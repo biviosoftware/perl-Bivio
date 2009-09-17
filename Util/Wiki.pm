@@ -134,6 +134,12 @@ sub _remove_leading_caret {
     return $content;
 }
 
+sub _update_caret_ampersand {
+    my(undef, $content) = @_;
+    $content =~ s/\^\&/\@\&/g;
+    return $content;
+}
+
 sub _update_b_tags {
     my(undef, $content) = @_;
     $content
@@ -147,6 +153,7 @@ sub _upgrade_content {
     my($self, $content) = @_;
     $content = _insert_carets($self, $content);
     $content = _remove_equals_equals($self, $content);
+    $content = _update_caret_ampersand($self, $content);
     $content = _update_b_tags($self, $content);
     $content = _remove_leading_caret($self, $content);
     return $content;
