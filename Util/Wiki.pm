@@ -36,10 +36,7 @@ sub convert_links {
     $self->model('RealmFile')->do_iterate(sub {
         my($it) = @_;
 	return 1
-	    if $it->get('is_folder')
-		|| $it->get('path_lc') =~ /\Q$_VF\E/i
-			|| ($it->get('path_lc') !~ /\Q$_WF\/\E/i
-				&& $it->get('path_lc') !~ /\Q$_BF\E\//i);
+	    unless _is_mutable_wiki_file($it);
 	$self->print("***\nCHECKING: " . $it->get('path') . "\n");
 	my($content) = ${$it->get_content};
 	$content = _upgrade_content($self, $content);
@@ -257,6 +254,13 @@ sub _from_xhtml {
 	    sort(keys(%$attr)))),
 	($value =~ /\@|\n.*\n/s ? ("\n", $value, '@/', $tag, "\n") : " $value"),
     );
+}
+
+sub _is_mutable_wiki_file {
+    my($rf) = @_;
+    my($p) = $rf->get('path_lc');
+    return !$rf->get('is_folder') && $rf->get_content_type =~ /wiki/i
+	&& $p !~ /\Q$_VF\/\E/i && ($p =~ /\Q$_WF\/\E/i || $p =~ /\Q$_BF\E\//i);
 }
 
 sub _recurse {
