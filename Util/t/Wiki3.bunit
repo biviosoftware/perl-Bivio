@@ -3,90 +3,6 @@
 Request();
 [
     class() => [
-	_insert_carets => [
-	    '@a href=//www.test.com Test Web' => '@a href=//www.test.com Test Web',
-	    '@a href=http://www.test.com Test Web' => '@a href=http://www.test.com Test Web',
-	    '@a href=mailto:foo@bar' => '@a href=mailto:foo@bar',
-	    '@img src=test.jpg' => '@img src=test.jpg',
-	    'SomeLink' => '^SomeLink',
-	    '^HardLink' => '^HardLink',
-	    'automatic@email.com' => '^automatic@email.com',
-	    'first.last@email.com' => '^first.last@email.com',
-	    '123@email.com' => '^123@email.com',
-	    '.wierd@email.com' => '.^wierd@email.com',  #TODO???
-	    '^explicit@email.com' => '^explicit@email.com',
-	    'test.com' => '^test.com',
-	    '^ok.com' => '^ok.com',
-	    '^&quot;' => '^&quot;',
-	    '@&quot;' => '@&quot;',
-	    'www.test.com/path1/pathA' => '^www.test.com/path1/pathA',
-	    'http://www.test.com' => '^http://www.test.com',
-	    'test.jpg' => '^test.jpg',
-	    '/public/test.jpg' => '^/public/test.jpg',
-	    '/public/test.kqh' => '/public/test.kqh',
-	    '^ok.gif' => '^ok.gif',
-	    '=NoLink=' => '=NoLink=',
-	    '=NotAllLinks=' => '=NotAllLinks=',
-	    '=NotAllLinksHere=' => '=NotAllLinksHere=',
-	    <<'END_IN' => <<'END_EXPECT',
-Lorem ipsum SomeLink
-=NoLink=
-Here is a =ProductName=
-email@test.com
-Some other email2@test.com
-StartPage
-www.test.com ipsum
-Ipso facto https://secure.com/super/secret
-END_IN
-Lorem ipsum ^SomeLink
-=NoLink=
-Here is a =ProductName=
-^email@test.com
-Some other ^email2@test.com
-^StartPage
-^www.test.com ipsum
-Ipso facto ^https://secure.com/super/secret
-END_EXPECT
-	],
-	_remove_equals_equals => [
-	    '=NoLink=' => 'NoLink',
-	    '=No=Link' => '=No=Link',
-	    <<'END_IN' => <<'END_EXPECT',
-=CamelCase= words are =NotAlwaysLinks=
-1 == 1.0
-END_IN
-CamelCase words are NotAlwaysLinks
-1 == 1.0
-END_EXPECT
-	],
-	_remove_leading_caret => [
-	    '^' => undef,
-	    '^SomeLink' => '^SomeLink',
-	    'S^ome^Link' => 'S^ome^Link',
-	    <<'END_IN' => <<'END_EXPECT',
-^
-^SomeLink
-Some words and 10^2 numbers
-END_IN
-^SomeLink
-Some words and 10^2 numbers
-END_EXPECT
-	    <<'END_IN' => <<'END_EXPECT',
- ^ Lorem ipsum
-^SomeOtherLink
-END_IN
-Lorem ipsum
-^SomeOtherLink
-END_EXPECT
-	    <<'END_IN' => <<'END_EXPECT',
-
-^ Ipso facto
-^SomeRareLink
-END_IN
-Ipso facto
-^SomeRareLink
-END_EXPECT
-	],
 	_update_caret_ampersand => [
 	    '^&quot;' => '@&quot;',
 	    '^&nbsp;' => '@&nbsp;',
@@ -137,41 +53,31 @@ Phasellus nec
 @b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265
 END_EXPECT
 	],
-	_upgrade_content => [
-	    <<'END_IN' => <<'END_EXPECT',
- ^
-Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
-^SomeOldLink
-^&#174;^&quot;
-ProductNameOne
-END_IN
-Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
-^SomeOldLink
-@&#174;@&quot;
-ProductNameOne
-END_EXPECT
+	_check_path => [
+	    'WikiName' => undef,
+	    'BlogPost' => undef,
+	    '/Wiki/WikiName' => 1,
+	    '/Blog/BlogPost' => 1,
+	    [qw(/Wiki/BlogOnly 1)] => undef,
+	    [qw(/Wiki/BlogAlso 0)] => 1,
+	],
+	internal_upgrade_content => [
 	    <<'END_IN' => <<'END_EXPECT',
 Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
-SomeOldLink
+^SomeOldLink
 ProductNameOne
-=ProductNameTwo=
 @b-widget ride_count_all
-email@test.com
+^email@test.com
+^&#174;^&quot;
 Some other email2@test.com
-StartPage
-www.test.com ipsum
-Ipso facto https://secure.com/super/secret
 END_IN
-Lorem ipsum dolor sit amet, ^ConSectetur adipiscing elit.
+Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
 ^SomeOldLink
-^ProductNameOne
-ProductNameTwo
+ProductNameOne
 @b-widget value=ride_count_all
 ^email@test.com
-Some other ^email2@test.com
-^StartPage
-^www.test.com ipsum
-Ipso facto ^https://secure.com/super/secret
+@&#174;@&quot;
+Some other email2@test.com
 END_EXPECT
 	],
     ],
