@@ -21,6 +21,8 @@ sub VIEW_CLASS {
 }
 
 sub execute_cancel {
+    my($self) = @_;
+    $self->clear_errors;
     return shift->internal_return_value;
 }
 
@@ -197,7 +199,9 @@ sub internal_query_who {
 }
 
 sub internal_return_value {
-    return;
+    return {
+        task_id => 'next',
+    };
 }
 
 sub internal_send_to_realm {
