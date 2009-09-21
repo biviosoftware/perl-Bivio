@@ -131,6 +131,7 @@ OUT
 	    '@hr' => qq{<hr />\n},
 	    '@@other' => qq{<p class="b_prose">\@other\n</p>},
 	    '@badtag' => qq{},
+	    '@center' => qq{},
 	    '@my/bp/Shell_Util_Help' => qq{},
 	    "\n\@hr" => qq{<hr />\n},
 	    '@a' => qq{<p class="b_prose"><a></a></p>},
