@@ -58,7 +58,7 @@ sub upgrade_blog_titles {
     $self->model('RealmFile')->do_iterate(sub {
         my($it) = @_;
 	return 1
-	    unless _mutable_wikitext($it, 1);
+	    unless _mutable_wikitext($self, $it, 1);
 	$self->print("***\nCHECKING: " . $it->get('path') . "\n");
 	my($content) = _upgrade_title($self, ${$it->get_content});
 	if (${$it->get_content} ne $content) {
@@ -84,7 +84,7 @@ sub upgrade_content {
     $self->model('RealmFile')->do_iterate(sub {
         my($it) = @_;
 	return 1
-	    unless _mutable_wikitext($it);
+	    unless _mutable_wikitext($self, $it);
 	$self->print("***\nCHECKING: " . $it->get('path') . "\n");
 	my($content) = ${$it->get_content};
 	$content = $self->internal_upgrade_content($content,
