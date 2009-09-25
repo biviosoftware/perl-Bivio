@@ -6,6 +6,10 @@ Request();
 	_update_caret_ampersand => [
 	    '^&quot;' => '@&quot;',
 	    '^&nbsp;' => '@&nbsp;',
+	    '10^2' => '10^2',
+	    '10^ 2' => '10^ 2',
+	    '10 ^2' => '10 ^2',
+	    '10 ^ 2' => '10 ^ 2',
 	    '^SomeWikiPage' => '^SomeWikiPage',
 	    <<'END_IN' => <<'END_EXPECT',
 ^ & *
