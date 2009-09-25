@@ -30,4 +30,9 @@ Type();
     from_sql_column => [
 	'200605/04030201' => '20060504030201',
     ],
+    to_absolute => [
+	[undef, 0] => '/Blog',
+	[undef, 1] => '/Public/Blog',
+	[20060504030201, 1] => '/Public/Blog/200605/04030201',
+    ],
 ];
