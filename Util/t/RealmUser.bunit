@@ -34,5 +34,5 @@ realm_user_util2: +ADMINISTRATOR +FILE_WRITER +MAIL_RECIPIENT +MEMBER
 realm_user_util3: +ADMINISTRATOR +FILE_WRITER +MAIL_RECIPIENT +MEMBER -WITHDRAWN
 realm_user_util4: +GUEST
 EOF
-#    [qw(-realm realm_user_util1 audit_all_users)] => [],
+    [qw(-realm realm_user_util1 audit_all_users)] => [],
 ];
