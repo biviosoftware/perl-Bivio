@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Die;
 use strict;
@@ -53,10 +53,11 @@ sub as_string {
 	}
 	$res .= "$curr->as_string: $@\n"
 	    unless eval {
-		my($c, $a, $p, $f, $l) = $curr->unsafe_get(
-		    'code', 'attrs', 'package', 'file', 'line');
-		$res .= $_A->format($p, $f, $l, undef,
-			_as_string_args($c, $a));
+		$res .= $_A->format(
+		    $curr->unsafe_get(qw(package file line)),
+		    undef,
+		    [$curr->unsafe_get('code'), ': ', _as_string_args($curr)],
+		);
 		chomp($res);
 		1;
 	    };
@@ -366,23 +367,16 @@ sub throw_quietly {
 }
 
 sub _as_string_args {
-    # (Bivio.DieCode, hash_ref) : any
-    # Tries to create an economical message.  Leaves formatting up
-    # to $_A (see as_string).
-    my($code, $attrs) = @_;
-    return [$code, ': ', $attrs->{message}]
-	if $attrs->{message}
-	&& int(keys(%$attrs)) <= 1 + ($attrs->{program_error} ? 1 : 0);
-    my($msg) = [$code];
-    if (%$attrs) {
-	# Don't just "join", because we want Alert to call
-	# as->string if appropriate.
-	push(@$msg, ': ', map {
-	    ($_, '=>', $attrs->{$_}, ' ');
-	} sort keys %$attrs);
-	pop(@$msg);
-    }
-    return $msg;
+    my($self) = @_;
+    my($attrs) = {%{$self->unsafe_get('attrs') || {}}};
+    delete($attrs->{program_error});
+    my($m) = delete($attrs->{message});
+    my($msg) = [
+	$m ? ($m, ' ') : (),
+	map(($_, '=>', $attrs->{$_}, ' '), sort(keys(%$attrs))),
+    ];
+    pop(@$msg);
+    return @$msg;
 }
 
 sub _caller {
