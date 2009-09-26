@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio.ShellUtil';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_ALL_REALMS_KEY) = 'ALL REALMS';
 my($_RN) = b_use('Type.RealmName');
 my($_R) = b_use('Auth.Role');
 my($_SA) = b_use('Type.StringArray');
@@ -122,7 +123,7 @@ sub _assert_audit {
     my($map) = $_MAP->{$self->req(qw(auth_realm owner_name))} || return;
     return (
 	$map,
-	{map(map(($_ => 1), keys(%$_)), values(%$map))},
+	{%{$map->{$_ALL_REALMS_KEY}}},
 	$self->req('auth_user_id'),
     );
 }
@@ -137,7 +138,9 @@ sub _parse_map {
 		if $res->{$src_realm};
 	    $src_realm = b_use('Type.ForumName')
 		->from_literal_or_die($src_realm);
-	    my($map) = $res->{$src_realm} = {};
+	    my($map) = $res->{$src_realm} = {
+		$_ALL_REALMS_KEY => my $all_realms = {},
+	    };
 	    $proto->map_by_two(
 		sub {
 		    my($src_role, $cfg) = @_;
@@ -161,7 +164,12 @@ sub _parse_map {
 			foreach my $realm (
 			    ref($tgt_realm) ? @$tgt_realm : $tgt_realm
 			) {
-			    my($x) = $realms->{$realm} ||= {};
+			    my($tr, $explicit) = $realm =~ /^(\S+)(\s+EXPLICIT)?$/;
+			    b_die($realm, ': invalid realm name')
+				unless $tr = $_RN->unsafe_from_uri($tr);
+			    my($x) = $realms->{$tr} ||= {};
+			    $all_realms->{$tr} = 1
+				unless $explicit;
 			    foreach my $role (
 				ref($tgt_roles) ? @$tgt_roles : $tgt_roles
 			    ) {

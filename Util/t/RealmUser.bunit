@@ -6,7 +6,7 @@ foreach my $x (
     [qw(root ADMINISTRATOR MEMBER)],
 ) {
     my($u) = shift(@$x);
-    foreach my $n (1..3) {
+    foreach my $n (1..4) {
 	ShellUtil_RealmAdmin()->main(
 	    -realm => "realm_user_util$n", -user => $u, 'leave_user');
     }
@@ -19,6 +19,8 @@ ShellUtil_RealmAdmin()->main(
 ShellUtil_RealmAdmin()->main(
     qw(-realm realm_user_util3 -user root join_user WITHDRAWN),
 );
+ShellUtil_RealmAdmin()->main(
+    qw(-realm realm_user_util4 -user demo join_user MEMBER));
 [
     [qw(-user demo audit_user)] => qr{DIE},
     [qw(-realm fourem -user user audit_user)] => qr{DIE},
@@ -30,6 +32,7 @@ realm_user_util3: -MAIL_RECIPIENT
 root:
 realm_user_util2: +ADMINISTRATOR +FILE_WRITER +MAIL_RECIPIENT +MEMBER
 realm_user_util3: +ADMINISTRATOR +FILE_WRITER +MAIL_RECIPIENT +MEMBER -WITHDRAWN
+realm_user_util4: +GUEST
 EOF
-    [qw(-realm realm_user_util1 audit_all_users)] => [],
+#    [qw(-realm realm_user_util1 audit_all_users)] => [],
 ];
