@@ -46,9 +46,12 @@ sub from_literal {
     return (undef, $_TE->EMAIL);
 }
 
+sub get_domain_part {
+    return (shift->split_parts(@_))[1];
+}
+
 sub get_local_part {
-    my(undef, $value) = @_;
-    return $value && $value =~ /^(.+?)\@/ ? $1 : undef;
+    return (shift->split_parts(@_))[0];
 }
 
 sub invalidate {
