@@ -29,7 +29,7 @@ sub SPECIAL_SEPARATOR {
 
 sub clean_and_trim {
     my($self, $value) = @_;
-    $value =~ s/\W+//;
+    $value =~ s/\W+//g;
     return shift->SUPER::clean_and_trim(lc($value));
 }
 
