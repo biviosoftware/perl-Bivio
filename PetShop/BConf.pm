@@ -89,6 +89,7 @@ sub merge_overrides {
 			'+MEMBER',
 			[realm_user_util2 => [qw(ADMINISTRATOR FILE_WRITER)]],
 			[realm_user_util3 => [qw(MEMBER MAIL_RECIPIENT ADMINISTRATOR FILE_WRITER)]],
+			['realm_user_util4 EXPLICIT' => 'GUEST'],
 		    ],
 		],
 	    ],

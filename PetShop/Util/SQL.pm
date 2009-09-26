@@ -799,7 +799,7 @@ EOF
 
 sub _init_site_admin {
     my($self) = @_;
-    foreach my $x (1..3) {
+    foreach my $x (1..4) {
 	$self->model('Club')->create_realm(
 	    {},
 	    {
