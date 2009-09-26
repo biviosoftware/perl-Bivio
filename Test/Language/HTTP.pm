@@ -39,6 +39,10 @@ my($_F) = __PACKAGE__->use('IO.File');
 my($_T) = __PACKAGE__->use('IO.Trace');
 my($_HTML) = __PACKAGE__->use('Bivio.HTML');
 
+sub LOCAL_EMAIL_DOMAIN_RE {
+    return qr{-(\w+\.(?:org|com))$};
+}
+
 sub absolute_uri {
     my($self, $uri) = @_;
     die('invalid uri')
@@ -304,13 +308,14 @@ sub follow_link_in_table {
 }
 
 sub generate_local_email {
-    my($self, $suffix) = @_;
+    my($self, $suffix, $domain) = @_;
     # Returns an email address based on I<email_user> and I<suffix>.
     Bivio::Die->die('missing suffix')
 	unless defined($suffix);
     return lc($_CFG->{email_user}
 	. $_CFG->{email_tag}
 	. $suffix
+        . ($domain ? "-$domain" : '')
 	. '@'
 	. $_CFG->{local_mail_host});
 }
