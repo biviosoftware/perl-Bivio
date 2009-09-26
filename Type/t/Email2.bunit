@@ -12,4 +12,9 @@ Type();
 	'' => [undef, undef],
 	'a@b.c' => ['a', 'b.c'],
     ],
+    get_domain_part => [
+	[undef] => [undef],
+	'' => [undef],
+	'a@a.a' => 'a.a',
+    ],
 ];
