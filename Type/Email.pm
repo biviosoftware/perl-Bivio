@@ -50,10 +50,10 @@ sub get_domain_part {
     my($proto, $value) = @_;
     return $1
         if $value
-            && UNIVERSAL::isa('Bivio::Agent::Request', 'Bivio::UNIVERSAL')
-            && Bivio::Agent::Request->is_test
-            && $proto->get_local_part($value) =~
-                b_use('TestLanguage.HTTP')->LOCAL_EMAIL_DOMAIN_RE;
+        && UNIVERSAL::isa('Bivio::Agent::Request', 'Bivio::UNIVERSAL')
+        && Bivio::Agent::Request->is_test
+        && $proto->get_local_part($value)
+	=~ b_use('TestLanguage.HTTP')->LOCAL_EMAIL_DOMAIN_RE;
     return (shift->split_parts(@_))[1];
 }
 
