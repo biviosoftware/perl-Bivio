@@ -995,6 +995,11 @@ sub unauth_model {
     return _model(@_);
 }
 
+sub unauth_realm_id {
+    my($self, $name) = @_;
+    return shift->unauth_model(RealmOwner => {name => $name})->get('realm_id');
+}
+
 sub unsafe_get {
     my($self) = shift;
     return $self->SUPER::unsafe_get(@_) if ref($self);
