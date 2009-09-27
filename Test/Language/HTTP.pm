@@ -40,7 +40,8 @@ my($_T) = __PACKAGE__->use('IO.Trace');
 my($_HTML) = __PACKAGE__->use('Bivio.HTML');
 
 sub LOCAL_EMAIL_DOMAIN_RE {
-    return qr{-(\w+\.(?:org|com))$};
+    # Must be synchronized with generate_local_email
+    return qr{=(\w+\.(?:org|com|net))$};
 }
 
 sub absolute_uri {
@@ -315,7 +316,8 @@ sub generate_local_email {
     return lc($_CFG->{email_user}
 	. $_CFG->{email_tag}
 	. $suffix
-        . ($domain ? "-$domain" : '')
+	# Must be synchronized with LOCAL_EMAIL_DOMAIN_RE
+        . ($domain ? "=$domain" : '')
 	. '@'
 	. $_CFG->{local_mail_host});
 }
