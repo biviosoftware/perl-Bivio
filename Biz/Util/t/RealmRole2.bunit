@@ -4,4 +4,20 @@ ShellUtil();
 [
     [qw(-realm fourem list)] => qr{^RealmRole\(\);\nRealmRole\(qw\(-r fourem edit ANONYMOUS -}s,
     [qw(-realm fourem list USER)] => qr{^RealmRole\(\);\nRealmRole\(qw\(-r fourem edit USER -\n    \+ANYBODY\n    \+ANY_USER}s,
+    [qw(-realm motion_forum edit_categories -open_results_motion)] => not_die(),
+    [qw(-realm motion_forum list_enabled_categories)] => sub {
+	my(undef, $actual) = @_;
+	assert_not_equals(qr{results_motion}, $actual->[0]);
+        return 1;
+    },
+    [qw(-realm motion_forum edit_categories +open_results_motion)] => not_die(),
+    [qw(-realm motion_forum list_enabled_categories)] => qr{open_results_motion},
+    [qw(-realm motion_forum edit_categories +close_results_motion)] => not_die(),
+    [qw(-realm motion_forum list_enabled_categories)] => sub {
+	my(undef, $actual) = @_;
+	assert_not_equals(qr{open_results_motion}, $actual->[0]);
+        return qr{close_results_motion};
+    },
+    [qw(-realm motion_forum edit_categories +open_results_motion)] => not_die(),
+    [qw(-realm motion_forum list_enabled_categories)] => qr{open_results_motion},
 ];
