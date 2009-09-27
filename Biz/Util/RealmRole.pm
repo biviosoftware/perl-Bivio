@@ -1,24 +1,23 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Util::RealmRole;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::IO::Trace;
+use Bivio::Base 'Bivio.ShellUtil';
+b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my(@_DATA);
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
-use vars qw($_TRACE);
 Bivio::IO::Trace->register;
 my($_CATEGORY_MAP);
-Bivio::IO::Config->register(my $_CFG = {
+b_use('IO.Config')->register(my $_CFG = {
     category_map => sub {[]},
 });
-my($_R) = __PACKAGE__->use('Auth.Role');
-my($_P) = __PACKAGE__->use('Auth.Permission');
-my($_PS) = __PACKAGE__->use('Auth.PermissionSet');
-my($_AR) = __PACKAGE__->use('Auth.Realm');
-my($_RT) = __PACKAGE__->use('Auth.RealmType');
+my($_R) = b_use('Auth.Role');
+my($_P) = b_use('Auth.Permission');
+my($_PS) = b_use('Auth.PermissionSet');
+my($_AR) = b_use('Auth.Realm');
+my($_RT) = b_use('Auth.RealmType');
 
 sub CATEGORIES {
     # : array_ref
@@ -126,7 +125,8 @@ sub edit {
 
 sub edit_categories {
     my($self, $category_ops) = _edit_categories_args(@_);
-    return unless @$category_ops;
+    return
+	unless @$category_ops;
     my($req) = $self->get_request;
     my($rr) = $self->model('RealmRole');
     my($o) = $req->get('auth_realm')->get('owner');
@@ -282,41 +282,7 @@ sub unmake_super_user {
 }
 
 sub _category_map {
-    # () : hash_ref
-    # Returns initialized $_CATEGORY_MAP.
-    my($proto) = @_;
-    return $_CATEGORY_MAP ||= {map({
-	my($cat, @ops) = @$_;
-	($cat => {
-	    map({
-		my($op) = $_;
-		($op => [
-		    map({
-			my($roles, $perms, @rest) = map(ref($_) ? $_ : [$_], @$_);
-			Bivio::Die->die(
-			    $cat,
-			    ': invalid category_map entry; extra params: ',
-			    \@rest,
-			) if @rest;
-			$roles = [map(
-			    $_ eq '*' ? $_R->get_non_zero_list
-				: $_R->from_any($_),
-			    @$roles,
-			)];
-			map({
-			    my($x) = $_;
-			    [
-				($x =~ s/^-// xor $op eq '-')
-				    ? 'remove_permissions' : 'add_permissions',
-				$roles,
-				${$_PS->set($_PS->get_min, $_P->$x())},
-			    ];
-			} @$perms);
-		    } @ops),
-		]);
-	    } qw(+ -)),
-	});
-    } @{$_CFG->{category_map}->()})};
+    return $_CATEGORY_MAP ||= _init_category_map(@_);
 }
 
 sub _edit_categories_args {
@@ -348,6 +314,64 @@ sub _get_permission_set {
     return $_PS->get_min if $dont_die;
     $self->usage($role->as_string, ": not set for realm");
     # DOES NOT RETURN
+}
+
+sub _init_category_map {
+    my($proto) = @_;
+    my($map) = {};
+    foreach my $x (@{$_CFG->{category_map}->()}) {
+	my($cat, @ops) = @$x;
+	$map->{$cat} = {map({
+	    my($sign) = $_;
+	    $sign => [map(
+		ref($_) ? _init_category_map_op($proto, $cat, $sign, $_)
+		    : _init_category_map_copy($proto, $cat, $sign, $_, $map),
+		@ops,
+	    )];
+        } qw(+ -))};
+    }
+    return $map;
+}
+
+sub _init_category_map_copy {
+    my($proto, $cat, $sign, $copy_cat, $map) = @_;
+    $copy_cat =~ s/^\+//;
+    my($reverse) = $copy_cat =~ s/^-//;
+    return map({
+	my($method, @rest) = @$_;
+	[
+	    $reverse ? $method eq 'add_permissions'
+		? 'remove_permissions'
+		: 'add_permissions'
+		: $method,
+	    @rest,
+	];
+    } @{($map->{$copy_cat} || b_die($copy_cat, ': not listed before ', $cat))
+       ->{$sign}});
+}
+
+sub _init_category_map_op {
+    my($proto, $cat, $sign, $op) = @_;
+    my($roles, $perms, @rest) = map(ref($_) ? $_ : [$_], @$op);
+    b_die(
+	$cat,
+	': invalid category_map entry; extra params: ',
+	\@rest,
+    ) if @rest;
+    $roles = [map(
+	$_ eq '*' ? $_R->get_non_zero_list : $_R->from_any($_),
+	@$roles,
+    )];
+    return map({
+	my($x) = $_;
+	$x =~ s/^\+//;
+	[
+	    ($x =~ s/^-// xor $sign eq '-')
+		? 'remove_permissions' : 'add_permissions',
+	    $roles,
+	    ${$_PS->set($_PS->get_min, $_P->$x())},
+	];
+    } @$perms);
 }
 
 sub _list_one {
