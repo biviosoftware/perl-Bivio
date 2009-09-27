@@ -9,5 +9,9 @@
 	    map(([read_file($_)] => not_die()),
 		glob('HTTP2/*.ok')),
 	],
+	generate_local_email => [
+	    abc => qr{^\w+\+btest_abc\@},
+	    [qw(abc def.com)] => qr{^\w+\+btest_abc=def.com\@},
+	],
     ],
 ];
