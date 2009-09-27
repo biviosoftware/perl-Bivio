@@ -2,13 +2,42 @@
 # $Id$
 Type();
 [
+    from_extension => [
+	undef => 'application/octet-stream',
+	htm => 'text/html',
+	html => 'text/html',
+	deploy => 'application/octet-stream',
+	application => 'application/x-ms-application',
+	manifest => 'application/x-ms-manifest',
+	doc => 'application/msword',
+    ],
+    suggest_encoding => [
+	map((
+	    ["$_/plain", \undef] => '7bit',
+	    ["$_/csv", \"$_,7bit,csv"] => '7bit',
+	    ["$_/css", \"\173\177\175"] => '7bit',
+	), (qw(text message))),
+	["text/plain", \"\200\377"] => 'quoted-printable',
+	["message/delivery-status", \"\201\376"] => 'binary',
+	['multipart/form-data', '0123'] => 'binary',
+	['video/x-sgi-movie', '0123'] => 'base64',
+	['bogus-type/bogus-subtype', '0123'] => 'base64',
+    ],
     to_extension => [
+	undef => [undef],
 	'foo/bar' => [undef],
-	'text/html' => 'htm',
+	'bogus-type/bogus-subtype' => [undef],
+	'text/html' => 'html',
+	'text/x-bivio-wiki' => 'bwiki',
+	'text/x-bivio-wiki-menu' => 'bmenu',
 	# Last line in the file
-	'video/x-sgi-movie' => 'movie',
+	'video/wavelet' => 'wv',
+    ],
+    to_header => [
+	'text/html' => "Content-Type: text/html\n",
     ],
     unsafe_from_extension => [
+	undef => [undef],
 	'x.htm' => 'text/html',
 	'x.foobar' => [undef],
 	movie => 'video/x-sgi-movie',
