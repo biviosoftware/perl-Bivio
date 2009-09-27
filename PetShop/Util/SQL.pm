@@ -203,6 +203,7 @@ sub initialize_test_data {
     _init_remote_copy($self);
     _init_task_log($self);
     _init_bulletin($self);
+    _init_motion($self);
     $self->new_other('RealmUser')->audit_all_users;
     return;
 }
@@ -704,6 +705,14 @@ sub _init_mail {
     my($self) = @_;
     $self->top_level_forum(
 	$self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    return;
+}
+
+sub _init_motion {
+    my($self) = @_;
+    $self->top_level_forum('motion_forum', [$self->SITE_ADM], ['motion_user']);
+    $self->new_other('RealmRole')
+	->edit_categories(qw(+feature_motion +open_results_motion));
     return;
 }
 
