@@ -391,8 +391,8 @@ sub merge_realm_role_category_map {
 		    [$guest_and_below => 'MAIL_SEND'],
 	    ], [
 		feature_crm =>
+		    'public_forum_email',
 		    ['*' => 'FEATURE_CRM'],
-		    [$guest_and_below => 'MAIL_SEND'],
 	    ], [
 		feature_site_admin =>
 		    ['*' => 'FEATURE_SITE_ADMIN'],
@@ -417,7 +417,7 @@ sub merge_realm_role_category_map {
             map(Bivio::Agent::TaskId->is_component_included($_) ? ([
                 "feature_$_" => ['*' => uc("feature_$_")],
             ]) : (),
-                qw(file blog wiki dav mail calendar)),
+                qw(file blog wiki dav mail calendar motion)),
 	    Bivio::Agent::TaskId->is_component_included('tuple') ? ([
 #DEPRECATED: Need to fix apps which use this and not feature_tuple
 		tuple =>
@@ -431,17 +431,20 @@ sub merge_realm_role_category_map {
 		    [MEMBER => [qw(TUPLE_WRITE TUPLE_READ)]],
 	    ]) : (),
 #TODO: Not clear if we can eliminate motion
- 	    Bivio::Agent::TaskId->is_component_included('motion') ? ([
-		closed_results_motion =>
+ 	    !Bivio::Agent::TaskId->is_component_included('motion') ? () : ([
+		common_results_motion =>
 		    ['*' => 'FEATURE_MOTION'],
-		    [MEMBER => [qw(MOTION_WRITE -MOTION_READ)]],
+		    [MEMBER => 'MOTION_WRITE'],
 		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
 	    ], [
 		open_results_motion =>
-		    ['*' => 'FEATURE_MOTION'],
-		    [MEMBER => [qw(MOTION_WRITE MOTION_READ)]],
-		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
-	    ]) : (),
+		    '+common_results_motion',
+		    [MEMBER => '+MOTION_READ'],
+	    ], [
+		close_results_motion =>
+		    '+common_results_motion',
+		    [MEMBER => '-MOTION_READ'],
+	    ]),
 	    $new ? @{$new->()} : (),
         ];
     }};
