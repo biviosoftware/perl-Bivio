@@ -19,17 +19,18 @@ sub USAGE {
     return <<'EOF';
 usage: b-test-user [options] command [args..]
 commands
-  create user_or_email [password] -- RealmAdmin->create_user
-  format_email base -- HTTP->generate_local_email if not already an email
+  create user_or_email [[password] name]-- RealmAdmin->create_user
+  format_email base [domain] -- HTTP->generate_local_email if not already an email
   init -- test users (adm, etc.)
   leave_and_delete -- remove user from all realms and delete
 EOF
 }
 
 sub create {
-    my($self, $user_or_email, $password) = shift->name_args([
+    my($self, $user_or_email, $password, $name) = shift->name_args([
 	[qw(user_or_email String)],
 	[Password => sub {shift->DEFAULT_PASSWORD}],
+	[name => RealmName => undef],
     ], \@_);
     $self->initialize_fully;
     my($display_name) = $_E->is_valid($user_or_email)
@@ -38,16 +39,16 @@ sub create {
 	$self->format_email($user_or_email),
 	$display_name,
 	$password,
-	b_use('Type.RealmName')->clean_and_trim($display_name),
+	$name || b_use('Type.RealmName')->clean_and_trim($display_name),
     );
     b_use('Type.PageSize')->row_tag_replace($uid, 100, $self->req);
     return $uid;
 }
 
 sub format_email {
-    my($self, $base) = @_;
+    my($self, $base, $domain) = @_;
     return $_E->is_valid($base) ? $base
-	: (b_use('TestLanguage.HTTP')->generate_local_email($base))[0],
+	: (b_use('TestLanguage.HTTP')->generate_local_email($base, $domain))[0],
 }
 
 sub init {
