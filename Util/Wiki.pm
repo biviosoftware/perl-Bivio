@@ -228,6 +228,8 @@ sub _update_b_tags {
 	=~ s/^\@(?:ins\-page|b\-embed)\s(?:.*=)*(.*)$/\@b-embed value=$1/gm;
     $content
 	=~ s/^\@b\-([a-z-]*)\s(?:\S*=)?(\S*)$/\@b-$1 value=$2/gm;
+    $content
+	=~ s/^\@random\-image\s(?:\S*=)?(\S*)$/\@random-image value=$1/gm;
     return $content;
 }
 
