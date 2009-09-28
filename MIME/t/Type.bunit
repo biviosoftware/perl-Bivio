@@ -30,6 +30,7 @@ Type();
 	undef => [undef],
 	'foo/bar' => [undef],
 	'bogus-type/bogus-subtype' => [undef],
+	'application/octet-stream' => 'bin',
 	'text/html' => 'html',
 	'text/x-bivio-wiki' => 'bwiki',
 	'text/x-bivio-wiki-menu' => 'bmenu',
