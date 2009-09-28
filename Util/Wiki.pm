@@ -59,12 +59,12 @@ sub upgrade_blog_titles {
         my($it) = @_;
 	return 1
 	    unless _mutable_wikitext($self, $it, 1);
-	$self->print("***\nCHECKING: " . $it->get('path') . "\n");
+	_trace("***\nCHECKING: " . $it->get('path') . "\n") if $_TRACE;
 	my($content) = _upgrade_title($self, ${$it->get_content});
 	if (${$it->get_content} ne $content) {
 	    my($die) = Bivio::Die->catch(
 		sub {
-		    $self->print("CONTENT MODIFIED:\n" . $content . "\n");
+		    _trace("CONTENT MODIFIED:\n" . $content . "\n") if $_TRACE;
 		    $it->update_with_content({
 			override_is_read_only => 1,
 		    }, \$content);
@@ -85,14 +85,14 @@ sub upgrade_content {
         my($it) = @_;
 	return 1
 	    unless _mutable_wikitext($self, $it);
-	$self->print("***\nCHECKING: " . $it->get('path') . "\n");
+	_trace("***\nCHECKING: " . $it->get('path') . "\n") if $_TRACE;
 	my($content) = ${$it->get_content};
 	$content = $self->internal_upgrade_content($content,
 						   $it->get('path_lc'));
 	if (${$it->get_content} ne $content) {
 	    my($die) = Bivio::Die->catch(
 		sub {
-		    $self->print("\nCONTENT MODIFIED:\n" . $content . "\n");
+		    _trace("\nCONTENT MODIFIED:\n" . $content . "\n") if $_TRACE;
 		    $it->update_with_content({
 			override_is_read_only => 1,
 		    }, \$content);
