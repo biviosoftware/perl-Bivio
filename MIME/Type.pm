@@ -58,7 +58,6 @@ sub _initialize {
     while (my $line = <DATA>) {
 	next if $line =~ /^#/;
 	my($t, @e) = split(/\s+/, lc($line));
-#	print $t . ':' . join(',', @e) . "\n";
 	if (@e) {
 	    $_TYPE_TO_EXT->{$t} = $e[0];
 	    map($_EXT_TO_TYPE->{$_} = $t, @e);
@@ -76,10 +75,6 @@ sub _initialize {
 # sync with the official internet media type registry, i.e.:
 #   http://svn.apache.org/viewvc/httpd/httpd/trunk/docs/conf/mime.types
 #   http://www.iana.org/assignments/media-Types/
-#
-# What about using MIME::Types from CPAN?
-#   http://search.cpan.org/~markov/MIME-Types-1.28/lib/MIME/Types.pod
-#   http://perl.overmeer.net/mimetypes/
 
 __DATA__
 application/activemessage
@@ -167,7 +162,7 @@ application/news-transmission
 application/nss
 application/ocsp-request
 application/ocsp-response
-#application/octet-stream bin dms lha lzh class so iso dmg dist distz pkg bpk dump elc scpt
+application/octet-stream bin dms lha lzh class so iso dmg dist distz pkg bpk dump elc scpt
 application/oda					oda
 application/oebps-package+xml
 application/ogg					ogg
@@ -1059,10 +1054,10 @@ video/x-ms-wvx					wvx
 video/x-msvideo					avi
 video/x-sgi-movie				movie
 x-conference/x-cooltalk				ice
-# Apache internet media types merged to reflect prior revision of this module
-# MUST BE COMMENTED OUT ABOVE
-application/octet-stream bin dms lha lzh class so iso dmg dist distz pkg bpk dump elc scpt deploy
-# Internet media types carried over from prior revision of our module
+#
+# Internet media types carried over from prior revision of our module, which
+# should be retained unless overridden above by future Apache mime.types
+#
 application/astound				asd
 application/envoy				evy
 application/fastman				lcc
