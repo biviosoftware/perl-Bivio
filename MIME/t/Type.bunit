@@ -6,10 +6,13 @@ Type();
 	undef => 'application/octet-stream',
 	htm => 'text/html',
 	html => 'text/html',
-	deploy => 'application/octet-stream',
 	application => 'application/x-ms-application',
 	manifest => 'application/x-ms-manifest',
 	doc => 'application/msword',
+	# Default unknown extension
+	dat => 'application/octet-stream',
+	# Support Microsoft ClickOnce deployments
+	deploy => 'application/octet-stream',
     ],
     suggest_encoding => [
 	map((
@@ -30,7 +33,8 @@ Type();
 	'text/html' => 'html',
 	'text/x-bivio-wiki' => 'bwiki',
 	'text/x-bivio-wiki-menu' => 'bmenu',
-	# Last line in the file
+	# First and last lines of appended media types data
+	'application/astound' => 'asd',
 	'video/wavelet' => 'wv',
     ],
     to_header => [
