@@ -26,6 +26,6 @@ options({
     ),
 	['T1Form' =>  not_die()],
 	['T3Form' =>  qr{duplicate name}i],
-	['T4Form' =>  qr{NoSuchType.*class not found}i],
+	['T4Form' =>  qr{class not found}i],
     ),
 ];
