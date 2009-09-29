@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
 
 sub ALL_INFO {
-    #DEPREDCATED
+    #DEPRECATED
     return shift->standard_components;
 }
 
