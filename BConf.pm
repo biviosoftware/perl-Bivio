@@ -441,7 +441,7 @@ sub merge_realm_role_category_map {
 		    '+common_results_motion',
 		    [MEMBER => '+MOTION_READ'],
 	    ], [
-		close_results_motion =>
+		closed_results_motion =>
 		    '+common_results_motion',
 		    [MEMBER => '-MOTION_READ'],
 	    ]),

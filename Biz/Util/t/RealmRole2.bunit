@@ -12,11 +12,11 @@ ShellUtil();
     },
     [qw(-realm motion_forum edit_categories +open_results_motion)] => not_die(),
     [qw(-realm motion_forum list_enabled_categories)] => qr{open_results_motion},
-    [qw(-realm motion_forum edit_categories +close_results_motion)] => not_die(),
+    [qw(-realm motion_forum edit_categories +closed_results_motion)] => not_die(),
     [qw(-realm motion_forum list_enabled_categories)] => sub {
 	my(undef, $actual) = @_;
 	assert_not_equals(qr{open_results_motion}, $actual->[0]);
-        return qr{close_results_motion};
+        return qr{closed_results_motion};
     },
     [qw(-realm motion_forum edit_categories +open_results_motion)] => not_die(),
     [qw(-realm motion_forum list_enabled_categories)] => qr{open_results_motion},
