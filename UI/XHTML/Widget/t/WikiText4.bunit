@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
 options({comparator => 'nested_contains'});
@@ -13,7 +13,7 @@ EOF
 [
     class() => [
 	render_html_without_view => [
-	    [\(<<'EOF'), req()] => qr{<td><p><div class="bmenu"><span><a.*?>Home</a></span></div>\n</p></td><td>other</td>},
+	    [\(<<'EOF'), req()] => qr{<td><div class="bmenu"><span><a.*?>Home</a></span></div></td><td><p class="b_prose">other</p></td>},
 @table
 @tr
 @td
@@ -24,7 +24,7 @@ EOF
 	],
 	render_plain_text => [
 	    [\("\@h1 t1\np1\np2\n"), req()] => [
-		"p1\np2",
+		"p1\np2\n",
 		{title => 't1'},
 	    ],
 	],

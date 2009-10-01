@@ -1,13 +1,8 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
 set_realm_and_user(qw(fourem root));
 initialize_fully('FORUM_WIKI_VIEW');
-config({
-    class() => {
-	deprecated_auto_link_mode => 1,
-    },
-});
 [
     class() => [
 	{
@@ -20,17 +15,11 @@ config({
 		}];
 	    },
 	} => [
-	    '@ins-page /my/bp/MissingPage' => undef,
-	    '@b-embed value=/my/bp/MissingPage' => undef,
-	    '@ins-page /my/bp/PrivatePage' => qr{My Example Page},
-	    '@b-embed value=/my/bp/PrivatePage' => qr{My Example Page},
-	    '@ins-page /site-help/bp/Shell_Util_Help'
-		=> qr{shell utility help}i,
-	    '@b-embed value=/site-help/bp/Shell_Util_Help'
-		=> qr{shell utility help}i,
-#TODO: @ symbol at end of line indicates 'no new line' -- is this useful?
-	    '@ins-page /pub/eg1@' => 'hello, world!',
-#	    '@b-embed value=/pub/eg1@' => 'hello, world!',
+	    '@b-embed value=/my/bp/MissingPage' => '',
+ 	    '@b-embed value=/my/bp/PrivatePage' => qr{My Example Page},
+ 	    '@b-embed value=/site-help/bp/Shell_Util_Help'
+ 		=> qr{shell utility help}i,
+	    '@b-embed value=/pub/eg1' => 'hello, world!',
 	],
     ],
 ];
