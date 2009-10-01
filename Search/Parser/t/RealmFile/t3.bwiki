@@ -2,7 +2,7 @@
 email me at ^foo@bar.com or ^A_Page home
 @b-menu value=MenuNotFoundIsOK
 @form.ez method=POST action=/site/Forms/Partner?blah=blah
-@th Name:
+@p Name:
 @input type=text size=40 name=name
 @/form
 the end
