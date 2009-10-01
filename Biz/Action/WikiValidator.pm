@@ -101,6 +101,8 @@ sub unsafe_load_error_list {
 sub validate_error {
     my($self, $entity, $message, $wiki_state) = @_;
     my($req) = $wiki_state->{req} || $self->req;
+    $message = $_A->format_args(@$message)
+	if ref($message) eq 'ARRAY';
     $message = $_FCT->facade_text_for_object(
 	$_D->is_blessed($message) ? $message->get('code') : $message, $req,
     ) if ref($message);
@@ -127,6 +129,8 @@ sub validate_error {
 	$entity ? ($entity, ': ') : (),
 	$message,
     );
+    b_die($msg)
+	if $wiki_state->{die_on_validate_error};
     if (ref($self)) {
 	my($re) = $self->get('ignore_regexp');
 	return
