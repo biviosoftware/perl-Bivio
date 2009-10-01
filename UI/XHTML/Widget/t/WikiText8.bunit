@@ -1,0 +1,22 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+set_realm_and_user(qw(fourem root));
+initialize_fully('FORUM_WIKI_VIEW');
+[
+    class() => [
+	{
+	    method => 'render_html',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [{
+		    value => $params->[0],
+		    req => req(),
+		    die_on_validate_error => 1,
+		}];
+	    },
+	} => [
+	    '@no-such-tag' => qr{line 1: \@no-such-tag: unknown tag}i,
+	],
+    ],
+];
