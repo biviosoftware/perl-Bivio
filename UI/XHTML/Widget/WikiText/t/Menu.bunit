@@ -15,7 +15,7 @@ Document,^Document,pdf
 EOF
 [
     [{
-	value => '@b-menu T1',
+	value => '@b-menu value=T1',
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
@@ -25,12 +25,5 @@ EOF
        class="want_sep selected" "/fourem/\w+/MyPage" MyPage
        class="pdf want_sep" "/fourem/\w+/Document" Document
        class="want_sep selected"><a href="/fourem/\w+/Flyer">Flyer.<img "[^"]+icon.png"
-    ))]}},
-    [{
-	value => '@b-menu value=T1',
-	is_public => 0,
-    }] => qr{@{[join('.*', qw(
-       class="bmenu"
-       "/fourem/\w+/Index" Index
     ))]}},
 ];

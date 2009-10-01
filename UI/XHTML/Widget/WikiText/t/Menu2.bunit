@@ -90,6 +90,6 @@ EOF
     [{
 	value => '@b-menu value=deviance',
 	is_public => 0,
-    }] => "\n",
+    }] => '',
 ];
 #TODO test uris with questionmark?

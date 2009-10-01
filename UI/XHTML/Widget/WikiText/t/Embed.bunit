@@ -4,6 +4,5 @@ WikiText();
 req()->set_realm_and_user('fourem');
 [
     '@b-embed value=/fourem/wiki/PrivatePage' => qr{My Example Page},
-    '@b-embed value=/pub/eg1' => "hello, world!\n",
-    '@ins-page /pub/eg1' => "hello, world!\n",
+    '@b-embed value=/pub/eg1' => "hello, world!",
 ];

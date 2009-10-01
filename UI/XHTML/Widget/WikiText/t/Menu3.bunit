@@ -22,7 +22,7 @@ EOF
         is_public => 0,
     }] => sub {
         my(undef, $actual) = @_;
-        assert_equals($actual, ["\n"]);
+        assert_equals($actual, ['']);
         assert_contains(qr{@{[join('.*', qw(
             class="bmenu"
             /fourem/\w+/Mmm Mmm
