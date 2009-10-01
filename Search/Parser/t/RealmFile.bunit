@@ -53,7 +53,7 @@ EOF
  	    't2.bwiki' => ['text/plain', 'TITLE',
  		qr/first text\s+second text\s+third text\s+the end/],
  	    't3.bwiki' => ['text/plain', 'TITLE',
- 		qr/email me at foo\@bar.com or A Page\s+home\s+Name\:\s+the end/],
+ 		qr/email\s+me\s+at\s+foo\@bar.com\s+or\s+A\s+Page\s+home\s+Name\:\s+the\s+end\s+/],
 	],
 	{
 	    method => 'new_excerpt',
