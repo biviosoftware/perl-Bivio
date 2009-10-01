@@ -17,6 +17,15 @@ initialize_fully('FORUM_WIKI_VIEW');
 	    },
 	} => [
 	    '@no-such-tag' => qr{line 1: \@no-such-tag: unknown tag}i,
+	    <<'IN' => qr{^<form><p.*<input.* /></p></form>$}s,
+@form
+@input
+@/form
+IN
+	    <<'IN' => qr{spurious end tag},
+@p x
+@/p
+IN
 	],
     ],
 ];
