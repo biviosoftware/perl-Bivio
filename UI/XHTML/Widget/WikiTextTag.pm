@@ -6,6 +6,10 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub EXPECTED_CHILDREN {
+    return [];
+}
+
 sub assert_no_content {
     my(undef, $args) = @_;
     b_die($args->{content}, ': does not accept content')
