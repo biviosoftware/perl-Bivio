@@ -494,8 +494,7 @@ sub register_tag {
 	ne $class->simple_package_name;
     # Super class will register first so we always override
     $_MY_TAGS->{$tag} = $class;
-#TODO: Ask question if empty tag.
-    $_CHILDREN->{$tag} = [];
+    $_CHILDREN->{$tag} = $class->EXPECTED_CHILDREN;
     # All tags can have registered tags except empty tags
     while (my($k, $v) = each(%$_CHILDREN)) {
 	push(@$v, $tag)
@@ -542,7 +541,6 @@ sub render_html {
 	unless defined($args->{is_public});
     my($state) = {
 	%$args,
-#TODO: use $args->{proto} so don't have to pass both proto & args
 	proto => $proto,
 	args => $args,
 	lines => [split(/\r?\n/, $args->{value})],
@@ -622,7 +620,6 @@ sub _eval_tag {
 	: $_EMPTY->{$tag} ? ''
 	: _eval($state, $args) . "\n"
 	if $state->{want_plain_text};
-#TODO: Shouldn't this be link_target?
     $attrs->{target} = '_top'
 	if $tag eq 'a'
 	&& ! defined($attrs->{target})
@@ -633,7 +630,6 @@ sub _eval_tag {
 	$attrs->{$k}
 	    = $state->{proto}->internal_format_uri($attrs->{$k}, $state);
     }
-#TODO: Need to parse children
     return _eval_tag_custom($state, $tag, $attrs)
 	if $_MY_TAGS->{$tag};
     my($start) = join(
@@ -663,8 +659,6 @@ sub _eval_tag_custom {
 	    : 'render_html';
         $res = $_MY_TAGS->{$tag}->$method({
 	    %{$state->{args}},
-#TODO: interface to widgets needs to change to understand ast.
-	    value => '',
 	    tag => $tag,
 	    attrs => $attrs,
 	});
@@ -1087,8 +1081,6 @@ sub _parse_tag_start {
     my($state, $line) = @_;
     return
 	unless my $tag = _parse_tag_ok($state, \$line);
-    _parse_stack_pop($state, $tag)
-	until _parse_child_ok($state, $tag);
     my($attrs) = _parse_tag_attrs($state, \$line);
     _parse_out(
 	$state,
@@ -1097,6 +1089,8 @@ sub _parse_tag_start {
     ) if _parse_child_ok($state, 'p')
  	&& _parse_paragraphing_ok($state)
 	&& $tag =~ $_INLINE_RE;
+    _parse_stack_pop($state, $tag)
+	until _parse_child_ok($state, $tag);
     _parse_out($state, \&_eval_tag, {tag => $tag, attrs => $attrs});
     $line =~ s/^\s+|\s+$//s;
     if (length($line)) {
