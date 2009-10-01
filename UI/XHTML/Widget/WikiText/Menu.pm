@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText::Menu;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'XHTMLWidget.WikiTextTag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -34,12 +34,15 @@ sub internal_submenu {
 }
 
 sub render_html {
-    my($proto, $args) = @_;
-    # load here to avoid subclass redfined error
+    my($proto, $args) = shift->parse_args(
+	[qw(class value b_selected_label_prefix)],
+	@_,
+    );
+    # load here to avoid subclass redefined error
     my($_WT) = b_use('XHTMLWidget.WikiText');
-    my($class) =  delete($args->{attrs}->{class}) || 'bmenu';
-    my($value) =  delete($args->{attrs}->{value}) || $args->{value};
-    my($prefix) = delete($args->{attrs}->{b_selected_label_prefix});
+    my($class) =  $args->{attrs}->{class} || 'bmenu';
+    my($value) =  $args->{attrs}->{value};
+    my($prefix) = $args->{attrs}->{b_selected_label_prefix};
     if ($args->{tag} eq 'b-menu-target') {
         my($die) = Bivio::Die->catch_quietly(sub {
             my($v) = $_WT->prepare_html(
@@ -57,10 +60,6 @@ sub render_html {
         #b-menu-source is now pre-rendered and therefore on the req
         return $die ? '' : $args->{req}->get_or_default($proto->TARGET, '');
     }
-    Bivio::Die->die(
-	$args->{attrs}, ': only accepts "class", "value", and',
-        ' "b_selected_label_prefix" attributes',
-    ) if %{$args->{attrs}};
     my($links) = _parse_csv($value, $args);
     return ''
 	unless $links && @$links;

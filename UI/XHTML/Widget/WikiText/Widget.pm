@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText::Widget;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'XHTMLWidget.WikiTextTag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -12,17 +12,24 @@ sub handle_register {
 }
 
 sub render_html {
-    my($proto, $args) = @_;
-    my($value) =  delete($args->{attrs}->{value}) || $args->{value};
-    Bivio::Die->die($args->{attrs}, ': does not accept attributes')
-        if %{$args->{attrs}};
-    Bivio::Die->die($value, ': value must be lower case word')
-        unless $value =~ /^[a-z][a-z0-9_]+$/;
-    return ${Bivio::UI::Widget->render_value(
-	$value,
-	view_get("wiki_widget_$value"),
-	$args->{source},
-    )};
+    my($proto, $args) = shift->parse_args([qw(value)], @_);
+    my($value) =  $args->{attrs}->{value};
+    return $args->{proto}->render_error(
+	$value, 'value must be lower case word', $args
+    ) unless $value =~ /^[a-z][a-z0-9_]+$/;
+    return $args->{proto}->render_error(
+	$value, 'value must be lower case word', $args
+    ) unless $value =~ /^[a-z][a-z0-9_]+$/;
+    my($v);
+    my($die) = Bivio::Die->catch_quietly(sub {
+        $v = view_get("wiki_widget_$value");
+    });
+    return $args->{proto}->render_error(
+	$value, 'widget not found', $args
+    ) unless defined($v);
+#TODO: upper case is a widget to render.  Request context.
+#TODOx: No eval on widget values.
+    return ${Bivio::UI::Widget->render_value($value, $v, $args->{source})};
 }
 
 1;

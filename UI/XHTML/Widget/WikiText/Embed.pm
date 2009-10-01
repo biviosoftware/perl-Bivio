@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText::Embed;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'XHTMLWidget.WikiTextTag';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -11,11 +11,10 @@ sub handle_register {
 }
 
 sub render_html {
-    my($proto, $args) = @_;
-    my($value) =  delete($args->{attrs}->{value}) || $args->{value};
-    Bivio::Die->die($args->{attrs}, ': does not accept attributes')
-        if %{$args->{attrs}};
-    my($uri) = $args->{proto}->internal_format_uri($value, $args);
+    my($proto, $args) = shift->parse_args([qw(value)], @_);
+    my($uri) = $args->{proto}->internal_format_uri(
+	$args->{attrs}->{value}, $args,
+    );
     return Bivio::Die->die('invalid URI, must begin with a /')
 	unless $uri =~ s{^/+}{/};
     my($reply) = $args->{validator}->call_embedded_task(
