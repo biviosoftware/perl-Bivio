@@ -13,7 +13,7 @@ Get me a rock.
 
 <answer label="Peon:">
 <para>
-Sure, boss.  Let's go for a ride to the quarry.
+Sure, boss.  Let us go for a ride to the quarry.
 </para>
 </answer>
 </qandaentry>
@@ -32,7 +32,7 @@ missed it if I went by myself.
 
 <answer label="Peon:">
 <para>
-You're welcome, boss.
+You are welcome, boss.
 </para>
 </answer>
 </qandaentry>
@@ -40,9 +40,8 @@ You're welcome, boss.
 </qandaset>
 
 <para>
-The <emphasis role="bold">alternative</emphasis> moral to the story is: If you can't bring the boss to
+The <emphasis role="bold">alternative</emphasis> moral to the story is: If you cannot bring the boss to
 the quarry, the boss just created a huge inefficiency.
 </para>
 </simplesect>
 </chapter>
-
