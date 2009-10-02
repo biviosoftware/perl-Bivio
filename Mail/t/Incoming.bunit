@@ -17,10 +17,10 @@ EOF
 	    [] => ['john+btest_forum-admin@localhost.localdomain', 'John Doe'],
 	],
 	get_references => [
-	    [] => [[qw(d@d b@b a@a)]],
+	    [] => [[qw(d@d c@c b@b a@a)]],
 	],
 	get_message_id => 'm@m',
-	get_date_time => 1130314787,
+	get_date_time => '2453670 29987',
 	get_reply_subject => 'Re: should bounce',
     ],
     [\(<<'EOF')] => [
@@ -35,7 +35,7 @@ EOF
 From: John Doe <john@localhost.localdomain>
 To: Private Forum <private_forum@localhost.localdomain>
 Subject: should bounce
-References: <a@a> <b@b>
+References: <a@a> <b@b> <bad-ref>
 Date: Wed, 26 Oct 2005 04:19:47 EDT
 In-Reply-To: <c@c> <d@d>
 Cc: cc@cc.com, John Doe <John@Localhost.localdomain>
@@ -51,6 +51,9 @@ EOF
                 john@localhost.localdomain
                 private_forum@localhost.localdomain
 	    )]],
+	],
+	get_references => [
+	    [] => [[qw(d@d c@c b@b a@a)]],
 	],
     ],
 ];
