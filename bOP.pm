@@ -26,11 +26,52 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.23  2009/09/28 03:11:38  nagler
+  * Bivio::BConf
+    use enhanced categories_map configuration
+  * Bivio::Biz::Model::MailForm
+    MailForm and CRMForm no longer show validation errors when canceled
+  * Bivio::Biz::Util::RealmRole
+    Added +/-<category> to category_map so category configuration can be shared.
+    Allow + on roles in category map
+  * Bivio::Delegate::SimpleRealmName
+    clean_and_trim needs to strip all \W
+    copy
+  * Bivio::Die
+    refactor _as_string_args
+  * Bivio::MIME::Type
+    update Internet media types, based on Apache conf/mime.types rev 800196
+  * Bivio::PetShop::BConf
+    added realm_user_util4 for ShellUtil.RealmUser testing
+  * Bivio::PetShop::Util::SQL
+    added realm_user_util4 for ShellUtil.RealmUser testing
+    added init_motion
+  * Bivio::ShellUtil
+    added unauth_realm_id
+  * Bivio::Test::Language::HTTP
+    generate_local_email now accepts an optional domain
+    change local_email_domain_re to =, not - so a bit clearer
+  * Bivio::Type::Email
+    added get_domain_part
+    added hook to get_domain_part() for testing domain specific email behavior
+    fmt
+  * Bivio::Type::Phone
+    from_literal implementation unnecessary
+  * Bivio::Util::RealmUser
+    added EXPLICIT realms which are not included $_ALL_REALMS
+  * Bivio::Util::TestUser
+    format_email and create accept a domain
+  * Bivio::Util::Wiki
+    rename convert_links to upgrade_content
+    rename convert_titles to upgrade_blog_titles
+    extract app-specific content upgrades
+    fix _mutable_wikitext calls
+
   Revision 8.22  2009/09/18 21:59:46  aviggio
   * Bivio::Util::Wiki
     extract _is_mutable_wiki_file, check content type
