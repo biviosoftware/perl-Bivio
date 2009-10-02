@@ -15,7 +15,7 @@ initialize_fully('FORUM_WIKI_VIEW');
 		}];
 	    },
 	} => [
-	    <<'IN' => _chomp(<<'OUT'),
+	    <<'IN' => trim_space(<<'OUT'),
 @h1 foo
 @blockquote
 my stuff
@@ -65,7 +65,7 @@ OUT
 	    '--' => qq{<hr /><br />},
 	    '@br' => qq{<br />},
 	    '@br dropped text' => qq{<br />},
-	    <<'IN' => _chomp(<<'OUT'),
+	    <<'IN' => trim_space(<<'OUT'),
 @table
 @tr
 @td
@@ -79,7 +79,7 @@ IN
 </p><table><tr><td><p class="b_prose">two
 </p></td></tr></table></td></tr></table>
 OUT
-	    <<'IN' => _chomp(<<'OUT'),
+	    <<'IN' => trim_space(<<'OUT'),
 @h1 h 1
 
 p1
@@ -87,7 +87,7 @@ IN
 <h1>h 1</h1><p class="b_prose">p1
 </p>
 OUT
-	    <<'IN' => _chomp(<<'OUT'),
+	    <<'IN' => trim_space(<<'OUT'),
 @h1
 h1a
 @br
@@ -102,8 +102,10 @@ IN
 </p>
 OUT
 	    '@p *x*' => qq{<p><strong>x</strong></p>},
+	    foo_bar => qq{<p class="b_prose">foo_bar\n</p>},
 	    # DIV means you are in "advanced" mode, and auto-paragraphing
 	    # is off.
+	    '@div' => qq{<div></div>},
 	    "\@div\n\@/div" => qq{<div></div>},
 	    "\@div.c1\n\@/div" => qq{<div class="c1"></div>},
 	    "\@div class=c1\n\@/div" => qq{<div class="c1"></div>},
@@ -145,7 +147,7 @@ OUT
 	    '@a href=^x#a y' => qr{<p class="b_prose"><a href="/fourem/\w+/x#a">y</a></p>},
 	    '^M#a' => qr{<p class="b_prose"><a href="/fourem/\w+/M#a">M a</a>\n</p>},
 
-	    <<'IN' => _chomp(<<'OUT'),
+	    <<'IN' => trim_space(<<'OUT'),
 @table
 @tr
 @td
@@ -157,7 +159,7 @@ IN
 <table><tr><td><ul>
 <li><p class="b_prose">item1</p></li><li><p class="b_prose">item2</p></li></ul></td></tr></table>
 OUT
-	    <<'IN' => _chomp(<<'OUT'),
+	    <<'IN' => trim_space(<<'OUT'),
 @h3 h 3
 p1
 
@@ -225,6 +227,28 @@ OUT
 	    '@img src="x"' => qr{<img src="/fourem/\w+/x" />},
 	    '@a href=/ foo.org' => qq{<p class="b_prose"><a href="/">foo.org</a></p>},
 	    "\@div x\ny" => qq{<div>x</div><p class="b_prose">y\n</p>},
+	    <<'IN' => trim_space(<<'OUT'),
+@form method=POST action=/fourem/Forms/wikiform enctype=multipart/form-data
+@div
+@input type=text name=w1 value=""
+@textarea name=w5 rows=4 cols=40
+@textarea name=w6 rows=4 cols=40
+value6
+@/textarea
+@textarea name=w7 rows=4 cols=40 value7
+@fieldset
+@legend options
+@select name=w8
+@option value=7 Seven
+@option selected=1 Eight
+@/select
+@/fieldset
+@input type="submit" name="submit" value="OK"
+@/form
+IN
+<form action="/fourem/Forms/wikiform" enctype="multipart/form-data" method="POST"><div><input name="w1" type="text" value="" /><textarea cols="40" name="w5" rows="4"></textarea><textarea cols="40" name="w6" rows="4">value6
+</textarea><textarea cols="40" name="w7" rows="4">value7</textarea><fieldset><legend>options</legend><select name="w8"><option value="7">Seven</option><option selected="1">Eight</option></select></fieldset><input name="submit" type="submit" value="OK" /></div></form>
+OUT
 	],
     ],
     class() => [
@@ -244,9 +268,3 @@ OUT
 	],
     ],
 ];
-
-sub _chomp {
-    my($x) = @_;
-    chomp($x);
-    return $x;
-}
