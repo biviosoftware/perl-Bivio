@@ -494,12 +494,13 @@ sub register_tag {
 	ne $class->simple_package_name;
     # Super class will register first so we always override
     $_MY_TAGS->{$tag} = $class;
-    $_CHILDREN->{$tag} = $class->EXPECTED_CHILDREN;
     # All tags can have registered tags except empty tags
     while (my($k, $v) = each(%$_CHILDREN)) {
 	push(@$v, $tag)
 	    if @$v;
     }
+    $_CHILDREN->{$tag} = $class->EXPECT_CHILDREN
+	? [@{$_CHILDREN->{$_ROOT_TAG}}] : [];
     return;
 }
 
@@ -1097,7 +1098,7 @@ sub _parse_tag_start {
 	return _parse_err(
 	    $state,
 	    $tag,
-	    ['empty tags are not allowed to have a value: ', $line],
+	    ['empty tags are not allowed to have content: ', $line],
 	) if $_EMPTY->{$tag};
 	_parse_content($state, $line);
 	_parse_stack_pop($state, $tag);

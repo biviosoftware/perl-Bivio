@@ -6,8 +6,8 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub EXPECTED_CHILDREN {
-    return [];
+sub EXPECT_CHILDREN {
+    return 0;
 }
 
 sub assert_no_content {
