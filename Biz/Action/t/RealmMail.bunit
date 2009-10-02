@@ -4,7 +4,7 @@
 Request('initialize_fully');
 req()->set_realm_and_user('fourem');
 my($domain) = '@model.realmmail.bunit';
-
+my($fourem) = req()->format_email;
 [
     class() => [
 	execute_receive => [
@@ -12,6 +12,7 @@ my($domain) = '@model.realmmail.bunit';
 From: a$domain
 Message-ID: <a$domain>
 Date: Sun, 1 May 2005 10:11:41 -0600
+To: $fourem
 Subject: test RealmMail action
 
 Message Body
@@ -25,12 +26,11 @@ EOF
 From: a$domain
 Date: Sun, 1 May 2005 12:11:41 -0600
 Subject: test RealmMail action
+To: $fourem
+Message-Id: <b$domain>
 
 Message Body
 EOF
 	],
-	sub {
-	    return req(qw(Model.RealmMail message_id)) eq 'no-message-id';
-	} => 1,
     ],
 ];
