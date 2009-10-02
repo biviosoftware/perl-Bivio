@@ -550,7 +550,6 @@ EOF
 @input type=text name=input
 @/td
 @/tr
-
 @tr
 @td
 @input type=submit name=ok value=OK
