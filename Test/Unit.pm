@@ -128,13 +128,6 @@ sub builtin_auth_user {
     return shift->builtin_req()->get('auth_user');
 }
 
-sub builtin_chomp_and_return {
-    my(undef, $value) = @_;
-    # Calls chomp and returns its argument
-    chomp($value);
-    return $value;
-}
-
 sub builtin_class {
     # Returns builtin_class under test without args.  With args, loads the
     # classes (mapped classes acceptable), and returns the first one.
@@ -311,6 +304,12 @@ sub builtin_model_exists {
     my($self, $name, $query) = @_;
     my($actual) = _model($self, $name, $query, undef);
     return @$actual > 0 ? 1 : 0;
+}
+
+sub builtin_trim_space {
+    my(undef, $value) = @_;
+    $value =~ s/^\s+|\s+$//g;
+    return $value
 }
 
 sub builtin_not_die {

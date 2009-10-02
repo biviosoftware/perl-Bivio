@@ -7,7 +7,7 @@ req()->set_realm_and_user('btest_read', 'btest_read')->client_redirect({
 model('ForumTreeList')->load_all;
 [
     [ForumTreeList => [vs_new(String => ['RealmOwner.name'])]]
-	=> chomp_and_return(<<'EOF'),
+	=> trim_space(<<'EOF'),
 <ul>
 <li>fourem</li>
 <ul>
