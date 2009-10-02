@@ -96,4 +96,14 @@ EOF
 	    {subject_lc => $subject_lc},
 	] => [["a$domain"]],
     ],
+    create_from_rfc822 => [
+	[\(<<'EOF')] => qr{no-message-id}i,
+From: d@d.d
+Message-ID: <bad-msg-id>
+Date: Sun, 1 May 2005 10:11:44 -0600
+Subject: [joe] Re: any subject
+
+Body
+EOF
+    ],
 ];
