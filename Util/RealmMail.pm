@@ -94,7 +94,7 @@ sub import_rfc822 {
     my($i) = 0;
     foreach my $f (
 	map($_->[0],
-	    sort {$a->[1] <=> $b->[1]}
+	    sort {$_DT->compare($a->[1], $b->[1])}
 	        map(_import_rfc822_validate($self, $_), glob("$dir/*")))
     ) {
 	Bivio::Biz::Model->new($req, 'RealmMail')->create_from_rfc822($f);
@@ -125,11 +125,9 @@ sub _import_rfc822_validate {
 	unless -f $name;
     my($in) = Bivio::Mail::Incoming->new(my $d = Bivio::IO::File->read($name));
     return
-	unless my $dt = $in->get_date_time;
-    return
 	if Bivio::Biz::Model->new($self->get_request, 'RealmMail')
 	    ->unsafe_load({message_id => my $id = $in->get_message_id});
-    return [$d, $dt];
+    return [$d, $in->get_date_time];
 }
 
 1;
