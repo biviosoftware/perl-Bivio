@@ -8,16 +8,17 @@ use IO::Scalar ();
 require 'ctime.pl';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_A) = __PACKAGE__->use('Mail.Address');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_RFC) = __PACKAGE__->use('Mail.RFC822');
-my($_MS) = __PACKAGE__->use('Type.MailSubject');
-my($_MRW) = __PACKAGE__->use('Type.MailReplyWho');
-my($_E) = __PACKAGE__->use('Type.Email');
+my($_A) = b_use('Mail.Address');
+my($_DT) = b_use('Type.DateTime');
+my($_RFC) = b_use('Mail.RFC822');
+my($_MS) = b_use('Type.MailSubject');
+my($_MRW) = b_use('Type.MailReplyWho');
+my($_E) = b_use('Type.Email');
 our($_TRACE);
-my($_EA) = __PACKAGE__->use('Type.EmailArray');
-my($_M) = __PACKAGE__->use('Biz.Model');
+my($_EA) = b_use('Type.EmailArray');
+my($_M) = b_use('Biz.Model');
 my($_SA) = b_use('Type.StringArray');
+my($_MI) = b_use('Type.MessageId');
 
 sub NO_MESSAGE_ID {
     return 'no-message-id';
@@ -48,11 +49,8 @@ sub get_date_time {
     my($self) = @_;
     # Returns the date specified by the message
     return $self->get_if_exists_else_put(date_time => sub {
-        return $_DT->to_unix(
-	    ($_DT->from_literal(
-		_get_field($self, 'date:') || return undef,
-	    ))[0] || return undef,
-	);
+        return ($_DT->from_literal(_get_field($self, 'date:') || $_DT->now))[0]
+	    || $_DT->now;
     });
 }
 
@@ -119,7 +117,8 @@ sub get_message_id {
     # Returns the Message-Id for this message.
     return $self->get_if_exists_else_put(message_id => sub {
 	my($id) = _get_field($self, 'message-id:') =~ /<([^<>]+)>/;
-	return defined($id) ? $id : $self->NO_MESSAGE_ID;
+	return _check_message_id($self, $id, 'Message-Id')
+	    || $self->NO_MESSAGE_ID;
     });
 }
 
@@ -132,11 +131,13 @@ sub get_references {
     # "References" list.
     return $self->get_if_exists_else_put(references => sub {
 	my($seen) = {};
-        return [map(
-	    $seen->{$_}++ ? () : $_,
-	    _get_field($self, 'in-reply-to:') =~ /.*<([^<>]+)>/,
-	    reverse(_get_field($self, 'references:') =~ /<([^<>]+)>/g),
-	)];
+        return [map({
+	    my($which) = $_;
+	    map(
+		$seen->{$_}++ ? () : _check_message_id($self, $_, $which),
+		reverse(_get_field($self, "$which:") =~ /<([^<>]+)>/g),
+	    );
+	} qw(In-Reply-To References))];
     });
 }
 
@@ -312,10 +313,20 @@ sub uninitialize {
     return;
 }
 
+sub _check_message_id {
+    my($self, $id, $which) = @_;
+    my($v, $e) = $_MI->from_literal($id);
+    return $v
+	if $v;
+    b_warn($id, ": invalid $which; from=", ($self->get_from)[0],
+       ' date=', $_DT->to_string($self->get_date_time));
+    return;
+}
+
 sub _get_field {
     my($self, $name) = @_;
     return $self->get_if_exists_else_put(
-	$name,
+	lc($name),
 	sub {
 	    my($v) = $self->get('header') =~ m{^$name(?: |\t)*(.*)}im;
 	    return defined($v) ? $v : '';
