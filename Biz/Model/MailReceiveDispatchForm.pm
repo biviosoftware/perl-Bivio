@@ -195,7 +195,7 @@ sub _ignore {
 	    unless my $which = $op->($self);
 	$_F->write(
 	    $_FP->join(
-		'MailReceiveDispatchForm',
+		$self->simple_package_name,
 		$which,
 		$_RI->current($self->req) . '.eml',
 	    ),
