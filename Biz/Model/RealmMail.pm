@@ -13,8 +13,12 @@ my($_MFN) = b_use('Type.MailFileName');
 my($_RF) = b_use('Model.RealmFile');
 my($_DT) = b_use('Type.DateTime');
 my($_I) = b_use('Mail.Incoming');
-my($_HANDLERS) = b_use('Biz.Registrar')->new;
 my($_MI) = b_use('Type.MessageId');
+my($_D) = b_use('Bivio.Die');
+my($_F) = b_use('Biz.File');
+my($_FP) = b_use('Type.FilePath');
+my($_RI) = b_use('Agent.RequestId');
+my($_HANDLERS) = b_use('Biz.Registrar')->new;
 
 sub cascade_delete {
     my($self, $query) = @_;
@@ -48,7 +52,22 @@ sub cascade_delete {
 
 sub create_from_rfc822 {
     my($self, $rfc822) = @_;
-    return _create($self, _create_file($self, $rfc822));
+    my($die);
+    my($res) = $_D->catch(
+	sub {_create($self, _create_file($self, $rfc822))},
+	\$die,
+    );
+    return $res
+	unless $die;
+    $_F->write(
+	$_FP->join(
+	    $self->simple_package_name,
+	    $_RI->current($self->req) . '.eml',
+	),
+	$rfc822,
+    );
+    $die->throw;
+    # DOES NOT RETURN
 }
 
 sub get_mail_part_list {
@@ -116,7 +135,8 @@ sub _create {
     $self->create(
 	_thread_values($self, $in, {
 	    map(($_ => $file->get($_)), qw(realm_id realm_file_id)),
-	    message_id => $_MI->clean_and_trim($in->get_message_id),
+	    message_id => $_MI->from_literal_or_die(
+		$_MI->clean_and_trim($in->get_message_id)),
 	    from_email => substr(lc(($in->get_from)[0]), 0, $_MAX_EMAIL),
 	    subject => $_MS->trim_literal($in->get_subject),
 	    subject_lc => $_MS->clean_and_trim($in->get_subject),
@@ -131,7 +151,6 @@ sub _create_file {
     _call_handlers(handle_mail_pre_create_file => $self, $rfc822);
     my($in) = $_I->new($rfc822);
     my($date) = $in->get_date_time;
-    $date = $date ? $_DT->from_unix($date) : $_DT->now;
     my($rf) = $self->new_other('RealmFile');
     return (
 	$in,
