@@ -56,12 +56,12 @@ BEGIN {
     $_WARN_COUNTER = $_MAX_WARNINGS;
     $_STRIP_BIT8 = 0;
 }
-my($_IDI) = __PACKAGE__->instance_data_index;
 my($_WARN_EXACTLY_ONCE) = {};
 
 #=IMPORTS
 # Should not important anything else.
 use Bivio::IO::Config;
+use Bivio::IO::CallingContext;
 use Carp ();
 
 #=VARIABLES
@@ -80,6 +80,7 @@ Bivio::IO::Config->register({
     max_warnings => $_MAX_WARNINGS,
     strip_bit8 => 0,
 });
+my($_CC) = 'Bivio::IO::CallingContext';
 
 sub bootstrap_die {
     # (proto, string, ...) : undef
@@ -102,32 +103,9 @@ sub bootstrap_die {
 }
 
 sub calling_context {
-    my($proto, $calling_package) = @_;
-    my($frame) = 1;
-    if ($calling_package) {
-	$frame++
-	    while caller($frame) eq $calling_package;
-    }
-    my($self) = $proto->SUPER::new;
-    $self->[$_IDI] = [
-	map(+{
-	    package => (caller($_))[0] || undef,
-	    file => (caller($_))[1] || undef,
-	    line => (caller($_))[2] || undef,
-	    sub => (caller($_ + 1))[3] || undef,
-	}, $frame, $frame + 1),
-    ];
-    return $self;
-}
-
-sub calling_context_get {
-    my($self) = shift;
-    my($fields) = $self->[$_IDI]->[0];
-    return $self->return_scalar_or_array(
-	map(exists($fields->{$_}) ? $fields->{$_}
-	    : $self->bootstrap_die($_, ': not a calling_context field'),
-	    @_),
-    );
+    my($proto, $skip_package) = @_;
+    return $_CC->new_from_caller(
+	[__PACKAGE__, $skip_package ? $skip_package : ()]);
 }
 
 sub debug {
@@ -177,10 +155,6 @@ sub get_max_arg_length {
     # (self) : int
     # Maximum length of an argument to any of the printing methods.
     return $_MAX_ARG_LENGTH;
-}
-
-sub get_top_package_file_line {
-    return @{shift->[$_IDI]->[0]}{qw(package file line)};
 }
 
 sub handle_config {
@@ -286,14 +260,9 @@ sub info {
     return;
 }
 
-sub internal_as_string {
-    my($self) = @_;
-    return [$self->calling_context_get(qw(file line))];
-}
-
 sub is_calling_context {
     my(undef, $value) = @_;
-    return __PACKAGE__->is_blessed($value);
+    return $_CC->is_blessed($value);
 }
 
 sub print_literally {
@@ -414,9 +383,9 @@ sub _call_format {
     return $simply ? $proto->format_args(@$msg)
 	: _format(
 	    $proto,
-	    @{(_has_calling_context($msg) ? shift(@$msg)
+	    (_has_calling_context($msg) ? shift(@$msg)
 		  : $proto->calling_context(__PACKAGE__)
-	    )->[$_IDI]->[0]}{qw(package file line sub)},
+	    )->get_top_package_file_line_sub,
 	    $msg,
 	);
 }
@@ -540,7 +509,7 @@ sub _format_string_with_type {
 
 sub _has_calling_context {
     my($msg) = @_;
-    return __PACKAGE__->is_blessed($msg->[0]);
+    return $_CC->is_blessed($msg->[0]);
 }
 
 sub _log_apache {
