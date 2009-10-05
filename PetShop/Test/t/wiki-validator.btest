@@ -13,7 +13,7 @@ verify_text('inline WikiText btest');
 visit_uri('/site/bp/WikiValidator_OK?validate=1');
 verify_no_text(qr{wiki error}i);
 visit_uri('/site/bp/WikiValidator_NOT_OK?validate=1');
-verify_text(qr{wiki error.*Bivio/PetShop/View/Base.pm, line \d+: \@invalidwikitag:}is);
+verify_text(qr{wiki error.*Base.*line \d+:.*invalidwikitag:}is);
 my($e) = generate_local_email('root');
 do_test_backdoor(Wiki => '-realm site-reports validate_all_realms');
 my($msg) = verify_local_mail($e, qr{wiki error}i);
