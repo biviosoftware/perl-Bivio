@@ -13,7 +13,7 @@ foreach my $item (
     follow_link(qr{^$forum$});
     follow_link($tool);
     my($link) = grep($_ =~ $re, @{get_html_parser()->get('Links')->get_keys});
-    follow_link(qr{^\Q$link\E$}, @extra_links);
+    follow_link($link ? (qr{^\Q$link\E$}, @extra_links) : 'new');
     submit_form('cancel');
 }
 
