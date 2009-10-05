@@ -135,15 +135,20 @@ sub render_html {
 }
 
 sub unsafe_load_wiki_data {
-    my($self) = shift;
-    if (my $res = $_ARF->access_controlled_load(@_)) {
+    my($self, $path, $wiki_args, $die_code) = @_;
+    $path = $_WDN->to_absolute($path, $wiki_args->{is_public});
+    if (my $res = $_ARF->access_controlled_load(
+	$wiki_args->{realm_id},
+	$path,
+	$wiki_args->{req},
+	$die_code,
+    )) {
 	return $res;
     }
-    my($realm_id, $path, $req, $die_code) = @_;
-    my($sid) = $_C->get_value('site_realm_id', $req);
+    my($sid) = $_C->get_value('site_realm_id', $wiki_args->{req});
     return
-	if $sid eq $realm_id;
-    my($rf) = $_MRF->new($req);
+	if $sid eq $wiki_args->{realm_id};
+    my($rf) = $_MRF->new($wiki_args->{req});
     return $rf
 	if $rf->unauth_load({
 	    realm_id => $sid,
