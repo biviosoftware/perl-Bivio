@@ -308,7 +308,7 @@ sub throw {
     my($cc) = shift
 	if $_A->is_calling_context($_[0]);
     my($code, $attrs) = (shift, shift);
-    my($package, $file, $line) = $cc ? $cc->get_top_package_file_line
+    my($package, $file, $line) = $cc ? $cc->get_top_package_file_line_sub
 	: (shift, shift, shift);
     my($self) = _new_from_throw(
 	$proto,
