@@ -6,7 +6,7 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub EXPECT_CHILDREN {
+sub ACCEPTS_CHILDREN {
     return 0;
 }
 
