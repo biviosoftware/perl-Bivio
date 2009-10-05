@@ -342,14 +342,20 @@ sub control_on_render {
 	map(($_ => $self->render_simple_attr($_, $source)), @$_WIDGET_ATTRS),
     };
     if (my $cc = $self->unsafe_get('calling_context')) {
-	$args->{line_num} = $cc->calling_context_get('line') - 1;
-	$args->{path} = $cc->calling_context_get('file');
+	$args->{line_num} = $cc->get('line') - 1;
+	$args->{path} = $cc->get('file');
     }
     else {
 	$args->{path} = $args->{value};
     }
     $$buffer .= $self->render_html($args);
     # Don't call SUPER; we don't want html_attrs
+    return;
+}
+
+sub include_content {
+    my($proto, $content, $state) = @_;
+    unshift(@{$state->{lines}}, split(/\r?\n/, $$content));
     return;
 }
 
@@ -391,14 +397,9 @@ sub internal_format_uri {
 sub unsafe_load_wiki_data {
     my($proto, $path, $args) = @_;
     my($die_code);
-    my($rf) = b_use('Action.WikiView')->unsafe_load_wiki_data(
-	$args->{realm_id},
-	$path,
-	$args->{req},
-	\$die_code,
-    );
-    _parse_err($args, $path, $die_code)
-	unless $rf;
+    return _parse_err($args, $path, $die_code)
+	unless my $rf = b_use('Action.WikiView')
+	->unsafe_load_wiki_data($path, $args, \$die_code);
     return $rf;
 }
 
@@ -494,13 +495,6 @@ sub register_tag {
 	ne $class->simple_package_name;
     # Super class will register first so we always override
     $_MY_TAGS->{$tag} = $class;
-    # All tags can have registered tags except empty tags
-    while (my($k, $v) = each(%$_CHILDREN)) {
-	push(@$v, $tag)
-	    if @$v;
-    }
-    $_CHILDREN->{$tag} = $class->EXPECT_CHILDREN
-	? [@{$_CHILDREN->{$_ROOT_TAG}}] : [];
     return;
 }
 
@@ -544,11 +538,11 @@ sub render_html {
 	%$args,
 	proto => $proto,
 	args => $args,
-	lines => [split(/\r?\n/, $args->{value})],
 	tags => [],
 	attrs => [],
-	html => '',
+	lines => [],
     };
+    $proto->include_content(\$args->{value}, $state);
     return _eval($state, _parse($state));
 }
 
@@ -654,20 +648,20 @@ sub _eval_tag {
 
 sub _eval_tag_custom {
     my($state, $tag, $attrs) = @_;
-    my($res);
-    my($die) = Bivio::Die->catch_quietly(sub {
-	my($method) = $state->{want_plain_text} ? 'render_plain_text'
-	    : 'render_html';
-        $res = $_MY_TAGS->{$tag}->$method({
-	    %{$state->{args}},
-	    tag => $tag,
-	    attrs => $attrs,
-	});
-	return;
-    });
-    return _parse_err($state, $tag, $die)
-	if $die;
-    return $res;
+    my($die);
+    my($res) = Bivio::Die->catch_quietly(
+	sub {
+	    my($method) = $state->{want_plain_text} ? 'render_plain_text'
+		: 'render_html';
+	    return $_MY_TAGS->{$tag}->$method({
+		%{$state->{args}},
+		tag => $tag,
+		attrs => $attrs,
+	    });
+	},
+	\$die,
+    );
+    return $die ? _parse_err($state, $tag, $die) : $res;
 }
 
 sub _fix_word {
@@ -1066,6 +1060,25 @@ sub _parse_tag_attrs {
     return $attrs;
 }
 
+sub _parse_tag_custom {
+    my($state, $tag, $attrs, $line) = @_;
+    return
+	unless $_MY_TAGS->{$tag} && $_MY_TAGS->{$tag}->can('parse_tag_start');
+    my($die);
+    my($res) = Bivio::Die->catch_quietly(
+	sub {
+	    return $_MY_TAGS->{$tag}->parse_tag_start({
+		state => $state,
+		tag => $tag,
+		attrs => $attrs,
+		line => $line,
+	    });
+	},
+	\$die,
+    );
+    return $die ? _parse_err($state, $tag, $die) : $res;
+}
+
 sub _parse_tag_end {
     my($state, $line) = @_;
     return
@@ -1083,17 +1096,21 @@ sub _parse_tag_start {
     return
 	unless my $tag = _parse_tag_ok($state, \$line);
     my($attrs) = _parse_tag_attrs($state, \$line);
+    $line =~ s/^\s+|\s+$//s;
+    return
+	if _parse_tag_custom($state, $tag, $attrs, $line);
     _parse_out(
 	$state,
 	\&_eval_tag,
 	{tag => 'p', attrs => {class => 'b_prose'}},
+#TODO: Does 'p' need to be here?
     ) if _parse_child_ok($state, 'p')
  	&& _parse_paragraphing_ok($state)
+#TODO: Move into _parse_paragraphing_ok?
 	&& $tag =~ $_INLINE_RE;
     _parse_stack_pop($state, $tag)
 	until _parse_child_ok($state, $tag);
     _parse_out($state, \&_eval_tag, {tag => $tag, attrs => $attrs});
-    $line =~ s/^\s+|\s+$//s;
     if (length($line)) {
 	return _parse_err(
 	    $state,
@@ -1123,6 +1140,16 @@ sub _require_my_tags {
 	    $proto->register_tag($t, $c);
 	}
     }
+    my($tags) = [sort(keys(%$_MY_TAGS))];
+    while (my($k, $v) = each(%$_CHILDREN)) {
+	push(@$v, @$tags)
+	    if @$v;
+    }
+    foreach my $tag (@$tags) {
+	$_CHILDREN->{$tag} = $_MY_TAGS->{$tag}->ACCEPTS_CHILDREN
+	    ? [grep($tag ne $_, @{$_CHILDREN->{$_ROOT_TAG}})]
+	    : [];
+    }
     return;
 }
 
@@ -1139,7 +1166,7 @@ sub _validator {
     my($args) = @_;
 #TODO: This should be encapsulated in validator
     return $args->{validator} ||= ($_WV ||= b_use('Action.WikiValidator'))
-	->unsafe_get_self($args->{path}, $args->{realm_id}, $args->{req});
+	->get_current_or_new($args->{path}, $args->{realm_id}, $args->{req});
 }
 
 1;
