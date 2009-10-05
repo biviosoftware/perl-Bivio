@@ -54,6 +54,15 @@ sub error_txt {
     return b_use('UI.View')->render('Wiki->validator_txt', $self->req);
 }
 
+sub get_current_or_new {
+    my($proto, $path, $realm_id, $req) = @_;
+    return $req->unsafe_get($proto->as_classloader_map_name)
+	|| $req->unsafe_from_query($_QUERY_KEY)
+	&& $req->can_user_execute_task('FORUM_WIKI_EDIT')
+	&& _new($proto, $path, $realm_id, $req)
+        || $proto;
+}
+
 sub return_with_validate {
     my($self, $task_return) = @_;
     ($task_return->{query} ||= {})->{$_QUERY_KEY} = 1;
@@ -77,15 +86,6 @@ sub send_mail {
     $self->put(to_email => $email);
     b_use('UI.View')->call_main('Wiki->validator_mail', $self->req);
     return;
-}
-
-sub unsafe_get_self {
-    my($proto, $path, $realm_id, $req) = @_;
-    return $req->unsafe_get($proto->as_classloader_map_name)
-	|| $req->unsafe_from_query($_QUERY_KEY)
-	&& $req->can_user_execute_task('FORUM_WIKI_EDIT')
-	&& _new($proto, $path, $realm_id, $req)
-        || $proto;
 }
 
 sub unsafe_load_error_list {
