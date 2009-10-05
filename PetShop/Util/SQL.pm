@@ -9,11 +9,14 @@ use Bivio::Base 'ShellUtil';
 # perl -w ../../b-petshop init_dbms
 # perl -w ../../b-petshop create_test_db
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_R) = __PACKAGE__->use('Auth.Role');
-my($_AR) = __PACKAGE__->use('Auth.Realm');
-my($_S) = __PACKAGE__->use('Type.String');
+my($_DT) = b_use('Type.DateTime');
+my($_R) = b_use('Auth.Role');
+my($_AR) = b_use('Auth.Realm');
+my($_S) = b_use('Type.String');
 my($_F) = b_use('IO.File');
+my($_WN) = b_use('Type.WikiName');
+my($_WDN) = b_use('Type.WikiDataName');
+my($_SN) = b_use('Type.SettingsName');
 
 sub BTEST_ADMIN {
     return 'btest_admin';
@@ -323,7 +326,7 @@ sub _init_demo_categories {
     my($self) = @_;
     # Initializes Model.Category.
     my($model) = Bivio::Biz::Model->new($self->get_request, 'Category');
-    foreach my $enum (Bivio::Type->get_instance('Category')->get_list) {
+    foreach my $enum (b_use('Type.Category')->get_list) {
 	# Don't create the '0' (UNKNOWN) case
 	next if $enum->as_int == 0;
 	$model->create({
@@ -541,7 +544,7 @@ completed
 </body>
 </html>
 EOF
-    $self->realm_file_create('Public/Wiki/EasyForm_btest', <<'EOF');
+    $self->realm_file_create($_WN->to_absolute('EasyForm_btest', 1), <<'EOF');
 @form method=POST action=/fourem/Forms/btest?goto=/fourem/Public/Wiki/EasyForm_btest_done
 @table
 @tr
@@ -558,35 +561,36 @@ EOF
 @/table
 @/form
 EOF
-    $self->realm_file_create('Public/Wiki/EasyForm_btest_done', <<'EOF');
+    $self->realm_file_create(
+	$_WN->to_absolute('EasyForm_btest_done', 1), <<'EOF');
 wiki completed
 EOF
     $self->realm_file_create('Forms/btest.csv', <<'EOF');
 &client_addr,&date,&email,input,ok
 EOF
-	$self->realm_file_create(b_use('Type.WikiName')->to_absolute('PublicPage', 1), <<'EOF');
+	$self->realm_file_create($_WN->to_absolute('PublicPage', 1), <<'EOF');
 @h1 My Public Header
 My Public Page
 EOF
-	$self->realm_file_create(b_use('Type.WikiName')->to_absolute('PrivatePage'), <<'EOF');
+	$self->realm_file_create($_WN->to_absolute('PrivatePage'), <<'EOF');
 My Example Page.
 EOF
-	$self->realm_file_create(	b_use('Type.BlogFileName')->to_absolute('20071225000000', 1),
+	$self->realm_file_create(b_use('Type.BlogFileName')->to_absolute('20071225000000', 1),
 	<<'EOF');
 @h1 Merry Xmas
 Ho, ho, ho!
 EOF
-    $self->realm_file_create('/Settings/RealmSettingList1.csv', <<'EOF');
+    $self->realm_file_create($_SN->to_absolute('RealmSettingList1.csv'), <<'EOF');
 Name,Number,Letter,Lesson,Other
 alpha,1,a,arithmetic,<undef>
 beta,2,b,
 ,4242,default-letter,default-lesson,default-other
 EOF
-    $self->realm_file_create('/Settings/RealmSettingList2.csv', <<'EOF');
+    $self->realm_file_create($_SN->to_absolute('RealmSettingList2.csv'), <<'EOF');
 Name,Number
 "a parser error
 EOF
-    $self->realm_file_create('/Settings/RealmSettingList3.csv', <<'EOF');
+    $self->realm_file_create($_SN->to_absolute('RealmSettingList3.csv'), <<'EOF');
 Name,Number
 a,
 ,
@@ -666,19 +670,22 @@ EOF
 Third page
 EOF
     ) {
-	$self->realm_file_create(b_use('Type.WikiName')->to_absolute($fv->[0], 1), $fv->[1]);
+	$self->realm_file_create($_WN->to_absolute($fv->[0], 1), $fv->[1]);
     }
     $self->realm_file_create(
-	b_use('Type.WikiName')->to_absolute('Shell_Util_Help', 1),
-	<<'EOF');
+	$_WN->to_absolute('Shell_Util_Help', 1), <<'EOF');
 Shell utility help.
 EOF
     $req->with_realm('site', sub {
-        $self->realm_file_create('Public/WikiData/spaces in name.gif',
+        $self->realm_file_create(
+	    $_WDN->to_absolute('spaces in name.gif', 1),
 	    <<'EOF');
 dummy image file
 EOF
     });
+    $self->realm_file_create($_WDN->to_absolute('include.bwiki', 1), <<'EOF');
+included text
+EOF
     return;
 }
 
@@ -752,7 +759,7 @@ sub _init_remote_copy {
 	'remote_copy_bunit',
     ) {
 	$req->with_realm($realm => sub {
-	    $self->realm_file_create('/Settings/RemoteCopy.csv', <<"EOF");
+	    $self->realm_file_create($_SN->to_absolute('RemoteCopy.csv'), <<"EOF");
 Realm,Folders,User,Password,URI
 remote_copy_bunit,/RemoteCopyBunit
 ,,remote_copy_user,@{[$self->PASSWORD]},$uri
@@ -761,7 +768,7 @@ EOF
 	});
     }
     $req->with_realm(b_use('ShellUtil.SiteForum')->REPORTS_REALM => sub {
-        $self->realm_file_create('/Settings/WikiValidator.csv', <<"EOF");
+        $self->realm_file_create($_SN->to_absolute('WikiValidator.csv'), <<"EOF");
 Realm,Ignore Regexp
 site,ignore-this-error
 EOF
@@ -781,19 +788,19 @@ sub _init_search {
     my($self) = @_;
     $self->req->set_realm('site');
     $self->req->set_user($self->ROOT);
-    $self->realm_file_create('Public/Wiki/SearchTest1', <<'EOF');
+    $self->realm_file_create($_WN->to_absolute('SearchTest1', 1), <<'EOF');
 @h1 Test Result One
 Hello Wiki World!
 EOF
-    $self->realm_file_create('Public/WikiData/search_test2.txt', <<'EOF');
+    $self->realm_file_create($_WDN->to_absolute('search_test2.txt', 1), <<'EOF');
 Test Result Two
 Hello Underscore World!
 EOF
-    $self->realm_file_create('Public/WikiData/search-test3.txt', <<'EOF');
+    $self->realm_file_create($_WDN->to_absolute('search-test3.txt', 1), <<'EOF');
 Test Result Three
 Hello Hyphen World!
 EOF
-    $self->realm_file_create('Public/WikiData/search test 4.txt', <<'EOF');
+    $self->realm_file_create($_WDN->to_absolute('search test 4.txt', 1), <<'EOF');
 Test Result Four
 Hello Space World!
 EOF
@@ -879,7 +886,7 @@ sub _init_tuple {
                 qw(Optional Required Integer String)),
         ],
     });
-    $self->realm_file_create('/Settings/TupleTag.csv', <<'EOF');
+    $self->realm_file_create($_SN->to_absolute('TupleTag.csv'), <<'EOF');
 Model,tuple_bunit1
 T1Form,Optional;Required;Integer;String
 EOF
