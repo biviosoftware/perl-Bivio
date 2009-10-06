@@ -33,8 +33,9 @@ END_EXPECT
 		=> '@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265',
 	    '@b-menu-source statutes' => '@b-menu-source value=statutes',
 	    '@b-menu-source value=statutes' => '@b-menu-source value=statutes',
-	    '@random-image bla' => '@random-image value=bla',
-	    '@random-image value=blah' => '@random-image value=blah',
+	    '@random-image bla' => '@aa-random-image value=bla',
+	    '@random-image value=blah' => '@aa-random-image value=blah',
+	    '@aa-random-image value=blah' => '@aa-random-image value=blah',
 	    <<'END_IN' => <<'END_EXPECT',
 Lorem ipsum
 @ins-page /site/recent-blog
