@@ -70,6 +70,33 @@ sub internal_dav_tasks {
     ];
 }
 
+sub internal_dav_text {
+    return [
+	[ForumList => [
+	    'RealmOwner.name' => 'Forum',
+	    'RealmOwner.display_name' => 'Title',
+	    'Forum.want_reply_to' => 'Reply-To List?',
+	    'admin_only_forum_email' => 'Admin Only Email?',
+	    'system_user_forum_email' => 'System User Email?',
+	    'public_forum_email' => 'Public Email?',
+	    'Forum.forum_id' => 'Database Key',
+#TODO: Make visible only if OTP is enabled.  Requires change to DAVList
+	    'Forum.require_otp' => 'Require OTP?',
+	]],
+	[ForumUserList => [
+	    mail_recipient => 'Subscribed?',
+	    file_writer => 'Write Files?',
+	    administrator => 'Administrator?',
+	    [qw(User.user_id RealmUser.user_id)] => 'Database Key',
+	]],
+	[EmailAliasList => [
+	    'EmailAlias.incoming' => 'From Email',
+	    'EmailAlias.outgoing' => 'To Email or Forum',
+	    'primary_key' => 'Database Key',
+	]],
+    ];
+}
+
 sub is_site_realm_name {
     my($self, $realm_name) = @_;
     return $_RN->is_equal(
@@ -554,30 +581,7 @@ sub _cfg_dav {
     my($proto) = @_;
     return {
 	Task => $proto->internal_dav_tasks,
-	Text => [
-	    [ForumList => [
-		'RealmOwner.name' => 'Forum',
-		'RealmOwner.display_name' => 'Title',
-		'Forum.want_reply_to' => 'Reply-To List?',
-		'admin_only_forum_email' => 'Admin Only Email?',
-		'system_user_forum_email' => 'System User Email?',
-		'public_forum_email' => 'Public Email?',
-		'Forum.forum_id' => 'Database Key',
-#TODO: Make visible only if OTP is enabled.  Requires change to DAVList
-		'Forum.require_otp' => 'Require OTP?',
-	    ]],
-	    [ForumUserList => [
-		mail_recipient => 'Subscribed?',
-		file_writer => 'Write Files?',
-		administrator => 'Administrator?',
-		[qw(User.user_id RealmUser.user_id)] => 'Database Key',
-	    ]],
-	    [EmailAliasList => [
-		'EmailAlias.incoming' => 'From Email',
-		'EmailAlias.outgoing' => 'To Email or Forum',
-		'primary_key' => 'Database Key',
-	    ]],
-	],
+	Text => $proto->internal_dav_text,
     };
 }
 
@@ -1495,6 +1499,7 @@ sub _cfg_wiki {
 		]);},
 		wiki_diff_tools => q{vs_text_as_prose('wiki_diff_tools_base');},
 		xhtml_dock_left_standard => q{If(['auth_realm', 'type', '->eq_forum'],
+
 	    TaskMenu([
 		'SITE_WIKI_VIEW',
 		'FORUM_CALENDAR',
