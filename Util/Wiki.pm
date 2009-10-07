@@ -53,55 +53,66 @@ sub internal_upgrade_content {
 
 sub upgrade_blog_titles {
     my($self) = @_;
-    $self->assert_not_general;
     $self->initialize_ui;
-    $self->model('RealmFile')->do_iterate(sub {
-        my($it) = @_;
-	return 1
-	    unless _mutable_wikitext($self, $it, 1);
-	_trace("***\nCHECKING: " . $it->get('path') . "\n") if $_TRACE;
-	my($content) = _upgrade_title($self, ${$it->get_content});
-	if (${$it->get_content} ne $content) {
-	    my($die) = Bivio::Die->catch(
-		sub {
-		    _trace("CONTENT MODIFIED:\n" . $content . "\n") if $_TRACE;
-		    $it->update_with_content({
-			override_is_read_only => 1,
-		    }, \$content);
-		    $self->commit_or_rollback;
-		}
-	    );
-	}
-        return 1;
-    });
+    $self->model('RealmFile')->do_iterate(
+	sub {
+	    my($rf) = @_;
+	    return 1
+		unless _mutable_wikitext($self, $rf, 1);
+	    _trace("***\nCHECKING: " . $rf->get('path') . "\n")
+		if $_TRACE;
+	    $self->req->with_realm(b_debug($rf->get('realm_id')),
+				   sub {
+				       my($content) = _upgrade_title($self, ${$rf->get_content});
+				       if (${$rf->get_content} ne $content) {
+					   my($die) = Bivio::Die->catch(
+					       sub {
+						   _trace("CONTENT MODIFIED:\n" . $content . "\n")
+						       if $_TRACE;
+						   $rf->update_with_content({
+						       override_is_read_only => 1,
+						   }, \$content);
+						   $self->commit_or_rollback;
+					       }
+					   );
+				       }
+				   });
+	    return 1;
+	}, $self->req('auth_realm')->is_general ?
+	    (unauth_iterate_start => 'realm_file_id asc') : ());
     return;
 }
 
 sub upgrade_content {
     my($self) = @_;
-    $self->assert_not_general;
     $self->initialize_ui;
-    $self->model('RealmFile')->do_iterate(sub {
-        my($it) = @_;
-	return 1
-	    unless _mutable_wikitext($self, $it);
-	_trace("***\nCHECKING: " . $it->get('path') . "\n") if $_TRACE;
-	my($content) = ${$it->get_content};
-	$content = $self->internal_upgrade_content($content,
-						   $it->get('path_lc'));
-	if (${$it->get_content} ne $content) {
-	    my($die) = Bivio::Die->catch(
-		sub {
-		    _trace("\nCONTENT MODIFIED:\n" . $content . "\n") if $_TRACE;
-		    $it->update_with_content({
-			override_is_read_only => 1,
-		    }, \$content);
-		    $self->commit_or_rollback;
-		}
-	    );
-	}
-        return 1;
-    });
+    $self->model('RealmFile')->do_iterate(
+	sub {
+	    my($rf) = @_;
+	    return 1
+		unless _mutable_wikitext($self, $rf);
+	    $self->req->with_realm(b_debug($rf->get('realm_id')),
+				   sub {
+				       _trace("***\nCHECKING: " . $rf->get('path') . "\n")
+					   if $_TRACE;
+				       my($content) = ${$rf->get_content};
+				       $content = $self->internal_upgrade_content($content, $rf->get('path_lc'));
+				       if (${$rf->get_content} ne $content) {
+					   my($die) = Bivio::Die->catch(
+					       sub {
+						   _trace("\nCONTENT MODIFIED:\n" . $content . "\n")
+						       if $_TRACE;
+						   $rf->update_with_content({
+						       override_is_read_only => 1,
+						   }, \$content);
+						   $self->commit_or_rollback;
+					       }
+					   );
+				       }
+				   });
+	    return 1;
+	}, $self->req('auth_realm')->is_general ?
+	    (unauth_iterate_start => 'realm_file_id asc') : ());
     return;
 }
 
@@ -229,7 +240,7 @@ sub _update_b_tags {
     $content
 	=~ s/^\@b\-([a-z-]*)\s(?:\S*=)?(\S*)$/\@b-$1 value=$2/gm;
     $content
-	=~ s/^\@random\-image\s(?:\S*=)?(\S*)$/\@random-image value=$1/gm;
+	=~ s/^\@random\-image\s(?:\S*=)?(\S*)$/\@aa-random-image value=$1/gm;
     return $content;
 }
 
