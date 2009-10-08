@@ -84,7 +84,8 @@ OUT
 
 p1
 IN
-<h1>h 1</h1><p class="b_prose">p1
+<h1>h 1</h1>
+<p class="b_prose">p1
 </p>
 OUT
 	    <<'IN' => trim_space(<<'OUT'),
@@ -98,7 +99,8 @@ p1
 IN
 <h1>h1a
 <br />h1b
-</h1><p class="b_prose">p1
+</h1>
+<p class="b_prose">p1
 </p>
 OUT
 	    '@p *x*' => qq{<p><strong>x</strong></p>},
@@ -123,7 +125,7 @@ OUT
  	    '@@other' => qq{<p class="b_prose">\@other\n</p>},
  	    '@badtag' => qq{},
  	    '@my/bp/Shell_Util_Help' => qq{},
- 	    "\n\@hr" => qq{<p class="b_prose"></p><hr />},
+ 	    "\n\@hr" => qq{\n<hr />},
 	    '@center' => qq{},
 	    '@a' => qq{<p class="b_prose"><a></a></p>},
 	    '@a href=/x y' => qq{<p class="b_prose"><a href="/x">y</a></p>},
@@ -206,8 +208,9 @@ IN
 </p><h2>h 2</h2><p class="b_prose">p3
 </p><table class="c1"><tbody><tr><td><p class="b_prose">1.1
 </p></td><td><p class="b_prose">1.2
-</p><p class="b_prose"></p></td><td></td></tr><tr><td><p class="b_prose">2.1</p></td><td class="number"><p class="b_prose">2.2
-</p></td></tr></tbody><tr><td><p class="b_prose">3.1p1
+</p></td><td></td></tr><tr><td><p class="b_prose">2.1</p></td><td class="number"><p class="b_prose">2.2
+</p></td></tr></tbody><tr><td>
+<p class="b_prose">3.1p1
 </p><p class="b_prose">3.1p2
 </p></td></tr></table><ol><li><p class="b_prose">i1.1
 </p><p class="b_prose">i1.2

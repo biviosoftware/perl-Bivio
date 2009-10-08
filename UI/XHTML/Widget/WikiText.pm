@@ -11,6 +11,7 @@ my($_CA) = b_use('Collection.Attributes');
 my($_DT) = b_use('Type.DateTime');
 my($_FCC) = b_use('FacadeComponent.Constant');
 my($_I) = b_use('View.Inline');
+my($_R) = b_use('IO.Ref');
 my($_RF) = b_use('Action.RealmFile');
 my($_RFC) = b_use('Mail.RFC822');
 my($_T) = b_use('FacadeComponent.Task');
@@ -643,7 +644,8 @@ sub _eval_tag {
 	) if @{$args->{children}};
 	return "<$start />";
     }
-    return "<$start>" . _eval($state, $args) . "</$tag>";
+    my($content) = _eval($state, $args);
+    return length($content) || $tag ne 'p' ? "<$start>$content</$tag>" : '';
 }
 
 sub _eval_tag_custom {
@@ -694,7 +696,7 @@ sub _init_children {
     my($pre_content) = ['a', @$fontstyle, @$phrase, @$special_pre, @$misc_inline, @$inline_forms];
     my($form_content) = [@$block, @$misc];
     my($button_content) = ['p', @$heading, 'div', @$lists, @$blocktext, 'table', @$special, @$fontstyle, @$phrase, @$misc];
-    my($res) = {
+    my($res) = $_R->nested_copy({
 	a => $a_content,
 	abbr => $Inline,
 	acronym => $Inline,
@@ -757,13 +759,15 @@ sub _init_children {
 	tr => [qw(th td)],
 	ul => [qw(li)],
 	var => $Inline,
-    };
+    });
     $res->{$_ROOT_TAG} = [sort(keys(%$res))];
     return $res;
 }
 
 sub _next_line {
     my($state) = @_;
+# Set line number via include/macro just like CPP.  Don't print messages
+# until eval.  parse_error
 #rjn: need to be able to set the line when parsing a content item
     $state->{line_num}++;
     return shift(@{$state->{lines}});
@@ -815,9 +819,8 @@ sub _parse_content {
     };
     my($out) = sub {
 	my($code, @args) = @_;
-	_parse_tag_start($state, '@p.b_prose')
+	_parse_out_p($state)
 	    if ($code || length($res))
-	    && _parse_child_ok($state, 'p')
 	    && _parse_paragraphing_ok($state);
 	_parse_out($state, \&_eval_literal, $res)
 	    if length($res);
@@ -947,6 +950,12 @@ sub _parse_content_special {
     return $ch eq ';' ? '' : $ch;
 }
 
+sub _parse_die {
+    my($state) = shift;
+    $state->{proto}->render_error(@_, $state);
+    return $state->{req}->if_test(sub {b_die('assertion fault')});
+}
+
 sub _parse_err {
     my($state, $object, $err) = @_;
     return $state->{proto}->render_error($object, $err, $state);
@@ -975,12 +984,14 @@ sub _parse_line {
 sub _parse_line_empty {
     my($state) = @_;
     return _parse_out($state, \&_eval_literal, "\n")
-	unless _parse_paragraphing_ok($state);
-    my($curr) = _parse_stack_in_tag($state, qr{^p$});
-    $curr &&= $curr->{attrs}->{class};
-    return _parse_tag_start(
+	unless _parse_paragraphing_ok(
+	$state, _parse_stack_top($state)->{tag}, 1);
+    my($p) = _parse_stack_in_tag($state, qr{^p$});
+    return _parse_out_p(
 	$state,
-	'@p class="' . (defined($curr) ? $curr : 'b_prose') . '"',
+	!$p ? ()
+	    : defined($p->{attrs}->{class}) ? $p->{attrs}->{class}
+	    : '',
     );
 }
 
@@ -1000,9 +1011,28 @@ sub _parse_out {
     return '';
 }
 
+sub _parse_out_p {
+    my($state, $class) = @_;
+    $class = 'b_prose'
+	if !defined($class);
+    _parse_stack_pop($state, 'p')
+	until _parse_child_ok($state, 'p');
+    return _parse_out(
+	$state,
+	\&_eval_tag,
+	{
+	    tag => 'p',
+	    attrs => length($class) ? {class => $class} : {},
+	},
+    );
+}
+
 sub _parse_paragraphing_ok {
-    my($state) = @_;
+    my($state, $tag, $line_empty) = @_;
     return $state->{parse}->{options}->{paragraphing}
+	&& ($tag ? $tag =~ $_INLINE_RE || $line_empty && $tag eq 'p'
+	: !_parse_stack_in_tag($state, qr{^p$}))
+	&& (!$line_empty || _parse_stack_in_tag($state, qr{^p$}))
 	&& !_parse_stack_in_tag($state, qr{^(?:div|dt|h\d|pre|script|select|textarea)$})
 	&& !_parse_stack_top($state, qr{^(?:ul|dl|ol)$})
 	&& (
@@ -1015,14 +1045,14 @@ sub _parse_paragraphing_ok {
 
 sub _parse_stack_in_tag {
     my($state, $tag_re) = @_;
-    return grep($_->{tag} =~ $tag_re, @{$state->{parse}->{stack}});
+    return (grep($_->{tag} =~ $tag_re, @{$state->{parse}->{stack}}))[0];
 }
 
 sub _parse_stack_pop {
     my($state, $tag) = @_;
     my($stack) = $state->{parse}->{stack};
-    b_die($tag, ': stack too short')
-	unless @$stack > 1;
+    return _parse_die($state, $tag, 'stack too short')
+        unless @$stack > 1;
     shift(@$stack);
     return;
 }
@@ -1099,15 +1129,8 @@ sub _parse_tag_start {
     $line =~ s/^\s+|\s+$//s;
     return
 	if _parse_tag_custom($state, $tag, $attrs, $line);
-    _parse_out(
-	$state,
-	\&_eval_tag,
-	{tag => 'p', attrs => {class => 'b_prose'}},
-#TODO: Does 'p' need to be here?
-    ) if _parse_child_ok($state, 'p')
- 	&& _parse_paragraphing_ok($state)
-#TODO: Move into _parse_paragraphing_ok?
-	&& $tag =~ $_INLINE_RE;
+    _parse_out_p($state)
+        if _parse_paragraphing_ok($state, $tag);
     _parse_stack_pop($state, $tag)
 	until _parse_child_ok($state, $tag);
     _parse_out($state, \&_eval_tag, {tag => $tag, attrs => $attrs});
