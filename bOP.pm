@@ -26,11 +26,50 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.24  2009/10/02 21:28:21  dobbs
+  * Bivio::BConf
+    fixed close_results_motion typo
+  * Bivio::Biz::Action::WikiValidator
+    added die_on_validate_error
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    fmt
+  * Bivio::Biz::Model::RealmMail
+    log emails which cause a die during creation
+  * Bivio::Delegate::TaskId
+    typo
+  * Bivio::MIME::Type
+    minor refactoring
+  * Bivio::Mail::Incoming
+    ignore bad message ids
+  * Bivio::Test::Unit
+    replace chomp_and_return with trim_space
+  * Bivio::UI::XHTML::Widget::WikiText::Embed
+    refactoring to be a real parser with AST
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    refactoring to be a real parser with AST
+  * Bivio::UI::XHTML::Widget::WikiText::SWFObject
+    refactoring to be a real parser with AST
+    add noflash attribute to SWFObject
+  * Bivio::UI::XHTML::Widget::WikiText::Widget
+    refactoring to be a real parser with AST
+  * Bivio::UI::XHTML::Widget::WikiText
+    refactoring to be a real parser with AST
+    fix spurious end tag problem
+    start down path of macros
+    EXPECTED_CHILDREN => EXPECT_CHILDREN
+  * Bivio::UI::XHTML::Widget::WikiTextTag
+    NEW
+  * Bivio::Util::RealmMail
+    get_date_time now returns a DateTime
+  * Bivio::Util::Wiki
+    upgrade @random-image tags
+    use trace to reduce runtime output
+
   Revision 8.23  2009/09/28 03:11:38  nagler
   * Bivio::BConf
     use enhanced categories_map configuration
