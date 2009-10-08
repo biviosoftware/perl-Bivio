@@ -1,0 +1,36 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+# Automatic paragraphing
+[
+    <<'IN' => trim_space(<<'OUT'),
+@table
+@tr
+@td
+x
+
+@p
+y
+@tr
+
+@td
+z
+@/table
+IN
+<table><tr><td><p class="b_prose">x
+</p><p>y
+</p></td></tr><tr>
+<td><p class="b_prose">z
+</p></td></tr></table>
+OUT
+    <<'IN' => trim_space(<<'OUT'),
+@p
+x
+
+y
+IN
+<p>x
+</p><p>y
+</p>
+OUT
+];
