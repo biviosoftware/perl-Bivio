@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 my($_C) = b_use('IO.Config');
 my($_CA) = b_use('Collection.Attributes');
+my($_CC) = b_use('IO.CallingContext');
 my($_DT) = b_use('Type.DateTime');
 my($_FCC) = b_use('FacadeComponent.Constant');
 my($_I) = b_use('View.Inline');
@@ -336,6 +337,7 @@ sub NEW_ARGS {
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
+#TODO: there should be two or more objects here: widget, language, and render(?)
     my($req) = $source->req;
     my($args) = {
 	source => $source,
@@ -354,9 +356,27 @@ sub control_on_render {
     return;
 }
 
+sub do_parse_lines {
+    my(undef, $state, $op) = @_;
+# Set line number via include/macro just like CPP.  Don't print messages
+# until eval.  render_error
+#rjn: need to be able to set the line when parsing a content item
+    while () {
+	return
+	    unless defined(my $line = shift(@{$state->{lines}}));
+	$state->{line_num}++;
+	return
+	    unless $op->($line);
+    }
+    return;
+}
+
 sub include_content {
     my($proto, $content, $state) = @_;
-    unshift(@{$state->{lines}}, split(/\r?\n/, $$content));
+    unshift(
+	@{$state->{lines}},
+	split(/\r?\n/, ref($content) ? $$content : $content),
+    );
     return;
 }
 
@@ -398,7 +418,7 @@ sub internal_format_uri {
 sub unsafe_load_wiki_data {
     my($proto, $path, $args) = @_;
     my($die_code);
-    return _parse_err($args, $path, $die_code)
+    return $proto->render_error($path, $die_code, $args)
 	unless my $rf = b_use('Action.WikiView')
 	->unsafe_load_wiki_data($path, $args, \$die_code);
     return $rf;
@@ -411,6 +431,11 @@ sub new {
 	    sub {Bivio::UI::ViewLanguageAUTOLOAD->unsafe_calling_context},
     );
     return $self;
+}
+
+sub parse_calling_context {
+    my($self, $state) = @_;
+    return $_CC->new_from_file_line(@$state{qw(path line_num)});
 }
 
 sub prepare_html {
@@ -472,7 +497,7 @@ sub prepare_html {
 	    $args->{title} = $t;
 	}
 	else {
-	    _parse_err($args, $x, 'not a header pattern');
+	    $args->{proto}->render_error($x, 'not a header pattern', $args);
 	    substr($$v, 0, 0) = $x;
 	}
     }
@@ -576,7 +601,7 @@ sub _check_uri {
     my($uri, $orig, $args) = @_;
 #TODO: Consider dropping this
     if ($uri =~ /^javascript:/i) {
-	_parse_err($args, $orig, 'javascript links not allowed');
+	$args->{proto}->render_error($orig, 'javascript links not allowed', $args);
 	return 'link-error';
     }
     $args->{validator}->validate_uri($uri, $args);
@@ -616,7 +641,7 @@ sub _eval_tag {
 	: $_EMPTY->{$tag} ? ''
 	: _eval($state, $args) . "\n"
 	if $state->{want_plain_text};
-    $attrs->{target} = '_top'
+    $attrs->{target} = $state->{link_target}
 	if $tag eq 'a'
 	&& ! defined($attrs->{target})
 	&& defined($state->{link_target});
@@ -637,10 +662,10 @@ sub _eval_tag {
 	),
     );
     if ($_EMPTY->{$tag}) {
-	_parse_err(
-	    $state,
+	$state->{proto}->render_error(
 	    $tag,
 	    ['empty tags are not allowed to have a value: ', $args->{children}],
+	    $state,
 	) if @{$args->{children}};
 	return "<$start />";
     }
@@ -663,7 +688,7 @@ sub _eval_tag_custom {
 	},
 	\$die,
     );
-    return $die ? _parse_err($state, $tag, $die) : $res;
+    return $die ? $state->{proto}->render_error($tag, $die, $state) : $res;
 }
 
 sub _fix_word {
@@ -764,15 +789,6 @@ sub _init_children {
     return $res;
 }
 
-sub _next_line {
-    my($state) = @_;
-# Set line number via include/macro just like CPP.  Don't print messages
-# until eval.  parse_error
-#rjn: need to be able to set the line when parsing a content item
-    $state->{line_num}++;
-    return shift(@{$state->{lines}});
-}
-
 sub _parse {
     my($state) = @_;
     $state->{parse} = {
@@ -783,17 +799,22 @@ sub _parse {
 	op => \&_eval,
 	tag => $_ROOT_TAG,
     });
-    while (defined(my $line = _next_line($state))) {
-	if ($line =~ /^\@[a-z]/i) {
-	    _parse_tag_start($state, $line);
-	}
-	elsif ($line =~ /^\@\/[a-z]/i) {
-	    _parse_tag_end($state, $line);
-	}
-	else {
-	    _parse_line($state, $line);
-	}
-    }
+    $state->{proto}->do_parse_lines(
+	$state,
+	sub {
+	    my($line) = @_;
+	    if ($line =~ /^\@[a-z]/i) {
+		_parse_tag_start($state, $line);
+	    }
+	    elsif ($line =~ /^\@\/[a-z]/i) {
+		_parse_tag_end($state, $line);
+	    }
+	    else {
+		_parse_line($state, $line);
+	    }
+	    return 1;
+	},
+    );
     delete($state->{parse});
     return $root;
 }
@@ -813,9 +834,11 @@ sub _parse_content {
     my($next) = sub {
 	return !@$chars ? ''
 	    : ord($ch = shift(@$chars)) > 0 ? $ch
-	    : _parse_err(
-		$state, undef,
-		[sprintf('0x%x', ord($ch)), ': invalid character']);
+	    : $state->{proto}->render_error(
+	        undef,
+		[sprintf('0x%x', ord($ch)), ': invalid character'],
+		$state,
+	    );
     };
     my($out) = sub {
 	my($code, @args) = @_;
@@ -944,7 +967,7 @@ sub _parse_content_special {
 	$value .= $ch;
 	$ch = $next->();
     }
-    _parse_err($state, undef, 'invalid character entity')
+    $state->{proto}->render_error(undef, 'invalid character entity', $state)
 	unless length($value) >= ($value =~ /#/ ? 3 : 2);
     _parse_out($state, \&_eval_char_entity, "&$value;");
     return $ch eq ';' ? '' : $ch;
@@ -954,11 +977,6 @@ sub _parse_die {
     my($state) = shift;
     $state->{proto}->render_error(@_, $state);
     return $state->{req}->if_test(sub {b_die('assertion fault')});
-}
-
-sub _parse_err {
-    my($state, $object, $err) = @_;
-    return $state->{proto}->render_error($object, $err, $state);
 }
 
 sub _parse_hr {
@@ -1082,7 +1100,7 @@ sub _parse_tag_attrs {
 	if $$line =~ s/^\.([\w\-]+)//s;
     while ($$line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]*)("?))//s) {
 	if (defined($3) && !$5) {
-	    _parse_err($state, $1, 'attribute value not terminated by quote');
+	    $state->{proto}->render_error($1, 'attribute value not terminated by quote', $state);
 	    last;
 	}
 	$attrs->{lc($1 ? $1 : $3)} = defined($2) ? $2 : $4;
@@ -1106,14 +1124,16 @@ sub _parse_tag_custom {
 	},
 	\$die,
     );
-    return $die ? _parse_err($state, $tag, $die) : $res;
+    $state->{proto}->render_error($tag, $die, $state)
+	if $die;
+    return 1;
 }
 
 sub _parse_tag_end {
     my($state, $line) = @_;
     return
 	unless my $tag = _parse_tag_ok($state, \$line);
-    return _parse_err($state, $tag, 'spurious end tag')
+    return $state->{proto}->render_error($tag, 'spurious end tag', $state)
 	unless _parse_stack_in_tag($state, qr{^$tag$});
     _parse_stack_pop($state, $tag)
 	until _parse_stack_top($state, $tag);
@@ -1135,10 +1155,10 @@ sub _parse_tag_start {
 	until _parse_child_ok($state, $tag);
     _parse_out($state, \&_eval_tag, {tag => $tag, attrs => $attrs});
     if (length($line)) {
-	return _parse_err(
-	    $state,
+	return $state->{proto}->render_error(
 	    $tag,
 	    ['empty tags are not allowed to have content: ', $line],
+	    $state,
 	) if $_EMPTY->{$tag};
 	_parse_content($state, $line);
 	_parse_stack_pop($state, $tag);
@@ -1149,9 +1169,9 @@ sub _parse_tag_start {
 sub _parse_tag_ok {
     my($state, $line) = @_;
     $$line =~ s/^(\@\/?)([\w\-]+)//s
-	|| b_die($line, ': invalid internal call');
+	|| _parse_die($state, $line, ': invalid internal call');
     my($tag) = lc($2);
-    return _parse_err($state, "$1$tag$$line", 'unknown tag')
+    return $state->{proto}->render_error("$1$tag$$line", 'unknown tag', $state)
 	unless $_CHILDREN->{$tag};
     return $tag
 }
