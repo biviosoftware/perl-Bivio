@@ -35,9 +35,11 @@ sub internal_submenu {
 
 sub render_html {
     my($proto, $args) = shift->parse_args(
-	[qw(class value b_selected_label_prefix)],
+	[qw(?class value ?b_selected_label_prefix)],
 	@_,
     );
+    return
+	unless $proto;
     # load here to avoid subclass redefined error
     my($_WT) = b_use('XHTMLWidget.WikiText');
     my($class) =  $args->{attrs}->{class} || 'bmenu';

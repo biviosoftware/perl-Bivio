@@ -6,6 +6,7 @@ use Bivio::Base 'XHTMLWidget.WikiTextTag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_W) = b_use('UI.Widget');
 
 sub handle_register {
     return [qw(b-widget)];
@@ -13,6 +14,8 @@ sub handle_register {
 
 sub render_html {
     my($proto, $args) = shift->parse_args([qw(value)], @_);
+    return
+	unless $proto;
     my($value) =  $args->{attrs}->{value};
     return $args->{proto}->render_error(
 	$value, 'value must be lower case word', $args
@@ -29,7 +32,7 @@ sub render_html {
     ) unless defined($v);
 #TODO: upper case is a widget to render.  Request context.
 #TODOx: No eval on widget values.
-    return ${Bivio::UI::Widget->render_value($value, $v, $args->{source})};
+    return ${$_W->render_value($value, $v, $args->{source})};
 }
 
 1;

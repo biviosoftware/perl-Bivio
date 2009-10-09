@@ -12,11 +12,16 @@ sub handle_register {
 
 sub render_html {
     my($proto, $args) = shift->parse_args([qw(value)], @_);
+    return
+	unless $proto;
     my($uri) = $args->{proto}->internal_format_uri(
 	$args->{attrs}->{value}, $args,
     );
-    return Bivio::Die->die('invalid URI, must begin with a /')
-	unless $uri =~ s{^/+}{/};
+    return $args->{proto}->render_error(
+	$uri,
+	'invalid URI, must begin with a /',
+	$args
+    ) unless $uri =~ s{^/+}{/};
     my($reply) = $args->{validator}->call_embedded_task(
 	$args->{req}->format_uri({
 	    uri => $uri,

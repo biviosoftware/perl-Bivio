@@ -12,6 +12,8 @@ sub handle_register {
 
 sub parse_tag_start {
     my($proto, $args) = shift->parse_args([qw(file)], @_);
+    return
+	unless $proto;
     my($state) = $args->{state};
     return
 	unless my $rf = $state->{proto}->unsafe_load_wiki_data(
