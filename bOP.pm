@@ -26,11 +26,47 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.25  2009/10/08 16:27:25  aviggio
+  * Bivio::Biz::Action::WikiValidator
+    renamed unsafe_get_self to get_current_or_new
+  * Bivio::Biz::Action::WikiView
+    unsafe_load_wiki_data forces the path to be in a WikiData directory
+  * Bivio::Die
+    Alert now uses IO.CallingContext
+  * Bivio::IO::Alert
+    factor out IO.CallingContext so can be used by other parsers
+  * Bivio::IO::CallingContext
+    NEW
+  * Bivio::PetShop::Util::SQL
+    remove empty line in test wiki content
+    avoid hardwired paths, use Type.*Name modules
+    added include.bwiki
+  * Bivio::Type::FilePathArg
+    NEW
+  * Bivio::Type::SettingsName
+    NEW
+  * Bivio::UI::FacadeBase
+    factored out internal_dav_text
+  * Bivio::UI::XHTML::Widget::WikiText::Include
+    NEW
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    unsafe_load_wiki_data now forces path to be WikiData
+  * Bivio::UI::XHTML::Widget::WikiText
+    support @b-include tag
+    added include_content
+    fixed paragraphing so does the right thing within @td and cascades
+    class (as before)
+  * Bivio::UI::XHTML::Widget::WikiTextTag
+    EXPECT_CHILDREN => ACCEPTS_CHILDREN
+  * Bivio::Util::Wiki
+    modify upgrade_content and upgrade_blog_titles to operate across all realms
+    handle @aa-random-image conversion
+
   Revision 8.24  2009/10/02 21:28:21  dobbs
   * Bivio::BConf
     fixed close_results_motion typo
