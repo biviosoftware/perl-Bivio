@@ -3,7 +3,7 @@
 WikiText();
 # Automatic paragraphing
 [
-    <<'IN' => trim_space(<<'OUT'),
+    <<'IN' => <<'OUT',
 @table
 @tr
 @td
@@ -23,7 +23,7 @@ IN
 <td><p class="b_prose">z
 </p></td></tr></table>
 OUT
-    <<'IN' => trim_space(<<'OUT'),
+    <<'IN' => <<'OUT',
 @p
 x
 
