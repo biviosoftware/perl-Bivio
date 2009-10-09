@@ -32,6 +32,11 @@ sub new_unit {
 		    req => $req,
 		}];
 	    },
+	    check_return => sub {
+		my(undef, undef, $expect) = @_;
+		return ref($expect) eq 'Regexp' ? $expect
+		    : [$proto->builtin_trim_space($expect->[0])];
+	    },
 	    method_to_test => 'render_html',
 	    $args ? %$args : (),
 	},
