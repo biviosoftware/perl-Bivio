@@ -1,0 +1,40 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+[
+    '@b-def name=m_1 params= c1' => '',
+    <<'IN' => <<'OUT',
+@b-def name=m_2 c2
+@b-call name=m_2
+IN
+<p class="b_prose">c2
+</p>
+OUT
+    <<'IN' => <<'OUT',
+@b-def name=m_3 params="p3_1 p3_2 p3_3"
+c3@p3_1@p3_2@p3_2not
+@p3_3
+@/b-def
+@b-call name=m_3 p3_1=3.1 p3_2=3.2
+IN
+<p class="b_prose">c33.13.2@p3_2not
+</p>
+
+OUT
+    <<'IN' => <<'OUT',
+@b-def name=m_4 params="p4_1 b_content"
+@h1 @p4_1
+@p
+@b_content
+@/p
+@/b-def
+@b-call name=m_4 p4_1=hello1 good bye 1
+@b-call name=m_4 p4_1=hello2
+some content here
+@/b-call
+IN
+<h1>hello1</h1><p>good bye 1
+</p><h1>hello2</h1><p>some content here
+</p>
+OUT
+];
