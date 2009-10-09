@@ -1,32 +1,25 @@
 # Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
 # $Id$
-WikiText({
-    check_return => sub {
-        my(undef, $actual, $expect) = @_;
-        foreach my $pattern (split(/\n/, $expect->[0])) {
-            assert_contains(qr{$pattern}, $actual->[0]);
-        }
-        return 1;
-    },
-});
+WikiText();
 [
     '@b-swfobject file=/bp/A.flv preview=/bp/B.png width=500 height=400'
-        => <<'EOF',
-var swfobject=function\(\)
-swfobject\.embedSWF\("/f/player.swf", "b_video", "500", "400", "9.0.0", false, \{'file' : '/bp/A.flv','image' : '/bp/B.png'\}, \{allowfullscreen:'true'\}\);
-<div id="b_video">
-requires JavaScript enabled
-Flash Player
-</div>
-EOF
-    '@b-swfobject id=A data=B.swf width=900 height=300' => <<'EOF',
-swfobject\.embedSWF\("B.swf", "A", "900", "300", "9.0.0", false, false, \{allowfullscreen:'true'\}\);
-EOF
-    '@b-swfobject noflash=/bp/B.png data=A.swf width=200 height=100' => <<'EOF',
-var swfobject=function\(\)
-swfobject\.embedSWF\("A.swf", "b_video", "200", "100", "9.0.0", false, false, \{allowfullscreen:'true'\}\);
-<div id="b_video">
-<img border="0" height="100" width="200" src="/bp/B.png" />
-</div>
-EOF
+        => qr{
+         embedSWF\(
+         .*/f/player.swf
+         .*b_video
+         .*'500'
+         .*'400'
+         .*false
+         .*file:'/bp/A.flv'
+         .*image:'/bp/B.png'
+         .*requires\s+javascript.*flash\s+player
+    }ixs,
+    '@b-swfobject id=A data=B.swf width=900 height=300' => qr{
+        embedSWF\(
+        .*'B.swf',\s*'A',
+    }ixs,
+    '@b-swfobject noflash=/any/path.png data=a width=1 height=2' => qr{
+        embedSWF\(
+        .*<img.*src="/any/path.png"
+    }ixs,
 ];
