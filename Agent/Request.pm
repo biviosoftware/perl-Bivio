@@ -668,6 +668,13 @@ sub handle_config {
     return;
 }
 
+sub if_test {
+    my($self, $then, $else) = @_;
+    return $self->is_test ? $then->()
+	: $else ? $else->()
+	: ();
+}
+
 sub internal_clear_current {
     # DO NOT CALL THIS UNLESS YOU KNOW WHAT YOU ARE DOING.
     $_CURRENT = undef;
