@@ -19,15 +19,19 @@ sub assert_no_content {
 
 sub parse_args {
     my($proto, $expected_attrs, $args) = @_;
-    my($attrs) = {
-	%{$args->{attrs}},
-	@{$args->{children} || []} ? (_children => $args->{children}) : (),
-    };
-    foreach my $ea (@$expected_attrs) {
+    my($attrs) = {%{$args->{attrs}}};
+    foreach my $ea (@{[@$expected_attrs]}) {
 	delete($attrs->{$ea});
     }
-    b_die(%$attrs, ': unexpected attributes passed to ', $args->{tag})
-        if %$attrs;
+    if (%$attrs) {
+	b_die($attrs, ': unexpected attributes passed to ', $args->{tag})
+	    unless my $state = $args->{state};
+	return $state->{proto}->render_error(
+	    join(' ', sort(keys(%$attrs))),
+	    "unexpected attributes passed to \@$args->{tag}",
+	    $state,
+	);
+    }
     return ($proto, $args);
 }
 
