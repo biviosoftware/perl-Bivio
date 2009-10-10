@@ -12,6 +12,7 @@ my($_R) = b_use('Type.Regexp');
 my($_C) = b_use('FacadeComponent.Constant');
 my($_S) = b_use('Type.String');
 my($_SUFFIX) = '.bmenu';
+my($_CC) = b_use('IO.CallingContext');
 
 sub TARGET {
     return __PACKAGE__ . '::b-menu-target';
@@ -111,7 +112,10 @@ sub _parse_csv {
 	unless my $rf = $args->{proto}
         ->unsafe_load_wiki_data("$value$_SUFFIX", $args);
     my($csv) = b_use('ShellUtil.CSV')->parse_records($rf->get_content);
-    $args = {%$args, path => $rf->get('path'), line_num => 1};
+    $args = {
+	%$args,
+	calling_context => $_CC->new_from_file_line($rf->get('path'), 1),
+    };
     unless (@$csv) {
 	$args->{proto}->render_error(undef, 'no lines in menu', $args);
 	return;
@@ -121,7 +125,7 @@ sub _parse_csv {
 
 sub _parse_csv_row {
     my($row, $args) = @_;
-    $args->{line_num}++;
+    $args->{calling_context} = $args->{calling_context}->inc_line(1);
     foreach my $k (keys(%$row)) {
 	$row->{$k} =~ s/^\s+|\s+$//s
 	    if _has_value($row->{$k});

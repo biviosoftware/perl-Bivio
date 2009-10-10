@@ -345,8 +345,7 @@ sub control_on_render {
 	map(($_ => $self->render_simple_attr($_, $source)), @$_WIDGET_ATTRS),
     };
     if (my $cc = $self->unsafe_get('calling_context')) {
-	$args->{line_num} = $cc->get('line') - 1;
-	$args->{path} = $cc->get('file');
+	$args->{calling_context} = $cc->inc_line(-1);
     }
     else {
 	$args->{path} = $args->{value};
@@ -364,7 +363,7 @@ sub do_parse_lines {
     while () {
 	return
 	    unless defined(my $line = shift(@{$state->{lines}}));
-	$state->{line_num}++;
+	$state->{calling_context} = $state->{calling_context}->inc_line(1);
 	return
 	    unless $op->($line);
     }
@@ -434,8 +433,8 @@ sub new {
 }
 
 sub parse_calling_context {
-    my($self, $state) = @_;
-    return $_CC->new_from_file_line(@$state{qw(path line_num)});
+    my(undef, $state) = @_;
+    return $state->{calling_context};
 }
 
 sub prepare_html {
@@ -489,7 +488,7 @@ sub prepare_html {
         | \@$_TT.*?\r?\n\@/$_TT\s*?\r?\n
     )}{}isox) {
 	my($x) = $1;
-	$args->{line_num} ||= 1;
+	$args->{calling_context} ||= $_CC->new_from_file_line($args->{path}, 1);
 	my($t) = $proto->render_html({%$args, value => $x})
 	    =~ m{^<$_TT>(.*)</$_TT>$}so;
 	if (defined($t)) {
@@ -552,7 +551,7 @@ sub render_html {
     $args->{task_id} = _task_id($args)
 	unless ref($args->{task_id});
     $args->{realm_id} ||= $args->{req}->get('auth_id');
-    $args->{line_num} ||= 0;
+    $args->{calling_context} ||= $_CC->new_from_file_line($args->{path}, 0);
     unless ($args->{realm_name}) {
 	my($ro) = Bivio::Biz::Model->new($args->{req}, 'RealmOwner');
 	$args->{realm_name} = $ro->get('name')
@@ -613,7 +612,7 @@ sub _eval {
     return join(
 	'',
 	map({
-	    $state->{line_num} = $_->{line_num};
+	    $state->{calling_context} = $_->{calling_context};
 	    $_->{op}->($state, $_);
 	} @{$tree->{children}}),
     );
@@ -1077,7 +1076,7 @@ sub _parse_stack_pop {
 
 sub _parse_stack_push {
     my($state, $args) = @_;
-    $args->{line_num} = $state->{line_num};
+    $args->{calling_context} = $state->{calling_context};
     $args->{children} = [];
     unshift(@{$state->{parse}->{stack}}, $args);
     return;
