@@ -585,6 +585,7 @@ sub _new_from_throw {
     $attrs = defined($attrs) ? !ref($attrs) ? {message => $attrs}
 	:  {attrs => $attrs} : {}
         unless ref($attrs) eq 'HASH';
+    $attrs->{message} ||= '';
     my($caller) = _caller();
     return _new(
 	$proto,
