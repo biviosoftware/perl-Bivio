@@ -1,63 +1,39 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Request();
-options({
-    class_name => 'Bivio::Biz::Model::RealmFile',
-});
-#TODO: create test forum?
-req()->set_realm_and_user('fourem', 'root');
+ShellUtil();
+req()->set_realm_and_user('wiki_bunit', 'root');
+model('RealmFile')->delete_all;
 my($original) = <<'EOF';
-@b-widget ride_count_all
+@b-widget arg
 ^&quot;
 EOF
-my($expected) = <<'EOF';
-@b-widget value=ride_count_all
-@&quot;
-EOF
-model('RealmFile')->create_with_content({
-    path => my($f0) = '/'.random_string(),
-}, \($original));
-model('RealmFile')->create_with_content({
-    path => my($f1) = '/Wiki/'.random_string(),
-}, \($original));
-model('RealmFile')->create_with_content({
-    path => my($f2) = '/Public/Wiki/'.random_string(),
-}, \($original));
-model('RealmFile')->create_with_content({
-    path => my($f3) = Bivio::Type::BlogFileName
-	->to_absolute(random_string(14, [0..9]), 1)
-}, \($original));
-model('RealmFile')->create_with_content({
-    path => my($f4) = '/Blogs/'.random_string(),
-}, \($original));
+my($cases) = [map(
+    {
+	my($type, $path, $expect_change) = @$_;
+	map(+{
+	    path => model('RealmFile')->create_with_content(
+		{path => b_use("Type.$type")->to_absolute($path, $_)},
+		\($original),
+	    )->get('path'),
+	    expect_change => $expect_change,
+	}, 0 .. 1),
+    }
+    [FilePath => random_string(), 0],
+    [WikiName => random_string(), 1],
+    [BlogFileName => Type_DateTime()->now_as_file_name, 1],
+)];
+my($update) = $original;
+$update =~ s/(?=arg)/value=/g;
+$update =~ s/\^(?=\&)/\@/g;
 [
-    map((
-	inline_case(
-	    sub {
-		ShellUtil_Wiki()->main(qw(-r fourem upgrade_content));
-		return 1;
-	    }
-	),
-	sub {
-	    return model(class());
-	} => [
-	    {
-		method => 'load',
-		compute_return => sub {
-		    my($case) = @_;
-		    return [${$case->get('object')->get_content}];
-		},
-		compute_params => sub {
-		    my(undef, $params) = @_;
-		    return [{path => $params->[0]}];
-		},
-	    } => [
-		$f0 => $original,
-		$f1 => $expected,
-		$f2 => $expected,
-		$f3 => $expected,
-		$f4 => $original,
-	    ],
-	],
-    ), (1..1)),
+    [qw(-realm wiki_bunit upgrade_content)] => sub {
+	foreach my $c (@$cases) {
+	    assert_equals(
+		$c->{expect_change} ? $update : $original,
+		model('RealmFile', {path => $c->{path}})->get_content,
+		$c->{path},
+	    );
+	}
+	return 1;
+    },
 ];
