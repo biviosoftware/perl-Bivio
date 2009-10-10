@@ -22,8 +22,8 @@ Bivio::IO::Config->register(my $_CFG = {
 	sub {0},
     ),
     filter_spam => 0,
+    duplicate_threshold_seconds => 3600,
 });
-my($_ONE_HOUR_SECONDS) = 3600;
 
 sub execute_ok {
     my($self) = @_;
@@ -209,20 +209,23 @@ sub _ignore {
 sub _ignore_duplicate {
     my($self) = @_;
     my($rml) = $self->new_other('RealmMailList');
+    my($mi) = $self->get('mail_incoming');
+    return undef
+	if $self->req->if_test(
+	sub {b_debug($mi->get('header') !~ /X-Bivio-Mail-Test/i)});
     return undef
 	unless $rml->unsafe_load_this_or_first
 	&& _ignore_duplicate_threshold(
 	    $rml->get('RealmFile.modified_date_time'));
-#TODO: Should decode body
-    return $_I->new($rml->get_rfc822)->get_body
-	eq $self->get('mail_incoming')->get_body
-        ? 'duplicate' : undef;
+#TODO: Should we decode body?
+    return $_I->new($rml->get_rfc822)->get_body eq $mi->get_body
+	? 'duplicate' : undef;
 }
 
 sub _ignore_duplicate_threshold {
     my($prev) = @_;
     return $_DT->compare(
-	$_DT->add_seconds($prev, $_ONE_HOUR_SECONDS),
+	$_DT->add_seconds($prev, $_CFG->{duplicate_threshold_seconds}),
 	$_DT->now,
     ) > 0;
 }
