@@ -34,6 +34,7 @@ my($headers) = sub {
 	$header->('From', $from),
 	$header->('To', $to),
 	'Message-Id' => next_message_id(),
+	'X-Bivio-Mail-Test' => 1,
 	Date => $date->(),
 	Subject => ref($ref) ? 'Re: ' . $ref->unsafe_get_header('Subject')
 	    : $ref ? "$ref " . random_string() . ' & co'
@@ -61,9 +62,9 @@ my($send_and_verify_mail) = sub {
 my($check_for_loop) = sub {
     sleep(10);
     visit_uri('/mail_forum/mail');
-    Bivio::Die->die('Found duplicate message')
-	    if get_table_row('_anon#0', 0)->{''}->get('text')
-		eq get_table_row('_anon#0', 1)->{''}->get('text');
+    b_die('Found duplicate message')
+	if get_table_row('_anon#0', 0)->{''}->get('text')
+	eq get_table_row('_anon#0', 1)->{''}->get('text');
     return;
 };
 my($msg, $subject) = $send_and_verify_mail->(qw(1.eml user1 forum),
