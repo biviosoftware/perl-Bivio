@@ -24,6 +24,7 @@ my($_TYPES) = [map(b_use("Type.$_"), qw(WikiName BlogFileName))];
 my($_ER) = b_use('Action.EmptyReply');
 my($_AA) = b_use('Action.Acknowledgement');
 my($_R) = b_use('Agent.Request');
+my($_PKG) = __PACKAGE__;
 
 sub TYPE_LIST {
     return @$_TYPES;
@@ -101,6 +102,12 @@ sub unsafe_load_error_list {
 sub validate_error {
     my($self, $entity, $message, $wiki_state) = @_;
     my($req) = $wiki_state && $wiki_state->{req} || $self->req;
+    if ($_D->is_blessed($message)
+        and my $prev_err = $message->get('attrs')->{$_PKG}
+    ) {
+	$message = $prev_err->{message};
+	$entity = $prev_err->{entity};
+    }
     $message = $_A->format_args(@$message)
 	if ref($message) eq 'ARRAY';
     $message = $_FCT->facade_text_for_object(
@@ -130,8 +137,10 @@ sub validate_error {
 	$entity ? ($entity, ': ') : (),
 	$message,
     );
-    b_die($msg)
-	if $wiki_state->{die_on_validate_error};
+    $_D->throw(DIE => {
+	msg => $msg,
+	$_PKG => $err,
+    }) if $wiki_state && $wiki_state->{die_on_validate_error};
     if (ref($self)) {
 	my($re) = $self->get('ignore_regexp');
 	return
