@@ -26,11 +26,41 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.26  2009/10/09 05:05:06  nagler
+  Release notes:
+  * Bivio::Agent::Request
+    added if_test
+  * Bivio::IO::CallingContext
+    addec new_from_file_line
+  * Bivio::Test::WikiText
+    added check_return to trim_space
+  * Bivio::UI::XHTML::Widget::WikiText::Embed
+    call render_error
+    parse_args may return false iwc bail immediately
+  * Bivio::UI::XHTML::Widget::WikiText::Include
+    call render_error
+    parse_args may return false iwc bail immediately
+  * Bivio::UI::XHTML::Widget::WikiText::Macro
+    NEW
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    call render_error
+    parse_args may return false iwc bail immediately
+  * Bivio::UI::XHTML::Widget::WikiText::SWFObject
+    Vista requires wmode=opaque
+    cleaned up code a bit more
+  * Bivio::UI::XHTML::Widget::WikiText::Widget
+    call render_error
+    parse_args may return false iwc bail immediately
+  * Bivio::UI::XHTML::Widget::WikiText
+    support for macros
+  * Bivio::UI::XHTML::Widget::WikiTextTag
+    better error handling
+
   Revision 8.25  2009/10/08 16:27:25  aviggio
   * Bivio::Biz::Action::WikiValidator
     renamed unsafe_get_self to get_current_or_new
