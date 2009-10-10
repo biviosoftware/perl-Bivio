@@ -40,9 +40,12 @@ sub _wiki {
     return $req->with_realm(
 	$_FC->get_value('site_realm_id', $req),
 	sub {
-	    my($wn) = $_T->get_from_source($req)
-		->unsafe_get_value(
-		    'ActionError.wiki_name', $self->get('status'));
+	    my($wn);
+	    foreach my $try ($self->get('status'), 'default') {
+		last
+		    if $wn = $_T->get_from_source($req)
+		    ->unsafe_get_value('ActionError.wiki_name', $try);
+	    }
 	    return
 		unless $wn;
 	    $req->put(path_info => $wn);
