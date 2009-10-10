@@ -495,14 +495,15 @@ sub run_unit {
 }
 
 sub _assert_expect {
-    my($invert, $self, $expect, $actual) = @_;
+    my($invert, $self, $expect, $actual, $comment) = @_;
     my($m) = $self->my_caller eq 'builtin_assert_equals'
 	? 'nested_differences' : 'nested_contains';
     my($res) = $_R->$m($expect, $actual);
+    $comment = defined($comment) ? "[$comment] " : '';
     Bivio::Die->throw_quietly(
 	DIE => $invert
-	    ? "unexpected match: ${$_R->to_string($expect)} == ${$_R->to_string($actual)}"
-	    : "expected != actual:\n$$res",
+	    ? "${comment}unexpected match: ${$_R->to_string($expect)} == ${$_R->to_string($actual)}"
+	    : "${comment}expected != actual:\n$$res",
     ) if $invert xor $res;
     return 1;
 }
