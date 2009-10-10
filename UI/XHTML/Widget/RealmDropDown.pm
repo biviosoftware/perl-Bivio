@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::RealmDropDown;
 use strict;
@@ -73,8 +73,10 @@ sub _curr_realm {
 
 sub _one_choice {
     my($self, $source) = @_;
+    my($choices) = $self->internal_choices($source);
     return $source->req(qw(auth_realm type))->equals($self->get('realm_type'))
-	&& @{$self->internal_choices($source)} == 1;
+	&& @$choices == 1
+	&& $choices->[0] eq $source->req(qw(auth_realm owner_name));
 }
 
 1;
