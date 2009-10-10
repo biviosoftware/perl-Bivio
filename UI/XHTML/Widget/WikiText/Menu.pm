@@ -41,14 +41,12 @@ sub render_html {
     );
     return
 	unless $proto;
-    # load here to avoid subclass redefined error
-    my($_WT) = b_use('XHTMLWidget.WikiText');
     my($class) =  $args->{attrs}->{class} || 'bmenu';
     my($value) =  $args->{attrs}->{value};
     my($prefix) = $args->{attrs}->{b_selected_label_prefix};
     if ($args->{tag} eq 'b-menu-target') {
         my($die) = Bivio::Die->catch_quietly(sub {
-            my($v) = $_WT->prepare_html(
+            my($v) = $args->{proto}->prepare_html(
                 $args->{realm_id},
                 $args->{req}->get('path_info'),
                 $args->{task_id},
@@ -57,10 +55,10 @@ sub render_html {
             ($v->{value}) = grep($_ && /^\@b-menu-source/,
                                  split(/\r?\n/, $v->{value}));
             $v->{value} ||= '';
-            $_WT->render_html($v);
+            $args->{proto}->render_html($v);
             return;
         });
-        #b-menu-source is now pre-rendered and therefore on the req
+        # b-menu-source is now pre-rendered and therefore on the req
         return $die ? '' : $args->{req}->get_or_default($proto->TARGET, '');
     }
     my($links) = _parse_csv($value, $args);
@@ -110,7 +108,7 @@ sub _parse_csv {
     my($value, $args) = @_;
     return
 	unless my $rf = $args->{proto}
-        ->unsafe_load_wiki_data("$value$_SUFFIX", $args);
+        ->unsafe_load_wiki_data($value . $_SUFFIX, $args);
     my($csv) = b_use('ShellUtil.CSV')->parse_records($rf->get_content);
     $args = {
 	%$args,

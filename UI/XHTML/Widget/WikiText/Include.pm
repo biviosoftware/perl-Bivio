@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'XHTMLWidget.WikiTextTag';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_CC) = b_use('IO.CallingContext');
 
 sub handle_register {
     return [qw(b-include)];
@@ -20,7 +21,11 @@ sub parse_tag_start {
 	    $args->{attrs}->{file} . '.bwiki',
 	    $state,
 	);
-    $state->{proto}->include_content($rf->get_content, $state);
+    $state->{proto}->include_content(
+	$rf->get_content,
+	$_CC->new_from_file_line($rf->get('path'), 0),
+	$state,
+    );
     return;
 }
 

@@ -361,8 +361,13 @@ sub do_parse_lines {
 # until eval.  render_error
 #rjn: need to be able to set the line when parsing a content item
     while () {
+	my($line) = shift(@{$state->{lines}});
 	return
-	    unless defined(my $line = shift(@{$state->{lines}}));
+	    unless defined($line);
+	if ($_CC->is_blessed($line)) {
+	    $state->{calling_context} = $line;
+	    next;
+	}
 	$state->{calling_context} = $state->{calling_context}->inc_line(1);
 	return
 	    unless $op->($line);
@@ -371,11 +376,13 @@ sub do_parse_lines {
 }
 
 sub include_content {
-    my($proto, $content, $state) = @_;
+    my($proto, $content, $calling_context, $state) = @_;
     unshift(
 	@{$state->{lines}},
 	split(/\r?\n/, ref($content) ? $$content : $content),
+	ref($state->{calling_context}) ? $state->{calling_context} : (),
     );
+    $state->{calling_context} = $calling_context;
     return;
 }
 
@@ -551,7 +558,6 @@ sub render_html {
     $args->{task_id} = _task_id($args)
 	unless ref($args->{task_id});
     $args->{realm_id} ||= $args->{req}->get('auth_id');
-    $args->{calling_context} ||= $_CC->new_from_file_line($args->{path}, 0);
     unless ($args->{realm_name}) {
 	my($ro) = Bivio::Biz::Model->new($args->{req}, 'RealmOwner');
 	$args->{realm_name} = $ro->get('name')
@@ -567,7 +573,11 @@ sub render_html {
 	attrs => [],
 	lines => [],
     };
-    $proto->include_content(\$args->{value}, $state);
+    $proto->include_content(
+	\$args->{value},
+	$args->{calling_context} || $_CC->new_from_file_line($args->{path}, 0),
+	$state,
+    );
     return _eval($state, _parse($state));
 }
 
@@ -636,7 +646,7 @@ sub _eval_tag {
     my($tag) = $args->{tag};
     my($attrs) = {%{$args->{attrs}}};
     return $_MY_TAGS->{$tag}
-	? _eval_tag_custom($state, $tag, $attrs)
+	? _eval_tag_custom($state, $args)
 	: $_EMPTY->{$tag} ? ''
 	: _eval($state, $args) . "\n"
 	if $state->{want_plain_text};
@@ -650,7 +660,7 @@ sub _eval_tag {
 	$attrs->{$k}
 	    = $state->{proto}->internal_format_uri($attrs->{$k}, $state);
     }
-    return _eval_tag_custom($state, $tag, $attrs)
+    return _eval_tag_custom($state, $args)
 	if $_MY_TAGS->{$tag};
     my($start) = join(
 	' ',
@@ -673,16 +683,17 @@ sub _eval_tag {
 }
 
 sub _eval_tag_custom {
-    my($state, $tag, $attrs) = @_;
+    my($state, $args) = @_;
     my($die);
+    my($tag) = $args->{tag};
     my($res) = Bivio::Die->catch_quietly(
 	sub {
 	    my($method) = $state->{want_plain_text} ? 'render_plain_text'
 		: 'render_html';
 	    return $_MY_TAGS->{$tag}->$method({
-		%{$state->{args}},
-		tag => $tag,
-		attrs => $attrs,
+		%$state,
+		%$args,
+		state => $state,
 	    });
 	},
 	\$die,
@@ -1123,8 +1134,11 @@ sub _parse_tag_custom {
 	},
 	\$die,
     );
-    $state->{proto}->render_error($tag, $die, $state)
-	if $die;
+    $state->{proto}->render_error(
+	$tag,
+	$die,
+	$state,
+    ) if $die;
     return 1;
 }
 
@@ -1132,8 +1146,11 @@ sub _parse_tag_end {
     my($state, $line) = @_;
     return
 	unless my $tag = _parse_tag_ok($state, \$line);
-    return $state->{proto}->render_error($tag, 'spurious end tag', $state)
-	unless _parse_stack_in_tag($state, qr{^$tag$});
+    return $state->{proto}->render_error(
+	'@/' . $tag,
+	'spurious end tag',
+	$state,
+    ) unless _parse_stack_in_tag($state, qr{^$tag$});
     _parse_stack_pop($state, $tag)
 	until _parse_stack_top($state, $tag);
     _parse_stack_pop($state, $tag);

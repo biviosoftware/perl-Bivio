@@ -95,7 +95,7 @@ sub _op_call {
     }{
 	defined($values->{$1}) ? $values->{$1} : "\@$1"
     }exsg;
-    $state->{proto}->include_content($content, $state);
+    $state->{proto}->include_content($content, $def->{calling_context}, $state);
     return;
 }
 
@@ -103,6 +103,7 @@ sub _op_def {
     my($proto, $args, $state, $attrs) = @_;
     return
 	unless shift->parse_args([qw(name params)], $args);
+    my($cc) = $state->{proto}->parse_calling_context($state);
     return
 	unless my $lines = _lines($args, $state, $args->{line});
     return
@@ -111,7 +112,7 @@ sub _op_def {
     return $state->{proto}->render_error($name, 'macro already defined', $state)
 	if %$def;
     %$def = (
-	calling_context => $state->{proto}->parse_calling_context($state),
+	calling_context => $cc,
 	name => $name,
 	content => join("\n", @$lines),
 	params => [sort(
