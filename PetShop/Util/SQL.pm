@@ -683,9 +683,6 @@ EOF
 dummy image file
 EOF
     });
-    $self->realm_file_create($_WDN->to_absolute('include.bwiki', 1), <<'EOF');
-included text
-EOF
     $self->top_level_forum('wiki_bunit', [$self->SITE_ADM], []);
     return;
 }
