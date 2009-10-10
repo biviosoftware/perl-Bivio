@@ -14,6 +14,17 @@ sub calling_context_get {
     return shift->get(@_);
 }
 
+sub equals {
+    my($self, $that) = @_;
+    return 0
+	unless $self->is_blessed($that);
+    foreach my $f (qw(file line)) {
+	return 0
+	    unless $self->get($f) eq $that->get($f);
+    }
+    return 1;
+}
+
 sub get {
     my($self) = shift;
     my($fields) = $self->[$_IDI]->[0];
@@ -28,9 +39,17 @@ sub get_top_package_file_line_sub {
     return @{shift->[$_IDI]->[0]}{qw(package file line sub)};
 }
 
+sub inc_line {
+    my($self, $inc) = @_;
+    return $self->new_from_file_line(
+	$self->get('file'),
+	$self->get('line') + $inc,
+    );
+}
+
 sub internal_as_string {
     my($self) = @_;
-    return [$self->get(qw(file line))];
+    return $self->get(qw(file line));
 }
 
 sub new_from_caller {
