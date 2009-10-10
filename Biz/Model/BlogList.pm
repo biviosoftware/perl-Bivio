@@ -68,6 +68,7 @@ sub internal_initialize {
         version => 1,
 	can_iterate => 1,
         auth_id => 'RealmFile.realm_id',
+	as_string_fields => [qw(RealmFile.realm_id RealmFile.path)],
         primary_key => [{
 	    name => 'path_info',
 	    type => 'BlogFileName',
@@ -117,7 +118,19 @@ sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{path_info} = $_BFN->from_literal_or_die($row->{path_info});
     $row->{text} = ${$_RF->get_content($self, 'RealmFile.', $row)};
-    ($row->{title}, $row->{body}) = $_BC->split(\$row->{text});
+    my($res) = [$_BC->split(\$row->{text})];
+    if (grep(ref($_), @$res)) {
+	b_warn(
+	    $row->{'RealmFile.realm_id'},
+	    ',',
+	    $row->{'RealmFile.path'},
+	    ': BlogContent->split error: ',
+	    $res,
+	);
+	$self->req->if_test(sub {b_die('file format error')});
+	return 0;
+    }
+    ($row->{title}, $row->{body}) = @$res;
     $row->{query} = undef;
     return 1;
 }
