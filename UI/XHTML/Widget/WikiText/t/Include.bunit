@@ -1,9 +1,8 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-WikiText({
-    realm => 'site-help',
-});
-req()->set_realm_and_user('site-help');
+WikiText();
+wiki_data_delete_all();
+wiki_data_create('include.bwiki', 1, 'included text');
 [
     '@b-include file=include' => qq{<p class="b_prose">included text\n</p>},
 ];

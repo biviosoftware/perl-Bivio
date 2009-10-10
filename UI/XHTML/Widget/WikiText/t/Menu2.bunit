@@ -41,8 +41,8 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       "/fourem/\w+/Aa" Aa
-       selected "/fourem/\w+/Ab" Ab
+       "/wiki_bunit/\w+/Aa" Aa
+       selected "/wiki_bunit/\w+/Ab" Ab
        "/\w+/C" Ac
     ))]}},
     inline_case(sub {wiki_uri_to_req('Ca'); 1}),
@@ -51,9 +51,9 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       selected "/fourem/\w+/Ca" Ba
-       b_submenu selected "/fourem/\w+/Ca" Ca "/fourem/\w+/Cb" Cb
-       "/fourem/\w+/Bb" Bb <img src="/fourem/\w+/x.gif"
+       selected "/wiki_bunit/\w+/Ca" Ba
+       b_submenu selected "/wiki_bunit/\w+/Ca" Ca "/wiki_bunit/\w+/Cb" Cb
+       "/wiki_bunit/\w+/Bb" Bb <img src="/wiki_bunit/\w+/x.gif"
     ))]}},
     inline_case(sub {wiki_uri_to_req('Ab'); 1}),
     [{
@@ -61,11 +61,11 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       "/fourem/\w+/Index" Index
-       selected "/fourem/\w+/Aa" A
-       b_submenu "/fourem/\w+/Aa" Aa "/fourem/\w+/Ab" Ab "/\w+/C" Ac
-       "/fourem/\w+/Ca" B
-       b_submenu "/fourem/\w+/Ca" Ba "/fourem/\w+/Bb" Bb
+       "/wiki_bunit/\w+/Index" Index
+       selected "/wiki_bunit/\w+/Aa" A
+       b_submenu "/wiki_bunit/\w+/Aa" Aa "/wiki_bunit/\w+/Ab" Ab "/\w+/C" Ac
+       "/wiki_bunit/\w+/Ca" B
+       b_submenu "/wiki_bunit/\w+/Ca" Ba "/wiki_bunit/\w+/Bb" Bb
     ))]}},
     inline_case(sub {wiki_uri_to_req('Foo'); 1}),
     [{
@@ -73,9 +73,9 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       "/fourem/\w+/Index" Index
-       "/fourem/\w+/Aa" A
-       selected "/fourem/\w+/Ca" B
+       "/wiki_bunit/\w+/Index" Index
+       "/wiki_bunit/\w+/Aa" A
+       selected "/wiki_bunit/\w+/Ca" B
     ))]}},
     inline_case(sub {wiki_uri_to_req('Cb'); 1}),
     [{
@@ -83,9 +83,9 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       "/fourem/\w+/Index" Index
-       "/fourem/\w+/Aa" A
-       selected "/fourem/\w+/Ca" B
+       "/wiki_bunit/\w+/Index" Index
+       "/wiki_bunit/\w+/Aa" A
+       selected "/wiki_bunit/\w+/Ca" B
     ))]}},
     [{
 	value => '@b-menu value=deviance',
