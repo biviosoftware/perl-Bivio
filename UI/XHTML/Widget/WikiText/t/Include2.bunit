@@ -1,0 +1,14 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText({die_on_validate_error => 1});
+wiki_data_delete_all();
+wiki_data_create('error1.bwiki', 0, <<'EOF');
+This text
+is fine
+but not
+@this-tag
+EOF
+[
+    '@b-include file=error1' => qr{/WikiData/error1.bwiki, line 4: \@this-tag:},
+    '@b-include file=not-found' => qr{<inline>, line 1: not-found.bwiki:},
+];

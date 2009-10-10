@@ -1,0 +1,15 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText({die_on_validate_error => 1});
+[
+    <<'IN' => qr{<inline>, line 6: \@here:},
+@b-def name=m_1
+multi line
+macro
+has
+error
+@here
+@/b-def
+@b-call name=m_1
+IN
+];
