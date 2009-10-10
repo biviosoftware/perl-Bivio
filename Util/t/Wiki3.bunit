@@ -60,7 +60,7 @@ Phasellus nec
 @b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265
 END_EXPECT
 	],
-	_check_path => [
+	internal_check_path => [
 	    'WikiName' => undef,
 	    'BlogPost' => undef,
 	    '/Wiki/WikiName' => 1,
