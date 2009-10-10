@@ -100,7 +100,7 @@ sub unsafe_load_error_list {
 
 sub validate_error {
     my($self, $entity, $message, $wiki_state) = @_;
-    my($req) = $wiki_state->{req} || $self->req;
+    my($req) = $wiki_state && $wiki_state->{req} || $self->req;
     $message = $_A->format_args(@$message)
 	if ref($message) eq 'ARRAY';
     $message = $_FCT->facade_text_for_object(
@@ -116,8 +116,9 @@ sub validate_error {
 	message => $message,
     };
     if ($wiki_state) {
-	$err->{path} = $wiki_state->{path};
-	$err->{line_num} = $wiki_state->{line_num},
+	my($cc) = $wiki_state->{calling_context};
+	$err->{path} = $cc->get('file'),
+	$err->{line_num} = $cc->get('line'),
     }
     $err->{path} ||= $self->unsafe_get('path');
     _trace($err) if $_TRACE;
