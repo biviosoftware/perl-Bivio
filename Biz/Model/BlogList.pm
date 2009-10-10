@@ -12,6 +12,7 @@ my($_DT) = b_use('Type.DateTime');
 my($_RF) = b_use('Model.RealmFile');
 my($_WT) = b_use('XHTMLWidget.WikiText');
 my($_P) = b_use('Search.Parser');
+my($_CC) = b_use('IO.CallingContext');
 
 sub PAGE_SIZE {
     return 5;
@@ -151,7 +152,8 @@ sub render_html {
 	name => $self->get('path_info'),
 	req => $self->get_request,
 	task_id => undef,
-	line_num => 1,
+	calling_context =>
+	    $_CC->new_from_file_line($self->get('RealmFile.path'), 1),
 	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id path)),
 	no_auto_links => 1,
     });
