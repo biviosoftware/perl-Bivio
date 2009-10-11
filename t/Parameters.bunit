@@ -1,0 +1,27 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+my($simple) = class()->new([
+    'p1',
+    [qw(gender Gender), Type_Gender()->FEMALE],
+    [qw(*repeat Integer), sub {99}],
+]);
+my($error);
+[
+    new => [
+	[['param1']] => 'Parameters(param1)',
+	[['Boolean']] => 'Parameters(Boolean)',
+	[['+Boolean']] => 'Parameters(+Boolean)',
+	[[[qw(?bool Boolean)], '*String']] => 'Parameters(?bool,*String)',
+	[[qw(+Boolean +String)]] => qr{Boolean: only the last.*repeat},
+	[[qw(?Boolean +String)]] => qr{String: param must be optional},
+	[['NoSuchType']] => qr{not.found}i,
+    ],
+    parameters => [
+	[['value1'], $simple] => [class() => {
+	    p1 => 'value1',
+	    gender => Type_Gender()->FEMALE,
+	    repeat => [99],
+	}],
+    ],
+];
