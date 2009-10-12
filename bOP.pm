@@ -26,11 +26,84 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.28  2009/10/12 04:27:47  nagler
+  * Bivio::Agent::Request
+    doc
+  * Bivio::Auth::RealmType
+    added is_group
+  * Bivio::Biz::Action::RealmMail
+    new interface to set_headers_for_list_send
+  * Bivio::Biz::Action::WikiValidator
+    use calling_context
+    when die_on_validate_error is true, make sure errors don't cascade
+    through catches in WikiText
+  * Bivio::Biz::Model::BlogList
+    use calling_context when calling WikiText
+    check error returned by BlogContent->split
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    made duplicate_threshold_seconds configurable
+    if_test, then duplicates NOT ignored unless X-Bivio-Mail-Test is set
+    in header of message
+  * Bivio::Die
+    ensure $attrs->{message} is always defined
+  * Bivio::IO::CallingContext
+    added equals
+    fixed internal_as_string
+    added inc_line
+  * Bivio::Mail::Outgoing
+    new interface to set_headers_for_list_send
+  * Bivio::Parameters
+    NEW
+  * Bivio::PetShop::Util::SQL
+    create wiki_bunit forum
+    include.bwiki is created on demand
+    use ROOT for wiki_bunit
+  * Bivio::Test::Unit
+    added comment option to assert_*
+  * Bivio::Test::WikiText
+    Added ability to set is_public in init args
+    Added wiki_data_create & wiki_data_delete_all
+    use TestUser->ADM for user
+  * Bivio::TypeError
+    rmpod
+    fpc
+  * Bivio::UI::XHTML::Widget::WikiText::Embed
+    use parameters()
+  * Bivio::UI::XHTML::Widget::WikiText::Include
+    include_content requires IO.CallingContext so errors have correct line numbers
+    use parameters()
+  * Bivio::UI::XHTML::Widget::WikiText::Macro
+    include_content requires IO.CallingContext so errors have correct line numbers
+    use parameters()
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    use calling_context to store file/line
+    include_content requires IO.CallingContext so errors have correct line numbers
+    use parameters()
+  * Bivio::UI::XHTML::Widget::WikiText::SWFObject
+    use parameters()
+  * Bivio::UI::XHTML::Widget::WikiText::Widget
+    use parameters()
+  * Bivio::UI::XHTML::Widget::WikiText
+    use calling_context to store file/line
+    include_content requires IO.CallingContext so errors have correct line numbers
+    moved options to $state
+    if render_html or render_plain_text return undef, use ''
+  * Bivio::UI::XHTML::Widget::WikiTextTag
+    added parameters() and parameters_error()
+    added default render_html()
+    removed parse_args
+  * Bivio::UNIVERSAL
+    added parameters() which calls Bivio.Parameters
+  * Bivio::Util::Wiki
+    share code between two upgrade paths
+  * Bivio/t/Parameters
+    NEW
+
   Revision 8.27  2009/10/10 00:30:58  nagler
   * Bivio::Biz::Action::Error
     use ActionError.wiki_name.default if status not found in facade
