@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_NULL) = b_use('Bivio.TypeError')->NULL;
 my($_TOO_MANY) = $_NULL->TOO_MANY;
+my($_NOT_FOUND) = $_NULL->NOT_FOUND;
 
 sub internal_as_string {
     my($decls) = shift->[$_IDI];
@@ -32,13 +33,18 @@ sub process_via_universal {
     my($proto, $caller_proto, $argv, $self, $error) = @_;
     $self ||= _self($proto, $caller_proto, (caller(2))[3]);
     my($decls) = $self->[$_IDI];
-    my($args) = ref($argv) eq 'HASH' ? _hash($decls, $argv)
-	: @$argv == 1 && ref($argv->[0]) eq 'HASH' ? _hash($decls, $argv->[0])
-	: _positional($decls, $argv, $error) || return $caller_proto;
+    my($args) = ref($argv) eq 'HASH'
+	? _hash($decls, $argv, $error)
+	: @$argv == 1 && ref($argv->[0]) eq 'HASH'
+	? _hash($decls, $argv->[0], $error)
+	: _positional($decls, $argv, $error);
+    return $caller_proto
+	unless $args;
     foreach my $decl (@$decls) {
+	my($name) = $decl->{name};
 	if ($decl->{repeatable}) {
 	    my($got_one);
-	    my($values) = $args->{$decl->{name}} || [];
+	    my($values) = $args->{$name} || [];
 	    @$values = ()
 		if @$values == 1 && !defined($values->[0]);
 	    foreach my $value (@$values) {
@@ -48,18 +54,15 @@ sub process_via_universal {
 	    }
 	    return $caller_proto
 		unless $got_one
-		|| _default(
-		    \$args->{$decl->{name}}, $decl, $caller_proto, $error);
+		|| _default(\$args->{$name}, $decl, $caller_proto, $error);
 	}
-	elsif (exists($args->{$decl->{name}})) {
+	elsif (exists($args->{$name})) {
 	    return $caller_proto
-		unless _value(
-		    \$args->{$decl->{name}}, $decl, $caller_proto, $error);
+		unless _value(\$args->{$name}, $decl, $caller_proto, $error);
 	}
 	else {
 	    return $caller_proto
-		unless _default(
-		    \$args->{$decl->{name}}, $decl, $caller_proto, $error);
+		unless _default(\$args->{$name}, $decl, $caller_proto, $error);
 	}
     }
     return ($caller_proto, $args);
@@ -130,13 +133,19 @@ sub _error {
 }
 
 sub _hash {
-    my($decls, $hash) = @_;
+    my($decls, $hash, $error) = @_;
     $hash = {%$hash};
     if ((my $repeat = $decls->[$#$decls])->{repeatable}) {
 	$hash->{$repeat->{name}} = [$hash->{$repeat->{name}}]
 	    if exists($hash->{$repeat->{name}})
 	    && ref($hash->{$repeat->{name}}) ne 'ARRAY';
     }
+    my($extra) = [grep({
+	my($k) = $_;
+	!grep($k eq $_->{name}, @$decls);
+    } keys(%$hash))];
+    return _error(undef, {name => $extra->[0]}, $_NOT_FOUND, $error)
+	if @$extra;
     return $hash;
 }
 
