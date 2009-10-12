@@ -26,11 +26,27 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.30  2009/10/12 22:44:44  nagler
+  * Bivio::Biz::Model::BlogList
+    Set is_inline_text explicitly in render_html
+  * Bivio::Mail::Outgoing
+    $np => $bp
+  * Bivio::Test::ListModel
+    save_excursion around map_rows so cursor preserved
+  * Bivio::UI::View::CSS
+    don't text-indent dd|li|blockquote|td p.b_prose
+  * Bivio::UI::XHTML::Widget::WikiText::Macro
+    compile params definition in @b-def
+  * Bivio::UI::XHTML::Widget::WikiText
+    allow callers to override is_inline_text in render_html
+    set is_inline_text when rendering title
+    fixed $_INLINE_RE problem with paragraphing
+
   Revision 8.29  2009/10/12 05:30:50  nagler
   * Bivio::UI::XHTML::Widget::WikiText::Include
     Include my.bwiki during pre_parse, if it exists
