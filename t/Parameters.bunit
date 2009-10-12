@@ -23,8 +23,8 @@ my($error);
 	    gender => Type_Gender()->FEMALE,
 	    repeat => [99],
 	}],
-	[[qw(v1 male 1 2 3)], $simple] => [class() => {
-	    p1 => 'v1',
+	[[Type_Month()->MAY, qw(male 1 2 3)], $simple] => [class() => {
+	    p1 => Type_Month()->MAY,
 	    gender => Type_Gender()->MALE,
 	    repeat => [1, 2, 3],
 	}],
