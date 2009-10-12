@@ -1,0 +1,23 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    class_name => class('XHTMLWidget.Wiki'),
+    realm => 'wiki_bunit',
+    user => 'root',
+    view_pre_compile => sub {
+	req()->put(path_info => 'SomePage');
+	class('Action.WikiView')->execute_prepare_html(req());
+	return;
+    },
+});
+req()->set_realm_and_user('wiki_bunit');
+model('RealmFile')->delete_all;
+foreach my $x (
+    [class('Type.WikiName')->to_absolute('SomePage') => "text after"],
+    [class('Type.WikiDataName')->to_absolute('my.bwiki') => "\@p\ntext before"],
+) {
+    model('RealmFile')->create_with_content({path => $x->[0]}, \$x->[1]);
+}
+[
+    [] => qq{<div class="wiki"><p>text before\ntext after\n</p></div>},
+];
