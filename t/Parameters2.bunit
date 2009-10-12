@@ -20,5 +20,9 @@ Unit();
 	    [{p1 => undef, p2 => ['january']}] => [0, [Type_Month()->JANUARY]],
 	    [{p1 => 1, p2 => []}] => qr{p2:.*empty},
 	],
+	s3 => [
+	    [] => [[Type_Month()->MARCH]],
+	    january => [[Type_Month()->JANUARY]],
+	],
     ],
 ];
