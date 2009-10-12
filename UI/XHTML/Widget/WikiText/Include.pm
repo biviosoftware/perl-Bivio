@@ -6,6 +6,7 @@ use Bivio::Base 'XHTMLWidget.WikiTextTag';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CC) = b_use('IO.CallingContext');
+my($_SUFFIX) = '.bwiki';
 
 sub handle_register {
     return [qw(b-include)];
@@ -16,11 +17,25 @@ sub parse_tag_start {
     my($proto, $args, $attrs) = shift->parameters(@_);
     return
 	unless $proto;
-    my($state) = $args->{state};
+    _load($args->{state}, $attrs->{file}, 0);
+    return;
+}
+
+sub pre_parse {
+    my($proto, $state) = @_;
+    return
+	if $state->{is_inline_text};
+    _load($state, 'my', 1);
+    return;
+}
+
+sub _load {
+    my($state, $base, $ignore_not_found) = @_;
     return
 	unless my $rf = $state->{proto}->unsafe_load_wiki_data(
-	    $args->{attrs}->{file} . '.bwiki',
+	    $base . $_SUFFIX,
 	    $state,
+	    $ignore_not_found,
 	);
     $state->{proto}->include_content(
 	$rf->get_content,
