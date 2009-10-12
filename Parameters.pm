@@ -30,8 +30,8 @@ sub new {
 }
 
 sub process_via_universal {
-    my($proto, $caller_proto, $argv, $self, $error) = @_;
-    $self ||= _self($proto, $caller_proto, (caller(2))[3]);
+    my($proto, $caller_proto, $argv, $self, $error, $sub) = @_;
+    $self ||= _self($proto, $caller_proto, $sub || (caller(2))[3]);
     my($decls) = $self->[$_IDI];
     my($args) = ref($argv) eq 'HASH'
 	? _hash($decls, $argv, $error)
@@ -125,9 +125,9 @@ sub _error {
 	$type_error->get_long_desc,
     ) unless $error;
     %$error = (
-	name => $decl->{name},
-	value => $value,
-	error => $type_error,
+	param_name => $decl->{name},
+	param_value => $value,
+	type_error => $type_error,
     );
     return;
 }
@@ -135,7 +135,7 @@ sub _error {
 sub _hash {
     my($decls, $hash, $error) = @_;
     $hash = {%$hash};
-    if ((my $repeat = $decls->[$#$decls])->{repeatable}) {
+    if (@$decls and (my $repeat = $decls->[$#$decls])->{repeatable}) {
 	$hash->{$repeat->{name}} = [$hash->{$repeat->{name}}]
 	    if exists($hash->{$repeat->{name}})
 	    && ref($hash->{$repeat->{name}}) ne 'ARRAY';
