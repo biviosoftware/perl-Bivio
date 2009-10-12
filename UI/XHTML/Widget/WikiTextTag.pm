@@ -10,33 +10,47 @@ sub ACCEPTS_CHILDREN {
     return 0;
 }
 
-sub assert_no_content {
-    my(undef, $args) = @_;
-    b_die($args->{content}, ': does not accept content')
-        if defined($args->{content});
+sub parameters {
+    my($proto, $args) = @_;
+    return shift->SUPER::parameters(@_)
+	if @_ > 2;
+    my(undef, $attrs) = shift->SUPER::parameters(
+	$args->{attrs},
+	undef,
+	$args->{state} ? (my $error = {}) : undef,
+	(caller(1))[3],
+    );
+    return $proto->parameters_error($error, $args)
+	if %$error;
+    return ($proto, $args, $attrs);
+}
+
+sub parameters_error {
+    my($proto, $error, $args) = @_;
+    my($te) = $error->{type_error};
+    return $proto->render_error(
+	$error->{param_name},
+	(!defined($error->{param_value}) && $te->eq_not_found
+	    ? 'unexpected attribute'
+#TODO: look up errors in facade
+	    : "invalid attribute value (@{[$te->get_long_desc]})"
+	) . " passed to \@$args->{tag}",
+	$args->{state},
+    );
+}
+
+sub render_error {
+    shift;
+    my(undef, undef, $args) = @_;
+    return $args->{proto}->render_error(@_);
+}
+
+sub render_html {
     return;
 }
 
-sub parse_args {
-    my($proto, $expected_attrs, $args) = @_;
-    my($attrs) = {%{$args->{attrs}}};
-    foreach my $ea (@{[@$expected_attrs]}) {
-	delete($attrs->{$ea});
-    }
-    if (%$attrs) {
-	b_die($attrs, ': unexpected attributes passed to ', $args->{tag})
-	    unless my $state = $args->{state};
-	return $state->{proto}->render_error(
-	    join(' ', sort(keys(%$attrs))),
-	    "unexpected attributes passed to \@$args->{tag}",
-	    $state,
-	);
-    }
-    return ($proto, $args);
-}
-
 sub render_plain_text {
-    return '';
+    return;
 }
 
 1;
