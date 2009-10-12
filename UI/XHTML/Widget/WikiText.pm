@@ -698,7 +698,8 @@ sub _eval_tag_custom {
 	},
 	\$die,
     );
-    return $die ? $state->{proto}->render_error($tag, $die, $state) : $res;
+    return $die ? $state->{proto}->render_error($tag, $die, $state)
+	: defined($res) ? $res : '';
 }
 
 sub _fix_word {
@@ -801,9 +802,9 @@ sub _init_children {
 
 sub _parse {
     my($state) = @_;
+    $state->{option} = {paragraphing => 1};
     $state->{parse} = {
 	stack => [],
-	options => {paragraphing => 1},
     };
     _parse_stack_push($state, my $root = {
 	op => \&_eval,
@@ -1057,7 +1058,7 @@ sub _parse_out_p {
 
 sub _parse_paragraphing_ok {
     my($state, $tag, $line_empty) = @_;
-    return $state->{parse}->{options}->{paragraphing}
+    return $state->{option}->{paragraphing}
 	&& ($tag ? $tag =~ $_INLINE_RE || $line_empty && $tag eq 'p'
 	: !_parse_stack_in_tag($state, qr{^p$}))
 	&& (!$line_empty || _parse_stack_in_tag($state, qr{^p$}))
