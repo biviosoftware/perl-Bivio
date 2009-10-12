@@ -3,6 +3,7 @@
 WikiText();
 wiki_data_delete_all();
 wiki_data_create('include.bwiki', 1, 'included text');
+wiki_data_create('my.bwiki', 1, 'should not be included');
 [
     '@b-include file=include' => qq{<p class="b_prose">included text\n</p>},
 ];
