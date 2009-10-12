@@ -33,4 +33,12 @@ IN
 </p><p>y
 </p>
 OUT
+    <<'IN' => <<'OUT',
+@p
+x
+@a href=/ y
+IN
+<p>x
+<a href="/">y</a></p>
+OUT
 ];
