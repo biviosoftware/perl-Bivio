@@ -23,7 +23,7 @@ sub new_unit {
 	{
 	    task_id => 'FORUM_WIKI_VIEW',
 	    realm => 'wiki_bunit',
-	    user => b_use('ShellUtil.SQL')->SITE_ADM,
+	    user => b_use('ShellUtil.TestUser')->ADM,
 	    class_name => $class_name,
 	    create_object => sub {
 		my($case, $params) = @_;
