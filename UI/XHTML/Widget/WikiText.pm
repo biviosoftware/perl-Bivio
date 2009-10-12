@@ -478,6 +478,7 @@ sub prepare_html {
 	req => $req = $rf->req,
 	name => $_WN->from_absolute($rf->get('path')),
 	path => $rf->get('path'),
+	is_inline_text => 0,
     ) if $rf;
     $req ||= $args->get('req');
     $args->put_unless_exists(
@@ -569,10 +570,11 @@ sub render_html {
     $args->{is_public} = 1
 	unless defined($args->{is_public});
     my($state) = {
+	# Allow %$args override
+	is_inline_text => $args->{name} eq $_NOT_FILE ? 1 : 0,
 	%$args,
 	proto => $proto,
 	args => $args,
-	is_inline_text => $args->{name} eq $_NOT_FILE ? 1 : 0,
 	tags => [],
 	attrs => [],
 	lines => [],
