@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Outgoing;
 use strict;
-use Bivio::Base 'Bivio::Mail::Common';
+use Bivio::Base 'Mail.Common';
 use MIME::Base64 ();
 use MIME::QuotedPrint ();
 
@@ -121,13 +121,11 @@ sub as_string {
 }
 
 sub attach {
-    my($self, $named) = shift->name_parameters(
-	[qw(content content_type filename binary)],
-	\@_,
-    );
+    sub ATTACH {[qw(content content_type ?filename ?binary)]};
+    my($self, $np) = shift->parameters(\@_);
     Bivio::IO::Alert->warn('binary is supplanted by suggest_encoding')
-        if defined($named->{binary});
-    push(@{$self->get_if_exists_else_put('parts', [])}, $named);
+        if defined($np->{binary});
+    push(@{$self->get_if_exists_else_put('parts', [])}, $np);
     return;
 }
 
@@ -244,50 +242,30 @@ sub set_header {
 
 sub set_headers_for_forward {
     my($self) = @_;
-    $self->set_header('X-Bivio-Forwarded',
-		      ($self->unsafe_get_header('X-Bivio-Forwarded') || 0) + 1);
-    return $self;
+    return $self->set_header(
+	'X-Bivio-Forwarded',
+	($self->unsafe_get_header('X-Bivio-Forwarded') || 0) + 1,
+    );
 }
 
 sub set_headers_for_list_send {
-    my($self, $np) = shift->name_parameters(
-	[qw(list_name list_title reply_to_list subject_prefix req list_email return_path sender reply_to keep_to_cc)], \@_);
-    # Removes the headers that are either to be replaced or are uninteresting on
-    # a resend.  This is used for mailing list resends, not simple alias
-    # forwarding.
-    #
-    # For example, Received:, To:, Cc:, and Message-Id: are removed.
-    #
-    # Sets the I<list_name> in the C<To>. Sets From to owner-I<list_name> if
-    # C<From:> not already set.  Inserts the I<list_name> in the C<Subject:> if
-    # I<list_in_subject>.  Sets I<Reply-To:> to I<list_name> if
-    # I<reply_to_list>.
-    if (($np->{subject_prefix} || '') eq 1) {
-	Bivio::IO::Alert->warn_deprecated(
-	    'list_in_subject is now subject_prefix');
-	$np->{subject_prefix} = "$np->{list_name}:";
-    }
-    if ($np->{list_email}) {
-	$np->{sender} ||= $np->{list_email};
-    }
-    else {
-	Bivio::Die->die($np->{list_name}, ': invalid list name')
-	   unless $np->{list_name} =~ /^[-\.\w]+$/s;
-	Bivio::Die->die($np->{list_title}, ': invalid list title')
-	    unless $np->{list_title} =~ /^[^\n]+$/s;
-	$np->{list_title} = $_A->escape_comment($np->{list_title});
-#TODO: Integrate with EmailAlias
-	$np->{list_email} = $np->{req}->format_email($np->{list_name});
-	# Old style is with -owner.
-	$np->{sender} ||= $np->{req}->format_email("$np->{list_name}-owner");
-    }
+    sub SET_HEADERS_FOR_LIST_SEND {[
+	[qw(list_email Email)],
+	[qw(?reply_to Email)],
+	[qw(?reply_to_list Boolean)],
+	[qw(?return_path Email)],
+	[qw(?sender Email)],
+	[qw(?subject_prefix Line)],
+    ]};
+    my($self, $np) = shift->parameters(\@_);
+    $np->{sender} ||= $np->{list_email};
+    $np->{reply_to} ||= $np->{list_email};
     my($headers) = $self->get('headers');
+    b_die('missing To: in headers: ', $headers)
+	unless $headers->{to};
     $self->set_headers_for_forward;
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
-    delete(@$headers{qw(to cc)})
-	unless $np->{keep_to_cc};
     $self->set_header(Sender => $np->{sender});
-    $np->{reply_to} ||= $np->{list_email};
     $self->set_header('Reply-To', $np->{reply_to})
 	if $np->{reply_to_list};
     $self->set_header(From => $np->{sender})
@@ -299,8 +277,8 @@ sub set_headers_for_list_send {
 		    $self->unsafe_get_header('from')))[0]
 	 ) . '>',
     );
-    $self->set_header(To => qq{"$np->{list_title}" <$np->{list_email}>})
-	unless $headers->{to};
+    b_die('missing To: in headers: ', $headers)
+	unless $self->unsafe_get_header('to');
     return $self
 	unless $np->{subject_prefix};
     my($s) = $self->unsafe_get_header('subject');

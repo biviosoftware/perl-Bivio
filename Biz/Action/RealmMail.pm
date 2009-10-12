@@ -27,10 +27,7 @@ sub execute_receive {
 	list_email => $email,
 	sender => $ea->format_realm_as_sender($email),
 	reply_to_list => $_WRT->is_set_for_realm($req),
-#TODO: This should be configurable
-	keep_to_cc => 1,
 	subject_prefix => $proto->internal_subject_prefix($rm),
-	req => $req,
     });
     $proto->use('AgentJob.Dispatcher')->enqueue(
 	$req,
