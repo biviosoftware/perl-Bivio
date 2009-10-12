@@ -2,10 +2,10 @@
 # $Id$
 Request();
 options({comparator => 'nested_contains'});
-set_realm_and_user(qw(fourem root));
-initialize_fully('FORUM_WIKI_VIEW');
+req()->set_realm_and_user('wiki_bunit');
+req()->initialize_fully('FORUM_WIKI_VIEW');
+model('RealmFile')->delete_all;
 my($menu) = class('Type.WikiDataName')->to_absolute('WikiText1.bmenu');
-model('RealmFile')->delete({path => $menu});
 model('RealmFile')->create_with_content({path => $menu}, \(<<'EOF'));
 Label,Link,Class
 Home,/
