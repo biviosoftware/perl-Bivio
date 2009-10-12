@@ -309,11 +309,13 @@ my($_DOMAIN) = qr{(@{[
 my($_ROOT_TAG) = '#ROOT';
 my($_CHILDREN) = _init_children();
 my($_MY_TAGS);
+my($_MY_TAG_CLASSES) = [];
 _require_my_tags(__PACKAGE__);
 my($_IMG) = qr{.*\.(?:jpg|gif|jpeg|png|jpe)};
 my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id is_public)];
 my($_TT) = $_WN->TITLE_TAG =~ /(\w+)/;
 my($_EMPTY) = {map((@{$_CHILDREN->{$_}} ? () : ($_ => 1)), keys(%$_CHILDREN))};
+my($_NOT_FILE) = '<inline>';
 
 sub CAMEL_CASE_REGEX {
     return $_CAMEL_CASE;
@@ -422,9 +424,10 @@ sub internal_format_uri {
 }
 
 sub unsafe_load_wiki_data {
-    my($proto, $path, $args) = @_;
+    my($proto, $path, $args, $ignore_not_found) = @_;
     my($die_code);
-    return $proto->render_error($path, $die_code, $args)
+    return $ignore_not_found ? ()
+	: $proto->render_error($path, $die_code, $args)
 	unless my $rf = b_use('Action.WikiView')
 	->unsafe_load_wiki_data($path, $args, \$die_code);
     return $rf;
@@ -480,7 +483,7 @@ sub prepare_html {
     $args->put_unless_exists(
 	is_public => 0,
 	modified_date_time => $_DT->now,
-	name => '<inline>',
+	name => $_NOT_FILE,
 	realm_id => $req->get('auth_id'),
 	user_id => $req->get('auth_user_id'),
 	proto => $proto,
@@ -551,7 +554,7 @@ sub render_html {
 	};
     }
     _validator($args);
-    $args->{name} ||= '<inline>';
+    $args->{name} ||= $_NOT_FILE;
     $args->{path} ||= $args->{name};
     $args->{source} ||= $args->{req};
     $args->{proto} = $proto;
@@ -569,6 +572,7 @@ sub render_html {
 	%$args,
 	proto => $proto,
 	args => $args,
+	is_inline_text => $args->{name} eq $_NOT_FILE ? 1 : 0,
 	tags => [],
 	attrs => [],
 	lines => [],
@@ -606,6 +610,17 @@ sub render_plain_text {
     return ($body, $args);
 }
 
+sub _call_my_tag {
+    my($state, $tag, $method, $args) = @_;
+    my($die);
+    my($res) = Bivio::Die->catch_quietly(
+	sub {$_MY_TAGS->{$tag}->$method($args)},
+	\$die,
+    );
+    return $die ? $state->{proto}->render_error($tag, $die, $state)
+	: defined($res) ? $res : '';
+}
+
 sub _check_uri {
     my($uri, $orig, $args) = @_;
 #TODO: Consider dropping this
@@ -641,12 +656,26 @@ sub _eval_literal {
 	: Bivio::HTML->escape($args->{content});
 }
 
+sub _eval_my_tag {
+    my($state, $args) = @_;
+    return _call_my_tag(
+	$state,
+	$args->{tag},
+	$state->{want_plain_text} ? 'render_plain_text' : 'render_html',
+	{
+	    %$state,
+	    %$args,
+	    state => $state,
+	},
+    );
+}
+
 sub _eval_tag {
     my($state, $args) = @_;
     my($tag) = $args->{tag};
     my($attrs) = {%{$args->{attrs}}};
     return $_MY_TAGS->{$tag}
-	? _eval_tag_custom($state, $args)
+	? _eval_my_tag($state, $args)
 	: $_EMPTY->{$tag} ? ''
 	: _eval($state, $args) . "\n"
 	if $state->{want_plain_text};
@@ -660,7 +689,7 @@ sub _eval_tag {
 	$attrs->{$k}
 	    = $state->{proto}->internal_format_uri($attrs->{$k}, $state);
     }
-    return _eval_tag_custom($state, $args)
+    return _eval_my_tag($state, $args)
 	if $_MY_TAGS->{$tag};
     my($start) = join(
 	' ',
@@ -680,26 +709,6 @@ sub _eval_tag {
     }
     my($content) = _eval($state, $args);
     return length($content) || $tag ne 'p' ? "<$start>$content</$tag>" : '';
-}
-
-sub _eval_tag_custom {
-    my($state, $args) = @_;
-    my($die);
-    my($tag) = $args->{tag};
-    my($res) = Bivio::Die->catch_quietly(
-	sub {
-	    my($method) = $state->{want_plain_text} ? 'render_plain_text'
-		: 'render_html';
-	    return $_MY_TAGS->{$tag}->$method({
-		%$state,
-		%$args,
-		state => $state,
-	    });
-	},
-	\$die,
-    );
-    return $die ? $state->{proto}->render_error($tag, $die, $state)
-	: defined($res) ? $res : '';
 }
 
 sub _fix_word {
@@ -810,6 +819,7 @@ sub _parse {
 	op => \&_eval,
 	tag => $_ROOT_TAG,
     });
+    _pre_parse_my_tags($state);
     $state->{proto}->do_parse_lines(
 	$state,
 	sub {
@@ -828,6 +838,14 @@ sub _parse {
     );
     delete($state->{parse});
     return $root;
+}
+
+sub _pre_parse_my_tags {
+    my($state) = @_;
+    foreach my $class (@$_MY_TAG_CLASSES) {
+	$class->pre_parse($state);
+    }
+    return;
 }
 
 sub _parse_child_ok {
@@ -1024,6 +1042,24 @@ sub _parse_line_empty {
     );
 }
 
+sub _parse_my_tag {
+    my($state, $tag, $attrs, $line) = @_;
+    return
+	unless $_MY_TAGS->{$tag} && $_MY_TAGS->{$tag}->can('parse_tag_start');
+    _call_my_tag(
+	$state,
+	$tag,
+	'parse_tag_start',
+	{
+	    state => $state,
+	    tag => $tag,
+	    attrs => $attrs,
+	    line => $line,
+	},
+    );
+    return 1;
+}
+
 sub _parse_out {
     my($state, $op, $args, $content) = @_;
     $args = {content => $args}
@@ -1119,30 +1155,6 @@ sub _parse_tag_attrs {
     return $attrs;
 }
 
-sub _parse_tag_custom {
-    my($state, $tag, $attrs, $line) = @_;
-    return
-	unless $_MY_TAGS->{$tag} && $_MY_TAGS->{$tag}->can('parse_tag_start');
-    my($die);
-    my($res) = Bivio::Die->catch_quietly(
-	sub {
-	    return $_MY_TAGS->{$tag}->parse_tag_start({
-		state => $state,
-		tag => $tag,
-		attrs => $attrs,
-		line => $line,
-	    });
-	},
-	\$die,
-    );
-    $state->{proto}->render_error(
-	$tag,
-	$die,
-	$state,
-    ) if $die;
-    return 1;
-}
-
 sub _parse_tag_end {
     my($state, $line) = @_;
     return
@@ -1165,7 +1177,7 @@ sub _parse_tag_start {
     my($attrs) = _parse_tag_attrs($state, \$line);
     $line =~ s/^\s+|\s+$//s;
     return
-	if _parse_tag_custom($state, $tag, $attrs, $line);
+	if _parse_my_tag($state, $tag, $attrs, $line);
     _parse_out_p($state)
         if _parse_paragraphing_ok($state, $tag);
     _parse_stack_pop($state, $tag)
@@ -1196,6 +1208,7 @@ sub _parse_tag_ok {
 sub _require_my_tags {
     my($proto) = @_;
     foreach my $c (@{b_use('IO.ClassLoader')->map_require_all('WikiText')}) {
+	push(@$_MY_TAG_CLASSES, $c);
 	foreach my $t (@{$c->handle_register}) {
 	    $proto->register_tag($t, $c);
 	}
