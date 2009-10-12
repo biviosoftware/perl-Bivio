@@ -30,45 +30,114 @@ sub new {
 
 sub process_via_universal {
     my($proto, $caller_proto, $argv, $self, $error) = @_;
-    $self ||= _self($caller_proto, (caller(2))[4]);
+    $self ||= _self($proto, $caller_proto, (caller(2))[3]);
     my($decls) = $self->[$_IDI];
-    $$error = undef;
     my($args) = ref($argv) eq 'HASH' ? _hash($decls, $argv)
 	: @$argv == 1 && ref($argv->[0]) eq 'HASH' ? _hash($decls, $argv->[0])
 	: _positional($decls, $argv, $error) || return $caller_proto;
     foreach my $decl (@$decls) {
-	unless (exists($args->{$decl->{name}})) {
-	    return ($caller_proto, _error(undef, $decl, $_NULL, $error))
-		unless $decl->{optional};
-	    my($d) = ref($decl->{default}) eq 'CODE'
-		? $decl->{default}->($caller_proto)
-	        : $decl->{default};
-	    $args->{$decl->{name}} = $decl->{repeatable} ? [$d] : $d;
-	    next;
-	}
-	next
-	    unless $decl->{type};
 	if ($decl->{repeatable}) {
-	    $args->{$decl->{name}} = [map({
-		my($v, $e)
-		    = $decl->{type}->from_literal($args->{$decl->{name}});
-		$e ? _error($_, $decl, $e, $error)
-		    : $v;
-	    } @{$args->{$decl->{name}}})];
+	    my($got_one);
+	    my($values) = $args->{$decl->{name}} || [];
+	    @$values = ()
+		if @$values == 1 && !defined($values->[0]);
+	    foreach my $value (@$values) {
+		$got_one++;
+		return $caller_proto
+		    unless _value(\$value, $decl, $caller_proto, $error);
+	    }
 	    return $caller_proto
-		if $$error;
+		unless $got_one
+		|| _default(
+		    \$args->{$decl->{name}}, $decl, $caller_proto, $error);
+	}
+	elsif (exists($args->{$decl->{name}})) {
+	    return $caller_proto
+		unless _value(
+		    \$args->{$decl->{name}}, $decl, $caller_proto, $error);
 	}
 	else {
-	    my($v, $e)
-		= $decl->{type}->from_literal($args->{$decl->{name}});
-	    return (
-		$caller_proto,
-		_error($args->{$decl->{name}}, $decl, $e, $error),
-	    ) if $e;
-	    $args->{$decl->{name}} = $v;
+	    return $caller_proto
+		unless _default(
+		    \$args->{$decl->{name}}, $decl, $caller_proto, $error);
 	}
     }
     return ($caller_proto, $args);
+}
+
+sub _decls {
+    my($decls) = @_;
+    my($i) = 0;
+    my($now_optional) = 0;
+    return [map({
+	my($name, $type, $default) = ref($_) ? @$_ : $_;
+	my($optional) = ref($_) && @$_ > 2 ? 1 : 0;
+	my($repeatable) = 0;
+	$i++;
+	if ($name =~ s/^([\?\*\+])//) {
+	    $optional = 1
+		unless $1 eq '+';
+	    $repeatable = 1
+		unless $1 eq '?';
+	    b_die($name, ': only the last param may repeat')
+		if $repeatable && @$decls != $i;
+	}
+	b_die($name, ': must be a perl identifier')
+	    unless $name =~ /^\w+$/;
+	if ($optional) {
+	    $now_optional = 1;
+	}
+	elsif ($now_optional) {
+	    b_die($name, ': param must be optional');
+	}
+	$type ||= $name =~ /^[A-Z]/ ? $name : 'String';
+	$type = b_use("Type.$type");
+	+{
+	    name => $name,
+	    type => $type,
+	    $optional ? (default => $default) : (),
+	    optional => $optional,
+	    repeatable => $repeatable,
+	};
+    } @$decls)];
+}
+
+sub _default {
+    my($value, $decl, $caller_proto, $error) = @_;
+    return _error(undef, $decl, $_NULL, $error)
+	unless $decl->{optional};
+    my($res) = ref($decl->{default}) eq 'CODE'
+	? $decl->{default}->($caller_proto)
+	: $decl->{default};
+    $$value = $decl->{repeatable} ? [$res] : $res;
+    return 1;
+}
+
+sub _error {
+    my($value, $decl, $type_error, $error) = @_;
+    b_die(
+	$decl->{name},
+	defined($value) ? ('=', $value) : (),
+	': ',
+	$type_error->get_long_desc,
+    ) unless $error;
+    %$error = (
+	name => $decl->{name},
+	value => $value,
+	error => $type_error,
+    );
+    return;
+}
+
+sub _hash {
+    my($decls, $hash) = @_;
+    $hash = {%$hash};
+    if ((my $repeat = $decls->[$#$decls])->{repeatable}) {
+	$hash->{$repeat->{name}} = [$hash->{$repeat->{name}}]
+	    if exists($hash->{$repeat->{name}})
+	    && ref($hash->{$repeat->{name}}) ne 'ARRAY';
+    }
+    return $hash;
 }
 
 sub _positional {
@@ -91,76 +160,29 @@ sub _positional {
     return $hash;
 }
 
-sub _decls {
-    my($decls) = @_;
-    my($i) = 0;
-    my($now_optional) = 0;
-    return [map({
-	my($name, $type, $default) = ref($_) ? @$_ : $_;
-	my($optional) = ref($_) && @$_ > 2 ? 1 : 0;
-	my($repeatable) = 0;
-	$i++;
-	if ($name =~ s/^([\?\*\+])//) {
-	    $optional = 1
-		unless $1 eq '+';
-	    $repeatable = 1
-		unless $1 eq '?';
-	    b_die($name, ': only the last param may repeat')
-		if $repeatable && @$decls != $i;
-	}
-	if ($optional) {
-	    $now_optional = 1;
-	}
-	elsif ($now_optional) {
-	    b_die($name, ': param must be optional');
-	}
-	$type ||= $name =~ /^[A-Z]/ ? $name : undef;
-	$type &&= b_use("Type.$type");
-	+{
-	    name => $name,
-	    type => $type,
-	    $optional ? (default => $default) : (),
-	    optional => $optional,
-	    repeatable => $repeatable,
-	};
-    } @$decls)];
-}
-
-sub _error {
-    my($value, $decl, $type_error, $error) = @_;
-    b_die(
-	$decl->{name},
-	defined($value) ? ('=', $value) : (), ': ',
-	$type_error,
-    ) unless $error;
-    $$error = join(
-	'',
-	$decl->{name},
-	defined($value) && !ref($value) ? '='. substr($value, 0, 20) : (),
-	': ',
-	$type_error->get_long_desc,
-    );
-    return;
-}
-
-sub _hash {
-    my($decls, $hash) = @_;
-    $hash = {%$hash};
-    if ((my $repeat = $decls->[$#$decls])->{repeatable}) {
-	$hash->{$repeat->{name}} = [$hash->{$repeat->{name}}]
-	    if exists($hash->{$repeat->{name}})
-	    && ref($hash->{$repeat->{name}}) ne 'ARRAY';
-    }
-    return $hash;
-}
-
 sub _self {
-    my($caller_proto, $sub) = @_;
+    my($proto, $caller_proto, $sub) = @_;
     $sub =~ /(.+::)(.+)/;
     my($method) = $1 . uc($2);
+    b_die($sub, ': not a valid subroutine')
+	unless $method;
     no strict;
     local(*cache) = *$method;
     return $cache ||= $proto->new(&cache($caller_proto));
+}
+
+sub _value {
+    my($value, $decl, $caller_proto, $error) = @_;
+    my($v, $e) = $decl->{type}->from_literal($$value);
+    return _error($$value, $decl, $e, $error)
+	if $e;
+    unless (defined($v)) {
+	return _error($$value, $decl, $_NULL, $error)
+	    unless $decl->{optional} && !$decl->{repeatable};
+	_default(\$v, $decl, $caller_proto, $error);
+    }
+    $$value = $v;
+    return 1;
 }
 
 1;

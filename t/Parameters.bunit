@@ -23,5 +23,18 @@ my($error);
 	    gender => Type_Gender()->FEMALE,
 	    repeat => [99],
 	}],
+	[[qw(v1 male 1 2 3)], $simple] => [class() => {
+	    p1 => 'v1',
+	    gender => Type_Gender()->MALE,
+	    repeat => [1, 2, 3],
+	}],
+	sub {[[qw(v1 not-gender)], $simple, $error = {}]} => sub {
+	    assert_equals({
+		name => 'gender',
+		value => 'not-gender',
+		error => Bivio_TypeError()->NOT_FOUND,
+	    }, $error);
+	    return 1;
+	},
     ],
 ];
