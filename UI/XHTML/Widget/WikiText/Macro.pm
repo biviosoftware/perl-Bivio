@@ -84,14 +84,7 @@ sub _op_call {
     elsif (defined($args->{line}) && length($args->{line})) {
 	$proto->render_error($args->{line}, "\@b-def $def->{name} must specify b_content in params to include content", $state);
     }
-    $values = $proto->parameters(
-	$values,
-	$_P->new([map(
-	    [$_, 'String', ''],
-	    @{$def->{params}},
-	)]),
-	my $error = {},
-    );
+    $values = $proto->parameters($values, $def->{params}, my $error = {});
     return $proto->parameters_error($error, $args)
 	if %$error;
     (my $content = $def->{content}) =~ s{
@@ -127,6 +120,10 @@ sub _op_def {
 	)],
     );
     $def->{call_content} = grep('b_content' eq $_, @{$def->{params}}) ? 1 : 0;
+    $def->{params} = $_P->new([map(
+	[$_, 'String', ''],
+	@{$def->{params}},
+    )]);
     return;
 }
 
