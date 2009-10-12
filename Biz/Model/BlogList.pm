@@ -165,10 +165,10 @@ sub render_html {
 	name => $self->get('path_info'),
 	req => $self->get_request,
 	task_id => undef,
+	is_inline_text => 0,
 	calling_context =>
 	    $_CC->new_from_file_line($self->get('RealmFile.path'), 1),
 	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id path)),
-	no_auto_links => 1,
     });
 }
 
