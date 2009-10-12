@@ -1,0 +1,36 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+[
+    <<'IN' => sub {[<<'OUT']},
+@b-option paragraphing=0
+a
+
+b
+IN
+a
+
+b
+OUT
+    <<'IN' => <<'OUT',
+@b-option paragraphing=1
+a
+
+b
+IN
+<p class="b_prose">a
+</p><p class="b_prose">b
+</p>
+OUT
+    <<'IN' => <<'OUT',
+a
+@b-option paragraphing=0
+
+b
+IN
+<p class="b_prose">a
+
+b
+</p>
+OUT
+];
