@@ -1,6 +1,7 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
+my($empty) = class()->new([]);
 my($simple) = class()->new([
     'p1',
     [qw(gender Gender), Type_Gender()->FEMALE],
@@ -9,6 +10,7 @@ my($simple) = class()->new([
 my($error);
 [
     new => [
+	[] => 'Parameters',
 	[['param1']] => 'Parameters(param1)',
 	[['Boolean']] => 'Parameters(Boolean)',
 	[['+Boolean']] => 'Parameters(+Boolean)',
@@ -18,21 +20,23 @@ my($error);
 	[['NoSuchType']] => qr{not.found}i,
     ],
     parameters => [
-	[['value1'], $simple] => [class() => {
+	[[], $empty] => [class(), {}],
+	[{}, $empty] => [class(), {}],
+	[['value1'], $simple] => [class(), {
 	    p1 => 'value1',
 	    gender => Type_Gender()->FEMALE,
 	    repeat => [99],
 	}],
-	[[Type_Month()->MAY, qw(male 1 2 3)], $simple] => [class() => {
+	[[Type_Month()->MAY, qw(male 1 2 3)], $simple] => [class(), {
 	    p1 => Type_Month()->MAY,
 	    gender => Type_Gender()->MALE,
 	    repeat => [1, 2, 3],
 	}],
 	sub {[[qw(v1 not-gender)], $simple, $error = {}]} => sub {
 	    assert_equals({
-		name => 'gender',
-		value => 'not-gender',
-		error => Bivio_TypeError()->NOT_FOUND,
+		param_name => 'gender',
+		param_value => 'not-gender',
+		type_error => Bivio_TypeError()->NOT_FOUND,
 	    }, $error);
 	    return 1;
 	},
