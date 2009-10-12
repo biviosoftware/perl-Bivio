@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::ListModel;
 use strict;
@@ -26,7 +26,7 @@ sub new {
 		&& ref($expect) eq 'ARRAY';
 	    if (ref($expect->[0]) eq 'ARRAY' && @$expect == 1
 		&& (!@{$expect->[0]} || ref($expect->[0]->[0]) eq 'HASH')) {
-		Bivio::IO::Alert->warn(
+		b_warn(
 		    $case,
 		    ': has too many square brackets for the expect, unwrapping one level',
 		);
@@ -46,8 +46,13 @@ sub new {
 		};
 	    };
 	    my($o) = $case->get('object');
-	    return $case->get('method') =~ /^find_row_by/ ? [$extract->($o)]
-		: $o->map_rows($extract);
+	    return $o->save_excursion(
+		sub {
+		    return $case->get('method') =~ /^find_row_by/
+			? [$extract->($o)]
+			: $o->map_rows($extract);
+		},
+	    );
 	},
 	%$attrs,
     });
