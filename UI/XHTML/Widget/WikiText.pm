@@ -500,8 +500,11 @@ sub prepare_html {
     )}{}isox) {
 	my($x) = $1;
 	$args->{calling_context} ||= $_CC->new_from_file_line($args->{path}, 1);
-	my($t) = $proto->render_html({%$args, value => $x})
-	    =~ m{^<$_TT>(.*)</$_TT>$}so;
+	my($t) = $proto->render_html({
+	    %$args,
+	    is_inline_text => 1,
+	    value => $x,
+	}) =~ m{^<$_TT>(.*)</$_TT>$}so;
 	if (defined($t)) {
 	    $t =~ s/^\s+|\s+$//g;
 	    $args->{title} = $t;
@@ -1097,10 +1100,11 @@ sub _parse_out_p {
 sub _parse_paragraphing_ok {
     my($state, $tag, $line_empty) = @_;
     return $state->{option}->{paragraphing}
-	&& ($tag ? $tag =~ $_INLINE_RE || $line_empty && $tag eq 'p'
-	: !_parse_stack_in_tag($state, qr{^p$}))
-	&& (!$line_empty || _parse_stack_in_tag($state, qr{^p$}))
-	&& !_parse_stack_in_tag($state, qr{^(?:div|dt|h\d|pre|script|select|textarea)$})
+	&& (
+	    $line_empty ? $tag eq 'p'
+	    : !_parse_stack_in_tag($state, qr{^p$})
+	    && (!$tag || $tag =~ $_INLINE_RE)
+        ) && !_parse_stack_in_tag($state, qr{^(?:div|dt|h\d|pre|script|select|textarea)$})
 	&& !_parse_stack_top($state, qr{^(?:ul|dl|ol)$})
 	&& (
 	    _parse_stack_in_tag(
