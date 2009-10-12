@@ -15,10 +15,8 @@ my($entry) = [map(
 	'RealmFile.is_public' => $_,
     }, 0, 1,
 )];
-my($_BFN) = Bivio::Type->get_instance('BlogFileName');
-Bivio::Biz::Model->new(req(), 'BlogCreateForm')->process($entry->[0]);
-commit();
-$this = $_BFN->from_absolute(req()->get('Model.RealmFile')->get('path'));
+model('BlogCreateForm')->process($entry->[0]);
+$this = Type_BlogFileName()->from_absolute(req(qw(Model.RealmFile path)));
 [
     empty_case($entry->[0]),
     map({
@@ -26,14 +24,13 @@ $this = $_BFN->from_absolute(req()->get('Model.RealmFile')->get('path'));
 	([$entry->[$x]] => [{
 	    'Model.RealmFile' => {
 		path => sub {
-		    commit();
 		    assert_equals(
-			$_BFN->get_instance('BlogContent')->join(
+			Type_BlogContent()->join(
 			    @{$entry->[$x]}{qw(title body)},
 			),
-			req()->get('Model.RealmFile')->get_content,
+			req('Model.RealmFile')->get_content,
 		    );
-		    return $_BFN->to_absolute($this, $x);
+		    return Type_BlogFileName()->to_absolute($this, $x);
 		},
 		is_public => $x,
 	     },
