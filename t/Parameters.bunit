@@ -36,5 +36,6 @@ my($error);
 	    }, $error);
 	    return 1;
 	},
+	[{not_found => 1}, $simple] => qr{not_found: not found},
     ],
 ];
