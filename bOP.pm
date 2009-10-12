@@ -26,11 +26,21 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.29  2009/10/12 05:30:50  nagler
+  * Bivio::UI::XHTML::Widget::WikiText::Include
+    Include my.bwiki during pre_parse, if it exists
+  * Bivio::UI::XHTML::Widget::WikiText::Option
+    NEW
+  * Bivio::UI::XHTML::Widget::WikiText
+    Call pre_parse in my_tags
+  * Bivio::UI::XHTML::Widget::WikiTextTag
+    default pre_parse
+
   Revision 8.28  2009/10/12 04:27:47  nagler
   * Bivio::Agent::Request
     doc
