@@ -4,7 +4,7 @@ package Bivio::UNIVERSAL;
 use strict;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_A, $_R, $_SA);
+my($_A, $_R, $_SA, $_P);
 
 sub as_classloader_map_name {
     my($self) = @_;
@@ -321,6 +321,7 @@ sub my_caller {
 }
 
 sub name_parameters {
+#TODO:    ($_A ||= __PACKAGE__->use('IO.Alert'))->warn_deprecated('use parameters');
     my($self, $names, $argv) = @_;
     my($map) = {map(($_ => 1), @$names)};
     my($named) = @$argv;
@@ -382,6 +383,11 @@ sub package_name {
 sub package_version {
     no strict 'refs';
     return ${\${shift->package_name . '::VERSION'}};
+}
+
+sub parameters {
+    return ($_P ||= __PACKAGE__->use('Bivio.Parameters'))
+	->process_via_universal(@_);
 }
 
 sub put_on_req {
