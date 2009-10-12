@@ -90,8 +90,8 @@ sub _decls {
 	elsif ($now_optional) {
 	    b_die($name, ': param must be optional');
 	}
-	$type ||= $name =~ /^[A-Z]/ ? $name : 'String';
-	$type = b_use("Type.$type");
+	$type ||= $name =~ /^[A-Z]/ ? $name : undef;
+	$type &&= b_use("Type.$type");
 	+{
 	    name => $name,
 	    type => $type,
@@ -173,7 +173,7 @@ sub _self {
 
 sub _value {
     my($value, $decl, $caller_proto, $error) = @_;
-    my($v, $e) = $decl->{type}->from_literal($$value);
+    my($v, $e) = $decl->{type} ? $decl->{type}->from_literal($$value) : $$value;
     return _error($$value, $decl, $e, $error)
 	if $e;
     unless (defined($v)) {
