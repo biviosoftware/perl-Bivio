@@ -6,6 +6,7 @@ use Bivio::Base 'XHTMLWidget.WikiTextTag';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PKG) = __PACKAGE__;
+my($_P) = b_use('Bivio.Parameters');
 
 sub ACCEPTS_CHILDREN {
     return 1;
@@ -16,13 +17,9 @@ sub handle_register {
 }
 
 sub parse_tag_start {
-    my($proto, $args) = @_;
+    my(undef, $args) = @_;
     (my $op = $args->{tag}) =~ s/^b-/_op_/;
-    return (\&{$op})->($proto, $args, @$args{qw(state attrs)});
-}
-
-sub render_html {
-    return '';
+    return (\&{$op})->(@_);
 }
 
 sub _ident {
@@ -67,8 +64,10 @@ sub _lines {
 }
 
 sub _op_call {
-    my($proto, $args, $state, $attrs) = @_;
-    return $state->{proto}->render_error(
+    my($proto, $args) = @_;
+    my($state) = $args->{state};
+    my($attrs) = $args->{attrs};
+    return $proto->render_error(
 	$attrs->{name},
 	'macro definition not found',
 	$state,
@@ -83,13 +82,18 @@ sub _op_call {
 	    unless defined($values->{'b_content'});
     }
     elsif (defined($args->{line}) && length($args->{line})) {
-	$state->{proto}->render_error($args->{line}, "\@b-def $def->{name} must specify b_content in params to include content", $state);
+	$proto->render_error($args->{line}, "\@b-def $def->{name} must specify b_content in params to include content", $state);
     }
-    $proto->parse_args($def->{params}, {%$args, attrs => $values});
-    foreach my $p (@{$def->{params}}) {
-	$values->{$p} = ''
-	    unless defined($values->{$p});
-    }
+    $values = $proto->parameters(
+	$values,
+	$_P->new([map(
+	    [$_, 'String', ''],
+	    @{$def->{params}},
+	)]),
+	my $error = {},
+    );
+    return $proto->parameters_error($error, $args)
+	if %$error;
     (my $content = $def->{content}) =~ s{
         \@(\w+)
     }{
@@ -100,16 +104,18 @@ sub _op_call {
 }
 
 sub _op_def {
-    my($proto, $args, $state, $attrs) = @_;
+    sub _OP_DEF {[qw(name ?params)]};
+    my($proto, $args, $attrs) = shift->parameters(@_);
     return
-	unless shift->parse_args([qw(name params)], $args);
+	unless $proto;
+    my($state) = $args->{state};
     my($cc) = $state->{proto}->parse_calling_context($state);
     return
 	unless my $lines = _lines($args, $state, $args->{line});
     return
 	unless my $name = _ident($attrs->{name}, $state);
     my($def) = $state->{$_PKG}->{$name} ||= {};
-    return $state->{proto}->render_error($name, 'macro already defined', $state)
+    return $proto->render_error($name, 'macro already defined', $state)
 	if %$def;
     %$def = (
 	calling_context => $cc,

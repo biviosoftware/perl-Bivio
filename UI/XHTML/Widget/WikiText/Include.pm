@@ -12,7 +12,8 @@ sub handle_register {
 }
 
 sub parse_tag_start {
-    my($proto, $args) = shift->parse_args([qw(file)], @_);
+    sub PARSE_TAG_START {[[qw(file FileName)]]};
+    my($proto, $args, $attrs) = shift->parameters(@_);
     return
 	unless $proto;
     my($state) = $args->{state};
@@ -27,10 +28,6 @@ sub parse_tag_start {
 	$state,
     );
     return;
-}
-
-sub render_html {
-    return '';
 }
 
 1;

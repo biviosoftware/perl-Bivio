@@ -35,15 +35,14 @@ sub internal_submenu {
 }
 
 sub render_html {
-    my($proto, $args) = shift->parse_args(
-	[qw(?class value ?b_selected_label_prefix)],
-	@_,
-    );
+    sub RENDER_HTML {[
+	[qw(?value FileName)],
+	[qw(class String bmenu)],
+	'?b_selected_label_prefix',
+    ]};
+    my($proto, $args, $attrs) = shift->parameters(@_);
     return
 	unless $proto;
-    my($class) =  $args->{attrs}->{class} || 'bmenu';
-    my($value) =  $args->{attrs}->{value};
-    my($prefix) = $args->{attrs}->{b_selected_label_prefix};
     if ($args->{tag} eq 'b-menu-target') {
         my($die) = Bivio::Die->catch_quietly(sub {
             my($v) = $args->{proto}->prepare_html(
@@ -61,11 +60,15 @@ sub render_html {
         # b-menu-source is now pre-rendered and therefore on the req
         return $die ? '' : $args->{req}->get_or_default($proto->TARGET, '');
     }
-    my($links) = _parse_csv($value, $args);
+    my($links) = _parse_csv(
+	$attrs->{value}
+	    || $proto->render_error('value', 'attribute required', $args),
+	$args,
+    );
     return ''
 	unless $links && @$links;
     my($buf) = '';
-    TaskMenu([map(_item_widget($proto, $args, $_, $prefix), @$links)], $class)
+    TaskMenu([map(_item_widget($proto, $args, $_, $attrs->{b_selected_label_prefix}), @$links)], $attrs->{class})
 	->put(selected_item => sub {
                 my($w, $source) = @_;
                 return ($source->ureq('uri') || '') =~

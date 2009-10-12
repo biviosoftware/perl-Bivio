@@ -11,12 +11,11 @@ sub handle_register {
 }
 
 sub render_html {
-    my($proto, $args) = shift->parse_args([qw(value)], @_);
+    sub RENDER_HTML {[qw(value)]};
+    my($proto, $args, $attrs) = shift->parameters(@_);
     return
 	unless $proto;
-    my($uri) = $args->{proto}->internal_format_uri(
-	$args->{attrs}->{value}, $args,
-    );
+    my($uri) = $args->{proto}->internal_format_uri($attrs->{value}, $args);
     return $args->{proto}->render_error(
 	$uri,
 	'invalid URI, must begin with a /',
