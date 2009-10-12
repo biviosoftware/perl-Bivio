@@ -1,0 +1,11 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    name_parameters => [
+	[[qw(p1 p2)], [{p1 => 1}]] => [class(), {p1 => 1}],
+	[[qw(p1 p2)], [1]] => [class(), {p1 => 1}],
+	[[qw(p1 p2)], [1, 2]] => [class(), {p1 => 1, p2 => 2}],
+	[[qw(p1 p2)], [{p3 => 1}]] => qr{p3.*unknown param},
+    ],
+];
