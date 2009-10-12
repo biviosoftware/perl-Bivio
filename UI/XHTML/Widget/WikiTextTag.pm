@@ -39,6 +39,10 @@ sub parameters_error {
     );
 }
 
+sub pre_parse {
+    return;
+}
+
 sub render_error {
     shift;
     my(undef, undef, $args) = @_;
