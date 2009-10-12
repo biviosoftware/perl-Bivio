@@ -122,10 +122,10 @@ sub as_string {
 
 sub attach {
     sub ATTACH {[qw(content content_type ?filename ?binary)]};
-    my($self, $np) = shift->parameters(\@_);
+    my($self, $bp) = shift->parameters(\@_);
     Bivio::IO::Alert->warn('binary is supplanted by suggest_encoding')
-        if defined($np->{binary});
-    push(@{$self->get_if_exists_else_put('parts', [])}, $np);
+        if defined($bp->{binary});
+    push(@{$self->get_if_exists_else_put('parts', [])}, $bp);
     return;
 }
 
@@ -257,36 +257,36 @@ sub set_headers_for_list_send {
 	[qw(?sender Email)],
 	[qw(?subject_prefix Line)],
     ]};
-    my($self, $np) = shift->parameters(\@_);
-    $np->{sender} ||= $np->{list_email};
-    $np->{reply_to} ||= $np->{list_email};
+    my($self, $bp) = shift->parameters(\@_);
+    $bp->{sender} ||= $bp->{list_email};
+    $bp->{reply_to} ||= $bp->{list_email};
     my($headers) = $self->get('headers');
     b_die('missing To: in headers: ', $headers)
 	unless $headers->{to};
     $self->set_headers_for_forward;
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
-    $self->set_header(Sender => $np->{sender});
-    $self->set_header('Reply-To', $np->{reply_to})
-	if $np->{reply_to_list};
-    $self->set_header(From => $np->{sender})
+    $self->set_header(Sender => $bp->{sender});
+    $self->set_header('Reply-To', $bp->{reply_to})
+	if $bp->{reply_to_list};
+    $self->set_header(From => $bp->{sender})
 	unless $headers->{from};
     $self->set_header(
 	'Return-Path',
 	'<' . (
-	    $np->{return_path} || ($_A->parse(
+	    $bp->{return_path} || ($_A->parse(
 		    $self->unsafe_get_header('from')))[0]
 	 ) . '>',
     );
     b_die('missing To: in headers: ', $headers)
 	unless $self->unsafe_get_header('to');
     return $self
-	unless $np->{subject_prefix};
+	unless $bp->{subject_prefix};
     my($s) = $self->unsafe_get_header('subject');
     if (defined($s)) {
-	$s =~ s/^(?!(Re:\s*)*\Q$np->{subject_prefix}\E)/$np->{subject_prefix} /is;
+	$s =~ s/^(?!(Re:\s*)*\Q$bp->{subject_prefix}\E)/$bp->{subject_prefix} /is;
     }
     else {
-	$s = $np->{subject_prefix};
+	$s = $bp->{subject_prefix};
     }
     $self->set_header(Subject => $s);
     return $self;
