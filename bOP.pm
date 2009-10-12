@@ -26,11 +26,21 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.27  2009/10/10 00:30:58  nagler
+  * Bivio::Biz::Action::Error
+    use ActionError.wiki_name.default if status not found in facade
+  * Bivio::UI::FacadeBase
+    Added ActionError.wiki_name.default
+  * Bivio::UI::Text
+    unsafe_get_value checks wantarray
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    _one_choice shouldn't be true if the choice is not in the user's realm list
+
   Revision 8.26  2009/10/09 05:05:06  nagler
   Release notes:
   * Bivio::Agent::Request
