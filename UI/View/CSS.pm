@@ -437,12 +437,6 @@ p.prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
 }
-blockquote p.b_prose,
-dd p.b_prose,
-td p.b_prose,
-li p.b_prose {
-  text-indent: 0;
-}
 form .sep {
   text-align: left;
   font-weight: normal;
@@ -875,6 +869,12 @@ div.wiki {
 .wiki .prose {
   text-indent: 2em;
   margin: 1ex 0 1ex 0;
+}
+.wiki blockquote .b_prose,
+.wiki dd .b_prose,
+.wiki td .b_prose,
+.wiki li .b_prose {
+  text-indent: 0;
 }
 .same, .different {
   width: 100%;
