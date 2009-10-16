@@ -1,0 +1,86 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+Request();
+my $_bunit_get_fields = sub {
+    my($o) = shift->get('object');
+    return [$o->_bunit_get_field('queue'),
+            [sort(keys(%{$o->_bunit_get_field('in_queue')}))]];
+};
+[
+    sub {class()->new({
+        base => 'http://petshop.bivio.biz',
+        include => [qr{/bp/}i],
+        exclude => [qr{/x/}i],
+    })} => [
+        local_uri => [
+            '/a/bp/c' => 'http://petshop.bivio.biz/a/bp/c',
+            '/a/bp' => [],
+            '/x/bp/' => [],
+        ],
+    ],
+    sub {class()->new({
+        base => 'http://petshop.bivio.biz',
+        cookies => '/tmp/cookies.txt',
+    })} => [
+        local_uri => [
+            '/a/b' => 'http://petshop.bivio.biz/a/b',
+            '/a/b?c=d' => 'http://petshop.bivio.biz/a/b',
+            'http://example.com/a' => [],
+            'mailto:a@b.com' => [],
+            '/a/b/c.pdf' => [],
+        ],
+        {
+            method => 'parse_links',
+            compute_return => sub {
+                return shift->get('object')->_bunit_get_field('page_links');
+            },
+        } => [
+            [\(<<'EOF')]
+<a href="mailto:a@b.com">a@b.com</a>
+<div><a href="/c/d?e=f">g</a></div>
+<table><tr><td><A href="http://petshop.bivio.biz/h">i</A></td></tr></table>
+<a name="h"></a>
+EOF
+                => [qw(
+                      http://petshop.bivio.biz/c/d
+                      http://petshop.bivio.biz/h
+                  )],
+#looks redundant, but confirming that second run produces a fresh set of links
+            [\(<<'EOF')]
+<a href="/x/y?z=0">g</a>
+<a href="http://petshop.bivio.biz/m">n</a>
+<a href="/o">p</a>
+EOF
+                => [qw(
+                      http://petshop.bivio.biz/x/y
+                      http://petshop.bivio.biz/m
+                      http://petshop.bivio.biz/o
+                  )],
+        ],
+        assert_absolute_and_bivio => [
+            '/i/j' => DIE(),
+            'http://example.com/' => DIE(),
+            'http://k.bivio.biz/l/m' => 'http://k.bivio.biz/l/m',
+        ],
+        {
+            method => 'enqueue_uri',
+            compute_return => $_bunit_get_fields,
+        } => [
+            'b' => [[qw(b)], [qw(b)]],
+            [undef] => [[qw(b)], [qw(b)]],
+            'a' => [[qw(b a)], [qw(a b)]],
+            'b' => [[qw(b a)], [qw(a b)]],
+            [qw(c d e)] => [
+                [qw(b a c d e)],
+                [qw(a b c d e)],
+            ],
+        ],
+        {
+            method => 'dequeue_uri',
+            compute_return => $_bunit_get_fields,
+        } => [
+            [] => [[qw(a c d e)], [qw(a c d e)]],
+            [] => [[qw(c d e)], [qw(c d e)]],
+        ],
+    ],
+];

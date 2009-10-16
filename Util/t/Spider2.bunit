@@ -1,0 +1,57 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+use Bivio::Util::t::Spider::Response;
+Request();
+my($state) = {};
+options({compute_return => sub {[$state]}});
+my($ua) = b_use('Collection.Attributes')->new({
+    map({
+        my($uri, $type, $content) = @$_;
+        $uri = 'http://petshop.bivio.biz' . $uri;
+        ($uri => Bivio::Util::t::Spider::Response->new({
+            uri => $uri,
+            type => $type,
+            content_ref => \$content,
+        }));
+    }
+        ['', 'text/html', <<'EOF'],
+<html><head><title>A</title></head><body>
+<a href="">a</a>
+<a href="/b">b</a>
+<a href="/c">c</a>
+<a name="bottom">d</a>
+<a href="mailto:x@y.z">contact us</a>
+</body></html>
+EOF
+        ['/b', 'text/html', <<'EOF'],
+<html><head><title>B</title></head><body>
+<a href="/b">B</a>
+<a href="/b/b">&nbsp;bb</a>
+</body></html>
+EOF
+        ['/c', 'text/plain', <<'EOF'],
+intentionally blank
+EOF
+        ['/b/b', 'text/html', <<'EOF'],
+<html><head><title>bb</title></head><body> intentionally blank </body></html>
+EOF
+    )});
+[
+    sub {class()->new({
+        base => 'http://petshop.bivio.biz',
+        user_agent => $ua,
+        visitor => sub {
+            my($uri, $content_ref) = @_;
+            ($state->{$uri}) = $$content_ref =~ qr{<title>(.*?)</title>}mi;
+            return 1;
+        }
+    })} => [
+        visit => [
+            [] => [{
+                'http://petshop.bivio.biz' => 'A',
+                'http://petshop.bivio.biz/b' => 'B',
+                'http://petshop.bivio.biz/b/b' => 'bb',
+            }],
+        ],
+    ],
+];
