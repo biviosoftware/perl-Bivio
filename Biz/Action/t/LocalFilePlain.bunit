@@ -10,6 +10,9 @@ options({
     class() => [
         execute_robots_txt => [
             [req()] => <<'EOF',
+User-agent: Bivio::Util::Spider
+Disallow:
+
 User-agent: *
 Disallow: /
 EOF

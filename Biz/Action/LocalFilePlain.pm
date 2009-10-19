@@ -46,10 +46,15 @@ sub execute_robots_txt {
     # (proto, Agent.Request) : boolean
     # Allow robot browsing only for production sites.
     my($proto, $req) = @_;
-    my($disallow) = $req->get('is_production') ? '' : ' /';
+    my($disallow, $test) = $req->get('is_production') ? ('', '')
+        : (' /', <<'EOF');
+User-agent: Bivio::Util::Spider
+Disallow:
+
+EOF
     $req->get('reply')->set_output_type('text/plain');
     $req->get('reply')->set_output(\(<<"EOF"));
-User-agent: *
+${test}User-agent: *
 Disallow:$disallow
 EOF
     return 1;
