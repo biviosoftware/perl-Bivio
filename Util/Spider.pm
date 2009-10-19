@@ -5,7 +5,7 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 use URI ();
 use HTML::Parser ();
-use LWP::UserAgent ();
+use LWP::RobotUA ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -43,21 +43,20 @@ sub new {
         }, 'attr'],
     );
     $fields->{parser}->report_tags('a');
-    unless ($self->has_keys('user_agent')) {
-        my($ua) = LWP::UserAgent->new(
-            cookie_jar => {
-                file => $self->get_if_defined_else_put(cookies =>
-                    b_use('IO.File')->temp_file),
-                autosave => 1,
-                ignore_discard => 1,
-            },
-        );
-        $ua->agent(__PACKAGE__ . " $VERSION");
-        $self->put(user_agent => $ua);
-    }
-    unless ($self->has_keys('visitor')) {
-        $self->put(visitor => sub {print(shift, "\n")});
-    }
+    $self->put(user_agent => LWP::RobotUA->new(
+        agent => __PACKAGE__,
+        from => $self->get_if_defined_else_put(
+            from_email => 'software@bivio.biz'),
+        cookie_jar => {
+            file => $self->get_if_defined_else_put(
+                cookies => b_use('IO.File')->temp_file),
+            autosave => 1,
+            ignore_discard => 1,
+        },
+    ))
+        unless $self->has_keys('user_agent');
+    $self->put(visitor => sub {print(shift, "\n")})
+        unless $self->has_keys('visitor');
     return $self;
 }
 
