@@ -862,6 +862,11 @@ sub _link_base_version {
     unlink($base);
     _output($output, "LINKING $version AS $base\n");
     _system("ln -s '$version' '$base'", $output);
+    return
+	if $base =~ /-HEAD\./;
+    unlink($base);
+    _output($output, "LINKING $version AS $base\n");
+    _system("ln -s '$version' '$base'", $output);
     return;
 }
 
@@ -890,7 +895,7 @@ sub _perl_make {
 	    && $Config::Config{$_} && $Config::Config{$_} =~ m!^/!,
 	    sort(keys(%Config::Config))))
 	.  ' POD2MAN=true pure_install && '
-        . ' find $RPM_BUILD_ROOT%{_libdir}/perl? -name "*.bs" '
+        . ' find $RPM_BUILD_ROOT -name "*.bs" '
 	. " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
 }
 
