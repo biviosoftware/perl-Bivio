@@ -106,7 +106,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # A separator will separate the headings from the cells.  The color will be
 # C<table_separator>.
 #
-# heading_separator_class : any []
+# heading_separator_row_class : any []
 #
 # HTML class for heading_separator.
 #
@@ -181,12 +181,16 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # The name of the table.
 #
+# title_row_class : string
+#
+# HTML class for title.
+#
 # trailing_separator : boolean [false]
 #
 # A separator will separate the cells from the summary.  The color will be
 # C<table_separator>.
 #
-# trailing_separator_class : any []
+# trailing_separator_row_class : any []
 #
 # HTML class for trailing_separator.
 #
@@ -515,10 +519,10 @@ sub initialize {
     $fields->{summary_cells} = $summary_cells;
     my($title) = $self->unsafe_get('title');
     if (defined($title)) {
-	$fields->{title} = $_VS->vs_new('String', {
-            value => $title,
-            string_font => 'table_heading',
-        })->initialize_with_parent($self, $source);
+	$fields->{title} = $_VS->vs_new('Tag', 'DIV',
+	    $_VS->vs_new('String', $title, 'table_heading'),
+	        $self->unsafe_get('title_row_class') || ())
+	    ->initialize_with_parent($self, $source);
     }
 
     # heading separator and summary
