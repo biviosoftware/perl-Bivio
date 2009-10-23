@@ -72,8 +72,14 @@ EOF
 sub add_crontab_line {
     my($self, $user, @entry) = @_;
     # Add I<entry>s to this I<user>'s crontab.
-    return $self->append_lines("/var/spool/cron/$user", 'root', $user, 0600,
-	@entry);
+    return $self->append_lines(
+	-d '/var/spool/cron/tabs' ? "/var/spool/cron/tabs/$user"
+	    : "/var/spool/cron/$user",
+	'root',
+	$user,
+	0600,
+	@entry,
+    );
 }
 
 sub add_group {
