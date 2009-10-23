@@ -18,13 +18,29 @@ sub handle_config {
 
 sub absolute_path {
     my(undef, $base) = @_;
+    return $base
+	if $base =~ /^\Q$_CFG->{root}/;
     return File::Spec->catfile($_CFG->{root}, $base);
+}
+
+sub delete {
+    my($proto, $base) = @_;
+    unlink($proto->absolute_path($base));
+    return;
 }
 
 sub destroy_db {
     my($proto) = @_;
     $_F->rm_children($_CFG->{root});
     return;
+}
+
+sub unsafe_read {
+    my($proto, $base) = @_;
+    my($f) = $proto->absolute_path($base);
+    # The -e allows us to catch file permission errors of which there should
+    # be none.  unsafe means "exists" in this case
+    return -e $f ? $_F->read($f) : undef;
 }
 
 sub write {
