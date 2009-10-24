@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Action::LocalFilePlain;
 use strict;
@@ -7,8 +7,8 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-# Avoids a warning
-my($_T) = __PACKAGE__->use('MIME.Type');
+my($_T) = b_use('MIME.Type');
+my($_C) = b_use('FacadeComponent.Constant');
 
 sub execute {
     # (self, Agent.Request, string, string) : boolean
@@ -43,10 +43,10 @@ sub execute_favicon {
 }
 
 sub execute_robots_txt {
-    # (proto, Agent.Request) : boolean
-    # Allow robot browsing only for production sites.
     my($proto, $req) = @_;
-    my($disallow) = $req->get('is_production') ? '' : ' /';
+    my($disallow) = $req->get('is_production')
+	&& $_C->get_value('robots_txt_allow_all', $req)
+	? '' : ' /';
     $req->get('reply')->set_output_type('text/plain');
     $req->get('reply')->set_output(\(<<"EOF"));
 User-agent: *
