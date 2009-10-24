@@ -11,6 +11,9 @@ __PACKAGE__->new({
     http_host => 'other.bivio.biz',
     mail_host => 'other.bivio.biz',
     clone => 'PetShop',
+    Constant => [
+	[robots_txt_allow_all => 0],
+    ],
 });
 
 1;
