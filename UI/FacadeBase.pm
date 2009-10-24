@@ -267,6 +267,7 @@ sub _cfg_base {
 	    [my_site_redirect_map => []],
 	    [ThreePartPage_want_UserState => 1],
 	    [ThreePartPage_want_ForumDropDown => 0],
+	    [robots_txt_allow_all => 1],
 	],
  	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
