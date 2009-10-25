@@ -14,7 +14,11 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-__PACKAGE__->use('Bivio::Agent::HTTP::Cookie')->register(__PACKAGE__);
+b_use('IO.Config')->register(my $_CFG = {
+    register_with_cookie => 1,
+});
+b_use('AgentHTTP.Cookie')->register(__PACKAGE__)
+    if $_CFG->{register_with_cookie};
 
 sub PASSWORD_FIELD {
     return 'p';
@@ -81,6 +85,12 @@ sub get_basic_authorization_realm {
 	# Extra space helps out on Mac, which puts a '.' right after realm
 	? 'Challenge: ' . $self->req('Model.OTP')->get_challenge . ' '
 	: '*';
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub handle_cookie_in {
