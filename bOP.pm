@@ -26,11 +26,28 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.33  2009/10/25 13:36:46  nagler
+  * Bivio::Agent::HTTP::Dispatcher
+    better tracing
+  * Bivio::Biz::Action::LocalFilePlain
+    backout previous change
+    added robots_txt_allow_all so can turn off for a facade
+  * Bivio::Biz::Model::UserLoginForm
+    added register_with_cookie config to allow apps to turn off cookie
+    processing by this module
+  * Bivio::PetShop::Facade::Other
+    for testing robots_txt_allow_all
+  * Bivio::UI::FacadeBase
+    added robots_txt_allow_all
+  * Bivio::Util::LinuxConfig
+    add_crontab_line needs to first look for /var/spool/cron/tabs as an
+    alternative location
+
   Revision 8.32  2009/10/23 12:34:16  nagler
   * Bivio::Biz::Action::LocalFilePlain
     allow Bivio::Util::Spider in robots.txt for test servers
