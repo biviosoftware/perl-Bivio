@@ -28,6 +28,7 @@ sub create_request {
 
 sub handler {
     my($r) = @_;
+    _trace('begin: ', $r->uri) if $_TRACE;
     Apache->push_handlers('PerlCleanupHandler', sub {
 	my($req) = $_REQUEST->get_current;
 	if ($req) {
@@ -46,12 +47,17 @@ sub handler {
 	my($c) = $r->connection();
 	my($u) = $c && $c->user() || 'ANONYMOUS';
 	my($ip) = $c && $c->remote_ip || '0.0.0.0';
-	$r->log_reason($ip.' '.$u.' '.$die->as_string)
+	$r->log_reason($ip.' '.$u.' '.$die->as_string);
+	_trace($die) if $_TRACE;
     }
-    Apache->push_handlers('PerlCleanupHandler', sub {
-	$_JD->execute_queue;
-	return $_OK;
-    }) unless $_JD->queue_is_empty;
+    unless ($_JD->queue_is_empty) {
+	_trace('PerlCleanupHandler for pending Jobs') if $_TRACE;
+	Apache->push_handlers('PerlCleanupHandler', sub {
+	    $_JD->execute_queue;
+	    return $_OK;
+	});
+    }
+    _trace('reply: ', $_REPLY->die_to_http_code($die, $r)) if $_TRACE;
     return $_REPLY->die_to_http_code($die, $r);
 }
 
