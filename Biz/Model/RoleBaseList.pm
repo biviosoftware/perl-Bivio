@@ -41,15 +41,34 @@ sub internal_initialize {
 		name => 'roles',
 		type => 'String',
 		constraint => 'NONE',
-		$_V1 ? (
+		!$_V1 ? (
+		    in_select => 0,
+		) : b_use('ShellUtil.SQL')->is_oracle ? (
+                    in_select => 1,
+                    select_value => q{(SELECT
+			group_concat(
+			    CAST(
+				MULTISET(
+				    SELECT role
+				    FROM realm_user_t ru
+				    WHERE ru.realm_id = realm_user_t.realm_id
+				    AND ru.user_id = realm_user_t.user_id
+				)
+				AS t_string_list
+			    )
+			)
+			FROM realm_user_t ru
+			WHERE ru.realm_id = realm_user_t.realm_id
+			AND ru.user_id = realm_user_t.user_id
+			GROUP BY realm_user_t.user_id
+			) AS roles},
+		) : (
 		    in_select => 1,
 		    select_value => q{(SELECT group_concat(ru.role || '')
 			FROM realm_user_t ru
 			WHERE ru.realm_id = realm_user_t.realm_id
 			AND ru.user_id = realm_user_t.user_id
 		    ) AS roles},
-		) : (
-		    in_select => 0,
 		),
 	    },
 	],
