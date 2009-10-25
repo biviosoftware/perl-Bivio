@@ -973,7 +973,26 @@ EOF
 
 sub internal_upgrade_db_group_concat {
     my($self) = @_;
-    $self->run(<<'EOF');
+    if (b_use('ShellUtil.SQL')->is_oracle) {
+        $self->run(<<'EOF');
+CREATE OR REPLACE TYPE t_string_list
+    AS TABLE OF VARCHAR2(4000)
+/
+CREATE OR REPLACE FUNCTION group_concat
+   (lst IN t_string_list)
+   RETURN  VARCHAR2 IS
+   ret VARCHAR2(4000);
+BEGIN
+   FOR j IN 1..lst.last  LOOP
+      ret := ret || ',' || lst(j);
+   END LOOP;
+   RETURN ret;
+END;
+/
+EOF
+    }
+    else {
+	$self->run(<<'EOF');
 CREATE OR REPLACE FUNCTION _group_concat(text, text)
 RETURNS text AS '
 SELECT CASE
@@ -990,6 +1009,8 @@ STYPE = text
 )
 /
 EOF
+    }
+    return;
 }
 
 sub internal_upgrade_db_job_lock {
@@ -1899,6 +1920,13 @@ ALTER TABLE tuple_t
 /
 EOF
     return;
+}
+
+sub is_oracle {
+    my($self) = @_;
+    # May not have a database at this point to connect to.
+    return b_use('SQL.Connection')->get_dbi_config->{connection} =~ /oracle/i
+	? 1 : 0;
 }
 
 sub realm_role_config {
