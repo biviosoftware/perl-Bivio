@@ -26,11 +26,29 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.32  2009/10/23 12:34:16  nagler
+  * Bivio::Biz::Action::LocalFilePlain
+    allow Bivio::Util::Spider in robots.txt for test servers
+  * Bivio::Biz::File
+    added delete & unsafe_read
+    absolute_path is now idem potent
+  * Bivio::UI::HTML::Widget::Table
+    wrap title in DIV with title_row_class
+  * Bivio::UI::XHTML::Widget::Page3
+    use xhtml_title instead of page3_title, fixes Prose eval of title
+  * Bivio::Util::Release
+    remove all *.bs, .packlist, perllocal.pod from top level build dir,
+    because /usr/lib64 is not necessarily where perl gets installed
+  * Bivio::Util::Spider
+    NEW
+  * Bivio/Util/t/Spider
+    NEW
+
   Revision 8.31  2009/10/12 23:46:05  nagler
   * Bivio::UI::View::CSS
     move b_prose change to wiki section
