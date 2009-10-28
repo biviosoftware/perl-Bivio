@@ -2,109 +2,45 @@
 # $Id$
 package Bivio::UI::HTML::Widget::TextArea;
 use strict;
-$Bivio::UI::HTML::Widget::TextArea::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::TextArea::VERSION;
+use Bivio::Base 'Bivio::UI::HTML::Widget::ControlBase';
 
-=head1 NAME
+# C<Bivio::UI::HTML::Widget::TextArea> draws a C<INPUT> tag with
+# attribute C<TYPE=TEXTAREA>.
+#
+#
+#
+# field : string (required)
+#
+# Name of the form field.
+#
+# form_model : array_ref (required, inherited, get_request)
+#
+# Which form are we dealing with.
+#
+# rows : int (required)
+#
+# The number of rows to show.
+#
+# cols : int (required)
+#
+# The number of character columns to show.
+#
+# readonly : boolean (optional) [0]
+#
+# Don't allow text-editing
+#
+# wrap : string (optional) [VIRTUAL]
+#
+# The text wrapping mode.
 
-Bivio::UI::HTML::Widget::TextArea - large text input field
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::TextArea;
-    Bivio::UI::HTML::Widget::TextArea->new($attrs);
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::HTML::Widget::ControlBase;
-@Bivio::UI::HTML::Widget::TextArea::ISA = ('Bivio::UI::HTML::Widget::ControlBase');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::TextArea> draws a C<INPUT> tag with
-attribute C<TYPE=TEXTAREA>.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item field : string (required)
-
-Name of the form field.
-
-=item form_model : array_ref (required, inherited, get_request)
-
-Which form are we dealing with.
-
-=item rows : int (required)
-
-The number of rows to show.
-
-=item cols : int (required)
-
-The number of character columns to show.
-
-=item readonly : boolean (optional) [0]
-
-Don't allow text-editing
-
-=item wrap : string (optional) [VIRTUAL]
-
-The text wrapping mode.
-
-=back
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::TextArea
-
-Creates a new TextArea widget.
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] ||= {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="control_on_render"></a>
-
-=head2 control_on_render(any source, string_ref buffer)
-
-Render the input field.
-
-=cut
-
 sub control_on_render {
+    # (self, any, string_ref) : undef
+    # Render the input field.
     my($self, $source, $buffer) = @_;
     $self->SUPER::control_on_render($source, $buffer);
     my($fields) = $self->[$_IDI];
@@ -136,15 +72,9 @@ sub control_on_render {
     return;
 }
 
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes from attribute settings.
-
-=cut
-
 sub initialize {
+    # (self) : undef
+    # Initializes from attribute settings.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return if $fields->{model};
@@ -157,16 +87,12 @@ sub initialize {
     return;
 }
 
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub new {
+    # (proto, hash_ref) : Widget.TextArea
+    # Creates a new TextArea widget.
+    my($self) = shift->SUPER::new(@_);
+    $self->[$_IDI] ||= {};
+    return $self;
+}
 
 1;
