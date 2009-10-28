@@ -138,7 +138,6 @@ sub _roles {
     my($main, $aux) = $self->roles_by_category(
 	$_V1 ? [map($_R->from_sql_column($_), split(/,/, $row->{roles}))]
 	   : _select_roles($self, $row));
-#TODO: Consider this for very old apps: [$row->{'RealmRole.role'}]);
     $row->{roles} = [@$main, @$aux];
     return;
 }
