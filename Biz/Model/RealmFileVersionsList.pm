@@ -70,13 +70,16 @@ sub internal_prepare_statement {
 	[qw(RealmFileLock.user_id Email_3.realm_id)],
 	['Email_3.location', [$self->use('Model.Email')->DEFAULT_LOCATION]],
     ]));
-    my(@parts) = split('/', $self->req('path_info'));
-    my($name) = $_FP->get_base(pop(@parts));
+    my($p) = $self->req('path_info') || '';
+    my(@parts) = split('/', $p);
+    my($name) = pop(@parts);
     $stmt->where(
 	$stmt->OR(
 	    $stmt->LIKE('RealmFile.path_lc',
-		lc($_FP->VERSIONS_FOLDER . join('/', @parts, $name .'%'))),
-	    $stmt->EQ('RealmFile.path', [$self->req('path_info')]),
+		lc($_FP->VERSIONS_FOLDER .
+		       join('/', @parts, $_FP->get_base($name) . '%'
+				. $_FP->get_suffix($name)))),
+	    $stmt->EQ('RealmFile.path', [$p]),
 	));
     return shift->SUPER::internal_prepare_statement(@_);
 }
