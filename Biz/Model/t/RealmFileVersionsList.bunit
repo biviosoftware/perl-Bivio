@@ -1,0 +1,50 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->set_realm_and_user('rfversions_bunit', 'root');
+model('RealmFile')->delete_all;
+map(
+    {
+	my($path) = @$_;
+	map(+{
+	    path => model('RealmFile')->create_or_update_with_content(
+		{path => b_use("Type.FilePath")->to_absolute($path, $_)},
+		\("Lorem ipsum\n"),
+	    )->get('path'),
+	}, 1 .. 3),
+    }
+    ['test.txt'],
+    ['test.doc'],
+);
+options({
+    compute_params => sub {
+	my(undef, $params) = @_;
+	req()->put(path_info => $params->[0]);
+	return [];
+    },
+});
+[
+    load_all => [
+	[] => undef,
+	['/Public'] => undef,
+	['/Public/test.txt'] => [
+	    {
+		'RealmFile.path_lc' => qr{test\.txt$},
+		revision_number => 'current',
+	    },
+	    {
+		'RealmFile.path_lc' => qr{;2\.txt$},
+		revision_number => 2,
+	    },
+	    {
+		'RealmFile.path_lc' => qr{;1\.txt$},
+		revision_number => 1,
+	    },
+	],
+	['/Public/test.doc'] => [
+	    {'RealmFile.path_lc' => qr{test\.doc$}},
+	    {'RealmFile.path_lc' => qr{;2\.doc$}},
+	    {'RealmFile.path_lc' => qr{;1\.doc$}},
+	],
+    ],
+];
