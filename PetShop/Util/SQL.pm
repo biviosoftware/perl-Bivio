@@ -684,6 +684,7 @@ dummy image file
 EOF
     });
     $self->top_level_forum('wiki_bunit', [$self->ROOT], []);
+    $self->top_level_forum('realmfileversionslist_bunit', [$self->ROOT], []);
     return;
 }
 
