@@ -316,6 +316,9 @@ my($_WIDGET_ATTRS) = [qw(value realm_id realm_name task_id is_public)];
 my($_TT) = $_WN->TITLE_TAG =~ /(\w+)/;
 my($_EMPTY) = {map((@{$_CHILDREN->{$_}} ? () : ($_ => 1)), keys(%$_CHILDREN))};
 my($_NOT_FILE) = '<inline>';
+b_use('IO.Config')->register(my $_CFG = {
+    paragraphing => 1,
+});
 
 sub CAMEL_CASE_REGEX {
     return $_CAMEL_CASE;
@@ -374,6 +377,12 @@ sub do_parse_lines {
 	return
 	    unless $op->($line);
     }
+    return;
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
     return;
 }
 
@@ -816,7 +825,7 @@ sub _init_children {
 
 sub _parse {
     my($state) = @_;
-    $state->{option} = {paragraphing => 1};
+    $state->{option} = {paragraphing => $_CFG->{paragraphing}};
     $state->{parse} = {
 	stack => [],
     };
