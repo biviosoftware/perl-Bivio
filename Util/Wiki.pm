@@ -199,13 +199,14 @@ sub _update_b_tags {
 	=~ s/^\@(?:ins\-page|b\-embed)\s(?:.*=)*(.*)$/\@b-embed value=$1/gm;
     $content
 	=~ s/^\@b\-([a-z-]*)\s(?:\S*=)?(\S*)$/\@b-$1 value=$2/gm;
-    $content
-	=~ s/^\@random\-image\s(?:\S*=)?(\S*)$/\@aa-random-image value=$1/gm;
+   $content
+	=~ s/^\@random\-img\s(?:\S*=)?(\S*)$/\@aa-random-image value=$1/gm;
     return $content;
 }
 
 sub _upgrade {
     my($self, $blog_only, $op) = @_;
+    $self->are_you_sure('Upgrade all content?');
     $self->initialize_ui;
     $self->model('RealmFile')->do_iterate(
 	sub {
