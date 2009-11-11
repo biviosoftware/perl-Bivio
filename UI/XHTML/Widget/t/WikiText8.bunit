@@ -12,4 +12,31 @@ IN
 @p x
 @/p
 IN
+    <<'IN' => qr{<inline>, line 6: \@/pre: spurious end tag},
+@pre
+@ol
+@li one
+@li two
+@/ol
+@/pre
+IN
+    <<'IN' => qr{<inline>, line 6: \@/code: spurious end tag},
+@code
+@ol
+@li uno
+@li dos
+@/ol
+@/code
+IN
+    <<'IN' => qr{<code>.*</code>},
+@code
+@a name="phone"
+@/code
+IN
+    <<'IN' => qr{<inline>, line 4: \@/code: spurious end tag},
+@code
+@a name="phone"
+@h2 Important Telephone Numbers 
+@/code 
+IN
 ];
