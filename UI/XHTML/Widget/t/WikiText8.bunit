@@ -36,7 +36,7 @@ IN
     <<'IN' => qr{<inline>, line 4: \@/code: spurious end tag},
 @code
 @a name="phone"
-@h2 Important Telephone Numbers 
-@/code 
+@h2 Important Telephone Numbers
+@/code
 IN
 ];
