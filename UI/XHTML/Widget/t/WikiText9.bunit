@@ -1,0 +1,43 @@
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+[
+    <<'IN' => trim_space(<<'OUT'),
+@pre Preserves whitespace
+IN
+<pre>Preserves whitespace</pre>
+OUT
+    <<'IN' => trim_space(<<'OUT'),
+@pre
+Preserving whitespace
+
+Unexpectedly?
+IN
+<pre>Preserving whitespace
+
+Unexpectedly?
+</pre>
+OUT
+    <<'IN' => trim_space(<<'OUT'),
+@pre
+Preserving
+
+whitespace
+@/pre
+Explicitly!
+IN
+<pre>Preserving
+
+whitespace
+</pre><p class="b_prose">Explicitly!
+</p>
+OUT
+    <<'IN' => trim_space(<<'OUT'),
+@code
+@a href=http://www.google.com Google Search
+@/code
+@a href=http://www.google.com Google Search
+IN
+<p class="b_prose"><code><a href="http://www.google.com">Google Search</a></code><a href="http://www.google.com">Google Search</a></p>
+OUT
+];
