@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::TextArea;
 use strict;
@@ -11,6 +11,14 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub LINE_WIDTH {
     return 60;
+}
+
+sub append_trailing_newline {
+    my(undef, $value) = @_;
+    return undef
+	unless defined($value);
+    $value =~ s/[\r\n]+$//s;
+    return "$value\n";
 }
 
 sub from_literal {
@@ -34,12 +42,13 @@ sub from_literal {
     $value =~ s/\r\n|\n\r|\r/\n/sg;
     $value =~ s/^\s+$//mg;
     $value =~ s/^\n+|\n+$//sg;
-    $value =~ s/\n{3,}/\n/sg;
+    $value =~ s/\n{3,}/\n\n/sg;
     return $value =~ /\S/ ? $value . "\n" : (undef, undef);
 }
 
 sub get_width {
-    return 64*1024;
+    # Max size in browsers
+    return 0xffff;
 }
 
 1;
