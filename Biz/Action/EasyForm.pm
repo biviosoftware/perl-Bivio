@@ -1,18 +1,19 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::EasyForm;
 use strict;
 use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = b_use('FacadeComponent.Constant');
 my($_CSV) = b_use('ShellUtil.CSV');
-my($_M) = b_use('Biz.Model');
-my($_RI) = b_use('Agent.RequestId');
+my($_DT) = b_use('Type.DateTime');
 my($_FCT) = b_use('FacadeComponent.Task');
 my($_FP) = b_use('Type.FilePath');
-my($_C) = b_use('FacadeComponent.Constant');
-my($_DT) = b_use('Type.DateTime');
+my($_M) = b_use('Biz.Model');
 my($_MT) = b_use('MIME.Type');
+my($_RI) = b_use('Agent.RequestId');
+my($_TA) = b_use('Type.TextArea');
 my($_V) = b_use('UI.View');
 
 sub execute {
@@ -37,6 +38,7 @@ sub execute {
     }
     $d =~ s{^.*?\n}{_headings_csv($headings)}es
 	if $new_headings;
+    $d = $_TA->append_trailing_newline($d);
     $d .= ${$_CSV->to_csv_text([[map($form->{$_}, @$headings)]])};
     $rf->update_with_content({user_id => $rf->get('user_id')}, \$d);
     my($email) = _email($rf, $base);
