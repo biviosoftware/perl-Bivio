@@ -1,60 +1,20 @@
-# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Format::Link;
 use strict;
-$Bivio::UI::HTML::Format::Link::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Format::Link::VERSION;
+use Bivio::Base 'Bivio::UI::HTML::Format';
 
-=head1 NAME
+# C<Bivio::UI::HTML::Format::Link> formats external hrefs as /goto
+# links.
 
-Bivio::UI::HTML::Format::Link - formats an href adding a goto, if necessary
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Format::Link;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::HTML::Format>
-
-=cut
-
-use Bivio::UI::HTML::Format;
-@Bivio::UI::HTML::Format::Link::ISA = ('Bivio::UI::HTML::Format');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Format::Link> formats external hrefs as /goto
-links.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_widget_value"></a>
-
-=head2 static get_widget_value(any href) : string
-
-Returns an href, possibly as an /goto link.
-
-href may be a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> or it
-may be a name of TaskId.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_widget_value {
+    # (proto, any) : string
+    # Returns an href, possibly as an /goto link.
+    #
+    # href may be a L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> or it
+    # may be a name of TaskId.
     my($source, $href) = @_;
     return $href if _format_task(\$href);
 
@@ -68,13 +28,9 @@ sub get_widget_value {
 	. '=' . Bivio::HTML->escape_query($href);
 }
 
-#=PRIVATE METHODS
-
-# _format_task(string_ref href) : boolean
-#
-# Returns true if formatted as a task uri.
-#
 sub _format_task {
+    # (string_ref) : boolean
+    # Returns true if formatted as a task uri.
     my($href) = @_;
     if (ref($$href)) {
 	Bivio::Die->die($$href, ': ref is not a TaskId')
@@ -90,15 +46,5 @@ sub _format_task {
     $$href = Bivio::Agent::Request->get_current->format_stateless_uri($$href);
     return 1;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
