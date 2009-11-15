@@ -2,13 +2,8 @@
 # $Id$
 package Bivio::Type::Text64K;
 use strict;
-use Bivio::Base 'Type.Text';
+use Bivio::Base 'Type.TextArea';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-sub get_width {
-    # Returns 64K - 1 so length fits in two bytes.
-    return 0xffff;
-}
 
 1;
