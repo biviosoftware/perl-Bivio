@@ -212,7 +212,7 @@ sub _ignore_duplicate {
     my($mi) = $self->get('mail_incoming');
     return undef
 	if $self->req->if_test(
-	sub {b_debug($mi->get('header') !~ /X-Bivio-Mail-Test/i)});
+	sub {$mi->get('header') !~ /X-Bivio-Mail-Test/i});
     return undef
 	unless $rml->unsafe_load_this_or_first
 	&& _ignore_duplicate_threshold(
