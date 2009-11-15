@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::FileChangeForm;
 use strict;
@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 my($_FN) = __PACKAGE__->use('Type.FileName');
 my($_FP) = Bivio::Type->get_instance('FilePath');
+my($_TA) = b_use('Type.TextArea');
 b_use('IO.Config')->register(my $_CFG = {
     show_comment => 0,
 });
@@ -103,11 +104,9 @@ sub execute_ok {
     # file
     elsif ($self->get('mode')->equals_by_name(qw(UPLOAD TEXT_FILE))) {
 	_release_lock($self);
-	my($realm_file_id) = $self->get('realm_file')->update_with_content({
-	    override_is_read_only => 1,
-	}, $self->get('mode')->eq_upload
-	    ? $self->get('file')->{content}
-	    : $self->get('content'))->get('realm_file_id');
+	my($realm_file_id) = $self->get('realm_file')
+	    ->update_with_content({}, _content($self))
+	    ->get('realm_file_id');
 	$self->new_other('RealmFileLock')->create({
 	    realm_file_id => $realm_file_id,
 	    comment => $self->get('comment'),
@@ -270,6 +269,13 @@ sub _add_file_name {
     $self->internal_put_error(file => 'FILE_NAME')
 	unless defined($name);
     return $name;
+}
+
+sub _content {
+    my($self) = @_;
+    return $self->get('file')->{content}
+	if $self->get('mode')->eq_upload;
+    return $_TA->append_trailing_newline($self->get('content'));
 }
 
 sub _default_mode {
