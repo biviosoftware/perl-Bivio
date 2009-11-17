@@ -16,10 +16,9 @@ sub LINE_WIDTH {
 sub canonicalize_newlines {
     my(undef, $value) = @_;
     my($v) = ref($value) ? $value : \$value;
-    $$v =~ s/\r\n|\n\r|\r/\n/sg;
-    $$v =~ s/^\s+$//mg;
-    $$v =~ s/^\n+|\n+$//sg;
-    $$v =~ s/\n{3,}/\n\n/sg;
+    $$v =~ s/\r\n|\r/\n/sg;
+    $$v =~ s/^[ \t]+$//mg;
+    $$v =~ s/\n+$//sg;
     $$v .= "\n"
 	if length($$v);
     return $v;
