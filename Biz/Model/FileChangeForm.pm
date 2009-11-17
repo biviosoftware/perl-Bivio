@@ -273,9 +273,8 @@ sub _add_file_name {
 
 sub _content {
     my($self) = @_;
-    return $self->get('file')->{content}
-	if $self->get('mode')->eq_upload;
-    return $_TA->append_trailing_newline($self->get('content'));
+    return $self->get('mode')->eq_upload ? $self->get('file')->{content}
+	: $self->get('content');
 }
 
 sub _default_mode {
