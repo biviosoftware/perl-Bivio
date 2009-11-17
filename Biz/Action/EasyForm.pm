@@ -38,9 +38,9 @@ sub execute {
     }
     $d =~ s{^.*?\n}{_headings_csv($headings)}es
 	if $new_headings;
-    $d = $_TA->append_trailing_newline($d);
-    $d .= ${$_CSV->to_csv_text([[map($form->{$_}, @$headings)]])};
-    $rf->update_with_content({user_id => $rf->get('user_id')}, \$d);
+    $d = $_TA->canonicalize_newlines(\$d);
+    $$d .= ${$_CSV->to_csv_text([[map($form->{$_}, @$headings)]])};
+    $rf->update_with_content({user_id => $rf->get('user_id')}, $d);
     my($email) = _email($rf, $base);
     $proto->new({
 	file_path => $rf->get('path'),
