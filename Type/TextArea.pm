@@ -13,12 +13,16 @@ sub LINE_WIDTH {
     return 60;
 }
 
-sub append_trailing_newline {
+sub canonicalize_newlines {
     my(undef, $value) = @_;
-    return undef
-	unless defined($value);
-    $value =~ s/[\r\n]+$//s;
-    return "$value\n";
+    my($v) = ref($value) ? $value : \$value;
+    $$v =~ s/\r\n|\n\r|\r/\n/sg;
+    $$v =~ s/^\s+$//mg;
+    $$v =~ s/^\n+|\n+$//sg;
+    $$v =~ s/\n{3,}/\n\n/sg;
+    $$v .= "\n"
+	if length($$v);
+    return $v;
 }
 
 sub from_literal {
@@ -39,11 +43,8 @@ sub from_literal {
         and $pref;
     return (undef, Bivio::TypeError->TOO_LONG)
  	if length($value) > $proto->get_width;
-    $value =~ s/\r\n|\n\r|\r/\n/sg;
-    $value =~ s/^\s+$//mg;
-    $value =~ s/^\n+|\n+$//sg;
-    $value =~ s/\n{3,}/\n\n/sg;
-    return $value =~ /\S/ ? $value . "\n" : (undef, undef);
+    $proto->canonicalize_newlines(\$value);
+    return $value =~ /\S/ ? $value : (undef, undef);
 }
 
 sub get_width {

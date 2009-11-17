@@ -5,13 +5,20 @@ req();
 [
     from_literal => [
 	'' => UNDEF(),
-	"\n\r" => UNDEF(),
-	"\n\r" => UNDEF(),
-	"  \n	\n \r \n\r" => UNDEF(),
-	'  x' => "  x\n",
+	"\n" => UNDEF(),
+	"  \n" => UNDEF(),
+	'x' => "x\n",
+    ],
+    canonicalize_newlines => [
+	'' => '',
+	"a\n\r" => "a\n",
+	"a\r\n" => "a\n",
+	"a\r" => "a\n",
+	"  \n	\n \r \n\r" => '',
+	'  x  ' => "  x  \n",
 	"  \r\n	  \nx\n\r" => "x\n",
 	"\n\nx\n\n" => "x\n",
 	"  x\n\n" => "  x\n",
-	"\n\n  x\n\ry\n\n" => "  x\ny\n",
+	"\n\n  x\n\ry\n\r\n" => "  x\ny\n",
     ],
 ];
