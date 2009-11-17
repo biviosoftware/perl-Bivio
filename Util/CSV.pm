@@ -6,8 +6,9 @@ use Bivio::Base 'Bivio::ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_QUOTE) = '"';
-my($_END_OF_VALUE) = qr/[\,\r\n]/o;
-my($_END_OF_LINE) = qr/[\r\n]/o;
+my($_END_OF_VALUE) = qr/[\,\n]/;
+my($_END_OF_LINE) = qr/\n/;
+my($_TA) = b_use('Type.TextArea');
 
 sub USAGE {
     return <<'EOF';
@@ -69,10 +70,11 @@ sub parse {
     #
     # If I<want_line_numbers> is specified, then the first item of each row
     # will contain the line number from the input text.
-    my($buf) = !defined($csv_text) ? $self->read_input
-	: ref($csv_text) ? $csv_text : \$csv_text;
     my($state) = {
-        buffer => $buf,
+        buffer => $_TA->canonicalize_newlines(
+	    !defined($csv_text) ? $self->read_input
+		: ref($csv_text) ? $csv_text : \$csv_text,
+	),
         want_line_numbers => $want_line_numbers,
         char_count => 0,
         line_number => 1,
@@ -80,17 +82,12 @@ sub parse {
         rows => [],
         current_row => [$want_line_numbers ? 1 : ()],
     };
-
     while (defined(my $char = _next_char($state))) {
-
         if ($char eq $_QUOTE) {
             _die($state, 'quote character within unquoted value')
                 if length($state->{current_value});
-
             while (defined($char = _next_char($state))) {
-
                 if ($char eq $_QUOTE) {
-
                     if (_peek_char($state) eq $_QUOTE) {
                         _append_char($state, $char);
                         _next_char($state);
@@ -103,7 +100,7 @@ sub parse {
                     }
                 }
                 elsif ($char =~ $_END_OF_LINE) {
-                    _next_line($state, $char);
+                    _next_line($state);
                     _append_char($state, "\n");
                 }
                 else {
@@ -117,7 +114,7 @@ sub parse {
             _end_value($state);
 
             if ($char =~ $_END_OF_LINE) {
-                _next_line($state, $char);
+                _next_line($state);
                 _end_row($state);
             }
         }
@@ -223,10 +220,7 @@ sub _next_char {
 }
 
 sub _next_line {
-    my($state, $char) = @_;
-    # Advances to the next line. Removes CR LF pair if present.
-    _next_char($state)
-        if $char eq "\r" && _peek_char($state) eq "\n";
+    my($state) = @_;
     $state->{line_number}++;
     return;
 }
