@@ -42,8 +42,8 @@ sub from_literal {
         and $pref;
     return (undef, Bivio::TypeError->TOO_LONG)
  	if length($value) > $proto->get_width;
-    $proto->canonicalize_newlines(\$value);
-    return $value =~ /\S/ ? $value : (undef, undef);
+    my($v) = $proto->canonicalize_newlines(\$value);
+    return $$v =~ /\S/ ? $$v : (undef, undef);
 }
 
 sub get_width {
