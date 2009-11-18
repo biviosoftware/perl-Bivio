@@ -26,11 +26,41 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.37  2009/11/17 14:55:16  nagler
+  * Bivio::BConf
+    ignore JOB_START/END changed
+  * Bivio::Biz::Action::EasyForm
+    always append trailing newline
+    call canonicalize_newlines
+  * Bivio::Biz::Model::FileChangeForm
+    Append a trailing newline if content is submitted from a form
+    append_new_line unnecessary b/c comes in via TextArea
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    remove a debug
+  * Bivio::Type::Text64K
+    subclass of TextArea
+  * Bivio::Type::TextArea
+    added append_trailing_newline
+    changed size to match max browser size
+    fixed a bug in from_literal which smashes together multiple lines
+    renamed append_new_line to canonicalize_newlines
+    from_literal uses it
+    \n\r is no longer parsed; This format is no longer relevant
+    parse whitespace on blank lines explicitly (\s includes newlines even
+    if //mg)
+    Don't strip multiple blank lines or leading newlines
+  * Bivio::UI::HTML::Format::Link
+    rmpod
+  * Bivio::Util::CSV
+    call canonicalize_newlines which takes a ref
+  * Bivio::Util::Wiki
+    correct random-image reference and call are_you_sure
+
   Revision 8.36  2009/11/10 18:41:20  nagler
   * Bivio::PetShop::Util::SQL
     add forum for RealmFileVersionsList.bunit
