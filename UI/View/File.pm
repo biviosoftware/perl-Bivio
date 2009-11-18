@@ -207,7 +207,7 @@ sub _javascript_field_selector {
 	# hack to make file browse button render correctly in firefox
 	$res .= <<'EOF'
 if (navigator.appName == "Netscape")
-  document.body.innerHTML += "\n";
+  document.file_form.innerHTML += "\n";
 EOF
 	    . 'document.file_form.'
 	    . $source->req('Model.FileChangeForm')
