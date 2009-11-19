@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 FormModel();
 require 'Blog.PL';
@@ -15,7 +15,7 @@ require 'Blog.PL';
 		path => sub {
 		    my($rf) = req()->get('Model.RealmFile');
 		    my($c) = $rf->get_content;
-		    assert_equals("\@h1 t$x\nb$x", $$c);
+		    assert_equals("\@h1 t$x\nb$x\n", $$c);
 		    return $p ? qr{^/Public/Blog/} : qr{^/Blog/};
 		},
 	    },

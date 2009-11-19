@@ -11,7 +11,7 @@ require 'Blog.PL';
 my($entry) = [map(
     +{
 	title => "Edit $_ Title",
-	body => "Edit\nbody $_",
+	body => "Edit\nbody $_\n",
 	'RealmFile.is_public' => $_,
     }, 0, 1,
 )];

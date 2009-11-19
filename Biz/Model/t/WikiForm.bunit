@@ -44,13 +44,13 @@ Bivio::Biz::Model->new('RealmFile')->unauth_delete_deep({
     $path->('/BunitOne'),
     empty_case({
 	'RealmFile.path_lc' => 'BunitOne',
-	content => 'b1',
+	content => "b1\n",
 	file_exists => 1,
     }),
     $path->(),
     error_case({
 	'RealmFile.path_lc' => 'BunitOne',
-	content => 'b1',
+	content => "b1\n",
     }, {
 	'RealmFile.path_lc' => 'EXISTS',
     }),
@@ -62,7 +62,7 @@ Bivio::Biz::Model->new('RealmFile')->unauth_delete_deep({
     }),
     [{
 	'RealmFile.path_lc' => 'BunitTwo',
-	content => 'b2',
+	content => "b2\n",
     }] => [{
 	'Model.RealmFile' => {
 	    path => '/Wiki/BunitTwo',

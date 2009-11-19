@@ -13,10 +13,10 @@ FormModel({
 req()->set_realm_and_user(qw(fourem root));
 [
     ['/TextFileForm.txt'] => [{content => undef}],
-    simple_case({content => 'aa'}, {}),
-    empty_case({content => 'aa'}),
-    simple_case({content => 'bb'}, {}),
-    empty_case({content => 'bb'}),
+    simple_case({content => "aa\n"}, {}),
+    empty_case({content => "aa\n"}),
+    simple_case({content => "bb\n"}, {}),
+    empty_case({content => "bb\n"}),
     inline_case(sub {
 	model('RealmFile')->delete({path => $path});
 	return;
