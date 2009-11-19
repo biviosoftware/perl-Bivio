@@ -545,7 +545,7 @@ completed
 </html>
 EOF
     $self->realm_file_create($_WN->to_absolute('EasyForm_btest', 1), <<'EOF');
-@form method=POST action=/fourem/Forms/btest?goto=/fourem/Public/Wiki/EasyForm_btest_done
+@form method=POST action=/fourem/Forms/btest?goto=/fourem/bp/EasyForm_btest_done
 @table
 @tr
 @td Input:
@@ -904,7 +904,6 @@ sub _realm_id {
 1;
 
 __DATA__
-# The following is returned by realm_role_config().
 b-realm-role -r GENERAL edit TEST_ROLE1 - \
     +TEST_PERMISSION1
 b-realm-role -r GENERAL edit TEST_ROLE2 - \
