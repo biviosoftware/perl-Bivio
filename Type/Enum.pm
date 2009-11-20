@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Enum;
 use strict;
@@ -256,10 +256,9 @@ sub compile_with_numbers {
 
 sub equals_by_name {
     my($self) = shift;
-    # Returns true if any I<name> is self's name.  Blows up if I<name> is invalid.
     foreach my $name (@_) {
 	return 1
-	    if $self == $self->from_name($name);
+	    if $self == $self->from_any($name);
     }
     return 0;
 }
