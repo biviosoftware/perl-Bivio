@@ -17,8 +17,12 @@ sub HELP_WIKI_REALM_NAME {
     return _site(shift, 'help');
 }
 
+sub MAIL_RECEIVE_URI_PREFIX {
+    return '_mail_receive';
+}
+
 sub MAIL_RECEIVE_PREFIX {
-    return '_mail_receive_';
+    return shift->MAIL_RECEIVE_URI_PREFIX . '_';
 }
 
 #TODO: use ForumName->join to create these.  Also, names should not
@@ -156,6 +160,7 @@ sub _cfg_base {
 	    )] => -1],
 	    # CSS
 	    [body => 0],
+	    [css_reset => -1],
 	    [[qw(body_background header_su)] => 0xffffff],
 	    [[qw(off footer_border_top disabled)] => 0x999999],
 	    [even_background => 0xeeeeee],
@@ -211,6 +216,7 @@ sub _cfg_base {
 	    [warn => 'italic'],
 	    [err => 'bold'],
 	    [body => ['family=Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small']],
+	    [css_reset => 'normal'],
 	    [tools => ['nowrap', 'inline']],
 	    [[qw(code pre_text)] => [
 		'family="Courier New",Courier,monospace,fixed',
@@ -232,6 +238,7 @@ sub _cfg_base {
 	    [[qw(off pager)] => []],
 	    [th => 'bold'],
 	    [dd_menu => ['normal']],
+	    [user_state => ['120%', 'nowrap']],
 	],
 	Constant => [
 	    map({
@@ -346,6 +353,9 @@ sub _cfg_base {
 	    [xlink => [
 		back_to_top => 'back to top',
 		SITE_ROOT => 'Home',
+		page_error_referer => 'Go back to the previous page, and try something different.',
+		page_error_user => 'Go back to your personal page.',
+		page_error_visitor => 'Go to the home page.',
 	    ]],
 	    [title => [
 		[qw(DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND DEFAULT_ERROR_REDIRECT_NOT_FOUND)] => 'Not Found',
@@ -566,11 +576,6 @@ sub _cfg_crm {
 		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
 		FORUM_CRM_THREAD_LIST => q{Enum(['Model.CRMThreadList', '->get_crm_thread_status']); Ticket #String(['Model.CRMThreadList', '->get_crm_thread_num']); String(['Model.CRMThreadList', '->get_subject']);},
 	    ]],
-	    [xlink => [
-		page_error_referer => 'Go back to the previous page, and try something different.',
-		page_error_user => 'Go back to your personal page.',
-		page_error_visitor => 'Go to the home page.',
-	    ]],
 	    [acknowledgement => [
 		FORUM_CRM_FORM => 'Your message was sent.',
 	    ]],
@@ -762,7 +767,8 @@ sub _cfg_mail {
 		},
 	    ),
 	    [GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT => undef],
-	    [MAIL_RECEIVE_DISPATCH => '_mail_receive/*'],
+	    [MAIL_RECEIVE_DISPATCH =>
+		 sub {shift->get_facade->MAIL_RECEIVE_URI_PREFIX . '/*'}],
 	    [FORUM_MAIL_REFLECTOR => undef],
 	    [MAIL_RECEIVE_FORWARD => undef],
 	    [MAIL_RECEIVE_IGNORE => undef],
@@ -773,9 +779,8 @@ sub _cfg_mail {
 	    [GROUP_BULLETIN_REFLECTOR => undef],
 	],
 	Text => [
-	    ['MailReceiveDispatchForm.uri_prefix' => sub {
-		 return shift->get_facade->MAIL_RECEIVE_PREFIX;
-	    }],
+	    ['MailReceiveDispatchForm.uri_prefix' =>
+		 sub {shift->get_facade->MAIL_RECEIVE_PREFIX}],
 	    [MailThreadRootList => [
 		'RealmMail.subject' => 'Topic',
 		'RealmMail.subject_lc' => 'Topic',
@@ -1254,9 +1259,6 @@ sub _cfg_user_auth {
 		sub {0},
 	    )],
 	],
-	Font => [
-	    [user_state => ['120%', 'nowrap']],
-	],
 	FormError => [
 	    ['UserSettingsListForm.User.first_name.NULL' => 'You must supply at least one of First, Middle, or Last Names.'],
 	    [[qw(ContextlessUserLoginForm UserLoginForm)] => [
@@ -1503,12 +1505,15 @@ sub _cfg_wiki {
 
 	    TaskMenu([
 		'SITE_WIKI_VIEW',
+                'FORUM_BLOG_LIST',
 		'FORUM_CALENDAR',
 		'FORUM_FILE_TREE_LIST',
-		'FORUM_MAIL_THREAD_ROOT_LIST',
 		'GROUP_TASK_LOG',
-		'FORUM_CRM_THREAD_ROOT_LIST',
+		'FORUM_MAIL_THREAD_ROOT_LIST',
+                'FORUM_MOTION_LIST',
+                'FORUM_TUPLE_USE_LIST',
 		'GROUP_USER_LIST',
+		'FORUM_CRM_THREAD_ROOT_LIST',
 		'FORUM_WIKI_VIEW',
 		SiteAdminDropDown(),
 	    ]),
