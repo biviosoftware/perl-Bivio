@@ -206,7 +206,7 @@ sub _validate_record {
 		$name . ': ' . $row->{$name} . ', ' . $err->get_short_desc)
 	}
 	# is the field required?
-	elsif (my $e = $columns->{$name}->{constraint}->check_value($v)) {
+	elsif (my $e = $columns->{$name}->{constraint}->check_value($type, $v)) {
 	    $self->internal_source_error(
 		$count, "${name}: " . $e->get_long_desc);
 	}
