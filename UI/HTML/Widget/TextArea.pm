@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::TextArea;
 use strict;
-use Bivio::Base 'Bivio::UI::HTML::Widget::ControlBase';
+use Bivio::Base 'HTMLWidget.ControlBase';
 
 # C<Bivio::UI::HTML::Widget::TextArea> draws a C<INPUT> tag with
 # attribute C<TYPE=TEXTAREA>.
@@ -37,10 +37,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
-
 sub control_on_render {
-    # (self, any, string_ref) : undef
-    # Render the input field.
     my($self, $source, $buffer) = @_;
     $self->SUPER::control_on_render($source, $buffer);
     my($fields) = $self->[$_IDI];
@@ -57,7 +54,7 @@ sub control_on_render {
 	$fields->{prefix} = '<textarea' . $attributes
 	    . ($_VS->vs_html_attrs_render($self, $source) || '')
 	    . join('', map(qq{ $_="$fields->{$_}"}, qw(rows cols wrap)));
-        $fields->{prefix} .= ' readonly="1"'
+        $fields->{prefix} .= ' readonly="readonly"'
 	    if $fields->{readonly};
 	$fields->{initialized} = 1;
     }
@@ -73,8 +70,6 @@ sub control_on_render {
 }
 
 sub initialize {
-    # (self) : undef
-    # Initializes from attribute settings.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return if $fields->{model};
@@ -88,8 +83,6 @@ sub initialize {
 }
 
 sub new {
-    # (proto, hash_ref) : Widget.TextArea
-    # Creates a new TextArea widget.
     my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] ||= {};
     return $self;
