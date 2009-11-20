@@ -161,11 +161,9 @@ sub _top {
 
 sub _use_general_realm_for_site_admin {
     my($self, $op) = @_;
-    return $self->req->with_realm(
-        $_F->get_from_source($self)->auth_realm_is_site_admin($self->req)
-        ? undef : $self->req('auth_id'),
-        $op,
-    );
+    return $self->req->with_realm(undef, $op)
+        if $_F->get_from_source($self)->auth_realm_is_site_admin($self->req);
+    return $op->();
 }
 
 1;
