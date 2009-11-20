@@ -132,7 +132,7 @@ sub internal_initialize {
  	    {
  		name => 'to',
 		type => 'EmailArray',
-		constraint => 'NOT_NULL',
+		constraint => 'IS_SPECIFIED',
  	    },
  	    {
  		name => 'cc',
@@ -240,6 +240,23 @@ sub reply_query {
 	    : ['RealmMail.realm_file_id'],
 	$_QUERY_WHO => lc($_MRW->from_any($who)->as_uri),
     };
+}
+
+sub validate {
+    my($self) = @_;
+    shift->SUPER::validate(@_);
+    my($type) = $self->get_field_type('cc');
+    if (
+	$self->field_error_equals(to => 'UNSPECIFIED')
+        && $type->is_specified($self->unsafe_get('cc'))
+    ) {
+	$self->internal_clear_error('to');
+	$self->internal_put_field(
+	    to => $self->get('cc'),
+	    cc => $type->from_literal_or_die(''),
+	);
+    }
+    return;
 }
 
 sub _realm_email {
