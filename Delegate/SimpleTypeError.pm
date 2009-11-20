@@ -308,7 +308,7 @@ sub get_delegate_info {
     TOP_FORUM_NAME => [
 	56,
 	undef,
-	'Top forum name not formed incorrectly.  Must not contain hyphens (-).',
+	'Top forum name not formed correctly.  Must not contain hyphens (-).',
     ],
     TOP_FORUM_NAME_CHANGE => [
 	57,
