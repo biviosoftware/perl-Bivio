@@ -60,7 +60,8 @@ sub call_method {
     # C<view_>, and is called in this module.
     my($method) = $autoload;
     $method =~ s/.*:://;
-    return if $method eq 'DESTROY';
+    return
+	if $method eq 'DESTROY';
     my($view) = _assert_in_eval($autoload);
     if ($method =~ /^[A-Z]/) {
 	my($map) = $view->ancestral_get('view_class_map', undef);
@@ -94,7 +95,7 @@ sub eval {
     #
     #
     # Compiles I<code> within context of the current view being compiled.
-    return UNIVERSAL::isa($value, 'Bivio::UI::View') ? _eval_view($value)
+    return b_use('UI.View')->is_blessed($value) ? _eval_view($value)
 	: ref($value) eq 'SCALAR' ? _eval_code($value)
 	: _die('eval: invalid argument (not a string_ref or view)');
 }
@@ -141,9 +142,7 @@ sub view_get {
     # is used for more complex widget value accesses.
     #
     # This works during evaluation of a view as well as during execution.
-    return ($_VIEW_IN_EVAL
-	|| $_R->get_current->get('Bivio::UI::View')
-    )->ancestral_get($attr);
+    return _view()->ancestral_get($attr);
 }
 
 sub view_main {
@@ -158,10 +157,7 @@ sub view_main {
 }
 
 sub view_ok {
-    # Returns true if in eval.
-    return $_VIEW_IN_EVAL
-	|| UNIVERSAL::isa('Bivio::UI::View', 'Bivio::UNIVERSAL')
-	&& $_V->unsafe_get_current ? 1 : 0;
+    return _view() ? 1 : 0;
 }
 
 sub view_parent {
@@ -309,7 +305,7 @@ sub _eval_view {
 }
 
 sub _in_eval {
-    return $_VIEW_IN_EVAL || Bivio::UI::View->unsafe_get_current;
+    return $_VIEW_IN_EVAL || b_use('UI.View')->unsafe_get_current;
 }
 
 sub _initialize {
@@ -366,6 +362,10 @@ sub _validated_put {
 	return;
     }, \@args);
     return;
+}
+
+sub _view {
+    return $_VIEW_IN_EVAL || b_use('UI.View')->unsafe_get_current;
 }
 
 1;
