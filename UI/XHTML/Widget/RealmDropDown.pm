@@ -16,7 +16,8 @@ sub initialize {
     my($self) = @_;
     $self->put(
 	realm_type => my $rt = $_RT->from_any(
-	    $self->get_or_default('realm_type', $self->DEFAULT_REALM_TYPE),
+	    $self->get_or_default(
+		'realm_type', sub {$self->DEFAULT_REALM_TYPE}),
 	),
     );
     $self->put_unless_exists(
