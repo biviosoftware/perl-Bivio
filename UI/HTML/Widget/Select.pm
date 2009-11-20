@@ -191,7 +191,7 @@ sub render {
 	. $fields->{handler}->get_html_field_attributes($field, $source)
 	if $fields->{handler};
     $$buffer .= ' size="' .$self->get_or_default('size', 1) . '"';
-    $$buffer .= ' disabled="1"'
+    $$buffer .= ' disabled="disabled"'
 	if $self->get_or_default('disabled', 0);
     $$buffer .= ' onchange="submit()"' if $fields->{auto_submit};
     $$buffer .= ">\n";
@@ -209,7 +209,7 @@ sub render {
     $self->map_by_two(sub {
         my($v, $k) = @_;
 	$$buffer .= qq{<option value="$v"}
-	    . ($field_value eq $v ? ' selected="1"' : '')
+	    . ($field_value eq $v ? ' selected="selected"' : '')
 	    . " />$k\n"
 	    if $editable || $field_value eq $v;
 	return;
