@@ -30,17 +30,15 @@ h5, h6, input, li, ol, p, pre, td, textarea, th, ul {
   padding: 0;
   text-align: left;
 @{[_v(4, q{
-  Font('normal');
-  Font('body');
+  Font('css_reset');
 })]}
 }
 textarea {
   white-space: pre;
 }
 address, caption, cite, code, dfn, em, h1, h2, h3, h4, h5, h6, strong, th, var {
-  Font('normal');
 @{[_v(4, q{
-  Font('body');
+  Font('css_reset');
 })]}
 }
 ol, ul {
@@ -56,8 +54,7 @@ abbr, acronym, fieldset, iframe, img, table {
   border-style: none;
   border: 0;
 @{[_v(4, q{
-  Font('normal');
-  Font('body');
+  Font('css_reset');
 })]}
 }
 a {
@@ -113,7 +110,7 @@ pre {
 table {
   border-collapse: collapse;
   border-spacing: 0;
-  margin: left;
+  text-align: left;
 }
 th {
   padding: .5em;
@@ -288,7 +285,7 @@ td.dock_right,
 td.dock_left,
 td.dock_middle,
 td.dock_right {
-  vertical-align: td;
+  vertical-align: top;
 }
 table.dock a {
   Font('dock');
@@ -726,8 +723,8 @@ EOF
 sub _site_mail {
     return <<'EOF';
 .msg {
-  margin-top: 1ex
-  margin-bottom: 1ex
+  margin-top: 1ex;
+  margin-bottom: 1ex;
 }
 .msg_sep {
   height: 3ex;
