@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::Calendar;
 use strict;
@@ -64,8 +64,15 @@ sub event_detail {
 		    'CalendarEvent.description'])],
 		[Location => String(['Model.CalendarEventList',
 		    'CalendarEvent.location'])],
-		[URL => Link(['Model.CalendarEventList', 'CalendarEvent.url'],
-		    ['Model.CalendarEventList', 'CalendarEvent.url'])],
+		[URL => If(
+		    ['Model.CalendarEventList', 'CalendarEvent.url'],
+		    Link(
+			String(
+			    ['Model.CalendarEventList', 'CalendarEvent.url']),
+			['Model.CalendarEventList', 'CalendarEvent.url'],
+		    ),
+		    '',
+		)],
 		['Time Zone' => Enum(['Model.CalendarEventList',
 		    'CalendarEvent.time_zone'])],
 		['Start', _date_time('dtstart_in_tz')],
