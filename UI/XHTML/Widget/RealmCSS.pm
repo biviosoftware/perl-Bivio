@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::RealmCSS;
 use strict;
@@ -6,10 +6,11 @@ use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_REALM_PLACEHOLDER)
-    = __PACKAGE__->use('Type.RealmName')->SPECIAL_PLACEHOLDER;
-my($_R) = __PACKAGE__->use('Type.Regexp');
-my($_NULL) = __PACKAGE__->use('Bivio::TypeError')->NULL;
+my($_REALM_PLACEHOLDER) = b_use('Type.RealmName')->SPECIAL_PLACEHOLDER;
+my($_R) = b_use('Type.Regexp');
+my($_NULL) = b_use('Bivio.TypeError')->NULL;
+my($_M) = b_use('Biz.Model');
+my($_V) = b_use('UI.View');
 
 sub render_tag_value {
     my($self, $source, $buffer) = @_;
@@ -17,8 +18,8 @@ sub render_tag_value {
     $$buffer .= _match_uri(
 	_compress(
 	    join("\n",
-		 ${Bivio::UI::View->render('CSS->site_css', $req)},
-		 @{Bivio::Biz::Model->new($req, 'RealmCSSList')->load_all
+		 ${$_V->render('CSS->site_css', $req)},
+		 @{$_M->new($req, 'RealmCSSList')->load_all
 	            ->map_rows(sub {${shift->get_content}})},
 	     ),
 	),

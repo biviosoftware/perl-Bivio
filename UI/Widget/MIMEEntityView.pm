@@ -1,15 +1,16 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::Widget::MIMEEntityView;
 use strict;
 use Bivio::Base 'Widget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_V) = b_use('UI.View');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
-    $$buffer .= ${Bivio::UI::View->render(
+    $$buffer .= ${$_V->render(
 	$self->render_simple_attr(view_name => $source),
 	$req,
     )};

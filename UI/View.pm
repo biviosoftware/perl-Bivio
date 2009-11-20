@@ -1,12 +1,9 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::View;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Die;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
-use Bivio::UI::Facade;
-use Bivio::UI::ViewLanguage;
 
 # C<Bivio::UI::View> presents output to the user.  You write programs to
 # initialize view instances.  The program defines attributes on the view which
@@ -203,6 +200,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE, $_CURRENT, $_CURRENT_FACADE);
 my($_CACHE) = {};
 my($_CLASSES);
+my($_R) = b_use('Agent.Request');
 
 sub SUFFIX {
     # Returns C<.bview>, the suffix for view files.
@@ -348,7 +346,7 @@ sub _destroy {
     push(@{$die->get('attrs')->{view_stack} ||= []}, $self->as_string)
 	if $die;
     delete($_CACHE->{$self->get_or_default(view_cache_name => '')});
-    if (my $req = Bivio::Agent::Request->get_current) {
+    if (my $req = $_R->get_current) {
 	$req->delete(__PACKAGE__);
     }
     _clear_children($self, {});
@@ -396,7 +394,7 @@ sub _get_instance {
     my($die) = do {
 	local($_CURRENT) = $_CACHE->{$unique} = -1;
 	local($_CURRENT_FACADE) = $facade;
-	Bivio::UI::ViewLanguage->eval($self);
+	b_use('UI.ViewLanguage')->eval($self);
     };
     delete($_CACHE->{$unique});
     _destroy($self, $die)

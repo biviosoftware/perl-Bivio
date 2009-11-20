@@ -1,9 +1,8 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::LocalFile;
 use strict;
-use base 'Bivio::UI::View';
-use Bivio::UI::LocalFileType;
+use Bivio::Base 'UI.View';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
