@@ -1,8 +1,8 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::YesNo;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 
 # C<Bivio::UI::HTML::Widget::YesNo> displays a Boolean field as Yes/No
 # radios.
@@ -34,7 +34,7 @@ sub render {
 	    . qq{" type=radio value="$value"};
 
 	if (($form->get($self->get('field')) || 0) eq $value) {
-	    $$buffer .= ' checked';
+	    $$buffer .= ' checked="checked"';
 	}
 
 	$$buffer .= ' />&nbsp;';

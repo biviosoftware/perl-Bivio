@@ -47,7 +47,7 @@ sub internal_input_base_post_render {
 sub internal_input_base_render_attrs {
     my($self, $form, $field, $source, $buffer) = @_;
     shift->SUPER::internal_input_base_render_attrs(@_);
-    $$buffer .= q{ checked="1"}
+    $$buffer .= q{ checked="checked"}
 	if $form->get($field);
     $$buffer .= ' onclick="submit()"'
 	if $self->render_simple_attr(auto_submit => $source);

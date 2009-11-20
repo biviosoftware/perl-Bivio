@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Radio;
 use strict;
@@ -129,7 +129,7 @@ sub control_on_render {
 	    . '"'
 #TODO: is_equal?
 	    . (defined($form->get($field))
-		    && $value eq $form->get($field) ? ' checked="1"' : '')
+		    && $value eq $form->get($field) ? ' checked="checked"' : '')
 	    . ' type="radio" value="'
 	    . (ref($value) ? $value->to_html($value) :
 		Bivio::HTML->escape($value))
