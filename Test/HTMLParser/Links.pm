@@ -1,11 +1,9 @@
-# Copyright (c) 2002-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::HTMLParser::Links;
 use strict;
-use Bivio::Base 'Bivio::Test::HTMLParser';
+use Bivio::Base 'Test.HTMLParser';
 use Bivio::IO::Trace;
-
-# C<Bivio::Test::HTMLParser::Links> models the links on a page.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -16,6 +14,8 @@ sub html_parser_end {
     # (self, string, string) : undef
     # Dispatch to the _end_XXX routines.
     my($self, $tag) = @_;
+    my($fields) = $self->[$_IDI];
+    pop(@{$fields->{xpath}});
     return _end_a($self) if $tag eq 'a';
     return;
 }
@@ -25,6 +25,7 @@ sub html_parser_start {
     # Dispatches to the _start_XXX routines.
     my($self, $tag, $attr) = @_;
     my($fields) = $self->[$_IDI];
+    push(@{$fields->{xpath}}, $tag . ($attr->{class} ? ".$attr->{class}" : ''));
     return _start_a($fields, $attr) if $tag eq 'a';
     return _start_img($self, $attr) if $tag eq 'img';
     return;
@@ -48,7 +49,9 @@ sub new {
     # Parses cleaned html for links.
     my($proto, $parser) = @_;
     my($self) = $proto->SUPER::new;
-    $self->[$_IDI] = {};
+    $self->[$_IDI] = {
+	xpath => [],
+    };
     return $self;
 }
 
@@ -93,7 +96,11 @@ sub _start_a {
     ) if $fields->{href};
     return if $attr->{name} && !$attr->{href};
     unless (defined($attr->{href}) || $attr->{name}) {
-	Bivio::IO::Alert->info('missing href, ignoring: ', $attr);
+	b_info(
+	    join('/', @{$fields->{xpath}}),
+            ': missing href or name, ignoring: ',
+	    $attr,
+	);
 	return;
     }
     $fields->{href} = $attr->{href};
