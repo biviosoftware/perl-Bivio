@@ -41,7 +41,7 @@ sub from_literal {
 	unless defined($v);
     my($c) = $self->[$_IDI]->{choices};
     return $v
-	unless $c->is_specified;
+	unless defined($c) && $c->is_specified;
     my($found);
     $c->do_iterate(
 	sub {($found = $fields->{class}->is_equal(shift, $v)) ? 0 : 1});
