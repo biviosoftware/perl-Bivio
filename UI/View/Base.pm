@@ -6,6 +6,8 @@ use Bivio::Base 'View.Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_WANT_USER_AUTH)
+    = b_use('Agent.TaskId')->is_component_included('user_auth');
 
 sub PARENT_CLASS {
     # Do not override this unless you know what you are doing.
@@ -95,9 +97,7 @@ sub internal_xhtml_adorned {
 	xhtml_topic => '',
 	xhtml_byline => '',
 	vs_pager => '',
-	xhtml_menu => TaskMenu([
-	    'USER_PASSWORD',
-	]),
+	xhtml_menu => $_WANT_USER_AUTH ? TaskMenu(['USER_PASSWORD']) : '',
     );
     return Page3({
 	head2 => Join([
@@ -105,11 +105,11 @@ sub internal_xhtml_adorned {
 	    P_menu(view_widget_value('xhtml_menu')),
 	    P_title(vs_text_as_prose('xhtml_title')),
 	]),
-	head3 => Director(['user_state', '->get_name'], {
+	head3 => $_WANT_USER_AUTH ? Director(['user_state', '->get_name'], {
 	    JUST_VISITOR => XLink('USER_CREATE'),
 	    LOGGED_OUT => XLink('my_site_login'),
 	    LOGGED_IN => XLink('LOGOUT'),
-	}),
+	}) : '',
 	content => Join([
 	    DIV_top(Join([
 		DIV_tools(Join([
