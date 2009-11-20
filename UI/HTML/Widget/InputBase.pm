@@ -1,14 +1,13 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::InputBase;
 use strict;
 use Bivio::Base 'HTMLWidget.Tag';
-use Bivio::UI::HTML::Format;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_C) = __PACKAGE__->use('IO.Config');
-my($_F) = __PACKAGE__->use('FacadeComponent.Font');
-my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
+my($_C) = b_use('IO.Config');
+my($_F) = b_use('FacadeComponent.Font');
+my($_VS) = b_use('UIHTML.ViewShortcuts');
 
 sub accepts_attribute {
     my($proto, $attr) = @_;
@@ -79,7 +78,7 @@ sub internal_input_base_render_attrs {
 	# Just in case there was some transient state
 	$req->delete("$self");
     }
-    $$buffer .= ' disabled="1"'
+    $$buffer .= ' disabled="disabled"'
 	if $self->render_simple_attr('is_read_only', $source)
 	|| !$form->is_field_editable($field);
     return;
