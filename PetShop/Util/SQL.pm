@@ -211,6 +211,11 @@ sub initialize_test_data {
     return;
 }
 
+
+sub internal_realm_role_config_data {
+    return __PACKAGE__->internal_data_section;
+}
+
 sub internal_upgrade_db {
     my($self) = @_;
     # Add time_zone field to CalendarEvent table
@@ -227,15 +232,6 @@ sub realm_file_create {
     return $self->model('RealmFile')->create_with_content(
 	{path => $path},
 	ref($content) ? $content : \$content);
-}
-
-sub realm_role_config {
-    my($self) = @_;
-    # Add test realm roles
-    return [
-        @{$self->SUPER::realm_role_config()},
-        <DATA>,
-    ];
 }
 
 sub top_level_forum {
