@@ -9,13 +9,16 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = b_use('Auth.RealmType');
 
 sub NEW_ARGS {
-    return [qw(realm_type)];
+    return shift->can('DEFAULT_REALM_TYPE') ? [] : [qw(realm_type)];
 }
 
 sub initialize {
     my($self) = @_;
     $self->put(
-	realm_type => my $rt = $_RT->from_any($self->get('realm_type')));
+	realm_type => my $rt = $_RT->from_any(
+	    $self->get_or_default('realm_type', $self->DEFAULT_REALM_TYPE),
+	),
+    );
     $self->put_unless_exists(
 	control => [sub {@{$self->internal_choices(shift)} != 0}],
 	control_on_value => If(
@@ -36,16 +39,17 @@ sub initialize {
 			     : '';
 			 return Join([
 			     map(
-				 Link(String($_) => URI({
-				     realm => $_,
-				     task_id => $self->render_simple_attr(
-					 task_id => $source,
-				     ) || ($rt->get_name . '_HOME'),
+				 Link(String(_value($_, 'display_name')) => URI({
+				     realm => _value($_, 'name'),
+				     task_id => _value($_, 'task_id')
+					 || $self->render_simple_attr(
+					     task_id => $source,
+					 ) || ($rt->get_name . '_HOME'),
 				     query => undef,
 				     path_info => undef,
 				 })),
-				 grep($_ eq $r, @$realms),
-				 grep($_ ne $r, @$realms),
+				 grep(_eq($_, $r), @$realms),
+				 grep(!_eq($_, $r), @$realms),
 			     ),
 			 ]);
 		    }],
@@ -71,12 +75,26 @@ sub _curr_realm {
     return String([qw(->req auth_realm owner_name)]);
 }
 
+sub _eq {
+    my($choice, $name) = @_;
+    return (_value($choice, 'name') || '') eq $name;
+}
+
 sub _one_choice {
     my($self, $source) = @_;
     my($choices) = $self->internal_choices($source);
     return $source->req(qw(auth_realm type))->equals($self->get('realm_type'))
 	&& @$choices == 1
 	&& $choices->[0] eq $source->req(qw(auth_realm owner_name));
+}
+
+sub _value {
+    my($choice, $which) = @_;
+    return $choice->{$which}
+	if ref($choice);
+    return $choice
+	if $which =~ /name/;
+    return undef;
 }
 
 1;
