@@ -16,8 +16,7 @@ my($_PARAMS) = [
     'xlink',
 ];
 my($_W) = b_use('UI.Widget');
-my($_T) = b_use('XHTMLWidget.Tag');
-my($_L) = b_use('XHTMLWidget.Link');
+my($_S) = b_use('XHTMLWidget.String');
 my($_A) = b_use('IO.Alert');
 
 sub NEW_ARGS {
@@ -91,8 +90,7 @@ sub initialize {
 	        ) : $self->die(
 		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
 	    $w = SPAN($w)
-		if $cfg->{xlink}
-		&& !($_T->is_blessed($w) || $_L->is_blessed($w));
+		if $cfg->{xlink} && $_S->is_blessed($w);
 	    my($class) = $w->unsafe_get('class');
 	    $w->put(
 		_task_menu_cfg => $cfg,
