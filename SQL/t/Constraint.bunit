@@ -1,5 +1,6 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+Unit();
 options({
     create_object => sub {
 	my(undef, $object) = @_;
@@ -10,17 +11,19 @@ class('Bivio::TypeError');
 [
     map((shift(@$_) => [
 	check_value => [
-	    [shift(@$_)] => ref($_->[0]) ? $_->[0]
+	    [shift(@$_), shift(@$_)] => ref($_->[0]) ? $_->[0]
 		: $_->[0] ? [Bivio::TypeError->from_name(@$_)] : [],
 	],
     ]),
-	[NONE => undef],
-	[NOT_NULL => 1],
-	[PRIMARY_KEY => 1],
-	[NOT_ZERO_ENUM => from_type(qw(Gender MALE))],
-	[PRIMARY_KEY => undef, 'NULL'],
-	[NOT_NULL => undef, 'NULL'],
-	[NOT_ZERO_ENUM => from_type(qw(Gender UNKNOWN)), 'NOT_ZERO'],
-	[NOT_NULL_SET => 1 => DIE()],
+	[NONE => Type_Integer(), undef],
+	[NOT_NULL => Type_Integer(), 1],
+	[PRIMARY_KEY => Type_Integer(), 1],
+	[NOT_ZERO_ENUM => Type_Gender(), from_type(qw(Gender MALE))],
+	[PRIMARY_KEY => Type_Integer(), 'NULL'],
+	[NOT_NULL => Type_Integer(), 'NULL'],
+	[NOT_ZERO_ENUM => Type_Gender(), from_type(qw(Gender UNKNOWN)), 'UNSPECIFIED'],
+	[IS_SPECIFIED => Type_StringArray(), undef, 'NULL'],
+	[IS_SPECIFIED => Type_StringArray(), Type_StringArray(''), 'UNSPECIFIED'],
+	[IS_SPECIFIED => Type_StringArray(), Type_StringArray('a')],
     ),
 ];
