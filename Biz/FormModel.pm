@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::FormModel;
 use strict;
@@ -193,6 +193,13 @@ sub execute_unwind {
     # Although it is unlikely, you'll ever want to do this.
     # Return true if you want the Form to execute immediately.
     return 0;
+}
+
+sub field_error_equals {
+    my($self, $field, @errors) = @_;
+    return 0
+	unless my $e = $self->get_field_error($field);
+    return $e->equals_by_name(@errors);
 }
 
 sub format_context_as_query {
@@ -977,6 +984,20 @@ sub validate_greater_than_zero {
     return _validate(1, sub {shift(@_) <= 0 && 'GREATER_THAN_ZERO'}, @_);
 }
 
+sub validate_is_specified {
+    my($self, $field) = @_;
+    return _validate(
+	0,
+	sub {
+	    my($value) = @_;
+	    return 'UNSPECIFIED'
+		unless $self->get_field_type($field)->is_specified($value);
+	    return;
+	},
+	@_,
+    );
+}
+
 sub validate_not_negative {
     # Ensures the specified field isn't negative. Puts an error on the form
     # if it fails. Returns false if the field is in error or if an error is
@@ -985,9 +1006,6 @@ sub validate_not_negative {
 }
 
 sub validate_not_null {
-    # Ensures the specified field isn't undef and isn't in error. Puts an error on
-    # the form if it fails.  Returns false if the field is in error or if an error is
-    # put on the field.
     return _validate(0, sub {!defined(shift(@_)) && 'NULL'}, @_);
 }
 
@@ -1210,38 +1228,21 @@ sub _parse_cols {
 	    $values->{$n} = $v;
 	}
 
-	# NOT_NULL_SET
-	# May need to include NOT_ZERO_ENUM and UNSPECIFIED checks
-	# from Success? case below
-	if ($self->get_field_info($n, 'constraint')->eq_not_null_set) {
-	    my($primary_field) =
-		$self->get_field_info($n, 'null_set_primary_field');
-	    $primary_field .= $1
-		if $n =~ /(_\d+)$/;
-	    $null_set->{$primary_field} ||= {passed_flag => 0};
-	    next
-		if $null_set->{$primary_field}->{passed_flag};
-	    if (defined($v)) {
-		$null_set->{$primary_field}->{passed_flag} = 1;
-		$self->internal_clear_error($primary_field);
-	    }
-	    else {
-		$self->internal_put_error($primary_field, $_TE->NULL);
-		next;
-	    }
-	}
-
 	# Success?
 	if (defined($v)) {
 	    # Zero field ok?
-	    next unless $self->get_field_info($n, 'constraint')->eq_not_zero_enum;
-	    next if $type->is_specified($v);
+	    next
+		unless $self->get_field_info($n, 'constraint')->equals_by_name(
+		    qw(NOT_ZERO_ENUM IS_SPECIFIED));
+	    next
+		if $type->is_specified($v);
 	    $err = $_TE->UNSPECIFIED;
 	}
 
 	# Null field ok?
 	unless ($err) {
-	    next if $self->get_field_info($n, 'constraint')->eq_none;
+	    next
+		if $self->get_field_info($n, 'constraint')->eq_none;
 	    $err = $_TE->NULL;
 	}
 
