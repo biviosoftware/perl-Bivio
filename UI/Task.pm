@@ -85,6 +85,10 @@ my($_TI) = b_use('Agent.TaskId');
 my($_FCT) = b_use('FacadeComponent.Text');
 my($_AT) = b_use('Agent.Task');
 
+sub HELP {
+    return $_TI->HELP;
+}
+
 sub HELP_INDEX {
     # Index for help tree.
     return '/index.html';
@@ -142,7 +146,7 @@ sub format_help_uri {
 	: undef;
     return $self->format_uri(
 	{
-	    task_id => $_TI->HELP,
+	    task_id => $self->HELP,
 	    realm => undef,
 	    path_info => $info && $info->{help} ? $info->{help}
 		: $_FCT->get_value('help_index_path_info', $req),
