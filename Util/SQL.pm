@@ -984,7 +984,7 @@ CREATE OR REPLACE FUNCTION group_concat
    ret VARCHAR2(4000);
 BEGIN
    FOR j IN 1..lst.last  LOOP
-      ret := ret || ',' || lst(j);
+      ret := ret || lst(j) || ',';
    END LOOP;
    RETURN ret;
 END;
@@ -1930,16 +1930,14 @@ sub is_oracle {
 }
 
 sub realm_role_config {
-    my($self) = @_;
-    # Returns the realm role configuration.
-    unless ($_REALM_ROLE_CONFIG) {
-	# Cache so the command is idempotent.
-	$_REALM_ROLE_CONFIG = [<DATA>];
-	chomp(@$_REALM_ROLE_CONFIG);
-	# Avoids error messages which point to <DATA>.
-	close(DATA);
-    }
-    return $_REALM_ROLE_CONFIG;
+    my($proto) = @_;
+    return $_REALM_ROLE_CONFIG ||= [
+	map(split(/\n/, $_),
+	    __PACKAGE__->internal_data_section,
+	    $proto->can('internal_realm_role_config_data')
+		? $proto->internal_realm_role_config_data : (),
+	),
+    ];
 }
 
 sub reinitialize_constraints {
