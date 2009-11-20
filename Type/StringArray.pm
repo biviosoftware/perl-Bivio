@@ -150,7 +150,7 @@ sub get_width {
 
 sub is_specified {
     my($value) = _value(@_);
-    return @{$value->as_array} ? 1 : 0;
+    return defined($value) && @{$value->as_array} ? 1 : 0;
 }
 
 sub map_iterate {
