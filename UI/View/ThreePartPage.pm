@@ -6,7 +6,8 @@ use Bivio::Base 'Bivio::UI::View::Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TI) = __PACKAGE__->use('Agent.TaskId');
+my($_TI) = b_use('Agent.TaskId');
+my($_WANT_USER_AUTH) = $_TI->is_component_included('user_auth');
 my($_C) = b_use('IO.Config');
 
 sub internal_xhtml_adorned {
@@ -40,7 +41,7 @@ sub internal_xhtml_adorned {
 
 sub internal_xhtml_adorned_attrs {
     my($self) = @_;
-    view_pre_execute(sub {
+   view_pre_execute(sub {
 	my($req) = shift->get_request;
 	Bivio::Biz::Model->new($req, 'SearchForm')->process
 	    unless $req->unsafe_get('Model.SearchForm');
@@ -68,8 +69,10 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_dock_right => JoinMenu([
 	    $_C->if_version(8 => sub {_header_right('ForumDropDown')}),
 	    _header_right(qw(HelpWiki HELP)),
-	    _header_right(qw(UserSettingsForm USER_SETTINGS_FORM)),
-	    _header_right(qw(UserState LOGIN)),
+	    $_WANT_USER_AUTH ? (
+		_header_right(qw(UserSettingsForm USER_SETTINGS_FORM)),
+		_header_right(qw(UserState LOGIN)),
+	    ) : (),
 	]),
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
 	xhtml_want_page_print => 0,
