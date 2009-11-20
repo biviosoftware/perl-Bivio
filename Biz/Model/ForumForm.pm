@@ -2,13 +2,14 @@
 # $Id$
 package Bivio::Biz::Model::ForumForm;
 use strict;
-use base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = Bivio::Type->get_instance('ForumName');
 my($_FEM) = Bivio::Type->get_instance('ForumEmailMode');
 my($_RR) = Bivio::IO::ClassLoader
     ->simple_require('Bivio::Biz::Util::RealmRole');
+my($_F) = b_use('UI.Facade');
 
 sub CREATE_REALM_MODELS {
     return qw(Forum RealmOwner);
@@ -16,48 +17,52 @@ sub CREATE_REALM_MODELS {
 
 sub execute_empty {
     my($self) = @_;
-    my($req) = $self->get_request;
-    return unless _is_forum($req);
-    $self->internal_put_field('Forum.forum_id' => $req->get('auth_id'));
-    foreach my $m ($self->CREATE_REALM_MODELS) {
-	$self->load_from_model_properties($m);
-    }
-    return unless $self->is_create;
-    $self->internal_put_field('RealmOwner.name' =>
-	$self->get('RealmOwner.name') . '-');
-    $self->internal_put_field('RealmOwner.display_name' =>
-        $self->get('RealmOwner.display_name') . ' ');
-    my($cats) = $_RR->list_enabled_categories();
-    foreach my $pc ($_FEM->OPTIONAL_MODES) {
-	$self->internal_put_field($pc => grep($_ eq $pc, @$cats) ? 1 : 0);
-    }
-    return;
+    return _use_general_realm_for_site_admin($self, sub {
+        my($req) = $self->get_request;
+        return unless _is_forum($req);
+        $self->internal_put_field('Forum.forum_id' => $req->get('auth_id'));
+        foreach my $m ($self->CREATE_REALM_MODELS) {
+            $self->load_from_model_properties($m);
+        }
+        return unless $self->is_create;
+        $self->internal_put_field('RealmOwner.name' =>
+            $self->get('RealmOwner.name') . '-');
+        $self->internal_put_field('RealmOwner.display_name' =>
+            $self->get('RealmOwner.display_name') . ' ');
+        my($cats) = $_RR->list_enabled_categories();
+        foreach my $pc ($_FEM->OPTIONAL_MODES) {
+            $self->internal_put_field($pc => grep($_ eq $pc, @$cats) ? 1 : 0);
+        }
+        return;
+    });
 }
 
 sub execute_ok {
     my($self) = @_;
-    unless ($self->unsafe_get('validate_called')) {
-	$self->validate;
-	return if $self->in_error;
-    }
-    my($req) = $self->get_request;
-    if ($self->is_create) {
-	my($f, $ro) = $self->new_other('Forum')->create_realm(
-	    map($self->get_model_properties($_),
-		$self->CREATE_REALM_MODELS),
-	);
-	$req->set_realm($ro);
-    }
-    else {
-	foreach my $m ($self->CREATE_REALM_MODELS) {
-	    $self->update_model_properties($m);
-	}
-    }
-    $_RR->edit_categories({
-	map({
-	    $_ => $self->unsafe_get($_);
-	} $_FEM->OPTIONAL_MODES)});
-    return;
+    return _use_general_realm_for_site_admin($self, sub {
+        unless ($self->unsafe_get('validate_called')) {
+            $self->validate;
+            return if $self->in_error;
+        }
+        my($req) = $self->get_request;
+        if ($self->is_create) {
+            my($f, $ro) = $self->new_other('Forum')->create_realm(
+                map($self->get_model_properties($_),
+                    $self->CREATE_REALM_MODELS),
+            );
+            $req->set_realm($ro);
+        }
+        else {
+            foreach my $m ($self->CREATE_REALM_MODELS) {
+                $self->update_model_properties($m);
+            }
+        }
+        $_RR->edit_categories({
+            map({
+                $_ => $self->unsafe_get($_);
+            } $_FEM->OPTIONAL_MODES)});
+        return;
+    });
 }
 
 sub internal_initialize {
@@ -98,32 +103,34 @@ sub is_create {
 
 sub validate {
     my($self) = @_;
-    $self->internal_put_field(validate_called => 1);
-    return if $self->get_field_error('RealmOwner.name');
-    # A sub forum must begin with its corresponding root forum prefix, but
-    # does not need to prepend its other parent forum names, i.e.:
-    # base ---> base-sub1 (valid)
-    #  |         |--> base-sub1alpha (valid)
-    #  |         |--> base-sub1-beta (also valid)
-    #  |--> base-sub2 (valid)
-    #  |--> sub3 (INVALID)
-    my($req) = $self->get_request;
-    my($n) = $self->get('RealmOwner.name');
-    my($new_top) = $_FN->extract_top($n);
-    return $self->internal_put_error(
-	'RealmOwner.name', Bivio::TypeError->TOP_FORUM_NAME
-    ) unless $new_top;
-    my($old_top, $is_top) = _top($self);
-    my($top_ok) = $is_top && $self->is_create && $n eq $new_top;
-    return $self->internal_put_error(
-	'RealmOwner.name',
-	$top_ok ? Bivio::TypeError->TOP_FORUM_NAME_CHANGE
-	    : Bivio::TypeError->TOP_FORUM_NAME
-    ) unless $top_ok || $old_top eq $new_top;
-    my($x) = [grep($self->unsafe_get($_), $_FEM->OPTIONAL_MODES)];
-    $self->internal_put_error($x->[1], Bivio::TypeError->MUTUALLY_EXCLUSIVE)
-	if @$x > 1;
-    return;
+    return _use_general_realm_for_site_admin($self, sub {
+        $self->internal_put_field(validate_called => 1);
+        return if $self->get_field_error('RealmOwner.name');
+        # A sub forum must begin with its corresponding root forum prefix, but
+        # does not need to prepend its other parent forum names, i.e.:
+        # base ---> base-sub1 (valid)
+        #  |         |--> base-sub1alpha (valid)
+        #  |         |--> base-sub1-beta (also valid)
+        #  |--> base-sub2 (valid)
+        #  |--> sub3 (INVALID)
+        my($req) = $self->get_request;
+        my($n) = $self->get('RealmOwner.name');
+        my($new_top) = $_FN->extract_top($n);
+        return $self->internal_put_error(
+            'RealmOwner.name', Bivio::TypeError->TOP_FORUM_NAME
+        ) unless $new_top;
+        my($old_top, $is_top) = _top($self);
+        my($top_ok) = $is_top && $self->is_create && $n eq $new_top;
+        return $self->internal_put_error(
+            'RealmOwner.name',
+            $top_ok ? Bivio::TypeError->TOP_FORUM_NAME_CHANGE
+                : Bivio::TypeError->TOP_FORUM_NAME
+        ) unless $top_ok || $old_top eq $new_top;
+        my($x) = [grep($self->unsafe_get($_), $_FEM->OPTIONAL_MODES)];
+        $self->internal_put_error($x->[1], Bivio::TypeError->MUTUALLY_EXCLUSIVE)
+            if @$x > 1;
+        return;
+    });
 }
 
 sub _is_forum {
@@ -150,6 +157,15 @@ sub _top {
     }
     die('too deep');
     # DOES NOT RETURN
+}
+
+sub _use_general_realm_for_site_admin {
+    my($self, $op) = @_;
+    return $self->req->with_realm(
+        $_F->get_from_source($self)->auth_realm_is_site_admin($self->req)
+        ? undef : $self->req('auth_id'),
+        $op,
+    );
 }
 
 1;

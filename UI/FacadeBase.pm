@@ -672,6 +672,7 @@ sub _cfg_group_admin {
 	    [GROUP_USER_LIST => '?/users'],
 	    [GROUP_USER_FORM => '?/edit-user'],
 	    [GROUP_USER_ADD_FORM => '?/add-user'],
+            [FORUM_FORM => '?/create-forum'],
 	],
 	Text => [
 	    [realm_owner_site_admin => [
@@ -721,10 +722,20 @@ sub _cfg_group_admin {
 		file_writer => 'Write access to files (Editor)',
 		mail_recipient => 'Receive mail sent to group (Subscribed)',
 	    ]],
+            [ForumForm => [
+                'RealmOwner.name' => 'Forum',
+                'RealmOwner.display_name' => 'Title',
+                'Forum.want_reply_to' => 'Reply-To List?',
+                'admin_only_forum_email' => 'Admin Only Email?',
+                'system_user_forum_email' => 'System User Email?',
+                'public_forum_email' => 'Public Email?',
+                'Forum.require_otp' => 'Require OTP?',
+            ]],
 	    [title => [
 		GROUP_USER_LIST => 'Roster',
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
+                FORUM_FORM => 'Create Forum',
 	    ]],
 	    [clear_on_focus_hint => [
 		GROUP_USER_LIST => 'Filter name or @email',

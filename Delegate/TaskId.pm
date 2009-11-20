@@ -658,8 +658,17 @@ sub info_group_admin {
 	    View.GroupUser->add_form
 	    next=GROUP_USER_LIST
 	)],
+	[qw(
+	    FORUM_FORM
+	    203
+	    FORUM
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.ForumForm
+	    View.GroupUser->create_forum
+	    next=GROUP_USER_LIST
+	)],
     ];
-#203-209 free
+#204-209 free
     return;
 }
 

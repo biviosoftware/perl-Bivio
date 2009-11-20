@@ -18,6 +18,21 @@ sub add_form {
     ]));
 }
 
+sub create_forum {
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(ForumForm => [
+        qw(
+            ForumForm.RealmOwner.display_name
+            ForumForm.RealmOwner.name
+            ForumForm.Forum.want_reply_to
+            ForumForm.admin_only_forum_email
+            ForumForm.system_user_forum_email
+            ForumForm.public_forum_email
+            ForumForm.Forum.require_otp
+        ),
+    ]));
+}
+
 sub form {
     my($self) = @_;
     $self->internal_put_base_attr(tools => TaskMenu([
