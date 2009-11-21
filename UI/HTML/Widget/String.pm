@@ -2,11 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Widget::String;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::Die;
-use Bivio::HTML;
-use Bivio::UI::Font;
-use Bivio::UI::HTML::Format;
+use Bivio::Base 'UI.Widget';
 
 # C<Bivio::UI::HTML::Widget::String> draws a string with decoration.  Does no
 # alignment (see L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>
@@ -79,6 +75,7 @@ use Bivio::UI::HTML::Format;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_F) = b_use('UIHTML.Format');
 
 sub initialize {
     my($self) = @_;
@@ -101,7 +98,7 @@ sub initialize {
 
     # Formatter
     my($f) = $self->unsafe_get('format', 0);
-    $fields->{format} = Bivio::UI::HTML::Format->get_instance($f) if $f;
+    $fields->{format} = $_F->get_instance($f) if $f;
 
     $fields->{undef_value} = $self->get_or_default('undef_value', '');
 
