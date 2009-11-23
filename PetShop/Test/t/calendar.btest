@@ -3,7 +3,7 @@
 test_setup('PetShop', 'groupware');
 home_page();
 login_as('root');
-follow_link('fourem-sub1-1', 'calendar', 'create');
+follow_link(qw(fourem-sub1-1 ^calendar$ create));
 my($r) = random_string();
 submit_form(OK => {
     event => $r,
