@@ -101,6 +101,8 @@ sub unsafe_load_error_list {
 
 sub validate_error {
     my($self, $entity, $message, $wiki_state) = @_;
+    return
+	unless ref($self);
     my($req) = $wiki_state && $wiki_state->{req} || $self->req;
     if ($_D->is_blessed($message)
         and my $prev_err = $message->get('attrs')->{$_PKG}
@@ -141,14 +143,10 @@ sub validate_error {
 	msg => $msg,
 	$_PKG => $err,
     }) if $wiki_state && $wiki_state->{die_on_validate_error};
-    if (ref($self)) {
-	my($re) = $self->get('ignore_regexp');
-	return
-	    if $re && $msg =~ $re;
-	push(@{$self->get('errors')}, $err);
-	return;
-    }
-    b_warn($msg, '; ', $req);
+    my($re) = $self->get('ignore_regexp');
+    return
+	if $re && $msg =~ $re;
+    push(@{$self->get('errors')}, $err);
     return;
 }
 
