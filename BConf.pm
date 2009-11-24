@@ -332,7 +332,7 @@ sub merge_http_log {
 		    'mod_ssl: SSL handshake interrupted by system',
 		    'request failed: URI too long',
 		    'Invalid method in request',
-		    'Facade::setup_request:.*: unknown facade uri',
+		    'Bivio::UI::Task::.* unknown facade uri',
                     'access to /favicon.ico failed',
 		    'Bivio::DieCode::FORBIDDEN',
 		    'Invalid URI in request',
