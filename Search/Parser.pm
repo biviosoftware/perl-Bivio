@@ -77,6 +77,7 @@ sub _do {
     return $self->put_unless_exists(
 	path => '',
 	title => '',
+	excerpt => '',
 	modified_date_time => sub {$_DT->now},
     );
 }
