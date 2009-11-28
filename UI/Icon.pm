@@ -6,6 +6,7 @@ use Bivio::Base 'UI.FacadeComponent';
 use Image::Size ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTML) = b_use('Bivio.HTML');
 my($_URI) = '/i';
 my($_CLEAR_DOT) = {
     uri => '/i/dot.gif',
@@ -64,8 +65,8 @@ sub format_html_attribute {
     #
     # Value contains a I<leading space>.
     my($proto, $name, $attribute, $req_or_facade) = @_;
-    return qq{ $attribute="}
-	. _find($proto, $name, $req_or_facade)->{value}->{uri} . '"';
+    return qq{ $attribute=}
+	. _html_attr(uri => $proto, $name, $req_or_facade);
 }
 
 sub get_clear_dot {
@@ -88,7 +89,7 @@ sub get_height_as_html {
     # (proto, string, Collection.Attributes) : string
     # Returns the height of the icon in the form of an " height=N" attribute
     # to an HTML tag.
-    return ' height="' . _find(@_)->{value}->{height} . '"';
+    return ' height=' . _html_attr(height => @_);
 }
 
 sub get_icon_dir {
@@ -128,7 +129,7 @@ sub get_width_as_html {
     # (proto, string, Collection.Attributes) : string
     # Returns the width of the icon in the form of an " width=N" attribute
     # to an HTML tag.
-    return ' width="' . _find(@_)->{value}->{width} . '"';
+    return ' width=' . _html_attr(width => @_);
 }
 
 sub handle_config {
@@ -239,11 +240,16 @@ sub _find {
     };
     my($value) = {
 	value => $v,
-	html => qq{ src="$v->{uri}" width="$w" height="$h"},
+	html => qq{ src="@{[$_HTML->escape_attr_value($v->{uri})]}" width="$w" height="$h"},
     };
     $_CACHE->{$key} = $value
 	if $cache;
     return $value;
+}
+
+sub _html_attr {
+    my($which) = shift;
+    return '"' . $_HTML->escape_attr_value(_find(@_)->{value}->{$which}) . '"';
 }
 
 1;
