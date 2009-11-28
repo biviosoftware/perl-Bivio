@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 #
 # Login page
@@ -7,9 +7,9 @@ view_parent('menu');
 view_put(
     header_title => 'Sign In',
     menu_content => Join([
-	'<br>',
+	'<br />',
 	String('Please sign into the bOP Pet Shop Demo', 'page_heading'),
-	'<br><br><br><br>',
+	'<br /><br /><br /><br />',
 
 	Form('UserLoginForm', Grid([
 	    [

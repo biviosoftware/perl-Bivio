@@ -13,6 +13,7 @@ my($source_name) = sub {
 };
 
 view_main(Page({
+    style => StyleSheet('/f/base.css'),
     head => Title({values => [Join([[$source_name]])]}),
     string_font => 'page_text',
     body => Join([

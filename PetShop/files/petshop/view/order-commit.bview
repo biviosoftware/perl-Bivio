@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 #
 # Order detail
@@ -19,9 +19,9 @@ my($address_widget) = sub {
         '<p>',
         String($location->get_short_desc),
         String(':'),
-        '<br>',
+        '<br />',
         String(['Model.Order', lc($location->get_name) . '_name']),
-        '<br>',
+        '<br />',
         [sub {
             my($req) = @_;
             Bivio::Biz::Model->new($req, 'Address')->load({
@@ -30,15 +30,16 @@ my($address_widget) = sub {
             return '';
         }],
 	String(['Model.Address', 'street1']),
-	'<br>',
+	'<br />',
 	If(['Model.Address', 'street2'],
-		Join([String(['Model.Address', 'street2']), '<br>',]),
+		Join([String(['Model.Address', 'street2']), '<br />',]),
 		Join([''])),
 	String(['Model.Address', 'city']),
 	String(', '),
 	String(['Model.Address', 'state']),
 	vs_blank_cell(2),
 	String(['Model.Address', 'zip']),
+	'</p>',
     ])->put(string_font => 'page_text');
 };
 
@@ -59,7 +60,7 @@ view_put(menu_content => Grid([
 	Join([
 	    String('Email: ', 'page_heading'),
 	    String(['Model.Email', 'email']),
-	    '<br>',
+	    '<br />',
 	]),
     ], [
 	String('Order Information:', 'page_heading'),
@@ -67,7 +68,7 @@ view_put(menu_content => Grid([
 	Join([
 	    String('Order ID: ', 'form_field_label'),
 	    String(['Model.Order', 'order_id']),
-	    '<br>',
+	    '<br />',
 	]),
     ], [
 	Table('CartItemList', [
