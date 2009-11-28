@@ -2,48 +2,18 @@
 # $Id$
 package Bivio::Ext::LWPUserAgent;
 use strict;
-$Bivio::Ext::LWPUserAgent::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Ext::LWPUserAgent::VERSION;
-
-=head1 NAME
-
-Bivio::Ext::LWPUserAgent - extends LWP::UserAgent with bivio config
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Ext::LWPUserAgent;
-
-=cut
-
-=head1 EXTENDS
-
-L<LWP::UserAgent>
-
-=cut
-
-use LWP::UserAgent ();
-@Bivio::Ext::LWPUserAgent::ISA = ('LWP::UserAgent');
-
-=head1 DESCRIPTION
-
-C<Bivio::Ext::LWPUserAgent> adds timeouts and proxy handling to LWP::UserAgent.
-
-If you trace this module, also turns on tracing in LWP::Debug.  See
-L<new|"new">.
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Base 'LWP::UserAgent';
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
 use LWP::Debug ();
 
-#=VARIABLES
-use vars ('$_TRACE');
+# C<Bivio::Ext::LWPUserAgent> adds timeouts and proxy handling to LWP::UserAgent.
+#
+# If you trace this module, also turns on tracing in LWP::Debug.  See
+# L<new|"new">.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_PKG) = __PACKAGE__;
 Bivio::IO::Trace->register;
 my($_HTTP_PROXY);
@@ -52,23 +22,21 @@ Bivio::IO::Config->register(my $_CFG = {
     timeout    => 60,
 });
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(boolean want_redirects) : Bivio::Ext::LWPUserAgent
-
-Calls SUPER::new and sets timeout and proxy.
-
-If I<want_redirects> is true, L<redirect_ok|"redirect_ok"> will return true.
-
-Turns on LWP::Debug if $_TRACE is true for this class.
-
-=cut
+sub handle_config {
+    # (proto, hash) : undef
+    # http_proxy : string [undef]
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
 
 sub new {
+    # (proto, boolean) : Ext.LWPUserAgent
+    # Calls SUPER::new and sets timeout and proxy.
+    #
+    # If I<want_redirects> is true, L<redirect_ok|"redirect_ok"> will return true.
+    #
+    # Turns on LWP::Debug if $_TRACE is true for this class.
     my($proto, $want_redirects) = @_;
     my($self) = $proto->SUPER::new;
     my($fields) = $self->{$_PKG} = {
@@ -87,51 +55,11 @@ sub new {
     return $self;
 }
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item http_proxy : string [undef]
-
-=back
-
-=cut
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_CFG = $cfg;
-    return;
-}
-
-=for html <a name="redirect_ok"></a>
-
-=head2 redirect_ok() : boolean
-
-Always returns false.  Redirects need to be handled at higher level for cookies
-and logging.
-
-=cut
-
 sub redirect_ok {
+    # (self) : boolean
+    # Always returns false.  Redirects need to be handled at higher level for cookies
+    # and logging.
     return shift->{$_PKG}->{want_redirects};
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
