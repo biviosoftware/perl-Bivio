@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::ThreePartPage;
 use strict;
@@ -9,6 +9,15 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = b_use('Agent.TaskId');
 my($_WANT_USER_AUTH) = $_TI->is_component_included('user_auth');
 my($_C) = b_use('IO.Config');
+b_use('IO.Config')->register(my $_CFG = {
+    center_replaces_middle => 0,
+});
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
 
 sub internal_xhtml_adorned {
     my($self) = @_;
@@ -65,7 +74,7 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_byline => '',
 	xhtml_selector => '',
 	xhtml_dock_left => '',
-	xhtml_dock_middle => '',
+	_center_replaces_middle('xhtml_dock_middle') => '',
 	xhtml_dock_right => JoinMenu([
 	    $_C->if_version(8 => sub {_header_right('ForumDropDown')}),
 	    _header_right(qw(HelpWiki HELP)),
@@ -79,7 +88,7 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_main_left => '',
 	xhtml_main_right => '',
 	xhtml_footer_left => XLink('back_to_top'),
-	xhtml_footer_middle => '',
+	_center_replaces_middle('xhtml_footer_middle') => '',
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
 	xhtml_want_first_focus => 1,
     );
@@ -97,9 +106,10 @@ sub internal_xhtml_adorned_attrs {
 		]);
 	    },
 	),
-	xhtml_header_middle => DIV_nav(view_widget_value('xhtml_nav')),
+	_center_replaces_middle('xhtml_header_middle')
+	    => DIV_nav(view_widget_value('xhtml_nav')),
 	xhtml_style => RealmCSS(),
-	xhtml_main_middle => Join([
+	_center_replaces_middle('xhtml_main_middle') => Join([
 	    Acknowledgement(),
 	    MainErrors(),
 	    DIV_main_top(Join([
@@ -142,7 +152,24 @@ sub internal_xhtml_adorned_body {
 
 sub internal_xhtml_grid3 {
     my(undef, $name) = @_;
-    return vs_grid3($name);
+    return Grid([[
+	map(
+	    Join([
+		view_widget_value("xhtml_${name}_$_"),
+	    ], {cell_class => "${name}_$_"}),
+	    'left', _center_replaces_middle('middle'), 'right',
+	),
+    ]], {
+	class => $name,
+	hide_empty_cells => 1,
+    });
+}
+
+sub _center_replaces_middle {
+    my($name) = @_;
+    $name =~ s/middle/center/
+	if $_CFG->{center_replaces_middle};
+    return $name;
 }
 
 sub _header_right {
