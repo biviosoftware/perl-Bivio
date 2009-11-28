@@ -2,93 +2,30 @@
 # $Id$
 package Bivio::UI::HTML::Widget::File;
 use strict;
-$Bivio::UI::HTML::Widget::File::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::File::VERSION;
+use Bivio::Base 'Bivio::UI::Widget';
 
-=head1 NAME
+# C<Bivio::UI::HTML::Widget::File> is a file field for forms.
+#
+#
+#
+# field : string (required)
+#
+# Name of the form field.
+#
+# form_model : array_ref (required, inherited, get_request)
+#
+# Which form are we dealing with.
+#
+# size : int (required)
+#
+# How wide is the field represented.
 
-Bivio::UI::HTML::Widget::File - a file field for forms
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::File;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::File::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::File> is a file field for forms.
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item field : string (required)
-
-Name of the form field.
-
-=item form_model : array_ref (required, inherited, get_request)
-
-Which form are we dealing with.
-
-=item size : int (required)
-
-How wide is the field represented.
-
-=back
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new() : Bivio::UI::HTML::Widget::File
-
-Creates a File widget.
-
-=cut
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Initializes from configuration attributes.
-
-=cut
-
 sub initialize {
+    # (self) : undef
+    # Initializes from configuration attributes.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return if $fields->{model};
@@ -100,15 +37,17 @@ sub initialize {
     return;
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-Draws the file field on the specified buffer.
-
-=cut
+sub new {
+    # (proto) : Widget.File
+    # Creates a File widget.
+    my($self) = shift->SUPER::new(@_);
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub render {
+    # (self, any, string_ref) : undef
+    # Draws the file field on the specified buffer.
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
@@ -126,17 +65,5 @@ sub render {
 	    .'" />';
     return;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
