@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::ViewShortcuts;
 use strict;
@@ -234,21 +234,6 @@ sub vs_form_error_title {
 	    control => [['->req'], "Model.$form", '->has_stale_data'],
 	}),
     ]);
-}
-
-sub vs_grid3 {
-    my(undef, $qualifier) = @_;
-    return Grid([[
-	map(
-	    Join([
-		view_widget_value("xhtml_${qualifier}_$_"),
-	    ], {cell_class => "${qualifier}_$_"}),
-	    qw(left middle right),
-	),
-    ]], {
-	class => $qualifier,
-	hide_empty_cells => 1,
-    });
 }
 
 sub vs_can_group_bulletin_form {
