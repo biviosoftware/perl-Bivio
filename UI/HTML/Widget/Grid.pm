@@ -232,7 +232,7 @@ sub initialize {
 		_append(\@p, Bivio::UI::Align->as_html($align)) if $align;
 		_append(\@p, qq{ rowspan="$rowspan"}) if $rowspan;
 		_append(\@p, qq{ colspan="$colspan"}) if $colspan;
-		_append(\@p, ' nowrap="1"')
+		_append(\@p, ' nowrap="nowrap"')
 		    if $c->get_or_default('cell_nowrap', 0);
 #TODO: Should be a number or percent?
 		_append(\@p, qq! width="$width"!) if $width;
@@ -371,7 +371,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
-    $$buffer .= $self->render_start_tag($source, '');
+    my($b) = $self->render_start_tag($source, '');
     my($r, $c);
     my($hide_cells) = $self->render_simple_attr('hide_empty_cells', $source);
  ROW: foreach $r (@{$fields->{rows}}) {
@@ -402,18 +402,16 @@ sub render {
 	    elsif (defined($w)) {
 		$cell = $w;
 	    }
-	    # else undefined, render nothing
 	    $row .= $cell;
 	    $row =~ s{<td[^>]*></td>\s*$}{}
 		if $hide_cells && $cell eq $_END_COL;
 	}
 	$row .= '</tr>';
-
-	# If row is completely empty, don't render it.
-	$$buffer .= $row
-	    unless $row =~ m!^<tr>\n*<td[^>]*></td>\n*</tr>$!s;
+	$b .= $row
+	    unless $row =~ m{^<tr[^>]*>\n*(?:<td[^>]*></td>\n*)*</tr>$}s;
     }
-    $$buffer .= $self->render_end_tag($source, '');
+    $$buffer .= $b . $self->render_end_tag($source, '')
+	unless $b =~ m{^<table[^>]*>$}s;
     return;
 }
 
