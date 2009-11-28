@@ -330,11 +330,7 @@ sub create_cell {
 	$cell->put(%$attrs);
     }
     elsif ($col eq '') {
-	$cell =  $_VS->vs_new('Join', {
-	    %{_xhtml(
-		$self,
-		sub {{values => ['&nbsp;']}}
-	    )},
+	$cell = Join(['&nbsp;'], {
 	    column_span => $attrs->{column_span} || 1,
 	});
     }
@@ -567,7 +563,7 @@ sub initialize_child_widget {
 	sub {
 	    $column_prefix .= $_A->as_html(
 		$widget->get_or_default('column_align', 'LEFT'));
-	    $column_prefix .= ' nowrap="1"'
+	    $column_prefix .= ' nowrap="nowrap"'
 		if $widget->unsafe_get('column_nowrap');
 	    return;
         },
