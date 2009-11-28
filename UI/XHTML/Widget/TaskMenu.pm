@@ -18,6 +18,7 @@ my($_PARAMS) = [
 my($_W) = b_use('UI.Widget');
 my($_CB) = b_use('HTMLWidget.ControlBase');
 my($_A) = b_use('IO.Alert');
+my($_TI) = b_use('Agent.TaskId');
 
 sub NEW_ARGS {
     return [qw(task_map ?class)];
@@ -60,20 +61,24 @@ sub initialize {
 	task_map => [map({
 	    my(undef, $cfg) = $self->name_parameters(
 		$_PARAMS, ref($_) eq 'ARRAY' ? $_
-		    : [$self->is_blessed($_, 'Bivio::UI::Widget') ? {
-			xlink => $_,
-		    } : $_],
+		    : [$_W->is_blessed($_) ? {xlink => $_}
+		    : $_],
 	    );
 	    if ($cfg->{task_id}) {
-#TODO: xlink is lower case and task_id is upper case
-		$_A->warn_deprecated('positional task_id must be uppercase')
-		    if !ref($cfg->{task_id}) && $cfg->{task_id} =~ /[a-z]/;
-		$cfg->{task_id}
-		    = Bivio::Agent::TaskId->from_any($cfg->{task_id});
-		$cfg->{label} ||= $cfg->{task_id}->get_name;
-		$cfg->{uri} ||= URI({
-		    _cfg($cfg, @$_URI),
-		});
+		unless (ref($cfg->{task_id})) {
+		    if ($cfg->{task_id} =~ /^[a-z\.\d_]+$/) {
+			$cfg->{xlink} = delete($cfg->{task_id});
+		    }
+		    else {
+			$cfg->{task_id} = $_TI->from_any($cfg->{task_id});
+		    }
+		}
+		if (ref($cfg->{task_id})) {
+		    $cfg->{label} ||= $cfg->{task_id}->get_name;
+		    $cfg->{uri} ||= URI({
+			_cfg($cfg, @$_URI),
+		    });
+		}
 	    }
             my($selected_cond) = ['->ureq', _selected_attr($self, \$i)];
  	    my($w) = $_W->is_blessed($cfg->{xlink})
