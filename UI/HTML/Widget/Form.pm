@@ -5,7 +5,6 @@ use strict;
 #TODO: Probably should subclass Tag, but cell_end_form is messy
 use Bivio::Base 'HTMLWidget.ControlBase';
 use Bivio::HTML;
-use Bivio::UI::HTML::ViewShortcuts;
 
 # C<Bivio::UI::HTML::Widget::Form> is an HTML C<FORM> tag surrounding
 # a widget, which is usually a
@@ -82,7 +81,8 @@ use Bivio::UI::HTML::ViewShortcuts;
 # L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = b_use('UIHTML.ViewShortcuts');
+my($_HTML) = b_use('Bivio.HTML');
 
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FORM_NAME_INDEX) = 0;
@@ -142,7 +142,7 @@ sub initialize {
 	. lc($self->ancestral_get('form_method', 'post'))
         . '"'
 	. $_VS->vs_link_target_as_html($self)
-	. qq{ name="$name" action="};
+	. qq{ id="$name" action="};
     $fields->{prefix} = $p;
     $fields->{end_tag} = $self->get_or_default('end_tag',
 	    $self->get_or_default('cell_end_form', 0)
@@ -188,7 +188,7 @@ sub control_on_render {
 #      context when you have a form to store the context in fields.
 #      Context management is hard....
     $action =~ s/[&?]fc=[^&=]+//;
-    $$buffer .= $fields->{prefix} . $action . '"';
+    $$buffer .= $fields->{prefix} . $_HTML->escape_attr_value($action) . '"';
     $self->SUPER::control_on_render($source, $buffer);
     $$buffer .= ' enctype="multipart/form-data"'
 	if $model->get_info('file_fields');
