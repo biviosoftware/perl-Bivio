@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 #
 # Order review prior to commit
@@ -21,14 +21,15 @@ my($address_widget) = sub {
     $address ||= '';
 
     return Join([
+	'<p>',
 	String([$order_field, 'Order.' . $name_prefix . '_name']),
-	'<br>',
+	'<br />',
 	String([$order_field, 'Address' . $address . '.street1']),
-	'<br>',
+	'<br />',
 	If([$order_field, 'Address' . $address . '.street2'],
 	    Join([
 		String([$order_field, 'Address' . $address . '.street2']),
-		'<br>',
+		'<br />',
 	    ]),
 	),
 	String([$order_field, 'Address' . $address . '.city']),
@@ -36,7 +37,7 @@ my($address_widget) = sub {
 	String([$order_field, 'Address' . $address . '.state']),
 	vs_blank_cell(2),
 	String([$order_field, 'Address' . $address . '.zip']),
-	'<p>',
+	'</p>',
     ]);
 };
 
