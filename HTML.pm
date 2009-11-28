@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::HTML;
 use strict;
@@ -17,8 +17,6 @@ sub escape {
 
 sub escape_attr_value {
     my($proto, $text) = @_;
-    # B<Netscape and IE seems to require that we escape the html inside the quotes
-    # even though this isn't the standard.>
     return $proto->escape($text);
 }
 
