@@ -53,7 +53,7 @@ sub control_on_render {
 #TODO: need get_width or is it something else?
 	$fields->{prefix} = '<textarea' . $attributes
 	    . ($_VS->vs_html_attrs_render($self, $source) || '')
-	    . join('', map(qq{ $_="$fields->{$_}"}, qw(rows cols wrap)));
+	    . join('', map(qq{ $_="$fields->{$_}"}, qw(rows cols)));
         $fields->{prefix} .= ' readonly="readonly"'
 	    if $fields->{readonly};
 	$fields->{initialized} = 1;
@@ -77,7 +77,6 @@ sub initialize {
     $fields->{model} = $self->ancestral_get('form_model');
     ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
 	    'field', 'rows', 'cols');
-    $fields->{wrap} = $self->get_or_default('wrap', 'virtual');
     $fields->{readonly} = $self->get_or_default('readonly', 0);
     return;
 }
