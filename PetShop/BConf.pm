@@ -68,6 +68,9 @@ sub merge_overrides {
 	    http_suffix => 'bivio.biz',
 	    mail_host => 'bivio.biz',
 	},
+	'Bivio::UI::View::ThreePartPage' => {
+	    center_replaces_middle => 1,
+	},
 	'Bivio::Util::RealmUser' => {
 	    audit_map => [
 		'site-admin' => [
