@@ -1,12 +1,12 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Checkbox;
 use strict;
 use Bivio::Base 'HTMLWidget.InputBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
-my($_C) = __PACKAGE__->use('IO.Config');
+my($_VS) = b_use('UIHTML.ViewShortcuts');
+my($_C) = b_use('IO.Config');
 
 sub initialize {
     my($self) = @_;
