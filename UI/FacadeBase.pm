@@ -160,7 +160,6 @@ sub _cfg_base {
 	    )] => -1],
 	    # CSS
 	    [body => 0],
-	    [css_reset => -1],
 	    [[qw(body_background header_su)] => 0xffffff],
 	    [[qw(off footer_border_top disabled)] => 0x999999],
 	    [even_background => 0xeeeeee],
@@ -179,6 +178,40 @@ sub _cfg_base {
 	    [dd_menu_selected_background => 0x888888],
 	],
 	Font => [
+	    # See Bivio::UI::View::CSS
+	    # Pass #1: Reset tag selectors (canonicalize browsers)
+	    [reset_body => ['size=100%', 'style=padding: 0; margin: 0;']],
+	    [reset_abbr => 'style=border: 0; border-style: none'],
+	    [reset_address => 'style=font-family: inherit; font-size: inherit; font-style: inherit; font-weight: inherit'],
+	    [reset_caption => [qw(left normal_weight)]],
+	    [reset_ol => 'style=margin-left: 2.5em; list-style-type: decimal'],
+	    [reset_pre => ['pre', 'style=line-height: 60%']],
+	    [reset_table => 'style=border-collapse: collapse; border-spacing=0'],
+	    [reset_textarea => 'pre'],
+	    [reset_ul => 'style=margin-left: 2.5em; list-style-type: disc'],
+
+	    # Pass #2: Style tag selectors (bOP's standard)
+	    [a_hover => 'underline'],
+	    [a_link => 'normal'],
+	    [body => ['family=Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small', 'style=margin-top: 0; margin-bottom: 0; margin-right: .5em; margin-left: .5em; min-width: 50em']],
+	    [caption => [qw(bold center)]],
+	    [[qw(code pre_text)] => [
+		'family="Courier New",Courier,monospace,fixed',
+		'120%',
+	    ]],
+	    [em => 'italic'],
+	    [hn => 'style=margin: 1ex 0 .5ex 0'],
+	    [h1 => ['140%', 'bold']],
+	    [h2 => ['130%', 'bold']],
+	    [h3 => ['120%', 'bold']],
+	    [h4 => ['110%', 'bold']],
+	    [[qw(h5 h6)] => ['size=100%', 'normal_weight']],
+	    [strong => 'bold'],
+	    [table => 'left'],
+	    [th => [qw(bold center), 'style=padding: .5em']],
+	    [th_a => [qw(bold center)]],
+
+	    # Historical font names
 	    map([$_->[0] => [qq{class=$_->[1]}]],
 		[error => 'field_err'],
 		[warning => 'warn'],
@@ -202,26 +235,11 @@ sub _cfg_base {
 		table_heading
 		list_action
 	    }] => []],
-	    # HTML4
-	    [a_hover => 'underline'],
-	    [a_link => 'normal'],
-	    [em => 'italic'],
-	    [h1 => ['140%', 'bold']],
-	    [h2 => ['130%', 'bold']],
-	    [h3 => ['120%', 'bold']],
-	    [h4 => ['110%', 'bold']],
+	    # Newer font names
 	    [normal => ['normal']],
-	    [strong => 'bold'],
-	    # Our tags
 	    [warn => 'italic'],
 	    [err => 'bold'],
-	    [body => ['family=Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small']],
-	    [css_reset => 'normal'],
 	    [tools => ['nowrap', 'inline']],
-	    [[qw(code pre_text)] => [
-		'family="Courier New",Courier,monospace,fixed',
-		'120%',
-	    ]],
 	    [form_err => 'bold'],
 	    [form_label_ok => ['bold', 'nowrap']],
 	    [form_field_err => ['normal', '80%']],
@@ -236,7 +254,6 @@ sub _cfg_base {
 	    [nav => '120%'],
 	    [dock => ['120%', 'nowrap']],
 	    [[qw(off pager)] => []],
-	    [th => 'bold'],
 	    [dd_menu => ['normal']],
 	    [user_state => ['120%', 'nowrap']],
 	],
@@ -325,9 +342,10 @@ sub _cfg_base {
 	    [favicon_uri => '/i/favicon.ico'],
 	    [form_error_title => 'Please correct the errors below:'],
 	    [form_stale_data_title => 'The page contents were modified by another request. Please resubmit the form with new data.'],
-	    [none => ''],
+	    [none => ' '],
 	    [Image_alt => [
-		dot => '',
+		none => 'none',
+		dot => 'dot',
 		sort_up => 'This column sorted in descending order',
 		sort_down => 'This column sorted in ascending order',
 	    ]],
@@ -1513,19 +1531,23 @@ sub _cfg_wiki {
 		]);},
 		wiki_diff_tools => q{vs_text_as_prose('wiki_diff_tools_base');},
 		xhtml_dock_left_standard => q{If(['auth_realm', 'type', '->eq_forum'],
-
 	    TaskMenu([
 		'SITE_WIKI_VIEW',
                 'FORUM_BLOG_LIST',
-		'FORUM_CALENDAR',
 		'FORUM_FILE_TREE_LIST',
-		'GROUP_TASK_LOG',
-		'FORUM_MAIL_THREAD_ROOT_LIST',
-                'FORUM_MOTION_LIST',
-                'FORUM_TUPLE_USE_LIST',
-		'GROUP_USER_LIST',
 		'FORUM_CRM_THREAD_ROOT_LIST',
 		'FORUM_WIKI_VIEW',
+		DropDown(
+		    String('more'),
+		    DIV_dd_menu(TaskMenu([qw(
+			FORUM_CALENDAR
+			GROUP_TASK_LOG
+		        FORUM_MAIL_THREAD_ROOT_LIST
+			FORUM_MOTION_LIST
+			GROUP_USER_LIST
+			FORUM_TUPLE_USE_LIST
+		    )]), {id => 'more_drop_down'}),
+		),
 		SiteAdminDropDown(),
 	    ]),
 	);},
