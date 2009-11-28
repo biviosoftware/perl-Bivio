@@ -22,7 +22,6 @@ sub control_on_render {
 	    ${$self->render_attr('image', $source)}, $req)->{uri}
 	. (length($alt) ? '" alt="' . Bivio::HTML->escape_attr_value($alt) : '')
 	. ($super =~ /id=/ ? '' : ('" id="' . $field))
-	. ($super =~ /class=/ ? '' : '" border="0')
 	. '"'
 	. $super
 	. $self->render_simple_attr('attributes', $source)
