@@ -11,24 +11,9 @@ sub internal_xhtml_adorned {
     my($self) = shift;
     my(@res) = $self->SUPER::internal_xhtml_adorned(@_);
     view_unsafe_put(
-	xhtml_dock_left => TaskMenu([
-	    {
-		task_id => 'SITE_ROOT',
-		label => String('PetShop'),
-	    },
-	    'SITE_WIKI_VIEW',
-	    'FORUM_CALENDAR',
-	    'FORUM_FILE_TREE_LIST',
-	    'FORUM_MAIL_THREAD_ROOT_LIST',
-	    'GROUP_TASK_LOG',
-	    'FORUM_CRM_THREAD_ROOT_LIST',
-	    'GROUP_USER_LIST',
-	    'FORUM_WIKI_VIEW',
-	    'FORUM_BLOG_LIST',
-	    'FORUM_TUPLE_USE_LIST',
-	    SiteAdminDropDown(),
-	]),
-	xhtml_dock_middle => IfWiki(
+	xhtml_dock_left => vs_text_as_prose('xhtml_dock_left_standard'),
+	xhtml_dock_center => Link(String('PetShop'), 'SITE_ROOT'),
+	xhtml_header_center => IfWiki(
 	    '/StartPage',
 	    WikiText('@h2 inline WikiText btest'),
 	    IfWiki(
