@@ -1,8 +1,8 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Ext::LWPUserAgent;
 use strict;
-use Bivio::Base 'LWP::UserAgent';
+use base 'LWP::UserAgent';
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use LWP::Debug ();
@@ -19,7 +19,7 @@ Bivio::IO::Trace->register;
 my($_HTTP_PROXY);
 Bivio::IO::Config->register(my $_CFG = {
     http_proxy => undef,
-    timeout    => 60,
+    timeout => 60,
 });
 
 sub handle_config {
