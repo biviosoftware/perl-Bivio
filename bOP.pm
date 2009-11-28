@@ -26,11 +26,100 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.39  2009/11/23 17:22:32  dobbs
+  * Bivio::BConf
+    copy
+  * Bivio::Biz::Action::WikiValidator
+    don't b_warn if not validating
+  * Bivio::Biz::FormModel
+    added IS_SPECIFIED constraint
+  * Bivio::Biz::Model::CSVImportForm
+    check_value takes type
+  * Bivio::Biz::Model::ForumForm
+    added web UI for creating forums
+  * Bivio::Biz::Model::MailForm
+    use IS_SPECIFIED
+    added validate to always has To:
+  * Bivio::Delegate::SimpleTypeError
+    fix grammar in TOP_FORUM_NAME
+  * Bivio::Delegate::SimpleWidgetFactory
+    made easier to subclass
+  * Bivio::Delegate::TaskId
+    added web UI for creating forums
+  * Bivio::PetShop::Util::SQL
+    use internal_realm_role_config_data
+  * Bivio::SQL::Constraint
+    check_value takes type
+    added IS_SPECIFIED
+  * Bivio::Test::HTMLParser::Links
+    output xpath-like value on errors
+  * Bivio::Type::Enum
+    equals_by_name takes "any"
+  * Bivio::Type::StringArray
+    is_specified checks undef
+  * Bivio::Type::TupleSlotType
+    use is_specified
+  * Bivio::UI::FacadeBase
+    Added css_reset, MAIL_RECEIVE_URI_PREFIX, changed a couple of TaskMenu sorts
+    added web UI for creating forums
+  * Bivio::UI::Font
+    bigger and smaller are not valid, use 120% & 80%
+  * Bivio::UI::HTML::Widget::Checkbox
+    xhtml: checked="checked"
+  * Bivio::UI::HTML::Widget::InputBase
+    xhtml: disabled="disabled="
+  * Bivio::UI::HTML::Widget::Radio
+    xhtml: checked="checked"
+  * Bivio::UI::HTML::Widget::Select
+    xhtml: selected="selected"
+  * Bivio::UI::HTML::Widget::String
+    b_use
+  * Bivio::UI::HTML::Widget::TextArea
+    xhtml: readonly="readonly"
+  * Bivio::UI::HTML::Widget::YesNo
+    xhtml: checked="checked"
+  * Bivio::UI::Task
+    added a HELP constant so can be overriden
+  * Bivio::UI::View::Base
+    protect USER_PASSWORD with user_auth component check
+  * Bivio::UI::View::CSS
+    don't reset the fonts so much
+  * Bivio::UI::View::Calendar
+    don't output URL if no URL
+  * Bivio::UI::View::GroupUser
+    added web UI for creating forums
+  * Bivio::UI::View::LocalFile
+    b_use
+  * Bivio::UI::View::Method
+    b_use
+  * Bivio::UI::View::ThreePartPage
+    protect USER_PASSWORD with user_auth component check
+  * Bivio::UI::View
+    b_use
+  * Bivio::UI::ViewLanguage
+    changed _view_in_eval to always ask UI.View for the view
+  * Bivio::UI::Widget::MIMEEntityView
+    b_use
+  * Bivio::UI::XHTML::Widget::ForumDropDown
+    use DEFAULT_REALM_TYPE
+  * Bivio::UI::XHTML::Widget::RealmCSS
+    b_use
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    allow subclass to pass hash for values to override display_name,
+    task_id, and name
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    check if xlink is a String, iwc surround in SPAN.  Other constraint
+    was too loose.
+    needed to wrap in a DIV if not HTMLWidget.ControlBase
+  * Bivio::Util::SQL
+    added internal_realm_role_config_data
+    fixed oracle's group_concat
+
   Revision 8.38  2009/11/18 22:03:47  nagler
   * Bivio::Biz::Action::EasyForm
     was not managing references correctly
