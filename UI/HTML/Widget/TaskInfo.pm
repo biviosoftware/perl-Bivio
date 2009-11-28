@@ -1,16 +1,12 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::TaskInfo;
 use strict;
-use base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SC);
-
-sub initialize {
-    return;
-}
 
 sub render {
     my($self, $source, $buffer) = @_;
@@ -18,8 +14,8 @@ sub render {
     my($task) = $req->get('task');
     $$buffer .= <<"EOF"
 <pre>
-<b><font size="+1">Control Logic for This Page</font></b>
-<font size="-1">(click on link to see the source code)</font>
+<b>Control Logic for This Page</b>
+(click on link to see the source code)
 Name:         @{[$task->get('id')->get_name]}
 Realm:        @{[$task->get('realm_type')->get_name]}
 Permissions:  @{[join('&',

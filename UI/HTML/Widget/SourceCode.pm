@@ -1,10 +1,11 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::SourceCode;
 use strict;
 use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTML) = b_use('Bivio.HTML');
 my($_D) = b_use('Bivio.Die');
 my($_F) = b_use('UI.Facade');
 my($_IGNORE_POD) = {
@@ -40,13 +41,16 @@ sub render {
     my($lines) = [`/usr/local/bin/perl2html -c -s < '$file'`];
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package, $req);
-    $$buffer .= join('', @$lines);
+    $lines = join('', @$lines);
+    $lines =~ s{<pre[^>]*}{<div class="pet_pre"}ig;
+    $lines =~ s{</pre>}{</div>}ig;
+    $$buffer .= $lines;
     return;
 }
 
 sub render_source_link {
     my($proto, $req, $source, $name, $buffer) = @_;
-    $$buffer .= qq{<a href="/src?s=$source">$name</a>};
+    $$buffer .= qq{<a href="@{[$_HTML->escape_attr_value("/src?s=$source")]}">$name</a>};
     return;
 }
 
@@ -67,12 +71,12 @@ sub _add_links {
 	foreach my $package (@$matches) {
 	    b_die('invalid package match: ', $package)
 		unless $line =~
-		    s{([^=>])(\Q$package\E)}{$1<a href="/$uri?s=$2">$2</a>}
-		|| $line =~ s{(\Q$package\E)}{<a href="/$uri?s=$1">$1</a>};
+		    s{([^=>])(\Q$package\E)}{$1<a href="@{[$_HTML->escape_attr_value("/$uri?s=$2")]}">$2</a>}
+		|| $line =~ s{(\Q$package\E)}{<a href="@{[$_HTML->escape_attr_value("/$uri?s=$1")]}">$1</a>};
 	}
 	if ($line =~ /view_parent\(.*?>.(\w+)/) {
 	    my($view) = $1;
-	    $line =~ s,(\Q$view\E),<a href="/$uri?s=View.$1">$1</a>,;
+	    $line =~ s,(\Q$view\E),<a href="@{[$_HTML->escape_attr_value("/$uri?s=View.$1")]}">$1</a>,;
 	}
     }
     return;
