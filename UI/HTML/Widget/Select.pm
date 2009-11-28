@@ -210,7 +210,7 @@ sub render {
         my($v, $k) = @_;
 	$$buffer .= qq{<option value="$v"}
 	    . ($field_value eq $v ? ' selected="selected"' : '')
-	    . " />$k\n"
+	    . ">$k</option>\n"
 	    if $editable || $field_value eq $v;
 	return;
     }, $ekl ? ['', $ekl, @$items] : $items);
