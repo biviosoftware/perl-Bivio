@@ -14,8 +14,14 @@ body {
 td.main_left {
   width: 3em;
 }
-td.header_middle .task_menu {
+td.header_center .task_menu {
   text-align: center;
+}
+img {
+  border: none;
+}
+a {
+  text-decoration: none;
 }
 EOF
 }
