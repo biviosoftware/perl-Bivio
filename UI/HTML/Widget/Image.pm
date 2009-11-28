@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Image;
 use strict;
@@ -80,10 +80,10 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-my($_OLD_HTML) =
-    [qw(hspace vspace width height border align attributes)];
-my($_A) = __PACKAGE__->use('FacadeComponent.Align');
-my($_I) = __PACKAGE__->use('FacadeComponent.Icon');
+my($_OLD_HTML) = [qw(hspace vspace width height border align attributes)];
+my($_A) = b_use('FacadeComponent.Align');
+my($_I) = b_use('FacadeComponent.Icon');
+my($_HTML) = b_use('Bivio.HTML');
 
 sub control_on_render {
     # (self, any, string_ref) : undef
@@ -108,8 +108,9 @@ sub control_on_render {
 	        ),
 	        $source,
 	    );
-    $$buffer .= ' alt="' . Bivio::HTML->escape_attr_value($alt) . '"'
-	if $alt;
+    $alt = 'none'
+	unless $alt;
+    $$buffer .= ' alt="' . Bivio::HTML->escape_attr_value($alt) . '"';
     my($a) = {map(($_ => $self->render_simple_attr($_, $source)), @$_OLD_HTML)};
     $a->{border} ||= '0'
 	unless  $b =~ /class=|id=/;
@@ -124,7 +125,7 @@ sub control_on_render {
     ) . (
 	$src_is_uri ? qq{ src="$src"}
 	    : defined($self->unsafe_get('width'))
-	    ? (' src="' . Bivio::HTML->escape(
+	    ? (' src="' . $_HTML->escape_attr_value(
 		$_I->get_value($src, $source)->{uri}) . '"')
 	    : $_I->format_html($src, $source)
     ) . ' />';

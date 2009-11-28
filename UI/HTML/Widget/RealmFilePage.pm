@@ -1,15 +1,15 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::RealmFilePage;
 use strict;
 use Bivio::Base 'HTMLWidget.Page';
-use Bivio::UI::HTML::Widget::ControlBase;
 use Bivio::UI::ViewLanguageAUTOLOAD;
 use URI ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATTRS) = [qw(view_attr_prefix realm_id path default_path)];
 my($_FP) = Bivio::Type->get_instance('FilePath');
+my($_HTML) = b_use('Bivio.HTML');
 
 sub execute {
     my($self, $req) = @_;
@@ -27,7 +27,7 @@ sub initialize {
 
 sub internal_new_args {
     shift;
-    return Bivio::UI::HTML::Widget::ControlBase
+    return b_use('HTMLWidget.ControlBase')
 	->internal_compute_new_args($_ATTRS, \@_);
 }
 
@@ -52,7 +52,7 @@ sub render {
     $p = $_FP->from_public($p)
 	if $rf->get('is_public');
     $p = URI->new($rf->get_request->format_http({uri => $p}));
-    $$b =~ s{(\b(?:href|src)=")([^"]+)}{$1 . _render_uri($2, $p)}sige;
+    $$b =~ s{(\b(?:href|src)=")([^"]+)}{$1 . $_HTML->escape_attr_value(_render_uri($2, $p))}sige;
     my($vap) = $self->render_simple_attr('view_attr_prefix', $source);
     $$b =~ s{
         \<\!--\s*bivio-([\w-]+)\s*--\>

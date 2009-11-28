@@ -1,10 +1,8 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::ListActions;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::Biz::QueryType;
-use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::Base 'UI.Widget';
 
 # link_target : string [] (inherited)
 #
@@ -35,9 +33,9 @@ use Bivio::UI::HTML::ViewShortcuts;
 # for the task.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-my($_T) = 'Bivio::Agent::TaskId';
-
+my($_VS) = b_use('UIHTML.ViewShortcuts');
+my($_T) = b_use('Agent.TaskId');
+my($_HTML) = b_use('Bivio.HTML');
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub initialize {
@@ -144,7 +142,7 @@ sub _render_link {
     return 0 unless $source->req->can_user_execute_task($v->{task_id}, $realm);
     $$buffer .= $sep
         . $v->{prefix}
-	. ($v->{format_uri}
+	. $_HTML->escape_attr_value(($v->{format_uri}
             ? ${$self->render_value(
                 "$i.format_uri", $v->{format_uri}, $source)}
             : $source->format_uri($v->{method},
@@ -153,7 +151,7 @@ sub _render_link {
                     query => undef,
                     realm => _realm_name($self, $source, $realm),
                     path_info => undef,
-                })))
+                }))))
         . '">'
         . (ref($v->{label})
             ? $self->render_simple_value($v->{label}, $source)

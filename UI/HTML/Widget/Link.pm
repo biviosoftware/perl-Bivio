@@ -1,11 +1,8 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Link;
 use strict;
 use Bivio::Base 'HTMLWidget.ControlBase';
-use Bivio::Die;
-use Bivio::HTML;
-use Bivio::UI::HTML::ViewShortcuts;
 
 # C<Bivio::UI::HTML::Widget::Link> implements an HTML C<A> tag with
 # an C<HREF> attribute.
@@ -58,8 +55,9 @@ use Bivio::UI::HTML::ViewShortcuts;
 # If not a widget, will be wrapped in a I<Widget.String>.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_VS) = b_use('UIHTML.ViewShortcuts');
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_HTML) = b_use('Bivio.HTML');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
@@ -71,7 +69,7 @@ sub control_on_render {
     $$buffer .= ' name="' . Bivio::HTML->escape_attr_value($n) . '"'
 	if $self->unsafe_render_attr('name', $source, \$n);
     my($href) = _render_href($self, $source);
-    $$buffer .= qq{ href="$href"}
+    $$buffer .= qq{ href="@{[$_HTML->escape_attr_value($href)]}"}
         if defined($href);
     my($handler) = $self->unsafe_resolve_widget_value(
 	$self->unsafe_get('event_handler'), $source);

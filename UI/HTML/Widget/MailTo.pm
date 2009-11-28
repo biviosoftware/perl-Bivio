@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::MailTo;
 use strict;
@@ -42,8 +42,9 @@ use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_E) = __PACKAGE__->use('Type.Email');
-my($_S) = __PACKAGE__->use('HTMLWidget.String');
+my($_E) = b_use('Type.Email');
+my($_S) = b_use('HTMLWidget.String');
+my($_HTML) = b_use('Bivio.HTML');
 
 sub initialize {
     # (self) : undef
@@ -141,7 +142,9 @@ sub render {
     elsif ($fields->{want_link}) {
 	# Not ignored email
 	$$buffer .= '<a href="'
-		.$req->format_mailto($email, $fields->{subject}).'">';
+            . $_HTML->escape_attr_value(
+		$req->format_mailto($email, $fields->{subject}))
+	    . '">';
 	$fields->{value_widget}->render($source, $buffer);
 	$$buffer .= '</a>';
     }

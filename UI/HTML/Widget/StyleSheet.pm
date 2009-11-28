@@ -6,6 +6,7 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTML) = b_use('Bivio.HTML');
 
 sub control_off_render {
     return _do(sub {
@@ -22,7 +23,7 @@ sub control_off_render {
 sub control_on_render {
     return _do(sub {
 	my($self, $source, $buffer, $value) = @_;
-	$$buffer .= qq{<link href="$value" rel="stylesheet" type="text/css" />\n};
+	$$buffer .= qq{<link href="@{[$_HTML->escape_attr_value($value)]}" rel="stylesheet" type="text/css" />\n};
 	return;
     }, @_);
 }
