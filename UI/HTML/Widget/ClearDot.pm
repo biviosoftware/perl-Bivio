@@ -1,10 +1,8 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::ClearDot;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::UI::Align;
-use Bivio::UI::Icon;
+use Bivio::Base 'UI.Widget';
 
 # C<Bivio::UI::HTML::Widget::ClearDot> displays the clear dot
 #
@@ -34,6 +32,8 @@ use Bivio::UI::Icon;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_I) = b_use('FacadeComponent.Icon');
+my($_A) = b_use('FacadeComponent.Align');
 
 sub as_html {
     # (self) : string
@@ -51,21 +51,20 @@ sub as_html {
 	$self->initialize;
     }
     elsif (!ref($self)) {
-	die('must pass width and height if called statically');
+	b_die('must pass width and height if called statically');
     }
     return $self->[$_IDI]->{value};
 }
 
 sub initialize {
-    # (self) : undef
-    # Initializes static information.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    return if exists($fields->{value});
+    return
+	if exists($fields->{value});
     $fields->{value} = '<img src="'
-	    .Bivio::UI::Icon->get_clear_dot->{uri}
-            .'" border="0"'
-	    .Bivio::UI::Align->as_html($self->unsafe_get('align'));
+	    . $_I->get_clear_dot->{uri}
+            .'" alt="dot" border="0"'
+	    . $_A->as_html($self->unsafe_get('align'));
 
     $fields->{is_constant} = 1;
     foreach my $f (qw(width height)) {
