@@ -50,6 +50,7 @@ sub get_rss_author {
 sub get_rss_summary {
     my($self) = @_;
     return $_P->new_excerpt({
+	model => $self,
 	content => \($self->get('text')),
 	content_type => 'text/x-bivio-wiki',
 	name => $self->get('path_info'),
@@ -58,7 +59,6 @@ sub get_rss_summary {
 	req => $self->req,
 	task_id => $self->req('task')->unsafe_get_attr_as_id('html_task'),
 	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
-	no_auto_links => 1,
     })->get('excerpt');
 }
 
