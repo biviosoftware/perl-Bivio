@@ -59,11 +59,11 @@ EOF
 	    method => 'new_excerpt',
 	    compute_return => sub {
 		my(undef, $actual) = @_;
-		return [$actual->[0]->get(qw(excerpt author))];
+		return [$actual->[0]->get(qw(excerpt author_user_id author))];
 	    },
 	} => [
-	    'excerpt.bwiki' => [qr{^w1( w\d+){42} w44 \.\.\.$}s, 'Demo User'],
-	    'excerpt.eml' => ['html body', 'Freddy'],
+	    'excerpt.bwiki' => [qr{^w1( w\d+){42} w44 \.\.\.$}s, realm_id('demo'), ''],
+	    'excerpt.eml' => ['html body', realm_id('demo'), 'Freddy'],
 	],
     ],
 ];
