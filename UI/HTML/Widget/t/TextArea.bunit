@@ -15,12 +15,12 @@ Widget();
 	cols => 60,
 	wrap => '',
 	edit_attributes => ' foo="bar"',
-    }] => qq(<textarea foo="bar" rows="2" cols="60" wrap="" name="$name"></textarea>),
+    }] => qq(<textarea foo="bar" rows="2" cols="60" name="$name"></textarea>),
     [{
 	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
 	model => 'BlogCreateForm',
 	field => 'body',
 	rows => 5,
 	cols => 20,
-    }] => qq(<textarea rows="5" cols="20" wrap="virtual" name="$name"></textarea>),
+    }] => qq(<textarea rows="5" cols="20" name="$name"></textarea>),
 ];
