@@ -202,7 +202,7 @@ sub initialize_test_data {
     _init_default_tuple($self);
     _init_mail($self);
     $self->new_other('TestCRM')->init;
-    _init_search($self);
+    $self->new_other('TestData')->init_search;
     _init_remote_copy($self);
     _init_task_log($self);
     _init_bulletin($self);
@@ -229,7 +229,7 @@ EOF
 
 sub realm_file_create {
     my($self, $path, $content) = @_;
-    return $self->model('RealmFile')->create_with_content(
+    return $self->model('RealmFile')->create_or_update_with_content(
 	{path => $path},
 	ref($content) ? $content : \$content);
 }
@@ -776,34 +776,6 @@ EOF
 	});
 	return;
     });
-    return;
-}
-
-sub _init_search {
-    my($self) = @_;
-    $self->req->set_realm('site');
-    $self->req->set_user($self->ROOT);
-    $self->realm_file_create($_WN->to_absolute('SearchTest1', 1), <<'EOF');
-@h1 Test Result One
-Hello Wiki World!
-EOF
-    $self->realm_file_create($_WDN->to_absolute('search_test2.txt', 1), <<'EOF');
-Test Result Two
-Hello Underscore World!
-EOF
-    $self->realm_file_create($_WDN->to_absolute('search-test3.txt', 1), <<'EOF');
-Test Result Three
-Hello Hyphen World!
-EOF
-    $self->realm_file_create($_WDN->to_absolute('search test 4.txt', 1), <<'EOF');
-Test Result Four
-Hello Space World!
-EOF
-    $self->realm_file_create('SearchTest5.csv', <<'EOF');
-Test,Result,Five
-t,r,5
-T,R,V
-EOF
     return;
 }
 
