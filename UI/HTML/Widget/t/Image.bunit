@@ -7,40 +7,41 @@ Widget({
     },
     parse_return => sub {
 	my($case, $actual, $expect) = @_;
-	$expect->[0] .= qq{ src="/i/dot.gif" width="1" height="1" />}
-	    unless $expect->[0] =~ />/;
+	unless ($expect->[0] =~ />/) {
+	    $expect->[0] .= qq{ src="/i/dot.gif" width="1" height="1" />};
+	}
 	return $actual;
     },
 });
 [
-    dot => '<img border="0"',
-    ['dot', 'not found'] => '<img border="0"',
+    dot => '<img alt="dot" border="0"',
+    ['dot', 'not found'] => '<img alt="none" border="0"',
     [bivio_power => {class => 'bp'}] =>
 	'<img class="bp" alt="Powered by bivio Software, Inc." src="/i/bivio_power.gif" width="118" height="22" />',
-    ['dot', ''] => '<img border="0"',
+    ['dot', ''] => '<img alt="none" border="0"',
     ['dot', {
 	align => 'n',
 	alt_text => vs_new('Join', ['image_bunit']),
 	attributes => ' x=y',
-    }] => '<img alt="Image.bunit" valign="top" align="center" x=y border="0"',
+    }] => '<img alt="Image.bunit" class="b_align_n" x=y border="0"',
     ['dot', {
 	xhtml => 1,
-    }] => '<img class="dot"',
+    }] => '<img class="dot" alt="dot"',
     ['dot', {
 	width => 0,
 	height => 1,
-    }] => '<img border="0" height="1" src="/i/dot.gif" />',
+    }] => '<img alt="dot" border="0" height="1" src="/i/dot.gif" />',
     ['dot', {
 	width => 1,
 	height => 0,
-    }] => '<img border="0" width="1" src="/i/dot.gif" />',
+    }] => '<img alt="dot" border="0" width="1" src="/i/dot.gif" />',
     ['dot', {
 	width => 2,
 	height => 3,
-    }] => '<img border="0" height="3" width="2" src="/i/dot.gif" />',
+    }] => '<img alt="dot" border="0" height="3" width="2" src="/i/dot.gif" />',
     ['/i/foo.gif', {
 	width => 2,
 	height => 3,
-    }] => '<img border="0" height="3" width="2" src="/i/foo.gif" />',
+    }] => '<img alt="none" border="0" height="3" width="2" src="/i/foo.gif" />',
 ];
 
