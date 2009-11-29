@@ -150,13 +150,29 @@ sub get_as {
 }
 
 sub get_auth_id {
-    my($self) = @_;
-    return $self->get($self->get_auth_id_name);
+    return _well_known_value(@_);
 }
 
 sub get_auth_id_name {
     my($self) = @_;
-    return ($self->get_info('auth_id') || $self->die('no auth_id'))->{name};
+    return _well_known_name(
+	$self,
+	[qw(auth_id realm_id)],
+	$self->get_info('auth_id'),
+    );
+}
+
+sub get_auth_user_id {
+    return _well_known_value(@_);
+}
+
+sub get_auth_user_id_name {
+    my($self) = @_;
+    return _well_known_name(
+	$self,
+	[qw(auth_user_id user_id)],
+	[grep(/\buser_id$/, @{$self->get_info('column_names')})],
+    );
 }
 
 sub get_field_alias_value {
@@ -222,15 +238,16 @@ sub get_model_info {
 }
 
 sub get_primary_id {
-    my($self) = @_;
-    return $self->get($self->get_primary_id_name);
+    return _well_known_value(@_);
 }
 
 sub get_primary_id_name {
     my($self) = @_;
-    my($pk) = $self->get_info('primary_key_names');
-    return @$pk == 1 ? $pk->[0]
-	: $self->die($pk, ': too many primary key values');
+    return _well_known_name(
+	$self,
+	['primary_id'],
+	$self->get_info('primary_key_names'),
+    );
 }
 
 sub get_qualified {
@@ -702,6 +719,30 @@ sub _new_args {
 	$req = undef;
     }
     return ($proto, $req || $proto->unsafe_get_request, $class);
+}
+
+sub _well_known_name {
+    my($self, $names, $choices) = @_;
+    foreach my $n (@$names) {
+	my($constant) = uc($n) . '_FIELD';
+	return $self->$constant()
+	    if $self->can($constant);
+    }
+    $self->die($names, ': no choices')
+	unless defined($choices);
+    return $choices->{name}
+	if ref($choices) eq 'HASH';
+    $self->die($choices, ": too many $names->[0] values")
+	if @$choices > 1;
+    $self->die($choices, ": too few $names->[0] values")
+	if @$choices < 1;
+    return $choices->[0];
+}
+
+sub _well_known_value {
+    my($self) = @_;
+    my($name) = $self->my_caller . '_name';
+    return $self->get($self->$name());
 }
 
 1;
