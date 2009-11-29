@@ -914,19 +914,20 @@ table.search_results td a span.excerpt {
   Font('search_result_excerpt');
   width: 80%;
 }
-table.search_results td a span.byline {
-  display: block;
+table.search_results td div.byline {
   margin-bottom: 1ex;
   Font('search_result_byline');
 }
-table.search_results td a span.byline span.author {
-  margin-right: .5em;
+table.search_results td div.byline span.author {
+  margin-right: .5ex;
+}
+table.search_results div.date {
+  display: inline;
 }
 table.search_results tr.even,
 table.search_results tr.odd {
   Color('search_results-background');
 }
-
 EOF
 }
 

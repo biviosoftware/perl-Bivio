@@ -15,19 +15,24 @@ sub list {
     my($self) = @_;
     return $self->internal_body(vs_paged_list(SearchList => [
 	['result_title', {
-	    column_widget => Link(
-		Join([
-		    SPAN_title(String(['result_title'])),
-		    SPAN_excerpt(String(['result_excerpt'])),
-		    SPAN_byline(Join([
+	    column_widget => Join([
+		Link(
+		    Join([
+			SPAN_title(String(['result_title'])),
+			SPAN_excerpt(String(['result_excerpt'])),
+		    ]),
+		    ['result_uri'],
+		),
+		DIV_byline(
+		    Join([
 			SPAN_author(String(['result_author'])),
-			SPAN_date(DateTime(['RealmFile.modified_date_time'])),
-		    ]), {
+			DIV_date(DateTime(['RealmFile.modified_date_time'])),
+		    ]),
+		    {
 			control => $self->internal_byline_control,
-		    }),
-		]),
-		['result_uri'],
-	    ),
+		    },
+		),
+	    ]),
 	}],
     ], {
 	class => 'paged_list search_results',
