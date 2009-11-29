@@ -3,11 +3,15 @@
 config({
     'Bivio::IO::ClassLoader' => {
 	maps => {
-	    View => ['Bivio::UI::t::View', 'Bivio::UI::View'],
+	    View => [qw(
+	        Bivio::UI::t::View
+		Bivio::PetShop::View
+		Bivio::UI::View
+	    )],
         },
     },
 });
-Request('setup_facade');
+Request('initialize_fully');
 die('only works in PetShop facade')
     unless req('Bivio::UI::Facade', 'uri') =~ /petshop/;
 # For ViewSource widget in PetShop
