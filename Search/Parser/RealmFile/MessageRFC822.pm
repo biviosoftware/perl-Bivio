@@ -45,6 +45,7 @@ sub handle_realm_file_new_text {
 			req => $parseable->req,
 			content_type => $mt,
 			content => \($it->get_body),
+			model => $parseable->get('model'),
 		    }),
 		);
 	    return ${$p->get('text')};
