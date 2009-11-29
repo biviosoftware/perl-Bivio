@@ -37,9 +37,8 @@ sub rebuild_db {
     $self->commit_or_rollback;
     foreach my $r (@$realms) {
 	system(
-	    $^X,
-	    '-w',
-	    $0,
+	    'bivio',
+	    $self->package_name,
 	    '-realm',
 	    $r,
 	    'rebuild_realm',
