@@ -161,9 +161,11 @@ sub query {
     $a->{length} ||= $_LENGTH;
     $a->{private_realm_ids} ||= [];
     $a->{public_realm_ids} ||= [];
-    b_die($a, ': invalid public_realm_ids, private_realm_ids, and want_public')
-	unless @{$a->{private_realm_ids}} || @{$a->{public_realm_ids}}
-	|| $a->{want_all_public};
+    unless (@{$a->{private_realm_ids}} || @{$a->{public_realm_ids}}
+		|| $a->{want_all_public}) {
+	_trace($a, ': no realms and not public') if $_TRACE;
+	return [];
+    }
     my($db) = Search::Xapian::Database->new($_CFG->{db_path});
     my($qp) = Search::Xapian::QueryParser->new;
     $qp->set_stemmer($_STEMMER);

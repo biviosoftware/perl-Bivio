@@ -34,7 +34,7 @@ my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})
 		return [sort(map($files->[$_], @$expect))];
 	    },
 	} => [
-	    '"commonly worded"' => DIE(),
+	    '"commonly worded"' => [],
  	    ['"commonly worded"', 0, 0, [$demo], undef, 1] => [0, 1, 4, 5],
   	    ['"place for"', 0, 0, [$demo], undef, 0] => [5, 4],
  	    ['"place for"', 0, 0, [$demo], undef, 1] => [5, 7, 4],
