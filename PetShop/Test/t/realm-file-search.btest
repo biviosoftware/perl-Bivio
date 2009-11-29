@@ -2,9 +2,6 @@
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
-user_agent_timeout(300);
-do_test_backdoor(Search => '-force rebuild_db');
-go_back();
 do_test_backdoor(TestData => 'init_search');
 go_back();
 submit_form({
