@@ -738,6 +738,13 @@ sub user_agent {
 	. ')';
 }
 
+sub user_agent_timeout {
+    my($self, $seconds) = @_;
+    my($fields) = $self->[$_IDI];
+    $fields->{user_agent}->timeout($seconds);
+    return;
+}
+
 sub verify_content_type {
     my($self, $mime_type) = @_;
     # Verifies the Content-Type of the reply.
