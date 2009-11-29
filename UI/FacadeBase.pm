@@ -1550,6 +1550,9 @@ sub _cfg_wiki {
 		),
 		SiteAdminDropDown(),
 	    ]),
+            TaskMenu([
+                'SITE_WIKI_VIEW',
+            ]),
 	);},
 	    ]],
 #DEPRECATED:
