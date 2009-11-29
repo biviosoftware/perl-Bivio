@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.  $Id:
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.  $Id:
 # RealmFile.bunit,v 1.5 2006/07/14 23:08:15 nagler Exp $
 Request();
 req()->set_realm_and_user(qw(fourem demo));
@@ -21,12 +21,13 @@ EOF
 
 	    sub {
 		my(undef, $actual) = @_;
+		my($p) = $actual->[0];
 		shift->actual_return([
 		    +{map({
 			my($k, $v) = $_ =~ /^([A-Z])([^A-Z].*)$/;
 			$k ? ($k, $v) : split(/:/, $_, 2);
-		    } @{$actual->[0]})},
-		    $actual->[1],
+		    } @{$p->get('terms')})},
+		    $p->get(qw(postings title excerpt)),
 		]);
 		my($now) = Bivio::Type::DateTime->local_now_as_file_name;
 		return [
@@ -64,6 +65,8 @@ EOF
 			no
 			worries
 		    )],
+		    'A Short Title',
+		    '*asterisks* F.U.D. is what makes programmers worry so much. I have no worries.',
 		];
 	    },
 	],
