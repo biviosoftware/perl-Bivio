@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Search::Parser;
 use strict;
@@ -24,22 +24,7 @@ sub handle_new_excerpt {
 	pop(@$words);
 	push(@$words, '...');
     }
-    $self->put(excerpt => join(' ', @$words));
-    return $self->put_unless_exists(
-	author => sub {
-	    my($req) = $parseable->req;
-	    return ''
-		unless my $uid = $self->unsafe_get('user_id');
-	    # Either author and author_email are set, or neither, and
-	    # we set both
-	    $self->put(author_email =>
-	        $_M->new($req, 'Email')->unauth_load_or_die({realm_id => $uid})
-		    ->get('email'));
-	    return $_M->new($req, 'RealmOwner')
-		->unauth_load_or_die({realm_id => $uid})
-		->get('display_name');
-	},
-    );
+    return $self->put(excerpt => join(' ', @$words));
 }
 
 sub new_text {
@@ -53,17 +38,21 @@ sub new_excerpt {
 sub xapian_terms_and_postings {
     my($proto, $model) = @_;
     return
-	unless my $self = $proto->new_text($model);
-    return (
-	_terms($self),
-	_postings(\($self->get('path')), \($self->get('title')),
-		  $self->get('text')),
+	unless my $self = $proto->new_excerpt($model);
+    return $self->put(
+	terms => _terms($self),
+	postings => _postings(
+	    \($self->get('path')),
+	    \($self->get('title')),
+	    $self->get('text'),
+	),
     );
 }
 
 sub _do {
     my($proto, $model) = @_;
     my($parseable) = $_P->is_blessed($model) ? $model : $_P->new($model);
+    $model = $parseable->get('model');
     my($method) = 'handle_' . $proto->my_caller;
     return
 	unless my $self = Bivio::Die->eval_or_die(sub {
@@ -75,10 +64,16 @@ sub _do {
         return $self->put_unless_exists(@_);
     });
     return $self->put_unless_exists(
-	path => '',
-	title => '',
+	'RealmOwner.realm_id' => $model->get_auth_id,
+	author => '',
+	author_email => '',
+	author_user_id => $model->get_auth_user_id,
 	excerpt => '',
 	modified_date_time => sub {$_DT->now},
+	path => '',
+	primary_id => $model->get_primary_id,
+	simple_class => $model->simple_package_name,
+	title => '',
     );
 }
 
