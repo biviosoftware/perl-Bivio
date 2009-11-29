@@ -17,6 +17,10 @@ sub NOT_FOUND_IF_EMPTY {
     return 0;
 }
 
+sub AUTH_USER_ID_FIELD {
+    return 'RealmFile_2.user_id';
+}
+
 sub drilldown_uri {
     my($self) = @_;
     my($req) = $self->req;
