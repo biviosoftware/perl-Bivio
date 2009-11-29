@@ -26,11 +26,87 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.40  2009/11/28 03:14:57  nagler
+  * Bivio::BConf
+    updated ignore_list
+  * Bivio::HTML
+    doc
+  * Bivio::PetShop::BConf
+    ThreePartPage.center_replaces_middle => 1
+  * Bivio::PetShop::View::Base
+    center_replaces_middle
+    Use standard dock_left
+  * Bivio::PetShop::View::CSS
+    turn off image borders
+  * Bivio::PetShop::Widget::Search
+    rmpod
+    xhtml
+  * Bivio::UI::Align
+    only generate css
+  * Bivio::UI::FacadeBase
+    All CSS reset and base styling can be overriden.  See View.CSS
+  * Bivio::UI::HTML::FormErrors
+    rmpod
+    escape_attr_value
+  * Bivio::UI::HTML::ViewShortcuts
+    removed vs_center
+  * Bivio::UI::HTML::Widget::Checkbox
+    b_use
+  * Bivio::UI::HTML::Widget::ClearDot
+    rmpod
+    xhtml
+  * Bivio::UI::HTML::Widget::File
+    rmpod
+    xhtml by subclassing InputBase
+  * Bivio::UI::HTML::Widget::Form
+    name= is not valid xhtml
+    attributes must be escaped
+  * Bivio::UI::HTML::Widget::Grid
+    fix empty_row deletion (<tr></tr> is not valid xhtml)
+  * Bivio::UI::HTML::Widget::Image
+    attributes must be escaped in xhtml
+  * Bivio::UI::HTML::Widget::ImageFormButton
+    border is not a valid xhtml attribute
+  * Bivio::UI::HTML::Widget::Link
+    attributes must be escaped in xhtml
+  * Bivio::UI::HTML::Widget::ListActions
+    attributes must be escaped in xhtml
+  * Bivio::UI::HTML::Widget::MailTo
+    attributes must be escaped in xhtml
+  * Bivio::UI::HTML::Widget::RealmFilePage
+    attributes must be escaped in xhtml
+  * Bivio::UI::HTML::Widget::Select
+    </option> is required
+  * Bivio::UI::HTML::Widget::SourceCode
+    xhtml
+  * Bivio::UI::HTML::Widget::StyleSheet
+    attributes must be escaped in xhtml
+  * Bivio::UI::HTML::Widget::Table
+    nowrap="nowrap"
+    '' (blank) cells map to &nbsp; always
+  * Bivio::UI::HTML::Widget::TaskInfo
+    xhtml
+  * Bivio::UI::HTML::Widget::TextArea
+    wrap=virtual is not valid xhtml
+  * Bivio::UI::Icon
+    escape_attr_value
+  * Bivio::UI::View::CSS
+    reset and base styling is structured with Facade values so can be
+    overridden by apps.
+    Added b_align support
+  * Bivio::UI::View::ThreePartPage
+    Added center_replaces_middle config, because xhtml_*_middle should be
+    xhtml_*_center, since they are horizontal.
+  * Bivio::UI::XHTML::ViewShortcuts
+    removed vs_grid3
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    lower case xlinks are looked up as xlinks.  Upper case xlinks are TaskIds
+
   Revision 8.39  2009/11/23 17:22:32  dobbs
   * Bivio::BConf
     copy
