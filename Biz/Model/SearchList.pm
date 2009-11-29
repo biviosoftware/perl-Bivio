@@ -64,6 +64,7 @@ sub internal_load_rows {
 	private_realm_ids => $self->internal_private_realm_ids($query),
 	public_realm_ids => $self->internal_public_realm_ids($query),
 	want_all_public => $self->internal_want_all_public($query),
+	req => $self->req,
     });
     if (@$rows > $c) {
 	$query->put(
@@ -81,11 +82,7 @@ sub internal_load_rows {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    my($m) = $self->new_other($row->{simple_class});
-    # There's a possibility that the the search db is out of sync with db
-    return $m->unauth_load({$m->get_primary_id_name => $row->{primary_id}})
-	? $self->internal_post_load_row_with_model($row, $m)
-	: 0;
+    return $self->internal_post_load_row_with_model($row, $row->{model});
 }
 
 sub internal_post_load_row_with_model {
@@ -103,10 +100,13 @@ sub internal_post_load_row_with_model {
     foreach my $f (@$_REALM_OWNER_FIELDS) {
 	$row->{"RealmOwner.$f"} = $ro->get($f);
     }
-    $row->{result_title} = $_FP->get_tail($model->unsafe_get('path') || '');
-    $row->{result_author}
-	= $ro->unauth_load_or_die({realm_id => $row->{'RealmFile.user_id'}})
+    $row->{result_title} = length($row->{title}) ? $row->{title}
+	: $_FP->get_tail($model->unsafe_get('path') || '');
+    $row->{result_author} = length($row->{author}) ? $row->{author}
+	: $ro->unauth_load_or_die({realm_id => $row->{'RealmFile.user_id'}})
 	->get('display_name');
+    $row->{result_excerpt} = length($row->{excerpt}) ? $row->{excerpt}
+	: '<No excerpt>';
     my($req) = $model->req;
     my($realm_mail);
     $row->{result_uri} = $req->format_uri(
@@ -156,7 +156,8 @@ sub internal_post_load_row_with_model {
 	    path_info => $row->{'RealmFile.path'},
 	},
     );
-    _excerpt($model, $realm_mail, $row);
+    $row->{result_title} = $realm_mail->get('subject')
+	if $realm_mail;
     return 1;
 }
 
@@ -194,20 +195,6 @@ sub parse_query_from_request {
 	$q->put(search => $f->get_search_value);
     }
     return $q;
-}
-
-sub _excerpt {
-    my($model, $realm_mail, $row) = @_;
-    my($p) = $_X->excerpt_model($model);
-    foreach my $n (qw(excerpt title author)) {
-	my($v) = $p && $p->unsafe_get($n);
-	$row->{"result_$n"} = defined($v) && length($v)
-	    ? $v : $row->{"result_$n"} ? $row->{"result_$n"} : 'No ' . $n;
-    }
-    $row->{result_title} = $realm_mail->get('subject')
-	if $realm_mail;
-    return;
-
 }
 
 1;
