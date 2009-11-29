@@ -200,8 +200,14 @@ my($category_count) = 0;
 	    ],
 	}, req());
     } => [
+	get_primary_id => [
+	    [] => [undef],
+	],
 	iterate_start => not_die(),
 	iterate_next_and_load => not_die(),
+	get_primary_id => [
+	    [] => 'Birds',
+	],
 	get_model => [
 	    Category_2 => sub {
 		my($case, $actual) = @_;
@@ -212,6 +218,22 @@ my($category_count) = 0;
 		];
 	    },
 	    Category => DIE(),
+	],
+    ],
+    sub {unauth_model('RealmOwner', {name => 'root'})} => [
+	get_auth_id => [
+	    [] => [realm_id('root')],
+	],
+	get_auth_user_id => [
+	    [] => DIE(),
+	],
+    ],
+    sub {unauth_model('User', {user_id => realm_id('root')})} => [
+	get_auth_id => [
+	    [] => [realm_id('root')],
+	],
+	get_auth_user_id => [
+	    [] => [realm_id('root')],
 	],
     ],
 ];
