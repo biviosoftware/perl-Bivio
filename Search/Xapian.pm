@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Search::Xapian;
 use strict;
@@ -11,20 +11,30 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 #TODO: What is the actual max term length; I've seen errors in the 400 range
 my($_MAX_WORD) = 240;
-my($_LENGTH) = __PACKAGE__->use('Type.PageSize')->get_default;
+my($_LENGTH) = b_use('Type.PageSize')->get_default;
 my($_STEMMER) = Search::Xapian::Stem->new('english');
 my($_FLAGS) = 0;
 foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD)) {
     $_FLAGS |= Search::Xapian->$f();
 }
-__PACKAGE__->use('IO.Config')->register(my $_CFG = {
-    db_path => __PACKAGE__->use('Biz.File')->absolute_path('Xapian'),
+my($_VALUE_MAP) = {
+    simple_class => 0,
+    'RealmOwner.realm_id' => 1,
+    primary_id => 2,
+    title => 3,
+    excerpt => 4,
+    author_user_id => 5,
+    author => 6,
+    author_email => 7,
+};
+b_use('IO.Config')->register(my $_CFG = {
+    db_path => b_use('Biz.File')->absolute_path('Xapian'),
 });
-my($_F) = __PACKAGE__->use('IO.File');
-my($_L) = __PACKAGE__->use('Model.Lock');
-my($_GENERAL_ID) = __PACKAGE__->use('Auth.Realm')->get_general->get('id');
-my($_P) = __PACKAGE__->use('Search.Parser');
-my($_A) = __PACKAGE__->use('IO.Alert');
+my($_F) = b_use('IO.File');
+my($_L) = b_use('Model.Lock');
+my($_GENERAL_ID) = b_use('Auth.Realm')->get_general->get('id');
+my($_P) = b_use('Search.Parser');
+my($_A) = b_use('IO.Alert');
 my($_M) = b_use('Biz.Model');
 
 sub delete_model {
@@ -35,7 +45,7 @@ sub delete_model {
 	$req,
 	[delete_model => $id],
     ) unless ref($proto);
-    _delete($proto, 'Q' . $id);
+    _delete($proto, _primary_term($id));
     return;
 }
 
@@ -46,6 +56,17 @@ sub destroy_db {
     $_A->info($_CFG->{db_path}, ': deleting');
     $_F->rm_rf($_CFG->{db_path});
     return;
+}
+
+sub get_values_for_model {
+    my($proto, $model) = @_;
+    if (my $query_result = _find($model->get_primary_id)) {
+	my($res) = _query_result($proto, $query_result, $model->req);
+	return $res
+	    if $res;
+    }
+    my($p) = $_P->new_excerpt($model);
+    return $p ? $p->get_shallow_copy : undef;
 }
 
 sub excerpt_model {
@@ -74,7 +95,7 @@ sub execute {
 sub handle_commit {
     my($self, $req) = @_;
     if ($req->isa('Bivio::Agent::HTTP::Request')) {
-	$self->use('AgentJob.Dispatcher')->enqueue(
+	b_use('AgentJob.Dispatcher')->enqueue(
 	    $req,
 	    'JOB_XAPIAN_COMMIT',
 	    {
@@ -118,7 +139,8 @@ sub update_model {
     ) unless ref($proto);
     my($class, $id) = @_;
     $model = $_M->new($req, $class);
-    return unless $model->unauth_load({$model->get_primary_id_name => $id});
+    return
+	unless $model->unauth_load({$model->get_primary_id_name => $id});
     if ($model->can('is_searchable') && !$model->is_searchable) {
 	# need to remove it, ex. archived searchable file
 	$proto->delete_model($req, $model);
@@ -127,9 +149,7 @@ sub update_model {
     _replace(
 	$proto,
 	$req,
-	$model->simple_package_name,
-	$model->get('realm_id'),
-	$model->get_primary_id,
+	$model,
 	$_P->xapian_terms_and_postings($model),
     );
     return;
@@ -171,19 +191,10 @@ sub query {
 		: (),
 	),
     );
-    my($res) = [map({
-	my($x) = $_;
-	my($d) = $x->get_document;
-	+{
-	    map({
-		my($m) = "get_$_";
-		($_  => $x->$m());
-	    } qw(percent rank collapse_count)),
-	    simple_class => $d->get_value(0),
-	    'RealmOwner.realm_id' => $d->get_value(1),
-	    primary_id => $d->get_value(2),
-	};
-    } $db->enquire($q)->matches($a->{offset}, $a->{length}))];
+    # Need to make a copy.  Xapian is using the Tie interface, and it's
+    # implementing it in a strange way.
+    my(@res) = $db->enquire($q)->matches($a->{offset}, $a->{length});
+    my($res) = [map(_query_result($proto, $_, $a->{req}), @res)];;
     _trace([$q->get_terms], '->[', $a->{offset}, '..',
         $a->{offset} + $a->{length}, ']: ', $res,
     ) if $_TRACE;
@@ -198,6 +209,11 @@ sub query_list_model_initialize {
 	    primary_key => [[qw(primary_id PrimaryId)]],
 	    other => [
 		qw(rank percent collapse_count),
+		[qw(author DisplayName NONE)],
+		[qw(author_email Email NONE)],
+		[qw(author_user_id User.user_id NONE)],
+		[qw(excerpt Text NONE)],
+		[qw(title Text NONE)],
 		[simple_class => 'Name'],
 	    ],
 	    qw(Integer NOT_NULL),
@@ -207,10 +223,25 @@ sub query_list_model_initialize {
 }
 
 sub _delete {
-    my($self, $primary_id, $req) = @_;
-    return unless $primary_id;
-    $self->get('db')->delete_document_by_term($primary_id);
+    my($self, $primary_term, $req) = @_;
+    return
+	unless $primary_term;
+    $self->get('db')->delete_document_by_term($primary_term);
     return;
+}
+
+sub _find {
+    my($primary_id) = @_;
+    return (
+	Search::Xapian::Database->new($_CFG->{db_path})
+	    ->enquire(Search::Xapian::Query->new(_primary_term($primary_id)))
+	    ->matches(0, 1),
+    )[0];
+}
+
+sub _primary_term {
+    my($id) = @_;
+    return "Q$id";
 }
 
 sub _queue {
@@ -223,27 +254,76 @@ sub _queue {
     return;
 }
 
+sub _query_author {
+    my($proto, $req, $res) = @_;
+    return
+	unless _query_model($proto, $res, $req);
+    return $res
+	if defined($res->{author}) && length($res->{author})
+	|| !(my $uid = $res->{author_user_id});
+    my($e) = $_M->new($req, 'Email');
+    my($ro) = $_M->new($req, 'RealmOwner');
+    return $res
+	unless $e->unauth_load({realm_id => $uid})
+	&& $ro->unauth_load({realm_id => $uid});
+    $res->{author_email} = $e->get('email');
+    $res->{author} = $ro->get('display_name');
+    return $res;
+}
+
+sub _query_model {
+    my($proto, $res, $req) = @_;
+    my($m) = $_M->new($req, $res->{simple_class});
+    # There's a possibility that the the search db is out of sync with db
+    return 0
+	unless $m->unauth_load({$m->get_primary_id_name => $res->{primary_id}});
+    $res->{model} = $m;
+    unless ($res->{author_user_id}) {
+	my($p) = $proto->excerpt_model($m);
+	foreach my $field (keys(%$_VALUE_MAP)) {
+	    $res->{$field} = $p->get($field);
+	}
+    }
+    return 1;
+}
+
+sub _query_result {
+    my($proto, $query_result, $req) = @_;
+    my($d) = $query_result->get_document;
+    return _query_author($proto, $req, {
+	map({
+	    my($m) = "get_$_";
+	    ($_  => $query_result->$m());
+	} qw(percent rank collapse_count)),
+	simple_class => $d->get_value(0),
+	'RealmOwner.realm_id' => $d->get_value(1),
+	primary_id => $d->get_value(2),
+	map(($_ => $d->get_value($_VALUE_MAP->{$_})), keys(%$_VALUE_MAP)),
+    });
+}
+
 sub _replace {
-    my($self, $req, $class, $realm_id, $primary_id, $terms, $postings) = @_;
-    return unless $terms;
+    my($self, $req, $model, $parser) = @_;
+    return
+	unless $parser;
     my($doc) = Search::Xapian::Document->new;
     $doc->set_data('');
-    $doc->add_value(0, $class);
-    $doc->add_value(1, $realm_id);
-    $doc->add_value(2, $primary_id);
-    $primary_id = "Q$primary_id";
-    foreach my $t ($primary_id, @$terms) {
+    while (my($field, $index) = each(%$_VALUE_MAP)) {
+	$doc->add_value($index, $parser->get($field));
+    }
+    my($primary_term) = _primary_term($model->get_primary_id);
+    foreach my $t ($primary_term, @{$parser->get('terms')}) {
 	$doc->add_term(substr($t, 0, $_MAX_WORD));
     }
     my($i) = 1;
-    foreach my $p (@$postings) {
+    foreach my $p (@{$parser->get('postings')}) {
 	my($s) = $_STEMMER->stem_word($p);
 	next if length($p) > $_MAX_WORD;
 	$doc->add_posting("$p", $i)
 	    unless $s eq $p;
 	$doc->add_posting($s, $i++);
     }
-    $self->get('db')->replace_document_by_term($primary_id, $doc);
+    $self->get('db')->replace_document_by_term($primary_term, $doc);
     return;
 }
 
