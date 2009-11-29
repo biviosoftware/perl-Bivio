@@ -1,13 +1,12 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
+# DO NOT TEST rebuild_db.  It's tested in realm-file-search.btest
 [
     module_version => qr{Xapian.*Search::Xapian}s,
-    rebuild_db => not_die(),
-# Realm must be specified
     rebuild_realm => DIE(),
-    [qw(-realm xapian_demo rebuild_realm)] => qr{Re-indexed all.*xapian_demo files}s,
     [qw(-realm xapian_demo rebuild_realm 12/1/2009)] => qr{Re-indexed.* xapian_demo files modified after 12/01/2009}s,
+    [qw(-realm xapian_demo rebuild_realm)] => qr{Re-indexed all.*xapian_demo files}s,
 #DEPRECATED: use the RealmType name to load default Realms
     [qw(-realm 1 rebuild_realm)] => qr{No files to re-index}s,
 ];
