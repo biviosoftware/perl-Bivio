@@ -186,7 +186,7 @@ sub _cfg_base {
 	    [reset_caption => [qw(left normal_weight)]],
 	    [reset_ol => 'style=margin-left: 2.5em; list-style-type: decimal'],
 	    [reset_pre => ['pre', 'style=line-height: 60%']],
-	    [reset_table => 'style=border-collapse: collapse; border-spacing=0'],
+	    [reset_table => 'style=border-collapse: collapse; border-spacing:0'],
 	    [reset_textarea => 'pre'],
 	    [reset_ul => 'style=margin-left: 2.5em; list-style-type: disc'],
 
@@ -1537,17 +1537,19 @@ sub _cfg_wiki {
 		'FORUM_FILE_TREE_LIST',
 		'FORUM_CRM_THREAD_ROOT_LIST',
 		'FORUM_WIKI_VIEW',
-		DropDown(
-		    String('more'),
-		    DIV_dd_menu(TaskMenu([qw(
-			FORUM_CALENDAR
-			GROUP_TASK_LOG
-		        FORUM_MAIL_THREAD_ROOT_LIST
-			FORUM_MOTION_LIST
-			GROUP_USER_LIST
-			FORUM_TUPLE_USE_LIST
-		    )]), {id => 'more_drop_down'}),
-		),
+		If(['->can_user_execute_task', 'FORUM_CALENDAR'],
+		     DropDown(
+			String('more'),
+			DIV_dd_menu(TaskMenu([qw(
+			    FORUM_CALENDAR
+			    GROUP_TASK_LOG
+			    FORUM_MAIL_THREAD_ROOT_LIST
+			    FORUM_MOTION_LIST
+			    GROUP_USER_LIST
+			    FORUM_TUPLE_USE_LIST
+			)]), {id => 'more_drop_down'}),
+		    ),
+                ),
 		SiteAdminDropDown(),
 	    ]),
             TaskMenu([
