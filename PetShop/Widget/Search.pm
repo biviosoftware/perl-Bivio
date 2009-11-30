@@ -16,7 +16,7 @@ sub render {
 	    .$req->format_stateless_uri($_ITEM_SEARCH)
 	    .'">'
 	    .$field_prefix
-	    .'<input type="text" size="14" class="b_align_e" name="'
+	    .'<input type="text" size="14" class="b_align_w" name="'
 	    .Bivio::SQL::ListQuery->to_char('search')
 	    .'" />'
 	    .$field_suffix
