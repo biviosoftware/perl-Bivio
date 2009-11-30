@@ -7,6 +7,10 @@ use Bivio::Base 'Bivio::UI::Widget';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_COMMON_CODE) = __PACKAGE__ . '.common_code';
 
+sub BASE_VAR_NAME {
+    return 'window.bivio';
+}
+
 sub escape_string {
     my($self, $text) = @_;
     # Converts a text string into something safely escaped.
@@ -26,14 +30,14 @@ sub has_been_rendered {
 }
 
 sub render {
-    my(undef, $source, $buffer, $module_tag, $common_code,
+    my($self, $source, $buffer, $module_tag, $common_code,
     # Render the JavaScript version tag if not already rendered.
     # Renders the I<common_code> for I<module_tag> if not already
     # rendered.  Renders I<script> and I<no_script_html> if defined.
 	    $script, $no_script_html) = @_;
     my($req) = $source->get_request;
 
-    return _render_script_in_head($req, $buffer)
+    return _render_script_in_head($self, $req, $buffer)
 	unless defined($module_tag)
 	    || defined($common_code)
 	    || defined($script)
@@ -70,18 +74,25 @@ sub strip {
     return $code;
 }
 
+sub var_name {
+    my($self, $suffix) = @_;
+    return $self->BASE_VAR_NAME . ".$suffix";
+}
+
 sub _render_script_in_head {
-    my($req, $buffer) = @_;
+    my($self, $req, $buffer) = @_;
     # render the common code in <script> tags
     # intended to be called in the html <head> block
     my($defns) = $req->unsafe_get($_COMMON_CODE);
     return
 	unless defined($defns);
-    $$buffer .= "<script type=\"text/javascript\">\n<!--\n";
-    foreach my $v (values(%$defns)) {
-        $$buffer .= $v;
-    }
-    $$buffer .= "\n// -->\n</script>";
+    my($bvn) = $self->BASE_VAR_NAME;
+    $$buffer .= <<"EOF"
+<script type=\"text/javascript\">\n<!--\n;
+$bvn = $bvn || {};
+EOF
+        . join('', values(%$defns))
+        . "\n// -->\n</script>";
     return;
 }
 
