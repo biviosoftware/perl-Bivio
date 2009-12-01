@@ -179,10 +179,6 @@ sub vs_blank_cell {
     return $proto->vs_join('&nbsp;' x ($count || 1));
 }
 
-sub vs_center {
-    return shift->vs_join(["\n<div align=center>\n", @_, "\n</div>\n"]);
-}
-
 sub vs_clear_dot {
     # (self, any, any) : Widget.ClearDot
     # (self, any, any) : Widget.ClearDot
