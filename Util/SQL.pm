@@ -363,37 +363,34 @@ sub init_dbms {
 
 sub init_realm_role {
     my($self) = @_;
-    # Initializes the database with the values from
-    # L<realm_role_config|"realm_role_config">.
-    my($cmd);
-    my($rr) = $self->new_other('RealmRole');
-    foreach my $line (@{$self->realm_role_config}) {
-	next if $line =~ /^\s*(#|$)/;
-	$cmd .= $line;
-	next if $cmd =~ s/\\$/ /;
-	my(@args) = split(' ', $cmd);
-	shift(@args);
-	$rr->main(@args);
-        $cmd = '';
-    }
-    if ($_RT->unsafe_from_name('FORUM')) {
-	$rr->copy_all(club => 'forum');
-	$rr->main(qw(-realm FORUM -user user edit MEMBER -ADMIN_READ -DATA_WRITE));
-    }
-    $rr->copy_all(forum => 'calendar_event')
+    $self->init_realm_role_with_config($self->realm_role_config);
+    $self->init_realm_role_forum
+	if $_RT->unsafe_from_name('FORUM');
+    $self->init_realm_role_calendar_event
 	if $_RT->unsafe_from_name('CALENDAR_EVENT');
+    $self->init_realm_role_copy_anonymous_permissions;
+    return;
+}
+
+sub init_realm_role_calendar_event {
+    my($self) = @_;
+    $self->new_other('RealmRole')->copy_all(forum => 'calendar_event');
+    return;
+}
+
+sub init_realm_role_copy_anonymous_permissions {
+    my($self) = @_;
     $_AR->do_default(sub {
 	my($r) = @_;
 	my($rr) = $self->model('RealmRole');
 	return unless
 	    defined(my $anon = $rr->get_permission_map($r)->{$_R->ANONYMOUS});
 	$_PS->clear(\$anon, ['ANYBODY']);
-        foreach my $role (grep(!$_->eq_anonymous, $_R->get_non_zero_list)) {
-	    if ($rr->unsafe_load({role => $role})) {
-		$rr->update({
-		    permission_set => $anon | $rr->get('permission_set')});
-	    }
-	    else {
+        foreach my $role (grep(
+	    !$self->internal_role_is_initialized($_),
+	    $_R->get_non_zero_list,
+	)) {
+	    unless ($rr->unsafe_load({role => $role})) {
 		$rr->create({
 		    realm_id => $self->req('auth_id'),
 		    role => $role,
@@ -403,6 +400,30 @@ sub init_realm_role {
 	}
         return 1;
     }, $self->req);
+    return;
+}
+
+sub init_realm_role_forum {
+    my($self) = @_;
+    my($rr) = $self->new_other('RealmRole');
+    $rr->copy_all(club => 'forum');
+    $rr->main(qw(-realm FORUM -user user edit MEMBER -ADMIN_READ -DATA_WRITE));
+    return;
+}
+
+sub init_realm_role_with_config {
+    my($self, $config) = @_;
+    my($rr) = $self->new_other('RealmRole');
+    my($cmd);
+    foreach my $line (@$config) {
+	next if $line =~ /^\s*(#|$)/;
+	$cmd .= $line;
+	next if $cmd =~ s/\\$/ /;
+	my($args) = [split(' ', $cmd)];
+	shift(@$args);
+	$rr->main(@$args);
+        $cmd = '';
+    }
     return;
 }
 
@@ -498,6 +519,11 @@ CREATE SEQUENCE bulletin_s
 /
 EOF
     return;
+}
+
+sub internal_role_is_initialized {
+    my($self, $role) = @_;
+    return $role->eq_anonymous;
 }
 
 sub internal_upgrade_db_task_log_remove_foreign_keys {
@@ -2119,7 +2145,7 @@ sub _ddl_files {
     $self->assert_ddl;
     my($f) = $self->ddl_files;
     # Some files should exist; Need more than just bOP
-    $self->usage('no DDL files found')
+    $self->usage('no DDL files found in ', $_F->pwd)
 	unless grep(-f $_, @$f);
     # Just write the files every time
     $self->use('SQL.DDL')->write_files;
@@ -2342,23 +2368,24 @@ b-realm-role -realm GENERAL -user user edit USER - \
 b-realm-role -realm GENERAL -user user edit WITHDRAWN - \
     +USER
 b-realm-role -realm GENERAL -user user edit GUEST - \
-    +WITHDRAWN
+    +USER
 b-realm-role -realm GENERAL -user user edit MEMBER - \
-    +GUEST \
-    +DATA_WRITE
+    +GUEST
 b-realm-role -realm GENERAL -user user edit ACCOUNTANT - \
     +MEMBER
 b-realm-role -realm GENERAL -user user edit ADMINISTRATOR - \
     +ACCOUNTANT \
     +ADMIN_READ \
     +ADMIN_WRITE \
-    +DATA_WRITE \
     +DATA_BROWSE \
+    +DATA_WRITE \
     +MAIL_READ \
     +MAIL_WRITE
 b-realm-role -realm GENERAL -user user edit MAIL_RECIPIENT -
 b-realm-role -realm GENERAL -user user edit FILE_WRITER - \
     +DATA_WRITE
+b-realm-role -realm GENERAL -user user edit UNAPPROVED_APPLICANT - \
+    +USER
 
 #
 # USER Permissions
@@ -2371,7 +2398,7 @@ b-realm-role -realm USER -user user edit USER - \
 b-realm-role -realm USER -user user edit WITHDRAWN - \
     +USER
 b-realm-role -realm USER -user user edit GUEST - \
-    +WITHDRAWN
+    +USER
 b-realm-role -realm USER -user user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
@@ -2386,6 +2413,8 @@ b-realm-role -realm USER -user user edit ADMINISTRATOR - \
 b-realm-role -realm USER -user user edit MAIL_RECIPIENT -
 b-realm-role -realm USER -user user edit FILE_WRITER - \
     +DATA_WRITE
+b-realm-role -realm USER -user user edit UNAPPROVED_APPLICANT - \
+    +USER
 
 #
 # CLUB Permissions
@@ -2404,7 +2433,7 @@ b-realm-role -realm CLUB -user user edit USER - \
 b-realm-role -realm CLUB -user user edit WITHDRAWN - \
     +USER
 b-realm-role -realm CLUB -user user edit GUEST - \
-    +WITHDRAWN
+    +USER
 b-realm-role -realm CLUB -user user edit MEMBER - \
     +GUEST \
     +ADMIN_READ \
@@ -2423,3 +2452,5 @@ b-realm-role -realm CLUB -user user edit ADMINISTRATOR - \
 b-realm-role -realm CLUB -user user edit MAIL_RECIPIENT -
 b-realm-role -realm CLUB -user user edit FILE_WRITER - \
     +DATA_WRITE
+b-realm-role -realm CLUB -user user edit UNAPPROVED_APPLICANT - \
+    +USER
