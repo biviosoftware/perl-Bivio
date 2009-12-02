@@ -748,6 +748,13 @@ sub _cfg_group_admin {
                 'system_user_forum_email' => 'System User Email?',
                 'public_forum_email' => 'Public Email?',
                 'Forum.require_otp' => 'Require OTP?',
+		feature_blog => 'Enable Blog Tool',
+		feature_motion => 'Enable Poll Tool',
+		feature_mail => 'Enable Mail Tool',
+		feature_file => 'Enable File Tool',
+		feature_calendar => 'Enable Calendar Tool',
+		feature_crm => 'Enable Ticket Tool',
+		feature_tuple => 'Enable Tables Tool',
             ]],
 	    [title => [
 		GROUP_USER_LIST => 'Roster',
