@@ -409,10 +409,6 @@ ALTER TABLE otp_t
   FOREIGN KEY (user_id)
   REFERENCES user_t(user_id)
 /
-CREATE INDEX otp_t3 ON otp_t (
-  user_id
-)
-/
 
 --
 -- phone_t
