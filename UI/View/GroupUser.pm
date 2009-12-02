@@ -6,6 +6,7 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_FF) = Bivio::Biz::Model->get_instance('ForumForm');
 
 sub add_form {
     my($self) = @_;
@@ -30,6 +31,7 @@ sub create_forum {
             ForumForm.public_forum_email
             ForumForm.Forum.require_otp
         ),
+	map(+('ForumForm.' . $_), $_FF->FEATURES),
     ]));
 }
 

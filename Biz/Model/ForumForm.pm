@@ -15,6 +15,13 @@ sub CREATE_REALM_MODELS {
     return qw(Forum RealmOwner);
 }
 
+#TODO: Define list here, but might be worth confirming against features
+# supported in BConf category map
+sub FEATURES {
+    return qw(feature_calendar feature_file feature_mail feature_crm
+	      feature_tuple feature_blog feature_motion);
+}
+
 sub execute_empty {
     my($self) = @_;
     return _use_general_realm_for_site_admin($self, sub {
@@ -30,7 +37,7 @@ sub execute_empty {
         $self->internal_put_field('RealmOwner.display_name' =>
             $self->get('RealmOwner.display_name') . ' ');
         my($cats) = $_RR->list_enabled_categories();
-        foreach my $pc ($_FEM->OPTIONAL_MODES) {
+        foreach my $pc ($_FEM->OPTIONAL_MODES, $self->FEATURES) {
             $self->internal_put_field($pc => grep($_ eq $pc, @$cats) ? 1 : 0);
         }
         return;
@@ -60,7 +67,7 @@ sub execute_ok {
         $_RR->edit_categories({
             map({
                 $_ => $self->unsafe_get($_);
-            } $_FEM->OPTIONAL_MODES)});
+            } $_FEM->OPTIONAL_MODES, $self->FEATURES)});
         return;
     });
 }
@@ -83,6 +90,11 @@ sub internal_initialize {
 		constraint => 'NONE',
 	    }, $_FEM->OPTIONAL_MODES),
 	    'Forum.require_otp',
+	    map(+{
+		name => $_,
+ 		type => 'Boolean',
+ 		constraint => 'NOT_NULL',
+	    }, $self->FEATURES),
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
 	other => [
