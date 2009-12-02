@@ -26,11 +26,57 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.41  2009/11/29 01:47:53  nagler
+  * Bivio::Biz::Action::WikiValidator
+    die_on_validate_error was broken
+  * Bivio::Biz::Model::BlogList
+    Search parser requires model passed to excerpt
+  * Bivio::Biz::Model::MailThreadRootList
+    added AUTH_USER_ID_FIELD
+  * Bivio::Biz::Model::SearchList
+    Xapian does more of the parsing and now caches excerpts
+  * Bivio::Biz::Model
+    added get_auth_user_id/_name with refactoring of _well_known_name/value
+  * Bivio::Ext::LWPUserAgent
+    rmpod
+    copy & fmt
+  * Bivio::PetShop::Util::SQL
+    factored out TestData->init_search
+  * Bivio::PetShop::Util::TestData
+    NEW
+  * Bivio::PetShop::Widget::Search
+    fpc
+  * Bivio::Search::Parser::RealmFile::MessageRFC822
+    reuse 'text' if available in handle_realm_file_new_text
+    parser requires a model
+  * Bivio::Search::Parser
+    put excerpt if doesn't exist in _do
+    Xapian caches exerpt, author_user_id, etc.
+    Fill in default values for these
+    xapian_terms_and_postings changed interface
+  * Bivio::Search::Xapian
+    Xapian caches exerpt, author_user_id, etc.
+    xapian_terms_and_postings changed interface
+    author/_email is looked up dynamically if not set (MessageRFC822
+    caches this value since it comes from the document)
+  * Bivio::Test::Language::HTTP
+    added user_agent_timeout
+  * Bivio::UI::FacadeBase
+    show Home in xhtml_dock_left_standard when not in forum
+  * Bivio::UI::View::CSS
+    .search_results .date must be a DIV, because <noscript> can't be in
+    inline tags
+  * Bivio::UI::View::Search
+    .search_results .date must be a DIV, because <noscript> can't be in
+    inline tags
+  * Bivio::Util::Search
+    call rebuild_realm properly
+
   Revision 8.40  2009/11/28 03:14:57  nagler
   * Bivio::BConf
     updated ignore_list
