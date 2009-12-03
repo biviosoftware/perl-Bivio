@@ -196,11 +196,11 @@ sub _update_caret_ampersand {
 sub _update_b_tags {
     my(undef, $content) = @_;
     $content
-	=~ s/^\@b\-([a-z-]*)\s(?:value=)?(\S*)$/\@b-$1 value=$2/gm;
+	=~ s/^\@b\-([a-z-]*)\s(?:value=)?(\S*)$/\@b-$1 value=$2/gmi;
    $content
-	=~ s/^\@random\-img\s(?:value=)?(\S*)$/\@aa-random-image value=$1/gm;
+	=~ s/^\@random\-img\s(?:value=)?(\S*)$/\@aa-random-image value=$1/gmi;
     $content
-	=~ s/^\@(?:ins\-page|b\-embed)\s(?:value=)?(.*)$/\@b-embed value=$1/gm;
+	=~ s/^\@(?:ins\-page|b\-embed)\s(?:value=)?(.*)$/\@b-embed value=$1/gmi;
     return $content;
 }
 
