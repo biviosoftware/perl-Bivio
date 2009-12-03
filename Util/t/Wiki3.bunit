@@ -23,6 +23,8 @@ END_EXPECT
 	],
 	_update_b_tags => [
 	    '@ins-page /site/recent-blog' => '@b-embed value=/site/recent-blog',
+	    '@ins-page /my/updates?count=10' => '@b-embed value=/my/updates?count=10',
+	    '@b-embed value=/my/updates?count=10' => '@b-embed value=/my/updates?count=10',
 	    '@b-embed /site/recent-blog' => '@b-embed value=/site/recent-blog',
 	    '@b-embed value=/site/recent-blog'
 		=> '@b-embed value=/site/recent-blog',
