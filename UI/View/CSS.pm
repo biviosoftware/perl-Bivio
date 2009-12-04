@@ -409,6 +409,9 @@ div.task_menu_wrapper,
 .tools div.sep {
   display: inline;
 }
+.task_menu_wrapper {
+  position: relative;
+}
 .b_prose p,
 p.b_prose,
 .prose p,
@@ -507,6 +510,8 @@ div.dd_link {
 div.dd_menu {
   display: inline;
   position: absolute;
+  top: 1.3em;
+  left: 0;
   visibility: hidden;
   Color('dd_menu-background');
   border: 1px solid;
