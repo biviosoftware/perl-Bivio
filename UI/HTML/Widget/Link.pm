@@ -69,7 +69,7 @@ sub control_on_render {
     $$buffer .= ' name="' . Bivio::HTML->escape_attr_value($n) . '"'
 	if $self->unsafe_render_attr('name', $source, \$n);
     my($href) = _render_href($self, $source);
-    $$buffer .= qq{ href="@{[$_HTML->escape_attr_value($href)]}"}
+    $$buffer .= qq{ href="@{[_escape($href)]}"}
         if defined($href);
     my($handler) = $self->unsafe_resolve_widget_value(
 	$self->unsafe_get('event_handler'), $source);
@@ -107,6 +107,13 @@ sub internal_as_string {
 sub internal_new_args {
     # Implements positional argument parsing for L<new|"new">.
     return shift->internal_compute_new_args([qw(value href ?class)], \@_);
+}
+
+sub _escape {
+    my($href) = @_;
+    return $href
+	if $href =~ /^javascript:/i;
+    return $_HTML->escape_attr_value($href);
 }
 
 sub _render_href {
