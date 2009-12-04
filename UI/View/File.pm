@@ -48,7 +48,8 @@ sub file_change {
 			})),
 			Link('Unlock', '#')->put(attributes => [sub {
 			    my($source) = @_;
-			    return ' onclick="document.file_form.'
+			    return ' onclick="'
+				. _javascript_form_object()
 				. $source->req('Model.FileChangeForm')
 				    ->get_field_name_for_html('cancel_button')
 				. '.click()"';
@@ -185,7 +186,7 @@ sub _javascript_field_selector {
 	$res .= "function $name {\n";
 
 	foreach my $field qw(name rename_name folder_id file comment content) {
-	    $res .= 'document.file_form.'
+	    $res .= _javascript_form_object()
 		. $source->req('Model.FileChangeForm')
 		    ->get_field_name_for_html($field)
 		. '.parentNode.parentNode.className = "'
@@ -205,11 +206,11 @@ sub _javascript_field_selector {
 		. "\n";
 	}
 	# hack to make file browse button render correctly in firefox
-	$res .= <<'EOF'
+	$res .= <<"EOF"
 if (navigator.appName == "Netscape")
-  document.file_form.innerHTML += "\n";
+  @{[_javascript_form_object()]}innerHTML += "\\n";
 EOF
-	    . 'document.file_form.'
+	    . _javascript_form_object()
 	    . $source->req('Model.FileChangeForm')
 		->get_field_name_for_html('mode')
 	    . '.value = "' . $mode->to_literal($mode)
@@ -217,6 +218,10 @@ EOF
     }
     $res .= "\n</script>\n";
     return $res;
+}
+
+sub _javascript_form_object {
+    return q{document.forms['file_form'].};
 }
 
 sub _javascript_function_name {
