@@ -26,11 +26,30 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.42  2009/12/02 13:20:59  nagler
+  * Bivio::PetShop::Widget::Search
+    switch input to the left
+  * Bivio::UI::Align
+    added css_mode for backwards compatibiilty with non-CSS sites
+  * Bivio::UI::FacadeBase
+    don't show more if can't show CALENDAR
+  * Bivio::UI::HTML::ViewShortcuts
+    restore vs_center
+    removed vs_center, put in specific app
+  * Bivio::UI::HTML::Widget::JavaScript
+    modularize the concept of a global variable name (window.bivio)
+  * Bivio::UI::XHTML::Widget::DropDown
+    multiple DropDowns now work
+  * Bivio::Util::SQL
+    factor out parts of init_realm_role so can be overriden
+    Added UNAPPROVED_APPLICANT to default init values
+    Removed update of roles once initialized in init_realm_role_copy_anonymous_permissions
+
   Revision 8.41  2009/11/29 01:47:53  nagler
   * Bivio::Biz::Action::WikiValidator
     die_on_validate_error was broken
