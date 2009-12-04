@@ -18,10 +18,7 @@ sub execute {
 	});
     }
     elsif (my $u = delete($q->{shell_util})) {
-	my($res) = Bivio::ShellUtil->new_other($u)
-            ->main(split(' ', $q->{command}));
-        $req->get('reply')->set_output_type('text/plain')->set_output($res)
-            if $res;
+	Bivio::ShellUtil->new_other($u)->main(split(' ', $q->{command}));
     }
     else {
 	Bivio::Die->die($q, ': invalid query');
