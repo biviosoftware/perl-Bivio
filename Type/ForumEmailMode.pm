@@ -15,8 +15,11 @@ __PACKAGE__->compile([
 ]);
 
 sub OPTIONAL_MODES {
-    return qw(admin_only_forum_email system_user_forum_email
-	      public_forum_email);
+    return qw(
+        admin_only_forum_email
+        system_user_forum_email
+	public_forum_email
+    );
 }
 
 1;
