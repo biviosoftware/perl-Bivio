@@ -1,45 +1,52 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ForumForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FN) = Bivio::Type->get_instance('ForumName');
-my($_FEM) = Bivio::Type->get_instance('ForumEmailMode');
-my($_RR) = Bivio::IO::ClassLoader
-    ->simple_require('Bivio::Biz::Util::RealmRole');
+my($_FN) = b_use('Type.ForumName');
+my($_FEM) = 
+my($_RR) = b_use('ShellUtil.RealmRole');
 my($_F) = b_use('UI.Facade');
-
-sub CREATE_REALM_MODELS {
-    return qw(Forum RealmOwner);
-}
-
+my($_EMAIL_MODES) = [map(lc($_), b_use('Type.ForumEmailMode')->OPTIONAL_MODES)];
+my($_CATEGORY_DEFAULTS) = {
 #TODO: Define list here, but might be worth confirming against features
 # supported in BConf category map
-sub FEATURES {
-    return qw(feature_calendar feature_file feature_mail feature_crm
-	      feature_tuple feature_blog feature_motion);
+    feature_blog => 1,
+    feature_calendar => 1,
+    feature_crm => 0,
+    feature_file => 1,
+    feature_mail => 1,
+    feature_motion => 1,
+    feature_tuple => 1,
+    map(($_ => 0), @$_EMAIL_MODES),
+};
+my($_CATEGORIES) = [sort(keys(%$_CATEGORY_DEFAULTS))];
+my($_ENABLED_CATEGORIES) = [grep($_CATEGORY_DEFAULTS->{$_}, @$_CATEGORIES)];
+my($_MODELS) = [qw(Forum RealmOwner)];
+
+sub CATEGORY_LIST {
+    return @$_CATEGORIES;
 }
 
 sub execute_empty {
     my($self) = @_;
     return _use_general_realm_for_site_admin($self, sub {
         my($req) = $self->get_request;
-        return unless _is_forum($req);
+        return $self->internal_put_field(%$_CATEGORY_DEFAULTS)
+	    unless _is_forum($req);
         $self->internal_put_field('Forum.forum_id' => $req->get('auth_id'));
-        foreach my $m ($self->CREATE_REALM_MODELS) {
+	_put_categories($self, 1);
+        foreach my $m (@$_MODELS) {
             $self->load_from_model_properties($m);
         }
-        return unless $self->is_create;
+        return
+	    unless $self->is_create;
         $self->internal_put_field('RealmOwner.name' =>
             $self->get('RealmOwner.name') . '-');
         $self->internal_put_field('RealmOwner.display_name' =>
             $self->get('RealmOwner.display_name') . ' ');
-        my($cats) = $_RR->list_enabled_categories();
-        foreach my $pc ($_FEM->OPTIONAL_MODES, $self->FEATURES) {
-            $self->internal_put_field($pc => grep($_ eq $pc, @$cats) ? 1 : 0);
-        }
         return;
     });
 }
@@ -49,25 +56,24 @@ sub execute_ok {
     return _use_general_realm_for_site_admin($self, sub {
         unless ($self->unsafe_get('validate_called')) {
             $self->validate;
-            return if $self->in_error;
+            return
+		if $self->in_error;
         }
         my($req) = $self->get_request;
+	_put_categories($self);
         if ($self->is_create) {
             my($f, $ro) = $self->new_other('Forum')->create_realm(
                 map($self->get_model_properties($_),
-                    $self->CREATE_REALM_MODELS),
+                    @$_MODELS),
             );
             $req->set_realm($ro);
         }
         else {
-            foreach my $m ($self->CREATE_REALM_MODELS) {
+            foreach my $m (@$_MODELS) {
                 $self->update_model_properties($m);
             }
         }
-        $_RR->edit_categories({
-            map({
-                $_ => $self->unsafe_get($_);
-            } $_FEM->OPTIONAL_MODES, $self->FEATURES)});
+        $_RR->edit_categories({map(($_ => $self->get($_)), @$_CATEGORIES)});
         return;
     });
 }
@@ -84,17 +90,11 @@ sub internal_initialize {
 	    },
 	    'Forum.want_reply_to',
 	    # Using Booleans instead of proper enum to support WebDAV CSV UI
-	    map(+{
-		name => $_,
-		type => 'Boolean',
-		constraint => 'NONE',
-	    }, $_FEM->OPTIONAL_MODES),
 	    'Forum.require_otp',
-	    map(+{
-		name => $_,
- 		type => 'Boolean',
- 		constraint => 'NOT_NULL',
-	    }, $self->FEATURES),
+	    $self->field_decl(
+		[@$_CATEGORIES],
+		'NullBoolean',
+	    ),
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
 	other => [
@@ -128,18 +128,16 @@ sub validate {
         my($req) = $self->get_request;
         my($n) = $self->get('RealmOwner.name');
         my($new_top) = $_FN->extract_top($n);
-        return $self->internal_put_error(
-            'RealmOwner.name', Bivio::TypeError->TOP_FORUM_NAME
-        ) unless $new_top;
+        return $self->internal_put_error('RealmOwner.name', 'TOP_FORUM_NAME')
+            unless $new_top;
         my($old_top, $is_top) = _top($self);
         my($top_ok) = $is_top && $self->is_create && $n eq $new_top;
         return $self->internal_put_error(
             'RealmOwner.name',
-            $top_ok ? Bivio::TypeError->TOP_FORUM_NAME_CHANGE
-                : Bivio::TypeError->TOP_FORUM_NAME
+            $top_ok ? 'TOP_FORUM_NAME_CHANGE' : 'TOP_FORUM_NAME',
         ) unless $top_ok || $old_top eq $new_top;
-        my($x) = [grep($self->unsafe_get($_), $_FEM->OPTIONAL_MODES)];
-        $self->internal_put_error($x->[1], Bivio::TypeError->MUTUALLY_EXCLUSIVE)
+        my($x) = [grep($self->unsafe_get($_), $_EMAIL_MODES)];
+        $self->internal_put_error($x->[1], 'MUTUALLY_EXCLUSIVE')
             if @$x > 1;
         return;
     });
@@ -147,6 +145,18 @@ sub validate {
 
 sub _is_forum {
     return shift->get_nested(qw(auth_realm type))->eq_forum;
+}
+
+sub _put_categories {
+    my($self, $overwrite) = @_;
+    my($cats) = $self->req('auth_realm')->is_general
+	? [@$_ENABLED_CATEGORIES]
+	: $_RR->list_enabled_categories;
+    foreach my $c (@$_CATEGORIES) {
+	$self->internal_put_field($c => grep($_ eq $c, @$cats) ? 1 : 0)
+	    if $overwrite || !defined($self->unsafe_get($c));
+    }
+    return;
 }
 
 sub _top {
