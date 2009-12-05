@@ -1,7 +1,9 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request('initialize_fully');
-set_realm('fourem');
+set_realm('fourem-sub1');
+model('Bulletin')->delete_all;
+model('RealmMail')->delete_all;
 my($domain) = 'Util.RealmMail.bunit';
 my($data) = [
     ['2008-05-12', 'plain subject', 'text/plain', 'plain body'],
@@ -35,9 +37,6 @@ foreach my $item (@$data) {
     }
 }
 [
-    inline_case(sub {
-        model('RealmMail')->test_unauth_delete_all({});
-    }),
     {
         object => class(),
         compute_return => sub {
@@ -65,11 +64,8 @@ foreach my $item (@$data) {
         ],
     ],
     inline_case(sub {
-        model('RealmMail')->test_unauth_delete_all({});
-        model('Bulletin')->test_unauth_delete_all({});
-        b_use('IO.File')->rm_children(
-            $_UIF->get_local_file_name($_LFT->REALM_DATA, 'bulletin'));
-        commit();
+        model('RealmMail')->delete_all;
+        model('Bulletin')->delete_all;
     }),
     {
 	object => class(),
