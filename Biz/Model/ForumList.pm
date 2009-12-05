@@ -1,11 +1,11 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ForumList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_EM) = Bivio::Type->get_instance('ForumEmailMode');
+my($_FF) = b_use('Model.ForumForm');
 
 sub internal_initialize {
     my($self) = @_;
@@ -26,7 +26,7 @@ sub internal_initialize {
 		name => $_,
 		type => 'Boolean',
 		constraint => 'NONE',
-	    }, $_EM->OPTIONAL_MODES),
+	    }, $_FF->CATEGORY_LIST),
 	],
 	auth_id => ['Forum.parent_realm_id'],
     });
@@ -40,7 +40,7 @@ sub internal_post_load_row {
     my($cats) = Bivio::IO::ClassLoader
 	->simple_require('Bivio::Biz::Util::RealmRole')
 	    ->list_enabled_categories();
-    foreach my $pc ($_EM->OPTIONAL_MODES) {
+    foreach my $pc ($_FF->CATEGORY_LIST) {
 	$row->{$pc} = grep($_ eq $pc, @$cats) ? 1 : 0;
     }
     $req->set_realm($a);
