@@ -267,6 +267,14 @@ sub drop_and_run {
     return $self->run($sql);
 }
 
+sub drop_object {
+    my($self, $type, @table) = @_;
+    foreach my $t (@table) {
+	$_D->catch_quietly(sub {$self->run("DROP $type $t\n/\n");});
+    }
+    return;
+}
+
 sub export_db {
     my($self, $dir) = @_;
     my($db) = _assert_postgres($self);
