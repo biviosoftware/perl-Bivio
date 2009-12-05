@@ -8,10 +8,17 @@ req()->set_realm_and_user('site-admin', 'root');
     [{
 	'RealmOwner.display_name' => 'Forum 2',
 	'RealmOwner.name' => 'ff2',
-	'public_forum_email' => 0,
 	'Forum.want_reply_to' => 1,
-	'feature_motion' => 1,
-	'feature_calendar' => 1,
+	admin_only_forum_email => 0,
+	public_forum_email => 0,
+	system_user_forum_email => 0,
+	feature_blog => 1,
+	feature_calendar => 1,
+	feature_crm => 0,
+	feature_file => 1,
+	feature_mail => 1,
+	feature_motion => 0,
+	feature_tuple => 0,
     }] => [{
 	'Model.RealmOwner' => {
 	    name => 'ff2',
@@ -24,23 +31,24 @@ req()->set_realm_and_user('site-admin', 'root');
 	'Model.RealmRole' => {
 	    realm_id => var('ff2'),
 	    role => Bivio::Auth::Role->TEST_ROLE2,
- 	    permission_set => ${Bivio::Auth::PermissionSet->from_array([
-		'FEATURE_CALENDAR',
-		'FEATURE_DAV',
-		'FEATURE_MOTION',
-		'FEATURE_TASK_LOG',
-		'FEATURE_WIKI',
-	    ])},
+ 	    permission_set => ${Bivio::Auth::PermissionSet->from_array([qw(
+		FEATURE_BLOG
+		FEATURE_CALENDAR
+		FEATURE_DAV
+		FEATURE_FILE
+		FEATURE_MAIL
+		FEATURE_TASK_LOG
+		FEATURE_WIKI
+	    )])},
 	}
     }],
     [{
 	'RealmOwner.display_name' => 'Forum 3',
 	'RealmOwner.name' => 'ff3',
-	'public_forum_email' => 0,
 	'Forum.want_reply_to' => 1,
-	'feature_blog' => 1,
-	'feature_file' => 1,
-	'feature_mail' => 1,
+	feature_blog => 0,
+	feature_file => 1,
+	feature_mail => 0,
     }] => [{
 	'Model.RealmOwner' => {
 	    name => 'ff3',
@@ -53,14 +61,15 @@ req()->set_realm_and_user('site-admin', 'root');
 	'Model.RealmRole' => {
 	    realm_id => var('ff3'),
 	    role => Bivio::Auth::Role->TEST_ROLE2,
- 	    permission_set => ${Bivio::Auth::PermissionSet->from_array([
-		'FEATURE_DAV',
-		'FEATURE_FILE',
-		'FEATURE_MAIL',
-		'FEATURE_BLOG',
-		'FEATURE_TASK_LOG',
-		'FEATURE_WIKI',
-	    ])},
+ 	    permission_set => ${Bivio::Auth::PermissionSet->from_array([qw(
+                FEATURE_CALENDAR
+                FEATURE_DAV
+                FEATURE_FILE
+                FEATURE_MOTION
+                FEATURE_TASK_LOG
+                FEATURE_TUPLE
+                FEATURE_WIKI
+	    )])},
 	}
     }],
     inline_case(sub{
