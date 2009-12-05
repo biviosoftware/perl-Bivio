@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::GroupUser;
 use strict;
@@ -6,7 +6,6 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FF) = Bivio::Biz::Model->get_instance('ForumForm');
 
 sub add_form {
     my($self) = @_;
@@ -25,13 +24,10 @@ sub create_forum {
         qw(
             ForumForm.RealmOwner.display_name
             ForumForm.RealmOwner.name
-            ForumForm.Forum.want_reply_to
-            ForumForm.admin_only_forum_email
-            ForumForm.system_user_forum_email
-            ForumForm.public_forum_email
             ForumForm.Forum.require_otp
+            ForumForm.Forum.want_reply_to
         ),
-	map(+('ForumForm.' . $_), $_FF->FEATURES),
+	map("ForumForm.$_", b_use('Model.ForumForm')->CATEGORY_LIST),
     ]));
 }
 
