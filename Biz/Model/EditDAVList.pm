@@ -1,14 +1,14 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::EditDAVList;
 use strict;
-use base 'Bivio::Biz::Model::AnyTaskDAVList';
-use Bivio::IO::Ref;
+use Bivio::Base 'Model.AnyTaskDAVList';
 use Bivio::IO::Trace;
-use Bivio::Util::CSV;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_CSV) = b_use('ShellUtil.CSV');
+my($_R) = b_use('IO.Ref');
 
 sub LOAD_ALL_SIZE {
     return 5000;
@@ -54,13 +54,13 @@ sub dav_put {
 		    ($cols->[$_] => $v);
 		} 0 .. $#$cols),
 	    } : ();
-	} @{Bivio::Util::CSV->parse($content)})
+	} @{$_CSV->parse($content)})
     ) {
 	my($o) = defined($new->{$pk}) && delete($old->{$new->{$pk}});
 	$o->{_line_num} = $new->{_line_num}
 	    if $o;
 	push(@{$ops->{$o ? 'row_update' : 'row_create'}}, [$new, $o])
-	    unless $o && Bivio::IO::Ref->nested_equals($o, $new);
+	    unless $o && $_R->nested_equals($o, $new);
     }
     $ops->{row_delete} = [map([$_], values(%$old))];
     my($realm) = $self->new_other('RealmOwner')->unauth_load_or_die({
@@ -80,11 +80,11 @@ sub dav_put {
 
 sub dav_reply_get {
     my($self) = @_;
-    Bivio::UI::View->execute(\(<<"EOF"), shift->get_request);
+    b_use('UI.View')->execute(\(<<"EOF"), shift->get_request);
 view_class_map('TextWidget');
 view_main(CSV(
     '@{[$self->LIST_CLASS]}',
-    ${Bivio::IO::Ref->to_string($self->CSV_COLUMNS)}
+    ${$_R->to_string($self->CSV_COLUMNS)}
 ));
 EOF
     return 1;

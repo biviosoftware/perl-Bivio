@@ -1,8 +1,8 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ForumEditDAVList;
 use strict;
-use base 'Bivio::Biz::Model::EditDAVList';
+use Bivio::Base 'Model.EditDAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FM) = Bivio::Type->get_instance('FormMode');
