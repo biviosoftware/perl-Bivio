@@ -778,7 +778,7 @@ sub process {
     # Bivio::Agent::Request->as_string).
     $req->put(form_model => $self);
 
-    my($input) = $req->get_form();
+    my($input) = $req->get_form;
     # Parse context from the query string, if any
     my($query) = $req->unsafe_get('query');
     if ($query
@@ -800,6 +800,7 @@ sub process {
     # User submitted a form, parse, validate, and execute
     # Cancel causes an immediate redirect.  parse() returns false
     # on SUBMIT_UNWIND
+    $input = {%$input};
     $fields->{literals} = $input;
 
     my($res) = _parse($self, $input);
@@ -1160,7 +1161,7 @@ sub _parse {
     _parse_timezone($self, $form->{$self->TIMEZONE_FIELD});
 
     # Allow ListFormModel to initialize its state
-    $self->internal_pre_parse_columns();
+    $self->internal_pre_parse_columns;
 
     my($values) = {};
     my($res) = _parse_cols($self, $form, $sql_support, $values, 1)
