@@ -1280,7 +1280,7 @@ CREATE TABLE tuple_slot_def_t (
   label VARCHAR(100) NOT NULL,
   tuple_slot_type_id NUMERIC(18) NOT NULL,
   is_required NUMERIC(1) NOT NULL,
-  CONSTRAINT tuple_slot_t1 PRIMARY KEY(tuple_def_id, tuple_slot_num)
+  CONSTRAINT tuple_slot_def_t1 PRIMARY KEY(tuple_def_id, tuple_slot_num)
 )
 /
 
@@ -1336,7 +1336,7 @@ CREATE TABLE realm_dag_t (
   parent_id NUMERIC(18) NOT NULL,
   child_id NUMERIC(18) NOT NULL,
   realm_dag_type NUMERIC(2) NOT NULL,
-  constraint realm_dag_t1 primary key (parent_id, child_id, realm_dag_type)
+  CONSTRAINT realm_dag_t1 PRIMARY KEY (parent_id, child_id, realm_dag_type)
 )
 /
 
