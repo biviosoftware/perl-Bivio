@@ -25,38 +25,40 @@ sub initialize {
 	control_on_value => If(
 	    [sub {_one_choice($self, shift)}],
 	    SPAN(_curr_realm(), {class => 'dd_link'}),
-	    DropDown(
-		If([[qw(->req auth_realm type)], '->equals', $rt],
-		   _curr_realm(),
-		   String(vs_text('RealmDropDown', $rt->get_name)),
-	        ),
-		DIV_dd_menu(
-		    [sub {
-			 my($source) = @_;
-			 my($realms) = $self->internal_choices($source);
-			 my($r) = $source->req('auth_realm');
-			 $r = $r->get('type')->equals($rt)
-			     ? $r->get('owner_name')
-			     : '';
-			 return Join([
-			     map(
-				 Link(String(_value($_, 'display_name')) => URI({
-				     realm => _value($_, 'name'),
-				     task_id => _value($_, 'task_id')
-					 || $self->render_simple_attr(
-					     task_id => $source,
-					 ) || ($rt->get_name . '_HOME'),
-				     query => undef,
-				     path_info => undef,
-				 })),
-				 grep(_eq($_, $r), @$realms),
-				 grep(!_eq($_, $r), @$realms),
-			     ),
-			 ]);
-		    }],
-		    {
-			id => lc($rt->get_name) . '_drop_down',
-		    },
+	    DIV_task_menu_wrapper(
+		DropDown(
+		    If([[qw(->req auth_realm type)], '->equals', $rt],
+		       _curr_realm(),
+		       String(vs_text('RealmDropDown', $rt->get_name)),
+		    ),
+		    DIV_dd_menu(
+			[sub {
+			     my($source) = @_;
+			     my($realms) = $self->internal_choices($source);
+			     my($r) = $source->req('auth_realm');
+			     $r = $r->get('type')->equals($rt)
+				 ? $r->get('owner_name')
+				 : '';
+			     return Join([
+				 map(
+				     Link(String(_value($_, 'display_name')) => URI({
+					 realm => _value($_, 'name'),
+					 task_id => _value($_, 'task_id')
+					     || $self->render_simple_attr(
+						 task_id => $source,
+					     ) || ($rt->get_name . '_HOME'),
+					 query => undef,
+					 path_info => undef,
+				     })),
+				     grep(_eq($_, $r), @$realms),
+				     grep(!_eq($_, $r), @$realms),
+				 ),
+			     ]);
+			}],
+			{
+			    id => lc($rt->get_name) . '_drop_down',
+			},
+		    ),
 		),
 	    ),
 	),
