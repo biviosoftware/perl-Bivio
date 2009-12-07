@@ -15,20 +15,15 @@ my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 sub JAVASCRIPT_B_SUBMENU_IE6 {
     return <<'EOF';
 function b_submenu_ie6_onload() {
-    if (document.getElementsByTagName) {
-        var divs = document.getElementsByTagName('div');
-        var H = 'hover';
-        for (var i=0; i < divs.length; i++) {
-            if (divs[i].className.indexOf('b_submenu') >= 0) {
-                var b_menu = divs[i].parentNode;
-                b_menu.onmouseout = function () {
-                    b_remove_class(this, H);
-                };
-                b_menu.onmouseover = function () {
-                    b_add_class(this, H);
-                };
-            }
-        }
+    var div;
+    while (div = b_element_by_class('div', 'b_submenu')) {
+	var b_menu = div.parentNode;
+	b_menu.onmouseout = function () {
+	    b_remove_class(this, 'hover');
+	};
+	b_menu.onmouseover = function () {
+	    b_add_class(this, 'hover');
+	};
     }
 }
 EOF
@@ -224,18 +219,35 @@ function b_remove_class (element, clazz) {
     }
     element.className = res.join(' ');
 }
+function b_has_class (element, clazz) {
+    return element.className.indexOf(clazz) >= 0;
+}
 function b_add_class (element, clazz) {
-    if (element.className.indexOf(clazz) < 0) {
+    if (!b_has_class(element, clazz)) {
         element.className += (element.className ? ' ' : '') + clazz;
     }
 }
-function b_toggle_class (element, clazz) {
-    if (element.className.indexOf(clazz) < 0) {
-        b_add_class(element, clazz);
+function b_toggle_class (element, class1, class2) {
+    if (!b_has_class(element, class1)) {
+        b_add_class(element, class1);
+        if (class2)
+            b_remove_class(element, class2);
     }
     else {
-        b_remove_class(element, clazz);
+        b_remove_class(element, class1);
+        if (class2)
+            b_add_class(element, class2);
     }
+}
+function b_element_by_class(tag_name, class_name) {
+    if (!document.getElementsByTagName)
+        return;
+    var tags = document.getElementsByTagName(tag_name);
+    for (var i = 0; i < tags.length; i++) {
+        if (b_has_class(tags[i], class_name))
+            return tags[i];
+    }
+    return null;
 }
 EOF
 }
@@ -278,7 +290,7 @@ sub JAVASCRIPT_B_THUMBNAIL_POPUP {
 function b_thumbnail_popup_onload() {
     for (var i=0; i < document.links.length; i++) {
         var A = document.links[i];
-        if (A.className.indexOf('b_thumbnail_popup') >= 0) {
+        if (b_has_class(A, 'b_thumbnail_popup')) {
             var img = document.createElement('img');
             img.src = A.href;
             b_add_class(img, A.className);
