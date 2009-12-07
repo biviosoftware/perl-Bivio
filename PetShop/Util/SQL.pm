@@ -441,6 +441,10 @@ sub _init_demo_users {
  	next
  	    if $u eq $self->ROOT;
 	$self->create_user_with_account($u);
+	$req->with_realm($self->DEMO, sub {
+            $self->new_other('RealmRole')->edit_categories('+feature_file');
+	    return;
+	});
 	my($uid) = $req->get('auth_user_id');
 	if ($u eq $self->DEMO || $u eq $self->XAPIAN_DEMO) {
 	    $demo_id = $uid;
