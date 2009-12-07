@@ -26,11 +26,38 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.45  2009/12/05 05:38:32  nagler
+  * Bivio::Biz::FormModel
+    make copy of form values
+  * Bivio::Biz::Model::EditDAVList
+    b_use and format
+  * Bivio::Biz::Model::ForumEditDAVList
+    b_use and format
+  * Bivio::Biz::Model::ForumForm
+    renamed features to categories to be consistent (they aren't just features)
+    normalized the categories for email
+    create: default values to parent realm's values or if general, standard defaults
+    update: default values to prior settings
+  * Bivio::Biz::Model::ForumList
+    include all categories
+  * Bivio::SQL::DDL
+    name of constraint incorrect
+  * Bivio::Type::ForumEmailMode
+    fmt
+  * Bivio::Type::NullBoolean
+    NEW
+  * Bivio::UI::View::CSS
+    fixed the positioning for dropdown menus
+  * Bivio::UI::View::GroupUser
+    create_form: pull the values from ForumForm CATEGORY_LIST
+  * Bivio::Util::SQL
+    added drop_object
+
   Revision 8.44  2009/12/04 17:36:09  dobbs
   * Bivio::Biz::Action::TestBackdoor
     rollback put results in the HTTP reply 'cos it introduced security risks
