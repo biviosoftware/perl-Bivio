@@ -15,6 +15,7 @@ sub initialize {
 	unless $id =~ /^[a-z]\w+$/s;
     my($local) = JavaScript()->var_name("drop_down_$id");
     $self->put_unless_exists(values => [
+	Script('common'),
 	$self->get('widget'),
 	[sub {_js(@_)}, JavaScript()->var_name('drop_down'), $local, $id],
 	_link($self, $local),
@@ -43,23 +44,15 @@ sub _js {
 (function (){
     $global = $global || {};
     var dd = $global;
-    dd.curr = null;
     dd.toggle = function (e, b2) {
-	if (dd.curr) {
-	    var c = dd.curr;
-	    dd.curr = null;
-	    c.toggle(e);
-	}
+        var prev;
+        while (prev = b_element_by_class('div', 'dd_visible')) {
+	    b_toggle_class(prev, 'dd_visible', 'dd_hidden');
+        }
 	(e || window.event).cancelBubble = true;
 	if (!b2)
 	    return;
-	if (b2.style.visibility == 'visible') {
-	    b2.style.visibility = 'hidden';
-	}
-	else {
-	    b2.style.visibility = 'visible';
-	    dd.curr = b2;
-	}
+        b_toggle_class(b2.element, 'dd_visible', 'dd_hidden');
     };
     document.onclick = function(e) {
 	dd.toggle(e, null);
@@ -71,7 +64,7 @@ EOF
     $local = $local || {};
     var b = $local;
     b.toggle = function (e) {
-        b.style = b.style || document.getElementById('$id').style;
+        b.element = b.element || document.getElementById('$id');
         $global.toggle(e, $local);
     };
 })();
@@ -83,7 +76,10 @@ EOF
 sub _link {
     my($self, $local) = @_;
     return A(
-	Join([$self->get('label'), vs_text_as_prose('drop_down_arrow')]),
+	Join([
+	    $self->get('label'),
+	    SPAN_dd_arrow(vs_text_as_prose('drop_down_arrow')),
+	]),
 	{
 	    HREF => '#',
 	    ONCLICK => "this.blur(); $local.toggle(event); return false",
