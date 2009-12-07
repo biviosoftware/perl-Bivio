@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::RealmType;
 use strict;
@@ -6,8 +6,8 @@ use Bivio::Base 'Type.EnumDelegator';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile;
-my($_S) = __PACKAGE__->use('Type.String');
-my($_I) = __PACKAGE__->use('Type.Integer');
+my($_S) = b_use('Type.String');
+my($_I) = b_use('Type.Integer');
 
 sub as_default_owner_id {
     return shift->as_int;
@@ -41,7 +41,7 @@ sub is_default_id {
 }
 
 sub is_group {
-    return shift->equals_by_name(qw(GENERAL USER)) ? 0 : 1;
+    return shift->equals_by_name(qw(GENERAL)) ? 0 : 1;
 }
 
 sub self_or_any_group {
