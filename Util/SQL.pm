@@ -54,6 +54,7 @@ my($_BUNDLE) = [qw(
     !feature_task_log2
     !tuple_thread_root_id_not_null
     !task_log_remove_foreign_keys
+    !feature_group_admin
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -766,6 +767,12 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_feature_group_admin {
+    my($self) = @_;
+    _add_permissions_to_all_forums($self, ['FEATURE_GROUP_ADMIN']);
+    return;
+}
+
 sub internal_upgrade_db_feature_task_log {
     my($self) = @_;
     $self->initialize_task_log_permissions;
@@ -774,7 +781,6 @@ sub internal_upgrade_db_feature_task_log {
 
 sub internal_upgrade_db_feature_task_log2 {
     my($self) = @_;
-#TODO: do we want this to all groups?
     _add_permissions_to_all_forums($self, ['FEATURE_TASK_LOG']);
     return;
 }
@@ -2433,6 +2439,7 @@ b-realm-role -realm CLUB -user user edit ANONYMOUS - \
     +FEATURE_CALENDAR \
     +FEATURE_DAV \
     +FEATURE_FILE \
+    +FEATURE_GROUP_ADMIN \
     +FEATURE_MAIL \
     +FEATURE_WIKI
 b-realm-role -realm CLUB -user user edit USER - \
