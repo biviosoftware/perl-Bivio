@@ -394,6 +394,12 @@ sub merge_realm_role_category_map {
 		    'public_forum_email',
 		    ['*' => 'FEATURE_CRM'],
 	    ], [
+		feature_file =>
+		    ['*' => 'FEATURE_FILE'],
+	    ], [
+		feature_group_admin =>
+		    ['*' => 'FEATURE_GROUP_ADMIN'],
+	    ], [
 		feature_site_admin =>
 		    ['*' => 'FEATURE_SITE_ADMIN'],
 		    [MEMBER => [qw(ADMIN_WRITE ADMIN_READ)]],
