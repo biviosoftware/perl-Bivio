@@ -634,7 +634,7 @@ sub info_group_admin {
 	    GROUP_USER_LIST
 	    200
 	    ANY_GROUP
-	    ADMIN_READ
+	    ADMIN_READ&FEATURE_GROUP_ADMIN
             Model.GroupUserQueryForm
 	    Model.GroupUserList->execute_load_page
 	    View.GroupUser->list
@@ -644,7 +644,7 @@ sub info_group_admin {
 	    GROUP_USER_FORM
 	    201
 	    ANY_GROUP
-	    ADMIN_READ&ADMIN_WRITE
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
 	    Model.GroupUserForm
 	    View.GroupUser->form
 	    next=GROUP_USER_LIST
@@ -653,7 +653,7 @@ sub info_group_admin {
 	    GROUP_USER_ADD_FORM
 	    202
 	    ANY_GROUP
-	    ADMIN_READ&ADMIN_WRITE
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
 	    Model.RealmUserAddForm
 	    View.GroupUser->add_form
 	    next=GROUP_USER_LIST
@@ -662,7 +662,7 @@ sub info_group_admin {
 	    FORUM_FORM
 	    203
 	    FORUM
-	    ADMIN_READ&ADMIN_WRITE
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
 	    Model.ForumForm
 	    View.GroupUser->create_forum
 	    next=GROUP_USER_LIST
@@ -915,7 +915,7 @@ sub info_site_admin {
 	    SITE_ADMIN_SUBSTITUTE_USER_DONE
 	    162
 	    ANY_GROUP
-	    ANYBODY
+	    ANYBODY&FEATURE_SITE_ADMIN
 	    Action.UserLogout
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
