@@ -247,7 +247,7 @@ sub _cfg_base {
 	    [form_footer => ['smaller', 'italic']],
 	    [footer => 'smaller'],
 	    [header_su => 'larger'],
-	    [selected => 'bold'],
+	    [[qw(selected task_menu_selected)] => 'bold'],
 	    [topic => 'bold', 'larger'],
 	    [byline => 'bold'],
 	    [title => ['140%', 'bold']],
