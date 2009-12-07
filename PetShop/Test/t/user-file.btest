@@ -1,0 +1,10 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+login_as('btest_read');
+test_deviance('forbidden');
+visit_uri('/btest_read/files');
+test_conformance();
+login_as('demo');
+visit_uri('/demo/files');
