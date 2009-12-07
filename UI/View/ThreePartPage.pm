@@ -43,6 +43,7 @@ sub internal_xhtml_adorned {
 	    }),
 	]),
 	body => $self->internal_xhtml_adorned_body,
+	body_class => view_widget_value('xhtml_body_class'),
 	xhtml => 1,
 	want_page_print => view_widget_value('xhtml_want_page_print'),
     });
