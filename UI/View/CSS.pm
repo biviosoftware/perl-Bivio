@@ -535,6 +535,12 @@ div.dd_menu a {
   text-align: left;
   font-weight: normal;
 }
+div.dd_visible {
+  visibility: visible;
+}
+div.dd_hidden {
+  visibility: hidden;
+}
 div.dd_menu a:hover {
   Color('dd_menu_selected-background');
   Color('dd_menu_selected');
