@@ -7,7 +7,10 @@ use Bivio::Base 'Model.RealmFeatureForm';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = b_use('Type.ForumName');
 my($_F) = b_use('UI.Facade');
-my($_MODELS) = [qw(Forum RealmOwner)];
+
+sub REALM_MODELS {
+    return [qw(Forum RealmOwner)];
+}
 
 sub execute_empty {
     my($self) = @_;
@@ -17,7 +20,7 @@ sub execute_empty {
 	    unless _is_forum($req);
         $self->internal_put_field('Forum.forum_id' => $req->get('auth_id'));
 	$self->internal_put_categories(1);
-        foreach my $m (@$_MODELS) {
+        foreach my $m (@{$self->REALM_MODELS}) {
             $self->load_from_model_properties($m);
         }
         return
@@ -43,12 +46,12 @@ sub execute_ok {
         if ($self->is_create) {
             my($f, $ro) = $self->new_other('Forum')->create_realm(
                 map($self->get_model_properties($_),
-                    @$_MODELS),
+                    @{$self->REALM_MODELS}),
             );
             $req->set_realm($ro);
         }
         else {
-            foreach my $m (@$_MODELS) {
+            foreach my $m (@{$self->REALM_MODELS}) {
                 $self->update_model_properties($m);
             }
         }
