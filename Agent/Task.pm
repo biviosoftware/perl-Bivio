@@ -333,7 +333,7 @@ sub handle_pre_execute_task {
 
 sub has_realm_type {
     my($self, $realm_type) = @_;
-    return $realm_type->equals_or_any_group_check($self->get('realm_type'));
+    return $realm_type->equals_or_any_owner_check($self->get('realm_type'));
 }
 
 sub initialize {

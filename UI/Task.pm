@@ -76,7 +76,7 @@ my($_R) = b_use('Auth.Realm');
 my($_RT) = b_use('Auth.RealmType');
 my($_GENERAL) = $_R->get_general;
 my($_GENERAL_TYPE) = $_RT->GENERAL;
-my($_ANY_GROUP_INT) = $_RT->ANY_GROUP->as_int;
+my($_ANY_OWNER_INT) = $_RT->ANY_OWNER->as_int;
 my($_REALM_PLACEHOLDER) = '?';
 my($_REALM_PLACEHOLDER_PAT) = $_REALM_PLACEHOLDER;
 $_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
@@ -472,7 +472,7 @@ sub _from_uri {
     return undef
 	unless my $res = $fields->{from_uri}->{$uri};
     return $res->[$realm_type->as_int]
-	|| $realm_type->equals_or_any_group_check && $res->[$_ANY_GROUP_INT]
+	|| $realm_type->equals_or_any_owner_check && $res->[$_ANY_OWNER_INT]
 	|| undef;
 }
 

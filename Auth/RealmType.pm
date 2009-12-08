@@ -21,16 +21,20 @@ sub as_property_model_class_name {
     return $_S->to_camel_case_identifier(shift->get_name);
 }
 
-sub equals_or_any_group_check {
+sub equals_or_any_owner_check {
     my($self, $match) = @_;
-    $match ||= $self->ANY_GROUP;
+    $match ||= $self->ANY_OWNER;
     return $self == $match
-	|| $match->eq_any_group && grep($self == $_, $self->get_any_group_list)
+	|| $match->eq_any_owner && grep($self == $_, $self->get_any_owner_list)
 	? 1 : 0;
 }
 
 sub get_any_group_list {
     return grep($_->is_group, shift->get_non_zero_list);
+}
+
+sub get_any_owner_list {
+    return grep($_->is_owner, shift->get_non_zero_list);
 }
 
 sub is_default_id {
@@ -41,12 +45,18 @@ sub is_default_id {
 }
 
 sub is_group {
+    return shift->equals_by_name(qw(USER GENERAL)) ? 0 : 1;
+}
+
+sub is_owner {
     return shift->equals_by_name(qw(GENERAL)) ? 0 : 1;
 }
 
 sub self_or_any_group {
     my($self) = @_;
-    return [$self->eq_any_group ? $self->get_any_group_list : $self];
+    # This is a bit subtle.  self_or_any_group means to match any_owner tasks
+    # if $self is any_owner, return groups without user.
+    return [$self->eq_any_owner ? $self->get_any_group_list : $self];
 }
 
 1;

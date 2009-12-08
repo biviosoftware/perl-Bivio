@@ -250,7 +250,7 @@ sub info_blog {
 	[qw(
 	    FORUM_BLOG_EDIT
 	    100
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_BLOG
 	    Model.BlogEditForm
 	    View.Blog->edit
@@ -259,7 +259,7 @@ sub info_blog {
 	[qw(
 	    FORUM_BLOG_CREATE
 	    101
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_BLOG
 	    Model.BlogCreateForm
 	    View.Blog->create
@@ -273,7 +273,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_DETAIL
 			102
-			ANY_GROUP
+			ANY_OWNER
 			ANYBODY&FEATURE_BLOG
 			Model.BlogRecentList->execute_load_all
 			Model.BlogList->execute_load_this
@@ -282,7 +282,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_LIST
 			103
-			ANY_GROUP
+			ANY_OWNER
 			ANYBODY&FEATURE_BLOG
 			Model.BlogRecentList->execute_load_all
 			Model.BlogList->execute_load_page
@@ -291,7 +291,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_RSS
 			107
-			ANY_GROUP
+			ANY_OWNER
 			ANYBODY&FEATURE_BLOG
 			Model.BlogList->execute_load_page
 			View.Blog->list_rss
@@ -305,7 +305,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_DETAIL
 			102
-			ANY_GROUP
+			ANY_OWNER
 			DATA_READ&FEATURE_BLOG
 			Type.AccessMode->execute_private
 			Model.BlogRecentList->execute_load_all
@@ -315,7 +315,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_LIST
 			103
-			ANY_GROUP
+			ANY_OWNER
 			DATA_READ&FEATURE_BLOG
 			Type.AccessMode->execute_private
 			Model.BlogRecentList->execute_load_all
@@ -325,7 +325,7 @@ sub info_blog {
 		    [qw(
 			FORUM_PUBLIC_BLOG_LIST
 			104
-			ANY_GROUP
+			ANY_OWNER
 			ANYBODY&FEATURE_BLOG
 			Type.AccessMode->execute_public
 			Model.BlogRecentList->execute_load_all
@@ -335,7 +335,7 @@ sub info_blog {
 		    [qw(
 			FORUM_PUBLIC_BLOG_DETAIL
 			105
-			ANY_GROUP
+			ANY_OWNER
 			ANYBODY&FEATURE_BLOG
 			Type.AccessMode->execute_public
 			Model.BlogRecentList->execute_load_all
@@ -345,7 +345,7 @@ sub info_blog {
 		    [qw(
 			FORUM_PUBLIC_BLOG_RSS
 			106
-			ANY_GROUP
+			ANY_OWNER
 			ANYBODY&FEATURE_BLOG
 			Type.AccessMode->execute_public
 			Model.BlogList->execute_load_page
@@ -356,7 +356,7 @@ sub info_blog {
 		    [qw(
 			FORUM_BLOG_RSS
 			107
-			ANY_GROUP
+			ANY_OWNER
 			DATA_READ&FEATURE_BLOG
 			Type.AccessMode->execute_private
 			Model.BlogList->execute_load_page
@@ -376,7 +376,7 @@ sub info_calendar {
 	[qw(
 	    FORUM_CALENDAR_EVENT_LIST_RSS
 	    32
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&FEATURE_CALENDAR
 	    Model.CalendarEventList->execute_load_page
 	    View.Calendar->event_list_rss
@@ -387,7 +387,7 @@ sub info_calendar {
 	[qw(
 	    FORUM_CALENDAR
 	    180
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&FEATURE_CALENDAR
 	    Model.SelectMonthForm
 	    Model.CalendarEventMonthList->execute_load_all_with_query
@@ -398,7 +398,7 @@ sub info_calendar {
 	[qw(
 	    FORUM_CALENDAR_EVENT
 	    181
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_CALENDAR
 	    Model.CalendarEventForm
 	    View.Calendar->event_form
@@ -407,7 +407,7 @@ sub info_calendar {
 	[qw(
 	    FORUM_CALENDAR_EVENT_DETAIL
 	    182
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_CALENDAR
 	    Model.CalendarEventList->execute_load_this
 	    View.Calendar->event_detail
@@ -417,7 +417,7 @@ sub info_calendar {
 	[qw(
 	    FORUM_CALENDAR_EVENT_DELETE
 	    183
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_CALENDAR
 	    Model.CalendarEvent->execute_load_this
 	    Model.CalendarEventDeleteForm
@@ -429,7 +429,7 @@ sub info_calendar {
 	[qw(
 	    FORUM_CALENDAR_EVENT_ICS
 	    184
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&FEATURE_CALENDAR
 	    Model.CalendarEventList->execute_load_this
 	    Action.CalendarEventICS
@@ -443,7 +443,7 @@ sub info_crm {
 	[qw(
 	    FORUM_CRM_THREAD_ROOT_LIST
 	    150
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&FEATURE_CRM
 	    Model.CRMQueryForm
 	    Model.CRMThreadRootList->execute_load_page
@@ -455,7 +455,7 @@ sub info_crm {
 	[qw(
 	    FORUM_CRM_THREAD_LIST
 	    151
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&FEATURE_CRM
 	    Model.CRMThreadList->execute_load_page
 	    View.CRM->thread_list
@@ -463,7 +463,7 @@ sub info_crm {
 	[qw(
 	    FORUM_CRM_FORM
 	    152
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&MAIL_POST&FEATURE_CRM
 	    Model.CRMForm
 	    View.CRM->send_form
@@ -498,7 +498,7 @@ sub info_dav {
 	[qw(
 	    DAV_FORUM_LIST
 	    27
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&FEATURE_DAV
 	    Model.UserForumDAVList
 	    next=DAV_FORUM_LIST
@@ -510,7 +510,7 @@ sub info_dav {
 	[qw(
 	    DAV_FORUM_FILE
 	    28
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&FEATURE_DAV
 	    Model.RealmFileDAVList
 	    require_dav=1
@@ -527,7 +527,7 @@ sub info_dav {
 	[qw(
 	    DAV_FORUM_LIST_EDIT
 	    30
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&FEATURE_DAV
 	    Model.Lock->execute_unless_acquired
 	    Model.ForumList->execute_load_all
@@ -536,7 +536,7 @@ sub info_dav {
 	[qw(
 	    DAV_FORUM_USER_LIST_EDIT
 	    31
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&FEATURE_DAV
 	    Model.Lock->execute_unless_acquired
 	    Model.ForumUserList->execute_load_all
@@ -545,7 +545,7 @@ sub info_dav {
 	[qw(
 	    DAV_FORUM_CALENDAR_EVENT_LIST_EDIT
 	    33
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&FEATURE_DAV
 	    Model.Lock->execute_unless_acquired
 	    Model.CalendarEventDAVList
@@ -568,21 +568,21 @@ sub info_file {
 	[qw(
 	    FORUM_EASY_FORM
 	    43
-	    ANY_GROUP
+	    ANY_OWNER
 	    ANYBODY&FEATURE_FILE
 	    Action.EasyForm
 	)],
 	[qw(
 	    FORUM_FILE
 	    52
-	    ANY_GROUP
+	    ANY_OWNER
 	    ANYBODY&FEATURE_FILE
 	    Action.RealmFile->access_controlled_execute
 	)],
 	[qw(
 	    FORUM_FILE_TREE_LIST
 	    170
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_BROWSE&FEATURE_FILE
 	    Action.RealmFile->access_controlled_execute
 	    Model.RealmFileTreeList->execute_load_all_with_query
@@ -595,7 +595,7 @@ sub info_file {
 	[qw(
 	    FORUM_FILE_VERSIONS_LIST
 	    171
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
 	    Action.RealmFile->assert_access
 	    Model.RealmFileVersionsList->execute_load_all
@@ -604,7 +604,7 @@ sub info_file {
 	[qw(
 	    FORUM_FILE_CHANGE
 	    172
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
 	    Action.RealmFile->assert_access
 	    Model.Lock
@@ -616,7 +616,7 @@ sub info_file {
 	[qw(
 	    FORUM_FILE_OVERRIDE_LOCK
 	    173
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
 	    Action.RealmFile->assert_access
 	    Model.Lock
@@ -633,7 +633,7 @@ sub info_group_admin {
 	[qw(
 	    GROUP_USER_LIST
 	    200
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&FEATURE_GROUP_ADMIN
             Model.GroupUserQueryForm
 	    Model.GroupUserList->execute_load_page
@@ -643,7 +643,7 @@ sub info_group_admin {
 	[qw(
 	    GROUP_USER_FORM
 	    201
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
 	    Model.GroupUserForm
 	    View.GroupUser->form
@@ -652,7 +652,7 @@ sub info_group_admin {
 	[qw(
 	    GROUP_USER_ADD_FORM
 	    202
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
 	    Model.RealmUserAddForm
 	    View.GroupUser->add_form
@@ -670,7 +670,7 @@ sub info_group_admin {
 	[qw(
 	    REALM_FEATURE_FORM
 	    204
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE
 	    Model.RealmFeatureForm
 	    View.GroupUser->edit_realm_features
@@ -729,7 +729,7 @@ sub info_mail {
 	[qw(
 	    FORUM_MAIL_RECEIVE
 	    42
-	    ANY_GROUP
+	    ANY_OWNER
 	    MAIL_SEND&FEATURE_MAIL
 	    Action.RealmMail->execute_receive
 	    Action.MailReceiveStatus
@@ -754,14 +754,14 @@ sub info_mail {
 	[qw(
 	    FORUM_MAIL_REFLECTOR
 	    53
-	    ANY_GROUP
+	    ANY_OWNER
 	    MAIL_SEND&FEATURE_MAIL
 	    Action.RealmMail->execute_reflector
 	)],
 	[qw(
 	    FORUM_MAIL_THREAD_ROOT_LIST
 	    140
-	    ANY_GROUP
+	    ANY_OWNER
 	    MAIL_READ&FEATURE_MAIL
 	    Model.MailThreadRootList->execute_load_page
 	    View.Mail->thread_root_list
@@ -771,7 +771,7 @@ sub info_mail {
 	[qw(
 	    FORUM_MAIL_THREAD_LIST
 	    141
-	    ANY_GROUP
+	    ANY_OWNER
 	    MAIL_READ&FEATURE_MAIL
 	    Model.MailThreadList->execute_load_page
 	    View.Mail->thread_list
@@ -779,14 +779,14 @@ sub info_mail {
 	[qw(
 	    FORUM_MAIL_PART
 	    142
-	    ANY_GROUP
+	    ANY_OWNER
 	    MAIL_READ&FEATURE_MAIL
 	    Model.MailPartList->execute_part
 	)],
 	[qw(
 	    FORUM_MAIL_FORM
 	    143
-	    ANY_GROUP
+	    ANY_OWNER
 	    MAIL_READ&MAIL_POST&FEATURE_MAIL
 	    Model.MailForm
 	    View.Mail->send_form
@@ -796,14 +796,14 @@ sub info_mail {
 	[qw(
 	    FORUM_MAIL_SHOW_ORIGINAL_FILE
 	    144
-	    ANY_GROUP
+	    ANY_OWNER
 	    ANYBODY&FEATURE_MAIL
 	    Action.RealmFile->execute_show_original
 	)],
 	[qw(
             GROUP_BULLETIN_FORM
             145
-            ANY_GROUP
+            ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_MAIL&FEATURE_BULLETIN
             Model.BulletinForm
             View.Bulletin->form
@@ -813,7 +813,7 @@ sub info_mail {
 	[qw(
 	    GROUP_BULLETIN_REFLECTOR
 	    146
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_MAIL&FEATURE_BULLETIN
 	    Action.RealmMail->execute_reflector
 	)],
@@ -826,7 +826,7 @@ sub info_motion {
 	[qw(
 	    FORUM_MOTION_LIST
 	    110
-	    ANY_GROUP
+	    ANY_OWNER
 	    MOTION_WRITE&FEATURE_MOTION
 	    Model.MotionList->execute_load_page
 	    View.Motion->list
@@ -834,7 +834,7 @@ sub info_motion {
 	[qw(
 	    FORUM_MOTION_ADD
 	    111
-	    ANY_GROUP
+	    ANY_OWNER
 	    MOTION_ADMIN&FEATURE_MOTION
 	    Type.FormMode->execute_create
 	    Model.MotionForm
@@ -844,7 +844,7 @@ sub info_motion {
 	[qw(
 	    FORUM_MOTION_EDIT
 	    112
-	    ANY_GROUP
+	    ANY_OWNER
 	    MOTION_ADMIN&FEATURE_MOTION
 	    Type.FormMode->execute_edit
 	    Model.MotionList->execute_load_this
@@ -855,7 +855,7 @@ sub info_motion {
 	[qw(
 	    FORUM_MOTION_VOTE
 	    113
-	    ANY_GROUP
+	    ANY_OWNER
 	    MOTION_WRITE&FEATURE_MOTION
 	    Model.MotionList->execute_load_this
 	    Model.MotionVoteForm
@@ -865,7 +865,7 @@ sub info_motion {
 	[qw(
 	    FORUM_MOTION_VOTE_LIST
 	    114
-	    ANY_GROUP
+	    ANY_OWNER
 	    MOTION_READ&FEATURE_MOTION
 	    Model.MotionList->execute_load_parent
 	    Model.MotionVoteList->execute_load_all_with_query
@@ -874,7 +874,7 @@ sub info_motion {
 	[qw(
 	    FORUM_MOTION_VOTE_LIST_CSV
 	    115
-	    ANY_GROUP
+	    ANY_OWNER
 	    MOTION_READ&FEATURE_MOTION
 	    Model.MotionVoteList->execute_load_all_with_query
 	    View.Motion->vote_result_csv
@@ -904,7 +904,7 @@ sub info_site_admin {
 	[qw(
 	    SITE_ADMIN_USER_LIST
 	    160
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&FEATURE_SITE_ADMIN
 	    Model.SiteAdminUserList->execute_load_page
 	    View.SiteAdmin->user_list
@@ -913,7 +913,7 @@ sub info_site_admin {
 	[qw(
 	    SITE_ADMIN_SUBSTITUTE_USER
 	    161
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&SUPER_USER_TRANSIENT
 	    Model.SiteAdminSubstituteUserForm
 	    View.SiteAdmin->substitute_user_form
@@ -923,7 +923,7 @@ sub info_site_admin {
 	[qw(
 	    SITE_ADMIN_SUBSTITUTE_USER_DONE
 	    162
-	    ANY_GROUP
+	    ANY_OWNER
 	    ANYBODY&FEATURE_SITE_ADMIN
 	    Action.UserLogout
 	    Action.ClientRedirect->execute_next
@@ -933,7 +933,7 @@ sub info_site_admin {
 	[qw(
 	    SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
 	    163
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&FEATURE_SITE_ADMIN
 	    Model.UnapprovedApplicantList->execute_load_page
 	    View.SiteAdmin->unapproved_applicant_list
@@ -942,7 +942,7 @@ sub info_site_admin {
 	[qw(
 	    SITE_ADMIN_UNAPPROVED_APPLICANT_FORM
 	    164
-	    ANY_GROUP
+	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN
 	    Model.Lock
 	    Model.UnapprovedApplicantForm
@@ -953,7 +953,7 @@ sub info_site_admin {
 	[qw(
 	    REMOTE_COPY_GET
 	    165
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_BROWSE&FEATURE_FILE
 	    Action.RemoteCopy
 	    want_basic_authorization=1
@@ -962,7 +962,7 @@ sub info_site_admin {
 	[qw(
 	    REMOTE_COPY_FORM
 	    166
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&DATA_BROWSE&FEATURE_FILE
 	    Model.RemoteCopyListForm
 	    View.SiteAdmin->remote_copy_form
@@ -981,7 +981,7 @@ sub info_site_admin {
 	    [qw(
 	        SITE_ADMIN_TASK_LOG
 	        210
-	        ANY_GROUP
+	        ANY_OWNER
 	        ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&FEATURE_TASK_LOG
                 Model.FilterQueryForm
 	        Model.TaskLogList->execute_unauth_load_page
@@ -992,7 +992,7 @@ sub info_site_admin {
 	    [qw(
 	        GROUP_TASK_LOG
 	        212
-	        ANY_GROUP
+	        ANY_OWNER
 	        ADMIN_READ&ADMIN_WRITE&FEATURE_TASK_LOG
                 Model.FilterQueryForm
 	        Model.TaskLogList->execute_load_page
@@ -1019,7 +1019,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_SLOT_TYPE_LIST
 	    70
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_ADMIN&FEATURE_TUPLE
 	    Model.TupleSlotTypeList->execute_load_all_with_query
 	    View.Tuple->slot_type_list
@@ -1027,7 +1027,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_SLOT_TYPE_EDIT
 	    71
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_ADMIN&FEATURE_TUPLE
 	    Model.TupleSlotTypeListForm
 	    View.Tuple->slot_type_edit
@@ -1036,7 +1036,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_DEF_LIST
 	    72
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_ADMIN&FEATURE_TUPLE
 	    Model.TupleDefList->execute_load_all_with_query
 	    View.Tuple->def_list
@@ -1044,7 +1044,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_DEF_EDIT
 	    73
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_ADMIN&FEATURE_TUPLE
             Model.TupleSlotTypeList->execute_load_all
 	    Model.TupleDefListForm
@@ -1054,7 +1054,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_USE_LIST
 	    74
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_READ&FEATURE_TUPLE
 	    Model.TupleUseList->execute_load_all_with_query
 	    View.Tuple->use_list
@@ -1062,7 +1062,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_USE_EDIT
 	    75
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_ADMIN&FEATURE_TUPLE
 	    Model.TupleUseForm
 	    View.Tuple->use_edit
@@ -1071,7 +1071,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_LIST
 	    76
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_READ&FEATURE_TUPLE
 	    Model.TupleList->execute_load_page
 	    View.Tuple->list
@@ -1079,7 +1079,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_LIST_CSV
 	    77
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_READ&FEATURE_TUPLE
 	    Model.TupleList->execute_load_all_with_query
 	    View.Tuple->list_csv
@@ -1087,7 +1087,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_EDIT
 	    78
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_READ&TUPLE_WRITE&FEATURE_TUPLE
 	    Model.TupleSlotListForm
 	    View.Tuple->edit
@@ -1097,7 +1097,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_HISTORY
 	    79
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_READ&FEATURE_TUPLE
 	    Model.TupleList->execute_load_history_list
 	    View.Tuple->history_list
@@ -1105,7 +1105,7 @@ sub info_tuple {
 	[qw(
 	    FORUM_TUPLE_HISTORY_CSV
 	    80
-	    ANY_GROUP
+	    ANY_OWNER
 	    TUPLE_READ&FEATURE_TUPLE
 	    Model.TupleList->execute_load_history_list
 	    View.Tuple->history_list_csv
@@ -1252,7 +1252,7 @@ sub info_wiki {
 	[qw(
 	    HELP
 	    9
-	    ANY_GROUP
+	    ANY_OWNER
 	    ANYBODY&FEATURE_WIKI
 	    View.Wiki->help
 	)],
@@ -1262,7 +1262,7 @@ sub info_wiki {
 		    [qw(
 			FORUM_WIKI_VIEW
 			48
-			ANY_GROUP
+			ANY_OWNER
 			ANYBODY&FEATURE_WIKI
 			Action.WikiView->execute_prepare_html
 			View.Wiki->view
@@ -1276,7 +1276,7 @@ sub info_wiki {
 		    [qw(
 			FORUM_PUBLIC_WIKI_VIEW
 			120
-			ANY_GROUP
+			ANY_OWNER
 			ANYBODY&FEATURE_WIKI
 			Action.WikiView->execute_prepare_html
 			View.Wiki->view
@@ -1287,7 +1287,7 @@ sub info_wiki {
 		    [qw(
 			FORUM_WIKI_VIEW
 			48
-			ANY_GROUP
+			ANY_OWNER
 			DATA_READ&FEATURE_WIKI
 			Action.WikiView->execute_prepare_html
 			View.Wiki->view
@@ -1301,7 +1301,7 @@ sub info_wiki {
 	[qw(
 	    FORUM_WIKI_EDIT
 	    49
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
 	    Model.WikiForm
 	    View.Wiki->edit
@@ -1310,7 +1310,7 @@ sub info_wiki {
 	[qw(
 	    FORUM_WIKI_NOT_FOUND
 	    50
-	    ANY_GROUP
+	    ANY_OWNER
 	    ANYBODY&FEATURE_WIKI
 	    Action.WikiView->execute_not_found
 	    View.Wiki->not_found
@@ -1338,7 +1338,7 @@ sub info_wiki {
 	[qw(
 	    FORUM_WIKI_VERSIONS_LIST
 	    122
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
 	    Action.WikiView->execute_load_history
 	    Model.RealmFileVersionsList->execute_load_all
@@ -1350,7 +1350,7 @@ sub info_wiki {
 	[qw(
 	    FORUM_WIKI_VERSIONS_DIFF
 	    123
-	    ANY_GROUP
+	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
             Model.RealmFileTextDiffList->execute_load_all
 	    View.Wiki->versions_diff
@@ -1358,7 +1358,7 @@ sub info_wiki {
 	[qw(
 	    GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
 	    124
-	    ANY_GROUP
+	    ANY_OWNER
 	    MAIL_SEND&FEATURE_MAIL
 	    Action.NightlyTestOutput
 	    Action.MailReceiveStatus
