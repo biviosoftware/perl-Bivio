@@ -26,11 +26,25 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.46  2009/12/07 04:08:06  nagler
+  * Bivio::UI::FacadeBase
+    added task_menu_selected
+  * Bivio::UI::HTML::Widget::Script
+    added b_element_by_class and b_has_class
+  * Bivio::UI::View::CSS
+    added dd_visible & dd_hidden
+  * Bivio::UI::View::ThreePartPage
+    copy body_class to xhtml_body_class
+  * Bivio::UI::XHTML::Widget::DropDown
+    use b_element_by_class() in javascript to find classes and toggle
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    added DIV_task_menu_wrapper temporarily so CSS.pm does the right thing
+
   Revision 8.45  2009/12/05 05:38:32  nagler
   * Bivio::Biz::FormModel
     make copy of form values
