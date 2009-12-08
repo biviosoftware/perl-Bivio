@@ -18,6 +18,10 @@ my($_P) = b_use('Auth.Permission');
 my($_PS) = b_use('Auth.PermissionSet');
 my($_AR) = b_use('Auth.Realm');
 my($_RT) = b_use('Auth.RealmType');
+my($_SUPER_USER_QUERY) = {
+    realm_id => $_RT->GENERAL->as_int,
+    role => $_R->ADMINISTRATOR,
+};
 
 sub CATEGORIES {
     # : array_ref
@@ -64,6 +68,24 @@ sub copy_all {
         unauth_iterate_start => ('realm_id', {realm_id => $src}),
     );
     return;
+}
+
+sub do_super_users {
+    my($self, $op) = @_;
+    return $self->model('RealmUser')->do_iterate(
+	sub {
+	    return $self->req->with_user(
+		shift->get('user_id'),
+		sub {
+		    $op->();
+		    return 1;
+		},
+	    );
+	},
+	'unauth_iterate_start',
+	'user_id',
+	{%$_SUPER_USER_QUERY},
+    );
 }
 
 sub edit {
@@ -229,9 +251,8 @@ sub make_super_user {
     # Makes current user an super_user (administrator of general realm).
     my($self) = @_;
     $self->model('RealmUser')->unauth_create_or_update({
-	realm_id => $_RT->GENERAL->as_int,
 	user_id => $self->req('auth_user_id'),
-	role => $_R->ADMINISTRATOR,
+	%$_SUPER_USER_QUERY,
     });
     return;
 }
@@ -273,10 +294,9 @@ sub unmake_super_user {
     my($self) = @_;
     my($req) = $self->get_request;
     $self->model('RealmUser')->unauth_delete({
-	realm_id => $_RT->GENERAL->as_int,
 	user_id => $req->get('auth_user_id')
 	    || $self->usage_error('user not set'),
-	role => $_R->ADMINISTRATOR,
+	%$_SUPER_USER_QUERY,
     });
     return;
 }
