@@ -55,6 +55,7 @@ my($_BUNDLE) = [qw(
     !tuple_thread_root_id_not_null
     !task_log_remove_foreign_keys
     !feature_group_admin
+    !message_id_255
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -92,6 +93,25 @@ commands:
     vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
     vacuum_db_continuously -- run vacuum_db as a daemon
 EOF
+}
+
+sub add_permissions_to_realm_type {
+    my($self, $realm_type, $permissions) = @_;
+    $self->model('RealmOwner')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    $it->new_other('RealmRole')->add_permissions(
+		$it,
+		[$_R->get_non_zero_list],
+		$permissions,
+	    );
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+	{realm_type => $realm_type},
+    );
+    return;
 }
 
 sub assert_ddl {
@@ -1077,6 +1097,17 @@ ALTER TABLE job_lock_t
 CREATE INDEX job_lock_t3 on job_lock_t (
   realm_id
 )
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_message_id_255 {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE realm_mail_t
+  ALTER COLUMN message_id
+  TYPE VARCHAR(255)
 /
 EOF
     return;
@@ -2192,22 +2223,7 @@ sub _enable_group_category {
 
 #TODO: This should be groups, but need to check RealmRole has changed
 sub _add_permissions_to_all_forums {
-    my($self, $permissions) = @_;
-    $self->model('RealmOwner')->do_iterate(
-	sub {
-	    my($it) = @_;
-	    $it->new_other('RealmRole')->add_permissions(
-		$it,
-		[$_R->get_non_zero_list],
-		$permissions,
-	    );
-	    return 1;
-	},
-	'unauth_iterate_start',
-	'realm_id',
-	{realm_type => $_RT->FORUM},
-    );
-    return;
+    return shift->add_permissions_to_realm_type($_RT->FORUM, @_);
 }
 
 sub _exists {
