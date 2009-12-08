@@ -26,11 +26,56 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.47  2009/12/08 18:18:29  nagler
+  * Bivio::Agent::Task
+    any_group => any_owner
+  * Bivio::Auth::RealmType
+    USER is part of ANY_GROUP
+    b_use
+    any_group => any_owner
+  * Bivio::BConf
+    added feature_file & feature_group_admin
+  * Bivio::Biz::Model::ForumForm
+    added task to edit realm features
+  * Bivio::Biz::Model::RealmFeatureForm
+    NEW
+  * Bivio::Biz::Util::RealmRole
+    added do_super_users()
+  * Bivio::Delegate::RealmType
+    any_group => any_owner
+  * Bivio::Delegate::SimplePermission
+    added FEATURE_GROUP_ADMIN
+  * Bivio::Delegate::TaskId
+    required FEATURE_GROUP_ADMIN for all group_admin tasks
+    required FEATURE_SITE_ADMIN for SITE_ADMIN_SUBSTITUTE_USER_DONE
+    added task to edit realm features
+    any_group => any_owner
+  * Bivio::PetShop::Test::PetShop
+    test 100+ byte message ids
+  * Bivio::PetShop::Util::SQL
+    demo gets feature_file
+  * Bivio::SQL::DDL
+    message_id is 255
+  * Bivio::Type::MACAddress
+    NEW
+  * Bivio::Type::MessageId
+    message_id is 255
+  * Bivio::UI::FacadeBase
+    added task to edit realm features
+  * Bivio::UI::Task
+    any_group => any_owner
+  * Bivio::UI::View::GroupUser
+    added task to edit realm features
+  * Bivio::Util::SQL
+    internal_upgrade_db_feature_group_admin
+    add_permissions_to_realm_type
+    message_id_255 upgrade
+
   Revision 8.46  2009/12/07 04:08:06  nagler
   * Bivio::UI::FacadeBase
     added task_menu_selected
