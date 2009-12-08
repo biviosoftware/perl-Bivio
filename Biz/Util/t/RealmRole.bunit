@@ -2,12 +2,22 @@
 # $Id$
 Request();
 req()->set_realm('fourem');
+my($super_users) = [];
 [
     class() => [
 	list_all_categories => [
 	    '' => not_die(),
 #TODO: This should work without needing a custom sub
 #	    '' => ["public_forum_email\nadmin_only_forum_email"],
+	],
+	do_super_users => [
+	    [sub {
+		 push(@$super_users, req(qw(auth_user name)));
+		 return 1;
+	    }] => sub {
+		shift->actual_return([sort(@$super_users)]);
+		return [qw(root)];
+	    },
 	],
     ],
 ];
