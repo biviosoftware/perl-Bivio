@@ -36,6 +36,7 @@ req()->set_realm_and_user('site-admin', 'root');
 		FEATURE_CALENDAR
 		FEATURE_DAV
 		FEATURE_FILE
+		FEATURE_GROUP_ADMIN
 		FEATURE_MAIL
 		FEATURE_TASK_LOG
 		FEATURE_WIKI
@@ -65,6 +66,7 @@ req()->set_realm_and_user('site-admin', 'root');
                 FEATURE_CALENDAR
                 FEATURE_DAV
                 FEATURE_FILE
+		FEATURE_GROUP_ADMIN
                 FEATURE_MOTION
                 FEATURE_TASK_LOG
                 FEATURE_TUPLE
