@@ -15,7 +15,7 @@ req()->set_realm_and_user('crm_forum', $uid);
 b_use('ShellUtil.RealmAdmin')->join_user('MEMBER');
 [
     [forum => {user => 'crm_tech1', realm => undef}] =>
-	qr{<a.*crm_forum.*crm_tuple_forum.*>Forum &#}s,
+	qr{<a.*crm_forum.*crm_tuple_forum.*>Forum<span}s,
     [club => {user => 'crm_tech1', realm => undef}] => '',
     [forum => {user => $uid, realm => 'crm_forum'}] =>
         qr{<span class="dd_link">crm_forum</span>},
