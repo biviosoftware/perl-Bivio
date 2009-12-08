@@ -11,7 +11,7 @@ sub REGEX {
 }
 
 sub get_width {
-    return 100;
+    return 255;
 }
 
 1;

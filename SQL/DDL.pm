@@ -1369,7 +1369,7 @@ CREATE TABLE realm_file_lock_t (
 CREATE TABLE realm_mail_t (
   realm_file_id NUMERIC(18),
   realm_id NUMERIC(18) NOT NULL,
-  message_id VARCHAR(100) NOT NULL,
+  message_id VARCHAR(255) NOT NULL,
   thread_root_id NUMERIC(18) NOT NULL,
   thread_parent_id NUMERIC(18),
   from_email VARCHAR(100) NOT NULL,
