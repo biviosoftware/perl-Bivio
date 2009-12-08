@@ -667,8 +667,17 @@ sub info_group_admin {
 	    View.GroupUser->create_forum
 	    next=GROUP_USER_LIST
 	)],
+	[qw(
+	    REALM_FEATURE_FORM
+	    204
+	    ANY_GROUP
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.RealmFeatureForm
+	    View.GroupUser->edit_realm_features
+	    next=GROUP_USER_LIST
+	)],
     ];
-#204-209 free
+#205-209 free
     return;
 }
 

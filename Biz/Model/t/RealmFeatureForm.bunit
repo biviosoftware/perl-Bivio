@@ -1,0 +1,64 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+FormModel();
+req()->set_realm_and_user('fourem', 'root');
+[
+    empty_case({
+        feature_blog => 1,
+        feature_calendar => 1,
+        feature_crm => 0,
+        feature_file => 1,
+        feature_mail => 1,
+        feature_motion => 1,
+        feature_tuple => 1,
+	admin_only_forum_email => 0,
+        system_user_forum_email => 0,
+	public_forum_email => 0,
+    }),
+    simple_case({
+	admin_only_forum_email => 1,
+	public_forum_email => 1,
+    } => {
+        public_forum_email => 'MUTUALLY_EXCLUSIVE',
+    }),
+    simple_case({
+	public_forum_email => 1,
+        system_user_forum_email => 1,
+    } => {
+        public_forum_email => 'MUTUALLY_EXCLUSIVE',
+    }),
+    [{
+        feature_blog => 0,
+        feature_calendar => 1,
+        feature_crm => 1,
+        feature_file => 1,
+        feature_mail => 1,
+        feature_motion => 0,
+        feature_tuple => 1,
+    }] => sub {
+        assert_equals(
+            [qw(
+                feature_calendar
+                feature_crm
+                feature_file
+                feature_mail
+                feature_task_log
+                feature_tuple
+            )],
+            [grep(/^feature/,
+                  @{ShellUtil_RealmRole()->list_enabled_categories})]
+        );
+        return 1;
+    },
+    inline_case(sub {req()->set_realm('demo')}),
+    [{
+        feature_file => 1,
+    }] => sub {
+        assert_equals(
+            ['feature_file'],
+            [grep(/^feature/,
+                  @{ShellUtil_RealmRole()->list_enabled_categories})],
+        );
+        return 1;
+    },
+];

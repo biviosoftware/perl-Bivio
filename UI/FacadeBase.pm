@@ -691,6 +691,7 @@ sub _cfg_group_admin {
 	    [GROUP_USER_FORM => '?/edit-user'],
 	    [GROUP_USER_ADD_FORM => '?/add-user'],
             [FORUM_FORM => '?/create-forum'],
+            [REALM_FEATURE_FORM => '?/edit-features'],
 	],
 	Text => [
 	    [realm_owner_site_admin => [
@@ -744,10 +745,9 @@ sub _cfg_group_admin {
                 'RealmOwner.name' => 'Forum',
                 'RealmOwner.display_name' => 'Title',
                 'Forum.want_reply_to' => 'Reply-To List?',
-                'admin_only_forum_email' => 'Admin Only Email?',
-                'system_user_forum_email' => 'System User Email?',
-                'public_forum_email' => 'Public Email?',
                 'Forum.require_otp' => 'Require OTP?',
+            ]],
+            [[qw(ForumForm RealmFeatureForm)] => [
 		feature_blog => 'Enable Blog Tool',
 		feature_motion => 'Enable Poll Tool',
 		feature_mail => 'Enable Mail Tool',
@@ -755,12 +755,16 @@ sub _cfg_group_admin {
 		feature_calendar => 'Enable Calendar Tool',
 		feature_crm => 'Enable Ticket Tool',
 		feature_tuple => 'Enable Tables Tool',
+                admin_only_forum_email => 'Admin Only Email?',
+                system_user_forum_email => 'System User Email?',
+                public_forum_email => 'Public Email?',
             ]],
 	    [title => [
 		GROUP_USER_LIST => 'Roster',
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
                 FORUM_FORM => 'Create Forum',
+                REALM_FEATURE_FORM => 'Edit Features',
 	    ]],
 	    [clear_on_focus_hint => [
 		GROUP_USER_LIST => 'Filter name or @email',

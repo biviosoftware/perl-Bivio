@@ -31,6 +31,15 @@ sub create_forum {
     ]));
 }
 
+sub edit_realm_features {
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(RealmFeatureForm => [
+	map("RealmFeatureForm.$_",
+            b_use('Model.RealmFeatureForm')->CATEGORY_LIST),
+    ]));
+    return;
+}
+
 sub form {
     my($self) = @_;
     $self->internal_put_base_attr(tools => TaskMenu([
