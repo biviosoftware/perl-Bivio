@@ -265,6 +265,10 @@ sub get_request {
 	|| b_die($self, ': request not set');
 }
 
+sub handle_call_autoload {
+    return _new_with_query(@_);
+}
+
 sub has_fields {
     return shift->internal_get_sql_support_no_assert->has_columns(@_);
 }
@@ -484,6 +488,11 @@ sub new_other {
 	? $_S->parse_model_name($model_name)->{model}
 	: $self->get_instance($model_name)
     )->new($self->get_request, @_);
+}
+
+sub new_other_with_query {
+    my($proto, $name, $query) = @_;
+    return _new_with_query($proto->get_instance($name), $query);
 }
 
 sub put {
@@ -719,6 +728,31 @@ sub _new_args {
 	$req = undef;
     }
     return ($proto, $req || $proto->unsafe_get_request, $class);
+}
+
+sub _new_with_query {
+    my($proto, $query) = @_;
+    # Instantiates I<model> and loads/processes I<query> if supplied.
+    my($self) = $proto->new;
+    return $self
+	unless $query;
+    my($is_unauth) = $proto->my_caller(1) =~ /unauth/;
+    if ($self->isa('Bivio::Biz::FormModel')) {
+	$self->process($query);
+    }
+    elsif ($self->isa('Bivio::Biz::ListModel')) {
+	my($method) = $is_unauth ? 'unauth_load_all' : 'load_all';
+	$self->$method($query);
+	$self->set_cursor(0);
+    }
+    elsif ($self->isa('Bivio::Biz::PropertyModel')) {
+	my($method) = $is_unauth ? 'unauth_load_or_die' : 'load';
+	$self->$method($query);
+    }
+    else {
+	b_die($self, ': does not support query argument: ', $query);
+    }
+    return $self;
 }
 
 sub _well_known_name {
