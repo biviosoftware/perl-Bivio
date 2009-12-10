@@ -56,16 +56,12 @@ use File::Spec ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS);
 our($_PROTO) = __PACKAGE__;
-my($_CL) = __PACKAGE__->use('IO.ClassLoader');
-my($_CLASS_SEARCH) = [qw(Type Model)];
-my($_CLASS_DISPATCH) = {
-    Type => 'builtin_from_type',
-    Model => 'builtin_model',
-};
-my($_A) = __PACKAGE__->use('IO.Alert');
-my($_R) = __PACKAGE__->use('IO.Ref');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_CL) = b_use('IO.ClassLoader');
+my($_A) = b_use('IO.Alert');
+my($_R) = b_use('IO.Ref');
+my($_DT) = b_use('Type.DateTime');
 my($_F) = b_use('IO.File');
+my($_M) = b_use('Biz.Model');
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
@@ -83,7 +79,7 @@ sub AUTOLOAD {
 	: $_TYPE
 	? $_TYPE->can($func) || $_TYPE_CAN_AUTOLOAD
         ? $_TYPE->$func(@_)
-	: _call_class($func, \@_)
+	: $_CL->call_autoload($func, \@_, [qw(Type Model)])
 	: _load_type_class($func, \@_);
 }
 
@@ -208,7 +204,7 @@ sub builtin_create_user {
         $req->set_realm($user);
 	$req->get('auth_user')->cascade_delete;
     });
-    $self->use('Bivio::Util::RealmAdmin')
+    b_use('Bivio::Util::RealmAdmin')
 	->create_user($self->builtin_email($user), $user, 'password', $user);
     $req->set_realm_and_user($user, $user);
     return $req->get('auth_user');
@@ -287,7 +283,7 @@ sub builtin_inline_trace {
 
 sub builtin_mock {
     my($self, $class, $values) = @_;
-    $class = $self->use($class);
+    $class = b_use($class);
     Bivio::Die->die($class, ': must be a property model')
         unless $class->isa('Bivio::Biz::PropertyModel');
     my($i) = $class->new($self->builtin_req);
@@ -297,13 +293,7 @@ sub builtin_mock {
 }
 
 sub builtin_model {
-    return _model(@_);
-}
-
-sub builtin_model_exists {
-    my($self, $name, $query) = @_;
-    my($actual) = _model($self, $name, $query, undef);
-    return @$actual > 0 ? 1 : 0;
+    return _model(shift, $_M->new_other_with_query(@_), @_)
 }
 
 sub builtin_trim_space {
@@ -348,7 +338,7 @@ sub builtin_read_file {
 sub builtin_req {
     my($self, @args) = @_;
     # Calls Bivio::Test::Request::get_instance.
-    my($req) = $self->use('Test.Request')->get_instance;
+    my($req) = b_use('Test.Request')->get_instance;
     return @args ? $req->get_widget_value(@args) : $req;
 }
 
@@ -396,7 +386,7 @@ sub builtin_tmp_dir {
 }
 
 sub builtin_unauth_model {
-    return _model(@_);
+    return _model(shift, $_M->new_other_with_query(@_), @_)
 }
 
 sub builtin_var {
@@ -508,31 +498,6 @@ sub _assert_expect {
     return 1;
 }
 
-sub _call_class {
-    my($func, $args) = @_;
-    my($map, $class);
-    foreach my $m (@$_CLASS_SEARCH) {
-	next unless $class = $_CL->unsafe_map_require($m, $func);
-	$map = $m;
-	last;
-    }
-#TODO: Need to merge with ClassLoader->call_autoload
-    unless ($class) {
-	($map, $class) = $func =~ /^([A-Z][a-zA-Z]+)_([A-Z][A-Za-z0-9]+)$/;
-	Bivio::Die->die(
-	    $func, ': not a valid method of ', ref($_TYPE) || $_TYPE,
-	    ' and not not found in these maps: ', $_CLASS_SEARCH,
-	) unless $map && $_CL->is_map_configured($map)
-	    and $class = $_CL->unsafe_map_require($map, $class);
-    }
-    if (my $method = $_CLASS_DISPATCH->{$map}) {
-	return $_PROTO->$method($class->simple_package_name, @$args);
-    }
-    my($method) = $class->can('from_literal_or_die') ? 'from_literal_or_die'
-	: 'new';
-    return @$args ? $class->$method(@$args) : $class;
-}
-
 sub _called_in_closure {
     my($proto) = @_;
     return 0
@@ -558,41 +523,21 @@ sub _load_type_class {
 }
 
 sub _model {
-    my($proto, $name, $query, $expect) = @_;
-    my($have_expect) = @_ >= 4;
-    # Returns a new model instance if just I<name>.  If I<query>, calls
-    # unauth_load_or_die (PropertyModel), unauth_load_all (ListModel), or process
-    # (FormModel).
-    #
-    # If I<expect>, calls map_iterate (PropertyModel in order of primary key) or
-    # unauth_load_all (ListModel), and calls builtin_assert_contains(I<expect>,
-    # I<result>).  Returns the complete data set in this last case.
-    my($m) = $proto->use('Bivio::ShellUtil')->model($name);
-    return $m
-	unless $query;
-    my($actual);
+    my($proto, $model, $name, $query, $expect) = @_;
+    return $model
+	unless @_ >= 5;
     my($is_unauth) = $proto->my_caller =~ /unauth/;
-    my($method) = $is_unauth ? 'unauth_model' : 'model';
-    if ($m->isa('Bivio::Biz::PropertyModel')) {
-	return Bivio::ShellUtil->$method($name, $query)
-	    unless $have_expect;
-	$actual = $m->map_iterate(
+    b_die($expect, ': expected not supported for FormModels')
+	if $model->isa('Bivio::Biz::FormModel');
+    my($actual) = $model->isa('Bivio::Biz::PropertyModel')
+	? $model->map_iterate(
 	    undef,
 	    $is_unauth ? 'unauth_iterate_start' : 'iterate_start',
 	    undef,
 	    $query,
-	);
-    }
-    else {
-	$m = Bivio::ShellUtil->$method($name, $query);
-	return $m
-	    unless $have_expect;
-	$m->die($expect, ': expected not supported for FormModels')
-	    if $m->isa('Bivio::Biz::FormModel');
-	$actual = $m->map_rows;
-    }
+	) : $model->map_rows;
     $proto->builtin_assert_contains($expect, $actual)
-	if defined($expect);
+	if $expect;
     return $actual;
 }
 
