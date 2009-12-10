@@ -196,8 +196,9 @@ sub get_width {
     die('abstract method');
 }
 
-sub handle_autoload {
-    return shift->from_literal_or_die(@_);
+sub handle_call_autoload {
+    my($proto) = shift;
+    return @_ ? $proto->from_literal_or_die(@_) : $proto;
 }
 
 sub internal_from_literal_warning {

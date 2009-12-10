@@ -6,8 +6,9 @@ use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub handle_autoload {
-    return shift->m1(@_);
+sub handle_call_autoload {
+    my($proto) = shift;
+    return @_ ? $proto->m1(@_) : $proto;
 }
 
 sub m1 {
