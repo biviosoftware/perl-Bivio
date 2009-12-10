@@ -109,12 +109,13 @@ my(%_DEFAULT_OPTIONS);
 my($_A) = b_use('IO.Alert');
 my($_C) = b_use('IO.Config');
 my($_CA) = b_use('Collection.Attributes');
+my($_CL) = b_use('IO.ClassLoader');
 my($_DIE) = b_use('Bivio.Die');
 my($_F) = b_use('IO.File');
-my($_L) = b_use('IO.Log');
-my($_TE) = b_use('Bivio.TypeError');
-my($_CL) = b_use('IO.ClassLoader');
 my($_FP) = b_use('Type.FilePath');
+my($_L) = b_use('IO.Log');
+my($_M) = b_use('Biz.Model');
+my($_TE) = b_use('Bivio.TypeError');
 my($_MAP_NAME) = 'ShellUtil';
 $_C->register(my $_CFG = {
     lock_directory => '/tmp',
@@ -612,7 +613,8 @@ sub main {
 }
 
 sub model {
-    return _model(@_);
+    shift->get_request;
+    return $_M->new_other_with_query(@_);
 }
 
 sub name_args {
@@ -991,8 +993,10 @@ sub shell_commands {
         keys(%{*{$proto->package_name.'::'}}))))];
 }
 
+
 sub unauth_model {
-    return _model(@_);
+    shift->get_request;
+    return $_M->new_other_with_query(@_);
 }
 
 sub unauth_realm_id {
@@ -1178,31 +1182,6 @@ sub _method_ok {
 	return 1 if $c->can($method);
     }
     return 0;
-}
-
-sub _model {
-    my($self, $name, $query) = @_;
-    # Instantiates I<model> and loads/processes I<query> if supplied.
-    my($m) = b_use('Model', $name)->new($self->get_request);
-    return $m
-	unless $query;
-    my($is_unauth) = $self->my_caller =~ /unauth/;
-    if ($m->isa('Bivio::Biz::FormModel')) {
-	$m->process($query);
-    }
-    elsif ($m->isa('Bivio::Biz::ListModel')) {
-	my($method) = $is_unauth ? 'unauth_load_all' : 'load_all';
-	$m->$method($query);
-	$m->set_cursor(0);
-    }
-    elsif ($m->isa('Bivio::Biz::PropertyModel')) {
-	my($method) = $is_unauth ? 'unauth_load_or_die' : 'load';
-	$m->$method($query);
-    }
-    else {
-	$_DIE->die($m, ': does not support query argument: ', $query);
-    }
-    return $m;
 }
 
 sub _monitor_daemon_children {
