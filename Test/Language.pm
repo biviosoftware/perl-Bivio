@@ -6,7 +6,6 @@ use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD);
 my($_IDI) = __PACKAGE__->instance_data_index;
 our($_SELF_IN_EVAL);
 Bivio::IO::Config->register(my $_CFG = {
@@ -17,29 +16,6 @@ my($_R) = __PACKAGE__->use('IO.Ref');
 my($_F) = __PACKAGE__->use('IO.File');
 our($_TRACE);
 my($_DT) = __PACKAGE__->use('Type.DateTime');
-
-sub AUTOLOAD {
-    my(undef, @args) = _args(@_);
-    # Calls the test language function.
-    my($func) = $AUTOLOAD;
-    $func =~ s/.*:://;
-    my($self) = _assert_in_eval($func);
-    _die($self, " function $func: ", _check_autoload($self, $func))
-	if _check_autoload($self, $func);
-    _trace($func, ' called with ', \@args) if $_TRACE;
-    my($td) = $self->unsafe_get('test_deviance');
-    return $self->$func(@args)
-	unless $td;
-    my($die) = Bivio::Die->catch_quietly(sub {
-	return $self->$func(@args);
-    });
-    _die($self, ' deviance call "', $td, '" failed to die: ', $func, \@args)
-	unless $die;
-    _die($self, ' deviance call to ', $func, \@args, ' failed with "',
-	$die, '" but did not match pattern: ', $td)
-	unless $die->as_string =~ $td;
-    return;
-}
 
 sub DESTROY {
     # You probably don't want to define a DESTROY method.  Instead create a
@@ -53,6 +29,11 @@ sub DESTROY {
     #         return $self->SUPER::DESTROY;
     #     }
     return;
+}
+
+sub assert_in_eval {
+    shift;
+    return _assert_in_eval(@_);
 }
 
 sub handle_cleanup {
@@ -189,7 +170,8 @@ sub test_run {
 	$_SELF_IN_EVAL = $proto->new({test_script => $script_name});
         $script = $_F->read($script_name)
 	    unless ref($script);
-	substr($$script, 0, 0) = 'use strict;';
+	substr($$script, 0, 0)
+	    = 'use strict;package ' . b_use('Test.LanguageWrapper') . ';';
 	my($die) = Bivio::Die->catch($script);
 	_trace($die) if $_TRACE;
 	return unless $die;
@@ -216,7 +198,7 @@ sub test_self {
 }
 
 sub test_setup {
-    my($proto, $map_class, @setup_args) = _args(@_);
+    my($proto, $map_class, @setup_args) = @_;
     # Loads TestLanguage I<map_class>.  Calls L<new|"new"> on the loaded class and
     # then calls L<handle_setup|"handle_setup"> with I<setup_args> on newly created
     # test instance.
@@ -274,22 +256,6 @@ sub _assert_in_eval {
     Bivio::Die->die($op, ': attempted operation outside test script')
 	unless $_SELF_IN_EVAL;
     return $_SELF_IN_EVAL;
-}
-
-sub _check_autoload {
-    my($self, $func) = @_;
-    # Returns false if ok.
-    return 'test_setup() must be first function called in test script'
-	if ref($self) eq __PACKAGE__;
-    return 'language function cannot begin with test_, handle_, internal_'
-	if $func =~ /^(?:test|handle|internal)_/;
-    return 'test function must be all lower case and begin with letter'
-	unless $func =~ /^[a-z][a-z0-9_]+$/;
-    return 'test function must contain an underscore (_)'
-	unless $func =~ /_/ || Bivio::UNIVERSAL->can($func);
-    return ref($self) . ' does not implement this function'
-	unless $self->can($func);
-    return;
 }
 
 sub _die {
