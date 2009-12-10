@@ -72,16 +72,28 @@ sub call_autoload {
 	if $func eq 'DESTROY';
     my($map, $class)
 	= $func =~ /^(?:^|::)([A-Z][a-zA-Z]+)_([A-Z][A-Za-z0-9]+)$/;
-    return $no_match ? $no_match->($func, $args)
-	: b_die($func, ': method not found')
-	unless $map;
-    b_die($func, ': no such mapped class')
-	unless $proto->is_map_configured($map)
-	and $class = $proto->unsafe_map_require($map, $class);
-    return $class
-	unless @$args;
-    my($method) = $class->can('handle_autoload') ? 'handle_autoload' : 'new';
-    return @$args ? $class->$method(@$args) : $class;
+    if ($map) {
+	b_die($func, ': no such mapped class')
+	    unless $proto->is_map_configured($map)
+	    and $class = $proto->unsafe_map_require($map, $class);
+    }
+    else {
+	return b_die($func, ': method not found')
+	    unless $no_match;
+	return $no_match->($func, $args)
+	    if ref($no_match) eq 'CODE';
+	foreach my $m (@$no_match) {
+	    next
+		unless $class = $proto->unsafe_map_require($m, $func);
+	    $map = $m;
+	    last;
+	}
+    }
+    return $class->handle_call_autoload(@$args)
+	if $class->can('handle_call_autoload');
+    return $class->new(@$args)
+	if @$args;
+    return $class;
 }
 
 sub delegate_require {
