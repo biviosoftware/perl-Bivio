@@ -19,6 +19,7 @@ my($_W) = b_use('UI.Widget');
 my($_CB) = b_use('HTMLWidget.ControlBase');
 my($_A) = b_use('IO.Alert');
 my($_TI) = b_use('Agent.TaskId');
+my($_DEFAULT_WANT_MORE_THRESHOLD) = 5;
 
 sub NEW_ARGS {
     return [qw(task_map ?class)];
@@ -46,6 +47,8 @@ sub initialize {
 	class => 'task_menu',
 	tag_if_empty => 0,
 	tag => 'div',
+        want_more => 0,
+        want_more_count => 0,
     );
     $self->initialize_attr('selected_item');
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
@@ -128,6 +131,7 @@ sub render_tag_value {
     my($req) = $self->get_request;
     my($need_sep) = $self->get('_init')->($source);
     my($i);
+    my($buffers) = [];
     foreach my $w (@{$self->get('task_map')}) {
         my($selected_attr) = _selected_attr($self, \$i);
 	next
@@ -144,7 +148,22 @@ sub render_tag_value {
 	$w->render($source, \$b);
 	next unless $b;
 	$$need_sep++;
-	$$buffer .= $b;
+        push(@$buffers, $b);
+    }
+    if (($self->get('want_more') || $self->get('want_more_count'))
+            && @$buffers > 1 + (my $n = $self->get('want_more_count')
+                                || $_DEFAULT_WANT_MORE_THRESHOLD)) {
+        my($b) = '';
+        DIV(DropDown(String('more'), DIV_dd_menu(
+            Join([splice(@$buffers, $n)]), {
+                id => 'more_drop_down',
+            })), {
+                class => 'task_menu_wrapper want_sep'
+            })->initialize_and_render($source, \$b);
+        push(@$buffers, $b);
+    }
+    foreach my $b (@$buffers) {
+        $$buffer .= $b;
     }
     return;
 }
