@@ -755,6 +755,7 @@ sub _cfg_group_admin {
 		feature_calendar => 'Enable Calendar Tool',
 		feature_crm => 'Enable Ticket Tool',
 		feature_tuple => 'Enable Tables Tool',
+                feature_wiki => 'Enable Wiki Tool',
                 admin_only_forum_email => 'Admin Only Email?',
                 system_user_forum_email => 'System User Email?',
                 public_forum_email => 'Public Email?',
@@ -1541,32 +1542,19 @@ sub _cfg_wiki {
 		    },
 		]);},
 		wiki_diff_tools => q{vs_text_as_prose('wiki_diff_tools_base');},
-		xhtml_dock_left_standard => q{If(['auth_realm', 'type', '->eq_forum'],
-	    TaskMenu([
-		'SITE_WIKI_VIEW',
-                'FORUM_BLOG_LIST',
-		'FORUM_FILE_TREE_LIST',
-		'FORUM_CRM_THREAD_ROOT_LIST',
-		'FORUM_WIKI_VIEW',
-		If(['->can_user_execute_task', 'FORUM_CALENDAR'],
-		     DropDown(
-			String('more'),
-			DIV_dd_menu(TaskMenu([qw(
-			    FORUM_CALENDAR
-			    GROUP_TASK_LOG
-			    FORUM_MAIL_THREAD_ROOT_LIST
-			    FORUM_MOTION_LIST
-			    GROUP_USER_LIST
-			    FORUM_TUPLE_USE_LIST
-			)]), {id => 'more_drop_down'}),
-		    ),
-                ),
-		SiteAdminDropDown(),
-	    ]),
-            TaskMenu([
-                'SITE_WIKI_VIEW',
-            ]),
-	);},
+                xhtml_dock_left_standard => q{TaskMenu([SiteAdminDropDown(),qw(
+                    SITE_WIKI_VIEW
+                    FORUM_BLOG_LIST
+                    FORUM_FILE_TREE_LIST
+                    FORUM_CRM_THREAD_ROOT_LIST
+                    FORUM_WIKI_VIEW
+                    FORUM_CALENDAR
+                    GROUP_TASK_LOG
+                    FORUM_MAIL_THREAD_ROOT_LIST
+                    FORUM_MOTION_LIST
+                    GROUP_USER_LIST
+                    FORUM_TUPLE_USE_LIST
+                )], {want_more => 1});},
 	    ]],
 #DEPRECATED:
 	    [HelpWiki => [

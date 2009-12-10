@@ -17,6 +17,7 @@ my($_CATEGORY_DEFAULTS) = {
     feature_mail => 1,
     feature_motion => 1,
     feature_tuple => 1,
+    feature_wiki => 1,
     map(($_ => 0), @$_EMAIL_MODES),
 };
 my($_CATEGORIES) = [sort(keys(%$_CATEGORY_DEFAULTS))];
