@@ -25,8 +25,10 @@ use Bivio::Base 'UI.WidgetValueSource';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_F) = b_use('UI.Facade');
+my($_R) = b_use('IO.Ref');
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
-Bivio::IO::Config->register(my $_CFG = {
+b_use('IO.Config')->register(my $_CFG = {
     die_on_error => 0,
 });
 
@@ -58,7 +60,8 @@ sub assert_name {
     #
     # May be overridden by subclasses.  There is no real restriction on names,
     # but it is convenient to limit names to perl's /\w+/.
-    $self->die($name, 'invalid name syntax') unless $name =~ /^\w+$/;
+    $self->die($name, 'invalid name syntax')
+	unless $name =~ /^\w+$/;
     return;
 }
 
@@ -66,7 +69,7 @@ sub die {
     my($self, $value, @msg) = @_;
     # Dies with I<msg> and context.
     my($n) = ref($value) eq 'HASH' ? $value->{names} : $value;
-    Bivio::Die->die($self, (defined($n) ? ('.', $n) : ()), ': ', @msg);
+    b_die($self, (defined($n) ? ('.', $n) : ()), ': ', @msg);
     # DOES NOT RETURN
 }
 
@@ -97,18 +100,18 @@ sub get_facade {
 
 sub get_from_source {
     my($proto, $source) = @_;
-    return Bivio::UI::Facade
-	->get_from_request_or_self($source)
+    return $_F->get_from_request_or_self($source)
 	->get($proto->simple_package_name);
 }
 
 sub group {
     my($self, $names, $value) = @_;
     _assert_writable($self);
-    $names = ref($names) ? $names : [$names];
-    $value = {config => $value, names => $names};
-    _initialize_value($self, $value);
-    foreach my $name (@$names) {
+    $value = _initialize_value($self, {
+	config => $value,
+	names => ref($names) ? $names : [$names]
+    });
+    foreach my $name (@{$value->{names}}) {
 	_assign($self, $name, $value);
     }
     return;
@@ -206,13 +209,8 @@ sub new {
     $fields->{initialize} = $initialize;
     return $self
 	if _init_from_parent($self);
-
-    # Initialize undef value
-    my($uv) = {config => $self->UNDEF_CONFIG, names => []};
-    $self->internal_initialize_value($uv);
-    $fields->{undef_value} = $uv;
-
-    # Initialize from clone, self, and complete
+    $fields->{undef_value}
+	= _initialize_value($self, {config => $self->UNDEF_CONFIG, names => []});
     _init_from_clone($self, $clone);
     $initialize->($self)
 	if $initialize;
@@ -223,7 +221,7 @@ sub new {
 sub new_static {
     my($proto, $facade) = @_;
     $proto->die($facade, 'missing or invalid facade')
-	unless UNIVERSAL::isa($facade, 'Bivio::UI::Facade');
+	unless $_F->is_subclass($facade);
     my($self) = shift->SUPER::new;
     $self->[$_IDI] = {
 	facade => $facade,
@@ -253,8 +251,8 @@ sub value {
 sub _assert_writable {
     my($self) = @_;
     # Called on "write" routines to make sure is writable.
-    Bivio::Die->die(undef, 'attempt to modify after initialization')
-		if $self->[$_IDI]->{read_only};
+    b_die(undef, 'attempt to modify after initialization')
+        if $self->[$_IDI]->{read_only};
     return;
 }
 
@@ -284,10 +282,12 @@ sub _error {
 sub _init_from_clone {
     my($self, $clone) = @_;
     # Calls the initialization depth first.
-    return unless $clone;
+    return
+	unless $clone;
     my($clone_fields) = $clone->[$_IDI];
     _init_from_clone($self, $clone_fields->{clone});
-    &{$clone_fields->{initialize}}($self) if $clone_fields->{initialize};
+    $clone_fields->{initialize}->($self)
+	if $clone_fields->{initialize};
     return;
 }
 
@@ -296,12 +296,13 @@ sub _init_from_parent {
     # Copy all the fields and groups verbatim.  Full sharing.
     my($fields) = $self->[$_IDI];
     # No clone or have explicit initialize, need to copy
-    return 0 unless $fields->{clone} && !$fields->{initialize};
-
+    return 0
+	unless $fields->{clone} && !$fields->{initialize};
     # Cloning from my parent?
     my($parent) = $fields->{facade}->unsafe_get('parent');
-    my($clone_fields) = $fields->{clone}->[$_IDI];
-    return 0 unless $parent && $parent == $clone_fields->{facade};
+    my($clone_fields) = $_R->nested_copy($fields->{clone}->[$_IDI]);
+    return 0
+	unless $parent && $parent == $clone_fields->{facade};
 
     # Copy fields and groups
     foreach my $field (qw(map undef_value read_only)) {
@@ -314,7 +315,8 @@ sub _initialize_value {
     my($self, $value) = @_;
     $value->{config} = $value->{config}->($self)
 	if ref($value->{config}) eq 'CODE';
-    return $self->internal_initialize_value($value);
+    $self->internal_initialize_value($value = $_R->nested_copy($value));
+    return $value;
 }
 
 1;
