@@ -2,63 +2,7 @@
 # $Id$
 package Bivio::Util::HTTPLog;
 use strict;
-$Bivio::Util::HTTPLog::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::HTTPLog::VERSION;
-
-=head1 NAME
-
-Bivio::Util::HTTPLog - manipulates HTTP logs
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Util::HTTPLog;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::ShellUtil>
-
-=cut
-
-use Bivio::ShellUtil;
-@Bivio::Util::HTTPLog::ISA = ('Bivio::ShellUtil');
-
-=head1 DESCRIPTION
-
-C<Bivio::Util::HTTPLog> manipulates HTTP logs.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="USAGE"></a>
-
-=head2 USAGE : string
-
-Returns:
-
-    usage: b-http-log [options] command [args...]
-    commands:
-	parse_errors interval_minutes -- returns errors found in last interval
-
-=cut
-
-sub USAGE {
-    return <<'EOF';
-usage: b-http-log [options] command [args...]
-commands:
-    parse_errors interval_minutes -- returns errors found in last interval
-EOF
-}
-
-#=IMPORTS
+use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
@@ -66,9 +10,10 @@ use Bivio::Type::Integer;
 use IO::File ();
 use Sys::Hostname ();
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::Util::HTTPLog> manipulates HTTP logs.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CFG) = {
     error_file => (-r '/var/log/httpd/error_log'
@@ -91,67 +36,68 @@ my($_RECORD_PREFIX) = '^(?:\[('
     . '))';
 my($_REGEXP);
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-Make sure regexps (error_list, etc.) are unique, e.g. have a '::' in them.
-This avoids misidentification of messages which contain user data, but are
-critical or errors.
-
-=over 4
-
-=item critical_list : array_ref (required)
-
-List of regexps which will cause the to be sent to I<pager_email>.  The
-matching value will be sent to the I<pager_email>, not the entire line
-
-=item email : string [root]
-
-Where to send mail to.  L<Bivio::ShellUtil|Bivio::ShellUtil> -email flag
-overrides this value if it is defined.
-
-=item error_count_for_page : int [3]
-
-How many error_list messages in an interval are required before
-the message is critical?
-
-=item error_file : string [/var/log/httpd/error.log || /var/log/httpd/error_log]
-
-File where errors are writted by httpd.
-
-=item error_list : array_ref (required)
-
-List of regexps which which will be emailed always.  Also see
-I<error_count_for_page>.
-
-=item ignore_list : array_ref (required)
-
-List of regexps which will be thrown away.
-
-=item ignore_unless_count : int [9999]
-
-How many times should we ignore matches to I<ignore_unless_count_list>?
-
-=item ignore_unless_count_list : array_ref []
-
-List of regexps which will be thrown away unless they exceed
-I<ignore_unless_count>.
-
-=item pager_email : string ['']
-
-Email addresses separated by commas which get pager messages.  See
-I<critical_list> and I<error_count_for_page>.
-
-=back
-
-=cut
+sub USAGE {
+    # : string
+    # Returns:
+    #
+    #     usage: b-http-log [options] command [args...]
+    #     commands:
+    # 	parse_errors interval_minutes -- returns errors found in last interval
+    return <<'EOF';
+usage: b-http-log [options] command [args...]
+commands:
+    parse_errors interval_minutes -- returns errors found in last interval
+EOF
+}
 
 sub handle_config {
+    # (proto, hash) : undef
+    # Make sure regexps (error_list, etc.) are unique, e.g. have a '::' in them.
+    # This avoids misidentification of messages which contain user data, but are
+    # critical or errors.
+    #
+    #
+    # critical_list : array_ref (required)
+    #
+    # List of regexps which will cause the to be sent to I<pager_email>.  The
+    # matching value will be sent to the I<pager_email>, not the entire line
+    #
+    # email : string [root]
+    #
+    # Where to send mail to.  L<Bivio::ShellUtil|Bivio::ShellUtil> -email flag
+    # overrides this value if it is defined.
+    #
+    # error_count_for_page : int [3]
+    #
+    # How many error_list messages in an interval are required before
+    # the message is critical?
+    #
+    # error_file : string [/var/log/httpd/error.log || /var/log/httpd/error_log]
+    #
+    # File where errors are writted by httpd.
+    #
+    # error_list : array_ref (required)
+    #
+    # List of regexps which which will be emailed always.  Also see
+    # I<error_count_for_page>.
+    #
+    # ignore_list : array_ref (required)
+    #
+    # List of regexps which will be thrown away.
+    #
+    # ignore_unless_count : int [9999]
+    #
+    # How many times should we ignore matches to I<ignore_unless_count_list>?
+    #
+    # ignore_unless_count_list : array_ref []
+    #
+    # List of regexps which will be thrown away unless they exceed
+    # I<ignore_unless_count>.
+    #
+    # pager_email : string ['']
+    #
+    # Email addresses separated by commas which get pager messages.  See
+    # I<critical_list> and I<error_count_for_page>.
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     $_REGEXP = {};
@@ -162,20 +108,14 @@ sub handle_config {
     return;
 }
 
-=for html <a name="parse_errors"></a>
-
-=head2 parse_errors(int interval_minutes) : string_ref
-
-Check Apache error logs for unknown messages during the last interval.
-You enter this in a crontab as:
-
-   0,15,30,45  * * * * /usr/local/bin/b-http-log parse_errors 15
-
-I<interval_minutes> must match the execute time in cron.
-
-=cut
-
 sub parse_errors {
+    # (self, int) : string_ref
+    # Check Apache error logs for unknown messages during the last interval.
+    # You enter this in a crontab as:
+    #
+    #    0,15,30,45  * * * * /usr/local/bin/b-http-log parse_errors 15
+    #
+    # I<interval_minutes> must match the execute time in cron.
     my($self, $interval_minutes) = @_;
     return ($self->lock_action(sub {
 	$self->get_request;
@@ -243,23 +183,17 @@ sub parse_errors {
     }, __PACKAGE__ . 'parse_errors' . $_CFG->{error_file}))[0];
 }
 
-#=PRIVATE METHODS
-
-# _clean_regexp(string regexp) : string
-#
-# Makes sure parethesizes regexes don't match anything
-#
 sub _clean_regexp {
+    # (string) : string
+    # Makes sure parethesizes regexes don't match anything
     my($value) = @_;
     $value =~ s/\(([^?])/\(?:$1/g;
     return $value;
 }
 
-# _pager_report(self, arg, ....)
-#
-# Reports the error to the pager and puts at top of $fields->{res}.
-#
 sub _pager_report {
+    # (self, arg, ....) : undef
+    # Reports the error to the pager and puts at top of $fields->{res}.
     my($self, @args) = @_;
     my($fields) = $self->[$_IDI];
     my($msg) = Bivio::IO::Alert->format_args(@args);
@@ -270,12 +204,10 @@ sub _pager_report {
     return;
 }
 
-# _parse_errors_complete(self) : string_ref
-#
-# Returns $fields->{res}.  Sends email to pager if pager_res and pager_email
-# are non-null.
-#
 sub _parse_errors_complete {
+    # (self) : string_ref
+    # Returns $fields->{res}.  Sends email to pager if pager_res and pager_email
+    # are non-null.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{fh}->close;
@@ -285,12 +217,10 @@ sub _parse_errors_complete {
     return \$fields->{res};
 }
 
-# _parse_errors_init(self, int interval_minutes) : array
-#
-# Returns its arguments, but first checks validity.  Sets up email
-# and result_name.  Failure is returned as interval_minutes being 0.
-#
 sub _parse_errors_init {
+    # (self, int) : array
+    # Returns its arguments, but first checks validity.  Sets up email
+    # and result_name.  Failure is returned as interval_minutes being 0.
     my($self, $interval_minutes) = @_;
     # Initializes the request (timezone)
     $self->usage('interval_minutes must be supplied')
@@ -312,23 +242,19 @@ sub _parse_errors_init {
     return $interval_minutes;
 }
 
-# _parse_line(hash_ref fields) : boolean
-#
-# Returns 0 at eof.  Fills in $fields->{line}.
-#
 sub _parse_line {
+    # (hash_ref) : boolean
+    # Returns 0 at eof.  Fills in $fields->{line}.
     my($fields) = @_;
     return 1 if defined($fields->{line});
     $fields->{line} = $fields->{fh}->getline;
     return defined($fields->{line}) ? 1 : 0;
 }
 
-# _parse_record(self, string_ref record, string_ref date) : boolean
-#
-# Parses a record (the entire text) from the file.  There's a lookahead
-# buffer.
-#
 sub _parse_record {
+    # (self, string_ref, string_ref) : boolean
+    # Parses a record (the entire text) from the file.  There's a lookahead
+    # buffer.
     my($self, $record, $date) = @_;
     my($fields) = $self->[$_IDI];
     $$record = undef;
@@ -350,45 +276,13 @@ sub _parse_record {
     return 1;
 }
 
-# _report(self, arg, ...)
-#
-# Adds errors (safely) to $fields->{res}
-#
 sub _report {
+    # (self, arg, ...) : undef
+    # Adds errors (safely) to $fields->{res}
     my($self, @args) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{res} .= Bivio::IO::Alert->format_args(@args);
     return;
 }
-
-# use Bivio::Test::Request;
-# my($req) = Bivio::Test::Request->initialize_fully;
-# my($e) = Bivio::Biz::Model->new($req, 'Email');
-# my($unknown) = {};
-# while (<>) {
-#     s{^[^:]+:www.\w+.com }{};
-#     s{\bli-(\d+)\b}{_email($1)}e || next;
-#     print;
-# }
-
-# sub _email {
-#     my($id) = @_;
-#     return $e->get('email')
-#         if $e->unauth_load({realm_id => $id});
-#     print(STDERR "$id: unknown\n")
-#         unless $unknown->{$id}++;
-#     return $id;
-# }
-
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
