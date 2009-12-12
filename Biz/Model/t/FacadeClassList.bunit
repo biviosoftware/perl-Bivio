@@ -1,10 +1,11 @@
-# Copyright (c) 2003-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2003-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 ListModel();
 req()->initialize_fully;
 [
     load_all => [
 	[] => [
+	    {simple_name => 'BeforeOther'},
 	    {simple_name => 'Other'},
 	    {simple_name => 'PetShop'},
 	],
