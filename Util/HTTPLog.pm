@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Util::HTTPLog;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
@@ -227,7 +227,11 @@ sub _parse_errors_init {
 	if $interval_minutes <= 0;
     $self->put(email => $_CFG->{email})
 	unless defined($self->unsafe_get('email'));
-    $self->put(result_subject => $_CFG->{error_file});
+    $self->put(result_subject =>
+	(Sys::Hostname::hostname() =~ /^([^\.]+)/)[0]
+	. ' '
+        . $_CFG->{error_file},
+    );
     my($fields) = $self->[$_IDI] = {
 	res => '',
 	pager_res => [],
