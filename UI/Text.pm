@@ -1,9 +1,8 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Text;
 use strict;
 use Bivio::Base 'UI.FacadeComponent';
-use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
 # C<Bivio::UI::Text> maps internal names to UI strings.  In the
@@ -93,6 +92,7 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_R) = b_use('Agent.Request');
 
 sub SEPARATOR {
     # Returns tag part separator ('.') which allows parts to be joined into
@@ -213,8 +213,7 @@ sub group {
 
 sub handle_register {
     my($proto) = @_;
-    # Registers with Facade.
-    Bivio::UI::Facade->register($proto);
+    b_use('UI.Facade')->register($proto);
     return;
 }
 
@@ -236,7 +235,7 @@ sub internal_initialize_value {
 
 sub join_tag {
     my($proto, @tag) = @_;
-    my($r) = Bivio::Agent::Request->get_current;
+    my($r) = $_R->get_current;
     if ($r and $r = $r->unsafe_get('auth_realm') and $r->has_owner) {
 	(my $n = $r->get('owner_name')) =~ s/\W/_/g;
 	unshift(@tag, 'realm_owner_' . $n);
@@ -279,13 +278,13 @@ sub _assert_group_arg {
     $v = $v->($self)
 	if ref($v) eq 'CODE';
     $self->die($v, $which, ' must be an array_ref or string')
-	    unless defined($v) && (ref($v) eq 'ARRAY' || !ref($v));
+	unless defined($v) && (ref($v) eq 'ARRAY' || !ref($v));
     $self->die($v, $which, ' array_ref must not be empty')
-	    unless ref($v) ne 'ARRAY' || int(@$v) > 0;
+	unless ref($v) ne 'ARRAY' || int(@$v) > 0;
     if ($which eq 'name') {
 	foreach my $n (@$v) {
 	    $self->die($v, 'name array_ref must consist of strings')
-		    unless defined($n) && !ref($n);
+		unless defined($n) && !ref($n);
 	}
     }
     elsif ($which eq 'value') {
