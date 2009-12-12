@@ -65,6 +65,13 @@ Bivio::Test->unit([
 	    [Bivio::UNIVERSAL->new] => 1,
 	    [Bivio::UNIVERSAL->new, 'Bivio::Type'] => 0,
 	    [Bivio::UNIVERSAL->new, 'Bivio::UNIVERSAL'] => 1,
+	],
+	is_subclass => [
+	    [undef] => 0,
+	    [''] => 0,
+	    [qr{any}] => 0,
+	    [Bivio::UNIVERSAL->new] => 1,
+	    [Bivio::UNIVERSAL->new, 'Bivio::Type'] => 1,
 	]
      ],
     'Bivio::t::UNIVERSAL::t1' => [

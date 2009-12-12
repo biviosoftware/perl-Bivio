@@ -207,13 +207,18 @@ sub is_blessed {
     my($proto, $value, $object) = @_;
     $object ||= $proto;
     my($v) = $value;
-    return ref($value) && $v =~ /=/ && $value->isa(ref($object) || $object)
-	? 1 : 0;
+    return ref($value) && $v =~ /=/ && $object->is_subclass($value) ? 1 : 0;
 }
 
 sub is_simple_package_name {
     my(undef, $name) = @_;
     return $name =~ /^\w+$/ ? 1 : 0;
+}
+
+sub is_subclass {
+    my($proto, $value) = @_;
+    return defined($value) && UNIVERSAL::isa($value, ref($proto) || $proto)
+	? 1 : 0;
 }
 
 sub iterate_reduce {
