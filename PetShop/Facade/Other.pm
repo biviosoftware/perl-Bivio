@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::PetShop::Facade::Other;
 use strict;
-use Bivio::Base 'UI.FacadeBase';
+use Bivio::Base 'Facade.PetShop';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -11,9 +11,16 @@ __PACKAGE__->new({
     http_host => 'other.bivio.biz',
     mail_host => 'other.bivio.biz',
     clone => 'PetShop',
-    Constant => [
-	[robots_txt_allow_all => 0],
-    ],
+    HTML => __PACKAGE__->make_groups(__PACKAGE__->bunit_shared_values),
+    Constant => __PACKAGE__->make_groups([
+	@{__PACKAGE__->bunit_shared_values},
+	shared_value2 => 'Other',
+	robots_txt_allow_all => 0,
+    ]),
+    Text => __PACKAGE__->make_groups([
+	@{__PACKAGE__->bunit_shared_values},
+	shared_value2 => 'Other',
+    ]),
 });
 
 1;

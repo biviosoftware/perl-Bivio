@@ -1,10 +1,17 @@
-# Copyright (c) 2000-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Facade::PetShop;
 use strict;
 use Bivio::Base 'UI.FacadeBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_SHARED_VALUES) = [
+    [qw(shared_value1 shared_value2)] => 'PetShop',
+    [qw(shared_value3 shared_value4)] => 'PetShop',
+    want_secure => 0,
+    table_default_align => 'left',
+    page_left_margin => 20,
+];
 
 __PACKAGE__->new({
     uri => 'petshop',
@@ -82,11 +89,7 @@ __PACKAGE__->new({
 	['UserLoginForm.RealmOwner.password.NULL' => 'Please enter a password.'],
 	['UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)'],
     ],
-    HTML => [
-	[want_secure => 0],
-	[table_default_align => 'left'],
-	[page_left_margin => 20],
-    ],
+    HTML => __PACKAGE__->make_groups(__PACKAGE__->bunit_shared_values),
     Task => [
 	[PRODUCTS => 'pub/products'],
 	[ITEM_SEARCH => 'pub/item-search'],
@@ -133,28 +136,30 @@ __PACKAGE__->new({
 	[TEST_MULTI_ROLES1 => undef],
 	[TEST_MULTI_ROLES2 => undef],
     ],
-    Constant => [
-	[xlink_bunit1 => {
+    Constant => __PACKAGE__->make_groups([
+	@{__PACKAGE__->bunit_shared_values},
+	xlink_bunit1 => {
 	    task_id => 'LOGIN',
 	    query => undef,
 	    no_context => 1,
-	}],
-	[xlink_bunit2 => {
+	},
+	xlink_bunit2 => {
 	    uri => '',
 	    anchor => 'a1',
-	}],
-	[xlink_bunit3 => {
+	},
+	xlink_bunit3 => {
 	    uri => [sub {shift->req('bunit3')}],
-	}],
-	[view_shortcuts1 => 'one'],
-	[my_site_redirect_map => [
+	},
+	view_shortcuts1 => 'one',
+	my_site_redirect_map => [
 	    [qw(GENERAL ADMINISTRATOR ADM_SUBSTITUTE_USER)],
 	    [qw(guest ADMINISTRATOR USER_PASSWORD)],
  	    [qw(USER ADMINISTRATOR USER_ACCOUNT_EDIT)],
-	]],
-	[threepartpage_want_ForumDropDown => 1],
-    ],
+	],
+	threepartpage_want_ForumDropDown => 1,
+    ]),
     Text => [
+	@{__PACKAGE__->make_groups(__PACKAGE__->bunit_shared_values)},
 	[bunit_simple => 'simple text'],
 	[bunit_escape => '"quoted"\backslash'],
 	[bunit_newline => "new\nline"],
@@ -281,6 +286,10 @@ __PACKAGE__->new({
 	]],
      ],
 });
+
+sub bunit_shared_values {
+    return $_SHARED_VALUES;
+}
 
 1;
 
