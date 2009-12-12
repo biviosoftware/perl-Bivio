@@ -29,7 +29,7 @@ sub create_request {
 sub handler {
     my($r) = @_;
     _trace('begin: ', $r->uri) if $_TRACE;
-    Apache->push_handlers('PerlCleanupHandler', sub {
+    $r->set_handlers('PerlCleanupHandler', [sub {
 	my($req) = $_REQUEST->get_current;
 	if ($req) {
 	    b_warn(
@@ -40,8 +40,11 @@ sub handler {
 	    $_T->rollback($req);
 	    $_REQUEST->clear_current;
 	}
+	else {
+	    $_JD->execute_queue;
+	}
 	return $_OK;
-    });
+    }]);
     my($die) = $_SELF->process_request($r);
     if ($die && !$die->get('code')->equals_by_name('CLIENT_REDIRECT_TASK')) {
 	my($c) = $r->connection();
@@ -49,13 +52,6 @@ sub handler {
 	my($ip) = $c && $c->remote_ip || '0.0.0.0';
 	$r->log_reason($ip.' '.$u.' '.$die->as_string);
 	_trace($die) if $_TRACE;
-    }
-    unless ($_JD->queue_is_empty) {
-	_trace('PerlCleanupHandler for pending Jobs') if $_TRACE;
-	Apache->push_handlers('PerlCleanupHandler', sub {
-	    $_JD->execute_queue;
-	    return $_OK;
-	});
     }
     _trace('reply: ', $_REPLY->die_to_http_code($die, $r)) if $_TRACE;
     return $_REPLY->die_to_http_code($die, $r);
