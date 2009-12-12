@@ -41,7 +41,6 @@ Bivio::IO::Config->introduce_values({
 # 	return Bivio::Type::DateTime->from_literal(@_);
 #     },
 # );
-
 Request();
 [
     [] => [
@@ -70,16 +69,27 @@ Request();
 	    [map("4:2$_ sometimes important", 1..2)] => [],
 	    [map("4:2$_ sometimes important", 1..3)] =>
 		qr/\[repeated 3 times\] sometimes important/,
-	    # Unknown
-	    '4:55 Unknown' => '4:55 Unknown',
-	    '4:55 normal' => '4:55 normal',
 	    # Outside interval
 	    '1:22 this is an error' => [],
+	    # Unknown
+	    '4:55 Unknown' => '4:55 Unknown',
+	    # Leaves file in a state for next
+	    '4:55 normal' => '4:55 normal',
 	],
     ],
     'Bivio::Util::HTTPLog' => [
 	main => [
-	    [-email => email('httplog'), parse_errors => 5] => undef,
+	    sub {
+		b_use('TestLanguage.HTTP')->clear_local_mail;
+		return [-email => email('httplog'), parse_errors => 5];
+	    } => sub {
+		b_use('TestLanguage.HTTP')->verify_local_mail(
+		    email('httplog'),
+		    qr{Subject: \w+ \Q$_LOG},
+		    1,
+		);
+		return 1;
+	    },
 	],
     ],
 ];
