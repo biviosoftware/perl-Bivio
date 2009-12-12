@@ -1,15 +1,9 @@
-# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Die;
-use Bivio::IO::ClassLoader;
-use Bivio::IO::Config;
+use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
-use Bivio::Type::FileName;
-use Bivio::UI::FacadeChildType;
-use Bivio::UI::LocalFileType;
 
 # C<Bivio::UI::Facade> is a collection of instances which present a uniform
 # view.  Typically, a Facade is used to represent UI components.  An
@@ -106,6 +100,12 @@ use Bivio::UI::LocalFileType;
 # be the simple package name for the Component.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_LFT) = b_use('UI.LocalFileType');
+my($_FCT) = b_use('UI.FacadeChildType');
+my($_C) = b_use('IO.Config');
+my($_R) = b_use('Agent.Request');
+my($_A) = b_use('IO.Alert');
+my($_FN) = b_use('Type.FileName');
 our($_TRACE);
 my($_INITIALIZED) = 0;
 my(%_CLASS_MAP);
@@ -113,21 +113,20 @@ my(%_URI_MAP);
 my(%_COMPONENTS);
 my(@_COMPONENTS);
 my($_STATIC_COMPONENTS) = [qw(Email Icon View)];
-Bivio::IO::Config->register(my $_CFG = {
-    default => Bivio::IO::Config->REQUIRED,
+$_C->register(my $_CFG = {
+    default => $_C->REQUIRED,
     # Always ends in a trailing slash
-    local_file_root => Bivio::IO::Config->REQUIRED,
+    local_file_root => $_C->REQUIRED,
     want_local_file_cache => 1,
-    mail_host => Bivio::IO::Config->REQUIRED,
-    http_suffix => Bivio::IO::Config->REQUIRED,
+    mail_host => $_C->REQUIRED,
+    http_suffix => $_C->REQUIRED,
 });
 my($_IS_FULLY_INITIALIZED) = 0;
 
 sub as_string {
     my($self) = @_;
     # Returns string representation of the Facade.
-    my($type) = $self->unsafe_get('type')
-	    || Bivio::UI::FacadeChildType->DEFAULT;
+    my($type) = $self->unsafe_get('type') || $_FCT->DEFAULT;
     return 'Facade['.$self->simple_package_name.'.'.lc($type->get_name).']';
 }
 
@@ -156,7 +155,7 @@ sub get_from_request_or_self {
 	    if UNIVERSAL::isa($req_or_facade, __PACKAGE__);
     }
     else {
-	$req_or_facade = Bivio::Agent::Request->get_current;
+	$req_or_facade = $_R->get_current;
     }
     return $proto->get_from_source($req_or_facade);
 }
@@ -172,7 +171,7 @@ sub get_instance {
     # Returns default facade, if I<simple_class> is C<undef> or false.
     return $simple_class
 	? $_CLASS_MAP{$simple_class}
-	    || Bivio::Die->die($simple_class, ': no such facade')
+	    || b_die($simple_class, ': no such facade')
 	: $proto->get_default
 }
 
@@ -197,7 +196,7 @@ sub get_local_file_name {
     $self = $self->get_from_request_or_self($req)
 	if defined($req) || !ref($self);
     return $self->get_local_file_root . $self->get('local_file_prefix')
-	. Bivio::UI::LocalFileType->from_any($type)->get_path
+	. $_LFT->from_any($type)->get_path
 	. $name;
 }
 
@@ -244,11 +243,10 @@ sub handle_config {
     # cache all icon sizes.
     #
     # For development, you probably want to set I<want_local_file_cache> to false.
-    Bivio::IO::Alert->warn(
+    b_warn(
 	$cfg->{local_file_root}, ': local_file_root is not a directory'
     ) unless $cfg->{local_file_root} && -d $cfg->{local_file_root};
-    $cfg->{local_file_root}
-	= Bivio::Type::FileName->add_trailing_slash($cfg->{local_file_root});
+    $cfg->{local_file_root} = $_FN->add_trailing_slash($cfg->{local_file_root});
     $_CFG = {%{$cfg}};
     return;
 }
@@ -271,17 +269,17 @@ sub initialize {
     Bivio::IO::ClassLoader->map_require('Facade', $_CFG->{default});
     Bivio::IO::ClassLoader->map_require_all('Facade')
         unless $partially;
-    Bivio::Die->die(
+    b_die(
 	$_CFG->{default}, ': unable to find or load default Facade',
     ) unless ref($_CLASS_MAP{$_CFG->{default}});
-    foreach my $f (values(%_CLASS_MAP)) {
+    foreach my $f (sort(values(%_CLASS_MAP))) {
 	foreach my $c (@$_STATIC_COMPONENTS) {
 	    $f->put($c => Bivio::IO::ClassLoader->map_require(
 		'FacadeComponent', $c
 	    )->initialize_by_facade($f));
 	}
 	foreach my $c (@_COMPONENTS) {
-	    Bivio::Die->die($f, ': ', $c, ': failed to load component')
+	    b_die($f, ': ', $c, ': failed to load component')
 	        unless $f->unsafe_get($c);
 	}
 	$f->set_read_only;
@@ -297,14 +295,9 @@ sub is_fully_initialized {
 
 sub make_groups {
     my($proto, $items) = @_;
-    # Converts a series of [(key, value), ...] pairs into [[key, value], ...].
-    Bivio::Die->die('uneven number of items in array: ', $items)
+    b_die('uneven number of items in array: ', $items)
         unless @$items % 2 == 0;
-    my($result) = [];
-    while (@$items) {
-        push(@$result, [splice(@$items, 0, 2)]);
-    }
-    return $result
+    return $proto->map_by_two(sub {[$_[0], $_[1]]}, $items);
 }
 
 sub new {
@@ -345,7 +338,7 @@ sub new {
     my($self) = $proto->SUPER::new();
     my($class) = ref($self);
     my($simple_class) = $self->simple_package_name;
-    Bivio::Die->die($class, ': duplicate initialization')
+    b_die($class, ': duplicate initialization')
         if $_CLASS_MAP{$simple_class};
     # Not yet initialized, but avoid infinite recursion in the
     # event of self-referential configuration.
@@ -361,7 +354,7 @@ sub new {
     }
 
     # Make sure clone is specified and loaded
-    Bivio::Die->die($class, ': missing clone attribute')
+    b_die($class, ': missing clone attribute')
 		unless exists($config->{clone});
     my($clone) = $config->{clone} ? _load($config->{clone}) : undef;
     delete($config->{clone});
@@ -374,7 +367,7 @@ sub new {
     $wlfc = $_CFG->{want_local_file_cache}
 	unless defined($wlfc);
 
-    Bivio::Die->die($uri, ': duplicate uri for ', $class, ' and ',
+    b_die($uri, ': duplicate uri for ', $class, ' and ',
 	    ref($_URI_MAP{$uri}))
 		if $_URI_MAP{$uri};
     _trace($class, ': uri=', $uri) if $_TRACE;
@@ -382,7 +375,7 @@ sub new {
     # Initialize this instance's attributes
     $self->internal_put({
 	uri => $uri,
-	local_file_prefix => Bivio::Type::FileName->add_trailing_slash($lfp),
+	local_file_prefix => $_FN->add_trailing_slash($lfp),
 	want_local_file_cache => $wlfc,
 	is_production => $config->{is_production} ? 1 : 0,
 	is_default => $_CFG->{default} eq $self->simple_package_name ? 1 : 0,
@@ -397,7 +390,7 @@ sub new {
     }
 
     # Load all components before initializing.  Modifies @ & %_COMPONENTS.
-    foreach my $c (keys(%$config)) {
+    foreach my $c (sort(keys(%$config))) {
 	Bivio::IO::ClassLoader->map_require('FacadeComponent', $c)
 	    ->handle_register;
     }
@@ -412,7 +405,7 @@ sub new_child {
     my($parent, $config) = @_;
     my($self) = $parent->SUPER::new;
     my($children) = $parent->get('children');
-    my($type) = Bivio::UI::FacadeChildType->from_any($config->{child_type});
+    my($type) = $_FCT->from_any($config->{child_type});
     delete($config->{child_type});
     $self->internal_put({
 	(map {
@@ -440,7 +433,7 @@ sub prepare_to_render {
     Bivio::Auth::Support->unsafe_get_user_pref(
 	'FACADE_CHILD_TYPE', $req, \$type,
     ) unless $type;
-    $type ||= Bivio::UI::FacadeChildType->get_default;
+    $type ||= $_FCT->get_default;
     unless ($children->{$type}) {
 	_trace($self, ': ', $type, ': no such child')
 	    if $_TRACE;
@@ -457,21 +450,21 @@ sub register {
     my($simple_class) = $class->simple_package_name;
 
     # Avoid recursion
-    return if exists($_COMPONENTS{$simple_class});
+    return
+	if exists($_COMPONENTS{$simple_class});
     $_COMPONENTS{$simple_class} = undef;
 
     # Load prerequisites first, so they register.  This forces the
     # toposort.
     foreach my $c (@$required_components) {
-	Bivio::IO::ClassLoader->map_require('FacadeComponent', $c)
-		    ->handle_register;
+	b_use('FacadeComponent', $c)->handle_register;
     }
 
     # Assert that this component is kosher.
-    Bivio::Die->die($class, ': is not a FacadeComponent')
-		unless $class->isa('Bivio::UI::FacadeComponent');
-    Bivio::Die->die($class, ': already registered')
-		if $_COMPONENTS{$simple_class};
+    b_die($class, ': is not a FacadeComponent')
+	unless b_use('UI.FacadeComponent')->is_subclass($class);
+    b_die($class, ': already registered')
+	if $_COMPONENTS{$simple_class};
 
     # Register this component
     push(@_COMPONENTS, $simple_class);
@@ -489,9 +482,9 @@ sub setup_request {
     #
     # Returns the facade.
     if (ref($uri_or_domain)) {
-	Bivio::Die->die($uri_or_domain, ': is not a Request')
-	    unless UNIVERSAL::isa($uri_or_domain, 'Bivio::Agent::Request');
-	Bivio::Die->die('must not be called statically')
+	b_die($uri_or_domain, ': is not a Request')
+	    unless $_R->is_blessed($uri_or_domain);
+	b_die('must not be called statically')
 	    unless ref($proto);
 	return _setup_request($proto, $uri_or_domain);
     }
@@ -503,7 +496,7 @@ sub setup_request {
 	    last if $self = $_URI_MAP{$uri};
 	}
 	unless ($self) {
-	    Bivio::IO::Alert->warn_exactly_once(
+	    $_A->warn_exactly_once(
 		$uri_or_domain, ': unknown facade uri');
 	    # Avoid repeated errors
 	    $self = $_URI_MAP{$uri_or_domain} = $_CLASS_MAP{$_CFG->{default}};
@@ -543,8 +536,8 @@ sub _init_hosts {
     my($self, $config) = @_;
     $self->put(
 	map(($_ => (
-	    Bivio::Agent::Request->is_production
-	        ? $config->{$_} || Bivio::Die->die(
+	    $_R->is_production
+	        ? $config->{$_} || b_die(
 		    $_, ': facade parameter missing in production')
 		: _fixup_test_uri($self, $_CFG->{$_} || $_CFG->{http_suffix}),
 	)), qw(http_host mail_host)),
@@ -555,9 +548,10 @@ sub _init_hosts {
 sub _initialize {
     my($self, $config, $clone) = @_;
     foreach my $c (@$_STATIC_COMPONENTS) {
-	$self->put($c => Bivio::IO::ClassLoader->map_require(
-	    'FacadeComponent', $c
-	)->initialize_by_facade($self));
+	$self->put(
+	    $c,
+	    b_use('FacadeComponent', $c)->initialize_by_facade($self),
+       );
     }
     foreach my $c (@_COMPONENTS) {
 	# Get the config for this component (or force to exist)
@@ -579,7 +573,7 @@ sub _initialize {
 	$cc = $cc->get($c) if $cc;
 
 	# Must have a clone or initialize (all components MUST be exist)
-	Bivio::Die->die(
+	b_die(
 	    $self, ': ', $c,
 	    ': missing component clone or initialize attributes',
 	) unless $cc || $cfg->{initialize};
@@ -591,7 +585,7 @@ sub _initialize {
     }
 
     # Make sure everything in $config is valid.
-    Bivio::Die->die($self, ': unknown config (modules not ',
+    b_die($self, ': unknown config (modules not ',
 	    ' FacadeComponents(?): ', $config) if %$config;
 
     return;
@@ -599,18 +593,16 @@ sub _initialize {
 
 sub _load {
     my($clone) = @_;
-    # Loads a facade if not already loaded.
-    my($c) = Bivio::IO::ClassLoader->map_require('Facade', $clone);
-    Bivio::Die->die($c, ': not a Bivio::UI::Facade')
-		unless UNIVERSAL::isa($c, 'Bivio::UI::Facade');
-    Bivio::Die->die($c, ": did not call this module's new "
-	    ." (non-production Facade?") unless ref($_CLASS_MAP{$clone});
+    my($c) = b_use('Facade', $clone);
+    b_die($c, ': not a ')
+	unless __PACKAGE__->is_subclass($c);
+    b_die($c, ": did not call this module's new (non-production Facade?")
+	unless ref($_CLASS_MAP{$clone});
     return $_CLASS_MAP{$clone};
 }
 
 sub _setup_request {
     my($self, $req) = @_;
-    # Puts Bivio::UI::Facade on request with $self
     $req->put_durable(__PACKAGE__, $self);
     _trace($self) if $_TRACE;
     return $self;
