@@ -213,7 +213,8 @@ sub internal_initialize_value {
 	$value->{config} = [];
     }
     # Special case the UNDEF_CONFIG.  The names list is empty in this case.
-    return if @{$value->{names}};
+    return
+	if @{$value->{names}};
     $value->{attrs} = {};
     $value->{html_no_style} = ['', ''];
     $value->{html_with_style} = ['', ''];
