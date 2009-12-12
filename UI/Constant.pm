@@ -1,8 +1,8 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::Constant;
 use strict;
-use base 'Bivio::UI::FacadeComponent';
+use Bivio::Base 'UI.FacadeComponent';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
