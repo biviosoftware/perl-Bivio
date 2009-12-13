@@ -924,7 +924,9 @@ sub send_mail {
     if (ref($body) eq 'CODE') {
 	$body->($msg);
     }
-    elsif (b_use('Model.RealmFile')->is_blessed($body)) {
+    elsif ($_CL->was_required('Model.RealmFile')
+        && b_use('Model.RealmFile')->is_blessed($body),
+    ) {
 	$msg->set_content_type('multipart/mixed');
 	$msg->attach({
 	    content => $body->get_content,
