@@ -26,11 +26,46 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.50  2009/12/12 21:55:56  nagler
+  * Bivio::Agent::HTTP::Dispatcher
+    call set_handlers, not push_handlers (doesn't work on Apache2)
+  * Bivio::Biz::Model::RealmFeatureForm
+    enable xhtml_dock_left_standard for non-fourm realms
+  * Bivio::PetShop::Facade::BeforeOther
+    NEW
+  * Bivio::PetShop::Facade::Other
+    test make_groups() and data sharing across calls
+  * Bivio::PetShop::Facade::PetShop
+    test make_groups() and data sharing across calls
+  * Bivio::UI::Constant
+    b_use
+  * Bivio::UI::Facade
+    make_groups was clobbering data
+    b_use
+  * Bivio::UI::FacadeBase
+    enable xhtml_dock_left_standard for non-fourm realms
+  * Bivio::UI::FacadeComponent
+    copy config and clone data to avoid clobbering passed in values
+    b_use
+  * Bivio::UI::Font
+    fmt
+  * Bivio::UI::HTML
+    b_use
+  * Bivio::UI::Text
+    b_use
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    Added want_more and want_more_count.  Menu items over the want_more_count (default=5) are rendered in the 'more' DropDown menu
+  * Bivio::UNIVERSAL
+    added is_subclass
+  * Bivio::Util::HTTPLog
+    rmpod
+    include first part of hostname in Subject:
+
   Revision 8.49  2009/12/10 00:28:46  nagler
   * Bivio::Biz::Model
     added new_other_with_query & handle_call_autoload
