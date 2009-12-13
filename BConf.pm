@@ -474,8 +474,6 @@ sub _base {
 		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
 		'Bivio::Type::RowTagKey' => 'Bivio::Delegate::RowTagKey',
 		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
-		'Bivio::UI::FacadeChildType' =>
-		    'Bivio::Delegate::SimpleFacadeChildType',
 		'Bivio::UI::HTML::FormErrors' =>
 		    'Bivio::Delegate::SimpleFormErrors',
 		'Bivio::UI::HTML::WidgetFactory' =>

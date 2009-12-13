@@ -27,20 +27,6 @@ use Bivio::IO::Trace;
 # (even if C<undef>).  The I<clone> may be overriden in a particular
 # component's configuration.
 #
-# children : hash_ref (facade)
-#
-# The children of this Facade.  The keys are
-# L<Bivio::UI::FacadeChildType|Bivio::UI::FacadeChildType>
-# and values are facades.  A child may be undef or
-# there may be no children at all.
-#
-# Children do not have children, i.e. the tree is only two levels deep.
-#
-# child_type : Bivio::UI::FacadeChildType (children)
-#
-# The type of this child.  Must be unique to all children of
-# this Facade.
-#
 # components : array_ref (facade,computed)
 #
 # List of component instances for this facade.
@@ -80,10 +66,6 @@ use Bivio::IO::Trace;
 #
 # Host used to create mail_to URIs.
 #
-# parent : Bivio::UI::Facade (children)
-#
-# Parent facade.
-#
 # uri : string (facade) [simple_package_name]
 #
 # Name of the facade as it appears in domain names and URIs.
@@ -101,7 +83,6 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_LFT) = b_use('UI.LocalFileType');
-my($_FCT) = b_use('UI.FacadeChildType');
 my($_C) = b_use('IO.Config');
 my($_R) = b_use('Agent.Request');
 my($_A) = b_use('IO.Alert');
@@ -125,9 +106,7 @@ my($_IS_FULLY_INITIALIZED) = 0;
 
 sub as_string {
     my($self) = @_;
-    # Returns string representation of the Facade.
-    my($type) = $self->unsafe_get('type') || $_FCT->DEFAULT;
-    return 'Facade['.$self->simple_package_name.'.'.lc($type->get_name).']';
+    return 'Facade[' . $self->simple_package_name . ']';
 }
 
 sub get_all_classes {
@@ -379,7 +358,6 @@ sub new {
 	want_local_file_cache => $wlfc,
 	is_production => $config->{is_production} ? 1 : 0,
 	is_default => $_CFG->{default} eq $self->simple_package_name ? 1 : 0,
-	children => {},
         cookie_domain => delete($config->{cookie_domain}),
     });
     _init_hosts($self, $config);
@@ -399,47 +377,6 @@ sub new {
     # Store globally
     $_CLASS_MAP{$simple_class} = $_URI_MAP{$uri} = $self;
     return $self;
-}
-
-sub new_child {
-    my($parent, $config) = @_;
-    my($self) = $parent->SUPER::new;
-    my($children) = $parent->get('children');
-    my($type) = $_FCT->from_any($config->{child_type});
-    delete($config->{child_type});
-    $self->internal_put({
-	(map {
-	    ($_, $parent->get($_));
-	} qw(uri local_file_prefix want_local_file_cache is_production http_host mail_host cookie_domain)),
-	is_default => 0,
-	child_type => $type,
-	parent => $parent,
-    });
-    b_die($self, ': duplicate child type initialization')
-        if $children->{$type};
-    _initialize($self, $config, $parent);
-    $children->{$type} = $self;
-    return $self;
-}
-
-sub prepare_to_render {
-    my(undef, $req, $type) = @_;
-    my($self) = $req->get(__PACKAGE__);
-    my($children) = $self->unsafe_get('children');
-    unless ($children && %$children) {
-	_trace($self, ': no children') if $_TRACE;
-	return;
-    }
-    Bivio::Auth::Support->unsafe_get_user_pref(
-	'FACADE_CHILD_TYPE', $req, \$type,
-    ) unless $type;
-    $type ||= $_FCT->get_default;
-    unless ($children->{$type}) {
-	_trace($self, ': ', $type, ': no such child')
-	    if $_TRACE;
-	return;
-    }
-    return _setup_request($children->{$type}, $req);
 }
 
 sub register {

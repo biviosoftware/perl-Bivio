@@ -263,7 +263,6 @@ sub merge {
     # 		delegates => {
     # 		    'Bivio::Agent::TaskId' => 'OurSite::Agent::TaskId',
     # 		    'Bivio::Agent::HTTP::Cookie' => 'OurSite::Agent::Cookie',
-    # 		    'Bivio::UI::FacadeChildType' => 'OurSite::UI::FacadeChildType',
     # 		    'Bivio::UI::HTML::FormErrors' => 'OurSite::UI::FormErrors',
     # 		    'Bivio::TypeError' => 'OurSite::TypeError',
     # 		},
