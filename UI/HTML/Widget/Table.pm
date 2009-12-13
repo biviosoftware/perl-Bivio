@@ -530,18 +530,19 @@ sub initialize {
     }
     $self->unsafe_initialize_attr('empty_list_widget', $source);
     $self->unsafe_initialize_attr('before_row', $source);
+    foreach my $c (qw(
+        data_row
+        footer_row
+        heading_row
+        heading_separator_row
+        title_row
+        trailing_separator_row
+    )) {
+	$self->initialize_attr($c . '_class', $c);
+    }
     $_VS->vs_html_attrs_initialize(
 	$self,
-	[qw(
-	    data_row_class
-	    even_row_class
-	    footer_row_class
-	    heading_row_class
-	    heading_separator_row_class
-	    odd_row_class
-	    title_row_class
-	    trailing_separator_row_class
-        )],
+	undef,
         $source,
     );
     $self->initialize_html_attrs($source);
@@ -930,10 +931,11 @@ sub _render_trailer {
     _render_row_with_colspan($state, 'trailing_separator')
 	if $self->unsafe_get('trailing_separator');
 
-    $self->render_row($state->{summary_cells},
+    $self->render_row(
+	$state->{summary_cells},
 	$state->{list}->get_summary, $state->{buffer}, undef,
-	$_TRC->FOOTER)
-	if $state->{summary_cells};
+	$_TRC->FOOTER,
+    ) if $state->{summary_cells};
 
     $self->render_row($state->{summary_lines}, $state->{list},
 	$state->{buffer}, undef,
