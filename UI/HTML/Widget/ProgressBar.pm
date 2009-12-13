@@ -2,91 +2,28 @@
 # $Id$
 package Bivio::UI::HTML::Widget::ProgressBar;
 use strict;
-$Bivio::UI::HTML::Widget::ProgressBar::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::ProgressBar::VERSION;
+use Bivio::Base 'Bivio::UI::Widget';
 
-=head1 NAME
+# C<Bivio::UI::HTML::Widget::ProgressBar>
+#
+#
+#
+# maximum_text : code_ref
+#
+# The maximum value as text (ex. "50.0MB")
+#
+# percent : code_ref
+#
+# The current percent value.
 
-Bivio::UI::HTML::Widget::ProgressBar - task progress indicator
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Widget::ProgressBar;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Widget>
-
-=cut
-
-use Bivio::UI::Widget;
-@Bivio::UI::HTML::Widget::ProgressBar::ISA = ('Bivio::UI::Widget');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Widget::ProgressBar>
-
-=head1 ATTRIBUTES
-
-=over 4
-
-=item maximum_text : code_ref
-
-The maximum value as text (ex. "50.0MB")
-
-=item percent : code_ref
-
-The current percent value.
-
-=back
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_VS) = __PACKAGE__->use('UI.ViewShortcuts');
 my($_RENDER_KEY) = __PACKAGE__ . 'rendered';
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="new"></a>
-
-=head2 static new(hash_ref attributes) : Bivio::UI::HTML::Widget::ProgressBar
-
-Creates a new ProgressBar widget.
-
-=cut
-
-sub new {
-    my($proto) = shift;
-    my($self) = $proto->SUPER::new(@_);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="initialize"></a>
-
-=head2 initialize()
-
-Widget setup.
-
-=cut
-
 sub initialize {
+    # (self) : undef
+    # Widget setup.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return if $fields->{grid};
@@ -116,15 +53,18 @@ sub initialize {
     return;
 }
 
-=for html <a name="render"></a>
-
-=head2 render(any source, string_ref buffer)
-
-Renders the progress bar.
-
-=cut
+sub new {
+    # (proto, hash_ref) : Widget.ProgressBar
+    # Creates a new ProgressBar widget.
+    my($proto) = shift;
+    my($self) = $proto->SUPER::new(@_);
+    $self->[$_IDI] = {};
+    return $self;
+}
 
 sub render {
+    # (self, any, string_ref) : undef
+    # Renders the progress bar.
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     my($req) = $source->get_request;
@@ -134,26 +74,12 @@ sub render {
     return;
 }
 
-#=PRIVATE SUBROUTINES
-
-# _get_cell_width(any source, self) : string
-#
-# Returns the HTML for the table cell width.
-#
 sub _get_cell_width {
+    # (any, self) : string
+    # Returns the HTML for the table cell width.
     my($source, $self) = @_;
     # want min width to be 1, 0% isn't rendered correctly by mozilla
     return ' width="' . ($self->get('percent')->($source) || 1) . '%"';
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
