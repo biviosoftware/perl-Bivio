@@ -227,12 +227,6 @@ sub simple_require {
     return wantarray ? @res : $res[0];
 }
 
-sub split_method_with_underscore {
-    my($self) = @_;
-    
-    return;
-}
-
 sub unsafe_map_require {
     my($proto, $map_name, $class_name, $map_class) = _map_args(@_);
     # Returns the fully qualified class loaded.
