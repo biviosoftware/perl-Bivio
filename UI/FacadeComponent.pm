@@ -25,7 +25,6 @@ use Bivio::Base 'UI.WidgetValueSource';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_F) = b_use('UI.Facade');
 my($_R) = b_use('IO.Ref');
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 b_use('IO.Config')->register(my $_CFG = {
@@ -100,7 +99,7 @@ sub get_facade {
 
 sub get_from_source {
     my($proto, $source) = @_;
-    return $_F->get_from_request_or_self($source)
+    return b_use('UI.Facade')->get_from_request_or_self($source)
 	->get($proto->simple_package_name);
 }
 
@@ -221,7 +220,7 @@ sub new {
 sub new_static {
     my($proto, $facade) = @_;
     $proto->die($facade, 'missing or invalid facade')
-	unless $_F->is_subclass($facade);
+	unless b_use('UI.Facade')->is_subclass($facade);
     my($self) = shift->SUPER::new;
     $self->[$_IDI] = {
 	facade => $facade,
