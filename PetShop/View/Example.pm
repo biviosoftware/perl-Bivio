@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::View::Example;
 use strict;
@@ -9,7 +9,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('Action.PingReply')->register_handler(__PACKAGE__);
 
 sub eg1 {
-    return shift->internal_body(Simple('hello, world!'));
+    return shift->internal_body(Join([
+	Simple('hello, world!'),
+	ProgressBar(25, 100),
+    ]));
 }
 
 sub handle_ping_reply {
