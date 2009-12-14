@@ -990,11 +990,14 @@ sub _sort_widget {
 		If(
 		    [sub {shift->get_query->get('order_by')->[1]}],
 		    map(
-			vs_call("SPAN_$_" =>
+			SPAN(
 			    Prose(
 				vs_text($list->simple_package_name, 'prose', $_),
 			    ),
-			    {tag_if_empty => 1},
+			    {
+				class => "b_sort_arrow $_",
+				tag_if_empty => 1,
+			    },
 		        ),
 			qw(ascend descend),
 		    ),
