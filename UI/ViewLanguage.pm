@@ -65,7 +65,7 @@ sub call_method {
     my($view) = _assert_in_eval($autoload);
     if ($method =~ /^[A-Z]/) {
 	my($map) = $view->ancestral_get('view_class_map', undef);
-	_die("view_class_map() or view_parent() must be called before $method")
+	_die("$method: view_class_map() or view_parent() must be called first")
 	    unless $map;
 	my($class) = $_CL->unsafe_map_require($map, $method);
 	return $class->new(@args)
