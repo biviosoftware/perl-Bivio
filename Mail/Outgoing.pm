@@ -261,8 +261,9 @@ sub set_headers_for_list_send {
     $bp->{sender} ||= $bp->{list_email};
     $bp->{reply_to} ||= $bp->{list_email};
     my($headers) = $self->get('headers');
-    b_die('missing To: in headers: ', $headers)
-	unless $headers->{to};
+    $self->set_header(
+	To => $self->unsafe_get_header('cc') || $bp->{list_email},
+    ) unless $self->unsafe_get_header('to');
     $self->set_headers_for_forward;
     delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
     $self->set_header(Sender => $bp->{sender});
@@ -277,8 +278,6 @@ sub set_headers_for_list_send {
 		    $self->unsafe_get_header('from')))[0]
 	 ) . '>',
     );
-    b_die('missing To: in headers: ', $headers)
-	unless $self->unsafe_get_header('to');
     return $self
 	unless $bp->{subject_prefix};
     my($s) = $self->unsafe_get_header('subject');
