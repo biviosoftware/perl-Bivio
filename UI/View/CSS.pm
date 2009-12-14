@@ -609,8 +609,6 @@ span.b_rounded_box_4 {
 .b_round_13 {margin: 0 13px;}
 .b_round_14 {margin: 0 14px;}
 .b_round_15 {margin: 0 15px;}
-
-
 form input.disabled {
   Color('disabled');
 }
@@ -626,6 +624,28 @@ a.b_thumbnail_popup:hover {
 }
 .b_hide {
   display: none;
+}
+img.b_clear_dot {
+  border: none;
+  width: 1px;
+  height: 1px;
+}
+span.b_progress_img {
+  display: block;
+  float: left;
+  border: 1px solid;
+  Color('b_progress_bar-border');
+  width: 10em;
+}
+.b_progress_bar span.b_text {
+  padding-left: 1em;
+}
+.b_progress_img img.b_clear_dot {
+  height: 1em;
+  Color('b_progress_bar-background');
+}
+span.b_sort_arrow {
+  Font('b_sort_arrow');
 }
 EOF
 }
