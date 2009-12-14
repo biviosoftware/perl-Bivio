@@ -26,11 +26,28 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.52  2009/12/13 19:24:05  nagler
+  * Bivio::BConf
+    No more facade children
+  * Bivio::Delegate::SimpleFacadeChildType
+    removed
+  * Bivio::IO::Config
+    No more facade children
+  * Bivio::UI::Facade
+    No more facade children
+  * Bivio::UI::FacadeChildType
+    removed
+  * Bivio::UI::HTML::Widget::Table
+    intialize all rows with classes
+  * Bivio::UI::TableRowClass
+    rmpod
+    fmt
+
   Revision 8.51  2009/12/13 00:53:30  nagler
   * Bivio::IO::ClassLoader
     cruft
