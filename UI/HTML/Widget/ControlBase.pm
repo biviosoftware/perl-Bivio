@@ -3,13 +3,13 @@
 package Bivio::UI::HTML::Widget::ControlBase;
 use strict;
 use Bivio::Base 'HTMLWidget';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    $$buffer .= $_VS->vs_html_attrs_render(
+    $$buffer .= vs_html_attrs_render(
 	$self, $source, $self->unsafe_get('html_attrs'));
     return;
 }
@@ -21,10 +21,10 @@ sub initialize {
             my(undef, $k) = @_;
 	    return $k =~ /^[A-Z]+[0-9]?$/ ? $k : ();
 	});
-	$self->put(html_attrs => $_VS->vs_html_attrs_merge([sort(@$a)]))
+	$self->put(html_attrs => vs_html_attrs_merge([sort(@$a)]))
 	    if @$a;
     }
-    $_VS->vs_html_attrs_initialize($self, $self->unsafe_get('html_attrs'));
+    vs_html_attrs_initialize($self, $self->unsafe_get('html_attrs'));
     return shift->SUPER::initialize(@_);
 }
 
