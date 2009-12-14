@@ -1,0 +1,9 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    [] => '<img class="b_clear_dot" alt="dot" src="/i/dot.gif" />',
+    3 => '<img class="b_clear_dot" alt="dot" src="/i/dot.gif" width="3" />',
+    [undef, 5] => '<img class="b_clear_dot" alt="dot" height="5" src="/i/dot.gif" />',
+    [[sub {99}]] => '<img class="b_clear_dot" alt="dot" src="/i/dot.gif" style="width: 99px;" />',
+];

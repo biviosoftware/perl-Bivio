@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Widget::ClearDot;
 use strict;
-use Bivio::Base 'UI.Widget';
+use Bivio::Base 'HTMLWidget.Tag';
 
 # C<Bivio::UI::HTML::Widget::ClearDot> displays the clear dot
 #
@@ -33,102 +33,58 @@ use Bivio::Base 'UI.Widget';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_I) = b_use('FacadeComponent.Icon');
-my($_A) = b_use('FacadeComponent.Align');
+my($_R) = b_use('Agent.Request');
+
+sub NEW_ARGS {
+    return [qw(?width ?height ?class)];
+}
 
 sub as_html {
-    # (self) : string
-    # (proto, int, int) : string
-    # Renders a clear dot and returns the string.  In the first case renders
-    # this instance (must be initialized).  With arguments, renders a
-    # constant string with the secified params.
-    #
-    # Don't use in rendering code, because dynamically creates a ClearDot widget.
-    # Instead create a ClearDot widget and have it do the dynamic rendering.
     my($self, $width, $height) = @_;
     if (@_ > 1) {
-#TODO: optimize
-	$self = __PACKAGE__->new({width => $width, height => $height});
-	$self->initialize;
+	$self = $self->new($width, $height);
     }
     elsif (!ref($self)) {
 	b_die('must pass width and height if called statically');
     }
-    return $self->[$_IDI]->{value};
+    $self->initialize_with_parent(parent => undef);
+    my($b) = '';
+    $self->render($_R->get_current, \$b);
+    return $b;
 }
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return
-	if exists($fields->{value});
-    $fields->{value} = '<img src="'
-	    . $_I->get_clear_dot->{uri}
-            .'" alt="dot" border="0"'
-	    . $_A->as_html($self->unsafe_get('align'));
-
-    $fields->{is_constant} = 1;
-    foreach my $f (qw(width height)) {
-	my($fv) = $self->get_or_default($f, 1);
-	if (ref($fv)) {
-	    $fields->{is_constant} = 0;
-	    $fields->{$f} = $fv;
-	}
-	elsif ($fv) {
-	    $fields->{value} .= qq{ $f="$fv"};
-	}
-    }
-    $fields->{value} .= ' />' if $fields->{is_constant};
-    return;
+    $self->put_unless_exists(
+	tag => 'img',
+	ALT => 'dot',
+	class => 'b_clear_dot',
+	SRC => $_I->get_clear_dot->{uri},
+	_dims($self),
+    );
+    return shift->SUPER::initialize(@_);
 }
 
-sub new {
-    # (proto, any, any, hash_ref) : Widget.ClearDot
-    # (proto, hash_ref) : Widget.ClearDot
-    # Creates a new ClearDot widget with I<width> and I<height> attributes.
-    #
-    #
-    # Creates a new ClearDot widget using I<attributes>.
-    my($proto, @args) = _new_args(@_);
-    my($self) = $proto->SUPER::new(@args);
-    $self->[$_IDI] = {};
-    return $self;
-}
-
-sub render {
-    # (self, any, string_ref) : undef
-    # Render the clear dot.
-    my($self, $source, $buffer) = @_;
-    my($fields) = $self->[$_IDI];
-    my($start) = length($$buffer);
-    $$buffer .= $fields->{value};
-    return if $fields->{is_constant};
-
-    foreach my $f (qw(width height)) {
-	next unless ref($fields->{$f});
-	my($v) = $source->get_widget_value(@{$fields->{$f}});
-	unless ($v) {
-	    # Zero width or height means that it shouldn't be drawn.
-	    substr($$buffer, $start) = '';
-	    return;
-	}
-	$$buffer .= qq{ $f="$v"};
-    }
-    $$buffer .= ' />';
-    return;
-}
-
-sub _new_args {
-    # (proto, any, ...) : array
-    # Returns arguments to be passed to Attributes::new.
-    my($proto, $width, $height, $attributes) = @_;
-    return ($proto, $width) if ref($width) eq 'HASH' || int(@_) == 1;
-    return ($proto, {
-	width => $width,
-	height => $height,
-	($attributes ? %$attributes : ()),
-    }) if defined($width) || defined($height);
-    $proto->die(undef, undef, 'invalid arguments to new');
-    # DOES NOT RETURN
+sub _dims {
+    my($self) = @_;
+    return (
+	WIDTH => $self->unsafe_get('width'),
+	HEIGHT => $self->unsafe_get('height'),
+    ) unless ref($self->unsafe_get('width')) || ref($self->unsafe_get('height'));
+    return (
+	STYLE => [sub {
+	    my($source) = @_;
+	    my($res) = '';
+	    foreach my $k (qw(height width)) {
+		if (length(my $v = $self->render_simple_attr($k, $source))) {
+		    $v .= 'px'
+			unless $v =~ /\D/;
+		    $res .= "$k: $v;"
+		}
+	    }
+	    return $res;
+	}],
+    );
 }
 
 1;
