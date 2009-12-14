@@ -29,7 +29,7 @@ sub initialize {
 		    task_log
 		    site_reports
                     create_forum
-                    edit_features
+                    configure_features
                 )),
 	    ]), {id => 'admin_drop_down'}),
 	),

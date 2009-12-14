@@ -696,7 +696,7 @@ sub _cfg_group_admin {
 	    [GROUP_USER_FORM => '?/edit-user'],
 	    [GROUP_USER_ADD_FORM => '?/add-user'],
             [FORUM_CREATE_FORM => '?/create-forum'],
-            [REALM_FEATURE_FORM => '?/edit-features'],
+            [REALM_FEATURE_FORM => '?/configure-features'],
 	],
 	Text => [
 	    [realm_owner_site_admin => [
@@ -770,7 +770,7 @@ sub _cfg_group_admin {
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
                 FORUM_CREATE_FORM => 'Create Forum',
-                REALM_FEATURE_FORM => 'Edit Features',
+                REALM_FEATURE_FORM => 'Configure Features',
 	    ]],
 	    [clear_on_focus_hint => [
 		GROUP_USER_LIST => 'Filter name or @email',
@@ -1037,7 +1037,7 @@ sub _cfg_site_admin {
                     'FORUM_CREATE_FORM',
                 ],
                 [
-                    'edit_features',
+                    'configure_features',
                     'REALM_FEATURE_FORM',
                     undef,
                     'no_match',
@@ -1078,7 +1078,7 @@ sub _cfg_site_admin {
 		task_log => 'Site Hits',
 		remote_copy => 'Remote Copy',
                 create_forum => 'Create Forum',
-                edit_features => 'Edit Features',
+                configure_features => 'Configure Features',
             ]],
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',

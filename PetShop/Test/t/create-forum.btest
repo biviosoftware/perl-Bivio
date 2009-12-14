@@ -6,7 +6,7 @@ login_as('root');
 follow_link('create_forum');
 submit_form({
     title => my $title = random_string(),
-    forum => my $name = random_string(),
+    forum => my $name = 'btest' . random_string(),
     enable_blog => 1,
     enable_calendar => 1,
     enable_file => 1,
@@ -17,11 +17,11 @@ submit_form({
         tables
     )),
 });
-follow_link('calendar');
+follow_link(qr{^$name$}, 'calendar');
 test_deviance();
 follow_link('tables');
 test_conformance();
-follow_link($name, 'edit_features');
+follow_link(qr{^$name$}, 'configure_features');
 verify_form({
     enable_blog => 1,
     enable_calendar => 1,
