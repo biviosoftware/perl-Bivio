@@ -659,7 +659,7 @@ sub info_group_admin {
 	    next=GROUP_USER_LIST
 	)],
 	[qw(
-	    FORUM_FORM
+	    FORUM_CREATE_FORM
 	    203
 	    FORUM
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
@@ -671,7 +671,7 @@ sub info_group_admin {
 	    REALM_FEATURE_FORM
 	    204
 	    ANY_OWNER
-	    ADMIN_READ&ADMIN_WRITE
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
 	    Model.RealmFeatureForm
 	    View.GroupUser->edit_realm_features
 	    next=GROUP_USER_LIST

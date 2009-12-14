@@ -28,6 +28,8 @@ sub initialize {
 		    applicants
 		    task_log
 		    site_reports
+                    create_forum
+                    edit_features
                 )),
 	    ]), {id => 'admin_drop_down'}),
 	),

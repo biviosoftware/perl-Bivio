@@ -695,7 +695,7 @@ sub _cfg_group_admin {
 	    [GROUP_USER_LIST => '?/users'],
 	    [GROUP_USER_FORM => '?/edit-user'],
 	    [GROUP_USER_ADD_FORM => '?/add-user'],
-            [FORUM_FORM => '?/create-forum'],
+            [FORUM_CREATE_FORM => '?/create-forum'],
             [REALM_FEATURE_FORM => '?/edit-features'],
 	],
 	Text => [
@@ -769,7 +769,7 @@ sub _cfg_group_admin {
 		GROUP_USER_LIST => 'Roster',
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
-                FORUM_FORM => 'Create Forum',
+                FORUM_CREATE_FORM => 'Create Forum',
                 REALM_FEATURE_FORM => 'Edit Features',
 	    ]],
 	    [clear_on_focus_hint => [
@@ -993,10 +993,13 @@ sub _cfg_site_admin {
 		my($n, $task, $control, $realm) = @$_;
 		$realm ||= 'SITE_ADMIN_REALM_NAME';
 		(
-		    ["xlink_$n" => sub {+{
-			task_id => $task,
-			realm => shift->get_facade->$realm(),
-		    }}],
+		    ["xlink_$n" => sub {
+                        my($f) = shift->get_facade;
+                        return {
+                            task_id => $task,
+                            $f->can($realm) ? (realm => $f->$realm()) : (),
+                        };
+                    }],
 		    ["want_$n" => defined($control) ? $control : 1],
 		);
 	    }
@@ -1029,6 +1032,16 @@ sub _cfg_site_admin {
 		    },
 		    'SITE_REPORTS_REALM_NAME',
 		],
+                [
+                    'create_forum',
+                    'FORUM_CREATE_FORM',
+                ],
+                [
+                    'edit_features',
+                    'REALM_FEATURE_FORM',
+                    undef,
+                    'no_match',
+                ],
             ),
         ],
 	FormError => [
@@ -1064,6 +1077,8 @@ sub _cfg_site_admin {
                 substitute_user => 'Act as User',
 		task_log => 'Site Hits',
 		remote_copy => 'Remote Copy',
+                create_forum => 'Create Forum',
+                edit_features => 'Edit Features',
             ]],
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',

@@ -1,0 +1,43 @@
+# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+login_as('root');
+follow_link('create_forum');
+submit_form({
+    title => my $title = random_string(),
+    forum => my $name = random_string(),
+    enable_blog => 1,
+    enable_calendar => 1,
+    enable_file => 1,
+    enable_wiki => 1,
+    map(("enable_$_" => 0), qw(
+        ticket
+        poll
+        tables
+    )),
+});
+follow_link('calendar');
+test_deviance();
+follow_link('tables');
+test_conformance();
+follow_link($name, 'edit_features');
+verify_form({
+    enable_blog => 1,
+    enable_calendar => 1,
+    enable_file => 1,
+    enable_wiki => 1,
+    map(("enable_$_" => 0), qw(
+        ticket
+        poll
+        tables
+    )),
+});
+submit_form({
+    enable_calendar => 0,
+    enable_tables => 1,
+});
+follow_link('tables');
+test_deviance();
+follow_link('calendar');
+
