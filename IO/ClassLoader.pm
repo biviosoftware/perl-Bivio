@@ -243,12 +243,9 @@ sub unsafe_map_require {
     # with L<unsafe_simple_require|"unsafe_simple_require">.
     return $proto->unsafe_simple_require($class_name)
 	unless defined($map_name);
-    _trace('cached map_class=', $map_class)
-	if $_TRACE && $_MAP_CLASS->{$map_class};
     return _post_require($_MAP_CLASS->{$map_class})
 	if $_MAP_CLASS->{$map_class};
-    _trace('map_class=', $map_class)
-	if $_TRACE;
+    _trace($map_class) if $_TRACE;
     foreach my $path (_map_path_list($map_name)) {
 	my($try) = $path . '::' . $class_name;
 	$_MAP_CLASS->{$map_class} = $try;
