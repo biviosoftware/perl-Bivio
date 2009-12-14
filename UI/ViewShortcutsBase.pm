@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::ViewShortcutsBase;
 use strict;
@@ -18,19 +18,14 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new {
-    # (proto) : undef
-    # Dies.  You can't instantiate a ViewShortcut.
-    Bivio::Die->die(
+    b_die(
 	"you can't instantiate a ViewShortcut; perhaps you meant vs_new()?");
     # DOES NOT RETURN
 }
 
 sub view_autoload {
-    # (self, string, array_ref) : any
-    # Called as last resort when the method doesn't match the
-    # standard ViewLanguage patterns (vs_*, view_*, SomeWidget).
     my(undef, $method, $args) = @_;
-    Bivio::Die->die("$method invalid view function, widget, or shortcut.");
+    b_die($method, ': invalid view function, widget, or shortcut.');
     # DOES NOT RETURN
 }
 
