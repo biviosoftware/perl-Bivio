@@ -62,6 +62,24 @@ Four score and seven years ago...
 Fan Tango
 EOF
 
+my($_WITH_CC) = <<'EOF';
+Message-ID: <123@example.com>
+From: from@from.from
+Cc: cc@cc.cc
+Date: Thu, 1 Jul 1999 09:33:35 -0400
+
+body
+EOF
+
+my($_WITHOUT_CC) = <<'EOF';
+Message-ID: <123@example.com>
+From: from@from.from
+Date: Thu, 1 Jul 1999 09:33:35 -0400
+
+body
+EOF
+
+
 my($_BODY) = 'what a body';
 [
     [Bivio::Mail::Incoming->new(\$_IN)] => [
@@ -132,6 +150,28 @@ my($_BODY) = 'what a body';
 	    from => '"Fan Tango" <foo_bar@example.net>',
 	    sender => 'a@a.a',
 	    'reply-to' => undef,
+	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_WITH_CC)] => [
+	set_headers_for_list_send => [
+	    [{
+		list_email => 'some-list@example.com',
+	    }] => undef,
+	],
+	unsafe_get_header => [
+	    to => 'cc@cc.cc',
+	    cc => undef,
+	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_WITHOUT_CC)] => [
+	set_headers_for_list_send => [
+	    [{
+		list_email => 'some-list@example.com',
+	    }] => undef,
+	],
+	unsafe_get_header => [
+	    to => 'some-list@example.com',
+	    cc => undef,
 	],
     ],
 ];
