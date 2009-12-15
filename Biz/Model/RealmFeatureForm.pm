@@ -22,9 +22,14 @@ my($_CATEGORY_DEFAULTS) = {
 };
 my($_CATEGORIES) = [sort(keys(%$_CATEGORY_DEFAULTS))];
 my($_ENABLED_CATEGORIES) = [grep($_CATEGORY_DEFAULTS->{$_}, @$_CATEGORIES)];
+my($_FEM) = b_use('Type.ForumEmailMode');
 
 sub CATEGORY_LIST {
     return @$_CATEGORIES;
+}
+
+sub FEATURE_LIST {
+    return grep(/^feature/, @$_CATEGORIES);
 }
 
 sub execute_empty {
@@ -51,7 +56,10 @@ sub internal_initialize {
         version => 1,
         visible => [
 	    $self->field_decl(
-		[@$_CATEGORIES],
+		[
+                    @$_CATEGORIES,
+                    [email_mode => 'ForumEmailMode', 'NONE'],
+                ],
 		'NullBoolean',
 	    ),
         ],
@@ -68,15 +76,23 @@ sub internal_put_categories {
 	$self->internal_put_field($c => grep($_ eq $c, @$cats) ? 1 : 0)
 	    if $overwrite || !defined($self->unsafe_get($c));
     }
+    _put_email_mode($self);
     return;
 }
 
 sub internal_put_field_category_defaults {
+    my($self) = @_;
+    _put_default_email_mode($self);
     return shift->internal_put_field(%$_CATEGORY_DEFAULTS)
 }
 
 sub internal_validate_email_modes {
     my($self) = @_;
+    if (my $mode = $self->unsafe_get('email_mode')) {
+        $self->internal_put_field(
+            map(($_ => $mode->equals_by_name($_) ? 1 : 0), @$_EMAIL_MODES),
+        );
+    }
     my($x) = [grep($self->unsafe_get($_), @$_EMAIL_MODES)];
     $self->internal_put_error($x->[1], 'MUTUALLY_EXCLUSIVE')
         if @$x > 1;
@@ -86,6 +102,38 @@ sub internal_validate_email_modes {
 sub validate {
     my($self) = @_;
     $self->internal_validate_email_modes;
+    return;
+}
+
+sub _put_default_email_mode {
+    my($self) = @_;
+    my(@x) = $self->unsafe_get(qw(
+        email_mode
+        admin_only_forum_email
+        system_user_forum_email
+        public_forum_email
+    ));
+    return if @x;
+    $self->internal_put_field(
+        email_mode => $_FEM->DEFAULT);
+    return;
+}
+
+sub _put_email_mode {
+    my($self) = @_;
+    my($email, $admin, $system, $public) = $self->unsafe_get(qw(
+        email_mode
+        admin_only_forum_email
+        system_user_forum_email
+        public_forum_email
+    ));
+    $self->internal_put_field(
+        email_mode =>
+            $admin && !$system && !$public ? $_FEM->ADMIN_ONLY_FORUM_EMAIL
+            : !$admin && $system && !$public ? $_FEM->SYSTEM_USER_FORUM_EMAIL
+            : !$admin && !$system && $public ? $_FEM->PUBLIC_FORUM_EMAIL
+            : $_FEM->DEFAULT,
+    );
     return;
 }
 

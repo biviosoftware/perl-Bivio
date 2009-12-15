@@ -14,6 +14,7 @@ req()->set_realm_and_user('fourem', 'root');
 	admin_only_forum_email => 0,
         system_user_forum_email => 0,
 	public_forum_email => 0,
+        email_mode => 'DEFAULT',
     }),
     simple_case({
 	admin_only_forum_email => 1,
@@ -36,17 +37,16 @@ req()->set_realm_and_user('fourem', 'root');
         feature_motion => 0,
         feature_tuple => 1,
     }] => sub {
-        assert_equals(
-            [qw(
+        assert_contains(
+            qr{@{[join('.*', qw(
                 feature_calendar
                 feature_crm
                 feature_file
                 feature_mail
                 feature_task_log
                 feature_tuple
-            )],
-            [grep(/^feature/,
-                  @{ShellUtil_RealmRole()->list_enabled_categories})]
+            ))]}},
+            ShellUtil_RealmRole()->list_enabled_categories,
         );
         return 1;
     },
@@ -54,11 +54,43 @@ req()->set_realm_and_user('fourem', 'root');
     [{
         feature_file => 1,
     }] => sub {
-        assert_equals(
-            ['feature_file'],
-            [grep(/^feature/,
-                  @{ShellUtil_RealmRole()->list_enabled_categories})],
+        assert_contains(
+            qr{feature_file},
+            ShellUtil_RealmRole()->list_enabled_categories,
         );
         return 1;
     },
+    simple_case({
+        email_mode => 'DEFAULT',
+    }, {
+	admin_only_forum_email => 0,
+        system_user_forum_email => 0,
+	public_forum_email => 0,
+    }),
+    simple_case({
+	admin_only_forum_email => 1,
+        email_mode => 'PUBLIC_FORUM_EMAIL',
+    }, {
+	admin_only_forum_email => 0,
+        system_user_forum_email => 0,
+	public_forum_email => 1,
+    }),
+    empty_case({
+        email_mode => 'PUBLIC_FORUM_EMAIL',
+	admin_only_forum_email => 0,
+        system_user_forum_email => 0,
+	public_forum_email => 1,
+    }),
+    simple_case({
+        system_user_forum_email => 1,
+        email_mode => undef,
+    }, {
+        system_user_forum_email => 1,
+    }),
+    empty_case({
+        email_mode => 'SYSTEM_USER_FORUM_EMAIL',
+	admin_only_forum_email => 0,
+        system_user_forum_email => 1,
+	public_forum_email => 0,
+    }),
 ];

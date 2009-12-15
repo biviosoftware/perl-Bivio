@@ -24,10 +24,13 @@ sub create_forum {
         qw(
             ForumForm.RealmOwner.display_name
             ForumForm.RealmOwner.name
-            ForumForm.Forum.require_otp
-            ForumForm.Forum.want_reply_to
         ),
-	map("ForumForm.$_", b_use('Model.ForumForm')->CATEGORY_LIST),
+	map("ForumForm.$_", b_use('Model.ForumForm')->FEATURE_LIST),
+        ['RealmFeatureForm.email_mode' => {
+            enum_sort => 'get_short_desc',
+            show_unknown => 0,
+            column_count => 1,
+        }],
     ]));
 }
 
@@ -35,7 +38,12 @@ sub edit_realm_features {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(RealmFeatureForm => [
 	map("RealmFeatureForm.$_",
-            b_use('Model.RealmFeatureForm')->CATEGORY_LIST),
+            b_use('Model.RealmFeatureForm')->FEATURE_LIST),
+        ['RealmFeatureForm.email_mode' => {
+            enum_sort => 'get_short_desc',
+            show_unknown => 0,
+            column_count => 1,
+        }],
     ]));
     return;
 }

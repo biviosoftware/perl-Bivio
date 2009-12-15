@@ -764,6 +764,7 @@ sub _cfg_group_admin {
                 admin_only_forum_email => 'Admin Only Email?',
                 system_user_forum_email => 'System User Email?',
                 public_forum_email => 'Public Email?',
+                email_mode => 'Accept Mail From',
             ]],
 	    [title => [
 		GROUP_USER_LIST => 'Roster',
