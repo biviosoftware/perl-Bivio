@@ -17,7 +17,10 @@ our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CFG) = {
     error_file => (-r '/var/log/httpd/error_log'
-       ? '/var/log/httpd/error_log' : '/var/log/httpd/error.log'),
+	? '/var/log/httpd/error_log'
+	: -r '/var/log/httpd/error.log'
+	    ? '/var/log/httpd/error.log'
+            : '/var/log/apache2/error_log'),
     email => 'root',
     pager_email => '',
     error_count_for_page => 3,
