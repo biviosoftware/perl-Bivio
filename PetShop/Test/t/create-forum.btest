@@ -17,11 +17,11 @@ submit_form({
         tables
     )),
 });
-follow_link(qr{^$name$}, 'calendar');
+follow_link(qr{^$name$}i, qr{^calendar$}i);
 test_deviance();
-follow_link('tables');
+follow_link(qr{^tables$}i);
 test_conformance();
-follow_link(qr{^$name$}, 'configure_features');
+follow_link(qr{^$name$}i, 'configure_features');
 verify_form({
     enable_blog => 1,
     enable_calendar => 1,
@@ -37,7 +37,7 @@ submit_form({
     enable_calendar => 0,
     enable_tables => 1,
 });
-follow_link('tables');
+follow_link(qr{^tables$}i);
 test_deviance();
-follow_link('calendar');
+follow_link(qr{^calendar$}i);
 
