@@ -1040,7 +1040,7 @@ sub _cfg_site_admin {
                 [
                     'configure_features',
                     'REALM_FEATURE_FORM',
-                    undef,
+                    [[qw(->req)], '->can_user_execute_task', 'REALM_FEATURE_FORM'],
                     'no_match',
                 ],
             ),
