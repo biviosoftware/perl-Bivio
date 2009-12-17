@@ -35,7 +35,7 @@ sub list {
 	    ]),
 	}],
     ], {
-	class => 'paged_list search_results',
+	class => 'paged_list b_search_results',
 	show_headings => 0,
     })),
 }
