@@ -68,13 +68,21 @@ sub render_html {
     return ''
 	unless $links && @$links;
     my($buf) = '';
-    TaskMenu([map(_item_widget($proto, $args, $_, $attrs->{b_selected_label_prefix}), @$links)], $attrs->{class})
-	->put(selected_item => sub {
-                my($w, $source) = @_;
-                return ($source->ureq('uri') || '') =~
-                    $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
-            },
-        )->initialize_and_render($args->{source}, \$buf);
+    TaskMenu([
+	map(
+	    _item_widget(
+		$proto,
+		$args,
+		$_,
+		$attrs->{b_selected_label_prefix},
+	    ), @$links,
+	)],
+	$attrs->{class},
+    )->put(selected_item => sub {
+        my($w, $source) = @_;
+	return ($source->ureq('uri') || '')
+	    =~ $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
+    })->initialize_and_render($args->{source}, \$buf);
     if ($args->{tag} eq 'b-menu-source') {
         $args->{req}->put($proto->TARGET, $buf);
         return '';
