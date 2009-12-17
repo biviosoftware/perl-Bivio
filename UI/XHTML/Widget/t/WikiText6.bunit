@@ -19,7 +19,7 @@ initialize_fully('FORUM_WIKI_VIEW');
  	    '@b-embed value=/my/bp/PrivatePage' => qr{My Example Page},
  	    '@b-embed value=/site-help/bp/Shell_Util_Help'
  		=> qr{shell utility help}i,
-	    '@b-embed value=/pub/eg1' => 'hello, world!',
+	    '@b-embed value=/pub/eg1' => qr{hello, world!},
 	],
     ],
 ];
