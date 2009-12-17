@@ -448,8 +448,6 @@ sub vs_table_attrs {
     my($proto, $model, $class, $attrs) = @_;
     return {
 	class => $class,
-	even_row_class => 'even',
-	odd_row_class => 'odd',
 	empty_list_widget => $proto->vs_empty_list_prose($model),
 	%{$attrs || {}},
     };
