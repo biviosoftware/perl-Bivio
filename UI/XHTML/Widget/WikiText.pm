@@ -20,6 +20,7 @@ my($_TI) = b_use('Agent.TaskId');
 my($_V) = b_use('UI.View');
 my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
+my($_VS) = b_use('UIXHTML.ViewShortcuts');
 my($_INLINE_RE);
 my($_WV);
 my($_REALM_PLACEHOLDER) = b_use('Type.RealmName')->SPECIAL_PLACEHOLDER;
@@ -607,6 +608,7 @@ sub render_html_without_view {
 	    sub {$args->{proto}->render_html($args)},
 	    $args->{req},
 	    'XHTMLWidget',
+	    $_VS,
 	),
 	$args,
     );
