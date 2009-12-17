@@ -319,6 +319,7 @@ my($_INFINITY_ROWS) = 0x7fffffff;
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_M) = b_use('Biz.Model');
 my($_IOA) = b_use('IO.Alert');
+my($_HTML) = b_use('Bivio.HTML');
 
 sub create_cell {
     my($self, $model, $col, $attrs) = @_;
@@ -531,6 +532,8 @@ sub initialize {
     $self->unsafe_initialize_attr('empty_list_widget', $source);
     $self->unsafe_initialize_attr('before_row', $source);
     foreach my $c (qw(
+	even_row
+	odd_row
         data_row
         footer_row
         heading_row
@@ -538,7 +541,7 @@ sub initialize {
         title_row
         trailing_separator_row
     )) {
-	$self->initialize_attr($c . '_class', $c);
+	$self->initialize_attr($c . '_class', 'b_' . $c);
     }
     $_VS->vs_html_attrs_initialize(
 	$self,
@@ -638,7 +641,6 @@ sub render {
 
     # alternating row colors
     my($is_even_row) = 0;
-    _initialize_row_prefixes($state);
 
     # Row counting
     my($list_size) = $_INFINITY_ROWS;
@@ -660,11 +662,13 @@ sub render {
 		if defined($grouping_field) && defined($prev_value)
 			&& $prev_value ne $grouping_value;
 
-	$self->render_row($state->{cells}, $list, $buffer,
-	    _row_prefix($state,
-		$is_even_row ? $state->{even_row} : $state->{odd_row}),
-	    $_TRC->DATA);
-
+	$self->render_row(
+	    $state->{cells},
+	    $list,
+	    $buffer,
+	    _row_prefix($state, $is_even_row),
+	    $_TRC->DATA,
+	);
 	if (defined($grouping_field)) {
 	    $prev_value = $grouping_value;
 	}
@@ -863,23 +867,6 @@ sub _initialize_colspan {
     return;
 }
 
-sub _initialize_row_prefixes {
-    # (hash_ref) : undef
-    # Initializes even_row and odd_row row prefixes.
-    my($state) = @_;
-    foreach my $w (qw(odd even)) {
-	$state->{$w . '_row'} = "\n<tr"
-	    . $_C->format_html(
-		$state->{self}->get_or_default(
-		    $w . '_row_bgcolor', "table_${w}_row_bg"),
-		'bgcolor', $state->{req})
-	    . $_VS->vs_html_attrs_render_one(
-		@$state{qw(self source)}, $w . '_row_class')
-	    .'>';
-    }
-    return;
-}
-
 sub _render_before_row {
     my($self, $cols, $source, $buffer) = @_;
     my($b) = '';
@@ -947,18 +934,33 @@ sub _render_trailer {
 }
 
 sub _row_prefix {
-    # (hash_ref, string) : string
-    # Returns row prefix
-    my($state, $row_prefix) = @_;
-    my($b) = '';
-    return $row_prefix
-	unless $state->{self}->unsafe_render_attr(
-	    'row_bgcolor', $state->{list}, \$b)
-	    && length($b);
-    $row_prefix =~ s/ bgcolor[^>\s]+//;
-    $row_prefix =~ s{(?<=\<tr)}{
-         $_C->format_html($b, 'bgcolor', $state->{req})}xe;
-    return $row_prefix;
+    my($state, $is_even_row) = @_;
+    my($color) = $state->{self}->render_simple_attr(
+	'row_bgcolor', $state->{list});
+    my($class) = join(
+	' ',
+	grep($_,
+	    $state->{self}->render_simple_attr(
+		'data_row_class',
+		$state->{list},
+	    ),
+	    $state->{self}->render_simple_attr(
+		$is_even_row ? 'even_row_class' : 'odd_row_class',
+		$state->{list},
+	    ),
+	),
+    );
+    _xhtml(
+	$state->{self},
+	sub {
+	    $color ||= ('table_' . ($is_even_row ? 'even' : 'odd') . '_row_bg');
+	    return;
+	},
+    );
+    return "\n<tr"
+	. ($color ? $_C->format_html($color, 'bgcolor', $state->{req}) : '')
+	. ($class ? ' class="' . $_HTML->escape_attr_value($class) . '"' : '')
+	. '>';
 }
 
 sub _sort_widget {

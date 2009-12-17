@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget({
     setup_render => sub {
@@ -40,20 +40,20 @@ Widget({
     }
 	[{align => 'n'}, {class => 'b_align_n'}],
 	[{expand => 1}, {width => '95%', class => 'b_align_left'}],
-	[{title => 'Reptiles'}, {title => qq{\n<tr><td colspan="2"><div><font face="arial,sans-serif"><b>Reptiles</b></font></div></td>\n</tr>}, class => 'b_align_left'}],
+	[{title => 'Reptiles'}, {title => qq{\n<tr class="b_title_row"><td colspan="2"><div><font face="arial,sans-serif"><b>Reptiles</b></font></div></td>\n</tr>}, class => 'b_align_left'}],
     ),
     [{class => 'reptiles'}] => _chomp(<<'EOF'),
 
 <table class="reptiles">
-<tr>
+<tr class="b_heading_row">
 <th><a href="/pub/products?p=REPTILES&amp;o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th><a href="/pub/products?p=REPTILES&amp;o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="ascend"> &#9650;</span></a></th>
+<th><a href="/pub/products?p=REPTILES&amp;o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="b_sort_arrow ascend"> &#9650;</span></a></th>
 </tr>
-<tr bgcolor="#D5EEFF">
+<tr class="b_data_row b_odd_row">
 <td><font face="arial,sans-serif">RP-LI-02</font></td>
 <td><font face="arial,sans-serif">Iguana</font></td>
 </tr>
-<tr bgcolor="#F0F9FF">
+<tr class="b_data_row b_even_row">
 <td><font face="arial,sans-serif">RP-SN-01</font></td>
 <td><font face="arial,sans-serif">Rattlesnake</font></td>
 </tr>
@@ -63,17 +63,17 @@ EOF
 	  class('HTMLWidget.String')->new('FOO', 0)}] => _chomp(<<'EOF'),
 
 <table class="reptiles">
-<tr>
+<tr class="b_heading_row">
 <th><a href="/pub/products?p=REPTILES&amp;o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th><a href="/pub/products?p=REPTILES&amp;o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="ascend"> &#9650;</span></a></th>
+<th><a href="/pub/products?p=REPTILES&amp;o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="b_sort_arrow ascend"> &#9650;</span></a></th>
 </tr>
 <tr><td colspan="2">FOO</td></tr>
-<tr bgcolor="#D5EEFF">
+<tr class="b_data_row b_odd_row">
 <td><font face="arial,sans-serif">RP-LI-02</font></td>
 <td><font face="arial,sans-serif">Iguana</font></td>
 </tr>
 <tr><td colspan="2">FOO</td></tr>
-<tr bgcolor="#F0F9FF">
+<tr class="b_data_row b_even_row">
 <td><font face="arial,sans-serif">RP-SN-01</font></td>
 <td><font face="arial,sans-serif">Rattlesnake</font></td>
 </tr>
@@ -88,11 +88,11 @@ EOF
     ], {class => 'reptiles', show_headings => 0}] => _chomp(<<'EOF'),
 
 <table class="reptiles">
-<tr bgcolor="#D5EEFF">
+<tr class="b_data_row b_odd_row">
 <td class="ping">&nbsp;</td>
 <td class="zing"><font face="arial,sans-serif">Iguana</font></td>
 </tr>
-<tr bgcolor="#F0F9FF">
+<tr class="b_data_row b_even_row">
 <td class="ping">&nbsp;</td>
 <td class="zing"><font face="arial,sans-serif">Rattlesnake</font></td>
 </tr>
@@ -111,18 +111,18 @@ sub _t {
     my($x) = _chomp(<<'EOF');
 
 <table border="0" cellpadding="5" cellspacing="0" valign="NOP" width="NOP" class="NOP"> title=NOP
-<tr>
+<tr class="b_heading_row">
 <th class="b_align_s"><a href="/pub/products?p=REPTILES&amp;o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
 <th class="b_align_s"><a href="/pub/products?p=REPTILES&amp;o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" class="b_align_bottom" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
 </tr>
-<tr><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
-<tr bgcolor="#000000"><td class="line_cell"><img src="/i/dot.gif" alt="dot" border="0" width="1" height="1" /></td></tr></table></td>
+<tr class="b_heading_separator_row"><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
+<tr bgcolor="#000000"><td class="line_cell"><img class="b_clear_dot" alt="dot" height="1" src="/i/dot.gif" width="1" /></td></tr></table></td>
 </tr>
-<tr bgcolor="#D5EEFF">
+<tr bgcolor="#D5EEFF" class="b_data_row b_odd_row">
 <td class="b_align_left"><font face="arial,sans-serif">RP-LI-02</font></td>
 <td class="b_align_left"><font face="arial,sans-serif">Iguana</font></td>
 </tr>
-<tr bgcolor="#F0F9FF">
+<tr bgcolor="#F0F9FF" class="b_data_row b_even_row">
 <td class="b_align_left"><font face="arial,sans-serif">RP-SN-01</font></td>
 <td class="b_align_left"><font face="arial,sans-serif">Rattlesnake</font></td>
 </tr>
