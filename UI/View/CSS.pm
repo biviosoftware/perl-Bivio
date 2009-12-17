@@ -478,10 +478,10 @@ pre .text {
 .tree_list td {
   padding: .3ex .8em;
 }
-.even {
+.b_even_row {
   Color('even-background');
 }
-.odd {
+.b_odd_row {
   Color('odd-background');
 }
 p {
@@ -955,8 +955,8 @@ table.search_results td div.byline span.author {
 table.search_results div.date {
   display: inline;
 }
-table.search_results tr.even,
-table.search_results tr.odd {
+table.b_search_results tr.b_even_row,
+table.b_search_results tr.b_odd_row {
   Color('search_results-background');
 }
 EOF
