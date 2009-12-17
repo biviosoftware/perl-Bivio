@@ -28,8 +28,8 @@ sub NEW_ARGS {
 sub internal_as_string {
     my($self) = @_;
     return map(
-	(ref($_) =~ /Link/ ?
-	    $_->get('_task_menu_cfg')->{xlink}
+	(ref($_) =~ /Link/ && $_->unsafe_get('_task_menu_cfg')
+	    ? $_->get('_task_menu_cfg')->{xlink}
 	    || $_->get('_task_menu_cfg')->{task_id}->get_name
 	    : ref($_) eq 'ARRAY' ? $_->[0]
 	    : ref($_) eq 'HASH' ?  $_->{xlink} || $_->{task_id}
@@ -47,10 +47,10 @@ sub initialize {
 	class => 'task_menu',
 	tag_if_empty => 0,
 	tag => 'div',
-        want_more => 0,
-        want_more_count => 0,
     );
     $self->initialize_attr('selected_item');
+    $self->unsafe_initialize_attr('want_more');
+    $self->unsafe_initialize_attr('want_more_count');
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
     my($need_sep, $selected);
     my($i);
@@ -150,21 +150,8 @@ sub render_tag_value {
 	$$need_sep++;
         push(@$buffers, $b);
     }
-    if (($self->get('want_more') || $self->get('want_more_count'))
-            && @$buffers > 1 + (my $n = $self->get('want_more_count')
-                                || $_DEFAULT_WANT_MORE_THRESHOLD)) {
-        my($b) = '';
-        DIV(DropDown(String('more'), DIV_dd_menu(
-            Join([splice(@$buffers, $n)]), {
-                id => 'more_drop_down',
-            })), {
-                class => 'task_menu_wrapper want_sep'
-            })->initialize_and_render($source, \$b);
-        push(@$buffers, $b);
-    }
-    foreach my $b (@$buffers) {
-        $$buffer .= $b;
-    }
+    _want_more($self, $source, $buffers);
+    $$buffer .= join('', @$buffers);
     return;
 }
 
@@ -190,6 +177,28 @@ sub _selected_attr {
     my($res) = "$self.$$i.is_selected";
     ++$$i;
     return $res;
+}
+
+sub _want_more {
+    my($self, $source, $buffers) = @_;
+    return
+	unless $self->render_simple_attr('want_more', $source)
+	or my $wmc = $self->render_simple_attr('want_more_count', $source);
+    return
+	unless @$buffers > 1 + ($wmc ||= $_DEFAULT_WANT_MORE_THRESHOLD);
+    my($b) = '';
+    DIV(
+	DropDown(
+	    String('more'),
+	    DIV_dd_menu(
+		Join([splice(@$buffers, $wmc)]),
+		{id => 'more_drop_down'},
+	    ),
+	),
+	{class => 'task_menu_wrapper want_sep'},
+    )->initialize_and_render($source, \$b);
+    push(@$buffers, $b);
+    return;
 }
 
 1;
