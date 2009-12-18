@@ -63,6 +63,7 @@ sub internal_initialize {
 		'NullBoolean',
 	    ),
         ],
+        require_context => 1,
 	auth_id => ['RealmOwner.realm_id'],
     });
 }
