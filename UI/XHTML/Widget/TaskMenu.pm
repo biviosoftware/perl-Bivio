@@ -50,7 +50,7 @@ sub initialize {
     );
     $self->initialize_attr('selected_item');
     $self->unsafe_initialize_attr('want_more');
-    $self->unsafe_initialize_attr('want_more_count');
+    $self->unsafe_initialize_attr('want_more_threshold');
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
     my($need_sep, $selected);
     my($i);
@@ -183,7 +183,7 @@ sub _want_more {
     my($self, $source, $buffers) = @_;
     return
 	unless $self->render_simple_attr('want_more', $source)
-	or my $wmc = $self->render_simple_attr('want_more_count', $source);
+	or my $wmc = $self->render_simple_attr('want_more_threshold', $source);
     return
 	unless @$buffers > 1 + ($wmc ||= $_DEFAULT_WANT_MORE_THRESHOLD);
     my($b) = '';
