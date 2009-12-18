@@ -198,7 +198,7 @@ sub _cfg_base {
 	    # Pass #2: Style tag selectors (bOP's standard)
 	    [a_hover => 'underline'],
 	    [a_link => 'normal'],
-	    [body => ['family=Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small', 'style=margin-top: 0; margin-bottom: 0; margin-right: .5em; margin-left: .5em; min-width: 50em']],
+	    [body => ['family=Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small', 'style=margin-top: 0; margin-bottom: 0; margin-right: .5em; margin-left: .5em; min-width: 50em']],
 	    [caption => [qw(bold center)]],
 	    [[qw(code pre_text)] => [
 		'family="Courier New",Courier,monospace,fixed',
