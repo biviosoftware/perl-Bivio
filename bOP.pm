@@ -26,11 +26,26 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.57  2009/12/17 15:30:54  moeller
+  * Bivio::UI::HTML::Widget::Table
+    fixed even and odd rows so renders classes properly
+  * Bivio::UI::View::CSS
+    b_even/odd_row rename
+  * Bivio::UI::View::Search
+    search_results => b_search_results
+  * Bivio::UI::XHTML::ViewShortcuts
+    vs_table_attrs() shouldn't default even/odd classes, Table() does that
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    want_more/_count should be dynamic
+    refactored code into _want_more() to make more readable
+  * Bivio::UI::XHTML::Widget::WikiText
+    need to pass ViewShortcuts to render_html
+
   Revision 8.56  2009/12/16 18:46:12  dobbs
   * Bivio::UI::FacadeBase
     added control to configure_features xlink
