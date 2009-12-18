@@ -1563,7 +1563,8 @@ sub _cfg_wiki {
 		    },
 		]);},
 		wiki_diff_tools => q{vs_text_as_prose('wiki_diff_tools_base');},
-                xhtml_dock_left_standard => q{TaskMenu([SiteAdminDropDown(),qw(
+                xhtml_site_admin_drop_down_standard => q{SiteAdminDropDown();},
+                xhtml_dock_left_standard => q{TaskMenu([vs_text_as_prose('xhtml_site_admin_drop_down_standard'),qw(
                     SITE_WIKI_VIEW
                     FORUM_BLOG_LIST
                     FORUM_FILE_TREE_LIST
