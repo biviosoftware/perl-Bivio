@@ -42,8 +42,8 @@ req()->set_realm_and_user(qw(fourem root));
      )]] => 'task_menu Home Blog Files Wiki Calendar Hits Mail Polls Roster Tables',
      [[('SITE_WIKI_VIEW')x5], {want_more => 1}] =>
          'task_menu Home Home Home Home Home',
-     [[('SITE_WIKI_VIEW')x4], {want_more_count => 2}] =>
+     [[('SITE_WIKI_VIEW')x4], {want_more_threshold => 2}] =>
          'task_menu Home Home task_menu_wrapper want_sep dd_menu Home Home more  &#9660;',
-     [[('SITE_WIKI_VIEW')x3], {want_more_count => 2}] =>
+     [[('SITE_WIKI_VIEW')x3], {want_more_threshhold => 2}] =>
          'task_menu Home Home Home',
 ];
