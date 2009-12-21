@@ -97,6 +97,7 @@ OUT
     '@div' => qq{<div></div>},
     "\@div\n\@/div" => qq{<div></div>},
     "\@div.c1\n\@/div" => qq{<div class="c1"></div>},
+    "\@div.c1.c2 x1\n" => qq{<div class="c1 c2">x1</div>},
     "\@div class=c1\n\@/div" => qq{<div class="c1"></div>},
     "\@div\na\n\nb" => qq{<div>a\n\nb\n</div>},
     "\@div\n\na\n\nb" => qq{<div>\na\n\nb\n</div>},

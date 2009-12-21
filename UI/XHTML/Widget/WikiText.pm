@@ -1160,8 +1160,9 @@ sub _parse_stack_top {
 sub _parse_tag_attrs {
     my($state, $line) = @_;
     my($attrs) = {};
-    $attrs->{class} = $1
-	if $$line =~ s/^\.([\w\-]+)//s;
+    while ($$line =~ s/^\.([\w\-]+)//s) {
+	$attrs->{class} .= (defined($attrs->{class}) ? ' ' : '') . $1;
+    }
     while ($$line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+)|(?:(\w+)=)"([^\"]*)("?))//s) {
 	if (defined($3) && !$5) {
 	    $state->{proto}->render_error($1, 'attribute value not terminated by quote', $state);
