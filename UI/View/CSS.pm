@@ -647,6 +647,16 @@ span.b_progress_img {
 span.b_sort_arrow {
   Font('b_sort_arrow');
 }
+.italics,
+.italic {
+  font-style: italic;
+}
+.bold {
+  font-weight: bold;
+}
+.underline {
+  text-decoration: underline;
+}
 EOF
 }
 
