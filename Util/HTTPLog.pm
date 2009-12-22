@@ -207,7 +207,6 @@ sub _pager_report {
     $fields->{res} = "CRITICAL ERRORS\n$fields->{res}"
 	unless $fields->{res} =~ /^CRITICAL ERRORS/;
     my($last) = $fields->{pager_res}->[$#{$fields->{pager_res}}];
-    $msg = substr($msg, 0, 100);
     push(@{$fields->{pager_res}}, $msg)
 	if !$last || $last ne $msg;
     return;
@@ -220,7 +219,7 @@ sub _parse_errors_complete {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{fh}->close;
-    my($pr) = join('', @{$fields->{pager_res}});
+    my($pr) = substr(join('', @{$fields->{pager_res}}), 0, 100);
     $self->send_mail(
 	$_CFG->{pager_email},
 	_subject(),
