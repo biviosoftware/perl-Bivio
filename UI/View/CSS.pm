@@ -546,6 +546,16 @@ div.dd_menu a:hover {
   Color('dd_menu_selected');
   text-decoration: none;
 }
+div.cb_menu {
+  display: inline;
+  position: absolute;
+  visibility: hidden;
+  Color('dd_menu-background');
+  border: 1px solid;
+  Color('dd_menu-border');
+  width: 15em;
+  z-index: 1000;
+}
 div.cb_selected {
   Color('dd_menu_selected-background');
   Color('dd_menu_selected');
