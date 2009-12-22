@@ -155,8 +155,12 @@ sub parse_errors {
 	    }
 	    # Critical already avoids dups, so put before time check after.
 	    if ($_REGEXP->{critical} && $record =~ $_REGEXP->{critical}) {
-		_trace('critical: ', $1) if $_TRACE;
-		_pager_report($self, $1);
+		my($e) = $1;
+		_trace('critical: ', $e) if $_TRACE;
+		$e =~ s/^Bivio::DieCode:://g;
+		$e =~ s/ class=>\S+//g;
+		$e =~ s/\w+=>//g;
+		_pager_report($self, $e);
 		$record =~ s/^/***CRITICAL*** /;
 	    }
 	    if ($_REGEXP->{error} && $record =~ $_REGEXP->{error}) {
@@ -203,7 +207,9 @@ sub _pager_report {
     $fields->{res} = "CRITICAL ERRORS\n$fields->{res}"
 	unless $fields->{res} =~ /^CRITICAL ERRORS/;
     my($last) = $fields->{pager_res}->[$#{$fields->{pager_res}}];
-    push(@{$fields->{pager_res}}, $msg) if !$last || $last ne $msg;
+    $msg = substr($msg, 0, 100);
+    push(@{$fields->{pager_res}}, $msg)
+	if !$last || $last ne $msg;
     return;
 }
 
@@ -215,8 +221,11 @@ sub _parse_errors_complete {
     my($fields) = $self->[$_IDI];
     $fields->{fh}->close;
     my($pr) = join('', @{$fields->{pager_res}});
-    $self->send_mail($_CFG->{pager_email}, 'critical http errors', \$pr)
-	if $pr && $_CFG->{pager_email};
+    $self->send_mail(
+	$_CFG->{pager_email},
+	_subject(),
+	\$pr,
+    ) if $pr && $_CFG->{pager_email};
     return \$fields->{res};
 }
 
@@ -230,11 +239,7 @@ sub _parse_errors_init {
 	if $interval_minutes <= 0;
     $self->put(email => $_CFG->{email})
 	unless defined($self->unsafe_get('email'));
-    $self->put(result_subject =>
-	(Sys::Hostname::hostname() =~ /^([^\.]+)/)[0]
-	. ' '
-        . $_CFG->{error_file},
-    );
+    $self->put(result_subject => _subject($_CFG->{error_file}));
     my($fields) = $self->[$_IDI] = {
 	res => '',
 	pager_res => [],
@@ -290,6 +295,13 @@ sub _report {
     my($fields) = $self->[$_IDI];
     $fields->{res} .= Bivio::IO::Alert->format_args(@args);
     return;
+}
+
+sub _subject {
+    my($subject) = @_;
+    return (Sys::Hostname::hostname() =~ /^([^\.]+)/)[0]
+	. ($subject ? (' ' . $subject) : '')
+;
 }
 
 1;

@@ -3,8 +3,8 @@
 use Bivio::Type::DateTime;
 my($_LOG) = 'HTTPLog.tmp';
 our($_PREFIX) = '2003/03/22 06:2';
-Bivio::IO::Config->introduce_values({
-    'Bivio::Util::HTTPLog' => {
+config({
+    'Bivio::Util::HTTPLog' => my $cfg = {
 	email => '',
 	pager_email => '',
 	interval_minutes => 5,
@@ -13,7 +13,7 @@ Bivio::IO::Config->introduce_values({
 	],
 	error_count_for_page => 2,
 	critical_list => [
-	    'this is critical',
+	    'Bivio::DieCode::DIE.*',
 	],
 	ignore_list => [
 	    'this is normal',
@@ -62,7 +62,6 @@ Request();
 	    # Inside interval
 	    '4:02 this is an error' => '4:02 this is an error',
 	    '4:50 this is normal' => [],
-	    '4:51 this is critical' => qr/CRITICAL.*this is critical/,
 	    # Repeated
 	    [map("4:2$_ this is an error", 1..2)] => qr/CRITICAL/,
 	    # Repeated
@@ -73,19 +72,37 @@ Request();
 	    '1:22 this is an error' => [],
 	    # Unknown
 	    '4:55 Unknown' => '4:55 Unknown',
-	    # Leaves file in a state for next
 	    '4:55 normal' => '4:55 normal',
+	    # Leaves file in a state for next
+	    '4:51 Bivio::DieCode::DIE: class=>FooBar message=>this is critical' => qr/CRITICAL.*this is critical/,
 	],
     ],
     'Bivio::Util::HTTPLog' => [
 	main => [
 	    sub {
-		b_use('TestLanguage.HTTP')->clear_local_mail;
+		clear_local_mail();
 		return [-email => email('httplog'), parse_errors => 5];
 	    } => sub {
-		b_use('TestLanguage.HTTP')->verify_local_mail(
+		verify_local_mail(
 		    email('httplog'),
 		    qr{Subject: \w+ \Q$_LOG},
+		    1,
+		);
+		return 1;
+	    },
+	    sub {
+		clear_local_mail();
+		config({
+		    'Bivio::Util::HTTPLog' => {
+			%$cfg,
+			pager_email => email('pager'),
+		    },
+		});
+		return [parse_errors => 5];
+	    } => sub {
+		verify_local_mail(
+		    email('pager'),
+		    qr{Subject: \w+\n.*\nDIE: this is critical}s,
 		    1,
 		);
 		return 1;
