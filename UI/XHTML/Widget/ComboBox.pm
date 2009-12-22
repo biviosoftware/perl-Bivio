@@ -41,7 +41,7 @@ sub initialize {
 	    : $text,
 	BR(),
 	Tag(div => Simple(' '), {
-	    CLASS => 'dd_menu',
+	    CLASS => 'cb_menu',
 	    ID => _drop_down_id($self),
 	}),
     ]);
