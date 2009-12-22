@@ -144,6 +144,11 @@ sub builtin_class {
     return $_CLASS;
 }
 
+sub builtin_clear_local_mail {
+    shift;
+    return b_use('TestLanguage.HTTP')->clear_local_mail(@_);
+}
+
 sub builtin_commit {
     # Calls Bivio::Agent::Task::commit
     Bivio::Agent::Task->commit(shift->builtin_req);
@@ -450,6 +455,11 @@ sub builtin_template {
 
 sub builtin_to_string {
     return ${shift->use('IO.Ref')->to_string(@_)};
+}
+
+sub builtin_verify_local_mail {
+    shift;
+    return b_use('TestLanguage.HTTP')->verify_local_mail(@_);
 }
 
 sub new_unit {
