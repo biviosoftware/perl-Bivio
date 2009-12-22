@@ -73,13 +73,11 @@ sub call_autoload {
     my($map, $class)
 	= $func =~ /^(?:^|::)([A-Z][a-zA-Z]+)_([A-Z][A-Za-z0-9]+)$/;
     if ($map) {
-	b_die($func, ': no such mapped class')
+	_die($autoload, ': no such mapped class')
 	    unless $proto->is_map_configured($map)
 	    and $class = $proto->unsafe_map_require($map, $class);
     }
-    else {
-	return b_die($func, ': method not found')
-	    unless $no_match;
+    elsif ($no_match) {
 	return $no_match->($func, $args)
 	    if ref($no_match) eq 'CODE';
 	foreach my $m (@$no_match) {
@@ -89,6 +87,8 @@ sub call_autoload {
 	    last;
 	}
     }
+    _die($autoload, ': method not found')
+	unless $class;
     return $class->handle_call_autoload(@$args)
 	if $class->can('handle_call_autoload');
     return $class->new(@$args)
