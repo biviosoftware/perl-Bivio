@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Random;
 use strict;
-use base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::MIME::Base64;
 use IO::File ();
 
@@ -12,6 +12,7 @@ my($_DEV) = -r '/dev/urandom' ? '/dev/urandom'
 
 sub bytes {
     my($proto, $length) = @_;
+    $length = b_use('Type.Integer')->from_literal_or_die($length);
     my($f, $res);
     return $_DEV
 	? ($f = IO::File->new("< $_DEV"))
@@ -27,6 +28,7 @@ sub bytes {
 
 sub hex_digits {
     my($proto, $length) = @_;
+    $length = b_use('Type.Integer')->from_literal_or_die($length);
     return substr(
 	unpack('h*', shift->bytes(int(($length + 1) / 2))),
 	0,
@@ -37,20 +39,20 @@ sub hex_digits {
 sub integer {
     my($proto, $ceiling, $floor) = @_;
     if (defined($ceiling)) {
-	Bivio::Die->die($ceiling, ': ceiling must be positive')
+	b_die($ceiling, ': ceiling must be positive')
             unless $ceiling > 0;
     }
     else {
 	$ceiling = $proto->use('Type.Integer')->get_max;
     }
     if (defined($floor)) {
-	Bivio::Die->die($floor, ': floor must be non-negative')
+	b_die($floor, ': floor must be non-negative')
             unless $floor >= 0;
     }
     else {
 	$floor = 0;
     }
-    Bivio::Die->die($floor, ': floor must be less than ceiling: ', $ceiling)
+    b_die($floor, ': floor must be less than ceiling: ', $ceiling)
 	unless $ceiling > $floor;
     return unpack('L', $proto->bytes(4)) % ($ceiling - $floor) + $floor;
 }
