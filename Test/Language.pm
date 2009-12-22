@@ -136,6 +136,8 @@ sub test_log_output {
     return unless $_SELF_IN_EVAL;
     my($self) = _assert_in_eval('test_log_output');
     return unless ref($self) && $self->unsafe_get('test_log_prefix');
+    # ignore wide-print warnings
+    local($SIG{__WARN__}) = sub {};
     return $_F->write(
 	$self->get('test_log_prefix') . "/$file_name",
 	ref($content) ? $content : \$content,
