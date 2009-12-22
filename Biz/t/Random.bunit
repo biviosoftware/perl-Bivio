@@ -18,11 +18,14 @@ my($prev) = {};
 	    4 => 4,
 	    4 => 4,
 	    1 => 1,
+	    [] => Bivio::DieCode->DIE,
+	    '' => Bivio::DieCode->DIE,
 	],
 	hex_digits => [
 	    1 => 1,
 	    2 => 2,
 	    3 => 3,
+	    [] => Bivio::DieCode->DIE,
 	],
 	password => [
 	    [] => 16,
