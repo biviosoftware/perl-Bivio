@@ -344,11 +344,11 @@ sub merge_http_log {
 		    # Don't add errors that we don't want counts on, e.g.
 		    # login_error.  Not ignored, so shows up in email, but
 		    # never goes criticial
-		    'Bivio::DieCode::DIE',
-		    'Bivio::DieCode::CONFIG_ERROR',
+		    'Bivio::DieCode::DIE.*',
+		    'Bivio::DieCode::CONFIG_ERROR.*',
 		],
 		critical_list => [
-		    'Bivio::DieCode::DB_ERROR',
+		    'Bivio::DieCode::DB_ERROR.*',
 		],
 		# These errors are not a problem unless they occur "too often"
 		# See ignore_unless_count_list
