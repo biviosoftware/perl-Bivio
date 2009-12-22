@@ -409,7 +409,7 @@ div.task_menu_wrapper,
 .tools div.sep {
   display: inline;
 }
-.task_menu_wrapper {
+.selector, .task_menu_wrapper {
   position: relative;
 }
 .b_prose p,
