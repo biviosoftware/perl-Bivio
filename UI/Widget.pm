@@ -152,8 +152,10 @@ sub die {
     my($proto, $entity, $source, @msg) = @_;
     # Dies with I<msg> and context including I<attr_name> and I<source>
     # which both may be C<undef>.
+    my($x) = Bivio::IO::Alert->format_args(@msg);
+    chomp($x);
     Bivio::Die->throw('DIE', {
-	message => Bivio::IO::Alert->format_args(@msg),
+	message => $x,
 	entity => $entity,
 	widget => $proto,
 	view => Bivio::IO::ClassLoader->was_required('Bivio::View')
