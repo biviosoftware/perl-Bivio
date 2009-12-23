@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_F) = b_use('UI.Facade');
 my($_RR) = b_use('ShellUtil.RealmRole');
 my($_EMAIL_MODES) = [map(lc($_), b_use('Type.ForumEmailMode')->OPTIONAL_MODES)];
 my($_CATEGORY_DEFAULTS) = {
@@ -12,12 +13,10 @@ my($_CATEGORY_DEFAULTS) = {
 # supported in BConf category map
     feature_blog => 1,
     feature_calendar => 1,
-    feature_crm => 0,
     feature_file => 1,
     feature_mail => 1,
     feature_motion => 1,
     feature_tuple => 1,
-    feature_wiki => 1,
     map(($_ => 0), @$_EMAIL_MODES),
 };
 my($_CATEGORIES) = [sort(keys(%$_CATEGORY_DEFAULTS))];
@@ -34,19 +33,45 @@ sub FEATURE_LIST {
 
 sub execute_empty {
     my($self) = @_;
-    $self->internal_put_categories(1);
+    $self->internal_use_general_realm_for_site_admin(sub {
+        $self->load_from_model_properties('RealmOwner')
+            unless $self->req('auth_realm')->is_general;
+        $self->internal_put_categories(1);
+    });
     return;
 }
 
 sub execute_ok {
     my($self) = @_;
-    $self->internal_edit_categories;
+    $self->internal_use_general_realm_for_site_admin(sub {
+        my($x) = $self->get_model_properties('RealmOwner');
+        foreach my $k (keys(%$x)) {
+            delete($x->{$k})
+                unless defined($x->{$k});
+        }
+        if ($self->req('auth_realm')->is_general) {
+            my($forum, $ro) = $self->new_other('Forum')
+                ->create_realm({}, $x, $self->req('auth_user_id'));
+            $self->req->with_realm($ro, sub {
+                $self->internal_edit_categories;
+            })
+        }
+        else {
+            $self->get_model('RealmOwner')->update($x)
+                if keys(%$x);
+            $self->internal_edit_categories;
+        }
+        return;
+    });
     return;
 }
 
 sub internal_edit_categories {
     my($self) = @_;
-    $_RR->edit_categories({map(($_ => $self->get($_)), @$_CATEGORIES)});
+    $_RR->edit_categories({
+        feature_wiki => 1,
+        map(($_ => $self->get($_)), @$_CATEGORIES),
+    });
     return;
 }
 
@@ -55,6 +80,10 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
+            $self->field_decl([
+                [('RealmOwner.display_name')x2],
+                [('RealmOwner.name')x2],
+            ], undef, 'NONE'),
 	    $self->field_decl(
 		[
                     @$_CATEGORIES,
@@ -87,6 +116,13 @@ sub internal_put_field_category_defaults {
     return shift->internal_put_field(%$_CATEGORY_DEFAULTS)
 }
 
+sub internal_use_general_realm_for_site_admin {
+    my($self, $op) = @_;
+    return $self->req->with_realm(undef, $op)
+        if $_F->get_from_source($self)->auth_realm_is_site_admin($self->req);
+    return $op->();
+}
+
 sub internal_validate_email_modes {
     my($self) = @_;
     if (my $mode = $self->unsafe_get('email_mode')) {
@@ -102,8 +138,18 @@ sub internal_validate_email_modes {
 
 sub validate {
     my($self) = @_;
-    $self->internal_validate_email_modes;
+    $self->internal_use_general_realm_for_site_admin(sub {
+        $self->internal_validate_email_modes;
+        $self->validate_not_null('RealmOwner.name')
+            if $self->req('auth_realm')->is_general;
+    });
     return;
+}
+
+sub _is_auth_relam_general_or_site_admin {
+    my($self) = @_;
+    return $_F->get_from_source($self)->auth_realm_is_site_admin($self->req)
+        || $self->req('auth_realm')->is_general;
 }
 
 sub _put_default_email_mode {

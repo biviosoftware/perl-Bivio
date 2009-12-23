@@ -10,25 +10,21 @@ submit_form({
     blog => 1,
     calendar => 1,
     file => 1,
-    wiki => 1,
     map(("$_" => 0), qw(
-        ticket
         poll
         tables
     )),
 });
-follow_link(qr{^$name$}i, qr{^calendar$}i);
+follow_link(qr{^$name$}i, qr{^wiki$}i, qr{^calendar$}i);
 test_deviance();
 follow_link(qr{^tables$}i);
 test_conformance();
-follow_link(qr{^$name$}i, 'configure_features');
+follow_link(qr{^$name$}i, 'features');
 verify_form({
     blog => 1,
     calendar => 1,
     file => 1,
-    wiki => 1,
     map(("$_" => 0), qw(
-        ticket
         poll
         tables
     )),

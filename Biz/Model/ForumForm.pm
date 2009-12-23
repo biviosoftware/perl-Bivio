@@ -6,7 +6,6 @@ use Bivio::Base 'Model.RealmFeatureForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = b_use('Type.ForumName');
-my($_F) = b_use('UI.Facade');
 
 sub REALM_MODELS {
     return [qw(Forum RealmOwner)];
@@ -14,7 +13,7 @@ sub REALM_MODELS {
 
 sub execute_empty {
     my($self) = @_;
-    return _use_general_realm_for_site_admin($self, sub {
+    return $self->internal_use_general_realm_for_site_admin(sub {
         my($req) = $self->get_request;
         return $self->internal_put_field_category_defaults
 	    unless _is_forum($req);
@@ -35,7 +34,7 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    return _use_general_realm_for_site_admin($self, sub {
+    return $self->internal_use_general_realm_for_site_admin(sub {
         unless ($self->unsafe_get('validate_called')) {
             $self->validate;
             return
@@ -93,7 +92,7 @@ sub is_create {
 
 sub validate {
     my($self) = @_;
-    return _use_general_realm_for_site_admin($self, sub {
+    return $self->internal_use_general_realm_for_site_admin(sub {
         $self->internal_put_field(validate_called => 1);
         return if $self->get_field_error('RealmOwner.name');
         # A sub forum must begin with its corresponding root forum prefix, but
@@ -143,13 +142,6 @@ sub _top {
     }
     die('too deep');
     # DOES NOT RETURN
-}
-
-sub _use_general_realm_for_site_admin {
-    my($self, $op) = @_;
-    return $self->req->with_realm(undef, $op)
-        if $_F->get_from_source($self)->auth_realm_is_site_admin($self->req);
-    return $op->();
 }
 
 1;

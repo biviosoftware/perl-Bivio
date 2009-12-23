@@ -747,12 +747,12 @@ sub _cfg_group_admin {
 		mail_recipient => 'Receive mail sent to group (Subscribed)',
 	    ]],
             [ForumForm => [
-                'RealmOwner.name' => 'Forum',
-                'RealmOwner.display_name' => 'Title',
                 'Forum.want_reply_to' => 'Reply-To List?',
                 'Forum.require_otp' => 'Require OTP?',
             ]],
             [[qw(ForumForm RealmFeatureForm)] => [
+                'RealmOwner.name' => 'Forum',
+                'RealmOwner.display_name' => 'Title',
 		feature_blog => 'Blog',
 		feature_motion => 'Poll',
 		feature_mail => 'Mail',
@@ -771,7 +771,7 @@ sub _cfg_group_admin {
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
                 FORUM_CREATE_FORM => 'Create Forum',
-                REALM_FEATURE_FORM => 'Configure Features',
+                REALM_FEATURE_FORM => 'Features',
 	    ]],
 	    [clear_on_focus_hint => [
 		GROUP_USER_LIST => 'Filter name or @email',
@@ -1035,7 +1035,10 @@ sub _cfg_site_admin {
 		],
                 [
                     'create_forum',
-                    'FORUM_CREATE_FORM',
+                    'REALM_FEATURE_FORM',
+                    [[qw(->req)], '->can_user_execute_task',
+                     'REALM_FEATURE_FORM'],
+                    'SITE_ADMIN_REALM_NAME',
                 ],
                 [
                     'configure_features',
@@ -1079,7 +1082,7 @@ sub _cfg_site_admin {
 		task_log => 'Site Hits',
 		remote_copy => 'Remote Copy',
                 create_forum => 'Create Forum',
-                configure_features => 'Configure Features',
+                configure_features => 'Features',
             ]],
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',

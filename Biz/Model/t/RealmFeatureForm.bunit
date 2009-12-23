@@ -1,12 +1,14 @@
 # Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
 # $Id$
 FormModel();
+my($dn, $n) = map('x'.random_string(), 1..2);
 req()->set_realm_and_user('fourem', 'root');
 [
     empty_case({
+        'RealmOwner.display_name' => 'Unit Test Forum',
+        'RealmOwner.name' => 'fourem',
         feature_blog => 1,
         feature_calendar => 1,
-        feature_crm => 0,
         feature_file => 1,
         feature_mail => 1,
         feature_motion => 1,
@@ -29,18 +31,21 @@ req()->set_realm_and_user('fourem', 'root');
         public_forum_email => 'MUTUALLY_EXCLUSIVE',
     }),
     [{
+        'RealmOwner.display_name' => $dn,
+        'RealmOwner.name' => 'fourem',
         feature_blog => 0,
         feature_calendar => 1,
-        feature_crm => 1,
         feature_file => 1,
         feature_mail => 1,
         feature_motion => 0,
         feature_tuple => 1,
     }] => sub {
+        assert_contains({
+            display_name => $dn,
+        }, shift->get('object')->get_model('RealmOwner'));
         assert_contains(
             qr{@{[join('.*', qw(
                 feature_calendar
-                feature_crm
                 feature_file
                 feature_mail
                 feature_task_log
@@ -50,16 +55,28 @@ req()->set_realm_and_user('fourem', 'root');
         );
         return 1;
     },
+    empty_case({
+        'RealmOwner.display_name' => $dn,
+        'RealmOwner.name' => 'fourem',
+    }),
     inline_case(sub {req()->set_realm('demo')}),
     [{
+        'RealmOwner.name' => $n,
         feature_file => 1,
     }] => sub {
+        assert_contains({
+            name => $n,
+        }, shift->get('object')->get_model('RealmOwner'));
         assert_contains(
             qr{feature_file},
             ShellUtil_RealmRole()->list_enabled_categories,
         );
         return 1;
     },
+    empty_case({
+        'RealmOwner.display_name' => 'Demo User',
+        'RealmOwner.name' => $n,
+    }),
     simple_case({
         email_mode => 'DEFAULT',
     }, {

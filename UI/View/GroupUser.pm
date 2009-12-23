@@ -37,8 +37,10 @@ sub create_forum {
 sub edit_realm_features {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(RealmFeatureForm => [
-	map("RealmFeatureForm.$_",
-            b_use('Model.RealmFeatureForm')->FEATURE_LIST),
+	map("RealmFeatureForm.$_", qw(
+            RealmOwner.display_name
+            RealmOwner.name
+        ), b_use('Model.RealmFeatureForm')->FEATURE_LIST),
         ['RealmFeatureForm.email_mode' => {
             enum_sort => 'get_short_desc',
             show_unknown => 0,

@@ -14,7 +14,6 @@ req()->set_realm_and_user('site-admin', 'root');
 	system_user_forum_email => 0,
 	feature_blog => 1,
 	feature_calendar => 1,
-	feature_crm => 0,
 	feature_file => 1,
 	feature_mail => 1,
 	feature_motion => 0,
