@@ -1036,9 +1036,6 @@ sub _cfg_site_admin {
                 [
                     'create_forum',
                     'REALM_FEATURE_FORM',
-                    [[qw(->req)], '->can_user_execute_task',
-                     'REALM_FEATURE_FORM'],
-                    'SITE_ADMIN_REALM_NAME',
                 ],
                 [
                     'configure_features',
