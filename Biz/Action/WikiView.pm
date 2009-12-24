@@ -17,6 +17,9 @@ my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
 my($_WT) = b_use('XHTMLWidget.WikiText');
 my($_NOT_FOUND) = b_use('Bivio.DieCode')->NOT_FOUND;
+b_use('IO.Config')->register(my $_CFG = {
+    use_default_start_page => 0,
+});
 
 sub execute {
     my($proto) = shift;
@@ -49,6 +52,10 @@ sub execute_load_history {
 
 sub execute_not_found {
     my($proto, $req) = @_;
+    # can't return to current task becuase it is FORUM_WIKI_NOT_FOUND
+    return 'FORUM_WIKI_VIEW'
+	if $_CFG->{use_default_start_page}
+	    && _create_default_start_page($proto, $req);
     my($t) = $req->get('task')->unsafe_get_attr_as_id('edit_task');
     return
 	unless $t && $req->can_user_execute_task($t)
@@ -75,8 +82,7 @@ sub execute_prepare_html {
 	    carry_path_info => 1,
 	};
     }
-    $name =~ s{^/+}{};
-    unless ($_WN->is_valid($name)) {
+    unless (_is_valid(\$name)) {
 	$req->put(path_info => $_WDN->to_absolute($name));
 	return $_ARF->access_controlled_execute($req);
 #TODO: Test this thoroughly with all apps
@@ -130,6 +136,12 @@ sub get {
     return shift->SUPER::get(@_);
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub render_html {
     return $_WT->render_html(shift->get('wiki_args'));
 }
@@ -159,10 +171,38 @@ sub unsafe_load_wiki_data {
     return undef;
 }
 
+sub _create_default_start_page {
+    my($proto, $req) = @_;
+    my($path) = $req->unsafe_get('path_info');
+    return 0 unless $path && _is_valid(\$path) && _is_start_page($req, $path);
+    my($rf) = b_use('Model.RealmFile')->new($req);
+    my($site_realm_id) = b_use('UI.Constant')
+	->get_value('site_realm_id', $req);
+    
+    unless ($rf->unauth_load({
+	path => $_WN->to_absolute($_WN->DEFAULT_START_PAGE),
+	realm_id => $site_realm_id,
+    })) {
+	b_warn('missing default_start_page file in realm: ', $site_realm_id);
+	return 0;
+    }
+    $rf->create_with_content({
+	path => $_WN->to_absolute($_WN->START_PAGE),
+	user_id => $rf->get('user_id'),
+    }, $rf->get_content);
+    return 1;
+}
+
 sub _is_start_page {
     my($req, $name) = @_;
     return lc(Bivio::UI::Text->get_value('WikiView.start_page', $req))
 	eq lc($name) ? 1 : 0,
+}
+
+sub _is_valid {
+    my($name) = @_;
+    $$name =~ s{^/+}{};
+    return $_WN->is_valid($$name);
 }
 
 1;
