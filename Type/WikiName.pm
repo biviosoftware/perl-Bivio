@@ -7,6 +7,10 @@ use Bivio::Base 'Type.DocletFileName';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WIDTH) = __PACKAGE__->get_instance('FileName')->get_width;
 
+sub DEFAULT_START_PAGE {
+    return 'DefaultStartPage';
+}
+
 sub ERROR {
     return Bivio::TypeError->WIKI_NAME;
 }
