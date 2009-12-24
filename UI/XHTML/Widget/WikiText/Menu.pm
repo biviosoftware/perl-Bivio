@@ -54,6 +54,7 @@ sub render_html {
             ($v->{value}) = grep($_ && /^\@b-menu-source/,
                                  split(/\r?\n/, $v->{value}));
             $v->{value} ||= '';
+	    $v->{is_inline_text} = 1;
             $args->{proto}->render_html($v);
             return;
         });
@@ -171,7 +172,8 @@ sub _render_label {
     my($row, $args) = @_;
     my($res) = $args->{proto}->render_html({
         %$args,
-        value => $row->{Label},
+	is_inline_text => 1,
+	value => $row->{Label},
     });
     $res =~ s{<p(?: class="(?:b_)?prose")?>(.*?)</p>$}{$1}s;
     # Need to strip the <a>, because page won't render otherwise
