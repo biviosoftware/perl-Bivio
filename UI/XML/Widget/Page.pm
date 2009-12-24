@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
-    $self->put_unless_exists(content_type => 'text/html');
+    $self->put_unless_exists(content_type => 'text/xml');
     return shift->SUPER::initialize(@_);
 }
 
