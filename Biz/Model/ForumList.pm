@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FF) = b_use('Model.ForumForm');
 
 sub internal_initialize {
     my($self) = @_;
@@ -21,30 +20,10 @@ sub internal_initialize {
 	    'RealmOwner.display_name',
 	],
 	other => [
-	    'Forum.want_reply_to',
-	    map(+{
-		name => $_,
-		type => 'Boolean',
-		constraint => 'NONE',
-	    }, $_FF->CATEGORY_LIST),
+	    'Forum.require_otp',
 	],
 	auth_id => ['Forum.parent_realm_id'],
     });
-}
-
-sub internal_post_load_row {
-    my($self, $row) = @_;
-    my($req) = $self->get_request;
-    my($a) = $req->get('auth_id');
-    $req->set_realm($row->{'RealmOwner.name'});
-    my($cats) = Bivio::IO::ClassLoader
-	->simple_require('Bivio::Biz::Util::RealmRole')
-	    ->list_enabled_categories();
-    foreach my $pc ($_FF->CATEGORY_LIST) {
-	$row->{$pc} = grep($_ eq $pc, @$cats) ? 1 : 0;
-    }
-    $req->set_realm($a);
-    return 1;
 }
 
 1;

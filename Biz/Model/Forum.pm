@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::Forum;
 use strict;
@@ -9,8 +9,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub create {
     my($self, $values) = @_;
     return $self->SUPER::create({
-	want_reply_to => 1,
-	is_public_email => 0,
 	parent_realm_id => Bivio::Auth::Realm->get_general->get('id'),
 	require_otp => 0,
 	%$values,
@@ -21,8 +19,6 @@ sub create_realm {
     my($self, $forum, $realm_owner, $admin_id) = @_;
     # don't super admin_id, added using ForumUserAddForm below
     my(@res) = $self->create({
-	want_reply_to => 0,
-	is_public_email => 0,
 	%$forum,
 	parent_realm_id => $self->req('auth_id'),
     })->SUPER::create_realm($realm_owner);
@@ -56,8 +52,6 @@ sub internal_initialize {
             forum_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	    # Don't link
 	    parent_realm_id => ['PrimaryId', 'NOT_NULL'],
-	    want_reply_to => ['Boolean', 'NOT_NULL'],
-	    is_public_email => ['Boolean', 'NOT_NULL'],
 	    require_otp => ['Boolean', 'NOT_NULL'],
         },
 	other => [

@@ -5,8 +5,7 @@ req()->set_realm_and_user(undef, 'demo');
 my($load_list) = sub {
     my($realm) = @_;
     req()->set_realm($realm);
-    return Bivio::Biz::Model->new(req(), 'ForumList')
-	->load_all->get_result_set_size;
+    return model('ForumList', {})->get_result_set_size;
 };
 my($base) = $load_list->();
 my($forum_count) = sub {
@@ -19,15 +18,14 @@ my($forum_count) = sub {
 	dav_put => [
 	    [\(my $x = <<'EOF')] => not_die(),
 ignore
-fedl1,ForumEditDAVList1,0,1
+fedl1,ForumEditDAVList1
 EOF
         ],
-
   	$forum_count->(undef, 1),
 	dav_put => [
 	    sub {[\(my $x = <<"EOF")]} => not_die(),
 ignore
-fedl1,ForumEditDAVList1 now,0,1,0,0,@{[Bivio::Biz::Model->new(req(), 'RealmOwner')->unauth_load_or_die({name => 'fedl1'})->get('realm_id')]}
+fedl1,ForumEditDAVList1 now,@{[realm_id('fedl1')]}
 fedl2,My OTher forum
 EOF
         ],

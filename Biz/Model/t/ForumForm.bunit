@@ -41,10 +41,6 @@ my($check_perms) = sub {
     error_case({
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 't1',
-	'Forum.want_reply_to' => 1,
-	admin_only_forum_email => 0,
-	public_forum_email => 0,
-	system_user_forum_email => 0,
 	feature_blog => 1,
 	feature_calendar => 1,
 	feature_file => 1,
@@ -52,12 +48,12 @@ my($check_perms) = sub {
 	feature_motion => 1,
 	feature_tuple => 1,
     }, {
-	'RealmOwner.name' => 'FORUM_NAME',
+	'RealmOwner.name' => 'TOO_SHORT',
     }),
     error_case({
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 'nosuchtop-subforum',
-	'public_forum_email' => 0,
+	mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }, {
 	'RealmOwner.name' => 'TOP_FORUM_NAME',
     }),
@@ -65,16 +61,19 @@ my($check_perms) = sub {
     [{
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
-	'public_forum_email' => 0,
-	'Forum.want_reply_to' => 1,
+	mail_send_access => MailSendAccess()->ALL_MEMBERS,
+	mail_want_reply_to => 1,
     }] => [{
-	'Model.RealmOwner' => {
-	    name => 'ff1',
-	},
 	'Model.Forum' => {
 	    parent_realm_id => Bivio::Auth::Realm->get_general->get('id'),
-	    want_reply_to => 1,
 	    forum_id => var('parent'),
+	},
+	auth_realm => {
+	    owner_name => 'ff1',
+	},
+	'Model.RowTag' => {
+	    key => RowTagKey()->MAIL_WANT_REPLY_TO,
+	    value => 1,
 	},
         'Model.RealmUser' => {
             user_id => req()->get('auth_user_id'),
@@ -90,8 +89,8 @@ my($check_perms) = sub {
     empty_case({
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
-	public_forum_email => 0,
-	'Forum.want_reply_to' => 1,
+	mail_want_reply_to => 1,
+	mail_send_access => MailSendAccess()->ALL_MEMBERS,
 	feature_blog => 1,
 	feature_calendar => 1,
 	feature_file => 1,
@@ -102,14 +101,14 @@ my($check_perms) = sub {
     [{
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
-	'public_forum_email' => 1,
+	mail_send_access => MailSendAccess()->EVERYBODY,
     }] => sub {
 	return $check_perms->(shift(@_), 1);
     },
     [{
 	'RealmOwner.display_name' => 'Top One',
 	'RealmOwner.name' => 'ff1',
-	'public_forum_email' => 0,
+	mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }] => sub {
 	return $check_perms->(shift(@_), 0);
     },
@@ -117,20 +116,19 @@ my($check_perms) = sub {
     empty_case({
 	'RealmOwner.display_name' => 'Top One ',
 	'RealmOwner.name' => 'ff1-',
-	'public_forum_email' => 0,
+	mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }),
     $realm->('ff1'),
     [{
 	'RealmOwner.display_name' => 'Sub One',
 	'RealmOwner.name' => 'ff1-s1',
-	'public_forum_email' => 0,
+	mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }] => [{
 	'Model.Forum' => {
 	    parent_realm_id => var('parent'),
-	    want_reply_to => 0,
 	},
-	'Model.RealmOwner' => {
-	    name => 'ff1-s1',
+	auth_realm => {
+	    owner_name => 'ff1-s1',
 	},
     }],
     $realm->('ff1'),
@@ -139,8 +137,8 @@ my($check_perms) = sub {
     error_case({
 	'RealmOwner.display_name' => 'Deviance',
 	'RealmOwner.name' => 'ff1_s1',
-	'public_forum_email' => 0,
+	mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }, {
-	'RealmOwner.name' => 'TOP_FORUM_NAME',
+	'RealmOwner.name' => 'TOP_FORUM_NAME_CHANGE',
     }),
 ];

@@ -294,14 +294,7 @@ CREATE INDEX forum_t3 on forum_t (
   parent_realm_id
 )
 /
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t4
-  CHECK (want_reply_to BETWEEN 0 AND 1)
-/
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t5
-  CHECK (is_public_email BETWEEN 0 AND 1)
-/
+-- t4 & t5
 ALTER TABLE forum_t
   ADD CONSTRAINT forum_t6
   CHECK (require_otp BETWEEN 0 AND 1)
@@ -1138,8 +1131,6 @@ CREATE TABLE email_t (
 CREATE TABLE forum_t (
   forum_id NUMERIC(18) NOT NULL,
   parent_realm_id NUMERIC(18) NOT NULL,
-  want_reply_to NUMERIC(1) NOT NULL,
-  is_public_email NUMERIC(1) NOT NULL,
   require_otp NUMERIC(1) NOT NULL,
   CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
 )
