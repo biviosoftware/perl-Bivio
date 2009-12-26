@@ -1,0 +1,41 @@
+# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+package Bivio::Type::MailSendAccess;
+use strict;
+use Bivio::Base 'Type.Enum';
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_CATEGORY_PREFIX) = 'mail_send_access_';
+__PACKAGE__->compile([
+    UNKNOWN => [0, 'Select who can send mail'],
+    ALL_MEMBERS => [1, 'Only group members can send mail'],
+    ALL_ADMINS => [2, 'Only adminstrators can send mail'],
+    ALL_USERS => [3, 'Any registered user can send mail'],
+    EVERYBODY => [4, 'Anybody (even non-users) can send mail'],
+    NOBODY => [5, 'Nobody (not even admins) can send mail'],
+]);
+
+sub as_realm_role_category {
+    return $_CATEGORY_PREFIX . shift->as_realm_role_category_role_group;
+}
+
+sub as_realm_role_category_role_group {
+    return lc(shift->get_name);
+}
+
+sub from_realm_role_enabled_categories {
+    my($proto, $enabled_categories) = @_;
+    my($modes) = [map(
+	$_ =~ /^$_CATEGORY_PREFIX(.+)/o ? $1 : (),
+	@$enabled_categories,
+    )];
+    b_die($modes, ': must be exactly one enabled mode')
+	unless @$modes == 1;
+    return $proto->from_name($modes->[0]);
+}
+
+sub get_default {
+    return shift->ALL_MEMBERS;
+}
+
+1;
