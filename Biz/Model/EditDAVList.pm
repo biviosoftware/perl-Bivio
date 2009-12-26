@@ -81,6 +81,7 @@ sub dav_put {
 sub dav_reply_get {
     my($self) = @_;
     b_use('UI.View')->execute(\(<<"EOF"), shift->get_request);
+view_shortcuts('UI.ViewShortcuts');
 view_class_map('TextWidget');
 view_main(CSV(
     '@{[$self->LIST_CLASS]}',
