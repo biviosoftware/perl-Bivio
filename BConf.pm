@@ -380,80 +380,66 @@ sub merge_overrides {
 
 sub merge_realm_role_category_map {
     my($proto, $new) = @_;
-#TODO: Needs to be generalized
-    my($guest_and_below)
-	= [qw(ANONYMOUS USER UNAPPROVED_APPLICANT WITHDRAWN GUEST)];
     return 'Bivio::Biz::Util::RealmRole' => {
-	category_map => sub {
-	    return [
+	category_map => sub {return [
+	    map([
+		$_->as_realm_role_category =>
+		    ['*everybody-' . $_->as_realm_role_category_role_group
+			 => [qw(-MAIL_SEND -MAIL_POST)]],
+		    ['*' . $_->as_realm_role_category_role_group
+			 => [qw(+MAIL_SEND +MAIL_POST)]],
+	    ], Bivio::IO::ClassLoader->map_require('Type.MailSendAccess')
+		->get_non_zero_list,
+	    ),
+            map([
+		"feature_$_" => ['*everybody' => uc("feature_$_")],
+	    ], qw(
+		blog
+		bulletin
+		calendar
+		dav
+		file
+		group_admin
+		mail
+		motion
+		task_log
+		wiki
+	    )),
 	    [
-		public_forum_email =>
-		    [$guest_and_below => 'MAIL_SEND'],
-	    ], [
 		feature_crm =>
-		    'public_forum_email',
-		    ['*' => 'FEATURE_CRM'],
-	    ], [
-		feature_file =>
-		    ['*' => 'FEATURE_FILE'],
-	    ], [
-		feature_group_admin =>
-		    ['*' => 'FEATURE_GROUP_ADMIN'],
+		    '+mail_send_access_everybody',
+		    ['*everybody' => 'FEATURE_CRM'],
 	    ], [
 		feature_site_admin =>
-		    ['*' => 'FEATURE_SITE_ADMIN'],
-		    [MEMBER => [qw(ADMIN_WRITE ADMIN_READ)]],
-	    ], [
-		feature_task_log =>
-		    ['*' => 'FEATURE_TASK_LOG'],
-	    ], [
-		system_user_forum_email =>
-		    [ANONYMOUS => '-MAIL_SEND'],
-		    [USER => 'MAIL_SEND'],
-	    ], [
-		admin_only_forum_email =>
-		    [MEMBER => [qw(-MAIL_POST -MAIL_SEND -MAIL_WRITE)]],
-	    ], [
-		cannot_mail =>
-		    ['*' => [qw(-MAIL_POST -MAIL_SEND -MAIL_WRITE)]],
-	    ], [
-		feature_bulletin =>
-		    ['*' => 'FEATURE_BULLETIN'],
-	    ],
-            map(Bivio::Agent::TaskId->is_component_included($_) ? ([
-                "feature_$_" => ['*' => uc("feature_$_")],
-            ]) : (),
-                qw(file blog wiki dav mail calendar motion)),
-	    Bivio::Agent::TaskId->is_component_included('tuple') ? ([
-#DEPRECATED: Need to fix apps which use this and not feature_tuple
-		tuple =>
-		    ['*', 'FEATURE_TUPLE'],
-		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
-		    [MEMBER => [qw(TUPLE_WRITE TUPLE_READ)]],
+		    ['*everybody' => 'FEATURE_SITE_ADMIN'],
+		    ['*all_members' => [qw(ADMIN_WRITE ADMIN_READ)]],
 	    ], [
 		feature_tuple =>
-		    ['*', 'FEATURE_TUPLE'],
-		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
-		    [MEMBER => [qw(TUPLE_WRITE TUPLE_READ)]],
-	    ]) : (),
+		    ['*everybody' => 'FEATURE_TUPLE'],
+		    ['*all_admins' => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
+		    ['*all_members' => [qw(TUPLE_WRITE TUPLE_READ)]],
+	    ], [
+#DEPRECATED: Need to fix apps which use this and not feature_tuple
+		tuple =>
+		    '+feature_tuple',
 #TODO: Not clear if we can eliminate motion
- 	    !Bivio::Agent::TaskId->is_component_included('motion') ? () : ([
+	    ], [
 		common_results_motion =>
-		    ['*' => 'FEATURE_MOTION'],
-		    [MEMBER => 'MOTION_WRITE'],
-		    [[qw(ACCOUNTANT ADMINISTRATOR)] => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
+		    ['*everybody' => 'FEATURE_MOTION'],
+		    ['*all_members' => 'MOTION_WRITE'],
+		    ['*all_admins' => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
 	    ], [
 		open_results_motion =>
 		    '+common_results_motion',
-		    [MEMBER => '+MOTION_READ'],
+		    ['*all_members-all_admins' => '+MOTION_READ'],
 	    ], [
 		closed_results_motion =>
 		    '+common_results_motion',
-		    [MEMBER => '-MOTION_READ'],
-	    ]),
+		    ['*all_members-all_admins' => '-MOTION_READ'],
+	    ],
 	    $new ? @{$new->()} : (),
-        ];
-    }};
+        ]},
+    };
 }
 
 sub _base {
