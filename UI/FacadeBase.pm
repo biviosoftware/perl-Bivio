@@ -77,15 +77,9 @@ sub internal_dav_tasks {
 sub internal_dav_text {
     return [
 	[ForumList => [
-	    'RealmOwner.name' => 'Forum',
+	    'RealmOwner.name' => 'vs_ui_forum();',
 	    'RealmOwner.display_name' => 'Title',
-	    'Forum.want_reply_to' => 'Reply-To List?',
-	    'admin_only_forum_email' => 'Admin Only Email?',
-	    'system_user_forum_email' => 'System User Email?',
-	    'public_forum_email' => 'Public Email?',
 	    'Forum.forum_id' => 'Database Key',
-#TODO: Make visible only if OTP is enabled.  Requires change to DAVList
-	    'Forum.require_otp' => 'Require OTP?',
 	]],
 	[ForumUserList => [
 	    mail_recipient => 'Subscribed?',
@@ -95,7 +89,7 @@ sub internal_dav_text {
 	]],
 	[EmailAliasList => [
 	    'EmailAlias.incoming' => 'From Email',
-	    'EmailAlias.outgoing' => 'To Email or Forum',
+	    'EmailAlias.outgoing' => 'To Email or vs_ui_forum();',
 	    'primary_key' => 'Database Key',
 	]],
     ];
@@ -373,6 +367,9 @@ sub _cfg_base {
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
 	    [[qw(actions list_actions)] => 'Actions'],
+	    [vs_ui => [
+		forum => 'Forum',
+	    ]],
 	    [xlink => [
 		back_to_top => 'back to top',
 		SITE_ROOT => 'Home',
@@ -696,7 +693,8 @@ sub _cfg_group_admin {
 	    [GROUP_USER_FORM => '?/edit-user'],
 	    [GROUP_USER_ADD_FORM => '?/add-user'],
             [FORUM_CREATE_FORM => '?/create-forum'],
-            [REALM_FEATURE_FORM => '?/configure-features'],
+            [FORUM_EDIT_FORM => '?/edit-forum'],
+            [REALM_FEATURE_FORM => '?/edit-features'],
 	],
 	Text => [
 	    [realm_owner_site_admin => [
@@ -744,34 +742,29 @@ sub _cfg_group_admin {
 	    [[qw(UnapprovedApplicantForm GroupUserForm)] => [
 		'RealmUser.role' => 'Access Level',
 		file_writer => 'Write access to files (Editor)',
-		mail_recipient => 'Receive mail sent to group (Subscribed)',
+		mail_recipient => 'Receive mail sent to vs_ui_forum(); (Subscribed)',
 	    ]],
-            [ForumForm => [
-                'Forum.want_reply_to' => 'Reply-To List?',
-                'Forum.require_otp' => 'Require OTP?',
-            ]],
+ 	    ['Forum.require_otp' => 'Require OTP?'],
+	    [mail_send_access => 'Mail Sending Mode'],
+	    [feature_blog => 'Blog'],
+	    [feature_motion => 'Poll'],
+	    [feature_mail => 'Mail'],
+	    [feature_file => 'File'],
+	    [feature_calendar => 'Calendar'],
+	    [feature_crm => 'Ticket'],
+	    [feature_tuple => 'Tables'],
+	    [feature_wiki => 'Wiki'],
+	    [mail_want_reply_to => 'Mail replies go to the vs_ui_forum(); by default'],
             [[qw(ForumForm RealmFeatureForm)] => [
-                'RealmOwner.name' => 'Forum',
+                'RealmOwner.name' => 'vs_ui_forum();',
                 'RealmOwner.display_name' => 'Title',
-		feature_blog => 'Blog',
-		feature_motion => 'Poll',
-		feature_mail => 'Mail',
-		feature_file => 'File',
-		feature_calendar => 'Calendar',
-		feature_crm => 'Ticket',
-		feature_tuple => 'Tables',
-                feature_wiki => 'Wiki',
-                admin_only_forum_email => 'Admin Only Email?',
-                system_user_forum_email => 'System User Email?',
-                public_forum_email => 'Public Email?',
-                email_mode => 'Accept Mail From',
             ]],
 	    [title => [
 		GROUP_USER_LIST => 'Roster',
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
-                FORUM_CREATE_FORM => 'Create Forum',
-                REALM_FEATURE_FORM => 'Features',
+                FORUM_CREATE_FORM => 'New vs_ui_forum();',
+		[qw(FORUM_EDIT_FORM REALM_FEATURE_FORM)] => 'Features',
 	    ]],
 	    [clear_on_focus_hint => [
 		GROUP_USER_LIST => 'Filter name or @email',
@@ -1033,16 +1026,6 @@ sub _cfg_site_admin {
 		    },
 		    'SITE_REPORTS_REALM_NAME',
 		],
-                [
-                    'create_forum',
-                    'REALM_FEATURE_FORM',
-                ],
-                [
-                    'configure_features',
-                    'REALM_FEATURE_FORM',
-                    [[qw(->req)], '->can_user_execute_task', 'REALM_FEATURE_FORM'],
-                    'no_match',
-                ],
             ),
         ],
 	FormError => [
@@ -1078,8 +1061,6 @@ sub _cfg_site_admin {
                 substitute_user => 'Act as User',
 		task_log => 'Site Hits',
 		remote_copy => 'Remote Copy',
-                create_forum => 'Create Forum',
-                configure_features => 'Features',
             ]],
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',
@@ -1370,7 +1351,7 @@ sub _cfg_user_auth {
 	    [[qw(UserSettingsListForm UserSubscriptionList)] => [
                 'page_size' => 'List Size',
 		'RealmOwner.name' => 'User Id',
-		'RealmOwner.display_name' => 'Forum',
+		'RealmOwner.display_name' => 'vs_ui_forum();',
 		'is_subscribed' => 'Subscribed?',
 		map(("$_.desc" => 'Field only visible to system administrators.'),
 		    qw(RealmOwner.name Email.email)),
@@ -1500,7 +1481,7 @@ sub _cfg_wiki {
 		forum_wiki_data => 'Files',
 	    ]],
 	    [RealmDropDown => [
-		forum => 'Forum',
+		forum => 'vs_ui_forum();',
 		user => 'User',
 	    ]],
 	    ['task_menu.title' => [
@@ -1564,19 +1545,32 @@ sub _cfg_wiki {
 		]);},
 		wiki_diff_tools => q{vs_text_as_prose('wiki_diff_tools_base');},
                 xhtml_site_admin_drop_down_standard => q{SiteAdminDropDown();},
-                xhtml_dock_left_standard => q{TaskMenu([vs_text_as_prose('xhtml_site_admin_drop_down_standard'),qw(
-                    SITE_WIKI_VIEW
-                    FORUM_BLOG_LIST
-                    FORUM_FILE_TREE_LIST
-                    FORUM_CRM_THREAD_ROOT_LIST
-                    FORUM_WIKI_VIEW
-                    FORUM_CALENDAR
-                    GROUP_TASK_LOG
-                    FORUM_MAIL_THREAD_ROOT_LIST
-                    FORUM_MOTION_LIST
-                    GROUP_USER_LIST
-                    FORUM_TUPLE_USE_LIST
-                )], {want_more => 1});},
+                xhtml_dock_left_standard => q{TaskMenu([
+                    vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
+                    qw(
+			SITE_WIKI_VIEW
+			FORUM_BLOG_LIST
+			FORUM_WIKI_VIEW
+			FORUM_CALENDAR
+                    ),
+                    {
+                        task_id => 'REALM_FEATURE_FORM',
+                        control =>
+                            ['!', [[qw(->req auth_realm)], 'type'], '->eq_forum'],
+                    },
+                    qw(
+                        FORUM_EDIT_FORM
+			FORUM_FILE_TREE_LIST
+			GROUP_TASK_LOG
+			FORUM_MAIL_THREAD_ROOT_LIST
+                        FORUM_CREATE_FORM
+			FORUM_MOTION_LIST
+			GROUP_USER_LIST
+			FORUM_TUPLE_USE_LIST
+			FORUM_CRM_THREAD_ROOT_LIST
+		    )],
+                    {want_more_threshold => 4}
+                );},
 	    ]],
 #DEPRECATED:
 	    [HelpWiki => [
