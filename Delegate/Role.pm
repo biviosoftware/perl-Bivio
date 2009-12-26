@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::Role;
 use strict;
@@ -40,8 +40,18 @@ sub get_main_list {
     ));
 }
 
+sub internal_category_role_group_map {
+    return {
+	nobody => [],
+	all_admins => [qw(ACCOUNTANT ADMINISTRATOR)],
+	all_members => [qw(all_admins MEMBER)],
+	all_users => [qw(all_members GUEST UNAPPROVED_APPLICANT USER WITHDRAWN)],,
+	everybody => [qw(all_users ANONYMOUS)],
+    };
+}
+
 sub is_admin {
-    return shift->equals_by_name('ADMINISTRATOR');
+    return shift->eq_administrator;
 }
 
 1;
