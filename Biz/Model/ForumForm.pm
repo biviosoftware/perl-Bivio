@@ -6,95 +6,90 @@ use Bivio::Base 'Model.RealmFeatureForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = b_use('Type.ForumName');
+my($_F) = b_use('UI.Facade');
 
 sub REALM_MODELS {
     return [qw(Forum RealmOwner)];
 }
 
 sub execute_empty {
-    my($self) = @_;
+    my($self, @args) = @_;
     return $self->internal_use_general_realm_for_site_admin(sub {
         my($req) = $self->get_request;
-        return $self->internal_put_field_category_defaults
+        return $self->SUPER::execute_empty(@args)
 	    unless _is_forum($req);
         $self->internal_put_field('Forum.forum_id' => $req->get('auth_id'));
-	$self->internal_put_categories(1);
         foreach my $m (@{$self->REALM_MODELS}) {
             $self->load_from_model_properties($m);
         }
-        return
+        return $self->SUPER::execute_empty(@args)
 	    unless $self->is_create;
         $self->internal_put_field('RealmOwner.name' =>
             $self->get('RealmOwner.name') . '-');
         $self->internal_put_field('RealmOwner.display_name' =>
             $self->get('RealmOwner.display_name') . ' ');
-        return;
+        return $self->SUPER::execute_empty(@args);
     });
 }
 
 sub execute_ok {
-    my($self) = @_;
-    return $self->internal_use_general_realm_for_site_admin(sub {
-        unless ($self->unsafe_get('validate_called')) {
-            $self->validate;
-            return
-		if $self->in_error;
-        }
+    my($self, @args) = @_;
+    my($realm);
+    $self->internal_use_general_realm_for_site_admin(sub {
         my($req) = $self->get_request;
-	$self->internal_put_categories();
         if ($self->is_create) {
-            my($f, $ro) = $self->new_other('Forum')->create_realm(
+            (undef, $realm) = $self->new_other('Forum')->create_realm(
                 map($self->get_model_properties($_),
                     @{$self->REALM_MODELS}),
             );
-            $req->set_realm($ro);
         }
         else {
             foreach my $m (@{$self->REALM_MODELS}) {
                 $self->update_model_properties($m);
             }
         }
-        $self->internal_edit_categories;
-        return;
+	return;
     });
+    $self->req->set_realm($realm)
+	if $realm;
+    return shift->SUPER::execute_ok(@_);
 }
 
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	require_validate => 1,
         visible => [
 	    'RealmOwner.display_name',
 	    {
 		name => 'RealmOwner.name',
 		type => 'ForumName',
 	    },
-	    'Forum.want_reply_to',
-	    # Using Booleans instead of proper enum to support WebDAV CSV UI
 	    'Forum.require_otp',
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
-	other => [
-	    {
-		name => 'validate_called',
-		type => 'Boolean',
-		constraint => 'NONE',
-	    },
-	],
     });
+}
+
+sub internal_use_general_realm_for_site_admin {
+    my($self, $op) = @_;
+    return $self->req->with_realm(undef, $op)
+        if $_F->get_from_source($self)->auth_realm_is_site_admin($self->req);
+    return $op->();
 }
 
 sub is_create {
     my($self) = @_;
     my($fm) = $self->req->unsafe_get('Type.FormMode');
-    return !$fm || $fm->eq_create;
+    return !$fm || $fm->eq_create ? 1 : 0;
 }
 
 sub validate {
     my($self) = @_;
     return $self->internal_use_general_realm_for_site_admin(sub {
-        $self->internal_put_field(validate_called => 1);
-        return if $self->get_field_error('RealmOwner.name');
+        return
+	    if $self->get_field_error('RealmOwner.name');
         # A sub forum must begin with its corresponding root forum prefix, but
         # does not need to prepend its other parent forum names, i.e.:
         # base ---> base-sub1 (valid)
@@ -111,9 +106,8 @@ sub validate {
         my($top_ok) = $is_top && $self->is_create && $n eq $new_top;
         return $self->internal_put_error(
             'RealmOwner.name',
-            $top_ok ? 'TOP_FORUM_NAME_CHANGE' : 'TOP_FORUM_NAME',
+            $is_top ? 'TOP_FORUM_NAME' : 'TOP_FORUM_NAME_CHANGE',
         ) unless $top_ok || $old_top eq $new_top;
-        $self->internal_validate_email_modes;
         return;
     });
 }
