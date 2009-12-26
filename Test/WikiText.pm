@@ -22,7 +22,7 @@ sub new_unit {
 	$class_name,
 	{
 	    task_id => 'FORUM_WIKI_VIEW',
-	    realm => 'wiki_bunit',
+	    realm => 'bunit_wiki',
 	    user => b_use('ShellUtil.TestUser')->ADM,
 	    class_name => $class_name,
 	    create_object => sub {
