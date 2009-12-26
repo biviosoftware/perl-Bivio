@@ -18,7 +18,7 @@ my($e) = generate_local_email('root');
 do_test_backdoor(Wiki => '-realm site-reports validate_all_realms');
 my($msg) = verify_local_mail($e, qr{wiki error}i);
 $msg =~ s{Errors in wiki_bunit:\s+Internal server error}{}i;
-b_die("server error:\n", $msg)
+b_die("server error reported in email:\n", $msg)
     if $msg =~ /server.error/i;
 my($unknown) = [grep(
     !/base.css: Not a valid|: Not found|: Same name|Errors in site:/i,
