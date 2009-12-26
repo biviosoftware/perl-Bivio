@@ -1,9 +1,10 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
-req()->set_realm_and_user('wiki_bunit', 'root');
+req()->set_realm_and_user('bunit_wiki', 'root');
 model('RealmFile')->delete_all;
 my($original) = <<'EOF';
+@h1 title
 @b-widget arg
 ^&quot;
 EOF
@@ -26,7 +27,7 @@ my($update) = $original;
 $update =~ s/(?=arg)/value=/g;
 $update =~ s/\^(?=\&)/\@/g;
 [
-    [qw(-realm wiki_bunit upgrade_content)] => sub {
+    [qw(-realm bunit_wiki upgrade_content)] => sub {
 	foreach my $c (@$cases) {
 	    assert_equals(
 		$c->{expect_change} ? $update : $original,
