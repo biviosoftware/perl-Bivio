@@ -19,8 +19,8 @@ my($_R) = b_use('Auth.Role');
 my($_RT) = b_use('Auth.RealmType');
 my($_TI) = b_use('Agent.TaskId');
 my($_D) = b_use('Bivio.Die');
+#TODO: Need to remove some of these
 my($_BUNDLE) = [qw(
-    forum
     realm_mail
     realm_mail_bounce
     calendar_event
@@ -56,6 +56,7 @@ my($_BUNDLE) = [qw(
     !task_log_remove_foreign_keys
     !feature_group_admin
     !message_id_255
+    !mail_want_reply_to
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -393,6 +394,10 @@ sub init_dbms {
 sub init_realm_role {
     my($self) = @_;
     $self->init_realm_role_with_config($self->realm_role_config);
+    $self->req->with_realm(club => sub {
+        $self->model('RealmFeatureForm')->process({force_default_values => 1});
+	return;
+    });
     $self->init_realm_role_forum
 	if $_RT->unsafe_from_name('FORUM');
     $self->init_realm_role_calendar_event
@@ -883,154 +888,6 @@ sub internal_upgrade_db_file_writer {
     return;
 }
 
-sub internal_upgrade_db_forum {
-    my($self) = @_;
-    # Adds Forum and RealmFile tables.  Don't forget to add the following
-    # to your BConf.pm after running this.
-    #
-    #    'Bivio::SQL::PropertySupport' => {
-    #         unused_classes => [],
-    #    },
-    $self->run(<<'EOF');
-CREATE TABLE realm_file_t (
-  realm_file_id NUMERIC(18),
-  realm_id NUMERIC(18) NOT NULL,
-  user_id NUMERIC(18) NOT NULL,
-  folder_id NUMERIC(18),
-  modified_date_time DATE NOT NULL,
-  path VARCHAR(500) NOT NULL,
-  path_lc VARCHAR(500) NOT NULL,
-  is_folder NUMERIC(1) NOT NULL,
-  is_public NUMERIC(1) NOT NULL,
-  is_read_only NUMERIC(1) NOT NULL,
-  CONSTRAINT realm_file_t1 PRIMARY KEY(realm_file_id)
-)
-/
-CREATE TABLE forum_t (
-  forum_id NUMERIC(18) NOT NULL,
-  parent_realm_id NUMERIC(18) NOT NULL,
-  want_reply_to NUMERIC(1) NOT NULL,
-  is_public_email NUMERIC(1) NOT NULL,
-  CONSTRAINT forum_t1 PRIMARY KEY(forum_id)
-)
-/
-CREATE SEQUENCE realm_file_s
-  MINVALUE 100003
-  CACHE 1 INCREMENT BY 100000
-/
-CREATE SEQUENCE forum_s
-  MINVALUE 100004
-  CACHE 1 INCREMENT BY 100000
-/
---
--- forum_t
---
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t2
-  FOREIGN KEY (parent_realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX forum_t3 on forum_t (
-  parent_realm_id
-)
-/
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t4
-  CHECK (want_reply_to BETWEEN 0 AND 1)
-/
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t5
-  CHECK (is_public_email BETWEEN 0 AND 1)
-/
---
--- realm_file_t
---
-ALTER TABLE realm_file_t
-  ADD CONSTRAINT realm_file_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX realm_file_t3 ON realm_file_t (
-  realm_id
-)
-/
-CREATE INDEX realm_file_t4 ON realm_file_t (
-  modified_date_time
-)
-/
-CREATE INDEX realm_file_t5 ON realm_file_t (
-  path_lc
-)
-/
-CREATE UNIQUE INDEX realm_file_t6 ON realm_file_t (
-  realm_id,
-  path_lc
-)
-/
-ALTER TABLE realm_file_t
-  ADD CONSTRAINT realm_file_t7
-  CHECK (is_folder BETWEEN 0 AND 1)
-/
-ALTER TABLE realm_file_t
-  ADD CONSTRAINT realm_file_t8
-  CHECK (is_public BETWEEN 0 AND 1)
-/
-ALTER TABLE realm_file_t
-  ADD CONSTRAINT realm_file_t9
-  CHECK (is_read_only BETWEEN 0 AND 1)
-/
-ALTER TABLE realm_file_t
-  ADD CONSTRAINT realm_file_t10
-  FOREIGN KEY (user_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX realm_file_t11 ON realm_file_t (
-  user_id
-)
-/
-CREATE INDEX realm_file_t12 ON realm_file_t (
-  folder_id
-)
-/
-EOF
-    $self->model('RealmOwner')->init_realm_type($_RT->FORUM);
-    my($rr) = $self->new_other('RealmRole');
-    $rr->copy_all(club => 'forum');
-    $rr->main(qw(-realm FORUM -user user edit MEMBER -ADMIN_READ -DATA_WRITE));
-    return;
-}
-
-sub internal_upgrade_db_forum_bits {
-    my($self) = @_;
-    # Adds Forum.is_public_email and want_reply_to
-    $self->run(<<'EOF');
-ALTER TABLE forum_t
-    ADD COLUMN want_reply_to NUMERIC(1)
-/
-ALTER TABLE forum_t
-    ADD COLUMN is_public_email NUMERIC(1)
-/
-UPDATE forum_t
-    SET want_reply_to = 0, is_public_email = 0;
-/
-ALTER TABLE forum_t
-    ALTER COLUMN want_reply_to SET NOT NULL
-/
-ALTER TABLE forum_t
-    ALTER COLUMN is_public_email SET NOT NULL
-/
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t4
-  CHECK (want_reply_to BETWEEN 0 AND 1)
-/
-ALTER TABLE forum_t
-  ADD CONSTRAINT forum_t5
-  CHECK (is_public_email BETWEEN 0 AND 1)
-/
-EOF
-    return;
-}
-
 sub internal_upgrade_db_group_concat {
     my($self) = @_;
     if (b_use('ShellUtil.SQL')->is_oracle) {
@@ -1075,7 +932,6 @@ EOF
 
 sub internal_upgrade_db_job_lock {
     my($self) = @_;
-    # Adds Forum.is_public_email and want_reply_to
     $self->run(<<'EOF');
 CREATE TABLE job_lock_t (
   realm_id NUMERIC(18) NOT NULL,
@@ -1097,6 +953,26 @@ ALTER TABLE job_lock_t
 CREATE INDEX job_lock_t3 on job_lock_t (
   realm_id
 )
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_mail_want_reply_to {
+    my($self) = @_;
+    $_C->do_execute_rows(sub {
+        my($row) = @_;
+        $self->model('RowTag')->replace_value(
+	    $row->{forum_id}, MAIL_WANT_REPLY_TO => 1
+	) if $row->{want_reply_to};
+	return 1;
+    }, 'SELECT forum_id, want_reply_to FROM forum_t');
+    $self->run(<<'EOF');
+ALTER TABLE forum_t
+  DROP COLUMN want_reply_to
+/
+ALTER TABLE forum_t
+  DROP COLUMN is_public_email
 /
 EOF
     return;
@@ -1552,8 +1428,8 @@ sub internal_upgrade_db_site_admin_forum {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => 'User Admin',
 	   'RealmOwner.name' => $f->SITE_ADMIN_REALM_NAME,
-	   'Forum.want_reply_to' => 0,
-	   'public_forum_email' => 1,
+	   mail_want_reply_to => 0,
+	   mail_send_access => b_use('Type.MailSendAccess')->EVERYBODY,
 	});
 	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
 	return;
@@ -2409,8 +2285,7 @@ b-realm-role -realm GENERAL -user user edit ADMINISTRATOR - \
     +ADMIN_WRITE \
     +DATA_BROWSE \
     +DATA_WRITE \
-    +MAIL_READ \
-    +MAIL_WRITE
+    +MAIL_READ
 b-realm-role -realm GENERAL -user user edit MAIL_RECIPIENT -
 b-realm-role -realm GENERAL -user user edit FILE_WRITER - \
     +DATA_WRITE
@@ -2451,12 +2326,8 @@ b-realm-role -realm USER -user user edit UNAPPROVED_APPLICANT - \
 #
 b-realm-role -realm CLUB -user user edit ANONYMOUS - \
     +ANYBODY \
-    +FEATURE_BLOG \
-    +FEATURE_CALENDAR \
     +FEATURE_DAV \
-    +FEATURE_FILE \
     +FEATURE_GROUP_ADMIN \
-    +FEATURE_MAIL \
     +FEATURE_WIKI
 b-realm-role -realm CLUB -user user edit USER - \
     +ANONYMOUS \
@@ -2471,17 +2342,14 @@ b-realm-role -realm CLUB -user user edit MEMBER - \
     +DATA_BROWSE \
     +DATA_READ \
     +DATA_WRITE \
-    +MAIL_POST \
-    +MAIL_READ \
-    +MAIL_SEND \
-    +MAIL_WRITE
+    +MAIL_READ
 b-realm-role -realm CLUB -user user edit ACCOUNTANT - \
     +MEMBER \
     +ADMIN_WRITE
 b-realm-role -realm CLUB -user user edit ADMINISTRATOR - \
     +ACCOUNTANT
+b-realm-role -realm CLUB -user user edit UNAPPROVED_APPLICANT - \
+    +USER
 b-realm-role -realm CLUB -user user edit MAIL_RECIPIENT -
 b-realm-role -realm CLUB -user user edit FILE_WRITER - \
     +DATA_WRITE
-b-realm-role -realm CLUB -user user edit UNAPPROVED_APPLICANT - \
-    +USER
