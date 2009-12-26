@@ -378,17 +378,17 @@ sub _init_category_map_op {
 	': invalid category_map entry; extra params: ',
 	\@rest,
     ) if @rest;
-    $roles = [map(
-	$_ eq '*' ? $_R->get_non_zero_list : $_R->from_any($_),
-	@$roles,
-    )];
     return map({
 	my($x) = $_;
 	$x =~ s/^\+//;
 	[
 	    ($x =~ s/^-// xor $sign eq '-')
 		? 'remove_permissions' : 'add_permissions',
-	    $roles,
+	    [map(
+		$_ =~ /^\*(.*)/ ? @{$_R->get_category_role_group($1 || 'all')}
+		    : $_R->from_any($_),
+		@$roles,
+	    )],
 	    ${$_PS->set($_PS->get_min, $_P->$x())},
 	];
     } @$perms);
