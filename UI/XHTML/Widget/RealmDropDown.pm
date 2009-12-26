@@ -29,7 +29,7 @@ sub initialize {
 		DropDown(
 		    If([[qw(->req auth_realm type)], '->equals', $rt],
 		       _curr_realm(),
-		       String(vs_text('RealmDropDown', $rt->get_name)),
+		       Prose(vs_text('RealmDropDown', $rt->get_name)),
 		    ),
 		    DIV_dd_menu(
 			[sub {
