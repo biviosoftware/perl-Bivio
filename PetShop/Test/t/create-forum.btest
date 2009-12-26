@@ -3,37 +3,42 @@
 test_setup('PetShop', 'groupware');
 home_page();
 login_as('root');
-follow_link('create_forum');
+follow_link(qw(site$ new_forum));
+my($title) = 'BTest ' . random_string();
+(my $name = lc($title)) =~ s/ /_/g;
+test_deviance(qr{top forum.*change}i);
 submit_form({
-    title => my $title = random_string(),
-    forum => my $name = 'btest' . random_string(),
+    title => $title,
+    '^forum' => $name,
+});
+test_conformance();
+follow_link(qw(site-admin new_forum));
+submit_form({
+    title => $title,
+    '^forum' => $name,
     blog => 1,
     calendar => 1,
     file => 1,
-    map(("$_" => 0), qw(
-        poll
-        tables
-    )),
+    poll => 0,
+    tables => 0,
 });
-follow_link(qr{^$name$}i, qr{^wiki$}i, qr{^calendar$}i);
+follow_link("${name}_1", '^wiki', 'calendar');
 test_deviance();
-follow_link(qr{^tables$}i);
+follow_link('tables');
 test_conformance();
-follow_link(qr{^$name$}i, 'features');
+follow_link('features');
+verify_text($title);
 verify_form({
     blog => 1,
     calendar => 1,
     file => 1,
-    map(("$_" => 0), qw(
-        poll
-        tables
-    )),
+    poll => 0,
+    tables => 0,
 });
 submit_form({
     calendar => 0,
     tables => 1,
 });
-follow_link(qr{^tables$}i);
+follow_link('tables');
 test_deviance();
-follow_link(qr{^calendar$}i);
-
+follow_link('calendar');
