@@ -85,11 +85,10 @@ sub process_name {
 
 sub unsafe_from_uri {
     my($proto, $value) = @_;
-    # Returns the name (possibly cleaned up) or undef, if not valid.
+    return $value
+	if ($value || '') eq $proto->SPECIAL_PLACEHOLDER;
     return undef
 	unless $value = ($proto->SUPER::from_literal($value))[0];
-    return $value
-	if $value eq $proto->SPECIAL_PLACEHOLDER;
     # We allow dashes in URI names (my-site and other constructed names)
     my($s) = $proto->SPECIAL_SEPARATOR;
     (my $v = $value) =~ s/$s//g;
