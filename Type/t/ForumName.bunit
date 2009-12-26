@@ -11,6 +11,7 @@ Type();
 	    'abc-1-?' => FORUM_NAME(),
 	    'abc-' => FORUM_NAME(),
 	    'abc-' => FORUM_NAME(),
+	    'ab' => TOO_SHORT(),
 	],
 	extract_top => [
 	    'abc-def' => 'abc',
