@@ -91,7 +91,7 @@ sub initialize {
                     _prefix(
                         $prefix,
                         ref($cfg->{label}) ? $cfg->{label}
-                            : vs_text('task_menu', 'title', $cfg->{label}),
+                            : Prose(vs_text('task_menu', 'title', $cfg->{label})),
                         $selected_cond,
                     ),
 		    $cfg->{uri}
