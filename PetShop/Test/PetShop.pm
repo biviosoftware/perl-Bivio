@@ -71,44 +71,36 @@ sub checkout_as_demo {
 sub create_crm_forum {
     my($self, $admins) = @_;
     $admins ||= [];
-    my($name, $uri, $dav) = $self->create_forum({
-        reply_to_list => 1,
-        public_email => 1,
-    });
+    my($name, $uri, $dav) = $self->create_forum;
     my($u) = "$dav/Members.csv";
     $self->send_request(GET => $u);
     $self->send_request(PUT => $u, undef, $self->get_content()
-        . ${$self->test_use('ShellUtil.CSV')->to_csv_text([
+        . ${$_CSV->to_csv_text([
             #[Email,Subscribed?,Write Files?,Administrator?]
             map([$self->generate_local_email($_), 1, 1, 1], @$admins)
         ])},
-    );
+    ) if @$admins;
     $self->do_test_backdoor(CRM => "-realm $name setup_realm");
-    return ($name, $uri, $dav);
+    return ($name, $uri);
 }
 
 sub create_forum {
-    my($self, $args) = shift;
-    $args = {
-        reply_to_list => 0,
-        admin_only_email => 0,
-        system_user_email => 0,
-        public_email => 0,
-        ref($args) ? %{$args} : (),
-    };
+    my($self) = @_;
     $self->home_page;
     $self->login_as('root');
     $self->basic_authorization('root');
-    (my $f = $self->test_name . $self->random_string) =~ s/\W+//g;
+    my($f) = 'btest_'
+	. (lc($self->test_name) =~ /^(\w+)/)[0]
+	. '_'
+	. $self->random_string;
+    (my $dn = ucfirst($f)) =~ s/_/ /g;
     my($u) = '/dav/Forums.csv';
     $self->send_request(GET => $u);
-    $self->send_request(PUT => $u, undef, $self->get_content()
-        . ${$_CSV->to_csv_text([$f, $f, map($args->{$_}, qw(
-            reply_to_list
-            admin_only_email
-            system_user_email
-            public_email
-        ))])});
+    $self->send_request(
+	PUT => $u,
+	undef,
+	$self->get_content . ${$_CSV->to_csv_text([$f, $dn])},
+    );
     return ($f, "/$f", "/dav/$f");
 }
 
