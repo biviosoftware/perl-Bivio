@@ -22,10 +22,10 @@ sub from_literal {
     my($proto, $value) = @_;
     $value = $proto->internal_pre_from_literal($value)
 	if defined($value);
-    my($v, $e) = $proto->SUPER::from_literal($value);
-    return !defined($v) ? ($v, $e)
-	: $v =~ /^@{[$proto->REGEX]}$/
-	? _length($proto, $proto->internal_post_from_literal($v))
+    return !defined($value) || !length($value)
+	? (undef, undef)
+	: $value =~ /^@{[$proto->REGEX]}$/
+	? _length($proto, $proto->internal_post_from_literal($value))
 	: (undef, $proto->SYNTAX_ERROR);
 }
 
