@@ -194,6 +194,8 @@ sub vs_descriptive_field {
 	    undef,
 	    FormField($name, $attrs),
 	) : $proto->vs_form_field($name, $attrs);
+    $label = undef
+	if $attrs->{vs_descriptive_field_no_label};
     return [
 	$label ? ($label->put(cell_class => 'label label_ok')) : (),
 	Join([
