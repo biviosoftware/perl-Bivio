@@ -92,14 +92,14 @@ sub init_bulletin {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => $display_name,
 	   'RealmOwner.name' => $name,
-	   'Forum.want_reply_to' => 1,
+	   mail_want_reply_to => 1,
 	});
 	$self->model('RowTag')->map_invoke(create_value => [
 	    [MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
 	    [BULLETIN_MAIL_MODE => 1],
 	]);
 	$self->new_other('RealmRole')
-	    ->edit_categories([qw(+cannot_mail +feature_bulletin)]);
+	    ->edit_categories([qw(+mail_send_access_nobody +feature_bulletin)]);
 	$self->model('EmailAlias')->create({
 	    incoming => $req->format_email($req->format_email),
 	    outgoing => _support_email($req),
@@ -146,8 +146,8 @@ sub init_realms {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => _site_name_prefix('Support', $req),
 	   'RealmOwner.name' => $self->CONTACT_REALM,
-	   'Forum.want_reply_to' => 1,
-	   'public_forum_email' => 1,
+	   mail_want_reply_to => 1,
+	   mail_send_access => b_use('Type.MailSendAccess')->EVERYBODY,
 	});
 	$self->new_other('CRM')->setup_realm;
 	return;
@@ -156,16 +156,16 @@ sub init_realms {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => 'Help',
 	   'RealmOwner.name' => $self->HELP_REALM,
-	   'Forum.want_reply_to' => 1,
+	   mail_want_reply_to => 1,
 	});
 	return;
     });
     $self->req->with_realm($self->SITE_REALM, sub {
         $self->model('ForumForm', {
-	   'RealmOwner.display_name' => 'User Admin',
+	   'RealmOwner.display_name' => 'Site Admin',
 	   'RealmOwner.name' => $self->ADMIN_REALM,
-	   'Forum.want_reply_to' => 0,
-	   'public_forum_email' => 1,
+	   mail_want_reply_to => 0,
+	   mail_send_access => b_use('Type.MailSendAccess')->EVERYBODY,
 	});
 	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
 	return;
