@@ -22,6 +22,7 @@ sub get_delegate_info {
 	FACADE_CHILD_TYPE => 11,
 	TEXTAREA_WRAP_LINES => 12,
 	TIME_ZONE => 13,
+	MAIL_WANT_REPLY_TO => 14,
 	LAST_RESERVED_VALUE => 99,
     ];
 }
