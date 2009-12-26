@@ -2,8 +2,8 @@
 # $Id$
 package Bivio::Type::String;
 use strict;
-use Bivio::Base 'Bivio::Type';
-use Text::Tabs;
+use Bivio::Base 'Bivio.Type';
+use Text::Tabs ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -30,6 +30,10 @@ sub from_literal {
         unless wantarray;
     return (undef, undef)
 	unless defined($value) && length($value);
+    if (my $mw = $proto->get_min_width) {
+	return (undef, Bivio::TypeError->TOO_SHORT)
+	    if length($value) < $mw;
+    }
     return (undef, Bivio::TypeError->TOO_LONG)
 	if length($value) > $proto->get_width;
     return $value;
