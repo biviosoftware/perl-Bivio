@@ -5,7 +5,7 @@ home_page();
 login_as('root');
 my($forum) = create_forum();
 home_page();
-follow_link('roster');
+follow_link($forum, 'roster');
 find_page_with_text('User, Root');
 follow_link_in_table('first', 'first', 'root', 'privileges', 'admin');
 verify_text('for Root User');
