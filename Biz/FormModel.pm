@@ -541,7 +541,7 @@ sub internal_parse {
     }
     # need to restore previous values because _parse() will remove invalid ones
     # for example, if the secondary email is invalid
-    $self->internal_put($values);
+    $self->internal_post_parse_columns($values);
     $self->validate
 	unless $self->in_error;
     return;
@@ -558,6 +558,12 @@ sub internal_post_execute {
     # Does nothing by default.
     #
     # See also L<internal_pre_execute|"internal_pre_execute">.
+    return;
+}
+
+sub internal_post_parse_columns {
+    my($self, $values) = @_;
+    $self->internal_put($values);
     return;
 }
 
@@ -714,7 +720,7 @@ sub process {
     if ($values) {
 	$values = {%$values};
 	$self->internal_pre_parse_columns;
-	$self->internal_put($values);
+	$self->internal_post_parse_columns($values);
 	$fields->{literals} = {};
 	# Forms called internally don't have a context.  Form models
 	# should blow up.
@@ -1168,7 +1174,7 @@ sub _parse {
 	|| _parse_cols($self, $form, $sql_support, $values, 0);
     return $res
 	if $res;
-    $self->internal_put($values);
+    $self->internal_post_parse_columns($values);
 
     # .next is set in _redirect()
     my($next) = $form->{$self->NEXT_FIELD} || '';
