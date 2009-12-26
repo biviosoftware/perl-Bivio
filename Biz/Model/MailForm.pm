@@ -14,7 +14,7 @@ my($_MRW) = b_use('Type.MailReplyWho');
 my($_ARM) = b_use('Action.RealmMail');
 my($_MA) = b_use('Mail.Address');
 my($_QUERY_WHO) = 'to';
-my($_WRT) = b_use('Type.WantReplyTo');
+my($_MWRT) = b_use('Type.MailWantReplyTo');
 
 sub VIEW_CLASS {
     return (shift->simple_package_name =~ /(.+)Form/)[0];
@@ -108,7 +108,7 @@ sub internal_format_incoming {
 
 sub internal_format_reply_to {
     my($self, $realm_email) = @_;
-    return $_WRT->is_set_for_realm($self->req) ? $_RFC->format_mailbox(
+    return $_MWRT->is_set_for_realm($self->req) ? $_RFC->format_mailbox(
 	$realm_email,
 	$self->req(qw(auth_realm owner display_name)),
     ) : ();
