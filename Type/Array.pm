@@ -1,13 +1,11 @@
-# Copyright (c) 2000,2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::Array;
 use strict;
 use Bivio::Base 'Bivio.Type';
 
-# C<Bivio::Type::Array> is a collection of array utilities and
-# a string representable type.  Not all conversions are supported.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_S) = b_use('Type.String');
 
 sub bsearch_numeric {
     # (proto, array_ref, int) : array
@@ -56,6 +54,32 @@ sub get_width {
     # (proto) : int
     # Returns 4000.
     return 4000;
+}
+
+sub map_sort_map {
+    my(undef, $name_op, $sort_op, $values) = @_;
+    return [map(
+	$_->[1],
+	sort(
+	    {$sort_op->($a->[0], $b->[0])}
+	    map(
+		[$name_op->($_), $_],
+		@$values,
+	    ),
+	),
+    )];
+}
+
+sub sort_unique {
+    my(undef, $values) = @_;
+    return []
+	unless @$values;
+    my($type) = ref($values->[0]) ? $values->[0] : $_S;
+    my($seen) = {};
+    return [sort(
+	{$type->compare($a, $b)}
+	grep(!$seen->{$type->to_literal($_)}++, @$values),
+    )];
 }
 
 sub to_literal {
