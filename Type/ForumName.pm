@@ -44,6 +44,10 @@ sub from_literal {
     return lc($v);
 }
 
+sub get_min_width {
+    return 3;
+}
+
 sub is_top {
     my($proto, $value) = @_;
     return $proto->extract_top($value) eq $value ? 1 : 0;
