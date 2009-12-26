@@ -14,7 +14,7 @@ sub initialize {
 	$self->ancestral_get('form_class')->simple_package_name,
 	$self->get('field')));
     $self->put(label => $_C->if_version(
-	6 => sub {
+	5 => sub {
 	    return $_VS->vs_new(
 		'Tag', 'span', $_VS->vs_new(Prose => $l), 'checkbox_label');
 	},
