@@ -19,11 +19,11 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       "/wiki_bunit/\w+/Index" Index
+       "/bunit_wiki/\w+/Index" Index
        class="want_sep" "/" Home
        class="want_sep" "/pub/login" Login
-       class="want_sep selected" "/wiki_bunit/\w+/MyPage" MyPage
-       class="pdf want_sep" "/wiki_bunit/\w+/Document" Document
-       class="want_sep selected"><a href="/wiki_bunit/\w+/Flyer">Flyer.<img "[^"]+icon.png"
+       class="want_sep selected" "/bunit_wiki/\w+/MyPage" MyPage
+       class="pdf want_sep" "/bunit_wiki/\w+/Document" Document
+       class="want_sep selected"><a href="/bunit_wiki/\w+/Flyer">Flyer.<img "[^"]+icon.png"
     ))]}},
 ];

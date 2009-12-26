@@ -14,15 +14,15 @@ my($reset_menu) = sub {
 $reset_menu->(qw(site x.bmenu), <<'EOF');
 Label,Link
 Xa,/bp/Xa
-Xb,/wiki_bunit/bp/Xb
-Xc,/wiki_bunit/bp/Xc
+Xb,/bunit_wiki/bp/Xb
+Xc,/bunit_wiki/bp/Xc
 EOF
 $reset_menu->(qw(site y.bmenu), <<'EOF');
 Label,Link
 Ya,/bp/Ya
 Yb,/bp/Yb
 EOF
-$reset_menu->(qw(wiki_bunit y.bmenu), <<'EOF');
+$reset_menu->(qw(bunit_wiki y.bmenu), <<'EOF');
 Label,Link
 Ya
 Yb
@@ -36,8 +36,8 @@ EOF
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/bp/Xa" Xa
-       selected "/wiki_bunit/bp/Xb" Xb
-       "/wiki_bunit/bp/Xc" Xc
+       selected "/bunit_wiki/bp/Xb" Xb
+       "/bunit_wiki/bp/Xc" Xc
     ))]}},
     inline_case(sub {wiki_uri_to_req('/Yb'); 1}),
     [{
@@ -45,8 +45,8 @@ EOF
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
-       "/wiki_bunit/\w+/Ya" Ya
-       selected "/wiki_bunit/\w+/Yb" Yb
-       "/wiki_bunit/\w+/Yc" Yc
+       "/bunit_wiki/\w+/Ya" Ya
+       selected "/bunit_wiki/\w+/Yb" Yb
+       "/bunit_wiki/\w+/Yc" Yc
     ))]}},
 ];

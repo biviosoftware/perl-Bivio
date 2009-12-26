@@ -2,7 +2,7 @@
 # $Id$
 Request();
 options({comparator => 'nested_contains'});
-req()->set_realm_and_user('wiki_bunit');
+req()->set_realm_and_user('bunit_wiki');
 req()->initialize_fully('FORUM_WIKI_VIEW');
 model('RealmFile')->delete_all;
 my($menu) = class('Type.WikiDataName')->to_absolute('WikiText1.bmenu');
