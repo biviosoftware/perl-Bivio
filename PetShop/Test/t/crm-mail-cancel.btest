@@ -10,10 +10,11 @@ foreach my $item (
     [crm_tuple_forum => mail => qr{^\[[^\d]+ #\d+\]}, qr{^Reply$}],
 ) {
     my($forum, $tool, $re, @extra_links) = @$item;
+    my($new) = 'new_' . ($tool eq 'tickets' ? 'ticket' : 'topic');
     follow_link(qr{^$forum$});
     follow_link($tool);
     my($link) = grep($_ =~ $re, @{get_html_parser()->get('Links')->get_keys});
-    follow_link($link ? (qr{^\Q$link\E$}, @extra_links) : 'new');
+    follow_link($link ? (qr{^\Q$link\E$}, @extra_links) : $new);
     submit_form('cancel');
 }
 
