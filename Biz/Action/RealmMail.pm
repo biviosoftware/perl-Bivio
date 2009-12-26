@@ -5,10 +5,10 @@ use strict;
 use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_O) = __PACKAGE__->use('Mail.Outgoing');
+my($_O) = b_use('Mail.Outgoing');
 my($_A) = b_use('Mail.Address');
 my($_T) = b_use('Agent.Task');
-my($_WRT) = b_use('Type.WantReplyTo');
+my($_MWRT) = b_use('Type.MailWantReplyTo');
 my($_RFC) = b_use('Mail.RFC822');
 
 sub EMPTY_SUBJECT_PREFIX {
@@ -26,7 +26,7 @@ sub execute_receive {
     my($out) = $_O->new($in)->set_headers_for_list_send({
 	list_email => $email,
 	sender => $ea->format_realm_as_sender($email),
-	reply_to_list => $_WRT->is_set_for_realm($req),
+	reply_to_list => $_MWRT->is_set_for_realm($req),
 	subject_prefix => $proto->internal_subject_prefix($rm),
     });
     $proto->use('AgentJob.Dispatcher')->enqueue(
