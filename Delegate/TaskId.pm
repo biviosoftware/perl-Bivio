@@ -637,7 +637,7 @@ sub info_group_admin {
 	    ADMIN_READ&FEATURE_GROUP_ADMIN
             Model.GroupUserQueryForm
 	    Model.GroupUserList->execute_load_page
-	    View.GroupUser->list
+	    View.GroupAdmin->user_list
             next=GROUP_USER_LIST
 	)],
 	[qw(
@@ -646,7 +646,7 @@ sub info_group_admin {
 	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
 	    Model.GroupUserForm
-	    View.GroupUser->form
+	    View.GroupAdmin->user_form
 	    next=GROUP_USER_LIST
 	)],
 	[qw(
@@ -655,7 +655,7 @@ sub info_group_admin {
 	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
 	    Model.RealmUserAddForm
-	    View.GroupUser->add_form
+	    View.GroupAdmin->user_add_form
 	    next=GROUP_USER_LIST
 	)],
 	[qw(
@@ -663,21 +663,33 @@ sub info_group_admin {
 	    203
 	    FORUM
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
+	    Type.FormMode->execute_create
 	    Model.ForumForm
-	    View.GroupUser->create_forum
+	    View.GroupAdmin->forum_form
+	    next=GROUP_USER_LIST
+	)],
+	[qw(
+	    FORUM_EDIT_FORM
+	    204
+	    FORUM
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
+	    Type.FormMode->execute_edit
+	    Model.ForumForm
+	    View.GroupAdmin->forum_form
 	    next=GROUP_USER_LIST
 	)],
 	[qw(
 	    REALM_FEATURE_FORM
-	    204
+	    205
 	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_GROUP_ADMIN
+	    Type.FormMode->execute_edit
 	    Model.RealmFeatureForm
-	    View.GroupUser->edit_realm_features
+	    View.GroupAdmin->feature_form
 	    next=GROUP_USER_LIST
 	)],
     ];
-#205-209 free
+#206-209 free
     return;
 }
 
