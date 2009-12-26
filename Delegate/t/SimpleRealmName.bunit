@@ -5,11 +5,11 @@ Type();
     class() => [
 	from_literal => [
 	    abc => 'abc',
-	    ab => REALM_NAME(),
+	    ab => TOO_SHORT(),
 	    ' abc ' => 'abc',
 	    [undef] => UNDEF(),
 	    [' '] => UNDEF(),
-	    0 => REALM_NAME(),
+	    0 => TOO_SHORT(),
 	],
         unsafe_from_uri => [
 	    ab => [undef],
