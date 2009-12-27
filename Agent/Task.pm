@@ -156,25 +156,9 @@ sub commit {
     return;
 }
 
-sub put_attr_for_test {
-    my($self, @attrs) = @_;
-    b_use('Agent.Request')->assert_test;
-    $self->internal_clear_read_only;
-    $self->do_by_two(
-	sub {
-	    my($k, $v) = @_;
-	    $self->delete($k);
-	    if ($k eq 'form_model') {
-		$self->put($k => $v->package_name);
-	    }
-	    else {
-		_parse_map_item($self->internal_get, $k, $v);
-	    }
-	    return 1;
-	},
-	\@attrs,
-    );
-    return $self->set_read_only;
+sub dep_unsafe_get_attr {
+    my($self) = shift;
+    return $self->return_scalar_or_array(map($_, $self->SUPER::unsafe_get(@_)));
 }
 
 sub execute {
@@ -358,6 +342,10 @@ sub initialize {
     return;
 }
 
+sub internal_as_string {
+    return shift->get('id')->get_name;
+}
+
 sub new {
     my($proto) = shift;
     my($id, $realm_type, $perm, @items) = @_;
@@ -390,6 +378,27 @@ sub new {
     return _new($proto->SUPER::new, @_);
 }
 
+sub put_attr_for_test {
+    my($self, @attrs) = @_;
+    b_use('Agent.Request')->assert_test;
+    $self->internal_clear_read_only;
+    $self->do_by_two(
+	sub {
+	    my($k, $v) = @_;
+	    $self->delete($k);
+	    if ($k eq 'form_model') {
+		$self->put($k => $v->package_name);
+	    }
+	    else {
+		_parse_map_item($self->internal_get, $k, $v);
+	    }
+	    return 1;
+	},
+	\@attrs,
+    );
+    return $self->set_read_only;
+}
+
 sub register {
     my($proto, $handler) = @_;
     push(@$_HANDLERS, $handler)
@@ -418,15 +427,6 @@ sub unsafe_get {
 	shift(@_) =~ $_TASK_ATTR_RE && $_ ? $_->{task_id} : $_,
 	shift->SUPER::unsafe_get(@_),
     ));
-}
-
-sub dep_unsafe_get_attr {
-    my($self) = shift;
-    return $self->return_scalar_or_array(map($_, $self->SUPER::unsafe_get(@_)));
-}
-
-sub internal_as_string {
-    return shift->get('id')->get_name;
 }
 
 sub unsafe_get_attr_as_id {
