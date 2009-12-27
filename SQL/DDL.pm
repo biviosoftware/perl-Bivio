@@ -672,14 +672,32 @@ CREATE INDEX realm_user_t8 ON realm_user_t (
 /
 
 --
+-- row_tag_t
+--
+CREATE INDEX row_tag_t2 ON row_tag_t (
+  value
+)
+/
+
+--
 -- task_log_t
 --
+-- Don't link *_id as foreign keys; have to be able to delete objects
+-- without updating this table.
 CREATE INDEX task_log_t3 ON task_log_t (
   realm_id
 )
 /
 CREATE INDEX task_log_t5 ON task_log_t (
   user_id
+)
+/
+CREATE INDEX task_log_t6 ON task_log_t (
+  super_user_id
+)
+/
+CREATE INDEX task_log_t7 ON task_log_t (
+  date_time
 )
 /
 
