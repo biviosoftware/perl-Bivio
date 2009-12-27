@@ -57,6 +57,7 @@ my($_BUNDLE) = [qw(
     !feature_group_admin
     !message_id_255
     !mail_want_reply_to
+    !index_20091227
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -927,6 +928,25 @@ STYPE = text
 /
 EOF
     }
+    return;
+}
+
+sub internal_upgrade_db_index_20091227 {
+    my($self) = @_;
+$self->run(<<'EOF');
+CREATE INDEX task_log_t6 ON task_log_t (
+  super_user_id
+)
+/
+CREATE INDEX task_log_t7 ON task_log_t (
+  date_time
+)
+/
+CREATE INDEX row_tag_t2 ON row_tag_t (
+  value
+)
+/
+EOF
     return;
 }
 
