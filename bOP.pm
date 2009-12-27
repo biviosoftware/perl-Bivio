@@ -26,11 +26,38 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.59  2009/12/23 17:12:59  moeller
+  * Bivio::BConf
+    expand to include more text on httplog
+  * Bivio::Biz::Random
+    validate length is an integer
+  * Bivio::IO::ClassLoader
+    call_autoload: improve error message
+  * Bivio::Test::Language
+    ignore wide-print warnings
+  * Bivio::Test::Unit
+    added builtin_clear_local_mail and builtin_verify_local_mail
+  * Bivio::UI::FacadeBase
+    simplify labels for realm features
+  * Bivio::UI::View::CSS
+    added .bold, .underline, .italic/s
+    set position:relative for .selector
+    added separate css for combobox dropdown menu
+  * Bivio::UI::Widget
+    improve error message
+  * Bivio::UI::XHTML::Widget::ComboBox
+    use cb_menu class instead of dd_menu
+  * Bivio::UI::XHTML::Widget::WikiText
+    added ability to chain classes, e.g. div.c1.c2 produces <div class="c1 c2">
+  * Bivio::Util::HTTPLog
+    trim pager emails and include more info
+    substr right before sending the email
+
   Revision 8.58  2009/12/18 22:39:48  dobbs
   * Bivio::Biz::Model::RealmFeatureForm
     require context
