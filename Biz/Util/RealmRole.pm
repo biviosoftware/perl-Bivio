@@ -176,6 +176,11 @@ sub handle_config {
     return;
 }
 
+sub is_category {
+    my($self, $value) = @_;
+    return _category_map($self)->{$value} ? 1 : 0;
+}
+
 sub list {
     # (self, string) : undef
     # Print the permission sets so they can be used as input to this program.
