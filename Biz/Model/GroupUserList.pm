@@ -124,13 +124,12 @@ sub _privileges {
     my($self, $row) = @_;
     my($main, $aux) = $self->roles_by_category($row->{roles});
     $row->{is_not_withdrawn} = 1;
+    my($text) = $_T->get_from_source($self->req);
     $row->{privileges} = $_SA->new([map({
         $row->{is_not_withdrawn} = 0
             if $_->eq_withdrawn;
-	$_T->get_value(
-	   'GroupUserList.privileges_name.' . $_->get_name,
-	    $self->req,
-	);
+	$text->unsafe_get_value('GroupUserList.privileges_name.' . $_->get_name)
+	    || $_->get_short_desc,
     }
 	@$main ? $main->[0] : (),
 	@$aux,
