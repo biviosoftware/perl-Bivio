@@ -107,6 +107,15 @@ sub equals {
 	? 1 : 0;
 }
 
+sub equals_by_name_or_id {
+    my($self, $name_or_id) = @_;
+    $name_or_id = ''
+	if !defined($name_or_id)
+        || $name_or_id eq $self->get_general->get_default_name;
+    return grep(($self->unsafe_get($_) || '') eq $name_or_id, qw(owner_name id))
+	? 1 : 0;
+}
+
 sub format_email {
     my($self) = @_;
     # How to mail to this realm.

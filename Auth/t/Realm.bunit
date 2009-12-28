@@ -48,6 +48,21 @@ my($realms) = [];
 	get_default_id => [
 	    [] => [Bivio::Auth::RealmType->USER->as_int],
 	],
+	equals_by_name_or_id => [
+	    [realm_id('demo')] => 1,
+	    [realm_id('user')] => 0,
+	    [undef] => 0,
+	    demo => 1,
+	    user => 0,
+	],
+    ],
+    sub {class()->get_general} => [
+	equals_by_name_or_id => [
+	    [undef] => 1,
+	    [realm_id('demo')] => 0,
+	    general => 1,
+	    demo => 0,
+	],
     ],
     ['club', req()] => [
 	get_default_id => [
