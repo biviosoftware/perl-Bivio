@@ -101,6 +101,16 @@ sub is_site_realm_name {
 	$realm_name, $self->get('Constant')->get_value('site_realm_name'));
 }
 
+sub is_special_realm_name {
+    my($self, $realm_name) = @_;
+    $realm_name = lc($realm_name);
+    my($c) = $self->get('Constant');
+    return grep(
+	($c->unsafe_get_value($_) || '') eq $realm_name,
+	$self->grep_methods(qr{_REALM_NAME$}),
+    ) ? 1 : 0;
+}
+
 sub mail_receive_task_list {
     my($self, @tasks) = @_;
     map({
@@ -382,6 +392,17 @@ sub _cfg_base {
 		[qw(DEFAULT_ERROR_REDIRECT_FORBIDDEN FORBIDDEN)] => 'Access Denied',
 		[qw(DEFAULT_ERROR_REDIRECT)] => 'Server Error',
 		[qw(DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION)] => 'Invalid Data',
+	    ]],
+	    [[qw(xlink title)] => [
+		# Some of this should be in user_auth, but all apps
+		# need these labels
+		ADM_SUBSTITUTE_USER => 'Act as User',
+		FORBIDDEN => 'Access denied',
+		SITE_ROOT => 'Home',
+		USER_PASSWORD  => 'Password',
+		[qw(LOGIN my_site_login user_logged_out)] => 'Login',
+		[qw(LOGOUT user_logged_in)] => 'Logout',
+		[qw(USER_CREATE user_just_visitor)] => 'Register',
 	    ]],
 	    [SHELL_UTIL => ''],
 	    [DieCode => [
@@ -755,7 +776,7 @@ sub _cfg_group_admin {
 	    [feature_tuple => 'Tables'],
 	    [feature_wiki => 'Wiki'],
 	    [mail_want_reply_to => 'Mail replies go to the vs_ui_forum(); by default'],
-            [[qw(ForumForm RealmFeatureForm)] => [
+            [ForumForm => [
                 'RealmOwner.name' => 'vs_ui_forum();',
                 'RealmOwner.display_name' => 'Title',
             ]],
@@ -1384,13 +1405,7 @@ sub _cfg_user_auth {
 	    ]],
 	    [[qw(title xlink)] => [
 		GENERAL_CONTACT => 'Contact',
-		USER_PASSWORD  => 'Password',
-		[qw(LOGIN my_site_login user_logged_out)] => 'Login',
-		[qw(LOGOUT user_logged_in)] => 'Logout',
-		[qw(USER_CREATE user_just_visitor)] => 'Register',
 		GENERAL_USER_PASSWORD_QUERY_ACK => 'Password Assistance Sent',
-		ADM_SUBSTITUTE_USER => 'Act as User',
-		SITE_ROOT => 'Home',
 		USER_SETTINGS_FORM => 'Personal Information and Settings',
 		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser is Missing Cookies',
 	    ]],
