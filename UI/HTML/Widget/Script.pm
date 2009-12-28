@@ -153,7 +153,7 @@ function populate_search(field) {
 	d.onclick = function() {
 	    save_selected(field);
 	}
-	d.innerHTML = v;
+	d.innerHTML = b_escape_html(v);
 	d.real_value = v;
 	field.drop_down.appendChild(d);
     }
@@ -210,6 +210,11 @@ EOF
 
 sub JAVASCRIPT_COMMON {
     return <<'EOF';
+function b_escape_html (value) {
+    return value.replace(/&/g, '&amp;')
+	.replace(/</g, '&lt;')
+	.replace(/>/g, '&gt;');
+}
 function b_remove_class (element, clazz) {
     var res = [], classes = element.className.split(/\s+/);
     for (var i = 0, length = classes.length; i < length; i++) {
@@ -218,6 +223,7 @@ function b_remove_class (element, clazz) {
         }
     }
     element.className = res.join(' ');
+    return;
 }
 function b_has_class (element, clazz) {
     return element.className.indexOf(clazz) >= 0;
