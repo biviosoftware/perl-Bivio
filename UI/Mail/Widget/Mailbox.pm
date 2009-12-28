@@ -7,20 +7,15 @@ use Bivio::Base 'UI.Widget';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 
+sub NEW_ARGS {
+    return [qw(email ?name)];
+}
+
 sub initialize {
     my($self) = @_;
     $self->initialize_attr('email');
     $self->unsafe_initialize_attr('name');
-    return;
-}
-
-sub internal_new_args {
-    my(undef, $email, $name, $attrs) = @_;
-    return {
-	email => $email,
-	(defined($name) ? (name => $name) : ()),
-	($attrs ? %$attrs : ()),
-    };
+    return shift->SUPER::initialize(@_);
 }
 
 sub render {
