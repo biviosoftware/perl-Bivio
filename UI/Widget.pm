@@ -265,6 +265,13 @@ sub internal_compute_new_args {
     };
 }
 
+sub is_initialized {
+    my($self) = @_;
+    my($res) = 1;
+    $self->put_unless_exists(__PACKAGE__ . '.initialized' => sub {$res--});
+    return $res;
+}
+
 sub new {
     # Creates a new instance and binds the initial attributes.  Instantation is
     # passive as far as the widgets are concerned, i.e.  attribute binding is the
