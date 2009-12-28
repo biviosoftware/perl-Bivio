@@ -9,10 +9,12 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Type.Array');
 
 sub forum_form {
-    return shift->internal_feature_form(ForumForm => [qw(
-	ForumForm.RealmOwner.display_name
-	ForumForm.RealmOwner.name
-    )]);
+    my($self, $model) = @_;
+    $model ||= 'ForumForm';
+    return shift->internal_feature_form($model => [
+	"$model.RealmOwner.display_name",
+	"$model.RealmOwner.name",
+    ]);
 }
 
 sub user_add_form {
