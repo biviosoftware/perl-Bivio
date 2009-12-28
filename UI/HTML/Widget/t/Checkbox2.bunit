@@ -2,7 +2,7 @@
 # $Id$
 config({
     'Bivio::IO::Config' => {
-	version => 5,
+	version => 4,
     },
 });
 FieldWidget({
