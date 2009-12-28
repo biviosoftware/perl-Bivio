@@ -98,14 +98,19 @@ sub catch {
     local($_IN_CATCH) = 1;
     local($SIG{__DIE__}) = sub {
 	my($msg) = @_;
-	_handle_die(_new_from_core_die($proto, Bivio::DieCode->DIE,
-		{(message => $msg eq "\n" ? $_A->get_last_warning
-		    : $msg),
+	_handle_die(
+	    _new_from_core_die(
+		$proto,
+		Bivio::DieCode->DIE,
+		{
+		    message => $msg eq "\n" ? $_A->get_last_warning
+			: $_A->fixup_perl_error($msg, 1),
 		    program_error => 1,
 		},
 		(caller)[0,1,2],
 		Carp::longmess("die"),
-	       ));
+	       ),
+	);
 	return;
     };
 
@@ -478,7 +483,7 @@ sub _handle_die {
 	    };
 
 	    # Unsuccessful eval, chain the error.
-	    my($msg) = $@;
+	    my($msg) = $_A->fixup_perl_error($@);
 	    # If not rethrow of an existing error?
 	    if ($msg eq "$self\n") {
 		# In this case, we don't want as_string
@@ -568,9 +573,19 @@ sub _new_from_eval_syntax_error {
     # 
     # We create a new Die and trace stack if necessary.
     my($proto) = @_;
-    my($self) = _new_from_throw($proto, Bivio::DieCode->DIE,
-	    {message => $@, program_error => 1},
-	    undef, undef, undef, Carp::longmess($@));
+    my($msg) = $_A->fixup_perl_error($@);
+    my($self) = _new_from_throw(
+	$proto,
+	Bivio::DieCode->DIE,
+	{
+	    message => $msg,
+	    program_error => 1,
+	},
+	undef,
+	undef,
+	undef,
+	Carp::longmess($msg),
+    );
     _print_stack($self)
 	if $_TRACE || $_STACK_TRACE || $_STACK_TRACE_ERROR
 	&& ($self->unsafe_get('attrs') || {program_error => 1})
