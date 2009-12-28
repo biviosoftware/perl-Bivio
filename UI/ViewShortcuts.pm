@@ -57,6 +57,14 @@ sub vs_html {
     return _fc(\@_, qw(HTML ->get_value));
 }
 
+sub vs_is_current_facade {
+    my($self, $name) = @_;
+    return [
+	sub {shift->req('UI.Facade')->matches_uri_or_domain(shift)},
+	$name,
+    ];
+}
+
 sub vs_mail_host {
     # Returns a widget value for mail_host.
     return _fc(\@_, qw(mail_host));
