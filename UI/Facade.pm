@@ -109,6 +109,18 @@ sub as_string {
     return 'Facade[' . $self->simple_package_name . ']';
 }
 
+sub find_by_uri_or_domain {
+    my($proto, $uri_or_domain) = @_;
+    return $_CLASS_MAP{$_CFG->{default}}
+	unless defined($uri_or_domain);
+    $uri_or_domain = lc($uri_or_domain);
+    foreach my $uri ($uri_or_domain, split(/\./, $uri_or_domain)) {
+	return $_URI_MAP{$uri}
+	    if $_URI_MAP{$uri};
+    }
+    return undef;
+}
+
 sub get_all_classes {
     # List of all Facades by simple class name.  Must be fully initialized to call
     # this function.
@@ -265,6 +277,11 @@ sub initialize {
     }
     $_IS_FULLY_INITIALIZED = $partially ? 0 : 1;
     return;
+}
+
+sub matches_uri_or_domain {
+    my($self, $uri_or_domain) = @_;
+    return ($self->find_by_uri_or_domain($uri_or_domain) || 0) == $self;
 }
 
 sub is_fully_initialized {
@@ -425,22 +442,12 @@ sub setup_request {
 	    unless ref($proto);
 	return _setup_request($proto, $uri_or_domain);
     }
-    my($self);
     _trace('uri: ', $uri_or_domain) if $_TRACE;
-    if (defined($uri_or_domain)) {
-	$uri_or_domain = lc($uri_or_domain);
-	foreach my $uri ($uri_or_domain, split(/\./, $uri_or_domain)) {
-	    last if $self = $_URI_MAP{$uri};
-	}
-	unless ($self) {
-	    $_A->warn_exactly_once(
-		$uri_or_domain, ': unknown facade uri');
-	    # Avoid repeated errors
-	    $self = $_URI_MAP{$uri_or_domain} = $_CLASS_MAP{$_CFG->{default}};
-	}
-    }
-    else {
-	$self = $_CLASS_MAP{$_CFG->{default}};
+    my($self) = $proto->find_by_uri_or_domain($uri_or_domain);
+    unless ($self) {
+	$_A->warn_exactly_once($uri_or_domain, ': unknown facade uri');
+	# Avoid repeated errors
+	$self = $_URI_MAP{$uri_or_domain} = $_CLASS_MAP{$_CFG->{default}};
     }
     return _setup_request($self, $req);
 }
@@ -540,7 +547,10 @@ sub _load {
 
 sub _setup_request {
     my($self, $req) = @_;
-    $req->put_durable(__PACKAGE__, $self);
+    $req->put_durable(
+	__PACKAGE__, $self,
+	'UI.Facade' => $self,
+    );
     _trace($self) if $_TRACE;
     return $self;
 }
