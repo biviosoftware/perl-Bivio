@@ -296,6 +296,11 @@ sub make_groups {
     return $proto->map_by_two(sub {[$_[0], $_[1]]}, $items);
 }
 
+sub matches_class_name {
+    my($self, $class) = @_;
+    return $self->simple_package_name eq $class;
+}
+
 sub new {
     my($proto, $config) = @_;
     # Create a new Facade.  I<config> is a list of components
