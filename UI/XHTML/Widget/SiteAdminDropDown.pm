@@ -11,6 +11,23 @@ sub NEW_ARGS {
     return [qw(?extra_items)];
 }
 
+sub TASK_MENU_LIST {
+    return map(
+        XLink({
+	    facade_label => $_,
+	    control => vs_constant("want_$_"),
+	}),
+	qw(
+	    substitute_user
+	    all_users
+	    remote_copy
+	    applicants
+	    task_log
+	    site_reports
+	),
+    );
+}
+
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
@@ -18,17 +35,7 @@ sub initialize {
 	    vs_text_as_prose('SiteAdminDropDown_label'),
 	    DIV_dd_menu(TaskMenu([
 		@{$self->get_or_default(extra_items => [])},
-                map(XLink({
-		    facade_label => $_,
-		    control => vs_constant("want_$_"),
-		}), qw(
-                    substitute_user
-                    all_users
-		    remote_copy
-		    applicants
-		    task_log
-		    site_reports
-                )),
+                $self->TASK_MENU_LIST,
 	    ]), {id => 'admin_drop_down'}),
 	),
     );
