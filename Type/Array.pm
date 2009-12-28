@@ -82,6 +82,17 @@ sub sort_unique {
     )];
 }
 
+sub to_hash {
+    my($self, $array, $value_or_op) = @_;
+    $value_or_op = 1
+	if @_ <= 2;
+    return {
+	ref($value_or_op) eq 'CODE'
+	    ? map(($_ => $value_or_op->($_)), @$array)
+	    : map(($_ => $value_or_op), @$array)
+    };
+}
+
 sub to_literal {
     # (proto, array_ref) : string
     # Returns printable string.
