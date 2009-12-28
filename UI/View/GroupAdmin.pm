@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Type.Array');
 
 sub forum_form {
-    return _feature_form(shift, ForumForm => [qw(
+    return shift->internal_feature_form(ForumForm => [qw(
 	ForumForm.RealmOwner.display_name
 	ForumForm.RealmOwner.name
     )]);
@@ -27,58 +27,10 @@ sub user_add_form {
 }
 
 sub feature_form {
-    return _feature_form(shift, RealmFeatureForm => []);
+    return shift->internal_feature_form(RealmFeatureForm => []);
 }
 
-sub user_form {
-    my($self) = @_;
-    $self->internal_put_base_attr(tools => TaskMenu([
-	'GROUP_USER_ADD_FORM',
-	'GROUP_USER_LIST',
-    ]));
-    return $self->internal_body(vs_simple_form(GroupUserForm => [
-	['GroupUserForm.RealmUser.role', {
-	    choices => ['->req', 'Model.RoleSelectList'],
-	    list_display_field => 'display',
-	    list_id_field => 'RealmUser.role',
-	}],
-	'GroupUserForm.file_writer',
-	'GroupUserForm.mail_recipient',
-    ]));
-}
-
-sub user_list {
-    my($self, $extra_columns) = @_;
-    $self->internal_put_base_attr(selector =>
-	vs_filter_query_form('GroupUserQueryForm', [
-	    Select({
-		choices => b_use('Model.GroupUserQueryForm'),
-		field => 'b_privilege',
-		unknown_label => 'Any Privilege',
-		auto_submit => 1,
-	    }),
-	]),
-    );
-    vs_user_email_list(
-	'GroupUserList',
-	[
-	    [privileges => {
-		wf_list_link => {
-		    query => 'THIS_DETAIL',
-		    task => 'GROUP_USER_FORM',
-		},
-                control => ['is_not_withdrawn'],
-	    }],
-	    @{$extra_columns || []},
-	],
-	[TaskMenu([
-	    'GROUP_USER_ADD_FORM',
-	])],
-    );
-    return;
-}
-
-sub _feature_form {
+sub internal_feature_form {
     my($self, $model, $extra_cols) = @_;
     return $self->internal_body([sub {
         my($req) = shift->req;
@@ -100,6 +52,52 @@ sub _feature_form {
 	    )},
 	]),
     }]);
+}
+
+sub user_form {
+    my($self) = @_;
+    $self->internal_put_base_attr(tools => TaskMenu([
+	'GROUP_USER_ADD_FORM',
+	'GROUP_USER_LIST',
+    ]));
+    return $self->internal_body(vs_simple_form(GroupUserForm => [
+	['GroupUserForm.RealmUser.role', {
+	    choices => ['->req', 'Model.RoleSelectList'],
+	    list_display_field => 'display',
+	    list_id_field => 'RealmUser.role',
+	}],
+	'GroupUserForm.file_writer',
+	'GroupUserForm.mail_recipient',
+    ]));
+}
+
+sub user_list {
+    my($self, $extra_columns, $other_tools) = @_;
+    $self->internal_put_base_attr(selector =>
+	vs_filter_query_form('GroupUserQueryForm', [
+	    Select({
+		choices => b_use('Model.GroupUserQueryForm'),
+		field => 'b_privilege',
+		unknown_label => 'Any Privilege',
+		auto_submit => 1,
+	    }),
+	]),
+    );
+    vs_user_email_list(
+	'GroupUserList',
+	[
+	    [privileges => {
+		wf_list_link => {
+		    query => 'THIS_DETAIL',
+		    task => 'GROUP_USER_FORM',
+		    control => [qw(->can_change_privileges GROUP_USER_FORM)],
+		},
+                control => ['->can_show_row'],
+	    }],
+	    @{$extra_columns || []},
+	],
+	$other_tools || [TaskMenu(['GROUP_USER_ADD_FORM'])],
+    );
     return;
 }
 
