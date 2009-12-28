@@ -22,6 +22,16 @@ sub NAME_SORT_COLUMNS {
     return shift->delegate_method($_AUL);
 }
 
+sub can_change_privileges {
+    my($self, $task_id) = @_;
+    return $self->req->can_user_execute_task($task_id);
+}
+
+sub can_show_row {
+    my($self) = @_;
+    return $self->get('is_not_withdrawn');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
