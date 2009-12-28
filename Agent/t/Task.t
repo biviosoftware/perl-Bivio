@@ -40,7 +40,7 @@ Bivio::Test->new({
     check_return => sub {
 	my($case, $actual, $expect) = @_;
 	return $expect
-	    unless $case->get('method') eq 'execute';
+	    unless $case->get('method') =~ /execute/;
 	my($t) = $req->get('task_id');
 	return 0
 	    unless $t;
@@ -97,6 +97,9 @@ Bivio::Test->new({
 	],
 	get_attr_as_id => [
 	    next => [Bivio::Agent::TaskId->REDIRECT_TEST_5],
+	],
+	get_attr_as_task => [
+	    next => [Bivio::Agent::Task->get_by_id(Bivio::Agent::TaskId->REDIRECT_TEST_5)],
 	],
     ],
     DEVIANCE_1 => [
