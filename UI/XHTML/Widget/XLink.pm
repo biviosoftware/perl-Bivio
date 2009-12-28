@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::XLink;
 use strict;
@@ -6,7 +6,7 @@ use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TI) = __PACKAGE__->use('Agent.TaskId');
+my($_TI) = b_use('Agent.TaskId');
 my($_C) = b_use('IO.Config');
 
 sub NEW_ARGS {
