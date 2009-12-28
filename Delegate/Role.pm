@@ -6,6 +6,13 @@ use Bivio::Base 'Bivio.Delegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
+my($_MAP) = {
+    nobody => [],
+    all_admins => [qw(ACCOUNTANT ADMINISTRATOR)],
+    all_members => [qw(all_admins MEMBER)],
+    all_users => [qw(all_members GUEST UNAPPROVED_APPLICANT USER WITHDRAWN)],
+    everybody => [qw(all_users ANONYMOUS)],
+};
 
 sub get_application_specific_list {
     return grep($_->as_int > 19, $_R->get_non_zero_list);
@@ -41,13 +48,7 @@ sub get_main_list {
 }
 
 sub internal_category_role_group_map {
-    return {
-	nobody => [],
-	all_admins => [qw(ACCOUNTANT ADMINISTRATOR)],
-	all_members => [qw(all_admins MEMBER)],
-	all_users => [qw(all_members GUEST UNAPPROVED_APPLICANT USER WITHDRAWN)],,
-	everybody => [qw(all_users ANONYMOUS)],
-    };
+    return $_MAP;
 }
 
 sub is_admin {
