@@ -94,7 +94,7 @@ sub initialize {
                             : Prose(vs_text('task_menu', 'title', $cfg->{label})),
                         $selected_cond,
                     ),
-		    $cfg->{uri}
+		    $cfg->{uri},
 	        ) : $self->die(
 		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
 	    $w = DIV_task_menu_wrapper($w)
