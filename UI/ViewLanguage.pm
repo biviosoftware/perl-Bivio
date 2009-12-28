@@ -51,40 +51,44 @@ sub AUTOLOAD {
 
 sub call_method {
     my(undef, $autoload, $proto, @args) = @_;
-    # Calls method or class contained in I<autoload>.  Using I<proto> and passing
-    # I<args> as appropriate.
-    #
-    # If I<autoload> begins with a capital letter, it is assumed to be a class which
-    # needs to be loaded via view_class_map.  If I<autoload> begins with C<vs_> it is
-    # found in the view_shortcuts map.  Otherwise, I<autoload> must begin with
-    # C<view_>, and is called in this module.
-    my($method) = $autoload;
-    $method =~ s/.*:://;
-    return
-	if $method eq 'DESTROY';
-    my($view) = _assert_in_eval($autoload);
-    if ($method =~ /^[A-Z]/) {
-	my($map) = $view->ancestral_get('view_class_map', undef);
-	_die("$method: view_class_map() or view_parent() must be called first")
-	    unless $map;
-	my($class) = $_CL->unsafe_map_require($map, $method);
-	return $class->new(@args)
-	    if $class;
-    }
-    elsif ($method =~ /^view_/) {
-	return $proto->$method(@args)
-	    if $proto->can($method);
-    }
-    my($vs) = $view->ancestral_get('view_shortcuts', undef);
-    if ($method =~ /^vs_/) {
-	_die("view_shortcuts() or view_parent() must be called before $method")
-	    unless $vs;
-	_die("$method is not implemented by $vs or its superclass(es)")
-	    unless $vs->can($method);
-	return $vs->$method(@args);
-    }
-    return ($vs || b_use('UI.ViewShortcutsBase'))
-	->view_autoload($method, \@args);
+    return $_CL->call_autoload(
+	$autoload,
+	\@args,
+	sub {
+	    # Calls method or class contained in I<autoload>.  Using I<proto>
+	    # and passing I<args> as appropriate.
+	    #
+	    # If I<autoload> begins with a capital letter, it is assumed to be
+	    # a class which needs to be loaded via view_class_map.  If
+	    # I<autoload> begins with C<vs_> it is found in the view_shortcuts
+	    # map.  Otherwise, I<autoload> must begin with C<view_>, and is
+	    # called in this module.
+	    my($method, $args) = @_;
+	    my($view) = _assert_in_eval($autoload);
+	    if ($method =~ /^[A-Z]/) {
+		my($map) = $view->ancestral_get('view_class_map', undef);
+		_die("$method: view_class_map() or view_parent() must be called first")
+		    unless $map;
+		my($class) = $_CL->unsafe_map_require($map, $method);
+		return $class->new(@$args)
+		    if $class;
+	    }
+	    elsif ($method =~ /^view_/) {
+		return $proto->$method(@$args)
+		    if $proto->can($method);
+	    }
+	    my($vs) = $view->ancestral_get('view_shortcuts', undef);
+	    if ($method =~ /^vs_/) {
+		_die("view_shortcuts() or view_parent() must be called before $method")
+		    unless $vs;
+		_die("$method is not implemented by $vs or its superclass(es)")
+		    unless $vs->can($method);
+		return $vs->$method(@$args);
+	    }
+	    return ($vs || b_use('UI.ViewShortcutsBase'))
+		->view_autoload($method, \@$args);
+	},
+    );
 }
 
 sub eval {
