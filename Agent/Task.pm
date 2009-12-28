@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
@@ -241,6 +241,12 @@ sub get_attr_as_id {
     my($self) = shift;
     return $self->return_scalar_or_array(
 	map($_->{task_id}, $self->SUPER::get(@_)));
+}
+
+sub get_attr_as_task {
+    my($proto) = shift;
+    return $proto->return_scalar_or_array(
+	map($proto->get_by_id($_), $proto->get_attr_as_id(@_)));
 }
 
 sub handle_die {
