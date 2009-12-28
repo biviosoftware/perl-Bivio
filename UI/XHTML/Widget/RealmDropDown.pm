@@ -86,9 +86,10 @@ sub _eq {
 sub _one_choice {
     my($self, $source) = @_;
     my($choices) = $self->internal_choices($source);
-    return $source->req(qw(auth_realm type))->equals($self->get('realm_type'))
-	&& @$choices == 1
-	&& $choices->[0] eq $source->req(qw(auth_realm owner_name));
+    my($ar) = $source->req('auth_realm');
+    return @$choices == 1
+        && $ar->has_owner
+	&& _value($choices->[0], 'name') eq $ar->get('owner_name');
 }
 
 sub _value {
