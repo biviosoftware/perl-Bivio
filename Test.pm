@@ -608,7 +608,8 @@ sub _eval {
 	$_CASE = $case;
 	$c++;
 	my($result);
-	next unless _prepare_case($self, $case, \$err);
+	next
+	    unless _prepare_case($self, $case, \$err);
 	my($die) = _catch(sub {
 	    _trace($case) if $_TRACE;
 	    $result = [$case->unsafe_get('want_scalar')
@@ -681,8 +682,10 @@ sub _eval_custom {
 	$$err = "Error in custom $which: " . $die->as_string . _die_stack($die);
 	return undef;
     }
-    if ($which =~ /params/ && ref($res) ne 'ARRAY') {
-	$$err = 'an array_ref';
+    if ($which =~ /params/ && !(
+	ref($res) eq 'ARRAY' || ($res || '') eq __PACKAGE__->IGNORE_RETURN
+    )) {
+	$$err = 'an array_ref'
     }
     elsif ($which =~ /object/
         && !(UNIVERSAL::isa($res, 'UNIVERSAL')
@@ -714,10 +717,11 @@ sub _eval_custom {
 sub _eval_method {
     my($case) = @_;
     # Calls the method based on whether it is a sub or not.
-    my($method) = $case->get('method');
+    my($object, $method, $params) = $case->get(qw(object method params));
+    return []
+	if $params eq __PACKAGE__->IGNORE_RETURN;
     return ref($method) eq 'CODE'
-	? $method->($case, $case->get('object'), @{$case->get('params')})
-	    : $case->get('object')->$method(@{$case->get('params')});
+	? $method->($case, $object, @$params) : $object->$method(@$params);
 }
 
 sub _eval_object {
@@ -752,10 +756,12 @@ sub _eval_params {
     my($case, $err) = @_;
     # Returns true if eval worked.
     foreach my $custom (qw(params compute_params)) {
-	next unless ref($case->unsafe_get($custom)) eq 'CODE';
+	next
+	    unless ref($case->unsafe_get($custom)) eq 'CODE';
 	my($res) = _eval_custom(
 	    $case, $custom, [$case->get(qw(params method object))], $err);
-	return 0 if $$err;
+	return 0
+	    if $$err;
 	$case->put(params => $res);
 	last;
     }
