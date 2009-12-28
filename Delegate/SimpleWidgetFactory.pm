@@ -48,7 +48,8 @@ sub create {
 	],
 	value => $widget,
 	control_off_value => $widget,
-	($wll->{task} ? (control => $wll->{task}) : ()),
+	($wll->{control} ? (control => $wll->{control})
+	     : $wll->{task} ? (control => $wll->{task}) : ()),
 	%$wll,
 	%attrs_copy,
     }) if $wll;
