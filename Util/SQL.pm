@@ -2345,10 +2345,7 @@ b-realm-role -realm USER -user user edit UNAPPROVED_APPLICANT - \
 # CLUB Permissions
 #
 b-realm-role -realm CLUB -user user edit ANONYMOUS - \
-    +ANYBODY \
-    +FEATURE_DAV \
-    +FEATURE_GROUP_ADMIN \
-    +FEATURE_WIKI
+    +ANYBODY
 b-realm-role -realm CLUB -user user edit USER - \
     +ANONYMOUS \
     +ANY_USER
