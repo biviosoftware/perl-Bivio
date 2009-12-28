@@ -1127,6 +1127,13 @@ sub set_realm {
     return $new_realm;
 }
 
+sub set_realm_unless_same {
+    my($self, $name_or_id) = @_;
+    return
+	if $self->req('auth_realm')->equals_by_name_or_id($name_or_id);
+    return shift->set_realm(@_);
+}
+
 sub set_task {
     my($self, $task_id) = @_;
     $task_id = $_TI->from_name($task_id)
