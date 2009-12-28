@@ -6,7 +6,6 @@ use Bivio::Base 'Model.RealmFeatureForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = b_use('Type.ForumName');
-my($_F) = b_use('UI.Facade');
 
 sub REALM_MODELS {
     return [qw(Forum RealmOwner)];
@@ -70,13 +69,6 @@ sub internal_initialize {
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
     });
-}
-
-sub internal_use_general_realm_for_site_admin {
-    my($self, $op) = @_;
-    return $self->req->with_realm(undef, $op)
-        if $_F->get_from_source($self)->auth_realm_is_site_admin($self->req);
-    return $op->();
 }
 
 sub is_create {
