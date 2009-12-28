@@ -119,6 +119,18 @@ sub debug {
     return wantarray ? @_ : $_[0];
 }
 
+sub fixup_perl_error {
+    my(undef, $msg, $strip_calling_context) = @_;
+    return $msg
+	unless $msg =~ s/$_PERL_MSG_AT_LINE//os;
+    $msg = "$1:$2 $msg"
+	unless $strip_calling_context;
+    $msg .= ' (package name spelling error?)'
+	if $msg =~ /Subroutine \w+ redefined/
+	|| $msg =~ /Can't locate object method "\w+" via package/;
+    return $msg;
+}
+
 sub format {
     # (proto, string, string, int, string, array) : string
     # Formats I<pkg>, I<file>, I<line>, I<sub>, and I<msg> into a pretty printed
@@ -561,9 +573,9 @@ sub _warn_handler {
     # if $_STACK_TRACE_WARN.
     my($msg) = @_;
     # Trim perl's message format (not enough info)
-    $msg =~ s/$_PERL_MSG_AT_LINE//os && ($msg = "$1:$2 $msg");
-    __PACKAGE__->warn($msg);
-    __PACKAGE__->print_stack() if $_STACK_TRACE_WARN;
+    __PACKAGE__->warn(__PACKAGE__->fixup_perl_error($msg));
+    __PACKAGE__->print_stack()
+	if $_STACK_TRACE_WARN;
     return;
 }
 
