@@ -25,4 +25,9 @@ req()->initialize_fully;
 	    other => ['other.anyhost.com', 'other.local'],
 	],
     ],
+    sub {class()->find_by_uri_or_domain('petshop', req())} => [
+	get => [
+	    uri => 'petshop',
+	],
+    ],
 ];
