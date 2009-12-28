@@ -204,10 +204,13 @@ sub init_realm {
 	entity => \@_,
 	message => 'init_realm must be called from within realm, use $req->with_realm',
     }) if @_;
-    return $self->create_folder({
+    my($v) = {
 	path => '/',
-	realm_id => $self->get_request->get('auth_id'),
-    });
+	realm_id => $self->req('auth_id'),
+    };
+    return $self
+	if $self->unsafe_load($v);
+    return $self->create_folder($v);
 }
 
 sub internal_clear_model_cache {
