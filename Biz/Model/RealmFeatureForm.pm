@@ -7,6 +7,7 @@ use Bivio::Base 'Biz.FormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RR) = b_use('ShellUtil.RealmRole');
 my($_MSA) = b_use('Type.MailSendAccess');
+my($_F) = b_use('UI.Facade');
 my($_FEATURE_TYPE_MAP) = {
     map(($_ => b_use('Type.RealmFeature')), qw(
 	feature_blog
@@ -19,9 +20,20 @@ my($_FEATURE_TYPE_MAP) = {
     mail_want_reply_to => b_use('Type.MailWantReplyTo'),
     mail_send_access => b_use('Type.MailSendAccess'),
 };
+my($_IMPLICIT_FEATURE_TYPE_MAP) = {
+    map(($_ => b_use('Type.RealmFeature')), qw(
+	feature_dav
+	feature_group_admin
+	feature_wiki
+    )),
+};
 
 sub FEATURE_TYPE_MAP {
-    return {%$_FEATURE_TYPE_MAP};
+    return $_FEATURE_TYPE_MAP;
+}
+
+sub IMPLICIT_FEATURE_TYPE_MAP {
+    return $_IMPLICIT_FEATURE_TYPE_MAP;
 }
 
 sub execute_empty {
@@ -71,9 +83,20 @@ sub internal_initialize {
     });
 }
 
+sub internal_use_general_realm_for_site_admin {
+    my($self, $op) = @_;
+    return $self->req->with_realm(undef, $op)
+        if $_F->get_from_source($self)->auth_realm_is_site_admin($self->req);
+    return $op->();
+}
+
 sub map_feature_type {
     my($self, $op) = @_;
-    my($m) = $self->FEATURE_TYPE_MAP;
+    my($m) = {
+	%{$self->FEATURE_TYPE_MAP},
+	ref($self) && $self->unsafe_get('force_default_values')
+	    ? %{$self->IMPLICIT_FEATURE_TYPE_MAP} : (),
+    };
     return [map($op ? $op->($_, $m->{$_}) : $_, sort(keys(%$m)))];
 }
 
