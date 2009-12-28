@@ -28,6 +28,17 @@ my($_IMPLICIT_FEATURE_TYPE_MAP) = {
     )),
 };
 
+sub ALL_FEATURES_WHICH_ARE_CATEGORIES {
+    my($proto) = @_;
+    return [grep(
+	$_RR->is_category($_),
+	sort(
+	    keys(%{$proto->FEATURE_TYPE_MAP}),
+	    keys(%{$proto->IMPLICIT_FEATURE_TYPE_MAP}),
+	),
+    )];
+}
+
 sub FEATURE_TYPE_MAP {
     return $_FEATURE_TYPE_MAP;
 }

@@ -25,5 +25,18 @@ my($check) = sub {
 		return 1;
 	    }),
 	],
+	ALL_FEATURES_WHICH_ARE_CATEGORIES => [
+	    [] => [[qw(
+		feature_blog
+		feature_calendar
+		feature_dav
+		feature_file
+		feature_group_admin
+		feature_mail
+		feature_motion
+		feature_tuple
+		feature_wiki
+	    )]],
+	],
     ],
 ];
