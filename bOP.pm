@@ -26,11 +26,118 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.60  2009/12/27 02:03:39  nagler
+  * Bivio::Auth::Role
+    introduced realm role categories
+  * Bivio::BConf
+    introduced realm role categories
+  * Bivio::Biz::Action::RealmMail
+    MailWantReplyTo change
+  * Bivio::Biz::Action::WikiView
+    added config option to create default start page
+  * Bivio::Biz::FormModel
+    added internal_post_parse_columns
+  * Bivio::Biz::Model::EditDAVList
+    added view_shortcuts to dav_reply_get
+  * Bivio::Biz::Model::Forum
+    removed is_public_email (Categories) and want_reply_to (now RowTag)
+  * Bivio::Biz::Model::ForumEditDAVList
+    removed is_public_email (Categories) and want_reply_to (now RowTag)
+  * Bivio::Biz::Model::ForumForm
+    UI now creates forums via RealmFeatureForm, feature_wiki is always on, feature_crm is always off
+    share better with RealmFeatureForm
+    fixed top_forum name change error return
+  * Bivio::Biz::Model::ForumList
+    removed is_public_email (Categories) and want_reply_to (now RowTag)
+  * Bivio::Biz::Model::MailForm
+    mail_want_reply_to
+  * Bivio::Biz::Model::RealmFeatureForm
+    UI now creates forums via RealmFeatureForm, feature_wiki is always on, feature_crm is always off
+    generalized interface so can be subclassed easily
+    execute_empty and execute_ok behave properly in all cases
+    introduced row_tag_replace_value & row_tag_get_value APIs
+    introduced as_realm_role_category
+  * Bivio::Biz::Util::RealmRole
+    Added category role groups and set arithmetic (*everybody-all_admins)_
+  * Bivio::Delegate::Role
+    added role groups
+  * Bivio::Delegate::RowTagKey
+    added MAIL_WANT_REPLY_TO
+  * Bivio::Delegate::SimpleRealmName
+    unsafe_from_uri must test SPECIAL_PLACEHOLDER first b/c may be shorter
+    than get_min_width
+  * Bivio::Delegate::TaskId
+    added FORUM_EDIT_FORM
+    fixed REALM_FEATURE_FORM
+  * Bivio::PetShop::Delegate::Role
+    rmpod
+    b_use
+  * Bivio::PetShop::Test::PetShop
+    create_crm/_forum implementation changed due to MAIL_WANT_REPLY_TO changes
+  * Bivio::PetShop::Util::SQL
+    mail_want_reply_to
+    wiki_bunit => bunit_wiki
+  * Bivio::SQL::DDL
+    removed is_public_email (Categories) and want_reply_to (now RowTag)
+  * Bivio::Test::WikiText
+    bunit_wiki name change
+  * Bivio::Type::Array
+    added sort_unique and map_sort_map
+  * Bivio::Type::ForumEmailMode
+    removed
+  * Bivio::Type::ForumName
+    set get_min_width
+  * Bivio::Type::MailSendAccess
+    NEW
+  * Bivio::Type::MailWantReplyTo
+    NEW
+  * Bivio::Type::RealmFeature
+    NEW
+  * Bivio::Type::String
+    check get_min_width if non-zero
+  * Bivio::Type::SyntacticString
+    need to not call SUPER, because of get_min_width check
+  * Bivio::Type::WantReplyTo
+    removed
+  * Bivio::Type::WikiName
+    added DEFAULT_START_PAGE
+  * Bivio::UI::FacadeBase
+    UI now creates forums via RealmFeatureForm, feature_wiki is always on, feature_crm is always off
+    fpc
+    removed is_public_email (Categories) and want_reply_to (now RowTag)
+    Added vs_ui_forum(); so all uses of Forum can be switched
+  * Bivio::UI::HTML::Widget::Checkbox
+    bumped Prose() on label down to v5
+  * Bivio::UI::View::GroupAdmin
+    NEW
+  * Bivio::UI::View::GroupUser
+    removed
+  * Bivio::UI::ViewShortcuts
+    Added vs_ui_forum(); so all uses of Forum can be switched
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_descriptive_field_no_label
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    drop down label is Prose()
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    moved create_forum and configure_features out
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    label is Prose
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    is_inline_text
+  * Bivio::UI::XML::Widget::Page
+    text/xml
+  * Bivio::Util::CRM
+    mail_want_reply_to change
+  * Bivio::Util::SQL
+    mail_want_reply_to upgrade (drops Forum.is_public_email/want_reply_to)
+  * Bivio::Util::SiteForum
+    mail_want_reply_to change
+
   Revision 8.59  2009/12/23 17:12:59  moeller
   * Bivio::BConf
     expand to include more text on httplog
