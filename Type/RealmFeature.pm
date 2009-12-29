@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::RealmFeature;
 use strict;
-use Bivio::Base 'Type.NullBoolean';
+use Bivio::Base 'Type.Boolean';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
