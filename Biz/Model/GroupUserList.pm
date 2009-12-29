@@ -24,12 +24,8 @@ sub NAME_SORT_COLUMNS {
 
 sub can_change_privileges {
     my($self, $task_id) = @_;
-    return $self->req->can_user_execute_task($task_id);
-}
-
-sub can_show_row {
-    my($self) = @_;
-    return $self->get('is_not_withdrawn');
+    return $self->req->can_user_execute_task($task_id)
+	&& $self->get('is_not_withdrawn');
 }
 
 sub internal_initialize {

@@ -94,7 +94,6 @@ sub user_list {
 		    task => 'GROUP_USER_FORM',
 		    control => [qw(->can_change_privileges GROUP_USER_FORM)],
 		},
-                control => ['->can_show_row'],
 	    }],
 	    @{$extra_columns || []},
 	],
