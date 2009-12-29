@@ -26,11 +26,87 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.61  2009/12/29 02:29:20  nagler
+  * Bivio::Agent::Request
+    added set_realm_unless_same
+  * Bivio::Agent::Task
+    sorted methods
+    added get_attr_as_task
+  * Bivio::Auth::Realm
+    added equals_by_name_or_id
+  * Bivio::Biz::Model::AdmRealmRoleList
+    NEW
+  * Bivio::Biz::Model::ForumForm
+    moved internal_use_general_realm_for_site_admin up to RealmFeatureForm
+  * Bivio::Biz::Model::GroupUserList
+    added can_show_row and can_change_privileges
+    default privs to get_short_desc
+  * Bivio::Biz::Model::RealmFeatureForm
+    added IMPLICIT_FEATURE_TYPE_MAP and force_default_values
+    added ALL_FEATURES_WHICH_ARE_CATEGORIES
+  * Bivio::Biz::Model::RealmFile
+    make init_realm safe against reinit
+  * Bivio::Biz::Util::RealmRole
+    added is_category
+  * Bivio::Delegate::Role
+    cache MAP
+    uncache map, becuse subclasses may modify
+  * Bivio::Delegate::SimpleWidgetFactory
+    added control to wf_list_link
+  * Bivio::Die
+    use fixup_perl_error to produce better error messages
+  * Bivio::IO::Alert
+    added fixup_perl_error to produce better syntax error messages
+  * Bivio::PetShop::Model::AdmSubstituteUserForm
+    NEW
+  * Bivio::PetShop::View::UserAuth
+    added adm_substitute_user to test ComboBox
+  * Bivio::SQL::DDL
+    added indexes on RowTag.value and TaskLog.date/super_user_id
+  * Bivio::Test
+    allow IGNORE_RETURN to work for compute_params so
+    Unit.builtin_inline_case works
+  * Bivio::Type::Array
+    added to_hash
+  * Bivio::UI::Facade
+    added matches_uri_or_domain & find_by_uri_or_domain
+    added matches_class_name
+  * Bivio::UI::FacadeBase
+    added is_special_realm_name
+  * Bivio::UI::HTML::Widget::Script
+    added escape_html & use in combobox
+  * Bivio::UI::JavaScript::Widget::QuotedValue
+    do the work in render
+  * Bivio::UI::Mail::Widget::Mailbox
+    added NEW_ARGS
+  * Bivio::UI::View::GroupAdmin
+    share better with _feature_form
+    parameterize forum_form
+  * Bivio::UI::ViewLanguage
+    use ClassLoader->call_method so can have Map_Class() form
+  * Bivio::UI::ViewShortcuts
+    added vs_is_current_facade
+  * Bivio::UI::Widget
+    added is_initialized
+  * Bivio::UI::XHTML::Widget::ComboBox
+    refactored and allow list_display_field to be any value, not just a field
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    make _one_choice() support all realms with owners
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    export the TASK_MENU_LIST to allow overrides
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    fmt
+  * Bivio::UI::XHTML::Widget::XLink
+    fmt
+  * Bivio::Util::SQL
+    added index_20091227
+    use RealmFeatureForm.force_default_values to setup of club & forum
+
   Revision 8.60  2009/12/27 02:03:39  nagler
   * Bivio::Auth::Role
     introduced realm role categories
