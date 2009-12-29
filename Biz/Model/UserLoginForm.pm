@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::UserLoginForm;
 use strict;
-use Bivio::Base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Biz.FormModel';
 use Bivio::IO::Trace;
 
 # C<Bivio::Biz::Model::UserLoginForm> is used to login which changes the
@@ -61,7 +61,10 @@ sub execute_ok {
 	? $self->get('realm_owner')
         : $self->has_keys('realm_owner') ? _assert_realm($self)
 	: $self->has_keys('login') ? _assert_login($self)
-	: Bivio::Die->die('missing form fields');
+	: b_die('missing form fields');
+    b_warn('RealmOwner.password was NOT CHECKED')
+	if defined($self->unsafe_get('RealmOwner.password'))
+	&& !$self->unsafe_get('validate_called');
     return _su_logout($self)
 	if !$realm && $req->is_substitute_user;
     _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
