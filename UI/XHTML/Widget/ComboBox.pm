@@ -14,6 +14,7 @@ sub initialize {
     my($self) = @_;
     return
 	if $self->is_initialized;
+    $self->initialize_attr(auto_submit => 0);
     $self->initialize_attr(size => 50);
 #TODO: Add list_id_field like Select().  See Pethop AdmSubstituteUserForm.
     my($ldf) = $self->initialize_attr('list_display_field');
