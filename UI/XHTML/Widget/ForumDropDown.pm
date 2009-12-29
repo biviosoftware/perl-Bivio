@@ -6,8 +6,8 @@ use Bivio::Base 'XHTMLWidget.RealmDropDown';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub DEFAULT_REALM_TYPE {
-    return 'FORUM';
+sub DEFAULT_REALM_TYPES {
+    return ['FORUM'];
 }
 
 1;

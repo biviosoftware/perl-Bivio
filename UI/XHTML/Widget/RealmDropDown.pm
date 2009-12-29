@@ -9,17 +9,15 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = b_use('Auth.RealmType');
 
 sub NEW_ARGS {
-    return shift->can('DEFAULT_REALM_TYPE') ? [] : [qw(realm_type)];
+    return shift->can('DEFAULT_REALM_TYPES') ? [] : [qw(realm_types)];
 }
 
 sub initialize {
     my($self) = @_;
-    $self->put(
-	realm_type => my $rt = $_RT->from_any(
-	    $self->get_or_default(
-		'realm_type', sub {$self->DEFAULT_REALM_TYPE}),
-	),
-    );
+    b_die('pass realm_types instead of realm_type')
+        if $self->unsafe_get('realm_type');
+    my($rt) = _realm_types($self);
+    my($first_rt) = $rt->[0];
     $self->put_unless_exists(
 	control => [sub {@{$self->internal_choices(shift)} != 0}],
 	control_on_value => If(
@@ -27,16 +25,16 @@ sub initialize {
 	    SPAN(_curr_realm(), {class => 'dd_link'}),
 	    DIV_task_menu_wrapper(
 		DropDown(
-		    If([[qw(->req auth_realm type)], '->equals', $rt],
+		    If([[qw(->req auth_realm type)], '->equals_by_name', @$rt],
 		       _curr_realm(),
-		       Prose(vs_text('RealmDropDown', $rt->get_name)),
+		       Prose(vs_text('RealmDropDown', $first_rt)),
 		    ),
 		    DIV_dd_menu(
 			[sub {
 			     my($source) = @_;
 			     my($realms) = $self->internal_choices($source);
 			     my($r) = $source->req('auth_realm');
-			     $r = $r->get('type')->equals($rt)
+			     $r = $r->get('type')->equals_by_name(@$rt)
 				 ? $r->get('owner_name')
 				 : '';
 			     return Join([
@@ -46,7 +44,7 @@ sub initialize {
 					 task_id => _value($_, 'task_id')
 					     || $self->render_simple_attr(
 						 task_id => $source,
-					     ) || ($rt->get_name . '_HOME'),
+					     ) || ($first_rt . '_HOME'),
 					 query => undef,
 					 path_info => undef,
 				     })),
@@ -56,7 +54,7 @@ sub initialize {
 			     ]);
 			}],
 			{
-			    id => lc($rt->get_name) . '_drop_down',
+			    id => lc($first_rt) . '_drop_down',
 			},
 		    ),
 		),
@@ -70,7 +68,9 @@ sub internal_choices {
     my($self, $source) = @_;
     return $source->req->map_user_realms(
 	sub {shift->{'RealmOwner.name'}},
-	{'RealmOwner.realm_type' => $self->get('realm_type')},
+	{'RealmOwner.realm_type' => [
+            map($_RT->from_any($_), @{_realm_types($self)}),
+        ]},
     );
 }
 
@@ -90,6 +90,15 @@ sub _one_choice {
     return @$choices == 1
         && $ar->has_owner
 	&& _value($choices->[0], 'name') eq $ar->get('owner_name');
+}
+
+sub _realm_types {
+    my($self) = @_;
+    my($v) = $self->get_or_default(
+        'realm_types', sub {$self->DEFAULT_REALM_TYPES});
+    $v = [map($_RT->from_any($_)->get_name, ref($v) ? @$v : $v)];
+    $self->put(realm_types => $v);
+    return $v;
 }
 
 sub _value {
