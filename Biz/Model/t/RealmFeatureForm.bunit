@@ -2,70 +2,69 @@
 # $Id$
 FormModel();
 req()->set_realm_and_user('fourem', 'root');
+my($params) = sub {
+    my(@params) = @_;
+    return {
+	map(($_ => 0), qw(
+	    feature_blog
+	    feature_calendar
+	    feature_file
+	    feature_mail
+	    feature_motion
+	    feature_tuple
+	    mail_want_reply_to
+	)),
+	mail_send_access => MailSendAccess()->ALL_MEMBERS,
+	map(($_ =~ /^[A-Z]/ ? (mail_send_access => MailSendAccess()->$_())
+	    : ($_ => 1)),
+	    @params),
+    };
+};
+my($case) = sub {
+    my($params) = $params->(@_);
+    return (
+	[$params] => not_die(),
+	empty_case($params),
+    );
+};
 [
-    empty_case({
-        feature_blog => 1,
-        feature_calendar => 1,
-        feature_file => 1,
-        feature_mail => 1,
-        feature_motion => 1,
-        feature_tuple => 1,
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
-	mail_want_reply_to => 0,
-    }),
-    [{
-        feature_blog => 0,
-        feature_motion => 0,
-        feature_tuple => 1,
-	mail_send_access => MailSendAccess()->ALL_ADMINS,
-	mail_want_reply_to => 1,
-    }] => not_die(),
-    empty_case({
-        feature_blog => 0,
-        feature_calendar => 1,
-        feature_file => 1,
-        feature_mail => 1,
-        feature_motion => 0,
-        feature_tuple => 1,
-	mail_send_access => MailSendAccess()->ALL_ADMINS,
-	mail_want_reply_to => 1,
-    }),
+    empty_case($params->(qw(
+	ALL_MEMBERS
+	feature_blog
+	feature_calendar
+	feature_file
+	feature_mail
+	feature_motion
+	feature_tuple
+    ))),
+    $case->(qw(
+	ALL_ADMINS
+	feature_calendar
+	feature_file
+	feature_mail
+	feature_tuple
+	mail_want_reply_to
+    )),
     inline_case(sub {req()->set_realm('demo')}),
-    empty_case({
-        feature_blog => 0,
-        feature_calendar => 0,
-        feature_file => 1,
-        feature_mail => 0,
-        feature_motion => 0,
-        feature_tuple => 0,
-	mail_send_access => MailSendAccess()->NOBODY,
-	mail_want_reply_to => 0,
-    }),
-    [{
-        feature_motion => 1,
-        feature_file => 0,
-	mail_send_access => MailSendAccess()->EVERYBODY,
-	mail_want_reply_to => 1,
-    }] => not_die(),
-    empty_case({
-        feature_blog => 0,
-        feature_calendar => 0,
-        feature_file => 0,
-        feature_mail => 0,
-        feature_motion => 1,
-        feature_tuple => 0,
-	mail_send_access => MailSendAccess()->EVERYBODY,
-	mail_want_reply_to => 1,
-    }),
+    $case->(qw(
+	NOBODY
+        feature_file
+    )),
+    $case->(qw(
+	EVERYBODY
+	mail_want_reply_to
+        feature_file
+        feature_motion
+    )),
     inline_case(sub {req()->set_realm(undef)}),
-    empty_case({
-        feature_blog => 1,
-        feature_calendar => 1,
-        feature_file => 1,
-        feature_mail => 1,
-        feature_motion => 1,
-        feature_tuple => 1,
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
-	mail_want_reply_to => 1,
-    }),
+    empty_case($params->(qw(
+        feature_blog
+        feature_calendar
+        feature_file
+        feature_mail
+        feature_motion
+        feature_tuple
+	ALL_MEMBERS
+	mail_want_reply_to
+     ))),
 ];
