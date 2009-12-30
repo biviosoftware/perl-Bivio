@@ -64,7 +64,7 @@ sub execute_ok {
     my($main_old) = $ul->roles_by_category;
     my($main) = $self->get('RealmUser.role');
     my($ru) = $self->new_other('RealmUser');
-    unless ($main_old eq $main) {
+    unless ($main_old->[0] eq $main) {
 # This only deletes this realm
 	$ru->delete_all({user_id => $uid});
 	return _audit_user($self, $uid)
@@ -142,8 +142,7 @@ sub internal_pre_execute {
     my($auth_role) = $self->req('auth_role');
     pop(@$roles)
 	until !@$roles || $auth_role->equals_by_name($roles->[$#$roles]);
-    $self->new_other('RoleSelectList')
-	->load_from_array($roles);
+    $self->new_other('RoleSelectList')->load_from_array($roles);
     return shift->SUPER::internal_pre_execute(@_);
 }
 
