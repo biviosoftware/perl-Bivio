@@ -19,6 +19,10 @@ sub internal_query_fields {
     ];
 }
 
+sub internal_roles {
+    return b_use('Model.RoleBaseList')->ROLES_ORDER;
+}
+
 sub provide_select_choices {
     my($self) = @_;
     return [sort(keys(%{_role_map($self)}))];
@@ -35,7 +39,7 @@ sub _role_map {
 	my($v) = $_T->get_from_source($self->req)
 	    ->unsafe_get_value('GroupUserList.privileges_name',	$_->get_name);
 	$v ? ($v => $_) : ();
-    } @{b_use('Model.RoleBaseList')->ROLES_ORDER})};
+    } @{$self->internal_roles})};
 }
 
 1;
