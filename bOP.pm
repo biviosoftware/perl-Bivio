@@ -26,11 +26,33 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.62  2009/12/29 23:46:45  moeller
+  * Bivio::Biz::Model::GroupUserList
+    can_show_row in user_list can't work
+  * Bivio::Biz::Model::UserLoginForm
+    print a warning if pass RealmOwner.password and not validated
+  * Bivio::Delegate::SimpleWidgetFactory
+    change order of overrides in wf_list_link
+  * Bivio::Type::MailWantReplyTo
+    not NullBoolean
+  * Bivio::Type::RealmFeature
+    not NullBoolean
+  * Bivio::UI::View::GroupAdmin
+    can_show_row in user_list can't work
+  * Bivio::UI::XHTML::Widget::ComboBox
+    default auto_submit => 0
+  * Bivio::UI::XHTML::Widget::ForumDropDown
+    RealmDropDown now expects a list of realm_types in DEFAULT_REALM_TYPES
+    DEFAULT_REALM_TYPE renamed to DEFAULT_REALM_TYPES
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    RealmDropDown now expects a list of realm_types in DEFAULT_REALM_TYPES
+    DEFAULT_REALM_TYPE renamed to DEFAULT_REALM_TYPES
+
   Revision 8.61  2009/12/29 02:29:20  nagler
   * Bivio::Agent::Request
     added set_realm_unless_same
