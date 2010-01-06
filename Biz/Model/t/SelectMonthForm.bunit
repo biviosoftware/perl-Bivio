@@ -1,0 +1,11 @@
+# Copyright (c) 2010 IEEE Industry Standards and Technology Organization.  All Rights Reserved.
+# $Id$
+FormModel();
+req()->set_realm('fourem');
+req()->initialize_fully('FORUM_CALENDAR');
+[
+    empty_case({
+	begin_date => Date()->set_beginning_of_month(Date()->now),
+	end_date => Date()->set_end_of_month(Date()->now),
+    }),
+];
