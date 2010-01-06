@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::DateTime;
 use strict;
-use base 'Bivio::Type';
+use Bivio::Base 'Bivio.Type';
 use Bivio::Die;
 use Bivio::Mail::RFC822;
 use Bivio::Type::Array;
@@ -686,13 +686,19 @@ sub rfc822 {
 	    $hour, $min, $sec);
 }
 
+sub set_beginning_of_month {
+    my($proto, $date_time) = @_;
+    my($sec, $min, $hour, $day, $mon, $year) = $proto->to_parts($date_time);
+    return $proto->from_parts_or_die($sec, $min, $hour, 1, $mon, $year);
+}
+
 sub set_end_of_month {
-    my($self, $date_time) = @_;
-    # Sets the the date part to end of the month.  The time part is unmodified.
-    my($sec, $min, $hour, $day, $mon, $year) = $self->to_parts($date_time);
-    return $self->from_parts_or_die($sec, $min, $hour,
-	$self->get_last_day_in_month($mon, $year),
-	$mon, $year);
+    my($proto, $date_time) = @_;
+    my($sec, $min, $hour, $day, $mon, $year) = $proto->to_parts($date_time);
+    return $proto->from_parts_or_die(
+	$sec, $min, $hour,
+	$proto->get_last_day_in_month($mon, $year), $mon, $year,
+    );
 }
 
 sub set_local_beginning_of_day {
