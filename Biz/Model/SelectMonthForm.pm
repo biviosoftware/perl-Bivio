@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::SelectMonthForm;
 use strict;
@@ -39,8 +39,7 @@ sub internal_initialize {
                 form_name => $_LQ->to_char('begin_date'),
                 type => 'Date',
                 constraint => 'NOT_NULL',
-                default_value => $_D->date_from_parts(
-		    1, $_D->get_parts($_D->now, qw(month year)))
+                default_value => sub {$_D->set_beginning_of_month($_D->now)},
             },
             {
                 name => 'end_date',
