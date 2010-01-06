@@ -39,7 +39,7 @@ sub get_current_query_for_list {
         map({
             my($v) = $self->unsafe_get($_);
             my($t) = $self->get_field_info($_, 'type');
-            my($dv) = $self->get_field_info($_, 'default_value');
+            my($dv) = $self->get_default_value($_);
 	    my($name) = $self->get_field_info($_, 'form_name');
             !$self->OMIT_DEFAULT_VALUES_FROM_QUERY || !$t->is_equal($dv, $v)
 	        ? ($name => $t->to_literal($v)) : ();
@@ -68,8 +68,7 @@ sub internal_pre_execute {
     foreach my $field (@{_get_visible_fields($self)}) {
         next if defined($self->unsafe_get($field));
         next if $self->get_field_error($field);
-        $self->internal_put_field($field =>
-            $self->get_field_info($field, 'default_value'));
+        $self->internal_put_field($field => $self->get_default_value($field));
     }
     return;
 }
@@ -97,7 +96,7 @@ sub _load_query_value {
 	}
     }
     else {
-	$v = $self->get_field_info($field, 'default_value');
+	$v = $self->get_default_value($field);
     }
     $self->internal_put_field($field => $v);
     return;
