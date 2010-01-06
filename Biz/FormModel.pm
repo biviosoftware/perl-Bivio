@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::FormModel;
 use strict;
@@ -271,6 +271,12 @@ sub get_context_from_request {
 	$form = $f;
     }
     return $_FC->new_from_form($self, $form, $context, $req);
+}
+
+sub get_default_value {
+    my($self, $field) = @_;
+    my($res) = $self->get_field_info($field, 'default_value');
+    return ref($res) eq 'CODE' ? $res->($self) : $res;
 }
 
 sub get_errors {
