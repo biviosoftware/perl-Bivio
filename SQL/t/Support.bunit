@@ -63,5 +63,10 @@ options({comparator => 'nested_contains'});
 	    'aa.bb.cc' => 'aa',
  	    'bb.cc' => DIE(),
  	],
+	extract_column_name => [
+	    'aa.bb.cc' => 'cc',
+ 	    'bb.cc' => 'cc',
+ 	    'cc' => 'cc',
+	],
     ],
 ];

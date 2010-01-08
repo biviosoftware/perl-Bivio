@@ -82,12 +82,18 @@ my($_QP) = qr{[a-z][a-z0-9_]+};
 my($_QUAL_PREFIX) = qr{^($_QP)\.}os;
 # Make minimal assumptions about what this looks like so that
 # Model.TupleTag can use for fields or slots
-my($_QUAL_FIELD) = qr{^($_QP)\.(\w+)\.(@{[b_use('Type.TupleSlotLabel')->VALID_CHAR_REGEX]}+)$}os;
+my($_COLUMN_RE) = qr{(?:^|\.)(@{[b_use('Type.TupleSlotLabel')->VALID_CHAR_REGEX]}+)$}os;
+my($_QUAL_FIELD) = qr{^($_QP)\.(\w+)$_COLUMN_RE}os;
 my($_QUAL_SUFFIX) = qr{(_\d+)$}s;
 
 sub clone {
     # Always a singleton
     return shift;
+}
+
+sub extract_column_name {
+    my($self, $column) = @_;
+    return ($column =~ $_COLUMN_RE)[0];
 }
 
 sub extract_model_prefix {
