@@ -1,18 +1,16 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Request();
+Type();
 req()->set_realm_and_user(qw(demo demo));
 [
-    class() => [
-	setup_by_list_this => [
-	    map({
-		my($mode) = $_;
-		sub {
-		    req()->put(query => {this => req('auth_id')})
-			if $mode eq 'EDIT';
-		    return [model('UserRealmList'), 'RealmOwner'];
-		} => [class()->$mode()],
-	    } qw(CREATE EDIT)),
-        ],
+    setup_by_list_this => [
+	map({
+	    my($mode) = $_;
+	    sub {
+		req()->put(query => {this => req('auth_id')})
+		    if $mode eq 'EDIT';
+		return [model('UserRealmList'), 'RealmOwner'];
+	    } => $mode,
+	} qw(CREATE EDIT)),
     ],
 ];
