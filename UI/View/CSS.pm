@@ -94,6 +94,9 @@ ul.none {
 .b_align_bottom {
   vertical-align: bottom;
 }
+.b_literal {
+  white-space: pre-wrap;
+}
 .trailer {
   margin: 1ex 0;
 }
