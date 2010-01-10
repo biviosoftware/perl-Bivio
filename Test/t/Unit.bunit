@@ -146,6 +146,11 @@ req()->set_realm('btest_read');
 	sub {
 	    assert_eval('die');
 	} => qr{died with: },
+	want_scalar => [
+	    case_tag('Unit1'),
+	    sub {[shift->as_string]} => 'Test.Case[Unit1]',
+	    sub {[shift->unsafe_get('tag')]} => [undef],
+	],
     ],
 #TODO: create_object needs to be deferred
 #     var('g2') => [

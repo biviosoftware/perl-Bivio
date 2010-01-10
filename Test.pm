@@ -856,6 +856,9 @@ sub _prepare_case {
     my($self, $case, $err) = @_;
     # Returns false if err.  Calls _eval_object_or_params and
     # then checks method.
+    if (my $ct = $self->unsafe_get_and_delete('case_tag')) {
+	$case->put(tag => $ct);
+    }
     return 0
 	unless _eval_object($self, $case, $err) && _eval_params($case, $err);
     if ($case->unsafe_get('method_is_autoloaded')
