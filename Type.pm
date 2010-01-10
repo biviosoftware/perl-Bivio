@@ -214,6 +214,22 @@ sub is_equal {
     return shift->compare(@_) == 0 ? 1 : 0;
 }
 
+sub is_greater_than {
+    return shift->compare(@_) > 0;
+}
+
+sub is_greater_than_or_equals {
+    return shift->compare(@_) >= 0;
+}
+
+sub is_less_than {
+    return shift->compare(@_) < 0;
+}
+
+sub is_less_than_or_equals {
+    return shift->compare(@_) <= 0;
+}
+
 sub is_password {
     # (proto) : boolean
     # Is this value a password, i.e. should it not be displayed?
