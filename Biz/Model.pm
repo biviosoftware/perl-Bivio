@@ -352,7 +352,7 @@ sub internal_put_iterator {
 }
 
 sub is_ephemeral {
-    my($self) = @_;    
+    my($self) = @_;
     return $self->[$_IDI]->{ephemeral} ? 1 : 0;
 }
 
