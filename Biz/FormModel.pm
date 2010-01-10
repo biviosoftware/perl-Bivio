@@ -600,6 +600,8 @@ sub internal_put_error {
 
 sub internal_put_error_and_detail {
     my($self, $property, $error, $detail) = @_;
+    return $self->internal_clear_error($property)
+	unless defined($error);
     my($fields) = $self->[$_IDI];
     $error = $_TE->from_any($error);
     $property ||= $self->GLOBAL_ERROR_FIELD;
