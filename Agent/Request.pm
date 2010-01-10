@@ -294,12 +294,13 @@ sub can_secure {
 }
 
 sub can_user_execute_task {
-    my($self, $task_name, $realm) = @_;
-    my($tid) = $_TI->from_any($task_name);
+    my($self, $task, $realm) = @_;
+    $task = $_T->get_by_id($_TI->from_any($task))
+	unless $_T->is_blessed($task);
+    my($tid) = $task->get('id');
     return 0
 	if $_V7
 	&& !$_FCT->is_defined_for_facade($tid->get_name, $self);
-    my($task) = $_T->get_by_id($tid);
     if ($realm) {
         $realm = Bivio::Auth::Realm->new($realm, $self);
 	$task->assert_realm_type($realm->get('type'));
