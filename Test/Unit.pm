@@ -54,7 +54,7 @@ use File::Spec ();
 #     ];
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS);
+our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS, $_SELF);
 our($_PROTO) = __PACKAGE__;
 my($_CL) = b_use('IO.ClassLoader');
 my($_A) = b_use('IO.Alert');
@@ -122,6 +122,14 @@ sub builtin_auth_realm {
 sub builtin_auth_user {
     # Return the current auth user.
     return shift->builtin_req()->get('auth_user');
+}
+
+sub builtin_case_tag {
+    my($proto, $tag) = @_;
+    return $proto->builtin_inline_case(sub {
+        $proto->builtin_self->put(case_tag => $tag);
+        return;
+    });
 }
 
 sub builtin_class {
@@ -363,8 +371,7 @@ sub builtin_rollback {
 }
 
 sub builtin_self {
-    return ref($_TYPE) ? $_TYPE
-	: Bivio::Die->die($_TYPE, ': is not an instance');
+    return $_SELF || b_die('may only be called during test execution');
 }
 
 sub builtin_shell_util {
@@ -484,11 +491,12 @@ sub run {
 }
 
 sub run_unit {
-    my($self) = shift;
+    my($proto) = shift;
+    local($_SELF);
     return (
-	$self->new({
-	    class_name => $self->builtin_class,
-	    ref($self) ? %{$self->get_shallow_copy} : (),
+	$_SELF = $proto->new({
+	    class_name => $proto->builtin_class,
+	    ref($proto) ? %{$proto->get_shallow_copy} : (),
 	    %$_OPTIONS,
 	})
     )->unit(@_);
