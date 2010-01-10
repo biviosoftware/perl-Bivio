@@ -33,6 +33,8 @@ sub as_string {
     return $self->SUPER::as_string
 	unless ref($self);
     my($attr) = $self->internal_get;
+    return "Test.Case[$attr->{tag}]"
+	if defined($attr->{tag});
     my($sig) = '';
     if ($attr->{object}) {
 	my($s) = UNIVERSAL::can($attr->{object}, 'as_string')
