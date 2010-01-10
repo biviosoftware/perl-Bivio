@@ -117,5 +117,8 @@ my($copy) = {
 	    [qw(d1 d2)] => 1,
 	    [qw(d1 d2 u1)] => 0,
 	],
+	unsafe_get_and_delete => [
+	    [qw(d1 d2)] => [1, 1],
+	],
     ],
 ];

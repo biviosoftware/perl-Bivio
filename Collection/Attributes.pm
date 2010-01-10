@@ -311,6 +311,13 @@ sub unsafe_get {
     return $self->return_scalar_or_array(map($fields->{$_}, @_))
 }
 
+sub unsafe_get_and_delete {
+    my($self) = shift;
+    my(@res) = $self->unsafe_get(@_);
+    $self->delete(@_);
+    return $self->return_scalar_or_array(@res);
+}
+
 sub unsafe_get_by_regexp {
     return _unsafe_get_by_regexp(1, @_);
 }
