@@ -3,6 +3,7 @@
 Request();
 req()->set_realm('demo');
 my($id) = req('auth_id');
+my($properties) = model('RealmOwner', {})->get_shallow_copy;
 [
     sub {model('RealmOwner')} => [
         map_iterate => [
@@ -28,6 +29,20 @@ my($id) = req('auth_id');
 	    req()->clear_nondurable_state;
 	    return req(qw(Model.RealmOwner name));
 	} => 'demo',
+	get_qualified_field_name_list => [
+	    [] => [map("RealmOwner.$_", sort(keys(%$properties)))],
+	],
+	{
+	    method => 'load_from_properties',
+	    comparator => 'nested_contains',
+	} => [
+	    [{%$properties}] => [{name => 'demo'}],
+	    [{map(("RealmOwner.$_" => $properties->{$_}), keys(%$properties))}]
+		 => [{name => 'demo'}],
+	    [{map($_ eq 'realm_id' ? () : ($_ => $properties->{$_}),
+		  keys(%$properties))}]
+		 => DIE(),
+	],
     ],
     sub {model('RealmOwner')->set_ephemeral} => [
 	map_iterate => [

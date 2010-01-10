@@ -12,6 +12,15 @@ use Bivio::SQL::PropertySupport;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 
+sub assert_properties {
+    my($self, $values) = @_;
+    foreach my $k (@{$self->get_info('column_names')}) {
+	$self->die($k, ': missing column')
+	    unless exists($values->{$k});
+    }
+    return $values;
+}
+
 sub cascade_delete {
     my($self, $query) = @_;
     my($support) = $self->internal_get_sql_support;
@@ -203,6 +212,11 @@ sub get_qualified_field_name {
     return shift->simple_package_name . '.' . shift(@_);
 }
 
+sub get_qualified_field_name_list {
+    my($self) = @_;
+    return map($self->get_qualified_field_name($_), @{$self->get_keys});
+}
+
 sub internal_get_target {
     my($self, $model, $model_prefix, $values) = @_;
     # Returns the class, target model and optional model prefix. This method is used
@@ -233,12 +247,8 @@ sub internal_load_properties {
     my($self, $values) = @_;
     # Loads model with values as properties.  DOES NOT MAKE A COPY of values.
     $self->internal_clear_model_cache;
-    unless (__PACKAGE__ eq (caller)[0]) {
-	foreach my $k (@{$self->get_info('column_names')}) {
-	    $self->die($k, ': missing column')
-		unless exists($values->{$k});
-	}
-    }
+    $self->assert_properties($values)
+	unless __PACKAGE__ eq (caller)[0];
     $self->internal_put($values);
     $self->put_on_request
 	unless $self->is_ephemeral;
@@ -344,6 +354,19 @@ sub load_for_auth_user {
 	    $self->get_request->get('auth_user') || $self->die('no auth_user')
 	)->get('realm_id'),
     });
+}
+
+sub load_from_properties {
+    my($self, $values) = @_;
+    my($support) = $self->internal_get_sql_support;
+    return $self->internal_load_properties(
+	$self->assert_properties({
+	    map({
+		my($cn) = $support->extract_column_name($_);
+		$support->has_columns($cn) ? ($cn => $values->{$_}) : ();
+	    } keys(%$values)),
+	}),
+    );
 }
 
 sub load_parent_from_request {
