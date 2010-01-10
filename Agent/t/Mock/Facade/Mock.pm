@@ -2,42 +2,12 @@
 # $Id$
 package Bivio::Agent::t::Mock::Facade::Mock;
 use strict;
-$Bivio::Agent::t::Mock::Facade::Mock::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::t::Mock::Facade::Mock::VERSION;
-
-=head1 NAME
-
-Bivio::Agent::t::Mock::Facade::Mock - facade for Agent unit tests
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Agent::t::Mock::Facade::Mock;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::Facade>
-
-=cut
-
-use Bivio::UI::Facade;
-@Bivio::Agent::t::Mock::Facade::Mock::ISA = ('Bivio::UI::Facade');
-
-=head1 DESCRIPTION
-
-C<Bivio::Agent::t::Mock::Facade::Mock> is a facade for Agent unit tests
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::UI::Facade';
 use Bivio::UI::HTML::ViewShortcuts;
 
-#=VARIABLES
+# C<Bivio::Agent::t::Mock::Facade::Mock> is a facade for Agent unit tests
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SELF) = __PACKAGE__->new({
     clone => undef,
     is_production => 1,
@@ -94,21 +64,5 @@ my($_SELF) = __PACKAGE__->new({
 	},
     },
 });
-
-=head1 METHODS
-
-=cut
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
