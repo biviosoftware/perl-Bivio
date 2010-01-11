@@ -1,11 +1,9 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::HTTPURI;
 use strict;
-use Bivio::Base 'Bivio::Type::String';
+use Bivio::Base 'Type.String';
 use URI ();
-
-# C<Bivio::Type::HTTPURI>
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -26,8 +24,6 @@ sub from_literal {
 }
 
 sub get_width {
-    # : int
-    # Returns 255.
     return 255;
 }
 
