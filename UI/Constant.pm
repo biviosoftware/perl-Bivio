@@ -2,43 +2,25 @@
 # $Id$
 package Bivio::UI::Constant;
 use strict;
-use Bivio::Base 'UI.FacadeComponent';
+use Bivio::Base 'FacadeComponent.Text';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub get_value {
-    my($proto, $name, $req) = @_;
-    return ($proto->internal_get_value($name, $req)
-        || $proto->die($name, 'not found')
-    )->{value};
-}
-
-sub get_widget_value {
-    my($self, @tag) = @_;
-    # I<tag_part>s are passed to L<get_value|"get_value">.
-    #
-    # If I<method_call> is passed (-E<gt>method), super will be called which
-    # will call the method appropriately.
-    # SUPER has code to handle ->, which we don't allow in names
-    return $tag[0] =~ /^->/ ? $self->SUPER::get_widget_value(@tag)
-	: $self->get_value(@tag);
-}
-
 sub handle_register {
     my($proto) = @_;
-    Bivio::UI::Facade->register($proto, ['Text']);
+    b_use('UI.Facade')->register($proto, ['Text']);
     return;
+}
+
+sub internal_assert_value {
+    my($self, $value, $name) = @_;
+    return $value;
 }
 
 sub internal_initialize_value {
     my($self, $value) = @_;
     $value->{value} = $value->{config};
     return;
-}
-
-sub unsafe_get_value {
-    my($v) = shift->internal_unsafe_lc_get_value(@_);
-    return $v ? $v->{value} : undef;
 }
 
 1;
