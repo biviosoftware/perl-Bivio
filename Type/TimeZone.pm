@@ -1,4 +1,4 @@
-# Copyright (c) 2006-s008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::TimeZone;
 use strict;
@@ -30,6 +30,10 @@ sub date_time_from_utc {
 sub date_time_to_utc {
     my($self, $date_time) = @_;
     return _convert($self, $date_time, $self, $self->UTC);
+}
+
+sub as_display_name {
+    return shift->get_long_desc;
 }
 
 sub get_default {
