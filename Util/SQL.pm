@@ -58,6 +58,7 @@ my($_BUNDLE) = [qw(
     !message_id_255
     !mail_want_reply_to
     !index_20091227
+    !user_feature_calendar
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -395,6 +396,7 @@ sub init_dbms {
 sub init_realm_role {
     my($self) = @_;
     $self->init_realm_role_with_config($self->realm_role_config);
+    $self->internal_upgrade_db_user_feature_calendar;
     $self->req->with_realm(club => sub {
         $self->model('RealmFeatureForm')->process({force_default_values => 1});
 	return;
@@ -556,6 +558,15 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_user_feature_calendar {
+    my($self) = @_;
+    $self->req->with_realm(user => sub {
+	$self->new_other('RealmRole')->edit_categories('+feature_calendar');
+        return;
+    });
+    return;
+}
+
 sub internal_role_is_initialized {
     my($self, $role) = @_;
     return $role->eq_anonymous;
@@ -564,10 +575,12 @@ sub internal_role_is_initialized {
 sub internal_upgrade_db_task_log_remove_foreign_keys {
     my($self) = @_;
     $self->run(<<'EOF');
-ALTER TABLE task_log_t DROP CONSTRAINT task_log_t2
-/    
-ALTER TABLE task_log_t DROP CONSTRAINT task_log_t4
-/    
+ALTER TABLE task_log_t
+    DROP CONSTRAINT task_log_t2
+/
+ALTER TABLE task_log_t
+    DROP CONSTRAINT task_log_t4
+/
 EOF
     return;
 }
