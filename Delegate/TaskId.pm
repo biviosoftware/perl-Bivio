@@ -396,19 +396,20 @@ sub info_calendar {
 	    next=FORUM_CALENDAR
 	)],
 	[qw(
-	    FORUM_CALENDAR_EVENT
+	    FORUM_CALENDAR_EVENT_FORM
 	    181
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_CALENDAR
 	    Model.CalendarEventForm
 	    View.Calendar->event_form
 	    next=FORUM_CALENDAR
+	    read_task=FORUM_CALENDAR_EVENT_DETAIL
 	)],
 	[qw(
 	    FORUM_CALENDAR_EVENT_DETAIL
 	    182
 	    ANY_OWNER
-	    DATA_READ&DATA_WRITE&FEATURE_CALENDAR
+	    DATA_READ&FEATURE_CALENDAR
 	    Model.CalendarEventList->execute_load_this
 	    View.Calendar->event_detail
 	    next=FORUM_CALENDAR
@@ -419,12 +420,10 @@ sub info_calendar {
 	    183
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_CALENDAR
-	    Model.CalendarEvent->execute_load_this
 	    Model.CalendarEventDeleteForm
 	    View.Calendar->event_delete
 	    next=FORUM_CALENDAR
 	    cancel=FORUM_CALENDAR_EVENT_DETAIL
-	    require_context=0
 	)],
 	[qw(
 	    FORUM_CALENDAR_EVENT_ICS
@@ -434,7 +433,24 @@ sub info_calendar {
 	    Model.CalendarEventList->execute_load_this
 	    Action.CalendarEventICS
 	)],
-	# 185-189 free
+ 	[qw(
+	    FORUM_CALENDAR_EVENT_LIST
+	    185
+	    FORUM
+	    DATA_READ&FEATURE_CALENDAR
+	    Model.CalendarEventList->execute_load_page
+	    View.Calendar->event_list
+	)],
+	[qw(
+	    FORUM_CALENDAR_EVENT_LIST_ICS
+	    186
+	    FORUM
+	    DATA_READ&FEATURE_CALENDAR
+	    Model.CalendarEventList->execute_load_all
+	    Action.CalendarEventICS
+            want_basic_authorization=1
+	)],
+# 187-189 free
     ];
 }
 
