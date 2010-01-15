@@ -1,11 +1,8 @@
-# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::t::Mock::Facade::Mock;
 use strict;
-use Bivio::Base 'Bivio::UI::Facade';
-use Bivio::UI::HTML::ViewShortcuts;
-
-# C<Bivio::Agent::t::Mock::Facade::Mock> is a facade for Agent unit tests
+use Bivio::Base 'UI.Facade';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SELF) = __PACKAGE__->new({
@@ -14,12 +11,8 @@ my($_SELF) = __PACKAGE__->new({
     uri => 'task',
     # So local files are found
     local_file_prefix => 'petshop',
-    Color => {
-	initialize => sub {
-	    my($fc) = @_;
-	    return;
-	},
-    },
+    Color => [],
+    Constant => [],
     Font => {
 	initialize => sub {
 	    my($fc) = @_;
