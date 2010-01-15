@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::CalendarEventList;
 use strict;
@@ -10,8 +10,6 @@ my($_T) = b_use('Type.Time');
 my($_D) = b_use('Type.Date');
 my($_UTC) = b_use('Type.TimeZone')->UTC;
 my($_DT) = b_use('Type.DateTime');
-my($_MC) = b_use('MIME.Calendar');
-
 
 sub get_creation_date_time {
     return shift->get('RealmOwner.creation_date_time');
@@ -30,8 +28,9 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	auth_id => 'CalendarEvent.realm_id',
+	# No auth_id, see internal_prepare_statement
 	can_iterate => 1,
+	date => 'CalendarEvent.dtstart',
         primary_key => [
 	    [qw{CalendarEvent.calendar_event_id RealmOwner.realm_id}],
 	 ],
@@ -41,48 +40,38 @@ sub internal_initialize {
 	    RealmOwner.display_name
 	    CalendarEvent.location
 	)],
-	other => [qw(
-	    RealmOwner.name
-	    RealmOwner.creation_date_time
-	    CalendarEvent.modified_date_time
-	    CalendarEvent.description
-	    CalendarEvent.url
-	    CalendarEvent.time_zone
-	),
-	    {
-		name => 'uid',
-		type => 'RealmOwner.name',
-	    },
-	    {
-		name => 'dtstart_in_tz',
-		type => 'DateTime',
-	    }, {
-		name => 'dtend_in_tz',
-		type => 'DateTime',
-	    },
-	    {
-		name => 'title_',
-		type => 'Line',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'path_info',
-		type => 'FilePath',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'query',
-		type => 'Line',
-		constraint => 'NOT_NULL',
-	    },
+	other => [
+	    qw(
+		RealmOwner.name
+		RealmOwner.creation_date_time
+		owner.RealmOwner.name
+		owner.RealmOwner.display_name
+		CalendarEvent.modified_date_time
+		CalendarEvent.description
+		CalendarEvent.url
+		CalendarEvent.time_zone
+	    ),
+	    [qw(CalendarEvent.realm_id owner.RealmOwner.realm_id)],
+	    $self->field_decl([
+		[qw(uid RealmOwner.name)],
+		[qw(dtstart_in_tz DateTime)],
+		[qw(dtend_in_tz DateTime)],
+		[qw(path_info FilePath)],
+		[qw(query Text)],
+		[qw(time_zone DisplayName)],
+	    ], undef, 'NOT_NULL'),
 	],
     });
 }
 
 sub internal_post_load_row {
     my($self, $row) = @_;
+    return 0
+	unless shift->SUPER::internal_post_load_row(@_);
     $row->{uid} = $_CE->id_to_uid($row->{'CalendarEvent.calendar_event_id'});
     my($tz) = $row->{'CalendarEvent.time_zone'} || $_UTC;
+    $row->{time_zone} = $self->req('Model.TimeZoneList')
+	->display_name_for_enum($tz);
     $row->{'dtstart_in_tz'}
 	= $tz->date_time_from_utc($row->{'CalendarEvent.dtstart'});
     $row->{'dtend_in_tz'}
@@ -92,35 +81,26 @@ sub internal_post_load_row {
 	$self->internal_get_sql_support,
 	[$row->{'CalendarEvent.calendar_event_id'}],
     );
-#TODO: Enscapsulate with T
-    $row->{title} = join(' - ',
-	$row->{'RealmOwner.display_name'},
-	grep($_ =~ s/GMT|UTC// || 1,
-	     $_DT->to_string($row->{'dtstart_in_tz'}),
-	     $_DT->to_string($row->{'dtend_in_tz'}),
-	),
-    );
     return 1;
 }
 
-sub update_from_ics {
-    my($self, $ics) = @_;
-    my($old) = {map(($_->{uid} => $_), @{$self->map_iterate})};
-    my($ce) = $self->new_other('CalendarEvent');
-    foreach my $v (@{$_MC->from_ics($ics)}) {
-        if (my $x = delete($old->{$v->{uid}})) {
-	    $ce->load({calendar_event_id => $x->{'CalendarEvent.calendar_event_id'}})
-		->update_from_vevent($v);
-	}
-	else {
-	    $ce->create_from_vevent($v);
-	}
-    }
-    foreach my $x (values(%$old)) {
-	$ce->load({calendar_event_id => $x->{'CalendarEvent.calendar_event_id'}})
-	    ->cascade_delete;
-    }
-    return;
+sub internal_prepare_statement {
+    my($self, $stmt) = @_;
+    $self->new_other('TimeZoneList')->load_all;
+    $stmt->where(
+	['CalendarEvent.realm_id' => $self->internal_realm_ids],
+    );
+    return shift->SUPER::internal_prepare_statement(@_);
+}
+
+sub internal_realm_ids {
+    my($self) = @_;
+#TODO: If user, will display auth_user, not auth_realm.  Not correct but safe
+    return $self->req(qw(auth_realm type))->eq_user
+	? $self->new_other('AuthUserGroupList')
+	    ->set_ephemeral
+	    ->realm_ids($self->req('task_id'))
+        : [$self->req('auth_id')];
 }
 
 1;
