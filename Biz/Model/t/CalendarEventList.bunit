@@ -1,36 +1,16 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->set_realm_and_user(ShellUtil_SQL()->DEMO);
-my($now) = DateTime()->from_literal('1/1/2006 16:0:0');
+my($create_list, $rows) = do('./CalendarEvent.PL');
+my($event) = $create_list->();
+req()->set_realm_and_user(qw(fourem btest_admin))
+    ->initialize_fully('FORUM_CALENDAR_EVENT_LIST');
 [
     load_all => [
-	[] => [
-	    map(
-		+{
-		    'RealmOwner.display_name' => 'Summary' . $_,
-		    'CalendarEvent.location' => 'Location' . $_,
-		    'CalendarEvent.dtstart' => DateTime()->add_seconds($now, $_ * 3600),
-		},
-		2, 1,
-	    ),
-	],
-    ],
-    sub {
-	model('CalendarEvent')->delete_all;
-	return 1;
-    } => 1,
-    {
-	compute_return => sub {
-	    return [shift->get('object')->map_iterate(
-		sub {
-		    return [shift->get(
-			qw(RealmOwner.display_name CalendarEvent.location))];
-		})];
-	    },
-	method => 'update_from_ics',
-    } => [
-	[read_file('CalendarEventList/1.in')]
-	    => [do('CalendarEventList/1.out')],
+	[] => [$rows->(qr{^07})],
+	sub {
+	    req()->set_realm('btest_admin');
+	    return [];
+	} => [$rows->(qr{^0[78]})],
     ],
 ];
