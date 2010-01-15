@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub handle_register {
     my($proto) = @_;
-    Bivio::UI::Facade->register($proto, ['Color', 'Font', 'Text']);
+    b_use('UI.Facade')->register($proto, [qw(Color Font Text Constant)]);
     return;
 }
 

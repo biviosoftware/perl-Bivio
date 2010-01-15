@@ -1,8 +1,8 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::FormError;
 use strict;
-use Bivio::Base 'Bivio::UI::Text';
+use Bivio::Base 'FacadeComponent.Text';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_IN_EVAL);

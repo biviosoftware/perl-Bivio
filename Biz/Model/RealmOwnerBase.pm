@@ -32,19 +32,18 @@ sub create_realm {
 	realm_type => $self->REALM_TYPE,
 	realm_id => $self->get_primary_id,
     });
-    $admin_id ||= $self->internal_create_realm_administrator_id;
     $self->new_other('RealmUser')->create({
 	realm_id => $self->get_primary_id,
 	user_id => $admin_id,
         role => $_R->ADMINISTRATOR,
-    }) if $admin_id;
+    }) if $admin_id ||= $self->internal_create_realm_administrator_id;
     return ($self, $ro);
 }
 
 sub delete {
-    # this guards against deleting a realm type without also removing the owner
-    Bivio::Die->die("call ->cascade_delete instead")
-	unless (caller(1))[3] =~ /\:cascade_delete$/;
+    my($self) = @_;
+    $self->die('call cascade_delete instead')
+	unless $self->my_caller eq 'cascade_delete';
     return shift->SUPER::delete(@_);
 }
 
