@@ -1,8 +1,8 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ForumTreeList;
 use strict;
-use base 'Bivio::Biz::Model::TreeList';
+use Bivio::Base 'Model.TreeList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -17,12 +17,6 @@ sub internal_default_expand {
 	$_->{is_parent} ? $_->{forum_id} : (),
 	values(%{$self->parent_map}),
     )];
-}
-
-sub internal_extend_where {
-    my($self, $stmt) = @_;
-    $stmt->where($stmt->EQ('RealmUser.role', [Bivio::Auth::Role->MEMBER]));
-    return;
 }
 
 sub internal_initialize {
@@ -83,7 +77,7 @@ sub internal_parent_id {
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $self->[$_IDI] = undef;
-    $self->internal_extend_where($stmt);
+    $stmt->where($stmt->EQ('RealmUser.role', [Bivio::Auth::Role->MEMBER]));
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
