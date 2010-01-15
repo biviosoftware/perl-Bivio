@@ -29,6 +29,7 @@ req()->put(query => {timezone => 1});
 	add_to_query => [
 	    [{abc => 'def'}] => [{abc => 'def', timezone => 1}],
 	],
+	get_long_desc => 'UTC',
     ],
     sub {class()->AMERICA_DENVER} => [
 	date_time_to_utc => [
@@ -37,5 +38,6 @@ req()->put(query => {timezone => 1});
 	date_time_from_utc => [
 	    ['2452260 49655'] => '2452260 24455',
 	],
+	get_long_desc => 'America/Denver',
     ],
 ];
