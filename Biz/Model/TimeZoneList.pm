@@ -1,0 +1,40 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+package Bivio::Biz::Model::TimeZoneList;
+use strict;
+use Bivio::Base 'Biz.ListModel';
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = b_use('FacadeComponent.Constant');
+my($_R) = b_use('IO.Ref');
+
+sub display_name_for_enum {
+    my($self, $enum) = @_;
+    $self->load_all
+	unless $self->is_loaded;
+    return $self->find_row_by(enum => $enum) ? $self->get('display_name')
+	: $enum->as_display_name;
+}
+
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+	can_iterate => 0,
+	$self->field_decl(
+	    primary_key => [
+		[qw(enum TimeZone)],
+	    ],
+	    other => [
+		[qw(display_name Line)],
+	    ],
+	    undef, 'NOT_NULL',
+	),
+    });
+}
+
+sub internal_load_rows {
+    return $_R->nested_copy($_C->get_value('Model.TimeZoneList.rows'));
+}
+
+1;

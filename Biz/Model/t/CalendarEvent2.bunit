@@ -1,0 +1,48 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+DateTime()->set_test_now('1/1/2009 12:0:0', req());
+my($create_list, $rows) = do('./CalendarEvent.PL');
+my($event) = $create_list->();
+req()->set_realm_and_user(qw(fourem btest_admin))
+    ->initialize_fully('DAV_FORUM_CALENDAR_EVENT_LIST_EDIT');
+my($fourem) = [$rows->(qr{^07}, sub {shift})];
+my($ics) = model('CalendarEventDAVList')
+    ->vcalendar_list(model('CalendarEventList', {}));
+[
+    [req()] => [
+	{
+	    method => 'update_from_ics',
+	    compute_return => sub {
+		return [model('CalendarEventDAVList')
+		    ->vcalendar_list(model('CalendarEventList', {}))];
+	    },
+	} => [
+	    [$ics] => [$ics],
+	    sub {
+		$$ics =~ s{(?<=DTSTART:)(\w+)}{
+		    DateTime()->to_ical(
+			DateTime()->add_days(
+			    DateTime()->from_literal_or_die($1),
+			    -1,
+			),
+		    ),
+                }ex;
+		return [$ics];
+	    } => sub {[$ics]},
+	],
+    ],
+];
+#     {
+# 	compute_return => sub {
+# 	    return [shift->get('object')->map_iterate(
+# 		sub {
+# 		    return [shift->get(
+# 			qw(RealmOwner.display_name CalendarEvent.location))];
+# 		})];
+# 	    },
+# 	method => 'update_from_ics',
+#     } => [
+# 	[read_file('CalendarEventList/1.in')]
+# 	    => [do('CalendarEventList/1.out')],
+#     ],

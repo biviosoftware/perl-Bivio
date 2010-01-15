@@ -1,0 +1,19 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->setup_facade;
+[
+    load_all => [
+	[] => not_die(),
+    ],
+    {
+	method => 'find_row_by',
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [$actual->[0]->get('display_name')];
+	},
+    } => [
+	[enum => TimeZone('UTC')] => 'UTC',
+	[enum => TimeZone('PACIFIC_HONOLULU')] => 'Pacific/Honolulu',
+    ],
+];
