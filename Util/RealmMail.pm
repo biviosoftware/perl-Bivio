@@ -20,7 +20,7 @@ usage: b-realm-mail [options] command [args..]
 commands
   delete_message_id message_id ... -- Message-ID: based removal of threads/msgs
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
-  import_mbox -- imports mbox input file containing
+  import_mbox -- imports mbox input file
   import_bulletins -- imports old Bulletins into forum mail files
 EOF
 }
