@@ -66,11 +66,9 @@ sub internal_part_list {
     my($self) = @_;
     return DIV_parts(
 	With(['->get_mail_part_list'],
-	     If(['!', '->has_mime_cid'],
-		If([sub {$_[1] > 1}, ['index']],
-		   DIV_attachment(_thread_list_director($self)),
-		   _thread_list_director($self),
-	       ),
+	    If([sub {$_[1] > 1}, ['index']],
+	        DIV_attachment(_thread_list_director($self)),
+		_thread_list_director($self),
 	    ),
 	),
 	{id => ['RealmMail.realm_file_id']},
