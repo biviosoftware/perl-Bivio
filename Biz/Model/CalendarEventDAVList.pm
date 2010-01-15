@@ -1,12 +1,12 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::CalendarEventDAVList;
 use strict;
-use base 'Bivio::Biz::Model::AnyTaskDAVList';
+use Bivio::Base 'Model.AnyTaskDAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_D) = Bivio::Type->get_instance('Date');
+my($_DT) = b_use('Type.DateTime');
+my($_D) = b_use('Type.Date');
 
 sub dav_is_read_only {
     return 0;
@@ -14,8 +14,13 @@ sub dav_is_read_only {
 
 sub dav_put {
     my($self, $content) = @_;
-    $self->get_request->set_realm($self->get_auth_id);
-    $self->new_other('CalendarEventList')->update_from_ics($content);
+    $self->get_request->with_realm(
+	$self->get_auth_id,
+	sub {
+	    $self->new_other('CalendarEvent')->update_from_ics($content);
+	    return;
+	},
+    );
     return;
 }
 
@@ -65,12 +70,14 @@ sub vcalendar_list {
 	'PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN',
 	'METHOD:PUBLISH',
 	@{
-	    $list
-		? $list->map_rows($handler)
-		: $self->new_other('CalendarEventList')->map_iterate(
-		    $handler, 'unauth_iterate_start', {
-			auth_id => $self->get_auth_id,
-		    }),
+	    $list ? $list->map_rows($handler)
+		: $self->req->with_realm(
+		    $self->get_auth_id,
+		    sub {
+			return $self->new_other('CalendarEventList')
+			    ->map_iterate($handler);
+		    },
+		),
 	},
 	'END:VCALENDAR',
 	'',
@@ -80,20 +87,13 @@ sub vcalendar_list {
 sub _dt {
     my($it, $key, $field) = @_;
     my($v) = $it->get($field);
-#     unless ($key =~ /DTSTART|DTEND/) {
-# 	$v = $_DT->to_file_name($v) . 'Z';
-# 	substr($v, 8, 0) = 'T';
-#     }
-#     elsif ($_DT->is_date($v)) {
     if ($_DT->is_date($v)) {
 	$key .= ";VALUE=DATE";
 	$v = $_D->to_file_name($v);
     }
     else {
 #TODO: timezone
-#	$v = $_DT->to_local_file_name($v, 0);
- 	$v = $_DT->to_file_name($v) . 'Z';
-	substr($v, 8, 0) = 'T';
+ 	$v = $_DT->to_ical($v);
     }
     return "$key:$v";
 }
