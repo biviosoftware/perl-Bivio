@@ -25,7 +25,7 @@ sub internal_as_string {
 sub new {
     my($proto, $decls) = @_;
     my($self) = $proto->SUPER::new;
-    $self->[$_IDI] = _decls($decls);
+    $self->[$_IDI] = _decls($self, $decls);
     return $self;
 }
 
@@ -69,7 +69,7 @@ sub process_via_universal {
 }
 
 sub _decls {
-    my($decls) = @_;
+    my($self, $decls) = @_;
     my($i) = 0;
     my($now_optional) = 0;
     return [map({
@@ -94,7 +94,9 @@ sub _decls {
 	    b_die($name, ': param must be optional');
 	}
 	$type ||= $name =~ /^[A-Z]/ ? $name : undef;
-	$type &&= b_use("Type.$type");
+	$type &&= b_use(
+	    $self->is_simple_package_name($type) ? "Type.$type" : $type,
+	);
 	+{
 	    name => $name,
 	    type => $type,
