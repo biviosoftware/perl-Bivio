@@ -151,12 +151,16 @@ __PACKAGE__->new({
 	    uri => [sub {shift->req('bunit3')}],
 	},
 	view_shortcuts1 => 'one',
-	my_site_redirect_map => [
+	my_site_redirect_map => sub {[
 	    [qw(GENERAL ADMINISTRATOR ADM_SUBSTITUTE_USER)],
 	    [qw(guest ADMINISTRATOR USER_PASSWORD)],
  	    [qw(USER ADMINISTRATOR USER_ACCOUNT_EDIT)],
-	],
+	]},
 	threepartpage_want_ForumDropDown => 1,
+	constant_bunit => [
+	    undef => undef,
+	    three => 3,
+	],
     ]),
     Text => [
 	@{__PACKAGE__->make_groups(__PACKAGE__->bunit_shared_values)},
@@ -243,14 +247,6 @@ __PACKAGE__->new({
 	    USER_HOME => 'user home',
 	    EXAMPLE_EG1 => 'Example 1',
 	    FORUM_PUBLIC_EXAMPLE_EG1 => 'Example 1',
-	]],
-	[prose => [
-	    rsspage => [
-		NumberedList => [
-		    title => 'ht',
-		    description => 'hd',
-		],
-	    ],
 	]],
 	[xlink => [
 	    bunit1 => 'one',
