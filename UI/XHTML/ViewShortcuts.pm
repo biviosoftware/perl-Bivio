@@ -108,7 +108,7 @@ my($_SUBMIT_CHAR) = '*';
 
 sub view_autoload {
     my(undef, $method, $args) = @_;
-    return Tag($1, @$args ? @$args : ('', {tag_if_empty => 1}))
+    return Tag(lc($1), @$args ? @$args : ('', {tag_if_empty => 1}))
 	->put_unless_exists($2 ? (class => $2) : ())
 	if $method =~ /^($_HTML_TAGS)?(?:_([a-z0-9_]{2,}))?$/os;
     return shift->SUPER::view_autoload(@_);
@@ -266,6 +266,14 @@ sub vs_filter_query_form {
 	want_timezone => 0,
 	want_hidden_fields => 0,
     });
+}
+
+sub vs_label_cell {
+    my($self, $model_field) = @_;
+    return (FormField("$model_field")->get_label_and_field)[0]
+	->get('label')
+#TODO: Encapsulate in FormFieldLabel
+	->put(cell_class => 'label label_ok');
 }
 
 sub vs_list {
