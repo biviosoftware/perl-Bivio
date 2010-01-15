@@ -1,27 +1,25 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::CalendarEvent;
 use strict;
 use Bivio::Base 'Model.RealmOwnerBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_RO) = Bivio::Biz::Model->get_instance('RealmOwner');
+my($_DT) = b_use('Type.DateTime');
+my($_RO) = b_use('Model.RealmOwner')->get_instance;
+my($_MC) = b_use('MIME.Calendar');
 my($_UID) = 'bce';
 
 sub create {
-    my($self, $values) = @_;
-    return shift->SUPER::create({
-        modified_date_time => $_DT->now,
-        %$values,
-        realm_id => $self->req('auth_id'),
-    });
+    my($self, $values) = (shift, shift);
+    $values->{modified_date_time} ||= $_DT->now;
+    $values->{realm_id} ||= $self->req('auth_id');
+    return $self->SUPER::create($values, @_);
 }
 
 sub create_from_vevent {
     my($self, $vevent) = @_;
-    my($sv, $rv) = _from_vevent($self, $vevent);
-    return ($self->create_realm($sv, $rv))[0];
+    return ($self->create_realm(_from_vevent($self, $vevent)))[0];
 }
 
 sub create_realm {
@@ -60,6 +58,29 @@ sub internal_initialize {
 	    [qw(calendar_event_id RealmOwner.realm_id)],
 	],
     });
+}
+
+sub update_from_ics {
+    my($self, $ics) = @_;
+    my($old) = {map(
+	($_->{uid} => $_),
+	@{$self->new_other('CalendarEventList')->map_iterate},
+    )};
+    my($ce) = $self->new;
+    foreach my $v (@{$_MC->from_ics($ics)}) {
+        if (my $x = delete($old->{$v->{uid}})) {
+	    $ce->load({calendar_event_id => $x->{'CalendarEvent.calendar_event_id'}})
+		->update_from_vevent($v);
+	}
+	else {
+	    $ce->create_from_vevent($v);
+	}
+    }
+    foreach my $x (values(%$old)) {
+	$ce->load({calendar_event_id => $x->{'CalendarEvent.calendar_event_id'}})
+	    ->cascade_delete;
+    }
+    return;
 }
 
 sub update_from_vevent {
