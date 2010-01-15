@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XML::Widget::XMLDocument;
 use strict;
@@ -14,21 +14,22 @@ sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
         version => '1.0',
-       encoding => 'utf-8',
+	encoding => 'utf-8',
     );
     return shift->SUPER::initialize(@_);
 }
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($b) = '<?xml version="';
-    $self->render_attr('version', $source, \$b);
-    $b .= '" encoding="';
-    $self->render_attr('encoding', $source, \$b);
-    $b .= '"?>'."\n";
-    $self->SUPER::render($source, \$b);
-    $$buffer .= $b;
-    return;
+    $$buffer .= join(
+	'',
+	'<?xml version="',
+	$self->render_simple_attr('version', $source),
+	'" encoding="',
+	$self->render_simple_attr('encoding', $source),
+	qq{"?>\n},
+    );
+    return shift->SUPER::render(@_);
 }
 
 1;
