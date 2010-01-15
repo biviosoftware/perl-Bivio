@@ -194,7 +194,6 @@ sub initialize_test_data {
     _init_demo_items($self);
     _init_demo_users($self);
     _init_demo_files($self);
-    _init_demo_calendar($self);
     _init_forum($self);
     _init_email_alias($self);
     _init_tuple($self);
@@ -293,28 +292,6 @@ sub _init_default_tuple {
     $self->model('TupleUse')->create_from_label('Requests');
     $self->model('RowTag')->create_value(
 	$req->get('auth_id'), 'DEFAULT_TUPLE_MONIKER', 'req');
-    return;
-}
-
-sub _init_demo_calendar {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($now) = $_DT->from_literal('1/1/2006 16:0:0');
-    my($ce) = Bivio::Biz::Model->new($req, 'CalendarEvent');
-    map(
-	{
-	    $self->set_realm_and_user($self->DEMO, $self->DEMO);
-	    $ce->create_from_vevent(
-		{
-		    dtstart => $_DT->add_seconds($now, $_ * 3600),
-		    dtend => $_DT->add_seconds($now, ($_ + 1) * 3600),
-		    location => 'Location' . $_,
-		    summary => 'Summary' . $_,
-		}
-	    );
-	}
-	qw{1 2}
-    );
     return;
 }
 
