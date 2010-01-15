@@ -152,6 +152,9 @@ form .err_title {
 form .field_err {
   Font('form_field_err');
 }
+.simple .label_ok,
+.simple .label_err,
+.simple .field,
 form .label_ok,
 form .label_err,
 form .field {
@@ -162,12 +165,16 @@ form .footer {
   Font('form_footer');
   margin-bottom: 1.0em;
 }
+.simple .label_ok,
+.simple .label_err,
+.simple .label,
 form .label_ok,
 form .label_err,
 form .label {
   text-align: right;
-  padding-right: .2em;
+  padding-right: .5em;
 }
+.simple .label_ok,
 form .label_ok {
   Font('form_label_ok');
 }
