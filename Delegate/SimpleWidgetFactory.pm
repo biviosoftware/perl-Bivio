@@ -166,6 +166,15 @@ sub internal_create_display {
 	}),
     }
 
+    if (UNIVERSAL::isa($type, 'Bivio::Type::HTTPURI')) {
+	return $_VS->vs_new(Link => {
+	    href => [$field],
+	    control => [$field],
+	    value => $_VS->vs_new(String => {value => [$field]}),
+	    %$attrs,
+	});
+    }
+
     # default type is string
     return $_VS->vs_new('String', {
         field => $field,
