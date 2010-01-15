@@ -10,7 +10,7 @@ my($_URI) = b_use('Agent.Request')->FORMAT_URI_PARAMETERS;
 my($_PARAMS) = [
     'task_id',
     'label',
-    @$_URI[1..$#$_URI],
+    grep($_ ne 'task_id', @$_URI),
     'control',
     'uri',
     'xlink',
