@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::Calendar;
 use strict;
@@ -6,103 +6,99 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_D) = __PACKAGE__->use('Type.Date');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_D) = b_use('Type.Date');
+my($_DT) = b_use('Type.DateTime');
+my($_UCEL) = b_use('Model.UnauthCalendarEventList');
 
 sub event_delete {
-    my($self) = @_;
-    view_put(
-	xhtml_title => Join([
-	    'Remove event: ',
-	    String([['Model.CalendarEvent', '->get_model', 'RealmOwner'],
-		    'display_name']),
-	]),
-    );
-    return $self->internal_body(vs_simple_form(CalendarEventDeleteForm => [
-	Join([
-	    'This will permanently remove this event from the ',
-	    String([qw(auth_realm owner display_name)]),
-	    ' calendar.',
-	]),
-    ]));
-
+    view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
+    return shift->internal_body(vs_simple_form(CalendarEventDeleteForm => []));
 }
 
 sub event_detail {
     my($self) = @_;
+    view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     view_put(
 	xhtml_title => String(['Model.CalendarEventList',
 	    'RealmOwner.display_name']),
 	xhtml_tools => TaskMenu([
-	    {
-		task_id => 'FORUM_CALENDAR_EVENT',
-		uri => ['->format_uri', 'FORUM_CALENDAR_EVENT'],
-	    },
- 	    {
- 		task_id => 'FORUM_CALENDAR_EVENT_DELETE',
- 		uri => ['->format_uri', 'FORUM_CALENDAR_EVENT_DELETE'],
- 	    },
-	    {
-		task_id => 'FORUM_CALENDAR_EVENT_ICS',
-		uri => ['->format_uri', 'FORUM_CALENDAR_EVENT_ICS'],
-	    },
-	    {
-		task_id => 'FORUM_CALENDAR_EVENT',
-		label => String('Create Event'),
-		query => undef,
-	    },
+	    map({
+		my($task, $label) = @$_;
+		$label ||= '';
+		+{
+		    task_id => $task,
+		    $label ? (label => vs_text_as_prose("task_menu.title.FORUM_CALENDAR_EVENT_FORM.$label"))
+			: (),
+		    ($label eq 'create') ? () : (query => {
+#TODO: Modularize better
+			'ListQuery.this' => [qw(Model.CalendarEventList CalendarEvent.calendar_event_id)],
+			$label eq 'copy' ? ($_UCEL->IS_COPY_QUERY_KEY => 1) : (),
+		    }),
+		};
+	    }
+		[qw(FORUM_CALENDAR_EVENT_FORM create)],
+		[qw(FORUM_CALENDAR_EVENT_FORM copy)],
+		[qw(FORUM_CALENDAR_EVENT_DELETE)],
+		[qw(FORUM_CALENDAR_EVENT_FORM edit)],
+		[qw(FORUM_CALENDAR_EVENT_ICS)],
+	    ),
 	]),
     );
     return $self->internal_body(vs_paged_detail('CalendarEventList',
 	[qw(THIS_LIST FORUM_CALENDAR)],
-	DIV_list(Grid([
+	WithModel('CalendarEventList', Grid([
 	    map([
-		SPAN_label_ok(String($_->[0] . ':')),
-		$_->[1] ? $_->[1] : (),
+		vs_label_cell("CalendarEventList.$_"),
+		vs_display("CalendarEventList.$_")->put(cell_class => 'field'),
 	    ], (
-		[Description => String(['Model.CalendarEventList',
-		    'CalendarEvent.description'])],
-		[Location => String(['Model.CalendarEventList',
-		    'CalendarEvent.location'])],
-		[URL => If(
-		    ['Model.CalendarEventList', 'CalendarEvent.url'],
-		    Link(
-			String(
-			    ['Model.CalendarEventList', 'CalendarEvent.url']),
-			['Model.CalendarEventList', 'CalendarEvent.url'],
-		    ),
-		    '',
-		)],
-		['Time Zone' => Enum(['Model.CalendarEventList',
-		    'CalendarEvent.time_zone'])],
-		['Start', _date_time('dtstart_in_tz')],
-		['End', _date_time('dtend_in_tz')],
-		['Local Time'],
-		map([ucfirst($_) => DateTime({
-		    field => 'CalendarEvent.dt' . $_,
-		    value => ['Model.CalendarEventList',
-			'CalendarEvent.dt' . $_],
-		    mode => 'DAY_MONTH3_YEAR_TIME',
-		})], qw(start end)),
+		'owner.RealmOwner.display_name',
+		'time_zone',
+		'dtstart_in_tz',
+		'dtend_in_tz',
+		'CalendarEvent.description',
+		'CalendarEvent.location',
+		'CalendarEvent.url',
 	    )),
-	])),
+	], {
+	    class => 'simple',
+	})),
     ));
 }
 
 sub event_form {
     my($self) = @_;
+    view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     return $self->internal_body(vs_simple_form(
-	CalendarEventForm => [qw(
-	    CalendarEventForm.RealmOwner.display_name
-	    CalendarEventForm.start_date
- 	    CalendarEventForm.start_time
-	    CalendarEventForm.end_date
- 	    CalendarEventForm.end_time
-	    CalendarEventForm.CalendarEvent.time_zone
-	    CalendarEventForm.CalendarEvent.location
-	    CalendarEventForm.CalendarEvent.url
-	    CalendarEventForm.CalendarEvent.description
-	)],
+	CalendarEventForm => [
+	    ['CalendarEventForm.CalendarEvent.realm_id', {
+		choices => ['Model.AuthUserGroupSelectList'],
+		list_display_field => 'RealmOwner.name',
+		list_id_field => 'RealmUser.realm_id',
+	    }],
+	    'CalendarEventForm.RealmOwner.display_name',
+	    ['CalendarEventForm.time_zone', {
+		wf_widget => ComboBox({
+		    field => 'time_zone',
+		    list_class => 'TimeZoneList',
+		    list_display_field => ['display_name'],
+		}),
+	    }],
+	    'CalendarEventForm.start_date',
+	    'CalendarEventForm.start_time',
+	    'CalendarEventForm.end_date',
+	    'CalendarEventForm.end_time',
+	    'CalendarEventForm.CalendarEvent.description',
+	    'CalendarEventForm.CalendarEvent.location',
+	    'CalendarEventForm.CalendarEvent.url',
+	    ['CalendarEventForm.recurrence' => {
+		enum_sort => 'get_short_desc',
+		wf_want_select => 1,
+		column_count => 1,
+	    }],
+	    'CalendarEventForm.recurrence_end_date',
+#TODO: Do we need copy_button?
+	    '*ok_button cancel_button',
+	],
     ));
 }
 
@@ -112,6 +108,7 @@ sub event_list_rss {
 
 sub month_list {
     my($self) = @_;
+    view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     view_pre_execute(sub {
 	my($req) = @_;
 	my($v) = {};
@@ -128,12 +125,11 @@ sub month_list {
 	_globals($req, $v);
 	return;
     });
-    view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     $self->internal_put_base_attr(tools => TaskMenu([
         {
-	    task_id => 'FORUM_CALENDAR_EVENT',
-	    label => String('Create Event'),
-	    query => undef,
+	    task_id => 'FORUM_CALENDAR_EVENT_FORM',
+	    label => vs_text_as_prose(
+		'task_menu.title.FORUM_CALENDAR_EVENT_FORM.create'),
 	},
     ]));
     return $self->internal_body(Join([
@@ -195,28 +191,6 @@ sub _date_cell {
 	    }
 	],
     );
-}
-
-sub _date_time {
-    my($field) = @_;
-    return Join([
-	String({
-	    field => $field,
-	    value => [
-		['Model.CalendarEventList', $field],
-		'HTMLFormat.DateTime',
-		'DAY_MONTH3_YEAR',
-		1,
-	    ],
-	}),
-	String({
-	    field => $field,
-	    value => [
-		'Bivio::Type::Time', '->to_string',
-		['Model.CalendarEventList', $field],
-	    ],
-	}),
-    ], ' ');
 }
 
 sub _event_links {
