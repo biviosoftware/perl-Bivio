@@ -1,15 +1,26 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XML::Widget::DateTime;
 use strict;
 use Bivio::Base 'XMLWidget.Simple';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_DT) = b_use('Type.DateTime');
+
+sub NEW_ARGS {
+    return [qw(value ?conversion_method)];
+}
+
+sub initialize {
+    my($self) = @_;
+    $self->initialize_attr(conversion_method => 'to_xml');
+    return shift->SUPER::initialize(@_);
+}
 
 sub render {
     my($self, $source, $buffer) = @_;
-    $$buffer .= $_DT->to_xml(${$self->render_attr('value', $source)});
+    my($method) = ${$self->render_attr(conversion_method => $source)};
+    $$buffer .= $_DT->$method(${$self->render_attr('value', $source)});
     return;
 }
 
