@@ -181,8 +181,9 @@ sub get_value {
     # L<UNDEF_CONFIG|"UNDEF_CONFIG">
     my($self) = $proto->internal_get_self(
 	ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef);
-    my($v) = $self->unsafe_get_value(@tag_part);
-    return defined($v) ? $v
+    my($v, $tag) = $self->unsafe_get_value(@tag_part);
+    # $v is always defined for tags which are found except in subclasses.
+    return defined($tag) ? $v
 	: $self->get_error($self->join_tag(@tag_part))->{value};
 }
 
@@ -215,6 +216,13 @@ sub handle_register {
     my($proto) = @_;
     b_use('UI.Facade')->register($proto);
     return;
+}
+
+sub internal_assert_value {
+    my($self, $value, $name) = @_;
+    $self->die($value, $name, ': value must be a defined string')
+	unless defined($value) && !ref($value);
+    return $value
 }
 
 sub internal_initialize_value {
@@ -260,7 +268,8 @@ sub unsafe_get_value {
 	    if $v;
 	# Chop off top level.  If unable to do replacement, the tag
 	# is bad so can't be found.
-	last unless $tag =~ s/^.+?\Q$sep//;
+	last
+	    unless $tag =~ s/^.+?\Q$sep//;
     }
     return wantarray ? (undef, undef) : undef;
 }
@@ -272,62 +281,51 @@ sub unsafe_get_widget_value_by_name {
     return $v ? ($v->{value}, 1) : (undef, 0);
 }
 
-sub _assert_group_arg {
-    my($self, $which, $v) = @_;
-    # Checks to make sure $v is an array_ref or string.
-    $v = $v->($self)
-	if ref($v) eq 'CODE';
-    $self->die($v, $which, ' must be an array_ref or string')
-	unless defined($v) && (ref($v) eq 'ARRAY' || !ref($v));
-    $self->die($v, $which, ' array_ref must not be empty')
-	unless ref($v) ne 'ARRAY' || int(@$v) > 0;
-    if ($which eq 'name') {
-	foreach my $n (@$v) {
-	    $self->die($v, 'name array_ref must consist of strings')
-		unless defined($n) && !ref($n);
-	}
-    }
-    elsif ($which eq 'value') {
-	$self->die($v, 'value must contain even number of elements')
-		if ref($v) && int(@$v) % 2 != 0;
-    }
-    return $v;
-}
-
 sub _group {
     my($self, $name, $value, $parent_names, $groups) = @_;
     # Returns the permutations found in name and value.  $parent_names is
     # used to pass info to recursive calls.  It contains the list of
     # prefixes to prepended to $name.
-    $value = _assert_group_arg($self, 'value', $value);
-    $name = [$name] unless ref($name);
-    $name = _assert_group_arg($self, 'name', $name);
+    $name = [$name]
+	unless ref($name);
+    $name = _group_assert_name($self, $name);
     $groups ||= [];
-
-    # Permute parent names over our names
-    $name = [map {
-	my($p) = $_;
-	map {
-	    # We don't append our name if it is "blank"
-	    length($_) ? $p . $self->SEPARATOR . $_ : $p;
-	} @$name;
-    } @$parent_names]
-	    if $parent_names;
-
-    # Create tuples
-    if (ref($value)) {
-	# Recurse with our names as parent_names
-	my(@value) = @$value;
-	while (@value) {
-	    my($n, $v) = splice(@value, 0, 2);
+    $name = [
+	map({
+	    my($p) = $_;
+	    map(length($_) ? $p . $self->SEPARATOR . $_ : $p, @$name);
+	} @$parent_names),
+    ] if $parent_names;
+    if (ref($value) eq 'ARRAY' && @$value > 1) {
+	$self->map_by_two(sub {
+	    my($n, $v) = @_;
 	    _group($self, $n, $v, $name, $groups);
-	}
+	    return;
+	}, $value);
     }
     else {
-	# Terminal condition is when we hit a scalar
-	push(@$groups, [$name, $value]);
+	push(@$groups, [
+	    $name,
+	    $self->internal_assert_value(
+		ref($value) eq 'CODE' ? $value->($self) : $value,
+		$name,
+	    ),
+	]);
     }
     return $groups;
+}
+
+sub _group_assert_name {
+    my($self, $v) = @_;
+    $self->die($v, ' name array_ref must not be empty')
+	unless ref($v) ne 'ARRAY' || int(@$v) > 0;
+    $self->die($v, 'name must be an array_ref or string')
+	unless defined($v) && (ref($v) eq 'ARRAY' || !ref($v));
+    foreach my $n (@$v) {
+	$self->die($v, 'name array_ref must consist of strings')
+	    unless defined($n) && !ref($n);
+    }
+    return $v;
 }
 
 1;
