@@ -142,7 +142,7 @@ sub REGEX_STRING {
 }
 
 sub REGEX_XML {
-    # Output format for L<to_xml|"to_xml">.  Only accepts zulu.
+    # Output format for L<to_xml|"to_xml"> or to_ical. Only accepts zulu.
     return '(\d{4})-?(\d\d)-?(\d\d)T(\d\d):?(\d\d):?(\d\d)(Z?)';
 }
 
@@ -794,6 +794,15 @@ sub to_four_digit_year {
 	    : $year + ($year > $_WINDOW_YEAR ? 1900 : 2000);
 }
 
+sub to_ical {
+    my($proto, $value) = @_;
+    return
+	unless $value;
+    $value = $proto->to_file_name($value);
+    substr($value, 8, 0) = 'T';
+    return $value . 'Z';
+}
+
 sub to_local_file_name {
     my($proto, $date_time, $tz) = @_;
     # Converts to a local time file name. I<tz> is optional timezone.  Defaults to
@@ -864,9 +873,9 @@ sub to_sql_value {
 }
 
 sub to_string {
-    my($proto, $date_time) = @_;
-    # Converts to a human readable string
-    return _to_string($proto, $date_time, 'GMT');
+    my($proto, $date_time, $timezone) = @_;
+    return _to_string(
+	$proto, $date_time, defined($timezone) ? $timezone : 'GMT');
 }
 
 sub to_time_parts {
@@ -1064,11 +1073,15 @@ sub _localtime {
 sub _to_string {
     my($proto, $date_time, $timezone) = @_;
     # Does the work of to_string and to_local_string.
-    return '' unless defined($date_time);
-    my($sec, $min, $hour, $mday, $mon, $year)
-	    = $proto->to_parts($date_time);
-    return sprintf('%02d/%02d/%04d %02d:%02d:%02d', $mon, $mday, $year,
-	    $hour, $min, $sec).($timezone ? ' '.$timezone : '');
+    return
+	'' unless defined($date_time);
+    my($sec, $min, $hour, $mday, $mon, $year) = $proto->to_parts($date_time);
+    return sprintf(
+	'%02d/%02d/%04d %02d:%02d:%02d%s',
+	$mon, $mday, $year,
+	$hour, $min, $sec,
+	$timezone ? " $timezone" : '',
+    );
 }
 
 1;
