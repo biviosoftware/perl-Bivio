@@ -194,7 +194,7 @@ sub _cfg_base {
 	    [reset_address => 'style=font-family: inherit; font-size: inherit; font-style: inherit; font-weight: inherit'],
 	    [reset_caption => [qw(left normal_weight)]],
 	    [reset_ol => 'style=margin-left: 2.5em; list-style-type: decimal'],
-	    [reset_pre => ['pre', 'style=line-height: 60%']],
+	    [reset_pre => ['pre', 'style=line-height: 100%']],
 	    [reset_table => 'style=border-collapse: collapse; border-spacing:0'],
 	    [reset_textarea => 'pre'],
 	    [reset_ul => 'style=margin-left: 2.5em; list-style-type: disc'],
@@ -377,6 +377,11 @@ sub _cfg_base {
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
 	    [[qw(actions list_actions)] => 'Actions'],
+	    ['AuthUserGroupSelectList.RealmOwner' => [
+		[qw(display_name name)] => [
+		    select => 'Select Forum',
+		],
+	    ]],
 	    [vs_ui => [
 		forum => 'Forum',
 	    ]],
@@ -412,6 +417,11 @@ sub _cfg_base {
 		prev => 'Back',
 		next => 'Next',
 		list => 'Back to list',
+	    ]],
+	    [AtomFeed => [
+		entry_title => q{String(['->get_rss_title']);},
+		entry_content => q{String(['->get_rss_summary']);},
+		title => q{String(vs_site_name()); vs_text_as_prose('xhtml_title');},
 	    ]],
 	    [prose => [
 		ascend => ' &#9650;',
@@ -506,12 +516,6 @@ sub _cfg_blog {
 	    ]],
 	    [FORUM_BLOG_EDIT => 'Edit this entry'],
 	    [FORUM_BLOG_CREATE => 'New blog entry'],
-	    [prose => [
-		[qw(BlogList BlogRecentList)] => [
-		    title => 'vs_site_name(); Blog',
-		    tagline => 'Recent Blog Entries at vs_site_name();',
-		],
-	    ]],
 	    [acknowledgement => [
 		FORUM_BLOG_CREATE => 'The blog entry has been added.',
 		FORUM_BLOG_EDIT => 'The blog entry update has been saved.',
@@ -524,45 +528,92 @@ sub _cfg_blog {
 
 sub _cfg_calendar {
     return {
+	Constant => [
+	    ['Model.TimeZoneList.rows' => sub {[map(+{
+		enum => $_,
+		display_name => $_->as_display_name,
+	    }, b_use('Type.TimeZone')->get_list)]}],
+	],
+ 	FormError => [
+	    [recurrence_end_date => [
+		EXISTS => q{vs_fe('label'); may only be set if vs_text_as_prose('CalendarEventForm.recurrence'); is set.},
+		TOO_SHORT => q{vs_fe('label'); must fall at least one week after vs_text_as_prose('CalendarEventForm.end_date');.},
+		TOO_LONG => q{vs_fe('label'); may not be more than a year after .vs_text_as_prose('CalendarEventForm.end_date');.},
+	    ]],
+	    ['CalendarEventForm.end_date.MUTUALLY_EXCLUSIVE' => q{The vs_fe('label'); must be after vs_text_as_prose('CalendarEventForm.start_date');.}],
+	],
 	Task => [
 	    [FORUM_CALENDAR => '?/calendar'],
-	    [FORUM_CALENDAR_EVENT => '?/event'],
-	    [FORUM_CALENDAR_EVENT_DETAIL => '?/event-detail'],
-	    [FORUM_CALENDAR_EVENT_DELETE => '?/event-delete'],
-	    [FORUM_CALENDAR_EVENT_ICS => '?/event.ics'],
-	    [FORUM_CALENDAR_EVENT_LIST_RSS =>
-                 ['?/calendar.atom', '?/calendar.rss']],
+	    [FORUM_CALENDAR_EVENT_DELETE => ['?/delete-calendar-event', '?/event-delete']],
+	    [FORUM_CALENDAR_EVENT_DETAIL => ['?/calendar-event', '?/event-detail']],
+	    [FORUM_CALENDAR_EVENT_FORM => ['?/edit-calendar-event', '?/event']],
+	    [FORUM_CALENDAR_EVENT_ICS => ['?/calendar-event.ics', '?/event.ics']],
+	    [FORUM_CALENDAR_EVENT_LIST => '?/calendar-list'],
+	    [FORUM_CALENDAR_EVENT_LIST_RSS => ['?/calendar.atom', '?/calendar.rss']],
 	],
 	Text => [
-	    [prose => [
-		CalendarEventList => [
-		    title => 'vs_site_name(); Calendar',
-		    tagline => 'Recent Calendar Entries at vs_site_name();',
-		],
-	    ]],
+	    [time_zone => 'Time Zone'],
+	    [dtstart_in_tz => 'Start'],
+	    [dtend_in_tz => 'End'],
+	    [[qw(CalendarEventList.owner.RealmOwner.display_name CalendarEvent.realm_id)] => 'Forum'],
 	    [CalendarEvent => [
-		time_zone => 'Time Zone',
-		location => 'Location',
 		description => 'Description',
+		location => 'Location',
+		'location.desc' => 'Maximum length 500 characters',
 		url => 'URL',
 	    ]],
+	    [CalendarEventContent => [
+		field_label_separator => ': ',
+	    ]],
 	    [CalendarEventList => [
-		atom_feed_content => q{CalendarEventContent();},
+		AtomFeed => [
+		    entry_title => q{String(['RealmOwner.display_name']); from DateTime(['CalendarEvent.dtstart'], 'to_string'); to DateTime(['CalendarEvent.dtend'], 'to_string');},
+		    entry_content => q{CalendarEventContent();},
+		],
+		empty_list_prose => 'No events for this forum.',
+	    ]],
+	    [CalendarEventDeleteForm => [
+		prologue => q{String([qw(Model.CalendarEvent title)},
+		ok_button => 'Delete',
 	    ]],
 	    [CalendarEventForm => [
 		'RealmOwner.display_name' => 'Event',
-		'start_date' => 'Start Date',
-		'start_time' => 'Start Time',
-		'end_date' => 'End Date',
-		'end_time' => 'End Time',
+		end_date => 'End Date',
+		end_time => 'End Time',
+		recurrence => 'Repeats',
+		'recurrence.desc' => 'Note: repeating events cannot be edited at this time',
+		recurrence_end_date => 'Repeat ends',
+		start_date => 'Start Date',
+		start_time => 'Start Time',
+		'start_time.desc' => 'In the selected Time Zone',
+		ok_button => q{vs_text_as_prose('FORUM_CALENDAR_EVENT_FORM', ['Model.CalendarEventForm', '->form_mode_as_string']);},
 	    ]],
+	    ['title.FORUM_CALENDAR_EVENT_FORM' => q{vs_text_as_prose('FORUM_CALENDAR_EVENT_FORM', ['Model.CalendarEventForm', '->form_mode_as_string']); Event}],
+	    [FORUM_CALENDAR_EVENT_FORM => [
+		edit => 'Modify',
+		create => 'Add',
+		copy => 'Copy',
+	    ]],
+	    ['task_menu.title.FORUM_CALENDAR_EVENT_FORM.create' => 'Add Event'],
+	    ['task_menu.title.FORUM_CALENDAR_EVENT_DELETE' => 'Delete'],
 	    [[qw(title xlink)] => [
-		[qw(FORUM_CALENDAR FORUM_CALENDAR_EVENT_LIST_RSS)]
-		    => 'Calendar',
-		FORUM_CALENDAR_EVENT => 'Edit Event',
-		FORUM_CALENDAR_EVENT_DETAIL => 'Event Detail',
+		[qw(
+		    FORUM_CALENDAR
+		    FORUM_CALENDAR_EVENT_LIST
+		    FORUM_CALENDAR_EVENT_LIST_RSS
+	        )] => 'Calendar',
 		FORUM_CALENDAR_EVENT_DELETE => 'Delete Event',
-		FORUM_CALENDAR_EVENT_ICS => 'Download iCal',
+		FORUM_CALENDAR_EVENT_DETAIL => 'Event',
+		FORUM_CALENDAR_EVENT_ICS => 'iCal',
+	    ]],
+	    [acknowledgement => [
+		FORUM_CALENDAR_EVENT_DELETE => 'The event was deleted.',
+		FORUM_CALENDAR_EVENT_FORM => [
+		    create => 'The new event was added.',
+		    copy => 'The event was copied.',
+		    edit => 'The event was updated.',
+		    recurrence => 'The recurring events were added.',
+		],
 	    ]],
 	],
     };
@@ -697,10 +748,6 @@ sub _cfg_file {
 		    to => q{Mailbox(['Action.EasyForm', 'to']);},
 		    subject => q{String(['Action.EasyForm', 'file_path']); submission},
 		    body => q{With(['Action.EasyForm', 'hash_list'], Join([['key'], ': ', ['value'], "\n"]));},
-		],
-		[qw(BlogList BlogRecentList)] => [
-		    title => 'vs_site_name(); Blog',
-		    tagline => 'Recent Blog Entries at vs_site_name();',
 		],
 	    ]],
         ],
@@ -1473,7 +1520,6 @@ sub _cfg_wiki {
 	    [different_background => 0xE6E6E6],
 	],
 	Text => [
-	    [atom_feed_content => q{String(['->get_rss_summary']);}],
 	    [WikiValidator => [
 		title => 'Wiki errors:',
 		subject => q{Wiki Errors},
