@@ -62,6 +62,10 @@ sub get_rss_summary {
     })->get('excerpt');
 }
 
+sub get_rss_title {
+    return shift->get('title');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
