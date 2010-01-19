@@ -137,6 +137,7 @@ $send_mail->(qw(ar.eml user1 forum));
 $check_for_loop->();
 $send_mail->(qw(ar.eml user1 forum));
 $check_for_loop->();
+clear_local_mail();
 # Test handling of other type of loop messages with different bodies
 %$vars = (
     %$vars,
