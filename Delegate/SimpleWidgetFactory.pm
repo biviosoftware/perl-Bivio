@@ -102,6 +102,7 @@ sub internal_create_display {
 	return $_VS->vs_new('AmountCell', {
 	    field => $field,
 	    decimals => $proto->internal_default_decimals($field),
+	    want_parens => $proto->internal_default_want_parens($field),
 	    %$attrs,
 	});
     }
@@ -328,6 +329,10 @@ sub internal_create_edit {
 
 sub internal_default_decimals {
     return 2;
+}
+
+sub internal_default_want_parens {
+    return 0;
 }
 
 sub _default_size {
