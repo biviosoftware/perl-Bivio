@@ -20,7 +20,10 @@ sub internal_load {
     my(@res) = shift->SUPER::internal_load(@_);
     unshift(@$rows, {
 	map(
-	    ($_ => $_T->get_value($self->simple_package_name . ".$_.select")),
+	    ($_ => $_T->get_value(
+		$self->simple_package_name . ".$_.select",
+		$self->req,
+	    )),
 	    qw(RealmOwner.display_name RealmOwner.name),
 	),
 	'RealmUser.realm_id' => undef,

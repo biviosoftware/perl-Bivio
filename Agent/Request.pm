@@ -1070,7 +1070,13 @@ sub realm_cache {
     my($self, $key, $compute) = @_;
     # Key includes caller's package and line for uniquenes
     return $self->get_if_exists_else_put(
-	join('#', 'realm_cache', $self->get('auth_id'), (caller)[0,2], @$key),
+	join(
+	    '#',
+	    'realm_cache',
+	    $self->get('auth_id'),
+	    (caller)[0,2],
+	    ref($key) ? @$key : $key,
+	),
 	$compute,
     );
 }
