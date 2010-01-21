@@ -74,7 +74,8 @@ sub user_form {
 }
 
 sub user_list {
-    my($self, $extra_columns, $other_tools) = @_;
+    my($self, $extra_columns, $other_tools, $list) = @_;
+    $list ||= 'GroupUserList'; 
     $self->internal_put_base_attr(selector =>
 	vs_filter_query_form('GroupUserQueryForm', [
 	    Select({
@@ -86,8 +87,9 @@ sub user_list {
 	]),
     );
     vs_user_email_list(
-	'GroupUserList',
+	$list,
 	[
+	    @{$extra_columns || []},
 	    [privileges => {
 		wf_list_link => {
 		    query => 'THIS_DETAIL',
@@ -95,7 +97,6 @@ sub user_list {
 		    control => [qw(->can_change_privileges GROUP_USER_FORM)],
 		},
 	    }],
-	    @{$extra_columns || []},
 	],
 	$other_tools || [TaskMenu(['GROUP_USER_ADD_FORM'])],
     );
