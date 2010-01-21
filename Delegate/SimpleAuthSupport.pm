@@ -13,6 +13,7 @@ my($_RR) = b_use('Model.RealmRole');
 my($_PS) = b_use('Auth.PermissionSet');
 my($_P) = b_use('Auth.Permission');
 my($_USER) = b_use('Auth.RealmType')->USER;
+our($_TRACE);
 
 sub get_auth_user {
     # (proto, Agent.Request) : Biz.Model
