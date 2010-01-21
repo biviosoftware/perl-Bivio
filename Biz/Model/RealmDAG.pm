@@ -2,14 +2,14 @@
 # $Id$
 package Bivio::Biz::Model::RealmDAG;
 use strict;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub create {
     my($self, $values) = @_;
     return $self->SUPER::create({
-	realm_dag_type => Bivio::Type->get_instance('RealmDAG')->UNKNOWN,
+	realm_dag_type => b_use('Type.RealmDAG')->UNKNOWN,
 	%$values,
     });
 }
