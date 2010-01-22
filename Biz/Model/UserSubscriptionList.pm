@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::UserSubscriptionList;
 use strict;
-use Bivio::Base 'Model.UserRealmList';
+use Bivio::Base 'Model.AuthUserGroupList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
@@ -14,20 +14,16 @@ sub internal_initialize {
         order_by => [qw(
 	    RealmOwner.display_name
         )],
-	other => [
-	    ['RealmOwner.realm_type',
-	     [b_use('Auth.RealmType')->get_any_group_list]],
-	],
     });
-}
-
-sub internal_prepare_statement {
-    my($self, $stmt) = @_;
-    return shift->SUPER::internal_prepare_statement(@_);
 }
 
 sub internal_qualifying_roles {
     return [map($_R->$_(), qw(MEMBER ACCOUNTANT ADMINISTRATOR))];
+}
+
+sub load_all {
+#TODO: this isn't quite the right task to ask for...
+    return shift->SUPER::load_all_for_task('FORUM_MAIL_THREAD_ROOT_LIST');
 }
 
 1;
