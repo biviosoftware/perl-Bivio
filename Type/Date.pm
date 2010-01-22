@@ -10,7 +10,7 @@ use Bivio::Base 'Type.DateTime';
 # julian days and seconds on that day ('J SSSSS').
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_DT) = b_use('Type.DateTime');
 my($_TIME_SUFFIX) = ' '.Bivio::Type::DateTime::DEFAULT_TIME();
 my($_MIN) = $_DT->FIRST_DATE_IN_JULIAN_DAYS().$_TIME_SUFFIX;
 my($_MAX) = $_DT->LAST_DATE_IN_JULIAN_DAYS().$_TIME_SUFFIX;
