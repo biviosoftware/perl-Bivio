@@ -1,14 +1,14 @@
 # Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
-req()->initialize_fully;
+req()->set_realm_and_user('fourem')->initialize_fully('GROUP_USER_LIST');
 [
     {
 	method => 'load_all_for_task',
 	compute_params => sub {
 	    my(undef, $actual) = @_;
 	    req()->set_user($actual->[0]);
-	    return [$actual->[1] || 'GROUP_USER_LIST'];
+	    return [$actual->[1] || undef];
 	},
     } => [
 	btest_read => [],
@@ -29,5 +29,11 @@ req()->initialize_fully;
 	['FORUM_CALENDAR_EVENT_DETAIL'] => [
 	    [map(realm_id($_), qw(btest_admin fourem fourem-sub2))],
 	],
+    ],
+    can_user_execute_task => [
+	['FORUM_CALENDAR_EVENT_DETAIL', realm_id('fourem')] => 1,
+	['FORUM_CALENDAR_EVENT_FORM', realm_id('fourem')] => 0,
+	['FORUM_CALENDAR_EVENT_FORM', realm_id('fourem-sub2')] => 1,
+	['FORUM_CALENDAR_EVENT_FORM', realm_id('demo')] => 0,
     ],
 ];
