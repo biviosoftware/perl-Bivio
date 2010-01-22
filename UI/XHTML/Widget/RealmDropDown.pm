@@ -19,7 +19,7 @@ sub initialize {
     my($rt) = _realm_types($self);
     my($first_rt) = $rt->[0];
     $self->put_unless_exists(
-	control => [sub {@{$self->internal_choices(shift)} != 0}],
+	control => [sub {$self->internal_control_value(@_)}],
 	control_on_value => If(
 	    [sub {_one_choice($self, shift)}],
 	    SPAN(_curr_realm(), {class => 'dd_link'}),
@@ -72,6 +72,11 @@ sub internal_choices {
             map($_RT->from_any($_), @{_realm_types($self)}),
         ]},
     );
+}
+
+sub internal_control_value {
+    my($self, $source) = @_;
+    return @{$self->internal_choices($source)} == 0 ? 0 : 1;
 }
 
 sub _curr_realm {
