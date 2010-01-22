@@ -40,6 +40,7 @@ sub execute_ok {
             (undef, $realm) = $self->new_other('Forum')->create_realm(
                 map($self->get_model_properties($_),
                     @{$self->REALM_MODELS}),
+		$self->internal_admin_user_id,
             );
         }
         else {
@@ -52,6 +53,10 @@ sub execute_ok {
     $self->req->set_realm($realm)
 	if $realm;
     return shift->SUPER::execute_ok(@_);
+}
+
+sub internal_admin_user_id {
+    return undef;
 }
 
 sub internal_initialize {
