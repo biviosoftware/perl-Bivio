@@ -45,15 +45,16 @@ sub internal_initialize {
         version => 1,
         visible => [
 	    map({
-		my($n, $t) = @$_;
+		my($n, $t, $overrides) = @$_;
                 $t = Bivio::Type->get_instance($t);
 		+{
-		    name =>  $_->[0],
-		    form_name => $_->[0],
-		    type => $_->[1],
+		    name =>  $n,
+		    form_name => $n,
+		    type => $t,
 		    default_value => UNIVERSAL::isa($t, 'Bivio::Type::Enum')
 			? $t->get_default : undef,
 		    constraint => 'NONE',
+		    %{$overrides || {}},
 		};
 	    } @{$self->internal_query_fields}),
         ],
