@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmUserAddForm;
 use strict;
@@ -12,12 +12,9 @@ sub copy_admins {
     my($self, $realm_id, $admin_user_id) = @_;
     my($req) = $self->get_request;
     foreach my $admin_id (
-	$admin_user_id ? $admin_user_id : @{
-	    $self->new_other('RealmAdminList')->map_iterate(
-	    sub {shift->get('RealmUser.user_id')},
-	    'unauth_iterate_start',
-	    {auth_id => $req->get('auth_id')},
-	)},
+	ref($admin_user_id) ? @$admin_user_id
+	    : $admin_user_id ? $admin_user_id
+	    : _admin_list($self),
     ) {
 	$self->new->process({
 	    'RealmUser.realm_id' => $realm_id,
@@ -100,6 +97,15 @@ sub internal_user_id {
 	    : (($self->internal_create_models)[0] || return)->get('realm_id'),
     ) unless $id;
     return $id;
+}
+
+sub _admin_list {
+    my($self) = @_;
+    return @{$self->new_other('RealmAdminList')->map_iterate(
+	sub {shift->get('RealmUser.user_id')},
+	'unauth_iterate_start',
+	{auth_id => $self->req('auth_id')},
+    )};
 }
 
 sub _join_user {
