@@ -21,10 +21,10 @@ Examples:
 =cut
 
 #=IMPORTS
-use Bivio::ShellUtil;
+use Bivio::IO::ClassLoader;
 
 #=VARIABLES
-Bivio::ShellUtil->required_main(@ARGV);
+b_use('Bivio.ShellUtil')->required_main(@ARGV);
 
 =head1 SEE ALSO
 
