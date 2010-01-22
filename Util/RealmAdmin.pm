@@ -1,8 +1,8 @@
-# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RealmAdmin;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 
 # C<Bivio::Util::RealmAdmin> is a generic interface to administration tasks.
 # It's likely you'll have to subclass this class.
@@ -18,6 +18,7 @@ commands:
     create_user email display_name password [user_name] -- creates a new user
     delete_user -- deletes the user
     delete_with_users -- deletes realm and all of its users
+    diff_users left_realm right_realm -- report differences between rosters
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
     join_user roles... -- adds specified user role to realm
@@ -91,6 +92,36 @@ sub delete_with_users {
     return;
 }
 
+
+sub diff_users {
+    sub DIFF_USERS {[[qw(left_realm RealmArg)], [qw(right_realm RealmArg)]]}
+    my($self) = shift;
+    $self->initialize_fully;
+    my(undef, $bp) = $self->parameters(\@_);
+    my($maps) = {};
+    foreach my $which (qw(left right)) {
+	my($u) = $self->req->with_realm(
+	    $bp->{$which . '_realm'},
+	    sub {$self->model('GroupUserList')->map_iterate},
+	);
+	foreach my $field (qw(RealmOwner.display_name RealmUser.realm_id)) {
+	    ($maps->{$field} ||= {})->{$which}
+		= {map(($_->{$field} => $_), @$u)};
+	}
+    }
+    foreach my $map (values(%$maps)) {
+	while (my($key, $row) = each(%{$map->{left}})) {
+	    next
+		unless $row == ($map->{right}->{$key} || {});
+	    foreach my $which (qw(left right)) {
+		delete($maps->{'RealmUser.realm_id'}
+		    ->{$which}->{$row->{'RealmUser.realm_id'}});
+	    }
+	}
+    }
+    return [map([values(%{$maps->{'RealmUser.realm_id'}->{$_}})], qw(left right))];
+}
+
 sub info {
     my($self, $owner) = @_;
     # Info on I<realm_owner> or auth_realm.
@@ -161,8 +192,9 @@ sub reset_password {
 sub to_id {
     my($self, $name_or_email) = shift->name_args(['String'], \@_);
     my($r) = $self->model('RealmOwner');
-    Bivio::Die->die($name_or_email, ': not found')
-        unless $r->unauth_load_by_email_id_or_name($name_or_email);
+    b_die($name_or_email, ': not found')
+	unless $r->unauth_load_by_email_id_or_name($name_or_email)
+	|| $r->unauth_load({display_name => $name_or_email});
     return $r->get('realm_id');
 }
 
