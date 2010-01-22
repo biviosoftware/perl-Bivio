@@ -20,6 +20,14 @@ sub assert_realm_exists {
     return;
 }
 
+sub can_user_execute_task {
+    my($self, $task_id, $realm_id) = @_;
+    return 0
+	if $realm_id && !$self->realm_exists($realm_id);
+    return $self->req->can_user_execute_task(
+	$_TI->from_any($task_id), $self->get_model('RealmOwner'));
+}
+
 sub realm_exists {
     sub REALM_EXISTS {[[qw(realm_id PrimaryId)], [qw(?task_id Agent.TaskId)]]}
     my($self, $bp) = shift->parameters(\@_);
@@ -66,7 +74,11 @@ sub load_all_for_task {
     my($self, $task_id) = @_;
     return $self->req->with_realm(
 	$self->req('auth_user'),
-	sub {$self->load_all({task_id => $_TI->from_any($task_id)})},
+	sub {
+	    return $self->load_all({
+		task_id => $_TI->from_any($task_id || $self->req('task_id')),
+	    });
+	},
     );
 }
 
