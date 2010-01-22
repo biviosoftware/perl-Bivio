@@ -39,6 +39,7 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 our($_VIEW_IN_EVAL);
+our($_TRACE);
 my($_CL) = b_use('IO.ClassLoader');
 my($_R) = b_use('Agent.Request');
 my($_V) = b_use('UI.View');
