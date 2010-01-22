@@ -24,5 +24,9 @@ Unit();
 	    [] => [[Type_Month()->MARCH]],
 	    january => [[Type_Month()->JANUARY]],
 	],
+	s4 => [
+	    [] => [[]],
+	    [qw(may june)] => [[Month('MAY'), Month('JUNE')]],
+	],
     ],
 ];

@@ -50,4 +50,14 @@ sub s3 {
     return $bp->{p1};
 }
 
+sub s4 {
+    sub S4 {[[qw(*Month)]]}
+    my($self, $bp) = shift->parameters(\@_);
+    b_die('Month not array')
+	unless ref($bp->{Month}) eq 'ARRAY';
+    b_die('Month contains undef')
+	if grep(!defined($_), @{$bp->{Month}});
+    return $bp->{Month};
+}
+
 1;
