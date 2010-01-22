@@ -515,7 +515,7 @@ sub _format_string_with_type {
 #TODO: DateTime should be an object
     return $Bivio::Type::DateTime::VERSION
 	&& Bivio::Type::DateTime->is_valid_specified($value)
-	? Bivio::Type::DateTime->to_string($value)
+	? Bivio::Type::DateTime->to_string($value) . " [$value]"
         : $value;
 }
 
