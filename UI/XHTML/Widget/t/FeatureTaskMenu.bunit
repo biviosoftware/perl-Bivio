@@ -1,0 +1,11 @@
+# Copyright (c) 20010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    view_class_map => 'XHTMLWidget',
+});
+req()->set_realm_and_user('fourem');
+req()->initialize_fully('FORUM_WIKI_EDIT');
+[
+    []=> qr{selected[^>]+>Wiki}s,
+];
+
