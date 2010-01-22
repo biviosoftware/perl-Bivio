@@ -6,6 +6,10 @@ Widget({
 req()->set_realm_and_user('fourem');
 req()->initialize_fully('FORUM_WIKI_EDIT');
 [
-    []=> qr{selected[^>]+>Wiki}s,
+    [] => sub {
+	my(undef, $actual) = @_;
+	assert_not_equals(qr{selected.*selected}s, $actual->[0]);
+	return qr{selected[^>]+>Wiki}s;
+    },
 ];
 
