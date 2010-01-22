@@ -6,6 +6,7 @@ use Bivio::Base 'XHTMLWidget.TaskMenu';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_TI) = b_use('Agent.TaskId');
 
 sub NEW_ARGS {
     return [qw(?class)];
@@ -16,8 +17,8 @@ sub initialize {
     $self->put_unless_exists(
 	task_map => $self->internal_tasks,
 	want_more_threshold => 4,
-	selected_item => sub {sub {
-	    my(undef, $source) = @_;
+	selected_item => [sub {
+	    my($source) = @_;
 	    my($curr_task) = $source->get('task_id')->get_name;
 	    $self->do_by_two(
 		sub {
@@ -29,8 +30,8 @@ sub initialize {
 		},
 		$self->internal_selected_item_map,
 	    );
-	    return $curr_task;
-	}},
+	    return $_TI->from_name($curr_task);
+	}],
     );
     return shift->SUPER::initialize(@_);
 }
