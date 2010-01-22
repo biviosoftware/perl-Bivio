@@ -1606,32 +1606,7 @@ sub _cfg_wiki {
 		]);},
 		wiki_diff_tools => q{vs_text_as_prose('wiki_diff_tools_base');},
                 xhtml_site_admin_drop_down_standard => q{SiteAdminDropDown();},
-                xhtml_dock_left_standard => q{TaskMenu([
-                    vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
-                    qw(
-			SITE_WIKI_VIEW
-			FORUM_BLOG_LIST
-			FORUM_WIKI_VIEW
-			FORUM_CALENDAR
-                    ),
-                    {
-                        task_id => 'REALM_FEATURE_FORM',
-                        control =>
-                            ['!', [[qw(->req auth_realm)], 'type'], '->eq_forum'],
-                    },
-                    qw(
-                        FORUM_EDIT_FORM
-			FORUM_FILE_TREE_LIST
-			GROUP_TASK_LOG
-			FORUM_MAIL_THREAD_ROOT_LIST
-                        FORUM_CREATE_FORM
-			FORUM_MOTION_LIST
-			GROUP_USER_LIST
-			FORUM_TUPLE_USE_LIST
-			FORUM_CRM_THREAD_ROOT_LIST
-		    )],
-                    {want_more_threshold => 4}
-                );},
+		xhtml_dock_left_standard => q{FeatureTaskMenu();},
 	    ]],
 #DEPRECATED:
 	    [HelpWiki => [
