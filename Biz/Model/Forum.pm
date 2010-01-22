@@ -17,7 +17,6 @@ sub create {
 
 sub create_realm {
     my($self, $forum, $realm_owner, $admin_id) = @_;
-    # don't super admin_id, added using ForumUserAddForm below
     my(@res) = $self->create({
 	%$forum,
 	parent_realm_id => $self->req('auth_id'),
