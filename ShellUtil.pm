@@ -419,7 +419,8 @@ sub initialize_ui {
         $req->setup_all_facades
             if $fully;
     }
-    b_use('UI.Facade')->setup_request(undef, $req);
+    b_use('UI.Facade')->setup_request(undef, $req)
+	unless $req->unsafe_get('UI.Facade');
     $req->put_durable(
 	task => b_use('Agent.Task')->get_by_id($req->get('task_id')))
 	if $req->unsafe_get('task_id');
