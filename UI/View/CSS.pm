@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::CSS;
 use strict;
@@ -715,39 +715,45 @@ EOF
 
 sub _site_calendar {
     return <<'EOF';
-.month_selection td {
-  padding-left: .5em;
+table.month_calendar {
+  width: 100%;
 }
 .month_calendar td {
-  width: 14%;
   vertical-align: top;
-  border: 2px solid #FFFFFF;
-  padding: .3em;
+  width: 14%;
+  padding: .5em;
+  border: 1px solid;
+  Color('month_calendar_td-border');
 }
-.month_calendar .day_of_week {
+.month_calendar th {
   padding-bottom: .5em;
-  background-color: #C8C8C8;
   text-align: center;
+  Color('month_calendar_th-background');
 }
-.month_calendar .date_this_month, .month_calendar .date_other_month {
-  height: 6em;
-  background-color: #EEEEEE;
+.month_calendar .date_this_month,
+.month_calendar .date_other_month {
+  height: 10ex;
+  Color('month_calendar-background');
 }
 .month_calendar .date_other_month {
-  background-color: #E6E6E6;
-}
-.month_calendar .date_other_month .day_of_month {
-  color: gray;
+  Color('month_calendar_date_other_month-background');
 }
 .month_calendar .day_of_month {
-  font-weight: bold;
+  display: block;
+  float: left;
   margin-bottom: .5em;
+  Font('month_calendar_th');
 }
-.month_calendar .event {
-  font-size: 85%;
-  padding-left: 20px;
-  text-align: left;
-  line-height: 16px;
+.month_calendar .date_other_month .day_of_month {
+  Font('month_calendar_date_other_month');
+}
+.month_calendar a.event_name {
+  display: block;
+  padding-left: 2.5em;
+  Font('month_calendar_event_name');
+}
+.list_calendar td.datetime {
+  Font('td_datetime');
 }
 EOF
 }
@@ -790,7 +796,7 @@ sub _site_mail {
   margin-bottom: 1ex;
 }
 .msg .parts {
-  border-top: 2px solid;
+  border-top: 2p xsolid;
   border-left: 2px solid;
   padding-left: 1em;
   padding-bottom: 1em;
