@@ -137,7 +137,7 @@ sub internal_pre_execute {
 	);
     }
     my($augsl) = $self->new_other('AuthUserGroupSelectList')
-	->load_all_for_task($self->req('task_id'));
+	->load_all_for_task;
     $self->throw_die(FORBIDDEN => {
 	entity => $self->req('auth_id'),
 	message => 'no authorized realms',
