@@ -755,8 +755,6 @@ sub internal_get_realm_for_task {
     my($realm) = $self->get('auth_realm');
     _trace('current auth_realm is: ', $realm->get('id'))
 	if $_TRACE;
-    return $realm
-	if $task_id->equals($self->get('task_id'));
     my($task) = $_T->get_by_id($task_id);
     return $realm
 	if $task->has_realm_type($realm->get('type'));
