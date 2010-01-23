@@ -106,6 +106,13 @@ sub internal_create_display {
 	    %$attrs,
 	});
     }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::DateTimeWithTimeZone')) {
+	return $_VS->vs_new('String', {
+	    field => $field,
+	    value => [$field, '->as_literal'],
+	    %$attrs,
+	});
+    }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Date')) {
         return $_VS->vs_new('String', {
             field => $field,
