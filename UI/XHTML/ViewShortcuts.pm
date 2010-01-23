@@ -385,6 +385,29 @@ sub vs_put_pager {
     return;
 }
 
+sub vs_selector_form {
+    my($proto, $model, $widgets) = @_;
+    return Form(
+	$model,
+	Join([
+	    map($_->put_unless_exists(auto_submit => 1), @$widgets),
+	    ScriptOnly({
+		widget => Simple(''),
+		alt_widget => FormButton({
+		    field => 'ok_button',
+		    label => $proto
+			->vs_text_as_prose('vs_selector_form.ok_button'),
+		}),
+	    }),
+	]),
+	{
+	    form_method => 'get',
+	    want_timezone => 0,
+	    want_hidden_fields => 0,
+	},
+    );
+}
+
 sub vs_simple_form {
     my($proto, $form, $rows, $no_submit) = @_;
     my($have_submit) = 0;
