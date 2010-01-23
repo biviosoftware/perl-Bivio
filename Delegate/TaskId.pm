@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2009 bivio Software, Inc.	All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.	All Rights Reserved.
 # $Id$
 package Bivio::Delegate::TaskId;
 use strict;
@@ -389,10 +389,9 @@ sub info_calendar {
 	    180
 	    ANY_OWNER
 	    DATA_READ&FEATURE_CALENDAR
-	    Model.SelectMonthForm
+	    Model.CalendarEventMonthForm
 	    Model.CalendarEventMonthList->execute_load_all_with_query
-	    Model.MonthList->execute_load_all
-	    View.Calendar->month_list
+	    View.Calendar->list
 	    next=FORUM_CALENDAR
 	)],
 	[qw(
@@ -433,24 +432,16 @@ sub info_calendar {
 	    Model.CalendarEventList->execute_load_this
 	    Action.CalendarEventICS
 	)],
- 	[qw(
-	    FORUM_CALENDAR_EVENT_LIST
-	    185
-	    FORUM
-	    DATA_READ&FEATURE_CALENDAR
-	    Model.CalendarEventList->execute_load_page
-	    View.Calendar->event_list
-	)],
 	[qw(
 	    FORUM_CALENDAR_EVENT_LIST_ICS
-	    186
+	    185
 	    FORUM
 	    DATA_READ&FEATURE_CALENDAR
 	    Model.CalendarEventList->execute_load_all
 	    Action.CalendarEventICS
             want_basic_authorization=1
 	)],
-# 187-189 free
+# 186-189 free
     ];
 }
 
