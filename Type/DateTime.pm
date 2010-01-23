@@ -330,10 +330,20 @@ sub diff_seconds {
     return ($lj - $rj) * $proto->SECONDS_IN_DAY + $ls - $rs;
 }
 
+sub do_iterate {
+    my($proto, $op, $begin, $end) = @_;
+    while ($proto->is_less_than_or_equals($begin, $end)) {
+	return
+	    unless $op->($begin);
+	$begin = $proto->add_days($begin, 1);
+    }
+    return;
+}
+
 sub english_day_of_week {
     my($proto, $date) = @_;
     # Returns day of week for date.
-    return $_DAY_OF_WEEK->[(gmtime($proto->to_unix($date)))[6]];
+    return $_DAY_OF_WEEK->[_dow($proto, $date)];
 }
 
 sub english_day_of_week_list {
@@ -701,6 +711,11 @@ sub set_beginning_of_month {
     return $proto->from_parts_or_die($sec, $min, $hour, 1, $mon, $year);
 }
 
+sub set_beginning_of_week {
+    my($proto, $date_time) = @_;
+    return $proto->add_days($date_time,  -_dow($proto, $date_time));
+}
+
 sub set_end_of_day {
     my($proto, $date_time) = @_;
     return _join((_split($date_time))[0], $_END_OF_DAY)
@@ -713,6 +728,11 @@ sub set_end_of_month {
 	$sec, $min, $hour,
 	$proto->get_last_day_in_month($mon, $year), $mon, $year,
     );
+}
+
+sub set_end_of_week {
+    my($proto, $date_time) = @_;
+    return $proto->add_days($date_time, 6 - _dow($proto, $date_time));
 }
 
 sub set_local_beginning_of_day {
@@ -939,6 +959,11 @@ sub _compute_local_timezone {
 	    int(__PACKAGE__->diff_seconds(__PACKAGE__->from_unix($now), $local)
 		    / 60 + 0.5);
     return;
+}
+
+sub _dow {
+    my($proto, $date) = @_;
+    return (gmtime($proto->to_unix($date)))[6];
 }
 
 sub _from_alert {
