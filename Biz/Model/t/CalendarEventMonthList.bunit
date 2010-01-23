@@ -1,0 +1,115 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+my(undef, undef, $create) = do('./CalendarEvent.PL');
+req()->set_realm_and_user(qw(fourem btest_admin))
+    ->initialize_fully('FORUM_CALENDAR');
+DateTime()->set_test_now('1/15/2010 0:0:0');
+my($rows) = [map({
+    my($start, $end) = split(/-/, $_);
+    $_ =~ /\W/ ? $create->(fourem => Date($start), $end && Date($end)) : ();
+} qw(
+0    12/26/2009
+1    12/26/2009-1/2/2010
+2    12/27/2009
+3    12/27/2009
+4    12/27/2009
+5    12/31/2009
+6    1/1/2010
+7    1/1/2010
+8    1/15/2010
+9    1/31/2010
+10    2/6/2010
+11    2/6/2010-2/8/2010
+12    2/7/2010
+13    2/7/2010
+))];
+my($check_day_list) = sub {
+    my($obj) = @_;
+    return
+	unless $obj->this_month == 2;
+    my($wl) = $obj->week_list;
+    my($check) = {
+	0 => {
+	    day_list_friday => [],
+	    day_list_saturday => [10, 11],
+	},
+	1 => {
+	    day_list_sunday => [11, 12, 13],
+	},
+    };
+    while (my($cur, $val) = each(%$check)) {
+	$wl->set_cursor_or_die($cur);
+	while (my($field, $indexes) = each(%$val)) {
+	    assert_equals(
+		[map($rows->[$_]->get('dtstart'), @$indexes)],
+		$wl->get($field)->map_rows(
+		    sub {shift->get('CalendarEvent.dtstart')}),
+		"$cur $field",
+	    );
+	}
+    }
+    return;
+};
+my($check_week_list) = sub {
+    my($obj) = @_;
+    my($wl) = $obj->week_list;
+    my($check) = {
+	12 => {
+	    0 => {
+		in_this_month_monday => 0,
+		in_this_month_tuesday => 1,
+		day_of_month_saturday => 5,
+	    },
+	},
+	1 => {
+	    5 => {
+		in_this_month_sunday => 1,
+		in_this_month_monday => 0,
+		day_of_month_saturday => 6,
+	    },
+	},
+	2 => {},
+    }->{$obj->this_month};
+    while (my($cur, $val) = each(%$check)) {
+	$wl->set_cursor_or_die($cur);
+	while (my($field, $value) = each(%$val)) {
+	    assert_equals(
+		$value, $wl->get($field), $obj->this_month . " $cur $field");
+	}
+    }
+    $check_day_list->($obj);
+    return;
+};
+[
+    [req()] => [
+	{
+	    method => 'load_all',
+	    comparator => 'nested_contains',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		model(CalendarEventMonthForm => {
+		    b_month => $params->[0] && Date($params->[0]),
+		});
+		return [];
+	    },
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		my($obj) = $actual->[0];
+		$check_week_list->($obj);
+		return $obj->map_rows;
+	    },
+	    check_return => sub {
+		my(undef, undef, $expect) = @_;
+		return [map(+{
+		    'CalendarEvent.dtstart' => $rows->[$_]->get('dtstart'),
+		    'CalendarEvent.dtend' => $rows->[$_]->get('dtend'),
+		}, @$expect)];
+	    },
+	} => [
+	    [] => [1 .. 11],
+	    '12/31/2009' => [0 .. 7],
+	    '2/1/2010' => [9 .. $#$rows],
+	],
+    ],
+];

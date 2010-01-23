@@ -1,0 +1,17 @@
+# Copyright (c) 2010 IEEE Industry Standards and Technology Organization.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->setup_facade;
+b_use('Type.DateTime')->set_test_now('2/1/1999 0:0:0', req());
+[
+    {
+	method => 'load_all',
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [$actual->[0]->set_cursor_or_die(0)->get('display_name')];
+	},
+    } => [
+	[] => 'Dec 2000',
+	[{b_month => Date('3/1/2005')}] => 'Dec 2006',
+    ],
+];
