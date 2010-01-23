@@ -146,7 +146,8 @@ sub render_tag_value {
 	);
 	my($b) = '';
 	$w->render($source, \$b);
-	next unless $b;
+	next
+	    unless $b;
 	$$need_sep++;
         push(@$buffers, $b);
     }
