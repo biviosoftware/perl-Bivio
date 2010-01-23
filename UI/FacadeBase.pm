@@ -385,6 +385,7 @@ sub _cfg_base {
 	    [vs_ui => [
 		forum => 'Forum',
 	    ]],
+	    ['vs_selector_form.ok_button' => 'Refresh'],
 	    [xlink => [
 		back_to_top => 'back to top',
 		SITE_ROOT => 'Home',
@@ -528,11 +529,26 @@ sub _cfg_blog {
 
 sub _cfg_calendar {
     return {
+	Color => [
+	    [month_calendar_td_border => 0],
+	    [month_calendar_th_background => -1],
+	    [month_calendar_background => -1],
+	    [month_calendar_date_other_month_background => 0xe6e6e6],
+	    [month_calendar_date_other_month => 0x808080],
+	],
 	Constant => [
 	    ['Model.TimeZoneList.rows' => sub {[map(+{
 		enum => $_,
 		display_name => $_->as_display_name,
 	    }, b_use('Type.TimeZone')->get_list)]}],
+	],
+	Font => [
+	    [month_calendar_th => 'bold'],
+	    [month_calendar_date_other_month => []],
+	    [month_calendar_event_name => ['size=85%', 'left']],
+	    [td_datetime => 'nowrap'],
+	    [mail_msg_field => 'bold'],
+	    [msg_byline => [qw(120% bold)]],
 	],
  	FormError => [
 	    [recurrence_end_date => [
@@ -543,19 +559,23 @@ sub _cfg_calendar {
 	    ['CalendarEventForm.end_date.MUTUALLY_EXCLUSIVE' => q{The vs_fe('label'); must be after vs_text_as_prose('CalendarEventForm.start_date');.}],
 	],
 	Task => [
-	    [FORUM_CALENDAR => '?/calendar'],
-	    [FORUM_CALENDAR_EVENT_DELETE => ['?/delete-calendar-event', '?/event-delete']],
-	    [FORUM_CALENDAR_EVENT_DETAIL => ['?/calendar-event', '?/event-detail']],
-	    [FORUM_CALENDAR_EVENT_FORM => ['?/edit-calendar-event', '?/event']],
+	    [FORUM_CALENDAR => ['?/calendar', '?/events-month', '?/calendar-month', '?/calendar-list', '?/my-calendar', '?/my-calendar-local', '?/events-local', '?/calendar-local', '?/events']],
+	    [FORUM_CALENDAR_EVENT_DELETE => ['?/delete-calendar-event', '?/event-delete', '?/event-remove']],
+	    [FORUM_CALENDAR_EVENT_DETAIL => ['?/calendar-event', '?/event-detail', '?/events-view', '?/calendar-view']],
+	    [FORUM_CALENDAR_EVENT_FORM => ['?/edit-calendar-event', '?/event', '?/event-edit', '?/calendar-edit', '?/event-add', '?/calendar-add', '?/event-copy']],
 	    [FORUM_CALENDAR_EVENT_ICS => ['?/calendar-event.ics', '?/event.ics']],
-	    [FORUM_CALENDAR_EVENT_LIST => '?/calendar-list'],
-	    [FORUM_CALENDAR_EVENT_LIST_RSS => ['?/calendar.atom', '?/calendar.rss']],
+	    [FORUM_CALENDAR_EVENT_LIST_RSS => ['?/calendar.atom', '?/calendar.rss', '?/my-calendar.atom', '?/my-calendar.rss']],
+	    [FORUM_CALENDAR_EVENT_LIST_ICS => ['?/calendar.ics', '?/events.ics']],
 	],
 	Text => [
 	    [time_zone => 'Time Zone'],
-	    [dtstart_in_tz => 'Start'],
-	    [dtend_in_tz => 'End'],
-	    [[qw(CalendarEventList.owner.RealmOwner.display_name CalendarEvent.realm_id)] => 'Forum'],
+	    [dtstart_tz => 'Start'],
+	    [dtend_tz => 'End'],
+	    [[qw(
+	        CalendarEventMonthList.RealmOwner.display_name
+		CalendarEventList.RealmOwner.display_name
+		CalendarEvent.realm_id
+	    )] => 'Forum'],
 	    [CalendarEvent => [
 		description => 'Description',
 		location => 'Location',
@@ -565,7 +585,18 @@ sub _cfg_calendar {
 	    [CalendarEventContent => [
 		field_label_separator => ': ',
 	    ]],
-	    [CalendarEventList => [
+	    [CalendarEventWeekList => [
+		map(($_ => $_),
+		    b_use('Type.DateTime')->english_day_of_week_list),
+	    ]],
+	    [MonthList => [
+		map(($_ => $_),
+		    b_use('Type.DateTime')->english_month3_list),
+	    ]],
+	    [CalendarEventMonthForm => [
+		b_list_view => 'View events as a list',
+	    ]],
+	    [[qw(CalendarEventList CalendarEventMonthList)] => [
 		AtomFeed => [
 		    entry_title => q{String(['RealmOwner.display_name']); from DateTime(['CalendarEvent.dtstart'], 'to_string'); to DateTime(['CalendarEvent.dtend'], 'to_string');},
 		    entry_content => q{CalendarEventContent();},
@@ -594,17 +625,19 @@ sub _cfg_calendar {
 		create => 'Add',
 		copy => 'Copy',
 	    ]],
-	    ['task_menu.title.FORUM_CALENDAR_EVENT_FORM.create' => 'Add Event'],
-	    ['task_menu.title.FORUM_CALENDAR_EVENT_DELETE' => 'Delete'],
+	    [[qw(task_menu.title list_action)] => [
+		'FORUM_CALENDAR_EVENT_FORM.create' => 'Add Event',
+		'FORUM_CALENDAR_EVENT_DELETE' => 'Delete',
+		'FORUM_CALENDAR.user' => 'All vs_ui_forum();s',
+	    ]],
 	    [[qw(title xlink)] => [
 		[qw(
 		    FORUM_CALENDAR
-		    FORUM_CALENDAR_EVENT_LIST
 		    FORUM_CALENDAR_EVENT_LIST_RSS
 	        )] => 'Calendar',
 		FORUM_CALENDAR_EVENT_DELETE => 'Delete Event',
 		FORUM_CALENDAR_EVENT_DETAIL => 'Event',
-		FORUM_CALENDAR_EVENT_ICS => 'iCal',
+		[qw(FORUM_CALENDAR_EVENT_ICS FORUM_CALENDAR_EVENT_LIST_ICS)] => 'iCal',
 	    ]],
 	    [acknowledgement => [
 		FORUM_CALENDAR_EVENT_DELETE => 'The event was deleted.',
