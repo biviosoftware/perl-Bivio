@@ -348,10 +348,10 @@ sub _load_items_from_list {
 
     unless ($self->unsafe_get('list_id_field')) {
         my($keys) = $list->get_info('primary_key_names');
-        Bivio::Die->die(
-            "can't default list_id_field with multiple primary keys: ",
-            $list) if int(@$keys) > 1;
-        # default to first primary key field
+        b_die(
+	    $list, ': ',
+	    @$keys ? 'too many primary key fields' : ': no primary keys?'
+	) unless @$keys == 1;
         $self->put(list_id_field => $keys->[0]);
     }
     my($id_name) = $self->get('list_id_field');
