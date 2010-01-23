@@ -35,7 +35,8 @@ sub get_select_attrs {
 		->package_name);
 	}, $proto, $field],
 	list_display_field => $proto->get_list_for_field($field)
-	    ->get_info('order_by_names')->[0],
+	    ->get_info('order_by_names')->[0]
+		|| b_die($field, ': must have at least one order_by'),
     };
 }
 
