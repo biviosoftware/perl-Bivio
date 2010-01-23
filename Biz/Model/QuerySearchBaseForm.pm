@@ -23,6 +23,10 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
+    foreach my $field (@{_get_visible_fields($self)}) {
+	$self->internal_put_field($field => $self->get_default_value($field))
+	    unless defined($self->unsafe_get($field));
+    }
     return _redirect($self, $self->get_current_query_for_list);
 }
 
@@ -58,19 +62,6 @@ sub internal_initialize {
 	    },
 	],
     });
-}
-
-sub internal_pre_execute {
-    my($self) = @_;
-    return unless $self->get_request->unsafe_get('form')
-	&& $self->equals($self->get_request->get('form'));
-
-    foreach my $field (@{_get_visible_fields($self)}) {
-        next if defined($self->unsafe_get($field));
-        next if $self->get_field_error($field);
-        $self->internal_put_field($field => $self->get_default_value($field));
-    }
-    return;
 }
 
 sub _get_visible_fields {
