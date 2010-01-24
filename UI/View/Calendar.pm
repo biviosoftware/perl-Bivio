@@ -127,12 +127,14 @@ sub list {
 		    'task_menu.title.FORUM_CALENDAR.user'),
 		realm => ['->req', 'auth_user', 'name'],
 		control => And(
-		    ['->req', 'auth_user'],
+		    ['->req', 'auth_user_id'],
 		    ['!', ['->req', 'auth_realm', 'type'], '->eq_user'],
 		),
 	    },
 	    'FORUM_CALENDAR_EVENT_LIST_ICS',
-	]),
+	], {
+	    selected_item => 0,
+	}),
 	selector => vs_selector_form($_CEMF->simple_package_name => [
 	    Select($_CEMF->get_select_attrs('b_month')),
 	    Checkbox('b_list_view'),
