@@ -400,11 +400,6 @@ sub vs_selector_form {
 		}),
 	    }),
 	]),
-	{
-	    form_method => 'get',
-	    want_timezone => 0,
-	    want_hidden_fields => 0,
-	},
     );
 }
 
