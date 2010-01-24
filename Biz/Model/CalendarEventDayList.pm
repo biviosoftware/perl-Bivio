@@ -21,7 +21,7 @@ sub detail_uri {
 
 sub internal_load_rows {
     my(undef, $query) = @_;
-    return $query->get('b_rows');
+    return $query->get_and_delete('b_rows');
 }
 
 1;
