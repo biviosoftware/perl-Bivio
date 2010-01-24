@@ -27,7 +27,8 @@ sub internal_initialize {
 
 sub internal_load_rows {
     my($self, $query) = @_;
-    my($date) = $_D->now;
+    my($now) = $_D->set_beginning_of_month($_D->now);
+    my($date) = $now;
     if (my $bm = $query->unsafe_get('b_month')) {
 	$bm = ($_D->from_literal($bm))[0];
 	$date = $bm
@@ -36,7 +37,13 @@ sub internal_load_rows {
     my($year) = $_D->get_part($date, 'year');
     my($t) = $_T->get_from_source($self->req);
     return [
-        reverse(map(+{
+	{
+	    # Need to make distinct value in list
+	    date => $_D->add_days($now, 1),
+	    display_name => $t->get_value(
+		$self->simple_package_name, 'this_month'),
+	},
+        map(+{
             date => $_,
             display_name => $t->get_value(
 		$self->simple_package_name,
@@ -46,7 +53,7 @@ sub internal_load_rows {
         }, map({
             my($year) = $_;
             map($_D->date_from_parts(1, $_, $year), 1 .. 12);
-        } ($year - 1 .. $year + 1)))),
+        } ($year - 1 .. $year + 1))),
     ];
 }
 
