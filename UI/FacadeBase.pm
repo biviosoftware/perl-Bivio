@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::FacadeBase;
 use strict;
@@ -379,7 +379,7 @@ sub _cfg_base {
 	    [[qw(actions list_actions)] => 'Actions'],
 	    ['AuthUserGroupSelectList.RealmOwner' => [
 		[qw(display_name name)] => [
-		    select => 'Select Forum',
+		    select => 'Select vs_ui_forum();',
 		],
 	    ]],
 	    [vs_ui => [
@@ -575,7 +575,7 @@ sub _cfg_calendar {
 	        CalendarEventMonthList.RealmOwner.display_name
 		CalendarEventList.RealmOwner.display_name
 		CalendarEvent.realm_id
-	    )] => 'Forum'],
+	    )] => 'vs_ui_forum();'],
 	    [CalendarEvent => [
 		description => 'Description',
 		location => 'Location',
@@ -590,6 +590,7 @@ sub _cfg_calendar {
 		    b_use('Type.DateTime')->english_day_of_week_list),
 	    ]],
 	    [MonthList => [
+		this_month => 'Today',
 		map(($_ => $_),
 		    b_use('Type.DateTime')->english_month3_list),
 	    ]],
