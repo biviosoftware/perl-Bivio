@@ -127,6 +127,10 @@ sub get {
 	@_));
 }
 
+sub get_and_delete {
+    return _get_and_delete(get => @_);
+}
+
 sub get_by_regexp {
     return _unsafe_get_by_regexp(0, @_);
 }
@@ -312,10 +316,7 @@ sub unsafe_get {
 }
 
 sub unsafe_get_and_delete {
-    my($self) = shift;
-    my(@res) = $self->unsafe_get(@_);
-    $self->delete(@_);
-    return $self->return_scalar_or_array(@res);
+    return _get_and_delete(unsafe_get => @_);
 }
 
 sub unsafe_get_by_regexp {
@@ -357,6 +358,13 @@ sub _even {
     _die($self, "must be an even number of parameters")
 	unless @$args % 2 == 0;
     return ($self, $args);
+}
+
+sub _get_and_delete {
+    my($method, $self) = (shift, shift);
+    my(@res) = $self->$method(@_);
+    $self->delete(@_);
+    return $self->return_scalar_or_array(@res);
 }
 
 sub _get_nested {
