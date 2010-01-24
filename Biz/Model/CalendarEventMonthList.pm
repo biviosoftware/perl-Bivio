@@ -7,6 +7,7 @@ use Bivio::Base 'Model.CalendarEventList';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_DT) = b_use('Type.DateTime');
+my($_D) = b_use('Type.Date');
 
 sub LIST_QUERY_FORM_CLASS {
     return b_use('Model.CalendarEventMonthForm');
@@ -37,11 +38,13 @@ sub internal_post_load_row {
 }
 
 sub internal_prepare_statement {
-    my($self, $stmt) = @_;
+    my($self, $stmt, $query) = @_;
 #TODO: Local timezone -- settings form
     my($bom) = $_DT->set_beginning_of_day(
 	$_DT->set_beginning_of_month(_query($self, 'b_month')));
-    $self->new_other('MonthList')->load_all({b_month => $bom});
+    $query->put(b_month => $_D->from_datetime($bom));
+    $self->new_other('MonthList')
+	->load_all({b_month => $query->get('b_month')});
     my($begin) = $_DT->set_beginning_of_week($bom);
     my($end) = $_DT->set_end_of_week(
 	$_DT->set_end_of_day($_DT->set_end_of_month($bom)));
