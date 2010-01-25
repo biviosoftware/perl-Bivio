@@ -26,11 +26,121 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.64  2010/01/21 21:05:04  moeller
+  * Bivio::Agent::Request
+    can_user_execute_task accepts a Task as sell now
+  * Bivio::Agent::t::Mock::Facade::Mock
+    define Constant and Color
+  * Bivio::Biz::FormModel
+    Added get_default_value() which computes the value dynamically if a CODE
+    internal_put_error/_and_detail accepts undef, which causes internal_clear_error
+  * Bivio::Biz::ListModel
+    unsafe_load_this does not die if no "this" on query
+  * Bivio::Biz::Model::BlogList
+    add get_rss_title
+  * Bivio::Biz::Model::CalendarEventDAVList
+    better modularization
+    Introduced DateTime->ical
+  * Bivio::Biz::Model::CalendarEventDeleteForm
+    load the CalendarEvent from the request
+  * Bivio::Biz::Model::CalendarEventForm
+    Handles user vs group execution so that user sees aggregate of groups
+    Added recurring events and copying
+    Standards time_zone handling
+    Added acknowledgements
+  * Bivio::Biz::Model::CalendarEventList
+    limit the query to AuthUserGroupList
+  * Bivio::Biz::Model::CalendarEventMonthList
+    date pushed up into CalendarEventList
+  * Bivio::Biz::Model::CalendarEvent
+    default values in create() properly
+    moved update_from_ics from CalendarEventList
+  * Bivio::Biz::Model::ForumTreeList
+    removed internal_extend_where since internal_prepare_statement is sufficient
+  * Bivio::Biz::Model::QuerySearchBaseForm
+    call get_default_value b/c default_value could be dynamically computed
+  * Bivio::Biz::Model::RealmDAG
+    use maps to get packages indirectly
+  * Bivio::Biz::Model::RealmUserAddForm
+    require context
+  * Bivio::Biz::Model::SelectMonthForm
+    default_value dynamically computed
+  * Bivio::Biz::PropertyModel
+    Added assert_properties, load_from_properties, and get_qualified_field_name_list
+  * Bivio::Collection::Attributes
+    added unsafe_get_and_delete
+  * Bivio::Delegate::SimpleAuthSupport
+    cache permissions for realms and load permissions for entire realm at once
+    added missing our($_TRACE)
+  * Bivio::Delegate::SimpleTypeError
+    removed INVALID_END_DATETIME
+  * Bivio::Delegate::SimpleWidgetFactory
+    added display support for HTTPURI (Link(String()))
+    added internal_default_want_parens()
+  * Bivio::Delegate::TaskId
+    added FORUM_CALENDAR_EVENT_LIST and FORUM_CALENDAR_EVENT_LIST_ICS
+  * Bivio::Parameters
+    allow declarations with qualified type names (Auth.Role and Bivio::Auth::Role)
+  * Bivio::PetShop::Facade::PetShop
+    my_site_redirect_map needs to return array_ref from code_ref
+  * Bivio::PetShop::Util::SQL
+    no need for demo_calendar
+  * Bivio::SQL::Support
+    added extract_column_name
+  * Bivio::Test::Case
+    added tags
+  * Bivio::Test::Unit
+    added case_tag
+    builtin_self returns $_SELF, not $_TYPE, because $_TYPE is not
+    necessarily a subclass of Test.Unit (Test.Request only case at this time)
+  * Bivio::Test
+    added case_tag
+  * Bivio::Type::DateTime
+    added set_beginning_of_month
+    b_use
+    to_string accepts timezone name (probably should accept TimeZone object)
+  * Bivio::Type::TimeZone
+    added as_display_name
+  * Bivio::Type
+    added is_greater_than, is_greater_than_or_equals, is_less_than, is_less_than_or_equals
+  * Bivio::UI::Constant
+    subclass Text
+  * Bivio::UI::FacadeBase
+    reset_pre line-height: 100% (used to be 60%)
+    cleaned up AtomFeed support
+    Added more CalendarEvent support
+  * Bivio::UI::Text
+    Can be subclassed by other components which don't always bind to text
+  * Bivio::UI::View::Calendar
+    major revamp to support recurring events
+    cleaned up formatting of event_detail
+    link generation better
+  * Bivio::UI::View::CSS
+    added b_literal
+    support for labels/fields on .simple layouts, not just "form"
+  * Bivio::UI::View::GroupAdmin
+    user_list() now accepts a list model name so applications can reuse this view with subclasses of GroupUserList
+  * Bivio::UI::View::Mail
+    always show links for attachments even if has CID
+  * Bivio::UI::XHTML::ViewShortcuts
+    downcase tag in view_autoload
+    added vs_label_cell
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    grep out task_id, don't assume it is first element in FORMAT_URI_PARAMETERS
+  * Bivio::UI::XML::Widget::AtomFeed
+    cleaned up structure to better support calendaring
+  * Bivio::UI::XML::Widget::DateTime
+    allow alternative renderings (to_ical)
+  * Bivio::UI::XML::Widget::String
+    allow undef values like HTMLWidget.String
+  * Bivio::Util::SQL
+    added user_feature_calendar bundle
+
   Revision 8.63  2009/12/30 22:39:19  moeller
   * Bivio::Biz::Model::GroupUserForm
     fixed old/new comparison
