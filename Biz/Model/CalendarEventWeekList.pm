@@ -47,16 +47,12 @@ sub internal_load_rows {
 	    $rows->[$#$rows] = {
 		%{$rows->[$#$rows]},
 		"in_this_month_$dow" => $month eq $this_month ? 1 : 0,
+#TODO: 		"is_today_$dow" => $dt ? 1 : 0,
 		"day_of_month_$dow" => $day,
 		"day_list_$dow" => $self->new_other('CalendarEventDayList')
 		    ->load_all({b_rows => [sort({
-			$_DT->compare(
-			    $a->{'CalendarEvent.dtstart'},
-			    $b->{'CalendarEvent.dtstart'},
-			) || $_DT->compare(
-			    $a->{'CalendarEvent.dtend'},
-			    $b->{'CalendarEvent.dtend'},
-			)
+			$_DT->compare($a->{dtstart_tz}, $b->{dtstart_tz})
+			    || $_DT->compare($a->{dtend_tz}, $b->{dtend_tz})
 		    } @{($months->[$month] || [])->[$day] || []})]}),
 	    };
 	    return 1;
@@ -78,8 +74,8 @@ sub _months {
 		push(@{($res->[$month] ||= [])->[$day] ||= []}, $row);
 		return 1;
 	    },
-	    $row->{'CalendarEvent.dtstart'},
-	    $row->{'CalendarEvent.dtend'},
+	    $row->{dtstart_tz},
+	    $row->{dtend_tz},
 	);
 	return 1;
     });
