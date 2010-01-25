@@ -5,7 +5,7 @@ use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RTK) = __PACKAGE__->use('Type.RowTagKey');
+my($_RTK) = b_use('Type.RowTagKey');
 
 sub USAGE {
     return <<'EOF';
@@ -17,16 +17,18 @@ EOF
 }
 
 sub list {
-    my($self, @key) = (shift, @_
-	? map($_RTK->from_name($_), @_)
-	: grep(!$_->eq_unknown, $_RTK->get_list));
+    sub LIST {[[
+	'*key',
+	'RowTagKey',
+	sub {[sort({$a->get_name cmp $b->get_name} $_RTK->get_non_zero_list)]},
+    ]]}
+    my($self, $bp) = shift->parameters(\@_);
     my($rt) = $self->model('RowTag');
     my($id) = $self->req('auth_id');
-    return join('', map(
-	$_->get_name
-	    . '='
-	    . ${Bivio::IO::Ref->to_string($rt->get_value($id, $_))},
-	@key));
+    return {map(
+	($_->get_name, $rt->get_value($id, $_)),
+	@{$bp->{key}},
+    )};
 }
 
 sub replace_value {
