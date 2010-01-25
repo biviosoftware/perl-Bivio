@@ -95,15 +95,14 @@ sub field_decl {
 	} unless ref($defaults) eq 'HASH';
 	$defaults->{constraint} ||= 'NONE';
 	return map({
-	    $_ = [$_]
-		unless ref($_);
-	    ref($_) eq 'HASH' ? {%$defaults, %$_} : +{
+	    my($decl) = ref($_) ? $_ : [$_];
+	    my($i) = 0;
+	    ref($_) eq 'HASH' ? {%$defaults, %$decl} : +{
 		%$defaults,
-		name => $_->[0],
-		$proto->list_if_value(
-		    type => $_->[1],
-		    constraint => $_->[2],
-		),
+		map({
+		    my($d) = $decl->[$i++];
+		    ref($d) eq 'HASH' ? %$d : defined($d) ? ($_ => $d) : ();
+		} qw(name type constraint)),
 	    };
 	} @$decls);
     }

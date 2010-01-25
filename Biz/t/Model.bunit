@@ -44,15 +44,25 @@ my($category_count) = 0;
 		    ]);
 		} 1 ..2),
             ],
-	    [c1 => [[qw(d1 Line NONE)]], c2 => [[qw(d2 String NOT_NULL)]]]
-		=> [
+	    [
+		c1 => [
+		    [qw(d1 Line NONE)],
+		    [d2 => {type => 'Text', in_list => 1}],
+		],
+		c2 => [[qw(d3 String NOT_NULL)]],
+	    ] => [
 		    c1 => [{
 			name => 'd1',
 			type => 'Line',
 			constraint => 'NONE',
+		    }, {
+			name => 'd2',
+			type => 'Text',
+			constraint => 'NONE',
+			in_list => 1,
 		    }],
 		    c2 => [{
-			name => 'd2',
+			name => 'd3',
 			type => 'String',
 			constraint => 'NOT_NULL',
 		    }],
