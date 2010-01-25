@@ -21,8 +21,6 @@ sub event_detail {
     my($self) = @_;
     view_put(
 	xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS',
-	xhtml_title => String(
-	    ['Model.CalendarEventList', 'RealmOwner.display_name']),
 	xhtml_tools => TaskMenu([
 	    map({
 		my($task, $label) = @$_;
@@ -61,10 +59,11 @@ sub event_detail {
 		vs_label_cell("CalendarEventList.$_"),
 		vs_display("CalendarEventList.$_")->put(cell_class => 'field'),
 	    ], (
+		'RealmOwner.display_name',
 		'owner.RealmOwner.display_name',
 		'time_zone',
-		'dtstart_tz',
-		'dtend_tz',
+		'dtstart_with_tz',
+		'dtend_with_tz',
 		'CalendarEvent.description',
 		'CalendarEvent.location',
 		'CalendarEvent.url',
@@ -80,19 +79,13 @@ sub event_form {
     view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     return $self->internal_body(vs_simple_form(
 	CalendarEventForm => [
+	    'CalendarEventForm.RealmOwner.display_name',
 	    ['CalendarEventForm.CalendarEvent.realm_id', {
 		choices => ['Model.AuthUserGroupSelectList'],
 		list_display_field => 'RealmOwner.name',
 		list_id_field => 'RealmUser.realm_id',
 	    }],
-	    'CalendarEventForm.RealmOwner.display_name',
-	    ['CalendarEventForm.time_zone', {
-		wf_widget => ComboBox({
-		    field => 'time_zone',
-		    list_class => 'TimeZoneList',
-		    list_display_field => ['display_name'],
-		}),
-	    }],
+	    'CalendarEventForm.time_zone_selector',
 	    'CalendarEventForm.start_date',
 	    'CalendarEventForm.start_time',
 	    'CalendarEventForm.end_date',
@@ -122,13 +115,22 @@ sub list {
     $self->internal_put_base_attr(
 	tools => TaskMenu([
 	    {
+		task_id => 'FORUM_CALENDAR_EVENT_FORM',
+		label => 'FORUM_CALENDAR_EVENT_FORM.create',
+		control => If(
+		    [['auth_realm', 'type'], '->eq_user'],
+		    [qw(Model.CalendarEventMonthList ->can_user_edit_any_realm)],
+		    [qw(Model.CalendarEventMonthList ->can_user_edit_this_realm)],
+		),
+	    },
+	    {
 		task_id => 'FORUM_CALENDAR',
 		label => vs_text_as_prose(
 		    'task_menu.title.FORUM_CALENDAR.user'),
-		realm => ['->req', 'auth_user', 'name'],
+		realm => ['auth_user', 'name'],
 		control => And(
-		    ['->req', 'auth_user_id'],
-		    ['!', ['->req', 'auth_realm', 'type'], '->eq_user'],
+		    ['auth_user_id'],
+		    ['!', ['auth_realm', 'type'], '->eq_user'],
 		),
 	    },
 	    'FORUM_CALENDAR_EVENT_LIST_ICS',
@@ -137,6 +139,7 @@ sub list {
 	}),
 	selector => vs_selector_form($_CEMF->simple_package_name => [
 	    Select($_CEMF->get_select_attrs('b_month')),
+	    Checkbox('b_time_zone'),
 	    Checkbox('b_list_view'),
 	]),
     );
@@ -150,17 +153,20 @@ sub list {
 sub _list_view {
     my($self) = @_;
     return vs_list(CalendarEventMonthList => [
-	[dtstart_tz => {
-	    column_data_class => 'datetime',
+	[dtstart_with_tz => {
+	    column_data_class => 'b_datetime',
+	    column_order_by => ['CalendarEvent.dtstart'],
 	}],
 	'time_zone',
-	['RealmOwner.display_name' => {
+	map([$_ => {
 	    wf_list_link => {
 		query => 'THIS_DETAIL',
 		task => 'FORUM_CALENDAR_EVENT_DETAIL',
 	    },
-	}],
-	'CalendarEvent.location',
+	}], qw(
+	    RealmOwner.display_name
+	    CalendarEvent.location
+	)),
 	['owner.RealmOwner.display_name' => {
 	    wf_list_link => {
 		href => URI({
@@ -195,7 +201,7 @@ sub _list_view {
 	    }),
 	},
     ], {
-	class => 'list list_calendar',
+	class => 'list b_list_calendar',
     });
 }
 
@@ -203,25 +209,25 @@ sub _month_view {
     return Table($_CEWL->simple_package_name => [
 	map([$_ => {
 	    column_widget => Join([
-		SPAN_day_of_month(["day_of_month_$_"]),
+		SPAN_b_day_of_month(["day_of_month_$_"]),
 		With(
 		    ["day_list_$_"],
 		    Link(
-			String(['RealmOwner.display_name']),
+			String(['time_and_name']),
 			['->detail_uri'],
-			{class => 'event_name'},
+			{class => 'b_event_name'},
 		    ),
 		),
 	    ]),
 	    column_data_class => If(
 		["in_this_month_$_"],
-		'date_this_month',
-		'date_other_month',
+		'b_date_this_month',
+		'b_date_other_month',
 	    ),
 	}], $_CEWL->day_of_week_suffix_list),
     ], {
 	source_name => ['Model.CalendarEventMonthList', '->week_list'],
-	class => 'month_calendar',
+	class => 'b_month_calendar',
 	odd_row_class => '',
 	even_row_class => '',
     });
