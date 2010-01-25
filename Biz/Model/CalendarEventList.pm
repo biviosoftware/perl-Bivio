@@ -63,11 +63,14 @@ sub decl_for_internal_initialize {
 	    [qw(CalendarEvent.realm_id owner.RealmOwner.realm_id)],
 	    $proto->field_decl([
 		[qw(uid RealmOwner.name)],
-		[qw(dtstart_tz DateTimeWithTimeZone)],
-		[qw(dtend_tz DateTimeWithTimeZone)],
+		[qw(dtstart_with_tz DateTimeWithTimeZone)],
+		[qw(dtend_with_tz DateTimeWithTimeZone)],
+		[qw(dtstart_tz DateTime)],
+		[qw(dtend_tz DateTime)],
 		[qw(path_info FilePath)],
 		[qw(query Text)],
 		[qw(time_zone DisplayName)],
+		[qw(time_and_name DisplayName)],
 	    ], undef, 'NOT_NULL'),
 	],
     };
@@ -100,9 +103,17 @@ sub internal_post_load_row {
     my($tz) = $row->{'CalendarEvent.time_zone'} || $_UTC;
     $row->{time_zone} = $self->req('Model.TimeZoneList')
 	->display_name_for_enum($tz);
-    $row->{dtstart_tz} = $_DTWTZ->new($row->{'CalendarEvent.dtstart'}, $tz);
-    $row->{dtend_tz} = $_DTWTZ->new($row->{'CalendarEvent.dtend'}, $tz);
+    foreach my $field (qw(dtstart dtend)) {
+	$row->{"${field}_tz"} = (
+	    $row->{"${field}_with_tz"}
+		= $_DTWTZ->new($row->{"CalendarEvent.$field"}, $tz)
+	)->as_date_time;
+    }
     $row->{path_info} = undef;
+    $row->{time_and_name}
+	= sprintf('%02d:%02d', $_DT->get_parts($row->{dtstart_tz}, qw(hour second)))
+	. ' '
+	. $row->{'RealmOwner.display_name'};
     $row->{query} = $self->get_query->format_uri_for_this(
 	$self->internal_get_sql_support,
 	[$row->{'CalendarEvent.calendar_event_id'}],
