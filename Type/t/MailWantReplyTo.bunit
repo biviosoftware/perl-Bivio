@@ -10,7 +10,7 @@ Type();
 	    return [req()];
 	},
     } => [
-	demo => 0,
+	demo => 1,
 	fourem => 0,
 	'site-contact' => 1,
     ],
