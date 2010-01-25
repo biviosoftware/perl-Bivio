@@ -9,6 +9,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 __PACKAGE__->compile;
 
+sub ROW_TAG_KEY {
+    return 'TIME_ZONE';
+}
+
 sub compile {
     my($i) = 2;
     return shift->SUPER::compile([
