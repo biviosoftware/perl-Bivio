@@ -21,9 +21,9 @@ sub internal_qualifying_roles {
     return [map($_R->$_(), qw(MEMBER ACCOUNTANT ADMINISTRATOR))];
 }
 
-sub load_all {
+sub load_all_qualified_realms {
 #TODO: this isn't quite the right task to ask for...
-    return shift->SUPER::load_all_for_task('FORUM_MAIL_THREAD_ROOT_LIST');
+    return shift->load_all_for_task('FORUM_MAIL_THREAD_ROOT_LIST');
 }
 
 1;
