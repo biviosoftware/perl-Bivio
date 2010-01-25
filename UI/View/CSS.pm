@@ -677,6 +677,13 @@ span.b_sort_arrow {
 .underline {
   text-decoration: underline;
 }
+.b_selector div.b_item {
+  display: inline;
+  padding-right: 1em;
+}
+form.b_selector {
+  padding-top: 1ex;
+}
 EOF
 }
 
@@ -715,45 +722,45 @@ EOF
 
 sub _site_calendar {
     return <<'EOF';
-table.month_calendar {
+table.b_month_calendar {
   width: 100%;
 }
-.month_calendar td {
+.b_month_calendar td {
   vertical-align: top;
   width: 14%;
   padding: .5em;
-  border: 1px solid;
-  Color('month_calendar_td-border');
+  border: 2px solid;
+  Color('b_month_calendar_td-border');
 }
-.month_calendar th {
+.b_month_calendar th {
   padding-bottom: .5em;
   text-align: center;
-  Color('month_calendar_th-background');
+  Color('b_month_calendar_th-background');
 }
-.month_calendar .date_this_month,
-.month_calendar .date_other_month {
+.b_month_calendar .b_date_this_month,
+.b_month_calendar .b_date_other_month {
   height: 10ex;
-  Color('month_calendar-background');
+  Color('b_month_calendar-background');
 }
-.month_calendar .date_other_month {
-  Color('month_calendar_date_other_month-background');
+.b_month_calendar .b_date_other_month {
+  Color('b_date_other_month-background');
 }
-.month_calendar .day_of_month {
+.b_month_calendar .b_day_of_month {
   display: block;
   float: left;
   margin-bottom: .5em;
-  Font('month_calendar_th');
+  Font('b_month_calendar_th');
 }
-.month_calendar .date_other_month .day_of_month {
-  Font('month_calendar_date_other_month');
+.b_month_calendar .b_date_other_month .b_day_of_month {
+  Font('b_date_other_month');
 }
-.month_calendar a.event_name {
+.b_month_calendar a.b_event_name {
   display: block;
   padding-left: 2.5em;
-  Font('month_calendar_event_name');
+  Font('b_event_name');
 }
-.list_calendar td.datetime {
-  Font('td_datetime');
+.b_list_calendar td.b_datetime {
+  Font('b_datetime');
 }
 EOF
 }
