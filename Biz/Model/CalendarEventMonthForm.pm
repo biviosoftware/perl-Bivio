@@ -30,6 +30,7 @@ sub internal_query_fields {
 	    default_value => sub {$_D->set_beginning_of_month($_D->now)},
 	}],
 	[qw(b_list_view Boolean), {default_value => 0}],
+	[qw(b_time_zone Boolean), {default_value => 0}],
     ];
 }
 
