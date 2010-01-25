@@ -36,7 +36,10 @@ sub execute_empty {
 	    );
 	}
     }
-    $self->internal_put_field(time_zone => _time_zone_display($self));
+    $self->internal_put_field(
+	time_zone_selector => $self->req('Model.TimeZoneList')
+	    ->display_name_for_enum($self->get('CalendarEvent.time_zone')),
+    );
     my($augsl) = $self->req('Model.AuthUserGroupSelectList');
     if (my $rid = $self->get('CalendarEvent.realm_id')) {
 	$self->internal_put_field('CalendarEvent.realm_id' => undef)
@@ -53,7 +56,9 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     $self->internal_put_field(
-	'CalendarEvent.time_zone' => _time_zone_enum($self) || return);
+	'CalendarEvent.time_zone' => $self->req('Model.TimeZoneList')
+	    ->enum_for_display_name($self->get('time_zone_selector')),
+    );
     $self->internal_put_error(
 	'recurrence_end_date',
 	$self->get('recurrence')->validate_end_date(
@@ -99,7 +104,7 @@ sub internal_initialize {
 	    'CalendarEvent.url',
 	    $self->field_decl(
 		[
-		    [qw(time_zone DisplayName NOT_NULL)],
+		    [qw(time_zone_selector TimeZoneSelector NOT_NULL)],
 		    [qw(start_date Date)],
 		    [qw(end_date Date)],
 		    [qw(start_time Time)],
@@ -200,26 +205,6 @@ sub _res {
     );
 #TODO: Need to redirect to the right forum's calendar if added in a different forum and not the user's realm.  The date of the start should be the date shown.
     return;
-}
-
-sub _time_zone_display {
-    my($self) = @_;
-    my($tz) = $self->get('CalendarEvent.time_zone');
-    my($tzl) = $self->req('Model.TimeZoneList');
-    return $tz->as_display_name
-	unless $tzl->find_row_by(enum => $tz);
-    return $tzl->get('display_name');
-}
-
-sub _time_zone_enum {
-    my($self) = @_;
-    my($tzl) = $self->req('Model.TimeZoneList');
-    my($tz) = $self->get('time_zone');
-    return $tzl->get('enum')
-	if $tzl->find_row_by(display_name => $tz);
-    return $tz
-	if $tz = $_TZ->unsafe_from_any($tz);
-    return $self->internal_put_error(time_zone => 'NOT_FOUND');
 }
 
 1;
