@@ -30,17 +30,6 @@ config({
     },
 });
 
-#use Test::MockObject;
-
-# Test::MockObject->fake_module(
-#     'Bivio::Type::DateTime',
-#     now => sub {
-# 	return Bivio::Type::DateTime->from_literal("${_PREFIX}9:00");
-#     },
-#     from_local_literal => sub {
-# 	return Bivio::Type::DateTime->from_literal(@_);
-#     },
-# );
 Request();
 [
     [] => [
@@ -107,6 +96,10 @@ Request();
 		);
 		return 1;
 	    },
+	    sub {
+		Bivio::IO::File->write($_LOG, '');
+		return [parse_errors => 5];
+	    } => qr/error file missing or empty/,
 	],
     ],
 ];
