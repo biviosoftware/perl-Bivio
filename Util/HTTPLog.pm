@@ -244,13 +244,18 @@ sub _parse_errors_init {
 	pager_res => [],
 	fh => IO::File->new,
     };
-    unless ($fields->{fh}->open($_CFG->{error_file})) {
-	my($err) = "$_CFG->{error_file}: $!";
-	_pager_report($self, $err);
-	_report($self, $err);
-	return 0;
+    my($err);
+
+    if (! -s $_CFG->{error_file}) {
+	$err = "$_CFG->{error_file}: error file missing or empty";
     }
-    return $interval_minutes;
+    elsif (! $fields->{fh}->open($_CFG->{error_file})) {
+	$err = "$_CFG->{error_file}: $!";
+    }
+    return $interval_minutes unless $err;
+    _pager_report($self, $err);
+    _report($self, $err);
+    return 0;
 }
 
 sub _parse_line {
