@@ -9,15 +9,17 @@ my($u) = req(qw(auth_realm owner));
 	    [$u, 3, req()] => not_die(),
 	],
 	row_tag_get => [
-	    [$u] => 3,
+	    [$u, req()] => 3,
 	    [$u->get('realm_id'), req()] => 3,
 	    [req()] => 3,
 	],
 	row_tag_replace => [
-	    [$u] => not_die(),
+	    [$u, undef] => DIE(),
+	    [$u, undef, req()] => not_die(),
+	    [undef, req()] => not_die(),
 	],
 	row_tag_get => [
-	    [$u] => class()->get_default,
+	    [$u, req()] => class()->get_default,
 	],
     ],
 ];
