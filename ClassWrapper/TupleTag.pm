@@ -78,7 +78,7 @@ sub _cache {
     my($key, $compute) = @_;
 #    To test with caching off
 #    return $compute->()
-    return $key->[0]->req->realm_cache([(caller)[2], @$key], $compute);
+    return $key->[0]->req->cache_for_auth_realm([(caller)[2], @$key], $compute);
 }
 
 sub _def_id {
