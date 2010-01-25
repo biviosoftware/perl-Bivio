@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Script;
 use strict;
@@ -115,6 +115,7 @@ function init_drop_down(field, init_values) {
     drop_down.style.width = field.clientWidth + 'px';
     field.drop_down = drop_down;
     field.auto_submit = init_values.auto_submit;
+    field.setAttribute('autocomplete', 'off');
     field.drop_down_values = init_values.dd_values;
     field.clear_list = function() {
         set_selected(null);
