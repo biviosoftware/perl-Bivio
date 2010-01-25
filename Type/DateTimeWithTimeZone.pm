@@ -16,7 +16,7 @@ sub as_date_time {
 
 sub as_literal {
     my($self) = @_;
-    return $_DT->to_string($self->as_date_time, 0);
+    return substr($_DT->to_string($self->as_date_time, 0), 0, -3);
 }
 
 sub from_literal {
@@ -35,7 +35,7 @@ sub new {
 }
 
 sub to_literal {
-    my($self, $value) = @_;
+    my(undef, $value) = @_;
     return ''
 	unless $value;
     return $value->as_literal;
