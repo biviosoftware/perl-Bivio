@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# Copyright (c) 2009-2010 bivio Software Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::ComboBox;
 use strict;
@@ -85,7 +85,6 @@ sub _text {
 	    '})',
 	]),
 	ONKEYUP => "return $_PREFIX.key_up(event.keyCode, this)",
-	AUTOCOMPLETE => 'off',
 	size => $self->get('size'),
     });
 }
