@@ -316,13 +316,13 @@ sub internal_put_error_and_detail {
 }
 
 sub internal_put_field {
-    my($self, $property, $value) = @_;
-    # Puts a value on a field.  No validation checking.
-    my($n, $nr) = _names($self, $property);
-    my($properties) = $self->internal_get;
-    $properties->{$n} = $value if $n;
-    $properties->{$nr} = $value if $nr;
-    return;
+    my($self) = shift;
+    return $self->SUPER::internal_put_field(
+	@{$self->map_by_two(sub {
+	    my($field, $value) = @_;
+	    return map($_ ? ($_ => $value) : (), _names($self, $field));
+	}, \@_)},
+    );
 }
 
 sub is_empty_row {
