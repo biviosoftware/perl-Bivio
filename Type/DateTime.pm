@@ -530,7 +530,7 @@ sub get_parts {
 	    (
 		$_PART_NUMBER->{$_}
 	        || $_PART_NUMBER->{lc($_)}
-		|| Bivio::Die->die($$_, ': invalid part name'),
+		|| Bivio::Die->die($_, ': invalid part name'),
 	    ) - 1,
 	    @parts,
 	),
