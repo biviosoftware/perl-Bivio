@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type;
 use strict;
@@ -289,14 +289,24 @@ sub put_on_request {
 }
 
 sub row_tag_get {
-    my($rt, $proto, $model_or_id) = _row_tag(@_);
-    my($v) = $rt->get_value($model_or_id, $proto->ROW_TAG_KEY);
+    my($proto) = shift;
+    my($req) = pop;
+    my($model_or_id) = @_,
+    $_A->bootstrap_die($req, ': last arg must be a Bivio::Agent::Request')
+	unless Bivio::Agent::Request->is_blessed($req);
+    my($v) = $proto->from_sql_column(
+	Bivio::Biz::Model->new($req, 'RowTag')
+	    ->get_value($model_or_id, $proto->ROW_TAG_KEY));
     return $proto->is_specified($v) ? $v : $proto->get_default;
 }
 
 sub row_tag_replace {
-    my($rt, $proto, $model_or_id, $value) = _row_tag(@_);
-    $rt->replace_value(
+    my($proto) = shift;
+    my($req) = pop;
+    my($model_or_id, $value) = @_ > 1 ? @_ : (undef, @_);
+    $_A->bootstrap_die($req, ': last arg must be a Bivio::Agent::Request')
+	unless Bivio::Agent::Request->is_blessed($req);
+    Bivio::Biz::Model->new($req, 'RowTag')->replace_value(
 	$model_or_id,
 	$proto->ROW_TAG_KEY,
 	!$proto->is_specified($value)
@@ -316,7 +326,8 @@ sub to_html {
     # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
     # empty string.  Otherwise, escapes html and returns.
     my($self, $value) = @_;
-    return '' unless defined($value);
+    return ''
+	unless defined($value);
     return $_HTML->escape($self->to_literal($value));
 }
 
@@ -403,35 +414,13 @@ sub to_uri {
     # Converts value L<to_literal|"to_literal">.  If the value is undef, returns the
     # empty string.  Otherwise, escapes uri and returns.
     my($proto, $value) = @_;
-    return '' unless defined($value);
+    return ''
+	unless defined($value);
     return $_HTML->escape_uri($proto->to_literal($value));
 }
 
 sub to_xml {
     return Bivio::XML->escape(shift->to_literal(shift));
-}
-
-sub _row_tag {
-    # (model, value) - uses primary id from model
-    # (id, value, req) - uses id
-    # (req, value) - uses auth_id
-    my($proto, $model_or_id_or_req) = (shift, shift);
-    my($req);
-    if (Bivio::Agent::Request->is_blessed($model_or_id_or_req)) {
-	$req = $model_or_id_or_req;
-	$model_or_id_or_req = $req->get('auth_id');
-    }
-    else {
-	$req = Bivio::Biz::Model->is_blessed($model_or_id_or_req)
-	    ? $model_or_id_or_req->req
-	    : pop(@_);
-    }
-    return (
-	Bivio::Biz::Model->new($req, 'RowTag'),
-	$proto,
-	$model_or_id_or_req,
-	@_,
-    );
 }
 
 1;
