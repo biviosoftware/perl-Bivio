@@ -77,10 +77,6 @@ my($check_perms) = sub {
 	auth_realm => {
 	    owner_name => 'ff1',
 	},
-	'Model.RowTag' => {
-	    key => RowTagKey()->MAIL_WANT_REPLY_TO,
-	    value => 1,
-	},
         'Model.RealmUser' => {
             user_id => req()->get('auth_user_id'),
 	    # Last role found for forum admin user
