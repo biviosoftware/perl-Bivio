@@ -197,6 +197,13 @@ sub internal_create_edit {
     # (proto, Biz.Model, string, Bivio.Type, hash_ref) : UI.Widget
     # Create an editable widget for the specified field.
     my($proto, $model, $field, $type, $attrs) = @_;
+    if (UNIVERSAL::isa($type, 'Bivio::Type::TimeZoneSelector')) {
+	return $_VS->vs_new(ComboBox => {
+	    field => $field,
+	    list_class => 'TimeZoneList',
+	    list_display_field => ['display_name'],
+	});
+    }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Enum')) {
 	# Don't have larger than a 2x3 Grid
 	return $_VS->vs_new('Select', {
