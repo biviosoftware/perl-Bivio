@@ -59,6 +59,7 @@ my($_BUNDLE) = [qw(
     !mail_want_reply_to
     !index_20091227
     !user_feature_calendar
+    !mail_want_reply_to_default
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -1008,6 +1009,30 @@ ALTER TABLE forum_t
   DROP COLUMN is_public_email
 /
 EOF
+    return;
+}
+
+sub internal_upgrade_db_mail_want_reply_to_default {
+    my($self) = @_;
+    my($map) = {@{$self->model('RowTag')->map_iterate(
+	sub {shift->get(qw(primary_id value))},
+	'unauth_iterate_start',
+	'primary_id',
+	{key => b_use('Type.RowTagKey')->MAIL_WANT_REPLY_TO},
+    )}};
+    $self->model('Forum')->do_iterate(
+	sub {
+	    my($fid) = shift->get('forum_id');
+	    b_use('Type.MailWantReplyTo')->row_tag_replace(
+		$fid,
+		$map->{$fid} || 0,
+		$self->req,
+	    );
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'forum_id',
+    );
     return;
 }
 
