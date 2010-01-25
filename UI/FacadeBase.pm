@@ -377,9 +377,11 @@ sub _cfg_base {
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
 	    [[qw(actions list_actions)] => 'Actions'],
+	    [[qw(time_zone time_zone_selector)] => 'Time Zone'],
 	    ['AuthUserGroupSelectList.RealmOwner' => [
 		[qw(display_name name)] => [
-		    select => 'Select vs_ui_forum();',
+#TODO:		    select => 'Select vs_ui_forum();',
+		    select => 'Select Forum',
 		],
 	    ]],
 	    [vs_ui => [
@@ -530,25 +532,26 @@ sub _cfg_blog {
 sub _cfg_calendar {
     return {
 	Color => [
-	    [month_calendar_td_border => 0],
-	    [month_calendar_th_background => -1],
-	    [month_calendar_background => -1],
-	    [month_calendar_date_other_month_background => 0xe6e6e6],
-	    [month_calendar_date_other_month => 0x808080],
+	    [b_month_calendar_td_border => 0],
+	    [b_month_calendar_th_background => -1],
+	    [b_month_calendar_background => -1],
+	    [b_date_other_month_background => 0xe6e6e6],
+	    [b_date_other_month => 0x808080],
 	],
 	Constant => [
 	    ['Model.TimeZoneList.rows' => sub {[map(+{
 		enum => $_,
 		display_name => $_->as_display_name,
 	    }, b_use('Type.TimeZone')->get_list)]}],
+	    [xlink_set_time_zone => {
+		task_id => 'USER_SETTINGS_FORM',
+	    }],
 	],
 	Font => [
-	    [month_calendar_th => 'bold'],
-	    [month_calendar_date_other_month => []],
-	    [month_calendar_event_name => ['size=85%', 'left']],
-	    [td_datetime => 'nowrap'],
-	    [mail_msg_field => 'bold'],
-	    [msg_byline => [qw(120% bold)]],
+	    [b_month_calendar_th => 'bold'],
+	    [b_date_other_month => []],
+	    [b_event_name => ['size=85%', 'left']],
+	    [b_datetime => 'nowrap'],
 	],
  	FormError => [
 	    [recurrence_end_date => [
@@ -568,14 +571,16 @@ sub _cfg_calendar {
 	    [FORUM_CALENDAR_EVENT_LIST_ICS => ['?/calendar.ics', '?/events.ics']],
 	],
 	Text => [
-	    [time_zone => 'Time Zone'],
-	    [dtstart_tz => 'Start'],
-	    [dtend_tz => 'End'],
+	    [[qw(dtstart_tz dtstart_with_tz)] => 'Start'],
+	    [[qw(dtend_tz dtend_with_tz)] => 'End'],
 	    [[qw(
-	        CalendarEventMonthList.RealmOwner.display_name
-		CalendarEventList.RealmOwner.display_name
+	        CalendarEventMonthList.owner.RealmOwner.display_name
+		CalendarEventList.owner.RealmOwner.display_name
 		CalendarEvent.realm_id
 	    )] => 'vs_ui_forum();'],
+	    [[qw(CalendarEventList CalendarEventMonthList CalendarEventForm)] => [
+		'RealmOwner.display_name' => 'Title',
+	    ]],
 	    [CalendarEvent => [
 		description => 'Description',
 		location => 'Location',
@@ -595,7 +600,8 @@ sub _cfg_calendar {
 		    b_use('Type.DateTime')->english_month3_list),
 	    ]],
 	    [CalendarEventMonthForm => [
-		b_list_view => 'View events as a list',
+		b_list_view => 'View events in a list',
+		b_time_zone => q{Show in Enum([qw(Model.CalendarEventMonthList ->auth_user_time_zone)]); time XLink('set_time_zone');},
 	    ]],
 	    [[qw(CalendarEventList CalendarEventMonthList)] => [
 		AtomFeed => [
@@ -605,11 +611,10 @@ sub _cfg_calendar {
 		empty_list_prose => 'No events for this forum.',
 	    ]],
 	    [CalendarEventDeleteForm => [
-		prologue => q{String([qw(Model.CalendarEvent title)},
+		'prose.prologue' => q{Are you sure you want to remove SPAN_bold(String([qw(Model.CalendarEventDeleteForm RealmOwner.display_name)])); from the calendar?},
 		ok_button => 'Delete',
 	    ]],
 	    [CalendarEventForm => [
-		'RealmOwner.display_name' => 'Event',
 		end_date => 'End Date',
 		end_time => 'End Time',
 		recurrence => 'Repeats',
@@ -639,6 +644,7 @@ sub _cfg_calendar {
 		FORUM_CALENDAR_EVENT_DELETE => 'Delete Event',
 		FORUM_CALENDAR_EVENT_DETAIL => 'Event',
 		[qw(FORUM_CALENDAR_EVENT_ICS FORUM_CALENDAR_EVENT_LIST_ICS)] => 'iCal',
+		set_time_zone => '[change]',
 	    ]],
 	    [acknowledgement => [
 		FORUM_CALENDAR_EVENT_DELETE => 'The event was deleted.',
