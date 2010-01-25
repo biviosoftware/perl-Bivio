@@ -24,7 +24,7 @@ Examples:
 use Bivio::IO::ClassLoader;
 
 #=VARIABLES
-b_use('Bivio.ShellUtil')->required_main(@ARGV);
+Bivio::IO::ClassLoader->map_require('Bivio.ShellUtil')->required_main(@ARGV);
 
 =head1 SEE ALSO
 
