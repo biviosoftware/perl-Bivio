@@ -17,12 +17,20 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	other => [
+	    'RealmOwner.display_name',
+	],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
-    $self->new_other('CalendarEvent')->load_this_from_request;
+    $self->internal_put_field(
+	'RealmOwner.display_name' => $self->new_other('CalendarEvent')
+	    ->load_this_from_request
+	    ->get_model('RealmOwner')
+	    ->get('display_name'),
+    );
     return shift->SUPER::internal_pre_execute(@_);
 }
 
