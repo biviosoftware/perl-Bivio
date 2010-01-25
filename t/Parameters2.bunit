@@ -28,5 +28,9 @@ Unit();
 	    [] => [[]],
 	    [qw(may june)] => [[Month('MAY'), Month('JUNE')]],
 	],
+	s5 => [
+	    [] => [[Month('MARCH'), Month('JULY')]],
+	    [qw(may june)] => [[Month('MAY'), Month('JUNE')]],
+	],
     ],
 ];

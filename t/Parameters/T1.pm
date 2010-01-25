@@ -6,7 +6,7 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S1) = 0;
-
+my($_M) = b_use('Type.Month');
 
 sub s1 {
     sub S1 {
@@ -37,7 +37,7 @@ sub s2 {
 }
 
 sub s3 {
-    sub S3 {[[qw(*p1 Month), b_use('Type.Month')->MARCH]]}
+    sub S3 {[[qw(*p1 Month), $_M->MARCH]]}
     my($self, $bp) = shift->parameters(\@_);
     b_die('p1 not array')
 	unless ref($bp->{p1}) eq 'ARRAY';
@@ -52,7 +52,16 @@ sub s3 {
 
 sub s4 {
     sub S4 {[[qw(*Month)]]}
-    my($self, $bp) = shift->parameters(\@_);
+    return _check(shift->parameters(\@_));
+}
+
+sub s5 {
+    sub S5 {[['*Month', undef, sub {[$_M->MARCH, $_M->JULY]}]]}
+    return _check(shift->parameters(\@_));
+}
+
+sub _check {
+    my($self, $bp) = @_;
     b_die('Month not array')
 	unless ref($bp->{Month}) eq 'ARRAY';
     b_die('Month contains undef')

@@ -114,7 +114,10 @@ sub _default {
     my($res) = ref($decl->{default}) eq 'CODE'
 	? $decl->{default}->($caller_proto)
 	: $decl->{default};
-    $$value = $decl->{repeatable} ? defined($res) ? [$res] : [] : $res;
+    $$value = !$decl->{repeatable} ? $res
+	: ref($res) eq 'ARRAY' ? $res
+	: defined($res) ? [$res]
+	: [];
     return 1;
 }
 
