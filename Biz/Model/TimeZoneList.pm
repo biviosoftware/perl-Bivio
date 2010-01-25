@@ -7,6 +7,7 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('FacadeComponent.Constant');
 my($_R) = b_use('IO.Ref');
+my($_TZ) = b_use('Type.TimeZone');
 
 sub display_name_for_enum {
     my($self, $enum) = @_;
@@ -14,6 +15,15 @@ sub display_name_for_enum {
 	unless $self->is_loaded;
     return $self->find_row_by(enum => $enum) ? $self->get('display_name')
 	: $enum->as_display_name;
+}
+
+sub enum_for_display_name {
+    my($self, $display_name) = @_;
+    $self->load_all
+	unless $self->is_loaded;
+    return $self->get('enum')
+	if $self->find_row_by(display_name => $display_name);
+    return $_TZ->from_any($display_name);
 }
 
 sub internal_initialize {

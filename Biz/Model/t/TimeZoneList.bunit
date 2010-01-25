@@ -16,4 +16,10 @@ req()->setup_facade;
 	[enum => TimeZone('UTC')] => 'UTC',
 	[enum => TimeZone('PACIFIC_HONOLULU')] => 'Pacific/Honolulu',
     ],
+    enum_for_display_name => [
+	'Pacific/Honolulu' => [TimeZone('PACIFIC_HONOLULU')],
+    ],
+    display_name_for_enum => [
+	[TimeZone('AMERICA_DENVER')] => 'America/Denver',
+    ],
 ];
