@@ -195,7 +195,8 @@ my($_HTML) = b_use('Bivio.HTML');
 my($_Q) = b_use('AgentHTTP.Query');
 my($_REALM) = b_use('Auth.Realm');
 my($_ROLE) = b_use('Auth.Role');
-my($_RT) = b_use('Auth.RealmType');
+my($_GENERAL) = b_use('Auth.RealmType')->GENERAL;
+my($_USER) = b_use('Auth.RealmType')->USER;
 my($_T) = b_use('Agent.Task');
 my($_TI) = b_use('Agent.TaskId');
 my($_UA) = b_use('Type.UserAgent');
@@ -287,6 +288,14 @@ sub assert_test {
     $self->throw_die(DIE => {message => 'may not be run on production'})
 	if $self->is_production;
     return $self;
+}
+
+sub cache_for_auth_user {
+    return _realm_cache('auth_user_id', @_);
+}
+
+sub cache_for_auth_realm {
+    return _realm_cache('auth_id', @_);
 }
 
 sub can_secure {
@@ -759,22 +768,15 @@ sub internal_get_realm_for_task {
     return $realm
 	if $task->has_realm_type($realm->get('type'));
     return $_REALM->get_general
-	if $task->has_realm_type($_RT->GENERAL);
-    if ($no_die) {
-	return undef
-	    unless $task->has_realm_type($_RT->USER);
+	if $task->has_realm_type($_GENERAL);
+    unless ($task->has_realm_type($_USER)) {
+	b_die($task, ': unable to determine realm type for task')
+	    unless $no_die;
     }
-    else {
-	$task->assert_realm_type($_RT->USER);
+    if (my $au = $self->get('auth_user')) {
+	return $_REALM->new($au);
     }
-    return undef
-	unless my $auth_user = $self->get('auth_user');
-    $realm = $self->unsafe_get('_internal_get_realm_for_task');
-    unless ($realm && $realm->get('id') eq $auth_user->get('realm_id')) {
-	$realm = $_REALM->new($auth_user);
-	$self->put(_internal_get_realm_for_task => $realm);
-    }
-    return $realm;
+    return undef;
 }
 
 sub internal_initialize {
@@ -854,7 +856,7 @@ sub internal_redirect_realm {
 sub internal_redirect_user_realm {
     my($self, $task) = @_;
     $self->client_redirect($_TI->USER_HOME)
-	unless $task->has_realm_type($_RT->USER);
+	unless $task->has_realm_type($_USER);
     $self->server_redirect($_TI->LOGIN);
     # DOES NOT RETURN
 }
@@ -931,10 +933,10 @@ sub is_super_user {
     return !$user_id
 	|| (defined($user_id) eq defined($self->get('auth_user_id'))
 	    && $user_id eq $self->get('auth_user_id'))
-	? _get_role($self, $_RT->GENERAL->as_int)
+	? _get_role($self, $_GENERAL->as_int)
 	    ->equals_by_name('ADMINISTRATOR')
 	: Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
-	    realm_id => $_RT->GENERAL->as_int,
+	    realm_id => $_GENERAL->as_int,
 	    user_id => $user_id,
 	    role => $_ROLE->ADMINISTRATOR,
 	});
@@ -1065,18 +1067,8 @@ sub put_durable_server_redirect_state {
 }
 
 sub realm_cache {
-    my($self, $key, $compute) = @_;
-    # Key includes caller's package and line for uniquenes
-    return $self->get_if_exists_else_put(
-	join(
-	    '#',
-	    'realm_cache',
-	    $self->get('auth_id'),
-	    (caller)[0,2],
-	    ref($key) ? @$key : $key,
-	),
-	$compute,
-    );
+    Bivio::IO::Alert->warn_deprecated('use cache_for_auth_realm');
+    return shift->cache_for_auth_realm(@_);
 }
 
 sub redirect {
@@ -1323,6 +1315,22 @@ sub _load_realm {
 	: defined($new_realm)
 	? $_REALM->new($new_realm, $self)
 	: $_REALM->get_general
+}
+
+sub _realm_cache {
+    my($which, $self, $key, $compute) = @_;
+    # Key includes caller's package and line for uniqueness
+    return $self->get_if_exists_else_put(
+	join(
+	    '#',
+	    'realm_cache',
+	    $self->get($which) || 0,
+	    (caller(1))[0,2],
+	    ref($key) ? @$key : $key,
+	),
+	$compute,
+    );
+    return;
 }
 
 sub _with {
