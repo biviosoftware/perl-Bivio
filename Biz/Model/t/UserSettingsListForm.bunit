@@ -5,28 +5,31 @@ FormModel();
     req_state({
 	task => sub {
 	    req()->set_realm(req('auth_user_id'));
-	    model('UserSubscriptionList', {});
+	    model('UserSubscriptionList')->load_all_qualified_realms;
 	    return 'USER_SETTINGS_FORM';
 	},
+	user => 'crm_tech1',
     }),
-    req_state_merge({user => 'crm_tech1'}),
     [{
         'User.last_name' => 'crm_tech1',
 	is_subscribed_1 => 1,
 	page_size => 33,
+	time_zone_selector => 'UTC',
     }] => not_die(),
     empty_case({
 	page_size => 33,
+	time_zone_selector => 'UTC',
 	is_subscribed_0 => 0,
 	is_subscribed_1 => 1,
     }),
     [{
         'User.last_name' => 'crm_tech1',
         page_size => 20,
+	time_zone_selector => 'Europe/London',
     }] => [{
         'Model.RowTag' => {
-            key => 'PAGE_SIZE',
-            value => 20,
+            key => 'TIME_ZONE',
+            value => TimeZone('EUROPE_LONDON')->as_sql_param,
         },
     }],
     req_state_merge({user => 'root'}),
