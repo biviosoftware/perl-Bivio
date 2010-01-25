@@ -20,6 +20,7 @@ sub internal_load {
     my(@res) = shift->SUPER::internal_load(@_);
     unshift(@$rows, {
 	map(
+#TODO: Eval as prose
 	    ($_ => $_T->get_value(
 		$self->simple_package_name . ".$_.select",
 		$self->req,
