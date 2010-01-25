@@ -390,7 +390,7 @@ sub vs_selector_form {
     return Form(
 	$model,
 	Join([
-	    map($_->put_unless_exists(auto_submit => 1), @$widgets),
+	    map(DIV_b_item($_->put_unless_exists(auto_submit => 1)), @$widgets),
 	    ScriptOnly({
 		widget => Simple(''),
 		alt_widget => FormButton({
@@ -400,6 +400,7 @@ sub vs_selector_form {
 		}),
 	    }),
 	]),
+	{class => 'b_selector'},
     );
 }
 
