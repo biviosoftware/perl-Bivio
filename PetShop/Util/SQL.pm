@@ -589,6 +589,7 @@ EOF
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub2',
 	'RealmOwner.name' => $self->FOUREM . '-sub2',
+        mail_want_reply_to => 0,
     });
     $req->set_user($self->BTEST_ADMIN);
     $self->model('ForumUserAddForm', {
