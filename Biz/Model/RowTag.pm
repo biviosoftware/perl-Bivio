@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RowTag;
 use strict;
@@ -49,7 +49,7 @@ sub update {
 
 sub _do {
     my($method, $self, $model_or_id, $key, $value) = @_;
-    my($id) = _primary_id($model_or_id);
+    my($id) = _primary_id($self, $model_or_id);
     unless ($id) {
 	($key, $value) = ($model_or_id, $key);
 	$id = $self->req('auth_id');
@@ -62,15 +62,14 @@ sub _do {
 }
 
 sub _primary_id {
-    my($model_or_id) = @_;
-    return $model_or_id =~ /^\d+$/ ? $model_or_id : undef
-	unless $_M->is_blessed($model_or_id);
-    my($pk) = $model_or_id->get_info('primary_key_names');
-    Bivio::Die->die($model_or_id, ': must have one field which is primary key')
-        unless @$pk == 1;
-    Bivio::Die->die($pk->[0], ': type is not a primary id')
-        unless $model_or_id->get_field_type($pk->[0])->isa($_PI);
-    return $model_or_id->get($pk->[0]);
+    my($self, $model_or_id) = @_;
+    return $model_or_id->get_primary_id
+	if $_M->is_blessed($model_or_id);
+    return $self->req('auth_id')
+	unless defined($model_or_id);
+    return $model_or_id
+	if $model_or_id =~ /^\d+$/;
+    return undef;
 }
 
 1;
