@@ -70,8 +70,8 @@ sub execute_ok {
 	    return
 		if $type->is_equal($v, $ev->{$field});
 	}
-	return $type->row_tag_replace_value($v)
-	    if $type->can('row_tag_replace_value');
+	return $type->row_tag_replace($v, $self->req)
+	    if $type->can('ROW_TAG_KEY');
 	$_RR->edit_categories(
 	    $type->can('as_realm_role_category')
 		? {$v->as_realm_role_category => 1}
@@ -125,8 +125,8 @@ sub _empty_values {
 	    $field,
 	    $type->can('from_realm_role_enabled_categories')
 		? $type->from_realm_role_enabled_categories($cats)
-		: $type->can('row_tag_get_value')
-		? $type->row_tag_get_value($self->req)
+		: $type->can('ROW_TAG_KEY')
+		? $type->row_tag_get($self->req)
 		: grep($field eq $_, @$cats) ? 1 : 0,
 	);
     })}};
