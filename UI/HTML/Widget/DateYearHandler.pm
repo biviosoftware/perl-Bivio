@@ -136,7 +136,7 @@ Returns the inlined source for this method.
 sub get_html_field_attributes {
     my($self, $field_name, $source) = @_;
     # This has to be onBlur, because onChange doesn't work quite right in IE.
-    return ' onBlur="dy_complete_date(this)"';
+    return ' onblur="dy_complete_date(this)"';
 }
 
 =for html <a name="initialize"></a>
