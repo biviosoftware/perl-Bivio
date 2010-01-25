@@ -11,7 +11,7 @@ my($create_params) = sub {
     return {
 	'CalendarEvent.realm_id' => realm_id('fourem'),
 	'RealmOwner.display_name' => 'E1',
-	time_zone => 'UTC',
+	time_zone_selector => 'UTC',
 	'CalendarEvent.location' => 'L1',
 	start_date => Date('1/1/2010'),
 	start_time => Time('9:00'),
@@ -27,7 +27,7 @@ my($create_params) = sub {
 	task => 'FORUM_CALENDAR_EVENT_FORM',
     }),
     empty_case({
-	time_zone => TimeZone()->get_default->as_display_name,
+	time_zone_selector => TimeZone()->get_default->as_display_name,
 	'CalendarEvent.realm_id' => realm_id('fourem'),
     }),
     req_state({
@@ -54,7 +54,7 @@ my($create_params) = sub {
     [{
 	'CalendarEvent.realm_id' => realm_id('fourem'),
 	'RealmOwner.display_name' => 'E2',
-	time_zone => 'Europe/Paris',
+	time_zone_selector => 'Europe/Paris',
 	'CalendarEvent.location' => 'L2',
 	start_date => Date('1/1/2010'),
 	start_time => Time('13:00'),
@@ -82,7 +82,7 @@ my($create_params) = sub {
     [{
 	'CalendarEvent.realm_id' => undef,
 	'RealmOwner.display_name' => 'E1',
-	time_zone => 'UTC',
+	time_zone_selector => 'UTC',
 	'CalendarEvent.location' => 'L1',
 	start_date => Date('1/1/2010'),
 	start_time => Time('9:00'),
@@ -95,12 +95,10 @@ my($create_params) = sub {
 	user => 'root',
 	realm => 'fourem',
     }),
-    error_case({
+    [{
 	%{$create_params->()},
-	time_zone => 'Not/Found',
-    }, {
-	time_zone => 'NOT_FOUND',
-    }),
+	time_zone_selector => 'Not/Found',
+    }] => DIE(),
     req_state({
 	user => 'btest_admin',
 	query => sub {
