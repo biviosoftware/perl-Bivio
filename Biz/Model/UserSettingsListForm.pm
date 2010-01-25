@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserSettingsListForm;
 use strict;
@@ -6,7 +6,6 @@ use Bivio::Base 'Biz.ListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_NAME_FIELDS) = [map("User.${_}_name", qw(first middle last))];
-my($_PS) = b_use('Type.PageSize');
 my($_MAIL_RECIPIENT) = b_use('Auth.Role')->MAIL_RECIPIENT;
 
 sub execute_empty_row {
@@ -17,16 +16,14 @@ sub execute_empty_row {
 
 sub execute_empty_start {
     my($self) = @_;
-
     foreach my $m (qw(RealmOwner User Email)) {
 	$self->load_from_model_properties($self->new_other($m)->load);
     }
     $self->internal_put_field(
-	page_size => $_PS->row_tag_get(
-	    $self->get('RealmOwner.realm_id'),
-	    $self->new_other('RowTag'),
-	    $self->req,
-	),
+	_map_row_tags($self, sub {
+           my($field, $type) = @_;
+	   return ($field => $type->row_tag_get($self->req));
+	}),
     );
     return;
 }
@@ -47,8 +44,11 @@ sub execute_ok_start {
     my($self) = @_;
     $self->new_other('User')->load->update($self->get_model_properties('User'));
     my($ro) = $self->new_other('RealmOwner')->load;
-#TODO: Delete RowTag for defaults
-    $_PS->row_tag_replace($ro, $self->unsafe_get('page_size'));
+    _map_row_tags($self, sub {
+        my($field, $type) = @_;
+	$type->row_tag_replace($self->get($field), $self->req);
+	return;
+    });
     if ($self->unsafe_get('show_name')) {
 	$ro->update($self->get_model_properties('RealmOwner'));
     }
@@ -69,36 +69,30 @@ sub internal_initialize {
 	    @$_NAME_FIELDS,
 	    'RealmOwner.name',
 	    'Email.email',
-            {
-                name => 'page_size',
-                type => 'PageSize',
-                constraint => 'NOT_NULL',
-            },
-	    {
-		name => 'is_subscribed',
-		type => 'Boolean',
-		constraint => 'NONE',
-		in_list => 1,
-	    },
+	    $self->field_decl([
+                [qw(page_size PageSize NOT_NULL)],
+                [qw(time_zone_selector TimeZoneSelector NOT_NULL)],
+		[qw(is_subscribed Boolean), {in_list => 1}],
+	    ]),
 	],
 	other => [
-	    map(+{
-		name => "show_$_",
-		type => 'Boolean',
-		constraint => 'NOT_NULL',
-	    }, qw(name email)),
+	    $self->field_decl([qw(
+		show_name
+		show_email
+	    )], 'Boolean', 'NOT_NULL'),
 	    'RealmOwner.realm_id',
 	],
     });
 }
 
 sub internal_initialize_list {
-    return shift->new_other('UserSubscriptionList')->load_all({});
+    return shift->new_other('UserSubscriptionList')->load_all_qualified_realms;
 }
 
 sub internal_pre_execute {
     my($self) = @_;
     my($req) = $self->req;
+    $self->new_other('TimeZoneList')->load_all;
     $self->internal_put_field(
 	show_name => $req->is_substitute_user || $req->is_super_user ? 1 : 0);
     $self->internal_put_field(show_email => $req->is_substitute_user);
@@ -133,6 +127,14 @@ sub _is_subscribed {
     my($self) = @_;
     return grep($_ == $_MAIL_RECIPIENT, @{$self->get_list_model->get('roles')})
 	? 1 : 0;
+}
+
+sub _map_row_tags {
+    my($self, $op) = @_;
+    return map(
+	$op->($_, $self->get_field_type($_)),
+	qw(page_size time_zone_selector),
+    );
 }
 
 1;
