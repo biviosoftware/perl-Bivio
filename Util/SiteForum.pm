@@ -79,7 +79,11 @@ sub forum_config {
                     'RealmOwner.display_name' => 'Site Admin',
                     mail_want_reply_to => 0,
                     mail_send_access => $_EVERYBODY,
-                    feature_site_admin => 1,
+                    post_create => [sub {
+                        $self->new_other('RealmRole')
+                            ->edit_categories('+feature_site_admin');
+                        return;
+                    }],
                 },
             ],
             post_create => [sub {
