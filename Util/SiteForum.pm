@@ -10,6 +10,7 @@ my($_FN) = b_use('Type.ForumName');
 my($_T) = b_use('FacadeComponent.Text');
 my($_RM) = b_use('Action.RealmMail');
 my($_C) = b_use('IO.Config');
+my($_A) = b_use('IO.Alert');
 
 sub ADMIN_REALM {
     return Bivio::UI::Facade->get_default->SITE_ADMIN_REALM_NAME;
@@ -43,9 +44,7 @@ commands
   make_admin [realm] -- add auth user as admin to site forums
   init -- create site forums, files, and aliases
   init_admin_user -- creates admin user
-  init_files -- import files for realm_names() in ddl directory
-  init_realms -- creates site realms
-  realm_names -- which realm names created by init
+  init_forums -- creates site forums and imports the related files
 EOF
 }
 
@@ -54,11 +53,55 @@ sub add_default_staging_suffix {
     return $_FN->join($name, 'staging');
 }
 
+sub forum_config {
+    my($self) = @_;
+    my($req) = $self->initialize_fully;
+    my($_EVERYBODY) = b_use('Type.MailSendAccess')->EVERYBODY;
+    return [
+        $self->SITE_REALM => {
+            display_name => 'Web Site',
+            sub_forums => [
+                $self->CONTACT_REALM => {
+                    'RealmOwner.display_name'
+                        => _site_name_prefix('Support', $req),
+                    mail_want_reply_to => 1,
+                    mail_send_access => $_EVERYBODY,
+                    post_create => sub {
+                        $self->new_other('CRM')->setup_realm;
+                        return;
+                    },
+                },
+                $self->HELP_REALM => {
+                    'RealmOwner.display_name' => 'Help',
+                    mail_want_reply_to => 1,
+                },
+                $self->ADMIN_REALM => {
+                    'RealmOwner.display_name' => 'Site Admin',
+                    mail_want_reply_to => 0,
+                    mail_send_access => $_EVERYBODY,
+                    feature_site_admin => 1,
+                },
+            ],
+            post_create => sub {
+                $self->model('EmailAlias')->create({
+                    incoming => _support_email($req),
+                    outgoing => $self->CONTACT_REALM,
+                });
+                $_C->if_version(3, sub {
+                    $self->new_other('HTTPStats')->init_forum(
+                        $self->REPORTS_REALM);
+                    return;
+                });
+                return;
+            },
+        },
+    ];
+}
+
 sub init {
     my($self) = @_;
     $self->init_admin_user;
-    $self->init_realms;
-    $self->init_files;
+    $self->init_forums;
     return;
 }
 
@@ -116,6 +159,8 @@ sub init_bulletin {
 
 sub init_files {
     my($self) = @_;
+    $self->new_other('SQL')->assert_ddl;
+    $_A->warn_deprecated('use init_forums instead');
     $self->initialize_fully;
     $self->new_other('SQL')->assert_ddl;
     $self->req->with_user($self->new_other('TestUser')->ADM, sub {
@@ -132,53 +177,52 @@ sub init_files {
     return;
 }
 
-sub init_realms {
-    my($self) = @_;
-    my($req) = $self->initialize_fully;
-    $req->with_realm(undef, sub {
-        $self->model('ForumForm', {
-	    'RealmOwner.name' => $self->SITE_REALM,
-	    'RealmOwner.display_name' => 'Web Site',
-	});
-	return;
-    });
-    $req->with_realm($self->SITE_REALM, sub {
-        $self->model('ForumForm', {
-	   'RealmOwner.display_name' => _site_name_prefix('Support', $req),
-	   'RealmOwner.name' => $self->CONTACT_REALM,
-	   mail_want_reply_to => 1,
-	   mail_send_access => b_use('Type.MailSendAccess')->EVERYBODY,
-	});
-	$self->new_other('CRM')->setup_realm;
-	return;
-    });
-    $req->with_realm($self->SITE_REALM, sub {
-        $self->model('ForumForm', {
-	   'RealmOwner.display_name' => 'Help',
-	   'RealmOwner.name' => $self->HELP_REALM,
-	   mail_want_reply_to => 1,
-	});
-	return;
-    });
-    $self->req->with_realm($self->SITE_REALM, sub {
-        $self->model('ForumForm', {
-	   'RealmOwner.display_name' => 'Site Admin',
-	   'RealmOwner.name' => $self->ADMIN_REALM,
-	   mail_want_reply_to => 0,
-	   mail_send_access => b_use('Type.MailSendAccess')->EVERYBODY,
-	});
-	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
-	return;
-    });
-    $self->model('EmailAlias')->create({
-	incoming => _support_email($req),
-	outgoing => $self->CONTACT_REALM,
-    });
-    $_C->if_version(3, sub {
-        $self->new_other('HTTPStats')->init_forum($self->REPORTS_REALM);
-	return;
-    });
+sub init_forum {
+    my($self, $forum, $cfg) = @_;
+    $cfg->{'RealmOwner.name'} = $forum;
+    my($sub_forums) = delete($cfg->{sub_forums}) || [];
+    my($post_create) = delete($cfg->{post_create});
+    $self->req->with_realm(
+        $_FN->is_top($forum) ? undef : $_FN->extract_top($forum),
+        sub {
+            return
+                if $self->model('RealmOwner')->unauth_load({
+                    name => $forum,
+                });
+            $self->model(ForumForm => $cfg);
+            $post_create->($cfg)
+                if $post_create && ref($post_create) eq 'CODE';
+            return;
+        });
+    $self->req->with_realm($forum, sub {
+        $_F->do_in_dir($forum => sub {
+            $self->new_other('RealmFile')->import_tree('/');
+            return;
+        });
+    })
+        if -d $forum;
+    $self->map_by_two(sub {
+        my($sub_forum, $sub_cfg) = @_;
+        # throw away any sub-sub-forums: we allow only one layer deep
+        delete($sub_cfg->{sub_forums});
+        $self->init_forum($sub_forum, $sub_cfg);
+        return;
+    }, $sub_forums);
     return;
+}
+
+sub init_forums {
+    my($self) = @_;
+    $self->map_by_two(sub {
+        $self->init_forum(@_);
+        return;
+    }, $self->forum_config);
+    return;
+}
+
+sub init_realms {
+    $_A->warn_deprecated('use init_forums instead');
+    return shift->init_forums(@_);
 }
 
 sub make_admin {
@@ -201,6 +245,7 @@ sub make_admin {
 
 sub realm_names {
     my($self) = @_;
+    $_A->warn_deprecated('use forum_config instead');
     $self->initialize_fully;
     return [
 	$self->SITE_REALM,
