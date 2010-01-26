@@ -66,10 +66,10 @@ sub forum_config {
                         => _site_name_prefix('Support', $req),
                     mail_want_reply_to => 1,
                     mail_send_access => $_EVERYBODY,
-                    post_create => sub {
+                    post_create => [sub {
                         $self->new_other('CRM')->setup_realm;
                         return;
-                    },
+                    }],
                 },
                 $self->HELP_REALM => {
                     'RealmOwner.display_name' => 'Help',
@@ -82,7 +82,7 @@ sub forum_config {
                     feature_site_admin => 1,
                 },
             ],
-            post_create => sub {
+            post_create => [sub {
                 $self->model('EmailAlias')->create({
                     incoming => _support_email($req),
                     outgoing => $self->CONTACT_REALM,
@@ -93,7 +93,7 @@ sub forum_config {
                     return;
                 });
                 return;
-            },
+            }],
         },
     ];
 }
@@ -181,26 +181,28 @@ sub init_forum {
     my($self, $forum, $cfg) = @_;
     $cfg->{'RealmOwner.name'} = $forum;
     my($sub_forums) = delete($cfg->{sub_forums}) || [];
-    my($post_create) = delete($cfg->{post_create});
+    my($post_create) = delete($cfg->{post_create}) || [];
     $self->req->with_realm(
         $_FN->is_top($forum) ? undef : $_FN->extract_top($forum),
         sub {
-            return
-                if $self->model('RealmOwner')->unauth_load({
+            $self->model(ForumForm => $cfg)
+                unless $self->model('RealmOwner')->unauth_load({
                     name => $forum,
                 });
-            $self->model(ForumForm => $cfg);
-            $post_create->($cfg)
-                if $post_create && ref($post_create) eq 'CODE';
+            $self->req->with_user($self->new_other('TestUser')->ADM, sub {
+                $_F->do_in_dir($forum => sub {
+                    $self->new_other('RealmFile')->import_tree('/');
+                    return;
+                });
+                return;
+            })
+                if $self->req->is_test && -d $forum;
+            foreach my $op (@$post_create) {
+                $op->($cfg);
+            }
             return;
-        });
-    $self->req->with_realm($forum, sub {
-        $_F->do_in_dir($forum => sub {
-            $self->new_other('RealmFile')->import_tree('/');
-            return;
-        });
-    })
-        if -d $forum;
+        },
+    );
     $self->map_by_two(sub {
         my($sub_forum, $sub_cfg) = @_;
         # throw away any sub-sub-forums: we allow only one layer deep
