@@ -36,6 +36,7 @@ my($case) = sub {
 	feature_mail
 	feature_motion
 	feature_tuple
+        mail_want_reply_to
     ))),
     $case->(qw(
 	ALL_ADMINS
