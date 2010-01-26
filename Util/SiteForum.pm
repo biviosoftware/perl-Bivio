@@ -59,7 +59,7 @@ sub forum_config {
     my($_EVERYBODY) = b_use('Type.MailSendAccess')->EVERYBODY;
     return [
         $self->SITE_REALM => {
-            display_name => 'Web Site',
+            'RealmOwner.display_name' => 'Web Site',
             sub_forums => [
                 $self->CONTACT_REALM => {
                     'RealmOwner.display_name'
@@ -105,7 +105,7 @@ sub forum_config {
 sub init {
     my($self) = @_;
     $self->init_admin_user;
-    $self->init_forums;
+    $self->init_realms;
     return;
 }
 
