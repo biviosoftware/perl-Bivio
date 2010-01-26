@@ -106,6 +106,7 @@ sub init {
     my($self) = @_;
     $self->init_admin_user;
     $self->init_realms;
+    $self->init_files;
     return;
 }
 
