@@ -6,19 +6,19 @@ login_as('root');
 follow_link(qw(fourem-sub1-1 ^calendar$ add_event));
 my($r) = random_string();
 submit_form({
-    event => $r,
+    title => $r,
     start_time => '11:00',
     end_time => '12:00',
 });
 follow_link($r, 'modify');
 verify_form({
-    event => $r,
+    title => $r,
     start_time => '11:00',
     end_time => '12:00',
 });
 my($r2) = random_string();
 submit_form({
-    event => $r2,
+    title => $r2,
     start_time => '10:00',
 });
 follow_link('back_to_list');
