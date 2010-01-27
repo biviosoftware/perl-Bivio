@@ -1128,8 +1128,8 @@ sub _cfg_site_admin {
 		     });
 		}],
                 [qw(applicants SITE_ADMIN_UNAPPROVED_APPLICANT_LIST), sub {
-		     b_use('Model.UserCreateForm')
-			 ->if_unapproved_applicant_mode(sub {'applicants'});
+		     return b_use('Model.UserCreateForm')
+			 ->if_unapproved_applicant_mode(sub {1}, sub {0});
 		}],
 		[
 		    'site_reports',

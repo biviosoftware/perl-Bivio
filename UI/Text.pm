@@ -307,7 +307,7 @@ sub _group {
 	push(@$groups, [
 	    $name,
 	    $self->internal_assert_value(
-		ref($value) eq 'CODE' ? $value->($self) : $value,
+		ref($value) eq 'CODE' ? scalar($value->($self)) : $value,
 		$name,
 	    ),
 	]);

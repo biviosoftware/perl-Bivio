@@ -160,6 +160,7 @@ __PACKAGE__->new({
 	constant_bunit => [
 	    undef => undef,
 	    three => 3,
+            empty_sub => sub {},
 	],
     ]),
     Text => [

@@ -6,6 +6,7 @@ Request('setup_facade');
 	get_value => [
 	    [qw(constant_bunit undef)] => [undef],
 	    [qw(constant_bunit three)] => 3,
+	    [qw(constant_bunit empty_sub)] => [undef],
 	],
     ],
 ];
