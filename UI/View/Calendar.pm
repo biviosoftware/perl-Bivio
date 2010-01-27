@@ -139,7 +139,7 @@ sub list {
 	}),
 	selector => vs_selector_form($_CEMF->simple_package_name => [
 	    Select($_CEMF->get_select_attrs('b_month')),
-	    Checkbox('b_time_zone'),
+	    Checkbox('b_time_zone', {control => vs_constant('Calendar.want_b_time_zone')}),
 	    Checkbox('b_list_view'),
 	]),
     );
