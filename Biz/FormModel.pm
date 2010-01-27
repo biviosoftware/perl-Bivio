@@ -1038,8 +1038,8 @@ sub _apply_type_error {
     my($attrs) = $die->get('attrs');
     _trace($attrs) if $_TRACE;
     my($err) = $attrs->{type_error};
-    b_die($err, ': die type_error not a Bivio::TypeError')
-	unless ref($err) && UNIVERSAL::isa($err, 'Bivio::TypeError');
+    b_die($err, ': die type_error not a ', $_TE->package_name)
+	unless $_TE->is_blessed($err);
     my($table, $columns) = @{$attrs}{'table','columns'};
     $die->throw_die() unless defined($table);
     my($sql_support) = $self->internal_get_sql_support();
