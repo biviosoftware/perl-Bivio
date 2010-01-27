@@ -12,7 +12,6 @@ my($_FEATURE_TYPE_MAP) = {
     map(($_ => b_use('Type.RealmFeature')), qw(
 	feature_blog
 	feature_calendar
-	feature_file
 	feature_mail
 	feature_motion
 	feature_tuple
@@ -23,6 +22,7 @@ my($_FEATURE_TYPE_MAP) = {
 my($_IMPLICIT_FEATURE_TYPE_MAP) = {
     map(($_ => b_use('Type.RealmFeature')), qw(
 	feature_dav
+	feature_file
 	feature_group_admin
 	feature_wiki
     )),

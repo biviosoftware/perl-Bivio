@@ -8,7 +8,6 @@ my($params) = sub {
 	map(($_ => 0), qw(
 	    feature_blog
 	    feature_calendar
-	    feature_file
 	    feature_mail
 	    feature_motion
 	    feature_tuple
@@ -32,7 +31,6 @@ my($case) = sub {
 	ALL_MEMBERS
 	feature_blog
 	feature_calendar
-	feature_file
 	feature_mail
 	feature_motion
 	feature_tuple
@@ -41,7 +39,6 @@ my($case) = sub {
     $case->(qw(
 	ALL_ADMINS
 	feature_calendar
-	feature_file
 	feature_mail
 	feature_tuple
 	mail_want_reply_to
@@ -49,19 +46,18 @@ my($case) = sub {
     inline_case(sub {req()->set_realm('demo')}),
     $case->(qw(
 	NOBODY
-        feature_file
+        feature_calendar
     )),
     $case->(qw(
 	EVERYBODY
 	mail_want_reply_to
-        feature_file
+        feature_calendar
         feature_motion
     )),
     inline_case(sub {req()->set_realm(undef)}),
     empty_case($params->(qw(
         feature_blog
         feature_calendar
-        feature_file
         feature_mail
         feature_motion
         feature_tuple
