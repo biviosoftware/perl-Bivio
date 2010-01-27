@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2009 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,154 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.65  2010/01/25 03:28:41  nagler
+  * Bivio::Agent::Request
+    removed incorrect internal_get_realm_for_task optimization
+    realm_cache => cache_for_auth_realm
+    Added cache_for_auth_user
+    fixed internal_get_realm_for_task for odd case
+  * Bivio::Biz::ListFormModel
+    internal_put_field handles multiple values
+  * Bivio::Biz::Model::AuthUserGroupList
+    UserSubscriptionList now subclasses AuthUserGroupList; subscribed? now means can user execute FORUM_MAIL_THREAD_ROOT_LIST?
+  * Bivio::Biz::Model::AuthUserGroupSelectList
+    need to eval the select as prose
+  * Bivio::Biz::Model::AuthUserRealmList
+    added can_user_execute_task
+  * Bivio::Biz::Model::CalendarEventDayList
+    NEW
+  * Bivio::Biz::Model::CalendarEventDeleteForm
+    loaded RealmOwner.display_name as well
+  * Bivio::Biz::Model::CalendarEventForm
+    load_all_for_task defaults date
+    moved time_zone_selector code to TimeZoneList
+  * Bivio::Biz::Model::CalendarEventList
+    added can_user_edit_any_realm
+    cleaner time_zone support
+  * Bivio::Biz::Model::CalendarEventMonthForm
+    NEW
+  * Bivio::Biz::Model::CalendarEventMonthList
+    Categorizes into weeks
+    Brackets dates around weeks
+    Added is_list_view, this_month
+    put b_month on the query
+    time_zone support
+  * Bivio::Biz::Model::CalendarEventWeekList
+    NEW
+  * Bivio::Biz::Model::Forum
+    rm#
+  * Bivio::Biz::Model::ForumForm
+    allow internal_admin_user_id to be passed and overridden
+  * Bivio::Biz::Model::ListQueryForm
+    allow overrides in internal_query_fields
+    print error when no order_by_names
+  * Bivio::Biz::Model::MonthList
+    look up names in facade
+    allow caller to set date
+    added this_month as first item
+  * Bivio::Biz::Model::QuerySearchBaseForm
+    removed internal_pre_execute
+    Added defaulting of values in execute_ok
+  * Bivio::Biz::Model::RealmFeatureForm
+    Use Type.row_tag_replace/get and check ROW_TAG_KEY
+  * Bivio::Biz::Model::RealmUserAddForm
+    $admin_user_id could be an array_ref (allows [] for none)
+  * Bivio::Biz::Model::RowTag
+    Default primary_id if undef
+  * Bivio::Biz::Model::SearchList
+    cruft
+  * Bivio::Biz::Model::SelectMonthForm
+    removed
+  * Bivio::Biz::Model::TimeZoneList
+    added enum_for_display_name & display_name_for_enum
+  * Bivio::Biz::Model::UserSettingsListForm
+    added time_zone
+  * Bivio::Biz::Model::UserSubscriptionList
+    UserSubscriptionList now subclasses AuthUserGroupList; subscribed? now means can user execute FORUM_MAIL_THREAD_ROOT_LIST?
+    load_all was getting in deep recursion b/c looped back
+  * Bivio::Biz::Model
+    allow passing in overrides in field_decl
+  * Bivio::ClassWrapper::TupleTag
+    realm_cache => cache_for_auth_realm
+  * Bivio::Collection::Attributes
+    added get_and_delete
+  * Bivio::Delegate::SimpleWidgetFactory
+    added DateTimeWithTimeZone
+    added support for TimeZoneSelector
+  * Bivio::Delegate::TaskId
+    reorganized calendar tasks. list/month views the same
+  * Bivio::IO::Alert
+    show both datetime and to_string versions in formatting
+  * Bivio::Parameters
+    do not return [undef] for optional repeatable parametres
+  * Bivio::ShellUtil
+    don't set the facade in initialize_ui if already set
+  * Bivio::Type::Date
+    b_use
+  * Bivio::Type::DateTime
+    refactored so _split() and _join() are used to split/join date/time parts
+    added set_beginning/end_of_day
+    added set_beginning/end_of_week & do_iterate
+    bug in error message
+  * Bivio::Type::DateTimeWithTimeZone
+    NEW
+  * Bivio::Type::MailWantReplyTo
+    removed row_tag_get/replace_value.  Use Type->row_tag_*
+  * Bivio::Type::RealmArg
+    check email, too
+  * Bivio::Type::TimeZone
+    added ROW_TAG_KEY
+  * Bivio::Type::TimeZoneSelector
+    NEW
+  * Bivio::Type
+    cleaned up row_tag_* interface
+  * Bivio::UI::FacadeBase
+    dock left is now FeatureTaskMenu()
+    reorganized calendar tasks
+    added colors and fonts for calendar so can be overriden within facade
+    fixed up Forum uses
+    Added hooks in facade for calendar formatting
+    time zone support in calendar
+  * Bivio::UI::HTML::Widget::DateYearHandler
+    onBlur => onblur
+  * Bivio::UI::HTML::Widget::Script
+    set autocomplete set on combobox
+  * Bivio::UI::HTML::Widget::Select
+    better error when no primary_keys
+  * Bivio::UI::View::CSS
+    added colors and fonts for calendar so can be overriden within facade
+    support for vs_selector_form
+    Added hooks in facade for calendar formatting
+  * Bivio::UI::View::Calendar
+    month and list views merged into one with a switch off CalendarEventMonthList
+    Removed business logic for rendering in the views
+    don't select anything in tools on month & list view
+    added time zone support
+  * Bivio::UI::View::UserAuth
+    added time_zone
+  * Bivio::UI::ViewLanguage
+    added missing OUR($_TRACE);
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_selector_form
+    vs_selector_form is a POST, not GET
+    vs_selector: wrap in b_item DIVs and class b_selector
+  * Bivio::UI::XHTML::Widget::ComboBox
+    AUTOCOMPLETE is not a valid attribute
+  * Bivio::UI::XHTML::Widget::FeatureTaskMenu
+    NEW
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    added internal_control_value for subclasses
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    fmt
+  * Bivio::Util::RealmAdmin
+    added diff_users
+  * Bivio::Util::RealmDAG
+    NEW
+  * Bivio::Util::SQL
+    added mail_want_reply_to_default
+  * Bivio::t::Parameters::T1
+    do not return [undef] for optional repeatable parametres
+
   Revision 8.64  2010/01/21 21:05:04  moeller
   * Bivio::Agent::Request
     can_user_execute_task accepts a Task as sell now
