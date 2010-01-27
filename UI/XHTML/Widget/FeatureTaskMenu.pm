@@ -17,6 +17,7 @@ sub initialize {
     $self->put_unless_exists(
 	task_map => $self->internal_tasks,
 	want_more_threshold => 4,
+	want_sorting => 1,
 	selected_item => [sub {
 	    my($source) = @_;
 	    my($curr_task) = $source->get('task_id')->get_name;
@@ -52,11 +53,20 @@ sub internal_selected_item_map {
 
 sub internal_tasks {
     return [
-	vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
+	{
+	    xlink => vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
+	    sort_label => 'SiteAdminDropDown_label',
+	},
+	{
+	    task_id => 'SITE_WIKI_VIEW',
+	    sort_label => 'sort_first',
+	},
+	{
+	    task_id => 'FORUM_WIKI_VIEW',
+	    sort_label => 'sort_second',
+	},
 	qw(
-	    SITE_WIKI_VIEW
 	    FORUM_BLOG_LIST
-	    FORUM_WIKI_VIEW
 	    FORUM_CALENDAR
 	),
 	{
