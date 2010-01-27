@@ -25,7 +25,8 @@ Widget({
         return [join(' ', @$res)];
     },
 });
-req()->set_realm_and_user(qw(fourem root));
+req()->set_realm_and_user(qw(fourem root))
+    ->initialize_fully('FORUM_WIKI_VIEW');
 [
     [[qw(
         SITE_WIKI_VIEW
@@ -40,6 +41,26 @@ req()->set_realm_and_user(qw(fourem root));
         GROUP_USER_LIST
         FORUM_TUPLE_USE_LIST
      )]] => 'task_menu Home Blog Files Wiki Calendar Hits Mail Polls Roster Tables',
+    [[{
+        task_id => 'SITE_WIKI_VIEW',
+	sort_label => 'sort_first',
+    }, qw(
+        FORUM_BLOG_LIST
+        FORUM_CRM_THREAD_ROOT_LIST
+        FORUM_FILE_TREE_LIST
+        FORUM_WIKI_VIEW
+        GROUP_TASK_LOG
+        FORUM_CALENDAR
+        FORUM_MAIL_THREAD_ROOT_LIST
+        GROUP_USER_LIST
+        FORUM_MOTION_LIST
+        FORUM_TUPLE_USE_LIST
+     )], {want_sorting => 1}] => 'task_menu Home Blog Calendar Files Hits Mail Polls Roster Tables Wiki',
+    [[qw(
+        FORUM_BLOG_LIST
+        FORUM_WIKI_VIEW
+        FORUM_CALENDAR
+    )], {show_current_task => 0}] => 'task_menu Blog Calendar',
      [[('SITE_WIKI_VIEW')x5], {want_more => 1}] =>
          'task_menu Home Home Home Home Home',
      [[('SITE_WIKI_VIEW')x4], {want_more_threshold => 2}] =>

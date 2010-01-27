@@ -14,11 +14,12 @@ my($_PARAMS) = [
     'control',
     'uri',
     'xlink',
+    'sort_label',
 ];
 my($_W) = b_use('UI.Widget');
 my($_CB) = b_use('HTMLWidget.ControlBase');
-my($_A) = b_use('IO.Alert');
 my($_TI) = b_use('Agent.TaskId');
+my($_A) = b_use('Type.Array');
 my($_DEFAULT_WANT_MORE_THRESHOLD) = 5;
 
 sub NEW_ARGS {
@@ -47,13 +48,14 @@ sub initialize {
 	class => 'task_menu',
 	tag_if_empty => 0,
 	tag => 'div',
+	show_current_task => 1,
     );
     $self->initialize_attr('selected_item');
     $self->unsafe_initialize_attr('want_more');
     $self->unsafe_initialize_attr('want_more_threshold');
+    $self->initialize_attr(want_sorting => 0);
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
     my($need_sep, $selected);
-    my($i);
     $self->put(
 	_init => sub {
 	    my($source) = @_;
@@ -83,7 +85,11 @@ sub initialize {
 		    });
 		}
 	    }
-            my($selected_cond) = ['->ureq', _selected_attr($self, \$i)];
+	    $self->initialize_value(
+		'sort_label',
+		$cfg->{sort_label} = _label($cfg->{sort_label}),
+	    ) if $cfg->{sort_label} ||= $cfg->{label};
+            my($selected_cond) = ['->ureq', _selected_attr($self, $cfg)];
  	    my($w) = $_W->is_blessed($cfg->{xlink})
 		? $cfg->{xlink}
 		: $cfg->{xlink} ? XLink($cfg->{xlink})
@@ -91,7 +97,7 @@ sub initialize {
                     _prefix(
                         $prefix,
                         ref($cfg->{label}) ? $cfg->{label}
-                            : Prose(vs_text('task_menu', 'title', $cfg->{label})),
+                            : _label($cfg->{label}),
                         $selected_cond,
                     ),
 		    $cfg->{uri},
@@ -100,6 +106,7 @@ sub initialize {
 	    $w = DIV_task_menu_wrapper($w)
 		if $cfg->{xlink} && !$_CB->is_blessed($w);
 	    my($class) = $w->unsafe_get('class');
+	    $self->initialize_value('label', $cfg->{label});
 	    $w->put(
 		_task_menu_cfg => $cfg,
 		_cfg($cfg, 'control'),
@@ -130,15 +137,18 @@ sub render_tag_value {
     my($self, $source, $buffer) = @_;
     my($req) = $self->get_request;
     my($need_sep) = $self->get('_init')->($source);
-    my($i);
     my($buffers) = [];
-    foreach my $w (@{$self->get('task_map')}) {
-        my($selected_attr) = _selected_attr($self, \$i);
+    my($sct) = $self->render_simple_attr(show_current_task => $source);
+    foreach my $w (_render_list($self, $source)) {
+	my($cfg) = $w->get('_task_menu_cfg');
+	next
+	    if !$sct && $cfg->{task_id}
+	    && $req->get('task_id')->equals($cfg->{task_id});
+        my($selected_attr) = _selected_attr($self, $cfg);
 	next
 	    if $w->can('is_control_on') && !$w->is_control_on($source);
         $req->put(
 	    $selected_attr => $w->render_simple_attr('_is_selected', $source));
-	my($cfg) = $w->get('_task_menu_cfg');
 	my($r) = $self->render_simple_value($cfg->{realm}, $source);
 	next unless !$cfg->{task_id} || $req->can_user_execute_task(
 	    $cfg->{task_id},
@@ -161,6 +171,11 @@ sub _cfg {
     return map(exists($cfg->{$_}) ? ($_ => $cfg->{$_}) : (), @_),
 }
 
+sub _label {
+    my($label) = @_;
+    return Prose(vs_text('task_menu', 'title', $label));
+}
+
 sub _prefix {
     my($prefix, $label, $cond) = @_;
     return $label
@@ -171,13 +186,27 @@ sub _prefix {
     ]);
 }
 
+sub _render_list {
+    my($self, $source) = @_;
+    my($list) = $self->get('task_map');
+    return @$list
+	unless $self->render_simple_attr('want_sorting', $source);
+    return @{$_A->map_sort_map(
+	sub {
+	    my($cfg) = shift->get('_task_menu_cfg');
+	    return lc($self->render_simple_value(
+		$cfg->{sort_label},
+		$source,
+	    ));
+	},
+	sub {shift cmp shift},
+	$list,
+    )};
+}
+
 sub _selected_attr {
-    my($self, $i) = @_;
-    $$i = 0
-        unless defined($$i);
-    my($res) = "$self.$$i.is_selected";
-    ++$$i;
-    return $res;
+    my($self, $cfg) = @_;
+    return "$self.$cfg.is_selected";
 }
 
 sub _want_more {
