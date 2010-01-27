@@ -32,7 +32,7 @@ use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
-my($_DTM) = b_use('FacadeComponent.DateTimeMode');
+my($_DTM) = b_use('UI.DateTimeMode');
 my($_F) = b_use('FacadeComponent.Font');
 my($_JS) = b_use('HTMLWidget.JavaScript');
 my($_HDT) = b_use('HTMLFormat.DateTime');
