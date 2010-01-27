@@ -426,6 +426,12 @@ sub _cfg_base {
 		entry_content => q{String(['->get_rss_summary']);},
 		title => q{String(vs_site_name()); vs_text_as_prose('xhtml_title');},
 	    ]],
+	    ['task_menu.title' => [
+		sort_first => "\0",
+		sort_second => "\1",
+		sort_third => "\2",
+		sort_third => "\3",
+	    ]],
 	    [prose => [
 		ascend => ' &#9650;',
 		[qw(descend drop_down_arrow)] => ' &#9660;',
@@ -546,6 +552,7 @@ sub _cfg_calendar {
 	    [xlink_set_time_zone => {
 		task_id => 'USER_SETTINGS_FORM',
 	    }],
+	    ['Calendar.want_b_time_zone' => 1],
 	],
 	Font => [
 	    [b_month_calendar_th => 'bold'],
@@ -1226,8 +1233,9 @@ EOF
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
-		SiteAdminDropDown_label => 'Admin',
 	    ]],
+	    [[qw(prose.SiteAdminDropDown_label
+		 task_menu.title.SiteAdminDropDown_label)] => 'Admin'],
 	    [acknowledgement => [
 		REMOTE_COPY_FORM => 'Local system updated.',
 		REMOTE_COPY_FORM_no_update => 'Remote and local systems are identical.  Nothing to update.',
