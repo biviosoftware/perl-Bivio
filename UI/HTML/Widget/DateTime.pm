@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::DateTime;
 use strict;
@@ -31,11 +31,11 @@ use Bivio::Base 'UI.Widget';
 # Not used if I<value> is a constant.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_DTM) = __PACKAGE__->use('FacadeComponent.DateTimeMode');
-my($_F) = __PACKAGE__->use('FacadeComponent.Font');
-my($_JS) = __PACKAGE__->use('HTMLWidget.JavaScript');
-my($_HDT) = __PACKAGE__->use('HTMLFormat.DateTime');
+my($_DT) = b_use('Type.DateTime');
+my($_DTM) = b_use('FacadeComponent.DateTimeMode');
+my($_F) = b_use('FacadeComponent.Font');
+my($_JS) = b_use('HTMLWidget.JavaScript');
+my($_HDT) = b_use('HTMLFormat.DateTime');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_UNIX_EPOCH) = $_DT->UNIX_EPOCH_IN_JULIAN_DAYS;
 my($_SECONDS) = $_DT->SECONDS_IN_DAY;
