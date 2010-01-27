@@ -18,7 +18,6 @@ submit_form({
     '^forum' => $name,
     blog => 1,
     calendar => 1,
-    file => 1,
     poll => 0,
     tables => 0,
 });
@@ -31,7 +30,6 @@ verify_text($title);
 verify_form({
     blog => 1,
     calendar => 1,
-    file => 1,
     poll => 0,
     tables => 0,
 });
