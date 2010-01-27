@@ -26,11 +26,46 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.66  2010/01/27 06:21:19  nagler
+  * Bivio::Biz::FormModel
+    minor error msg fmt
+  * Bivio::Biz::Model::RealmFeatureForm
+    feature_file is implicit
+  * Bivio::Parameters
+    added ability for defaulting repeating parameter with an array
+  * Bivio::PetShop::Util::SQL
+    fourem-sub2 is now mail_want_reply_to => 0
+  * Bivio::UI::FacadeBase
+    task_menu sorting support
+    Calendar.want_b_time_zone
+  * Bivio::UI::HTML::Widget::DateTime
+    b_use
+    UI not FacadeComponent
+  * Bivio::UI::View::Calendar
+    don't display b_time_zone if want_b_time_zone is false
+  * Bivio::UI::XHTML::Widget::FeatureTaskMenu
+    test want_sorting
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    added want_sorting and show_current_task
+  * Bivio::Util::HTTPLog
+    die if error_file is an empty file
+  * Bivio::Util::RowTag
+    list: return a hash instead of formatting
+  * Bivio::Util::SiteForum
+    init_realms, init_files, and realm_names deprecated.  Use forum_config and init_forums
+    fpc
+    fpc
+    fpc
+    fpc
+    revert init_forums, init_realms, init_files and forum_config
+  * Bivio::t::Parameters::T1
+    added ability for defaulting repeating parameter with an array
+
   Revision 8.65  2010/01/25 03:28:41  nagler
   * Bivio::Agent::Request
     removed incorrect internal_get_realm_for_task optimization
