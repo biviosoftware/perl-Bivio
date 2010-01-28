@@ -4,11 +4,8 @@ package Bivio::Util::RealmAdmin;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-# C<Bivio::Util::RealmAdmin> is a generic interface to administration tasks.
-# It's likely you'll have to subclass this class.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_DT) = b_use('Type.DateTime');
 
 sub USAGE {
     # Returns usage string.
@@ -16,8 +13,9 @@ sub USAGE {
 usage: b-realm-admin [options] command [args...]
 commands:
     create_user email display_name password [user_name] -- creates a new user
-    delete_user -- deletes the user
-    delete_with_users -- deletes realm and all of its users
+    delete_auth_realm -- deletes auth_realm
+    delete_auth_realm_and_users -- deletes realm and all of its users
+    delete_auth_user -- deletes auth_user
     diff_users left_realm right_realm -- report differences between rosters
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
@@ -53,22 +51,16 @@ sub create_user {
     })->get('User.user_id');
 }
 
-sub delete_user {
+sub delete_auth_realm {
     my($self) = @_;
-    # Deletes current user.
-    my($req) = $self->get_request;
-    my($n) = Bivio::Biz::Model->new($req, 'Email');
-    $n = $n->unauth_load({realm_id => $req->get('auth_user_id')})
-	? $n->get('email') : $self->req(qw(auth_user name));
-    $self->are_you_sure("delete user $n");
-    $req->set_realm($req->get('auth_user'));
-    $req->get('auth_user')->cascade_delete;
-    $req->set_user(undef);
-    $req->set_realm(undef);
+    $self->are_you_sure('Delete ' . $self->req('auth_realm')->as_string . '?');
+    my($id) = $self->req('auth_id');
+    $self->req->set_realm(undef);
+    $self->model('RealmOwner')->unauth_delete_realm({realm_id => $id});
     return;
 }
 
-sub delete_with_users {
+sub delete_auth_realm_and_users {
     my($self) = @_;
     # Deletes current realm and its users and sets realm to general,
     # and user to nobody afterwards.
@@ -92,6 +84,39 @@ sub delete_with_users {
     return;
 }
 
+sub delete_auth_user {
+    my($self) = @_;
+    # Deletes current user.
+    my($req) = $self->get_request;
+    my($n) = Bivio::Biz::Model->new($req, 'Email');
+    $n = $n->unauth_load({realm_id => $req->get('auth_user_id')})
+	? $n->get('email') : $self->req(qw(auth_user name));
+    $self->are_you_sure("delete user $n");
+    my($user) = $req->get('auth_user');
+    $req->set_realm(undef);
+    $req->set_user(undef);
+    $self->model('RealmUser')->do_iterate(
+	sub {
+	    shift->unauth_delete;
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+	{user_id => $user->get('realm_id')},
+    );
+    $user->unauth_delete_realm;
+    return;
+}
+
+sub delete_user {
+    Bivio::IO::Alert->warn_deprecated('use delete_auth_user');
+    return shift->delete_auth_user(@_);
+}
+
+sub delete_with_users {
+    Bivio::IO::Alert->warn_deprecated('use delete_auth_realm_and_users');
+    return shift->delete_auth_realm_and_users(@_);
+}
 
 sub diff_users {
     sub DIFF_USERS {[[qw(left_realm RealmArg)], [qw(right_realm RealmArg)]]}
@@ -184,7 +209,7 @@ sub reset_password {
     $self->usage_error("missing new password")
         unless defined($password);
     _validate_user($self, 'Reset Password')->update({
-        password => $self->use('Type.Password')->encrypt($password),
+        password => b_use('Type.Password')->encrypt($password),
     });
     return;
 }
