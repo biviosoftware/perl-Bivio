@@ -955,7 +955,7 @@ sub _load_this {
     $query = $self->parse_query($query);
     unless ($query->unsafe_get('this')) {
 	return
-	    if $not_found_ok;
+	    if $not_found_ok && ! $first_only;
 	$self->throw_die('DIE', {
 	    message => 'missing this',
 	    query => $query,
