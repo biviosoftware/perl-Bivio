@@ -511,7 +511,7 @@ sub login_as {
     $self->visit_uri('/pub/login')
 	unless $self->unsafe_op(follow_link => qr{login}i);
     $self->submit_form(Login => {
-	qr{Email}i => $email,
+	qr{email|user}i => $email,
 	qr{password}i =>
 	    defined($password) ? $password : $self->default_password,
     });
