@@ -101,6 +101,7 @@ sub create_forum {
 	undef,
 	$self->get_content . ${$_CSV->to_csv_text([$f, $dn])},
     );
+    push(@{$self->[$_IDI]->{cleanup_realm} ||= []}, $f);
     return ($f, "/$f", "/dav/$f");
 }
 
@@ -119,6 +120,7 @@ sub create_user {
 	'^new' => $self->default_password,
 	'^re-en' => $self->default_password,
     });
+    push(@{$self->[$_IDI]->{cleanup_user} ||= []}, $e);
     return ($e, $n);
 }
 
@@ -150,6 +152,23 @@ sub groupware_check {
     $self->home_page
 	if $self->unsafe_get('groupware_mode');
     return;
+}
+
+sub handle_cleanup {
+    my($self, $die) = @_;
+    unless ($die) {
+	my($fields) = $self->[$_IDI];
+#TODO: 'user' does not work, because constraint realm_file_t10
+	foreach my $which (qw(realm )) {
+	    foreach my $name (@{delete($fields->{"cleanup_$which"}) || []}) {
+		$self->do_test_backdoor(
+		    'RealmAdmin',
+		    "-$which $name -force delete_auth_$which",
+		);
+	    }
+	}
+    }
+    return shift->SUPER::handle_cleanup(@_);
 }
 
 sub handle_setup {
