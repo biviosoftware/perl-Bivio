@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ForumForm;
 use strict;
@@ -6,6 +6,7 @@ use Bivio::Base 'Model.RealmFeatureForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = b_use('Type.ForumName');
+my($_R) = b_use('Auth.Realm');
 
 sub REALM_MODELS {
     return [qw(Forum RealmOwner)];
@@ -47,11 +48,12 @@ sub execute_ok {
             foreach my $m (@{$self->REALM_MODELS}) {
                 $self->update_model_properties($m);
             }
+	    $realm = $_R->new($self->get_model('RealmOwner'));
         }
 	return;
     });
-    $self->req->set_realm($realm)
-	if $realm;
+    $self->req->set_realm($realm);
+    $self->internal_post_realm_create;
     return shift->SUPER::execute_ok(@_);
 }
 
@@ -74,6 +76,10 @@ sub internal_initialize {
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
     });
+}
+
+sub internal_post_realm_create {
+    return;
 }
 
 sub is_create {
