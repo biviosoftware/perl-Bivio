@@ -8,6 +8,9 @@ use DateTime ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 __PACKAGE__->compile;
+b_use('IO.Config')->register(my $_CFG = {
+    default => 'UTC',
+});
 
 sub ROW_TAG_KEY {
     return 'TIME_ZONE';
@@ -41,7 +44,13 @@ sub as_display_name {
 }
 
 sub get_default {
-    return shift->UTC;
+    return $_CFG->{default};
+}
+
+sub handle_config {
+    my($proto, $cfg) = @_;
+    $_CFG->{default} = $proto->from_any($cfg->{default});
+    return;
 }
 
 sub _convert {
