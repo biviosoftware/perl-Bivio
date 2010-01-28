@@ -27,3 +27,39 @@ follow_link($r2);
 follow_link('delete');
 submit_form('delete');
 verify_no_text($r2);
+#
+my($start_date) = Type_Date()->set_beginning_of_month(Type_Date()->now);
+my($repeat_end) = Type_Date()->add_days($start_date, 31);
+# repeats interval values are the recurrence counts
+# within the start_date to repeat_ends period
+my(%repeats) = (
+    every_week => 5,
+    every_two_weeks => 3,
+    every_four_weeks => 2,
+);
+foreach my $interval (keys %repeats) {
+    follow_link(qw(add_event));	
+    my($title) = random_string();	
+    submit_form({
+	title => $title,
+	start_date => Type_Date()->to_string($start_date),
+	start_time => '12pm',
+	end_date => Type_Date()->to_string($start_date),
+	end_time => '1 pm',
+	repeats => $interval,
+	repeat_ends => Type_Date()->to_string($repeat_end),
+    });
+    my($count) = $repeats{$interval};
+    my($links_regexp);
+    foreach (1..$count) {
+	$links_regexp .= "$title.*";
+    }
+    verify_text(qr($links_regexp)s);
+    foreach my $i (1..$count) {
+	my($link) = $i == $count ? $title : "${title}_".($count-$i);
+	follow_link($link, 'delete');
+	submit_form('delete');
+    }
+    verify_no_text($title);
+};
+
