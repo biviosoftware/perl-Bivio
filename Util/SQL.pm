@@ -2048,8 +2048,11 @@ sub upgrade_db {
     my($upgrade) = $self->model('DbUpgrade');
     my($v) = $type ? ($type eq 'bundle' ? $VERSION : '') . $type
 	: $self->package_version;
-    $self->usage_error($v, ': already ran.')
-	if $upgrade->unauth_load({version => $v});
+    $self->usage_error(
+	$v,
+	': ran on ',
+	$_DT->to_local_string($upgrade->get('run_date_time')),
+    ) if $upgrade->unauth_load({version => $v});
     $self->are_you_sure(
 	qq{Upgrade the database@{[$type ? " with $type" : '']}?});
     $self->print($self->export_db . "\n")
