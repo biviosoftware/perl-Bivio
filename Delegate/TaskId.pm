@@ -435,7 +435,7 @@ sub info_calendar {
 	[qw(
 	    FORUM_CALENDAR_EVENT_LIST_ICS
 	    185
-	    FORUM
+	    ANY_OWNER
 	    DATA_READ&FEATURE_CALENDAR
 	    Model.CalendarEventList->execute_load_all
 	    Action.CalendarEventICS
