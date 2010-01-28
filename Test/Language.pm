@@ -87,14 +87,14 @@ sub new {
 }
 
 sub test_cleanup {
-    my($proto) = _args(@_);
+    my($proto, $die) = _args(@_);
     # Clean up state, such as external files, database values, etc.
     # Must not rely on state of instance, but be able to clean up globally.
     #
     # This method is called automatically at the end of every test script.
     #
     # See L<handle_cleanup|"handle_cleanup"> for what subclasses should implement.
-    return $proto->handle_cleanup;
+    return $proto->handle_cleanup($die);
 }
 
 sub test_conformance {
@@ -184,7 +184,7 @@ sub test_run {
 	# DOES NOT RETURN
     });
     _trace($die) if $_TRACE;
-    Bivio::Die->eval(sub {$_SELF_IN_EVAL->test_cleanup});
+    Bivio::Die->eval(sub {$_SELF_IN_EVAL->test_cleanup($die)});
     _find_line_number($die, $script_name) if $die;
     _trace($script, ' ', $die) if $die && $_TRACE;
     return $die;
