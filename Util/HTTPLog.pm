@@ -246,7 +246,7 @@ sub _parse_errors_init {
     };
     my($err);
 
-    if (! -s $_CFG->{error_file}) {
+    if ($self->req->is_production && ! -s $_CFG->{error_file}) {
 	$err = "$_CFG->{error_file}: error file missing or empty";
     }
     elsif (! $fields->{fh}->open($_CFG->{error_file})) {
