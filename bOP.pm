@@ -26,11 +26,24 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.69  2010/01/28 22:15:30  nagler
+  * Bivio::Biz::ListModel
+    _load_this() will continue if first_only and no this
+  * Bivio::PetShop::Test::PetShop
+    delete realms created in test (user delete not work yet)
+  * Bivio::Test::Language::HTTP
+    login is either Email or User
+  * Bivio::Test::Language
+    pass $die to handle_cleanup
+  * Bivio::Util::RealmAdmin
+    delete_auth_realm
+    deprecate delete_user (delete_auth_user) & delete_with_users (delete_auth_realm_and_users)
+
   Revision 8.68  2010/01/28 17:47:44  nagler
   * Bivio::Biz::Model::ForumForm
     internal_post_realm_create
