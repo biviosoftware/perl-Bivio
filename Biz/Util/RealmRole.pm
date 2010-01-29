@@ -35,6 +35,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-role [options] command [args...]
 commands:
+    category_role_group group... -- lists roles
     copy_all src dst -- copies all records from src to dst realm
     edit role operation ... -- changes the permissions for realm/role
     edit_categories [category_op ...] -- disable or enable permission categories
@@ -95,9 +96,7 @@ sub edit {
     my($req) = $self->get_request;
     my($realm) = $req->get('auth_realm');
     my($realm_id) = $realm->get('id');
-    $self->model('RealmRole')->initialize_permissions(
-	$realm->get('owner'),
-    ) unless $realm->is_default;
+    $self->model('RealmRole')->initialize_permissions($realm->get('owner'));
     my($role) = $_R->from_any($role_name);
     my($ps) = _get_permission_set($self, $realm_id, $role, 1);
     _trace('current ', $role, ' ', $_PS->to_literal($ps))
@@ -227,6 +226,11 @@ sub list_all_categories {
 	$res .= "$x\n";
     }
     return \$res;
+}
+
+sub category_role_group {
+    my($self, @group) = @_;
+    return {map(($_ => [map($_->get_name, @{$_R->get_category_role_group($_)})]), @group)};
 }
 
 sub list_enabled_categories {
