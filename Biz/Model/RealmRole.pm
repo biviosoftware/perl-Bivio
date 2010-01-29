@@ -6,6 +6,7 @@ use Bivio::Base 'Biz.PropertyModel';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_PS) = b_use('Auth.PermissionSet');
 my($_R) = b_use('Auth.Role');
 my($_RS) = b_use('Auth.RoleSet');
@@ -52,14 +53,16 @@ sub initialize_permissions {
     my($type_id) = $realm->get('realm_type')->as_int;
     my($realm_id) = $realm->get('realm_id');
     foreach my $role ($_R->get_non_zero_list) {
-        # Skip role if already cloned
-        next if $self->unauth_load(realm_id => $realm_id, role => $role);
-
-	$self->unauth_load(realm_id => $type_id, role => $role);
-	next if !$self->is_loaded();
-
-        $self->create({realm_id => $realm_id, role => $role,
-            permission_set => $self->get('permission_set')});
+        next
+	    if $self->unauth_load(realm_id => $realm_id, role => $role);
+	_default($self, $type_id, $role);
+	next
+	    if $type_id eq $realm_id;
+        $self->create({
+	    realm_id => $realm_id,
+	    role => $role,
+            permission_set => $self->get('permission_set'),
+	});
     }
     return;
 }
@@ -79,6 +82,16 @@ sub internal_initialize {
 
 sub remove_permissions {
     return _do('remove', @_);
+}
+
+sub _default {
+    my($self, $type_id, $role) = @_;
+    $self->create({
+	realm_id => $type_id,
+	role => $role,
+	permission_set => $self->EMPTY_PERMISSION_MAP->{$role},
+    }) unless $self->unauth_load({realm_id => $type_id, role => $role});
+    return;
 }
 
 sub _do {
