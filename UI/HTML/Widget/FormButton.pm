@@ -42,7 +42,7 @@ sub NEW_ARGS {
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    my($p, $s) = $_F->format_html('form_submit', $source);
+    my($p, $s) = $_F->format_html('form_submit', $source->req);
     my($a) = $self->render_simple_attr('attributes', $source);
     $a = " $a"
 	if $a && $a =~ /^\S/;
