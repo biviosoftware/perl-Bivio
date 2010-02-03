@@ -520,7 +520,7 @@ div.dd_link {
 div.dd_menu {
   display: inline;
   position: absolute;
-  top: 1.3em;
+  top: 3ex;
   left: 0;
   visibility: hidden;
   Color('dd_menu-background');
