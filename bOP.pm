@@ -26,11 +26,20 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 8.70  2010/01/29 18:35:12  nagler
+  * Bivio::Biz::Model::RealmRole
+    always initialize default permission map
+  * Bivio::Biz::Util::RealmRole
+    initialize_permissions called always on edit()
+    category_role_group
+  * Bivio::Util::HTTPLog
+    only check for 0 length error file on production
+
   Revision 8.69  2010/01/28 22:15:30  nagler
   * Bivio::Biz::ListModel
     _load_this() will continue if first_only and no this
