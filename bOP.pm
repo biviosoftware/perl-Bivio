@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.71  2010/02/03 17:44:24  nagler
+  * Bivio::UI::Font
+    use ->req, not  in FacadeComponent.Font->format_html
+  * Bivio::UI::HTML::Widget::FormButton
+    use ->req, not  in FacadeComponent.Font->format_html
+  * Bivio::Util::SiteForum
+    init_forum
+
   Revision 8.70  2010/01/29 18:35:12  nagler
   * Bivio::Biz::Model::RealmRole
     always initialize default permission map
