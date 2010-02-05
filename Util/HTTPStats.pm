@@ -126,8 +126,8 @@ DirData="$data_dir"
 EOF
 	    _trace($str) if $_TRACE;
 	    $_F->write($conf_file, $str);
-	    `$_AWSTATS -config=$domain --configdir=.`;
-	    `$_BUILD_PAGES -config=$domain --configdir=. -lang=en -dir . -diricons="icon" -month=$month -year=$year`;
+	    $self->piped_exec(qq{$_AWSTATS -config=$domain --configdir=. 2>&1});
+	    $self->piped_exec(qq{$_BUILD_PAGES -config=$domain --configdir=. -lang=en -dir . -diricons="icon" -month=$month -year=$year 2>&1});
 	    unlink($conf_file);
 	    _organize_files($self, $domain, $date);
 	    $self->new_other('RealmFile')->import_tree('/');
