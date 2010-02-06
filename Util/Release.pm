@@ -225,7 +225,7 @@ sub create_stream {
 sub get_projects {
     # Returns a map of root packages names and long names.
     #     {
-    # 	ieeesa => 'IEEESA, Inc.',
+    # 	pet => 'bivio Software, Inc.',
     #     }
     return {map({lc @$_[0], @$_[2]} @{$_CFG->{projects}})};
 }
