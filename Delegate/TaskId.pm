@@ -596,6 +596,7 @@ sub info_file {
 	    View.File->tree_list
 	    want_folder_fall_thru=1
 	    next=FORUM_FILE
+	    write_task=FORUM_FILE_CHANGE
 	)],
 # Separate tree list so permissions check d by task
 # data explore is a bit on the file?  STill need data_explore on the task
