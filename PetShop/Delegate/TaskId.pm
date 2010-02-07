@@ -9,26 +9,19 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub get_delegate_info {
     my($proto) = @_;
     return $proto->merge_task_info(@{$proto->standard_components}, 'otp', [
-	[qw(
-	    LOGIN
-	    90
-	    GENERAL
-	    ANYBODY
-	    Action.UserLogout
-	    Model.UserLoginForm
-	    View.login
-	    next=CART
-            require_secure=1
-	)],
-	[qw(
-	    LOGOUT
-	    91
-	    GENERAL
-	    ANYBODY
-	    Action.UserLogout->execute
-	    Action.ClientRedirect->execute_next
-	    next=MAIN
-	)],
+	{
+	    name => 'LOGIN',
+	    items => [qw(
+		Action.UserLogout
+		Model.UserLoginForm
+		View.login
+	    )],
+	    next => 'CART',
+	},
+	{
+	    name => 'LOGOUT',
+	    next => 'MAIN',
+	},
 	[qw(
 	    PRODUCTS
 	    500
