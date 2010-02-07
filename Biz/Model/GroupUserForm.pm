@@ -61,10 +61,9 @@ sub execute_ok {
     my($ul) = $self->req('Model.' . $self->USER_LIST_CLASS);
     my($uid) = $self->get('RealmUser.user_id');
     my($rid) = $self->req('auth_id');
-    my($main_old) = $ul->roles_by_category;
     my($main) = $self->get('RealmUser.role');
     my($ru) = $self->new_other('RealmUser');
-    unless ($main_old->[0] eq $main) {
+    unless (($ul->roles_by_category->[0] || '') eq $main) {
 # This only deletes this realm
 	$ru->delete_all({user_id => $uid});
 	return _audit_user($self, $uid)
