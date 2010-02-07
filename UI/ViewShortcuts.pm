@@ -51,6 +51,10 @@ sub vs_ui_forum {
     return shift->vs_text('vs_ui.forum');
 }
 
+sub vs_ui_wiki {
+    return shift->vs_text('vs_ui.wiki');
+}
+
 sub vs_html {
     # Returns a widget value to retrieve I<attr> using
     # L<Bivio::UI::HTML::get_value|Bivio::UI::HTML/"get_value">.
