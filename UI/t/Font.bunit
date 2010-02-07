@@ -4,7 +4,7 @@ Request('setup_facade');
 [
     sub {req('Bivio::UI::Facade', 'Font')} => [
 	format_html => [
-	    page_text => ['<font face="arial,sans-serif">', '</font>'],
+	    ['page_text', req()] => ['<font face="arial,sans-serif">', '</font>'],
 	],
 	format_css => [
 	    bunit_bold => 'font-weight: bold;',
