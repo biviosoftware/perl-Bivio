@@ -26,8 +26,9 @@ sub event_detail {
 		my($task, $label) = @$_;
 		$label ||= '';
 #TODO: Modularize better.  This is really messy code to have in a view.
-		+{
+		ref($task) eq 'HASH' ? $task : +{
 		    task_id => $task,
+		    realm => [qw(Model.CalendarEventList owner.RealmOwner.name)],
 		    $label ? (label => vs_text_as_prose("task_menu.title.FORUM_CALENDAR_EVENT_FORM.$label"))
 			: (),
 		    ($label eq 'create') ? () : (query => {
@@ -48,6 +49,7 @@ sub event_detail {
 		[qw(FORUM_CALENDAR_EVENT_FORM copy)],
 		[qw(FORUM_CALENDAR_EVENT_DELETE)],
 		[qw(FORUM_CALENDAR_EVENT_FORM edit)],
+		[_user_list_link()],
 		[qw(FORUM_CALENDAR_EVENT_ICS)],
 	    ),
 	]),
@@ -117,22 +119,12 @@ sub list {
 	    {
 		task_id => 'FORUM_CALENDAR_EVENT_FORM',
 		label => 'FORUM_CALENDAR_EVENT_FORM.create',
-		control => If(
-		    [['auth_realm', 'type'], '->eq_user'],
-		    [qw(Model.CalendarEventMonthList ->can_user_edit_any_realm)],
+		control => And(
+		    ['!', ['auth_realm', 'type'], '->eq_user'],
 		    [qw(Model.CalendarEventMonthList ->can_user_edit_this_realm)],
 		),
 	    },
-	    {
-		task_id => 'FORUM_CALENDAR',
-		label => vs_text_as_prose(
-		    'task_menu.title.FORUM_CALENDAR.user'),
-		realm => ['auth_user', 'name'],
-		control => And(
-		    ['auth_user_id'],
-		    ['!', ['auth_realm', 'type'], '->eq_user'],
-		),
-	    },
+	    _user_list_link(),
 	    'FORUM_CALENDAR_EVENT_LIST_ICS',
 	], {
 	    selected_item => 0,
@@ -160,6 +152,7 @@ sub _list_view {
 	'time_zone',
 	map([$_ => {
 	    wf_list_link => {
+		realm => ['owner.RealmOwner.name'],
 		query => 'THIS_DETAIL',
 		task => 'FORUM_CALENDAR_EVENT_DETAIL',
 	    },
@@ -186,6 +179,7 @@ sub _list_view {
 			URI({
 			    task_id => $task,
 			    query => [qw(->format_query THIS_DETAIL)],
+			    realm => ['owner.RealmOwner.name'],
 			}),
 			['->can_user_edit_this_realm'],
 		    ];
@@ -214,7 +208,11 @@ sub _month_view {
 		    ["day_list_$_"],
 		    Link(
 			String(['time_and_name']),
-			['->detail_uri'],
+			URI({
+			    task_id => 'FORUM_CALENDAR_EVENT_DETAIL',
+			    query => [qw(->format_query THIS_DETAIL)],
+			    realm => ['owner.RealmOwner.name'],
+			}),
 			{class => 'b_event_name'},
 		    ),
 		),
@@ -231,6 +229,19 @@ sub _month_view {
 	odd_row_class => '',
 	even_row_class => '',
     });
+}
+
+sub _user_list_link {
+    return {
+	task_id => 'FORUM_CALENDAR',
+	label => vs_text_as_prose(
+	    'task_menu.title.FORUM_CALENDAR.user'),
+	realm => ['auth_user', 'name'],
+	control => And(
+	    ['auth_user_id'],
+	    ['!', ['auth_realm', 'type'], '->eq_user'],
+	),
+    };
 }
 
 1;
