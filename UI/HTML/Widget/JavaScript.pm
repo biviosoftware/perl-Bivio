@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::JavaScript;
 use strict;
@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio::UI::Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_COMMON_CODE) = __PACKAGE__ . '.common_code';
+my($_ID) = 0;
 
 sub BASE_VAR_NAME {
     return 'window.bivio';
@@ -72,6 +73,10 @@ sub strip {
     # Strip comments
     $code =~ s/\/\/.*\n//g;
     return $code;
+}
+
+sub unique_html_id {
+    return 'b_js' . ++$_ID;
 }
 
 sub var_name {
