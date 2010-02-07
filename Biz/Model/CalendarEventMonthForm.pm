@@ -5,16 +5,14 @@ use strict;
 use Bivio::Base 'Model.ListQueryForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_D) = b_use('Type.Date');
+my($_CEMD) = b_use('Type.CalendarEventMonthDate');
 
-sub get_current_query_for_list {
-    my($query) = shift->SUPER::get_current_query_for_list(@_);
-#TODO: This needs to be encapsulated.  The concent of "month" is
-# across CalendarEventMonthForm, CalendarEventMonthList, and MonthList
-    $query->{b_month} = $_D->to_literal(
-	$_D->set_beginning_of_month($_D->from_literal_or_die($query->{b_month})),
-    ) if $query->{b_month};
-    return $query;
+
+sub date_to_query {
+    my($proto, $date) = @_;
+    return {
+	b_month => $_CEMD->to_query_value($date),
+    };
 }
 
 sub get_list_for_field {
@@ -26,9 +24,7 @@ sub get_list_for_field {
 
 sub internal_query_fields {
     return [
-	[qw(b_month Date), {
-	    default_value => sub {$_D->set_beginning_of_month($_D->now)},
-	}],
+	[qw(b_month), $_CEMD, {default_value => sub {$_CEMD->get_default}}],
 	[qw(b_list_view Boolean), {default_value => 0}],
 	[qw(b_time_zone Boolean), {default_value => 0}],
     ];
