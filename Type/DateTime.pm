@@ -156,6 +156,10 @@ sub SQL_FORMAT {
     return 'J SSSSS';
 }
 
+sub TEST_NOW_QUERY_KEY {
+    return 'date_time_test_now';
+}
+
 sub TO_SQL_FORMAT {
     return shift->SQL_FORMAT;
 }
@@ -610,7 +614,7 @@ sub gettimeofday_diff_seconds {
 sub handle_pre_execute_task {
     my($proto, undef, $req) = @_;
     $proto->set_test_now(
-	delete(($req->unsafe_get('query') || {})->{date_time_test_now}),
+	delete(($req->unsafe_get('query') || {})->{$proto->TEST_NOW_QUERY_KEY}),
         $req,
     ) if !defined($_IS_TEST) || $_IS_TEST;
     return;
@@ -758,7 +762,7 @@ sub set_local_time_part {
 
 sub set_test_now {
     my($proto, $now, $req) = @_;
-    $_TEST_NOW = $proto->from_literal_or_die($now, 1)
+    return $_TEST_NOW = $proto->from_literal_or_die($now, 1)
 	if $_IS_TEST ||= $req->is_test;
     return;
 }
