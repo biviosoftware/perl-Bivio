@@ -3,7 +3,6 @@
 package Bivio::Test::Language::HTTP;
 use strict;
 use Bivio::Base 'Test.Language';
-use Bivio::Die;
 use Bivio::Ext::LWPUserAgent;
 use Bivio::IO::Ref;
 use Bivio::IO::Trace;
@@ -18,6 +17,10 @@ use Sys::Hostname ();
 use URI ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_F) = b_use('IO.File');
+my($_T) = b_use('IO.Trace');
+my($_HTML) = b_use('Bivio.HTML');
+my($_DT) = b_use('Type.DateTime');
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Config->register(my $_CFG = {
     # NOTE: There is no ENV when loaded under apache
@@ -35,9 +38,6 @@ Bivio::IO::Config->register(my $_CFG = {
     ),
 });
 my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
-my($_F) = __PACKAGE__->use('IO.File');
-my($_T) = __PACKAGE__->use('IO.Trace');
-my($_HTML) = __PACKAGE__->use('Bivio.HTML');
 
 sub LOCAL_EMAIL_DOMAIN_RE {
     # Must be synchronized with generate_local_email
@@ -133,6 +133,14 @@ sub basic_authorization {
     return;
 }
 
+sub case_tag {
+    my($self, $tag) = @_;
+    b_die($tag, ': invalid case tag')
+	unless ($tag || '') =~ /^[-\w ]+$/;
+    $self->put(case_tag => $tag);
+    return;
+}
+
 sub clear_cookies {
     # Clear the cookies
     shift->[$_IDI]->{cookies}->clear();
@@ -141,8 +149,7 @@ sub clear_cookies {
 
 sub clear_extra_query_params {
     my($self) = @_;
-    # Clear the extra query params
-    delete($self->internal_get->{extra_query_params});
+    $self->delete('extra_query_params');
     return;
 }
 
@@ -152,6 +159,16 @@ sub clear_local_mail {
 	return;
     });
     return;
+}
+
+sub date_time_now {
+    my($self, $now) = @_;
+    $now = $_DT->set_test_now($now, b_use('Test.Request')->get_current_or_new);
+    $self->clear_extra_query_params;
+    $self->extra_query_params(
+	$_DT->TEST_NOW_QUERY_KEY => $now,
+    ) if $now;
+    return $now;
 }
 
 sub debug_print {
@@ -192,7 +209,7 @@ sub do_test_backdoor {
     # Executes ShellUtil or FormModel based on $args.
     $self->visit_uri(
 	'/test-backdoor?'
-	. $self->use('Bivio::Agent::HTTP::Query')->format(
+	. b_use('Bivio::Agent::HTTP::Query')->format(
 	    ref($args) eq 'HASH' ? {%$args, form_model => $op}
 	        : ref($args) eq '' ? {shell_util => $op, command => $args}
 		: Bivio::Die->die($args, ': unable to parse args'),
@@ -221,7 +238,11 @@ sub escape_html {
 sub extra_query_params {
     my($self, $key, $value) = @_;
     # Append extra query params.
-    push(@{($self->internal_get->{extra_query_params} ||= [])}, $key, $value);
+    push(
+	@{$self->get_if_exists_else_put(extra_query_params => [])},
+	$key,
+	$value,
+    );
     return;
 }
 
@@ -306,6 +327,10 @@ sub follow_link_in_table {
 		    $self,
 		    defined($link_name) ? $link_name : $find_value)),
     )->{href});
+}
+
+sub follow_menu_link {
+    return shift->follow_link(map(_fixup_pattern($_, 1), @_));
 }
 
 sub generate_local_email {
@@ -393,7 +418,7 @@ sub go_back {
 
 sub handle_cleanup {
     my($self) = @_;
-    my($req) = $self->use('Test.Request')->get_current;
+    my($req) = b_use('Test.Request')->get_current;
     $req->process_cleanup
 	if $req;
     return shift->SUPER::handle_cleanup(@_);
@@ -603,8 +628,8 @@ sub send_mail {
     my($self, $from_email, $to_email, $headers, $body) = @_;
     # Send a message.  Returns the object.  Sets subject and body to unique values.
     my($r) = $self->random_string();
-    my($req) = $self->use('Test.Request')->get_current_or_new;
-    my($o) = $self->use('Mail.Outgoing')->new;
+    my($req) = b_use('Test.Request')->get_current_or_new;
+    my($o) = b_use('Mail.Outgoing')->new;
     $o->set_recipients($to_email, $req);
     $o->set_header(To => ref($to_email) ? join(',', @$to_email) : $to_email);
     $headers = {
@@ -708,7 +733,7 @@ sub text_exists {
 
 sub tmp_file {
     my($self, $name) = @_;
-    return $_F->temp_file($self->use('Test.Request')->get_current_or_new,
+    return $_F->temp_file(b_use('Test.Request')->get_current_or_new,
 	$name || 'test.txt');
 }
 
@@ -958,7 +983,7 @@ sub visit_uri {
 sub _append_query {
     my($self, $u) = @_;
     # query should be [k1 => v1, k2 => v2, ...]
-    my($q) = $self->internal_get->{extra_query_params};
+    my($q) = $self->unsafe_get('extra_query_params');
     return $u
 	unless defined($q);
     my($uri) = URI->new($u);
@@ -1032,7 +1057,7 @@ sub _facade {
     my($self, $to_fix, undef, $facade_uri) = @_;
     return $to_fix
 	unless $facade_uri;
-    my($req) = $self->use('TestUnit.Request')->get_instance;
+    my($req) = b_use('TestUnit.Request')->get_instance;
     my($default) = (
 	$req->unsafe_get('Bivio::UI::Facade')
 	    || $req->initialize_fully->get('Bivio::UI::Facade')
@@ -1064,10 +1089,15 @@ sub _fixup_form_fields {
 }
 
 sub _fixup_pattern {
-    my($v) = @_;
+    my($v, $want_absolute) = @_;
     return $v
-	if ref($v) || $v =~ /^\(\?/s || $v !~ /^[a-z0-9_]+$|\.[\*\+]|^\^|\$$/;
+	if !$want_absolute
+	&& (ref($v) || $v =~ /^\(\?/s || $v !~ /^[a-z0-9_]+$|\.[\*\+]|^\^|\$$/);
     $v =~ s/(.)_/$1./g;
+    if ($want_absolute) {
+	$v =~ s/(?<!\$)$/\$/;
+	$v =~ s/^(?!=\^)/^/;
+    }
     return qr{$v}i;
 }
 
@@ -1201,12 +1231,13 @@ sub _key_from_hash {
 }
 
 sub _log {
-    my($self, $type, $msg) = @_;
+    my($self, $type, $msg, $case_tag) = @_;
     # Writes the HTTP message to a file with a nice suffix.  Preserves file
     # ordering, returns the file.
     my($fields) = $self->[$_IDI];
     return $self->test_log_output(
-	sprintf('http-%05d.%s', $fields->{log_index}++, $type),
+	sprintf('http-%05d.%s', $fields->{log_index}++, $type)
+	    . ($case_tag ? "-$case_tag" : ''),
 	UNIVERSAL::can($msg, 'as_string') ? $msg->as_string : $msg);
 }
 
@@ -1273,6 +1304,7 @@ sub _send_request {
     my($redirect_count) = 0;
     my($prev_uri) = $self->get_or_default('referer', $fields->{uri});
     $self->delete('referer');
+    my($case_tag) = $self->unsafe_get_and_delete('case_tag');
     _save_history($fields);
     while () {
 	$request->header(Authorization => $self->get('Authorization'))
@@ -1281,9 +1313,9 @@ sub _send_request {
 	    if $prev_uri;
 	$fields->{uri} = $request->uri->canonical->as_string;
 	$fields->{cookies}->add_cookie_header($request);
-	_log($self, 'req', $request);
+	_log($self, 'req', $request, $case_tag);
 	$fields->{response} = $fields->{user_agent}->request($request);
-	_log($self, 'res', $fields->{response});
+	_log($self, 'res', $fields->{response}, $case_tag);
 	last unless $fields->{response}->is_redirect;
 	Bivio::Die->die('too many redirects ', $request)
 	    if $redirect_count++ > 5;
