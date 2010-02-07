@@ -94,7 +94,10 @@ sub _start_a {
 	'already have an href (missing </a>). current=', $fields->{href},
 	' new=', $attr->{href},
     ) if $fields->{href};
-    return if $attr->{name} && !$attr->{href};
+    return
+	if $attr->{name} && !$attr->{href}
+	# DropDown creates links that are meaningless for testing
+        || $attr->{onclick} && ($attr->{href} || '') eq '#';
     unless (defined($attr->{href}) || $attr->{name}) {
 	b_info(
 	    join('/', @{$fields->{xpath}}),
