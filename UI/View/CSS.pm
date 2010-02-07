@@ -18,7 +18,7 @@ sub internal_site_css {
 
 sub site_css {
     my($self) = @_;
-    return $self->internal_body(Prose([sub {$self->internal_site_css}]));
+    return $self->internal_body(Prose([sub {$self->internal_site_css(shift)}]));
 }
 
 sub _site_base {
