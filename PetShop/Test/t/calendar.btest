@@ -2,15 +2,16 @@
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
-login_as('root');
-follow_link(qw(fourem-sub1-1 ^calendar$ add_event));
+do_test_backdoor(TestData => 'reset_calendar_btest');
+login_as('calendar_btest_user');
+follow_menu_link(qw(calendar_btest_main calendar add_event));
 my($r) = random_string();
 submit_form({
     title => $r,
     start_time => '11:00',
     end_time => '12:00',
 });
-follow_link($r, 'modify');
+follow_menu_link("11:00 $r", 'modify');
 verify_form({
     title => $r,
     start_time => '11:00',
@@ -21,68 +22,85 @@ submit_form({
     title => $r2,
     start_time => '10:00',
 });
-follow_link('back_to_list');
 verify_no_text($r);
-follow_link($r2);
-follow_link('delete');
+follow_menu_link("10:00 $r2", 'delete');
 submit_form('delete');
 verify_no_text($r2);
 # Show in UTC and View event list...
 submit_form({
-        view_events_in_a_list => 1,
-    });
-verify_text('No events for this forum');
+    list => 1,
+});
+verify_text(qr{\bno events}i);
 submit_form({
-        view_events_in_a_list => 0,
-    });
-verify_no_text('No events for this forum');
-follow_link(qw(add_event));
+    list => 0,
+});
+verify_no_text(qr{\bno events}i);
+follow_link('add_event');
 submit_form({
-            title => 'mst_event',
-            time_zone => 'MST',
-            start_time => '11:00',
-            end_time => '12:00',
-    });
-verify_text(qr(11:00.*mst_event)si);
+    title => 'mst_event',
+    zone => 'MST',
+    start_date => '2/3/2010',
+    end_date => '2/3/2010',
+    start_time => '11:00',
+    end_time => '12:00',
+});
+#TODO: Test the [change] link and changing the time zone
 submit_form({
-        show_in_utc_time => 1,
-        view_events_in_a_list => 1,
-    });
-verify_text(qr(18:00.*mst_event)si);
-follow_link('mst_event', 'delete');
+    show => 1,
+    list => 1,
+});
+case_tag('tz');
+verify_table(start => [
+    [qw(start zone title)],
+    ['02/03/2010 18:00', 'UTC', 'mst_event'],
+]);
+submit_form({
+    show => 0,
+});
+verify_table(start => [
+    [qw(start zone title)],
+    ['02/03/2010 11:00', 'MST', 'mst_event'],
+]);
+follow_link_in_table(qw(start title mst_event actions delete));
 submit_form('delete');
 verify_no_text('mst_event');
 # add repeated events and check number of occurances...
-my($start_date) = Type_Date()->set_beginning_of_month(Type_Date()->now);
-my($repeat_end) = Type_Date()->add_days($start_date, 31);
+my($start_date) = Type_Date('1/1/2010');
+date_time_now($start_date);
+my($repeat_end) = Type_Date()->set_end_of_month($start_date);
 # repeats interval values are the recurrence counts
 # within the start_date to repeat_ends period
+#TODO: this is testing business logic which is for bunits
+#    test stuff that has to do with workflow in btests
+#TODO: test feb 2009, no other months (only links for 1-28)
+# test that we return the month for the starting event, not the subsequent
+#TODO: A hash is in appropriate here, because order matters when debugging
 my($repeats) = {
     every_week => 5,
     every_two_weeks => 3,
     every_four_weeks => 2,
 };
-foreach my $interval (keys %{$repeats}) {
-    follow_link(qw(add_event));
+foreach my $interval (sort(keys(%{$repeats}))) {
+    follow_link('add_event');
     my($title) = random_string();
     submit_form({
 	title => $title,
-	start_date => Type_Date()->to_string($start_date),
+	start_date => $start_date,
 	start_time => '12pm',
-	end_date => Type_Date()->to_string($start_date),
+	end_date => $start_date,
 	end_time => '1 pm',
 	repeats => $interval,
 	repeat_ends => Type_Date()->to_string($repeat_end),
     });
     my($count) = $repeats->{$interval};
-    my($links_regexp);
-    foreach (1..$count) {
-	$links_regexp .= "$title.*";
-    }
-    verify_text(qr($links_regexp)s);
-    foreach my $i (1..$count) {
-	my($link) = $i == $count ? $title : "${title}_".($count-$i);
-	follow_link($link, 'delete');
+    my($pat) = qr(@{[join('.*', map($title, 1 .. $count))]})s;
+    verify_text($pat);
+    verify_no_text(qr{$pat.*$title});
+    foreach my $i (reverse(0 .. $count - 1)) {
+	follow_link(
+	    $title . ($i ? '_' . $i : ''),
+	    'delete',
+	);
 	submit_form('delete');
     }
     verify_no_text($title);
@@ -97,12 +115,12 @@ my($daysevents) = {
     $d3 => [['8am', '9am']],
 };
 my($titles) = [];
-foreach my $devk (sort keys %{$daysevents}) {
+foreach my $devk (sort(keys(%{$daysevents}))) {
     foreach my $d (@{$daysevents->{$devk}}) {
 	my($title) = random_string();
         push(@$titles, $title);
 	my($st, $et) = @$d;
-        follow_link(qw(add_event));
+        follow_link('add_event');
 	submit_form({
 	   title => $title,
 	   start_date => $devk,
@@ -112,18 +130,30 @@ foreach my $devk (sort keys %{$daysevents}) {
 	});
     };
 };
-# note that back is actually going to newer event
-for(my $i = 0; $i < @$titles; $i++) {
-    $i == 0 ? follow_link($titles->[$i]) : follow_link(qr{^back$}i);
-    verify_text($titles->[$i]);
-};
-for(my $i = @$titles - 2; $i >= 0; $i--) {
-    follow_link('next');
-    verify_text($titles->[$i]);
-};
-follow_link('back_to_list');
-for(my $i = 0; $i < @$titles; $i++) {
-    follow_link($titles->[$i], 'delete');
+# note that back is actually going to newer event -- DEPENDS ON SORTING
+#TODO: Fix the code to say Older & Newer
+#TODO: Does this iterate through all events in the calendars?
+foreach my $dir (qw(next back)) {
+    my($not_first) = 0;
+    follow_menu_link('calendar');
+    foreach my $title ($dir eq 'next' ? reverse(@$titles) : @$titles) {
+	follow_link($not_first++ ? qr{^$dir$}i : $title);
+	verify_text($title);
+    }
+    return;
+}
+foreach my $title (@$titles) {
+    follow_link('calendar$');
+#TODO: Need to test navigating through months
+    submit_form(refresh => {
+	_anon => 'Feb 2010',
+    }) unless text_exists($title);
+    follow_link($title);
+    follow_menu_link('delete');
     submit_form('delete');
-};
+}
+#TODO: Test modify, create from All Forums view
+#TODO: Test return to date of event after create/modify
+#TODO: Test today is highlighted
+#TODO: Test create links on empty space in calendar days
 
