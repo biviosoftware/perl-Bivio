@@ -611,11 +611,14 @@ sub _cfg_calendar {
 		b_time_zone => q{Show in Enum([qw(Model.CalendarEventMonthList ->auth_user_time_zone)]); time XLink('set_time_zone');},
 	    ]],
 	    [[qw(CalendarEventList CalendarEventMonthList)] => [
+		[qw(paged_detail paged_list)] => [
+		    list => 'Calendar',
+		],
 		AtomFeed => [
 		    entry_title => q{String(['RealmOwner.display_name']); from DateTime(['CalendarEvent.dtstart'], 'to_string'); to DateTime(['CalendarEvent.dtend'], 'to_string');},
 		    entry_content => q{CalendarEventContent();},
 		],
-		empty_list_prose => 'No events for this forum.',
+		empty_list_prose => 'No events in this time period.',
 	    ]],
 	    [CalendarEventDeleteForm => [
 		'prose.prologue' => q{Are you sure you want to remove SPAN_bold(String([qw(Model.CalendarEventDeleteForm RealmOwner.display_name)])); from the calendar?},
