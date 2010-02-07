@@ -12,6 +12,7 @@ my($_T) = b_use('Type.Time');
 my($_TZ) = b_use('Type.TimeZone');
 my($_FM) = b_use('Type.FormMode');
 my($_A) = b_use('Action.Acknowledgement');
+my($_CEMF) = b_use('Model.CalendarEventMonthForm');
 
 sub execute_empty {
     my($self) = @_;
@@ -68,8 +69,10 @@ sub execute_ok {
 	if $self->in_error;
     $_FM->execute_create($self->req)
 	if $self->is_copy;
-    _create_or_update($self);
-    return _res($self)
+    my($redirect) = _create_or_update($self, 1);
+    return
+	if $self->in_error;
+    return _ack_and_redirect($self, $redirect)
 	if $self->get('recurrence')->eq_unknown;
     $_FM->execute_create($self->req);
     my($days) = $self->get('recurrence')->period_in_days;
@@ -83,7 +86,7 @@ sub execute_ok {
 	    if $_DT->is_less_than($recur_end, $self->get('end_date'));
 	_create_or_update($self);
     }
-    return _res($self);
+    return _ack_and_redirect($self, $redirect);
 }
 
 sub form_mode_as_string {
@@ -166,8 +169,22 @@ sub is_create {
     return $self->req('Type.FormMode')->eq_create;
 }
 
+sub _ack_and_redirect {
+    my($self, $redirect) = @_;
+    $_A->save_label(
+	$self->req('task_id')->get_name
+	    . '.'
+	    . (!$self->get('recurrence')->eq_unknown ? 'recurrence'
+	    : $self->is_copy ? 'copy'
+	    : $self->is_create ? 'create'
+	    : 'edit'),
+	$self->req,
+    );
+    return $redirect;
+}
+
 sub _create_or_update {
-    my($self) = @_;
+    my($self, $want_redirect) = @_;
     my($start) = $_DT->from_date_and_time($self->get(qw(start_date start_time)));
     my($end) = $_DT->from_date_and_time($self->get(qw(end_date end_time)));
     return $self->internal_put_error(end_date => 'MUTUALLY_EXCLUSIVE')
@@ -189,22 +206,16 @@ sub _create_or_update {
 	$self->update_model_properties('CalendarEvent');
 	$self->update_model_properties('RealmOwner');
     }
-    return;
-}
-
-sub _res {
-    my($self) = @_;
-    $_A->save_label(
-	$self->req('task_id')->get_name
-	    . '.'
-	    . (!$self->get('recurrence')->eq_unknown ? 'recurrence'
-	    : $self->is_copy ? 'copy'
-	    : $self->is_create ? 'create'
-	    : 'edit'),
-	$self->req,
-    );
-#TODO: Need to redirect to the right forum's calendar if added in a different forum and not the user's realm.  The date of the start should be the date shown.
-    return;
+    return
+	unless $want_redirect;
+    my($ce) = $self->req('Model.CalendarEvent');
+    return {
+	task_id => 'FORUM_CALENDAR',
+	realm => $self->new_other('RealmOwner')
+	    ->unauth_load_or_die({realm_id => $ce->get('realm_id')})
+	    ->get('name'),
+	query => $_CEMF->date_to_query($ce->get('dtstart')),
+    };
 }
 
 1;
