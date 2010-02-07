@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Util::TestData;
 use strict;
@@ -12,8 +12,41 @@ sub USAGE {
     return <<'EOF';
 usage: bivio TestData [options] command [args..]
 commands
+  clear_calendar_btest
+  init_calendar_btest
   init_search -- files for realm-file-search.btest
 EOF
+}
+
+sub init_calendar_btest {
+    my($self) = @_;
+    $self->initialize_fully;
+    $self->new_other('SQL')->map_invoke(
+	create_user_with_account => [qw(
+	    calendar_btest_user
+	    calendar_btest_adm
+	)],
+    );
+    _do_calendar_btest(sub {
+	my($name) = @_;
+	$self->req->set_realm(undef);
+	$self->model('ForumForm', {
+	    'RealmOwner.display_name'
+		=> b_use('Type.String')->to_camel_case($name),
+	    'RealmOwner.name' => $name,
+	});
+	$self->model(RealmUserAddForm => {
+	    administrator => 1,
+	    'User.user_id' => $self->unauth_realm_id('calendar_btest_adm'),
+	});
+	$self->model(RealmUserAddForm => {
+	    administrator => 0,
+	    'User.user_id' => $self->unauth_realm_id('calendar_btest_user'),
+	    file_writer => 1,
+	}) unless $name =~ /adm_only/;
+	return 1;
+    });
+    return;
 }
 
 sub init_search {
@@ -43,6 +76,33 @@ t,r,5
 T,R,V
 EOF
     });
+    return;
+}
+
+sub reset_calendar_btest {
+    my($self) = @_;
+    return _do_calendar_btest(sub {
+	return $self->req->with_realm(shift, sub {
+	    $self->model('CalendarEvent')->do_iterate(
+	        sub {
+		    shift->cascade_delete;
+		    return 1;
+		},
+	    );
+	    return;
+        });
+    });
+}
+
+sub _do_calendar_btest {
+    my($op) = @_;
+    foreach my $name (qw(
+	calendar_btest_main
+	calendar_btest_adm_only
+	calendar_btest_other
+    )) {
+        $op->($name);
+    }
     return;
 }
 
