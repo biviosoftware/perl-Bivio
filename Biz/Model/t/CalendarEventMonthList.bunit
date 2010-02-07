@@ -89,7 +89,8 @@ my($check_week_list) = sub {
 	    compute_params => sub {
 		my(undef, $params) = @_;
 		model(CalendarEventMonthForm => {
-		    b_month => $params->[0] && Date($params->[0]),
+		    b_month => $params->[0]
+			&& CalendarEventMonthDate($params->[0]),
 		});
 		return [];
 	    },
