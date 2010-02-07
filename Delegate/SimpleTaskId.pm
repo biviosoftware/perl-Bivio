@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::SimpleTaskId;
 # DEPRECATED: Subclass Bivio::Delegate::TaskId for new projects.
@@ -12,11 +12,12 @@ package Bivio::Delegate::SimpleTaskId;
 #	    ]);
 #	}
 use strict;
-use base 'Bivio::Delegate';
+use Bivio::Base 'Bivio::Delegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_INFO_RE) = qr{^info_(.*)};
 my($_INCLUDED) = {};
+my($_PS) = b_use('Auth.PermissionSet');
 
 sub all_components {
     Bivio::IO::Alert->warn_deprecated('use standard_components');
@@ -433,15 +434,15 @@ sub is_component_included {
 }
 
 sub merge_task_info {
-    my($proto) = shift;
+    my($proto, @cfg) = @_;
     my($seen) = {};
-    return [map(
-	$seen->{$_->[0]}++ ? () : $_,
+    return _merge_modifiers($proto, [map(
+	!ref($_) eq 'HASH' && $seen->{$_->[0]}++ ? () : $_,
 	map(@{ref($_) ? $_
 	    : ($_INCLUDED->{$_} = 1, _component_info($proto, $_))[1]},
-	    reverse(@_),
+	    reverse(@cfg),
 	),
-    )];
+    )]);
 }
 
 sub standard_components {
@@ -456,6 +457,48 @@ sub _component_info {
     return $proto->$m();
 }
 
+sub _merge_modifiers {
+    my($self, $cfg) = @_;
+    my($map) = {};
+    foreach my $c (reverse(@$cfg)) {
+	if (ref($c) eq 'HASH') {
+	    $map->{$c->{name}} = {
+		%{$map->{$c->{name}} || b_die($c->{name}, ': not found')},
+		%$c,
+	    };
+	}
+	elsif (ref($c) eq 'ARRAY') {
+	    my($n) = shift(@$c);
+	    $map->{$n} = {
+		name => $n,
+		int => shift(@$c),
+		realm_type => shift(@$c),
+		permissions => shift(@$c),
+		items => [grep(!/=/, @$c)],
+		map(split(/=/, $_, 2), grep(/=/, @$c)),
+	    };
+	}
+	else {
+	    b_die($c, ': invalid config format');
+	}
+    }
+    return [map({
+	my($c) = $_;
+	[
+	    delete(@$c{qw(
+		name
+		int
+		realm_type
+		permissions
+	    )}),
+	    @{delete($c->{items})},
+	    $c,
+	];
+    } sort({$a->{int} <=> $b->{int}} values(%$map)))];
+}
+# sub _merge_modifiers {
+#     return $_[1];
+# }
 sub _sort {
     return $a eq $b ? 0
 	: $a eq 'base' ? -1
