@@ -341,7 +341,10 @@ sub initialize {
 	$proto->new(
 	    $_T->$id_name(),
 	    $_RT->from_any($realm_type),
-	    ${$_PS->from_array([split(/\&/, $perm_spec)])},
+	    ${$_PS->from_array(
+		ref($perm_spec) eq 'ARRAY' ? $perm_spec
+		    : [split(/\&/, $perm_spec)],
+	    )},
 	    $partially ? () : @items,
 	);
     };
@@ -578,7 +581,11 @@ sub _new {
     $_ID_TO_TASK{$id} = $self;
     my(@executables);
     foreach my $i (@items) {
-	if (ref($i) eq 'ARRAY' || $i =~ /=/ && ($i = [split(/=/, $i, 2)])) {
+	if (ref($i) eq 'HASH') {
+	    map(_parse_map_item($attrs, $_, $i->{$_}), sort(keys(%$i)));
+	    next;
+	}
+	elsif (ref($i) eq 'ARRAY' || $i =~ /=/ && ($i = [split(/=/, $i, 2)])) {
 	    _parse_map_item($attrs, @$i);
 	    next;
 	}

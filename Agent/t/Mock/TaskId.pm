@@ -18,14 +18,14 @@ sub get_delegate_info {
             Action.ClientRedirect->execute_next
             next=SITE_ROOT
 	)],
-	[qw(
-	    REDIRECT_TEST_1
-	    501
-	    GENERAL
-	    ANYBODY
-            Action.ClientRedirect->execute_next
-            next=REDIRECT_TEST_2
-	)],
+	[
+	    'REDIRECT_TEST_1',
+	    501,
+	    'GENERAL',
+	    ['ANYBODY'],
+            'Action.ClientRedirect->execute_next',
+            {next => 'REDIRECT_TEST_2'},
+	],
 	[qw(
 	    REDIRECT_TEST_2
 	    502
