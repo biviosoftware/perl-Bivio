@@ -386,6 +386,7 @@ sub _cfg_base {
 	    ]],
 	    [vs_ui => [
 		forum => 'Forum',
+		wiki => 'Wiki',
 	    ]],
 	    ['vs_selector_form.ok_button' => 'Refresh'],
 	    [xlink => [
@@ -871,7 +872,7 @@ sub _cfg_group_admin {
 	    [feature_calendar => 'Calendar'],
 	    [feature_crm => 'Ticket'],
 	    [feature_tuple => 'Tables'],
-	    [feature_wiki => 'Wiki'],
+	    [feature_wiki => 'vs_ui_wiki();'],
 	    [mail_want_reply_to => 'Mail replies go to the vs_ui_forum(); by default'],
             [ForumForm => [
                 'RealmOwner.name' => 'vs_ui_forum();',
@@ -1525,9 +1526,103 @@ sub _cfg_user_auth {
 		USER_SETTINGS_FORM => 'Settings',
 	    ]],
 	    [prose => [
-		password_query_mail_subject => 'vs_site_name(); Password Assistance',
-		create_mail_subject => 'vs_site_name(); Registration Verification',
+		UserAuth => [
+		    general_contact_mail => [
+			subject => q{vs_site_name(); Web Contact},
+		    ],
+		    password_query_mail => [
+			subject => 'vs_site_name(); Password Assistance',
+			body => <<'EOF',
+Please follow the link to reset your password:
+
+Join([['Model.UserPasswordQueryForm', 'uri']]);
+
+For your security, this link may be used one time only to set your
+password.
+
+You may contact customer support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
+EOF
+		    ],
+		    'create_done.body' => <<'EOF',
+We have sent a confirmation email to
+String(['Model.UserRegisterForm', 'Email.email']);.
+Please follow the instructions in this email message to complete
+your registration with vs_site_name();.
+EOF
+		    create_mail => [
+			subject => 'vs_site_name(); Registration Verification',
+			body => <<'EOF',
+Thank you for registering with vs_site_name();.
+In order to complete your registration, please click on the
+following link:
+
+String(['Model.UserRegisterForm', 'uri']);
+
+For your security, this link may be used one time only to set your
+password.
+
+You may contact customer support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
+EOF
+		    ],
+		    'missing_cookies.body' => <<'EOF',
+Join([
+    P('It seems that your browser does not support cookies, or cookies have been disabled. Cookies are required for you to sign-in.'),
+    H3('Enabling Cookies in your Browser'),
+    P(q{The members area application requires the use of Cookies. By default, cookies are enabled in your browser. If you were directed to this page by our software, you or someone else has disable cookies in your browser. The following instructions are meant as a guide only. Please consult your browser's help system for a complete description. Scroll down this page until you find your browser. We apologize if your browser isn't in our list yet.}),
+    map((
+	H4(shift(@$_)),
+	OL(Join([map(LI($_), @$_)])),
+    ), [
+	'Internet Explorer 6.0',
+	'Click on the Tools menu (at the very top of your window)',
+	'Select Internet Options',
+	'Switch to the Privacy tab',
+	'Slide the vertical slider to Medium',
+    ], [
+	'AOL 6.0 and above',
+	'Click on My AOL at the top of the AOL window',
+	'Select Preferences from the menu',
+	'Click on the WWW icon',
+	'Switch to the Privacy tab',
+	'Slide the vertical slider to Medium',
+    ], [
+	'Older Internet Explorer Versions',
+	'Click on the Tools menu (at the very top of your window)',
+	'Select Internet Options',
+	'Switch to the Security tab',
+	'Click on Internet in the Select a Web content zone',
+	'Further down, press the Custom Level button',
+	'Scroll down to the Cookies section in the Settings box',
+	'Click on Enable for Allow cookies that are stored option',
+	'Click on Enable for Allow per-session cookies option',
+    ], [
+	'Older AOL Versions',
+	'Click on My AOL at the top of the AOL window',
+	'Select Preferences from the menu',
+	'Click on the WWW icon',
+	'Click on Internet in the Select a Web content zone',
+	'Further down, press the Custom Level button',
+	'Scroll down to the Cookies section in the Settings box',
+	'Click on Enable for Allow cookies that are stored option',
+	'Click on Enable for Allow per-session cookies option',
+    ], [
+	'Netscape Communicator',
+	'Click on the Edit menu (at the very top of your window)',
+	'Select Preferences',
+	'Click on Advanced in the Category box',
+	'Click on Accept all cookies in the Cookies box',
+    ]),
+]);
+EOF
+		],
 	    ]],
+
 	],
     };
 }
@@ -1572,8 +1667,8 @@ sub _cfg_wiki {
 	],
 	Text => [
 	    [WikiValidator => [
-		title => 'Wiki errors:',
-		subject => q{Wiki Errors},
+		title => 'vs_ui_wiki(); errors:',
+		subject => q{vs_ui_wiki(); Errors},
 	    ]],
 	    ['WikiView.start_page' => 'StartPage'],
 	    [WikiForm => [
@@ -1582,13 +1677,13 @@ sub _cfg_wiki {
 		'RealmFile.is_public' => 'Make this article publicly available?',
 	    ]],
 	    [title => [
-		FORUM_WIKI_NOT_FOUND => 'Wiki Page Not Found',
+		FORUM_WIKI_NOT_FOUND => 'vs_ui_wiki(); Page Not Found',
 		HELP_NOT_FOUND => 'Help Page Not Found',
 		HELP => 'Help',
-		FORUM_WIKI_EDIT => 'Edit Wiki Page',
-		FORUM_WIKI_VERSIONS_LIST => 'Wiki Page History',
-		FORUM_WIKI_VERSIONS_DIFF => 'Wiki Versions Comparison',
-		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'Wiki',
+		FORUM_WIKI_EDIT => 'Edit vs_ui_wiki(); Page',
+		FORUM_WIKI_VERSIONS_LIST => 'vs_ui_wiki(); Page History',
+		FORUM_WIKI_VERSIONS_DIFF => 'vs_ui_wiki(); Versions Comparison',
+		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'vs_ui_wiki();',
 		SITE_WIKI_VIEW => '',
 		forum_wiki_data => 'Files',
 	    ]],
