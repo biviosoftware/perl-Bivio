@@ -98,8 +98,14 @@ sub internal_xhtml_adorned {
 	xhtml_byline => '',
 	vs_pager => '',
 	xhtml_menu => $_WANT_USER_AUTH ? TaskMenu(['USER_PASSWORD']) : '',
+	xhtml_want_first_focus => 1,
+	xhtml_body_first => Join([
+	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
+            vs_first_focus(view_widget_value('xhtml_want_first_focus')),
+	]),
     );
     return Page3({
+	body_first => view_widget_value('xhtml_body_first'),
 	head2 => Join([
 	    P_realm(view_widget_value('xhtml_realm')),
 	    P_menu(view_widget_value('xhtml_menu')),
@@ -111,6 +117,7 @@ sub internal_xhtml_adorned {
 	    LOGGED_IN => XLink('LOGOUT'),
 	}) : '',
 	content => Join([
+	    view_widget_value('xhtml_body_first'),
 	    DIV_top(Join([
 		DIV_tools(Join([
 		    view_widget_value('xhtml_tools'),
