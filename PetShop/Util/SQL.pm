@@ -144,7 +144,6 @@ sub create_user_with_account {
 	name => $user,
 	display_name => join(' ', ucfirst($user), $self->DEMO_LAST_NAME),
     });
-    $self->print("Created user $user\n");
     return;
 }
 
@@ -202,6 +201,7 @@ sub initialize_test_data {
     _init_mail($self);
     $self->new_other('TestCRM')->init;
     $self->new_other('TestData')->init_search;
+    $self->new_other('TestData')->init_calendar_btest;
     _init_remote_copy($self);
     _init_task_log($self);
     _init_bulletin($self);
