@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.74  2010/02/07 19:12:28  nagler
+  * Bivio::Biz::Model::CalendarEventMonthList
+    b_month is now correctly initialzied CalendarEventForm
+  * Bivio::Biz::Model::RealmFileTreeList
+    cleaned up permissions
+    some formatting
+  * Bivio::Delegate::TaskId
+    added write_task to FORUM_FILE_TREE_LIST
+
   Revision 8.73  2010/02/07 00:56:53  nagler
   * Bivio::Biz::Model::CalendarEventDayList
     detail_uri not needed
