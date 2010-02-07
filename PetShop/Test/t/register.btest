@@ -2,6 +2,15 @@
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
+follow_link(qw(register login));
+clear_cookies();
+submit_form({
+    email => 'root',
+    password => default_password(),
+});
+verify_text('seems that your browser');
+clear_cookies();
+home_page();
 follow_link('register');
 submit_form({
     name => 'My Name',
