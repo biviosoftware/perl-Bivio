@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.72  2010/02/03 23:24:57  nagler
+  * Bivio::UI::View::CSS
+    changed dd_menu top to 3ex for MSIE
+
   Revision 8.71  2010/02/03 17:44:24  nagler
   * Bivio::UI::Font
     use ->req, not  in FacadeComponent.Font->format_html
