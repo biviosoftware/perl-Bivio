@@ -97,6 +97,7 @@ Request();
 		return 1;
 	    },
 	    sub {
+		req()->put(is_production => 1);
 		Bivio::IO::File->write($_LOG, '');
 		return [parse_errors => 5];
 	    } => qr/error file missing or empty/,
