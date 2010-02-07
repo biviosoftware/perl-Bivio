@@ -53,9 +53,6 @@ sub initialize {
 				 ),
 			     ]);
 			}],
-			{
-			    id => lc($first_rt) . '_drop_down',
-			},
 		    ),
 		),
 	    ),

@@ -251,7 +251,6 @@ sub vs_filter_query_form {
     return Form($form || 'FilterQueryForm', Grid([[
 	$attrs->{text} || ClearOnFocus(Text({
 	    field => 'b_filter',
-	    id => 'b_filter',
 	    size => int(b_use('Type.Line')->get_width / 2),
 	}),
 	    ['Model.' . ($form || 'FilterQueryForm'),

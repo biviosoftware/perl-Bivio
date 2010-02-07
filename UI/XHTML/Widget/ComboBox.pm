@@ -29,6 +29,7 @@ sub initialize {
 	    "];\n",
 	]),
     );
+    $self->put(_html_id => JavaScript()->unique_html_id());
     $self->put(values => [
 	Script('common'),
 	Script('b_combo_box'),
@@ -61,9 +62,7 @@ sub _drop_down_id {
     my($self) = @_;
     return [sub {
         my($source, $field) = @_;
-	$field =~ s/\W//g;
-	return 'combobox_drop_down_'
-	    . $field
+	return $self->get('_html_id')
 	    . ($source->can('get_list_model')
 		   ? '_' . $source->get_list_model->get_cursor
 		   : '');

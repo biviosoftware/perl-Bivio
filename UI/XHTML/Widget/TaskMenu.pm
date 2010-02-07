@@ -222,7 +222,6 @@ sub _want_more {
 	    String('more'),
 	    DIV_dd_menu(
 		Join([splice(@$buffers, $wmc)]),
-		{id => 'more_drop_down'},
 	    ),
 	),
 	{class => 'task_menu_wrapper want_sep'},

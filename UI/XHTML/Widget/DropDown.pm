@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::DropDown;
 use strict;
@@ -9,8 +9,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
+    my($w) = $self->get_nested('widget');
     $self->put_unless_exists(link_class => 'dd_link');
-    my($id) = $self->get_nested(qw(widget id));
+    my($id) = $w->get_if_exists_else_put(
+	id => sub {JavaScript()->unique_html_id});
     $self->die($id, undef, 'widget.id is not JS identifier')
 	unless $id =~ /^[a-z]\w+$/s;
     my($local) = JavaScript()->var_name("drop_down_$id");

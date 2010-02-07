@@ -36,7 +36,7 @@ sub initialize {
 	    DIV_dd_menu(TaskMenu([
 		@{$self->get_or_default(extra_items => [])},
                 $self->TASK_MENU_LIST,
-	    ]), {id => 'admin_drop_down'}),
+	    ])),
 	),
     );
     return shift->SUPER::initialize(@_);
