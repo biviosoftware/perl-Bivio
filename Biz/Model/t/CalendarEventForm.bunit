@@ -1,6 +1,6 @@
 # Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-FormModel();
+FormModel({comparator => 'nested_contains'});
 my(undef) = do('./CalendarEvent.PL');
 my($id_by_location) = sub {
     return unauth_model('CalendarEvent', {
@@ -19,6 +19,17 @@ my($create_params) = sub {
 	end_time => Time('10:00'),
 	recurrence => CalendarEventRecurrence('UNKNOWN'),
     };
+};
+my($check_display_name) = sub {
+    my($expect) = @_;
+    return inline_case(sub {
+	unauth_model(
+	    'RealmOwner',
+	    {realm_id => req(qw(Model.CalendarEvent calendar_event_id))},
+	    [{display_name => $expect}],
+	);
+        return;
+    });
 };
 [
     req_state({
@@ -43,10 +54,8 @@ my($create_params) = sub {
 	    dtstart => DateTime('1/1/2010 9:00:00'),
 	    dtend => DateTime('1/2/2010 10:00:00'),
 	},
-	'Model.RealmOwner' => {
-	    display_name => 'E1',
-	},
     }],
+    $check_display_name->('E1'),
     req_state({
 	user => 'root',
 	realm => 'fourem',
@@ -68,10 +77,8 @@ my($create_params) = sub {
 	    dtstart => DateTime('1/8/2010 12:00:00'),
 	    dtend => DateTime('1/9/2010 15:00:00'),
 	},
-	'Model.RealmOwner' => {
-	    display_name => 'E2',
-	},
     }],
+    $check_display_name->('E2'),
     req_state({
 	user => 'btest_read',
 	query => sub {+{
