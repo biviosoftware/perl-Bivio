@@ -15,10 +15,6 @@ sub internal_initialize {
     });
 }
 
-sub detail_uri {
-    return shift->format_uri('THIS_DETAIL', 'FORUM_CALENDAR_EVENT_DETAIL');
-}
-
 sub internal_load_rows {
     my(undef, $query) = @_;
     return $query->get_and_delete('b_rows');
