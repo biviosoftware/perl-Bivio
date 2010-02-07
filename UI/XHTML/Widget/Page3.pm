@@ -23,6 +23,7 @@ sub new {
 	['foot2'],
 	[foot3 => vs_text_as_prose('xhtml_copyright')],
 	[style => StyleSheet('/f/base.css')],
+	[body_first => '<a name="top"></a>'],
     ));
     return $proto->SUPER::new($attrs)->put_unless_exists(
 	head => Join([
@@ -30,7 +31,7 @@ sub new {
 	    view_widget_value('page3_meta_info'),
 	]),
 	body => Join([
-	    '<a name="top"></a>',
+	    view_widget_value('page3_body_first'),
 	    DIV_head(Join([
 		map(
 		    DIV(view_widget_value("page3_head$_"), "head$_"),
