@@ -453,7 +453,7 @@ sub init_realm_role_with_config {
     my($self, $config) = @_;
     my($rr) = $self->new_other('RealmRole');
     my($cmd);
-    foreach my $line (@$config) {
+    foreach my $line (ref($config) ? @$config : split(/\n/, $config)) {
 	next if $line =~ /^\s*(#|$)/;
 	$cmd .= $line;
 	next if $cmd =~ s/\\$/ /;
