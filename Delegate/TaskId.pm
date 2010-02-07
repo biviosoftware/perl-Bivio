@@ -2,10 +2,10 @@
 # $Id$
 package Bivio::Delegate::TaskId;
 use strict;
-use base 'Bivio::Delegate::SimpleTaskId';
+use Bivio::Base 'Delegate.SimpleTaskId';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_C) = __PACKAGE__->use('IO.Config');
+my($_C) = b_use('IO.Config');
 
 sub ALL_INFO {
     #DEPRECATED
@@ -274,7 +274,7 @@ sub info_blog {
 			FORUM_BLOG_DETAIL
 			102
 			ANY_OWNER
-			ANYBODY&FEATURE_BLOG
+			FEATURE_BLOG
 			Model.BlogRecentList->execute_load_all
 			Model.BlogList->execute_load_this
 			View.Blog->detail
@@ -283,7 +283,7 @@ sub info_blog {
 			FORUM_BLOG_LIST
 			103
 			ANY_OWNER
-			ANYBODY&FEATURE_BLOG
+			FEATURE_BLOG
 			Model.BlogRecentList->execute_load_all
 			Model.BlogList->execute_load_page
 			View.Blog->list
@@ -292,7 +292,7 @@ sub info_blog {
 			FORUM_BLOG_RSS
 			107
 			ANY_OWNER
-			ANYBODY&FEATURE_BLOG
+			FEATURE_BLOG
 			Model.BlogList->execute_load_page
 			View.Blog->list_rss
 			html_task=FORUM_BLOG_LIST
