@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,54 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.73  2010/02/07 00:56:53  nagler
+  * Bivio::Biz::Model::CalendarEventDayList
+    detail_uri not needed
+  * Bivio::Biz::Model::CalendarEventForm
+    return to the calendar page which has the date fo the first event
+  * Bivio::Biz::Model::CalendarEventMonthForm
+    encapsulate beginning_of_month in CalendarEventMonthDate
+  * Bivio::Biz::Model::MonthList
+    encapsulate beginning_of_month in CalendarEventMonthDate
+  * Bivio::PetShop::Util::SQL
+    init_calendar_btest
+    removed "Created $user"
+  * Bivio::PetShop::Util::TestData
+    added init_calendar_btest and reset_calendar_btest
+  * Bivio::Test::HTMLParser::Links
+    don't record link if there's an onclick and href=#
+  * Bivio::Test::Language::HTTP
+    added date_time_now(), follow_menu_link() (name may change), and case_tag()
+  * Bivio::Type::CalendarEventMonthDate
+    NEW
+  * Bivio::Type::DateTime
+    TEST_NOW_QUERY_KEY added
+    set_date_time now returns the now it sets
+  * Bivio::UI::FacadeBase
+    minor calendar support
+  * Bivio::UI::HTML::Widget::JavaScript
+    unique_html_id
+  * Bivio::UI::View::Calendar
+    When editing or in detail, go to the forum, not user realm
+  * Bivio::UI::XHTML::ViewShortcuts
+    id's are generated dynamically by JavaScript
+  * Bivio::UI::XHTML::Widget::ComboBox
+    id's are generated dynamically by JavaScript
+  * Bivio::UI::XHTML::Widget::DropDown
+    id's are generated dynamically by JavaScript
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    id's are generated dynamically by JavaScript
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    id's are generated dynamically by JavaScript
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    id's are generated dynamically by JavaScript
+  * Bivio::Util::HTTPStats
+    backticks to piped_exec
+  * Bivio::Util::Release
+    remove reference to customer
+  * Bivio::Util::SQL
+    init_realm_role_with_config accepts a string also
+
   Revision 8.72  2010/02/03 23:24:57  nagler
   * Bivio::UI::View::CSS
     changed dd_menu top to 3ex for MSIE
