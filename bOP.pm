@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,35 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.75  2010/02/07 23:57:37  nagler
+  * Bivio::Agent::Task
+    accept an array for permissions_spec
+    accept a hash for attributes
+  * Bivio::Agent::t::Mock::TaskId
+    accept an array for permissions_spec
+    accept a hash for attributes
+  * Bivio::Biz::Model::GroupUserForm
+    roles_by_category could be undef so don't assume set
+  * Bivio::Delegate::SimpleTaskId
+    added _merge_modifiers which allows applications to modify an existing
+    task's config instead of having to copy it.
+  * Bivio::Delegate::TaskId
+    fix permissions on BLOG (only need FEATURE_BLOG not alos ANYBODY(implied)
+  * Bivio::PetShop::Delegate::TaskId
+    use task modifiers
+  * Bivio::UI::FacadeBase
+    support for UserAuth
+  * Bivio::UI::View::Base
+    turn on first_focus using page3_body_first
+  * Bivio::UI::View::CSS
+    pass $source to internal_site_css
+  * Bivio::UI::View::UserAuth
+    move all text except unapproved_applicant_mail to Facade
+  * Bivio::UI::ViewShortcuts
+    vs_ui_wiki();
+  * Bivio::UI::XHTML::Widget::Page3
+    added page3_body_first
+
   Revision 8.74  2010/02/07 19:12:28  nagler
   * Bivio::Biz::Model::CalendarEventMonthList
     b_month is now correctly initialzied CalendarEventForm
