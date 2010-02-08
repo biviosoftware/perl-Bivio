@@ -1453,10 +1453,10 @@ sub _cfg_user_auth {
 		],
 	    ]],
 	    [password => 'Password'],
+	    [confirm_password => 'Re-enter Password'],
+	    ['confirm_password.field_description' => q{Enter your password again.}],
 	    [[qw(UserCreateForm UserRegisterForm)]  => [
 		ok_button => 'Register',
-		'confirm_password.field_description' => q{Enter your password again.},
-		confirm_password => 'Re-enter Password',
 		prose => [
 		    prologue => q{P(XLink('GENERAL_USER_PASSWORD_QUERY'));},
 		    epilogue => q{P(XLink('login_no_context'));},
