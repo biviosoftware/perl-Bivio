@@ -1462,10 +1462,10 @@ sub _cfg_user_auth {
 		    epilogue => q{P(XLink('login_no_context'));},
 		],
 	    ]],
+	    [old_password => 'Current Password'],
+	    [new_password => 'New Password'],
+	    [confirm_new_password => 'Re-enter New Password'],
 	    [UserPasswordForm => [
-		old_password => 'Current Password',
-		new_password => 'New Password',
-		confirm_new_password => 'Re-enter New Password',
 		ok_button => 'Update',
 	    ]],
 	    [[qw(UserSettingsListForm UserSubscriptionList)] => [
