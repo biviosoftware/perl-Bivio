@@ -44,7 +44,9 @@ sub help {
 # Why can't this be inline?
 	xhtml => 1,
 	style => view_widget_value('xhtml_style'),
-	head => Simple(''),
+	head => Join([
+	    vs_text_as_prose('xhtml_head_title'),
+	]),
 	body => Join([
 	Join([<<"EOF"]),
 <script type="text/javascript">
