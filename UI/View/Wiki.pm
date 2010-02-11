@@ -47,7 +47,7 @@ sub help {
 	head => Simple(''),
 	body => Join([
 	Join([<<"EOF"]),
-<script>
+<script type="text/javascript">
 window.onload=function(){
   parent.@{[HelpWiki()->RESIZE_FUNCTION]}();
 }
