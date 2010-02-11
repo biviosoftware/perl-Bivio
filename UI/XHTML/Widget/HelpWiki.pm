@@ -155,7 +155,7 @@ sub _link_add {
 sub _link_close {
     return Link(
 	vs_text_as_prose('help_wiki_close'),
-	'javascript: parent.help_wiki_toggle()',
+	'javascript:parent.help_wiki_toggle()',
         'close',
     );
 }
@@ -175,7 +175,7 @@ sub _link_open {
 		_uri('FORUM_WIKI_VIEW')),
 	    widget => Link(
 		vs_text_as_prose('help_wiki_open'),
-		'javascript: help_wiki_toggle()',
+		'javascript:help_wiki_toggle()',
 		{
 		    id => 'help_wiki_open',
 		    class => 'help_wiki_open',
