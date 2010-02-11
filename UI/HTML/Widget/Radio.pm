@@ -135,7 +135,7 @@ sub control_on_render {
 		Bivio::HTML->escape($value))
 	    . "\""
 	    . ($fields->{auto_submit} ? ' onclick="submit()"' : '')
-	    . ">&nbsp;";
+	    . " />&nbsp;";
 
     my($label) = $self->get('label');
     if (UNIVERSAL::isa($label, 'Bivio::UI::Widget')) {
