@@ -51,8 +51,8 @@ EOF
     # draw the javascript text within a document.write()
     my($str) = '';
     $self->get('widget')->render($source, \$str);
-    # escape any single quotes
-    $str =~ s|'|\\'|g;
+    # escape single quotes, escape < and / per w3 validator
+    $str =~ s|([</'])|\\$1|g;
     # ensure it is one line
     $str =~ s|\n| |g;
     $$buffer .= "document.write('".$str."');
