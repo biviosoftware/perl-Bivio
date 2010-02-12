@@ -20,14 +20,6 @@ options({
             fourem-sub1-1
             fourem-sub2
         ))],
-        [ShellUtil_SQL()->CRM_TECH(1), 'forum'] => [map(+{
-            'RealmOwner.name' => $_,
-            link => '/' . $_,
-        }, qw(
-            crm_forum
-            crm_tuple_bunit
-            crm_tuple_forum
-        ))],
         [ShellUtil_SQL()->BTEST_READ, 'club'] => [],
     ],
 ];
