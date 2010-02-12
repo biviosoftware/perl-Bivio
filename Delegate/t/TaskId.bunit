@@ -4,9 +4,27 @@
     class() => [
 	bunit_validate_all => undef,
 	merge_task_info => [
-	    xapian => [class()->info_xapian()],
-	    [[[a => 1]], [[b => 2]]] => [[[b => 2], [a => 1]]],
-	    [[[a => 1]], [[a => 3], [b => 2]]] => [[[a => 3], [b => 2]]],
+	    xapian => [[
+		[qw(
+		    JOB_XAPIAN_COMMIT
+		    60
+		    GENERAL
+		    ANYBODY
+		    Search.Xapian
+		), {}],
+		[qw(
+		    SEARCH_LIST
+		    61
+		    GENERAL
+		    ANYBODY
+		    Model.SearchForm
+		    Model.SearchList->execute_load_page
+		    View.Search->list
+		), {next => 'SEARCH_LIST'},
+		],
+	    ]],
+	    [[[a => 1]], [[b => 2]]] => [[[a => 1, undef, undef, {}], [b => 2, undef, undef, {}]]],
+	    [[[a => 1]], [[a => 3], [b => 2]]] => [[[b => 2, undef, undef, {}], [a => 3, undef, undef, {}]]],
 	],
     ],
 ];
