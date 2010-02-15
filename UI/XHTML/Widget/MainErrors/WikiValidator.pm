@@ -34,7 +34,7 @@ sub handle_render_main_errors {
     return
 	unless my $wv = $_WV->unsafe_self_from_req($source->req);
     Join([
-	DIV_b_title(vs_text('WikiValidator.title')),
+	DIV_b_title(vs_text_as_prose('WikiValidator.title')),
 	$self->error_list_widget,
     ])->initialize_and_render(@_)
 	if $wv->unsafe_load_error_list;
