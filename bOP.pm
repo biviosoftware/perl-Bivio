@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.76  2010/02/08 01:17:20  nagler
+  * Bivio::UI::FacadeBase
+    old_password, new_password, confirm_new_password at outerlevel
+    fpc
+
   Revision 8.75  2010/02/07 23:57:37  nagler
   * Bivio::Agent::Task
     accept an array for permissions_spec
