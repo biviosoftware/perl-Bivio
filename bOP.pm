@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,43 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.78  2010/02/17 01:59:49  nagler
+  * Bivio::Agent::HTTP::Request
+    call internal_call_handlers in server_redirect
+  * Bivio::Agent::Request
+    added internal_call_handlers to handle_server_redirect
+  * Bivio::Agent::TaskEvent
+    don't carry_* if there's nothing to carry
+  * Bivio::Biz::Action::Acknowledgement
+    Register for handle_server/client_redirect so ack carried properly
+  * Bivio::Biz::ExpandableListFormModel
+    don't rely on buttons passed to internal_pre_execute
+  * Bivio::Biz::FormContext
+    carry query properly in the event of context
+  * Bivio::Biz::FormModel
+    refactored execute_ok handling (both direct calls and http processing)
+    internal_post_execute is called in all cases now
+    deal with carrying query on Acknowledgements
+  * Bivio::Biz::ListModel
+    b_use and fmt
+  * Bivio::Biz::Model::CalendarEventForm
+    used 'acknowledgement' attribute on return to FormModel
+  * Bivio::PetShop::View::Base
+    dynamic dock
+  * Bivio::UI::FacadeBase
+    ack for USER_SETTINGS_FORM
+  * Bivio::UI::HTML::ViewShortcuts
+    removed vs_acknowledgement
+  * Bivio::UI::View::ThreePartPage
+    factor out vs_rss_task_in_head()
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_rss_task_in_head to share with Page3
+  * Bivio::UI::XHTML::Widget::Acknowledgement
+    use extract_and_delete_label
+    Fix up calling structure for Widgets
+  * Bivio::UI::XHTML::Widget::Pager
+    fmt
+
   Revision 8.77  2010/02/15 22:37:05  moeller
   * Bivio::UI::HTML::Widget::Radio
     made XHTML conformant
