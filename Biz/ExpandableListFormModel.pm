@@ -125,7 +125,7 @@ sub validate {
     # Responds to button click on 'add_rows', save the values on the
     # request and redirects to the same task.
     return shift->SUPER::validate(@_)
-	unless $form_button eq 'add_rows';
+	unless $self->unsafe_get('add_rows');
     my($req) = $self->get_request;
     # increment the empty_row count and redirect to the same task
     $self->internal_put_field(empty_row_count =>
