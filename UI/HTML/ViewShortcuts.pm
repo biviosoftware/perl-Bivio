@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::ViewShortcuts;
 use strict;
@@ -114,30 +114,6 @@ user_state
 value
 want_sep
     )];
-}
-
-sub vs_acknowledgement {
-    # (proto) : UI.Widget
-    # (proto, boolean) : UI.Widget
-    # Display acknowledgement, if it exists or can be extracted.  Sets row_control on
-    # the widget.  Dies if die_if_not_found is specified and the acknowledgement is
-    # missing (does not extract_label in this case).
-    my($proto, $die_if_not_found) = @_;
-    return $proto->vs_call('Tag', 'p',
-        [sub {
-             my($req) = shift->get_request;
-             return __PACKAGE__->vs_call('String',
-                 __PACKAGE__->vs_call('Prose',
-                     Bivio::UI::Text->get_value('acknowledgement',
-                         $req->get_nested('Action.Acknowledgement', 'label'),
-                         $req)),
-             );
-         }],
-	'acknowledgement',
-        $die_if_not_found ? ()
-        : {
-            row_control => [sub {$_AA->extract_label(shift->req)}],
-        });
 }
 
 sub vs_alphabetical_chooser {
