@@ -11,7 +11,9 @@ sub internal_xhtml_adorned {
     my($self) = shift;
     my(@res) = $self->SUPER::internal_xhtml_adorned(@_);
     view_unsafe_put(
-	xhtml_dock_left => vs_text_as_prose('xhtml_dock_left_standard'),
+	xhtml_dock_left => [sub {
+            return vs_text_as_prose('xhtml_dock_left_standard');
+	}],
 	xhtml_dock_center => Link(String('PetShop'), 'SITE_ROOT'),
 	xhtml_header_center => IfWiki(
 	    '/StartPage',
