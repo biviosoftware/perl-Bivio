@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::Pager;
 use strict;
-use base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 use Bivio::Biz::QueryType;
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
@@ -40,8 +40,8 @@ sub render {
     my($req) = $source->get_request;
     my($key) = 'Model.' . $self->get('list_class');
     my($query) = $req->get($key)->get_query;
-    return unless $query->get('has_next') || $query->get('has_prev');
-
+    return
+	unless $query->get('has_next') || $query->get('has_prev');
     $self->get('_prev')->render($req, $buffer);
     my($no_sep) = 0;
     foreach my $page (@{_get_page_numbers($self, $query)}) {
