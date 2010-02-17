@@ -624,11 +624,11 @@ sub internal_put_field {
 }
 
 sub internal_redirect_next {
-    my($self) = @_;
+    my($self, $extra_query) = @_;
     # Redirects to the next form task. This can be used to double unwind
     # a form context, popping another level when called from
     # L<execute_unwind|"execute_unwind">.
-    return _redirect($self, 'next');
+    return _redirect($self, 'next', $extra_query);
 }
 
 sub internal_stay_on_page {
@@ -726,31 +726,19 @@ sub process {
 
     # Called as an action internally, process values.  Do no validation.
     if ($values) {
-	$values = {%$values};
+	$values = {
+	    $self->OK_BUTTON_NAME => 1,
+	    %$values,
+	};
 	$self->internal_pre_parse_columns;
 	$self->internal_post_parse_columns($values);
 	$fields->{literals} = {};
 	# Forms called internally don't have a context.  Form models
 	# should blow up.
-	if ($self->get_info('require_validate')) {
-	    my($res) = $self->internal_pre_execute('validate_and_execute_ok');
-	    return $res
-		if $res;
-	    $self->validate;
-	}
-	else {
-	    my($res) = $self->internal_pre_execute('execute_ok');
-	    return $res
-		if $res;
-	}
-	unless ($self->in_error) {
-	    my($res) = _call_execute_ok(
-		$self, 'execute_ok', $self->OK_BUTTON_NAME);
-	    return $res
-		if $res;
-	    return 0
-		unless $self->in_error;
-	}
+	my($res) = _call_execute_ok(
+	    $self, $self->OK_BUTTON_NAME, $self->get_info('require_validate'));
+	return $res || 0
+	    unless $self->in_error;
 	if ($_TRACE) {
 	    my($msg) = '';
 	    my($e) = $self->get_errors;
@@ -941,55 +929,34 @@ sub validate_and_execute_ok {
     # changes on errors.
     my($req) = $self->get_request;
     my($fields) = $self->[$_IDI];
-
-    # If the form has errors, the transaction will be rolled back.
-    # validate is always called so we try to return as many errors
-    # to the user as possible.
-    my($res) = $self->internal_pre_execute('validate_and_execute_ok');
-    return $res
-	if $res;
-    $self->validate($form_button);
-    if ($self->in_error) {
-	_put_file_field_reset_errors($self);
-	$res = $self->internal_post_execute('validate_and_execute_ok');
-	return $res
-	    if $res;
-    }
-    else {
-	# Catch errors and rethrow unless we can process
-	my($res) = _call_execute_ok(
-	    $self, 'validate_and_execute_ok', $form_button);
-	$_A->save_label(
-	    undef,
+    my($res) = _call_execute_ok($self, $form_button, 1);
+    unless ($self->in_error || $fields->{stay_on_page}) {
+	my($query) = $_A->save_label(
+	    ref($res) eq 'HASH' ? delete($res->{acknowledgement}) : undef,
 	    $req,
-	    ref($res) eq 'HASH' ? ($res->{query} ||= {}) : (),
-	) unless $self->in_error || $fields->{stay_on_page};
-	return _assert_ok_result($self, $res)
-	    if $res;
-	if ($self->in_error) {
-	    _put_file_field_reset_errors($self);
-	}
-	elsif ( ! $fields->{stay_on_page}) {
-	    return $self->internal_redirect_next;
-	}
+	    ref($res) eq 'HASH' ? ($res->{query} ||= {}) : {},
+	);
+	return $res
+	    || $self->internal_redirect_next($query);
     }
-    $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
-	if $self->in_error;
-    unless ($fields->{stay_on_page}) {
-	$_T->rollback($req);
-	if (my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task')) {
-	    $self->put_on_request(1);
-	    return {
-		method => 'server_redirect',
-		task_id => $t,
-		map(($_ => $req->unsafe_get($_)), qw(
-		    query
-		    path_info
-		)),
-	    };
-	}
-    }
-    return 0;
+    $self->die($res, ': non-zero result and stay_on_page or error')
+	if $_V1 && $res;
+    return 0
+	if $fields->{stay_on_page};
+    $_T->rollback($req);
+    return 0
+	unless my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task');
+    _execute_ok_in_error($self);
+    $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details);
+    $self->put_on_request(1);
+    return {
+	method => 'server_redirect',
+	task_id => $t,
+	map(($_ => $req->unsafe_get($_)), qw(
+	    query
+	    path_info
+	)),
+    };
 }
 
 sub validate_greater_than_zero {
@@ -1061,14 +1028,6 @@ sub _apply_type_error {
     return;
 }
 
-sub _assert_ok_result {
-    my($self, $res) = @_;
-    my($fields) = $self->[$_IDI];
-    $self->die('non-zero result and stay_on_page or error')
-	if $_V1 && ($self->in_error || $fields->{stay_on_page});
-    return $res;
-}
-
 sub _call_execute {
     my($self, $method) = (shift, shift);
     return $self->internal_pre_execute($method)
@@ -1076,35 +1035,40 @@ sub _call_execute {
 }
 
 sub _call_execute_ok {
-    my($self, $method, $form_button) = @_;
-    # Calls "execute_ok" without wrappers, and catches any DB_CONSTRAINT
-    # violations.
-    my($res);
-    my($die) = $_D->catch(sub {
-        $res = $self->want_scalar($self->execute_ok($form_button));
-	return;
-    });
-    if ($die) {
-	if ($die->get('code')->eq_db_constraint) {
-	    # Type errors are "normal"
-	    _apply_type_error($self, $die);
-	}
-	else {
-	    $die->throw_die;
-	    # DOES NOT RETURN
+    my($self, $form_button, $validate) = @_;
+    my($method) = $validate ? 'validate_and_execute_ok' : 'execute_ok';
+    my($res) = $self->internal_pre_execute($method);
+    return $res
+	if $res;
+    $self->validate($form_button)
+	if $validate;
+    unless ($self->in_error) {
+	my($die) = $_D->catch(sub {
+	    $res = $self->want_scalar($self->execute_ok($form_button));
+	    return;
+	});
+	if ($die) {
+	    if ($die->get('code')->eq_db_constraint) {
+		# Type errors are "normal"
+		_apply_type_error($self, $die);
+	    }
+	    else {
+		$die->throw_die;
+		# DOES NOT RETURN
+	    }
 	}
     }
     return _post_execute($self, $method, $res);
 }
 
 sub _carry_path_info_and_query {
-    return $_V9 ? (
+    return $_V9 ? {
 	carry_path_info => 0,
 	carry_query => 0,
-    ) : (
+    } : {
 	carry_path_info => 1,
 	carry_query => 1,
-    );
+    };
 }
 
 sub _do_columns_referenced {
@@ -1127,6 +1091,16 @@ sub _do_model_properties {
 	)},
 	$override_values ? %$override_values : (),
     });
+}
+
+sub _execute_ok_in_error {
+    my($self) = @_;
+    foreach my $n (@{$self->internal_get_file_field_names || []}) {
+	next
+	    unless defined($self->unsafe_get($n)) && !$self->get_field_error($n);
+	$self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
+    }
+    return;
 }
 
 sub _get_literal {
@@ -1348,26 +1322,6 @@ sub _post_execute {
     return $self->internal_post_execute($method, $res) || $res;
 }
 
-sub _put_file_field_reset_errors {
-    my($self) = @_;
-    # Puts FILE_FIELD_RESET_FOR_SECURITY on file fields not in error.
-    # If there were errors, provide feedback to the user about
-    # file fields which are special.
-    my($file_fields) = $self->internal_get_file_field_names;
-    return unless $file_fields;
-
-    my($fields) = $self->[$_IDI];
-    my($properties) = $self->internal_get;
-    foreach my $n (@$file_fields) {
-	# Don't replace an existing error
-	next unless defined($properties->{$n}) && !$self->get_field_error($n);
-
-	# Tells user that we didn't clear the field, the browser did.
-	$self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
-    }
-    return;
-}
-
 sub _put_literal {
     my($fields, $form_name, $value) = @_;
     # Modifies the literal value of the named form field.  In the event
@@ -1381,30 +1335,36 @@ sub _put_literal {
 }
 
 sub _redirect {
-    my($self, $which) = @_;
+    my($self, $which, $extra_query) = @_;
     # Redirect to the "next" or "cancel" task depending on "which" if there
     # is no context.  Otherwise, redirect to context.
     my($fields) = $self->[$_IDI];
     my($req) = $self->get_request;
     $req->put(form_model => $self);
-    $fields->{redirecting} = 1;
-    if ($fields->{context}) {
-	if ($req->unsafe_get_nested(qw(task want_workflow))) {
-	    _trace('continue workflow') if $_TRACE;
-	    return {
-		method => 'server_redirect',
-		task_id => $req->get('task')->get_attr_as_id($which),
-		require_context => 1,
-		_carry_path_info_and_query(),
-	    };
-	}
-	return $fields->{context}->return_redirect($self, $which);
-    }
-    return {
-	task_id => $req->get('task')->get_attr_as_id($which),
-	_carry_path_info_and_query(),
+    my($carry) = _carry_path_info_and_query();
+    my($query) = {
+	$carry->{carry_query} ? %{$self->req('query') || {}} : (),
+	%{$extra_query || {}},
     };
-    # DOES NOT RETURN
+    $fields->{redirecting} = 1;
+    return {
+	%$carry,
+	%$query ? (query => $query) : (),
+	task_id => $req->get('task')->get_attr_as_id($which),
+    } unless $fields->{context};
+    return $fields->{context}->return_redirect(
+	$self,
+	$which,
+	$extra_query,
+    ) unless $req->unsafe_get_nested(qw(task want_workflow));
+    _trace('continue workflow') if $_TRACE;
+    return {
+	%$carry,
+	%$query ? (query => $query) : (),
+	method => 'server_redirect',
+	task_id => $req->get('task')->get_attr_as_id($which),
+	require_context => 1,
+    };
 }
 
 sub _redirect_same {
