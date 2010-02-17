@@ -384,6 +384,24 @@ sub vs_put_pager {
     return;
 }
 
+sub vs_rss_task_in_head {
+    my($self) = @_;
+    return EmptyTag(link => {
+	control => view_widget_value('xhtml_rss_task'),
+	html_attrs => [qw(rel type title href)],
+	rel => 'alternate',
+	type => 'application/atom+xml',
+	title => Prose(
+	    vs_text(
+		'rsslink', 'title', view_widget_value('xhtml_rss_task')),
+	   ),
+	href => URI({
+	    task_id => view_widget_value('xhtml_rss_task'),
+	    query => undef,
+	}),
+    });
+}
+
 sub vs_selector_form {
     my($proto, $model, $widgets) = @_;
     return Form(
