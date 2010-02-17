@@ -1,8 +1,8 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::Acknowledgement;
 use strict;
-use base 'Bivio::UI::HTML::Widget::Tag';
+use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -13,16 +13,15 @@ sub new {
     return shift->SUPER::new(@_)->put_unless_exists(
 	tag => 'div',
 	class => 'acknowledgement',
-	control => [sub {$_A->extract_label(shift->get_request)}],
-        value => [sub {
-             my($req) = shift->get_request;
-             return Tag(div => Prose(
-		 $_T->get_value(
-		     'acknowledgement',
-		     $_A->extract_label($req),
-		     $req,
-		 )), 'text');
-         }],
+	tag_if_empty => 0,
+        value => DIV_text(Prose(
+	    [sub {
+	         my($req) = shift->req;
+	         return ''
+		     unless my $label = $_A->extract_and_delete_label($req);
+                 return vs_text($req, 'acknowledgement', $label);
+	    }],
+        )),
     );
 }
 
