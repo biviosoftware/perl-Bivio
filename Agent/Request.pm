@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved
 # $Id$
 package Bivio::Agent::Request;
 use strict;
@@ -183,6 +183,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # initialized by Bivio::Agent::Dispatcher
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_HANDLERS) = b_use('Biz.Registrar')->new;
 my($_A) = b_use('IO.Alert');
 my($_C) = b_use('SQL.Connection');
 my($_D) = b_use('Bivio.Die');
@@ -685,6 +686,12 @@ sub if_test {
 	: ();
 }
 
+sub internal_call_handlers {
+    shift;
+    $_HANDLERS->call_fifo(@_);
+    return;
+}
+
 sub internal_clear_current {
     # DO NOT CALL THIS UNLESS YOU KNOW WHAT YOU ARE DOING.
     $_CURRENT = undef;
@@ -885,6 +892,8 @@ sub internal_server_redirect {
     $named->{form_context} = $fc;
     $named->{form} = undef
 	unless exists($named->{form});
+    $named->{method} = 'server_redirect';
+    $self->internal_call_handlers(handle_server_redirect => [$named, $self]);
     $self->put_durable_server_redirect_state($named);
     return $named->{task_id};
 }
@@ -1003,7 +1012,7 @@ sub process_cleanup {
     foreach my $cleaner (@{$self->get('process_cleanup')}) {
         if ($_D->catch(
             sub {
-                $cleaner->($self, $die);
+		$cleaner->($self, $die);
             })
         ) {
             $is_ok = 0;
@@ -1079,6 +1088,12 @@ sub redirect {
 	entity => {%$args, method => $method},
     }) unless $method =~ /^(?:server_redirect|client_redirect)$/;
     return $self->$method($args);
+}
+
+sub register_handler {
+    shift;
+    $_HANDLERS->push_object(@_);
+    return;
 }
 
 sub server_redirect {
