@@ -171,16 +171,15 @@ sub is_create {
 
 sub _ack_and_redirect {
     my($self, $redirect) = @_;
-    $_A->save_label(
-	$self->req('task_id')->get_name
+    return {
+	%$redirect,
+	acknowledgement => $self->req('task_id')->get_name
 	    . '.'
 	    . (!$self->get('recurrence')->eq_unknown ? 'recurrence'
 	    : $self->is_copy ? 'copy'
 	    : $self->is_create ? 'create'
 	    : 'edit'),
-	$self->req,
-    );
-    return $redirect;
+    };
 }
 
 sub _create_or_update {
