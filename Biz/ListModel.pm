@@ -34,9 +34,10 @@ my($_LOAD_ALL_DIE_FACTOR) = 2;
 Bivio::IO::Config->register(my $_CFG = {
     want_page_count => 1,
 });
-my($_LS) = __PACKAGE__->use('SQL.ListSupport');
-my($_LQ) = __PACKAGE__->use('SQL.ListQuery');
-my($_QT) = __PACKAGE__->use('Biz.QueryType');
+my($_LS) = b_use('SQL.ListSupport');
+my($_LQ) = b_use('SQL.ListQuery');
+my($_QT) = b_use('Biz.QueryType');
+my($_S) = b_use('SQL.Statement');
 
 sub EMPTY_KEY_VALUE {
     # The value used to populate keys for rows added by append_empty_rows().
@@ -369,7 +370,7 @@ sub get_result_set_size {
 sub get_summary {
     my($self) = @_;
     _trace(ref($self)) if $_TRACE;
-    return $self->use('Model.SummaryList')->new([$self]);
+    return b_use('Model.SummaryList')->new([$self]);
 }
 
 sub handle_config {
@@ -992,9 +993,8 @@ sub _new {
 
 sub _statement {
     my($self) = @_;
-    # Gather changes from internal_prepare_statement and internal_pre_load
-    my($stmt) = Bivio::SQL::Statement->new();
-    $self->internal_prepare_statement($stmt, $self->get_query());
+    my($stmt) = $_S->new;
+    $self->internal_prepare_statement($stmt, $self->get_query);
     return $stmt;
 }
 
@@ -1030,7 +1030,7 @@ sub _unauth_load {
 	else {
 	    Bivio::Auth::Support->unsafe_get_user_pref(
 		'PAGE_SIZE', $self->get_request, \$count);
-	    $count ||= Bivio::Type->get_instance('PageSize')->get_default;
+	    $count ||= b_use('Type.PageSize')->get_default;
 	}
 	$query->put(count => $count);
     }
@@ -1072,14 +1072,15 @@ sub _unauth_load_page {
 
 sub _where_and_params {
     my($self) = @_;
-    # Gather changes from internal_prepare_statement and internal_pre_load
     my($params) = [];
-    my($where) = $self->internal_pre_load(
-	$self->get_query(),
-	$self->internal_get_sql_support(),
+    return (
+	$self->internal_pre_load(
+	    $self->get_query,
+	    $self->internal_get_sql_support,
+	    $params,
+	),
 	$params,
     );
-    return ($where, $params);
 }
 
 1;
