@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.77  2010/02/15 22:37:05  moeller
+  * Bivio::UI::HTML::Widget::Radio
+    made XHTML conformant
+  * Bivio::UI::HTML::Widget::ScriptOnly
+    escape < and / per w3 validator
+  * Bivio::UI::View::Wiki
+    fixed script type
+    set head title for help() for xhtml validator
+    use vs_text_as_prose() for WikiValidator labels
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    no spaces in javascript: href
+  * Bivio::UI::XHTML::Widget::MainErrors::WikiValidator
+    use vs_text_as_prose() for WikiValidator labels
+
   Revision 8.76  2010/02/08 01:17:20  nagler
   * Bivio::UI::FacadeBase
     old_password, new_password, confirm_new_password at outerlevel
