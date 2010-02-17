@@ -1037,14 +1037,21 @@ sub push_txn_resource {
 }
 
 sub put {
-    my($self, @args) = @_;
-    while (@args) {
-	my($x) = shift(@args);
-	shift(@args);
-	$_A->warn_deprecated($x, ': use realm_cache')
-	    if $x =~ /^auth_(realm|user)\./s;
-    }
-    return shift->SUPER::put(@_);
+    my($self) = shift;
+    return $self->SUPER::put(@{$self->map_by_two(
+	sub {
+	    my($key, $value) = @_;
+	    if ($key =~ /^auth_(realm|user)\./s) {
+		$_A->warn_deprecated($key, ': use realm_cache');
+	    }
+	    elsif ($key eq 'query') {
+		$value = $_Q->parse($value)
+		    if defined($value) && ref($value) ne 'HASH';
+	    }
+	    return ($key, $value);
+	},
+	\@_,
+    )});
 }
 
 sub put_durable {
