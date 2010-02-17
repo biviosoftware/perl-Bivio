@@ -63,7 +63,7 @@ sub new {
     $params->{task_id} &&= $_TI->from_any($params->{task_id});
     foreach my $k (qw(path_info query)) {
 	$params->{$k} = $req->unsafe_get($k)
-	    if $params->{"carry_$k"};
+	    if $params->{"carry_$k"} && !$params->{$k};
     }
     return $self->internal_put($params);
 }
