@@ -1497,6 +1497,7 @@ sub _cfg_user_auth {
 		USER_FORUM_TREE => q{Your subscriptions have been updated.},
 		user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},
 		GENERAL_CONTACT => 'Your inquiry has been sent.  Thank you!',
+		USER_SETTINGS_FORM => 'Your settings have been updated.',
 	    ]],
 	    [title => [
 		 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
