@@ -42,10 +42,7 @@ sub load_permissions {
     my($proto, $realm, $role, $req) = @_;
     my($owner) = $realm->unsafe_get('owner');
     if ($owner) {
-	my($map) = $req->get_if_exists_else_put(
-	    __PACKAGE__ . '.' . $realm->get('id'),
-	    sub {_map_permissions($_RR->new($req), $realm->get('id'))},
-	);
+	my($map) = _map_permissions($realm->get('id'), $req);
 	return $map->{$role}
 	    if defined($map->{$role});
     }
@@ -89,26 +86,45 @@ sub unsafe_get_user_pref {
 
 sub _load_default_permissions {
     my($rti, $req) = @_;
-    my($rr) = $_RR->new($req);
-#TODO: Use RealmRole->get_permission_map
     $_DEFAULT_PERMISSIONS->{$rti} = {
-	%{$rr->EMPTY_PERMISSION_MAP},
-	%{_map_permissions($rr, $rti)},
+	%{$_RR->new($req)->EMPTY_PERMISSION_MAP},
+	%{_map_permissions($rti, $req)},
     };
     return;
 }
 
 sub _map_permissions {
-    my($rr, $realm_id) = @_;
-    return {@{$rr->map_iterate(
+    my($realm_id, $req) = @_;
+    my($all) = $req->unsafe_get(__PACKAGE__);
+    return $all->{$realm_id}
+	if $all && $all->{$realm_id};
+    _map_permissions_query(
 	sub {
-	    my($it) = @_;
-	    return ($it->get('role') => $it->get('permission_set'));
+	    my($rid, $role, $ps) = @_;
+	    (($all ||= {})->{$rid} ||= {})->{$role} = $ps;
+	    return 1;
 	},
+	$_RR->new($req),
+	$all ? [$realm_id] : [
+	    $realm_id,
+	    grep(
+		$realm_id ne $_,
+		@{$req->map_user_realms(sub {shift->{'RealmUser.realm_id'}})},
+	    ),
+	],
+    );
+    return $all->{$realm_id};
+}
+
+sub _map_permissions_query {
+    my($op, $rr, $realm_ids) = @_;
+    $rr->do_iterate(
+	sub {$op->(shift->get(qw(realm_id role permission_set)))},
 	'unauth_iterate_start',
 	'role',
-	{realm_id => $realm_id},
-    )}};
+	{realm_id => $realm_ids},
+    );
+    return;
 }
 
 1;
