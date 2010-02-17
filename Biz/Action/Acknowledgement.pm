@@ -6,10 +6,12 @@ use Bivio::Base 'Biz.Action';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-b_use('Agent.Task')->register(__PACKAGE__);
-our($_TRACE);
 my($_TI) = b_use('Agent.TaskId');
 my($_T) = b_use('FacadeComponent.Text');
+my($_HTML) = b_use('Bivio.HTML');
+b_use('Agent.Task')->register(__PACKAGE__);
+b_use('Agent.Request')->register_handler(__PACKAGE__);
+our($_TRACE);
 
 sub QUERY_KEY {
     return 'ack';
@@ -20,15 +22,45 @@ sub execute {
     return 0;
 }
 
+sub extract_and_delete_label {
+    my($proto, $req) = @_;
+    my($label) = $proto->extract_label($req);
+    $proto->delete_from_req($req);
+    return $label;
+}
+
 sub extract_label {
     my($proto, $req) = @_;
-    return $req->unsafe_get_nested($proto->package_name, 'label')
-	|| _extract($proto, $req);
+    return _extract($proto, $req)
+	|| $req->unsafe_get_nested($proto->package_name, 'label');
+}
+
+sub handle_client_redirect {
+    my($proto, $named, $req) = @_;
+    return
+	if $named->{uri} =~ /\b@{[$proto->QUERY_KEY]}=/;
+    return
+	unless my $label = $proto->extract_and_delete_label($req);
+    $named->{uri} .= ($named->{uri} =~ /\?/ ? '&' : '?')
+	. $proto->QUERY_KEY
+	. '='
+	. $_HTML->escape_query($label);
+    return;
 }
 
 sub handle_pre_execute_task {
     my($proto, $task, $req) = @_;
     $proto->execute($req);
+    return;
+}
+
+sub handle_server_redirect {
+    my($proto, $named, $req) = @_;
+    return
+	if ($named->{query} ||= {})->{$proto->QUERY_KEY};
+    return
+	unless my $label = $proto->extract_and_delete_label($req);
+    ($named->{query} ||= {})->{$proto->QUERY_KEY} = $label;
     return;
 }
 
