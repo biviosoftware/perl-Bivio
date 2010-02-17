@@ -27,20 +27,7 @@ sub internal_xhtml_adorned {
 	head => Join([
 	    vs_text_as_prose('xhtml_head_title'),
 	    view_widget_value('xhtml_head_tags'),
-	    EmptyTag(link => {
-		control => view_widget_value('xhtml_rss_task'),
-		html_attrs => [qw(rel type title href)],
-		rel => 'alternate',
-		type => 'application/atom+xml',
-		title => Prose(
-		    vs_text(
-			'rsslink', 'title', view_widget_value('xhtml_rss_task')),
-		),
-		href => URI({
-		    task_id => view_widget_value('xhtml_rss_task'),
-		    query => undef,
-		}),
-	    }),
+	    vs_rss_task_in_head(),
 	]),
 	body => $self->internal_xhtml_adorned_body,
 	body_class => view_widget_value('xhtml_body_class'),
