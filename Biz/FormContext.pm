@@ -233,14 +233,13 @@ sub new_from_literal {
 }
 
 sub return_redirect {
-    # (self, string, Agent.Request) : undef
-    # Redirects back to the task contained in the context.  I<which> may be
-    # 'cancel' or 'next'.
-    #
-    # Does not return.
-    my($self, $model, $which) = @_;
+    my($self, $model, $which, $extra_query) = @_;
     my($req) = $model->get_request;
     my($c) = $self->internal_get;
+    my($query) = {
+	%{$c->{query} || {}},
+	%{$extra_query || {}},
+    };
     unless ($c->{form}) {
 	my($res) = {
 	    method => 'client_redirect',
@@ -248,7 +247,7 @@ sub return_redirect {
 		? $c->{cancel_task} : $c->{unwind_task},
 	    realm => $c->{realm},
 	    path_info => $c->{path_info},
-	    query => $c->{query},
+	    query => $query,
 	};
 	_trace('no form: ', $res)
 	    if $_TRACE;
@@ -267,12 +266,12 @@ sub return_redirect {
 
     # Redirect calls model back in get_context_from_request
     _trace('have form, server_redirect: ', $c->{unwind_task},
-	'?', $c->{query}, ' form=', $f) if $_TRACE;
+	'?', $query, ' form=', $f) if $_TRACE;
     return {
 	method => 'server_redirect',
 	task_id => $c->{unwind_task},
 	realm => $c->{realm},
-	query => $c->{query},
+	query => $query,
 	form => $f,
 	path_info => $c->{path_info},
     };
