@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.80  2010/02/17 23:49:03  nagler
+  * Bivio::Agent::Request
+    if the query is put with a string, parse it
+
   Revision 8.79  2010/02/17 18:41:16  nagler
   * Bivio::Delegate::SimpleAuthSupport
     all realms for user in a single query
