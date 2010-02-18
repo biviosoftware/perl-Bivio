@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
+my($_T) = b_use('Type.Text');
 
 sub USAGE {
     my($proto) = @_;
@@ -38,7 +39,7 @@ sub import_access_log {
 	    date_time => _parse_date($date),
 	    task_id => $task_id,
 	    method => $method,
-	    uri => $uri,
+	    uri => $_T->clean_and_trim($uri),
 	});
 	$count++;
     }
