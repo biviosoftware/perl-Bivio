@@ -640,6 +640,9 @@ sub _cfg_calendar {
 		'recurrence.desc' => 'Note: repeating events cannot be edited at this time',
 		recurrence_end_date => 'Repeat ends',
 		start_date => 'Start Date',
+		[qw(start_date end_date)] => [
+		    desc => 'm/d/yy, d.m.yy, yyyy/m/d, d-mon-yyyy, or mmddyy',
+		],
 		start_time => 'Start Time',
 		'start_time.desc' => 'In the selected Time Zone',
 		ok_button => q{vs_text_as_prose('FORUM_CALENDAR_EVENT_FORM', ['Model.CalendarEventForm', '->form_mode_as_string']);},
