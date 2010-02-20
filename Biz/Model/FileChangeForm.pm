@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::FileChangeForm;
 use strict;
@@ -243,8 +243,10 @@ sub is_root {
 
 sub is_text_content_type {
     my($self) = @_;
-    return 0 if $self->get('realm_file')->get('is_folder');
-    return $self->get('realm_file')->is_text_content_type;
+    my($rf) = $self->get('realm_file');
+    return !$rf->get('is_folder')
+	&& $rf->is_text_content_type
+	&& $rf->get_content_length < $_TA->get_width; 
 }
 
 sub validate {
