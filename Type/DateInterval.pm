@@ -1,44 +1,11 @@
-# Copyright (c) 2000-2004 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::DateInterval;
 use strict;
-use Bivio::Base 'Bivio::Type::Enum';
-use Bivio::Type::DateTime;
-
-# C<Bivio::Type::DateInterval> is a list and computations for various time
-# offsets:
-#
-#
-# NONE : 0 days
-#
-# DAY : 1 day
-#
-# WEEK : 7 days
-#
-# MONTH
-#
-# A month relative to current date/time.  Time component unmodified.
-#
-# YEAR
-#
-# A year relative to current date/time.  Time component unmodified.
-#
-# FISCAL_YEAR
-#
-# SIX_MONTHS
-#
-# Six months.
-#
-# THREE_MONTHS
-#
-# Three months.
-#
-# IRS_TAX_SEASON
-#
-# From 1/1 to 4/15 next year.
+use Bivio::Base 'Type.Enum';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = 'Bivio::Type::DateTime';
+my($_DT) = b_use('Type.DateTime');
 __PACKAGE__->compile([
     NONE => [
         0,
