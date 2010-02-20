@@ -49,10 +49,10 @@ sub internal_prepare_statement {
 	$qf->filter_statement($stmt, {
 	    date_time => 'TaskLog.date_time',
 	    match_fields => [
-		qr/\// => 'TaskLog.uri',
-		qr/\@/ => 'Email.email',
-		qr/^\w/ => 'RealmOwner.display_name',
-		qr{^(\d+\.){1,3}\d*$} => 'TaskLog.client_address',
+		qr{/} => 'TaskLog.uri',
+		qr{\@} => 'Email.email',
+		qr{^\d+\.}s => 'TaskLog.client_address',
+		qr{^\w} => 'RealmOwner.display_name',
 	    ],
 	});
     }
