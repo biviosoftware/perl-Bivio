@@ -294,9 +294,9 @@ sub drop_and_run {
 }
 
 sub drop_object {
-    my($self, $type, @table) = @_;
-    foreach my $t (@table) {
-	$_D->catch_quietly(sub {$self->run("DROP $type $t\n/\n");});
+    my($self, $type, @object) = @_;
+    foreach my $o (@object) {
+	$_D->catch_quietly(sub {$self->run("DROP $type $o\n/\n");});
     }
     return;
 }
@@ -592,6 +592,14 @@ sub internal_upgrade_db_task_log_client_address {
     $self->run(<<'EOF');
 ALTER TABLE task_log_t
     ADD COLUMN client_address VARCHAR(30)
+/
+CREATE INDEX task_log_t8 ON task_log_t (
+  uri
+)
+/
+CREATE INDEX task_log_t9 ON task_log_t (
+  client_address
+)
 /
 EOF
     return;
