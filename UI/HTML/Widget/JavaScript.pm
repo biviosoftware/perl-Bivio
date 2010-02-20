@@ -69,9 +69,7 @@ sub strip {
     # Strip leading blanks and blank lines
     $code =~ s/^\s+//sg;
     $code =~ s/\n\s+/\n/g;
-
-    # Strip comments
-    $code =~ s/\/\/.*\n//g;
+    $code =~ s{^\s*//.*\n}{}mg;
     return $code;
 }
 
