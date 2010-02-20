@@ -10,6 +10,7 @@ my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
 my($_UCEL) = b_use('Model.UnauthCalendarEventList')->get_instance;
 my($_CEMF) = b_use('Model.CalendarEventMonthForm')->get_instance;
+my($_CEF) = b_use('Model.CalendarEventForm')->get_instance;
 my($_CEWL) = b_use('Model.CalendarEventWeekList')->get_instance;
 
 sub event_delete {
@@ -101,7 +102,6 @@ sub event_form {
 		column_count => 1,
 	    }],
 	    'CalendarEventForm.recurrence_end_date',
-#TODO: Do we need copy_button?
 	    '*ok_button cancel_button',
 	],
     ));
@@ -215,6 +215,23 @@ sub _month_view {
 			}),
 			{class => 'b_event_name'},
 		    ),
+		),
+		Link(
+		    vs_text_as_prose('task_menu.title.FORUM_CALENDAR_EVENT_FORM.create'),
+		    URI({
+			task_id => 'FORUM_CALENDAR_EVENT_FORM',
+			query => {
+			    $_CEF->CREATE_DATE_QUERY_KEY
+			        => ["create_date_$_", 'HTMLFormat.DateTime', 'DATE', 1],
+			},
+		    }),
+		    {
+			control => And(
+			    ['!', ['->req', 'auth_realm', 'type'], '->eq_user'],
+			    [[qw(->req Model.CalendarEventMonthList)], '->can_user_edit_this_realm'],
+			),
+			class => 'b_day_of_month_create',
+		    },
 		),
 	    ]),
 	    column_data_class => If(
