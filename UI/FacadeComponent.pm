@@ -122,6 +122,14 @@ sub handle_config {
     return;
 }
 
+sub handle_init_from_prior_group {
+    my($self, $name) = @_;
+    return (
+	$self->[$_IDI]->{map}->{lc($name)}
+	|| $self->get_error($name, 'group value not previously defined')
+    )->{config};
+}
+
 sub initialization_complete {
     my($fields) = shift->[$_IDI];
     # Called by the Facade after all initialization is complete.
