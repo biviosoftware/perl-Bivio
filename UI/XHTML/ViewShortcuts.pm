@@ -200,18 +200,7 @@ sub vs_descriptive_field {
 	$label ? ($label->put(cell_class => 'label label_ok')) : (),
 	Join([
 	    $input,
-	    [sub {
-		 my($req) = shift->get_request;
-		 my($proto, $name) = @_;
-#TODO: Need to create a separate space for field_descriptions so we don't
-#      default to something that we don't expect.
-		 my($v) = $req->get_nested('Bivio::UI::Facade', 'Text')
-		     ->unsafe_get_value($name, 'desc');
-		 return $v ? Join([
-		     EmptyTag('BR'),
-		     Tag(p => Prose($v), 'desc'),
-		 ]) :  '';
-	    }, $proto, $name],
+	    $proto->vs_field_description($name),
 	], {
 	    cell_class => 'field',
 	    $label ? () : (cell_colspan => 2),
@@ -246,18 +235,31 @@ sub vs_can_group_bulletin_form {
     }];
 }
 
+sub vs_field_description {
+    my(undef, $field_name) = @_;
+    return [sub {
+        my($source, $field_name) = @_;
+#TODO: Need to create a separate space for field_descriptions so we don't
+#      default to something that we don't expect.
+	return ''
+	    unless my $v = $source->req('Bivio::UI::Facade', 'Text')
+	    ->unsafe_get_value($field_name, 'desc');
+	return DIV_desc(Prose($v));
+    }, $field_name];
+}
+
 sub vs_filter_query_form {
     my($proto, $form, $extra_columns, $attrs) = @_;
     return $proto->vs_selector_form(
 	$form ||= 'FilterQueryForm',
 	[
-	    $attrs->{text} || ClearOnFocus(
+	    $attrs->{text} || DIV(Join([ClearOnFocus(
 		Text({
 		    field => 'b_filter',
 		    size => int(b_use('Type.Line')->get_width / 2),
 		}),
 		[['->req', "Model.$form"], '->clear_on_focus_hint'],
-	    ),
+	    ), DIV('hello')])),
 	    @{$extra_columns || []},
 	],
 	1,
