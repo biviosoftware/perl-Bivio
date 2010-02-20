@@ -105,10 +105,11 @@ sub get_from_source {
 
 sub group {
     my($self, $names, $value) = @_;
+    my($fields) = $self->[$_IDI];
     _assert_writable($self);
     $value = _initialize_value($self, {
-	config => $value,
-	names => ref($names) ? $names : [$names]
+	orig_config => $value,
+	names => [ref($names) ? @$names : $names],
     });
     foreach my $name (@{$value->{names}}) {
 	_assign($self, $name, $value);
@@ -124,10 +125,10 @@ sub handle_config {
 
 sub handle_init_from_prior_group {
     my($self, $name) = @_;
-    return (
+    return $_R->nested_copy((
 	$self->[$_IDI]->{map}->{lc($name)}
 	|| $self->get_error($name, 'group value not previously defined')
-    )->{config};
+    )->{config});
 }
 
 sub initialization_complete {
@@ -212,15 +213,18 @@ sub new {
     my($self) = $proto->new_static($facade);
     my($fields) = $self->[$_IDI];
     $fields->{map} = {};
+    $fields->{dynamic_init} = [];
     $fields->{clone} = $clone;
     $fields->{initialize} = $initialize;
-    return $self
-	if _init_from_parent($self);
     $fields->{undef_value}
-	= _initialize_value($self, {config => $self->UNDEF_CONFIG, names => []});
+	= _initialize_value($self, {orig_config => $self->UNDEF_CONFIG, names => []});
     _init_from_clone($self, $clone);
     $initialize->($self)
 	if $initialize;
+    foreach my $value (@{$fields->{dynamic_init}}) {
+	$value->{config} = $value->{orig_config}->($self);
+	$self->internal_initialize_value($value);
+    }
     $self->initialization_complete;
     return $self;
 }
@@ -298,32 +302,19 @@ sub _init_from_clone {
     return;
 }
 
-sub _init_from_parent {
-    my($self) = @_;
-    # Copy all the fields and groups verbatim.  Full sharing.
-    my($fields) = $self->[$_IDI];
-    # No clone or have explicit initialize, need to copy
-    return 0
-	unless $fields->{clone} && !$fields->{initialize};
-    # Cloning from my parent?
-    my($parent) = $fields->{facade}->unsafe_get('parent');
-    my($clone_fields) = $_R->nested_copy($fields->{clone}->[$_IDI]);
-    return 0
-	unless $parent && $parent == $clone_fields->{facade};
-
-    # Copy fields and groups
-    foreach my $field (qw(map undef_value read_only)) {
-	$fields->{$field} = $clone_fields->{$field};
-    }
-    return 1;
-}
-
 sub _initialize_value {
     my($self, $value) = @_;
-    $value->{config} = $value->{config}->($self)
-	if ref($value->{config}) eq 'CODE';
-    $self->internal_initialize_value($value = $_R->nested_copy($value));
+    $value->{config} = _initialize_value_config($self, $value);
+    $self->internal_initialize_value($value);
     return $value;
+}
+
+sub _initialize_value_config {
+    my($self, $value) = @_;
+    return $_R->nested_copy($value->{orig_config})
+	unless ref($value->{orig_config}) eq 'CODE';
+    push(@{$self->[$_IDI]->{dynamic_init}}, $value);
+    return $value->{orig_config}->($self);
 }
 
 1;
