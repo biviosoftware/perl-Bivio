@@ -6,6 +6,7 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
+my($_D) = b_use('Type.Date');
 
 sub day_of_week_suffix_list {
     return map(lc($_), $_DT->english_day_of_week_list);
@@ -21,6 +22,7 @@ sub internal_initialize {
 	    ],
 	    other => [
 		map((
+		    ["create_date_$_", 'Date'],
 		    ["in_this_month_$_", 'Boolean'],
 		    ["day_of_month_$_", 'Integer'],
 		    ["event_list_$_", 'Model.CalendarEventDayList'],
@@ -46,6 +48,7 @@ sub internal_load_rows {
 	    my($month, $day) = $_DT->get_parts($dt, 'month', 'day');
 	    $rows->[$#$rows] = {
 		%{$rows->[$#$rows]},
+		"create_date_$dow" => $_D->from_datetime($dt),
 		"in_this_month_$dow" => $month eq $this_month ? 1 : 0,
 #TODO: 		"is_today_$dow" => $dt ? 1 : 0,
 		"day_of_month_$dow" => $day,
