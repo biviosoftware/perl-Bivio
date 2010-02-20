@@ -14,11 +14,17 @@ my($_DATE_OP) = {qw(
 )};
 my($_DATE_OP_RE) = join('|', sort(keys(%$_DATE_OP)));
 my($_T) = b_use('FacadeComponent.Text');
+my($_DI) = b_use('Type.DateInterval');
 
 sub clear_on_focus_hint {
     my($self) = @_;
     return $_T->get_value(join('.',
 	'clear_on_focus_hint', $self->req('task_id')->get_name));
+}
+
+sub default_date_filter {
+    my($self, $date_interval) = @_;
+    return '>' . $_D->to_string($_DI->from_any($date_interval)->dec($_D->local_today));
 }
 
 sub execute_empty {
@@ -30,8 +36,13 @@ sub execute_empty {
 }
 
 sub filter_statement {
-    my($self, $stmt, $args) = @_;
-    return unless defined(my $filter = $self->get_filter_value);
+    my($self, $stmt, $args, $default) = @_;
+    my($filter) = $self->get_filter_value;
+    unless (defined($filter)) {
+	return
+	    unless $default;
+	$self->internal_put_field(b_filter => $filter = $default);
+    }
     $stmt->where(map(_filter($_, $stmt, $args), split(' ', $filter)));
     return;
 }
