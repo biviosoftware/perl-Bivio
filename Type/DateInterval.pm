@@ -2,75 +2,42 @@
 # $Id$
 package Bivio::Type::DateInterval;
 use strict;
-$Bivio::Type::DateInterval::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::DateInterval::VERSION;
-
-=head1 NAME
-
-Bivio::Type::DateInterval - various date periods
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Type::DateInterval;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Type::Enum>
-
-=cut
-
-use Bivio::Type::Enum;
-@Bivio::Type::DateInterval::ISA = ('Bivio::Type::Enum');
-
-=head1 DESCRIPTION
-
-C<Bivio::Type::DateInterval> is a list and computations for various time
-offsets:
-
-=over 4
-
-=item NONE : 0 days
-
-=item DAY : 1 day
-
-=item WEEK : 7 days
-
-=item MONTH
-
-A month relative to current date/time.  Time component unmodified.
-
-=item YEAR
-
-A year relative to current date/time.  Time component unmodified.
-
-=item FISCAL_YEAR
-
-=item SIX_MONTHS
-
-Six months.
-
-=item THREE_MONTHS
-
-Three months.
-
-=item IRS_TAX_SEASON
-
-From 1/1 to 4/15 next year.
-
-=back
-
-=cut
-
-#=IMPORTS
+use Bivio::Base 'Bivio::Type::Enum';
 use Bivio::Type::DateTime;
 
-#=VARIABLES
+# C<Bivio::Type::DateInterval> is a list and computations for various time
+# offsets:
+#
+#
+# NONE : 0 days
+#
+# DAY : 1 day
+#
+# WEEK : 7 days
+#
+# MONTH
+#
+# A month relative to current date/time.  Time component unmodified.
+#
+# YEAR
+#
+# A year relative to current date/time.  Time component unmodified.
+#
+# FISCAL_YEAR
+#
+# SIX_MONTHS
+#
+# Six months.
+#
+# THREE_MONTHS
+#
+# Three months.
+#
+# IRS_TAX_SEASON
+#
+# From 1/1 to 4/15 next year.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = 'Bivio::Type::DateTime';
 __PACKAGE__->compile([
     NONE => [
@@ -102,78 +69,46 @@ __PACKAGE__->compile([
     ],
 ]);
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="dec"></a>
-
-=head2 dec(string date_time) : string
-
-Returns I<date_time> decremented by this DateInterval.
-
-=cut
-
 sub dec {
+    # (self, string) : string
+    # Returns I<date_time> decremented by this DateInterval.
     my($self, $date_time) = @_;
     return $self->as_int >= 0 ? $_DT->add_days($date_time, -$self->as_int)
 	: &{\&{'_dec_'.lc($self->get_name)}}($date_time);
 }
 
-=for html <a name="inc"></a>
-
-=head2 inc(string date_time) : string
-
-Returns I<date_time> incremented by this DateInterval.
-
-=cut
-
 sub inc {
+    # (self, string) : string
+    # Returns I<date_time> incremented by this DateInterval.
     my($self, $date_time) = @_;
     return $self->as_int >= 0 ? $_DT->add_days($date_time, $self->as_int)
 	: &{\&{'_inc_'.lc($self->get_name)}}($date_time);
 }
 
-=for html <a name="inc_to_end"></a>
-
-=head2 inc_to_end(string start_date) : string
-
-Increments I<start_date> to end of interval.  It does not adjust the time
-component.  For DAY and NONE is no-op.  For YEAR, WEEK, and MONTH increments by
-the amount and substracts one day.  It does not go to the calendar period
-except for FISCAL_YEAR, e.g. MONTH-E<gt>inc_to_end('12/22/2001') is
-1/21/2001 (not 12/31/2001).
-
-FISCAL_YEAR increments to 12/31.
-
-=cut
-
 sub inc_to_end {
+    # (self, string) : string
+    # Increments I<start_date> to end of interval.  It does not adjust the time
+    # component.  For DAY and NONE is no-op.  For YEAR, WEEK, and MONTH increments by
+    # the amount and substracts one day.  It does not go to the calendar period
+    # except for FISCAL_YEAR, e.g. MONTH-E<gt>inc_to_end('12/22/2001') is
+    # 1/21/2001 (not 12/31/2001).
+    #
+    # FISCAL_YEAR increments to 12/31.
     my($self, $start_date) = @_;
     my($sub) = \&{'_inc_to_end_'.lc($self->get_name)};
     return defined(&$sub) ? $sub->($self, $start_date)
 	: $_DT->add_days($self->inc($start_date), -1);
 }
 
-=for html <a name="is_continuous"></a>
-
-=head2 is_continuous() : boolean
-
-Returns false.
-
-=cut
-
 sub is_continuous {
+    # (self) : boolean
+    # Returns false.
     return 0;
 }
 
-#=PRIVATE METHODS
-
-# _dec_fiscal_year(string date_time) : string
-#
-# On 1/1, goes to prior year.  Else, goes to beginning of this year.
-#
 sub _dec_fiscal_year {
+    # (string) : string
+    # On 1/1, goes to prior year.  Else, goes to beginning of this year.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
     $year--
@@ -181,12 +116,10 @@ sub _dec_fiscal_year {
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
 }
 
-# _dec_irs_tax_season(string date_time) : string
-#
-# If on or before 4/15, goes to 1/1 prior year.  Else, goes to 1/1 of this
-# year.
-#
 sub _dec_irs_tax_season {
+    # (string) : string
+    # If on or before 4/15, goes to 1/1 prior year.  Else, goes to 1/1 of this
+    # year.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
     $year--
@@ -194,12 +127,10 @@ sub _dec_irs_tax_season {
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
 }
 
-# _dec_month(string date_time) : string
-#
-# Goes to same date/time in previous month.  Goes to end of month if outside
-# of month boundary.
-#
 sub _dec_month {
+    # (string) : string
+    # Goes to same date/time in previous month.  Goes to end of month if outside
+    # of month boundary.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
 	= $_DT->to_parts($date_time);
@@ -208,28 +139,22 @@ sub _dec_month {
 	$mday, $mon, $year);
 }
 
-# _dec_six_months(string date_time) : string
-#
-# Decrement six months.
-#
 sub _dec_six_months {
+    # (string) : string
+    # Decrement six months.
     return $_DT->add_months(shift, -6);
 }
 
-# _dec_three_months(string date_time) : string
-#
-# Decrement three months.
-#
 sub _dec_three_months {
+    # (string) : string
+    # Decrement three months.
     return $_DT->add_months(shift, -3);
 }
 
-# _dec_year(string date_time) : string
-#
-# Goes to same date/time in previous year.  Goes to month of year if outside
-# of month boundary.
-#
 sub _dec_year {
+    # (string) : string
+    # Goes to same date/time in previous year.  Goes to month of year if outside
+    # of month boundary.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
 	= $_DT->to_parts($date_time);
@@ -237,43 +162,35 @@ sub _dec_year {
 	$mday, $mon, $year - 1);
 }
 
-# _from_parts_with_mday_correction(int sec, int min, int hour, int mday, int mon, int year) : string
-#
-# Returns DateTime->from_parts correcting mday to be at month's end
-# if not already at month's end.
-#
 sub _from_parts_with_mday_correction {
+    # (int, int, int, int, int, int) : string
+    # Returns DateTime->from_parts correcting mday to be at month's end
+    # if not already at month's end.
     my($sec, $min, $hour, $mday, $mon, $year) = @_;
     my($last) = $_DT->get_last_day_in_month($mon, $year);
     return $_DT->from_parts_or_die($sec, $min, $hour,
 	    $mday > $last ? $last : $mday, $mon, $year);
 }
 
-# _inc_fiscal_year(string date_time) : string
-#
-# Goes to beginning of next year.
-#
 sub _inc_fiscal_year {
+    # (string) : string
+    # Goes to beginning of next year.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
 	= $_DT->to_parts($date_time);
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, 1 + $year);
 }
 
-# _inc_irs_tax_season(string date_time) : string
-#
-# Goes to the beginning of next year (just like fiscal year)
-#
 sub _inc_irs_tax_season {
+    # (string) : string
+    # Goes to the beginning of next year (just like fiscal year)
     return _inc_fiscal_year(@_);
 }
 
-# _inc_month(string date_time) : string
-#
-# Goes to same date/time next month.  Goes to end of month if outside
-# of month boundary.
-#
 sub _inc_month {
+    # (string) : string
+    # Goes to same date/time next month.  Goes to end of month if outside
+    # of month boundary.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
 	= $_DT->to_parts($date_time);
@@ -282,72 +199,49 @@ sub _inc_month {
 	$mday, $mon, $year);
 }
 
-# _inc_six_months(string date_time) : string
-#
-# Increments by six months.
-#
 sub _inc_six_months {
+    # (string) : string
+    # Increments by six months.
     return $_DT->add_months(shift, 6);
 }
 
-# _inc_three_months(string date_time) : string
-#
-# Increments by three months.
-#
 sub _inc_three_months {
+    # (string) : string
+    # Increments by three months.
     return $_DT->add_months(shift, 3);
 }
 
-# _inc_to_end_day(self, string start_date) : string
-#
-# No-op.
-#
 sub _inc_to_end_day {
+    # (self, string) : string
+    # No-op.
     shift;
     return shift;
 }
 
-# _inc_to_end_irs_tax_season(self, string start_date) : string
-#
-# Goes to 4/15 of this year if at or before 4/15.
-#
 sub _inc_to_end_irs_tax_season {
+    # (self, string) : string
+    # Goes to 4/15 of this year if at or before 4/15.
     my($self, $start_date) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($start_date);
     return $_DT->from_parts_or_die($sec, $min, $hour, 15, 4, ++$year);
 }
 
-# _inc_to_end_none(self, string start_date) : string
-#
-# No-op.
-#
 sub _inc_to_end_none {
+    # (self, string) : string
+    # No-op.
     shift;
     return shift;
 }
 
-# _inc_year(string date_time) : string
-#
-# Goes to same date/time in previous year.  Goes to month of year if outside
-# of month boundary.
-#
 sub _inc_year {
+    # (string) : string
+    # Goes to same date/time in previous year.  Goes to month of year if outside
+    # of month boundary.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
 	= $_DT->to_parts($date_time);
     return _from_parts_with_mday_correction($sec, $min, $hour,
 	$mday, $mon, $year + 1);
 }
-
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000-2004 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
