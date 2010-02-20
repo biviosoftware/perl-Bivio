@@ -46,15 +46,19 @@ sub internal_prepare_statement {
 	]));
     }
     if (my $qf = $self->ureq('Model.FilterQueryForm')) {
-	$qf->filter_statement($stmt, {
-	    date_time => 'TaskLog.date_time',
-	    match_fields => [
-		qr{/} => 'TaskLog.uri',
-		qr{\@} => 'Email.email',
-		qr{^\d+\.}s => 'TaskLog.client_address',
-		qr{^\w} => 'RealmOwner.display_name',
-	    ],
-	});
+	$qf->filter_statement(
+	    $stmt,
+	    {
+		date_time => 'TaskLog.date_time',
+		match_fields => [
+		    qr{/} => 'TaskLog.uri',
+		    qr{\@} => 'Email.email',
+		    qr{^\d+\.}s => 'TaskLog.client_address',
+		    qr{^\w} => 'RealmOwner.display_name',
+		],
+	    },
+	    $qf->default_date_filter('WEEK'),
+	);
     }
     return shift->SUPER::internal_prepare_statement(@_);
 }
