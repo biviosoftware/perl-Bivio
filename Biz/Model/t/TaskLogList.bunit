@@ -41,10 +41,12 @@ options({
 });
 [
     unauth_load_all => [
-	[] => 'all',
+	[] => 'root',
+	[b_filter => '_'] => 'all',
     ],
     load_all => [
-	[] => 'all',
+	[] => 'root',
+	[b_filter => '_'] => 'all',
 	[b_filter => 'task_log_user@'] => 'task_log_user',
 	[b_filter => '-task_log_user@'] => 'root',
 	[b_filter => '=' . Date()->to_string($now)] => 'task_log_user',
