@@ -12,6 +12,9 @@ __PACKAGE__->new({
     mail_host => 'other.bivio.biz',
     clone => 'PetShop',
     HTML => __PACKAGE__->make_groups(__PACKAGE__->bunit_shared_values),
+    Color => [
+	[body_background => 0xff88ff],
+    ],
     Constant => __PACKAGE__->make_groups([
 	@{__PACKAGE__->bunit_shared_values},
 	shared_value2 => 'Other',
