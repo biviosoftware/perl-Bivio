@@ -817,7 +817,7 @@ sub _site_mail {
   margin-bottom: 1ex;
 }
 .msg .parts {
-  border-top: 2p xsolid;
+  border-top: 2px solid;
   border-left: 2px solid;
   padding-left: 1em;
   padding-bottom: 1em;
