@@ -34,6 +34,7 @@ options({
 	    'TaskLog.realm_id' => realm_id('task_log_bunit'),
 	    'TaskLog.super_user_id' => undef,
 	    'Email.email' => email($_),
+	    'TaskLog.client_address' => '127.0.0.1',
 	}, @$expect)], $case->get('object')->map_rows);
 	return 1;
     },
