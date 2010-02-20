@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# Copyright (c) 2009-2010 bivio Software Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TaskLog;
 use strict;
@@ -52,6 +52,7 @@ sub handle_pre_execute_task {
 	    $req->get('uri') . (defined($query) && length($query)
 		? ('?' . $query)
 		: '')),
+	client_address => $req->unsafe_get('client_addr') || '',
     });
     return;
 }
@@ -75,6 +76,7 @@ sub internal_initialize {
 	    task_id => [qw(Bivio::Agent::TaskId NOT_NULL)],
 	    method => [qw(Name NONE)],
 	    uri => [qw(Text NOT_NULL)],
+	    client_address => [qw(Name NONE)],
 	},
 	other => [
 	    [qw(realm_id RealmOwner_1.realm_id)],

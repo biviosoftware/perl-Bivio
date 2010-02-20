@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::TaskLog;
 use strict;
@@ -25,6 +25,7 @@ sub list {
 	    column_widget => Join([
 		Join([
 		    SPAN_date(DateTime(['TaskLog.date_time'], 'DATE_TIME')),
+		    SPAN_ip(String(['TaskLog.client_address'])),
 		    Join([
 			SPAN_super_user(
 			    String(['super_user.RealmOwner.name'])),

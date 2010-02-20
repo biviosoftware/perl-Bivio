@@ -60,6 +60,7 @@ my($_BUNDLE) = [qw(
     !index_20091227
     !user_feature_calendar
     !mail_want_reply_to_default
+    !task_log_client_address
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -581,6 +582,16 @@ ALTER TABLE task_log_t
 /
 ALTER TABLE task_log_t
     DROP CONSTRAINT task_log_t4
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_task_log_client_address {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE task_log_t
+    ADD COLUMN client_address VARCHAR(30)
 /
 EOF
     return;

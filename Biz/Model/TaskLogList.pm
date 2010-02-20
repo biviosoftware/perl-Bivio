@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software Inc.  All Rights Reserved.
+# Copyright (c) 2009-2010 bivio Software Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TaskLogList;
 use strict;
@@ -22,6 +22,7 @@ sub internal_initialize {
 	    'super_user.RealmOwner.name',
 	    'TaskLog.uri',
 	    'TaskLog.user_id',
+	    'TaskLog.client_address',
 	    [qw(TaskLog.super_user_id super_user.RealmOwner.realm_id(+))],
 	],
 	other_query_keys => [qw(b_filter)],
@@ -35,7 +36,6 @@ sub internal_left_join_model_list {
 
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
-
     foreach my $model ($self->internal_left_join_model_list) {
 	$stmt->from($stmt->LEFT_JOIN_ON('TaskLog', $model, [
 	    ['TaskLog.user_id', "$model.realm_id"],
@@ -45,7 +45,6 @@ sub internal_prepare_statement {
 	        : (),
 	]));
     }
-
     if (my $qf = $self->ureq('Model.FilterQueryForm')) {
 	$qf->filter_statement($stmt, {
 	    date_time => 'TaskLog.date_time',
@@ -53,6 +52,7 @@ sub internal_prepare_statement {
 		qr/\// => 'TaskLog.uri',
 		qr/\@/ => 'Email.email',
 		qr/^\w/ => 'RealmOwner.display_name',
+		qr{^(\d+\.){1,3}\d*$} => 'TaskLog.client_address',
 	    ],
 	});
     }

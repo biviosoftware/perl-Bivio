@@ -1239,7 +1239,7 @@ EOF
 		GROUP_TASK_LOG_CSV => 'Spreadsheet',
 	    ]],
 	    [clear_on_focus_hint => [
-		map(($_ => 'Filter name, >date, @email, or /link'),
+		map(($_ => 'Filter name, >date, @email, /link, or x.y.z.'),
 		    map(($_, $_ . '_CSV'),
 			qw(SITE_ADMIN_TASK_LOG GROUP_TASK_LOG))),
 	    ]],

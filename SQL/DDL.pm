@@ -1239,6 +1239,7 @@ CREATE TABLE task_log_t (
   task_id NUMERIC(9) NOT NULL,
   method VARCHAR(30),
   uri VARCHAR(500) NOT NULL,
+  client_address VARCHAR(30),
   CONSTRAINT task_log_t1 primary key (task_log_id)
 )
 /
