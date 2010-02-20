@@ -247,6 +247,11 @@ sub handle_unload_package {
     return;
 }
 
+sub init_from_prior_group {
+    my($self, $name) = @_;
+    return sub {shift->handle_init_from_prior_group($name)};
+}
+
 sub initialize {
     my($proto, $partially) = @_;
     # Initializes this module.  Must be called before use.
