@@ -248,23 +248,20 @@ sub vs_can_group_bulletin_form {
 
 sub vs_filter_query_form {
     my($proto, $form, $extra_columns, $attrs) = @_;
-    return Form($form || 'FilterQueryForm', Grid([[
-	$attrs->{text} || ClearOnFocus(Text({
-	    field => 'b_filter',
-	    size => int(b_use('Type.Line')->get_width / 2),
-	}),
-	    ['Model.' . ($form || 'FilterQueryForm'),
-		'->clear_on_focus_hint']),
-	@{$extra_columns || []},
-	ScriptOnly({
-	    widget => Simple(''),
-	    alt_widget => FormButton('ok_button')->put(label => 'Refresh'),
-	}),
-    ]]), {
-	form_method => 'get',
-	want_timezone => 0,
-	want_hidden_fields => 0,
-    });
+    return $proto->vs_selector_form(
+	$form ||= 'FilterQueryForm',
+	[
+	    $attrs->{text} || ClearOnFocus(
+		Text({
+		    field => 'b_filter',
+		    size => int(b_use('Type.Line')->get_width / 2),
+		}),
+		[['->req', "Model.$form"], '->clear_on_focus_hint'],
+	    ),
+	    @{$extra_columns || []},
+	],
+	1,
+    );
 }
 
 sub vs_label_cell {
@@ -403,7 +400,7 @@ sub vs_rss_task_in_head {
 }
 
 sub vs_selector_form {
-    my($proto, $model, $widgets) = @_;
+    my($proto, $model, $widgets, $is_get) = @_;
     return Form(
 	$model,
 	Join([
@@ -417,7 +414,14 @@ sub vs_selector_form {
 		}),
 	    }),
 	]),
-	{class => 'b_selector'},
+	{
+	    class => 'b_selector',
+	    !$is_get ? () : (
+		form_method => 'get',
+		want_timezone => 0,
+		want_hidden_fields => 0,
+	    ),
+	},
     );
 }
 
