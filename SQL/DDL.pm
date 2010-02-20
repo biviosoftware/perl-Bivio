@@ -700,6 +700,14 @@ CREATE INDEX task_log_t7 ON task_log_t (
   date_time
 )
 /
+CREATE INDEX task_log_t8 ON task_log_t (
+  uri
+)
+/
+CREATE INDEX task_log_t9 ON task_log_t (
+  client_address
+)
+/
 
 --
 -- tuple_t
