@@ -23,6 +23,10 @@ foreach my $r ($_R->get_non_zero_list) {
 	unless grep($r == $_, @$_ROLES_ORDER);
 }
 
+sub LOAD_ALL_SIZE {
+    return 3000;
+}
+
 sub ROLES_ORDER {
     return [@{$_ROLES_ORDER}];
 }
