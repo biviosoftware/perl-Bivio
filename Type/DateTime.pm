@@ -24,7 +24,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IS_TEST);
 my($_TEST_NOW);
 my($_MIN) = FIRST_DATE_IN_JULIAN_DAYS().' 0';
-my($_MAX) = _join(LAST_DATE_IN_JULIAN_DAYS(), (SECONDS_IN_DAY() - 1));
+my($_MAX) = __PACKAGE__->internal_join(
+    __PACKAGE__->LAST_DATE_IN_JULIAN_DAYS,
+    (__PACKAGE__->SECONDS_IN_DAY - 1));
 # Is this year (- FIRST_YEAR) a leap year?  Returns 0 or 1.
 my(@_IS_LEAP_YEAR);
 # First index is "is_leap_year", next is month - 1.
@@ -32,10 +34,10 @@ my(@_IS_LEAP_YEAR);
 my(@_MONTH_DAYS, @_MONTH_BASE);
 # Index is year - FIRST_YEAR.  Returns number of days up to this year.
 my(@_YEAR_BASE);
-my($_TIME_SUFFIX) = _join('', DEFAULT_TIME());
-my($_DATE_PREFIX) = _join(FIRST_DATE_IN_JULIAN_DAYS(), '');
+my($_TIME_SUFFIX) = __PACKAGE__->internal_join('', __PACKAGE__->DEFAULT_TIME);
+my($_DATE_PREFIX) = __PACKAGE__->internal_join(__PACKAGE__->FIRST_DATE_IN_JULIAN_DAYS, '');
 my($_BEGINNING_OF_DAY) = 0;
-my($_END_OF_DAY) = SECONDS_IN_DAY()-1;
+my($_END_OF_DAY) = __PACKAGE__->SECONDS_IN_DAY-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
 my($_DAY_OF_WEEK)
     = [qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)];
@@ -174,12 +176,12 @@ sub add_days {
     # Returns I<date_time> adjusted by I<days> (may be negative).
     #
     # Dies on range error.
-    my($j, $s) = _split($date_time);
-    if (abs($days) < RANGE_IN_DAYS()) {
+    my($j, $s) = $proto->internal_split($date_time);
+    if (abs($days) < $proto->RANGE_IN_DAYS) {
 	$j += $days;
-	return _join($j, $s)
-	    if FIRST_DATE_IN_JULIAN_DAYS() <= $j
-	    && $j < LAST_DATE_IN_JULIAN_DAYS();
+	return $proto->internal_join($j, $s)
+	    if $proto->FIRST_DATE_IN_JULIAN_DAYS <= $j
+	    && $j < $proto->LAST_DATE_IN_JULIAN_DAYS;
     }
     Bivio::Die->die('range_error: ', $date_time, ' + ', $days);
     # DOES NOT RETURN
@@ -220,12 +222,12 @@ sub add_seconds {
     # Compute the adjustment in seconds and days
     my($abs) = abs($seconds);
     my($sign) = $seconds < 0 ? -1 : 1;
-    my($secs) = $abs % SECONDS_IN_DAY();
-    my($days) = $sign * int(($abs - $secs) / SECONDS_IN_DAY() + 0.5);
+    my($secs) = $abs % $proto->SECONDS_IN_DAY();
+    my($days) = $sign * int(($abs - $secs) / $proto->SECONDS_IN_DAY() + 0.5);
     $secs *= $sign;
 
     # Adjust for the seconds component
-    my($j, $s) = _split($date_time);
+    my($j, $s) = $proto->internal_split($date_time);
     $s += $secs;
 
     # Compute wrap, if any
@@ -239,7 +241,7 @@ sub add_seconds {
     }
 
     # Adjust the days component (also checks range)
-    return $proto->add_days(_join($j, $s), $days);
+    return $proto->add_days($proto->internal_join($j, $s), $days);
 }
 
 sub can_be_negative {
@@ -258,12 +260,12 @@ sub can_be_zero {
 }
 
 sub compare_defined {
-    my(undef, $left, $right) = @_;
+    my($proto, $left, $right) = @_;
     # Returns 1 if I<left> is greater than I<right>.
     # Returns 0 if I<left> is equal to I<right>.
     # Returns -1 if I<left> is less than I<right>.
-    my($ld, $lt) = _split($left);
-    my($rd, $rt) = _split($right);
+    my($ld, $lt) = $proto->internal_split($left);
+    my($rd, $rt) = $proto->internal_split($right);
     return 1
 	if $ld > $rd;
     return -1
@@ -306,7 +308,7 @@ sub delta_days {
 	if $start_date eq $end_date;
 
     my($sign) = 1;
-    my(@dates) = ([_split($start_date)], [_split($end_date)]);
+    my(@dates) = ([$proto->internal_split($start_date)], [$proto->internal_split($end_date)]);
     if ($dates[1]->[0] < $dates[0]->[0] ||
 	    ($dates[1]->[0] == $dates[0]->[0] &&
 		$dates[1]->[1] < $dates[0]->[1])) {
@@ -329,8 +331,8 @@ sub delta_days {
 sub diff_seconds {
     my($proto, $left, $right) = @_;
     # Subtract I<right> from I<left> and return the number of seconds.
-    my($lj, $ls) = _split($left);
-    my($rj, $rs) = _split($right);
+    my($lj, $ls) = $proto->internal_split($left);
+    my($rj, $rs) = $proto->internal_split($right);
     return ($lj - $rj) * $proto->SECONDS_IN_DAY + $ls - $rs;
 }
 
@@ -380,9 +382,9 @@ sub from_date_and_time {
 	unless $proto->is_date($date);
     die($time, "Not a valid time-only value")
 	unless $proto->is_time($time);
-    my($d1_d, $d1_t) = _split($date);
-    my($d2_d, $d2_t) = _split($time);
-    my($v, $e) = $proto->from_literal(_join($d1_d, $d2_t));
+    my($d1_d, $d1_t) = $proto->internal_split($date);
+    my($d2_d, $d2_t) = $proto->internal_split($time);
+    my($v, $e) = $proto->from_literal($proto->internal_join($d1_d, $d2_t));
     return ($v, $e) if $e;
     return $v;
 }
@@ -429,7 +431,7 @@ sub from_parts {
     my($time, $err2) = $proto->time_from_parts($sec, $min, $hour);
     return (undef, $err2)
 	if $err2;
-    return _join((_split($date))[0], (_split($time))[1]);
+    return $proto->internal_join(($proto->internal_split($date))[0], ($proto->internal_split($time))[1]);
 }
 
 sub from_parts_or_die {
@@ -444,13 +446,14 @@ sub from_sql_value {
 }
 
 sub from_unix {
-    my(undef, $unix_time) = @_;
+    my($proto, $unix_time) = @_;
     # Returns date/time for I<unix_time>.
-    return undef unless defined($unix_time);
-    my($s) = int($unix_time % SECONDS_IN_DAY() + 0.5);
-    my($j) = int(($unix_time - $s)/SECONDS_IN_DAY() + 0.5)
-	    + UNIX_EPOCH_IN_JULIAN_DAYS();
-    return _join($j, $s);
+    return undef
+	unless defined($unix_time);
+    my($s) = int($unix_time % $proto->SECONDS_IN_DAY() + 0.5);
+    my($j) = int(($unix_time - $s)/$proto->SECONDS_IN_DAY() + 0.5)
+	    + $proto->UNIX_EPOCH_IN_JULIAN_DAYS();
+    return $proto->internal_join($j, $s);
 }
 
 sub get_decimals {
@@ -544,8 +547,8 @@ sub get_parts {
 sub get_previous_day {
     my($proto, $date) = @_;
     # Returns the date value for the day previous to the specified date.
-    my($j, $s) = _split($date);
-    return _join(($j - 1), $s);
+    my($j, $s) = $proto->internal_split($date);
+    return $proto->internal_join(($j - 1), $s);
 }
 
 sub get_previous_month {
@@ -618,6 +621,16 @@ sub handle_pre_execute_task {
         $req,
     ) if !defined($_IS_TEST) || $_IS_TEST;
     return;
+}
+
+sub internal_join {
+    my(undef, $date, $time) = @_;
+    return "$date $time";
+}
+
+sub internal_split {
+    my(undef, $date_time) = @_;
+    return split(' ', $date_time);
 }
 
 sub is_date {
@@ -706,7 +719,7 @@ sub rfc822 {
 
 sub set_beginning_of_day {
     my($proto, $date_time) = @_;
-    return _join((_split($date_time))[0], $_BEGINNING_OF_DAY)
+    return $proto->internal_join(($proto->internal_split($date_time))[0], $_BEGINNING_OF_DAY)
 }
 
 sub set_beginning_of_month {
@@ -722,7 +735,7 @@ sub set_beginning_of_week {
 
 sub set_end_of_day {
     my($proto, $date_time) = @_;
-    return _join((_split($date_time))[0], $_END_OF_DAY)
+    return $proto->internal_join(($proto->internal_split($date_time))[0], $_END_OF_DAY)
 }
 
 sub set_end_of_month {
@@ -753,7 +766,7 @@ sub set_local_time_part {
     my($proto, $date_time, $seconds, $tz) = @_;
     # Sets the time component of the date/time to I<seconds> in the user's
     # time zone.  I<timezone> may be undef iwc it defaults to I<timezone>.
-    my($date) = _split(
+    my($date) = $proto->internal_split(
 	$proto->is_date($date_time) ? $date_time
 	    : _adjust_to_local($proto, $date_time, $tz),
     );
@@ -850,13 +863,13 @@ sub to_local_string {
 }
 
 sub to_parts {
-    my(undef, $value) = @_;
+    my($proto, $value) = @_;
     # Returns the date/time in parts in the same order as C<gmtime>
     # (sec, min, hour, mday, mon, year), but mday is one-based and
     # year is four digits.
     #
     # Handles BOTH unix and date/time formats (for convenience).
-    my($date, $time) = _split($value);
+    my($date, $time) = $proto->internal_split($value);
 
     # Unix time doesn't have a "$time" component
     unless (defined($time)) {
@@ -917,12 +930,12 @@ sub to_time_parts {
 }
 
 sub to_unix {
-    my(undef, $date_time) = @_;
+    my($proto, $date_time) = @_;
     # Returns unix time or blows up if before epoch.
-    my($date, $time) = _split($date_time);
+    my($date, $time) = $proto->internal_split($date_time);
     die($date, ': date before unix epoch')
-	    if $date < UNIX_EPOCH_IN_JULIAN_DAYS();
-    return ($date - UNIX_EPOCH_IN_JULIAN_DAYS()) * SECONDS_IN_DAY() + $time;
+	if $date < $proto->UNIX_EPOCH_IN_JULIAN_DAYS();
+    return ($date - $proto->UNIX_EPOCH_IN_JULIAN_DAYS()) * $proto->SECONDS_IN_DAY() + $time;
 }
 
 sub to_xml {
@@ -960,8 +973,8 @@ sub _compute_local_timezone {
 	entity => $now,
     }) unless $local;
     $_LOCAL_TIMEZONE =
-	    int(__PACKAGE__->diff_seconds(__PACKAGE__->from_unix($now), $local)
-		    / 60 + 0.5);
+	int(__PACKAGE__->diff_seconds(__PACKAGE__->from_unix($now), $local)
+	    / 60 + 0.5);
     return;
 }
 
@@ -999,22 +1012,23 @@ sub _from_file_name {
 sub _from_literal {
     my($proto, $value, $res, $err) = @_;
     # Returns ($res, $err) if it matches the pattern.  Parses literal format.
-    my($date, $time) = $value =~ /^@{[REGEX_LITERAL()]}$/o;
+    my($date, $time) = $value =~ /^@{[$proto->REGEX_LITERAL()]}$/o;
     return () unless defined($time);
     return (undef, Bivio::TypeError->DATE_RANGE)
-	if length($date) > length(LAST_DATE_IN_JULIAN_DAYS())
-	    || $date < FIRST_DATE_IN_JULIAN_DAYS()
-	    || $date > LAST_DATE_IN_JULIAN_DAYS();
+	if length($date) > length($proto->LAST_DATE_IN_JULIAN_DAYS())
+	    || $date < $proto->FIRST_DATE_IN_JULIAN_DAYS()
+	    || $date > $proto->LAST_DATE_IN_JULIAN_DAYS();
     return (undef, Bivio::TypeError->TIME_RANGE)
-	if length($time) > length(SECONDS_IN_DAY())
-	    || $time >= SECONDS_IN_DAY();
-    return _join($date, $time);
+	if length($time) > length($proto->SECONDS_IN_DAY())
+	    || $time >= $proto->SECONDS_IN_DAY();
+    return $proto->internal_join($date, $time);
 }
 
 sub _from_or_die {
     my($method, $proto) = (shift, shift);
     my($res, $e) = $proto->$method(@_);
-    return $res if defined($res);
+    return $res
+	if defined($res);
     Bivio::Die->throw_die('DIE', {
 	message => "$method failed: " . $e->get_long_desc,
 	program_error => 1,
@@ -1051,14 +1065,14 @@ sub _from_rfc822 {
 sub _from_string {
     my($proto, $value) = @_;
     # Returns ($res, $err) if it matches to_string pattern.  Parses string format.
-    my($mon, $d, $y, $h, $m, $s) = $value =~ /^@{[REGEX_STRING()]}$/o;
+    my($mon, $d, $y, $h, $m, $s) = $value =~ /^@{[$proto->REGEX_STRING()]}$/o;
     return defined($s) ? $proto->from_parts($s, $m, $h, $d, $mon, $y) : ();
 }
 
 sub _from_xml {
     my($proto, $value) = @_;
     # Parses to_xml format
-    my($y, $mon, $d, $h, $m, $s, $z) = $value =~ /^@{[REGEX_XML()]}$/o;
+    my($y, $mon, $d, $h, $m, $s, $z) = $value =~ /^@{[$proto->REGEX_XML()]}$/o;
     return ()
 	unless defined($s);
     my($res) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
@@ -1099,11 +1113,6 @@ sub _initialize {
     return;
 }
 
-sub _join {
-    my($date, $time) = @_;
-    return "$date $time";
-}
-
 sub _localtime {
     my($unix_time) = @_;
     # Returns the parts adjust for month and year.
@@ -1111,11 +1120,6 @@ sub _localtime {
     $mon++;
     $year += 1900;
     return ($sec, $min, $hour, $mday, $mon, $year);
-}
-
-sub _split {
-    my($date_time) = @_;
-    return split(' ', $date_time);
 }
 
 sub _to_string {
