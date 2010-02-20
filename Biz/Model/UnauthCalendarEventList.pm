@@ -7,7 +7,7 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub IS_COPY_QUERY_KEY {
-    return 'is_copy';
+    return 'b_is_copy';
 }
 
 sub internal_initialize {
