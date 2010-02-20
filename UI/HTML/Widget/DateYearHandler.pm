@@ -1,14 +1,9 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::DateYearHandler;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::UI::HTML::Widget::JavaScript;
+use Bivio::Base 'UI.Widget';
 
-# C<Bivio::UI::HTML::Widget::DateYearHandler>
-#
-#
-#
 # form_name : string (inherited)
 #
 # Used to access the form within JavaScript.
@@ -19,84 +14,69 @@ use Bivio::UI::HTML::Widget::JavaScript;
 # if the source date is less than the current value.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FUNCS) = Bivio::UI::HTML::Widget::JavaScript->strip(<<"EOF");
-
-// Adds the current four digit year to the source date if
-// it is not given, or completes a two digit date (now+20 mapping).
-// s - full source date (input by user)
-// s_month - source month
-// s_day - source day
-// s_year - source year
-// c_year - current year (taken from local machine)
-// slash_1 - index of first slash
-// slash_2 - index of second slash (-1 if not present)
+my($_JS) = b_use('HTMLWidget.JavaScript');
+my($_FUNCS) = $_JS->strip(<<'EOF');
 function dy_complete_date(s) {
-  if (s.value.length == 0)
-    return;
-  c_year = new Date().getFullYear();
-  slash_1 = s.value.indexOf('/');
-  slash_2 = s.value.indexOf('/', slash_1 + 1);
-  s_month = s.value.substring(0, slash_1);
-
-  if (slash_2 == -1) {
-    s_day = s.value.substring(slash_1 + 1, s.value.length);
-    s_year = "";
-  } else {
-    s_day = s.value.substring(slash_1 + 1, slash_2);
-    s_year = s.value.substring(slash_2 + 1, s.value.length);
-  }
-
-  var pattern = new RegExp("[0-9]?[0-9]/[0-9]?[0-9](/[0-9][0-9])?");
-
-  // Had to hack this a bit, don't think Regex works in IE correctly
-  if (!pattern.test(s.value)) {
-    return;
-  } else if (s_month.length > 2 || s_day.length > 2) {
-    return;
-  }
-
-  if (slash_2 == -1) {
-    s.value = s.value + '/' + c_year;
-  } else if (s_year.length == 2) {
-    diff = c_year - 1980;
-
-    if (diff >= s_year) {
-      s_year = '20' + s_year;
-    } else {
-      s_year = '19' + s_year;
+    if (s.value.length == 0)
+        return;
+    var c_year = new Date().getFullYear() + '';
+    var century = c_year.substring(0, 2);
+    var century 
+    var pattern = new RegExp('^[0-9]?[0-9][/\.][0-9]?[0-9][/\.]?[0-9]?[0-9]?$');
+    if (!pattern.test(s.value)) {
+        pattern = new RegExp('^[0-9][0-9][0-9][0-9]$');
+        if (!pattern.test(s.value)) {
+            pattern = new RegExp('^[0-9][0-9][0-9][0-9][0-9][0-9]$');
+            if (!pattern.test(s.value))
+                return;
+            c_year = century + s.value.substring(4, 6);
+        }
+        s.value = s.value.substring(0, 2) + '/'
+            + s.value.substring(2, 4) + '/'
+            + c_year;
+        return;
     }
-
-    s.value = s_month + '/' + s_day + '/' + s_year;
-  }
+    var sep = '/';
+    if ((sep_1 = s.value.indexOf(sep)) < 0)
+        sep_1 = s.value.indexOf(sep = '.');
+    var sep_2 = s.value.indexOf(sep, sep_1 + 1);
+    var s_month = s.value.substring(0, sep_1);
+    var s_day, s_year;
+    if (sep_2 == -1) {
+        s_day = s.value.substring(sep_1 + 1, s.value.length);
+        s_year = '';
+    }
+    else {
+        s_day = s.value.substring(sep_1 + 1, sep_2);
+        s_year = s.value.substring(sep_2 + 1, s.value.length);
+    }
+    if (s_month.length > 2 || s_day.length > 2)
+        return;
+    if (sep_2 == -1)
+        s.value = s.value + sep + c_year;
+    else if (s_year.length == 0)
+        s.value = s.value + c_year;
+    else if (s_year.length <= 2)
+	s.value = s_month + sep + s_day + sep
+            + (s_year.length == 1 ? century + '0'
+            : c_year - (century + '00') >= s_year - 20 ? century
+            : century - 1)
+            + s_year;
 }
 EOF
 
 sub JAVASCRIPT_FUNCTION_NAME {
-    # : string
-    # Return the tag used by this class to prefix javascript functions.
     return 'dy';
 }
 
 sub get_html_field_attributes {
-    # (self, string, ref) : string
-    # Returns the inlined source for this method.
     my($self, $field_name, $source) = @_;
-    # This has to be onBlur, because onChange doesn't work quite right in IE.
     return ' onblur="dy_complete_date(this)"';
 }
 
-sub initialize {
-    # (self) : undef
-    # NOP
-    return;
-}
-
 sub render {
-    # (self, any, string_ref) : undef
-    # Renders the javascript.
     my($self, $source, $buffer) = @_;
-    Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer,
-	    JAVASCRIPT_FUNCTION_NAME(), $_FUNCS);
+    $_JS->render($source, $buffer, shift->JAVASCRIPT_FUNCTION_NAME, $_FUNCS);
     return;
 }
 
