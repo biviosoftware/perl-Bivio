@@ -762,7 +762,7 @@ table.b_month_calendar {
 .b_list_calendar td.b_datetime {
   Font('b_datetime');
 }
-a.b_day_of_month_create {
+a.b_day_of_month_create:link {
   display: inline-block;
   width: 100%;
   height: 100%;
