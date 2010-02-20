@@ -238,12 +238,10 @@ sub vs_can_group_bulletin_form {
 sub vs_field_description {
     my(undef, $field_name) = @_;
     return [sub {
-        my($source, $field_name) = @_;
-#TODO: Need to create a separate space for field_descriptions so we don't
-#      default to something that we don't expect.
+        my($source, $fn) = @_;
 	return ''
 	    unless my $v = $source->req('Bivio::UI::Facade', 'Text')
-	    ->unsafe_get_value($field_name, 'desc');
+	    ->unsafe_get_value($fn, 'desc');
 	return DIV_desc(Prose($v));
     }, $field_name];
 }
@@ -253,13 +251,13 @@ sub vs_filter_query_form {
     return $proto->vs_selector_form(
 	$form ||= 'FilterQueryForm',
 	[
-	    $attrs->{text} || DIV(Join([ClearOnFocus(
+	    $attrs->{text} || Join([ClearOnFocus(
 		Text({
-		    field => 'b_filter',
-		    size => int(b_use('Type.Line')->get_width / 2),
-		}),
+  		    field => 'b_filter',
+  		    size => int(b_use('Type.Line')->get_width / 2),
+  		}),
 		[['->req', "Model.$form"], '->clear_on_focus_hint'],
-	    ), DIV('hello')])),
+	    )]),
 	    @{$extra_columns || []},
 	],
 	1,
