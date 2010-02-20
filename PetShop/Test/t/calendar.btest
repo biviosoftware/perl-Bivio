@@ -35,7 +35,7 @@ submit_form({
     list => 0,
 });
 verify_no_text(qr{\bno events}i);
-follow_link('add_event');
+follow_menu_link('add_event');
 submit_form({
     title => 'mst_event',
     zone => 'MST',
@@ -64,9 +64,15 @@ verify_table(start => [
 follow_link_in_table(qw(start title mst_event actions delete));
 submit_form('delete');
 verify_no_text('mst_event');
-# add repeated events and check number of occurances...
 my($start_date) = Type_Date('1/1/2010');
 date_time_now($start_date);
+follow_menu_link(qw(calendar_btest_main calendar add_event_8));
+verify_form({
+    start_date => '01/03/2010',
+    end_date => '01/03/2010',
+});
+go_back();
+# add repeated events and check number of occurances...
 my($repeat_end) = Type_Date()->set_end_of_month($start_date);
 # repeats interval values are the recurrence counts
 # within the start_date to repeat_ends period
@@ -81,7 +87,7 @@ my($repeats) = {
     every_four_weeks => 2,
 };
 foreach my $interval (sort(keys(%{$repeats}))) {
-    follow_link('add_event');
+    follow_menu_link('add_event');
     my($title) = random_string();
     submit_form({
 	title => $title,
@@ -120,7 +126,7 @@ foreach my $devk (sort(keys(%{$daysevents}))) {
 	my($title) = random_string();
         push(@$titles, $title);
 	my($st, $et) = @$d;
-        follow_link('add_event');
+        follow_menu_link('add_event');
 	submit_form({
 	   title => $title,
 	   start_date => $devk,

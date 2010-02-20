@@ -540,10 +540,16 @@ sub _cfg_calendar {
     return {
 	Color => [
 	    [b_month_calendar_td_border => 0],
-	    [b_month_calendar_th_background => -1],
-	    [b_month_calendar_background => -1],
-	    [b_date_other_month_background => 0xe6e6e6],
+	    [[qw(b_date_other_month_background b_day_of_other_month_create_hidden)]
+		=> 0xe6e6e6],
 	    [b_date_other_month => 0x808080],
+	    [[qw(
+		b_day_of_month_create_hidden
+	        b_month_calendar_th_background
+		b_month_calendar_background
+	    )] => __PACKAGE__->init_from_prior_group('body_background')],
+	    [b_day_of_month_create_visible =>
+		__PACKAGE__->init_from_prior_group('a_hover')],
 	],
 	Constant => [
 	    ['Model.TimeZoneList.rows' => sub {[map(+{
@@ -560,6 +566,8 @@ sub _cfg_calendar {
 	    [b_date_other_month => []],
 	    [b_event_name => ['size=85%', 'left']],
 	    [b_datetime => 'nowrap'],
+	    [b_day_of_month_create_hidden => ['normal_decoration']],
+	    [b_day_of_month_create_visible => ['normal_decoration']],
 	],
  	FormError => [
 	    [recurrence_end_date => [

@@ -762,6 +762,20 @@ table.b_month_calendar {
 .b_list_calendar td.b_datetime {
   Font('b_datetime');
 }
+a.b_day_of_month_create {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  Font('b_day_of_month_create_hidden');
+  text-align: center;
+  vertical-align: middle;
+}
+.b_date_other_month a.b_day_of_month_create {
+  Color('b_day_of_other_month_create_hidden');
+}
+a.b_day_of_month_create:hover {
+  Font('b_day_of_month_create_visible');
+}
 EOF
 }
 
