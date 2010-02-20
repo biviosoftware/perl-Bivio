@@ -65,16 +65,16 @@ sub from_literal {
 	if $value =~ /^\d+ (\d+)$/;
     $value =~ s/\s+//g;
     return $proto->date_from_parts($3, $2, $1)
-	if $value =~ m{^(\d{4})[/-](\d{2})[/-](\d{2})$}s;
+	if $value =~ m{^(\d{4})[/-](\d+)[/-](\d+)$}s;
     return $proto->date_from_parts($2, $1, $3)
-	if $value =~ m{^(\d+)[/-](\d+)[/-](\d+)$}s;
+	if $value =~ m{^(\d+)[/-](\d+)[/-](\d{4})$}s;
     return $proto->date_from_parts($3, $2, $1)
 	if $value =~ m{^(\d{4})(\d{2})(\d{2})$}s;
     return $proto->date_from_parts(
         $1,
 	$proto->english_month3_to_int($2),
 	$3,
-    ) if $value =~ m{^(\d{2})-([a-z]{3})-(\d{4})$}is;
+    ) if $value =~ m{^(\d+)-([a-z]{3})-(\d{4})$}is;
     return $proto->date_from_parts($1, $2, $3)
 	if $value =~ m{^(\d+)\.(\d+)\.(\d{4})$}s;
     return (undef, Bivio::TypeError->DATE);
