@@ -304,13 +304,7 @@ sub _group {
 	}, $value);
     }
     else {
-	push(@$groups, [
-	    $name,
-	    $self->internal_assert_value(
-		ref($value) eq 'CODE' ? scalar($value->($self)) : $value,
-		$name,
-	    ),
-	]);
+	push(@$groups, [$name, $value]);
     }
     return $groups;
 }
