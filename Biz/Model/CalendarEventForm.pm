@@ -14,6 +14,10 @@ my($_FM) = b_use('Type.FormMode');
 my($_A) = b_use('Action.Acknowledgement');
 my($_CEMF) = b_use('Model.CalendarEventMonthForm');
 
+sub CREATE_DATE_QUERY_KEY {
+    return 'b_create_date';
+}
+
 sub execute_empty {
     my($self) = @_;
     $self->internal_put_field(recurrence => $_CER->from_name('UNKNOWN'));
@@ -24,6 +28,12 @@ sub execute_empty {
 		$self->req(qw(auth_realm type))->eq_user ? undef
 	        : $self->req('auth_id'),
 	);
+	if (my $dt = _create_date($self)) {
+	    $self->internal_put_field(
+		start_date => $dt,
+		end_date => $dt,
+	    );
+	}
     }
     else {
 	$self->load_from_model_properties('CalendarEvent');
@@ -180,6 +190,13 @@ sub _ack_and_redirect {
 	    : $self->is_create ? 'create'
 	    : 'edit'),
     };
+}
+
+sub _create_date {
+    my($self) = @_;
+    return ($_D->from_literal(
+	($self->ureq('query') || return 0)->{$self->CREATE_DATE_QUERY_KEY},
+    ))[0];
 }
 
 sub _create_or_update {
