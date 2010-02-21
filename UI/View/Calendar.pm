@@ -119,10 +119,7 @@ sub list {
 	    {
 		task_id => 'FORUM_CALENDAR_EVENT_FORM',
 		label => 'FORUM_CALENDAR_EVENT_FORM.create',
-		control => And(
-		    ['!', ['auth_realm', 'type'], '->eq_user'],
-		    [qw(Model.CalendarEventMonthList ->can_user_edit_this_realm)],
-		),
+		control => [qw(Model.CalendarEventMonthList ->can_user_edit_any_realm)],
 	    },
 	    _user_list_link(),
 	    'FORUM_CALENDAR_EVENT_LIST_ICS',
@@ -203,7 +200,17 @@ sub _month_view {
     return Table($_CEWL->simple_package_name => [
 	map([$_ => {
 	    column_widget => Join([
-		SPAN_b_day_of_month(["day_of_month_$_"]),
+		SPAN(
+		    ["day_of_month_$_"],
+		    {
+			class => Join([
+			    If(["is_today_$_"], 'b_is_today'),
+			    'b_day_of_month',
+			], {
+			    join_separator => ' ',
+			}),
+		    },
+		),
 		With(
 		    ["day_list_$_"],
 		    Link(
@@ -226,10 +233,8 @@ sub _month_view {
 			},
 		    }),
 		    {
-			control => And(
-			    ['!', ['->req', 'auth_realm', 'type'], '->eq_user'],
-			    [[qw(->req Model.CalendarEventMonthList)], '->can_user_edit_this_realm'],
-			),
+			control =>
+			    [[qw(->req Model.CalendarEventMonthList)], '->show_create_on_month_view'],
 			class => 'b_day_of_month_create',
 		    },
 		),
