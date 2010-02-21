@@ -60,10 +60,16 @@ my($check_week_list) = sub {
 		in_this_month_monday => 0,
 		in_this_month_tuesday => 1,
 		day_of_month_saturday => 5,
+		is_today_friday => 0,
 	    },
 	},
 	1 => {
+	    2 => {
+		is_today_friday => 1,
+		is_today_saturday => 0,
+	    },
 	    5 => {
+		is_today_friday => 0,
 		in_this_month_sunday => 1,
 		in_this_month_monday => 0,
 		day_of_month_saturday => 6,
