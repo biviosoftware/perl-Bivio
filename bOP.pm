@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.83  2010/02/21 02:27:38  nagler
+  * README
+    Added BOOKKEEPING section
+  * MANIFEST.html
+    NEW
+
   Revision 8.82  2010/02/20 22:48:18  nagler
   * Bivio::Biz::Model::CalendarEventForm
     added create_date in query
