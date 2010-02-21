@@ -11,25 +11,19 @@ my($_D) = b_use('Type.Date');
 my($_UTC) = b_use('Type.TimeZone')->UTC;
 my($_DT) = b_use('Type.DateTime');
 my($_DTWTZ) = b_use('Type.DateTimeWithTimeZone');
+my($_EDIT_TASK) = 'FORUM_CALENDAR_EVENT_FORM';
 
 sub can_user_edit_any_realm {
     my($self) = @_;
-    my($res) = 0;
-    $self->req('Model.AuthUserGroupList')->do_rows(
-	sub {
-	    my($it) = @_;
-	    return 0
-		if $res = $it->can_user_execute_task('FORUM_CALENDAR_EVENT_FORM');
-	    return 1;
-	},
-    );
-    return $res;
+    return $self->req('Model.AuthUserGroupList')
+	->can_user_execute_task_in_any_realm($_EDIT_TASK);
 }
 
 sub can_user_edit_this_realm {
     my($self) = @_;
-    return $self->req('Model.AuthUserGroupList')->can_user_execute_task(
-	'FORUM_CALENDAR_EVENT_FORM',
+    $self->assert_has_cursor;
+    return $self->req->can_user_execute_task(
+	$_EDIT_TASK,
 	$self->get('CalendarEvent.realm_id'),
     );
 }
@@ -137,6 +131,13 @@ sub internal_realm_ids {
     return $self->req(qw(auth_realm type))->eq_user
 	? $self->req('Model.AuthUserGroupList')->realm_ids
         : [$self->req('auth_id')];
+}
+
+sub show_create_on_month_view {
+    my($self) = @_;
+    return $self->can_user_edit_any_realm
+	if $self->req(qw(auth_realm type))->eq_user;
+    return $self->req->can_user_execute_task($_EDIT_TASK);
 }
 
 1;
