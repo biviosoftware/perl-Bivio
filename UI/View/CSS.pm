@@ -754,6 +754,10 @@ table.b_month_calendar {
 .b_month_calendar .b_date_other_month .b_day_of_month {
   Font('b_date_other_month');
 }
+.b_month_calendar .b_is_today .b_day_of_month {
+  border: 1px solid;
+  Color('b_month_calendar_is_today-border');
+}
 .b_month_calendar a.b_event_name {
   display: block;
   padding-left: 2.5em;
@@ -762,6 +766,8 @@ table.b_month_calendar {
 .b_list_calendar td.b_datetime {
   Font('b_datetime');
 }
+a.b_day_of_month_create,
+a.b_day_of_month_create:visited,
 a.b_day_of_month_create:link {
   display: inline-block;
   width: 100%;
@@ -770,10 +776,15 @@ a.b_day_of_month_create:link {
   text-align: center;
   vertical-align: middle;
 }
-.b_date_other_month a.b_day_of_month_create {
+.b_date_other_month a.b_day_of_month_create,
+.b_date_other_month a.b_day_of_month_create:visited,
+.b_date_other_month a.b_day_of_month_create:link {
   Color('b_day_of_other_month_create_hidden');
 }
-a.b_day_of_month_create:hover {
+a.b_day_of_month_create:active,
+a.b_day_of_month_create:hover,
+.b_date_other_month a.b_day_of_month_create:active,
+.b_date_other_month a.b_day_of_month_create:hover {
   Font('b_day_of_month_create_visible');
 }
 EOF
