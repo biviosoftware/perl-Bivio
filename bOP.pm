@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,74 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.82  2010/02/20 22:48:18  nagler
+  * Bivio::Biz::Model::CalendarEventForm
+    added create_date in query
+  * Bivio::Biz::Model::CalendarEventWeekList
+    added create_date
+  * Bivio::Biz::Model::FileChangeForm
+    don't set is_text_content_type if length greater than TextArea can hold
+  * Bivio::Biz::Model::FilterQueryForm
+    added default_date_filter & ability to default field
+  * Bivio::Biz::Model::RoleBaseList
+    Allow larger lists
+  * Bivio::Biz::Model::TaskLogList
+    Added TaskLog.client_address
+    TaskLog.client_address takes precence
+    set default_date_filter to WEEK
+  * Bivio::Biz::Model::TaskLog
+    Added TaskLog.client_address
+  * Bivio::Biz::Model::UnauthCalendarEventList
+    is_copy => b_is_copy
+  * Bivio::PetShop::Facade::Other
+    test initialize Other
+  * Bivio::SQL::DDL
+    Added TaskLog.client_address
+    added indexes for uri and client_address to task_log
+  * Bivio::Type::DateInterval
+    rmpod
+    rmpod
+  * Bivio::Type::Date
+    accept European date format
+    Use $proto and internal_join/split
+    support d.m.yyyy format
+  * Bivio::Type::DateTime
+    _join() & _split() => internal_join/split
+    Put in $proto-><CONSTANT> most places
+  * Bivio::UI::FacadeBase
+    support for Add Event on month view of calendar
+    Added TaskLog.client_address
+    added desc to start/end_date
+  * Bivio::UI::FacadeComponent
+    added handle_init_from_prior_group to allow group aliases
+    dynamically initialized values are initialized twice
+  * Bivio::UI::Facade
+    added init_from_prior_group to allow group aliases
+  * Bivio::UI::HTML::Widget::DateYearHandler
+    rmpod
+    Handle '.' as a separator
+    New formats: 0202 => 02/02/<year>; 020205 => 02/02/2005; 6/7/8 => 6/7/2008
+    Handle century transitions properly
+  * Bivio::UI::HTML::Widget::JavaScript
+    cruft
+  * Bivio::UI::Text
+    don't do the initialization here
+  * Bivio::UI::View::Calendar
+    added link to create an event on a particular day in the month view
+  * Bivio::UI::View::CSS
+    support for Add Event on month view of calendar
+    need :link to ensure b_day_of_month_create visible
+    typo
+  * Bivio::UI::View::TaskLog
+    Added TaskLog.client_address
+  * Bivio::UI::XHTML::ViewShortcuts
+    vs_filter_query_form uses vs_selector_form
+    modularize vs_field_description and put in a DIV, not BR()
+    fpc
+  * Bivio::Util::SQL
+    Added TaskLog.client_address
+    added indexes to task_log_client_address upgraded
+
   Revision 8.81  2010/02/18 00:41:05  nagler
   * Bivio::Delegate::SimpleAuthSupport
     fix caching once again
