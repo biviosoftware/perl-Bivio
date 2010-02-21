@@ -11,8 +11,7 @@ do {
     });
     my($files) = [];
     my($root) = '/xapian';
-    model('Lock')->execute_general(req());
-    Bivio::Search::Xapian->destroy_db;
+    Search_Xapian()->destroy_db;
     commit();
     foreach my $op (
 	[xapian_demo => [

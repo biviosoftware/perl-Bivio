@@ -9,6 +9,11 @@ use Search::Xapian ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_F) = b_use('IO.File');
+my($_P) = b_use('Search.Parser');
+my($_A) = b_use('IO.Alert');
+my($_M) = b_use('Biz.Model');
+my($_LOCK_ID);
 #TODO: What is the actual max term length; I've seen errors in the 400 range
 my($_MAX_WORD) = 240;
 my($_LENGTH) = b_use('Type.PageSize')->get_default;
@@ -30,12 +35,16 @@ my($_VALUE_MAP) = {
 b_use('IO.Config')->register(my $_CFG = {
     db_path => b_use('Biz.File')->absolute_path('Xapian'),
 });
-my($_F) = b_use('IO.File');
 my($_L) = b_use('Model.Lock');
-my($_GENERAL_ID) = b_use('Auth.Realm')->get_general->get('id');
-my($_P) = b_use('Search.Parser');
-my($_A) = b_use('IO.Alert');
-my($_M) = b_use('Biz.Model');
+
+sub EXEC_REALM {
+    return 'xapian_exec';
+}
+
+sub acquire_lock {
+    my($proto, $req) = @_;
+    return $_M->new($req, 'Lock')->acquire_unless_exists(_lock_id($proto, $req));
+}
 
 sub delete_model {
     my($proto, $req, $model_or_id) = @_;
@@ -50,9 +59,8 @@ sub delete_model {
 }
 
 sub destroy_db {
-    my(undef, $req) = @_;
-    Bivio::Die->die('general lock must be acquired')
-	unless $_L->new($req)->is_general_acquired;
+    my($proto, $req) = @_;
+    $proto->acquire_lock($req);
     $_A->info($_CFG->{db_path}, ': deleting');
     $_F->rm_rf($_CFG->{db_path});
     return;
@@ -77,7 +85,7 @@ sub excerpt_model {
 sub execute {
     my($proto, $req) = @_;
     my($self) = $req->get(ref($proto) || $proto);
-    $_L->new($req)->acquire_general_unless_exists;
+    $proto->acquire_lock($req);
     unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
     my($db) = Search::Xapian::WritableDatabase->new(
 	$_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
@@ -100,7 +108,7 @@ sub handle_commit {
 	    'JOB_XAPIAN_COMMIT',
 	    {
 		ref($self) => $self,
-		auth_id => $_GENERAL_ID,
+		auth_id => _lock_id($self, $req),
 		auth_user_id => undef,
 	    },
 	);
@@ -157,6 +165,7 @@ sub update_model {
 
 sub query {
     my($proto, $a) = @_;
+    $proto->acquire_lock($a->{req});
     $a->{offset} ||= 0;
     $a->{length} ||= $_LENGTH;
     $a->{private_realm_ids} ||= [];
@@ -239,6 +248,13 @@ sub _find {
 	    ->enquire(Search::Xapian::Query->new(_primary_term($primary_id)))
 	    ->matches(0, 1),
     )[0];
+}
+
+sub _lock_id {
+    my($proto, $req) = @_;
+    return $_LOCK_ID ||= $_M->new($req, 'RealmOwner')
+	->unauth_load_or_die({name => $proto->EXEC_REALM})
+	->get('realm_id');
 }
 
 sub _primary_term {
