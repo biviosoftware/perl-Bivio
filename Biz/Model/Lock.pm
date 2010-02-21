@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::Lock;
 use strict;
@@ -7,19 +7,23 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_GENERAL) = __PACKAGE__->use('Auth.Realm')->get_general;
+my($_GENERAL) = b_use('Auth.Realm')->get_general->get('id');
+my($_PI) = b_use('Type.PrimaryId');
+my($_SQL_READ_ONLY) = b_use('SQL.Connection')->is_read_only;
+my($_D) = b_use('Bivio.Die');
 
 sub acquire {
-    my($self) = @_;
+    my($self, $realm_id) = @_;
+    $realm_id ||= $self->req('auth_id');
     if (my $other = $self->req->unsafe_get(ref($self))) {
 	$other->throw_die(ALREADY_EXISTS => {
 	    message => 'more than one lock on the request',
 	});
 	# DOES NOT RETURN
     }
-    my($values) = {realm_id => $self->req('auth_id')};
+    my($values) = {realm_id => $realm_id};
     _read_request_input($self);
-    my($die) = Bivio::Die->catch(sub {$self->create($values)});
+    my($die) = $_D->catch(sub {$self->create($values)});
     if ($die) {
 	if ($die->get('code')->equals_by_name('DB_CONSTRAINT')) {
 	    my($a) = $die->unsafe_get('attrs');
@@ -36,21 +40,17 @@ sub acquire {
 }
 
 sub acquire_general {
-    my($self) = @_;
-    $self->req->with_realm(undef, sub {$self->acquire});
-    return;
+    return shift->acquire($_GENERAL);
 }
 
 sub acquire_general_unless_exists {
-    my($self) = @_;
-    $self->req->with_realm(undef, sub {$self->acquire_unless_exists});
-    return;
+    return shift->acquire_unless_exists($_GENERAL);
 }
 
 sub acquire_unless_exists {
-    my($self) = @_;
-    $self->acquire
-	unless $self->is_acquired;
+    my($self, $realm_id) = @_;
+    $self->acquire($realm_id)
+	unless $self->is_acquired($realm_id);
     return;
 }
 
@@ -96,10 +96,13 @@ sub internal_initialize {
 }
 
 sub is_acquired {
-    my($self) = shift;
-    return 0 unless my $other = $self->req->unsafe_get(ref($self));
-    return $other->get('realm_id') eq $self->req('auth_realm')->id_from_any(@_)
-	? 1 : 0;
+    my($self, $realm_id) = @_;
+    return 0
+	unless my $other = $self->unsafe_self_from_req($self->req);
+    return $_PI->is_equal(
+	$other->get('realm_id'),
+	$realm_id || $self->req('auth_id'),
+    );
 }
 
 sub is_general_acquired {
@@ -110,21 +113,25 @@ sub is_general_acquired {
 sub release {
     my($self) = @_;
     my($req_lock) = $self->req->unsafe_get(ref($self));
-    $self->throw_die('DIE', 'no locks on request') unless $req_lock;
-    $self->throw_die('DIE', {message => 'too many locks on the same request',
-	request_lock => $req_lock}) unless $req_lock == $self;
+    $self->throw_die('DIE', 'no locks on request')
+	unless $req_lock;
+    $self->throw_die(
+	'DIE',
+	{
+	    message => 'too many locks on the same request',
+	    request_lock => $req_lock,
+	},
+    ) unless $req_lock == $self;
     _trace($self) if $_TRACE;
     $self->delete_from_request;
     $self->throw_die('UPDATE_COLLISION')
-	    unless $self->delete() || Bivio::SQL::Connection->is_read_only;
+	unless $self->delete || $_SQL_READ_ONLY;
     return;
 }
 
 sub _read_request_input {
     my($self) = @_;
-    my($r) = $self->req->unsafe_get('r');
-    return unless $r;
-    my($m) = lc($r->method) eq 'post' ? 'get_form' : 'get_content';
+    my($m) = $self->req->is_http_method('post') ? 'get_form' : 'get_content';
     $self->req->$m();
     return;
 }
