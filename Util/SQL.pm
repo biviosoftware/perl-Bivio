@@ -61,6 +61,7 @@ my($_BUNDLE) = [qw(
     !user_feature_calendar
     !mail_want_reply_to_default
     !task_log_client_address
+    !xapian_exec_realm
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -170,7 +171,7 @@ sub create_db {
         $self->put(input => $file);
         $self->run;
     }
-    $self->initialize_db();
+    $self->initialize_db;
     return;
 }
 
@@ -476,6 +477,7 @@ sub initialize_db {
 	[qw(FORUM_TUPLE_SLOT_TYPE_LIST initialize_tuple_permissions initialize_tuple_slot_types)],
 	[qw(GROUP_TASK_LOG initialize_task_log_permissions)],
 	[qw(FORUM_MOTION_LIST initialize_motion_permissions)],
+	[qw(JOB_XAPIAN_COMMIT initialize_xapian_exec_realm)],
     ) {
 	next
 	    unless $_TI->unsafe_from_name(shift(@$x));
@@ -537,6 +539,16 @@ sub initialize_tuple_slot_types {
 	},
     });
     $req->set_realm($prev);
+    return;
+}
+
+sub initialize_xapian_exec_realm {
+    my($self) = @_;
+    $self->model('Club')->create_realm({}, {
+	name => b_use('Search.Xapian')->EXEC_REALM,
+	display_name => b_use('Type.String')->to_camel_case(
+	    b_use('Search.Xapian')->EXEC_REALM),
+    });
     return;
 }
 
@@ -1943,6 +1955,12 @@ ALTER TABLE tuple_t
     ALTER COLUMN thread_root_id SET NOT NULL
 /
 EOF
+    return;
+}
+
+sub internal_upgrade_db_xapian_exec_realm {
+    my($self) = @_;
+    $self->initialize_xapian_exec_realm;
     return;
 }
 
