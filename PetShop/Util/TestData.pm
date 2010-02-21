@@ -42,7 +42,7 @@ sub init_calendar_btest {
 	$self->model(RealmUserAddForm => {
 	    administrator => 0,
 	    'User.user_id' => $self->unauth_realm_id('calendar_btest_user'),
-	    file_writer => 1,
+	    file_writer => $name =~ /read_only/ ? 0 : 1,
 	}) unless $name =~ /adm_only/;
 	return 1;
     });
@@ -100,6 +100,7 @@ sub _do_calendar_btest {
 	calendar_btest_main
 	calendar_btest_adm_only
 	calendar_btest_other
+        calendar_btest_read_only
     )) {
         $op->($name);
     }
