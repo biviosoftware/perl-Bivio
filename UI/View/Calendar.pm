@@ -200,17 +200,7 @@ sub _month_view {
     return Table($_CEWL->simple_package_name => [
 	map([$_ => {
 	    column_widget => Join([
-		SPAN(
-		    ["day_of_month_$_"],
-		    {
-			class => Join([
-			    If(["is_today_$_"], 'b_is_today'),
-			    'b_day_of_month',
-			], {
-			    join_separator => ' ',
-			}),
-		    },
-		),
+		SPAN_b_day_of_month(["day_of_month_$_"]),
 		With(
 		    ["day_list_$_"],
 		    Link(
@@ -239,11 +229,16 @@ sub _month_view {
 		    },
 		),
 	    ]),
-	    column_data_class => If(
-		["in_this_month_$_"],
-		'b_date_this_month',
-		'b_date_other_month',
-	    ),
+	    column_data_class => Join([
+		If(
+		    ["in_this_month_$_"],
+		    'b_date_this_month',
+		    'b_date_other_month',
+		),
+		If(["is_today_$_"], 'b_is_today'),
+	    ], {
+		join_separator => ' ',
+	    }),
 	}], $_CEWL->day_of_week_suffix_list),
     ], {
 	source_name => ['Model.CalendarEventMonthList', '->week_list'],
