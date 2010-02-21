@@ -56,8 +56,10 @@ sub execute_empty {
 	$self->internal_put_field('CalendarEvent.realm_id' => undef)
 	    unless $augsl->realm_exists($rid);
     }
+#TODO: Encapsulate
     if ($augsl->get_result_set_size <= 2) {
 	# Will blow up if list is only "Select Forum"
+#TODO: Encapsulate
 	$self->internal_put_field('CalendarEvent.realm_id',
 	    $augsl->set_cursor_or_die(1)->get('RealmUser.realm_id'));
     }
@@ -160,6 +162,7 @@ sub internal_pre_execute {
 	entity => $self->req('auth_id'),
 	message => 'no authorized realms',
 	auth_user => $self->req('auth_user'),
+#TODO: Encapsulate
     }) if $augsl->get_result_set_size <= 1;
     $augsl->assert_realm_exists($self->get('CalendarEvent.realm_id'))
 	if $self->unsafe_get('CalendarEvent.realm_id');
