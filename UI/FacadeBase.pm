@@ -540,6 +540,7 @@ sub _cfg_calendar {
     return {
 	Color => [
 	    [b_month_calendar_td_border => 0],
+	    [b_month_calendar_is_today_border => 0xff8888],
 	    [[qw(b_date_other_month_background b_day_of_other_month_create_hidden)]
 		=> 0xe6e6e6],
 	    [b_date_other_month => 0x808080],
