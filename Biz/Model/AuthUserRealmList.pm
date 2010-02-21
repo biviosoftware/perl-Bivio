@@ -20,10 +20,19 @@ sub assert_realm_exists {
     return;
 }
 
-sub can_user_execute_task {
-    my($self, $task_id, $realm_id) = @_;
-    return 0
-	if $realm_id && !$self->realm_exists($realm_id);
+sub can_user_execute_task_in_any_realm {
+    my($self, $task) = @_;
+    my($res) = 0;
+    $self->do_rows(
+	sub {!($res = shift->can_user_execute_task_in_this_realm($task))},
+    );
+    $self->reset_cursor;
+    return $res;
+}
+
+sub can_user_execute_task_in_this_realm {
+    my($self, $task_id) = @_;
+    $self->assert_has_cursor;
     return $self->req->can_user_execute_task(
 	$_TI->from_any($task_id), $self->get_model('RealmOwner'));
 }
@@ -31,8 +40,10 @@ sub can_user_execute_task {
 sub realm_exists {
     sub REALM_EXISTS {[[qw(realm_id PrimaryId)], [qw(?task_id Agent.TaskId)]]}
     my($self, $bp) = shift->parameters(\@_);
-    return _load($self, $bp->{task_id})
+    my($ok) = _load($self, $bp->{task_id})
 	->find_row_by('RealmUser.realm_id' => $bp->{realm_id});
+    $self->reset_cursor;
+    return $ok ? 1 : 0;
 }
 
 sub internal_clear_model_cache {

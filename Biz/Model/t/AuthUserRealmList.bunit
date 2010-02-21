@@ -30,10 +30,26 @@ req()->set_realm_and_user('fourem')->initialize_fully('GROUP_USER_LIST');
 	    [map(realm_id($_), qw(btest_admin fourem fourem-sub2))],
 	],
     ],
-    can_user_execute_task => [
-	['FORUM_CALENDAR_EVENT_DETAIL', realm_id('fourem')] => 1,
-	['FORUM_CALENDAR_EVENT_FORM', realm_id('fourem')] => 0,
-	['FORUM_CALENDAR_EVENT_FORM', realm_id('fourem-sub2')] => 1,
-	['FORUM_CALENDAR_EVENT_FORM', realm_id('demo')] => 0,
+    inline_case(sub {req()->set_user('calendar_btest_user')}),
+    load_all_for_task => [
+	'FORUM_CALENDAR_EVENT_DETAIL' => not_die(),
+    ],
+    {
+	method => 'can_user_execute_task_in_this_realm',
+	compute_params => sub {
+	    my($case, $params) = @_;
+	    $case->get('object')->find_row_by('RealmOwner.name', shift(@$params));
+	    return [@$params];
+	},
+    } => [
+	[qw(fourem FORUM_CALENDAR_EVENT_DETAIL)] => DIE(),
+	[qw(calendar_btest_main FORUM_CALENDAR_EVENT_DETAIL)] => 1,
+	[qw(calendar_btest_main FORUM_CALENDAR_EVENT_FORM)] => 1,
+	[qw(calendar_btest_read_only FORUM_CALENDAR_EVENT_DETAIL)] => 1,
+	[qw(calendar_btest_read_only FORUM_CALENDAR_EVENT_FORM)] => 0,
+    ],
+    can_user_execute_task_in_any_realm => [
+	FORUM_CALENDAR_EVENT_FORM => 1,
+	SITE_ADMIN_USER_LIST => 0,
     ],
 ];
