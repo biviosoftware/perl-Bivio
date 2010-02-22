@@ -32,7 +32,7 @@ sub initialize {
 		    DIV_dd_menu(
 			[sub {
 			     my($source) = @_;
-			     my($realms) = $self->internal_choices($source);
+			     my($realms) = _choices($self, $source);
 			     my($r) = $source->req('auth_realm');
 			     $r = $r->get('type')->equals_by_name(@$rt)
 				 ? $r->get('owner_name')
@@ -66,14 +66,22 @@ sub internal_choices {
     return $source->req->map_user_realms(
 	sub {shift->{'RealmOwner.name'}},
 	{'RealmOwner.realm_type' => [
-            map($_RT->from_any($_), @{_realm_types($self)}),
-        ]},
+	    map($_RT->from_any($_), @{_realm_types($self)}),
+	]},
     );
 }
 
 sub internal_control_value {
     my($self, $source) = @_;
-    return @{$self->internal_choices($source)} == 0 ? 0 : 1;
+    return @{_choices($self, $source)} == 0 ? 0 : 1;
+}
+
+sub _choices {
+    my($self, $source) = @_;
+    return $source->req->cache_for_auth_user(
+	[$self, @{_realm_types($self)}],
+	sub {$self->internal_choices($source)},
+    );
 }
 
 sub _curr_realm {
@@ -87,7 +95,7 @@ sub _eq {
 
 sub _one_choice {
     my($self, $source) = @_;
-    my($choices) = $self->internal_choices($source);
+    my($choices) = _choices($self, $source);
     my($ar) = $source->req('auth_realm');
     return @$choices == 1
         && $ar->has_owner
@@ -96,11 +104,14 @@ sub _one_choice {
 
 sub _realm_types {
     my($self) = @_;
-    my($v) = $self->get_or_default(
-        'realm_types', sub {$self->DEFAULT_REALM_TYPES});
-    $v = [map($_RT->from_any($_)->get_name, ref($v) ? @$v : $v)];
-    $self->put(realm_types => $v);
-    return $v;
+    return $self->get_if_exists_else_put(_realm_types => sub {
+	my($rt) = $self->unsafe_get('realm_types')
+	    || $self->DEFAULT_REALM_TYPES;
+        return [map(
+	    $_RT->from_any($_)->get_name,
+	    ref($rt) ? @$rt : $rt,
+        )];
+    });
 }
 
 sub _value {
