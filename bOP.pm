@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.84  2010/02/21 17:38:48  nagler
+  * Bivio::Biz::Model::AuthUserRealmList
+    split can_user_execute_task to can_user_execute_task_in_any_realm and
+    can_user_execute_task_in_this_realm.  Was not handling arguments
+    properly before
+  * Bivio::Biz::Model::CalendarEventForm
+    dco
+  * Bivio::Biz::Model::CalendarEventList
+    added show_create_on_month_view
+    can_user_* tasks were flakey
+  * Bivio::Biz::Model::CalendarEventWeekList
+    add is_today_*
+  * Bivio::PetShop::Util::TestData
+    added calendar_btest_read_only
+  * Bivio::UI::FacadeBase
+    calendar highlight today
+  * Bivio::UI::View::Calendar
+    allow create for users
+    highlight today
+    today highlight is at cell level to allow alternative styling
+  * Bivio::UI::View::CSS
+    highlight today
+
   Revision 8.83  2010/02/21 02:27:38  nagler
   * README
     Added BOOKKEEPING section
