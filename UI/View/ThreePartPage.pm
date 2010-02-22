@@ -61,14 +61,18 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_topic => '',
 	xhtml_byline => '',
 	xhtml_selector => '',
-	xhtml_dock_left => '',
+	xhtml_dock_left => _if_want(
+	    'dock_left_standard',
+	    undef,
+	    vs_text_as_prose('xhtml_dock_left_standard'),
+        ),
 	_center_replaces_middle('xhtml_dock_middle') => '',
 	xhtml_dock_right => JoinMenu([
-	    $_C->if_version(8 => sub {_header_right('ForumDropDown')}),
-	    _header_right(qw(HelpWiki HELP)),
+	    $_C->if_version(8 => sub {_if_want('ForumDropDown')}),
+	    _if_want(qw(HelpWiki HELP)),
 	    $_WANT_USER_AUTH ? (
-		_header_right(qw(UserSettingsForm USER_SETTINGS_FORM)),
-		_header_right(qw(UserState LOGIN)),
+		_if_want(qw(UserSettingsForm USER_SETTINGS_FORM)),
+		_if_want(qw(UserState LOGIN)),
 	    ) : (),
 	]),
 	xhtml_header_left => vs_text_as_prose('xhtml_logo'),
@@ -86,11 +90,11 @@ sub internal_xhtml_adorned_attrs {
             vs_first_focus(view_widget_value('xhtml_want_first_focus')),
 	]),
 	xhtml_header_right => $_C->if_version(
-	    7 => sub {_header_right(qw(SearchForm SEARCH_LIST))},
+	    7 => sub {_if_want(qw(SearchForm SEARCH_LIST))},
 	    sub {
 		return Join([
 		    DIV_user_state(view_widget_value('xhtml_dock_right')),
-		    _header_right(qw(SearchForm SEARCH_LIST)),
+		    _if_want(qw(SearchForm SEARCH_LIST)),
 		]);
 	    },
 	),
@@ -160,11 +164,15 @@ sub _center_replaces_middle {
     return $name;
 }
 
-sub _header_right {
-    my($widget, $task) = @_;
+sub _if_want {
+    my($name, $task, $widget) = @_;
     return ''
 	if $task && !$_TI->unsafe_from_name($task);
-    return If(vs_constant("ThreePartPage_want_$widget"), vs_call($widget));
+    $widget ||= $name;
+    return If(
+	vs_constant("ThreePartPage_want_$name"),
+	ref($widget) ? $widget : vs_call($widget),
+    );
 }
 
 1;
