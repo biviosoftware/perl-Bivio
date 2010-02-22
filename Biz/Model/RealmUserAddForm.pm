@@ -122,6 +122,9 @@ sub _join_user {
 	    role => $r,
 	});
     }
+    $self->req->with_realm_and_user($realm_id, $user_id, sub {
+        b_use('ShellUtil.RealmUser')->new->audit_user;
+    });
     return;
 }
 
