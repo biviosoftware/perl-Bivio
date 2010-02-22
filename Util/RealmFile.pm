@@ -2,11 +2,13 @@
 # $Id$
 package Bivio::Util::RealmFile;
 use strict;
-use base 'Bivio::ShellUtil';
-use Bivio::Biz::Model::RealmFile;
+use Bivio::Base 'Bivio.ShellUtil';
 use File::Find ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = b_use('Type.DateTime');
+my($_F) = b_use('IO.File');
+my($_MFN) = b_use('Type.MailFileName');
 
 sub OPTIONS {
     return {
@@ -79,9 +81,9 @@ sub export_tree {
 	    unless !$it->get('is_folder')
 	    && (my $p = $it->get('path')) =~ $re;
 	$p =~ s{^/}{};
-	Bivio::IO::File->mkdir_parent_only($p);
-	Bivio::IO::File->write($p, $it->get_content);
-	Bivio::IO::File->chmod(0444, $p)
+	$_F->mkdir_parent_only($p);
+	$_F->write($p, $it->get_content);
+	$_F->chmod(0444, $p)
 	    if $it->get('is_read_only');
         return 1;
     });
@@ -98,22 +100,31 @@ sub import_tree {
 		$File::Find::prune = 1;
 		return;
 	    }
-	    return if $_ =~ m{(^|/)(\..*|.*~|#.*)$};
+	    return
+		if $_ =~ m{(^|/)(\..*|.*~|#.*)$};
 	    my($f) = $File::Find::name =~ m{^\./(.+)};
 	    my($path) = $self->convert_literal('FilePath', "$folder/$f");
 	    my($method) = -d $_ ? 'create_folder' : 'create_with_content';
-	    my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
+	    my($rf) = $self->model('RealmFile');
 	    if ($rf->unsafe_load({path => $path})) {
-		return if $rf->get('is_folder');
+		return
+		    if $rf->get('is_folder');
 		$method = 'update_with_content';
+	    }
+	    if ($_MFN->is_absolute($path)) {
+		$self->model('RealmMail')
+		    ->cascade_delete({realm_file_id => $rf->get('realm_file_id')})
+		    if $rf->is_loaded;
+		$self->model('RealmMail')->create_from_rfc822($_F->read($_));
+		return;
 	    }
 	    $rf->$method(
 		_fix_values($self, $path, {
-		    modified_date_time => Bivio::Type::DateTime->from_unix(
+		    modified_date_time => $_DT->from_unix(
 			(stat($_))[9],
 		    ),
 		}),
-		$method =~ /content/ ? Bivio::IO::File->read($_) : (),
+		$method =~ /content/ ? $_F->read($_) : (),
 	    );
 	    return;
 	},
@@ -123,8 +134,8 @@ sub import_tree {
 
 sub list_folder {
     my($self, $path) = @_;
-    return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFileList')
-	->map_iterate(
+    $self->initialize_fully;
+    return $self->model('RealmFileList')->map_iterate(
 	    sub {shift->get('RealmFile.path')},
 	    {path_info => $self->convert_literal('FilePath', $path)},
 	);
@@ -155,7 +166,8 @@ sub update {
 
 sub _do {
     my($self, $method, $path, @args) = @_;
-    return Bivio::Biz::Model->new($self->initialize_ui, 'RealmFile')
+    $self->initialize_fully;
+    return $self->model('RealmFile')
 	->$method(_fix_values($self, $path, {}, $method =~ /(delete|load)/), @args);
 }
 
