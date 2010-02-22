@@ -149,28 +149,33 @@ sub internal_thread_root_list_columns {
     return [
 	['excerpt', {
 	    column_heading => '',
+	    column_data_class => 'b_msg_summary',
 	    column_widget => Join([
 		Link(String(['RealmMail.subject']),
-		    ['->drilldown_uri']),
-		DIV_msg_exerpt(String(['excerpt'])),
-		SPAN_msg_name_and_date(Join([
-		    'By ', String(['RealmOwner.display_name']),
-		    ' - ',
-		    DateTime(['RealmFile.modified_date_time']),
-		    ' - ',
+		    ['->drilldown_uri'],
+		   {class => 'b_subject'},
+		),
+		DIV_b_exerpt(String(['excerpt'])),
+		DIV_byline(Join([
+		    SPAN_author(String(['RealmOwner.display_name'])),
+		    DIV_date(DateTime(['RealmFile.modified_date_time'])),
 		])),
-		Link(Join([
-		    AmountCell(['message_count'])
-		    ->put(decimals => 0),
-		    ' message',
-		    If(
-			[sub {
-			     my(undef, $count) = @_;
-			     return $count > 1 ? 1 : 0;
-			}, ['message_count']],
-			Simple('s'),
-		    ),
-		]), ['->drilldown_uri']),
+		Link(
+		    Join([
+			AmountCell(['message_count'])
+			->put(decimals => 0),
+			' message',
+			If(
+			    [sub {
+				 my(undef, $count) = @_;
+				 return $count > 1 ? 1 : 0;
+			    }, ['message_count']],
+			    Simple('s'),
+			),
+		    ]),
+		    ['->drilldown_uri'],
+		    {class => 'b_count'},
+		),
 	    ]),
 	}],
     ];
