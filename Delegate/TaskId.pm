@@ -1398,7 +1398,7 @@ sub info_xapian {
 	[qw(
 	    JOB_XAPIAN_COMMIT
 	    60
-	    GENERAL
+	    ANY_OWNER
 	    ANYBODY
 	    Search.Xapian
 	)],
