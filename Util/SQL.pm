@@ -1960,6 +1960,8 @@ EOF
 
 sub internal_upgrade_db_xapian_exec_realm {
     my($self) = @_;
+    return
+	unless $_TI->unsafe_from_name('JOB_XAPIAN_COMMIT');
     $self->initialize_xapian_exec_realm;
     return;
 }
