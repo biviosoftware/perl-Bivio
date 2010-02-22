@@ -10,6 +10,7 @@ sub new_unit {
     my($proto, $class_name, $args) = @_;
     my($default_wiki_args) = {
 	is_public => 0,
+	die_on_validate_error => 1,
 	map(
 	    exists($args->{$_}) ? (die_on_validate_error => delete($args->{$_}))
 		: (),
