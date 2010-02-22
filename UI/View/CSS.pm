@@ -827,15 +827,18 @@ sub _site_mail {
   margin-top: 1ex;
   margin-bottom: 1ex;
 }
+.msg .parts .byline {
+  Font('msg_byline');
+}
+.msg .byline .date {
+  display: inline;
+}
 .msg .parts {
   border-top: 2px solid;
   border-left: 2px solid;
   padding-left: 1em;
   padding-bottom: 1em;
   Color('msg_parts-border');
-}
-.msg .parts .byline {
-  Font('msg_byline');
 }
 .msg .parts .forward .label {
   padding-right: .5em;
@@ -858,6 +861,20 @@ sub _site_mail {
 }
 .msg_compose .textarea .label {
   vertical-align: top;
+}
+.b_msg_summary div.b_excerpt {
+  Font('msg_excerpt');
+}
+.b_msg_summary .byline,
+.b_msg_summary .date {
+  display: inline;
+}
+.b_msg_summary span.author,
+.b_msg_summary div.date {
+  padding-right: 1em;
+}
+.b_msg_summary div.byline {
+  Font('msg_summary_byline');
 }
 EOF
 }
@@ -1011,7 +1028,6 @@ table.b_search_results td a span.excerpt {
   display: block;
   margin-bottom: .5ex;
   Font('search_result_excerpt');
-  width: 60em;
 }
 table.b_search_results td div.byline {
   margin-bottom: 1ex;

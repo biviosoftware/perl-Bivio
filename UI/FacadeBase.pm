@@ -179,7 +179,7 @@ sub _cfg_base {
 	    [[qw(acknowledgement_border b_progress_bar_border)] => 0x0],
 	    [[qw(err warn empty_list_border form_field_err)] => 0x990000],
 	    [[qw(header_su_background super_user)] => 0x00ff00],
-	    [[qw(form_desc form_sep_border sep_bar msg_parts_border)] => 0x666666],
+	    [[qw(form_desc form_sep_border sep_bar msg_parts_border text_byline)] => 0x666666],
             [help_wiki_background => 0x6b9fea],
 	    [dd_menu => 0x444444],
 	    [[qw(dd_menu_selected dd_menu_background)] => 0xffffff],
@@ -204,6 +204,8 @@ sub _cfg_base {
 	    [a_link => 'normal'],
 	    [body => ['family=Verdana, Arial, Helvetica, Geneva, SunSans-Regular, sans-serif', 'small', 'style=margin-top: 0; margin-bottom: 0; margin-right: .5em; margin-left: .5em; min-width: 50em']],
 	    [caption => [qw(bold center)]],
+	    [text_excerpt => ['style=width:50em', qw(normal_weight normal_decoration)]],
+	    [text_byline => [qw(normal_weight normal_decoration)]],
 	    [[qw(code pre_text)] => [
 		'family="Courier New",Courier,monospace,fixed',
 		'120%',
@@ -911,14 +913,14 @@ sub _cfg_group_admin {
 sub _cfg_mail {
     return {
 	Font => [
-#TODO: Old?
 	    [mail_msg_field => 'bold'],
 	    [msg_byline => [qw(120% bold)]],
+	    [msg_summary_byline => __PACKAGE__->init_from_prior_group('text_byline')],
+	    [msg_excerpt => __PACKAGE__->init_from_prior_group('text_excerpt')],
 	],
 	Color => [
 	    [msg_byline => 0x0],
-#TODO: Alias this to form_sep_border
-	    [mail_msg_border => 0x666666],
+	    [mail_msg_border => __PACKAGE__->init_from_prior_group('form_sep_border')],
 	],
 	Task => [
 	    __PACKAGE__->mail_receive_task_list(
@@ -987,7 +989,7 @@ sub _cfg_mail {
 		    date => 'Date:',
 		],
 	        MailPartList => [
-		     byline => q{DIV_byline(Join([SPAN_author(String(['->get_from_name'])), SPAN_label(' on '), SPAN_date(DateTime(['->get_header', 'date']))]));},
+		     byline => q{DIV_byline(Join([SPAN_author(String(['->get_from_name'])), SPAN_label(' on '), DIV_date(DateTime(['->get_header', 'date']))]));},
 		     forward => q{DIV_forward(Join([DIV_header('---------- Forwarded message ----------'), MailHeader()]));},
 		     attachment => q{SPAN_label('Attachment:');SPAN_value(String(['->get_file_name']));},
 		 ],
@@ -1790,12 +1792,12 @@ sub _cfg_xapian {
 	Color => [
 	    [[qw(search_result_title search_result_excerpt)] => 0],
 	    [search_results_background => 0xffffff],
-	    [search_result_byline => 0x666666],
+	    [search_result_byline => __PACKAGE__->init_from_prior_group('text_byline')],
 	],
 	Font => [
 	    [search_result_title => [qw(bold)]],
-	    [search_result_excerpt => [qw(normal_weight normal_decoration)]],
-	    [search_result_byline => [qw(normal_weight normal_decoration)]],
+	    [search_result_excerpt => __PACKAGE__->init_from_prior_group('text_excerpt')],
+	    [search_result_byline => __PACKAGE__->init_from_prior_group('text_byline')],
 	],
 	Task => [
 	    [SEARCH_LIST => 'pub/search'],
