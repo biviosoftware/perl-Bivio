@@ -1,0 +1,9 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+req()->set_realm_and_user('fourem');
+[
+    '@b-email joe' => qr{<a href="mailto:joe(\@|\%40)\w+[^>]+>joe\@\w+},
+    '@b-email joe@bob.com' => qr{<a href="mailto:joe(\@|\%40)bob.com">joe\@bob.com},
+    "\@b-email\n\@strong foo\n/\@b-email" => qr{must be simple text},
+];
