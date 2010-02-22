@@ -999,28 +999,28 @@ td.header_right form.search {
 td.header_right form.search input.go {
   margin-left: .3em;
 }
-table.search_results td a:hover span.title {
+table.b_search_results td a:hover span.title {
   Font('a_hover');
 }
-table.search_results td a span.title {
+table.b_search_results td a span.title {
   display: block;
   margin-bottom: .3ex;
   Font('search_result_title');
 }
-table.search_results td a span.excerpt {
+table.b_search_results td a span.excerpt {
   display: block;
   margin-bottom: .5ex;
   Font('search_result_excerpt');
-  width: 80%;
+  width: 60em;
 }
-table.search_results td div.byline {
+table.b_search_results td div.byline {
   margin-bottom: 1ex;
   Font('search_result_byline');
 }
-table.search_results td div.byline span.author {
+table.b_search_results td div.byline span.author {
   margin-right: .5ex;
 }
-table.search_results div.date {
+table.b_search_results div.date {
   display: inline;
 }
 table.b_search_results tr.b_even_row,
