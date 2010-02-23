@@ -253,7 +253,7 @@ sub init_realms {
 	   mail_want_reply_to => 1,
 	});
 	return;
-    });
+    }) unless $self->model('RealmOwner')->unauth_load({name => $self->HELP_REALM});
     $self->req->with_realm($self->SITE_REALM, sub {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => 'Site Admin',
