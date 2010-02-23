@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.87  2010/02/23 21:29:20  moeller
+  * Bivio::Biz::FormModel
+    Fixed ack being carried from execute_ok with a non-empty and non-hash
+    return
+
   Revision 8.86  2010/02/23 00:21:30  nagler
   * Bivio::UI::FacadeBase
     calendar support
