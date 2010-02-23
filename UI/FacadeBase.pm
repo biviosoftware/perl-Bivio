@@ -566,12 +566,15 @@ sub _cfg_calendar {
 	    ['Calendar.want_b_time_zone' => 1],
 	],
 	Font => [
-	    [b_month_calendar_th => 'bold'],
+	    [b_month_calendar_day_of_month => 'bold'],
+	    [b_month_calendar_th => ['size=85%', 'center', 'style=padding: 0 0 .5ex 0']],
 	    [b_date_other_month => []],
 	    [b_event_name => ['size=85%', 'left']],
 	    [b_datetime => 'nowrap'],
-	    [b_day_of_month_create_hidden => ['normal_decoration']],
-	    [b_day_of_month_create_visible => ['normal_decoration']],
+	    [[qw( b_day_of_month_create_visible)]
+		=> [qw(normal_decoration size=85% nowrap)]],
+	    [[qw(b_day_of_month_create_hidden )]
+		=> [qw(normal_decoration size=85% nowrap)]],
 	],
  	FormError => [
 	    [recurrence_end_date => [
