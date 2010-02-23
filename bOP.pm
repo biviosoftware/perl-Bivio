@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.86  2010/02/23 00:21:30  nagler
+  * Bivio::UI::FacadeBase
+    calendar support
+  * Bivio::UI::View::Calendar
+    dynamically calculate height of create link in month view
+  * Bivio::UI::View::CSS
+    calendar has to be fixed with so renders on IE*
+  * Bivio::Util::SiteForum
+    don't create site-help if exists already (some apps use 'site' as help realm)
+
   Revision 8.85  2010/02/22 04:31:41  nagler
   * Bivio::Biz::Model::Lock
     allow passing in realm_id into acquire
