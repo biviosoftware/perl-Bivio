@@ -931,10 +931,19 @@ sub validate_and_execute_ok {
     my($fields) = $self->[$_IDI];
     my($res) = _call_execute_ok($self, $form_button, 1);
     unless ($self->in_error || $fields->{stay_on_page}) {
+	unless (!$res || ref($res) eq 'HASH') {
+	    return 1
+		if $res eq 1;
+	    my($carry) = _carry_path_info_and_query();
+	    $res = {
+		task_id => $res,
+		$carry->{carry_query} ? %{$self->req('query') || {}} : (),
+	    };
+	}
 	my($query) = $_A->save_label(
-	    ref($res) eq 'HASH' ? delete($res->{acknowledgement}) : undef,
+	    $res ? delete($res->{acknowledgement}) : undef,
 	    $req,
-	    ref($res) eq 'HASH' ? ($res->{query} ||= {}) : {},
+	    $res ? $res->{query} ||= {} : {},
 	);
 	return $res
 	    || $self->internal_redirect_next($query);
