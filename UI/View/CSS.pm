@@ -723,23 +723,21 @@ EOF
 sub _site_calendar {
     return <<'EOF';
 table.b_month_calendar {
-  width: 100%;
+  width: 70em;
 }
 .b_month_calendar td {
   vertical-align: top;
-  width: 14%;
+  width: 5em;
   padding: .5em;
   border: 2px solid;
   Color('b_month_calendar_td-border');
 }
 .b_month_calendar th {
-  padding-bottom: .5em;
-  text-align: center;
+  Font('b_month_calendar_th');
   Color('b_month_calendar_th-background');
 }
 .b_month_calendar .b_date_this_month,
 .b_month_calendar .b_date_other_month {
-  height: 10ex;
   Color('b_month_calendar-background');
 }
 .b_month_calendar .b_date_other_month {
@@ -749,7 +747,7 @@ table.b_month_calendar {
   display: block;
   float: left;
   margin-bottom: .5em;
-  Font('b_month_calendar_th');
+  Font('b_month_calendar_day_of_month');
 }
 .b_month_calendar .b_date_other_month .b_day_of_month {
   Font('b_date_other_month');
@@ -769,12 +767,13 @@ table.b_month_calendar {
 a.b_day_of_month_create,
 a.b_day_of_month_create:visited,
 a.b_day_of_month_create:link {
-  display: inline-block;
-  width: 100%;
-  height: 100%;
+  display: block;
+  margin: auto;
+  width: 5em;
+!See View.Calendar calculation for height
+  padding: .5ex .5em;
   Font('b_day_of_month_create_hidden');
   text-align: center;
-  vertical-align: middle;
 }
 .b_date_other_month a.b_day_of_month_create,
 .b_date_other_month a.b_day_of_month_create:visited,
