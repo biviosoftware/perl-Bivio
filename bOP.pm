@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,41 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.85  2010/02/22 04:31:41  nagler
+  * Bivio::Biz::Model::Lock
+    allow passing in realm_id into acquire
+  * Bivio::Biz::Model::RealmMail
+    b_use
+  * Bivio::Biz::Model::RealmUserAddForm
+    audit user after adding
+  * Bivio::Delegate::TaskId
+    JOB_XAPIAN_COMMIT is now ANY_OWNER since adding xapian_exec
+  * Bivio::Search::Xapian
+    Q#461: lock is in own realm so we don't get
+    terminate called after throwing an instance of 'Xapian::DatabaseModifiedError'
+  * Bivio::Test::WikiText
+    die_on_validate_error by default
+  * Bivio::UI::FacadeBase
+    added ThreePartPage_want_dock_left_standard
+    fix up mail css
+  * Bivio::UI::View::CSS
+    search_results => b_search_results
+    fix up mail css
+  * Bivio::UI::View::Mail
+    date can't be in a SPAN
+  * Bivio::UI::View::ThreePartPage
+    added ThreePartPage_want_dock_left_standard
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    cache realm_types and choices
+  * Bivio::UI::XHTML::Widget::WikiText::Email
+    NEW
+  * Bivio::Util::RealmFile
+    import_tree: if file is a mail file, use RealmMail to create
+  * Bivio::Util::RealmMail
+    b_use
+  * Bivio::Util::SQL
+    initialize_xapian_exec_realm and upgrade
+
   Revision 8.84  2010/02/21 17:38:48  nagler
   * Bivio::Biz::Model::AuthUserRealmList
     split can_user_execute_task to can_user_execute_task_in_any_realm and
