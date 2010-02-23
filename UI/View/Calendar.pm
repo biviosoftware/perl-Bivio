@@ -226,6 +226,13 @@ sub _month_view {
 			control =>
 			    [[qw(->req Model.CalendarEventMonthList)], '->show_create_on_month_view'],
 			class => 'b_day_of_month_create',
+			STYLE => [sub {
+			    my(undef, $list) = @_;
+			    my($i) = $list->get_result_set_size;
+			    return 'height: '
+				. ($i >= 4 ? '3' : (7 - $i))
+				. 'ex;';
+			}, ["day_list_$_"]],
 		    },
 		),
 	    ]),
