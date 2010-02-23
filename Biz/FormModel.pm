@@ -937,7 +937,9 @@ sub validate_and_execute_ok {
 	    my($carry) = _carry_path_info_and_query();
 	    $res = {
 		task_id => $res,
-		$carry->{carry_query} ? %{$self->req('query') || {}} : (),
+		query => {
+		    $carry->{carry_query} ? %{$self->req('query') || {}} : (),
+		},
 	    };
 	}
 	my($query) = $_A->save_label(
