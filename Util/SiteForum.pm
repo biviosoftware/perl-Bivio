@@ -107,7 +107,8 @@ sub init {
     my($self) = @_;
     $self->init_admin_user;
     $self->init_realms;
-    $self->init_files;
+    $self->init_files
+	if $self->req->is_test;
     return;
 }
 
@@ -167,9 +168,10 @@ sub init_files {
     my($self) = @_;
     $self->initialize_fully;
     $self->new_other('SQL')->assert_ddl;
-    $self->req->with_user($self->new_other('TestUser')->ADM, sub {
+    $self->req->with_user(undef, sub {
         foreach my $realm (@{$self->realm_names}) {
 	    $self->req->with_realm($realm, sub {
+		$self->set_user_to_any_online_admin;
 		$_F->do_in_dir($realm => sub {
 		    $self->new_other('RealmFile')->import_tree('/');
 		    return;
