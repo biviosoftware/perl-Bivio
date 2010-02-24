@@ -12,10 +12,12 @@ my($_EMS) = b_use('Type.MailSubject')->EMPTY_VALUE;
 my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_SUBJECT_RE) = qr{\#\s*(\d+)\s*\]};
 my($_REQ_ATTR) = __PACKAGE__ . '.pre_create';
+my($_REQ_ORD_FIELD) = __PACKAGE__ . '.ord_field';
 my($_DT) = b_use('Type.DateTime');
 my($_MS) = b_use('Type.MailSubject');
 my($_I) = b_use('Mail.Incoming');
 my($_RECENT) = 60;
+my($_LQ) = b_use('SQL.ListQuery');
 b_use('Model.RealmMail')->register('Model.CRMThread');
 #TODO: Share with CRMForm & CRMThreadRootList
 b_use('ClassWrapper.TupleTag')->wrap_methods(__PACKAGE__,  {
@@ -94,6 +96,7 @@ sub handle_mail_pre_create_file {
 	unless $proto->is_enabled_for_auth_realm($req);
     my($self) = $proto->new($req);
     $$rfc822 =~ s{(?<=^subject:)(.*)}{_create_subject($self, $1, $rfc822)}emi;
+    $$rfc822 =~ s{(\n\n)}{$1._create_ticket_link($self, $rfc822).$1}sei;
     return;
 }
 
@@ -163,9 +166,22 @@ sub _create_subject {
     $req->put($_REQ_ATTR => $self)
 	if $self->is_loaded;
     $value =~ s/^\s+|\s+$//g;
+    $req->put($_REQ_ORD_FIELD => $num || $self->internal_next_ord);
     return ' '
 	. _prefix($self, $num || $self->internal_next_ord)
 	. $value;
+}
+
+sub _create_ticket_link {
+    my($self, $rfc822) = @_;
+    return $self->req->format_uri({
+        task_id => 'FORUM_CRM_THREAD_LIST',
+        query => {
+            $_LQ->to_char('parent_id') => $self->req($_REQ_ORD_FIELD),
+        },
+        path_info => undef,
+        require_absolute => 1,
+    });
 }
 
 sub _fixup_values {

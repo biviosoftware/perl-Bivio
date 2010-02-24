@@ -1,6 +1,6 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Request();
+Request('initialize_fully');
 options({
     class_name => 'Model.RealmMail',
     comparator => 'nested_contains',
@@ -50,7 +50,7 @@ EOF
 		    realm_file_id => sub {$first_tid = shift},
 		    message_id => sub {$msg_id = shift},
 		},
-	    }, qr{Subject: .*#$first_num\] problem}],
+	    }, qr{Subject: .*#$first_num\] problem.*\n\nhttp://.*ticket\?p=$first_num\n\n}s],
 	    ['problem2', sub {
 		 "In-Reply-To: <$msg_id>\n";
 	    }] => [{
@@ -64,7 +64,7 @@ EOF
                 'Model.CRMThread' => {
                     crm_thread_num => $second_num,
                 },
-            }, qr{Subject: .*#$second_num\] problem2}],
+            }, qr{Subject: .*#$second_num\] problem2.*ticket\?p=$second_num}s],
 	    ['problem', sub {
 		 "In-Reply-To: <$msg_id>\n";
 	    }] => [{
@@ -88,7 +88,7 @@ EOF
 		'Model.CRMThread' => {
 		    crm_thread_num => $first_num,
 		},
-	    }, qr{Subject: .*#$first_num\]}],
+	    }, qr{Subject: .*#$first_num\].*ticket\?p=$first_num}s],
             map(([$_, sub {
                 "In-Reply-To: <$msg_id>\n";
             }] => [{
