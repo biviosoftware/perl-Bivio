@@ -60,11 +60,14 @@ sub new {
     my($proto, $params, $req) = @_;
     my($self) = shift->SUPER::new({%$_DEFAULTS, %$params});
     $params = $self->internal_get;
-    $params->{task_id} &&= $_TI->from_any($params->{task_id});
     foreach my $k (qw(path_info query)) {
+	next
+	    unless $params->{"carry_$k"} and my $curr = $req->unsafe_get($k);
+	b_die($params, ": only one of $k and carry_$k ", $req)
+	    if $params->{$k};
 	$params->{$k} = $req->unsafe_get($k)
-	    if $params->{"carry_$k"} && !$params->{$k};
     }
+    $params->{task_id} &&= $_TI->from_any($params->{task_id});
     return $self->internal_put($params);
 }
 
