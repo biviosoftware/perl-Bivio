@@ -931,14 +931,21 @@ sub validate_and_execute_ok {
     my($fields) = $self->[$_IDI];
     my($res) = _call_execute_ok($self, $form_button, 1);
     unless ($self->in_error || $fields->{stay_on_page}) {
-	unless (!$res || ref($res) eq 'HASH') {
+	if (ref($res) eq 'HASH') {
+	    $self->die($res, ': both query or carry_query set in result')
+		if $res->{carry_query} && $res->{query};
+	    $res->{query} = $req->unsafe_get('query')
+		if delete($res->{carry_query});
+	}
+	elsif ($res) {
 	    return 1
 		if $res eq 1;
 	    my($carry) = _carry_path_info_and_query();
 	    $res = {
 		task_id => $res,
 		query => {
-		    $carry->{carry_query} ? %{$self->req('query') || {}} : (),
+		    delete($carry->{carry_query})
+		        ? %{$self->req('query') || {}} : (),
 		},
 	    };
 	}
@@ -1354,7 +1361,7 @@ sub _redirect {
     $req->put(form_model => $self);
     my($carry) = _carry_path_info_and_query();
     my($query) = {
-	$carry->{carry_query} ? %{$self->req('query') || {}} : (),
+	delete($carry->{carry_query}) ? %{$self->req('query') || {}} : (),
 	%{$extra_query || {}},
     };
     $fields->{redirecting} = 1;
