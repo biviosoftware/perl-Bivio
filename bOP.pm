@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.88  2010/02/23 23:30:03  moeller
+  * Bivio::Biz::FormModel
+    fixed carry_query nesting
+
   Revision 8.87  2010/02/23 21:29:20  moeller
   * Bivio::Biz::FormModel
     Fixed ack being carried from execute_ok with a non-empty and non-hash
