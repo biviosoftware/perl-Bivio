@@ -62,6 +62,7 @@ my($_BUNDLE) = [qw(
     !mail_want_reply_to_default
     !task_log_client_address
     !xapian_exec_realm
+    !xapian_exec_realm2
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -544,11 +545,11 @@ sub initialize_tuple_slot_types {
 
 sub initialize_xapian_exec_realm {
     my($self) = @_;
-    $self->model('Club')->create_realm({}, {
-	name => b_use('Search.Xapian')->EXEC_REALM,
-	display_name => b_use('Type.String')->to_camel_case(
-	    b_use('Search.Xapian')->EXEC_REALM),
-    });
+    my($n) = b_use('Search.Xapian')->EXEC_REALM;
+    $self->model('User')->create_realm(
+	{last_name => $n},
+	{name => $n, display_name => $n},
+    );
     return;
 }
 
@@ -1962,6 +1963,21 @@ sub internal_upgrade_db_xapian_exec_realm {
     my($self) = @_;
     return
 	unless $_TI->unsafe_from_name('JOB_XAPIAN_COMMIT');
+    $self->initialize_xapian_exec_realm;
+    return;
+}
+
+sub internal_upgrade_db_xapian_exec_realm2 {
+    my($self) = @_;
+    return
+	unless $_TI->unsafe_from_name('JOB_XAPIAN_COMMIT');
+    my($n) = b_use('Search.Xapian')->EXEC_REALM;
+    my($ro) = $self->model('RealmOwner');
+    if ($ro->unauth_load({name => $n, })) {
+	return
+	    unless $ro->get('realm_type')->eq_club;
+	$ro->new_other('Club')->unauth_delete_realm($ro);
+    }
     $self->initialize_xapian_exec_realm;
     return;
 }
