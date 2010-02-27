@@ -9,6 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_F) = b_use('IO.File');
 my($_MFN) = b_use('Type.MailFileName');
+my($_FP) = b_use('Type.FilePath');
 
 sub OPTIONS {
     return {
@@ -34,7 +35,7 @@ commands:
     create_folder path -- creates folder and parents
     delete_deep path ... -- deletes files or folders specified
     rename old new --- moves old to new
-    export_tree folder -- exports an entire tree to current directory
+    export_tree folder [noarchive] -- exports an entire tree to current directory
     import_tree [folder] -- imports files in current directory into folder [/]
     list_folder folder -- lists a folder
     read path -- returns file contents
@@ -70,7 +71,10 @@ sub delete_deep {
 }
 
 sub export_tree {
-    my($self, $folder) = shift->name_args([[qw(folder FilePath)]], \@_);
+    my($self, $folder, $noarchive) = shift->name_args([
+        [qw(folder FilePath)],
+        [qw(?noarchive Boolean)],
+    ], \@_);
     $self->initialize_ui;
     $folder .= '/'
 	unless length($folder) == 1;
@@ -80,6 +84,8 @@ sub export_tree {
 	return 1
 	    unless !$it->get('is_folder')
 	    && (my $p = $it->get('path')) =~ $re;
+        return 1
+            if $noarchive && $p =~ /^@{[$_FP->VERSIONS_FOLDER]}/;
 	$p =~ s{^/}{};
 	$_F->mkdir_parent_only($p);
 	$_F->write($p, $it->get_content);
