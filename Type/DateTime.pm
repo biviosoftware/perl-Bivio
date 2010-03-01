@@ -680,7 +680,7 @@ sub now {
 	$proto->use('Bivio::Agent::Task')->register($proto)
 	    if $_IS_TEST = $proto->use('Bivio::Agent::Request')->is_test;
     }
-    return $_IS_TEST && $_TEST_NOW || $proto->from_unix(time);
+    return $_IS_TEST && $_TEST_NOW || __PACKAGE__->from_unix(time);
 }
 
 sub now_as_file_name {
