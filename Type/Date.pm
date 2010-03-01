@@ -89,12 +89,8 @@ sub from_sql_column {
 }
 
 sub from_unix {
-    my($proto, $unix_time) = @_;
-    my($s) = int($unix_time % $proto->SECONDS_IN_DAY);
-    my($j) = int(($unix_time - $s)
-	    / $proto->SECONDS_IN_DAY
-	    + $proto->UNIX_EPOCH_IN_JULIAN_DAYS);
-    return _to($proto, $j);
+    my($proto) = shift;
+    return $proto->from_datetime($proto->SUPER::from_unix(@_));
 }
 
 sub get_default {

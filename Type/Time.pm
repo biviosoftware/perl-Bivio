@@ -61,11 +61,8 @@ sub from_literal {
 }
 
 sub from_unix {
-    my($proto, $unix_time) = @_;
-    # Returns the clock component of I<unix_time> interpreted in GMT.
-    # Must be same truncation algorithm as Date::from_unix
-    my($s) = int($unix_time % $proto->SECONDS_IN_DAY);
-    return $_DATE_PREFIX.$s;
+    my($proto) = shift;
+    return $proto->from_datetime($proto->SUPER::from_unix(@_));
 }
 
 sub get_max {
