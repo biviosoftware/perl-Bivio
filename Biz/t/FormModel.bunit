@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 FormModel({
     class_name => 'Model.UserLoginForm',
@@ -12,18 +12,20 @@ FormModel({
     [LOGIN => {
 	login => 'no such user',
 	'RealmOwner.password' => 'no match',
-    }] => [{
-	actual_return => 0,
-    }],
+    }] => sub {
+	return [0];
+    },
     [FORM_MODEL_BUNIT_LOGIN => {
 	login => 'no such user',
 	'RealmOwner.password' => 'no match',
-    }] => [{
-	actual_return => {
+    }] => sub {
+	return [{
 	    method => 'server_redirect',
 	    task_id => 'SITE_ROOT',
-	},
-    }],
+	    path_info => undef,
+	    query => undef,
+	}];
+    },
     get_visible_non_button_names => [
 	[] => [[qw(RealmOwner.password login)]],
     ],

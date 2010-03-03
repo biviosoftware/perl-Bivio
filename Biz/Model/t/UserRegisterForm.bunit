@@ -17,12 +17,13 @@ my($exists) = ShellUtil_SQL()->DEMO_EMAIL();
     }],
     [{
         'Email.email' => $exists,
-    }] => [{
-	actual_return => {
+    }] => sub {
+	return [{
+	    task_id => 'user_exists_task',
 	    query => {
 		ack => 'user_exists',
 		email => $exists,
 	    },
-	},
-    }],
+	}];
+    },
 ];
