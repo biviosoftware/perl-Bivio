@@ -455,7 +455,6 @@ sub setup_request {
     _trace('uri: ', $uri_or_domain) if $_TRACE;
     my($self) = $proto->find_by_uri_or_domain($uri_or_domain);
     unless ($self) {
-	$_A->warn_exactly_once($uri_or_domain, ': unknown facade uri');
 	# Avoid repeated errors
 	$self = $_URI_MAP{$uri_or_domain} = $_CLASS_MAP{$_CFG->{default}};
     }
