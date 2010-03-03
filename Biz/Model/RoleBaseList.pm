@@ -118,7 +118,7 @@ sub roles_by_category {
     my($self, $roles) = @_;
     $roles = {map(($_ => 1), @{$roles || $self->get('roles') || []})};
     my($main) = [];
-    foreach my $m ($_R->get_main_list) {
+    foreach my $m (@{$_R->get_category_role_group('all_users')}) {
 	push(@$main, $m)
 	    if delete($roles->{$m});
     }
@@ -143,6 +143,14 @@ sub _roles {
 	$_V1 ? [map($_R->from_sql_column($_), split(/,/, $row->{roles}))]
 	   : _select_roles($self, $row));
     $row->{roles} = [@$main, @$aux];
+    if (@$main > 1) {
+	b_warn($main, ': too many main roles in ', $row);
+    }
+    elsif (!@$main) {
+	b_warn($main, ': no main role in ', $row);
+	$main = $aux;
+    }
+    $row->{'RealmUser.role'} = $main->[$#$main];
     return;
 }
 
