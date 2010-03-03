@@ -45,7 +45,7 @@ sub internal_category_role_group_map {
 	nobody => [],
 	all_admins => [qw(ACCOUNTANT ADMINISTRATOR)],
 	all_members => [qw(all_admins MEMBER)],
-	all_users => [qw(all_members GUEST UNAPPROVED_APPLICANT USER WITHDRAWN)],
+	all_users => [qw(all_members GUEST WITHDRAWN UNAPPROVED_APPLICANT USER)],
 	everybody => [qw(all_users ANONYMOUS)],
     };
 }
