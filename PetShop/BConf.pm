@@ -80,8 +80,7 @@ sub merge_overrides {
 			[[qw(site site-help site-contact)] => [qw(MEMBER MAIL_RECIPIENT FILE_WRITER)]],
 		    ],
 		    ADMINISTRATOR => [
-			'+MEMBER',
-			[[qw(site site-help site-contact)] => [qw(ADMINISTRATOR)]],
+			[[qw(site site-help site-contact)] => [qw(MAIL_RECIPIENT FILE_WRITER ADMINISTRATOR)]],
 		    ],
 		],
 		realm_user_util1 => [
@@ -89,9 +88,8 @@ sub merge_overrides {
 			[realm_user_util2 => [qw(MEMBER MAIL_RECIPIENT)]],
 		    ],
 		    ADMINISTRATOR => [
-			'+MEMBER',
-			[realm_user_util2 => [qw(ADMINISTRATOR FILE_WRITER)]],
-			[realm_user_util3 => [qw(MEMBER MAIL_RECIPIENT ADMINISTRATOR FILE_WRITER)]],
+			[realm_user_util2 => [qw(MAIL_RECIPIENT ADMINISTRATOR FILE_WRITER)]],
+			[realm_user_util3 => [qw(MAIL_RECIPIENT ADMINISTRATOR FILE_WRITER)]],
 			['realm_user_util4 EXPLICIT' => 'GUEST'],
 		    ],
 		],
