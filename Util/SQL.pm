@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::SQL;
 use strict;
@@ -63,6 +63,7 @@ my($_BUNDLE) = [qw(
     !task_log_client_address
     !xapian_exec_realm
     !xapian_exec_realm2
+    !drop_member_if_administrator
 )];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -818,6 +819,35 @@ sub internal_upgrade_db_data_browse {
 	'unauth_iterate_start',
 	'realm_id',
     );
+    return;
+}
+
+sub internal_upgrade_db_drop_member_if_administrator {
+    my($self) = @_;
+    my($realms) = {};
+    my($ru) = $self->model('RealmUser');
+    $ru->do_iterate(
+	sub {
+	    my($it) = @_;
+	    push(@{($realms->{$it->get('realm_id')} ||= {})
+		->{$it->get('user_id')} ||= []}, $it->get('role'));
+	    return 1;
+	},
+        'unauth_iterate_start',
+	'realm_id',
+    );
+    while (my($realm_id, $users) = each(%$realms)) {
+	while (my($user_id, $roles) = each(%$users)) {
+	    next
+		unless grep($_->eq_administrator, @$roles)
+		and grep($_->eq_member, @$roles);
+	    $ru->unauth_delete({
+		realm_id => $realm_id,
+		user_id => $user_id,
+		role => $_R->MEMBER,
+	    });
+	}
+    }
     return;
 }
 
