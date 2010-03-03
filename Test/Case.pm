@@ -51,7 +51,18 @@ sub as_string {
 	    $_R->to_short_string($attr->{params}).']' : '')
 	.')'
 	if $attr->{case_num};
+    if (my $en = $self->error_note) {
+	$sig .= '; error_note=' . $_R->to_short_string($en);
+    }
     return $sig;
+}
+
+sub error_note {
+    my($self, $note) = @_;
+    return $self->unsafe_get('error_note')
+	if @_ <= 1;
+    $self->put(error_note => $note);
+    return;
 }
 
 sub expect {
