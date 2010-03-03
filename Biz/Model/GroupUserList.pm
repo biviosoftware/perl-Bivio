@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::GroupUserList;
 use strict;
@@ -77,8 +77,10 @@ sub internal_post_load_row {
 
 sub internal_pre_load {
     my($self) = @_;
-    return '' unless my $qf = $self->ureq('Model.GroupUserQueryForm');
-    return '' unless my $role = $qf->get_privilege_role;
+    return ''
+	unless my $qf = $self->ureq('Model.GroupUserQueryForm');
+    return ''
+	unless my $role = $qf->get_privilege_role;
     return <<"EOF";
         EXISTS (
             SELECT ru.role
@@ -96,7 +98,6 @@ sub internal_prepare_statement {
 #TODO: Move internal_prepare_statement out of AdmUserList into RoleBaseList(?)
 #      or just here.
     $self->delegate_method($_AUL, @_);
-
     if (my $qf = $self->ureq('Model.GroupUserQueryForm')) {
 	$qf->filter_statement($stmt, {
 	    match_fields => [
