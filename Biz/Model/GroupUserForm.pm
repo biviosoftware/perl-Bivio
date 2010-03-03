@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::GroupUserForm;
 use strict;
@@ -58,27 +58,26 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    my($ul) = $self->req('Model.' . $self->USER_LIST_CLASS);
+    my($old_main);
+    if (my $ul = $self->ureq('Model.' . $self->USER_LIST_CLASS)) {
+	$old_main = $ul->roles_by_category->[0];
+    }
+    else {
+	$old_main = $self->get('current_main_role');
+    }
     my($uid) = $self->get('RealmUser.user_id');
     my($rid) = $self->req('auth_id');
     my($main) = $self->get('RealmUser.role');
     my($ru) = $self->new_other('RealmUser');
-    unless (($ul->roles_by_category->[0] || '') eq $main) {
-# This only deletes this realm
+    unless (($old_main || '') eq $main) {
 	$ru->delete_all({user_id => $uid});
 	return _audit_user($self, $uid)
 	    if $main->eq_unknown;
-# depending on the realm we'd deefinitely need to delete ForumUserDeleteForm
 	$ru->create({
 	    realm_id => $rid,
 	    user_id => $uid,
 	    role => $main,
 	});
-# 	$ru->create({
-# 	    realm_id => $rid,
-# 	    user_id => $uid,
-# 	    role => $main->MEMBER,
-# 	}) if $main->eq_administrator || $main->eq_accountant;
     }
 #TODO: Deal with the site level (invalidate password?)
 #      Maybe not delete password
@@ -88,15 +87,15 @@ sub execute_ok {
 #TODO: when transitioning from unapproved to other state, send email
 #      except unknown.  Have code in place to transition, but the views
 #      can be empty.
-#TODO: shouldn't this be using self->internal_aux_fields instead of accessing
-#      $_AUX directly?
-    foreach my $f (@$_AUX) {
+    $self->internal_put_field(file_writer => 1)
+	if $main->in_category_role_group('all_admins');
+    foreach my $f (@{$self->internal_aux_fields}) {
 	my($method) = $self->unsafe_get($f) ? 'unauth_create_or_update'
 	    : 'delete';
 	$ru->$method({
 	    realm_id => $rid,
 	    user_id => $uid,
-	    role => $main->from_any($f),
+	    role => $_R->from_any($f),
 	});
     }
     _audit_user($self, $uid);
@@ -115,39 +114,46 @@ sub internal_initialize {
 	visible => [
 	    {
 		name => 'RealmUser.role',
-		constraint => 'NOT_NULL',
+	        constraint => 'NOT_NULL',
 	    },
-#TODO: shouldn't this be using self->internal_aux_fields instead of accessing
-#      $_AUX directly?
 	    $self->field_decl(
-		[@{$_AUX}],
+		$self->internal_aux_fields,
 		'Boolean',
 	    ),
 	],
 	other => [
 	    'RealmUser.user_id',
+	    $self->field_decl([[qw(current_main_role Auth.Role)]]),
 	],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
-    my($lm) = $self->new_other($self->USER_LIST_CLASS);
-    $_FM->setup_by_list_this($lm, 'RealmOwner');
-    $self->internal_put_field(
-	'RealmUser.user_id' => $lm->get('RealmUser.user_id'));
+    unless ($self->unsafe_get('RealmUser.user_id')) {
+	my($lm) = $self->new_other($self->USER_LIST_CLASS);
+	$_FM->setup_by_list_this($lm, 'RealmOwner');
+	$self->internal_put_field(
+	    'RealmUser.user_id' => $lm->get('RealmUser.user_id'));
+    }
     # SECURITY: Limit privilege escalation to the level auth_user has
-    my($roles) = $self->internal_select_roles;
-    my($auth_role) = $self->req('auth_role');
-    pop(@$roles)
-	until !@$roles || $auth_role->equals_by_name($roles->[$#$roles]);
-    $self->new_other('RoleSelectList')->load_from_array($roles);
+    my($auth_roles) = $self->req('auth_roles');
+    my($not_allowed) = [grep({
+	my($g) = $_;
+	!grep($_->in_category_role_group($g), @$auth_roles);
+    } qw(all_members all_admins everybody))];
+    $self->new_other('RoleSelectList')->load_from_array(
+	[grep({
+	    my($r) = $_;
+	    !$r->eq_unknown
+	    && !grep($r->in_category_role_group($_), @$not_allowed);
+	} map($_R->from_any($_), @{$self->internal_select_roles}))],
+    );
     return shift->SUPER::internal_pre_execute(@_);
 }
 
 sub internal_select_roles {
     my($self) = @_;
-    # From least to most privileged order
     return $_F->get_from_source($self)->auth_realm_is_site_admin($self->req)
 	? [qw(WITHDRAWN USER MEMBER ADMINISTRATOR)]
 	: [qw(UNKNOWN GUEST MEMBER ADMINISTRATOR)];
