@@ -38,11 +38,12 @@ sub execute_ok {
 sub internal_get_roles {
     my($self) = @_;
     return [
-	Bivio::Auth::Role->MEMBER,
 	map(Bivio::Auth::Role->$_(),
 	    $self->unsafe_get('not_mail_recipient') ? () : 'MAIL_RECIPIENT',
-	    $self->unsafe_get('administrator') ? qw(ADMINISTRATOR FILE_WRITER)
-		: $self->unsafe_get('file_writer') ? 'FILE_WRITER' : (),
+	    $self->unsafe_get('administrator') ? qw(ADMINISTRATOR FILE_WRITER) : (
+		'MEMBER',
+		$self->unsafe_get('file_writer') ? 'FILE_WRITER' : (),
+	    ),
 	),
     ];
 }
