@@ -1,10 +1,11 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ForumUserEditDAVList;
 use strict;
-use base 'Bivio::Biz::Model::EditDAVList';
+use Bivio::Base 'Model.EditDAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R) = b_use('Auth.Role');
 
 sub CSV_COLUMNS {
     return [qw(Email.email mail_recipient file_writer administrator RealmUser.user_id)];
@@ -41,17 +42,18 @@ sub row_update {
     my($self, $new, $old) = @_;
     return 'Email may not be updated via this interface'
 	unless $new->{'Email.email'} eq $old->{'Email.email'};
-    my($req) = $self->get_request;
-    foreach my $r (qw(mail_recipient administrator file_writer)) {
-	next unless $new->{$r} xor $old->{$r};
-	my($op) = $new->{$r} ? 'create' : 'unauth_delete';
-	$self->new_other('RealmUser')->$op({
-	    realm_id => $req->get('auth_id'),
-	    user_id => $old->{'RealmUser.user_id'},
-	    role => Bivio::Auth::Role->from_name($r),
-	});
-    }
+    $self->new_other('GroupUserForm')->process({
+	map(($_ => $new->{$_}), (qw(mail_recipient file_writer))),
+	'RealmUser.role' => _role($new),
+	'RealmUser.user_id' => $old->{'RealmUser.user_id'},
+	current_main_role => _role($old),
+    });
     return;
+}
+
+sub _role {
+    my($values) = @_;
+    return $_R->from_name($values->{administrator} ? 'ADMINISTRATOR' : 'MEMBER');
 }
 
 1;
