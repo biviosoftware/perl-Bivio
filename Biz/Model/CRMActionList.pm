@@ -1,18 +1,17 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::CRMActionList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_CTS) = __PACKAGE__->use('Type.CRMThreadStatus');
-my($_MEMBER) = __PACKAGE__->use('Auth.Role')->MEMBER;
+my($_IDI) = __PACKAGE__->instance_data_index;
+my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_LIST) = [grep(!$_->eq_new, $_CTS->get_non_zero_list)];
 my($_NAMES) = [map($_->get_name, @$_LIST)];
-my($_T) = __PACKAGE__->use('UI.Text');
-my($_LOCATION) = __PACKAGE__->use('Model.Email')->DEFAULT_LOCATION;
-my($_E) = __PACKAGE__->use('Type.Email');
-my($_IDI) = __PACKAGE__->instance_data_index;
+my($_T) = b_use('UI.Text');
+my($_E) = b_use('Type.Email');
+my($_R) = b_use('Auth.Role');
 
 sub id_to_owner {
     my($self, $id) = @_;
@@ -60,12 +59,11 @@ sub internal_load_rows {
 		    id => $self->status_to_id($_),
 		    name => $n->{$_->get_name},
 		}, @$_LIST)],
-	    $self->new_other('RealmEmailList')->map_iterate(
+	    $self->new_other('GroupUserList')->map_iterate(
 		sub {
 		    my($it) = @_;
 		    return
-			unless $it->get('Email.location') == $_LOCATION
-			    && $it->get('RealmUser.role') == $_MEMBER;
+			unless $it->get('RealmUser.role')->in_category_role_group('all_members');
 		    return {
 			id => $it->get('RealmUser.user_id'),
 			name => ($fields && $fields->{names_only}
@@ -74,7 +72,6 @@ sub internal_load_rows {
 				$it->get('Email.email')),
 		    };
 		},
-		{roles => [$_MEMBER]},
 	    ),
 	),
     ];
