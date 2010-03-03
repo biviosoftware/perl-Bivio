@@ -7,6 +7,8 @@ use Bivio::Base 'Bivio.Type';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S) = b_use('Type.String');
 
+#TODO: This class is deprecated.  Use ArrayBase, StringArray, etc.
+
 sub bsearch_numeric {
     # (proto, array_ref, int) : array
     # Searches for I<to_find> in I<values> and returns an array
