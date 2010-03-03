@@ -19,7 +19,7 @@ sub internal_initialize {
 
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
-    $stmt->where(['RealmUser.role', [Bivio::Auth::Role->MEMBER]]);
+    $stmt->where(['RealmUser.role', $_R->get_category_role_group('all_members')]);
     return shift->SUPER::internal_prepare_statement(@_);
 }
 

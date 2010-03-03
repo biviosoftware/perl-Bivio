@@ -18,7 +18,7 @@ sub internal_initialize {
 }
 
 sub internal_qualifying_roles {
-    return [map($_R->$_(), qw(MEMBER ACCOUNTANT ADMINISTRATOR))];
+    return $_R->get_category_role_group('all_members');
 }
 
 sub load_all_qualified_realms {
