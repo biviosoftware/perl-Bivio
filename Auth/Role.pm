@@ -18,6 +18,14 @@ sub get_overlap_count {
     return int(shift->get_non_zero_list / 2);
 }
 
+sub in_category_role_group {
+    my($self, $which) = @_;
+    return grep(
+	$self->equals($_),
+	@{$self->get_category_role_group($which)},
+    ) ? 1 : 0;
+}
+
 sub is_continuous {
     return 0;
 }
