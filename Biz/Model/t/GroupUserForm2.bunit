@@ -2,9 +2,16 @@
 # $Id$
 FormModel({
     check_return => sub {
-	my(undef, undef, $expect, $method) = @_;
+	my($case, undef, $expect) = @_;
 	return 1
 	    unless shift->is_method('process');
+	if (ref($expect->[0])) {
+	    assert_equals(
+		$expect->[0]->{class()},
+		$case->get('object')->get_errors,
+	    );
+	    return 1;
+	}
 	model('GroupUserList')->execute_load_this;
 	assert_equals(
 	    $expect,
@@ -21,8 +28,31 @@ FormModel({
 	query => {this => realm_id('root')},
     }),
     [{
+	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+	file_writer => 1,
+	mail_recipient => 0,
+    }] => [qw(ADMINISTRATOR FILE_WRITER)],
+    [{
 	'RealmUser.role' => Auth_Role('MEMBER'),
 	file_writer => 1,
 	mail_recipient => 0,
     }] => [qw(MEMBER FILE_WRITER)],
+    error_case({
+	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+	file_writer => 1,
+	mail_recipient => 0,
+    } => {
+	'RealmUser.role' => 'NOT_FOUND',
+    }),
+    inline_rollback(),
+    [{
+	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+	file_writer => 1,
+	mail_recipient => 0,
+    }] => [qw(ADMINISTRATOR FILE_WRITER)],
+    [{
+	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+	file_writer => 0,
+	mail_recipient => 1,
+    }] => [qw(ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT)],
 ];
