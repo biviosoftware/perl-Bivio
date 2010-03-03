@@ -84,15 +84,15 @@ sub new_unit {
 	},
 	check_return => sub {
 	    my($case, $actual, $expect) = @_;
+	    my($o) = $case->get('object');
+	    $case->error_note($o->get_errors);
 	    return $expect
 		unless $case->get('method') eq 'process';
-	    $req->put(actual_return => $actual->[0]);
 	    my($e) = $expect->[0];
 	    if ($case->get('comparator') eq 'nested_contains') {
 		$case->actual_return([_walk_tree_actual($case, $e, $req)]);
 		return [$e];
 	    }
-	    my($o) = $case->get('object');
 	    return $expect
 		unless (ref($e) eq 'HASH' && @$expect == 1)
 		    || ($o->isa('Bivio::Biz::ListFormModel')
@@ -100,6 +100,11 @@ sub new_unit {
 	    $e = _walk_tree_expect($case, $e);
 	    $case->actual_return([_walk_tree_actual($case, $e, $req)]);
 	    return [$e];
+	},
+	compute_return => sub {
+	    my($case, $actual) = @_;
+	    $case->error_note($case->get('object')->get_errors);
+	    return $actual;
 	},
 	%$attrs,
     });
