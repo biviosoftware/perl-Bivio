@@ -146,7 +146,7 @@ sub _assert_map {
 	    }
 	}
     }
-    return;
+    return $map;
 }
 
 sub _parse_map {
