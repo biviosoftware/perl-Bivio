@@ -128,6 +128,27 @@ sub _assert_audit {
     );
 }
 
+sub _assert_map {
+    my($map) = @_;
+    while (my($src_realm, $v) = each(%$map)) {
+	while (my($src_role, $v2) = each(%$v)) {
+	    while (my($tgt_realm, $tgt_roles) = each(%$v2)) {
+		next
+		    unless ref($tgt_roles);
+		b_die(
+		    $tgt_roles,
+		    ': too many main roles in ',
+		    join('/', $src_realm, $src_role, $tgt_realm),
+		) if grep(
+		    $_R->$_()->in_category_role_group('all_users'),
+		    @$tgt_roles,
+		) > 1;
+	    }
+	}
+    }
+    return;
+}
+
 sub _parse_map {
     my($proto, $cfg) = @_;
     my($res) = {};
@@ -190,7 +211,7 @@ sub _parse_map {
 	$cfg,
     );
     _trace(b_use('IO.Ref')->to_string($res)) if $_TRACE;
-    return $res;
+    return _assert_map($res);
 }
 
 sub _realm_id {
