@@ -6,6 +6,12 @@ my($id) = req('auth_id');
 my($properties) = model('RealmOwner', {})->get_shallow_copy;
 [
     sub {model('RealmOwner')} => [
+	unauth_rows_exist => [
+	    [{name => 'demo'}] => 1,
+	    [{name => ['demo', 'root']}] => 1,
+	    [{name => ['demo', 'no_such_realm_name']}] => 1,
+	    [{name => 'no_such_realm_name'}] => 0,
+	],
         map_iterate => [
 	    [] => expect_contains([{name => 'demo'}]),
 	    ['name'] => [['demo']],

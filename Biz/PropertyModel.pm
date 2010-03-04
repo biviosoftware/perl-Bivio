@@ -588,6 +588,18 @@ sub unauth_load_this_from_request {
     return $q ? $self->unauth_load($q) : 0;
 }
 
+sub unauth_rows_exist {
+    my($self, $query) = @_;
+    my($res) = 0;
+    $self->do_iterate(
+	sub {$res++},
+	'unauth_iterate_start',
+	$self->get_info('primary_key_names')->[0],
+	$query,
+    );
+    return $res;
+}
+
 sub unsafe_load {
     my($self, $query) = _load_args(@_);
     # Loads the model.  On success, saves model in request and returns true.
