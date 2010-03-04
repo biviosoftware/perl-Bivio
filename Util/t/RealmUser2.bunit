@@ -1,0 +1,20 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+[
+    class() => [
+	sub {
+	    config({
+		'Bivio::Util::RealmUser' => {
+		    audit_map => [
+			demo => [
+			    ADMINISTRATOR => [
+				[guest => [qw(ADMINISTRATOR MEMBER)]],
+			    ],
+			],	
+		    ],
+		},
+	    });
+	    return b_die('did not die');
+	} => qr{too many main roles in},
+    ],
+];
