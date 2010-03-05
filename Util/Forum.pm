@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = b_use('Type.ForumName');
+my($_FP) = b_use('Type.FilePath');
 
 sub USAGE {
     return <<'EOF';
@@ -33,6 +34,27 @@ sub reparent {
 	})->get('realm_id'),
     });
     return;
+}
+
+sub tree_paths {
+    my($self, $top) = shift->name_args([[qw(child ForumName)]], \@_);
+    return [_tree_paths($self, $self->unauth_realm_id($top), '/')];
+}
+
+sub _tree_paths {
+    my($self, $pid, $path) = @_;
+    $path = $_FP->join($path, $self->unauth_model(RealmOwner => {realm_id => $pid})->get('name'));
+    return (
+	$path,
+	sort(
+	    @{$self->model('Forum')->map_iterate(
+		sub {_tree_paths($self, shift->get('forum_id'), $path)},
+		'unauth_iterate_start',
+		'forum_id',
+		{parent_realm_id => $pid},
+	    )},
+        ),
+    );
 }
 
 1;
