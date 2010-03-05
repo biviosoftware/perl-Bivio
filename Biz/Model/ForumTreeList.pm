@@ -6,6 +6,7 @@ use Bivio::Base 'Model.TreeList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_R) = b_use('Auth.Role');
 
 sub PARENT_NODE_ID_FIELD {
     return 'Forum.parent_realm_id';
@@ -77,7 +78,9 @@ sub internal_parent_id {
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $self->[$_IDI] = undef;
-    $stmt->where($stmt->EQ('RealmUser.role', [Bivio::Auth::Role->MEMBER]));
+    $stmt->where(
+	['RealmUser.role', $_R->get_category_role_group('all_members')],
+    );
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
