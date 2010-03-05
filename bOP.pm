@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.89  2010/02/24 14:50:18  nagler
+  * Bivio::Agent::TaskEvent
+    catch case of carry_path_info/query and path_info/query being set in
+    return result
+  * Bivio::Biz::FormModel
+    carry_query not being checked in return of {carry_query => 1}; delete
+    carry_query once carried.  TaskEvent now assserts
+  * Bivio::Util::SQL
+    added xapian_exec_realm2 upgrade to switch realm type to user from club
+
   Revision 8.88  2010/02/23 23:30:03  moeller
   * Bivio::Biz::FormModel
     fixed carry_query nesting
