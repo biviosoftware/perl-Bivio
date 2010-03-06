@@ -431,10 +431,15 @@ sub _cfg_base {
 		title => q{String(vs_site_name()); vs_text_as_prose('xhtml_title');},
 	    ]],
 	    ['task_menu.title' => [
-		sort_first => "\0",
-		sort_second => "\1",
-		sort_third => "\2",
+		sort_first => "\1",
+		sort_second => "\2",
 		sort_third => "\3",
+		sort_fourth => "\4",
+		sort_fifth => "\5",
+		sort_sixth => "\6",
+		sort_seventh => "\7",
+		sort_eighth => "\8",
+		sort_ninth => "\9",
 	    ]],
 	    [prose => [
 		ascend => ' &#9650;',
