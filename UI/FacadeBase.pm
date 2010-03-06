@@ -438,8 +438,8 @@ sub _cfg_base {
 		sort_fifth => "\5",
 		sort_sixth => "\6",
 		sort_seventh => "\7",
-		sort_eighth => "\8",
-		sort_ninth => "\9",
+		sort_eighth => "\10",
+		sort_ninth => "\11",
 	    ]],
 	    [prose => [
 		ascend => ' &#9650;',
