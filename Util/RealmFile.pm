@@ -85,7 +85,7 @@ sub export_tree {
 	    unless !$it->get('is_folder')
 	    && (my $p = $it->get('path')) =~ $re;
         return 1
-            if $noarchive && $p =~ /^@{[$_FP->VERSIONS_FOLDER]}/;
+            if $noarchive && $it->is_version;
 	$p =~ s{^/}{};
 	$_F->mkdir_parent_only($p);
 	$_F->write($p, $it->get_content);
