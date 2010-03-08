@@ -1,6 +1,7 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
+#TODO: test with admin
 req()->set_realm_and_user('btest_read', 'btest_read')
     ->initialize_fully('USER_HOME');
 [
