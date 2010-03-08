@@ -933,9 +933,8 @@ sub _cfg_mail {
 	Task => [
 	    __PACKAGE__->mail_receive_task_list(
 		'FORUM_MAIL_RECEIVE',
-		[USER_MAIL_BOUNCE =>
-		     Bivio::Biz::Model->get_instance('RealmMailBounce')
-		         ->TASK_URI],
+		[USER_MAIL_BOUNCE => b_use('Model.RealmMailBounce')->TASK_URI],
+		[ADMIN_REALM_MAIL_RECEIVE => b_use('Action.AdminRealmMail')->TASK_URI],
 	    ),
 	    $_C->if_version(
 		4 => sub {
@@ -952,6 +951,7 @@ sub _cfg_mail {
 	    [MAIL_RECEIVE_DISPATCH =>
 		 sub {shift->get_facade->MAIL_RECEIVE_URI_PREFIX . '/*'}],
 	    [FORUM_MAIL_REFLECTOR => undef],
+	    [ADMIN_REALM_MAIL_REFLECTOR => undef],
 	    [MAIL_RECEIVE_FORWARD => undef],
 	    [MAIL_RECEIVE_IGNORE => undef],
 	    [MAIL_RECEIVE_NOT_FOUND => undef],

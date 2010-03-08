@@ -837,7 +837,24 @@ sub info_mail {
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_MAIL&FEATURE_BULLETIN
 	    Action.RealmMail->execute_reflector
 	)],
-#147-149 free
+	[qw(
+	    ADMIN_REALM_MAIL_RECEIVE
+	    147
+	    ANY_OWNER
+	    MAIL_SEND&FEATURE_MAIL
+	    Action.AdminRealmMail->execute_receive
+	    Action.MailReceiveStatus
+	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+	    mail_reflector_task=ADMIN_REALM_MAIL_REFLECTOR
+	)],
+	[qw(
+	    ADMIN_REALM_MAIL_REFLECTOR
+	    148
+	    ANY_OWNER
+	    MAIL_SEND&FEATURE_MAIL
+	    Action.AdminRealmMail->execute_reflector
+	)],
+#149 free
     ];
 }
 
