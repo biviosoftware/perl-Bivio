@@ -10,9 +10,22 @@ my($_A) = b_use('Mail.Address');
 my($_T) = b_use('Agent.Task');
 my($_MWRT) = b_use('Type.MailWantReplyTo');
 my($_RFC) = b_use('Mail.RFC822');
+my($_I) = b_use('Mail.Incoming');
+
+sub ALLOW_REPLY_TO {
+    return 1;
+}
+
+sub EMAIL_LIST {
+    return 'RealmEmailList';
+}
 
 sub EMPTY_SUBJECT_PREFIX {
     return '!';
+}
+
+sub WANT_REALM_MAIL_CREATED {
+    return 1;
 }
 
 sub execute_receive {
@@ -20,23 +33,24 @@ sub execute_receive {
     $rfc822 ||= $req->get('Model.MailReceiveDispatchForm')
 	->get('message')->{content};
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
-    my($in) = $rm->create_from_rfc822($rfc822);
+    my($in) = $proto->WANT_REALM_MAIL_CREATED ? $rm->create_from_rfc822($rfc822)
+	: $_I->new($rfc822);
     my($ea) = $rm->new_other('EmailAlias');
     my($email) = $ea->format_realm_as_incoming;
     my($out) = $_O->new($in)->set_headers_for_list_send({
 	list_email => $email,
 	sender => $ea->format_realm_as_sender($email),
-	reply_to_list => $_MWRT->is_set_for_realm($req),
+	reply_to_list => $proto->ALLOW_REPLY_TO && $_MWRT->is_set_for_realm($req),
 	subject_prefix => $proto->internal_subject_prefix($rm),
     });
-    $proto->use('AgentJob.Dispatcher')->enqueue(
+    b_use('AgentJob.Dispatcher')->enqueue(
 	$req,
 	$reflector_task
 	    || $req->get('task')->get_attr_as_id('mail_reflector_task'),
 	{
 	    $proto->package_name => $proto->new({
 		outgoing => $out,
-		realm_file_id => $rm->get('realm_file_id'),
+		realm_file_id => $rm->unsafe_get('realm_file_id'),
 	    }),
 	},
     );
@@ -52,17 +66,18 @@ sub execute_reflector {
         $req->get('auth_id'), 'BULLETIN_MAIL_MODE');
     my $f = ($_A->parse($out->unsafe_get_header('From')))[1]
 	if $bulletin;
-    $rmb->new_other('RealmEmailList')->get_recipients(sub {
+    $rmb->new_other($self->EMAIL_LIST)->get_recipients(sub {
 	my($it) = @_;
 	return Bivio::Die->catch(sub {
-	    my($rp) = $rmb->return_path(
+	    my($rp) = $rfid && $rmb->return_path(
 	        $it->get(qw(RealmUser.user_id Email.email)),
 	        $rfid,
 	    );
 	    my($msg) = $out->new($out)
-		->set_recipients($it->get('Email.email'), $req)
-		->set_header('Return-Path' =>
-		    $_RFC->format_angle_brackets($rp));
+		->set_recipients($it->get('Email.email'), $req);
+	    $msg->set_header(
+		'Return-Path' => $_RFC->format_angle_brackets($rp),
+	    ) if $rp;
 	    if ($bulletin) {
 		$msg->set_header(To => $it->get('Email.email'));
 		$msg->set_header(From => $_RFC->format_mailbox($rp, $f));
