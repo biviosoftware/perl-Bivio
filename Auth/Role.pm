@@ -7,11 +7,14 @@ use Bivio::Base 'Type.EnumDelegator';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Type.Array');
 __PACKAGE__->compile;
+my($_CACHE) = b_use('Collection.Attributes')->new;
 
 sub get_category_role_group {
     my($proto, $which) = @_;
-    return $which eq 'all' ? [$proto->get_non_zero_list]
-	: $_A->sort_unique([_group($proto, $which)]);
+    return $_CACHE->get_if_exists_else_put($which => sub {
+	return $which eq 'all' ? [$proto->get_non_zero_list]
+	    : $_A->sort_unique([_group($proto, $which)]);
+    });
 }
 
 sub get_overlap_count {
