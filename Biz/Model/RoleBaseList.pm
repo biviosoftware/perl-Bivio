@@ -144,10 +144,10 @@ sub _roles {
 	   : _select_roles($self, $row));
     $row->{roles} = [@$main, @$aux];
     if (@$main > 1) {
-	b_warn($main, ': too many main roles in ', $row);
+#	b_warn($main, ': too many main roles in ', $row);
     }
     elsif (!@$main) {
-	b_warn($main, ': no main role in ', $row);
+#	b_warn($main, ': no main role in ', $row);
 	$main = $aux;
     }
     $row->{'RealmUser.role'} = $main->[$#$main];
