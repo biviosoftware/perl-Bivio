@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,67 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.90  2010/03/05 21:16:29  moeller
+  * Bivio::Auth::Role
+    added in_category_role_group
+  * Bivio::Biz::Model::CRMActionList
+    use GroupUserList, not RealmEmailList
+  * Bivio::Biz::Model::CRMThread
+    include link to CRM ticket at top of all tickets
+  * Bivio::Biz::Model::ForumTreeList
+    use all_members for where
+  * Bivio::Biz::Model::ForumUserEditDAVList
+    use GroupUserForm
+  * Bivio::Biz::Model::GroupUserForm
+    member and administrator roles are mutually exclusive
+    security handled with role groups (can't upgrade a user to all_admins
+    role if not a member of all_admins)
+  * Bivio::Biz::Model::RealmMemberList
+    use category_role_group
+  * Bivio::Biz::Model::RealmUserAddForm
+    member and administrator roles are mutually exclusive
+  * Bivio::Biz::Model::RoleBaseList
+    used category role groups for determining main role
+  * Bivio::Biz::Model::UserSubscriptionList
+    use category_role_group
+  * Bivio::Biz::PropertyModel
+    added unauth_rows_exist
+  * Bivio::Delegate::Role
+    all_users includes USER role
+  * Bivio::PetShop::BConf
+    member and administrator roles are mutually exclusive
+  * Bivio::Test::Case
+    added error_note
+  * Bivio::Test::FormModel
+    actual_return on Request went away
+    Call error_note with get_errors on form
+  * Bivio::Type::ArrayBase
+    NEW
+  * Bivio::Type::Array
+    deprecated
+  * Bivio::Type::Date
+    from_unix calls SUPER::from_unix and then from_datetime
+  * Bivio::Type::DateTime
+    now() needs to call __PACKAGE__->from_unix, not $proto->from_unix
+  * Bivio::Type::StringArray
+    moved up code to ArrayBase
+  * Bivio::Type::Time
+    from_unix calls SUPER::from_unix and then from_datetime
+  * Bivio::UI::Facade
+    remove unknown facade uri error
+  * Bivio::Util::Forum
+    added tree_paths
+  * Bivio::Util::RealmFile
+    added noarchive flag
+  * Bivio::Util::RealmUser
+    assert too many main roles
+    _assert_map must return $map
+  * Bivio::Util::SiteForum
+    init_files only if test
+    don't call ADM directly in init_files use set_user_to_any_online_admin
+  * Bivio::Util::SQL
+    db_upgrade drop_member_if_administrator
+
   Revision 8.89  2010/02/24 14:50:18  nagler
   * Bivio::Agent::TaskEvent
     catch case of carry_path_info/query and path_info/query being set in
