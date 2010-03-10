@@ -64,7 +64,7 @@ view_main(Page(
         ]], {
 	    expand => 1,
 	}),
-	'<p><hr />',
+	'<div><hr /></div>',
 	TaskInfo({}),
 	vs_first_focus(),
         vs_correct_table_layout_bug(),
