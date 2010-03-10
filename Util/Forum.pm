@@ -12,8 +12,22 @@ sub USAGE {
     return <<'EOF';
 usage: bivio Forum [options] command [args..]
 commands
+   delete_forum -- deletes the forum
    reparent child-forum new-parent -- updates child-forum to point at new-parent
 EOF
+}
+
+sub delete_forum {
+    my($self) = @_;
+    my($id) = $self->model('Forum', {})->get('forum_id');
+    # cascade delete doesn't pick up DAGs correctly
+    $self->model('RealmDAG')->delete_all({
+	child_id => $id,
+    });
+    $self->model('RealmOwner')->unauth_delete_realm({
+	realm_id => $id,
+    });
+    return;
 }
 
 sub reparent {
