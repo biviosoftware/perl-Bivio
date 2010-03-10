@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.91  2010/03/08 22:52:41  moeller
+  * Bivio::Auth::Role
+    cache get_category_role_group
+  * Bivio::Biz::Action::AdminRealmMail
+    NEW
+  * Bivio::Biz::Action::RealmMail
+    refactoring to support AdminRealmMail
+  * Bivio::Biz::Model::RoleBaseList
+    don't warn on too many/no roles
+  * Bivio::Delegate::TaskId
+    added ADMIN_REALM_MAIL tasks
+  * Bivio::UI::FacadeBase
+    fix sort_third and added through ninth
+    fpc
+    added ADMIN_REALM_MAIL tasks
+  * Bivio::Util::RealmFile
+    use is_version
+
   Revision 8.90  2010/03/05 21:16:29  moeller
   * Bivio::Auth::Role
     added in_category_role_group
