@@ -32,8 +32,7 @@ sub REPORTS_REALM {
 }
 
 sub SITE_REALM {
-#TODO: Need to get this naming straight.  SITE_REALM_NAME should only 
-    return 'site';
+    return Bivio::UI::Facade->get_default->SITE_REALM_NAME;
 }
 
 sub USAGE {
