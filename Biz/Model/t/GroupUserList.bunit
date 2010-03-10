@@ -39,7 +39,7 @@ foreach my $args (
     ],
     roles_by_category => [
 	[] => [
-	    [Auth_Role('ADMINISTRATOR'), Auth_Role('MEMBER')],
+	    [Auth_Role('ADMINISTRATOR')],
 	    [Auth_Role('FILE_WRITER'), Auth_Role('MAIL_RECIPIENT')],
 	],
 	[[map(Auth_Role($_), qw(GUEST FILE_WRITER ADMINISTRATOR))]] => [
