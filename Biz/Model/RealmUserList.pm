@@ -16,8 +16,8 @@ sub internal_initialize {
         version => 1,
 	can_iterate => 1,
 	order_by => [qw(
-            RealmUser.role
             RealmOwner.display_name
+            RealmUser.role
         )],
 	primary_key => [
 	    [qw(RealmUser.user_id RealmOwner.realm_id)],
