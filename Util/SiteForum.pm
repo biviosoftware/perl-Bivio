@@ -235,6 +235,7 @@ sub init_realms {
 	    'RealmOwner.name' => $self->SITE_REALM,
 	    'RealmOwner.display_name' => 'Web Site',
 	});
+	$self->internal_post_site_create;
 	return;
     });
     $req->with_realm($self->SITE_REALM, sub {
@@ -255,6 +256,10 @@ sub init_realms {
 	});
 	return;
     }) unless $self->model('RealmOwner')->unauth_load({name => $self->HELP_REALM});
+    $_C->if_version(3, sub {
+        $self->new_other('HTTPStats')->init_forum($self->REPORTS_REALM);
+	return;
+    });
     $self->req->with_realm($self->SITE_REALM, sub {
         $self->model('ForumForm', {
 	   'RealmOwner.display_name' => 'Site Admin',
@@ -266,13 +271,13 @@ sub init_realms {
 	return;
     });
     $self->model('EmailAlias')->create({
-	incoming => _support_email($req),
-	outgoing => $self->CONTACT_REALM,
+ 	incoming => _support_email($req),
+ 	outgoing => $self->CONTACT_REALM,
     });
-    $_C->if_version(3, sub {
-        $self->new_other('HTTPStats')->init_forum($self->REPORTS_REALM);
-	return;
-    });
+    return;
+}
+
+sub internal_post_site_create {
     return;
 }
 
