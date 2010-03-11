@@ -250,7 +250,7 @@ sub top_level_forum {
 	$self->model('ForumUserAddForm', {
 	    'RealmUser.realm_id' => $rid,
 	    'User.user_id' => _realm_id($self, $user),
-	    administrator => grep($_ eq $_, @$admins) ? 1 : 0,
+	    administrator => grep($user eq $_, @$admins) ? 1 : 0,
 	});
     }
     return;
