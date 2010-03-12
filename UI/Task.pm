@@ -178,9 +178,9 @@ sub format_uri {
     my($self, $named, $req) = @_;
     return shift->internal_get_self($req)->format_uri(@_)
 	unless ref($self);
-    Bivio::Die->die('named parameters only')
+    b_die('named parameters only')
 	unless ref($named) eq 'HASH';
-    return $named->{uri}
+    return _seo_uri_prefix($self, $named->{uri}, $named, $req)
 	if defined($named->{uri});
     $named->{task_id} = $_TI->from_name($named->{task_id})
 	unless ref($named->{task_id});
@@ -221,10 +221,11 @@ sub format_uri {
     $uri =~ s{//+}{/}g;
     $named->{no_form} = 1
 	unless exists($named->{no_form});
-    return $uri . Bivio::Biz::FormModel->format_context_as_query(
-	$req->get_form_context_from_named($named),
-	$req,
-    );
+    return _seo_uri_prefix($self, $uri, $named, $req)
+        . Bivio::Biz::FormModel->format_context_as_query(
+	    $req->get_form_context_from_named($named),
+	    $req,
+	);
 }
 
 sub handle_register {
@@ -317,19 +318,15 @@ sub new {
 }
 
 sub parse_uri {
-    my($self, $uri, $req) = @_;
+    my($self, $orig_uri, $req) = @_;
     return shift->internal_setup_facade($req)->parse_uri(@_)
         unless ref($self);
     my($fields) = $self->[$_IDI];
-    my($orig_uri) = $uri;
-    $uri =~ s!^/+!!;
-    # Special case: '/' or ''
+    my($uri) = _seo_uri_prefix_strip($orig_uri);
     unless (length($uri)) {
 	_trace($orig_uri,  '=> special case root') if $_TRACE;
 	return ($fields->{site_root}, $_GENERAL, '', '/', '/');
     }
-
-    # Question mark is a special character
     my(@uri) = split(m{/+}, $uri);
     $uri = join('/', @uri);
     my($initial_uri) = "/$uri";
@@ -337,11 +334,7 @@ sub parse_uri {
 	entity => $orig_uri,
 	message => 'contains special char',
     }) if grep($_ eq $_REALM_PLACEHOLDER, @uri);
-
-    # There is always something in $uri and @uri at this point
     my($info);
-
-    # General realm simple map; no placeholders or path_info.
     return (
 	_task($self, $info, $orig_uri),
 	$_GENERAL,
@@ -349,15 +342,7 @@ sub parse_uri {
 	$orig_uri,
 	$initial_uri,
     ) if $info = _from_uri($fields, $uri, $_GENERAL_TYPE);
-
-    # Is this a general realm with path_info?  URI has at least
-    # one component at this stage, so $uri[0] is defined.
     if ($info = _from_uri($fields, $uri[0], $_GENERAL_TYPE)) {
-	# At this stage, we have to map to a general realm, because
-	# all first components of the general realm are not valid
-	# RealmName values.  Therefore, we fail with
-	# not found if it matches the first component, but the task
-	# doesn't have path_info.
 	return (
 	    _task($self, $info, $orig_uri),
 	    $_GENERAL,
@@ -372,11 +357,8 @@ sub parse_uri {
 	    message => 'no such general URI (not a path_info uri)',
 	});
     }
-
-    # If first uri doesn't match a RealmName, can't be one.
     my($name) = $_RN->unsafe_from_uri($uri[0]);
     unless (defined($name) && $self->has_uri($_TI->USER_HOME)) {
-	# Not a realm, so try site_root
 	_trace($orig_uri, ' => site_root (no name or no USER_HOME uri')
 	    if $_TRACE;
 	return (
@@ -387,16 +369,9 @@ sub parse_uri {
 	    $initial_uri,
 	);
     }
-
-    # Try to find the uri with the realm replaced by placeholder
-    # Replace realm with underscore.  This is ugly, but good enough for now.
     my($realm);
-    # Up to which component is checked for path_info URI
     my($path_info_index) = undef;
-
     $uri[0] = $_REALM_PLACEHOLDER;
-
-    # Is this a valid, authorized realm with a task for this uri?
     my($o) = Bivio::Biz::Model->new($req, 'RealmOwner');
     return _parse_err($self, $orig_uri, $initial_uri, $req, {
 	entity => $name, uri => $orig_uri,
@@ -404,8 +379,6 @@ sub parse_uri {
 	message => 'no such realm',
     }) unless $o->unauth_load({name => $name});
     $realm = $_R->new($o);
-
-    # Found the realm, now try to find the URI (without checking path_info)
     $uri = join('/', @uri);
     my($rt) = $realm->get('type');
     return (
@@ -415,9 +388,6 @@ sub parse_uri {
 	$orig_uri,
 	$initial_uri,
     ) if $info = _from_uri($fields, $uri, $rt);
-    # Is this a path_info URI?  Note this may seem a bit "slow", but it
-    # is a rare case and NOT_FOUND processing is much faster than normal
-    # requests anyway.  Component after realm name must identify path_info URI
     $path_info_index = 1;
     $uri = join('/', @uri[0..$path_info_index])
 	if @uri > $path_info_index;
@@ -672,6 +642,25 @@ sub _parse_err {
     $req->throw_die('NOT_FOUND', $attrs)
 	unless my $t = $fields->{not_found};
     return ($t->{task}, $_GENERAL, '', $orig_uri, $initial_uri);
+}
+
+sub _seo_uri_prefix {
+    my($self, $uri, $named, $req) = @_;
+    return $uri
+	unless $uri =~ m{^/};
+    if (defined(my $sup = $named->{seo_uri_prefix})) {
+	$sup =~ s/([\W]+)/-/g;
+	$uri = "/$sup-$uri"
+	    if $sup && $sup ne '-';
+    }
+    return $uri;
+}
+
+sub _seo_uri_prefix_strip {
+    my($uri) = @_;
+    $uri =~ s{^/+}{};
+    $uri =~ s{^[^/]*-(?:$|/+)}{};
+    return $uri;
 }
 
 sub _task {
