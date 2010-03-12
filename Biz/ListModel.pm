@@ -172,11 +172,21 @@ sub execute_unauth_load_page {
 }
 
 sub find_row_by {
-    my($self, $field, $value) = @_;
-    # Sets the cursor by I<field> and returns self or returns undef.
-    my($t) = $self->get_field_type($field);
-    return $self->do_rows(sub {!$t->is_equal($self->get($field), $value)})
-	->has_cursor ? $self : undef;
+    my($self) = shift;
+    my($query) = @_;
+    $query = {@_}
+	unless ref($query) eq 'HASH';
+    return $self->do_rows(
+	sub {
+	    foreach my $field (keys(%$query)) {
+		return 1
+		    unless $self->get_field_type($field)
+		    ->is_equal($self->get($field), $query->{$field});
+		
+	    }
+	    return 0;
+	},
+    )->has_cursor ? $self : undef;
 }
 
 sub format_query {
