@@ -14,6 +14,7 @@ my($_X) = b_use('Search.Xapian');
 my($_REALM_FILE_FIELDS) = [qw(
     realm_file_id
     path
+    path_lc
     realm_id
     modified_date_time
     is_public
@@ -27,6 +28,58 @@ my($_REALM_OWNER_FIELDS) = [qw(
 )];
 my($_FP) = b_use('Type.FilePath');
 my($_R) = b_use('Auth.Realm');
+
+sub format_uri_params_with_row {
+    my($self, $row) = @_;
+    my($req) = $self->req;
+    # Order needs to be clear.  Possibly by registration order or dependencies?
+    return $_BFN->is_absolute($row->{'RealmFile.path'}) ? {
+# What if I removed realm from the task?  What would happen?
+	task_id => 'FORUM_BLOG_DETAIL',
+	realm => $row->{'RealmOwner.name'},
+	query => undef,
+	path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
+    } : $_WN->is_absolute($row->{'RealmFile.path'}) ?
+	$_WN->uri_hash_for_realm_and_path(
+	    $row->{'RealmOwner.name'},
+	    $row->{'RealmFile.path'})
+      : $_WDN->is_absolute($row->{'RealmFile.path'}) ?
+	$_WDN->uri_hash_for_realm_and_path(
+	    $row->{'RealmOwner.name'},
+	    $row->{'RealmFile.path'})
+      : $_MFN->is_absolute($row->{'RealmFile.path'}) ? $req->with_realm(
+	$row->{'RealmOwner.name'},
+	sub {
+	    my($crm) = $req->get('auth_realm')
+		->does_user_have_permissions(['FEATURE_CRM'], $req);
+	    my($realm_mail) = $self->new_other('RealmMail')->load({
+		realm_file_id => $row->{'RealmFile.realm_file_id'}});
+	    my($pid) = $realm_mail->get('thread_root_id');
+#TODO: Is this necessary now that we're caching?
+#	    $row->{result_title} = $realm_mail->get('subject');
+	    if ($crm) {
+		my($m) = $self->new_other('CRMThread');
+		# Remote possibility that the message isn't a CRMThread
+		# due to switchover after realm had mail.
+		$pid = $m->get('crm_thread_num')
+		    if $m->unsafe_load({thread_root_id => $pid});
+	    }
+	    return {
+		task_id => $crm ? 'FORUM_CRM_THREAD_LIST'
+		    : 'FORUM_MAIL_THREAD_LIST',
+		realm => $row->{'RealmOwner.name'},
+		query => {'ListQuery.parent_id' => $pid},
+#TODO: Integrate with View.Mail->internal_part_list (need <a name=>)
+		anchor => $row->{'RealmFile.realm_file_id'},
+	    };
+	},
+    ) : {
+	task_id => 'FORUM_FILE',
+	realm => $row->{'RealmOwner.name'},
+	query => undef,
+	path_info => $row->{'RealmFile.path'},
+    };
+}
 
 sub internal_initialize {
     my($self) = @_;
@@ -82,83 +135,12 @@ sub internal_load_rows {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    return $self->internal_post_load_row_with_model($row, $row->{model});
+    return $self->load_row_with_model($row, $row->{model});
 }
 
 sub internal_post_load_row_with_model {
-    my(undef, $row, $model) = @_;
-    foreach my $f (@$_REALM_FILE_FIELDS) {
-	$row->{"RealmFile.$f"} = $model->get($f);
-    }
-#TODO: realm_ids are a security issue.  Need to cache the realms, and then
-#      verify they are here.  Can save the info above in
-#      internal_get_realm_ids
-#TODO: Optimize by caching realms
-    my($ro) = $model->new_other('RealmOwner')->unauth_load_or_die({
-	realm_id => $model->get_auth_id,
-    });
-    foreach my $f (@$_REALM_OWNER_FIELDS) {
-	$row->{"RealmOwner.$f"} = $ro->get($f);
-    }
-    $row->{result_title} = length($row->{title}) ? $row->{title}
-	: $_FP->get_tail($model->unsafe_get('path') || '');
-    $row->{result_author} = length($row->{author}) ? $row->{author}
-	: $ro->unauth_load_or_die({realm_id => $row->{'RealmFile.user_id'}})
-	->get('display_name');
-    $row->{result_excerpt} = length($row->{excerpt}) ? $row->{excerpt}
-	: '<No excerpt>';
-    my($req) = $model->req;
-    my($realm_mail);
-    $row->{result_uri} = $req->format_uri(
-# Order needs to be clear.  Possibly by registration order or dependencies?
-	$_BFN->is_absolute($row->{'RealmFile.path'}) ? {
-# What if I removed realm from the task?  What would happen?
-	    task_id => 'FORUM_BLOG_DETAIL',
-	    realm => $row->{'RealmOwner.name'},
-	    query => undef,
-	    path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
-	} : $_WN->is_absolute($row->{'RealmFile.path'}) ?
-	    $_WN->uri_hash_for_realm_and_path(
-		$row->{'RealmOwner.name'},
-		$row->{'RealmFile.path'})
-	  : $_WDN->is_absolute($row->{'RealmFile.path'}) ?
-	    $_WDN->uri_hash_for_realm_and_path(
-		$row->{'RealmOwner.name'},
-		$row->{'RealmFile.path'})
-	  : $_MFN->is_absolute($row->{'RealmFile.path'}) ? $req->with_realm(
-	    $row->{'RealmOwner.name'},
-	    sub {
-		my($crm) = $req->get('auth_realm')
-		    ->does_user_have_permissions(['FEATURE_CRM'], $req);
-		$realm_mail = $model->new_other('RealmMail')->load({
-		    realm_file_id => $row->{'RealmFile.realm_file_id'}});
-		my($pid) = $realm_mail->get('thread_root_id');
-		if ($crm) {
-		    my($m) = $model->new_other('CRMThread');
-		    # Remote possibility that the message isn't a CRMThread
-		    # due to switchover after realm had mail.
-		    $pid = $m->get('crm_thread_num')
-			if $m->unsafe_load({thread_root_id => $pid});
-		}
-		return {
-		    task_id => $crm ? 'FORUM_CRM_THREAD_LIST'
-			: 'FORUM_MAIL_THREAD_LIST',
-		    realm => $row->{'RealmOwner.name'},
-		    query => {'ListQuery.parent_id' => $pid},
-#TODO: Integrate with View.Mail->internal_part_list (need <a name=>)
-		    anchor => $row->{'RealmFile.realm_file_id'},
-		};
-	    },
-	) : {
-	    task_id => 'FORUM_FILE',
-	    realm => $row->{'RealmOwner.name'},
-	    query => undef,
-	    path_info => $row->{'RealmFile.path'},
-	},
-    );
-    $row->{result_title} = $realm_mail->get('subject')
-	if $realm_mail;
-    return 1;
+    Bivio::IO::Alert->warn_deprecated('use load_row_with_model');
+    return shift->load_row_with_model(@_);
 }
 
 sub internal_private_realm_ids {
@@ -180,6 +162,33 @@ sub internal_public_realm_ids {
 }
 
 sub internal_want_all_public {
+    return 1;
+}
+
+sub load_row_with_model {
+    my($self, $row, $model) = @_;
+    foreach my $f (@$_REALM_FILE_FIELDS) {
+	$row->{"RealmFile.$f"} = $model->get($f);
+    }
+#TODO: realm_ids are a security issue.  Need to cache the realms, and then
+#      verify they are here.  Can save the info above in
+#      internal_get_realm_ids
+#TODO: Optimize by caching realms
+    my($ro) = $model->new_other('RealmOwner')->unauth_load_or_die({
+	realm_id => $model->get_auth_id,
+    });
+    foreach my $f (@$_REALM_OWNER_FIELDS) {
+	$row->{"RealmOwner.$f"} = $ro->get($f);
+    }
+    $row->{result_title} = length($row->{title}) ? $row->{title}
+	: $_FP->get_tail($model->unsafe_get('path') || '');
+    $row->{result_author} = length($row->{author}) ? $row->{author}
+	: $ro->unauth_load_or_die({realm_id => $row->{'RealmFile.user_id'}})
+	->get('display_name');
+    $row->{result_excerpt} = length($row->{excerpt}) ? $row->{excerpt}
+	: '<No excerpt>';
+    $row->{result_uri} = $self->req->format_uri(
+	$self->format_uri_params_with_row($row));
     return 1;
 }
 
