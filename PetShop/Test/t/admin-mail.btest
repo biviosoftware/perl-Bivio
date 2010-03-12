@@ -10,6 +10,6 @@ test_equals(
 	    generate_local_email('mail_user2'),
 	    generate_remote_email('admin.mail_forum'),
 	)->unsafe_get_header('subject'),
-	1,
-    ),
+	2,
+   ),
 );
