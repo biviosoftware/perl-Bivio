@@ -131,6 +131,7 @@ my($_A) = b_use('IO.Alert');
 my($_TE);
 my($_C) = b_use('IO.Config');
 our($_COMMITTED) = undef;
+my($_UNAUTH_EXECUTE) = __PACKAGE__ . '.unauth_execute';
 
 sub TASK_ATTR_RE {
     return $_TASK_ATTR_RE;
@@ -313,6 +314,8 @@ sub handle_pre_auth_task {
 
 sub handle_pre_execute_task {
     my(undef, $task, $req) = @_;
+    return
+	if $req->unsafe_get_and_delete($_UNAUTH_EXECUTE);
     Bivio::Die->throw_quietly(FORBIDDEN => {
 	map(($_ => $req->get($_)),
 	    qw(auth_realm auth_user auth_roles auth_role)),
@@ -425,6 +428,12 @@ sub rollback {
     # and this code must stay in synch with it.
     _call_txn_resources($req, 'handle_rollback');
     return;
+}
+
+sub unauth_server_redirect {
+    my(undef, $redirect_params, $req) = @_;
+    $req->put_durable($_UNAUTH_EXECUTE => 1);
+    return $req->server_redirect($redirect_params);
 }
 
 sub unsafe_get {
