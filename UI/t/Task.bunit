@@ -32,6 +32,7 @@ sub _parse_err {
 	    [{uri => ''}] => '',
 	    [{uri => '#'}] => '#',
 	    [{uri => 'http://a/'}] => 'http://a/',
+	    [{uri => '/foo', seo_uri_prefix => 'hi ho'}] => '/hi-ho-/foo',
 	],
 	{
 	    method => 'parse_uri',
@@ -53,6 +54,8 @@ sub _parse_err {
 	} => [
 	    '' => [qw(SITE_ROOT GENERAL), '', '/'],
 	    '/' => [qw(SITE_ROOT GENERAL), '', '/'],
+	    '/seo-' => [qw(SITE_ROOT GENERAL), '', '/'],
+	    '/seo-/' => [qw(SITE_ROOT GENERAL), '', '/'],
 	    'index.html' => [qw(SITE_ROOT GENERAL /index.html index.html)],
 	    'foo/?/baz' => _parse_err('foo/?/baz'),
 	    'pub/products' => [qw(PRODUCTS GENERAL), '', 'pub/products'],
@@ -61,6 +64,8 @@ sub _parse_err {
 	    'my-site/account' => [qw(MY_SITE GENERAL /account my-site/account)],
 	    '/demo/account' => [qw(USER_ACCOUNT_EDIT USER),
 				'', '/demo/account'],
+	    '/seo-prefix-/demo/account' => [qw(USER_ACCOUNT_EDIT USER),
+				'', '/seo-prefix-/demo/account'],
 	    '/non_existant/account' => _parse_err('/non_existant/account'),
 	    '/demo/dav/pub/foo.csv' => [qw(USER_DAV USER
 					   /pub/foo.csv /demo/dav/pub/foo.csv)],
