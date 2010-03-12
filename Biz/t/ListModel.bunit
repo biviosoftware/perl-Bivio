@@ -3,8 +3,8 @@
 Request();
 [
     map(($_ => [
-	load_empty => undef,
-	load_all => undef,
+	load_empty => not_die(),
+	load_all => not_die(),
 	map(($_ => [
 	    [] => [[{
 		'RealmOwner.name' => 'club',
@@ -21,6 +21,21 @@ Request();
 	    -999999 => 0,
 	    1 => DIE(),
 	    -2 => DIE(),
+	],
+    ],
+    sub {Bivio::Biz::t::ListModel::T2List->new(req())} => [
+	load_all => not_die(),
+	find_row_by => [
+	    [qw(RealmOwner.name club)] => sub {[req('Bivio::Biz::t::ListModel::T2List')]},
+	    [qw(RealmOwner.name not-found)] => [undef],
+	    [{
+		'RealmOwner.name' => 'club',
+		'RealmOwner.realm_id' => 3,
+	    }] => sub {[req('Bivio::Biz::t::ListModel::T2List')]},
+	    [{
+		'RealmOwner.name' => 'club',
+		'RealmOwner.realm_id' => 1,
+	    }] => [undef],
 	],
     ],
 ];
