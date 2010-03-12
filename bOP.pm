@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.93  2010/03/10 22:57:16  moeller
+  * Bivio::Util::SiteForum
+    get SITE_REALM from the default facade SITE_REALM_NAME
+
   Revision 8.92  2010/03/10 01:43:16  moeller
   * Bivio::Util::Forum
     added delete_forum
