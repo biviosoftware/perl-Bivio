@@ -28,7 +28,7 @@ sub import_access_log {
 	    $line =~ /^\S+ [\d\.]+ \d+ \- (\S+) \[(.*?)\] \"(\w+) (\S+) .*?" (\d+)/;
 	next unless $response_code && $response_code =~ /200|302/;
 	my(undef, $su_id, $u_id) = $user =~ /^(su-(\d+)-)?li-(\d+)$/;
-	my($task_id, $auth_realm) = b_use('Bivio::UI::Task')
+	my($task_id, $auth_realm) = b_use('FacadeComponent.Task')
 	    ->parse_uri($uri, $self->req);
 	$self->model('TaskLog')->create({
 	    realm_id => $auth_realm->unsafe_get('owner')
