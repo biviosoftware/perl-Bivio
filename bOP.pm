@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,31 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.94  2010/03/12 04:19:39  nagler
+  * Bivio::Agent::Request
+    added seo_uri_prefix to FORMAT_URI_PARAMETERS
+  * Bivio::Agent::Task
+    added unauth_execute
+  * Bivio::Biz::Action::AdminRealmMail
+    added format_email_for_auth_realm
+  * Bivio::Biz::ListModel
+    find_row_by accepts a hash for (field, value) tuples to match
+  * Bivio::Biz::Model::RealmUserList
+    order by RealmOwner.dispaly_name first
+  * Bivio::Biz::Model::SearchList
+    factored out format_uri_params_with_row
+  * Bivio::PetShop::Util::SQL
+    top_level_forum was not setting admin correctly
+  * Bivio::UI::Task
+    added seo_uri_prefix
+    removed comments in parse_uri, because too complicated to be cluttered
+    by comments
+  * Bivio::Util::SiteForum
+    added internal_post_site_create()
+    create site-reports before site-admin
+  * Bivio::Util::TaskLog
+    b_use FacadeComponent.Task
+
   Revision 8.93  2010/03/10 22:57:16  moeller
   * Bivio::Util::SiteForum
     get SITE_REALM from the default facade SITE_REALM_NAME
