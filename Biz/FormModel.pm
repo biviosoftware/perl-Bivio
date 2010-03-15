@@ -959,13 +959,14 @@ sub validate_and_execute_ok {
     }
     $self->die($res, ': non-zero result and stay_on_page or error')
 	if $_V1 && $res;
+    $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
+	if $self->in_error;
+    _execute_ok_in_error($self);
     return 0
 	if $fields->{stay_on_page};
     $_T->rollback($req);
     return 0
 	unless my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task');
-    _execute_ok_in_error($self);
-    $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details);
     $self->put_on_request(1);
     return {
 	method => 'server_redirect',
