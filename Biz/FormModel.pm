@@ -961,9 +961,9 @@ sub validate_and_execute_ok {
 	if $_V1 && $res;
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
 	if $self->in_error;
-    _execute_ok_in_error($self);
     return 0
 	if $fields->{stay_on_page};
+    _execute_ok_in_error($self);
     $_T->rollback($req);
     return 0
 	unless my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task');
