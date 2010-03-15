@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.0  2010/03/15 03:29:54  nagler
+  Switch to 9.0
+
   Revision 8.95  2010/03/15 03:29:14  nagler
   * Bivio::Biz::FormModel
     form_errors were not being printed unless there was a form_error_task
