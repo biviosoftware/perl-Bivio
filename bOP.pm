@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 8.95  2010/03/15 03:29:14  nagler
+  * Bivio::Biz::FormModel
+    form_errors were not being printed unless there was a form_error_task
+
   Revision 8.94  2010/03/12 04:19:39  nagler
   * Bivio::Agent::Request
     added seo_uri_prefix to FORMAT_URI_PARAMETERS
