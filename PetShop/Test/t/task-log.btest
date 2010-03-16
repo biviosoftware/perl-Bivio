@@ -4,7 +4,7 @@ test_setup('PetShop', 'groupware');
 home_page();
 do_test_backdoor(TaskLog => 'test_reset');
 login_as('btest_read');
-sleep(1);
+sleep(2);
 follow_link('wiki');
 login_as('root');
 follow_link('site_hits');
