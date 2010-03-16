@@ -10,7 +10,7 @@ sub ALLOW_REPLY_TO {
     return 0;
 }
 
-sub LIST_EMAIL {
+sub EMAIL_LIST {
     return 'RealmAdminEmailList';
 }
 
