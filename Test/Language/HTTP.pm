@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Language::HTTP;
 use strict;
@@ -828,7 +828,7 @@ sub verify_local_mail {
     my($body_re) = !defined($body_regex) ? qr{}
 	: ref($body_regex) ? $body_regex : qr{$body_regex};
     $count ||= ref($email) eq 'ARRAY' ? int(@$email) : 1;
-    Bivio::Die->die($_CFG->{mail_dir},
+    b_die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
     my($match) = {};
@@ -843,15 +843,11 @@ sub verify_local_mail {
 	# we're going to be competing for the CPU so let b-sendmail-http win
 	sleep(1);
 	$found = _grep_msgs($self, $email, $body_re, $match);
-	next if @$found < $count;
-	last unless @$found == $count && @$email == keys(%$match);
-	foreach my $f (@$found) {
-	    unlink($f->[0]);
-	    _log($self, 'eml', $f->[1])
-		if ref($self);
-	}
-	return @$found ? wantarray ? map(${$_->[1]}, @$found) : ${$found->[0]->[1]}
-            : ();
+	next
+	    if @$found < $count;
+	last
+	    unless @$found >= $count && @$email == keys(%$match);
+	$i -= int($i/2);
     }
     $die->(%$match
         ? ('Found mail for "', $email, '", but does not match ',
@@ -860,11 +856,22 @@ sub verify_local_mail {
     ) unless @$found;
     $die->('incorrect number of messages.  expected != actual: ',
 	$count, ' != ', int(@$found)
-    ) if @$found != $count;
+    ) unless @$found == $count;
     $die->('correct number of messages, but emails expected != actual: ',
 	[sort(@$email)], ' != ', $match,
-    );
-    # DOES NOT RETURN
+    ) unless @$email == keys(%$match);
+    foreach my $f (@$found) {
+	unlink($f->[0]);
+	_log($self, 'eml', $f->[1])
+	    if ref($self);
+    }
+    return @$found
+	? wantarray
+	? map(${$_->[1]}, @$found)
+	: ${$found->[0]->[1]}
+	: wantarray
+	? ()
+	: undef;
 }
 
 sub verify_no_link {
