@@ -814,7 +814,7 @@ sub verify_link {
 }
 
 sub verify_local_mail {
-    my($self, $email, $body_regex, $count) = @_;
+    my($self, $email, $body_regex, $expect_count) = @_;
     # Get the last messages received for I<recipient_email> (see
     # L<generate_local_email|"generate_local_email">) and verify that
     # I<body_regex> matches.  Deletes the message(s) on a match.
@@ -827,7 +827,7 @@ sub verify_local_mail {
     # messages found.
     my($body_re) = !defined($body_regex) ? qr{}
 	: ref($body_regex) ? $body_regex : qr{$body_regex};
-    $count ||= ref($email) eq 'ARRAY' ? int(@$email) : 1;
+    my($count) = $expect_count || (ref($email) eq 'ARRAY' ? int(@$email) : 1);
     b_die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
@@ -846,7 +846,7 @@ sub verify_local_mail {
 	next
 	    if @$found < $count;
 	last
-	    unless @$found >= $count && @$email == keys(%$match);
+	    unless $expect_count;
 	$i -= int($i/2);
     }
     $die->(%$match
@@ -854,11 +854,17 @@ sub verify_local_mail {
 	   $body_re, ' matches=', $match)
 	: ('No mail for "', $email, '" found in ', $_CFG->{mail_dir}),
     ) unless @$found;
-    $die->('incorrect number of messages.  expected != actual: ',
-	$count, ' != ', int(@$found)
-    ) unless @$found == $count;
-    $die->('correct number of messages, but emails expected != actual: ',
-	[sort(@$email)], ' != ', $match,
+    $die->(
+	'incorrect number of messages.  expected != actual: ',
+	$count,
+	' != ',
+	int(@$found),
+    ) unless !$expect_count || @$found == $count;
+    $die->(
+	'correct number of messages, but emails expected != actual: ',
+	[sort(@$email)],
+	' != ',
+	$match,
     ) unless @$email == keys(%$match);
     foreach my $f (@$found) {
 	unlink($f->[0]);
