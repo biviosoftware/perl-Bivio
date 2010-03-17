@@ -24,7 +24,7 @@ do {
 	]],
 	[xapian_guest => [
 	    'a private place for the common man',
-	    'a public place for the common man',
+	    'a public place for the common man stuz',
 	]]
     ) {
 	my($user, $data) = @$op;
