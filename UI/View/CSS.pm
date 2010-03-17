@@ -1009,11 +1009,18 @@ EOF
 sub _site_xapian {
     return <<'EOF';
 td.header_right form.search {
-  text-align: right;
   margin-top: 1ex;
 }
 td.header_right form.search input.go {
   margin-left: .3em;
+}
+form.search div.b_realm_only {
+  padding-top: .5ex;
+  padding-right: vs_add(Icon('magnifier', 'width'), 2);px;
+  text-align: right;
+}
+form.search div.b_realm_only input {
+  margin-right: .5em;
 }
 table.b_search_results td a:hover span.title {
   Font('a_hover');
