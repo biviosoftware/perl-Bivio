@@ -101,6 +101,7 @@ sub internal_initialize {
 		    type => 'Biz.PropertyModel',
 		},
 	    ],
+	    other_query_keys => [qw(b_realm_only)],
         }),
     );
 }
@@ -114,9 +115,7 @@ sub internal_load_rows {
 	phrase => $s,
 	offset => ($pn - 1) * $c,
 	length => $c + 1,
-	private_realm_ids => $self->internal_private_realm_ids($query),
-	public_realm_ids => $self->internal_public_realm_ids($query),
-	want_all_public => $self->internal_want_all_public($query),
+	_b_realm_only($self, $query),
 	req => $self->req,
     });
     if (@$rows > $c) {
@@ -192,18 +191,21 @@ sub load_row_with_model {
     return 1;
 }
 
-sub parse_query_from_request {
-    my($self) = shift;
-    my($q) = $self->SUPER::parse_query_from_request(@_);
-    return
-	unless my $f = $self->ureq('form_model');
-    if (defined(my $s = $q->unsafe_get('search'))) {
-	$f->put_search_value($s);
-    }
-    else {
-	$q->put(search => $f->get_search_value);
-    }
-    return $q;
+sub _b_realm_only {
+    my($self, $query) = @_;
+    return (
+	private_realm_ids => $self->internal_private_realm_ids($query),
+	public_realm_ids => $self->internal_public_realm_ids($query),
+	want_all_public => $self->internal_want_all_public($query),
+    ) unless $query->unsafe_get('b_realm_only');
+    my($aid) = $self->req('auth_id');
+    return (
+	map({
+	    my($method) = 'internal_' . $_;
+	    ($_ => [grep($aid eq $_, @{$self->$method($query)})]);
+	} qw(private_realm_ids public_realm_ids)),
+	want_all_public => 0,
+    );
 }
 
 1;
