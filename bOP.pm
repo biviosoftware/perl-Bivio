@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.2  2010/03/16 17:32:00  nagler
+  * Bivio::Biz::Model::CRMThread
+    revert to 1.20.  Can't put link in "pre_create_file", because may be
+    going out to user.
+
   Revision 9.1  2010/03/15 17:26:46  moeller
   * Bivio::Biz::FormModel
     don't put errors on file fields if stay_on_page
