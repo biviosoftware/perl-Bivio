@@ -1809,6 +1809,7 @@ sub _cfg_xapian {
 	],
 	Task => [
 	    [SEARCH_LIST => 'pub/search'],
+	    [GROUP_SEARCH_LIST => '?/search'],
 	    [JOB_XAPIAN_COMMIT => undef],
 	],
 	Text => [
@@ -1817,10 +1818,11 @@ sub _cfg_xapian {
 	    ]],
 	    [SearchForm => [
 		search => '',
+		b_realm_only => 'Only in String([qw(->req auth_realm owner display_name)]);',
 		ok_button => 'Search',
 	    ]],
 	    [title => [
-		SEARCH_LIST => 'Search Results',
+		[qw(SEARCH_LIST GROUP_SEARCH_LIST)] => 'Search Results',
 	    ]],
 	],
     };

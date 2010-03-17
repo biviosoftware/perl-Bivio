@@ -1429,6 +1429,16 @@ sub info_xapian {
 	    View.Search->list
 	    next=SEARCH_LIST
 	)],
+	[qw(
+	    GROUP_SEARCH_LIST
+	    62
+	    ANY_OWNER
+	    ANYBODY
+	    Model.SearchForm
+	    Model.SearchList->execute_load_page
+	    View.Search->list
+	    next=GROUP_SEARCH_LIST
+	)],
 #62-69 free
     ];
 }
