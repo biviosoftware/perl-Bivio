@@ -9,9 +9,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
+    my($id) = JavaScript()->unique_html_id;
     $self->put_unless_exists(values => [
 	Script('b_clear_on_focus'),
-	# Have we rendered already?
 	$self->get('widget')->put(
 	    ONFOCUS => Join([
 		'b_clear_on_focus(this, "',
@@ -19,7 +19,18 @@ sub initialize {
 		'")',
             ]),
 	    class => _class($self),
+	    id => $id,
 	),
+	SCRIPT({
+	    TYPE => 'text/javascript',
+	    value => Join([
+		"var b_clear_on_focus_value = document.getElementById('$id');\n",
+                "if (b_clear_on_focus_value && !b_clear_on_focus_value.value.length)\n",
+                'b_clear_on_focus_value.value = "',
+                JavaScriptString($self->get('hint_text')),
+		qq{";\n},
+	    ]),
+	}),
     ]);
     return shift->SUPER::initialize(@_);
 }
