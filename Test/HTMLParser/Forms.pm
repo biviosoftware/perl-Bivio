@@ -470,7 +470,7 @@ sub _start_input {
     # Nothing to label unless defined
     return if _empty($fields->{text}, $fields->{prev_cell_text});
 
-    # A field has a label if the word preceding it begins with a ':'
+    # A field has a label if the word preceding it ends with a ':'
     return _label_visible($fields)
         if ($fields->{text} || $fields->{prev_cell_text}) =~ /\:\s*$/
             && $attr->{type} !~ /checkbox/;
