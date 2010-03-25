@@ -21,7 +21,8 @@ sub initialize {
 	    class => _class($self),
 	    id => $id,
 	),
-	SCRIPT({
+	Tag({
+            tag => 'script',
 	    TYPE => 'text/javascript',
 	    value => Join([
 		"var b_clear_on_focus_value = document.getElementById('$id');\n",
