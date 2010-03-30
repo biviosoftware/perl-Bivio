@@ -121,6 +121,8 @@ sub default_merge_overrides {
 
 sub dev {
     my($proto, $http_port, $overrides) = @_;
+    print(STDERR $http_port, ": using odd numbered port not advised, will be 'secure'\n")
+	if $http_port % 2;
     my($pwd) = Cwd::getcwd();
     my($host) = Sys::Hostname::hostname();
     my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
