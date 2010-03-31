@@ -80,7 +80,7 @@ sub internal_reply_list {
 }
 
 sub internal_standard_tools {
-    my($self) = @_;
+    my($self, $extra_tools) = @_;
     $self->internal_put_base_attr(tools => TaskMenu([
         {
 	    task_id => _name($self, 'FORUM_XX_FORM'),
@@ -96,6 +96,7 @@ sub internal_standard_tools {
 	    ],
 	    query => undef,
 	},
+	@{$extra_tools || []},
     ]));
     return;
 }
