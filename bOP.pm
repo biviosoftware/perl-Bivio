@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.4  2010/03/31 16:53:47  nagler
+  * Bivio::BConf
+    test of http_port being odd
+  * Bivio::Biz::Model::SearchList
+    added display of RealmOwner.display name with a link
+    (result_realm_uri) and show_byline
+  * Bivio::Test::HTMLParser::Forms
+    fixed comment to match code
+  * Bivio::UI::View::CSS
+    more margin in search results byline
+  * Bivio::UI::View::Search
+    added display of RealmOwner.display name with a link
+    (result_realm_uri) and show_byline
+  * Bivio::UI::XHTML::Widget::ClearOnFocus
+    cannot use SCRIPT.  Use Tag({tag=>'script'...}) instead
+  * Bivio::UI::XHTML::Widget::SearchForm
+    control broken
+
   Revision 9.3  2010/03/17 22:33:49  nagler
   * Bivio::Biz::Action::AdminRealmMail
     misspelt EMAIL_LIST
