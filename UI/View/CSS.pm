@@ -1040,10 +1040,11 @@ table.b_search_results td div.byline {
   Font('search_result_byline');
 }
 table.b_search_results td div.byline span.author {
-  margin-right: .5ex;
+  margin-right: 1em;
 }
 table.b_search_results div.date {
   display: inline;
+  margin-right: 1em;
 }
 table.b_search_results tr.b_even_row,
 table.b_search_results tr.b_odd_row {
