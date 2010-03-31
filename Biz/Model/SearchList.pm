@@ -28,6 +28,7 @@ my($_REALM_OWNER_FIELDS) = [qw(
 )];
 my($_FP) = b_use('Type.FilePath');
 my($_R) = b_use('Auth.Realm');
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub format_uri_params_with_row {
     my($self, $row) = @_;
@@ -88,7 +89,16 @@ sub internal_initialize {
 	$self->merge_initialize_info($self->SUPER::internal_initialize, {
 	    other => [
 		$self->field_decl(
-		    [qw(result_uri result_title result_excerpt result_author)],
+		    [
+			qw(
+                            result_uri
+                            result_title
+                            result_excerpt
+                            result_author
+                            result_realm_uri
+                        ),
+			[qw(show_byline Boolean)],
+		    ],
 		    'Text', 'NOT_NULL',
 		),
 		$self->field_decl(
@@ -111,12 +121,14 @@ sub internal_load_rows {
     my($s, $pn, $c) = $query->unsafe_get(qw(search page_number count));
     return []
 	unless defined(($_S->from_literal($s))[0]);
+    my($x) = _b_realm_only($self, $query);
+    $self->[$_IDI] = {map(($_ => 1), @{$x->{private_realm_ids}})};
     my($rows) = $_X->query({
 	phrase => $s,
 	offset => ($pn - 1) * $c,
 	length => $c + 1,
-	_b_realm_only($self, $query),
 	req => $self->req,
+	%$x,
     });
     if (@$rows > $c) {
 	$query->put(
@@ -134,7 +146,11 @@ sub internal_load_rows {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    return $self->load_row_with_model($row, $row->{model});
+    return 0
+	unless $self->load_row_with_model($row, $row->{model});
+    $row->{show_byline} = $self->[$_IDI]->{$row->{'RealmOwner.realm_id'}}
+	|| 0;
+    return 1;
 }
 
 sub internal_post_load_row_with_model {
@@ -173,12 +189,12 @@ sub load_row_with_model {
 #      verify they are here.  Can save the info above in
 #      internal_get_realm_ids
 #TODO: Optimize by caching realms
-    my($ro) = $model->new_other('RealmOwner')->unauth_load_or_die({
-	realm_id => $model->get_auth_id,
-    });
+    my($ro) = $model->new_other('RealmOwner')
+	->unauth_load_or_die({realm_id => $model->get_auth_id});
     foreach my $f (@$_REALM_OWNER_FIELDS) {
 	$row->{"RealmOwner.$f"} = $ro->get($f);
     }
+    $row->{result_realm_uri} = $ro->format_uri;
     $row->{result_title} = length($row->{title}) ? $row->{title}
 	: $_FP->get_tail($model->unsafe_get('path') || '');
     $row->{result_author} = length($row->{author}) ? $row->{author}
@@ -193,19 +209,19 @@ sub load_row_with_model {
 
 sub _b_realm_only {
     my($self, $query) = @_;
-    return (
+    return {
 	private_realm_ids => $self->internal_private_realm_ids($query),
 	public_realm_ids => $self->internal_public_realm_ids($query),
 	want_all_public => $self->internal_want_all_public($query),
-    ) unless $query->unsafe_get('b_realm_only');
+    } unless $query->unsafe_get('b_realm_only');
     my($aid) = $self->req('auth_id');
-    return (
+    return {
 	map({
 	    my($method) = 'internal_' . $_;
 	    ($_ => [grep($aid eq $_, @{$self->$method($query)})]);
 	} qw(private_realm_ids public_realm_ids)),
 	want_all_public => 0,
-    );
+    };
 }
 
 1;

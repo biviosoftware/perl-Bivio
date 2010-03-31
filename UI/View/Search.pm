@@ -8,7 +8,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_byline_control {
-    return 1;
+    return ['show_byline'];
 }
 
 sub list {
@@ -27,6 +27,11 @@ sub list {
 		    Join([
 			SPAN_author(String(['result_author'])),
 			DIV_date(DateTime(['RealmFile.modified_date_time'])),
+			Link(
+			    String(['RealmOwner.display_name']),
+			    ['result_realm_uri'],
+			    'b_realm_uri',
+			),
 		    ]),
 		    {
 			control => $self->internal_byline_control,
