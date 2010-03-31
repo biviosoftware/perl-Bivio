@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.3  2010/03/17 22:33:49  nagler
+  * Bivio::Biz::Action::AdminRealmMail
+    misspelt EMAIL_LIST
+  * Bivio::Biz::Model::SearchForm
+    CLEAR_ON_FOCUS_HINT management is handled by ClearOnFocus widget in JavaScript
+  * Bivio::Biz::Model::SearchList
+    SearchForm is now subclass of ListQueryForm so could rip out
+    parse_query_from_request.
+    Added b_realm_only which allows you to constrain search to current realm
+  * Bivio::Delegate::TaskId
+    added GROUP_SEARCH_LIST to support b_realm_only
+  * Bivio::Test::Language::HTTP
+    verify that get exactly the number of messages
+    verify_local_mail won't keep trying if $expect_count not supplied
+  * Bivio::UI::FacadeBase
+    added GROUP_SEARCH_LIST to support b_realm_only
+  * Bivio::UI::View::CSS
+    support b_realm_only checkbox
+  * Bivio::UI::XHTML::Widget::ClearOnFocus
+    Initialize the hint in the javascript
+  * Bivio::UI::XHTML::Widget::SearchForm
+    added b_realm_only checkbox
+
   Revision 9.2  2010/03/16 17:32:00  nagler
   * Bivio::Biz::Model::CRMThread
     revert to 1.20.  Can't put link in "pre_create_file", because may be
