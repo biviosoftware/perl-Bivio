@@ -22,6 +22,16 @@
 		    View.Search->list
 		), {next => 'SEARCH_LIST'},
 		],
+		[qw(
+		    GROUP_SEARCH_LIST
+		    62
+		    ANY_OWNER
+		    ANYBODY
+		    Model.SearchForm
+		    Model.SearchList->execute_load_page
+		    View.Search->list
+		), {next => 'GROUP_SEARCH_LIST'},
+		],
 	    ]],
 	    [[[a => 1]], [[b => 2]]] => [[[a => 1, undef, undef, {}], [b => 2, undef, undef, {}]]],
 	    [[[a => 1]], [[a => 3], [b => 2]]] => [[[b => 2, undef, undef, {}], [a => 3, undef, undef, {}]]],
