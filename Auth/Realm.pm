@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::Realm;
 use strict;
@@ -242,7 +242,10 @@ sub new {
 	my($g) = $proto->get_general;
 	return $g
 	    if $g->get('id') eq $owner || $owner eq 'general';
-	$owner = $_RO->new($req)->unauth_load_by_id_or_name_or_die($owner);
+	$owner = (
+	    $req->get_if_exists_else_put(__PACKAGE__, sub {{}})->{$owner}
+	    ||= $_RO->new($req)->unauth_load_by_id_or_name_or_die($owner)
+        )->clone;
     }
     return $owner->clone
 	if __PACKAGE__->is_blessed($owner);
