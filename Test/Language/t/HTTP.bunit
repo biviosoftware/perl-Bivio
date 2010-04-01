@@ -89,7 +89,7 @@ verify_local_mail(\$e1, 'You have mail');
 \$m->();
 \$m->();
 test_deviance(qr/incorrect number of messages/);
-verify_local_mail(\$e1, 'You have mail');
+verify_local_mail(\$e1, 'You have mail', 1);
 test_conformance();
 foreach my \$m (verify_local_mail(\$e1, 'You have mail', 2)) {
     \$m =~ /^From: someone\\\@example.com[\\s\\S]*You have mail\n\$/
