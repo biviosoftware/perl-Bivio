@@ -1,19 +1,16 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::RealmOwner;
 use strict;
 use Bivio::Agent::TaskId;
 use Bivio::Auth::RealmType;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
-
-# C<Bivio::Biz::Model::RealmOwner> is the create, read, update,
-# and delete interface to the C<realm_owner_t> table.
+use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_RN) = Bivio::Type->get_instance('RealmName');
-my($_PI) = Bivio::Type->get_instance('PrimaryId');
-my($_P) = Bivio::Type->get_instance('Password');
+my($_DT) = b_use('Type.DateTime');
+my($_RN) = b_use('Type.RealmName');
+my($_PI) = b_use('Type.PrimaryId');
+my($_P) = b_use('Type.Password');
 my($_HOME_TASK_MAP) = {
     map({
         $_ => Bivio::Agent::TaskId->from_name($_->get_name . '_HOME'),
@@ -21,6 +18,7 @@ my($_HOME_TASK_MAP) = {
         Bivio::Auth::RealmType->get_non_zero_list))),
 };
 my($_RT) = b_use('Auth.RealmType');
+my($_R) = b_use('Auth.Realm');
 
 sub create {
     my($self, $values) = @_;
@@ -306,6 +304,8 @@ sub update {
 	$otp->delete
 	    unless $otp->unauth_load({user_id => $self->get('realm_id')});
     }
+    $_R->clear_model_cache($self->req)
+	if $values->{name} && $values->{name} ne $self->get('name');
     return shift->SUPER::update(@_);
 }
 

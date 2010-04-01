@@ -72,6 +72,12 @@ sub can_user_execute_task {
     return $self->does_user_have_permissions($task->get('permission_set'), $req);
 }
 
+sub clear_model_cache {
+    my($proto, $req) = @_;
+    $req->delete(__PACKAGE__);
+    return;
+}
+
 sub do_default {
     return _do_default(get_non_zero_list => @_);
 }
