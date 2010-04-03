@@ -1,8 +1,8 @@
-# Copyright (c) 2006-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::DocletFileName;
 use strict;
-use Bivio::Base 'Type.FileName';
+use Bivio::Base 'Type.FilePath';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -16,11 +16,8 @@ sub ABSOLUTE_REGEX {
 
 sub from_absolute {
     my($proto, $path) = @_;
-    Bivio::Die->throw(DIE => {
-	message => 'not an absolute path',
-	entity => $path,
-#TODO: This is too lax
-    }) unless my(@x) = ($path || '') =~ $proto->PATH_REGEX;
+    b_die($path, ': not an absolute path')
+        unless my(@x) = ($path || '') =~ m{@{[$proto->ABSOLUTE_REGEX]}};
     return join('', @x);
 }
 
@@ -34,6 +31,7 @@ sub from_literal {
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
 	unless defined($v);
+    $v =~ s{^/}{};
     return $v =~ m{^@{[$proto->REGEX]}$}s ? $v : (undef, $proto->ERROR);
 }
 
