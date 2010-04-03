@@ -43,7 +43,9 @@ sub from_literal_stripper {
 }
 
 sub from_sql_column {
-    return shift->from_absolute(@_);
+    my($proto, $value) = @_;
+    return $proto->is_absolute($value) ? $proto->from_absolute($value)
+	: $proto->from_literal_or_die($value);
 }
 
 sub get_width {
