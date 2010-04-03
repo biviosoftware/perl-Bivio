@@ -419,15 +419,19 @@ sub internal_format_uri {
     return _check_uri(
 	$uri =~ m{^/+$_REALM_PLACEHOLDER(/.+)}os && $args->{realm_name}
 	? $_T->format_uri({uri => "/$args->{realm_name}$1"}, $args->{req})
-	: $uri =~ m{[/:]}
+	: $uri =~ m{^(?:\w+:|/)}
 	? $_T->format_uri({uri => $uri}, $args->{req})
-	: $uri =~ /\./ ? $_WDN->format_uri($uri, $args)
-	: $args->{req}->format_uri({
+	: $_WN->is_valid($uri)
+	? $args->{req}->format_uri({
 	    task_id => $args->{task_id},
 	    realm => $args->{realm_name},
 	    query => undef,
 	    path_info => $uri,
-	}),
+	})
+	: $_WDN->is_valid($uri)
+	? $_WDN->format_uri($uri, $args)
+#TODO: Probably should die?
+	: $_T->format_uri({uri => $uri}, $args->{req}),
 	$orig,
 	$args,
     ) . $anchor;
@@ -486,7 +490,8 @@ sub prepare_html {
 	map(($_ => $rf->get($_)), @{$rf->get_keys}),
 	value => ${$rf->get_content},
 	req => $req = $rf->req,
-	name => $_WN->from_absolute($rf->get('path')),
+	name => $_WN->is_absolute($rf->get('path'))
+	    ? $_WN->from_absolute($rf->get('path')) : $rf->get('path'),
 	path => $rf->get('path'),
 	is_inline_text => 0,
     ) if $rf;
