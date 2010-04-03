@@ -20,7 +20,7 @@ sub PRIVATE_FOLDER {
 }
 
 sub REGEX {
-    return qr{(\w+(?:(?:;\d+)(?:\.\d+)?)?)$};
+    return qr{((?:[A-Z]\w+/)*\w+(?:(?:;\d+)(?:\.\d+)?)?)$};
 }
 
 sub START_PAGE {
@@ -52,7 +52,7 @@ sub title_to_help {
 sub to_title {
     my($proto, $name) = @_;
     my($title) = $proto->get_base($name);
-    $title =~ s/_/ /g;
+    $title =~ s{[_/]+}{ }g;
     return $title;
 }
 
