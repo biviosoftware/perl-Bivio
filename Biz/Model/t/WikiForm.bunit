@@ -77,4 +77,13 @@ Bivio::Biz::Model->new('RealmFile')->unauth_delete_deep({
 	    path => '/Public/Wiki/BunitTwo',
 	},
     }],
+    [{
+	'RealmFile.path_lc' => 'Bunit/Three',
+	'RealmFile.is_public' => 1,
+	content => 'b3',
+    }] => [{
+	'Model.RealmFile' => {
+	    path => '/Public/Wiki/Bunit/Three',
+	},
+    }],
 ];
