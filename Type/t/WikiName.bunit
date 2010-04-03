@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
 [
@@ -16,6 +16,12 @@ Type();
 	    'MIC9;1' => 'MIC9;1',
 	    'MIC9;0.1' => 'MIC9;0.1',
 	    '20090502030303' => '20090502030303',
+            'Sub/Folder' => 'Sub/Folder',
+	    # This is the behavior documented in BlogFileName.bunit,
+	    # but I'm not sure it's right
+            '/Sub/Folder' => 'Sub/Folder',
+	    # This one is behavior that FilePath supports.
+            'Sub/' => 'Sub',
 	    '.' => WIKI_NAME(),
 	    ' ' => WIKI_NAME(),
 	    '_' => WIKI_NAME(),
@@ -24,9 +30,11 @@ Type();
 	to_absolute => [
 	    [undef] => '/Wiki',
 	    'a' => '/Wiki/a',
+	    'Sub1/b' => '/Wiki/Sub1/b',
 	    '' => '/Wiki',
 	    [qw(a 1)] => '/Public/Wiki/a',
 	    [qw(a;1 1)] => '/Archived/Public/Wiki/a;1',
+	    [qw(Dir2/b;1 1)] => '/Archived/Public/Wiki/Dir2/b;1',
 	],
 	is_absolute => [
 	    [undef] => 0,
@@ -38,6 +46,7 @@ Type();
 	],
 	from_absolute => [
 	    '/Wiki/StartPage' => 'StartPage',
+            '/Wiki/Dir/b' => 'Dir/b',
 	],
 	title_to_help => [
 	    'Foo Bar' => 'Foo_Bar_Help',
