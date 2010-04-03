@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.5  2010/03/31 23:15:01  nagler
+  * Bivio::UI::View::Mail
+    added extra_tools to internal_standard_tools
+
   Revision 9.4  2010/03/31 16:53:47  nagler
   * Bivio::BConf
     test of http_port being odd
