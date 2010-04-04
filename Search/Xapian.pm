@@ -327,7 +327,8 @@ sub _replace {
     my($doc) = Search::Xapian::Document->new;
     $doc->set_data('');
     while (my($field, $index) = each(%$_VALUE_MAP)) {
-	$doc->add_value($index, $parser->get($field));
+        my($v) = $parser->get($field);
+	$doc->add_value($index, defined($v) ? $v : '');
     }
     my($primary_term) = _primary_term($model->get_primary_id);
     foreach my $t ($primary_term, @{$parser->get('terms')}) {
