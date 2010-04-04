@@ -2,93 +2,29 @@
 # $Id$
 package Bivio::Delegate::NoDbAuthSupport;
 use strict;
-$Bivio::Delegate::NoDbAuthSupport::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Delegate::NoDbAuthSupport::VERSION;
+use Bivio::Base 'Bivio::Delegate';
 
-=head1 NAME
+# C<Bivio::Delegate::NoDbAuthSupport> provides support for authenication
+# without a database.  Always grants permissions to the user.
 
-Bivio::Delegate::NoDbAuthSupport - auth support without a database
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Delegate::NoDbAuthSupport;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Delegate>
-
-=cut
-
-use Bivio::Delegate;
-@Bivio::Delegate::NoDbAuthSupport::ISA = ('Bivio::Delegate');
-
-=head1 DESCRIPTION
-
-C<Bivio::Delegate::NoDbAuthSupport> provides support for authenication
-without a database.  Always grants permissions to the user.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="load_permissions"></a>
-
-=head2 load_permissions() : Bivio::Auth::PermissionSet
-
-All permissions are true.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub load_permissions {
+    # (self) : Auth.PermissionSet
+    # All permissions are true.
     return Bivio::Auth::PermissionSet->get_max;
 }
 
-=for html <a name="task_permission_ok"></a>
-
-=head2 task_permission_ok() : boolean
-
-Returns true always.
-
-=cut
-
 sub task_permission_ok {
+    # (self) : boolean
+    # Returns true always.
     return 1;
 }
 
-=for html <a name="unsafe_get_user_pref"></a>
-
-=head2 static unsafe_get_user_pref() : boolean
-
-No database, so no preferences.
-
-=cut
-
 sub unsafe_get_user_pref {
+    # (proto) : boolean
+    # No database, so no preferences.
     return 0;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
