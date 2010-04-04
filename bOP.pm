@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.6  2010/04/03 17:26:35  nagler
+  * Bivio::Auth::Realm
+    caceh RealmOwner
+    added clear_model_cache
+  * Bivio::Biz::Model::RealmOwner
+    added clear_model_cache
+  * Bivio::Type::BlogFileName
+    from_sql_column needs to check from_absolute
+  * Bivio::Type::DocletFileName
+    don't subclass FileName, because Doclets can have slashes in them
+  * Bivio::Type::WikiName
+    allow slashes in the names
+  * Bivio::UI::XHTML::Widget::WikiText
+    names can have slashes and from_absolute can't always be called on
+    paths, because may be blogs
+
   Revision 9.5  2010/03/31 23:15:01  nagler
   * Bivio::UI::View::Mail
     added extra_tools to internal_standard_tools
