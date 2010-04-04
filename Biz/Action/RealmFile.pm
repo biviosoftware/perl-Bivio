@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::RealmFile;
 use strict;
@@ -9,6 +9,7 @@ my($_FP) = b_use('Type.FilePath');
 my($_DATA_READ) = ${b_use('Auth.PermissionSet')->from_array(['DATA_READ'])};
 my($_RF) = b_use('Model.RealmFile');
 my($_DC) = b_use('Bivio.DieCode');
+my($_R) = b_use('Auth.Realm');
 
 sub access_controlled_execute {
     my($proto, $req) = @_;
@@ -32,7 +33,7 @@ sub access_controlled_load {
     }
     my($e) = 'MODEL_NOT_FOUND';
     if ($rf->is_loaded) {
-	my($aipo) = $proto->access_is_public_only($req, $realm_id);
+	my($aipo) = $proto->access_is_public_only($req, $rf);
 	if ($rf->get('is_public') || !$aipo) {
 	    return $rf
 		unless $rf->get('is_folder');
@@ -55,17 +56,15 @@ sub access_controlled_load {
 }
 
 sub access_is_public_only {
-    my($proto, $req, $realm) = @_;
-    my($have_realm) = @_ > 2;
-    my($op) = sub {
-        return $req->get('auth_realm')
-	    ->does_user_have_permissions($_DATA_READ, $req)
-	    ? 0 : 1;
-    };
-    return $have_realm ? $req->with_realm($realm => $op) : $op->();
+    my($proto, $req, $realm_file) = @_;
+    return (
+	$realm_file ? $_R->new($realm_file->get('realm_id'), $req)
+	: $req->get('auth_realm')
+    )->does_user_have_permissions($_DATA_READ, $req) ? 0 : 1;
 }
 
 sub assert_access {
+#TODO: What is going on here?  Used in FORUM_FILE_*
     return;
 }
 
