@@ -483,9 +483,11 @@ sub internal_load {
     $req->put(list_model => $self) if $req;
 
     for (my($i) = 0; $i <= $#$rows; $i++) {
+	$self->set_cursor_or_die($i);
 	splice(@$rows, $i--, 1)
 	    unless $self->internal_post_load_row($rows->[$i]);
     }
+    $self->reset_cursor;
     return;
 }
 
