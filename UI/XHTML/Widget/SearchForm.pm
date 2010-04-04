@@ -40,7 +40,10 @@ sub initialize {
 			 label => Prose(vs_text(qw(SearchForm b_realm_only))),
 			 control => [[qw(->req auth_realm)], '->has_owner'],
 		     }),
-		     {control => $self->get_or_default('show_b_realm_only', 1)},
+		     {control => $self->get_or_default(
+			 'show_b_realm_only',
+			 [qw(auth_realm type ->is_group)],
+		     )},
 		 ),
 	     ]);
 	}],
