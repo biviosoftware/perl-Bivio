@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::RealmRole;
 use strict;
@@ -7,6 +7,7 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_S) = b_use('Auth.Support');
 my($_PS) = b_use('Auth.PermissionSet');
 my($_R) = b_use('Auth.Role');
 my($_RS) = b_use('Auth.RoleSet');
@@ -18,6 +19,12 @@ sub EMPTY_PERMISSION_MAP {
 
 sub add_permissions {
     return _do('add', @_);
+}
+
+sub delete {
+    my($self) = shift;
+    $_S->clear_model_cache($self->req);
+    return $self->SUPER::delete(@_);
 }
 
 sub get_permission_map {
@@ -82,6 +89,12 @@ sub internal_initialize {
 
 sub remove_permissions {
     return _do('remove', @_);
+}
+
+sub update {
+    my($self) = shift;
+    $_S->clear_model_cache($self->req);
+    return $self->SUPER::update(@_);
 }
 
 sub _default {
