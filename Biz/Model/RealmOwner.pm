@@ -296,6 +296,7 @@ sub unsafe_get_model {
 
 sub update {
     my($self, $values) = @_;
+    $_R->clear_model_cache($self->req);
     if ($self->require_otp
         && defined($values->{password})
         && $values->{password} ne $self->get('password'),
@@ -304,8 +305,6 @@ sub update {
 	$otp->delete
 	    unless $otp->unauth_load({user_id => $self->get('realm_id')});
     }
-    $_R->clear_model_cache($self->req)
-	if $values->{name} && $values->{name} ne $self->get('name');
     return shift->SUPER::update(@_);
 }
 
