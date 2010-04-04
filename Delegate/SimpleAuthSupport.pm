@@ -15,6 +15,12 @@ my($_P) = b_use('Auth.Permission');
 my($_USER) = b_use('Auth.RealmType')->USER;
 our($_TRACE);
 
+sub clear_model_cache {
+    my($proto, $req) = @_;
+    $req->delete(__PACKAGE__);
+    return;
+}
+
 sub get_auth_user {
     # (proto, Agent.Request) : Biz.Model
     # Expects I<Request.auth_user_id> to be set.  If it isn't set, returns
@@ -68,7 +74,7 @@ sub task_permission_ok {
 	    $_PS->set(
 		\$user,
 		$_P->from_name($op . '_transient'));
-	    _trace($op, ' user: ', $user) if $_TRACE;
+	    _trace($op, ' user: ', $_PS->to_array($user)) if $_TRACE;
 	}
 	# Does this role have all the required permission?
 	return 1 if ($user & $task) eq $task;
@@ -95,7 +101,7 @@ sub _load_default_permissions {
 
 sub _map_permissions {
     my($realm_id, $req) = @_;
-    my($all) = $req->get_if_defined_else_put(__PACKAGE__, sub {{}});
+    my($all) = $req->get_if_defined_else_put(__PACKAGE__, {});
     return $all->{$realm_id}
 	|| _map_permissions_all($realm_id, $all, $req);
 }
@@ -107,7 +113,7 @@ sub _map_permissions_all {
 	grep(
 	    $realm_id ne $_,
 	    @{$req->map_user_realms(sub {shift->{'RealmUser.realm_id'}})},
-	   ),
+	),
     ];
     map($all->{$_} ||= {}, @$realm_ids);
     return _map_permissions_query($realm_ids, $all, $req)->{$realm_id};
@@ -115,6 +121,7 @@ sub _map_permissions_all {
 
 sub _map_permissions_query {
     my($realm_ids, $all, $req) = @_;
+    _trace($realm_ids) if $_TRACE;
     $_RR->new($req)->do_iterate(
 	sub {
 	    my($rid, $role, $ps)
