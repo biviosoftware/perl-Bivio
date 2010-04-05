@@ -12,6 +12,7 @@ my($_GUEST) = b_use('Auth.Role')->GUEST;
 my($_USER) = $_GUEST->USER;
 b_use('IO.Config')->register(my $_CFG = {
     unapproved_applicant_mode => 0,
+    join_site_admin_realm => 0,
 });
 
 sub execute_ok {
@@ -80,6 +81,8 @@ sub internal_create_models {
 	want_bulletin => defined($params->{'Email.want_bulletin'})
 	    ? $params->{'Email.want_bulletin'} : 1,
     }) unless ($self->unsafe_get('Email.email') || '') eq $et->IGNORE_PREFIX;
+    $self->join_site_admin_realm
+	if $_CFG->{join_site_admin_realm};
     return ($realm, $user);
 }
 
@@ -111,12 +114,15 @@ sub internal_initialize {
 
 sub join_site_admin_realm {
     my($self, $user_id) = @_;
-    $self->req->with_realm(b_use('ShellUtil.SiteForum')->ADMIN_REALM, sub {
-        return $self->new_other('GroupUserForm')
-	    ->change_main_role(
-		$user_id || $self->get('User.user_id'),
-		$_USER,
-	    );
+    $self->req->with_realm(
+	b_use('FacadeComponent.Constant')
+	->get_value('site_admin_realm_name', $self->req),
+	sub {
+	    return $self->new_other('GroupUserForm')
+		->change_main_role(
+		    $user_id || $self->get('User.user_id'),
+		    $_USER,
+		);
     });
     return;
 }
