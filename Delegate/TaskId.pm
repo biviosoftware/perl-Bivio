@@ -951,7 +951,7 @@ sub info_site_admin {
 	    SITE_ADMIN_SUBSTITUTE_USER
 	    161
 	    ANY_OWNER
-	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&SUPER_USER_TRANSIENT
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN
 	    Model.SiteAdminSubstituteUserForm
 	    View.SiteAdmin->substitute_user_form
 	    next=MY_SITE
