@@ -16,6 +16,11 @@ sub SUPER_USER_FIELD {
     return 's';
 }
 
+sub can_substitute_user {
+    my($self, undef) = @_;
+    return $self->req->is_super_user;
+}
+
 sub execute_empty {
     # (self) : undef
     # Perform lookup and su automatically if coming in with query string.
@@ -36,7 +41,8 @@ sub execute_ok {
     # user is validated in internal_pre_execute
     return $self->new_other('UserLoginForm')->substitute_user(
 	$self->get('realm_owner'),
-	$self->get_request,
+	$self->req,
+	$self,
     );
 }
 
