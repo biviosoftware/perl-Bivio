@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
 set_realm_and_user('demo', 'demo');
@@ -6,7 +6,10 @@ set_realm_and_user('demo', 'demo');
     class() => [
 	access_is_public_only => [
 	    [req()] => 0,
-	    [req(), 'root'] => 1,
+	    [req(), unauth_model('RealmFile')->unauth_load_or_die({
+		path => '/',
+		realm_id => realm_id('site'),
+	    })] => 1,
 	    [req(), undef] => 0,
 	],
     ],
