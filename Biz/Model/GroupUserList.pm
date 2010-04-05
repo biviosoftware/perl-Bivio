@@ -28,6 +28,12 @@ sub can_change_privileges {
 	&& $self->get('is_not_withdrawn');
 }
 
+sub can_substitute_user {
+    my($self) = @_;
+    return $self->new_other('AdmSubstituteUserForm')
+	->can_substitute_user($self->get('RealmUser.user_id'));
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {

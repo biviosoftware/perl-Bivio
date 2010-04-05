@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::AdmUserList;
 use strict;
@@ -20,6 +20,16 @@ sub NAME_COLUMNS {
 
 sub NAME_SORT_COLUMNS {
     return [@$_NAME_SORT_COLS];
+}
+
+sub SUBSTITUTE_USER_FORM {
+    return 'AdmSubstituteUserForm';
+}
+
+sub can_substitute_user {
+    my($self) = @_;
+    return $self->new_other($self->SUBSTITUTE_USER_FORM)
+	->can_substitute_user($self->get('User.user_id'));
 }
 
 sub internal_initialize {
