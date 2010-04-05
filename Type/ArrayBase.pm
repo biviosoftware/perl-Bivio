@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::ArrayBase;
 use strict;
@@ -6,6 +6,8 @@ use Bivio::Base 'Bivio.Type';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_S) = b_use('Type.String');
+
 
 sub ANY_SEPARATOR_REGEX {
     my($proto) = @_;
@@ -26,6 +28,10 @@ sub SQL_SEPARATOR {
 
 sub SQL_SEPARATOR_REGEX {
     return qr{\s*$;\s*}s;
+}
+
+sub UNDERLYING_TYPE {
+    return $_S;
 }
 
 sub WANT_SORTED {
@@ -161,9 +167,11 @@ sub new {
 
 sub sort_unique {
     my($value) = _value(@_);
-    return ref($value) eq 'ARRAY'
-	? [sort(keys(%{+{map(($_ => undef), @$value)}}))]
-	: $value->new($value->sort_unique($value->as_array));
+    my($ut) = shift->UNDERLYING_TYPE;
+    return ref($value) eq 'ARRAY' ? [sort(
+	{$ut->compare($a, $b)}
+	keys(%{+{map(($_ => undef), @$value)}}),
+    )] : $value->new($value->sort_unique($value->as_array));
 }
 
 sub to_literal {
