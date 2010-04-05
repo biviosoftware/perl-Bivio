@@ -37,18 +37,6 @@ sub USER_FIELD {
     return 'u';
 }
 
-sub assert_can_substitute_user {
-    my($proto, $new_user, $req) = @_;
-    # Dies unless user is super user.  Subclasses can override this method
-    # to relax this constraint.
-    Bivio::Die->throw(FORBIDDEN => {
-	message => 'not a super user',
-	entity => $req->get('auth_user'),
-	request => $req,
-    }) unless $req->is_super_user;
-    return;
-}
-
 sub disable_assert_cookie {
     shift->internal_put_field(disable_assert_cookie => 1);
     return;
@@ -186,12 +174,17 @@ sub internal_validate_login_value {
 }
 
 sub substitute_user {
-    my($proto, $new_user, $req) = @_;
+    my($proto, $new_user, $req, $form) = @_;
     my($self) = ref($proto) ? $proto : $proto->new($req);
     # Become another user if you are super_user.  Returns the task to switch
     # to or undef (default).
     # A small sanity check, since this is an important function
-    $self->assert_can_substitute_user($new_user, $req);
+    Bivio::Die->throw(FORBIDDEN => {
+	message => 'not a super user',
+	entity => $req->get('auth_user'),
+	request => $req,
+    }) unless ($form || $self->new_other('AdmSubstituteUserForm'))
+	->can_substitute_user($new_user->get('realm_id'));
     unless ($req->unsafe_get('super_user_id')) {
 	# Only set super_user_id field if not already set.  This keeps
 	# original user and doesn't allow someone to su to an admin and
