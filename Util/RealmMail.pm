@@ -31,6 +31,7 @@ sub anonymize_emails {
     $self->req->assert_test;
     $self->initialize_ui;
     my($prefix) = b_use('Type.Email')->INVALID_PREFIX;
+    my($length) = b_use('Type.Email')->get_width - 1;
     foreach my $x (
 	[qw(email_alias_t outgoing)],
 	[qw(nonunique_email_t email)],
@@ -42,7 +43,7 @@ sub anonymize_emails {
 #TODO: should truncate
         Bivio::SQL::Connection->execute(<<"EOF", [$prefix . '%']);
             UPDATE $table
-            SET $field = '$prefix' || $field
+            SET $field = SUBSTRING('$prefix' || $field FROM 1 FOR $length)
             WHERE $field NOT LIKE ?
 EOF
     }
