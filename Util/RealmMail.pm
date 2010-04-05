@@ -18,11 +18,35 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-mail [options] command [args..]
 commands
+  anonymize_emails -- anonymize emails in the database
   delete_message_id message_id ... -- Message-ID: based removal of threads/msgs
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
   import_mbox -- imports mbox input file
   import_bulletins -- imports old Bulletins into forum mail files
 EOF
+}
+
+sub anonymize_emails {
+    my($self) = @_;
+    $self->req->assert_test;
+    $self->initialize_ui;
+    my($prefix) = b_use('Type.Email')->INVALID_PREFIX;
+    foreach my $x (
+	[qw(email_alias_t outgoing)],
+	[qw(nonunique_email_t email)],
+	[qw(realm_mail_bounce_t email)],
+	[qw(realm_mail_t from_email)],
+        [qw(email_t email)],
+    ) {
+	my($table, $field) = @$x;
+#TODO: should truncate
+        Bivio::SQL::Connection->execute(<<"EOF", [$prefix . '%']);
+            UPDATE $table
+            SET $field = '$prefix' || $field
+            WHERE $field NOT LIKE ?
+EOF
+    }
+    return;
 }
 
 sub delete_message_id {
