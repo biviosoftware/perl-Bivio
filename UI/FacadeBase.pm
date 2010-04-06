@@ -1204,7 +1204,7 @@ sub _cfg_site_admin {
 		task_log => 'Site Hits',
 		remote_copy => 'Remote Copy',
             ]],
-	    [[qw(AdmUserList UnapprovedApplicantList)] => [
+	    [[qw(AdmUserList UnapprovedApplicantList SiteAdminUserList)] => [
 		display_name => 'Name',
 		privileges => 'Privileges',
 	    ]],
