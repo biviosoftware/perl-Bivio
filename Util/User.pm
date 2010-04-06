@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Util::User;
 use strict;
-use base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::IO::TTY;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -13,6 +13,7 @@ sub USAGE {
 usage: b-user [options] command [args..]
 commands
     create_from_email email -- creates a new user, prompts for password
+    merge_users source_user_id target_user_id -- merge two users
     realms -- returns realms of the current user
     unsubscribe_bulletin [user_id...] -- clears want_bulletin for auth_user_id or user_ids
 EOF
@@ -31,6 +32,51 @@ sub create_from_email {
     }
     $self->initialize_ui;
     $self->new_other('RealmAdmin')->create_user($email, $u, $password, $u);
+    return;
+}
+
+sub merge_users {
+    my($self, $source_user_id, $target_user_id) = @_;
+    $self->usage_error('missing source and/or target')
+	unless $source_user_id && $target_user_id;
+    return if $source_user_id eq $target_user_id;
+    $self->are_you_sure('Merge '
+	. join(' into ',
+	    map($self->unauth_model('RealmOwner', {
+		realm_id => $_
+	    })->get('display_name'), $source_user_id, $target_user_id))
+	. '?');
+
+    foreach my $property (@{_get_related_property_names($self)}) {
+	next if $property eq 'User.user_id';
+ 	my($model, $field) = $property =~ /(.*)\.(.*)/;
+	$self->model($model)->do_iterate(sub {
+	    my($m) = @_;
+
+	    if ($self->model($model)->unauth_load({
+	        map(($_ => $m->get($_)),
+		    @{$m->get_info('primary_key_names')}),
+		$field => $target_user_id,
+	    })) {
+		$m->delete;
+	    }
+	    else {
+		$m->update({
+		    $field => $target_user_id,
+		});
+	    }
+	    return 1;
+	}, 'unauth_iterate_start', $field, {
+            $field => $source_user_id,
+        });
+    }
+    # special case for RealmFile because updates fail if is_read_only
+    b_use('SQL.Connection')->execute(
+	'UPDATE realm_file_t SET user_id = ? WHERE user_id = ?',
+	[$target_user_id, $source_user_id]);
+    $self->unauth_model('User', {
+	user_id => $source_user_id,
+    })->cascade_delete;
     return;
 }
 
@@ -82,5 +128,26 @@ sub unsubscribe_bulletin {
     }
     return;
 }
+
+sub _get_related_property_names {
+    my($self) = @_;
+    my($names) = [];
+
+    # get all the fields which refer to RealmOwner.realm_id or User.user_id
+    foreach my $model (qw(RealmOwner User)) {
+	foreach my $related (@{$self->model($model)
+	    ->internal_get_sql_support->get_children}) {
+
+	    foreach my $field (keys(%{$related->[1]})) {
+		push(@$names, join('.', ($related->[0]->simple_package_name,
+		    $field)));
+	    }
+	}
+    }
+    # ECPayment doesn't export the user_id relationship
+    push(@$names, 'ECPayment.user_id');
+    return $names;
+}
+
 
 1;
