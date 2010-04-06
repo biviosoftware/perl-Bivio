@@ -114,16 +114,22 @@ sub internal_initialize {
 
 sub join_site_admin_realm {
     my($self, $user_id) = @_;
+    my($ro) = $self->new_other('RealmOwner');
+    return
+	unless $ro->unauth_load({
+	    name => b_use('FacadeComponent.Constant')
+	    ->get_value('site_admin_realm_name', $self->req),
+	});
     $self->req->with_realm(
-	b_use('FacadeComponent.Constant')
-	->get_value('site_admin_realm_name', $self->req),
+	$ro,
 	sub {
 	    return $self->new_other('GroupUserForm')
 		->change_main_role(
 		    $user_id || $self->get('User.user_id'),
 		    $_USER,
-		);
-    });
+	       );
+	},
+    );
     return;
 }
 
