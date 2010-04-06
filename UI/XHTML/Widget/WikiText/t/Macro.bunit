@@ -37,4 +37,20 @@ IN
 </p><h1>hello2</h1><p>some content here
 </p>
 OUT
+    <<'IN' => <<'OUT',
+@b-def name=m_5 params="b_content"
+@div.m_5
+@b_content
+@/div
+@/b-def
+@b-call name=m_5
+wiki tags in b_content
+@strong are
+ interpreted
+@/b-call
+IN
+<div class="m_5">wiki tags in b_content
+<strong>are</strong> interpreted
+</div>
+OUT
 ];
