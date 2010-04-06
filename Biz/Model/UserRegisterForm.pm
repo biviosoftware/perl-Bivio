@@ -23,10 +23,18 @@ sub execute_ok {
     $self->put_on_request(1);
     $self->if_unapproved_applicant_mode(sub {
 	# Just in case there's another RealmUser record
-        $self->new_other('RealmUser')->delete({
-	    user_id => $self->get('User.user_id'),
-	    realm_id => $self->req('auth_id'),
-	});
+        $self->new_other('RealmUser')->do_iterate(
+	    sub {
+		shift->delete;
+		return 1;
+	    },
+	    'unauth_iterate_start',
+	    'role',
+	    {
+		user_id => $self->get('User.user_id'),
+		realm_id => $self->req('auth_id'),
+	    },
+	);
 	$self->new_other('GroupUserForm')
 	    ->create_unapproved_applicant($self->get('User.user_id'));
 	return;
