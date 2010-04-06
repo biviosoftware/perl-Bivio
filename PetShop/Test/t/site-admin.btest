@@ -1,8 +1,8 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
-login_as('root');
+login_as('site_adm');
 follow_link('All Users', qr{^All$});
 find_page_with_text('User, Demo');
 follow_link('User, Demo');
@@ -19,7 +19,7 @@ go_back();
 follow_link('exit');
 home_page();
 verify_link('login');
-login_as('root');
+login_as('site_adm');
 follow_link('site-admin');
 follow_link('All Users', qr{^All$});
 find_page_with_text('User, Btest_read');
