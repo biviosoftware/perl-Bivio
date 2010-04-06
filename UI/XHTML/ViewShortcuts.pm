@@ -585,6 +585,7 @@ sub vs_user_email_list {
 			    5 => sub {'SITE_ADMIN_SUBSTITUTE_USER'},
 			    sub {'ADM_SUBSTITUTE_USER'},
 			),
+			control => [qw(->can_substitute_user)],
 		    },
 		}],
 		'Email.email',
