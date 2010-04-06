@@ -1,6 +1,19 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
+
+my($email) = 'xxx@x.x';
+my($e) = model('Email');
+if ($e->unauth_load({
+    email => $email,
+})) {
+    model('RealmUser')->test_unauth_delete_all({
+	user_id => $e->get('realm_id'),
+    });
+    unauth_model('User', {
+	user_id => $e->get('realm_id'),
+    })->cascade_delete;
+}
 my($ids) = [map({
     my($i) = realm_id($_);
     unauth_model('Email', {realm_id => $i})->update({want_bulletin => 1});
@@ -11,6 +24,11 @@ my($ids) = [map({
 	foreach my $i (@$ids) {
 	    unauth_model('Email', {realm_id => $i, want_bulletin => 0});
 	}
+	return 1;
+    },
+    [create_from_email => $email, 'xxxxxx'] => sub {
+	b_use('ShellUtil.User')->new->put(force => 1)
+	    ->merge_users(req(qw(Model.User user_id)), $ids->[0]);
 	return 1;
     },
 ];
