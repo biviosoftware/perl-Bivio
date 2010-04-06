@@ -28,12 +28,8 @@ sub execute_ok {
 		shift->delete;
 		return 1;
 	    },
-	    'unauth_iterate_start',
 	    'role',
-	    {
-		user_id => $self->get('User.user_id'),
-		realm_id => $self->req('auth_id'),
-	    },
+	    {user_id => $self->get('User.user_id')},
 	);
 	$self->new_other('GroupUserForm')
 	    ->create_unapproved_applicant($self->get('User.user_id'));
