@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Util::SQL;
 use strict;
@@ -104,6 +104,10 @@ sub SITE_ADM {
     return 'site_adm';
 }
 
+sub SITE_ACCOUNTANT {
+    return 'site_accountant';
+}
+
 sub USAGE {
     return shift->SUPER::USAGE . <<'EOF';
     demo_users -- lists demo user names
@@ -144,7 +148,7 @@ sub create_user_with_account {
 	name => $user,
 	display_name => join(' ', ucfirst($user), $self->DEMO_LAST_NAME),
     });
-    return;
+    return $self->req('auth_user_id');
 }
 
 sub ddl_files {
@@ -772,14 +776,20 @@ sub _init_site_admin {
 	    },
 	);
     }
-    my($uid) = $self->create_test_user($self->SITE_ADM);
-    $self->req->with_realm(b_use('ShellUtil.SiteForum')->ADMIN_REALM, sub {
-        $self->model(RealmUserAddForm => {
-	    administrator => 0,
-	    'User.user_id' => $uid,
-	});
-	return;
-    });
+    foreach my $user (qw(ROOT SITE_ADM SITE_ACCOUNTANT)) {
+	my($uid) = $user eq 'ROOT' ? $self->unauth_realm_id($self->$user())
+	    : $self->create_user_with_account($self->$user());
+	$self->req->with_realm(
+	    b_use('ShellUtil.SiteForum')->ADMIN_REALM,
+	    sub {
+		$self->model(RealmUserAddForm => {
+		    administrator => $user eq 'SITE_ACCOUNTANT' ? 0 : 1,
+		    'User.user_id' => $uid,
+		});
+		return;
+	    },
+	);
+    }
     return;
 }
 
