@@ -5,7 +5,8 @@ use strict;
 use Bivio::Base 'Bivio::Biz::PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DEFAULT_LOCATION) = Bivio::Type->get_instance('Location')->get_default;
+my($_L) = b_use('Type.Location');
+my($_DEFAULT_LOCATION) = $_L->get_default;
 
 sub DEFAULT_LOCATION {
     return $_DEFAULT_LOCATION;
@@ -13,10 +14,17 @@ sub DEFAULT_LOCATION {
 
 sub create {
     my($self, $values) = @_;
-    # Sets I<location> if not set, then calls SUPER.
     $values->{location} ||= $_DEFAULT_LOCATION;
-    $values->{realm_id} ||= $self->get_request->get('auth_id');
+    $values->{realm_id} ||= $self->req('auth_id');
     return $self->SUPER::create($values);
+}
+
+sub execute_load_home {
+    my($proto, $req) = @_;
+    $proto->new($req)->load({
+	location => $_L->HOME,
+    });
+    return 0;
 }
 
 sub internal_unique_load_values {
