@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.7  2010/04/04 21:25:08  nagler
+  * Bivio::Biz::Action::RealmFile
+    access_is_public_only accepts realm_file, not realm, and creates realm
+    instead of doing with_realm
+  * Bivio::Biz::ListModel
+    set_cursor for calls to internal_post_load_row
+  * Bivio::Biz::Model::RealmOwner
+    call clear_model_cache on any update
+  * Bivio::Biz::Model::RealmRole
+    call clear_model_cache on changes
+  * Bivio::Delegate::NoDbAuthSupport
+    rmpod
+    added clear_model_cache
+  * Bivio::Delegate::SimpleAuthSupport
+    added clear_model_cache
+  * Bivio::Search::Xapian
+    don't call add_value with undef
+  * Bivio::UI::XHTML::Widget::SearchForm
+    default show_b_realm_only to is_group
+
   Revision 9.6  2010/04/03 17:26:35  nagler
   * Bivio::Auth::Realm
     caceh RealmOwner
