@@ -5,20 +5,13 @@ use strict;
 use Bivio::Base 'Model.LocationBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_E) = b_use('Type.Email');
 
 sub create {
     my($self, $values) = (shift, shift);
     $values->{want_bulletin} = 1
 	unless defined($values->{want_bulletin});
     return $self->SUPER::create($self->internal_prepare_query($values), @_);
-}
-
-sub execute_load_home {
-    my($proto, $req) = @_;
-    $proto->new($req)->load({
-	location => Bivio::Type::Location->HOME,
-    });
-    return 0;
 }
 
 sub internal_initialize {
@@ -62,7 +55,7 @@ sub invalidate {
 
 sub is_ignore {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return Bivio::Type::Email->is_ignore($model->get($model_prefix.'email'));
+    return $_E->is_ignore($model->get($model_prefix.'email'));
 }
 
 sub update {
