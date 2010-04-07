@@ -1142,7 +1142,7 @@ sub _cfg_site_admin {
 		);
 	    }
 		Bivio::IO::Config->if_version(10 => sub {
-		        return [qw(all_users SITE_ADMIN_USER_LIST)],
+		        return [qw(all_users GROUP_USER_LIST SITE_ADMIN_REALM_NAME)],
 		    },
 		    sub {[qw(all_users SITE_ADMIN_USER_LIST)]},
 		),
@@ -1210,7 +1210,7 @@ sub _cfg_site_admin {
 		task_log => 'Site Hits',
 		remote_copy => 'Remote Copy',
             ]],
-	    [[qw(AdmUserList UnapprovedApplicantList SiteAdminUserList)] => [
+	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',
 		privileges => 'Privileges',
 	    ]],
