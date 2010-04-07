@@ -581,8 +581,8 @@ sub vs_user_email_list {
 		    want_sorting => 1,
 		    wf_list_link => {
 			query => 'THIS_DETAIL',
-			task => Bivio::IO::Config->if_version(
-			    5 => sub {'SITE_ADMIN_SUBSTITUTE_USER'},
+			task => Bivio::IO::Config->if_version(10,
+			    sub {'SITE_ADMIN_SUBSTITUTE_USER'},
 			    sub {'ADM_SUBSTITUTE_USER'},
 			),
 			control => [qw(->can_substitute_user)],
