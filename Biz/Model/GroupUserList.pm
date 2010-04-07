@@ -9,6 +9,7 @@ my($_AUL) = b_use('Model.AdmUserList');
 my($_R) = b_use('Auth.Role');
 my($_SA) = b_use('Type.StringArray');
 my($_T) = b_use('FacadeComponent.Text');
+my($_C) = b_use('IO.Config');
 
 sub LOAD_ALL_SEARCH_STRING {
     return shift->delegate_method($_AUL);
@@ -30,8 +31,12 @@ sub can_change_privileges {
 
 sub can_substitute_user {
     my($self) = @_;
-    return $self->new_other('AdmSubstituteUserForm')
-	->can_substitute_user($self->get('RealmUser.user_id'));
+    return $self->new_other(
+	$_C->if_version(10,
+	    sub {'SiteAdminSubstituteUserForm'},
+	    sub {'AdmSubstituteUserForm'},
+	),
+    )->can_substitute_user($self->get('RealmUser.user_id'));
 }
 
 sub internal_initialize {
