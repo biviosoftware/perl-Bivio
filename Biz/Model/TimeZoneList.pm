@@ -44,7 +44,9 @@ sub internal_initialize {
 }
 
 sub internal_load_rows {
-    return $_R->nested_copy($_C->get_value('Model.TimeZoneList.rows'));
+    my($self) = @_;
+    return $_R->nested_copy(
+	$_C->get_value('Model.TimeZoneList.rows', $self->req));
 }
 
 1;
