@@ -8,7 +8,7 @@ sleep(2);
 follow_link('wiki');
 login_as('root');
 follow_link('site_hits');
-verify_text(qr{>Btest_read.*/site/\w+/StartPage}im);
+find_page_with_text(qr{>Btest_read.*/site/\w+/StartPage}im);
 verify_no_text(qr{acting as});
 follow_link('all_users');
 find_page_with_text('User, Btest_read');
@@ -19,7 +19,7 @@ follow_link('site_hits');
 submit_form(Refresh => {
     '_anon' => 'btest_read',
 });
-verify_text(qr{root.*acting as.*Btest_read.*/bp/StartPage}im);
+find_page_with_text(qr{root.*acting as.*Btest_read.*/bp/StartPage}im);
 login_as('task_log_user');
 follow_link('site_hits');
 submit_form(Refresh => {
