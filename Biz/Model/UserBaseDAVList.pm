@@ -1,8 +1,8 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserBaseDAVList;
 use strict;
-use base 'Bivio::Biz::Model::UserRealmDAVList';
+use Bivio::Base 'Model.UserRealmDAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TASK_REGEXP) = Bivio::Biz::Model->get_instance('UserTaskDAVList')->REGEXP;
