@@ -8,6 +8,10 @@ my($ok) = sub {
     model('UserLoginForm')->process({login => undef});
     return 1;
 };
+model('RealmUser')->test_unauth_delete_all({
+    realm_id => realm_id('site-admin'),
+    user_id => realm_id('root'),
+});
 [
     req_state({
 	realm => 'site-admin',
@@ -26,8 +30,4 @@ my($ok) = sub {
 	user => 'site_adm',
     }),
     [{login => 'demo'}] => sub {$ok->('demo')},
-    req_state({
-	realm => 'site',
-    }),
-    [{login => 'demo'}] => FORBIDDEN(),
 ];
