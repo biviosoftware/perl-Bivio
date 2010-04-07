@@ -460,16 +460,20 @@ sub _cfg_base {
 			['->is_substitute_user'],
 			Link(
 			    RoundedBox(Join([
-				"Acting as User: <br />\n",
+				'Acting as User:',
+                                BR(),
 				String(['auth_user', 'display_name']),
-				"<br />\nClick here to exit.\n",
+                                BR(),
+				'Click here to exit.',
 			    ])),
-			    Bivio::IO::Config->if_version(
-                                5 => sub {URI({
-                                    task_id => 'SITE_ADMIN_SUBSTITUTE_USER_DONE',
-                                    realm => vs_constant('site_admin_realm_name'),
-                                    query => undef,
-                                })},
+			    Bivio::IO::Config->if_version(10,
+                                sub {
+				    return URI({
+					task_id => 'SITE_ADMIN_SUBSTITUTE_USER_DONE',
+					realm => vs_constant('site_admin_realm_name'),
+					query => undef,
+				    }<)>;
+                                },
                                 sub {'LOGOUT'},
                             ),
 			    'su',
@@ -497,8 +501,7 @@ sub _cfg_blog {
 	Task => [
 	    [FORUM_BLOG_CREATE => '?/add-blog-entry'],
 	    [FORUM_BLOG_EDIT => '?/edit-blog-entry/*'],
-	    $_C->if_version(
-		3 => sub {
+	    $_C->if_version(3 => sub {
 		    return (
 			[FORUM_BLOG_LIST => ['?/blog', '?/public-blog']],
 			[FORUM_BLOG_DETAIL => ['?/blog-entry/*', '?/public-blog-entry/*']],
@@ -936,8 +939,7 @@ sub _cfg_mail {
 		[USER_MAIL_BOUNCE => b_use('Model.RealmMailBounce')->TASK_URI],
 		[ADMIN_REALM_MAIL_RECEIVE => b_use('Action.AdminRealmMail')->TASK_URI],
 	    ),
-	    $_C->if_version(
-		4 => sub {
+	    $_C->if_version(4 => sub {
 		    return (
 			[FORUM_MAIL_THREAD_ROOT_LIST => '?/mail'],
 			[FORUM_MAIL_THREAD_LIST => '?/mail-thread'],
@@ -1139,7 +1141,11 @@ sub _cfg_site_admin {
 		    ["want_$n" => defined($control) ? $control : 1],
 		);
 	    }
-                [qw(all_users SITE_ADMIN_USER_LIST)],
+		Bivio::IO::Config->if_version(10 => sub {
+		        return [qw(all_users SITE_ADMIN_USER_LIST)],
+		    },
+		    sub {[qw(all_users SITE_ADMIN_USER_LIST)]},
+		),
                 [qw(substitute_user SITE_ADMIN_SUBSTITUTE_USER)],
 		[qw(task_log SITE_ADMIN_TASK_LOG), sub {
 		     b_use('Model.TaskLog')->if_enabled(sub {'task_log'});
@@ -1440,8 +1446,7 @@ sub _cfg_user_auth {
 		     => 'USER_CREATE'],
 		[xlink_user_logged_in => 'LOGOUT'],
 	    ),
-	    [ThreePartPage_want_UserSettingsForm => $_C->if_version(
-		5 => sub {1},
+	    [ThreePartPage_want_UserSettingsForm => $_C->if_version(5 => sub {1},
 		sub {0},
 	    )],
 	],
@@ -1655,8 +1660,7 @@ sub _cfg_wiki {
     return {
 	Task => [
 	    [FORUM_WIKI_EDIT => '?/edit-wiki/*'],
-	    $_C->if_version(
-		3 => sub {
+	    $_C->if_version(3 => sub {
 		    return (
 			[FORUM_WIKI_VIEW => [
 			    '?/bp/*', '?/wiki/*', '?/public-wiki/*']],
