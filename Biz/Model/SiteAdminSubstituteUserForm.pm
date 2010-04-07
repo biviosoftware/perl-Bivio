@@ -10,7 +10,7 @@ sub can_substitute_user {
     my($self, $user_id) = @_;
     my($req) = $self->req;
     return 0
-	unless my $super_users = $req->cache_for_auth_user(
+	unless my $users = $req->cache_for_auth_user(
 	    $req->get('auth_id'),
 	    sub {
 		return undef
@@ -18,17 +18,19 @@ sub can_substitute_user {
 		    || !b_use('UI.Facade')
 		    ->get_from_source($req)
 		    ->auth_realm_is_site_admin($req);
-		return {@{$self
-		    ->new_other('SiteAdminSuperUserList')
+		my($res) = {@{$self->new_other('GroupUserList')
 		    ->map_iterate(
-			sub {shift->get('RealmUser.user_id') => 1},
-		    )
-		}};
+		        sub {shift->get('RealmUser.user_id') => 1},
+		)}};
+		$self->new_other('AdmSuperUserList')
+		    ->do_iterate(sub {
+		        delete($res->{shift->get('RealmUser.user_id')});
+			return 1;
+		    });
+		return $res;
 	    },
 	);
-    return 0
-	unless $super_users->{$req->get('auth_user_id')};
-    return $super_users->{$user_id} ? 0 : 1;
+    return $users->{$user_id} || 0;
 }
 
 1;
