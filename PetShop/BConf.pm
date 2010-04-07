@@ -98,7 +98,7 @@ sub merge_overrides {
 	},
     },
     $proto->default_merge_overrides({
-	version => 9,
+	version => 10,
 	root => 'Bivio/PetShop',
 	prefix => 'pet',
 	owner => 'bivio Software, Inc.',
