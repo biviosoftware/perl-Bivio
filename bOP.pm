@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.9  2010/04/07 17:48:46  moeller
+  * Bivio::Biz::Model::Email
+    moved execute_load_home() to super class
+  * Bivio::Biz::Model::LocationBase
+    added execute_load_home()
+  * Bivio::Biz::Model::UserRegisterForm
+    need to iterate over roles to delete them.
+    make auth iterate, not unauth_iterate_start
+  * Bivio::UI::FacadeBase
+    added label for SiteAdminUserList.RealmOwner.diplay_name
+  * Bivio::Util::User
+    added merge_users()
+
   Revision 9.8  2010/04/06 00:35:50  nagler
   * Bivio::Biz::Model::AdmSubstituteUserForm
     added can_substitute_user
