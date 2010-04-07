@@ -1,10 +1,12 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserForumDAVList;
 use strict;
-use base 'Bivio::Biz::Model::UserBaseDAVList';
+use Bivio::Base 'Model.UserBaseDAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_REQUIRED_ROLE_GROUP) = b_use('Model.UserForumList')
+    ->REQUIRED_ROLE_GROUP;
 
 sub internal_initialize {
     my($self) = @_;
@@ -14,6 +16,12 @@ sub internal_initialize {
 	    [qw(RealmOwner.realm_id Forum.forum_id)],
 	],
     });
+}
+
+sub internal_prepare_statement {
+    my($self, $stmt) = @_;
+    $stmt->where($stmt->IN('RealmUser.role', $_REQUIRED_ROLE_GROUP));
+    return shift->SUPER::internal_prepare_statement(@_);
 }
 
 1;
