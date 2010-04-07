@@ -944,7 +944,7 @@ sub info_site_admin {
 	    160
 	    ANY_OWNER
 	    ADMIN_READ&FEATURE_SITE_ADMIN
-	    Model.SiteAdminUserList->execute_load_page
+	    Model.AdmUserList->execute_load_page
 	    View.SiteAdmin->user_list
 	    require_secure=1
 	)],
@@ -966,8 +966,13 @@ sub info_site_admin {
 	    Action.UserLogout
 	    Action.ClientRedirect->execute_next
 	    next=SITE_ROOT
-	    su_task=SITE_ADMIN_USER_LIST
-	)],
+	),
+	    $_C->if_version(10,
+		sub {'su_task=GROUP_USER_LIST'},
+		sub {'su_task=SITE_ADMIN_USER_LIST'},
+	    ),
+
+	],
 	[qw(
 	    SITE_ADMIN_UNAPPROVED_APPLICANT_LIST
 	    163
