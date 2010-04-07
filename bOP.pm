@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,48 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.8  2010/04/06 00:35:50  nagler
+  * Bivio::Biz::Model::AdmSubstituteUserForm
+    added can_substitute_user
+    substitute_user now takes a Form instance so can overrided default substitute_user
+  * Bivio::Biz::Model::AdmUserList
+    added can_substitute_user
+  * Bivio::Biz::Model::GroupUserList
+    added can_substitute_user
+  * Bivio::Biz::Model::SiteAdminSubstituteUserForm
+    can_substitute_user now effective
+  * Bivio::Biz::Model::SiteAdminSuperUserList
+    NEW
+  * Bivio::Biz::Model::SiteAdminUserList
+    added SUBSTITUTE_USER_FORM
+  * Bivio::Biz::Model::UserCreateForm
+    added join_site_admin_realm configuration param
+    call join_site_admin_realm if join_site_admin_realm is true
+    join_site_admin_realm: don't add the user if can't load the realm (for
+    db init)
+  * Bivio::Biz::Model::UserLoginForm
+    call can_substitute_user on the form passed in
+  * Bivio::Biz::Model::UserRegisterForm
+    delete RealmUser record if_unapproved_applicant_mode before
+    GroupUserForm add
+  * Bivio::Delegate::TaskId
+    SITE_ADMIN_SUBSTITUTE_USER works for anybody with ADMIN_WRITE
+    privileges, but can_substitute_user limits to ADMINISTRATOR
+  * Bivio::PetShop::BConf
+    added join_site_admin_realm
+  * Bivio::PetShop::Util::SQL
+    added SITE_ACCOUNTANT
+    Create site_adm with account
+  * Bivio::Type::ArrayBase
+    sort_unique uses compare()
+  * Bivio::Type::PrimaryIdArray
+    NEW
+  * Bivio::UI::XHTML::ViewShortcuts
+    added can_substitute_user for list
+  * Bivio::Util::RealmMail
+    added anonymize_emails
+    limit length of email
+
   Revision 9.7  2010/04/04 21:25:08  nagler
   * Bivio::Biz::Action::RealmFile
     access_is_public_only accepts realm_file, not realm, and creates realm
