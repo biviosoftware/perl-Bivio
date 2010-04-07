@@ -91,9 +91,9 @@ sub unapproved_applicant_list {
 
 sub user_list {
     my($self, $extra_columns) = @_;
-    vs_user_email_list('SiteAdminUserList', [
+    vs_user_email_list('AdmUserList', [
 	@{$extra_columns || []},
-    ], [vs_alphabetical_chooser('SiteAdminUserList')]);
+    ], [vs_alphabetical_chooser('AdmUserList')]);
     return;
 }
 

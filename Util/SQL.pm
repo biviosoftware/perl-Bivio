@@ -1564,7 +1564,7 @@ sub internal_upgrade_db_site_admin_forum_users {
     $self->req->with_realm($f->SITE_REALM_NAME, sub {
 	b_info("Adding users to site-admin");
 	my($users) = {
-	    @{$self->model('SiteAdminUserList')->map_iterate(
+	    @{$self->model('AdmUserList')->map_iterate(
 		sub {(shift->get('User.user_id') => [$_R->USER])},
 	    )},
 	    @{$self->model('GroupUserList')->map_iterate(
