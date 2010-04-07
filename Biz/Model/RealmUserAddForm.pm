@@ -113,6 +113,19 @@ sub _join_user {
     my($self, $user_id, $realm_id) = @_;
     $self->internal_put_field('RealmUser.realm_id' => $realm_id);
     $self->internal_put_field('User.user_id' => $user_id);
+    # Just in case there's another RealmUser record
+    $self->new_other('RealmUser')->do_iterate(
+	sub {
+	    shift->delete;
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'role',
+	{
+	    user_id => $user_id,
+	    realm_id => $realm_id,
+	},
+    );
     foreach my $r (
 	@{$self->unsafe_get('other_roles') || []},
 	@{$self->internal_get_roles},
