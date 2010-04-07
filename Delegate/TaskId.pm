@@ -647,6 +647,7 @@ sub info_group_admin {
 	    Model.GroupUserList->execute_load_page
 	    View.GroupAdmin->user_list
             next=GROUP_USER_LIST
+            require_secure=1
 	)],
 	[qw(
 	    GROUP_USER_FORM
