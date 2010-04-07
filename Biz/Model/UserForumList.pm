@@ -5,10 +5,16 @@ use strict;
 use Bivio::Base 'Model.UserRealmList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_REQUIRED_ROLE_GROUP)
+    = b_use('Auth.Role')->get_category_role_group('all_guests');
 
 sub LOAD_ALL_SIZE {
 #TODO: Needs to be high to account for admins in all forums
     return 5000;
+}
+
+sub REQUIRED_ROLE_GROUP {
+    return [@$_REQUIRED_ROLE_GROUP];
 }
 
 sub internal_initialize {
@@ -24,6 +30,12 @@ sub internal_initialize {
 	    'Forum.parent_realm_id',
 	],
     });
+}
+
+sub internal_prepare_statement {
+    my($self, $stmt) = @_;
+    $stmt->where($stmt->IN('RealmUser.role', $self->REQUIRED_ROLE_GROUP));
+    return shift->SUPER::internal_prepare_statement(@_);
 }
 
 1;

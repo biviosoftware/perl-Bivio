@@ -6,6 +6,8 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = b_use('Auth.RealmType');
+my($_REQUIRED_ROLE_GROUP) = b_use('Model.UserForumList')
+    ->REQUIRED_ROLE_GROUP;
 
 sub internal_initialize {
     my($self) = @_;
@@ -40,9 +42,11 @@ sub internal_load_rows {
         }),
     }, @{$self->req->map_user_realms(
 	sub {shift->{'RealmOwner.name'}},
-        @$realm_types ? {
-            'RealmOwner.realm_type' => $realm_types
-        } : (),
+	{
+	    !@$realm_types ? ()
+	        : ('RealmOwner.realm_type' => $realm_types),
+	    roles => $_REQUIRED_ROLE_GROUP,
+	},
     )})];
 }
 
