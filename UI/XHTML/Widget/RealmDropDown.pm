@@ -7,6 +7,9 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = b_use('Auth.RealmType');
+my($_R) = b_use('Auth.Role');
+my($_REQUIRED_ROLE_GROUP) = b_use('Model.UserForumList')
+    ->REQUIRED_ROLE_GROUP;
 
 sub NEW_ARGS {
     return shift->can('DEFAULT_REALM_TYPES') ? [] : [qw(realm_types)];
@@ -65,9 +68,12 @@ sub internal_choices {
     my($self, $source) = @_;
     return $source->req->map_user_realms(
 	sub {shift->{'RealmOwner.name'}},
-	{'RealmOwner.realm_type' => [
-	    map($_RT->from_any($_), @{_realm_types($self)}),
-	]},
+	{
+	    'RealmOwner.realm_type' => [
+		map($_RT->from_any($_), @{_realm_types($self)}),
+	    ],
+	    roles => $_REQUIRED_ROLE_GROUP,
+	},
     );
 }
 
