@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,37 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.10  2010/04/07 20:32:40  nagler
+  * Bivio::Biz::Model::AdmSuperUserList
+    NEW
+  * Bivio::Biz::Model::RealmDropDownList
+    provide REQUIRED_ROLE_GROUP to qualify role to all_guests
+  * Bivio::Biz::Model::SiteAdminSubstituteUserForm
+    don't allow users not in the site-admin realm to be su'd to
+  * Bivio::Biz::Model::SiteAdminSuperUserList
+    removed
+  * Bivio::Biz::Model::UserBaseDAVList
+    fmt
+  * Bivio::Biz::Model::UserForumDAVList
+    include site-admin
+  * Bivio::Biz::Model::UserForumList
+    provide REQUIRED_ROLE_GROUP to qualify role to all_guests
+  * Bivio::Delegate::Role
+    added all_guests
+  * Bivio::Delegate::TaskId
+    require_secure for GROUP_USER_LIST
+  * Bivio::PetShop::BConf
+    v10
+  * Bivio::UI::FacadeBase
+    v10: xl_linkall_users uses GROUP_USER_LIST, not SITE_ADMIN_USER_LIST
+  * Bivio::UI::Widget::SiteAdminControl
+    v10: use GROUP_USER_LIST, not SITE_ADMIN_USER_LIST
+  * Bivio::UI::XHTML::ViewShortcuts
+    v10: use SITE_ADMIN_SUBSTITUTE_USER (was formerly v5, but never really
+    worked at that level) instead of ADM_SUBSTITUTE_USER
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    use REQUIRED_ROLE_GROUP in UserFormList to qualify at all_guests
+
   Revision 9.9  2010/04/07 17:48:46  moeller
   * Bivio::Biz::Model::Email
     moved execute_load_home() to super class
