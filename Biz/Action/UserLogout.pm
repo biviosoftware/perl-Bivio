@@ -5,11 +5,11 @@ use strict;
 use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_ULF) = b_use('Model.UserLoginForm');
 
 sub execute {
     my(undef, $req) = @_;
-    return Bivio::Biz::Model->get_instance('UserLoginForm')->execute(
-	$req, {realm_owner => undef});
+    return $_ULF->execute($req, {realm_owner => undef});
 }
 
 1;
