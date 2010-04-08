@@ -65,6 +65,8 @@ my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_FACADES_DIR) = 'facades';
 my($_FILES_LIST) = '%{build_root}/../b_release_files.list';
 my($_EXCLUDE_LIST) = '%{build_root}/../b_release_files.exclude';
+my($_PACKLIST) = ' find $RPM_BUILD_ROOT -name "*.bs" '
+    . " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
 my($_R) = b_use('IO.Ref');
 Bivio::IO::Config->register(my $_CFG = {
     cvs_rpm_spec_dir => 'pkgs',
@@ -711,7 +713,7 @@ sub _create_rpm_spec {
     my($name) = _search('name', $base_spec)
 	|| (Bivio::Type::FileName->get_tail($specin) =~ /(.*)\.spec$/);
     my($provides) = _search('provides', $base_spec) || $name;
-    my($buf) = <<"EOF" . _perl_make();
+    my($buf) = <<"EOF" . _perl_make() . _perl_build();
 %define suse_check echo not calling /usr/sbin/Check
 %define _sourcedir .
 %define _topdir .
@@ -879,6 +881,19 @@ sub _output {
     return;
 }
 
+sub _perl_build {
+    return
+	'%define perl_build umask '
+	. _umask_string()
+	. " && perl Build.PL < /dev/null\n"
+	. '%define perl_build_install umask '
+	. _umask_string()
+	. '; ./Build install --destdir $RPM_BUILD_ROOT && '
+	# rm manified files - couldn't find flag to turn off manify
+	. ' rm -rf $RPM_BUILD_ROOT/usr/share/man && '
+	. $_PACKLIST
+}
+
 sub _perl_make {
     # Define the %define values for perl_make, perl_make_install and now
     # perl_build_install for Module::Build compatibility.
@@ -895,8 +910,7 @@ sub _perl_make {
 	    && $Config::Config{$_} && $Config::Config{$_} =~ m!^/!,
 	    sort(keys(%Config::Config))))
 	.  ' POD2MAN=true pure_install && '
-        . ' find $RPM_BUILD_ROOT -name "*.bs" '
-	. " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
+	. $_PACKLIST;
 }
 
 sub _project_args {
