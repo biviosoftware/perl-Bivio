@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.11  2010/04/07 21:55:43  nagler
+  * Bivio::Biz::Model::GroupUserList
+    v10: use SiteAdminSubstituteUserForm for can_substitute_user
+  * Bivio::Biz::Model::RealmUserAddForm
+    delete prior user records if any
+  * Bivio::Biz::Model::SiteAdminSubstituteUserForm
+    can su from any realm, just make sure user is an admin of that realm
+  * Bivio::Biz::Model::TimeZoneList
+    need to pass req to get_value
+  * Bivio::Biz::Model::UserRegisterForm
+    create_unapproved_applicant already deletes user records so don't need
+    to do it here
+
   Revision 9.10  2010/04/07 20:32:40  nagler
   * Bivio::Biz::Model::AdmSuperUserList
     NEW
