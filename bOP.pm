@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.12  2010/04/08 20:56:23  moeller
+  * Bivio::Biz::Action::UserLogout
+    rmpod
+    oc
+    clean
+  * Bivio::Biz::Model::SiteAdminUserList
+    removed
+  * Bivio::Biz::Model::UserCreateForm
+    join_site_admin_realm not necessary, use v10
+  * Bivio::Delegate::TaskId
+    v10: SITE_ADMIN_SUBSTITUTE_USER_DONE returns to GROUP_USER_LIST
+  * Bivio::PetShop::BConf
+    join_site_admin_realm not necessary, use v10
+  * Bivio::UI::FacadeBase
+    SiteAdminUserList gone
+    v10: xlink_all_users goest to GROUP_USER_LIST and SITE_ADMIN_REALM_NAME
+  * Bivio::UI::View::SiteAdmin
+    use AdmUserList not SiteAdminUserList
+  * Bivio::Util::Release
+    allow building modules without a Makefile.PL, but with Build.PL instead
+  * Bivio::Util::SQL
+    use AdmUserList not SiteAdminUserList
+
   Revision 9.11  2010/04/07 21:55:43  nagler
   * Bivio::Biz::Model::GroupUserList
     v10: use SiteAdminSubstituteUserForm for can_substitute_user
