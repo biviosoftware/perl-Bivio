@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserCreateForm;
 use strict;
@@ -6,13 +6,13 @@ use Bivio::Base 'Biz.FormModel';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DN) = __PACKAGE__->use('Type.DisplayName');
-my($_A) = __PACKAGE__->use('IO.Alert');
+my($_DN) = b_use('Type.DisplayName');
+my($_A) = b_use('IO.Alert');
 my($_GUEST) = b_use('Auth.Role')->GUEST;
 my($_USER) = $_GUEST->USER;
-b_use('IO.Config')->register(my $_CFG = {
+my($_C) = b_use('IO.Config');
+$_C->register(my $_CFG = {
     unapproved_applicant_mode => 0,
-    join_site_admin_realm => 0,
 });
 
 sub execute_ok {
@@ -82,7 +82,7 @@ sub internal_create_models {
 	    ? $params->{'Email.want_bulletin'} : 1,
     }) unless ($self->unsafe_get('Email.email') || '') eq $et->IGNORE_PREFIX;
     $self->join_site_admin_realm
-	if $_CFG->{join_site_admin_realm};
+	if $_C->if_version(10);
     return ($realm, $user);
 }
 

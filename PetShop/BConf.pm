@@ -20,7 +20,6 @@ sub merge_overrides {
     return Bivio::IO::Config->merge_list({
 	'Bivio::Biz::Model::UserCreateForm' => {
 	    unapproved_applicant_mode => 1,
-	    join_site_admin_realm => 1,
 	},
 	'Bivio::Biz::Model::MailReceiveDispatchForm' => {
 	    filter_spam => 1,
