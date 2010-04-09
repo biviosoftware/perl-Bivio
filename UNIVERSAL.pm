@@ -1,14 +1,22 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UNIVERSAL;
 use strict;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_A, $_R, $_SA, $_P);
+my($_A, $_R, $_SA, $_P, $_CL);
+
+sub CLASSLOADER_MAP_NAME {
+    return _classloader()->unsafe_map_for_package(
+	shift->package_name,
+    );
+}
 
 sub as_classloader_map_name {
     my($self) = @_;
-    return $self->CLASSLOADER_MAP_NAME . '.' . $self->simple_package_name,
+    return $self->CLASSLOADER_MAP_NAME
+	. '.'
+	. $self->simple_package_name;
 }
 
 sub as_req_key_value_list {
@@ -198,7 +206,7 @@ sub instance_data_index {
 sub internal_data_section {
     my($proto, $op) = @_;
     no strict 'refs';
-    my($f) = $proto->use('Bivio::IO::File');
+    my($f) = $proto->use('IO.File');
     my($h) = \${$proto->package_name . '::'}{DATA};
     return $op ? $f->do_lines($h, $op) : ${$f->read($h)};
 }
@@ -465,12 +473,17 @@ sub ureq {
 
 sub use {
     shift;
-    return Bivio::IO::ClassLoader->map_require(@_);
+    return _classloader()->map_require(@_);
 }
 
 sub want_scalar {
     shift;
     return shift;
+}
+
+sub _classloader {
+    return $_CL
+	||= Bivio::IO::ClassLoader->map_require('IO.ClassLoader');
 }
 
 sub _grep_sub {
