@@ -54,7 +54,7 @@ sub delete_all {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    Bivio::Die->die($cfg->{domain}, ': domain must begin with dot (.)')
+    b_die($cfg->{domain}, ': domain must begin with dot (.)')
         if defined($cfg->{domain}) && $cfg->{domain} !~ /^\./;
     $cfg->{session_update_seconds} = int($cfg->{session_timeout_seconds}/20)
 	if $cfg->{session_timeout_seconds}
@@ -105,7 +105,7 @@ sub put {
     my($self) = shift;
     my(%values) = @_;
     foreach my $key (keys(%values)) {
-        Bivio::Die->die('keys must start with a letter: ', $key)
+        b_die('keys must start with a letter: ', $key)
             unless $key =~ /^[a-z]/i;
     }
     _trace(\@_) if $_TRACE;
