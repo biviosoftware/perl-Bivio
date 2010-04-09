@@ -27,7 +27,11 @@ verify_no_text($name);
 verify_no_text($email);
 $name = "u$name";
 login_as('root');
-follow_link('all_users', qr{^All$}, $first);
+follow_link('all_users');
+submit_form(refresh => {
+   _anon => $first,
+});
+follow_link($first);
 home_page();
 follow_link('settings');
 verify_form({
