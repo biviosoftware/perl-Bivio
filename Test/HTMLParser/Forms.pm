@@ -120,6 +120,7 @@ sub html_parser_start {
 
 sub html_parser_text {
     my($self, $text) = @_;
+    $text = $self->get('cleaner')->text($text);
     # Text is applied as labels to form fields. It is cleaned first.
     # In the case of textareas, the cleaned text is saved as the "value"
     # (see _end_textarea).

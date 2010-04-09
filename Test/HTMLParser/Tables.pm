@@ -114,6 +114,7 @@ sub html_parser_start {
 
 sub html_parser_text {
     my($self, $text) = (shift, @_);
+    $text = $self->get('cleaner')->unescape_text($text);
     # Parses the tables.  Called internally.
     my($fields) = $self->[$_IDI];
     $fields->{links}->html_parser_text(@_)
