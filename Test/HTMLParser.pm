@@ -87,12 +87,4 @@ sub register {
     return;
 }
 
-sub unescape_text {
-    my($undef, $text) = @_;
-    $text =~ s/\&\#39\;/'/g;
-    $text =~ s/\&quot\;/"/g;
-    $text =~ s/\&\#\d+\;/ /g;
-    return $text;
-}
-
 1;
