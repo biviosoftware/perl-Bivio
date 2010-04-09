@@ -11,17 +11,36 @@ sub internal_site_css {
 body {
   Color('example-background');
 }
+img {
+  border: none;
+}
+a {
+  text-decoration: none;
+}
 td.main_left {
   width: 3em;
 }
 td.header_center .task_menu {
   text-align: center;
 }
-img {
-  border: none;
+!^/src td.header_left {
+!  background: none;
+!  display: none;
+!  height: 0;
+!  width: 0;
+!}
+^/src td.header_right {
+  background: none;
+  display: none;
+  height: 0;
+  width: 0;
 }
-a {
-  text-decoration: none;
+div.b_source_code_title {
+  Font('title');
+  margin-bottom: .5ex;
+}
+div.pet_task_info {
+  margin-top: .5ex;
 }
 EOF
 }
