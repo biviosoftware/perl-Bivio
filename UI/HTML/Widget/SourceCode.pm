@@ -1,12 +1,15 @@
-# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::SourceCode;
 use strict;
 use Bivio::Base 'UI.Widget';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
+my($_C) = b_use('IO.Config');
 my($_D) = b_use('Bivio.Die');
+my($_CL) = b_use('IO.ClassLoader');
 my($_F) = b_use('UI.Facade');
 my($_IGNORE_POD) = {
     '=for' => 1,
@@ -15,8 +18,8 @@ my($_IGNORE_POD) = {
     '=cut' => 1,
 };
 my($_CACHE);
-Bivio::IO::Config->register(my $_CFG = {
-    source_dir => Bivio::IO::Config->REQUIRED,
+$_C->register(my $_CFG = {
+    source_dir => $_C->REQUIRED,
 });
 
 sub handle_config {
@@ -33,8 +36,14 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
+    my($package) = $req->unsafe_get('path_info')
+	|| ($req->get('query') || {})->{'s'};
+    $package =~ s{^/}{};
+    my($p) = $_CL->unsafe_map_require($package);
+    $package = $p
+	if $p;
     $_D->throw('NOT_FOUND')
-	unless my $package = ($req->get('query') || {})->{'s'};
+	unless $package;
     $_D->throw('NOT_FOUND')
 	 unless my $file = _file($package, $req);
 #TODO: remove this and do it inline always
@@ -42,42 +51,74 @@ sub render {
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package, $req);
     $lines = join('', @$lines);
-    $lines =~ s{<pre[^>]*}{<div class="pet_pre"}ig;
+    $lines =~ s{<pre[^>]*}{<div class="b_literal"}ig;
     $lines =~ s{</pre>}{</div>}ig;
+    DIV_b_source_code_title(String($package))
+	->initialize_and_render($req, $buffer);
     $$buffer .= $lines;
     return;
 }
 
 sub render_source_link {
     my($proto, $req, $source, $name, $buffer) = @_;
-    $$buffer .= qq{<a href="@{[$_HTML->escape_attr_value("/src?s=$source")]}">$name</a>};
+    Link(
+	$name,
+	URI({
+	    task_id => 'SOURCE',
+	    path_info => Bivio::UNIVERSAL->is_subclass($source)
+	       ? $source->as_classloader_map_name : $source,
+	}),
+    )->initialize_and_render($req, $buffer);
     return;
 }
 
 sub _add_links {
     my($self, $lines, $ignore_package, $req) = @_;
-    my($uri) = $self->get('uri');
+    my($vars) = {};
+    my($render) = sub {
+	my($prefix, $map_name, $pkg, $var, $widget) = @_;
+	my($name) = $map_name || $pkg || $var || $widget;
+	if ($map_name) {
+	    return $prefix . $map_name
+		unless $_CL->unsafe_map_require($pkg = $map_name);
+	}
+	elsif ($pkg) {
+	    return $pkg
+		unless $_CL->unsafe_map_require($pkg);
+	}
+	elsif ($var) {
+	    return $var
+		unless $pkg = $vars->{$var};
+	}
+	else {
+	    $pkg = undef;
+	    # We prefer XHTMLWidget over other widgets.  It's
+	    # not easy to determine in which context a widget will
+	    # be loaded.
+	    foreach my $map (
+		'XHTMLWidget',
+		grep(/Widget/, @{$_CL->all_map_names}),
+	    ) {
+		last
+		    if $_CL->unsafe_map_require($pkg = "$map.$widget");
+		$pkg = undef;
+	    }
+	    return $widget
+	        unless $pkg;
+	}
+	my($b);
+	$self->render_source_link($req, $pkg, $name, \$b);
+	return ($prefix || '') . $b;
+    };
     foreach my $line (@$lines) {
-	my($matches) = [];
-	while ($line =~ /(\w+::[\w:]+)/g) {
-	    my($package) = $1;
-	    $package =~ s/::[A-Z_]+$//
-		unless _file($package, $req);
-	    push(@$matches, $package)
-		if _file($package, $req)
-		&& $package ne $ignore_package
-		&& !_contains($matches, $package);
-	}
-	foreach my $package (@$matches) {
-	    b_die('invalid package match: ', $package)
-		unless $line =~
-		    s{([^=>])(\Q$package\E)}{$1<a href="@{[$_HTML->escape_attr_value("/$uri?s=$2")]}">$2</a>}
-		|| $line =~ s{(\Q$package\E)}{<a href="@{[$_HTML->escape_attr_value("/$uri?s=$1")]}">$1</a>};
-	}
-	if ($line =~ /view_parent\(.*?>.(\w+)/) {
-	    my($view) = $1;
-	    $line =~ s,(\Q$view\E),<a href="@{[$_HTML->escape_attr_value("/$uri?s=View.$1")]}">$1</a>,;
-	}
+	$vars->{$1} = $2
+	    if $line =~ m{my.*?\((\$_\w+)\).*use\(.*?'(\w+\.\w+)};
+	$line =~ s{
+	    ((?:use|require|Bivio::Base)\b.*?')([A-Z]\w+\.[A-Z]\w+)
+	    | ((?:[A-Z]\w+::)+[A-Z]\w+)
+	    | (\$_[A-Z0-9]+\b)
+            | (?<=[^:])(\b[A-Z]\w+)(?=\()
+	}{$render->($1, $2, $3, $4, $5)}exg;
     }
     return;
 }
