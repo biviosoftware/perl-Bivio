@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailReceiveDispatchForm;
 use strict;
@@ -16,11 +16,9 @@ my($_RI) = b_use('Agent.RequestId');
 my($_TASK) = b_use('FacadeComponent.Task');
 my($_TEXT) = b_use('FacadeComponent.Text');
 my($_FP) = b_use('Type.FilePath');
-Bivio::IO::Config->register(my $_CFG = {
-    ignore_dashes_in_recipient => Bivio::IO::Config->if_version(
-	5 => sub {1},
-	sub {0},
-    ),
+my($_C) = b_use('IO.Config');
+$_C->register(my $_CFG = {
+    ignore_dashes_in_recipient => $_C->if_version(5),
     filter_spam => 0,
     duplicate_threshold_seconds => 3600,
 });
