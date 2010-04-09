@@ -18,7 +18,7 @@ sub render {
 (click on link to see the source code)
 Name:         @{[$task->get('id')->get_name]}
 Realm:        @{[$task->get('realm_type')->get_name]}
-Permissions:  @{[join('&',
+Permissions:  @{[join('&amp;',
     map($_->get_name, @{Bivio::Auth::PermissionSet->to_array(
         $task->get('permission_set'))}))]}
 EOF
