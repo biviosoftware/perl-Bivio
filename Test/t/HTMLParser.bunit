@@ -20,6 +20,10 @@ options({
 	    get_nested => $_->[1],
         ];
     } [
+ 	'all-users' => [
+ 	    ['Forms', 'Any Privilege', 'visible', '_anon', 'name',] => 'b_filter',
+	],
+    ],[
  	'chooser-label' => [
  	    ['Forms', 'Refresh', 'visible', '_anon', 'type'] => 'select',
 	],
@@ -312,5 +316,5 @@ options({
 	    ['Subject', 'campaign.btest at 06/16/2003 17:21:39']
 	        => qr{href.*/dev/campaign-domains\?p=33600023}s,
 	],
-    ],
+   ],
 ];
