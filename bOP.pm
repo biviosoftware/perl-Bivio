@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.13  2010/04/08 21:42:15  moeller
+  * Bivio::Util::Release
+    call Makefile.PL with --skipdeps so it doesn't go out to CPAN
+
   Revision 9.12  2010/04/08 20:56:23  moeller
   * Bivio::Biz::Action::UserLogout
     rmpod
