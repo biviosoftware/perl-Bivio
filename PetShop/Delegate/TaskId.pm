@@ -170,7 +170,7 @@ sub get_delegate_info {
             519
 	    GENERAL
 	    ANYBODY
-	    View.source
+	    View.Source->show_module
 	)],
 #520-524
 	[qw(
