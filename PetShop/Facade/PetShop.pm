@@ -112,7 +112,7 @@ __PACKAGE__->new({
 	[USER_ACCOUNT_UPDATED => '?/account-updated'],
 	[ORDER_COMMIT => '?/commit-order'],
 	[DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
-	[SOURCE => 'src'],
+	[SOURCE => 'src/*'],
 	__PACKAGE__->mail_receive_task_list(
 	    'MAIL_RECEIVE_IGNORE',
 	    'USER_MAIL_RECEIVE',
@@ -247,6 +247,7 @@ __PACKAGE__->new({
 	    SHELL_UTIL => 'shell util',
 	    USER_HOME => 'user home',
 	    EXAMPLE_EG1 => 'Example 1',
+	    SOURCE => '',
 	    FORUM_PUBLIC_EXAMPLE_EG1 => 'Example 1',
 	]],
 	[xlink => [
