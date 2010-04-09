@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 config({
     'Bivio::IO::ClassLoader' => {
@@ -97,5 +97,9 @@ my($importers) = sub {
 	    ['ANYTHING::not_valid', [], []] => qr{not_valid:.*not found},
 	],
 	$importers->(1),
+	unsafe_map_for_package => [
+	    'Bivio::IO::t::ClassLoader::Valid' => 'ClassLoaderBunit',
+	    'Bivio::IO::t::NotFound' => [undef],
+	],
     ],
 ];

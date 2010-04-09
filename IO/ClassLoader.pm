@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::ClassLoader;
 use strict;
@@ -62,6 +62,10 @@ sub after_in_map {
     }
     _die($map_name, ': unable to find package after ', $this_package);
     # DOES NOT RETURN
+}
+
+sub all_map_names {
+    return [sort(keys(%{$_CFG->{maps}}))];
 }
 
 sub call_autoload {
@@ -225,6 +229,17 @@ sub simple_require {
     # arguments.
     my(@res) = map(_require($proto, $_, 1), @package);
     return wantarray ? @res : $res[0];
+}
+
+sub unsafe_map_for_package {
+    my($self, $package) = @_;
+    foreach my $map_name (@{$self->all_map_names}) {
+	foreach my $path (_map_path_list($map_name)) {
+	    return $map_name
+		if $package =~ /^\Q$path\E::\w+$/;
+	}
+    }
+    return undef;
 }
 
 sub unsafe_map_require {
