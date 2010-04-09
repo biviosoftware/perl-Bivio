@@ -31,7 +31,6 @@ b_use('IO.Config')->register(my $_CFG = {
     die_on_error => 0,
 });
 
-
 sub UNDEF_CONFIG {
     # The configuration to be used when a value can't be found.  A
     # warning will be output and the value created by this configuration
