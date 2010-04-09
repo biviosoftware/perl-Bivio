@@ -97,7 +97,8 @@ sub internal_initialize {
 sub internal_use_general_realm_for_site_admin {
     my($self, $op) = @_;
     return $self->req->with_realm(undef, $op)
-        if $_F->get_from_source($self)->auth_realm_is_site_admin($self->req);
+        if $_F->get_from_source($self)->auth_realm_is_site_admin($self->req)
+	&& $self->is_create;
     return $op->();
 }
 
