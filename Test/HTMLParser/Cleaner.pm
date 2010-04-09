@@ -14,7 +14,7 @@ sub internal_new {
 sub new {
     my($proto, $parser) = @_;
     my($html) = $parser->get('html');
-    $html =~ s/\015//g;
+    $html =~ s/015//g;
     $html =~ s/&nbsp;/ /g;
     $html =~ s/<\/?(?:br|p) ?\/?>/\n/ig;
     return $proto->SUPER::new({
@@ -22,7 +22,7 @@ sub new {
     })->set_read_only;
 }
 
-sub text {
+sub unescape_text {
     my($self, $text) = @_;
     return ''
 	unless defined($text);
@@ -30,6 +30,14 @@ sub text {
     $text =~ s/\&quot\;/"/g;
     $text =~ s/\&\#\d+\;/ /g;
     $text = Bivio::HTML->unescape($text);
+    return $text;
+}
+
+sub text {
+    my($self, $text) = @_;
+    return ''
+	unless defined($text);
+    $text = $self->unescape_text($text);
     $text =~ s/\s+/ /g;
     $text =~ s/^\s+|\s+$//g;
     return $text;
