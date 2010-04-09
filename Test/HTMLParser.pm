@@ -1,15 +1,11 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2004 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::HTMLParser;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
-use Bivio::Ext::HTMLParser;
-use Bivio::IO::ClassLoader;
+use Bivio::Base 'Collection.Attributes';
 
 # C<Bivio::Test::HTMLParser> directs parsing of html by calling classes in the
 # TestHTMLParser class map.
-#
-#
 #
 # html : string
 #
@@ -21,7 +17,8 @@ use Bivio::IO::ClassLoader;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(@_CLASSES);
-Bivio::IO::ClassLoader->map_require_all('TestHTMLParser');
+b_use('IO.ClassLoader')->map_require_all('TestHTMLParser');
+my($_HP) = b_use('Ext.HTMLParser');
 
 sub html_parser_comment {
     return;
@@ -53,7 +50,7 @@ sub internal_new {
 	elements => {},
     });
 
-    my($p) = Bivio::Ext::HTMLParser->new($self);
+    my($p) = $_HP->new($self);
     $p->ignore_elements(qw(script style));
     $p->parse($self->get('cleaner')->get('html'));
     $self->internal_put($self->get('elements'));
@@ -84,10 +81,18 @@ sub register {
     # Adds I<proto> to list of classes, but first loads I<prerequisite_classes>.
     my($proto, $prerequisite_classes) = @_;
     foreach my $p (@{$prerequisite_classes || []}) {
-	Bivio::IO::ClassLoader->map_require('TestHTMLParser', $p);
+	b_use('TestHTMLParser', $p);
     }
     push(@_CLASSES, ref($proto) || $proto);
     return;
+}
+
+sub unescape_text {
+    my($undef, $text) = @_;
+    $text =~ s/\&\#39\;/'/g;
+    $text =~ s/\&quot\;/"/g;
+    $text =~ s/\&\#\d+\;/ /g;
+    return $text;
 }
 
 1;
