@@ -91,7 +91,6 @@ sub _add_links {
 		unless $pkg = $vars->{$var};
 	}
 	else {
-	    $pkg = undef;
 	    # We prefer XHTMLWidget over other widgets.  It's
 	    # not easy to determine in which context a widget will
 	    # be loaded.
