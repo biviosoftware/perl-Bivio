@@ -24,5 +24,11 @@ follow_link('All Users');
 find_page_with_text('User, Btest_read');
 follow_link('User, Btest_read');
 home_page();
-follow_link('wiki');
+follow_menu_link('wiki');
 verify_no_text(qr{new page|this page}i);
+follow_link('exit');
+follow_menu_link(qw(site-admin features));
+verify_form({
+    title => 'Site Admin',
+    '^forum' => 'site-admin',
+});
