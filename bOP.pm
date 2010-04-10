@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.14  2010/04/09 23:07:00  moeller
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    modernize config registration
+  * Bivio::Biz::Model::RealmFeatureForm
+    internal_use_general_realm_for_site_admin only use general on is_create
+  * Bivio::Delegate::Cookie
+    call b_die
+  * Bivio::Test::HTMLParser::Cleaner
+    &quot; should not be escaped at $html level
+    need to decouple unescape_text from text (full clean)
+  * Bivio::Test::HTMLParser::Forms
+    unescape_text explicitly
+  * Bivio::Test::HTMLParser::Tables
+    unescape_text explicitly
+  * Bivio::Test::HTMLParser
+    rmpod
+    added unescape_text (really should be in cleaner, but in a hurry)
+    fpc
+
   Revision 9.13  2010/04/08 21:42:15  moeller
   * Bivio::Util::Release
     call Makefile.PL with --skipdeps so it doesn't go out to CPAN
