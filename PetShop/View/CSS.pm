@@ -23,18 +23,6 @@ td.main_left {
 td.header_center .task_menu {
   text-align: center;
 }
-!^/src td.header_left {
-!  background: none;
-!  display: none;
-!  height: 0;
-!  width: 0;
-!}
-^/src td.header_right {
-  background: none;
-  display: none;
-  height: 0;
-  width: 0;
-}
 div.b_source_code_title {
   Font('title');
   margin-bottom: .5ex;
