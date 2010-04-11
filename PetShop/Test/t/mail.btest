@@ -101,7 +101,7 @@ submit_form(Send => {
 });
 verify_local_mail(qr{.}, qr{.}, 2);
 reload_page();
-follow_link('mail');
+follow_menu_link('mail');
 follow_link($reply_subject);
 follow_link('author');
 verify_text('initial message');
@@ -119,7 +119,7 @@ submit_form(Send => {
 });
 verify_text('was sent');
 verify_local_mail(qr{.}, qr{.}, 2);
-follow_link('mail');
+follow_menu_link('mail');
 follow_link($reply_subject);
 verify_text('reply text');
 # Test handling of autoreply messages, verifying that repeat messages from a
