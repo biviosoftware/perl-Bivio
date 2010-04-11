@@ -114,6 +114,10 @@ sub _join_user {
     $self->internal_put_field('RealmUser.realm_id' => $realm_id);
     $self->internal_put_field('User.user_id' => $user_id);
     # Just in case there's another RealmUser record
+    my($v) = {
+	user_id => $user_id,
+	realm_id => $realm_id,
+    };
     $self->new_other('RealmUser')->do_iterate(
 	sub {
 	    shift->delete;
@@ -121,18 +125,14 @@ sub _join_user {
 	},
 	'unauth_iterate_start',
 	'role',
-	{
-	    user_id => $user_id,
-	    realm_id => $realm_id,
-	},
+	$v,
     );
     foreach my $r (
 	@{$self->unsafe_get('other_roles') || []},
 	@{$self->internal_get_roles},
     ) {
 	$self->new_other('RealmUser')->unauth_create_or_update({
-	    realm_id => $realm_id,
-	    user_id => $user_id,
+	    %$v,
 	    role => $r,
 	});
     }
