@@ -191,7 +191,7 @@ sub create_test_db {
 	(grep(
 	    -d $_,
 	    $self->get_project_root . '/files/ddl',
-	    glob($self->get_project_root . '*/files/ddl'),
+	    glob($self->get_project_root . '/files/*/ddl'),
 	    '.',
 	))[0],
 	sub {
