@@ -5,9 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REALM_ROLE_CONFIG);
-Bivio::IO::Config->register(my $_CFG = {
-    export_db_on_upgrade => 1,
-});
 my($_AR) = b_use('Auth.Realm');
 my($_C) = b_use('SQL.Connection');
 my($_DT) = b_use('Type.DateTime');
@@ -19,6 +16,7 @@ my($_R) = b_use('Auth.Role');
 my($_RT) = b_use('Auth.RealmType');
 my($_TI) = b_use('Agent.TaskId');
 my($_D) = b_use('Bivio.Die');
+my($_IC) = b_use('IO.Config');
 #TODO: Need to remove some of these
 my($_BUNDLE) = [qw(
     realm_mail
@@ -47,7 +45,6 @@ my($_BUNDLE) = [qw(
     !group_concat
     !role_unused_11
     site_admin_forum
-    !site_admin_forum_users
     !data_browse
     task_log
     !feature_task_log
@@ -64,12 +61,17 @@ my($_BUNDLE) = [qw(
     !xapian_exec_realm
     !xapian_exec_realm2
     !drop_member_if_administrator
-)];
+),
+    'site_admin_forum_users2',
+];
 #    crm_mail
 my($_AGGREGATES) = [qw(
     group_concat(text)
 )];
 my($_INITIALIZE_SENTINEL) = [grep(s/!//, @$_BUNDLE)];
+$_IC->register(my $_CFG = {
+    export_db_on_upgrade => 1,
+});
 
 sub TEST_PASSWORD {
     return b_use('ShellUtil.TestUser')->DEFAULT_PASSWORD;
@@ -182,17 +184,25 @@ sub create_test_db {
     # Destroys old database, creates new database, populates with test data.
     # Subclasses should override L<initialize_test_data|"initialize_test_data">
     # to create the test data.
-    $self->initialize_fully;
-    my($req) = $self->get_request;
-    die('cannot be run on production system')
+    my($req) = $self->initialize_fully;
+    b_die('cannot be run on production system')
 	if $req->is_production;
-    my($ddl_dir) = $self->get_project_root . '/files/ddl';
-    $_F->do_in_dir(-d $ddl_dir ? $ddl_dir : '.', sub {
-        $self->destroy_db;
-        $self->create_db;
-        $self->delete_realm_files;
-        $self->initialize_test_data;
-    });
+    $_F->do_in_dir(
+	(grep(
+	    -d $_,
+	    $self->get_project_root . '/files/ddl',
+	    glob($self->get_project_root . '*/files/ddl'),
+	    '.',
+	))[0],
+	sub {
+	    $self->destroy_db;
+	    $self->create_db;
+	    $self->delete_realm_files;
+	    $self->initialize_test_data;
+	    $self->upgrade_db('bundle');
+	    return;
+	},
+    );
     return;
 }
 
@@ -1557,29 +1567,31 @@ sub internal_upgrade_db_site_admin_forum {
     return;
 }
 
-sub internal_upgrade_db_site_admin_forum_users {
+sub internal_upgrade_db_site_admin_forum_users2 {
     my($self) = @_;
-    $self->initialize_fully;
-    my($f) = $self->req('Bivio::UI::Facade')->get_default;
-    $self->req->with_realm($f->SITE_REALM_NAME, sub {
-	b_info("Adding users to site-admin");
-	my($users) = {
-	    @{$self->model('AdmUserList')->map_iterate(
-		sub {(shift->get('User.user_id') => [$_R->USER])},
-	    )},
-	    @{$self->model('GroupUserList')->map_iterate(
-		sub {return shift->get(qw(RealmUser.user_id roles))},
-	    )},
-	};
-	$self->req->set_realm($f->SITE_ADMIN_REALM_NAME);
-	while (my($uid, $roles) = each(%$users)) {
-	    foreach my $role (@$roles) {
-		$self->model('RealmUser')->create_or_update({
-		    role => $role,
+    my($req) = $self->initialize_fully;
+    my($f) = b_use('UI.Facade')->get_default;
+    $req->with_realm($f->SITE_ADMIN_REALM_NAME, sub {
+        my($rid) = $req->get('auth_id');
+	my($ro) = $self->model('RealmOwner');
+	my($ru) = $self->model('RealmUser');
+	$self->model('AdmUserList')->do_iterate(
+	    sub {
+		my($it) = @_;
+		return 1
+		    if $ro->is_offline_user($it, 'RealmOwner.');
+		my($uid) = $it->get('User.user_id');
+		return 1
+		    if $ru->rows_exist({user_id => $uid});
+		$ru->create({
+		    role => $req->is_super_user($uid)
+		        ? $_R->ADMINISTRATOR
+		        : $_R->USER,
 		    user_id => $uid,
 		});
-	    }
-	}
+		return 1;
+	    },
+	);
 	return;
     });
     return;
@@ -2371,11 +2383,13 @@ sub _sentinel_site_admin_forum {
     return $self->model('RealmOwner')->unauth_load({name => $forum});
 }
 
-sub _sentinel_site_admin_forum_users {
+sub _sentinel_site_admin_forum_users2 {
     my($self, @args) = @_;
     $self->initialize_fully;
-    return b_use('Model.UserCreateForm')->if_unapproved_applicant_mode(
-	sub {_default_sentinel($self, @args)}, sub {1});
+    return $_IC->if_version(10,
+	sub {_default_sentinel($self, @args)},
+	1,
+    );
 }
 
 sub _sentinel_site_forum {
