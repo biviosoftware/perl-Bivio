@@ -420,6 +420,11 @@ sub register_child_model {
     return shift->internal_get_sql_support_no_assert->register_child_model(@_);
 }
 
+sub rows_exist {
+    my($self, $query) = @_;
+    return $self->unauth_rows_exist(_add_auth_id($self, $query));
+}
+
 sub test_unauth_delete_all {
     my($self, $query) = @_;
     $self->req->assert_test;
