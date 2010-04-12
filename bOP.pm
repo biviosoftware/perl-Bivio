@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.15  2010/04/10 00:38:44  nagler
+  * Bivio::IO::ClassLoader
+    added all_map_names & unsafe_map_for_package
+  * Bivio::PetShop::Delegate::TaskId
+    SOURCE is now a method view
+  * Bivio::PetShop::Facade::PetShop
+    SOURCE takes path_info
+  * Bivio::PetShop::View::Base
+    added TaskInfo to footer_left
+  * Bivio::PetShop::View::CSS
+    support for SOURCE
+  * Bivio::PetShop::View::Source
+    NEW
+  * Bivio::UI::FacadeComponent
+    fmt
+  * Bivio::UI::HTML::Widget::SourceCode
+    do a better job of mapping classes
+    fpc
+  * Bivio::UI::HTML::Widget::TaskInfo
+    escape html
+  * Bivio::UNIVERSAL
+    load IO.ClassLoader with Bivio::IO::ClassLoader to allow app overrides
+    added CLASSLOADER_MAP_NAME which uses unsafe_map_for_package
+
   Revision 9.14  2010/04/09 23:07:00  moeller
   * Bivio::Biz::Model::MailReceiveDispatchForm
     modernize config registration
