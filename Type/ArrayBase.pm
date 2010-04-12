@@ -47,6 +47,11 @@ sub as_array {
     return [@{shift->[$_IDI]}];
 }
 
+sub as_hash {
+    my($self) = @_;
+    return {@{$self->map_iterate(sub {(shift(@_), 1)})}};
+}
+
 sub as_html {
     my($self) = @_;
     return $self->to_html($self);
@@ -109,9 +114,18 @@ sub equals {
 }
 
 sub exclude {
-    my($self, $value) = @_;
-    my($exclude) = $self->from_literal_or_die($value, 1);
-    return $self->new([grep(!$exclude->contains($_), @{$self->as_array})]);
+    my($self, $subtrahend) = @_;
+    my($base) = $self->as_hash;
+    $subtrahend = $self->from_literal_or_die($subtrahend, 1)
+	unless $self->is_blessed($subtrahend);
+    $subtrahend = $subtrahend->as_hash;
+    return $self->new(
+	$self->map_iterate(sub {
+	    my($v) = @_;
+	    return $subtrahend->{$v} ? () : $v;
+	}),
+    );
+
 }
 
 sub from_literal {
