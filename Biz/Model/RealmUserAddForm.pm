@@ -118,15 +118,6 @@ sub _join_user {
 	user_id => $user_id,
 	realm_id => $realm_id,
     };
-    $self->new_other('RealmUser')->do_iterate(
-	sub {
-	    shift->delete;
-	    return 1;
-	},
-	'unauth_iterate_start',
-	'role',
-	$v,
-    );
     foreach my $r (
 	@{$self->unsafe_get('other_roles') || []},
 	@{$self->internal_get_roles},
