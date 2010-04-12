@@ -172,8 +172,7 @@ sub demo_users {
     return [
         map($self->$_(),
 	    qw(DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST XAPIAN_WITHDRAWN MULTI_ROLE_USER
-	       BTEST_ADMIN BTEST_READ OTP),
-	    $self->get_request->is_production ? () : 'ROOT',
+	       BTEST_ADMIN BTEST_READ OTP ROOT),
 	),
     ];
 }
