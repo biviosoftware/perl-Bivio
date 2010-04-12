@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.16  2010/04/12 02:46:06  nagler
+  * Bivio::Biz::Model::RealmUserAddForm
+    normalize some code
+  * Bivio::Biz::Model
+    Let UNIVERSAL create CLASSLOADER_MAP_NAME
+  * Bivio::Biz::PropertyModel
+    added rows_exists
+  * Bivio::PetShop::View::CSS
+    leave logo for /src
+  * Bivio::UI::XHTML::ViewShortcuts
+    need to specify realm on vs_user_email_list wf_list_link
+  * Bivio::Util::SQL
+    files/*/ddl is now checked for existence in create_test_db
+    upgrades site_admin_forum_users2 added, site_admin_forum_users deleted
+    fpc
+
   Revision 9.15  2010/04/10 00:38:44  nagler
   * Bivio::IO::ClassLoader
     added all_map_names & unsafe_map_for_package
