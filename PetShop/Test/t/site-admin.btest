@@ -3,11 +3,11 @@
 test_setup('PetShop', 'groupware');
 home_page();
 login_as('site_adm');
-follow_link('All Users');
+follow_menu_link('all_users');
 find_page_with_text('User, Demo');
-follow_link('User, Demo');
+follow_menu_link('User, Demo');
 home_page();
-follow_link('settings');
+follow_menu_link('settings');
 verify_form({
     last => 'User',
     size => 15,
@@ -20,12 +20,12 @@ follow_link('exit');
 home_page();
 verify_link('login');
 login_as('site_adm');
-follow_link('All Users');
+follow_menu_link('all_users');
 find_page_with_text('User, Btest_read');
-follow_link('User, Btest_read');
+follow_menu_link('User, Btest_read');
 home_page();
 follow_menu_link('wiki');
-verify_no_text(qr{new page|this page}i);
+verify_no_text(qr{new page|edit this page}i);
 follow_link('exit');
 follow_menu_link(qw(site-admin features));
 verify_form({
