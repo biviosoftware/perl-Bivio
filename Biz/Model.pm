@@ -18,10 +18,6 @@ my($_S) = b_use('SQL.Support');
 my($_SS) = b_use('SQL.Statement');
 my($_CL) = b_use('IO.ClassLoader');
 
-sub CLASSLOADER_MAP_NAME {
-    return 'Model';
-}
-
 sub as_string {
     my($self) = @_;
     my($ci) = $self->[$_IDI]->{class_info};
