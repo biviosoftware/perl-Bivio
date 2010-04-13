@@ -80,11 +80,11 @@ sub _add_links {
 	my($name) = $map_name || $pkg || $var || $widget;
 	if ($map_name) {
 	    return $prefix . $map_name
-		unless $_CL->unsafe_map_require($pkg = $map_name);
+		unless _require($pkg = $map_name);
 	}
 	elsif ($pkg) {
 	    return $pkg
-		unless $_CL->unsafe_map_require($pkg);
+		unless _require($pkg);
 	}
 	elsif ($var) {
 	    return $var
@@ -99,7 +99,7 @@ sub _add_links {
 		grep(/Widget/, @{$_CL->all_map_names}),
 	    ) {
 		last
-		    if $_CL->unsafe_map_require($pkg = "$map.$widget");
+		    if _require($pkg = "$map.$widget");
 		$pkg = undef;
 	    }
 	    return $widget
@@ -185,6 +185,11 @@ sub _reformat_pod {
 	}
     }
     return;
+}
+
+sub _require {
+    my($pkg) = @_;
+    return $_D->eval(sub {$_CL->unsafe_map_require($pkg)});
 }
 
 sub _unescape_pod {
