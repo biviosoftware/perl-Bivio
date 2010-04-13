@@ -199,7 +199,6 @@ sub create_test_db {
 	    $self->create_db;
 	    $self->delete_realm_files;
 	    $self->initialize_test_data;
-	    $self->upgrade_db('bundle');
 	    return;
 	},
     );
@@ -1569,31 +1568,7 @@ sub internal_upgrade_db_site_admin_forum {
 
 sub internal_upgrade_db_site_admin_forum_users2 {
     my($self) = @_;
-    my($req) = $self->initialize_fully;
-    my($f) = b_use('UI.Facade')->get_default;
-    $req->with_realm($f->SITE_ADMIN_REALM_NAME, sub {
-        my($rid) = $req->get('auth_id');
-	my($ro) = $self->model('RealmOwner');
-	my($ru) = $self->model('RealmUser');
-	$self->model('AdmUserList')->do_iterate(
-	    sub {
-		my($it) = @_;
-		return 1
-		    if $ro->is_offline_user($it, 'RealmOwner.');
-		my($uid) = $it->get('User.user_id');
-		return 1
-		    if $ru->rows_exist({user_id => $uid});
-		$ru->create({
-		    role => $req->is_super_user($uid)
-		        ? $_R->ADMINISTRATOR
-		        : $_R->USER,
-		    user_id => $uid,
-		});
-		return 1;
-	    },
-	);
-	return;
-    });
+    $self->new_other('SiteForum')->add_users_to_site_admin;
     return;
 }
 

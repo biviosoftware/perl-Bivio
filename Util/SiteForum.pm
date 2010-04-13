@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::SiteForum;
 use strict;
@@ -51,6 +51,38 @@ EOF
 sub add_default_staging_suffix {
     my($self, $name) = @_;
     return $_FN->join($name, 'staging');
+}
+
+sub add_users_to_site_admin {
+    my($self) = @_;
+    my($req) = $self->initialize_fully;
+    my($f) = b_use('UI.Facade')->get_default;
+    $req->with_realm($f->SITE_ADMIN_REALM_NAME, sub {
+        my($rid) = $req->get('auth_id');
+	my($ro) = $self->model('RealmOwner');
+	my($ru) = $self->model('RealmUser');
+	$self->model('AdmUserList')->do_iterate(
+	    sub {
+		my($it) = @_;
+		return 1
+		    if $ro->is_offline_user($it, 'RealmOwner.');
+		my($uid) = $it->get('User.user_id');
+		return 1
+		    if $ru->rows_exist({user_id => $uid});
+		$ru->create({
+		    role => b_user('Auth.Role')->from_name(
+			$req->is_super_user($uid)
+		        ? 'ADMINISTRATOR'
+		        : 'USER',
+		    ),
+		    user_id => $uid,
+		});
+		return 1;
+	    },
+	);
+	return;
+    });
+    return;
 }
 
 sub forum_config {
@@ -270,6 +302,7 @@ sub init_realms {
 	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
 	return;
     });
+    $self->add_users_to_site_admin;
     $self->model('EmailAlias')->create({
  	incoming => _support_email($req),
  	outgoing => $self->CONTACT_REALM,
