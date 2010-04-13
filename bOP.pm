@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.17  2010/04/12 21:28:49  nagler
+  * Bivio::Biz::Model::RealmUserAddForm
+    don't delete userse before adding
+  * Bivio::Type::ArrayBase
+    exclude algorithm would explode memory
+
   Revision 9.16  2010/04/12 02:46:06  nagler
   * Bivio::Biz::Model::RealmUserAddForm
     normalize some code
