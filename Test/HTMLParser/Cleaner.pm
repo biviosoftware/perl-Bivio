@@ -14,7 +14,6 @@ sub internal_new {
 sub new {
     my($proto, $parser) = @_;
     my($html) = $parser->get('html');
-    $html =~ s/015//g;
     $html =~ s/&nbsp;/ /g;
     $html =~ s/<\/?(?:br|p) ?\/?>/\n/ig;
     return $proto->SUPER::new({
