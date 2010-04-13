@@ -6,6 +6,10 @@ use Bivio::Base 'Biz.ExpandableListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub CLASSLOADER_MAP_NAME {
+    return 'Model';
+}
+
 sub execute_empty_row {
     my($self) = @_;
     $self->internal_load_field('form_index', 'index');
