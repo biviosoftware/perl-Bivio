@@ -38,6 +38,13 @@ verify_text($body);
 verify_text("Open Ticket #$ticket");
 follow_link('Show Original');
 test_equals('text/plain', get_response()->content_type);
+go_back();
+follow_link('new_ticket');
+submit_form(send => {
+    to => $cust1,
+    subject => 'x',
+    text => 'x',
+});
 
 # Audit log is the email stream, like tuple, but action
 # is simple notification
