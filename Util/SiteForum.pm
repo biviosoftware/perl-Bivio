@@ -70,7 +70,7 @@ sub add_users_to_site_admin {
 		return 1
 		    if $ru->rows_exist({user_id => $uid});
 		$ru->create({
-		    role => b_user('Auth.Role')->from_name(
+		    role => b_use('Auth.Role')->from_name(
 			$req->is_super_user($uid)
 		        ? 'ADMINISTRATOR'
 		        : 'USER',
