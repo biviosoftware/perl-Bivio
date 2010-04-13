@@ -62,7 +62,7 @@ my($_BUNDLE) = [qw(
     !xapian_exec_realm2
     !drop_member_if_administrator
 ),
-    'site_admin_forum_users2',
+    $_IC->if_version(10, '!', '') ? 'site_admin_forum_users2' : (),
 ];
 #    crm_mail
 my($_AGGREGATES) = [qw(
