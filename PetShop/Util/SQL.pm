@@ -171,8 +171,8 @@ sub demo_users {
     my($self) = @_;
     return [
         map($self->$_(),
-	    qw(DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST XAPIAN_WITHDRAWN MULTI_ROLE_USER
-	       BTEST_ADMIN BTEST_READ OTP ROOT),
+	    qw(ROOT DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST XAPIAN_WITHDRAWN MULTI_ROLE_USER
+	       BTEST_ADMIN BTEST_READ OTP),
 	),
     ];
 }
