@@ -14,7 +14,7 @@ sub CLASSLOADER_MAP_NAME {
 
 sub as_classloader_map_name {
     my($self) = @_;
-    return $self->CLASSLOADER_MAP_NAME
+    return ($self->CLASSLOADER_MAP_NAME || return $self->package_name)
 	. '.'
 	. $self->simple_package_name;
 }
