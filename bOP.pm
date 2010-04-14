@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.18  2010/04/13 00:22:58  nagler
+  * Bivio::PetShop::Util::SQL
+    create ROOT user
+    always init root
+  * Bivio::Util::SiteForum
+    moved site_admin_forum_users2 to SiteForum
+    Call at initialization
+  * Bivio::Util::SQL
+    moved site_admin_forum_users2 to SiteForum
+    Call at initialization
+    don't init site_admin_forum_users2 if not v10
+
   Revision 9.17  2010/04/12 21:28:49  nagler
   * Bivio::Biz::Model::RealmUserAddForm
     don't delete userse before adding
