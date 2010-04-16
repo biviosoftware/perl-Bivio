@@ -111,7 +111,7 @@ sub _map_permissions_all {
     my($realm_ids) = [
 	$realm_id,
 	grep(
-	    $realm_id ne $_,
+	    $realm_id ne $_ && ! $all->{$_},
 	    @{$req->map_user_realms(sub {shift->{'RealmUser.realm_id'}})},
 	),
     ];
@@ -122,7 +122,7 @@ sub _map_permissions_all {
 sub _map_permissions_query {
     my($realm_ids, $all, $req) = @_;
     _trace($realm_ids) if $_TRACE;
-    $_RR->new($req)->do_iterate(
+    $_RR->new($req)->set_ephemeral->do_iterate(
 	sub {
 	    my($rid, $role, $ps)
 		= shift->get(qw(realm_id role permission_set));
