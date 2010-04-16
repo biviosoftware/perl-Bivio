@@ -6,11 +6,12 @@ use strict;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A, $_R, $_SA, $_P, $_CL);
 my($_REQ_KEY_CACHE) = {};
+my($_CLASSLOADER_MAP_NAME) = {};
 
 sub CLASSLOADER_MAP_NAME {
-    return _classloader()->unsafe_map_for_package(
-	shift->package_name,
-    );
+    my($pkg) = shift->package_name;
+    return $_CLASSLOADER_MAP_NAME->{$pkg}
+	||= _classloader()->unsafe_map_for_package($pkg);
 }
 
 sub as_classloader_map_name {
@@ -22,9 +23,10 @@ sub as_classloader_map_name {
 
 sub as_req_key_value_list {
     my($self) = @_;
-    return map(($_ => $self, ), @{$_REQ_KEY_CACHE->{ref($self) || $self} ||= [
-	$self->as_classloader_map_name, $self->package_name,
-    ]});
+    return (
+	$self->as_classloader_map_name => $self,
+	$self->package_name => $self,
+    );
 }
 
 sub as_string {
