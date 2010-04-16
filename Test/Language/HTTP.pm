@@ -822,7 +822,8 @@ sub verify_local_mail {
     # Polls for I<mail_tries>.  If multiple messages come in simultaneously, will
     # only complete if both I<recipient_email> and I<body_regex> match.
     #
-    # I<count> defaults to 1.  An exception is thrown if the number of messages found
+    # I<count> defaults to at least one (not like if set explicitly, which is
+    # exactly $count).  An exception is thrown if the number of messages found
     # is not equal to I<count>.  Returns and array with I<count> strings of the
     # messages found.
     my($body_re) = !defined($body_regex) ? qr{}
