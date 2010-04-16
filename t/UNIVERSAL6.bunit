@@ -1,0 +1,17 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    inline_case(sub {
+        my($dc) = Bivio_DieCode()->NOT_FOUND;
+	my($req) = req();
+	my($start) = time;
+        foreach my $x (1..10000) {
+	    $dc->put_on_req($req);
+	}
+	my($delta) = time - $start;
+	b_die($delta, ': too many seconds')
+	    unless $delta <= 1;
+        return;
+    }),
+];
