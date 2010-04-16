@@ -72,6 +72,11 @@ sub clone {
     return shift;
 }
 
+sub compare {
+    my($self) = shift;
+    return $self->SUPER::compare(@_ <= 1 ? ($self, @_) : @_);
+}
+
 sub compare_defined {
     my(undef, $left, $right) = @_;
     # Performs the numeric comparison of the enum values.  C<undef> is treated as
@@ -302,6 +307,8 @@ sub from_literal {
     my($proto, $value) = @_;
     $proto->internal_from_literal_warning
         unless wantarray;
+    return $value
+	if $proto->is_blessed($value);
     return ()
 	unless defined($value) && $value ne '';
     my($info);
