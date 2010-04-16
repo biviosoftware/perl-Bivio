@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model;
 use strict;
@@ -12,7 +12,6 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
-#my(%_CLASS_INFO);
 my($_LOADED_ALL_PROPERTY_MODELS);
 my($_S) = b_use('SQL.Support');
 my($_SS) = b_use('SQL.Statement');
@@ -210,8 +209,6 @@ sub get_instance {
     # I<class> may also be an instance of a model.
     #
     # May not be called on anonymous Models without I<class> argument.
-#     _initialize_class_info($class) unless $_CLASS_INFO{$class};
-#     return $_CLASS_INFO{$class}->{singleton};
     return _get_class_info(_class($proto, $class))->{singleton};
 }
 
@@ -642,7 +639,6 @@ sub _initialize_class_info {
     _load_all_property_models();
 
     # Have here for safety to avoid infinite recursion if called badly.
-#    return if !$config && $_CLASS_INFO{$class};
     {
 	no strict qw(refs);
         return if !$config && defined *{$class . '::'}{HASH}->{_CLASS_INFO};
@@ -663,8 +659,6 @@ sub _initialize_class_info {
 	],
     };
     return $ci if $config;
-    # $_CLASS_INFO{$class} is sentinel to stop recursion
-#    $_CLASS_INFO{$class} = $ci;
     {
 	no strict qw(refs);
         *{$class . '::'}{HASH}->{_CLASS_INFO} = $ci;
