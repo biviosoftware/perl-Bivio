@@ -9,23 +9,25 @@ my($_REQ_KEY_CACHE) = {};
 my($_CLASSLOADER_MAP_NAME) = {};
 
 sub CLASSLOADER_MAP_NAME {
-    my($pkg) = shift->package_name;
+    my($proto) = @_;
+    my($pkg) = $proto->package_name;
     return $_CLASSLOADER_MAP_NAME->{$pkg}
 	||= _classloader()->unsafe_map_for_package($pkg);
 }
 
 sub as_classloader_map_name {
-    my($self) = @_;
-    return ($self->CLASSLOADER_MAP_NAME || return $self->package_name)
+    my($proto) = @_;
+    return ($proto->CLASSLOADER_MAP_NAME || return $proto->package_name)
 	. '.'
-	. $self->simple_package_name;
+	. $proto->simple_package_name;
 }
 
 sub as_req_key_value_list {
-    my($self) = @_;
+    my($proto) = @_;
+    my($pkg) = $proto->package_name;
     return (
-	$self->as_classloader_map_name => $self,
-	$self->package_name => $self,
+	$proto->as_classloader_map_name => $proto,
+	$pkg => $proto,
     );
 }
 
