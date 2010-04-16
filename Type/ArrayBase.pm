@@ -57,6 +57,10 @@ sub as_html {
     return $self->to_html($self);
 }
 
+sub as_length {
+    return scalar(shift->as_list);
+}
+
 sub as_list {
     return @{shift->[$_IDI]};
 }
@@ -184,7 +188,9 @@ sub sort_unique {
     my($ut) = shift->UNDERLYING_TYPE;
     return ref($value) eq 'ARRAY' ? [sort(
 	{$ut->compare($a, $b)}
-	keys(%{+{map(($_ => undef), @$value)}}),
+	map($ut->from_literal_or_die($_),
+	    keys(%{+{map(($_ => undef),
+		map($ut->to_literal($_), @$value))}})),
     )] : $value->new($value->sort_unique($value->as_array));
 }
 
