@@ -1,14 +1,8 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::PropertySupport;
 use strict;
 use Bivio::Base 'SQL.Support';
-use Bivio::Die;
-use Bivio::HTML;
-use Bivio::IO::Trace;
-use Bivio::SQL::Connection;
-use Bivio::Type::DateTime;
-use Bivio::Type::PrimaryId;
 
 # C<Bivio::SQL::PropertySupport> is SQL transaction support for
 # L<Bivio::Biz::PropertyModel>s. PropertyModel life-cycle methods are
@@ -41,12 +35,17 @@ use Bivio::Type::PrimaryId;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_EMPTY_ARRAY) = [];
-my($_MIN_PRIMARY_ID) = Bivio::Type::PrimaryId->get_min;
-Bivio::IO::Config->register(my $_CFG = {
+b_use('IO.Trace');
+my($_BLOB) = b_use('Type.BLOB');
+my($_C) = b_use('SQL.Constraint');
+my($_D) = b_use('Bivio.Die');
+my($_DT) = b_use('Type.DateTime');
+my($_M) = b_use('Biz.Model');
+my($_SC) = b_use('SQL.Connection');
+my($_MIN_PRIMARY_ID) = b_use('Type.PrimaryId')->get_min;
+b_use('IO.Config')->register(my $_CFG = {
     unused_classes => [qw(RealmFile RealmMail RealmMailBounce Website Forum CalendarEvent JobLock Tuple TupleDef TupleSlotType TupleSlotDef TupleUse Motion MotionVote RealmDAG OTP NonuniqueEmail CRMThread TupleTag RealmFileLock TaskLog)],
 });
-my($_C) = __PACKAGE__->use('SQL.Constraint');
 
 sub create {
     my($self, $new_values, $die) = @_;
@@ -57,7 +56,7 @@ sub create {
     # the sequence I<table_name_s> (table_name sans '_t', that is) I<if it
     # not already set>.
     #
-    # I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
+    # I<die> must implement L<Bivio::Die::die|Bivio::ie/"die">.
     my($attrs) = $self->internal_get;
     my($sql) = $attrs->{insert};
 
@@ -73,7 +72,7 @@ sub create {
 #		    unless $new_values->{$pid} < $_MIN_PRIMARY_ID;
 	}
 	else {
-	    $new_values->{$pid} = Bivio::SQL::Connection->next_primary_id(
+	    $new_values->{$pid} = $_SC->next_primary_id(
 		    $attrs->{table_name}, $die);
 	}
     }
@@ -81,7 +80,7 @@ sub create {
     my(@params) = map {
 	$columns->{$_}->{type}->to_sql_param($new_values->{$_});
     } @{$attrs->{column_names}};
-    Bivio::SQL::Connection->execute($sql, \@params, $die, $attrs->{has_blob})
+    $_SC->execute($sql, \@params, $die, $attrs->{has_blob})
         ->finish;
     return;
 }
@@ -98,7 +97,7 @@ sub delete {
     my($columns) = $attrs->{columns};
     my(@params) = map {
         unless (exists($values->{$_})) {
-            $die ||= 'Bivio::Die';
+            $die ||= $_D;
             $die->throw_die('DIE', {
                 message => 'missing primary key value for delete',
                 entity => $self,
@@ -106,7 +105,7 @@ sub delete {
         }
 	$columns->{$_}->{type}->to_sql_param($values->{$_});
     } @{$attrs->{primary_key_names}};
-    my($sth) = Bivio::SQL::Connection->execute($attrs->{delete},
+    my($sth) = $_SC->execute($attrs->{delete},
 	    \@params, $die,
 	    $attrs->{has_blob});
     my($rows) = $sth->rows;
@@ -115,21 +114,17 @@ sub delete {
 }
 
 sub delete_all {
-    my($self, $values, $die) = @_;
+    my($self, $query, $die) = @_;
     # Deletes all the rows specified by the possibly partial key values.
     # If an error occurs during the delete, calls die.
     # Returns the number of rows deleted.
     my($sql) = 'delete from ' . $self->get('table_name');
     my($params) = [];
-    my($first_col) = 1;
-    foreach my $col (sort(keys(%$values))) {
-	my($info) = $self->get_column_info($col);
-	$sql .= ($first_col ? ' where ' : ' and ')
-	    . $col . '=' . $info->{sql_pos_param};
-	push(@$params, $info->{type}->to_sql_param($values->{$col}));
-	$first_col = 0;
-    }
-    my($sth) = Bivio::SQL::Connection->execute($sql, $params, $die);
+    my($sth) = $_SC->execute(
+	$sql,
+	_prepare_select($self, $query, $params),
+	$die,
+    );
     my($rows) = $sth->rows;
     $sth->finish;
     return $rows ? $rows : 0;
@@ -164,7 +159,7 @@ sub iterate_start {
     my(@params);
     my($sql) = _prepare_select($self, $query, \@params);
     $sql =~ s/(\bwhere\s*)?$/ order by $order_by/i;
-    my($iterator) = Bivio::SQL::Connection->execute($sql, \@params, $die,
+    my($iterator) = $_SC->execute($sql, \@params, $die,
 	    $self->get('has_blob'));
     return $iterator;
 }
@@ -204,13 +199,13 @@ sub new {
     die("$attrs->{table_name}: invalid table name, must end in _t")
 	    unless $attrs->{table_name} =~ m!^\w{1,28}_t$!;
 
-    _init_columns($attrs, $decl->{columns});
+    _init_columns($proto, $attrs, $decl->{columns});
 
     # Get auth_id and other columns
     my($save_count) = int(keys(%{$attrs->{columns}}));
     __PACKAGE__->init_column_classes($attrs, $decl, [qw(auth_id other)]);
     __PACKAGE__->init_model_primary_key_maps($attrs);
-    Bivio::Die->die(
+    b_die(
         'columns may not be added in "other" or "auth_id" category: ',
         [keys(%{$attrs->{columns}})])
         unless $save_count == int(keys(%{$attrs->{columns}}));
@@ -248,12 +243,12 @@ sub unsafe_load {
     my($attrs) = $self->internal_get;
     my(@params);
     my($sql) = _prepare_select($self, $query, \@params);
-    my($statement) = Bivio::SQL::Connection->execute($sql, \@params, $die,
+    my($statement) = $_SC->execute($sql, \@params, $die,
 	   $attrs->{has_blob});
-    my($start_time) = Bivio::Type::DateTime->gettimeofday();
+    my($start_time) = $_DT->gettimeofday;
     my($row) = $statement->fetchrow_arrayref();
     my($too_many) = $statement->fetchrow_arrayref ? 1 : 0 if $row;
-    Bivio::SQL::Connection->increment_db_time($start_time);
+    $_SC->increment_db_time($start_time);
     my($values);
     if ($row) {
 	if ($too_many) {
@@ -312,11 +307,11 @@ sub update {
 
     # Need to lock the row before updating if blob
     if ($attrs->{has_blob}) {
-	Bivio::SQL::Connection->execute(
+	$_SC->execute(
 		$attrs->{update_lock}, \@pk, $die)->finish();
     }
 
-    Bivio::SQL::Connection->execute(
+    $_SC->execute(
 	    $attrs->{update}.$set.$attrs->{primary_where}, \@params, $die,
 	    $attrs->{has_blob})->finish();
     return;
@@ -340,7 +335,7 @@ sub _equals {
 }
 
 sub _init_columns {
-    my($attrs, $column_cfg) = @_;
+    my($proto, $attrs, $column_cfg) = @_;
     # Initializes the columns.
     # Sort the columns, so in a guaranteed order.  Makes for better
     # Oracle caching of prepared statements.  We sort first, so
@@ -354,14 +349,14 @@ sub _init_columns {
 	};
 	my($type_decl) = $col->{type};
 	$attrs->{columns}->{$n} = $attrs->{column_aliases}->{$n} = $col;
-	Bivio::SQL::Support->init_type($col, $col->{type});
+	$proto->init_type($col, $col->{type});
 	$col->{constraint} = $_C->from_any($col->{constraint});
 	$col->{sql_name} = $col->{name} = $n;
 	$col->{is_searchable} = $col->{is_searchable} ? 1 : 0;
 	$col->{sql_pos_param} = $col->{type}->to_sql_value('?');
 	$col->{sql_pos_param_for_insert} ||= $col->{type}->to_sql_value('?');
 	$attrs->{has_blob} = 1
-	    if UNIVERSAL::isa($col->{type}, 'Bivio::Type::BLOB');
+	    if $_BLOB->is_subclass($col->{type});
 	$col->{is_primary_key} = $col->{constraint}->eq_primary_key;
 	push(@{$attrs->{primary_key}}, $col)
 	    if $col->{is_primary_key};
@@ -379,10 +374,10 @@ sub _init_columns {
 # 	}
     }
     _register_with_parents($attrs);
-    Bivio::Die->die($attrs->{table_name}, ': too many BLOBs')
-		if $attrs->{has_blob} > 1;
-    Bivio::Die->die($attrs->{table_name}, ': no primary keys')
-		unless int(@{$attrs->{primary_key}});
+    b_die($attrs->{table_name}, ': too many BLOBs')
+	if $attrs->{has_blob} > 1;
+    b_die($attrs->{table_name}, ': no primary keys')
+	unless int(@{$attrs->{primary_key}});
 
     $attrs->{primary_key_names} = [map {$_->{name}} @{$attrs->{primary_key}}];
     return;
@@ -429,7 +424,7 @@ sub _prepare_select {
     my($sql) = $attrs->{select};
     if ($query) {
 	$sql .=' where '.join(' and ', map {
-	    Bivio::Die->die('invalid field name: ', $_)
+	    b_die('invalid field name: ', $_)
 		unless $columns->{$_};
 	    _prepare_select_param($columns->{$_}, $query->{$_}, $params);
 	    # Use a sort to force order which (may) help Oracle's cache.
@@ -462,7 +457,7 @@ sub _register_with_parents {
 	@{$_CFG->{unused_classes}},
     );
     while (my($parent, $key_map) = each(%{$attrs->{parents}})) {
-	Bivio::Biz::Model->get_instance($parent =~ /^(\S+)/)
+	$_M->get_instance($parent =~ /^(\S+)/)
 	    ->register_child_model($attrs->{class}, $key_map);
     }
     return;

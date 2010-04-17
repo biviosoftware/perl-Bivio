@@ -61,6 +61,14 @@ my($support);
 	unsafe_load => [
 	    [{gender => Type_Gender()->FEMALE}] => [{gender => 'FEMALE'}],
 	],
+	delete_all => [
+	    [{
+		gender => [Type_Gender()->FEMALE, Type_Gender()->MALE],
+	    }] => not_die(),
+	],
+	unsafe_load => [
+	    [{gender => Type_Gender()->FEMALE}] => [undef],
+	],
 	new => [
 	    [{
 		version => 1,
