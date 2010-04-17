@@ -1,24 +1,20 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-
-use Bivio::SQL::Connection;
-
-my($_TABLE) = 't_support_t';
-my($_SEQUENCE) = 't_support_s';
-my($_ID) = 't_support_id';
-my($_MIN_ID) = '100099';
-
-eval {
-    Bivio::SQL::Connection->execute("drop table $_TABLE");
-};
-eval {
-    Bivio::SQL::Connection->execute("drop sequence $_SEQUENCE");
-};
-Bivio::SQL::Connection->commit;
-
-Bivio::SQL::Connection->execute(<<"EOF");
-create table $_TABLE (
-    $_ID NUMERIC(18) primary key,
+Unit();
+options({comparator => 'nested_contains'});
+my($table) = 't_support_t';
+my($sequence) = 't_support_s';
+my($id) = 't_support_id';
+my($min_id) = '100099';
+my($_S) = SQL_Connection();
+Bivio_Die()->eval(
+    sub {$_S->execute("drop table $table")});
+Bivio_Die()->eval(
+    sub {$_S->execute("drop sequence $sequence")});
+$_S->commit;
+$_S->execute(<<"EOF");
+create table $table (
+    $id NUMERIC(18) primary key,
     name VARCHAR(30),
     line VARCHAR(100),
     text VARCHAR(500),
@@ -30,69 +26,49 @@ create table $_TABLE (
     gender NUMERIC(1) CHECK (gender BETWEEN 0 AND 2) NOT NULL
 )
 EOF
-Bivio::SQL::Connection->execute(<<"EOF");
-create sequence $_SEQUENCE minvalue $_MIN_ID increment by 100000
+$_S->execute(<<"EOF");
+create sequence $sequence minvalue $min_id increment by 100000
 EOF
-Bivio::SQL::Connection->commit;  # Can't see table until commit
-
+# Can't see table until commit in Oracle
+$_S->commit;
 my($support);
-
 [
-    inline_case(sub {
-        $support = Bivio::SQL::PropertySupport->new({
-            version => 1,
-            table_name => $_TABLE,
-            columns => {
-	        $_ID => ['Bivio::Type::PrimaryId',
-		    Bivio::SQL::Constraint::PRIMARY_KEY()],
-	        name => ['Bivio::Type::Name',
-		    Bivio::SQL::Constraint::NONE()],
-	        line => ['Bivio::Type::Line',
-		    Bivio::SQL::Constraint::NONE()],
-	        text => ['Bivio::Type::Text',
-		    Bivio::SQL::Constraint::NONE()],
-	        amount => ['Bivio::Type::Amount',
-		    Bivio::SQL::Constraint::NONE()],
-	        boolean => ['Bivio::Type::Boolean',
-		    Bivio::SQL::Constraint::NOT_NULL()],
-	        date_time => ['Bivio::Type::DateTime',
-		    Bivio::SQL::Constraint::NONE()],
-	        dt => ['Bivio::Type::Date',
-		    Bivio::SQL::Constraint::NONE()],
-	        tm => ['Bivio::Type::Time',
-		    Bivio::SQL::Constraint::NONE()],
-	        gender => ['Bivio::Type::Gender',
-                    Bivio::SQL::Constraint::NOT_NULL()],
-            },
-        });
-	# unsafe_load returns undefined if no data is loaded
-	assert_equals(1, !defined($support->unsafe_load({$_ID => $_MIN_ID})));
-    }),
-    inline_case(sub {
-	$support->create({
-            gender => Bivio::Type::Gender->FEMALE,
-            boolean => 0,
-        });
-        assert_equals(Bivio::Type::Gender->FEMALE,
-	    $support->unsafe_load({
-	        gender => Bivio::Type::Gender->FEMALE,
-	    })->{gender},
-	);
-    }),
-    inline_case(sub {
-        my($die) = Bivio::Die->catch(sub {
-            Bivio::SQL::PropertySupport->new({
-                version => 1,
-                table => $_TABLE,
-                columns => {
-                    name => ['Bivio::Type::Name',
-			     Bivio::SQL::Constraint::NONE()],
-                },
-	    });
-	});
-	assert_equals(
-	    qr{^you must declare table_name},
-	    $die->get('attrs')->{message},
-	);
-    }),
+    [{
+	version => 1,
+	table_name => $table,
+	columns => {
+	    $id => [qw(PrimaryId PRIMARY_KEY)],
+	    name => [qw(Name NONE)],
+	    line => [qw(Line NONE)],
+	    text => [qw(Text NONE)],
+	    amount => [qw(Amount NONE)],
+	    boolean => [qw(Boolean NOT_NULL)],
+	    date_time => [qw(DateTime NONE)],
+	    dt => [qw(Date NONE)],
+	    tm => [qw(Time NONE)],
+	    gender => [qw(Gender NOT_NULL)],
+	},
+    }] => [
+	unsafe_load => [
+	    [{$id => $min_id}] => [undef],
+	],
+	create => [
+	    [{
+		gender => Type_Gender()->FEMALE,
+		boolean => 0,
+	    }] => not_die(),
+	],
+	unsafe_load => [
+	    [{gender => Type_Gender()->FEMALE}] => [{gender => 'FEMALE'}],
+	],
+	new => [
+	    [{
+		version => 1,
+		table => $table,
+		columns => {
+		    name => ['Name', 'NONE'],
+		},
+	    }] => qr{you must declare table_name},
+	],
+    ],
 ];
