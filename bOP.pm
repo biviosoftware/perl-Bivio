@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.19  2010/04/14 15:27:34  moeller
+  * Bivio::Biz::t::ExpandableListFormModel::T1ListForm
+    added CLASSLOADER_MAP_NAME
+  * Bivio::Test::HTMLParser::Cleaner
+    removed 015 line
+  * Bivio::UI::HTML::Widget::SourceCode
+    unsafe_map_require dies on syntax error so must execute in eval
+  * Bivio::UNIVERSAL
+    as_classloader_map_name returns package_name if map_name is empty
+  * Bivio::Util::SiteForum
+    fpc
+
   Revision 9.18  2010/04/13 00:22:58  nagler
   * Bivio::PetShop::Util::SQL
     create ROOT user
