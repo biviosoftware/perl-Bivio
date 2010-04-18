@@ -12,7 +12,7 @@ package Bivio::Delegate::SimpleTaskId;
 #	    ]);
 #	}
 use strict;
-use Bivio::Base 'Bivio::Delegate';
+use Bivio::Base 'Bivio.Delegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_INFO_RE) = qr{^info_(.*)};
@@ -29,7 +29,7 @@ sub bunit_validate_all {
     my($proto) = @_;
     my($seen) = {};
     foreach my $c (@{$proto->standard_components}) {
-	foreach my $t (@{_component_info($proto, $c)}) {
+	foreach my $t (@{_component_info($proto, $c) || []}) {
 	    my($n) = $t->[0];
 	    Bivio::Die->die($c, ' and ', $seen->{$n}, ': both define ', $n)
 	        if $seen->{$n};
@@ -435,14 +435,28 @@ sub is_component_included {
 
 sub merge_task_info {
     my($proto, @cfg) = @_;
-    my($seen) = {};
-    return _merge_modifiers($proto, [map(
-	!ref($_) eq 'HASH' && $seen->{$_->[0]}++ ? () : $_,
-	map(@{ref($_) ? $_
-	    : ($_INCLUDED->{$_} = 1, _component_info($proto, $_))[1]},
-	    reverse(@cfg),
-	),
-    )]);
+    my($only_once) = sub {
+	my($cfg) = @_;
+	my($seen) = {};
+	return [map(
+	    ref($_) ne 'HASH' && $seen->{$_->[0]}++ ? () : $_,
+	    @$cfg,
+        )];
+    };
+    my($info) = sub {
+	my($component) = @_;
+	return @$component
+	    if ref($component);
+	return
+	    unless my $tasks = _component_info($proto, $component);
+	$_INCLUDED->{$component} = 1;
+	return @$tasks;
+    };
+    return _merge_modifiers(
+	$proto,
+	$only_once->(
+	    [map($info->($_), reverse(@cfg))]),
+    );
 }
 
 sub standard_components {
@@ -452,7 +466,7 @@ sub standard_components {
 sub _component_info {
     my($proto, $component) = @_;
     my($m) = "info_$component";
-    Bivio::Die->die($component, ': no such info_* component')
+    b_die($component, ': no such info_* component')
         unless $proto->can($m);
     return $proto->$m();
 }
@@ -496,13 +510,11 @@ sub _merge_modifiers {
 	];
     } sort({$a->{int} <=> $b->{int}} values(%$map)))];
 }
-# sub _merge_modifiers {
-#     return $_[1];
-# }
+
 sub _sort {
     return $a eq $b ? 0
 	: $a eq 'base' ? -1
-	: $b eq 'base' ? -1
+	: $b eq 'base' ? +1
 	: $a cmp $b;
 }
 
