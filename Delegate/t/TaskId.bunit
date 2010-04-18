@@ -3,6 +3,9 @@
 [
     class() => [
 	bunit_validate_all => undef,
+	included_components => [
+	    [] => [[]],
+	],
 	merge_task_info => [
 	    xapian => [[
 		[qw(
@@ -35,6 +38,9 @@
 	    ]],
 	    [[[a => 1]], [[b => 2]]] => [[[a => 1, undef, undef, {}], [b => 2, undef, undef, {}]]],
 	    [[[a => 1]], [[a => 3], [b => 2]]] => [[[b => 2, undef, undef, {}], [a => 3, undef, undef, {}]]],
+	],
+	included_components => [
+	    [] => [[qw(xapian)]],
 	],
     ],
 ];
