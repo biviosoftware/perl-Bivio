@@ -41,6 +41,7 @@ my($_C) = b_use('SQL.Constraint');
 my($_D) = b_use('Bivio.Die');
 my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');
+my($_R) = b_use('Agent.Request');
 my($_SC) = b_use('SQL.Connection');
 my($_MIN_PRIMARY_ID) = b_use('Type.PrimaryId')->get_min;
 b_use('IO.Config')->register(my $_CFG = {
@@ -118,11 +119,14 @@ sub delete_all {
     # Deletes all the rows specified by the possibly partial key values.
     # If an error occurs during the delete, calls die.
     # Returns the number of rows deleted.
-    my($sql) = 'delete from ' . $self->get('table_name');
+    $_R->assert_test
+	unless %$query;
     my($params) = [];
     my($sth) = $_SC->execute(
-	$sql,
-	_prepare_select($self, $query, $params),
+	'delete from '
+	    . $self->get('table_name')
+	    . _prepare_where($self, $query, $params),
+	$params,
 	$die,
     );
     my($rows) = $sth->rows;
@@ -241,6 +245,7 @@ sub unsafe_load {
     #
     # I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
     my($attrs) = $self->internal_get;
+    $die ||= $_D;
     my(@params);
     my($sql) = _prepare_select($self, $query, \@params);
     my($statement) = $_SC->execute($sql, \@params, $die,
@@ -417,20 +422,7 @@ sub _init_statements {
 
 sub _prepare_select {
     my($self, $query, $params) = @_;
-    # Returns select statement including where if there is a query.
-    # Create the where clause and values array
-    my($attrs) = $self->internal_get;
-    my($columns) = $attrs->{columns};
-    my($sql) = $attrs->{select};
-    if ($query) {
-	$sql .=' where '.join(' and ', map {
-	    b_die('invalid field name: ', $_)
-		unless $columns->{$_};
-	    _prepare_select_param($columns->{$_}, $query->{$_}, $params);
-	    # Use a sort to force order which (may) help Oracle's cache.
-	} sort keys(%$query));
-    }
-    return $sql;
+    return $self->get('select') . _prepare_where($self, $query, $params);
 }
 
 sub _prepare_select_param {
@@ -448,6 +440,26 @@ sub _prepare_select_param {
     return $column->{sql_name}
 	. ' IN '
 	. $column->{type}->to_sql_value_list($value);
+}
+
+sub _prepare_where {
+    my($self, $query, $params) = @_;
+    return ''
+	unless $query && %$query;
+    my($columns) = $self->get('columns');
+    return ' WHERE '
+	. join(
+	    ' AND ',
+	    map(
+		_prepare_select_param(
+		    $columns->{$_} || b_die('invalid field name: ', $_),
+		    $query->{$_},
+		    $params,
+	        ),
+		# Use a sort to force order which (may) help Oracle's cache.
+		sort(keys(%$query)),
+	    ),
+	);
 }
 
 sub _register_with_parents {
