@@ -781,10 +781,13 @@ sub _init_site_admin {
 	$self->req->with_realm(
 	    b_use('ShellUtil.SiteForum')->ADMIN_REALM,
 	    sub {
-		$self->model(RealmUserAddForm => {
-		    administrator => $user eq 'SITE_ACCOUNTANT' ? 0 : 1,
-		    'User.user_id' => $uid,
-		});
+		$self->model('GroupUserForm')->change_main_role(
+		    $uid,
+		    $_R->from_name(
+			$user eq 'SITE_ACCOUNTANT' ? 'USER'
+			: 'ADMINISTRATOR',
+		    ),
+		);
 		return;
 	    },
 	);
