@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::HTTPD;
 use strict;
@@ -6,7 +6,7 @@ use Bivio::Base 'Bivio::ShellUtil';
 use Sys::Hostname ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_V2) = b_use('Bivio::Agent::Request')->if_apache_version(2 => sub {1});
+my($_V2) = b_use('Agent.Request')->if_apache_version(2 => sub {1});
 my($_HTTPD) = _find_file($_V2 ? qw(
     /usr/local/apache/bin/httpd2
     /usr/sbin/httpd2
@@ -25,9 +25,16 @@ sub USAGE {
     return <<'EOF';
 usage: bivio httpd [options] command [args..]
 commands
+   assert_in_exec_dir -- dies if not in execution directory
    run -- starts httpd in foreground 
    run_background -- starts httpd in background
 EOF
+}
+
+sub assert_in_exec_dir {
+    b_die(`pwd`, ': wrong directory to write restart sentinel')
+	unless -r 'httpd.pid';
+    return;
 }
 
 sub handle_config {
@@ -118,9 +125,16 @@ PerlFreshRestart off
 	$self->print("tail -f httpd/stderr.log\n")
 	    if $background;
 	Bivio::IO::File->chdir($pwd);
-	$self->internal_pre_exec;
-	exec($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
-	die("$_HTTPD: $!");
+	while (1) {
+	    $self->internal_pre_exec;
+	    if ($background) {
+		exec($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
+		die("$_HTTPD: $!");
+	    }
+	    system($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
+	    last
+		unless b_use('Action.DevRestart')->restart_requested;
+	}
     }
     else {
 	$self->print("Would start: $_HTTPD -X -d $pwd -f $pwd/$conf\n");
