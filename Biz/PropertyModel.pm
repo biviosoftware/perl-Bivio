@@ -1,16 +1,13 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::PropertyModel;
 use strict;
 use Bivio::Base 'Biz.Model';
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::IO::Trace;
-use Bivio::SQL::ListQuery;
-use Bivio::SQL::PropertySupport;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Trace');
 our($_TRACE);
+my($_PS) = b_use('SQL.PropertySupport');
 
 sub assert_properties {
     my($self, $values) = @_;
@@ -240,18 +237,18 @@ sub internal_initialize_sql_support {
     die('cannot create anonymous PropertyModels') if $config;
     $config = $proto->internal_initialize;
     $config->{class} = ref($proto) || $proto;
-    return  Bivio::SQL::PropertySupport->new($config);
+    return $_PS->new($config);
 }
 
 sub internal_load_properties {
-    my($self, $values) = @_;
+    my($self, $values, $ephemeral) = @_;
     # Loads model with values as properties.  DOES NOT MAKE A COPY of values.
     $self->internal_clear_model_cache;
     $self->assert_properties($values)
 	unless __PACKAGE__ eq (caller)[0];
     $self->internal_put($values);
     $self->put_on_request
-	unless $self->is_ephemeral;
+	unless $ephemeral || $self->is_ephemeral;
     return $self;
 }
 
@@ -297,17 +294,7 @@ sub iterate_next_and_load {
     #
     # B<Deprecated form accepts an iterator as the first argument.>
     my(undef, $row) = $self->internal_iterate_next(@_, {});
-    return $row ? _load($self, $row) : _unload($self, 1);
-}
-
-sub iterate_next_and_load_new {
-    my($self, $row) = shift->internal_iterate_next(@_, {});
-    # Same as L<iterate_next_and_load|"iterate_next_and_load">, but
-    # returns a new model instance for each row if iteration proceeds.
-    # Returns C<undef> if end of iteration.
-    #
-    # B<Deprecated form accepts an iterator as the first argument.>
-    return $row ? $self->new->internal_load_properties($row) : undef;
+    return $row ? _load($self, $row, 1) : _unload($self, 1);
 }
 
 sub iterate_start {
@@ -827,7 +814,7 @@ sub _unload {
     $self->internal_clear_model_cache;
     $self->internal_put({});
     $self->delete_from_request
-	if $delete_from_request && ! $self->is_ephemeral;
+	if $delete_from_request && !$self->is_ephemeral;
     return 0;
 }
 
