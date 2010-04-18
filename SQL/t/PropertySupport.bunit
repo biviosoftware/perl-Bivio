@@ -32,6 +32,14 @@ EOF
 # Can't see table until commit in Oracle
 $_S->commit;
 my($support);
+my($values) = sub {
+    my($gender, $boolean) = @_;
+    return [{
+	gender => ref($gender) ? [map(Type_Gender($_), @$gender)]
+	    : Type_Gender($gender),
+	boolean => $boolean,
+    }];
+};
 [
     [{
 	version => 1,
@@ -53,21 +61,47 @@ my($support);
 	    [{$id => $min_id}] => [undef],
 	],
 	create => [
-	    [{
-		gender => Type_Gender()->FEMALE,
-		boolean => 0,
-	    }] => not_die(),
+	    map(
+		($values->(@$_) => not_die()),
+		[qw(FEMALE 0)],
+		[qw(MALE 0)],
+		[qw(FEMALE 1)],
+		[qw(MALE 1)],
+	    ),
 	],
 	unsafe_load => [
-	    [{gender => Type_Gender()->FEMALE}] => [{gender => 'FEMALE'}],
+	    map(
+		($values->(@$_) => $values->(@$_)),
+		[qw(FEMALE 0)],
+		[qw(MALE 0)],
+		[qw(FEMALE 1)],
+		[qw(MALE 1)],
+	    ),
 	],
 	delete_all => [
-	    [{
-		gender => [Type_Gender()->FEMALE, Type_Gender()->MALE],
-	    }] => not_die(),
+	    $values->([qw(FEMALE MALE)], 0) => not_die(),
 	],
 	unsafe_load => [
-	    [{gender => Type_Gender()->FEMALE}] => [undef],
+	    map(
+		($values->(@$_) => $_->[1] ? $values->(@$_) : [undef]),
+		[qw(FEMALE 0)],
+		[qw(MALE 0)],
+		[qw(FEMALE 1)],
+		[qw(MALE 1)],
+	    ),
+	],
+	delete_all => [
+	    [{}] => not_die(),
+	],
+	unsafe_load => [
+	    [{}] => [undef],
+	],
+	delete_all => [
+	    inline_case(sub {
+	        config({'Bivio::Agent::Request' => {is_production => 1}});
+		return;
+	    }),
+	    [{}] => DIE(),
 	],
 	new => [
 	    [{
