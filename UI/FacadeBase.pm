@@ -3,15 +3,17 @@
 package Bivio::UI::FacadeBase;
 use strict;
 use Bivio::Base 'UI.Facade';
-use Bivio::IO::Trace;
+
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_C) = __PACKAGE__->use('IO.Config');
-my($_WIKI_DATA_FOLDER) = __PACKAGE__->use('Type.WikiDataName')->PRIVATE_FOLDER;
+our($_TRACE);
+b_use('IO.Trace');
+my($_C) = b_use('IO.Config');
+my($_WIKI_DATA_FOLDER) = b_use('Type.WikiDataName')->PRIVATE_FOLDER;
 my($_EASY_FORM_DIR) = 'Forms';
 my($_RN) = b_use('Type.RealmName');
 my($_FN) = b_use('Type.ForumName');
-our($_TRACE);
+my($_D) = b_use('Bivio.Die');
 
 sub HELP_WIKI_REALM_NAME {
     return _site(shift, 'help');
@@ -119,7 +121,7 @@ sub mail_receive_task_list {
 	       lc($_ =~ /MAIL_RECEIVE_(\w+)/ ? $1
 	       : $_ =~ /_MAIL_RECEIVE$/ ? ''
 	       : b_die($_, ': invalid mail_receive task name')));
-	[$name => Bivio::Die->eval(qq{
+	[$name => $_D->eval(qq{
 	     sub {shift->get_facade->mail_receive_uri('$uri_suffix')}
 	})];
     } @tasks);
@@ -136,8 +138,8 @@ sub new {
 	_merge(
 	    map({
 		my($x) = \&{"_cfg_$_"};
-		$x->($proto);
-	    } @{Bivio::Agent::TaskId->included_components}),
+		defined(&$x) ? $x->($proto) : ();
+	    } @{b_use('Agent.TaskId')->included_components}),
 	    $config,
 	),
     );
@@ -466,7 +468,7 @@ sub _cfg_base {
                                 BR(),
 				'Click here to exit.',
 			    ])),
-			    Bivio::IO::Config->if_version(10,
+			    b_use('IO.Config')->if_version(10,
                                 sub {
 				    return URI({
 					task_id => 'SITE_ADMIN_SUBSTITUTE_USER_DONE',
@@ -760,6 +762,14 @@ sub _cfg_dav {
     };
 }
 
+sub _cfg_dev {
+    return {
+	Task => [
+	    [DEV_RESTART => 'pub/restart-server'],
+	],
+    };
+}
+
 sub _cfg_file {
     return {
 	FormError => [
@@ -977,7 +987,7 @@ sub _cfg_mail {
 	    [cc => 'Cc'],
 	    [subject => 'Subject'],
 	    [body => 'Text'],
-	    [Bivio::Biz::Model->get_instance('MailForm')
+	    [b_use('Biz.Model')->get_instance('MailForm')
 	        ->map_attachments(sub {shift}) => 'Attach'],
 	    [view_rfc822 => 'Show Original'],
 	    [MailForm => [
@@ -1141,7 +1151,7 @@ sub _cfg_site_admin {
 		    ["want_$n" => defined($control) ? $control : 1],
 		);
 	    }
-		Bivio::IO::Config->if_version(10 => sub {
+		$_C->if_version(10 => sub {
 		        return [qw(all_users GROUP_USER_LIST SITE_ADMIN_REALM_NAME)],
 		    },
 		    sub {[qw(all_users SITE_ADMIN_USER_LIST)]},
@@ -1152,7 +1162,7 @@ sub _cfg_site_admin {
 		}],
 		[qw(remote_copy REMOTE_COPY_FORM), sub {
 		     my($fc) = @_;
-		     return Bivio::Die->eval(sub {
+		     return $_D->eval(sub {
 			 my($id) = $fc->unsafe_get_value('site_admin_realm_id');
 			 return $id
 			     && b_use('Model.RemoteCopyList')->new(
@@ -1866,7 +1876,7 @@ sub _unsafe_realm_id {
 	unless $n;
     my($req) = $self->req;
     my($res);
-    Bivio::Die->catch_quietly(sub {
+    $_D->catch_quietly(sub {
         my($ro) = b_use('Model.RealmOwner')->new($req);
 	return $res = $ro->get('realm_id')
 	    if $ro->unauth_load({name => $n});
