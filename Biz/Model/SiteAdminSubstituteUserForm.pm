@@ -21,9 +21,10 @@ sub can_substitute_user {
 		my($res) = {@{$self->new_other('GroupUserList')
 		    ->map_iterate(
 		        sub {
-			    my($uid, $role) = shift->get(qw(RealmUser.user_id RealmUser.role));
+			    my($uid, $roles) = shift->get(qw(RealmUser.user_id roles));
 			    $found++
-				if $uid eq $auid && $role->eq_administrator;
+				if $uid eq $auid
+				&& grep($_->eq_administrator, @$roles);
 			    return ($uid => 1);
 			},
 			'unauth_iterate_start',
