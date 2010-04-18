@@ -10,6 +10,7 @@ my($_AUX) = [qw(file_writer mail_recipient)];
 my($_R) = b_use('Auth.Role');
 my($_F) = b_use('UI.Facade');
 my($_UNAPPROVED) = $_R->UNAPPROVED_APPLICANT;
+my($_EVERYBODY) = b_use('Auth.Role')->get_category_role_group('everybody');
 
 sub UNAPPROVED_ROLE {
     return $_UNAPPROVED;
@@ -21,9 +22,11 @@ sub USER_LIST_CLASS {
 
 sub change_main_role {
     my($self, $user_id, $role) = @_;
-    # CANNOT use RealmUserAddForm (or subclasses) to avoid looping
     my($ru) = $self->new_other('RealmUser');
-    $ru->delete_all({user_id => $user_id});
+    $ru->delete_all({
+	user_id => $user_id,
+	role => $_EVERYBODY,
+    });
     $ru->create({
 	realm_id => $self->req('auth_id'),
 	user_id => $user_id,
