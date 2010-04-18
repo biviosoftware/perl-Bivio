@@ -32,12 +32,8 @@ Bivio::Test->unit([
 		    [$case->get('object')->get('product_id')]);
 		return ['FI-FW-01'];
 	    },
-	    iterate_next_and_load_new => sub {
-		my($case, $return) = @_;
-		$case->actual_return([$return->[0]->get('product_id')]);
-		return ['FI-FW-02'];
-	    },
 	    iterate_next => [
+		[{}] => undef,
 		[{}] => sub {
 		    my($case, $return) = @_;
 		    $case->actual_return([
