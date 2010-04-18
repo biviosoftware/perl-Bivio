@@ -570,6 +570,22 @@ sub info_dav {
     ];
 }
 
+sub info_dev {
+    my($self) = @_;
+    return
+	unless -w __FILE__;
+    return [
+	[qw(
+	    DEV_RESTART
+            220
+            GENERAL
+            ANYBODY
+            Action.DevRestart
+	)],
+#221-229
+    ];
+}
+
 sub info_file {
     return [
 	[qw(
@@ -1032,6 +1048,7 @@ sub info_site_admin {
                 next=SITE_ADMIN_TASK_LOG
 	        require_secure=1
 	    )],
+#211
 	    [qw(
 	        GROUP_TASK_LOG
 	        212
