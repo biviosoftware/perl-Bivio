@@ -75,7 +75,13 @@ sub do_iterate {
     my($iterate_start) = $_[0] && !ref($_[0]) && $_[0] =~ /iterate_start/
 	&& $self->can($_[0]) ? shift : 'iterate_start';
     $self->$iterate_start(@_);
-    0 while $self->iterate_next_and_load && $do_iterate_handler->($self);
+    while ($self->iterate_next_and_load) {
+	next
+	    if $do_iterate_handler->($self);
+	$self->put_on_request($self)
+	    unless $self->is_ephemeral;
+	last;
+    }
     $self->iterate_end;
     return $self;
 }
@@ -494,15 +500,15 @@ sub put {
 
 sub put_on_request {
     my($self, $durable) = @_;
-    $self->[$_IDI]->{ephemeral} = 0;
+    $self->set_ephemeral(0);
     return $self->unsafe_get_request
 	? $self->put_on_req($self->req, $durable)
 	: $self;
 }
 
 sub set_ephemeral {
-    my($self) = @_;
-    $self->[$_IDI]->{ephemeral} = 1;
+    my($self, $value) = @_;
+    $self->[$_IDI]->{ephemeral} = @_ < 2 || $value ? 1 : 0;
     return $self;
 }
 
