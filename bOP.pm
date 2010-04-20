@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,51 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.20  2010/04/18 20:05:33  nagler
+  * Bivio::Biz::Action::DevRestart
+    NEW
+  * Bivio::Biz::Model::GroupUserForm
+    only delete "everybody" roles in change_main_role
+  * Bivio::Biz::Model::SiteAdminSubstituteUserForm
+    check for eq_administrator in all roles, not just main role
+  * Bivio::Biz::Model
+    cruft
+    do_iterate calls put_on_request if the loop ends early
+  * Bivio::Biz::PropertyModel
+    iterate does not put_on_request
+    b_use
+  * Bivio::Delegate::SimpleAuthSupport
+    set_ephemeral on do_iterate to avoid put_on_request()
+    don't query on realm roles which have already been cached
+  * Bivio::Delegate::SimpleTaskId
+    modularized merge_task_info better
+    _sort() was not returning correct value when $b was base
+    b_use
+  * Bivio::Delegate::TaskId
+    added info_dev component, DEV_RESTART
+  * Bivio::PetShop::Util::SQL
+    use change_main_role in _init_site_admin
+  * Bivio::SQL::PropertySupport
+    delete_all supports generalized queries
+    delete_all uses _prepare_where
+    factor out _prepare_where from _prepare_select
+    put in an assertion on the query on delete_all
+  * Bivio::Test::Language::HTTP
+    doc
+  * Bivio::Type::ArrayBase
+    sort unique needs to use to_literal, from_literal before doing keys
+  * Bivio::Type::Enum
+    compare works if only passed one parameter, it uses $self as the $left
+  * Bivio::UI::FacadeBase
+    added _cfg_dev
+    b_use
+  * Bivio::UNIVERSAL
+    cache request keys by package name
+    cache as_classloader_map_name, not _REQ_KEY_CACHE
+    $self => $proto in a couple of places
+  * Bivio::Util::HTTPD
+    added restart function
+
   Revision 9.19  2010/04/14 15:27:34  moeller
   * Bivio::Biz::t::ExpandableListFormModel::T1ListForm
     added CLASSLOADER_MAP_NAME
