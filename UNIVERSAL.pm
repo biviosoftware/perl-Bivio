@@ -5,7 +5,6 @@ use strict;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A, $_R, $_SA, $_P, $_CL);
-my($_REQ_KEY_CACHE) = {};
 my($_CLASSLOADER_MAP_NAME) = {};
 
 sub CLASSLOADER_MAP_NAME {
