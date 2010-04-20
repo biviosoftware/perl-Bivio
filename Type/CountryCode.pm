@@ -997,6 +997,14 @@ __PACKAGE__->compile([
         239,
         'Various',
     ],
+    ME => [
+	240,
+	'Montenegro',
+   ],
+    RS => [
+	241,
+	'Serbia',
+    ],
 ]);
 
 =head1 METHODS
