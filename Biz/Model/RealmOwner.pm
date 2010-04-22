@@ -18,7 +18,6 @@ my($_HOME_TASK_MAP) = {
         Bivio::Auth::RealmType->get_non_zero_list))),
 };
 my($_RT) = b_use('Auth.RealmType');
-my($_R) = b_use('Auth.Realm');
 
 sub create {
     my($self, $values) = @_;
@@ -296,7 +295,6 @@ sub unsafe_get_model {
 
 sub update {
     my($self, $values) = @_;
-    $_R->clear_model_cache($self->req);
     if ($self->require_otp
         && defined($values->{password})
         && $values->{password} ne $self->get('password'),

@@ -21,12 +21,6 @@ sub add_permissions {
     return _do('add', @_);
 }
 
-sub delete {
-    my($self) = shift;
-    $_S->clear_model_cache($self->req);
-    return $self->SUPER::delete(@_);
-}
-
 sub get_permission_map {
     my($self, $realm) = @_;
     $realm = Bivio::Auth::Realm->new($realm, $self->get_request)
@@ -89,12 +83,6 @@ sub internal_initialize {
 
 sub remove_permissions {
     return _do('remove', @_);
-}
-
-sub update {
-    my($self) = shift;
-    $_S->clear_model_cache($self->req);
-    return $self->SUPER::update(@_);
 }
 
 sub _default {
