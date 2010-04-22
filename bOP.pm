@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.21  2010/04/20 20:17:07  moeller
+  * Bivio::Biz::Action::ECPaymentProcessAll
+    rm pod,
+    put payment model on request during iterate
+  * Bivio::Type::CountryCode
+    added montenegro and serbia
+
   Revision 9.20  2010/04/18 20:05:33  nagler
   * Bivio::Biz::Action::DevRestart
     NEW
