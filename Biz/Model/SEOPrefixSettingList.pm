@@ -12,7 +12,7 @@ sub find_prefix_by_uri {
     my($map) = $self->req->get_if_exists_else_put(
 	__PACKAGE__ . '.all',
 	sub {
-	    my($res) = $self->new_other('RealmSettingList')
+	    my($res) = $self->new_other('RealmSettingList')->set_ephemeral
 		->unauth_get_all_settings(
 		    $_C->get_value('site_realm_id', $self->req),
 		    SEOPrefix => [
