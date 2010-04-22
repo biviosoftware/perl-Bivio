@@ -477,10 +477,12 @@ sub internal_load {
     $self->internal_put($empty_properties);
     $self->throw_die('MODEL_NOT_FOUND')
         if $self->NOT_FOUND_IF_EMPTY && !@$rows;
-    $self->put_on_request
-	unless $self->is_ephemeral;
-    my($req) = $self->unsafe_get_request;
-    $req->put(list_model => $self) if $req;
+
+    unless ($self->is_ephemeral) {
+	$self->put_on_request;
+	$self->req->put(list_model => $self)
+	    if $self->unsafe_get_request;
+    }
 
     for (my($i) = 0; $i <= $#$rows; $i++) {
 	$self->set_cursor_or_die($i);
