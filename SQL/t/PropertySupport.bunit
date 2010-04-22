@@ -112,5 +112,10 @@ my($values) = sub {
 		},
 	    }] => qr{you must declare table_name},
 	],
+	iterate_start => [
+	    ['Bivio::Die', undef, undef] => not_die(),
+	    ['Bivio::Die', 'gender ASC', undef] => not_die(),
+	    ['Bivio::Die', 'gender ASC', {gender => Type_Gender('MALE')}] => not_die(),
+	],
     ],
 ];
