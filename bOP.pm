@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.22  2010/04/22 00:13:29  nagler
+  * Bivio::Biz::Model::RealmSettingList
+    added unauth_* methods so can load more easily (without setting realm)
+  * Bivio::Biz::Model::SEOPrefixSettingList
+    NEW
+  * Bivio::PetShop::Util::SQL
+    added seo_btest support
+  * Bivio::PetShop::Util::TestData
+    added seo_btest support
+  * Bivio::UI::Task
+    added SEOPrefixSettingList support
+
   Revision 9.21  2010/04/20 20:17:07  moeller
   * Bivio::Biz::Action::ECPaymentProcessAll
     rm pod,
