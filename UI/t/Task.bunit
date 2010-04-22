@@ -33,6 +33,9 @@ sub _parse_err {
 	    [{uri => '#'}] => '#',
 	    [{uri => 'http://a/'}] => 'http://a/',
 	    [{uri => '/foo', seo_uri_prefix => 'hi ho'}] => '/hi-ho-/foo',
+	    [{uri => '/foo', seo_uri_prefix => 'hi ho'}] => '/hi-ho-/foo',
+	    [{uri => '/seo_btest'}] => '/forum-home-/seo_btest',
+	    [{task_id => 'FORUM_WIKI_VIEW', realm => 'seo_btest'}] => '/wiki-home-/seo_btest/bp',
 	],
 	{
 	    method => 'parse_uri',
