@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmSettingList;
 use strict;
@@ -22,53 +22,15 @@ sub as_string {
 }
 
 sub get_all_settings {
-    my($self, $base, $columns) = @_;
-    $self = _load($self, $base);
-    my($keys) = $self->map_rows(
-	sub {
-	    my($k) = shift->get('key');
-	    return defined($k) ? $k : ();
-	},
-    );
-    return {map(
-	($_ => $self->get_multiple_settings($base, $_, $columns)),
-	@$keys,
-    )};
+    return shift->unauth_get_all_settings(undef, @_);
 }
 
 sub get_multiple_settings {
-    my($self, $base, $key, $columns) = @_;
-    $self = _load($self, $base);
-    return {map(($_->[0] => $self->get_setting($base, $key, @$_)), @$columns)};
+    return shift->unauth_get_multiple_settings(undef, @_);
 }
 
 sub get_setting {
-    my($self, $base, $key, $column, $type, $default) = @_;
-    $type = $_T->get_instance($type);
-    $column = qr{\Q$column\E}is
-	unless ref($column);
-    return _default($default)
-	unless ($self = _load($self, $base))->find_row_by('key', $key)
-	|| $self->find_row_by('key', $key = undef);
-    return _grep(
-	$self,
-	$column,
-	$type,
-	sub {
-	    return _default($default, @_)
-		unless defined($key)
-		&& $self->find_row_by('key', undef);
-	    return _grep($self, $column, $type, $default);
-	},
-    );
-}
-
-sub unauth_if_file_exists {
-    my($self, $base, $realm_id) = @_;
-    return $self->new_other('RealmFile')->unauth_load({
-	path => _path($base),
-	realm_id => $realm_id,
-    });
+    return shift->unauth_get_setting(undef, @_);
 }
 
 sub internal_initialize {
@@ -95,6 +57,61 @@ sub setting_error {
     my($self, @msg) = @_;
     $_A->warn_exactly_once($self, ': ', @msg);
     return;
+}
+
+sub unauth_get_all_settings {
+    my($self, $realm_id, $base, $columns) = @_;
+    $self = _load($self, $realm_id, $base);
+    my($keys) = $self->map_rows(
+	sub {
+	    my($k) = shift->get('key');
+	    return defined($k) ? $k : ();
+	},
+    );
+    return {map(
+        ($_ => $self->unauth_get_multiple_settings(
+	    $realm_id, $base, $_, $columns)),
+	@$keys,
+    )};
+}
+
+sub unauth_get_multiple_settings {
+    my($self, $realm_id, $base, $key, $columns) = @_;
+    $self = _load($self, $realm_id, $base);
+    return {map(
+	($_->[0] => $self->unauth_get_setting(
+	    $realm_id, $base, $key, @$_)),
+	@$columns,
+    )};
+}
+
+sub unauth_get_setting {
+    my($self, $realm_id, $base, $key, $column, $type, $default) = @_;
+    $type = $_T->get_instance($type);
+    $column = qr{\Q$column\E}is
+	unless ref($column);
+    return _default($default)
+	unless ($self = _load($self, $realm_id, $base))->find_row_by('key', $key)
+	|| $self->find_row_by('key', $key = undef);
+    return _grep(
+	$self,
+	$column,
+	$type,
+	sub {
+	    return _default($default, @_)
+		unless defined($key)
+		&& $self->find_row_by('key', undef);
+	    return _grep($self, $column, $type, $default);
+	},
+    );
+}
+
+sub unauth_if_file_exists {
+    my($self, $base, $realm_id) = @_;
+    return $self->new_other('RealmFile')->unauth_load({
+	path => _path($base),
+	realm_id => $realm_id,
+    });
 }
 
 sub _default {
@@ -130,12 +147,13 @@ sub _grep {
 }
 
 sub _load {
-    my($self, $base) = @_;
-    $base = $self->req('auth_id') . ":$base";
+    my($self, $realm_id, $base) = @_;
+    $realm_id ||= $self->req('auth_id');
+    $base = $realm_id . ":$base";
     return $self
 	if $_S->is_equal($self->[$_IDI], $base);
     $self->[$_IDI] = $base;
-    $self->load_all;
+    $self->unauth_load_all;
     return $self;
 }
 
@@ -144,16 +162,26 @@ sub _parse {
     my($rows);
     if (my $die = $_D->catch(sub {
 	my($heading) = [];
-        $rows = [map(+{
-	    key => length($_->{$heading->[0]}) ? $_->{$heading->[0]} : undef,
-	    value => $_,
-	}, @{$_CSV->parse_records($rf->get_content, undef, $heading)})];
+        $rows = [map(
+	    (_parse_record($_, $heading)),
+	    @{$_CSV->parse_records($rf->get_content, undef, $heading)},
+	)];
 	return;
     })) {
 	$self->setting_error($rf, ': ', $die);
 	return [];
     }
-    return $rows
+    return $rows;
+}
+
+sub _parse_record {
+    my($row, $heading) = @_;
+    return {
+	key => length($row->{$heading->[0]}) ? $row->{$heading->[0]} : undef,
+	value => {
+	    map((lc($_) => $row->{$_}), keys(%$row)),
+	},
+    };
 }
 
 sub _path {
