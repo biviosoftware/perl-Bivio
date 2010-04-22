@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Ext::DBI;
 use strict;
-use Bivio::Base 'DBI';
+use base 'DBI';
 use Bivio::IO::Config;
 use Bivio::IO::Trace;
 
