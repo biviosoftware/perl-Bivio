@@ -237,6 +237,7 @@ sub merge_class_loader {
 		    AgentJob => ['Bivio::Agent::Job'],
 		    Auth => ['Bivio::Auth'],
 		    Bivio => ['Bivio'],
+		    Cache => ['Bivio::Cache'],
 		    Collection => ['Bivio::Collection'],
 		    ClassWrapper => ['Bivio::ClassWrapper'],
 		    Delegate => ['Bivio::Delegate'],
