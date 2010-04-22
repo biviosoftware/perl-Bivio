@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.23  2010/04/22 16:52:52  moeller
+  * Bivio::Biz::ListModel
+    don't put "list_model" on request if ephemeral
+  * Bivio::Biz::Model::RealmSettingList
+    set_ephemeral when checking for RealmFile
+  * Bivio::Biz::Model::SEOPrefixSettingList
+    set_ephemeral
+
   Revision 9.22  2010/04/22 00:13:29  nagler
   * Bivio::Biz::Model::RealmSettingList
     added unauth_* methods so can load more easily (without setting realm)
