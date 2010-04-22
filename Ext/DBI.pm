@@ -2,49 +2,16 @@
 # $Id$
 package Bivio::Ext::DBI;
 use strict;
-$Bivio::Ext::DBI::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Ext::DBI::VERSION;
-
-=head1 NAME
-
-Bivio::Ext::DBI - configuration wrapper around DBI
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Ext::DBI;
-    Bivio::Ext::DBI->connect();
-    Bivio::Ext::DBI->connect("my_db_cfg");
-
-=cut
-
-=head1 EXTENDS
-
-C<DBI>
-
-=cut
-
-use DBI;
-@Bivio::Ext::DBI::ISA = qw(DBI);
-
-=head1 DESCRIPTION
-
-C<Bivio::Ext::DBI> is a simple wrapper around the standard C<DBI>.  Instead of
-specifying the configuration explicitly, the caller specifies a configuration
-name which is used to connect to.
-
-=cut
-
-#=IMPORTS
-use Bivio::IO::Trace;
+use Bivio::Base 'DBI';
 use Bivio::IO::Config;
+use Bivio::IO::Trace;
 
-#=VARIABLES
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+# C<Bivio::Ext::DBI> is a simple wrapper around the standard C<DBI>.  Instead of
+# specifying the configuration explicitly, the caller specifies a configuration
+# name which is used to connect to.
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_ORACLE_HOME);
 Bivio::IO::Config->register({
     'oracle_home' => $ENV{ORACLE_HOME},
@@ -62,24 +29,13 @@ my($_DEFAULT_OPTIONS) = {
     PrintError => 0,
 };
 
-=head1 FACTORIES
-
-=cut
-
-=for html <a name="connect"></a>
-
-=head2 static connect() : Bivio::Ext::DBI
-
-=head2 static connect(string database) : Bivio::Ext::DBI
-
-Connect to the default or the specfied database.  Returns a handle that
-can be used just like DBI.
-
-If an error is encountered, die is called.
-
-=cut
-
 sub connect {
+    # (proto) : Ext.DBI
+    # (proto, string) : Ext.DBI
+    # Connect to the default or the specfied database.  Returns a handle that
+    # can be used just like DBI.
+    #
+    # If an error is encountered, die is called.
     my($proto, $database) = @_;
     my($cfg) = Bivio::IO::Config->get($database);
 
@@ -100,74 +56,41 @@ sub connect {
     return $self;
 }
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_config"></a>
-
-=head2 static get_config() : hash_ref
-
-=head2 static get_config(string database) : hash_ref
-
-Returns the C<user>, C<password>, and C<database> used C<oracle_home>
-used to make connections.  The hash_ref is a copy of the configuration.
-
-=cut
-
 sub get_config {
+    # (proto) : hash_ref
+    # (proto, string) : hash_ref
+    # Returns the C<user>, C<password>, and C<database> used C<oracle_home>
+    # used to make connections.  The hash_ref is a copy of the configuration.
     my($self, $database) = @_;
     my($res) = {%{Bivio::IO::Config->get($database)}};
     $res->{oracle_home} = $_ORACLE_HOME;
     return $res;
 }
 
-=for html <a name="handle_config"></a>
-
-=head2 static handle_config(hash cfg)
-
-=over 4
-
-=item database : string [$ENV{DBI_DATABASE} || required]
-
-Database to connect to (named configuration)
-
-=item oracle_home : string [$ENV{ORACLE_HOME}]
-
-Where oracle resides (optional).
-
-=item password : string [$ENV{DBI_PASS} || required]
-
-Password to use (named configuration)
-
-=item user : string [$ENV{DBI_USER} || required]
-
-User to log in as (named configuration)
-
-=item connection : string (required)
-
-The database connection implementation.
-
-=back
-
-=cut
-
 sub handle_config {
+    # (proto, hash) : undef
+    # database : string [$ENV{DBI_DATABASE} || required]
+    #
+    # Database to connect to (named configuration)
+    #
+    # oracle_home : string [$ENV{ORACLE_HOME}]
+    #
+    # Where oracle resides (optional).
+    #
+    # password : string [$ENV{DBI_PASS} || required]
+    #
+    # Password to use (named configuration)
+    #
+    # user : string [$ENV{DBI_USER} || required]
+    #
+    # User to log in as (named configuration)
+    #
+    # connection : string (required)
+    #
+    # The database connection implementation.
     my(undef, $cfg) = @_;
     $_ORACLE_HOME = $cfg->{oracle_home};
     return;
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
