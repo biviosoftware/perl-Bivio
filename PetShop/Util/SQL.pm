@@ -205,6 +205,7 @@ sub initialize_test_data {
     $self->new_other('TestCRM')->init;
     $self->new_other('TestData')->init_search;
     $self->new_other('TestData')->init_calendar_btest;
+    $self->new_other('TestData')->init_seo_btest;
     _init_remote_copy($self);
     _init_task_log($self);
     _init_bulletin($self);

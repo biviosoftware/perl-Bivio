@@ -7,6 +7,7 @@ use Bivio::Base 'Bivio.ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
+my($_C) = b_use('FacadeComponent.Constant');
 
 sub USAGE {
     return <<'EOF';
@@ -76,6 +77,37 @@ t,r,5
 T,R,V
 EOF
     });
+    return;
+}
+
+sub init_seo_btest {
+    my($self) = @_;
+    $self->initialize_fully;
+    $self->req->with_realm_and_user(
+	undef,
+	$self->new_other('TestUser')->ADM,
+	sub {
+	    $self->model('ForumForm', {
+		'RealmOwner.display_name' => 'SEO Btest',
+		'RealmOwner.name' => 'seo_btest',
+	    });
+	    $self->model('RealmFile')->create_with_content({
+		path => '/Public/Wiki/StartPage',
+	    }, \('content does not matter'));
+	    $self->req->set_realm(
+		$_C->get_value('site_realm_name'), $self->req);
+	    # Didn't want to export from SEOPrefixList, because no need except
+	    # for this class (private unless necessary public)
+	    $self->model('RealmFile')->create_with_content({
+		path => '/Settings/SEOPrefix.csv',
+	    }, <<'EOF');
+URI,Prefix
+/seo_btest,forum home
+/seo_btest/bp,wiki home
+/seo_btest/bp/StartPage,start page
+EOF
+	},
+    );
     return;
 }
 
