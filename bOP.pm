@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,34 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.24  2010/04/22 20:11:55  nagler
+  * Bivio::Auth::Realm
+    clear_model_cache is replaced by Cache.RealmOwner
+  * Bivio::BConf
+    added Cache map
+  * Bivio::Biz::Action::JobBase
+    factor out enqueue_task
+  * Bivio::Biz::Model::RealmOwner
+    clear_model_cache is replaced by PropertyModel->internal_data_modification
+  * Bivio::Biz::Model::RealmRole
+    clear_model_cache is replaced by PropertyModel->internal_data_modification
+  * Bivio::Biz::PropertyModel
+    added internal_data_modification and register_handler
+  * Bivio/Cache
+    NEW
+  * Bivio::Cache
+    NEW
+  * Bivio::Delegate::SimpleAuthSupport
+    use Cache.RealmRole
+  * Bivio::SQL::PropertySupport
+    $order_by  not required for iterate_start, because can be faster for
+    certain cases
+    Eliminate circular import
+  * Bivio::Test::Unit
+    inline_* need to return IGNORE_RETURN
+  * Bivio::Util::User
+    catch and ignore uniqueness errors when merging user data
+
   Revision 9.23  2010/04/22 16:52:52  moeller
   * Bivio::Biz::ListModel
     don't put "list_model" on request if ephemeral
