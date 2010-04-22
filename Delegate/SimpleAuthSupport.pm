@@ -6,13 +6,13 @@ use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DEFAULT_PERMISSIONS) = {};
 my($_RT) = b_use('Model.RowTag');
 my($_RO) = b_use('Model.RealmOwner');
 my($_RR) = b_use('Model.RealmRole');
 my($_PS) = b_use('Auth.PermissionSet');
 my($_P) = b_use('Auth.Permission');
 my($_USER) = b_use('Auth.RealmType')->USER;
+my($_CRR) = b_use('Cache.RealmRole');
 our($_TRACE);
 
 sub clear_model_cache {
@@ -47,18 +47,11 @@ sub load_permissions {
     # loads default permissions from RealmRole table.
     my($proto, $realm, $role, $req) = @_;
     my($owner) = $realm->unsafe_get('owner');
-    if ($owner) {
-	my($map) = _map_permissions($realm->get('id'), $req);
-	return $map->{$role}
-	    if defined($map->{$role});
+    if ($owner and my $res = _get($owner->get('realm_id'), $role, $req)) {
+	return $res;
     }
-    my($rti) = $realm->get('type')->as_int;
-    _load_default_permissions($rti, $req)
-	unless $_DEFAULT_PERMISSIONS->{$rti};
-    my($res) = $_DEFAULT_PERMISSIONS->{$rti}->{$role};
-    b_die($realm, ': unable to load default permissions for ', $role)
-	unless defined($res);
-    return $res;
+    return _get($realm->get_default_id, $role, $req)
+	|| b_die($realm, ': unable to load default permissions for ', $role);
 }
 
 sub task_permission_ok {
@@ -90,51 +83,9 @@ sub unsafe_get_user_pref {
     return defined($$res = $_RT->new($req)->get_value($u, $pref)) ? 1 : 0;
 }
 
-sub _load_default_permissions {
-    my($rti, $req) = @_;
-    $_DEFAULT_PERMISSIONS->{$rti} = {
-	%{$_RR->new($req)->EMPTY_PERMISSION_MAP},
-	%{_map_permissions_query([$rti], {}, $req)->{$rti}},
-    };
-    return;
-}
-
-sub _map_permissions {
-    my($realm_id, $req) = @_;
-    my($all) = $req->get_if_defined_else_put(__PACKAGE__, {});
-    return $all->{$realm_id}
-	|| _map_permissions_all($realm_id, $all, $req);
-}
-
-sub _map_permissions_all {
-    my($realm_id, $all, $req) = @_;
-    my($realm_ids) = [
-	$realm_id,
-	grep(
-	    $realm_id ne $_ && ! $all->{$_},
-	    @{$req->map_user_realms(sub {shift->{'RealmUser.realm_id'}})},
-	),
-    ];
-    map($all->{$_} ||= {}, @$realm_ids);
-    return _map_permissions_query($realm_ids, $all, $req)->{$realm_id};
-}
-
-sub _map_permissions_query {
-    my($realm_ids, $all, $req) = @_;
-    _trace($realm_ids) if $_TRACE;
-    $_RR->new($req)->set_ephemeral->do_iterate(
-	sub {
-	    my($rid, $role, $ps)
-		= shift->get(qw(realm_id role permission_set));
-	    $all->{$rid}->{$role} = $ps;
-	    return 1;
-	},
-	'unauth_iterate_start',
-	'realm_id',
-	{
-	    realm_id => $realm_ids},
-       );
-    return $all;
+sub _get {
+    my($realm_id, $role, $req) = @_;
+    return $_CRR->permission_set_for_realm_role($realm_id, $role, $req);
 }
 
 1;
