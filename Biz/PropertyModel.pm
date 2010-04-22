@@ -8,6 +8,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
 my($_PS) = b_use('SQL.PropertySupport');
+my($_HANDLERS) = b_use('Biz.Registrar')->new;
+b_use('Bivio.Cache')->init;
 
 sub assert_properties {
     my($self, $values) = @_;
@@ -52,7 +54,9 @@ sub create {
 	$new_values->{$n} = undef unless exists($new_values->{$n});
     }
     $sql_support->create($new_values, $self);
-    return $self->internal_load_properties($new_values);
+    $self->internal_load_properties($new_values);
+    $self->internal_data_modification(create => $new_values);
+    return $self;
 }
 
 sub create_from_literals {
@@ -102,10 +106,12 @@ sub delete {
     ($self, $query) = _load_args(@_);
     $self = $self->new()
 	unless ref($self);
-    return $self->internal_get_sql_support->delete(
+    my($res) = $self->internal_get_sql_support->delete(
 	$self->internal_prepare_query(_add_auth_id($self, $query)),
 	$self,
     );
+    $self->internal_data_modification(delete => $query);
+    return $res;
 }
 
 sub delete_all {
@@ -115,10 +121,11 @@ sub delete_all {
     $self = $self->new
 	unless ref($self);
     my($rows) =  $self->internal_get_sql_support->delete_all(
-	$self->internal_prepare_query(_add_auth_id($self, $query)),
+	$self->internal_prepare_query($query = _add_auth_id($self, $query)),
 	$self,
     );
     _trace($rows, ' ', ref($self)) if $_TRACE;
+    $self->internal_data_modification(delete => $query);
     return $rows;
 }
 
@@ -212,6 +219,13 @@ sub get_qualified_field_name {
 sub get_qualified_field_name_list {
     my($self) = @_;
     return map($self->get_qualified_field_name($_), @{$self->get_keys});
+}
+
+sub internal_data_modification {
+    my($self, $op, $query) = @_;
+    $_HANDLERS->call_fifo(
+	handle_property_model_modification => [$self, $op, {%{$query || {}}}]);
+    return;
 }
 
 sub internal_get_target {
@@ -407,6 +421,12 @@ sub register_child_model {
     return shift->internal_get_sql_support_no_assert->register_child_model(@_);
 }
 
+sub register_handler {
+    shift;
+    $_HANDLERS->push_object(@_);
+    return;
+}
+
 sub rows_exist {
     my($self, $query) = @_;
     return $self->unauth_rows_exist(_add_auth_id($self, $query));
@@ -415,10 +435,12 @@ sub rows_exist {
 sub test_unauth_delete_all {
     my($self, $query) = @_;
     $self->req->assert_test;
-    return $self->internal_get_sql_support->delete_all(
+    my($res) = $self->internal_get_sql_support->delete_all(
 	$self->internal_prepare_query(_dup($query)),
 	$self,
     );
+    $self->internal_data_modification(delete => $query);
+    return $res;
 }
 
 sub unauth_create_or_update {
@@ -482,8 +504,10 @@ sub unauth_delete {
 	unless ref($self);
     $self->die('load_args or model must not be empty')
 	unless %$load_args;
-    return $self->internal_get_sql_support->delete(
+    my($res) = $self->internal_get_sql_support->delete(
 	$self->internal_prepare_query({%$load_args}), $self);
+    $self->internal_data_modification(delete => $load_args);
+    return $res;
 }
 
 sub unauth_iterate_start {
@@ -643,7 +667,7 @@ sub update {
     #
     # Returns I<self>.
     $new_values = _dup($new_values);
-    Bivio::Die->die('model is not loaded')
+    b_die('model is not loaded')
 	unless $self->is_loaded;
     $self->internal_clear_model_cache;
     my($properties) = $self->internal_get;
@@ -651,6 +675,7 @@ sub update {
     foreach my $n (keys(%$new_values)) {
 	$properties->{$n} =  $new_values->{$n};
     }
+    $self->internal_data_modification(update => $new_values);
     return $self;
 }
 
