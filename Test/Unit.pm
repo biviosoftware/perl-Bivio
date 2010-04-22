@@ -268,8 +268,8 @@ sub builtin_inline_commit {
     # Commit database changes
     return sub {
 	$proto->commit;
-	return 1;
-    } => 1;
+	return $proto->IGNORE_RETURN;
+    } => $proto->IGNORE_RETURN;
 }
 
 sub builtin_inline_rollback {
@@ -277,8 +277,8 @@ sub builtin_inline_rollback {
     # Rollback database changes
     return sub {
 	$proto->rollback;
-	return 1;
-    } => 1;
+	return $proto->IGNORE_RETURN;
+    } => $proto->IGNORE_RETURN;
 }
 
 sub builtin_trace {
@@ -290,8 +290,8 @@ sub builtin_inline_trace {
     my($proto, @args) = @_;
     return sub {
 	$proto->builtin_trace(@args);
-	return 1;
-    } => 1;
+	return $proto->IGNORE_RETURN;
+    } => $proto->IGNORE_RETURN;
 }
 
 sub builtin_mock {
