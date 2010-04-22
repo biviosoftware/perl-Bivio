@@ -1,0 +1,34 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+req()->initialize_fully;
+[
+    sub {req()} => [
+	{
+	    method => 'can_user_execute_task',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->set_realm_and_user(shift(@$params), shift(@$params));
+		return $params;
+	    },
+	} => [
+	    [qw(demo demo USER_PASSWORD)] => 1,
+	    inline_case(sub {
+	        ShellUtil_RealmRole()->edit(qw(ADMINISTRATOR -));
+	        return;
+	    }),
+	    [qw(demo demo USER_PASSWORD)] => 0,
+	    inline_case(sub {
+	        model('RealmRole')->delete_all;
+		return;
+	    }),
+	    [qw(demo demo USER_PASSWORD)] => 1,
+	    inline_case(sub {
+	        ShellUtil_RealmRole()->edit(qw(ADMINISTRATOR -));
+	        return;
+	    }),
+	    inline_rollback(),
+	    [qw(demo demo USER_PASSWORD)] => 1,
+	],
+    ],
+];
