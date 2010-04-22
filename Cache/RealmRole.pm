@@ -7,12 +7,12 @@ use Storable ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RR) = b_use('Model.RealmRole');
-my($_FILE) = b_use('Biz.File')->absolute_path('Cache/RealmRole.storable');
-b_use('Biz.PropertyModel')->register_handler(__PACKAGE__);
+my($_FILE);
 my($_F) = b_use('IO.File');
+b_use('Biz.PropertyModel')->register_handler(__PACKAGE__);
 
 sub handle_commit {
-    unlink($_FILE);
+    unlink(_file());
     return;
 }
 
@@ -63,9 +63,13 @@ sub _compute {
 	},
 	'unauth_iterate_start',
     );
-    $_F->mkdir_parent_only($_FILE, 0750);
+    $_F->mkdir_parent_only(_file(), 0750);
     Storable::lock_store($map, $_FILE);
     return $map;
+}
+
+sub _file {
+    return $_FILE ||= b_use('Biz.File')->absolute_path('Cache/RealmRole.storable');
 }
 
 sub _map {
@@ -77,7 +81,7 @@ sub _map {
 }
 
 sub _read {
-    return -r $_FILE && Storable::lock_retrieve($_FILE);
+    return -r _file() && Storable::lock_retrieve($_FILE);
 }
 
 sub _update {
