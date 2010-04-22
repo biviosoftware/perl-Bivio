@@ -41,7 +41,7 @@ my($_C) = b_use('SQL.Constraint');
 my($_D) = b_use('Bivio.Die');
 my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');
-my($_R) = b_use('Agent.Request');
+my($_R);
 my($_SC) = b_use('SQL.Connection');
 my($_MIN_PRIMARY_ID) = b_use('Type.PrimaryId')->get_min;
 b_use('IO.Config')->register(my $_CFG = {
@@ -119,7 +119,7 @@ sub delete_all {
     # Deletes all the rows specified by the possibly partial key values.
     # If an error occurs during the delete, calls die.
     # Returns the number of rows deleted.
-    $_R->assert_test
+    ($_R ||= b_use('Agent.Request'))->assert_test
 	unless %$query;
     my($params) = [];
     my($sth) = $_SC->execute(
@@ -160,12 +160,14 @@ sub iterate_start {
     #
     # I<order_by> is an SQL C<ORDER BY> clause without the keywords
     # C<ORDER BY>.
-    my(@params);
-    my($sql) = _prepare_select($self, $query, \@params);
-    $sql =~ s/(\bwhere\s*)?$/ order by $order_by/i;
-    my($iterator) = $_SC->execute($sql, \@params, $die,
-	    $self->get('has_blob'));
-    return $iterator;
+    my($params) = [];
+    $_SC->execute(
+        _prepare_select($self, $query, $params)
+	    . ($order_by ? " ORDER BY $order_by" : ''),
+	$params,
+	$die,
+	$self->get('has_blob'),
+    );
 }
 
 sub new {
