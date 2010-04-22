@@ -45,6 +45,7 @@ my($_PS) = b_use('Auth.PermissionSet');
 my($_RO) = b_use('Model.RealmOwner');
 my($_S) = b_use('Auth.Support');
 my($_M) = b_use('Biz.Model');
+my($_CRO);
 
 sub as_string {
     my($self) = @_;
@@ -70,12 +71,6 @@ sub can_user_execute_task {
 	return 0;
     }
     return $self->does_user_have_permissions($task->get('permission_set'), $req);
-}
-
-sub clear_model_cache {
-    my($proto, $req) = @_;
-    $req->delete(__PACKAGE__);
-    return;
 }
 
 sub do_default {
@@ -248,10 +243,8 @@ sub new {
 	my($g) = $proto->get_general;
 	return $g
 	    if $g->get('id') eq $owner || $owner eq 'general';
-	$owner = (
-	    $req->get_if_exists_else_put(__PACKAGE__, sub {{}})->{$owner}
-	    ||= $_RO->new($req)->unauth_load_by_id_or_name_or_die($owner)
-        )->clone;
+	$owner = ($_CRO ||= b_use('Cache.RealmOwner'))
+	    ->get_cache_value($owner, $req);
     }
     return $owner->clone
 	if __PACKAGE__->is_blessed($owner);
@@ -293,8 +286,6 @@ sub _new {
 	$self->put(id => $type->as_int, type => $type);
 	return $self;
     }
-
-    my($type) = $owner->get('realm_type');
     b_die($owner, ': owner not a Model::RealmOwner')
         unless $_RO->is_blessed($owner);
 
@@ -306,7 +297,7 @@ sub _new {
 	owner => $owner,
 	id => $id,
 	owner_name => $owner->get('name'),
-	type => $type,
+	type => $owner->get('realm_type'),
     );
     return $self;
 }
