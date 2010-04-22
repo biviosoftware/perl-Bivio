@@ -84,6 +84,7 @@ $_REALM_PLACEHOLDER_PAT =~ s/(\W)/\\$1/g;
 my($_TI) = b_use('Agent.TaskId');
 my($_FCT) = b_use('FacadeComponent.Text');
 my($_AT) = b_use('Agent.Task');
+my($_SEOPSL) = b_use('Model.SEOPrefixSettingList');
 
 sub HELP {
     return $_TI->HELP;
@@ -648,11 +649,15 @@ sub _seo_uri_prefix {
     my($self, $uri, $named, $req) = @_;
     return $uri
 	unless $uri =~ m{^/};
-    if (defined(my $sup = $named->{seo_uri_prefix})) {
-	$sup =~ s/([\W]+)/-/g;
-	$uri = "/$sup-$uri"
-	    if $sup && $sup ne '-';
+    my($sup) = $named->{seo_uri_prefix};
+    unless ($sup) {
+	return $uri
+	    unless $sup = $_SEOPSL->new($req)
+		->find_prefix_by_uri($uri);
     }
+    $sup =~ s/([\W]+)/-/g;
+    $uri = "/$sup-$uri"
+	if $sup && $sup ne '-';
     return $uri;
 }
 
