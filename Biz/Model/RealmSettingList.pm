@@ -47,7 +47,7 @@ sub internal_initialize {
 sub internal_load_rows {
     my($self, $query) = @_;
     my($auth_id, $base) = split(/:/, $self->[$_IDI], 2);
-    my($rf) = $self->new_other('RealmFile');
+    my($rf) = $self->new_other('RealmFile')->set_ephemeral;
     return []
 	unless $rf->unauth_load({realm_id => $auth_id, path => _path($base)});
     return _parse($self, $rf);
