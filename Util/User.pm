@@ -61,9 +61,22 @@ sub merge_users {
 		$m->delete;
 	    }
 	    else {
-		$m->update({
-		    $field => $target_user_id,
+		my($die) = Bivio::Die->catch_quietly(sub {
+		    $m->update({
+		        $field => $target_user_id,
+		    });
 		});
+		
+		# continue if constraint fails, ex. uniqueness violation
+		if ($die && $die->get('code')->eq_db_constraint) {
+		    b_warn('skipping model for merge user db constraint: ',
+		       $die->get('attrs')->{model},
+		       ' ', $die->get('attrs')->{dbi_errstr},);
+		}
+		else {
+		    $die->throw
+			if $die;
+		}
 	    }
 	    return 1;
 	}, 'unauth_iterate_start', $field, {
