@@ -1034,6 +1034,9 @@ sub info_site_admin {
 	    my($csv) = [@$def];
 	    $csv->[1]++;
 	    push(@$def, 'csv_task=' . ($csv->[0] .= '_CSV'));
+	    $csv->[5] = 'Model.TaskLogList->execute_'
+		. ($def->[0] =~ /SITE_ADMIN_TASK_LOG/ ? 'unauth_' : '')
+		. 'load_all';
 	    $csv->[6] .= '_csv';
 	    ($def, $csv);
 	} (
