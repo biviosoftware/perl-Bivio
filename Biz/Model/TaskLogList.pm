@@ -6,6 +6,12 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub execute_unauth_load_all {
+    my($proto, $req) = @_;
+    $proto->new($req)->unauth_load_all;
+    return 0;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
