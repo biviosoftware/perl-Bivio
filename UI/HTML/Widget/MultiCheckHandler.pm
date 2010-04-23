@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_JS) = b_use('HTMLWidget.JavaScript');
 
 sub get_html_field_attributes {
     return ' onclick="mc_checked(this, event)"';
@@ -12,8 +13,7 @@ sub get_html_field_attributes {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    $$buffer .= b_use('HTMLWidget.JavaScript')->strip(<<'EOF');
-<script type="text/javascript">
+    $_JS->render($source, $buffer, $self->package_name, <<'EOF');
 var mc_last_check = -1;
 function mc_checked(c, e) {
   var index = parseInt(c.name.substr(c.name.indexOf('_') + 1));
@@ -29,7 +29,6 @@ function mc_checked(c, e) {
   mc_last_check = index;
   return;
 }
-</script>
 EOF
     return;
 }
