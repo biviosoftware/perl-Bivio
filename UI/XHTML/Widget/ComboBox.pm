@@ -9,6 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_JS) = b_use('HTMLWidget.JavaScript');
 my($_QV) = b_use('JavaScriptWidget.QuotedValue');
 my($_PREFIX) = 'window.bivio.combobox';
+my($_RENDERED_LIST) = __PACKAGE__ . '.rendered_list';
 
 sub initialize {
     my($self) = @_;
@@ -47,13 +48,15 @@ sub initialize {
 
 sub render {
     my($self, $source, $buffer) = @_;
+    $self->req->put_unless_exists($_RENDERED_LIST => {});
+    my($key) = $self->package_name
+	. '.' . $self->render_simple_attr('list_class', $source);
     $_JS->render(
-	$source,
-	$buffer,
-        $self->package_name
-	    . '.'
-	    . $self->render_simple_attr('list_class', $source),
-	${$self->render_attr('_list', $source)},
+    	$source,
+    	$buffer,
+	$key,
+    	${$self->req($_RENDERED_LIST)->{$key}
+	    ||= $self->render_attr('_list', $source)},
     );
     return shift->SUPER::render(@_);
 }
