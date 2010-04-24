@@ -461,6 +461,11 @@ sub setup_request {
     return _setup_request($self, $req);
 }
 
+sub unsafe_get_from_source {
+    my(undef, $source) = @_;
+    return $source->ureq(__PACKAGE__);
+}
+
 sub _fixup_test_uri {
     my($self, $uri) = @_;
     return $uri
