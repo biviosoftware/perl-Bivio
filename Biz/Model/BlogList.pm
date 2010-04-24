@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::BlogList;
 use strict;
@@ -13,6 +13,7 @@ my($_RF) = b_use('Model.RealmFile');
 my($_WT) = b_use('XHTMLWidget.WikiText');
 my($_P) = b_use('Search.Parser');
 my($_CC) = b_use('IO.CallingContext');
+my($_X) = b_use('Search.Xapian');
 
 sub PAGE_SIZE {
     return 5;
@@ -49,17 +50,10 @@ sub get_rss_author {
 
 sub get_rss_summary {
     my($self) = @_;
-    return $_P->new_excerpt({
-	model => $self,
-	content => \($self->get('text')),
-	content_type => 'text/x-bivio-wiki',
-	name => $self->get('path_info'),
-	path => $self->get('path_info'),
-	class => 'RealmFile',
-	req => $self->req,
-	task_id => $self->req('task')->unsafe_get_attr_as_id('html_task'),
-	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id)),
-    })->get('excerpt');
+    return $_X->get_excerpt_for_primary_id(
+	$self->get('RealmFile.realm_file_id'),
+	$self->new_other('RealmFile'),
+    );
 }
 
 sub get_rss_title {

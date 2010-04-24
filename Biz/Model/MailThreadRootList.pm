@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailThreadRootList;
 use strict;
@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Mail.Address');
 my($_P) = b_use('Search.Parser');
 my($_MF) = b_use('Model.MailForm');
+my($_X) = b_use('Search.Xapian');
 
 sub DATE_SORT_ORDER {
     return 0;
@@ -89,10 +90,10 @@ EOF
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    $row->{excerpt} = $_P->new_excerpt(
-	$self->new_other('RealmFile')
-	    ->load({realm_file_id => $row->{'RealmMail.realm_file_id'}}),
-    )->get('excerpt');
+    $row->{excerpt} = $_X->get_excerpt_for_primary_id(
+	$row->{'RealmMail.realm_file_id'},
+	$self->new_other('RealmFile'),
+    );
     $row->{message_count} = $row->{reply_count} + 1;
     return 1;
 }
