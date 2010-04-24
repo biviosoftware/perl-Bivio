@@ -3,7 +3,6 @@
 package Bivio::Agent::Request;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::IO::Trace;
 
 # C<Bivio::Agent::Request> Request provides a common interface for http,...
 # requests to the application.  The transport specific
@@ -182,6 +181,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # We don't import any UI components here, because they are
 # initialized by Bivio::Agent::Dispatcher
 our($_TRACE);
+b_use('IO.Trace');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 my($_A) = b_use('IO.Alert');
@@ -191,6 +191,7 @@ my($_DC) = b_use('Bivio.DieCode');
 my($_DT) = b_use('Type.DateTime');
 my($_FCC) = b_use('FacadeComponent.Constant');
 my($_FCT) = b_use('FacadeComponent.Task');
+my($_F) = b_use('UI.Facade');
 my($_FM) = b_use('Biz.FormModel');
 my($_HTML) = b_use('Bivio.HTML');
 my($_Q) = b_use('AgentHTTP.Query');
@@ -203,7 +204,7 @@ my($_TI) = b_use('Agent.TaskId');
 my($_UA) = b_use('Type.UserAgent');
 my($_V1) = b_use('IO.Config')->if_version(1);
 my($_V7) = b_use('IO.Config')->if_version(7);
-Bivio::IO::Config->register(my $_CFG = {
+b_use('IO.Config')->register(my $_CFG = {
     is_production => 0,
     can_secure => 1,
     apache_version => 1,
@@ -313,7 +314,7 @@ sub can_user_execute_task {
 	if $_V7
 	&& !$_FCT->is_defined_for_facade($tid->get_name, $self);
     if ($realm) {
-        $realm = Bivio::Auth::Realm->new($realm, $self);
+        $realm = $_REALM->new($realm, $self);
 	$task->assert_realm_type($realm->get('type'));
     }
     else {
@@ -379,12 +380,6 @@ sub delete_from_query {
     return $res;
 }
 
-sub elapsed_time {
-    my($self) = @_;
-    # Returns the number of seconds elapsed since the request was created.
-    return $_DT->gettimeofday_diff_seconds($self->get('start_time'));
-}
-
 sub format_email {
     my($self, $email) = @_;
     # Formats the email address for inclusion in a mail header.
@@ -395,7 +390,7 @@ sub format_email {
 	unless defined($email);
     return $email
 	if $email =~ /\@/;
-    my($f) =  $self->unsafe_get('Bivio::UI::Facade');
+    my($f) =  $self->unsafe_get($_F);
     return $f->get('Email')->format($email)
         if $f && $f->unsafe_get('Email');
     return $email . '@' . Sys::Hostname::hostname();
@@ -430,7 +425,7 @@ sub format_http_insecure {
     my($uri) = $self->format_uri(@_);
     return $uri
 	if $uri =~ s/^https:/http:/;
-    return 'http://' . Bivio::UI::Facade->get_value('http_host', $self) . $uri;
+    return 'http://' . $_F->get_value('http_host', $self) . $uri;
 }
 
 sub format_http_toggling_secure {
@@ -442,7 +437,7 @@ sub format_http_toggling_secure {
     my($self, $host) = @_;
     my($is_secure, $r, $redirect_count, $uri, $query) = $self->get(
 	    qw(is_secure r redirect_count uri query));
-    $host ||= Bivio::UI::Facade->get_value('http_host', $self);
+    $host ||= $_F->get_value('http_host', $self);
 
     # This is particularly strange.  FormModel deletes the incoming
     # query context.   If we haven't internally redirected, we use
@@ -472,7 +467,7 @@ sub format_http_prefix {
     # If is_secure is not set, default to non-secure
     return ($self->unsafe_get('is_secure') || $require_secure
 	    ? 'https://' : 'http://')
-	    . Bivio::UI::Facade->get_value('http_host', $self);
+	    . $_F->get_value('http_host', $self);
 }
 
 sub format_mailto {
@@ -832,6 +827,8 @@ sub internal_new {
 	is_production => $proto->is_production,
 	txn_resources => [],
 	can_secure => $proto->can_secure,
+	start_time => $_DT->gettimeofday,
+	perf_time => {},
     );
     # Make sure a value gets set
     Bivio::Type::UserAgent->execute_unknown($self);
@@ -1003,25 +1000,39 @@ sub new {
     die('only can initialize from subclasses');
 }
 
+sub perf_time_inc {
+    my($self, $pkg, $start) = @_;
+    return
+	unless $self = $self->unsafe_get_current_root;
+    my($delta) = $_DT->gettimeofday_diff_seconds($start);
+    $self->get('perf_time')->{$pkg} += $delta;
+    return $delta;
+}
+
+sub perf_time_op {
+    my($proto, $pkg, $op, $delta_ref) = @_;
+    return $op->()
+	unless $delta_ref || $_TRACE
+	and my $self = ref($proto) ? $proto : $proto->get_current;
+    my($start) = $_DT->gettimeofday;
+    my($res) = $op->();
+    my($delta) = $self->perf_time_inc($pkg, $start);
+    $$delta_ref = $delta
+	if $delta_ref;
+    return $self->return_scalar_or_array($res);
+}
+
 sub process_cleanup {
     my($self, $die) = @_;
-    # Calls any cleanup outside of the database commit/rollback.
-    return unless $self->unsafe_get('process_cleanup')
-        && @{$self->get('process_cleanup')};
-    my($is_ok) = 1;
-
-    foreach my $cleaner (@{$self->get('process_cleanup')}) {
-        if ($_D->catch(
-            sub {
-		$cleaner->($self, $die);
-            })
-        ) {
-            $is_ok = 0;
-        }
+    my($ops) = $self->unsafe_get('process_cleanup') || [];
+    my($method) = 'commit';
+    foreach my $cleaner (@$ops) {
+	$method = 'rollback'
+	    if $_D->catch(sub {$cleaner->($self, $die)});
     }
-    $is_ok
-        ? $_T->commit($self)
-        : $_T->rollback($self);
+    $_T->$method($self);
+    _perf_time_info($self)
+	if $_TRACE;
     return;
 }
 
@@ -1117,7 +1128,6 @@ sub server_redirect {
 	return $self->client_redirect($named);
     }
     my($task) = $self->internal_server_redirect(@_);
-    $_C->get_db_time;
     $_D->throw_quietly(
 	$_DC->SERVER_REDIRECT_TASK,
 	{task_id => $task},
@@ -1251,6 +1261,10 @@ sub unsafe_from_query {
     return $self->return_scalar_or_array(map($q->{$_}, @_));
 }
 
+sub unsafe_get_current_root {
+    return shift->get_current;
+}
+
 sub unsafe_get_txn_resource {
     my($self, $class) = @_;
     # Gets the transaction resource which implements I<class> on the
@@ -1338,6 +1352,24 @@ sub _load_realm {
 	: defined($new_realm)
 	? $_REALM->new($new_realm, $self)
 	: $_REALM->get_general
+}
+
+sub _perf_time_info {
+    my($self) = @_;
+    my($start) = $self->get('start_time');
+    $self->perf_time_inc(__PACKAGE__, $start);
+    my($pt) = $self->get('perf_time');
+    b_info([map(
+	sprintf(
+	    '%s=%.3f',
+	    $_->simple_package_name,
+	    $pt->{$_},
+	),
+	sort(keys(%$pt)),
+    )]);
+    $self->put(start_time => $_DT->gettimeofday);
+    %$pt = ();
+    return;
 }
 
 sub _realm_cache {
