@@ -28,6 +28,7 @@ options({
     class() => [
 	execute => [
 	    [\(<<'EOF'), req()]
+view_shortcuts('UIHTML.ViewShortcuts');
 view_class_map('HTMLWidget');
 view_main(Page({
     head => Join(['hello']),
@@ -42,6 +43,7 @@ EOF
 		 # "use Bivio::UI::ViewLanguageAUTOLOAD;" to get this behavior.
 		 package Bivio::UI::ViewLanguage;
 		 view_class_map('HTMLWidget');
+		 view_shortcuts('UIHTML.ViewShortcuts');
 		 view_main(SimplePage('Simple'));
 	    }, req()] => qr{^Simple$}s,
 	],
