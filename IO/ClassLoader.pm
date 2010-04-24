@@ -274,22 +274,22 @@ sub unsafe_map_require {
     return undef;
 }
 
+sub unsafe_required_class {
+    my(undef, $class) = @_;
+    return $_MAP_CLASS->{$class}
+	if $class =~ /\Q$_SEP/o;
+    return $_SIMPLE_CLASS->{$class}
+	|| (UNIVERSAL::isa($class, 'Bivio::UNIVERSAL') && $class);
+}
+
 sub unsafe_simple_require {
     my($proto, $package) = @_;
-    # Returns I<package> if it could be loaded.  Else, returns C<undef>.
     return _require($proto, $package);
 }
 
 sub was_required {
     my($proto, $class) = @_;
-    # Returns true if I<simple_class> has been loaded into the perl interpreter
-    # or if I<map_class> has been loaded by I<map_require>.
-    #
-    # Returns false if class is not loaded or if class isn't a
-    # L<Bivio::UNIVERSAL|Bivio::UNIVERSAL>.
-    return ($class =~ /\Q$_SEP/o ? $_MAP_CLASS->{$class}
-        : $_SIMPLE_CLASS->{$class} || UNIVERSAL::isa($class, 'Bivio::UNIVERSAL')
-    ) ? 1 : 0;
+    return shift->unsafe_required_class(@_) ? 1 : 0;
 }
 
 sub _catch {
