@@ -1,15 +1,8 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::Connection;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::Ext::DBI;
-use Bivio::IO::Alert;
-use Bivio::IO::ClassLoader;
-use Bivio::IO::Trace;
-use Bivio::Type::DateTime;
+use Bivio::Base 'Bivio.UNIVERSAL';
 
 # C<Bivio::SQL::Connection> is used to transact with the database. Instances
 # of this module maintains one connection to the database at all times.  They
@@ -20,7 +13,13 @@ use Bivio::Type::DateTime;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+b_use('IO.Trace');
+my($_DT) = b_use('Type.DateTime');
+my($_D) = b_use('Bivio.Die');
 my($_A) = b_use('IO.Alert');
+my($_DBI) = b_use('Ext.DBI');
+my($_CL) = b_use('IO.ClassLoader');
+my($_R);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CONNECTIONS) = {};
 my($_DEFAULT_DBI_NAME);
@@ -111,60 +110,61 @@ sub execute {
     # L<internal_get_retry_sleep|"internal_get_retry_sleep">).
     my($sql, $params, $die, $has_blob) = @_;
     my($fields) = $self->[$_IDI];
-
     $sql = $self->internal_fixup_sql($sql);
     my($err, $errstr, $statement);
     my($retries) = 0;
     TRY: {
 	# Execute the statement
-	my($start_time) = Bivio::Type::DateTime->gettimeofday();
 #TODO: should be a Die->catch() but this prints a stack trace, and
 #      causes the request to lose attributes?
-        my($ok) = Bivio::Die->eval(sub {
-		$self->internal_execute($sql, $params, $has_blob, \$statement);
-                return 1;
-            });
+        my($delta) = 0;
+        my($ok) = $self->perf_time_op(sub {
+	    return $_D->eval(sub {
+	        $self->internal_execute($sql, $params, $has_blob, \$statement);
+		return 1;
+	    }),
+	},
+	    \$delta,
+	);
         my($die_error) = $@;
-	my($delta) = $self->increment_db_time($start_time);
 	b_warn($delta, 's: query took a long time: ', $sql, $params)
 	    if $delta > $_CFG->{long_query_seconds};
-	return $statement if $ok;
+	return $statement
+	    if $ok;
 	$err = $statement && $statement->err ? $statement->err + 0 : 0;
 	$errstr = $statement && $statement->errstr
             ? $statement->errstr : $die_error;
-
 	# If we get an error, it may be a timed-out connection.  We'll
 	# check the connection the next time through.
 	$fields->{need_ping} = 1;
-
-	# Can we retry?
 	my($sleep) = $self->internal_get_retry_sleep($err, $errstr);
-	last TRY unless defined($sleep);
-
-	# Don't retry if connection has executed DML already
+	last TRY
+	    unless defined($sleep);
 	if ($fields->{need_commit}) {
-	    Bivio::IO::Alert->warn($errstr,
-		    '; not retrying, partial transaction');
+	    b_warn($errstr, '; not retrying, partial transaction');
 	    last TRY;
 	}
-
-	# Maxed out?
 	if (++$retries > $_MAX_RETRIES) {
 	    Bivio::IO::Alert->warn($errstr, '; max retries hit');
 	    last TRY;
 	}
-
 	# Don't do anything with statement, it will be garbage collected.
 	# Shouldn't really get here, so put in the logs.
-	Bivio::IO::Alert->warn('retrying:  ',
-		$errstr, '; die=', $die, '; sql=', $sql,
-		'; params=', $params,
-		'; retries=', $retries) if $retries == 1;
-
+	b_warn(
+	    'retrying:  ',
+	    $errstr,
+	    '; die=',
+	    $die,
+	    '; sql=',
+	    $sql,
+	    '; params=',
+	    $params,
+	    '; retries=',
+	    $retries,
+	) if $retries == 1;
 	_trace('retry after sleep=', $sleep) if $_TRACE;
-
-	# Don't call "empty" sleeps
-	sleep($sleep) if $sleep > 0;
+	sleep($sleep)
+	    if $sleep > 0;
 	redo TRY;
     }
 
@@ -177,11 +177,11 @@ sub execute {
 	sql_params => $params,
     };
     my($die_code) = $self->internal_get_error_code($attrs);
-    Bivio::Die->eval(sub {
-	$statement->finish if $statement;
+    $_D->eval(sub {
+	$self->perf_time_op(sub {$statement->finish})
+	    if $statement;
     });
-    $die ||= 'Bivio::Die';
-    $die->throw_die($die_code, $attrs, caller);
+    ($die || $_D)->throw_die($die_code, $attrs, caller);
     # DOES NOT RETURN
 }
 
@@ -192,21 +192,11 @@ sub execute_one_row {
     return _get_instance($self)->execute_one_row(@_)
 	unless ref($self);
     my($sth) = $self->execute(@_);
-    my($row) = $sth->fetchrow_arrayref;
-    $sth->finish;
-    return $row;
-}
-
-sub get_db_time {
-    my($self) = shift;
-    # If tracing is enabled, this returns the amount of time spent processing
-    # database requests. Invoking this method clears the counter.
-    return _get_instance($self)->get_db_time(@_)
-	unless ref($self);
-    my($fields) = $self->[$_IDI];
-    my($result) = $fields->{db_time};
-    $fields->{db_time} = 0;
-    return $result;
+    return $self->perf_time_op(sub {
+	my($row) = $sth->fetchrow_arrayref;
+        $sth->finish;
+	return $row;
+    });
 }
 
 sub get_dbi_config {
@@ -228,7 +218,7 @@ sub get_instance {
 	_trace($module) if $_TRACE;
 	$_CONNECTIONS->{$dbi_name} = $module->internal_new($dbi_name);
     }
-    if (my $req = $proto->use('Agent.Request')->get_current) {
+    if (my $req = ($_R ||= b_use('Agent.Request'))->get_current) {
 	$req->push_txn_resource($_CONNECTIONS->{$dbi_name});
     }
     return $_CONNECTIONS->{$dbi_name};
@@ -252,7 +242,7 @@ sub handle_ping_reply {
 sub handle_piped_exec_child {
     foreach my $self (values(%$_CONNECTIONS)) {
 	next
-	    unless my $fields = $self->[$_IDI];
+v	    unless my $fields = $self->[$_IDI];
 	$fields->{connection}->{InactiveDestroy} = 1;
 	$fields->{connection} = undef;
     }
@@ -262,18 +252,6 @@ sub handle_piped_exec_child {
 sub handle_rollback {
     shift->rollback(@_);
     return;
-}
-
-sub increment_db_time {
-    my($self) = shift;
-    return _get_instance($self)->increment_db_time(@_)
-	unless ref($self);
-    my($start_time) = @_;
-    my($fields) = $self->[$_IDI];
-    die('invalid start_time') unless $start_time;
-    my($res) = Bivio::Type::DateTime->gettimeofday_diff_seconds($start_time);
-    $fields->{db_time} += $res;
-    return $res;
 }
 
 sub internal_clear_ping {
@@ -287,7 +265,7 @@ sub internal_clear_ping {
 sub internal_dbi_connect {
     my(undef, $dbi_name) = @_;
     # Connects to the database.  Returns the database handle.
-    return Bivio::Ext::DBI->connect($dbi_name);
+    return $_DBI->connect($dbi_name);
 }
 
 sub internal_execute {
@@ -295,12 +273,10 @@ sub internal_execute {
     # Executes sql.  Exception must be caught by caller. Sets statement (even on
     # error).
     my($fields) = $self->[$_IDI];
-
     _trace_sql($sql, $params) if $_TRACE;
 #TODO: Need to investigate problems and performance of cached statements
 #TODO: If do cache, then make sure not "active" when making call.
     $$statement = _get_connection($self)->prepare($sql);
-
     # Only need a commit if there has been data modification language
     # Tightly coupled with PropertySupport
     my($is_select) = $sql =~ /^\s*select/i
@@ -318,12 +294,8 @@ sub internal_execute {
 
 sub internal_fixup_sql {
     my($self, $sql) = @_;
-    # Performs any database specific changes to the Oracle SQL string.
-
-    # Removes 'order by' clause from 'select count(*) from ...' queries.
-    if  ($sql =~ /^\s*SELECT\s+COUNT\(\*\)\s+FROM\s/is) {
-        $sql =~ s/\border\s+by\s.*$//is;
-    }
+    $sql =~ s/\border\s+by\s.*$//is
+	if $sql =~ /^\s*SELECT\s+COUNT\(\*\)\s+FROM\s/is;
     return $sql;
 }
 
@@ -366,7 +338,6 @@ sub internal_new {
 	# checks the connection with a ping to make sure it is still
 	# alive.
 	need_ping => 0,
-	db_time => 0,
     };
     return $self;
 }
@@ -420,8 +391,18 @@ sub next_primary_id {
     # table.
     return _get_instance($self)->next_primary_id(@_)
 	unless ref($self);
-    Bivio::Die->die('abstract method');
+    $_D->die('abstract method');
     # DOES NOT RETURN
+}
+
+sub perf_time_finish {
+    my($self, $st) = @_;
+    return $self->perf_time_op(sub {$st->finish});
+}
+
+sub perf_time_op {
+    shift;
+    return ($_R ||=  b_use('Agent.Request'))->perf_time_op(__PACKAGE__, @_);
 }
 
 sub ping_connection {
@@ -477,10 +458,11 @@ sub _do_execute {
     my($st) = $self->execute(@_);
     return
 	unless $st->{Active};
-    while (my $row = $st->$method) {
-	last unless $op->($row);
+    while (my $row = $self->perf_time_op(sub {$st->$method})) {
+	last
+	    unless $op->($row);
     }
-    $st->finish;
+    $self->perf_time_finish($st);
 #TODO: Clears cached handle
 #    $self->finish_statement($st);
     return;
@@ -498,10 +480,10 @@ sub _get_connection {
 	if ($fields->{connection}) {
 	    # This disconnects the parent process'.  Make sure we rollback
 	    # any pending transactions.  By default, disconnect commits
-	    Bivio::Die->eval(sub {
+	    $_D->eval(sub {
 		$fields->{connection}->ping
 			&& $fields->{connection}->rollback});
-	    Bivio::Die->eval(sub {$fields->{connection}->disconnect});
+	    $_D->eval(sub {$fields->{connection}->disconnect});
 	    Bivio::IO::Alert->warn("reconnecting to database: pid=$$");
 	    # Make sure we don't enter this code again.
 	    $fields->{connection} = undef;
@@ -521,7 +503,7 @@ sub _get_connection {
 	# Got an error on a previous use of this connection.  Make
 	# sure is still valid.
 	$fields->{need_ping} = 0;
-	unless (Bivio::Die->eval(sub {$fields->{connection}->ping})) {
+	unless ($_D->eval(sub {$fields->{connection}->ping})) {
 	    # Just in case, rollback any pending actions
 	    # be executed.  Caller will reset $_CONNECTION
 	    $fields->{connection_pid} = 0;
@@ -534,8 +516,8 @@ sub _get_connection {
 
 sub _get_instance {
     my($proto) = @_;
-    # Returns the default instance.
-    return $proto->get_instance($_DEFAULT_DBI_NAME);
+    return ref($proto) ? $proto
+	: $proto->get_instance($_DEFAULT_DBI_NAME);
 }
 
 sub _map_execute {
@@ -551,10 +533,12 @@ sub _map_execute {
     my($res) = [];
     return $res
 	unless $st->{Active};
-    while (my $row = $st->$method) {
+    while (1) {
+	last
+	    unless my $row = $self->perf_time_op(sub {$st->$method});
 	push(@$res, $op->($row));
     }
-    $st->finish;
+    $self->perf_time_finish($st);
 #TODO: Clears cached handle
 #    $self->finish_statement($st);
     return $res;
@@ -584,7 +568,6 @@ sub _trace_sql_quote {
 }
 
 sub _verify_instance {
-    # (any) : self
     return shift
 	if ref($_[0]);
     return _get_instance(shift);
