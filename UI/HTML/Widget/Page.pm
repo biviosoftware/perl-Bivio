@@ -1,10 +1,9 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Page;
 use strict;
 use Bivio::Base 'UI.Widget';
-use Bivio::IO::Config;
-use Bivio::IO::Trace;
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::Page> is an HTML C<PAGE> tag surrounding
 # a widget, which is usually a
@@ -98,11 +97,9 @@ use Bivio::IO::Trace;
 # INCOMPLETE
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_SHOW_TIME) = 0;
-my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
-Bivio::IO::Config->register({
-    'show_time' => $_SHOW_TIME,
-});
+our($_TRACE);
+b_use('IO.Trace');
+my($_CL) = b_use('IO.ClassLoader');
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 
 sub execute {
@@ -110,15 +107,6 @@ sub execute {
     # Calls L<Bivio::UI::Widget::execute_with_content_type|Bivio::UI::Widget/"execute_with_content_type">
     # as text/html.
     return $self->execute_with_content_type($req, 'text/html');
-}
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    # show_time : boolean [false] (inherited)
-    #
-    # Show the elapsed time in page trailer.
-    $_SHOW_TIME = $cfg->{show_time};
-    return;
 }
 
 sub initialize {
@@ -136,7 +124,7 @@ sub internal_initialize_head_attrs {
     $self->unsafe_initialize_attr('style');
     $self->unsafe_initialize_attr('xhtml');
     foreach my $x (qw(Style Script JavaScript)) {
-	$self->initialize_attr(lc($x), sub {$_VS->vs_new($x)});
+	$self->initialize_attr(lc($x), sub {vs_call($x)});
     }
     $self->initialize_attr(
        _page_print_script => $self->get('script')->new('page_print'),
@@ -208,14 +196,12 @@ sub render {
     $$buffer .= Bivio::UI::Icon->format_html_attribute(
 	$x, 'background', $req
     ) if $self->unsafe_render_attr('background', $source, \$x) && $x;
-    $$buffer .= $_VS->vs_html_attrs_render_one(
+    $$buffer .= vs_html_attrs_render_one(
 	$self, $source, 'body_class');
     $self->get('body')->unsafe_render_attr('html_tag_attrs', $source, $buffer)
 	if Bivio::UI::Widget->is_blessed($self->get('body'))
 	&& $self->get('body')->can('unsafe_render_attr');
-    $$buffer .= ">\n$$body\n"
-	. $self->show_time_as_html($req)
-	. "</body></html>\n";
+    $$buffer .= ">\n$$body\n</body></html>\n";
     $_HANDLERS->do_filo(handle_page_render_end => [$source, $buffer]);
     return;
 }
@@ -235,19 +221,6 @@ sub register_handler {
     shift;
     $_HANDLERS->push_object(@_);
     return;
-}
-
-sub show_time_as_html {
-    my($proto, $req) = @_;
-    # Returns page times as an html comment, no spaces or newlines.
-    # Resets counters.  Returns empty string if I<show_time> not configured.
-    return '' unless $_SHOW_TIME || $_TRACE;
-    # Output timing info
-    my($times) = sprintf('total=%.3fs; db=%.3fs',
-	    $req->get_current->elapsed_time,
-	    Bivio::SQL::Connection->get_db_time);
-    _trace($times) if $_TRACE;
-    return $_SHOW_TIME ? "<!-- " . $times . " -->\n" : '';
 }
 
 1;
