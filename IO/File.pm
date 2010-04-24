@@ -2,9 +2,7 @@
 # $Id$
 package Bivio::IO::File;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
-use Bivio::Die;
-use Bivio::IO::Trace;
+use Bivio::Base 'Bivio.UNIVERSAL';
 use Cwd ();
 use File::Basename ();
 use File::Path ();
@@ -14,6 +12,7 @@ use IO::Dir ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+b_use('IO.Trace');
 
 sub absolute_path {
     my(undef, $file_name, $base) = @_;
@@ -32,9 +31,9 @@ sub append {
 sub chdir {
     my(undef, $directory) = @_;
     # Change to I<directory> or die.  Returns I<directory>.
-    Bivio::Die->die('no directory supplied')
+    b_die('no directory supplied')
         unless defined($directory) && length($directory);
-    Bivio::Die->die('chdir(', $directory, "): $!")
+    b_die('chdir(', $directory, "): $!")
 	unless Cwd::chdir($directory);
     _trace($directory) if $_TRACE;
     return $directory;
@@ -45,7 +44,7 @@ sub chmod {
     # Changes permissions of I<file>s to I<perms>.  Dies on first error.
     foreach my $file (@file) {
 	CORE::chmod($perms, $file)
-	    or Bivio::Die->die($file, ": unable to set permissions: $!");
+	    or b_die($file, ": unable to set permissions: $!");
     }
     return;
 }
@@ -55,14 +54,14 @@ sub chown_by_name {
     # Changes ownership of I<file>s to I<owner> AND I<group>.  Looking up with
     # getpwnam first.  Dies on first error.
     my($o) = (CORE::getpwnam($owner))[2];
-    Bivio::Die->die($owner, ': no such user')
+    b_die($owner, ': no such user')
 	unless defined($o);
     my($g) = (CORE::getgrnam($group))[2];
-    Bivio::Die->die($group, ': no such group')
+    b_die($group, ': no such group')
 	unless defined($g);
     foreach my $file (@file) {
 	CORE::chown($o, $g, $file)
-	    or Bivio::Die->die($file, ": unable to set owner: $!");
+	    or b_die($file, ": unable to set owner: $!");
     }
     return;
 }
@@ -146,7 +145,7 @@ sub map_lines {
 sub mkdir_p {
     my(undef, $path, $permissions) = @_;
     # Creates I<path> including parent directories.  Returns I<path>.
-    Bivio::Die->die('no path supplied')
+    b_die('no path supplied')
 	unless defined($path) && length($path);
     File::Path::mkpath($path, 0, defined($permissions) ? ($permissions) : ());
     _trace($path) if $_TRACE;
@@ -159,8 +158,8 @@ sub mkdir_parent_only {
     # Doesn't create I<child>.
     #
     # Returns parent directory.
-    Bivio::Die->die('no path supplied')
-	    unless defined($child) && length($child);
+    b_die('no path supplied')
+	unless defined($child) && length($child);
     return Bivio::IO::File->mkdir_p(
 	File::Basename::dirname($child), $permissions);
 }
@@ -171,10 +170,7 @@ sub get_modified_date_time {
 }
 
 sub pwd {
-    my($dir) = Cwd::getcwd();
-    # Returns the current working directory.  dies if can't get pwd.
-    Bivio::Die->die("couldn't get cwd") unless $dir;
-    return $dir;
+    return Cwd::getcwd() || b_die("couldn't get cwd");
 }
 
 sub read {
@@ -184,7 +180,7 @@ sub read {
     #
     # If I<file> is supplied, must be a IO::File to an open file and
     # file_name must be supplied.
-    Bivio::Die->die($unused, ': pass IO::File as first parameter')
+    b_die($unused, ': pass IO::File as first parameter')
 	if ref($unused);
     my($file) = _open($file_name, 'r');
     my($offset, $read, $buf) = (0, 0, '');
@@ -201,11 +197,11 @@ sub read {
 sub rename {
     my(undef, $old, $new) = @_;
     # Renames I<old> to I<new> and returns I<new>.  Dies on errors.
-    Bivio::Die->die('missing args')
-	    unless defined($new) && length($new)
-		    && defined($old) && length($old);
-    rename($old, $new)
-	    || Bivio::Die->die('rename(', $old, ',', $new, "): $!");
+    b_die('missing args')
+	unless defined($new) && length($new)
+	&& defined($old) && length($old);
+    b_die('rename(', $old, ',', $new, "): $!")
+	unless rename($old, $new);
     return $new;
 }
 
@@ -290,24 +286,22 @@ sub write {
 sub _assert_not_root {
     my($path) = @_;
     $path = File::Spec->canonpath($path);
-    Bivio::Die->die($path, ': file name unacceptable, must be absolute')
+    b_die($path, ': file name unacceptable, must be absolute')
 	unless File::Spec->file_name_is_absolute($path)
-	    && $path ne File::Spec->rootdir;
+	&& $path ne File::Spec->rootdir;
     return $path;
 }
 
 sub _err {
     my($op, $file, $file_name) = @_;
-    # close $file if defined, and dies.
     my($err) = "$!";
-    # Don't leave the file hanging open
     close($file)
 	if $file;
-    Bivio::Die->throw_die('IO_ERROR', {
+    Bivio::Die->throw_die(IO_ERROR => {
 	message => $err,
 	method => __PACKAGE__->my_caller,
 	operation => $op,
-	entity => ref($file_name) ? "$file_name" : $file_name,
+	entity => ref($file_name) ? $file_name . '' : $file_name,
     });
     return;
 }
