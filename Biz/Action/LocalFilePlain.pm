@@ -28,9 +28,6 @@ sub execute {
     $reply->set_output_type(
 	    defined($content_type) ? $content_type : $mime_type);
     $reply->set_output($res);
-    _trace(sprintf('total=%.3fs; db=%.3fs',
-	    $req->get_current->elapsed_time,
-	    Bivio::SQL::Connection->get_db_time)) if $_TRACE;
     return 1;
 }
 

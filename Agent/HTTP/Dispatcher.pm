@@ -71,7 +71,6 @@ sub initialize {
 	return;
     });
     $_JD = b_use('AgentJob.Dispatcher');
-    $_C->get_db_time;
     return;
 }
 
