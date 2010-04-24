@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.25  2010/04/22 22:01:02  nagler
+  * Bivio::Cache::RealmRole
+    set $_FILE dynamically so don't bring in Biz.File (which has a
+    required config param)
+  * Bivio::Ext::DBI
+    rmpod
+    fpc
+
   Revision 9.24  2010/04/22 20:11:55  nagler
   * Bivio::Auth::Realm
     clear_model_cache is replaced by Cache.RealmOwner
