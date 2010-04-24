@@ -12,7 +12,9 @@ my($_SELF) = __PACKAGE__->new({
     # So local files are found
     local_file_prefix => 'petshop',
     Color => [],
-    Constant => [],
+    Constant => [
+	site_realm_id => 1,
+    ],
     Font => {
 	initialize => sub {
 	    my($fc) = @_;
