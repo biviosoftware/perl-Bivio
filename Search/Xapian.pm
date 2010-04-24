@@ -48,13 +48,16 @@ sub acquire_lock {
 
 sub delete_model {
     my($proto, $req, $model_or_id) = @_;
-    my($id) = ref($model_or_id) ? $model_or_id->get_primary_id : $model_or_id;
-    return _queue(
-	$proto,
-	$req,
-	[delete_model => $id],
-    ) unless ref($proto);
-    _delete($proto, _primary_term($id));
+    $req->perf_time_op(__PACKAGE__, sub {
+	my($id) = ref($model_or_id) ? $model_or_id->get_primary_id : $model_or_id;
+	return _queue(
+	    $proto,
+	    $req,
+	    [delete_model => $id],
+	) unless ref($proto);
+	_delete($proto, _primary_term($id));
+	return;
+    });
     return;
 }
 
@@ -64,17 +67,6 @@ sub destroy_db {
     $_A->info($_CFG->{db_path}, ': deleting');
     $_F->rm_rf($_CFG->{db_path});
     return;
-}
-
-sub get_values_for_model {
-    my($proto, $model) = @_;
-    if (my $query_result = _find($model->get_primary_id)) {
-	my($res) = _query_result($proto, $query_result, $model->req);
-	return $res
-	    if $res;
-    }
-    my($p) = $_P->new_excerpt($model);
-    return $p ? $p->get_shallow_copy : undef;
 }
 
 sub excerpt_model {
@@ -87,17 +79,42 @@ sub execute {
     my($self) = $req->get(ref($proto) || $proto);
     $proto->acquire_lock($req);
     unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
-    my($db) = Search::Xapian::WritableDatabase->new(
-	$_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
-    $self->put(db => $db);
-    foreach my $op (@{$self->get('ops')}) {
-	_trace($op) if $_TRACE;
-	my($method) = shift(@$op);
-	$self->$method($req, @$op);
-    }
-    $self->delete('db');
-    $db->flush;
+    $req->perf_time_op(__PACKAGE__, sub {
+        my($db) = Search::Xapian::WritableDatabase->new(
+	    $_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
+	$self->put(db => $db);
+	foreach my $op (@{$self->get('ops')}) {
+	    _trace($op) if $_TRACE;
+	    my($method) = shift(@$op);
+	    $self->$method($req, @$op);
+	}
+	$self->delete('db');
+	$db->flush;
+    });
     return 0;
+}
+
+sub get_excerpt_for_primary_id {
+    my($p) = shift->get_values_for_primary_id(@_);
+    return $p && $p->{excerpt} || '';
+}
+
+sub get_values_for_primary_id {
+    my($proto, $primary_id, $model) = @_;
+    my($req) = $model->req;
+    $req->perf_time_op(__PACKAGE__, sub {
+	if (my $query_result = _find($primary_id)) {
+	    if (my $res = _query_result($proto, $query_result, $req)) {
+		return $res;
+	    }
+	}
+	return _parse_values(
+	    $model->is_loaded ? $model
+		: $model->unauth_load_or_die({
+		    $model->get_info('primary_key_names')->[0] => $primary_id,
+	    }),
+	);
+    });
 }
 
 sub handle_commit {
@@ -154,58 +171,64 @@ sub update_model {
 	$proto->delete_model($req, $model);
 	return;
     }
-    _replace(
-	$proto,
-	$req,
-	$model,
-	$_P->xapian_terms_and_postings($model),
-    );
+    $req->perf_time_op(__PACKAGE__, sub {
+	_replace(
+	    $proto,
+	    $req,
+	    $model,
+	    $_P->xapian_terms_and_postings($model),
+	);
+	return;
+    });
     return;
 }
 
 sub query {
     my($proto, $a) = @_;
     $proto->acquire_lock($a->{req});
-    $a->{offset} ||= 0;
-    $a->{length} ||= $_LENGTH;
-    $a->{private_realm_ids} ||= [];
-    $a->{public_realm_ids} ||= [];
-    unless (@{$a->{private_realm_ids}} || @{$a->{public_realm_ids}}
-		|| $a->{want_all_public}) {
-	_trace($a, ': no realms and not public') if $_TRACE;
-	return [];
-    }
-    my($db) = Search::Xapian::Database->new($_CFG->{db_path});
-    my($qp) = Search::Xapian::QueryParser->new;
-    $qp->set_stemmer($_STEMMER);
-    $qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
-    $qp->set_default_op(Search::Xapian->OP_AND);
-    my($phrase) = $a->{phrase};
-    $phrase =~ s/_/ /g;
-    my($q) = Search::Xapian::Query->new(
- 	Search::Xapian->OP_AND,
- 	$qp->parse_query($phrase, $_FLAGS),
-	Search::Xapian::Query->new(
-	    Search::Xapian->OP_OR,
-	    map(Search::Xapian::Query->new("XREALMID:$_"),
-		@{$a->{private_realm_ids}}),
-	    map(
-		Search::Xapian::Query->new(
-		    Search::Xapian->OP_AND,
-		    Search::Xapian::Query->new("XREALMID:$_"),
-		    Search::Xapian::Query->new('XISPUBLIC:1'),
+    my($q);
+    my($res) = $a->{req}->perf_time_op(__PACKAGE__, sub {
+	$a->{offset} ||= 0;
+	$a->{length} ||= $_LENGTH;
+	$a->{private_realm_ids} ||= [];
+	$a->{public_realm_ids} ||= [];
+	unless (@{$a->{private_realm_ids}} || @{$a->{public_realm_ids}}
+		    || $a->{want_all_public}) {
+	    _trace($a, ': no realms and not public') if $_TRACE;
+	    return [];
+	}
+	my($db) = Search::Xapian::Database->new($_CFG->{db_path});
+	my($qp) = Search::Xapian::QueryParser->new;
+	$qp->set_stemmer($_STEMMER);
+	$qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
+	$qp->set_default_op(Search::Xapian->OP_AND);
+	my($phrase) = $a->{phrase};
+	$phrase =~ s/_/ /g;
+	$q = Search::Xapian::Query->new(
+	    Search::Xapian->OP_AND,
+	    $qp->parse_query($phrase, $_FLAGS),
+	    Search::Xapian::Query->new(
+		Search::Xapian->OP_OR,
+		map(Search::Xapian::Query->new("XREALMID:$_"),
+		    @{$a->{private_realm_ids}}),
+		map(
+		    Search::Xapian::Query->new(
+			Search::Xapian->OP_AND,
+			Search::Xapian::Query->new("XREALMID:$_"),
+			Search::Xapian::Query->new('XISPUBLIC:1'),
+		    ),
+		    @{$a->{public_realm_ids}},
 		),
-		@{$a->{public_realm_ids}},
+		$a->{want_all_public}
+		    ? Search::Xapian::Query->new('XISPUBLIC:1')
+		    : (),
 	    ),
-	    $a->{want_all_public}
-		? Search::Xapian::Query->new('XISPUBLIC:1')
-		: (),
-	),
-    );
-    # Need to make a copy.  Xapian is using the Tie interface, and it's
-    # implementing it in a strange way.
-    my(@res) = $db->enquire($q)->matches($a->{offset}, $a->{length});
-    my($res) = [map(_query_result($proto, $_, $a->{req}), @res)];;
+	);
+	# Need to make a copy.  Xapian is using the Tie interface, and it's
+	# implementing it in a strange way.
+	my(@res) = $db->enquire($q)->matches($a->{offset}, $a->{length});
+	return [map(_query_result($proto, $_, $a->{req}), @res)];
+    });
     _trace([$q->get_terms], '->[', $a->{offset}, '..',
         $a->{offset} + $a->{length}, ']: ', $res,
     ) if $_TRACE;
@@ -255,6 +278,12 @@ sub _lock_id {
     return $_LOCK_ID ||= $_M->new($req, 'RealmOwner')
 	->unauth_load_or_die({name => $proto->EXEC_REALM})
 	->get('realm_id');
+}
+
+sub _parse_values {
+    my($model) = @_;
+    my($p) = $_P->new_excerpt($model);
+    return $p ? $p->get_shallow_copy : undef;
 }
 
 sub _primary_term {
