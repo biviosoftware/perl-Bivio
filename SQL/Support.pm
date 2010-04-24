@@ -1,14 +1,8 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::Support;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::Die;
-use Bivio::HTML;
-use Bivio::IO::ClassLoader;
-use Bivio::IO::Trace;
-use Bivio::Type::DateTime;
-use Bivio::Type;
 
 # C<Bivio::SQL::Support> contains common attributes and routines for
 # L<Bivio::SQL::Support|Bivio::SQL::PropertySupport> and
@@ -78,6 +72,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_LQ) = b_use('SQL.ListQuery');
 my($_C) = b_use('SQL.Constraint');
+my($_U) = b_use('Bivio.UNIVERSAL');
+my($_S) = b_use('SQL.Statement');
+my($_T) = b_use('Bivio.Type');
+my($_CONNECTION);
 my($_QP) = qr{[a-z][a-z0-9_]+};
 my($_QUAL_PREFIX) = qr{^($_QP)\.}os;
 # Make minimal assumptions about what this looks like so that
@@ -118,12 +116,12 @@ sub get_column_info {
     my($self, $name, $attr) = @_;
     # Returns I<attr> for I<column> or all attrs if attr not defined.
     my($col) = $self->get('columns')->{$name};
-    Bivio::Die->die(
+    b_die(
 	$name, ': no such column in ', $self->unsafe_get('table_name')
     ) unless $col;
     return $col
 	unless defined($attr);
-    Bivio::Die->die($name, '.', $attr, ': no such attribute')
+    b_die($name, '.', $attr, ': no such attribute')
         unless exists($col->{$attr});
     return $col->{$attr};
 }
@@ -133,16 +131,12 @@ sub get_column_name {
     # Returns the name of the column.  This maps all aliases (including
     # main column names) to the original column name.
     my($col) = $self->get('column_aliases')->{$name};
-    Bivio::Die->die($name, ': no such column alias')
+    b_die($name, ': no such column alias')
         unless $col;
     return $col->{name};
 }
 
 sub get_column_type {
-    # Returns the type of the column.  May be a
-    # L<Bivio::Type|Bivio::Type> or a
-    # L<Bivio::Biz::Model|Bivio::Biz::Model>.  The latter may only be
-    # used for non-database fields.
     return shift->get_column_info(@_, 'type');
 }
 
@@ -184,8 +178,6 @@ sub init_column {
 	};
 	push(@{$model->{column_names_referenced}}, $cn->{column_name});
 	$col = {
-	    # Keep these attributes in synch with FormSupport::_init_list_class
-	    # Bivio::SQL::Support attributes
 	    map(($_ => $cn->{$_}),
 		qw(name type constraint sql_name column_name)),
 	    sort_order => $_LQ->get_sort_order_for_type($cn->{type}),
@@ -217,14 +209,14 @@ sub init_column_classes {
 	# auth_id, parent_id, and date always need to be wrapped.  They
 	# single entity.
 	$list = [$list] if $class =~ /^date$|_id$/;
-	Bivio::Die->die(
+	b_die(
 	    $class, ': is not an ARRAY; forgot square brackets?',
 	) unless ref($list) eq 'ARRAY';
 	foreach my $decl (@$list) {
 	    my(@aliases) = ref($decl) eq 'ARRAY' ? @$decl : ($decl);
 	    my($col) = _init_column_from_decl($proto, $attrs, shift(@aliases),
 	        $class, 0);
-	    Bivio::IO::Alert->warn(
+	    b_warn(
 		$attrs->{class}, ' ', $col->{name},
 		': column initialized, but already an alias of ',
 		$column_aliases->{$col->{name}}->{name},
@@ -273,12 +265,12 @@ sub init_common_attrs {
     # sets in I<attrs>.
     #
     # Also initializes I<as_string_fields>.
-    Bivio::Die->die(
+    b_die(
 	$decl->{class},
 	' does not have a declared version--did you forget to ',
 	'declare version in internal_initialize?')
     unless $decl->{version};
-    Bivio::Die->die(
+    b_die(
 	$decl->{version},
 	': version not declared or invalid (not positive integer)'
     ) unless $decl->{version} =~ /^\d+$/;
@@ -286,7 +278,7 @@ sub init_common_attrs {
 #TODO: Validate the list
     $attrs->{as_string_fields} = $decl->{as_string_fields}
 	if $decl->{as_string_fields};
-    $attrs->{statement} ||= Bivio::SQL::Statement->new();
+    $attrs->{statement} ||= $_S->new;
     $attrs->{class} = $decl->{class};
     return;
 }
@@ -322,11 +314,11 @@ sub init_type {
     if ($type_cfg =~ /^(.*)\.(.*)$/) {
 	my($model, $field) = ($1, $2);
 	$type_cfg = $field !~ /^[a-z]/ ? $proto->use($type_cfg)
-	    : Bivio::Biz::Model->get_instance($model)->get_field_type($field);
+	    : b_use('Biz.Model')->get_instance($model)->get_field_type($field);
     }
-    $col->{type} = UNIVERSAL::isa($type_cfg, 'Bivio::UNIVERSAL')
+    $col->{type} = $_U->is_subclass($type_cfg)
 	? $type_cfg
-	: Bivio::Type->get_instance($type_cfg);
+	: $_T->get_instance($type_cfg);
     $col->{sort_order} = $_LQ->get_sort_order_for_type($col->{type});
     return;
 }
@@ -338,26 +330,17 @@ sub is_qualified_model_name {
 
 sub iterate_end {
     my($self, $iterator) = @_;
-    # Terminates the iterator.
-    $iterator->finish;
+    ($_CONNECTION ||= b_use('SQL.Connection'))->perf_time_finish($iterator);
     return;
 }
 
 sub iterate_next {
     my($self, $model, $iterator, $row, $converter) = @_;
-    # I<iterator> was returned by L<iterate_start|"iterate_start">.
-    # I<row> is the resultant values by field name.
-    # I<converter> is optional and is the name of a
-    # L<Bivio::Type|Bivio::Type> method, e.g. C<to_html>.
-    #
-    # Returns false if there is no next.
-    my($start_time) = Bivio::Type::DateTime->gettimeofday();
-    my($r) = $iterator->fetchrow_arrayref;
-    Bivio::SQL::Connection->increment_db_time($start_time);
+    my($r) = ($_CONNECTION ||= b_use('SQL.Connection'))
+	->perf_time_op(sub {$iterator->fetchrow_arrayref});
     unless ($r) {
-	# End
 	%$row = ();
-	$iterator->finish;
+	$_CONNECTION->perf_time_finish($iterator);
 	return 0;
     }
 
@@ -397,7 +380,7 @@ sub parse_model_name {
     my($model) = $qual_model;
     my($prefix) = lc($model =~ s/$_QUAL_PREFIX//o ? "_$1" : '');
     my($suffix) = $model =~ s/$_QUAL_SUFFIX//o ? $1 : '';
-    $model = Bivio::Biz::Model->get_instance($model);
+    $model = b_use('Biz.Model')->get_instance($model);
     my($table) = lc($model->get_info('table_name'));
     my($sql) = "$table$suffix$prefix";
     return {
@@ -439,7 +422,7 @@ sub _init_column_from_hash {
     my($col_name) = $decl->{name};
     if (ref($decl->{name}) eq 'ARRAY') {
 	# case: "{name => [a, b]}"
-	Bivio::Die->die('Invalid attempt to alias. Use [{}, ...] instead');
+	b_die('Invalid attempt to alias. Use [{}, ...] instead');
     }
     if ($col_name =~ /\./) {
 	# case: "{name => Model.column}"
@@ -451,10 +434,10 @@ sub _init_column_from_hash {
     }
     else {
 	# case: "{name => local_field}"
-	Bivio::Die->die($col_name, ': column declared at least twice')
+	b_die($col_name, ': column declared at least twice')
 	    if $attrs->{columns}->{$col_name};
 	foreach my $x (qw(type name)) {
-	    Bivio::Die->die($x, ': must be defined for "', $col_name, '"')
+	    b_die($x, ': must be defined for "', $col_name, '"')
 		unless $decl->{$x};
 	}
 	$col = {name => $col_name};

@@ -40,7 +40,6 @@ my($_BLOB) = b_use('Type.BLOB');
 my($_C) = b_use('SQL.Constraint');
 my($_D) = b_use('Bivio.Die');
 my($_DT) = b_use('Type.DateTime');
-my($_M) = b_use('Biz.Model');
 my($_R);
 my($_SC) = b_use('SQL.Connection');
 my($_MIN_PRIMARY_ID) = b_use('Type.PrimaryId')->get_min;
@@ -81,8 +80,9 @@ sub create {
     my(@params) = map {
 	$columns->{$_}->{type}->to_sql_param($new_values->{$_});
     } @{$attrs->{column_names}};
-    $_SC->execute($sql, \@params, $die, $attrs->{has_blob})
-        ->finish;
+    $_SC->perf_time_finish(
+	$_SC->execute($sql, \@params, $die, $attrs->{has_blob}),
+    );
     return;
 }
 
@@ -106,12 +106,16 @@ sub delete {
         }
 	$columns->{$_}->{type}->to_sql_param($values->{$_});
     } @{$attrs->{primary_key_names}};
-    my($sth) = $_SC->execute($attrs->{delete},
-	    \@params, $die,
-	    $attrs->{has_blob});
-    my($rows) = $sth->rows;
-    $sth->finish();
-    return $rows ? 1 : 0;
+    my($sth) = $_SC->execute(
+	$attrs->{delete},
+	\@params, $die,
+	$attrs->{has_blob},
+    );
+    return $_SC->perf_time_op(sub {
+	my($rows) = $sth->rows;
+	$sth->finish;
+	return $rows ? 1 : 0;
+    });
 }
 
 sub delete_all {
@@ -129,9 +133,11 @@ sub delete_all {
 	$params,
 	$die,
     );
-    my($rows) = $sth->rows;
-    $sth->finish;
-    return $rows ? $rows : 0;
+    return $_SC->perf_time_op(sub {
+        my($rows) = $sth->rows;
+        $sth->finish;
+	return $rows ? $rows : 0;
+    });
 }
 
 sub get_children {
@@ -247,33 +253,33 @@ sub unsafe_load {
     #
     # I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
     my($attrs) = $self->internal_get;
-    $die ||= $_D;
     my(@params);
+    $die ||= $_D;
     my($sql) = _prepare_select($self, $query, \@params);
-    my($statement) = $_SC->execute($sql, \@params, $die,
-	   $attrs->{has_blob});
-    my($start_time) = $_DT->gettimeofday;
-    my($row) = $statement->fetchrow_arrayref();
-    my($too_many) = $statement->fetchrow_arrayref ? 1 : 0 if $row;
-    $_SC->increment_db_time($start_time);
-    my($values);
-    if ($row) {
-	if ($too_many) {
+    my($statement) = $_SC->execute($sql, \@params, $die, $attrs->{has_blob});
+    my($row, $too_many);
+    $_SC->perf_time_op(
+	sub {
+	    $row = $statement->fetchrow_arrayref;
+	    $too_many = $statement->fetchrow_arrayref ? 1 : 0
+		if $row;
 	    $statement->finish;
-	    $die->throw_die('TOO_MANY', {
-		message => 'too many rows returned',
-		sql => $sql,
-		params => \@params,
-	    });
-	}
-	my($columns) = $attrs->{columns};
-	my($i) = 0;
-	$values = {map {
-	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
-	} @{$attrs->{select_columns}}};
-    }
-    $statement->finish();
-    return $values;
+	    return;
+	},
+    );
+    return undef
+	unless $row;
+    $die->throw_die(TOO_MANY => {
+	message => 'too many rows returned',
+	sql => $sql,
+	params => \@params,
+    }) if $too_many;
+    my($columns) = $attrs->{columns};
+    my($i) = 0;
+    return {map(
+	($_->{name}, $_->{type}->from_sql_column($row->[$i++])),
+	@{$attrs->{select_columns}},
+    )};
 }
 
 sub update {
@@ -297,30 +303,28 @@ sub update {
 	$new = $column->{type}->to_sql_param($new);
 	push(@params, $new);
     }
-    # check if any changes required
     unless ($set) {
 	&_trace(defined($die) ? ($die, ': ') : (), 'no update required')
 		if $_TRACE;
 	return;
     }
-    # remove the extra ',' from set
     chop($set);
-    # add primary key values for the primary_where
     my(@pk);
     foreach $n (@{$attrs->{primary_key_names}}) {
 	push(@pk, $columns->{$n}->{type}->to_sql_param($old_values->{$n}));
     }
     push(@params, @pk);
-
     # Need to lock the row before updating if blob
-    if ($attrs->{has_blob}) {
+    $_SC->perf_time_finish($_SC->execute($attrs->{update_lock}, \@pk, $die))
+	if $attrs->{has_blob};
+    $_SC->perf_time_finish(
 	$_SC->execute(
-		$attrs->{update_lock}, \@pk, $die)->finish();
-    }
-
-    $_SC->execute(
-	    $attrs->{update}.$set.$attrs->{primary_where}, \@params, $die,
-	    $attrs->{has_blob})->finish();
+	    $attrs->{update} . $set.$attrs->{primary_where},
+	    \@params,
+	    $die,
+	    $attrs->{has_blob},
+	),
+    );
     return;
 }
 
@@ -471,7 +475,7 @@ sub _register_with_parents {
 	@{$_CFG->{unused_classes}},
     );
     while (my($parent, $key_map) = each(%{$attrs->{parents}})) {
-	$_M->get_instance($parent =~ /^(\S+)/)
+	b_use('Biz.Model')->get_instance($parent =~ /^(\S+)/)
 	    ->register_child_model($attrs->{class}, $key_map);
     }
     return;

@@ -1,13 +1,8 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::ListSupport;
 use strict;
-use Bivio::Base 'Bivio::SQL::Support';
-use Bivio::Biz::PropertyModel;
-use Bivio::IO::Trace;
-use Bivio::SQL::Connection;
-use Bivio::Type::Date;
-use Bivio::Type::PrimaryId;
+use Bivio::Base 'SQL.Support';
 
 # C<Bivio::SQL::ListSupport> provides SQL database access for
 # L<Bivio::Biz::ListModel>s.  The loading specification is defined
@@ -201,9 +196,13 @@ use Bivio::Type::PrimaryId;
 # unique to each row of the ListSupport.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_PRIMARY_ID_SQL_VALUE) = Bivio::Type::PrimaryId->to_sql_value('?');
-my($_DATE_SQL_VALUE) = Bivio::Type::Date->to_sql_value('?');
+our($_TRACE);
+b_use('IO.Trace');
+my($_PRIMARY_ID_SQL_VALUE) = b_use('Type.PrimaryId')->to_sql_value('?');
+my($_DATE_SQL_VALUE) = b_use('Type.Date')->to_sql_value('?');
 my($_CONSTANT_COLS) = [qw(auth_id auth_user_id parent_id)];
+my($_LQ) = b_use('SQL.ListQuery');
+my($_C) = b_use('SQL.Connection');
 
 sub get_statement {
     my($self) = @_;
@@ -286,7 +285,7 @@ sub new {
 	other_query_keys => !defined($decl->{other_query_keys})
 	    || ref($decl->{other_query_keys}) eq 'ARRAY'
 	    ? $decl->{other_query_keys}
-	    : Bivio::Die->die(
+	    : b_die(
 		$decl->{other_query_keys}, ': invalid other_query_keys'),
 	want_page_count => $decl->{want_page_count},
     };
@@ -307,7 +306,7 @@ sub new {
 
     _init_column_lists($attrs, $decl, _init_column_classes($attrs, $decl));
     my($self) = $proto->SUPER::new($attrs);
-    Bivio::SQL::ListQuery->initialize_support($self);
+    $_LQ->initialize_support($self);
 #TODO: make $self read_only?
     return $self;
 }
@@ -329,9 +328,9 @@ sub _add_constant_values {
 sub _count_pages {
     my($self, $query, $from_where, $params) = @_;
     # Sets page_count and adjusts page_number.  Returns page_count.
-    my($statement) = Bivio::SQL::Connection->execute(
+    my($statement) = $_C->execute(
 	$self->get('select_count') . ' ' . $from_where, $params);
-    my($row_count) = $statement->fetchrow_array;
+    my($row_count) = $_C->perf_time_op(sub {$statement->fetchrow_array});
     my($page_count) = _page_number($query, $row_count);
     my($page_number) = $query->get('page_number');
     _trace('page_count=', $page_count) if $_TRACE;
@@ -345,13 +344,13 @@ sub _count_pages {
 
 sub _execute_select {
     # Prepare and execute the select statement.
-    return Bivio::SQL::Connection->execute((_prepare_statement(@_))[0,1]);
+    return $_C->execute((_prepare_statement(@_))[0,1]);
 }
 
 sub _find_list_start {
     my($self, $query, $sql, $params, $die) = @_;
     # Returns $rows and $statement after finding first row to return.
-    my($db) = Bivio::SQL::Connection->get_instance;
+    my($db) = $_C->get_instance;
     my($statement, $row);
     my($page_number, $count) = $query->get(qw(page_number count));
     my($can_limit_and_offset) = $db->CAN_LIMIT_AND_OFFSET;
@@ -372,8 +371,8 @@ sub _find_list_start {
 		    ($page_number - 1) * $count, $count + 1),
 		 $params);
 	    return ($row, $statement)
-		if $row = $statement->fetchrow_arrayref;
-	    $statement->finish;
+		if $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
+	    $_C->perf_time_finish($statement);
 	    return (undef, undef)
 		if $is_second_try || $page_number == $query->FIRST_PAGE;
 	    $can_limit_and_offset = 0;
@@ -385,10 +384,12 @@ sub _find_list_start {
 	$statement = $db->execute($sql, $params);
 	my($num_rows) = 0;
 
-	0 while $row = $statement->fetchrow_arrayref and ++$num_rows <= $start;
+	0
+	    while $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref})
+	    and ++$num_rows <= $start;
 	return ($row, $statement)
 	    if $row;
-	$statement->finish;
+	$_C->perf_time_finish($statement);
 	unless ($num_rows) {
 	    _trace('no rows found') if $_TRACE;
 	    return (undef, undef);
@@ -559,22 +560,23 @@ sub _load_list {
 	}));
 	last
 	    if --$count <= 0;
-	unless ($row = $statement->fetchrow_arrayref) {
-	    $statement->finish;
+	unless ($row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref})) {
+	    $_C->perf_time_finish($statement);
 	    return \@rows;
 	}
     }
 
     # Is there a next?
-    if ($statement->fetchrow_arrayref) {
+    if ($_C->perf_time_op(sub {$statement->fetchrow_arrayref})) {
 	$query->put(has_next => 1,
 	    next_page => $query->get('page_number') + 1);
 	# See discussion of =item orabug_fetch_all_select
 	if ($attrs->{orabug_fetch_all_select}) {
-	    0 while $statement->fetchrow_arrayref;
+	    0
+		while $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
 	}
     }
-    $statement->finish();
+    $_C->perf_time_finish($statement);
 
     # Return the page
     return \@rows;
@@ -597,8 +599,8 @@ sub _load_this {
     my($prev, $row);
     my($row_count) = 0;
     for (;;) {
-	$statement->finish(), return []
-		unless $row = $statement->fetchrow_arrayref;
+	$_C->perf_time_finish($statement), return []
+	    unless $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
 	$row_count++;
 
 	# Convert the entire primary key and save in $prev if no match
@@ -636,7 +638,7 @@ sub _load_this {
     $query->put(prev => $prev, has_prev => 1) if $prev;
 
     # Set next if more rows
-    my($next) = $statement->fetchrow_arrayref;
+    my($next) = $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
     if ($next) {
 	my($j) = 0;
 	$query->put(has_next => 1,
@@ -645,12 +647,11 @@ sub _load_this {
 		} @$types]);
 	# See discussion of =item orabug_fetch_all_select
 	if ($attrs->{orabug_fetch_all_select}) {
-	    0 while $statement->fetchrow_arrayref;
+	    0
+		while $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
 	}
     }
-    $statement->finish;
-
-    # Which page are we on?
+    $_C->perf_time_finish($statement);
     $query->put(page_number => _page_number($query, $row_count));
     return $rows;
 }
