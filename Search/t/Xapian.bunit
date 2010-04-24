@@ -14,6 +14,7 @@ my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})
 	    compute_params => sub {
 		my(undef, $params) = @_;
 		return [{
+		    req => req(),
 		    @{__PACKAGE__->map_together(
 			sub {@_},
 			[qw(
@@ -47,7 +48,11 @@ my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})
 		unauth_model('RealmFile', {realm_file_id => $files->[1]})
 		    ->delete;
 		commit();
-		return [{phrase => 'abcz', private_realm_ids => [$demo]}];
+		return [{
+		    req => req(),
+		    phrase => 'abcz',
+		    private_realm_ids => [$demo],
+		}];
 	    } => [],
  	    ['"0.txt"', 0, 0, [$demo], undef, 1] => [0],
  	    ['"/xapian/0.txt"', 0, 0, [$demo], undef, 1] => [0],
