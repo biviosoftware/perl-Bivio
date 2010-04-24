@@ -84,6 +84,17 @@ sub default_merge_overrides {
 		# However, --trace=config is rather convenient
 		package_filter => '/^Bivio::IO::Config$/',
 	    },
+	    html_attrs => {
+		call_filter => '$sub =~ /vs_html_attrs_render_one/',
+		package_filter => '/^Bivio::UI::HTML::ViewShortcuts$/',
+	    },
+	    perf => {
+		call_filter => '$sub =~ /\bperf_time/',
+		package_filter => '/^Bivio::Agent::Request$/',
+	    },
+	    search => {
+		package_filter => '/::Search/',
+	    },
 	    sql => {
 		call_filter => '$sub =~ /_trace_sql/',
 		package_filter => '/^Bivio::SQL::Connection$/',
@@ -91,13 +102,6 @@ sub default_merge_overrides {
 	    stack => {
 		call_filter => '$sub =~ /_print_stack/',
 		package_filter => '/^Bivio::Die$/',
-	    },
-	    search => {
-		package_filter => '/::Search/',
-	    },
-	    html_attrs => {
-		call_filter => '$sub =~ /vs_html_attrs_render_one/',
-		package_filter => '/^Bivio::UI::HTML::ViewShortcuts$/',
 	    },
 	},
     }, {
