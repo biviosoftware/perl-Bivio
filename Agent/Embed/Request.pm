@@ -3,12 +3,11 @@
 package Bivio::Agent::Embed::Request;
 use strict;
 use Bivio::Base 'Agent.Request';
-use Bivio::Agent::Embed::Reply;
-use Bivio::Agent::HTTP::Query;
-use Bivio::HTML;
-use Bivio::UI::Task;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTML) = b_use('Bivio.HTML');
+my($_F) = b_use('UI.Facade');
+my($_R) = b_use('AgentEmbed.Reply');
 
 sub get_form {
     my($self) = @_;
@@ -27,7 +26,7 @@ sub new {
 	    }ix ? ($k => $v) : ();
         })},
 	parent_request => $req,
-	reply => Bivio::Agent::Embed::Reply->new->put(parent_request => $req),
+	reply => $_R->new->put(parent_request => $req),
 	embed_level => ($req->unsafe_get('embed_level') || 0) + 1,
     );
     $self->throw_die(DIE => {
@@ -35,15 +34,27 @@ sub new {
 	embed_level => $self->get('embed_level'),
 	parent_request => $self->get('parent_request'),
     }) if $self->get('embed_level') > 2;
-    if (my $f = $req->unsafe_get('Bivio::UI::Facade')) {
+    if (my $f = $_F->unsafe_get_from_source($req)) {
 	$f->setup_request($self);
     }
     $full_uri =~ s/\?(.*)//;
     my($query) = $1;
     return $self->internal_initialize_with_uri(
-	Bivio::HTML->unescape($full_uri),
+	$_HTML->unescape($full_uri),
 	$query,
     )->put(form => undef);
+}
+
+sub unsafe_get_current_root {
+    return undef
+	unless my $self = shift->get_current;
+    foreach my $x (1..10) {
+	return $self
+	    unless my $p = $self->unsafe_get('parent_request');
+	$self = $p;
+    }
+    b_die($self, ': no parent');
+    # DOES NOT RETURN
 }
 
 1;
