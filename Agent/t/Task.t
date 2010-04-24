@@ -21,7 +21,7 @@ use Bivio::Test;
 use Bivio::Test::Unit;
 use Bivio::Test::Request;
 use Bivio::Agent::Task;
-my($req) = Bivio::Test::Request->get_instance;
+my($req) = Bivio::Test::Request->initialize_fully;
 Bivio::Agent::Task->initialize;
 $req->setup_facade->ignore_redirects(0);
 Bivio::Test->new({
