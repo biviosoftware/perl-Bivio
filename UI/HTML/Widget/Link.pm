@@ -1,8 +1,9 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Link;
 use strict;
 use Bivio::Base 'HTMLWidget.ControlBase';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::Link> implements an HTML C<A> tag with
 # an C<HREF> attribute.
@@ -55,14 +56,13 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 # If not a widget, will be wrapped in a I<Widget.String>.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = b_use('UIHTML.ViewShortcuts');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_HTML) = b_use('Bivio.HTML');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     # Render the link.
-    $$buffer .= '<a' . $_VS->vs_link_target_as_html($self, $source);
+    $$buffer .= '<a' . vs_link_target_as_html($self, $source);
     $self->SUPER::control_on_render($source, $buffer);
     $self->unsafe_render_attr('attributes', $source, $buffer);
     my($n) = '';
@@ -92,7 +92,7 @@ sub initialize {
 	[qw(attributes event_handler name link_target)],
     );
     my($v) = $self->get('value');
-    $self->put(value => $_VS->vs_new('String', $v))
+    $self->put(value => String($v))
 	unless UNIVERSAL::isa($v, 'Bivio::UI::Widget');
     $self->map_invoke('initialize_attr', [qw(value href)]);
     return shift->SUPER::initialize(@_);
