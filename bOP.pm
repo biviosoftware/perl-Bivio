@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.26  2010/04/24 17:49:12  moeller
+  * Bivio::Biz::Model::TaskLogList
+    added execute_unauth_load_all to allow SITE_ADMIN_TASK_LOG_CSV to get
+    all records instead of only the current page
+  * Bivio::Delegate::TaskId
+    changed *_TASK_LOG_CSV tasks to load all records instead of only the
+    current page
+  * Bivio::UI::HTML::Widget::MultiCheckHandler
+    fixed render so it only happens once per page
+  * Bivio::UI::XHTML::Widget::ComboBox
+    avoid recalculating list items if already rendered
+
   Revision 9.25  2010/04/22 22:01:02  nagler
   * Bivio::Cache::RealmRole
     set $_FILE dynamically so don't bring in Biz.File (which has a
