@@ -127,14 +127,12 @@ sub new {
     # Creates a Request from an apache request.  The target and path are
     # separated.
     my($proto, $r) = @_;
-    my($start_time) = $_DT->gettimeofday();
     # Set remote IP address if passed through by mod_proxy (RH6.2 and RH7.2)
     $r->connection->remote_ip($1)
 	if ($r->header_in('x-forwarded-for') || $r->header_in('via') || '')
 	    =~ /((?:\d+\.){3}\d+)/;
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
     my($self) = $proto->internal_new({
-	start_time => $start_time,
 	reply => $_R->new($r),
 	r => $r,
 	client_addr => $r->connection->remote_ip,
