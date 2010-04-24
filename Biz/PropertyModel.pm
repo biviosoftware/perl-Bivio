@@ -342,7 +342,8 @@ sub load {
     #
     #
     # B<DEPRECATED>
-    return $self if $self->unsafe_load(@_);
+    return $self
+	if $self->unsafe_load(@_);
     _die_not_found($self, \@_, caller);
     # DOES NOT RETURN
 }
@@ -558,7 +559,9 @@ sub unauth_load {
     # B<DEPRECATED>
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $self->internal_get_sql_support->unsafe_load(
-	$self->internal_prepare_query(_dup($query)), $self);
+	$self->internal_prepare_query(_dup($query)),
+	$self,
+    );
     return $values ? _load($self, $values) : _unload($self, 1);
 }
 
