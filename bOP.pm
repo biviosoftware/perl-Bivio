@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.28  2010/04/25 17:48:22  nagler
+  * Bivio::Agent::t::Mock::Facade::Mock
+    fpc
+  * Bivio::Biz::Model::RealmSettingList
+    export get_file_path
+  * Bivio::Biz::Model::SEOPrefixSettingList
+    removed
+  * Bivio::Cache::RealmRole
+    pushed up code into Cache
+  * Bivio::Cache::SEOPrefix
+    NEW
+  * Bivio::Cache
+    support subclasses better
+  * Bivio::PetShop::Util::SQL
+    init_seo_btest => reset_seo_btest; Made reentrant
+  * Bivio::PetShop::Util::TestData
+    init_seo_btest => reset_seo_btest; Made reentrant
+  * Bivio::UI::Task
+    moved SEOPrefixSettingList => SEOPrefix
+
   Revision 9.27  2010/04/24 21:40:39  nagler
   * Bivio::Agent::Embed::Request
     added unsafe_get_current_root
