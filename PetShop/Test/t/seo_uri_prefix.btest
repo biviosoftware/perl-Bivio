@@ -2,6 +2,7 @@
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
+do_test_backdoor(TestData => 'reset_seo_btest');
 login_as('root');
 verify_link(qr{^seo_btest$}, '/forum-home-/seo_btest');
 follow_menu_link('seo_btest');
