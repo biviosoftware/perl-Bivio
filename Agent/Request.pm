@@ -191,7 +191,7 @@ my($_DC) = b_use('Bivio.DieCode');
 my($_DT) = b_use('Type.DateTime');
 my($_FCC) = b_use('FacadeComponent.Constant');
 my($_FCT) = b_use('FacadeComponent.Task');
-my($_F) = b_use('UI.Facade');
+my($_F);
 my($_FM) = b_use('Biz.FormModel');
 my($_HTML) = b_use('Bivio.HTML');
 my($_Q) = b_use('AgentHTTP.Query');
@@ -425,7 +425,9 @@ sub format_http_insecure {
     my($uri) = $self->format_uri(@_);
     return $uri
 	if $uri =~ s/^https:/http:/;
-    return 'http://' . $_F->get_value('http_host', $self) . $uri;
+    return 'http://'
+	. ($_F ||= b_use('UI.Facade'))->get_value('http_host', $self)
+        . $uri;
 }
 
 sub format_http_toggling_secure {
@@ -437,7 +439,7 @@ sub format_http_toggling_secure {
     my($self, $host) = @_;
     my($is_secure, $r, $redirect_count, $uri, $query) = $self->get(
 	    qw(is_secure r redirect_count uri query));
-    $host ||= $_F->get_value('http_host', $self);
+    $host ||= ($_F ||= b_use('UI.Facade'))->get_value('http_host', $self);
 
     # This is particularly strange.  FormModel deletes the incoming
     # query context.   If we haven't internally redirected, we use
@@ -467,7 +469,7 @@ sub format_http_prefix {
     # If is_secure is not set, default to non-secure
     return ($self->unsafe_get('is_secure') || $require_secure
 	    ? 'https://' : 'http://')
-	    . $_F->get_value('http_host', $self);
+	    . ($_F ||= b_use('UI.Facade'))->get_value('http_host', $self);
 }
 
 sub format_mailto {
