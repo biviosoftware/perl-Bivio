@@ -25,6 +25,11 @@ sub get_all_settings {
     return shift->unauth_get_all_settings(undef, @_);
 }
 
+sub get_file_path {
+    my($self, $base) = @_;
+    return _path($base);
+}
+
 sub get_multiple_settings {
     return shift->unauth_get_multiple_settings(undef, @_);
 }
