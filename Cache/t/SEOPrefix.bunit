@@ -1,0 +1,39 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+req()->initialize_fully;
+ShellUtil_TestData()->reset_seo_btest;
+commit();
+[
+    {
+	object => class(),
+	compute_params => sub {
+	    my(undef, $params) = @_;
+	    return [@$params, req()];
+	},
+    } => [
+	find_prefix_by_uri => [
+	    '/' => [undef],
+	    '/seo_btest' => 'forum home',
+	    '/seo_btest/bp' => 'wiki home',
+	    '/seo_btest/bp/startPage' => 'start page',
+	    '/seo_btest/bp/AnyPage' => 'wiki home',
+	],
+	inline_case(sub {
+             unauth_model('RealmFile', {
+		 path => '/Settings/SEOPrefix.csv',
+		 realm_id => realm_id('site'),
+	     })->delete;
+	     commit();
+	     b_info(req()->unsafe_get_by_regexp(qr{Cache/SEO}));
+	     return;
+	}),
+	find_prefix_by_uri => [
+	    '/' => [undef],
+	    '/seo_btest' => [undef],
+	    '/seo_btest/bp' => [undef],
+	    '/seo_btest/bp/startPage' => [undef],
+	    '/seo_btest/bp/AnyPage' => [undef],
+	],
+    ],
+];
