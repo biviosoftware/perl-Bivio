@@ -13,7 +13,7 @@ my($_SELF) = __PACKAGE__->new({
     local_file_prefix => 'petshop',
     Color => [],
     Constant => [
-	site_realm_id => 1,
+	[site_realm_id => 1],
     ],
     Font => {
 	initialize => sub {
