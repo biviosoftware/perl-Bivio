@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,56 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.27  2010/04/24 21:40:39  nagler
+  * Bivio::Agent::Embed::Request
+    added unsafe_get_current_root
+    b_use
+  * Bivio::Agent::HTTP::Dispatcher
+    get_db_time is gone
+  * Bivio::Agent::HTTP::Request
+    start_time is in superclass
+  * Bivio::Agent::Request
+    Added perf_time_op, etc. to support generalized performance timing
+    Added unsafe_get_current_root (for perf_time)
+    process_cleanup always goes through the loop
+  * Bivio::Agent::t::Mock::Facade::Mock
+    need mock  site_realm_id
+  * Bivio::BConf
+    added perf trace
+  * Bivio::Biz::Action::LocalFilePlain
+    get_db_time is gone
+  * Bivio::Biz::Model::BlogList
+    use get_excerpt_for_primary_id
+  * Bivio::Biz::Model::MailThreadRootList
+    use get_excerpt_for_primary_id
+  * Bivio::Biz::PropertyModel
+    fmt
+  * Bivio::IO::ClassLoader
+    added unsafe_required_class
+  * Bivio::IO::File
+    b_use
+  * Bivio::Search::Xapian
+    use perf_time_op
+  * Bivio::SQL::Connection
+    get_db_time was not recording all fetches and finishes
+    Use perf_time_op
+  * Bivio::SQL::ListSupport
+    use perf_time_op
+    b_use
+  * Bivio::SQL::PropertySupport
+    use perf_time_op
+    b_use
+  * Bivio::SQL::Support
+    use perf_time_op
+    b_use
+  * Bivio::UI::Facade
+    added unsafe_get_from_source
+  * Bivio::UI::HTML::Widget::Link
+    use ViewLanguageAUTOLOAD
+  * Bivio::UI::HTML::Widget::Page
+    show_time is replaced by req->perf_time_op
+    use ViewLanguageAUTOLOAD
+
   Revision 9.26  2010/04/24 17:49:12  moeller
   * Bivio::Biz::Model::TaskLogList
     added execute_unauth_load_all to allow SITE_ADMIN_TASK_LOG_CSV to get
