@@ -8,7 +8,7 @@ use Storable ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IOF) = b_use('IO.File');
 my($_FP) = b_use('Type.FilePath');
-my($_BF) = b_use('Biz.File');
+my($_BF);
 my($_REALM_ID) = b_use('Auth.Realm')->get_general->get_default_id;
 
 sub init {
@@ -52,7 +52,7 @@ sub internal_retrieve {
 
 sub _file {
     my($proto, $req) = @_;
-    return $_BF->absolute_path(
+    return  ($_BF ||= b_use('Biz.File'))->absolute_path(
 	$_FP->join(
 	    'Cache',
 	    $proto->simple_package_name,
