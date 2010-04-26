@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.29  2010/04/25 22:54:06  nagler
+  * Bivio::Agent::Request
+    don't load UI.Facade until have to
+  * Bivio::Cache
+    don't load Biz.File until have to
+
   Revision 9.28  2010/04/25 17:48:22  nagler
   * Bivio::Agent::t::Mock::Facade::Mock
     fpc
