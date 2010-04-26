@@ -390,7 +390,7 @@ sub format_email {
 	unless defined($email);
     return $email
 	if $email =~ /\@/;
-    my($f) =  $self->unsafe_get($_F ||= b_use('UI.Facade'));
+    my($f) =  $self->unsafe_get('Bivio::UI::Facade');
     return $f->get('Email')->format($email)
         if $f && $f->unsafe_get('Email');
     return $email . '@' . Sys::Hostname::hostname();
