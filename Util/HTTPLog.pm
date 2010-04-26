@@ -218,7 +218,8 @@ sub _parse_errors_complete {
     # are non-null.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    $fields->{fh}->close;
+    $fields->{fh}->close
+	if $fields->{fh} && !$fields->{fh}->eof;
     my($pr) = substr(join('', @{$fields->{pager_res}}), 0, 100);
     $self->send_mail(
 	$_CFG->{pager_email},
