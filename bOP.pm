@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.30  2010/04/26 03:14:13  nagler
+  * Bivio::Agent::Request
+    fpc
+  * Bivio::Util::HTTPLog
+    don't close file handle if not open
+
   Revision 9.29  2010/04/25 22:54:06  nagler
   * Bivio::Agent::Request
     don't load UI.Facade until have to
