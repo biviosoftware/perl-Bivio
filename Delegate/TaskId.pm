@@ -871,7 +871,16 @@ sub info_mail {
 	    MAIL_SEND&FEATURE_MAIL
 	    Action.AdminRealmMail->execute_reflector
 	)],
-#149 free
+	[qw(
+	    BOARD_REALM_MAIL_RECEIVE
+	    149
+	    ANY_OWNER
+	    MAIL_SEND&FEATURE_MAIL
+	    Action.BoardRealmMail->execute_receive
+	    Action.MailReceiveStatus
+	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+	)],
+#230-239
     ];
 }
 

@@ -948,6 +948,7 @@ sub _cfg_mail {
 		'FORUM_MAIL_RECEIVE',
 		[USER_MAIL_BOUNCE => b_use('Model.RealmMailBounce')->TASK_URI],
 		[ADMIN_REALM_MAIL_RECEIVE => b_use('Action.AdminRealmMail')->TASK_URI],
+		[BOARD_REALM_MAIL_RECEIVE => b_use('Action.BoardRealmMail')->TASK_URI],
 	    ),
 	    $_C->if_version(4 => sub {
 		    return (
