@@ -23,16 +23,6 @@ sub execute_empty {
 	carry_query => 0,
 	carry_path_info => 0,
     } unless $auth_user;
-    return 'next'
-	if $req->get('task')->unsafe_get('require_explicit_su');
-    my($c) = $self->unsafe_get_context;
-    my($task) = $c->get('unwind_task');
-    $req->set_realm($c->get('realm'));
-    if ($req->is_substitute_user) {
-	Bivio::Biz::Action->get_instance('UserLogout')->execute($req);
-	return $self->internal_redirect_next
-	    if $req->can_user_execute_task($task);
-    }
     return 'next';
 }
 
