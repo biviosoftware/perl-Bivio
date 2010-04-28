@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.33  2010/04/28 01:43:13  nagler
+  * Bivio::Biz::Action::BoardRealmMail
+    NEW
+  * Bivio::Biz::Model::CRMForm
+    added internal_send_to_board_maybe
+  * Bivio::Biz::Model::MailForm
+    added internal_send_to_board_maybe
+  * Bivio::Delegate::TaskId
+    added BOARD_REALM_MAIL_RECEIVE
+  * Bivio::PetShop::Util::TestData
+    need a commit_or_rollback at end of reset_seo_btest to force the cache
+    to be updated
+  * Bivio::Test::Language::HTTP
+    enable verify_local_mail to test for 0 messages
+  * Bivio::UI::FacadeBase
+    added BOARD_REALM_MAIL_RECEIVE
+
   Revision 9.32  2010/04/27 23:57:48  nagler
   * Bivio::Cache::RealmFileBase
     NEW
