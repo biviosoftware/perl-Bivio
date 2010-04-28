@@ -8,10 +8,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = b_use('Mail.RFC822');
 my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_CT) = b_use('Model.CRMThread');
+my($_BRM) = b_use('Action.BoardRealmMail');
 my($_TAG_ID) = 'CRMThread.thread_root_id';
 b_use('ClassWrapper.TupleTag')->wrap_methods(
     __PACKAGE__, __PACKAGE__->TUPLE_TAG_INFO);
-
 #TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
@@ -128,6 +128,13 @@ sub internal_pre_execute {
     }
     $self->new_other('CRMActionList')->load_all;
     return @res;
+}
+
+sub internal_send_to_board_maybe {
+    my($self, $rfc822) = @_;
+    my($req) = $self->req;
+    $_BRM->execute_receive($req, $rfc822);
+    return $req->get('Model.RealmMail')->get_rfc822;
 }
 
 sub validate {

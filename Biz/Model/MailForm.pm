@@ -77,8 +77,12 @@ sub execute_ok {
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
     my($im) = $self->internal_format_incoming;
-    $im = $self->internal_send_to_realm($im)
-	if $removed_sender;
+    if ($removed_sender) {
+	$im = $self->internal_send_to_realm($im);
+    }
+    else {
+	$im = $self->internal_send_to_board_maybe($im);
+    }
     $_O->new($im)
 	->set_recipients($other_recipients)
 	->set_envelope_from($from_email)
@@ -202,6 +206,11 @@ sub internal_return_value {
     return {
         task_id => 'next',
     };
+}
+
+sub internal_send_to_board_maybe {
+    my($self, $rfc822) = @_;
+    return $rfc822;
 }
 
 sub internal_send_to_realm {
