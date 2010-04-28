@@ -8,7 +8,7 @@
 	    1 => 1,
 	    2 => 1,
 	    bla => DIE(),
-	    [] => DIE(),
+	    [] => 0,
 	],
 	as_default_owner_id => 2,
 	as_default_owner_name => 'user',
