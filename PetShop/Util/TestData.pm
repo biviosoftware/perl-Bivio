@@ -126,6 +126,7 @@ URI,Prefix
 EOF
 	},
     );
+    $self->commit_or_rollback;
     return;
 }
 
