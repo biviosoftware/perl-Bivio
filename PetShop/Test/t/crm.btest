@@ -45,6 +45,7 @@ submit_form(send => {
     subject => my $board_subject = random_string(),
     text => 'x',
 });
+verify_local_mail($cust1);
 verify_link($board_subject);
 # Audit log is the email stream, like tuple, but action
 # is simple notification
