@@ -80,7 +80,6 @@ my($realms) = [];
 	    1 => 1,
 	    2 => 1,
 	    [] => DIE(),
-	    'Bivio::Auth::Realm' => DIE(),
 	],
 	{
 	    method => 'id_from_any',
