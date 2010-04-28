@@ -1,0 +1,27 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+test_equals(
+    qr{mail_user1\@},
+    verify_local_mail(
+	qr{.},
+	send_mail(
+	    generate_local_email('mail_user2'),
+	    generate_remote_email('admin.mail_forum'),
+	)->unsafe_get_header('subject'),
+	1,
+   ),
+);
+verify_local_mail(
+    qr{.},
+    my $board_subject = send_mail(
+	generate_local_email('mail_user2'),
+	generate_remote_email('board.mail_forum'),
+    )->unsafe_get_header('subject'),
+    0,
+);
+login_as('mail_user2');
+follow_menu_link(qw(mail_forum mail));
+verify_link($board_subject);
+
