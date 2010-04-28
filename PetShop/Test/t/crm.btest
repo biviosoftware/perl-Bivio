@@ -42,10 +42,10 @@ go_back();
 follow_link('new_ticket');
 submit_form(send => {
     to => $cust1,
-    subject => 'x',
+    subject => my $board_subject = random_string(),
     text => 'x',
 });
-
+verify_link($board_subject);
 # Audit log is the email stream, like tuple, but action
 # is simple notification
 # verify_text(qr{last update by.*tech1});
