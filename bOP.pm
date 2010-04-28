@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.32  2010/04/27 23:57:48  nagler
+  * Bivio::Cache::RealmFileBase
+    NEW
+  * Bivio::Cache::SEOPrefix
+    move code up to RealmFileBase
+
   Revision 9.31  2010/04/27 22:05:44  moeller
   * Bivio::Agent::Request
     can't use $_F in format_email, because may not have a facade.
