@@ -83,6 +83,14 @@ sub join_parts {
     return $proto->from_literal_or_die(join('@', $local, $domain));
 }
 
+sub replace_domain {
+    my($proto, $email, $new_domain) = @_;
+    return $proto->join_parts(
+	$proto->get_local_part($email) || b_die($email, ': malformed email'),
+	$new_domain,
+    );
+}
+
 sub split_parts {
     my(undef, $value) = @_;
     return $value && $value =~ /^(.+?)\@(.+)$/ ? ($1, $2) : (undef, undef);
