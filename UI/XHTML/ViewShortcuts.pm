@@ -592,7 +592,10 @@ sub vs_user_email_list {
 			    ),
 			    realm => vs_constant('site_admin_realm_name'),
 			}),
-			control => [qw(->can_substitute_user)],
+			control => Or(
+			    [['->req'], '->is_super_user'],
+			    ['->can_substitute_user'],
+			),
 		    },
 		}],
 		'Email.email',
