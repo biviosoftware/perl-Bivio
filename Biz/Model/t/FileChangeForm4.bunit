@@ -35,6 +35,14 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
     sub {
 	$file_exists->('foo3.txt');
     } => 1,
+    [{
+	path_info => '/foo3.txt',
+	rename_name => 'foo4.TXT',
+	mode => $_FCM->RENAME,
+    }] => [{}],
+    sub {
+	$file_exists->('foo4.TXT');
+    } => 1,
     sub {
 	model('RealmFile')->create_folder({
 	    path => '/foo',

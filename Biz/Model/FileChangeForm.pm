@@ -301,7 +301,7 @@ sub _rename_file_name {
     my($suffix) = $_FP->get_suffix($old_name);
     return $self->get('rename_name')
 	if $self->is_folder || ! $suffix;
-    return $suffix eq $_FP->get_suffix($self->get('rename_name'))
+    return lc($suffix) eq lc($_FP->get_suffix($self->get('rename_name')))
 	? $self->get('rename_name')
 	: join('.', $self->get('rename_name'), $_FP->get_suffix($old_name));
 }
