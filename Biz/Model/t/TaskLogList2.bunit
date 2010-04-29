@@ -1,0 +1,17 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    class() => [
+	execute_unauth_iterate_start => [
+	    [req()->put(query => {count => 5})] => sub {
+		my($i) = 0;
+		my($m) = req('Model.TaskLogList');
+		$i++
+		    while $m->iterate_next_and_load;
+		assert_equals(1, $i <= 5, "actual = $i");
+		return 1;
+	    },
+	],
+    ],
+];
