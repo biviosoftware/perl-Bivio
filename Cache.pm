@@ -52,6 +52,7 @@ sub internal_retrieve {
 	    my($lfp) = "$fp.flock";
 	    my($lock);
 	    my($die) = $_D->catch(sub {
+		$_IOF->mkdir_parent_only($fp, 0750);
 		$lock = IO::File->new($lfp, 'w')
 		    || b_die($lfp, ": open: $!");
 		return $res
@@ -61,7 +62,6 @@ sub internal_retrieve {
 		return $res = Storable::lock_retrieve($fp)
 		    if -r $fp;
 		$res = $proto->internal_compute($req, @extra);
-		$_IOF->mkdir_parent_only($fp, 0750);
 		Storable::lock_store($res, $fp);
 		return;
 	    });
