@@ -583,7 +583,11 @@ sub vs_user_email_list {
 			href => URI({
 			    query => [qw(->format_query THIS_DETAIL)],
 			    task_id => Bivio::IO::Config->if_version(10,
-				sub {'SITE_ADMIN_SUBSTITUTE_USER'},
+				sub {If(
+				    [['->req'], '->is_super_user'],
+				    'ADM_SUBSTITUTE_USER',
+				    'SITE_ADMIN_SUBSTITUTE_USER',
+				)},
 				sub {'ADM_SUBSTITUTE_USER'},
 			    ),
 			    realm => vs_constant('site_admin_realm_name'),
