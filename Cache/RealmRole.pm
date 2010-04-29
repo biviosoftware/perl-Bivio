@@ -25,7 +25,8 @@ sub handle_property_model_modification {
     return
 	unless $model->simple_package_name eq 'RealmRole';
     my($req) = $model->req;
-    my($map) = $proto->internal_retrieve($model->req);
+    return
+	unless my $map = $proto->internal_retrieve($model->req);
     if ($op eq 'delete') {
 	b_die($query, 'must supply a realm_id to delete')
 	    unless $query->{realm_id};
@@ -56,19 +57,10 @@ sub internal_compute {
     return $map;
 }
 
-sub permission_set_for_realm_role {
-    return _not_enabled(@_)
-	unless $_CFG->{enable};
-    my($proto, $realm_id, $role, $req) = @_;
-    return (
-	$proto->internal_retrieve($req)->{$realm_id}
-	|| return undef
-     )->{$role->as_int};
-}
-
-sub _not_enabled {
-    my($proto, $realm_id, $role, $req) = @_;
+sub internal_compute_no_cache {
+    my($self, $req, $realm_id, $role) = @_;
     my($rr) = $_RR->new($req);
+#TODO: Cache
     unless ($_RT->is_default_id($realm_id)) {
 	return	$rr->get('permission_set')
 	    if $rr->unauth_load({realm_id => $realm_id, role => $role});
@@ -86,6 +78,21 @@ sub _not_enabled {
 	    {realm_id => $realm_id},
 	)},
     })->{$role};
+}
+
+sub permission_set_for_realm_role {
+    return _not_enabled(@_)
+	unless $_CFG->{enable};
+    my($proto, $realm_id, $role, $req) = @_;
+    my($res) = $proto->internal_retrieve($req, $realm_id, $role);
+    return $res
+	unless ref($res) eq 'HASH';
+    return $res->{$realm_id}->{$role->as_int};
+}
+
+sub _not_enabled {
+    my($proto, $realm_id, $role, $req) = @_;
+    return $proto->internal_compute_no_cache($req, $realm_id, $role);
 }
 
 sub _update {
