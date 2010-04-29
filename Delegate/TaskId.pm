@@ -1047,6 +1047,7 @@ sub info_site_admin {
 	    Model.TaskLogList->execute_unauth_load_page
 	    View.TaskLog->list
 	    next=SITE_ADMIN_TASK_LOG
+            csv_task=SITE_ADMIN_TASK_LOG_CSV
 	    require_secure=1
 	)],
 	[qw(
@@ -1058,6 +1059,7 @@ sub info_site_admin {
 	    Model.TaskLogList->execute_unauth_iterate_start
 	    View.TaskLog->list_csv
 	    next=SITE_ADMIN_TASK_LOG_CSV
+            csv_task=SITE_ADMIN_TASK_LOG_CSV
 	    require_secure=1
 	)],
 	[qw(
@@ -1069,6 +1071,7 @@ sub info_site_admin {
 	    Model.TaskLogList->execute_load_page
 	    View.TaskLog->list
 	    next=GROUP_TASK_LOG
+            csv_task=GROUP_TASK_LOG_CSV
 	    require_secure=1
 	)],
 	[qw(
@@ -1080,6 +1083,7 @@ sub info_site_admin {
 	    Model.TaskLogList->execute_iterate_start
 	    View.TaskLog->list_csv
 	    next=GROUP_TASK_LOG_CSV
+            csv_task=GROUP_TASK_LOG_CSV
 	    require_secure=1
 	)],
 #214-219
