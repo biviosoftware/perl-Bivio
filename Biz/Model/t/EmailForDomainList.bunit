@@ -1,0 +1,12 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+my($domain, $users) = do('./EmailForDomainList.PL');
+[
+    load_all => [
+        [{b_domain_name => $domain->()}] => [map(
+	    +{'Email.email' => $domain->($_)},
+	    @$users,
+	)],
+    ],
+];
