@@ -5,6 +5,19 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_IDI) = __PACKAGE__->instance_data_index;
+
+sub ITERATE_NEXT_AND_LOAD_SIZE {
+    return 10_000;
+}
+
+sub execute_iterate_start {
+    return _execute_iterate(@_);
+}
+
+sub execute_unauth_iterate_start {
+    return _execute_iterate(@_);
+}
 
 sub execute_unauth_load_all {
     my($proto, $req) = @_;
@@ -67,6 +80,28 @@ sub internal_prepare_statement {
 	);
     }
     return shift->SUPER::internal_prepare_statement(@_);
+}
+
+sub iterate_next_and_load {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    return
+	unless !$fields || $fields->{count}-- > 0;
+    return shift->SUPER::iterate_next_and_load(@_);
+}
+
+sub _execute_iterate {
+    my($proto, $req) = @_;
+    my($method) = $proto->my_caller =~ /unauth/ ? 'unauth_iterate_start'
+	: 'iterate_start';
+    my($self) = $proto->new($req);
+    $self->unauth_iterate_start($self->ureq('query'));
+    $self->[$_IDI] = {
+	count => $self->get_query->unsafe_get('count')
+	    || $self->ITERATE_NEXT_AND_LOAD_SIZE,
+    };
+    $self->put_on_request;
+    return;
 }
 
 1;
