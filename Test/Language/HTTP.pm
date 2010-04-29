@@ -822,14 +822,13 @@ sub verify_local_mail {
     # Polls for I<mail_tries>.  If multiple messages come in simultaneously, will
     # only complete if both I<recipient_email> and I<body_regex> match.
     #
-    # I<count> defaults to at least one (not if set explicitly, which is
+    # I<count> defaults to at least one (not like if set explicitly, which is
     # exactly $count).  An exception is thrown if the number of messages found
     # is not equal to I<count>.  Returns and array with I<count> strings of the
     # messages found.
     my($body_re) = !defined($body_regex) ? qr{}
 	: ref($body_regex) ? $body_regex : qr{$body_regex};
-    my($count) = defined($expect_count) ? $expect_count
-	: (ref($email) eq 'ARRAY' ? int(@$email) : 1);
+    my($count) = $expect_count || (ref($email) eq 'ARRAY' ? int(@$email) : 1);
     b_die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
@@ -848,11 +847,9 @@ sub verify_local_mail {
 	next
 	    if @$found < $count;
 	last
-	    unless defined($expect_count);
+	    unless $expect_count;
 	$i -= int($i/2);
     }
-    return undef
-	if defined($expect_count) && $count == 0 && !%$match;
     $die->(%$match
         ? ('Found mail for "', $email, '", but does not match ',
 	   $body_re, ' matches=', $match)
@@ -863,7 +860,7 @@ sub verify_local_mail {
 	$count,
 	' != ',
 	int(@$found),
-    ) unless !defined($expect_count) || @$found == $count;
+    ) unless !$expect_count || @$found == $count;
     $die->(
 	'correct number of messages, but emails expected != actual: ',
 	[sort(@$email)],
@@ -885,10 +882,14 @@ sub verify_local_mail {
 }
 
 sub verify_no_link {
-    my($self, $link_text) = @_;
-    # Verifies that none of the links on the page match I<link_name>.
+    my($self, $link_text, $pattern) = @_;
+    my($link) = _unsafe_html_get($self, Links => $link_text);
+    return unless defined($link);
     Bivio::Die->die('found link "', $link_text, '".')
-	    if _assert_html($self)->get('Links')->unsafe_get($link_text);
+	if !defined($pattern);
+    my($href) = $link->{href};
+    Bivio::Die->die($href, ': matches pattern: ', $pattern)
+	if defined($href) && $href =~ $pattern;
     return;
 }
 
@@ -1353,6 +1354,15 @@ sub _send_request {
 	$fields->{response}->message,
     ) unless $fields->{response}->is_success;
     return;
+}
+
+sub _unsafe_html_get {
+    my($self, $what, $key) = @_;
+    my($w) = _assert_html($self)->unsafe_get($what);
+    return undef unless defined($w);
+    $key = _fixup_pattern_protected($self, $key);
+    my($m) = ref($key) ? 'unsafe_get_by_regexp' : 'unsafe_get';
+    return $w->$m($key);
 }
 
 sub _validate_text_field {
