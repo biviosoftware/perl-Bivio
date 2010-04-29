@@ -1038,41 +1038,50 @@ sub info_site_admin {
 	    require_secure=1
 	)],
 #167-169,
-	map({
-	    my($def) = $_;
-	    my($csv) = [@$def];
-	    $csv->[1]++;
-	    push(@$def, 'csv_task=' . ($csv->[0] .= '_CSV'));
-	    $csv->[5] = 'Model.TaskLogList->execute_'
-		. ($def->[0] =~ /SITE_ADMIN_TASK_LOG/ ? 'unauth_' : '')
-		. 'load_all';
-	    $csv->[6] .= '_csv';
-	    ($def, $csv);
-	} (
-	    [qw(
-	        SITE_ADMIN_TASK_LOG
-	        210
-	        ANY_OWNER
-	        ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&FEATURE_TASK_LOG
-                Model.FilterQueryForm
-	        Model.TaskLogList->execute_unauth_load_page
-	        View.TaskLog->list
-                next=SITE_ADMIN_TASK_LOG
-	        require_secure=1
-	    )],
-#211
-	    [qw(
-	        GROUP_TASK_LOG
-	        212
-	        ANY_OWNER
-	        ADMIN_READ&ADMIN_WRITE&FEATURE_TASK_LOG
-                Model.FilterQueryForm
-	        Model.TaskLogList->execute_load_page
-	        View.TaskLog->list
-                next=GROUP_TASK_LOG
-	        require_secure=1
-	    )],
-	)),
+	[qw(
+	    SITE_ADMIN_TASK_LOG
+	    210
+	    ANY_OWNER
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&FEATURE_TASK_LOG
+	    Model.FilterQueryForm
+	    Model.TaskLogList->execute_unauth_load_page
+	    View.TaskLog->list
+	    next=SITE_ADMIN_TASK_LOG
+	    require_secure=1
+	)],
+	[qw(
+	    SITE_ADMIN_TASK_LOG_CSV
+	    211
+	    ANY_OWNER
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN&FEATURE_TASK_LOG
+	    Model.FilterQueryForm
+	    Model.TaskLogList->execute_unauth_iterate_start
+	    View.TaskLog->list_csv
+	    next=SITE_ADMIN_TASK_LOG_CSV
+	    require_secure=1
+	)],
+	[qw(
+	    GROUP_TASK_LOG
+	    212
+	    ANY_OWNER
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_TASK_LOG
+	    Model.FilterQueryForm
+	    Model.TaskLogList->execute_load_page
+	    View.TaskLog->list
+	    next=GROUP_TASK_LOG
+	    require_secure=1
+	)],
+	[qw(
+	    GROUP_TASK_LOG_CSV
+	    213
+	    ANY_OWNER
+	    ADMIN_READ&ADMIN_WRITE&FEATURE_TASK_LOG
+	    Model.FilterQueryForm
+	    Model.TaskLogList->execute_iterate_start
+	    View.TaskLog->list_csv
+	    next=GROUP_TASK_LOG_CSV
+	    require_secure=1
+	)],
 #214-219
     ];
 }
