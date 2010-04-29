@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.34  2010/04/28 02:51:56  nagler
+  * Bivio::Cache::RealmRole
+    Added 'enable' configuration to allow apps to turn off caching.
+    Important if RealmRole table is large
+
   Revision 9.33  2010/04/28 01:43:13  nagler
   * Bivio::Biz::Action::BoardRealmMail
     NEW
