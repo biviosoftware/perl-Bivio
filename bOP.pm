@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.35  2010/04/29 00:00:51  nagler
+  * Bivio::Auth::RealmType
+    is_default_id should just use unsafe_from_int, because doesn't work
+    with large realm_ids to use Type.Integer
+    need to restrict test of is_default_id to numbers less than $_MIN,
+    because large realm_ids may get into e+ digits
+  * Bivio::Biz::Model::ForbiddenForm
+    don't logout if substitute user
+  * Bivio::Cache::RealmRole
+    put in non-blocking locking on computation.  If there's no cache, then
+    internal_compute_no_cache will return undef (OK for SEOPrefix) and for
+    RealmRole, it will go right to the db
+  * Bivio::Cache
+    put in non-blocking locking on computation.  If there's no cache, then
+    internal_compute_no_cache will return undef (OK for SEOPrefix) and for
+    RealmRole, it will go right to the db
+
   Revision 9.34  2010/04/28 02:51:56  nagler
   * Bivio::Cache::RealmRole
     Added 'enable' configuration to allow apps to turn off caching.
