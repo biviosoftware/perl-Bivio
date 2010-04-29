@@ -822,13 +822,14 @@ sub verify_local_mail {
     # Polls for I<mail_tries>.  If multiple messages come in simultaneously, will
     # only complete if both I<recipient_email> and I<body_regex> match.
     #
-    # I<count> defaults to at least one (not like if set explicitly, which is
+    # I<count> defaults to at least one (not if set explicitly, which is
     # exactly $count).  An exception is thrown if the number of messages found
     # is not equal to I<count>.  Returns and array with I<count> strings of the
     # messages found.
     my($body_re) = !defined($body_regex) ? qr{}
 	: ref($body_regex) ? $body_regex : qr{$body_regex};
-    my($count) = $expect_count || (ref($email) eq 'ARRAY' ? int(@$email) : 1);
+    my($count) = defined($expect_count) ? $expect_count
+	: (ref($email) eq 'ARRAY' ? int(@$email) : 1);
     b_die($_CFG->{mail_dir},
 	': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
@@ -847,9 +848,11 @@ sub verify_local_mail {
 	next
 	    if @$found < $count;
 	last
-	    unless $expect_count;
+	    unless defined($expect_count);
 	$i -= int($i/2);
     }
+    return undef
+	if defined($expect_count) && $count == 0 && !%$match;
     $die->(%$match
         ? ('Found mail for "', $email, '", but does not match ',
 	   $body_re, ' matches=', $match)
@@ -860,7 +863,7 @@ sub verify_local_mail {
 	$count,
 	' != ',
 	int(@$found),
-    ) unless !$expect_count || @$found == $count;
+    ) unless !defined($expect_count) || @$found == $count;
     $die->(
 	'correct number of messages, but emails expected != actual: ',
 	[sort(@$email)],
