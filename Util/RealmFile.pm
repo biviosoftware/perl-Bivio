@@ -96,6 +96,36 @@ sub export_tree {
     return;
 }
 
+sub folder_sizes {
+    sub FOLDER_SIZES {[[qw(folder FilePath /)]]}
+    my($self, $bp) = shift->parameters(\@_);
+    $self->get_request;
+    my($res) = {TOTAL => 0};
+    my($pat) = qr{^\Q@{[$_FP->add_trailing_slash($bp->{folder})]}\E}i;
+    $self->model('RealmFile')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    my($p) = $it->get('path');
+	    return 1
+		unless $p =~ $pat;
+	    my($l) = $it->get_content_length;
+	    $res->{($p =~ m{(.*)/})[0] || '/'} += $l;
+	    $res->{TOTAL} += $l;
+	    return 1;
+	},
+	undef,
+	{is_folder => 0},
+    );
+    return join(
+	'',
+	sprintf("%6s %s\n", 'KB', 'Folder'),
+	map(
+	    sprintf("%6d %s\n", $res->{$_}/1024, $_),
+	    sort(keys(%$res)),
+	),
+    );
+}
+
 sub import_tree {
     my($self, $folder) = @_;
     my($req) = $self->initialize_ui;

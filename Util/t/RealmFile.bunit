@@ -7,6 +7,7 @@ my($file) = "$folder/$content";
 req()->set_realm_and_user('fourem');
 my($archive_folder) = "/Archived$folder";
 my($archive_file) = "/Archived$file;1";
+my($subfolder);
 [
     [-input => \$content, create => $file] => not_die(),
     [delete_deep => $folder] => sub {
@@ -21,5 +22,17 @@ my($archive_file) = "/Archived$file;1";
 		{path_info => $archive_folder}),
 	);
 	return 1;
-    }
+    },
+    [qw(-realm site folder_sizes /Public/WikiData)] => sub {
+	my(undef, $actual) = @_;
+	b_die($actual->[0])
+	    unless $subfolder = (${$actual->[0]} =~ /(\d+) TOTAL/)[0];
+	return 1;
+    },
+    [qw(-realm site folder_sizes)] => sub {
+	my(undef, $actual) = @_;
+	b_die($subfolder, ': not less than ', $actual->[0])
+	    unless $subfolder < (${$actual->[0]} =~ /(\d+) TOTAL/)[0];
+	return 1;
+    },
 ];
