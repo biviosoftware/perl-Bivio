@@ -15,15 +15,11 @@ sub TEXT_AREA_ROWS {
     return 30;
 }
 
-sub HIDE_IS_PUBLIC {
-    return 0;
-}
-
 sub edit {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(WikiForm => [
 	'WikiForm.RealmFile.path_lc',
-	$self->HIDE_IS_PUBLIC ? () : 'WikiForm.RealmFile.is_public',
+	'WikiForm.RealmFile.is_public',
 	Join([
 	    FormFieldError({
 		field => 'content',
