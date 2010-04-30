@@ -8,12 +8,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
 
-sub HIDE_IS_PUBLIC {
-    return 0;
-}
-
 sub TEXT_AREA_COLS {
-    return 60;
+    return 80;
 }
 
 sub TEXT_AREA_ROWS {
@@ -26,7 +22,7 @@ sub edit {
 	['BlogEditForm.title', {
 	    size => 57,
 	}],
-	$self->HIDE_IS_PUBLIC ? () : 'BlogEditForm.RealmFile.is_public',
+	'BlogEditForm.RealmFile.is_public',
 	_edit($self),
     ]));
 }
@@ -137,10 +133,8 @@ sub list_rss {
 
 sub _access_mode {
     my($task) = @_;
-    return $_C->if_version(
-	3 => sub {
-	    return $task;
-	},
+    return $_C->if_version(3,
+	$task,
 	sub {
 	    (my $p = $task) =~ s/(?<=^FORUM_)/PUBLIC_/;
 	    return [
