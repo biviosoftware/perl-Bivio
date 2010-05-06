@@ -105,7 +105,7 @@ sub internal_post_load_row {
     }
     $row->{path_info} = undef;
     $row->{time_and_name}
-	= sprintf('%02d:%02d', $_DT->get_parts($row->{dtstart_tz}, qw(hour second)))
+	= sprintf('%02d:%02d', $_DT->get_parts($row->{dtstart_tz}, qw(hour minute)))
 	. ' '
 	. $row->{'RealmOwner.display_name'};
     $row->{query} = $self->get_query->format_uri_for_this(
