@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.36  2010/04/29 16:48:19  nagler
+  * Bivio::Cache
+    need to create the directory first
+  * Bivio::Test::Language::HTTP
+    reworked verify_no_link to use patterns
+    fix vc conflict
+  * Bivio::UI::XHTML::ViewShortcuts
+    use ADM_SUBSTITUTE_USER for super users in vs_user_email_list
+
   Revision 9.35  2010/04/29 00:00:51  nagler
   * Bivio::Auth::RealmType
     is_default_id should just use unsafe_from_int, because doesn't work
