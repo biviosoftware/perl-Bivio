@@ -209,8 +209,8 @@ sub id_from_any {
 
 sub is_default {
     my($self) = @_;
-    # Returns true if the realm is one of the default realms (general, user, club).
-    return 1 if $self->get('type') == $_RT->GENERAL;
+    return 1
+	if $self->get('type') == $_RT->GENERAL;
     return $self->get('owner')->is_default;
 }
 
