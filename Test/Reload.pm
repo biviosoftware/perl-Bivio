@@ -1,11 +1,13 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Reload;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 use File::Find ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_CL) = b_use('IO.ClassLoader');
+my($_R) = b_use('Agent.Request');
 my($_LAST_TIME) = time;
 my($_WATCH) = [grep(s{/BConf.pm$}{}, @{[values(%INC)]})];
 # File::Find doesn't put '.' in the Path
@@ -14,9 +16,8 @@ my($_INC) = [map($_ eq '.' ? '' : "$_/", @INC)];
 Bivio::IO::Alert->info('Watching: ', $_WATCH);
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 my($_DDL);
-my($_CL) = b_use('IO.ClassLoader');
 my($_DONE) = 1;
-b_use('Agent.Request')->if_apache_version(2 => sub {
+$_R->if_apache_version(2 => sub {
     use attributes ();
 	Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
     $_DONE = b_use('Ext.ApacheConstants')->OK;
@@ -31,7 +32,6 @@ sub handler {
 	map($_HANDLERS->call_fifo(handle_reload_class => [$_]), @$modified);
 	$_LAST_TIME = time;
     }
-    my($req);
     foreach my $modified (@{_modified_ddl()}) {
 	my($realm, $path, $file) = @$modified;
 	b_use('ShellUtil.RealmFile')->main(
@@ -40,8 +40,7 @@ sub handler {
 	    create_or_update => $path,
 	);
     }
-    $req->clear_current
-	if $req;
+    $_R->clear_current;
     return $_DONE;
 }
 
