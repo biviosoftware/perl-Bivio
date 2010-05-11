@@ -13,6 +13,7 @@ my($_C) = b_use('FacadeComponent.Constant');
 my($_S) = b_use('Type.String');
 my($_SUFFIX) = '.bmenu';
 my($_CC) = b_use('IO.CallingContext');
+my($_CACHE) = {};
 
 sub TARGET {
     return __PACKAGE__ . '::b-menu-target';
@@ -38,6 +39,7 @@ sub render_html {
     sub RENDER_HTML {[
 	[qw(?value FileName)],
 	[qw(class String bmenu)],
+	[qw(?id String)],
 	'?b_selected_label_prefix',
     ]};
     my($proto, $args, $attrs) = shift->parameters(@_);
@@ -78,7 +80,10 @@ sub render_html {
 		$attrs->{b_selected_label_prefix},
 	    ), @$links,
 	)],
-	$attrs->{class},
+	{
+	    class => $attrs->{class},
+	    id => $attrs->{id},
+	},
     )->put(selected_item => sub {
         my($w, $source) = @_;
 	return ($source->ureq('uri') || '')
@@ -181,7 +186,7 @@ sub _render_label {
 	$row->{Label}, 'Label contains ^ or embedded link', $args,
     ) if $res =~ s{<a[^>]+>(.*?)</a>}{$1}s;
     chomp($res);
-    return Simple($res);
+    return $res;
 }
 
 sub _set_missing_link_from_label {
