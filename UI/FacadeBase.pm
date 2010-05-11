@@ -307,6 +307,14 @@ sub _cfg_base {
 	    [ThreePartPage_want_dock_left_standard => 0],
 	    [robots_txt_allow_all => 1],
 	],
+	CSS => [
+	    [table_footer => q{
+		border-top: 1px solid;
+		Color('footer-border-top');
+		margin: .5ex 0 .5ex 0;
+		padding-top: .5ex;
+            }],
+	],
  	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
 	    [EXISTS => 'vs_fe("label"); already exists in our database.'],
