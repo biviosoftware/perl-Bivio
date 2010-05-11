@@ -404,10 +404,7 @@ td.footer_left {
 .header_right .want_sep,
 .tools span.want_sep,
 .tools div.sep {
-  padding-left: .3em;
-  margin-left: .3em;
-  border-left: 1px solid;
-  Color('form_sep-border');
+  CSS('menu_want_sep');
 }
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
