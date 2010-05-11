@@ -44,7 +44,7 @@ sub new {
 	form => undef,
 	query => undef,
 	# Needed by Task->execute, but not used here
-	reply => Bivio::Agent::Reply->new(),
+	reply => b_use('Agent.Reply')->new,
     });
     Bivio::Type::UserAgent->execute_job($self);
     $self->put_durable(
