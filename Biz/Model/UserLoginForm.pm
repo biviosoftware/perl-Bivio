@@ -199,7 +199,7 @@ sub substitute_user {
 	if $_TRACE;
     return $self->process({
 	realm_owner => $new_user,
-	disable_assert_cookie => $self->unsafe_get('disable_assert_cookie') || 0,
+	disable_assert_cookie => _disable_assert_cookie($self),
     });
 }
 
@@ -278,6 +278,13 @@ sub _cookie_password {
 	: $realm->get('password')
 }
 
+sub _disable_assert_cookie {
+    my($self) = @_;
+    return $self->unsafe_get('disable_assert_cookie')
+	|| $self->ureq('disable_assert_cookie')
+        || 0;
+}
+
 sub _get {
     my($cookie, $field) = @_;
     # Returns cookie field, if there is a cookie.
@@ -323,7 +330,7 @@ sub _set_cookie_user {
 
     # If logging in, need to have a cookie.
     Bivio::Agent::HTTP::Cookie->assert_is_ok($req)
-	if $realm && ! $self->unsafe_get('disable_assert_cookie');
+	if $realm && !_disable_assert_cookie($self);
     if ($realm) {
 	$cookie->put(
 	    $self->USER_FIELD => $realm->get('realm_id'),
