@@ -79,7 +79,7 @@ my($realms) = [];
 	is_default_id => [
 	    1 => 1,
 	    2 => 1,
-	    [] => DIE(),
+	    [] => 0,
 	],
 	{
 	    method => 'id_from_any',
