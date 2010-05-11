@@ -513,7 +513,7 @@ sub _initialize {
     }
     foreach my $c (@_COMPONENTS) {
 	# Get the config for this component (or force to exist)
-	my($cfg) = $config->{$c} || {};
+	my($cfg) = $config->{$c} || {initialize => sub {}};
 	if (ref($cfg) eq 'ARRAY') {
 	    # closure must be bound to new a variable
 	    my($groups) = $cfg;
