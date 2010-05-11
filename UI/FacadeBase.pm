@@ -314,6 +314,17 @@ sub _cfg_base {
 		margin: .5ex 0 .5ex 0;
 		padding-top: .5ex;
             }],
+	    [menu_want_sep => q{
+		padding-left: .3em;
+		margin-left: .3em;
+		border-left: 1px solid;
+		Color('form_sep-border');
+            }],
+	    [menu_want_sep_clear => q{
+		padding-left: 0;
+		margin-left: 0;
+		border-left: none;
+            }],
 	],
  	FormError => [
 	    [NULL => 'You must supply a value for vs_fe("label");.'],
