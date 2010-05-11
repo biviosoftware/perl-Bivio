@@ -44,16 +44,16 @@ sub initialize {
     return
         if $self->unsafe_get('_init');
     $self->put_unless_exists(
-	selected_item => [['->get_request'], 'task_id'],
 	class => 'task_menu',
 	tag_if_empty => 0,
 	tag => 'div',
-	show_current_task => 1,
     );
-    $self->initialize_attr('selected_item');
+    $self->initialize_attr('selected_item', ['->req', 'task_id']);
+    $self->initialize_attr(show_current_task => 1);
+    $self->initialize_attr(want_more_label => String('more'));
+    $self->initialize_attr(want_sorting => 0);
     $self->unsafe_initialize_attr('want_more');
     $self->unsafe_initialize_attr('want_more_threshold');
-    $self->initialize_attr(want_sorting => 0);
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
     my($need_sep, $selected);
     $self->put(
@@ -219,7 +219,7 @@ sub _want_more {
     my($b) = '';
     DIV(
 	DropDown(
-	    String('more'),
+	    $self->get('want_more_label'),
 	    DIV_dd_menu(
 		Join([splice(@$buffers, $wmc)]),
 	    ),
