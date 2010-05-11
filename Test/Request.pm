@@ -176,7 +176,8 @@ sub server_redirect {
 
 sub set_realm_and_user {
     my($self) = shift;
-    $self = $self->get_instance unless ref($self);
+    $self = $self->get_instance
+	unless ref($self);
     Bivio::ShellUtil->set_realm_and_user(@_);
     return $self;
 }
@@ -199,10 +200,12 @@ sub setup_facade {
 
 sub setup_http {
     my($self, $cookie_class) = @_;
-    $self = $self->get_instance unless ref($self);
-    return $self if $self->unsafe_get('r');
+    $self = $self->get_instance
+	unless ref($self);
+    return $self
+	if $self->unsafe_get('r');
     # What's required by bOP infrastructure.
-    Bivio::Type::UserAgent->BROWSER_HTML4->execute($self, 1);
+    b_use('Type.UserAgent')->BROWSER_HTML4->execute($self, 1);
     my($ip) = '127.0.0.1';
     my($addr) = Socket::pack_sockaddr_in(80, Socket::inet_aton($ip));
     my($method) = 'GET';
@@ -232,14 +235,6 @@ sub setup_http {
 	'get_server_port()' => [80],
     });
     $self->put_durable(r => $r);
-    Bivio::IO::Config->introduce_values({
-	'Bivio::IO::ClassLoader' => {
-	    delegates => {
-		'Bivio::Agent::HTTP::Cookie' =>
-		    $cookie_class || 'Bivio::Delegate::NoCookie',
-	    },
-	},
-    });
     # Cookie overwrites, so we have to reset below
     my($user) = $self->get('auth_user');
     $self->put_durable(
@@ -258,6 +253,7 @@ sub setup_http {
 	else {
 	    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($self, {
 		realm_owner => $user,
+		disable_assert_cookie => 1,
 	    });
 	}
 	$self->put_durable(user_state => $self->get('user_state')->LOGGED_IN); 
