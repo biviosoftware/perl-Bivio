@@ -1,20 +1,15 @@
-# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Request;
 use strict;
-use Bivio::Base 'Bivio::Agent::Job::Request';
-use Bivio::Agent::TaskId;
-use Bivio::Type::DateTime;
-use Bivio::UI::Task;
-use Bivio::Test::Bean;
-use Bivio::Test::Reply;
-use Bivio::ShellUtil;
+use Bivio::Base 'AgentJob.Request';
 use Socket ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_B) = b_use('Test.Bean');
 my($_RI) = b_use('Agent.RequestId');
 b_use('Bivio.Test')->register_handler(__PACKAGE__);
+my($_CL) = b_use('IO.ClassLoader');
 
 sub get_instance {
     return shift->get_current_or_new(@_);
@@ -22,7 +17,7 @@ sub get_instance {
 
 sub new_unit {
     my($proto, $class_name, $method, @args) = @_;
-    Bivio::Die->die('request already exists: ', $proto->get_current)
+    b_die('request already exists: ', $proto->get_current)
         if $proto->get_current;
     $method ||= 'get_instance';
     return $proto->$method(@args)->put(class_name => $class_name);
@@ -39,7 +34,7 @@ sub client_redirect {
 }
 
 sub commit {
-    return Bivio::Agent::Task->commit(shift(@_));
+    return b_use('Agent.Task')->commit(shift(@_));
 }
 
 sub delete_class_from_self {
@@ -74,11 +69,12 @@ sub get_current_or_new {
     $self = $proto->new({
 	auth_id => undef,
 	auth_user_id => undef,
-	task_id => Bivio::Agent::TaskId->SHELL_UTIL,
-	timezone => Bivio::Type::DateTime->timezone,
+	task_id => b_use('Agent.TaskId')->SHELL_UTIL,
+	timezone => b_use('Type.DateTime')->timezone,
 	is_secure => 0,
+	disable_assert_cookie => 1,
     })->put(
-	reply => Bivio::Test::Reply->new,
+	reply => b_use('Test.Reply')->new,
     );
     $self->set_realm(undef);
     $self->set_user(undef);
@@ -101,24 +97,22 @@ sub initialize_fully {
     my($self) = shift(@_);
     $self = $self->get_instance unless ref($self);
     my($task_id, $req_attrs, $facade_name) = @_;
-    ($req_attrs ||= {})->{task_id} = Bivio::Agent::TaskId->from_any(
+    ($req_attrs ||= {})->{task_id} = b_use('Agent.TaskId')->from_any(
 	$task_id || $self->unsafe_get('task_id') || 'SHELL_UTIL');
-    Bivio::IO::ClassLoader->simple_require(
-	'Bivio::Agent::Dispatcher')->initialize;
+    b_use('Agent.Dispatcher')->initialize;
     $self->put(%$req_attrs);
-
     if ($facade_name) {
 	$self->setup_facade($facade_name);
     }
     else {
 	$self->setup_all_facades;
     }
-    Bivio::Die->die(
+    b_die(
 	'facade not fully initialized; this method must be called before'
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
-    ) unless Bivio::UI::Facade->is_fully_initialized;
+    ) unless b_use('UI.Facade')->is_fully_initialized;
     $self->put_durable(uri => $self->format_uri)
-        if Bivio::UI::Task->has_uri($self->get('task_id'), $self);
+        if b_use('FacadeComponent.Task')->has_uri($self->get('task_id'), $self);
     return $self;
 }
 
@@ -168,7 +162,7 @@ sub run_unit {
 sub server_redirect {
     my($self) = _redirect_check(shift);
     my(undef, $named) = $self->internal_client_redirect_args(@_);
-    Bivio::Die->die($named, ': uris not supported yet')
+    b_die($named, ': uris not supported yet')
         if defined($named->{uri});
     $self->internal_server_redirect($named);
     return;
@@ -178,22 +172,21 @@ sub set_realm_and_user {
     my($self) = shift;
     $self = $self->get_instance
 	unless ref($self);
-    Bivio::ShellUtil->set_realm_and_user(@_);
+    b_use('Bivio.ShellUtil')->set_realm_and_user(@_);
     return $self;
 }
 
 sub setup_all_facades {
     my($self) = shift->setup_http;
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Dispatcher')
-	->initialize(0);
+    b_use('Agent.Dispatcher')->initialize(0);
     return $self->setup_facade;
 }
 
 sub setup_facade {
     my($proto, $facade) = @_;
     my($self) = $proto->setup_http;
-    Bivio::ShellUtil->initialize_ui;
-    Bivio::UI::Facade->setup_request($facade, $self)
+    b_use('Bivio.ShellUtil')->initialize_ui;
+    b_use('UI.Facade')->setup_request($facade, $self)
         if $facade;
     return $self;
 }
@@ -235,15 +228,23 @@ sub setup_http {
 	'get_server_port()' => [80],
     });
     $self->put_durable(r => $r);
+    b_use('IO.Config')->introduce_values({
+	'Bivio::IO::ClassLoader' => {
+	    delegates => {
+		'Bivio::Agent::HTTP::Cookie' =>
+		    $cookie_class || 'Bivio::Delegate::NoCookie',
+	    },
+	},
+    }) unless $_CL->was_required('Bivio::Agent::HTTP::Cookie');
     # Cookie overwrites, so we have to reset below
     my($user) = $self->get('auth_user');
     $self->put_durable(
 	uri => '/',
 	path_info => $self->unsafe_get('path_info'),
 	query => $self->unsafe_get('query'),
-	cookie => Bivio::Agent::HTTP::Cookie->new($self, $r),
+	cookie => b_use('AgentHTTP.Cookie')->new($self, $r),
 	client_addr => $ip,
-	user_state => Bivio::Type->get_instance('UserState')->JUST_VISITOR,
+	user_state => b_use('Type.UserState')->JUST_VISITOR,
     );
     # Sets user after cookie clears it
     if ($user) {
@@ -251,24 +252,21 @@ sub setup_http {
 	    $self->set_user($user);
 	}
 	else {
-	    Bivio::Biz::Model->get_instance('UserLoginForm')->execute($self, {
+	    b_use('Model.UserLoginForm')->execute($self, {
 		realm_owner => $user,
-		disable_assert_cookie => 1,
 	    });
 	}
 	$self->put_durable(user_state => $self->get('user_state')->LOGGED_IN); 
     }
-    Bivio::IO::ClassLoader->simple_require('Bivio::Biz::Action')
-	->get_instance('JobBase')->set_sentinel($self);
+    b_use('Action.JobBase')->set_sentinel($self);
     return $self;
 }
 
 sub set_user_state_and_cookie {
     my($self, $user_state, $user) = @_;
-    $user_state = $self->use('Type.UserState')->from_any($user_state);
-    $self->put(disable_assert_cookie => 1);
-    $self->put_unless_exists(cookie => Bivio::Collection::Attributes->new);
-    my($ulf) = Bivio::Biz::Model->new($self, 'UserLoginForm');
+    $user_state = b_use('Type.UserState')->from_any($user_state);
+    $self->put_unless_exists(cookie => b_use('Collection.Attributes')->new);
+    my($ulf) = b_use('Model.UserLoginForm')->new($self);
     $ulf->process({login => $user});
     $ulf->process({login => undef})
 	if $user_state->eq_logged_out;
@@ -290,8 +288,8 @@ sub unsafe_get_captured_mail {
 sub _maybe_to_char {
     my($key) = @_;
     my($die);
-    return Bivio::Die->catch(sub {
-	return __PACKAGE__->use('Bivio::SQL::ListQuery')->to_char($key);
+    return b_use('Bivio.Die')->catch(sub {
+	return b_use('SQL.ListQuery')->to_char($key);
     }, \$die) || $key;
 }
 
