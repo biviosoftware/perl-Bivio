@@ -386,10 +386,7 @@ div.alphabetical_chooser {
   Font('selected');
 }
 table.footer {
-  border-top: 1px solid;
-  Color('footer-border-top');
-  margin: .5ex 0 .5ex 0;
-  padding-top: .5ex;
+    CSS('table_footer');
 }
 td.footer_right {
   text-align: right;
