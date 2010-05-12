@@ -73,7 +73,8 @@ sub parse {
     my($state) = {
         buffer => $_TA->canonicalize_newlines(
 	    !defined($csv_text) ? $self->read_input
-		: ref($csv_text) ? $csv_text : \$csv_text,
+		: ref($csv_text) ? $csv_text
+	        : _assert_csv_text($self, $csv_text),
 	),
         want_line_numbers => $want_line_numbers,
         char_count => 0,
@@ -175,6 +176,13 @@ sub _append_char {
     # Appends a character to the current value.
     $state->{current_value} .= $char;
     return;
+}
+
+sub _assert_csv_text {
+    my($self, $csv_text) = @_;
+    $self->usage_error($csv_text, ': must be CSV, not file name')
+	unless $csv_text =~ m{\n} || $csv_text !~ m{/};
+    return \$csv_text;
 }
 
 sub _die {
