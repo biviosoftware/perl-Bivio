@@ -18,10 +18,20 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 	    [$resource] => [$resource],
 	],
 	format_uri => [
-	    ['LOGOUT'] => ['/pub/logout'],
+	    LOGOUT => '/pub/logout',
 	    [{
 		task_id => 'LOGOUT',
-	    }] => ['/pub/logout'],
+	    }] => '/pub/logout',
+	    [{
+		task_id => 'LOGOUT',
+		facade_uri => 'other',
+	    }] => qr{^http://other.*/pub/logout$},
+	],
+	format_http_prefix => [
+	    [] => qr{^http://(?!other)},
+	    [1] => qr{^https://(?!other)},
+	    [undef, 'other'] => qr{^\Qhttp://other.},
+	    [1, 'other'] => qr{^\Qhttps://other.},
 	],
     ],
 ];
