@@ -226,7 +226,7 @@ sub EXTRA_URI_PARAM_LIST {
         no_context anchor require_context
 	uri form_in_query require_absolute no_form
         carry_query carry_path_info _server_redirect
-        seo_uri_prefix
+        seo_uri_prefix facade_uri
     );
 }
 
@@ -460,16 +460,21 @@ sub format_http_toggling_secure {
 }
 
 sub format_http_prefix {
-    my($self, $require_secure) = @_;
+    my($self, $require_secure, $facade_uri) = @_;
     # Returns the http or https prefix for this I<Text.http_host>.  Does not add
     # trailing '/'.
     #
     # You should pass in the I<require_secure> value for the task you are
     # rendering for.
     # If is_secure is not set, default to non-secure
+    $_F = b_use('UI.Facade')
+	unless $_F;
     return ($self->unsafe_get('is_secure') || $require_secure
-	    ? 'https://' : 'http://')
-	    . ($_F ||= b_use('UI.Facade'))->get_value('http_host', $self);
+	? 'https://' : 'http://')
+        . $_F->get_value(
+	    'http_host',
+	    $facade_uri ? $_F->find_by_uri_or_domain($facade_uri) : $self,
+	);
 }
 
 sub format_mailto {
@@ -554,7 +559,7 @@ sub format_uri {
 	    if my $ncst = $self->need_to_secure_task(
 		$_T->get_by_id($named->{task_id}));
 	$uri = $_FCT->format_uri($named, $self);
-	$uri = $self->format_http_prefix(1) . $uri
+	$uri = $self->format_http_prefix(1, $named->{facade_uri}) . $uri
 	    if $ncst;
     }
     if (defined($named->{query})) {
@@ -567,6 +572,9 @@ sub format_uri {
     }
     $uri .= '#' . $_HTML->escape_query($named->{anchor})
         if defined($named->{anchor}) && length($named->{anchor});
+#TODO: Handle case with a uri which is already absolute
+    $uri = $self->format_http_prefix(undef, $named->{facade_uri}) . $uri
+	if $named->{facade_uri};
     return $uri;
 }
 
