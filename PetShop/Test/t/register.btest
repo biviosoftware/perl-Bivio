@@ -50,7 +50,7 @@ submit_form({
 login_as($u);
 follow_link('site-contact');
 verify_link('tickets');
-verify_no_link('applicants');
+verify_link('applicants');
 login_as('root');
 visit_uri($form);
 submit_form({
