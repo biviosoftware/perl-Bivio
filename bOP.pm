@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,40 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.37  2010/05/10 15:34:40  moeller
+  * Bivio::Biz::Action::ECCreditCardProcessor
+    refactored, removed unimplemented check_transaction_batch()
+  * Bivio::Biz::Action::ECPaymentProcessAll
+    fixed unauth_iterate_start
+    removed call to check_transaction_batch() - not implemented
+  * Bivio::Biz::Action::ECSecureSourceProcessor
+    rm pod, refactored - changed internal_get_additional_form_data()
+    to return an array of key/value pairs
+  * Bivio::Biz::Model::CalendarEventList
+    seconds => minute
+  * Bivio::Biz::Model::EmailForDomainList
+    NEW
+  * Bivio::Biz::Model::FileChangeForm
+    Q#520:        Can't rename suffix of file when upper case
+  * Bivio::Biz::Model::TaskLogList
+    added execute_unauth_iterate_start and execute_iterate_start
+  * Bivio::Delegate::TaskId
+    Use execute_*_iterate_start for TASK_LOG_CSV tasks, which now exits at
+    a "reasonable" number (10K)
+  * Bivio::Type::Email
+    added replace_domain
+  * Bivio::UI::View::Blog
+    removed HIDE_IS_PUBLIC
+    Made cols same as WIKI
+  * Bivio::UI::View::Wiki
+    removed HIDE_IS_PUBLIC
+  * Bivio::UI::XHTML::ViewShortcuts
+    vs_user_email_list: control on wf_list_link should check is_super_user
+  * Bivio::Util::Email
+    NEW
+  * Bivio::Util::RealmFile
+    added folder_sizes
+
   Revision 9.36  2010/04/29 16:48:19  nagler
   * Bivio::Cache
     need to create the directory first
