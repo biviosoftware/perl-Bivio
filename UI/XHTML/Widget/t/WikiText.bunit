@@ -123,7 +123,9 @@ OUT
     '@a href=^x ^y.jpg' => qr{<p class="b_prose"><a href="/bunit_wiki/\w+/x"><img src="/bunit_wiki/\w+/y.jpg" /></a></p>},
     '@a href=a.com y' => qr{<p class="b_prose"><a href="http://www.a.com">y</a></p>},
     '@a href=^cateye.com y' => qq{<p class="b_prose"><a href="http://www.cateye.com">y</a></p>},
-    '@a href= x' => qr{<p class="b_prose"><a href="">x</a></p>},
+
+    '@a href= class=y x' => qr{<p class="b_prose"><a class="y" href="">x</a></p>},
+    "\@a href=\nz" => qr{<p class="b_prose"><a href="">z\n</a></p>},
     '^/foo.doc' => qq{<p class="b_prose"><a href="/foo.doc">/foo.doc</a>\n</p>},
     '@img src="x"' => qr{<img src="/bunit_wiki/\w+/x" />},
     "a\@\nb" => qq{<p class="b_prose">a\nb\n</p>},
