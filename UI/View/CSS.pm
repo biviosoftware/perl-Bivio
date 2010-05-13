@@ -420,8 +420,7 @@ div.task_menu_wrapper,
 p.b_prose,
 .prose p,
 p.prose {
-  text-indent: 2em;
-  margin: 1ex 0 1ex 0;
+  CSS('b_prose');
 }
 form .sep {
   text-align: left;
