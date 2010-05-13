@@ -301,6 +301,9 @@ sub _cfg_base {
 	    [xlink_page_error_referer => {
 		uri => ['Action.Error', 'uri'],
 	    }],
+	    [xlink_xhtml_logo_normal => {
+		task_id => 'SITE_ROOT',
+	    }],
 	    [my_site_redirect_map => []],
 	    [ThreePartPage_want_UserState => 1],
 	    [ThreePartPage_want_ForumDropDown => 0],
@@ -324,6 +327,10 @@ sub _cfg_base {
 		padding-left: 0;
 		margin-left: 0;
 		border-left: none;
+            }],
+	    [b_prose => q{
+		text-indent: 2em;
+		margin: 1ex 0 1ex 0;
             }],
 	],
  	FormError => [
@@ -419,6 +426,7 @@ sub _cfg_base {
 		page_error_referer => 'Go back to the previous page, and try something different.',
 		page_error_user => 'Go back to your personal page.',
 		page_error_visitor => 'Go to the home page.',
+		xhtml_logo_normal => ' ',
 	    ]],
 	    [title => [
 		[qw(DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND DEFAULT_ERROR_REDIRECT_NOT_FOUND)] => 'Not Found',
@@ -499,7 +507,7 @@ sub _cfg_base {
                             ),
 			    'su',
 			),
-			Link(' ', '/', 'logo'),
+			XLink('xhtml_logo_normal', 'logo'),
 		    ));},
 		    xhtml_head_title => q{Title([vs_site_name(), vs_text_as_prose('xhtml_title')]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
