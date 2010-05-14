@@ -991,7 +991,7 @@ sub _parse_content_link {
 	$state,
 	length($link) ? (
 	    \&_eval_tag,
-	    $link =~ $_IMG ? {tag => 'img', attrs => {src => $link}} : (
+	    $link =~ $_IMG ? {tag => 'img', attrs => {alt => $link, src => $link}} : (
 		{tag => 'a', attrs => {href => $link}},
 		_fix_word($link),
 	    ),
