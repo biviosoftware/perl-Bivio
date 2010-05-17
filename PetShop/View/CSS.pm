@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::PetShop::View::CSS;
 use strict;
-use Bivio::Base 'Bivio::UI::View::CSS';
+use Bivio::Base 'View';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
