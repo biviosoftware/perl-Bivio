@@ -10,6 +10,8 @@ my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub execute_empty {
     my($self) = @_;
+    return
+        unless $self->req('auth_user_id');
     $self->internal_put_field('ECCreditCardPayment.card_number' =>
 	$self->use('Type.ECCreditCardNumber')->TEST_NUMBER)
         unless $self->req->is_production;
