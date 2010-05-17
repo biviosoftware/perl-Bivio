@@ -53,6 +53,20 @@ sub new_unit {
     );
 }
 
+sub wiki_create {
+    return _wiki_create(0, @_);
+}
+
+sub wiki_data_create {
+    return _wiki_create(1, @_);
+}
+
+sub wiki_data_delete_all {
+    my($self) = @_;
+    $self->builtin_model('RealmFile')->delete_all;
+    return;
+}
+
 sub wiki_uri_to_req {
     my($self, $name) = @_;
     return $self->builtin_req->put(uri => $self->builtin_req->format_uri({
@@ -62,17 +76,12 @@ sub wiki_uri_to_req {
     }));
 }
 
-sub wiki_data_create {
-    my($self, $name, $is_public, $content) = @_;
+sub _wiki_create {
+    my($is_wiki_data, $self, $name, $is_public, $content) = @_;
+    my($type) = b_use($is_wiki_data ? 'Type.WikiDataName' : 'Type.WikiName');
     return $self->builtin_model('RealmFile')->create_with_content({
-	path => b_use('Type.WikiDataName')->to_absolute($name, $is_public),
+	path => $type->to_absolute($name, $is_public),
     }, ref($content) ? $content : \$content);
-}
-
-sub wiki_data_delete_all {
-    my($self) = @_;
-    $self->builtin_model('RealmFile')->delete_all;
-    return;
 }
 
 1;
