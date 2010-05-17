@@ -26,11 +26,56 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info.
+http://www.bivio.biz for more info. 
 
 =head1 CHANGES
 
   $Log$
+  Revision 9.38  2010/05/13 22:29:58  nagler
+  * Bivio::Agent::Job::Request
+    b_use Agent::Reply
+  * Bivio::Agent::Request
+    added facade_uri to format_uri so can switch facades easily
+  * Bivio::Auth::Realm
+    fmt
+  * Bivio::Biz::Model::UserLoginForm
+    if disable_assert_cookie set on request, then like on the form itself
+  * Bivio::Test::Reload
+    always delete the request ($req was not being set before)
+  * Bivio::Test::Request
+    don't introduce_values
+    disable_assert_cookie
+    put disable_assert_cookie on self
+    b_use
+  * Bivio::Type::UserAgent
+    Added BROWSER_IPHONE & ->is_mobile_device
+    fmt
+  * Bivio::UI::CSS
+    NEW
+  * Bivio::UI::FacadeBase
+    Define new CSS FacadeComponent
+    added menu_want_sep/_clear
+    encapsulate CSS('b_prose')
+    define xhtml_logo_normal XLink
+  * Bivio::UI::Facade
+    default initialization for a component is empty
+  * Bivio::UI::View::CSS
+    use new CSS FacadeComponent
+    use CSS menu_want_sep
+    encapsulate CSS('b_prose')
+  * Bivio::UI::Widget::Equals
+    NEW
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    define want_more_label
+    fmt
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    allow id= attribute
+  * Bivio::UI::XHTML::Widget::WikiText
+    Parse blank tag attributes correctly: @a href= foo
+    allow "@tag attr=" that is, attr= ends the line
+  * Bivio::Util::CSV
+    added assertion to test if a file name is passed to parse/_records
+
   Revision 9.37  2010/05/10 15:34:40  moeller
   * Bivio::Biz::Action::ECCreditCardProcessor
     refactored, removed unimplemented check_transaction_batch()
