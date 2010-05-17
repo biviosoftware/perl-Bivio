@@ -8,10 +8,10 @@ my($p) = HTML::Parser->new(
     start_h => [sub {
         my($tag, $attr) = @_;
         push(@$res, $attr->{class})
-            if $tag && $tag eq 'div';
+            if $tag && $tag =~ /ol|div/ && $attr->{class};
     }, 'tag,attr'],
 );
-$p->report_tags('a', 'div');
+$p->report_tags('a', 'div', 'ol');
 $p->ignore_elements('script');
 Widget({
     view_class_map => 'XHTMLWidget',
@@ -40,7 +40,7 @@ req()->set_realm_and_user(qw(fourem root))
         FORUM_MOTION_LIST
         GROUP_USER_LIST
         FORUM_TUPLE_USE_LIST
-     )]] => 'task_menu Home Blog Files Wiki Calendar Hits Mail Polls Roster Tables',
+     )]] => 'b_task_menu Home Blog Files Wiki Calendar Hits Mail Polls Roster Tables',
     [[{
         task_id => 'SITE_WIKI_VIEW',
 	sort_label => 'sort_first',
@@ -55,16 +55,16 @@ req()->set_realm_and_user(qw(fourem root))
         GROUP_USER_LIST
         FORUM_MOTION_LIST
         FORUM_TUPLE_USE_LIST
-     )], {want_sorting => 1}] => 'task_menu Home Blog Calendar Files Hits Mail Polls Roster Tables Wiki',
+     )], {want_sorting => 1}] => 'b_task_menu Home Blog Calendar Files Hits Mail Polls Roster Tables Wiki',
     [[qw(
         FORUM_BLOG_LIST
         FORUM_WIKI_VIEW
         FORUM_CALENDAR
-    )], {show_current_task => 0}] => 'task_menu Blog Calendar',
+    )], {show_current_task => 0}] => 'b_task_menu Blog Calendar',
      [[('SITE_WIKI_VIEW')x5], {want_more => 1}] =>
-         'task_menu Home Home Home Home Home',
+         'b_task_menu Home Home Home Home Home',
      [[('SITE_WIKI_VIEW')x4], {want_more_threshold => 2}] =>
-         'task_menu Home Home task_menu_wrapper want_sep dd_menu Home Home more  &#9660;',
+         'b_task_menu Home Home more  &#9660; b_dd_menu b_hide Home Home',
      [[('SITE_WIKI_VIEW')x3], {want_more_threshhold => 2}] =>
-         'task_menu Home Home Home',
+         'b_task_menu Home Home Home',
 ];
