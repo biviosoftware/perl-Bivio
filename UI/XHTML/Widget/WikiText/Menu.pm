@@ -80,14 +80,10 @@ sub render_html {
 		$attrs->{b_selected_label_prefix},
 	    ), @$links,
 	)],
-	{
-	    class => $attrs->{class},
-	    id => $attrs->{id},
-	},
     )->put(selected_item => sub {
         my($w, $source) = @_;
 	return ($source->ureq('uri') || '')
-	    =~ $w->get_nested(qw(value selected_regexp)) ? 1 : 0;
+	    =~ $w->get_nested(qw(selected_regexp)) ? 1 : 0;
     })->initialize_and_render($args->{source}, \$buf);
     if ($args->{tag} eq 'b-menu-source') {
         $args->{req}->put($proto->TARGET, $buf);
@@ -105,12 +101,12 @@ sub _item_widget {
     my($proto, $args, $row, $prefix) = @_;
     my($c) = delete($row->{class});
     $row->{value} = Simple($row->{value});
-    return Tag(span => Link($row), $c ? $c : ())
+    return $c ? Link($row)->put(class => $c) : Link($row)
         unless my $links = delete($row->{links});
     my($selected_regexp) = delete($row->{selected_regexp});
-    return Tag(span => Join([Link($row),
+    return Join([Link($row),
         $proto->internal_submenu($args, $links),
-    ], {selected_regexp => $selected_regexp}),  $c ? $c : ());
+    ], {selected_regexp => $selected_regexp});
 }
 
 sub _join_regexp {
