@@ -1,48 +1,42 @@
 # Copyright (c) 2008-2010 bivio Software Inc.  All Rights Reserved.
 # $Id$
 WikiText({die_on_validate_error => 0});
-foreach my $item (
-    ['top.bmenu', <<'EOF'],
+wiki_data_delete_all();
+wiki_data_create('top.bmenu', 1, <<'EOF');
 Label,Link,Class,Selected Regexp
 Index
 A,a.bmenu
 B,b.bmenu,,foo
 EOF
-    ['a.bmenu', <<'EOF'],
+wiki_data_create('a.bmenu', 1, <<'EOF');
 Label,Link
 Aa
 Ab
 Ac,/anything/C
 EOF
-    ['b.bmenu', <<'EOF'],
+wiki_data_create('b.bmenu', 1, <<'EOF');
 Label,Link
 Ba,c.bmenu
 Bb ^x.gif,Bb
 EOF
-    ['c.bmenu', <<'EOF'],
+wiki_data_create('c.bmenu', 1, <<'EOF');
 Label,Link
 Ca
 Cb
 EOF
-    ['deviance.bmenu', <<'EOF'],
+wiki_data_create('deviance.bmenu', 1, <<'EOF');
 Label,Link
 
 EOF
-) {
-    my($p, $c) = @$item;
-    my($path) = class('Type.WikiDataName')->to_absolute($p);
-    model('RealmFile')->delete({path => $path});
-    model('RealmFile')->create_with_content({path => $path}, \$c);
-}
 [
     inline_case(sub {wiki_uri_to_req('/Ab'); 1}),
     [{
 	value => '@b-menu value=a',
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
-       class="bmenu"
+       class="b_task_menu"
        "/bunit_wiki/\w+/Aa" Aa
-       selected "/bunit_wiki/\w+/Ab" Ab
+       b_selected "/bunit_wiki/\w+/Ab" Ab
        "/\w+/C" Ac
     ))]}},
     inline_case(sub {wiki_uri_to_req('Ca'); 1}),
@@ -50,9 +44,9 @@ EOF
 	value => '@b-menu value=b',
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
-       class="bmenu"
-       selected "/bunit_wiki/\w+/Ca" Ba
-       b_submenu selected "/bunit_wiki/\w+/Ca" Ca "/bunit_wiki/\w+/Cb" Cb
+       class="b_task_menu"
+       b_selected "/bunit_wiki/\w+/Ca" Ba
+       b_submenu b_selected "/bunit_wiki/\w+/Ca" Ca "/bunit_wiki/\w+/Cb" Cb
        "/bunit_wiki/\w+/Bb" Bb <img src="/bunit_wiki/\w+/x.gif"
     ))]}},
     inline_case(sub {wiki_uri_to_req('Ab'); 1}),
@@ -60,9 +54,9 @@ EOF
 	value => '@b-menu value=top',
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
-       class="bmenu"
+       class="b_task_menu"
        "/bunit_wiki/\w+/Index" Index
-       selected "/bunit_wiki/\w+/Aa" A
+       b_selected "/bunit_wiki/\w+/Aa" A
        b_submenu "/bunit_wiki/\w+/Aa" Aa "/bunit_wiki/\w+/Ab" Ab "/\w+/C" Ac
        "/bunit_wiki/\w+/Ca" B
        b_submenu "/bunit_wiki/\w+/Ca" Ba "/bunit_wiki/\w+/Bb" Bb
@@ -72,20 +66,20 @@ EOF
 	value => '@b-menu value=top',
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
-       class="bmenu"
+       class="b_task_menu"
        "/bunit_wiki/\w+/Index" Index
        "/bunit_wiki/\w+/Aa" A
-       selected "/bunit_wiki/\w+/Ca" B
+       b_selected "/bunit_wiki/\w+/Ca" B
     ))]}},
     inline_case(sub {wiki_uri_to_req('Cb'); 1}),
     [{
 	value => '@b-menu value=top',
 	is_public => 0,
     }] => qr{@{[join('.*', qw(
-       class="bmenu"
+       class="b_task_menu"
        "/bunit_wiki/\w+/Index" Index
        "/bunit_wiki/\w+/Aa" A
-       selected "/bunit_wiki/\w+/Ca" B
+       b_selected "/bunit_wiki/\w+/Ca" B
     ))]}},
     [{
 	value => '@b-menu value=deviance',
