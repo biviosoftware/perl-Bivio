@@ -21,7 +21,8 @@ submit_form({
     poll => 0,
     tables => 0,
 });
-follow_link($name, '^wiki', 'calendar$');
+follow_menu_link($name);
+follow_link('^wiki', 'calendar$');
 test_deviance();
 follow_link('tables');
 test_conformance();
