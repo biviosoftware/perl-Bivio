@@ -5,7 +5,7 @@ Widget({
 	my($case, $actual, $expect) = @_;
 	my($r) = $actual->[0];
 	$r =~ s{.*?<html><head>\n}{}s || die;
-	$r =~ s{\n</body></html>\n}{}s || die;
+	$r =~ s{\n<script.*?</script></body></html>\n}{}s || die;
 	return [$r];
     },
 });

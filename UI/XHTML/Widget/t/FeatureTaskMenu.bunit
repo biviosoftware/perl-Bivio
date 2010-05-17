@@ -8,8 +8,8 @@ req()->initialize_fully('FORUM_WIKI_EDIT');
 [
     [] => sub {
 	my(undef, $actual) = @_;
-	assert_not_equals(qr{selected.*selected}s, $actual->[0]);
-	return qr{selected[^>]+>Wiki}s;
+	assert_not_equals(qr{b_selected.*b_selected}s, $actual->[0]);
+	return qr{b_selected[^>]+><a href="[^"]+">Wiki</a>}s;
     },
 ];
 
