@@ -727,7 +727,10 @@ sub _update {
     _assert_writable($self, $values);
     my($c) = delete($values->{_content});
     my($method) = 'SUPER::update';
-    my($versioned) = $c && _version($self, $self->get_shallow_copy);
+    my($versioned) = $c && _version($self, {
+	%{$self->get_shallow_copy},
+	$values->{override_versioning} ? (override_versioning => 1) : (),
+    });
     if ($versioned) {
 	$method = 'SUPER::create';
 	delete($values->{realm_file_id});
