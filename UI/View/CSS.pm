@@ -292,6 +292,11 @@ table.dock a {
   position: relative;
   z-index: 1000;
 }
+.dock .b_dd_menu li a {
+  font-size: 90%;
+  If([qw(Type.UserAgent ->equals_by_name BROWSER_MSIE_6 BROWSER_MSIE_7 BROWSER_MSIE_8)], 'margin-left: -1em;');
+  display:block;
+}
 td.header_left {
   width: 30%;
   text-align: left;
@@ -535,9 +540,9 @@ td.amount_cell {
 }
 .b_dd_menu {
   Color('b_dd_menu-background');
-  Color('b_dd_menu-border');
   list-style-type: none;
   border: 1px solid;
+  Color('b_dd_menu-border');
   display: inline;
   left: 0;
   position: absolute;
@@ -689,11 +694,6 @@ span.b_sort_arrow {
 }
 form.b_selector {
   padding-top: 1ex;
-}
-.dock .b_dd_menu li a {
-  font-size: 90%;
-  If([qw(Type.UserAgent ->equals_by_name BROWSER_MSIE_6 BROWSER_MSIE_7 BROWSER_MSIE_8)], 'margin-left: -1em;');
-  display:block;
 }
 EOF
 }
@@ -856,11 +856,17 @@ sub _site_mail {
 .msg .parts {
   margin-bottom: 1em;
 }
+.msg .actions .b_task_menu li {
+  border: 0;
+}
+.msg .actions .b_task_menu li.b_first a {
+  margin-left: 0;
+}
 .msg .actions .b_task_menu a {
   background: none;
-  border: none;
+  border: 0;
   padding-left: 0;
-  margin-left: 2em;
+  margin-left: 1.2em;
 }
 .msg .actions {
   Color('even-background');
