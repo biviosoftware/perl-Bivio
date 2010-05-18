@@ -36,8 +36,9 @@ commands:
     delete_deep path ... -- deletes files or folders specified
     rename old new --- moves old to new
     export_tree folder [noarchive] -- exports an entire tree to current directory
-    import_tree [folder] -- imports files in current directory into folder [/]
+    import_tree [folder] [noarchive] -- imports files in current directory into folder [/]
     list_folder folder -- lists a folder
+    purge_archive [min_file_size] -- deletes archived files
     read path -- returns file contents
     send_file_via_mail email subject path -- email a file as an attachment
     update path --  updates path with input
@@ -127,7 +128,10 @@ sub folder_sizes {
 }
 
 sub import_tree {
-    my($self, $folder) = @_;
+    my($self, $folder, $noarchive) = shift->name_args([
+        [qw(?folder String)],
+        [qw(?noarchive Boolean)],
+    ], \@_);
     my($req) = $self->initialize_ui;
     $folder = $folder ? $self->convert_literal(FilePath => $folder) : '/';
     File::Find::find({
@@ -159,6 +163,7 @@ sub import_tree {
 		    modified_date_time => $_DT->from_unix(
 			(stat($_))[9],
 		    ),
+		    $noarchive ? (override_versioning => 1) : (),
 		}),
 		$method =~ /content/ ? $_F->read($_) : (),
 	    );
@@ -175,6 +180,38 @@ sub list_folder {
 	    sub {shift->get('RealmFile.path')},
 	    {path_info => $self->convert_literal('FilePath', $path)},
 	);
+}
+
+sub purge_archive {
+    my($self, $file_size) = @_;
+    $file_size = defined($file_size) ? $file_size : 1;
+    $self->are_you_sure('Delete all archived files larger than '
+        . $file_size . 'M in ' . $self->req(qw(auth_realm owner name)) . '?');
+    my($m) = 1024 * 1024;
+    $file_size *= $m;
+    my($deleted_count) = 0;
+    my($deleted_size) = 0;
+    $self->model('RealmFile')->do_iterate(sub {
+        my($rf) = @_;
+	return 1 unless $rf->is_version;
+	return 1 if $rf->get('is_folder');
+	return 1 if $rf->get_content_length <= $file_size;
+	$self->print($rf->get('realm_file_id'),
+	      ' ', int($rf->get_content_length / $m),
+	      'M ', $rf->get('path'), "\n");
+	$deleted_size += $rf->get_content_length / $m;
+	$rf->new_other('RealmFileLock')->delete_all({
+	    realm_file_id => $rf->get('realm_file_id'),
+	});
+	$rf->delete({
+	    override_versioning => 1,
+	    override_is_read_only => 1,
+	});
+	$deleted_count++;
+	return 1;
+    });
+    return $deleted_count . ' archive files deleted: '
+	. sprintf("%.2fM", $deleted_size);
 }
 
 sub read {
