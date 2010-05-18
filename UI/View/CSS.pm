@@ -287,6 +287,11 @@ td.dock_right {
 table.dock a {
   Font('dock');
 }
+.dock .b_task_menu {
+!IE7 z-index bug: the *parent* of the dropdown must have position and z-index
+  position: relative;
+  z-index: 1000;
+}
 td.header_left {
   width: 30%;
   text-align: left;
@@ -684,6 +689,11 @@ span.b_sort_arrow {
 }
 form.b_selector {
   padding-top: 1ex;
+}
+.dock .b_dd_menu li a {
+  font-size: 90%;
+  If([qw(Type.UserAgent ->equals_by_name BROWSER_MSIE_6 BROWSER_MSIE_7 BROWSER_MSIE_8)], 'margin-left: -1em;');
+  display:block;
 }
 EOF
 }
