@@ -26,11 +26,46 @@ Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
-http://www.bivio.biz for more info. 
+http://www.bivio.biz for more info.
 
 =head1 CHANGES
 
   $Log$
+  Revision 9.39  2010/05/17 22:28:42  dobbs
+  * Bivio::Biz::Model::ECCreditCardPaymentForm
+    execute_empty now only populates fields if user is logged in
+  * Bivio::PetShop::View::CSS
+    DropDown javascript move to <head>, prefix b_ for css and facade
+  * Bivio::Test::WikiText
+    added wiki_create() and refactored b-menu units
+  * Bivio::UI::FacadeBase
+    DropDown javascript move to <head>, prefix b_ for css and facade
+  * Bivio::UI::HTML::Widget::Script
+    DropDown javascript move to <head>, prefix b_ for css and facade
+    call window.onload just before </body>
+  * Bivio::UI::View::CSS
+    first draft: TaskMenu changed to <ol><li>
+    DropDown javascript move to <head>, prefix b_ for css and facade
+    fix interaction between new TaskMenu and wiki bmenus
+    .selected => .b_selected
+  * Bivio::UI::View::ThreePartPage
+    dock_right now uses TaskMenu
+  * Bivio::UI::XHTML::Widget::DropDown
+    DropDown javascript move to <head>, prefix b_ for css and facade
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    dock_right now uses TaskMenu
+    DropDown javascript move to <head>, prefix b_ for css and facade
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    DropDown javascript move to <head>, prefix b_ for css and facade
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    use <ol><li>, not <div>, and b_ class prefix
+    put more dropdown inside an <li>
+    DropDown javascript move to <head>, prefix b_ for css and facade
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    fix interaction between new TaskMenu and wiki bmenus
+  * Bivio::UI::XHTML::Widget::WikiText
+    added alt tag to implict img tags
+
   Revision 9.38  2010/05/13 22:29:58  nagler
   * Bivio::Agent::Job::Request
     b_use Agent::Reply
