@@ -982,6 +982,7 @@ div.wiki {
   margin: 1ex 0 1ex 0;
 }
 .wiki blockquote .b_prose,
+.wiki blockquote ul li .b_prose,
 .wiki dd .b_prose,
 .wiki td .b_prose,
 .wiki li .b_prose {
