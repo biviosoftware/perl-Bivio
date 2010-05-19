@@ -270,6 +270,11 @@ td.dock_middle {
 .b_task_menu li {
   list-style-type: none;
   display: inline;
+  border-left: 1px solid;
+  padding: 0 .3em;
+}
+.b_task_menu li.b_first {
+  border-left: 0;
 }
 td.dock_right,
 .dock_right .b_task_menu {
@@ -427,13 +432,6 @@ td.footer_left {
 .tools span.want_sep,
 .tools div.sep {
   CSS('menu_want_sep');
-}
-.b_task_menu li {
-  border-left: 1px solid;
-  padding: 0 .3em;
-}
-.b_task_menu li.b_first {
-  border-left: 0;
 }
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
