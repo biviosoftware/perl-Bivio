@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.41  2010/05/18 22:21:49  dobbs
+  * Bivio::UI::View::CSS
+    fix dropdown border color
+    fix .b_first margin and remove borders on tools in ?/mail-thread
+
   Revision 9.40  2010/05/18 21:38:18  dobbs
   * Bivio::UI::View::CSS
     reduce font-size for dock and some fixes for IE
