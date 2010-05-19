@@ -40,7 +40,7 @@ req()->set_realm_and_user(qw(fourem root))
         FORUM_MOTION_LIST
         GROUP_USER_LIST
         FORUM_TUPLE_USE_LIST
-     )]] => 'b_task_menu Home Blog Files Wiki Calendar Hits Mail Polls Roster Tables',
+     )], 'aaa'] => 'b_task_menu aaa Home Blog Files Wiki Calendar Hits Mail Polls Roster Tables',
     [[{
         task_id => 'SITE_WIKI_VIEW',
 	sort_label => 'sort_first',

@@ -43,9 +43,10 @@ sub initialize {
     my($self) = @_;
     return
         if $self->unsafe_get('_init');
+    $self->put(
+        class => join(' ', 'b_task_menu', ($self->unsafe_get('class') || ())));
     $self->put_unless_exists(
 	selected_item => [['->get_request'], 'task_id'],
-	class => 'b_task_menu',
 	tag_if_empty => 0,
 	tag => 'ol',
 	show_current_task => 1,
