@@ -33,10 +33,10 @@ sub initialize {
     $self->put_unless_exists(
 	control_on_value => DropDown(
 	    vs_text_as_prose('SiteAdminDropDown_label'),
-	    TaskMenu([
+	    OL(Join([map(LI($_),
 		@{$self->get_or_default(extra_items => [])},
                 $self->TASK_MENU_LIST,
-	    ]),
+	    )])),
 	),
     );
     return shift->SUPER::initialize(@_);
