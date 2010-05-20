@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.42  2010/05/19 19:47:59  dobbs
+  * Bivio::Biz::Model::RealmFile
+    allow override_versioning flag in update_with_content()
+  * Bivio::UI::View::CSS
+    fix indention for unordered list items in slide notes sections
+    merge blocks for .b_task_menu li
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    now appends html class instead of overriding
+  * Bivio::Util::HTTPStats
+    import_tree without archiving old files
+  * Bivio::Util::RealmFile
+    added noarchive arg to import_tree(),
+    added purge_archive()
+
   Revision 9.41  2010/05/18 22:21:49  dobbs
   * Bivio::UI::View::CSS
     fix dropdown border color
