@@ -536,6 +536,7 @@ td.amount_cell {
 .b_dd_link {
   Font('user_state');
 }
+.b_task_menu.b_dd_menu,
 .b_dd_menu {
   Color('b_dd_menu-background');
   list-style-type: none;
@@ -651,6 +652,7 @@ a.b_thumbnail_popup {
 a.b_thumbnail_popup:hover {
   border: 1pt solid blue;
 }
+.b_dd_menu.b_hide,
 .b_hide {
   display: none;
 }
