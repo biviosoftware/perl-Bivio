@@ -7,6 +7,7 @@ use Bivio::Base 'Model.UserRegisterForm';
 #      UserCreateForm to create the user
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_RU) = b_use('ShellUtil.RealmUser');
 
 sub copy_admins {
     my($self, $realm_id, $admin_user_id) = @_;
@@ -128,8 +129,8 @@ sub _join_user {
 	});
     }
     $self->req->with_realm_and_user($realm_id, $user_id, sub {
-        b_use('ShellUtil.RealmUser')->new->audit_user;
-    });
+        $_RU->new->audit_user;
+    }) if $_RU->IS_AUDIT_ENABLED;
     return;
 }
 
