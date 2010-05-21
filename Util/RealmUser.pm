@@ -15,6 +15,10 @@ b_use('IO.Config')->register(my $_CFG = {
     audit_map => [],
 });
 
+sub IS_AUDIT_ENABLED {
+    return @{$_CFG->{audit_map}} ? 1 : 0;
+}
+
 sub USAGE {
     my($proto) = @_;
     return <<"EOF";
