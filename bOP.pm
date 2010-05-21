@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.44  2010/05/21 19:40:02  nagler
+  * Bivio::Biz::Model::RealmUserAddForm
+    check IS_AUDIT_ENABLED
+  * Bivio::Util::RealmUser
+    added IS_AUDIT_ENABLED
+
   Revision 9.43  2010/05/20 22:45:56  dobbs
   * Bivio::Test::HTMLParser::Forms
     HTMLParser now clears previous text on a form start tag
