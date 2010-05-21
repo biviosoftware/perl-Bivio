@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.43  2010/05/20 22:45:56  dobbs
+  * Bivio::Test::HTMLParser::Forms
+    HTMLParser now clears previous text on a form start tag
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    changed from TaskMenu to simple OL
+
   Revision 9.42  2010/05/19 19:47:59  dobbs
   * Bivio::Biz::Model::RealmFile
     allow override_versioning flag in update_with_content()
