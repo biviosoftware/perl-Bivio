@@ -236,7 +236,9 @@ function b_drop_down_onload() {
             else {
                 b_add_class(menu, 'b_hide');
             }
-            (e || window.event).cancelBubble = true;
+            if (!e) e = window.event;
+            e.cancelBubble = true;
+            if (e.stopPropagation) e.stopPropagation();
             return false;
         };
         document.onclick = b_drop_down_hide_all;
