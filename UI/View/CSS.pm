@@ -555,7 +555,7 @@ td.amount_cell {
   padding: 0;
   display: block;
 }
-.b_dd_menu a {
+.b_dd_menu li a {
   background: none;
   margin-left: 0;
   padding: 0 .2em;
