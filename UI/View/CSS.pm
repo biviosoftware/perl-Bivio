@@ -292,14 +292,8 @@ td.dock_right {
 table.dock a {
   Font('dock');
 }
-.dock .b_task_menu {
-!IE7 z-index bug: the *parent* of the dropdown must have position and z-index
-  position: relative;
-  z-index: 1000;
-}
 .dock .b_dd_menu li a {
   font-size: 90%;
-  If([qw(Type.UserAgent ->equals_by_name BROWSER_MSIE_6 BROWSER_MSIE_7 BROWSER_MSIE_8)], 'margin-left: -1em;');
   display:block;
 }
 td.header_left {
@@ -409,10 +403,19 @@ div.alphabetical_chooser {
   display: inline;
   margin-right: 1em;
 }
-.b_task_menu .b_selected a,
+.b_task_menu .b_selected>a,
 .alphabetical_chooser .selected {
   Font('selected');
 }
+!ie6 hack to replace direct child selector
+* html .b_task_menu .b_selected a,
+* html .b_task_menu .b_dd_menu .b_selected a {
+  Font('selected');
+}
+* html .b_task_menu .b_selected * a {
+  Font('normal');
+}
+!end ie6 hack
 table.footer {
     CSS('table_footer');
 }
@@ -542,12 +545,13 @@ td.amount_cell {
   list-style-type: none;
   border: 1px solid;
   Color('b_dd_menu-border');
-  display: inline;
+  display: block;
   left: 0;
   position: absolute;
   top: 3ex;
   width: 15em;
   z-index: 1000;
+  zoom: 1;
 }
 .b_dd_menu li {
   border: 0;
