@@ -536,9 +536,6 @@ td.amount_cell {
   text-align: right;
   white-space: nowrap;
 }
-.b_dd_link {
-  Font('user_state');
-}
 .b_task_menu.b_dd_menu,
 .b_dd_menu {
   Color('b_dd_menu-background');
