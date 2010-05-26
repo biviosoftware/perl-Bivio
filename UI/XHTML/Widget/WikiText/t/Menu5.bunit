@@ -9,10 +9,10 @@ b,,bbb
 EOF
 [
     [{
-	value => '@b-menu value=html_class',
+	value => '@b-menu class="foo" value=html_class',
 	is_public => 1,
-    }] => qr{@{[join('.*', qw(
-       class="b_task_menu"
+    }] => qr{@{[join('.*',
+       'class="b_task_menu foo"', qw(
        class="aaa b_first" "/bunit_wiki/\w+/a" a
        class="bbb" "/bunit_wiki/\w+/b" b
     ))]}},

@@ -80,6 +80,7 @@ sub render_html {
 		$attrs->{b_selected_label_prefix},
 	    ), @$links,
 	)],
+        ($attrs->{class} || ()),
     )->put(selected_item => sub {
         my($w, $source) = @_;
 	return ($source->ureq('uri') || '')
