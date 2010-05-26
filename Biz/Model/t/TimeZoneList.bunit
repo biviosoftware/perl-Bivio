@@ -22,4 +22,8 @@ req()->setup_facade;
     display_name_for_enum => [
 	[TimeZone('AMERICA_DENVER')] => 'America/Denver',
     ],
+    unsafe_enum_for_display_name => [
+	'Pacific/Honolulu' => [TimeZone('PACIFIC_HONOLULU')],
+	'this_time_zone_doesnt_exist' => undef,
+    ],
 ];
