@@ -19,11 +19,8 @@ sub display_name_for_enum {
 
 sub enum_for_display_name {
     my($self, $display_name) = @_;
-    $self->load_all
-	unless $self->is_loaded;
-    return $self->get('enum')
-	if $self->find_row_by(display_name => $display_name);
-    return $_TZ->from_any($display_name);
+    return _get_enum_from_model($self, $display_name)
+	|| $_TZ->from_any($display_name);
 }
 
 sub internal_initialize {
@@ -47,6 +44,20 @@ sub internal_load_rows {
     my($self) = @_;
     return $_R->nested_copy(
 	$_C->get_value('Model.TimeZoneList.rows', $self->req));
+}
+
+sub unsafe_enum_for_display_name {
+    my($self, $display_name) = @_;
+    return _get_enum_from_model($self, $display_name)
+	|| $_TZ->unsafe_from_any($display_name);
+}
+
+sub _get_enum_from_model {
+    my($self, $display_name) = @_;
+    $self->load_all
+	unless $self->is_loaded;
+    return $self->find_row_by(display_name => $display_name)
+	? $self->get('enum') : undef;
 }
 
 1;
