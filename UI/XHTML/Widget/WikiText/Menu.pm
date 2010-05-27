@@ -38,7 +38,7 @@ sub internal_submenu {
 sub render_html {
     sub RENDER_HTML {[
 	[qw(?value FileName)],
-	[qw(class String bmenu)],
+	[qw(?class String)],
 	[qw(?id String)],
 	'?b_selected_label_prefix',
     ]};
