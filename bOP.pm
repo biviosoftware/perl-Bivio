@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.46  2010/05/26 23:26:47  dobbs
+  * Bivio::Biz::Model::TimeZoneList
+    add unsafe_enum_for_display_name, reorg to make use of _get_enum_from_model
+  * Bivio::UI::HTML::Widget::Script
+    cancelBubble is a microsoft model property. For w3c compliant browsers
+    we need to use stopPropagation()
+  * Bivio::UI::View::CSS
+    fix new TaskMenu and DropDown styles for IE6
+    remove unnecessary styling on .b_dd_link
+    links styles in .b_dd_menu now override links styles from table.dock
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    the class in @b-menu.someclass is now correctly handed off to TaskMenu()
+
   Revision 9.45  2010/05/21 21:14:48  dobbs
   * Bivio::UI::View::CSS
   * Bivio::UI::XHTML::Widget::SiteAdminDropDown
