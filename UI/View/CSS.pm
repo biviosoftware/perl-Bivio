@@ -653,8 +653,9 @@ a.b_thumbnail_popup {
 a.b_thumbnail_popup:hover {
   border: 1pt solid blue;
 }
+.b_hide,
 .b_dd_menu.b_hide,
-.b_hide {
+.tools .b_task_menu .b_hide {
   display: none;
 }
 img.b_clear_dot {
