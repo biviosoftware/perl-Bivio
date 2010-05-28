@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.48  2010/05/28 16:27:04  nagler
+  * Bivio::Biz::Model::CalendarEventForm
+    added validation for time_zone_selector field
+  * Bivio::Biz::Model::UserSettingsListForm
+    added validation (delegation) method validate_time_zone_selector
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    no longer defaults the class to bmenu, use TaskMenu's b_task_menu
+  * Bivio::Util::Search
+    acquire lock per $_X, not directly
+    don't index default realms
+
   Revision 9.47  2010/05/27 16:07:30  dobbs
   * Bivio::UI::View::CSS
     made .b_hide more specific so DropDowns work inside .tools
