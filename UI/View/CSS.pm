@@ -658,6 +658,11 @@ a.b_thumbnail_popup:hover {
 .tools .b_task_menu .b_hide {
   display: none;
 }
+.b_invisible,
+.b_dd_menu.b_invisible,
+.tools .b_task_menu .b_invisible {
+  visibility: hidden;
+}
 img.b_clear_dot {
   border: none;
   width: 1px;

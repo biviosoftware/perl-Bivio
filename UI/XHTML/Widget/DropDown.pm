@@ -20,7 +20,8 @@ sub initialize {
                 HREF => '#',
                 class => $self->get('class'),
             }),
-            $self->get('widget')->put_unless_exists(class => 'b_dd_menu b_hide'),
+            $self->get('widget')
+                ->put_unless_exists(class => 'b_dd_menu b_invisible'),
         ]);
     return shift->SUPER::initialize(@_);
 }
