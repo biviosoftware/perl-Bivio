@@ -7,6 +7,7 @@ use Bivio::Base 'Bivio.ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_X) = b_use('Search.Xapian');
 my($_D) = b_use('Type.Date');
+my($_RT) = b_use('Auth.RealmType');
 
 sub USAGE {
     return <<'EOF';
@@ -26,7 +27,7 @@ sub module_version {
 sub rebuild_db {
     my($self, $d) = @_;
     $self->are_you_sure('Rebuild Xapian database?');
-    $self->model('Lock')->acquire_general;
+    $_X->acquire_lock($self->req);
     $_X->destroy_db($self->req);
     my($realms) = $self->model('RealmFile')->map_iterate(
 	sub {shift->get('realm_id')},
@@ -36,6 +37,8 @@ sub rebuild_db {
     );
     $self->commit_or_rollback;
     foreach my $r (@$realms) {
+	next
+	    if $_RT->is_default_id($r);
 	system(
 	    'bivio',
 	    $self->package_name,
@@ -64,7 +67,7 @@ sub rebuild_realm {
 	    if (0 == $i++ % 100) {
 		$self->commit_or_rollback;
 		Bivio::IO::Alert->reset_warn_counter;
-		$it->new_other('Lock')->acquire_general;
+		$_X->acquire_lock($req);
 		b_info(
 		    'file#', $i, ': ', $it->get('realm_file_id'),
 		) if $i > 1;
