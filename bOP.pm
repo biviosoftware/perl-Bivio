@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.47  2010/05/27 16:07:30  dobbs
+  * Bivio::UI::View::CSS
+    made .b_hide more specific so DropDowns work inside .tools
+
   Revision 9.46  2010/05/26 23:26:47  dobbs
   * Bivio::Biz::Model::TimeZoneList
     add unsafe_enum_for_display_name, reorg to make use of _get_enum_from_model
