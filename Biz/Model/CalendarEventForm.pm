@@ -13,7 +13,7 @@ my($_TZ) = b_use('Type.TimeZone');
 my($_FM) = b_use('Type.FormMode');
 my($_A) = b_use('Action.Acknowledgement');
 my($_CEMF) = b_use('Model.CalendarEventMonthForm');
-my($_US) = b_use('Model.UserSettingsListForm');
+my($_USLF) = b_use('Model.UserSettingsListForm');
 
 sub CREATE_DATE_QUERY_KEY {
     return 'b_create_date';
@@ -185,7 +185,8 @@ sub is_create {
 
 sub validate {
     my($self) = @_;
-    $_US->validate_time_zone_selector($self);
+    shift->SUPER::validate(@_);
+    $_USLF->validate_time_zone_selector($self);
     return;
 }
 
