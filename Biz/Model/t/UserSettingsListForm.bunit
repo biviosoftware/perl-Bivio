@@ -22,6 +22,13 @@ FormModel();
 	is_subscribed_0 => 0,
 	is_subscribed_1 => 1,
     }),
+    error_case({
+	'User.last_name' => 'crm_tech1',
+	page_size => 20,
+	time_zone_selector => 'this_time_zone_doesnt_exist',
+    } => {
+	time_zone_selector => 'NOT_FOUND',
+    }),
     [{
         'User.last_name' => 'crm_tech1',
         page_size => 20,
@@ -39,6 +46,7 @@ FormModel();
         'User.middle_name' => undef,
         'User.last_name' => undef,
 	'RealmOwner.name' => 'NULL',
+	time_zone_selector => 'NOT_FOUND',
     }),
     sub {
 	b_use('Model.UserLoginForm')->substitute_user(
@@ -53,5 +61,6 @@ FormModel();
         'User.last_name' => undef,
 	'RealmOwner.name' => 'NULL',
 	'Email.email' => 'NULL',
+	time_zone_selector => 'NOT_FOUND',
     }),
 ];
