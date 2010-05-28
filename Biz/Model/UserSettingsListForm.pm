@@ -103,10 +103,21 @@ sub validate_start {
     my($self) = @_;
     $self->internal_put_error('User.first_name', 'NULL')
 	unless _is_name_set($self);
+    $self->validate_time_zone_selector();
     $self->internal_clear_error('RealmOwner.name')
 	unless $self->get('show_name');
     $self->internal_clear_error('Email.email')
 	unless $self->get('show_email');
+    return;
+}
+
+sub validate_time_zone_selector {
+    my($self, $model) = @_;
+    $model ||= $self;
+    my($enum) = $model->req('Model.TimeZoneList')
+	->unsafe_enum_for_display_name($model->get('time_zone_selector'));
+    $model->internal_put_error(qw(time_zone_selector NOT_FOUND))
+	if !$enum || $enum->equals_by_name('UNKNOWN');
     return;
 }
 
