@@ -102,10 +102,12 @@ my($check_display_name) = sub {
 	user => 'root',
 	realm => 'fourem',
     }),
-    [{
+    error_case({
 	%{$create_params->()},
 	time_zone_selector => 'Not/Found',
-    }] => DIE(),
+    } => {
+	time_zone_selector => 'NOT_FOUND',
+    }),
     req_state({
 	user => 'btest_admin',
 	query => sub {
