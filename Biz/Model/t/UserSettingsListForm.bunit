@@ -29,6 +29,13 @@ FormModel();
     } => {
 	time_zone_selector => 'NOT_FOUND',
     }),
+    error_case({
+	'User.last_name' => 'crm_tech1',
+	page_size => 20,
+	time_zone_selector => 'Select Time Zone',
+    } => {
+	time_zone_selector => 'NOT_FOUND',
+    }),
     [{
         'User.last_name' => 'crm_tech1',
         page_size => 20,
