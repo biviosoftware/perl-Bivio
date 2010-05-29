@@ -1454,11 +1454,6 @@ sub info_wiki {
 }
 
 sub info_xapian {
-    Bivio::IO::Config->introduce_values({
-	'Bivio::Biz::Model::RealmFile' => {
-	    search_class => 'Search.Xapian',
-	},
-    });
     return [
 	[qw(
 	    JOB_XAPIAN_COMMIT
