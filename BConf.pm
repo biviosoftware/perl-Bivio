@@ -408,7 +408,6 @@ sub merge_realm_role_category_map {
 		file
 		group_admin
 		mail
-		motion
 		task_log
 		wiki
 	    )),
@@ -443,6 +442,9 @@ sub merge_realm_role_category_map {
 		closed_results_motion =>
 		    '+common_results_motion',
 		    ['*all_members-all_admins' => '-MOTION_READ'],
+	    ], [
+		feature_motion =>
+		    '+open_results_motion',
 	    ],
 	    $new ? @{$new->()} : (),
         ]},
