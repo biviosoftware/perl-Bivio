@@ -1,8 +1,8 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Search::Xapian;
 use strict;
-use Bivio::Base 'Collection.Attributes';
+use Bivio::Base 'Search.None';
 use Bivio::IO::Trace;
 use File::Spec ();
 use Search::Xapian ();
@@ -69,11 +69,6 @@ sub destroy_db {
     return;
 }
 
-sub excerpt_model {
-    my(undef, $model) = @_;
-    return $_P->new_excerpt($model);
-}
-
 sub execute {
     my($proto, $req) = @_;
     my($self) = $req->get(ref($proto) || $proto);
@@ -94,27 +89,16 @@ sub execute {
     return 0;
 }
 
-sub get_excerpt_for_primary_id {
-    my($p) = shift->get_values_for_primary_id(@_);
-    return $p && $p->{excerpt} || '';
-}
-
 sub get_values_for_primary_id {
     my($proto, $primary_id, $model) = @_;
     my($req) = $model->req;
-    $req->perf_time_op(__PACKAGE__, sub {
+    return $req->perf_time_op(__PACKAGE__, sub {
 	if (my $query_result = _find($primary_id)) {
 	    if (my $res = _query_result($proto, $query_result, $req)) {
 		return $res;
 	    }
 	}
-	return _parse_values(
-	    $model->is_loaded ? $model
-		: $model->unauth_load_or_die({
-		    $model->get_info('primary_key_names')->[0] => $primary_id,
-	    }),
-	);
-    });
+    }) || return shift->SUPER::get_values_for_primary_id(@_);
 }
 
 sub handle_commit {
@@ -145,13 +129,6 @@ sub handle_config {
 
 sub handle_rollback {
     return;
-}
-
-sub module_version {
-    my($self) = @_;
-    return Search::Xapian::major_version() . '.'
-	. Search::Xapian::minor_version() . '.'
-	    . Search::Xapian::revision();
 }
 
 sub update_model {
@@ -235,27 +212,6 @@ sub query {
     return $res;
 }
 
-sub query_list_model_initialize {
-    my(undef, $list_model, $parent_info) = @_;
-    return $list_model->merge_initialize_info($parent_info, {
-	version => 1,
-	$list_model->field_decl(
-	    primary_key => [[qw(primary_id PrimaryId)]],
-	    other => [
-		qw(rank percent collapse_count),
-		[qw(author DisplayName NONE)],
-		[qw(author_email Email NONE)],
-		[qw(author_user_id User.user_id NONE)],
-		[qw(excerpt Text NONE)],
-		[qw(title Text NONE)],
-		[simple_class => 'Name'],
-	    ],
-	    qw(Integer NOT_NULL),
-	),
-	auth_id => 'RealmOwner.realm_id',
-    });
-}
-
 sub _delete {
     my($self, $primary_term, $req) = @_;
     return
@@ -278,12 +234,6 @@ sub _lock_id {
     return $_LOCK_ID ||= $_M->new($req, 'RealmOwner')
 	->unauth_load_or_die({name => $proto->EXEC_REALM})
 	->get('realm_id');
-}
-
-sub _parse_values {
-    my($model) = @_;
-    my($p) = $_P->new_excerpt($model);
-    return $p ? $p->get_shallow_copy : undef;
 }
 
 sub _primary_term {
