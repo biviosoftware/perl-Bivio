@@ -1,51 +1,12 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate;
 use strict;
-$Bivio::Delegate::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Delegate::VERSION;
+use Bivio::Base 'Bivio.UNIVERSAL';
 
-=head1 NAME
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-Bivio::Delegate - delegate info superclass
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Delegate;
-
-=cut
-
-use Bivio::UNIVERSAL;
-@Bivio::Delegate::ISA = ('Bivio::UNIVERSAL');
-
-=head1 DESCRIPTION
-
-C<Bivio::Delegate>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+# A base class which documents delegates.  A delegate does not have
+# to subclass this module to be delegated by a Bivio.Delegator.
 
 1;
