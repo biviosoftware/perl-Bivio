@@ -13,15 +13,9 @@ sub USAGE {
     return <<'EOF';
 usage: b-search [options] command [args..]
 commands
-  module_version -- list versions of Xapian C++ and Perl XS libraries in use
   rebuild_db [date] -- reload entire search database, optionally files modified after date
   rebuild_realm [date] -- reindex all files in the current realm, optionally files modified after date
 EOF
-}
-
-sub module_version {
-    return 'Xapian C++ core v' . $_X->module_version()
-	. "\nSearch::Xapian Perl XS v" .  $Search::Xapian::VERSION;
 }
 
 sub rebuild_db {
