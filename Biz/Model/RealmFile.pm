@@ -18,9 +18,7 @@ my($_IOF) = b_use('IO.File');
 my($_T) = b_use('MIME.Type');
 my($_WN) = b_use('Type.WikiName');
 my($_TXN_PREFIX);
-Bivio::IO::Config->register(my $_CFG = {
-    search_class => undef,
-});
+my($_S) = b_use('Bivio.Search');
 
 #DEPRECATED
 sub MAIL_FOLDER {
@@ -177,14 +175,6 @@ sub handle_commit {
 	    return;
 	}
     );
-}
-
-sub handle_config {
-    my($proto, $cfg) = @_;
-    $cfg->{search_class} = $proto->use($cfg->{search_class})
-	if $cfg->{search_class};
-    $_CFG = $cfg;
-    return;
 }
 
 sub handle_rollback {
@@ -616,18 +606,17 @@ sub _realm_dir {
 
 sub _search_delete {
     my($self, $cmds) = @_;
-    $_CFG->{search_class}->map_invoke(
+    $_S->map_invoke(
 	'delete_model',
 	[map(/(\w+)$/, @$cmds[1..$#$cmds])],
-	[$self->get_request],
-    ) if $_CFG->{search_class};
+	[$self->req],
+    );
     return $cmds;
 }
 
 sub _search_update {
     my($self) = @_;
-    $_CFG->{search_class}->update_model($self->get_request, $self)
-	if $_CFG->{search_class};
+    $_S->update_model($self->req, $self);
     return $self;
 }
 
