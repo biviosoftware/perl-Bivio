@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.49  2010/05/28 20:41:27  dobbs
+  * Bivio::Biz::Model::CalendarEventForm
+    $_US -> $_USLF, call SUPER::validate
+  * Bivio::UI::HTML::Widget::Script
+    DropDowns now toggle visibility instead of toggling display
+  * Bivio::UI::View::CSS
+    DropDowns now toggle visibility instead of toggling display
+  * Bivio::UI::XHTML::Widget::DropDown
+    DropDowns now toggle visibility instead of toggling display
+
   Revision 9.48  2010/05/28 16:27:04  nagler
   * Bivio::Biz::Model::CalendarEventForm
     added validation for time_zone_selector field
