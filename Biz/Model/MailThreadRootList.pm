@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Mail.Address');
 my($_P) = b_use('Search.Parser');
 my($_MF) = b_use('Model.MailForm');
-my($_X) = b_use('Search.Xapian');
+my($_S) = b_use('Bivio.Search');
 
 sub DATE_SORT_ORDER {
     return 0;
@@ -90,7 +90,7 @@ EOF
 
 sub internal_post_load_row {
     my($self, $row) = @_;
-    $row->{excerpt} = $_X->get_excerpt_for_primary_id(
+    $row->{excerpt} = $_S->get_excerpt_for_primary_id(
 	$row->{'RealmMail.realm_file_id'},
 	$self->new_other('RealmFile'),
     );

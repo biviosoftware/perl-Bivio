@@ -11,9 +11,8 @@ my($_BFN) = b_use('Type.BlogFileName');
 my($_DT) = b_use('Type.DateTime');
 my($_RF) = b_use('Model.RealmFile');
 my($_WT) = b_use('XHTMLWidget.WikiText');
-my($_P) = b_use('Search.Parser');
 my($_CC) = b_use('IO.CallingContext');
-my($_X) = b_use('Search.Xapian');
+my($_S) = b_use('Bivio.Search');
 
 sub PAGE_SIZE {
     return 5;
@@ -50,7 +49,7 @@ sub get_rss_author {
 
 sub get_rss_summary {
     my($self) = @_;
-    return $_X->get_excerpt_for_primary_id(
+    return $_S->get_excerpt_for_primary_id(
 	$self->get('RealmFile.realm_file_id'),
 	$self->new_other('RealmFile'),
     );

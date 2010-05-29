@@ -7,10 +7,10 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_BFN) = b_use('Type.BlogFileName');
 my($_MFN) = b_use('Type.MailFileName');
-my($_S) = b_use('Type.String');
+my($_TS) = b_use('Type.String');
 my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
-my($_X) = b_use('Search.Xapian');
+my($_S) = b_use('Bivio.Search');
 my($_REALM_FILE_FIELDS) = [qw(
     realm_file_id
     path
@@ -84,7 +84,7 @@ sub format_uri_params_with_row {
 
 sub internal_initialize {
     my($self) = @_;
-    return $_X->query_list_model_initialize(
+    return $_S->query_list_model_initialize(
 	$self,
 	$self->merge_initialize_info($self->SUPER::internal_initialize, {
 	    other => [
@@ -120,10 +120,10 @@ sub internal_load_rows {
     my($self, $query) = @_;
     my($s, $pn, $c) = $query->unsafe_get(qw(search page_number count));
     return []
-	unless defined(($_S->from_literal($s))[0]);
+	unless defined(($_TS->from_literal($s))[0]);
     my($x) = _b_realm_only($self, $query);
     $self->[$_IDI] = {map(($_ => 1), @{$x->{private_realm_ids}})};
-    my($rows) = $_X->query({
+    my($rows) = $_S->query({
 	phrase => $s,
 	offset => ($pn - 1) * $c,
 	length => $c + 1,
