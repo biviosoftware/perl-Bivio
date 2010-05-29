@@ -501,7 +501,7 @@ sub initialize_db {
 }
 
 sub initialize_motion_permissions {
-    return _enable_group_category(shift, 'open_results_motion');
+    return _enable_group_category(shift, 'feature_motion');
 }
 
 sub initialize_task_log_permissions {

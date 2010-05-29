@@ -699,7 +699,7 @@ sub _init_motion {
     my($self) = @_;
     $self->top_level_forum('motion_forum', [$self->SITE_ADM], ['motion_user']);
     $self->new_other('RealmRole')
-	->edit_categories(qw(+feature_motion +open_results_motion));
+	->edit_categories(qw(+feature_motion));
     return;
 }
 
