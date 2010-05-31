@@ -19,10 +19,7 @@ Widget({
 <script type="text/javascript">
 <!--
 function page_print_onload(){window.print()}
-var b_onload_has_already_run = false;
 window.onload=function(){
-if (b_onload_has_already_run) {return;}
-b_onload_has_already_run = true;
 page_print_onload();
 }
 // --></script>
