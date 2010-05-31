@@ -13,7 +13,7 @@ EOF
 [
     class() => [
 	render_html_without_view => [
-	    [\(<<'EOF'), req()] => qr{<td><ol class="b_task_menu"><li class="b_first"><a.*?>Home</a></li></ol></td><td><p class="b_prose">other</p></td>},
+	    [\(<<'EOF'), req()] => qr{<td><div class="bmenu"><span><a.*?>Home</a></span></div></td><td><p class="b_prose">other</p></td>},
 @table
 @tr
 @td
