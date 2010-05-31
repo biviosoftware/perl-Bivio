@@ -25,13 +25,14 @@ sub initialize {
 	control => [sub {$self->internal_control_value(@_)}],
 	control_on_value => If(
 	    [sub {_one_choice($self, shift)}],
-	    SPAN(_curr_realm(), {class => 'b_dd_link'}),
+	    SPAN(_curr_realm(), {class => 'dd_link'}),
+	    DIV_task_menu_wrapper(
 		DropDown(
 		    If([[qw(->req auth_realm type)], '->equals_by_name', @$rt],
 		       _curr_realm(),
 		       Prose(vs_text('RealmDropDown', $first_rt)),
 		    ),
-                    OL(
+		    DIV_dd_menu(
 			[sub {
 			     my($source) = @_;
 			     my($realms) = _choices($self, $source);
@@ -41,7 +42,7 @@ sub initialize {
 				 : '';
 			     return Join([
 				 map(
-				     LI(Link(String(_value($_, 'display_name')) => URI({
+				     Link(String(_value($_, 'display_name')) => URI({
 					 realm => _value($_, 'name'),
 					 task_id => _value($_, 'task_id')
 					     || $self->render_simple_attr(
@@ -49,7 +50,7 @@ sub initialize {
 					     ) || ($first_rt . '_HOME'),
 					 query => undef,
 					 path_info => undef,
-				     }))),
+				     })),
 				     grep(_eq($_, $r), @$realms),
 				     grep(!_eq($_, $r), @$realms),
 				 ),
@@ -57,6 +58,7 @@ sub initialize {
 			}],
 		    ),
 		),
+	    ),
 	),
     );
     return shift->SUPER::initialize(@_);
