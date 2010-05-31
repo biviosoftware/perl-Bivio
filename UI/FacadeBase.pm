@@ -183,10 +183,10 @@ sub _cfg_base {
 	    [[qw(header_su_background super_user)] => 0x00ff00],
 	    [[qw(form_desc form_sep_border sep_bar msg_parts_border text_byline)] => 0x666666],
             [help_wiki_background => 0x6b9fea],
-	    [b_dd_menu => 0x444444],
-	    [[qw(b_dd_menu_selected b_dd_menu_background)] => 0xffffff],
-	    [b_dd_menu_border => 0x888888],
-	    [b_dd_menu_selected_background => 0x888888],
+	    [dd_menu => 0x444444],
+	    [[qw(dd_menu_selected dd_menu_background)] => 0xffffff],
+	    [dd_menu_border => 0x888888],
+	    [dd_menu_selected_background => 0x888888],
 	],
 	Font => [
 	    # See Bivio::UI::View::CSS
@@ -267,7 +267,7 @@ sub _cfg_base {
 	    [nav => '120%'],
 	    [dock => ['120%', 'nowrap']],
 	    [[qw(off pager)] => []],
-	    [b_dd_menu => ['normal']],
+	    [dd_menu => ['normal']],
 	    [user_state => ['120%', 'nowrap']],
 	],
 	Constant => [
