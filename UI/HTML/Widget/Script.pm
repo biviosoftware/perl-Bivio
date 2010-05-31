@@ -212,9 +212,9 @@ EOF
 
 sub JAVASCRIPT_B_DROP_DOWN {
     return <<'EOF';
-function b_drop_down_all_invisible() {
+function b_drop_down_hide_all() {
     b_element_by_class('ol', 'b_dd_menu', function (ol) {
-        b_add_class(ol, 'b_invisible');
+        b_add_class(ol, 'b_hide');
     });
 }
 function b_drop_down_onload() {
@@ -228,20 +228,20 @@ function b_drop_down_onload() {
             }
         }
         link.onclick = function (e) {
-            var is_invisible = b_has_class(menu, 'b_invisible');
-            b_drop_down_all_invisible();
-            if (is_invisible) {
-                b_remove_class(menu, 'b_invisible');
+            var is_hidden = b_has_class(menu, 'b_hide');
+            b_drop_down_hide_all();
+            if (is_hidden) {
+                b_remove_class(menu, 'b_hide');
             }
             else {
-                b_add_class(menu, 'b_invisible');
+                b_add_class(menu, 'b_hide');
             }
             if (!e) e = window.event;
             e.cancelBubble = true;
             if (e.stopPropagation) e.stopPropagation();
             return false;
         };
-        document.onclick = b_drop_down_all_invisible;
+        document.onclick = b_drop_down_hide_all;
         return;
     });
 }
