@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,44 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.50  2010/05/29 22:13:33  nagler
+  * Bivio::Auth::Support
+    rmpod
+  * Bivio::BConf
+    feature_motion is the same as open_results_motion
+  * Bivio::Biz::Model::BlogList
+    call Bivio.Search, not Search.Xapian so if Xapian not installed,
+    doesn't pull in Xapian
+  * Bivio::Biz::Model::MailThreadRootList
+    call Bivio.Search, not Search.Xapian so if Xapian not installed,
+    doesn't pull in Xapian
+  * Bivio::Biz::Model::RealmFile
+    search_class is no longer configured.  Instead Bivio.Search specifies
+    delegate explicitly dependent on which search component included
+  * Bivio::Biz::Model::SearchList
+    call Bivio.Search, not Search.Xapian so if Xapian not installed,
+    doesn't pull in Xapian
+  * Bivio::Delegate::TaskId
+    Bivio.Search manages the delegation of the search class based on which
+    task is included
+  * Bivio::Delegate
+    rmpod
+  * Bivio::Delegator
+    rmpod
+    allow subclasses to specify delegate explicitly (Bivio::Search needs this)
+  * Bivio::PetShop::Util::SQL
+    don't need open_results_motion now that feature_motion does the same thing
+  * Bivio::Search::None
+    NEW
+  * Bivio::Search::Xapian
+    moved code up to Search.None so excerpts work even if Xapian is not installed
+  * Bivio::Search
+    NEW
+  * Bivio::Util::Search
+    module_version not needed
+  * Bivio::Util::SQL
+    don't need open_results_motion now that feature_motion does the same thing
+
   Revision 9.49  2010/05/28 20:41:27  dobbs
   * Bivio::Biz::Model::CalendarEventForm
     $_US -> $_USLF, call SUPER::validate
