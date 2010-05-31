@@ -43,13 +43,10 @@ sub initialize {
     my($self) = @_;
     return
         if $self->unsafe_get('_init');
-    $self->put(
-        class => join(' ', 'b_task_menu', ($self->unsafe_get('class') || ())));
     $self->put_unless_exists(
-	selected_item => [['->get_request'], 'task_id'],
+	class => 'task_menu',
 	tag_if_empty => 0,
-	tag => 'ol',
-	show_current_task => 1,
+	tag => 'div',
     );
     $self->initialize_attr('selected_item', ['->req', 'task_id']);
     $self->initialize_attr(show_current_task => 1);
@@ -58,13 +55,13 @@ sub initialize {
     $self->unsafe_initialize_attr('want_more');
     $self->unsafe_initialize_attr('want_more_threshold');
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
-    my($is_first, $selected);
+    my($need_sep, $selected);
     $self->put(
 	_init => sub {
 	    my($source) = @_;
-	    $is_first = 1;
+	    $need_sep = 0;
 	    $selected = $self->resolve_attr('selected_item', $source);
-	    return \$is_first;
+	    return \$need_sep;
 	},
 	task_map => [map({
 	    my(undef, $cfg) = $self->name_parameters(
@@ -106,10 +103,11 @@ sub initialize {
 		    $cfg->{uri},
 	        ) : $self->die(
 		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
+	    $w = DIV_task_menu_wrapper($w)
+		if $cfg->{xlink} && !$_CB->is_blessed($w);
 	    my($class) = $w->unsafe_get('class');
 	    $self->initialize_value('label', $cfg->{label});
-            my($ww) = LI($w);
-	    $ww->put(
+	    $w->put(
 		_task_menu_cfg => $cfg,
 		_cfg($cfg, 'control'),
                 _is_selected => [sub {
@@ -125,11 +123,11 @@ sub initialize {
                 }],
 		class => Join([
 		    defined($class) ? $class : (),
-		    [sub {$is_first ? 'b_first' : ()}],
-                    If($selected_cond, 'b_selected'),
+		    [sub {$need_sep ? 'want_sep' : ()}],
+                    If($selected_cond, 'selected'),
 		], {join_separator => ' '}),
 	    );
-	    $self->initialize_value($cfg->{label}, $ww);
+	    $self->initialize_value($cfg->{label}, $w);
 	} @{$self->get('task_map')})],
     );
     return shift->SUPER::initialize(@_);
@@ -138,7 +136,7 @@ sub initialize {
 sub render_tag_value {
     my($self, $source, $buffer) = @_;
     my($req) = $self->get_request;
-    my($is_first) = $self->get('_init')->($source);
+    my($need_sep) = $self->get('_init')->($source);
     my($buffers) = [];
     my($sct) = $self->render_simple_attr(show_current_task => $source);
     foreach my $w (_render_list($self, $source)) {
@@ -160,7 +158,7 @@ sub render_tag_value {
 	$w->render($source, \$b);
 	next
 	    unless $b;
-	$$is_first = 0;
+	$$need_sep++;
         push(@$buffers, $b);
     }
     _want_more($self, $source, $buffers);
@@ -219,10 +217,15 @@ sub _want_more {
     return
 	unless @$buffers > 1 + ($wmc ||= $_DEFAULT_WANT_MORE_THRESHOLD);
     my($b) = '';
-    LI(DropDown(
-        $self->get('want_more_label'),
-        OL(Join([splice(@$buffers, $wmc)])),
-    ))->initialize_and_render($source, \$b);
+    DIV(
+	DropDown(
+	    $self->get('want_more_label'),
+	    DIV_dd_menu(
+		Join([splice(@$buffers, $wmc)]),
+	    ),
+	),
+	{class => 'task_menu_wrapper want_sep'},
+    )->initialize_and_render($source, \$b);
     push(@$buffers, $b);
     return;
 }
