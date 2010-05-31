@@ -10,7 +10,6 @@ use Bivio::Base 'UI.Widget';
 # onload function called I<script_name>_onload.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-b_use('XHTMLWidget.Page')->register_handler(__PACKAGE__);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub JAVASCRIPT_B_SUBMENU_IE6 {
@@ -210,44 +209,6 @@ function set_timeout(field, count) {
 EOF
 }
 
-sub JAVASCRIPT_B_DROP_DOWN {
-    return <<'EOF';
-function b_drop_down_hide_all() {
-    b_element_by_class('ol', 'b_dd_menu', function (ol) {
-        b_add_class(ol, 'b_hide');
-    });
-}
-function b_drop_down_onload() {
-    b_element_by_class('ol', 'b_dd_menu', function (menu) {
-        var link;
-        var parent = menu.parentNode;
-        var node_count = parent.childNodes.length;
-        for (var i = 0; i < node_count && link == null; i++) {
-            if (b_has_class(parent.childNodes[i], 'b_dd_link')) {
-                link = parent.childNodes[i];
-            }
-        }
-        link.onclick = function (e) {
-            var is_hidden = b_has_class(menu, 'b_hide');
-            b_drop_down_hide_all();
-            if (is_hidden) {
-                b_remove_class(menu, 'b_hide');
-            }
-            else {
-                b_add_class(menu, 'b_hide');
-            }
-            if (!e) e = window.event;
-            e.cancelBubble = true;
-            if (e.stopPropagation) e.stopPropagation();
-            return false;
-        };
-        document.onclick = b_drop_down_hide_all;
-        return;
-    });
-}
-EOF
-}
-
 sub JAVASCRIPT_COMMON {
     return <<'EOF';
 function b_escape_html (value) {
@@ -266,7 +227,7 @@ function b_remove_class (element, clazz) {
     return;
 }
 function b_has_class (element, clazz) {
-    return element.className && element.className.indexOf(clazz) >= 0;
+    return element.className.indexOf(clazz) >= 0;
 }
 function b_add_class (element, clazz) {
     if (!b_has_class(element, clazz)) {
@@ -285,17 +246,13 @@ function b_toggle_class (element, class1, class2) {
             b_add_class(element, class2);
     }
 }
-function b_element_by_class(tag_name, class_name, op) {
+function b_element_by_class(tag_name, class_name) {
     if (!document.getElementsByTagName)
         return;
     var tags = document.getElementsByTagName(tag_name);
     for (var i = 0; i < tags.length; i++) {
-        if (b_has_class(tags[i], class_name)) {
-            if (op == null) {
-                return tags[i];
-            }
-            op(tags[i]);
-        }
+        if (b_has_class(tags[i], class_name))
+            return tags[i];
     }
     return null;
 }
@@ -369,12 +326,6 @@ sub JAVASCRIPT_PAGE_PRINT {
     return 'function page_print_onload(){window.print()}';
 }
 
-sub handle_page_render_end {
-    my($proto, $source, $buffer) = @_;
-    $$buffer =~ s{</body>}{<script type="text/javascript"><!-- window.onload(); --></script></body>}s;
-    return;
-}
-
 sub initialize {
     my($self) = @_;
     $self->unsafe_initialize_attr('value');
@@ -425,10 +376,7 @@ sub _onload {
     my($functions) = @_;
     my($onload) = [map(/^function\s+(\w+_onload)\s*\(/mg, @$functions)];
     return !@$onload ? () : (
-        'var b_onload_has_already_run = false;',
 	'window.onload=function(){',
-        'if (b_onload_has_already_run) {return;}',
-        'b_onload_has_already_run = true;',
 	map($_ . '();', @$onload),
 	'}',
     );
