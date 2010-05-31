@@ -595,7 +595,7 @@ sub main {
 
     # Don't finish if setup never called.
     $self->finish($die ? 1 : 0)
-	if $self->unsafe_get('req');;
+	if $self->unsafe_get('req');
     if ($die) {
 	# Email error and re-throw
 	$self->put(result_type => undef,
