@@ -67,7 +67,7 @@ sub internal_xhtml_adorned_attrs {
 	    vs_text_as_prose('xhtml_dock_left_standard'),
         ),
 	_center_replaces_middle('xhtml_dock_middle') => '',
-	xhtml_dock_right => TaskMenu([
+	xhtml_dock_right => JoinMenu([
 	    $_C->if_version(8 => sub {_if_want('ForumDropDown')}),
 	    _if_want(qw(HelpWiki HELP)),
 	    $_WANT_USER_AUTH ? (
