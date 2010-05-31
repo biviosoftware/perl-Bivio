@@ -13,13 +13,13 @@ Widget({
 });
 req()->set_realm_and_user(qw(demo guest));
 [
-    [[vs_new(qw(XLink back_to_top))]] => '<ol class="b_task_menu"><li class="b_first"><a href="#top">back to top</a></li></ol>',
-    [[qw(SITE_ROOT)]] => qr{<ol class="b_task_menu"><li class="b_first b_selected"><a href="/">home</a></li></ol>}i,
-    [[[qw(SITE_ROOT site_name)]]] => qr{<ol class="b_task_menu"><li class="b_first b_selected"><a href="/">PetShop</a></li></ol>},
+    [[vs_new(qw(XLink back_to_top))]] => '<div class="task_menu"><a href="#top">back to top</a></div>',
+    [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a class="selected" href="/">home</a></div>}i,
+    [[[qw(SITE_ROOT site_name)]]] => qr{<div class="task_menu"><a class="selected" href="/">PetShop</a></div>},
     [[{
 	task_id => 'SITE_ROOT',
 	label => 'site_name',
-    }]] => qr{<ol class="b_task_menu"><li class="b_first b_selected"><a href="/">PetShop</a></li></ol>},
+    }]] => qr{<div class="task_menu"><a class="selected" href="/">PetShop</a></div>},
     [[
 	{
 	    task_id => 'SITE_ROOT',
@@ -34,11 +34,11 @@ req()->set_realm_and_user(qw(demo guest));
 	    my($widget, $source) = @_;
 	    return $widget->render_simple_attr(href => $source) eq '/';
 	},
-    }] => qr{b_task_menu.*href="/x".*class="b_selected".*href="/">}s,
+    }] => qr{task_menu.*href="/x".*class="want_sep selected" href="/">}s,
     [[{
 	task_id => 'SITE_ROOT',
 	path_info => '/x',
-    }]] => qr{<ol class="b_task_menu"><li class="b_first b_selected"><a href="/x">home</a></li></ol>}i,
+    }]] => qr{<div class="task_menu"><a class="selected" href="/x">home</a></div>}i,
     [[{
 	task_id => 'SITE_ROOT',
 	control => [sub {0}],
@@ -46,12 +46,12 @@ req()->set_realm_and_user(qw(demo guest));
     [[{
 	task_id => 'SITE_ROOT',
 	control => [sub {1}],
-    }]] => qr{<ol class="b_task_menu"><li class="b_first b_selected"><a href="/">home</a></li></ol>}i,
-    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<ol class="b_task_menu"><li class="b_first"><a href="/">home</a></li></ol>}i,
+    }]] => qr{<div class="task_menu"><a class="selected" href="/">home</a></div>}i,
+    [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a href="/">home</a></div>}i,
     [[qw(ADM_SUBSTITUTE_USER SITE_ROOT), {
-	task_id => Agent_TaskId()->USER_HOME,
+	task_id => Bivio::Agent::TaskId->USER_HOME,
 	realm => 'demo',
-    }]] => qr{<ol class="b_task_menu"><li class="b_first"><a href="/">home</a></li><li><a href="/demo">user home</a></li></ol>}i,
+    }]] => qr{<div class="task_menu"><a href="/">home</a><a class="want_sep" href="/demo">user home</a></div>}i,
     [[{
 	task_id => 'USER_HOME',
 	label => [sub {'x'}],
@@ -60,11 +60,11 @@ req()->set_realm_and_user(qw(demo guest));
 	label => [sub {'y'}],
      }], {
 	 selected_item => [sub {'y'}],
-     }] => qr{<ol class="b_task_menu"><li class="b_first"><a href="/guest">x</a></li><li class="b_selected"><a href="/">y</a></li></ol>},
+     }] => qr{<div class="task_menu"><a href="/guest">x</a><a class="want_sep selected" href="/">y</a></div>},
     [[{
 	task_id => 'SITE_ROOT',
 	xlink => 'back_to_top',
-    }]] => '<ol class="b_task_menu"><li class="b_first b_selected"><a href="#top">back to top</a></li></ol>',
+    }]] => '<div class="task_menu"><a class="selected" href="#top">back to top</a></div>',
     [[{
 	xlink => 'back_to_top',
 	control => 0,
@@ -72,11 +72,11 @@ req()->set_realm_and_user(qw(demo guest));
     [[{xlink => 'bunit2'}]] => qr{<a href="#a1">anchor</a>},
     [[{
 	xlink => vs_new(qw(XLink back_to_top)),
-    }]] => '<ol class="b_task_menu"><li class="b_first"><a href="#top">back to top</a></li></ol>',
+    }]] => '<div class="task_menu"><a href="#top">back to top</a></div>',
     [[{
 	xlink => vs_new(qw(SiteRoot hm_bunit1)),
-    }]] => '<ol class="b_task_menu"><li class="b_first"><a href="/hm/bunit1">bunit1</a></li></ol>',
+    }]] => '<div class="task_menu"><a href="/hm/bunit1">bunit1</a></div>',
     [['SITE_ROOT'], {selected_label_prefix => '!!'}]
-        => qr{b_task_menu.*<li class="b_first b_selected">.*href="/">!!home}is,
-    [[vs_new(Simple => 'xyz'), vs_new(RealmDropDown => 'user')]] => qr{xyz</li><li>.*demo}s,
+        => qr{task_menu.*class="selected" href="/">!!home}is,
+    [[vs_new(Simple => 'xyz'), vs_new(RealmDropDown => 'user')]] => qr{xyz</div><div class="task_menu_wrapper want_sep">.*demo}s,
 ];
