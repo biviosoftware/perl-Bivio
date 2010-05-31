@@ -78,6 +78,7 @@ sub wiki_uri_to_req {
 
 sub _wiki_create {
     my($is_wiki_data, $self, $name, $is_public, $content) = @_;
+#TODO: just pass in the type
     my($type) = b_use($is_wiki_data ? 'Type.WikiDataName' : 'Type.WikiName');
     return $self->builtin_model('RealmFile')->create_with_content({
 	path => $type->to_absolute($name, $is_public),
