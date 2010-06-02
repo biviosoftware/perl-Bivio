@@ -30,7 +30,6 @@ sub handler {
 	_do(delete_require => $modified);
 	_do(simple_require => $modified);
 	map($_HANDLERS->call_fifo(handle_reload_class => [$_]), @$modified);
-	$_LAST_TIME = time;
     }
     foreach my $modified (@{_modified_ddl()}) {
 	my($realm, $path, $file) = @$modified;
@@ -40,6 +39,7 @@ sub handler {
 	    create_or_update => $path,
 	);
     }
+    $_LAST_TIME = time;
     $_R->clear_current;
     return $_DONE;
 }
