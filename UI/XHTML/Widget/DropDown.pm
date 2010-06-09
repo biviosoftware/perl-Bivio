@@ -51,7 +51,9 @@ sub _js {
         while (prev = b_element_by_class('div', 'dd_visible')) {
 	    b_toggle_class(prev, 'dd_visible', 'dd_hidden');
         }
-	(e || window.event).cancelBubble = true;
+        if (!e) var e = window.event;
+        e.cancelBubble = true;
+        if (e.stopPropagation) e.stopPropagation();
 	if (!b2)
 	    return;
         b_toggle_class(b2.element, 'dd_visible', 'dd_hidden');
