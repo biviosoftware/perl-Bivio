@@ -35,6 +35,7 @@ sub _edit {
     return vs_edit(join('',
 	$self->ancestral_get('form_class'), '.',
 	$self->get('base_field'), '_', $suffix), {
+	    wf_want_select => 1,
 	    enum_sort => 'as_int',
 	    $want_two_digit_month
 	        ? (enum_display => 'get_two_digit_value')
