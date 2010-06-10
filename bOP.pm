@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,34 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.51  2010/05/31 20:17:02  nagler
+  * Bivio::PetShop::View::CSS
+    revert to 1.5
+  * Bivio::ShellUtil
+    fmt
+  * Bivio::Test::WikiText
+    todo
+  * Bivio::UI::FacadeBase
+    revert to 1.264
+  * Bivio::UI::HTML::Widget::Script
+    revert to 1.21
+    revert to 1.19
+  * Bivio::UI::View::CSS
+    revert to 1.120
+    reapply 1.124
+  * Bivio::UI::View::ThreePartPage
+    revert to 1.32
+  * Bivio::UI::XHTML::Widget::DropDown
+    revert to 1.5
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    revert to 1.13
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    revert to 1.11
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    revert to 1.42
+  * Bivio::UI::XHTML::Widget::WikiText::Menu
+    revert to 1.42
+
   Revision 9.50  2010/05/29 22:13:33  nagler
   * Bivio::Auth::Support
     rmpod
