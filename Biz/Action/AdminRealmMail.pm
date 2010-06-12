@@ -22,15 +22,4 @@ sub WANT_REALM_MAIL_CREATED {
     return 0;
 }
 
-#TODO: This needs to be coupled with the actual task's uri, not the constant here
-sub format_email_for_auth_realm {
-    my($proto, $req) = @_;
-    return $req->format_email(
-	$proto->TASK_URI
-        . '.'
-	. $req->req(qw(auth_realm owner name)),
-    );
-}
-
-
 1;
