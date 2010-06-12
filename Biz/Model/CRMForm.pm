@@ -130,13 +130,6 @@ sub internal_pre_execute {
     return @res;
 }
 
-sub internal_send_to_board_maybe {
-    my($self, $rfc822) = @_;
-    my($req) = $self->req;
-    $_BRM->execute_receive($req, $rfc822);
-    return $req->get('Model.RealmMail')->get_rfc822;
-}
-
 sub validate {
     my($self) = @_;
     if ($self->unsafe_get('update_only')) {
