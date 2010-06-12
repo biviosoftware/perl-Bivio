@@ -12,7 +12,6 @@ my($_A) = b_use('Mail.Address');
 my($_DT) = b_use('Type.DateTime');
 my($_RFC) = b_use('Mail.RFC822');
 my($_MS) = b_use('Type.MailSubject');
-my($_MRW) = b_use('Type.MailReplyWho');
 my($_E) = b_use('Type.Email');
 our($_TRACE);
 my($_EA) = b_use('Type.EmailArray');
