@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::Mail;
 use strict;
@@ -124,18 +124,24 @@ sub internal_send_form {
 	vs_simple_form(_name($self, 'XxForm') => [
             $buttons,
 	    @{$extra_fields || []},
-	    map([_name($self, "XxForm.$_"), {
-		cols => $self->DEFAULT_COLS,
-		    rows => 1,
-		    row_class => 'textarea',
-		}], qw(to cc)),
-		$self->internal_subject_body_attachments,
-		$buttons,
-	    ]),
+	    $self->internal_send_form_email_field('to'),
+	    $self->internal_send_form_email_field('cc'),
+	    $self->internal_subject_body_attachments,
+	    $buttons,
+	]),
 	If([_name($self, 'Model.XxForm'), '->is_reply'], _msg($self, 1)),
     ]));
 }
 
+
+sub internal_send_form_email_field {
+    my($self, $field) = @_;
+    return [_name($self, "XxForm.$field"), {
+	cols => $self->DEFAULT_COLS,
+	rows => 1,
+	row_class => 'textarea',
+    }];
+}
 
 sub internal_thread_root_list {
     my($self, $columns) = @_;
