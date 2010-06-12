@@ -39,6 +39,12 @@ my($x) = 0;
 	    [[1, 2, 4]] => [StringArray([1, 2])],
 	    [[4]] => [StringArray([])],
 	],
+	get_element => [
+	    0 => 3,
+	    2 => 2,
+	    3 => DIE(),
+	    -1 => DIE(),
+	],
     ],
     [[]] => [
 	is_specified => 0,
