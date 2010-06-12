@@ -1,8 +1,8 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::RealmMail;
 use strict;
-use Bivio::Base 'Biz.Action';
+use Bivio::Base 'Action.RealmMailBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_O) = b_use('Mail.Outgoing');
@@ -22,6 +22,10 @@ sub EMAIL_LIST {
 
 sub EMPTY_SUBJECT_PREFIX {
     return '!';
+}
+
+sub TASK_URI {
+    return '';
 }
 
 sub WANT_REALM_MAIL_CREATED {

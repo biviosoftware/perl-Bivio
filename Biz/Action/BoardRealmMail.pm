@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Action::BoardRealmMail;
 use strict;
-use Bivio::Base 'Biz.Action';
+use Bivio::Base 'Action.RealmMailBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RM) = b_use('Model.RealmMail');
