@@ -162,6 +162,14 @@ sub from_sql_column {
     )]);
 }
 
+sub get_element {
+    my($self, $index) = @_;
+    my($elements) = shift->[$_IDI];
+    b_die($index, ': range error max=', $#$elements)
+	if $index < 0 || $index > $#$elements;
+    return $elements->[$index];
+}
+
 sub get_width {
     return 4000;
 }
