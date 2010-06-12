@@ -15,6 +15,7 @@ my($_ARM) = b_use('Action.RealmMail');
 my($_MA) = b_use('Mail.Address');
 my($_QUERY_WHO) = 'to';
 my($_MWRT) = b_use('Type.MailWantReplyTo');
+my($_BRM) = b_use('Action.BoardRealmMail');
 
 sub VIEW_CLASS {
     return (shift->simple_package_name =~ /(.+)Form/)[0];
@@ -53,14 +54,21 @@ sub execute_ok {
     my($sender) = $self->internal_format_sender($realm_email);
     my($reply_to) = $self->internal_format_reply_to($realm_email);
     my($removed_sender) = 0;
+    my($board_only) = 0;
+    my($board_email) = $_BRM->format_email_for_realm($req);
+    my($realm_emails) = $self->get_realm_emails;
     $self->internal_put_field(headers => {
 	_from => $from,
 	_recipients => my $other_recipients = $to->new([
 	    map({
 		my($r) = $_;
-		if (grep($r eq $_, @{$self->get_realm_emails})) {
+		if (grep($r eq $_, @$realm_emails)) {
 		    $r = undef;
 		    $removed_sender++;
+		}
+		elsif ($board_email eq $r) {
+		    $r = undef;
+		    $board_only++;
 		}
 		$r ? $r : ();
 	    }
@@ -80,8 +88,8 @@ sub execute_ok {
     if ($removed_sender) {
 	$im = $self->internal_send_to_realm($im);
     }
-    else {
-	$im = $self->internal_send_to_board_maybe($im);
+    elsif ($board_only) {
+	$im = $self->internal_send_to_board($im);
     }
     $_O->new($im)
 	->set_recipients($other_recipients)
@@ -208,13 +216,15 @@ sub internal_return_value {
     };
 }
 
-sub internal_send_to_board_maybe {
+sub internal_send_to_board {
     my($self, $rfc822) = @_;
-    return $rfc822;
+    my($req) = $self->req;
+    $_BRM->execute_receive($req, $rfc822);
+    return $req->get('Model.RealmMail')->get_rfc822;
 }
 
 sub internal_send_to_realm {
-    my($self, $rfc822) = @_;
+    my($self, $rfc822, $board_only) = @_;
     my($req) = $self->req;
     $_ARM->execute_receive($req, $rfc822);
     return $req->get('Model.RealmMail')->get_rfc822;
