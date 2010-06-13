@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailForm;
 use strict;
@@ -16,6 +16,7 @@ my($_MA) = b_use('Mail.Address');
 my($_QUERY_WHO) = 'to';
 my($_MWRT) = b_use('Type.MailWantReplyTo');
 my($_BRM) = b_use('Action.BoardRealmMail');
+my($_FM) = b_use('Type.FormMode');
 
 sub VIEW_CLASS {
     return (shift->simple_package_name =~ /(.+)Form/)[0];
@@ -29,16 +30,20 @@ sub execute_cancel {
 
 sub execute_empty {
     my($self) = @_;
-    my($m) = $self->ureq('Model.RealmMail');
+    my($m) = $self->get('realm_mail');
     my($in) = $m && $_I->new($m);
-    $self->internal_put_field(subject => $in ? $in->get_reply_subject : '');
-    my($to, $cc) =  ($in || $_I)->get_reply_email_arrays(
-	$self->internal_query_who,
-	_realm_email($self),
-	$self->get_realm_emails,
-	$self->req,
+    my($to, $cc) =  $self
+	->internal_get_reply_incoming($in)
+	->get_reply_email_arrays(
+	    $self->internal_query_who,
+	    $self->get(qw(realm_email realm_emails)),
+	    $self->req,
+	);
+    $self->internal_put_field(
+	subject => $in ? $in->get_reply_subject : '',
+	to => $to,
+	cc => $cc,
     );
-    $self->internal_put_field(to => $to, cc => $cc);
     return;
 }
 
@@ -48,21 +53,20 @@ sub execute_ok {
     my($id) = $req->unsafe_get_nested(qw(Model.RealmMail message_id));
     my($cc) = $self->get('cc')->as_literal;
     my($to) = $self->get('to');
-    my($realm_email) = _realm_email($self);
+    my($realm_email) = $self->get('realm_email');
     my($from) = $self->internal_format_from($realm_email);
     my($from_email) = $_MA->parse($from);
     my($sender) = $self->internal_format_sender($realm_email);
     my($reply_to) = $self->internal_format_reply_to($realm_email);
     my($removed_sender) = 0;
-    my($board_only) = 0;
+    my($board_only) = $self->unsafe_get('board_only');
     my($board_email) = $_BRM->format_email_for_realm($req);
-    my($realm_emails) = $self->get_realm_emails;
     $self->internal_put_field(headers => {
 	_from => $from,
 	_recipients => my $other_recipients = $to->new([
 	    map({
 		my($r) = $_;
-		if (grep($r eq $_, @$realm_emails)) {
+		if (grep($r eq $_, @{$self->get('realm_emails')})) {
 		    $r = undef;
 		    $removed_sender++;
 		}
@@ -84,14 +88,14 @@ sub execute_ok {
 	'Message-Id' => $_O->generate_message_id($req),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
-    my($im) = $self->internal_format_incoming;
-    if ($removed_sender) {
-	$im = $self->internal_send_to_realm($im);
+    my($msg) = $self->internal_format_incoming;
+    if ($removed_sender) {# && !$self->unsafe_get('board_only')) {
+	$msg = $self->internal_send_to_realm($msg);
     }
-    elsif ($board_only) {
-	$im = $self->internal_send_to_board($im);
+    elsif ($board_only || $self->unsafe_get('board_always')) {
+	$msg = $self->internal_send_to_board($msg);
     }
-    $_O->new($im)
+    $_O->new($msg)
 	->set_recipients($other_recipients)
 	->set_envelope_from($from_email)
 	->enqueue_send($req)
@@ -135,73 +139,54 @@ sub internal_format_subject {
     return shift->get('subject');
 }
 
+sub internal_get_reply_incoming {
+    my($self, $in) = @_;
+    return $in || $_I;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	require_context => 1,
-        visible => [
- 	    {
- 		name => 'to',
-		type => 'EmailArray',
-		constraint => 'IS_SPECIFIED',
- 	    },
- 	    {
- 		name => 'cc',
-		type => 'EmailArray',
-		constraint => 'NONE',
- 	    },
-	    {
-		name => 'subject',
-		type => 'RealmMail.subject',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'body',
-		type => 'TextArea',
-		constraint => 'NOT_NULL',
-	    },
-	    @{$self->map_attachments(sub {
-		return +{
-		    name => shift,
-		    type => 'FileField',
-		    constraint => 'NONE',
-		};
-	    })},
-	],
-	other => [
-	    {
-		name => 'headers',
-		type => 'Hash',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'RealmMail.realm_file_id',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'RealmMail.thread_root_id',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'is_new',
-		type => 'Boolean',
-		constraint => 'NOT_NULL',
-	    },
-	],
+	$self->field_decl(
+	    visible => [
+		[qw(to EmailArray IS_SPECIFIED)],
+		[qw(cc EmailArray)],
+		[qw(subject RealmMail.subject NOT_NULL)],
+		[qw(body TextArea NOT_NULL)],
+		@{$self->map_attachments(sub {[shift, 'FileField']})},
+		[qw(board_only Boolean)],
+	    ],
+	    other => [
+		[qw(headers Hash)],
+		'RealmMail.realm_file_id',
+		'RealmMail.thread_root_id',
+	        [qw(is_new Boolean NOT_NULL)],
+		[qw(realm_mail Model.RealmMail)],
+		[qw(realm_email Email)],
+		[qw(realm_emails EmailArray)],
+		[qw(board_always Boolean)],
+	    ],
+        ),
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
     my($rml) = $self->new_other('RealmMailList');
-    my($edit) = $self->use('Type.FormMode')
-	->setup_by_list_this($rml, 'RealmMail')
-	->eq_edit;
-    $self->internal_put_field(is_new => $edit ? 0 : 1);
-    foreach my $f (qw(RealmMail.realm_file_id RealmMail.thread_root_id)) {
-	$self->internal_put_field($f => $edit && $rml->get($f));
-    }
+    my($edit) = $_FM->setup_by_list_this($rml, 'RealmMail')->eq_edit;
+    $self->internal_put_field(
+	realm_mail => $self->ureq('Model.RealmMail'),
+	is_new => $edit ? 0 : 1,
+	realm_emails => $self->get_realm_emails,
+	realm_email => $self->new_other('EmailAlias')
+	    ->format_realm_as_incoming,
+	map(
+	    ($_ => $edit && $rml->get($_)),
+	    qw(RealmMail.realm_file_id RealmMail.thread_root_id),
+	),
+    );
     return shift->SUPER::internal_pre_execute(@_);
 }
 
@@ -276,11 +261,6 @@ sub validate {
 	);
     }
     return;
-}
-
-sub _realm_email {
-    my($self) = @_;
-    return $self->new_other('EmailAlias')->format_realm_as_incoming;
 }
 
 1;
