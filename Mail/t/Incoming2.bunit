@@ -24,7 +24,7 @@ my($alias) = remote_email('forum_alias');
 		compute_return => sub {
 		    my(undef, $actual) = @_;
 		    return [map(
-			$_ && @{$_ = $_->as_array} ? $_ : (),
+			$_ && $_->as_length ? $_->as_array : (),
 			@$actual,
 		    )];
 		},
@@ -46,6 +46,16 @@ my($alias) = remote_email('forum_alias');
 	],
     ), [
 	{From => 'a@a.a', To => $forum, Cc => $user2},
+	author => [['a@a.a']],
+	[realm => $alias] => [[$alias]],
+	all => [['a@a.a'], [$forum]],
+    ], [
+	{From => 'a@a.a', To => $user2, Cc => ''},
+	author => [['a@a.a']],
+	[realm => $alias] => [[$alias]],
+	all => [['a@a.a'], [$forum]],
+    ], [
+	{From => 'a@a.a', To => $user2, Cc => $forum},
 	author => [['a@a.a']],
 	[realm => $alias] => [[$alias]],
 	all => [['a@a.a'], [$forum]],
