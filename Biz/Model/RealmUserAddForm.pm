@@ -116,7 +116,7 @@ sub _join_user {
     $self->internal_put_field('User.user_id' => $user_id);
     # Just in case there's another RealmUser record
     my($existing_roles) = [];
-    $self->req('Model.RealmUser')->do_iterate(sub {
+    $self->new_other('RealmUser')->do_iterate(sub {
         my($it) = @_;
 	push(@$existing_roles, $it->get('role'))
 	    if $it->field_equals('user_id', $user_id)
