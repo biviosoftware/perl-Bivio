@@ -1,19 +1,21 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-my($ctid);
+my($ctid, $who);
 FormModel({
     setup_request => sub {
 	my(undef, $params) = @_;
 	req()->put(query => {
 	    $ctid ? (this => $ctid) : (),
+	    $who ? (to => $who) : (),
 	});
 	return;
     },
 });
 req()->set_realm_and_user(qw(crm_forum crm_tech1))
     ->initialize_fully('FORUM_CRM_FORM');
-my($crm_alias) = EmailArray([remote_email('crm')]);
+my($crm_alias) = EmailArray(remote_email('crm'));
 my($board) = remote_email('board.crm_forum');
+my($demo) = EmailArray(email('demo'));
 [
     empty_case({
 	action_id => -CRMThreadStatus('OPEN')->as_int,
@@ -21,7 +23,8 @@ my($board) = remote_email('board.crm_forum');
 	cc => $crm_alias,
     }),
     [{
-	to => $crm_alias,
+	to => $demo, 
+	cc => $crm_alias,
 	subject => 's1',
 	body => 'b1',
 	action_id => -CRMThreadStatus('NEW')->as_int,
@@ -36,13 +39,22 @@ my($board) = remote_email('board.crm_forum');
 	    from_email => email('crm_tech1'),
 	},
     }],
+    inline_case(sub {$who = 'ALL'}),
     empty_case({
-	action_id => -CRMThreadStatus('OPEN')->as_int,
+	to => $demo,
+	cc => $crm_alias,
+	action_id => -CRMThreadStatus('CLOSED')->as_int,
+    }),
+    inline_case(sub {$who = 'REALM'}),
+    empty_case({
+	to => $crm_alias,
+	cc => EmailArray([]),
+	action_id => -CRMThreadStatus('LOCKED')->as_int,
     }),
     [{
 	action_id => -CRMThreadStatus('CLOSED')->as_int,
 	to => EmailArray([$board]),
-	subject => 's1',
+	subject => 's2',
 	body => 'b1',
     }] => [{
 	'Model.CRMThread' => {
@@ -61,6 +73,10 @@ my($board) = remote_email('board.crm_forum');
 	    },
 	},
     }],
+    empty_case({
+	to => $crm_alias,
+	action_id => -CRMThreadStatus('CLOSED')->as_int,
+    }),
     [{
 	action_id => -CRMThreadStatus('OPEN')->as_int,
 	cc => [''],
@@ -73,7 +89,13 @@ my($board) = remote_email('board.crm_forum');
 	    modified_by_user_id => realm_id('crm_tech1'),
 	},
     }],
-    inline_case(sub{undef($ctid);}),
+    inline_case(sub {$who = 'ALL'}),
+    empty_case({
+	to => $demo,
+	cc => $crm_alias,
+	action_id => -CRMThreadStatus('CLOSED')->as_int,
+    }),
+    inline_case(sub {$ctid = $who = undef}),
     [{
 	to => $crm_alias,
 	subject => 's2',
@@ -83,9 +105,8 @@ my($board) = remote_email('board.crm_forum');
 	'Model.CRMThread' => {
 	    owner_user_id => req('auth_user_id'),
 	    crm_thread_status => CRMThreadStatus('OPEN'),
-	    thread_root_id => sub {
-		return $ctid = req(qw(Model.CRMThread thread_root_id));
-	    },
+	    thread_root_id =>
+		sub {$ctid = req(qw(Model.CRMThread thread_root_id))},
 	},
     }],
     empty_case({
