@@ -115,14 +115,27 @@ sub _join_user {
     $self->internal_put_field('RealmUser.realm_id' => $realm_id);
     $self->internal_put_field('User.user_id' => $user_id);
     # Just in case there's another RealmUser record
+    my($existing_roles) = [];
+    $self->req('Model.RealmUser')->do_iterate(sub {
+        my($it) = @_;
+	push(@$existing_roles, $it->get('role'))
+	    if $it->field_equals('user_id', $user_id)
+		&& $it->field_equals('realm_id', $realm_id);
+	return 1;
+    });
+    my($new_roles) = [
+	@{$self->unsafe_get('other_roles') || []},
+	@{$self->internal_get_roles},
+    ];
+    my($main, undef) = b_use('Model.RoleBaseList')
+	->roles_by_category([@$existing_roles, @$new_roles]);
+    b_die('Must have exactly one main role')
+	if @$main != 1;
     my($v) = {
 	user_id => $user_id,
 	realm_id => $realm_id,
     };
-    foreach my $r (
-	@{$self->unsafe_get('other_roles') || []},
-	@{$self->internal_get_roles},
-    ) {
+    foreach my $r (@$new_roles) {
 	$self->new_other('RealmUser')->unauth_create_or_update({
 	    %$v,
 	    role => $r,
