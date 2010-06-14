@@ -32,7 +32,7 @@ sub execute_empty {
     my($self) = @_;
     my($m) = $self->get('realm_mail');
     my($in) = $m && $_I->new($m);
-    my($to, $cc) =  $self
+    my($to, $cc) = $self
 	->internal_get_reply_incoming($in)
 	->get_reply_email_arrays(
 	    $self->internal_query_who,
