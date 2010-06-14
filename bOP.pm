@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.52  2010/06/10 17:14:07  moeller
+  * Bivio::Test::Reload
+    update reload time stamp after modules and/or ddl files have been
+    checked and updated, if necessary.
+  * Bivio::Type::USZipCodeMap
+    NEW
+  * Bivio::Type::USZipCode
+    added zip_codes_by_proximity()
+  * Bivio::UI::HTML::Widget::MonthYear
+    always show month/year as a select widget
+  * Bivio::UI::XHTML::Widget::DropDown
+    cancelBubble is a Microsoft model property, w3c browsers use stopPropagatio()
+
   Revision 9.51  2010/05/31 20:17:02  nagler
   * Bivio::PetShop::View::CSS
     revert to 1.5
