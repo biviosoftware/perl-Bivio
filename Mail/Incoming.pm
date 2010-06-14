@@ -142,30 +142,36 @@ sub get_references {
 
 sub get_reply_email_arrays {
     my($self, $who, $canonical_email, $realm_emails, $req) = @_;
-    return $_EA->new($canonical_email)
+    return ($_EA->new($canonical_email), $_EA->new([]))
 	unless ref($self) and !$who->eq_realm;
     my($reply_to) = lc($self->get_reply_to);
     $reply_to = undef
 	if grep($_E->is_equal($reply_to, $_), @$realm_emails);
     my($from) = lc($reply_to || $self->get_from);
-    return $_EA->new([$from])
+    return ($_EA->new([$from]), $_EA->new([]))
 	if $who->eq_author;
     my($dups) = {
 	@{$_M->new($req, 'RealmEmailList')->get_recipients(
 	    sub {shift->get('Email.email') => 1},
 	)},
+	map($_ ? ($_ => 1) : (), @$realm_emails),
     };
-    my($to) = $dups->{$from} ? $canonical_email : $from;
-    my($cc) = $to eq $canonical_email ? undef : $canonical_email;
-    map($_ ? $dups->{$_}++ : (), $from, $reply_to, @$realm_emails);
-    return map(
+    my($to, $cc) = map(
 	$_EA->new([
-	    $_ eq 'to' ? $to : $cc,
 	    grep(!$dups->{$_},
 		 map(lc($_), @{$_A->parse_list(_get_field($self, "$_:"))})),
 	]),
 	qw(to cc),
     );
+    $to = $to->append($from)
+	unless $dups->{$from};
+    if ($to->as_length) {
+	$cc = $cc->append($canonical_email);
+    }
+    else {
+	$to = $to->append($canonical_email);
+    }
+    return ($to, $cc);
 }
 
 sub get_reply_subject {
