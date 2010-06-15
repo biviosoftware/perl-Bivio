@@ -27,6 +27,10 @@ text1
 EOF
 $rmid = $rm->get('realm_file_id');
 [
+    empty_case({
+	to => $to,
+	subject => 'Re: MailForm1',
+    }),
     [{
 	to => $to,
         subject => 's1',
@@ -52,8 +56,4 @@ $rmid = $rm->get('realm_file_id');
 	}
 	return 1;
     },
-    empty_case({
-	to => $to,
-	subject => 'Re: MailForm1',
-    }),
 ];
