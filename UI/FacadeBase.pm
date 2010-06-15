@@ -418,6 +418,7 @@ sub _cfg_base {
 	    [vs_ui => [
 		forum => 'Forum',
 		wiki => 'Wiki',
+		members => 'Members',
 	    ]],
 	    ['vs_selector_form.ok_button' => 'Refresh'],
 	    [xlink => [
@@ -1018,10 +1019,11 @@ sub _cfg_mail {
 	    [b_use('Biz.Model')->get_instance('MailForm')
 	        ->map_attachments(sub {shift}) => 'Attach'],
 	    [view_rfc822 => 'Show Original'],
-	    [MailForm => [
-		subject => 'Topic',
+	    [[qw(MailForm CRMForm)] => [
+		board_only => 'Do not send message to vs_ui_forum(); vs_ui_members();',
 		ok_button => 'Send',
 	    ]],
+	    ['MailForm.subject' => 'Topic'],
 	    [BulletinForm => [
 		ok_button => 'Send',
 		prose => [
@@ -1641,7 +1643,7 @@ EOF
 Join([
     P('It seems that your browser does not support cookies, or cookies have been disabled. Cookies are required for you to sign-in.'),
     H3('Enabling Cookies in your Browser'),
-    P(q{The members area application requires the use of Cookies. By default, cookies are enabled in your browser. If you were directed to this page by our software, you or someone else has disable cookies in your browser. The following instructions are meant as a guide only. Please consult your browser's help system for a complete description. Scroll down this page until you find your browser. We apologize if your browser isn't in our list yet.}),
+    P(q{This application requires the use of Cookies. By default, cookies are enabled in your browser. If you were directed to this page by our software, you or someone else has disable cookies in your browser. The following instructions are meant as a guide only. Please consult your browser's help system for a complete description. Scroll down this page until you find your browser. We apologize if your browser isn't in our list yet.}),
     map((
 	H4(shift(@$_)),
 	OL(Join([map(LI($_), @$_)])),
