@@ -51,6 +51,10 @@ sub vs_ui_forum {
     return shift->vs_text('vs_ui.forum');
 }
 
+sub vs_ui_members {
+    return shift->vs_text('vs_ui.members');
+}
+
 sub vs_ui_wiki {
     return shift->vs_text('vs_ui.wiki');
 }
