@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,37 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.53  2010/06/14 17:24:16  nagler
+  * Bivio::Biz::Action::AdminRealmMail
+    pushed up format_email_for_auth_realm and changed to format_email_for_realm
+  * Bivio::Biz::Action::BoardRealmMail
+    Subclass RealmMailBase
+  * Bivio::Biz::Action::RealmMailBase
+    NEW
+  * Bivio::Biz::Action::RealmMail
+    Subclass RealmMailBase
+  * Bivio::Biz::Model::CRMForm
+    Removed internal_send_to_board_maybe
+    Always send to board (broken when internal_send_to_board_maybe removed)
+    to/cc switched around when new
+    Grab first From: in the list of all emails so MailReplyWho->ALL does
+    the right thing
+  * Bivio::Biz::Model::MailForm
+    added removal of board.<realm> emails
+    Removed internal_send_to_board_maybe
+    Added internal_send_to_board
+    refactoring (use field_decl)
+    Added board_always for CRMForm
+    Added internal_get_reply_incoming for CRMForm
+  * Bivio::Biz::Model::RealmUserAddForm
+    assert that we only have one main role
+  * Bivio::Mail::Incoming
+    cruft
+  * Bivio::Type::ArrayBase
+    Added get_element
+  * Bivio::UI::View::Mail
+    factored out internal_send_form_email_field
+
   Revision 9.52  2010/06/10 17:14:07  moeller
   * Bivio::Test::Reload
     update reload time stamp after modules and/or ddl files have been
