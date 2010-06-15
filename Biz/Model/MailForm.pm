@@ -51,55 +51,58 @@ sub execute_ok {
     my($self) = @_;
     my($req) = $self->req;
     my($id) = $req->unsafe_get_nested(qw(Model.RealmMail message_id));
-    my($cc) = $self->get('cc')->as_literal;
-    my($to) = $self->get('to');
-    my($realm_email) = $self->get('realm_email');
+    my($to, $cc, $realm_email, $realm_emails)
+	= $self->get(qw(to cc realm_email realm_emails));
+    my($board_email) = $_BRM->format_email_for_realm($req);
     my($from) = $self->internal_format_from($realm_email);
     my($from_email) = $_MA->parse($from);
     my($sender) = $self->internal_format_sender($realm_email);
     my($reply_to) = $self->internal_format_reply_to($realm_email);
-    my($removed_sender) = 0;
-    my($board_only) = $self->unsafe_get('board_only');
-    my($board_email) = $_BRM->format_email_for_realm($req);
+    my($other_recipients, $removed_sender)
+	= _remove_emails($to->append($cc), $realm_emails);
+    my($removed_board);
+    ($other_recipients, $removed_board)
+	= _remove_emails($other_recipients, $board_email);
+    my($board_only) = $removed_board
+        || $self->unsafe_get('board_only')
+	|| (!$removed_sender && $self->unsafe_get('board_always'));
+    if ($board_only) {
+	if ($removed_sender) {
+	    $to = $to->exclude($realm_emails);
+	    $cc = $cc->exclude($realm_emails);
+	}
+	unless ($removed_board) {
+	    if ($to->as_length) {
+		$cc = $cc->append($board_email);
+	    }
+	    else {
+		$to = $to->append($board_email);
+	    }
+	}
+    }
     $self->internal_put_field(headers => {
 	_from => $from,
-	_recipients => my $other_recipients = $to->new([
-	    map({
-		my($r) = $_;
-		if (grep($r eq $_, @{$self->get('realm_emails')})) {
-		    $r = undef;
-		    $removed_sender++;
-		}
-		elsif ($board_email eq $r) {
-		    $r = undef;
-		    $board_only++;
-		}
-		$r ? $r : ();
-	    }
-	        @{$to->as_array},
-		@{$self->get('cc')->as_array},
-	    ),
-	])->as_literal,
+	_recipients => $other_recipients->as_literal,
 	Sender => $sender,
 	To => $to->as_literal,
 	$reply_to ? ('Reply-To' => $reply_to) : (),
-	$cc ? (Cc => $cc) : (),
+	$cc->as_length ? (Cc => $cc->as_literal) : (),
 	Subject => $self->internal_format_subject,
 	'Message-Id' => $_O->generate_message_id($req),
 	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
     });
     my($msg) = $self->internal_format_incoming;
-    if ($removed_sender) {# && !$self->unsafe_get('board_only')) {
-	$msg = $self->internal_send_to_realm($msg);
-    }
-    elsif ($board_only || $self->unsafe_get('board_always')) {
+    if ($board_only) {
 	$msg = $self->internal_send_to_board($msg);
     }
+    elsif ($removed_sender) {
+	$msg = $self->internal_send_to_realm($msg);
+    }
     $_O->new($msg)
-	->set_recipients($other_recipients)
+	->set_recipients($other_recipients->as_literal)
 	->set_envelope_from($from_email)
 	->enqueue_send($req)
-	if $other_recipients;
+	if $other_recipients->as_length;
     return $self->internal_return_value;
 }
 
@@ -261,6 +264,12 @@ sub validate {
 	);
     }
     return;
+}
+
+sub _remove_emails {
+    my($email_array, $to_remove) = @_;
+    my($res) = $email_array->exclude($to_remove);
+    return ($res, $res->as_length != $email_array->as_length);
 }
 
 1;
