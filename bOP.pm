@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.54  2010/06/15 20:27:38  moeller
+  * Bivio::Biz::Model::RealmUserAddForm
+    don't assume Model.RealmUser is on request
+  * Bivio::Mail::Incoming
+    get_reply_email_arrays will return realm with ALL as Cc, if there's
+    already a To.  Cleaned up the duplicate code a bit
+  * Bivio::UI::HTML::Widget::RealmFilePage
+    ignore javascript links
+
   Revision 9.53  2010/06/14 17:24:16  nagler
   * Bivio::Biz::Action::AdminRealmMail
     pushed up format_email_for_auth_realm and changed to format_email_for_realm
