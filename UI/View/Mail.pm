@@ -126,6 +126,7 @@ sub internal_send_form {
 	    @{$extra_fields || []},
 	    $self->internal_send_form_email_field('to'),
 	    $self->internal_send_form_email_field('cc'),
+	    _name($self, 'XxForm.board_only'),
 	    $self->internal_subject_body_attachments,
 	    $buttons,
 	]),
