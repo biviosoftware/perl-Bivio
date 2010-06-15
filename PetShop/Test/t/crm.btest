@@ -1,8 +1,8 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
 home_page();
-my($forum) = generate_remote_email('crm_forum');
+my($forum) = generate_remote_email('crm');
 my($cust1) = generate_local_email('crm_cust1');
 my($tech1) = generate_local_email('crm_tech1');
 my($msg) = send_mail($cust1, $forum);
@@ -40,12 +40,14 @@ follow_link('Show Original');
 test_equals('text/plain', get_response()->content_type);
 go_back();
 follow_link('new_ticket');
-submit_form(send => {
-    to => $cust1,
+submit_form({
+    '^to' => $cust1,
+    members => 1,
     subject => my $board_subject = random_string(),
     text => 'x',
 });
-verify_local_mail($cust1);
+$msg = verify_local_mail($cust1);
+test_ok($msg !~ /(To|Cc):.* \Q$forum/im, "found $forum");
 verify_link($board_subject);
 # Audit log is the email stream, like tuple, but action
 # is simple notification
