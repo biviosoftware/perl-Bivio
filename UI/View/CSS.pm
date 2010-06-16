@@ -161,6 +161,10 @@ form .field {
   padding-top: 0.5em;
   padding-bottom: 0.5em;
 }
+.simple .field,
+form .field {
+  padding-top: 0.5ex;
+}
 form .footer {
   Font('form_footer');
   margin-bottom: 1.0em;
