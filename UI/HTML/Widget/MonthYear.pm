@@ -11,7 +11,8 @@ sub initialize {
     my($self) = @_;
     $self->put(
 	values => [
-	    _edit($self, 'month', $self->unsafe_get('want_two_digit_month')),
+	    _edit($self, 'month', $self->unsafe_get('want_two_digit_month'),
+		  $self->unsafe_get('month_choices')),
 	    _edit($self, 'year'),
 	],
 	join_separator => Join([
@@ -31,7 +32,7 @@ sub internal_new_args {
 }
 
 sub _edit {
-    my($self, $suffix, $want_two_digit_month) = @_;
+    my($self, $suffix, $want_two_digit_month, $choices) = @_;
     return vs_edit(join('',
 	$self->ancestral_get('form_class'), '.',
 	$self->get('base_field'), '_', $suffix), {
@@ -43,6 +44,7 @@ sub _edit {
 	    $self->unsafe_get('unknown_label')
 	        ? (unknown_label => $self->get('unknown_label'))
 	        : (),
+	    $choices ? (choices => $choices) : (),
 	});
 }
 
