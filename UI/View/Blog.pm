@@ -31,6 +31,7 @@ sub create {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
+	'BlogEditForm.RealmFile.is_public',
 	_edit($self),
     ]));
 }
