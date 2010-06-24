@@ -8,6 +8,7 @@ use Bivio::Base 'Model.UserRegisterForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RU) = b_use('ShellUtil.RealmUser');
+my($_A) = b_use('IO.Alert');
 
 sub copy_admins {
     my($self, $realm_id, $admin_user_id) = @_;
@@ -129,7 +130,7 @@ sub _join_user {
     ];
     my($main, undef) = b_use('Model.RoleBaseList')
 	->roles_by_category([@$existing_roles, @$new_roles]);
-    b_die('Must have exactly one main role')
+    $_A->warn_deprecated($main, ': must have exactly one main role')
 	if @$main != 1;
     my($v) = {
 	user_id => $user_id,
