@@ -1181,9 +1181,8 @@ sub _cfg_site_admin {
 		    ["want_$n" => defined($control) ? $control : 1],
 		);
 	    }
-		$_C->if_version(10 => sub {
-		        return [qw(all_users GROUP_USER_LIST SITE_ADMIN_REALM_NAME)],
-		    },
+		$_C->if_version(10 =>
+		    sub {[qw(all_users GROUP_USER_LIST)]},
 		    sub {[qw(all_users SITE_ADMIN_USER_LIST)]},
 		),
                 [qw(substitute_user SITE_ADMIN_SUBSTITUTE_USER)],
