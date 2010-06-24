@@ -13,10 +13,14 @@ sub NEW_ARGS {
 
 sub TASK_MENU_LIST {
     return map(
-        XLink({
-	    facade_label => $_,
-	    control => vs_constant("want_$_"),
-	}),
+        {
+	    xlink => XLink({
+		facade_label => $_,
+		control => vs_constant("want_$_"),
+	    }),
+	    sort_label => "xlink.$_",
+	    label => 'none',
+	},
 	qw(
 	    substitute_user
 	    all_users
@@ -36,7 +40,9 @@ sub initialize {
 	    DIV_dd_menu(TaskMenu([
 		@{$self->get_or_default(extra_items => [])},
                 $self->TASK_MENU_LIST,
-	    ])),
+	    ], {
+		want_sorting => 1,
+	    })),
 	),
     );
     return shift->SUPER::initialize(@_);
