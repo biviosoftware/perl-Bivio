@@ -12,6 +12,16 @@ sub NEW_ARGS {
     return [qw(?class)];
 }
 
+sub exclude_tasks {
+    my($self, $tasks_to_exclude, $tasks) = @_;
+    $tasks_to_exclude = {map((lc($_) => 1), @$tasks_to_exclude)};
+    return [grep(
+	!(ref($_) ? $tasks_to_exclude->{lc($_->{task_id} || '')}
+	      : $tasks_to_exclude->{lc($_)}),
+	@$tasks,
+    )];
+}
+
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
@@ -55,7 +65,8 @@ sub internal_tasks {
     return [
 	{
 	    xlink => vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
-	    sort_label => 'SiteAdminDropDown_label',
+	    label => 'SiteAdminDropDown_label',
+	    sort_label => 'sort_third',
 	},
 	{
 	    task_id => 'SITE_WIKI_VIEW',
