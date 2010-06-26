@@ -221,6 +221,9 @@ sub remote_archive {
     $self->piped_exec_remote($host, "mke2fs -b 4096 -m 0 -N 4194304 -O dir_index -O sparse_super $dev", "y\n");
     $self->piped_exec_remote($host, "mkdir -p $mount");
     $self->piped_exec_remote($host, "mount $dev $mount");
+    my($ls) = split(' ', ${$self->piped_exec_remote($host, "ls $mount")});
+    b_die($ls, ': incorrect number of files')
+	unless "@$ls" eq 'lost+found';
     my($done);
     foreach my $other ("$root/weekly", "$root/archive") {
 	next
