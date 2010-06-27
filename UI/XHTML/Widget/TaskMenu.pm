@@ -85,10 +85,13 @@ sub initialize {
 		    });
 		}
 	    }
-	    $self->initialize_value(
-		'sort_label',
-		$cfg->{sort_label} = _label($cfg->{sort_label}),
-	    ) if $cfg->{sort_label} ||= $cfg->{label};
+	    $cfg->{label} = _label($cfg->{label})
+		unless ref($cfg->{label});
+	    $self->initialize_value('label', $cfg->{label});
+	    $cfg->{sort_label} ||= $cfg->{label};
+	    $cfg->{sort_label} = _label($cfg->{sort_label})
+		unless ref($cfg->{sort_label});
+	    $self->initialize_value('sort_label', $cfg->{sort_label});
             my($selected_cond) = ['->ureq', _selected_attr($self, $cfg)];
  	    my($w) = $_W->is_blessed($cfg->{xlink})
 		? $cfg->{xlink}
@@ -96,8 +99,7 @@ sub initialize {
 		: $cfg->{task_id} ? Link(
                     _prefix(
                         $prefix,
-                        ref($cfg->{label}) ? $cfg->{label}
-                            : _label($cfg->{label}),
+			$cfg->{label},
                         $selected_cond,
                     ),
 		    $cfg->{uri},
@@ -106,7 +108,6 @@ sub initialize {
 	    $w = DIV_task_menu_wrapper($w)
 		if $cfg->{xlink} && !$_CB->is_blessed($w);
 	    my($class) = $w->unsafe_get('class');
-	    $self->initialize_value('label', $cfg->{label});
 	    $w->put(
 		_task_menu_cfg => $cfg,
 		_cfg($cfg, 'control'),
