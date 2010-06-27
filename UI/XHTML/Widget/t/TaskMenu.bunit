@@ -59,6 +59,7 @@ req()->set_realm_and_user(qw(demo guest));
 	task_id => 'SITE_ROOT',
 	label => [sub {'y'}],
      }], {
+	 want_sorting => 1,
 	 selected_item => [sub {'y'}],
      }] => qr{<div class="task_menu"><a href="/guest">x</a><a class="want_sep selected" href="/">y</a></div>},
     [[{
