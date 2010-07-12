@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.55  2010/06/15 21:46:36  nagler
+  * Bivio::Biz::Model::MailForm
+    support for cleaning up to/cc when board_only selected
+  * Bivio::Type::EmailArray
+    b_use
+  * Bivio::UI::FacadeBase
+    added board_only support
+  * Bivio::UI::View::Mail
+    added board_only field to send_form
+  * Bivio::UI::ViewShortcuts
+    added vs_ui_members
+
   Revision 9.54  2010/06/15 20:27:38  moeller
   * Bivio::Biz::Model::RealmUserAddForm
     don't assume Model.RealmUser is on request
