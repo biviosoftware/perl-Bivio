@@ -46,7 +46,7 @@ sub from_literal {
 	}
 	else {
 	    # 12:\d+ p.m. is noon, not midnight
-	    $h += 12 if lc($am_pm) =~ 'p';
+	    $h += 12 if lc($am_pm) eq 'p';
 	}
     }
     else {
