@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,28 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.56  2010/07/12 19:14:46  moeller
+  * Bivio::Biz::Model::RealmUserAddForm
+    changed "must have exactly one main role" to be a warn_deprecated
+  * Bivio::UI::FacadeBase
+    fixed xlink_all_users
+  * Bivio::UI::HTML::Widget::MonthYear
+    added month_choices arg
+  * Bivio::UI::View::Blog
+    added is_public to create()
+  * Bivio::UI::View::CSS
+    improve field position
+  * Bivio::UI::XHTML::Widget::FeatureTaskMenu
+    added exclude_tasks()
+    made SiteAdminDropDown third item
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    sort the list
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    sort_label needed to handle refs (widgets)
+  * Bivio::Util::Backup
+    remote_archive: check that the drive mounted correctly
+    fpc
+
   Revision 9.55  2010/06/15 21:46:36  nagler
   * Bivio::Biz::Model::MailForm
     support for cleaning up to/cc when board_only selected
