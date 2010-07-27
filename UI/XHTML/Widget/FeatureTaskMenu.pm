@@ -47,6 +47,32 @@ sub initialize {
     return shift->SUPER::initialize(@_);
 }
 
+sub internal_merge_tasks {
+    my($self, $parent, $child) = @_;
+    my($seen) = {};
+    my($labels) = {};
+    foreach my $x (@$child) {
+	if (my $n = _sort_label($x)) {
+	    $labels->{$n}++;
+	}
+    }
+    foreach my $x (@$parent) {
+	next
+	    unless my $label = _sort_label($x);
+	foreach my $n (keys(%$labels)) {
+	    $label++
+		if $label >= $n;
+	}
+	$x->{sort_label} = sprintf('sort_label_%02d', $label);
+    }
+    return [
+	map({
+	    my($t) = ref($_) ? $_->{task_id} : $_;
+	    $t && $seen->{$t}++ ? () : $_;
+	} @$child, @$parent),
+    ];
+}
+
 sub internal_selected_item_map {
     return [
 	qr{^FORUM_BLOG_} => 'FORUM_BLOG_LIST',
@@ -66,15 +92,15 @@ sub internal_tasks {
 	{
 	    xlink => vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
 	    label => 'SiteAdminDropDown_label',
-	    sort_label => 'sort_third',
+	    sort_label => 'sort_label_11',
 	},
 	{
 	    task_id => 'SITE_WIKI_VIEW',
-	    sort_label => 'sort_first',
+	    sort_label => 'sort_label_12',
 	},
 	{
 	    task_id => 'FORUM_WIKI_VIEW',
-	    sort_label => 'sort_second',
+	    sort_label => 'sort_label_13',
 	},
 	qw(
 	    FORUM_BLOG_LIST
@@ -97,6 +123,14 @@ sub internal_tasks {
 	    FORUM_CRM_THREAD_ROOT_LIST
 	),
     ];
+}
+
+sub _sort_label {
+    my($cfg) = @_;
+    return $1
+	if ref($cfg)
+	&& ($cfg->{sort_label} || '') =~ /^sort_label_(\d+)/;
+    return undef;
 }
 
 1;
