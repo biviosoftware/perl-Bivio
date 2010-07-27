@@ -264,6 +264,34 @@ sub vs_filter_query_form {
     );
 }
 
+sub vs_header_su_link {
+    my(undef, $normal_widget) = @_;
+    return DIV_logo_su(If(
+	['->is_substitute_user'],
+	Link(
+	    RoundedBox(Join([
+		'Acting as User:',
+		BR(),
+		String(['auth_user', 'display_name']),
+		BR(),
+		'Click here to exit.',
+	    ])),
+	    b_use('IO.Config')->if_version(10,
+		sub {
+		    return URI({
+			task_id => 'SITE_ADMIN_SUBSTITUTE_USER_DONE',
+			realm => vs_constant('site_admin_realm_name'),
+			query => undef,
+		    });
+		},
+		sub {'LOGOUT'},
+	    ),
+	    'su',
+	),
+	$normal_widget,
+    ));
+}
+
 sub vs_label_cell {
     my($self, $model_field) = @_;
     return (FormField("$model_field")->get_label_and_field)[0]
@@ -293,12 +321,12 @@ sub vs_list_form {
 	map({
 #TODO: Need to enapsulate this!
 	    my($d) = $_;
+	    my($field) = ref($d) eq 'HASH' ? $d
+		: !ref($d) && $d =~ /^\w+\.(.+)/ ? $1 : undef
+		if defined($d);
 	    my($t);
-	    if (defined($d) && (
-		ref($d) eq 'HASH' || !ref($d)
-	        && $f->has_fields($d) && $f->get_field_info($d, 'in_list'))
-	    ) {
-		push(@$list, $d);
+	    if ($field) {
+		push(@$list, $field);
 		$d = undef;
 	    }
 	    elsif (@$list) {
