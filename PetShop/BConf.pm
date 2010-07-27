@@ -93,6 +93,11 @@ sub merge_overrides {
 			['realm_user_util4 EXPLICIT' => 'GUEST'],
 		    ],
 		],
+		realm_user_util5 => [
+		    MEMBER => [
+			[FORUM => [qw(WITHDRAWN)]],
+		    ],
+		],
 	    ],
 	},
     },
