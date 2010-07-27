@@ -92,15 +92,15 @@ sub internal_tasks {
 	{
 	    xlink => vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
 	    label => 'SiteAdminDropDown_label',
-	    sort_label => 'sort_label_11',
+	    sort_label => 'sort_label_02',
 	},
 	{
 	    task_id => 'SITE_WIKI_VIEW',
-	    sort_label => 'sort_label_12',
+	    sort_label => 'sort_label_01',
 	},
 	{
 	    task_id => 'FORUM_WIKI_VIEW',
-	    sort_label => 'sort_label_13',
+	    sort_label => 'sort_label_03',
 	},
 	qw(
 	    FORUM_BLOG_LIST
