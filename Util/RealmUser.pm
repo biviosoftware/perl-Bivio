@@ -9,6 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ALL_REALMS_KEY) = 'ALL REALMS';
 my($_RN) = b_use('Type.RealmName');
 my($_R) = b_use('Auth.Role');
+my($_RT) = b_use('Auth.RealmType');
 my($_SA) = b_use('Type.StringArray');
 my($_MAP) = {};
 b_use('IO.Config')->register(my $_CFG = {
@@ -233,13 +234,31 @@ sub _tgt_realms {
 	next
 	    unless my $x = $map->{$src_role->get_name};
 	while (my($tgt_realm, $tgt_roles) = each(%$x)) {
-	    foreach my $r (@$tgt_roles) {
-		($res->{$tgt_realm} ||= {})->{$r} = 1;
+	    foreach my $realm (_tgt_realms_list($self, $tgt_realm)) {
+		foreach my $role (@$tgt_roles) {
+		    ($res->{$realm} ||= {})->{$role} = 1;
+		}
 	    }
-
 	}
     }
     return $res;
+}
+
+sub _tgt_realms_list {
+    my($self, $tgt_realm) = @_;
+    return $tgt_realm
+	unless my $rt = $_RT->unsafe_from_name($tgt_realm);
+    return @{$self->model('RealmOwner')->map_iterate(
+	sub {
+	    my($it) = @_;
+	    return
+		if $it->is_default;
+	    return $it->get('name');
+	},
+	'unauth_iterate_start',
+	'name',
+	{realm_type => $rt},
+    )};
 }
 
 1;
