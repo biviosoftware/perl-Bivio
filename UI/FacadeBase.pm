@@ -461,15 +461,25 @@ sub _cfg_base {
 		title => q{String(vs_site_name()); vs_text_as_prose('xhtml_title');},
 	    ]],
 	    ['task_menu.title' => [
-		sort_first => "\1",
-		sort_second => "\2",
-		sort_third => "\3",
-		sort_fourth => "\4",
-		sort_fifth => "\5",
-		sort_sixth => "\6",
-		sort_seventh => "\7",
-		sort_eighth => "\10",
-		sort_ninth => "\11",
+		[qw(sort_first sort_label_01)] => "\1",
+		[qw(sort_second sort_label_02)] => "\2",
+		[qw(sort_third sort_label_03)] => "\3",
+		[qw(sort_fourth sort_label_04)] => "\4",
+		[qw(sort_fifth sort_label_05)] => "\5",
+		[qw(sort_sixth sort_label_06)] => "\6",
+		[qw(sort_seventh sort_label_07)] => "\7",
+		[qw(sort_eighth sort_label_08)] => "\10",
+		[qw(sort_ninth sort_label_09)] => "\11",
+		[qw(sort_first sort_label_10)] => "\12",
+		[qw(sort_second sort_label_11)] => "\13",
+		[qw(sort_third sort_label_12)] => "\14",
+		[qw(sort_fourth sort_label_13)] => "\15",
+		[qw(sort_fifth sort_label_14)] => "\16",
+		[qw(sort_sixth sort_label_15)] => "\17",
+		[qw(sort_seventh sort_label_16)] => "\20",
+		[qw(sort_eighth sort_label_17)] => "\21",
+		[qw(sort_ninth sort_label_18)] => "\22",
+		[qw(sort_ninth sort_label_19)] => "\23",
 	    ]],
 	    [prose => [
 		ascend => ' &#9650;',
@@ -486,30 +496,7 @@ sub _cfg_base {
 		    # Base. is deprecated usage
 		    return ([$k, "Base.$k"] => $v);
 	        }, [
-		    xhtml_logo => q{DIV_logo_su(If(
-			['->is_substitute_user'],
-			Link(
-			    RoundedBox(Join([
-				'Acting as User:',
-                                BR(),
-				String(['auth_user', 'display_name']),
-                                BR(),
-				'Click here to exit.',
-			    ])),
-			    b_use('IO.Config')->if_version(10,
-                                sub {
-				    return URI({
-					task_id => 'SITE_ADMIN_SUBSTITUTE_USER_DONE',
-					realm => vs_constant('site_admin_realm_name'),
-					query => undef,
-				    }<)>;
-                                },
-                                sub {'LOGOUT'},
-                            ),
-			    'su',
-			),
-			XLink('xhtml_logo_normal', 'logo'),
-		    ));},
+		    xhtml_logo => q{vs_header_su_link(XLink('xhtml_logo_normal', 'logo'));},
 		    xhtml_head_title => q{Title([vs_site_name(), vs_text_as_prose('xhtml_title')]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
 		    xhtml_copyright => <<"EOF",
