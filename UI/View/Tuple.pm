@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::Tuple;
 use strict;
@@ -11,8 +11,8 @@ sub def_edit {
     return shift->internal_body(vs_list_form(TupleDefListForm => [qw(
 	TupleDefListForm.TupleDef.label
 	TupleDefListForm.TupleDef.moniker
-	TupleSlotDef.label
-	TupleSlotDef.is_required
+	TupleDefListForm.TupleSlotDef.label
+	TupleDefListForm.TupleSlotDef.is_required
     ),
 	{
 	    field => 'TupleSlotDef.tuple_slot_type_id',
@@ -298,7 +298,7 @@ sub slot_type_edit {
 	    list_id_field => 'TupleSlotType.type_class',
 	}],
 	'TupleSlotTypeListForm.TupleSlotType.default_value',
-	'choice',
+	'TupleSlotTypeListForm.choice',
     ]));
 }
 
