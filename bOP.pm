@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,38 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.57  2010/07/27 17:44:29  nagler
+  * Bivio::PetShop::BConf
+    added realm_user_util5
+  * Bivio::PetShop::Util::SQL
+    added realm_user_util5
+  * Bivio::Type::CurrencyName
+    NEW
+  * Bivio::Type::Currency
+    NEW
+  * Bivio::Type::Dollar
+    rmpod
+    *** empty log message ***
+  * Bivio::Type::NonNegativeCurrency
+    NEW
+  * Bivio::Type::NonNegativeInteger
+    NEW
+  * Bivio::Type::NonNegativePercent
+    NEW
+  * Bivio::Type::Time
+    fix minor operator error in from_literal
+  * Bivio::UI::FacadeBase
+    moved out Logo link in xhtml_logo to vs_header_su_link()
+    renamed sort_first/second/etc. to sort_label_01/02/etc.
+  * Bivio::UI::XHTML::ViewShortcuts
+    moved out Logo link in xhtml_logo from FacadeBase to vs_header_su_link()
+    vs_list_form was not parsing field names correctly
+  * Bivio::UI::XHTML::Widget::FeatureTaskMenu
+    added internal_merge_tasks
+    use sort_label_nn
+  * Bivio::Util::RealmUser
+    allow all realms of a particular RealmType to be added in auditor
+
   Revision 9.56  2010/07/12 19:14:46  moeller
   * Bivio::Biz::Model::RealmUserAddForm
     changed "must have exactly one main role" to be a warn_deprecated
