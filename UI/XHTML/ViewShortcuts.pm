@@ -325,7 +325,11 @@ sub vs_list_form {
 		: !ref($d) && $d =~ /^\w+\.(.+)/ ? $1 : undef
 		if defined($d);
 	    my($t);
-	    if ($field) {
+	    if (ref($field)
+		|| $field
+	        && $f->has_fields($field)
+	        && $f->get_field_info($field, 'in_list')
+	    ) {
 		push(@$list, $field);
 		$d = undef;
 	    }
