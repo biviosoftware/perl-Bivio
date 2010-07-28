@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.58  2010/07/28 00:00:39  nagler
+  * Bivio::Biz::Model::ECCreditCardPaymentForm
+    fpc
+  * Bivio::UI::XHTML::ViewShortcuts
+    fpc: vs_list_form field validation incorrect
+  * Bivio::UI::XHTML::Widget::FeatureTaskMenu
+    sort_labels were wrong order
+
   Revision 9.57  2010/07/27 17:44:29  nagler
   * Bivio::PetShop::BConf
     added realm_user_util5
