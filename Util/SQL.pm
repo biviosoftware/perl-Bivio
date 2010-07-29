@@ -1576,6 +1576,15 @@ sub internal_upgrade_db_site_forum {
     my($self) = @_;
     $self->initialize_fully;
     my($req) = $self->req;
+    $self->run(<<'EOF')
+ALTER TABLE forum_t
+    ALTER COLUMN want_reply_to DROP NOT NULL
+/
+ALTER TABLE forum_t
+    ALTER COLUMN is_public_email DROP NOT NULL
+/
+EOF
+	if $self->column_exists(qw(forum_t want_reply_to));
     $req->with_realm(undef, sub {
 	$req->with_user($self->model('RealmUser')->get_any_online_admin, sub {
 	    $self->new_other('SiteForum')->init;
