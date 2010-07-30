@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::BConf;
 use strict;
@@ -346,6 +346,7 @@ sub merge_http_log {
 		    'Action::RealmFile:.*::MODEL_NOT_FOUND:.*model.*::RealmFile',
 		    'MODEL_NOT_FOUND: model.*::RealmOwner.*task=MAIL_RECEIVE_DISPATCH',
 		    'Directory index forbidden by rule:',
+		    '_update_status.*DECLINED:',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
