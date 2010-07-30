@@ -1,4 +1,4 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::ECCreditCardProcessor;
 use strict;
@@ -15,11 +15,8 @@ use HTTP::Request ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ECPS) = b_use('Type.ECPaymentStatus');
-my($_GW_LOGIN);
-my($_GW_PASSWORD);
-my($_GW_TEST_MODE);
 our($_TRACE);
-Bivio::IO::Config->register({
+Bivio::IO::Config->register(my $_CFG = {
     login => undef,
     password => undef,
     test_mode => 1,
@@ -36,9 +33,7 @@ sub execute_process {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_GW_LOGIN = $cfg->{login};
-    $_GW_PASSWORD = $cfg->{password};
-    $_GW_TEST_MODE = $cfg->{test_mode};
+    $_CFG = $cfg;
     return;
 }
 
@@ -60,7 +55,7 @@ sub _process_payment {
     return
 	unless $payment->get('method')->eq_credit_card;
 
-    unless ($_GW_LOGIN && $_GW_PASSWORD) {
+    unless ($_CFG->{login} && $_CFG->{password}) {
 	b_warn('Missing payment gateway login configuration');
 	return;
     }
@@ -95,7 +90,7 @@ sub _transact_form_data {
     my($card_number);
     my($amount);
 
-    if ($_GW_TEST_MODE) {
+    if ($_CFG->{test_mode}) {
         $card_number = '4222222222222';
         # Amount field used to trigger response:
         # 1=Approved, 2=Declined, 3=Error
@@ -111,8 +106,8 @@ sub _transact_form_data {
         [x_ADC_Delim_Data => 'TRUE'],
         [x_ADC_URL => 'FALSE'],
 	[x_Version => '3.0'],
-	[x_Login => $_GW_LOGIN],
-        [x_Password => $_GW_PASSWORD],
+	[x_Login => $_CFG->{login}],
+        [x_Password => $_CFG->{password}],
 	[x_Type => $payment->get('status')->get_authorize_net_type],
 	defined($cc_payment->get('processor_transaction_number'))
 	    ? [x_Trans_ID => $cc_payment->get('processor_transaction_number')]
@@ -127,7 +122,7 @@ sub _transact_form_data {
 	    ? [x_Zip => b_use('Bivio::HTML')
 	        ->escape_uri($cc_payment->get('card_zip'))]
 	    : (),
-        $_GW_TEST_MODE
+        $_CFG->{test_mode}
 	    ? [x_Test_Request => 'TRUE']
 	    : (),
 	@{$proto->internal_get_additional_form_data($payment)},
@@ -139,7 +134,7 @@ sub _update_status {
     # Update payment status given the gateway's result code.
     # Look at Authorize.Net developer's guide, app. C, for a list of error codes.
     my($proto, $payment, $result_code, $details) = @_;
-    my($error_code, $msg, $processor_transaction_number) =
+    my($error_code, $msg, $txn) =
 	$details ? (@$details)[1,2,5] : (undef, undef, undef);
     my($status);
     if ($result_code eq '1') {
@@ -147,13 +142,14 @@ sub _update_status {
     }
     elsif ($result_code eq '2') {
 	$status = $_ECPS->DECLINED;
+	b_warn($status, ': ', $details, ' ', $payment);
     }
     elsif ($result_code eq '3') {
         # Error. Keep existing status except for the following fatal cases
         $status = $error_code =~ /^([5-9]|1[079]|2[01235678]|3[5])$/
 	    ? $_ECPS->FAILED
 	    : $payment->get('status');
-	b_warn($details, ': failed request: ', $payment);
+	b_warn($status, ': ', $details, ' ', $payment);
     }
     else {
         b_die({
@@ -169,7 +165,7 @@ sub _update_status {
     $payment->get_model('ECCreditCardPayment')->update({
 	processed_date_time => b_use('Type.DateTime')->now,
 	processor_response => $msg,
-	processor_transaction_number => $processor_transaction_number,
+	processor_transaction_number => $txn,
     });
     b_warn($payment->get('status')->get_name,
 	' payment for ', $payment->req(qw(auth_realm owner_name)),
