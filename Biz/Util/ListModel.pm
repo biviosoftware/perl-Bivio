@@ -1,14 +1,15 @@
-# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Util::ListModel;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
+use Bivio::Base 'Bivio.ShellUtil';
 use Bivio::Biz::Action;
 use Bivio::IO::Trace;
 use Bivio::Util::CSV;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_Q) = b_use('AgentHTTP.Query');
 
 sub USAGE {
     return <<'EOF';
@@ -41,7 +42,7 @@ sub csv {
 		$method = 'iterate_next_and_load';
 		$m = 'iterate_start';
 	    }
-	    $model->$m(Bivio::Agent::HTTP::Query->parse($query || ''));
+	    $model->$m($_Q->parse($query || ''));
 	}
     }
     my($cols) = $columns ? [

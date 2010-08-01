@@ -276,8 +276,8 @@ sub task {
 	->get_instance;
     # Forces type check, and probably good thing anyway.
     $query = ref($query) ? {%$query}
-	: $query ? Bivio::IO::ClassLoader->simple_require(
-	    'Bivio::Agent::HTTP::Query')->parse($query)
+	: $query
+	? b_use('AgentHTTP.Query')->parse($query)
 	: undef;
     # Finishes realm, user, db init, and then executes task
     return $self->get_request->execute_task($task, {
