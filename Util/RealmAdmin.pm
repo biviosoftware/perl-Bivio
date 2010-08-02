@@ -8,7 +8,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 
 sub USAGE {
-    # Returns usage string.
     return <<'EOF';
 usage: b-realm-admin [options] command [args...]
 commands:
