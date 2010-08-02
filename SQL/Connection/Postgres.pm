@@ -233,9 +233,9 @@ sub _interpret_constraint_violation {
 	my($statement) = $self->internal_get_dbi_connection()->prepare(<<"EOF");
             SELECT class2.relname, attname
             FROM pg_class class1, pg_class class2, pg_index, pg_attribute
-            WHERE class1.relfilenode=pg_attribute.attrelid
-            AND class1.relfilenode=pg_index.indexrelid
-            AND pg_index.indrelid=class2.relfilenode
+            WHERE class1.oid=pg_attribute.attrelid
+            AND class1.oid=pg_index.indexrelid
+            AND pg_index.indrelid=class2.oid
             AND class1.relname=?
 EOF
 	$statement->execute($constraint);
