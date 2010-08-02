@@ -3,7 +3,6 @@
 package Bivio::Test::Type;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
-use Bivio::TypeError;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = b_use('Bivio.TypeError');
