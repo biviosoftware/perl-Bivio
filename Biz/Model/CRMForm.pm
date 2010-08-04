@@ -121,7 +121,7 @@ sub internal_get_reply_incoming {
     return shift->SUPER::internal_get_reply_incoming(@_)
 	if $trid eq $self->get('RealmMail.realm_file_id');
     return $_I->new(
-	$self->new_other('Model.RealmMail')->load({realm_file_id => $trid}),
+	$self->new_other('RealmMail')->load({realm_file_id => $trid}),
     );
 }
 
