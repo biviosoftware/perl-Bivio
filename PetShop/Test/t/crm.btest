@@ -6,12 +6,13 @@ my($forum) = generate_remote_email('crm');
 my($cust1) = generate_local_email('crm_cust1');
 my($tech1) = generate_local_email('crm_tech1');
 my($msg) = send_mail($cust1, $forum);
+my($bug_subject) = $msg->unsafe_get_header('Subject');
 my($ticket) = verify_local_mail($tech1, qr{.}, 1) =~ m{#(\d+)\]}i;
 die('no ticket')
     unless $ticket;
 login_as('crm_tech1');
 visit_uri('/crm_forum/tickets');
-follow_link_in_table('Ticket', 'Subject', $msg->unsafe_get_header('Subject'));
+follow_link_in_table('Ticket', 'Subject', $bug_subject);
 follow_link('answer');
 verify_text("Locked Ticket #$ticket");
 verify_text(qr{Cc:.*\Q$cust1}s);
@@ -49,9 +50,7 @@ submit_form({
 $msg = verify_local_mail($cust1);
 test_ok($msg !~ /(To|Cc):.* \Q$forum/im, "found $forum");
 verify_link($board_subject);
-# Audit log is the email stream, like tuple, but action
-# is simple notification
-# verify_text(qr{last update by.*tech1});
-# submit_form({
-#     assign => 'cust_tech2',
-# });
+
+visit_uri('/crm_forum/tickets');
+follow_link_in_table('Ticket', 'Subject', $bug_subject);
+follow_link('discuss_internally_2');
