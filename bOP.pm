@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.59  2010/07/28 17:23:20  nagler
+  * Bivio::UI::View::Tuple
+    Be compatible with vs_list_form change
+
   Revision 9.58  2010/07/28 00:00:39  nagler
   * Bivio::Biz::Model::ECCreditCardPaymentForm
     fpc
