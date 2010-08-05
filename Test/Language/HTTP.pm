@@ -209,10 +209,13 @@ sub do_test_backdoor {
     # Executes ShellUtil or FormModel based on $args.
     $self->visit_uri(
 	'/test-backdoor?'
-	. b_use('Bivio::Agent::HTTP::Query')->format(
-	    ref($args) eq 'HASH' ? {%$args, form_model => $op}
-	        : ref($args) eq '' ? {shell_util => $op, command => $args}
-		: Bivio::Die->die($args, ': unable to parse args'),
+	. b_use('AgentHTTP.Query')->format(
+	    ref($args) eq 'HASH'
+		? {%$args, form_model => $op}
+	        : ref($args) eq ''
+		? {shell_util => $op, command => $args}
+		: b_die($args, ': unable to parse args'),
+	    b_use('Agent.Request')->get_current,
 	)
     );
     return;
@@ -724,11 +727,7 @@ sub submit_from_table {
 
 sub text_exists {
     my($self, $pattern) = @_;
-    # Returns true if I<pattern> exists in response (must be text/html),
-    # else false.
-    $pattern = qr/\Q$pattern/
-	unless ref($pattern) && ref($pattern) eq 'Regexp';
-    return $self->get_content =~ $pattern ? 1 : 0;
+    return $self->get_content =~ _fixup_pattern_protected($self, $pattern) ? 1 : 0;
 }
 
 sub tmp_file {
