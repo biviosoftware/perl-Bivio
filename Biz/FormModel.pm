@@ -1037,8 +1037,10 @@ sub _apply_type_error {
 	foreach my $c (@$columns) {
 	    my($my_col) = "$n.$c";
 	    foreach my $d (values(%{$sql_support->get('columns')})) {
-		next unless defined($d->{constraining_field})
-		    && $d->{constraining_field} eq $my_col;
+		next unless
+		    $d->{name} eq $my_col
+		    || (defined($d->{constraining_field})
+			&& $d->{constraining_field} eq $my_col);
 		$got_one = 1;
 		$self->internal_put_error($d->{name}, $err);
 		$self->internal_field_constraint_error($d->{name}, $err);
