@@ -464,6 +464,7 @@ sub _init_column_from_hash {
     $col->{form_name} = $decl->{form_name} if $decl->{form_name};
     $col->{default_value} = exists($decl->{default_value})
         ? $decl->{default_value} : undef;
+    $col->{constraining_field} = $decl->{constraining_field} || $col->{name};
     _add_to_class($attrs, $class, $col);
     return $col;
 }
