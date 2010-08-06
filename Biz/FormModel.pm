@@ -1036,10 +1036,12 @@ sub _apply_type_error {
 	next unless $table eq $m->get_info('table_name');
 	foreach my $c (@$columns) {
 	    my($my_col) = "$n.$c";
-	    if ($sql_support->has_columns($my_col)) {
+	    foreach my $d (values(%{$sql_support->get('columns')})) {
+		next unless defined($d->{constraining_field})
+		    && $d->{constraining_field} eq $my_col;
 		$got_one = 1;
-		$self->internal_put_error($my_col, $err);
-		$self->internal_field_constraint_error($my_col, $err);
+		$self->internal_put_error($d->{name}, $err);
+		$self->internal_field_constraint_error($d->{name}, $err);
 	    }
 	}
     }
