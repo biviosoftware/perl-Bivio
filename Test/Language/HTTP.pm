@@ -727,7 +727,11 @@ sub submit_from_table {
 
 sub text_exists {
     my($self, $pattern) = @_;
-    return $self->get_content =~ _fixup_pattern_protected($self, $pattern) ? 1 : 0;
+    # Returns true if I<pattern> exists in response (must be text/html),
+    # else false.
+    $pattern = qr/\Q$pattern/
+	unless ref($pattern) && ref($pattern) eq 'Regexp';
+    return $self->get_content =~ $pattern ? 1 : 0;
 }
 
 sub tmp_file {
