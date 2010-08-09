@@ -415,6 +415,11 @@ sub get_delegate_info {
 	undef,
 	'Your lock on this file is no longer valid, please revisit the file from the file tree',
     ],
+    INVALID_SENDER => [
+	79,
+	undef,
+	'Your email address is invalid, please update and resend.',
+    ],
 ];
 }
 
