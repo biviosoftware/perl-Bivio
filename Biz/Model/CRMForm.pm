@@ -63,6 +63,7 @@ sub execute_ok {
     my($self) = @_;
     my($res) = $self->unsafe_get('update_only') ? $self->internal_return_value
 	: shift->SUPER::execute_ok(@_);
+    return if $self->in_error;
     my($ct) = $self->req('Model.CRMThread');
     my($cal, $cid) = $self->unsafe_get(
 	qw(crm_action_list CRMThread.customer_realm_id));
