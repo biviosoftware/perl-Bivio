@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.60  2010/08/05 15:20:33  moeller
+  * Bivio::BConf
+    ignore declined CC errors
+  * Bivio::Biz::Action::ECCreditCardProcessor
+    added more warning info
+  * Bivio::Biz::Model::CRMForm
+    fpc
+  * Bivio::Biz::Util::ListModel
+    use AgentHTTP.Query
+  * Bivio::SQL::Connection::Postgres
+    fixed constraint attrname lookup
+  * Bivio::Test::Util
+    use AgentHTTP.Query
+  * Bivio::Util::SQL
+    want_reply_to and is_public_email need to have DROP NOT NULL in
+    site_forum upgrade
+
   Revision 9.59  2010/07/28 17:23:20  nagler
   * Bivio::UI::View::Tuple
     Be compatible with vs_list_form change
