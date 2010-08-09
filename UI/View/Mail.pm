@@ -122,6 +122,7 @@ sub internal_send_form {
     $buttons ||= vs_simple_form_submit();
     return DIV_msg_compose(Join([
 	vs_simple_form(_name($self, 'XxForm') => [
+	    [vs_blank_cell(), FormFieldError('from_email')],
             $buttons,
 	    @{$extra_fields || []},
 	    $self->internal_send_form_email_field('to'),
