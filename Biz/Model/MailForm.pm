@@ -56,6 +56,11 @@ sub execute_ok {
     my($board_email) = $_BRM->format_email_for_realm($req);
     my($from) = $self->internal_format_from($realm_email);
     my($from_email) = $_MA->parse($from);
+
+    unless ($from_email) {
+	$self->internal_put_error(from_email => 'INVALID_SENDER');
+	return;
+    }
     my($sender) = $self->internal_format_sender($realm_email);
     my($reply_to) = $self->internal_format_reply_to($realm_email);
     my($other_recipients, $removed_sender)
@@ -170,6 +175,7 @@ sub internal_initialize {
 		[qw(realm_email Email)],
 		[qw(realm_emails EmailArray)],
 		[qw(board_always Boolean)],
+		[qw(from_email Email)],
 	    ],
         ),
     });
