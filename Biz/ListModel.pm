@@ -38,6 +38,7 @@ my($_LS) = b_use('SQL.ListSupport');
 my($_LQ) = b_use('SQL.ListQuery');
 my($_QT) = b_use('Biz.QueryType');
 my($_S) = b_use('SQL.Statement');
+my($_Q) = b_use('AgentHTTP.Query');
 
 sub EMPTY_KEY_VALUE {
     # The value used to populate keys for rows added by append_empty_rows().
@@ -367,7 +368,7 @@ sub get_query_as_hash {
     # this one case.  Typical case is that the string is empty.
     # If there is one element, it's easy, too.
     my($s) = $self->format_query(@_);
-    return length($s) ? Bivio::Agent::HTTP::Query->parse($s) : undef;
+    return length($s) ? $_Q->parse($s) : undef;
 }
 
 sub get_result_set_size {

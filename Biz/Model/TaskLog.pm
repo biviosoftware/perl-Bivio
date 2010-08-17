@@ -39,7 +39,7 @@ sub handle_pre_execute_task {
     my($proto, $task, $req) = @_;
     return
 	unless grep(defined($_), $req->unsafe_get(qw(uri auth_id))) == 2;
-    my($query) = $_Q->format($req->get('query'));
+    my($query) = $_Q->format($req->get('query'), $req);
     # save state before task items modify them
     $req->put($_REQ_KEY => {
 	realm_id => $req->req('auth_id'),
