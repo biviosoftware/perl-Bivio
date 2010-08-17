@@ -1,30 +1,41 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Query;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 use Bivio::HTML;
 
-# C<Bivio::Agent::HTTP::Query> formats a hash_ref into a query string
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTML) = b_use('Bivio.HTML');
+my($_LQ) = b_use('SQL.ListQuery');
+my($_A);
 
 sub format {
     # (proto, hash_ref) : string
     # Returns the string version of the query.  Returns C<undef> if I<query> is
     # C<undef>.  Attributes of the form C<ListQuery.>I<name> will be looked up
     # with L<Bivio::ListQuery::to_char|Bivio::ListQuery/"to_char">.
-    my(undef, $query) = @_;
-    return undef unless $query;
+    my(undef, $query, $req) = @_;
+    return undef
+	unless $query;
+    if (exists($query->{acknowledgement})) {
+	($_A ||= b_use('Action.Acknowledgement'))
+	    ->save_label(delete($query->{acknowledgement}), $req, $query);
+	return undef
+	    unless %$query;
+    }
     my($res) = '';
-    # Always format the keys the same way
+    # Always format the keys in the same order
     foreach my $k (sort(keys(%$query))) {
 	my($v) = $query->{$k};
-	$k = Bivio::SQL::ListQuery->to_char($k) if $k =~ s/^ListQuery\.//;
-	$res .= Bivio::HTML->escape_query($k).'='
-		# Sometimes the query value is not defined.  It may
-		# be a corrupt query, but shouldn't blow up.
-		.Bivio::HTML->escape_query(defined($v) ? $v : '').'&';
+	$k = $_LQ->to_char($k)
+	    if $k =~ s/^ListQuery\.//;
+	$res .= $_HTML->escape_query($k)
+	    . '='
+	    # Sometimes the query value is not defined.  It may
+	    # be a corrupt query, but shouldn't blow up.
+	    . $_HTML->escape_query(defined($v) ? $v : '')
+	    . '&';
     }
     chop($res);
     return $res;
@@ -61,8 +72,8 @@ sub parse {
 
 	# $v may not be defined.  This is a malformed query, but
 	# let's handle anyway.
-	push(@v, Bivio::HTML->unescape_query($k),
-		defined($v) ? Bivio::HTML->unescape_query($v) : undef);
+	push(@v, $_HTML->unescape_query($k),
+		defined($v) ? $_HTML->unescape_query($v) : undef);
     }
 
     # No valid elements?
@@ -88,7 +99,7 @@ sub _correct {
 	       );
     }
     Bivio::IO::Alert->warn(@msg);
-    return Bivio::HTML->$method($literal);
+    return $_HTML->$method($literal);
 }
 
 1;
