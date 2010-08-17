@@ -46,16 +46,18 @@ sub initialize {
     my($self) = @_;
     $self->put(
 	value => [sub {
-		my($source, $amount) = @_;
-	        return $_FA->get_widget_value(
-		    $amount,
-		    map($self->render_simple_attr($_, $source), qw(
-		        decimals
-			want_parens
-			zero_as_blank
-		    )),
-		);
-	    }, [$self->get('field')]],
+	    my($source, $amount) = @_;
+	    return $self->render_simple_attr('undef_value', $source)
+		unless defined($amount);
+	    return $_FA->get_widget_value(
+		$amount,
+		map($self->render_simple_attr($_, $source), qw(
+		    decimals
+		    want_parens
+		    zero_as_blank
+		)),
+	    );
+	}, [$self->get('field')]],
     );
     $self->map_invoke(initialize_attr => [
 	map([$_ => $_CFG->{$_}], @$_CFG_KEYS),
