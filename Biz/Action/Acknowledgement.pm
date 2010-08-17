@@ -13,6 +13,11 @@ b_use('Agent.Task')->register(__PACKAGE__);
 b_use('Agent.Request')->register_handler(__PACKAGE__);
 our($_TRACE);
 
+sub SAVE_LABEL_DEFAULT {
+    # IMPLICIT: save_label
+    return 0;
+}
+
 sub QUERY_KEY {
     return 'ack';
 }
