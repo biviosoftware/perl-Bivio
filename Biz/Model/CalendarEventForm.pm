@@ -192,15 +192,14 @@ sub validate {
 
 sub _ack_and_redirect {
     my($self, $redirect) = @_;
-    return {
-	%$redirect,
-	acknowledgement => $self->req('task_id')->get_name
+    (($redirect ||= {})->{query} ||= {})->{acknowledgement}
+	= $self->req('task_id')->get_name
 	    . '.'
 	    . (!$self->get('recurrence')->eq_unknown ? 'recurrence'
 	    : $self->is_copy ? 'copy'
 	    : $self->is_create ? 'create'
-	    : 'edit'),
-    };
+	    : 'edit');
+    return $redirect;
 }
 
 sub _create_date {
