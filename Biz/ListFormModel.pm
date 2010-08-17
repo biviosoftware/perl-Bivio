@@ -1,8 +1,8 @@
-# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListFormModel;
 use strict;
-use Bivio::Base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Biz.FormModel';
 use Bivio::IO::Trace;
 
 # C<Bivio::Biz::ListFormModel> is a form which can have repeated properties.
@@ -328,6 +328,18 @@ sub internal_put_field {
 sub is_empty_row {
     # Calls get_list_model.is_empty_row.
     return shift->get_list_model->is_empty_row;
+}
+
+sub iterate_end {
+    return;
+}
+
+sub iterate_next_and_load {
+    return shift->next_row;
+}
+
+sub iterate_start {
+    return shift;
 }
 
 sub load_from_list_model_properties {
