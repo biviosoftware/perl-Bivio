@@ -949,13 +949,9 @@ sub validate_and_execute_ok {
 		},
 	    };
 	}
-	my($query) = $_A->save_label(
-	    $res ? delete($res->{acknowledgement}) : undef,
-	    $req,
-	    $res ? $res->{query} ||= {} : {},
-	);
-	return $res
-	    || $self->internal_redirect_next($query);
+	return $res || $self->internal_redirect_next({
+	    acknowledgement => $_A->SAVE_LABEL_DEFAULT,
+	});
     }
     $self->die($res, ': non-zero result and stay_on_page or error')
 	if $_V1 && $res;
