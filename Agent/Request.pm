@@ -226,7 +226,7 @@ sub EXTRA_URI_PARAM_LIST {
         no_context anchor require_context
 	uri form_in_query require_absolute no_form
         carry_query carry_path_info _server_redirect
-        seo_uri_prefix facade_uri
+        seo_uri_prefix facade_uri acknowledgement
     );
 }
 
@@ -450,7 +450,7 @@ sub format_http_toggling_secure {
 #      really the form_model.
 #      RJN 12/13/00 For require_secure, shouldn't grab form context,
 #      because we don't even want to pretend to process it.
-    $query = $redirect_count ? $_Q->format($query)
+    $query = $redirect_count ? $_Q->format($query, $self)
 	    : $r->args;
     $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query)
 	if $query;
@@ -565,10 +565,10 @@ sub format_uri {
     if (defined($named->{query})) {
 	$named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1
 	    if $named->{form_in_query};
-        $named->{query} = $_Q->format($named->{query})
+        $named->{query} = $_Q->format($named->{query}, $self)
             if ref($named->{query});
         $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
-	    if length($named->{query});
+	    if defined($named->{query}) && length($named->{query});
     }
     $uri .= '#' . $_HTML->escape_query($named->{anchor})
         if defined($named->{anchor}) && length($named->{anchor});
@@ -722,7 +722,7 @@ sub internal_client_redirect_args {
 		unless exists($named->{$a}) || exists($named->{"carry_$a"});
 	}
 	$self->internal_copy_implicit($named);
-	$named->{query} = $_Q->format($named->{query})
+	$named->{query} = $_Q->format($named->{query}, $self)
 	    if ref($named->{query});
 	$named->{uri} =~ s/\?/\?$named->{query}&/
 	    || ($named->{uri} .= '?'.$named->{query})
@@ -734,8 +734,12 @@ sub internal_client_redirect_args {
 
 sub internal_copy_implicit {
     my($self, $named) = @_;
+#TODO: I think carry_query should override anything if it is set
     foreach my $a (qw(query path_info)) {
-	if ($a eq 'query' && $named->{task_id}
+	my($carry) = exists($named->{"carry_$a"}) && $named->{"carry_$a"};
+	if (!$carry
+	    && $a eq 'query'
+	    && $named->{task_id}
 	    && !$_T->get_by_id($named->{task_id})->get('want_query')
 	) {
 	    $named->{query} = undef;
@@ -743,7 +747,7 @@ sub internal_copy_implicit {
 	}
 	next
 	    if exists($named->{$a})
-	    || exists($named->{"carry_$a"}) && !$named->{"carry_$a"};
+ 	    || exists($named->{"carry_$a"}) && !$named->{"carry_$a"};
 	$named->{$a} = $self->get($a)
     }
     return;
@@ -888,7 +892,7 @@ sub internal_server_redirect {
     $named->{path_info} = undef
 	unless exists($named->{path_info}) || exists($named->{carry_path_info});
     $self->internal_copy_implicit($named);
-    $named->{query} = $_Q->format($named->{query})
+    $named->{query} = $_Q->format($named->{query}, $self)
 	if ref($named->{query});
     $named->{query} = defined($named->{query})
 	? $_Q->parse($named->{query}) : undef;
