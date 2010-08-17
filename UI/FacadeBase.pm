@@ -486,7 +486,7 @@ sub _cfg_base {
 		[qw(descend drop_down_arrow)] => ' &#9660;',
 		error_indicator => '&#9654;',
 		page_error => [
-		    [qw(not_found model_not_found)] => q{The page requested was not found or is not a functioning properly.},
+		    [qw(not_found model_not_found)] => q{The page requested was not found or is not functioning properly.},
 		    server_error => q{The server encountered an error.  The webmaster has been notified.},
 		    forbidden => q{You do not have permission to access this page.},
 		    update_collision => q{Your request cannot be fulfilled because the submitted data is no longer valid.},
