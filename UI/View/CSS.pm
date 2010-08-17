@@ -407,6 +407,7 @@ td.footer_left {
 .dock .want_sep,
 .header_right .want_sep,
 .tools span.want_sep,
+.tools div.want_sep,
 .tools div.sep {
   CSS('menu_want_sep');
 }
@@ -526,13 +527,16 @@ div.dd_menu {
   width: 15em;
   z-index: 1000;
 }
+.tools div.dd_menu a,
 div.dd_menu a,
+.tools div.dd_menu a.want_sep,
 div.dd_menu a.want_sep {
   background: none;
   margin-left: 0;
   padding: 0 .2em;
-  border-left: 0;
+  border-left: none;
 }
+.tools div.dd_menu a,
 div.dd_menu a {
   display: block;
   padding: 0 .2em;
@@ -548,6 +552,7 @@ div.dd_visible {
 div.dd_hidden {
   visibility: hidden;
 }
+.tools div.dd_menu a:hover,
 div.dd_menu a:hover {
   Color('dd_menu_selected-background');
   Color('dd_menu_selected');
