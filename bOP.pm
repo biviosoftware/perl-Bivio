@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.61  2010/08/09 20:54:53  moeller
+  * Bivio::Biz::FormModel
+    support for new concept of a 'constraining_field'
+  * Bivio::Biz::Model::CRMForm
+    stop processing if superclass is in_error()
+  * Bivio::Biz::Model::MailForm
+    put an error on from_email if from email is invalid
+  * Bivio::Delegate::SimpleTypeError
+    added INVALID_SENDER
+  * Bivio::SQL::Support
+    added 'constraining_field' concept whereby a field's validation is
+    defined as dependent on the constraints of another field
+  * Bivio::Test::Language::HTTP
+    text_exists uses _fixup_pattern_protected
+    use AgentHTTP.Query
+    undid change to text_exists()
+  * Bivio::UI::View::Mail
+    added from_email FormFieldError
+
   Revision 9.60  2010/08/05 15:20:33  moeller
   * Bivio::BConf
     ignore declined CC errors
