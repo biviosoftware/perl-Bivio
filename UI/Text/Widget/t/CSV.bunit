@@ -43,6 +43,8 @@ model('ProductList', {
     ]] => qr/Product ID\nK9-BD-01\n/s,
     ['ProductList', [
 	# Test invalid type
-	['Product.name', {type => Bivio::Type->get_instance('Date')}],
+	['Product.name', {type => Bivio::Type->get_instance('TimeZone')}],
     ]] =>  DIE(),
+    ['Product', ['name'], {want_iterate_start => 1}] =>
+	qr/Corgi\nDalmation\nPoodle/s,
 ];
