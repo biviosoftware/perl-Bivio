@@ -10,8 +10,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # Extracts the cells and summary cells and produces a table.
 #
-#
-#
 # column_control : value
 #
 # A widget value which, if set, must be a true value to render the column.
@@ -46,8 +44,9 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # used to look up the type from the list model.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_CSV) = __PACKAGE__->use('ShellUtil.CSV');
-my($_VS) = __PACKAGE__->use('UI.ViewShortcuts');
+my($_CSV) = b_use('ShellUtil.CSV');
+my($_M) = b_use('Biz.Model');
+my($_VS) = b_use('UI.ViewShortcuts');
 
 sub execute {
     my($self, $req) = @_;
@@ -56,7 +55,7 @@ sub execute {
 
 sub initialize {
     my($self) = @_;
-    my($list) = Bivio::Biz::Model->get_instance($self->get('list_class'));
+    my($list) = _list_class($self);
 
     foreach my $col (@{$self->get('columns')}) {
         $col = [$col, {}]
@@ -95,8 +94,15 @@ sub render {
         $self->unsafe_render_attr('header', $source, $buffer);
 	$$buffer .= "\n\n";
     }
-    my($list) = $source->get_widget_value(
-	ref(Bivio::Biz::Model->get_instance($self->get('list_class'))));
+    my($list);
+
+    if ($self->unsafe_get('want_iterate_start')) {
+	$list = _list_class($self)->new($self->req);
+	$list->iterate_start;
+    }
+    else {
+	$list = $source->get_widget_value(ref(_list_class($self)));
+    }
     my($cells) = [grep(_get_column_control($self,
 	$_->[1]->{column_control}, $list), @{$self->get('columns')})];
     _render_cells($self, 'column_heading', $cells, $source, $buffer);
@@ -112,6 +118,11 @@ sub render {
 sub _get_column_control {
     my($self, $control, $list) = @_;
     return $control ? $self->unsafe_resolve_widget_value($control, $list) : 1;
+}
+
+sub _list_class {
+    my($self) = @_;
+    return $_M->get_instance($self->get('list_class'));
 }
 
 sub _render_cells {
