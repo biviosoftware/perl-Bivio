@@ -423,7 +423,7 @@ sub _start_form {
 	hidden => {},
 	submit => {},
     };
-    $fields->{text} = undef;
+    $fields->{text} = $fields->{prev_cell_text} = undef;
     $fields->{radios} = {};
     return;
 }
