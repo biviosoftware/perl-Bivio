@@ -30,10 +30,10 @@ sub from_literal {
     my($res, $err) = shift->SUPER::from_literal(@_);
     if ($err) {
 	my($v) = @_;
-	if ($v =~ /^(?:y|yes|t|true|on)$/i) {
+	if ($v =~ /^\s*(?:y|yes|t|true|on)\s*$/i) {
 	    $res = 1;
 	}
-	elsif ($v =~ /^(?:n|no|f|false|off)$/i) {
+	elsif ($v =~ /^\s*(?:n|no|f|false|off)\s*$/i) {
 	    $res = 0;
 	}
     }
