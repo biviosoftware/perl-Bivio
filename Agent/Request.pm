@@ -887,15 +887,15 @@ sub internal_server_redirect {
 	\@_,
     );
     $_FCT->assert_defined_for_facade($named->{task_id}, $self);
-    my($fc) = $_FM->get_context_from_request($named, $self);
-    $self->internal_redirect_realm($named->{task_id}, $named->{realm});
-    $named->{path_info} = undef
-	unless exists($named->{path_info}) || exists($named->{carry_path_info});
     $self->internal_copy_implicit($named);
     $named->{query} = $_Q->format($named->{query}, $self)
 	if ref($named->{query});
     $named->{query} = defined($named->{query})
 	? $_Q->parse($named->{query}) : undef;
+    my($fc) = $_FM->get_context_from_request($named, $self);
+    $self->internal_redirect_realm($named->{task_id}, $named->{realm});
+    $named->{path_info} = undef
+	unless exists($named->{path_info}) || exists($named->{carry_path_info});
     $named->{uri} = $_FCT->has_uri($named->{task_id})
 	? $self->format_uri({
 	    map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
