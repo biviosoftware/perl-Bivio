@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,34 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.62  2010/08/23 23:27:43  moeller
+  * Bivio::Agent::HTTP::Query
+    added support for Action.Acknowledgement
+  * Bivio::Agent::Request
+    Use AgentHTTP.Query
+    Fixed carry_query logic
+  * Bivio::Biz::Action::Acknowledgement
+    added SAVE_LABEL_DEFAULT
+  * Bivio::Biz::FormModel
+    move Acknowledgement support to AgentHTTP.Query
+  * Bivio::Biz::ListFormModel
+    added iterate_*
+  * Bivio::Biz::ListModel
+    Use AgentHTTP.Query
+  * Bivio::Biz::Model::Address
+    remove comments
+  * Bivio::Biz::Model::CalendarEventForm
+    acknowledgement needs to be in the query
+  * Bivio::Biz::Model::TaskLog
+    Use AgentHTTP.Query
+  * Bivio::UI::HTML::Widget::AmountCell
+    deal with undef properly
+  * Bivio::UI::Text::Widget::CSV
+    added want_iterate_start attribute,
+    allows iterating unloaded PropertyModels or ListModels
+  * Bivio::UI::View::CSS
+    more menu in .tools was not aligning properly
+
   Revision 9.61  2010/08/09 20:54:53  moeller
   * Bivio::Biz::FormModel
     support for new concept of a 'constraining_field'
