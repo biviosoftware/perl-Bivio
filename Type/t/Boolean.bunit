@@ -19,5 +19,6 @@ Type();
 	on => 1,
 	off => 0,
 	x => INTEGER(),
+	' Yes ' => 1,
     ],
 ];
