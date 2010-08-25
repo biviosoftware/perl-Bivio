@@ -949,9 +949,11 @@ sub validate_and_execute_ok {
 		},
 	    };
 	}
-	return $res || $self->internal_redirect_next({
+	return $self->internal_redirect_next({
 	    acknowledgement => $_A->SAVE_LABEL_DEFAULT,
-	});
+	}) unless $res;
+	($res->{query} ||= {})->{acknowledgement} ||= $_A->SAVE_LABEL_DEFAULT;
+	return $res;
     }
     $self->die($res, ': non-zero result and stay_on_page or error')
 	if $_V1 && $res;
