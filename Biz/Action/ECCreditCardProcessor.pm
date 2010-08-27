@@ -56,7 +56,8 @@ sub _process_payment {
 	unless $payment->get('method')->eq_credit_card;
 
     unless ($_CFG->{login} && $_CFG->{password}) {
-	b_warn('Missing payment gateway login configuration');
+	b_warn('Missing payment gateway login configuration')
+	    if $payment->req->is_production;
 	return;
     }
     my($hreq) = HTTP::Request->new(
