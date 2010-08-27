@@ -174,7 +174,8 @@ sub parse_errors {
 		    if !$error_times{$date}++ && --$error_countdown == 0;
 	    }
 	    # Avoid duplicate error messages by checking $last_error
-	    if (Bivio::Type::DateTime->compare($last_error, $date) == 0) {
+	    if (Bivio::Type::DateTime->compare($last_error, $date) == 0
+		&& $record !~ /JOB_ERROR/) {
 		_trace('same time: ', $record) if $_TRACE;
 		next RECORD;
 	    }
