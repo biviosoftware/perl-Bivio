@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.63  2010/08/25 20:39:20  moeller
+  * Bivio::Agent::Request
+    format the query before redirecting the realm during server_redirect
+  * Bivio::Biz::FormModel
+    always set acknowledgement to SAVE_LABEL_DEFAULT unless present
+  * Bivio::Test::HTMLParser::Forms
+    clear prev_cell_text at start of a form
+  * Bivio::Type::Boolean
+    ignore space around literals
+
   Revision 9.62  2010/08/23 23:27:43  moeller
   * Bivio::Agent::HTTP::Query
     added support for Action.Acknowledgement
