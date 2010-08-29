@@ -34,6 +34,6 @@ verify_text(qr{>cool $code<.*>This is some really cool $code}s);
 verify_text("$f/bp");
 follow_link(qr{^$code});
 verify_link('new_topic');
-go_back(2);
+go_back();
 follow_link(qr{^cool $code});
 verify_text(qr{edit this page}i);
