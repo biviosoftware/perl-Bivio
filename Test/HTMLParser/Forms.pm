@@ -1,20 +1,21 @@
-# Copyright (c) 2002-2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::HTMLParser::Forms;
 use strict;
-use Bivio::Base 'Bivio::Test::HTMLParser';
-use Bivio::IO::Config;
-use Bivio::IO::Trace;
+use Bivio::Base 'Test.HTMLParser';
+b_use('IO.Trace');
 
 # C<Bivio::Test::HTMLParser::Forms> models the forms on a page.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
 Bivio::IO::Config->register(my $_CFG = {
     error_color => '#990000',
     # Set by XHTMLWidget.FormFieldError
     error_class => 'field_err',
+    error_title_class => 'err_title',
     label_class => 'label',
     disable_checkbox_heading => {},
 });
@@ -27,8 +28,7 @@ sub get_by_field_names {
     my($form) = shift->unsafe_get_by_field_names(@_);
     return $form
 	if $form;
-
-    Bivio::Die->die(\@name,
+    b_die(\@name,
 	': no form matches named fields; all visible form fields: ',
         map({[sort(keys(%{$_->{visible}}), keys(%{$_->{submit}}))]}
             values(%{$self->get_shallow_copy})));
@@ -234,6 +234,8 @@ sub _end_maybe_err {
     my($fields) = @_;
     # Ends the current tag which may contain err.
     my($f) = pop(@{$fields->{maybe_err}});
+    $fields->{current}->{error_title_seen}++
+	if $f->{class} && $f->{class} eq $_CFG->{error_title_class};
     return
 	unless (
 	    $f->{color} ? $f->{color} eq $_CFG->{error_color}
