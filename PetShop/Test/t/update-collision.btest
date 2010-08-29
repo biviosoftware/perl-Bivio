@@ -10,6 +10,7 @@ go_back(3);
 test_deviance('form error');
 submit_form('checkout');
 test_conformance();
+verify_text('page contents were modified by another request');
 follow_link('Cart');
 submit_form(update_cart => {
     quantity_0 => 0,
