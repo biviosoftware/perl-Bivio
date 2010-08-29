@@ -407,12 +407,12 @@ sub get_uri_for_link {
 }
 
 sub go_back {
-    my($self) = @_;
-    # Goes back one element in the history.  If there is no history, blows
-    # up.
+    my($self, $count) = @_;
     my($fields) = $self->[$_IDI];
-    my($x) = pop(@{$fields->{history}})
-	|| Bivio::Die->die('no page to go back to');
+    my($x) = reverse(map(
+	pop(@{$fields->{history}}) || b_die('no page to go back to'),
+	1 .. $count || 1,
+    ));
     while (my($k, $v) = each(%$x)) {
 	$fields->{$k} = $v;
     }
@@ -1031,8 +1031,12 @@ sub _assert_form_response {
     if ($expected_content_type eq 'text/html') {
 	my($forms) = _assert_html($self)->get('Forms')->get_shallow_copy;
 	while (my($k, $v) = each(%$forms)) {
-	    Bivio::Die->die('form submission errors: ', $v->{errors})
+	    b_die('form submission errors: ', $v->{errors})
 	        if $v->{errors};
+	    b_die(
+		'form error title without field errors. Visible fields: ',
+		[sort(map(keys(%{$v->{$_}}), qw(visible submit)))],
+	    ) if $v->{error_title_seen};
 	}
     }
     else {
