@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.64  2010/08/27 19:09:40  moeller
+  * Bivio::Biz::Action::ECCreditCardProcessor
+    don't warn about missing login unless on production
+  * Bivio::Util::HTTPLog
+    always log JOB_ERROR
+
   Revision 9.63  2010/08/25 20:39:20  moeller
   * Bivio::Agent::Request
     format the query before redirecting the realm during server_redirect
