@@ -1448,9 +1448,17 @@ sub _cfg_tuple {
 		'The type does not accept the existing record data.'],
 	    ['TupleUseForm.TupleUse.tuple_def_id.EXISTS' =>
 		'This Table is in use so you cannot change the Schema.'],
-	    [[qw(Tuple TupleSlotDef TupleSlotType)] => [
-		[qw(label moniker)] => [
+	    [[qw(TupleSlotDef TupleSlotType)] => [
+		'label' => [
+		    SYNTAX_ERROR => 'Labels must be at least two characters and begin with a uppercase letter, consist of letters, numbers, dashes<(>-), or underscores',
+		],
+	    ]],
+	    [[qw(TupleDef TupleUse)] => [
+		'label' => [
 		    SYNTAX_ERROR => 'Labels must be at least two characters and begin with a letter, consist of letters, numbers, dashes<(>-), or underscores',
+		],
+		'moniker' => [
+		    SYNTAX_ERROR => 'Mail prefixes must be at least two characters and begin with a lowercase letter, consist of letters, numbers, or underscores',
 		],
 	    ]],
 	],
