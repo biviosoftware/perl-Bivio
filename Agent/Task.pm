@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
@@ -471,21 +471,30 @@ sub unsafe_params_for_die_code {
 
 sub _call_txn_resources {
     my($req, $method) = @_;
-    return unless $req;
+    my($orig_die);
+    return
+	unless $req;
     foreach my $n (1..10) {
 	my($resources) = $req->unsafe_get('txn_resources');
 	$req->put(txn_resources => []);
-	return unless ref($resources) eq 'ARRAY' && @$resources;
+	unless (ref($resources) eq 'ARRAY' && @$resources) {
+	    $orig_die->throw
+		if $orig_die;
+	    return;
+	}
 	while (my $r = pop(@$resources)) {
 	    _trace($r, '->', $method) if $_TRACE;
-	    next unless my $die = Bivio::Die->catch(
-		sub {
-		    $r->$method($req);
-		    return;
-		},
-	    );
+	    next
+		unless my $die = Bivio::Die->catch(
+		    sub {
+			$r->$method($req);
+			return;
+		    },
+		);
 	    $_A->warn(
 		$r, '->', $method, ': ', $die, '; switching to rollback');
+	    $orig_die ||= $die
+		if $method eq 'handle_commit';
 	    $method = 'handle_rollback';
 	}
     }
