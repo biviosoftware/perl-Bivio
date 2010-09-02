@@ -104,7 +104,6 @@ eval(q{
 # or the file identified by C<$BCONF> (or its default) is not found.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
 #=VARIABLES
 my($_PKG) = __PACKAGE__;
 my($_BCONF) = undef;
@@ -118,6 +117,9 @@ my(%_SPEC) = ();
 # Has a package been configured?
 my(%_CONFIGURED) = ();
 _initialize(defined(@main::ARGV) ? \@main::ARGV : []);
+__PACKAGE__->register(my $_CFG = {
+    is_production => 0,
+});
 
 sub DEFAULT_NAME {
     return '';
@@ -178,6 +180,12 @@ sub get {
     return $res;
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub if_version {
     my($proto, @cond) = @_;
     push(@cond, 1)
@@ -214,6 +222,10 @@ sub introduce_values {
     $_ACTUAL = $proto->merge($new_values, $_ACTUAL);
     _actual_changed();
     return;
+}
+
+sub is_production {
+    return $_CFG->{is_production};
 }
 
 sub merge {
