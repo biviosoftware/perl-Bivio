@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::Pager;
 use strict;
@@ -7,6 +7,8 @@ use Bivio::Biz::QueryType;
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_I) = b_use('Type.Integer');
+my($_BLOCK_SIZE) = 15;
 
 # Table Pager Widget
 #   list_class : string (required)
@@ -79,24 +81,11 @@ sub _create_navigation_link {
 
 sub _get_page_numbers {
     my($self, $query) = @_;
-    my($pages) = [];
-    return $pages unless $query->unsafe_get('page_count');
-    my($page_count) = $self->get_or_default('pages', 15);
-    my($last) = $query->get('page_number') + int(($page_count - 1) / 2);
-
-    if ($last < $page_count) {
-        $last = $page_count;
-    }
-    elsif ($last > $query->get('page_count')) {
-        $last = $query->get('page_count');
-    }
-
-    foreach my $i (0 .. ($page_count - 1)) {
-        my($page) = $last - $i;
-        next if $page > $query->get('page_count') || $page <= 0;
-        unshift(@$pages, $page);
-    }
-    return $pages;
+    return []
+	unless my $pc = $query->unsafe_get('page_count');
+    my($mod) = $self->get_or_default('pages', $_BLOCK_SIZE);
+    my($block) = int($query->get('page_number') / $mod) * $_BLOCK_SIZE;
+    return [$block + 1 .. $_I->min($block + $mod, $pc)];
 }
 
 sub _nav {
