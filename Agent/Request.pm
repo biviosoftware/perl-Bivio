@@ -202,9 +202,10 @@ my($_USER) = b_use('Auth.RealmType')->USER;
 my($_T) = b_use('Agent.Task');
 my($_TI) = b_use('Agent.TaskId');
 my($_UA) = b_use('Type.UserAgent');
-my($_V1) = b_use('IO.Config')->if_version(1);
-my($_V7) = b_use('IO.Config')->if_version(7);
-b_use('IO.Config')->register(my $_CFG = {
+my($_IC) = b_use('IO.Config');
+my($_V1) = $_IC->if_version(1);
+my($_V7) = $_IC->if_version(7);
+$_IC->register(my $_CFG = {
     is_production => 0,
     can_secure => 1,
     apache_version => 1,
@@ -929,6 +930,7 @@ sub is_http_method {
 
 sub is_production {
     my($self) = @_;
+    $_CFG->{is_production} ||= $_IC->is_production;
     return ref($self)
 	? $self->get_if_exists_else_put(is_production => $_CFG->{is_production})
 	: $_CFG->{is_production};

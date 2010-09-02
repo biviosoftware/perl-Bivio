@@ -114,6 +114,9 @@ $root_prefix::BConf->merge_dir({
         is_production => $is_production,
         can_secure => $can_secure,
     },
+    'Bivio::IO::Config' => {
+        is_production => $is_production,
+    },
     'Bivio::Delegate::Cookie' => {
         tag => '$cookie_tag',
     },
