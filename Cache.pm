@@ -43,37 +43,43 @@ sub internal_realm_id {
 sub internal_retrieve {
     my($proto, $req, @extra) = @_;
     my($fp) = _file($proto, $req);
-    return $req->get_if_exists_else_put(
-	$fp,
-	sub {
-	    my($res);
-	    return $res
-		if $res = -r $fp && Storable::lock_retrieve($fp);
-	    my($lfp) = "$fp.flock";
-	    my($lock);
-	    my($die) = $_D->catch(sub {
-		$_IOF->mkdir_parent_only($fp, 0750);
-		$lock = IO::File->new($lfp, 'w')
-		    || b_die($lfp, ": open: $!");
-		return $res
-		    = $proto->internal_compute_no_cache($req, @extra)
-		    unless flock(
-			$lock, Fcntl::LOCK_EX() | Fcntl::LOCK_NB());
-		return $res = Storable::lock_retrieve($fp)
-		    if -r $fp;
-		$res = $proto->internal_compute($req, @extra);
-		Storable::lock_store($res, $fp);
+    return $req->has_keys($fp) ? $req->get($fp) : _compute($proto, $fp, $req, \@extra);
+}
+
+sub _compute {
+    my($proto, $fp, $req, $extra) = @_;
+    my($res);
+    my($hit) = 1;
+    unless ($res = -r $fp && Storable::lock_retrieve($fp)) {
+	$hit = 0;
+	my($lfp) = "$fp.flock";
+	my($lock);
+	my($die) = $_D->catch(sub {
+	    $_IOF->mkdir_parent_only($fp, 0750);
+	    $lock = IO::File->new($lfp, 'w') || b_die($lfp, ": open: $!");
+            return
+		unless flock($lock, Fcntl::LOCK_EX() | Fcntl::LOCK_NB());
+	    if (-r $fp) {
+		$res = Storable::lock_retrieve($fp);
+		$hit++;
 		return;
-	    });
-	    if ($lock) {
-		flock($lock, Fcntl::LOCK_UN());
-		$lock->close;
 	    }
-	    $die->throw
-		if $die;
-	    return $res;
-	},
-    );
+	    $res = $proto->internal_compute($req, @$extra);
+	    Storable::lock_store($res, $fp);
+	    $hit++;
+	    return;
+	});
+	if ($lock) {
+	    flock($lock, Fcntl::LOCK_UN());
+	    $lock->close;
+	}
+	$die->throw
+	    if $die;
+    }
+    return $proto->internal_compute_no_cache($req, @$extra)
+	unless $hit;
+    $req->put($fp => $res);
+    return $res;
 }
 
 sub _file {
