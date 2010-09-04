@@ -8,11 +8,12 @@ use IO::File ();
 use Fcntl ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IOF) = b_use('IO.File');
+my($_F) = b_use('IO.File');
 my($_FP) = b_use('Type.FilePath');
 my($_D) = b_use('Bivio.Die');
 my($_BF);
 my($_REALM_ID) = b_use('Auth.Realm')->get_general->get_default_id;
+my($_SU);
 
 sub init {
     b_use('IO.ClassLoader')->map_require_all('Cache');
@@ -43,41 +44,17 @@ sub internal_realm_id {
 sub internal_retrieve {
     my($proto, $req, @extra) = @_;
     my($fp) = _file($proto, $req);
-    return $req->has_keys($fp) ? $req->get($fp) : _compute($proto, $fp, $req, \@extra);
+    return $req->has_keys($fp) ? $req->get($fp)
+	: _read_and_thaw($fp, $req) || _try_compute($proto, $fp, $req, \@extra);
 }
 
 sub _compute {
     my($proto, $fp, $req, $extra) = @_;
-    my($res);
-    my($hit) = 1;
-    unless ($res = -r $fp && Storable::lock_retrieve($fp)) {
-	$hit = 0;
-	my($lfp) = "$fp.flock";
-	my($lock);
-	my($die) = $_D->catch(sub {
-	    $_IOF->mkdir_parent_only($fp, 0750);
-	    $lock = IO::File->new($lfp, 'w') || b_die($lfp, ": open: $!");
-            return
-		unless flock($lock, Fcntl::LOCK_EX() | Fcntl::LOCK_NB());
-	    if (-r $fp) {
-		$res = Storable::lock_retrieve($fp);
-		$hit++;
-		return;
-	    }
-	    $res = $proto->internal_compute($req, @$extra);
-	    Storable::lock_store($res, $fp);
-	    $hit++;
-	    return;
-	});
-	if ($lock) {
-	    flock($lock, Fcntl::LOCK_UN());
-	    $lock->close;
-	}
-	$die->throw
-	    if $die;
-    }
-    return $proto->internal_compute_no_cache($req, @$extra)
-	unless $hit;
+    $_F->mkdir_parent_only($fp, 0750);
+    my($res) = $proto->internal_compute($req, @$extra);
+    my($tmp) = '$fp.tmp';
+    $_F->write($tmp, Storable::freeze($res));
+    $_F->rename($tmp, $fp);
     $req->put($fp => $res);
     return $res;
 }
@@ -91,6 +68,30 @@ sub _file {
 	    $proto->internal_realm_id($req),
 	),
     );
+}
+
+sub _read_and_thaw {
+    my($fp, $req) = @_;
+    return
+	unless my $file = IO::File->new($fp, 'r');
+    my($res) = Storable::thaw(${$_F->read($file)});
+    $req->put($fp => $res);
+    return;
+
+}
+
+sub _try_compute {
+    my($proto, $fp, $req, $extra) = @_;
+    my($res);
+    ($_SU ||= b_use('Bivio.ShellUtil'))->lock_action(
+	sub {
+	    $res = _read_and_thaw($fp, $req) || _compute($proto, $fp, $req, $extra);
+	    return
+	},
+	$fp,
+	1,
+    );
+    return $res || $proto->internal_compute_no_cache($req, @$extra);
 }
 
 1;
