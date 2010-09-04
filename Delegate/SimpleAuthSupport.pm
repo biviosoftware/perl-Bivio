@@ -6,6 +6,7 @@ use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_RT) = b_use('Model.RowTag');
 my($_RO) = b_use('Model.RealmOwner');
 my($_RR) = b_use('Model.RealmRole');
@@ -13,7 +14,8 @@ my($_PS) = b_use('Auth.PermissionSet');
 my($_P) = b_use('Auth.Permission');
 my($_USER) = b_use('Auth.RealmType')->USER;
 my($_CRR) = b_use('Cache.RealmRole');
-our($_TRACE);
+my($_DEFAULT_PERMISSIONS) = {};
+my($_EMPTY_PERMISSION_MAP) = $_RR->EMPTY_PERMISSION_MAP;
 
 sub clear_model_cache {
     my($proto, $req) = @_;
@@ -50,8 +52,11 @@ sub load_permissions {
     if ($owner and my $res = _get($owner->get('realm_id'), $role, $req)) {
 	return $res;
     }
-    return _get($realm->get_default_id, $role, $req)
-	|| b_die($realm, ': unable to load default permissions for ', $role);
+    my($rid) = $realm->get_default_id;
+    return ($_DEFAULT_PERMISSIONS->{$rid} ||= {})->{$role}
+	||= _get($rid, $role, $req)
+	|| $_EMPTY_PERMISSION_MAP->{$role}
+	|| b_die($role, ': EMPTY_PERMISSION_MAP missing role');
 }
 
 sub task_permission_ok {
