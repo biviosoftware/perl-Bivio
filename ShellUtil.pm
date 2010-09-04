@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::ShellUtil;
 use strict;
@@ -442,7 +442,7 @@ sub is_loadavg_ok {
 }
 
 sub lock_action {
-    my(undef, $op, $name) = @_;
+    my(undef, $op, $name, $no_warn) = @_;
     # Creates a file lock for I<name> in /tmp/.  If I<name> is undef,
     # uses C<caller> subroutine name.  The usage is:
     #
@@ -484,19 +484,22 @@ sub lock_action {
     return _deprecated_lock_action($op || (caller(1))[3])
 	unless ref($op) eq 'CODE';
     my($lock_dir, $lock_pid) = _lock_files($name || (caller(1))[3]);
-    for my $retry (1, 0) {
-	last if mkdir($lock_dir, 0700);
+    foreach my $retry (1, 0) {
+	last
+	    if mkdir($lock_dir, 0700);
 	unless ($retry) {
-	    $_A->warn(
-		$lock_dir, ': unable to delete lock for dead process');
-	    return _lock_warning($lock_dir);
+	    b_warn($lock_dir, ': unable to delete lock for dead process');
+	    _lock_warning($lock_dir)
+		unless $no_warn;
+	    return;
 	}
 	my($pid, $host) = split(/\s+/, ${$_F->read($lock_pid)});
-	return _lock_warning($lock_dir)
-	    if ($host && $host ne Sys::Hostname::hostname())
-		|| _process_exists($pid);
-	$_A->warn(
-	    $pid, ": process doesn't exist, removing ", $lock_dir);
+	if (($host && $host ne Sys::Hostname::hostname()) || _process_exists($pid)) {
+	    _lock_warning($lock_dir)
+		unless $no_warn;
+	    return;
+	}
+	b_warn($pid, ": process doesn't exist, removing ", $lock_dir);
 	# Don't test results, because there may be contention
 	unlink($lock_pid);
 	rmdir($lock_dir);
@@ -1164,8 +1167,9 @@ sub _lock_files {
 
 sub _lock_warning {
     my($lock_dir) = @_;
-    # Prints warning with lock_dir's age.  Returns 0
-    $_A->warn($lock_dir, ': not acquired; lock age=',
+    b_warn(
+	$lock_dir,
+	': not acquired; lock age=',
 	time - (stat($lock_dir))[9],
 	's',
     );
@@ -1400,7 +1404,7 @@ sub _start_daemon_child {
  RETRY: {
 	my($child) = fork;
 	unless (defined($child)) {
-	    $_A->warn($args,
+	    b_warn($args,
 		" fork: $!; sleeping before retry");
 	    sleep($cfg->{daemon_sleep_after_start});
 	    redo RETRY;
