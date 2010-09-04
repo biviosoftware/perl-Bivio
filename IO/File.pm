@@ -160,8 +160,7 @@ sub mkdir_parent_only {
     # Returns parent directory.
     b_die('no path supplied')
 	unless defined($child) && length($child);
-    return Bivio::IO::File->mkdir_p(
-	File::Basename::dirname($child), $permissions);
+    return $proto->mkdir_p(File::Basename::dirname($child), $permissions);
 }
 
 sub get_modified_date_time {
