@@ -37,7 +37,7 @@ sub initialize {
 	    return [sub {
 		my($source) = @_;
 		my($body_attr) = "$self.body";
-		return
+		return ''
 		    unless _iframe_body($source, $body_attr);
 		return DIV_help_wiki(Join([
 		    DIV_tools(Join([
