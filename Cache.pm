@@ -76,7 +76,7 @@ sub _read_and_thaw {
 	unless my $file = IO::File->new($fp, 'r');
     my($res) = Storable::thaw(${$_F->read($file)});
     $req->put($fp => $res);
-    return;
+    return $res;
 
 }
 
