@@ -83,6 +83,15 @@ sub get_width {
     return 18;
 }
 
+sub is_equal {
+    my(undef, $left, $right) = @_;
+    return 0
+	if defined($left) xor defined($right);
+    return 1
+	unless defined($left);
+    return $left eq $right ? 1 : 0;
+}
+
 sub is_specified {
     my($proto, $value) = @_;
     return defined($value) && $value =~ /\d/
