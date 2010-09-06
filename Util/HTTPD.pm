@@ -10,6 +10,7 @@ my($_V2) = b_use('Agent.Request')->if_apache_version(2 => sub {1});
 my($_HTTPD) = _find_file($_V2 ? qw(
     /usr/local/apache/bin/httpd2
     /usr/sbin/httpd2
+    /usr/sbin/apache2
 ) : qw(
     /usr/local/apache/bin/httpd
     /usr/sbin/httpd
@@ -66,6 +67,8 @@ sub run {
 	Bivio::IO::File->mkdir_p("$pwd/files");
 	_symlink($pwd, "$pwd/logs");
 	_symlink(_find_file($_V2 ? qw(
+            /usr/lib/apache2/modules
+            /usr/lib64/apache2/modules
             /usr/local/apache2/libexec
             /usr/lib/apache2
             /usr/lib64/apache2
@@ -100,7 +103,12 @@ sub run {
     my($bconf) = "PerlSetEnv BCONF $pwd/httpd$$.bconf";
     my($reload) = 'PerlInitHandler Bivio::Test::Reload';
     my($modules) = _dynamic_modules($_HTTPD);
-
+    my($pass_env) = join(
+	"\n",
+	map(("PassEnv $_", "PerlPassEnv $_"),
+	    grep(exists($ENV{$_}), qw(ORACLE_HOME DBI_USER DBI_PASS HOME)),
+	),
+    );
     my($conf) = $self->is_execute ? "httpd$$.conf" : "&STDOUT";
     open(OUT, ">$pwd/$conf") || die("open $conf: $!");
     my($apache_status) = $_V2 ? 'PerlResponseHandler Apache2::Status'
@@ -192,7 +200,7 @@ sub _find_file {
 	return $f
 	    if -e $f;
     }
-    die('Could not find any of: ', @path);
+    b_die('could not find any of: ', \@path);
     # DOES NOT RETURN
 }
 
@@ -221,17 +229,7 @@ PerlWarn on
 $bconf
 $reload
 $perl_module
-#RJN: This doesn't work for some reason
-PassEnv HOME
-PassEnv ORACLE_HOME
-PassEnv DBI_USER
-PassEnv DBI_PASS
-PassEnv ORACLE_SID
-PerlPassEnv HOME
-PerlPassEnv ORACLE_HOME
-PerlPassEnv DBI_USER
-PerlPassEnv DBI_PASS
-PerlPassEnv ORACLE_SID
+$pass_env
 $version_config
 
 Timeout 60
