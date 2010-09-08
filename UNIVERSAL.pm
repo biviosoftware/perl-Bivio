@@ -415,6 +415,10 @@ sub put_on_req {
     return $self;
 }
 
+sub put_on_request {
+    return shift->put_on_req(@_);
+}
+
 sub replace_subroutine {
     my($proto, $method, $code_ref) = @_;
     no strict 'refs';
