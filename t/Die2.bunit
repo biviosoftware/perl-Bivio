@@ -1,12 +1,21 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 my($sub) = sub {(caller)[0]};
+my($var) = 0;
 [
     class() => [
 	eval => [
 	    [sub {(caller)[0]}] => 'Bivio::Test',
 	    ['(caller)[0]'] => 'Bivio::Test',
 	    [sub {$sub->()}] => 'Bivio::Test::Unit',
+	],
+	catch_and_rethrow => [
+	    [sub {'a'}, sub {$var = 1}] => sub {
+		assert_equals($var, 1);
+		return ['a'];
+	    },
+	    [sub {b_die('bad')}, sub {$var = 2}] => DIE(),
+	    inline_case(sub {assert_equals($var, 2)}),
 	],
     ],
 ];
