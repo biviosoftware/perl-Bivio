@@ -72,13 +72,11 @@ sub do_in_dir {
     # and then returns result (always array context) or throws exception
     # if that's what happened.
     my($pwd) = $proto->pwd;
-    my($die);
     $proto->chdir($dir);
-    my(@res) = Bivio::Die->catch($op, \$die);
-    $proto->chdir($pwd);
-    $die->throw
-	if $die;
-    return @res;
+    return Bivio::Die->catch_and_rethrow(
+	$op,
+	sub {$proto->chdir($pwd)},
+    );
 }
 
 sub do_lines {
