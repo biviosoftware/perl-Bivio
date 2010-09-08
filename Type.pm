@@ -15,6 +15,10 @@ my($_HTML) = 'Bivio::HTML';
 my($_A) = 'Bivio::IO::Alert';
 my($_RT);
 
+sub CLASSLOADER_MAP_NAME {
+    return 'Type';
+}
+
 sub can_be_negative {
     # : boolean
     # Can the number be negative?
@@ -271,21 +275,6 @@ sub min {
         my($v1, $v2) = @_;
 	return $proto->compare($v1, $v2) < 0 ? $v1 : $v2;
     }, \@values);
-}
-
-sub put_on_request {
-    # (self, Agent.Request, boolean) : self
-    # Puts an instance of I<self> on request.  Only works with types which are
-    # instantiated.
-    my($self, $req, $put_durable) = @_;
-    $_A->bootstrap_die($self, ': must be instance')
-	unless ref($self);
-    my($method) = $put_durable ? 'put_durable' : 'put';
-    $req->$method(
-	ref($self) => $self,
-	'Type.' . $self->simple_package_name => $self,
-    );
-    return $self;
 }
 
 sub row_tag_get {
