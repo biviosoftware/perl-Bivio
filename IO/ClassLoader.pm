@@ -256,6 +256,10 @@ sub unsafe_map_require {
     # If I<class_name> is passed without a I<map_name> or if I<class_name>
     # is a qualified class name (contains ::), the class will be loaded
     # with L<unsafe_simple_require|"unsafe_simple_require">.
+    #
+    # COUPLING: Bivio::Base::b_use assumes it can cache responses.
+    #           This means _post_require is only called once per
+    #		(importer, map_class) name.
     return $proto->unsafe_simple_require($class_name)
 	unless defined($map_name);
     return _post_require($_MAP_CLASS->{$map_class})
