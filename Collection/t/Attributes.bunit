@@ -120,5 +120,30 @@ my($copy) = {
 	unsafe_get_and_delete => [
 	    [qw(d1 d2)] => [1, 1],
 	],
+	put => [
+	    [qw(d1 2)] => not_die(),
+	],
+	with_attributes => [
+	    sub {
+		my($self) = shift->get('object');
+		my($attrs) = {u1 => 33, d1 => 44, just_here => 5};
+		return [
+		    $attrs,
+		    sub {
+			foreach my $k (sort(keys(%$attrs))) {
+			    assert_equals($attrs->{$k}, $self->get($k), $k);
+			}
+			return (res => 3);
+		    },
+		];
+	    } => sub {
+		my($case, $actual) = @_;
+		my($self) = $case->get('object');
+		assert_equals(undef, $self->get('u1'), 'u1');
+		assert_equals(2, $self->get('d1'), 'd1');
+		assert_equals(0, $self->has_keys('just_here'));
+		return [res => 3];
+	    },
+	],
     ],
 ];
