@@ -6,8 +6,8 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_N) = b_use('Type.TreeListNode');
-my($_P) = b_use('Type.PrimaryId');
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_PI) = b_use('Type.PrimaryId');
 
 sub internal_initialize {
     my($self) = @_;
@@ -118,7 +118,7 @@ sub _parents {
     my($pid) = $self->internal_parent_id($id);
     return [
 	$id,
-	$_P->compare($pid, $self->internal_root_parent_node_id) == 0 ? ()
+	$_PI->is_equal($pid, $self->internal_root_parent_node_id) ? ()
 	    : @{_parents($self, $pid)},
     ];
 }
@@ -127,8 +127,7 @@ sub _sort {
     my($pid, $level, $rows, $pkf, $pf) = @_;
     my($parents) = [];
     my($children) = [grep(
-	!($_P->compare($_->{$pf}, $pid) == 0
-	    && push(@$parents, {%$_, node_level => $level})),
+	!($_PI->is_equal($_->{$pf}, $pid) && push(@$parents, {%$_, node_level => $level})),
 	@$rows,
     )];
     return [
