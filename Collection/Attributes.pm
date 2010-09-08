@@ -121,10 +121,14 @@ sub get {
     # Returns the named value(s).  If I<key> doesn't exist, C<die> is called.  Use
     # L<has_keys|"has_keys"> to test for existence.
     my($fields) = $self->[$_IDI];
-    return $self->return_scalar_or_array(map(
-	exists($fields->{$_}) ? $fields->{$_}
-	    : _die($self, $_, ": attribute doesn't exist"),
-	@_));
+    return @_ == 1 && exists($fields->{$_[0]}) ? $fields->{$_[0]}
+	: $self->return_scalar_or_array(
+	    map(
+		exists($fields->{$_}) ? $fields->{$_}
+		    : _die($self, $_, ": attribute doesn't exist"),
+		@_,
+	    ),
+	);
 }
 
 sub get_and_delete {
@@ -312,7 +316,8 @@ sub unsafe_get {
     # Returns the named value(s).  If I<key> doesn't exist, C<undef> is returned
     # in its place.
     my($fields) = $self->[$_IDI];
-    return $self->return_scalar_or_array(map($fields->{$_}, @_))
+    return @_ == 1 ? $fields->{$_[0]}
+	: $self->return_scalar_or_array(map($fields->{$_}, @_))
 }
 
 sub unsafe_get_and_delete {
@@ -341,6 +346,25 @@ sub unsafe_get_widget_value_by_name {
     #
     #     ($self->unsafe_get($name), $self->exists($name))
     return ($self->unsafe_get($name), $self->has_keys($name));
+}
+
+sub with_attributes {
+    my($self, $attrs, $op) = @_;
+    my($prev) = {
+	map(
+	    $self->has_keys($_) ? ($_ => $self->get($_)) : (),
+	    keys(%$attrs),
+	),
+    };
+    $self->put(%$attrs);
+    return Bivio::Die->catch_and_rethrow(
+	$op,
+	sub {
+	    $self->delete(grep(!exists($prev->{$_}), keys(%$attrs)));
+	    $self->put(%$prev);
+	    return;
+	},
+    );
 }
 
 sub _die {
