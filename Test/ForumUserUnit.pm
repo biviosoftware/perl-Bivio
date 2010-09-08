@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Test::ForumUserUnit;
 use strict;
-use base 'Bivio::Test::Request';
+use Bivio::Base 'Test.Request';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -28,8 +28,7 @@ sub run_unit {
 	    ]],
 	],
     );
-    return Bivio::IO::ClassLoader->simple_require('Bivio::Test')
-	->new({
+    return b_use('Bivio.Test')->new({
 	    class_name => shift->get('class_name'),
 	    compute_params => sub {
 		my(undef, $params) = @_;

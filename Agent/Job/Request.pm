@@ -53,12 +53,12 @@ sub new {
 	form => $self->get('form'),
 	query => $self->get('query'),
 	reply => $self->get('reply'),
-	'Bivio::Type::UserAgent' => $self->get('Bivio::Type::UserAgent'),
     );
+    $self->get('Bivio::Type::UserAgent')->put_on_request($self, 1);
     my($realm) = $params->{auth_id}
-	&& $params->{auth_id} != Bivio::Auth::RealmType->GENERAL()->as_int
-	? Bivio::Auth::Realm->new($params->{auth_id}, $self)
-	: Bivio::Auth::Realm->get_general();
+	&& $params->{auth_id} != b_use('Auth.RealmType')->GENERAL->as_default_owner_id
+	? b_use('Auth.Realm')->new($params->{auth_id}, $self)
+	: b_use('Auth.Realm')->get_general;
     $self->internal_set_current();
     my($auth_user);
     if ($params->{auth_user_id}) {

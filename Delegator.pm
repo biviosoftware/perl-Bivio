@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Delegator;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 
 # C<Bivio::Delegator> delegates implementation to another class. Subclasses
 # must have an entry in ClassLoader.delegates.

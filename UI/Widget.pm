@@ -1,11 +1,8 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::Die;
-use Bivio::IO::Alert;
-use Bivio::IO::ClassLoader;
 
 # C<Bivio::UI::Widget> is the superclass of all UI widgets.  Widgets are
 # a way of rendering arbitrary strings.  There are few constraints
@@ -140,6 +137,7 @@ use Bivio::IO::ClassLoader;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 my($_V1) = b_use('IO.Config')->if_version(1);
+my($_CL) = b_use('IO.ClassLoader');
 
 sub accepts_attribute {
     # Does the widget accept this attribute?
@@ -158,8 +156,8 @@ sub die {
 	message => $x,
 	entity => $entity,
 	widget => $proto,
-	view => Bivio::IO::ClassLoader->was_required('Bivio::View')
-	    && Bivio::View->unsafe_get_current,
+	view => $_CL->was_required('Bivio::View')
+	    && b_use('Bivio.View')->unsafe_get_current,
 	source => $source,
 	program_error => 1,
     });

@@ -17,7 +17,7 @@ our($_TRACE);
 b_use('IO.Config')->register(my $_CFG = {
     register_with_cookie => 1,
 });
-b_use('AgentHTTP.Cookie')->register(__PACKAGE__)
+(my $_C = b_use('AgentHTTP.Cookie'))->register(__PACKAGE__)
     if $_CFG->{register_with_cookie};
 
 sub PASSWORD_FIELD {
@@ -329,7 +329,7 @@ sub _set_cookie_user {
     return unless $cookie;
 
     # If logging in, need to have a cookie.
-    Bivio::Agent::HTTP::Cookie->assert_is_ok($req)
+    $_C->assert_is_ok($req)
 	if $realm && !_disable_assert_cookie($self);
     if ($realm) {
 	$cookie->put(

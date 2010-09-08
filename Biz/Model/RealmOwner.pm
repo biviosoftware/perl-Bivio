@@ -2,8 +2,6 @@
 # $Id$
 package Bivio::Biz::Model::RealmOwner;
 use strict;
-use Bivio::Agent::TaskId;
-use Bivio::Auth::RealmType;
 use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -11,13 +9,13 @@ my($_DT) = b_use('Type.DateTime');
 my($_RN) = b_use('Type.RealmName');
 my($_PI) = b_use('Type.PrimaryId');
 my($_P) = b_use('Type.Password');
+my($_RT) = b_use('Auth.RealmType');
 my($_HOME_TASK_MAP) = {
     map({
-        $_ => Bivio::Agent::TaskId->from_name($_->get_name . '_HOME'),
+        $_ => b_use('Agent.TaskId')->from_name($_->get_name . '_HOME'),
     } (grep($_->equals_by_name(qw(GENERAL)) ? 0 : 1,
-        Bivio::Auth::RealmType->get_non_zero_list))),
+        $_RT->get_non_zero_list))),
 };
-my($_RT) = b_use('Auth.RealmType');
 
 sub create {
     my($self, $values) = @_;
@@ -87,10 +85,10 @@ sub format_uri {
     #
     # See L<format_name|"format_name"> for params.
     my($name) = $proto->format_name($model, $model_prefix);
-    Bivio::Die->die($model->get($model_prefix . 'name'),
+    b_die($model->get($model_prefix . 'name'),
         ': must not be offline user') unless $name;
     my($task) = $_HOME_TASK_MAP->{$model->get($model_prefix . 'realm_type')};
-    Bivio::Die->die($model->get($model_prefix . 'name'), ', ',
+    b_die($model->get($model_prefix . 'name'), ', ',
         $model->get($model_prefix . 'realm_type'),
         ': invalid realm type') unless $task;
     return $model->get_request->format_uri($task, undef, $name, undef);
@@ -132,7 +130,7 @@ sub internal_initialize {
             realm_id => ['PrimaryId', 'PRIMARY_KEY'],
             name => ['RealmName', 'NOT_NULL_UNIQUE'],
             password => ['Password', 'NOT_NULL'],
-            realm_type => ['Bivio::Auth::RealmType', 'NOT_NULL'],
+            realm_type => [b_use('Auth.RealmType'), 'NOT_NULL'],
 	    display_name => ['DisplayName', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
         },
@@ -182,7 +180,7 @@ sub is_name_eq_email {
     # put error C<EMAIL_LOOP> on the email.  If I<name> or I<email>
     # C<undef>, returns false.
     return 0 unless defined($name) && defined($email);
-    my($mail_host) = Bivio::UI::Facade->get_value('mail_host', $req);
+    my($mail_host) = b_use('UI.Facade')->get_value('mail_host', $req);
 #TODO: ANY OTHER mail_host aliases?
     return $email eq $name . '@' . $mail_host
         || $email eq $name . '@www.' . $mail_host;
@@ -237,7 +235,7 @@ sub unauth_load_by_email {
     my($query) = @query == 1
 	? ref($query[0]) eq 'HASH'
 	? $query[0]
-	: Bivio::Die->die(@query, ': query not a hash')
+	: b_die(@query, ': query not a hash')
 	: {@query};
     # Emails are always lower case
     $email = lc($email);
@@ -245,12 +243,12 @@ sub unauth_load_by_email {
     my($em) = $self->new_other('Email');
     return $self->unauth_load({%$query, realm_id => $em->get('realm_id')})
         if $em->unauth_load({email => $email});
-    return unless Bivio::IO::ClassLoader->simple_require(
-        'Bivio::UI::Facade')->is_fully_initialized;
+    return
+	unless b_use('UI.Facade')->is_fully_initialized;
     # Strip off @mail_host and validate resulting name
-    my($mail_host) = '@' . Bivio::UI::Facade->get_value('mail_host',
-        $self->get_request);
-    return 0 unless $email =~ s/\Q$mail_host\E$//i;
+    my($mail_host) = '@' . b_use('UI.Facade')->get_value('mail_host', $self->req);
+    return 0
+	unless $email =~ s/\Q$mail_host\E$//i;
     # Is it a valid user/club?
     return $self->unauth_load({
         %$query,
@@ -271,7 +269,7 @@ sub unauth_load_by_id_or_name_or_die {
     my($self, $id_or_name, $realm_type) = @_;
     # Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, further qualifies the query.
     _unauth_load($self, $id_or_name, $realm_type
-        ? {realm_type => Bivio::Auth::RealmType->from_any($realm_type)}
+        ? {realm_type => $_RT->from_any($realm_type)}
 	: {},
 	1,
     );
@@ -341,7 +339,7 @@ sub _unauth_load {
 	delete($query->{name});
 	$query->{realm_id} = $id_or_name;
 	if ($self->unauth_load($query)) {
-	    Bivio::IO::Alert->warn_deprecated(
+	    b_use('IO.Alert')->warn_deprecated(
 		'use the RealmType name to load default Realms');
 	    return 1;
 	}

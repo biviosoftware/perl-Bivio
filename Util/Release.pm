@@ -1,13 +1,8 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::Release;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::Ext::LWPUserAgent;
-use Bivio::IO::File;
-use Bivio::IO::Trace;
-use Bivio::Type::FileName;
-use Bivio::Type::FileName;
+use Bivio::Base 'Bivio.ShellUtil';
 use Config ();
 use File::Find ();
 use Sys::Hostname ();
@@ -207,7 +202,7 @@ sub build_tar {
 	    my($cvs) = "$_CFG->{cvs_perl_dir}/$project->[0]";
 	    my($b) = "$project->[0]-$cvs_version";
 	    my($bv) = "$b-$file_version";
-	    my($tgt) = File::Spec->rel2abs(Bivio::IO::File->mkdir_p($bv));
+	    my($tgt) = File::Spec->rel2abs(b_use('IO.File')->mkdir_p($bv));
 	    _system(join(' ', $_CVS_CHECKOUT, $cvs_version, $cvs), $output);
 	    _build_tar_copy($_CFG->{cvs_perl_dir}, $project, $tgt);
 	    _build_tar_makefile($self, $project, $file_version, $tgt);
@@ -367,7 +362,7 @@ sub install {
 	foreach my $arg (@$command) {
 	    next unless $arg =~ /^http/;
 	    my($file) = $arg =~ m{([^/]+)$};
-	    Bivio::IO::File->write($file, _http_get($arg, $output));
+	    b_use('IO.File')->write($file, _http_get($arg, $output));
 	    substr($arg, 0) = $file;
 	}
 	_output($output, "@$command\n");
@@ -397,8 +392,7 @@ sub install_facades {
     # I<facades_user>, I<facades_group>, and I<facades_umask>.
     _do_output(sub {
 	my($output) = @_;
-	my($r) = Bivio::IO::ClassLoader->simple_require('Bivio::UI::Facade')
-	    ->get_local_file_root;
+	my($r) = b_use('UI.Facade')->get_local_file_root;
 	_umask('facades_umask');
 	_chdir($facades_dir, $output);
 	_system("chown -h -R '$_CFG->{facades_user}' .", $output);
@@ -432,7 +426,7 @@ sub install_tar {
 	for my $project (map(ref($_) ? $_->[0] : $_, @projects)) {
 	    my($tgz) = $project =~ /(?:\.tar\.gz|\.tgz)$/ ? $project
 		: "$project-$cvs_version.tar.gz";
-	    Bivio::IO::File->write($tgz, _http_get($tgz, $output));
+	    b_use('IO.File')->write($tgz, _http_get($tgz, $output));
 	    _system("tar xpzf '$tgz'", $output);
 	    chomp(my $dir = `ls -t | grep -v '$tgz' | head -1`);
 	    Bivio::Die->die($dir, ': not a directory, expecting it to be one')
@@ -576,13 +570,13 @@ sub _b_release_include {
     _system("cd $_CFG->{tmp_dir} && cvs checkout -f -r $version"
 	. " $_CFG->{cvs_rpm_spec_dir}/$to_include", $output)
 	if $version;
-    return ${Bivio::IO::File->read("$spec_dir$to_include")};
+    return ${b_use('IO.File')->read("$spec_dir$to_include")};
 }
 
 sub _build_root {
     my($build_root) = @_;
     $build_root ||= 'install';
-    $build_root = Bivio::IO::File->pwd.'/'.$build_root
+    $build_root = b_use('IO.File')->pwd.'/'.$build_root
 	unless $build_root =~ m,^/,;
     return <<"EOF"
 BuildRoot: $build_root
@@ -599,7 +593,7 @@ sub _build_tar_copy {
     my($cvs_dir, $project, $tgt) = @_;
     # Copy files from cvs_dir to tgt for $project.
 #     my($uri) = grep
-# 	Bivio::IO::File->read("$cvs_dir/$project->[0]/Facades/$project->[0].pm");
+# 	b_use('IO.File')->read("$cvs_dir/$project->[0]/Facades/$project->[0].pm");
     File::Find::find(sub {
 
 	# The alg fails with '.'
@@ -616,9 +610,7 @@ sub _build_tar_copy {
 	    ($dst = $1) =~ s{^(?=@{[
                 join('|',
 	            map($_->get_path,
-	                Bivio::IO::ClassLoader->simple_require(
-                            'Bivio::UI::LocalFileType'
-                        )->get_list,
+	                b_use('UI.LocalFileType')->get_list,
                     ),
                 ),
             ]}/)}{@{[
@@ -645,8 +637,8 @@ sub _build_tar_copy {
 	    _trace($file, ': ignoring') if $_TRACE;
 	    return;
 	}
-	Bivio::IO::File->mkdir_parent_only($dst);
-	Bivio::IO::File->write($dst, Bivio::IO::File->read($_));
+	b_use('IO.File')->mkdir_parent_only($dst);
+	b_use('IO.File')->write($dst, b_use('IO.File')->read($_));
 	return;
     }, "$cvs_dir/$project->[0]");
     return;
@@ -655,7 +647,7 @@ sub _build_tar_copy {
 sub _build_tar_makefile {
     my($self, $project, $file_version, $tgt) = @_;
     # Creates Makefile.PL
-    Bivio::IO::File->write("$tgt/Makefile.PL", <<"EOF");
+    b_use('IO.File')->write("$tgt/Makefile.PL", <<"EOF");
 # Copyright (c) @{[$_DT->now_as_year]} $project->[2].  All Rights Reserved.
 use strict;
 use ExtUtils::MakeMaker ();
@@ -682,7 +674,7 @@ EOF
 sub _chdir {
     my($dir, $output) = @_;
     # Change to dir, and write to output.
-    Bivio::IO::File->chdir($dir);
+    b_use('IO.File')->chdir($dir);
     _output($output, "cd $dir\n");
     return $dir;
 }
@@ -702,7 +694,7 @@ sub _create_rpm_spec {
     else {
         $specin = "$_CFG->{cvs_rpm_spec_dir}/$specin.spec";
         _system("cvs checkout -f -r $version $specin", $output);
-	$specin = Bivio::IO::File->pwd.'/'.$specin
+	$specin = b_use('IO.File')->pwd.'/'.$specin
 	    unless $specin =~ m!^/!;
 	$cvs = 1;
     }
@@ -740,7 +732,7 @@ EOF
 
     $version = $1 if $buf =~ /\nVersion:\s*(\S+)/i;
     my($specout) = "$specin-build";
-    Bivio::IO::File->write($specout, \$buf);
+    b_use('IO.File')->write($specout, \$buf);
     return ($specout, "$name-$version", "$name-$version-$release");
 }
 
@@ -756,14 +748,14 @@ sub _do_in_tmp {
     # Returns output of operations.
     $self->usage_error($_CFG->{rpm_home_dir}, ': rpm_home_dir not found')
         unless !$assert_root || -d $_CFG->{rpm_home_dir};
-    Bivio::IO::File->rm_rf($_CFG->{tmp_dir});
-    Bivio::IO::File->mkdir_p($_CFG->{tmp_dir});
+    b_use('IO.File')->rm_rf($_CFG->{tmp_dir});
+    b_use('IO.File')->mkdir_p($_CFG->{tmp_dir});
     return _do_output(sub {
         my($output) = @_;
-	my($prev_dir) = Bivio::IO::File->pwd;
+	my($prev_dir) = b_use('IO.File')->pwd;
 	$op->(_chdir($_CFG->{tmp_dir}, $output), $output, $prev_dir);
 	_chdir($prev_dir);
-	Bivio::IO::File->rm_rf($_CFG->{tmp_dir})
+	b_use('IO.File')->rm_rf($_CFG->{tmp_dir})
 	    unless $self->get('noexecute');
 	return;
     });
@@ -787,8 +779,8 @@ sub _err_parser {
     my($orig, $final) = @_;
     # Gets rid of 'warning: x saved as y' if the files are the same
     return ("warning: $orig saved as $final\n")
-	    unless ${Bivio::IO::File->read($orig)}
-		    eq ${Bivio::IO::File->read($final)};
+	    unless ${b_use('IO.File')->read($orig)}
+		    eq ${b_use('IO.File')->read($final)};
     return '';
 }
 
@@ -943,7 +935,7 @@ sub _read_all {
 sub _rpm_uri_to_filename {
     my($uri) = @_;
     # Creates file name from $uri.  Ensures directory exists.
-    return Bivio::IO::File->mkdir_p('/var/spool/up2date')
+    return b_use('IO.File')->mkdir_p('/var/spool/up2date')
 	. '/'. Bivio::Type::FileName->get_tail($uri);
 }
 

@@ -35,7 +35,7 @@ sub new_unit {
     my($setup_request) = delete($attrs->{setup_request});
     $attrs = {}
 	unless ref($attrs);
-    my($req) = $proto->use('Bivio::Test::Request')->get_instance;
+    my($req) = b_use('Test.Request')->get_instance;
     return $proto->SUPER::new({
 	class_name => $_M->get_instance($class)->package_name,
 	compute_params => sub {

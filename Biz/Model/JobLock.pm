@@ -1,12 +1,9 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::JobLock;
 use strict;
-use Bivio::Agent::Task;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Biz.PropertyModel';
 use Sys::Hostname ();
-
-# C<Bivio::Biz::Model::JobLock>
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -16,9 +13,9 @@ sub acquire_or_load {
     # Returns true if successfully, false if the JobLock already exists
     # for the task.
     my($self, $task_id, $job_attributes) = @_;
-    $task_id = Bivio::Agent::TaskId->from_name($task_id)
+    $task_id = b_use('Agent.TaskId')->from_name($task_id)
         unless ref($task_id);
-    Bivio::Die->die('missing realm lock')
+    b_die('missing realm lock')
         unless $self->new_other('Lock')->is_acquired;
     return 0 if $self->unsafe_load({
         task_id => $task_id
@@ -27,19 +24,18 @@ sub acquire_or_load {
     $self->SUPER::create({
         realm_id => $realm_id,
         task_id => $task_id,
-        modified_date_time => Bivio::Type::DateTime->now,
+        modified_date_time => b_use('Type.DateTime')->now,
         hostname => Sys::Hostname::hostname(),
         pid => $$,
     });
-    Bivio::IO::ClassLoader->simple_require('Bivio::Agent::Job::Dispatcher');
-    Bivio::Agent::Job::Dispatcher->enqueue($self->get_request,
+    b_use('AgentJob.Dispatcher')->enqueue(
+	$self->req,
         $task_id, {
             %$job_attributes,
             process_cleanup => [
                 sub {
                     my($req, $die) = @_;
-                    my($job_lock) = Bivio::Biz::Model->new($req, 'JobLock')
-                        ->unauth_load_or_die({
+                    my($job_lock) = $self->new->unauth_load_or_die({
                             realm_id => $realm_id,
                             task_id => $task_id,
                         });
@@ -60,10 +56,8 @@ sub acquire_or_load {
 }
 
 sub create {
-    # (self, hash_ref) : self
-    # Do not call this method - use acquire_or_load() instead.
-    Bivio::Die->die(
-        'invalid call to create() - call acquire_or_load() instead');
+    b_die('invalid call to create() - call acquire_or_load() instead');
+    # DOES NOT RETURN
 }
 
 sub execute_load {
@@ -84,13 +78,13 @@ sub internal_initialize {
 	table_name => 'job_lock_t',
 	columns => {
             realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
-            task_id => ['Bivio::Agent::TaskId', 'PRIMARY_KEY'],
+            task_id => [b_use('Agent.TaskId'), 'PRIMARY_KEY'],
 	    modified_date_time => ['DateTime', 'NOT_NULL'],
             hostname => ['Line', 'NOT_NULL'],
             pid => ['Integer', 'NOT_NULL'],
             percent_complete => ['Amount', 'NONE'],
             message => ['Text', 'NONE'],
-            die_code => ['Bivio::DieCode', 'NONE'],
+            die_code => [b_use('Bivio.DieCode'), 'NONE'],
 	},
 	auth_id => 'realm_id',
     };
@@ -100,7 +94,7 @@ sub update {
     # (self, hash_ref) : self
     # Adds modified_date_time to values and calls super class.
     my($self, $values) = @_;
-    $values->{modified_date_time} = Bivio::Type::DateTime->now;
+    $values->{modified_date_time} = b_use('Type.DateTime')->now;
     return shift->SUPER::update(@_);
 }
 
@@ -109,7 +103,7 @@ sub update_and_commit {
     # Applies the changes and commits changes to the database.
     my($self, $values) = @_;
     $self->update($values);
-    Bivio::Agent::Task->commit($self->get_request);
+    b_use('Agent.Task')->commit($self->get_request);
     return $self;
 }
 

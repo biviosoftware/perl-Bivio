@@ -1,4 +1,4 @@
-# Copyright (c) 2004-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2004-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::Cookie;
 use strict;
@@ -14,12 +14,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_MODIFIED_FIELD) = '_modified';
 my($_SEP) = "\036";
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_F) = __PACKAGE__->use('UI.Facade');
-my($_S) = __PACKAGE__->use('Type.Secret');
+my($_DT) = b_use('Type.DateTime');
+my($_S) = b_use('Type.Secret');
 #TODO: Need to format dynamically
 my($_EXPIRES) = "; expires=Thu, 15 Apr 2020 20:00:00 GMT";
-Bivio::IO::Config->register(my $_CFG = {
+b_use('IO.Config')->register(my $_CFG = {
     domain => undef,
     tag => 'A',
     is_temporary => 0,
@@ -69,7 +68,7 @@ sub header_out {
     return 0
 	unless _need_header_out($self, $fields, $req);
     my($domain) = $_CFG->{domain}
-        ? $_F->get_from_request_or_self($req)
+        ? b_use('UI.Facade')->get_from_request_or_self($req)
             ->unsafe_get('cookie_domain') || $_CFG->{domain}
         : undef;
     $fields->{$self->DATE_TIME_FIELD} = $_DT->now;
@@ -171,7 +170,7 @@ sub _parse_items {
 	    next;
 	}
         if (exists($items->{$k})) {
-	    Bivio::IO::Alert->warn('duplicate cookie value for key: ', $k,
+	    b_warn('duplicate cookie value for key: ', $k,
                 ', ', $items->{$k}, ' and ', $v);
             next;
         }
@@ -197,7 +196,7 @@ sub _parse_values {
 	my(%v) = @v;
 	unless (($_DT->from_literal(
 	    $v{$proto->DATE_TIME_FIELD}))[0]) {
-	    Bivio::IO::Alert->warn(
+	    b_warn(
 		'invalid cookie: encrypted=', $v, ' decrypted=', \@v);
             return undef;
 	}

@@ -1,12 +1,17 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TupleSlotType;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TS) = Bivio::Type->get_instance('TupleSlot');
-my($_TSA) = Bivio::Type->get_instance('TupleSlotArray');
+my($_TS) = b_use('Type.TupleSlot');
+my($_TSA) = b_use('Type.TupleSlotArray');
+my($_T) = b_use('Bivio.Type');
+my($_TE) = b_use('Bivio.TypeError');
+my($_CA) = b_use('Collection.Attributes');
+my($_D) = b_use('Bivio.Die');
+my($_CL) = b_use('IO.ClassLoader');
 
 sub LIST_FIELDS {
     return [map(
@@ -52,8 +57,7 @@ sub internal_initialize {
 
 sub type_class_instance {
     my($proto, $model, $prefix) = @_;
-    return Bivio::Type->get_instance(
-	_class($proto, $model->get($prefix . 'type_class')));
+    return $_T->get_instance(_class($proto, $model->get($prefix . 'type_class')));
 }
 
 sub update {
@@ -76,20 +80,19 @@ sub validate_slot {
 	and (my $c = $model->get($prefix . 'choices'))->is_specified;
     return @{$c->map_iterate(sub {$t->is_equal($v, $_[0]) ? 1 : ()})}
 	? ($v, undef)
-	: (undef, Bivio::TypeError->NOT_FOUND);
+	: (undef, $_TE->NOT_FOUND);
 }
 
 sub _assert_values {
     my($self, $values) = @_;
-    my($mock) = Bivio::Collection::Attributes->new({%$values});
+    my($mock) = $_CA->new({%$values});
     defined($values->{label})
 	or _err($self, label => 'NULL');
     defined($values->{type_class})
 	or _err($self, type_class => 'NULL');
+    my($class) = 'Type.' . _class($self, $values->{type_class});
     _err($self, type_class => 'SIMPLE_CLASS_NAME')
-	unless Bivio::IO::ClassLoader->unsafe_map_require(
-	    'Type', _class($self, $values->{type_class}),
-	);
+	unless $_CL->was_required($class) || $_CL->unsafe_map_require($class);
     if ($values->{choices}->is_specified) {
 	$mock->put(choices => $values->{choices}->new([]));
 	my($seen) = {};
@@ -123,8 +126,8 @@ sub _class {
 
 sub _err {
     my($self, $field, $err) = @_;
-    Bivio::Die->throw(DB_CONSTRAINT => {
-	type_error => Bivio::TypeError->from_any($err),
+    $_D->throw(DB_CONSTRAINT => {
+	type_error => $_TE->from_any($err),
 	table => $self->get_info('table_name'),
 	columns => [$field],
     });

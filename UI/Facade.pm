@@ -3,7 +3,7 @@
 package Bivio::UI::Facade;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::IO::Trace;
+b_use('Bivio::IO::Trace');
 
 # C<Bivio::UI::Facade> is a collection of instances which present a uniform
 # view.  Typically, a Facade is used to represent UI components.  An
@@ -84,6 +84,7 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_LFT) = b_use('UI.LocalFileType');
 my($_C) = b_use('IO.Config');
+my($_CL) = b_use('IO.ClassLoader');
 my($_R) = b_use('Agent.Request');
 my($_A) = b_use('IO.Alert');
 my($_FN) = b_use('Type.FileName');
@@ -262,8 +263,8 @@ sub initialize {
     return if $_INITIALIZED;
     $_INITIALIZED = 1;
     # Default must be initialized first
-    Bivio::IO::ClassLoader->map_require('Facade', $_CFG->{default});
-    Bivio::IO::ClassLoader->map_require_all('Facade')
+    b_use('Facade', $_CFG->{default});
+    $_CL->map_require_all('Facade')
         unless $partially;
     b_die(
 	$_CFG->{default}, ': unable to find or load default Facade',

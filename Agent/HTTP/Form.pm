@@ -1,10 +1,9 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Form;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
-use Bivio::Ext::ApacheConstants;
-use Bivio::IO::Trace;
+use Bivio::Base 'Bivio.UNIVERSAL';
+b_use('IO.Trace');
 
 # C<Bivio::Agent::HTTP::Form> parses an incoming form.
 # The request must have a I<form_model> attribute.  Handles both
@@ -26,6 +25,10 @@ my($_TOKEN) = '([^][()<>@,;:\\\\"/?=\\000-\\040\\177-\\377]+)';
 # This is the same as Mail::RFC822::QUOTED_STRING, except
 # we parse out the surrounding quotes.
 #my($_QUOTED_STRING) = '"((?:(?:\\\\{2})+|\\\\[^\\\\]|[^\\\\"])*)"';
+my($_TOO_LONG) = b_use('Bivio.TypeError')->TOO_LONG;
+my($_FORM_DATA_MULTIPART_MIXED)
+    = b_use('Bivio.TypeError')->FORM_DATA_MULTIPART_MIXED;
+my($_HTML) = b_use('Bivio.HTML');
 
 sub parse {
     my(undef, $req) = @_;
@@ -41,11 +44,11 @@ sub parse {
 	return $q;
     }
     my($ct) = $r->header_in('content-type') || '';
-    return Bivio::HTML->parse_www_form_urlencoded(${$req->get_content})
+    return $_HTML->parse_www_form_urlencoded(${$req->get_content})
 	if $ct =~ /^\s*application\/x-www-form-urlencoded/i;
     return _parse($req, $r)
 	if $ct =~ /^\s*multipart\/form-data/i;
-    Bivio::IO::Alert->warn($ct, ': unknown Content-Type');
+    b_warn($ct, ': unknown Content-Type');
     return undef;
 }
 
@@ -60,9 +63,9 @@ sub _err {
 sub _parse {
     my($req, $r) = @_;
     # Returns the parsed multipart/form-data.  See RFC1867 for a spec.
-    my($max_field_size) = $req->get_or_default(
-	'form_model', 'Bivio::Biz::FormModel',
-    )->MAX_FIELD_SIZE;
+    my($max_field_size)
+	= ($req->unsafe_get('form_model') || b_use('Biz.FormModel'))
+	->MAX_FIELD_SIZE;
     my($buf) = $req->get_content;
     # We destroy content so we have to clear it here.
     $req->delete('content');
@@ -83,7 +86,7 @@ sub _parse {
 	    $field->{error} ? () : (content => \$content),
 	} : length($content) > $max_field_size ? {
 	    %$field,
-	    error => Bivio::TypeError->TOO_LONG
+	    error => $_TOO_LONG
 	} : $content;
 	next if $$buf =~ s/^\r\n//s;
 	last if $$buf =~ s/^--//s;
@@ -109,7 +112,7 @@ sub _parse_headers {
 	    # LIMITATION: We don't handle multipart/mixed.  Browsers may use
 	    # this to send multiple files for a single field.
 	    if ($value =~ /multipart\/mixed/i) {
-		$field->{error} = Bivio::TypeError->FORM_DATA_MULTIPART_MIXED;
+		$field->{error} = $_FORM_DATA_MULTIPART_MIXED;
 		next;
 	    }
 	    $field->{content_type} = $value;
@@ -144,7 +147,7 @@ sub _parse_headers {
 		unless $value =~ /^(?:8bit|binary)\b/i;
 	}
         elsif ($key ne 'content-length') {
-	    Bivio::IO::Alert->warn($key, ': unexpected header field; headers=', $headers);
+	    b_warn($key, ': unexpected header field; headers=', $headers);
 	}
     }
     _err($req, 'field missing "name" attribute', $field)

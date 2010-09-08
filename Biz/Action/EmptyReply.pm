@@ -1,12 +1,12 @@
-# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::EmptyReply;
 use strict;
 use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-__PACKAGE__->use('Agent.Task')->register(__PACKAGE__);
-my($_AC) = __PACKAGE__->use('Ext.ApacheConstants');
+my($_AC) = b_use('Ext.ApacheConstants');
+b_use('Agent.Task')->register(__PACKAGE__);
 b_use('Action.BasicAuthorization');
 
 sub execute {

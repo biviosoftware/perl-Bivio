@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_CR) = b_use('Action.ClientRedirect');
 
 sub OMIT_DEFAULT_VALUES_FROM_QUERY {
     # Returns true if the query values are to be omitted if they match
@@ -101,7 +100,7 @@ sub _redirect {
 	method => 'client_redirect',
 	task_id => 'CLIENT_REDIRECT',
 	query => {
-	    $_CR->QUERY_TAG => $req->format_uri(
+	    b_use('Action.ClientRedirect')->QUERY_TAG => $req->format_uri(
 		$req->get('task_id'), $query || {}),
 	},
     };
