@@ -4,7 +4,7 @@ use Bivio::Test::Request;
 Bivio::IO::Config->introduce_values({
     'Bivio::IO::ClassLoader' => {
 	maps => {
-	    'Action' => ['Bivio::Biz::t::Action'],
+	    'Action' => ['Bivio::Biz::t::Action', 'Bivio::Biz::Action'],
 	},
     },
 });
