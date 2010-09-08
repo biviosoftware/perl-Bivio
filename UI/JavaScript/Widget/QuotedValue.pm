@@ -18,10 +18,15 @@ sub initialize {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    my($v) = $self->render_simple_attr(value => $source);
-    $v =~ s/"/\\"/g;
-    $$buffer .= qq{"$v"};
+    $$buffer .= $self->escape_value($self->render_simple_attr(value => $source));
     return;
+}
+
+sub escape_value {
+    my(undef, $v) = @_;
+    $v =~ s/"/\\"/g;
+    $v =~ s/\r?\n/\\n/sg;
+    return qq{"$v"};
 }
 
 1;
