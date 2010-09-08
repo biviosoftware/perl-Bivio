@@ -19,13 +19,19 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 	],
 	format_uri => [
 	    LOGOUT => '/pub/logout',
-	    [{
-		task_id => 'LOGOUT',
-	    }] => '/pub/logout',
+	    [{task_id => 'LOGOUT'}] => '/pub/logout',
 	    [{
 		task_id => 'LOGOUT',
 		facade_uri => 'other',
 	    }] => qr{^http://other.*/pub/logout$},
+	    sub {
+		shift->get('object')->put(req()->REQUIRE_ABSOLUTE_GLOBAL => 1);
+		return ['LOGOUT'];
+	    } => sub {
+		shift->get('object')->delete(req()->REQUIRE_ABSOLUTE_GLOBAL);
+		return qr{^http:/.*/pub/logout$};
+	    },
+	    LOGOUT => '/pub/logout',
 	],
 	format_http_prefix => [
 	    [] => qr{^http://(?!other)},
