@@ -1,19 +1,19 @@
-# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Backup;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::IO::Trace;
+b_use('Bivio::IO::Trace');
+use File::Find ();
 use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-use File::Find ();
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
-my($_DATE_RE) = qr{(.+)/(\d{8}(?:\d{6})?)};
 my($_F) = b_use('IO.File');
 my($_LINK) = 'link';
+my($_DATE_RE) = qr{(.+)/(\d{8}(?:\d{6})?)};
 Bivio::IO::Config->register(my $_CFG = {
     Bivio::IO::Config->NAMED => {
 	mirror_dest_host => Bivio::IO::Config->REQUIRED,
@@ -42,25 +42,31 @@ sub archive_logs {
 	[[qw(mirror_dir String)], [qw(archive_dir String)]],
 	\@_,
     );
-    my($res) = [];
-    File::Find::find({
-	no_chdir => 1,
-	follow => 0,
-	wanted => sub {
-	    return
-		unless $_ =~ /$_DATE_RE.*gz$/ && -f $_;
-	    my($year) = $2 =~ /^(\d{4})/;
-	    (my $tgt = $_) =~ s{^\Q$mirror_dir\E}{$archive_dir/$year};
-	    return
-		if -f $tgt;
-	    $_F->mkdir_parent_only($tgt);
-	    $self->piped_exec("cp -p '$_' '$tgt'");
-	    $_F->chmod(0400, $tgt);
-	    push(@$res, $tgt);
-	    return;
-	},
-    }, glob("$mirror_dir/*.*/var/log"));
-    return @$res ? [sort(@$res)] : ();
+    #PERLBUG: $_DATE_RE is not visible in the second sub {}.
+    #         Precompiling the regexp in a local variable fixes
+    #         the problem, and it's a loop invariant anyway.
+    my($date_gz) = qr{$_DATE_RE.*gz$};
+    return $self->lock_action(sub {
+        my($res) = [];
+	File::Find::find({
+	    no_chdir => 1,
+	    follow => 0,
+	    wanted => sub {
+		return
+		    unless $_ =~ $date_gz && -f $_;
+		my($year) = $2 =~ /^(\d{4})/;
+		(my $tgt = $_) =~ s{^\Q$mirror_dir\E}{$archive_dir/$year};
+		return
+		    if -f $tgt;
+		$_F->mkdir_parent_only($tgt);
+		$self->piped_exec("cp -p '$_' '$tgt'");
+		$_F->chmod(0400, $tgt);
+		push(@$res, $tgt);
+		return;
+	    },
+	}, glob("$mirror_dir/*.*/var/log"));
+	return @$res ? [sort(@$res)] : ();
+    });
 }
 
 sub archive_mirror_link {
@@ -68,43 +74,45 @@ sub archive_mirror_link {
 	['String', 'Date'],
 	\@_,
     );
-    $date = $_D->to_file_name($date);
-    $root = $_F->absolute_path($root);
-    my($link) = "$root/mirror/$_LINK/$date";
-    $self->usage_error($link, ': does not exist')
-	unless -d $link;
-    return
-	unless my $archive = _which_archive($self, $root, $date);
-    $_F->mkdir_p($archive, 0700);
-    $_F->do_in_dir($link, sub {
-        foreach my $top (glob('*')) {
-	    my($dirs) = [];
-	    my($du) = IO::File->new;
-	    Bivio::die->die($top, ": du failed: $!")
-	        unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
-	    while (defined(my $line = readline($du))) {
-		my($n, $d) = split(/\s+/, $line, 2);
-		chomp($d);
-		last
-		    if @$dirs && $n < $_CFG->{min_kb};
-		push(@$dirs, $d);
+    return $self->lock_action(sub {
+	$date = $_D->to_file_name($date);
+	$root = $_F->absolute_path($root);
+	my($link) = "$root/mirror/$_LINK/$date";
+	$self->usage_error($link, ': does not exist')
+	    unless -d $link;
+	return
+	    unless my $archive = _which_archive($self, $root, $date);
+	$_F->mkdir_p($archive, 0700);
+	$_F->do_in_dir($link, sub {
+	    foreach my $top (glob('*')) {
+		my($dirs) = [];
+		my($du) = IO::File->new;
+		Bivio::die->die($top, ": du failed: $!")
+		    unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
+		while (defined(my $line = readline($du))) {
+		    my($n, $d) = split(/\s+/, $line, 2);
+		    chomp($d);
+		    last
+			if @$dirs && $n < $_CFG->{min_kb};
+		    push(@$dirs, $d);
+		}
+		# Directories with same size may come out in any order
+		$dirs = [sort(@$dirs)];
+		$du->close;
+		while (my $src = shift(@$dirs)) {
+		    my($dst) = _safe_path("$archive/$src.tgz");
+		    $_F->mkdir_parent_only($dst, 0700);
+		    $self->piped_exec(
+			['tar', 'czfX', $dst, '-', $src],
+			\(join("\n", @$dirs)),
+		    );
+		}
 	    }
-	    # Directories with same size may come out in any order
-	    $dirs = [sort(@$dirs)];
-	    $du->close;
-	    while (my $src = shift(@$dirs)) {
-		my($dst) = _safe_path("$archive/$src.tgz");
-		$_F->mkdir_parent_only($dst, 0700);
-		$self->piped_exec(
-		    ['tar', 'czfX', $dst, '-', $src],
-		    \(join("\n", @$dirs)),
-		);
-	    }
-	}
-	return;
+	    return;
+	});
+	$self->piped_exec("chmod -R -w $archive");
+	return $archive;
     });
-    $self->piped_exec("chmod -R -w $archive");
-    return $archive;
 }
 
 sub compress_and_trim_log_dirs {
@@ -112,56 +120,58 @@ sub compress_and_trim_log_dirs {
 	['String', [qw(num_keep Integer 30)]],
 	\@_,
     );
-    $self->req;
-    my($dirs) = {};
-    File::Find::find({
-	no_chdir => 1,
-	follow => 0,
-	wanted => sub {
-	    return
-		unless -d $_
-		&& $_ =~ qr{$_DATE_RE$}o;
-	    push(@{$dirs->{$1} ||= []}, $2);
-            $File::Find::prune = 1;
-	    return;
-	},
-    }, $root_dir);
-    my($compressed) = '';
-    foreach my $dir (sort(keys(%$dirs))) {
-	my($sort) = [sort(@{$dirs->{$dir}})];
-	pop(@$sort);
-	foreach my $d (map("$dir/$_", @$sort)) {
-	    $self->piped_exec("tar czf '$d.tgz' '$d' 2>&1 && chmod -w '$d.tgz'");
-	    $compressed .= " $d";
-	    Bivio::IO::File->rm_rf($d);
+    return $self->lock_action(sub {
+	$self->req;
+	my($deleted) = '';
+	my($compressed) = '';
+        my($dirs) = {};
+	File::Find::find({
+	    no_chdir => 1,
+	    follow => 0,
+	    wanted => sub {
+		return
+		    unless -d $_
+		    && $_ =~ qr{$_DATE_RE$}o;
+		push(@{$dirs->{$1} ||= []}, $2);
+		$File::Find::prune = 1;
+		return;
+	    },
+	}, $root_dir);
+	foreach my $dir (sort(keys(%$dirs))) {
+	    my($sort) = [sort(@{$dirs->{$dir}})];
+	    pop(@$sort);
+	    foreach my $d (map("$dir/$_", @$sort)) {
+		$self->piped_exec("tar czf '$d.tgz' '$d' 2>&1 && chmod -w '$d.tgz'");
+		$compressed .= " $d";
+		Bivio::IO::File->rm_rf($d);
+	    }
 	}
-    }
-    $dirs = {};
-    File::Find::find({
-	no_chdir => 1,
-	follow => 0,
-	wanted => sub {
-	    return
-		unless -f $_
-		&& $_ =~ m{(.+)/(\d{8}(?:\d{6})?\.tgz)$};
-	    push(@{$dirs->{$1} ||= []}, $2);
-            $File::Find::prune = 1;
-	    return;
-	},
-    }, $root_dir);
-    my($deleted) = '';
-    foreach my $dir (sort(keys(%$dirs))) {
-	my($sort) = [sort(@{$dirs->{$dir}})];
-	next
-	    unless @$sort > $num_keep;
-	splice(@$sort, -$num_keep);
-	foreach my $d (map("$dir/$_", @$sort)) {
-	    $deleted .= " $d";
-	    unlink($d) || b_die("unlink($d): $!");
+	$dirs = {};
+	File::Find::find({
+	    no_chdir => 1,
+	    follow => 0,
+	    wanted => sub {
+		return
+		    unless -f $_
+		    && $_ =~ m{(.+)/(\d{8}(?:\d{6})?\.tgz)$};
+		push(@{$dirs->{$1} ||= []}, $2);
+		$File::Find::prune = 1;
+		return;
+	    },
+	}, $root_dir);
+	foreach my $dir (sort(keys(%$dirs))) {
+	    my($sort) = [sort(@{$dirs->{$dir}})];
+	    next
+		unless @$sort > $num_keep;
+	    splice(@$sort, -$num_keep);
+	    foreach my $d (map("$dir/$_", @$sort)) {
+		$deleted .= " $d";
+		unlink($d) || b_die("unlink($d): $!");
+	    }
 	}
-    }
-    return ($compressed && "Compressed:$compressed\n")
-	. ($deleted && "Deleted:$deleted\n")
+	return ($compressed && "Compressed:$compressed\n")
+	    . ($deleted && "Deleted:$deleted\n");
+    });
 }
 
 sub handle_config {
@@ -209,73 +219,75 @@ sub remote_archive {
 	['String', 'Date', 'String', 'String'],
 	\@_,
     );
-    $date = $_D->to_file_name($date);
-    $root = $_F->absolute_path($root);
-    my($link) = "$root/mirror/$_LINK/$date";
-    $self->usage_error($link, ': does not exist')
-	unless -d $link;
-    my($mount) = "$root/remote_archive";
-    my($archive) = "$mount/$date";
-    $self->piped_exec_remote($host, "umount $dev", undef, 1);
-    $self->piped_exec_remote($host, "umount $mount", undef, 1);
-    $self->piped_exec_remote($host, "mke2fs -b 4096 -m 0 -N 4194304 -O dir_index -O sparse_super $dev", "y\n");
-    $self->piped_exec_remote($host, "mkdir -p $mount");
-    $self->piped_exec_remote($host, "mount $dev $mount");
-    my($ls) = [split(' ', ${$self->piped_exec_remote($host, "ls $mount")})];
-    b_die($ls, ': incorrect number of files')
-	unless "@$ls" eq 'lost+found';
-    my($done);
-    foreach my $other ("$root/weekly", "$root/archive") {
-	next
-	    unless -d (my $src = "$other/$date");
-	$self->piped_exec("rsync -a -e ssh --timeout 43200 $src $host:$mount");
-	$done = 1;
-	last;
-    }
-    my($link_size) = split(' ', `du -s $link`);
-    $_F->do_in_dir($link, sub {
-	foreach my $top (glob('*')) {
-	    my($dirs) = [];
-	    my($du) = IO::File->new;
-	    Bivio::die->die($top, ": du failed: $!")
-		unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
-	    while (defined(my $line = readline($du))) {
-		my($n, $d) = split(/\s+/, $line, 2);
-		chomp($d);
-		last
-		    if @$dirs && $n < $_CFG->{min_kb};
-		push(@$dirs, $d);
-	    }
-	    # Directories with same size may come out in any order
-	    $dirs = [sort(@$dirs)];
-	    $du->close;
-	    while (my $src = shift(@$dirs)) {
-		my($dst) = _safe_path("$archive/$src.tgz");
-		my($die) = Bivio::Die->catch(sub {
-		    $self->piped_exec_remote(
-			$host,
-			"mkdir -p '" .  File::Basename::dirname($dst) . "'",
-		    );
-		    $self->piped_exec(
-			"tar czfX - - @{[_quote($src)]} | "
-			. "ssh $host dd of='$dst' bs=1000 2> /dev/null",
-			\(join("\n", @$dirs)),
-		    );
-		});
-		b_warn($dst, ': ', $die)
-		    if $die;
-	    }
+    return $self->lock_action(sub {
+	$date = $_D->to_file_name($date);
+	$root = $_F->absolute_path($root);
+	my($link) = "$root/mirror/$_LINK/$date";
+	$self->usage_error($link, ': does not exist')
+	    unless -d $link;
+	my($mount) = "$root/remote_archive";
+	my($archive) = "$mount/$date";
+	$self->piped_exec_remote($host, "umount $dev", undef, 1);
+	$self->piped_exec_remote($host, "umount $mount", undef, 1);
+	$self->piped_exec_remote($host, "mke2fs -b 4096 -m 0 -N 4194304 -O dir_index -O sparse_super $dev", "y\n");
+	$self->piped_exec_remote($host, "mkdir -p $mount");
+	$self->piped_exec_remote($host, "mount $dev $mount");
+	my($ls) = [split(' ', ${$self->piped_exec_remote($host, "ls $mount")})];
+	b_die($ls, ': incorrect number of files')
+	    unless "@$ls" eq 'lost+found';
+	my($done);
+	foreach my $other ("$root/weekly", "$root/archive") {
+	    next
+		unless -d (my $src = "$other/$date");
+	    $self->piped_exec("rsync -a -e ssh --timeout 43200 $src $host:$mount");
+	    $done = 1;
+	    last;
 	}
-	return;
-    }) unless $done;
-    my($archive_size) = split(
-	' ',
-	${$self->piped_exec_remote($host, "du -s $archive")},
-    );
-    $self->piped_exec_remote($host, "chmod -R -w $archive; umount $dev");
-    b_warn("ERROR: $archive size ($archive_size) << ($link_size) $link size")
-	if $archive_size / $link_size < 0.25;
-    return $archive;
+	my($link_size) = split(' ', `du -s $link`);
+	$_F->do_in_dir($link, sub {
+	    foreach my $top (glob('*')) {
+		my($dirs) = [];
+		my($du) = IO::File->new;
+		Bivio::die->die($top, ": du failed: $!")
+		    unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
+		while (defined(my $line = readline($du))) {
+		    my($n, $d) = split(/\s+/, $line, 2);
+		    chomp($d);
+		    last
+			if @$dirs && $n < $_CFG->{min_kb};
+		    push(@$dirs, $d);
+		}
+		# Directories with same size may come out in any order
+		$dirs = [sort(@$dirs)];
+		$du->close;
+		while (my $src = shift(@$dirs)) {
+		    my($dst) = _safe_path("$archive/$src.tgz");
+		    my($die) = Bivio::Die->catch(sub {
+			$self->piped_exec_remote(
+			    $host,
+			    "mkdir -p '" .  File::Basename::dirname($dst) . "'",
+			);
+			$self->piped_exec(
+			    "tar cfX - - @{[_quote($src)]} | "
+			    . "ssh $host gzip -c > '$dst' 2> /dev/null",
+			    \(join("\n", @$dirs)),
+			);
+		    });
+		    b_warn($dst, ': ', $die)
+			if $die;
+		}
+	    }
+	    return;
+	}) unless $done;
+	my($archive_size) = split(
+	    ' ',
+	    ${$self->piped_exec_remote($host, "du -s $archive")},
+	);
+	$self->piped_exec_remote($host, "chmod -R -w $archive; umount $dev");
+	b_warn("ERROR: $archive size ($archive_size) << ($link_size) $link size")
+	    if $archive_size / $link_size < 0.25;
+	return $archive;
+    });
 }
 
 sub trim_directories {
@@ -283,16 +295,18 @@ sub trim_directories {
 	[qw(root String)],
 	[qw(num_keep Integer)],
     ], \@_);
-    my($dirs) = [reverse(sort(glob("$root/20" . ('[0-9]' x 6))))];
-    return
-	if @$dirs <= $num_keep;
-    $dirs = [reverse(splice(@$dirs, $num_keep))];
-    foreach my $d (@$dirs) {
-	system('chmod', '-R', 'ug+w', $d);
-	Bivio::IO::Alert->warn($d, ': unable to delete')
-            unless system('rm', '-rf', $d) == 0;
-    }
-    return 'Removed: ' . join(' ', @$dirs);
+    return $self->lock_action(sub {
+	my($dirs) = [reverse(sort(glob("$root/20" . ('[0-9]' x 6))))];
+	return
+	    if @$dirs <= $num_keep;
+	$dirs = [reverse(splice(@$dirs, $num_keep))];
+	foreach my $d (@$dirs) {
+	    system('chmod', '-R', 'ug+w', $d);
+	    Bivio::IO::Alert->warn($d, ': unable to delete')
+		unless system('rm', '-rf', $d) == 0;
+	}
+	return 'Removed: ' . join(' ', @$dirs);
+    });
 }
 
 sub _quote {
