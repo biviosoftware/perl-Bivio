@@ -1,16 +1,8 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::Test::Util;
 use strict;
-use Bivio::Base 'Bivio::ShellUtil';
-use Bivio::Die;
-use Bivio::IO::Config;
-use Bivio::IO::File;
-use Bivio::IO::Trace;
-use Bivio::IO::Trace;
-use Bivio::Test::Language;
-use Bivio::Test;
-use Bivio::Type::DateTime;
+use Bivio::Base 'Bivio.ShellUtil';
 use File::Find ();
 use File::Spec ();
 
@@ -19,15 +11,16 @@ use File::Spec ();
 # which is a subclass of L<Bivio::Test::Language|Bivio::Test::Language>.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-Bivio::IO::Config->register({
+our($_TRACE);
+b_use('IO.Trace');
+my($_DT) = b_use('Type.DateTime');
+my($_D) = b_use('Bivio.Die');
+my($_PERL_DIR) = '/perl';
+my($_WN) = b_use('Type.WikiName');
+b_use('IO.Config')->register(my $_CFG = {
     nightly_output_dir => '/tmp/test-run',
     nightly_cvs_dir => 'perl/Bivio',
 });
-my($_CFG);
-my($_DT) = Bivio::Type->get_instance('DateTime');
-my($_PERL_DIR) = '/perl';
-my($_WN) = __PACKAGE__->use('Type.WikiName');
-my($_F) = __PACKAGE__->use('UI.Facade');
 
 sub USAGE {
     # Returns usage.
@@ -55,9 +48,9 @@ sub acceptance {
 	my($ok) = 0;
 	_piped_exec($self, '-', <<"EOF", $out,
 use strict;
-use Bivio::Test::Language;
+use Bivio::IO::ClassLoader;
 print "1..1\n";
-my(\$die) = Bivio::Test::Language->test_run(qw{$test});
+my(\$die) = Bivio::IO::ClassLoader->map_require('Test.Language')->test_run(qw{$test});
 print(\$die ? "1 not ok: " . \$die->as_string . "\n" : "1 ok\n");
 EOF
 	    sub {
@@ -120,8 +113,8 @@ sub mock_sendmail {
 	my($extension) = $1 || '';
 	$msg->set_recipients($r, $req);
 	my($die);
-	return Bivio::IO::Alert->warn($r, ': ', $die)
-	    unless my $http = Bivio::Die->catch_quietly(
+	return b_warn($r, ': ', $die)
+	    unless my $http = $_D->catch_quietly(
 		sub {_uri_for_task($self, 'MAIL_RECEIVE_DISPATCH', $r)},
 		\$die,
 	    );
@@ -135,7 +128,7 @@ sub mock_sendmail {
 	chomp($$res);
 	next
 	    unless $$res;
-	Bivio::IO::Alert->warn(
+	b_warn(
 	    $msg->unsafe_get_header('from'),
 	    ' -> ',
 	    $r,
@@ -145,7 +138,7 @@ sub mock_sendmail {
 	_trace($msg) if $_TRACE;
 	next
 	    if $recursing;
-	$r = (Bivio::Mail::Address->parse(
+	$r = (b_use('Mail.Address')->parse(
 	    $msg->unsafe_get_header('errors-to')
 	    || $msg->unsafe_get_header('return-path')
 	    || $from
@@ -167,12 +160,13 @@ sub nightly {
     my($self) = @_;
     # Creates test directory, calls cvs update to get latest test files.  Runs all
     # acceptance tests.  Output is to STDERR.
-    my($old_pwd) = Bivio::IO::File->pwd;
+    my($f) = b_use('IO.File');
+    my($old_pwd) = $f->pwd;
     _expunge($self);
     _make_nightly_dir($self);
-    $ENV{PERLLIB} = Bivio::IO::File->pwd . $_PERL_DIR
+    $ENV{PERLLIB} = $f->pwd . $_PERL_DIR
 	. ($ENV{PERLLIB} ? ":$ENV{PERLLIB}" : '');
-    my($die) = Bivio::Die->catch(sub {
+    my($die) = $_D->catch(sub {
         # CVS checkout
         (my $bop = $_CFG->{nightly_cvs_dir}) =~ s{\w+$}{Bivio};
 	# Bivio/PetShop special case
@@ -180,8 +174,8 @@ sub nightly {
 	$bop =~ s{Bivio/Bivio}{Bivio};
         system("cvs -Q checkout '$_CFG->{nightly_cvs_dir}' '$bop'");
         $self->print("Completed CVS checkout of test files\n");
-        Bivio::IO::File->chdir($_CFG->{nightly_cvs_dir});
-	$self->print("cd ".Bivio::IO::File->pwd . "\n");
+        $f->chdir($_CFG->{nightly_cvs_dir});
+	$self->print("cd " . $f->pwd . "\n");
 	$self->print("export PERLLIB=$ENV{PERLLIB}\n");
 	$self->print("export BCONF=$ENV{BCONF}\n");
 	$self->print("bivio test acceptance .\n");
@@ -189,8 +183,9 @@ sub nightly {
         return;
     });
     # restore state before die is rethrown
-    Bivio::IO::File->chdir($old_pwd);
-    $die->throw if $die;
+    $f->chdir($old_pwd);
+    $die->throw
+	if $die;
     return;
 }
 
@@ -262,7 +257,7 @@ sub remote_trace {
 	    _uri_for_task($self, 'TEST_TRACE', undef, {path_info => $named}),
 	),
     );
-    Bivio::Die->die($resp)
+    b_die($resp)
         unless $resp->is_success;
     return;
 }
@@ -272,14 +267,12 @@ sub task {
     # Executes the task, and returns the result. See
     # L<Bivio::Test::Request->execute_task|Bivio::Test::Request->execute_task>
     # for output details.
-    Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
-	->get_instance;
+    my($req) = b_use('Test.Request')->get_instance;
     # Forces type check, and probably good thing anyway.
     $query = ref($query) ? {%$query}
 	: $query
 	? b_use('AgentHTTP.Query')->parse($query)
 	: undef;
-    # Finishes realm, user, db init, and then executes task
     return $self->get_request->execute_task($task, {
 	query => $query,
 	path_info => $path_info,
@@ -318,7 +311,7 @@ sub _expunge {
     while (@dirs > 7) {
 	my($dir) = shift(@dirs);
         $self->print("Deleting old test directory: $dir\n");
-	Bivio::IO::File->rm_rf($dir);
+	b_use('IO.File')->rm_rf($dir);
     }
     return;
 }
@@ -330,7 +323,7 @@ sub _find_files {
     $self->usage_error('must supply test files or directories')
 	unless @$args;
     my($tests) = {};
-    my($pwd) = Bivio::IO::File->pwd;
+    my($pwd) = b_use('IO.File')->pwd;
     foreach my $arg (@$args) {
 	$arg = "t/$arg"
 	    if !-e $arg && $arg =~ $pattern && -e "t/$arg";
@@ -362,12 +355,11 @@ sub _make_nightly_dir {
     my($self) = @_;
     # Makes the directory in which nightly() executes and leaves testsuite
     # log files.
-    my($dir) = $_CFG->{nightly_output_dir} . '/'
-        . Bivio::Type::DateTime->local_now_as_file_name;
-    Bivio::Die->die($dir, ': dir exists; move out of the way')
+    my($dir) = $_CFG->{nightly_output_dir} . '/' . $_DT->local_now_as_file_name;
+    b_die($dir, ': dir exists; move out of the way')
         if -d $dir;
-    Bivio::IO::File->mkdir_p($dir);
-    Bivio::IO::File->chdir($dir);
+    b_use('IO.File')->mkdir_p($dir);
+    b_use('IO.File')->chdir($dir);
     $self->print("Created $dir\n");
     return $dir;
 }
@@ -385,7 +377,7 @@ sub _piped_exec {
 		    # this regex is hairy to accommodate shell string escaping rules
 		    s/'/'\\''/g;
 		    "'$_'";
-		} @{Bivio::IO::Config->command_line_args}),
+		} @{b_use('IO.Config')->command_line_args}),
 		'2>&1',
 	    ),
 	    $input, 1)})
@@ -408,7 +400,7 @@ sub _run {
     $self->usage_error('no tests found') unless $max;
     foreach my $d (sort(keys(%$tests))) {
 	$self->print("*** Entering: $d\n") unless $one_dir;
-	Bivio::IO::File->do_in_dir($d => sub {
+	b_use('IO.File')->do_in_dir($d => sub {
 	    foreach my $t (sort(@{$tests->{$d}})) {
 		my($res) = 'FAILED';
 		my($out);
@@ -432,8 +424,8 @@ sub _run {
     $self->print(
 	(@$failed ? join("\n    ", 'Failed tests: ', @$failed) . "\n"
 	    : ''),
-	Bivio::Test->format_results($ok, $max));
-    Bivio::Die->throw_quietly('DIE')
+	b_use('Bivio.Test')->format_results($ok, $max));
+    $_D->throw_quietly('DIE')
 	unless $max == $ok;
     return;
 }
@@ -451,14 +443,15 @@ EOF
 
 sub _uri_for_task {
     my($self, $task, $email_or_facade, $uri_args) = @_;
-    my($facade) = $_F->setup_request(
+    my($f) = b_use('UI.Facade');
+    my($facade) = $f->setup_request(
 	$email_or_facade ? ($email_or_facade =~ /@(.+)/)[0] || $email_or_facade
-	    : $_F->get_default->get('uri'),
+	    : $f->get_default->get('uri'),
 	$self->req,
     );
     my($http) = $self->use('TestLanguage.HTTP')->home_page_uri(
 	$facade->get('uri'));
-    Bivio::Die->die($http, ': TestLanguage.HTTP->home_page_uri missing http:')
+    b_die($http, ': TestLanguage.HTTP->home_page_uri missing http:')
         unless $http =~ m{http://[^/]+};
     return $http . $self->req->format_uri({
 	realm => undef,
