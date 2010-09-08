@@ -1,13 +1,12 @@
 # $Id$
-# Copyright (c) 2002-2008 bivio Software, Inc.  All rights reserved.
-Request();
+# Copyright (c) 2002-2010 bivio Software, Inc.  All rights reserved.
+require './Cookie.PL';
 config({
     'Bivio::Delegate::Cookie' => {
 	domain => undef,
 	tag => 'Tt',
     },
 });
-req()->setup_http(class());
 options({
     method_is_autoloaded => 1,
 });

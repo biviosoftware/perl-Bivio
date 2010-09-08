@@ -1,7 +1,6 @@
 # $Id$
-# Copyright (c) 2002-2008 bivio Software, Inc.  All rights reserved.
-Request();
-req()->setup_http(class())->initialize_fully;
+# Copyright (c) 2002-2010 bivio Software, Inc.  All rights reserved.
+require './Cookie.PL';
 [
     [req(), req('r')] => [
 	{
