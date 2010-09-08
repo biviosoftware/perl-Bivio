@@ -596,8 +596,9 @@ sub _class {
 sub _get_class_info {
     my($class) = @_;
     no strict qw(refs);
+#TODO: Name should be something like Bivio::Biz::Model::_class_info, not _CLASS_INFO
     _initialize_class_info($class)
-	unless defined *{$class . '::'}{HASH}->{_CLASS_INFO};
+	unless defined(*{$class . '::'}{HASH}->{_CLASS_INFO});
     return *{$class . '::'}{HASH}->{_CLASS_INFO};
 }
 
