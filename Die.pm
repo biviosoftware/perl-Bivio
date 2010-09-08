@@ -134,6 +134,16 @@ sub catch {
     return $$die ? undef : $res;
 }
 
+sub catch_and_rethrow {
+    my($proto, $op, $before_rethrow) = @_;
+    my($self);
+    my(@res) = $proto->catch($op, \$self);
+    $before_rethrow->($self);
+    $self->throw
+	if $self;
+    return $proto->return_scalar_or_array(@res);
+}
+
 sub catch_quietly {
     local($_CATCH_QUIETLY) = 1;
     return shift->catch(@_);
