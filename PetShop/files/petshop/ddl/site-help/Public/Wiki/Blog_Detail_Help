@@ -1,3 +1,4 @@
+@h1 Blog Detail
 This page displays the details of the blog entry you have clicked on. Under the title of the blog you will see the date the page was created and who/when the blog was last edited by. Underneath the text you will see 5 links the following will tell you what they are about.
 
 @dl
