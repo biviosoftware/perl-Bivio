@@ -62,9 +62,6 @@ sub as_string {
 
 sub can_user_execute_task {
     my($self, $task, $req) = @_;
-    # Returns true if I<auth_user> of I<req> can execute I<task>.
-
-    # Is the task defined in the right realm?
     unless ($task->has_realm_type($self->get('type'))) {
 	_trace($task->get('id'), ': no such task in ', $self->get('type'))
 	    if $_TRACE;
