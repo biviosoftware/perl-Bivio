@@ -531,6 +531,7 @@ sub _called_in_closure {
 
 sub _load_type_class {
     my($func, $args) = @_;
+    b_use('Test.Request')->require_no_cookie;
     $_TYPE = $_CL->map_require('TestUnit', $func);
     $_TYPE = $_TYPE->new_unit($_PROTO->builtin_class(), @$args)
 	if $_TYPE->can('new_unit');
