@@ -146,6 +146,18 @@ sub internal_xhtml_adorned {
     });
 }
 
+sub js {
+    my($self) = @_;
+    view_class_map('JavaScriptWidget');
+    view_declare('js_body');
+    view_shortcuts($self->VIEW_SHORTCUTS);
+    view_main(SimplePage({
+	content_type => 'text/javascript',
+	value => view_widget_value('js_body'),
+    }));
+    return;
+}
+
 sub mail {
     my($self) = @_;
     view_main(_mail($self));
@@ -158,7 +170,7 @@ sub pre_compile {
     view_parent(
 	$self->PARENT_CLASS
 	. '->'
-	. ($n =~ /_(imail|mail|csv|rss|css|xml)$/ ? $1 : 'xhtml')
+	. ($n =~ /_(imail|js|mail|csv|rss|css|xml|xhtml_widget)$/ ? $1 : 'xhtml')
     ) unless $self->use('View.' . $self->PARENT_CLASS)->can($n);
     return;
 }
@@ -201,6 +213,17 @@ sub xhtml {
     return;
 }
 
+sub xhtml_widget {
+    my($self) = @_;
+    view_class_map('XHTMLWidget');
+    view_declare('xhtml_widget_body');
+    view_shortcuts($self->VIEW_SHORTCUTS);
+    view_main(SimplePage({
+	content_type => 'text/xhtml+xml',
+	value => view_widget_value('xhtml_widget_body'),
+    }));
+    return;
+}
 
 sub _mail {
     my($self) = @_;
