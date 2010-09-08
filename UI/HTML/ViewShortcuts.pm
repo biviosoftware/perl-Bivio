@@ -2,16 +2,16 @@
 # $Id$
 package Bivio::UI::HTML::ViewShortcuts;
 use strict;
-use base 'Bivio::UI::ViewShortcuts';
+use Bivio::Base 'UI.ViewShortcuts';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_WF) = __PACKAGE__->use('Bivio::UI::HTML::WidgetFactory');
-my($_V6) = __PACKAGE__->use('IO.Config')->if_version(6);
+my($_WF) = b_use('Bivio::UI::HTML::WidgetFactory');
+my($_V6) = b_use('IO.Config')->if_version(6);
 my($_LINK_TARGET) = $_V6 ? undef : '_top';
 my($_ATTRS) = {};
 our($_TRACE);
-my($_AA) = __PACKAGE__->use('Action.Acknowledgement');
+my($_AA) = b_use('Action.Acknowledgement');
 
 sub BOP_HTML_CLASSES {
     return [qw(
@@ -524,15 +524,7 @@ sub _escape {
 }
 
 sub _use {
-    # (string, ....) : array
-    # Executes Bivio::IO::ClassLoader->simple_require on its args.  Inserts
-    # HTMLWidget# prefix, if class does not contain
-    # colons.  Returns the named classes.
-    my(@class) = @_;
-    return map {
-	$_ =~ /:/ ? Bivio::IO::ClassLoader->simple_require($_)
-	: Bivio::IO::ClassLoader->map_require('HTMLWidget', $_);
-    } @class;
+    return map(b_use($_ =~ /\W/ ? $_ : ('HTMLWidget', $_)), @_);
 }
 
 sub _wf {
