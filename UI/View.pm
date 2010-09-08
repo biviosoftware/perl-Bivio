@@ -217,7 +217,7 @@ sub as_string {
 }
 
 sub call_main {
-    my($proto, $view_name, $req) = @_;
+    my($proto, $view_name, $req) = _view_name_args(@_);
     b_die('req: missing argument')
 	unless $req;
     # Return the result of calling execute on the widget rendered by view_main
@@ -305,7 +305,7 @@ sub pre_call_main {
 }
 
 sub render {
-    my($proto, $view_name, $req) = @_;
+    my($proto, $view_name, $req) = _view_name_args(@_);
     # Renders view identified by I<view_name> and returns the result.
     #
     # Always returns false.
@@ -313,7 +313,7 @@ sub render {
     my($o) = $reply->unsafe_get_output;
     Bivio::Die->die($view_name, ': output already exists: ', $o)
         if $o;
-    shift->call_main(@_);
+    $proto->call_main($view_name, $req);
     return $reply->delete_output
 	|| Bivio::Die->die($view_name, ': no output was rendered');
 }
@@ -377,7 +377,7 @@ sub _get_instance {
 	entity => $name_arg,
 	class => $proto,
 	facade => $facade,
-    }) unless my $self = $proto->unsafe_new($name_arg, $facade)
+    }) unless my $self = ($proto->unsafe_new($name_arg, $facade))
 	|| !$proto->isa('Bivio::UI::View::LocalFile')
 	&& $proto->use('View.LocalFile')->unsafe_new($name_arg, $facade);
     my($unique) = join('->', ref($self), $self->absolute_path);
@@ -416,6 +416,14 @@ sub _pre_execute {
     _pre_execute($parent, $req) if $parent;
     $code->($req) if $code;
     return;
+}
+
+sub _view_name_args {
+    my($proto, $class, $view_name, $req) = @_;
+    return (
+	$proto,
+	@_ <= 3 ? ($class, $view_name) : ("${class}->$view_name", $req),
+    );
 }
 
 1;
