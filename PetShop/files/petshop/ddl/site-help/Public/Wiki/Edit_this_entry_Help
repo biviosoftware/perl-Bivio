@@ -1,0 +1,15 @@
+This is the page to edit an existing blog entry. Fill out/edit the following forms.
+@dl
+@dt Title
+@dd
+This is the title of the blog entry
+@dt Public?
+@dd
+Click this if you would like to make the page visible to anyone who visits the page.
+@dt Text field
+@dd 
+Fill out/edit this text field
+@dt OK
+@dd
+Click this once you have finished editing this page to save it. 
+@/dl

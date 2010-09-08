@@ -1,0 +1,19 @@
+This page displays the details of the blog entry you have clicked on. Under the title of the blog you will see the date the page was created and who/when the blog was last edited by. Underneath the text you will see 5 links the following will tell you what they are about.
+
+@dl
+@dt Edit This Entry
+@dd
+Click this if you would like to edit this blog entry.
+@dt New Blog Entry
+@dd
+Click this if you would like to create a New Blog Entry.
+@dt Back
+@dd
+Click this if you would like to view the previous blog.
+@dt Next
+@dd
+Click this if you would like to view the next blog.
+@dt Back To List
+@dd
+Click this if you would like to view the list of all the blog entries for this blog.
+@/dl

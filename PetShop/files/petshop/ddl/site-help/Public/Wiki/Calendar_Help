@@ -1,0 +1,24 @@
+This is the website's calendar. 
+@dl
+@dt Drop Menu
+@dd
+Click this to chose the month you would like to view on the calendar.
+@dt Show in UTC time
+@dd
+Click this if you would like to view the time in Universal Time, Coordinated.
+@dt [Change]
+@dd
+Click this if you would like to edit your account imformation.
+@dt View events in a list
+@dd
+Click this if you would like to view all the events in a list vs. a calendar.
+@dt Add Event
+@dd
+Click this if you would like to create a new calendar event.
+@dt All Forums
+@dd
+Click this if you would like to view all forums' events in this calendar.
+@dt iCal
+@dd
+Click this if you would like to view this calendar in iCal(mac only)
+@/dl

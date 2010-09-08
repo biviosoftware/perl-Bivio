@@ -1,0 +1,17 @@
+This page creates a blog entry. To create a new blog entry, you first have to have the ability to write files. You can click "BLOG", and then click "New Blog Entry" in the toolbar on the right side or the lower left of the page. 
+
+Once you click this you will be presented with a form with the following fields:
+@dl
+@dt Title
+@dd 
+is the name of the new blog.
+@dt Public?
+@dd
+Makes the blog entry visible to anyone who visits the website or not.
+@dt Text field
+@dd
+Type here to create text in the blog.
+@dt OK
+@dd
+Click OK to enter the blog.
+@/dl

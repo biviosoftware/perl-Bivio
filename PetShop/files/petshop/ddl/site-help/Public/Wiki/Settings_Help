@@ -1,0 +1,26 @@
+This is the page to edit your personal information. Fill out/edit the following forms if you would like to create new/edit your account.
+@dl
+@dt First Name: 	
+@dd
+Enter your first name into this text field.
+@dt Middle Name: 	
+@dd
+Enter your middle name into this text field.
+@dt Last Name: 	
+@dd
+Enter your last name into this text field.
+@dt List Size: 	
+@dd
+Click the drop menu to click the list size you wish to have whenever you see a list on this site.
+@dt Time Zone:
+@dd
+Enter the time zone you are in ie. UTC 	
+@dt User Id:
+@dd
+Enter the user ID you wish to use.
+@dt Forum/Subscribed?
+@dd
+Click the check box to the according forum if you wish to subscribe to it.
+@dt OK
+@dd
+Click OK to save

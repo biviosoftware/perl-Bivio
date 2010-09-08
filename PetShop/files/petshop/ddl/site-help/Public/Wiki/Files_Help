@@ -1,0 +1,14 @@
+This is the page to view existing files, editing existing files and uploading new files. Click the blue and white wrench to upload a file, edit, add sub-folder or move the folder.
+@dl
+@dt Name
+@dd Under this are names of folders/files. Click on the icon of a folder to open/collapse the folder.
+@dt Changed
+@dd
+Under this are the dates of when the item(s) have last been changed.
+@dt Size
+@dd
+Under this are the sizes of the item(s) below.
+@dt Who
+@dd
+Under this is who edited the item(s) last.
+@/dl

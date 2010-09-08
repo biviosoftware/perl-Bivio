@@ -1,0 +1,42 @@
+This is the page to create a new calendar event. Fill in the following forms to create a new event.
+@dl
+@dt Title: 	
+@dd
+Enter the title into this field.
+@dt Forum: 	
+@dd
+Enter the forum you would like the event to be attached to into this field.
+@dt Time Zone: 
+@dd 
+Enter the time zone you would like the event to be in into this field.
+@dt Start Date: 	
+@dd
+Enter the date you would like the event to start on into this field.
+@dt Start Time: 	
+@dd
+Enter the time you would like the event to start at into this field.
+@dt End Date: 	
+@dd
+Enter the date you would like the event to end at into this field.
+@dt End Time: 	
+@dd
+Enter the time you would like the event to end at into this field.
+@dt Description: 	
+@dd
+Describe the event in this field.
+@dt Location: 	
+@dd
+Enter the location of the event into this field.
+@dt URL: 	
+@dd
+Enter the event's site's URL into this field
+@dt Repeats: 	
+@dd
+If you would like to repeat the event ie. every monday, click the drop menu and select how often you would like the event to repeat.
+@dt Repeat ends: 	
+@dd
+Enter when you would like the event to stop repeating ie. never into this field.
+@dt OK
+@dd
+Click Add to create the new event.
+@/dl

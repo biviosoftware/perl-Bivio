@@ -1,0 +1,48 @@
+This is the page to edit and move folders/files. 
+FOR FOLDERS.
+@dl
+@dt Add file
+@dd
+Click on this to add a file once you have clicked on this click browse or just enter the location of the file you are going to upload. Once you have done that click OK to upload the file.
+@dt Add text file
+@dd
+Click this if you would like to create a text file.
+Enter the "Name"-The title, into the "Name" field and enter your text into the "text field". Then click OK to save it.
+@dt Add Subfolder 
+@dd
+Click this if you would like to create a folder under this folder. Then enter the name of the subfolder into the "name field". Click OK to create the file.
+@dt Rename Folder
+@dd
+Click this to rename your folder. Enter the new name into the "New Name" field. Then click the OK button to save the name.
+ @dt Move Folder
+@dd
+Click this if you would like to move your folder. Click the drop menu and select the folder you would like the item to be put into. Then click OK to save.
+@dt Delete
+@dd
+Click this if you would like to delete this item. Then click OK to delete this item.
+@/dl
+
+FOR FILES
+@dl
+@dt Edit Contents
+@dd
+Click this if you would like to edit this files content. Edit the text in the "Text Field" and click OK to save the changes.
+@dt Replace Content
+@dd
+Click this if you would like to replace this file's content. Enter the file's location manually or click browse. Then click OK to replace the file's content.
+@dt Rename File
+@dd
+Click this if you would like to rename this file. Enter the new name into the "New Name" text field and click OK to rename the file.
+@dt Move file
+@dd
+Click this if you would like to move this file into a different parent folder. Click the drop menu and select the parent folder you would like to move this file into, then click OK to move it.
+@dt Delete
+@dd
+Click this if you would like to delete this file. Click OK to delete it.
+@dt Leave File Locked
+@dd
+Click this if you would like to lock your file.
+@dt Unlock
+@dd
+Click this to unlock your file.
+@/dl
