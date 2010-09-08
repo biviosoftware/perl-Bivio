@@ -7,7 +7,8 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('SQL.Connection');
 my($_R) = b_use('Auth.Role');
-my($_V1) = b_use('IO.Config')->if_version(1);
+b_die('v0: no longer supported')
+    unless b_use('IO.Config')->if_version(1);
 my($_ROLES_ORDER) = [map($_R->unsafe_from_name($_) ? $_R->$_() : (), qw(
     ADMINISTRATOR
     ACCOUNTANT
@@ -22,6 +23,9 @@ foreach my $r ($_R->get_non_zero_list) {
     push(@$_ROLES_ORDER, $r)
 	unless grep($r == $_, @$_ROLES_ORDER);
 }
+my($i) = 1;
+my($_ROLES_ORDERING) = {map(($_ => $i++), @$_ROLES_ORDER)};
+my($_CACHE) = {};
 
 sub LOAD_ALL_SIZE {
     return 3000;
@@ -45,9 +49,7 @@ sub internal_initialize {
 		name => 'roles',
 		type => 'String',
 		constraint => 'NONE',
-		!$_V1 ? (
-		    in_select => 0,
-		) : b_use('ShellUtil.SQL')->is_oracle ? (
+	        b_use('ShellUtil.SQL')->is_oracle ? (
                     in_select => 1,
                     select_value => q{(SELECT
 			group_concat(
@@ -114,53 +116,47 @@ sub internal_qualifying_roles {
     return [];
 }
 
+#could cache this, too
 sub roles_by_category {
     my($self, $roles) = @_;
-    $roles = {map(($_ => 1), @{$roles || $self->get('roles') || []})};
+    my($map) = {map(($_ => 1), @{$roles ||= $self->get('roles') || []})};
     my($main) = [];
     foreach my $m (@{$_R->get_category_role_group('all_users')}) {
 	push(@$main, $m)
-	    if delete($roles->{$m});
+	    if delete($map->{$m});
     }
     return (
 	$self->roles_in_order($main),
-	$self->roles_in_order([keys(%$roles)]),
+	$self->roles_in_order([grep($map->{$_}, @$roles)]),
     );
 }
 
+#can be private
 sub roles_in_order {
     my($self, $roles) = @_;
     $roles ||= $self->get('roles');
-    return [map({
-	my($r) = $_;
-	grep($r eq $_, @$roles) ? $r : ();
-    } @{$self->ROLES_ORDER})];
+    return [sort({
+    	$_ROLES_ORDERING->{$a} <=> $_ROLES_ORDERING->{$b};
+    } @$roles)];
 }
 
 sub _roles {
     my($self, $row) = @_;
-    my($main, $aux) = $self->roles_by_category(
-	$_V1 ? [map($_R->from_sql_column($_), split(/,/, $row->{roles}))]
-	   : _select_roles($self, $row));
-    $row->{roles} = [@$main, @$aux];
-    if (@$main > 1) {
-#	b_warn($main, ': too many main roles in ', $row);
-    }
-    elsif (!@$main) {
-#	b_warn($main, ': no main role in ', $row);
-	$main = $aux;
-    }
-    $row->{'RealmUser.role'} = $main->[$#$main];
+    my($res) = $_CACHE->{$row->{roles}} ||= _roles_compute($self, $row);
+    $row->{roles} = $res->[0];
+    $row->{'RealmUser.role'} = $res->[1];
     return;
 }
 
-sub _select_roles {
+sub _roles_compute {
     my($self, $row) = @_;
-    return $_C->map_execute(
-	sub {$_R->from_sql_column(shift->[0])},
-	'SELECT role FROM realm_user_t WHERE realm_id = ? AND user_id = ?',
-	[$row->{'RealmUser.realm_id'}, $row->{'RealmUser.user_id'}],
+    my($main, $aux) = $self->roles_by_category(
+	[map($_R->from_sql_column($_), split(/,/, $row->{roles}))],
     );
+    my($roles) = [@$main, @$aux];
+    $main = $aux
+	unless @$main;
+    return [$roles, $main->[$#$main]];
 }
 
 1;
