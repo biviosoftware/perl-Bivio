@@ -8,6 +8,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TI) = b_use('Agent.TaskId');
 my($_T) = b_use('Agent.Task');
+my($_R) = b_use('Auth.Realm');
+b_die('v6: no longer supported')
+    unless b_use('IO.Config')->if_version(7);
 
 sub assert_realm_exists {
     my($self, $realm_id, $task_id) = @_;
@@ -46,12 +49,6 @@ sub realm_exists {
     return $ok ? 1 : 0;
 }
 
-sub internal_clear_model_cache {
-    my($self) = @_;
-    $self->[$_IDI] = undef;
-    return shift->SUPER::internal_clear_model_cache(@_);
-}
-
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -71,23 +68,22 @@ sub internal_post_load_row {
     my($self, $row) = @_;
     return 0
 	unless shift->SUPER::internal_post_load_row(@_);
-    my($task) = $self->[$_IDI]
-	||= $_T->get_by_id($self->get_query->get('task_id'));
-    return $task->has_realm_type($row->{'RealmOwner.realm_type'})
-	&& $self->req->can_user_execute_task(
-	    $task,
-	    $self->new_other('RealmOwner')->load_from_properties($row),
-    );
+    my($fields) = $self->[$_IDI];
+    return $fields->{is_defined_for_facade}
+	&& $_R->new($self->new_other('RealmOwner')->load_from_properties($row))
+	->can_user_execute_task($fields->{task}, $self->req);
 }
 
 
 sub load_all_for_task {
     my($self, $task_id) = @_;
+    $task_id = $_TI->from_any($task_id || $self->req('task_id'));
+    $self->[$_IDI] = _init($self, $task_id);
     return $self->req->with_realm(
 	$self->req('auth_user'),
 	sub {
 	    return $self->load_all({
-		task_id => $_TI->from_any($task_id || $self->req('task_id')),
+		task_id => $task_id,
 	    });
 	},
     );
@@ -95,6 +91,16 @@ sub load_all_for_task {
 
 sub realm_ids {
     return _load(@_)->map_rows(sub {shift->get('RealmUser.realm_id')});
+}
+
+sub _init {
+    my($self, $task_id) = @_;
+    my($t) = $_T->get_by_id($task_id);
+    return {
+	task => $t,
+	is_defined_for_facade => b_use('FacadeComponent.Task')
+	    ->is_defined_for_facade($task_id->get_name, $self->req),
+    };
 }
 
 sub _load {
