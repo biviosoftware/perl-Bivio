@@ -1,10 +1,9 @@
-# Copyright (c) 1999 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::StandardSubmit;
 use strict;
-use Bivio::Base 'Bivio::UI::HTML::Widget::Grid';
-use Bivio::UI::HTML::ViewShortcuts;
-use Bivio::UI::HTML::Widget::ClearDot;
+use Bivio::Base 'HTMLWidget.Grid';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::StandardSubmit> Draws buttons associated with
 # the form. By default, the ok_button and cancel_button are rendered. Use
@@ -27,8 +26,6 @@ use Bivio::UI::HTML::Widget::ClearDot;
 # field name.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SEPARATION) = 10;
 
@@ -57,11 +54,11 @@ sub initialize {
 		    'Bivio::Type::CancelButton')
 	            ? 'onclick="reset()"'
 	            : '',
-	    label => $_VS->vs_text($form->simple_package_name,
+	    label => vs_text($form->simple_package_name,
 		    $labels->{$button} || $button),
 	}));
 	unshift(@$values,
-		Bivio::UI::HTML::Widget::ClearDot->as_html($_SEPARATION))
+		ClearDot()->as_html($_SEPARATION))
 		unless $button eq $buttons->[0];
     }
 
