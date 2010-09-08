@@ -241,7 +241,15 @@ sub info_base {
 	    ANYBODY
 	    Action.Error
 	)],
-#193-199 free
+	[qw(
+	    PUBLIC_WIDGET_INJECTOR
+	    193
+	    GENERAL
+	    ANYBODY
+	    View.WidgetInjector->public_xhtml_widget_js
+	)],
+	
+#194-199 free
     ];
 }
 
