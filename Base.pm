@@ -9,6 +9,7 @@ use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_USE) = {};
 
 sub import {
     my(undef, $map_or_class) = @_;
@@ -48,7 +49,13 @@ sub b_trace {
 }
 
 sub b_use {
-    return Bivio::IO::ClassLoader->map_require(@_);
+    my($cache);
+    # COUPLING: Bivio::IO::ClassLoader->unsafe_map_require
+    {
+	no strict 'refs';
+	$cache = ${(caller(0))[0] . '::'}{HASH}->{'Bivio::Base::b_use'} ||= {};
+    };
+    return $cache->{join($;, @_)} ||= Bivio::IO::ClassLoader->map_require(@_);
 }
 
 sub b_warn {
