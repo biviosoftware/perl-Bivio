@@ -18,7 +18,7 @@ my($_TEXT) = b_use('FacadeComponent.Text');
 my($_FP) = b_use('Type.FilePath');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    ignore_dashes_in_recipient => $_C->if_version(5),
+    ignore_dashes_in_recipient => $_C->if_version(5, 1, 0),
     filter_spam => 0,
     duplicate_threshold_seconds => 3600,
 });
