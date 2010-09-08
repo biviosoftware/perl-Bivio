@@ -12,7 +12,7 @@ b_use('Bivio.Test')->register_handler(__PACKAGE__);
 my($_CL) = b_use('IO.ClassLoader');
 
 sub get_instance {
-    return shift->get_current_or_new(@_);
+    return shift->get_current_or_new(@_)->require_no_cookie;
 }
 
 sub new_unit {
@@ -52,7 +52,7 @@ sub execute_task {
     $self->req->delete('list_model');
     $self->capture_mail;
     $self->get('task')->execute($self);
-    my($o) = $self->get('reply')->get_output;
+    my($o) = $self->get('reply')->delete_output;
     return [$o ? $$o : undef, @{$self->unsafe_get_captured_mail}];
 }
 
@@ -66,14 +66,13 @@ sub get_current_or_new {
     my($self) = $proto->get_current;
     return $self
 	if $self;
-    $self = $proto->new({
+    $self = $proto->new({})->put_durable(
 	auth_id => undef,
 	auth_user_id => undef,
 	task_id => b_use('Agent.TaskId')->SHELL_UTIL,
 	timezone => b_use('Type.DateTime')->timezone,
 	is_secure => 0,
 	disable_assert_cookie => 1,
-    })->put(
 	reply => b_use('Test.Reply')->new,
     );
     $self->set_realm(undef);
@@ -95,12 +94,13 @@ sub handle_prepare_case {
 
 sub initialize_fully {
     my($self) = shift(@_);
-    $self = $self->get_instance unless ref($self);
+    $self = $self->get_instance
+	unless ref($self);
     my($task_id, $req_attrs, $facade_name) = @_;
     ($req_attrs ||= {})->{task_id} = b_use('Agent.TaskId')->from_any(
 	$task_id || $self->unsafe_get('task_id') || 'SHELL_UTIL');
     b_use('Agent.Dispatcher')->initialize;
-    $self->put(%$req_attrs);
+    $self->put_durable(%$req_attrs);
     if ($facade_name) {
 	$self->setup_facade($facade_name);
     }
@@ -155,6 +155,17 @@ sub put_on_query {
     return $self;
 }
 
+sub require_no_cookie {
+    b_use('IO.Config')->introduce_values({
+	'Bivio::IO::ClassLoader' => {
+	    delegates => {
+		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
+	    },
+	},
+    }) unless $_CL->was_required('Bivio::Agent::HTTP::Cookie');
+    return shift;
+}
+
 sub run_unit {
     return shift->use('TestUnit.Unit')->run_unit(@_);
 }
@@ -192,7 +203,7 @@ sub setup_facade {
 }
 
 sub setup_http {
-    my($self, $cookie_class) = @_;
+    my($self) = @_;
     $self = $self->get_instance
 	unless ref($self);
     return $self
@@ -228,14 +239,6 @@ sub setup_http {
 	'get_server_port()' => [80],
     });
     $self->put_durable(r => $r);
-    b_use('IO.Config')->introduce_values({
-	'Bivio::IO::ClassLoader' => {
-	    delegates => {
-		'Bivio::Agent::HTTP::Cookie' =>
-		    $cookie_class || 'Bivio::Delegate::NoCookie',
-	    },
-	},
-    }) unless $_CL->was_required('Bivio::Agent::HTTP::Cookie');
     # Cookie overwrites, so we have to reset below
     my($user) = $self->get('auth_user');
     $self->put_durable(
