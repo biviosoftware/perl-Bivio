@@ -326,7 +326,7 @@ sub handle_pre_execute_task {
 
 sub has_realm_type {
     my($self, $realm_type) = @_;
-    return $realm_type->equals_or_any_owner_check($self->get('realm_type'));
+    return $self->get('_has_realm_type')->{$realm_type};
 }
 
 sub initialize {
@@ -622,6 +622,11 @@ sub _new {
 	    unless defined($attrs->{$x->[0]});
     }
     $attrs->{items} = $new_items;
+    $attrs->{_has_realm_type} = {
+	map(($_ => $_->equals_or_any_owner_check($realm_type)),
+	    $_RT->get_list,
+	),
+    };
     $self->internal_put($attrs);
     return $self->set_read_only;
 }
