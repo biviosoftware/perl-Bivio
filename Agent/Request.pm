@@ -185,27 +185,22 @@ b_use('IO.Trace');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 my($_A) = b_use('IO.Alert');
-my($_C) = b_use('SQL.Connection');
 my($_D) = b_use('Bivio.Die');
 my($_DC) = b_use('Bivio.DieCode');
 my($_DT) = b_use('Type.DateTime');
-my($_FCC) = b_use('FacadeComponent.Constant');
-my($_FCT) = b_use('FacadeComponent.Task');
-my($_F);
-my($_FM) = b_use('Biz.FormModel');
 my($_HTML) = b_use('Bivio.HTML');
-my($_Q) = b_use('AgentHTTP.Query');
-my($_REALM) = b_use('Auth.Realm');
-my($_ROLE) = b_use('Auth.Role');
+my($_ADMINISTRATOR) = b_use('Auth.Role')->ADMINISTRATOR;
+my($_ROLE_USER) = b_use('Auth.Role')->USER;
+my($_ANONYMOUS) = b_use('Auth.Role')->ANONYMOUS;
 my($_GENERAL) = b_use('Auth.RealmType')->GENERAL;
 my($_USER) = b_use('Auth.RealmType')->USER;
-my($_T) = b_use('Agent.Task');
 my($_TI) = b_use('Agent.TaskId');
+my($_T) = b_use('Agent.Task');
 my($_UA) = b_use('Type.UserAgent');
-my($_IC) = b_use('IO.Config');
-my($_V1) = $_IC->if_version(1);
-my($_V7) = $_IC->if_version(7);
-$_IC->register(my $_CFG = {
+my($_C) = b_use('IO.Config');
+my($_V1) = $_C->if_version(1);
+my($_V7) = $_C->if_version(7);
+$_C->register(my $_CFG = {
     is_production => 0,
     can_secure => 1,
     apache_version => 1,
@@ -241,6 +236,10 @@ sub FORMAT_URI_PARAMETERS {
 
 sub FORM_IN_QUERY_FLAG {
     return 'form_post';
+}
+
+sub REQUIRE_ABSOLUTE_GLOBAL {
+    return 'format_uri.require_absolute';
 }
 
 sub SERVER_REDIRECT_PARAMETERS {
@@ -313,9 +312,9 @@ sub can_user_execute_task {
     my($tid) = $task->get('id');
     return 0
 	if $_V7
-	&& !$_FCT->is_defined_for_facade($tid->get_name, $self);
+	&& !b_use('FacadeComponent.Task')->is_defined_for_facade($tid->get_name, $self);
     if ($realm) {
-        $realm = $_REALM->new($realm, $self);
+        $realm = b_use('Auth.Realm')->new($realm, $self);
 	$task->assert_realm_type($realm->get('type'));
     }
     else {
@@ -355,9 +354,9 @@ sub client_redirect {
 	b_die($named->{uri}, ': cannot redirect to an http URI')
 	    if $named->{uri} =~ /^\w+:/;
 	$named->{uri} =~ s/\?(.*)//;
-	$named->{query} = $_Q->parse($1);
+	$named->{query} = b_use('AgentHTTP.Query')->parse($1);
 	my($task_id, $auth_realm, $path_info)
-	    = $_FCT->parse_uri($named->{uri}, $self);
+	    = b_use('FacadeComponent.Task')->parse_uri($named->{uri}, $self);
 	$named->{task_id} = $task_id;
 	$named->{realm} = $auth_realm->unsafe_get('owner_name');
 	$named->{path_info} = $path_info;
@@ -407,7 +406,7 @@ sub format_help_uri {
     $task_id = $task_id ? ref($task_id) ? $task_id
 	: $_TI->from_any($task_id)
 	: $self->get('task_id');
-    return $_FCT->format_help_uri($task_id, $self);
+    return b_use('FacadeComponent.Task')->format_help_uri($task_id, $self);
 }
 
 sub format_http {
@@ -416,8 +415,7 @@ sub format_http {
     #
     # Handles I<require_secure> according to rules in L<format_uri|"format_uri">.
     # Must be @_ so format_uri handles overloading properly
-    my($uri) = $self->format_uri(@_);
-    return $uri =~ /^\w+:/ ? $uri : $self->format_http_prefix . $uri;
+    return _http($self, $self->format_uri(@_));
 }
 
 sub format_http_insecure {
@@ -427,7 +425,7 @@ sub format_http_insecure {
     return $uri
 	if $uri =~ s/^https:/http:/;
     return 'http://'
-	. ($_F ||= b_use('UI.Facade'))->get_value('http_host', $self)
+	. b_use('UI.Facade')->get_value('http_host', $self)
         . $uri;
 }
 
@@ -440,7 +438,7 @@ sub format_http_toggling_secure {
     my($self, $host) = @_;
     my($is_secure, $r, $redirect_count, $uri, $query) = $self->get(
 	    qw(is_secure r redirect_count uri query));
-    $host ||= ($_F ||= b_use('UI.Facade'))->get_value('http_host', $self);
+    $host ||= b_use('UI.Facade')->get_value('http_host', $self);
 
     # This is particularly strange.  FormModel deletes the incoming
     # query context.   If we haven't internally redirected, we use
@@ -451,7 +449,7 @@ sub format_http_toggling_secure {
 #      really the form_model.
 #      RJN 12/13/00 For require_secure, shouldn't grab form context,
 #      because we don't even want to pretend to process it.
-    $query = $redirect_count ? $_Q->format($query, $self)
+    $query = $redirect_count ? b_use('AgentHTTP.Query')->format($query, $self)
 	    : $r->args;
     $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query)
 	if $query;
@@ -468,13 +466,12 @@ sub format_http_prefix {
     # You should pass in the I<require_secure> value for the task you are
     # rendering for.
     # If is_secure is not set, default to non-secure
-    $_F = b_use('UI.Facade')
-	unless $_F;
     return ($self->unsafe_get('is_secure') || $require_secure
 	? 'https://' : 'http://')
-        . $_F->get_value(
+        . b_use('UI.Facade')->get_value(
 	    'http_host',
-	    $facade_uri ? $_F->find_by_uri_or_domain($facade_uri) : $self,
+	    $facade_uri ? b_use('UI.Facade')->find_by_uri_or_domain($facade_uri)
+		: $self,
 	);
 }
 
@@ -528,15 +525,12 @@ sub format_uri {
     #
     # I<anchor> will be appended last.
     #
-    # I<no_context> and I<require_context> as described by
-    # L<$_FCT::format_uri|$_FCT/"format_uri">.
+    # I<no_context> and I<require_context> as described by FacadeComponent.Task
     my($self) = shift;
     my($named);
     ($self, $named) = $self->internal_get_named_args(
 	$self->FORMAT_URI_PARAMETERS,
 	\@_);
-    return $self->format_http($named)
-	if delete($named->{require_absolute});
     my($uri);
     b_die($named, ': must supply query with form_in_query')
         if $named->{form_in_query} && ref($named->{query}) ne 'HASH';
@@ -548,7 +542,7 @@ sub format_uri {
 	    || defined($named->{require_context});
 	$named->{uri} = $uri;
 	$self->internal_copy_implicit($named);
-	$uri = $_FCT->format_uri($named, $self);
+	$uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
     }
     else {
 	$named->{task_id} = $self->unsafe_get('task_id')
@@ -559,14 +553,14 @@ sub format_uri {
 	$named->{no_form} = 0
 	    if my $ncst = $self->need_to_secure_task(
 		$_T->get_by_id($named->{task_id}));
-	$uri = $_FCT->format_uri($named, $self);
+	$uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
 	$uri = $self->format_http_prefix(1, $named->{facade_uri}) . $uri
 	    if $ncst;
     }
     if (defined($named->{query})) {
 	$named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1
 	    if $named->{form_in_query};
-        $named->{query} = $_Q->format($named->{query}, $self)
+        $named->{query} = b_use('AgentHTTP.Query')->format($named->{query}, $self)
             if ref($named->{query});
         $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
 	    if defined($named->{query}) && length($named->{query});
@@ -576,7 +570,7 @@ sub format_uri {
 #TODO: Handle case with a uri which is already absolute
     $uri = $self->format_http_prefix(undef, $named->{facade_uri}) . $uri
 	if $named->{facade_uri};
-    return $uri;
+    return $named->{require_absolute} ? _http($self, $uri) : $uri;
 }
 
 sub get_auth_role {
@@ -649,7 +643,7 @@ sub get_form {
 
 sub get_form_context_from_named {
     my($self, $named) = @_;
-    # Used to communicate between L<$_FCT|$_FCT>,
+    # Used to communicate between FacadeComponent.Task
     # L<$_T|$_T>, and this class.  You don't want to
     # call this.
     my($fc);
@@ -662,7 +656,7 @@ sub get_form_context_from_named {
             && $_T->get_by_id($named->{task_id})
 		->get('require_context')
 	) && ($fc = exists($named->{form_context}) ? $named->{form_context}
-		  : $_FM->get_context_from_request(
+		  : b_use('Biz.FormModel')->get_context_from_request(
 		      $named, $self)
 #THIS MAY BE DUBIOUS
 	) && ($fc->unsafe_get('unwind_task') || '') ne $named->{task_id}
@@ -723,7 +717,7 @@ sub internal_client_redirect_args {
 		unless exists($named->{$a}) || exists($named->{"carry_$a"});
 	}
 	$self->internal_copy_implicit($named);
-	$named->{query} = $_Q->format($named->{query}, $self)
+	$named->{query} = b_use('AgentHTTP.Query')->format($named->{query}, $self)
 	    if ref($named->{query});
 	$named->{uri} =~ s/\?/\?$named->{query}&/
 	    || ($named->{uri} .= '?'.$named->{query})
@@ -767,6 +761,9 @@ sub internal_get_named_args {
 	? $named->{task_id}
 	: $_TI->from_name($named->{task_id})
 	if grep($_ eq 'task_id', @$names);
+    $named->{require_absolute} = 1
+	if !defined($named->{require_absolute})
+	&& $self->unsafe_get($self->REQUIRE_ABSOLUTE_GLOBAL);
     _trace((caller(1))[3], $named) if $_TRACE;
     return ($self, $named);
 }
@@ -785,14 +782,14 @@ sub internal_get_realm_for_task {
     my($task) = $_T->get_by_id($task_id);
     return $realm
 	if $task->has_realm_type($realm->get('type'));
-    return $_REALM->get_general
+    return b_use('Auth.Realm')->get_general
 	if $task->has_realm_type($_GENERAL);
     unless ($task->has_realm_type($_USER)) {
 	b_die($task, ': unable to determine realm type for task')
 	    unless $no_die;
     }
     if (my $au = $self->get('auth_user')) {
-	return $_REALM->new($au);
+	return b_use('Auth.Realm')->new($au);
     }
     return undef;
 }
@@ -808,9 +805,9 @@ sub internal_initialize {
 sub internal_initialize_with_uri {
     my($self, $full_uri, $query) = @_;
     my($task_id, $auth_realm, $path_info, $uri, $initial_uri)
-	= $_FCT->parse_uri($full_uri, $self);
+	= b_use('FacadeComponent.Task')->parse_uri($full_uri, $self);
     $self->internal_set_current;
-    $query = $_Q->parse($query);
+    $query = b_use('AgentHTTP.Query')->parse($query);
     # SECURITY: Make sure the auth_id is NEVER set by the user.
     delete($query->{auth_id})
 	if $query;
@@ -834,7 +831,7 @@ sub internal_new {
     # when the instance is sufficiently initialized.
     #
     # I<attributes> is put_durable.
-    my($self) = $proto->SUPER::new({durable_keys => {durable_keys => 1}});
+    my($self) = $proto->SUPER::new;
     $self->put_durable(
 	# Initial keys 
 	%$attributes,
@@ -887,17 +884,18 @@ sub internal_server_redirect {
 	$self->SERVER_REDIRECT_PARAMETERS,
 	\@_,
     );
-    $_FCT->assert_defined_for_facade($named->{task_id}, $self);
+    b_use('FacadeComponent.Task')
+	->assert_defined_for_facade($named->{task_id}, $self);
     $self->internal_copy_implicit($named);
-    $named->{query} = $_Q->format($named->{query}, $self)
+    $named->{query} = b_use('AgentHTTP.Query')->format($named->{query}, $self)
 	if ref($named->{query});
     $named->{query} = defined($named->{query})
-	? $_Q->parse($named->{query}) : undef;
-    my($fc) = $_FM->get_context_from_request($named, $self);
+	? b_use('AgentHTTP.Query')->parse($named->{query}) : undef;
+    my($fc) = b_use('Biz.FormModel')->get_context_from_request($named, $self);
     $self->internal_redirect_realm($named->{task_id}, $named->{realm});
     $named->{path_info} = undef
 	unless exists($named->{path_info}) || exists($named->{carry_path_info});
-    $named->{uri} = $_FCT->has_uri($named->{task_id})
+    $named->{uri} = b_use('FacadeComponent.Task')->has_uri($named->{task_id})
 	? $self->format_uri({
 	    map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
 		@{$self->FORMAT_URI_PARAMETERS}),
@@ -930,7 +928,7 @@ sub is_http_method {
 
 sub is_production {
     my($self) = @_;
-    $_CFG->{is_production} ||= $_IC->is_production;
+    $_CFG->{is_production} ||= $_C->is_production;
     return ref($self)
 	? $self->get_if_exists_else_put(is_production => $_CFG->{is_production})
 	: $_CFG->{is_production};
@@ -939,8 +937,9 @@ sub is_production {
 sub is_site_admin {
     my($self) = @_;
     return $self->match_user_realms({
-	'RealmUser.realm_id' => $_FCC->get_value('site_realm_id', $self),
-	roles => $_ROLE->ADMINISTRATOR,
+	'RealmUser.realm_id' => b_use('FacadeComponent.Constant')
+	    ->get_value('site_realm_id', $self),
+	roles => $_ADMINISTRATOR,
     });
 }
 
@@ -961,7 +960,7 @@ sub is_super_user {
 	: Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
 	    realm_id => $_GENERAL->as_int,
 	    user_id => $user_id,
-	    role => $_ROLE->ADMINISTRATOR,
+	    role => $_ADMINISTRATOR,
 	});
 }
 
@@ -1073,7 +1072,7 @@ sub put {
 		$_A->warn_deprecated($key, ': use realm_cache');
 	    }
 	    elsif ($key eq 'query') {
-		$value = $_Q->parse($value)
+		$value = b_use('AgentHTTP.Query')->parse($value)
 		    if defined($value) && ref($value) ne 'HASH';
 	    }
 	    return ($key, $value);
@@ -1086,7 +1085,10 @@ sub put_durable {
     my($self) = shift;
     # Puts durable attributes on the request.  A durable attribute survives
     # redirects.
-    my($durable_keys) = $self->get('durable_keys');
+    my($durable_keys) = $self->get_if_exists_else_put(
+	'durable_keys',
+	{durable_keys => 1},
+    );
     for (my ($i) = 0; $i < int(@_); $i += 2) {
 	$durable_keys->{$_[$i]} = 1;
     }
@@ -1352,22 +1354,27 @@ sub _get_roles {
         qw(auth_user user_realms));
 
     # If no user, then is always anonymous
-    return [$_ROLE->ANONYMOUS] unless $auth_user;
+    return [$_ANONYMOUS] unless $auth_user;
 
     # Not the current realm, but an authenticated realm
     return $user_realms->{$realm_id}->{roles}
         if ref($user_realms->{$realm_id});
 
     # User has no special privileges in realm
-    return [$_ROLE->USER];
+    return [$_ROLE_USER];
+}
+
+sub _http {
+    my($self, $uri) = @_;
+    return $uri =~ /^\w+:/ ? $uri : $self->format_http_prefix . $uri;
 }
 
 sub _load_realm {
     my($self, $new_realm) = @_;
-    return $_REALM->is_blessed($new_realm) ? $new_realm
+    return b_use('Auth.Realm')->is_blessed($new_realm) ? $new_realm
 	: defined($new_realm)
-	? $_REALM->new($new_realm, $self)
-	: $_REALM->get_general
+	? b_use('Auth.Realm')->new($new_realm, $self)
+	: b_use('Auth.Realm')->get_general
 }
 
 sub _perf_time_info {
