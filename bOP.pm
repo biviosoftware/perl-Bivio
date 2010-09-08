@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.65  2010/08/29 17:49:18  nagler
+  * Bivio::Test::HTMLParser::Forms
+    Detect err_title class showing up
+  * Bivio::Test::Language::HTTP
+    go_back() supports a count
+    When an err_title class shows up without input errors on the form, die
+
   Revision 9.64  2010/08/27 19:09:40  moeller
   * Bivio::Biz::Action::ECCreditCardProcessor
     don't warn about missing login unless on production
