@@ -442,7 +442,7 @@ sub is_loadavg_ok {
 }
 
 sub lock_action {
-    my(undef, $op, $name, $no_warn) = @_;
+    my($proto, $op, $name, $no_warn) = @_;
     # Creates a file lock for I<name> in /tmp/.  If I<name> is undef,
     # uses C<caller> subroutine name.  The usage is:
     #
@@ -520,7 +520,7 @@ sub lock_action {
     rmdir($lock_dir);
     $die->throw
 	if $die;
-    return @res;
+    return $proto->return_scalar_or_array(@res);
 }
 
 sub lock_realm {
