@@ -370,6 +370,7 @@ sub _cfg_base {
 	    [TEST_BACKDOOR => ['test-backdoor', 'test_backdoor']],
 	    [USER_HOME => '?'],
 	    [UNADORNED_PAGE => 'rp/*'],
+	    [PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
 	    [TEST_TRACE => 'test-trace/*'],
 	],
 	Text => [
