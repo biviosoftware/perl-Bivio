@@ -1,9 +1,9 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::TableBase;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::UI::HTML::ViewShortcuts;
+use Bivio::Base 'UI.Widget';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::TableBase>
 #
@@ -85,7 +85,6 @@ use Bivio::UI::HTML::ViewShortcuts;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML_ATTRS) = [qw(border cellpadding cellspacing width height style class id)];
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub initialize_html_attrs {
     # (self) : undef
@@ -99,8 +98,7 @@ sub initialize_html_attrs {
     }
     $self->put(
 	width => $self->subclass_is_table
-	    ? $_VS->vs_new(
-		'If',
+	    ? If(
 		[['->get_request'], 'Bivio::UI::Facade', 'HTML',
 		 '->get_value', 'page_left_margin'],
 		'95%',
@@ -122,7 +120,7 @@ sub initialize_html_attrs {
     # Make sure these two exist
     $self->get_if_exists_else_put(end_tag => 1);
     $self->get_if_exists_else_put(start_tag => 1);
-    $_VS->vs_html_attrs_initialize(
+    vs_html_attrs_initialize(
 	$self, [@$_HTML_ATTRS, qw(align start_tag end_tag background bgcolor)],
         $source,
     );
@@ -147,17 +145,17 @@ sub render_start_tag {
 	? join('',
 	       ($self->subclass_is_table ? "\n" : ()),
 	       '<table',
-	       $_VS->vs_html_attrs_render($self, $source, $_HTML_ATTRS),
+	       vs_html_attrs_render($self, $source, $_HTML_ATTRS),
 	       map({
 		   my($class, $method, $attr) = @$_;
 		   my($b);
 		   # as_html works, b/c it ignores subsequent args
 		   $self->unsafe_render_attr($attr, $source, \$b) && $b
-		       ? $class->$method($b, $attr, $req) : '',
+		       ? b_use($class)->$method($b, $attr, $req) : '',
 	       }
-		   [qw(Bivio::UI::Color format_html bgcolor)],
-		   [qw(Bivio::UI::Icon format_html_attribute background)],
-		   [qw(Bivio::UI::Align as_html align)],
+		   [qw(UI.Color format_html bgcolor)],
+		   [qw(UI.Icon format_html_attribute background)],
+		   [qw(UI.Align as_html align)],
 	       ),
 	       '>',
 	) : '';

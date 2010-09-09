@@ -1,13 +1,16 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::ViewShortcuts;
 use strict;
-use Bivio::Base 'UIHTML.ViewShortcuts';
+use Bivio::Base 'UIXHTML';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FF) = __PACKAGE__->use('HTMLWidget.FormField');
-my($_W) = __PACKAGE__->use('UI.Widget');
+my($_FF) = b_use('HTMLWidget.FormField');
+my($_W) = b_use('UI.Widget');
+my($_AA) = b_use('Action.Acknowledgement');
+my($_M) = b_use('Biz.Model');
+my($_WF) = b_use('UIHTML.WidgetFactory');
 my($_HTML_TAGS) = join('|', qw(
     A
     ABBR
@@ -101,9 +104,6 @@ my($_HTML_TAGS) = join('|', qw(
     UL
     VAR
 ));
-my($_AA) = __PACKAGE__->use('Action.Acknowledgement');
-my($_M) = b_use('Biz.Model');
-my($_WF) = b_use('UIHTML.WidgetFactory');
 my($_SUBMIT_CHAR) = '*';
 
 sub view_autoload {

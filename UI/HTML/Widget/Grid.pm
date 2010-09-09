@@ -1,9 +1,9 @@
-# Copyright (c) 1999-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Grid;
 use strict;
-use Bivio::Base 'Bivio::UI::HTML::Widget::TableBase';
-use Bivio::UI::Align;
+use Bivio::Base 'HTMLWidget.TableBase';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::Grid> lays out widgets in an html table.
 # There are two types of attributes: table and cell.
@@ -103,7 +103,6 @@ use Bivio::UI::Align;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SPACER) = '&nbsp;' x 3;
-my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
 my($_END_COL) = "</td>\n";
 
 sub initialize {
@@ -159,7 +158,7 @@ sub initialize {
 #TODO: Need better crosschecking
 		_append(\@p, ' width="1%"')
 			if $c->get_or_default('cell_compact', 0);
-		_append(\@p, Bivio::UI::Align->as_html($align)) if $align;
+		_append(\@p, b_use('UI.Align')->as_html($align)) if $align;
 		_append(\@p, qq{ rowspan="$rowspan"}) if $rowspan;
 		_append(\@p, qq{ colspan="$colspan"}) if $colspan;
 		_append(\@p, ' nowrap="nowrap"')
@@ -307,12 +306,11 @@ sub render {
 		    my($b);
 		    # Only first row_class counts
 		    $row =~ s/^<tr>/<tr$b>/
-			if $b = $_VS->vs_html_attrs_render_one(
+			if $b = vs_html_attrs_render_one(
 			    $w, $source, 'row_class');
-		    $cell .= Bivio::UI::Color->format_html($b, 'bgcolor', $req)
+		    $cell .= b_use('UI.Color')->format_html($b, 'bgcolor', $req)
 			if $b = $c->render_simple_attr('cell_bgcolor', $source);
-		    $cell .= $_VS->vs_html_attrs_render_one(
-			$c, $source, 'cell_class')
+		    $cell .= vs_html_attrs_render_one($c, $source, 'cell_class')
 		        . '>';
 		}
 		$w->render($source, \$cell);
