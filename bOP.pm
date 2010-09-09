@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,169 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.66  2010/09/08 22:08:53  nagler
+  * Bivio::Agent::HTTP::Cookie
+    rmpod
+    fmt
+  * Bivio::Agent::HTTP::Form
+    b_use
+  * Bivio::Agent::Job::Request
+    b_use
+  * Bivio::Agent::Request
+    is_production now comes from config.  Still in Request config.  One
+    must be true for is_production
+    added REQUIRE_ABSOLUTE_GLOBAL
+    Fixed numerous b_use calls
+  * Bivio::Agent::Task
+    display the error if the commit fails
+    cache has_realm_type
+  * Bivio::Auth::Realm
+    remove comments
+  * Bivio::Base
+    Added b_use cache.  Can't do in IO.ClassLoader, because has particular
+       semantics on post_require
+  * Bivio::Biz::Action::EmptyReply
+    b_use
+  * Bivio::Biz::Action
+    use eq, not ==
+  * Bivio::Biz::Model::AuthUserRealmList
+    fixed load_all_for_task to move out invariants
+    removed internal_clear_model_cache, because was clearing cache every
+    internal_post_load_row.
+    cache the state of is_defined_for_facade
+  * Bivio::Biz::Model::JobLock
+    rmpod
+    b_use
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    if_version changed (not sure how); fix use
+  * Bivio::Biz::Model::QuerySearchBaseForm
+    b_use
+  * Bivio::Biz::Model::RealmAdminEmailList
+    use get_category_role_group all_admins
+  * Bivio::Biz::Model::RealmOwner
+    b_use
+  * Bivio::Biz::Model::RoleBaseList
+    cache _roles()
+  * Bivio::Biz::Model::TaskLog
+    b_use
+  * Bivio::Biz::Model::TreeList
+    compare of PrimaryId was very slow so customized is_equal, and called here
+  * Bivio::Biz::Model::TupleSlotType
+    b_use
+  * Bivio::Biz::Model::UserLoginForm
+    b_use
+  * Bivio::Biz::Model
+    todo & fmt
+  * Bivio::Biz::Util::ListModel
+    b_use
+  * Bivio::Cache::RealmRole
+    restructure so internal_compute_no_cache returns a hash, not the permission_set
+    moved DEFAULT_PERMISSIONS cache to SimpleAuthSupport, because it is
+    more than a simple cache.
+    Need to use as_int, because values are persisted
+  * Bivio::Cache
+    was putting on the request for internal_compute_no_cache case
+    use Bivio.ShellUtil->lock_action to manage locking.  Simplifies the
+    process, because Storable had its own lock, and then we had to
+    introduce ours.  Also, locking is implicitly non-blocking
+    need to return $res from _read_and_thaw
+  * Bivio::Collection::Attributes
+    optimized get and unsafe_get for single parameter case
+    added with_attributes
+  * Bivio::Collection::SingletonMap
+    rmpod
+    b_use
+    removed Carp
+  * Bivio::Delegate::Cookie
+    b_use
+  * Bivio::Delegate::NoCookie
+    rmpod
+    removed comments
+  * Bivio::Delegate::SimpleAuthSupport
+    moved DEFAULT_PERMISSIONS cache back here, because backfills with EMPTY_PERMISSION_MAP
+  * Bivio::Delegate::TaskId
+    added PUBLIC_WIDGET_INJECTOR
+  * Bivio::Delegator
+    b_use
+  * Bivio::Die
+    added catch_and_rethrow
+  * Bivio::IO::ClassLoader
+    not COUPLING
+  * Bivio::IO::Config
+    added is_production
+  * Bivio::IO::File
+    fpt
+    use catch_and_rethrow
+  * Bivio::ShellUtil
+    added no_warn to lock_action
+    b_warn
+    lock_action calls return_scalar_or_array
+  * Bivio::Test::FormModel
+    b_use
+  * Bivio::Test::ForumUserUnit
+    b_use
+  * Bivio::Test::Request
+    added require_no_cookie
+    put_durable on certain attributes
+  * Bivio::Test::Unit
+    require_no_cookie explicitly, because wasn't actually working in all
+    tests.  Needed for re-entrancy, too
+  * Bivio::Test::Util
+    b_use
+    execute_task is re-entrant
+  * Bivio::Type::EnumDelegator
+    fmt
+  * Bivio::Type::Location
+    rmpod
+    b_use and fmt
+  * Bivio::Type::PrimaryId
+    for performance reasons, is_equal coded locally
+    copy
+  * Bivio::Type
+    added CLASSLOADER_MAP_NAME and removed put_on_request (in UNIVERSAL)
+  * Bivio::UI::FacadeBase
+    adjust validation string for different types of tuple lables/monikers
+    added PUBLIC_WIDGET_INJECTOR
+  * Bivio::UI::Facade
+    b_use
+  * Bivio::UI::HTML::Format
+    rmpod
+    b_use & fmt
+  * Bivio::UI::HTML::ViewShortcuts
+    simplify _use to use b_use
+  * Bivio::UI::HTML::Widget::StandardSubmit
+    rmpod
+    ViewLanguageAUTOLOAD
+  * Bivio::UI::JavaScript::Widget::QuotedValue
+    factored out escape_value
+  * Bivio::UI::JavaScript::Widget::WidgetInjector
+    NEW
+  * Bivio::UI::View::Base
+    added js() and xhtml_widget() views for WidgetInjector
+  * Bivio::UI::View::WidgetInjector
+    NEW
+  * Bivio::UI::View
+    call_main and render accept view_class and view_name or just view_name
+  * Bivio::UI::Widget
+    b_use
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    control_on_value must return a string, not undef
+  * Bivio::UI::XHTML::Widget::Pager
+    refactor _get_page_numbers
+  * Bivio::UNIVERSAL
+    add put_on_request so can move out of subclasses
+  * Bivio::Util::Backup
+    added lock_action to most calls
+    b_use
+  * Bivio::Util::HTTPConf
+    is_production now comes from config.  Still in Request config.  One
+    must be true for is_production
+  * Bivio::Util::HTTPD
+    get running on gentoo
+    don't PassEnv vars that don't exist
+  * Bivio::Util::Release
+    b_use
+
   Revision 9.65  2010/08/29 17:49:18  nagler
   * Bivio::Test::HTMLParser::Forms
     Detect err_title class showing up
