@@ -63,12 +63,13 @@ my($_EXCLUDE_LIST) = '%{build_root}/../b_release_files.exclude';
 my($_PACKLIST) = ' find $RPM_BUILD_ROOT -name "*.bs" '
     . " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
 my($_R) = b_use('IO.Ref');
-Bivio::IO::Config->register(my $_CFG = {
+my($_C) = b_use('IO.Config');
+$_C->register(my $_CFG = {
     cvs_rpm_spec_dir => 'pkgs',
     cvs_perl_dir => 'perl',
-    rpm_home_dir => Bivio::IO::Config->REQUIRED,
+    rpm_home_dir => $_C->REQUIRED,
     rpm_http_root => undef,
-    rpm_user => Bivio::IO::Config->REQUIRED,
+    rpm_user => $_C->REQUIRED,
     rpm_group => undef,
     rpm_arch => 'i586',
     http_realm => undef,
@@ -310,7 +311,7 @@ sub handle_config {
     # tmp_dir : string ["/var/tmp/build-$$"]
     #
     # Where the builds and installs take place.
-    Bivio::Die->die($cfg->{projects}, ': projects must be an array_ref')
+    b_die($cfg->{projects}, ': projects must be an array_ref')
         unless ref($cfg->{projects}) eq 'ARRAY';
     $_CFG = {%$cfg};
     $_CFG->{rpm_http_root} = $_CFG->{rpm_home_dir}
@@ -373,7 +374,7 @@ sub install {
 	$self->print($$output);
 	$$output = '';
 	system(@$command) == 0
-	    || Bivio::Die->die('ERROR exit status: ', $?);
+	    || b_die('ERROR exit status: ', $?);
 	return;
     }) if $_CFG->{http_realm} || $ENV{http_proxy};
 
@@ -429,7 +430,7 @@ sub install_tar {
 	    b_use('IO.File')->write($tgz, _http_get($tgz, $output));
 	    _system("tar xpzf '$tgz'", $output);
 	    chomp(my $dir = `ls -t | grep -v '$tgz' | head -1`);
-	    Bivio::Die->die($dir, ': not a directory, expecting it to be one')
+	    b_die($dir, ': not a directory, expecting it to be one')
 	       unless -d $dir;
 	    my($cmd) = "cd '$dir' && perl Makefile.PL < /dev/null "
 		. " && make POD2MAN=true install";
@@ -703,7 +704,7 @@ sub _create_rpm_spec {
     my($base_spec) =  _read_all($specin);
     my($release) = _search('release', $base_spec) || _get_date_format();
     my($name) = _search('name', $base_spec)
-	|| (Bivio::Type::FileName->get_tail($specin) =~ /(.*)\.spec$/);
+	|| (b_use('Type.FileName')->get_tail($specin) =~ /(.*)\.spec$/);
     my($provides) = _search('provides', $base_spec) || $name;
     my($buf) = <<"EOF" . _perl_make() . _perl_build();
 %define suse_check echo not calling /usr/sbin/Check
@@ -798,7 +799,7 @@ sub _get_proxy {
     my($proxy) = $ENV{http_proxy};
     return () unless $proxy;
     $proxy =~ m,/([\w\.]+):(\d+),
-        || Bivio::Die->die('couldn\'t parse proxy: ', $proxy);
+        || b_die('couldn\'t parse proxy: ', $proxy);
     return (
         '--httpproxy', $1,
         '--httpport', $2,
@@ -837,14 +838,14 @@ sub _http_get {
     _output($output, "GET $uri\n");
     local($ENV{HTTPS_CA_FILE}) = $_CFG->{https_ca_file}
 	if $_CFG->{https_ca_file};
-    my($ua) = Bivio::Ext::LWPUserAgent->new(1);
+    my($ua) = b_use('Ext.LWPUserAgent')->new(1);
     $ua->credentials(
 	URI->new($uri)->host_port,
 	@$_CFG{qw(http_realm http_user http_password)},
     ) if $_CFG->{http_realm};
     my($reply) = $ua->request(
 	HTTP::Request->new('GET', $uri));
-    Bivio::Die->die($uri, ": GET failed: ", $reply->status_line)
+    b_die($uri, ": GET failed: ", $reply->status_line)
 	unless $reply->is_success;
     return \($reply->content);
 }
@@ -926,7 +927,7 @@ sub _project_args {
 sub _read_all {
     my($file) = @_;
     # Returns the entire contents of the named file.
-    open(IN, $file) || Bivio::Die->die("$file: $!");
+    open(IN, $file) || b_die("$file: $!");
     my(@data) = <IN>;
     close(IN);
     return \@data;
@@ -936,13 +937,13 @@ sub _rpm_uri_to_filename {
     my($uri) = @_;
     # Creates file name from $uri.  Ensures directory exists.
     return b_use('IO.File')->mkdir_p('/var/spool/up2date')
-	. '/'. Bivio::Type::FileName->get_tail($uri);
+	. '/'. b_use('Type.FileName')->get_tail($uri);
 }
 
 sub _save_rpm_file {
     my($rpm_file, $output) = @_;
     # Saves the named rpm file into _RPM_HOME_DIR.
-    Bivio::Die->die("Missing rpm file $rpm_file") unless -f $rpm_file;
+    b_die("Missing rpm file $rpm_file") unless -f $rpm_file;
 
     $$output .= "SAVING RPM $rpm_file in $_CFG->{rpm_home_dir}\n";
     _system("chown $_CFG->{rpm_user}.$_CFG->{rpm_group} $rpm_file", $output);
