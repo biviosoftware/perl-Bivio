@@ -269,7 +269,7 @@ sub remote_archive {
 			);
 			$self->piped_exec(
 			    "tar cfX - - @{[_quote($src)]} | "
-			    . "ssh $host gzip -c > '$dst' 2> /dev/null",
+			    . qq{ssh $host sh -c "gzip -c > '$dst'" 2> /dev/null},
 			    \(join("\n", @$dirs)),
 			);
 		    });
