@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.67  2010/09/09 03:32:44  nagler
+  * Bivio::BConf
+    added Bivio::UI::HTML to UIXHTML path
+  * Bivio::UI::HTML::ViewShortcuts
+    can't use Bivio::Base UI.ViewShortcuts; Probably with an older app
+    which keeps shorcuts in odd place
+  * Bivio::UI::HTML::Widget::Grid
+    rmpod
+    b_use
+  * Bivio::UI::HTML::Widget::TableBase
+    rmpod
+    b_use
+  * Bivio::UI::XHTML::ViewShortcuts
+    b_use
+
   Revision 9.66  2010/09/08 22:08:53  nagler
   * Bivio::Agent::HTTP::Cookie
     rmpod
