@@ -212,9 +212,9 @@ EOF
 sub JAVASCRIPT_COMMON {
     return <<'EOF';
 function b_escape_html (value) {
-    return value.replace(/&/g, '&amp;')
-	.replace(/</g, '&lt;')
-	.replace(/>/g, '&gt;');
+    return value.replace(new RegExp('&', 'g'), '&amp;')
+	.replace(new RegExp('<', 'g'), '&lt;')
+	.replace(new RegExp('>', 'g'), '&gt;');
 }
 function b_remove_class (element, clazz) {
     var res = [], classes = element.className.split(/\s+/);
