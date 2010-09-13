@@ -414,12 +414,12 @@ td.footer_left {
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
 }
+.selector {
+  position: relative;
+}
 div.task_menu_wrapper,
 .tools div.sep {
   display: inline;
-}
-.selector, .task_menu_wrapper {
-  position: relative;
 }
 .b_prose p,
 p.b_prose,
