@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.68  2010/09/13 17:04:37  moeller
+  * Bivio::UI::HTML::Widget::Script
+    use new RegExp() instead of // to avoid HTML Tidy warnings
+  * Bivio::UI::View::CSS
+    removed position relative from .task_menu_wrapper for better MSIE layout
+  * Bivio::UI::View::Tuple
+    remove eq_forum row control from _list_actions as tuples can now
+    belong to any realm_type
+  * Bivio::UI::XHTML::Widget::DropDown
+    set dropdown left to parentNode's left, avoid MSIE missing scrollbar bug
+  * Bivio::Util::Backup
+    fixed to work on server properly
+
   Revision 9.67  2010/09/09 03:32:44  nagler
   * Bivio::BConf
     added Bivio::UI::HTML to UIXHTML path
