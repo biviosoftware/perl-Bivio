@@ -12,7 +12,10 @@ b_use('Bivio.Test')->register_handler(__PACKAGE__);
 my($_CL) = b_use('IO.ClassLoader');
 
 sub get_instance {
-    return shift->get_current_or_new(@_)->require_no_cookie;
+    my($req) = shift->get_current_or_new(@_);
+    $req->require_no_cookie
+	if $req->can('require_no_cookie');
+    return $req;
 }
 
 sub new_unit {
