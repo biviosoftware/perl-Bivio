@@ -23,5 +23,5 @@ verify_local_mail(
 );
 login_as('mail_user2');
 follow_menu_link(qw(mail_forum mail));
-verify_link($board_subject);
+poll_page(verify_link => $board_subject);
 
