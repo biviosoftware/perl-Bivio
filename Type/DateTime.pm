@@ -189,14 +189,9 @@ sub add_days {
 
 sub add_months {
     my($proto, $date_time, $months) = @_;
-    # Returns I<date_time> adjusted by I<> (may be negative).
-    #
-    # Aborts on range error.
     my($sec, $min, $hour, $mday, $mon, $year) = $proto->to_parts($date_time);
-
     $year += $months / 12;
     $mon += $months % 12;
-
     if ($mon < 1) {
 	$mon += 12;
 	$year--;
@@ -205,7 +200,6 @@ sub add_months {
 	$mon -= 12;
 	$year++;
     }
-
     my($last_day) = $proto->get_last_day_in_month($mon, $year);
     if ($mday > $last_day) {
 	$mday = $last_day;
@@ -215,33 +209,27 @@ sub add_months {
 
 sub add_seconds {
     my($proto, $date_time, $seconds) = @_;
-    # Returns I<date_time> adjusted by I<seconds> (may be negative).
-    #
-    # Aborts on range error.
-
-    # Compute the adjustment in seconds and days
     my($abs) = abs($seconds);
     my($sign) = $seconds < 0 ? -1 : 1;
     my($secs) = $abs % $proto->SECONDS_IN_DAY();
     my($days) = $sign * int(($abs - $secs) / $proto->SECONDS_IN_DAY() + 0.5);
     $secs *= $sign;
-
-    # Adjust for the seconds component
     my($j, $s) = $proto->internal_split($date_time);
     $s += $secs;
-
-    # Compute wrap, if any
     if ($s < 0) {
 	$days--;
-	$s += SECONDS_IN_DAY();
+	$s += $proto->SECONDS_IN_DAY;
     }
-    elsif ($s >= SECONDS_IN_DAY()) {
+    elsif ($s >= $proto->SECONDS_IN_DAY) {
 	$days++;
 	$s -= SECONDS_IN_DAY();
     }
-
-    # Adjust the days component (also checks range)
     return $proto->add_days($proto->internal_join($j, $s), $days);
+}
+
+sub add_years {
+    my($proto, $date_time, $years) = @_;
+    return $proto->add_months($date_time, $years * 12);
 }
 
 sub can_be_negative {
@@ -495,25 +483,6 @@ sub get_min {
     return $_MIN;
 }
 
-sub get_next_year {
-    my($proto, $date) = @_;
-    # Returns the date value for this date next year.
-
-    my($day, $month, $year) = ($proto->to_parts($date))[3..5];
-    $year++;
-
-    my($next_date, $err);
-    # find the closest day of that month
-    for my $i (0 .. 1) {
-	($next_date, $err) = $proto->date_from_parts($day, $month, $year);
-	last unless $err;
-	$day--;
-    }
-
-    # may drop off the end if original date near min
-    return $next_date || $proto->get_max;
-}
-
 sub get_part {
     # DEPRECATED: use get_parts.
     return shift->get_parts(@_);
@@ -545,51 +514,21 @@ sub get_parts {
 }
 
 sub get_previous_day {
-    my($proto, $date) = @_;
-    # Returns the date value for the day previous to the specified date.
-    my($j, $s) = $proto->internal_split($date);
-    return $proto->internal_join(($j - 1), $s);
+    my($proto, $date_time) = @_;
+    b_use('IO.Alert')->warn_deprecated('use add_days');
+    return $proto->add_days($date_time, -1);
 }
 
 sub get_previous_month {
-    my($proto, $date) = @_;
-    # Returns the date value closest to the previous month of the specified date.
-
-    my($day, $month, $year) = ($proto->to_parts($date))[3..5];
-    if (--$month == 0) {
-	$month = 12;
-	$year--;
-    }
-
-    my($prev_date, $err);
-    # find the closest day of that month
-    for my $i (0 .. 3) {
-	($prev_date, $err) = $proto->date_from_parts($day, $month, $year);
-	last unless $err;
-	$day--;
-    }
-
-    # may drop off the end if original date near min
-    return $prev_date || $proto->get_min;
+    my($proto, $date_time) = @_;
+    b_use('IO.Alert')->warn_deprecated('use add_months');
+    return $proto->add_months($date_time, -1);
 }
 
 sub get_previous_year {
-    my($proto, $date) = @_;
-    # Returns the date value closest to the previous year of the specified date.
-
-    my($day, $month, $year) = ($proto->to_parts($date))[3..5];
-    $year--;
-
-    my($prev_date, $err);
-    # find the closest day of that month
-    for my $i (0 .. 1) {
-	($prev_date, $err) = $proto->date_from_parts($day, $month, $year);
-	last unless $err;
-	$day--;
-    }
-
-    # may drop off the end if original date near min
-    return $prev_date || $proto->get_min;
+    my($proto, $date_time) = @_;
+    b_use('IO.Alert')->warn_deprecated('use add_years');
+    return $proto->add_years($date_time, -1);
 }
 
 sub get_width {
