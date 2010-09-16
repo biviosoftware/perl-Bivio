@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.69  2010/09/16 16:59:22  moeller
+  * Bivio::UI::View::CSS
+    undid previous change
+  * Bivio::UI::XHTML::Widget::DropDown
+    undid previous change
+
   Revision 9.68  2010/09/13 17:04:37  moeller
   * Bivio::UI::HTML::Widget::Script
     use new RegExp() instead of // to avoid HTML Tidy warnings
