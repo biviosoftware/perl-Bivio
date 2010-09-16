@@ -358,6 +358,8 @@ sub _list_actions {
 	column_widget => ListActions([
 	    map({
 		my($t, $c, $q) = ref($_) ? @$_{qw(task_id controls query)} : $_;
+		push(@{$c ||= []}, ['!', 'RealmOwner.realm_type', '->eq_general'])
+		    if $r;
 		[
 		    vs_text("$model.list_action.$t"),
 		    $t,
