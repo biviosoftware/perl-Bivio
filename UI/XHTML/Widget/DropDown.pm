@@ -56,12 +56,6 @@ sub _js {
         if (e.stopPropagation) e.stopPropagation();
 	if (!b2)
 	    return;
-        if (b2.element.parentNode.getBoundingClientRect) {
-            b2.element.style.left = parseInt(b2.element.parentNode.getBoundingClientRect().left) + 'px';
-        }
-        else {
-            b2.element.parentNode.style.position = 'relative';
-        }
         b_toggle_class(b2.element, 'dd_visible', 'dd_hidden');
     };
     document.onclick = function(e) {

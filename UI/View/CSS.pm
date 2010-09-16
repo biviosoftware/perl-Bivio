@@ -414,7 +414,7 @@ td.footer_left {
 .alphabetical_chooser a.want_sep {
   margin-left: .2em;
 }
-.selector {
+.selector, .task_menu_wrapper {
   position: relative;
 }
 div.task_menu_wrapper,
