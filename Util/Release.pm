@@ -893,7 +893,7 @@ sub _perl_make {
     return
 	'%define perl_make umask '
 	. _umask_string()
-	. " && perl Makefile.PL --skipdeps < /dev/null && make POD2MAN=true\n"
+	. " && perl Makefile.PL < /dev/null && make POD2MAN=true\n"
 	. '%define perl_make_install umask '
 	. _umask_string()
 	. '; make '
