@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.70  2010/09/16 17:56:03  moeller
+  * Bivio::Test::Request
+    only call require_no_cookie() if the request supports it
+  * Bivio::UI::View::Tuple
+    don't show list action if expecting a realm and operating in general realm
+
   Revision 9.69  2010/09/16 16:59:22  moeller
   * Bivio::UI::View::CSS
     undid previous change
