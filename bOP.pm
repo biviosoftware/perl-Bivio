@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.71  2010/09/23 19:14:32  moeller
+  * Bivio::Type::DateTime
+    removed get_next_year and added add_years
+    removed get_previous_*
+  * Bivio::Util::Release
+    removed --skipdeps arg to Makefile.PL, causes problems in old modules
+
   Revision 9.70  2010/09/16 17:56:03  moeller
   * Bivio::Test::Request
     only call require_no_cookie() if the request supports it
