@@ -39,6 +39,17 @@ sub internal_reply_list {
     return qw(all realm);
 }
 
+sub internal_standard_tools {
+    shift->SUPER::internal_standard_tools([
+        {
+	    task_id => 'FORUM_CRM_THREAD_ROOT_LIST_CSV',
+	    control => ['!', 'task_id', '->eq_forum_crm_form'],
+	    query => ['->req', 'query'],
+	},
+    ]);
+    return;
+}
+
 sub internal_thread_root_list_columns {
     my($self, $model) = @_;
     return [
@@ -129,6 +140,23 @@ sub thread_root_list {
 	    ),
 	);
     }])
+}
+
+sub thread_root_list_csv {
+    return shift->internal_body(
+	CSV('CRMThreadRootList', [
+	    'CRMThread.crm_thread_num',
+	    map($_, b_use('Model.CRMThreadRootList')->tuple_tag_field_check),
+	    'RealmMail.from_email',
+	    'CRMThread.crm_thread_status',
+	    'owner_name',
+	    'CRMThread.subject',
+	    'CRMThread.modified_date_time',
+	    'modified_by_name',
+        ], {
+	    want_iterate_start => 1,
+	}),
+    );
 }
 
 sub _update_uri_column {
