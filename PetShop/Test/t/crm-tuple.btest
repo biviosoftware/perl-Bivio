@@ -45,3 +45,6 @@ submit_form(Refresh => {
     'Any Status' => 'Any Status',
 });
 verify_no_text($product);
+follow_link('Spreadsheet');
+verify_text('Priority');
+verify_text('Medium');
