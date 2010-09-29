@@ -724,6 +724,7 @@ sub _cfg_crm {
 	    [FORUM_CRM_THREAD_ROOT_LIST => '?/tickets'],
 	    [FORUM_CRM_THREAD_LIST => '?/ticket'],
 	    [FORUM_CRM_FORM => '?/compose-ticket-msg'],
+	    [FORUM_CRM_THREAD_ROOT_LIST_CSV => '?/tickets.csv'],
 	],
 	Text => [
 	    [CRMQueryForm => [
@@ -761,6 +762,7 @@ sub _cfg_crm {
 #TODO: Make into shortcut of widget
 		FORUM_CRM_FORM => q{If(['->has_keys', 'Model.RealmMailList'], Join([Enum(['Model.CRMThread', 'crm_thread_status']), ' Ticket #', String(['Model.CRMThread', 'crm_thread_num'])]), 'New Ticket');},
 		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
+		FORUM_CRM_THREAD_ROOT_LIST_CSV => 'Spreadsheet',
 		FORUM_CRM_THREAD_LIST => q{Enum(['Model.CRMThreadList', '->get_crm_thread_status']); Ticket #String(['Model.CRMThreadList', '->get_crm_thread_num']); String(['Model.CRMThreadList', '->get_subject']);},
 	    ]],
 	    [acknowledgement => [
