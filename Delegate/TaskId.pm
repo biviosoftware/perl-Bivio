@@ -485,7 +485,16 @@ sub info_crm {
 	    next=FORUM_CRM_THREAD_ROOT_LIST
 	    mail_reflector_task=FORUM_MAIL_REFLECTOR
 	)],
-#153-159
+	[qw(
+	    FORUM_CRM_THREAD_ROOT_LIST_CSV
+	    153
+	    ANY_OWNER
+	    DATA_READ&FEATURE_CRM
+	    Model.CRMQueryForm
+	    View.CRM->thread_root_list_csv
+	    next=FORUM_CRM_THREAD_ROOT_LIST
+	)],
+#154-159
     ];
 }
 
