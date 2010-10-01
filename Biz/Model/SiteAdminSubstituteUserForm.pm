@@ -17,12 +17,12 @@ sub can_substitute_user {
 		return undef
 		    if $req->is_substitute_user;
 		my($auid) = $req->get('auth_user_id');
-		my($found);
+		my($auth_is_admin);
 		my($res) = {@{$self->new_other('GroupUserList')
 		    ->map_iterate(
 		        sub {
 			    my($uid, $roles) = shift->get(qw(RealmUser.user_id roles));
-			    $found++
+			    $auth_is_admin++
 				if $uid eq $auid
 				&& grep($_->eq_administrator, @$roles);
 			    return ($uid => 1);
@@ -35,7 +35,7 @@ sub can_substitute_user {
 		       ),
 		}};
 		return undef
-		    unless $found || $req->is_super_user;
+		    unless $auth_is_admin || $req->is_super_user;
 		$self->new_other('AdmSuperUserList')
 		    ->do_iterate(sub {
 		        delete($res->{shift->get('RealmUser.user_id')});
