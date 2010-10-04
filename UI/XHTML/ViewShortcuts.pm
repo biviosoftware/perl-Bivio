@@ -11,6 +11,7 @@ my($_W) = b_use('UI.Widget');
 my($_AA) = b_use('Action.Acknowledgement');
 my($_M) = b_use('Biz.Model');
 my($_WF) = b_use('UIHTML.WidgetFactory');
+my($_ELFM) = b_use('Biz.ExpandableListFormModel');
 my($_HTML_TAGS) = join('|', qw(
     A
     ABBR
@@ -495,6 +496,8 @@ sub vs_simple_form {
 			})];
 		    }
 		    elsif ($_ =~ s/^\Q$_SUBMIT_CHAR//) {
+			$_ = 'ok_button add_rows cancel_button'
+			    if !$_ && $_ELFM->is_blessed($m);
 			$x = [StandardSubmit({
 			    cell_colspan => 2,
 			    $_ ? (buttons => $_) : (),
