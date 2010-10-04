@@ -458,29 +458,23 @@ sub _base {
     return {
 	$proto->merge_class_loader({
 	    delegates => {
-		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
-		'Bivio::Agent::TaskId' => 'Bivio::Delegate::SimpleTaskId',
-		'Bivio::Auth::Permission' =>
-		    'Bivio::Delegate::SimplePermission',
-		'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
-		'Bivio::Auth::Role' => 'Bivio::Delegate::Role',
-		'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
-		'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
-		'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
-		'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
-		'Bivio::Type::RowTagKey' => 'Bivio::Delegate::RowTagKey',
-		'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
-		'Bivio::UI::HTML::FormErrors' =>
-		    'Bivio::Delegate::SimpleFormErrors',
-		'Bivio::UI::HTML::WidgetFactory' =>
-		    'Bivio::Delegate::SimpleWidgetFactory',
-		'Bivio::Type::MotionVote' =>
-		    'Bivio::Delegate::SimpleMotionVote',
-		'Bivio::Type::MotionStatus' =>
-		    'Bivio::Delegate::SimpleMotionStatus',
-		'Bivio::Type::MotionType' =>
-		    'Bivio::Delegate::SimpleMotionType',
-		'Bivio::Type::RealmDAG' => 'Bivio::Delegate::RealmDAG',
+                'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
+                'Bivio::Agent::TaskId' => 'Bivio::Delegate::SimpleTaskId',
+                'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
+                'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
+                'Bivio::Auth::Role' => 'Bivio::Delegate::Role',
+                'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
+                'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
+                'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
+                'Bivio::Type::MotionStatus' => 'Bivio::Delegate::SimpleMotionStatus',
+                'Bivio::Type::MotionType' => 'Bivio::Delegate::SimpleMotionType',
+                'Bivio::Type::MotionVote' => 'Bivio::Delegate::SimpleMotionVote',
+                'Bivio::Type::RealmDAG' => 'Bivio::Delegate::RealmDAG',
+                'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
+                'Bivio::Type::RowTagKey' => 'Bivio::Delegate::RowTagKey',
+                'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
+                'Bivio::UI::HTML::FormErrors' => 'Bivio::Delegate::SimpleFormErrors',
+                'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidgetFactory',
 	    },
 	}),
 	$proto->merge_realm_role_category_map(),
