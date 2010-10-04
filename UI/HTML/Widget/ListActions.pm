@@ -134,24 +134,32 @@ sub _realm_name {
 
 sub _render_link {
     my($self, $source, $i, $v, $sep, $buffer) = @_;
-    return 0 if $v->{control}
-        && ! $self->render_simple_value($v->{control}, $source);
+    return 0
+	if $v->{control}
+        && !$self->render_simple_value($v->{control}, $source);
     my($realm) = ref($v->{realm})
         ? $self->render_simple_value($v->{realm}, $source) || undef
         : $v->{realm};
-    return 0 unless $source->req->can_user_execute_task($v->{task_id}, $realm);
+    return 0
+	unless $source->req->can_user_execute_task($v->{task_id}, $realm);
     $$buffer .= $sep
         . $v->{prefix}
-	. $_HTML->escape_attr_value(($v->{format_uri}
+	. $_HTML->escape_attr_value(
+	    $v->{format_uri}
             ? ${$self->render_value(
-                "$i.format_uri", $v->{format_uri}, $source)}
+                "$i.format_uri",
+		$v->{format_uri},
+		$source,
+	    )}
             : $source->format_uri($v->{method},
                 $source->req->format_uri({
                     task_id => $v->{task_id},
                     query => undef,
                     realm => _realm_name($self, $source, $realm),
                     path_info => undef,
-                }))))
+                }),
+	    ),
+	)
         . '">'
         . (ref($v->{label})
             ? $self->render_simple_value($v->{label}, $source)
