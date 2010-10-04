@@ -47,6 +47,10 @@ sub LAST_ROW {
     return Bivio::Biz::ListModel->LAST_ROW;
 }
 
+sub WANT_EXECUTE_OK_ROW_DISPATCH {
+    return 0;
+}
+
 sub do_rows {
     return shift->delegate_method($_LM, @_);
 }
@@ -136,9 +140,41 @@ sub execute_ok_end {
 }
 
 sub execute_ok_row {
+    my($self) = shift;
     # Subclasses should override if they need to perform an
     # operation during L<execute_ok|"execute_ok">
     # B<for each row>.
+    return $self->execute_ok_row_dispatch(@_)
+	if $self->WANT_EXECUTE_OK_ROW_DISPATCH;
+    return;
+}
+
+sub execute_ok_row_create {
+    return;
+}
+
+sub execute_ok_row_delete {
+    return;
+}
+
+sub execute_ok_row_dispatch {
+    my($self, @args) = @_;
+    my($lm) = $self->get_list_model;
+    if ($lm->is_empty_row) {
+	return $self->execute_ok_row_empty(@args)
+	    if $self->is_empty_row;
+	return $self->execute_ok_row_create(@args);
+    }
+    return $self->execute_ok_row_delete(@args)
+	if $self->is_empty_row;
+    return $self->execute_ok_row_update(@args);
+}
+
+sub execute_ok_row_empty {
+    return;
+}
+
+sub execute_ok_row_update {
     return;
 }
 
