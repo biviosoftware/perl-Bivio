@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::TupleExpandableListForm;
 use strict;
-use base 'Bivio::Biz::ExpandableListFormModel';
+use Bivio::Base 'Biz.ExpandableListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
