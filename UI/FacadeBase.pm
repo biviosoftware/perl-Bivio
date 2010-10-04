@@ -1533,8 +1533,8 @@ sub _cfg_user_auth {
 	    [UserPasswordForm => [
 		ok_button => 'Update',
 	    ]],
+	    ['page_size' => 'List Size'],
 	    [[qw(UserSettingsListForm UserSubscriptionList)] => [
-                'page_size' => 'List Size',
 		'RealmOwner.name' => 'User Id',
 		'RealmOwner.display_name' => 'vs_ui_forum();',
 		'is_subscribed' => 'Subscribed?',
