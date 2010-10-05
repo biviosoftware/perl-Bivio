@@ -43,6 +43,17 @@ ul.none {
   padding: .5em;
   text-align: center;
 }
+.acknowledgement .text a,
+div.empty_list a,
+div.page_error a,
+form .desc a,
+form .field_err a,
+form .form_prose a,
+form .label_err a,
+form .label_ok a
+form .sep a {
+  Font('embedded_prose_link');
+}
 .b_align_n {
   text-align: center;
   vertical-align: top;
@@ -192,13 +203,6 @@ tr td .line_cell  {
 .list td,
 .paged_list td {
   padding: .5em;
-}
-.form_prose,
-.list_prose,
-.paged_list .empty {
-  text-align: left;
-  width: 40em;
-  padding-bottom: .5ex;
 }
 table.dock,
 table.header,
@@ -426,6 +430,14 @@ p.b_prose,
 .prose p,
 p.prose {
   CSS('b_prose');
+}
+.form_prose,
+!TODO: Unused?
+.list_prose,
+.paged_list .empty {
+  text-align: left;
+  width: 40em;
+  padding-bottom: .5ex;
 }
 form .sep {
   text-align: left;
