@@ -31,6 +31,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  * Bivio::BConf
+    sort delegates
+  * Bivio::Biz::ListFormModel
+    added execute_ok_row_dispatch similar to EditDAVList
+  * Bivio::Biz::Model::SiteAdminSubstituteUserForm
+    rename var to be more clear
+  * Bivio::Biz::Model::TupleExpandableListForm
+    bivio::Base
+  * Bivio::UI::FacadeBase
+    move page_size to top level
+    added Font embedded_prose_link
+    Text for add_rows button
+  * Bivio::UI::HTML::Widget::ListActions
+    fmt
+  * Bivio::UI::View::CSS
+    added Font('embedded_prose_link'); to text like div.empty_list a, form
+    .desc a, etc
+  * Bivio::UI::XHTML::ViewShortcuts
+    add_rows shows up by default for ExpandableListFormModel
+
+  Revision 9.72  2010/09/29 17:19:14  moeller
+  * Bivio::Delegate::TaskId, Bivio::UI::FacadeBase
+    added FORUM_CRM_THREAD_ROOT_LIST_CSV
+  * Bivio::UI::View::CRM
+    added thread_root_list_csv()
+
   Revision 9.71  2010/09/23 19:14:32  moeller
   * Bivio::Type::DateTime
     removed get_next_year and added add_years
