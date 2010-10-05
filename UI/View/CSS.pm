@@ -204,6 +204,10 @@ tr td .line_cell  {
 .paged_list td {
   padding: .5em;
 }
+.list td.paragraph_text,
+.paged_list td.paragraph_text {
+  Font('paragraph_text');
+}
 table.dock,
 table.header,
 table.footer,
