@@ -254,6 +254,7 @@ sub _cfg_base {
 	    [err => 'bold'],
 	    [tools => ['nowrap', 'inline']],
 	    [embedded_prose_link => 'underline'],
+	    [paragraph_text => 'normal_wrap'],
 	    [form_err => 'bold'],
 	    [form_label_ok => ['bold', 'nowrap']],
 	    [form_field_err => ['normal', '80%']],
