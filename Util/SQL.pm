@@ -190,8 +190,8 @@ sub create_test_db {
     $_F->do_in_dir(
 	(grep(
 	    -d $_,
-	    $self->get_project_root . '/files/ddl',
 	    glob($self->get_project_root . '/files/*/ddl'),
+	    $self->get_project_root . '/files/ddl',
 	    '.',
 	))[0],
 	sub {
