@@ -17,31 +17,31 @@ submit_form(Save => {
 });
 follow_link_in_table('Type Name', 'Type Name', 'I1a', 'Actions', 'Modify');
 test_deviance(qr{default value.*pick list}is);
-submit_form({
+submit_form(Save => {
     default => 3,
 });
 test_deviance(qr{duplicate.*pick list}is);
-submit_form({
+submit_form(Save => {
     default => 1,
     qr{pick.*_1$}is => 1,
 });
 test_conformance();
 follow_link('types');
 follow_link('add.*type');
-submit_form({
+submit_form(Save => {
     name => 'I1',
 });
 follow_link('schemas');
 follow_link('add.*schema');
 test_deviance(qr{must be at least two characters}is);
-submit_form({
+submit_form(Save => {
     name => 'Database1',
     prefix => 'd1',
     qr{Field.*_0$}is => 'Field1?',
     qr{type.*_0$}is => 'I1',
 });
 test_conformance();
-submit_form({
+submit_form(Save => {
     name => 'Database1',
     prefix => 'd1',
     qr{Field.*_0$}is => 'Field1',
