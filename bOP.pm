@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.73  2010/10/05 18:37:24  schellj
+  *** empty log message ***
+
   * Bivio::BConf
     sort delegates
   * Bivio::Biz::ListFormModel
