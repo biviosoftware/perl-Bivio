@@ -121,15 +121,23 @@ sub validate_time_zone_selector {
     return;
 }
 
+sub validate_user_names {
+    my($self, $model) = @_;
+    $model ||= $self;
+    $model->internal_put_error('User.first_name', 'NULL')
+	unless _is_name_set($model);
+    return;
+}
+
 sub _is_name_set {
     return _is_set(shift, $_NAME_FIELDS);
 }
 
 sub _is_set {
-    my($self, $fields) = @_;
+    my($model, $fields) = @_;
     foreach my $f (@$fields) {
 	return 1
-	    if defined($self->unsafe_get($f));
+	    if defined($model->unsafe_get($f));
     }
     return 0;
 }
