@@ -189,7 +189,7 @@ sub create_test_db {
 	if $req->is_production;
     $_F->do_in_dir(
 	(grep(
-	    -d $_,
+	    -d $_ && glob("$_/*.sql"),
 	    glob($self->get_project_root . '/files/*/ddl'),
 	    $self->get_project_root . '/files/ddl',
 	    '.',
