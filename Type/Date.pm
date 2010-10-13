@@ -21,6 +21,10 @@ sub REGEX_FILE_NAME {
     return qr{(\d{4})(\d{2})(\d{2})};
 }
 
+sub TO_STRING_REGEX {
+    return qr{(\d+/\d+/\d+)};
+}
+
 sub can_be_zero {
     return 0;
 }
