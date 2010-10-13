@@ -1011,7 +1011,8 @@ sub _append_query {
     return $u
 	unless defined($q);
     my($uri) = URI->new($u);
-    $uri->query_form($uri->query_form, @$q);
+    $q = {$uri->query_form, @$q};
+    $uri->query_form(map(($_ => $q->{$_}), sort(keys(%$q))));
     return $uri->canonical->as_string;
 }
 
