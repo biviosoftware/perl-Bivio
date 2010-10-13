@@ -28,10 +28,17 @@ sub as_string {
 	) . ')';
 }
 
-sub assert_not_singleton {
+sub assert_is_instance {
     my($self) = @_;
     # Throws an exception if this is the singleton instance.
-    die("can't create, update, read, or delete singleton instance")
+    $self->throw_die('operation not supported on classes, use get_instance')
+	unless ref($self);
+    return $self;
+}
+
+sub assert_not_singleton {
+    my($self) = shift->assert_is_instance;
+    $self->throw_die("can't create, update, read, or delete singleton instance")
 	if $self->[$_IDI]->{is_singleton};
     return $self;
 }
@@ -297,7 +304,8 @@ sub internal_get_sql_support {
 }
 
 sub internal_get_sql_support_no_assert {
-    return shift->[$_IDI]->{class_info}->{sql_support};
+    my($self) = @_;
+    return $self->assert_is_instance->[$_IDI]->{class_info}->{sql_support};
 }
 
 sub internal_get_statement {
