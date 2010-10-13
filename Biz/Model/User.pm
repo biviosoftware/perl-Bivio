@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::User;
 use strict;
@@ -9,18 +9,19 @@ my($_ADMINISTRATOR) = __PACKAGE__->use('Auth.Role')->ADMINISTRATOR;
 
 sub concat_last_first_middle {
     my(undef, $last, $first, $middle) = @_;
-    # Does the work of L<format_last_first_middle|"format_last_first_middle">.
-
-    # We shown the last_name as "-" if not set.
     if (defined($last)) {
 	my($res) = undef;
-	return $last unless defined($first) || defined($middle);
+	return $last
+	    unless defined($first) || defined($middle);
 	$res = $last . ',';
-	$res .= ' ' . $first if defined($first);
-	$res .= ' ' . $middle if defined($middle);
+	$res .= ' ' . $first
+	    if defined($first);
+	$res .= ' ' . $middle
+	    if defined($middle);
 	return $res;
     }
-    return $first . ' ' . $middle if defined($first) && defined($middle);
+    return $first . ' ' . $middle
+	if defined($first) && defined($middle);
     return defined($first) ? $first : $middle;
 }
 
@@ -160,19 +161,18 @@ sub update {
 
 sub _compute_sorting_names {
     my($values) = @_;
-    # Computes the first/middle/last sorting field values.
-
-    # user lower case for sorting
     foreach my $field (qw(first_name middle_name last_name)) {
-	next unless exists($values->{$field});
-
+	my($sort) = $field . '_sort';
+	unless (exists($values->{$field})) {
+	    delete($values->{$sort});
+	    next;
+	}
 	if (defined($values->{$field}) && length($values->{$field})) {
-	    $values->{$field . '_sort'} = lc($values->{$field});
+	    $values->{$sort} = lc($values->{$field});
 	}
 	else {
-	    # set both to undef
 	    $values->{$field} = undef;
-	    $values->{$field . '_sort'} = undef;
+	    $values->{$sort} = undef;
 	}
     }
     return;
