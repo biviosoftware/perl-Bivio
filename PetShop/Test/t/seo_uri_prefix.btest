@@ -7,4 +7,5 @@ login_as('root');
 verify_link(qr{^seo_btest$}, '/forum-home-/seo_btest');
 follow_menu_link('seo_btest');
 verify_uri(qr{/start-page-/seo_btest/});
+#TODO: edit the file
 
