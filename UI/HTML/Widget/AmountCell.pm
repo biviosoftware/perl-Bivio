@@ -5,9 +5,7 @@ use strict;
 use Bivio::Base 'HTMLWidget.String';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_C) = __PACKAGE__->use('IO.Config');
-my($_FA) = __PACKAGE__->use('HTMLFormat.Amount');
-my($_FA_ARGS) = [];
+my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     $_C->if_version(
 	1 => sub {
@@ -49,18 +47,23 @@ sub initialize {
 	    my($source, $amount) = @_;
 	    return $self->render_simple_attr('undef_value', $source)
 		unless defined($amount);
-	    return $_FA->get_widget_value(
-		$amount,
-		map($self->render_simple_attr($_, $source), qw(
-		    decimals
-		    want_parens
-		    zero_as_blank
-		)),
-	    );
+	    
+	    return $self->render_simple_attr('html_format', $source)
+		->get_widget_value(
+		    $amount,
+		    map($self->render_simple_attr($_, $source),
+			qw(
+			    decimals
+			    want_parens
+			    zero_as_blank
+			),
+		    ),
+		);
 	}, [$self->get('field')]],
     );
     $self->map_invoke(initialize_attr => [
 	map([$_ => $_CFG->{$_}], @$_CFG_KEYS),
+	[html_format => b_use('HTMLFormat.Amount')],
     ]);
     return $self->SUPER::initialize(@_);
 }
