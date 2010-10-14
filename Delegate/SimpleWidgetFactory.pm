@@ -79,6 +79,9 @@ sub internal_create_display {
     if (UNIVERSAL::isa($type, 'Bivio::Type::Dollar')) {
 	return $_VS->vs_new('DollarCell', {
 	    field => $field,
+	    string_font => 'table_cell',
+	    column_align => 'right',
+	    column_data_class => 'amount_cell',
 	    %$attrs,
 	});
     }
