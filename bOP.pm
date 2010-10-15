@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,34 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.74  2010/10/13 19:44:39  nagler
+  * Bivio::Biz::Model::ECCreditCardPaymentForm
+    return 0 from process_payment() if in_error()
+    minor refactoring
+  * Bivio::Biz::Model::User
+    _compute_sorting_names needs to delete the sorting name if the
+    non-sort name exists, that is, if first_name_sort is passed in, but
+    not first_name, first_name_sort should not be updated.
+  * Bivio::Biz::Model::UserSettingsListForm
+    added validate_user_names
+  * Bivio::Biz::Model
+    added assert_is_instance for clearer error msgs when a class is the object
+  * Bivio::Test::Language::HTTP
+    _append_query should delete duplicate query key values
+  * Bivio::Type::Date
+    added TO_STRING_REGEX
+  * Bivio::Type::DateTime
+    now() must register __PACKAGE__ with Agent.Task, not $proto, which my
+    Date or Time, not necessarily DateTime
+  * Bivio::UI::FacadeBase
+    paragraph_text gets underline
+  * Bivio::UI::View::CSS
+    paragraph_text gets special font
+  * Bivio::Util::SQL
+    search facades ddl firs
+    create_test_db checks to see if there are any *.sql, not just that the
+    ddl path is a directory
+
   Revision 9.73  2010/10/05 18:37:24  schellj
   *** empty log message ***
 
