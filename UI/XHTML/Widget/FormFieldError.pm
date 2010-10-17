@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::FormFieldError;
 use strict;
@@ -6,7 +6,7 @@ use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_F) = __PACKAGE__->use('UI.Facade');
+my($_FE) = b_use('FacadeComponent.FormError');
 
 sub NEW_ARGS {
     return [qw(field ?class)];
@@ -28,18 +28,18 @@ sub render_tag_value {
     my($self, $source, $buffer) = @_;
     my($field) = $self->render_simple_attr(field => $source);
     my($model) = $self->resolve_form_model($source);
-    $$buffer .= ($_F->get_from_request_or_self($source->req)
-	->unsafe_get('FormError')
-        || $self->use('Bivio::UI::HTML::FormErrors')
-    )->to_html(
+    $$buffer .= $self->render_simple_value(
+	$_FE->get_from_source($source)
+	    ->to_widget_value(
+		$source,
+		$model,
+		$field,
+		$self->render_simple_attr(label => $source),
+		$model->get_field_error($field),
+	    ),
 	$source,
-	$model,
-	$field,
-	$self->render_simple_attr(label => $source),
-	$model->get_field_error($field),
     );
     return;
 }
 
 1;
-
