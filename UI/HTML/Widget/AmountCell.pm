@@ -34,6 +34,10 @@ $_C->register(my $_CFG = {
 });
 my($_CFG_KEYS) = [sort(keys(%$_CFG))];
 
+sub NEW_ARGS {
+    return ['field'];
+}
+
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
@@ -66,14 +70,6 @@ sub initialize {
 	[html_format => b_use('HTMLFormat.Amount')],
     ]);
     return $self->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    my(undef, $field, $attributes) = @_;
-    return {
-        field => $field,
-	($attributes ? %$attributes : ()),
-    };
 }
 
 1;
