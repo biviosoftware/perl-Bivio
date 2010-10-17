@@ -48,7 +48,7 @@ sub absolute_uri {
     my($self, $uri) = @_;
     die('invalid uri')
 	unless defined($uri) && length($uri);
-    my($u) = URI->new(_append_query($self, $uri));
+    my($u) = URI->new($self->internal_append_query($uri));
     return defined($u->scheme) ? $uri : $u->abs(
 	$self->[$_IDI]->{uri}
 	|| Bivio::Die->die($uri, ': unable to make absolute; no prior URI')
@@ -512,6 +512,18 @@ sub http_facade {
     $self->put(http_facade => $facade)
 	if @_ > 1;
     return $self->unsafe_get('http_facade');
+}
+
+sub internal_append_query {
+    my($self, $u) = @_;
+    # query should be [k1 => v1, k2 => v2, ...]
+    my($q) = $self->unsafe_get('extra_query_params');
+    return $u
+	unless defined($q);
+    my($uri) = URI->new($u);
+    $q = {$uri->query_form, @$q};
+    $uri->query_form(map(($_ => $q->{$_}), sort(keys(%$q))));
+    return $uri->canonical->as_string;
 }
 
 sub internal_assert_no_prose {
@@ -1004,18 +1016,6 @@ sub visit_uri {
     return;
 }
 
-sub _append_query {
-    my($self, $u) = @_;
-    # query should be [k1 => v1, k2 => v2, ...]
-    my($q) = $self->unsafe_get('extra_query_params');
-    return $u
-	unless defined($q);
-    my($uri) = URI->new($u);
-    $q = {$uri->query_form, @$q};
-    $uri->query_form(map(($_ => $q->{$_}), sort(keys(%$q))));
-    return $uri->canonical->as_string;
-}
-
 sub _assert_form_field {
     # Returns the named field from form->class or dies.
     return Bivio::Test::HTMLParser::Forms->get_field(@_);
@@ -1076,9 +1076,9 @@ sub _create_form_request {
         my($url) = URI->new('http:');
         $url->query_form(@$form);
 	return HTTP::Request->new(
-	    GET => _append_query($self, $uri . '?' . $url->query));
+	    GET => $self->internal_append_query($uri . '?' . $url->query));
     }
-    return _create_form_post(_append_query($self, $uri), $form, []);
+    return _create_form_post($self->internal_append_query($uri), $form, []);
 
 }
 

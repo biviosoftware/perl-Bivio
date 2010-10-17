@@ -18,10 +18,16 @@ config({
 my($mail_file) = Bivio::IO::File->write("$mail_dir/1", 'should be deleted');
 [
     [] => [
-	extra_query_params => [[K => 'V'] => undef],
-	_append_query => [['/foo/bar?k=v'] => '/foo/bar?k=v&K=V'],
-	clear_extra_query_params => undef,
-	_append_query => [['/foo/bar?k=v'] => '/foo/bar?k=v'],
+	extra_query_params => [
+	    [K => 'V'] => not_die(),
+	],
+	internal_append_query => [
+	    ['/foo/bar?k=v'] => '/foo/bar?K=V&k=v',
+	],
+	clear_extra_query_params => not_die(),
+	internal_append_query => [
+	    ['/foo/bar?k=v'] => '/foo/bar?k=v',
+	],
     ],
     sub {'Bivio::Test::Language'} => [
 	{
