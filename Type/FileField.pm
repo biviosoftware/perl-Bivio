@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::FileField;
 use strict;
-use Bivio::Base 'Bivio::Type';
+use Bivio::Base 'Bivio.Type';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('Type.Text');
@@ -10,6 +10,20 @@ my($_RF) = b_use('Model.RealmFile');
 my($_TE) = b_use('Bivio.TypeError');
 my($_FP) = b_use('Type.FilePath');
 my($_F) = b_use('IO.File');
+
+sub from_any {
+    my($proto, @args) = @_;
+    return $proto->from_literal(@args)
+	if ref($args[0]) eq 'HASH';
+    return $proto->from_string_ref(@args)
+	if ref($args[0]) eq 'SCALAR';
+    return $proto->from_disk(@args)
+	if @args == 1 && !ref($args[0]) && $args[0] !~ /\n/;
+    return $proto->from_string_ref(\(shift(@args)), @args)
+	if @args >= 1 && !ref($args[0]) && defined($args[0]);
+    b_die(\@args, ': unable to convert arguments');
+    # DOES NOT RETURN
+}
 
 sub from_string_ref {
     return shift->from_literal({
@@ -24,7 +38,7 @@ sub from_disk {
     return $v
 	if $v;
     my(undef, $file_name) = @_;
-    b_use($file_name, ': invalid disk file: ' , $e || $_TE->NULL);
+    b_die($file_name, ': invalid disk file: ' , $e || $_TE->NULL);
     # DOES NOT RETURN
 }
 
