@@ -40,11 +40,12 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 # special and must be valid for a javascript field id.  Guess what?
 # You can't change this value. ;-)
 my($_SEP) = '_';
-my($_LM) = __PACKAGE__->use('Biz.ListModel');
+my($_LM) = b_use('Biz.ListModel');
+my($_A) = b_use('IO.Alert');
 
 sub LAST_ROW {
     # Returns a constant which means the "last_row".
-    return Bivio::Biz::ListModel->LAST_ROW;
+    return $_LM->LAST_ROW;
 }
 
 sub WANT_EXECUTE_OK_ROW_DISPATCH {
@@ -65,21 +66,21 @@ sub execute_empty {
     # On exit, the cursor will be reset.
     my($fields) = $self->[$_IDI];
     my($lm) = _execute_init($self);
-
+    # Copy in primary keys
     my($properties) = $self->internal_get;
-    %$properties = (%$properties,
-		    %{$self->get_fields_for_primary_keys($lm)});
-
-#TODO: Optimize.  Don't make calls if method doesn't exist
+    %$properties = (
+	%$properties,
+	%{$self->get_fields_for_primary_keys($lm)},
+    );
     # Do start/row/end
     $self->reset_cursor;
     my($res) = $self->execute_empty_start;
-    Bivio::IO::Alert->warn_deprecated($res, ': unexpected return from ', $self)
-	    if $res;
+    $_A->warn_deprecated($res, ': unexpected return from ', $self)
+	if $res;
     while ($self->next_row) {
 	$res = $self->execute_empty_row;
-	Bivio::IO::Alert->warn_deprecated($res, ': unexpected return from ', $self)
-		if $res;
+	$_A->warn_deprecated($res, ': unexpected return from ', $self)
+	    if $res;
     }
     $self->execute_empty_end;
     $self->reset_cursor;
@@ -120,12 +121,12 @@ sub execute_ok {
     my($res) = $self->execute_ok_start($button);
 #TODO: Need to see if this is happening.  If not, execute_ok should return
 #      when any execute* returns
-    Bivio::IO::Alert->warn_deprecated($res, ': unexpected return from ', $self)
-	    if $res;
+    $_A->warn_deprecated($res, ': unexpected return from ', $self)
+	if $res;
     while ($self->next_row) {
 	$res = $self->execute_ok_row($button);
-	Bivio::IO::Alert->warn_deprecated($res, ': unexpected return from ', $self)
-		if $res;
+	$_A->warn_deprecated($res, ': unexpected return from ', $self)
+	    if $res;
     }
     my($result) = $self->execute_ok_end($button);
     $self->reset_cursor;
@@ -367,14 +368,17 @@ sub is_empty_row {
 }
 
 sub iterate_end {
+    $_A->warn_deprecated('should not call this');
     return;
 }
 
 sub iterate_next_and_load {
+    $_A->warn_deprecated('should not call this');
     return shift->next_row;
 }
 
 sub iterate_start {
+    $_A->warn_deprecated('should not call this');
     return shift;
 }
 
