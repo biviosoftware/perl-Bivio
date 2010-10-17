@@ -1,4 +1,4 @@
-# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::FormFieldError;
 use strict;
@@ -19,14 +19,17 @@ sub control_on_render {
     my($req) = $source->req;
     my($p, $s) = $_FCF->format_html('form_field_error', $req);
     $$buffer .= $p
-	. ($_F->get_from_request_or_self($req)->unsafe_get('FormError')
-	    || $self->use('Bivio::UI::HTML::FormErrors')
-	)->to_html(
+	. $self->render_simple_value(
+	    ($_F->get_from_request_or_self($req)->unsafe_get('FormError')
+		|| b_use('UIHTML.FormErrors')
+	    )->to_widget_value(
+		$source,
+		$self->resolve_form_model($source),
+		$self->render_simple_attr(field => $source),
+		$self->render_simple_attr(label => $source),
+		$self->resolve_attr(control => $source),
+	    ),
 	    $source,
-	    $self->resolve_form_model($source),
-	    $self->render_simple_attr(field => $source),
-	    $self->render_simple_attr(label => $source),
-	    $self->resolve_attr(control => $source),
 	)
 	. $s
 	. "<br />\n";
