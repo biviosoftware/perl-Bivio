@@ -411,6 +411,7 @@ sub _cfg_base {
 	    [country => 'Country'],
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
+	    ['FormError.prose.detail_prefix' => '; additional info: '],
 	    [[qw(actions list_actions)] => 'Actions'],
 	    [[qw(time_zone time_zone_selector)] => 'Time Zone'],
 	    ['AuthUserGroupSelectList.RealmOwner' => [
