@@ -45,6 +45,7 @@ Returns the form error definitions.
 =cut
 
 sub get_delegate_info {
+    b_die('use FacadeComponent.FormError');
     my($info) = <<'EOF';
 
 
