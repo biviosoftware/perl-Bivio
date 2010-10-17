@@ -1,5 +1,6 @@
-NAME  ,id,other,gender
-joe,1,ok, male
+NAME  ,id,other,gender,login,pass
+joe,1,ok, male,a@b.c,pw123456
+bob,2,,,bobby
 ,
 
 mary

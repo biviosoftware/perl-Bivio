@@ -12,6 +12,8 @@ sub COLUMNS {
 	[qw(ID RealmOwner.realm_id NONE User.user_id)],
 	[qw(other Line)],
 	[qw(gender Gender)],
+	[qw(login UserLoginForm.login NONE)],
+	[qw(pass UserLoginForm.RealmOwner.password NONE)],
     ];
 }
 
