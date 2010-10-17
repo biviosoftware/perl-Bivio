@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Unit;
 use strict;
@@ -62,10 +62,11 @@ my($_R) = b_use('IO.Ref');
 my($_DT) = b_use('Type.DateTime');
 my($_F) = b_use('IO.File');
 my($_M) = b_use('Biz.Model');
+my($_DC) = b_use('Bivio.DieCode');
+my($_D) = b_use('Bivio.Die');
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
-    # Tries to find Bivio::DieCode or class or type or type function.
     $func =~ s/.*:://;
     return if $func eq 'DESTROY';
     my($b) = "builtin_$func";
@@ -74,8 +75,8 @@ sub AUTOLOAD {
         : $_TYPE && $_TYPE->can('handle_test_unit_autoload_ok')
 	    && $_TYPE->handle_test_unit_autoload_ok($func)
         ? $_TYPE->handle_test_unit_autoload($func, \@_)
-	: Bivio::DieCode->is_valid_name($func) && Bivio::DieCode->can($func)
-	? Bivio::DieCode->$func()
+	: $_DC->is_valid_name($func) && $_DC->can($func)
+	? $_DC->$func()
 	: $_TYPE
 	? $_TYPE->can($func) || $_TYPE_CAN_AUTOLOAD
         ? $_TYPE->$func(@_)
@@ -84,7 +85,6 @@ sub AUTOLOAD {
 }
 
 sub builtin_assert_contains {
-    # Calls Bivio::IO::Ref::nested_contains.  Returns 1.
     return _assert_expect(0, @_);
 }
 
@@ -101,8 +101,8 @@ sub builtin_assert_equals {
 sub builtin_assert_eval {
     my(undef, $code) = @_;
     my($die);
-    return Bivio::Die->catch($code, \$die)
-	|| Bivio::Die->throw_quietly(
+    return $_D->catch($code, \$die)
+	|| $_D->throw_quietly(
 	    DIE => $_A->format_args(
 		ref($code) ? ('line ', (caller)[2]) : $code,
 		$die ? (': died with: ', $die) : ': returned false',
@@ -115,12 +115,10 @@ sub builtin_assert_not_equals {
 }
 
 sub builtin_auth_realm {
-    # Return the current auth realm.
     return shift->builtin_req()->get('auth_realm')->get('owner');
 }
 
 sub builtin_auth_user {
-    # Return the current auth user.
     return shift->builtin_req()->get('auth_user');
 }
 
@@ -135,19 +133,20 @@ sub builtin_case_tag {
 sub builtin_class {
     # Returns builtin_class under test without args.  With args, loads the
     # classes (mapped classes acceptable), and returns the first one.
-    return shift->use(@_)
-	if @_ > 1;
+    shift;
+    return b_use(@_)
+	if @_;
     return $_CLASS
 	if $_CLASS;
     $_CLASS = $_CL->unsafe_simple_require(
 	(${$_F->read($_PM)}
 	     =~ /^\s*package\s+((?:\w+::)*\w+)\s*;/m)[0]
-	    || Bivio::Die->die(
-		$_PM, ': unable to extract class to test; must',
+	    || b_die(
+		$_PM, ': unable to extract class name from .pm; must',
 		' have "package <class::name>;" statement in class under test',
 	    ),
     );
-    Bivio::Die->die($_PM, ': unable to load the pm')
+    b_die($_PM, ': unable to load the pm')
         unless $_CLASS;
     return $_CLASS;
 }
@@ -158,16 +157,13 @@ sub builtin_clear_local_mail {
 }
 
 sub builtin_commit {
-    # Calls Bivio::Agent::Task::commit
-    Bivio::Agent::Task->commit(shift->builtin_req);
+    b_use('Agent.Task')->commit(shift->builtin_req);
     return;
 }
 
 sub builtin_config {
-    my(undef, $config) = @_;
-    # Calls Bivio::IO::Config::introduce_values.
-    Bivio::IO::Config->introduce_values($config);
-    return;
+    shift;
+    return b_use('IO.Config')->introduce_values(@_);
 }
 
 sub builtin_create_mail {
@@ -205,19 +201,18 @@ sub builtin_create_mail {
 
 sub builtin_create_user {
     my($self, $user) = @_;
-    # Generate a btest, and sets realm and user to this user.  Deletes any user first.
     my($req) = $self->builtin_req->initialize_fully;
-    Bivio::Die->eval(sub {
+    $_D->eval(sub {
         $req->set_user(
-	    Bivio::Biz::Model->new('RealmOwner')->unauth_load({
+	    $_M->new('RealmOwner')->unauth_load({
 		name => $user,
-		realm_type => Bivio::Auth::RealmType->USER,
+		realm_type => b_use('Auth.RealmType')->USER,
 	    }) ? $user : return,
 	);
         $req->set_realm($user);
 	$req->get('auth_user')->cascade_delete;
     });
-    b_use('Bivio::Util::RealmAdmin')
+    b_use('ShellUtil.RealmAdmin')
 	->create_user($self->builtin_email($user), $user, 'password', $user);
     $req->set_realm_and_user($user, $user);
     return $req->get('auth_user');
@@ -228,12 +223,12 @@ sub builtin_date_time {
 }
 
 sub builtin_email {
-    return shift->use('TestLanguage.HTTP')->generate_local_email(@_);
+    shift;
+    return b_use('TestLanguage.HTTP')->generate_local_email(@_);
 }
 
 sub builtin_expect_contains {
     my($proto, @expect) = @_;
-    # Returns a closure that calls assert_contains() on the actual return.
     return sub {
 	my(undef, $actual) = @_;
 	return $proto->builtin_assert_contains(\@expect, $actual);
@@ -241,11 +236,13 @@ sub builtin_expect_contains {
 }
 
 sub builtin_file_field {
-    return shift->use('Type.FileField')->from_disk(@_);
+    shift;
+    return b_use('Type.FileField')->from_any(@_);
 }
 
 sub builtin_from_type {
-    my($t) = shift->use('Type', shift(@_));
+    shift;
+    my($t) = b_use('Type', shift(@_));
     return @_ ? $t->from_literal_or_die(shift(@_)) : $t;
 }
 
@@ -256,7 +253,6 @@ sub builtin_go_dir {
 
 sub builtin_inline_case {
     my($proto, $op) = @_;
-    # Execute I<op> imperatively.  Note that
     return sub {
 	$op->($proto->current_case, $proto->current_self);
 	return $proto->IGNORE_RETURN;
@@ -265,7 +261,6 @@ sub builtin_inline_case {
 
 sub builtin_inline_commit {
     my($proto) = @_;
-    # Commit database changes
     return sub {
 	$proto->commit;
 	return $proto->IGNORE_RETURN;
@@ -274,7 +269,6 @@ sub builtin_inline_commit {
 
 sub builtin_inline_rollback {
     my($proto) = @_;
-    # Rollback database changes
     return sub {
 	$proto->rollback;
 	return $proto->IGNORE_RETURN;
@@ -282,7 +276,8 @@ sub builtin_inline_rollback {
 }
 
 sub builtin_trace {
-    shift->use('IO.Trace')->set_named_filters(@_);
+    shift;
+    b_use('IO.Trace')->set_named_filters(@_);
     return;
 }
 
@@ -297,7 +292,7 @@ sub builtin_inline_trace {
 sub builtin_mock {
     my($self, $class, $values) = @_;
     $class = b_use($class);
-    Bivio::Die->die($class, ': must be a property model')
+    b_die($class, ': must be a property model')
         unless $class->isa('Bivio::Biz::PropertyModel');
     my($i) = $class->new($self->builtin_req);
 #TODO: Not elegant, but works.  Think about testing structure for mocking objects
@@ -327,30 +322,28 @@ sub builtin_now {
 
 sub builtin_options {
     my($proto, $options) = @_;
-    # Sets global options to be based to Bivio::Test::unit.  Returns current
-    # options.
     $_CLASS = $proto->use($options->{class_name})
 	if $options->{class_name};
     return {%{$_OPTIONS = {%$_OPTIONS, $options ? %$options : ()}}};
 }
 
 sub builtin_random_string {
-    # Return a random string
-    return shift->use('Biz.Random')->string(@_);
+    shift;
+    return b_use('Biz.Random')->string(@_);
 }
 
 sub builtin_random_alpha_string {
-    # Return a random string
-    return shift->use('Biz.Random')->string(shift(@_), ['a' .. 'z']);
+    shift;
+    return b_use('Biz.Random')->string(shift(@_), ['a' .. 'z']);
 }
 
 sub builtin_read_file {
-    return shift->use('IO.File')->read(@_);
+    shift;
+    return b_use('IO.File')->read(@_);
 }
 
 sub builtin_req {
     my($self, @args) = @_;
-    # Calls Bivio::Test::Request::get_instance.
     my($req) = b_use('Test.Request')->get_instance;
     return @args ? $req->get_widget_value(@args) : $req;
 }
@@ -365,8 +358,7 @@ sub builtin_rm_rf {
 }
 
 sub builtin_rollback {
-    # Calls Bivio::Agent::Task::rollback
-    Bivio::Agent::Task->rollback(shift->builtin_req);
+    b_use('Agent.Task')->rollback(shift->builtin_req);
     return;
 }
 
@@ -376,7 +368,7 @@ sub builtin_self {
 
 sub builtin_shell_util {
     my($self, $module, $args) = @_;
-    return Bivio::ShellUtil->new_other($module)->main(@$args);
+    return b_use('Bivio.ShellUtil')->new_other($module)->main(@$args);
 }
 
 sub builtin_simple_require {
@@ -403,10 +395,9 @@ sub builtin_unauth_model {
 
 sub builtin_var {
     my($proto) = shift;
-    # Stores or retrieves global state depending on context.
-    Bivio::Die->die(\@_, ': var called with too many arguments')
+    b_die(\@_, ': var called with too many arguments')
         if @_ > 2;
-    Bivio::Die->die(\@_, ': var called with too few arguments')
+    b_die(\@_, ': var called with too few arguments')
         if @_ < 1;
     my($name, $value) = @_;
     return _var_put($proto, $name, $value)
@@ -438,7 +429,7 @@ sub builtin_var {
 		    if $c =~ /^(?:return|result)$/;
 	    }
 	}
-	Bivio::Die->die($name, ': var called in an incorrect context: ', $c);
+	b_die($name, ': var called in an incorrect context: ', $c);
 	# DOES NOT RETURN
     };
 }
@@ -449,19 +440,23 @@ sub builtin_write_file {
 }
 
 sub builtin_realm_id {
-    return shift->use('ShellUtil.RealmAdmin')->to_id(@_);
+    shift;
+    return b_use('ShellUtil.RealmAdmin')->to_id(@_);
 }
 
 sub builtin_remote_email {
-    return shift->use('TestLanguage.HTTP')->generate_remote_email(@_);
+    shift;
+    return b_use('TestLanguage.HTTP')->generate_remote_email(@_);
 }
 
 sub builtin_template {
-    return shift->use('IO.Template')->replace_in_string(@_);
+    shift;
+    return b_use('IO.Template')->replace_in_string(@_);
 }
 
 sub builtin_to_string {
-    return ${shift->use('IO.Ref')->to_string(@_)};
+    shift;
+    return ${b_use('IO.Ref')->to_string(@_)};
 }
 
 sub builtin_verify_local_mail {
@@ -479,12 +474,11 @@ sub new_unit {
 
 sub run {
     my($proto, $bunit) = @_;
-    # Runs I<file> in bunit environment.
     local($_PM) = _pm($bunit);
     local($_TYPE, $_CLASS);
     local($_OPTIONS) = {};
     local($_PROTO) = $proto->package_name;
-    my($t) = Bivio::Die->eval_or_die(
+    my($t) = $_D->eval_or_die(
 	"package $_PROTO;use strict;" . ${$_F->read($bunit)});
     $_TYPE ||= $_PROTO;
     return $_TYPE->run_unit($t);
@@ -508,7 +502,7 @@ sub _assert_expect {
 	? 'nested_differences' : 'nested_contains';
     my($res) = $_R->$m($expect, $actual);
     $comment = defined($comment) ? "[$comment] " : '';
-    Bivio::Die->throw_quietly(
+    $_D->throw_quietly(
 	DIE => $invert
 	    ? "${comment}unexpected match: ${$_R->to_string($expect)} == ${$_R->to_string($actual)}"
 	    : "${comment}expected != actual:\n$$res",
@@ -596,7 +590,7 @@ sub _var_get {
 	return _var_hash($proto)->{$name}
 	    if !ref($name) && _var_exists($proto, $name);
     }
-    Bivio::Die->die($name, ': var value is defined')
+    b_die($name, ': var value is defined')
         unless $not_die;
     return $name;
 }
@@ -616,9 +610,9 @@ sub _var_hash {
 
 sub _var_put {
     my($proto, $name, $value) = @_;
-    Bivio::Die->die($name, ': name must be a (perl) identifier')
+    b_die($name, ': name must be a (perl) identifier')
 	unless $name =~ /^\w+$/s;
-    Bivio::Die->die($name, ': var may only be set once')
+    b_die($name, ': var may only be set once')
 	if _var_exists($proto, $name);
     return _var_hash($proto)->{$name} = $value;
 }
