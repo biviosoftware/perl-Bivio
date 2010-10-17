@@ -479,7 +479,7 @@ sub vs_string {
     # (proto, any, string, hash_ref) : Widget.String
     # B<DEPRECATED.  Use L<vs_new|"vs_new">>.
     my($proto, $value, $font, $attrs) = @_;
-    return $proto->vs_new('String', $value, $font, $attrs);
+    return $proto->vs_new('String', $value, $font, $attrs ? $attrs : ());
 }
 
 sub vs_task_link {
