@@ -114,42 +114,46 @@ sub version_list {
 	    path_info => [qw(Action.WikiView title)],
 	},
     ]));
-    return shift->internal_body(vs_list_form(RealmFileVersionsListForm => [
-	map(+{
-	    column_data_class => 'check',
-	    column_heading => $_,
-	    column_widget => Radio({
-		field => $_,
-		value => [['->get_list_model'], 'RealmFile.realm_file_id'],
-	    }),
-	    $_ eq 'compare'
-		? (control => [['->get_list_model'], '->get_cursor']) : (),
-	}, qw(selected compare)),
-	{
-	    column_widget => Link(
-		Join([
-		    Image(vs_text('RealmFileList.leaf_node')),
-		    String([['->get_list_model'], 'revision_number']),
-		]),
-		URI({
-		    task_id => 'FORUM_WIKI_VIEW',
-		    path_info => [['->get_list_model'], 'file_name'],
+    vs_put_pager('RealmFileVersionsListForm');
+    return shift->internal_body(
+	vs_list_form(RealmFileVersionsListForm => [
+	    map(+{
+		column_data_class => 'check',
+		column_heading => $_,
+		column_widget => Radio({
+		    field => $_,
+		    value => [['->get_list_model'], 'RealmFile.realm_file_id'],
 		}),
-	    ),
-	},
-	{
-	    field => 'RealmFile.modified_date_time',
-	    want_sorting => 0,
-	},
-	{
-	    field => 'RealmOwner_2.display_name',
-	},
-	{
-	    field => 'RealmFileLock.comment',
-	    want_sorting => 0,
-	},
-	'*ok_button',
-    ]));
+		$_ eq 'compare'
+		    ? (control => [['->get_list_model'], '->get_cursor']) : (),
+	    }, qw(selected compare)),
+	    {
+		column_widget => Link(
+		    Join([
+			Image(vs_text('RealmFileList.leaf_node')),
+			String([['->get_list_model'], 'revision_number']),
+		    ]),
+		    URI({
+			task_id => 'FORUM_WIKI_VIEW',
+			path_info => [['->get_list_model'], 'file_name'],
+		    }),
+		),
+	    },
+	    {
+		field => 'RealmFile.modified_date_time',
+		want_sorting => 0,
+	    },
+	    {
+		field => 'RealmOwner_2.display_name',
+	    },
+	    {
+		field => 'RealmFileLock.comment',
+		want_sorting => 0,
+	    },
+	], {
+	    class => 'simple paged_list',
+	}),
+    );
 }
 
 sub versions_diff {
