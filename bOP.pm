@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.75  2010/10/15 20:55:37  moeller
+  * Bivio::Biz::Model::ContextWritebackForm
+    NEW
+  * Bivio::Delegate::SimpleWidgetFactory
+    DollarCell subclasses AmountCell
+  * Bivio::UI::HTML::Widget::AmountCell
+    Added html_format attribute
+    simplified config
+  * Bivio::UI::HTML::Widget::DollarCell
+    subclass AmountCell
+
   Revision 9.74  2010/10/13 19:44:39  nagler
   * Bivio::Biz::Model::ECCreditCardPaymentForm
     return 0 from process_payment() if in_error()
