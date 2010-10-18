@@ -12,9 +12,19 @@ sub NEW_ARGS {
 
 sub initialize {
     my($self) = @_;
+    $self->initialize_attr('field');
     $self->put_unless_exists(
 #TODO: enable a lookup on the value
-	value => [$self->get('field'), '->get_short_desc'],
+	value => [
+	    sub {
+		my($source) = @_;
+		my($v) = $self->unsafe_resolve_widget_value(
+		    [$self->render_simple_attr('field', $source)],
+		    $source,
+		);
+		return $v && $v->get_short_desc;
+	    },
+	],
     );
     return shift->SUPER::initialize(@_);
 }
