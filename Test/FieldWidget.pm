@@ -12,6 +12,7 @@ sub new_unit {
     my($proto, $class_name, $args, @rest) = @_;
     $args ||= {};
     $args->{task_id} ||= 'FIELD_TEST_FORM';
+    $args->{source} ||= 'Model.FieldTestForm';
     Bivio::Die->die($args, ': field not specified')
         unless $args->{field};
     Bivio::Die->die($args, ': field not a regexp')
