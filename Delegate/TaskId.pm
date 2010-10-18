@@ -639,7 +639,7 @@ sub info_file {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
 	    Action.RealmFile->assert_access
-	    Model.RealmFileVersionsList->execute_load_all
+	    Model.RealmFileVersionsList->execute_load_page
 	    View.File->version_list
 	)],
 	[qw(
@@ -1443,7 +1443,7 @@ sub info_wiki {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
 	    Action.WikiView->execute_load_history
-	    Model.RealmFileVersionsList->execute_load_all
+	    Model.RealmFileVersionsList->execute_load_page
 	    Model.RealmFileVersionsListForm
 	    View.Wiki->version_list
 	    next=FORUM_WIKI_VERSIONS_DIFF
