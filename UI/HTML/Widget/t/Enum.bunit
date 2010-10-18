@@ -1,0 +1,10 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FieldWidget({
+    field => 'gender',
+    parse_return_regex => qr{(.*)}s,
+});
+[
+    [{test_value => undef}] => '',
+    [{test_value => Type_Gender()->FEMALE}] => 'Female',
+];
