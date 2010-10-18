@@ -7,4 +7,5 @@ FieldWidget({
 [
     [{test_value => undef}] => '',
     [{test_value => Type_Gender()->FEMALE}] => 'Female',
+    [{test_value => [sub {Type_Gender()->MALE}]}] => 'Male',
 ];

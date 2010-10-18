@@ -19,7 +19,7 @@ sub initialize {
 	    sub {
 		my($source) = @_;
 		my($v) = $self->unsafe_resolve_widget_value(
-		    [$self->render_simple_attr('field', $source)],
+		    [$self->get('field')],
 		    $source,
 		);
 		return $v && $v->get_short_desc;
