@@ -17,6 +17,7 @@ sub new_unit {
     $args->{method_to_test} ||= 'render';
     $args->{view_class_map} ||= 'HTMLWidget';
     $args->{view_shortcuts} ||= 'Bivio::UI::XHTML::ViewShortcuts';
+    $args->{source} ||= 0;
     my($req) = $proto->builtin_req->initialize_fully;
     $req->set_realm_and_user(@$args{qw(realm user)});
     $req->initialize_fully($args->{task_id});
@@ -27,7 +28,7 @@ sub new_unit {
 	$args->{setup_render}->($req, @_)
 	    if $args->{setup_render};
 	my($x) = '';
-	return [$req, \$x];
+	return [$args->{source} ? $req->get($args->{source}) : $req, \$x];
     };
     $args->{create_object} ||= sub {
 	my($case, $params) = @_;
