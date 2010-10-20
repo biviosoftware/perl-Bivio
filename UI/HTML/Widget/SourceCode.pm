@@ -39,9 +39,11 @@ sub render {
     my($package) = $req->unsafe_get('path_info')
 	|| ($req->get('query') || {})->{'s'};
     $package =~ s{^/}{};
-    my($p) = $_CL->unsafe_map_require($package);
-    $package = $p
-	if $p;
+    $_D->throw('NOT_FOUND') if Bivio::Die->catch_quietly(sub {
+        my($p) = $_CL->unsafe_map_require($package);
+	$package = $p
+	    if $p;
+    });
     $_D->throw('NOT_FOUND')
 	unless $package;
     $_D->throw('NOT_FOUND')
