@@ -3,7 +3,7 @@
 package Bivio::Biz::ListFormModel;
 use strict;
 use Bivio::Base 'Biz.FormModel';
-use Bivio::IO::Trace;
+b_use('IO.Trace');
 
 # C<Bivio::Biz::ListFormModel> is a form which can have repeated properties.
 # The repeated properties are indexed with the primary key of an
@@ -35,6 +35,7 @@ use Bivio::IO::Trace;
 # If there is too little, it will blow up.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Separates row index from simple field name.  Must not be a regexp
 # special and must be valid for a javascript field id.  Guess what?
