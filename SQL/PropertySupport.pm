@@ -206,9 +206,9 @@ sub new {
 	cascade_delete_children => $decl->{cascade_delete_children} || 0,
     };
     $proto->init_common_attrs($attrs, $decl);
-    die("you must declare table_name")
+    b_die('you must declare table_name: ', $decl)
 	unless defined($attrs->{table_name});
-    die("$attrs->{table_name}: invalid table name, must end in _t")
+    b_die("$attrs->{table_name}: invalid table name, must end in _t")
 	    unless $attrs->{table_name} =~ m!^\w{1,28}_t$!;
 
     _init_columns($proto, $attrs, $decl->{columns});
@@ -223,7 +223,7 @@ sub new {
         unless $save_count == int(keys(%{$attrs->{columns}}));
 
     # auth_id must be at most one column.  Turn into that column or undef.
-    die('too many auth_id fields')
+    b_die('too many auth_id fields')
 	if int(@{$attrs->{auth_id}}) > 1;
     $attrs->{auth_id} = $attrs->{auth_id}->[0];
     $attrs->{primary_key_types} = [map {$_->{type}} @{$attrs->{primary_key}}];
@@ -352,6 +352,8 @@ sub _init_columns {
     # Oracle caching of prepared statements.  We sort first, so
     # primary keys are sorted as well.
     $attrs->{column_names} = [sort(keys(%$column_cfg))];
+    b_die('missing columns: ', $attrs)
+	unless %$column_cfg;
     foreach my $n (@{$attrs->{column_names}}) {
 	my($cfg) = $column_cfg->{$n};
 	my($col) = ref($cfg) eq 'HASH' ? $cfg : {
