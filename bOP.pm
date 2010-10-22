@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,59 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.76  2010/10/18 01:57:11  nagler
+  * Bivio::Biz::ListFormModel
+    iterate_* methods were added incorrectly.  They now die.
+  * Bivio::Biz::Model::CSVImportForm
+    internal_source_error takes @args
+    look up some of the text (detail_prefix) in Facade
+    internal_put_error_and_detail call_super_before
+    If enum is empty, return NULL, not not found, only if constraint is NOT_NULL
+    previous checkin: fields can now refer to forms directly,
+    e.g. UserLoginForm.RealmOwner.password
+  * Bivio::Biz::Model::t::CSVImportForm::T1Form
+    added fields
+  * Bivio::Biz::Model
+    assert_is_instance/singleton called throw_die incorrectly
+  * Bivio::Delegate::SimpleFormErrors
+    dies if called
+  * Bivio::PetShop::Model::FieldTestForm
+    added Enum
+  * Bivio::Test::FieldWidget
+    set source to be the form
+  * Bivio::Test::Language::HTTP
+    _append_query => internal_append_query
+  * Bivio::Test::Unit
+    b_use
+    removed cruft comments
+  * Bivio::Test::Widget
+    allow bunit to set $source
+  * Bivio::Type::FileField
+    added from_any
+  * Bivio::UI::FacadeBase
+    added FormError.prose.detail_prefix
+  * Bivio::UI::FormError
+    detail can be a widget (FormModel doesn't care)
+    FormError returns a widget
+    to_html => to_widget_value
+  * Bivio::UI::HTML::ViewShortcuts
+    vs_string passes $attrs only if exists
+  * Bivio::UI::HTML::Widget::AmountCell
+    NEW_ARGS
+  * Bivio::UI::HTML::Widget::Enum
+    rmpod
+    simplified, dynamic, and NEW_ARGS
+    fpc
+    field may be a reference
+  * Bivio::UI::HTML::Widget::FormFieldError
+    FormError implements to_widget_value
+  * Bivio::UI::HTML::Widget::String
+    b_use
+    NEW_ARGS
+  * Bivio::UI::XHTML::Widget::FormFieldError
+    FormError implements to_widget_value
+    Removed reference to UIHTML.FormErrors
+
   Revision 9.75  2010/10/15 20:55:37  moeller
   * Bivio::Biz::Model::ContextWritebackForm
     NEW
