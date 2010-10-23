@@ -33,8 +33,8 @@ function ner_rename_children(c) {
   if (c.name)
     c.name = ner_next_name(c.name);
   else {
-    for (var i = 0; i < c.children.length; i++)
-      ner_rename_children(c.children[i]);
+    for (var i = 0; i < c.childNodes.length; i++)
+      ner_rename_children(c.childNodes[i]);
   }
   return c;
 }
@@ -42,8 +42,8 @@ function ner_rename_children(c) {
 function ner_add_hidden(c) {
   var count = parseInt(ner_match_name(c.name)[2]);
 
-  for (var i = 0; i < c.form.children.length; i++) {
-    var child = c.form.children[i];
+  for (var i = 0; i < c.form.childNodes.length; i++) {
+    var child = c.form.childNodes[i];
 
     if (child.type && child.type == "hidden") {
         var match = ner_match_name(child.name);
