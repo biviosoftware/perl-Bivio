@@ -29,6 +29,7 @@ commands
    assert_in_exec_dir -- dies if not in execution directory
    run -- starts httpd in foreground 
    run_background -- starts httpd in background
+   run_db [breakpoint] -- starts httpd with the Devel::BivioDB debugger
 EOF
 }
 
@@ -106,7 +107,7 @@ sub run {
     my($pass_env) = join(
 	"\n",
 	map(("PassEnv $_", "PerlPassEnv $_"),
-	    grep(exists($ENV{$_}), qw(ORACLE_HOME DBI_USER DBI_PASS HOME)),
+	    grep(exists($ENV{$_}), qw(ORACLE_HOME DBI_USER DBI_PASS HOME PERL5OPT BIVIODB_BREAKPOINT)),
 	),
     );
     my($conf) = $self->is_execute ? "httpd$$.conf" : "&STDOUT";
@@ -151,6 +152,13 @@ PerlFreshRestart off
 
 sub run_background {
     return shift->run(1);
+}
+
+sub run_db {
+    my($self, $breakpoint) = @_;
+    $ENV{PERL5OPT} = '-d:BivioDB';
+    $ENV{BIVIODB_BREAKPOINT} = $breakpoint ? $breakpoint : '';
+    return $self->run;
 }
 
 sub _dynamic_modules {
