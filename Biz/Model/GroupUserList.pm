@@ -88,19 +88,15 @@ sub internal_post_load_row {
 
 sub internal_pre_load {
     my($self) = @_;
-    return ''
+    my($super) = shift->SUPER::internal_pre_load(@_);
+    return $super
 	unless my $qf = $self->ureq('Model.GroupUserQueryForm');
-    return ''
+    return $super
 	unless my $role = $qf->get_privilege_role;
-    return <<"EOF";
-        EXISTS (
-            SELECT ru.role
-            FROM realm_user_t ru
-            WHERE ru.realm_id = realm_user_t.realm_id
-            AND ru.user_id = realm_user_t.user_id
-            AND ru.role = @{[$role->as_sql_param]}
-        )
-EOF
+    return join(' AND ',
+        $super || (),
+	$self->internal_role_exists_statement($role),
+    );
 }
 
 sub internal_prepare_statement {
@@ -126,6 +122,19 @@ sub internal_qualifying_roles {
     return $m && $m->get_privilege_role && $m->get_privilege_role->eq_withdrawn
         ? shift->SUPER::internal_qualifying_roles(@_)
         : [grep(! $_->eq_withdrawn, @{$self->ROLES_ORDER})];
+}
+
+sub internal_role_exists_statement {
+    my($self, $role) = @_;
+    return <<"EOF";
+        EXISTS (
+            SELECT ru.role
+            FROM realm_user_t ru
+            WHERE ru.realm_id = realm_user_t.realm_id
+            AND ru.user_id = realm_user_t.user_id
+            AND ru.role = @{[$role->as_sql_param]}
+        )
+EOF
 }
 
 sub _privileges {
