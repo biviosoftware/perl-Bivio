@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.78  2010/10/26 15:20:03  moeller
+  * Bivio::Biz::Model::GroupUserList
+    replaced EXISTS statement in internal_pre_load with
+    internal_role_exists_statement
+  * Bivio::UI::HTML::Widget::NewEmptyRowHandler
+    use c.childNodes not c.children
+  * Bivio::UI::HTML::Widget::Script
+    ComboBox search for drop_down rather than lookup by name,
+    allows cloned value to work properly
+  * Bivio::UI::XHTML::Widget::ComboBox
+    removed dd_name and _drop_down_id()
+  * Bivio::Util::HTTPD
+    added run_db
+
   Revision 9.77  2010/10/22 22:53:29  moeller
   * Bivio::Biz::Model::SelectSearchForm
     removed
@@ -144,8 +158,6 @@ http://www.bivio.biz for more info.
     ddl path is a directory
 
   Revision 9.73  2010/10/05 18:37:24  schellj
-  *** empty log message ***
-
   * Bivio::BConf
     sort delegates
   * Bivio::Biz::ListFormModel
