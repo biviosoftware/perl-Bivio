@@ -110,7 +110,9 @@ window.bivio.combobox.key_up = function(key, field) {
 }
 
 function init_drop_down(field, init_values) {
-    var drop_down = document.getElementById(init_values.dd_name);
+    var drop_down = field.nextSibling;
+    while (drop_down.nodeName != 'DIV')
+      drop_down = drop_down.nextSibling;
 
     drop_down.style.width = field.clientWidth + 'px';
     field.drop_down = drop_down;
