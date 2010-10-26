@@ -11,9 +11,12 @@ sub def_edit {
     return shift->internal_body(vs_list_form(TupleDefListForm => [qw(
 	TupleDefListForm.TupleDef.label
 	TupleDefListForm.TupleDef.moniker
-	TupleDefListForm.TupleSlotDef.label
-	TupleDefListForm.TupleSlotDef.is_required
     ),
+        {
+	    field => 'TupleSlotDef.label',
+	    event_handler => NewEmptyRowHandler(),
+	},
+	'TupleDefListForm.TupleSlotDef.is_required',
 	{
 	    field => 'TupleSlotDef.tuple_slot_type_id',
 	    choices => ['Model.TupleSlotTypeList'],
@@ -298,7 +301,10 @@ sub slot_type_edit {
 	    list_id_field => 'TupleSlotType.type_class',
 	}],
 	'TupleSlotTypeListForm.TupleSlotType.default_value',
-	'TupleSlotTypeListForm.choice',
+	{
+	    field => 'choice',
+	    event_handler => NewEmptyRowHandler(),
+	},
     ]));
 }
 
