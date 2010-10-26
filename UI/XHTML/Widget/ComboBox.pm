@@ -39,7 +39,6 @@ sub initialize {
 	BR(),
 	EmptyTag(div => {
 	    CLASS => 'cb_menu',
-	    ID => _drop_down_id($self),
 	}),
     ]);
     return shift->SUPER::initialize(@_);
@@ -58,25 +57,11 @@ sub render {
     return shift->SUPER::render(@_);
 }
 
-sub _drop_down_id {
-    my($self) = @_;
-    return [sub {
-        my($source, $field) = @_;
-	return $self->get('_html_id')
-	    . ($source->can('get_list_model')
-		   ? '_' . $source->get_list_model->get_cursor
-		   : '');
-    }, $self->get('field')];
-}
-
 sub _text {
     my($self) = @_;
     return Text($self->get('field'), {
 	ONKEYDOWN => Join([
 	    "return $_PREFIX.key_down(event.keyCode, this, {",
-	    'dd_name: "',
-	    _drop_down_id($self),
-	    '",',
 	    If($self->unsafe_get('auto_submit'),
 	       'auto_submit: true,'),
 	    'dd_values: ',
