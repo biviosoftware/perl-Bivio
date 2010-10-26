@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.77  2010/10/22 22:53:29  moeller
+  * Bivio::Biz::Model::SelectSearchForm
+    removed
+  * Bivio::Delegate::TaskId
+    FORUM_FILE_VERSIONS_LIST & FORUM_WIKI_VERSIONS_LIST are paged lists
+  * Bivio::SQL::PropertySupport
+    improved error messages when missing "table_name" or "columns"
+  * Bivio::UI::HTML::Widget::CopyListValueHandler
+    NEW
+  * Bivio::UI::HTML::Widget::JoinHandler
+    rm pod, refactored
+  * Bivio::UI::HTML::Widget::NewEmptyRowHandler
+    NEW
+  * Bivio::UI::HTML::Widget::SelectSearch
+    removed
+  * Bivio::UI::HTML::Widget::SourceCode
+    wrap unsafe_map_require() in catch_quietly() in case the map is invalid
+  * Bivio::UI::View::Wiki
+    page history is now paged
+
   Revision 9.76  2010/10/18 01:57:11  nagler
   * Bivio::Biz::ListFormModel
     iterate_* methods were added incorrectly.  They now die.
