@@ -61,10 +61,9 @@ sub internal_execute_parent {
 	file_writer => 0,
 	'RealmUser.realm_id' => $f->get('forum_id'),
     }) if $f->unauth_load({forum_id => $f->get('parent_realm_id')})
-	&& !$self->new_other('RealmUser')->unauth_load({
+	&& !$self->new_other('RealmUser')->unauth_rows_exist({
 	    realm_id => $f->get('forum_id'),
 	    user_id => $self->get('User.user_id'),
-	    role => $self->internal_get_roles->[0],
         });
     return;
 }
