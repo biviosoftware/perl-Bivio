@@ -860,6 +860,12 @@ sub internal_upgrade_db_drop_member_if_administrator {
     return;
 }
 
+sub internal_upgrade_db_drop_member_if_administrator2 {
+    my($self) = @_;
+    $self->internal_upgrade_db_drop_member_if_administrator;
+    return;
+}
+
 sub internal_upgrade_db_email_alias {
     my($self) = @_;
     # Adds EmailAlias table.
