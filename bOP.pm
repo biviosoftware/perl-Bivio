@@ -28,9 +28,16 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 9.79  2010/10/26 20:47:10  schellj
+  * Bivio::Biz::Model::ForumUserAddForm
+    check for any roles in parent forum before adding user
+  * Bivio::Biz::Model::RealmUserAddForm
+    get existing_roles more efficiently, remove warning
+
   Revision 9.78  2010/10/26 15:20:03  moeller
   * Bivio::Biz::Model::GroupUserList
     replaced EXISTS statement in internal_pre_load with
