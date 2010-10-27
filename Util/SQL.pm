@@ -150,15 +150,22 @@ sub backup_model {
 sub column_exists {
     my($self, $table, $column) = @_;
     return _exists(
-        'FROM pg_attribute
-        WHERE attname = ?
-        AND attisdropped IS FALSE
-        AND attrelid = (
-            SELECT relfilenode
-            FROM pg_class
-            WHERE relname = ?
-        )',
-	[lc($column), lc($table)],
+	$self->is_oracle ? (
+	    'FROM user_tab_columns
+            WHERE column_name = ?
+            AND table_name = ?',
+	    [uc($column), uc($table)],
+	) : (
+	    'FROM pg_attribute
+	    WHERE attname = ?
+	    AND attisdropped IS FALSE
+	    AND attrelid = (
+		SELECT relfilenode
+		FROM pg_class
+		WHERE relname = ?
+	    )',
+	    [lc($column), lc($table)],
+        ),
     );
 }
 
@@ -982,7 +989,7 @@ sub internal_upgrade_db_file_writer {
 
 sub internal_upgrade_db_group_concat {
     my($self) = @_;
-    if (b_use('ShellUtil.SQL')->is_oracle) {
+    if ($self->is_oracle) {
         $self->run(<<'EOF');
 CREATE OR REPLACE TYPE t_string_list
     AS TABLE OF VARCHAR2(4000)
@@ -1580,17 +1587,7 @@ sub internal_upgrade_db_site_admin_forum_users2 {
 
 sub internal_upgrade_db_site_forum {
     my($self) = @_;
-    $self->initialize_fully;
-    my($req) = $self->req;
-    $self->run(<<'EOF')
-ALTER TABLE forum_t
-    ALTER COLUMN want_reply_to DROP NOT NULL
-/
-ALTER TABLE forum_t
-    ALTER COLUMN is_public_email DROP NOT NULL
-/
-EOF
-	if $self->column_exists(qw(forum_t want_reply_to));
+    my($req) = $self->initialize_fully;
     $req->with_realm(undef, sub {
 	$req->with_user($self->model('RealmUser')->get_any_online_admin, sub {
 	    $self->new_other('SiteForum')->init;
