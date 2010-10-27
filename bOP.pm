@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.80  2010/10/27 18:42:07  schellj
+  * Bivio::UI::View::Tuple
+    added NewEmptyRowHandler() to schema and table editor
+  * Bivio::Util::SQL
+    added drop_member_if_administrator2
+
   Revision 9.79  2010/10/26 20:47:10  schellj
   * Bivio::Biz::Model::ForumUserAddForm
     check for any roles in parent forum before adding user
