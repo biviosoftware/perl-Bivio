@@ -140,6 +140,7 @@ sub internal_fixup_sql {
     my($self, $sql) = @_;
     $sql = $self->SUPER::internal_fixup_sql($sql);
     $sql =~ s/\bTEXT64K\b/CLOB/igs;
+    $sql =~ s/\bSTRPOS\(/INSTR\(/igs;
     # remove work-around for Postgres bug, Oracle doesn't allow CACHE of 1
     $sql =~ s/\bCACHE 1 (INCREMENT BY)\b/$1/igs;
     return $sql;
