@@ -127,7 +127,7 @@ sub add_permissions_to_realm_type {
 sub assert_ddl {
     my($self) = @_;
     $self->usage_error('must be run in ddl directory')
-	unless $_F->pwd =~ m{/ddl$};
+	unless $self->is_oracle || $_F->pwd =~ m{/ddl$};
     return;
 }
 
