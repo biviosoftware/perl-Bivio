@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.81  2010/10/27 21:55:09  nagler
+  * Bivio::Util::SQL
+    column_exists for oracle
+    dropped unnecessary "drop column" in init_site_forum upgrade
+
   Revision 9.80  2010/10/27 18:42:07  schellj
   * Bivio::UI::View::Tuple
     added NewEmptyRowHandler() to schema and table editor
