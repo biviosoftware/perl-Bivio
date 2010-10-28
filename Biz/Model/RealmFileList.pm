@@ -66,11 +66,11 @@ sub internal_pre_load {
 	push(@$params, $rfid);
 	return q{folder_id = ?};
     }
-    return q{POSITION('/' IN SUBSTRING(path_lc FROM 2)) = 0 AND path_lc != '/'}
+    return q{STRPOS(SUBSTR(path_lc, 2), '/') = 0 AND path_lc != '/'}
 	if $p eq '/';
     push(@$params, $p, lc($p) . '/', $p);
-    return q{SUBSTRING(path_lc FROM 1 FOR LENGTH(?) + 1) = ?
-        AND POSITION('/' IN SUBSTRING(path_lc FROM LENGTH(?) + 2)) = 0};
+    return q{SUBSTR(path_lc, 1, LENGTH(?) + 1) = ?
+        AND STRPOS(SUBSTR(path_lc, LENGTH(?) + 2), '/') = 0};
 }
 
 1;

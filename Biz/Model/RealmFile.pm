@@ -568,8 +568,8 @@ sub _next_version {
 	},
 	q{SELECT path_lc FROM realm_file_t
         WHERE realm_id = ?
-        AND SUBSTRING(path_lc FROM 1 FOR LENGTH(?) + 1) = ?
-        AND POSITION('/' IN SUBSTRING(path_lc FROM LENGTH(?) + 2)) = 0},
+        AND SUBSTR(path_lc, 1, LENGTH(?) + 1) = ?
+        AND STRPOS(SUBSTR(path_lc, LENGTH(?) + 2), '/') = 0},
         [$rid, $base, $base . ';', $base]);
     substr($p, length($base), 0) = ';' . ++$max;
     return $p;

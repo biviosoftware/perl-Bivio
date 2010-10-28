@@ -43,7 +43,7 @@ sub anonymize_emails {
 #TODO: should truncate
         Bivio::SQL::Connection->execute(<<"EOF", [$prefix . '%']);
             UPDATE $table
-            SET $field = SUBSTRING('$prefix' || $field FROM 1 FOR $length)
+            SET $field = SUBSTR('$prefix' || $field, 1, $length)
             WHERE $field NOT LIKE ?
 EOF
     }
