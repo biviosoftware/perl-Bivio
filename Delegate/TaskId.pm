@@ -590,7 +590,7 @@ sub info_dav {
 sub info_dev {
     my($self) = @_;
     return
-	unless -w __FILE__;
+	if $_C->is_production || !-w __FILE__;
     return [
 	[qw(
 	    DEV_RESTART
