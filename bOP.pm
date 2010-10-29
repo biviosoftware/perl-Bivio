@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.82  2010/10/28 16:39:48  nagler
+  * Bivio::Biz::Model::RealmFileList
+    use STRPOS and SUBSTR
+  * Bivio::Biz::Model::RealmFile
+    use STRPOS and SUBSTR
+  * Bivio::SQL::Connection::Oracle
+    translate STRPOS( to INSTR(
+  * Bivio::Util::RealmMail
+    use STRPOS and SUBSTR
+  * Bivio::Util::SQL
+    oracle does not have a ddl directory, necessarily
+
   Revision 9.81  2010/10/27 21:55:09  nagler
   * Bivio::Util::SQL
     column_exists for oracle
