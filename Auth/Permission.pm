@@ -1,16 +1,15 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::Permission;
 use strict;
-use Bivio::Base 'Bivio::Type::Enum';
+use Bivio::Base 'Type.EnumDelegator';
 
 # C<Bivio::Auth::Permission> is used to specify a task's access
 # permissions.  See L<Bivio::Agent::Task|Bivio::Agent::Task> for
 # how the permissions are used.
 #
-#
 # See L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> and
-# L<Bivio::Delegate::SimpleTaskId|Bivio::Delegate::SimpleTaskId>
+# L<Bivio::Delegate::TaskId|Bivio::Delegate::TaskId>
 # for how you define permissions on tasks.
 #
 # See L<Bivio::Agent::Task|Bivio::Agent::Task> and
@@ -27,11 +26,9 @@ use Bivio::Base 'Bivio::Type::Enum';
 # L<Bivio::Delegate::NoDbAuthSupport|Bivio::Delegate::NoDbAuthSupport>.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-__PACKAGE__->compile(
-	Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__));
+__PACKAGE__->compile;
 
 sub is_continuous {
-    # (proto) : false
     # Permissions aren't continuous, because they may go away or have
     # gaps across delegate aggregations.
     return 0;
