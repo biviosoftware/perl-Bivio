@@ -30,6 +30,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-file [options] command [args...]
 commands:
+    backup_realms dir realm... - export_tree for all realms in dir/<date-time>
     create path -- creates file_path with input
     create_or_update path -- creates or updates file_path with input
     create_folder path -- creates folder and parents
@@ -43,6 +44,29 @@ commands:
     send_file_via_mail email subject path -- email a file as an attachment
     update path --  updates path with input
 EOF
+}
+
+sub backup_realms {
+    my($self, $base_dir, @realms) = @_;
+    my($root) = $_FP->join($base_dir, $_DT->local_now_as_file_name);
+    foreach my $r (@realms) {
+	my($die) = b_catch(sub {
+	    $_F->do_in_dir(
+		$_F->mkdir_p($_FP->join($root, $r)),
+		sub {
+		    $self->req->with_realm(
+			$r, 
+			sub {$self->export_tree('/', 1)},
+		    );
+		    $self->piped_exec("sh -c 'cd .. && tar czf $r.tgz $r && rm -rf $r' 2>&1");
+		    return;
+		},
+	    );
+        });
+        b_warn($r, ': ', $die)
+            if $die;
+    }
+    return;
 }
 
 sub create {
