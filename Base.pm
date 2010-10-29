@@ -24,12 +24,16 @@ sub import {
 	) . "';1",
     );
     {
-	foreach my $n (qw(b_debug b_die b_info b_trace b_use b_warn)) {
+	foreach my $n (qw(b_catch b_debug b_die b_info b_trace b_use b_warn)) {
 	    # Special case call because $pkg has yet to initialize
 	    Bivio::UNIVERSAL::replace_subroutine($pkg, $n, \&{$n});
 	}
     };
     return;
+}
+
+sub b_catch {
+    return Bivio::Die->catch(@_);
 }
 
 sub b_debug {
