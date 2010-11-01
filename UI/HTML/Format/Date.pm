@@ -2,84 +2,23 @@
 # $Id$
 package Bivio::UI::HTML::Format::Date;
 use strict;
-$Bivio::UI::HTML::Format::Date::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Format::Date::VERSION;
+use Bivio::Base 'UIHTML.Format';
 
-=head1 NAME
-
-Bivio::UI::HTML::Format::Date - transforms a unix time to date/time string
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::UI::HTML::Format::Date;
-    Bivio::UI::HTML::Format::Date->new();
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::UI::HTML::Format> formats a unix time into a date string.
-
-=cut
-
-use Bivio::UI::HTML::Format;
-@Bivio::UI::HTML::Format::Date::ISA = ('Bivio::UI::HTML::Format');
-
-=head1 DESCRIPTION
-
-C<Bivio::UI::HTML::Format::Date>
-
-=cut
-
-#=IMPORTS
-use Bivio::Type::DateTime;
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_widget_value"></a>
-
-=head2 static get_widget_value(int time) : string
-
-Formats a date time value as a string with a 4 digit year.
-
-=head2 static get_widget_value(int time, int year_digits) : string
-
-Formats a date time value as a string with the specified 2 or 4 digit year.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = b_use('Type.DateTime');
 
 sub get_widget_value {
+    # Formats a date time value as a string with the
+    # specified 2 or 4 digit year.
     my(undef, $time, $year_digits) = @_;
-#TODO: Is this right?
     return '' unless defined($time);
-    die("invalid year_digits $year_digits") if (defined($year_digits)
-	    && $year_digits != 2 && $year_digits != 4);
+    b_die('invalid year_digits ', $year_digits)
+	if defined($year_digits) && $year_digits != 2 && $year_digits != 4;
     $year_digits ||= 4;
-    my($sec, $min, $hour, $mday, $mon, $year) =
-	    Bivio::Type::DateTime->to_parts($time);
+    my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($time);
     return $year_digits == 2
-	    ? sprintf('%02d/%02d/%02d', $mon, $mday, $year =~ /(\d\d)$/)
-	    : sprintf('%02d/%02d/%04d', $mon, $mday, $year);
+	? sprintf('%02d/%02d/%02d', $mon, $mday, $year =~ /(\d\d)$/)
+	: sprintf('%02d/%02d/%04d', $mon, $mday, $year);
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
