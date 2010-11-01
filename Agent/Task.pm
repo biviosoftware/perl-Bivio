@@ -316,11 +316,16 @@ sub handle_pre_execute_task {
     my(undef, $task, $req) = @_;
     return
 	if $req->unsafe_get_and_delete($_UNAUTH_EXECUTE);
-    Bivio::Die->throw_quietly(FORBIDDEN => {
-	map(($_ => $req->get($_)),
-	    qw(auth_realm auth_user auth_roles auth_role)),
-	operation => $task->get('id'),
-    }) unless $req->get('auth_realm')->can_user_execute_task($task, $req);
+
+    unless ($req->get('auth_realm')->can_user_execute_task($task, $req)) {
+	# make sure the form makes it into the form context
+	$req->get_form;
+	Bivio::Die->throw_quietly(FORBIDDEN => {
+	    map(($_ => $req->get($_)),
+		qw(auth_realm auth_user auth_roles auth_role)),
+	    operation => $task->get('id'),
+	});
+    }
     return;
 }
 
