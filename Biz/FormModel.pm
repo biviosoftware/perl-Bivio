@@ -245,7 +245,7 @@ sub get_context_from_request {
     }
     elsif ($self = $req->get('task')->get('form_model')) {
 	$self = $self->get_instance;
-	$form = $req->unsafe_get('form');
+	$form = $req->get_form;
 	_trace('model from task: ', $form) if $_TRACE;
     }
 
@@ -256,7 +256,8 @@ sub get_context_from_request {
 
     # Fix up file fields if any
     my($ff);
-    if ($form && $self && ($ff = $self->internal_get_file_field_names)) {
+    if ($form && $self && $self->is_instance
+        && ($ff = $self->internal_get_file_field_names)) {
 	# Need to copy, because we don't want to trash existing form.
 	my($f) = {%$form};
 	foreach my $n (@$ff) {
