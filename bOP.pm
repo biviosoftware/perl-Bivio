@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.84  2010/11/02 14:54:58  moeller
+  * Bivio::Agent::Task
+    parse the request's form before throwing a forbidden error, allows the
+    form to retain values in case of a login time-out
+
   Revision 9.83  2010/10/29 17:41:35  nagler
   * Bivio::Auth::Permission
     rmpod
