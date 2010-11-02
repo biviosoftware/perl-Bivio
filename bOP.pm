@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.83  2010/10/29 17:41:35  nagler
+  * Bivio::Auth::Permission
+    rmpod
+    now an EnumDelegator
+  * Bivio::Base
+    added b_catch
+  * Bivio::Delegate::TaskId
+    added is_production predicate to info_dev()
+  * Bivio::Util::Class
+    removed tasks_for_label and tasks_for_view: not in use, and too
+    tightly coupled implementation with TaskId which is changing
+  * Bivio::Util::RealmFile
+    added backup_realms
+
   Revision 9.82  2010/10/28 16:39:48  nagler
   * Bivio::Biz::Model::RealmFileList
     use STRPOS and SUBSTR
