@@ -182,7 +182,6 @@ sub get_delegate_info {
     FILE_FIELD_RESET_FOR_SECURITY => [
 	31,
 	undef,
-	# Real message in FormErrors.  Have one here just in case.
 	'your browser reset this field for security reasons',
     ],
     FILE_NAME => [
