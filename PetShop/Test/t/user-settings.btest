@@ -46,3 +46,17 @@ do_logout();
 login_as($name);
 follow_link('settings');
 verify_no_text(qr{[^/]$name});
+
+do_logout();
+go_back();
+go_back();
+submit_form({
+    middle => 'x',
+});
+submit_form({
+    email => $email,
+    password => default_password(),
+});
+verify_form({
+    middle => 'x',
+});
