@@ -319,7 +319,6 @@ sub handle_pre_execute_task {
 
     unless ($req->get('auth_realm')->can_user_execute_task($task, $req)) {
 	# make sure the form makes it into the form context
-	$req->get_form;
 	Bivio::Die->throw_quietly(FORBIDDEN => {
 	    map(($_ => $req->get($_)),
 		qw(auth_realm auth_user auth_roles auth_role)),
