@@ -20,9 +20,8 @@ sub control_on_render {
     my($p, $s) = $_FCF->format_html('form_field_error', $req);
     $$buffer .= $p
 	. $self->render_simple_value(
-	    ($_F->get_from_request_or_self($req)->unsafe_get('FormError')
-		|| b_use('UIHTML.FormErrors')
-	    )->to_widget_value(
+	    $_F->get_from_request_or_self($req)->get('FormError')
+		->to_widget_value(
 		$source,
 		$self->resolve_form_model($source),
 		$self->render_simple_attr(field => $source),
