@@ -45,8 +45,6 @@ sub merge_overrides {
 		'Bivio::Type::Location'
 		    => 'Bivio::PetShop::Delegate::Location',
 		'Bivio::TypeError' => 'Bivio::PetShop::Delegate::TypeError',
-		'Bivio::UI::HTML::FormErrors'
-		    => 'Bivio::PetShop::Delegate::FormErrors',
 	    },
 	    maps => {
 		Action => ['Bivio::PetShop::Action'],
