@@ -1195,7 +1195,7 @@ CREATE TABLE motion_t (
 CREATE TABLE motion_vote_t (
   motion_id NUMERIC(18),
   user_id NUMERIC(18) NOT NULL,
-  affiliated_realm_id NUMERIC(18) NOT NULL,
+  affiliated_realm_id NUMERIC(18),
   realm_id NUMERIC(18) NOT NULL,
   vote NUMERIC(2) NOT NULL,
   creation_date_time DATE NOT NULL,
