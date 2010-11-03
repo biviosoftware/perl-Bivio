@@ -61,6 +61,7 @@ my($_BUNDLE) = [qw(
     !xapian_exec_realm
     !xapian_exec_realm2
     !drop_member_if_administrator
+    !motion_vote_aff_drop_not_null
 ),
     $_IC->if_version(10, '!', '') ? 'site_admin_forum_users2' : (),
 ];
@@ -1375,6 +1376,26 @@ CREATE SEQUENCE motion_s
 /
 
 EOF
+    return;
+}
+
+sub internal_upgrade_db_motion_vote_aff_drop_not_null {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE motion_vote_t
+    ALTER COLUMN affiliated_realm_id DROP NOT NULL
+/
+EOF
+    $self->initialize_fully;
+    $self->model('MotionVote')->do_iterate(sub {
+            my($it) = @_;
+            $it->update({affiliated_realm_id => undef})
+	        if $_PI->is_equal(
+		    $it->get('affiliated_realm_id'), $it->get('user_id'));
+	    return 1;
+        },
+	'unauth_iterate_start',
+    );
     return;
 }
 
