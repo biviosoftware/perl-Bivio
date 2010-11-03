@@ -28,9 +28,20 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 9.86  2010/11/03 04:17:30  schellj
+  * Bivio::Biz::Model::MotionVote
+    allow affiliated_realm_id to be null, users don't need to be
+    affiliated with themselves if they aren't in an organization
+  * Bivio::SQL::DDL
+    remove NOT_NULL constraint from motion_vote_t.affiliated_realm_id
+  * Bivio::Util::SQL
+    drop motion_vote_t.affiliated_realm_id not null, remove motion
+    vote affiliated_realm_ids that were set to user_id
+
   Revision 9.85  2010/11/02 21:22:06  moeller
   * Bivio::Agent::Task
     undid previous change
