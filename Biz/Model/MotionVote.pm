@@ -12,8 +12,6 @@ sub create {
     my($req) = $self->get_request;
     $values->{realm_id} = $req->get('auth_id');
     $values->{user_id} = $req->get('auth_user_id');
-    $values->{affiliated_realm_id} = $values->{user_id}
-	unless defined($values->{affiliated_realm_id});
     $values->{creation_date_time} ||= $_DT->now;
     return $self->SUPER::create($values);
 }
@@ -26,7 +24,7 @@ sub internal_initialize {
         columns => {
             motion_id => ['Motion.motion_id', 'PRIMARY_KEY'],
             user_id => ['User.user_id', 'PRIMARY_KEY'],
-	    affiliated_realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
+	    affiliated_realm_id => ['RealmOwner.realm_id', 'NONE'],
 	    realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    vote => ['MotionVote', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
