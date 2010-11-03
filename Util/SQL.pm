@@ -639,7 +639,7 @@ EOF
 sub internal_upgrade_db_bundle {
     my($self) = @_;
     _assert_postgres($self);
-    $self->initialize_ui;
+    $self->initialize_fully;
     my($tables) = {map(($_ => 1), @{$self->tables})};
     foreach my $type (@$_BUNDLE) {
 	my($sentinel) = \&{"_sentinel_$type"};
@@ -1381,12 +1381,12 @@ EOF
 
 sub internal_upgrade_db_motion_vote_aff_drop_not_null {
     my($self) = @_;
+    $self->initialize_fully;
     $self->run(<<'EOF');
 ALTER TABLE motion_vote_t
     ALTER COLUMN affiliated_realm_id DROP NOT NULL
 /
 EOF
-    $self->initialize_fully;
     $self->model('MotionVote')->do_iterate(sub {
             my($it) = @_;
             $it->update({affiliated_realm_id => undef})
