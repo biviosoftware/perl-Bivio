@@ -28,10 +28,29 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 9.85  2010/11/02 21:22:06  moeller
+  * Bivio::Agent::Task
+    undid previous change
+  * Bivio::BConf
+    removed Delegate.FormErrors
+  * Bivio::Biz::FormModel
+    get_form() rather than unsafe_get('form') when getting context from
+    request,
+    don't call internal_get_file_field_names() on non instance
+  * Bivio::Delegate::SimpleFormErrors
+    removed
+  * Bivio::PetShop::BConf
+    removed Delegate.FormErrors
+  * Bivio::PetShop::Delegate::FormErrors
+    removed
+  * Bivio::UI::HTML::FormErrors
+    removed
+  * Bivio::UI::HTML::Widget::FormFieldError
+    removed UIHTML.FormErrors
+
   Revision 9.84  2010/11/02 14:54:58  moeller
   * Bivio::Agent::Task
     parse the request's form before throwing a forbidden error, allows the
