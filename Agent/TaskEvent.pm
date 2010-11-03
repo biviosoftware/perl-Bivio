@@ -102,9 +102,6 @@ sub parse_die {
 	$_DC->SERVER_REDIRECT_TASK,
 	task_id => $params->{task_id},
     );
-#TODO: Figure out how to save the current form in context if there is one.
-#      Cannot simply call $req->get_form here, because it has to be
-#      parsed into internal_values by FormModel.
     # Leave uri untouched.
     $proto->new({%$_IMPLICIT_OVERRIDE, %$params}, $req)
 	->call_method($req, put_durable_server_redirect_state => {
