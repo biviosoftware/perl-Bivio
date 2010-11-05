@@ -287,10 +287,8 @@ sub assert_http_method {
 }
 
 sub assert_test {
-    my($self) = @_;
-    $self->throw_die(DIE => {message => 'may not be run on production'})
-	if $self->is_production;
-    return $self;
+    $_C->assert_test;
+    return shift;
 }
 
 sub cache_for_auth_user {
