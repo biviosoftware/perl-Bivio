@@ -56,6 +56,10 @@ sub as_string {
     return $res;
 }
 
+sub boolean {
+    return $_[1] ? 1 : 0;
+}
+
 sub call_super {
     my($proto) = shift;
     my($package, $method, $args) = $_[0] =~ /^[a-z]\w*$/
@@ -253,13 +257,28 @@ sub list_if_value {
     }, \@_)};
 }
 
-sub map_by_two {
-    my(undef, $op, $values) = @_;
-    $values ||= [];
+sub map_by_slice {
+    my($self, $op, $values, $slice_size) = @_;
+    $slice_size ||= 2;
     return [map(
-	$op->($values->[2 * $_], $values->[2 * $_ + 1], $_),
-	0 .. int((@$values + 1) / 2) - 1,
+	{
+	    my($i) = $slice_size * $_;
+	    $op->(
+		@$values[$i .. ($i + $slice_size - 1)],
+		$_,
+	    );
+	}
+	0 .. int((@$values + 1) / $slice_size) - 1,
     )];
+}
+
+sub map_by_two {
+    my($proto, $op, $values) = @_;
+    unless (ref($values) eq 'ARRAY') {
+	Bivio::IO::Alert->warn_deprecated('values must be an array ref');
+	$values = [];
+    }
+    return $proto->map_by_slice($op, $values);
 }
 
 sub map_invoke {
