@@ -55,6 +55,11 @@ Bivio::Test->unit([
 	    [sub {$_[1]}, [qw(a)]] => [[undef]],
 	    [sub {$_[0]}, [qw(a 1 b 2)]] => [[qw(a b)]],
 	    [sub {$_[1]}, [qw(a 1 b 2)]] => [[qw(1 2)]],
+	    [sub {$_[0]}] => [[]],
+	],
+	map_by_slice => [
+	    [sub {join('', @_)}, [qw(a 1 x b 2 y)]] => [[qw(a10 xb1 2y2)]],
+	    [sub {join('', @_)}, [qw(a 1 x b 2 y)], 3] => [[qw(a1x0 b2y1)]],
 	],
 	is_blessed => [
 	    [undef] => 0,
