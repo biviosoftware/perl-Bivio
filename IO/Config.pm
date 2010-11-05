@@ -136,6 +136,13 @@ sub REQUIRED {
     return \&REQUIRED;
 }
 
+sub assert_test {
+    my($proto) = @_;
+    die('may not be run on production')
+	if $proto->is_production;
+    return;
+}
+
 sub assert_version {
     my($proto, $version) = @_;
     $proto->if_version($version, 1, sub {
