@@ -7,6 +7,7 @@ options({
     },
 });
 my($s1) = class('Bivio::t::UNIVERSAL::Super1')->code_ref_for_subroutine('s1');
+my($after);
 [
     'Bivio::t::UNIVERSAL::Super2' => [
 	code_ref_for_subroutine => [
@@ -29,5 +30,32 @@ my($s1) = class('Bivio::t::UNIVERSAL::Super1')->code_ref_for_subroutine('s1');
     ],
     'Bivio::t::UNIVERSAL::Super2' => [
 	s1 => 'Super1',
+    ],
+    {
+	object => 'Bivio::t::UNIVERSAL::Super2',
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    my($after2) = $after;
+	    $after = undef;
+	    return [$actual, $after2];
+	},
+    } => [
+	call_and_do_after => [
+	    [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {$after = 'x'}] => [[qw(a 5 9)], 'x'],
+	    [boolean => ['a'], sub {$after = 'x'}] => [[1], 'x'],
+	    [boolean => [], sub {$after = 'x'}] => [[0], 'x'],
+	],
+	{
+	    method => 'call_and_do_after',
+	    want_scalar => 1,
+	} => [
+	    [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {$after = 'x'}] => [[3], 'x'],
+	],
+	{
+	    method => 'call_and_do_after',
+	    want_void => 1,
+	} => [
+	    [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {$after = 'x'}] => [[], 'x'],
+	],
     ],
 ];

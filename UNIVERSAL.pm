@@ -60,6 +60,28 @@ sub boolean {
     return $_[1] ? 1 : 0;
 }
 
+sub call_and_do_after {
+    my($proto, $op_or_method, $args, $do_after) = @_;
+    # Unlike call_super_before, you can't modify the return value of
+    # $op_or_method.  This routine is here to preserve the calling context.  If
+    # you wanted to modify the result, just call $op_or_method inline.
+    # This method observes all of Perl's wantarray behavior.
+    my($op) = sub {ref($op_or_method) ? $op_or_method->(@$args) : $proto->$op_or_method(@$args)};
+    if (wantarray) {
+	my($res) = [$op->()];
+	$do_after->();
+	return @$res;
+    }
+    if (defined(wantarray)) {
+	my($res) = scalar($op->());
+	$do_after->();
+	return $res;
+    }
+    $op->();
+    $do_after->();
+    return;
+}
+
 sub call_super {
     my($proto) = shift;
     my($package, $method, $args) = $_[0] =~ /^[a-z]\w*$/
@@ -71,6 +93,8 @@ sub call_super {
 
 sub call_super_before {
     my($proto, $args, $op) = @_;
+    # wantarray is observed only for the return from this method.  $op must
+    # expect to be called in an array context like any normal bOP method.
     my($sub) = (caller(0))[0]->super_for_method($proto->my_caller);
     my($super) = [$sub->($proto, @$args)];
     my($my) = $op->($proto, $args, $super) || $super;
