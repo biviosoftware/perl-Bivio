@@ -10,6 +10,13 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_C) = b_use('IO.Config');
 my($_SUFFIX) = '.bdb';
 
+sub db_close {
+    my($self) = @_;
+    ($self->[$_IDI]->{db} || return)->db_close;
+    $self->[$_IDI]->{db} = undef;
+    return;
+}
+
 sub db_create_or_open {
     my($self) = shift->new;
     my($name) = @_;
@@ -31,11 +38,16 @@ sub db_destroy {
 }
 
 sub db_do_glob {
-    my($self, $name_glob, $op) = @_;
+    my($proto, $name_glob, $op) = @_;
     foreach my $name (glob($name_glob . $_SUFFIX)) {
 	$name =~ s/$_SUFFIX$//;
-	return
-	    unless $op->($self->db_create_or_open($name), $name);
+	my($self) = $proto->db_create_or_open($name);
+	last
+	    unless $self->call_and_do_after(
+		$op,
+		[$self, $name],
+		sub {$self->db_close},
+	    );
     }
     return;
 }
@@ -53,21 +65,21 @@ sub delete_keys {
     return;
 }
 
-sub do_each {
+sub do_key_values {
     my($self, $op) = @_;
     my($cursor) = $self->[$_IDI]->{db}->db_cursor;
     my($k, $v);
-    {
-	# With this shows an uninitialized subroutine entry.  We isolate this
-	# warning with this DB_FIRST section.  Otherwise, the loop would be simpler.
-	local($SIG{__WARN__}) = sub {};
-	return
-	    unless $cursor->c_get($k, $v, BerkeleyDB::DB_FIRST()) == 0;
-    };
-    do {
+    while (
+	(sub {
+	     # With this shows an uninitialized subroutine entry.  We isolate this
+	     # warning with this DB_FIRST section.  Otherwise, the loop would be simpler.
+	     local($SIG{__WARN__}) = sub {};
+	     return $cursor->c_get($k, $v, BerkeleyDB::DB_NEXT()) == 0;
+	 })->()
+    ) {
 	return
 	    unless $op->($k, $v);
-    } while $cursor->c_get($k, $v, BerkeleyDB::DB_NEXT()) == 0;
+    };
     return;
 }
 
@@ -123,8 +135,12 @@ sub _get {
 sub _op {
     my($self, $method) = (shift, shift);
     my($fields) = $self->[$_IDI];
-    return $method =~ /db_del|db_put/ ? _op($self, 'db_sync') : 1
-	if 0 == (my $status = $fields->{db}->$method(@_));
+    my($status);
+    {
+	local($SIG{__WARN__}) = sub {};
+	return $method =~ /db_del|db_put/ ? _op($self, 'db_sync') : 1
+	    if 0 == ($status = $fields->{db}->$method(@_));
+    }
     return 0
 	if $status = BerkeleyDB::DB_NOTFOUND();
     _err(

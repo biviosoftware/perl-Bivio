@@ -29,6 +29,9 @@ my($name) = 'BerkeleyDB.tmp';
 	put_key_values => [
 	    [map(($_ => ord($_)), qw(x y z))] => not_die(),
 	],
+	get_values => [
+	    [qw(x y)] => [ord('x'), ord('y')],
+	],
 	db_do_glob => [
 	    [
 		'*',
@@ -39,10 +42,7 @@ my($name) = 'BerkeleyDB.tmp';
 		},
 	    ] => not_die(),
 	],
-	get_values => [
-	    [qw(x y)] => [ord('x'), ord('y')],
-	],
-	do_each => [
+	do_key_values => [
 	    [sub {
 		 my($k, $v) = @_;
 		 assert_equals(ord($k), $v);
@@ -60,6 +60,11 @@ my($name) = 'BerkeleyDB.tmp';
 	    x => [undef],
 	    y => ord('y'),
 	    z => [undef],
+	],
+	db_close => not_die(),
+	db_close => not_die(),
+	unsafe_get_values => [
+	    y => DIE(),
 	],
     ],
 ];
