@@ -103,6 +103,10 @@ sub default_merge_overrides {
 		call_filter => '$sub =~ /_print_stack/',
 		package_filter => '/^Bivio::Die$/',
 	    },
+	    bunit_case => {
+		call_filter => '$sub =~ /_eval$/',
+		package_filter => '/^Bivio::Test$/',
+	    },
 	},
     }, {
 	$args->{version} < 9 ? () : (
