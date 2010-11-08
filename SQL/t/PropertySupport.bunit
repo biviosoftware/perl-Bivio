@@ -98,7 +98,7 @@ my($values) = sub {
 	],
 	delete_all => [
 	    inline_case(sub {
-	        config({'Bivio::Agent::Request' => {is_production => 1}});
+	        config({'Bivio::IO::Config' => {is_production => 1}});
 		return;
 	    }),
 	    [{}] => DIE(),
