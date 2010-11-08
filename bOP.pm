@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.87  2010/11/03 22:09:19  schellj
+  * Bivio::Agent::TaskEvent
+    removed TODO
+  * Bivio::Util::SQL
+    always initialize_fully in bundle db upgrades, move
+    initialize_fully up in motion_vote_aff_drop_not_null
+
   Revision 9.86  2010/11/03 04:17:30  schellj
   * Bivio::Biz::Model::MotionVote
     allow affiliated_realm_id to be null, users don't need to be
