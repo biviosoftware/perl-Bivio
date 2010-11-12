@@ -26,10 +26,9 @@ sub internal_crm_send_form_extra_fields {
     my($m) = $model->simple_package_name;
     return [
 	["$m.action_id", {
-	    wf_class => 'Select',
+	    wf_class => 'ComboBox',
+	    list_class => 'CRMActionList',
 	    list_display_field => 'name',
-	    choices => ['->req', 'Model.CRMActionList'],
-	    list_id_field => 'id',
 	}],
 	$self->internal_tuple_tag_form_fields($model),
     ];
@@ -104,20 +103,23 @@ sub thread_root_list {
 	    Form(
 		$f->simple_package_name,
 		Join([
-		    map(
-			Select({
-			    %{$f->get_select_attrs($_)},
-			    unknown_label => vs_text('CRMQueryForm', $_),
-			    auto_submit => 1,
-			    $_ eq 'b_status' ? (
-				enum_display => 'get_desc_for_query_form',
-			    ): (),
-			}),
-			grep($f->get_field_type($_)->isa(
-			    'Bivio::Type::TupleChoiceList'),
-			     $f->tuple_tag_field_check),
-			qw(b_status b_owner_name),
-		    ),
+		    Select({
+			%{$f->get_select_attrs('b_status')},
+			unknown_label => vs_text('CRMQueryForm', 'b_status'),
+			auto_submit => 1,
+			enum_display => 'get_desc_for_query_form',
+		    }),
+		    grep($f->get_field_type('b_status')->isa(
+			'Bivio::Type::TupleChoiceList'),
+			 $f->tuple_tag_field_check),
+		    ComboBox({
+			%{$f->get_select_attrs('b_owner_name')},
+			field => 'b_owner_name',
+			list_class => 'CRMActionList',
+			list_display_field => ['name'],
+			auto_submit => 1,
+			hint_text => 'Owner',
+		    }),
 		    ScriptOnly({
 			widget => Simple(''),
 			alt_widget => FormButton('ok_button')
