@@ -43,5 +43,8 @@ Widget({
 	width => 2,
 	height => 3,
     }] => '<img alt="none" border="0" height="3" width="2" src="/i/foo.gif" />',
+    ['/dot.png', {
+	xhtml => 1,
+    }] => '<img class="dot" alt="dot" src="/dot.png" />',
 ];
 
