@@ -36,18 +36,16 @@ sub initialize {
 	$self->unsafe_get('hint_text')
 	    ? ClearOnFocus(_text($self), $self->get('hint_text'))
 	    : _text($self),
-	A(
-	    DIV_cb_arrow(vs_text_as_prose('combo_box_arrow')),
-	    {
-		HREF => '#',
-		ONMOUSEDOWN => Join([
-		    "return $_PREFIX.arrow_mouse_down(this, {",
-		    _init_values($self),
-		    "})",
-		]),
-		ONMOUSEUP => "return $_PREFIX.arrow_mouse_up(this)",
-	    },
-	),
+	DIV_cb_arrow(vs_text_as_prose('combo_box_arrow'),
+	{
+	    ONMOUSEDOWN => Join([
+		"return $_PREFIX.arrow_mouse_down(this, {",
+		_init_values($self),
+		"})",
+	    ]),
+	    ONMOUSEUP => "return $_PREFIX.arrow_mouse_up(this)",
+	    ONSELECTSTART => 'return false',
+	}),
 	BR(),
 	EmptyTag(div => {
 	    CLASS => 'cb_menu',
