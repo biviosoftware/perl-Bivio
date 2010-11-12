@@ -489,6 +489,7 @@ sub _cfg_base {
 	    [prose => [
 		ascend => ' &#9650;',
 		[qw(descend drop_down_arrow)] => ' &#9660;',
+		combo_box_arrow => '&#9660;',
 		error_indicator => '&#9654;',
 		page_error => [
 		    [qw(not_found model_not_found)] => q{The page requested was not found or is not functioning properly.},
