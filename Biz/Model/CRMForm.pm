@@ -41,17 +41,20 @@ sub execute_empty {
 		_acquire_lock($ct)
 		    unless my $discuss = $self->internal_query_who->eq_realm;
 		return (
-		    action_id => _action_id_for_owner_and_status(
-			$self, $ct, $cal, $discuss),
+		    action_id =>
+			$cal->id_to_name(
+			_action_id_for_owner_and_status(
+			    $self, $ct, $cal, $discuss)),
 		    subject => $ct->clean_subject($self->get('subject')),
 		);
 	    },
 	    sub {
+		my($cal) = @_;
 		return (
 		    to => undef,
 		    cc => $self->get('to'),
-		    action_id => shift->status_to_id_in_list(
-			$self->internal_empty_status_when_new),
+		    action_id => $cal->id_to_name($cal->status_to_id_in_list(
+			$self->internal_empty_status_when_new)),
 		);
 	    },
 	),
@@ -132,7 +135,7 @@ sub internal_initialize {
 	version => 1,
 	$self->field_decl(
 	    visible => [
-		[qw(action_id CRMActionId)],
+		[qw(action_id Line)],
 		[qw(update_only OKButton)],
 	    ],
 	    other => [
@@ -169,13 +172,15 @@ sub validate {
     else {
 	shift->SUPER::validate(@_);
     }
-    return _if_crm_thread($self, sub {
-        my(undef, $cal) = @_;
-	$self->internal_put_error(action_id => 'SYNTAX_ERROR')
-	    unless $self->get_field_error('action_id')
-	    || $cal->validate_id($self->get('action_id'));
-	return;
-    });
+    my($cal) = $self->get('crm_action_list');
+    my($id) = $cal->name_to_id($self->get('action_id'));
+    $self->internal_put_error(action_id => 'SYNTAX_ERROR')
+	unless $self->get_field_error('action_id')
+	    || $cal->validate_id($id);
+    $self->internal_put_field(
+	action_id => $id
+    ) unless $self->in_error;
+    return;
 }
 
 sub _acquire_lock {
