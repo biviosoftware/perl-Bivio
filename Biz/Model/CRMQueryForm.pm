@@ -18,7 +18,7 @@ sub get_list_for_field {
 sub internal_query_fields {
     return [
 	[qw(b_status CRMThreadStatus)],
-	[qw(b_owner_name PrimaryId)],
+	[qw(b_owner_name Line)],
     ];
 }
 

@@ -13,6 +13,22 @@ my($_T) = b_use('UI.Text');
 my($_E) = b_use('Type.Email');
 my($_R) = b_use('Auth.Role');
 
+sub all_actions {
+    return _names_only(shift, 0);
+}
+
+sub id_to_name {
+    my($self, $id) = @_;
+    my($name);
+    if ($self->id_to_owner($id)) {
+	$name = _format_name($self,
+	    $self->new_other('GroupUserList')->load_this({this => $id}));
+    } else {
+	$name = _labels($self)->{$self->id_to_status($id)->get_name};
+    }
+    return $name;
+}
+
 sub id_to_owner {
     my($self, $id) = @_;
     return $id > 0 ? $id : undef;
@@ -30,7 +46,7 @@ sub internal_initialize {
 	can_iterate => 0,
         primary_key => [{
 	    name => 'id',
-	    type => 'CRMActionId',
+	    type => 'Line',
 	    constraint => 'NOT_NULL',
 	}],
 	order_by => [{
@@ -45,11 +61,6 @@ sub internal_load_rows {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     my($req) = $self->req;
-    my($n) = {map(
-	($_ => $_T->get_value('CRMActionList', 'label', $_, $req)),
-	'assign_to',
-	@$_NAMES,
-    )};
     return [
 	map(
 	    sort({lc($a->{name}) cmp lc($b->{name})} @$_),
@@ -57,19 +68,17 @@ sub internal_load_rows {
 	        ? ()
 	        : [map(+{
 		    id => $self->status_to_id($_),
-		    name => $n->{$_->get_name},
+		    name => _labels($self)->{$_->get_name},
 		}, @$_LIST)],
 	    $self->new_other('GroupUserList')->map_iterate(
 		sub {
 		    my($it) = @_;
 		    return
-			unless $it->get('RealmUser.role')->in_category_role_group('all_members');
+			unless $it->get('RealmUser.role')->
+			    in_category_role_group('all_members');
 		    return {
 			id => $it->get('RealmUser.user_id'),
-			name => ($fields && $fields->{names_only}
-			    ? '' : $n->{assign_to})
-			    . $self->owner_email_to_name(
-				$it->get('Email.email')),
+			name => _format_name($self, $it),
 		    };
 		},
 	    ),
@@ -79,10 +88,25 @@ sub internal_load_rows {
 
 sub load_owner_names {
     my($self) = @_;
-    $self->[$_IDI] ||= {
-	names_only => 1,
-    };
+    _names_only($self, 1);
     return $self->load_all;
+}
+
+sub name_to_id {
+    my($self, $name) = @_;
+    my($id);
+    $self->new_other('GroupUserList')->do_iterate(sub {
+        my($it) = @_;
+	return 1
+	    unless _format_name($self, $it) eq $name;
+	$id = $it->get('RealmUser.user_id');
+	return 0;
+    }) if $name;
+    return $id;
+}
+
+sub names_only {
+    return _names_only(shift, 1);
 }
 
 sub owner_email_to_name {
@@ -105,6 +129,31 @@ sub status_to_id_in_list {
 sub validate_id {
     my($self, $id) = @_;
     return $id && $self->find_row_by(id => $id) ? 1 : 0;
+}
+
+sub _format_name {
+    my($self, $row) = @_;
+    my($fields) = $self->[$_IDI];
+    return ($fields && $fields->{names_only}
+		? '' : _labels($self)->{assign_to})
+	. $row->get('display_name') . ' (' . $row->get('Email.email') . ')';
+}
+
+sub _labels {
+    my($self) = @_;
+    return {map(
+	($_ => $_T->get_value('CRMActionList', 'label', $_, $self->req)),
+	'assign_to',
+	@$_NAMES,
+    )};
+}
+
+sub _names_only {
+    my($self, $names_only) = @_;
+    $self->[$_IDI] ||= {
+	names_only => $names_only,
+    };
+    return;
 }
 
 1;
