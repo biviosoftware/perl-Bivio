@@ -574,6 +574,13 @@ div.dd_menu a:hover {
   Color('dd_menu_selected');
   text-decoration: none;
 }
+div.cb_arrow {
+  display: inline;
+  position: absolute;
+  border: 1px outset;
+  Color('dd_menu-border');
+  Color('body');
+}
 div.cb_menu {
   display: inline;
   position: absolute;
@@ -582,6 +589,8 @@ div.cb_menu {
   border: 1px solid;
   Color('dd_menu-border');
   width: 15em;
+  max-height: 10em;
+  overflow: auto;
   z-index: 1000;
 }
 div.cb_selected {
