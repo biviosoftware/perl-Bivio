@@ -91,7 +91,7 @@ sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($src) = ${$self->render_attr('src', $source)};
     my($src_is_uri) = $src =~ m{[/:]};
-    my($src_name) = $src_is_uri ? $src =~ m{([^/]+)\.\w+$} || '' : $src;
+    my($src_name) = $src_is_uri ? ($src =~ m{([^/]+)\.\w+$})[0] || '' : $src;
     my($b) = '<img';
     $self->SUPER::control_on_render($source, \$b);
     $b .= qq{ class="$src_name"}
