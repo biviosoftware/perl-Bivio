@@ -92,38 +92,70 @@ window.bivio.combobox.key_up = function(key, field) {
             field.value = field.typed_value;
 	return true;
     }
-    populate_search(field);
+    populate_search(field, false);
+    show_drop_down(field, false);
 
-    var drop_down = field.drop_down;
-    if (drop_down.childNodes.length > 0) {
-
-        if (drop_down.childNodes.length == 1
-            && field.value == drop_down.childNodes[0].real_value) {
-            return true;
-        }
-        drop_down.style.visibility = 'visible';
-        document.onclick = function() {
-            field.clear_list();
-        }
-    }
     return true;
 }
 
-function init_drop_down(field, init_values) {
-    var drop_down = field.nextSibling;
-    while (drop_down.nodeName != 'DIV')
-      drop_down = drop_down.nextSibling;
+window.bivio.combobox.arrow_mouse_down = function(arrow, init_values) {
+    var field = get_sibling(arrow, false, 'INPUT');
+    if (! field.drop_down)
+        init_drop_down(field, init_values);
+    return true;
+}
 
-    drop_down.style.width = field.clientWidth + 'px';
+window.bivio.combobox.arrow_mouse_up = function(arrow) {
+    var field = get_sibling(arrow, false, 'INPUT');
+
+    if (active_timer)
+        window.clearTimeout(active_timer);
+
+    var drop_down = field.drop_down;
+    var list_items = drop_down.childNodes.length;
+    if (! drop_down)
+        return true;
+    if (list_items) {
+        field.clear_list();
+        return true;
+    }
+
+    field.clear_list();
+    populate_search(field, true);
+    show_drop_down(field, true);
+
+    return true;
+}
+
+function get_sibling(obj, next, nodeName) {
+    var sibling;
+    sibling = next ? obj.nextSibling : obj.previousSibling;
+    while (sibling.nodeName != nodeName) {
+        sibling = next ? sibling.nextSibling : sibling.previousSibling;
+    }
+    return sibling;
+}
+
+function init_drop_down(field, init_values) {
+    var drop_down = get_sibling(field, true, 'DIV');
+    var arrow = get_sibling(field, true, 'A');
+    arrow = arrow.firstChild;
+
+    drop_down.style.width = (field.clientWidth + arrow.offsetWidth) + 'px';
+    drop_down.style.left = (position(field)[0] - 1) + 'px';
     field.drop_down = drop_down;
     field.auto_submit = init_values.auto_submit;
     field.setAttribute('autocomplete', 'off');
     field.drop_down_values = init_values.dd_values;
     field.clear_list = function() {
-        set_selected(null);
         var drop_down = this.drop_down;
         if (! drop_down)
             return;
+        if (this.block_clear) {
+            this.block_clear = false;
+            return;
+        }
+        set_selected(null);
         while (drop_down.firstChild)
 	    drop_down.removeChild(drop_down.firstChild);
         if (drop_down.style.visibility == 'visible')
@@ -132,16 +164,16 @@ function init_drop_down(field, init_values) {
     field.clear_list();
 }
 
-function populate_search(field) {
-    var search = field.value;
-    field.typed_value = search;
-    if (! search.length)
+function populate_search(field, show_all) {
+    var search;
+    search = show_all ? '' : field.value;
+    field.typed_value = field.value;
+    if (! search.length && ! show_all)
 	return true;
 
     for (var i = 0; i < field.drop_down_values.length; i++) {
 	var v = field.drop_down_values[i];
         if (! v) continue;
-
         if (search.length == 1) {
             if (v.toLowerCase().indexOf(search.toLowerCase()) != 0)
                 continue;
@@ -158,8 +190,22 @@ function populate_search(field) {
 	}
 	d.innerHTML = b_escape_html(v);
 	d.real_value = v;
+        if (v == field.value)
+            set_selected(d);
 	field.drop_down.appendChild(d);
     }
+}
+
+function position(obj) {
+    var left = 0;
+    var top = 0;
+    if (obj.offsetParent) {
+        do {
+            left += obj.offsetLeft;
+            top += obj.offsetTop;
+        } while ((obj = obj.offsetParent) && obj.offsetParent.tagName != 'BODY');
+    }
+    return [left, top];
 }
 
 function save_selected(field) {
@@ -193,7 +239,7 @@ function select_next_item(prev, field) {
 function set_selected(item) {
     if (item)
         b_add_class(item, 'cb_selected');
-    if (selected)
+    if (selected && selected != item)
         b_remove_class(selected, 'cb_selected');
     selected = item;
 }
@@ -205,6 +251,21 @@ function set_timeout(field, count) {
         set_timeout(field, 150);
         select_next_item(field.key_code == key_codes.UP_ARROW, field);
     }, count);
+}
+
+function show_drop_down(field, block_clear) {
+    var drop_down = field.drop_down;
+    if (drop_down.childNodes.length > 0) {
+        if (drop_down.childNodes.length == 1
+            && field.value == drop_down.childNodes[0].real_value) {
+            return;
+        }
+        drop_down.style.visibility = 'visible';
+        field.block_clear = block_clear;
+        document.onclick = function() {
+            field.clear_list();
+        }
+    }
 }
 
 })();
