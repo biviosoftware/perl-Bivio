@@ -36,6 +36,18 @@ sub initialize {
 	$self->unsafe_get('hint_text')
 	    ? ClearOnFocus(_text($self), $self->get('hint_text'))
 	    : _text($self),
+	A(
+	    DIV_cb_arrow(vs_text_as_prose('combo_box_arrow')),
+	    {
+		HREF => '#',
+		ONMOUSEDOWN => Join([
+		    "return $_PREFIX.arrow_mouse_down(this, {",
+		    _init_values($self),
+		    "})",
+		]),
+		ONMOUSEUP => "return $_PREFIX.arrow_mouse_up(this)",
+	    },
+	),
 	BR(),
 	EmptyTag(div => {
 	    CLASS => 'cb_menu',
@@ -57,18 +69,26 @@ sub render {
     return shift->SUPER::render(@_);
 }
 
+sub _init_values {
+    my($self) = @_;
+    return (
+	If($self->unsafe_get('auto_submit'),
+	   'auto_submit: true,'),
+	'dd_values: ',
+	_var_name($self),
+    );
+}
+
 sub _text {
     my($self) = @_;
     return Text($self->get('field'), {
 	ONKEYDOWN => Join([
 	    "return $_PREFIX.key_down(event.keyCode, this, {",
-	    If($self->unsafe_get('auto_submit'),
-	       'auto_submit: true,'),
-	    'dd_values: ',
-	    _var_name($self),
+	    _init_values($self),
 	    '})',
 	]),
 	ONKEYUP => "return $_PREFIX.key_up(event.keyCode, this)",
+	AUTOCOMPLETE => 'off',
 	size => $self->get('size'),
     });
 }
