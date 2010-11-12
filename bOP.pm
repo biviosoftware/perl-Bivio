@@ -28,10 +28,30 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 9.88  2010/11/08 22:19:49  nagler
+  * Bivio::Agent::Request
+    refactored assert_test to call IO.Config->assert_test
+  * Bivio::BConf
+    added bunit_case Trace config
+  * Bivio::Ext::BerkeleyDB
+    NEW
+  * Bivio::IO::Config
+    added assert_test()
+  * Bivio::Test
+    added want_void option (like want_scalar)
+    move trace statement for bunit_case Trace config
+  * Bivio::Type::ExistingFolderArg
+    NEW
+  * Bivio::Type::FolderArg
+    NEW
+  * Bivio::UNIVERSAL
+    added map_by_slice and boolean
+    refactored map_by_two to use map_by_slice
+    added call_and_do_after
+
   Revision 9.87  2010/11/03 22:09:19  schellj
   * Bivio::Agent::TaskEvent
     removed TODO
