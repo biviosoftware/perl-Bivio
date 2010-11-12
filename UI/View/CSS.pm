@@ -575,11 +575,14 @@ div.dd_menu a:hover {
   text-decoration: none;
 }
 div.cb_arrow {
+  cursor: pointer;
   display: inline;
   position: absolute;
   border: 1px outset;
   Color('dd_menu-border');
   Color('body');
+  -webkit-user-select: none;
+  -moz-user-select: none;
 }
 div.cb_menu {
   display: inline;
