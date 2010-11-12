@@ -137,9 +137,8 @@ function get_sibling(obj, next, nodeName) {
 }
 
 function init_drop_down(field, init_values) {
-    var drop_down = get_sibling(field, true, 'DIV');
-    var arrow = get_sibling(field, true, 'A');
-    arrow = arrow.firstChild;
+    var arrow = get_sibling(field, true, 'DIV');
+    var drop_down = get_sibling(arrow, true, 'DIV');
 
     drop_down.style.width = (field.clientWidth + arrow.offsetWidth) + 'px';
     drop_down.style.left = (position(field)[0] - 1) + 'px';
