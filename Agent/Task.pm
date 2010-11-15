@@ -343,16 +343,17 @@ sub initialize {
     # to speed up command line initialization.  B<Never use in a server.>
     return if $_INITIALIZED;
     $_INITIALIZED = 1;
-    foreach my $cfg (@{$_T->get_cfg_list}) {
-	my($id_name, undef, $realm_type, $perm_spec, @items) = @$cfg;
+    foreach my $cfg (map(+{%$_}, @{$_T->get_cfg_list})) {
+	my($ps) = delete($cfg->{permissions});
+	delete($cfg->{int});
 	$proto->new(
-	    $_T->$id_name(),
-	    $_RT->from_any($realm_type),
+	    $_T->from_any(delete($cfg->{name})),
+	    $_RT->from_any(delete($cfg->{realm_type})),
 	    ${$_PS->from_array(
-		ref($perm_spec) eq 'ARRAY' ? $perm_spec
-		    : [split(/\&/, $perm_spec)],
+		ref($ps) eq 'ARRAY' ? $ps : [split(/\&/, $ps)],
 	    )},
-	    $partially ? () : @items,
+	    $partially ? ()
+		: (@{delete($cfg->{items})}, $cfg),
 	);
     };
     return;
@@ -376,7 +377,7 @@ sub new {
     #     Model.UserLoginForm
     #     View.user-login
     #
-    # See L<Bivio::Delegate::SimpleTaskId|Bivio::Delegate::SimpleTaskId>
+    # See L<Bivio::Delegate::TaskId|Bivio::Delegate::TaskId>
     # and L<Bivio::PetShop::Agent::TaskId|Bivio::PetShop::Agent::TaskId>
     # for complete examples.
     #
