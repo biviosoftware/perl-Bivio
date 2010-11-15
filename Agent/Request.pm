@@ -252,8 +252,8 @@ sub SERVER_REDIRECT_PARAMETERS {
 }
 
 sub if_apache_version {
-    my(undef, $expect, $then, $else) = @_;
-    return $_CFG->{apache_version} >= $expect ? $then->() : $else && $else->();
+    my($proto, $expect) = (shift, shift);
+    return $proto->if_then_else($_CFG->{apache_version} >= $expect, @_);
 }
 
 sub as_string {
@@ -679,10 +679,8 @@ sub handle_config {
 }
 
 sub if_test {
-    my($self, $then, $else) = @_;
-    return $self->is_test ? $then->()
-	: $else ? $else->()
-	: ();
+    my($self) = shift;
+    return $self->if_then_else($self->is_test, @_);
 }
 
 sub internal_call_handlers {
