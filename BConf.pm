@@ -110,9 +110,6 @@ sub default_merge_overrides {
 	},
     }, {
 	$args->{version} < 9 ? () : (
-	    'Bivio::Biz::Model::TaskLog' => {
-		enable_log => 1,
-	    },
 	    'Bivio::SQL::PropertySupport' => {
 		unused_classes => [],
 	    },
@@ -463,7 +460,7 @@ sub _base {
 	$proto->merge_class_loader({
 	    delegates => {
                 'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
-                'Bivio::Agent::TaskId' => 'Bivio::Delegate::SimpleTaskId',
+                'Bivio::Agent::TaskId' => 'Bivio::Delegate::TaskId',
                 'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
                 'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
                 'Bivio::Auth::Role' => 'Bivio::Delegate::Role',

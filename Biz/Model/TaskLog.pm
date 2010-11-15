@@ -7,17 +7,8 @@ use Bivio::Base 'Biz.PropertyModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REQ_KEY) = __PACKAGE__ . '.state';
 my($_DT) = b_use('Type.DateTime');
-b_use('IO.Config')->register(my $_CFG = {
-    enable_log => 0,
-});
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    b_use('Agent.Task')->register(__PACKAGE__)
-	if $cfg->{enable_log};
-    $_CFG = $cfg;
-    return;
-}
+b_use('Agent.Task')->register(__PACKAGE__)
+    if b_use('Agent.TaskId')->unsafe_from_name('SITE_ADMIN_TASK_LOG');
 
 sub handle_post_execute_task {
     my($proto, $task, $req) = @_;
@@ -51,11 +42,6 @@ sub handle_pre_execute_task {
 	client_address => $req->unsafe_get('client_addr') || '',
     });
     return;
-}
-
-sub if_enabled {
-    my(undef, $then, $else) = @_;
-    return $_CFG->{enable_log} ? $then->() : $else ? $else->() : ();
 }
 
 sub internal_initialize {
