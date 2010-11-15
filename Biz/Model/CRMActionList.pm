@@ -94,14 +94,25 @@ sub load_owner_names {
 
 sub name_to_id {
     my($self, $name) = @_;
+    return undef
+	unless defined($name);
     my($id);
+    my($l) = _labels($self);
+    foreach my $k (keys(%$l)) {
+	my($v) = $l->{$k};
+	$id = -$_CTS->$k->as_int
+	    if $v eq $name;
+	last if defined($id);
+    }
+    return $id
+	if defined($id);
     $self->new_other('GroupUserList')->do_iterate(sub {
         my($it) = @_;
 	return 1
 	    unless _format_name($self, $it) eq $name;
 	$id = $it->get('RealmUser.user_id');
 	return 0;
-    }) if $name;
+    });
     return $id;
 }
 
