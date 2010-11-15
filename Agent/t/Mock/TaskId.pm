@@ -2,14 +2,14 @@
 # $Id$
 package Bivio::Agent::t::Mock::TaskId;
 use strict;
-use Bivio::Base 'Bivio::Delegate::SimpleTaskId';
+use Bivio::Base 'Delegate.TaskId';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     my($proto) = @_;
     # Returns the task declarations.
-    return $proto->merge_task_info($proto->SUPER::get_delegate_info, [
+    return $proto->merge_task_info(qw(base user_auth wiki), [
 	[qw(
 	    LOGIN
 	    500
