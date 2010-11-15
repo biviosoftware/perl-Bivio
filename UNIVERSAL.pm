@@ -195,6 +195,17 @@ sub grep_subroutines {
     return _grep_sub($proto, undef, @_);
 }
 
+sub if_then_else {
+    my($proto, $condition, $then, $else) = @_;
+    $then = 1
+	unless @_ >= 3;
+    return ref($then) eq 'CODE' ? $then->() : $then
+	if ref($condition) eq 'CODE' ? $condition->() : $condition;
+    return
+	unless @_ >= 4;
+    return ref($else) eq 'CODE' ? $else->() : $else;
+}
+
 sub inheritance_ancestors {
     my($proto) = @_;
     my($class) = ref($proto) || $proto;
