@@ -8,36 +8,66 @@
 	],
 	merge_task_info => [
 	    xapian => [[
-		[qw(
-		    JOB_XAPIAN_COMMIT
-		    60
-		    ANY_OWNER
-		    ANYBODY
-		    Search.Xapian
-		), {}],
-		[qw(
-		    SEARCH_LIST
-		    61
-		    GENERAL
-		    ANYBODY
-		    Model.SearchForm
-		    Model.SearchList->execute_load_page
-		    View.Search->list
-		), {next => 'SEARCH_LIST'},
-		],
-		[qw(
-		    GROUP_SEARCH_LIST
-		    62
-		    ANY_OWNER
-		    ANYBODY
-		    Model.SearchForm
-		    Model.SearchList->execute_load_page
-		    View.Search->list
-		), {next => 'GROUP_SEARCH_LIST'},
-		],
+		{
+		    name => 'JOB_XAPIAN_COMMIT',
+		    int => 60,
+		    realm_type => 'ANY_OWNER',
+		    permissions => 'ANYBODY',
+		    items => [qw(
+                        Search.Xapian
+		    )],
+		},
+		{
+		    name => 'SEARCH_LIST',
+		    int => 61,
+		    realm_type => 'GENERAL',
+		    permissions => 'ANYBODY',
+		    items => [qw(
+		        Model.SearchForm
+			Model.SearchList->execute_load_page
+			View.Search->list
+		    )],
+		    next => 'SEARCH_LIST',
+		},
+		{
+		    name => 'GROUP_SEARCH_LIST',
+		    int => 62,
+		    realm_type => 'ANY_OWNER',
+		    permissions => 'ANYBODY',
+		    items => [qw(
+		        Model.SearchForm
+			Model.SearchList->execute_load_page
+			View.Search->list
+		    )],
+		    next => 'GROUP_SEARCH_LIST',
+		},
 	    ]],
-	    [[[a => 1]], [[b => 2]]] => [[[a => 1, undef, undef, {}], [b => 2, undef, undef, {}]]],
-	    [[[a => 1]], [[a => 3], [b => 2]]] => [[[b => 2, undef, undef, {}], [a => 3, undef, undef, {}]]],
+	    [[[a => 1]], [[b => 2]]] => [[{
+		name => 'a',
+		int => 1,
+		realm_type => undef,
+		permissions => undef,
+		items => [],
+	    }, {
+		name => 'b',
+		int => 2,
+		realm_type => undef,
+		permissions => undef,
+		items => [],
+	    }]],
+	    [[[a => 1]], [[a => 3], [b => 2]]] => [[{
+		name => 'b',
+		int => 2,
+		realm_type => undef,
+		permissions => undef,
+		items => [],
+	    }, {
+		name => 'a',
+		int => 3,
+		realm_type => undef,
+		permissions => undef,
+		items => [],
+	    }]],
 	],
 	included_components => [
 	    [] => [[qw(xapian)]],
