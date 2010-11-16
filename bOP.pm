@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,64 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.90  2010/11/16 08:24:33  schellj
+  * Bivio::Agent::Request
+    used UNIVERSAL->if_then_else
+  * Bivio::Agent::t::Mock::TaskId
+    don't inlude all components.  Unnecessary and creates conflicts
+  * Bivio::Agent::TaskId
+    tasks are now configured as hashes
+  * Bivio::Agent::Task
+    allow tasks to be configured as a hash with converted values (references)
+  * Bivio::BConf
+    TaskLog configured as task component
+    SimpleTaskId gone
+  * Bivio::Biz::Model::CRMActionList
+    fix for validation of status actions
+  * Bivio::Biz::Model::TaskLog
+    TaskLog configured as task component
+    SimpleTaskId gone
+  * Bivio::Delegate::SimpleTaskId
+    removed
+  * Bivio::Delegate::TaskId
+    task_log configures as a component
+    merged with SimpleTaskId.pm
+  * Bivio::Test::ShellUtilConf
+    NEW
+  * Bivio::Type::CIDRNotation
+    NEW
+  * Bivio::Type::SyntacticString
+    internal_post_from_literal can return an error
+  * Bivio::UI::FacadeBase
+    task_log is a component
+  * Bivio::UI::HTML::Widget::Script
+    changes for removed anchor on combobox button
+  * Bivio::UI::Task
+    tasks now configure as a hash
+  * Bivio::UI::Text::Widget::File
+    removed
+  * Bivio::UI::View::CSS
+    changes for removed anchor on combobox button, disable button text
+    selection (Mozilla, Webkit)
+  * Bivio::UI::Widget::MIMEBodyWithAttachment
+    removed
+  * Bivio::UI::XHTML::Widget::ComboBox
+    remove anchor on combobox button, disable button text selection (IE)
+  * Bivio::UI::XHTML::Widget::FeatureTaskMenu
+    don't include tasks if they don't exists
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    reorder render_tag_value "control" checking.  Wasn't able to have a
+    tasks which don't exists
+  * Bivio::UNIVERSAL
+    added if_then_else
+  * Bivio::Util::HTTPConf
+    allow passing in or read_input
+  * Bivio::Util::NamedConf
+    NEW
+  * Bivio::Util::SQL
+    added general_accountant upgrade: accounting has admin_read privs in
+    general realm
+
   Revision 9.89  2010/11/12 09:40:46  schellj
   * Bivio::Biz::Model::CRMActionList
     support for use of combobox
