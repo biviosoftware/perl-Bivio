@@ -14,6 +14,7 @@ my($_EASY_FORM_DIR) = 'Forms';
 my($_RN) = b_use('Type.RealmName');
 my($_FN) = b_use('Type.ForumName');
 my($_D) = b_use('Bivio.Die');
+my($_TI) = b_use('Agent.TaskId');
 
 sub HELP_WIKI_REALM_NAME {
     return _site(shift, 'help');
@@ -809,6 +810,9 @@ sub _cfg_file {
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
 	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
+	    # b_use('Model.RealmFileLock')->if_enabled(
+	    # 	[FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
+	    # ),
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -1165,6 +1169,8 @@ sub _cfg_site_admin {
             map({
 		my($n, $task, $control, $realm) = @$_;
 		$realm ||= 'SITE_ADMIN_REALM_NAME';
+		$control = $_TI->unsafe_from_name($task) ? 1 : 0
+		    unless defined($control);
 		(
 		    ["xlink_$n" => sub {
                         my($f) = shift->get_facade;
@@ -1173,7 +1179,7 @@ sub _cfg_site_admin {
                             $f->can($realm) ? (realm => $f->$realm()) : (),
                         };
                     }],
-		    ["want_$n" => defined($control) ? $control : 1],
+		    ["want_$n" => $control],
 		);
 	    }
 		$_C->if_version(10 =>
@@ -1181,9 +1187,7 @@ sub _cfg_site_admin {
 		    sub {[qw(all_users SITE_ADMIN_USER_LIST)]},
 		),
                 [qw(substitute_user SITE_ADMIN_SUBSTITUTE_USER)],
-		[qw(task_log SITE_ADMIN_TASK_LOG), sub {
-		     b_use('Model.TaskLog')->if_enabled(sub {'task_log'});
-		}],
+		[qw(task_log SITE_ADMIN_TASK_LOG)],
 		[qw(remote_copy REMOTE_COPY_FORM), sub {
 		     my($fc) = @_;
 		     return $_D->eval(sub {
@@ -1226,14 +1230,6 @@ sub _cfg_site_admin {
 	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => => '?/admin-applicants'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => => '?/admin-assign-applicant'],
-	    b_use('Model.TaskLog')->if_enabled(sub {
-		return (
-		    [SITE_ADMIN_TASK_LOG => '?/admin-hits'],
-		    [SITE_ADMIN_TASK_LOG_CSV => '?/admin-hits.csv'],
-		    [GROUP_TASK_LOG => '?/hits'],
-		    [GROUP_TASK_LOG_CSV => '?/hits.csv'],
-		);
-	    }),
 	],
 	Text => [
             [xlink => [
@@ -1241,7 +1237,6 @@ sub _cfg_site_admin {
                 all_users => 'All Users',
                 site_reports => 'Web Stats',
                 substitute_user => 'Act as User',
-		task_log => 'Site Hits',
 		remote_copy => 'Remote Copy',
             ]],
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
@@ -1288,15 +1283,6 @@ EOF
 		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
-		SITE_ADMIN_TASK_LOG => 'Site Hits',
-		GROUP_TASK_LOG => 'Hits',
-		SITE_ADMIN_TASK_LOG_CSV => 'Spreadsheet',
-		GROUP_TASK_LOG_CSV => 'Spreadsheet',
-	    ]],
-	    [clear_on_focus_hint => [
-		map(($_ => 'Filter name, >date, @email, /link, or x.y.z.'),
-		    map(($_, $_ . '_CSV'),
-			qw(SITE_ADMIN_TASK_LOG GROUP_TASK_LOG))),
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
@@ -1306,6 +1292,33 @@ EOF
 	    [acknowledgement => [
 		REMOTE_COPY_FORM => 'Local system updated.',
 		REMOTE_COPY_FORM_no_update => 'Remote and local systems are identical.  Nothing to update.',
+	    ]],
+	],
+    };
+}
+
+sub _cfg_task_log {
+    return {
+	Task => [
+	    [SITE_ADMIN_TASK_LOG => '?/admin-hits'],
+	    [SITE_ADMIN_TASK_LOG_CSV => '?/admin-hits.csv'],
+	    [GROUP_TASK_LOG => '?/hits'],
+	    [GROUP_TASK_LOG_CSV => '?/hits.csv'],
+	],
+	Text => [
+            [xlink => [
+		task_log => 'Site Hits',
+            ]],
+	    [clear_on_focus_hint => [
+		map(($_ => 'Filter name, >date, @email, /link, or x.y.z.'),
+		    map(($_, $_ . '_CSV'),
+			qw(SITE_ADMIN_TASK_LOG GROUP_TASK_LOG))),
+	    ]],
+	    [title => [
+		SITE_ADMIN_TASK_LOG => 'Site Hits',
+		GROUP_TASK_LOG => 'Hits',
+		SITE_ADMIN_TASK_LOG_CSV => 'Spreadsheet',
+		GROUP_TASK_LOG_CSV => 'Spreadsheet',
 	    ]],
 	],
     };
