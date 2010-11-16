@@ -26,8 +26,7 @@ sub bunit_validate_all {
 }
 
 sub get_delegate_info {
-    # For backwards compatibility
-    return shift->info_base(@_);
+    return shift->merge_task_info('base');
 }
 
 sub included_components {
