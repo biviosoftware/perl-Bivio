@@ -61,6 +61,7 @@ my($_BUNDLE) = [qw(
     !xapian_exec_realm
     !xapian_exec_realm2
     !drop_member_if_administrator
+    !general_accountant
     !motion_vote_aff_drop_not_null
 ),
     $_IC->if_version(10, '!', '') ? 'site_admin_forum_users2' : (),
@@ -985,6 +986,13 @@ sub internal_upgrade_db_file_writer {
 	unauth_iterate_start => 'realm_id',
 	{role => $_R->MEMBER},
     );
+    return;
+}
+
+sub internal_upgrade_db_general_accountant {
+    my($self) = @_;
+    $self->new_other('RealmRole')
+	->main(qw(-realm GENERAL -user user edit ACCOUNTANT +ADMIN_READ +DATA_BROWSE +MAIL_READ));
     return;
 }
 
@@ -2446,14 +2454,14 @@ b-realm-role -realm GENERAL -user user edit GUEST - \
 b-realm-role -realm GENERAL -user user edit MEMBER - \
     +GUEST
 b-realm-role -realm GENERAL -user user edit ACCOUNTANT - \
-    +MEMBER
+    +MEMBER \
+    +ADMIN_READ \
+    +DATA_BROWSE \
+    +MAIL_READ
 b-realm-role -realm GENERAL -user user edit ADMINISTRATOR - \
     +ACCOUNTANT \
-    +ADMIN_READ \
     +ADMIN_WRITE \
-    +DATA_BROWSE \
-    +DATA_WRITE \
-    +MAIL_READ
+    +DATA_WRITE
 b-realm-role -realm GENERAL -user user edit MAIL_RECIPIENT -
 b-realm-role -realm GENERAL -user user edit FILE_WRITER - \
     +DATA_WRITE
