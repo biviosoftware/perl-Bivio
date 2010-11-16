@@ -136,24 +136,13 @@ sub initialize {
 
 sub render_tag_value {
     my($self, $source, $buffer) = @_;
-    my($req) = $self->get_request;
     my($need_sep) = $self->get('_init')->($source);
     my($buffers) = [];
-    my($sct) = $self->render_simple_attr(show_current_task => $source);
+    my($req) = $source->req;
     foreach my $w (_render_list($self, $source)) {
-	my($cfg) = $w->get('_task_menu_cfg');
-	next
-	    if !$sct && $cfg->{task_id}
-	    && $req->get('task_id')->equals($cfg->{task_id});
-        my($selected_attr) = _selected_attr($self, $cfg);
-	next
-	    if $w->can('is_control_on') && !$w->is_control_on($source);
         $req->put(
-	    $selected_attr => $w->render_simple_attr('_is_selected', $source));
-	my($r) = $self->render_simple_value($cfg->{realm}, $source);
-	next unless !$cfg->{task_id} || $req->can_user_execute_task(
-	    $cfg->{task_id},
-	    $r || undef,
+	    _selected_attr($self, $w->get('_task_menu_cfg'))
+		=> $w->render_simple_attr('_is_selected', $source),
 	);
 	my($b) = '';
 	$w->render($source, \$b);
@@ -189,20 +178,43 @@ sub _prefix {
 
 sub _render_list {
     my($self, $source) = @_;
-    my($list) = $self->get('task_map');
+    my($req) = $self->get_request;
+    my($sct) = $self->render_simple_attr(show_current_task => $source);
+    my($list) = [map(
+	{
+	    my($w, $cfg) = ($_, $_->get('_task_menu_cfg'));
+	    # Control is the first question that has to be asked.  If the widget is
+	    # off, then the rest doesn't make sense, and there may be a conditional
+	    # value in the other parts of the widget (task_id, for example) which
+	    # is protected by the control.
+	    $w->can('is_control_on')
+		&& !$w->is_control_on($source)
+		|| !$sct
+		&& $cfg->{task_id}
+		&& $req->get('task_id')->equals($cfg->{task_id})
+		|| $cfg->{task_id}
+		&& !$req->can_user_execute_task(
+		    $cfg->{task_id},
+		    $self->render_simple_value($cfg->{realm}, $source) || undef,
+		)
+		? () : $w;
+        }
+	@{$self->get('task_map')},
+    )];
     return @$list
 	unless $self->render_simple_attr('want_sorting', $source);
-    return @{$_A->map_sort_map(
-	sub {
-	    my($cfg) = shift->get('_task_menu_cfg');
-	    return lc($self->render_simple_value(
-		$cfg->{sort_label},
-		$source,
-	    ));
-	},
-	sub {shift cmp shift},
-	$list,
-    )};
+    return @{
+	$_A->map_sort_map(
+	    sub {
+		my($cfg) = shift->get('_task_menu_cfg');
+		return lc(
+		    $self->render_simple_value($cfg->{sort_label}, $source),
+		);
+	    },
+	    sub {shift cmp shift},
+	    $list,
+        ),
+    };
 }
 
 sub _selected_attr {
