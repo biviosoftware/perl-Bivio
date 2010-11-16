@@ -632,7 +632,7 @@ sub _initialize_fields {
     return $self->[$_IDI] = {
 	# Used only at initialization
 	to_realm_type => {map {
-	    (uc($_->[0]) => uc($_->[2]));
+	    (uc($_->{name}) => uc($_->{realm_type}));
 	} @{$_TI->get_cfg_list}},
     };
 }
