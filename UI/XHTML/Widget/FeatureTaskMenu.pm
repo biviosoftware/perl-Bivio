@@ -89,38 +89,41 @@ sub internal_selected_item_map {
 
 sub internal_tasks {
     return [
-	{
-	    xlink => vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
-	    label => 'SiteAdminDropDown_label',
-	    sort_label => 'sort_label_02',
-	},
-	{
-	    task_id => 'SITE_WIKI_VIEW',
-	    sort_label => 'sort_label_01',
-	},
-	{
-	    task_id => 'FORUM_WIKI_VIEW',
-	    sort_label => 'sort_label_03',
-	},
-	qw(
-	    FORUM_BLOG_LIST
-	    FORUM_CALENDAR
-	),
-	{
-	    task_id => 'REALM_FEATURE_FORM',
-	    control =>
-		['!', [[qw(->req auth_realm)], 'type'], '->eq_forum'],
-	},
-	qw(
-	    FORUM_EDIT_FORM
-	    FORUM_FILE_TREE_LIST
-	    GROUP_TASK_LOG
-	    FORUM_MAIL_THREAD_ROOT_LIST
-	    FORUM_CREATE_FORM
-	    FORUM_MOTION_LIST
-	    GROUP_USER_LIST
-	    FORUM_TUPLE_USE_LIST
-	    FORUM_CRM_THREAD_ROOT_LIST
+	map(
+	    ref($_) || $_TI->unsafe_from_name($_) ? $_ : (),
+	    {
+		xlink => vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
+		label => 'SiteAdminDropDown_label',
+		sort_label => 'sort_label_02',
+	    },
+	    {
+		task_id => 'SITE_WIKI_VIEW',
+		sort_label => 'sort_label_01',
+	    },
+	    {
+		task_id => 'FORUM_WIKI_VIEW',
+		sort_label => 'sort_label_03',
+	    },
+	    qw(
+		FORUM_BLOG_LIST
+		FORUM_CALENDAR
+	    ),
+	    {
+		task_id => 'REALM_FEATURE_FORM',
+		control =>
+		    ['!', [[qw(->req auth_realm)], 'type'], '->eq_forum'],
+	    },
+	    qw(
+		FORUM_EDIT_FORM
+		FORUM_FILE_TREE_LIST
+		GROUP_TASK_LOG
+		FORUM_MAIL_THREAD_ROOT_LIST
+		FORUM_CREATE_FORM
+		FORUM_MOTION_LIST
+		GROUP_USER_LIST
+		FORUM_TUPLE_USE_LIST
+		FORUM_CRM_THREAD_ROOT_LIST
+	    ),
 	),
     ];
 }
