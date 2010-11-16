@@ -28,9 +28,32 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 9.89  2010/11/12 09:40:46  schellj
+  * Bivio::Biz::Model::CRMActionList
+    support for use of combobox
+  * Bivio::Biz::Model::CRMForm
+    support use of combobox
+  * Bivio::Biz::Model::CRMQueryForm
+    support for use of combobox
+  * Bivio::Biz::Model::CRMThreadRootList
+    support for use of combobox
+  * Bivio::UI::FacadeBase
+    added combo_box_arrow
+  * Bivio::UI::HTML::Widget::Image
+    fixed src_name if src_is_uri and xhtml
+  * Bivio::UI::HTML::Widget::Script
+    add arrow button to make a true combobox
+  * Bivio::UI::View::CRM
+    change owner select to combobox
+  * Bivio::UI::View::CSS
+    styles for combobox arrow
+  * Bivio::UI::XHTML::Widget::ComboBox
+    add arrow button
+
   Revision 9.88  2010/11/08 22:19:49  nagler
   * Bivio::Agent::Request
     refactored assert_test to call IO.Config->assert_test
