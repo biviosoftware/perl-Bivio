@@ -5,28 +5,32 @@ use strict;
 use Bivio::Base 'Type.String';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_TE) = b_use('Bivio.TypeError');
 
 sub SYNTAX_ERROR {
-    return Bivio::TypeError->SYNTAX_ERROR;
+    return $_TE->SYNTAX_ERROR;
 }
 
 sub TOO_LONG_ERROR {
-    return Bivio::TypeError->TOO_LONG;
+    return $_TE->TOO_LONG;
 }
 
 sub TOO_SHORT_ERROR {
-    return Bivio::TypeError->TOO_SHORT;
+    return $_TE->TOO_SHORT;
 }
 
 sub from_literal {
     my($proto, $value) = @_;
     $value = $proto->internal_pre_from_literal($value)
 	if defined($value);
-    return !defined($value) || !length($value)
-	? (undef, undef)
-	: $value =~ /^@{[$proto->REGEX]}$/
-	? _length($proto, $proto->internal_post_from_literal($value))
-	: (undef, $proto->SYNTAX_ERROR);
+    return (undef, undef)
+	if !defined($value) || !length($value);
+    return (undef, $proto->SYNTAX_ERROR)
+	unless $value =~ /^@{[$proto->REGEX]}$/;
+    my($v, $e) = $proto->internal_post_from_literal($value);
+    return (undef, $e)
+	if $e;
+    return _length($proto, $v);
 }
 
 sub get_min_width {
