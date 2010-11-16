@@ -654,6 +654,7 @@ sub info_file {
 	    View.File->file_change
 	    next=FORUM_FILE_TREE_LIST
 	)],
+#TODO: b_use('Model.RealmFileLock')->if_enabled() causes a circular import problem
 	[qw(
 	    FORUM_FILE_OVERRIDE_LOCK
 	    173
@@ -897,7 +898,16 @@ sub info_mail {
 	    Action.MailReceiveStatus
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
 	)],
-#230-239
+	[qw(
+	    GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
+	    230
+	    ANY_OWNER
+	    MAIL_SEND&FEATURE_MAIL
+	    Action.NightlyTestOutput
+	    Action.MailReceiveStatus
+	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+        )],
+#231-239
     ];
 }
 
@@ -1055,6 +1065,11 @@ sub info_site_admin {
 	    require_secure=1
 	)],
 #167-169,
+    ];
+}
+
+sub info_task_log {
+    return [
 	[qw(
 	    SITE_ADMIN_TASK_LOG
 	    210
@@ -1457,17 +1472,8 @@ sub info_wiki {
             Model.RealmFileTextDiffList->execute_load_all
 	    View.Wiki->versions_diff
 	)],
-	[qw(
-	    GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
-	    124
-	    ANY_OWNER
-	    MAIL_SEND&FEATURE_MAIL
-	    Action.NightlyTestOutput
-	    Action.MailReceiveStatus
-	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
-        )],
     ];
-#125-129 free
+#124-129 free
 }
 
 sub info_xapian {
