@@ -88,6 +88,7 @@ sub generate {
 
 sub validate_vars {
     my($self, $vars) = @_;
+    $vars ||= ${$self->read_input};
     $vars = {
 	%$_VARS,
 	%{Bivio::Die->eval_or_die($vars)},
