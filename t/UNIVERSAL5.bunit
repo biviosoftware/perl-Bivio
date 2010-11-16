@@ -8,4 +8,13 @@ Type();
 	[[qw(p1 p2)], [1, 2]] => [class(), {p1 => 1, p2 => 2}],
 	[[qw(p1 p2)], [{p3 => 1}]] => qr{p3.*unknown param},
     ],
+    if_then_else => [
+	[1, 2, 3] => 2,
+	[0, 2, 3] => 3,
+	[sub {1}, sub {2}, sub {3}] => 2,
+	[0, sub {2}, sub {3}] => 3,
+	[0, undef] => [],
+	[1, undef] => [undef],
+	[1] => 1,
+    ],
 ];
