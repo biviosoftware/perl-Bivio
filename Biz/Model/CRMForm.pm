@@ -176,7 +176,7 @@ sub validate {
     my($id) = $cal->name_to_id($self->get('action_id'));
     $self->internal_put_error(action_id => 'SYNTAX_ERROR')
 	unless $self->get_field_error('action_id')
-	    || $cal->validate_id($id);
+	    || defined($id);
     $self->internal_put_field(
 	action_id => $id
     ) unless $self->in_error;
