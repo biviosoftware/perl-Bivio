@@ -753,6 +753,7 @@ sub _cfg_crm {
 		locked => 'Open (Locked)',
 		open => 'Open',
 		pending_customer => 'Pending Customer',
+		new => 'New',
 	    ]],
 	    [CRMForm => [
 		action_id => 'Action',
