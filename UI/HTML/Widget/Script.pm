@@ -141,7 +141,7 @@ function init_drop_down(field, init_values) {
     var drop_down = get_sibling(arrow, true, 'DIV');
 
     drop_down.style.width = (field.clientWidth + arrow.offsetWidth) + 'px';
-    drop_down.style.left = (position(field)[0] - 1) + 'px';
+    drop_down.style.left = (position(field, drop_down.offsetParent)[0] - 1) + 'px';
     field.drop_down = drop_down;
     field.auto_submit = init_values.auto_submit;
     field.setAttribute('autocomplete', 'off');
@@ -195,14 +195,14 @@ function populate_search(field, show_all) {
     }
 }
 
-function position(obj) {
+function position(obj, commonParent) {
     var left = 0;
     var top = 0;
     if (obj.offsetParent) {
         do {
             left += obj.offsetLeft;
             top += obj.offsetTop;
-        } while ((obj = obj.offsetParent) && obj.offsetParent.tagName != 'BODY');
+        } while ((obj = obj.offsetParent) && obj != commonParent);
     }
     return [left, top];
 }
