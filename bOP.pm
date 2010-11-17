@@ -28,10 +28,21 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 9.92  2010/11/17 02:31:49  nagler
+  * Bivio::Type::Line
+    from_literal calls canonicalize_charset
+  * Bivio::Type::String
+    added canonicalize_charset to remove Windows-1252 and UTF-8 characters
+    on TextArea
+  * Bivio::Type::TextArea
+    canonicalize_newlines moved to Type.String
+    from_literal calls canonicalize_charset
+  * Bivio::Type::Text
+    fmt
+
   Revision 9.91  2010/11/16 20:44:36  nagler
   * Bivio::Delegate::TaskId
     get_delegate_info calls merge_task_info, not info_base
