@@ -84,7 +84,7 @@ sub internal_prepare_statement {
     if (my $qf = $self->req->unsafe_get($self->LIST_QUERY_FORM_CLASS)) {
 	my($status, $owner) = $qf->unsafe_get(qw(b_status b_owner_name));
 	my($cal) = $self->new_other('CRMActionList');
-	$cal->names_only;
+	$cal->load_owner_names;
 	$owner = $cal->name_to_id($owner);
 	$stmt->where(['CRMThread.crm_thread_status', [
             $status->get_criteria_list,
