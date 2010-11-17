@@ -30,4 +30,15 @@ Type();
 	'a-z' => 'AZ',
 	'ab cd' => 'AbCd',
     ],
+    canonicalize_charset => [
+	"\x{2018}hello\x{2018}" => "'hello'",
+	"\xe2\x80\x98hello\xe2\x80\x99" => "'hello'",
+	"'x" => "'x",
+	"\223smart quotes\224" =>
+	    '"smart quotes"',
+	"\221single quotes\222" =>
+	    "'single quotes'",
+	"\n\r\t" => '',
+	"a\n\r\tb" => "a\n b",
+    ],
 ];
