@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.91  2010/11/16 20:44:36  nagler
+  * Bivio::Delegate::TaskId
+    get_delegate_info calls merge_task_info, not info_base
+
   Revision 9.90  2010/11/16 08:24:33  schellj
   * Bivio::Agent::Request
     used UNIVERSAL->if_then_else
