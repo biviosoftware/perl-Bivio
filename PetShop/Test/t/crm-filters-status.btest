@@ -21,9 +21,9 @@ my($to_lock, $to_open, $to_close) = map({
 visit_uri($uri);
 follow_link('tickets');
 foreach my $item (
-    [locked => $to_lock],
-    [open => $to_open],
-    [close => $to_close],
+    ['Open (Locked)' => $to_lock],
+    [Open => $to_open],
+    [Close => $to_close],
 ) {
     my($action, $number) = @$item;
     follow_link(qr{^$number$});

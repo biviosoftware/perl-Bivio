@@ -12,6 +12,7 @@ FormModel({
 });
 req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1))
     ->initialize_fully('FORUM_CRM_FORM');
+my($cal) = model('CRMActionList')->load_all;
 [
     empty_case({
 	'b_ticket.TupleTag.slot1' => undef,
@@ -24,7 +25,7 @@ req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1))
 	body => 'x',
 	'b_ticket.TupleTag.slot1' => 'Male Puppy',
 	'b_ticket.TupleTag.slot2' => 'Medium',
-	action_id => -CRMThreadStatus('NEW')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('NEW')->as_int),
     }] => [{
 	'Model.CRMThread' => {
 	    crm_thread_status => CRMThreadStatus('NEW'),
@@ -52,7 +53,7 @@ req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1))
 	body => 'x',
 	'b_ticket.TupleTag.Priority' => undef,
 	'b_ticket.TupleTag.Product' => undef,
-	action_id => -CRMThreadStatus('NEW')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('NEW')->as_int),
     }] => [{
 	'Model.TupleTag' => {
 	    slot1 => undef,

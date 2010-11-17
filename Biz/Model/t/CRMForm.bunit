@@ -14,11 +14,12 @@ FormModel({
 req()->set_realm_and_user(qw(crm_forum crm_tech1))
     ->initialize_fully('FORUM_CRM_FORM');
 my($crm_alias) = EmailArray(remote_email('crm'));
+my($cal) = model('CRMActionList')->load_all;
 my($board) = remote_email('board.crm_forum');
 my($demo) = EmailArray(email('demo'));
 [
     empty_case({
-	action_id => -CRMThreadStatus('OPEN')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('OPEN')->as_int),
 	to => undef,
 	cc => $crm_alias,
     }),
@@ -27,7 +28,7 @@ my($demo) = EmailArray(email('demo'));
 	cc => $crm_alias,
 	subject => 's1',
 	body => 'b1',
-	action_id => -CRMThreadStatus('NEW')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('NEW')->as_int),
     }] => [{
 	'Model.CRMThread' => {
 	    thread_root_id => sub {
@@ -43,16 +44,16 @@ my($demo) = EmailArray(email('demo'));
     empty_case({
 	to => $demo,
 	cc => $crm_alias,
-	action_id => -CRMThreadStatus('CLOSED')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('CLOSED')->as_int),
     }),
     inline_case(sub {$who = 'REALM'}),
     empty_case({
 	to => $crm_alias,
 	cc => EmailArray([]),
-	action_id => -CRMThreadStatus('LOCKED')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('LOCKED')->as_int),
     }),
     [{
-	action_id => -CRMThreadStatus('CLOSED')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('CLOSED')->as_int),
 	to => EmailArray([$board]),
 	subject => 's2',
 	body => 'b1',
@@ -75,10 +76,10 @@ my($demo) = EmailArray(email('demo'));
     }],
     empty_case({
 	to => $crm_alias,
-	action_id => -CRMThreadStatus('CLOSED')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('CLOSED')->as_int),
     }),
     [{
-	action_id => -CRMThreadStatus('OPEN')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('OPEN')->as_int),
 	cc => [''],
 	subject => 'new subj1',
 	update_only => 1,
@@ -93,14 +94,14 @@ my($demo) = EmailArray(email('demo'));
     empty_case({
 	to => $demo,
 	cc => $crm_alias,
-	action_id => -CRMThreadStatus('CLOSED')->as_int,
+	action_id => $cal->id_to_name(-CRMThreadStatus('CLOSED')->as_int),
     }),
     inline_case(sub {$ctid = $who = undef}),
     [{
 	to => $crm_alias,
 	subject => 's2',
 	body => 'b2',
-	action_id => req('auth_user_id'),
+	action_id => $cal->id_to_name(req('auth_user_id')),
     }] => [{
 	'Model.CRMThread' => {
 	    owner_user_id => req('auth_user_id'),
@@ -110,6 +111,6 @@ my($demo) = EmailArray(email('demo'));
 	},
     }],
     empty_case({
-        action_id => req('auth_user_id'),
+        action_id => $cal->id_to_name(req('auth_user_id')),
     }),
 ];

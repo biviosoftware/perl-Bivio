@@ -3,14 +3,16 @@
 FormModel();
 req()->set_realm_and_user(qw(crm_forum crm_tech1))
     ->initialize_fully('FORUM_CRM_FORM');
+my($cal) = model('CRMActionList')->load_all;
 [
     inline_case(sub {
 	 b_use('Model.User')->new(req())->unauth_load_or_die({
 	     user_id => req('auth_user_id'),
 	 })->invalidate_email;
-    }),		    
+    }),
     empty_case({}),
     [{
+	action_id => $cal->id_to_name(-CRMThreadStatus('OPEN')->as_int),
 	to => EmailArray(email('demo')),
 	subject => 's1',
 	body => 'b1',
