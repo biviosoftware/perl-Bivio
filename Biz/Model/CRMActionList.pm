@@ -19,14 +19,12 @@ sub all_actions {
 
 sub id_to_name {
     my($self, $id) = @_;
-    my($name);
-    if ($self->id_to_owner($id)) {
-	$name = _format_name($self,
-	    $self->new_other('GroupUserList')->load_this({this => $id}));
-    } else {
-	$name = _labels($self)->{$self->id_to_status($id)->get_name};
-    }
-    return $name;
+    return undef
+	unless defined($id);
+    my($res) = $self->find_row_by(id => $id);
+    return $res	? $res->get('name')
+	        : -$id eq $_CTS->NEW->as_int
+		    ? _get_label($self, $_CTS->NEW->get_name) : undef;
 }
 
 sub id_to_owner {
@@ -96,24 +94,10 @@ sub name_to_id {
     my($self, $name) = @_;
     return undef
 	unless defined($name);
-    my($id);
-    my($l) = _labels($self);
-    foreach my $k (keys(%$l)) {
-	my($v) = $l->{$k};
-	$id = -$_CTS->$k->as_int
-	    if $v eq $name;
-	last if defined($id);
-    }
-    return $id
-	if defined($id);
-    $self->new_other('GroupUserList')->do_iterate(sub {
-        my($it) = @_;
-	return 1
-	    unless _format_name($self, $it) eq $name;
-	$id = $it->get('RealmUser.user_id');
-	return 0;
-    });
-    return $id;
+    my($res) = $self->find_row_by(name => $name);
+    return $res	? $res->get('id')
+                : $name eq _get_label($self, $_CTS->NEW->get_name)
+		    ? -$_CTS->NEW->as_int : undef;
 }
 
 sub names_only {
@@ -137,11 +121,6 @@ sub status_to_id_in_list {
     return $self->status_to_id($status);
 }
 
-sub validate_id {
-    my($self, $id) = @_;
-    return $id && $self->find_row_by(id => $id) ? 1 : 0;
-}
-
 sub _format_name {
     my($self, $row) = @_;
     my($fields) = $self->[$_IDI];
@@ -150,10 +129,15 @@ sub _format_name {
 	. $row->get('display_name') . ' (' . $row->get('Email.email') . ')';
 }
 
+sub _get_label {
+    my($self, $name) = @_;
+    return $_T->get_value('CRMActionList', 'label', $name, $self->req);
+}
+
 sub _labels {
     my($self) = @_;
     return {map(
-	($_ => $_T->get_value('CRMActionList', 'label', $_, $self->req)),
+	($_ => _get_label($self, $_)),
 	'assign_to',
 	@$_NAMES,
     )};
