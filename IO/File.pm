@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::File;
 use strict;
@@ -92,7 +92,7 @@ sub do_lines {
 		if $!;
 	    last;
 	}
-	chomp($line);
+	$line =~ s/[\r\n]+$//s;
 	last unless $op->($line);
     }
     close($file)
