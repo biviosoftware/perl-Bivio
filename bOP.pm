@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.93  2010/11/17 22:43:35  schellj
+  * Bivio::Biz::Model::CRMActionList
+    more efficient id_to_name/name_to_id behavior, don't need validate_id
+  * Bivio::Biz::Model::CRMForm
+    id will be defined iff it is valid
+  * Bivio::Biz::Model::CRMThreadRootList
+    fix for changed CRMActionList->name_to_id behavior
+  * Bivio::UI::FacadeBase
+    add label for CRM status NEW
+  * Bivio::UI::HTML::Widget::Script
+    fix for dropdown positioning
+
   Revision 9.92  2010/11/17 02:31:49  nagler
   * Bivio::Type::Line
     from_literal calls canonicalize_charset
