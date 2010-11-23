@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 9.94  2010/11/23 14:22:02  nagler
+  * Bivio::IO::File
+    Trim [\r\n] at end of line in do_lines
+
   Revision 9.93  2010/11/17 22:43:35  schellj
   * Bivio::Biz::Model::CRMActionList
     more efficient id_to_name/name_to_id behavior, don't need validate_id
