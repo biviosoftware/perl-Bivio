@@ -60,28 +60,28 @@ sub internal_load_rows {
     my($fields) = $self->[$_IDI];
     my($req) = $self->req;
     return [
-	map(
-	    sort({lc($a->{name}) cmp lc($b->{name})} @$_),
-	    $fields && $fields->{names_only}
-	        ? ()
-	        : [map(+{
-		    id => $self->status_to_id($_),
-		    name => _labels($self)->{$_->get_name},
-		}, @$_LIST)],
-	    $self->new_other('GroupUserList')->map_iterate(
-		sub {
-		    my($it) = @_;
-		    return
-			unless $it->get('RealmUser.role')->
-			    in_category_role_group('all_members');
-		    return {
-			id => $it->get('RealmUser.user_id'),
-			name => _format_name($self, $it),
-		    };
-		},
-	    ),
-	),
+	$fields && $fields->{names_only}
+	    ? ()
+	    : sort({lc($a->{name}) cmp lc($b->{name})} map(+{
+		id => $self->status_to_id($_),
+		name => _labels($self)->{$_->get_name},
+	    }, @$_LIST)),
+	@{$self->new_other('CRMUserList')->map_iterate(
+	    sub {
+		my($it) = @_;
+		return {
+		    id => $it->get('RealmUser.user_id'),
+		    name => _format_name($self, $it),
+		};
+	    },
+	)},
     ];
+}
+
+sub load_all_actions {
+    my($self) = @_;
+    _names_only($self, 0);
+    return $self->load_all;
 }
 
 sub load_owner_names {
