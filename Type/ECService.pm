@@ -1,10 +1,8 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::ECService;
 use strict;
-use Bivio::Base 'Bivio::Type::EnumDelegator';
-
-# C<Bivio::Type::ECService>
+use Bivio::Base 'Type.EnumDelegator';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile;
