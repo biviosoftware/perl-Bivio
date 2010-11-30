@@ -28,9 +28,13 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.0  2010/11/23 14:24:27  nagler
+  Switch to 10.0
+
   Revision 9.94  2010/11/23 14:22:02  nagler
   * Bivio::IO::File
     Trim [\r\n] at end of line in do_lines
