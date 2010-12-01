@@ -161,6 +161,12 @@ function init_drop_down(field, init_values) {
             drop_down.style.visibility = 'hidden';
     }
     field.clear_list();
+
+    var ocf = document.onclick;
+    document.onclick = function(e) {
+        if (ocf) ocf(e);
+        field.clear_list();
+    }
 }
 
 function populate_search(field, show_all) {
@@ -261,9 +267,6 @@ function show_drop_down(field, block_clear) {
         }
         drop_down.style.visibility = 'visible';
         field.block_clear = block_clear;
-        document.onclick = function() {
-            field.clear_list();
-        }
     }
 }
 
