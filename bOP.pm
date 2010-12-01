@@ -28,10 +28,15 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.1  2010/11/30 07:53:40  schellj
+  * Bivio::Biz::Model::CRMActionList
+    now using CRMUserList (GroupUserList did more work than needed here)
+  * Bivio::Biz::Model::CRMUserList
+    NEW
+
   Revision 10.0  2010/11/23 14:24:27  nagler
   Switch to 10.0
 
