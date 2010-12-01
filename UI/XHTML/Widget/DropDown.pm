@@ -58,7 +58,9 @@ sub _js {
 	    return;
         b_toggle_class(b2.element, 'dd_visible', 'dd_hidden');
     };
+    var ocf = document.onclick;
     document.onclick = function(e) {
+        if (ocf) ocf(e);
 	dd.toggle(e, null);
     };
 })();
