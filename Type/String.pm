@@ -143,7 +143,7 @@ sub _clean_whitespace {
     $$value =~ s/\t/ /sg;
     $$value =~ s/\r\n/\n/sg;
     $$value =~ s/\r/\n/sg;
-    $$value =~ s/\s+\n/\n/sg;
+    $$value =~ s/ +$//mg;
     $$value =~ s/^\s*|\s*$//sg;
     return $value;
 }
