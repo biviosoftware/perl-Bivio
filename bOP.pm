@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.2  2010/12/01 06:47:35  schellj
+  * Bivio::Type::ECService
+    rmpod
+    copy
+  * Bivio::UI::HTML::Widget::Script
+    fix for combobox drop down conflicting with menu drop down
+  * Bivio::UI::XHTML::Widget::DropDown
+    fix for conflict with combobox drop down
+
   Revision 10.1  2010/11/30 07:53:40  schellj
   * Bivio::Biz::Model::CRMActionList
     now using CRMUserList (GroupUserList did more work than needed here)
