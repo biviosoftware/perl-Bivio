@@ -134,25 +134,11 @@ sub internal_post_load_row {
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    my($am) = $self->req->unsafe_get('Type.AccessMode');
-    my($is_public) = $am ? $am->eq_public
-	: $_ARF->access_is_public_only($self->req);
+    $self->new_other('RealmFileList')->prepare_statement_for_access_mode($stmt, $_BFN);
     $stmt->where(
-	$stmt->AND(
-	    $stmt->OR(
-		map(
-		    $stmt->LIKE(
-			'RealmFile.path_lc', $_BFN->to_sql_like_path($_),
-		    ),
-		    1,
-		    $is_public ? () : 0,
-		),
-	    ),
-	    $is_public ? ['RealmFile.is_public', [1]] : (),
-	),
 	['Email.location', [$self->get_instance('Email')->DEFAULT_LOCATION]],
     );
-    return;
+    return shift->SUPER::internal_prepare_statement(@_);
 }
 
 sub render_html {
