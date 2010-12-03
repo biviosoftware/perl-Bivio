@@ -5,16 +5,17 @@ use strict;
 use Bivio::Base 'HTMLWidget.InputTextBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_D) = __PACKAGE__->use('Type.Date');
+my($_D) = b_use('Type.Date');
 
 sub internal_input_base_render_attrs {
     my($self, $form, $field, $source, $buffer) = @_;
     shift->SUPER::internal_input_base_render_attrs(@_);
-    my($v) = $_D->to_html(
-       $form->get($field)
-	   || ($self->render_simple_attr('allow_undef', $source) ? undef
-	   : $_D->local_today),
-    );
+    my($v) = $form->in_error
+	? $form->get_field_as_html($field)
+	: $_D->to_html($form->get($field)
+	    || ($self->render_simple_attr('allow_undef', $source)
+		? undef
+		: $_D->local_today));
     $$buffer .= qq{ value="$v"};
     return;
 }
