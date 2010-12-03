@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::Wiki;
 use strict;
@@ -6,6 +6,7 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_WHL) = b_use('Model.WikiHelpList');
 
 sub TEXT_AREA_COLS {
     return 80;
@@ -36,8 +37,6 @@ sub edit {
 
 sub help {
     view_main(Page({
-# Shouldn't this be xhtml => 1,
-# Why can't this be inline?
 	xhtml => 1,
 	style => view_widget_value('xhtml_style'),
 	head => Join([
@@ -174,14 +173,39 @@ sub versions_diff {
 }
 
 sub view {
-    my($self) = shift;
-    view_put(
-	xhtml_title => vs_text_as_prose('wiki_view_topic'),
-	xhtml_topic => '',
-	xhtml_byline => vs_text_as_prose('wiki_view_byline'),
-	xhtml_tools => vs_text_as_prose('wiki_view_tools'),
+    return shift->internal_put_base_attr(
+	title => vs_text_as_prose('wiki_view_topic'),
+	topic => '',
+	byline => vs_text_as_prose('wiki_view_byline'),
+	tools => vs_text_as_prose('wiki_view_tools'),
+	main_right => If(
+	    ['UI.Facade', '->auth_realm_is_help_wiki', ['->req']],
+	    [sub {
+	        my($req) = shift->req;
+		$_WHL->new($req)->load_all
+		    unless $req->unsafe_get($_WHL);
+		return SPAN_b_help_index(
+		    Join([
+			SPAN_b_title(vs_text_as_prose('b_help_list_title')),
+			List(
+			    'WikiHelpList',
+			    [
+				Link(
+				    String(['result_title']),
+				    URI({
+					task_id => 'FORUM_WIKI_VIEW',
+					path_info => ['name'],
+				    }),
+				    'b_item',
+				),
+			    ],
+			),
+		    ]),
+		);
+	    }],
+	),
+	body => Wiki(),
     );
-    return $self->internal_body(Wiki());
 }
 
 1;
