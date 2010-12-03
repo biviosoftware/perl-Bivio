@@ -9,6 +9,7 @@ my($now) = Date()->local_today;
 my($yesterday) = Date()->add_days($now, -1);
 [
     [{test_value => undef}] => '',
+    [{test_value => undef, allow_undef => 0}] => Date()->to_html($now),
     [{test_value => $yesterday}] => test_value_as_html(),
     [{test_value => undef, allow_undef => 1}] => '',
 ];
