@@ -634,7 +634,7 @@ EOF
     foreach my $fv (
 	['base.css', <<'EOF'],
 ^Not.*Found.*Wiki {font-size: 100%}
-^.*Help {background-color: purple}
+^.*Help {background-color: #dddddd;}
 EOF
 	['WikiView1', <<'EOF'],
 @h1 Wiki View One
