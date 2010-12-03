@@ -572,7 +572,7 @@ sub initialize_xapian_exec_realm {
     return;
 }
 
-sub internal_db_upgrade_bulletin {
+sub internal_upgrade_db_bulletin {
     my($self) = @_;
     $self->run(<<'EOF');
 CREATE TABLE bulletin_t (
