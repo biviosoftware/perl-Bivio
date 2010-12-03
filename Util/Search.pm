@@ -8,21 +8,24 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_X) = b_use('Search.Xapian');
 my($_D) = b_use('Type.Date');
 my($_RT) = b_use('Auth.RealmType');
+my($_A) = b_use('IO.Alert');
 
 sub USAGE {
     return <<'EOF';
 usage: b-search [options] command [args..]
 commands
-  rebuild_db [date] -- reload entire search database, optionally files modified after date
-  rebuild_realm [date] -- reindex all files in the current realm, optionally files modified after date
+  rebuild_db [after_date] -- reload entire search database, optionally files modified after date
+  rebuild_realm [after_date] -- reindex all files in the current realm, optionally files modified after date
 EOF
 }
 
 sub rebuild_db {
-    my($self, $d) = @_;
+    sub REBUILD_DB {[[qw(?after_date Date)]]}
+    my($self, $bp) = shift->parameters(\@_);
     $self->are_you_sure('Rebuild Xapian database?');
-    $_X->acquire_lock($self->req);
-    $_X->destroy_db($self->req);
+    my($req) = $self->req;
+    $_X->acquire_lock($req);
+    $_X->destroy_db($req);
     my($realms) = $self->model('RealmFile')->map_iterate(
 	sub {shift->get('realm_id')},
 	'unauth_iterate_start',
@@ -30,45 +33,50 @@ sub rebuild_db {
 	{path => '/'},
     );
     $self->commit_or_rollback;
+    b_info('Rebuilding ', scalar(@$realms), ' realms');
     foreach my $r (@$realms) {
 	next
 	    if $_RT->is_default_id($r);
-	system(
-	    'bivio',
-	    $self->package_name,
-	    '-realm',
+	$req->with_realm(
 	    $r,
-	    'rebuild_realm',
-	    $d ? $d : ()
+	    sub {
+		b_info($self->rebuild_realm($bp->{after_date}));
+		return;
+	    },
 	);
     }
     return;
 }
 
 sub rebuild_realm {
-    my($self, $date) = @_;
+    sub REBUILD_REALM {[[qw(?after_date Date)]]}
+    my($self, $bp) = shift->parameters(\@_);
     $self->usage_error('realm must be specified')
-	unless $self->unsafe_get('realm');
+	if $self->req('auth_realm')->is_default;
     my($req) = $self->initialize_fully;
-    $date = $_D->from_literal_or_die($date)
-	if $date;
     my($i) = 0;
     my($j) = 0;
-    b_info('Re-indexing ' . $self->req(qw(auth_realm owner name)));
+    my($commit) = sub {
+	$self->commit_or_rollback;
+	$_A->reset_warn_counter;
+	return;
+    };
     $self->model('RealmFile')->do_iterate(
 	sub {
 	    my($it) = @_;
 	    if (0 == $i++ % 100) {
-		$self->commit_or_rollback;
-		Bivio::IO::Alert->reset_warn_counter;
+		$commit->();
 		$_X->acquire_lock($req);
 		b_info(
 		    'file#', $i, ': ', $it->get('realm_file_id'),
 		) if $i > 1;
 	    }
 	    return 1
-		if $date && $_D->compare_defined(
-		    $date, $it->get('modified_date_time')) > -1;
+		if $bp->{after_date}
+		&& $_D->is_less_than(
+		    $it->get('modified_date_time'),
+		    $bp->{after_date},
+		);
 	    $_X->update_model($req, $it);
 	    $j++;
 	    return 1;
@@ -76,16 +84,8 @@ sub rebuild_realm {
 	'realm_file_id asc',
 	{is_folder => 0},
     );
-    my($r) = $i ? ($date ? "Re-indexed $j "
-		       . $self->req(qw(auth_realm owner name))
-			   . ' files modified after ' . $_D->to_string($date)
-			       . " of $i total files"
-				   : "Re-indexed all $i "
-				       . $self->req(qw(auth_realm owner name))
-					   . ' files')
-	: 'No files to re-index';
-    b_info($r);
-    return $r;
+    $commit->();
+    return $self->req(qw(auth_realm owner name)) . ": $j files";
 }
 
 1;
