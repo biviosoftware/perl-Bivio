@@ -14,6 +14,10 @@ sub ABSOLUTE_REGEX {
     )]}$}is;
 }
 
+sub SQL_LIKE_BASE {
+    return '%';
+}
+
 sub from_absolute {
     my($proto, $path) = @_;
     b_die($path, ': not an absolute path')
@@ -59,7 +63,7 @@ sub public_path_info {
 
 sub to_sql_like_path {
     my($proto, $is_public) = @_;
-    return lc($proto->to_absolute('_' x $proto->get_width, $is_public));
+    return lc($proto->to_absolute($proto->SQL_LIKE_BASE, $is_public));
 }
 
 sub uri_hash_for_realm_and_path {
