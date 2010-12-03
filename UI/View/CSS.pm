@@ -985,7 +985,40 @@ a.help_wiki_add {
 .help_wiki .help_wiki_body {
   Font('help_wiki_body');
 }
+span.b_help_index {
+  display: block;
+  CSS('b_help_index');
+}
+span.b_help_index .b_item,
+span.b_help_index .b_title {
+  display: block;
+  CSS('b_help_index_text_indent');
+}
+span.b_help_index .b_title {
+  Font('b_help_index_title');
+  CSS('b_help_index_title');
+}
+span.b_help_index .b_item {
+  Font('b_help_index_item');
+  CSS('b_help_index_item');
+}
+div.wiki a:visited {
+   color: #996600;
+}
+div.wiki a:link {
+   color: #009999;
+}
+table.help_format td.index h2 {
+   background-color: #000088;
+   color: #ffffff;
+   text-align: center;
+   padding: .5ex .5em;
+}
+table.help_format td.index p.b_prose {
+   margin: 0;
+}
 div.wiki {
+  CSS('b_wiki_width');
   padding-top: .5ex;
   padding-bottom: .5ex;
 }

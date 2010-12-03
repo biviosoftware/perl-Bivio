@@ -54,13 +54,11 @@ sub auth_realm_is_site {
 }
 
 sub auth_realm_is_site_admin {
-    my($self, $req) = @_;
-    my($r) = $req->get('auth_realm');
-    return $r->has_owner
-	&& $_RN->is_equal(
-	    $r->get('owner_name'),
-	    $self->get('Constant')->get_value('site_admin_realm_name'),
-	);
+    return _auth_realm_is(site_admin => @_);
+}
+
+sub auth_realm_is_help_wiki {
+    return _auth_realm_is(help_wiki => @_);
 }
 
 sub internal_dav_tasks {
@@ -144,6 +142,16 @@ sub new {
 	    $config,
 	),
     );
+}
+
+sub _auth_realm_is {
+    my($which, $self, $req) = @_;
+    my($r) = $req->get('auth_realm');
+    return $r->has_owner
+	&& $_RN->is_equal(
+	    $r->get('owner_name'),
+	    $self->get('Constant')->get_value($which . '_realm_name'),
+	);
 }
 
 sub _cfg_base {
@@ -1736,18 +1744,39 @@ sub _cfg_wiki {
 	    [HELP_NOT_FOUND => undef],
 	    [SITE_WIKI_VIEW => 'bp/*'],
 	],
+	Color => [
+	    [same_background => 0xF2F2F2],
+	    [different_background => 0xE6E6E6],
+	],
 	Constant => [
 	    [ThreePartPage_want_HelpWiki => 1],
+	],
+	CSS => [
+	    [b_help_index => q{
+	        float: right;
+	        width: 10em;
+                padding-left: 1.5em;
+            }],
+	    [b_help_index_text_indent => q{
+                text-indent: -1em;
+            }],
+	    [b_help_index_title => q{
+                margin-bottom: .5ex;
+            }],
+	    [b_help_index_item => q{
+                margin-bottom: .3ex;
+            }],
+	    [b_wiki_width => q{
+                width: 40em;
+            }],
 	],
 	Font => [
 	    [help_wiki_body => ['95%']],
 	    [help_wiki_tools => ['95%']],
 	    [help_wiki_header => ['bold', '140%', 'uppercase']],
 	    [help_wiki_iframe_body => ['small']],
-	],
-	Color => [
-	    [same_background => 0xF2F2F2],
-	    [different_background => 0xE6E6E6],
+	    [b_help_index_title => ['80%', 'bold']],
+	    [b_help_index_item => ['80%']],
 	],
 	Text => [
 	    [WikiValidator => [
@@ -1787,6 +1816,7 @@ sub _cfg_wiki {
 		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
 	    ]],
 	    [prose => [
+		b_help_list_title => 'Help Index',
 		help_wiki_add => 'Add Help',
 		help_wiki_close => 'Close',
 		help_wiki_edit => 'Edit',
