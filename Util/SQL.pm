@@ -65,6 +65,9 @@ my($_BUNDLE) = [qw(
     !motion_vote_aff_drop_not_null
 ),
     $_IC->if_version(10, '!', '') ? 'site_admin_forum_users2' : (),
+qw(
+    !site_help_title
+)
 ];
 #    crm_mail
 my($_AGGREGATES) = [qw(
@@ -1623,6 +1626,28 @@ sub internal_upgrade_db_site_forum {
 	});
 	return;
     });
+    return;
+}
+
+sub internal_upgrade_db_site_help_title {
+    my($self) = @_;
+    my($req) = $self->initialize_fully;
+    my($c) = b_use('FacadeComponent.Constant');
+    my($seen) = {};
+    foreach my $facade (@{b_use('UI.Facade')->get_all_classes}) {
+	next
+	    unless my $help = $c->get_from_source($req)
+	    ->unsafe_get_value('help_wiki_realm_name');
+	next
+	    if $seen->{$help}++;
+	$req->with_realm(
+	    $help,
+	    sub {
+		b_info($self->new_other('Search')->rebuild_realm);
+		return;
+	    },
+	);
+    }
     return;
 }
 
