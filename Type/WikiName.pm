@@ -6,6 +6,7 @@ use Bivio::Base 'Type.DocletFileName';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WIDTH) = __PACKAGE__->get_instance('FileName')->get_width;
+my($_HELP) = '_Help';
 
 sub DEFAULT_START_PAGE {
     return 'DefaultStartPage';
@@ -46,12 +47,13 @@ sub get_width {
 sub title_to_help {
     my($proto, $title) = @_;
     $title =~ s/\W+/_/g;
-    return $proto->from_literal_stripper($title) . '_Help';
+    return $proto->from_literal_stripper($title) . $_HELP;
 }
 
 sub to_title {
     my($proto, $name) = @_;
     my($title) = $proto->get_base($name);
+    $title =~ s/$_HELP$//;
     $title =~ s{[_/]+}{ }g;
     return $title;
 }
