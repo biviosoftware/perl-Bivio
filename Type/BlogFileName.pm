@@ -54,7 +54,13 @@ sub get_width {
 
 sub to_absolute {
     my($proto, $value) = (shift, shift);
-    return $proto->SUPER::to_absolute($value && _base($proto, $value), @_);
+    return $proto->SUPER::to_absolute(
+	!$value ? ''
+	    : $proto->SQL_LIKE_BASE eq $value
+	    ? $value
+	    : _base($proto, $value),
+	@_,
+    );
 }
 
 sub to_sql_param {
