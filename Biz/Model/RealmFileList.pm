@@ -1,12 +1,13 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmFileList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
+my($_RF) = b_use('Biz.Model')->get_instance('RealmFile');
 my($_FP) = $_RF->get_field_type('path');
+my($_ARF) = b_use('Action.RealmFile');
 
 sub delete {
     my($self) = @_;
@@ -71,6 +72,28 @@ sub internal_pre_load {
     push(@$params, $p, lc($p) . '/', $p);
     return q{SUBSTR(path_lc, 1, LENGTH(?) + 1) = ?
         AND STRPOS(SUBSTR(path_lc, LENGTH(?) + 2), '/') = 0};
+}
+
+sub prepare_statement_for_access_mode {
+    my($self, $stmt, $doclet) = @_;
+    my($am) = $self->req->unsafe_get('Type.AccessMode');
+    my($is_public) = $am ? $am->eq_public
+	: $_ARF->access_is_public_only($self->req);
+    $stmt->where(
+	$stmt->AND(
+	    $stmt->OR(
+		map(
+		    $stmt->LIKE(
+			'RealmFile.path_lc', $doclet->to_sql_like_path($_),
+		    ),
+		    1,
+		    $is_public ? () : 0,
+		),
+	    ),
+	    $is_public ? ['RealmFile.is_public', [1]] : (),
+	),
+    );
+    return;
 }
 
 1;
