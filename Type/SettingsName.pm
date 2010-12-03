@@ -14,4 +14,8 @@ sub REGEX {
     return qr{(\w+\.csv)$};
 }
 
+sub SQL_LIKE_BASE {
+    return '%.csv';
+}
+
 1;

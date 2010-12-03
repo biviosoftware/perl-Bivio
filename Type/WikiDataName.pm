@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::WikiDataName;
 use strict;
@@ -16,6 +16,10 @@ sub PRIVATE_FOLDER {
 
 sub REGEX {
     return qr{([^/]+\.\w+)$};
+}
+
+sub SQL_LIKE_BASE {
+    return '%.%';
 }
 
 sub format_uri {
