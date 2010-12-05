@@ -8,6 +8,7 @@ use Socket ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TE) = b_use('Bivio.TypeError');
+my($_N) = b_use('Type.Number');
 
 #TODO: Only works with ipv4
 sub REGEX {
@@ -54,9 +55,18 @@ sub internal_post_from_literal {
 sub map_host_addresses {
     my($self, $op) = @_;
     my($fields) = $self->[$_IDI];
+    my($n) = $fields->{min_number};
     return [map(
-	$op->(join('.', unpack('C4', pack('N', $_)))),
-	$fields->{min_number} .. $fields->{max_number},
+	$op->(
+	    join(
+		'.',
+		unpack(
+		    'C4',
+		    pack('N', $_N->add($n, $_, 0)),
+		),
+	    ),
+	),
+	0 .. $fields->{last},
     )];
 }
 
@@ -66,11 +76,11 @@ sub to_literal {
 }
 
 sub _new {
-    my($proto, $number, $count, $string) = @_;
+    my($proto, $number, $last, $string) = @_;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
         min_number => $number,
-	max_number => $number + $count,
+	last => $last,
 	string => $string,
     };
     return $self;
