@@ -1,0 +1,17 @@
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+WikiText();
+[
+    <<'IN' => <<'OUT',
+@div
+@b-html <b>hello</b>
+@b-html
+<em>@bye ^foo</em>
+
+@/b-html
+@/div
+IN
+<div><b>hello</b><em>@bye ^foo</em>
+</div>
+OUT
+];
