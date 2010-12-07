@@ -39,6 +39,33 @@ sub parameters_error {
     );
 }
 
+sub parse_lines_till_end_tag {
+    my(undef, $args) = @_;
+    my($state) = $args->{state};
+    my($line) = $args->{line};
+    return [$line]
+	if defined($line) && length($line);
+    my($end_tag) = qr{^\@/$args->{tag}\s*$};
+    my($end) = 0;
+    my($lines) = [];
+    $state->{proto}->do_parse_lines(
+	$state,
+	sub {
+	    my($line) = @_;
+	    return $end++
+		if $line =~ $end_tag;
+	    push(@$lines, $line);
+	    return 1;
+	},
+    );
+    return $state->{proto}->render_error(
+	$args->{attrs}->{name},
+	"\@/$args->{tag} not found",
+	$state
+    ) unless $end;
+    return $lines;
+}
+
 sub pre_parse {
     return;
 }
