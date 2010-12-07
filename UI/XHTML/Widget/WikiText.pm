@@ -1065,19 +1065,22 @@ sub _parse_line_empty {
 
 sub _parse_my_tag {
     my($state, $tag, $attrs, $line) = @_;
-    return
+    return 0
 	unless $_MY_TAGS->{$tag} && $_MY_TAGS->{$tag}->can('parse_tag_start');
-    _call_my_tag(
-	$state,
-	$tag,
-	'parse_tag_start',
-	{
-	    state => $state,
-	    tag => $tag,
-	    attrs => $attrs,
-	    line => $line,
-	},
-    );
+    return 1
+        unless _call_my_tag(
+	    $state,
+	    $tag,
+	    'parse_tag_start',
+	    my $args = {
+		state => $state,
+		tag => $tag,
+		attrs => $attrs,
+		line => $line,
+	    },
+	);
+    _parse_out($state, \&_eval_tag, $args);
+    _parse_stack_pop($state, $tag);
     return 1;
 }
 
