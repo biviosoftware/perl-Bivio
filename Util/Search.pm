@@ -64,7 +64,7 @@ sub rebuild_realm {
     $self->model('RealmFile')->do_iterate(
 	sub {
 	    my($it) = @_;
-	    if (0 == $i++ % 100) {
+	    if (0 == ++$i % 100) {
 		$commit->();
 		$_X->acquire_lock($req);
 		b_info(
