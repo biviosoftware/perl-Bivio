@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.3  2010/12/02 20:22:09  nagler
+  * Bivio::Type::String
+    _clean_whitespace was cleaning multiple newlines
+
   Revision 10.2  2010/12/01 06:47:35  schellj
   * Bivio::Type::ECService
     rmpod
