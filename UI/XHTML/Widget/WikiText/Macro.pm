@@ -19,7 +19,8 @@ sub handle_register {
 sub parse_tag_start {
     my(undef, $args) = @_;
     (my $op = $args->{tag}) =~ s/^b-/_op_/;
-    return (\&{$op})->(@_);
+    (\&{$op})->(@_);
+    return 1;
 }
 
 sub _ident {
@@ -38,31 +39,6 @@ sub _ident {
     return $name;
 }
 
-sub _lines {
-    my($args, $state, $line) = @_;
-    return [$line]
-	if defined($line) && length($line);
-    my($end_tag) = qr{^\@/$args->{tag}\s*$};
-    my($end) = 0;
-    my($lines) = [];
-    $state->{proto}->do_parse_lines(
-	$state,
-	sub {
-	    my($line) = @_;
-	    return $end++
-		if $line =~ $end_tag;
-	    push(@$lines, $line);
-	    return 1;
-	},
-    );
-    return $state->{proto}->render_error(
-	$args->{attrs}->{name},
-	"\@/$args->{tag} not found",
-	$state
-    ) unless $end;
-    return $lines;
-}
-
 sub _op_call {
     my($proto, $args) = @_;
     my($state) = $args->{state};
@@ -78,7 +54,7 @@ sub _op_call {
     )};
     if ($def->{call_content}) {
 	$values->{'b_content'}
-	    = join("\n", @{_lines($args, $state, $args->{line}) || []})
+	    = join("\n", @{$proto->parse_lines_till_end_tag($args) || []})
 	    unless defined($values->{'b_content'});
     }
     elsif (defined($args->{line}) && length($args->{line})) {
@@ -104,7 +80,7 @@ sub _op_def {
     my($state) = $args->{state};
     my($cc) = $state->{proto}->parse_calling_context($state);
     return
-	unless my $lines = _lines($args, $state, $args->{line});
+	unless my $lines = $proto->parse_lines_till_end_tag($args);
     return
 	unless my $name = _ident($attrs->{name}, $state);
     my($def) = $state->{$_PKG}->{$name} ||= {};
