@@ -321,6 +321,17 @@ function b_element_by_class(tag_name, class_name) {
     }
     return null;
 }
+function b_all_elements_by_class(tag_name, class_name) {
+    if (!document.getElementsByTagName)
+        return;
+    var tags = document.getElementsByTagName(tag_name);
+    var elements = [];
+    for (var i = 0; i < tags.length; i++) {
+        if (b_has_class(tags[i], class_name))
+            elements.push(tags[i]);
+    }
+    return elements;
+}
 EOF
 }
 
