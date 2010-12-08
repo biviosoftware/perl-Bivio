@@ -17,9 +17,9 @@ my($net1) = '111.22.33.24/29';
 	    ipv4 => {
 		$net1 => {
 		    24 => [
+			'@mail',
 			'ns1',
-			'mail',
-			['@' => {
+			['@example.com.' => {
 			    spf1 => '+ include:mail.yahoo.com',
 			    mx => [
 				'mail',
@@ -31,7 +31,7 @@ my($net1) = '111.22.33.24/29';
 			'ns2',
 			'www',
 		    ],
-		    26 => 'two.level',
+		    26 => '@two.level',
 		},
 		'10.10.1.0/29' => {
 		    1 => 'ski',

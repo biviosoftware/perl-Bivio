@@ -90,6 +90,7 @@ sub _local_cfg {
 		    ['@', {
 			mx => undef,
 			spf1 => undef,
+			want_ptr => 1,
 		    }],
 		],
 	    },
@@ -251,7 +252,7 @@ sub _zone_a {
 	    push(
 		@{$ip_map->{$cidr}->{$ip} ||= []},
 		_dot($host, $zone),
-	    );
+	    ) if $host_cfg->{want_ptr};
 	    return join(
 		' ',
 		$host,
@@ -304,6 +305,7 @@ sub _zone_ipv4_map {
 			my($hosts) = $net_cfg->{$num};
 			$hosts = [$hosts]
 			    unless ref($hosts);
+			my($not_first_host) = 0;
 			return map(
 			    {
 				$op->(@$_, $ip, $cidr);
@@ -313,12 +315,15 @@ sub _zone_ipv4_map {
 				map(
 				    {
 					$_ = (ref($_) ? $_ : [$_]);
-					$_->[0] = $zone
-					    if $_->[0] eq '@';
 					$_->[1] = {
 					    %$cfg,
 					    %{$_->[1] || {}},
 					};
+					$_->[1]->{want_ptr} = 1
+					    if $_->[0] =~ s/^\@(?=[\w\@])//
+					    + !$not_first_host++;
+					$_->[0] = $zone
+					    if $_->[0] eq '@';
 					$_;
 				    }
 				    @$hosts,
