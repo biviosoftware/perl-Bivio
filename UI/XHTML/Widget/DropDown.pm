@@ -46,14 +46,18 @@ sub _js {
 (function (){
     $global = $global || {};
     var dd = $global;
-    dd.toggle = function (e, b2) {
-        var prev;
-        while (prev = b_element_by_class('div', 'dd_visible')) {
-	    b_toggle_class(prev, 'dd_visible', 'dd_hidden');
+    dd.toggle = function (e, stop_prop, b2) {
+        var visible = b_all_elements_by_class('div', 'dd_visible');
+        for (var i = 0; i < visible.length; i++) {
+            if (!b2 || visible[i] != b2.element) {
+                b_toggle_class(visible[i], 'dd_visible', 'dd_hidden');
+            }
         }
-        if (!e) var e = window.event;
-        e.cancelBubble = true;
-        if (e.stopPropagation) e.stopPropagation();
+        if (stop_prop) {
+            if (!e) var e = window.event;
+            e.cancelBubble = true;
+            if (e.stopPropagation) e.stopPropagation();
+        }
 	if (!b2)
 	    return;
         b_toggle_class(b2.element, 'dd_visible', 'dd_hidden');
@@ -61,7 +65,7 @@ sub _js {
     var ocf = document.onclick;
     document.onclick = function(e) {
         if (ocf) ocf(e);
-	dd.toggle(e, null);
+	dd.toggle(e, false, null);
     };
 })();
 EOF
@@ -71,7 +75,7 @@ EOF
     var b = $local;
     b.toggle = function (e) {
         b.element = b.element || document.getElementById('$id');
-        $global.toggle(e, $local);
+        $global.toggle(e, true, $local);
     };
 })();
 EOF
