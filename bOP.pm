@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,54 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.4  2010/12/07 20:07:57  nagler
+  * Bivio::Biz::Model::BlogList
+    push up access check in prepare_statement_for_access_mode
+  * Bivio::Biz::Model::RealmFileList
+    added prepare_statement_for_access_mode
+  * Bivio::Biz::Model::WikiHelpList
+    NEW
+  * Bivio::Biz::Model::WikiList
+    call prepare_statement_for_access_mode
+  * Bivio::PetShop::Util::SQL
+    change the default color for help pages; purple too annoying
+  * Bivio::Type::BlogFileName
+    to_absolute uses SQL_LIKE_BASE check
+  * Bivio::Type::CIDRNotation
+    map_host_addresses must use fixed decimals, because the addresses are
+    greater than the max signed int
+  * Bivio::Type::DocletFileName
+    added SQL_LIKE_BASE
+    and to_sql_like_path uses it
+  * Bivio::Type::SettingsName
+    added SQL_LIKE_BASE
+  * Bivio::Type::WikiDataName
+    added SQL_LIKE_BASE
+  * Bivio::Type::WikiName
+    strip _Help from the title
+  * Bivio::UI::FacadeBase
+    support for help_list
+  * Bivio::UI::HTML::Widget::DateField
+    if form is in error render form literal not form value
+  * Bivio::UI::View::CSS
+    support for help_list
+    fpc
+  * Bivio::UI::View::Wiki
+    added WikiHelpList for help realm in view
+  * Bivio::UI::XHTML::Widget::WikiText::HTML
+    NEW
+  * Bivio::UI::XHTML::Widget::WikiText::Macro
+    use parse_lines_till_end_tag
+  * Bivio::UI::XHTML::Widget::WikiText
+    _parse_my_tag pushes tag if parse_tag_start returns true
+  * Bivio::UI::XHTML::Widget::WikiTextTag
+    added parse_lines_till_end_tag
+  * Bivio::Util::Search
+    cleaned up messageing
+  * Bivio::Util::SQL
+    internal_db_upgrade_bulletin => internal_upgrade_db_bulletin
+    site_help_title upgrade
+
   Revision 10.3  2010/12/02 20:22:09  nagler
   * Bivio::Type::String
     _clean_whitespace was cleaning multiple newlines
