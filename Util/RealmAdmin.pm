@@ -61,50 +61,34 @@ sub delete_auth_realm {
 
 sub delete_auth_realm_and_users {
     my($self) = @_;
-    # Deletes current realm and its users and sets realm to general,
-    # and user to nobody afterwards.
-    my($req) = $self->get_request;
-    $self->usage_error(
-	$req->get_nested('auth_realm'),
-	': cannot delete a default realm',
-    ) if $req->get('auth_realm')->is_default;
-    $self->are_you_sure(
-	'delete realm ' . $req->get_nested(qw(auth_realm owner_name)));
+    my($req) = $self->req;
+    $self->usage_error($self->req('auth_realm'), ': cannot delete a default realm')
+	if $req->get('auth_realm')->is_default;
+    $self->are_you_sure('delete realm ' . $self->req(qw(auth_realm owner_name)));
     foreach my $r (
-	$req->get('auth_id'),
-	@{Bivio::Biz::Model->new($req, 'RealmUser')->map_iterate(
-	    sub {shift->get('user_id')}, 'user_id',
-	)},
+	@{$self->model('RealmUser')
+	    ->map_iterate(sub {shift->get('user_id')}, 'user_id')
+	},
     ) {
-	$req->set_realm($r)->get('owner')->cascade_delete;
+	next
+	    if $r eq $self->req(qw(auth_id));
+	$req->with_user(
+	    $r,
+	    sub {
+		$self->delete_auth_user;
+		return;
+	    },
+	);
     }
-    $req->set_user(undef);
-    $req->set_realm(undef);
-    return;
+    return $self->delete_auth_realm;
 }
 
 sub delete_auth_user {
     my($self) = @_;
-    # Deletes current user.
-    my($req) = $self->get_request;
-    my($n) = Bivio::Biz::Model->new($req, 'Email');
-    $n = $n->unauth_load({realm_id => $req->get('auth_user_id')})
-	? $n->get('email') : $self->req(qw(auth_user name));
-    $self->are_you_sure("delete user $n");
-    my($user) = $req->get('auth_user');
-    $req->set_realm(undef);
-    $req->set_user(undef);
-    $self->model('RealmUser')->do_iterate(
-	sub {
-	    shift->unauth_delete;
-	    return 1;
-	},
-	'unauth_iterate_start',
-	'realm_id',
-	{user_id => $user->get('realm_id')},
+    return $self->req->with_realm(
+	$self->req('auth_user'),
+	sub {$self->delete_auth_realm},
     );
-    $user->unauth_delete_realm;
-    return;
 }
 
 sub delete_user {

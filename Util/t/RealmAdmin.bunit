@@ -1,6 +1,7 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
+my($uid);
 [
     [qw(-realm general users)] => qr{^multi_role_user.*\nroot\b}s,
     [qw(-realm general users administrator)] => qr{^root\b}s,
@@ -21,5 +22,12 @@ ShellUtil();
 	assert_not_equals(qr{crm_tech1}, $actual->[0]);
 	return 1;
     },
+    inline_case(sub {
+        $uid = ShellUtil_TestUser()->create(random_realm_name());
+	my($uid2) = ShellUtil_TestUser()->create(random_realm_name());
+	class()->main(-realm => $uid, -user => $uid2, qw(join_user GUEST));
+        return;
+    }),
+    sub {[-realm => $uid, 'delete_auth_realm_and_users']} => not_die(),
 ];
 
