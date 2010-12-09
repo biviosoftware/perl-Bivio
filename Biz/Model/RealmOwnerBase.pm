@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmOwnerBase;
 use strict;
@@ -18,10 +18,32 @@ sub REALM_TYPE {
 
 sub cascade_delete {
     my($self) = @_;
-    $self->req->with_realm($self->get_primary_id, sub {
-        $self->SUPER::cascade_delete;
-	$self->req(qw(auth_realm owner))->cascade_delete;
-    });
+    my($pid) = $self->get_primary_id;
+    $self->req->with_realm(
+	$pid,
+	sub {
+	    foreach my $x (
+		[qw(RealmDAG child_id)],
+		[qw(RealmDAG parent_id)],
+		[qw(RowTag primary_id)],
+		[qw(RealmUser realm_id)],
+		[qw(RealmUser user_id)],
+	    ) {
+		$self->new_other($x->[0])
+		    ->do_iterate(
+			sub {
+			    shift->unauth_delete;
+			    return 1;
+			},
+			'unauth_iterate_start',
+			$x->[1],
+			{$x->[1] => $pid},
+		    );
+	    }
+	    $self->SUPER::cascade_delete;
+	    $self->req(qw(auth_realm owner))->cascade_delete;
+	},
+    );
     return;
 }
 
