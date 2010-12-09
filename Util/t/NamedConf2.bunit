@@ -1,0 +1,60 @@
+ShellUtil();
+foreach my $x (
+    [c1 => <<'EOF'],
+	'example.com' => {
+	    ipv4 => {
+		'111.22.33.24/29' => {
+		    25 => ['mail', 'mail2'],
+		},
+	    },
+	},
+EOF
+    [c2 => <<'EOF'],
+	'example.com' => {
+	    ipv4 => {
+		'111.22.33.24/29' => {
+		    25 => [
+                        ['mail', {ptr => 1}],
+                    ],
+		},
+	    },
+	},
+	'example2.com' => {
+	    ipv4 => {
+		'111.22.33.24/29' => {
+		    25 => [
+                        ['mail', {ptr => 1}],
+                    ],
+		},
+	    },
+	},
+EOF
+) {
+    my($file, $zones) = @$x;
+    write_file(
+	"NamedConf/$file",
+	<<"EOF"
+{
+    expiry => '5M',
+    hostmaster => 'hostmaster.example.com.',
+    minimum => '6M',
+    mx_pref => 10,
+    servers => [qw(ns1.example.com. ns2.example.com.)],
+    refresh => '7M',
+    retry => '8M',
+    spf1 => 'include:aspmx.googlemail.com',
+    ttl => '9M',
+    nets => {
+	'24-31.33.22.111' => '111.22.33.24/29',
+    },
+    zones => {
+        $zones
+    }
+};
+EOF
+    );
+}
+[
+    [qw(-input NamedConf/c1 generate)] => qr{no PTR records for 111.22.33.25},
+    [qw(-input NamedConf/c2 generate)] => qr{too many PTR records for 111.22.33.25},
+];
