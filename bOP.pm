@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.5  2010/12/09 16:18:06  nagler
+  * Bivio::Biz::Model::RealmOwnerBase
+    cascade_delete deletes RowTag, RealmDAG and any RealmUser records
+  * Bivio::Test::Unit
+    builtin_random_realm_name
+  * Bivio::UI::HTML::Widget::Script
+    added b_all_elements_by_class
+  * Bivio::UI::XHTML::Widget::DropDown
+    fix for cmd-click not opening new tabs in ff, fix to close dd upon
+    clicking link a second time
+  * Bivio::Util::NamedConf
+    handle ptr cases
+  * Bivio::Util::RealmAdmin
+    delete_auth_realm_and_users calls delete_auth_user and delete_auth_realm
+    delete_auth_user calls delete_auth_realm
+    delete_auth_realm no longer needs to delete RealmUser records RealmOwnerBase handles this
+  * Bivio::Util::Search
+    don't commit first time.
+
   Revision 10.4  2010/12/07 20:07:57  nagler
   * Bivio::Biz::Model::BlogList
     push up access check in prepare_statement_for_access_mode
