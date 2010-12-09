@@ -24,7 +24,7 @@ EOF
 sub generate {
     my($self) = @_;
     # http://zytrax.com/books/dns/
-# use named-checkzone and named-checkconf on all files
+#TODO: Shoudl we use named-checkzone and named-checkconf on all files(?); doesn't do much
     my($cfg) = $_D->eval_or_die(${$self->read_input});
     _local_cfg($cfg);
     $_F->mkdir_p('etc');
@@ -90,7 +90,7 @@ sub _local_cfg {
 		    ['@', {
 			mx => undef,
 			spf1 => undef,
-			want_ptr => 1,
+			ptr => 1,
 		    }],
 		],
 	    },
@@ -139,23 +139,23 @@ EOF
 }
 
 sub _net {
-    my($zone, $cfg, $common, $ip_map) = @_;
+    my($zone, $cfg, $common, $ptr_map) = @_;
     my($zone_dot) = _dot($zone = "$zone.in-addr.arpa");
     $cfg = {%$common, ref($cfg) ? %$cfg : (cidr => $cfg)};
     return (
 	$zone,
 	_newlines(
 	    _zone_header($zone_dot, $cfg),
-	    _net_ips($zone_dot, $cfg, $ip_map),
+	    _net_ptr($zone_dot, $cfg, $ptr_map),
 	),
     );
 }
 
-sub _net_ips {
-    my($zone, $cfg, $ip_map) = @_;
-    my($im) = $ip_map->{$cfg->{cidr}};
+sub _net_ptr {
+    my($zone, $cfg, $ptr_map) = @_;
+    my($im) = $ptr_map->{$cfg->{cidr}};
     my($cidr) = $cfg->{cidr};
-    my($ips) = $ip_map->{$cidr};
+    my($ptr) = $ptr_map->{$cidr};
     return @{
 	$_CIDRN
 	    ->from_literal_or_die($cidr)
@@ -163,10 +163,17 @@ sub _net_ips {
 		my($full) = @_;
 #TODO: Should we make this work with other than Class C CIDRs?
 		my($num) = $full =~ /(\d+)$/;
-		map(
-		    "$num IN PTR $_",
-		    @{$ips->{$full} || []},
-		);
+		my($yes) = $ptr->{$full}->{yes} || [];
+		my($no) = $ptr->{$full}->{no} || [];
+		return ()
+		    unless @$yes || @$no;
+		$yes = $no
+		    if !@$yes && @$no == 1;
+		b_die($no, ': no PTR records for ', $full)
+		    if !@$yes && @$no;
+		b_die($yes, ': too many PTR records for ', $full)
+		    unless @$yes <= 1;
+	        return "$num IN PTR $yes->[0]";
 	    })
     };
 }
@@ -212,21 +219,21 @@ sub _zones {
     $cfg->{serial} = _serial();
     my($z) = delete($cfg->{zones});
     my($n) = delete($cfg->{nets});
-    my($ip_map) = {};
+    my($ptr_map) = {};
     return (
 	map(
-	    _zone($_, $z->{$_}, $cfg, $ip_map),
+	    _zone($_, $z->{$_}, $cfg, $ptr_map),
 	    sort(keys(%$z)),
 	),
 	map(
-	    _net($_, $n->{$_}, $cfg, $ip_map),
+	    _net($_, $n->{$_}, $cfg, $ptr_map),
 	    sort(keys(%$n)),
 	),
     );
 }
 
 sub _zone {
-    my($zone, $cfg, $common, $ip_map) = @_;
+    my($zone, $cfg, $common, $ptr_map) = @_;
     $cfg = {%$common, %$cfg};
     my($zone_dot) = _dot($zone);
     return (
@@ -234,25 +241,27 @@ sub _zone {
 	_newlines(
 	    _zone_header($zone_dot, $cfg),
 	    sort(
-		_zone_a($zone_dot, $cfg, $ip_map),
-		_zone_cname($zone_dot, $cfg, $ip_map),
-		_zone_mx($zone_dot, $cfg, $ip_map),
-		_zone_spf1($zone_dot, $cfg, $ip_map),
+		_zone_a($zone_dot, $cfg, $ptr_map),
+		_zone_cname($zone_dot, $cfg, $ptr_map),
+		_zone_mx($zone_dot, $cfg, $ptr_map),
+		_zone_spf1($zone_dot, $cfg, $ptr_map),
 	    ),
 	),
     );
 }
 
 sub _zone_a {
-    my($zone, $cfg, $ip_map) = @_;
+    my($zone, $cfg, $ptr_map) = @_;
     return _zone_ipv4_map(
 	@_,
 	sub {
 	    my($host, $host_cfg, $ip, $cidr) = @_;
 	    push(
-		@{$ip_map->{$cidr}->{$ip} ||= []},
+		@{($ptr_map->{$cidr}->{$ip} ||= {})
+		    ->{$host_cfg->{ptr} ? 'yes' : 'no'}
+		    ||= []},
 		_dot($host, $zone),
-	    ) if $host_cfg->{want_ptr};
+	    );
 	    return join(
 		' ',
 		$host,
@@ -290,7 +299,7 @@ sub _zone_header {
 }
 
 sub _zone_ipv4_map {
-    my($zone, $cfg, $ip_map, $op) = @_;
+    my($zone, $cfg, $ptr_map, $op) = @_;
     my($ipv4) = $cfg->{ipv4};
     return map(
 	{
@@ -319,9 +328,8 @@ sub _zone_ipv4_map {
 					    %$cfg,
 					    %{$_->[1] || {}},
 					};
-					$_->[1]->{want_ptr} = 1
-					    if $_->[0] =~ s/^\@(?=[\w\@])//
-					    + !$not_first_host++;
+					$_->[1]->{ptr} = 1
+					    if $_->[0] =~ s/^\@(?=[\w\@])//;
 					$_->[0] = $zone
 					    if $_->[0] eq '@';
 					$_;
