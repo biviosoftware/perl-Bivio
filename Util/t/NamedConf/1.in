@@ -19,7 +19,7 @@ my($net1) = '111.22.33.24/29';
 		    24 => [
 			'@mail',
 			'ns1',
-			['@example.com.' => {
+			['example.com.' => {
 			    spf1 => '+ include:mail.yahoo.com',
 			    mx => [
 				'mail',
@@ -28,10 +28,10 @@ my($net1) = '111.22.33.24/29';
 			}],
 		    ],
 		    25 => [
-			'ns2',
+		        ['ns2', {ptr => 1}],
 			'www',
 		    ],
-		    26 => '@two.level',
+		    26 => 'two.level',
 		},
 		'10.10.1.0/29' => {
 		    1 => 'ski',
