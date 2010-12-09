@@ -7,5 +7,5 @@ req()->set_realm_and_user('site-help');
 req()->initialize_fully('HELP');
 req()->put(path_info => 'Shell_Util_Help');
 [
-    [] => qr{site_my_public.*NO-MATCH.*100.*body.*purple}s,
+    [] => qr{site_my_public.*NO-MATCH.*100.*body.*dddddd}s,
 ];
