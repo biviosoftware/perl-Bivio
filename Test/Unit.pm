@@ -337,6 +337,10 @@ sub builtin_random_alpha_string {
     return b_use('Biz.Random')->string(shift(@_), ['a' .. 'z']);
 }
 
+sub builtin_random_realm_name {
+    return shift->builtin_random_alpha_string(@_);
+}
+
 sub builtin_read_file {
     shift;
     return b_use('IO.File')->read(@_);
