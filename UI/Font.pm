@@ -1,4 +1,4 @@
-# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Font;
 use strict;
@@ -76,8 +76,10 @@ use Bivio::Base 'UI.FacadeComponent';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_A) = b_use('IO.Alert');
+my($_C) = b_use('FacadeComponent.Color');
 # Map style names to numeric sizes
-my(%_SIZE_MAP) = (
+my($_SIZE_MAP) = {
     'xx-small' => 1,
     'x-small' => 2,
     'small' => 3,
@@ -85,10 +87,10 @@ my(%_SIZE_MAP) = (
     'large' => 5,
     'x-large' => 6,
     'xx-large' => 7,
-);
+};
 # Certain attributes map one to one to tags.  See refererences to
 # _TAG_MAP below and _initialize_html
-my(%_TAG_MAP) = (
+my($_TAG_MAP) = {
     bold => 'b',
     italic => 'i',
     code => 'tt',
@@ -98,7 +100,7 @@ my(%_TAG_MAP) = (
     smaller => 'small',
     strike => 'strike',
     underline => 'u',
-);
+};
 # CSS-only
 my($_CSS_MAP) = {
     capitalize => 'text-transform: capitalize',
@@ -126,8 +128,6 @@ my($_CSS_MAP) = {
     right => 'text-align: right',
     uppercase => 'text-transform: uppercase',
 };
-
-# Attribute should only be used by this module
 my($_CONFIG_ATTR) = '_config';
 
 sub UNDEF_CONFIG {
@@ -229,45 +229,44 @@ sub _initialize {
     # (UI.Font, hash_ref, hash_ref) : undef
     # Intializes the value.
     my($self, $value, $default) = @_;
-    return if $value->{html};
-    my(@c) = @{$value->{config}};
+    return
+	if $value->{html};
+    my($config) =[@{$value->{config}}];
 #TODO: This should be lower down so that the each name is separate, i.e
 #      [[qw(foo bar)] => []]
 #      shares color for foo and bar unless foo and bar each have a color
-    if (int(@{$value->{names}}) == 1 && !grep(/^color=/, @c)) {
+    if (int(@{$value->{names}}) == 1 && !grep(/^color=/, @$config)) {
 	my($name) = $value->{names}->[0];
 	if ($self->get_facade->get('Color')->exists($name)) {
 	    # Only set color if doesn't already exist.
-	    push(@c, 'color='.$name);
+	    push(@$config, 'color='.$name);
 	}
     }
-    my(%attrs, @tags);
-    $attrs{$_CONFIG_ATTR} = \@c;
-    foreach my $a (@c) {
-	if ($_TAG_MAP{$a}) {
-	    $attrs{'tag_'.$_TAG_MAP{$a}} = 1;
+    my($attrs) = {};
+    $attrs->{$_CONFIG_ATTR} = $config;
+    foreach my $attr (@$config) {
+	if ($_TAG_MAP->{$attr}) {
+	    $attrs->{'tag_' . $_TAG_MAP->{$attr}} = 1;
 	}
-	elsif ($a =~ /^(family|weight|size|class|id|style)=(.*)/) {
-	    # May be blank
-	    $attrs{$1} = $2;
+	elsif ($attr =~ /^(family|weight|size|class|id|style)=(.*)/) {
+	    $attrs->{$1} = $2;
 	}
-	elsif ($a =~ /^\d+\%$/ || $_SIZE_MAP{$a}) {
-	    $attrs{size} = $a;
+	elsif ($attr =~ /^\d+\%$/ || $_SIZE_MAP->{$attr}) {
+	    $attrs->{size} = $attr;
 	}
-	elsif ($a =~ /^color=(.+)/) {
-	    $attrs{color} = Bivio::UI::Color->format_html(
-		    $1, '', $self->get_facade);
+	elsif ($attr =~ /^color=(.+)/) {
+	    $attrs->{color} = $_C->format_html($1, '', $self->get_facade);
 	}
-	elsif ($_CSS_MAP->{$a}) {
-	    push(@{$attrs{other_styles} ||= []}, $_CSS_MAP->{$a});
+	elsif ($_CSS_MAP->{$attr}) {
+	    push(@{$attrs->{other_styles} ||= []}, $_CSS_MAP->{$attr});
 	}
 	else {
-	    $self->initialization_error($value, 'unknown attribute: ', $a);
-	    %attrs = ();
+	    $self->initialization_error($value, 'unknown attribute: ', $attr);
+	    %$attrs = ();
 	    last;
 	}
     }
-    $value->{attrs} = \%attrs;
+    $value->{attrs} = $attrs;
     _initialize_html_no_style($value, $default);
     _initialize_css($self, $value);
     _initialize_html_with_style($value, $default);
@@ -278,12 +277,12 @@ sub _initialize_css {
     # (hash) : array_ref
     # Returns 
     my($self, $value) = @_;
-    my($a) = $value->{attrs};
+    my($attr) = $value->{attrs};
     $value->{css} = join(' ', map(
 	$_ =~ /;$/ ? $_ : "$_;",
-        map($a->{$_} ? ($_ eq 'color' ? '' : 'font-') . "$_: $a->{$_}" : (),
+        map($attr->{$_} ? ($_ eq 'color' ? '' : 'font-') . "$_: $attr->{$_}" : (),
 	    qw(family weight color size)),
-	map($a->{"tag_$_->[0]"} ? $_->[1] : (),
+	map($attr->{"tag_$_->[0]"} ? $_->[1] : (),
 	    [b => 'font-weight: bold'],
 	    [big => 'font-size: 120%'],
 	    [i => 'font-style: italic'],
@@ -292,8 +291,8 @@ sub _initialize_css {
 	    [tt => 'font-family: monospace'],
 	    [u => 'text-decoration: underline'],
 	),
-	@{$a->{other_styles} || []},
-	$a->{style} ? $a->{style} : (),
+	@{$attr->{other_styles} || []},
+	$attr->{style} ? $attr->{style} : (),
     ));
     return;
 }
@@ -312,8 +311,8 @@ sub _initialize_html {
 	my($n) = $k eq 'family' ? 'face' : $k;
 	my($v) = $attrs{$k};
 	# Map to numeric sizes, but only in <FONT> attributes
-	$v = $_SIZE_MAP{$v}
-	    if $k eq 'size' && $_SIZE_MAP{$v};
+	$v = $_SIZE_MAP->{$v}
+	    if $k eq 'size' && $_SIZE_MAP->{$v};
 	$p .= ' '.$n.'="'.$v.'"';
     }
     $p .= '>' if $p;
