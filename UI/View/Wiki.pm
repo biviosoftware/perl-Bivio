@@ -145,10 +145,12 @@ sub version_list {
 	    {
 		field => 'RealmOwner_2.display_name',
 	    },
-	    {
-		field => 'RealmFileLock.comment',
-		want_sorting => 0,
-	    },
+	    b_use('Model.RealmFileLock')->if_enabled(sub {
+		return {
+		    field => 'RealmFileLock.comment',
+		    want_sorting => 0,
+		};
+	    }),
 	], {
 	    class => 'simple paged_list',
 	}),
@@ -178,7 +180,11 @@ sub view {
 	topic => '',
 	byline => vs_text_as_prose('wiki_view_byline'),
 	tools => vs_text_as_prose('wiki_view_tools'),
-	main_right => If(
+	body_class => If(
+	    ['UI.Facade', '->auth_realm_is_help_wiki', ['->req']],
+	    'b_help_wiki',
+	),
+	main_left => If(
 	    ['UI.Facade', '->auth_realm_is_help_wiki', ['->req']],
 	    [sub {
 	        my($req) = shift->req;
