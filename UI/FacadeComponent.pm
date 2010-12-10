@@ -106,12 +106,15 @@ sub group {
     my($self, $names, $value) = @_;
     my($fields) = $self->[$_IDI];
     _assert_writable($self);
-    $value = _initialize_value($self, {
-	orig_config => $value,
-	names => [ref($names) ? @$names : $names],
-    });
-    foreach my $name (@{$value->{names}}) {
-	_assign($self, $name, $value);
+    foreach my $name (ref($names) ? @$names : $names) {
+	_assign(
+	    $self,
+	    $name,
+	    _initialize_value($self, {
+		orig_config => $value,
+		names => [$name],
+	    }),
+	);
     }
     return;
 }
