@@ -323,10 +323,17 @@ sub _cfg_base {
 	],
 	CSS => [
 	    [table_footer => q{
+		text-align: center;
 		border-top: 1px solid;
 		Color('footer-border-top');
 		margin: .5ex 0 .5ex 0;
 		padding-top: .5ex;
+		padding-bottom: 7ex;
+            }],
+	    [td_footer_center => q{ 
+		vertical-align: top;
+		text-align: center;
+		font-size: 100%;
             }],
 	    [menu_want_sep => q{
 		padding-left: .3em;
@@ -818,10 +825,10 @@ sub _cfg_file {
 	    [FORUM_FILE_TREE_LIST => '?/files/*'],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
-	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
-	    # b_use('Model.RealmFileLock')->if_enabled(
-	    # 	[FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
-	    # ),
+#	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
+	    b_use('Model.RealmFileLock')->if_enabled(
+	    	[FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
+	    ),
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -1752,10 +1759,14 @@ sub _cfg_wiki {
 	    [ThreePartPage_want_HelpWiki => 1],
 	],
 	CSS => [
+	    [b_help_wiki_main_left => q{
+                width: 12em;
+            }],
 	    [b_help_index => q{
-	        float: right;
+                padding-top: 0.5ex;
+	        text-align: left;
 	        width: 10em;
-                padding-left: 1.5em;
+                padding-left: 1em;
             }],
 	    [b_help_index_text_indent => q{
                 text-indent: -1em;
@@ -1818,6 +1829,7 @@ sub _cfg_wiki {
 	    [prose => [
 		b_help_list_title => 'Help Index',
 		help_wiki_add => 'Add Help',
+		help_wiki_page => 'Help',
 		help_wiki_close => 'Close',
 		help_wiki_edit => 'Edit',
 		help_wiki_footer => '',
