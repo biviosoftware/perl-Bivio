@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.6  2010/12/09 18:40:56  nagler
+  * Bivio::Util::NamedConf
+    PTR generated if only one A record
+    PTR checking, must be exactly one
+    '@' is back as a PTR identifier
+
   Revision 10.5  2010/12/09 16:18:06  nagler
   * Bivio::Biz::Model::RealmOwnerBase
     cascade_delete deletes RowTag, RealmDAG and any RealmUser records
