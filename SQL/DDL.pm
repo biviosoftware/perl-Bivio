@@ -489,6 +489,11 @@ CREATE INDEX realm_file_t12 ON realm_file_t (
   folder_id
 )
 /
+ALTER TABLE realm_file_t
+  ADD CONSTRAINT realm_file_t13
+  FOREIGN KEY (folder_id)
+  REFERENCES realm_file_t(realm_file_id)
+/
 
 --
 -- realm_file_lock_t
