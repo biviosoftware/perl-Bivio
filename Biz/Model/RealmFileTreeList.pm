@@ -10,9 +10,12 @@ my($_FP) = b_use('Type.FilePath');
 my($_RF) = b_use('Model.RealmFile');
 my($_RTK) = b_use('Type.RowTagKey');
 my($_TLN) = b_use('Type.TreeListNode');
-my($_DEFAULT_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
 my($_MAIL_FOLDER) = lc($_FP->MAIL_FOLDER);
 my($_VERSIONS_FOLDER_RE) =  qr{^$_FP->VERSIONS_FOLDER(?:/:$)}ios;
+my($_RFL) = b_use('Model.RealmFileLock');
+my($_DEFAULT_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
+my($_LOCK) = $_RFL->if_enabled;
+my($_RFVL) = b_use('Model.RealmFileVersionsList');
 
 sub LOAD_ALL_SIZE {
     return 5000;
@@ -36,23 +39,26 @@ sub internal_initialize {
 	version => 1,
         primary_key => ['RealmFile.realm_file_id'],
         auth_id => ['RealmFile.realm_id', 'RealmOwner.realm_id'],
-	order_by => [qw(
-	    RealmFile.path_lc
-            RealmFileLock.modified_date_time
-	    RealmFile.modified_date_time
-            Email_2.email
-            RealmOwner_2.display_name
-	    Email_3.email
-	    RealmOwner_3.display_name
-	)],
+	order_by => [
+	    'RealmFile.path_lc',
+	    'RealmFile.modified_date_time',
+	    'Email_2.email',
+	    'RealmOwner_2.display_name',
+	    _lock(qw(
+		Email_3.email
+		RealmOwner_3.display_name
+	    )),
+	],
 	other => [
+	    _lock('RealmFileLock.modified_date_time'),
 	    'RealmOwner.name',
 	    'RealmFile.path',
 	    'RealmFile.folder_id',
 	    'RealmFile.is_read_only',
             [qw(RealmFile.user_id Email_2.realm_id RealmOwner_2.realm_id)],
 	    'RealmFile.is_folder',
-	    'RealmFileLock.comment',
+	    # Needed for is_locked
+	    _lock('RealmFileLock.comment'),
 	    {
 		name => 'is_empty',
 		type => 'Boolean',
@@ -136,17 +142,7 @@ sub internal_prepare_statement {
 	can_write => $self->req->can_user_execute_task(
 	    $self->req('task')->get_attr_as_task('write_task')),
     };
-    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFile RealmFileLock), [
-	[qw(RealmFile.realm_file_id RealmFileLock.realm_file_id)],
-	['RealmFileLock.comment', [undef]],
-    ]));
-    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFileLock RealmOwner_3), [
-	[qw(RealmFileLock.user_id RealmOwner_3.realm_id)],
-    ]));
-    $stmt->from($stmt->LEFT_JOIN_ON(qw(RealmFileLock Email_3), [
-	[qw(RealmFileLock.user_id Email_3.realm_id)],
-	['Email_3.location', [$_DEFAULT_LOCATION]],
-    ]));
+    $_RFVL->prepare_statement_for_realm_file_lock($stmt);
     # /Mail is probably large so we'll ignore it
     # dot-files are uninteresting, so we'll ignore them.
     # All are available via DAV
@@ -175,7 +171,7 @@ sub is_file {
 }
 
 sub is_locked {
-    return shift->get('RealmFileLock.modified_date_time') ? 1 : 0;
+    return $_RFL->is_locked(shift, 'RealmFileLock.');
 }
 
 sub parse_query_from_request {
@@ -185,6 +181,10 @@ sub parse_query_from_request {
 	$query->put(path_info => $_RF->parse_path($p));
     }
     return $query;
+}
+
+sub _lock {
+    return $_LOCK ? @_ : ();
 }
 
 1;

@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::File;
 use strict;
@@ -6,9 +6,10 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FP) = __PACKAGE__->use('Type.FilePath');
-my($_FCF) = __PACKAGE__->use('Model.FileChangeForm');
-my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
+my($_FP) = b_use('Type.FilePath');
+my($_FCF) = b_use('Model.FileChangeForm');
+my($_FCM) = b_use('Type.FileChangeMode');
+my($_LOCK) = b_use('Model.RealmFileLock')->if_enabled;
 
 sub file_change {
     view_put(xhtml_title => Join([
@@ -41,19 +42,21 @@ sub file_change {
 			_link('Rename file', 'RENAME'),
 			_link('Move file', 'MOVE'),
 			_link('Delete', 'DELETE'),
-			Link('Leave file locked', URI({
-			    task_id => 'FORUM_FILE_TREE_LIST',
-			    query => [['Model.FileChangeForm',
-			        '->unsafe_get_context'], 'query'],
-			})),
-			Link('Unlock', '#')->put(attributes => [sub {
-			    my($source) = @_;
-			    return ' onclick="'
-				. _javascript_form_object()
-				. $source->req('Model.FileChangeForm')
-				    ->get_field_name_for_html('cancel_button')
-				. '.click()"';
-			}]),
+			_lock(
+			    Link('Leave file locked', URI({
+				task_id => 'FORUM_FILE_TREE_LIST',
+				query => [['Model.FileChangeForm',
+				    '->unsafe_get_context'], 'query'],
+			    })),
+			    Link('Unlock', '#')->put(attributes => [sub {
+				my($source) = @_;
+				return ' onclick="'
+				    . _javascript_form_object()
+				    . $source->req('Model.FileChangeForm')
+					->get_field_name_for_html('cancel_button')
+				    . '.click()"';
+			    }]),
+			),
 		    ], String(' - ')),
 		]),
 	    ),
@@ -78,10 +81,12 @@ sub file_change {
 		rows => 30,
 		cols => 80,
 	    }],
-	    ['FileChangeForm.comment',{
-		row_class => 'hidden_file_field',
-		rows => 2,
-	    }],
+	    _lock([
+		'FileChangeForm.comment', {
+		    row_class => 'hidden_file_field',
+		    rows => 2,
+		},
+	    ]),
 	])->put(form_name => 'file_form'),
 	"\n" . '<script type="text/javascript">' . "\n",
 	[sub {
@@ -128,10 +133,12 @@ sub version_list {
 	    column_order_by => ['RealmFile.path_lc'],
 	    column_widget => Link(
 		Join([
- 		    If(['->is_locked'],
- 			Image(vs_text('RealmFileList.locked_leaf_node')),
- 			Image(vs_text('RealmFileList.leaf_node')),
- 		    ),
+		    _lock(
+			If(['->is_locked'],
+			    Image(vs_text('RealmFileList.locked_leaf_node')),
+			    Image(vs_text('RealmFileList.leaf_node')),
+			),
+		    ),
 		    _file_name(['revision_number']),
 		]),
 		URI({
@@ -140,38 +147,50 @@ sub version_list {
 		}),
 	    ),
 	}],
+only modified_date_time
 	['RealmFile.modified_date_time', {
 	    column_widget => _file_date(),
 	}],
 	_file_owner_column(),
-	'RealmFileLock.comment',
+	_lock('RealmFileLock.comment'),
 #TODO: sorting isn't preserving path_info
     ])->put(want_sorting => 0));
 }
 
 sub _file_date {
-    return If(['RealmFileLock.modified_date_time'],
-	DateTime(['RealmFileLock.modified_date_time']),
-	DateTime(['RealmFile.modified_date_time']),
+    return DateTime(['RealmFile.modified_date_time'])
+	unless $_LOCK;
+    return DateTime(
+	Or(
+	    ['RealmFileLock.modified_date_time'],
+	    ['RealmFile.modified_date_time'],
+	),
     );
 }
 
 sub _file_name {
     my($name) = @_;
+    return String($name)
+	unless $_LOCK;
     return Join([
 	String($name),
 	If(['->is_locked'],
-	    SPAN_warn(' (locked)')),
+	   SPAN_warn(' (locked)')),
     ]);
 }
 
 sub _file_owner_column {
-    return ['RealmOwner_2.display_name', {
-	column_widget => If(['->is_locked'],
-	    SPAN_warn(String(['RealmOwner_3.display_name'])),
-	    String(['RealmOwner_2.display_name']),
-	)
-    }];
+    return [
+	'RealmOwner_2.display_name',
+	{
+	    column_widget => !$_LOCK ? String(['RealmOwner_2.display_name'])
+		: If(
+		    ['->is_locked'],
+		    SPAN_warn(String(['RealmOwner_3.display_name'])),
+		    String(['RealmOwner_2.display_name']),
+		),
+	},
+    ];
 }
 
 sub _javascript_field_selector {
@@ -184,8 +203,9 @@ sub _javascript_field_selector {
 	my($visible_names) = [$source->req('Model.FileChangeForm')
 	    ->get_fields_for_mode($mode)];
 	$res .= "function $name {\n";
-
-	foreach my $field qw(name rename_name folder_id file comment content) {
+	foreach my $field (qw(name rename_name folder_id file comment content)) {
+	    next
+		if $field eq 'comment' && !$_LOCK;
 	    $res .= _javascript_form_object()
 		. $source->req('Model.FileChangeForm')
 		    ->get_field_name_for_html($field)
@@ -300,6 +320,10 @@ sub _tree_list {
 	}],
 	_file_owner_column(),
     ]);
+}
+
+sub _lock {
+    return $_LOCK ? @_ : ();
 }
 
 1;

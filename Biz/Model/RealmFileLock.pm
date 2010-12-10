@@ -5,13 +5,27 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Config')->register(my $_CFG = {
+    enable => 1,
+});
 
 sub create {
     my($self, $values) = @_;
+    _assert_enabled($self);
     $values->{modified_date_time} ||= $self->use('Type.DateTime')->now;
     $values->{realm_id} ||= $self->req('auth_id');
     $values->{user_id} ||= $self->req('auth_user_id');
     return shift->SUPER::create(@_);
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
+sub if_enabled {
+    return shift->if_then_else($_CFG->{enable}, @_);
 }
 
 sub internal_initialize {
@@ -38,8 +52,19 @@ sub internal_initialize {
 }
 
 sub is_locked {
+    my($self) = @_;
+    return 0
+	unless $self->if_enabled;
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return defined($model->get($model_prefix . 'comment')) ? 0 : 1;
+    return $proto->boolean(
+	$model->get($model_prefix . 'modified_date_time')
+	&& !defined($model->get($model_prefix . 'comment')),
+    );
+}
+
+sub _assert_enabled {
+    my($self) = @_;
+    return $self->if_enabled($self, sub {b_die('RealmFileLock not enabled')});
 }
 
 1;
