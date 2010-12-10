@@ -30,8 +30,8 @@ sub handle_config {
 }
 
 sub if_unapproved_applicant_mode {
-    my($self, $then, $else) = @_;
-    if ($_CFG->{unapproved_applicant_mode}) {
+    my($self, $then) = (shift, shift);
+    my($then2) = sub {
 	return $then->()
 	    unless ref($self);
 	return $self->req->with_realm(
@@ -39,10 +39,8 @@ sub if_unapproved_applicant_mode {
 		->get_value('site_admin_realm_name', $self->req),
 	    $then,
 	);
-    }
-    return $else->()
-	if $else;
-    return;
+    };
+    return $self->if_then_else($_CFG->{unapproved_applicant_mode}, $then2, @_);
 }
 
 sub internal_create_models {
