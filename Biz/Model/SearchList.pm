@@ -216,10 +216,8 @@ sub _b_realm_only {
     } unless $query->unsafe_get('b_realm_only');
     my($aid) = $self->req('auth_id');
     return {
-	map({
-	    my($method) = 'internal_' . $_;
-	    ($_ => [grep($aid eq $_, @{$self->$method($query)})]);
-	} qw(private_realm_ids public_realm_ids)),
+	private_realm_ids => [grep($aid eq $_, @{$self->internal_private_realm_ids($query)})],
+	public_realm_ids => [$aid],
 	want_all_public => 0,
     };
 }
