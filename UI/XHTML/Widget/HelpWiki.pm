@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::HelpWiki;
 use strict;
@@ -13,53 +13,23 @@ my($_T) = b_use('FacadeComponent.Text');
 my($_C) = b_use('FacadeComponent.Constant');
 my($_TASK_ID) = b_use('Agent.TaskId')->HELP;
 
+sub NEW_ARGS {
+    return [qw(?control)];
+}
+
 sub RESIZE_FUNCTION {
     return 'help_wiki_resize';
 }
 
 sub initialize {
     my($self) = @_;
-    $self->initialize_attr(control => 0);
-    $self->initialize_attr(position_over_link => 0);
-    $self->initialize_attr(visibility => 'hidden');
-    $self->put_unless_exists(
-        control_off_value => sub {
-	    return [sub {
-		my($source) = @_;
-		return _page_exists($source)
-		    ? Join([_js($self, $source), _iframe($self), _link_open()])
-		    : _user_can_edit($source)
-		    ? _link_add()
-		    : ();
-	    }],
-	},
-	control_on_value => sub {
-	    return [sub {
-		my($source) = @_;
-		my($body_attr) = "$self.body";
-		return ''
-		    unless _iframe_body($source, $body_attr);
-		return DIV_help_wiki(Join([
-		    DIV_tools(Join([
-			_user_can_edit($source) ?  _link_edit() : (),
-			_link_close(),
-		    ])),
-		    DIV_header(vs_text_as_prose('help_wiki_header')),
-		    DIV_help_wiki_body([$body_attr]),
-		    DIV_footer(vs_text_as_prose('help_wiki_footer')),
-		]))->put(link_target => '_top');
-	    }],
-        },
-    );
+    if ($self->get_or_default(want_popup => 1)) {
+	_init_popup($self);
+    }
+    else {
+	_init_page($self);
+    }
     return shift->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    my(undef, $control, $attributes) = @_;
-    return {
-	control => $control || 0,
-	($attributes ? %$attributes : ()),
-    };
 }
 
 sub page_name {
@@ -102,6 +72,55 @@ sub _iframe_body {
 	);
     $req->put($body_attr => $html);
     return 1;
+}
+
+sub _init_page {
+    my($self) = @_;
+    $self->put(
+	control => 1,
+        control_on_value => [sub {
+            my($source) = @_;
+	    return _page_exists($source)
+		? _link_page()
+		: _user_can_edit($source)
+		? _link_add()
+		: XLink('help_start_page', 'help_wiki_link');
+	}],
+    );
+    return;
+}
+
+sub _init_popup {
+    my($self) = @_;
+    $self->initialize_attr(control => 0);
+    $self->initialize_attr(position_over_link => 0);
+    $self->initialize_attr(visibility => 'hidden');
+    $self->put(
+        control_off_value => [sub {
+	    my($source) = @_;
+	    return _page_exists($source)
+		? Join([_js($self, $source), _iframe($self), _link_open()])
+		: _user_can_edit($source)
+		? _link_add()
+		: ();
+	}],
+	control_on_value => [sub {
+	     my($source) = @_;
+	     my($body_attr) = "$self.body";
+	     return ''
+		 unless _iframe_body($source, $body_attr);
+	     return DIV_help_wiki(Join([
+		 DIV_tools(Join([
+		     _user_can_edit($source) ?  _link_edit() : (),
+		     _link_close(),
+		 ])),
+		 DIV_header(vs_text_as_prose('help_wiki_header')),
+		 DIV_help_wiki_body([$body_attr]),
+		 DIV_footer(vs_text_as_prose('help_wiki_footer')),
+	     ]))->put(link_target => '_top');
+	 }],
+    );
+    return;
 }
 
 sub _js {
@@ -193,13 +212,21 @@ EOF
     ]);
 }
 
+sub _link_page {
+    return Link(
+	vs_text_as_prose('help_wiki_page'),
+	_uri('FORUM_WIKI_VIEW'),
+	'help_wiki_page',
+    );
+}
+
 sub _page_exists {
     my($source) = @_;
     my($req) = $source->req;
     my($die_code);
     return $_RF->access_controlled_load(
 	vs_constant($req, 'help_wiki_realm_id'),
-	$_WN->to_absolute(_page_name($source)),
+	$_WN->to_absolute(b_debug _page_name($source)),
 	$source->req,
 	\$die_code,
     );
