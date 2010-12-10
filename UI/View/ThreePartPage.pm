@@ -46,12 +46,7 @@ sub internal_xhtml_adorned_attrs {
     }) if $_TI->unsafe_from_name('SEARCH_LIST')
         && !$self->unsafe_get('view_pre_execute');
     view_put(
-	xhtml_title => Join([
-	    SPAN_realm(String([qw(auth_realm owner display_name)]), {
-		control => vs_realm_type('forum'),
-	    }),
-	    vs_text_as_prose('xhtml_title'),
-	], {join_separator => ' '}),
+	xhtml_title => vs_xhtml_title(),
 	vs_pager => '',
 	xhtml_body_class => '',
 	xhtml_head_tags => '',

@@ -640,6 +640,21 @@ sub vs_user_email_list {
     return;
 }
 
+sub vs_xhtml_title {
+    return Join(
+	[
+	    SPAN_realm(
+		String([qw(auth_realm owner display_name)]),
+		{
+		    control => vs_realm_type('forum'),
+		},
+	    ),
+	    vs_text_as_prose('xhtml_title'),
+	],
+	{join_separator => ' '},
+    );
+}
+
 sub _has_submit {
     my($proto, $rows) = @_;
     return grep(
