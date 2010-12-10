@@ -232,11 +232,6 @@ td.main_right {
 table.header {
   padding-bottom: 1ex;
 }
-table.footer {
-  Font('footer');
-  padding-bottom: 7ex;
-  text-align: center;
-}
 td.header_left a.su {
   Color('header_su-background');
   Font('header_su');
@@ -316,9 +311,7 @@ td.footer_right {
 td.footer_center,
 td.footer_middle {
   width: 40%;
-  vertical-align: top;
-  text-align: center;
-  font-size: 100%;
+  CSS('td_footer_center');
 }
 td.header_center div.nav div.task_menu,
 td.header_middle div.nav div.task_menu {
@@ -398,7 +391,8 @@ div.alphabetical_chooser {
   Font('selected');
 }
 table.footer {
-    CSS('table_footer');
+  Font('footer');
+  CSS('table_footer');
 }
 td.footer_right {
   text-align: right;
@@ -964,6 +958,7 @@ body.help_wiki_iframe_body {
   z-index: 1;
 }
 a.help_wiki_open,
+a.help_wiki_page,
 a.help_wiki_add {
   Font('user_state');
 }
@@ -984,6 +979,9 @@ a.help_wiki_add {
 }
 .help_wiki .help_wiki_body {
   Font('help_wiki_body');
+}
+body.b_help_wiki td.main_left {
+  CSS('b_help_wiki_main_left');
 }
 span.b_help_index {
   display: block;
