@@ -147,7 +147,6 @@ sub version_list {
 		}),
 	    ),
 	}],
-only modified_date_time
 	['RealmFile.modified_date_time', {
 	    column_widget => _file_date(),
 	}],
@@ -160,11 +159,10 @@ only modified_date_time
 sub _file_date {
     return DateTime(['RealmFile.modified_date_time'])
 	unless $_LOCK;
-    return DateTime(
-	Or(
-	    ['RealmFileLock.modified_date_time'],
-	    ['RealmFile.modified_date_time'],
-	),
+    return If(
+	['RealmFileLock.modified_date_time'],
+	DateTime(['RealmFileLock.modified_date_time']),
+	DateTime(['RealmFile.modified_date_time']),
     );
 }
 
