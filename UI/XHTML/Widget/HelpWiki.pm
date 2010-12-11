@@ -226,7 +226,7 @@ sub _page_exists {
     my($die_code);
     return $_RF->access_controlled_load(
 	vs_constant($req, 'help_wiki_realm_id'),
-	$_WN->to_absolute(b_debug _page_name($source)),
+	$_WN->to_absolute(_page_name($source)),
 	$source->req,
 	\$die_code,
     );
