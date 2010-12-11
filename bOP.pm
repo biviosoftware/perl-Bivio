@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,41 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.7  2010/12/10 23:47:48  nagler
+  * Bivio::Biz::Model::FileChangeForm
+    locking is configured
+  * Bivio::Biz::Model::RealmFileLock
+    locking is configured
+  * Bivio::Biz::Model::RealmFileTreeList
+    locking is configured
+  * Bivio::Biz::Model::RealmFileVersionsList
+    locking is configured
+  * Bivio::Biz::Model::SearchList
+    _b_realm_only wasn't computing public_realm_ids properly
+  * Bivio::Biz::Model::UserCreateForm
+    call if_then_else
+  * Bivio::SQL::DDL
+    need constraint on folder_t
+  * Bivio::UI::FacadeBase
+    support for help_wiki
+  * Bivio::UI::FacadeComponent
+    initialize the value once per name in a group
+  * Bivio::UI::Font
+    fmt
+  * Bivio::UI::View::CSS
+    support for help wiki
+  * Bivio::UI::View::File
+    locking is configured
+  * Bivio::UI::View::ThreePartPage
+    added vs_xhtml_title()
+  * Bivio::UI::View::Wiki
+    locking is configured
+    move help index to the left
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_xhtml_title()
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    added want_popup attribute so can just be a link (want_popup = 0)
+
   Revision 10.6  2010/12/09 18:40:56  nagler
   * Bivio::Util::NamedConf
     PTR generated if only one A record
