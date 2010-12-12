@@ -31,7 +31,7 @@ sub execute_ok {
     my($self) = @_;
     _join_user(
 	$self,
-	$self->internal_user_id,
+	$self->internal_user_id || return,
 	$self->internal_realm_id,
     );
     return;
