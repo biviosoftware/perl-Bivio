@@ -6,6 +6,18 @@ use Bivio::Base 'TestUnit.Unit';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub make_expect_rows {
+    my($proto, $fields, @values) = @_;
+    return $proto->map_together(
+	sub {
+	    return {
+		map(($_ => shift(@_)), @$fields),
+	    };
+	},
+	@values,
+    );
+}
+
 sub new {
     my($proto, $attrs) = @_;
     # Simple model name, which is loaded.  Sets up create_object and compute_return.
