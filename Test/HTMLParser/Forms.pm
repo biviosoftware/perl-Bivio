@@ -181,9 +181,13 @@ sub unsafe_get_field {
 	unless ref($name);
     my($res) = [];
     foreach my $c (qw(visible submit hidden)) {
-	push(@$res, map(
-	    $form->{$c}->{$_},
-	    grep($_ =~ $name, keys(%{$form->{$c}}))));
+	push(
+	    @$res,
+	    map(
+		$form->{$c}->{$_},
+		grep($_ =~ $name, keys(%{$form->{$c}})),
+	    ),
+	);
     }
     return $res;
 }
