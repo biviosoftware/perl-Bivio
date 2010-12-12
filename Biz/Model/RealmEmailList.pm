@@ -25,15 +25,32 @@ sub internal_get_roles {
 
 sub internal_initialize {
     my($self) = @_;
-    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	order_by => [qw(
-	    Email.email
-        )],
-	other => [
-	    'Email.location',
-	    [qw(RealmUser.user_id Email.realm_id(+))],
-	],
-    });
+    return $self->merge_initialize_info(
+	$self->field_decl_exclude(
+	    'RealmUser.role',
+	    $self->SUPER::internal_initialize,
+	),
+	{
+	    order_by => [qw(
+		Email.email
+	    )],
+	    other => [
+		'Email.location',
+		[qw(RealmUser.user_id Email.realm_id(+))],
+		{
+		    name => 'RealmUser.role',
+		    in_select => 0,
+		},
+	    ],
+	    group_by => [qw(
+		Email.email
+		Email.location
+		RealmOwner.display_name
+		RealmUser.realm_id
+		RealmUser.user_id
+	    )],
+	},
+    );
 }
 
 sub internal_post_load_row {
