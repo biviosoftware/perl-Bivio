@@ -68,6 +68,12 @@ my($category_count) = 0;
 		    }],
 		],
 	],
+	field_decl_exclude => [
+	    ['a', {a => 'b'}] => [{a => 'b'}],
+	    ['b', {a => 'b'}] => [{}],
+	    ['b', {a => ['b', 'c']}] => [{a => ['c']}],
+	    ['b', {a => [['b', 'c', 'd'], 'e']}] => [{a => [['c', 'd'], 'e']}],
+	],
 	new => [
 	    RealmOwner => qr/RealmOwner/,
 	    [req(), 'RealmOwner'] => qr/RealmOwner/,

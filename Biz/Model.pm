@@ -126,6 +126,33 @@ sub field_decl {
     );
 }
 
+sub field_decl_exclude {
+    my($self, $field, $info) = @_;
+    $info = b_use('IO.Ref')->nested_copy($info);
+    my($ne) = sub {
+	my($x) = @_;
+	return (ref($x) eq 'HASH' ? $x->{name} : $x) ne $field;
+    };
+    while (my($k, $v) = each(%$info)) {
+	if (ref($v) eq 'ARRAY') {
+	    @$v = map(
+		ref($_) eq 'ARRAY'
+		    ? [grep($ne->($_), @$_)]
+		    : grep($ne->($_), $_),
+		@$v,
+	    );
+	}
+	elsif (!ref($v)) {
+	    delete($info->{$k})
+		if ($v || '') eq $field;
+	}
+	else {
+	    b_die($k, ': unexpected value type: must be array_ref or scalar');
+	}
+    }
+    return $info;
+}
+
 sub field_equals {
     my($self, $field, $value) = @_;
     return $self->get_field_type($field)->is_equal($value, $self->get($field));
