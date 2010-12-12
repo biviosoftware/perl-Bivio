@@ -39,11 +39,12 @@ commands:
     copy_all src dst -- copies all records from src to dst realm
     edit role operation ... -- changes the permissions for realm/role
     edit_categories [category_op ...] -- disable or enable permission categories
-    list_all_categories -- lists all defined permission categories
-    list_enabled_categories -- list enabled permission categories for this realm
     list [role] -- lists permissions for this realm and role or all
     list_all [realm_type] -- lists permissions for all realms of realm_type
+    list_all_categories -- lists all defined permission categories
+    list_enabled_categories -- list enabled permission categories for this realm
     make_super_user -- gives current user super_user privileges
+    roles_for_permissions permission... -- list roles which have permission(s)
     set_same old new - copies permission old to new for ALL realms
     unmake_super_user -- drops current user's super_user privileges
 EOF
@@ -69,6 +70,11 @@ sub copy_all {
         unauth_iterate_start => ('realm_id', {realm_id => $src}),
     );
     return;
+}
+
+sub category_role_group {
+    my($self, @group) = @_;
+    return {map(($_ => [map($_->get_name, @{$_R->get_category_role_group($_)})]), @group)};
 }
 
 sub do_super_users {
@@ -185,8 +191,11 @@ sub list {
     # Print the permission sets so they can be used as input to this program.
     # If I<role_name> is C<undef>, gets all roles.
     my($self, $role_name) = @_;
-    return _list_one($self, $self->get_request->get('auth_realm'),
-	    _roles($role_name));
+    return _list_one(
+	$self,
+	$self->req('auth_realm'),
+	_roles($role_name),
+    );
 }
 
 sub list_all {
@@ -226,11 +235,6 @@ sub list_all_categories {
 	$res .= "$x\n";
     }
     return \$res;
-}
-
-sub category_role_group {
-    my($self, @group) = @_;
-    return {map(($_ => [map($_->get_name, @{$_R->get_category_role_group($_)})]), @group)};
 }
 
 sub list_enabled_categories {
@@ -295,6 +299,20 @@ sub set_same {
     }
     $rr->iterate_end($it);
     return;
+}
+
+sub roles_for_permissions {
+    sub ROLES_FOR_PERMISSIONS {[[qw(+permission Auth.Permission)]]}
+    my($self, $bp) = shift->parameters(\@_);
+    my($ps) = ${$_PS->from_array($bp->{permission})};
+    my($rp) = $self->model('RealmRole')
+	->get_permission_map($self->req('auth_realm'));
+    return [
+	map(
+	    defined($rp->{$_}) && ($rp->{$_} & $ps) eq $ps ? $_->get_name : (),
+	    @{_roles()},
+	),
+    ]
 }
 
 sub unmake_super_user {
@@ -452,12 +470,10 @@ sub _list_one {
 }
 
 sub _roles {
-    # (string) : array_ref
-    # Returns the list of all roles or just role I<name>.
     my($name) = @_;
     return defined($name)
-	    ? [$_R->from_any($name)]
-	    : [sort {$a->as_int <=> $b->as_int} $_R->get_list];
+	? [$_R->from_any($name)]
+        : [sort {$a->as_int <=> $b->as_int} $_R->get_list];
 }
 
 1;

@@ -19,5 +19,9 @@ my($super_users) = [];
 		return [qw(root)];
 	    },
 	],
+	roles_for_permissions => [
+	    'ADMIN_WRITE' => [[qw(ACCOUNTANT ADMINISTRATOR)]],
+	    [qw(ADMIN_WRITE FEATURE_SITE_ADMIN)] => [[]],
+	],
     ],
 ];
