@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.8  2010/12/11 18:43:39  nagler
+  * Bivio::UI::View::File
+    remove invalid text in code
+    DateTime() only accepts a widget value
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    remove debug
+
   Revision 10.7  2010/12/10 23:47:48  nagler
   * Bivio::Biz::Model::FileChangeForm
     locking is configured
