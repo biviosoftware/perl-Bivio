@@ -11,7 +11,6 @@ my($_C) = b_use('SQL.Connection');
 my($_D) = b_use('Type.Date');
 my($_F) = b_use('IO.File');
 my($_FN) = b_use('Type.ForumName');
-my($_SF) = b_use('ShellUtil.SiteForum');
 my($_UIF) = b_use('UI.Facade');
 my($_V3) = b_use('IO.Config')->if_version(3);
 my($_AWSTATS) = '/usr/local/awstats/wwwroot/cgi-bin/awstats.pl';
