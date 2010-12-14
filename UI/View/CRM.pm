@@ -103,15 +103,20 @@ sub thread_root_list {
 	    Form(
 		$f->simple_package_name,
 		Join([
-		    Select({
-			%{$f->get_select_attrs('b_status')},
-			unknown_label => vs_text('CRMQueryForm', 'b_status'),
-			auto_submit => 1,
-			enum_display => 'get_desc_for_query_form',
-		    }),
-		    grep($f->get_field_type('b_status')->isa(
-			'Bivio::Type::TupleChoiceList'),
-			 $f->tuple_tag_field_check),
+		    map(
+			Select({
+			    %{$f->get_select_attrs($_)},
+			    unknown_label => vs_text('CRMQueryForm', $_),
+			    auto_submit => 1,
+			    $_ eq 'b_status' ? (
+				enum_display => 'get_desc_for_query_form',
+			    ) : (),
+			}),
+			grep($f->get_field_type($_)->isa(
+			    'Bivio::Type::TupleChoiceList'),
+			     $f->tuple_tag_field_check),
+			'b_status',
+		    ),
 		    ComboBox({
 			%{$f->get_select_attrs('b_owner_name')},
 			field => 'b_owner_name',
