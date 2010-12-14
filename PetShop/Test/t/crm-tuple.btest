@@ -32,6 +32,13 @@ submit_form(Send => {
     text => 'Solution here',
 });
 follow_link('tickets');
+submit_form({
+    priority => 'Low',
+});
+verify_text('This list is empty');
+submit_form({
+    priority => 'Priority',
+});
 follow_link_in_table('Ticket', 'Ticket', $ticket);
 verify_text("Open Ticket #$ticket");
 my($product) = random_string();
