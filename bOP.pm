@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.9  2010/12/12 23:29:46  nagler
+  * Bivio::Biz::Model::RealmEmailList
+    ensure is unique list of emails/realm_ids (role is deleted from query)
+  * Bivio::Biz::Model::RealmUserAddForm
+    if no internal_user_id, just return
+  * Bivio::Biz::Model
+    added field_decl_exclude
+  * Bivio::Biz::Util::RealmRole
+    added roles_for_permissions
+  * Bivio::Test::HTMLParser::Forms
+    fmt
+  * Bivio::Test::ListModel
+    added make_expect_rows
+
   Revision 10.8  2010/12/11 18:43:39  nagler
   * Bivio::UI::View::File
     remove invalid text in code
