@@ -53,9 +53,6 @@ sub default_merge_overrides {
 		password => 'pgpass',
 	    },
 	},
-	'Bivio::Test::HTMLParser::Forms' => {
-	    error_color => '#993300',
-	},
 	'Bivio::Test::Language::HTTP' => {
 	    home_page_uri => "http://test.$root_lc.bivio.biz",
 	},
