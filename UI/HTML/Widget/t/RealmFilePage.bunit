@@ -15,7 +15,6 @@ href="#"
 <!--bivio-wv1--><!--start-bivio-wv2-->
 ignore this
 <!--end-bivio-wv2-->
-<!--bivio-missing-tag-->
 </body></html>
 EOF
 [
@@ -49,10 +48,8 @@ EOF
 		</head>\n
 		<body>\n
 		aaabbb\n
-		TAG-ERR\n
 		</body>
 	    }sx,
-	    0 => qr{aaabbb\nTAG-ERR:.*Bivio::Collection::Attributes:.*vap_missing_tag.*not found.*\n</body>}s,
 	],
     ],
 ];
