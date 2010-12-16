@@ -12,7 +12,7 @@ our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
 Bivio::IO::Config->register(my $_CFG = {
-    error_color => '#990000',
+    error_color => '#993300',
     # Set by XHTMLWidget.FormFieldError
     error_class => 'field_err',
     error_title_class => 'err_title',
