@@ -239,7 +239,7 @@ sub arg_list {
 sub assert_have_user {
     my($self) = @_;
     $self->usage_error('-user must be specified')
-	unless $self->req('auth_user_id');
+	unless $self->unsafe_get('user');
     return;
 }
 
