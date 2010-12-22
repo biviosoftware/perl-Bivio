@@ -11,6 +11,21 @@ my($_ROLES) = join(
 );
 my($_OFFLINE) = b_use('Type.RealmName')->OFFLINE_PREFIX;
 my($_C) = b_use('SQL.Connection');
+my($_R) = b_use('Auth.Role');
+
+sub delete_main_roles {
+    my($self, $realm_id, $user_id) = @_;
+    my($res) = 0;
+    map{
+	$res = $self->delete
+	    if $self->unauth_load({
+		user_id => $user_id,
+		realm_id => $realm_id,
+		role => $_,
+	    })
+	} $_R->get_main_list;
+    return $res;
+}
 
 sub execute_auth_user {
     my($proto, $req) = @_;
