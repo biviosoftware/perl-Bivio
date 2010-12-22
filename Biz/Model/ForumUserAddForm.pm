@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Model.RealmUserAddForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R) = b_use('Auth.Role');
 
 sub execute_ok {
     my($self) = @_;
@@ -29,24 +30,33 @@ sub execute_ok {
 
 sub internal_execute_children {
     my($self) = @_;
-    foreach my $cid (@{$self->new_other('Forum')->map_iterate(
-	sub {
-#TODO: Need to look at other children such as CalendarEvent
-	    my($child) = @_;
-	    return $self->new_other('RealmUser')->unauth_load({
-		realm_id => $child->get('forum_id'),
-		user_id => $self->get('User.user_id'),
-		role => Bivio::Auth::Role->ADMINISTRATOR,
-	    }) ? () : $child->get('forum_id');
-	},
-	'unauth_iterate_start',
-	'forum_id',
-	{parent_realm_id => $self->get('RealmUser.realm_id')},
-    )}) {
-	$self->execute($self->get_request, {
-	    %{$self->get_shallow_copy},
-	    'RealmUser.realm_id' => $cid,
-	});
+    if ($self->unsafe_get('administrator')) {
+	foreach my $cid (@{$self->new_other('Forum')->map_iterate(
+	    sub {
+		#TODO: Need to look at other children such as CalendarEvent
+		my($child) = @_;
+		return ()
+		    if $self->new_other('RealmUser')->unauth_load({
+			realm_id => $child->get('forum_id'),
+			user_id => $self->get('User.user_id'),
+			role => $_R->ADMINISTRATOR,
+		    });
+		$self->new_other('RealmUser')->delete_main_roles(
+		    $child->get('forum_id'),
+		    $self->get('User.user_id'),
+		);
+		return $child->get('forum_id');
+	    },
+	    'unauth_iterate_start',
+	    'forum_id',
+	    {
+		parent_realm_id => $self->get('RealmUser.realm_id')},
+	)}) {
+	    $self->execute($self->get_request, {
+		%{$self->get_shallow_copy},
+		'RealmUser.realm_id' => $cid,
+	    });
+	}
     }
     return;
 }
