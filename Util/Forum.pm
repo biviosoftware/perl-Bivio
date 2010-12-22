@@ -7,12 +7,16 @@ use Bivio::Base 'Bivio.ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = b_use('Type.ForumName');
 my($_FP) = b_use('Type.FilePath');
+my($_FM) = b_use('Biz.FormModel');
+my($_R) = b_use('Auth.Role');
+my($_M) = b_use('Biz.Model');
 
 sub USAGE {
     return <<'EOF';
 usage: bivio Forum [options] command [args..]
 commands
    delete_forum -- deletes the forum
+   make_admin_of_forum -- make user admin of forum (and subforums)
    reparent child-forum new-parent -- updates child-forum to point at new-parent
 EOF
 }
@@ -26,6 +30,30 @@ sub delete_forum {
     });
     $self->model('RealmOwner')->unauth_delete_realm({
 	realm_id => $id,
+    });
+    return;
+}
+
+sub make_admin_of_forum {
+    my($self) = @_;
+    $self->usage_error('-user must be specified')
+	unless $self->unsafe_get('user');
+    $self->assert_not_general();
+    my($req) = $self->get_request;
+    my($uid) = $req->get('auth_user_id');
+    my($fid) = $req->get('auth_id');
+    $self->usage_error('-realm must be specified')
+	unless defined($fid);
+    $self->usage_error('-realm must be a forum')
+	unless $req->get_nested(qw(auth_realm type))->eq_forum;
+    $_M->new($req, 'RealmUser')->delete_main_roles($fid, $uid);
+    $_FM->new($req, 'ForumUserAddForm')->process({
+	administrator => 1,
+	# Won't add MAIL_RECIPIENT role, but also
+	# won't remove existing MAIL_RECIPIENT roles.
+	not_mail_recipient => 1,
+	'RealmUser.realm_id' => $fid,
+	'User.user_id' => $uid,
     });
     return;
 }
