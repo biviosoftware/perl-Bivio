@@ -28,9 +28,22 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.10  2010/12/16 22:09:50  moeller
+  * Bivio::BConf
+    removed Forms.error_color override
+  * Bivio::Test::HTMLParser::Forms
+    use default error_color which was coming from Bivio::BConf
+  * Bivio::UI::HTML::Widget::RealmFilePage
+    don't catch die during render_value()
+  * Bivio::UI::View::CRM
+    fixed missing tuple fields in CRM query form
+  * Bivio::Util::HTTPStats
+    SiteForum not referenced
+
   Revision 10.9  2010/12/12 23:29:46  nagler
   * Bivio::Biz::Model::RealmEmailList
     ensure is unique list of emails/realm_ids (role is deleted from query)
