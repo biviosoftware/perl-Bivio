@@ -800,6 +800,7 @@ sub _init_task_log {
     my($self) = @_;
     $self->create_user_with_account('task_log_user');
     $self->top_level_forum('task_log_bunit', ['root', 'task_log_user']);
+    $self->new_other('RealmRole')->edit_categories('+feature_task_log');
     my($req) = $self->req;
     $req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
         $self->model(ForumUserAddForm => {
