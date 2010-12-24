@@ -344,7 +344,7 @@ sub initialize {
     return if $_INITIALIZED;
     $_INITIALIZED = 1;
     foreach my $cfg (map(+{%$_}, @{$_T->get_cfg_list})) {
-	my($ps) = delete($cfg->{permissions});
+	my($ps) = delete($cfg->{permission_set});
 	delete($cfg->{int});
 	$proto->new(
 	    $_T->from_any(delete($cfg->{name})),

@@ -9,6 +9,7 @@ my($_INFO_RE) = qr{^info_(.*)};
 my($_INCLUDED) = {};
 my($_PS) = b_use('Auth.PermissionSet');
 my($_C) = b_use('IO.Config');
+my($_A) = b_use('IO.Alert');
 
 sub bunit_validate_all {
     # Sanity check to make sure the the list of info_ methods don't collide
@@ -652,8 +653,8 @@ sub info_file {
 	    next=FORUM_FILE
 	    write_task=FORUM_FILE_CHANGE
 	)],
-# Separate tree list so permissions check d by task
-# data explore is a bit on the file?  STill need data_explore on the task
+# TODO: Separate tree list so permissions check by task data explore
+#	is a bit on the file?  STill need data_explore on the task
 	[qw(
 	    FORUM_FILE_VERSIONS_LIST
 	    171
@@ -1556,8 +1557,7 @@ sub merge_task_info {
     };
     return _merge_modifiers(
 	$proto,
-	$only_once->(
-	    [map($info->($_), reverse(@cfg))]),
+	$only_once->([map($info->($_), reverse(@cfg))]),
     );
 }
 
@@ -1585,6 +1585,10 @@ sub _merge_modifiers {
     my($map) = {};
     foreach my $c (reverse(@$cfg)) {
 	if (ref($c) eq 'HASH') {
+	    if ($c->{permissions}) {
+		$_A->warn_deprecated($c->{name}, ': permissions deprecated, use permission_set');
+		$c->{permission_set} = delete($c->{permissions});
+	    }
 	    $map->{$c->{name}} = {
 		%{$map->{$c->{name}} || b_die($c->{name}, ': not found')},
 		%$c,
@@ -1596,7 +1600,7 @@ sub _merge_modifiers {
 		name => $n,
 		int => shift(@$c),
 		realm_type => shift(@$c),
-		permissions => shift(@$c),
+		permission_set => shift(@$c),
 		items => [grep(!/=/, @$c)],
 		map(split(/=/, $_, 2), grep(/=/, @$c)),
 	    };
