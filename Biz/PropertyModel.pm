@@ -490,6 +490,17 @@ sub unauth_create_or_update_keys {
     return $self->create($values);
 }
 
+sub unauth_create_unless_exists {
+    my($self, $values) = @_;
+    my($pk_values) = _get_primary_keys($self, $values)
+	|| $self->internal_unique_load_values($values);
+    b_die($values, ': no primary key values')
+	unless $pk_values;
+    return $self
+	if $self->unauth_load($pk_values);
+    return $self->create($values);
+}
+
 sub unauth_delete {
     my($self, $load_args) = @_;
     # Deletes the current model from the database.   Doesn't check
