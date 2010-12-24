@@ -490,43 +490,39 @@ sub init_realm_role_with_config {
     return;
 }
 
+sub init_task_log_for_forums {
+    my($self) = @_;
+    $self->model('Forum')->do_iterate(
+	sub {
+	    return $self->req->with_realm(
+		shift->get('forum_id'),
+		sub {
+		    $self->new_other('RealmRole')
+			->edit_categories('feature_task_log');
+		    return 1;
+		},
+	    );
+	},
+    );
+    return;
+}
+
 sub initialize_db {
     my($self) = @_;
     $self->internal_upgrade_db_group_concat;
     $self->model('RealmOwner')->init_db;
+    $self->initialize_tuple_slot_types;
+    $self->initialize_xapian_exec_realm;
     $self->init_realm_role;
-#TODO: Needs to be after subclasses init_realm_role for new realmtypes
-    foreach my $x (
-	[qw(FORUM_TUPLE_SLOT_TYPE_LIST initialize_tuple_permissions initialize_tuple_slot_types)],
-	[qw(GROUP_TASK_LOG initialize_task_log_permissions)],
-	[qw(FORUM_MOTION_LIST initialize_motion_permissions)],
-	[qw(JOB_XAPIAN_COMMIT initialize_xapian_exec_realm)],
-    ) {
-	next
-	    unless $_TI->unsafe_from_name(shift(@$x));
-	map($self->$_(), @$x);
-    }
     foreach my $x (@$_INITIALIZE_SENTINEL) {
 	_default_sentinel($self, $x);
     }
     return;
 }
 
-sub initialize_motion_permissions {
-    return _enable_group_category(shift, 'feature_motion');
-}
-
-sub initialize_task_log_permissions {
-    return _enable_group_category(shift, 'feature_task_log');
-}
-
 sub initialize_test_data {
     # Initializes test data.  A hook for the subclasses.
     return;
-}
-
-sub initialize_tuple_permissions {
-    return _enable_group_category(shift, 'feature_tuple');
 }
 
 sub initialize_tuple_slot_types {
@@ -2283,18 +2279,6 @@ sub _default_sentinel {
     });
     return 0;
 }
-
-sub _enable_group_category {
-    my($self, $category) = @_;
-    my($req) = $self->get_request;
-    my($rr) = $self->new_other('RealmRole');
-    $_AR->do_any_group_default(sub {
-        $rr->edit_categories("+$category");
-	return 1;
-    }, $req);
-    return;
-}
-
 
 #TODO: This should be groups, but need to check RealmRole has changed
 sub _add_permissions_to_all_forums {
