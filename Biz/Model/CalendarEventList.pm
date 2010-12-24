@@ -36,7 +36,7 @@ sub decl_for_internal_initialize {
 	can_iterate => 1,
         primary_key => [
 	    [qw{CalendarEvent.calendar_event_id RealmOwner.realm_id}],
-	 ],
+	],
 	order_by => [qw(
 	    CalendarEvent.dtstart
 	    CalendarEvent.dtend
