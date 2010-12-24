@@ -23,5 +23,8 @@ my($super_users) = [];
 	    'ADMIN_WRITE' => [[qw(ACCOUNTANT ADMINISTRATOR)]],
 	    [qw(ADMIN_WRITE FEATURE_SITE_ADMIN)] => [[]],
 	],
+	list_roles => [
+	    '*all_guests-all_members' => [['GUEST']],
+	],
     ],
 ];
