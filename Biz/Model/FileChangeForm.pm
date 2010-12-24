@@ -200,39 +200,38 @@ sub internal_initialize {
 }
 
 sub internal_pre_execute {
-    return shift->call_super_before(\@_, sub {
-	my($self) = @_;
-	$self->internal_put_field(
-	    realm_file =>
-	    $self->new_other('RealmFile')->load({
-		path => $self->req('path_info') || '/',
-	    }),
-	);
-	return
-	    unless $_LOCK;
-	my($lock) = $self->new_other('RealmFileLock');
-	$self->internal_put_field(
-	    realm_file_lock => $lock->unsafe_load({
-		realm_file_id => $self->get('realm_file')->get('realm_file_id'),
-		comment => undef,
-	    }) ? $lock : undef,
-	);
-	if ($self->get('RealmFileLock.realm_file_lock_id')) {
-	    $self->internal_put_error('RealmFile.path_lc' => 'STALE_FILE_LOCK')
-		unless $self->get('RealmFileLock.realm_file_lock_id')
-		    eq ($self->get('realm_file_lock')
-			? $self->get('realm_file_lock')->get('realm_file_lock_id')
-			: '');
-	}
-	$self->internal_put_field('RealmFileLock.realm_file_lock_id' =>
-	    $self->get('realm_file_lock')->get('realm_file_lock_id'))
-	    if $self->get('realm_file_lock');
-	return {
-	    method => 'server_redirect',
-	    task_id => 'FORUM_FILE_OVERRIDE_LOCK',
-	} if $self->get('realm_file_lock') && ! $self->is_lock_owner;
-	return;
-    });
+    my($self) = @_;
+    my(@res) = shift->SUPER::internal_pre_execute(@_);
+    $self->internal_put_field(
+	realm_file =>
+	$self->new_other('RealmFile')->load({
+	    path => $self->req('path_info') || '/',
+	}),
+    );
+    return
+	unless $_LOCK;
+    my($lock) = $self->new_other('RealmFileLock');
+    $self->internal_put_field(
+	realm_file_lock => $lock->unsafe_load({
+	    realm_file_id => $self->get('realm_file')->get('realm_file_id'),
+	    comment => undef,
+	}) ? $lock : undef,
+    );
+    if ($self->get('RealmFileLock.realm_file_lock_id')) {
+	$self->internal_put_error('RealmFile.path_lc' => 'STALE_FILE_LOCK')
+	    unless $self->get('RealmFileLock.realm_file_lock_id')
+		eq ($self->get('realm_file_lock')
+		    ? $self->get('realm_file_lock')->get('realm_file_lock_id')
+		    : '');
+    }
+    $self->internal_put_field('RealmFileLock.realm_file_lock_id' =>
+	$self->get('realm_file_lock')->get('realm_file_lock_id'))
+	if $self->get('realm_file_lock');
+    return {
+	method => 'server_redirect',
+	task_id => 'FORUM_FILE_OVERRIDE_LOCK',
+    } if $self->get('realm_file_lock') && ! $self->is_lock_owner;
+    return @res;
 }
 
 sub is_folder {
