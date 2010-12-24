@@ -36,9 +36,8 @@ sub delete_forum {
 
 sub make_admin_of_forum {
     my($self) = @_;
-    $self->usage_error('-user must be specified')
-	unless $self->unsafe_get('user');
-    $self->assert_not_general();
+    $self->assert_have_user;
+    $self->assert_not_general;
     my($req) = $self->get_request;
     my($uid) = $req->get('auth_user_id');
     my($fid) = $req->get('auth_id');
