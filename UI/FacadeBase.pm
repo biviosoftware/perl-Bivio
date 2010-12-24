@@ -341,6 +341,21 @@ sub _cfg_base {
 		border-left: 1px solid;
 		Color('form_sep-border');
             }],
+	    [logo_su_logo => q{
+		text-align: left;
+		display: block;
+		height: Icon(qw(logo height));px;
+		width: Icon(qw(logo width));px;
+            }],
+	    [td_header_left => q{
+		background: Icon('logo'); left no-repeat;
+		height: Icon(qw(logo height));px;
+		width: Icon(qw(logo width));px;
+            }],
+	    [table_main => q{
+		width: 100%;
+		margin: 1em auto;
+            }],
 	    [menu_want_sep_clear => q{
 		padding-left: 0;
 		margin-left: 0;

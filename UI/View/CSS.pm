@@ -212,16 +212,13 @@ table.dock,
 table.header,
 table.footer,
 table.main {
-  width: 100%;
-  margin: auto;
+  CSS('table_main');
 }
 table.dock {
   margin-top: 0;
   margin-bottom: 1ex;
 }
 table.main {
-  margin-top: 1em;
-  margin-bottom: 1em;
 }
 td.main_left,
 td.main_middle,
@@ -242,15 +239,10 @@ td.header_left a.su {
   vertical-align: middle;
 }
 td.header_left {
-  background: Icon('logo'); left no-repeat;
-  height: Icon(qw(logo height));px;
-  width: Icon(qw(logo width));px;
+  CSS('td_header_left');
 }
 td.header_left .logo_su .logo {
-  text-align: left;
-  display: block;
-  height: Icon(qw(logo height));px;
-  width: Icon(qw(logo width));px;
+  CSS('logo_su_logo');
 }
 td.header_left .logo_su a.logo:hover {
   text-decoration: none;
