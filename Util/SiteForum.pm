@@ -10,17 +10,18 @@ my($_FN) = b_use('Type.ForumName');
 my($_T) = b_use('FacadeComponent.Text');
 my($_RM) = b_use('Action.RealmMail');
 my($_C) = b_use('IO.Config');
+my($_WN) = b_use('Type.WikiName');
 
 sub ADMIN_REALM {
-    return Bivio::UI::Facade->get_default->SITE_ADMIN_REALM_NAME;
+    return _facade()->SITE_ADMIN_REALM_NAME;
 }
 
 sub CONTACT_REALM {
-    return Bivio::UI::Facade->get_default->SITE_CONTACT_REALM_NAME;
+    return _facade()->SITE_CONTACT_REALM_NAME;
 }
 
 sub HELP_REALM {
-    return Bivio::UI::Facade->get_default->HELP_WIKI_REALM_NAME;
+    return _facade()->HELP_WIKI_REALM_NAME;
 }
 
 sub DEFAULT_MAKE_ADMIN_REALMS {
@@ -28,11 +29,11 @@ sub DEFAULT_MAKE_ADMIN_REALMS {
 }
 
 sub REPORTS_REALM {
-    return Bivio::UI::Facade->get_default->SITE_REPORTS_REALM_NAME;
+    return _facade()->SITE_REPORTS_REALM_NAME;
 }
 
 sub SITE_REALM {
-    return Bivio::UI::Facade->get_default->SITE_REALM_NAME;
+    return _facade()->SITE_REALM_NAME;
 }
 
 sub USAGE {
@@ -55,8 +56,9 @@ sub add_default_staging_suffix {
 
 sub add_users_to_site_admin {
     my($self) = @_;
-    my($req) = $self->initialize_fully;
-    my($f) = b_use('UI.Facade')->get_default;
+    $self->initialize_fully;
+    my($f) = _facade();
+    my($req) = $self->req;
     $req->with_realm($f->SITE_ADMIN_REALM_NAME, sub {
         my($rid) = $req->get('auth_id');
 	my($ro) = $self->model('RealmOwner');
@@ -86,6 +88,7 @@ sub add_users_to_site_admin {
 }
 
 sub forum_config {
+#TODO: NOT USED; need to convert init_realms to use this    
     my($self) = @_;
     my($req) = $self->initialize_fully;
     my($_EVERYBODY) = b_use('Type.MailSendAccess')->EVERYBODY;
@@ -112,8 +115,7 @@ sub forum_config {
                     mail_want_reply_to => 0,
                     mail_send_access => $_EVERYBODY,
                     post_create => [sub {
-                        $self->new_other('RealmRole')
-                            ->edit_categories('+feature_site_admin');
+			_init_admin_features($self);
                         return;
                     }],
                 },
@@ -196,20 +198,36 @@ sub init_bulletin {
 }
 
 sub init_files {
-    my($self) = @_;
+    sub INIT_FILES {[
+	[
+	    'realm_names',
+	    'StringArray',
+	    sub {b_use('Type.StringArray')->from_literal_or_die(shift->realm_names)},
+	],
+    ]}
+    my($self, $bp) = shift->parameters(\@_);
     $self->initialize_fully;
     $self->new_other('SQL')->assert_ddl;
     $self->req->with_user(undef, sub {
-        foreach my $realm (@{$self->realm_names}) {
-	    $self->req->with_realm($realm, sub {
-		$self->set_user_to_any_online_admin;
-		$_F->do_in_dir($realm => sub {
-		    $self->new_other('RealmFile')->import_tree('/');
+        return $bp->{realm_names}->do_iterate(
+	    sub {
+		my($realm) = @_;
+		$self->req->with_realm($realm, sub {
+		    $self->set_user_to_any_online_admin;
+		    return $_F->do_in_dir($realm => sub {
+			$self->new_other('RealmFile')->import_tree('/');
+			return;
+		    }) if -d $realm;
+		    $self->model('RealmFile')
+			->create_or_update_with_content(
+			    {path => $_WN->to_absolute($_WN->START_PAGE, 1)},
+			    \('Placeholder'),
+			);
 		    return;
-		}) if -d $realm;
-		return;
-	    });
-	}
+		});
+		return 1;
+	    },
+	);
     });
     return;
 }
@@ -219,21 +237,21 @@ sub init_forum {
     $cfg->{'RealmOwner.name'} = $forum;
     my($sub_forums) = delete($cfg->{sub_forums}) || [];
     my($post_create) = delete($cfg->{post_create}) || [];
-    $self->req->with_realm(
+    $self->req->with_realm_and_user(
         $_FN->is_top($forum) ? undef : $_FN->extract_top($forum),
+	$self->new_other('TestUser')->ADM,
         sub {
             $self->model(ForumForm => $cfg)
                 unless $self->model('RealmOwner')->unauth_load({
                     name => $forum,
                 });
-            $self->req->with_user($self->new_other('TestUser')->ADM, sub {
-                $_F->do_in_dir($forum => sub {
-                    $self->new_other('RealmFile')->import_tree('/');
-                    return;
-                });
-                return;
-            })
-                if $self->req->is_test && -d $forum;
+	    $_F->do_in_dir(
+		$forum,
+		sub {
+		    $self->new_other('RealmFile')->import_tree('/');
+		    return;
+		},
+            ) if $self->req->is_test && -d $forum;
             foreach my $op (@$post_create) {
                 $op->($cfg);
             }
@@ -299,14 +317,14 @@ sub init_realms {
 	   mail_want_reply_to => 0,
 	   mail_send_access => b_use('Type.MailSendAccess')->EVERYBODY,
 	});
-	$self->new_other('RealmRole')->edit_categories('+feature_site_admin');
+	_init_admin_features($self);
 	return;
     });
     $self->add_users_to_site_admin;
-    $self->model('EmailAlias')->create({
- 	incoming => _support_email($req),
- 	outgoing => $self->CONTACT_REALM,
-    });
+    # $self->model('EmailAlias')->create({
+    # 	incoming => _support_email($req),
+    # 	outgoing => $self->CONTACT_REALM,
+    # });
     return;
 }
 
@@ -343,9 +361,28 @@ sub realm_names {
     ];
 }
 
+sub _facade {
+    return b_use('Agent.Request')
+	->get_current_or_die
+	->unsafe_get('UI.Facade')
+	|| b_use('UI.Facade')
+	->get_default;
+}
+
+sub _init_admin_features {
+    my($self) = @_;
+    $self->new_other('RealmRole')->edit_categories(
+	'+feature_site_admin',
+	b_use('Agent.TaskId')
+	    ->unsafe_from_name('GROUP_TASK_LOG')
+	    ? '+feature_task_log' : (),
+    );
+    return;
+}
+
 sub _site_name_prefix {
     my($suffix, $req) = @_;
-    return b_use('UI.Text')->get_value('site_name', $req) . " $suffix";
+    return b_use('FacadeComponent.Text')->get_value('site_name', $req) . " $suffix";
 }
 
 sub _support_email {
