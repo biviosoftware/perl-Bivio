@@ -980,6 +980,7 @@ a.help_wiki_add {
 .help_wiki .help_wiki_body {
   Font('help_wiki_body');
 }
+body.b_help_wiki td.main_right,
 body.b_help_wiki td.main_left {
   CSS('b_help_wiki_main_left');
 }
