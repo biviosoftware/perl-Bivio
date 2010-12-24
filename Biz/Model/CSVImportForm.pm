@@ -102,13 +102,9 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self, $method) = @_;
-    return shift->call_super_before(
-	\@_,
-	sub {
-	    $self->internal_put_field(import_errors => '');
-	    return;
-	},
-    );
+    my(@res) = shift->SUPER::internal_pre_execute(@_);
+    $self->internal_put_field(import_errors => '');
+    return @res;
 }
 
 sub process_content {
