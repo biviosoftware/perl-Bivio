@@ -1760,12 +1760,12 @@ sub _cfg_wiki {
 	],
 	CSS => [
 	    [b_help_wiki_main_left => q{
-                width: 12em;
+                width: 32em;
             }],
 	    [b_help_index => q{
                 padding-top: 0.5ex;
 	        text-align: left;
-	        width: 10em;
+	        width: 30em;
                 padding-left: 1em;
             }],
 	    [b_help_index_text_indent => q{
@@ -1777,9 +1777,7 @@ sub _cfg_wiki {
 	    [b_help_index_item => q{
                 margin-bottom: .3ex;
             }],
-	    [b_wiki_width => q{
-                width: 40em;
-            }],
+	    [b_wiki_width => q{}],
 	],
 	Font => [
 	    [help_wiki_body => ['95%']],
