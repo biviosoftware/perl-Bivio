@@ -11,9 +11,4 @@ sub as_string {
     return $delegator->simple_package_name;
 }
 
-sub simple_package_name {
-    my($delegation, $delegator) = shift->delegated_args(@_);
-    return $delegation->call_delegator_super('simple_package_name');
-}
-
 1;

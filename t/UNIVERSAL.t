@@ -139,9 +139,6 @@ Bivio::Test->unit([
 	    sub {[Bivio::t::UNIVERSAL::Clonee->new]} => 0,
 	    sub {[shift->get('object')->clone]} => 1,
 	],
-	call_super => [
-	    sub {[equals => [shift->get('object')->clone]]} => 0,
-	],
     ],
 ]);
 

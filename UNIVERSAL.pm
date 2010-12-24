@@ -62,8 +62,7 @@ sub boolean {
 
 sub call_and_do_after {
     my($proto, $op_or_method, $args, $do_after) = @_;
-    # Unlike call_super_before, you can't modify the return value of
-    # $op_or_method.  This routine is here to preserve the calling context.  If
+    # This routine is here to preserve the calling context.  If
     # you wanted to modify the result, just call $op_or_method inline.
     # This method observes all of Perl's wantarray behavior.
     my($op) = sub {ref($op_or_method) ? $op_or_method->(@$args) : $proto->$op_or_method(@$args)};
@@ -82,51 +81,12 @@ sub call_and_do_after {
     return;
 }
 
-sub call_super {
-    my($proto) = shift;
-    my($package, $method, $args) = $_[0] =~ /^[a-z]\w*$/
-	? ($proto->package_name, @_)
-	: @_;
-    my($sub) = $package->super_for_method($method);
-    return $sub->($proto, $args ? @$args : ());
-}
-
-sub call_super_before {
-    my($proto, $args, $op) = @_;
-    # wantarray is observed only for the return from this method.  $op must
-    # expect to be called in an array context like any normal bOP method.
-    my($sub) = (caller(0))[0]->super_for_method($proto->my_caller);
-    my($super) = [$sub->($proto, @$args)];
-    my($my) = $op->($proto, $args, $super) || $super;
-    return wantarray ? @$my : $my->[0];
-}
-
 sub clone {
     my($self) = @_;
     return bless(
 	[map(($_R ||= $self->use('IO.Ref'))->nested_copy($_), @$self)],
 	ref($self),
     );
-}
-
-sub code_ref_for_method {
-    my($proto, $method) = @_;
-    return ($proto->code_ref_for_subroutine($method))[0]
-	|| ($proto->unsafe_super_for_method($method))[0];
-}
-
-sub code_ref_for_subroutine {
-    my($proto, $name) = @_;
-    do {
-	no strict;
-	local(*p) = *{$proto->package_name . '::'};
-	if (exists($p{$name})) {
-	    local(*n) = $p{$name};
-	    return *n{CODE}
-		if defined(*n{CODE});
-	}
-    };
-    return undef;
 }
 
 sub delegate_method {
@@ -499,13 +459,6 @@ sub simple_package_name {
     return (shift->package_name =~ /([^:]+$)/)[0];
 }
 
-sub super_for_method {
-    my($proto, $method) = @_;
-    my(@res) = shift->unsafe_super_for_method(@_);
-    return @res ? @res : Bivio::Die->die(
-	$method, ': not implemented by SUPER of ', $proto->package_name);
-}
-
 sub type {
     my($proto, $class) = (shift, shift);
     $class = $proto->use('Type', $class);
@@ -515,17 +468,6 @@ sub type {
 sub unsafe_self_from_req {
     my($proto, $req) = @_;
     return $req->unsafe_get($proto->as_classloader_map_name);
-}
-
-sub unsafe_super_for_method {
-    my($proto, $method) = @_;
-    $method ||= $proto->my_caller;
-    foreach my $a (@{$proto->inheritance_ancestors}) {
-	if (my $sub = $a->code_ref_for_subroutine($method)) {
-	    return ($sub, $a);
-	}
-    }
-    return;
 }
 
 sub ureq {
