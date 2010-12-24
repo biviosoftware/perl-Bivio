@@ -238,14 +238,13 @@ sub arg_list {
 
 sub assert_have_user {
     my($self) = @_;
-    $self->usage_error('-user must be specified')
-	unless $self->unsafe_get('user');
+    $self->usage_error('must select a realm with -realm')
+	unless $self->req('auth_user');
     return;
 }
 
 sub assert_not_general {
     my($self) = @_;
-    # Ensure auth_realm is not general.
     $self->usage_error('must select a realm with -realm')
 	if $self->req('auth_realm')->is_general;
     return;
