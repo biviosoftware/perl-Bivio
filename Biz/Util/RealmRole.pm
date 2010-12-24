@@ -9,6 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Trace->register;
+my($_ROLE_GROUP_RE) = qr{^\*(.*)};
 my($_CATEGORY_MAP);
 b_use('IO.Config')->register(my $_CFG = {
     category_map => sub {[]},
@@ -35,14 +36,14 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-role [options] command [args...]
 commands:
-    category_role_group group... -- lists roles
     copy_all src dst -- copies all records from src to dst realm
-    edit role operation ... -- changes the permissions for realm/role
+    edit role|group operation ... -- changes the permissions for realm/role|group
     edit_categories [category_op ...] -- disable or enable permission categories
-    list [role] -- lists permissions for this realm and role or all
+    list [role|group] -- lists permissions for this realm and role|group, or all
     list_all [realm_type] -- lists permissions for all realms of realm_type
     list_all_categories -- lists all defined permission categories
     list_enabled_categories -- list enabled permission categories for this realm
+    list_roles role|group -- roles for category role group designator
     make_super_user -- gives current user super_user privileges
     roles_for_permissions permission... -- list roles which have permission(s)
     set_same old new - copies permission old to new for ALL realms
@@ -72,11 +73,6 @@ sub copy_all {
     return;
 }
 
-sub category_role_group {
-    my($self, @group) = @_;
-    return {map(($_ => [map($_->get_name, @{$_R->get_category_role_group($_)})]), @group)};
-}
-
 sub do_super_users {
     my($self, $op) = @_;
     return $self->model('RealmUser')->do_iterate(
@@ -96,57 +92,27 @@ sub do_super_users {
 }
 
 sub edit {
-    my($self, $role_name, @operations) = @_;
-    $self->usage('missing operations')
-	unless @operations;
-    my($req) = $self->get_request;
+    sub EDIT {[[qw(role_or_group Line)], [qw(+operations Line)]]}
+    my($self, $bp) = shift->parameters(\@_);
+    my($roles) = _roles($bp->{role_or_group});
+    my($req) = $self->req;
     my($realm) = $req->get('auth_realm');
     my($realm_id) = $realm->get('id');
     $self->model('RealmRole')->initialize_permissions($realm->get('owner'));
-    my($role) = $_R->from_any($role_name);
-    my($ps) = _get_permission_set($self, $realm_id, $role, 1);
-    _trace('current ', $role, ' ', $_PS->to_literal($ps))
-	if $_TRACE;
-    foreach my $op (@operations) {
-	$self->usage_error("$op: invalid operation syntax")
-	    unless $op =~ /^([-+])(\w*)$/;
-	my($which, $operand) = ($1, uc($2));
-	if (length($operand)) {
-	    my($p) = $_P->unsafe_from_any($operand);
-	    Bivio::Die->die($p, ': cannot set TRANSIENT permissions')
-	        if $which eq '+' && $p && $p->get_name =~ /TRANSIENT/;
-	    if ($p && $p->get_name eq $operand) {
-		vec($ps, $p->as_int, 1) = $which eq '+' ? 1 : 0;
-	    }
-	    else {
-		my($r) = $_R->unsafe_from_any($operand);
-		$self->usage($op, ': neither a Role nor Permission')
-			unless $r && $r->get_name eq $operand;
-		my($s) = _get_permission_set($self, $realm_id, $r, 0);
-		_trace($which, $r, ' ',
-		    $_PS->to_literal($s)) if $_TRACE;
-		# Set lengths must match for ~$s to work properly
-		Bivio::Die->die(
-		    'ASSERTION FAULT: set lengths differ: ',
-		    length($s), ' != ', length($ps)
-		) if length($s) != length($ps);
-		$ps = $which eq '+' ? ($ps | $s) : ($ps & ~$s);
-	    }
+    foreach my $role (@$roles) {
+	my($ps) = _get_permission_set($self, $realm_id, $role, 1);
+	_trace('current ', $role, ' ', $_PS->to_literal($ps))
+	    if $_TRACE;
+	foreach my $op (@{$bp->{operations}}) {
+	    $self->usage_error("$op: invalid operation syntax")
+		unless $op =~ /^([-+])(\w*)$/;
+	    $ps = _edit_one($self, $1, uc($2), $ps, $op, $realm_id);
 	}
-	else {
-	    $ps = $which eq '+'
-		? $_PS->get_max
-		: $_PS->get_min;
-	}
-    }
-    my($rr) = $self->model('RealmRole');
-    $rr->unauth_load(realm_id => $realm_id, role => $role)
-	? $rr->update({permission_set => $ps})
-	: $rr->create({
-	    realm_id => $realm_id,
+	$self->model('RealmRole')->create_or_update({
 	    role => $role,
 	    permission_set => $ps,
 	});
+    }
     return;
 }
 
@@ -199,42 +165,34 @@ sub list {
 }
 
 sub list_all {
-    # (self, string) : string_ref
-    # Lists all realms of I<realm_type>.  If no I<realm_type> is supplied,
-    # all types are listed in order by I<realm_id>.  The first three realms
-    # are the defaults, so we list them first.
-    my($self, $realm_type) = @_;
-    $realm_type = $_RT->from_any($realm_type)
-	if defined($realm_type);
+    sub LIST_ALL {[[qw(?realm_type Auth.RealmType)]]}
+    my($self, $bp) = shift->parameters(\@_);
     my($sep) = '';
-    my($ro) = $self->model('RealmOwner');
-    my($it) = $ro->unauth_iterate_start('realm_id',
-	    $realm_type ? {realm_type => $realm_type} : ());
     my($roles) = _roles();
     my($res) = '';
-    while ($ro->iterate_next_and_load($it)) {
-	# Roles are ascending, so can use $prev_role to shorten lists
-	my($p) = _list_one($self, $_AR->new($ro), $roles);
-	next unless $$p;
-	$res .= <<"EOF".$$p;
+    $self->model('RealmOwner')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    my($p) = _list_one($self, $_AR->new($it->clone), $roles);
+	    return 1
+		unless $$p;
+	    $res .= <<"EOF" . $$p;
 $sep#
-# @{[$ro->get('name')]} - Permissions
+# @{[$it->get('name')]} - Permissions
 #
 EOF
-	$sep = "\n";
-    }
+	    $sep = "\n";
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
+	$bp->{realm_type} ? {realm_type => $bp->{realm_type}} : (),
+    );
     return \$res;
 }
 
 sub list_all_categories {
-    # (self) : string_ref
-    # Print all defined permission categories.
-    my($self) = @_;
-    my($res) = '';
-    foreach my $x (@{$self->CATEGORIES}) {
-	$res .= "$x\n";
-    }
-    return \$res;
+    return shift->CATEGORIES;
 }
 
 sub list_enabled_categories {
@@ -257,6 +215,11 @@ sub list_enabled_categories {
 		@$roles);
 	} @$ops) ? $k : ();
     } sort(keys(%$cm)))];
+}
+
+sub list_roles {
+    my($self, $role_or_group) = @_;
+    return _roles($role_or_group);
 }
 
 sub make_super_user {
@@ -333,34 +296,63 @@ sub _category_map {
 }
 
 sub _edit_categories_args {
-    # (self, any) : array_ref
-    # Returns a list of permission_categories, which have been  properly sorted
-    # such that categories to be enabled following any categories to be disabled.
-    # 
-    # See edit_categories for more info on I<category_ops>.
     my($self) = shift;
     $self->usage('missing category_ops')
 	unless @_;
-    return $self, [reverse(sort(map({
-	my($a) = $_;
-	ref($a) eq 'ARRAY' ? @$a
-	    : ref($a) eq 'HASH' ? map(($a->{$_} ? '+' : '-') . $_,
-				      sort(keys(%$a)))
-		: $a;
-    } @_)))];
+    return ($self, [reverse(
+	sort(
+	    map(
+		{
+		    my($v) = $_;
+		    ref($v) eq 'ARRAY' ? @$v
+			: ref($v) eq 'HASH'
+			    ? map(
+				($v->{$_} ? '+' : '-') . $_,
+				  sort(keys(%$v)),
+			    )
+			    : $v;
+		}
+	        @_,
+	    ),
+	),
+    )]);
+}
+
+sub _edit_one {
+    my($self, $which, $operand, $ps, $op, $realm_id) = @_;
+    return $which eq '+' ? $_PS->get_max : $_PS->get_min
+	unless length($operand);
+    my($p) = $_P->unsafe_from_any($operand);
+    b_die($p, ': cannot set TRANSIENT permissions')
+	if $which eq '+' && $p && $p->get_name =~ /TRANSIENT/;
+    if ($p && $p->get_name eq $operand) {
+	vec($ps, $p->as_int, 1) = $which eq '+' ? 1 : 0;
+	return $ps;
+    }
+    my($r) = $_R->unsafe_from_any($operand);
+    $self->usage($op, ': neither a Role nor Permission')
+	unless $r && $r->get_name eq $operand;
+    my($s) = _get_permission_set($self, $realm_id, $r, 0);
+    _trace($which, $r, ' ', $_PS->to_literal($s))
+	if $_TRACE;
+    # Set lengths must match for ~$s to work properly
+    b_die(
+	'ASSERTION FAULT: set lengths differ: ',
+	length($s),
+	' != ',
+	length($ps),
+    ) if length($s) != length($ps);
+    return $which eq '+' ? ($ps | $s) : ($ps & ~$s);
 }
 
 sub _get_permission_set {
-    # (self, string, Auth.Role, boolean) : string
-    # Returns the permission_set for the realm and role.
     my($self, $realm_id, $role, $dont_die) = @_;
     my($rr) = $self->model('RealmRole');
     return $rr->get('permission_set')
-	    if $rr->unauth_load(realm_id => $realm_id, role => $role);
-    # Make sure the initial value is correct
-    return $_PS->get_min if $dont_die;
-    $self->usage($role->as_string, ": not set for realm");
-    # DOES NOT RETURN
+	if $rr->unauth_load(realm_id => $realm_id, role => $role);
+    $self->usage($role->as_string, ": not set for realm: ", $realm_id)
+	unless $dont_die;
+    return $_PS->get_min
 }
 
 sub _init_category_map {
@@ -405,20 +397,19 @@ sub _init_category_map_op {
 	': invalid category_map entry; extra params: ',
 	\@rest,
     ) if @rest;
-    return map({
-	my($x) = $_;
-	$x =~ s/^\+//;
-	[
-	    ($x =~ s/^-// xor $sign eq '-')
-		? 'remove_permissions' : 'add_permissions',
-	    [map(
-		$_ =~ /^\*(.*)/ ? @{$_R->get_category_role_group($1 || 'all')}
-		    : $_R->from_any($_),
-		@$roles,
-	    )],
-	    ${$_PS->set($_PS->get_min, $_P->$x())},
-	];
-    } @$perms);
+    return map(
+	{
+	    my($x) = $_;
+	    $x =~ s/^\+//;
+	    [
+		($x =~ s/^-// xor $sign eq '-')
+		    ? 'remove_permissions' : 'add_permissions',
+		[map(@{_roles($_)}, @$roles)],
+		${$_PS->set($_PS->get_min, $_P->$x())},
+	    ];
+	}
+	@$perms,
+    );
 }
 
 sub _list_one {
@@ -472,7 +463,9 @@ sub _list_one {
 sub _roles {
     my($name) = @_;
     return defined($name)
-	? [$_R->from_any($name)]
+	? $name =~ $_ROLE_GROUP_RE
+	? $_R->get_category_role_group($1 || 'all')
+	: [$_R->from_any($name)]
         : [sort {$a->as_int <=> $b->as_int} $_R->get_list];
 }
 
