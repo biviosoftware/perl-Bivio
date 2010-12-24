@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.11  2010/12/22 19:43:03  schellj
+  * Bivio::Biz::Model::ForumUserAddForm
+    remove existing main roles when adding admin
+  * Bivio::Biz::Model::RealmUserAddForm
+    removed unnecessary code
+  * Bivio::Biz::Model::RealmUser
+    added delete_main_roles
+  * Bivio::ShellUtil
+    assert_have_user() checks for 'user' arg
+  * Bivio::Util::Forum
+    added make_admin_of_forum
+
   Revision 10.10  2010/12/16 22:09:50  moeller
   * Bivio::BConf
     removed Forms.error_color override
