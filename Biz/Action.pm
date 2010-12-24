@@ -37,6 +37,13 @@ sub get_request {
 	|| shift->SUPER::get_request(@_);
 }
 
+sub new {
+    my(undef, $req) = @_;
+    return shift->SUPER::new->put_on_request(@_)
+	if b_use('Agent.Request')->is_blessed($req);
+    return shift->SUPER::new(@_);
+}
+
 sub put_on_request {
     my($self, $req, $durable) = @_;
     b_die($self, ': may not put singleton on request')
