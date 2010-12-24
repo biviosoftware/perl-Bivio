@@ -323,6 +323,13 @@ sub can_user_execute_task {
         : 0;
 }
 
+sub clear_cache_for_auth_user {
+    my($self) = @_;
+    my($u) = $self->get('auth_user');
+    _clear_realm_cache($self, $u->get('realm_id'));
+    return $self->set_user($u);
+}
+
 sub clear_current {
     # Clears the state of the current request.  See L<get_current|"get_current">.
     return unless $_CURRENT;
@@ -1316,6 +1323,21 @@ sub with_user {
     # Calls set_user(user) and then op.   Restores prior user, even on exception.
     # Returns what I<op> returns (in array context always).
     return _with(user => @_);
+}
+
+sub _clear_realm_cache {
+    my($self, $realm_id) = @_;
+    $self->delete_all_by_regexp(
+	qr{@{[
+	    join(
+		'#',
+		'realm_cache',
+                $realm_id,
+                '.*',
+            )
+        ]}},
+    );
+    return;
 }
 
 sub _form_for_warning {
