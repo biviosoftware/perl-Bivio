@@ -184,7 +184,7 @@ sub view {
 	    ['UI.Facade', '->auth_realm_is_help_wiki', ['->req']],
 	    'b_help_wiki',
 	),
-	main_left => If(
+	main_right => If(
 	    ['UI.Facade', '->auth_realm_is_help_wiki', ['->req']],
 	    [sub {
 	        my($req) = shift->req;
