@@ -212,13 +212,14 @@ table.dock,
 table.header,
 table.footer,
 table.main {
-  CSS('table_main');
+  CSS('b_three_part_page_tables');
 }
 table.dock {
   margin-top: 0;
   margin-bottom: 1ex;
 }
 table.main {
+  CSS('b_table_main');
 }
 td.main_left,
 td.main_middle,
@@ -239,10 +240,10 @@ td.header_left a.su {
   vertical-align: middle;
 }
 td.header_left {
-  CSS('td_header_left');
+  CSS('b_td_header_left');
 }
 td.header_left .logo_su .logo {
-  CSS('logo_su_logo');
+  CSS('b_logo_su_logo');
 }
 td.header_left .logo_su a.logo:hover {
   text-decoration: none;
@@ -303,7 +304,7 @@ td.footer_right {
 td.footer_center,
 td.footer_middle {
   width: 40%;
-  CSS('td_footer_center');
+  CSS('b_td_footer_center');
 }
 td.header_center div.nav div.task_menu,
 td.header_middle div.nav div.task_menu {
@@ -384,7 +385,7 @@ div.alphabetical_chooser {
 }
 table.footer {
   Font('footer');
-  CSS('table_footer');
+  CSS('b_table_footer');
 }
 td.footer_right {
   text-align: right;

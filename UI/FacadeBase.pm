@@ -322,7 +322,7 @@ sub _cfg_base {
 	    [robots_txt_allow_all => 1],
 	],
 	CSS => [
-	    [table_footer => q{
+	    [b_table_footer => q{
 		text-align: center;
 		border-top: 1px solid;
 		Color('footer-border-top');
@@ -330,7 +330,7 @@ sub _cfg_base {
 		padding-top: .5ex;
 		padding-bottom: 7ex;
             }],
-	    [td_footer_center => q{ 
+	    [b_td_footer_center => q{ 
 		vertical-align: top;
 		text-align: center;
 		font-size: 100%;
@@ -341,20 +341,24 @@ sub _cfg_base {
 		border-left: 1px solid;
 		Color('form_sep-border');
             }],
-	    [logo_su_logo => q{
+	    [b_logo_su_logo => q{
 		text-align: left;
 		display: block;
 		height: Icon(qw(logo height));px;
 		width: Icon(qw(logo width));px;
             }],
-	    [td_header_left => q{
+	    [b_td_header_left => q{
 		background: Icon('logo'); left no-repeat;
 		height: Icon(qw(logo height));px;
 		width: Icon(qw(logo width));px;
             }],
-	    [table_main => q{
+	    [b_three_part_page_tables => q{
 		width: 100%;
-		margin: 1em auto;
+		margin: auto;
+            }],
+	    [b_table_main => q{
+                margin-top: 1em;
+                margin-bottom: 1em;
             }],
 	    [menu_want_sep_clear => q{
 		padding-left: 0;
@@ -436,6 +440,7 @@ sub _cfg_base {
 	    [last_name => 'Last Name'],
 	    [street1 => 'Street Line 1'],
 	    [street2 => 'Street Line 2'],
+	    [url => 'Link'],
 	    [city => 'City'],
 	    [state => 'State'],
 	    [zip => 'Zip'],
