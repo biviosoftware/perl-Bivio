@@ -70,6 +70,13 @@ sub is_continuous {
     return 0;
 }
 
+sub is_msie_6_or_before {
+    shift->equals_by_name(qw(
+        BROWSER_MSIE_5
+        BROWSER_MSIE_6
+    ));
+}
+
 sub is_css_compatible {
     return shift->equals_by_name(qw(
 	BROWSER_FIREFOX_1
