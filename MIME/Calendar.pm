@@ -58,9 +58,8 @@ sub _event {
 	    _die($v, ": failed to parse $k: ", $e)
 		unless $t;
 	    $k = $w;
-	    $v = $tz
-		? $_TZ->from_any($tz)->date_time_to_utc($t)
-		: $t
+	    $v = $t;
+	    $ve->{time_zone} = $tz ? $_TZ->from_any($tz) : $_TZ->UTC;
 	}
 	elsif ($k !~
 	    m{^(summary|description|location|class|url|uid|rrule)$}x) {
