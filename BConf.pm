@@ -228,9 +228,14 @@ sub merge_class_loader {
     #         },
     #     }),
     #     ...
+    $overrides->{delegates} = {map(
+	($_ => join('::', $proto =~ /^(\w+)/, 'Delegate', $_ =~ /(\w+)$/)),
+	@{$overrides->{delegates}},
+    )} if ref($overrides->{delegates}) eq 'ARRAY';
     return (
 	'Bivio::IO::ClassLoader' => Bivio::IO::Config->merge(
-	    $overrides || {}, {
+	    $overrides || {},
+	    {
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
 		    Agent => ['Bivio::Agent'],
@@ -456,12 +461,12 @@ sub _base {
     return {
 	$proto->merge_class_loader({
 	    delegates => {
-                'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::NoCookie',
+                'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
                 'Bivio::Agent::TaskId' => 'Bivio::Delegate::TaskId',
                 'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
                 'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
                 'Bivio::Auth::Role' => 'Bivio::Delegate::Role',
-                'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
+                'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
                 'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
                 'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
                 'Bivio::Type::MotionStatus' => 'Bivio::Delegate::SimpleMotionStatus',
