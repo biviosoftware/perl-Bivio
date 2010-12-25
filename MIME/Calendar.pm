@@ -2,11 +2,11 @@
 # $Id$
 package Bivio::MIME::Calendar;
 use strict;
-use base 'Bivio::Collection::Attributes';
+use Bivio::Base 'Collection.Attributes';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_D) = Bivio::Type->get_instance('Date');
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_D) = b_use('Type.Date');
+my($_DT) = b_use('Type.DateTime');
 
 sub from_ics {
     my($proto, $ics) = @_;
@@ -20,7 +20,7 @@ sub from_ics {
 sub _assert {
     my($self, $expect) = @_;
     my($r) = _next_row($self);
-    _e($self, ': element does not match: ', $expect)
+    _die($self, ': element does not match: ', $expect)
 	unless "@{[map(lc($_), @$r)]}" eq "@$expect";
     return;
 }
@@ -34,11 +34,9 @@ sub _do_until {
     return;
 }
 
-sub _e {
+sub _die {
     my($self, @msg) = @_;
-    Bivio::Die->die(
-	$self->get('row'), ': ', @msg, ' at row ', $self->get('row_num'));
-    # DOES NOT RETURN
+    b_die($self->get('row'), ': ', @msg, ' at row ', $self->get('row_num'));
 }
 
 sub _event {
@@ -56,16 +54,16 @@ sub _event {
 	    $v .= 'Z'
 		unless $is_date || $v =~ /Z$/;
 	    my($t, $e) = ($2 ? $_D : $_DT)->from_literal($v);
-	    _e($v, ": failed to parse $k: ", $e)
+	    _die($v, ": failed to parse $k: ", $e)
 		unless $t;
 	    $k = $w;
 	    $v = $t;
 	}
 	elsif ($k !~ m{^(summary|description|location|class|url|uid)$}x) {
-	    _e($self, $k, ': unsupported attribute');
+	    _die($self, $k, ': unsupported attribute');
 	    # DOES NOT RETURN
 	}
-	_e($k, ': attribute may not be repeated')
+	_die($k, ': attribute may not be repeated')
 	    if exists($ve->{$k});
 	$ve->{$k} = $v;
 	return 1;
@@ -79,13 +77,13 @@ sub _header {
     _assert($self, [begin => 'vcalendar']);
     _do_until($self, 'begin', sub {
 	my($k, $v) = @_;
-	_e($self, 'unknown element')
+	_die($self, 'unknown element')
 	    unless $k =~ /^(version|prodid|method)$/;
 	return 1;
     });
     _do_until($self, 'end', sub {
 	my($k, $v) = @_;
-        _e($self, 'expecting begin vevent')
+        _die($self, 'expecting begin vevent')
 	    unless $k eq 'begin' && lc($v) eq 'vevent';
 	_event($self);
 	_assert($self, [end => 'vevent']);
@@ -98,7 +96,7 @@ sub _header {
 sub _next_row {
     my($self) = @_;
     $self->put(row_num => $self->get('row_num') + 1);
-    my($r) = shift(@{$self->get('rows')}) || _e($self, 'unexpected eof');
+    my($r) = shift(@{$self->get('rows')}) || _die($self, 'unexpected eof');
     $self->put(row => $r);
     return $r;
 }
