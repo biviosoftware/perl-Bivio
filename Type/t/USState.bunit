@@ -6,6 +6,7 @@ Type();
         '' => UNDEF(),
 	az => 'AZ',
 	x => SYNTAX_ERROR(),
+	xx => NOT_FOUND(),
     ],
     unsafe_from_zip_code => [
 	'06230' => 'CT',

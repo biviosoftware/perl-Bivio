@@ -1,11 +1,13 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::USState;
 use strict;
 use Bivio::Base 'Type.SyntacticString';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_MAP) = _init_map();
+my($_ZIP) = _init_map();
+my($_STATE) = {map($_ ? ($_ => 1) : (), @$_ZIP)};
+my($_NOT_FOUND) = b_use('Bivio.TypeError')->NOT_FOUND;
 
 sub REGEX {
     return qr{[a-z]{2}}i;
@@ -16,20 +18,23 @@ sub get_width {
 }
 
 sub internal_post_from_literal {
-    return uc($_[1]);
+    my($v) = uc($_[1]);
+    return (undef, $_NOT_FOUND)
+	unless $_STATE->{$v};
+    return $v;
 }
 
 sub unsafe_from_zip_code {
     my(undef, $zip) = @_;
-    return $zip && $zip =~ /^(\d{3})/s ? $_MAP->[$1] : undef;
+    return $zip && $zip =~ /^(\d{3})/s ? $_ZIP->[$1] : undef;
 }
 
 sub _init_map {
     my($map) = [];
     foreach my $line (split(/\n/, __PACKAGE__->internal_data_section)) {
-	my($state, @codes) = split(' ', $line);
-	foreach my $code (@codes) {
-	    $map->[$code] = $state;
+	my($state, @zips) = split(' ', $line);
+	foreach my $zip (@zips) {
+	    $map->[$zip] = $state;
 	}
     }
     return $map;
