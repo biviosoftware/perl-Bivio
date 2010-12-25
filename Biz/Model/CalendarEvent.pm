@@ -102,7 +102,8 @@ sub update_from_vevent {
 sub _from_vevent {
     my($self, $vevent) = @_;
     return ({
-	_map_field($self, $vevent, [qw(dtstart dtend location url description)]),
+	_map_field($self, $vevent,
+	    [qw(dtstart dtend location url description time_zone)]),
     }, {
 	_map_field($_RO, $vevent, [qw(summary:display_name)]),
     });
@@ -113,20 +114,27 @@ sub _map_field {
     return map({
 	my($from, $to) = split(/:/, $_);
 	$to ||= $from;
-	my($t) = $m->get_field_type($to);
-	# Dates are converted "twice", but we that's ok, because date
-	# internal format can be converted from literal
-	my($v, $e) = $t->from_literal($vevent->{$from});
-	if ($e) {
-	    ($v, $e) = $t->from_literal(
-		substr($vevent->{$from}, 0, $t->get_width)
-	    ) if $t->isa('Bivio::Type::String');
-	    Bivio::Die->die(
-		$from, '=', $vevent->{$from}, ': ', $e, ' of ', $vevent
-	    ) if $e;
-	}
-	($to => $v);
+	($to => _value_for_type($m, $to, $vevent, $from));
     } @$fields);
+}
+
+sub _value_for_type {
+    my($m, $field, $vevent, $from) = @_;
+    return $vevent->{$from}
+	if ref($vevent->{$from});
+    my($t) = $m->get_field_type($field);
+    # Dates are converted "twice", but we that's ok, because date
+    # internal format can be converted from literal
+    my($v, $e) = $t->from_literal($vevent->{$from});
+    if ($e) {
+	($v, $e) = $t->from_literal(
+	    substr($vevent->{$from}, 0, $t->get_width)
+	) if $t->isa('Bivio::Type::String');
+	b_die(
+	    $from, '=', $vevent->{$from}, ': ', $e, ' of ', $vevent
+	) if $e;
+    }
+    return $v;
 }
 
 1;
