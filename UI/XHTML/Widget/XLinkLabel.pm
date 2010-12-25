@@ -7,14 +7,20 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub qualify_label {
+    my(undef, $label) = @_;
+    return "xlink.$label";
+}
+
 sub initialize {
     my($self) = @_;
     $self->initialize_attr(_prose => Prose([sub {
 	my($source) = @_;
         return vs_text(
 	    $source->req,
-	    'xlink',
-	    $self->render_simple_attr('value', $source),
+	    $self->qualify_label(
+		$self->render_simple_attr('value', $source),
+	    ),
 	);
     }]));
     return shift->SUPER::initialize(@_);
