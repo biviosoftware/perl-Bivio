@@ -58,7 +58,9 @@
   },
   {
     'class' => 'PRIVATE',
-    'description' => 'some\\nmultiline\\ndesci',
+    'description' => 'some
+multiline
+desci',
     'dtend' => '2453720 79199',
     'dtstart' => '2453718 79199',
     'location' => 'This is a long location field',
