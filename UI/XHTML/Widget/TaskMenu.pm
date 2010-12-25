@@ -18,6 +18,7 @@ my($_PARAMS) = [
 ];
 my($_W) = b_use('UI.Widget');
 my($_CB) = b_use('HTMLWidget.ControlBase');
+my($_XLL) = b_use('XHTMLWidget.XLinkLabel');
 my($_TI) = b_use('Agent.TaskId');
 my($_A) = b_use('Type.Array');
 my($_DEFAULT_WANT_MORE_THRESHOLD) = 5;
@@ -73,6 +74,7 @@ sub initialize {
 		unless (ref($cfg->{task_id})) {
 		    if ($cfg->{task_id} =~ /^[a-z\.\d_]+$/) {
 			$cfg->{xlink} = delete($cfg->{task_id});
+			$cfg->{label} = $_XLL->qualify_label($cfg->{xlink});
 		    }
 		    else {
 			$cfg->{task_id} = $_TI->from_any($cfg->{task_id});
