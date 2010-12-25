@@ -1,0 +1,30 @@
+[
+    {
+	description => 'The Brad Upton Quartet: 
+
+feat. Eric Gunnison, keyboards, Mark Simon, bass, Matt Houston, drums
+
+Brad Upton
+Composer, Trumpeter, Educator
+
+Formative years:  From 1970-1972 in Boston at Berklee College of Music, then New York City from 1972-1980 appearances with Chuck Israels, Lionel Hampton, Tito Puente, Chet Baker, Tom Harrell, and others
+
+Colorado: 1980-present
+
+Multiple arts grants for music composition/ jazz performance from City of Boulder Arts Commission; Boulder High School and Trondertun Arts Conservatory; Fairview High Jazz Program
+Composed, produced, & recorded music for 7 original c.d.s
+JazzTimes Magazine 2002 critics poll top ten pick for his c.d.“Dragon”
+
+Adjunct Faculty Naropa University, Dept. of Music
+Faculty member of ijamjazz camp, Bonefro, Italy
+Member B.M.I.
+
+www.blackorchidmusic.com',
+	dtend => '2455605 46800',
+	dtstart => '2455605 36000',
+	location => '',
+	rrule => 'FREQ=MONTHLY;BYDAY=2FR',
+	summary => 'Brad Upton Quartet',
+	uid => 'bhftm0j4pigl7husoqpjoeoeck@google.com',
+    },
+];

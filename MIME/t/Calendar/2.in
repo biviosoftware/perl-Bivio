@@ -1,0 +1,20 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.0//EN
+BEGIN:VEVENT
+CREATED:20051220T222822Z
+LAST-MODIFIED:20051220T222822Z
+DTSTAMP:20051220T222822Z
+UID:uuid:1135117484828
+SUMMARY:Monday status meeting
+CLASS:PUBLIC
+DTSTART:20051219T090000
+DTEND:20051219T100000
+LOCATION:bivio Software Meeting Room
+DESCRIPTION:A terrific opportunity to discuss last week's T
+ PS
+  reports\n\nand in addition\, some more
+CATEGORIES:Status
+X-LIC-ERROR:No value for STATUS property. Removing entire property:
+END:VEVENT
+END:VCALENDAR

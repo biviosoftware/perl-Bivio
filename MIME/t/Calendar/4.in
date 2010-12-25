@@ -1,0 +1,54 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:caffesolemusic@gmail.com
+X-WR-TIMEZONE:America/Denver
+X-WR-CALDESC:This calendar provides information on the various events that 
+ take place at Caffe Sole
+BEGIN:VTIMEZONE
+TZID:America/Denver
+X-LIC-LOCATION:America/Denver
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0600
+TZNAME:MDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0700
+TZNAME:MST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=America/Denver:20110211T200000
+DTEND;TZID=America/Denver:20110211T230000
+RRULE:FREQ=MONTHLY;BYDAY=2FR
+DTSTAMP:20101224T181522Z
+UID:bhftm0j4pigl7husoqpjoeoeck@google.com
+CREATED:00001231T000000Z
+DESCRIPTION:The Brad Upton Quartet: \n\nfeat. Eric Gunnison\, keyboards\, M
+ ark Simon\, bass\, Matt Houston\, drums\n\nBrad Upton\nComposer\, Trumpeter
+ \, Educator\n\nFormative years:  From 1970-1972 in Boston at Berklee Colleg
+ e of Music\, then New York City from 1972-1980 appearances with Chuck Israe
+ ls\, Lionel Hampton\, Tito Puente\, Chet Baker\, Tom Harrell\, and others\n
+ \nColorado: 1980-present\n\nMultiple arts grants for music composition/ jaz
+ z performance from City of Boulder Arts Commission\; Boulder High School an
+ d Trondertun Arts Conservatory\; Fairview High Jazz Program\nComposed\, pro
+ duced\, & recorded music for 7 original c.d.s\nJazzTimes Magazine 2002 crit
+ ics poll top ten pick for his c.d.“Dragon”\n\nAdjunct Faculty Naropa Univer
+ sity\, Dept. of Music\nFaculty member of ijamjazz camp\, Bonefro\, Italy\nM
+ ember B.M.I.\n\nwww.blackorchidmusic.com
+LAST-MODIFIED:20101215T032232Z
+LOCATION:
+SEQUENCE:2
+STATUS:CONFIRMED
+SUMMARY:Brad Upton Quartet
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,47 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:caffesolemusic@gmail.com
+X-WR-TIMEZONE:America/Denver
+X-WR-CALDESC:This calendar provides information on the various events that 
+ take place at Caffe Sole
+BEGIN:VTIMEZONE
+TZID:America/Denver
+X-LIC-LOCATION:America/Denver
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0600
+TZNAME:MDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0700
+TZNAME:MST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART:20110213T030000Z
+DTEND:20110213T060000Z
+DTSTAMP:20101224T181522Z
+UID:maijcm3u9ujc25qbnh01jag47s@google.com
+CREATED:20101215T040042Z
+DESCRIPTION:Lisa Bell Trio\n\nThe Lisa Bell Trio\, featuring Lisa Bell on v
+ ocals\, Bob Story and Chris Malley on guitar & bass\, perform an eclectic m
+ ix of original music and unique renditions of cover tunes. With the release
+  of her third CD Dancing on the Moon Lisa's original music has delighted au
+ diences throughout the state\, nationally and internationally.\n\nwww.lisab
+ ellmusic.com
+LAST-MODIFIED:20101215T040042Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Lisa Bell Trio
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
