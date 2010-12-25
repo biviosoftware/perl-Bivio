@@ -258,6 +258,10 @@ sub assert_not_root {
     return;
 }
 
+sub assert_test {
+    return $_C->assert_test;
+}
+
 sub command_line {
     my($self) = @_;
     # Returns the command line that was used to execute this command.
