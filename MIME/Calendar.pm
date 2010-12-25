@@ -7,6 +7,7 @@ use Bivio::Base 'Collection.Attributes';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
+my($_TZ) = b_use('Type.TimeZone');
 
 sub from_ics {
     my($proto, $ics) = @_;
@@ -46,20 +47,23 @@ sub _event {
         my($k, $v) = @_;
         return 1
 	    if $k =~ m{^(status|x-lic-error|categories|last-modified|created
-	    |dtstamp|priority)$}x;
-	if ($k =~ /^(dtstart|dtend)(;value=date)?$/) {
+	    |dtstamp|priority|sequence|transp)$}x;
+	if ($k =~ /^(dtstart|dtend)(;value=date)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
 	    my($is_date) = $2;
-#TODO: Timezone
+	    my($tz) = $3 ? $4 : undef;
 	    $v .= 'Z'
-		unless $is_date || $v =~ /Z$/;
-	    my($t, $e) = ($2 ? $_D : $_DT)->from_literal($v);
+		unless $tz || $is_date || $v =~ /Z$/;
+	    my($t, $e) = ($is_date ? $_D : $_DT)->from_literal($v);
 	    _die($v, ": failed to parse $k: ", $e)
 		unless $t;
 	    $k = $w;
-	    $v = $t;
+	    $v = $tz
+		? $_TZ->from_any($tz)->date_time_to_utc($t)
+		: $t
 	}
-	elsif ($k !~ m{^(summary|description|location|class|url|uid)$}x) {
+	elsif ($k !~
+	    m{^(summary|description|location|class|url|uid|rrule)$}x) {
 	    _die($self, $k, ': unsupported attribute');
 	    # DOES NOT RETURN
 	}
@@ -78,15 +82,25 @@ sub _header {
     _do_until($self, 'begin', sub {
 	my($k, $v) = @_;
 	_die($self, 'unknown element')
-	    unless $k =~ /^(version|prodid|method)$/;
+	    unless $k =~ /^(version|prodid|method|calscale|(x-wr-.*))$/;
 	return 1;
     });
     _do_until($self, 'end', sub {
 	my($k, $v) = @_;
-        _die($self, 'expecting begin vevent')
-	    unless $k eq 'begin' && lc($v) eq 'vevent';
-	_event($self);
-	_assert($self, [end => 'vevent']);
+	_die($self, 'expecting begin')
+	    unless $k eq 'begin';
+	my($type) = lc($v);
+
+	if ($type eq 'vtimezone') {
+	    _timezone($self);
+	}
+	elsif ($type eq 'vevent') {
+	    _event($self);
+	}
+	else {
+	    _die($self, 'unknown begin: ', $v);
+	}
+	_assert($self, [end => $type]);
 	return 1;
     });
     _assert($self, [end => 'vcalendar']);
@@ -109,9 +123,26 @@ sub _split {
 	    chomp($_);
 	    $_ =~ s/\s+$//;
 	    my($k, $v) = split(/\s*:\s*/, $_, 2);
+	    $v =~ s/\\n/\n/g;
+	    $v =~ s/\\([,;])/$1/g;
 	    [lc($k), $v];
 	} split(/\r?\n/, $ics)),
     ]));
+}
+
+sub _timezone {
+    my($self) = @_;
+    _do_until($self, 'end', sub {
+        my($k, $v) = @_;
+	return 1 unless $k eq 'begin';
+	my($type) = lc($v);
+	_do_until($self, 'end', sub {
+	    return 1;
+	});
+	_assert($self, [end => $type]);
+	return 1;
+    });
+    return;
 }
 
 1;
