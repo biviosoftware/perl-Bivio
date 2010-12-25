@@ -9,6 +9,7 @@ www.lisabellmusic.com',
 	dtstart => '2455606 10800',
 	location => '',
 	summary => 'Lisa Bell Trio',
+        time_zone => 'UTC',
 	uid => 'maijcm3u9ujc25qbnh01jag47s@google.com',
     },
 ];

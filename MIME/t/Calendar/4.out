@@ -20,11 +20,12 @@ Faculty member of ijamjazz camp, Bonefro, Italy
 Member B.M.I.
 
 www.blackorchidmusic.com',
-	dtend => '2455605 46800',
-	dtstart => '2455605 36000',
+	dtend => '2455605 21600',
+	dtstart => '2455605 10800',
 	location => '',
 	rrule => 'FREQ=MONTHLY;BYDAY=2FR',
 	summary => 'Brad Upton Quartet',
+	time_zone => 'AMERICA_DENVER',
 	uid => 'bhftm0j4pigl7husoqpjoeoeck@google.com',
     },
 ];

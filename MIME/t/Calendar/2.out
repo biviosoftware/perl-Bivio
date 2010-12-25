@@ -4,10 +4,11 @@
     'description' => 'A terrific opportunity to discuss last week\'s TPS reports
 
 and in addition, some more',
-    'dtend' => '2453724 36000',
-    'dtstart' => '2453724 32400',
+    'dtend' => '2455551 21600',
+    'dtstart' => '2455551 10800',
     'location' => 'bivio Software Meeting Room',
     'summary' => 'Monday status meeting',
+    'time_zone' => 'UTC',
     'uid' => 'uuid:1135117484828'
   },
 ];

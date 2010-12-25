@@ -6,6 +6,7 @@
     'dtstart' => '2453724 32400',
     'location' => 'bivio Software Meeting Room',
     'summary' => 'Monday status meeting',
+    'time_zone' => 'UTC',
     'uid' => 'uuid:1135117484828'
   },
   {
@@ -15,6 +16,7 @@
     'dtstart' => '2453726 39600',
     'location' => 'teleconference',
     'summary' => 'Liberty Call NOW',
+    'time_zone' => 'UTC',
     'uid' => 'uuid:1135117573515'
   },
   {
@@ -22,6 +24,7 @@
     'dtend' => '2453737 79199',
     'dtstart' => '2453736 79199',
     'summary' => 'New Years Eve',
+    'time_zone' => 'UTC',
     'uid' => 'uuid:1135117609417'
   },
   {
@@ -29,6 +32,7 @@
     'dtend' => '2453731 79199',
     'dtstart' => '2453730 79199',
     'summary' => 'Christmas',
+    'time_zone' => 'UTC',
     'uid' => 'uuid:1135117592332'
   },
   {
@@ -38,6 +42,7 @@
     'dtstart' => '2453729 64800',
     'location' => 'PR Ski Refuge',
     'summary' => 'Christmas Eve Party',
+    'time_zone' => 'UTC',
     'uid' => 'uuid1135118086629'
   },
   {
@@ -47,6 +52,7 @@
     'dtstart' => '2453740 50400',
     'location' => 'bivio Software HQ',
     'summary' => 'Greg\'s Visit',
+    'time_zone' => 'UTC',
     'uid' => 'uuid1135118466990'
   },
   {
@@ -54,6 +60,7 @@
     'dtend' => '2453733 79199',
     'dtstart' => '2453732 79199',
     'summary' => 'Kwanzaa begins!',
+    'time_zone' => 'UTC',
     'uid' => 'a7514d3f-722e-11da-94d5-8d6b5f6091c9'
   },
   {
@@ -66,6 +73,7 @@ desci',
     'location' => 'This is a long location field',
     'summary' => 'hello',
     'uid' => 'uuid1135277417056jfjf',
+    'time_zone' => 'UTC',
     'url' => 'hello'
   }
 ];
