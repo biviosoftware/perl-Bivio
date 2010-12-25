@@ -39,6 +39,9 @@ sub execute_empty {
     else {
 	$self->load_from_model_properties('CalendarEvent');
 	$self->load_from_model_properties('RealmOwner');
+	$self->internal_put_field('CalendarEvent.time_zone' => $_TZ->UTC)
+	    unless $self->get('CalendarEvent.time_zone');
+
 	foreach my $which (qw(start end)) {
 	    my($dt) = $self->get('CalendarEvent.time_zone')
 		->date_time_from_utc($self->get("CalendarEvent.dt$which"));
