@@ -1,6 +1,6 @@
 # Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Biz::Model::FormModeFormBase;
+package Bivio::Biz::Model::FormModeBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
