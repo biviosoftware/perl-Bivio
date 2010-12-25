@@ -2,11 +2,10 @@
 # $Id$
 package Bivio::Type::Location;
 use strict;
-use Bivio::Base 'Type.Enum';
+use Bivio::Base 'Type.EnumDelegator';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-__PACKAGE__->compile(
-    b_use('IO.ClassLoader')->delegate_require_info(__PACKAGE__));
+__PACKAGE__->compile;
 
 sub get_default {
     return shift->from_int(1);
