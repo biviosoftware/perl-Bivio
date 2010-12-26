@@ -1,6 +1,8 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
+my($last_name);
+my($find_row_by_ok) = sub {[req('Bivio::Biz::t::ListModel::T2List')]};
 [
     map(($_ => [
 	load_empty => not_die(),
@@ -24,14 +26,21 @@ Request();
 	],
     ],
     sub {Bivio::Biz::t::ListModel::T2List->new(req())} => [
-	load_all => not_die(),
+	load_all => sub {
+	    my($list) = shift->get('object');
+	    $last_name = $list
+		->set_cursor_or_die($list->get_result_set_size - 1)
+		->get('RealmOwner.name');
+	    return 1;
+	},
 	find_row_by => [
-	    [qw(RealmOwner.name club)] => sub {[req('Bivio::Biz::t::ListModel::T2List')]},
+	    sub {['RealmOwner.name', $last_name]} => $find_row_by_ok,
+	    [qw(RealmOwner.name club)] => $find_row_by_ok,
 	    [qw(RealmOwner.name not-found)] => [undef],
 	    [{
 		'RealmOwner.name' => 'club',
 		'RealmOwner.realm_id' => 3,
-	    }] => sub {[req('Bivio::Biz::t::ListModel::T2List')]},
+	    }] => $find_row_by_ok,
 	    [{
 		'RealmOwner.name' => 'club',
 		'RealmOwner.realm_id' => 1,
