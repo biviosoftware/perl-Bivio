@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$ 
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,67 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.12  2010/12/24 16:25:11  nagler
+  * Bivio::Agent::Request
+    add clear_cache_for_auth_user
+  * Bivio::Agent::Task
+    permissions => permission_set
+  * Bivio::Biz::Action
+    added new
+  * Bivio::Biz::Model::CSVImportForm
+    removed call_super_before
+  * Bivio::Biz::Model::FileChangeForm
+    removed call_super*
+  * Bivio::Biz::PropertyModel
+    added unauth_create_unless_exists
+  * Bivio::Biz::Util::RealmRole
+    list_roles replaces category_role_group
+    fixed methods to use "role calculation" (role|group)
+  * Bivio::ClassWrapper
+    moved code_ref_for_* to ClassWrapper from UNIVERSAL as private
+    routine(s) ; there's a bug in the symbol table gets trashed so
+    call_super, etc. which relied on code_ref_for_* can't be used
+  * Bivio::Delegate::Role
+    is_admin => in_category_role_group(all_admins)
+  * Bivio::Delegate::TaskId
+    permissions => permission_set
+  * Bivio::Delegation
+    remove call_delegator_super
+  * Bivio::PetShop::Util::SQL
+    turn on feature_task_log explicitly
+  * Bivio::ShellUtil
+    assert_have_user checks auth_user not -user flag so methods can be
+    called directly
+  * Bivio::t::UNIVERSAL::DelegateSuper
+    moved code_ref_for_* to ClassWrapper from UNIVERSAL as private
+    routine(s) ; there's a bug in the symbol table gets trashed so
+    call_super, etc. which relied on code_ref_for_* can't be used
+  * Bivio::t::UNIVERSAL::Super3
+    removed
+  * Bivio::Type::PositiveInteger
+    NEW
+  * Bivio::UI::FacadeBase
+    b_wiki_width is blank by default
+  * Bivio::UI::View::CSS
+    allow wiki index on right or left
+  * Bivio::UI::View::Wiki
+    move index to left
+  * Bivio::UNIVERSAL
+    moved code_ref_for_* to ClassWrapper from UNIVERSAL as private
+    routine(s) ; there's a bug in the symbol table gets trashed so
+    call_super, etc. which relied on code_ref_for_* can't be used
+  * Bivio::Util::CRM
+    added setup_realm_with_priority
+  * Bivio::Util::Forum
+    use assert_have_user
+  * Bivio::Util::SiteForum
+    used facade's realm names, not hardwired
+    initialize task_log explicitly
+    create placeholder start page for all realms
+  * Bivio::Util::SQL
+    removed initialize_motion/tuple/task_log_permissions
+    added init_task_log_for_forums
+
   Revision 10.11  2010/12/22 19:43:03  schellj
   * Bivio::Biz::Model::ForumUserAddForm
     remove existing main roles when adding admin
