@@ -42,4 +42,8 @@ Type();
 	"a\n\r\tb" => "a\n\n b",
 	"a\n\n\nb" => "a\n\n\nb",
     ],
+    canonicalize_and_excerpt => [
+	'a  short text.' => 'a short text.',
+	join(' ', 1 .. 50) => join(' ', 1 .. 44) . ' ...',
+    ],
 ];

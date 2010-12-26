@@ -26,6 +26,26 @@ my($_TRANSLITERATE) = {
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub canonicalize_and_excerpt {
+    my($proto, $value, $max_words) = @_;
+    $max_words ||= 45;
+#TODO: Split on paragraphs first.  Google groups seems to do this
+    my($words) = [grep(
+	length($_),
+	split(
+	    ' ',
+	    ${$proto->canonicalize_newlines(
+		$proto->canonicalize_newlines($value),
+	    )}, $max_words,
+	),
+    )];
+    if (@$words >= $max_words) {
+	pop(@$words);
+	push(@$words, '...');
+    }
+    return join(' ', @$words);
+}
+
 sub canonicalize_charset {
     my(undef, $value) = @_;
     my($v) = ref($value) ? $value : \$value;
