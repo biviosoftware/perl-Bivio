@@ -1,4 +1,4 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::MIME::Calendar;
 use strict;
@@ -49,8 +49,21 @@ sub _event {
     _do_until($self, 'end', sub {
         my($k, $v) = @_;
         return 1
-	    if $k =~ m{^(status|x-lic-error|categories|last-modified|created
-	    |dtstamp|priority|sequence|transp)$}x;
+	    if $k =~ m{^(?:
+		categories
+		|confirmed
+		|created
+		|dtstamp
+		|exdate
+		|last-modified
+		|priority
+		|recurrence-id
+		|rrule
+		|sequence
+		|status
+		|transp
+	        |x-lic-error
+	    )(?:$|;)}x;
 	if ($k =~ /^(dtstart|dtend)(;value=date)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
 	    my($is_date) = $2;
@@ -64,8 +77,7 @@ sub _event {
 	    $v = $t;
 	    $ve->{time_zone} = $tz ? $_TZ->from_any($tz) : $_TZ->UTC;
 	}
-	elsif ($k !~
-	    m{^(summary|description|location|class|url|uid|rrule)$}x) {
+	elsif ($k !~ m{^(?:summary|description|location|class|url|uid)$}) {
 	    _die($self, $k, ': unsupported attribute');
 	    # DOES NOT RETURN
 	}
