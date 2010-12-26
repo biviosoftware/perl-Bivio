@@ -11,11 +11,13 @@ my($_TZ) = b_use('Type.TimeZone');
 
 sub from_ics {
     my($proto, $ics) = @_;
-    return _split($proto->new({
-	ics => $ics,
-	row_num => 0,
-	vevents => [],
-    }))->get('vevents');
+    return _split(
+	$proto->new({
+	    ics => $ics,
+	    row_num => 0,
+	    vevents => [],
+	}),
+    )->get('vevents');
 }
 
 sub _assert {
@@ -43,6 +45,7 @@ sub _die {
 sub _event {
     my($self) = @_;
     my($ve) = {};
+    my($default_tz) = $self->unsafe_get('time_zone');
     _do_until($self, 'end', sub {
         my($k, $v) = @_;
         return 1
@@ -51,7 +54,7 @@ sub _event {
 	if ($k =~ /^(dtstart|dtend)(;value=date)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
 	    my($is_date) = $2;
-	    my($tz) = $3 ? $4 : undef;
+	    my($tz) = $3 ? $4 : $default_tz;
 	    $v .= 'Z'
 		unless $tz || $is_date || $v =~ /Z$/;
 	    my($t, $e) = ($is_date ? $_D : $_DT)->from_literal($v);
@@ -133,7 +136,10 @@ sub _timezone {
     my($self) = @_;
     _do_until($self, 'end', sub {
         my($k, $v) = @_;
-	return 1 unless $k eq 'begin';
+	$self->put(time_zone => $v)
+	    if $k eq 'tzid';
+	return 1
+	    unless $k eq 'begin';
 	my($type) = lc($v);
 	_do_until($self, 'end', sub {
 	    return 1;
