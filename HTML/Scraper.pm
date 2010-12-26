@@ -1,26 +1,29 @@
-# Copyright (c) 2002-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::HTML::Scraper;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::HTML;
-use Bivio::IO::File;
-use Bivio::IO::Trace;
 use HTTP::Cookies ();
 use HTTP::Request ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Trace');
 # use URI ();
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = b_use('IO.Alert');
+my($_F) = b_use('IO.File');
+my($_D) = b_use('Bivio.Die');
+my($_HTML) = b_use('Bivio.HTML');
+my($_FP) = b_use('Type.FilePath');
 
 sub abs_uri {
     my($self, $uri) = @_;
     # Adds https://blaa, if doesn't already exist and path.
     # Only works after the first query.
-    return $uri if $uri =~ /^https?:/i;
-    Bivio::Die->die($uri, ': no last_uri from previous request')
+    return $uri
+	if $uri =~ /^https?:/i;
+    b_die($uri, ': no last_uri from previous request')
 	unless my $last_uri = $self->unsafe_get('last_uri');
     return URI->new_abs($uri, $last_uri)->as_string;
 }
@@ -30,7 +33,7 @@ sub client_error {
     # Throws a CLIENT_ERROR exception.  Account is added automatically as entity.
     $args ||= {};
     $args->{message} = $message;
-    Bivio::Die->throw_die('CLIENT_ERROR', $args);
+    $_D->throw_die('CLIENT_ERROR', $args);
     # DOES NOT RETURN
 }
 
@@ -55,11 +58,13 @@ sub extract_content {
 
 sub file_name {
     my($self, $base_name) = @_;
-    # Returns the absolute file name for I<base_name>.  Used for storing raw files
-    # associated with download.
-    #
-    # Uses I<directory> attribute of self to form name.
-    return $self->get('directory') . '/' . $base_name;
+    return undef
+	unless $base_name;
+    return $base_name
+	if $_FP->is_absolute($base_name);
+    return ($self->get('directory') || return undef)
+	. '/'
+	. $base_name;
 }
 
 sub html_parser_comment {
@@ -95,11 +100,10 @@ sub html_parser_text {
 
 sub http_get {
     my($self, $uri, $file_name) = @_;
-    # Executes an GET and returns the result.
-    #
-    # Calls L<http_request|"http_request">.
     return $self->http_request(
-	HTTP::Request->new(GET => $self->abs_uri($uri)), $file_name);
+	HTTP::Request->new(GET => $self->abs_uri($uri)),
+	$file_name,
+    );
 }
 
 sub http_post {
@@ -133,8 +137,7 @@ sub http_request {
 	if $u;
     my($hres) = _http_request($self, $hreq);
     # Always write the file (even on failure)
-    $self->write_file($file_name, \($hres->as_string))
-        if defined($file_name);
+    $self->write_file($file_name, \($hres->as_string));
     $self->client_error('request failed', {entity => $hres})
 	unless $hres->is_success;
     $self->put(login_ok => 1)
@@ -163,7 +166,7 @@ sub new {
 	login_ok => 0,
     );
     $self->get('user_agent')->agent(
-	'Mozilla/4.0 (compatible; MSIE 5.5; Windows 98)');
+	'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)');
     $self->[$_IDI] = {};
     return $self;
 }
@@ -179,15 +182,15 @@ sub parse_html {
 
 sub read_file {
     my($self, $file_name) = @_;
-    # Returns the contents of I<file_name> from the current directory.
-    return Bivio::IO::File->read($self->file_name($file_name));
+    return $_F->read($self->file_name($file_name));
 }
 
 sub strip_tags_and_whitespace {
     my($proto, $value) = @_;
     # Removes extra and leading whitespace and any html tags.  If value is
     # C<undef>, returns the empty string.
-    return '' unless defined($value);
+    return ''
+	unless defined($value);
     #convert <br> to a space, globally.
     $value =~ s/<br>/ /ig;
     $value =~ s/<[^>]+>//g;
@@ -214,7 +217,7 @@ sub unescape_html {
     # Calls L<Bivio::HTML::unescape|Bivio::HTML/"unescape"> and fixes up
     # ISO-88559-1 chars, e.g. \240 (non-breaking-space).
     shift;
-    my($v) = Bivio::HTML->unescape(shift);
+    my($v) = $_HTML->unescape(shift);
     $v =~ s/\240/ /g;
     return $v;
 }
@@ -242,9 +245,10 @@ sub user_friendly_error_message {
 
 sub write_file {
     my($self, $file_name, $contents) = @_;
-    # Writes I<contents> to I<file_name> in the current directory.
-    return unless $self->unsafe_get('directory');
-    Bivio::IO::File->write($self->file_name($file_name), $contents);
+    $_F->write(
+	$self->file_name($file_name) || return,
+	$contents,
+    );
     return;
 }
 
@@ -253,9 +257,11 @@ sub _format_form {
     # Returns URL encoded form.
     my($res) = '';
     my($sep) = '';
-    Bivio::Die->die('expecting even number of elements') if int(@$form) % 2;
+    b_die('expecting even number of elements')
+	if int(@$form) % 2;
     foreach my $i (@$form) {
-	$res .= $sep.Bivio::HTML->escape_query($i) if defined($i);
+	$res .= $sep . $_HTML->escape_query($i)
+	    if defined($i);
 	# Works first time through, because we compare to '='
 	$sep = $sep eq '=' ? '&' : '=';
     }
