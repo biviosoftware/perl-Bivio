@@ -15,7 +15,7 @@ sub handle_new_excerpt {
     return undef
 	unless my $self = ref($proto) ? $proto
 	: $proto->new_text($parseable, @rest);
-    return $self->put(excerpt => $_S->canonicalize_and_excerpt($self->get('text')));
+    return $self->put(excerpt => ${$_S->canonicalize_and_excerpt($self->get('text'))});
 }
 
 sub new_text {

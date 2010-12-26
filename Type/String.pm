@@ -43,7 +43,7 @@ sub canonicalize_and_excerpt {
 	pop(@$words);
 	push(@$words, '...');
     }
-    return join(' ', @$words);
+    return \(join(' ', @$words));
 }
 
 sub canonicalize_charset {
