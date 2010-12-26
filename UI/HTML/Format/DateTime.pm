@@ -22,14 +22,11 @@ my($_MONTHS) = [qw(
 )];
 my($_DT) = b_use('Type.DateTime');
 my($_DTM) = b_use('UI.DateTimeMode');
-my($_DTWTZ) = b_use('Type.DateTimeWithTimeZone');
 
 sub get_widget_value {
     my(undef, $dt, $mode, $no_timezone) = @_;
     return ''
 	unless defined($dt);
-    $dt = $_DTWTZ->as_date_time($dt)
-	if $_DTWTZ->is_blessed($dt);
     $mode = defined($mode) ? $_DTM->from_any($mode) : $_DTM->get_default;
     my($op) = '_to_' . lc($mode->get_name);
     return (\&{$op})->($_DT->to_parts($dt), $dt) . ($no_timezone ? '': ' GMT');
