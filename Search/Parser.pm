@@ -1,30 +1,21 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Search::Parser;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = __PACKAGE__->use('Type.DateTime');
+my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');
 my($_P) = b_use('Search.Parseable');
+my($_S) = b_use('Type.String');
 
 sub handle_new_excerpt {
     my($proto, $parseable, @rest) = @_;
     return undef
 	unless my $self = ref($proto) ? $proto
 	: $proto->new_text($parseable, @rest);
-#TODO: Split on paragraphs first.  Google groups seems to do this
-    my($max) = 45;
-    my($words) = [grep(
-	length($_),
-	split(' ', ${$self->get('text')}, $max),
-    )];
-    if (@$words >= $max) {
-	pop(@$words);
-	push(@$words, '...');
-    }
-    return $self->put(excerpt => join(' ', @$words));
+    return $self->put(excerpt => $_S->canonicalize_and_excerpt($self->get('text')));
 }
 
 sub new_text {
