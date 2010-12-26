@@ -1,23 +1,23 @@
-# Copyright (c) 2002-20009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::HTML::t::Scraper::T1;
 use strict;
-use Bivio::Base 'Bivio::HTML::Scraper';
-use Bivio::Test::Language::HTTP;
+use Bivio::Base 'HTML.Scraper';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_HTTP) = b_use('TestLanguage.HTTP');
 
 sub attempt_login {
     # (self) : boolean
     # Uses home_page_uri.
     my($self) = @_;
-    my($uri) = Bivio::Test::Language::HTTP->home_page_uri . '/pub/login';
+    my($uri) = $_HTTP->home_page_uri . '/pub/login';
     my($hres) = $self->http_get($uri, 'login.html');
     $self->client_error("couldn't find fields on login page")
 	unless $hres->content =~ /name="v.*value="?1"?/mig;
     $self->http_post(
-	Bivio::Test::Language::HTTP->home_page_uri . '/pub/login', [
+	$_HTTP->home_page_uri . '/pub/login', [
 	v => 1,
 	f2 => 'demo',
 	f3 => 'password',
