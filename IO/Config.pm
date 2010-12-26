@@ -235,6 +235,10 @@ sub is_production {
     return $_CFG->{is_production};
 }
 
+sub is_test {
+    return $_CFG->{is_production} ? 0 : 1;
+}
+
 sub merge {
     my($proto, $custom, $defaults, $merge_arrays) = @_;
     # Creates a new hash_ref by copying I<custom> values int a I<default>
