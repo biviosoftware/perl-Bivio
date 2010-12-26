@@ -58,7 +58,6 @@ sub _event {
 		|last-modified
 		|priority
 		|recurrence-id
-		|rrule
 		|sequence
 		|status
 		|transp
@@ -77,7 +76,7 @@ sub _event {
 	    $v = $t;
 	    $ve->{time_zone} = $tz ? $_TZ->from_any($tz) : $_TZ->UTC;
 	}
-	elsif ($k !~ m{^(?:summary|description|location|class|url|uid)$}) {
+	elsif ($k !~ m{^(?:summary|description|location|class|url|uid|rrule)$}) {
 	    _die($self, $k, ': unsupported attribute');
 	    # DOES NOT RETURN
 	}
