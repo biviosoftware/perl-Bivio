@@ -97,7 +97,7 @@ sub _to_full_month_day_and_year_uc {
 sub _to_hour_minute_am_pm_lc {
     my($sec, $min, $hour, $mday, $mon, $year, $dt) = @_;
     ($min, $hour) = $_DT->get_parts($_DT->add_seconds($dt, 30), 'minute', 'hour');
-    return sprintf('%02d:%02d %s', _twelve_hour($hour), $min, lc(_am_pm($hour)));
+    return sprintf('%d:%02d %s', _twelve_hour($hour), $min, lc(_am_pm($hour)));
 }
 
 sub _to_month_and_day {

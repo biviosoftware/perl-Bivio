@@ -33,7 +33,7 @@
 	    [DAY_MONTH3_YEAR_TIME_PERIOD => '4/15/2006 13:00:00'] => '15-Apr-2006 01:00:00 PM',
 	    [DAY_MONTH3_YEAR_TIME_PERIOD => '4/15/2006 23:59:59'] => '15-Apr-2006 11:59:59 PM',
 	    HOUR_MINUTE_AM_PM_LC => '12:00 pm',
-	    [HOUR_MINUTE_AM_PM_LC => '4/15/2006 00:00:30'] => '12:01 am',
+	    [HOUR_MINUTE_AM_PM_LC => '4/15/2006 01:00:30'] => '1:01 am',
 	],
     ],
 ];
