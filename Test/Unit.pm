@@ -390,7 +390,7 @@ sub builtin_string_ref {
 sub builtin_tmp_dir {
     my($self) = @_;
     return $_F->mkdir_p(
-	$self->rm_rf($self->builtin_class->simple_package_name . '.tmp'));
+	$self->builtin_rm_rf($self->builtin_class->simple_package_name . '.tmp'));
 }
 
 sub builtin_unauth_model {
