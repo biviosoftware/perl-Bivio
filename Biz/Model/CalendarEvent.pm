@@ -43,8 +43,7 @@ sub internal_initialize {
 	table_name => 'calendar_event_t',
         columns => {
 	    calendar_event_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
-	    # Don't couple
-            realm_id => ['PrimaryId', 'NOT_NULL'],
+            realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    modified_date_time => ['DateTime', 'NOT_NULL'],
 	    dtstart => ['DateTime', 'NOT_NULL'],
 	    dtend => ['DateTime', 'NOT_NULL'],
