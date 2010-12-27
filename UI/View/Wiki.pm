@@ -6,7 +6,6 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_WHL) = b_use('Model.WikiHelpList');
 
 sub TEXT_AREA_COLS {
     return 80;
@@ -183,32 +182,6 @@ sub view {
 	body_class => If(
 	    ['UI.Facade', '->auth_realm_is_help_wiki', ['->req']],
 	    'b_help_wiki',
-	),
-	main_right => If(
-	    ['UI.Facade', '->auth_realm_is_help_wiki', ['->req']],
-	    [sub {
-	        my($req) = shift->req;
-		$_WHL->new($req)->load_all
-		    unless $req->unsafe_get($_WHL);
-		return SPAN_b_help_index(
-		    Join([
-			SPAN_b_title(vs_text_as_prose('b_help_list_title')),
-			List(
-			    'WikiHelpList',
-			    [
-				Link(
-				    String(['result_title']),
-				    URI({
-					task_id => 'FORUM_WIKI_VIEW',
-					path_info => ['name'],
-				    }),
-				    'b_item',
-				),
-			    ],
-			),
-		    ]),
-		);
-	    }],
 	),
 	body => Wiki(),
     );
