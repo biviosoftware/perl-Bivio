@@ -1,15 +1,16 @@
-# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2003-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::IO::Log;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
-use Bivio::IO::Config;
-use Bivio::IO::File;
+use Bivio::Base 'Bivio.UNIVERSAL';
 use File::Spec ();
 use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_C) = __PACKAGE__->use('IO.Config');
+my($_IOF) = b_use('IO.File');
+my($_UIF) = b_use('UI.Facade');
+my($_D) = b_use('Bivio.Die');
+my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     $_C->if_version(
 	2 => sub {
@@ -23,16 +24,12 @@ $_C->register(my $_CFG = {
     file_mode => 0640,
 });
 
-#=VARIABLES
-
 sub file_name {
     my($proto, $base_name, $req) = @_;
-    # Returns the absolute file name of I<base_name> if
-    # I<base_name> is not already absolute.
     return $base_name
 	if File::Spec->file_name_is_absolute($base_name);
     my($path) = [$base_name];
-    if ($req and my $f = Bivio::UI::Facade->get_from_source($req)) {
+    if ($req and my $f = $_UIF->get_from_source($req)) {
 	unshift(@$path, $f->get('local_file_prefix'));
     }
     return File::Spec->catfile($_CFG->{directory}, @$path);
@@ -64,12 +61,12 @@ sub read {
     # I<base_name> is not absolute, prefixes with L<directory|"directory">.
     $base_name = $proto->file_name($base_name, $req);
     local($?);
-    my($contents) = Bivio::IO::File->read(
+    my($contents) = $_IOF->read(
 	$base_name =~ /\.gz$/
 	    ? IO::File->new("gunzip -c '$base_name' 2>/dev/null |")
 	: $base_name,
     );
-    Bivio::Die->throw_die('IO_ERROR', {
+    $_D->throw_die('IO_ERROR', {
 	entity => $base_name,
 	operation => 'gunzip',
 	message => "non-zero exit status ($?)",
@@ -82,23 +79,23 @@ sub write {
     # Writes the log file.  If an error occurs, throws an exception.  If
     # I<base_name> ends in C<.gz>, creates file with C<gzip>.  If I<base_name>
     # is not absolute, prefixes with L<directory|"directory">.
-    Bivio::IO::File->mkdir_parent_only(
+    $_IOF->mkdir_parent_only(
 	$base_name = $proto->file_name($base_name, $req),
 	$_CFG->{directory_mode},
     );
     local($?);
-    Bivio::IO::File->write(
+    $_IOF->write(
 	$base_name =~ /\.gz$/
 	    ? IO::File->new(
 		"| gzip --best --stdout - > '$base_name' 2>/dev/null")
 	    : $base_name,
 	ref($contents) ? $contents : \$contents);
-    Bivio::Die->throw_die('IO_ERROR', {
+    $_D->throw_die('IO_ERROR', {
 	entity => $base_name,
 	operation => 'gzip',
 	message => "non-zero exit status ($?)",
     }) if $?;
-    Bivio::IO::File->chmod($_CFG->{file_mode}, $base_name);
+    $_IOF->chmod($_CFG->{file_mode}, $base_name);
     return;
 }
 
