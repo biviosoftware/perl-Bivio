@@ -39,15 +39,12 @@ my($_DATE_PREFIX) = __PACKAGE__->internal_join(__PACKAGE__->FIRST_DATE_IN_JULIAN
 my($_BEGINNING_OF_DAY) = 0;
 my($_END_OF_DAY) = __PACKAGE__->SECONDS_IN_DAY-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
-my($_DAY_OF_WEEK)
-    = [qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)];
-my($_NUM_TO_MONTH) = [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)];
-my($_MONTH_TO_NUM) = {map {
-    (uc($_NUM_TO_MONTH->[$_]), $_ + 1);
-} 0..$#$_NUM_TO_MONTH};
-
-my($_PART_NUMBER) = {};
-@$_PART_NUMBER{qw(second minute hour day month year)} = 1..6;
+my($_DAY_OF_WEEK) = [qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)];
+my($_NUM_TO_MONTH3) = [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)];
+my($_MONTH3_TO_NUM) = _make_map($_NUM_TO_MONTH3);
+my($_NUM_TO_MONTH) = [qw(January February March April May June July August September October November December)];
+my($_MONTH_TO_NUM) = _make_map($_NUM_TO_MONTH);
+my($_PART_NUMBER) = _make_map([qw(second minute hour day month year)]);
 my($_LOCAL_TIMEZONE);
 my($_WINDOW_YEAR);
 _initialize();
@@ -349,18 +346,25 @@ sub english_month3 {
     # Returns I<month> as a three character string with first letter caps.
     Bivio::Die->die('month out of range: ', $month)
         unless 1 <= $month && $month <= 12;
-    return $_NUM_TO_MONTH->[$month - 1];
+    return $_NUM_TO_MONTH3->[$month - 1];
 }
 
 sub english_month3_list {
-    return @{$_NUM_TO_MONTH};
+    return @{$_NUM_TO_MONTH3};
 }
 
 sub english_month3_to_int {
-    my(undef, $month) = @_;
-    # Returns integer for I<month>.
-    return $_MONTH_TO_NUM->{uc($month)}
-	|| Bivio::Die->die($month, ': month not found');
+    return shift->english_month_to_int(@_);
+}
+
+sub english_month_to_int {
+    my($self, $month) = @_;
+    $month = lc($month);
+    foreach my $map ($_MONTH3_TO_NUM, $_MONTH_TO_NUM) {
+	return $map->{$month} || next;
+    }
+    b_die($month, ': month not found');
+    # DOES NOT RETURN
 }
 
 sub from_date_and_time {
@@ -652,7 +656,7 @@ sub rfc822 {
     my($sec, $min, $hour, $mday, $mon, $year, $wday)
 	    = gmtime($unix_time);
     return sprintf('%s, %2d %s %04d %02d:%02d:%02d GMT',
-	    $_DOW[$wday], $mday, $_NUM_TO_MONTH->[$mon], $year + 1900,
+	    $_DOW[$wday], $mday, $_NUM_TO_MONTH3->[$mon], $year + 1900,
 	    $hour, $min, $sec);
 }
 
@@ -759,7 +763,7 @@ sub to_dd_mmm_yyyy {
 	unless defined($sep);
     my($mday, $mon, $year) = ($proto->to_parts($value))[3..5];
     my($format) = "%2d${sep}%s${sep}%04d";
-    return sprintf($format, $mday, $_NUM_TO_MONTH->[$mon-1], $year);
+    return sprintf($format, $mday, $_NUM_TO_MONTH3->[$mon-1], $year);
 }
 
 sub to_file_name {
@@ -937,7 +941,7 @@ sub _from_ctime {
     return () unless defined($y);
 
     return (undef, Bivio::TypeError->MONTH)
-	unless defined($mon = $_MONTH_TO_NUM->{uc($mon)});
+	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
     return $proto->from_parts($s, $m, $h, $d, $mon, $y);
 }
 
@@ -986,8 +990,8 @@ sub _from_rfc822 {
     return
 	unless defined($mday);
     return (undef, Bivio::TypeError->MONTH)
-	unless defined($mon = Bivio::Mail::RFC822->MONTHS->{uc($mon)});
-    my($v, $e) = $proto->from_parts($sec, $min, $hour, $mday, $mon + 1, $year);
+	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
+    my($v, $e) = $proto->from_parts($sec, $min, $hour, $mday, $mon, $year);
     return (undef, $e)
 	if $e;
     $tz = Bivio::Mail::RFC822::TIME_ZONES->{uc($tz)}
@@ -1059,6 +1063,11 @@ sub _localtime {
     $mon++;
     $year += 1900;
     return ($sec, $min, $hour, $mday, $mon, $year);
+}
+
+sub _make_map {
+    my($list) = @_;
+    return {map((lc($list->[$_]), $_ + 1), 0 .. $#$list)};
 }
 
 sub _to_string {
