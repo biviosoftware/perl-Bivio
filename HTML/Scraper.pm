@@ -60,11 +60,15 @@ sub file_name {
     my($self, $base_name) = @_;
     return undef
 	unless $base_name;
-    return $base_name
-	if $_FP->is_absolute($base_name);
-    return ($self->get('directory') || return undef)
-	. '/'
-	. $base_name;
+    my($file) = $_FP->is_absolute($base_name)
+	? $base_name
+        : (
+	    ($self->get('directory') || return undef)
+	    . '/'
+	    . $base_name
+	);
+    $_F->mkdir_parent_only($file);
+    return $file;
 }
 
 sub html_parser_comment {
