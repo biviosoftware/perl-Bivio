@@ -8,7 +8,6 @@ use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IOF) = b_use('IO.File');
-my($_UIF) = b_use('UI.Facade');
 my($_D) = b_use('Bivio.Die');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
@@ -29,7 +28,7 @@ sub file_name {
     return $base_name
 	if File::Spec->file_name_is_absolute($base_name);
     my($path) = [$base_name];
-    if ($req and my $f = $_UIF->get_from_source($req)) {
+    if ($req and my $f = b_use('UI.Facade')->get_from_source($req)) {
 	unshift(@$path, $f->get('local_file_prefix'));
     }
     return File::Spec->catfile($_CFG->{directory}, @$path);
