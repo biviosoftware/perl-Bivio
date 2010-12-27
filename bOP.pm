@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
 # $Id$ 
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.14  2010/12/27 14:43:28  nagler
+  * Bivio::HTML::Scraper
+    fmt
+    file_name returns undef if no directory attr and accepts absolute path
+    without directory
+    if no directory, don't return a file_name
+  * Bivio::HTML::t::Scraper::T1
+    fmt
+  * Bivio::IO::Config
+    added is_test
+  * Bivio::IO::Log
+    b_use
+    mkdir_parent_only
+  * Bivio::Test::Unit
+    builtin_tmp_dir was calling rm_rf instead of builtin_rm_rf
+  * Bivio::Type::DateTime
+    refactor month to num code
+    added full month names
+
   Revision 10.13  2010/12/26 03:59:30  nagler
   * Bivio::BConf
     merge_class_loader accepts an array_ref for overrides->{delegates} and
