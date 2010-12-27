@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$ 
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.15  2010/12/27 14:52:02  nagler
+  * Bivio::Biz::Model::CalendarEvent
+    couple realm_id
+  * Bivio::IO::Log
+    need to import UI.Facade dynamically
+
   Revision 10.14  2010/12/27 14:43:28  nagler
   * Bivio::HTML::Scraper
     fmt
