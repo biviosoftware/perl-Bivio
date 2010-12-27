@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
 # $Id$ 
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,67 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.13  2010/12/26 03:59:30  nagler
+  * Bivio::BConf
+    merge_class_loader accepts an array_ref for overrides->{delegates} and
+    maps to a hash
+  * Bivio::Biz::Model::CalendarEventForm
+    if no time_zone is set, assume UTC
+  * Bivio::Biz::Model::CalendarEventList
+    fmt
+  * Bivio::Biz::Model::CalendarEvent
+    set time_zone from ics file
+  * Bivio::Biz::Model::FormModeBaseForm
+    NEW
+  * Bivio::Delegate::RealmType
+    doc
+    doc
+  * Bivio::Delegate::SimpleLocation
+    doc
+  * Bivio::MIME::Calendar
+    use Bivio::Base
+    parse out start/end date timezone attr
+    allow calscale, sequence, rrule, and transp values
+    parse out and ignore vtimezone entries
+    unescape newline, comma and semicolon
+    save time_zone in event data
+    _timezone() saves the default time zone and applies to records without timezones
+    exclude a few more unhandled keys
+    store rrule, even though Model.CalendarEvent can't handle (yet)
+  * Bivio::Search::Parser
+    moved excerpting to Type.String->canonicalize_and_excerpt
+    canonicalize_and_excerpt returns a ref now
+  * Bivio::ShellUtil
+    added assert_test()
+  * Bivio::Type::Location
+    EnumDelegator
+  * Bivio::Type::String
+    added canonicalize_and_excerpt
+    canonicalize_and_excerpt returns a ref now
+  * Bivio::Type::UserAgent
+    added is_msie_6_or_before
+  * Bivio::Type::USState
+    Lookup state in table or NOT_FOUND
+  * Bivio::UI::DateTimeMode
+    added HOUR_MINUTE_AM_PM_LC and FULL_MONTH_DAY_AND_YEAR
+    simplified compile() statement
+  * Bivio::UI::FacadeBase
+    added CSS for td_header_left, logo_su_logo, table_main
+    b_* in front of td_footer_center, table_main, etc.
+  * Bivio::UI::HTML::Format::DateTime
+    added HOUR_MINUTE_AM_PM_LC and FULL_MONTH_DAY_AND_YEAR
+    refactored to be clearer what's going on
+    don't need DateTimeWithTimeZone
+    HOUR_MINUTE_AM_PM_LC: no leading 0 on hours
+  * Bivio::UI::View::CSS
+    added CSS for td_header_left, logo_su_logo, table_main
+    b_* in front of td_footer_center, table_main, etc.
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    *** empty log message ***
+    if passing in xlink (lower case) then need to set label, too
+  * Bivio::UI::XHTML::Widget::XLinkLabel
+    added qualify_label
+
   Revision 10.12  2010/12/24 16:25:11  nagler
   * Bivio::Agent::Request
     add clear_cache_for_auth_user
