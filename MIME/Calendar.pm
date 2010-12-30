@@ -11,13 +11,27 @@ my($_TZ) = b_use('Type.TimeZone');
 
 sub from_ics {
     my($proto, $ics) = @_;
-    return _split(
-	$proto->new({
-	    ics => $ics,
-	    row_num => 0,
-	    vevents => [],
-	}),
-    )->get('vevents');
+    return [
+	sort({
+	    my($r) = $_D->compare($a->{dtstart}, $b->{dtstart});
+	    if ($r) {
+		return $r;
+	    }
+	    if ($a->{rrule} && $b->{rrule}) {
+		return $a->{rrule} cmp $b->{rrule}
+	    }
+	    if ($a->{rrule} || $b->{rrule}) {
+		return $a->{rrule} ? 1 : -1;
+	    }
+	    return 0;
+	} @{_split(
+	    $proto->new({
+		ics => $ics,
+		row_num => 0,
+		vevents => [],
+	    }),
+	)->get('vevents')}),
+    ];
 }
 
 sub _assert {
@@ -57,13 +71,11 @@ sub _event {
 		|exdate
 		|last-modified
 		|priority
-		|recurrence-id
-		|sequence
 		|status
 		|transp
 	        |x-lic-error
 	    )(?:$|;)}x;
-	if ($k =~ /^(dtstart|dtend)(;value=date)?(;tzid=(.*))?$/) {
+	if ($k =~ /^(recurrence-id|dtstart|dtend)(;value=date)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
 	    my($is_date) = $2;
 	    my($tz) = $3 ? $4 : $default_tz;
@@ -76,7 +88,17 @@ sub _event {
 	    $v = $t;
 	    $ve->{time_zone} = $tz ? $_TZ->from_any($tz) : $_TZ->UTC;
 	}
-	elsif ($k !~ m{^(?:summary|description|location|class|url|uid|rrule)$}) {
+	elsif ($k !~ m{^(?:
+	    summary
+	    |description
+	    |location
+	    |class
+	    |url
+	    |uid
+	    |rrule
+	    |recurrence-id
+	    |sequence
+	    )$}x) {
 	    _die($self, $k, ': unsupported attribute');
 	    # DOES NOT RETURN
 	}
