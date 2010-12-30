@@ -1,0 +1,18 @@
+[
+    {
+	description => 'Jami Lynn
+
+Americana Folk Singer-Songwriter, story teller, banjo player, and guitar picker. Starting out on the prairies of rural South Dakota, Jami Lynn found inspiration for music in adolescence, nature, and the bluegrass of previous generations.
+
+http://www.jamilynnmusic.com
+http://www.myspace.com/jamlyn',
+	dtend => '2455617 14400',
+	dtstart => '2455617 10800',
+	location => '',
+	'recurrence-id' => '2455616 79199',
+	sequence => 0,
+	summary => 'Jami Lynn',
+	time_zone => 'AMERICA_DENVER',
+	uid => 'el35cmrihhe14hldf3hr30msb4@google.com',
+    },
+];
