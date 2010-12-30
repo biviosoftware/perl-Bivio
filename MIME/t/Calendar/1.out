@@ -1,5 +1,18 @@
 [
   {
+    'class' => 'PRIVATE',
+    'description' => 'some
+multiline
+desci',
+    'dtend' => '2453720 79199',
+    'dtstart' => '2453718 79199',
+    'location' => 'This is a long location field',
+    'summary' => 'hello',
+    'uid' => 'uuid1135277417056jfjf',
+    'time_zone' => 'UTC',
+    'url' => 'hello'
+  },
+  {
     'class' => 'PUBLIC',
     'description' => 'A terrific opportunity to discuss last week\'s TPS reports',
     'dtend' => '2453724 36000',
@@ -21,11 +34,13 @@
   },
   {
     'class' => 'PUBLIC',
-    'dtend' => '2453737 79199',
-    'dtstart' => '2453736 79199',
-    'summary' => 'New Years Eve',
+    'description' => 'Drink all of the rummy egg nog that you can handle!',
+    'dtend' => '2453729 79200',
+    'dtstart' => '2453729 64800',
+    'location' => 'PR Ski Refuge',
+    'summary' => 'Christmas Eve Party',
     'time_zone' => 'UTC',
-    'uid' => 'uuid:1135117609417'
+    'uid' => 'uuid1135118086629'
   },
   {
     'class' => 'PUBLIC',
@@ -36,14 +51,20 @@
     'uid' => 'uuid:1135117592332'
   },
   {
-    'class' => 'PUBLIC',
-    'description' => 'Drink all of the rummy egg nog that you can handle!',
-    'dtend' => '2453729 79200',
-    'dtstart' => '2453729 64800',
-    'location' => 'PR Ski Refuge',
-    'summary' => 'Christmas Eve Party',
+    'class' => 'PRIVATE',
+    'dtend' => '2453733 79199',
+    'dtstart' => '2453732 79199',
+    'summary' => 'Kwanzaa begins!',
     'time_zone' => 'UTC',
-    'uid' => 'uuid1135118086629'
+    'uid' => 'a7514d3f-722e-11da-94d5-8d6b5f6091c9'
+  },
+  {
+    'class' => 'PUBLIC',
+    'dtend' => '2453737 79199',
+    'dtstart' => '2453736 79199',
+    'summary' => 'New Years Eve',
+    'time_zone' => 'UTC',
+    'uid' => 'uuid:1135117609417'
   },
   {
     'class' => 'PUBLIC',
@@ -55,25 +76,4 @@
     'time_zone' => 'UTC',
     'uid' => 'uuid1135118466990'
   },
-  {
-    'class' => 'PRIVATE',
-    'dtend' => '2453733 79199',
-    'dtstart' => '2453732 79199',
-    'summary' => 'Kwanzaa begins!',
-    'time_zone' => 'UTC',
-    'uid' => 'a7514d3f-722e-11da-94d5-8d6b5f6091c9'
-  },
-  {
-    'class' => 'PRIVATE',
-    'description' => 'some
-multiline
-desci',
-    'dtend' => '2453720 79199',
-    'dtstart' => '2453718 79199',
-    'location' => 'This is a long location field',
-    'summary' => 'hello',
-    'uid' => 'uuid1135277417056jfjf',
-    'time_zone' => 'UTC',
-    'url' => 'hello'
-  }
 ];
