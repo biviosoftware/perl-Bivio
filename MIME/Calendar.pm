@@ -77,14 +77,16 @@ sub _event {
 	    my($w) = $1;
 	    my($is_date) = $2;
 	    my($tz) = $3 ? $4 : $default_tz;
-	    $v .= 'Z'
-		unless $tz || $is_date || $v =~ /Z$/;
-	    my($t, $e) = ($is_date ? $_D : $_DT)->from_literal($v);
+	    my($is_gmt) = $v =~ /Z$/;
+	    my($t, $e) = ($is_date ? $_D : $_DT)->from_literal(
+		$v . ($is_date || $is_gmt ? '' : 'Z'));
 	    _die($v, ": failed to parse $k: ", $e)
 		unless $t;
-	    $k = $w;
-	    $v = $t;
 	    $ve->{time_zone} = $tz ? $_TZ->from_any($tz) : $_TZ->UTC;
+	    $k = $w;
+	    $v = $is_date || $is_gmt
+		? $t
+		: $ve->{time_zone}->date_time_to_utc($t);
 	}
 	elsif ($k !~ m{^(?:
 	    summary
