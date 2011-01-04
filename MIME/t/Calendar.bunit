@@ -7,7 +7,7 @@ options({comparator => 'nested_contains'});
 	from_ics => [
 	    map(
 		([$_F->read("Calendar/$_.in")] => [do("Calendar/$_.out")]),
-		1 .. 7,
+		1 .. 8,
 	    ),
 	],
     ],
