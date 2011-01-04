@@ -68,14 +68,12 @@ sub _event {
 		|confirmed
 		|created
 		|dtstamp
-		|exdate
 		|last-modified
 		|priority
-		|status
 		|transp
 	        |x-lic-error
 	    )(?:$|;)}x;
-	if ($k =~ /^(recurrence-id|dtstart|dtend)(;value=date)?(;tzid=(.*))?$/) {
+	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
 	    my($is_date) = $2;
 	    my($tz) = $3 ? $4 : $default_tz;
@@ -98,13 +96,21 @@ sub _event {
 	    |rrule
 	    |recurrence-id
 	    |sequence
+	    |status
 	    )$}x) {
 	    _die($self, $k, ': unsupported attribute');
 	    # DOES NOT RETURN
 	}
-	_die($k, ': attribute may not be repeated')
-	    if exists($ve->{$k});
-	$ve->{$k} = $v;
+
+	if ($k eq 'exdate') {
+	    push(@{$ve->{$k} ||= []}, $v);
+	}
+	elsif (exists($ve->{$k})) {
+	    _die($k, ': attribute may not be repeated');
+	}
+	else {
+	    $ve->{$k} = $v;
+	}
 	return 1;
     });
     push(@{$self->get('vevents')}, $ve);
