@@ -1,0 +1,63 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Events at The Laughing Goat
+X-WR-TIMEZONE:America/Denver
+BEGIN:VTIMEZONE
+TZID:America/Denver
+X-LIC-LOCATION:America/Denver
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0700
+TZOFFSETTO:-0600
+TZNAME:MDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0700
+TZNAME:MST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=America/Denver:20091010T203000
+DTEND;TZID=America/Denver:20091010T223000
+RRULE:FREQ=MONTHLY;BYDAY=2SA;WKST=SU
+EXDATE;TZID=America/Denver:20101211T203000
+EXDATE;TZID=America/Denver:20101009T203000
+EXDATE;TZID=America/Denver:20100814T203000
+EXDATE;TZID=America/Denver:20100612T203000
+EXDATE;TZID=America/Denver:20100410T203000
+EXDATE;TZID=America/Denver:20100213T203000
+EXDATE;TZID=America/Denver:20091212T203000
+DTSTAMP:20101229T195151Z
+UID:ebhnkcu7ni01k088a310u5psl4@google.com
+CREATED:00001231T000000Z
+DESCRIPTION:WadiRum:\n\nWadiRum was named by the band's leader\, Stewart Er
+ lich\, after traveling for 6 months in the middle east. Wadi Rum is a regio
+ n in Jordan where Erlich found himself miraculously healed after suffering 
+ a debilitating illness during his travels in the desert. \n\nThe music is m
+ uch like the region: raw\, powerful\, silent and loud in turns\, and ultima
+ tely healing. \n\nWadiRum's songs build to crescendo\, with lush harmony\, 
+ dark\, warm bass and cello\, and drums that move from subtle to explosive. 
+ Each song is different\, but the message is the same- the revelation of the
+  human heart. \n\nAs a band\, we try to make great music onstage and in the
+  studio... we write our songs together\, and bring our diverse backgrounds 
+ into the musical melting pot. Our strengths include using full-range dynami
+ cs\, and creating songs with evocative lyrics. \n\nWe perform in and around
+  Denver and Boulder regularly\, and tend to prefer good 'listening' venues.
+  \n\nCurrently\, we've started working on creating songs for our third albu
+ m\, and are searching for a vocalist to replace our dear friend Jill who ha
+ s moved out east...\n\nhttp://www.myspace.com/wadirum\n
+LAST-MODIFIED:20091213T051639Z
+LOCATION:
+SEQUENCE:1
+STATUS:CONFIRMED
+SUMMARY:Wadirum
+TRANSP:TRANSPARENT
+END:VEVENT
+END:VCALENDAR
