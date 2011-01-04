@@ -11,5 +11,6 @@ www.lisabellmusic.com',
 	summary => 'Lisa Bell Trio',
         time_zone => 'AMERICA_DENVER',
 	uid => 'maijcm3u9ujc25qbnh01jag47s@google.com',
+	status => 'CANCELLED',
     },
 ];
