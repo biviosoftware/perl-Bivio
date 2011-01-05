@@ -27,6 +27,7 @@ sub list {
 		    Join([
 			SPAN_author(String(['result_author'])),
 			DIV_date(DateTime(['RealmFile.modified_date_time'])),
+			DIV_uri(String(['result_uri'])),
 			Link(
 			    String(['RealmOwner.display_name']),
 			    ['result_realm_uri'],
