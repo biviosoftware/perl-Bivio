@@ -64,11 +64,13 @@ sub _event {
         my($k, $v) = @_;
         return 1
 	    if $k =~ m{^(?:
-		categories
+		|attendee
+		|categories
 		|confirmed
 		|created
 		|dtstamp
 		|last-modified
+		|organizer
 		|priority
 		|transp
 	        |x-lic-error
@@ -80,13 +82,18 @@ sub _event {
 	    my($is_gmt) = $v =~ /Z$/;
 	    my($t, $e) = ($is_date ? $_D : $_DT)->from_literal(
 		$v . ($is_date || $is_gmt ? '' : 'Z'));
-	    _die($v, ": failed to parse $k: ", $e)
+	    _die($self, $v, ": failed to parse $k: ", $e)
 		unless $t;
 	    $ve->{time_zone} = $tz ? $_TZ->from_any($tz) : $_TZ->UTC;
 	    $k = $w;
 	    $v = $is_date || $is_gmt
 		? $t
 		: $ve->{time_zone}->date_time_to_utc($t);
+	}
+	elsif ($k eq 'begin') {
+	    _die($self, 'unknown event subentry')
+		unless _ignore_subentry($self, $v) eq 'valarm';
+	    return 1;
 	}
 	elsif ($k !~ m{^(?:
 	    summary
@@ -108,7 +115,7 @@ sub _event {
 	    push(@{$ve->{$k} ||= []}, $v);
 	}
 	elsif (exists($ve->{$k})) {
-	    _die($k, ': attribute may not be repeated');
+	    _die($self, $k, ': attribute may not be repeated');
 	}
 	else {
 	    $ve->{$k} = $v;
@@ -150,6 +157,16 @@ sub _header {
     return $self;
 }
 
+sub _ignore_subentry {
+    my($self, $type) = @_;
+    $type = lc($type);
+    _do_until($self, 'end', sub {
+        return 1;
+    });
+    _assert($self, [end => $type]);
+    return $type;
+}
+
 sub _next_row {
     my($self) = @_;
     $self->put(row_num => $self->get('row_num') + 1);
@@ -161,6 +178,7 @@ sub _next_row {
 sub _split {
     my($self) = @_;
     (my $ics = ${$self->get('ics')}) =~ s/\r?\n //g;
+    $ics =~ s/(\r?\n)+/\n/g;
     return _header($self->put(rows => [
 	map({
 	    chomp($_);
@@ -181,11 +199,7 @@ sub _timezone {
 	    if $k eq 'tzid';
 	return 1
 	    unless $k eq 'begin';
-	my($type) = lc($v);
-	_do_until($self, 'end', sub {
-	    return 1;
-	});
-	_assert($self, [end => $type]);
+	_ignore_subentry($self, $v);
 	return 1;
     });
     return;
