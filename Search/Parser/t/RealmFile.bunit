@@ -54,6 +54,9 @@ EOF
  		qr/first text\s+second text\s+third text\s+the end/],
  	    't3.bwiki' => ['text/plain', 'TITLE',
  		qr/email\s+me\s+at\s+foo\@bar.com\s+or\s+A\s+Page\s+home\s+Name\:\s+the\s+end\s+/],
+	    't.doc' => 'application/msword',
+	    't.xls' => ['application/vnd.ms-excel', 'TITLE', "some,text"],
+	    't.docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', ''],
 	],
 	{
 	    method => 'new_excerpt',
