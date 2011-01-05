@@ -2,42 +2,29 @@
 # $Id$
 package Bivio::Search::Parser::RealmFile::PDF;
 use strict;
-use Bivio::Base 'SearchParser.RealmFile';
+use Bivio::Base 'SearchParserRealmFile.CommandBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_SU) = b_use('Bivio.ShellUtil');
-my($_D) = b_use('Bivio.Die');
 
 sub CONTENT_TYPE_LIST {
     return 'application/pdf';
 }
 
-sub handle_realm_file_new_text {
+sub internal_get_text {
     my($proto, $parseable) = @_;
     my($path) = $parseable->get_os_path;
-    return
-	unless my $info = _run($parseable, "pdfinfo $path");
-    my($title) = $info =~ /^Title:\s*(.*)/im ? $1 : undef;
-    $title = ''
-	unless defined($title);
-    return
-	unless my $text = _run($parseable, "pdftotext $path -");
+    my($text) = $proto->internal_run_command("pdftotext $path -");
     $text =~ s/^\s*\n$//mg;
-    return $proto->new({
-	type => 'application/pdf',
-	length($title) ? (title => $title) : (),
-	text => \$text,
-    });
+    return $text;
 }
 
-sub _run {
-    my($parseable, $cmd) = @_;
-    my($out);
-    my($die) = $_D->catch_quietly(sub {$out = $_SU->piped_exec("$cmd 2>&1")});
-    return b_warn($cmd, ': ',
-	$die ? $die->get('attrs') : ($out || 'no output'))
-	if $die || !$out || $$out =~ /^Error:.*Error:/s;
-    return $$out;
+sub internal_get_title {
+    my($proto, $parseable) = @_;
+    my($path) = $parseable->get_os_path;
+    return undef
+	unless my $info = $proto->internal_run_command(
+	    "pdfinfo $path", qr{/^Error:.*Error:/s});
+    return $info =~ /^Title:\s*(.*)/im ? $1 : undef;
 }
 
 1;
