@@ -28,10 +28,13 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.16  2010/12/27 20:51:46  nagler
+  * Bivio::UI::View::Wiki
+    removed WikiHelpList
+
   Revision 10.15  2010/12/27 14:52:02  nagler
   * Bivio::Biz::Model::CalendarEvent
     couple realm_id
