@@ -1087,6 +1087,10 @@ table.b_search_results div.date {
   display: inline;
   margin-right: 1em;
 }
+table.b_search_results div.uri {
+  display: inline;
+  margin-right: 1em;
+}
 table.b_search_results tr.b_even_row,
 table.b_search_results tr.b_odd_row {
   Color('search_results-background');
