@@ -1,0 +1,33 @@
+BEGIN:VCALENDAR
+METHOD:PUBLISH
+PRODID:-//ActiveDataExchange/Calendar V3.10.0//EN
+VERSION:2.0
+BEGIN:VEVENT
+ORGANIZER:mailto:musictix@colorado.edu
+DTSTART:20110109T230000Z
+DTEND:20110110T010000Z
+DTSTAMP:20110104T175800
+
+LOCATION:Multiple Locations (See list below.)
+SUMMARY:Takács Quartet
+DESCRIPTION:Event Description:\nAn irresistible blend of virtuosic technique and e
+ ngaging personality has made the GRAMMY Award-winning Takacs Quartet, 
+ in residence at CU-Boulder, a favorite for over 20 years. \n\nThis eve
+ nt is open to\nEveryone\n\nOf note:\nwww.cupresents.org\n\nFor tickets
+ :\n303-492-8008\n\nContact Information:\nName: CU Presents Box Office\n
+ Phone: 303-492-8008\nEmail: musictix@colorado.edu\n\nLocation Informat
+ ion:\nMain Campus - Imig Music\nRoom: Grusin Music Hall \n \nMain Camp
+ us - Imig Music\nRoom: Grusin Music Hall \n \nMain Campus - Imig Music
+ \nRoom: Grusin Music Hall \n \nMain Campus - Imig Music\nRoom: Grusin 
+ Music Hall \n \nMain Campus - Imig Music\nRoom: Grusin Music Hall \n \n
+ \n
+CATEGORIES:Arts & Culture - Performing Arts,College & School Events,College of Music,College of Music - CU Presents,College of Music - Faculty Performances,College of Music - Strings,College of Music - Tak&aacute;cs Quartet
+CLASS:PUBLIC
+UID:138c3069-89ac-47d9-82b5-c0a80c46c29d
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:Takács Quartet
+END:VALARM
+END:VEVENT
+END:VCALENDAR
