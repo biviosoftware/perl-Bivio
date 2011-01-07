@@ -41,6 +41,7 @@ Type();
 	"\n\r\t" => '',
 	"a\n\r\tb" => "a\n\n b",
 	"a\n\n\nb" => "a\n\n\nb",
+	'á' => 'a',
     ],
     canonicalize_and_excerpt => [
 	'a  short text.' => [\('a short text.')],
