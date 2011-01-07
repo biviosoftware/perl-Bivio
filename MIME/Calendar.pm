@@ -7,6 +7,7 @@ use Bivio::Base 'Collection.Attributes';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
+my($_HTML) = b_use('Bivio::HTML');
 my($_TZ) = b_use('Type.TimeZone');
 
 sub from_ics {
@@ -184,9 +185,9 @@ sub _split {
 	    chomp($_);
 	    $_ =~ s/\s+$//;
 	    my($k, $v) = split(/\s*:\s*/, $_, 2);
-	    $v =~ s/\\n/\n/g;
-	    $v =~ s/\\([,;])/$1/g;
-	    [lc($k), $v];
+	    $v =~ s/\\n/\n/ig;
+	    $v =~ s/\\([,;\\])/$1/g;
+	    [lc($k), $_HTML->unescape($v)];
 	} split(/\r?\n/, $ics)),
     ]));
 }
