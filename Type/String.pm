@@ -22,6 +22,21 @@ my($_TRANSLITERATE) = {
     '1/4' => [qr{\x{00BC}}, qr{\xBC}],
     '1/2' => [qr{\x{00BD}}, qr{\xBD}],
     '3/4' => [qr{\x{00BE}}, qr{\xBE}],
+#TODO: remove these when we support unicode    
+    'A' => [qr{[\x{00C0}-\x{00C5}]}, qr{[\xC0-\xC5]}],
+    'AE' => [qr{\x00C7}, qr{\xC7}],
+    'E' => [qr{[\x{00C8}-\x{00CB}]}, qr{[\xC8-\xCB]}],
+    'I' => [qr{[\x{00CC}-\x{00CF}]}, qr{[\xCC-\xCF]}],
+    'O' => [qr{[\x{00D2}-\x{00D6}]}, qr{[\xD2-\xD6]}],
+    'U' => [qr{[\x{00D9}-\x{00DC}]}, qr{[\xD9-\xDC]}],
+    'Y' => [qr{\x{00DD}}, qr{\xDD}],
+    'a' => [qr{[\x{00E0}-\x{00E5}]}, qr{[\xE0-\xE5]}],
+    'ae' => [qr{\x00E7}, qr{\xE7}],
+    'e' => [qr{[\x{00E8}-\x{00EB}]}, qr{[\xE8-\xEB]}],
+    'i' => [qr{[\x{00EC}-\x{00EF}]}, qr{[\xEC-\xEF]}],
+    'o' => [qr{[\x{00F2}-\x{00F6}]}, qr{[\xF2-\xF6]}],
+    'u' => [qr{[\x{00F9}-\x{00FC}]}, qr{[\xF9-\xFC]}],
+    'y' => [qr{\x{00FD}}, qr{\xFD}],
 };
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
