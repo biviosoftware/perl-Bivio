@@ -4,7 +4,7 @@
 	dtend => '2455572 3600',
 	dtstart => '2455571 82800',
 	location => 'Multiple Locations (See list below.)',
-	summary => 'Takács Quartet',
+	summary => 'Takács Quartet & Friends',
 	time_zone => Bivio::Type::TimeZone->UTC,
 	uid=> '138c3069-89ac-47d9-82b5-c0a80c46c29d',
     },
