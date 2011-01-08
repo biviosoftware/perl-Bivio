@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,33 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.17  2011/01/05 02:30:45  schellj
+  * Bivio::MIME::Calendar
+    sort event rows by dtstart and rrule,
+    added recurrence-id and sequence to data
+    parse out exdate list, and status
+    for date times with timezones, convert times to utc
+    parse out and ignore valarm subentries within an entry
+    ignore categories and organizer
+  * Bivio::Search::Parser::RealmFile::CommandBase
+    NEW
+  * Bivio::Search::Parser::RealmFile::MSExcel
+    NEW
+  * Bivio::Search::Parser::RealmFile::MSOfficeBase
+    NEW
+  * Bivio::Search::Parser::RealmFile::MSPowerPoint
+    NEW
+  * Bivio::Search::Parser::RealmFile::MSWord
+    NEW
+  * Bivio::Search::Parser::RealmFile::OpenXMLDoc
+    NEW
+  * Bivio::Search::Parser::RealmFile::PDF
+    refactored to use CommandBase
+  * Bivio::UI::View::CSS
+    added table.b_search_results div.uri
+  * Bivio::UI::View::Search
+    added file uri
+
   Revision 10.16  2010/12/27 20:51:46  nagler
   * Bivio::UI::View::Wiki
     removed WikiHelpList
