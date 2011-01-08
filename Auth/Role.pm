@@ -5,9 +5,19 @@ use strict;
 use Bivio::Base 'Type.EnumDelegator';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_ROLE_GROUP_RE) = qr{^\*(.*)};
 my($_A) = b_use('Type.Array');
 __PACKAGE__->compile;
 my($_CACHE) = b_use('Collection.Attributes')->new;
+
+sub calculate_expression {
+    my($proto, $name) = @_;
+    return defined($name)
+	? $name =~ $_ROLE_GROUP_RE
+	? $proto->get_category_role_group($1 || 'all')
+	: [$proto->from_any($name)]
+        : [sort {$a->as_int <=> $b->as_int} $proto->get_list];
+}
 
 sub get_category_role_group {
     my($proto, $which) = @_;
@@ -27,6 +37,10 @@ sub in_category_role_group {
 	$self->equals($_),
 	@{$self->get_category_role_group($which)},
     ) ? 1 : 0;
+}
+
+sub is_admin {
+    return shift->in_category_role_group('all_admins');
 }
 
 sub is_continuous {
