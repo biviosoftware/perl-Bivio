@@ -21,7 +21,7 @@ use Time::HiRes ();
 # A C<DateTime> is not a L<Bivio::Type::Number|Bivio::Type::Number>.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IS_TEST);
+my($_IS_TEST) = b_use('IO.Config')->is_test;
 my($_TEST_NOW);
 my($_MIN) = FIRST_DATE_IN_JULIAN_DAYS().' 0';
 my($_MAX) = __PACKAGE__->internal_join(
@@ -562,7 +562,7 @@ sub handle_pre_execute_task {
     $proto->set_test_now(
 	delete(($req->unsafe_get('query') || {})->{$proto->TEST_NOW_QUERY_KEY}),
         $req,
-    ) if !defined($_IS_TEST) || $_IS_TEST;
+    ) if $_IS_TEST;
     return;
 }
 
@@ -621,7 +621,7 @@ sub now {
         && UNIVERSAL::can('Bivio::Agent::Task', 'register')
     ) {
 	$proto->use('Bivio::Agent::Task')->register(__PACKAGE__)
-	    if $_IS_TEST = $proto->use('Bivio::Agent::Request')->is_test;
+	    if $_IS_TEST;
     }
     return $_IS_TEST && $_TEST_NOW || __PACKAGE__->from_unix(time);
 }
@@ -717,9 +717,9 @@ sub set_local_time_part {
 }
 
 sub set_test_now {
-    my($proto, $now, $req) = @_;
+    my($proto, $now) = @_;
     return $_TEST_NOW = $proto->from_literal_or_die($now, 1)
-	if $_IS_TEST ||= $req->is_test;
+	if $_IS_TEST;
     return;
 }
 
