@@ -426,26 +426,26 @@ sub merge_realm_role_category_map {
 	    ], [
 		feature_tuple =>
 		    ['*everybody' => 'FEATURE_TUPLE'],
-		    ['*all_admins' => [qw(TUPLE_ADMIN TUPLE_WRITE TUPLE_READ)]],
-		    ['*all_members' => [qw(TUPLE_WRITE TUPLE_READ)]],
+		    ['*all_admins' => [qw(TUPLE_ADMIN)]],
+		    ['*all_members' => [qw(TUPLE_WRITE)]],
+		    ['*all_guests' => [qw(TUPLE_READ)]],
 	    ], [
-#DEPRECATED: Need to fix apps which use this and not feature_tuple
+#DEPRECATED: Need to fix apps which use this, and use feature_tuple instead
 		tuple =>
 		    '+feature_tuple',
-#TODO: Not clear if we can eliminate motion
 	    ], [
 		common_results_motion =>
 		    ['*everybody' => 'FEATURE_MOTION'],
 		    ['*all_members' => 'MOTION_WRITE'],
-		    ['*all_admins' => [qw(MOTION_ADMIN MOTION_WRITE MOTION_READ)]],
+		    ['*all_admins' => [qw(MOTION_ADMIN MOTION_READ)]],
 	    ], [
 		open_results_motion =>
 		    '+common_results_motion',
-		    ['*all_members-all_admins' => '+MOTION_READ'],
+		    ['*all_guests-all_admins' => '+MOTION_READ'],
 	    ], [
 		closed_results_motion =>
 		    '+common_results_motion',
-		    ['*all_members-all_admins' => '-MOTION_READ'],
+		    ['*all_guests-all_admins' => '-MOTION_READ'],
 	    ], [
 		feature_motion =>
 		    '+open_results_motion',
