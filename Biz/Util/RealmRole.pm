@@ -9,7 +9,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Trace->register;
-my($_ROLE_GROUP_RE) = qr{^\*(.*)};
 my($_CATEGORY_MAP);
 b_use('IO.Config')->register(my $_CFG = {
     category_map => sub {[]},
@@ -94,7 +93,7 @@ sub do_super_users {
 sub edit {
     sub EDIT {[[qw(role_or_group Line)], [qw(+operations Line)]]}
     my($self, $bp) = shift->parameters(\@_);
-    my($roles) = _roles($bp->{role_or_group});
+    my($roles) = $_R->calculate_expression($bp->{role_or_group});
     my($req) = $self->req;
     my($realm) = $req->get('auth_realm');
     my($realm_id) = $realm->get('id');
@@ -125,7 +124,7 @@ sub edit_categories {
     my($o) = $req->get('auth_realm')->get('owner');
     foreach my $category_op (@$category_ops) {
 	my($op, $cat) = $category_op =~ /^(-|\+)(\w+)$/;
-	$self->usage_error($_, ': unknown category operation')
+	$self->usage_error($category_op, ': unknown category operation (missing "+"?)')
 	    unless $op;
 	foreach my $x (@{
 	    _category_map($self)->{$cat}->{$op}
@@ -160,7 +159,7 @@ sub list {
     return _list_one(
 	$self,
 	$self->req('auth_realm'),
-	_roles($role_name),
+	$_R->calculate_expression($role_name),
     );
 }
 
@@ -168,7 +167,7 @@ sub list_all {
     sub LIST_ALL {[[qw(?realm_type Auth.RealmType)]]}
     my($self, $bp) = shift->parameters(\@_);
     my($sep) = '';
-    my($roles) = _roles();
+    my($roles) = $_R->calculate_expression();
     my($res) = '';
     $self->model('RealmOwner')->do_iterate(
 	sub {
@@ -219,7 +218,7 @@ sub list_enabled_categories {
 
 sub list_roles {
     my($self, $role_or_group) = @_;
-    return _roles($role_or_group);
+    return [map($_->get_name, @{$_R->calculate_expression($role_or_group)})];
 }
 
 sub make_super_user {
@@ -273,7 +272,7 @@ sub roles_for_permissions {
     return [
 	map(
 	    defined($rp->{$_}) && ($rp->{$_} & $ps) eq $ps ? $_->get_name : (),
-	    @{_roles()},
+	    @{$_R->calculate_expression()},
 	),
     ]
 }
@@ -404,7 +403,7 @@ sub _init_category_map_op {
 	    [
 		($x =~ s/^-// xor $sign eq '-')
 		    ? 'remove_permissions' : 'add_permissions',
-		[map(@{_roles($_)}, @$roles)],
+		[map(@{$_R->calculate_expression($_)}, @$roles)],
 		${$_PS->set($_PS->get_min, $_P->$x())},
 	    ];
 	}
@@ -458,15 +457,6 @@ sub _list_one {
 	$prev_ps = $ps;
     }
     return \$res;
-}
-
-sub _roles {
-    my($name) = @_;
-    return defined($name)
-	? $name =~ $_ROLE_GROUP_RE
-	? $_R->get_category_role_group($1 || 'all')
-	: [$_R->from_any($name)]
-        : [sort {$a->as_int <=> $b->as_int} $_R->get_list];
 }
 
 1;
