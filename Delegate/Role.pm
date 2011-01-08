@@ -51,8 +51,4 @@ sub internal_category_role_group_map {
     };
 }
 
-sub is_admin {
-    return shift->in_category_role_group('all_admins');
-}
-
 1;
