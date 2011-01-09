@@ -1,0 +1,67 @@
+{
+    feed => {
+	'openSearch$startIndex' => {
+	    '$t' => '1'
+	},
+	xmlns => 'http://www.w3.org/2005/Atom',
+	'xmlns$openSearch' => 'http://a9.com/-/spec/opensearchrss/1.0/',
+	'gCal$timezone' => {
+	    value => 'America/Denver'
+	},
+	author => [
+	    {
+		email => {
+		    '$t' => 'thelaughinggoat@gmail.com'
+		},
+		name => {
+		    '$t' => 'John Jenkins'
+		}
+	    }
+	],
+	generator => {
+	    version => '1.0',
+	    '$t' => 'Google Calendar',
+	    uri => 'http://www.google.com/calendar'
+	},
+	'gCal$timesCleaned' => {
+	    value => '0'
+	},
+	'xmlns$gd' => 'http://schemas.google.com/g/2005',
+	'openSearch$itemsPerPage' => {
+	    '$t' => '576'
+	},
+	id => {
+	    '$t' => 'http://www.google.com/calendar/feeds/thelaughinggoat%40gmail.com/public/embed'
+	},
+	updated => {
+	    '$t' => '2011-01-05T23:48:40.000Z'
+	},
+	category => [
+	    {
+		scheme => 'http://schemas.google.com/g/2005#kind',
+		term => 'http://schemas.google.com/g/2005#event'
+	    }
+	],
+	link => [
+	    {
+		rel => 'alternate',
+		href => 'https://www.google.com/calendar/embed?src=thelaughinggoat@gmail.com',
+		type => 'text/html'
+	    }
+	],
+	'openSearch$totalResults' => {
+	    '$t' => '16'
+	},
+	'xmlns$gCal' => 'http://schemas.google.com/gCal/2005',
+	subtitle => {
+	    '$t' => 'Events at The Laughing Goat',
+	    type => 'text'
+	},
+	title => {
+	    '$t' => 'Events at The Laughing Goat',
+	    type => 'text'
+	}
+    },
+    version => '1.0',
+    encoding => 'UTF-8'
+};
