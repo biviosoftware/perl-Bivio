@@ -153,6 +153,15 @@ sub field_decl_exclude {
     return $info;
 }
 
+sub field_decl_from_property_model {
+    my($self, $class) = @_;
+    my($m) = $self->get_instance($class);
+    return map(
+	$m->simple_package_name . ".$_",
+	@{$m->get_info('column_names')},
+    );
+}
+
 sub field_equals {
     my($self, $field, $value) = @_;
     return $self->get_field_type($field)->is_equal($value, $self->get($field));
