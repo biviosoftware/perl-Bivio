@@ -27,9 +27,11 @@ sub _parse_array {
     my($self) = @_;
     my($res) = [];
     b_die() unless _next_char($self) eq '[';
+    _skip_whitespace($self);
 
     while (_peek_char($self) ne ']') {
 	push(@$res, _parse_text($self));
+	_skip_whitespace($self);
 	_parse_delim($self)
 	    unless _peek_char($self) eq ']';
     }
@@ -52,6 +54,7 @@ sub _parse_delim {
     my($self) = @_;
     b_die('missing delimiter')
 	unless _next_char($self) eq ',';
+    _skip_whitespace($self);
     return;
 }
 
@@ -115,13 +118,16 @@ sub _parse_object {
     my($self) = @_;
     my($res) = {};
     b_die() unless _next_char($self) eq '{';
+    _skip_whitespace($self);
 
     while (_peek_char($self) ne '}') {
 	my($k) = _parse_string($self);
+	_skip_whitespace($self);
 	b_die() unless _next_char($self) eq ':';
 	b_die('key exists: ', $k, ' object: ', $res)
 	    if exists($res->{$k});
 	$res->{$k} = _parse_text($self);
+	_skip_whitespace($self);
 	_parse_delim($self)
 	    unless _peek_char($self) eq '}';
     }
@@ -169,6 +175,7 @@ sub _parse_string {
 
 sub _parse_text {
     my($self) = @_;
+    _skip_whitespace($self);
     my($c) = _peek_char($self);
 
     if ($c eq '{') {
@@ -216,6 +223,15 @@ sub _peek_char {
     return $self->get('char_count') > length(${$self->get('text')})
 	? undef
 	: substr(${$self->get('text')}, $self->get('char_count'), 1);
+}
+
+sub _skip_whitespace {
+    my($self) = @_;
+
+    while (_peek_char($self) && _peek_char($self) =~ /\s/) {
+	_next_char($self);
+    }
+    return;
 }
 
 1;
