@@ -1,0 +1,13 @@
+{
+    firstName => 'Ole',
+    data => [
+	'hello',
+	{},
+	'true',
+	'false',
+	'null',
+	'\\/"',
+	"\t\t",
+    ],
+    lastName => 'Moeller'
+};

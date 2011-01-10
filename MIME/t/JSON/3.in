@@ -1,0 +1,17 @@
+
+
+  {
+      "firstName" : "Ole" ,
+      "lastName" : "Moeller",
+      "data" : [
+          "hello",
+	  { },
+	  true,
+	  false,
+	  null,
+	  "\\\/\"",
+	  "\t\t",
+      ],
+  }
+
+
