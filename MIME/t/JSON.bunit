@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 my($_F) = b_use('IO.File');
 options({comparator => 'nested_contains'});
@@ -7,7 +7,7 @@ options({comparator => 'nested_contains'});
 	from_text => [
 	    map(
 		([$_F->read("JSON/$_.in")] => [do("JSON/$_.out")]),
-		1 .. 2,
+		1 .. 3,
 	    ),
 	],
     ],
