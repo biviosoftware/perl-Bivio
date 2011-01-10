@@ -76,18 +76,9 @@ sub _parse_digits {
 sub _parse_exp {
     my($self) = @_;
     b_die() unless _next_char($self) =~ /e/i;
-    my($res) = 'e';
-
-    if (_peek_char($self) =~ /\+|\-/) {
-	$res .= _next_char($self);
-    }
-    return $res . _parse_digits($self);
-}
-
-sub _parse_frac {
-    my($self) = @_;
-    b_die() unless _next_char($self) eq '.';
-    return '.' . _parse_digits($self);
+    return 'e' . (_peek_char($self) =~ /\+|\-/
+	? _next_char($self)
+	: '') . _parse_digits($self);
 }
 
 sub _parse_int {
@@ -103,14 +94,12 @@ sub _parse_number {
     my($c) = _peek_char($self);
 
     if ($c eq '.') {
-	$res .= _parse_frac($self);
+	$res .= _next_char($self) . _parse_digits($self);
 	$c = _peek_char($self);
     }
-
-    if ($c =~ /e/i) {
-	return $res . _parse_exp($self);
-    }
-    return $res;
+    return $res . ($c =~ /e/i
+        ? _parse_exp($self)
+	: '');
 }
 
 sub _parse_object {
@@ -173,13 +162,10 @@ sub _parse_string {
 sub _parse_text {
     my($self) = @_;
     my($c) = _peek_char($self, 1);
-
-    if ($c eq '{') {
-	return _parse_object($self);
-    }
-    elsif ($c eq '[') {
-	return _parse_array($self);
-    }
+    return _parse_object($self)
+	if $c eq '{';
+    return _parse_array($self)
+	if $c eq '[';
     return _parse_value($self);
 }
 
