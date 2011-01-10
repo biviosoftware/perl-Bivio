@@ -52,8 +52,9 @@ sub _parse_constant {
 
 sub _parse_delim {
     my($self) = @_;
-    b_die('missing delimiter')
-	unless _next_char($self) eq ',';
+    my($c) = _next_char($self);
+    b_die('missing delimiter: ', $c)
+	unless $c eq ',';
     _skip_whitespace($self);
     return;
 }
@@ -62,7 +63,7 @@ sub _parse_digits {
     my($self) = @_;
     my($res) = _next_char($self);
 
-    while (_peek_char($self) && _peek_char($self) =~ /^\d$/) {
+    while (defined(_peek_char($self)) && _peek_char($self) =~ /\d/) {
 	$res .= _next_char($self);
     }
     return $res;
@@ -70,11 +71,11 @@ sub _parse_digits {
 
 sub _parse_exp {
     my($self) = @_;
-    b_die() unless _next_char($self) =~ /^e$/i;
+    b_die() unless _next_char($self) =~ /e/i;
     my($res) = 'e';
 
-    if (_peek_char($self) =~ /^\+|\-$/) {
-	$res .= _peek_char($self);
+    if (_peek_char($self) =~ /\+|\-/) {
+	$res .= _next_char($self);
     }
     return $res . _parse_digits($self);
 }
@@ -108,7 +109,7 @@ sub _parse_number {
 	return $res unless defined($c);
     }
 
-    if ($c =~ /^e$/i) {
+    if ($c =~ /e/i) {
 	return $res . _parse_exp($self);
     }
     return $res;
@@ -152,10 +153,10 @@ sub _parse_string {
 	    elsif ($c eq 't') {
 		$res .= "\t";
 	    }
-	    elsif ($c =~ /^b|f$/) {
+	    elsif ($c =~ /b|f/) {
 		# ignore formfeed or backspace
 	    }
-	    elsif ($c =~ /^"|\\|\/$/) {
+	    elsif ($c =~ /"|\\|\//) {
 		$res .= $c;
 	    }
 	    elsif ($c eq 'u') {
@@ -212,7 +213,7 @@ sub _parse_value {
     elsif ($c eq 'n') {
 	return _parse_constant($self, 'null');
     }
-    elsif ($c =~ /^\d$/) {
+    elsif ($c =~ /\d|\-/) {
 	return _parse_number($self);
     }
     b_die('invalid value start: ', $c);
