@@ -10,16 +10,21 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_text {
     my($proto, $text) = @_;
-    return _parse_text($proto->new({
+    my($self) = $proto->new({
 	text => ref($text) ? $text : \$text,
 	char_count => 0,
-    }));
+    });
+    my($res) = _parse_text($self);
+    b_die('leftover data at char index: ', $self->get('char_count'))
+	if length(_peek_char($self, 1));
+    return $res;
 }
 
 sub _next_char {
     my($self) = @_;
     my($res) = _peek_char($self);
-    $self->put(char_count => $self->get('char_count') + 1 );
+    b_die('unexpected end of input') unless length($res);
+    $self->put(char_count => $self->get('char_count') + 1);
     return $res;
 }
 
@@ -27,13 +32,11 @@ sub _parse_array {
     my($self) = @_;
     my($res) = [];
     b_die() unless _next_char($self) eq '[';
-    _skip_whitespace($self);
 
-    while (_peek_char($self) ne ']') {
+    while (_peek_char($self, 1) ne ']') {
 	push(@$res, _parse_text($self));
-	_skip_whitespace($self);
 	_parse_delim($self)
-	    unless _peek_char($self) eq ']';
+	    unless _peek_char($self, 1) eq ']';
     }
     b_die() unless _next_char($self) eq ']';
     return $res;
@@ -55,15 +58,16 @@ sub _parse_delim {
     my($c) = _next_char($self);
     b_die('missing delimiter: ', $c)
 	unless $c eq ',';
-    _skip_whitespace($self);
     return;
 }
 
 sub _parse_digits {
     my($self) = @_;
     my($res) = _next_char($self);
+    b_die('expecting digit but found: ', $res)
+	unless $res =~ /\d/;
 
-    while (defined(_peek_char($self)) && _peek_char($self) =~ /\d/) {
+    while (_peek_char($self) =~ /\d/) {
 	$res .= _next_char($self);
     }
     return $res;
@@ -88,25 +92,19 @@ sub _parse_frac {
 
 sub _parse_int {
     my($self) = @_;
-    my($res) = '';
-    my($c) = _peek_char($self);
-
-    if ($c eq '-') {
-	$res .= _next_char($self);
-    }
-    return $res . _parse_digits($self);
+    return (_peek_char($self) eq '-'
+	? _next_char($self)
+	: '') . _parse_digits($self);
 }
 
 sub _parse_number {
     my($self) = @_;
     my($res) = _parse_int($self);
     my($c) = _peek_char($self);
-    return $res unless defined($c);
 
     if ($c eq '.') {
 	$res .= _parse_frac($self);
 	$c = _peek_char($self);
-	return $res unless defined($c);
     }
 
     if ($c =~ /e/i) {
@@ -119,18 +117,16 @@ sub _parse_object {
     my($self) = @_;
     my($res) = {};
     b_die() unless _next_char($self) eq '{';
-    _skip_whitespace($self);
 
-    while (_peek_char($self) ne '}') {
+    while (_peek_char($self, 1) ne '}') {
 	my($k) = _parse_string($self);
 	_skip_whitespace($self);
-	b_die() unless _next_char($self) eq ':';
+	b_die('missing colon') unless _next_char($self) eq ':';
 	b_die('key exists: ', $k, ' object: ', $res)
 	    if exists($res->{$k});
 	$res->{$k} = _parse_text($self);
-	_skip_whitespace($self);
 	_parse_delim($self)
-	    unless _peek_char($self) eq '}';
+	    unless _peek_char($self, 1) eq '}';
     }
     b_die() unless _next_char($self) eq '}';
     return $res;
@@ -170,14 +166,13 @@ sub _parse_string {
 	    $res .= $c;
 	}
     }
-    b_die() unless _next_char($self) eq '"';
+    b_die('missing end quote') unless _next_char($self) eq '"';
     return $res;
 }
 
 sub _parse_text {
     my($self) = @_;
-    _skip_whitespace($self);
-    my($c) = _peek_char($self);
+    my($c) = _peek_char($self, 1);
 
     if ($c eq '{') {
 	return _parse_object($self);
@@ -199,37 +194,33 @@ sub _parse_unicode_char {
 sub _parse_value {
     my($self) = @_;
     my($c) = _peek_char($self);
-    b_die('missing value') unless defined($c);
-
-    if ($c eq '"') {
-	return _parse_string($self);
-    }
-    elsif ($c eq 't') {
-	return _parse_constant($self, 'true');
-    }
-    elsif ($c eq 'f') {
-	return _parse_constant($self, 'false');
-    }
-    elsif ($c eq 'n') {
-	return _parse_constant($self, 'null');
-    }
-    elsif ($c =~ /\d|\-/) {
-	return _parse_number($self);
-    }
+    b_die('missing value') unless length($c);
+    return _parse_string($self)
+	if $c eq '"';
+    return _parse_constant($self, 'true')
+	if $c eq 't';
+    return _parse_constant($self, 'false')
+	if $c eq 'f';
+    return _parse_constant($self, 'null')
+	if $c eq 'n';
+    return _parse_number($self)
+	if $c =~ /\d|\-/;
     b_die('invalid value start: ', $c);
 }
 
 sub _peek_char {
-    my($self) = @_;
-    return $self->get('char_count') > length(${$self->get('text')})
-	? undef
+    my($self, $skip_whitespace) = @_;
+    _skip_whitespace($self)
+	if $skip_whitespace;
+    return $self->get('char_count') >= length(${$self->get('text')})
+	? ''
 	: substr(${$self->get('text')}, $self->get('char_count'), 1);
 }
 
 sub _skip_whitespace {
     my($self) = @_;
 
-    while (_peek_char($self) && _peek_char($self) =~ /\s/) {
+    while (_peek_char($self) =~ /\s/) {
 	_next_char($self);
     }
     return;
