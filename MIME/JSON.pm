@@ -7,6 +7,7 @@ use Bivio::Base 'Collection.Attributes';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 # Using BNF at http://www.json.org/
+# expanded to allow strings in single quote and unquoted object keys
 
 sub from_text {
     my($proto, $text) = @_;
@@ -73,33 +74,27 @@ sub _parse_digits {
     return $res;
 }
 
-sub _parse_exp {
-    my($self) = @_;
-    b_die() unless _next_char($self) =~ /e/i;
-    return 'e' . (_peek_char($self) =~ /\+|\-/
-	? _next_char($self)
-	: '') . _parse_digits($self);
-}
-
-sub _parse_int {
-    my($self) = @_;
-    return (_peek_char($self) eq '-'
-	? _next_char($self)
-	: '') . _parse_digits($self);
-}
-
 sub _parse_number {
     my($self) = @_;
-    my($res) = _parse_int($self);
-    my($c) = _peek_char($self);
+    my($res) = '';
 
-    if ($c eq '.') {
-	$res .= _next_char($self) . _parse_digits($self);
-	$c = _peek_char($self);
+    if (_peek_char($self) eq '-') {
+	$res .= _next_char($self);
     }
-    return $res . ($c =~ /e/i
-        ? _parse_exp($self)
-	: '');
+    $res .= _parse_digits($self);
+
+    if (_peek_char($self) eq '.') {
+	$res .= _next_char($self) . _parse_digits($self);
+    }
+
+    if (_peek_char($self) =~ /e/i) {
+	$res .= lc(_next_char($self))
+	    . (_peek_char($self) =~ /\+|\-/
+		   ? _next_char($self)
+		   : '')
+	    . _parse_digits($self);
+    }
+    return $res;
 }
 
 sub _parse_object {
@@ -108,7 +103,7 @@ sub _parse_object {
     b_die() unless _next_char($self) eq '{';
 
     while (_peek_char($self, 1) ne '}') {
-	my($k) = _parse_string($self);
+	my($k) = _parse_string($self, ':');
 	_skip_whitespace($self);
 	b_die('missing colon') unless _next_char($self) eq ':';
 	b_die('key exists: ', $k, ' object: ', $res)
@@ -122,11 +117,18 @@ sub _parse_object {
 }
 
 sub _parse_string {
-    my($self) = @_;
-    b_die() unless _next_char($self) eq '"';
+    my($self, $end_char) = @_;
+
+    if (_peek_char($self) =~ /'|"/) {
+	$end_char = _next_char($self);
+    }
+    else {
+	b_die('invalid quote char')
+	    unless $end_char;
+    }
     my($res) = '';
 
-    while (_peek_char($self) ne '"') {
+    while (_peek_char($self) ne $end_char) {
 	my($c) = _next_char($self);
 
 	if ($c eq '\\') {
@@ -141,7 +143,7 @@ sub _parse_string {
 	    elsif ($c =~ /b|f/) {
 		# ignore formfeed or backspace
 	    }
-	    elsif ($c =~ /"|\\|\//) {
+	    elsif ($c =~ /'|"|\\|\//) {
 		$res .= $c;
 	    }
 	    elsif ($c eq 'u') {
@@ -155,7 +157,10 @@ sub _parse_string {
 	    $res .= $c;
 	}
     }
-    b_die('missing end quote') unless _next_char($self) eq '"';
+
+    if ($end_char =~ /'|"/) {
+	b_die('missing end quote') unless _next_char($self) eq $end_char;
+    }
     return $res;
 }
 
@@ -182,7 +187,7 @@ sub _parse_value {
     my($c) = _peek_char($self);
     b_die('missing value') unless length($c);
     return _parse_string($self)
-	if $c eq '"';
+	if $c =~ /'|"/;
     return _parse_constant($self, 'true')
 	if $c eq 't';
     return _parse_constant($self, 'false')
