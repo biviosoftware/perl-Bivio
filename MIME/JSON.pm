@@ -2,32 +2,35 @@
 # $Id$
 package Bivio::MIME::JSON;
 use strict;
-use Bivio::Base 'Collection.Attributes';
+use Bivio::Base 'Bivio.UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_IDI) = __PACKAGE__->instance_data_index;
 
 # Using BNF at http://www.json.org/
 # expanded to allow strings in single quote and unquoted object keys
 
 sub from_text {
     my($proto, $text) = @_;
-    my($self) = $proto->new({
+    my($self) = $proto->new;
+    my($fields) = $self->[$_IDI] = {
 	text => ref($text) ? $text : \$text,
 	char_count => 0,
-    });
+    };
     my($res) = _parse_text($self);
-    b_die('leftover data at char index: ', $self->get('char_count'))
+    b_die('leftover data at char index: ', $fields->{char_count})
 	if length(_peek_char($self, 1));
     return $res;
 }
 
 sub _next_char {
     my($self, $expected_char) = @_;
+    my($fields) = $self->[$_IDI];
     my($res) = _peek_char($self);
     b_die('unexpected end of input') unless length($res);
     b_die('unexpected char: ', $res, ' != ', $expected_char)
 	if defined($expected_char) && $res ne $expected_char;
-    $self->put(char_count => $self->get('char_count') + 1);
+    $fields->{char_count}++;
     return $res;
 }
 
@@ -184,11 +187,12 @@ sub _parse_unicode_char {
 
 sub _peek_char {
     my($self, $skip_whitespace) = @_;
+    my($fields) = $self->[$_IDI];
     _skip_whitespace($self)
 	if $skip_whitespace;
-    return $self->get('char_count') >= length(${$self->get('text')})
+    return $fields->{char_count} >= length(${$fields->{text}})
 	? ''
-	: substr(${$self->get('text')}, $self->get('char_count'), 1);
+	: substr(${$fields->{text}}, $fields->{char_count}, 1);
 }
 
 sub _skip_whitespace {
