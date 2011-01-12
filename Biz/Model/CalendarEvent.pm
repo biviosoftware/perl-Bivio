@@ -6,7 +6,7 @@ use Bivio::Base 'Model.RealmOwnerBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
-my($_RO) = b_use('Model.RealmOwner')->get_instance;
+my($_RO);
 my($_MC) = b_use('MIME.Calendar');
 my($_UID) = 'bce';
 
@@ -104,7 +104,11 @@ sub _from_vevent {
 	_map_field($self, $vevent,
 	    [qw(dtstart dtend location url description time_zone)]),
     }, {
-	_map_field($_RO, $vevent, [qw(summary:display_name)]),
+	_map_field(
+	    $_RO ||= b_use('Model.RealmOwner')->get_instance,
+	    $vevent,
+	    [qw(summary:display_name)],
+	),
     });
 }
 
