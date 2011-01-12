@@ -1,11 +1,12 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Search::Parseable;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_F) = __PACKAGE__->use('IO.File');
+my($_F) = b_use('IO.File');
+my($_S) = b_use('Type.String');
 
 sub as_string {
     my($self) = @_;
@@ -23,6 +24,13 @@ sub get_content {
     my($self) = @_;
     return $self->get_if_defined_else_put(content => sub {
         return $self->get('model')->get_content;
+    });
+}
+
+sub get_excerpt {
+    my($self) = @_;
+    return $self->get_if_defined_else_put(excerpt => sub {
+        return $self->get('model')->get_search_excerpt;
     });
 }
 
