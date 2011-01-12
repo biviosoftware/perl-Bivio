@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Search::Parser;
 use strict;
@@ -8,14 +8,21 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');
 my($_P) = b_use('Search.Parseable');
-my($_S) = b_use('Type.String');
 
 sub handle_new_excerpt {
-    my($proto, $parseable, @rest) = @_;
-    return undef
-	unless my $self = ref($proto) ? $proto
-	: $proto->new_text($parseable, @rest);
-    return $self->put(excerpt => ${$_S->canonicalize_and_excerpt($self->get('text'))});
+    my($self, $parseable) = @_;
+    $self = $self->new
+	unless ref($self);
+    $self->handle_new_text($parseable)
+	unless $self->unsafe_get('text');
+    return $self->put(excerpt => $parseable->get_excerpt);
+}
+
+sub handle_new_text {
+    my($self, $parseable) = @_;
+    $self = $self->new
+	unless ref($self);
+    return $self->put(text => $parseable->get_content);
 }
 
 sub new_text {
@@ -112,9 +119,9 @@ sub _terms {
 	_field_term($self, 'realm_id'),
 	_field_term($self, 'user_id'),
 	_field_term($self, 'is_public'),
+	_field_term($self, 'simple_class'),
 	_omega_terms($self),
     ];
 }
 
 1;
-
