@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.18  2011/01/08 14:59:58  nagler
+  * Bivio::Auth::Role
+    added calculate_expression and is_admin
+  * Bivio::BConf
+    guests can read motions and tuples
+  * Bivio::Biz::Util::RealmRole
+    use Auth.Role->calculate_expression
+  * Bivio::Delegate::Role
+    moved is_admin to Auth.Role
+  * Bivio::MIME::Calendar
+    unescape \\
+    call HTML->unescape() on values
+  * Bivio::MIME::RRule
+    NEW
+  * Bivio::Type::String
+    convert common latin chars to ascii
+  * Bivio::UI::XHTML::Widget::ECMAScriptFile
+    removed
+  * Bivio::UI::XHTML::Widget::ECMAScriptNamed
+    removed
+  * Bivio::UI::XHTML::Widget::ECMAScript
+    removed
+
   Revision 10.17  2011/01/05 02:30:45  schellj
   * Bivio::MIME::Calendar
     sort event rows by dtstart and rrule,
