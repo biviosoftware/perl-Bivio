@@ -90,11 +90,11 @@ sub execute {
 }
 
 sub get_values_for_primary_id {
-    my($proto, $primary_id, $model) = @_;
+    my($proto, $primary_id, $model, $attr) = @_;
     my($req) = $model->req;
     return $req->perf_time_op(__PACKAGE__, sub {
 	if (my $query_result = _find($primary_id)) {
-	    if (my $res = _query_result($proto, $query_result, $req)) {
+	    if (my $res = _query_result($proto, $query_result, $req, $attr || {})) {
 		return $res;
 	    }
 	}
@@ -103,7 +103,7 @@ sub get_values_for_primary_id {
 
 sub handle_commit {
     my($self, $req) = @_;
-    if ($req->isa('Bivio::Agent::HTTP::Request')) {
+    if (b_use('AgentJob.Dispatcher')->can_enqueue_job($req)) {
 	b_use('AgentJob.Dispatcher')->enqueue(
 	    $req,
 	    'JOB_XAPIAN_COMMIT',
@@ -161,17 +161,17 @@ sub update_model {
 }
 
 sub query {
-    my($proto, $a) = @_;
-    $proto->acquire_lock($a->{req});
+    my($proto, $attr) = @_;
+    $proto->acquire_lock($attr->{req});
     my($q);
-    my($res) = $a->{req}->perf_time_op(__PACKAGE__, sub {
-	$a->{offset} ||= 0;
-	$a->{length} ||= $_LENGTH;
-	$a->{private_realm_ids} ||= [];
-	$a->{public_realm_ids} ||= [];
-	unless (@{$a->{private_realm_ids}} || @{$a->{public_realm_ids}}
-		    || $a->{want_all_public}) {
-	    _trace($a, ': no realms and not public') if $_TRACE;
+    my($res) = $attr->{req}->perf_time_op(__PACKAGE__, sub {
+	$attr->{offset} ||= 0;
+	$attr->{length} ||= $_LENGTH;
+	$attr->{private_realm_ids} ||= [];
+	$attr->{public_realm_ids} ||= [];
+	unless (@{$attr->{private_realm_ids}} || @{$attr->{public_realm_ids}}
+		    || $attr->{want_all_public}) {
+	    _trace($attr, ': no realms and not public') if $_TRACE;
 	    return [];
 	}
 	my($db) = Search::Xapian::Database->new($_CFG->{db_path});
@@ -179,35 +179,38 @@ sub query {
 	$qp->set_stemmer($_STEMMER);
 	$qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
 	$qp->set_default_op(Search::Xapian->OP_AND);
-	my($phrase) = $a->{phrase};
+	my($phrase) = $attr->{phrase};
 	$phrase =~ s/_/ /g;
 	$q = Search::Xapian::Query->new(
 	    Search::Xapian->OP_AND,
 	    $qp->parse_query($phrase, $_FLAGS),
+	    $attr->{simple_class}
+	    	? Search::Xapian::Query->new('XSIMPLECLASS:' . lc($attr->{simple_class}))
+	    	: (),
 	    Search::Xapian::Query->new(
-		Search::Xapian->OP_OR,
-		map(Search::Xapian::Query->new("XREALMID:$_"),
-		    @{$a->{private_realm_ids}}),
-		map(
-		    Search::Xapian::Query->new(
-			Search::Xapian->OP_AND,
-			Search::Xapian::Query->new("XREALMID:$_"),
-			Search::Xapian::Query->new('XISPUBLIC:1'),
-		    ),
-		    @{$a->{public_realm_ids}},
-		),
-		$a->{want_all_public}
-		    ? Search::Xapian::Query->new('XISPUBLIC:1')
-		    : (),
+	    	Search::Xapian->OP_OR,
+	    	map(Search::Xapian::Query->new("XREALMID:$_"),
+	    	    @{$attr->{private_realm_ids}}),
+	    	map(
+	    	    Search::Xapian::Query->new(
+	    		Search::Xapian->OP_AND,
+	    		Search::Xapian::Query->new("XREALMID:$_"),
+	    		Search::Xapian::Query->new('XISPUBLIC:1'),
+	    	    ),
+	    	    @{$attr->{public_realm_ids}},
+	    	),
+	    	$attr->{want_all_public}
+	    	    ? Search::Xapian::Query->new('XISPUBLIC:1')
+	    	    : (),
 	    ),
 	);
 	# Need to make a copy.  Xapian is using the Tie interface, and it's
 	# implementing it in a strange way.
-	my(@res) = $db->enquire($q)->matches($a->{offset}, $a->{length});
-	return [map(_query_result($proto, $_, $a->{req}), @res)];
+	my(@res) = $db->enquire($q)->matches($attr->{offset}, $attr->{length});
+	return [map(_query_result($proto, $_, $attr->{req}, $attr), @res)];
     });
-    _trace([$q->get_terms], '->[', $a->{offset}, '..',
-        $a->{offset} + $a->{length}, ']: ', $res,
+    _trace([$q->get_terms], '->[', $attr->{offset}, '..',
+        $attr->{offset} + $attr->{length}, ']: ', $res,
     ) if $_TRACE;
     return $res;
 }
@@ -252,9 +255,9 @@ sub _queue {
 }
 
 sub _query_author {
-    my($proto, $req, $res) = @_;
-    return
-	unless _query_model($proto, $res, $req);
+    my($proto, $req, $res, $attr) = @_;
+    return $res
+	unless _query_model($proto, $res, $req, $attr);
     return $res
 	if defined($res->{author}) && length($res->{author})
 	|| !(my $uid = $res->{author_user_id});
@@ -269,7 +272,9 @@ sub _query_author {
 }
 
 sub _query_model {
-    my($proto, $res, $req) = @_;
+    my($proto, $res, $req, $attr) = @_;
+    return 0
+	if $attr->{no_model};
     my($m) = $_M->new($req, $res->{simple_class});
     # There's a possibility that the the search db is out of sync with db
     return 0
@@ -285,18 +290,23 @@ sub _query_model {
 }
 
 sub _query_result {
-    my($proto, $query_result, $req) = @_;
+    my($proto, $query_result, $req, $attr) = @_;
     my($d) = $query_result->get_document;
-    return _query_author($proto, $req, {
-	map({
-	    my($m) = "get_$_";
-	    ($_  => $query_result->$m());
-	} qw(percent rank collapse_count)),
-	simple_class => $d->get_value(0),
-	'RealmOwner.realm_id' => $d->get_value(1),
-	primary_id => $d->get_value(2),
-	map(($_ => $d->get_value($_VALUE_MAP->{$_})), keys(%$_VALUE_MAP)),
-    });
+    return _query_author(
+	$proto,
+	$req,
+	{
+	    map({
+		my($m) = "get_$_";
+		($_  => $query_result->$m());
+	    } qw(percent rank collapse_count)),
+	    simple_class => $d->get_value(0),
+	    'RealmOwner.realm_id' => $d->get_value(1),
+	    primary_id => $d->get_value(2),
+	    map(($_ => $d->get_value($_VALUE_MAP->{$_})), keys(%$_VALUE_MAP)),
+	},
+	$attr,
+    );
 }
 
 sub _replace {
