@@ -672,6 +672,8 @@ sub _cfg_calendar {
 		'RealmOwner.display_name' => 'Title',
 	    ]],
 	    [CalendarEvent => [
+		dtstart => 'Start',
+		dtend => 'End',
 		description => 'Description',
 		location => 'Location',
 		'location.desc' => 'Maximum length 500 characters',
