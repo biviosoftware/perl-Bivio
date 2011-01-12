@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Search;
 use strict;
@@ -9,6 +9,7 @@ my($_X) = b_use('Search.Xapian');
 my($_D) = b_use('Type.Date');
 my($_RT) = b_use('Auth.RealmType');
 my($_A) = b_use('IO.Alert');
+my($_CL) = b_use('IO.ClassLoader');
 
 sub USAGE {
     return <<'EOF';
@@ -26,25 +27,26 @@ sub rebuild_db {
     my($req) = $self->req;
     $_X->acquire_lock($req);
     $_X->destroy_db($req);
-    my($realms) = $self->model('RealmFile')->map_iterate(
-	sub {shift->get('realm_id')},
-	'unauth_iterate_start',
-	'realm_id',
-	{path => '/'},
-    );
+    my($realms) = b_use('Type.StringArray')
+	->new(_map_classes(sub {@{shift->realms_for_rebuild_db($req)}}))
+	->sort_unique;
     $self->commit_or_rollback;
     b_info('Rebuilding ', scalar(@$realms), ' realms');
-    foreach my $r (@$realms) {
-	next
-	    if $_RT->is_default_id($r);
-	$req->with_realm(
-	    $r,
-	    sub {
-		b_info($self->rebuild_realm($bp->{after_date}));
-		return;
-	    },
-	);
-    }
+    $realms->do_iterate(
+	sub {
+	    my($r) = @_;
+	    return 1
+		if $_RT->is_default_id($r);
+	    $req->with_realm(
+		$r,
+		sub {
+		    b_info($self->rebuild_realm($bp->{after_date}));
+		    return;
+		},
+	    );
+	    return 1;
+	},
+    );
     return;
 }
 
@@ -61,31 +63,43 @@ sub rebuild_realm {
 	$_A->reset_warn_counter;
 	return;
     };
-    $self->model('RealmFile')->do_iterate(
+    _map_classes(
 	sub {
-	    my($it) = @_;
-	    if (0 == ++$i % 100) {
-		$commit->();
-		$_X->acquire_lock($req);
-		b_info(
-		    'file#', $i, ': ', $it->get('realm_file_id'),
-		) if $i > 1;
-	    }
-	    return 1
-		if $bp->{after_date}
-		&& $_D->is_less_than(
-		    $it->get('modified_date_time'),
-		    $bp->{after_date},
-		);
-	    $_X->update_model($req, $it);
-	    $j++;
-	    return 1;
-        },
-	'realm_file_id asc',
-	{is_folder => 0},
+	    my($class) = @_;
+	    b_info($class);
+	    $class->do_iterate_realm_models(
+		sub {
+		    my($it) = @_;
+		    if (0 == ++$i % 100) {
+			$commit->();
+			$_X->acquire_lock($req);
+			b_info($i)
+		            if $i > 1;
+		    }
+		    return 1
+			if $bp->{after_date}
+			&& $_D->is_less_than(
+			$it->get('modified_date_time'),
+			$bp->{after_date},
+		    );
+		    $_X->update_model($req, $it);
+		    $j++;
+		    return 1;
+		},
+		$req,
+	    );
+	},
     );
     $commit->();
-    return $self->req(qw(auth_realm owner name)) . ": $j files";
+    return $self->req(qw(auth_realm owner name)) . ": $j objects";
+}
+
+sub _map_classes {
+    my($op) = @_;
+    return [map(
+	$op->(b_use('SearchParser', $_)),
+	@{$_CL->list_simple_packages_in_map('SearchParser')},
+    )];
 }
 
 1;
