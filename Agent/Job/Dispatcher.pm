@@ -18,6 +18,12 @@ my($_IN_EXECUTE) = 0;
 my(@_QUEUE);
 __PACKAGE__->initialize;
 
+sub can_enqueue_job {
+    my($proto, $req) = @_;
+    return exists($ENV{MOD_PERL}) && $req->is_blessed('Bivio::Agent::HTTP:Request')
+	? 1 : 0;
+}
+
 sub create_request {
     # (self, hash_ref) : Agent.Request
     # Creates and returns a request.
