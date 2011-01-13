@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.19  2011/01/12 18:11:19  nagler
+  * Bivio::Agent::Job::Dispatcher
+    added can_enqueue_job
+  * Bivio::Biz::Model::CalendarEvent
+    initialize $_RO dynamically to avoid circular import
+  * Bivio::Biz::Model
+    added field_decl_from_property_model
+  * Bivio::MIME::JSON
+    NEW
+  * Bivio::Search::Parseable
+    added get_excerpt
+  * Bivio::Search::Parser::RealmFile
+    added realms_for_rebuild_db and do_iterate_realm_models
+  * Bivio::Search::Parser
+    added handle_new_text
+    added simple_class to field_term
+  * Bivio::Search::Xapian
+    can qualify by simple_class
+    don't return model from query() if no_model is set
+  * Bivio::Type::DateTime
+    use IO.Config for is_test (no longer need req() on set_test_now)
+  * Bivio::UI::FacadeBase
+    dtstart/end need names
+  * Bivio::Util::Search
+    remove RealmFile dependency, instead just iterate classes
+
   Revision 10.18  2011/01/08 14:59:58  nagler
   * Bivio::Auth::Role
     added calculate_expression and is_admin
