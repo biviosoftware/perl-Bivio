@@ -59,26 +59,31 @@ sub internal_create_display {
     # (proto, Biz.Model, string, Bivio.Type, hash_ref) : UI.Widget
     # Create a display-only widget for the specified field.
     my($proto, $model, $field, $type, $attrs) = @_;
-
+    my($value) = $attrs->{source_is_list_model}
+	? [['->get_list_model'], $field]
+	: $field;
+    $model = $model->get_list_model
+	if $attrs->{source_is_list_model};
     if ($field eq 'RealmOwner.name' && $model->can('format_name')) {
 	return $_VS->vs_new('String', {
-	    field => $field,
+	    field => $value,
 #TODO: This is broken in the case of $attrs->{value} existing
-	    value => ['->format_name'],
+	    value => $attrs->{source_is_list_model}
+		? [['->get_list_model'], '->format_name']
+		: ['->format_name'],
 	    %$attrs,
 	});
     }
-
     if (UNIVERSAL::isa($type, 'Bivio::Type::Percent')) {
 	b_use('HTMLWidget.PercentCell');
 	return $_VS->vs_new('PercentCell', {
-	    field => $field,
+	    field => $value,
 	    %$attrs,
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Dollar')) {
 	return $_VS->vs_new('DollarCell', {
-	    field => $field,
+	    field => $value,
 	    string_font => 'table_cell',
 	    column_align => 'right',
 	    column_data_class => 'amount_cell',
@@ -88,7 +93,7 @@ sub internal_create_display {
     if (UNIVERSAL::isa($type, 'Bivio::Type::Year')) {
 	return $_VS->vs_new('String', {
 	    field => $field,
-	    value => [$field],
+	    value => $value,
 	    string_font => 'table_cell',
 	    column_align => 'right',
 	    column_data_class => 'amount_cell',
@@ -97,13 +102,13 @@ sub internal_create_display {
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Integer')) {
 	return $_VS->vs_new('Integer', {
-	    field => $field,
+	    field => $value,
 	    %$attrs,
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Amount')) {
 	return $_VS->vs_new('AmountCell', {
-	    field => $field,
+	    field => $value,
 	    decimals => $proto->internal_default_decimals($field),
 	    want_parens => $proto->internal_default_want_parens($field),
 	    %$attrs,
@@ -112,14 +117,14 @@ sub internal_create_display {
     if (UNIVERSAL::isa($type, 'Bivio::Type::DateTimeWithTimeZone')) {
 	return $_VS->vs_new('String', {
 	    field => $field,
-	    value => [$field, '->as_literal'],
+	    value => [$value, '->as_literal'],
 	    %$attrs,
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Date')) {
         return $_VS->vs_new('String', {
             field => $field,
-            value => [[$field], 'HTMLFormat.DateTime',
+            value => [[$value], 'HTMLFormat.DateTime',
                 $attrs->{mode} || b_use('UI.DateTimeMode')->get_date_default,
 		defined($attrs->{no_timezone})
                     ? $attrs->{no_timezone} : 1],
@@ -130,7 +135,7 @@ sub internal_create_display {
     if (UNIVERSAL::isa($type, 'Bivio::Type::Time')) {
         return $_VS->vs_new('String', {
 	    field => $field,
-            value => ['Bivio::Type::Time', '->to_string', [$field]],
+            value => ['Bivio::Type::Time', '->to_string', [$value]],
 	    column_align => 'E',
 	    %$attrs,
         });
@@ -140,20 +145,20 @@ sub internal_create_display {
 	    field => $field,
 	    column_align => 'E',
 #TODO: This is broken in the case of $attrs->{value} existing
-	    value => [$field],
+	    value => [$value],
 	    %$attrs,
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Enum')) {
 	return $_VS->vs_new('Enum', {
-	    field => $field,
+	    field => $value,
 	    %$attrs,
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Email')) {
 	return $_VS->vs_new('MailTo', {
 	    field => $field,
-	    email => [$field],
+	    email => [$value],
 	    %$attrs,
 	});
     }
@@ -161,7 +166,7 @@ sub internal_create_display {
     if (UNIVERSAL::isa($type, 'Bivio::Type::PrimaryId')) {
 	return $_VS->vs_new('String', {
 	    field => $field,
-	    value => [$field],
+	    value => [$value],
 	    string_font => 'table_cell',
 	    column_align => 'right',
 	    %$attrs,
@@ -179,9 +184,9 @@ sub internal_create_display {
 
     if (UNIVERSAL::isa($type, 'Bivio::Type::HTTPURI')) {
 	return $_VS->vs_new(Link => {
-	    href => [$field],
-	    control => [$field],
-	    value => $_VS->vs_new(String => {value => [$field]}),
+	    href => [$value],
+	    control => [$value],
+	    value => $_VS->vs_new(String => {value => [$value]}),
 	    %$attrs,
 	});
     }
@@ -190,7 +195,7 @@ sub internal_create_display {
     return $_VS->vs_new('String', {
         field => $field,
 #TODO: This is broken in the case of $attrs->{value} existing
-	value => [$field],
+	value => [$value],
 	string_font => 'table_cell',
 	%$attrs,
     });
