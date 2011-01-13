@@ -764,10 +764,10 @@ sub _get_heading {
 	    'heading_font',
 	    $self->get_or_default('heading_font', 'table_heading'),
 	),
-	$cell->unsafe_get('column_heading_class') ? {
-	    column_heading_class => $cell->get('column_heading_class'),
-	} : (),
     ) unless UNIVERSAL::isa($heading, 'Bivio::UI::Widget');
+    if (my $class = $cell->unsafe_get('column_heading_class')) {
+	$heading->put(column_heading_class => $class);
+    }
     $heading = $_VS->vs_new(
 	'Link',
 	$_VS->vs_new(
