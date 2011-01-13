@@ -185,7 +185,9 @@ sub vs_alphabetical_chooser {
 
 sub vs_descriptive_field {
     my($proto, $field) = @_;
-    my($name, $attrs) = ref($field) ? @$field : $field;
+    my($name, $attrs) = ref($field) eq 'HASH'
+	? ($field->{field}, $field)
+        : ref($field) ? @$field : $field;
     $attrs ||= {};
     $name =~ /^(\w+)\.(.+)/;
     my($label, $input) = !$attrs->{wf_type}
@@ -315,42 +317,85 @@ sub vs_list_form {
     # Elements in $fields which are hash_refs or are "in_list" appear
     # as columns.  Elements which are arrays or are not "in_list" appear
     # as simple form entries.
-    my($f) = Bivio::Biz::Model->get_instance($form);
-    my($l) = Bivio::Biz::Model->get_instance($f->get_list_class);
+    my($fm) = $_M->get_instance($form);
+    my($lm) = $_M->get_instance($fm->get_list_class);
     my($list) = [];
-    return $proto->vs_simple_form($form => [
-	map({
-#TODO: Need to enapsulate this!
-	    my($d) = $_;
-	    my($field) = ref($d) eq 'HASH' ? $d
-		: !ref($d) && $d =~ /^\w+\.(.+)/ ? $1 : undef
-		if defined($d);
-	    my($t);
-	    if (ref($field)
-		|| $field
-	        && $f->has_fields($field)
-	        && $f->get_field_info($field, 'in_list')
-	    ) {
-		push(@$list, $field);
-		$d = undef;
-	    }
-	    elsif (@$list) {
-		$t = Table($form => [
-		    map({
-#TODO: Need to enapsulate this!
+    my($submit);
+    return $proto->vs_simple_form(
+	$form,
+	[
+	    map(
+		{
+		    my($d) = $_;
+		    my($field) = ref($d) eq 'HASH'
+			? $d
+			: ref($d) eq 'ARRAY'
+			? {
+			    field => $d->[0],
+			    %{$d->[1] || {}},
+			}
+			: !ref($d)
+			? {
+			    field => ($d =~ /^\w+\.(\w+\.\w+)$/)[0] || $d,
+			}
+			: b_die($d, ': unknown field format');
+
+		    unless ($field->{field}) {
+			push(@$list, $field);
+			$d = undef;
+		    }
+		    elsif ($fm->has_fields($field->{field})) {
+			if ($fm->get_field_info($field->{field}, 'in_list')) {
+			    push(@$list, $field);
+			    $d = undef;
+			}
+		    }
+		    elsif ($lm->has_fields($field->{field})) {
+			push(
+			    @$list,
+			    {
+				%$field,
+				wf_want_display => 1,
+				column_widget => $_WF->create(
+				    $lm->simple_package_name . ".$field->{field}",
+				    {
+					source_is_list_model => 1,
+					field => $field->{field},
+					%$field,
+				    },
+				),
+			    },
+			);
+			$d = undef;
+		    }
+		    elsif ($field->{field} =~ /^\*/) {
+			if (@$list) {
+			    $submit = $field->{field};
+			    $d = undef;
+			}
+		    }
+		    $d ? $d : ();
+		}
+		@$fields,
+	    ),
+	    @$list ? Table(
+		$form,
+		[map(
+		    {
 			my($x) = !ref($_) ? {field => $_} : $_;
 			$x->{column_class} ||= 'field';
 			# So checkboxes don't have labels in the fields, just hdr
 			$x->{label} = ''
 			    unless exists($x->{label});
 			$x;
-		    } @$list),
-		], $proto->vs_table_attrs($form, list => $table_attrs));
-		$list = [];
-	    }
-	    ($t ? $t : (), $d ? $d : ());
-	} @$fields, undef),
-    ]);
+		    }
+		    @$list,
+		)],
+		$proto->vs_table_attrs($form, list => $table_attrs),
+	    ) : (),
+	    $submit ? $submit : (),
+	],
+    );
 }
 
 sub vs_paged_detail {
