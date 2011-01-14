@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.20  2011/01/13 06:17:54  nagler
+  * Bivio::Delegate::SimpleWidgetFactory
+    support source_is_list_model
+  * Bivio::MIME::JSON
+    no longer derived from Attributes, now uses fields, 3x faster
+  * Bivio::UI::HTML::Widget::Table
+    allow headings to be applied outside the creation of the widget so
+    incoming widgets can get a heading, too.
+  * Bivio::UI::XHTML::ViewShortcuts
+    vs_descriptive_field accepts hash
+    vs_list_form wraps get_list_model on fields if they are not available
+    from ListFormModel and are available by ListModel
+
   Revision 10.19  2011/01/12 18:11:19  nagler
   * Bivio::Agent::Job::Dispatcher
     added can_enqueue_job
