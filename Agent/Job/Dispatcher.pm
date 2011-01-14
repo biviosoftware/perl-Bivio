@@ -20,7 +20,7 @@ __PACKAGE__->initialize;
 
 sub can_enqueue_job {
     my($proto, $req) = @_;
-    return exists($ENV{MOD_PERL}) && $req->is_blessed('Bivio::Agent::HTTP:Request')
+    return exists($ENV{MOD_PERL}) && b_use('AgentHTTP.Request')->is_blessed($req)
 	? 1 : 0;
 }
 
