@@ -977,23 +977,6 @@ body.b_help_wiki td.main_right,
 body.b_help_wiki td.main_left {
   CSS('b_help_wiki_main_left');
 }
-span.b_help_index {
-  display: block;
-  CSS('b_help_index');
-}
-span.b_help_index .b_item,
-span.b_help_index .b_title {
-  display: block;
-  CSS('b_help_index_text_indent');
-}
-span.b_help_index .b_title {
-  Font('b_help_index_title');
-  CSS('b_help_index_title');
-}
-span.b_help_index .b_item {
-  Font('b_help_index_item');
-  CSS('b_help_index_item');
-}
 div.wiki {
   CSS('b_wiki_width');
   padding-top: .5ex;
@@ -1001,15 +984,7 @@ div.wiki {
 }
 .wiki .b_prose,
 .wiki .prose {
-  text-indent: 2em;
   margin: 1ex 0 1ex 0;
-}
-.wiki blockquote .b_prose,
-.wiki blockquote ul li .b_prose,
-.wiki dd .b_prose,
-.wiki td .b_prose,
-.wiki li .b_prose {
-  text-indent: 0;
 }
 .same, .different {
   width: 100%;

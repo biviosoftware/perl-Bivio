@@ -1847,7 +1847,6 @@ sub _cfg_wiki {
 		FORUM_WIKI_NOT_FOUND => 'Wiki page not found.  Please create it.',
 	    ]],
 	    [prose => [
-		b_help_list_title => 'Help Index',
 		help_wiki_add => 'Add Help',
 		help_wiki_page => 'Help',
 		help_wiki_close => 'Close',
