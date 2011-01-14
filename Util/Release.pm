@@ -336,7 +336,8 @@ sub install {
     #   myproject
     #
     # Returns a list of commands executed.
-    $self->usage_error("No packages to install?") unless @packages;
+    $self->usage_error("No packages to install?")
+	unless @packages;
 
     my($command) = ['rpm', '-Uvh'];
     push(@$command, '--force') if $self->unsafe_get('force');
@@ -348,7 +349,11 @@ sub install {
 #	unless $_CFG->{http_realm};
 
     # install all the packages
-    for my $package (@packages) {
+    my($prev) = [];
+    foreach my $package (@packages) {
+	push(@$prev,
+	     `rpm -q --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE}.\%{ARCH}.rpm' $package 2>/dev/null`,
+	);
 	$package .= '.rpm'
 	    if $package =~ /\.\d+$/;
 	$package .= '-'.$self->get('version').'.rpm'
@@ -358,12 +363,29 @@ sub install {
 
 #TODO: download srcrpm and build/install
     _umask('install_umask');
+    my($run) = sub {
+	my($op) = @_;
+	my($err) = $?
+	    if $op->() != 0;
+	$self->print(
+	    "To rollback:\n",
+	    "rpm -Uvh --force --nodeps @$prev\n",
+	);
+	if ($err) {
+	    $self->print("ERROR: exit status = $err\n");
+	    CORE::exit(1);
+	}
+	return;
+    };
     return _do_in_tmp($self, 0, sub {
 	my($tmp, $output) = @_;
+	my($i) = 0;
 	foreach my $arg (@$command) {
-	    next unless $arg =~ /^http/;
+	    next
+		unless $arg =~ /^http/;
 	    my($file) = $arg =~ m{([^/]+)$};
-	    b_use('IO.File')->write($file, _http_get($arg, $output));
+	    b_use('IO.File')->write($file, _http_get(\$arg, $output));
+	    substr($prev->[$i++], 0, 0) = ($arg =~ m{(.*/)})[0];
 	    substr($arg, 0) = $file;
 	}
 	_output($output, "@$command\n");
@@ -373,16 +395,12 @@ sub install {
 	# There seems to be a "wait" problem.
 	$self->print($$output);
 	$$output = '';
-	system(@$command) == 0
-	    || b_die('ERROR exit status: ', $?);
+	$run->(sub {system(@$command)});
 	return;
     }) if $_CFG->{http_realm} || $ENV{http_proxy};
-
     $self->print(join(' ', @$command, "\n"));
-
-    exec(@$command);
-    die("command failed: $!\n");
-    # DOES NOT RETURN
+    $run->(sub {system(@$command)});
+    return;
 }
 
 sub install_facades {
@@ -427,7 +445,7 @@ sub install_tar {
 	for my $project (map(ref($_) ? $_->[0] : $_, @projects)) {
 	    my($tgz) = $project =~ /(?:\.tar\.gz|\.tgz)$/ ? $project
 		: "$project-$cvs_version.tar.gz";
-	    b_use('IO.File')->write($tgz, _http_get($tgz, $output));
+	    b_use('IO.File')->write($tgz, _http_get(\$tgz, $output));
 	    _system("tar xpzf '$tgz'", $output);
 	    chomp(my $dir = `ls -t | grep -v '$tgz' | head -1`);
 	    b_die($dir, ': not a directory, expecting it to be one')
@@ -456,7 +474,7 @@ sub list {
     #
     # or directory.
     return join('',
-	map("$_\n", ${_http_get($uri || '')} =~ /.+\">\s*(\S+\.rpm)<\/A>/g));
+	map("$_\n", ${_http_get(\($uri ||= ''))} =~ /.+\">\s*(\S+\.rpm)<\/A>/g));
 }
 
 sub list_installed {
@@ -819,13 +837,14 @@ sub _get_update_list {
 	    `rpm -qa --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' | sort`,
 	)),
     };
+    my($uri);
     return [
 	map({
 	    my($base, $version, $rpm) = split(/\s+/, $_);
 	    !$local_rpms->{"$base $version"}
 	        && ($install || $local_rpms->{$base})
 	        ? $rpm : ();
-	} split(/\n/, ${_http_get("$stream-rpms.txt")})),
+	} split(/\n/, ${_http_get(\($uri = "$stream-rpms.txt"))})),
     ];
 }
 
@@ -833,19 +852,19 @@ sub _http_get {
     my($uri, $output) = @_;
     # Returns content pointed to by $uri.  Handles local files as well
     # as remote files.
-    ($uri = _create_uri($uri)) =~ /^\w+:/
-	or $uri = URI::Heuristic::uf_uri($uri)->as_string;
-    _output($output, "GET $uri\n");
+    ($$uri = _create_uri($$uri)) =~ /^\w+:/
+	or $$uri = URI::Heuristic::uf_uri($$uri)->as_string;
+    _output($output, "GET $$uri\n");
     local($ENV{HTTPS_CA_FILE}) = $_CFG->{https_ca_file}
 	if $_CFG->{https_ca_file};
     my($ua) = b_use('Ext.LWPUserAgent')->new(1);
     $ua->credentials(
-	URI->new($uri)->host_port,
+	URI->new($$uri)->host_port,
 	@$_CFG{qw(http_realm http_user http_password)},
     ) if $_CFG->{http_realm};
     my($reply) = $ua->request(
-	HTTP::Request->new('GET', $uri));
-    b_die($uri, ": GET failed: ", $reply->status_line)
+	HTTP::Request->new('GET', $$uri));
+    b_die($$uri, ": GET failed: ", $reply->status_line)
 	unless $reply->is_success;
     return \($reply->content);
 }
