@@ -4,7 +4,6 @@ package Bivio::UI::FacadeBase;
 use strict;
 use Bivio::Base 'UI.Facade';
 
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
@@ -366,7 +365,6 @@ sub _cfg_base {
 		border-left: none;
             }],
 	    [b_prose => q{
-		text-indent: 2em;
 		margin: 1ex 0 1ex 0;
             }],
 	],
