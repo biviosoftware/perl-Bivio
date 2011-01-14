@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.21  2011/01/14 16:04:29  nagler
+  * Bivio::Agent::Job::Dispatcher
+    can_enqueue_job had is_blessed arguments wrong
+
   Revision 10.20  2011/01/13 06:17:54  nagler
   * Bivio::Delegate::SimpleWidgetFactory
     support source_is_list_model
