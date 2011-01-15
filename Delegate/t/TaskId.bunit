@@ -12,7 +12,7 @@
 		    name => 'JOB_XAPIAN_COMMIT',
 		    int => 60,
 		    realm_type => 'ANY_OWNER',
-		    permissions => 'ANYBODY',
+		    permission_set => 'ANYBODY',
 		    items => [qw(
                         Search.Xapian
 		    )],
@@ -21,7 +21,7 @@
 		    name => 'SEARCH_LIST',
 		    int => 61,
 		    realm_type => 'GENERAL',
-		    permissions => 'ANYBODY',
+		    permission_set => 'ANYBODY',
 		    items => [qw(
 		        Model.SearchForm
 			Model.SearchList->execute_load_page
@@ -33,7 +33,7 @@
 		    name => 'GROUP_SEARCH_LIST',
 		    int => 62,
 		    realm_type => 'ANY_OWNER',
-		    permissions => 'ANYBODY',
+		    permission_set => 'ANYBODY',
 		    items => [qw(
 		        Model.SearchForm
 			Model.SearchList->execute_load_page
@@ -46,26 +46,26 @@
 		name => 'a',
 		int => 1,
 		realm_type => undef,
-		permissions => undef,
+		permission_set => undef,
 		items => [],
 	    }, {
 		name => 'b',
 		int => 2,
 		realm_type => undef,
-		permissions => undef,
+		permission_set => undef,
 		items => [],
 	    }]],
 	    [[[a => 1]], [[a => 3], [b => 2]]] => [[{
 		name => 'b',
 		int => 2,
 		realm_type => undef,
-		permissions => undef,
+		permission_set => undef,
 		items => [],
 	    }, {
 		name => 'a',
 		int => 3,
 		realm_type => undef,
-		permissions => undef,
+		permission_set => undef,
 		items => [],
 	    }]],
 	],
