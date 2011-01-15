@@ -34,6 +34,7 @@ EOF
 		    {map(ref($_) ? lc(req()->get_widget_value(@$_)) : $_,
 			 XREALMID => ['auth_id'],
 			 XUSERID => ['auth_user_id'],
+			 XSIMPLECLASS => 'realmfile',
 			 XISPUBLIC => 0,
 			 S => 'a short title',
 			 T => 'text/html',
