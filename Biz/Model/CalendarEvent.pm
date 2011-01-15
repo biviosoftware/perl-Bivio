@@ -130,10 +130,13 @@ sub _value_for_type {
     # internal format can be converted from literal
     my($v, $e) = $t->from_literal($vevent->{$from});
     if ($e) {
-	($v, $e) = $t->from_literal(
-	    substr($vevent->{$from}, 0, $t->get_width)
-	) if $t->isa('Bivio::Type::String');
-	b_die(
+	if ($t->isa('Bivio::Type::String')) {
+	    # need to canonicalize before trimmming due to expansion
+	    ($v, $e) = $t->from_literal(
+		substr(${$t->canonicalize_charset($vevent->{$from})},
+		       0, $t->get_width));
+	}
+ 	b_die(
 	    $from, '=', $vevent->{$from}, ': ', $e, ' of ', $vevent
 	) if $e;
     }
