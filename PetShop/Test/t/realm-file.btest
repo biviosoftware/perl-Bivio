@@ -21,7 +21,7 @@ login_as('root');
 visit_uri('/fourem/files');
 
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
-    follow_link_in_table('Name', 'Name', 'realm-file-btest.txt',
+    follow_link_in_table('Name', 'Name', qr{realm-file-btest.txt},
 	'Name', 'change');
     fixup_files_uri('DELETE');
     submit_form(OK => {
