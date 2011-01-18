@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.22  2011/01/14 17:59:09  nagler
+  * Bivio::UI::FacadeBase
+    removed help_index
+    removed text-indent: 2em
+  * Bivio::UI::View::CSS
+    removed help_index
+
   Revision 10.21  2011/01/14 16:04:29  nagler
   * Bivio::Agent::Job::Dispatcher
     can_enqueue_job had is_blessed arguments wrong
