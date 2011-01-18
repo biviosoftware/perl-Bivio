@@ -40,6 +40,7 @@ my($_BEGINNING_OF_DAY) = 0;
 my($_END_OF_DAY) = __PACKAGE__->SECONDS_IN_DAY-1;
 my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
 my($_DAY_OF_WEEK) = [qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)];
+my($_IS_REGISTERED_WITH_TASK) = 0;
 my($_NUM_TO_MONTH3) = [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)];
 my($_MONTH3_TO_NUM) = _make_map($_NUM_TO_MONTH3);
 my($_NUM_TO_MONTH) = [qw(January February March April May June July August September October November December)];
@@ -617,11 +618,10 @@ sub local_to_parts {
 sub now {
     my($proto) = @_;
     # Returns date/time for now.
-    if (!defined($_IS_TEST)
-        && UNIVERSAL::can('Bivio::Agent::Task', 'register')
-    ) {
-	$proto->use('Bivio::Agent::Task')->register(__PACKAGE__)
-	    if $_IS_TEST;
+    if ($_IS_TEST && ! $_IS_REGISTERED_WITH_TASK
+	&& UNIVERSAL::can('Bivio::Agent::Task', 'register')) {
+	$_IS_REGISTERED_WITH_TASK = 1;
+	b_use('Bivio::Agent::Task')->register(__PACKAGE__);
     }
     return $_IS_TEST && $_TEST_NOW || __PACKAGE__->from_unix(time);
 }
