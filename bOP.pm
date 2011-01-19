@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.23  2011/01/18 21:52:25  moeller
+  * Bivio::Biz::Model::CalendarEvent
+    when importing vevent, trim long strings after canonicalizing the charset
+  * Bivio::Type::DateTime
+    fixed Task registration on test systems
+  * Bivio::Util::Release
+    added rollback instructions to install
+  * Bivio::Util::SQL
+    added upgrade db to remove forum feature_motion and feature_tuple
+
   Revision 10.22  2011/01/14 17:59:09  nagler
   * Bivio::UI::FacadeBase
     removed help_index
