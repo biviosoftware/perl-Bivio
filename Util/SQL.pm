@@ -63,7 +63,6 @@ my($_BUNDLE) = [qw(
     !drop_member_if_administrator
     !general_accountant
     !motion_vote_aff_drop_not_null
-    !remove_forum_features
 ),
     $_IC->if_version(10, '!', '') ? 'site_admin_forum_users2' : (),
 qw(
@@ -1559,16 +1558,6 @@ CREATE INDEX realm_file_lock_t7 ON realm_file_lock_t (
 )
 /
 EOF
-    return;
-}
-
-sub internal_upgrade_db_remove_forum_features {
-    my($self) = @_;
-    $self->req->with_realm('forum', sub {
-        my($rr) = $self->new_other('RealmRole');
-        $rr->edit_categories('-feature_motion');
-        $rr->edit_categories('-feature_tuple');
-    });
     return;
 }
 
