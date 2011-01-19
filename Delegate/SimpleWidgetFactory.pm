@@ -93,7 +93,7 @@ sub internal_create_display {
     if (UNIVERSAL::isa($type, 'Bivio::Type::Year')) {
 	return $_VS->vs_new('String', {
 	    field => $field,
-	    value => $value,
+	    value => [$value],
 	    string_font => 'table_cell',
 	    column_align => 'right',
 	    column_data_class => 'amount_cell',
