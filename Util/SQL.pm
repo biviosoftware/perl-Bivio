@@ -64,7 +64,7 @@ my($_BUNDLE) = [qw(
     !general_accountant
     !motion_vote_aff_drop_not_null
 ),
-    $_IC->if_version(10, '!', '') ? 'site_admin_forum_users2' : (),
+    $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
     !site_help_title
 )
