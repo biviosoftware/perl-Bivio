@@ -8,7 +8,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FP) = b_use('Type.FilePath');
 my($_RF) = b_use('Model.RealmFile');
-my($_RTK) = b_use('Type.RowTagKey');
 my($_TLN) = b_use('Type.TreeListNode');
 my($_MAIL_FOLDER) = lc($_FP->MAIL_FOLDER);
 my($_VERSIONS_FOLDER_RE) =  qr{^$_FP->VERSIONS_FOLDER(?:/:$)}ios;
