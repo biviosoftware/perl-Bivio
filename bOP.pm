@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.24  2011/01/19 20:10:48  nagler
+  * Bivio::Delegate::SimpleWidgetFactory
+    value needs to be in brackets for Year
+  * Bivio::Util::SQL
+    fpc
+
   Revision 10.23  2011/01/18 21:52:25  moeller
   * Bivio::Biz::Model::CalendarEvent
     when importing vevent, trim long strings after canonicalizing the charset
