@@ -20,6 +20,11 @@ sub USER_LIST_CLASS {
     return 'GroupUserList';
 }
 
+sub can_add_user {
+    my($self) = @_;
+    return $self->new_other('GroupUserList')->can_add_user;
+}
+
 sub change_main_role {
     my($self, $user_id, $role) = @_;
     my($ru) = $self->new_other('RealmUser');
@@ -72,16 +77,18 @@ sub execute_ok {
     my($rid) = $self->req('auth_id');
     my($main) = $self->get('RealmUser.role');
     my($ru) = $self->new_other('RealmUser');
-    unless (($old_main || '') eq $main) {
-	$ru->delete_all({user_id => $uid});
-	return _audit_user($self, $uid)
-	    if $main->eq_unknown;
-	$ru->create({
-	    realm_id => $rid,
-	    user_id => $uid,
-	    role => $main,
-	});
-    }
+
+    if ($main) {
+	unless (($old_main || '') eq $main) {
+	    $ru->delete_all({user_id => $uid});
+	    return _audit_user($self, $uid)
+		if $main->eq_unknown;
+	    $ru->create({
+		realm_id => $rid,
+		user_id => $uid,
+		role => $main,
+	    });
+	}
 #TODO: Deal with the site level (invalidate password?)
 #      Maybe not delete password
 #TODO: ForumUserForm would delete children (need to generalize with realm_dag)
@@ -90,8 +97,9 @@ sub execute_ok {
 #TODO: when transitioning from unapproved to other state, send email
 #      except unknown.  Have code in place to transition, but the views
 #      can be empty.
-    $self->internal_put_field(file_writer => 1)
-	if $main->in_category_role_group('all_admins');
+	$self->internal_put_field(file_writer => 1)
+	    if $main->in_category_role_group('all_admins');
+    }
     foreach my $f (@{$self->internal_aux_fields}) {
 	my($method) = $self->unsafe_get($f) ? 'unauth_create_or_update'
 	    : 'delete';
