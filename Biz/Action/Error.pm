@@ -49,6 +49,7 @@ sub _wiki {
 	    return
 		unless $wn;
 	    $req->put(path_info => $wn);
+	    $req->set_task('FORUM_WIKI_VIEW');
 	    $_WV->execute_prepare_html($req);
 	    $_V->execute('Wiki->site_view', $req);
 	    return;
