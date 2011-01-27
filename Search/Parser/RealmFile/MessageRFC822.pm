@@ -64,7 +64,9 @@ sub handle_realm_file_new_excerpt {
     my($proto) = shift;
     my($self) = ref($proto) ? $proto : $proto->new_text(@_);
     my($text) = $self->get('text');
-    $self->put(text => \((split(/\n\n/, $$text, 2))[1]));
+    my($v) = (split(/\n\n/, $$text, 2))[1];
+    $v = '' unless defined($v);
+    $self->put(text => \$v);
     return $self->SUPER::handle_realm_file_new_excerpt(@_)
 	->put(text => $text);
 }
