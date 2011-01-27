@@ -249,6 +249,8 @@ sub user_friendly_error_message {
 
 sub write_file {
     my($self, $file_name, $contents) = @_;
+    # ignore utf warnings
+    local($SIG{__WARN__}) = sub {};
     $_F->write(
 	$self->file_name($file_name) || return,
 	$contents,
