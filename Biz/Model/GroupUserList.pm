@@ -23,6 +23,10 @@ sub NAME_SORT_COLUMNS {
     return shift->delegate_method($_AUL);
 }
 
+sub can_add_user {
+    return 1;
+}
+
 sub can_change_privileges {
     my($self, $task_id) = @_;
     return $self->req->can_user_execute_task($task_id)
