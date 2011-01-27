@@ -59,7 +59,10 @@ sub internal_feature_form {
 sub user_form {
     my($self) = @_;
     $self->internal_put_base_attr(tools => TaskMenu([
-	'GROUP_USER_ADD_FORM',
+	{
+	    task_id => 'GROUP_USER_ADD_FORM',
+	    control => ['Model.GroupUserForm', '->can_add_user'],
+	},
 	'GROUP_USER_LIST',
     ]));
     return $self->internal_body(vs_simple_form(GroupUserForm => [
@@ -67,6 +70,8 @@ sub user_form {
 	    choices => ['->req', 'Model.RoleSelectList'],
 	    list_display_field => 'display',
 	    list_id_field => 'RealmUser.role',
+	    row_control => ['Model.GroupUserForm',
+	        '->is_field_editable', 'RealmUser.role'],
 	}],
 	'GroupUserForm.file_writer',
 	'GroupUserForm.mail_recipient',
