@@ -339,8 +339,7 @@ sub vs_list_form {
 			    field => ($d =~ /^\w+\.(\w+\.\w+)$/)[0] || $d,
 			}
 			: b_die($d, ': unknown field format');
-
-		    unless ($field->{field}) {
+		    if (!$field->{field} || $field->{column_widget}) {
 			push(@$list, $field);
 			$d = undef;
 		    }
