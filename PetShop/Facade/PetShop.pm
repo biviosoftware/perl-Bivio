@@ -154,7 +154,7 @@ __PACKAGE__->new({
 	my_site_redirect_map => sub {[
 	    [qw(GENERAL ADMINISTRATOR ADM_SUBSTITUTE_USER)],
 	    [qw(guest ADMINISTRATOR USER_PASSWORD)],
- 	    [qw(USER ADMINISTRATOR USER_ACCOUNT_EDIT)],
+ 	    [qw(USER ADMINISTRATOR SITE_ROOT)],
 	]},
 	threepartpage_want_ForumDropDown => 1,
 	constant_bunit => [
