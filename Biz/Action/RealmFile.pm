@@ -63,11 +63,6 @@ sub access_is_public_only {
     )->does_user_have_permissions($_DATA_READ, $req) ? 0 : 1;
 }
 
-sub assert_access {
-#TODO: What is going on here?  Used in FORUM_FILE_*
-    return;
-}
-
 sub execute_private {
     my($proto, $req) = @_;
     return $proto->unauth_execute($req, undef, $req->get('auth_id'));
