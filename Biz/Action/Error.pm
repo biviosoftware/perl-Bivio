@@ -26,7 +26,7 @@ sub execute {
     my($reply) = $req->get('reply');
     $reply->delete_output;
     my($die) = Bivio::Die->catch_quietly(sub {_wiki($self, $req)});
-    Bivio::IO::Alert->warn($status, ': wiki rendering error: ', $die)
+    b_warn($status, ': wiki rendering error: ', $die)
         if $die && !$_WARNINGS->{$status}++;
     $_V->execute('Error->default', $req)
         if $die || ! $reply->unsafe_get_output;
@@ -49,8 +49,8 @@ sub _wiki {
 	    return
 		unless $wn;
 	    $req->put(path_info => $wn);
-	    $req->set_task('FORUM_WIKI_VIEW');
 	    $_WV->execute_prepare_html($req);
+	    $req->set_task('FORUM_WIKI_VIEW');
 	    $_V->execute('Wiki->site_view', $req);
 	    return;
 	},
