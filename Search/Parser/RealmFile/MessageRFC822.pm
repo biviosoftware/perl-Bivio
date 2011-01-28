@@ -5,9 +5,9 @@ use strict;
 use Bivio::Base 'SearchParser.RealmFile';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_MPL) = __PACKAGE__->use('Model.MailPartList');
-my($_RF) = __PACKAGE__->use('SearchParser.RealmFile');
-my($_A) = __PACKAGE__->use('Mail.Address');
+my($_MPL) = b_use('Model.MailPartList');
+my($_RF) = b_use('SearchParser.RealmFile');
+my($_A) = b_use('Mail.Address');
 
 sub CONTENT_TYPE_LIST {
     return 'message/rfc822';
@@ -65,7 +65,8 @@ sub handle_realm_file_new_excerpt {
     my($self) = ref($proto) ? $proto : $proto->new_text(@_);
     my($text) = $self->get('text');
     my($v) = (split(/\n\n/, $$text, 2))[1];
-    $v = '' unless defined($v);
+    $v = ''
+	unless defined($v);
     $self->put(text => \$v);
     return $self->SUPER::handle_realm_file_new_excerpt(@_)
 	->put(text => $text);
