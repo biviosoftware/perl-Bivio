@@ -18,7 +18,22 @@ my($_D) = b_use('Bivio.Die');
 my($_F) = b_use('Biz.File');
 my($_FP) = b_use('Type.FilePath');
 my($_RI) = b_use('Agent.RequestId');
+my($_MV) = b_use('Type.MailVisibility');
+my($_MAIL_READ) = ${b_use('Auth.PermissionSet')->from_array(['MAIL_READ'])};
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
+
+sub access_is_public_only {
+    my($proto, $req) = @_;
+    return $req->get('auth_realm')->does_user_have_permissions($_MAIL_READ, $req) ? 0 : 1;
+}
+
+sub assert_mail_visibility {
+    my($proto, $req) = @_;
+    $proto->throw_die('FORBIDDEN', 'Always is private')
+	if $_MV->row_tag_get($req)->eq_always_is_private
+	&& $proto->access_is_public_only($req);
+    return;
+}
 
 sub cascade_delete {
     my($self, $query) = @_;
@@ -156,7 +171,10 @@ sub _create_file {
 	$in,
 	$rf->create_with_content({
 	    override_is_read_only => 1,
-	    path => $_MFN->to_unique_absolute($date),
+	    path => $_MFN->to_unique_absolute(
+		$date,
+		$_MV->row_tag_get($self->req)->eq_always_is_public,
+	    ),
 	    user_id => _user_id($self, $in),
 	    modified_date_time => $date,
 	}, $rfc822),
