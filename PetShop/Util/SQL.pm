@@ -67,6 +67,14 @@ sub MAIL_FORUM {
     return 'mail_forum';
 }
 
+sub MAIL_FORUM_PUBLIC {
+    return 'mail_forum_public';
+}
+
+sub MAIL_FORUM_ALLOW_PUBLIC {
+    return 'mail_forum_allow_public';
+}
+
 sub MAIL_USER {
     return 'mail_user' . $_[1];
 }
@@ -692,6 +700,13 @@ sub _init_mail {
     my($self) = @_;
     $self->top_level_forum(
 	$self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    my($mv) = b_use('Type.MailVisibility');
+    $self->top_level_forum(
+	$self->MAIL_FORUM_PUBLIC, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    $mv->row_tag_replace($mv->ALWAYS_IS_PUBLIC, $self->req);
+    $self->top_level_forum(
+	$self->MAIL_FORUM_ALLOW_PUBLIC, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    $mv->row_tag_replace($mv->ALLOW_IS_PUBLIC, $self->req);
     return;
 }
 
