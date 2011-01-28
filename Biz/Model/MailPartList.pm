@@ -1,16 +1,17 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailPartList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_A) = __PACKAGE__->use('Mail.Address');
-my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_FN) = __PACKAGE__->use('Type.FileName');
-my($_MP) = __PACKAGE__->use('Ext.MIMEParser');
-my($_T) = __PACKAGE__->use('MIME.Type');
-my($_W) = __PACKAGE__->use('MIME.Word');
+my($_A) = b_use('Mail.Address');
+my($_DT) = b_use('Type.DateTime');
+my($_FN) = b_use('Type.FileName');
+my($_MP) = b_use('Ext.MIMEParser');
+my($_T) = b_use('MIME.Type');
+my($_W) = b_use('MIME.Word');
+my($_RM) = b_use('Model.RealmMail');
 
 sub execute_from_realm_mail_list {
     my($proto, $req) = @_;
@@ -147,6 +148,8 @@ sub internal_load_rows {
     my($self, $query) = @_;
     my($index) = 0;
     my($rid) = $query->get('auth_id');
+    b_die($rid, ': auth_id not same as auth_realm: ', $self->req('auth_realm'))
+	unless $query->unsafe_get('content_ref') || $self->req('auth_id') eq $rid;
     my($res) = [map({
 	$_->{index} = $index++;
 	$_->{'RealmFile.realm_id'} = $rid;
@@ -158,6 +161,9 @@ sub internal_load_rows {
 	        || $self->new_other('RealmFile')->unauth_load_or_die({
 		    realm_id => $query->get('auth_id'),
 		    realm_file_id => $query->get('parent_id'),
+		    $_RM->access_is_public_only($self->req)
+			? (is_public => 1)
+			: (),
 		})->get_content},
 	))},
     )];

@@ -51,4 +51,11 @@ sub internal_initialize {
     });
 }
 
+sub internal_prepare_statement {
+    my($self, $stmt) = @_;
+    $stmt->where(['RealmFile.is_public', [1]])
+	if $_RM->access_is_public_only($self->req);
+    return shift->SUPER::internal_prepare_statement(@_);
+}
+
 1;
