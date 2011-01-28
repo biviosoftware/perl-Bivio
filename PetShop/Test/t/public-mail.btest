@@ -1,0 +1,72 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+my($always_public) = 'mail_forum_public';
+my($always_public_uri) = "/$always_public/mail";
+my($from) = generate_local_email('mail_user1');
+my($to) = generate_remote_email($always_public);
+my($msg) = send_mail(
+    $from,
+    $to,
+    {
+	'MIME-Version' => '1.0',
+	'Content-Type' => 'multipart/mixed; boundary="----------=_1201646665-416-4"',
+	'Content-Transfer-Encoding' => 'binary',
+    },
+    random_string() . <<'EOF',
+
+This is a multi-part message in MIME format...
+
+------------=_1201646665-416-4
+Content-Type: multipart/related; boundary="----------=_1201646665-416-5"
+Content-Transfer-Encoding: binary
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+This is a multi-part message in MIME format...
+
+
+------------=_1201646665-416-5
+Content-Type: text/html; charset="us-ascii"
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.=
+w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">=0D
+<html xmlns=3D"http://www.w3.org/1999/xhtml">=0D
+<body>=0D
+<a href=3D"cid:pqwflo4g7tvg3mo9.9w2xcpn7sss75wi4@bivio.biz">embedded-image</a>=0D
+<img src=3D"cid:pqwflo4g7tvg3mo9.9w2xcpn7sss75wi4@bivio.biz" />=0D
+</body>=0D
+</html>=0D
+
+------------=_1201646665-416-5
+Content-Type: image/gif; name="4000021.gif"
+Content-Disposition: inline; filename="4000021.gif"
+Content-Transfer-Encoding: base64
+Content-ID: <pqwflo4g7tvg3mo9.9w2xcpn7sss75wi4@bivio.biz>
+MIME-Version: 1.0
+X-Mailer: MIME-tools 5.411 (Entity 5.404)
+
+R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAEBMgA7
+------------=_1201646665-416-4--
+
+EOF
+);
+verify_local_mail(qr{});
+login_as($from);
+follow_link($always_public, '^mail$');
+my($mail_uri) = get_uri();
+follow_link($msg->unsafe_get_header('subject'));
+my($msg_uri) = get_uri();
+follow_link('embedded-image');
+my($image_uri) = get_uri();
+go_back();
+follow_link('original');
+my($original_uri) = get_uri();
+do_logout();
+visit_uri($mail_uri);
+visit_uri($msg_uri);
+visit_uri($image_uri);
+visit_uri($original_uri);
