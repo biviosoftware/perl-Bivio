@@ -660,7 +660,6 @@ sub info_file {
 	    171
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
-	    Action.RealmFile->assert_access
 	    Model.RealmFileVersionsList->execute_load_page
 	    View.File->version_list
 	)],
@@ -669,7 +668,6 @@ sub info_file {
 	    172
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
-	    Action.RealmFile->assert_access
 	    Model.Lock
 	    Model.FileChangeForm
 	    Model.RealmFolderList->execute_load_all
@@ -682,7 +680,6 @@ sub info_file {
 	    173
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
-	    Action.RealmFile->assert_access
 	    Model.Lock
 	    Model.FileUnlockForm
 	    View.File->file_unlock
@@ -839,7 +836,8 @@ sub info_mail {
 	    FORUM_MAIL_THREAD_ROOT_LIST
 	    140
 	    ANY_OWNER
-	    MAIL_READ&FEATURE_MAIL
+	    ANYBODY&FEATURE_MAIL
+	    Model.RealmMail->assert_mail_visibility
 	    Model.MailThreadRootList->execute_load_page
 	    View.Mail->thread_root_list
 	    thread_task=FORUM_MAIL_THREAD_LIST
@@ -849,7 +847,8 @@ sub info_mail {
 	    FORUM_MAIL_THREAD_LIST
 	    141
 	    ANY_OWNER
-	    MAIL_READ&FEATURE_MAIL
+	    ANYBODY&FEATURE_MAIL
+	    Model.RealmMail->assert_mail_visibility
 	    Model.MailThreadList->execute_load_page
 	    View.Mail->thread_list
 	)],
@@ -857,14 +856,15 @@ sub info_mail {
 	    FORUM_MAIL_PART
 	    142
 	    ANY_OWNER
-	    MAIL_READ&FEATURE_MAIL
+	    ANYBODY&FEATURE_MAIL
+	    Model.RealmMail->assert_mail_visibility
 	    Model.MailPartList->execute_part
 	)],
 	[qw(
 	    FORUM_MAIL_FORM
 	    143
 	    ANY_OWNER
-	    MAIL_READ&MAIL_POST&FEATURE_MAIL
+	    MAIL_POST&FEATURE_MAIL
 	    Model.MailForm
 	    View.Mail->send_form
 	    next=FORUM_MAIL_THREAD_ROOT_LIST
@@ -875,6 +875,7 @@ sub info_mail {
 	    144
 	    ANY_OWNER
 	    ANYBODY&FEATURE_MAIL
+	    Model.RealmMail->assert_mail_visibility
 	    Action.RealmFile->execute_show_original
 	)],
 	[qw(
