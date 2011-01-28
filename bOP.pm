@@ -28,9 +28,28 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.25  2011/01/27 23:23:20  moeller
+  * Bivio::Biz::Action::Error
+    when rendering wiki, set task to FORUM_WIKI_VIEW so unwinds work correctly
+  * Bivio::Biz::Model::GroupUserForm
+    added can_add_user()
+    don't update RealmUser.role if not editable
+  * Bivio::Biz::Model::GroupUserList
+    added can_add_user()
+  * Bivio::HTML::Scraper
+    ignore utf8 warnings when writing files
+  * Bivio::Search::Parser::RealmFile::MessageRFC822
+    guard against unsplittable text
+  * Bivio::UI::View::GroupAdmin
+    don't show GROUP_USER_ADD_FORM link unless ->can_add_user()
+    don't show permission field unless editable
+  * Bivio::Util::SQL
+    bug in the way !site_admin_forum_users2 was being initialized
+
   Revision 10.24  2011/01/19 20:10:48  nagler
   * Bivio::Delegate::SimpleWidgetFactory
     value needs to be in brackets for Year
