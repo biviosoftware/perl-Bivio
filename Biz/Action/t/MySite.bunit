@@ -18,7 +18,7 @@ options({comparator => 'nested_contains'});
 		query => undef,
 	    }],
 	    demo => [{
-		task_id => 'USER_ACCOUNT_EDIT',
+		task_id => 'SITE_ROOT',
 		query => undef,
 	    }],
 	    root => [{
