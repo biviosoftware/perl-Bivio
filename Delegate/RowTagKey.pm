@@ -23,6 +23,7 @@ sub get_delegate_info {
 	TEXTAREA_WRAP_LINES => 12,
 	TIME_ZONE => 13,
 	MAIL_WANT_REPLY_TO => 14,
+	MAIL_VISIBILITY => 15,
 	LAST_RESERVED_VALUE => 99,
     ];
 }
