@@ -1,6 +1,6 @@
 # Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-test_setup('PetShop');
+test_setup('PetShop', 'groupware');
 home_page();
 my($vars) = test_template_vars({
     user1_email => generate_local_email('mail_user1'),
@@ -61,7 +61,7 @@ my($send_and_verify_mail) = sub {
 };
 my($check_for_loop) = sub {
     sleep(10);
-    visit_uri('/mail_forum/mail');
+    follow_link(qw(^mail_forum$ ^mail$));
     b_die('Found duplicate message')
 	if get_table_row('_anon#0', 0)->{''}->get('text')
 	eq get_table_row('_anon#0', 1)->{''}->get('text');
@@ -71,8 +71,10 @@ my($msg, $subject) = $send_and_verify_mail->(qw(1.eml user1 forum),
 					     'Long Thread');
 login_as('mail_user1');
 my($user1_email) = generate_local_email('mail_user1');
-visit_uri('/mail_forum/mail');
+follow_link(qw(^mail_forum$ ^mail$));
+my($main_uri) = get_uri();
 follow_link($subject);
+my($msg_uri) = get_uri();
 verify_text(escape_html($subject));
 %$vars = (
     %$vars,
@@ -90,6 +92,7 @@ verify_no_text($vars->{inner_plain});
 $send_and_verify_mail->(qw(3.eml user1 forum), $msg);
 reload_page();
 follow_link('embedded-image');
+my($image_uri) = get_uri();
 verify_content_type('image/gif');
 go_back();
 follow_link('new_topic');
@@ -111,6 +114,7 @@ verify_form({
 verify_text(qr{To:.*\Q$user1_email}s);
 go_back();
 follow_link('original');
+my($original_uri) = get_uri();
 verify_text(qr{message-id:}i);
 go_back();
 follow_link('reply$');
@@ -130,7 +134,7 @@ verify_text('reply text');
 );
 $next_date = $d->add_seconds($next_date, 120);
 ($msg, $subject) = $send_and_verify_mail->(qw(ar.eml user1 forum));
-visit_uri('/mail_forum/mail');
+follow_link(qw(^mail_forum$ ^mail$));
 follow_link($subject);
 verify_text($subject);
 $send_mail->(qw(ar.eml user1 forum));
@@ -145,7 +149,7 @@ clear_local_mail();
     bf_count => 3,
 );
 ($msg, $subject) = $send_and_verify_mail->(qw(bf1.eml user1 forum));
-visit_uri('/mail_forum/mail');
+follow_link(qw(^mail_forum$ ^mail$));
 follow_link($subject);
 verify_text($subject);
 %$vars = (
@@ -161,7 +165,7 @@ $check_for_loop->();
 );
 ($msg, $subject) = $send_and_verify_mail->(qw(ham.eml user1 forum));
 login_as('mail_user1');
-visit_uri('/mail_forum/mail');
+follow_link(qw(^mail_forum$ ^mail$));
 follow_link($subject);
 verify_text(escape_html($subject));
 %$vars = (
@@ -173,5 +177,11 @@ $msg = $send_mail->(qw(spam.eml user1 forum));
 test_deviance();
 verify_local_mail(qr{.}, qr{.});
 test_conformance();
-visit_uri('/mail_forum/mail');
+follow_link(qw(^mail_forum$ ^mail$));
 verify_no_text($subject);
+login_as('guest');
+test_deviance(qr{forbidden}i);
+visit_uri($main_uri);
+visit_uri($msg_uri);
+visit_uri($original_uri);
+visit_uri($image_uri);
