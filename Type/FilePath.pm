@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::FilePath;
 use strict;
@@ -98,9 +98,11 @@ sub from_literal {
 
 sub from_public {
     my($proto, $path) = @_;
+    return '/'
+	unless defined($path);
+    my($v) = $proto->VERSIONS_FOLDER;
     my($p) = $proto->PUBLIC_FOLDER_ROOT;
-    Bivio::Die->die($path, ": must contain $p in the path")
-        unless $path =~ s{^\Q$p\E(/|$)}{$1}i;
+    $path =~ s{^((?:\Q$v\E)?)\Q$p\E(/|$)}{$1$2}i;
     return length($path) ? $path : '/';
 }
 
@@ -181,7 +183,7 @@ sub to_public {
     return $p
 	unless defined($path);
     if ($path =~ /^\Q$v\E/) {
-	$path =~ s{^$v\E}{$v$p}i;
+	$path =~ s{^\Q$v\E}{$v$p}i;
     }
     else {
 	$path = $proto->join($p, $path);

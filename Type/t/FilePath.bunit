@@ -88,8 +88,9 @@ Type();
 	    '/Public' => '/',
 	    '/public' => '/',
 	    '/public/Foo' => '/Foo',
-	    '/a' => DIE(),
-	    [undef] => DIE(),
+	    '/Archived/public/Foo' => '/Archived/Foo',
+	    '/a' => '/a',
+	    [undef] => '/'
 	],
 	to_absolute => [
 	    ['foo.txt', 0] => 'foo.txt',
