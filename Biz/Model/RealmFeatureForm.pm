@@ -18,6 +18,7 @@ my($_FEATURE_TYPE_MAP) = {
     )),
     mail_want_reply_to => b_use('Type.MailWantReplyTo'),
     mail_send_access => b_use('Type.MailSendAccess'),
+    mail_visibility => b_use('Type.MailVisibility'),
 };
 my($_IMPLICIT_FEATURE_TYPE_MAP) = {
     map(($_ => b_use('Type.RealmFeature')), qw(
