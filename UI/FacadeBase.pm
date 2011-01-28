@@ -964,6 +964,7 @@ sub _cfg_group_admin {
 	    ]],
  	    ['Forum.require_otp' => 'Require OTP?'],
 	    [mail_send_access => 'Mail Sending Mode'],
+	    [mail_visibility_mode => 'Mail Visibility'],
 	    [feature_blog => 'Blog'],
 	    [feature_motion => 'Poll'],
 	    [feature_mail => 'Mail'],
