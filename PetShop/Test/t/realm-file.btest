@@ -22,14 +22,14 @@ visit_uri('/fourem/files');
 
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
     follow_link_in_table('Name', 'Name', qr{realm-file-btest.txt},
-	'Name', 'change');
+	'Actions', 'Modify');
     fixup_files_uri('DELETE');
     submit_form(OK => {
 	'Comments:' => 'deleted by acceptance test',
     });
 }
 
-follow_link_in_table('Name', 'Name', '/', 'Name', 'change');
+follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
 fixup_files_uri('TEXT_FILE'),
 submit_form(OK => {
     'Name:' => 'realm-file-btest.txt',
@@ -40,7 +40,7 @@ follow_link('realm-file-btest.txt');
 verify_text($c);
 
 visit_uri('/fourem/files');
-follow_link_in_table('Name', 'Name', '/', 'Name', 'change');
+follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
 fixup_files_uri('ADD_SUBFOLDER'),
 submit_form(OK => {
     'Name:' => 'Empty Folder',
@@ -48,7 +48,7 @@ submit_form(OK => {
 test_deviance();
 follow_link('Empty Folder');
 test_conformance();
-follow_link_in_table('Name', 'Name', 'Empty Folder', 'Name', 'change');
+follow_link_in_table('Name', 'Name', 'Empty Folder', 'Actions', 'Modify');
 fixup_files_uri('TEXT_FILE'),
 submit_form(OK => {
     'Name:' => 'no-longer-empty.txt',
@@ -59,7 +59,7 @@ follow_link('Empty Folder');
 follow_link('no-longer-empty.txt');
 verify_text($c2);
 visit_uri('/fourem/files');
-follow_link_in_table('Name', 'Name', 'Empty Folder', 'Name', 'change');
+follow_link_in_table('Name', 'Name', 'Empty Folder', 'Actions', 'Modify');
 fixup_files_uri('DELETE'),
 submit_form(OK => {
     'Comments:' => 'cleanup for next test run',
