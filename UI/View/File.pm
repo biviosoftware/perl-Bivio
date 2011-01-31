@@ -290,14 +290,27 @@ sub _tree_list {
 	['RealmFile.path', {
 	    column_order_by => ['RealmFile.path_lc'],
 	    column_widget => _file_name(['base_name']),
-	    tree_list_control_suffix_widget => If(['!', '->is_archive']
-	        && ['!', 'RealmFile.is_read_only'],
-		Link(Image('change'),
-		    URI({
-			task_id => 'FORUM_FILE_CHANGE',
-			path_info => ['RealmFile.path'],
-		    })),
-	    ),
+	}],
+	['actions', {
+	    column_widget => ListActions([
+		map({
+		    my($task) = $_;
+		    [
+			vs_text_as_prose("RealmFileTreeList.list_action.$_"),
+			$task,
+			URI({
+			    task_id => $task,
+			    path_info => ['RealmFile.path'],
+			}),
+			And(
+			    ['!', '->is_archive'],
+			    ['!', 'RealmFile.is_read_only'],
+			),
+		    ];
+		}
+		    'FORUM_FILE_CHANGE',
+		),
+	    ]),
 	}],
 	['RealmFile.modified_date_time', {
 	    column_widget => If(

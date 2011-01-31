@@ -870,6 +870,8 @@ sub _cfg_file {
 		empty_list_prose => 'No files in this forum.',
 		locked_leaf_node => 'leaf_file_locked',
 		content_length => 'Size',
+		actions => 'Actions',
+		'list_action.FORUM_FILE_CHANGE' => 'Modify',
 	    ]],
 	    [RealmFileLock => [
 		comment => 'Comments',
