@@ -290,7 +290,11 @@ sub _http_request {
 	_trace($hreq) if $_TRACE;
 	my($hres) = $self->get('user_agent')->request($hreq);
 	_trace($hres) if $_TRACE;
-	$self->get('cookie_jar')->extract_cookies($hres);
+	# ignore bad date warnings
+	Bivio::Die->catch_quietly(sub {
+	    local($SIG{__WARN__}) = sub {};
+	    $self->get('cookie_jar')->extract_cookies($hres);
+	});
 	if ($hres->is_redirect) {
 	    $uri = $hres->header('Location');
 	    $self->client_error('unable to parse Locations header', {
