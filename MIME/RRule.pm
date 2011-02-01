@@ -123,11 +123,13 @@ sub _is_valid_rrule {
     }
 
     if ($rrule->{wkst} && $rrule->{wkst} ne 'su') {
-	b_warn('unsupported rrule wkst: ', $vevent);
-	return 0;
+	if ($rrule->{byday} && $rrule->{byday} =~ /,/) {
+	    b_warn('unsupported rrule wkst: ', $vevent);
+	    return 0;
+	}
     }
 
-    if ($rrule->{interval}) {
+    if ($rrule->{interval} && $rrule->{interval} ne '1') {
 	b_warn('rrule interval not yet supported: ', $vevent);
 	return 0;
     }
