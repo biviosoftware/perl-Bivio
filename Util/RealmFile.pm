@@ -179,6 +179,7 @@ sub import_tree {
 		$self->model('RealmMail')
 		    ->cascade_delete({realm_file_id => $rf->get('realm_file_id')})
 		    if $rf->is_loaded;
+		$self->model('RealmMail')->create_from_rfc822($_F->read($_));
 		$self->req('Model.RealmFile')->toggle_is_public
 		    if $_MFN->is_public($path);
 		return;
