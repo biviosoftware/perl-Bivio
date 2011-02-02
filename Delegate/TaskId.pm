@@ -214,11 +214,11 @@ sub info_base {
 	    Action.Error
 	)],
 	[qw(
-	    PERMANENT_REDIRECT
+	    CLIENT_REDIRECT_PERMANENT_MAP
 	    56
 	    GENERAL
 	    ANYBODY
-	    Action.PermanentRedirect
+	    Action.ClientRedirect->execute_permanent_map
 	)],
 	[qw(
 	    PUBLIC_PING
@@ -930,6 +930,14 @@ sub info_mail {
 	    Action.MailReceiveStatus
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
         )],
+	[qw(
+	    GROUP_MAIL_TOGGLE_PUBLIC
+	    231
+	    ANY_OWNER
+	    MAIL_READ&MAIL_WRITE&FEATURE_MAIL
+	    Model.RealmMailPublicForm
+	    next=FORUM_MAIL_THREAD_ROOT_LIST
+	)],
 #231-239
     ];
 }
