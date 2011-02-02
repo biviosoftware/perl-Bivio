@@ -87,7 +87,7 @@ my($_AT) = b_use('Agent.Task');
 my($_SEOP) = b_use('Cache.SEOPrefix');
 
 sub HELP {
-    return $_TI->HELP;
+    return $_TI->HELP_START_PAGE;
 }
 
 sub HELP_INDEX {
@@ -471,6 +471,8 @@ sub _init_config {
     # Returns error message or success (undef).
     my($c) = $value->{config};
     if (ref($c) eq 'HASH') {
+	b_die($c, ': no help configuration')
+	    unless $c->{help};
 	# path_info must begin with '/'
 	($value->{help} = $c->{help}) =~ s!^([^\/])!/$1!;
 	# Must be last line, because we overwrite
