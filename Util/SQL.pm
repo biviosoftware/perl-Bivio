@@ -67,6 +67,7 @@ my($_BUNDLE) = [qw(
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
     !site_help_title
+    !mail_write
 )
 ];
 #    crm_mail
@@ -1124,6 +1125,26 @@ sub internal_upgrade_db_mail_want_reply_to_default {
 	},
 	'unauth_iterate_start',
 	'forum_id',
+    );
+    return;
+}
+
+sub internal_upgrade_db_mail_write {
+    my($self) = @_;
+    my($ap) = $self->use('Auth.Permission');
+    my($aps) = $self->use('Auth.PermissionSet');
+    $self->model('RealmRole')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    my($ps) = $it->get('permission_set');
+	    return 1
+		unless $aps->is_set(\$ps, $ap->from_name('ADMIN_WRITE'));
+	    $aps->set(\$ps, $ap->from_name('MAIL_WRITE'));
+	    $it->update({permission_set => $ps});
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id',
     );
     return;
 }
@@ -2527,7 +2548,8 @@ b-realm-role -realm CLUB -user user edit MEMBER - \
     +MAIL_READ
 b-realm-role -realm CLUB -user user edit ACCOUNTANT - \
     +MEMBER \
-    +ADMIN_WRITE
+    +ADMIN_WRITE \
+    +MAIL_WRITE
 b-realm-role -realm CLUB -user user edit ADMINISTRATOR - \
     +ACCOUNTANT
 b-realm-role -realm CLUB -user user edit UNAPPROVED_APPLICANT - \
