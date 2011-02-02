@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::TupleUseForm;
 use strict;
-use base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
