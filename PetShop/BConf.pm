@@ -18,6 +18,11 @@ sub dev_overrides {
 sub merge_overrides {
     my($proto) = @_;
     return Bivio::IO::Config->merge_list({
+	'Bivio::Biz::Action::ClientRedirect' => {
+	    permanent_map => {
+		'/permanent-redirect' => '/pub/products',
+	    },
+	},
 	'Bivio::Biz::Model::UserCreateForm' => {
 	    unapproved_applicant_mode => 1,
 	},
