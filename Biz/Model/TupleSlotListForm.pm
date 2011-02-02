@@ -104,18 +104,15 @@ sub internal_initialize {
 	other => [
 	    'RealmMail.from_email',
 	    'RealmMail.subject',
-	    {
-		name => 'slot_headers',
-		type => 'Text64K',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'choice_list',
-		type => $self->get_instance('TupleSlotChoiceSelectList')
-		    ->package_name,
-		in_list => 1,
-		constraint => 'NONE',
-	    },
+	    $self->field_decl([
+		[qw(slot_headers Text64K)],
+		[
+		    'choice_list',
+		    $self->get_instance('TupleSlotChoiceSelectList')
+			->package_name,
+		    {in_list => 1},
+		],
+	    ]),
 	],
     });
 }
@@ -125,12 +122,9 @@ sub internal_initialize_list {
     my($q) = $self->new_other('TupleList')->parse_query_from_request;
     my($tdid, $tn) = $q->unsafe_get(qw(parent_id this));
     # AUTH: Make sure this realm can use this schema
-    $self->new_other('TupleUseList')->load_this({
-	this => $tdid,
-    });
-    $self->new_other('TupleSlotDefList')->load_all({
-	parent_id => $tdid,
-    });
+    $self->new_other('TupleUseList')->load_this({this => $tdid});
+    $self->new_other('TupleSlotDefList')
+	->load_all({parent_id => $tdid});
     if ($tn) {
 	my($trid) = $self->new_other('Tuple')->load({
 	    tuple_def_id => $tdid,
