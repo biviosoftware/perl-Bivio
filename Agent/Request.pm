@@ -223,6 +223,7 @@ sub EXTRA_URI_PARAM_LIST {
 	uri form_in_query require_absolute no_form
         carry_query carry_path_info _server_redirect
         seo_uri_prefix facade_uri acknowledgement
+	http_status_code
     );
 }
 
