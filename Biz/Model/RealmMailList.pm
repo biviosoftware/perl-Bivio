@@ -32,6 +32,7 @@ sub internal_initialize {
             RealmMail.thread_parent_id
             RealmMail.thread_root_id
 	    RealmFile.user_id
+	    RealmFile.is_public
 	)],
     });
 }
