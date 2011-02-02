@@ -246,10 +246,25 @@ sub _msg {
 				path_info => ['RealmFile.path'],
 			    },
 			    {
+				task_id => 'GROUP_MAIL_TOGGLE_PUBLIC',
+				label => If(
+				    ['RealmFile.is_public'],
+				    vs_text_as_prose('realm_mail_make_private'),
+				    vs_text_as_prose('realm_mail_make_public'),
+				),
+				query => {
+				    'ListQuery.this' => ['RealmMail.realm_file_id'],
+				},
+				control => [
+				    b_use('Model.RealmMailPublicForm'),
+				    '->can_toggle_public',
+				    ['->req'],
+				],
+			    },
+			    {
 				task_id => 'GROUP_BULLETIN_FORM',
 				query => {
-				    'ListQuery.this'
-					=> ['RealmMail.realm_file_id'],
+				    'ListQuery.this' => ['RealmMail.realm_file_id'],
 				},
 				control => vs_can_group_bulletin_form(),
 			    },
