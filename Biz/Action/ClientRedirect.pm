@@ -1,10 +1,15 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::ClientRedirect;
 use strict;
-use base 'Bivio::Biz::Action';
+use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTTP_MOVED_PERMANENTLY) = b_use('Ext.ApacheConstants')->HTTP_MOVED_PERMANENTLY;
+b_use('IO.Config')->register(my $_CFG = {
+    permanent_map => {},
+});
+
 
 sub QUERY_TAG {
    return 'x';
@@ -33,6 +38,17 @@ sub execute_next_stateless {
     return {
 	task_id => 'next',
 	query => undef,
+    };
+}
+
+sub execute_permanent_map {
+    my($proto, $req) = @_;
+    b_die($req->get('uri'), ': URI not in permanent_map')
+	unless my $new = $_CFG->{permanent_map}->{$req->get('uri')};
+    return {
+	uri => $new,
+	query => $req->get('query'),
+	http_status_code => $_HTTP_MOVED_PERMANENTLY,
     };
 }
 
@@ -89,6 +105,12 @@ sub get_realm_for_task {
 	entity => $task,
 	message => 'no appropriate realm for task',
     });
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub _role_in_realm {
