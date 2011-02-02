@@ -118,7 +118,7 @@ sub internal_client_redirect {
 	$named->{uri} = $self->format_uri($named);
     }
     $self->internal_call_handlers(handle_client_redirect => [$named, $self]);
-    $self->get('reply')->client_redirect($self, $named->{uri});
+    $self->get('reply')->client_redirect($self, $named);
     return;
 }
 
