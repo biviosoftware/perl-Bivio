@@ -397,7 +397,7 @@ sub _cfg_base {
 	    [LOCAL_FILE_PLAIN => ['i/*', 'f/*']],
 	    [MY_CLUB_SITE => undef],
 	    [MY_SITE => 'my-site/*'],
-	    [PERMANENT_REDIRECT => undef],
+	    [CLIENT_REDIRECT_PERMANENT_MAP => undef],
 	    [ROBOTS_TXT => 'robots.txt'],
 	    [SHELL_UTIL => undef],
 	    [SITE_CSS => 'pub/site.css'],
@@ -1038,6 +1038,7 @@ sub _cfg_mail {
 	    [MAIL_RECEIVE_FORBIDDEN => undef],
 	    [GROUP_BULLETIN_FORM => '?/publish-bulletin'],
 	    [GROUP_BULLETIN_REFLECTOR => undef],
+	    [GROUP_MAIL_TOGGLE_PUBLIC => '?/mail-toggle-public'],
 	],
 	Text => [
 	    ['MailReceiveDispatchForm.uri_prefix' =>
@@ -1057,6 +1058,8 @@ sub _cfg_mail {
 	    [b_use('Biz.Model')->get_instance('MailForm')
 	        ->map_attachments(sub {shift}) => 'Attach'],
 	    [view_rfc822 => 'Show Original'],
+	    [realm_mail_make_private => 'Public [change]'],
+	    [realm_mail_make_public => 'Private [change]'],
 	    [[qw(MailForm CRMForm)] => [
 		board_only => 'Do not send message to vs_ui_forum(); vs_ui_members();',
 		ok_button => 'Send',
