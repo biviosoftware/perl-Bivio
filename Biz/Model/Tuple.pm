@@ -61,7 +61,10 @@ sub handle_mail_post_create {
     my($proto, $realm_mail, $incoming) = @_;
 #TODO: Use FEATURE_TUPLE to control loading
     # AUTH: TupleUseList authenticates access to schema
-    my($tul) = $realm_mail->new_other('TupleUseList')->load_all;
+    my($tul) = $realm_mail
+	->new_other('TupleUseList')
+	->set_ephemeral
+	->load_all;
     my($m) = join('|', @{$tul->monikers});
     _trace($realm_mail->get('subject'), ' matching with ', $m) if $_TRACE;
     return unless $m;
