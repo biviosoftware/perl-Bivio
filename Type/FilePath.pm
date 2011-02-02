@@ -166,6 +166,11 @@ sub is_absolute {
     return defined($value) && $value =~ $proto->ABSOLUTE_REGEX ? 1 : 0;
 }
 
+sub is_public {
+    my($proto, $value) = @_;
+    return ($value || '') =~ m{^\Q@{[$proto->PUBLIC_FOLDER]}\E(?:/|$)}i ? 1 : 0;
+}
+
 sub to_absolute {
     my($proto, $value, $is_public) = @_;
     return $proto->join(

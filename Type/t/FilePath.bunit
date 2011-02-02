@@ -92,6 +92,13 @@ Type();
 	    '/a' => '/a',
 	    [undef] => '/'
 	],
+	is_public => [
+	    [undef] => 0,
+	    '/Public' => 1,
+	    '/Public/' => 1,
+	    '/' => 0,
+	    '/public/x' => 1,
+	],
 	to_absolute => [
 	    ['foo.txt', 0] => 'foo.txt',
 	    ['bar.txt', 1] => '/Public/bar.txt',
