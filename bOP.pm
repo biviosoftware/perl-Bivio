@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.26  2011/01/28 00:30:32  schellj
+  * Bivio::UI::XHTML::ViewShortcuts
+    if field has column_widget, then just put in list
+
   Revision 10.25  2011/01/27 23:23:20  moeller
   * Bivio::Biz::Action::Error
     when rendering wiki, set task to FORUM_WIKI_VIEW so unwinds work correctly
