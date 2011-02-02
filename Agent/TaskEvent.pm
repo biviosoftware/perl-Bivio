@@ -26,7 +26,7 @@ my($_EXPECTED) = {
         task_id realm query form path_info no_context require_context no_form
     )],
     client_redirect => [qw(
-        task_id realm query path_info no_context require_context no_form uri
+        task_id realm query path_info no_context require_context no_form uri http_status_code
     )],
 };
 my($_IMPLICIT_OVERRIDE) = {
