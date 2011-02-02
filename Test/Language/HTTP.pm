@@ -778,6 +778,10 @@ sub user_agent {
 	. ')';
 }
 
+sub user_agent_instance {
+    return shift->[$_IDI]->{user_agent};
+}
+
 sub user_agent_timeout {
     my($self, $seconds) = @_;
     my($fields) = $self->[$_IDI];
@@ -1345,7 +1349,8 @@ sub _send_request {
 	_log($self, 'req', $request, $case_tag);
 	$fields->{response} = $fields->{user_agent}->request($request);
 	_log($self, 'res', $fields->{response}, $case_tag);
-	last unless $fields->{response}->is_redirect;
+	last
+	    unless $fields->{response}->is_redirect;
 	Bivio::Die->die('too many redirects ', $request)
 	    if $redirect_count++ > 5;
 	$fields->{cookies}->extract_cookies($fields->{response});
