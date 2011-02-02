@@ -277,10 +277,12 @@ sub is_empty {
     return 1
 	unless $self->get('is_folder');
     my($got_one) = 0;
-    $self->new_other('RealmFileList')->do_iterate(
-	sub {$got_one++},
-	{path_info => $self->get('path')},
-    );
+    $self->new_other('RealmFileList')
+	->set_ephemeral
+	->do_iterate(
+	    sub {$got_one++},
+	    {path_info => $self->get('path')},
+	);
     return $got_one ? 0 : 1;
 }
 
@@ -332,6 +334,18 @@ sub path_info_to_id {
 	->get('realm_file_id');
 }
 
+sub toggle_is_public {
+    my($self) = @_;
+    my($ip) = $self->get('is_public') ? 0 : 1;
+    my($method) = $ip ? 'to_public' : 'from_public';
+    $self->update({
+	override_is_read_only => 1,
+	is_public => $ip,
+	path => $_FP->$method($self->get('path')),
+    });
+    return;
+}
+
 sub unauth_copy_deep {
     my($self, $dest) = @_;
 #TODO: Die if $dest->is_version
@@ -362,13 +376,15 @@ sub unauth_delete_deep {
     my($count) = 0;
     my($v) = $self->get_shallow_copy;
     foreach my $child (@{
-	$self->new_other('RealmFileList')->map_iterate(
-	    sub {shift->get_model('RealmFile')},
-	    unauth_iterate_start => {
-		auth_id => $v->{realm_id},
-		path_info => $v->{path},
-	    },
-	),
+	$self->new_other('RealmFileList')
+	    ->set_ephemeral
+	    ->map_iterate(
+		sub {shift->get_model('RealmFile')},
+		unauth_iterate_start => {
+		    auth_id => $v->{realm_id},
+		    path_info => $v->{path},
+		},
+	    ),
     }) {
 	$count += $child->unauth_delete_deep(_child_attrs($values, $self));
     }
@@ -624,7 +640,7 @@ sub _touch_parent {
     my($self, $values) = @_;
     return
 	if $values->{_touch_parent} || $values->{path} eq '/';
-    my($parent) = $self->new_other;
+    my($parent) = $self->new_other->set_ephemeral;
     my($parent_path) = ($values->{path} =~ m{(^/.+)/})[0] || '/';
     return $parent->create_folder({
 	map(($_ => $values->{$_}), qw(user_id realm_id override_is_read_only)),
@@ -752,13 +768,15 @@ sub _update {
     return $self
 	if $old_realm eq $self->get('realm_id') && $old_path eq $new_path;
     foreach my $child (@{
-	$self->new_other('RealmFileList')->map_iterate(
-	    sub {shift->get_model('RealmFile')},
-	    unauth_iterate_start => {
-		auth_id => $old_realm,
-		path_info => $old_path,
-	    },
-	),
+	$self->new_other('RealmFileList')
+	    ->set_ephemeral
+	    ->map_iterate(
+		sub {shift->get_model('RealmFile')},
+		unauth_iterate_start => {
+		    auth_id => $old_realm,
+		    path_info => $old_path,
+		},
+	    ),
     }) {
 	_update($child, {
 	    %{$child->get_shallow_copy},
