@@ -22,27 +22,27 @@ Bivio::IO::Config->register({
 });
 
 sub client_redirect {
-    # (self, Agent.Request, string) : undef
-    # Redirects the client to the specified uri.
-    my($self, $req, $uri) = @_;
+    my($self, $req, $named) = @_;
     my($r) = $self->get('r');
     $self->internal_put({});
+    my($uri, $status) = @$named{qw(uri http_status_code)};
+    $status ||= 302;
 
     # have to do it the long way, there is a bug in using the REDIRECT
     # return value when handling a form
     $r->header_out(Location => $uri);
-    $r->status(302);
+    $r->status($status);
     _send_http_header($self, $req, $r);
     # make it look like apache's redirect.  Ignore HEAD, because this
     # is like an error.
     $r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<HTML><HEAD>
-<TITLE>302 Found</TITLE>
-</HEAD><BODY>
-<H1>Found</H1>
-The document has moved <A HREF="$uri">here</A>.<P>
-</BODY></HTML>
+<html><head>
+<title>$status Found</title>
+</head><body>
+<h1>found</h1>
+<p>The document has moved <a href="$uri">here</a>.</p>
+</body></html>
 EOF
     return;
 }
@@ -237,42 +237,42 @@ sub _error {
     if ($code == Bivio::Ext::ApacheConstants->NOT_FOUND) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<HTML><HEAD>
-<TITLE>404 Not Found</TITLE>
-</HEAD><BODY>
-<H1>Not Found</H1>
-The requested URL $uri was not found on this server.<P>
-</BODY></HTML>
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL $uri was not found on this server.</p>
+</body></html>
 EOF
     }
     elsif ($code == Bivio::Ext::ApacheConstants->FORBIDDEN) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<HTML><HEAD>
-<TITLE>403 Forbidden</TITLE>
-</HEAD><BODY>
-<H1>Forbidden</H1>
-You don't have permission to access $uri
-on this server.<P>
-</BODY></HTML>
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>Forbidden</h1>
+<p>You don't have permission to access $uri
+on this server.</p>
+</body></html>
 EOF
     }
     else {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<HTML><HEAD>
-<TITLE>500 Internal Server Error</TITLE>
-</HEAD><BODY>
-<H1>Internal Server Error</H1>
-The server encountered an internal error or
+<html><head>
+<title>500 Internal Server Error</title>
+</head><body>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error or
 misconfiguration and was unable to complete
-your request.<P>
-Please contact the server administrator,
+your request.</P>
+<p>Please contact the server administrator,
 webmaster\@@{[$r->server->server_hostname]}
 and inform them of the time the error occurred,
 and anything you might have done that may have
-caused the error.<P>
-</BODY></HTML>
+caused the error.</p>
+</body></html>
 EOF
     }
     # This is a workaround in older Apache versions
