@@ -291,6 +291,24 @@ sub _tree_list {
 	    column_order_by => ['RealmFile.path_lc'],
 	    column_widget => _file_name(['base_name']),
 	}],
+	['RealmFile.modified_date_time', {
+	    column_widget => If(
+		And(
+		    ['->is_file'],
+		    ['!', '->is_archive'],
+		),
+		Link(_file_date(), URI({
+		    task_id => 'FORUM_FILE_VERSIONS_LIST',
+		    path_info => ['RealmFile.path'],
+		})),
+		_file_date(),
+	    ),
+	}],
+	['content_length', {
+	    format => 'Bytes',
+	    column_data_class => 'amount_cell',
+	}],
+	_file_owner_column(),
 	['actions', {
 	    column_widget => ListActions([
 		map({
@@ -312,24 +330,6 @@ sub _tree_list {
 		),
 	    ]),
 	}],
-	['RealmFile.modified_date_time', {
-	    column_widget => If(
-		And(
-		    ['->is_file'],
-		    ['!', '->is_archive'],
-		),
-		Link(_file_date(), URI({
-		    task_id => 'FORUM_FILE_VERSIONS_LIST',
-		    path_info => ['RealmFile.path'],
-		})),
-		_file_date(),
-	    ),
-	}],
-	['content_length', {
-	    format => 'Bytes',
-	    column_data_class => 'amount_cell',
-	}],
-	_file_owner_column(),
     ]);
 }
 
