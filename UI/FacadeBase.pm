@@ -227,6 +227,7 @@ sub _cfg_base {
 	    [h3 => ['120%', 'bold']],
 	    [h4 => ['110%', 'bold']],
 	    [[qw(h5 h6)] => ['size=100%', 'normal_weight']],
+	    [p => 'style=margin-bottom: 1ex'],
 	    [strong => 'bold'],
 	    [table => 'left'],
 	    [th => [qw(bold center), 'style=padding: .5em']],
