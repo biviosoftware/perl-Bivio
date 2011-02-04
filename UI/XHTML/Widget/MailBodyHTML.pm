@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::MailBodyHTML;
 use strict;
@@ -6,6 +6,7 @@ use Bivio::Base 'XHTMLWidget.Tag';
 use HTML::Parser ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTML) = b_use('Bivio.HTML');
 my($_EMPTY_TAG) = _hash(qw(
     br
     col
@@ -107,6 +108,7 @@ my($_SAFE_ATTRIBUTE) = _hash(qw(
     scope
     size
     span
+    src
     start
     style
     summary
@@ -258,7 +260,7 @@ sub _clean_attr {
     my($state, $name, $v) = @_;
     return if !$_SAFE_ATTRIBUTE->{$name} || $v =~ /"/;
     $v =~ s/\s+/ /sg;
-    if ($name eq 'href') {
+    if ($name eq 'href' || $name eq 'src') {
 	$v = _clean_attr_href($state, $v);
     }
     elsif ($name eq 'style') {
@@ -269,6 +271,8 @@ sub _clean_attr {
 
 sub _clean_attr_href {
     my($state, $v) = @_;
+    return $v
+	if $v =~ /^#/;
     return $v =~ /^(?:https?|ftp|mailto):/s ? $v
 	: $v =~ /^cid:(.+)/ ? _clean_attr_href_cid($state, $1)
 	: undef;
@@ -276,10 +280,20 @@ sub _clean_attr_href {
 
 sub _clean_attr_href_cid {
     my($state, $cid) = @_;
+
+    if ($state->{source}->ureq('Model.MailPartList')) {
+	$state->{source}->ureq('Model.MailPartList')
+	    ->set_attachment_visited($cid);
+    }
     return $state->{source}->unsafe_get_cursor_for_mime_cid($cid)
-	? $state->{source}->format_uri_for_mime_cid(
-	    $cid,
-	    ${$state->{self}->render_attr('mime_cid_task', $state->{source})},
+	? $_HTML->escape_attr_value(
+	    $state->{source}->format_uri_for_mime_cid(
+		$cid,
+		${$state->{self}->render_attr(
+		    'mime_cid_task',
+		    $state->{source},
+		)},
+	    ),
 	) : undef;
 }
 
