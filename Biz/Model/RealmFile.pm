@@ -342,6 +342,7 @@ sub toggle_is_public {
 	override_is_read_only => 1,
 	is_public => $ip,
 	path => $_FP->$method($self->get('path')),
+	modified_date_time => $self->get('modified_date_time'),
     });
     return;
 }
