@@ -14,7 +14,7 @@ A Short Title
 <body>
 *asterisks*    
 F.U.D. is what makes programmers worry so much.
-I have no worries.
+I have no worries.  unicodechar&#198;
 </body>
 </html>
 EOF
@@ -65,9 +65,10 @@ EOF
 			have
 			no
 			worries
+			unicodecharae
 		    )],
 		    'A Short Title',
-		    '*asterisks* F.U.D. is what makes programmers worry so much. I have no worries.',
+		    '*asterisks* F.U.D. is what makes programmers worry so much. I have no worries. unicodecharAE',
 		];
 	    },
 	],
