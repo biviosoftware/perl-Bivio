@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');
 my($_P) = b_use('Search.Parseable');
+my($_S) = b_use('Type.String');
 
 sub handle_new_excerpt {
     my($self, $parseable) = @_;
@@ -61,7 +62,7 @@ sub _do {
         shift;
         return $self->put_unless_exists(@_);
     });
-    return $self->put_unless_exists(
+    $self->put_unless_exists(
 	'RealmOwner.realm_id' => $model->get_auth_id,
 	author => '',
 	author_email => '',
@@ -73,6 +74,11 @@ sub _do {
 	simple_class => $model->simple_package_name,
 	title => '',
     );
+    foreach my $v (values(%{$self->internal_get})) {
+	$_S->canonicalize_charset(\$v)
+	    unless ref($v);
+    }
+    return $self;
 }
 
 sub _field_term {
@@ -106,7 +112,7 @@ sub _postings {
 		    length($_) ? lc($_) : (),
 		    $_ =~ /^[\W_]*((?:[A-Z]\.){2,10})[\W_]*$/ ? $1 : split(/[\W_]+/, $_),
 		),
-		split(' ', $$_),
+		split(' ', ${$_S->canonicalize_charset($_)}),
 	    ),
 	    @_,
 	),
