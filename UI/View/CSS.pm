@@ -1147,6 +1147,9 @@ h5 {
 h6 {
   Font('h6');
 }
+p {
+  Font('p');
+}
 strong {
   Font('strong');
 }
