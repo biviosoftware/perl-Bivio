@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = b_use('Mail.Address');
 my($_DT) = b_use('Type.DateTime');
 my($_FN) = b_use('Type.FileName');
@@ -180,6 +181,20 @@ sub load_from_content {
     });
 }
 
+sub set_attachment_visited {
+    my($self, $mime_cid) = @_;
+    my($fields) = $self->[$_IDI] ||= {
+	visited => {},
+    };
+    $fields->{visited}->{$mime_cid} = 1;
+    return;
+}
+
+sub show_as_attachment {
+    my($self) = @_;
+    return $self->get('index') > 1 ? 1 : 0;
+}
+
 sub unsafe_get_cursor_for_mime_cid {
     my($self, $mime_cid) = @_;
     return $self->save_excursion(sub {
@@ -197,6 +212,17 @@ sub unsafe_get_cursor_for_mime_cid {
 	});
 	return $cursor;
     });
+}
+
+sub was_attachment_visited {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    return 0 unless $fields && $self->unsafe_get('mime_cid');
+    my($cid) = $self->get('mime_cid');
+    $cid =~ s/^<|>\s*$//sg;
+    return $fields->{visited} && $fields->{visited}->{$cid}
+	? 1
+	: 0;
 }
 
 sub _default_file_name {
