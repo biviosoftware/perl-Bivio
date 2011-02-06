@@ -46,6 +46,10 @@ sub SITE_REPORTS_REALM_NAME {
     return _site(shift, 'reports');
 }
 
+sub BULLETIN_REALM_NAME {
+    return 'bulletin';
+}
+
 sub auth_realm_is_site {
     my($self, $req) = @_;
     my($r) = $req->get('auth_realm');
@@ -294,6 +298,7 @@ sub _cfg_base {
 	        [qw(site_contact_realm_id SITE_CONTACT_REALM_NAME)],
 	        [qw(site_admin_realm_id SITE_ADMIN_REALM_NAME)],
 		[qw(site_reports_realm_id SITE_REPORTS_REALM_NAME)],
+		[qw(bulletin_realm_id BULLETIN_REALM_NAME)],
 	    ),
 	    [xlink_back_to_top => {
 		uri => '',
@@ -2008,7 +2013,7 @@ sub _unsafe_realm_id {
     return $res
 	if $res;
     _trace($n, ': realm not found') if $_TRACE;
-    return 1;
+    return 0;
 }
 
 1;
