@@ -938,7 +938,16 @@ sub info_mail {
 	    Model.RealmMailPublicForm
 	    next=FORUM_MAIL_THREAD_ROOT_LIST
 	)],
-#231-239
+	[qw(
+	    USER_MAIL_UNSUBSCRIBE_FORM
+	    232
+	    USER
+	    ANYBODY
+	    Model.MailUnsubscribeForm
+	    View.Mail->unsubscribe_form
+	    next=SITE_ROOT
+	)],
+#233-239
     ];
 }
 

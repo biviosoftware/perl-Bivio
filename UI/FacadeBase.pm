@@ -1040,6 +1040,7 @@ sub _cfg_mail {
 	    [GROUP_BULLETIN_FORM => '?/publish-bulletin'],
 	    [GROUP_BULLETIN_REFLECTOR => undef],
 	    [GROUP_MAIL_TOGGLE_PUBLIC => '?/mail-toggle-public'],
+	    [USER_MAIL_UNSUBSCRIBE_FORM => '?/unsubscribe/*'],
 	],
 	Text => [
 	    ['MailReceiveDispatchForm.uri_prefix' =>
@@ -1072,6 +1073,13 @@ sub _cfg_mail {
 		    prologue => q{To send a test message, just change the To: list below.  To publish to this bulletin as is, click Send once.},
 		],
 	    ]],
+	    [MailUnsubscribeForm => [
+		prose => [
+		    prologue => q{To remove yourself from String(['Model.MailUnsubscribeForm', 'realm_display_name']); mailings, click Unsubscribe below, or you can unsubscribe from all mailings from String(vs_site_name());.},
+		],
+		ok_button => 'Unsubscribe',
+		all_button => 'Unsubscribe From All Mailings',
+	    ]],
 	    [prose => [
 		MailHeader => [
 		    to => 'To:',
@@ -1097,11 +1105,14 @@ sub _cfg_mail {
 		FORUM_MAIL_FORM => q{If(['->has_keys', 'Model.RealmMailList'], 'Reply', 'New Topic');},
 		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
 		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
+		USER_MAIL_UNSUBSCRIBE_FORM => 'Unsubscribe',
 		GROUP_BULLETIN_FORM => 'Publish Bulletin',
 	    ]],
 	    [acknowledgement => [
 		FORUM_MAIL_FORM => 'Your message was sent.',
 		GROUP_BULLETIN_FORM => q{The bulletin has been sent to String(['Model.BulletinForm', 'to']);.},
+		user_mail_unsubscribed => q{You have been unsubscribed.},
+		user_mail_unsubscribed_all => q{You have been unsubscribed from ALL MAILINGS from String(vs_site_name());},
 	    ]],
 	],
     };
