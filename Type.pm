@@ -280,7 +280,7 @@ sub min {
 sub row_tag_get {
     my($proto) = shift;
     my($req) = pop;
-    my($model_or_id) = @_,
+    my($model_or_id) = @_;
     $_A->bootstrap_die($req, ': last arg must be a Bivio::Agent::Request')
 	unless Bivio::Agent::Request->is_blessed($req);
     my($v) = $proto->from_sql_column(
