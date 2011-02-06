@@ -35,6 +35,7 @@ Return-Receipt-To: nagler@acm.org
 Four score and seven years ago...
 
 Fan Tango
+$somevar
 EOF
 
 
@@ -60,6 +61,7 @@ X-Priority: 3
 Four score and seven years ago...
 
 Fan Tango
+$somevar
 EOF
 
 my($_WITH_CC) = <<'EOF';
@@ -151,6 +153,10 @@ my($_BODY) = 'what a body';
 	    sender => 'a@a.a',
 	    'reply-to' => undef,
 	],
+	edit_body => [
+	    [{somevar => 'ReplacedVar'}] => not_die(),
+	],
+	get_body => qr{ReplacedVar},
     ],
     [Bivio::Mail::Incoming->new(\$_WITH_CC)] => [
 	set_headers_for_list_send => [
