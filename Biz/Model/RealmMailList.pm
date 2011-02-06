@@ -5,7 +5,8 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RM) = __PACKAGE__->use('Model.RealmMail');
+my($_RM) = b_use('Model.RealmMail');
+my($_MTL) = b_use('Model.MailThreadList');
 
 sub get_rfc822 {
     return shift->get_model('RealmFile')->get_content;
@@ -13,6 +14,10 @@ sub get_rfc822 {
 
 sub get_mail_part_list {
     return shift->delegate_method($_RM, 'RealmMail.', @_);
+}
+
+sub get_message_anchor {
+    return $_MTL->get_message_anchor(shift->get('RealmMail.realm_file_id'));
 }
 
 sub internal_initialize {

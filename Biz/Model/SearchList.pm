@@ -1,10 +1,11 @@
-# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::SearchList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_MTL) = b_use('Model.MailThreadList');
 my($_BFN) = b_use('Type.BlogFileName');
 my($_MFN) = b_use('Type.MailFileName');
 my($_TS) = b_use('Type.String');
@@ -71,7 +72,7 @@ sub format_uri_params_with_row {
 		realm => $row->{'RealmOwner.name'},
 		query => {'ListQuery.parent_id' => $pid},
 #TODO: Integrate with View.Mail->internal_part_list (need <a name=>)
-		anchor => $row->{'RealmFile.realm_file_id'},
+		anchor => $_MTL->get_message_anchor($row->{'RealmFile.realm_file_id'}),
 	    };
 	},
     ) : {

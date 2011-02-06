@@ -73,6 +73,7 @@ sub internal_part_list {
 	        _thread_list_director($self),
 	    ),
 	),
+	{id => ['->get_message_anchor']},
     );
 }
 
