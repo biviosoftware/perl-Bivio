@@ -24,7 +24,7 @@ my($_TRANSLITERATE) = {
     '3/4' => [qr{\x{00BE}}, qr{\xBE}],
 #TODO: remove these when we support unicode    
     'A' => [qr{[\x{00C0}-\x{00C5}]}, qr{[\xC0-\xC5]}],
-    'AE' => [qr{\x00C7}, qr{\xC7}],
+    'AE' => [qr{\x00C7}, qr{[\xC6-\xC7]}],
     'E' => [qr{[\x{00C8}-\x{00CB}]}, qr{[\xC8-\xCB]}],
     'I' => [qr{[\x{00CC}-\x{00CF}]}, qr{[\xCC-\xCF]}],
     'O' => [qr{[\x{00D2}-\x{00D6}]}, qr{[\xD2-\xD6]}],
