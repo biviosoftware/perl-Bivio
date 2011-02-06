@@ -43,6 +43,7 @@ sub new {
 	start_time => $start_time,
 	form => undef,
 	query => undef,
+	path_info => undef,
 	# Needed by Task->execute, but not used here
 	reply => b_use('Agent.Reply')->new,
     });
