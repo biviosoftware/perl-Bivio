@@ -32,7 +32,7 @@ sub execute_ok {
 	$self->req->with_realm(
 	    $rid,
 	    sub {
-		my($role) = $_BMM->row_tag_get($self->req) ? []
+		my($role) = $_BMM->should_leave_realm($self->req) ? []
 		    : [role => $_MAIL_RECIPIENT];
 		$self->new_other('RealmUser')
 		    ->delete_all({

@@ -14,4 +14,8 @@ sub get_default {
     return 0;
 }
 
+sub should_leave_realm {
+    return shift->row_tag_get(@_);
+}
+
 1;
