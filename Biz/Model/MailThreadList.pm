@@ -19,6 +19,11 @@ sub get_mail_part_list {
     return shift->delegate_method($_RM, 'RealmMail.', @_);
 }
 
+sub get_message_anchor {
+    my($self, $realm_file_id) = @_;
+    return 'b_msg_' . ($realm_file_id || $self->get('RealmMail.realm_file_id'));
+}
+
 sub get_subject {
     my($self) = @_;
     $self->set_cursor_or_die(0)
