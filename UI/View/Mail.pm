@@ -223,6 +223,14 @@ sub thread_root_list {
     return $self->internal_body($self->internal_thread_root_list);
 }
 
+sub unsubscribe_form {
+    return shift->internal_body(
+	vs_simple_form(MailUnsubscribeForm => [
+	    '*ok_button cancel_button all_button',
+	]),
+    );
+}
+
 sub _msg {
     my($self, $msg_only) = @_;
     return WithModel(
