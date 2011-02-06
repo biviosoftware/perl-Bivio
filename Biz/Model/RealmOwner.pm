@@ -265,6 +265,12 @@ sub unauth_load_by_email_id_or_name {
 	: _unauth_load($self, $email_id_or_name, {});
 }
 
+sub unauth_load_by_email_id_or_name_or_die {
+    my($self, $email_id_or_name) = @_;
+    return shift->unauth_load_by_email_id_or_name(@_) ? $self
+	: $self->throw_die(MODEL_NOT_FOUND => {entity => $email_id_or_name});
+}
+
 sub unauth_load_by_id_or_name_or_die {
     my($self, $id_or_name, $realm_type) = @_;
     # Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, further qualifies the query.
