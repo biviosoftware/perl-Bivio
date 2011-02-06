@@ -1,11 +1,11 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::IO::Template;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_F) = __PACKAGE__->use('IO.File');
+my($_F) = b_use('IO.File');
 
 sub replace_in_file {
     my($proto, $file_name, $vars) = @_;
