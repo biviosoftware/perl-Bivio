@@ -24,6 +24,7 @@ sub get_delegate_info {
 	TIME_ZONE => 13,
 	MAIL_WANT_REPLY_TO => 14,
 	MAIL_VISIBILITY => 15,
+	BULLETIN_BODY_TEMPLATE => 16,
 	LAST_RESERVED_VALUE => 99,
     ];
 }
