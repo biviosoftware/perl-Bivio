@@ -180,6 +180,7 @@ sub init_bulletin {
 	$self->model('RowTag')->map_invoke(create_value => [
 	    [MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
 	    [BULLETIN_MAIL_MODE => 1],
+	    [BULLETIN_BODY_TEMPLATE => 1],
 	]);
 	$self->new_other('RealmRole')
 	    ->edit_categories([qw(+mail_send_access_nobody +feature_bulletin)]);
@@ -194,6 +195,7 @@ sub init_bulletin {
 	$self->model('RowTag')->map_invoke(create_value => [
 	    [MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
 	    [BULLETIN_MAIL_MODE => 1],
+	    [BULLETIN_BODY_TEMPLATE => 1],
 	]);
 	$self->new_other('RealmRole')->edit_categories('+feature_bulletin');
 	return;

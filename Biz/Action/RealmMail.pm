@@ -13,6 +13,7 @@ my($_RFC) = b_use('Mail.RFC822');
 my($_I) = b_use('Mail.Incoming');
 my($_M) = b_use('Biz.Model');
 my($_BMM) = b_use('Type.BulletinMailMode');
+my($_BBT) = b_use('Type.BulletinBodyTemplate');
 
 sub ALLOW_REPLY_TO {
     return 1;
@@ -95,7 +96,7 @@ sub execute_reflector {
 			    $rfid,
 			),
 		    }),
-		}),
+		}) if $_BBT->row_tag_get($req);
 	    }
             $msg->send($req);
         });
