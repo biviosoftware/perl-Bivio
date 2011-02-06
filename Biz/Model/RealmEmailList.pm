@@ -46,6 +46,7 @@ sub internal_initialize {
 		Email.email
 		Email.location
 		RealmOwner.display_name
+		RealmOwner.name
 		RealmUser.realm_id
 		RealmUser.user_id
 	    )],
