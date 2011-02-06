@@ -496,7 +496,7 @@ sub lock_action {
 		unless $no_warn;
 	    return;
 	}
-	my($pid, $host) = split(/\s+/, ${$_F->read($lock_pid)});
+	my($pid, $host) = -r $lock_pid ? split(/\s+/, ${$_F->read($lock_pid)}) : ();
 	if (($host && $host ne Sys::Hostname::hostname()) || _process_exists($pid)) {
 	    _lock_warning($lock_dir)
 		unless $no_warn;
@@ -1278,6 +1278,8 @@ sub _parse_realm {
 
 sub _process_exists {
     my($pid) = @_;
+    return 0
+	unless $pid;
     # Returns true if $pid exists
     $! = undef;
     return kill(0, $pid) || $! != POSIX::ESRCH() ? 1 : 0;
