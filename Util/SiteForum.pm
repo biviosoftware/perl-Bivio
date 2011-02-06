@@ -191,6 +191,10 @@ sub init_bulletin {
 	    'RealmOwner.display_name' => $display_name . ' Staging',
 	    'RealmOwner.name' => $self->add_default_staging_suffix($name),
 	});
+	$self->model('RowTag')->map_invoke(create_value => [
+	    [MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
+	    [BULLETIN_MAIL_MODE => 1],
+	]);
 	$self->new_other('RealmRole')->edit_categories('+feature_bulletin');
 	return;
     });
