@@ -1009,8 +1009,10 @@ sub unauth_model {
 }
 
 sub unauth_realm_id {
-    my($self, $name) = @_;
-    return shift->unauth_model(RealmOwner => {name => $name})->get('realm_id');
+    my($self, $email_id_or_name) = @_;
+    return shift->model('RealmOwner')
+	->unauth_load_by_email_id_or_name_or_die($email_id_or_name)
+        ->get('realm_id');
 }
 
 sub unsafe_get {
