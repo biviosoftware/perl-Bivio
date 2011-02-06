@@ -3,8 +3,13 @@
 Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 req()->set_realm('demo');
 req()->set_user('demo');
-my($m) = Bivio::Biz::Model->new(req(), 'RealmMail');
-$m->create_from_rfc822(\(<<'EOF'));
+my($rfid);
+my($email);
+my($uid) = req('auth_user_id');
+my($compute) = sub {
+    my($case, $params) = @_;
+    my($m) = Bivio::Biz::Model->new(req(), 'RealmMail');
+    $m->create_from_rfc822(\(<<'EOF'));
 From: a@a.a
 Message-ID: <a1@a.a>
 Date: Sun, 1 May 2005 10:11:41 -0600
@@ -12,22 +17,20 @@ Subject: s
 
 B
 EOF
-my($rfid) = $m->get('realm_file_id');
-my($email) = $m->new_other('Email')->load->get('email');
-[{
-    compute_params => => sub {
-	my($case, $params) = @_;
-	my($rmb) = class()->new(req());
-	$rmb->new_other('MailReceiveDispatchForm')->execute(req(),  {
-	    recipient => $rmb->return_path(
-		req()->get('auth_id'),
-		$email,
-		$rfid,
-	    ),
-	    client_addr => '1.2.3.4',
-	    message => {
-		name => '',
-		content => \(<<'EOF'),
+    req()->set_realm($uid);
+    my($rmb) = class()->new(req());
+    $rfid = $m->get('realm_file_id');
+    $email = $m->new_other('Email')->load->get('email');
+    $rmb->new_other('MailReceiveDispatchForm')->execute(req(),  {
+	recipient => $rmb->return_path(
+	    req()->get('auth_id'),
+	    $email,
+	    $rfid,
+	),
+	client_addr => '1.2.3.4',
+	message => {
+	    name => '',
+	    content => \(<<'EOF'),
 From MAILER-DAEMON@bivio.biz  Sun Feb 26 06:02:39 2006
 Return-Path: <MAILER-DAEMON@bivio.biz>
 Date: Sun, 26 Feb 2006 06:02:38 -0700
@@ -49,7 +52,7 @@ from localhost
 with id k1QD2cu23383
 
    ----- The following addresses had permanent fatal errors -----
-no-such-user@ieee.bivio.biz
+no-such-user@bivio.biz
     (reason: addressee unknown)
 
    ----- Transcript of session follows -----
@@ -82,18 +85,44 @@ bla
 
 --k1QD2cv23383.1140958958/bivio.biz--
 EOF
-	    },
-	});
-	return [req()];
-    },
-    compute_return => sub {
-	return [req()->get(class())->get(qw(realm_file_id email reason))];
-    },
+	},
+    });
+    return [req()];
+};
+[{
     object => sub {
 	class();
     },
 } => [
     execute => [
-	[] => [$rfid, $email, 'addressee unknown'],
+	$compute => sub {
+	    assert_equals(
+		[$rfid, $email, 'addressee unknown'],
+		[req(class())->get(qw(realm_file_id email reason))],
+	    );
+	    assert_equals(
+		1,
+		model('RealmUser')->rows_exist({user_id => $uid}),
+	    );
+	    return 1;
+	},
+	sub {
+	    req()->set_realm('bulletin');
+	    req()->set_user(
+		$uid = ShellUtil_TestUser()
+		    ->create(
+			$email = email(random_string()),
+		    ),
+	    );
+	    ShellUtil_RealmAdmin()->join_user(qw(MAIL_RECIPIENT MEMBER));
+	    return $compute->();
+	} => sub {
+	    req()->set_realm('bulletin');
+	    assert_equals(
+		0,
+		model('RealmUser')->rows_exist({user_id => $uid}),
+	    );
+	    return 1;
+	},
     ],
 ]];

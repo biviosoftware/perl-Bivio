@@ -5,7 +5,8 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_BMM) = b_use('Type.BulletinMailMode');
+my($_DT) = b_use('Type.DateTime');
 
 sub TASK_URI {
     return 'bounce';
@@ -19,15 +20,27 @@ sub create_from_rfc822 {
     if ($email && $email =~ s/(.*)=/$1@/) {
 	my($rm) = $self->new_other('RealmMail');
 	if ($rm->unauth_load({realm_file_id => $rfid})) {
-	    return $self->unauth_create_or_update({
+	    my($rid) = $rm->get('realm_id');
+	    $self->unauth_create_or_update({
 		realm_file_id => $rfid,
 		email => _trunc($self, $email, 'email'),
-		realm_id => $rm->get('realm_id'),
+		realm_id => $rid,
 		user_id => $uid,
 		modified_date_time => $_DT->now,
 		reason => _trunc($self, _reason($self, $rfid, $uid, $c),
 				 'reason'),
 	    });
+	    $self->req
+		->with_realm(
+		    $rid,
+		    sub {
+			$self->new_other('RealmUser')
+			    ->delete_all({user_id => $uid});
+			return;
+		    },
+		)
+		if $_BMM->should_leave_realm($rid, $self->req);
+	    return;
 	}
     }
     else {
