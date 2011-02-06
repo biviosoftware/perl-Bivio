@@ -1,0 +1,19 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ShellUtil();
+my($email) = email(my $pattern = random_string());
+my($assert) = sub {
+    my($expect) = @_;
+    return sub {
+	return assert_equals(
+	    $expect,
+	    model('Email')->unauth_rows_exist({email => $email}),
+	);
+    };
+};
+[
+    [create => $email] => $assert->(1),
+    [-email => $email, 'leave_and_delete'] => $assert->(0),
+    [create => $email] => $assert->(1),
+    [leave_and_delete => $pattern] => $assert->(0),
+];
