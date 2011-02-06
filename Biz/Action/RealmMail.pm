@@ -11,6 +11,8 @@ my($_T) = b_use('Agent.Task');
 my($_MWRT) = b_use('Type.MailWantReplyTo');
 my($_RFC) = b_use('Mail.RFC822');
 my($_I) = b_use('Mail.Incoming');
+my($_M) = b_use('Biz.Model');
+my($_BMM) = b_use('Type.BulletinMailMode');
 
 sub ALLOW_REPLY_TO {
     return 1;
@@ -65,9 +67,9 @@ sub execute_reflector {
     my($proto, $req) = @_;
     my($self) = $req->get($proto->package_name);
     my($out, $rfid) = $self->get(qw(outgoing realm_file_id));
-    my($rmb) = Bivio::Biz::Model->new($req, 'RealmMailBounce');
-    my($bulletin) = $rmb->new_other('RowTag')->get_value(
-        $req->get('auth_id'), 'BULLETIN_MAIL_MODE');
+    my($rmb) = $_M->new($req, 'RealmMailBounce');
+    my($bulletin) = $_BMM->row_tag_get($req);
+    my($muf) = $rmb->new_other('MailUnsubscribeForm');
     my $f = ($_A->parse($out->unsafe_get_header('From')))[1]
 	if $bulletin;
     $rmb->new_other($self->EMAIL_LIST)->get_recipients(sub {
@@ -85,6 +87,15 @@ sub execute_reflector {
 	    if ($bulletin) {
 		$msg->set_header(To => $it->get('Email.email'));
 		$msg->set_header(From => $_RFC->format_mailbox($rp, $f));
+		$msg->edit_body({
+		    email => $it->get('Email.email'),
+		    unsubscribe => $req->format_http({
+			uri => $muf->format_uri_for_user(
+			    $it->get('RealmOwner.name'),
+			    $rfid,
+			),
+		    }),
+		}),
 	    }
             $msg->send($req);
         });
