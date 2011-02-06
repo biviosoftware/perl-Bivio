@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Outgoing;
 use strict;
@@ -11,7 +11,13 @@ use MIME::QuotedPrint ();
 # scratch.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_T) = b_use('MIME.Type');
+my($_R) = b_use('Biz.Random');
+my($_FP) = b_use('Type.FilePath');
+my($_I) = b_use('Mail.Incoming');
+my($_A) = b_use('Mail.Address');
+my($_IOT) = b_use('IO.Template');
+my($_DT) = b_use('Type.DateTime');
 # Some of these were taken from majordomo's resend.  Others, just make
 # sense.  Check set_headers_for_list_send for headers which set but
 # not in this list.
@@ -35,11 +41,6 @@ my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
 ),
     Bivio::Mail::Common->TEST_RECIPIENT_HDR,
 )];
-my($_T) = __PACKAGE__->use('MIME.Type');
-my($_R) = __PACKAGE__->use('Biz.Random');
-my($_FP) = __PACKAGE__->use('Type.FilePath');
-my($_I) = __PACKAGE__->use('Mail.Incoming');
-my($_A) = __PACKAGE__->use('Mail.Address');
 
 # 822:
 # Due to an artifact of the notational conventions, the syn-
@@ -126,6 +127,13 @@ sub attach {
     Bivio::IO::Alert->warn('binary is supplanted by suggest_encoding')
         if defined($bp->{binary});
     push(@{$self->get_if_exists_else_put('parts', [])}, $bp);
+    return;
+}
+
+sub edit_body {
+    my($self, $vars) = @_;
+    my($body) = ${$self->get_body};
+    $self->set_body($_IOT->replace_in_string(\$body, $vars));
     return;
 }
 
