@@ -90,4 +90,37 @@ sub internal_pre_execute {
     return @res;
 }
 
+sub subscribe_to_bulletin_realm {
+    my($self, $user_id) = @_;
+    $self->new_other('RealmUser')->unauth_create_unless_exists({
+	realm_id => b_use('FacadeComponent.Constant')
+	    ->get_value('bulletin_realm_id', $self->req),
+	user_id => $user_id,
+	role => $_MAIL_RECIPIENT,
+    });
+    return;
+}
+
+sub unsubscribe_from_bulletin_realm {
+    my($self, $user_id, $realm_id) = @_;
+    $realm_id ||= _bulletin_id($self);
+    $self->req
+	->with_realm(
+	    $realm_id,
+	    sub {
+		$self->new_other('RealmUser')
+		    ->delete_all({user_id => $user_id});
+		return;
+	    },
+	)
+	if $_BMM->should_leave_realm($realm_id, $self->req);
+    return;
+}
+
+sub _bulletin_id {
+    my($self) = @_;
+    return b_use('FacadeComponent.Constant')
+	->get_value('bulletin_realm_id', $self->req);
+}
+
 1;
