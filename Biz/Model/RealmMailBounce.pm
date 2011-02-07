@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_BMM) = b_use('Type.BulletinMailMode');
 my($_DT) = b_use('Type.DateTime');
 
 sub TASK_URI {
@@ -30,16 +29,8 @@ sub create_from_rfc822 {
 		reason => _trunc($self, _reason($self, $rfid, $uid, $c),
 				 'reason'),
 	    });
-	    $self->req
-		->with_realm(
-		    $rid,
-		    sub {
-			$self->new_other('RealmUser')
-			    ->delete_all({user_id => $uid});
-			return;
-		    },
-		)
-		if $_BMM->should_leave_realm($rid, $self->req);
+	    $self->new_other('MailUnsubscribeForm')
+		->unsubscribe_from_bulletin_realm($uid, $rid);
 	    return;
 	}
     }
