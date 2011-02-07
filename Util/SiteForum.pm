@@ -170,6 +170,8 @@ sub init_admin_user {
 sub init_bulletin {
     my($self, $name, $display_name) = @_;
     my($req) = $self->initialize_fully;
+    $self->set_user_to_any_online_admin;
+    $name ||= b_use('FacadeComponent.Constant')->get_value('bulletin_realm_name', $req);
     $display_name ||= _site_name_prefix(ucfirst($name), $req);
     $req->with_realm(undef, sub {
         $self->model('ForumForm', {
