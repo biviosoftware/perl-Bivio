@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,86 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.28  2011/02/07 16:01:50  nagler
+  * Bivio::Agent::Job::Request
+    set path_info to undef
+  * Bivio::Biz::Action::RealmMail
+    call Outgoing->edit_body on BULLETIN_MAIL_MODE forum msgs
+    added BULLETIN_BODY_TEMPLATE so can use BULLETIN_MAIL_MODE without templating
+  * Bivio::Biz::Model::MailPartList
+    added set_attachment_visited() and was_attachment_visited()
+    to control whether to render extra attachments to a file
+  * Bivio::Biz::Model::MailThreadList
+    added get_message_anchor so explicitly coupled between View.Mail and SearchList
+  * Bivio::Biz::Model::MailUnsubscribeForm
+    NEW
+  * Bivio::Biz::Model::RealmEmailList
+    added RealmOwner.name
+  * Bivio::Biz::Model::RealmFile
+    toggle_is_public() doesn't changed modified_date_time
+  * Bivio::Biz::Model::RealmMailBounce
+    If BulletinMailMode set for realm, remove user from realm
+    use MailUnsubscribeForm
+  * Bivio::Biz::Model::RealmMailList
+    use MailThreadList->get_message_anchor
+  * Bivio::Biz::Model::RealmOwner
+    added unauth_load_by_email_id_or_name_or_die
+  * Bivio::Biz::Model::SearchList
+    use MailThreadList->get_message_anchor
+  * Bivio::Delegate::RowTagKey
+    added BULLETIN_BODY_TEMPLATE
+  * Bivio::Delegate::TaskId
+    added USER_MAIL_UNSUBSCRIBE_FORM
+  * Bivio::IO::Template
+    b_use
+  * Bivio::Mail::Outgoing
+    added edit_body
+    b_use
+  * Bivio::Search::Parser
+    Need to canonicalize_charset on all values going into xapian
+  * Bivio::ShellUtil
+    unauth_realm_id works on emails or names
+    lock_action needs to protect against an unreadable/non-existent lock_pid file
+  * Bivio::Type::BulletinBodyTemplate
+    NEW
+  * Bivio::Type::BulletinMailMode
+    NEW
+  * Bivio::Type::FilePath
+    added is_public
+  * Bivio::Type::String
+    test AE ligature
+  * Bivio::Type
+    row_tag_get now handles model_or_id correctly
+  * Bivio::UI::FacadeBase
+    added 'p' font def
+    added USER_MAIL_UNSUBSCRIBE_FORM
+    added BULLETIN_REALM_NAME and bulletin_realm_id
+    _unsafe_realm_id returns 0 when not found, because 1 is legitimate
+    realm_id, which isn't a good idea as values are getting bound to the
+    general realm
+  * Bivio::UI::View::CSS
+    added Font 'p'
+  * Bivio::UI::View::File
+    make tree list actions column rightmost
+  * Bivio::UI::View::Mail
+    removed internal_part_list() id,
+    only render attachments if they haven't already been rendered inline
+    added unsubscribe_form
+    use MailThreadList->get_message_anchor
+  * Bivio::UI::XHTML::Widget::MailBodyHTML
+    render img src
+    mark mime_cids as rendered when accessed inline
+    render a anchors
+  * Bivio::Util::RealmFile
+    make mail files public if public path
+    fpc
+  * Bivio::Util::SiteForum
+    set BULLETIN_MAIL_MODE and MAIL_SUBJECT_PREFIX on bulletin_staging
+    added BULLETIN_BODY_TEMPLATE so can use BULLETIN_MAIL_MODE without templating
+  * Bivio::Util::TestUser
+    leave_and_delete takes a pattern
+    create uses parameters()
+
   Revision 10.27  2011/02/02 16:46:46  nagler
   * Bivio::Agent::HTTP::Reply
     added http_status_code support
