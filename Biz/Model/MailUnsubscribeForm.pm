@@ -90,11 +90,18 @@ sub internal_pre_execute {
     return @res;
 }
 
+sub is_subscribed_to_bulletin_realm {
+    my($self, $user_id, $realm_id) = @_;
+    return $self->new_other('RealmUser')->unauth_rows_exist({
+	realm_id => _bulletin_id($self, $realm_id), 
+	user_id => $user_id,
+    });
+}
+
 sub subscribe_to_bulletin_realm {
-    my($self, $user_id) = @_;
+    my($self, $user_id, $realm_id) = @_;
     $self->new_other('RealmUser')->unauth_create_unless_exists({
-	realm_id => b_use('FacadeComponent.Constant')
-	    ->get_value('bulletin_realm_id', $self->req),
+	realm_id => _bulletin_id($self, $realm_id),
 	user_id => $user_id,
 	role => $_MAIL_RECIPIENT,
     });
@@ -103,7 +110,7 @@ sub subscribe_to_bulletin_realm {
 
 sub unsubscribe_from_bulletin_realm {
     my($self, $user_id, $realm_id) = @_;
-    $realm_id ||= _bulletin_id($self);
+    $realm_id = _bulletin_id($self, $realm_id);
     $self->req
 	->with_realm(
 	    $realm_id,
@@ -118,8 +125,9 @@ sub unsubscribe_from_bulletin_realm {
 }
 
 sub _bulletin_id {
-    my($self) = @_;
-    return b_use('FacadeComponent.Constant')
+    my($self, $realm_id) = @_;
+    return $realm_id
+	|| b_use('FacadeComponent.Constant')
 	->get_value('bulletin_realm_id', $self->req);
 }
 
