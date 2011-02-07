@@ -193,6 +193,7 @@ sub init_bulletin {
 	$self->model('ForumForm', {
 	    'RealmOwner.display_name' => $display_name . ' Staging',
 	    'RealmOwner.name' => $self->add_default_staging_suffix($name),
+	    mail_want_reply_to => 1,
 	});
 	$self->model('RowTag')->map_invoke(create_value => [
 	    [MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
