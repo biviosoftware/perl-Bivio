@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,89 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.27  2011/02/02 16:46:46  nagler
+  * Bivio::Agent::HTTP::Reply
+    added http_status_code support
+    downcased builtin responses
+  * Bivio::Agent::HTTP::Request
+    passed $named to reply->client_redirect
+  * Bivio::Agent::Request
+    added http_status_code to EXTRA_URI_PARAM_LIST
+  * Bivio::Agent::TaskEvent
+    added http_status_code to params
+  * Bivio::Biz::Action::ClientRedirect
+    added execute_permanent_map
+  * Bivio::Biz::Action::Error
+    fpc
+  * Bivio::Biz::Action::PermanentRedirect
+    removed
+  * Bivio::Biz::Action::RealmFile
+    removed unused assert_access
+  * Bivio::Biz::Model::MailPartList
+    added access_is_public_only feature
+  * Bivio::Biz::Model::MailThreadList
+    added access_is_public_only feature
+    added is_public
+  * Bivio::Biz::Model::RealmFeatureForm
+    added mail_visibility
+  * Bivio::Biz::Model::RealmFile
+    added toggle_is_public
+    make lists ephemeral
+  * Bivio::Biz::Model::RealmMailList
+    added is_public
+  * Bivio::Biz::Model::RealmMail
+    added access_is_public_only and assert_mail_visibility
+    support for visibility control
+  * Bivio::Biz::Model::RealmMailPublicForm
+    NEW
+  * Bivio::Biz::Model::Tuple
+    make TupleUseList ephemeral
+  * Bivio::Biz::Model::TupleSlotListForm
+    fmt
+  * Bivio::Biz::Model::TupleUseForm
+    Bivio::Base
+  * Bivio::Delegate::RowTagKey
+    MAIL_VISIBILITY
+  * Bivio::Delegate::TaskId
+    Mail permissions now controlled through assert_mail_visibility
+    replaced PERMANENT_REDIRECT with CLIENT_REDIRECT_PERMANENT_MAP
+    added GROUP_MAIL_TOGGLE_PUBLIC
+  * Bivio::HTML::Scraper
+    catch and ignore errors/warnings when extracting cookies
+  * Bivio::MIME::RRule
+    allow interval 1
+    allow wkst if byday isn't multiple
+  * Bivio::PetShop::BConf
+    test data for CLIENT_REDIRECT_PERMANENT_MAP
+  * Bivio::PetShop::Facade::PetShop
+    MY_SITE defaults to SITE_ROOT
+    test data for CLIENT_REDIRECT_PERMANENT_MAP
+  * Bivio::PetShop::Util::SQL
+    added mail_forum_public and mail_forum_allow_public
+  * Bivio::Search::Parser::RealmFile::MessageRFC822
+    b_use
+  * Bivio::Test::Language::HTTP
+    exported user_agent_instance
+  * Bivio::Type::FilePath
+    from_public doesn't die if no /public prefix
+  * Bivio::Type::MailVisibility
+    NEW
+  * Bivio::Type::String
+    \xb4 --> '
+  * Bivio::UI::FacadeBase
+    mail_visibility_mode
+    fpc
+    replace wrench with 'Modify' link
+    added GROUP_MAIL_TOGGLE_PUBLIC & CLIENT_REDIRECT_PERMANENT_MAP
+  * Bivio::UI::Task
+    fix HELP link
+  * Bivio::UI::View::File
+    replace wrench with 'Modify' link
+  * Bivio::UI::View::Mail
+    added GROUP_MAIL_TOGGLE_PUBLIC
+  * Bivio::Util::SQL
+    upgrade to add mail_write
+
   Revision 10.26  2011/01/28 00:30:32  schellj
   * Bivio::UI::XHTML::ViewShortcuts
     if field has column_widget, then just put in list
