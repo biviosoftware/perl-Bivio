@@ -44,12 +44,16 @@ sub internal_feature_form {
 		sub {lc(shift) cmp lc(shift)},
 		$m->map_feature_type(sub {
 		    my($field, $type) = @_;
-		    $m->get_field_type($_)->isa('Bivio::Type::Enum')
-			? ["$model.$field" => {
-			    wf_want_select => 1,
-			    enum_sort => 'as_int',
-			    vs_descriptive_field_no_label => 1,
-			}] : ["$model.$field"],
+		    ["$model.$field" => {
+			$m->get_field_type($_)->isa('Bivio::Type::Enum')
+			    ? (
+				wf_want_select => 1,
+				enum_sort => 'as_int',
+				vs_descriptive_field_no_label => 1,
+			    )
+			    : (),
+			row_control => ["Model.$model", "allow_$field"],
+		    }],
 		}),
 	    )},
 	]),
