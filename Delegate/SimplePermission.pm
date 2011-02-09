@@ -18,7 +18,7 @@ sub get_delegate_info {
 	SUPER_USER_TRANSIENT => [8],
 	TEST_TRANSIENT => [9],
 	MAIL_READ => [10],
-	MAIL_WRITE => [11],
+	MAIL_ADMIN => [11],
 	MAIL_SEND => [12],
 	MAIL_POST => [13],
 	TUPLE_READ => [14],

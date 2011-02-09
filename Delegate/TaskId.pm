@@ -934,7 +934,7 @@ sub info_mail {
 	    GROUP_MAIL_TOGGLE_PUBLIC
 	    231
 	    ANY_OWNER
-	    MAIL_READ&MAIL_WRITE&FEATURE_MAIL
+	    MAIL_READ&MAIL_ADMIN&FEATURE_MAIL
 	    Model.RealmMailPublicForm
 	    next=FORUM_MAIL_THREAD_ROOT_LIST
 	)],
