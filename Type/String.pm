@@ -43,14 +43,17 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub canonicalize_and_excerpt {
     my($proto, $value, $max_words) = @_;
+    my($v, $return) = _ref($value);
+    return $v
+	if $return;
     $max_words ||= 45;
 #TODO: Split on paragraphs first.  Google groups seems to do this
     my($words) = [grep(
 	length($_),
 	split(
 	    ' ',
-	    ${$proto->canonicalize_newlines(
-		$proto->canonicalize_newlines($value),
+	    ${$proto->canonicalize_charset(
+		$proto->canonicalize_newlines($v),
 	    )}, $max_words,
 	),
     )];
@@ -63,13 +66,17 @@ sub canonicalize_and_excerpt {
 
 sub canonicalize_charset {
     my(undef, $value) = @_;
-    my($v) = ref($value) ? $value : \$value;
+    my($v, $return) = _ref($value);
+    return $v
+	if $return;
     return _clean_whitespace(_clean_utf8($v) || _clean_1252($v) || $v);
 }
 
 sub canonicalize_newlines {
     my(undef, $value) = @_;
-    my($v) = ref($value) ? $value : \$value;
+    my($v, $return) = _ref($value);
+    return $v
+	if $return;
     $$v =~ s/\r\n|\r/\n/sg;
     $$v =~ s/^[ \t]+$//mg;
     $$v =~ s/\n+$//sg;
@@ -80,8 +87,9 @@ sub canonicalize_newlines {
 
 sub clean_and_trim {
     my($proto, $value) = @_;
-    b_die('value must be no-zero length')
-	unless defined($value) && length($value);
+    my($v, $return) = _ref($value);
+    return $v
+	if $return;
     $value .= $value
 	while length($value) < $proto->get_min_width;
     return substr($value, 0, $proto->get_width);
@@ -191,6 +199,15 @@ sub _map_characters {
 	    if $$value =~ s/$from->[$map]/$to/g;
     }
     return $match ? $value : undef;
+}
+
+sub _ref {
+    my($value) = @_;
+    my($v) = ref($value) ? $value : \$value;
+    return ($v, 0)
+	if defined($$v) && length($$v);
+    $$v = '';
+    return ($v, 1);
 }
 
 sub _wrap_line {
