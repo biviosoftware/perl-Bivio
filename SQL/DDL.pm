@@ -1238,7 +1238,7 @@ CREATE TABLE phone_t (
 CREATE TABLE row_tag_t (
   primary_id NUMERIC(18) NOT NULL,
   key NUMERIC(3) NOT NULL,
-  value VARCHAR(500) NOT NULL,
+  value VARCHAR(65535) NOT NULL,
   CONSTRAINT row_tag_t1 primary key(primary_id, key)
 )
 /
