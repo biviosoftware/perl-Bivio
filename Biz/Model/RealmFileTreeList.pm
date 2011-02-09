@@ -9,7 +9,15 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FP) = b_use('Type.FilePath');
 my($_RF) = b_use('Model.RealmFile');
 my($_TLN) = b_use('Type.TreeListNode');
-my($_MAIL_FOLDER) = lc($_FP->MAIL_FOLDER);
+my($_NOT_LIKE) = [
+    '/.%',
+    '%/.%',
+    map(
+	($_, $_ . '/%'),
+        lc($_FP->MAIL_FOLDER),
+	lc($_FP->to_public($_FP->MAIL_FOLDER)),
+    ),
+];
 my($_VERSIONS_FOLDER_RE) =  qr{^$_FP->VERSIONS_FOLDER(?:/:$)}ios;
 my($_RFL) = b_use('Model.RealmFileLock');
 my($_DEFAULT_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
@@ -142,11 +150,8 @@ sub internal_prepare_statement {
 	    $self->req('task')->get_attr_as_task('write_task')),
     };
     $_RFVL->prepare_statement_for_realm_file_lock($stmt);
-    # /Mail is probably large so we'll ignore it
-    # dot-files are uninteresting, so we'll ignore them.
-    # All are available via DAV
     $stmt->where(@{$stmt->map_invoke(
-	NOT_LIKE => ['/.%', '%/.%', $_MAIL_FOLDER . '/%', $_MAIL_FOLDER],
+	NOT_LIKE => $_NOT_LIKE,
 	['RealmFile.path_lc'],
     )});
     return shift->SUPER::internal_prepare_statement(@_);
