@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::RowTagValue;
 use strict;
-use Bivio::Base 'Type.Text';
+use Bivio::Base 'Type.Text64K';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
