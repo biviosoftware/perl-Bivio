@@ -32,7 +32,6 @@ my($_BUNDLE) = [qw(
     site_forum
     file_writer
     bulletin
-    row_tag
     motion_vote_comment
     nonunique_email
     !permissions51
@@ -67,7 +66,8 @@ my($_BUNDLE) = [qw(
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
     !site_help_title
-    !mail_write
+    !mail_admin
+    !row_tag_value_64k
 )
 ];
 #    crm_mail
@@ -1129,7 +1129,7 @@ sub internal_upgrade_db_mail_want_reply_to_default {
     return;
 }
 
-sub internal_upgrade_db_mail_write {
+sub internal_upgrade_db_mail_admin {
     my($self) = @_;
     my($ap) = $self->use('Auth.Permission');
     my($aps) = $self->use('Auth.PermissionSet');
@@ -1139,7 +1139,7 @@ sub internal_upgrade_db_mail_write {
 	    my($ps) = $it->get('permission_set');
 	    return 1
 		unless $aps->is_set(\$ps, $ap->from_name('ADMIN_WRITE'));
-	    $aps->set(\$ps, $ap->from_name('MAIL_WRITE'));
+	    $aps->set(\$ps, $ap->from_name('MAIL_ADMIN'));
 	    $it->update({permission_set => $ps});
 	    return 1;
 	},
@@ -1595,17 +1595,39 @@ EOF
     return;
 }
 
-sub internal_upgrade_db_row_tag {
+sub internal_upgrade_db_row_tag_value_64k {
     my($self) = @_;
-    $self->run(<<'EOF');
-CREATE TABLE row_tag_t (
-  primary_id NUMERIC(18) NOT NULL,
-  key NUMERIC(3) NOT NULL,
-  value VARCHAR(500) NOT NULL,
-  CONSTRAINT row_tag_t1 primary key(primary_id, key)
+    if ($self->is_oracle) {
+	$self->run(<<'EOF');
+ALTER TABLE row_tag_t
+    MODIFY value VARCHAR(65535)
+/
+EOF
+    }
+    else {
+	$self->run(<<'EOF');
+ALTER TABLE row_tag_t
+    ADD COLUMN value2 VARCHAR(65535)
+/
+UPDATE row_tag_t
+    SET value2 = value
+/
+ALTER TABLE row_tag_t
+    DROP COLUMN value
+/
+ALTER TABLE row_tag_t
+    RENAME COLUMN value2
+    TO value
+/
+ALTER TABLE row_tag_t
+    ALTER COLUMN value SET NOT NULL
+/
+CREATE INDEX row_tag_t2 ON row_tag_t (
+  value
 )
 /
 EOF
+    }
     return;
 }
 
@@ -2549,7 +2571,7 @@ b-realm-role -realm CLUB -user user edit MEMBER - \
 b-realm-role -realm CLUB -user user edit ACCOUNTANT - \
     +MEMBER \
     +ADMIN_WRITE \
-    +MAIL_WRITE
+    +MAIL_ADMIN
 b-realm-role -realm CLUB -user user edit ADMINISTRATOR - \
     +ACCOUNTANT
 b-realm-role -realm CLUB -user user edit UNAPPROVED_APPLICANT - \
