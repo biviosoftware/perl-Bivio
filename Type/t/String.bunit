@@ -45,7 +45,9 @@ Type();
 	'á' => 'a',
     ],
     canonicalize_and_excerpt => [
-	'a  short text.' => [\('a short text.')],
+	[undef] => [\('')],
+	'' => [\('')],
+	"\221a  short text." => [\(q{'a short text.})],
 	join(' ', 1 .. 50) => [\(join(' ', 1 .. 44) . ' ...')],
     ],
 ];
