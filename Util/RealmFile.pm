@@ -107,15 +107,22 @@ sub export_tree {
     $self->model('RealmFile')->do_iterate(sub {
         my($it) = @_;
 	return 1
-	    unless !$it->get('is_folder')
-	    && (my $p = $it->get('path')) =~ $re;
+	    unless (my $p = $it->get('path')) =~ $re;
         return 1
             if $noarchive && $it->is_version;
 	$p =~ s{^/}{};
-	$_F->mkdir_parent_only($p);
-	$_F->write($p, $it->get_content);
-	$_F->chmod(0444, $p)
-	    if $it->get('is_read_only');
+	return 1 unless $p;
+
+	if ($it->get('is_folder')) {
+	    $_F->mkdir_p($p);
+	}
+	else {
+	    $_F->mkdir_parent_only($p);
+	    $_F->write($p, $it->get_content);
+	    $_F->chmod(0444, $p)
+		if $it->get('is_read_only');
+	}
+	$_F->set_modified_date_time($p, $it->get('modified_date_time'));
         return 1;
     });
     return;
@@ -196,6 +203,7 @@ sub import_tree {
 	    return;
 	},
     }, '.');
+    _audit_folder_modified_time($self);
     return;
 }
 
@@ -263,6 +271,22 @@ sub update {
     return;
 }
 
+sub _audit_folder_modified_time {
+    my($self) = @_;
+    $self->model('RealmFile')->do_iterate(sub {
+        my($rf) = @_;
+	my($max) = _max_modified_time($self, $rf);
+	$rf->update({
+	    override_is_read_only => 1,
+	    modified_date_time => $max,
+	}) if $max;
+	return 1;
+    }, {
+	is_folder => 1,
+    });
+    return;
+}
+
 sub _do {
     my($self, $method, $path, @args) = @_;
     $self->initialize_fully;
@@ -278,6 +302,26 @@ sub _fix_values {
 	$ignore_is ? () : map(($_ => $self->get($_)), qw(is_public is_read_only)),
 	$self->get('force') ? (override_is_read_only => 1) : (),
     };
+}
+
+sub _max_modified_time {
+    my($self, $folder) = @_;
+    my($max) = $_DT->get_min;
+
+    $self->model('RealmFile')->do_iterate(sub {
+        my($rf) = @_;
+	my($v) = $rf->get('is_folder')
+	    ? _max_modified_time($self, $rf)
+	    : $rf->get('modified_date_time');
+
+	if ($_DT->compare($v, $max) > 0) {
+	    $max = $v;
+	}
+	return 1;
+    }, {
+	folder_id => $folder->get('realm_file_id'),
+    });
+    return $max eq $_DT->get_min ? undef : $max;
 }
 
 1;
