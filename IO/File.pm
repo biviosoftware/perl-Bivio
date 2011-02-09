@@ -13,6 +13,7 @@ use IO::Dir ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
+my($_DT) = b_use('Type.DateTime');
 
 sub absolute_path {
     my(undef, $file_name, $base) = @_;
@@ -163,7 +164,7 @@ sub mkdir_parent_only {
 
 sub get_modified_date_time {
     my($proto, $file) = @_;
-    return $proto->use('Type.DateTime')->from_unix((stat($file))[9]);
+    return $_DT->from_unix((stat($file))[9]);
 }
 
 sub pwd {
@@ -223,6 +224,14 @@ sub rm_rf {
     my(undef, $path) = @_;
     system('rm', '-rf', $path = _assert_not_root($path));
     return $path;
+}
+
+sub set_modified_date_time {
+    my($proto, $file, $date_time) = @_;
+    my($mtime) = $_DT->to_unix($date_time);
+    utime($mtime, $mtime, $file)
+	|| b_die('error setting timestamp: ', $file, ' ', $!);
+    return;
 }
 
 sub temp_file {
