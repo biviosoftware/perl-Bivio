@@ -1,0 +1,48 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+PropertyModel();
+my($root);
+my($domain) = '@model.realmmail.bunit';
+my($subject) = 'Model.RealmMail.bunit subject:';
+[
+    create_from_rfc822 => [
+	[\(<<"EOF")] => not_die(),
+From: a$domain
+Message-ID: <a$domain>
+Date: Sun, 1 May 2005 10:11:41 -0600
+Subject: $subject
+
+Body
+EOF
+	sub {$root = shift->get('object')->get('realm_file_id'); [\(<<"EOF")]}
+From: b$domain
+In-Reply-To: <a$domain>
+Message-ID: <b$domain>
+Date: Sun, 1 May 2005 10:11:42 -0600
+Subject: $subject
+
+Body
+EOF
+	=> not_die(),
+	[\(<<"EOF")] => not_die(),
+From: c$domain
+Message-ID: <c$domain>
+References: <a$domain> <b$domain>
+Date: Sun, 1 May 2005 10:11:43 -0600
+Subject: $subject
+
+Body
+EOF
+    ],
+    load => [
+	[{message_id => "b$domain"}] => not_die(),
+    ],
+    delete_message => not_die(),
+    load => [
+	[{message_id => "c$domain"}] => [{
+	    thread_root_id => sub {$root},
+	    thread_parent_id => sub {$root},
+	}],
+	[{message_id => "b$domain"}] => MODEL_NOT_FOUND(),
+    ],
+];
