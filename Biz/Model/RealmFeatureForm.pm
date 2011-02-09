@@ -61,6 +61,8 @@ sub execute_ok {
     my($ev) = _empty_values($self);
     $self->map_feature_type(sub {
         my($field, $type) = @_;
+	return
+	    unless $self->unsafe_get("allow_$field");
 	my($v);
 	if ($self->unsafe_get('force_default_values')) {
 	    $v = $ev->{$field};
@@ -83,16 +85,42 @@ sub execute_ok {
     return;
 }
 
+sub internal_allow_field_value {
+    return 1;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	$self->field_decl(
 	    visible => $self->map_feature_type(sub {[@_]}),
-	    other => [[qw(force_default_values Boolean)]],
+	    other => [
+		[qw(force_default_values Boolean)],
+		@{shift->map_feature_type(
+		    sub {['allow_' . shift(@_), 'Boolean']},
+		)},
+	    ],
 	),
 	auth_id => ['RealmOwner.realm_id'],
     });
+}
+
+sub internal_pre_execute {
+    my($self) = @_;
+    my(@res) = shift->SUPER::internal_pre_execute(@_);
+    $self->internal_put_field(
+	@{$self->map_feature_type(
+	    sub {
+		my($field) = @_;
+		return (
+		    "allow_$field",
+		    $self->internal_allow_field_value(@_),
+		);
+	    },
+	)},
+    );
+    return @res;
 }
 
 sub internal_use_general_realm_for_site_admin {
