@@ -25,10 +25,6 @@ sub csv {
     # one is written.  The others are just loaded.
     $self->initialize_ui;
     $self->usage('too few arguments') unless int(@_) >= 2;
-#TODO: Remove this ugly hack
-    my($pr) = b_use('IO.ClassLoader')->unsafe_map_require('Action.PublicRealm');
-    $pr->get_instance->execute_simple($self->req)
-	if $pr;
     my($model) = $models;
     my($iterating) = {};
     my($method) = 'next_row';
