@@ -310,6 +310,7 @@ sub _tree_list {
 	}],
 	_file_owner_column(),
 	['actions', {
+	    column_data_class => 'list_action',
 	    column_widget => ListActions([
 		map({
 		    my($task) = $_;
