@@ -40,6 +40,11 @@ sub access_controlled_load {
 	    if ($req->unsafe_get_nested(qw(task want_folder_fall_thru))) {
 		return undef
 		    unless $aipo;
+		# allow viewing public folders
+		if ($rf->get('is_public')) {
+		    $req->put(path_info => $rf->get('path'));
+		    return undef;
+		}
 		$e = 'FORBIDDEN';
 	    }
 	}
