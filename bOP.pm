@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.29  2011/02/07 18:32:20  nagler
+  * Bivio::Biz::Model::MailUnsubscribeForm
+    added is_subscribed_to_bulletin_realm
+    Allow realm_id to be passed into all bulletin realm calls
+  * Bivio::Util::SiteForum
+    init_bulletin needs to default a user and name
+
   Revision 10.28  2011/02/07 16:01:50  nagler
   * Bivio::Agent::Job::Request
     set path_info to undef
