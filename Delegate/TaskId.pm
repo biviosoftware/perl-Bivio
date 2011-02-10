@@ -645,7 +645,7 @@ sub info_file {
 	    FORUM_FILE_TREE_LIST
 	    170
 	    ANY_OWNER
-	    DATA_READ&DATA_BROWSE&FEATURE_FILE
+	    ANYBODY&FEATURE_FILE
 	    Action.RealmFile->access_controlled_execute
 	    Model.RealmFileTreeList->execute_load_all_with_query
 	    View.File->tree_list
