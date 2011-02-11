@@ -128,7 +128,8 @@ sub _bulletin_id {
     my($self, $realm_id) = @_;
     return $realm_id
 	|| b_use('FacadeComponent.Constant')
-	->get_value('bulletin_realm_id', $self->req);
+	    ->get_value('bulletin_realm_id', $self->req)
+	|| b_die('no bulletin_realm_id');
 }
 
 1;
