@@ -77,6 +77,8 @@ follow_link('^public');
 follow_link('^private');
 follow_link('^public');
 do_logout();
+visit_uri($mail_uri);
+verify_no_text($msg_uri);
 test_deviance(qr{not.found}i);
 visit_uri($msg_uri);
 visit_uri($image_uri);
