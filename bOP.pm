@@ -1,5 +1,5 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,42 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.30  2011/02/10 19:22:43  moeller
+  * Bivio::Biz::Action::RealmFile
+    allow viewing public folders
+  * Bivio::Biz::Model::RealmFeatureForm
+    added allow_<feature> fields so can control which fields are
+    rendered.  Subclasses override internal_allow_field_value
+  * Bivio::Biz::Model::RealmFileTreeList
+    don't render public mail
+  * Bivio::Delegate::SimplePermission
+    MAIL_WRITE => MAIL_ADMIN
+  * Bivio::Delegate::TaskId
+    MAIL_WRITE => MAIL_ADMIN
+    removed DATA_BROWSE permission from FORUM_FILE_TREE_LIST
+  * Bivio::IO::File
+    added set_modified_date_time()
+  * Bivio::SQL::DDL
+    row_tag_t.value is now 65535
+  * Bivio::Type::RowTagValue
+    Length is now 65535
+  * Bivio::Type::String
+    accept undef/empty strings in canonicalize*
+  * Bivio::UI::View::File
+    added list_action css class to File tree actions column
+  * Bivio::UI::View::GroupAdmin
+    allow RealmFeatureForm to control which fields are rendered
+  * Bivio::Util::RealmFile
+    export_tree() now sets the file's modified date_time,
+    import_tree() updates folder's modified_date_time to the max content date_tim
+  e
+  * Bivio::Util::SiteForum
+    init_bulletin: do want mail_want_reply_to for staging (should be set
+    up the same as the bulletin realm)
+  * Bivio::Util::SQL
+    internal_upgrade_db_row_tag_value_64k: RowTag.value is now 65535
+    internal_upgrade_db_mail_admin: add MAIL_ADMIN to anybody with ADMIN_WRITE
+
   Revision 10.29  2011/02/07 18:32:20  nagler
   * Bivio::Biz::Model::MailUnsubscribeForm
     added is_subscribed_to_bulletin_realm
@@ -14877,7 +14913,7 @@ http://www.bivio.biz for more info.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2009 bivio Software, Inc.  All Rights reserved.
+Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
 
 =head1 VERSION
 
