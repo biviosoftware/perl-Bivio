@@ -1600,7 +1600,7 @@ sub internal_upgrade_db_row_tag_value_64k {
     if ($self->is_oracle) {
 	$self->run(<<'EOF');
 ALTER TABLE row_tag_t
-    MODIFY value VARCHAR(65535)
+    MODIFY value VARCHAR(4000)
 /
 EOF
     }
