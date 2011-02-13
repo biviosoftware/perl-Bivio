@@ -1599,8 +1599,10 @@ sub internal_upgrade_db_row_tag_value_64k {
     my($self) = @_;
     if ($self->is_oracle) {
 	$self->run(<<'EOF');
+DROP INDEX row_tag_t2
+/
 ALTER TABLE row_tag_t
-    MODIFY value VARCHAR(4000)
+    MODIFY value VARCHAR2(4000)
 /
 EOF
     }
