@@ -11,7 +11,9 @@ my($_M) = b_use('Biz.Model');
 
 sub create {
     my($self, $values) = @_;
-    return defined($values->{value}) ? shift->SUPER::create(@_) : $self;
+    return defined($values->{value}) && length($values->{value})
+	? shift->SUPER::create(@_)
+	: $self;
 }
 
 sub create_value {
@@ -42,7 +44,8 @@ sub replace_value {
 sub update {
     my($self, $values) = @_;
     return shift->SUPER::update(@_)
-	unless exists($values->{value}) && !defined($values->{value});
+	if !exists($values->{value})
+	|| defined($values->{value}) && length($values->{value});
     $self->delete;
     return $self;
 }
