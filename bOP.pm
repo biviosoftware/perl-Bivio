@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.31  2011/02/12 23:31:52  nagler
+  * Bivio::Biz::Model::MailUnsubscribeForm
+    die if no bulletin_realm_id facade value
+  * Bivio::Biz::Util::ListModel
+    removed Action.PublicRealm hack
+  * Bivio::UI::FacadeBase
+    label feature_wiki
+
   Revision 10.30  2011/02/10 19:22:43  moeller
   * Bivio::Biz::Action::RealmFile
     allow viewing public folders
