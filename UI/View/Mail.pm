@@ -18,6 +18,11 @@ sub PART_TASK {
     return 'FORUM_MAIL_PART';
 }
 
+sub delete_form {
+    my($self) = shift;
+    return $self->internal_body($self->internal_delete_form(@_));
+}
+
 sub form_imail {
     my($self) = @_;
     return $self->internal_put_base_attr(
@@ -52,6 +57,12 @@ sub form_imail {
     );
 }
 
+sub internal_delete_form {
+    my($self) = @_;
+    my($buttons) = vs_simple_form_submit();
+    return vs_simple_form(RealmMailDeleteForm => [$buttons]);
+}
+
 sub internal_form_model {
     my($self, $req) = @_;
     my($m) = $_M->get_instance(_name($self, 'XxForm'));
@@ -79,6 +90,34 @@ sub internal_part_list {
 
 sub internal_reply_list {
     return qw(realm all author);
+}
+
+sub internal_send_form {
+    my($self, $extra_fields, $buttons) = @_;
+    $buttons ||= vs_simple_form_submit();
+    return DIV_msg_compose(Join([
+	vs_simple_form(_name($self, 'XxForm') => [
+	    [vs_blank_cell(), FormFieldError('from_email')],
+            $buttons,
+	    @{$extra_fields || []},
+	    $self->internal_send_form_email_field('to'),
+	    $self->internal_send_form_email_field('cc'),
+	    _name($self, 'XxForm.board_only'),
+	    $self->internal_subject_body_attachments,
+	    $buttons,
+	]),
+	If([_name($self, 'Model.XxForm'), '->is_reply'], _msg($self, 1)),
+    ]));
+}
+
+
+sub internal_send_form_email_field {
+    my($self, $field) = @_;
+    return [_name($self, "XxForm.$field"), {
+	cols => $self->DEFAULT_COLS,
+	rows => 1,
+	row_class => 'textarea',
+    }];
 }
 
 sub internal_standard_tools {
@@ -117,34 +156,6 @@ sub internal_subject_body_attachments {
 	@{Bivio::Biz::Model->get_instance(_name($self, 'XxForm'))
 	    ->map_attachments(sub {_name($self, 'XxForm.') . shift(@_)})},
     );
-}
-
-sub internal_send_form {
-    my($self, $extra_fields, $buttons) = @_;
-    $buttons ||= vs_simple_form_submit();
-    return DIV_msg_compose(Join([
-	vs_simple_form(_name($self, 'XxForm') => [
-	    [vs_blank_cell(), FormFieldError('from_email')],
-            $buttons,
-	    @{$extra_fields || []},
-	    $self->internal_send_form_email_field('to'),
-	    $self->internal_send_form_email_field('cc'),
-	    _name($self, 'XxForm.board_only'),
-	    $self->internal_subject_body_attachments,
-	    $buttons,
-	]),
-	If([_name($self, 'Model.XxForm'), '->is_reply'], _msg($self, 1)),
-    ]));
-}
-
-
-sub internal_send_form_email_field {
-    my($self, $field) = @_;
-    return [_name($self, "XxForm.$field"), {
-	cols => $self->DEFAULT_COLS,
-	rows => 1,
-	row_class => 'textarea',
-    }];
 }
 
 sub internal_thread_root_list {
@@ -254,6 +265,13 @@ sub _msg {
 				label => _name($self, 'FORUM_XX_FORM.view_rfc822'),
 				query => undef,
 				path_info => ['RealmFile.path'],
+			    },
+			    {
+				task_id => 'GROUP_MAIL_DELETE_FORM',
+				query => {
+				    'ListQuery.this'
+					=> ['RealmMail.realm_file_id'],
+				},
 			    },
 			    {
 				task_id => 'GROUP_MAIL_TOGGLE_PUBLIC',
