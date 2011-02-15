@@ -745,9 +745,9 @@ sub _init_children {
     my($special_pre) = ['br', 'span', 'bdo', 'map'];
     my($special) = [@$special_pre, 'object', 'img'];
     my($fontstyle) = ['tt', 'i', 'b', 'big', 'small'];
-    my($phrase) = ['em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup',];
+    my($phrase) = ['em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup'];
     my($inline_forms) = ['input', 'select', 'textarea', 'label', 'button'];
-    my($misc_inline) = ['ins', 'del', 'script', 'strike',];
+    my($misc_inline) = ['ins', 'del', 'script'];
     my($misc) = ['noscript', @$misc_inline];
     my($inline) = ['a', @$special, @$fontstyle, @$phrase, @$inline_forms];
     my($Inline) = [@$inline, @$misc_inline];
@@ -812,7 +812,6 @@ sub _init_children {
 	select => [qw(optgroup option)],
 	small => $Inline,
 	span => $Inline,
-	strike => $Flow,
 	strong => $Inline,
 	sub => $Inline,
 	sup => $Inline,
