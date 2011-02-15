@@ -947,6 +947,15 @@ sub info_mail {
 	    View.Mail->unsubscribe_form
 	    next=SITE_ROOT
 	)],
+	[qw(
+	    GROUP_MAIL_DELETE_FORM
+	    233
+	    ANY_OWNER
+	    ADMIN_WRITE&MAIL_READ&FEATURE_MAIL
+	    Model.RealmMailDeleteForm
+	    View.Mail->delete_form
+	    next=FORUM_MAIL_THREAD_ROOT_LIST
+        )],
 #233-239
     ];
 }
