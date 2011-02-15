@@ -94,6 +94,7 @@ sub initialize {
 	    $cfg->{sort_label} = _label($cfg->{sort_label})
 		unless ref($cfg->{sort_label});
 	    $self->initialize_value('sort_label', $cfg->{sort_label});
+	    # Note that 'realm' is initialized, b/c URI has reference, not deep copy
             my($selected_cond) = ['->ureq', _selected_attr($self, $cfg)];
  	    my($w) = $_W->is_blessed($cfg->{xlink})
 		? $cfg->{xlink}
