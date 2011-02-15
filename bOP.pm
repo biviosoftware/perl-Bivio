@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.32  2011/02/13 14:11:58  nagler
+  * Bivio::Biz::Model::RowTag
+    don't insert the value if it is undefined OR zero length
+  * Bivio::Util::SQL
+    fixed row_tag_value_64k upgrade to drop index for oracle version
+
   Revision 10.31  2011/02/12 23:31:52  nagler
   * Bivio::Biz::Model::MailUnsubscribeForm
     die if no bulletin_realm_id facade value
