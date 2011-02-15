@@ -21,6 +21,7 @@ my($_RI) = b_use('Agent.RequestId');
 my($_MV) = b_use('Type.MailVisibility');
 my($_MAIL_READ) = ${b_use('Auth.PermissionSet')->from_array(['MAIL_READ'])};
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
+my($_LM) = b_use('Biz.ListModel');
 
 sub access_is_public_only {
     my($proto, $req) = @_;
@@ -83,6 +84,66 @@ sub create_from_rfc822 {
     );
     $die->throw;
     # DOES NOT RETURN
+}
+
+sub delete_message {
+    my($self) = @_;
+    my($this_id) = $self->get('realm_file_id');
+    my($parent_id) = $self->get('thread_parent_id');
+    if ($parent_id) {
+	$self->new_other('RealmMail')->do_iterate(sub {
+	    my($it) = @_;
+	    $it->update({
+		thread_root_id => $it->get('thread_root_id'),
+		thread_parent_id => $parent_id,
+	    });
+	    return 1;
+	}, {
+	    'thread_parent_id' => $this_id,
+	});
+    } else {
+	my($new_root_id);
+	$_LM->new_anonymous({
+	    primary_key => [[qw(RealmMail.realm_file_id RealmFile.realm_file_id)]],
+	    order_by => [{
+		name => 'RealmFile.modified_date_time',
+		sort_order => 1,
+	    }],
+	    other => [['RealmMail.thread_parent_id', [$this_id]]],
+	})->do_iterate(sub {
+	    my($it) = @_;
+	    my($new_parent_id);
+	    if ($new_root_id) {
+		$new_parent_id = $new_root_id;
+	    } else {
+		$new_root_id = $it->get('RealmMail.realm_file_id');
+	    }
+	    $self->new_other('RealmMail')->load({
+		realm_file_id => $it->get('RealmMail.realm_file_id'),
+	    })->update({
+		thread_root_id => $new_root_id,
+		thread_parent_id => $new_parent_id,
+	    });
+	    return 1;
+	});
+	$self->new_other('RealmMail')->do_iterate(sub {
+	    my($it) = @_;
+	    $it->update({
+		thread_root_id => $new_root_id,
+		thread_parent_id => $it->get('thread_parent_id'),
+	    });
+	    return 1;
+	}, {
+	    'thread_root_id' => $this_id,
+	});
+    }
+    $self->delete;
+    $self->new_other('RealmFile')->delete({
+	realm_file_id => $self->get('realm_file_id'),
+	override_is_read_only => 1,
+	override_versioning => 1,
+    });
+    return;
 }
 
 sub get_mail_part_list {
