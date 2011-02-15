@@ -1032,6 +1032,7 @@ sub _cfg_mail {
 			[FORUM_MAIL_FORM => '?/compose-mail-msg'],
 			[FORUM_MAIL_PART => '?/mail-msg-part/*'],
                         [FORUM_MAIL_SHOW_ORIGINAL_FILE => '?/original-msg/*'],
+			[GROUP_MAIL_DELETE_FORM => '?/mail-delete'],
 		    );
 		},
 	    ),
@@ -1081,6 +1082,12 @@ sub _cfg_mail {
 		    prologue => q{To send a test message, just change the To: list below.  To publish to this bulletin as is, click Send once.},
 		],
 	    ]],
+	    [RealmMailDeleteForm => [
+		ok_button => 'Delete',
+		prose => [
+		    prologue => q{Are you sure you want to delete message SPAN_bold(String([qw(Model.RealmMail subject)])); from SPAN_bold(String([qw(Model.RealmMail from_email)]));?},
+		],
+	    ]],
 	    [MailUnsubscribeForm => [
 		prose => [
 		    prologue => q{To remove yourself from String(['Model.MailUnsubscribeForm', 'realm_display_name']); mailings, click Unsubscribe below, or you can unsubscribe from all mailings from String(vs_site_name());.},
@@ -1115,10 +1122,12 @@ sub _cfg_mail {
 		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
 		USER_MAIL_UNSUBSCRIBE_FORM => 'Unsubscribe',
 		GROUP_BULLETIN_FORM => 'Publish Bulletin',
+		GROUP_MAIL_DELETE_FORM => 'Delete Message',
 	    ]],
 	    [acknowledgement => [
 		FORUM_MAIL_FORM => 'Your message was sent.',
 		GROUP_BULLETIN_FORM => q{The bulletin has been sent to String(['Model.BulletinForm', 'to']);.},
+		GROUP_MAIL_DELETE_FORM => 'Message deleted',
 		user_mail_unsubscribed => q{You have been unsubscribed.},
 		user_mail_unsubscribed_all => q{You have been unsubscribed from ALL MAILINGS from String(vs_site_name());},
 	    ]],
