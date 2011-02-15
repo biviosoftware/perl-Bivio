@@ -135,7 +135,7 @@ sub delete_message {
 	    return 1;
 	}, {
 	    'thread_root_id' => $this_id,
-	});
+	}) if defined($new_root_id);
     }
     $self->delete;
     $self->new_other('RealmFile')->delete({
