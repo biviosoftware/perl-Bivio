@@ -8,8 +8,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WIDTH) = __PACKAGE__->get_instance('FileName')->get_width;
 my($_HELP) = '_Help';
 
-sub DEFAULT_START_PAGE {
-    return 'DefaultStartPage';
+sub DEFAULT_START_PAGE_PATH {
+    return shift->to_absolute('DefaultStartPage');
 }
 
 sub ERROR {
