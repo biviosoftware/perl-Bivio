@@ -1,0 +1,75 @@
+@table style="border-spacing: 1ex; border-collapse: separate;"
+@tr
+@th markup
+@th as rendered
+@th example
+
+@tr
+@td
+@code @h1 Heading 1
+@td
+@h1 Heading 1
+
+@tr
+@td
+@code @h2 Heading 2
+@td
+@h2 Heading 2
+
+@tr
+@td
+@code @h3 Heading 3
+@td
+@h3 Heading 3
+
+@tr
+@td
+@code @h4 Heading 4
+@td
+@h4 Heading 4
+
+@tr
+@td 
+@code *boldface*
+@td *boldface*
+@td We *really*need* to emphasize *this*
+
+@tr
+@td
+@code _italics_
+@td _italics_
+@td Someone _must_ have seen it
+
+@tr
+@td
+@code ^^Edit_Wiki_Page_Help
+@td ^Edit_Wiki_Page_Help
+@td
+@em
+@small underscores in name are rendered as spaces
+
+@tr
+@td
+@code ^^http://www.google.com
+@td Search ^http://www.google.com
+
+@tr
+@td
+@code ^^b.png
+@td 
+@img src=/site-help/bp/b.png style="float: left; margin-right: 1em;"
+@td
+@em
+@small Searches for images by name in the WikiData folder.
+
+@tr
+@td
+@code ^^info@example.com
+@td Send your questions to ^info@example.com
+
+@tr
+@td colspan=2
+see also
+@a href=^/site-help/bp/Advanced_Wiki_Markup Advanced Wiki Markup
+
+@/table

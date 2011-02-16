@@ -1,0 +1,85 @@
+@code @a href=^StartPage Control link label separately 
+
+@a href=^StartPage Control link label separately 
+
+
+@code @img src=^^b.png alt="Communication is a core value"
+
+@img src=^b.png alt="Communication is a core value"
+
+@pre
+@@ul
+@@li one fish
+@@li two fish
+@@li red fish
+@@li blue fish
+@@/ul
+@/pre
+
+@ul
+@li one fish
+@li two fish
+@li red fish
+@li blue fish
+@/ul
+
+@pre
+@@table
+@@tr
+@@th column 1
+@@th column 2
+@@th column 3
+@@/tr
+@@tr
+@@td top 1
+@@td top 2
+@@td top 3
+@@/tr
+@@tr
+@@td
+@@strong middle 1
+@@/td
+@@td middle 2
+@@td middle 3
+@@/tr
+@@/table
+@/pre
+
+@table
+@tr
+@th column 1
+@th column 2
+@th column 3
+@/tr
+@tr
+@td top 1
+@td top 2
+@td top 3
+@/tr
+@tr
+@td
+@em middle 1
+@/td
+@td middle 2
+@td middle 3
+@/tr
+@/table
+
+
+@pre
+@@div style="background-color: #996; width: 15em;"
+@@span.custom-class Special HTML class
+@@p Loreum whatever
+@@p More loreum
+@@/div
+@/pre
+
+@div style="background-color: #996; width: 15em;"
+@span.custom-class Special HTML class
+@p Loreum whatever
+@p More Loreum
+@/div
+
+@small
+An HTML class can be added to tags with the .classname convention.  You can edit the my.css file to add styling to your custom classes.
+@/small
