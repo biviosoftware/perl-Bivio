@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.33  2011/02/15 19:51:26  nagler
+  * Bivio::Biz::Action::RealmFile
+    $realm_id not req(auth_id) needs to be used for error msg in die
+  * Bivio::Biz::Action::WikiView
+    changed the way default_start_page is loaded.  Use
+    default_start_page_realm, otherwise use the facade's site_realm_id.
+    DEFAULT_START_PAGE_PATH replaces DEFAULT_START_PAGE so apps can
+    override full path (public or private, for example)
+  * Bivio::Type::WikiName
+    DEFAULT_START_PAGE_PATH replaces DEFAULT_START_PAGE so apps can
+    override full path (public or private, for example)
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    doc
+  * Bivio::UI::XHTML::Widget::WikiText
+    #611 add <strike>
+
   Revision 10.32  2011/02/13 14:11:58  nagler
   * Bivio::Biz::Model::RowTag
     don't insert the value if it is undefined OR zero length
