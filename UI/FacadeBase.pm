@@ -400,7 +400,7 @@ sub _cfg_base {
 	    [FAVICON_ICO => 'favicon.ico'],
 	    [FORBIDDEN => undef],
 	    [PUBLIC_PING => 'pub/ping'],
-	    [LOCAL_FILE_PLAIN => ['i/*', 'f/*']],
+	    [LOCAL_FILE_PLAIN => ['i/*', 'f/*', 'b/*',]],
 	    [MY_CLUB_SITE => undef],
 	    [MY_SITE => 'my-site/*'],
 	    [CLIENT_REDIRECT_PERMANENT_MAP => undef],
