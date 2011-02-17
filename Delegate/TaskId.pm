@@ -283,7 +283,7 @@ sub info_blog {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_BLOG
 	    Model.BlogEditForm
-	    View.Blog->edit
+	    View.Blog->wysiwyg
 	    next=FORUM_BLOG_DETAIL
 	)],
 	[qw(
@@ -1470,7 +1470,7 @@ sub info_wiki {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
 	    Model.WikiForm
-	    View.Wiki->edit
+	    View.Wiki->wysiwyg
 	    next=FORUM_WIKI_VIEW
 	)],
 	[qw(
