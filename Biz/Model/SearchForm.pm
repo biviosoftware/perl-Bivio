@@ -10,6 +10,18 @@ sub CLEAR_ON_FOCUS_HINT {
     return 'Search';
 }
 
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        visible => [
+	    {
+		name => 'ok_button',
+		form_name => 'b_ok',
+	    },
+	],
+    });
+}
+
 sub internal_query_fields {
     my($self) = @_;
     return [
