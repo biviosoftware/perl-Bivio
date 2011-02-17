@@ -34,6 +34,25 @@ sub edit {
     ]));
 }
 
+sub wysiwyg {
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(WikiForm => [
+	'WikiForm.RealmFile.path_lc',
+	'WikiForm.RealmFile.is_public',
+	Join([
+	    FormFieldError({
+		field => 'content',
+		label => 'text',
+	    }),
+	    CKEditor({
+		field => 'content',
+		rows => $self->TEXT_AREA_ROWS,
+		cols => $self->TEXT_AREA_COLS,
+	    }),
+	]),
+    ]));
+}
+
 sub help {
     view_main(Page({
 	xhtml => 1,
