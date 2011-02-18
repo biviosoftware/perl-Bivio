@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegator;
 use strict;
@@ -26,6 +26,13 @@ sub AUTOLOAD {
 	ref($proto) ? $proto->[$_IDI]->{delegate}
 	    : $proto->internal_delegate_package
     )->$method(@_);
+}
+
+sub b_can {
+    my($proto, $method) = @_;
+    return $proto->internal_delegate_package->can($method)
+	|| $proto->SUPER::b_can($method)
+	? 1 : 0;
 }
 
 sub internal_delegate_package {

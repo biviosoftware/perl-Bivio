@@ -56,6 +56,11 @@ sub as_string {
     return $res;
 }
 
+sub b_can {
+    my($proto, $method) = @_;
+    return $proto->can($method) ? 1 : 0;
+}
+
 sub boolean {
     return $_[1] ? 1 : 0;
 }
@@ -503,6 +508,7 @@ sub _grep_sub {
 sub _ureq {
     my($method, $proto, @args) = @_;
     my($req) = ref($proto) && $proto->can('get_request') && $proto->get_request
+# deprecate
 	|| Bivio::Agent::Request->get_current
 	|| Bivio::Die->die('no request');
     return @args ? $req->$method(@args) : $req
