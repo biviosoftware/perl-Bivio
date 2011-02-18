@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Delegate::TaskId;
 use strict;
@@ -139,6 +139,7 @@ sub get_delegate_info {
 	    Model.UserAccountForm
 	    View.account
 	    next=USER_ACCOUNT_UPDATED
+	    extra_auth=realm_bunit
 	)],
 	[qw(
 	    USER_ACCOUNT_CREATED
