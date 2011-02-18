@@ -23,7 +23,7 @@ sub edit {
 	    size => 57,
 	}],
 	'BlogEditForm.RealmFile.is_public',
-	_edit($self, [\&TextArea]),
+	_edit($self, {editor => \&TextArea}),
     ]));
 }
 
@@ -34,7 +34,7 @@ sub wysiwyg {
 	    size => 57,
 	}],
 	'BlogEditForm.RealmFile.is_public',
-	_edit($self, [\&CKEditor]),
+	_edit($self, {editor => \&CKEditor}),
     ]));
 }
 
@@ -43,7 +43,7 @@ sub create {
     return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
 	'BlogEditForm.RealmFile.is_public',
-	_edit($self),
+	_edit($self, {editor => \&CKEditor}),
     ]));
 }
 
@@ -161,14 +161,17 @@ sub _access_mode {
     );
 }
 
+
 sub _edit {
-    my($self, $widget) = @_;
+    my($self, $options) = @_;
+
     return Join([
 	FormFieldError({
 	    field => 'body',
 	    label => 'text',
 	}),
-	$$widget[0]->({
+      	    
+	$options->{editor}->({
 	    field => 'body',
 	    rows => $self->TEXT_AREA_ROWS,
 	    cols => $self->TEXT_AREA_COLS,
