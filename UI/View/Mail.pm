@@ -283,11 +283,14 @@ sub _msg {
 				query => {
 				    'ListQuery.this' => ['RealmMail.realm_file_id'],
 				},
-				control => [
-				    b_use('Model.RealmMailPublicForm'),
-				    '->can_toggle_public',
-				    ['->req'],
-				],
+				control => Or(
+				    ['RealmFile.is_public'],
+				    [
+					b_use('Model.RealmMailPublicForm'),
+					'->can_toggle_public',
+					['->req'],
+				    ],
+				),
 			    },
 			    {
 				task_id => 'GROUP_BULLETIN_FORM',
