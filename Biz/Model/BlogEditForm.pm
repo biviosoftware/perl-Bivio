@@ -8,6 +8,13 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_BFN) = b_use('Type.BlogFileName');
 my($_BC) = b_use('Type.BlogContent');
 
+sub execute_cancel {
+    return {
+	task_id => 'next',
+	carry_path_info => 1,
+    };
+}
+
 sub execute_empty {
     my($self) = @_;
     my($l) = $self->get_request->get('Model.BlogList');
