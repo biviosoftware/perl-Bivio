@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::WikiValidatorSettingList;
 use strict;
@@ -9,10 +9,18 @@ my($_C) = b_use('FacadeComponent.Constant');
 
 sub regexp_for_auth_realm {
     my($self) = @_;
-    my($n) = $self->req(qw(auth_realm owner_name));
+    return undef
+	unless my $rid = $_C->get_value('site_reports_realm_id', $self->req);
     return $self->req->with_realm(
-	$_C->get_value('site_reports_realm_id'),
-	sub {$self->get_setting('WikiValidator', $n, 'ignore', 'Regexp')},
+	$rid,
+	sub {
+	    return $self->get_setting(
+		'WikiValidator',
+		$self->req(qw(auth_realm owner_name)),
+		'ignore',
+		'Regexp',
+	    );
+	},
     );
 }
 
