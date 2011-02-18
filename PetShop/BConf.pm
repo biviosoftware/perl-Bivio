@@ -36,21 +36,16 @@ sub merge_overrides {
 	    connection => 'Bivio::SQL::Connection::Postgres',
 	},
 	$proto->merge_class_loader({
-	    delegates => {
-		'Bivio::Agent::TaskId' => 'Bivio::PetShop::Delegate::TaskId',
-		'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
-		'Bivio::Auth::RealmType'
-		    => 'Bivio::PetShop::Delegate::RealmType',
-		'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
-		'Bivio::Auth::Permission'
-		    => 'Bivio::PetShop::Delegate::Permission',
-		'Bivio::Auth::Role' => 'Bivio::PetShop::Delegate::Role',
-		'Bivio::Type::ECService'
-		    => 'Bivio::PetShop::Delegate::ECService',
-		'Bivio::Type::Location'
-		    => 'Bivio::PetShop::Delegate::Location',
-		'Bivio::TypeError' => 'Bivio::PetShop::Delegate::TypeError',
-	    },
+	    delegates => [
+		'Bivio::Agent::TaskId',
+		'Bivio::Auth::RealmType',
+		'Bivio::Auth::Support',
+		'Bivio::Auth::Permission',
+		'Bivio::Auth::Role',
+		'Bivio::Type::ECService',
+		'Bivio::Type::Location', 
+		'Bivio::TypeError',
+	    ],
 	    maps => {
 		Action => ['Bivio::PetShop::Action'],
 		Delegate => ['Bivio::PetShop::Delegate'],
