@@ -229,7 +229,7 @@ sub merge_class_loader {
     #     }),
     #     ...
     $overrides->{delegates} = {map(
-	($_ => join('::', $proto =~ /^(\w+)/, 'Delegate', $_ =~ /(\w+)$/)),
+	($_ => join('::', $proto =~ /^(.*)::BConf$/, 'Delegate', $_ =~ /(\w+)$/)),
 	@{$overrides->{delegates}},
     )} if ref($overrides->{delegates}) eq 'ARRAY';
     return (
