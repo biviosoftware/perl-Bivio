@@ -34,7 +34,7 @@ sub edit {
     ]));
 }
 
-sub wysiwyg {
+sub edit_wysiwyg {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(WikiForm => [
 	'WikiForm.RealmFile.path_lc',

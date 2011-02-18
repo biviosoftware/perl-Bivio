@@ -283,7 +283,7 @@ sub info_blog {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_BLOG
 	    Model.BlogEditForm
-	    View.Blog->wysiwyg
+	    View.Blog->edit_wysiwyg
 	    next=FORUM_BLOG_DETAIL
 	)],
 	[qw(
@@ -292,7 +292,7 @@ sub info_blog {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_BLOG
 	    Model.BlogCreateForm
-	    View.Blog->create
+	    View.Blog->create_wysiwyg
 	    next=FORUM_BLOG_DETAIL
             cancel=FORUM_BLOG_LIST
 	    want_query=0
@@ -1470,7 +1470,7 @@ sub info_wiki {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
 	    Model.WikiForm
-	    View.Wiki->wysiwyg
+	    View.Wiki->edit_wysiwyg
 	    next=FORUM_WIKI_VIEW
 	)],
 	[qw(

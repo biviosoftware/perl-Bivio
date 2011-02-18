@@ -27,7 +27,7 @@ sub edit {
     ]));
 }
 
-sub wysiwyg {
+sub edit_wysiwyg {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(BlogEditForm => [
 	['BlogEditForm.title', {
@@ -39,6 +39,15 @@ sub wysiwyg {
 }
 
 sub create {
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(BlogCreateForm => [
+	'BlogCreateForm.title',
+	'BlogEditForm.RealmFile.is_public',
+	_edit($self, {editor => \&TextArea}),
+    ]));
+}
+
+sub create_wysiwyg {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
