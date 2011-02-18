@@ -14,9 +14,7 @@ sub can_toggle_public {
 
 sub execute_empty {
     my($self) = @_;
-    $self->new_other('RealmFile')
-	->load({realm_file_id => $self->get_nested(qw(realm_mail realm_file_id))})
-	->toggle_is_public;
+    $self->get('realm_file')->toggle_is_public;
     return $self->internal_redirect_next;
 }
 
@@ -31,22 +29,28 @@ sub internal_initialize {
         version => 1,
 	require_context => 1,
 	other => [
-	    $self->field_decl([[qw(realm_mail Model.RealmMail)]]),
+	    $self->field_decl([
+		[qw(realm_mail Model.RealmMail)],
+		[qw(realm_file Model.RealmFile)],
+	    ]),
 	],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
-    $self->throw_die('FORBIDDEN', 'Always is private')
-	unless $self->can_toggle_public;
-    my(@res) = shift->SUPER::internal_pre_execute(@_);
+    my($rm) = $self
+	->new_other('RealmMail')
+	->set_ephemeral
+	->load_this_from_request;
+    my($rf) = $rm->get_model('RealmFile');
     $self->internal_put_field(
-	realm_mail => $self
-	    ->new_other('RealmMail')
-	    ->set_ephemeral
-	    ->load_this_from_request,
+	realm_mail => $rm,
+	realm_file => $rf,
     );
+    $self->throw_die('FORBIDDEN', 'Always is private')
+	unless $rf->get('is_public') or $self->can_toggle_public;
+    my(@res) = shift->SUPER::internal_pre_execute(@_);
     return @res;
 }
 
