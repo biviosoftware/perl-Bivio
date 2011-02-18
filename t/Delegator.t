@@ -25,5 +25,10 @@ Bivio::Test->new({
 	    hello => 'hello',
         ],
 	static_does_not_exist => Bivio::DieCode->DIE,
+	b_can => [
+	    static_echo => 1,
+	    method_d1 => 1,
+	    not_a_method => 0,
+	],
     ],
 ]);

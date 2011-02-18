@@ -6,4 +6,8 @@ use Bivio::Base 'Bivio.Delegator';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub method_d1 {
+    return;
+}
+
 1;
