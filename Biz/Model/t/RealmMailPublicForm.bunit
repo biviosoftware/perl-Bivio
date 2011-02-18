@@ -30,6 +30,17 @@ EOF
     	return;
     }),
     [] => FORBIDDEN(),
+    inline_case(sub {
+    	$create->('mail_forum');
+        req('Model.RealmFile')->toggle_is_public;
+	return;
+    }),
+    [] => [{
+	'Model.RealmFile' => {
+	    is_public => 0,
+	},
+    }],
+    [] => FORBIDDEN(),
     req_state_merge({
 	realm => 'mail_forum_allow_public',
     }),
