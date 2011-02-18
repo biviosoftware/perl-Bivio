@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Auth::Realm;
 use strict;
@@ -45,7 +45,6 @@ my($_PS) = b_use('Auth.PermissionSet');
 my($_RO) = b_use('Model.RealmOwner');
 my($_S) = b_use('Auth.Support');
 my($_M) = b_use('Biz.Model');
-my($_CRO);
 
 sub as_string {
     my($self) = @_;
@@ -67,7 +66,13 @@ sub can_user_execute_task {
 	    if $_TRACE;
 	return 0;
     }
-    return $self->does_user_have_permissions($task->get('permission_set'), $req);
+    return 0
+	unless $self->does_user_have_permissions($task->get('permission_set'), $req);
+    return 1
+	unless my $as = $task->unsafe_get('extra_auth');
+    # enforce type, since no guarantees caller does, and can_user_execute_task
+    # is a very public interface.
+    return $_S->$as($self, $task, $req) ? 1 : 0;
 }
 
 sub do_default {
@@ -240,7 +245,7 @@ sub new {
 	my($g) = $proto->get_general;
 	return $g
 	    if $g->get('id') eq $owner || $owner eq 'general';
-	$owner = ($_CRO ||= b_use('Cache.RealmOwner'))
+	$owner = b_use('Cache.RealmOwner')
 	    ->get_cache_value($owner, $req);
     }
     return $owner->clone
