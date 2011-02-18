@@ -1,9 +1,8 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::Task;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::IO::Trace;
 
 # C<Bivio::Agent::Task> defines a tuple which is configured by
 # L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
@@ -113,6 +112,7 @@ use Bivio::IO::Trace;
 # Custom task value for redirects.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Trace');
 our($_TRACE);
 my($_T) = b_use('Agent.TaskId');
 my(%_ID_TO_TASK) = ();
@@ -125,13 +125,14 @@ my($_HANDLERS) = [__PACKAGE__];
 my($_B) = b_use('Type.Boolean');
 my($_PS) = b_use('Auth.PermissionSet');
 my($_RT) = b_use('Auth.RealmType');
-my($_TASK_ATTR_RE) = qr{^(?:next|cancel|login|[a-z0-9_]+_task)$};
 my($_DC) = b_use('Bivio.DieCode');
 my($_A) = b_use('IO.Alert');
-my($_TE);
+my($_S);
 my($_C) = b_use('IO.Config');
+my($_TE);
 our($_COMMITTED) = undef;
 my($_UNAUTH_EXECUTE) = __PACKAGE__ . '.unauth_execute';
+my($_TASK_ATTR_RE) = qr{^(?:next|cancel|login|[a-z0-9_]+_task)$};
 
 sub TASK_ATTR_RE {
     return $_TASK_ATTR_RE;
@@ -341,7 +342,8 @@ sub initialize {
     # I<partially> allows this module to initialize only part of the
     # task state.  This is only used by L<Bivio::ShellUtil|Bivio::ShellUtil>
     # to speed up command line initialization.  B<Never use in a server.>
-    return if $_INITIALIZED;
+    return
+	if $_INITIALIZED;
     $_INITIALIZED = 1;
     foreach my $cfg (map(+{%$_}, @{$_T->get_cfg_list})) {
 	my($ps) = delete($cfg->{permission_set});
@@ -523,6 +525,14 @@ sub _commit {
     return;
 }
 
+sub _extra_auth {
+    my($attrs, $method) = @_;
+    $method = "extra_auth_$method";
+    b_die(b_use('Auth.Support'), '->', $method, ': not implemented; ', $attrs)
+	unless b_use('Auth.Support')->b_can($method);
+    return $method;
+}
+
 sub _init_executables {
     my($proto, $attrs, $executables) = @_;
     # Returns the parsed and initialized executables.
@@ -542,16 +552,16 @@ sub _init_executables {
 	my($c) = $proto->use($class);
 	$_C->if_version(8 => 0, sub {
 	    $c = $c->get_instance
-		if $c->can('get_instance');
+		if $c->b_can('get_instance');
 	    return;
 	});
-	if ($c->can('execute_task_item') && $method) {
+	if ($c->b_can('execute_task_item') && $method) {
 	    push(@new_items, [$c, execute_task_item => [$method]]);
 	}
 	else {
 	    $method ||= 'execute';
 	    b_die($i, ": can't be executed (missing $method method)")
-	        unless $c->can($method) || $c->can('AUTOLOAD');
+	        unless $c->b_can($method) || $c->b_can('AUTOLOAD');
 	    push(@new_items, [$c, $method, []]);
 	}
 	if ($c->isa('Bivio::Biz::FormModel')) {
@@ -639,7 +649,7 @@ sub _new {
 sub _op {
     my($self, $item) = @_;
     return ref($item) ? $item
-	: map($_->can($item) ? [$_, $item, [$self]] : (),
+	: map($_->b_can($item) ? [$_, $item, [$self]] : (),
 	      $item eq 'handle_post_execute_task'
 		  ? reverse(@$_HANDLERS) : @$_HANDLERS),
 }
@@ -648,9 +658,15 @@ sub _parse_map_item {
     my($attrs, $cause, $params) = @_;
     # Parses a new map item for this task.
     return _put_attr(
-	$attrs, $cause,
+	$attrs,
+	$cause,
 	$_B->from_literal_or_die($params),
     ) if $cause =~ /^(?:require_|want_)[a-z0-9_]+$/;
+    return _put_attr(
+	$attrs,
+	$cause,
+	_extra_auth($attrs, $params),
+    ) if $cause eq 'extra_auth';
     $params = $_TE->parse_item($cause, $params);
     return _put_attr($attrs, $cause, $params)
 	if $cause =~ $_TASK_ATTR_RE;
