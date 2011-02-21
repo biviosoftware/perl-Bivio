@@ -187,8 +187,15 @@ sub import_tree {
 		    ->cascade_delete({realm_file_id => $rf->get('realm_file_id')})
 		    if $rf->is_loaded;
 		$self->model('RealmMail')->create_from_rfc822($_F->read($_));
-		$self->req('Model.RealmFile')->toggle_is_public
-		    if $_MFN->is_public($path);
+		$self->req('Model.RealmFile')->update({
+		    override_is_read_only => 1,
+		    path => $path,
+		    modified_date_time =>
+			$self->req(qw(Model.RealmFile modified_date_time)),
+		});
+		b_die('public mismatch')
+		    unless $_MFN->is_public($path)
+			eq $self->req(qw(Model.RealmFile is_public));
 		return;
 	    }
 	    $rf->$method(
