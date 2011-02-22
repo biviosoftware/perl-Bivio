@@ -1,10 +1,12 @@
-# Copyright (c) 2001-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget::ControlBase;
 use strict;
 use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_TI) = b_use('Agent.TaskId');
+my($_A) = b_use('IO.Alert');
 
 sub control_off_render {
     my($self, $source, $buffer) = @_;
@@ -14,21 +16,20 @@ sub control_off_render {
 
 sub initialize {
     my($self) = @_;
-    if (my $c = $self->unsafe_get('control')) {
+    if (defined(my $c = $self->unsafe_get('control'))) {
 	unless (ref($c)) {
 	    if ($c =~ /^[a-z_0-9]{3,}$/
-	        and Bivio::Agent::TaskId->is_valid_name(uc($c))
+	        and $_TI->is_valid_name(uc($c))
 	    ) {
-		Bivio::IO::Alert->warn_deprecated(
+		$_A->warn_deprecated(
 		    $c, ': change task name to upper case');
 		$c = uc($c);
 	    }
-	    $c = Bivio::Agent::TaskId->from_name($c)
-		if Bivio::Agent::TaskId->is_valid_name($c);
+	    $c = $_TI->from_name($c)
+		if $_TI->is_valid_name($c);
 	}
-	$self->put(
-	    control => [['->get_request'], '->can_user_execute_task', $c],
-	) if $self->is_blessed($c, 'Bivio::Agent::TaskId');
+	$self->put(control => [['->req'], '->can_user_execute_task', $c])
+	    if $_TI->is_blessed($c);
     }
     $self->map_invoke(
 	unsafe_initialize_attr => [qw(control control_off_value)],
