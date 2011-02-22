@@ -517,7 +517,7 @@ sub unauth_delete {
     $self->die('load_args or model must not be empty')
 	unless %$load_args;
     my($res) = $self->internal_get_sql_support->delete(
-	$self->internal_prepare_query({%$load_args}), $self);
+	$self->internal_prepare_query({%$load_args}));
     $self->internal_data_modification(delete => $load_args);
     return $res;
 }
