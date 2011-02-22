@@ -13,6 +13,7 @@ __PACKAGE__->compile([
     ALL_USERS => [3, 'Any registered user can send mail'],
     EVERYBODY => [4, 'Anybody (even non-users) can send mail'],
     NOBODY => [5, 'Nobody (not even admins) can send mail'],
+    ALL_GUESTS => [6, 'Guests and members can send mail'],
 ]);
 
 sub as_realm_role_category {
