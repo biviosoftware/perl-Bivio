@@ -19,4 +19,12 @@ sub format_email_for_realm {
     );
 }
 
+sub want_realm_mail_created {
+    return 1;
+}
+
+sub want_reply_to {
+    return 1;
+}
+
 1;
