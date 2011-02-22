@@ -1,8 +1,8 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::UserLoginForm;
 use strict;
-use Bivio::Base 'Biz.FormModel';
+use Bivio::Base 'Model.UserLoginBaseForm';
 use Bivio::IO::Trace;
 
 # C<Bivio::Biz::Model::UserLoginForm> is used to login which changes the
@@ -20,21 +20,12 @@ b_use('IO.Config')->register(my $_CFG = {
 (my $_C = b_use('AgentHTTP.Cookie'))->register(__PACKAGE__)
     if $_CFG->{register_with_cookie};
 
-sub PASSWORD_FIELD {
-    return 'p';
-}
-
 sub SUPER_USER_FIELD {
     # B<DEPRECATED>:
     # L<Bivio::Biz::Model::AdmSubstituteUserForm::SUPER_USER_FIELD|Bivio::Biz::Model::AdmSubstituteUserForm/SUPER_USER_FIELD>
     Bivio::IO::Alert->warn_deprecated(
 	q{use Bivio::Biz::Model->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD});
     return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
-}
-
-sub USER_FIELD {
-    # Returns the cookie key for the super user value.
-    return 'u';
 }
 
 sub disable_assert_cookie {
@@ -98,72 +89,6 @@ sub handle_cookie_in {
     _su_logout($proto->new($req))
 	if $req->is_substitute_user && ! $req->get('auth_user');
     return;
-}
-
-sub internal_initialize {
-    my($self) = @_;
-    # B<FOR INTERNAL USE ONLY>
-    my($info) = $self->merge_initialize_info(
-        shift->SUPER::internal_initialize(@_), {
-	# Form versions are checked and mismatches causes VERSION_MISMATCH
-	version => 1,
-
-	# This form's "next" is the task which redirected to this form.
-	# If redirect was not from a task, returns to normal "next".
-	require_context => 1,
-
-	# Fields which are shown to the user.
-	visible => [
-	    {
-		name => 'login',
-		type => 'Line',
-		constraint => 'NOT_NULL',
-                form_name => 'x1',
-	    },
-            {
-                name => 'RealmOwner.password',
-                form_name => 'x2',
-            },
-	],
-
-	# Fields used internally which are computed dynamically.
-	# They are not sent to or returned from the user.
-	other => [
-	    # The following fields are computed by validate
-	    {
-		name => 'realm_owner',
-		# PropertyModels may act as types.
-		type => 'Bivio::Biz::Model::RealmOwner',
-		constraint => 'NONE',
-	    },
-	    {
-		# Only set by validate
-		name => 'validate_called',
-		type => 'Boolean',
-		constraint => 'NONE',
-	    },
-            {
-                # Don't assert the cookie is valid
-                name => 'disable_assert_cookie',
-		type => 'Boolean',
-		constraint => 'NONE',
-            },
-	    {
-		name => 'via_mta',
-		type => 'Boolean',
-		constraint => 'NONE',
-	    },
-	],
-    });
-
-    foreach my $field (@{$info->{visible}}) {
-        $field = {
-            name => $field,
-        } unless ref($field);
-        next if $field->{form_name};
-        $field->{form_name} = $field->{name};
-    }
-    return $info;
 }
 
 sub internal_validate_login_value {
