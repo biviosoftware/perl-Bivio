@@ -1,17 +1,18 @@
-# Copyright (c) 2001-2008 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Mail::Widget::Message;
 use strict;
-use Bivio::Base 'UI.Widget';
+use Bivio::Base 'Widget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_O) = __PACKAGE__->use('Mail.Outgoing');
-my($_A) = __PACKAGE__->use('Mail.Address');
-my($_L) = __PACKAGE__->use('IO.Log');
+my($_O) = b_use('Mail.Outgoing');
+my($_A) = b_use('Mail.Address');
+my($_L) = b_use('IO.Log');
 
 sub execute {
     my($self, $req) = @_;
-    my($msg) = _render($self, $req);
+    return
+	unless my $msg = _render($self, $req);
     $msg->enqueue_send($req);
     my($lf);
     $_L->write($lf, $msg->as_string)
@@ -30,17 +31,21 @@ sub initialize {
 	subject
 	to
     )]);
-    return;
+    return shift->SUPER::initialize(@_);
 }
 
 sub render {
     my($self, $source, $buffer) = @_;
-    $$buffer .= _render($self, $source->req)->as_string;
+    return
+	unless my $msg = _render($self, $source->req);
+    $$buffer .= $msg->as_string;
     return;
 }
 
 sub _render {
     my($self, $req) = @_;
+    return undef
+	unless $self->is_control_on($req);
     $self->map_invoke(obsolete_attr => [qw(headers want_aol_munge)]);
     my($msg) = $_O->new;
     my($from) = $self->render_simple_attr('from', $req);
