@@ -1216,8 +1216,12 @@ sub _monitor_daemon_children {
 sub _other {
     my($self, $class) = @_;
     my($die);
-    return $_DIE->catch_quietly(sub {b_use($_MAP_NAME => $class)}, \$die)
-	|| $_DIE->die($class, ": $_MAP_NAME not found or syntax error: ", $die);
+    $class = "$_MAP_NAME.$class"
+	if $self->is_simple_package_name($class);
+    return $_DIE->catch_quietly(
+	sub {b_use($class)},
+	\$die,
+    ) || $_DIE->die($class, ": $_ not found or syntax error: ", $die);
 }
 
 sub _parse_option_value {
