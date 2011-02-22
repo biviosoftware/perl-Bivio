@@ -1,4 +1,4 @@
-# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2010-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::BoardRealmMail;
 use strict;
@@ -19,6 +19,10 @@ sub execute_receive {
 	    ->get('message')->{content},
     );
     return;
+}
+
+sub want_reply_to {
+    return 0;
 }
 
 1;
