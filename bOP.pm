@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.34  2011/02/17 00:15:02  moeller
+  * Bivio::Biz::Model::RealmMailDeleteForm
+    NEW
+  * Bivio::Biz::Model::RealmMail
+    added delete_message for individual message complete deletion (no archiving)
+    fix for deleting only message in a thread
+  * Bivio::Delegate::TaskId
+    added GROUP_MAIL_DELETE_FORM
+  * Bivio::Type::RowTagValue
+    can't be subclass of type Type.Text64K, because it adds a newline
+  * Bivio::UI::FacadeBase
+    added facade components for delete message functionality
+  * Bivio::UI::View::Mail
+    added delete message link
+  * Bivio::UI::XHTML::Widget::WikiText
+    Backout previous change for #611 (add <strike>).
+    "strike" is deprecated in XHTML - will fix in ckeditor
+
   Revision 10.33  2011/02/15 19:51:26  nagler
   * Bivio::Biz::Action::RealmFile
     $realm_id not req(auth_id) needs to be used for error msg in die
