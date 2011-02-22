@@ -237,10 +237,18 @@ sub _mail {
 	    vs_text_as_prose('support_name'),
 	),
 	recipients => '',
+	control => 1,
     );
     return Message({
-	map(($_ => view_widget_value($self->internal_base_attr($_))),
-	    @$a, qw(from recipients)),
+	map(
+	    ($_ => view_widget_value($self->internal_base_attr($_))),
+	    @$a,
+	    qw(
+	        from
+		recipients
+		control
+	    ),
+	),
     });
 }
 
