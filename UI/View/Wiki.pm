@@ -6,6 +6,9 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Config')->register(my $_CFG = {
+    use_wysiwyg => 0,
+});
 
 sub TEXT_AREA_COLS {
     return 80;
@@ -17,6 +20,8 @@ sub TEXT_AREA_ROWS {
 
 sub edit {
     my($self) = @_;
+    return shift->edit_wysiwyg(@_)
+	if $self->use_wysiwg;
     return $self->internal_body(vs_simple_form(WikiForm => [
 	'WikiForm.RealmFile.path_lc',
 	'WikiForm.RealmFile.is_public',
@@ -53,6 +58,12 @@ sub edit_wysiwyg {
     ]));
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub help {
     view_main(Page({
 	xhtml => 1,
@@ -85,6 +96,10 @@ EOF
 
 sub site_view {
     return shift->view(@_);
+}
+
+sub use_wysiwg {
+    return $_CFG->{use_wysiwyg};
 }
 
 sub validator_all_mail {
