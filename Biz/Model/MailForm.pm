@@ -9,7 +9,6 @@ my($_EA) = b_use('Type.EmailArray');
 my($_I) = b_use('Mail.Incoming');
 my($_O) = b_use('Mail.Outgoing');
 my($_RFC) = b_use('Mail.RFC822');
-my($_V) = b_use('UI.View');
 my($_MRW) = b_use('Type.MailReplyWho');
 my($_ARM) = b_use('Action.RealmMail');
 my($_MA) = b_use('Mail.Address');
@@ -127,7 +126,7 @@ sub internal_format_from {
 
 sub internal_format_incoming {
     my($self) = @_;
-    return $_V->render($self->VIEW_CLASS . '->form_imail', $self->req);
+    return b_use('UI.View')->render($self->VIEW_CLASS . '->form_imail', $self->req);
 }
 
 sub internal_format_reply_to {
