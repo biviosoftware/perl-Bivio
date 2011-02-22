@@ -23,8 +23,7 @@ sub control_on_render {
 	     ->render_tag_value($req, \$css);
     my(@lines) = split('\n', $css);
     my($jscss) = q{['} . join(qq{'\n + '}, @lines) . q{']};
-    
-    print STDERR $jscss;
+
     # need first time initialization to get field name from form model
     unless ($fields->{initialized}) {
 	my($type) = $fields->{type} = $form->get_field_type($field);
@@ -72,8 +71,6 @@ sub control_on_render {
 	    . $form->get_field_name_for_html($field)
 	    . '", {customConfig : "/b/ckeditor/bwiki_config.js"'
 	    . ' ,  filebrowserImageUploadUrl: "/site/change-file/Public"});' . "\n"
-#	    . 'CKEDITOR.config.contentsCss="' +  '' +  '";'
-#	    . 'CKEDITOR.config.contentsCss=["body {background-color: #F0FFA0;} body {color: #FFFFFF;}"];'
 	    . 'CKEDITOR.config.contentsCss=' . $jscss. ';'
 	    . '</script>'	
 	    . $s;
