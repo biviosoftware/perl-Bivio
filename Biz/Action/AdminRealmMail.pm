@@ -1,14 +1,10 @@
-# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2010-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::AdminRealmMail;
 use strict;
 use Bivio::Base 'Action.RealmMail';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-sub ALLOW_REPLY_TO {
-    return 0;
-}
 
 sub EMAIL_LIST {
     return 'RealmAdminEmailList';
@@ -18,7 +14,11 @@ sub TASK_URI {
     return 'admin';
 }
 
-sub WANT_REALM_MAIL_CREATED {
+sub want_realm_mail_created {
+    return 0;
+}
+
+sub want_reply_to {
     return 0;
 }
 
