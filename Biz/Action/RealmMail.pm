@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::RealmMail;
 use strict;
@@ -15,10 +15,6 @@ my($_M) = b_use('Biz.Model');
 my($_BMM) = b_use('Type.BulletinMailMode');
 my($_BBT) = b_use('Type.BulletinBodyTemplate');
 
-sub ALLOW_REPLY_TO {
-    return 1;
-}
-
 sub EMAIL_LIST {
     return 'RealmEmailList';
 }
@@ -31,23 +27,21 @@ sub TASK_URI {
     return '';
 }
 
-sub WANT_REALM_MAIL_CREATED {
-    return 1;
-}
-
 sub execute_receive {
     my($proto, $req, $rfc822, $reflector_task) = @_;
     $rfc822 ||= $req->get('Model.MailReceiveDispatchForm')
 	->get('message')->{content};
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
-    my($in) = $proto->WANT_REALM_MAIL_CREATED ? $rm->create_from_rfc822($rfc822)
+    my($in) = $proto->want_realm_mail_created($req)
+	? $rm->create_from_rfc822($rfc822)
 	: $_I->new($rfc822);
     my($ea) = $rm->new_other('EmailAlias');
     my($email) = $ea->format_realm_as_incoming;
     my($out) = $_O->new($in)->set_headers_for_list_send({
 	list_email => $email,
 	sender => $ea->format_realm_as_sender($email),
-	reply_to_list => $proto->ALLOW_REPLY_TO && $_MWRT->is_set_for_realm($req),
+	reply_to_list => $proto->want_reply_to($req)
+	    && $_MWRT->is_set_for_realm($req),
 	subject_prefix => $proto->internal_subject_prefix($rm),
     });
     b_use('AgentJob.Dispatcher')->enqueue(
