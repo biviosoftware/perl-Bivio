@@ -19,7 +19,7 @@ sub TEXT_AREA_ROWS {
 sub edit {
     my($self) = @_;
     return shift->edit_wysiwyg(@_)
-	if b_use('View.Wiki')->use_wysiwg;
+	if b_use('View.Wiki')->use_wysiwyg;
     return $self->internal_body(vs_simple_form(BlogEditForm => [
 	['BlogEditForm.title', {
 	    size => 57,
@@ -52,7 +52,7 @@ sub create {
 sub create_wysiwyg {
     my($self) = @_;
     return shift->create_wysiwyg(@_)
-	if b_use('View.Wiki')->use_wysiwg;
+	if b_use('View.Wiki')->use_wysiwyg;
     return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
 	'BlogEditForm.RealmFile.is_public',

@@ -21,7 +21,7 @@ sub TEXT_AREA_ROWS {
 sub edit {
     my($self) = @_;
     return shift->edit_wysiwyg(@_)
-	if $self->use_wysiwg;
+	if $self->use_wysiwyg;
     return $self->internal_body(vs_simple_form(WikiForm => [
 	'WikiForm.RealmFile.path_lc',
 	'WikiForm.RealmFile.is_public',
@@ -98,7 +98,7 @@ sub site_view {
     return shift->view(@_);
 }
 
-sub use_wysiwg {
+sub use_wysiwyg {
     return $_CFG->{use_wysiwyg};
 }
 
