@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_PARENT) = b_use('SQL.ListQuery')->to_char('parent_id');
 
 sub execute_ok {
     my($self) = @_;
