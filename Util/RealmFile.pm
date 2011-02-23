@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RealmFile;
 use strict;
@@ -6,10 +6,11 @@ use Bivio::Base 'Bivio.ShellUtil';
 use File::Find ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_D) = b_use('Bivio.Die');
 my($_DT) = b_use('Type.DateTime');
 my($_F) = b_use('IO.File');
-my($_MFN) = b_use('Type.MailFileName');
 my($_FP) = b_use('Type.FilePath');
+my($_MFN) = b_use('Type.MailFileName');
 
 sub OPTIONS {
     return {
@@ -167,31 +168,41 @@ sub import_tree {
     $folder = $folder ? $self->convert_literal(FilePath => $folder) : '/';
     File::Find::find({
 	wanted => sub {
-	    if ($_ =~ /^CVS$/) {
+	    my($name) = $_;
+	    if ($name =~ /^CVS$/) {
 		$File::Find::prune = 1;
 		return;
 	    }
 	    return
-		if $_ =~ m{(^|/)(\..*|.*~|#.*)$};
+		if $name =~ m{(^|/)(\..*|.*~|#.*)$};
 	    my($f) = $File::Find::name =~ m{^\./(.+)};
 	    my($path) = $self->convert_literal('FilePath', "$folder/$f");
-	    my($method) = -d $_ ? 'create_folder' : 'create_with_content';
+	    my($method) = -d $name ? 'create_folder' : 'create_with_content';
 	    my($rf) = $self->model('RealmFile');
 	    if ($rf->unsafe_load({path => $path})) {
 		return
 		    if $rf->get('is_folder');
 		$method = 'update_with_content';
 	    }
+	    my($modified_date_time) = $_DT->from_unix((stat($name))[9]);
 	    if ($_MFN->is_absolute($path)) {
 		$self->model('RealmMail')
 		    ->cascade_delete({realm_file_id => $rf->get('realm_file_id')})
 		    if $rf->is_loaded;
-		$self->model('RealmMail')->create_from_rfc822($_F->read($_));
-		$self->req('Model.RealmFile')->update({
+		my($die) = $_D->catch_quietly(sub {
+		    $self->model('RealmMail')
+			->create_from_rfc822($_F->read($name));
+		});
+		if ($die) {
+		    b_info('mail from rfc822 failed: ',
+		        ($die->unsafe_get('attrs') || {})->{message});
+		    return;
+		}
+		my($rf) = $self->req('Model.RealmFile');
+		$rf->update({
 		    override_is_read_only => 1,
 		    path => $path,
-		    modified_date_time =>
-			$self->req(qw(Model.RealmFile modified_date_time)),
+		    modified_date_time => $modified_date_time,
 		});
 		b_die('public mismatch')
 		    unless $_MFN->is_public($path)
@@ -200,12 +211,10 @@ sub import_tree {
 	    }
 	    $rf->$method(
 		_fix_values($self, $path, {
-		    modified_date_time => $_DT->from_unix(
-			(stat($_))[9],
-		    ),
+		    modified_date_time => $modified_date_time,
 		    $noarchive ? (override_versioning => 1) : (),
 		}),
-		$method =~ /content/ ? $_F->read($_) : (),
+		$method =~ /content/ ? $_F->read($name) : (),
 	    );
 	    return;
 	},
