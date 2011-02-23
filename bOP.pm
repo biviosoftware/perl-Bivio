@@ -28,10 +28,88 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.35  2011/02/22 00:39:27  nagler
+  * Bivio::Agent::Task
+    Support for "extra_auth" attribute on tasks, which allows arbitrary
+    control logic on tasks
+  * Bivio::Auth::Realm
+    Added "extra_auth" call on can_user_execute_task if it exists in Auth.Support
+  * Bivio::BConf
+    Delegate mapping in merge_class_loader needed better regexp for
+    PetShop (two levels)
+    remove map() on ClassLoader config so Widget maps are listed explicitly
+  * Bivio::Biz::Action::AdminRealmMail
+    Added want_realm_mail_created and want_reply_to
+  * Bivio::Biz::Action::BoardRealmMail
+    Added want_reply_to
+  * Bivio::Biz::Action::RealmMailBase
+    default want_realm_mail_created and want_reply_to
+  * Bivio::Biz::Action::RealmMail
+    renamed WANT_REALM_MAIL_CREATED and ALLOW_REPLY_TO to
+    want_realm_mail_created and want_reply_to which take $req so can be
+    dynamic values
+  * Bivio::Biz::Model::BlogEditForm
+    carry_path_info in execute_cancel()
+  * Bivio::Biz::Model::MailForm
+    don't init $_V, rather just b_use('UI.View') -- avoid initialization loops
+  * Bivio::Biz::Model::RealmMailPublicForm
+    If RealmFile.is_public on the msg, then allow the user in private
+    realms to turn it off
+  * Bivio::Biz::Model::SearchForm
+    explicity set ok_button form_name to avoid javascript problems
+  * Bivio::Biz::Model::UserLoginBaseForm
+    NEW
+  * Bivio::Biz::Model::UserLoginForm
+    push up code into UserLoginBaseForm so subclasses can override without
+    grabbing whole module
+  * Bivio::Biz::Model::WikiValidatorSettingList
+    don't get setting if no site_reports_realm_id
+  * Bivio::Biz::PropertyModel
+    cruft
+  * Bivio::Delegate::TaskId
+    Use WYSIWYG (CKEditor) for blogs and wikis
+    Rename the 'wysiwyg' methods edit_wysiwyg and create_wysiwyg
+  * Bivio::Delegator
+    Added b_can so can answer question about AUTOLOADED methods
+  * Bivio::PetShop::BConf
+    use simple form of delegates
+    Added Auth.Support delegate (for extra_auth testing)
+  * Bivio::PetShop::Delegate::Support
+    NEW
+  * Bivio::PetShop::Delegate::TaskId
+    added extra_auth case on USER_ACCOUNT_EDIT
+  * Bivio::ShellUtil
+    new_other() works with a mapped class
+  * Bivio::t::Delegator::D1
+    test b_can
+  * Bivio::Type::MailSendAccess
+    added ALL_GUESTS
+  * Bivio::UI::FacadeBase
+    Use WYSIWYG (CKEditor) for blogs and wikis
+    Editor is in "files/plain/b" which can be a link to Bivio/files
+  * Bivio::UI::Mail::Widget::Message
+    Subclass Widget.ControlBase so messages can render as empty (not executing)
+  * Bivio::UI::View::Base
+    added control to mail and imail
+  * Bivio::UI::View::Blog
+    Use WYSIWYG (CKEditor) for blogs and wikis
+    CKEditor - missed "create"
+    Rename the 'wysiwyg' methods edit_wysiwyg and create_wysiwyg
+  * Bivio::UI::View::Mail
+    if the msg is public (even in a private group) display the GROUP_MAIL_TOGGLE_PUBLIC
+  * Bivio::UI::View::Wiki
+    Use WYSIWYG (CKEditor) for blogs and wikis
+    Rename the 'wysiwyg' methods edit_wysiwyg and create_wysiwyg
+  * Bivio::UI::Widget::ControlBase
+    if control is not defined, don't initialize
+  * Bivio::UNIVERSAL
+    Added b_can so can answer question about AUTOLOADED methods
+  * Bivio::Util::RealmFile
+    restore path after creating RealmMail from rfc822 during import_tree()
+
   Revision 10.34  2011/02/17 00:15:02  moeller
   * Bivio::Biz::Model::RealmMailDeleteForm
     NEW
