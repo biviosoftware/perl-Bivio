@@ -41,6 +41,28 @@ sub replace_value {
     return _do(create_or_update => @_);
 }
 
+sub row_tag_get {
+    my(undef, $self, $id, $key) = _args(undef, @_);
+    my($t) = $key->get_type;
+    return $t->get_default
+	unless $self->unsafe_load({primary_id => $id, key => $key});
+    my($v) = $t->from_sql_column($self->get('value'));
+    return $t->is_specified($v) ? $v : $t->get_default;
+}
+
+sub row_tag_replace {
+    my(undef, $self, $id, $key, $value) = _args(undef, @_);
+    my($t) = $key->get_type;
+    return $self->create_or_update({
+	primary_id => $id,
+	key => $key,
+	value => !$t->is_specified($value)
+	    || $t->is_equal($value, $t->get_default)
+	    ? undef
+	    : $t->to_sql_param($value),
+    });
+}
+
 sub update {
     my($self, $values) = @_;
     return shift->SUPER::update(@_)
@@ -50,16 +72,21 @@ sub update {
     return $self;
 }
 
-sub _do {
+sub _args {
     my($method, $self, $model_or_id, $key, $value) = @_;
     my($id) = _primary_id($self, $model_or_id);
     unless ($id) {
 	($key, $value) = ($model_or_id, $key);
 	$id = $self->req('auth_id');
     }
+    return ($method, $self, $id, $_RTK->from_any($key), $value);
+}
+
+sub _do {
+    my($method, $self, $id, $key, $value) = _args(@_);
     return $self->$method({
 	primary_id => $id,
-	key => $_RTK->from_any($key),
+	key => $key,
 	$method =~ /load/ ? () : (value => $value),
     });
 }
