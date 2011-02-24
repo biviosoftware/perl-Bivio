@@ -1152,11 +1152,20 @@ sub internal_upgrade_db_mail_admin {
 
 sub internal_upgrade_db_mail_from_display_name {
     my($self) = @_;
-    $self->run(<<'EOF');
+    if ($self->is_oracle) {
+	$self->run(<<'EOF');
+ALTER TABLE realm_mail_t
+  ADD from_display_name VARCHAR(100)
+/
+EOF
+    }
+    else {
+	$self->run(<<'EOF');
 ALTER TABLE realm_mail_t
   ADD COLUMN from_display_name VARCHAR(100)
 /
 EOF
+    }
     return;
 }
 
