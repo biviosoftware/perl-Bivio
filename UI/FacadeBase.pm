@@ -1276,11 +1276,7 @@ sub _cfg_site_admin {
 		[
 		    'site_reports',
 		    'FORUM_FILE_TREE_LIST',
-		    sub {
-			return 0
-			    unless my $id = _unsafe_realm_id(shift, 'SITE_REPORTS_REALM_NAME');
-			return b_use('Auth.Realm')->is_default_id($id) ? 0 : 1;
-		    },
+		    sub {_unsafe_realm_id(shift, 'SITE_REPORTS_REALM_NAME')},
 		    'SITE_REPORTS_REALM_NAME',
 		],
             ),
