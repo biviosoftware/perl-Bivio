@@ -7,6 +7,10 @@ use Bivio::Base 'Type.EnumDelegator';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile();
 
+sub get_type {
+    return b_use('Type', shift->get_short_desc);
+}
+
 sub is_continuous {
     return 0;
 }
