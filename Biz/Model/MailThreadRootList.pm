@@ -62,8 +62,7 @@ sub internal_initialize {
 	    [qw(RealmMail.thread_root_id RealmMail_2.thread_root_id)],
 	    [qw(RealmMail_2.realm_file_id RealmFile_2.realm_file_id)],
 	    [qw(RealmMail.realm_id RealmFile_2.realm_id RealmMail_2.realm_id)],
-	    [qw(RealmFile_2.user_id RealmOwner_2.realm_id)],
-	    'RealmOwner_2.display_name',
+	    'RealmMail.from_display_name',
 	    {
 		name => 'excerpt',
 		type => 'Text',
