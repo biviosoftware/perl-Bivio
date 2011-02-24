@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::View::Mail;
 use strict;
@@ -9,6 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('MIME.Type');
 my($_MF) = b_use('Model.MailForm');
 my($_M) = b_use('Biz.Model');
+my($_E) = b_use('Type.Email');
 
 sub DEFAULT_COLS {
     return 80;
@@ -179,7 +180,21 @@ sub internal_thread_root_list_columns {
 		),
 		DIV_b_exerpt(String(['excerpt'])),
 		DIV_byline(Join([
-		    SPAN_author(String(['RealmOwner.display_name'])),
+		    SPAN_author(
+			String(
+			    Or(
+				['RealmMail.from_display_name'],
+				[
+				     sub {
+					 my(undef, $v) = @_;
+				         return $_E->get_local_part($v);
+				     },
+				     'RealmMail.from_email',
+				],
+			    ),
+			    {escape_html => 1},
+			),
+		    ),
 		    DIV_date(DateTime(['RealmFile.modified_date_time'])),
 		])),
 		Link(
