@@ -1,4 +1,9 @@
-! css is not indexed
+/*
+ * Copyright (c) 2011 bivio Software, Inc.  All rights reserved.
+ * $Id$
+ *
+ * Here to test that css is not indexed by searches
+ */
 .donotfindcss  {
     margin: 0;
 }
