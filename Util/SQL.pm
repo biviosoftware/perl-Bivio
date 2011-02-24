@@ -68,6 +68,7 @@ qw(
     !site_help_title
     !mail_admin
     !row_tag_value_64k
+    !mail_from_display_name
 )
 ];
 #    crm_mail
@@ -1146,6 +1147,16 @@ sub internal_upgrade_db_mail_admin {
 	'unauth_iterate_start',
 	'realm_id',
     );
+    return;
+}
+
+sub internal_upgrade_db_mail_from_display_name {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE realm_mail_t
+  ADD COLUMN from_display_name VARCHAR(100)
+/
+EOF
     return;
 }
 
