@@ -46,8 +46,7 @@ sub internal_initialize {
             'RealmMail.subject_lc',
 	],
 	other => [
- 	    [qw(RealmFile.user_id RealmOwner.realm_id)],
- 	    'RealmOwner.display_name',
+	    'RealmMail.from_display_name',
             'RealmMail.subject',
 	    'RealmFile.path',
 	    'RealmFile.is_public',
