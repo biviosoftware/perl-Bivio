@@ -1396,6 +1396,7 @@ CREATE TABLE realm_mail_t (
   thread_root_id NUMERIC(18) NOT NULL,
   thread_parent_id NUMERIC(18),
   from_email VARCHAR(100) NOT NULL,
+  from_display_name VARCHAR(100),
   subject VARCHAR(100) NOT NULL,
   subject_lc VARCHAR(100) NOT NULL,
   CONSTRAINT realm_mail_t1 PRIMARY KEY(realm_file_id)
