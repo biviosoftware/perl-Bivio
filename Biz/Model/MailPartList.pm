@@ -8,11 +8,12 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = b_use('Mail.Address');
 my($_DT) = b_use('Type.DateTime');
+my($_E) = b_use('Type.Email');
 my($_FN) = b_use('Type.FileName');
 my($_MP) = b_use('Ext.MIMEParser');
+my($_RM) = b_use('Model.RealmMail');
 my($_T) = b_use('MIME.Type');
 my($_W) = b_use('MIME.Word');
-my($_RM) = b_use('Model.RealmMail');
 
 sub execute_from_realm_mail_list {
     my($proto, $req) = @_;
@@ -88,7 +89,8 @@ sub get_file_name {
 
 sub get_from_name {
     my($self) = @_;
-    return $self->get_header('from_name') || $self->get_header('from_email');
+    return $self->get_header('from_name')
+	|| $_E->get_local_part($self->get_header('from_email'));
 }
 
 sub get_header {
