@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ListModel();
 req()->set_realm('site');
@@ -24,6 +24,7 @@ req()->set_realm('site');
 	    /Public/Wiki/WikiValidator_NOT_OK
 	    /Public/Wiki/WikiValidator_OK
 	    /Wiki/base.css
+	    /Wiki/DefaultStartPage
 	    /Wiki/index
 	))],
     ],
