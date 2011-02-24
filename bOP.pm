@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.36  2011/02/23 00:09:35  schellj
+  * Bivio::Biz::PropertyModel
+    RCS file: /home/cvs/perl/Bivio/Biz/PropertyModel.pm,v
+    Working file: Bivio/Biz/PropertyModel.pm
+    head: 2.49
+    branch:
+    locks: strict
+    access list:
+    symbolic names:
+    keyword substitution: kv
+    total revisions: 123;	selected revisions: 0
+    description:
+  * Bivio::Delegate::TaskId
+    don't call create/edit_wysiwyg directly, let Blog/Wiki make decision
+    about use_wysiwg
+  * Bivio::UI::HTML::Widget::CKEditor
+    NEW
+  * Bivio::UI::View::Blog
+    added use_wysiwyg config parameter so can deploy without having
+    wysiwyg code released
+  * Bivio::UI::View::Wiki
+    added use_wysiwyg config parameter so can deploy without having
+    wysiwyg code released
+
   Revision 10.35  2011/02/22 00:39:27  nagler
   * Bivio::Agent::Task
     Support for "extra_auth" attribute on tasks, which allows arbitrary
