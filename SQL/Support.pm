@@ -364,6 +364,8 @@ sub new {
 sub parse_column_name {
     my($proto, $qual_col) = @_;
     my($qual_model, $field) = $qual_col =~ m{^(.+)\.(\w+)$};
+    b_die($qual_col, ': not a qualified column')
+	unless $qual_model;
     my($m) = $proto->parse_model_name($qual_model);
     return {
 	%$m,
