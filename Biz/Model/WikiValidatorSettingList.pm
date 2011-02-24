@@ -11,12 +11,13 @@ sub regexp_for_auth_realm {
     my($self) = @_;
     return undef
 	unless my $rid = $_C->get_value('site_reports_realm_id', $self->req);
+    my($realm) = $self->req(qw(auth_realm owner_name));
     return $self->req->with_realm(
 	$rid,
 	sub {
 	    return $self->get_setting(
 		'WikiValidator',
-		$self->req(qw(auth_realm owner_name)),
+		$realm,
 		'ignore',
 		'Regexp',
 	    );
