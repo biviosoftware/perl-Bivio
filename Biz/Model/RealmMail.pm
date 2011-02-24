@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmMail;
 use strict;
@@ -7,21 +7,23 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_MAX_EMAIL) = b_use('Type.Email')->get_width;
-my($_MS) = b_use('Type.MailSubject');
-my($_MFN) = b_use('Type.MailFileName');
-my($_RF) = b_use('Model.RealmFile');
-my($_DT) = b_use('Type.DateTime');
-my($_I) = b_use('Mail.Incoming');
-my($_MI) = b_use('Type.MessageId');
 my($_D) = b_use('Bivio.Die');
+my($_DT) = b_use('Type.DateTime');
+my($_E) = b_use('Type.Email');
 my($_F) = b_use('Biz.File');
 my($_FP) = b_use('Type.FilePath');
-my($_RI) = b_use('Agent.RequestId');
-my($_MV) = b_use('Type.MailVisibility');
-my($_MAIL_READ) = ${b_use('Auth.PermissionSet')->from_array(['MAIL_READ'])};
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
+my($_I) = b_use('Mail.Incoming');
 my($_LM) = b_use('Biz.ListModel');
+my($_MAIL_READ) = ${b_use('Auth.PermissionSet')->from_array(['MAIL_READ'])};
+my($_MAX_EMAIL) = b_use('Type.Email')->get_width;
+my($_MAX_NAME) = b_use('Type.DisplayName')->get_width;
+my($_MFN) = b_use('Type.MailFileName');
+my($_MI) = b_use('Type.MessageId');
+my($_MS) = b_use('Type.MailSubject');
+my($_MV) = b_use('Type.MailVisibility');
+my($_RF) = b_use('Model.RealmFile');
+my($_RI) = b_use('Agent.RequestId');
 
 sub access_is_public_only {
     my($proto, $req) = @_;
@@ -170,6 +172,7 @@ sub internal_initialize {
 	    thread_root_id => ['RealmFile.realm_file_id', 'NOT_NULL'],
 	    thread_parent_id => ['RealmFile.realm_file_id', 'NONE'],
             from_email => ['Email', 'NOT_NULL'],
+	    from_display_name => ['DisplayName', 'NONE'],
             subject => ['MailSubject', 'NOT_NULL'],
             subject_lc => ['MailSubject', 'NOT_NULL'],
         },
@@ -208,12 +211,15 @@ sub _call_handlers {
 
 sub _create {
     my($self, $in, $file) = @_;
+    my($email, $name) = $in->get_from;
+    $name ||= $_E->get_local_part($email);
     $self->create(
 	_thread_values($self, $in, {
 	    map(($_ => $file->get($_)), qw(realm_id realm_file_id)),
 	    message_id => $_MI->from_literal_or_die(
 		$_MI->clean_and_trim($in->get_message_id)),
-	    from_email => substr(lc(($in->get_from)[0]), 0, $_MAX_EMAIL),
+	    from_email => substr(lc($email), 0, $_MAX_EMAIL),
+	    from_display_name => substr($name || '', 0, $_MAX_NAME),
 	    subject => $_MS->trim_literal($in->get_subject),
 	    subject_lc => $_MS->clean_and_trim($in->get_subject),
 	}, $in),
