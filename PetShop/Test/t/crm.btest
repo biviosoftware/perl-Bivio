@@ -15,7 +15,10 @@ visit_uri('/crm_forum/tickets');
 follow_link_in_table('Ticket', 'Subject', $bug_subject);
 follow_link('answer');
 verify_text("Locked Ticket #$ticket");
-verify_text(qr{Cc:.*\Q$cust1}s);
+verify_form({
+    '^to' => $cust1,
+    cc => qr{^crm\@},
+});
 submit_form(Send => {
     action => 'Close',
     text => 'Solution here',
