@@ -22,6 +22,7 @@ my($title) = sub {
 	    /Public/Wiki/Calendar_Help
 	    /Public/Wiki/Change_Help
 	    /Public/Wiki/Edit_this_entry_Help
+	    /Public/Wiki/Edit_Wiki_Page_Help
 	    /Public/Wiki/Files_Help
 	    /Public/Wiki/New_blog_entry_Help
 	    /Public/Wiki/Remote_Copy_Help
