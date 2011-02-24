@@ -1,0 +1,23 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+req()->set_realm('demo');
+[
+    [req()] => [
+	row_tag_get => [
+	    TIME_ZONE => 'UTC',
+	],
+	row_tag_replace => [
+	    ['TIME_ZONE', Type_TimeZone()->AMERICA_DENVER] => not_die(),
+	],
+	row_tag_get => [
+	    TIME_ZONE => 'AMERICA_DENVER',
+	],
+	row_tag_replace => [
+	    ['TIME_ZONE', undef] => not_die(),
+	],
+	row_tag_get => [
+	    TIME_ZONE => 'UTC',
+	],
+    ],
+];
