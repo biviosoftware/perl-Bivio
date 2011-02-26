@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::MIME::Calendar;
 use strict;
@@ -76,9 +76,9 @@ sub _event {
 		|transp
 	        |x-lic-error
 	    )(?:$|;)}x;
-	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date)?(;tzid=(.*))?$/) {
+	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date(?:-time)?)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
-	    my($is_date) = $2;
+	    my($is_date) = $2 && $2 =~ /date$/ ? 1 : 0;
 	    my($tz) = $3 ? $4 : $default_tz;
 	    my($is_gmt) = $v =~ /Z$/;
 	    my($t, $e) = ($is_date ? $_D : $_DT)->from_literal(
@@ -95,6 +95,9 @@ sub _event {
 	    _die($self, 'unknown event subentry')
 		unless _ignore_subentry($self, $v) eq 'valarm';
 	    return 1;
+	}
+	elsif ($k =~ /^(url)(;value=uri)?$/) {
+	    $k = $1;
 	}
 	elsif ($k !~ m{^(?:
 	    summary
@@ -186,7 +189,9 @@ sub _split {
 	    $_ =~ s/\s+$//;
 	    my($k, $v) = split(/\s*:\s*/, $_, 2);
 	    $v =~ s/\\n/\n/ig;
-	    $v =~ s/\\([,;\\])/$1/g;
+	    $v =~ s/\\([,;\\:"])/$1/g;
+	    # quotes are sometimes double escaped?
+	    $v =~ s/\\(["])/$1/g;
 	    [lc($k), $_HTML->unescape($v)];
 	} split(/\r?\n/, $ics)),
     ]));
