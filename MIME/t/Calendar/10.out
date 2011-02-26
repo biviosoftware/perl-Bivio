@@ -1,0 +1,101 @@
+[
+          {
+            'summary' => 'Joan Borysenko - Fried: Why You Burn Out & How to Revive',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/joan-borysenko-fried-why-you-burn-out-how-revive',
+            'dtend' => '2455618 9000',
+            'url' => 'http://boulderbookstore.indiebound.com/event/joan-borysenko-fried-why-you-burn-out-how-revive',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Joan Borysenko will speak about and sign <em>Fried: Why You Burn Out & How to Revive.</em></p>',
+            'dtstart' => '2455618 9000'
+          },
+          {
+            'summary' => 'Benjamin Hale - The Evolution of Bruno Littlemore',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/benjamin-hale-evolution-bruno-littlemore',
+            'dtend' => '2455619 3600',
+            'url' => 'http://boulderbookstore.indiebound.com/event/benjamin-hale-evolution-bruno-littlemore',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Benjamin Hale will speak about and sign <em>The Evolution of Bruno Littlemore.</em></p>',
+            'dtstart' => '2455619 3600'
+          },
+          {
+            'summary' => 'How to Break In To Publishing with Literary Agent Sara Megibow',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/how-break-publishing-literary-agent-sara-megibow',
+            'dtend' => '2455620 79200',
+            'url' => 'http://boulderbookstore.indiebound.com/event/how-break-publishing-literary-agent-sara-megibow',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Starting your writing career, or looking to amp up your writing career?  Join us as Sara Megibow, a literary agent with Nelson Literary Agency, talks about how to break in to publishing as a writer.  </p><p>�</p><p>Sara has worked at the Nelson Literary Agency since 2006. As an Associate Literary Agent, Sara is actively acquiring new clients and enthusiastically celebrating sales for her first authors. The Nelson Literary Agency specializes in representing young adult and middle grade fiction, romance (all genres except category and inspirational), science fiction and fantasy, commercial and women’s fiction (including chick lit) and high concept literary fiction. Nelson Literary Agency is a member of AAR, RWA, SFWA and SCBWI. Please visit their website <a href="http://www.nelsonagency.com" title="www.nelsonagency.com">www.nelsonagency.com</a> for submission guidelines, and feel free to visit Sara’s Publisher’s Marketplace site (<a href="http://www.publishersmarketplace.com/members/SaraMegibow" title="www.publishersmarketplace.com/members/SaraMegibow">www.publishersmarketplace.com/members/SaraMegibow</a>) to learn more about her personal tastes and recent sales.</p>',
+            'dtstart' => '2455620 75600'
+          },
+          {
+            'summary' => 'How to Break In To Publishing with special guest Literary Agent Sara Megibow',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/how-break-publishing-special-guest-literary-agent-sara-megibow',
+            'dtend' => '2455620 75600',
+            'url' => 'http://boulderbookstore.indiebound.com/event/how-break-publishing-special-guest-literary-agent-sara-megibow',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Ever wondered how a book goes from your laptop to the shelves of Boulder Book Store?  Literary agent Sara Megibow is here to tell you how the publishing process works. She’ll also give tips on what agents are looking for, how to query an agent, how to pitch your book, and how essential those first few pages really are. We’ll end the afternoon with a Q&A, so bring questions!</p><p> </p><p><strong>With special guest Sara Megibow, Associate Literary Agent, Nelson Literary Agency, LLC</strong><br />Sara has worked at the Nelson Literary Agency since 2006. As an Associate Literary Agent, Sara is actively acquiring new clients and enthusiastically celebrating sales for her first authors. The Nelson Literary Agency specializes in representing young adult and middle grade fiction, romance (all genres except category and inspirational), science fiction and fantasy, commercial and women’s fiction (including chick lit) and high concept literary fiction. Nelson Literary Agency is a member of AAR, RWA, SFWA and SCBWI. Please visit our website <a href="http://www.nelsonagency.com" title="www.nelsonagency.com">www.nelsonagency.com</a> for submission guidelines, and feel free to visit Sara’s Publisher’s Marketplace site (<a href="http://www.publishersmarketplace.com/members/SaraMegibow" title="www.publishersmarketplace.com/members/SaraMegibow">www.publishersmarketplace.com/members/SaraMegibow</a>) to learn more about her personal tastes and recent sales. </p><p> </p>',
+            'dtstart' => '2455620 75600'
+          },
+          {
+            'summary' => 'Jonathan Evison - West of Here',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/jonathan-evison-west-here',
+            'dtend' => '2455623 9000',
+            'url' => 'http://boulderbookstore.indiebound.com/event/jonathan-evison-west-here',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Jonathan Evison will speak about and sign <em>West of Here.</em></p>',
+            'dtstart' => '2455623 9000'
+          },
+          {
+            'summary' => 'Yann Martel - Beatrice & Virgil',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/yann-martel-beatrice-virgil',
+            'dtend' => '2455624 9000',
+            'url' => 'http://boulderbookstore.indiebound.com/event/yann-martel-beatrice-virgil',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Yann Martel will speak about and sign <em>Beatrice & Virgil.</em></p>',
+            'dtstart' => '2455624 9000'
+          },
+          {
+            'summary' => 'Lisa Napoli - Radio Shangri-La',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/lisa-napoli-radio-shangri-la',
+            'dtend' => '2455630 9000',
+            'url' => 'http://boulderbookstore.indiebound.com/event/lisa-napoli-radio-shangri-la',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Lisa Napoli will speak about and sign <em>Radio Shangri-La.  </em></p>',
+            'dtstart' => '2455630 9000'
+          },
+          {
+            'summary' => 'Doreen Cronin - The Trouble with Chickens: A J.J. Tully Mystery',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/doreen-cronin-trouble-chickens-jj-tully-mystery',
+            'dtend' => '2455631 5400',
+            'url' => 'http://boulderbookstore.indiebound.com/event/doreen-cronin-trouble-chickens-jj-tully-mystery',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Doreen Cronin will speak about and sign <em>The Trouble with Chickens: A J.J. Tully Mystery.</em></p>',
+            'dtstart' => '2455631 5400'
+          },
+          {
+            'summary' => 'Rabbi Naomi Levy - Hope Will Find You',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/rabbi-naomi-levy-hope-will-find-you',
+            'dtend' => '2455632 9000',
+            'url' => 'http://boulderbookstore.indiebound.com/event/rabbi-naomi-levy-hope-will-find-you',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Rabbi Naomi Levy will speak about and sign <em>Hope Will Find You.</em></p>',
+            'dtstart' => '2455632 9000'
+          },
+          {
+            'summary' => 'Tracy Ross - The Source of All Things: A Memoir',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/tracy-ross-source-all-things-memoir',
+            'dtend' => '2455637 9000',
+            'url' => 'http://boulderbookstore.indiebound.com/event/tracy-ross-source-all-things-memoir',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Tracy Ross will speak about and sign <em>The Source of all Things: A Memoir.</em></p>',
+            'dtstart' => '2455637 9000'
+          },
+          {
+            'summary' => 'Linda Fairstein - Silent Mercy',
+            'uid' => 'http://boulderbookstore.indiebound.com/event/linda-fairstein-silent-mercy',
+            'dtend' => '2455644 9000',
+            'url' => 'http://boulderbookstore.indiebound.com/event/linda-fairstein-silent-mercy',
+            'time_zone' => Bivio::Type::TimeZone->UTC,
+            'description' => '<p>Linda Fairstein will speak about and sign <em>Silent Mercy.</em></p>',
+            'dtstart' => '2455644 9000'
+          }
+        ];
