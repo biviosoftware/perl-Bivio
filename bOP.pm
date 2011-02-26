@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,53 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.37  2011/02/24 02:55:02  nagler
+  * Bivio::Biz::Model::MailPartList
+    from_name is get_local_part(from_email) if name not available (not
+    whole email address, because would expose too much in public mailing lists)
+  * Bivio::Biz::Model::MailThreadList
+    added RealmMail.from_display_name, removed RealmOwner.display_name,
+    because not the rigth thing
+  * Bivio::Biz::Model::MailThreadRootList
+    added RealmMail.from_display_name, removed RealmOwner.display_name,
+    because not the right thing
+  * Bivio::Biz::Model::RealmMailDeleteForm
+    removed unused global
+  * Bivio::Biz::Model::RealmMail
+    added from_display_name, compute from get_from or get_local_part of email
+    sort list of b_use's
+  * Bivio::Biz::Model::RowTag
+    added row_tag_get and row_tag_replace, which use RowTagKey->get_type
+    to convert the values
+  * Bivio::Biz::Model::WikiValidatorSettingList
+    $realm needs to be gotten outside the with_realm
+  * Bivio::Delegate::RowTagKey
+    added types (as short_desc) to keys
+  * Bivio::SQL::DDL
+    added realm_mail_t.from_display_name
+  * Bivio::SQL::Support
+    check result of match in parse_column_name, and print a error msg if
+    regexp doesn't match
+  * Bivio::Type::BooleanFalseDefault
+    NEW
+  * Bivio::Type::BooleanTrueDefault
+    NEW
+  * Bivio::Type::RowTagKey
+    added get_type (calls get_short_desc)
+  * Bivio::UI::FacadeBase
+    don't use is_default_id to check if a realm_id was initialized
+  * Bivio::UI::View::Blog
+    fixed method name typo
+  * Bivio::UI::View::Mail
+    show from_display_name if it is non-null or extract local part from from_email
+  * Bivio::UI::View::Wiki
+    fixed method name typo
+  * Bivio::Util::RealmFile
+    always set import_tree() modified_date_time to file date_time
+    catch errors when creating mail from rfc822
+  * Bivio::Util::SQL
+    internal_upgrade_db_mail_from_display_name
+
   Revision 10.36  2011/02/23 00:09:35  schellj
   * Bivio::Biz::PropertyModel
     RCS file: /home/cvs/perl/Bivio/Biz/PropertyModel.pm,v
