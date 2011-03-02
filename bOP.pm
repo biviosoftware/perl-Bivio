@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.38  2011/02/26 22:05:58  moeller
+  * Bivio::MIME::Calendar
+    allow double escaped quotes
+    allow value=date-time
+    allow value=uri
+
   Revision 10.37  2011/02/24 02:55:02  nagler
   * Bivio::Biz::Model::MailPartList
     from_name is get_local_part(from_email) if name not available (not
