@@ -9,6 +9,7 @@ my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');
 my($_P) = b_use('Search.Parseable');
 my($_S) = b_use('Type.String');
+my($_D) = b_use('Bivio.Die');
 
 sub handle_new_excerpt {
     my($self, $parseable) = @_;
@@ -53,15 +54,17 @@ sub _do {
     my($parseable) = $_P->is_blessed($model) ? $model : $_P->new($model);
     $model = $parseable->get('model');
     my($method) = 'handle_' . $proto->my_caller;
-    return
-	unless my $self = Bivio::Die->eval_or_die(sub {
-	    return b_use(SearchParser => $parseable->get('class'))
-		->$method($parseable);
-	});
+    my($die);
+    my($self) = $_D->catch(sub {
+        return b_use(SearchParser => $parseable->get('class'))
+	    ->$method($parseable);
+    }, \$die);
+    $self ||= $proto->new();
     $parseable->map_each(sub {
         shift;
         return $self->put_unless_exists(@_);
     });
+    my($no_text) = '';
     $self->put_unless_exists(
 	'RealmOwner.realm_id' => $model->get_auth_id,
 	author => '',
@@ -73,6 +76,7 @@ sub _do {
 	primary_id => $model->get_primary_id,
 	simple_class => $model->simple_package_name,
 	title => '',
+	text => \$no_text,
     );
     foreach my $v (values(%{$self->internal_get})) {
 	$_S->canonicalize_charset(\$v)
