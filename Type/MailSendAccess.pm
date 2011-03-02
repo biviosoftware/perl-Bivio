@@ -8,12 +8,12 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CATEGORY_PREFIX) = 'mail_send_access_';
 __PACKAGE__->compile([
     UNKNOWN => [0, 'Select who can send mail'],
-    ALL_MEMBERS => [1, 'Only group members can send mail'],
-    ALL_ADMINS => [2, 'Only adminstrators can send mail'],
-    ALL_USERS => [3, 'Any registered user can send mail'],
-    EVERYBODY => [4, 'Anybody (even non-users) can send mail'],
-    NOBODY => [5, 'Nobody (not even admins) can send mail'],
-    ALL_GUESTS => [6, 'Guests and members can send mail'],
+    ALL_GUESTS => [1, 'Guests and members can send mail'],
+    ALL_MEMBERS => [2, 'Only group members can send mail'],
+    ALL_ADMINS => [3, 'Only adminstrators can send mail'],
+    ALL_USERS => [4, 'Any registered user can send mail'],
+    EVERYBODY => [5, 'Anybody (even non-users) can send mail'],
+    NOBODY => [6, 'Nobody (not even admins) can send mail'],
 ]);
 
 sub as_realm_role_category {
