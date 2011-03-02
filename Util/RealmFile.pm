@@ -195,6 +195,7 @@ sub import_tree {
 		});
 		if ($die) {
 		    b_info('mail from rfc822 failed: ',
+		        'name: ', $name, ' err: ',
 		        ($die->unsafe_get('attrs') || {})->{message});
 		    return;
 		}
