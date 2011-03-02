@@ -892,6 +892,13 @@ sub to_xml {
         $year, $mon, $mday, $hour, $min, $sec);
 }
 
+sub to_yyyy_mm_dd {
+    my($proto, $date_time, $sep) = @_;
+    $sep ||= '';
+    my($mday, $mon, $year) = $proto->to_date_parts($date_time);
+    return sprintf("%04d$sep%02d$sep%02d", $year, $mon, $mday);
+}
+
 sub _adjust_from_local {
     return _adjust_local(+1, @_);
 }
