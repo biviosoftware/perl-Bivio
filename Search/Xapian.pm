@@ -31,11 +31,13 @@ my($_VALUE_MAP) = {
     author_user_id => 5,
     author => 6,
     author_email => 7,
+    modified_date_time => 8,
 };
 b_use('IO.Config')->register(my $_CFG = {
     db_path => b_use('Biz.File')->absolute_path('Xapian'),
 });
 my($_L) = b_use('Model.Lock');
+my($_DT) = b_use('Type.DateTime');
 
 sub EXEC_REALM {
     return 'xapian_exec';
@@ -179,6 +181,9 @@ sub query {
 	$qp->set_stemmer($_STEMMER);
 	$qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
 	$qp->set_default_op(Search::Xapian->OP_AND);
+	my($date_proc) = Search::Xapian::DateValueRangeProcessor->new(
+	    8, 1, $_DT->now_as_year - 80);
+	$qp->add_valuerangeprocessor($date_proc);
 	my($phrase) = $attr->{phrase};
 	$phrase =~ s/_/ /g;
 	$q = Search::Xapian::Query->new(
@@ -317,6 +322,8 @@ sub _replace {
     $doc->set_data('');
     while (my($field, $index) = each(%$_VALUE_MAP)) {
         my($v) = $parser->get($field);
+	$v = $_DT->to_yyyy_mm_dd($v)
+	    if $field eq 'modified_date_time';
 	$doc->add_value($index, defined($v) ? $v : '');
     }
     my($primary_term) = _primary_term($model->get_primary_id);
@@ -336,3 +343,4 @@ sub _replace {
 }
 
 1;
+
