@@ -135,7 +135,7 @@ sub _parse_string {
 	    elsif ($c eq 't') {
 		$res .= "\t";
 	    }
-	    elsif ($c =~ /b|f/) {
+	    elsif ($c =~ /b|f|r/) {
 		# ignore formfeed or backspace
 	    }
 	    elsif ($c =~ /'|"|\\|\//) {
