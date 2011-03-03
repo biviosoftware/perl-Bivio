@@ -14,12 +14,12 @@ sub get_delegate_info {
 	DEFAULT_TUPLE_MONIKER => [3, 'TupleMoniker'],
 	MAIL_SUBJECT_PREFIX => [4, 'MailSubject'],
 	BULLETIN_MAIL_MODE => [5, 'BulletinMailMode'],
-#	REALM_FILE_LOCKING => [6, 'BooleanFalseDefault'],
+#6
 	PAGE_SIZE => [7, 'PageSize'],
 	CANONICAL_EMAIL_ALIAS => [8, 'Email'],
 	CANONICAL_SENDER_EMAIL => [9, 'Email'],
 	CRM_SUBJECT_PREFIX => [10, 'MailSubject'],
-#	FACADE_CHILD_TYPE => [11],
+#11
 	TEXTAREA_WRAP_LINES => [12, 'BooleanTrueDefault'],
 	TIME_ZONE => [13, 'TimeZone'],
 	MAIL_WANT_REPLY_TO => [14, 'MailWantReplyTo'],
