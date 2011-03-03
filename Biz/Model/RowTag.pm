@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RowTag;
 use strict;
@@ -50,6 +50,14 @@ sub row_tag_get {
     return $t->is_specified($v) ? $v : $t->get_default;
 }
 
+sub row_tag_get_for_auth_user {
+    my($self, $key) = @_;
+    $key = $_RTK->from_any($key);
+    return $key->get_type->get_default
+	unless my $uid = $self->ureq('auth_user_id');
+    return $self->row_tag_get($uid, $key);
+}
+
 sub row_tag_replace {
     my(undef, $self, $id, $key, $value) = _args(undef, @_);
     my($t) = $key->get_type;
@@ -61,6 +69,13 @@ sub row_tag_replace {
 	    ? undef
 	    : $t->to_sql_param($value),
     });
+}
+
+sub row_tag_replace_for_auth_user {
+    my($self) = shift;
+    return
+	unless my $uid = $self->ureq('auth_user_id');
+    return $self->row_tag_replace($uid, @_);
 }
 
 sub update {
