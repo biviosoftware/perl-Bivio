@@ -151,6 +151,10 @@ sub get_decimals {
     return undef;
 }
 
+sub get_default {
+    return undef;
+}
+
 sub get_instance {
     # (proto, any) : Bivio.Type
     # (self) : Bivio.Type
