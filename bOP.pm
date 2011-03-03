@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.39  2011/03/02 19:43:27  nagler
+  * Bivio::Search::Parser
+    don't die if document can't be parsed
+  * Bivio::Search::Xapian
+    add date range capability
+  * Bivio::Type::DateTime
+    added to_yyyy_mm_dd
+  * Bivio::Type::MailSendAccess
+    change sort order
+  * Bivio::Type::String
+    translate n~
+  * Bivio::Util::RealmFile
+    improved error message for rfc822 parse failure
+
   Revision 10.38  2011/02/26 22:05:58  moeller
   * Bivio::MIME::Calendar
     allow double escaped quotes
