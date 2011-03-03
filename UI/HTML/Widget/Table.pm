@@ -320,6 +320,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_M) = b_use('Biz.Model');
 my($_IOA) = b_use('IO.Alert');
 my($_HTML) = b_use('Bivio.HTML');
+my($_RT) = b_use('Model.RowTag');
 
 sub create_cell {
     my($self, $model, $col, $attrs) = @_;
@@ -644,8 +645,8 @@ sub render {
 
     # Row counting
     my($list_size) = $_INFINITY_ROWS;
-    Bivio::Auth::Support->unsafe_get_user_pref('page_size', $req, \$list_size)
-		if $self->get_or_default('repeat_headings', 0);
+    $list_size = $_RT->new($req)->row_tag_get_for_auth_user('page_size')
+        if $self->get_or_default('repeat_headings', 0);
     my($max_rows) = $req->unsafe_get($state->{list_name}.'.table_max_rows');
     $max_rows = $_INFINITY_ROWS unless $max_rows && $max_rows > 0;
     my($row_count) = 0;

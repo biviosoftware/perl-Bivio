@@ -81,13 +81,6 @@ sub task_permission_ok {
     return 0;
 }
 
-sub unsafe_get_user_pref {
-    my($proto, $pref, $req, $res) = @_;
-    return 0
-	unless my $u = $req->get('auth_user_id');
-    return defined($$res = $_RT->new($req)->get_value($u, $pref)) ? 1 : 0;
-}
-
 sub _get {
     my($realm_id, $role, $req) = @_;
     return $_CRR->permission_set_for_realm_role($realm_id, $role, $req);

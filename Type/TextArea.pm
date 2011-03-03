@@ -20,8 +20,8 @@ sub from_literal {
     return $proto->wrap_lines($value, $line_width || $proto->LINE_WIDTH)
 	if defined($value)
         and $req = Bivio::Agent::Request->get_current
-	and Bivio::Auth::Support
-	    ->unsafe_get_user_pref('TEXTAREA_WRAP_LINES', $req, \$pref)
+	and $pref = b_use('Model.RowTag')->new($req)
+	    ->row_tag_get_for_auth_user('TEXTAREA_WRAP_LINES')
         and $pref;
     return (undef, Bivio::TypeError->TOO_LONG)
  	if length($value) > $proto->get_width;

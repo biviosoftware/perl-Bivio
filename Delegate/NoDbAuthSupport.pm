@@ -18,8 +18,4 @@ sub task_permission_ok {
     return 1;
 }
 
-sub unsafe_get_user_pref {
-    return 0;
-}
-
 1;

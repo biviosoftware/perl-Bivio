@@ -1043,9 +1043,8 @@ sub _unauth_load {
 	}
 	# only check preferences if that model is present
 	else {
-	    Bivio::Auth::Support->unsafe_get_user_pref(
-		'PAGE_SIZE', $self->get_request, \$count);
-	    $count ||= b_use('Type.PageSize')->get_default;
+	    $count = $self->new_other('RowTag')
+		->row_tag_get_for_auth_user('PAGE_SIZE');
 	}
 	$query->put(count => $count);
     }
