@@ -855,6 +855,7 @@ sub _cfg_file {
 	    b_use('Model.RealmFileLock')->if_enabled(
 	    	[FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
 	    ),
+	    [FORUM_FILE_REVERT_FORM => '?/revert-file/*'],
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -892,6 +893,8 @@ sub _cfg_file {
 		selected => 'Selected',
 		compare => 'Compare',
 		ok_button => 'Compare',
+		actions => 'Actions',
+		'list_action.FORUM_FILE_REVERT_FORM' => 'Revert to Version',
 	    ]],
 	    [title => [
 		FORUM_FILE => 'File',
@@ -1085,7 +1088,13 @@ sub _cfg_mail {
 	    [RealmMailDeleteForm => [
 		ok_button => 'Delete',
 		prose => [
-		    prologue => q{Are you sure you want to delete message SPAN_bold(String([qw(Model.RealmMail subject)])); from SPAN_bold(String([qw(Model.RealmMail from_email)]));?},
+		    prologue => q{Are you sure you want to delete message SPAN_bold(String([qw(Model.RealmMailDeleteForm realm_mail subject)])); from SPAN_bold(String([qw(Model.RealmMailDeleteForm realm_mail from_email)]));?},
+		],
+	    ]],
+	    [RealmFileRevertForm => [
+		ok_button => 'Revert',
+		prose => [
+		    prologue => q{Are you sure you want to revert file SPAN_bold(String([qw(Model.RealmFileRevertForm realm_file path)])); to version SPAN_bold(String([qw(Model.RealmFileRevertForm new_version)]));?},
 		],
 	    ]],
 	    [MailUnsubscribeForm => [
@@ -1120,12 +1129,14 @@ sub _cfg_mail {
 		FORUM_MAIL_FORM => q{If(['->has_keys', 'Model.RealmMailList'], 'Reply', 'New Topic');},
 		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
 		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
+		FORUM_FILE_REVERT_FORM => 'Revert File',
 		USER_MAIL_UNSUBSCRIBE_FORM => 'Unsubscribe',
 		GROUP_BULLETIN_FORM => 'Publish Bulletin',
 		GROUP_MAIL_DELETE_FORM => 'Delete Message',
 	    ]],
 	    [acknowledgement => [
 		FORUM_MAIL_FORM => 'Your message was sent.',
+		FORUM_FILE_REVERT_FORM => 'File reverted.',
 		GROUP_BULLETIN_FORM => q{The bulletin has been sent to String(['Model.BulletinForm', 'to']);.},
 		GROUP_MAIL_DELETE_FORM => 'Message deleted',
 		user_mail_unsubscribed => q{You have been unsubscribed.},
