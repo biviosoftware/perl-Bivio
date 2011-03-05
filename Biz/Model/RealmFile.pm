@@ -420,6 +420,18 @@ sub update_with_content {
     return $self->update($values);
 }
 
+sub update_with_file {
+    my($self, $values, $id_or_path) = @_;
+    return $self->update_with_content(
+	$values,
+	$self->new_other('RealmFile')->load({
+	    $id_or_path =~ /^\d+$/
+		? (realm_file_id => $id_or_path)
+		: (path => $id_or_path),
+	})->get_content,
+    );
+}
+
 sub _assert_loaded {
     my($self) = @_;
     $self->die('not loaded')
