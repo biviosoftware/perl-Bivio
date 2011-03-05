@@ -184,6 +184,7 @@ sub version_list {
 		    want_sorting => 0,
 		};
 	    }),
+	    vs_file_versions_actions_column(),
 	], {
 	    class => 'simple paged_list',
 	}),

@@ -108,6 +108,15 @@ sub file_unlock {
     ]));
 }
 
+sub internal_revert_form {
+    return vs_simple_form('RealmFileRevertForm');
+}
+
+sub revert_form {
+    my($self) = @_;
+    return $self->internal_body($self->internal_revert_form(@_));
+}
+
 sub tree_list {
     return shift->internal_body(
 	If(['Model.RealmFileTreeList', '->can_write'],
@@ -152,6 +161,7 @@ sub version_list {
 	}],
 	_file_owner_column(),
 	_lock('RealmFileLock.comment'),
+	vs_file_versions_actions_column(),
 #TODO: sorting isn't preserving path_info
     ])->put(want_sorting => 0));
 }
