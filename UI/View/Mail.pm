@@ -20,7 +20,7 @@ sub PART_TASK {
 }
 
 sub delete_form {
-    my($self) = shift;
+    my($self) = @_;
     return $self->internal_body($self->internal_delete_form(@_));
 }
 
@@ -59,9 +59,7 @@ sub form_imail {
 }
 
 sub internal_delete_form {
-    my($self) = @_;
-    my($buttons) = vs_simple_form_submit();
-    return vs_simple_form(RealmMailDeleteForm => [$buttons]);
+    return vs_simple_form('RealmMailDeleteForm');
 }
 
 sub internal_form_model {
