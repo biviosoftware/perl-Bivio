@@ -4,7 +4,7 @@ Request();
 require 'RealmFile.PL';
 my($root) = '/' . random_string();
 my($path) = sub {
-    my($version, $base) = @_;
+    my($version, $base, $no_hash) = @_;
     ($base, $version) = ($version, undef)
 	if defined($version) && $version =~ /\D/;
     $base ||= 'file';
@@ -15,7 +15,9 @@ my($path) = sub {
     my($suffix) = $fp->get_suffix($base);
     substr($base, length($suffix) ? -length($suffix) - 1 : length($base),  0)
 	= ";$version";
-    return {path => $fp->join($fp->VERSIONS_FOLDER, $base)};
+    return {path => $fp->join($fp->VERSIONS_FOLDER, $base)}
+	unless $no_hash;
+    return $fp->join($fp->VERSIONS_FOLDER, $base);
 };
 my($commit) = sub {commit(); return 1};
 options({
@@ -245,6 +247,20 @@ options({
 	],
 	unsafe_load => [
 	    [$path->('expenses.2007.xls')] => 0,
+	],
+	create_with_content => [
+	    [$path->('revert'), \('text1')] => $commit,
+	],
+	update_with_content => [
+	    [$path->('revert'), \('text2')] => $commit,
+	],
+	update_with_file => [
+	    [$path->('revert'), $path->(1, 'revert', 1)] => $commit,
+	],
+	load => [
+	    [$path->('revert')] => 'text1',
+	    [$path->(2, 'revert')] => 'text2',
+	    [$path->(1, 'revert')] => 'text1',
 	],
     ],
 ];
