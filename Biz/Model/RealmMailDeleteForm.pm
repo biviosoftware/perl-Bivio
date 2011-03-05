@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     my($self) = @_;
-    $self->req('Model.RealmMail')->delete_message;
+    $self->get('realm_mail')->delete_message;
     return;
 }
 
@@ -17,13 +17,24 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	require_context => 1,
+	other => [
+	    {
+		name => 'realm_mail',
+		type => 'Model.RealmMail',
+		constraint => 'NOT_NULL',
+	    },
+	],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
     my(@res) = shift->SUPER::internal_pre_execute(@_);
-    $self->new_other('RealmMail')->load_this_from_request;
+    $self->internal_put_field(
+	realm_mail => $self->new_other('RealmMail')
+	    ->set_ephemeral
+	    ->load_this_from_request,
+    );
     return @res;
 }
 
