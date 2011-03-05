@@ -106,6 +106,7 @@ my($_HTML_TAGS) = join('|', qw(
     VAR
 ));
 my($_SUBMIT_CHAR) = '*';
+my($_LM) = b_use('Biz.ListModel');
 
 sub view_autoload {
     my(undef, $method, $args) = @_;
@@ -247,6 +248,40 @@ sub vs_field_description {
 	    ->unsafe_get_value($fn, 'desc');
 	return DIV_desc(Prose($v));
     }, $field_name];
+}
+
+sub vs_file_versions_actions_column {
+    return ['actions', {
+	column_data_class => 'list_action',
+	column_control => [sub {
+	    my($source) = @_;
+	    return ! $_LM->new_anonymous({
+		primary_key => [
+		    [qw(RealmFile.realm_file_id RealmFileLock.realm_file_id)],
+		],
+		other => [['RealmFile.path', [$source->req->get('path_info')]]],
+	    })->set_ephemeral->unsafe_load_this_or_first;
+	}],
+	column_widget => ListActions([
+	    map({
+		my($task) = $_;
+		[
+		    vs_text_as_prose("RealmFileVersionsList.list_action.$_"),
+		    $task,
+		    URI({
+			task_id => $task,
+			query => {
+			    'ListQuery.this' => ['RealmFile.realm_file_id'],
+			},
+			path_info => [qw(->req path_info)],
+		    }),
+		    Not(Equals([['->get_list_model'], 'revision_number'], 'current')),
+		];
+	    }
+		    'FORUM_FILE_REVERT_FORM',
+	    ),
+	]),
+    }];
 }
 
 sub vs_filter_query_form {
