@@ -685,6 +685,15 @@ sub info_file {
 	    View.File->file_unlock
 	    next=FORUM_FILE_TREE_LIST
 	)],
+	[qw(
+	    FORUM_FILE_REVERT_FORM
+	    174
+	    ANY_OWNER
+	    DATA_READ&DATA_WRITE&FEATURE_FILE
+	    Model.RealmFileRevertForm
+	    View.File->revert_form
+	    next=FORUM_FILE_TREE_LIST
+         )],
 #174-179 free
     ];
 }
