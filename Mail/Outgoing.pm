@@ -242,9 +242,11 @@ sub set_header {
     # ASSUMES: I<name> and I<value> conform to RFC 822.
     my($n) = lc($name);
 #TODO: Should assert header name is valid and quote value if need be
-    $self->get('headers')->{$n} = $name . ': ' . $value . "\n";
+    b_warn('stripped trailing newline from header value: ', $name, ' ', $value)
+	if $value =~ s/\n+$//g;
     $self->set_envelope_from(($_A->parse($value))[0])
 	if $n eq 'return-path';
+    $self->get('headers')->{$n} = $name . ': ' . $value . "\n";
     return $self;
 }
 
