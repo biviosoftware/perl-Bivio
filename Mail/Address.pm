@@ -109,7 +109,7 @@ sub parse {
 	    return (_clean_route_addr($a), $n, undef);
 	}
 #TODO: error or assert_fail
-	Bivio::Die->die('regexps incorrect, cannot parse: ', $_);
+	b_die('regexps incorrect, cannot parse: ', $_);
     }
 
     # Local delivery: root
@@ -124,8 +124,7 @@ sub parse {
 	$n =~ s/\s+$//;
 	return ($a, _clean_quoted_string(qq{"$n"}), $r);
     }
-
-    Bivio::IO::Alert->warn('Unable to parse address: ', $_);
+    b_warn('Unable to parse address: ', $_);
     return (undef, undef, undef);
 }
 
@@ -133,16 +132,18 @@ sub parse_list {
     my($proto, $addr_list) = @_;
     return []
 	unless $addr_list;
+    return []
+	if $addr_list =~ /^undisclosed-recipients:;$/i;
     my($addrs) = [];
     my($addr);
     while (1) {
 	my($old_list) = $addr_list;
 	($addr, undef, $addr_list) = $proto->parse($addr_list);
-	Bivio::Die->die($old_list, ': invalid address')
+	b_die($old_list, ': invalid address')
 	    unless $addr;
 	push(@$addrs, $addr);
 	last unless $addr_list;
-	Bivio::Die->die($old_list, ': parse() did not trim addr_list')
+	b_die($old_list, ': parse() did not trim addr_list')
 	    if length($addr_list) > length($old_list);
     }
     return $addrs;
@@ -182,14 +183,14 @@ sub _clean_comment {
 
 sub _clean_quoted_string {
     local($_) = @_;
-    s/^\"//s && s/\"$//s || die("not a quoted string: $_");
+    s/^\"//s && s/\"$//s || b_die("not a quoted string: $_");
     s/\\(.)/$1/gs;
     return $_;
 }
 
 sub _clean_route_addr {
     local($_) = @_;
-    s/^\<//s && s/\>$//s || die("not a route address: $_");
+    s/^\<//s && s/\>$//s || b_die("not a route address: $_");
     return $_;
 }
 
