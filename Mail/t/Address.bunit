@@ -40,6 +40,7 @@ use strict;
 	        => [['jed@example.com', 'joe@example.com', 'jim@example.com',
 		     'jef@example.com', '"Mary Joe"@2.example.com',
 		    'hackers@foo.com']],
+	    'Undisclosed-Recipients:;' => [[]],
 	],
 	escape_comment => [
 	    a => 'a',
