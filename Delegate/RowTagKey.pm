@@ -20,7 +20,7 @@ sub get_delegate_info {
 	CANONICAL_SENDER_EMAIL => [9, 'Email'],
 	CRM_SUBJECT_PREFIX => [10, 'MailSubject'],
 #11
-	TEXTAREA_WRAP_LINES => [12, 'BooleanTrueDefault'],
+	TEXTAREA_WRAP_LINES => [12, 'BooleanFalseDefault'],
 	TIME_ZONE => [13, 'TimeZone'],
 	MAIL_WANT_REPLY_TO => [14, 'MailWantReplyTo'],
 	MAIL_VISIBILITY => [15, 'MailVisibility'],
