@@ -891,7 +891,7 @@ sub _assert_all {
     $self->throw_die(Bivio::DieCode->TOO_MANY, 'more than '
         . _load_all_die_count($self) . ' records')
         if $fields->{query}->get('has_next');
-    Bivio::IO::Alert->warn('more than ', $self->LOAD_ALL_SIZE,
+    $self->req->warn('more than ', $self->LOAD_ALL_SIZE,
         ' records returned: ', $self)
         if $self->get_result_set_size > $self->LOAD_ALL_SIZE;
     return;
