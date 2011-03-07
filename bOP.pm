@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,28 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.40  2011/03/03 18:22:01  nagler
+  * Bivio::Biz::ListModel
+    RowTag->row_tage_get_for_auth_user replaces Auth.Support->unsafe_get_user_pref
+  * Bivio::Biz::Model::RowTag
+    added row_tag_get/replace_for_auth_user and
+  * Bivio::Delegate::NoDbAuthSupport
+    RowTag->row_tage_get_for_auth_user replaces Auth.Support->unsafe_get_user_pref
+  * Bivio::Delegate::RowTagKey
+    removed REALM_FILE_LOCKING and FACADE_CHILD_TYPE
+  * Bivio::Delegate::SimpleAuthSupport
+    RowTag->row_tage_get_for_auth_user replaces Auth.Support->unsafe_get_user_pref
+  * Bivio::MIME::JSON
+    ignore \r
+  * Bivio::Type::TextArea
+    RowTag->row_tage_get_for_auth_user replaces Auth.Support->unsafe_get_user_pref
+  * Bivio::Type
+    all types have get_default
+  * Bivio::UI::HTML::Widget::Table
+    RowTag->row_tage_get_for_auth_user replaces Auth.Support->unsafe_get_user_pref
+  * Bivio::Util::RowTag
+    b_use
+
   Revision 10.39  2011/03/02 19:43:27  nagler
   * Bivio::Search::Parser
     don't die if document can't be parsed
