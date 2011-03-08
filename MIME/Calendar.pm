@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
 my($_HTML) = b_use('Bivio::HTML');
+my($_S) = b_use('Type.String');
 my($_TZ) = b_use('Type.TimeZone');
 
 sub from_ics {
@@ -192,7 +193,7 @@ sub _split {
 	    $v =~ s/\\([,;\\:"])/$1/g;
 	    # quotes are sometimes double escaped?
 	    $v =~ s/\\(["])/$1/g;
-	    [lc($k), $_HTML->unescape($v)];
+	    [lc($k), $_HTML->unescape(${$_S->canonicalize_charset(\$v)})];
 	} split(/\r?\n/, $ics)),
     ]));
 }
