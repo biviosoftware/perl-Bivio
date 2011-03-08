@@ -9,6 +9,10 @@ my($_R) = b_use('Auth.Role');
 
 sub execute_ok {
     my($self) = @_;
+    $self->new_other('RealmUser')->delete_main_roles(
+	$self->internal_realm_id,
+	$self->internal_user_id,
+    );
     my(@res) = shift->SUPER::execute_ok(@_);
     return @res
 	if $self->in_error;
@@ -35,17 +39,11 @@ sub internal_execute_children {
 	    sub {
 		#TODO: Need to look at other children such as CalendarEvent
 		my($child) = @_;
-		return ()
-		    if $self->new_other('RealmUser')->unauth_load({
-			realm_id => $child->get('forum_id'),
-			user_id => $self->get('User.user_id'),
-			role => $_R->ADMINISTRATOR,
-		    });
-		$self->new_other('RealmUser')->delete_main_roles(
-		    $child->get('forum_id'),
-		    $self->get('User.user_id'),
-		);
-		return $child->get('forum_id');
+		return $self->new_other('RealmUser')->unauth_load({
+		    realm_id => $child->get('forum_id'),
+		    user_id => $self->get('User.user_id'),
+		    role => $_R->ADMINISTRATOR,
+		}) ? () : $child->get('forum_id');
 	    },
 	    'unauth_iterate_start',
 	    'forum_id',
