@@ -2,16 +2,15 @@
 # $Id$
 package Bivio::UI::Widget::Director;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
-use Bivio::Die;
+use Bivio::Base 'UI.Widget';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_R) = __PACKAGE__->use('Type.Regexp');
+my($_R) = b_use('Type.Regexp');
 
 sub execute {
     my($self, $req) = @_;
     my($w) = _select($self, $req);
-    Bivio::Die->die('Director did not select a widget; no content type')
+    b_die('Director did not select a widget; no content type')
         unless defined($w);
     return $w->execute($req);
 }
@@ -70,7 +69,7 @@ sub _select {
 	    $self->get('_value_array'),
 	);
 	if (@$x) {
-	    Bivio::Die->die($x, ': control matches too many keys')
+	    b_die($x, ': control matches too many keys')
 	        if @$x > 2;
 	    return @$x;
 	}
@@ -79,9 +78,12 @@ sub _select {
     my($v) = $self->unsafe_get($n);
     return ($v || undef, $n)
 	if defined($v);
-    Bivio::Die->die(
-	$self->get('control'), '=', $ctl,
-	": control matches $n value, but not specified");
+    b_die(
+	$self->get('control'),
+	'=',
+	$ctl,
+	": control matches $n value, but not specified",
+    );
     # DOES NOT RETURN
 }
 
