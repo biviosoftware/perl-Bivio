@@ -6,7 +6,7 @@ use Bivio::Base 'Bivio.Type';
 use Text::Tabs ();
 # char => [utf-8, windows-1252]
 my($_TRANSLITERATE) = {
-    '-' => [qr{[\x{2010}-\x{2013}]}, qr{\x96}],
+    '-' => [qr{[\x{0096}\x{2010}-\x{2013}]}, qr{\x96}],
     '--' => [qr{[\x{2014}-\x{2015}]}, qr{\x97}],
     "'" => [qr{[\x{2018}-\x{201B}]}, qr{[\x91\x92\xb4]}],
     '"' => [qr{[\x{201C}-\x{201F}]}, qr{[\x93\x94]}],
@@ -22,6 +22,7 @@ my($_TRANSLITERATE) = {
     '1/4' => [qr{\x{00BC}}, qr{\xBC}],
     '1/2' => [qr{\x{00BD}}, qr{\xBD}],
     '3/4' => [qr{\x{00BE}}, qr{\xBE}],
+    ' ' => [qr{\x{00A0}}, qr{\xA0}],
 #TODO: remove these when we support unicode    
     'A' => [qr{[\x{00C0}-\x{00C5}]}, qr{[\xC0-\xC5]}],
     'AE' => [qr{\x00C7}, qr{[\xC6-\xC7]}],
@@ -34,6 +35,8 @@ my($_TRANSLITERATE) = {
     'a' => [qr{[\x{00E0}-\x{00E5}]}, qr{[\xE0-\xE5]}],
     'ae' => [qr{\x00E7}, qr{\xE7}],
     'e' => [qr{[\x{00E8}-\x{00EB}]}, qr{[\xE8-\xEB]}],
+    'fi' => [qr{[\x{fb01}]}],
+    'fl' => [qr{[\x{fb02}]}],
     'i' => [qr{[\x{00EC}-\x{00EF}]}, qr{[\xEC-\xEF]}],
     'n' => [qr{[\x{00F1}]}, qr{[\xF1]}],
     'o' => [qr{[\x{00F2}-\x{00F6}]}, qr{[\xF2-\xF6]}],
@@ -197,8 +200,10 @@ sub _map_characters {
     my($value, $map) = @_;
     my($match) = 0;
     while (my($to, $from) = each(%$_TRANSLITERATE)) {
+	my($regexp) = $from->[$map];
+	next unless $regexp;
         $match = 1
-	    if $$value =~ s/$from->[$map]/$to/g;
+	    if $$value =~ s/$regexp/$to/g;
     }
     return $match ? $value : undef;
 }
