@@ -5,6 +5,8 @@ use strict;
 use Bivio::Base 'Test.Request';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_R) = b_use('Auth.Role');
+my($_M) = b_use('Biz.Model');
 
 sub run_unit {
     my($self, $cases) = @_;
@@ -28,10 +30,12 @@ sub run_unit {
 	    ]],
 	],
     );
+    my($test_main_roles);
     return b_use('Bivio.Test')->new({
 	    class_name => shift->get('class_name'),
 	    compute_params => sub {
 		my(undef, $params) = @_;
+		$test_main_roles = $params->[3];
 		return [$self, {
 		    'Email.email' => $params->[2] || $params->[0]
 			. '@a.a' . ($params->[1] ? 'admin' : ''),
@@ -43,19 +47,26 @@ sub run_unit {
 		my($case) = @_;
 		my($f) = $case->get('object');
 		return [sort(
-		    @{Bivio::Biz::Model->new($self, 'RealmUser')
+		    @{$_M->new($self, 'RealmUser')
 			->map_iterate(sub {
-			    my($rid) = shift->get('realm_id');
+			    my($ru) = @_;
+			    my($role) = $ru->get('role');
+			    return
+				unless !$test_main_roles
+				    || grep($_R->is_equal($role, $_),
+					    $_R->get_main_list);
 			    return grep(
-				$realm_id->{$_} eq $rid, keys(%$realm_id));
+				$realm_id->{$_} eq $ru->get('realm_id'),
+				keys(%$realm_id));
 			},
 			'unauth_iterate_start',
 			'realm_id',
 			{
 			    user_id => $f->unsafe_get('User.user_id'),
-			    role => $f->unsafe_get('administrator') ?
-				Bivio::Auth::Role->ADMINISTRATOR
-				: Bivio::Auth::Role->MEMBER,
+			    $test_main_roles ? () :
+				(role => $f->unsafe_get('administrator')
+				    ? $_R->ADMINISTRATOR
+				    : $_R->MEMBER),
 			},
 		 )})];
 	    },
@@ -65,7 +76,7 @@ sub run_unit {
 sub _create_realms {
     my($self, $parent, $children, $realm_id) = @_;
     $realm_id ||= {};
-    my($ff) = Bivio::Biz::Model->get_instance('ForumForm');
+    my($ff) = $_M->get_instance('ForumForm');
     foreach my $child (@$children) {
 	my($n) = $child->[0];
 	$self->set_realm($parent);
