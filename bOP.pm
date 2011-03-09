@@ -28,9 +28,39 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.41  2011/03/07 18:42:13  moeller
+  * Bivio::Biz::ListModel
+    changed b_warn to req->warn()
+  * Bivio::Biz::Model::RealmFile
+    add update_with_file
+  * Bivio::Biz::Model::RealmFileRevertForm
+    NEW
+  * Bivio::Biz::Model::RealmMailDeleteForm
+    save message instead of putting on request
+  * Bivio::Delegate::RowTagKey
+    changed TEXTAREA_WRAP_LINES to BooleanFalseDefault
+  * Bivio::Delegate::TaskId
+    add 'Revert to Version' action to file history list
+  * Bivio::Mail::Address
+    allow undisclosed-recipients value for address list
+  * Bivio::Mail::Outgoing
+    warn/strip trailing newlines from set_header() value
+  * Bivio::UI::FacadeBase
+    add 'Revert to Version' action to file history list
+    fix RealmMailDeleteForm strings
+  * Bivio::UI::View::File
+    add 'Revert to Version' action to file history list
+  * Bivio::UI::View::Mail
+    simplify delete form
+  * Bivio::UI::View::Wiki
+    add 'Revert to Version' action to file history list
+  * Bivio::UI::XHTML::ViewShortcuts
+    add vs_file_versions_actions_column
+
   Revision 10.40  2011/03/03 18:22:01  nagler
   * Bivio::Biz::ListModel
     RowTag->row_tage_get_for_auth_user replaces Auth.Support->unsafe_get_user_pref
