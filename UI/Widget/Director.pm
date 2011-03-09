@@ -36,7 +36,8 @@ sub internal_as_string {
 
 sub internal_new_args {
     my(undef, $control, $values, $default_value, $undef_value, $attrs) = @_;
-    return '"control" attribute must be defined' unless defined($control);
+    return '"control" attribute must be defined'
+	unless defined($control);
     return {
 	control => $control,
 	values => $values ? $values : {},
