@@ -285,6 +285,15 @@ sub _msg {
 				    'ListQuery.this'
 					=> ['RealmMail.realm_file_id'],
 				},
+				control => [sub {
+				   my($source) = @_;
+				   return ! $source->new_other('CRMThread')
+				       ->unsafe_load({
+					   thread_root_id =>
+					       $source->get_query
+						   ->get('parent_id'),
+				       });
+			        }],
 			    },
 			    {
 				task_id => 'GROUP_MAIL_TOGGLE_PUBLIC',
