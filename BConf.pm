@@ -349,6 +349,7 @@ sub merge_http_log {
 		    'MODEL_NOT_FOUND: model.*::RealmOwner.*task=MAIL_RECEIVE_DISPATCH',
 		    'Directory index forbidden by rule:',
 		    '_update_status.*DECLINED:',
+		    'command died with non-zero status entity=>(?:catdoc|catppt|docx2txt|ldat|pdfinfo|pdftotext)',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
