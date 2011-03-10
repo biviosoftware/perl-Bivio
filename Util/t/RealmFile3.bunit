@@ -3,7 +3,7 @@
 Request();
 req()->set_realm_and_user('fourem', 'root');
 my($rf) = model('RealmFile');
-foreach my $msg (glob('RealmMail3/Mail/*.eml')) {
+foreach my $msg (glob('RealmFile3/Mail/*/*.eml')) {
     IO_File()->set_modified_date_time(
 	$msg,
 	Mail_Incoming()->new(IO_File()->read($msg))
@@ -12,7 +12,10 @@ foreach my $msg (glob('RealmMail3/Mail/*.eml')) {
 }
 IO_File()->chdir('RealmFile3');
 [
-    sub {Bivio_ShellUtil()->new_other(class())} => [
+    sub {
+	return Bivio_ShellUtil()->new_other(class())
+	    ->put(force => 1);
+    } => [
 	import_tree => [
 	    '/' => sub {
 		my($bb);
@@ -22,7 +25,7 @@ IO_File()->chdir('RealmFile3');
 			    my($it) = @_;
 			    my($id) = $it->get('message_id');
 			    if ($id eq 'bb@b.b') {
-				my($bb) = $it->get('realm_file_id');
+				$bb = $it->get('realm_file_id');
 				assert_equals(
 				    $bb,
 				    $it->get('thread_root_id'),
@@ -48,9 +51,11 @@ IO_File()->chdir('RealmFile3');
 			    }
 			    return 1;
 			},
-			'realm_file_id',
+			'realm_file_id asc',
 			{subject => 'RealmMail3.bunit'},
 		    );
+		b_die('no bb')
+		    unless $bb;
 		return 1;
 	    },
 	],
