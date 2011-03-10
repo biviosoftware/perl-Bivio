@@ -166,60 +166,84 @@ sub import_tree {
     ], \@_);
     my($req) = $self->initialize_ui;
     $folder = $folder ? $self->convert_literal(FilePath => $folder) : '/';
-    File::Find::find({
-	wanted => sub {
-	    my($name) = $_;
-	    if ($name =~ /^CVS$/) {
-		$File::Find::prune = 1;
-		return;
-	    }
-	    return
-		if $name =~ m{(^|/)(\..*|.*~|#.*)$};
-	    my($f) = $File::Find::name =~ m{^\./(.+)};
-	    my($path) = $self->convert_literal('FilePath', "$folder/$f");
-	    my($method) = -d $name ? 'create_folder' : 'create_with_content';
-	    my($rf) = $self->model('RealmFile');
-	    if ($rf->unsafe_load({path => $path})) {
-		return
-		    if $rf->get('is_folder');
-		$method = 'update_with_content';
-	    }
-	    my($modified_date_time) = $_DT->from_unix((stat($name))[9]);
-	    if ($_MFN->is_absolute($path)) {
-		$self->model('RealmMail')
-		    ->cascade_delete({realm_file_id => $rf->get('realm_file_id')})
-		    if $rf->is_loaded;
-		my($die) = $_D->catch_quietly(sub {
-		    $self->model('RealmMail')
-			->create_from_rfc822($_F->read($name));
-		});
-		if ($die) {
-		    b_info('mail from rfc822 failed: ',
-		        'name: ', $name, ' err: ',
-		        ($die->unsafe_get('attrs') || {})->{message});
+    my($folders) = [];
+    my($files) = [];
+    File::Find::find(
+	{
+	    wanted => sub {
+		my($name) = $_;
+		if ($name =~ /^CVS$/) {
+		    $File::Find::prune = 1;
 		    return;
 		}
-		my($rf) = $self->req('Model.RealmFile');
-		$rf->update({
-		    override_is_read_only => 1,
-		    path => $path,
-		    modified_date_time => $modified_date_time,
-		});
-		b_die('public mismatch')
-		    unless $_MFN->is_public($path)
-			eq $self->req(qw(Model.RealmFile is_public));
+		return
+		    if $name =~ m{(^|/)(\..*|.*~|#.*)$};
+
+		push(
+		    @{-d $name ? $folders : $files},
+		    [$File::Find::name, (stat($name))[9]],
+		);
 		return;
-	    }
-	    $rf->$method(
-		_fix_values($self, $path, {
-		    modified_date_time => $modified_date_time,
-		    $noarchive ? (override_versioning => 1) : (),
-		}),
-		$method =~ /content/ ? $_F->read($name) : (),
-	    );
-	    return;
+	    },
 	},
-    }, '.');
+	'.',
+    );
+    foreach my $x (
+	@$folders,
+	sort({$a->[1] <=> $b->[1]} @$files),
+    ) {
+	my($name, $mtime) = @$x;
+	my($f) = $name =~ m{^\./(.+)};
+	my($path) = $self->convert_literal('FilePath', "$folder/$f");
+	my($method) = -d $name ? 'create_folder' : 'create_with_content';
+	my($rf) = $self->model('RealmFile');
+	if ($rf->unsafe_load({path => $path})) {
+	    next
+		if $rf->get('is_folder');
+	    $method = 'update_with_content';
+	}
+	my($modified_date_time) = $_DT->from_unix($mtime);
+	if ($_MFN->is_absolute($path)) {
+	    $self->model('RealmMail')
+		->cascade_delete({realm_file_id => $rf->get('realm_file_id')})
+		if $rf->is_loaded;
+	    my($die) = $_D->catch_quietly(
+		sub {
+		    $self->model('RealmMail')
+			->create_from_rfc822($_F->read($name));
+		    return;
+		},
+	    );
+	    if ($die) {
+		b_info(
+		    'mail from rfc822 failed: ',
+		    'name: ',
+		    $name,
+		    ' err: ',
+		    ($die->unsafe_get('attrs') || {})->{message},
+		);
+		next;
+	    }
+	    my($rf) = $self->req('Model.RealmFile');
+	    $rf->update({
+		override_is_read_only => 1,
+		path => $path,
+		modified_date_time => $modified_date_time,
+	    });
+	    b_die('public mismatch')
+		unless $_MFN->is_public($path)
+		    eq $self->req(qw(Model.RealmFile is_public));
+	    next;
+	}
+	$rf->$method(
+	    _fix_values($self, $path, {
+		modified_date_time => $modified_date_time,
+		$noarchive ? (override_versioning => 1) : (),
+	    }),
+	    $method =~ /content/ ? $_F->read($name) : (),
+	);
+	next;
+    }
     _audit_folder_modified_time($self);
     return;
 }
