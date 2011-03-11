@@ -56,6 +56,38 @@ sub audit_threads {
     return;
 }
 
+sub audit_threads_all_realms {
+    my($self) = @_;
+    $self->print("auditing mail threads\n");
+    $_C->do_execute(
+	sub {
+	    my($rid) = shift->[0];
+	    my($die) = b_catch(
+		sub {
+		    $self->req
+			->with_realm(
+			    $rid,
+			    sub {
+				$self->print($self->req(qw(auth_realm owner_name)), "\n");
+				$self->audit_threads;
+				return;
+			    },
+			);
+		},
+	    );
+	    $self->commit_or_rollback($die);
+	    return 1;
+	},
+	<<'EOF',
+	    SELECT DISTINCT(name)
+	    FROM realm_mail_t, realm_owner_t
+	    WHERE realm_mail_t.realm_id = realm_owner_t.realm_id
+	    ORDER BY name ASC
+EOF
+    );
+    return;
+}
+
 sub delete_message_id {
     my($self, @message_id) = @_;
     my($req) = $self->get_request;
