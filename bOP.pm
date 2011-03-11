@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.42  2011/03/09 00:18:27  schellj
+  * Bivio::Biz::Model::ForumUserAddForm
+    fix for possible multiple main roles
+  * Bivio::MIME::Calendar
+    canonicalize_charset before calling unescape()
+  * Bivio::Test::ForumUserUnit
+    allow for multiple main roles testing
+  * Bivio::Type::String
+    added more transliterations: nbsp, -, fi and fl ligatures
+  * Bivio::UI::Widget::Director
+    b_use
+
   Revision 10.41  2011/03/07 18:42:13  moeller
   * Bivio::Biz::ListModel
     changed b_warn to req->warn()
