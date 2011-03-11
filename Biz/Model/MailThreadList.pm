@@ -50,6 +50,7 @@ sub internal_initialize {
             'RealmMail.subject',
 	    'RealmFile.path',
 	    'RealmFile.is_public',
+	    'RealmMail.message_id',
 	],
 	auth_id => [qw(RealmMail.realm_id RealmFile.realm_id)],
 	parent_id => 'RealmMail.thread_root_id',
