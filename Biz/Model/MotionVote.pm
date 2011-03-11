@@ -2,18 +2,17 @@
 # $Id$
 package Bivio::Biz::Model::MotionVote;
 use strict;
-use base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_DT) = b_use('Type.DateTime');
 
 sub create {
     my($self, $values) = @_;
-    my($req) = $self->get_request;
-    $values->{realm_id} = $req->get('auth_id');
-    $values->{user_id} = $req->get('auth_user_id');
+    $values->{realm_id} ||= $self->req('auth_id');
+    $values->{user_id} ||= $self->req('auth_user_id');
     $values->{creation_date_time} ||= $_DT->now;
-    return $self->SUPER::create($values);
+    return shift->SUPER::create(@_);
 }
 
 sub internal_initialize {
