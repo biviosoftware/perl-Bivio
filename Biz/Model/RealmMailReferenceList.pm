@@ -12,10 +12,10 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-        primary_key => ['RealmMail.realm_file_id'],
+        primary_key => [[qw(RealmMail.realm_file_id RealmFile.realm_file_id)]],
 	order_by => [
 	    {
-		name => 'RealmMail.realm_file_id',
+		name => 'RealmFile.modified_date_time',
 		sort_order => 0,
 	    },
 	],
@@ -23,7 +23,7 @@ sub internal_initialize {
 	    'RealmMail.thread_root_id',
 	    'RealmMail.subject_lc',
 	],
-	auth_id => 'RealmMail.realm_id',
+	auth_id => [qw(RealmMail.realm_id RealmFile.realm_id)],
     });
 }
 
