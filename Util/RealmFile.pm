@@ -205,11 +205,13 @@ sub import_tree {
 	my($modified_date_time) = $_DT->from_unix($mtime);
 	if ($_MFN->is_absolute($path)) {
 	    $self->model('RealmMail')
-		->cascade_delete({realm_file_id => $rf->get('realm_file_id')})
+		->load({realm_file_id => $rf->get('realm_file_id')})
+		->delete_message
 		if $rf->is_loaded;
+	    my($in);
 	    my($die) = $_D->catch_quietly(
 		sub {
-		    $self->model('RealmMail')
+		    $in = $self->model('RealmMail')
 			->create_from_rfc822($_F->read($name));
 		    return;
 		},
@@ -228,7 +230,7 @@ sub import_tree {
 	    $rf->update({
 		override_is_read_only => 1,
 		path => $path,
-		modified_date_time => $modified_date_time,
+		modified_date_time => $in->get_date_time || $modified_date_time,
 	    });
 	    b_die('public mismatch')
 		unless $_MFN->is_public($path)
@@ -245,6 +247,7 @@ sub import_tree {
 	next;
     }
     _audit_folder_modified_time($self);
+    $self->model('RealmMail')->audit_threads;
     return;
 }
 
