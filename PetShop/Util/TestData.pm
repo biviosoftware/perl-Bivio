@@ -14,9 +14,21 @@ sub USAGE {
 usage: bivio TestData [options] command [args..]
 commands
   clear_calendar_btest
+  init
   init_calendar_btest
+  init_mail_references
   init_search -- files for realm-file-search.btest
+  init_seo_btest
 EOF
+}
+
+sub init {
+    my($self) = @_;
+    $self->init_search;
+    $self->init_calendar_btest;
+    $self->reset_seo_btest;
+    $self->init_mail_references;
+    return;
 }
 
 sub init_calendar_btest {
@@ -47,6 +59,24 @@ sub init_calendar_btest {
 	}) unless $name =~ /adm_only/;
 	return 1;
     });
+    return;
+}
+
+sub init_mail_references {
+    my($self) = @_;
+    $self->req->with_realm_and_user(
+	undef,
+	$self->new_other('TestUser')->ADM,
+	sub {
+	    $self->model('ForumForm', {
+		'RealmOwner.display_name' => 'Mail References',
+		'RealmOwner.name' => 'mail_references',
+	    }) unless $self->model('RealmOwner')
+		->unauth_rows_exist({name => 'mail_references'});
+	    $self->new_other('SiteForum')->init_files('mail_references');
+	    return;
+	},
+    );
     return;
 }
 
