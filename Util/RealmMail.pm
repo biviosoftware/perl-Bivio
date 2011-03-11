@@ -13,6 +13,7 @@ my($_FP) = b_use('Type.FilePath');
 my($_DT) = b_use('Type.DateTime');
 my($_E) = b_use('Type.Email');
 my($_I) = b_use('Mail.Incoming');
+my($_C) = b_use('SQL.Connection');
 
 sub USAGE {
     return <<'EOF';
@@ -40,13 +41,18 @@ sub anonymize_emails {
         [qw(email_t email)],
     ) {
 	my($table, $field) = @$x;
-#TODO: should truncate
-        Bivio::SQL::Connection->execute(<<"EOF", [$prefix . '%']);
+        $_C->execute(<<"EOF", [$prefix . '%']);
             UPDATE $table
             SET $field = SUBSTR('$prefix' || $field, 1, $length)
             WHERE $field NOT LIKE ?
 EOF
     }
+    return;
+}
+
+sub audit_threads {
+    my($self) = @_;
+    $self->model('RealmMail')->audit_threads;
     return;
 }
 
