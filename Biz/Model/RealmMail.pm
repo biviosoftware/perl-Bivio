@@ -38,33 +38,28 @@ sub assert_mail_visibility {
     return;
 }
 
-sub cascade_delete {
-    my($self, $query) = @_;
-    if ($query) {
-	$self->cascade_delete
-	    if $self->unsafe_load($query);
-	return;
-    }
-    $self->die('model must be loaded or query must be supplied')
-	unless $self->is_loaded;
-    foreach my $m (@{
-	$self->new->map_iterate(
+sub audit_threads {
+    my($self) = @_;
+    $self->new_other('RealmMailList')
+	->do_iterate(
 	    sub {
 		my($it) = @_;
-		return $it->new->internal_load_properties(
-		    $it->get_shallow_copy);
+		my($rm) = $it->get_model('RealmMail');
+		$rm->update(
+		    _thread_values(
+			$rm,
+			$_I->new(
+			    $_RF->get_content($it, 'RealmMail.'),
+			),
+			$rm->get_shallow_copy,
+		    ),
+		);
+		return 1;
 	    },
-	    'realm_file_id',
-	    {thread_parent_id => $self->get('realm_file_id')},
-	)
-    }) {
-	$m->cascade_delete;
-    }
-    $self->delete;
-    $self->new_other('RealmFile')->delete({
-	realm_file_id => $self->get('realm_file_id'),
-	override_is_read_only => 1,
-    });
+	    {
+		order_by => [qw(RealmFile.modified_date_time asc)],
+	    },
+	);
     return;
 }
 
