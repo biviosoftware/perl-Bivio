@@ -342,6 +342,14 @@ sub english_day_of_week_list {
     return @{$_DAY_OF_WEEK};
 }
 
+sub english_month {
+    my(undef, $month) = @_;
+    # Returns I<month> as a three character string with first letter caps.
+    Bivio::Die->die('month out of range: ', $month)
+        unless 1 <= $month && $month <= 12;
+    return $_NUM_TO_MONTH->[$month - 1];
+}
+
 sub english_month3 {
     my(undef, $month) = @_;
     # Returns I<month> as a three character string with first letter caps.
