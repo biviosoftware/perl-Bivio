@@ -670,23 +670,35 @@ sub _parse_order_by {
     # or false (descending).
     my($orig_value) = $attrs->{o} || $attrs->{order_by} || '';
     my($res) = $attrs->{order_by} = [];
-    my($order_by, $columns) = $support->unsafe_get(
-	    'order_by_names', 'columns');
-    return unless $order_by;
+    my($order_by, $columns)
+	= $support->unsafe_get('order_by_names', 'columns');
+    return
+	unless $order_by;
     my($value) = $orig_value;
-    while (length($value)) {
-	_die($die, 'CORRUPT_QUERY', 'invalid order_by',
-		$orig_value) unless $value =~ s/^(\d+)([ad])//;
-	my($index, $dir) = ($1, $2);
-	_die($die, 'CORRUPT_QUERY', 'unknown order_by column',
-		$index) unless $order_by->[$index];
-	push(@$res, $order_by->[$index], $dir eq 'a' ? 1 : 0);
+    if (ref($value) eq 'ARRAY') {
+	@$res = @{__PACKAGE__->map_by_two(
+	    sub {
+		my($col, $dir) = @_;
+		_die($die, 'CORRUPT_QUERY', 'unknown column', $col)
+		    unless grep($col eq $_, @$order_by);
+		return ($col, $dir =~ /asc|1/ ? 1 : 0);
+	    },
+	    $value,
+	)};
     }
-
-    # Add in default order_by values not explicitly listed.
+    else {
+	while (length($value)) {
+	    _die($die, 'CORRUPT_QUERY', 'invalid order_by',
+		    $orig_value) unless $value =~ s/^(\d+)([ad])//;
+	    my($index, $dir) = ($1, $2);
+	    _die($die, 'CORRUPT_QUERY', 'unknown order_by column',
+		    $index) unless $order_by->[$index];
+	    push(@$res, $order_by->[$index], $dir eq 'a' ? 1 : 0);
+	}
+    }
     foreach my $ob (@$order_by) {
 	push(@$res, $ob, $columns->{$ob}->{sort_order})
-		unless grep($_ eq $ob, @$res);
+	    unless grep($_ eq $ob, @$res);
     }
     return;
 }

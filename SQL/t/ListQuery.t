@@ -55,6 +55,21 @@ Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
     ],
     [
 	{
+	    order_by => [qw(RealmOwner.realm_id asc)],
+	},
+	$_SUPPORT1,
+	'Bivio::Die',
+    ] => [
+	get => [
+	    order_by => [[
+		'RealmOwner.realm_id' => 1,
+		'RealmOwner.name' => 1,
+		'RealmOwner.creation_date_time' => 0,
+	    ]],
+	],
+    ],
+    [
+	{
 	    d => '12/12/2001 1:0:0',
 	    b => '12/1/2001',
 	    count => 3,
