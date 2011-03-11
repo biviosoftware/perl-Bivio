@@ -211,9 +211,7 @@ sub initialize_test_data {
     _init_default_tuple($self);
     _init_mail($self);
     $self->new_other('TestCRM')->init;
-    $self->new_other('TestData')->init_search;
-    $self->new_other('TestData')->init_calendar_btest;
-    $self->new_other('TestData')->reset_seo_btest;
+    $self->new_other('TestData')->init;
     _init_remote_copy($self);
     _init_task_log($self);
     _init_bulletin($self);
