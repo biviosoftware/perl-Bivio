@@ -59,6 +59,8 @@ sub _do {
         return b_use(SearchParser => $parseable->get('class'))
 	    ->$method($parseable);
     }, \$die);
+    b_warn('Could not parse file:', $die->get('attrs'))
+	if $die;
     $self ||= $proto->new();
     $parseable->map_each(sub {
         shift;
