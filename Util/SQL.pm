@@ -62,6 +62,7 @@ my($_BUNDLE) = [qw(
     !drop_member_if_administrator
     !general_accountant
     !motion_vote_aff_drop_not_null
+    motion2
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -1423,6 +1424,28 @@ CREATE SEQUENCE motion_s
   CACHE 1 INCREMENT BY 100000
 /
 
+EOF
+    return;
+}
+
+sub internal_upgrade_db_motion2 {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE motion_t ADD COLUMN start_date_time DATE
+/
+ALTER TABLE motion_t ADD COLUMN end_date_time DATE
+/
+ALTER TABLE motion_T ADD COLUMN motion_file_id NUMERIC(18)
+/
+ALTER TABLE motion_t
+  add constraint motion_t5
+  foreign key (motion_file_id)
+  references realm_file_t(realm_file_id)
+/
+CREATE INDEX motion_t6 on motion_t (
+  motion_file_id
+)
+/
 EOF
     return;
 }
