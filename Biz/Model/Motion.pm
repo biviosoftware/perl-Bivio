@@ -5,17 +5,34 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = b_use('Type.DateTime');
 
 sub create {
     my($self, $values) = @_;
     $values->{realm_id} ||= $self->req('auth_id');
     $values->{name_lc} = lc($values->{name});
+
+    if ($values->{status}->eq_open) {
+	$values->{start_date_time} ||= $_DT->now;
+    }
     return shift->SUPER::create(@_);
 }
 
 sub update {
     my($self, $values) = @_;
     $values->{name_lc} = lc($values->{name});
+
+    if ($values->{status}
+	&& $values->{status} != $self->get('status')) {
+
+	if ($values->{status}->eq_open) {
+	    $values->{start_date_time} ||= $_DT->now;
+	    $values->{end_date_time} = undef;
+	}
+	else {
+	    $values->{end_date_time} ||= $_DT->now;
+	}
+    }
     return shift->SUPER::update(@_);
 }
 
@@ -32,8 +49,15 @@ sub internal_initialize {
 	    question => ['Text', 'NOT_NULL'],
 	    status => ['MotionStatus', 'NOT_NULL'],
 	    type => ['MotionType', 'NOT_NULL'],
+	    start_date_time => ['DateTime', 'NONE'],
+	    end_date_time => ['DateTime', 'NONE'],
+	    motion_file_id => ['RealmFile.realm_file_id', 'NONE'],
 	},
 	auth_id => 'realm_id',
+	other => [
+	    [qw(realm_id RealmOwner.realm_id)],
+	    [qw(motion_file_id RealmFile.realm_file_id)],
+	],
     });
 }
 
