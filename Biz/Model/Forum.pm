@@ -90,8 +90,6 @@ sub unauth_cascade_delete {
 
 sub update {
     my($self, $values) = @_;
-    $values->{name_lc} = lc($values->{name})
-	if defined($values->{name});
 
     # don't allow non OTP people to be in an OTP forum (su excepted)
     if ($values->{require_otp}
