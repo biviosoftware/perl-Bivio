@@ -1150,8 +1150,7 @@ sub _cfg_motion {
     return {
 	Task => [
 	    [FORUM_MOTION_LIST => ['?/polls', '?/votes']],
-	    [FORUM_MOTION_ADD => ['?/new-poll', '?/add-vote', '?/vote-add']],
-	    [FORUM_MOTION_EDIT => ['?/edit-poll', '?/edit-vote', '?/vote-edit']],
+	    [FORUM_MOTION_FORM => ['?/poll', '?/edit-poll', '?/edit-vote', '?/vote-edit']],
 	    [FORUM_MOTION_VOTE => ['?/poll-vote', '?/vote']],
 	    [FORUM_MOTION_VOTE_LIST => ['?/poll-results', '?/vote-results', '?/results']],
 	    [FORUM_MOTION_VOTE_LIST_CSV => ['?/poll-results.csv', '?/vote-results.csv', '?/results.csv']],
@@ -1162,6 +1161,18 @@ sub _cfg_motion {
 		question => 'Question',
 		status => 'Status',
 		type => 'Type',
+		motion_file_id => 'Document',
+		start_date_time => 'Started',
+		end_date_time => 'Ended',
+	    ]],
+	    [MotionForm => [
+		file => q{If(And(
+                    [['->req', 'form_model'], '->is_edit'],
+                    [['->req', 'form_model'], 'Motion.motion_file_id'],
+                ),
+                    'Replace Document',
+                    'Document',
+                );},
 	    ]],
 	    [MotionVote => [
 		vote => 'Vote',
@@ -1175,14 +1186,13 @@ sub _cfg_motion {
 		empty_list_prose => 'No poll results.',
 	    ]],
 	    [acknowledgement => [
-		FORUM_MOTION_EDIT => 'Poll updates have been saved.',
+		FORUM_MOTION_FORM => 'The poll has been saved.',
 		FORUM_MOTION_VOTE =>
 		    'Thank you for your participation in the poll.',
 	    ]],
 	    [title => [
 		FORUM_MOTION_LIST => 'Polls',
-		FORUM_MOTION_ADD => 'New Poll',
-		FORUM_MOTION_EDIT => 'Edit Poll',
+		FORUM_MOTION_FORM => 'New Poll',
 		FORUM_MOTION_VOTE => 'Vote',
 		FORUM_MOTION_VOTE_LIST => 'Poll Results',
 	    ]],
@@ -1191,7 +1201,6 @@ sub _cfg_motion {
 	    ]],
 	    [ListActions => [
 		FORUM_MOTION_VOTE => 'Vote',
-		FORUM_MOTION_EDIT => 'Edit',
 		FORUM_MOTION_VOTE_LIST => 'Results',
 	    ]],
 	],

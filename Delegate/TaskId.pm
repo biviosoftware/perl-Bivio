@@ -980,26 +980,15 @@ sub info_motion {
 	    View.Motion->list
 	)],
 	[qw(
-	    FORUM_MOTION_ADD
+	    FORUM_MOTION_FORM
 	    111
 	    ANY_OWNER
 	    MOTION_ADMIN&FEATURE_MOTION
-	    Type.FormMode->execute_create
 	    Model.MotionForm
 	    View.Motion->form
 	    next=FORUM_MOTION_LIST
 	)],
-	[qw(
-	    FORUM_MOTION_EDIT
-	    112
-	    ANY_OWNER
-	    MOTION_ADMIN&FEATURE_MOTION
-	    Type.FormMode->execute_edit
-	    Model.MotionList->execute_load_this
-	    Model.MotionForm
-	    View.Motion->form
-	    next=FORUM_MOTION_LIST
-	)],
+# 112
 	[qw(
 	    FORUM_MOTION_VOTE
 	    113
@@ -1015,7 +1004,7 @@ sub info_motion {
 	    114
 	    ANY_OWNER
 	    MOTION_READ&FEATURE_MOTION
-	    Model.MotionList->execute_load_parent
+	    Model.Motion->execute_load_parent
 	    Model.MotionVoteList->execute_load_all_with_query
 	    View.Motion->vote_result
 	)],
