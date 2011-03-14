@@ -78,7 +78,8 @@ sub execute_ok {
 
 	if ($self->get('mode')->equals_by_name(qw(UPLOAD TEXT_FILE))) {
 	    my($name, $content) = $self->get('mode')->eq_upload
-		? (_add_file_name($self), $self->get('file')->{content})
+		? ($self->validate_file_name($self, 'file'),
+		   $self->get('file')->{content})
 		: ($self->get(qw(name content)));
 	    return if $self->in_error;
 	    my($realm_file_id) = $self->new_other('RealmFile')
@@ -270,16 +271,16 @@ sub validate {
     return;
 }
 
-sub _add_file_name {
-    my($self) = @_;
+sub validate_file_name {
+    my($proto, $form, $file_field) = @_;
     my($name, $err) = $_FN->from_literal(
-	$_FP->get_tail($self->get('file')->{filename}));
+	$_FP->get_tail($form->get($file_field)->{filename}));
 
     if ($err) {
-	$self->internal_put_error(file => $err);
+	$form->internal_put_error(file => $err);
 	return;
     }
-    $self->internal_put_error(file => 'FILE_NAME')
+    $form->internal_put_error(file => 'FILE_NAME')
 	unless defined($name);
     return $name;
 }
