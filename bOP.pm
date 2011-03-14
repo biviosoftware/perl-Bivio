@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.44  2011/03/14 19:19:40  nagler
+  * Bivio::Util::RealmMail
+    added audit_threads and audit_threads_all_realms
+
   Revision 10.43  2011/03/11 20:37:38  nagler
   * Bivio::BConf
     don't send pages for search parser utility failures
