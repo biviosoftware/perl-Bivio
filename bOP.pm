@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,42 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.43  2011/03/11 20:37:38  nagler
+  * Bivio::BConf
+    don't send pages for search parser utility failures
+  * Bivio::Biz::Model::MailThreadList
+    added message_id
+  * Bivio::Biz::Model::Motion
+    minor refactor
+  * Bivio::Biz::Model::MotionVote
+    minor refactoring
+  * Bivio::Biz::Model::RealmMail
+    cascade_delete was not the right thing to do
+    added audit_threads
+  * Bivio::Biz::Model::RealmMailReferenceList
+    get modified_date_time
+  * Bivio::PetShop::Util::SQL
+    consolidate into TestData->init
+  * Bivio::PetShop::Util::TestData
+    added init & init_mail_references
+  * Bivio::Search::Parser
+    warn if parser failed
+  * Bivio::SQL::ListQuery
+    allow order_by of [qw(Model.field asc)],
+  * Bivio::Type::DateTime
+    english_month
+  * Bivio::UI::View::Mail
+    prevent delete link from showing up on CRM threads
+  * Bivio::UI::Widget::Director
+    fmt
+  * Bivio::Util::RealmFile
+    need to import mail in mtime order
+    set modified_date_time from the value of the Date: field in mail msgs
+    Run audit_threads
+  * Bivio::Util::RealmMail
+    added audit_threads
+    added audit_threads_all_realms
+
   Revision 10.42  2011/03/09 00:18:27  schellj
   * Bivio::Biz::Model::ForumUserAddForm
     fix for possible multiple main roles
