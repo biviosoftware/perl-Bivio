@@ -20,6 +20,8 @@ sub USAGE {
 usage: b-realm-mail [options] command [args..]
 commands
   anonymize_emails -- anonymize emails in the database
+  audit_threads -- reconnect thread_root_id and thread_parent_id
+  audit_threads_all_realms -- audit_threads for all realms with mail
   delete_message_id message_id ... -- Message-ID: based removal of threads/msgs
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
   import_mbox -- imports mbox input file
