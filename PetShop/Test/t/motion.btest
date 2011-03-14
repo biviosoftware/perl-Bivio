@@ -1,28 +1,55 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
-my($forum, $uri) = create_forum();
-#Bivio::IO::Alert->info($uri);
-visit_uri("$uri/polls");
-verify_text(qr{no polls}i);
-follow_link(qr{new poll}i);
+visit_uri((create_forum())[1]);
+follow_link('polls');
+verify_text(qr/no polls/i);
+follow_link('new_poll');
 verify_text(qr{one vote per user}i);
-submit_form(ok => {
-    'Name:' => 'Test Motion 1',
-    'Question:' => 'Is black your favorite color?',
+my($motion) = 'Test Motion 1';
+test_deviance('must supply a value');
+submit_form({
+    name => $motion,
 });
-follow_link_in_table('Name', 'Name', 'Test Motion 1', 'Actions', 'Vote');
-submit_form(ok => {
-    '_radio' => 'Yes',
-    'Comment:' => 'Black rules!',
+test_conformance();
+submit_form({
+    question => 'Do you like green?',
+});
+verify_table('Name', [
+    ['Name', 'Started', 'Ended'],
+    [$motion, qr/./, ''],
+]);
+follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Edit');
+submit_form({
+    document => file_field('doc.txt', 'a document'),
+});
+follow_link_in_table('Name', 'Name', $motion, 'Document', 'doc.txt');
+verify_text('a document');
+go_back();
+
+follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Vote');
+submit_form({
+    _radio => 'Yes',
+    comment => 'green rules!',
 });
 test_deviance(qr{attribute doesn't exist});
-follow_link_in_table('Name', 'Name', 'Test Motion 1', 'Actions', 'Vote');
+follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Vote');
 test_conformance();
-follow_link_in_table('Name', 'Name', 'Test Motion 1', 'Actions', 'Edit');
-submit_form(ok => {
-    'Name:' => 'Test Motion One',
-    'Question:' => 'Is black your favorite color?',
+follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Edit');
+submit_form({
+    name => 'Test Motion One',
+    '_radio#0' => 'Closed',
 });
+verify_table('Name', [
+    ['Name', 'Started', 'Ended'],
+    ['Test Motion One', qr/./, qr/./],
+]);
+
 follow_link_in_table('Name', 'Name', 'Test Motion One', 'Actions', 'Results');
-verify_text(qr{yes.*black rules}si);
+verify_table('Date', [
+    ['Vote', 'Comment'],
+    ['Yes', 'green rules!'],
+]);
+follow_link('spreadsheet');
+verify_text(qr/yes.*green rules/i);
+
