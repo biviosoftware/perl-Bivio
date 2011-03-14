@@ -335,6 +335,15 @@ CREATE UNIQUE INDEX motion_t4 ON motion_t (
   name_lc
 )
 /
+ALTER TABLE motion_t
+  add constraint motion_t5
+  foreign key (motion_file_id)
+  references realm_file_t(realm_file_id)
+/
+CREATE INDEX motion_t6 on motion_t (
+  motion_file_id
+)
+/
 
 --
 -- motion_vote_t
@@ -1193,6 +1202,9 @@ CREATE TABLE motion_t (
   question VARCHAR(500) NOT NULL,
   status NUMERIC(2) NOT NULL,
   type NUMERIC(2) NOT NULL,
+  start_date_time DATE,
+  end_date_time DATE,
+  motion_file_id NUMERIC(18),
   CONSTRAINT motion_t1 PRIMARY KEY(motion_id)
 )
 /
