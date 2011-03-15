@@ -284,6 +284,8 @@ sub _cfg_base {
 	    [[qw(off pager)] => []],
 	    [dd_menu => ['normal']],
 	    [user_state => ['120%', 'nowrap']],
+	    [b_abtest_a => []],
+	    [b_abtest_a_selected => 'bold'],
 	],
 	Constant => [
 	    map({

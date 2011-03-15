@@ -701,6 +701,13 @@ span.b_sort_arrow {
 form.b_selector {
   padding-top: 1ex;
 }
+span.b_abtest a {
+  Font('b_abtest_a');
+  margin-left: .5em;
+}
+span.b_abtest a.selected {
+  Font('b_abtest_a_selected');
+}
 EOF
 }
 
