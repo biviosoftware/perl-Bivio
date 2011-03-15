@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.45  2011/03/14 23:21:07  moeller
+  * Bivio::Biz::Model::FileChangeForm
+    changed _add_file_name() to public validate_file_name()
+  * Bivio::Biz::Model::Forum
+    removed ref to name_lc
+  * Bivio::Biz::Model::MotionForm
+    now derived from FormModeBaseForm
+    added motion file
+    refactored
+  * Bivio::Biz::Model::MotionList
+    removed execute_load_parent()
+    added can_vote()
+    added motion file fields
+  * Bivio::Biz::Model::Motion
+    added start_date_time, end_date_time and motion_file_id
+  * Bivio::Delegate::TaskId
+  * Bivio::UI::FacadeBase
+    combined FORUM_MOTION_ADD and FORUM_MOTION_EDIT into FORUM_MOTION_FORM
+  * Bivio::SQL::DDL
+    added motion_t start_date_time, end_date_time, motion_file_id
+  * Bivio::UI::View::Motion
+    added motion start/end dates and motion file
+  * Bivio::Util::SQL
+    added motion2 upgrade - adds motion_t start_date_time, end_date_time,
+    and motion_file_id
+
   Revision 10.44  2011/03/14 19:19:40  nagler
   * Bivio::Util::RealmMail
     added audit_threads and audit_threads_all_realms
