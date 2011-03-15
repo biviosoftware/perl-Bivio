@@ -1,0 +1,16 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+my($values) = [qw(cd cd), undef]; 
+Widget({
+    setup_render => sub {
+	req()->put(query => {b_abtest => shift(@$values)});
+	class()->handle_pre_execute_task(undef, req());
+	return;
+    },
+});
+class()->global_init('dflt');
+[
+    [cd => 'wx', ab => 'yz', dflt => 'dd'] => 'wx',
+    [ab => 'xy', 'foo'] => 'foo',
+    [cd => 'wx', ab => 'yz', dflt => 'dd'] => 'dd',
+];
