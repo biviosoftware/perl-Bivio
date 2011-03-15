@@ -548,6 +548,7 @@ sub format_uri {
 	    || defined($named->{require_context});
 	$named->{uri} = $uri;
 	$self->internal_copy_implicit($named);
+	$self->internal_call_handlers(handle_format_uri_named => [$named, $self]);
 	$uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
     }
     else {
@@ -559,6 +560,7 @@ sub format_uri {
 	$named->{no_form} = 0
 	    if my $ncst = $self->need_to_secure_task(
 		$_T->get_by_id($named->{task_id}));
+	$self->internal_call_handlers(handle_format_uri_named => [$named, $self]);
 	$uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
 	$uri = $self->format_http_prefix(1, $named->{facade_uri}) . $uri
 	    if $ncst;
