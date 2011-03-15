@@ -6,6 +6,7 @@ my($domain) = '@model.realmmail.bunit';
 my($subject) = 'Model.RealmMail.bunit subject:';
 my($subject_lc) = lc($subject);
 $subject_lc =~ s/://;
+req()->set_realm('fourem-sub1');
 [
     create_from_rfc822 => [
 	[\(<<"EOF")]
@@ -87,14 +88,6 @@ EOF
     ],
     load => [
 	[{message_id => "b$domain"}] => not_die(),
-    ],
-    cascade_delete => not_die(),
-    map_iterate => [
-	[
-	    sub {shift->get('message_id')},
-	    'message_id ASC',
-	    {subject_lc => $subject_lc},
-	] => [["a$domain"]],
     ],
     create_from_rfc822 => [
 	[\(<<'EOF')] => qr{no-message-id}i,
