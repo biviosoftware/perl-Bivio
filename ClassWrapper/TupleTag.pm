@@ -183,7 +183,7 @@ sub _labels {
 	    })};
 	    $rsl->setting_error($check, ": no such label in ", $moniker)
 		unless $res;
-	    return $res;
+	    return $res ? $res : ();
 	});
     });
 }
