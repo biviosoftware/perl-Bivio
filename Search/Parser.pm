@@ -77,6 +77,7 @@ sub _do {
 	path => '',
 	primary_id => $model->get_primary_id,
 	simple_class => $model->simple_package_name,
+	type => 'unparsed',
 	title => '',
 	text => \$no_text,
     );
