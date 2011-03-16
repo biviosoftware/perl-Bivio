@@ -45,10 +45,10 @@ From: John Doe <john@example.com>
 
  some text 
 EOF
- 	    't.gif' => [],
+ 	    't.gif' => ['unparsed', '', ''],
  	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
  	    TextFile => ['text/plain', ''],
- 	    BinaryFile => [],
+ 	    BinaryFile => ['unparsed', '', ''],
  	    ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
  	    't2.bwiki' => ['text/plain', 'TITLE',
  		qr/first text\s+second text\s+third text\s+the end/],
