@@ -63,6 +63,7 @@ my($_BUNDLE) = [qw(
     !general_accountant
     !motion_vote_aff_drop_not_null
     motion2
+    motion_comment
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -1445,6 +1446,56 @@ ALTER TABLE motion_t
 CREATE INDEX motion_t6 on motion_t (
   motion_file_id
 )
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_motion_comment {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE motion_t ADD COLUMN moniker VARCHAR(100)
+/
+CREATE TABLE motion_comment_t (
+  motion_comment_id NUMERIC(18),
+  motion_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  comment VARCHAR(500),
+  CONSTRAINT motion_comment_t1 PRIMARY KEY(motion_comment_id)
+)
+/
+ALTER TABLE motion_comment_t
+  ADD CONSTRAINT motion_comment_t2
+  FOREIGN KEY (motion_id)
+  REFERENCES motion_t(motion_id)
+/
+CREATE INDEX motion_comment_t3 ON motion_comment_t (
+  motion_id
+)
+/
+ALTER TABLE motion_comment_t
+  ADD CONSTRAINT motion_comment_t4
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX motion_comment_t5 ON motion_comment_t (
+  realm_id
+)
+/
+ALTER TABLE motion_comment_t
+  ADD CONSTRAINT motion_comment_t6
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX motion_comment_t7 ON motion_comment_t (
+  user_id
+)
+/
+CREATE SEQUENCE motion_comment_s
+  MINVALUE 100011
+  CACHE 1 INCREMENT BY 100000
 /
 EOF
     return;
