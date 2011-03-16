@@ -1,15 +1,14 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::Motion;
 use strict;
-use Bivio::Base 'Biz.PropertyModel';
+use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 
 sub create {
     my($self, $values) = @_;
-    $values->{realm_id} ||= $self->req('auth_id');
     $values->{name_lc} = lc($values->{name});
 
     if ($values->{status}->eq_open) {
@@ -43,7 +42,6 @@ sub internal_initialize {
         table_name => 'motion_t',
         columns => {
             motion_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    name => ['Line', 'NOT_NULL'],
 	    name_lc => ['Line', 'NOT_NULL'],
 	    question => ['Text', 'NOT_NULL'],
@@ -52,8 +50,8 @@ sub internal_initialize {
 	    start_date_time => ['DateTime', 'NONE'],
 	    end_date_time => ['DateTime', 'NONE'],
 	    motion_file_id => ['RealmFile.realm_file_id', 'NONE'],
+	    moniker => ['TupleMoniker', 'NONE'],
 	},
-	auth_id => 'realm_id',
 	other => [
 	    [qw(realm_id RealmOwner.realm_id)],
 	    [qw(motion_file_id RealmFile.realm_file_id)],
