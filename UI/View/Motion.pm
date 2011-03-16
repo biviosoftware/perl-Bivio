@@ -11,6 +11,47 @@ sub WANT_FILE_FIELDS {
     return 1;
 }
 
+sub comment_form {
+    my($self) = @_;
+    return shift->internal_body([sub {
+        my($source) = @_;
+	my($model) = $source->req('Model.MotionCommentForm');
+        return vs_simple_form(MotionCommentForm => [
+	    'MotionCommentForm.MotionComment.comment',
+	    map(["MotionCommentForm.$_", {
+		wf_type => $model->get_field_type($_),
+	    }], $model->tuple_tag_field_check),
+	]);
+    }]);
+}
+
+sub comment_result {
+    my($self) = @_;
+    vs_put_pager('MotionCommentList');
+    return shift->internal_put_base_attr(
+	tools => TaskMenu([
+	    'FORUM_MOTION_LIST',
+	]),
+	_topic(),
+	body => [sub {
+            my($source) = @_;
+	    my($model) = $source->req('Model.MotionCommentList');
+	    return vs_paged_list(
+		MotionCommentList => [
+		    'RealmOwner.display_name',
+		    'MotionComment.comment',
+		    map([$_, {
+			wf_type => $model->get_field_type($_),
+			column_heading =>
+			    String(vs_text($model->simple_package_name, $_)),
+		    }], $model->tuple_tag_field_check),
+		], {
+		    no_pager => 1,
+		});
+	}],
+    );
+}
+
 sub form {
     my($self) = @_;
     return shift->internal_put_base_attr(
@@ -38,6 +79,7 @@ sub form {
 		    column_count => 1,
 		}
 	    ],
+	    'MotionForm.Motion.moniker',
 	]),
     );
 }
@@ -72,8 +114,19 @@ sub list {
 			['->can_vote'],
 		    ],
 		    [
+			'Comment',
+			'FORUM_MOTION_COMMENT',
+			'THIS_DETAIL',
+			['->can_comment'],
+		    ],
+		    [
 			'Results',
 			'FORUM_MOTION_VOTE_LIST',
+			'THIS_AS_PARENT',
+		    ],
+		    [
+			'View Comments',
+			'FORUM_MOTION_COMMENT_LIST',
 			'THIS_AS_PARENT',
 		    ],
 		    [
@@ -115,11 +168,7 @@ sub vote_result {
 	    },
 	    'FORUM_MOTION_LIST',
 	]),
-	topic => Join([
-	    String([qw(Model.Motion name)]),
-	    ': ',
-	    String([qw(Model.Motion question)]),
-	]),
+	_topic(),
 	body => vs_paged_list(
 	    MotionVoteList => [qw(
 		MotionVote.creation_date_time
@@ -160,6 +209,16 @@ sub _file_fields {
 	    ),
         ],
         'MotionForm.file',
+    );
+}
+
+sub _topic {
+    return (
+	topic => Join([
+	    String([qw(Model.Motion name)]),
+	    ': ',
+	    String([qw(Model.Motion question)]),
+	]),
     );
 }
 
