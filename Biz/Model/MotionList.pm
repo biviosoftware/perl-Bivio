@@ -7,6 +7,11 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 
+sub can_comment {
+    my($self) = @_;
+    return $self->get('Motion.status')->eq_open;
+}
+
 sub can_vote {
     my($self) = @_;
     return 0
@@ -36,6 +41,7 @@ sub internal_initialize {
 	    Motion.question
 	    Motion.type
 	    Motion.motion_file_id
+	    Motion.moniker
 	    RealmFile.path
 	),
 	    {
