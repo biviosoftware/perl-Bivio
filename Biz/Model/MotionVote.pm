@@ -1,19 +1,10 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MotionVote;
 use strict;
-use Bivio::Base 'Biz.PropertyModel';
+use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = b_use('Type.DateTime');
-
-sub create {
-    my($self, $values) = @_;
-    $values->{realm_id} ||= $self->req('auth_id');
-    $values->{user_id} ||= $self->req('auth_user_id');
-    $values->{creation_date_time} ||= $_DT->now;
-    return shift->SUPER::create(@_);
-}
 
 sub internal_initialize {
     my($self) = @_;
@@ -29,7 +20,6 @@ sub internal_initialize {
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
 	    comment => ['Text', 'NONE'],
 	},
-	auth_id => 'realm_id',
     });
 }
 
