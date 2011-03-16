@@ -1153,9 +1153,11 @@ sub _cfg_motion {
 	Task => [
 	    [FORUM_MOTION_LIST => ['?/polls', '?/votes']],
 	    [FORUM_MOTION_FORM => ['?/poll', '?/edit-poll', '?/edit-vote', '?/vote-edit']],
+	    [FORUM_MOTION_COMMENT => '?/poll-comment'],
 	    [FORUM_MOTION_VOTE => ['?/poll-vote', '?/vote']],
 	    [FORUM_MOTION_VOTE_LIST => ['?/poll-results', '?/vote-results', '?/results']],
 	    [FORUM_MOTION_VOTE_LIST_CSV => ['?/poll-results.csv', '?/vote-results.csv', '?/results.csv']],
+	    [FORUM_MOTION_COMMENT_LIST => '?/poll-comments'],
 	],
 	Text => [
 	    [Motion => [
@@ -1166,6 +1168,7 @@ sub _cfg_motion {
 		motion_file_id => 'Document',
 		start_date_time => 'Started',
 		end_date_time => 'Ended',
+		moniker => 'Comment Format',
 	    ]],
 	    [MotionForm => [
 		file => q{If(And(
@@ -1175,6 +1178,12 @@ sub _cfg_motion {
                     'Replace Document',
                     'Document',
                 );},
+	    ]],
+	    [MotionComment => [
+		comment => 'Comment',
+	    ]],
+	    [MotionCommentList => [
+		'RealmOwner.display_name' => 'Name',
 	    ]],
 	    [MotionVote => [
 		vote => 'Vote',
@@ -1195,15 +1204,13 @@ sub _cfg_motion {
 	    [title => [
 		FORUM_MOTION_LIST => 'Polls',
 		FORUM_MOTION_FORM => 'New Poll',
+		FORUM_MOTION_COMMENT => 'Comment',
 		FORUM_MOTION_VOTE => 'Vote',
 		FORUM_MOTION_VOTE_LIST => 'Poll Results',
+		FORUM_MOTION_COMMENT_LIST => 'Poll Comments',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_MOTION_VOTE_LIST_CSV => 'Spreadsheet',
-	    ]],
-	    [ListActions => [
-		FORUM_MOTION_VOTE => 'Vote',
-		FORUM_MOTION_VOTE_LIST => 'Results',
 	    ]],
 	],
     };

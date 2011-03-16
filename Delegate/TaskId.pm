@@ -988,7 +988,16 @@ sub info_motion {
 	    View.Motion->form
 	    next=FORUM_MOTION_LIST
 	)],
-# 112
+	[qw(
+	    FORUM_MOTION_COMMENT
+	    112
+	    ANY_OWNER
+	    MOTION_WRITE&FEATURE_MOTION
+	    Model.MotionList->execute_load_this
+	    Model.MotionCommentForm
+	    View.Motion->comment_form
+	    next=FORUM_MOTION_LIST
+	)],
 	[qw(
 	    FORUM_MOTION_VOTE
 	    113
@@ -1016,7 +1025,16 @@ sub info_motion {
 	    Model.MotionVoteList->execute_load_all_with_query
 	    View.Motion->vote_result_csv
 	)],
-#116-119 free
+	[qw(
+	    FORUM_MOTION_COMMENT_LIST
+	    116
+	    ANY_OWNER
+	    MOTION_READ&FEATURE_MOTION
+	    Model.Motion->execute_load_parent
+	    Model.MotionCommentList->execute_load_all_with_query
+	    View.Motion->comment_result
+	)],
+#117-119 free
     ];
 }
 
