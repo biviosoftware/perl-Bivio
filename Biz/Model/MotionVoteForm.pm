@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MotionVoteForm;
 use strict;
@@ -14,6 +14,7 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
+    return unless $self->req('Model.MotionList')->can_vote;
     $self->new_other('MotionVote')
 	->create($self->get_model_properties('MotionVote'));
     return;
