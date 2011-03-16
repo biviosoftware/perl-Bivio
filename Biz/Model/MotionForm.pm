@@ -67,6 +67,7 @@ sub internal_initialize {
 	    Motion.question
 	    Motion.status
 	    Motion.type
+	    Motion.moniker
 	),
 	    {
 		name => 'file',
@@ -82,6 +83,18 @@ sub internal_initialize {
 	    Motion.name_lc
 	)],
     });
+}
+
+sub validate {
+    my($self) = @_;
+
+    if ($self->get('Motion.moniker')) {
+	$self->internal_put_error('Motion.moniker' => 'NOT_FOUND')
+	    unless $self->new_other('TupleUse')->unsafe_load({
+		moniker => $self->get('Motion.moniker'),
+	    });
+    }
+    return shift->SUPER::validate(@_);
 }
 
 sub _add_file {
