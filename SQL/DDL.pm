@@ -1005,8 +1005,13 @@ CREATE SEQUENCE task_log_s
   CACHE 1 INCREMENT BY 100000
 /
 
+CREATE SEQUENCE motion_comment_s
+  MINVALUE 100011
+  CACHE 1 INCREMENT BY 100000
+/
+
 --
--- 100011-14 available
+-- 100012-14 available
 --
 
 CREATE SEQUENCE ec_payment_s
@@ -1205,7 +1210,17 @@ CREATE TABLE motion_t (
   start_date_time DATE,
   end_date_time DATE,
   motion_file_id NUMERIC(18),
+  moniker VARCHAR(100) NOT NULL,
   CONSTRAINT motion_t1 PRIMARY KEY(motion_id)
+)
+/
+
+CREATE TABLE motion_comment_t (
+  motion_comment_id NUMERIC(18),
+  motion_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18) NOT NULL,
+  comment VARCHAR(500),
+  CONSTRAINT motion_comment_t1 PRIMARY KEY(motion_comment_id)
 )
 /
 
