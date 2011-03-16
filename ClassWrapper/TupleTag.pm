@@ -90,8 +90,14 @@ sub _defs {
     my($self, $wp) = @_;
     return _cache([$wp], sub {
 	my($tu) = $wp->new_other('TupleUse');
+	my($moniker);
+
+	if (ref($wp) && $wp->can('get_tuple_use_moniker')) {
+	    $moniker = $wp->get_tuple_use_moniker;
+	}
+	$moniker ||= $self->get('moniker');
 	return undef
-	    unless $tu->unsafe_load({moniker => $self->get('moniker')});
+	    unless $tu->unsafe_load({moniker => $moniker});
 	return $tu->load_tuple_slot_def_list;
     });
 }
