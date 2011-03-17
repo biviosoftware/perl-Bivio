@@ -1217,6 +1217,7 @@ CREATE TABLE motion_t (
 
 CREATE TABLE motion_comment_t (
   motion_comment_id NUMERIC(18),
+  realm_id NUMERIC(18) NOT NULL,
   motion_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
   creation_date_time DATE NOT NULL,
