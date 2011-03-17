@@ -37,8 +37,8 @@ sub get_excerpt {
 sub get_os_path {
     my($self) = @_;
     return $self->get_if_defined_else_put(os_path => sub {
-        my $rf = $self->unsafe_get('model');
-	return $rf ? $rf->get_os_path
+        my($rf, $content) = $self->unsafe_get('model', 'content');
+	return !$content && $rf ? $rf->get_os_path
 	    : $_F->write($_F->temp_file($self->req), $self->get('content'));
     });
 }
