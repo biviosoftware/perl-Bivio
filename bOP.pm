@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.46  2011/03/15 01:46:45  nagler
+  * Bivio::Agent::Request
+    added call handlers for handle_format_uri_named
+  * Bivio::UI::FacadeBase
+    added support for ABTest
+  * Bivio::UI::View::CSS
+    added support for ABTest
+  * Bivio::UI::Widget::ABTest
+    NEW
+
   Revision 10.45  2011/03/14 23:21:07  moeller
   * Bivio::Biz::Model::FileChangeForm
     changed _add_file_name() to public validate_file_name()
