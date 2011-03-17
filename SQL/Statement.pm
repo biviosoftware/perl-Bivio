@@ -466,7 +466,7 @@ sub _in {
 		    . "$modifier IN ("
 		    . join(',', map(_build_value($column, $_, @_), @$values))
 		    . ')'
-		    : $modifier ? 'TRUE' : 'FALSE',
+		    : $modifier ? '(1 = 1)' : '(1 = 0)',
 	    };
         },
     };
