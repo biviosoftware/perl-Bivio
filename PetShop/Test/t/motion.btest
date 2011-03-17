@@ -2,6 +2,33 @@
 # $Id$
 test_setup('PetShop');
 visit_uri((create_forum())[1]);
+
+follow_link(qw(tables schemas add_schema));
+submit_form(Save => {
+    schema_name => 'b_motion_comment',
+    mail_prefix => 'b_motion_comment',
+    field_0 => 'Proposed_Change',
+    type_0 => 'String',
+    field_1 => 'Due_Date',
+    type_1 => 'Date',
+});
+follow_link(qw(tables add_table));
+submit_form({
+    schema => 'b_motion_comment',
+});
+
+follow_link(qw(schemas add_schema));
+submit_form(Save => {
+    schema_name => 'b_motion_comment2',
+    mail_prefix => 'b_motion_comment2',
+    field_0 => 'Extra_Field',
+    type_0 => 'String',
+});
+follow_link(qw(tables add_table));
+submit_form({
+    schema => 'b_motion_comment2',
+});
+
 follow_link('polls');
 verify_text(qr/no polls/i);
 follow_link('new_poll');
@@ -14,6 +41,7 @@ submit_form({
 test_conformance();
 submit_form({
     question => 'Do you like green?',
+    comment_format => 'b_motion_comment2',
 });
 verify_table('Name', [
     ['Name', 'Started', 'Ended'],
@@ -35,6 +63,18 @@ submit_form({
 test_deviance(qr{attribute doesn't exist});
 follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Vote');
 test_conformance();
+follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Comment');
+submit_form({
+    comment => 'x',
+    extra => 'y',
+});
+follow_link_in_table('Name', 'Name', $motion, 'Actions', 'View Comments');
+verify_table('Name', [
+    ['Name', 'Comment', 'Extra Field'],
+    ['Root User', 'x', 'y'],
+]);
+
+follow_link('polls');
 follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Edit');
 submit_form({
     name => 'Test Motion One',
