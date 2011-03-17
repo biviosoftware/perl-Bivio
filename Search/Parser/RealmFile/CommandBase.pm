@@ -35,15 +35,17 @@ sub internal_get_title {
     return undef;
 }
 
-sub internal_run_command {
-    my($proto, $cmd, $error_pattern) = @_;
+sub internal_run_parser {
+    my($proto, $cmd, $parseable, $error_pattern) = @_;
     my($out);
+    my($path) = $parseable->get_os_path;
+    b_die($cmd, ': missing <path>')
+	unless $cmd =~ s/<path>/$path/g;
     my($die) = $_D->catch_quietly(sub {$out = $_SU->piped_exec("$cmd 2>&1")});
-    return b_warn($cmd, ': ',
-	$die ? $die->get('attrs') : ($out || 'no output'))
-	if $die ||
-	    !defined($out) ||
-	    ($error_pattern && $$out =~ $error_pattern);
+    if ($die || !defined($out) || ($error_pattern && $$out =~ $error_pattern)) {
+	b_warn($cmd, ': ', $die ? $die->get('attrs') : ($out || 'no output'));
+	return '';
+    }
     return $$out;
 }
 
