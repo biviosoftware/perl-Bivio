@@ -66,7 +66,6 @@ sub rebuild_realm {
     _map_classes(
 	sub {
 	    my($class) = @_;
-	    b_info($class);
 	    $class->do_iterate_realm_models(
 		sub {
 		    my($it) = @_;
