@@ -1219,6 +1219,7 @@ CREATE TABLE motion_comment_t (
   motion_comment_id NUMERIC(18),
   motion_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
   comment VARCHAR(500),
   CONSTRAINT motion_comment_t1 PRIMARY KEY(motion_comment_id)
 )
