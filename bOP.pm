@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.48  2011/03/17 18:10:49  moeller
+  * Bivio::Search::Xapian
+    catch errors when querying Xapian and warn, then call super for
+    default processing
+
   Revision 10.47  2011/03/17 16:30:12  moeller
   * Bivio::Biz::Model::MotionCommentForm
     NEW
