@@ -31,7 +31,7 @@ sub rebuild_db {
 	->new(_map_classes(sub {@{shift->realms_for_rebuild_db($req)}}))
 	->sort_unique;
     $self->commit_or_rollback;
-    b_info('Rebuilding ', scalar(@$realms), ' realms');
+    b_info('Rebuilding ', $realms->as_length, ' realms');
     $realms->do_iterate(
 	sub {
 	    my($r) = @_;
@@ -91,7 +91,7 @@ sub rebuild_realm {
 	},
     );
     $commit->();
-    return $self->req(qw(auth_realm owner name)) . ": $j objects";
+    return $self->req(qw(auth_realm owner))->as_string . ": $j objects";
 }
 
 sub _map_classes {
