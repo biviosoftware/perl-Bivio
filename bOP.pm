@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,44 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.47  2011/03/17 16:30:12  moeller
+  * Bivio::Biz::Model::MotionCommentForm
+    NEW
+  * Bivio::Biz::Model::MotionCommentList
+    NEW
+  * Bivio::Biz::Model::MotionComment
+    NEW
+  * Bivio::Biz::Model::MotionForm
+    added Motion.moniker with validator
+  * Bivio::Biz::Model::MotionList
+    added can_comment() and Motion.moniker
+  * Bivio::Biz::Model::Motion
+    now derived from Model.RealmBase
+    added moniker field
+  * Bivio::Biz::Model::MotionVoteForm
+    don't allow votes if motion is closed
+  * Bivio::Biz::Model::MotionVoteList
+    can_iterate => 1
+  * Bivio::Biz::Model::MotionVote
+    now derived from Model.RealmBase
+  * Bivio::ClassWrapper::TupleTag
+    don't include missing labels as undef items
+    call get_tuple_use_moniker() when loading TupleUse
+  * Bivio::Delegate::TaskId
+    added FORUM_MOTION_COMMENT and FORUM_MOTION_COMMENT_LIST
+  * Bivio::Search::Parser
+    use type 'unparsed' for unparsed files
+  * Bivio::SQL::DDL
+    added motion_comment_s and motion_comment_t
+  * Bivio::SQL::Statement
+    changed TRUE and FALSE to (1 = 1) and (1 = 0) to be compatible with oracle
+  * Bivio::UI::FacadeBase
+    added FORUM_MOTION_COMMENT and FORUM_MOTION_COMMENT_LIST
+  * Bivio::UI::View::Motion
+    added comment_form() and comment_result()
+  * Bivio::Util::SQL
+    added bundle upgrade motion_comment
+
   Revision 10.46  2011/03/15 01:46:45  nagler
   * Bivio::Agent::Request
     added call handlers for handle_format_uri_named
