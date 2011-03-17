@@ -23,7 +23,7 @@ sub internal_get_title {
     return $proto->internal_run_parser(
 	'pdfinfo <path>',
 	$parseable,
-	qr{/^Error:.*Error:/s},
+	qr{^Error:.*Error:}s,
     ) =~ /^Title:\s*(.*)/im ? $1 : undef;
 }
 
