@@ -94,13 +94,21 @@ sub execute {
 sub get_values_for_primary_id {
     my($proto, $primary_id, $model, $attr) = @_;
     my($req) = $model->req;
-    return $req->perf_time_op(__PACKAGE__, sub {
-	if (my $query_result = _find($primary_id)) {
-	    if (my $res = _query_result($proto, $query_result, $req, $attr || {})) {
-		return $res;
+    my($res);
+    my($die) = Bivio::Die->catch_quietly(sub {
+        $res = $req->perf_time_op(__PACKAGE__, sub {
+	    if (my $query_result = _find($primary_id)) {
+		if (my $res =
+		    _query_result($proto, $query_result, $req, $attr || {})) {
+		    return $res;
+		}
 	    }
-	}
-    }) || return shift->SUPER::get_values_for_primary_id(@_);
+	});
+    });
+    b_warn($die) if $die;
+    return $die
+	? shift->SUPER::get_values_for_primary_id(@_)
+	: $res;
 }
 
 sub handle_commit {
