@@ -13,18 +13,18 @@ sub CONTENT_TYPE_LIST {
 sub internal_get_text {
     my($proto, $parseable) = @_;
     my($path) = $parseable->get_os_path;
-    my($text) = $proto->internal_run_command("pdftotext $path -");
+    my($text) = $proto->internal_run_parser('pdftotext <path> -', $parseable);
     $text =~ s/^\s*\n$//mg;
     return $text;
 }
 
 sub internal_get_title {
     my($proto, $parseable) = @_;
-    my($path) = $parseable->get_os_path;
-    return undef
-	unless my $info = $proto->internal_run_command(
-	    "pdfinfo $path", qr{/^Error:.*Error:/s});
-    return $info =~ /^Title:\s*(.*)/im ? $1 : undef;
+    return $proto->internal_run_parser(
+	'pdfinfo <path>',
+	$parseable,
+	qr{/^Error:.*Error:/s},
+    ) =~ /^Title:\s*(.*)/im ? $1 : undef;
 }
 
 1;

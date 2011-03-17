@@ -5,8 +5,8 @@ use strict;
 use Bivio::Base 'SearchParser.RealmFile';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FP) = __PACKAGE__->use('Type.FilePath');
-my($_WT) = __PACKAGE__->use('XHTMLWidget.WikiText');
+my($_FP) = b_use('Type.FilePath');
+my($_WT) = b_use('XHTMLWidget.WikiText');
 
 sub CONTENT_TYPE_LIST {
     return 'text/x-bivio-wiki';

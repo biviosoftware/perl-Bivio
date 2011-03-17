@@ -12,8 +12,7 @@ sub CONTENT_TYPE_LIST {
 
 sub internal_get_text {
     my($proto, $parseable) = @_;
-    my($path) = $parseable->get_os_path;
-    my($text) = $proto->internal_run_command("xls2csv $path");
+    my($text) = $proto->internal_run_parser('xls2csv <path>', $parseable);
     $text =~ s/"//g;
     return $text;
 }

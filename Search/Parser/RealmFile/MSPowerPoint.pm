@@ -12,8 +12,7 @@ sub CONTENT_TYPE_LIST {
 
 sub internal_get_text {
     my($proto, $parseable) = @_;
-    my($path) = $parseable->get_os_path;
-    return $proto->internal_run_command("catppt $path");
+    return $proto->internal_run_parser('catppt <path>', $parseable);
 }
 
 1;

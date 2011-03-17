@@ -8,10 +8,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_get_title {
     my($proto, $parseable) = @_;
-    my($path) = $parseable->get_os_path;
-    return undef
-	unless my $info = $proto->internal_run_command("ldat $path");
-    return $info =~ /^\s*Title:\s*(.*)/im ? $1 : undef;
+    return $proto->internal_run_parser('ldat <path>', $parseable)
+	=~ /^\s*Title:\s*(.*)/im
+        ? $1 : undef;
 }
 
 1;
