@@ -251,7 +251,7 @@ sub _initialize {
 	elsif ($attr =~ /^(family|weight|size|class|id|style)=(.*)/) {
 	    $attrs->{$1} = $2;
 	}
-	elsif ($attr =~ /^\d+\%$/ || $_SIZE_MAP->{$attr}) {
+	elsif ($attr =~ /^\d+(?:\%|px)$/ || $_SIZE_MAP->{$attr}) {
 	    $attrs->{size} = $attr;
 	}
 	elsif ($attr =~ /^color=(.+)/) {
