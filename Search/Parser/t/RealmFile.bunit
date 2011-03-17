@@ -45,15 +45,16 @@ From: John Doe <john@example.com>
 
  some text 
 EOF
+	    'pdf.eml' => ['message/rfc822', 'mysubject', "Subject: mysubject\nTo: SomeList <q\@r.s>\nFrom: SomeUser <x\@y.z>\n\nsome text\n\n\nA sample PDF document."],
  	    't.gif' => ['unparsed', '', ''],
  	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
- 	    TextFile => ['text/plain', ''],
+ 	    TextFile => ['unparsed', '', ''],
  	    BinaryFile => ['unparsed', '', ''],
  	    ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
  	    't2.bwiki' => ['text/plain', 'TITLE',
- 		qr/first text\s+second text\s+third text\s+the end/],
+ 	    	qr/first text\s+second text\s+third text\s+the end/],
  	    't3.bwiki' => ['text/plain', 'TITLE',
- 		qr/email\s+me\s+at\s+foo\@bar.com\s+or\s+A\s+Page\s+home\s+Name\:\s+the\s+end\s+/],
+ 	    	qr/email\s+me\s+at\s+foo\@bar.com\s+or\s+A\s+Page\s+home\s+Name\:\s+the\s+end\s+/],
 	    't.doc' => 'application/msword',
 	    't.xls' => ['application/vnd.ms-excel', 'TITLE', "some,text"],
 	    't.docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', ''],
