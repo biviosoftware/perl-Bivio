@@ -18,7 +18,14 @@ sub access_controlled_execute {
 	$_RF->parse_path($req->get('path_info')),
 	$req,
     );
-    return $rf ? $proto->set_output_for_get($rf) : 0;
+    return $proto->set_output_for_get($rf)
+	if $rf;
+
+    if (($rf = $req->ureq('Model.RealmFile')) && $req->get('path_info')) {
+	$req->put(path_info => $rf->get('path'))
+	    if $rf->get('is_folder');
+    }
+    return 0;
 }
 
 sub access_controlled_load {
