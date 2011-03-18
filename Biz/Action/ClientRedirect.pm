@@ -43,7 +43,7 @@ sub execute_next_stateless {
 
 sub execute_permanent_map {
     my($proto, $req) = @_;
-    b_die($req->get('uri'), ': URI not in permanent_map')
+    b_die('NOT_FOUND')
 	unless my $new = $_CFG->{permanent_map}->{$req->get('uri')};
     return {
 	uri => $new,
