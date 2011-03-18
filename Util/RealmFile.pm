@@ -32,6 +32,7 @@ sub USAGE {
 usage: b-realm-file [options] command [args...]
 commands:
     backup_realms dir realm... - export_tree for all realms in dir/<date-time>
+    clear_files_and_mail
     create path -- creates file_path with input
     create_or_update path -- creates or updates file_path with input
     create_folder path -- creates folder and parents
@@ -67,6 +68,15 @@ sub backup_realms {
         b_warn($r, ': ', $die)
             if $die;
     }
+    return;
+}
+
+sub clear_files_and_mail {
+    my($self) = @_;
+    $self->assert_test;
+    $self->are_you_sure('delete realm files and mail?');
+    $self->model('RealmMail')->delete_all;
+    $self->model('RealmFile')->delete_all;
     return;
 }
 
