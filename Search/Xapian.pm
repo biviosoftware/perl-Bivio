@@ -111,7 +111,7 @@ sub get_values_for_primary_id {
 	: $res;
 }
 
-sub handle_commit {
+sub handle_prepare_commit {
     my($self, $req) = @_;
     if (b_use('AgentJob.Dispatcher')->can_enqueue_job($req)) {
 	b_use('AgentJob.Dispatcher')->enqueue(
@@ -134,10 +134,6 @@ sub handle_commit {
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
-    return;
-}
-
-sub handle_rollback {
     return;
 }
 
