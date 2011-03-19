@@ -51,7 +51,7 @@ To: $errors_to
 Subject: ERROR: unable to send mail
 Sender: "$0" <$u>
 
-Error while trying to message to $recipients:
+Error while trying to send message to $recipients:
 
     (reason: $err)
 
