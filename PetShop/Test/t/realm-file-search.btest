@@ -45,9 +45,3 @@ submit_form({
     _anon => 'SearchTest5.csv'
 });
 verify_text('Test,Result,Five t,r,5');
-# CSS not indexed (should not find donotfind.css)
-submit_form({
-    _anon => 'donotfindcss'
-});
-verify_text('Search Results');
-verify_text('search did not match');
