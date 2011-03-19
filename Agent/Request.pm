@@ -386,6 +386,13 @@ sub delete_from_query {
     return $res;
 }
 
+sub delete_txn_resource {
+    my($self, $resource) = @_;
+    my($tr) = $self->get('txn_resources');
+    @$tr = grep($_ ne $resource, @$tr);
+    return;
+}
+
 sub format_email {
     my($self, $email) = @_;
     # Formats the email address for inclusion in a mail header.
