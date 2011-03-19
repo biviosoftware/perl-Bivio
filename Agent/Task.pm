@@ -131,6 +131,7 @@ my($_S);
 my($_C) = b_use('IO.Config');
 my($_TE);
 our($_COMMITTED) = undef;
+our($_IN_COMMIT) = 0;
 my($_UNAUTH_EXECUTE) = __PACKAGE__ . '.unauth_execute';
 my($_TASK_ATTR_RE) = qr{^(?:next|cancel|login|[a-z0-9_]+_task)$};
 
@@ -334,6 +335,10 @@ sub has_realm_type {
     return $self->get('_has_realm_type')->{$realm_type};
 }
 
+sub in_commit {
+    return $_IN_COMMIT;
+}
+
 sub initialize {
     my($proto, $partially) = @_;
     # Initializes task list from the configuration in
@@ -478,39 +483,44 @@ sub unsafe_params_for_die_code {
 
 sub _call_txn_resources {
     my($req, $method) = @_;
-    my($orig_die);
     return
 	unless $req;
-    foreach my $n (1..10) {
-	my($resources) = $req->unsafe_get('txn_resources');
-	$req->put(txn_resources => []);
-	unless (ref($resources) eq 'ARRAY' && @$resources) {
-	    $orig_die->throw
-		if $orig_die;
-	    return;
-	}
-	while (my $r = pop(@$resources)) {
-	    _trace($r, '->', $method) if $_TRACE;
-	    next
-		unless my $die = Bivio::Die->catch(
-		    sub {
-			$r->$method($req);
-			return;
-		    },
-		);
-	    $_A->warn(
-		$r, '->', $method, ': ', $die, '; switching to rollback');
-	    $orig_die ||= $die
-		if $method eq 'handle_commit';
-	    $method = 'handle_rollback';
-	}
+    my($resources) = [@{$req->unsafe_get('txn_resources') || []}];
+    my($orig_die);
+    _call_txn_resources_method(
+	$resources, 'handle_prepare_commit', $req, \$orig_die,
+    ) if $method eq 'handle_commit';
+    $method = 'handle_rollback'
+	if $orig_die;
+    local($_IN_COMMIT) = $method eq 'handle_commit' ? 1 : 0;
+    $resources = $req->unsafe_get('txn_resources') || [];
+    $req->put(txn_resources => []);
+    _call_txn_resources_method($resources, $method, $req, \$orig_die);
+    $orig_die->throw
+	if $orig_die;
+    return;
+}
+
+sub _call_txn_resources_method {
+    my($resources, $method, $req, $orig_die) = @_;
+    foreach my $r (reverse(@$resources)) {
+	_trace($r, '->', $method) if $_TRACE;
+	next
+	    unless my $die = Bivio::Die->catch(
+		sub {
+		    $r->$method($req)
+			if $r->can($method);
+		    return;
+		},
+	    );
+	$$orig_die ||= $die
+	    if $method ne 'handle_rollback';
+	last
+	    if $method eq 'handle_prepare_commit';
+	b_warn($r, '->', $method, ': ', $die, '; switching to rollback');
+	$method = 'handle_rollback';
     }
-    b_die(
-	$req->unsafe_get('txn_resources'),
-	': transaction resource loop: ',
-	$req,
-    );
-    # DOES NOT RETURN
+    return;
 }
 
 sub _commit {
