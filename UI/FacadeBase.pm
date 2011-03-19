@@ -982,7 +982,7 @@ sub _cfg_group_admin {
 		feature_wiki => 'Wiki',
 	    ]],
 	    [feature_blog => 'Blog'],
-	    [feature_motion => 'Poll'],
+	    [feature_motion => 'ePoll'],
 	    [feature_mail => 'Mail'],
 	    [feature_file => 'File'],
 	    [feature_calendar => 'Calendar'],
@@ -1191,23 +1191,24 @@ sub _cfg_motion {
 		creation_date_time => 'Date',
 	    ]],
 	    [MotionList => [
-		empty_list_prose => 'No polls to display.',
+		empty_list_prose => 'No ePolls to display.',
+		vote_count => 'Vote count',
 	    ]],
 	    [MotionVoteList => [
-		empty_list_prose => 'No poll results.',
+		empty_list_prose => 'No ePoll results.',
 	    ]],
 	    [acknowledgement => [
-		FORUM_MOTION_FORM => 'The poll has been saved.',
+		FORUM_MOTION_FORM => 'The ePoll has been saved.',
 		FORUM_MOTION_VOTE =>
-		    'Thank you for your participation in the poll.',
+		    'Thank you for your participation in the ePoll.',
 	    ]],
 	    [title => [
-		FORUM_MOTION_LIST => 'Polls',
-		FORUM_MOTION_FORM => 'New Poll',
+		FORUM_MOTION_LIST => 'ePolls',
+		FORUM_MOTION_FORM => 'New ePoll',
 		FORUM_MOTION_COMMENT => 'Comment',
 		FORUM_MOTION_VOTE => 'Vote',
-		FORUM_MOTION_VOTE_LIST => 'Poll Results',
-		FORUM_MOTION_COMMENT_LIST => 'Poll Comments',
+		FORUM_MOTION_VOTE_LIST => 'ePoll Results',
+		FORUM_MOTION_COMMENT_LIST => 'ePoll Comments',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_MOTION_VOTE_LIST_CSV => 'Spreadsheet',
