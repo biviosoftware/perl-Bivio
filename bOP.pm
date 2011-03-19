@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,41 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.49  2011/03/17 21:03:23  nagler
+  * Bivio::Biz::Model::TupleTag
+    tuple_def_id refers to TupleUse.tuple_def_id so cascade_delete() order
+    is correct for the realm
+  * Bivio::Search::Parseable
+    get_os_path checks for "content" iwc it writes that to a temporary
+    file instead of use $rf->get_os_path
+  * Bivio::Search::Parser::RealmFile::CommandBase
+    do the call to get_os_path and replace that in the command
+  * Bivio::Search::Parser::RealmFile::MSExcel
+    use internal_run_parser
+  * Bivio::Search::Parser::RealmFile::MSOfficeBase
+    use internal_run_parser
+  * Bivio::Search::Parser::RealmFile::MSPowerPoint
+    use internal_run_parser
+  * Bivio::Search::Parser::RealmFile::MSWord
+    use internal_run_parser
+  * Bivio::Search::Parser::RealmFile::OpenXMLDoc
+    use internal_run_parser
+  * Bivio::Search::Parser::RealmFile::PDF
+    use internal_run_parser
+  * Bivio::Search::Parser::RealmFile::Unknown
+    don't parse files without content types
+  * Bivio::Search::Parser::RealmFile::Wiki
+    use internal_run_parser
+  * Bivio::Search::Xapian
+    call super class if get_values_for_primary_id() query returns no result
+  * Bivio::SQL::DDL
+    added motion_comment_t.creation_date_time
+    added motion_comment_t.realm_id
+  * Bivio::UI::Font
+    support NNNpx
+  * Bivio::Util::Search
+    cleaned up the logging output
+
   Revision 10.48  2011/03/17 18:10:49  moeller
   * Bivio::Search::Xapian
     catch errors when querying Xapian and warn, then call super for
