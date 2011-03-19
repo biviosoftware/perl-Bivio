@@ -7,9 +7,9 @@ do_test_backdoor(TestUser => 'leave_and_delete bulletin_btest');
 do_test_backdoor(TestUser => "create $new_user");
 do_test_backdoor(RealmAdmin => "-realm bulletin -user $new_user join_user MEMBER MAIL_RECIPIENT");
 login_as('root');
-follow_link(qw(^bulletin$ mail));
+follow_link(qw(^bulletin$ mail$));
 verify_no_text('new.topic');
-follow_link(qw(bulletin_staging mail new_topic));
+follow_link(qw(bulletin_staging mail$ new_topic));
 my($s) = random_string();
 submit_form({
     topic => $s,
@@ -24,9 +24,9 @@ submit_form({
     to => my $e = generate_local_email('demo'),
 });
 test_equals(qr{\Q$e}, verify_local_mail(qr{.}, $s, 1));
-follow_link(qw(^bulletin$ mail));
+follow_link(qw(^bulletin$ mail$));
 verify_no_link($s);
-follow_link(qw(bulletin_staging mail), $s, 'publish');
+follow_link(qw(bulletin_staging mail$), $s, 'publish');
 clear_local_mail();
 submit_form(send => {});
 $e = generate_remote_email('bulletin');
@@ -44,7 +44,7 @@ foreach my $msg (verify_local_mail(qr{.}, $s, 3)) {
 visit_uri($uri);
 submit_form('Unsubscribe');
 go_back();
-follow_link(qw(bulletin_staging mail), $s, 'publish');
+follow_link(qw(bulletin_staging mail$), $s, 'publish');
 clear_local_mail();
 submit_form(send => {});
 verify_local_mail(qr{.}, $s, 2);
