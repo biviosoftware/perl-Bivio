@@ -4,6 +4,6 @@ ShellUtil();
 # DO NOT TEST rebuild_db.  It's tested in realm-file-search.btest
 [
     rebuild_realm => DIE(),
-    [qw(-realm xapian_demo rebuild_realm 12/1/2009)] => qr{xapian_demo: 6 object}s,
-    [qw(-realm xapian_demo rebuild_realm)] => qr{xapian_demo: 6 object}s,
+    [qw(-realm xapian_demo rebuild_realm 12/1/2009)] => qr{xapian_demo.*: 6 object}s,
+    [qw(-realm xapian_demo rebuild_realm)] => qr{xapian_demo.*: 6 object}s,
 ];
