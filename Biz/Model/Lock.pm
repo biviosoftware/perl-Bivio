@@ -15,21 +15,24 @@ my($_D) = b_use('Bivio.Die');
 sub acquire {
     my($self, $realm_id) = @_;
     $realm_id ||= $self->req('auth_id');
-    if (my $other = $self->req->unsafe_get(ref($self))) {
-	$other->throw_die(ALREADY_EXISTS => {
-	    message => 'more than one lock on the request',
-	});
-	# DOES NOT RETURN
-    }
+    $self->throw_die(
+	'ALREADY_EXISTS',
+	{
+	    message => 'duplicate lock: use acquire_unless_exists',
+	    entity => $realm_id,
+	},
+    ) if $self->is_acquired($realm_id);
+    $self->throw_die('ALREADY_EXISTS', 'cannot reuse lock instance')
+	if _map_txn_resources($self, sub {shift == $self ? 1 : ()});
     my($values) = {realm_id => $realm_id};
     _read_request_input($self);
     my($die) = $_D->catch(sub {$self->create($values)});
     if ($die) {
 	if ($die->get('code')->equals_by_name('DB_CONSTRAINT')) {
-	    my($a) = $die->unsafe_get('attrs');
+	    my($attrs) = $die->unsafe_get('attrs');
 	    $self->throw_die('DB_ERROR', $values)
-		if ref($a) && ref($a->{type_error})
-		    && $a->{type_error}->equals_by_name('EXISTS');
+		if ref($attrs) && ref($attrs->{type_error})
+		    && $attrs->{type_error}->equals_by_name('EXISTS');
 	}
 	$die->throw_die;
 	# DOES NOT RETURN
@@ -97,12 +100,11 @@ sub internal_initialize {
 
 sub is_acquired {
     my($self, $realm_id) = @_;
-    return 0
-	unless my $other = $self->unsafe_self_from_req($self->req);
-    return $_PI->is_equal(
-	$other->get('realm_id'),
-	$realm_id || $self->req('auth_id'),
-    );
+    $realm_id || $self->req('auth_id');
+    return _map_txn_resources(
+	$self,
+	sub {_is_equal(shift, $realm_id) ? 1 : ()},
+    ) ? 1 : 0;
 }
 
 sub is_general_acquired {
@@ -112,21 +114,41 @@ sub is_general_acquired {
 
 sub release {
     my($self) = @_;
-    my($req_lock) = $self->req->unsafe_get(ref($self));
-    $self->throw_die('DIE', 'no locks on request')
-	unless $req_lock;
-    $self->throw_die(
-	'DIE',
-	{
-	    message => 'too many locks on the same request',
-	    request_lock => $req_lock,
-	},
-    ) unless $req_lock == $self;
     _trace($self) if $_TRACE;
-    $self->delete_from_request;
+    $self->throw_die('DIE', 'lock is not loaded')
+	unless $self->is_loaded;
+    $self->req->delete_txn_resource($self);
     $self->throw_die('UPDATE_COLLISION')
 	unless $self->delete || $_SQL_READ_ONLY;
     return;
+}
+
+sub release_all {
+    my($self) = @_;
+    _map_txn_resources(
+	$self,
+	sub {
+	    shift->release;
+	    return;
+	},
+    );
+    return;
+}
+
+sub _is_equal {
+    my($other, $realm_id) = @_;
+    return $_PI->is_equal(
+	$other->get('realm_id'),
+	$realm_id || $other->req('auth_id'),
+    );
+}
+
+sub _map_txn_resources {
+    my($self, $op) = @_;
+    return map(
+	$self->is_blessed($_) ? $op->($_) : (),
+	@{$self->req('txn_resources')},
+    );
 }
 
 sub _read_request_input {
