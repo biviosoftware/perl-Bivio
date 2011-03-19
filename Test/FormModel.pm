@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::FormModel;
 use strict;
@@ -43,9 +43,7 @@ sub new_unit {
 	    $object->reset_instance_state;
 	    return $params
 		unless $method eq 'process';
-	    if (my $l = $req->unsafe_get('Model.Lock')) {
-		$l->release;
-	    }
+	    $_M->new($req, 'Lock')->release_all;
 	    _setup_request($proto, $setup_request, @_);
 	    unless (@$params) {
 		$req->delete('form');
