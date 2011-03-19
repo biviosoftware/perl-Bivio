@@ -14,12 +14,7 @@ sub can_comment {
 
 sub can_vote {
     my($self) = @_;
-    return 0
-	if $self->get('Motion.status')->eq_closed;
-    return $self->new_other('MotionVote')->unsafe_load({
-	motion_id => $self->get('Motion.motion_id'),
-	user_id => $self->req('auth_user_id'),
-    }) ? 0 : 1;
+    return $self->get('Motion.status')->eq_open;
 }
 
 sub internal_initialize {
@@ -48,7 +43,19 @@ sub internal_initialize {
 		name => 'file_name',
 		type => 'FileName',
 		constraint => 'NONE',
-	    }],
+	    },
+	    {
+		name => 'vote_count',
+		type => 'Integer',
+		constraint => 'NONE',
+		in_select => 1,
+		select_value => '(
+                    SELECT COUNT(*)
+                       FROM motion_vote_t mv
+                       WHERE mv.motion_id = motion_t.motion_id
+                 ) AS vote_count',
+            },	    
+	],
     });
 }
 

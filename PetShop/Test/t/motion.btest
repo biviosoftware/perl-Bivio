@@ -30,8 +30,8 @@ submit_form({
 });
 
 follow_link('polls');
-verify_text(qr/no polls/i);
-follow_link('new_poll');
+verify_text(qr/no epolls/i);
+follow_link('new_epoll');
 verify_text(qr{one vote per user}i);
 my($motion) = 'Test Motion 1';
 test_deviance('must supply a value');
@@ -60,9 +60,11 @@ submit_form({
     _radio => 'Yes',
     comment => 'green rules!',
 });
-test_deviance(qr{attribute doesn't exist});
-follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Vote');
-test_conformance();
+# can change vote
+verify_table('Name', [
+    ['Name', 'Votes', 'Actions'],
+    [$motion, '1', qr/vote/i],
+]);
 follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Comment');
 submit_form({
     comment => 'x',
@@ -74,16 +76,19 @@ verify_table('Name', [
     ['Root User', 'x', 'y'],
 ]);
 
-follow_link('polls');
+follow_link('epolls');
 follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Edit');
 submit_form({
     name => 'Test Motion One',
     '_radio#0' => 'Closed',
 });
-verify_table('Name', [
-    ['Name', 'Started', 'Ended'],
-    ['Test Motion One', qr/./, qr/./],
-]);
+verify_text(qr/the epoll has been saved/i);
+# WiP
+
+#verify_table('Name', [
+#    ['Name', 'Started', 'Ended'],
+#    ['Test Motion One', qr/./, qr/./],
+#]);
 
 follow_link_in_table('Name', 'Name', 'Test Motion One', 'Actions', 'Results');
 verify_table('Date', [

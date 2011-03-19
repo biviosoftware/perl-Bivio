@@ -106,6 +106,7 @@ sub list {
 		'Motion.status',
 		'Motion.start_date_time',
 		'Motion.end_date_time',
+		'vote_count',
 		vs_actions_column([
 		    [
 			'Vote',
