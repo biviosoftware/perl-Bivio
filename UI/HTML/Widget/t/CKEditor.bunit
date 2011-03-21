@@ -1,0 +1,35 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+req()->initialize_fully;
+my($form) = Bivio::Biz::Model->new(req(), 'BlogCreateForm');
+my($name) = $form->get_field_name_for_html('body');
+$form->put_on_request;
+req()->put(font_with_style => 1); #suppress <font> tags in rendered output
+Widget();
+[
+    [{
+	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
+	model => 'BlogCreateForm',
+	field => 'body',
+	rows => 2,
+	cols => 60,
+	wrap => '',
+	edit_attributes => ' foo="bar"',
+    }] => qr
+        {
+	    <script\stype="text/javascript"\ssrc="/b/ckeditor/ckeditor\.js\?mt=\d+"></script>
+	    <textarea\sfoo="bar"\srows="2"\scols="60"\sname="$name"></textarea>
+	    <script\stype="text/javascript">
+	        CKEDITOR\.replace\("$name",\s
+	        {
+	            customConfig:\s"/b/ckeditor/bwiki_config.js",\s
+		    filebrowserImageUploadUrl:\s"/site/change-file/Public"
+	        }\);\s*
+		CKEDITOR\.config\.contentsCss=\[
+		   '/\*\sCopyright[^']+'
+		   # expect quite a few CSS lines
+		   (\s+\+\s'[^']+'){500,}
+	       ];
+	    </script>
+	}x,
+];
