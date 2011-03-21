@@ -69,8 +69,8 @@ sub control_on_render {
             . '<script type="text/javascript">'
 	    . 'CKEDITOR.replace("'
 	    . $form->get_field_name_for_html($field)
-	    . '", {customConfig : "/b/ckeditor/bwiki_config.js"'
-	    . ' ,  filebrowserImageUploadUrl: "/site/change-file/Public"});' . "\n"
+	    . '", {customConfig: "/b/ckeditor/bwiki_config.js"'
+	    . ', filebrowserImageUploadUrl: "/site/change-file/Public"});' . "\n"
 	    . 'CKEDITOR.config.contentsCss=' . $jscss. ';'
 	    . '</script>'	
 	    . $s;
