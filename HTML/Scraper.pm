@@ -180,6 +180,8 @@ sub parse_html {
     my($fields) = $self->[$_IDI];
     $fields->{html_parser} = b_use('Ext.HTMLParser')->new($self)
 	unless $fields->{html_parser};
+    # ignore utf warnings
+    local($SIG{__WARN__}) = sub {};
     $fields->{html_parser}->parse($$content);
     return;
 }
