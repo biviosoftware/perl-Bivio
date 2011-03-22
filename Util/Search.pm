@@ -23,6 +23,7 @@ EOF
 sub rebuild_db {
     sub REBUILD_DB {[[qw(?after_date Date)]]}
     my($self, $bp) = shift->parameters(\@_);
+    $self->assert_not_root;
     $self->are_you_sure('Rebuild Xapian database?');
     my($req) = $self->req;
     $_X->acquire_lock($req);
@@ -53,6 +54,7 @@ sub rebuild_db {
 sub rebuild_realm {
     sub REBUILD_REALM {[[qw(?after_date Date)]]}
     my($self, $bp) = shift->parameters(\@_);
+    $self->assert_not_root;
     $self->usage_error('realm must be specified')
 	if $self->req('auth_realm')->is_default;
     my($req) = $self->initialize_fully;
