@@ -222,6 +222,8 @@ sub _clean {
 	self => $self,
 	stack => [],
     };
+    # ignore utf warnings
+    local($SIG{__WARN__}) = sub {};
     HTML::Parser->new(
 	api_version => 3,
 	strict_end => 0,
