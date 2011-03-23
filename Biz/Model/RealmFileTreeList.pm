@@ -6,8 +6,11 @@ use Bivio::Base 'Model.TreeList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_FN) = b_use('Type.FileName');
 my($_FP) = b_use('Type.FilePath');
 my($_RF) = b_use('Model.RealmFile');
+my($_RFL) = b_use('Model.RealmFileLock');
+my($_RFVL) = b_use('Model.RealmFileVersionsList');
 my($_TLN) = b_use('Type.TreeListNode');
 my($_NOT_LIKE) = [
     '/.%',
@@ -19,13 +22,15 @@ my($_NOT_LIKE) = [
     ),
 ];
 my($_VERSIONS_FOLDER_RE) =  qr{^$_FP->VERSIONS_FOLDER(?:/:$)}ios;
-my($_RFL) = b_use('Model.RealmFileLock');
 my($_DEFAULT_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
 my($_LOCK) = $_RFL->if_enabled;
-my($_RFVL) = b_use('Model.RealmFileVersionsList');
 
 sub LOAD_ALL_SIZE {
     return 5000;
+}
+
+sub MAX_FILES_PER_FOLDER {
+    return 200;
 }
 
 sub PARENT_NODE_ID_FIELD {
@@ -81,6 +86,11 @@ sub internal_initialize {
 		type => 'String',
 		constraint => 'NONE',
 	    },
+	    {
+		name => 'is_max_files_per_folder',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
 	    ['Email_2.location', [$_DEFAULT_LOCATION]],
 	],
 	other_query_keys => [qw(path_info)],
@@ -105,8 +115,8 @@ sub internal_is_parent {
 
 sub internal_leaf_node_uri {
     my($self, $row) = @_;
-    return $self->get_request->format_uri({
-	task_id => $self->get_request->get('task')->get_attr_as_id('next'),
+    return $self->req->format_uri({
+	task_id => $self->req('task')->get_attr_as_id('next'),
 	path_info => $row->{'RealmFile.path'},
 	query => undef,
     });
@@ -129,6 +139,29 @@ sub internal_parent_node_uri_uri_params {
 
 sub internal_post_load_row {
     my($self, $row) = @_;
+    my($count_by_folder) = shift->[$_IDI]->{count_by_folder} ||= {};
+    $row->{is_max_files_per_folder} = 0;
+
+    if ($row->{'RealmFile.folder_id'} && ! $row->{'RealmFile.is_folder'}) {
+	my($count) =
+	    ($count_by_folder->{$row->{'RealmFile.folder_id'}} ||= 0)++;
+
+	if ($count == $self->MAX_FILES_PER_FOLDER) {
+	    $row->{is_max_files_per_folder} = 1;
+	    $row->{base_name} = undef;
+	    $row->{'RealmFile.modified_date_time'} = undef;
+	    $row->{'RealmOwner_2.display_name'} = undef;
+	    $row->{node_uri} = $self->req->format_uri({
+		task_id => 'FORUM_FOLDER_FILE_LIST',
+		query => {
+		    'ListQuery.parent_id' => $row->{'RealmFile.folder_id'},
+		},
+	    });
+	}
+	else {
+	    return 0 if $count >= $self->MAX_FILES_PER_FOLDER;
+	}
+    }
     $row->{node_state} = $_TLN->LOCKED_LEAF_NODE
 	if $row->{'RealmFileLock.modified_date_time'};
     if ($self->internal_is_parent($row) && $self->internal_is_empty($row)) {
@@ -136,8 +169,8 @@ sub internal_post_load_row {
 	$row->{node_uri} = undef;
     }
     $row->{base_name} = $row->{'RealmFile.path'} eq '/' ? '/'
-	: Bivio::Type::FileName->get_tail($row->{'RealmFile.path'});
-    $row->{content_length} = $row->{'RealmFile.is_folder'}
+	: $_FN->get_tail($row->{'RealmFile.path'});
+    $row->{content_length} = $row->{'RealmFile.is_folder'} || $row->{is_max_files_per_folder}
 	? undef
 	: $_RF->get_content_length(undef, 'RealmFile.', $row);
     return 1;
@@ -156,7 +189,6 @@ sub internal_prepare_statement {
     )});
     return shift->SUPER::internal_prepare_statement(@_);
 }
-
 
 sub internal_root_parent_node_id {
     my($self) = @_;
