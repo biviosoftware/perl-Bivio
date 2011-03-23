@@ -108,6 +108,12 @@ sub file_unlock {
     ]));
 }
 
+sub folder_file_list {
+    my($self) = @_;
+    vs_put_pager('RealmFolderFileList');
+    return $self->tree_list('RealmFolderFileList');
+}
+
 sub internal_revert_form {
     return vs_simple_form('RealmFileRevertForm');
 }
@@ -118,10 +124,11 @@ sub revert_form {
 }
 
 sub tree_list {
+    my($self, $model) = @_;
     return shift->internal_body(
-	If(['Model.RealmFileTreeList', '->can_write'],
-	    _tree_list(),
-	    _simple_tree(),
+	If(['Model.' . ($model || 'RealmFileTreeList'), '->can_write'],
+	    _tree_list($model),
+	    _simple_tree($model),
 	),
     );
 }
@@ -174,6 +181,16 @@ sub _file_date {
 	DateTime(['RealmFileLock.modified_date_time']),
 	DateTime(['RealmFile.modified_date_time']),
     );
+}
+
+sub _file_link_column {
+    return ['RealmFile.path', {
+	column_order_by => ['RealmFile.path_lc'],
+	column_widget => If(['is_max_files_per_folder'],
+	    vs_text('RealmFileTreeList.more_files'),
+	    String(['base_name']),
+	),
+    }];
 }
 
 sub _file_name {
@@ -286,21 +303,17 @@ sub _mailto {
 }
 
 sub _simple_tree {
-    return vs_tree_list(RealmFileTreeList => [
-	['RealmFile.path', {
-	    column_order_by => ['RealmFile.path_lc'],
-	    column_widget => String(['base_name']),
-	}],
+    my($model) = @_;
+    return vs_tree_list($model || 'RealmFileTreeList' => [
+	_file_link_column(),
 	'RealmFile.modified_date_time',
     ]);
 }
 
 sub _tree_list {
-    return vs_tree_list(RealmFileTreeList => [
-	['RealmFile.path', {
-	    column_order_by => ['RealmFile.path_lc'],
-	    column_widget => _file_name(['base_name']),
-	}],
+    my($model) = @_;
+    return vs_tree_list($model || 'RealmFileTreeList' => [
+	_file_link_column(),
 	['RealmFile.modified_date_time', {
 	    column_widget => If(
 		And(
@@ -334,6 +347,7 @@ sub _tree_list {
 			And(
 			    ['!', '->is_archive'],
 			    ['!', 'RealmFile.is_read_only'],
+			    ['!', 'is_max_files_per_folder'],
 			),
 		    ];
 		}
