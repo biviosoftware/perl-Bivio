@@ -858,6 +858,7 @@ sub _cfg_file {
 	    	[FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
 	    ),
 	    [FORUM_FILE_REVERT_FORM => '?/revert-file/*'],
+	    [FORUM_FOLDER_FILE_LIST => '?/folder/*'],
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -868,7 +869,7 @@ sub _cfg_file {
 		content => '',
 		folder_id => 'New Parent Folder',
 	    ]],
-	    [[qw(RealmFileList RealmFileTreeList)] => [
+	    [[qw(RealmFileList RealmFileTreeList RealmFolderFileList)] => [
 		'RealmFile.path' => 'Name',
 		'RealmFile.modified_date_time' => 'Changed',
 		[qw(Email_2.email RealmOwner_2.display_name)] => 'Who',
@@ -881,6 +882,7 @@ sub _cfg_file {
 		content_length => 'Size',
 		actions => 'Actions',
 		'list_action.FORUM_FILE_CHANGE' => 'Modify',
+		more_files => 'more ...',
 	    ]],
 	    [RealmFileLock => [
 		comment => 'Comments',
@@ -904,6 +906,7 @@ sub _cfg_file {
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
+		FORUM_FOLDER_FILE_LIST => q{Files for String(['Model.RealmFolderFileList', '->get_folder_path']);},
 	    ]],
 	    [prose => [
 		'EasyForm.update_mail' => [

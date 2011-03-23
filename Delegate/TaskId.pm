@@ -694,7 +694,18 @@ sub info_file {
 	    View.File->revert_form
 	    next=FORUM_FILE_TREE_LIST
          )],
-#174-179 free
+	[qw(
+	    FORUM_FOLDER_FILE_LIST
+	    175
+	    ANY_OWNER
+	    ANYBODY&FEATURE_FILE
+	    Model.RealmFile->execute_load_parent
+	    Model.RealmFolderFileList->execute_load_page
+	    View.File->folder_file_list
+	    next=FORUM_FILE
+	    write_task=FORUM_FILE_CHANGE
+	)],
+#176-179 free
     ];
 }
 
