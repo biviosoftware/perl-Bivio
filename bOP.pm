@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,49 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.50  2011/03/19 22:44:05  nagler
+  * Bivio::Agent::Request
+    added delete_txn_resource for Lock
+  * Bivio::Agent::Task
+    the loop in _call_txn_resources was wrong.  Need two phase commit.
+    handle_prepare_commit is called before handle_commit.
+    Xapian may execute in handle_prepare_commit phase, including grabbing
+    a lock
+  * Bivio::Biz::Action::ClientRedirect
+    die with NOT_FOUND if uri not in execute_permanent_map()
+  * Bivio::Biz::Action::RealmFile
+    if loading a folder, set path_info to folder path from file lookup
+  * Bivio::Biz::Model::Lock
+    Now can have multiple locks on the request.  This is necessary,
+    because Xapian may need a lock, and the task needs a lock, too, during
+    ShellUtil execution.
+  * Bivio::Biz::Model::MotionList
+    Display vote count and allow votes to be changed.
+  * Bivio::Biz::Model::MotionVoteForm
+    Display vote count and allow votes to be changed.
+  * Bivio::Biz::Model::RealmMailDeleteForm
+    removed require_context, might be deleting last message in thread
+  * Bivio::Mail::Common
+    minor text change
+  * Bivio::Search::Parser::RealmFile::PDF
+    fix error regex
+  * Bivio::Search::Parser::RealmFile::Unknown
+    turn unknown text file parsing back on
+  * Bivio::Search::Xapian
+    Because execute does a bunch of db stuff, it can't be called in
+    handle_commit.  Changed Agent.Task to have handle_prepare_commit, and
+    that's what's called to prepare the commit
+  * Bivio::Test::FormModel
+    Locks changed so now have to call release_all
+  * Bivio::UI::FacadeBase
+    Cosmetic "poll" -> "ePoll" for IEEE
+  * Bivio::UI::View::Motion
+    Display vote count and allow votes to be changed.
+  * Bivio::Util::RealmFile
+    added clear_files_and_mail()
+  * Bivio::Util::Search
+    remove debug stmt
+
   Revision 10.49  2011/03/17 21:03:23  nagler
   * Bivio::Biz::Model::TupleTag
     tuple_def_id refers to TupleUse.tuple_def_id so cascade_delete() order
