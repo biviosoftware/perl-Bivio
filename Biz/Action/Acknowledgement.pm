@@ -46,6 +46,10 @@ sub handle_client_redirect {
 	if $named->{uri} =~ /\b@{[$proto->QUERY_KEY]}=/;
     return
 	unless my $label = $proto->extract_and_delete_label($req);
+
+    if (my $t = $_TI->unsafe_from_name($label)) {
+	$label = $t->as_int;
+    }
     $named->{uri} .= ($named->{uri} =~ /\?/ ? '&' : '?')
 	. $proto->QUERY_KEY
 	. '='
