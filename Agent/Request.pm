@@ -388,8 +388,8 @@ sub delete_from_query {
 
 sub delete_txn_resource {
     my($self, $resource) = @_;
-    my($tr) = $self->get('txn_resources');
-    @$tr = grep($_ ne $resource, @$tr);
+    # use new array in case something is iterating the original
+    $self->put(txn_resources => [grep($_ ne $resource, @{$self->get('txn_resources')})]);
     return;
 }
 
