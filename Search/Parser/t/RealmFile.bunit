@@ -48,7 +48,7 @@ EOF
 	    'pdf.eml' => ['message/rfc822', 'mysubject', "Subject: mysubject\nTo: SomeList <q\@r.s>\nFrom: SomeUser <x\@y.z>\n\nsome text\n\n\nA sample PDF document."],
  	    't.gif' => ['unparsed', '', ''],
  	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
- 	    TextFile => ['text/plain', '', 'some text'],
+ 	    TextFile => ['text/plain', '', "some text\n"],
  	    BinaryFile => ['unparsed', '', ''],
  	    ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
  	    't2.bwiki' => ['text/plain', 'TITLE',
