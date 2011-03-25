@@ -105,7 +105,7 @@ sub get_values_for_primary_id {
 	    }
 	});
     });
-    b_warn($die) if $die;
+    b_warn($die->get('attrs')->{message}) if $die;
     return ($die || ! $res)
 	? shift->SUPER::get_values_for_primary_id(@_)
 	: $res;
