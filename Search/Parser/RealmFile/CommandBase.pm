@@ -41,7 +41,7 @@ sub internal_run_parser {
     my($path) = $parseable->get_os_path;
     b_die($cmd, ': missing <path>')
 	unless $cmd =~ s/<path>/$path/g;
-    my($die) = $_D->catch_quietly(sub {$out = $_SU->piped_exec("$cmd 2>&1")});
+    my($die) = $_D->catch_quietly(sub {$out = $_SU->piped_exec($cmd)});
     if ($die || !defined($out) || ($error_pattern && $$out =~ $error_pattern)) {
 	b_warn($cmd, ': ', $die ? $die->get('attrs') : ($out || 'no output'));
 	return '';
