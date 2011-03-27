@@ -1,0 +1,24 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+package Bivio::UI::Widget::IfMobile;
+use strict;
+use Bivio::Base 'Widget.If';
+use Bivio::UI::ViewLanguageAUTOLOAD;
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+
+sub NEW_ARGS {
+    return [qw(control_on_value ?control_off_value)];
+}
+
+sub REQ_KEY {
+    return __PACKAGE__;
+}
+
+sub initialize {
+    my($self) = @_;
+    $self->put_unless_exists(control => ['->ureq', $self->REQ_KEY]);
+    return shift->SUPER::initialize(@_);
+}
+
+1;
