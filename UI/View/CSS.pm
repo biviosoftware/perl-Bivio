@@ -395,6 +395,7 @@ td.footer_left {
   text-align: left;
   vertical-align: top;
 }
+div.want_sep,
 .task_menu a.want_sep,
 .pager .next,
 .pager .list,
@@ -402,7 +403,6 @@ td.footer_left {
 .dock .want_sep,
 .header_right .want_sep,
 .tools span.want_sep,
-.tools div.want_sep,
 .tools div.sep {
   CSS('menu_want_sep');
 }
@@ -707,6 +707,12 @@ span.b_abtest a {
 }
 span.b_abtest a.selected {
   Font('b_abtest_a_selected');
+}
+div.b_mobile_toggler span.selected {
+  Font('b_mobile_toggler_selected');
+}
+div.b_mobile_toggler a {
+  Font('b_mobile_toggler_a');
 }
 EOF
 }
