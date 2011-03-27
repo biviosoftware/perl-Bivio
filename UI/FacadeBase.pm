@@ -237,6 +237,8 @@ sub _cfg_base {
 	    [th => [qw(bold center), 'style=padding: .5em']],
 	    [th_a => [qw(bold center)]],
 	    [b_sort_arrow => []],
+	    [b_mobile_toggler_selected => 'bold'],
+	    [b_mobile_toggler_a => []],
 	    # Historical font names
 	    map([$_->[0] => [qq{class=$_->[1]}]],
 		[error => 'field_err'],
@@ -506,6 +508,10 @@ sub _cfg_base {
 		entry_title => q{String(['->get_rss_title']);},
 		entry_content => q{String(['->get_rss_summary']);},
 		title => q{String(vs_site_name()); vs_text_as_prose('xhtml_title');},
+	    ]],
+	    [MobileToggler => [
+		desktop => 'Desktop',
+		mobile => 'Mobile',
 	    ]],
 	    ['task_menu.title' => [
 		[qw(sort_first sort_label_01)] => "\1",
