@@ -101,9 +101,7 @@ __PACKAGE__->new({
 	[SHIPPING_ADDRESS => '?/shipping-address'],
 	[ORDER_CONFIRMATION => '?/confirm-order'],
 	[ORDER_DETAILS => '?/order-details'],
-	[MAIN => sub {
-	     shift->get_facade->get('Text')->get_value('home_page_uri');
-	}],
+	[MAIN => '/pub'],
 	[USER_ACCOUNT_CREATE => 'my/create-account'],
 	[USER_ACCOUNT_EDIT => '?/account'],
 	[USER_ACCOUNT_EDIT_BY_SUPER_USER => '?/edit-account'],
