@@ -23,9 +23,14 @@ sub internal_xhtml_adorned {
 		WikiText('@invalidwikitag'),
 	    ),
 	),
+	xhtml_footer_center => MobileToggler(),
+	xhtml_head_tags => MobileDetector(),
 	xhtml_footer_left => Join([
 	    XLink('back_to_top'),
-	    DIV_pet_task_info(TaskInfo({})),
+	    IfMobile(
+		'',
+		DIV_pet_task_info(TaskInfo({})),
+	    ),
 	]),
     );
     return @res;
