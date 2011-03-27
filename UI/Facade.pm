@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade;
 use strict;
@@ -90,8 +90,9 @@ my($_A) = b_use('IO.Alert');
 my($_FN) = b_use('Type.FileName');
 our($_TRACE);
 my($_INITIALIZED) = 0;
-my(%_CLASS_MAP);
-my(%_URI_MAP);
+my($_CLASS_MAP) = {};
+my($_URI_MAP) = {};
+my($_URI_SEARCH_LIST) = [];
 my(%_COMPONENTS);
 my(@_COMPONENTS);
 my($_STATIC_COMPONENTS) = [qw(Email Icon View)];
@@ -112,12 +113,12 @@ sub as_string {
 
 sub find_by_uri_or_domain {
     my($proto, $uri_or_domain) = @_;
-    return $_CLASS_MAP{$_CFG->{default}}
+    return $_CLASS_MAP->{$_CFG->{default}}
 	unless defined($uri_or_domain);
     $uri_or_domain = lc($uri_or_domain);
-    foreach my $uri ($uri_or_domain, split(/\./, $uri_or_domain)) {
-	return $_URI_MAP{$uri}
-	    if $_URI_MAP{$uri};
+    foreach my $uri (@$_URI_SEARCH_LIST) {
+	return $_URI_MAP->{$uri}
+	    if $uri_or_domain =~ /(?:^|\.)$uri(?:$|\.)/;
     }
     return undef;
 }
@@ -127,12 +128,11 @@ sub get_all_classes {
     # this function.
     die('not all classes available, because not fully initialized')
 	unless shift->is_fully_initialized;
-    return [sort(keys(%_CLASS_MAP))];
+    return [sort(keys(%$_CLASS_MAP))];
 }
 
 sub get_default {
-    # Get the default facade.
-    return $_CLASS_MAP{$_CFG->{default}};
+    return $_CLASS_MAP->{$_CFG->{default}};
 }
 
 sub get_from_request_or_self {
@@ -162,7 +162,7 @@ sub get_instance {
     # Returns facade instance for I<simple_class>.  Facade must be initialized.
     # Returns default facade, if I<simple_class> is C<undef> or false.
     return $simple_class
-	? $_CLASS_MAP{$simple_class}
+	? $_CLASS_MAP->{$simple_class}
 	    || b_die($simple_class, ': no such facade')
 	: $proto->get_default
 }
@@ -268,8 +268,8 @@ sub initialize {
         unless $partially;
     b_die(
 	$_CFG->{default}, ': unable to find or load default Facade',
-    ) unless ref($_CLASS_MAP{$_CFG->{default}});
-    foreach my $f (sort(values(%_CLASS_MAP))) {
+    ) unless ref($_CLASS_MAP->{$_CFG->{default}});
+    foreach my $f (sort(values(%$_CLASS_MAP))) {
 	foreach my $c (@$_STATIC_COMPONENTS) {
 	    $f->put($c => Bivio::IO::ClassLoader->map_require(
 		'FacadeComponent', $c
@@ -346,17 +346,17 @@ sub new {
     my($class) = ref($self);
     my($simple_class) = $self->simple_package_name;
     b_die($class, ': duplicate initialization')
-        if $_CLASS_MAP{$simple_class};
+        if $_CLASS_MAP->{$simple_class};
     # Not yet initialized, but avoid infinite recursion in the
     # event of self-referential configuration.
-    $_CLASS_MAP{$simple_class} = 1;
+    $_CLASS_MAP->{$simple_class} = 1;
 
     $self->use('Agent.Request');
     # Only load production configuration.
     if (Bivio::Agent::Request->is_production && !$config->{is_production}) {
 	# Anybody referencing this facade will get an error; see _load().
 	_trace($class, ': non-production Facade, not initializing');
-	delete($_CLASS_MAP{$simple_class});
+	delete($_CLASS_MAP->{$simple_class});
 	return undef;
     }
 
@@ -374,9 +374,13 @@ sub new {
     $wlfc = $_CFG->{want_local_file_cache}
 	unless defined($wlfc);
 
-    b_die($uri, ': duplicate uri for ', $class, ' and ',
-	    ref($_URI_MAP{$uri}))
-		if $_URI_MAP{$uri};
+    b_die(
+	$uri,
+	': duplicate uri for ',
+	$class,
+	' and ',
+	ref($_URI_MAP->{$uri}),
+    ) if $_URI_MAP->{$uri};
     _trace($class, ': uri=', $uri) if $_TRACE;
 
     # Initialize this instance's attributes
@@ -387,6 +391,7 @@ sub new {
 	is_production => $config->{is_production} ? 1 : 0,
 	is_default => $_CFG->{default} eq $self->simple_package_name ? 1 : 0,
         cookie_domain => delete($config->{cookie_domain}),
+	parent => $clone,
     });
     _init_hosts($self, $config);
     foreach my $x (qw(
@@ -403,7 +408,13 @@ sub new {
     _initialize($self, $config, $clone);
 
     # Store globally
-    $_CLASS_MAP{$simple_class} = $_URI_MAP{$uri} = $self;
+    $_CLASS_MAP->{$simple_class} = $_URI_MAP->{$uri} = $self;
+    $_URI_SEARCH_LIST = [
+	sort(
+	    {length($b) <=> length($a) || $a cmp $b}
+	    keys(%$_URI_MAP),
+	),
+    ];
     return $self;
 }
 
@@ -438,28 +449,22 @@ sub register {
 }
 
 sub setup_request {
-    my($proto, $uri_or_domain, $req) = @_;
-    # Sets up the request with the appropriate Facade.  Sets the attribute
-    # I<Bivio::UI::Facade>.  If I<uri_or_domain> is not a valid Facade, writes a
-    # warning (only once) and uses the default Facade.
-    #
-    # Only outputs the warning once.
-    #
-    # Returns the facade.
-    if (ref($uri_or_domain)) {
-	b_die($uri_or_domain, ': is not a Request')
-	    unless $_R->is_blessed($uri_or_domain);
+    my($proto) = shift;
+    my($arg1) = shift;
+    if (ref($arg1)) {
+	b_die($arg1, ': first arg is not a Request')
+	    unless $_R->is_blessed($arg1);
 	b_die('must not be called statically')
 	    unless ref($proto);
-	return _setup_request($proto, $uri_or_domain);
+	return _setup_request($proto, $arg1);
     }
-    _trace('uri: ', $uri_or_domain) if $_TRACE;
-    my($self) = $proto->find_by_uri_or_domain($uri_or_domain);
-    unless ($self) {
-	# Avoid repeated errors
-	$self = $_URI_MAP{$uri_or_domain} = $_CLASS_MAP{$_CFG->{default}};
-    }
-    return _setup_request($self, $req);
+    my($req) = shift;
+    _trace('uri: ', $arg1) if $_TRACE;
+    return _setup_request(
+	$proto->find_by_uri_or_domain($arg1)
+	    || $_CLASS_MAP->{$_CFG->{default}},
+	$req,
+    );
 }
 
 sub unsafe_get_from_source {
@@ -556,8 +561,8 @@ sub _load {
     b_die($c, ': not a ')
 	unless __PACKAGE__->is_subclass($c);
     b_die($c, ": did not call this module's new (non-production Facade?")
-	unless ref($_CLASS_MAP{$clone});
-    return $_CLASS_MAP{$clone};
+	unless ref($_CLASS_MAP->{$clone});
+    return $_CLASS_MAP->{$clone};
 }
 
 sub _setup_request {
