@@ -24,9 +24,11 @@ my($_EXPECTED) = {
     put_durable_server_redirect_state => [@$_PARAMS, qw(form form_model)],
     server_redirect => [qw(
         task_id realm query form path_info no_context require_context no_form
+	carry_path_info carry_query
     )],
     client_redirect => [qw(
         task_id realm query path_info no_context require_context no_form uri http_status_code
+	require_absolute carry_path_info carry_query
     )],
 };
 my($_IMPLICIT_OVERRIDE) = {
