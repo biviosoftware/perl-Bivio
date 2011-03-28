@@ -1013,7 +1013,7 @@ sub info_motion {
 	    FORUM_MOTION_VOTE
 	    113
 	    ANY_OWNER
-	    MOTION_WRITE&FEATURE_MOTION
+            MOTION_WRITE&FEATURE_MOTION
 	    Model.MotionList->execute_load_this
 	    Model.MotionVoteForm
 	    View.Motion->vote_form
@@ -1045,7 +1045,26 @@ sub info_motion {
 	    Model.MotionCommentList->execute_load_all_with_query
 	    View.Motion->comment_result
 	)],
-#117-119 free
+	[qw(
+	    FORUM_MOTION_COMMENT_LIST_CSV
+	    117
+	    ANY_OWNER
+	    MOTION_READ&FEATURE_MOTION
+	    Model.MotionCommentList->execute_load_all_with_query
+	    View.Motion->comment_result_csv
+	)],
+	[qw(
+	    FORUM_MOTION_STATUS
+	    118
+	    ANY_OWNER
+	    MOTION_READ&FEATURE_MOTION
+	    Model.MotionList->execute_load_all_with_query
+	    Model.Motion->execute_load_parent
+	    Model.MotionVoteList->execute_load_all_with_query
+	    Model.MotionCommentList->execute_load_all_with_query
+	    View.Motion->status
+	)],
+#119 free
     ];
 }
 
@@ -1497,7 +1516,7 @@ sub info_wiki {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
 	    Model.WikiForm
-	    View.Wiki->edit
+	    View.Wiki->edit_wysiwyg
 	    next=FORUM_WIKI_VIEW
 	)],
 	[qw(
