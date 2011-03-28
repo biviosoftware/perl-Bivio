@@ -366,7 +366,6 @@ sub _value_cell {
 
 sub _vote_list {
     my($self) = @_;
-    b_debug($self);
     return vs_paged_list(
 	    MotionVoteList => [qw(
 		MotionVote.creation_date_time
