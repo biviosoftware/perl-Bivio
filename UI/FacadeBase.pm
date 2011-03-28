@@ -1189,7 +1189,6 @@ sub _cfg_motion {
                     'Replace Document',
                     'Document',
                 );},
-		'Motion.end_date_time' => 'End date',
                 end_date_string => "End",
 	    ]],
 	    [MotionComment => [
