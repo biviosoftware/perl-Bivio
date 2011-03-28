@@ -60,10 +60,15 @@ sub comment_result {
 }
 
 sub comment_result_csv {
-    return shift->internal_body(CSV(MotionCommentList => [qw(
-        RealmOwner.display_name
-	MotionComment.comment
-    )]));
+    return shift->internal_body([sub {
+	my($source) = @_;
+	my($model) = $source->req('Model.MotionCommentList');
+        return CSV(MotionCommentList => [
+	    'RealmOwner.display_name',
+	    'MotionComment.comment',
+	    map($_, $model->tuple_tag_field_check),
+	]);
+    }]);
 }
 
 
