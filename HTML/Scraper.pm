@@ -281,8 +281,8 @@ sub _http_request {
     # Tries to redirect up to four times, then dies with too many redirects.
     my(@uris);
     my($uri) = $hreq->uri->as_string;
-    # Only allow 5 redirects
-    foreach my $iteration (1..5) {
+    # Only allow 10 redirects
+    foreach my $iteration (1..10) {
 	push(@uris, $uri);
 	# We save the host
 	$self->get('cookie_jar')->add_cookie_header($hreq);
