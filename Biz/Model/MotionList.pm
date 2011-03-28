@@ -28,6 +28,7 @@ sub internal_initialize {
 	primary_key => ['Motion.motion_id'],
 	order_by => [qw(
 	    Motion.name_lc
+	    Motion.question
 	    Motion.start_date_time
 	    Motion.end_date_time
 	    Motion.status
