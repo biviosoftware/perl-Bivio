@@ -15,6 +15,7 @@ sub WANT_FILE_FIELDS {
 
 sub comment_form {
     my($self) = @_;
+    _topic_from_list($self);
     return shift->internal_body([sub {
         my($source) = @_;
 	my($model) = $source->req('Model.MotionCommentForm');
@@ -32,9 +33,13 @@ sub comment_result {
     vs_put_pager('MotionCommentList');
     return shift->internal_put_base_attr(
 	tools => TaskMenu([
+	    {
+		task_id => 'FORUM_MOTION_COMMENT_LIST_CSV',
+		query => ['->req', 'query'],
+	    },
 	    'FORUM_MOTION_LIST',
 	]),
-	_topic(),
+	_topic_from_motion($self),
 	body => [sub {
             my($source) = @_;
 	    my($model) = $source->req('Model.MotionCommentList');
@@ -116,6 +121,7 @@ sub list {
 		'Motion.start_date_time',
 		'Motion.end_date_time',
 		[ 'vote_count', {
+		    column_data_class => 'vote_count',
 		        column_widget => Join([       
 			    Integer("yes_count"),
 			    String("/"),	
@@ -223,13 +229,10 @@ sub status {
 
 
 sub vote_form {
-    return shift->internal_put_base_attr(
-	topic => Join([
-	    String([qw(Model.MotionVoteForm Motion.name)]),
-	    ': ',
-	    String([qw(Model.MotionVoteForm Motion.question)]),
-	]),
-	body => vs_simple_form(MotionVoteForm => [
+    my($self) = @_;
+    _topic_from_list($self);
+    return shift->internal_body(
+	vs_simple_form(MotionVoteForm => [
 	    [
 		'MotionVoteForm.MotionVote.vote' => {
 		    enum_sort => 'get_short_desc',
@@ -243,6 +246,7 @@ sub vote_form {
 }
 
 sub vote_result {
+    my($self) = @_;
     return shift->internal_put_base_attr(
 	tools => TaskMenu([
 	    {
@@ -251,7 +255,7 @@ sub vote_result {
 	    },
 	    'FORUM_MOTION_LIST',
 	]),
-	_topic(),
+	_topic_from_motion($self),
 	body => vs_paged_list(
 	    MotionVoteList => [qw(
 		MotionVote.creation_date_time
@@ -327,14 +331,28 @@ sub _label_cell  {
 	    qw(column_data_class cell_class column_footer_class)));
 }
 
-sub _topic {
-    return (
+sub _topic_from_list {
+    my($self) = @_;
+    $self->internal_put_base_attr(
+	topic => Join([
+	    String([qw(Model.MotionList Motion.name)]),
+	    ': ',
+	    String([qw(Model.MotionList Motion.question)]),
+	]),
+    );
+    return;
+}
+
+sub _topic_from_motion {
+    my($self) = @_;
+    $self->internal_put_base_attr(
 	topic => Join([
 	    String([qw(Model.Motion name)]),
 	    ': ',
 	    String([qw(Model.Motion question)]),
 	]),
     );
+    return;
 }
 
 sub _value_cell {
