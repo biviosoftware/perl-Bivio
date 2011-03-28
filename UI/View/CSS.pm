@@ -908,6 +908,14 @@ sub _site_mail {
 EOF
 }
 
+sub _site_motion {
+    return <<'EOF';
+td.vote_count {
+  text-align: center;
+}
+EOF
+}
+
 sub _site_site_admin {
     return <<'EOF';
 table.task_log .super_user {
