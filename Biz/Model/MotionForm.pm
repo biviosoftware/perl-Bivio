@@ -122,6 +122,7 @@ sub internal_pre_execute {
     my($sal) = $self->new_other('StringArrayList');
     $sal->load_from_string_array(b_use('Type.StringArray')->from_literal(\@_TIME_NAMES));
     $self->internal_put_field('Model.StringArrayList', $sal);
+    
     return shift->SUPER::internal_pre_execute(@_);
 }
 
@@ -131,7 +132,7 @@ sub validate {
     $self->_fix_up_end_date();
     if ($self->get('Motion.moniker')) {
 	$self->internal_put_error('Motion.moniker' => 'NOT_FOUND')
-	    unless $self->new_other('TupleUse')->unsafe_load({
+	    unless $self->new_other('TupleDef')->unsafe_load({
 		moniker => $self->get('Motion.moniker'),
 	    });
     }
