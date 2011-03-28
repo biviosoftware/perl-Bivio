@@ -1210,7 +1210,7 @@ CREATE TABLE motion_t (
   start_date_time DATE,
   end_date_time DATE,
   motion_file_id NUMERIC(18),
-  moniker VARCHAR(100) NOT NULL,
+  moniker VARCHAR(100),
   CONSTRAINT motion_t1 PRIMARY KEY(motion_id)
 )
 /
