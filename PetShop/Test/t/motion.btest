@@ -30,9 +30,9 @@ submit_form({
 });
 
 follow_link('polls');
-verify_text(qr/no epolls/i);
-follow_link('new_epoll');
-verify_text(qr{one vote per user}i);
+verify_text(qr/no polls/i);
+follow_link('new_poll');
+#verify_text(qr{one vote per user}i);
 my($motion) = 'Test Motion 1';
 test_deviance('must supply a value');
 submit_form({
@@ -44,7 +44,7 @@ submit_form({
     comment_format => 'b_motion_comment2',
 });
 verify_table('Name', [
-    ['Name', 'Started', 'Ended'],
+    ['Name', 'Start', 'End'],
     [$motion, qr/./, ''],
 ]);
 follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Edit');
@@ -62,8 +62,8 @@ submit_form({
 });
 # can change vote
 verify_table('Name', [
-    ['Name', 'Votes', 'Actions'],
-    [$motion, '1', qr/vote/i],
+    ['Name', qr/Votes/, 'Actions'],
+    [$motion, '1/0/0', qr/vote/i],
 ]);
 follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Comment');
 submit_form({
@@ -76,17 +76,17 @@ verify_table('Name', [
     ['Root User', 'x', 'y'],
 ]);
 
-follow_link('epolls');
+follow_link('polls');
 follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Edit');
 submit_form({
     name => 'Test Motion One',
-    '_radio#0' => 'Closed',
+    end => 'now',
 });
-verify_text(qr/the epoll has been saved/i);
+verify_text(qr/the poll has been saved/i);
 # WiP
 
 #verify_table('Name', [
-#    ['Name', 'Started', 'Ended'],
+#    ['Name', 'Start', 'End'],
 #    ['Test Motion One', qr/./, qr/./],
 #]);
 
