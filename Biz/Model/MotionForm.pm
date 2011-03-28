@@ -132,7 +132,7 @@ sub validate {
     $self->_fix_up_end_date();
     if ($self->get('Motion.moniker')) {
 	$self->internal_put_error('Motion.moniker' => 'NOT_FOUND')
-	    unless $self->new_other('TupleDef')->unsafe_load({
+	    unless $self->new_other('TupleUse')->unsafe_load({
 		moniker => $self->get('Motion.moniker'),
 	    });
     }
