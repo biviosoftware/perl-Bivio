@@ -13,10 +13,9 @@ my($_VT) = b_use('Type.MotionVote');
 sub create {
     my($self, $values) = @_;
     $values->{name_lc} = lc($values->{name});
-    $values->{type} = $_MT->VOTE_PER_USER;
-    $values->{status} = $_MS->OPEN;
+    $values->{type} ||= $_MT->VOTE_PER_USER;
+    $values->{status} ||= $_MS->OPEN;
     $values->{start_date_time} ||= $_DT->now;
-    $values->{end_date_time} = undef;
     return shift->SUPER::create(@_);
 }
 
