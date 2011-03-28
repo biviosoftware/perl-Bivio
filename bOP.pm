@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.51  2011/03/23 19:50:33  moeller
+  * Bivio::Biz::Model::RealmFileTreeList
+    added MAX_FILES_PER_FOLDER, limit folder files and use a "more" link
+    if limit is reached
+  * Bivio::Biz::Model::RealmFolderFileList
+    NEW
+  * Bivio::Delegate::TaskId
+    added FORUM_FOLDER_FILE_LIST
+  * Bivio::HTML::Scraper
+    ignore UTF warnings during parse_html()
+  * Bivio::UI::FacadeBase
+    added FORUM_FOLDER_FILE_LIST
+    backed out ePoll name change
+  * Bivio::UI::HTML::Widget::CKEditor
+    Cosmetic change for unit test
+  * Bivio::UI::View::File
+    added folder_file_list(), reuse tree_list() for implementation
+  * Bivio::Util::Search
+    don't allow running commands as root
+
   Revision 10.50  2011/03/19 22:44:05  nagler
   * Bivio::Agent::Request
     added delete_txn_resource for Lock
