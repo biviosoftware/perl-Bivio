@@ -1167,6 +1167,8 @@ sub _cfg_motion {
 	    [FORUM_MOTION_VOTE_LIST => ['?/poll-results', '?/vote-results', '?/results']],
 	    [FORUM_MOTION_VOTE_LIST_CSV => ['?/poll-results.csv', '?/vote-results.csv', '?/results.csv']],
 	    [FORUM_MOTION_COMMENT_LIST => '?/poll-comments'],
+	    [FORUM_MOTION_COMMENT_LIST_CSV => '?/poll-comments.csv'],
+	    [FORUM_MOTION_STATUS => '?/poll-status'],
 	],
 	Text => [
 	    [Motion => [
@@ -1175,8 +1177,8 @@ sub _cfg_motion {
 		status => 'Status',
 		type => 'Type',
 		motion_file_id => 'Document',
-		start_date_time => 'Started',
-		end_date_time => 'Ended',
+		start_date_time => 'Start',
+		end_date_time => 'End',
 		moniker => 'Comment Format',
 	    ]],
 	    [MotionForm => [
@@ -1187,6 +1189,8 @@ sub _cfg_motion {
                     'Replace Document',
                     'Document',
                 );},
+		'Motion.end_date_time' => 'End date',
+                end_date_string => "End",
 	    ]],
 	    [MotionComment => [
 		comment => 'Comment',
@@ -1201,7 +1205,7 @@ sub _cfg_motion {
 	    ]],
 	    [MotionList => [
 		empty_list_prose => 'No polls to display.',
-		vote_count => 'Vote count',
+		vote_count => 'Votes [Y/N/A]',
 	    ]],
 	    [MotionVoteList => [
 		empty_list_prose => 'No poll results.',
@@ -1218,9 +1222,11 @@ sub _cfg_motion {
 		FORUM_MOTION_VOTE => 'Vote',
 		FORUM_MOTION_VOTE_LIST => 'Poll Results',
 		FORUM_MOTION_COMMENT_LIST => 'Poll Comments',
+		FORUM_MOTION_STATUS => 'Poll Status',
 	    ]],
 	    ['task_menu.title' => [
-		FORUM_MOTION_VOTE_LIST_CSV => 'Spreadsheet',
+		FORUM_MOTION_VOTE_LIST_CSV => 'Vote spreadsheet',
+		FORUM_MOTION_COMMENT_LIST_CSV => 'Comment spreadsheet',
 	    ]],
 	],
     };
