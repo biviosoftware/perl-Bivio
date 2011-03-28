@@ -6,8 +6,8 @@ use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
-my($_MT) = b_use('Type.MotionType');
 my($_MS) = b_use('Type.MotionStatus');
+my($_MT) = b_use('Type.MotionType');
 my($_VT) = b_use('Type.MotionVote');
 
 sub create {
@@ -23,8 +23,6 @@ sub create {
 sub update {
     my($self, $values) = @_;
     $values->{name_lc} = lc($values->{name});
-    $values->{type} = $_MT->VOTE_PER_USER;
-    $values->{status} = $_MS->OPEN;
     return shift->SUPER::update(@_);
 }
 
@@ -56,15 +54,12 @@ sub internal_initialize {
 
 sub vote_count {
     my($self,  $vote_type) = @_;
-    my($clause) = $vote_type ? ' AND mv.vote = ' . $vote_type->as_sql_param : '';
-
-      my($results) = Bivio::SQL::Connection->execute_one_row('
-            SELECT COUNT(*)
-            FROM motion_vote_t mv
-            WHERE mv.motion_id = ?'
-	    . $clause,
-	    [ $self->get('motion_id') ]);
-    return $results->[0];
+    return b_use('SQL.Connection')->execute_one_row('
+        SELECT COUNT(*)
+        FROM motion_vote_t mv
+        WHERE mv.motion_id = ?
+        ' . ($vote_type ? 'AND mv.vote = ?' : ''),
+	[$self->get('motion_id'), $vote_type->as_sql_param || ()])->[0];
 }
 
 sub vote_count_abstain {
