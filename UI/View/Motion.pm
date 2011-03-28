@@ -82,18 +82,38 @@ sub form {
 	    FormFieldError('Motion.name_lc'),
 	    'MotionForm.Motion.name',
 	    'MotionForm.Motion.question',
+	    map(["MotionForm.Motion.$_" => {
+		enum_sort => 'get_short_desc',
+		show_unknown => 0,
+		column_count => 1,
+	    }], qw(status type)),
 	    $self->WANT_FILE_FIELDS
-		? _file_fields($self)
+		? $self->internal_file_fields
 		: (),
-	    [   'MotionForm.end_date_string' => {
-		    wf_class => 'ComboBox',
-                    size => Bivio::Biz::Model::MotionForm->DATE_TIME_SIZE,
-		    list_display_field => [ 'value' ],
-		    list_class => 'StringArrayList',
-	        },
-	    ],
-	    'MotionForm.Motion.moniker',
 	]),
+    );
+}
+
+sub internal_file_fields {
+    my($self) = @_;
+    return (
+	[String(After(vs_text('Motion.motion_file_id'), ':'))
+	    ->put(cell_class => 'label label_ok'),
+	    If(['Model.MotionForm', 'Motion.motion_file_id'],
+	        Link(
+		    String([['Model.MotionForm', '->get_motion_document'],
+		        'path']),
+		    URI({
+			task_id => 'FORUM_FILE',
+			path_info => [['Model.MotionForm',
+		            '->get_motion_document'], 'path'],
+		    }),
+		),
+	    )->put(row_control =>
+	        ['Model.MotionForm', 'Motion.motion_file_id'],
+	    ),
+        ],
+        'MotionForm.file',
     );
 }
 
@@ -305,29 +325,6 @@ sub _comment_list {
 	]
 }
 
-
-sub _file_fields {
-    my($self) = @_;
-    return (
-	[String(After(vs_text('Motion.motion_file_id'), ':'))
-	    ->put(cell_class => 'label label_ok'),
-	    If(['Model.MotionForm', 'Motion.motion_file_id'],
-	        Link(
-		    String([['Model.MotionForm', '->get_motion_document'],
-		        'path']),
-		    URI({
-			task_id => 'FORUM_FILE',
-			path_info => [['Model.MotionForm',
-		            '->get_motion_document'], 'path'],
-		    }),
-		),
-	    )->put(row_control =>
-	        ['Model.MotionForm', 'Motion.motion_file_id'],
-	    ),
-        ],
-        'MotionForm.file',
-    );
-}
 
 sub _label_cell  {
     my($text) = @_;
