@@ -1025,7 +1025,7 @@ sub info_motion {
 	    ANY_OWNER
 	    MOTION_READ&FEATURE_MOTION
 	    Model.Motion->execute_load_parent
-	    Model.MotionVoteList->execute_load_all_with_query
+	    Model.MotionVoteList->execute_load_page
 	    View.Motion->vote_result
 	)],
 	[qw(
@@ -1042,7 +1042,7 @@ sub info_motion {
 	    ANY_OWNER
 	    MOTION_READ&FEATURE_MOTION
 	    Model.Motion->execute_load_parent
-	    Model.MotionCommentList->execute_load_all_with_query
+	    Model.MotionCommentList->execute_load_page
 	    View.Motion->comment_result
 	)],
 	[qw(
@@ -1050,6 +1050,7 @@ sub info_motion {
 	    117
 	    ANY_OWNER
 	    MOTION_READ&FEATURE_MOTION
+	    Model.Motion->execute_load_parent
 	    Model.MotionCommentList->execute_load_all_with_query
 	    View.Motion->comment_result_csv
 	)],
