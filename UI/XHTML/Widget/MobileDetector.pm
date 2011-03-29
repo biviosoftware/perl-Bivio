@@ -12,14 +12,7 @@ my($_B) = b_use('Type.Boolean');
 my($_QUERY_KEY) = 'b_mobile';
 my($_COOKIE_KEY) = 'mobile';
 b_use('Agent.Task')->register(__PACKAGE__);
-#b_use('Agent.Request')->register_handler(__PACKAGE__);
-b_use('AgentHTTP.Cookie')->register(__PACKAGE__);
 my($_SCRIPT) = _init_script(__PACKAGE__);
-
-#cannot have on every page, because too hard to handle the infinite redirect problem
-#catch client_redirect and put b_mobile on query always 
-#When it is redirecting, we put it on the query
-#    if not mobile facade, put mobile in the query, and then the incoming will redirect
 
 sub NEW_ARGS {
     return [];
