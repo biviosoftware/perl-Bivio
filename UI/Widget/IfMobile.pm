@@ -21,4 +21,9 @@ sub initialize {
     return shift->SUPER::initialize(@_);
 }
 
+sub is_mobile {
+    my($proto, $req) = @_;
+    return $req->ureq($proto->REQ_KEY) ? 1 : 0;
+}
+
 1;
