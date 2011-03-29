@@ -995,6 +995,7 @@ sub info_motion {
 	    111
 	    ANY_OWNER
 	    MOTION_ADMIN&FEATURE_MOTION
+	    Model.TupleUseList->execute_load_all_with_query
 	    Model.MotionForm
 	    View.Motion->form
 	    next=FORUM_MOTION_LIST
