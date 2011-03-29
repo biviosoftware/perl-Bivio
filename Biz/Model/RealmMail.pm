@@ -135,6 +135,9 @@ sub delete_message {
 	}) if defined($new_root_id);
     }
     $self->delete;
+    $self->new_other('RealmMailBounce')->delete_all({
+	realm_file_id => $self->get('realm_file_id'),
+    });
     $self->new_other('RealmFile')->delete({
 	realm_file_id => $self->get('realm_file_id'),
 	override_is_read_only => 1,
