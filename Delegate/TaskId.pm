@@ -1518,7 +1518,7 @@ sub info_wiki {
 	    ANY_OWNER
 	    DATA_READ&DATA_WRITE&FEATURE_WIKI
 	    Model.WikiForm
-	    View.Wiki->edit_wysiwyg
+	    View.Wiki->edit
 	    next=FORUM_WIKI_VIEW
 	)],
 	[qw(
