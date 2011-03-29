@@ -37,6 +37,19 @@ EOF
     load => [
 	[{message_id => "a$domain"}] => not_die(),
     ],
+    sub {
+	req()->set_user('root');
+	model('RealmMailBounce')->create({
+	    realm_file_id => req(qw(Model.RealmMail realm_file_id)),
+	    email => "z$domain",
+	    realm_id => req('auth_id'),
+	    user_id => req('auth_user_id'),
+	    modified_date_time => b_use('Type.DateTime')->now,
+	    reason => 'x',
+	});
+	req()->set_user(undef);
+	return 1;
+    } => 1,
     delete_message => not_die(),
     load => [
 	[{message_id => "b$domain"}] => [{
