@@ -4,10 +4,15 @@ package Bivio::UI::View::Motion;
 use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
+use Bivio::UI::DateTimeMode;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_VT) = b_use('Type.MotionVote');
+
+b_use('IO.Config')->register(my $_CFG = {
+    list_date_time_mode => 'DATE',
+});
 
 sub WANT_FILE_FIELDS {
     return 1;
@@ -94,6 +99,12 @@ sub form {
     );
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub internal_file_fields {
     my($self) = @_;
     return (
@@ -118,6 +129,7 @@ sub internal_file_fields {
 }
 
 sub list {
+    my($self) = @_;
     return shift->internal_put_base_attr(
 	tools => TaskMenu([
 	    'FORUM_MOTION_FORM',
@@ -143,8 +155,12 @@ sub list {
 			    String("Closed"))
 		    }
 	        ],
-		'Motion.start_date_time',
-		'Motion.end_date_time',
+		[ 'Motion.start_date_time', {
+		    mode => _list_date_time_mode(),
+		}],
+		[ 'Motion.end_date_time', {
+		    mode => _list_date_time_mode(),
+		}],
 		[ 'vote_count', {
 		    column_data_class => 'vote_count',
 		        column_widget => Join([       
@@ -331,6 +347,10 @@ sub _label_cell  {
     return String(Join([String($text), ':']))
 	->put(map(($_ => 'label label_ok'),
 	    qw(column_data_class cell_class column_footer_class)));
+}
+
+sub _list_date_time_mode {
+    return Bivio::Die->eval('Bivio::UI::DateTimeMode->' . $_CFG->{list_date_time_mode}); 
 }
 
 sub _topic_from_list {
