@@ -45,24 +45,10 @@ sub comment_result {
 	    'FORUM_MOTION_LIST',
 	]),
 	_topic_from_motion($self),
-	body => [sub {
-            my($source) = @_;
-	    my($model) = $source->req('Model.MotionCommentList');
-	    return vs_paged_list(
-		MotionCommentList => [
-		    'RealmOwner.display_name',
-		    'MotionComment.comment',
-		    map([$_, {
-			wf_type => $model->get_field_type($_),
-			column_heading =>
-			    String(vs_text($model->simple_package_name, $_)),
-		    }], $model->tuple_tag_field_check),
-		], {
-		    no_pager => 1,
-		});
-	}],
+	body => [ \&_comment_list,  [qw(Model.MotionCommentList)]],
     );
 }
+
 
 sub comment_result_csv {
     return shift->internal_body([sub {
@@ -156,10 +142,10 @@ sub list {
 		    }
 	        ],
 		[ 'Motion.start_date_time', {
-		    mode => _list_date_time_mode(),
+		    mode => $self->_list_date_time_mode,
 		}],
 		[ 'Motion.end_date_time', {
-		    mode => _list_date_time_mode(),
+		    mode => $self->_list_date_time_mode,
 		}],
 		[ 'vote_count', {
 		    column_data_class => 'vote_count',
@@ -230,20 +216,9 @@ sub status {
 	    Grid([
 		[ _label_cell('Name'), _value_cell([qw(Model.Motion name)] )],
 		[ _label_cell('Question'), _value_cell([qw(Model.Motion question)]) ],
-		[ _label_cell('File'), _value_cell([qw(Model.Motion motion_file_id)]) ],
-		[ _label_cell('Start time'), _value_cell([
-		    sub {
-			my($self, $sdt) = @_;
-			return substr($_DT->to_local_string($sdt),
-				      0, b_use('Model.MotionForm')->DATE_TIME_SIZE);
-		    }, [ qw(Model.Motion start_date_time) ] ])
-	        ],
-		[ _label_cell('End time'), _value_cell([
-		    sub {
-			my ($req, $edt) = @_;
-			return $edt ? substr($_DT->to_local_string($edt), 0, 16) : 'open';
-		    }, [ qw(Model.Motion end_date_time) ] ] )
-	        ],
+		[ _label_cell('File'), _value_cell([\&_file_link, [qw(Model.Motion)]]) ],
+		[ _label_cell('Start time'), _value_cell([\&_date_time, [qw(Model.Motion start_date_time)]]) ],
+		[ _label_cell('End time'), _value_cell([\&_date_time, [qw(Model.Motion end_date_time)], 'open']) ],
 		[ _label_cell('Yes'),  _value_cell([ 'Model.Motion', '->vote_count_yes' ], ), ],  	
 		[ _label_cell('No'),  _value_cell([ 'Model.Motion', '->vote_count_no' ], ), ],  	
 		[ _label_cell('Abstain'),  _value_cell([ 'Model.Motion', '->vote_count_abstain' ], ),  ],  	
@@ -254,14 +229,16 @@ sub status {
 		 }
 	     ),
              Grid([
-		 [ _label_cell('Votes'), $self->_vote_list() ],
+		 [ _value_cell(' ') ],
+		 [ _label_cell('Votes'), Join([ [\&_vote_list ]]) ],
+		 [ _value_cell(' ') ],
+		 [ _label_cell('Comments'), Join([ [ \&_comment_list, [qw(Model.MotionCommentList)] ] ] ) ],
 	    ],
 		 {
 		     class => 'simple',
 		     align => 'center',
 		 }
 	    ),
-	    [  $self->_comment_list() ],
 	]
       )
     )
@@ -297,14 +274,7 @@ sub vote_result {
 	    'FORUM_MOTION_LIST',
 	]),
 	_topic_from_motion($self),
-	body => vs_paged_list(
-	    MotionVoteList => [qw(
-		MotionVote.creation_date_time
-		MotionVote.vote
-		MotionVote.comment
-		Email.email
-	    )],
-	),
+	body => [ \&_vote_list ]
     );
 }
 
@@ -317,30 +287,49 @@ sub vote_result_csv {
     )]));
 }
 
-
 sub _comment_list {
-    my($self) = @_;
-    return
-	[
-	    sub {
-		my($source) = @_;
-		my($model) = $source->req('Model.MotionCommentList');
-		return vs_paged_list(
-		    MotionCommentList => [
-			'RealmOwner.display_name',
-			'MotionComment.comment',
-			map([$_, {
-			    wf_type => $model->get_field_type($_),
-			    column_heading =>
-				String(vs_text($model->simple_package_name, $_)),
-			}], $model->tuple_tag_field_check),
-		    ], {
-			no_pager => 1,
-		    });
-	    }, 
-	]
+    my($req, $model) = @_;
+    return vs_paged_list(
+	MotionCommentList => [
+	    'RealmOwner.display_name',
+	    'MotionComment.comment',
+	    map([$_, {
+		wf_type => $model->get_field_type($_),
+		column_heading =>
+		    String(vs_text($model->simple_package_name, $_)),
+	    }], $model->tuple_tag_field_check),
+	], {
+	    no_pager => 1,
+	});
 }
 
+
+sub _date_time {
+    my($req, $dt, $default) = @_;
+    return substr($_DT->to_local_string($dt),
+		  0, b_use('Model.MotionForm')->DATE_TIME_SIZE)
+	if $dt;
+    return $default;
+}
+
+sub _file_link {
+    my ($req, $motion) = @_;
+    if (my $mfid = $motion->unsafe_get('motion_file_id')) {
+	if (my $rf = $motion->new_other('Bivio::Biz::Model::RealmFile')
+		->load({realm_file_id => $mfid})) {
+	    if (my $path = $rf->unsafe_get('path')) {
+		return Link(
+		    String($path),
+		    URI({
+			task_id => 'FORUM_FILE',
+			path_info => $path,
+		    }),
+  		),		
+	    }
+	}
+    }
+    return;
+}
 
 sub _label_cell  {
     my($text) = @_;
@@ -385,7 +374,6 @@ sub _value_cell {
 
 
 sub _vote_list {
-    my($self) = @_;
     return vs_paged_list(
 	    MotionVoteList => [qw(
 		MotionVote.creation_date_time
