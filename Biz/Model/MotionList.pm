@@ -39,7 +39,8 @@ sub internal_initialize {
 	    Motion.question
 	    Motion.type
 	    Motion.motion_file_id
-	    Motion.moniker
+	    Motion.tuple_def_id
+	    TupleUse.moniker
 	    RealmFile.path
 	),
 	    {
@@ -102,6 +103,10 @@ sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $stmt->from($stmt->LEFT_JOIN_ON('Motion', 'RealmFile', [
 	[qw(Motion.motion_file_id RealmFile.realm_file_id)],
+    ]));
+    $stmt->from($stmt->LEFT_JOIN_ON('Motion', 'TupleUse', [
+	[qw(Motion.tuple_def_id TupleUse.tuple_def_id)],
+	[qw(Motion.realm_id TupleUse.realm_id)],
     ]));
     return;
 }
