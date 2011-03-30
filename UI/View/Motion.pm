@@ -10,10 +10,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_VT) = b_use('Type.MotionVote');
 
-b_use('IO.Config')->register(my $_CFG = {
-    list_date_time_mode => 'DATE',
-});
-
 sub WANT_FILE_FIELDS {
     return 1;
 }
@@ -85,10 +81,10 @@ sub form {
     );
 }
 
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_CFG = $cfg;
-    return;
+sub internal_date_time_attr {
+    return (
+	mode => 'DATE_TIME',
+    );
 }
 
 sub internal_file_fields {
@@ -142,10 +138,12 @@ sub list {
 		    }
 	        ],
 		[ 'Motion.start_date_time', {
-		    mode => $self->_list_date_time_mode,
+		    $self->internal_date_time_attr,
+		    value => ['Motion.start_date_time'],
 		}],
 		[ 'Motion.end_date_time', {
-		    mode => $self->_list_date_time_mode,
+		    $self->internal_date_time_attr,
+		    value => ['Motion.end_date_time'],
 		}],
 		[ 'vote_count', {
 		    column_data_class => 'vote_count',
@@ -338,9 +336,9 @@ sub _label_cell  {
 	    qw(column_data_class cell_class column_footer_class)));
 }
 
-sub _list_date_time_mode {
-    return Bivio::Die->eval('Bivio::UI::DateTimeMode->' . $_CFG->{list_date_time_mode}); 
-}
+#sub _list_date_time_mode {
+#    return Bivio::Die->eval('Bivio::UI::DateTimeMode->' . $_CFG->{list_date_time_mode}); 
+#}
 
 sub _topic_from_list {
     my($self) = @_;
