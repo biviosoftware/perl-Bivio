@@ -64,6 +64,7 @@ my($_BUNDLE) = [qw(
     !motion_vote_aff_drop_not_null
     motion2
     motion_comment
+    motion3
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -1445,6 +1446,26 @@ ALTER TABLE motion_t
 /
 CREATE INDEX motion_t6 on motion_t (
   motion_file_id
+)
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_motion3 {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE motion_t DROP COLUMN moniker
+/
+ALTER TABLE motion_t ADD COLUMN tuple_def_id NUMERIC(18)
+/
+ALTER TABLE motion_t
+  add constraint motion_t7
+  foreign key (tuple_def_id, realm_id)
+  references tuple_use_t(tuple_def_id, realm_id)
+/
+CREATE INDEX motion_t8 on motion_t (
+  tuple_def_id
 )
 /
 EOF
