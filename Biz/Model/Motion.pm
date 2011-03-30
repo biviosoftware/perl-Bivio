@@ -40,11 +40,11 @@ sub internal_initialize {
 	    start_date_time => ['DateTime', 'NONE'],
 	    end_date_time => ['DateTime', 'NONE'],
       	    motion_file_id => ['RealmFile.realm_file_id', 'NONE'],
-	    moniker => ['TupleMoniker', 'NONE'],
+	    tuple_def_id => ['TupleUse.tuple_def_id', 'NONE'],
 	},
 	other => [
 	    [qw(realm_id RealmOwner.realm_id)],
-	    [qw(motion_file_id RealmFile.realm_file_id)], 
+	    [qw(motion_file_id RealmFile.realm_file_id)],
 	],
     });
 }

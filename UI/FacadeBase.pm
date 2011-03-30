@@ -1179,7 +1179,7 @@ sub _cfg_motion {
 		motion_file_id => 'Document',
 		start_date_time => 'Start',
 		end_date_time => 'End',
-		moniker => 'Comment Format',
+		tuple_def_id => 'Comment Format',
 	    ]],
 	    [MotionForm => [
 		file => q{If(And(
