@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,71 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.52  2011/03/28 21:06:14  moeller
+  * Bivio::Agent::Request
+    don't modify txn_resources in place during delete_txn_resource(),
+    something be iterating over it
+  * Bivio::Agent::TaskEvent
+    Need require_absolute for Mobile task events
+  * Bivio::Biz::Action::Acknowledgement
+    convert task label to int during handle_client_redirect()
+  * Bivio::Biz::Model::MotionForm
+    end date processing
+    Schema had to be used by a table or else validation failed.
+    changed TupelDef back to Tuple Use
+    moved new features to app
+  * Bivio::Biz::Model::MotionList
+    'can_vote/can_comment' based on end time
+    Queries for vote counts
+    added question to sorting
+  * Bivio::Biz::Model::Motion
+    vote counts
+  * Bivio::Delegate::TaskId
+    motions additional 'status' page and comment list CSV
+    changed motion task's execute_load_all_with_query() to execute_load_page()
+  * Bivio::HTML::Scraper
+    increase redirect limit to 10
+  * Bivio::PetShop::Facade::Mobile
+    NEW
+  * Bivio::PetShop::Facade::PetShop
+    Added mobile facade support
+  * Bivio::PetShop::View::Base
+    Mobile support
+  * Bivio::Search::Parser::RealmFile::CommandBase
+    don't pipe error into output
+  * Bivio::Search::Xapian
+    get message from die during get_values_for_primary_id() rather than
+    warning with die message to avoid errors from HTTPLog
+  * Bivio::SQL::DDL
+    removed motion_t.moniker NOT NULL
+  * Bivio::UI::FacadeBase
+    MobileToggler support
+  * Bivio::UI::Facade
+    allow URIs to match dotted values
+    Convert globals to refs
+  * Bivio::UI::View::CSS
+    MobileToggler support
+    loosen div.want_sep qualifier so can be used in TaskMenu with differen class
+    added _site_motion() CSS values
+  * Bivio::UI::View::Motion
+    added page topic to tasks
+    comment results csv now includes tuple fields
+    moved some motion form fields to app
+  * Bivio::UI::Widget::IfMobile
+    NEW
+  * Bivio::UI::Widget::IfUserAgent
+    NEW
+  * Bivio::UI::XHTML::Widget::MailBodyHTML
+    ignore utf warnings during parse()
+  * Bivio::UI::XHTML::Widget::MobileDetector
+    NEW
+  * Bivio::UI::XHTML::Widget::MobileToggler
+    NEW
+  * Bivio::UI::XHTML::Widget::RealmCSS
+    compress better
+  * Bivio::Util::Project
+    NEW
+
   Revision 10.51  2011/03/23 19:50:33  moeller
   * Bivio::Biz::Model::RealmFileTreeList
     added MAX_FILES_PER_FOLDER, limit folder files and use a "more" link
