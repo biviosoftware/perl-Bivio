@@ -344,6 +344,15 @@ CREATE INDEX motion_t6 on motion_t (
   motion_file_id
 )
 /
+ALTER TABLE motion_t
+  add constraint motion_t7
+  foreign key (tuple_def_id, realm_id)
+  references tuple_use_t(tuple_def_id, realm_id)
+/
+CREATE INDEX motion_t8 on motion_t (
+  tuple_def_id
+)
+/
 
 --
 -- motion_vote_t
@@ -1210,7 +1219,7 @@ CREATE TABLE motion_t (
   start_date_time DATE,
   end_date_time DATE,
   motion_file_id NUMERIC(18),
-  moniker VARCHAR(100),
+  tuple_def_id NUMERIC(18),
   CONSTRAINT motion_t1 PRIMARY KEY(motion_id)
 )
 /
