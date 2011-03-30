@@ -10,7 +10,12 @@ b_use('ClassWrapper.TupleTag')->wrap_methods(
 
 sub get_tuple_use_moniker {
     my($self) = @_;
-    return $self->req(qw(Model.Motion moniker));
+    my($motion) = $self->req('Model.Motion');
+    return $motion->get('tuple_def_id')
+	? $self->new_other('TupleUse')->load({
+	    tuple_def_id => $motion->get('tuple_def_id'),
+	})->get('moniker')
+	: undef;
 }
 
 sub internal_initialize {
