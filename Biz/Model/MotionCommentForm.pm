@@ -35,7 +35,7 @@ sub execute_ok {
 
 sub get_tuple_use_moniker {
     my($self) = @_;
-    return $self->req(qw(Model.MotionList Motion.moniker));
+    return $self->req(qw(Model.MotionList TupleUse.moniker));
 }
 
 sub internal_initialize {
