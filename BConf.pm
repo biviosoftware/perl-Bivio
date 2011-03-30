@@ -501,8 +501,8 @@ sub _base {
 	},
 	'Bivio::UI::Facade' => {
 	    local_file_root => '/var/www/facades',
-	    http_suffix => 'localhost',
-	    mail_host => 'localhost',
+	    http_suffix => 'localhost.localdomain',
+	    mail_host => 'localhost.localdomain',
 	},
 	'Bivio::Util::Release' => {
 	    rpm_home_dir => '/usr/src/redhat/RPMS/noarch',
