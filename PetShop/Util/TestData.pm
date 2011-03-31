@@ -73,7 +73,9 @@ sub init_mail_references {
 		'RealmOwner.name' => 'mail_references',
 	    }) unless $self->model('RealmOwner')
 		->unauth_rows_exist({name => 'mail_references'});
-	    $self->new_other('SiteForum')->init_files('mail_references');
+	    $self->new_other('SiteForum')
+		->put(force => 1)
+		->init_files('mail_references');
 	    return;
 	},
     );
