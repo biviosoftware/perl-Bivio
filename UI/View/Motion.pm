@@ -58,7 +58,6 @@ sub comment_result_csv {
     }]);
 }
 
-
 sub form {
     my($self) = @_;
     return shift->internal_put_base_attr(
@@ -218,7 +217,6 @@ sub list {
     );
 }
 
-
 sub status {
     my($self) = @_;
 
@@ -239,8 +237,20 @@ sub status {
 		[ _label_cell('Name'), _value_cell([qw(Model.Motion name)] )],
 		[ _label_cell('Question'), _value_cell([qw(Model.Motion question)]) ],
 		[ _label_cell('File'), _value_cell([\&_file_link, [qw(Model.Motion)]]) ],
-		[ _label_cell('Start time'), _value_cell([\&_date_time, [qw(Model.Motion start_date_time)]]) ],
-		[ _label_cell('End time'), _value_cell([\&_date_time, [qw(Model.Motion end_date_time)], 'open']) ],
+		[ _label_cell('Start time'), _value_cell(
+		    vs_display('Motion.start_date_time', {
+			value => [qw(Model.Motion start_date_time)],
+			$self->internal_date_time_attr,
+		    }))],
+		[ _label_cell('End time'), _value_cell(
+		    If([qw(Model.Motion end_date_time)],
+		       vs_display('Motion.end_date_time', {
+			   value => [qw(Model.Motion end_date_time)],
+			   $self->internal_date_time_attr,
+		       }),
+		       'open',
+		    ),
+		)],
 		[ _label_cell('Yes'),  _value_cell([ 'Model.Motion', '->vote_count_yes' ], ), ],  	
 		[ _label_cell('No'),  _value_cell([ 'Model.Motion', '->vote_count_no' ], ), ],  	
 		[ _label_cell('Abstain'),  _value_cell([ 'Model.Motion', '->vote_count_abstain' ], ),  ],  	
@@ -265,8 +275,6 @@ sub status {
       )
     )
 }
- 
-
 
 sub vote_form {
     my($self) = @_;
@@ -323,15 +331,6 @@ sub _comment_list {
 	], {
 	    no_pager => 1,
 	});
-}
-
-
-sub _date_time {
-    my($req, $dt, $default) = @_;
-    return substr($_DT->to_local_string($dt),
-		  0, b_use('Model.MotionForm')->DATE_TIME_SIZE)
-	if $dt;
-    return $default;
 }
 
 sub _file_link {
