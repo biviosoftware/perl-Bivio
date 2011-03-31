@@ -63,3 +63,6 @@ verify_table('Date', [
 follow_link('spreadsheet');
 verify_text(qr/yes.*green rules/i);
 
+go_back();
+follow_link('polls');
+follow_link_in_table('Name', 'Name', 'Test Motion One', 'Actions', 'Status');
