@@ -15,13 +15,28 @@ sub create {
     $values->{name_lc} = lc($values->{name});
     $values->{type} ||= $_MT->VOTE_PER_USER;
     $values->{status} ||= $_MS->OPEN;
-    $values->{start_date_time} ||= $_DT->now;
+
+    if ($values->{status}->eq_open) {
+	$values->{start_date_time} ||= $_DT->now;
+    }
     return shift->SUPER::create(@_);
 }
 
 sub update {
     my($self, $values) = @_;
     $values->{name_lc} = lc($values->{name});
+
+    if ($values->{status}
+	&& ! $_MS->equals($values->{status}, $self->get('status'))) {
+
+	if ($values->{status}->eq_open) {
+	    $values->{start_date_time} = $_DT->now;
+	    $values->{end_date_time} = undef;
+	}
+	elsif ($values->{status}->eq_closed) {
+	    $values->{end_date_time} = $_DT->now;
+	}
+    }
     return shift->SUPER::update(@_);
 }
 
