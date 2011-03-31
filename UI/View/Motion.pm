@@ -16,7 +16,7 @@ sub WANT_FILE_FIELDS {
 
 sub comment_form {
     my($self) = @_;
-    _topic_from_list($self);
+    $self->internal_topic_from_list;
     return shift->internal_body([sub {
         my($source) = @_;
 	my($model) = $source->req('Model.MotionCommentForm');
@@ -40,7 +40,7 @@ sub comment_result {
 	    },
 	    'FORUM_MOTION_LIST',
 	]),
-	_topic_from_motion($self),
+	$self->internal_topic_from_motion,
 	body => [ \&_comment_list,  [qw(Model.MotionCommentList)]],
     );
 }
@@ -108,6 +108,30 @@ sub internal_file_fields {
         ],
         'MotionForm.file',
     );
+}
+
+sub internal_topic_from_list {
+    my($self) = @_;
+    $self->internal_put_base_attr(
+	topic => Join([
+	    String([qw(Model.MotionList Motion.name)]),
+	    ': ',
+	    String([qw(Model.MotionList Motion.question)]),
+	]),
+    );
+    return;
+}
+
+sub internal_topic_from_motion {
+    my($self) = @_;
+    $self->internal_put_base_attr(
+	topic => Join([
+	    String([qw(Model.Motion name)]),
+	    ': ',
+	    String([qw(Model.Motion question)]),
+	]),
+    );
+    return;
 }
 
 sub list {
@@ -246,7 +270,7 @@ sub status {
 
 sub vote_form {
     my($self) = @_;
-    _topic_from_list($self);
+    $self->internal_topic_from_list;
     return shift->internal_body(
 	vs_simple_form(MotionVoteForm => [
 	    [
@@ -271,7 +295,7 @@ sub vote_result {
 	    },
 	    'FORUM_MOTION_LIST',
 	]),
-	_topic_from_motion($self),
+	$self->internal_topic_from_motion,
 	body => [ \&_vote_list ]
     );
 }
@@ -336,40 +360,11 @@ sub _label_cell  {
 	    qw(column_data_class cell_class column_footer_class)));
 }
 
-#sub _list_date_time_mode {
-#    return Bivio::Die->eval('Bivio::UI::DateTimeMode->' . $_CFG->{list_date_time_mode}); 
-#}
-
-sub _topic_from_list {
-    my($self) = @_;
-    $self->internal_put_base_attr(
-	topic => Join([
-	    String([qw(Model.MotionList Motion.name)]),
-	    ': ',
-	    String([qw(Model.MotionList Motion.question)]),
-	]),
-    );
-    return;
-}
-
-sub _topic_from_motion {
-    my($self) = @_;
-    $self->internal_put_base_attr(
-	topic => Join([
-	    String([qw(Model.Motion name)]),
-	    ': ',
-	    String([qw(Model.Motion question)]),
-	]),
-    );
-    return;
-}
-
 sub _value_cell {
     my($text) = @_;
     return String($text)
 	->put(cell_class => 'simple field');
 }
-
 
 sub _vote_list {
     return vs_paged_list(
