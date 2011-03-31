@@ -1060,7 +1060,6 @@ sub info_motion {
 	    118
 	    ANY_OWNER
 	    MOTION_READ&FEATURE_MOTION
-	    Model.MotionList->execute_load_all_with_query
 	    Model.Motion->execute_load_parent
 	    Model.MotionVoteList->execute_load_all_with_query
 	    Model.MotionCommentList->execute_load_all_with_query
