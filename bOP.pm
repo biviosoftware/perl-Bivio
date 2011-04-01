@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.53  2011/03/30 21:27:25  nagler
+  * Bivio::BConf
+    use localhost.localdomain
+  * Bivio::Biz::Model::RealmMail
+    delete RealmMailBounce during delete_message()
+  * Bivio::Delegate::TaskId
+    Moniker combobox for additional comment fields.
+    Use of wysiwyg editor is confurable
+  * Bivio::UI::View::Motion
+    removed b_debug()
+    Make start/end date/time formats configurable in motion list.
+    Add poll 'status' screen with summary votes list and comment list
+  * Bivio::UI::Widget::IfMobile
+    added is_mobile
+  * Bivio::UI::XHTML::Widget::MobileDetector
+    don'tneed to register for cookie
+
   Revision 10.52  2011/03/28 21:06:14  moeller
   * Bivio::Agent::Request
     don't modify txn_resources in place during delete_txn_resource(),
