@@ -2544,6 +2544,14 @@ sub _sentinel_file_writer {
     return $ok;
 }
 
+sub _sentinel_motion2 {
+    return shift->column_exists(qw(motion_t start_date_time));
+}
+
+sub _sentinel_motion3 {
+    return shift->column_exists(qw(motion_t tuple_def_id));
+}
+
 sub _sentinel_motion_vote_comment {
     return shift->column_exists(qw(motion_vote_t comment));
 }
