@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::ContactForm;
 use strict;
-use base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -20,8 +20,8 @@ sub execute_ok {
     my($self) = @_;
     $self->internal_put_field(subject => 'Web Contact')
 	unless $self->unsafe_get('subject');
-    Bivio::UI::View->execute(
-	Bivio::IO::Config->if_version(
+    b_use('UI.View')->execute(
+	b_use('IO.Config')->if_version(
 	    3 => sub {'UserAuth->general_contact_mail'},
 	    sub {'contact-mail'},
 	),
