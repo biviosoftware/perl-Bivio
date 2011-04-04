@@ -19,6 +19,7 @@ commands:
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
     join_user roles... -- adds specified user role to realm
+    leave_role -- remove one user role from a realm
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
     info -- dump info on a realm
@@ -164,6 +165,20 @@ sub join_user {
 	};
 	$self->model('RealmUser')->create($v)
 	    unless $self->model('RealmUser')->unauth_load($v);
+    }
+    return;
+}
+
+sub leave_role {
+    my($self, @roles) = shift->name_args([['Auth.Role']], \@_);
+    $self->assert_have_user;
+    
+    foreach my $role (@roles) {
+	$self->model('RealmUser')->delete({
+	    realm_id => $self->req('auth_id'),
+	    user_id => $self->req('auth_user_id'),
+	    role => $role,
+	});
     }
     return;
 }
