@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.54  2011/04/01 00:03:42  moeller
+  * Bivio::Biz::Model::Motion
+    set start_date_time and end_date_time from status changes
+    for apps without start/end date_time
+  * Bivio::Biz::Model::MotionVoteForm
+    removed Motion fields
+  * Bivio::Biz::Model::MotionVote
+    default user_id and realm_id in create()
+  * Bivio::Delegate::TaskId
+    removed unneeded MotionList->execute_load_all_with_query
+  * Bivio::UI::View::Motion
+    made internal_topic_from_list() and internal_topic_from_motion() public
+    use internal_date_time_attr() for status dates
+
   Revision 10.53  2011/03/30 21:27:25  nagler
   * Bivio::BConf
     use localhost.localdomain
