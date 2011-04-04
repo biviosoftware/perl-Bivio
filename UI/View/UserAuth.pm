@@ -20,7 +20,7 @@ sub general_contact_mail {
 	    vs_text('support_email'),
 	    vs_text_as_prose('support_name'),
 	),
-	subject => _prose('general_contact_mail.subject'),
+	subject => ['Model.ContactForm', 'subject'],
 	body => ['Model.ContactForm', 'text'],
     );
 }
