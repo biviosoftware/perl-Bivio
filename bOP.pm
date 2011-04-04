@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.55  2011/04/04 16:23:20  moeller
+  * Bivio::Util::RealmAdmin
+    added leave_role()
+  * Bivio::Util::SQL
+    added sentinels for bundle upgrades motion2 and motion3
+
   Revision 10.54  2011/04/01 00:03:42  moeller
   * Bivio::Biz::Model::Motion
     set start_date_time and end_date_time from status changes
