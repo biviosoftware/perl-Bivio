@@ -24,10 +24,13 @@ sub create {
 
 sub update {
     my($self, $values) = @_;
-    $values->{name_lc} = lc($values->{name});
+
+    if ($values->{name}) {
+	$values->{name_lc} = lc($values->{name});
+    }
 
     if ($values->{status}
-	&& ! $_MS->equals($values->{status}, $self->get('status'))) {
+	&& $values->{status} != $self->get('status')) {
 
 	if ($values->{status}->eq_open) {
 	    $values->{start_date_time} = $_DT->now;
