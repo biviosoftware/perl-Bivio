@@ -181,6 +181,10 @@ sub list {
 	        ],
 		vs_actions_column([
 		    [
+			'Edit',
+			'FORUM_MOTION_FORM',
+		    ],
+		    [
 			'Vote',
 			'FORUM_MOTION_VOTE',
 			'THIS_DETAIL',
@@ -191,20 +195,6 @@ sub list {
 			'FORUM_MOTION_COMMENT',
 			'THIS_DETAIL',
 			['->can_comment'],
-		    ],
-		    [
-			'Results',
-			'FORUM_MOTION_VOTE_LIST',
-			'THIS_AS_PARENT',
-		    ],
-		    [
-			'View Comments',
-			'FORUM_MOTION_COMMENT_LIST',
-			'THIS_AS_PARENT',
-		    ],
-		    [
-			'Edit',
-			'FORUM_MOTION_FORM',
 		    ],
 		    [
 			'Status',
