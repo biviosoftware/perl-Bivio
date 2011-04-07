@@ -303,6 +303,7 @@ sub format_uri_for_this {
     my(%attrs) = ref($self) ? %{$self->internal_get()} : ();
     $attrs{this} = $this_row;
     $attrs{page_number} = undef;
+    $attrs{order_by} = undef;
     return _format_uri(\%attrs, $support);
 }
 
