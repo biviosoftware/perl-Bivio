@@ -109,6 +109,32 @@ sub internal_file_fields {
     );
 }
 
+sub internal_list_actions {
+    return [
+	[
+	    'Edit',
+	    'FORUM_MOTION_FORM',
+	],
+	[
+	    'Vote',
+	    'FORUM_MOTION_VOTE',
+	    'THIS_DETAIL',
+	    ['->can_vote'],
+	],
+	[
+	    'Comment', 
+	    'FORUM_MOTION_COMMENT',
+	    'THIS_DETAIL',
+	    ['->can_comment'],
+	],
+	[
+	    'Status',
+	    'FORUM_MOTION_STATUS',
+	    'THIS_AS_PARENT',
+	],
+    ];
+}
+
 sub internal_topic_from_list {
     my($self) = @_;
     $self->internal_put_base_attr(
@@ -179,29 +205,7 @@ sub list {
 			]), 
 		    }
 	        ],
-		vs_actions_column([
-		    [
-			'Edit',
-			'FORUM_MOTION_FORM',
-		    ],
-		    [
-			'Vote',
-			'FORUM_MOTION_VOTE',
-			'THIS_DETAIL',
-			['->can_vote'],
-		    ],
-		    [
-			'Comment', 
-			'FORUM_MOTION_COMMENT',
-			'THIS_DETAIL',
-			['->can_comment'],
-		    ],
-		    [
-			'Status',
-			'FORUM_MOTION_STATUS',
-		        'THIS_AS_PARENT',
-		    ],
-		]),
+		vs_actions_column($self->internal_list_actions),
 	    ],
 	),
     );
