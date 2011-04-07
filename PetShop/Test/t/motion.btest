@@ -41,11 +41,6 @@ follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Comment');
 submit_form({
     comment => 'x',
 });
-follow_link_in_table('Name', 'Name', $motion, 'Actions', 'View Comments');
-verify_table('Name', [
-    ['Name', 'Comment'],
-    ['Root User', 'x'],
-]);
 
 follow_link('polls');
 follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Edit');
@@ -55,14 +50,19 @@ submit_form({
 });
 verify_text(qr/the poll has been saved/i);
 
-follow_link_in_table('Name', 'Name', 'Test Motion One', 'Actions', 'Results');
+follow_link_in_table('Name', 'Name', 'Test Motion One', 'Actions', 'Status');
 verify_table('Date', [
     ['Vote', 'Comment'],
     ['Yes', 'green rules!'],
 ]);
-follow_link('spreadsheet');
+verify_table('Name', [
+    ['Name', 'Comment'],
+    ['Root User', 'x'],
+]);
+
+follow_link('vote_spreadsheet');
 verify_text(qr/yes.*green rules/i);
 
 go_back();
-follow_link('polls');
-follow_link_in_table('Name', 'Name', 'Test Motion One', 'Actions', 'Status');
+follow_link('comment_spreadsheet');
+verify_text(qr/Root User,x/i);
