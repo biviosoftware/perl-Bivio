@@ -111,8 +111,9 @@ my($_LM) = b_use('Biz.ListModel');
 sub view_autoload {
     my(undef, $method, $args) = @_;
     return Tag(lc($1), @$args ? @$args : ('', {tag_if_empty => 1}))
-	->put_unless_exists($2 ? (class => $2) : ())
-	if $method =~ /^($_HTML_TAGS)?(?:_([a-z0-9_]{2,}))?$/os;
+ 	->put_unless_exists($2 ? (class => $2) : ())
+	if $method =~ /^($_HTML_TAGS)?(?:_([a-z0-9_]{2,}))?$/os
+	    && $method !~ /^_/;
     return shift->SUPER::view_autoload(@_);
 }
 
