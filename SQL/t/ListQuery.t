@@ -104,6 +104,7 @@ Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
 	{
 	    d => '12/12/2001 1:0:0',
 	    p => '10001',
+	    o => '1a',
 	},
 	$_SUPPORT1,
 	'Bivio::Die',
