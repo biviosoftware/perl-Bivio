@@ -55,6 +55,9 @@ sub control_on_render {
 sub initialize {
     my($self, $source) = @_;
     my($t, $v) = $self->unsafe_get(qw(tag value));
+    $self->die('missing tag')
+	unless $t;
+
     if (_empty($t)) {
 	if ($v and $v =~ /^[a-z0-9]+$/) {
 	    $self->put_unless_exists(class => $v);
