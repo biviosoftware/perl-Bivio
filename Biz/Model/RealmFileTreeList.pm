@@ -21,7 +21,8 @@ my($_NOT_LIKE) = [
 	lc($_FP->to_public($_FP->MAIL_FOLDER)),
     ),
 ];
-my($_VERSIONS_FOLDER_RE) =  qr{^$_FP->VERSIONS_FOLDER(?:/:$)}ios;
+my($_VERSIONS_FOLDER) = $_FP->VERSIONS_FOLDER;
+my($_VERSIONS_FOLDER_RE) =  qr{^$_VERSIONS_FOLDER/}ios;
 my($_DEFAULT_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
 my($_LOCK) = $_RFL->if_enabled;
 
