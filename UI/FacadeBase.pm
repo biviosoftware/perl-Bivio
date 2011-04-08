@@ -859,10 +859,12 @@ sub _cfg_file {
 	    [FORUM_FILE_TREE_LIST => '?/files/*'],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
+	    [FORUM_FILE_DELETE_PERMANENTLY_FORM => '?/delete-file-permanently/*'],
 #	    [FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
 	    b_use('Model.RealmFileLock')->if_enabled(
 	    	[FORUM_FILE_OVERRIDE_LOCK => '?/override-lock/*'],
 	    ),
+	    [FORUM_FILE_RESTORE_FORM => '?/restore-file/*'],
 	    [FORUM_FILE_REVERT_FORM => '?/revert-file/*'],
 	    [FORUM_FOLDER_FILE_LIST => '?/folder/*'],
 	],
@@ -888,6 +890,9 @@ sub _cfg_file {
 		content_length => 'Size',
 		actions => 'Actions',
 		'list_action.FORUM_FILE_CHANGE' => 'Modify',
+		'list_action.FORUM_FILE_DELETE_PERMANENTLY_FORM'
+		    => 'Delete Permanently',
+		'list_action.FORUM_FILE_RESTORE_FORM' => 'Restore',
 		more_files => 'more ...',
 	    ]],
 	    [RealmFileLock => [
@@ -1102,6 +1107,19 @@ sub _cfg_mail {
 		    prologue => q{Are you sure you want to delete message SPAN_bold(String([qw(Model.RealmMailDeleteForm realm_mail subject)])); from SPAN_bold(String([qw(Model.RealmMailDeleteForm realm_mail from_email)]));?},
 		],
 	    ]],
+	    [RealmFileDeletePermanentlyForm => [
+		ok_button => 'Delete Permanently',
+		prose => [
+		    prologue => q{Are you sure you want to delete SPAN_bold(String([qw(->req path_info)])); permanently?},
+		],
+	    ]],
+	    [RealmFileRestoreForm => [
+		ok_button => 'Restore',
+		prose => [
+		    prologue => q{Are you sure you want to restore SPAN_bold(String([qw(->req path_info)]));?},
+#		    prologue => q{Are you sure you want to restore file?},
+		],
+	    ]],
 	    [RealmFileRevertForm => [
 		ok_button => 'Revert',
 		prose => [
@@ -1140,13 +1158,17 @@ sub _cfg_mail {
 		FORUM_MAIL_FORM => q{If(['->has_keys', 'Model.RealmMailList'], 'Reply', 'New Topic');},
 		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
 		FORUM_MAIL_THREAD_LIST => q{Topic: String(['Model.MailThreadList', '->get_subject']);},
+		FORUM_FILE_DELETE_PERMANENTLY_FORM => 'Delete File Permanantly',
+		FORUM_FILE_RESTORE_FORM => 'Restore File',
 		FORUM_FILE_REVERT_FORM => 'Revert File',
 		USER_MAIL_UNSUBSCRIBE_FORM => 'Unsubscribe',
 		GROUP_BULLETIN_FORM => 'Publish Bulletin',
 		GROUP_MAIL_DELETE_FORM => 'Delete Message',
 	    ]],
 	    [acknowledgement => [
+		FORUM_FILE_DELETE_PERMANENTLY_FORM => 'File deleted permanently.',
 		FORUM_MAIL_FORM => 'Your message was sent.',
+		FORUM_FILE_RESTORE_FORM => 'File restored.',
 		FORUM_FILE_REVERT_FORM => 'File reverted.',
 		GROUP_BULLETIN_FORM => q{The bulletin has been sent to String(['Model.BulletinForm', 'to']);.},
 		GROUP_MAIL_DELETE_FORM => 'Message deleted',
