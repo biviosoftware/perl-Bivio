@@ -705,7 +705,25 @@ sub info_file {
 	    next=FORUM_FILE
 	    write_task=FORUM_FILE_CHANGE
 	)],
-#176-179 free
+	[qw(
+	    FORUM_FILE_RESTORE_FORM
+	    176
+	    ANY_OWNER
+	    DATA_READ&DATA_WRITE&FEATURE_FILE
+	    Model.RealmFileRestoreForm
+	    View.File->restore_form
+	    next=FORUM_FILE_TREE_LIST
+        )],
+	[qw(
+	    FORUM_FILE_DELETE_PERMANENTLY_FORM
+	    177
+	    ANY_OWNER
+	    DATA_READ&DATA_WRITE&FEATURE_FILE
+	    Model.RealmFileDeletePermanentlyForm
+	    View.File->delete_permanently_form
+	    next=FORUM_FILE_TREE_LIST
+        )],
+#178-179 free
     ];
 }
 
