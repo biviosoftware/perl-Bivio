@@ -1,11 +1,11 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TupleSlotDef;
 use strict;
-use base 'Bivio::Biz::Model::RealmBase';
+use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TST) = __PACKAGE__->get_instance('TupleSlotType');
+my($_TST) = b_use('Model.TupleSlotType');
 
 sub LIST_FIELDS {
     return [map(
