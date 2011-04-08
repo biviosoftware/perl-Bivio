@@ -30,7 +30,7 @@ if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
 }
 
 follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
-fixup_files_uri('TEXT_FILE'),
+fixup_files_uri('TEXT_FILE');
 submit_form(OK => {
     'Name:' => 'realm-file-btest.txt',
     _anon => my $c = random_string(),
@@ -41,7 +41,7 @@ verify_text($c);
 
 visit_uri('/fourem/files');
 follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
-fixup_files_uri('ADD_SUBFOLDER'),
+fixup_files_uri('ADD_SUBFOLDER');
 submit_form(OK => {
     'Name:' => 'Empty Folder',
 });
@@ -49,7 +49,7 @@ test_deviance();
 follow_link('Empty Folder');
 test_conformance();
 follow_link_in_table('Name', 'Name', 'Empty Folder', 'Actions', 'Modify');
-fixup_files_uri('TEXT_FILE'),
+fixup_files_uri('TEXT_FILE');
 submit_form(OK => {
     'Name:' => 'no-longer-empty.txt',
     _anon => my $c2 = random_string(),
@@ -60,7 +60,7 @@ follow_link('no-longer-empty.txt');
 verify_text($c2);
 visit_uri('/fourem/files');
 follow_link_in_table('Name', 'Name', 'Empty Folder', 'Actions', 'Modify');
-fixup_files_uri('DELETE'),
+fixup_files_uri('DELETE');
 submit_form(OK => {
     'Comments:' => 'cleanup for next test run',
 });
@@ -74,3 +74,50 @@ my($subj) = random_string();
 do_test_backdoor(RealmFile => "-realm demo send_file_via_mail $email $subj /private/image.gif");
 my($msg) = verify_local_mail($email, $subj);
 test_equals(qr{filename="image.gif"}, $msg);
+visit_uri('/fourem/files');
+follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
+fixup_files_uri('ADD_SUBFOLDER');
+submit_form(OK => {
+    'Name:' => 'Restore Folder',
+});
+follow_link_in_table('Name', 'Name', 'Restore Folder', 'Actions', 'Modify');
+fixup_files_uri('TEXT_FILE');
+submit_form(OK => {
+    'Name:' => my $f1 = random_string(),
+    _anon => my $c3 = random_string(),
+});
+follow_link_in_table('Name', 'Name', 'Restore Folder', 'Actions', 'Modify');
+fixup_files_uri('DELETE');
+submit_form('OK');
+verify_no_text('Restore Folder');
+follow_link('Archived', 'Restore Folder', "$f1;1");
+verify_text($c3);
+visit_uri('/fourem/files');
+follow_link('Archived', 'Restore Folder');
+verify_table('Name', [
+    ['Name', 'Actions'],
+    ['Restore Folder', qr/^Restore$/],
+    [$f1, qr/^Restore, Delete Permanently$/],
+]);
+follow_link_in_table('Name', 'Name', 'Restore Folder', 'Actions', 'Restore');
+verify_text(qr{want to restore.*/Archived/Restore Folder});
+submit_form('Restore');
+verify_table('Name', [
+    ['Name', 'Actions'],
+    ['Restore Folder', qr/^$/],
+    [$f1, qr/^Restore, Delete Permanently$/],
+]);
+follow_link_in_table('Name', 'Name', $f1, 'Actions', 'Delete Permanently');
+verify_text(qr{delete.*/Archived/Restore Folder/$f1;1.*permanently});
+submit_form('Delete Permanently');
+verify_table('Name', [
+    ['Name', 'Actions'],
+    ['Restore Folder', qr/^Delete Permanently$/],
+]);
+follow_link_in_table('Name', 'Name', 'Restore Folder',
+		     'Actions', 'Delete Permanently');
+verify_text(qr{delete.*/Archived/Restore Folder.*permanently});
+submit_form('Delete Permanently');
+follow_link(qr/^fourem$/, 'Files', 'Restore Folder');
+follow_link($f1);
+verify_text($c3);
