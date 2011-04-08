@@ -19,6 +19,8 @@ my($_T) = b_use('MIME.Type');
 my($_WN) = b_use('Type.WikiName');
 my($_TXN_PREFIX);
 my($_S) = b_use('Bivio.Search');
+my($_VERSIONS_FOLDER) = $_FP->VERSIONS_FOLDER;
+my($_VERSION_REGEX) = $_FP->VERSION_REGEX;
 
 #DEPRECATED
 sub MAIL_FOLDER {
@@ -66,9 +68,17 @@ sub create_or_update_with_content {
     return $self->create_or_update($values);
 }
 
+sub create_or_update_with_file {
+    return _with_file(shift, 'create_or_update', shift, shift);
+}
+
 sub create_with_content {
     my($self, $values) = _with_content(@_);
     return $self->create($values);
+}
+
+sub create_with_file {
+    return _with_file(shift, 'create', shift, shift);
 }
 
 sub delete {
@@ -334,6 +344,64 @@ sub path_info_to_id {
 	->get('realm_file_id');
 }
 
+sub restore {
+    _assert_loaded(@_);
+    my($self) = @_;
+    my($old_path) = $self->get('path');
+    my($new_path) = $self->restore_path;
+    $self->throw_die(INVALID_OP => 'attempt to restore non-archived file')
+	unless $new_path;
+    my($rf) = $self->new_other('RealmFile')->set_ephemeral;
+    if ($rf->load({
+	path => $old_path,
+    })->get('is_folder')) {
+	$self->throw_die(INVALID_OP => 'may not restore existing folders')
+	    if $rf->unsafe_load({
+		path => $new_path,
+	    });
+	$rf->create({
+	    path => $new_path,
+	    is_folder => 1,
+	});
+	my($restored) = {};
+	$self->new_other('RealmFileList')
+	    ->set_ephemeral
+	    ->do_iterate(
+		sub {
+		    my($rf) = shift->get_model('RealmFile');
+		    my($rp) = $rf->restore_path;
+		    # Only restore the latest version of each file
+		    return 1
+			if $restored->{$rp};
+		    $rf->restore;
+		    $restored->{$rp} = 1;
+		    return 1;
+		},
+		{
+		    path_info => $old_path,
+		    order_by => ['RealmFile.path_lc', 'desc'],
+		},
+	    );
+    } else {
+	$self->new_other('RealmFile')
+	    ->set_ephemeral
+	    ->create_or_update_with_file({
+		path => $new_path,
+	    }, $old_path);
+    }
+    return;
+}
+
+sub restore_path {
+    _assert_loaded(@_);
+    my($self) = @_;
+    my($archive_path) = $self->get('path');
+    return undef
+	unless $archive_path =~ s/$_VERSIONS_FOLDER//;
+    $archive_path =~ s/$_VERSION_REGEX//;
+    return $archive_path;
+}
+
 sub toggle_is_public {
     my($self) = @_;
     my($ip) = $self->get('is_public') ? 0 : 1;
@@ -421,15 +489,7 @@ sub update_with_content {
 }
 
 sub update_with_file {
-    my($self, $values, $id_or_path) = @_;
-    return $self->update_with_content(
-	$values,
-	$self->new_other('RealmFile')->load({
-	    $id_or_path =~ /^\d+$/
-		? (realm_file_id => $id_or_path)
-		: (path => $id_or_path),
-	})->get_content,
-    );
+    return _with_file(shift, 'update', shift, shift);
 }
 
 sub _assert_loaded {
@@ -844,6 +904,21 @@ sub _with_content {
 	is_folder => 0,
 	_content => ref($content) ? $content : \$content,
     });
+}
+
+sub _with_file {
+    my($self, $method, $values, $id_or_path) = @_;
+    $self->die('must provide a method prefix')
+	unless defined($method) && length($method);
+    $method .= '_with_content';
+    return $self->$method(
+	$values,
+	$self->new_other('RealmFile')->set_ephemeral->load({
+	    $id_or_path =~ /^\d+$/
+		? (realm_file_id => $id_or_path)
+		: (path => $id_or_path),
+	})->get_content,
+    );
 }
 
 sub _write {
