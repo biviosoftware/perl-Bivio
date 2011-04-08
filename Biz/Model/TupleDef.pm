@@ -1,13 +1,13 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TupleDef;
 use strict;
-use base 'Bivio::Biz::Model::RealmBase';
+use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub create_from_hash {
-    my($self, $defs, $tstl) = @_;
+    my($self, $defs) = @_;
     while (my($k, $slots) = each(%$defs)) {
 	my($moniker, $label) = split(m{#}, $k);
 	$self->create({
