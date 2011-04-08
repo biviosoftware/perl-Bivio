@@ -28,10 +28,15 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.56  2011/04/04 21:25:26  moeller
+  * Bivio::Biz::Model::ContactForm
+    minor refactoring
+  * Bivio::UI::View::UserAuth
+    general_contact_mail() now gets subject from ContactForm
+
   Revision 10.55  2011/04/04 16:23:20  moeller
   * Bivio::Util::RealmAdmin
     added leave_role()
