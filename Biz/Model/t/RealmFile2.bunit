@@ -262,5 +262,49 @@ options({
 	    [$path->(2, 'revert')] => 'text2',
 	    [$path->(1, 'revert')] => 'text1',
 	],
+	create_with_content => [
+	    [$path->('restore_dir/file1'), \('1abc')] => $commit,
+	],
+	update_with_content => [
+	    [$path->('restore_dir/file1'), \('1def')] => $commit,
+	],
+	create_with_content => [
+	    [$path->('restore_dir/file2'), \('2zyx')] => $commit,
+	],
+	update_with_content => [
+	    [$path->('restore_dir/file2'), \('2wvu')] => $commit,
+	],
+	load => [
+	    [$path->('restore_dir')] => not_die(),
+	],
+	unauth_delete_deep => $commit,
+	load => [
+	    [{
+		path => class('Type.FilePath')->VERSIONS_FOLDER
+		  . $root . '/restore_dir'
+	    }] => not_die(),
+	],
+	restore_path => $root . '/restore_dir',
+	restore => $commit,
+	load => [
+	    [$path->('restore_dir')] => not_die(),
+	    [$path->('restore_dir/file1')] => '1def',
+	    [$path->('restore_dir/file2')] => '2wvu',
+	],
+	load => [
+	    [$path->(1, 'restore_dir/file1')] => '1abc',
+	],
+	restore_path => $root . '/restore_dir/file1',
+	restore => $commit,
+	load => [
+	    [$path->('restore_dir/file1')] => '1abc',
+	],
+	load => [
+	    [{
+		path => class('Type.FilePath')->VERSIONS_FOLDER
+		  . $root . '/restore_dir'
+	    }] => not_die(),
+	],
+	restore => INVALID_OP(),
     ],
 ];
