@@ -11,6 +11,11 @@ my($_FCF) = b_use('Model.FileChangeForm');
 my($_FCM) = b_use('Type.FileChangeMode');
 my($_LOCK) = b_use('Model.RealmFileLock')->if_enabled;
 
+sub delete_permanently_form {
+    my($self) = @_;
+    return $self->internal_body($self->internal_delete_permanently_form(@_));
+}
+
 sub file_change {
     view_put(xhtml_title => Join([
 	vs_text('title.FORUM_FILE_CHANGE'),
@@ -114,8 +119,21 @@ sub folder_file_list {
     return $self->tree_list('RealmFolderFileList');
 }
 
+sub internal_delete_permanently_form {
+    return vs_simple_form('RealmFileDeletePermanentlyForm');
+}
+
+sub internal_restore_form {
+    return vs_simple_form('RealmFileRestoreForm');
+}
+
 sub internal_revert_form {
     return vs_simple_form('RealmFileRevertForm');
+}
+
+sub restore_form {
+    my($self) = @_;
+    return $self->internal_body($self->internal_restore_form(@_));
 }
 
 sub revert_form {
@@ -336,23 +354,40 @@ sub _tree_list {
 	    column_data_class => 'list_action',
 	    column_widget => ListActions([
 		map({
-		    my($task) = $_;
 		    [
 			vs_text_as_prose("RealmFileTreeList.list_action.$_"),
-			$task,
+			$_,
 			URI({
-			    task_id => $task,
+			    task_id => $_,
 			    path_info => ['RealmFile.path'],
 			}),
-			And(
-			    ['!', '->is_archive'],
-			    ['!', 'RealmFile.is_read_only'],
-			    ['!', 'is_max_files_per_folder'],
-			),
+			$_ eq 'FORUM_FILE_CHANGE' ?
+			    And(['!', '->is_archive'],
+				['!', 'RealmFile.is_read_only'],
+				['!', 'is_max_files_per_folder'])
+			: $_ eq 'FORUM_FILE_RESTORE_FORM' ?
+			    And(['->is_archive'],
+				[sub {
+				     my($source) = @_;
+				     my($rf) = $source
+					 ->get_model('RealmFile');
+				     return ! ($rf->get('is_folder')
+					 && $rf->new_other('RealmFile')
+					     ->set_ephemeral
+					     ->unsafe_load({
+						 path => $rf->restore_path,
+					     }));
+				 }])
+			: And(['->is_archive'],
+			      If(['RealmFile.is_folder'],
+				 ['is_empty'],
+				 1)),
 		    ];
-		}
-		    'FORUM_FILE_CHANGE',
-		),
+		} qw(
+		    FORUM_FILE_CHANGE
+		    FORUM_FILE_RESTORE_FORM
+		    FORUM_FILE_DELETE_PERMANENTLY_FORM
+		)),
 	    ]),
 	}],
     ]);
