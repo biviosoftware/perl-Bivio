@@ -86,6 +86,10 @@ sub is_list_view {
     return _query(shift, 'b_list_view');
 }
 
+sub is_time_zone {
+    return _query(shift, 'b_time_zone');
+}
+
 sub this_month {
     return $_DT->get_parts(_query(shift, 'b_month'), 'month');
 }

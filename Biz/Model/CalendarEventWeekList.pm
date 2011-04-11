@@ -41,10 +41,12 @@ sub internal_load_rows {
     my($months) = _months($month_list);
     my($rows) = [];
     my($today) = $_D->from_datetime(
-	$month_list->auth_user_time_zone->date_time_to_utc($_DT->now));
+	$month_list->auth_user_time_zone->date_time_from_utc($_DT->now));
     $_DT->do_iterate(
 	sub {
 	    my($dt) = @_;
+	    $dt = $month_list->auth_user_time_zone->date_time_from_utc($dt)
+		if $month_list->is_time_zone;
 	    my($dow) = lc($_DT->english_day_of_week($dt));
 	    push(@$rows, {})
 		if $dow eq 'sunday';
