@@ -4,7 +4,13 @@ test_setup('PetShop', 'groupware');
 home_page();
 do_test_backdoor(TestData => 'reset_calendar_btest');
 login_as('calendar_btest_user');
-follow_menu_link(qw(calendar_btest_main calendar add_event));
+follow_menu_link(qw(calendar_btest_main calendar));
+follow_link('[change]');
+submit_form({
+    qr{time zone}i => 'UTC'
+});
+verify_text(qr{Show in UTC time}i);
+follow_menu_link('add_event');
 my($r) = random_string();
 submit_form({
     title => $r,
@@ -44,11 +50,38 @@ submit_form({
     start_time => '11:00',
     end_time => '12:00',
 });
-#TODO: Test the [change] link and changing the time zone
+# Test that showing the calendar in the user's time zone
+# still renders a calendar (q586)
+submit_form({
+    show => 1,
+    list => 0,
+});
+verify_text(qr{Show in UTC time}i);
+verify_text(qr{sunday}i);
+follow_link('[change]');
+submit_form({
+    qr{time zone}i => 'Asia/Seoul'
+});
+verify_text(qr{Show in Asia/Seoul time}i);
+verify_text(qr{sunday}i);
+follow_link('[change]');
+submit_form({
+    qr{time zone}i => 'America/Denver'
+});
+verify_text(qr{Show in America/Denver time}i);
+verify_text(qr{sunday}i);
+follow_link('[change]');
+submit_form({
+    qr{time zone}i => 'UTC'
+});
+verify_text(qr{Show in UTC time}i);
+verify_text(qr{sunday}i);
 submit_form({
     show => 1,
     list => 1,
 });
+#TODO: Test that the events appear on the right day
+# with changing the time zone
 case_tag('tz');
 verify_table(start => [
     [qw(start zone title)],
