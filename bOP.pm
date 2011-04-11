@@ -28,9 +28,38 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.57  2011/04/08 00:51:53  schellj
+  * Bivio::Biz::Model::Motion
+    avoid uninitialized value in update()
+    fixed status compare in update()
+  * Bivio::Biz::Model::RealmFileDeletePermanentlyForm
+    NEW
+  * Bivio::Biz::Model::RealmFile
+    added restore, restore_path, create_or_update_with_file
+  * Bivio::Biz::Model::RealmFileRestoreForm
+    NEW
+  * Bivio::Biz::Model::RealmFileTreeList
+    fix for is_archive, old $_VERSIONS_FOLDER_RE didn't work
+  * Bivio::Delegate::TaskId
+    added FORUM_FILE_RESTORE_FORM, FORUM_FILE_DELETE_PERMANENTLY_FORM
+  * Bivio::SQL::ListQuery
+    format_uri_for_this() doesn't include order_by from current list
+  * Bivio::UI::FacadeBase
+    added support for FORUM_FILE_RESTORE_FORM, FORUM_FILE_DELETE_PERMANENTLY_FORM
+  * Bivio::UI::HTML::Widget::Tag
+    die unless tag has a value
+  * Bivio::UI::View::File
+    added "Restore", "Delete Permanently" links for archived files
+  * Bivio::UI::View::Motion
+    removed Results and View Comments, now shown on Status page
+    added internal_list_actions() for subclasses
+  * Bivio::UI::XHTML::ViewShortcuts
+    don't create Tag() for names which start with '_'
+
   Revision 10.56  2011/04/04 21:25:26  moeller
   * Bivio::Biz::Model::ContactForm
     minor refactoring
