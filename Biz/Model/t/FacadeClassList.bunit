@@ -6,6 +6,7 @@ req()->initialize_fully;
     load_all => [
 	[] => [
 	    {simple_name => 'BeforeOther'},
+	    {simple_name => 'Mobile'},
 	    {simple_name => 'Other'},
 	    {simple_name => 'PetShop'},
 	],
