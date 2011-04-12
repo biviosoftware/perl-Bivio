@@ -75,49 +75,53 @@ do_test_backdoor(RealmFile => "-realm demo send_file_via_mail $email $subj /priv
 my($msg) = verify_local_mail($email, $subj);
 test_equals(qr{filename="image.gif"}, $msg);
 visit_uri('/fourem/files');
-follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
-fixup_files_uri('ADD_SUBFOLDER');
-submit_form(OK => {
-    'Name:' => 'Restore Folder',
-});
-follow_link_in_table('Name', 'Name', 'Restore Folder', 'Actions', 'Modify');
+my($folder) = 'folder ' . random_string();
+
+unless (text_exists($folder)) {
+    follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
+    fixup_files_uri('ADD_SUBFOLDER');
+    submit_form(OK => {
+	'Name:' => $folder,
+    });
+}
+follow_link_in_table('Name', 'Name', $folder, 'Actions', 'Modify');
 fixup_files_uri('TEXT_FILE');
 submit_form(OK => {
     'Name:' => my $f1 = random_string(),
     _anon => my $c3 = random_string(),
 });
-follow_link_in_table('Name', 'Name', 'Restore Folder', 'Actions', 'Modify');
+follow_link_in_table('Name', 'Name', $folder, 'Actions', 'Modify');
 fixup_files_uri('DELETE');
 submit_form('OK');
-verify_no_text('Restore Folder');
-follow_link('Archived', 'Restore Folder', "$f1;1");
+verify_no_text($folder);
+follow_link('Archived', $folder, "$f1;1");
 verify_text($c3);
 visit_uri('/fourem/files');
-follow_link('Archived', 'Restore Folder');
+follow_link('Archived', $folder);
 verify_table('Name', [
     ['Name', 'Actions'],
-    ['Restore Folder', qr/^Restore$/],
+    [$folder, qr/^Restore$/],
     [$f1, qr/^Restore, Delete Permanently$/],
 ]);
-follow_link_in_table('Name', 'Name', 'Restore Folder', 'Actions', 'Restore');
-verify_text(qr{want to restore.*/Archived/Restore Folder});
+follow_link_in_table('Name', 'Name', $folder, 'Actions', 'Restore');
+verify_text(qr{want to restore.*/Archived/$folder});
 submit_form('Restore');
 verify_table('Name', [
     ['Name', 'Actions'],
-    ['Restore Folder', qr/^$/],
+    [$folder, qr/^$/],
     [$f1, qr/^Restore, Delete Permanently$/],
 ]);
 follow_link_in_table('Name', 'Name', $f1, 'Actions', 'Delete Permanently');
-verify_text(qr{delete.*/Archived/Restore Folder/$f1;1.*permanently});
+verify_text(qr{delete.*/Archived/$folder/$f1;1.*permanently});
 submit_form('Delete Permanently');
 verify_table('Name', [
     ['Name', 'Actions'],
-    ['Restore Folder', qr/^Delete Permanently$/],
+    [$folder, qr/^Delete Permanently$/],
 ]);
-follow_link_in_table('Name', 'Name', 'Restore Folder',
+follow_link_in_table('Name', 'Name', $folder,
 		     'Actions', 'Delete Permanently');
-verify_text(qr{delete.*/Archived/Restore Folder.*permanently});
+verify_text(qr{delete.*/Archived/$folder.*permanently});
 submit_form('Delete Permanently');
-follow_link(qr/^fourem$/, 'Files', 'Restore Folder');
+follow_link(qr/^fourem$/, 'Files', $folder);
 follow_link($f1);
 verify_text($c3);
