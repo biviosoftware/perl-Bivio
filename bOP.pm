@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.58  2011/04/11 22:54:52  schellj
+  * Bivio::Biz::Model::CalendarEventMonthList
+    time zone fix q586
+  * Bivio::Biz::Model::CalendarEventWeekList
+    time zone fix q586
+  * Bivio::Biz::Model::TupleDef
+    removed unused arg from create_from_hash()
+  * Bivio::Biz::Model::TupleSlotDef
+    minor refactoring
+  * Bivio::Delegate::TaskId
+    fixed load_all on TupleUseList
+
   Revision 10.57  2011/04/08 00:51:53  schellj
   * Bivio::Biz::Model::Motion
     avoid uninitialized value in update()
