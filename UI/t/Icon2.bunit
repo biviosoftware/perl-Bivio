@@ -4,7 +4,7 @@ Request();
 my($root) = tmp_dir();
 my($dir) = Bivio::IO::File->mkdir_p("$root/petshop/plain/i");
 my($my_icon) = "$dir/my_icon.gif";
-system("cp ../../PetShop/files/plain/i/logo.gif $my_icon");
+system("cp ../../PetShop/files/petshop/plain/i/logo.gif $my_icon");
 config({
     'Bivio::UI::Facade' => {
 	local_file_root => $root,
