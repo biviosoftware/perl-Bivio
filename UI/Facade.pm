@@ -116,9 +116,9 @@ sub find_by_uri_or_domain {
     return $_CLASS_MAP->{$_CFG->{default}}
 	unless defined($uri_or_domain);
     $uri_or_domain = lc($uri_or_domain);
-    foreach my $uri (@$_URI_SEARCH_LIST) {
+    foreach my $uri ($uri_or_domain, split(/\./, $uri_or_domain)) {
 	return $_URI_MAP->{$uri}
-	    if $uri_or_domain =~ /(?:^|\.)$uri(?:$|\.)/;
+	    if $_URI_MAP->{$uri};
     }
     return undef;
 }
