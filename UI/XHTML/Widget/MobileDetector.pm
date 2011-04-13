@@ -29,6 +29,7 @@ sub uri_args_for {
 	    %{$req->unsafe_get('query') || {}},
 	    $_QUERY_KEY => $which eq 'mobile' ? 1 : 0,
 	},
+	control => vs_task_has_uri([qw(->req task_id)]),
 	carry_path_info => 1,
     };
 }
