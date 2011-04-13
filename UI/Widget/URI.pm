@@ -2,20 +2,22 @@
 # $Id$
 package Bivio::UI::Widget::URI;
 use strict;
-use Bivio::Base 'UI.Widget';
+use Bivio::Base 'Widget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
     my($h) = $self->get('format_uri_hash');
+    $self->put(control => delete($h->{control}))
+	if exists($h->{control});
     $h->{query} ||= undef;
     $h->{path_info} ||= undef;
     $self->initialize_attr(format_method => 'format_uri');
     while (my($k, $v) = each(%$h)) {
 	$self->initialize_value("format_uri_hash.$k", $v);
     }
-    return;
+    return shift->SUPER::initialize(@_);
 }
 
 sub new {
@@ -41,7 +43,7 @@ sub internal_new_args {
     };
 }
 
-sub render {
+sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($method) = $self->render_simple_attr('format_method', $source);
     $$buffer .= $source->get_request->$method(
