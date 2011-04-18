@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.59  2011/04/12 23:07:50  moeller
+  * Bivio::UI::Facade
+    revert find_by_uri_or_domain() to search domain parts in order
+  * Bivio::UI::XHTML::Widget::RealmCSS
+    backed out last change, caused bad css in NO-MATCH case
+
   Revision 10.58  2011/04/11 22:54:52  schellj
   * Bivio::Biz::Model::CalendarEventMonthList
     time zone fix q586
