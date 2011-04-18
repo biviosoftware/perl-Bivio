@@ -182,6 +182,11 @@ sub get_or_default {
 	: $default;
 }
 
+sub get_request {
+    my($self) = @_;
+    return $self->unsafe_get('req') || shift->SUPER::get_request(@_);
+}
+
 sub get_shallow_copy {
     my($self, $key_re) = @_;
     # Return a shallow copy of the attributes.
