@@ -27,7 +27,8 @@ sub get_all_settings {
 
 sub get_file_path {
     my($self, $base) = @_;
-    return _path($base);
+    $base ||= $self->FILE_PATH_BASE;
+    return $_FP->join($_FP->SETTINGS_FOLDER, "$base.csv");
 }
 
 sub get_multiple_settings {
@@ -54,7 +55,7 @@ sub internal_load_rows {
     my($auth_id, $base) = split(/:/, $self->[$_IDI], 2);
     my($rf) = $self->new_other('RealmFile')->set_ephemeral;
     return []
-	unless $rf->unauth_load({realm_id => $auth_id, path => _path($base)});
+	unless $rf->unauth_load({realm_id => $auth_id, path => $self->get_file_path($base)});
     return _parse($self, $rf);
 }
 
@@ -114,7 +115,7 @@ sub unauth_get_setting {
 sub unauth_if_file_exists {
     my($self, $base, $realm_id) = @_;
     return $self->new_other('RealmFile')->unauth_load({
-	path => _path($base),
+	path => $self->get_file_path($base),
 	realm_id => $realm_id,
     });
 }
@@ -153,6 +154,7 @@ sub _grep {
 
 sub _load {
     my($self, $realm_id, $base) = @_;
+    $base ||= $self->FILE_PATH_BASE;
     $realm_id ||= $self->req('auth_id');
     $base = $realm_id . ":$base";
     return $self
@@ -190,8 +192,6 @@ sub _parse_record {
 }
 
 sub _path {
-    my($base) = @_;
-    return $_FP->join($_FP->SETTINGS_FOLDER, "$base.csv");
 }
 
 1;
