@@ -330,8 +330,6 @@ sub _replace {
     $doc->set_data('');
     while (my($field, $index) = each(%$_VALUE_MAP)) {
         my($v) = $parser->get($field);
-	$v = $_DT->to_yyyy_mm_dd($v)
-	    if $field eq 'modified_date_time';
 	$doc->add_value($index, defined($v) ? $v : '');
     }
     my($primary_term) = _primary_term($model->get_primary_id);
