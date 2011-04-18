@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,31 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.60  2011/04/18 01:39:03  nagler
+  * Bivio::Biz::Model::RealmSettingList
+    Added get_file_path, which can rely on FILE_PATH_BASE.  Makes easier
+    for subclasses to specify file path in multiple places
+  * Bivio::Collection::Attributes
+    added get_request.  WidgetValueSource already had get_request and this
+    makes it more coupled by asking if "req" is on self first
+  * Bivio::Search::Parser
+    added xapian_posting_synonyms (defaults [])
+    fmt
+    Add req to attributes
+  * Bivio::Search::Xapian
+    Added get_stemmer (needed for parsers which want to create synonyms)
+    Bind synonyms (only stemmed versions)
+  * Bivio::UI::Facade
+    revert find_by_uri_or_domain to use $_URI_SEARCH_LIST.  Needed to
+    allow "dotted" facade uris
+  * Bivio::UI::Widget::URI
+    subclass as ControlBase so MobileToggler won't render tasks without uri's
+  * Bivio::UI::XHTML::Widget::MobileDetector
+    uri_args_for returns a hash with a control that won't render the URI
+    if there's no uri for the current task
+    uri_args_for: control can't use vs_task_has_uri, because doesn't work
+    when not in a view
+
   Revision 10.59  2011/04/12 23:07:50  moeller
   * Bivio::UI::Facade
     revert find_by_uri_or_domain() to search domain parts in order
