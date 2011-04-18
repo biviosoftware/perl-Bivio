@@ -91,6 +91,10 @@ sub execute {
     return 0;
 }
 
+sub get_stemmer {
+    return $_STEMMER;
+}
+
 sub get_values_for_primary_id {
     my($proto, $primary_id, $model, $attr) = @_;
     my($req) = $model->req;
@@ -336,11 +340,16 @@ sub _replace {
     }
     my($i) = 1;
     foreach my $p (@{$parser->get('postings')}) {
+	next
+	    if length($p) > $_MAX_WORD;
 	my($s) = $_STEMMER->stem_word($p);
-	next if length($p) > $_MAX_WORD;
-	$doc->add_posting("$p", $i)
+	$doc->add_posting($p, $i)
 	    unless $s eq $p;
-	$doc->add_posting($s, $i++);
+	$doc->add_posting($s, $i);
+	foreach my $syn (@{$parser->xapian_posting_synonyms($s)}) {
+	    $doc->add_posting($syn, $i);
+	}
+	$i++;
     }
     $self->get('db')->replace_document_by_term($primary_term, $doc);
     return;
