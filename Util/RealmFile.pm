@@ -31,6 +31,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-file [options] command [args...]
 commands:
+    audit_folders -- correct folder modified_date_time and user_id
     backup_realms dir realm... - export_tree for all realms in dir/<date-time>
     clear_files_and_mail
     create path -- creates file_path with input
@@ -46,6 +47,23 @@ commands:
     send_file_via_mail email subject path -- email a file as an attachment
     update path --  updates path with input
 EOF
+}
+
+sub audit_folders {
+    my($self) = @_;
+    $self->model('RealmFile')->do_iterate(sub {
+        my($rf) = @_;
+	my($max, $user_id) = _max_modified_time($self, $rf);
+	$rf->update({
+	    override_is_read_only => 1,
+	    modified_date_time => $max,
+	    user_id => $user_id,
+	}) if $max;
+	return 1;
+    }, {
+	is_folder => 1,
+    });
+    return;
 }
 
 sub backup_realms {
@@ -256,7 +274,7 @@ sub import_tree {
 	);
 	next;
     }
-    _audit_folder_modified_time($self);
+    $self->audit_folders;
     $self->model('RealmMail')->audit_threads;
     return;
 }
@@ -325,22 +343,6 @@ sub update {
     return;
 }
 
-sub _audit_folder_modified_time {
-    my($self) = @_;
-    $self->model('RealmFile')->do_iterate(sub {
-        my($rf) = @_;
-	my($max) = _max_modified_time($self, $rf);
-	$rf->update({
-	    override_is_read_only => 1,
-	    modified_date_time => $max,
-	}) if $max;
-	return 1;
-    }, {
-	is_folder => 1,
-    });
-    return;
-}
-
 sub _do {
     my($self, $method, $path, @args) = @_;
     $self->initialize_fully;
@@ -361,21 +363,23 @@ sub _fix_values {
 sub _max_modified_time {
     my($self, $folder) = @_;
     my($max) = $_DT->get_min;
+    my($user_id);
 
     $self->model('RealmFile')->do_iterate(sub {
         my($rf) = @_;
-	my($v) = $rf->get('is_folder')
+	my($v, $u) = $rf->get('is_folder')
 	    ? _max_modified_time($self, $rf)
-	    : $rf->get('modified_date_time');
+	    : $rf->get(qw(modified_date_time user_id));
 
 	if ($_DT->compare($v, $max) > 0) {
 	    $max = $v;
+	    $user_id = $u;
 	}
 	return 1;
     }, {
 	folder_id => $folder->get('realm_file_id'),
     });
-    return $max eq $_DT->get_min ? undef : $max;
+    return $max eq $_DT->get_min ? undef : ($max, $user_id);
 }
 
 1;
