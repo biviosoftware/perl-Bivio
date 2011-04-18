@@ -35,6 +35,10 @@ sub new_excerpt {
     return _do(@_);
 }
 
+sub xapian_posting_synonyms {
+    return [];
+}
+
 sub xapian_terms_and_postings {
     my($proto, $model) = @_;
     return
@@ -55,20 +59,26 @@ sub _do {
     $model = $parseable->get('model');
     my($method) = 'handle_' . $proto->my_caller;
     my($die);
-    my($self) = $_D->catch(sub {
-        return b_use(SearchParser => $parseable->get('class'))
-	    ->$method($parseable);
-    }, \$die);
+    my($self) = $_D->catch(
+	sub {
+	    return b_use(SearchParser => $parseable->get('class'))
+		->$method($parseable);
+	},
+	\$die,
+    );
     b_warn('Could not parse file:', $die->get('attrs'))
 	if $die;
     $self ||= $proto->new();
-    $parseable->map_each(sub {
-        shift;
-        return $self->put_unless_exists(@_);
-    });
+    $parseable->map_each(
+	sub {
+	    shift;
+	    return $self->put_unless_exists(@_);
+	},
+    );
     my($no_text) = '';
     $self->put_unless_exists(
 	'RealmOwner.realm_id' => $model->get_auth_id,
+	req => $parseable->req,
 	author => '',
 	author_email => '',
 	author_user_id => $model->get_auth_user_id,
