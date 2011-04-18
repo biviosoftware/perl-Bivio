@@ -10,9 +10,14 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_VT) = b_use('Type.MotionVote');
 
+sub WANT_VOTE_COMMENT {
+    return 1;
+}
+
 sub WANT_FILE_FIELDS {
     return 1;
 }
+
 
 sub comment_form {
     my($self) = @_;
@@ -256,7 +261,7 @@ sub status {
 	     ),
              Grid([
 		 [ _value_cell(' ') ],
-		 [ _label_cell('Votes'), Join([ [\&_vote_list ]]) ],
+		 [ _label_cell('Votes'), Join([ [\&_vote_list, $self ]]) ],
 		 [ _value_cell(' ') ],
 		 [ _label_cell('Comments'), Join([ [ \&_comment_list, [qw(Model.MotionCommentList)] ] ] ) ],
 	    ],
@@ -298,7 +303,7 @@ sub vote_result {
 	    'FORUM_MOTION_LIST',
 	]),
 	$self->internal_topic_from_motion,
-	body => [ \&_vote_list ]
+	body => [ \&_vote_list, $self ]
     );
 }
 
@@ -360,13 +365,14 @@ sub _value_cell {
 }
 
 sub _vote_list {
+    my ($req, $self) = @_;
     return vs_paged_list(
-	    MotionVoteList => [qw(
-		MotionVote.creation_date_time
-		MotionVote.vote
-		MotionVote.comment
-		Email.email
-	    )],
+	    MotionVoteList => [
+		'MotionVote.creation_date_time',
+		'MotionVote.vote',
+		$self->WANT_VOTE_COMMENT ? 'MotionVote.comment' : (),
+		'Email.email',
+	    ],
 	    {
 		no_pager => 1,
 	    }
