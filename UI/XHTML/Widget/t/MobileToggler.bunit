@@ -1,0 +1,21 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget({
+    view_class_map => 'XHTMLWidget',
+    new_params => sub {
+	my($case, $params) = @_;
+	$case->put('MobileToggler.bunit' => $params);
+	return [];
+    },
+    setup_render => sub {
+	my($req, $case) = @_;
+	$req->server_redirect('SITE_ROOT');
+        $req->put(query => {b_mobile => $case->get('MobileToggler.bunit')->[0]});
+	XHTMLWidget_MobileDetector()->handle_pre_execute_task($req->get('task'), $req);
+	return;
+    },
+});
+[
+    0 => qr{Desktop</span>.*b_mobile=1}s,
+    1 => qr{b_mobile=0.*Mobile</span>},
+];
