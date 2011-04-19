@@ -35,15 +35,15 @@ sub execute_empty_edit {
 
 sub execute_ok_create {
     my($self) = @_;
+     $self->new_other('Motion')->create($self->get_model_properties('Motion'));
     _add_file($self);
-    $self->new_other('Motion')->create($self->get_model_properties('Motion'));
-    return;
+     return;
 }
 
 sub execute_ok_edit {
     my($self) = @_;
-    _add_file($self);
     $self->update_model_properties('Motion');
+    _add_file($self);
     return;
 }
 
