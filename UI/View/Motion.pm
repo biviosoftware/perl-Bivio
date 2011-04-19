@@ -10,14 +10,18 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_VT) = b_use('Type.MotionVote');
 
-sub WANT_VOTE_COMMENT {
-    return 1;
+
+sub WANT_BADGE_NUMBER {
+    return 0;
 }
 
 sub WANT_FILE_FIELDS {
     return 1;
 }
 
+sub WANT_VOTE_COMMENT {
+    return 1;
+}
 
 sub comment_form {
     my($self) = @_;
@@ -52,11 +56,13 @@ sub comment_result {
 
 
 sub comment_result_csv {
+    my($self) = @_;
     return shift->internal_body([sub {
 	my($source) = @_;
 	my($model) = $source->req('Model.MotionCommentList');
         return CSV(MotionCommentList => [
 	    'RealmOwner.display_name',
+	    $self->WANT_BADGE_NUMBER ? 'UserInfo.badge_number' : (),
 	    'MotionComment.comment',
 	    map($_, $model->tuple_tag_field_check),
 	]);
@@ -308,12 +314,13 @@ sub vote_result {
 }
 
 sub vote_result_csv {
-    return shift->internal_body(CSV(MotionVoteList => [qw(
-        MotionVote.creation_date_time
-	MotionVote.vote
-	MotionVote.comment
-	Email.email
-    )]));
+    my($self) = @_;
+    return shift->internal_body(CSV(MotionVoteList => [
+        'MotionVote.creation_date_time',
+	'MotionVote.vote',
+	$self->WANT_VOTE_COMMENT ? 'MotionVote.comment' : (),
+	'Email.email',
+    ]));
 }
 
 sub _comment_list {

@@ -29,9 +29,11 @@ sub internal_initialize {
 	    'MotionComment.motion_comment_id',
 	    'MotionComment.comment',
 	    'RealmOwner.display_name',
+	    'UserInfo.badge_number',
 	],
 	other => [
 	    [qw(MotionComment.user_id RealmOwner.realm_id)],
+	    [qw(MotionComment.user_id UserInfo.user_id)],
 	],
 	auth_id => ['MotionComment.realm_id'],
     });
