@@ -28,10 +28,16 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.61  2011/04/18 21:42:40  nagler
+  * Bivio::Search::Xapian
+    store the actual modified_date_time not yyyy_mm_dd.  It's not used by
+    Xapian so is ok to do this
+  * Bivio::UI::View::Motion
+    Make comment in vote list optional.
+
   Revision 10.60  2011/04/18 01:39:03  nagler
   * Bivio::Biz::Model::RealmSettingList
     Added get_file_path, which can rely on FILE_PATH_BASE.  Makes easier
