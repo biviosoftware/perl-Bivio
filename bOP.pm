@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.62  2011/04/20 04:46:09  schellj
+  * Bivio::Biz::Model::MotionCommentList
+    Add badge number to comment csv. Remove comment in vote list and csv
+    removed UserInfo ref
+  * Bivio::Biz::Model::MotionForm
+    When creating a new ePoll, if a document was supplied and the ePoll name already existed then an internal error resulted instead of "already exists"..
+  * Bivio::UI::FacadeBase
+    Add badge number to comment csv. Remove comment in vote list and csv
+  * Bivio::UI::View::File
+    show "(locked)" on non-simple file trees
+  * Bivio::UI::View::Motion
+    Add badge number to comment csv. Remove comment in vote list and csv
+  * Bivio::Util::RealmFile
+    made audit_folders() public
+
   Revision 10.61  2011/04/18 21:42:40  nagler
   * Bivio::Search::Xapian
     store the actual modified_date_time not yyyy_mm_dd.  It's not used by
