@@ -189,7 +189,9 @@ sub _parse_rows {
 sub _validate_columns {
     my($self, $row, $columns) = @_;
     my($headings) = [keys(%$columns)];
-    return grep(exists($row->{$_}), @$headings) == @$headings
+    return grep(
+	exists($row->{$_}) || $columns->{$_}->{constraint} eq $_C->NONE,
+	@$headings) == @$headings
 	? 1
 	: $self->internal_source_error(
 	    undef,
