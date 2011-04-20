@@ -202,11 +202,12 @@ sub _file_date {
 }
 
 sub _file_link_column {
+    my($simple) = @_;
     return ['RealmFile.path', {
 	column_order_by => ['RealmFile.path_lc'],
 	column_widget => If(['is_max_files_per_folder'],
 	    vs_text('RealmFileTreeList.more_files'),
-	    String(['base_name']),
+	    $simple ? String(['base_name']) : _file_name(['base_name']),
 	),
     }];
 }
@@ -323,7 +324,7 @@ sub _mailto {
 sub _simple_tree {
     my($model) = @_;
     return vs_tree_list($model || 'RealmFileTreeList' => [
-	_file_link_column(),
+	_file_link_column(1),
 	'RealmFile.modified_date_time',
     ]);
 }
