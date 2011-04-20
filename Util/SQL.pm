@@ -65,6 +65,7 @@ my($_BUNDLE) = [qw(
     motion2
     motion_comment
     motion3
+    motion_comment_64k
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -1426,6 +1427,16 @@ CREATE SEQUENCE motion_s
   CACHE 1 INCREMENT BY 100000
 /
 
+EOF
+    return;
+}
+
+sub internal_upgrade_db_motion_comment_64k {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE motion_comment_t
+    ALTER COLUMN comment TYPE TEXT64K
+/
 EOF
     return;
 }

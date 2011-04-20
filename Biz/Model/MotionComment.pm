@@ -29,7 +29,7 @@ sub internal_initialize {
 	    motion_id => ['Motion.motion_id', 'NOT_NULL'],
 	    user_id => ['User.user_id', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
-	    comment => ['Text', 'NOT_NULL'],
+	    comment => ['Text64K', 'NOT_NULL'],
 	},
     });
 }
