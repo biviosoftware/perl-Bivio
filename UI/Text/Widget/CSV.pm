@@ -125,10 +125,20 @@ sub _list_class {
     return $_M->get_instance($self->get('list_class'));
 }
 
+sub _render_cell {
+    my($self, $name, $source) = @_;
+    my($v) = $self->render_simple_value($name, $source);
+
+    if ($v) {
+	$v =~ s/\n+$//;
+    }
+    return $v;
+}
+
 sub _render_cells {
     my($self, $name, $cells, $source, $buffer) = @_;
     $$buffer .= ${$_CSV->to_csv_text([
-	map($self->render_simple_value($_->[1]->{$name}, $source), @$cells),
+	map(_render_cell($self, $_->[1]->{$name}, $source), @$cells),
     ])};
     return;
 }
