@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.63  2011/04/20 21:42:33  moeller
+  * Bivio::Biz::Model::CSVImportForm
+    allow columns with constraint NONE to be missing
+  * Bivio::Biz::Model::MotionComment
+    Change motion comment to Text64K
+  * Bivio::Biz::Model::MotionForm
+    update Motion with motion_file_id
+  * Bivio::SQL::DDL
+    Change motion comment to Text64K
+  * Bivio::UI::Text::Widget::CSV
+    strip trailing newlines from values
+  * Bivio::Util::SQL
+    Change motion comment to Text64K
+
   Revision 10.62  2011/04/20 04:46:09  schellj
   * Bivio::Biz::Model::MotionCommentList
     Add badge number to comment csv. Remove comment in vote list and csv
