@@ -59,13 +59,10 @@ sub comment_result_csv {
     my($self) = @_;
     return shift->internal_body([sub {
 	my($source) = @_;
-	my($model) = $source->req('Model.MotionCommentList');
-        return CSV(MotionCommentList => [
-	    'RealmOwner.display_name',
-	    $self->WANT_BADGE_NUMBER ? 'UserInfo.badge_number' : (),
-	    'MotionComment.comment',
-	    map($_, $model->tuple_tag_field_check),
-	]);
+        return CSV(MotionCommentList =>
+	    $self->internal_comment_csv_fields(
+		$source->req('Model.MotionCommentList')),
+	);
     }]);
 }
 
@@ -89,6 +86,15 @@ sub form {
 		: (),
 	]),
     );
+}
+
+sub internal_comment_csv_fields {
+    my($self, $model) = @_;
+    return [
+	'RealmOwner.display_name',
+	'MotionComment.comment',
+	map($_, $model->tuple_tag_field_check),
+    ];
 }
 
 sub internal_date_time_attr {
