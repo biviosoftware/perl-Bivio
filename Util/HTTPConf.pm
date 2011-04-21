@@ -13,6 +13,7 @@ my($_VARS) = {
     can_secure => 0,
     legacy_rewrite_rules => '',
     cookie_tag => undef,
+    cookie_domain => '',
     listen => undef,
     root_prefix => undef,
     server_admin => undef,
@@ -119,7 +120,7 @@ $root_prefix::BConf->merge_dir({
         is_production => $is_production,
     },
     'Bivio::Delegate::Cookie' => {
-        tag => '$cookie_tag',
+        tag => '$cookie_tag',$cookie_domain_cfg
     },
     'Bivio::UI::Facade' => {
         local_file_root => '/var/www/facades',
@@ -180,6 +181,8 @@ EOF
 		'@' . $vars->{mail_host} => $app,
 	    ),
     ];
+    $vars->{cookie_domain_cfg} = !$vars->{cookie_domain} ? ''
+	: "\n        domain => '$vars->{cookie_domain}',";
     Bivio::Die->die(
 	$app, ': virtual_hosts must be an array_ref of pairs'
     ) unless ref($vars->{virtual_hosts}) eq 'ARRAY'

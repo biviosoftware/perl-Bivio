@@ -29,6 +29,7 @@
     a2 => {
         is_production => 1,
         cookie_tag => 'A2T',
+	cookie_domain => 'bivio.biz',
         root_prefix => 'A2',
         listen => 1010,
         legacy_rewrite_rules => 
