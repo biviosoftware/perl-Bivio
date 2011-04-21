@@ -66,10 +66,17 @@ sub vs_html {
 }
 
 sub vs_is_current_facade {
-    my($self, $name) = @_;
+    my($self, $simple_class) = @_;
     return [
-	sub {shift->req('UI.Facade')->matches_uri_or_domain(shift)},
-	$name,
+	sub {
+	    my(undef, $sc) = @_;
+	    return b_use('UI.Facade')
+		->get_from_source(shift)
+		->simple_package_name
+	        eq $sc
+		? 1 : 0;
+	},
+	$simple_class,
     ];
 }
 
