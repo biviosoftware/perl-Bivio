@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.64  2011/04/21 18:12:09  nagler
+  * Bivio::UI::ViewShortcuts
+    vs_is_current_facade uses simple_class, not uri, because uri may change
+
   Revision 10.63  2011/04/20 21:42:33  moeller
   * Bivio::Biz::Model::CSVImportForm
     allow columns with constraint NONE to be missing
