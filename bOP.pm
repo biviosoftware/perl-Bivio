@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.65  2011/04/21 21:04:05  nagler
+  * Bivio::Util::HTTPConf
+    added cookie_domain support
+
   Revision 10.64  2011/04/21 18:12:09  nagler
   * Bivio::UI::ViewShortcuts
     vs_is_current_facade uses simple_class, not uri, because uri may change
