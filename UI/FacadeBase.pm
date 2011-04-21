@@ -1218,7 +1218,6 @@ sub _cfg_motion {
 	    ]],
 	    [MotionCommentList => [
 		'RealmOwner.display_name' => 'Name',
-		'UserInfo.badge_number' => 'Badge Number',
 	    ]],
 	    [MotionVote => [
 		vote => 'Vote',
