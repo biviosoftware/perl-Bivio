@@ -12,11 +12,12 @@ sub format_email_for_realm {
     my($realm, $req) = $_M->is_blessed($req_or_realm)
 	? ($req_or_realm, $req_or_realm->req)
 	: ($req_or_realm->req(qw(auth_realm owner)), $req_or_realm);
-    return $req->format_email(
+    return $_M->new($req, 'MailReceiveDispatchForm')
+	->format_recipient(
 #TODO: This needs to be coupled with the actual task's uri, not the constant here
-	($proto->TASK_URI ? $proto->TASK_URI . '.' : '')
-	    . $realm->get('name'),
-    );
+	    $proto->TASK_URI,
+	    $realm->get('name'),
+	);
 }
 
 sub want_realm_mail_created {

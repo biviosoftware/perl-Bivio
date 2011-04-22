@@ -74,15 +74,12 @@ sub internal_initialize {
 sub return_path {
     my($self, $user_id, $email, $realm_file_id) = @_;
     $email =~ s/\@/=/;
-    return $self->req->format_email(
-	$self->TASK_URI
-        . '.'
-	. $user_id
-	. '+'
-	. $realm_file_id
-	. '-'
-	. $email
-    );
+    return $self->new_other('MailReceiveDispatchForm')
+	->format_recipient(
+	    $user_id,
+	    $self->TASK_URI,
+	    $realm_file_id . '-' . $email,
+	);
 }
 
 sub _check_loop {
