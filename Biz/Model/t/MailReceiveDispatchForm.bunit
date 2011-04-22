@@ -46,15 +46,14 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 	    },
 	} => [
 	    # [From:, To:] => [auth_user, auth_realm]
-	    [qw(demo demo-ignore)] => [qw(demo demo)],
-	    [qw(demo ignore.demo)] => [qw(demo demo)],
-	    ['Bob <' . email('demo') . '>', 'ignore.demo'] => [qw(demo demo)],
-	    [qw(not_a_user demo-ignore)] => [undef, 'demo'],
-	    [qw(demo not_a_user-ignore)] => MODEL_NOT_FOUND(),
+	    [qw(demo ignore*demo)] => [qw(demo demo)],
+	    ['Bob <' . email('demo') . '>', 'ignore*demo'] => [qw(demo demo)],
+	    [qw(not_a_user ignore*demo)] => [undef, 'demo'],
+	    [qw(demo ignore*not_a_user)] => MODEL_NOT_FOUND(),
 	    [qw(demo demo)] => [qw(demo demo USER_MAIL_RECEIVE)],
-	    [qw(demo demo-ignore+antything)] => [qw(demo demo)],
+	    [qw(demo ignore*demo+antything)] => [qw(demo demo)],
 	    # Should not see "unknown facade uri"
-	    [qw(demo demo-ignore+antything@petshop.bivio.biz)]
+	    [qw(demo ignore*demo+antything@petshop.bivio.biz)]
 		=> [qw(demo demo)],
 	    [qw(demo fourem)] => [qw(demo fourem FORUM_MAIL_RECEIVE)],
 	    [qw(demo ignore-fourem)] => [undef, undef, 'ignore_task'],
@@ -77,25 +76,25 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 	{
 	    method => 'parse_recipient',
 	    compute_params => sub {
+		req()->set_user(undef);
 		shift->get('object')->internal_put_field(recipient => shift->[0]),
 		return [1];
 	    },
 	} => [
-	    'a.b+c@d.d' => [qw(b a c d.d)],
+	    'a*b+c@d.d' => [qw(b a c d.d)],
 	    'a@b.b' => ['a', undef, undef, 'b.b'],
-	    'a.b.c@d.d' => NOT_FOUND(),
 	],
 	{
 	    method => 'parse_recipient',
 	    compute_params => sub {
+		req()->set_user(undef);
 		shift->get('object')->internal_put_field(recipient => shift->[0]),
 		return [0];
 	    },
 	} => [
-	    'a-b+c@d.d' => [qw(a b c d.d)],
+	    'b*a+c@d.d' => [qw(a b c d.d)],
 	    'a@b.b' => ['a', undef, undef, 'b.b'],
-            'a-b-c@d.d' => [qw(a b-c), undef, 'd.d'],
-	    'a.b.c@d.d' => NOT_FOUND(),
+            'a*b-c@d.d' => [qw(b-c a), undef, 'd.d'],
 	],
     ],
 ];

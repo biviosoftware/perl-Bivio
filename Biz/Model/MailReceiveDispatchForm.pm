@@ -13,12 +13,12 @@ my($_F) = b_use('Biz.File');
 my($_E) = b_use('Type.Email');
 my($_I) = b_use('Mail.Incoming');
 my($_RI) = b_use('Agent.RequestId');
-my($_TASK) = b_use('FacadeComponent.Task');
-my($_TEXT) = b_use('FacadeComponent.Text');
+my($_DOMAIN_SEP) = '@';
+my($_OP_SEP) = '*';
+my($_PLUS_SEP) = '+';
 my($_FP) = b_use('Type.FilePath');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    ignore_dashes_in_recipient => $_C->if_version(5, 1, 0),
     filter_spam => 0,
     duplicate_threshold_seconds => 3600,
 });
@@ -72,6 +72,15 @@ sub execute_ok {
 	task_id => $self->get('task_id'),
 	query => undef,
     };
+}
+
+sub format_recipient {
+    my($self, $realm, $op, $plus_part) = @_;
+    return $self->req->format_email(
+	($op ? $op . $_OP_SEP : '')
+	. $realm
+	. ($plus_part ? $_PLUS_SEP . $plus_part : ''),
+    );
 }
 
 sub handle_config {
@@ -129,29 +138,14 @@ sub internal_set_realm {
 }
 
 sub parse_recipient {
-    my($self, $ignore_dashes) = @_;
-    # Returns (realm, op, plus_tag, domain) from recipient.  I<op> may be undef.
-    # I<realm> may be a Model.RealmOwner, name, or realm_id.  Dies with
-    # NOT_FOUND if recipient not syntactically valid.
-    #
-    # Two addresses are parsed:
-    #
-    #    op.realm+plus_tag@domain
-    #    realm-op+plus_tag@domain  (only if !$ignore_dashes)
-    #
-    # Where +plus_tag is like sendmail style +anything after the address.  You
-    # don't need +plus_tag.
-    $ignore_dashes = $_CFG->{ignore_dashes_in_recipient}
-	unless defined($ignore_dashes);
+    my($self) = @_;
     my($to) = $self->get('recipient');
     _trace('to: ', $to) if $_TRACE;
     my($domain) = $1
-	if $to =~ s/\@(.*)$//;
+	if $to =~ s/\Q$_DOMAIN_SEP\E(.*)$//o;
     my($plus_tag) = $1
-	if $to =~ s/\+(.*)$//;
-    my($name, $op) = $ignore_dashes ? () : $to =~ /^(\w+)(?:-([^\.]+))?$/;
-    ($op, $name) = $to =~/^(?:([^\.]+)\.)?([\w-]+)$/
-	unless $name;
+	if $to =~ s/\Q$_PLUS_SEP\E(.*)$//o;
+    my($op, $name) = $to =~/^(?:(\w+)\Q$_OP_SEP\E)?(.+)$/o;
     $self->throw_die('NOT_FOUND', {
 	entity => $to,
         message => 'invalid recipient',
@@ -268,11 +262,13 @@ sub _task {
     $self->throw_die('NOT_FOUND', {
 	entity => $op,
         message => 'operation is invalid',
-    }) unless $op =~ /^[-\w]*$/;
-    return $_TASK->unsafe_get_from_uri(
-	$_TEXT->get_value('MailReceiveDispatchForm.uri_prefix', $req) . $op,
+    }) unless $op =~ /^\w*$/;
+    return b_use('FacadeComponent.Task')->unsafe_get_from_uri(
+	b_use('FacadeComponent.Text')
+	    ->get_value('MailReceiveDispatchForm.uri_prefix', $req)
+	    . $op,
 	$req->get('auth_realm')->get('type'),
-	$req
+	$req,
     ) || $self->throw_die('NOT_FOUND', {
 	entity => $op,
 	message => 'task not found',
