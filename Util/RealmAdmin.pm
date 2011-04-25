@@ -42,6 +42,7 @@ sub create_user {
 		 ->clean_and_trim($args->{DisplayName});
 	}],
     ], \@_);
+    $self->initialize_ui;
     return $self->model(UserCreateForm => {
 	'Email.email' => $email,
 	'RealmOwner.display_name' => $display_name,
