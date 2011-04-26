@@ -8,7 +8,7 @@ test_equals(
 	qr{.},
 	send_mail(
 	    generate_local_email('mail_user2'),
-	    generate_remote_email('admin.mail_forum'),
+	    generate_remote_email('admin*mail_forum'),
 	)->unsafe_get_header('subject'),
 	1,
    ),
@@ -17,7 +17,7 @@ verify_local_mail(
     qr{.},
     my $board_subject = send_mail(
 	generate_local_email('mail_user2'),
-	generate_remote_email('board.mail_forum'),
+	generate_remote_email('board*mail_forum'),
     )->unsafe_get_header('subject'),
     0,
 );
