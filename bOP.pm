@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.66  2011/04/21 22:29:40  moeller
+  * Bivio::UI::FacadeBase
+    removed ref to UserInfo
+  * Bivio::UI::View::Motion
+    added internal_comment_csv_fields() for subclasses
+
   Revision 10.65  2011/04/21 21:04:05  nagler
   * Bivio::Util::HTTPConf
     added cookie_domain support
