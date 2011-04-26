@@ -36,9 +36,4 @@ req()->initialize_fully;
 	    uri => 'petshop',
 	],
     ],
-    sub {class()->find_by_uri_or_domain('other.petshop', req())} => [
-	get => [
-	    uri => 'other',
-	],
-    ],
 ];
