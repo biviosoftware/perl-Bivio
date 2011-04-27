@@ -152,6 +152,10 @@ sub internal_list_actions {
     ];
 }
 
+sub internal_motion_initiator {
+    return;
+}
+
 sub internal_topic_from_list {
     my($self) = @_;
     $self->internal_put_base_attr(
@@ -245,6 +249,7 @@ sub status {
 	]),
 	body => Join( [
 	    Grid([
+		$self->internal_motion_initiator(\&_label_cell, \&_value_cell),
 		[ _label_cell('Name'), _value_cell([qw(Model.Motion name)] )],
 		[ _label_cell('Question'), _value_cell([qw(Model.Motion question)]) ],
 		[ _label_cell('File'), _value_cell([\&_file_link, [qw(Model.Motion)]]) ],
