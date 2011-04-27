@@ -29,6 +29,8 @@ sub execute {
     my($headings) = _headings($rf, $path);
     my($form) = _form($rf);
     my($d) = ${$rf->get_content};
+    $d .= "\n"
+	unless $d =~ /\n$/;
     my($new_headings) = 0;
     foreach my $k (sort(map($_, keys(%$form)))) {
 	next
