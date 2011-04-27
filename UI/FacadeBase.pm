@@ -1228,6 +1228,18 @@ sub _cfg_motion {
 		empty_list_prose => 'No polls to display.',
 		vote_count => 'Votes [Y/N/A]',
 	    ]],
+	    [MotionStatus => [
+		name => 'Name',
+		question => 'Question',
+		file => 'File',
+		start_date_time => 'Start time',
+		end_date_time => 'End time',
+		yes_count => 'Yes',
+		no_count => 'No',
+		abstain_count => 'Abstain',
+		vote_list => 'Votes',
+		comment_list => 'Comments',
+	    ]],
 	    [MotionVoteList => [
 		empty_list_prose => 'No poll results.',
 	    ]],
