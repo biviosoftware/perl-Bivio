@@ -250,15 +250,15 @@ sub status {
 	body => Join( [
 	    Grid([
 		$self->internal_motion_initiator(\&_label_cell, \&_value_cell),
-		[ _label_cell('Name'), _value_cell([qw(Model.Motion name)] )],
-		[ _label_cell('Question'), _value_cell([qw(Model.Motion question)]) ],
-		[ _label_cell('File'), _value_cell([\&_file_link, [qw(Model.Motion)]]) ],
-		[ _label_cell('Start time'), _value_cell(
+		[ _label_cell(vs_text('MotionStatus.name')), _value_cell([qw(Model.Motion name)] )],
+		[ _label_cell(vs_text('MotionStatus.question')), _value_cell([qw(Model.Motion question)]) ],
+		[ _label_cell(vs_text('MotionStatus.file')), _value_cell([\&_file_link, [qw(Model.Motion)]]) ],
+		[ _label_cell(vs_text('MotionStatus.start_date_time')), _value_cell(
 		    vs_display('Motion.start_date_time', {
 			value => [qw(Model.Motion start_date_time)],
 			$self->internal_date_time_attr,
 		    }))],
-		[ _label_cell('End time'), _value_cell(
+		[ _label_cell(vs_text('MotionStatus.end_date_time')), _value_cell(
 		    If([qw(Model.Motion end_date_time)],
 		       vs_display('Motion.end_date_time', {
 			   value => [qw(Model.Motion end_date_time)],
@@ -267,9 +267,9 @@ sub status {
 		       'open',
 		    ),
 		)],
-		[ _label_cell('Yes'),  _value_cell([ 'Model.Motion', '->vote_count_yes' ], ), ],  	
-		[ _label_cell('No'),  _value_cell([ 'Model.Motion', '->vote_count_no' ], ), ],  	
-		[ _label_cell('Abstain'),  _value_cell([ 'Model.Motion', '->vote_count_abstain' ], ),  ],  	
+		[ _label_cell(vs_text('MotionStatus.yes_count')),  _value_cell([ 'Model.Motion', '->vote_count_yes' ], ), ],  	
+		[ _label_cell(vs_text('MotionStatus.no_count')),  _value_cell([ 'Model.Motion', '->vote_count_no' ], ), ],  	
+		[ _label_cell(vs_text('MotionStatus.abstain_count')),  _value_cell([ 'Model.Motion', '->vote_count_abstain' ], ),  ],  	
 	    ],
 		 {
 		     class => 'simple',
@@ -278,9 +278,9 @@ sub status {
 	     ),
              Grid([
 		 [ _value_cell(' ') ],
-		 [ _label_cell('Votes'), Join([ [\&_vote_list, $self ]]) ],
+		 [ _label_cell(vs_text('MotionStatus.vote_list')), Join([ [\&_vote_list, $self ]]) ],
 		 [ _value_cell(' ') ],
-		 [ _label_cell('Comments'), Join([ [ \&_comment_list, [qw(Model.MotionCommentList)] ] ] ) ],
+		 [ _label_cell(vs_text('MotionStatus.comment_list')), Join([ [ \&_comment_list, [qw(Model.MotionCommentList)] ] ] ) ],
 	    ],
 		 {
 		     class => 'simple',
