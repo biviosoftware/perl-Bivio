@@ -2,7 +2,6 @@
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
-login_as('root');
 my($form_uri) = '/Forms/btest.csv';
 my($r) = random_string();
 foreach my $u ('', 'root') {
@@ -24,3 +23,8 @@ verify_text('wiki completed');
 verify_local_mail(qr{root}, qr{submission.*$input}s);
 follow_link('fourem$', 'files', 'forms', 'btest.csv');
 verify_text(qr{\n.*,$r,OK\n.*,[^,]+root\@[^,]+,root$r,OK\n.*easyform$r,OK\n}s);
+do_test_backdoor(RealmFile => '-r fourem delete_deep ' . $form_uri);
+visit_uri('/fourem/bp/EasyForm_btest');
+submit_form(OK => {
+    'Input:' => "emptyform$r",
+});
