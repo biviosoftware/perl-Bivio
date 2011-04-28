@@ -1182,7 +1182,7 @@ sub _cfg_mail {
 sub _cfg_motion {
     return {
 	Task => [
-	    [FORUM_MOTION_LIST => ['?/polls', '?/votes']],
+	    [FORUM_MOTION_LIST => ['?/polls/*', '?/votes']],
 	    [FORUM_MOTION_FORM => ['?/poll', '?/edit-poll', '?/edit-vote', '?/vote-edit']],
 	    [FORUM_MOTION_COMMENT => '?/poll-comment'],
 	    [FORUM_MOTION_VOTE => ['?/poll-vote', '?/vote']],
