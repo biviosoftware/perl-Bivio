@@ -23,6 +23,19 @@ sub WANT_VOTE_COMMENT {
     return 1;
 }
 
+sub comment_detail {
+    my($self) = @_;
+    my($grid) = 
+    
+    
+    return shift->internal_put_base_attr(
+	tools => TaskMenu([
+	    'FORUM_MOTION_LIST',
+	]),
+	body => [\&_comment_detail_grid, [qw(Model.MotionCommentList)]],
+    );
+}
+
 sub comment_form {
     my($self) = @_;
     $self->internal_topic_from_list;
@@ -334,12 +347,41 @@ sub vote_result_csv {
     ]));
 }
 
+sub _comment_detail_grid {
+    my($source, $model) = @_;
+    my(@fields) = $model->tuple_tag_field_check;
+    my($rows) =
+	[
+	    [ _label_cell(vs_text('MotionCommentDetail.name')), _value_cell([qw(Model.Motion name)] )],
+	    [ _label_cell(vs_text('MotionCommentDetail.question')), _value_cell([qw(Model.Motion question)]) ],
+	    [ _label_cell(vs_text('MotionCommentDetail.comment')), _value_cell([qw(Model.MotionComment comment)]) ],
+	];
+    push(@$rows, map([
+	_label_cell(vs_text($model->simple_package_name, $_)),
+	_value_cell("How to get this?"),
+#	_value_cell($source->get($field)),
+    ], $model->tuple_tag_field_check));
+    return Grid($rows);
+}
+
 sub _comment_list {
     my($req, $model) = @_;
+
     return vs_paged_list(
 	MotionCommentList => [
 	    'RealmOwner.display_name',
-	    'MotionComment.comment',
+            ['MotionComment.comment', {
+                column_widget =>
+		    If([
+			sub {
+			    return (shift->get('comment_trimmed') || '') =~ /\.\.\.$/ ? 1 : 0;
+			}],
+		       Link(['comment_trimmed'],
+			    ['->format_uri', 'THIS_DETAIL', 'FORUM_MOTION_COMMENT_DETAIL']),
+		       String(['comment_trimmed']),
+		   ),
+                column_expand => 1,
+            }],
 	    map([$_, {
 		wf_type => $model->get_field_type($_),
 		column_heading =>

@@ -1191,6 +1191,7 @@ sub _cfg_motion {
 	    [FORUM_MOTION_COMMENT_LIST => '?/poll-comments'],
 	    [FORUM_MOTION_COMMENT_LIST_CSV => '?/poll-comments.csv'],
 	    [FORUM_MOTION_STATUS => '?/poll-status'],
+	    [FORUM_MOTION_COMMENT_DETAIL => '?/poll-comment-detail'],
 	],
 	Text => [
 	    [Motion => [
@@ -1218,6 +1219,11 @@ sub _cfg_motion {
 	    ]],
 	    [MotionCommentList => [
 		'RealmOwner.display_name' => 'Name',
+	    ]],
+	    [MotionCommentDetail => [
+		name => 'Name',
+		question => 'Question',
+		comment => 'Comment',
 	    ]],
 	    [MotionVote => [
 		vote => 'Vote',
@@ -1256,6 +1262,7 @@ sub _cfg_motion {
 		FORUM_MOTION_VOTE_LIST => 'Poll Results',
 		FORUM_MOTION_COMMENT_LIST => 'Poll Comments',
 		FORUM_MOTION_STATUS => 'Poll Status',
+		FORUM_MOTION_COMMENT_DETAIL => 'Poll Comment Detail',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_MOTION_VOTE_LIST_CSV => 'Vote spreadsheet',

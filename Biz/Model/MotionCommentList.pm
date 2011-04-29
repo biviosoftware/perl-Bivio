@@ -8,6 +8,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('ClassWrapper.TupleTag')->wrap_methods(
     __PACKAGE__, b_use('Model.MotionCommentForm')->TUPLE_TAG_INFO);
 
+sub MAX_TRIMMED_COMMENT_SIZE {
+    return 32;
+}
+
 sub get_tuple_use_moniker {
     my($self) = @_;
     my($motion) = $self->req('Model.Motion');
@@ -31,10 +35,27 @@ sub internal_initialize {
 	    'RealmOwner.display_name',
 	],
 	other => [
-	    [qw(MotionComment.user_id RealmOwner.realm_id)],
+	    [qw(MotionComment.user_id RealmOwner.realm_id)],	    
+	    {
+		name => 'comment_trimmed',
+		type => 'String',
+		contraint => 'NONE',
+	    }
 	],
 	auth_id => ['MotionComment.realm_id'],
     });
+}
+
+sub internal_post_load_row {
+    my($self, $row) = @_;
+    my($comment) =  $row->{'MotionComment.comment'};
+    if (length($comment) > $self->MAX_TRIMMED_COMMENT_SIZE) {
+	my($ellipses) = '...';
+	$comment = substr($comment, 0, MAX_TRIMMED_COMMENT_SIZE - length($ellipses));
+	$comment =~ s/\s*$/$ellipses/;
+    }	
+     $row->{comment_trimmed} = $comment;
+     return 1;
 }
 
 1;
