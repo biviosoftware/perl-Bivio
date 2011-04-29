@@ -25,14 +25,26 @@ sub WANT_VOTE_COMMENT {
 
 sub comment_detail {
     my($self) = @_;
-    my($grid) = 
-    
-    
     return shift->internal_put_base_attr(
 	tools => TaskMenu([
 	    'FORUM_MOTION_LIST',
 	]),
-	body => [\&_comment_detail_grid, [qw(Model.MotionCommentList)]],
+	body => [sub {
+	    my($source, $model) = @_;
+	    return Grid([
+		[_label_cell(vs_text('MotionCommentDetail.name')),
+		    _value_cell(String([qw(Model.Motion name)]))],
+		[_label_cell(vs_text('MotionCommentDetail.question')),
+		    _value_cell(String([qw(Model.Motion question)]))],
+		[_label_cell(vs_text('MotionComment.comment')),
+		    _value_cell(String(
+			[qw(Model.MotionCommentList MotionComment.comment)]))],
+		map([
+		    _label_cell(vs_text('MotionCommentList.' . $_)),
+		    String(['Model.MotionCommentList', $_]),
+		], $model->tuple_tag_field_check),
+	    ])->put(class => 'simple');
+	}, ['Model.MotionCommentList']],
     );
 }
 
@@ -66,7 +78,6 @@ sub comment_result {
 	body => [ \&_comment_list,  [qw(Model.MotionCommentList)]],
     );
 }
-
 
 sub comment_result_csv {
     my($self) = @_;
@@ -345,23 +356,6 @@ sub vote_result_csv {
 	$self->WANT_VOTE_COMMENT ? 'MotionVote.comment' : (),
 	'Email.email',
     ]));
-}
-
-sub _comment_detail_grid {
-    my($source, $model) = @_;
-    my(@fields) = $model->tuple_tag_field_check;
-    my($rows) =
-	[
-	    [ _label_cell(vs_text('MotionCommentDetail.name')), _value_cell([qw(Model.Motion name)] )],
-	    [ _label_cell(vs_text('MotionCommentDetail.question')), _value_cell([qw(Model.Motion question)]) ],
-	    [ _label_cell(vs_text('MotionCommentDetail.comment')), _value_cell([qw(Model.MotionComment comment)]) ],
-	];
-    push(@$rows, map([
-	_label_cell(vs_text($model->simple_package_name, $_)),
-	_value_cell("How to get this?"),
-#	_value_cell($source->get($field)),
-    ], $model->tuple_tag_field_check));
-    return Grid($rows);
 }
 
 sub _comment_list {
