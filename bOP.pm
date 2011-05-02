@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
 # $Id$ 
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.67  2011/04/26 17:14:06  moeller
+  * Bivio::Biz::Action::RealmMailBase
+    use format_recipient to format the email address
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    removed '.' and '-' support.  Now use '*' to separate the op
+  * Bivio::Biz::Model::RealmMailBounce
+    use format_recipient to format the email address
+  * Bivio::Type::String
+    convert U+2BC to single-quote
+  * Bivio::Util::RealmAdmin
+    added initialize_ui() to create_user()
+
   Revision 10.66  2011/04/21 22:29:40  moeller
   * Bivio::UI::FacadeBase
     removed ref to UserInfo
