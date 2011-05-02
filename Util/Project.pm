@@ -55,6 +55,7 @@ sub link_facade_files {
 			}
 			my($up) = $File::Find::dir;
 			$up =~ s,[^/]+,..,g;
+			next if $File::Find::name =~ /\.cvsignore/;
 			b_die($!)
 			    unless symlink("$up/$File::Find::name", $destination);
 		    }
