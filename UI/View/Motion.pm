@@ -15,6 +15,10 @@ sub WANT_BADGE_NUMBER {
     return 0;
 }
 
+sub WANT_COMMENT_LIST_ACTION {
+    return 1;
+}
+
 sub WANT_FILE_FIELDS {
     return 1;
 }
@@ -151,6 +155,7 @@ sub internal_file_fields {
 }
 
 sub internal_list_actions {
+    my($self) = @_;
     return [
 	[
 	    'Edit',
@@ -168,12 +173,13 @@ sub internal_list_actions {
 	    }),
 	    ['->can_vote'],
 	],
-	[
-	    'Comment', 
-	    'FORUM_MOTION_COMMENT',
-	    'THIS_DETAIL',
-	    ['->can_comment'],
-	],
+	$self->WANT_COMMENT_LIST_ACTION ?
+	    [
+		'Comment', 
+		'FORUM_MOTION_COMMENT',
+		'THIS_DETAIL',
+		['->can_comment'],
+	    ] : (),
 	[
 	    'Status',
 	    'FORUM_MOTION_STATUS',
