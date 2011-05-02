@@ -159,7 +159,13 @@ sub internal_list_actions {
 	[
 	    'Vote',
 	    'FORUM_MOTION_VOTE',
-	    'THIS_DETAIL',
+	    URI({
+		task_id => 'FORUM_MOTION_VOTE',
+		query => {
+		    'ListQuery.this' => [ 'Motion.motion_id' ],
+		    'ListQuery.parent_id' => [ 'Motion.motion_id' ],
+		},
+	    }),
 	    ['->can_vote'],
 	],
 	[
