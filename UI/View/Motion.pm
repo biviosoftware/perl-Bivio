@@ -437,7 +437,9 @@ sub _vote_list {
 		'MotionVote.creation_date_time',
 		'MotionVote.vote',
 		$self->WANT_VOTE_COMMENT ? 'MotionVote.comment' : (),
-		'Email.email',
+		['Email.email',	{
+		    column_widget => MailTo(['Email.email'], ['RealmOwner.display_name']),
+		}],
 	    ],
 	    {
 		no_pager => 1,

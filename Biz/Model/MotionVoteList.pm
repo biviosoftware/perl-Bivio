@@ -18,9 +18,11 @@ sub internal_initialize {
 	    'MotionVote.vote',
 	    'MotionVote.comment',
 	    'Email.email',
+	    'RealmOwner.display_name',
 	],
 	other => [
 	    [qw(MotionVote.user_id Email.realm_id)],
+	    [qw(MotionVote.user_id RealmOwner.realm_id)],
 	],
 	auth_id => ['MotionVote.realm_id'],
     });
