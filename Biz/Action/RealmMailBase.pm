@@ -15,8 +15,8 @@ sub format_email_for_realm {
     return $_M->new($req, 'MailReceiveDispatchForm')
 	->format_recipient(
 #TODO: This needs to be coupled with the actual task's uri, not the constant here
-	    $proto->TASK_URI,
 	    $realm->get('name'),
+	    $proto->TASK_URI,
 	);
 }
 
