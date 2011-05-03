@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,36 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.68  2011/05/02 18:23:54  nagler
+  * Bivio::Biz::Action::EasyForm
+    ensure the existing csv file content has a trailing "\n"
+    so heading substitution works
+  * Bivio::Biz::Action::SCMViewerTunnel
+    removed
+  * Bivio::Biz::Action::SFEETunnel
+    removed
+  * Bivio::Biz::Model::MotionCommentList
+    Truncate long comments and provide link to comment detail
+  * Bivio::Delegate::TaskId
+    Truncate long comments and provide link to comment detail
+    removed MotionAux from FORUM_MOTION_COMMENT_DETAIL
+    changed items loaded for FORUM_MOTION_COMMENT_DETAIL
+  * Bivio::PetShop::BConf
+    turn on use_wysiwyg
+  * Bivio::UI::FacadeBase
+    Yes/No -> Approve/Disapprove and other labels
+    Display only own vote for non-officers. Refactor open/closed ePoll lists
+    Truncate long comments and provide link to comment detail
+  * Bivio::UI::View::Motion
+    Show the initiator's name and email on the ePoll status page.
+    Yes/No -> Approve/Disapprove and other labels
+    Truncate long comments and provide link to comment detail
+    added items to comment_detail()
+    Include motion ID in both "parent" and "this" in URL to vote form.
+    Make "comment" list action optional
+  * Bivio::Util::Project
+    was including the default facade directory as one of the dirs to link
+
   Revision 10.67  2011/04/26 17:14:06  moeller
   * Bivio::Biz::Action::RealmMailBase
     use format_recipient to format the email address
