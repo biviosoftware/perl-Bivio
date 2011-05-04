@@ -11,19 +11,11 @@ my($_DT) = b_use('Type.DateTime');
 my($_VT) = b_use('Type.MotionVote');
 
 
-sub WANT_BADGE_NUMBER {
-    return 0;
-}
-
 sub WANT_COMMENT_LIST_ACTION {
     return 1;
 }
 
 sub WANT_FILE_FIELDS {
-    return 1;
-}
-
-sub WANT_VOTE_COMMENT {
     return 1;
 }
 
@@ -216,6 +208,15 @@ sub internal_topic_from_motion {
     return;
 }
 
+sub internal_vote_result_csv_fields {
+    return [
+        'MotionVote.creation_date_time',
+	'MotionVote.vote',
+	'MotionVote.comment',
+	'Email.email',
+    ];
+}
+
 sub list {
     my($self) = @_;
     return shift->internal_put_base_attr(
@@ -362,12 +363,8 @@ sub vote_result {
 
 sub vote_result_csv {
     my($self) = @_;
-    return shift->internal_body(CSV(MotionVoteList => [
-        'MotionVote.creation_date_time',
-	'MotionVote.vote',
-	$self->WANT_VOTE_COMMENT ? 'MotionVote.comment' : (),
-	'Email.email',
-    ]));
+    return shift->internal_body(CSV(MotionVoteList => 
+	$self->internal_vote_result_csv_fields));
 }
 
 sub _comment_list {
