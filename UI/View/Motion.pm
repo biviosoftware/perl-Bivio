@@ -19,6 +19,10 @@ sub WANT_FILE_FIELDS {
     return 1;
 }
 
+sub WANT_VOTE_COMMENT {
+    return 1;
+}
+
 sub comment_detail {
     my($self) = @_;
     return shift->internal_put_base_attr(
