@@ -7,12 +7,14 @@ use Bivio::Base 'Bivio.UNIVERSAL';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
     root => Bivio::IO::Config->REQUIRED,
+    backup_root => Bivio::IO::Config->REQUIRED,
 });
 my($_F) = b_use('IO.File');
 
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
+    $_CFG->{backup_root} ||= $_CFG->{root} . '/bkp';
     return;
 }
 
@@ -21,6 +23,11 @@ sub absolute_path {
     return $base
 	if $base =~ /^\Q$_CFG->{root}/;
     return File::Spec->catfile($_CFG->{root}, $base);
+}
+
+sub absolute_path_for_backup {
+    my(undef, $base) = @_;
+    return File::Spec->catfile($_CFG->{backup_root}, $base);
 }
 
 sub delete {
