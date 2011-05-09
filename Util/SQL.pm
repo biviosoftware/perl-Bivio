@@ -66,7 +66,6 @@ my($_BUNDLE) = [qw(
     motion_comment
     motion3
     motion_comment_64k
-    pnp_scope
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -1628,17 +1627,6 @@ sub internal_upgrade_db_permissions51 {
     );
     return;
 }
-
-sub internal_upgrade_db_pnp_scope {
-    my($self) = @_;
-    $self->run(<<'EOF');
-ALTER TABLE pnp_t
-    ADD COLUMN scope TEXT64K
-/
-EOF
-    return;
-}
-
 
 sub internal_upgrade_db_realm_dag {
     my($self) = @_;
