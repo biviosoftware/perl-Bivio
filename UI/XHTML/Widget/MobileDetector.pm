@@ -54,10 +54,6 @@ sub handle_pre_execute_task {
     };
 }
 
-sub handle_cookie_in {
-    return;
-}
-
 sub initialize {
     my($self) = @_;
     $self->put(
