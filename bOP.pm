@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.69  2011/05/03 19:15:08  moeller
+  * Bivio::Biz::Action::RealmMailBase
+    fixed arg order to format_recipient()
+  * Bivio::Biz::Model::MotionVoteList
+    Add display name to mail link in vote list
+  * Bivio::UI::View::Motion
+    Add display name to mail link in vote list
+  * Bivio::Util::Project
+    ignore .cvsignore
+
   Revision 10.68  2011/05/02 18:23:54  nagler
   * Bivio::Biz::Action::EasyForm
     ensure the existing csv file content has a trailing "\n"
