@@ -91,11 +91,14 @@ sub _render_script_in_head {
 	unless defined($defns);
     my($bvn) = $self->BASE_VAR_NAME;
     $$buffer .= <<"EOF"
-<script type=\"text/javascript\">\n<!--\n;
+<script type=\"text/javascript\">
+<!--
 $bvn = $bvn || {};
 EOF
         . join('', values(%$defns))
-        . "\n// -->\n</script>";
+        . "
+// -->
+</script>";
     return;
 }
 
