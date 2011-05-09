@@ -31,10 +31,10 @@ sub default_merge_overrides {
 	};
     }
     my($uri) = $args->{uri} ||= lc(($args->{root} =~ /(\w+)$/)[0]);
-    my($file_root) = "/var/db/$uri";
     my($res) = Bivio::IO::Config->merge_list({
 	'Bivio::Biz::File' => {
-	    root => $file_root,
+	    root => "/var/db/$uri",
+	    backup_root => "/var/bkp/$uri",
 	},
 	'Bivio::Ext::DBI' => {
 	    database => $args->{prefix},
@@ -141,6 +141,7 @@ sub dev {
 	    },
 	    'Bivio::Biz::File' => {
 		root => "$files_root/db",
+		backup_root => "$files_root/bkp",
 	    },
 	    'Bivio::IO::Alert' => {
 		want_time => 0,
