@@ -30,10 +30,8 @@ sub default_merge_overrides {
 	    owner => $owner,
 	};
     }
-    # Configure L<Bivio::Test::Util|Bivio::Test::Util>.
-    # Grab last part: Only needed by PetShop
-    my($root_lc) = lc(($args->{root} =~ /(\w+)$/)[0]);
-    (my $file_root = "/var/db/$root_lc") =~ s/_/-/g;
+    my($uri) = $args->{uri} ||= lc(($args->{root} =~ /(\w+)$/)[0]);
+    my($file_root) = "/var/db/$uri";
     my($res) = Bivio::IO::Config->merge_list({
 	'Bivio::Biz::File' => {
 	    root => $file_root,
@@ -54,10 +52,10 @@ sub default_merge_overrides {
 	    },
 	},
 	'Bivio::Test::Language::HTTP' => {
-	    home_page_uri => "http://test.$root_lc.bivio.biz",
+	    home_page_uri => "http://test.$uri.bivio.biz",
 	},
 	'Bivio::Test::Util' => {
-	    nightly_output_dir => "/home/btest/$root_lc",
+	    nightly_output_dir => "/home/btest/$uri",
 	    nightly_cvs_dir => "perl/$args->{root}",
 	},
 	'Bivio::UI::Facade' => {
