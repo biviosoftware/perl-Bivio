@@ -83,7 +83,9 @@ sub _do {
 	author_email => '',
 	author_user_id => $model->get_auth_user_id,
 	excerpt => '',
-	modified_date_time => sub {$_DT->now},
+	modified_date_time => sub {
+	    return $model->unsafe_get('modified_date_time') || $_DT->now;
+	},
 	path => '',
 	primary_id => $model->get_primary_id,
 	simple_class => $model->simple_package_name,
