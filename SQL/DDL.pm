@@ -946,6 +946,20 @@ CREATE INDEX website_t3 on website_t (
   realm_id
 )
 /
+
+--
+-- email_verify_t
+--
+ALTER TABLE email_verify_t
+  ADD CONSTRAINT email_verify_t2
+  FOREIGN KEY (realm_id, location)
+  REFERENCES email_t(realm_id, location)
+/
+CREATE INDEX email_verify_t3 ON email_verify_t (
+  realm_id,
+  location
+)
+/
 EOF
 }
 
@@ -1499,6 +1513,16 @@ CREATE TABLE website_t (
   location NUMERIC(2) NOT NULL,
   url VARCHAR(255),
   CONSTRAINT website_t1 primary key(realm_id, location)
+)
+/
+
+CREATE TABLE email_verify_t (
+  realm_id NUMERIC(18) NOT NULL,
+  location NUMERIC(2) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  email_verify_key VARCHAR(10) NOT NULL,
+  email_verified_date_time DATE,
+  CONSTRAINT email_verify_t1 primary key(realm_id, location)
 )
 /
 EOF
