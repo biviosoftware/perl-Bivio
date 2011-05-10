@@ -23,8 +23,7 @@ verify_form({
     last => 'Zetter',
     size => 5,
 });
-verify_no_text($name);
-verify_no_text($email);
+verify_no_text(qr{[^_]$name[^@]});
 $name = "u$name";
 login_as('root');
 follow_link('all_users');
