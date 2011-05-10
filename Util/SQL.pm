@@ -27,6 +27,7 @@ my($_BUNDLE) = [qw(
     tuple
     motion
     website
+    email_verify
     realm_dag
     otp
     site_forum
@@ -892,6 +893,35 @@ CREATE TABLE email_alias_t (
 /
 CREATE INDEX email_alias_t2 ON email_alias_t (
   outgoing
+)
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_email_verify {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE email_verify_t (
+  realm_id NUMERIC(18) NOT NULL,
+  location NUMERIC(2) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  email_verify_key VARCHAR(10) NOT NULL,
+  email_verified_date_time DATE,
+  CONSTRAINT email_verify_t1 primary key(realm_id, location)
+)
+/
+--
+-- email_verify_t
+--
+ALTER TABLE email_verify_t
+  ADD CONSTRAINT email_verify_t2
+  FOREIGN KEY (realm_id, location)
+  REFERENCES email_t(realm_id, location)
+/
+CREATE INDEX email_verify_t3 ON email_verify_t (
+  realm_id,
+  location
 )
 /
 EOF
