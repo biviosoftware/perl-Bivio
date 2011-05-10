@@ -1,0 +1,23 @@
+test_setup('PetShop', 'groupware');
+home_page();
+login_as('demo');
+my($e1) = 'demo-' . random_string();
+my($e2) = 'demo';
+foreach my $addr ($e1, $e2) {
+    $addr = generate_local_email($addr);
+    follow_link('Settings');
+    submit_form({
+	email => $addr,
+    });
+    verify_text(qr{verify your email address}i);
+    verify_text($addr);
+    submit_form({
+	qr{^email}i => $addr,
+    });
+    verify_text(qr{click on the link}i);
+    verify_text($addr);
+    visit_uri(extract_uri_from_local_mail($addr));
+    verify_text(qr{verify your account information is correct}i);
+    verify_text($addr);
+}
+
