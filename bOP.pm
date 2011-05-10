@@ -28,9 +28,20 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.70  2011/05/09 17:30:45  nagler
+  * Bivio::BConf
+    added ability to set "uri" so can have different value from Root
+    added backup_root; added "uri" so can be different from Root
+  * Bivio::Biz::File
+    addec backup_root
+  * Bivio::UI::View::Motion
+    Add badge number to vote result CSV (refactor)
+    Fix comment list on status screen
+
   Revision 10.69  2011/05/03 19:15:08  moeller
   * Bivio::Biz::Action::RealmMailBase
     fixed arg order to format_recipient()
