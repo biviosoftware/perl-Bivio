@@ -61,6 +61,10 @@ sub control_on_render {
 	       : $_HTML->escape($value))
 	 . "\""
 	 . ($self->unsafe_get('auto_submit') ? ' onclick="submit()"' : '')
+	 . ($self->unsafe_get('event_handler')
+		? $self->get('event_handler')
+		    ->get_html_field_attributes($field, $source)
+		: '')
 	 . " />&nbsp;";
 
     my($label) = $self->get('label');
@@ -73,6 +77,8 @@ sub control_on_render {
 	    if ref($label);
 	$$buffer .= $p . $_HTML->escape($label) . $s;
     }
+    $self->get('event_handler')->render($source, $buffer)
+	if $self->unsafe_get('event_handler');
     return;
 }
 
@@ -80,6 +86,8 @@ sub initialize {
     my($self) = @_;
     $self->get('label')->initialize_with_parent($self)
 	if UNIVERSAL::isa($self->get('label'), 'Bivio::UI::Widget');
+    $self->get('event_handler')->initialize_with_parent($self)
+	if $self->unsafe_get('event_handler');
     return shift->SUPER::initialize(@_);
 }
 
