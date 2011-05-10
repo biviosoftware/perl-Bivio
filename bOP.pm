@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.72  2011/05/10 03:01:59  schellj
+  * Bivio::Util::SQL
+    added upgrade_db email_verify
+
   Revision 10.71  2011/05/10 01:18:20  schellj
   * Bivio::Biz::Model::EmailVerifyForm
     NEW
