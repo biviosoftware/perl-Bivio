@@ -6,13 +6,6 @@ use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub create {
-    my($self, $values) = @_;
-    $values->{user_id} ||= $self->req('auth_user_id');
-    $values->{realm_id} ||= $self->req('auth_id');
-    return shift->SUPER::create(@_);
-}
-
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -22,7 +15,6 @@ sub internal_initialize {
             motion_id => ['Motion.motion_id', 'PRIMARY_KEY'],
             user_id => ['User.user_id', 'PRIMARY_KEY'],
 	    affiliated_realm_id => ['RealmOwner.realm_id', 'NONE'],
-	    realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
 	    vote => ['MotionVote', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
 	    comment => ['Text', 'NONE'],
