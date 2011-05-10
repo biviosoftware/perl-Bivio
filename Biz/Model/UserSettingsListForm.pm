@@ -7,6 +7,7 @@ use Bivio::Base 'Biz.ListFormModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_NAME_FIELDS) = [map("User.${_}_name", qw(first middle last))];
 my($_MAIL_RECIPIENT) = b_use('Auth.Role')->MAIL_RECIPIENT;
+my($_EV) = b_use('Model.EmailVerify');
 
 sub execute_empty_row {
     my($self) = @_;
@@ -25,6 +26,18 @@ sub execute_empty_start {
 	   return ($field => $type->row_tag_get($self->req));
 	}),
     );
+    return;
+}
+
+sub execute_ok_end {
+    my($self) = @_;
+    my($new_email) = $self->get_model_properties('Email')->{'email'};
+    return {
+	task_id => 'USER_EMAIL_VERIFY',
+	query => {
+	    $_EV->EMAIL_KEY => $new_email,
+	},
+    } if $new_email ne $self->new_other('Email')->load->get('email');
     return;
 }
 
@@ -52,10 +65,6 @@ sub execute_ok_start {
     if ($self->unsafe_get('show_name')) {
 	$ro->update($self->get_model_properties('RealmOwner'));
     }
-    if ($self->unsafe_get('show_email')) {
-	$self->new_other('Email')->load->update(
-	    $self->get_model_properties('Email'));
-    }
     return;
 }
 
@@ -76,10 +85,9 @@ sub internal_initialize {
 	    ]),
 	],
 	other => [
-	    $self->field_decl([qw(
-		show_name
-		show_email
-	    )], 'Boolean', 'NOT_NULL'),
+	    $self->field_decl([
+		[qw(show_name Boolean NOT_NULL)],
+	    ]),
 	    'RealmOwner.realm_id',
 	],
     });
@@ -95,7 +103,6 @@ sub internal_pre_execute {
     $self->new_other('TimeZoneList')->load_all;
     $self->internal_put_field(
 	show_name => $req->is_substitute_user || $req->is_super_user ? 1 : 0);
-    $self->internal_put_field(show_email => $req->is_substitute_user);
     return shift->SUPER::internal_pre_execute(@_);
 }
 
@@ -106,8 +113,6 @@ sub validate_start {
     $self->validate_time_zone_selector();
     $self->internal_clear_error('RealmOwner.name')
 	unless $self->get('show_name');
-    $self->internal_clear_error('Email.email')
-	unless $self->get('show_email');
     return;
 }
 
