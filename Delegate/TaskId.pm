@@ -1482,7 +1482,25 @@ sub info_user_auth {
 	    View.UserAuth->settings_form
 	    next=MY_SITE
 	)],
-#95-99
+	[qw(
+	    USER_EMAIL_VERIFY
+	    95
+	    USER
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.EmailVerifyForm
+	    View.Mail->email_verify
+            next=USER_EMAIL_VERIFY_SENT
+	    ok_task=USER_SETTINGS_FORM
+	)],
+	[qw(
+	    USER_EMAIL_VERIFY_SENT
+	    97
+	    USER
+	    ADMIN_READ&ADMIN_WRITE
+	    View.Mail->email_verify_mail
+	    View.Mail->email_verify_sent
+	)],
+#97-99
     ];
 }
 
