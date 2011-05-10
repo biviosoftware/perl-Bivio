@@ -417,8 +417,6 @@ sub _cfg_base {
 	    [UNADORNED_PAGE => 'rp/*'],
 	    [PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
 	    [TEST_TRACE => 'test-trace/*'],
-	    [USER_EMAIL_VERIFY => '?/verify-email'],
-	    [USER_EMAIL_VERIFY_SENT => undef],
 	],
 	Text => [
 	    [support_email => 'support'],
@@ -485,8 +483,6 @@ sub _cfg_base {
 		[qw(DEFAULT_ERROR_REDIRECT_FORBIDDEN FORBIDDEN)] => 'Access Denied',
 		[qw(DEFAULT_ERROR_REDIRECT)] => 'Server Error',
 		[qw(DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION)] => 'Invalid Data',
-		USER_EMAIL_VERIFY => 'Verify Your Email Address',
-		USER_EMAIL_VERIFY_SENT => 'Check Your Mail',
 	    ]],
 	    [[qw(xlink title)] => [
 		# Some of this should be in user_auth, but all apps
@@ -1686,6 +1682,8 @@ sub _cfg_user_auth {
 	    [USER_SETTINGS_FORM => '?/settings'],
 	    [ADM_SUBSTITUTE_USER => 'adm/su'],
 	    [DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
+	    [USER_EMAIL_VERIFY => '?/verify-email'],
+	    [USER_EMAIL_VERIFY_SENT => undef],
 	],
 	Text => [
 	    [[qw(UserLoginForm ContextlessUserLoginForm)] => [
@@ -1742,8 +1740,10 @@ sub _cfg_user_auth {
 		USER_SETTINGS_FORM => 'Your settings have been updated.',
 	    ]],
 	    [title => [
-		 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
-		 USER_CREATE_DONE => 'Registration Email Sent',
+		GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
+		USER_CREATE_DONE => 'Registration Email Sent',
+		USER_EMAIL_VERIFY => 'Verify Your Email Address',
+		USER_EMAIL_VERIFY_SENT => 'Check Your Mail',
 	    ]],
 	    [[qw(title xlink)] => [
 		GENERAL_CONTACT => 'Contact',
