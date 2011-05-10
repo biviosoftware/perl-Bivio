@@ -419,6 +419,11 @@ sub get_delegate_info {
 	undef,
 	'Your email address is invalid, please update and resend.',
     ],
+    EMAIL_VERIFY_KEY => [
+	80,
+	undef,
+	'Your verification key is invalid.',
+    ],
 ];
 }
 
