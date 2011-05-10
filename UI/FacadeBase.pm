@@ -417,6 +417,8 @@ sub _cfg_base {
 	    [UNADORNED_PAGE => 'rp/*'],
 	    [PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
 	    [TEST_TRACE => 'test-trace/*'],
+	    [USER_EMAIL_VERIFY => '?/verify-email'],
+	    [USER_EMAIL_VERIFY_SENT => undef],
 	],
 	Text => [
 	    [support_email => 'support'],
@@ -483,6 +485,8 @@ sub _cfg_base {
 		[qw(DEFAULT_ERROR_REDIRECT_FORBIDDEN FORBIDDEN)] => 'Access Denied',
 		[qw(DEFAULT_ERROR_REDIRECT)] => 'Server Error',
 		[qw(DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION)] => 'Invalid Data',
+		USER_EMAIL_VERIFY => 'Verify Your Email Address',
+		USER_EMAIL_VERIFY_SENT => 'Check Your Mail',
 	    ]],
 	    [[qw(xlink title)] => [
 		# Some of this should be in user_auth, but all apps
@@ -508,6 +512,9 @@ sub _cfg_base {
 		entry_title => q{String(['->get_rss_title']);},
 		entry_content => q{String(['->get_rss_summary']);},
 		title => q{String(vs_site_name()); vs_text_as_prose('xhtml_title');},
+	    ]],
+	    [EmailVerifyForm => [
+		ok_button => 'Verify Email',
 	    ]],
 	    [MobileToggler => [
 		desktop => 'Desktop',
@@ -611,6 +618,7 @@ sub _cfg_blog {
 	    [acknowledgement => [
 		FORUM_BLOG_CREATE => 'The blog entry has been added.',
 		FORUM_BLOG_EDIT => 'The blog entry update has been saved.',
+		email_verified => q{Your email address has been updated.},
 	    ]],
 #TODO: Move this
 	    [FORUM_ADM_FORUM_ADD => 'Add forum'],
@@ -1708,8 +1716,7 @@ sub _cfg_user_auth {
 		'RealmOwner.name' => 'User Id',
 		'RealmOwner.display_name' => 'vs_ui_forum();',
 		'is_subscribed' => 'Subscribed?',
-		map(("$_.desc" => 'Field only visible to system administrators.'),
-		    qw(RealmOwner.name Email.email)),
+		'RealmOwner.name.desc' => 'Field only visible to system administrators.',
 		'separator.password' => 'Fill in to change your password; otherwise, leave blank',
 		prose => [
 		    user_password => q{Link('Click here to change your password.', 'USER_PASSWORD');},
@@ -1748,7 +1755,7 @@ sub _cfg_user_auth {
 		GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
 		login_no_context => 'Already registered?  Click here to login.',
 		user_create_no_context => 'Not registered? Click here to register.',
-		USER_CREATE_DONE => 'Check Your Mail',
+		USER_CREATE_DONE => 'Check Your Email',
 	    ]],
 	    [[qw(page3.title xhtml.title)] => [
 		LOGIN => 'Please Login',
