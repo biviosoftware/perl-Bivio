@@ -68,4 +68,10 @@ sub internal_initialize {
     });
 }
 
+sub set_user_id {
+    my($proto, $req, $user_id) = @_;
+    $req->get($_REQ_KEY)->{user_id} = $user_id;
+    return;
+}
+
 1;
