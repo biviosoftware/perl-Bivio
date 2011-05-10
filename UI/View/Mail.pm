@@ -24,6 +24,38 @@ sub delete_form {
     return $self->internal_body($self->internal_delete_form(@_));
 }
 
+sub email_verify {
+    return shift->internal_body(vs_simple_form(EmailVerifyForm => [
+	P_prose(<<'EOF'),
+To change your email address you must first verify that you have access
+to the given account.  Click 'Verify Email' to send a message containing
+a link that will allow you to verify your access and change your email address.
+EOF
+	'EmailVerifyForm.Email.email',
+    ]));
+}
+
+sub email_verify_mail {
+    my($self) = @_;
+    view_put(
+	mail_to => Mailbox(['Model.EmailVerifyForm', 'Email.email']),
+	mail_subject => 'Verification Request',
+    );
+    return _support_message($self, <<'EOF');
+Please follow the link to complete the email verification process:
+
+String(['Model.EmailVerifyForm', 'uri']);
+EOF
+}
+
+sub email_verify_sent {
+    return shift->internal_body(P_prose(Prose(<<'EOF')));
+An email has been sent to String(['Model.EmailVerifyForm', 'Email.email']);.
+Please click on the link in the email message to complete the verification
+process.
+EOF
+}
+
 sub form_imail {
     my($self) = @_;
     return $self->internal_put_base_attr(
@@ -336,6 +368,27 @@ sub _name {
     $name =~ s{xx}{$name =~ /XX/ ? uc($c) : $name =~ /xx/ ? lc($c) : $c}ie
 	|| die($name, ': bad name');
     return $name;
+}
+
+sub _support_mailbox {
+    return Mailbox(
+	vs_text('support_email'),
+	Join([vs_site_name(), ' Support']),
+    );
+}
+
+sub _support_message {
+    my($self, $text) = @_;
+    view_put(
+	mail_from => _support_mailbox(),
+    );
+    return $self->internal_body_prose($text . <<'EOF');
+
+You may contact support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
+EOF
 }
 
 sub _thread_list_director {
