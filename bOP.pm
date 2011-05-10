@@ -28,10 +28,37 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.71  2011/05/10 01:18:20  schellj
+  * Bivio::Biz::Model::EmailVerifyForm
+    NEW
+  * Bivio::Biz::Model::EmailVerify
+    NEW
+  * Bivio::Biz::Model::UserSettingsListForm
+    redirect to USER_EMAIL_VERIFY if email changed
+  * Bivio::Delegate::SimpleTypeError
+    add EMAIL_VERIFY_KEY
+  * Bivio::Delegate::TaskId
+    add USER_EMAIL_VERIFY, USER_EMAIL_VERIFY_SENT
+  * Bivio::Search::Parser
+    set modified_date_time to model
+  * Bivio::SQL::DDL
+    add email_verify_t
+  * Bivio::Type::EmailVerifyKey
+    NEW
+  * Bivio::UI::FacadeBase
+    changes for USER_EMAIL_VERIFY
+  * Bivio::UI::HTML::Widget::JavaScript
+    made newlines in-place
+  * Bivio::UI::View::Mail
+    added email_verify_mail, email_verify_sent
+  * Bivio::UI::View::UserAuth
+    remove row control on email
+  * Bivio::UI::XHTML::Widget::MobileDetector
+    removed unused handle_cookie_in()
+
   Revision 10.70  2011/05/09 17:30:45  nagler
   * Bivio::BConf
     added ability to set "uri" so can have different value from Root
