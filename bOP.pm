@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.73  2011/05/10 16:33:01  nagler
+  * Bivio::Biz::Model::TaskLog
+    added set_user_id()
+  * Bivio::UI::FacadeBase
+    moved USER_EMAIL_VERIFY tasks to _cfg_user_auth()
+
   Revision 10.72  2011/05/10 03:01:59  schellj
   * Bivio::Util::SQL
     added upgrade_db email_verify
