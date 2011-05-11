@@ -10,14 +10,16 @@ foreach my $addr ($e1, $e2) {
 	email => $addr,
     });
     verify_text(qr{verify your email address}i);
-    verify_text($addr);
+    verify_form({
+	qr{^email}i => $addr
+    });
     submit_form({
 	qr{^email}i => $addr,
     });
     verify_text(qr{click on the link}i);
     verify_text($addr);
     visit_uri(extract_uri_from_local_mail($addr));
-    verify_text(qr{verify your account information is correct}i);
+    verify_text(qr{address has been updated}i);
     verify_text($addr);
 }
 
