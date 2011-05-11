@@ -1742,7 +1742,7 @@ sub _cfg_user_auth {
 	    [title => [
 		GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
 		USER_CREATE_DONE => 'Registration Email Sent',
-		USER_EMAIL_VERIFY => 'Verify Your Email Address',
+		USER_EMAIL_VERIFY => 'Verify Email Address',
 		USER_EMAIL_VERIFY_SENT => 'Check Your Email',
 	    ]],
 	    [[qw(title xlink)] => [
