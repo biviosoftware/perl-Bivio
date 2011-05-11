@@ -46,15 +46,7 @@ sub execute_ok {
 }
 
 sub internal_get_email {
-    my($self) = @_;
-    my($req) = $self->get_request;
-    my($e) = $self->new_other('Email');
-    $req->unsafe_get('auth_user')
-	? $e->load
-	: $e->unauth_load({
-	    realm_id => $_ULF->unsafe_get_cookie_user_id($req),
-	});
-    return $e->get('email');
+    return shift->new_other('Email')->load->get('email');
 }
 
 sub internal_initialize {
