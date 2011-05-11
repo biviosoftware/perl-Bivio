@@ -1743,7 +1743,7 @@ sub _cfg_user_auth {
 		GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
 		USER_CREATE_DONE => 'Registration Email Sent',
 		USER_EMAIL_VERIFY => 'Verify Your Email Address',
-		USER_EMAIL_VERIFY_SENT => 'Check Your Mail',
+		USER_EMAIL_VERIFY_SENT => 'Check Your Email',
 	    ]],
 	    [[qw(title xlink)] => [
 		GENERAL_CONTACT => 'Contact',
