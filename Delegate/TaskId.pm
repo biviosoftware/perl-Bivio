@@ -1488,8 +1488,9 @@ sub info_user_auth {
 	    USER
 	    ADMIN_READ&ADMIN_WRITE
 	    Model.EmailVerifyForm
-	    View.Mail->email_verify
+	    View.UserAuth->email_verify
             next=USER_EMAIL_VERIFY_SENT
+	    cancel=SITE_ROOT
 	    ok_task=USER_SETTINGS_FORM
 	)],
 	[qw(
@@ -1497,8 +1498,8 @@ sub info_user_auth {
 	    97
 	    USER
 	    ADMIN_READ&ADMIN_WRITE
-	    View.Mail->email_verify_mail
-	    View.Mail->email_verify_sent
+	    View.UserAuth->email_verify_mail
+	    View.UserAuth->email_verify_sent
 	)],
 #97-99
     ];
