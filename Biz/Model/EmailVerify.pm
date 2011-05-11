@@ -26,10 +26,6 @@ sub check_key_and_update {
     return 1;
 }
 
-sub internal_get_realm_id {
-    return shift->req('auth_id');
-}
-
 sub internal_initialize {
     return {
 	version => 1,
@@ -50,7 +46,7 @@ sub uri_with_new_key {
     my($vk) = $_EVK->create;
     $self->unauth_create_or_update({
 	email_verify_key => $vk,
-	realm_id => $self->internal_get_realm_id,
+	realm_id => $self->req('auth_id'),
 	defined($email) ? (email => $email) : (),
 	location => $self->DEFAULT_LOCATION,
     });
