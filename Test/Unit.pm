@@ -568,7 +568,7 @@ sub _pm {
     return $res
 	if -f $res;
     my($res2) = $res;
-    $res2 =~ s/\d(?=\.pm$)//;
+    $res2 =~ s/\d+(?=\.pm$)//;
     return -f $res2 ? $res2 : $res;
 }
 
