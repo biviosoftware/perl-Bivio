@@ -12,7 +12,7 @@ my($_EV) = b_use('Model.EmailVerify');
 sub execute_empty {
     my($self) = @_;
     my($req) = $self->get_request;
-    my($q) = b_debug $req->unsafe_get('query');
+    my($q) = $req->unsafe_get('query');
     if ($q && $q->{$_EV->VERIFY_KEY}) {
 	$req->put(query => {});
 	my($ev) = $self->new_other('EmailVerify');
@@ -29,19 +29,10 @@ sub execute_empty {
 	}
 	$self->internal_put_error('Email.email' => 'EMAIL_VERIFY_KEY');
     }
-    my($e);
-    if ($q && $q->{$_EV->EMAIL_KEY}) {
-	$e = $q->{$_EV->EMAIL_KEY};
-    } else {
-	my($em) = $self->new_other('Email');
-	$req->unsafe_get('auth_user')
-	    ? $em->load
-	    : $em->unauth_load({
-		realm_id => $_ULF->unsafe_get_cookie_user_id($req),
-	    });
-	$e = $em->get('email');
-    }
-    $self->internal_put_field('Email.email' => $e);
+    $self->internal_put_field('Email.email'
+	=> $q && $q->{$_EV->EMAIL_KEY}
+	    ? $q->{$_EV->EMAIL_KEY}
+	    : $self->internal_get_email);
     return;
 }
 
@@ -52,6 +43,18 @@ sub execute_ok {
 	    ->uri_with_new_key($self->get('Email.email')));
     $self->put_on_request(1);
     return;
+}
+
+sub internal_get_email {
+    my($self) = @_;
+    my($req) = $self->get_request;
+    my($e) = $self->new_other('Email');
+    $req->unsafe_get('auth_user')
+	? $e->load
+	: $e->unauth_load({
+	    realm_id => $_ULF->unsafe_get_cookie_user_id($req),
+	});
+    return $e->get('email');
 }
 
 sub internal_initialize {
