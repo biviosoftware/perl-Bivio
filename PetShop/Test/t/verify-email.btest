@@ -9,7 +9,7 @@ foreach my $addr ($e1, $e2) {
     submit_form({
 	email => $addr,
     });
-    verify_text(qr{verify your email address}i);
+    verify_text(qr{verify email address}i);
     verify_form({
 	qr{^email}i => $addr
     });
