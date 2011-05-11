@@ -28,9 +28,24 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.74  2011/05/10 23:39:15  moeller
+  * Bivio::Biz::Model::MotionVote
+    removed items already defined in superclass
+  * Bivio::UI::HTML::Widget::MultipleChoice
+    NEW
+  * Bivio::UI::HTML::Widget::RadioGrid
+    now derived from MultipleChoice widget
+  * Bivio::UI::HTML::Widget::Radio
+    rm pod, refactored
+    convert selected value using get_field_type()->to_html()
+    added event_handler
+  * Bivio::UI::HTML::Widget::Select
+    moved logic to superclass for sharing with RadioGrid
+
   Revision 10.73  2011/05/10 16:33:01  nagler
   * Bivio::Biz::Model::TaskLog
     added set_user_id()
