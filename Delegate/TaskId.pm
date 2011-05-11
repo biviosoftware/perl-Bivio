@@ -1490,7 +1490,7 @@ sub info_user_auth {
 	    Model.EmailVerifyForm
 	    View.UserAuth->email_verify
             next=USER_EMAIL_VERIFY_SENT
-	    cancel=SITE_ROOT
+	    cancel=USER_SETTINGS_FORM
 	    ok_task=USER_SETTINGS_FORM
 	)],
 	[qw(
