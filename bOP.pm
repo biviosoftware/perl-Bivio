@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.76  2011/05/12 00:46:22  schellj
+  * Bivio::Biz::Model::EmailVerify
+    don't need internal_get_realm_id anymore
+    added force_update to use when people first register
+
   Revision 10.75  2011/05/11 21:49:26  schellj
   * Bivio::Biz::Model::EmailVerifyForm
     add internal_get_mail
