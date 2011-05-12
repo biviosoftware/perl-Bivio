@@ -56,9 +56,11 @@ sub comment_form {
 	my($model) = $source->req('Model.MotionCommentForm');
         return vs_simple_form(MotionCommentForm => [
 	    'MotionCommentForm.MotionComment.comment',
-	    map(["MotionCommentForm.$_", {
-		wf_type => $model->get_field_type($_),
-	    }], $model->tuple_tag_field_check),
+	    map($self->internal_display_comment_field($_) ?
+		    ["MotionCommentForm.$_", {
+			wf_type => $model->get_field_type($_),
+		    }] : (),
+		$model->tuple_tag_field_check),
 	]);
     }]);
 }
@@ -125,6 +127,10 @@ sub internal_date_time_attr {
     return (
 	mode => 'DATE_TIME',
     );
+}
+
+sub internal_display_comment_field {
+    return 1;
 }
 
 sub internal_file_fields {
