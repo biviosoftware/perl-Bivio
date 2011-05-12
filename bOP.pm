@@ -28,10 +28,26 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.75  2011/05/11 21:49:26  schellj
+  * Bivio::Biz::Model::EmailVerifyForm
+    add internal_get_mail
+    will be logged in, load email from auth_user
+  * Bivio::Delegate::TaskId
+    moved email verify views to UserAuth
+    redirect to USER_SETTINGS_FORM on USER_EMAIL_VERIFY cancel
+  * Bivio::Test::Unit
+    allow more than 9 test files for a module
+  * Bivio::UI::FacadeBase
+    email verify text change
+    verify email text adjustment
+  * Bivio::UI::View::Mail
+    moved email verify views to UserAuth
+  * Bivio::UI::View::UserAuth
+    moved email verify views from Mail
+
   Revision 10.74  2011/05/10 23:39:15  moeller
   * Bivio::Biz::Model::MotionVote
     removed items already defined in superclass
