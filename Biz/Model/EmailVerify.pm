@@ -26,6 +26,24 @@ sub check_key_and_update {
     return 1;
 }
 
+sub force_update {
+    my($self, $realm_id, $location) = @_;
+    $location ||= $self->DEFAULT_LOCATION;
+    my($e) = $self->new_other('Email');
+    $e->unauth_load({
+	realm_id => $realm_id,
+	location => $location,
+    });
+    $self->unauth_create_or_update({
+	realm_id => $realm_id,
+	location => $location,
+	email => $e->unsafe_get('email'),
+	email_verify_key => $_EVK->create,
+	email_verified_date_time => $_DT->now,
+    });
+    return;
+}
+
 sub internal_initialize {
     return {
 	version => 1,
