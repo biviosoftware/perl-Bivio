@@ -146,6 +146,9 @@ sub dev {
 	    'Bivio::IO::Alert' => {
 		want_time => 0,
 	    },
+	    'Bivio::IO::Config' => {
+		is_dev => 1,
+	    },
 	    'Bivio::IO::Log' => {
 		directory => "$files_root/log",
 	    },
