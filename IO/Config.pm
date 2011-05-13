@@ -119,6 +119,7 @@ my(%_CONFIGURED) = ();
 _initialize(defined(@main::ARGV) ? \@main::ARGV : []);
 __PACKAGE__->register(my $_CFG = {
     is_production => 0,
+    is_dev => 0,
 });
 
 sub DEFAULT_NAME {
@@ -229,6 +230,10 @@ sub introduce_values {
     $_ACTUAL = $proto->merge($new_values, $_ACTUAL);
     _actual_changed();
     return;
+}
+
+sub is_dev {
+    return $_CFG->{is_dev} ? 1 : 0;
 }
 
 sub is_production {
