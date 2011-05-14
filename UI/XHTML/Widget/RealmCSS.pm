@@ -12,13 +12,17 @@ my($_NULL) = b_use('Bivio.TypeError')->NULL;
 my($_M) = b_use('Biz.Model');
 my($_V) = b_use('UI.View');
 
+sub NEW_ARGS {
+    return [qw(?view_name)];
+}
+
 sub render_tag_value {
     my($self, $source, $buffer) = @_;
     my($req) = $self->req;
     $$buffer .= _match_uri(
 	_compress(
 	    join("\n",
-		 ${$_V->render('CSS->site_css', $req)},
+		 ${$_V->render($self->render_simple_attr('view_name', $source), $req)},
 		 @{$_M->new($req, 'RealmCSSList')->load_all
 	            ->map_rows(sub {${shift->get_content}})},
 	     ),
@@ -36,12 +40,9 @@ sub initialize {
 	[tag => 'style'],
 	[TYPE => 'text/css'],
 	[tag_if_empty => 0],
+	[view_name => 'CSS->site_css'],
     ]);
     return shift->SUPER::initialize(@_);
-}
-
-sub internal_new_args {
-    return shift->internal_compute_new_args([], \@_);
 }
 
 sub _compress {
