@@ -1,0 +1,43 @@
+# $Id$
+# Copyright (c) 2011 bivio Software, Inc.  All rights reserved.
+require './Cookie.PL';
+config({
+    'Bivio::Delegate::Cookie' => {
+	tag => 'TAG2',
+	prior_tags => ['TAG1'],
+    },
+});
+my($encrypted);
+[
+    [req(), req('r')] => [
+	header_out => [
+	    sub {
+		my($case) = @_;
+		$case->get('object')->put('val1' => 'hello');
+		return [req(), req('r')];
+	    } => sub {
+		$encrypted = (req('r')->header_out('Set-Cookie') =~ /TAG2=([^;]+)/)[0];
+		return [1];
+	    },
+	],
+    ],
+    sub {
+	req('r')->header_in('Cookie', "TAG1=$encrypted");
+	return class()->new(req(), req('r'));
+    } => [
+	header_out => [
+	    [req(), req('r')] => sub {
+		assert_equals(
+		    'hello',
+		    shift->get_nested(qw(object val1)),
+		);
+		assert_equals(
+		    1,
+		    req('r')->header_out('Set-Cookie') =~ /TAG1=;/,
+		);
+		return [1];
+	    }
+	],
+    ],
+];
+
