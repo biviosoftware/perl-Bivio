@@ -13,6 +13,7 @@ use Bivio::IO::Trace;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_MODIFIED_FIELD) = '_modified';
+my($_PRIOR_TAG_FIELD) = '_prior_tag';
 my($_SEP) = "\036";
 my($_DT) = b_use('Type.DateTime');
 my($_S) = b_use('Type.Secret');
@@ -21,6 +22,7 @@ my($_EXPIRES) = "; expires=Thu, 15 Apr 2020 20:00:00 GMT";
 b_use('IO.Config')->register(my $_CFG = {
     domain => undef,
     tag => 'A',
+    prior_tags => undef,
     is_temporary => 0,
     session_timeout_seconds => undef,
     session_update_seconds => undef,
@@ -89,6 +91,10 @@ sub header_out {
 	. $p;
     _trace($value) if $_TRACE;
     $r->header_out('Set-Cookie', $value);
+    map(
+	$r->header_out('Set-Cookie', "$_=; path=/"),
+	@{$_CFG->{prior_tags}},
+    ) if $fields->{$_PRIOR_TAG_FIELD};
     return 1;
 }
 
@@ -160,14 +166,19 @@ sub _parse_items {
     my($items) = {};
     foreach my $f (split(/\s*[;,]\s*/, $cookie)) {
 	my($k, $v) = split(/\s*=\s*/, $f, 2);
-	unless (defined($k) && defined($v)) {
+	unless (defined($k) && defined($v) && length($v)) {
 	    _trace($k, ': ignoring other element') if $_TRACE;
 	    next;
 	}
 	$k = uc($k);
 	unless ($k eq $_CFG->{tag}) {
-	    _trace('tag from another server or old tag: ', $k) if $_TRACE;
-	    next;
+	    if ($_CFG->{prior_tags} && grep($k eq $_, @{$_CFG->{prior_tags}})) {
+		$items->{$_PRIOR_TAG_FIELD}++;
+	    }
+	    else {
+		_trace('tag from another server or old tag: ', $k) if $_TRACE;
+		next;
+	    }
 	}
         if (exists($items->{$k})) {
 	    b_warn('duplicate cookie value for key: ', $k,
@@ -183,6 +194,7 @@ sub _parse_values {
     my($proto, $cookie) = @_;
     my($values) = {};
     my($items) = _parse_items($proto, $cookie);
+    my($prior_tag) = delete($items->{$_PRIOR_TAG_FIELD});
     while (my($k, $v) = each(%$items)) {
 	$v =~ s/"//g;
 	my($s) = $_S->decrypt_http_base64($v);
@@ -203,6 +215,10 @@ sub _parse_values {
 	while (my($k, $v) = each(%v)) {
 	    $values->{$k} = $v;
 	}
+    }
+    if ($prior_tag) {
+	$values->{$_PRIOR_TAG_FIELD}++;
+	$values->{$_MODIFIED_FIELD}++;
     }
     return $values;
 }
