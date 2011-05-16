@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.77  2011/05/12 20:57:48  moeller
+  * Bivio::UI::View::Motion
+    Added internal_display_comment_field() for subclasses
+
   Revision 10.76  2011/05/12 00:46:22  schellj
   * Bivio::Biz::Model::EmailVerify
     don't need internal_get_realm_id anymore
