@@ -546,8 +546,8 @@ sub is_local_email {
 }
 
 sub login_as {
-    my($self, $email, $password) = @_;
-    $self->home_page;
+    my($self, $email, $password, $facade) = @_;
+    $self->home_page($facade);
     $self->visit_uri('/pub/login')
 	unless $self->unsafe_op(follow_link => qr{login}i);
     $self->submit_form(Login => {
