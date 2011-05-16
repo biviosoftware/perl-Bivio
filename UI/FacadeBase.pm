@@ -64,6 +64,35 @@ sub auth_realm_is_help_wiki {
     return _auth_realm_is(help_wiki => @_);
 }
 
+sub internal_base_tasks {
+    return [
+	[CLIENT_REDIRECT => ['go/*', 'goto/*']],
+	[CLUB_HOME => '?'],
+	[FORUM_HOME => '?'],
+	[DEFAULT_ERROR_REDIRECT => undef],
+	[DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
+	[DEFAULT_ERROR_REDIRECT_NOT_FOUND => undef],
+	[DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND => undef],
+	[DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION => undef],
+	[FAVICON_ICO => 'favicon.ico'],
+	[FORBIDDEN => undef],
+	[PUBLIC_PING => 'pub/ping'],
+	[LOCAL_FILE_PLAIN => ['i/*', 'f/*', 'b/*',]],
+	[MY_CLUB_SITE => undef],
+	[MY_SITE => 'my-site/*'],
+	[CLIENT_REDIRECT_PERMANENT_MAP => undef],
+	[ROBOTS_TXT => 'robots.txt'],
+	[SHELL_UTIL => undef],
+	[SITE_CSS => 'pub/site.css'],
+	[SITE_ROOT => '*'],
+	[TEST_BACKDOOR => ['test-backdoor', 'test_backdoor']],
+	[USER_HOME => '?'],
+	[UNADORNED_PAGE => 'rp/*'],
+	[PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
+	[TEST_TRACE => 'test-trace/*'],
+    ];
+}
+
 sub internal_dav_tasks {
     return [
 	[DAV => ['dav/*', 'dv/*']],
@@ -97,6 +126,22 @@ sub internal_dav_text {
 	    'primary_key' => 'Database Key',
 	]],
     ];
+}
+
+sub internal_merge {
+    my($self) = shift;
+    my($child) = pop;
+    foreach my $cfg (reverse(@_)) {
+	foreach my $k (keys(%$cfg)) {
+	    if (ref($child->{$k}) eq 'ARRAY') {
+		unshift(@{$child->{$k} ||= []}, @{$cfg->{$k}});
+	    }
+	    elsif (!defined($child->{$k})) {
+		$child->{$k} = $cfg->{$k};
+	    }
+	}
+    }
+    return $child;
 }
 
 sub is_site_realm_name {
@@ -137,7 +182,7 @@ sub mail_receive_uri {
 sub new {
     my($proto, $config) = @_;
     return $config->{clone} ? $proto->SUPER::new($config) : $proto->SUPER::new(
-	_merge(
+        $proto->internal_merge(
 	    map({
 		my($x) = \&{"_cfg_$_"};
 		defined(&$x) ? $x->($proto) : ();
@@ -329,6 +374,8 @@ sub _cfg_base {
 	    [ThreePartPage_want_ForumDropDown => 0],
 	    [ThreePartPage_want_dock_left_standard => 0],
 	    [robots_txt_allow_all => 1],
+            [ActionError_default_view => 'Error->default'],
+            [ActionError_want_wiki_view => 1],
 	],
 	CSS => [
 	    [b_table_footer => q{
@@ -392,32 +439,7 @@ sub _cfg_base {
 	    [want_secure => 0],
 	    [table_default_align => 'left'],
 	],
-	Task => [
-	    [CLIENT_REDIRECT => ['go/*', 'goto/*']],
-	    [CLUB_HOME => '?'],
-	    [FORUM_HOME => '?'],
-	    [DEFAULT_ERROR_REDIRECT => undef],
-	    [DEFAULT_ERROR_REDIRECT_FORBIDDEN => undef],
- 	    [DEFAULT_ERROR_REDIRECT_NOT_FOUND => undef],
- 	    [DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND => undef],
- 	    [DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION => undef],
-	    [FAVICON_ICO => 'favicon.ico'],
-	    [FORBIDDEN => undef],
-	    [PUBLIC_PING => 'pub/ping'],
-	    [LOCAL_FILE_PLAIN => ['i/*', 'f/*', 'b/*',]],
-	    [MY_CLUB_SITE => undef],
-	    [MY_SITE => 'my-site/*'],
-	    [CLIENT_REDIRECT_PERMANENT_MAP => undef],
-	    [ROBOTS_TXT => 'robots.txt'],
-	    [SHELL_UTIL => undef],
-	    [SITE_CSS => 'pub/site.css'],
-	    [SITE_ROOT => '*'],
-	    [TEST_BACKDOOR => ['test-backdoor', 'test_backdoor']],
-	    [USER_HOME => '?'],
-	    [UNADORNED_PAGE => 'rp/*'],
-	    [PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
-	    [TEST_TRACE => 'test-trace/*'],
-	],
+	Task => __PACKAGE__->internal_base_tasks,
 	Text => [
 	    [support_email => 'support'],
 	    [support_name => 'vs_site_name(); Support'],
@@ -2068,21 +2090,6 @@ sub _cfg_xapian {
 	    ]],
 	],
     };
-}
-
-sub _merge {
-    my($child) = pop(@_);
-    foreach my $cfg (reverse(@_)) {
-	foreach my $k (keys(%$cfg)) {
-	    if (ref($child->{$k}) eq 'ARRAY') {
-		unshift(@{$child->{$k} ||= []}, @{$cfg->{$k}});
-	    }
-	    elsif (!defined($child->{$k})) {
-		$child->{$k} = $cfg->{$k};
-	    }
-	}
-    }
-    return $child;
 }
 
 sub _site {
