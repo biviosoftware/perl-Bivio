@@ -8,8 +8,13 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub default {
-    my($self, @extra) = @_;
-    return shift->internal_body(DIV_page_error(
+    my($self) = shift;
+    return $self->internal_body($self->default_body);
+}
+
+sub default_body {
+    my(undef, @extra) = @_;
+    return DIV_page_error(
 	Join([
             [sub {
                  my($source, $status, $ff) = @_;
@@ -32,7 +37,7 @@ sub default {
                 )
             ),
 	]),
-    ));
+    );
 }
 
 1;
