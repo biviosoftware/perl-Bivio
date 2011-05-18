@@ -408,6 +408,7 @@ sub from_literal {
 	\&_from_file_name,
 	\&_from_rfc822,
 	\&_from_xml,
+	\&_from_yyyy_mm_dd_hh_mm_ss,
     ) {
 	return @res
 	    if @res = $method->($proto, $value);
@@ -944,7 +945,7 @@ sub _dow {
 sub _from_alert {
     my($proto, $value, $res, $err) = @_;
     # Returns ($res, $err) if it matches the pattern.  Parses alert format.
-    my($y, $mon, $d, $h, $m, $s) = $value =~ /^@{[REGEX_ALERT()]}$/o;
+    my($y, $mon, $d, $h, $m, $s) = $value =~ /^@{[$proto->REGEX_ALERT()]}$/;
     return () unless defined($s);
     return $proto->from_parts($s, $m, $h, $d, $mon, $y);
 }
@@ -952,7 +953,7 @@ sub _from_alert {
 sub _from_ctime {
     my($proto, $value, $res, $err) = @_;
     # Returns ($res, $err) if it matches the pattern.  Parses ctime format.
-    my($mon, $d, $h, $m, $s, $y) = $value =~ /^@{[REGEX_CTIME()]}$/o;
+    my($mon, $d, $h, $m, $s, $y) = $value =~ /^@{[$proto->REGEX_CTIME()]}$/;
     return () unless defined($y);
 
     return (undef, Bivio::TypeError->MONTH)
@@ -963,14 +964,14 @@ sub _from_ctime {
 sub _from_file_name {
     my($proto, $value) = @_;
     # Parses to_file_name format
-    my($y, $mon, $d, $h, $m, $s) = $value =~ /^@{[REGEX_FILE_NAME()]}$/o;
+    my($y, $mon, $d, $h, $m, $s) = $value =~ /^@{[$proto->REGEX_FILE_NAME()]}$/;
     return defined($s) ? $proto->from_parts($s, $m, $h, $d, $mon, $y) : ();
 }
 
 sub _from_literal {
     my($proto, $value, $res, $err) = @_;
     # Returns ($res, $err) if it matches the pattern.  Parses literal format.
-    my($date, $time) = $value =~ /^@{[$proto->REGEX_LITERAL()]}$/o;
+    my($date, $time) = $value =~ /^@{[$proto->REGEX_LITERAL()]}$/;
     return () unless defined($time);
     return (undef, Bivio::TypeError->DATE_RANGE)
 	if length($date) > length($proto->LAST_DATE_IN_JULIAN_DAYS())
@@ -1001,7 +1002,7 @@ sub _from_rfc822 {
     my($proto, $value) = @_;
     my($DATE_TIME) = Bivio::Mail::RFC822->DATE_TIME;
     my($mday, $mon, $year, $hour, $min, $sec, $tz)
-	= $value =~ /^@{[$proto->REGEX_RFC822]}/os;
+	= $value =~ /^@{[$proto->REGEX_RFC822]}/s;
     return
 	unless defined($mday);
     return (undef, Bivio::TypeError->MONTH)
@@ -1023,18 +1024,24 @@ sub _from_rfc822 {
 sub _from_string {
     my($proto, $value) = @_;
     # Returns ($res, $err) if it matches to_string pattern.  Parses string format.
-    my($mon, $d, $y, $h, $m, $s) = $value =~ /^@{[$proto->REGEX_STRING()]}$/o;
+    my($mon, $d, $y, $h, $m, $s) = $value =~ /^@{[$proto->REGEX_STRING()]}$/;
     return defined($s) ? $proto->from_parts($s, $m, $h, $d, $mon, $y) : ();
 }
 
 sub _from_xml {
     my($proto, $value) = @_;
     # Parses to_xml format
-    my($y, $mon, $d, $h, $m, $s, $z) = $value =~ /^@{[$proto->REGEX_XML()]}$/o;
+    my($y, $mon, $d, $h, $m, $s, $z) = $value =~ /^@{[$proto->REGEX_XML()]}$/;
     return ()
 	unless defined($s);
     my($res) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
     return $z ? $res : _adjust_from_local($proto, $res);
+}
+
+sub _from_yyyy_mm_dd_hh_mm_ss {
+    my($proto, $value) = @_;
+    my($y, $mon, $d, $h, $m, $s) = $value =~ /(\d{4})\W(\d{1,2})\W(\d{1,2})\W(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/;
+    return defined($y) ? $proto->from_parts($s || 0, $m, $h, $d, $mon, $y) : ();
 }
 
 sub _initialize {
