@@ -6,6 +6,7 @@ use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
+my($_M) = b_use('Biz.Model');
 
 sub USAGE {
     return <<'EOF';
@@ -16,6 +17,7 @@ commands:
     delete_auth_realm_and_users -- deletes realm and all of its users
     delete_auth_user -- deletes auth_user
     diff_users left_realm right_realm -- report differences between rosters
+    force_email_verify -- creates/updates email verification record for auth_realm
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
     join_user roles... -- adds specified user role to realm
@@ -130,6 +132,12 @@ sub diff_users {
 	}
     }
     return [map([values(%{$maps->{'RealmUser.realm_id'}->{$_}})], qw(left right))];
+}
+
+sub force_email_verify {
+    my($req) = shift->req;
+    $_M->new_other('EmailVerify')->force_update($req->get('auth_id'));
+    return;
 }
 
 sub info {
