@@ -28,9 +28,28 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.78  2011/05/16 22:12:46  nagler
+  * Bivio::BConf
+    dev(): added is_dev => 1
+  * Bivio::Biz::Action::Error
+    Facade configurable view (ActionError_default_value)
+  * Bivio::Delegate::Cookie
+    added prior_tags which are read and deleted if found
+  * Bivio::IO::Config
+    added is_dev
+  * Bivio::Test::Language::HTTP
+    login_as accepts facade
+  * Bivio::UI::FacadeBase
+    export internal_merge and internal_base_tasks allowing filtering by sublcasses
+  * Bivio::UI::View::Error
+    export body
+  * Bivio::UI::XHTML::Widget::RealmCSS
+    added view_name so can specify which view to render
+
   Revision 10.77  2011/05/12 20:57:48  moeller
   * Bivio::UI::View::Motion
     Added internal_display_comment_field() for subclasses
