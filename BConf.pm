@@ -51,6 +51,9 @@ sub default_merge_overrides {
 		password => 'pgpass',
 	    },
 	},
+	'Bivio::IO::Log' => {
+	    directory => "/var/log/bop/$uri",
+	},
 	'Bivio::Test::Language::HTTP' => {
 	    home_page_uri => "http://test.$uri.bivio.biz",
 	},
