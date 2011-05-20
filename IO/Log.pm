@@ -11,14 +11,7 @@ my($_IOF) = b_use('IO.File');
 my($_D) = b_use('Bivio.Die');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    $_C->if_version(
-	2 => sub {
-	    return (directory => '/var/log/bop');
-	},
-	sub {
-	    return (directory => '/var/log');
-	},
-    ),
+    directory => $_C->REQUIRED,
     directory_mode => 0750,
     file_mode => 0640,
 });
@@ -27,11 +20,7 @@ sub file_name {
     my($proto, $base_name, $req) = @_;
     return $base_name
 	if File::Spec->file_name_is_absolute($base_name);
-    my($path) = [$base_name];
-    if ($req and my $f = b_use('UI.Facade')->get_from_source($req)) {
-	unshift(@$path, $f->get('local_file_prefix'));
-    }
-    return File::Spec->catfile($_CFG->{directory}, @$path);
+    return File::Spec->catfile($_CFG->{directory}, $base_name);
 }
 
 sub handle_config {
