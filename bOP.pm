@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.79  2011/05/18 02:15:30  schellj
+  * Bivio::Util::RealmAdmin
+    add force_email_verify
+
   Revision 10.78  2011/05/16 22:12:46  nagler
   * Bivio::BConf
     dev(): added is_dev => 1
