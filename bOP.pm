@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.80  2011/05/20 19:01:25  nagler
+  * Bivio::BConf
+    Bivio::IO::Log.directory is $uri based
+  * Bivio::IO::Log
+    log directory can't be required, because default_merge_overrides()
+    isn't always called in Bivio::BConf
+    directory is required, and now in Bivio::BConf to use the main uri,
+    not the specific facade uri
+
   Revision 10.79  2011/05/18 02:15:30  schellj
   * Bivio::Util::RealmAdmin
     add force_email_verify
