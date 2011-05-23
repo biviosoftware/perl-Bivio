@@ -42,51 +42,15 @@ sub internal_initialize {
 	    Motion.tuple_def_id
 	    TupleUse.moniker
 	    RealmFile.path
-	),
+	    ),
 	    {
 		name => 'file_name',
 		type => 'FileName',
 		constraint => 'NONE',
 	    },
-	    {
-		name => 'yes_count',
-		type => 'Integer',
-		constraint => 'NONE',
-		in_select => 1,
-		select_value => '(
-                    SELECT COUNT(*)
-                       FROM motion_vote_t mv
-                       WHERE mv.motion_id = motion_t.motion_id
-                         AND mv.vote = '
-		            . $_VT->YES->as_sql_param
-			    . ') AS yes_count',
-            },	    
-	    {
-		name => 'no_count',
-		type => 'Integer',
-		constraint => 'NONE',
-		in_select => 1,
-		select_value => '(
-                    SELECT COUNT(*)
-                       FROM motion_vote_t mv
-                       WHERE mv.motion_id = motion_t.motion_id
-                         AND mv.vote = '
-		            . $_VT->NO->as_sql_param
-			    . ') AS no_count',
-            },	    
-	    {
-		name => 'abstain_count',
-		type => 'Integer',
-		constraint => 'NONE',
-		in_select => 1,
-		select_value => '(
-                    SELECT COUNT(*)
-                       FROM motion_vote_t mv
-                       WHERE mv.motion_id = motion_t.motion_id
-                         AND mv.vote = '
-		            . $_VT->ABSTAIN->as_sql_param
-                            . ') AS abstain_count',
-            },	    
+	    $self->vote_count_field($_VT->YES),
+	    $self->vote_count_field($_VT->NO),
+	    $self->vote_count_field($_VT->ABSTAIN),
 	],
     });
 }
@@ -115,6 +79,22 @@ sub is_open {
     my($end) = $self->get('Motion.end_date_time');
     return 1 unless $end;
     return $_DT->compare_defined($end, $_DT->now) > 0;
+}
+
+sub vote_count_field {
+    my($self, $vote) = @_;
+    return {
+	name => lc($vote->get_name) . '_count',
+	type => 'Integer',
+	constraint => 'NONE',
+	in_select => 1,
+	select_value => '(
+            SELECT COUNT(*)
+                FROM motion_vote_t mv
+                WHERE mv.motion_id = motion_t.motion_id
+                AND mv.vote = ' . $vote->as_sql_param
+		 . ') AS ' . lc($vote->get_name) . '_count'
+    };	    
 }
 
 1;

@@ -19,10 +19,6 @@ sub WANT_FILE_FIELDS {
     return 1;
 }
 
-sub WANT_VOTE_COMMENT {
-    return 1;
-}
-
 sub comment_detail {
     my($self) = @_;
     return shift->internal_put_base_attr(
@@ -194,6 +190,10 @@ sub internal_motion_initiator {
     return;
 }
 
+sub internal_motion_type {
+    return;
+}
+
 sub internal_topic_from_list {
     my($self) = @_;
     $self->internal_put_base_attr(
@@ -216,6 +216,17 @@ sub internal_topic_from_motion {
 	]),
     );
     return;
+}
+
+sub internal_vote_list_fields {
+    return [
+	'MotionVote.creation_date_time',
+	'MotionVote.vote',
+	'MotionVote.comment',
+	['Email.email',	{
+	    column_widget => MailTo(['Email.email'], ['RealmOwner.display_name']),
+	}],
+    ];
 }
 
 sub internal_vote_result_csv_fields {
@@ -299,6 +310,7 @@ sub status {
 		$self->internal_motion_initiator(\&_label_cell, \&_value_cell),
 		[ _label_cell(vs_text('MotionStatus.name')), _value_cell([qw(Model.Motion name)] )],
 		[ _label_cell(vs_text('MotionStatus.question')), _value_cell([qw(Model.Motion question)]) ],
+		$self->internal_motion_type(\&_label_cell, \&_value_cell),
 		[ _label_cell(vs_text('MotionStatus.file')), _value_cell([\&_file_link, [qw(Model.Motion)]]) ],
 		[ _label_cell(vs_text('MotionStatus.start_date_time')), _value_cell(
 		    vs_display('Motion.start_date_time', {
@@ -440,14 +452,7 @@ sub _value_cell {
 sub _vote_list {
     my ($req, $self) = @_;
     return vs_paged_list(
-	    MotionVoteList => [
-		'MotionVote.creation_date_time',
-		'MotionVote.vote',
-		$self->WANT_VOTE_COMMENT ? 'MotionVote.comment' : (),
-		['Email.email',	{
-		    column_widget => MailTo(['Email.email'], ['RealmOwner.display_name']),
-		}],
-	    ],
+	    MotionVoteList => $self->internal_vote_list_fields,
 	    {
 		no_pager => 1,
 	    }
