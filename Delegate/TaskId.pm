@@ -1052,6 +1052,7 @@ sub info_motion {
 	    115
 	    ANY_OWNER
 	    MOTION_READ&FEATURE_MOTION
+	    Model.Motion->execute_load_parent
 	    Model.MotionVoteList->execute_load_all_with_query
 	    View.Motion->vote_result_csv
 	)],
