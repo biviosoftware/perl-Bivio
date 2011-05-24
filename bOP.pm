@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.81  2011/05/23 20:23:41  moeller
+  * Bivio::Biz::Model::MotionList
+    refactored vote count columns
+  * Bivio::UI::View::Motion
+    Allow subclasses to override motion type column and vote list fields
+
   Revision 10.80  2011/05/20 19:01:25  nagler
   * Bivio::BConf
     Bivio::IO::Log.directory is $uri based
