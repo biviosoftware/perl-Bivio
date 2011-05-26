@@ -73,7 +73,7 @@ sub comment_result {
 	    'FORUM_MOTION_LIST',
 	]),
 	$self->internal_topic_from_motion,
-	body => [ \&_comment_list,  [qw(Model.MotionCommentList)]],
+	body => [ \&_comment_list,  [qw(Model.MotionCommentList)], $self, [qw(Model.Motion type)]],
     );
 }
 
@@ -83,8 +83,9 @@ sub comment_result_csv {
 	my($source) = @_;
         return CSV(MotionCommentList =>
 	    $self->internal_comment_csv_fields(
-		$source->req('Model.MotionCommentList')),
-	);
+		$source->req('Model.MotionCommentList'),
+	        $source->req(qw(Model.Motion type)),
+	));
     }]);
 }
 
@@ -109,6 +110,31 @@ sub form {
 	]),
     );
 }
+
+sub internal_comment_fields {
+    my($self, $model) = @_;
+    return [
+	'RealmOwner.display_name',
+	['MotionComment.comment', {
+	    column_widget =>
+		If([
+		    sub {
+			return (shift->get('comment_trimmed') || '') =~ /\.\.\.$/ ? 1 : 0;
+		    }],
+		   Link(['comment_trimmed'],
+			['->format_uri', 'THIS_DETAIL', 'FORUM_MOTION_COMMENT_DETAIL']),
+		   String(['comment_trimmed']),
+	       ),
+	    column_expand => 1,
+	}],
+	map([$_, {
+	    wf_type => $model->get_field_type($_),
+	    column_heading =>
+		String(vs_text($model->simple_package_name, $_)),
+	}], $model->tuple_tag_field_check),
+    ];
+}
+
 
 sub internal_comment_csv_fields {
     my($self, $model) = @_;
@@ -231,7 +257,7 @@ sub internal_vote_list_fields {
 
 sub internal_vote_result_csv_fields {
     return [
-        'MotionVote.creation_date_time',
+	'MotionVote.creation_date_time',
 	'MotionVote.vote',
 	'MotionVote.comment',
 	'Email.email',
@@ -339,7 +365,8 @@ sub status {
 		 [ _value_cell(' ') ],
 		 [ _label_cell(vs_text('MotionStatus.vote_list')), Join([ [\&_vote_list, $self ]]) ],
 		 [ _value_cell(' ') ],
-		 [ _label_cell(vs_text('MotionStatus.comment_list')), Join([ [ \&_comment_list, [qw(Model.MotionCommentList)] ] ] ) ],
+		 [ _label_cell(vs_text('MotionStatus.comment_list')), Join([
+		     [ \&_comment_list, $self, [qw(Model.MotionCommentList)], [qw(Model.Motion type)] ] ] ) ],
 	    ],
 		 {
 		     class => 'simple',
@@ -385,34 +412,23 @@ sub vote_result {
 
 sub vote_result_csv {
     my($self) = @_;
-    return shift->internal_body(CSV(MotionVoteList => 
-	$self->internal_vote_result_csv_fields));
+    return shift->internal_body(
+	[sub {
+	     my($source, $type) = @_;
+	     return CSV(MotionVoteList =>
+			    $self->internal_vote_result_csv_fields($type)
+			);
+	 },	 
+	 ['Model.Motion', 'type'],
+	 ]);
 }
 
 sub _comment_list {
-    my($req, $model) = @_;
+    my($req, $self, $model, $type) = @_;
 
     return vs_paged_list(
-	MotionCommentList => [
-	    'RealmOwner.display_name',
-            ['MotionComment.comment', {
-                column_widget =>
-		    If([
-			sub {
-			    return (shift->get('comment_trimmed') || '') =~ /\.\.\.$/ ? 1 : 0;
-			}],
-		       Link(['comment_trimmed'],
-			    ['->format_uri', 'THIS_DETAIL', 'FORUM_MOTION_COMMENT_DETAIL']),
-		       String(['comment_trimmed']),
-		   ),
-                column_expand => 1,
-            }],
-	    map([$_, {
-		wf_type => $model->get_field_type($_),
-		column_heading =>
-		    String(vs_text($model->simple_package_name, $_)),
-	    }], $model->tuple_tag_field_check),
-	], {
+	MotionCommentList => $self->internal_comment_fields($model, $type),
+        {
 	    no_pager => 1,
 	});
 }
