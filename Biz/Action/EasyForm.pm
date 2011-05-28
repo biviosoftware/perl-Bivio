@@ -1,8 +1,8 @@
 # Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Biz::Action::EasyForm;
+package IEEE_ISTO::Action::EasyForm;
 use strict;
-use Bivio::Base 'Biz.Action';
+use Bivio::Base 'Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('FacadeComponent.Constant');
@@ -17,7 +17,7 @@ my($_TA) = b_use('Type.TextArea');
 my($_V) = b_use('UI.View');
 
 sub execute {
-    my($proto, $req) = @_;
+    my($proto, $req, $no_update_mail) = @_;
     $req->assert_http_method('post');
     $_FCT->assert_uri($req->get('task_id'), $req);
     my($dir) = $_C->get_value('easyform_dir', $req);
@@ -51,7 +51,7 @@ sub execute {
 	    $form, $headings),
     })->put_on_request($req);
     $_V->execute('EasyForm->update_mail', $req)
-	if $email;
+	if $email && !$no_update_mail;
     return {
 	uri => $req->get('query')->{goto},
 	query => undef,
