@@ -1,8 +1,8 @@
 # Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package IEEE_ISTO::Action::EasyForm;
+package Bivio::Biz::Action::EasyForm;
 use strict;
-use Bivio::Base 'Action';
+use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('FacadeComponent.Constant');
@@ -17,15 +17,14 @@ my($_TA) = b_use('Type.TextArea');
 my($_V) = b_use('UI.View');
 
 sub execute {
-    my($proto, $req, $no_update_mail) = @_;
+    my($proto, $req, $base_name, $no_update_mail) = @_;
     $req->assert_http_method('post');
     $_FCT->assert_uri($req->get('task_id'), $req);
     my($dir) = $_C->get_value('easyform_dir', $req);
     my($rf) = $_M->new($req, 'RealmFile');
-    b_die($req->get('path_info'), ': invalid Forms path')
-	unless my $base
-	= $_FP->get_clean_tail($rf->parse_path($req->get('path_info')));
-    my($path) = $_FP->join($dir, "$base.csv");
+    b_die($base_name, ': invalid Forms path')
+	unless $base_name ||= $_FP->get_clean_tail($rf->parse_path($req->get('path_info')));
+    my($path) = $_FP->join($dir, "$base_name.csv");
     my($headings) = _headings($rf, $path);
     my($form) = _form($rf);
     my($d) = ${$rf->get_content};
@@ -43,7 +42,7 @@ sub execute {
     my($ref) = $_TA->canonicalize_newlines(\$d);
     $$ref .= ${$_CSV->to_csv_text([[map($form->{$_}, @$headings)]])};
     $rf->update_with_content({user_id => $rf->get('user_id')}, $ref);
-    my($email) = _email($rf, $base);
+    my($email) = _email($rf, $base_name);
     $proto->new({
 	file_path => $rf->get('path'),
 	to => $email,
