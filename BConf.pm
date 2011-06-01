@@ -105,6 +105,9 @@ sub default_merge_overrides {
 		call_filter => '$sub =~ /_eval$/',
 		package_filter => '/^Bivio::Test$/',
 	    },
+	    all => {
+		package_filter => '/./',
+	    },
 	},
     }, {
 	$args->{version} < 9 ? () : (
