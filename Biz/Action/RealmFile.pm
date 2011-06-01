@@ -60,7 +60,7 @@ sub access_controlled_load {
 	}
     }
     $rf->throw_die($e => {
-	entity => $req->get('path_info'),
+	entity => $path,
 	realm_id => $realm_id,
     }) unless $die_code;
     $$die_code = $_DC->from_name($e);
