@@ -17,8 +17,9 @@ my($_TA) = b_use('Type.TextArea');
 my($_V) = b_use('UI.View');
 
 sub execute {
-    my($proto, $req, $base_name, $no_update_mail) = @_;
-    $req->assert_http_method('post');
+    my($proto, $req, $base_name, $no_update_mail, $form) = @_;
+    $req->assert_http_method('post')
+	unless $form;
     $_FCT->assert_uri($req->get('task_id'), $req);
     my($dir) = $_C->get_value('easyform_dir', $req);
     my($rf) = $_M->new($req, 'RealmFile');
@@ -26,7 +27,7 @@ sub execute {
 	unless $base_name ||= $_FP->get_clean_tail($rf->parse_path($req->get('path_info')));
     my($path) = $_FP->join($dir, "$base_name.csv");
     my($headings) = _headings($rf, $path);
-    my($form) = _form($rf);
+    $form = _form($rf, $form);
     my($d) = ${$rf->get_content};
     $d .= "\n"
 	unless $d =~ /\n$/;
@@ -51,7 +52,7 @@ sub execute {
     })->put_on_request($req);
     $_V->execute('EasyForm->update_mail', $req)
 	if $email && !$no_update_mail;
-    return {
+    return $form ? 0 : {
 	uri => $req->get('query')->{goto},
 	query => undef,
     };
@@ -74,10 +75,10 @@ sub _email {
 }
 
 sub _form {
-    my($rf) = @_;
+    my($rf, $form) = @_;
     my($e) = $rf->new_other('Email');
     my($uid) = $rf->req->get('auth_user_id');
-    my($form) = $rf->req->get_form || {};
+    $form ||= $rf->req->get_form || {};
     return {
 	map(_form_value($form, $_, $rf), keys(%$form)),
 	'&date' => $_DT->now_as_string,
