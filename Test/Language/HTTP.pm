@@ -48,7 +48,7 @@ sub absolute_uri {
     my($self, $uri) = @_;
     die('invalid uri')
 	unless defined($uri) && length($uri);
-    my($u) = URI->new($self->internal_append_query($uri));
+    my($u) = URI->new($uri = $self->internal_append_query($uri));
     return defined($u->scheme) ? $uri : $u->abs(
 	$self->[$_IDI]->{uri}
 	|| Bivio::Die->die($uri, ': unable to make absolute; no prior URI')
