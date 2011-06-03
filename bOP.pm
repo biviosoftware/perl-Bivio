@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.83  2011/06/02 02:44:20  schellj
+  * Bivio::BConf
+    added "all" trace
+  * Bivio::Biz::Action::EasyForm
+    Added $no_update_mail param for subclasses
+    fpc
+    added ability to pass in form directly
+  * Bivio::Biz::Action::RealmFile
+    fix error output
+  * Bivio::Test::Language::HTTP
+    update uri with internal_append_query
+  * Bivio::UI::View::Motion
+    For entity ePOlls, add affiliation to summary screen, summary csv, comment list/csv and votes list/csv
+
   Revision 10.82  2011/05/24 23:47:38  moeller
   * Bivio::Agent::TaskEvent
     use facade_uri with redirects
