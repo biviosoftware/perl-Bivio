@@ -28,9 +28,17 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.84  2011/06/03 15:49:38  nagler
+  * Bivio::UI::HTML::Widget::RadioGrid
+    put spans around elements
+    only put the span around the label if it is not a blessed widget
+  * Bivio::UI::XHTML::Widget::RealmCSS
+    fmt
+
   Revision 10.83  2011/06/02 02:44:20  schellj
   * Bivio::BConf
     added "all" trace
