@@ -63,7 +63,7 @@ sub _match_uri {
 	my($text) = $1;
 	my($comma) = $text =~ s/,$//s ? ',' : '';
         my($re, $err) = $_R->from_literal($text);
-	unless($re) {
+	unless ($re) {
 	    Bivio::IO::Alert->warn($re, ': ', $err || $_NULL, '; ', $req);
 	    $re = 'IGNORE-INVALID-REGEXP';
         }
