@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::RadioGrid;
 use strict;
@@ -21,7 +21,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
-    return if $self->unsafe_get('value');
+    return
+	if $self->unsafe_get('value');
     shift->SUPER::initialize(@_);
     b_die('static items only for RadioGrid')
 	unless $self->unsafe_get('items');
@@ -29,15 +30,15 @@ sub initialize {
     # Convert to Radio
     my($items) = $self->map_by_two(sub {
 	my($k, $v) = @_;
-	return Radio({
+	return SPAN_b_radio(Radio({
 	    field => $self->get('field'),
 	    value => $k,
-	    label => _max_width(\$max_width, $v),
+	    label => SPAN_b_item(_max_width(\$max_width, $v)),
 	    auto_submit => $self->get_or_default('auto_submit', 0),
 	    $self->unsafe_get('event_handler')
 		? (event_handler => $self->get('event_handler'))
 		: (),
-	});
+	}));
     }, $self->get('items'));
 
     my($grid) = Grid();
@@ -48,6 +49,7 @@ sub initialize {
     else {
 	$grid->layout_buttons($items, $max_width);
     }
+    $grid->put(class => 'b_radio_grid');
     $self->initialize_attr(value => $grid);
     return;
 }
