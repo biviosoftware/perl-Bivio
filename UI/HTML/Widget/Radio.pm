@@ -47,7 +47,7 @@ sub control_on_render {
 	->get_widget_value(@{$self->ancestral_get('form_model')});
     my($field) = $self->get('field');
     my($value) = UNIVERSAL::isa($self->get('value'), 'Bivio::Type::Enum')
-        ? $self->get('value')
+        ? $self->get('value')->to_html($self->get('value'))
         : ${$self->render_attr('value', $source)};
     my($field_value) = $form->get_field_type($field)
 	->to_html($form->get($field));
