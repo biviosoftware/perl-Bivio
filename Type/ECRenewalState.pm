@@ -1,47 +1,10 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::ECRenewalState;
 use strict;
-$Bivio::Type::ECRenewalState::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::ECRenewalState::VERSION;
+use Bivio::Base 'Type.Enum';
 
-=head1 NAME
-
-Bivio::Type::ECRenewalState - subscription renewal states
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Type::ECRenewalState;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Type::Enum>
-
-=cut
-
-use Bivio::Type::Enum;
-@Bivio::Type::ECRenewalState::ISA = ('Bivio::Type::Enum');
-
-=head1 DESCRIPTION
-
-C<Bivio::Type::ECRenewalState>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [0],
     OK => [1],
@@ -49,17 +12,5 @@ __PACKAGE__->compile([
     SECOND_NOTICE => [3],
     EXPIRED => [4],
 ]);
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

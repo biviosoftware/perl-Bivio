@@ -1,93 +1,23 @@
-# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Type::ECPaymentStatus;
 use strict;
-$Bivio::Type::ECPaymentStatus::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::ECPaymentStatus::VERSION;
+use Bivio::Base 'Type.Enum';
 
-=head1 NAME
+# C<Bivio::Type::ECPaymentStatus> describes the possible states
+# a payment can be associated with.
 
-Bivio::Type::ECPaymentStatus - list of payment statuses
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Type::ECPaymentStatus;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Type::Enum>
-
-=cut
-
-use Bivio::Type::Enum;
-@Bivio::Type::ECPaymentStatus::ISA = ('Bivio::Type::Enum');
-
-=head1 DESCRIPTION
-
-C<Bivio::Type::ECPaymentStatus> describes the possible states
-a payment can be associated with. The current choices are:
-
-=over 4
-
-=item TRY_CAPTURE
-
-=item CAPTURED
-
-=item DECLINED
-
-=item FAILED
-
-=item CANCELLED
-
-=item TRY_VOID
-
-=item VOIDED
-
-=item TRY_CREDIT
-
-=item CREDITED
-
-=back
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
-    TRY_CAPTURE => [
-	1,
-    ],
-    CAPTURED => [
-	2,
-    ],
-    DECLINED => [
-	3,
-    ],
-    FAILED => [
-	4,
-    ],
-    CANCELLED => [
-	5,
-    ],
-    TRY_VOID => [
-	6,
-    ],
-    VOIDED => [
-	7,
-    ],
-    TRY_CREDIT => [
-	8,
-    ],
-    CREDITED => [
-	9,
-    ],
+    TRY_CAPTURE => [1],
+    CAPTURED => [2],
+    DECLINED => [3],
+    FAILED => [4],
+    CANCELLED => [5],
+    TRY_VOID => [6],
+    VOIDED => [7],
+    TRY_CREDIT => [8],
+    CREDITED => [9],
 ]);
 my($_SUCCESS_MAP) = {
     TRY_CAPTURE => 'CAPTURED',
@@ -103,90 +33,46 @@ my($_NEEDS_PROCESSING_LIST) = [map {__PACKAGE__->$_()}
     qw(TRY_CAPTURE TRY_VOID TRY_CREDIT)];
 my($_APPROVED_SET, $_BAD_SET, $_NEEDS_PROCESSING_SET);
 
-=head1 METHODS
-
-=cut
-
-=for html <a name="get_authorize_net_type"></a>
-
-=head2 get_authorize_net_type() : string
-
-Return the appropriate Authorize.Net transaction type
-
-=cut
-
 sub get_authorize_net_type {
+    # (self) : string
+    # Return the appropriate Authorize.Net transaction type
     return _map(shift, $_AUTHORIZE_NET_MAP);
 }
 
-=for html <a name="get_success_state"></a>
-
-=head2 get_success_state() : Bivio::Type::ECPaymentStatus
-
-From any TRY_* state, change to the corresponding success state.
-
-=cut
-
 sub get_success_state {
+    # (self) : Type.ECPaymentStatus
+    # From any TRY_* state, change to the corresponding success state.
     my($res) = _map(shift, $_SUCCESS_MAP);
     return __PACKAGE__->$res();
 }
 
-=for html <a name="is_approved"></a>
-
-=head2 is_approved() : boolean
-
-Return TRUE if self is one of the approved states.
-
-=cut
-
 sub is_approved {
+    # (self) : boolean
+    # Return TRUE if self is one of the approved states.
     return _is_set(shift, \$_APPROVED_SET);
 }
 
-=for html <a name="is_bad"></a>
-
-=head2 is_bad() : boolean
-
-Returns true if self is one of the declined states.
-
-=cut
-
 sub is_bad {
+    # (self) : boolean
+    # Returns true if self is one of the declined states.
     return _is_set(shift, \$_BAD_SET);
 }
 
-=for html <a name="needs_processing"></a>
-
-=head2 needs_processing() : boolean
-
-Return TRUE if self needs further processing.
-
-=cut
-
 sub needs_processing {
+    # (self) : boolean
+    # Return TRUE if self needs further processing.
     return _is_set(shift, \$_NEEDS_PROCESSING_SET);
 }
 
-=for html <a name="needs_processing_list"></a>
-
-=head2 needs_processing_list() : array_ref
-
-List of statuses which need processing.
-
-=cut
-
 sub needs_processing_list {
+    # (self) : array_ref
+    # List of statuses which need processing.
     return [@$_NEEDS_PROCESSING_LIST];
 }
 
-#=PRIVATE METHODS
-
-# _init_set(string_ref set, array names) : string_ref
-#
-# Initializes a bit vector.
-#
 sub _init_set {
+    # (string_ref, array) : string_ref
+    # Initializes a bit vector.
     my($set) = shift;
     $$set = '';
     return Bivio::Type::ECPaymentStatusSet->set(
@@ -197,11 +83,9 @@ sub _init_set {
     );
 }
 
-# _is_set(self, string_ref set) : boolean
-#
-# Returns true if $self is set in $set.  Initializes sets, if need be.
-#
 sub _is_set {
+    # (self, string_ref) : boolean
+    # Returns true if $self is set in $set.  Initializes sets, if need be.
     my($self, $set) = @_;
     unless (defined($$set)) {
 	# Avoids circular import.
@@ -214,25 +98,13 @@ sub _is_set {
     return Bivio::Type::ECPaymentStatusSet->is_set($set, $self);
 }
 
-# _map(self, hash_ref map) : string
-#
-# Maps value or blows up.
-#
 sub _map {
+    # (self, hash_ref) : string
+    # Maps value or blows up.
     my($self, $map) = @_;
     my($res) = $map->{$self->get_name};
     Bivio::Die->die($self, ': invalid status') unless $res;
     return $res;
 }
-
-=head1 COPYRIGHT
-
-Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

@@ -1,43 +1,10 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::CountryCode;
 use strict;
-$Bivio::Type::CountryCode::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Type::CountryCode::VERSION;
+use Bivio::Base 'Type.Enum';
 
-=head1 NAME
-
-Bivio::Type::CountryCode - county codes
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Type::CountryCode;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Type::Enum>
-
-=cut
-
-use Bivio::Type::Enum;
-@Bivio::Type::CountryCode::ISA = ('Bivio::Type::Enum');
-
-=head1 DESCRIPTION
-
-C<Bivio::Type::CountryCode>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [
 	0,
@@ -1006,21 +973,5 @@ __PACKAGE__->compile([
 	'Serbia',
     ],
 ]);
-
-=head1 METHODS
-
-=cut
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
