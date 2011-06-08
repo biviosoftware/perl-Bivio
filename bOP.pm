@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.86  2011/06/06 20:49:22  moeller
+  * Bivio::UI::HTML::Widget::Radio
+    render enum as html before comparing values
+
   Revision 10.85  2011/06/03 20:02:38  schellj
   * Bivio::UI::HTML::Widget::RadioGrid
     double escaping the enum value
