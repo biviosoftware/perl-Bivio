@@ -35,6 +35,11 @@ sub ROLES_ORDER {
     return [@{$_ROLES_ORDER}];
 }
 
+sub internal_cache_key {
+    my($self) = @_;
+    return __PACKAGE__;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -142,7 +147,8 @@ sub roles_in_order {
 
 sub _roles {
     my($self, $row) = @_;
-    my($res) = $_CACHE->{$row->{roles}} ||= _roles_compute($self, $row);
+    my($res) = ($_CACHE->{$self->internal_cache_key} ||= {})->{$row->{roles}}
+	||= _roles_compute($self, $row);
     $row->{roles} = $res->[0];
     $row->{'RealmUser.role'} = $res->[1];
     return;
