@@ -772,9 +772,7 @@ sub uri_and_local_mail {
 sub user_agent {
     my($self) = @_;
     return 'Mozilla/5.0 (compatible; '
-	. $self->get('test_script')
-        . ':'
-	. _get_script_line($self)
+	. _test_script_location($self)
 	. ')';
 }
 
@@ -1346,7 +1344,8 @@ sub _send_request {
 	    if $prev_uri;
 	$fields->{uri} = $request->uri->canonical->as_string;
 	$fields->{cookies}->add_cookie_header($request);
-	_log($self, 'req', $request, $case_tag);
+	_log($self, 'req', '# ' . _test_script_location($self) . "\n"
+		 . $request->as_string, $case_tag);
 	$fields->{response} = $fields->{user_agent}->request($request);
 	_log($self, 'res', $fields->{response}, $case_tag);
 	last
@@ -1370,6 +1369,13 @@ sub _send_request {
 	$fields->{response}->message,
     ) unless $fields->{response}->is_success;
     return;
+}
+
+sub _test_script_location {
+    my($self) = @_; 
+    return $self->get('test_script')
+        . ':'
+	. _get_script_line($self);
 }
 
 sub _unsafe_html_get {
