@@ -187,7 +187,7 @@ sub get_delegate_info {
     FILE_NAME => [
 	32,
 	undef,
-	'File names may not contain \\, /, :, *, ?, ", <, >, or |.  They may not be equal to "." or "..". or contain control characters or tabs.',
+	'File names may not contain \\, /, :, *, ?, ", <, >, % or |.  They may not be equal to "." or "..". or contain control characters or tabs.',
     ],
     NOT_ZERO => [
 	33,
