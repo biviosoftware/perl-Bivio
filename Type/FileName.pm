@@ -11,7 +11,7 @@ sub ERROR {
 }
 
 sub ILLEGAL_CHAR_REGEXP {
-    return qr{^\.\.?$|[\\/:*?"<>|\0-\037\177]};
+    return qr{^\.\.?$|[\\/:*?"<>%|\0-\037\177]};
 }
 
 sub from_literal {
