@@ -1728,6 +1728,7 @@ sub _cfg_user_auth {
 	    [old_password => 'Current Password'],
 	    [new_password => 'New Password'],
 	    [confirm_new_password => 'Re-enter New Password'],
+	    [email_verified_date_time => 'Last Verified'],
 	    [UserPasswordForm => [
 		ok_button => 'Update',
 	    ]],
