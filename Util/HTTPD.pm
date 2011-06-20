@@ -11,6 +11,7 @@ my($_HTTPD) = _find_file($_V2 ? qw(
     /usr/local/apache/bin/httpd2
     /usr/sbin/httpd2
     /usr/sbin/apache2
+    /usr/sbin/httpd
 ) : qw(
     /usr/local/apache/bin/httpd
     /usr/sbin/httpd
@@ -73,6 +74,7 @@ sub run {
             /usr/local/apache2/libexec
             /usr/lib/apache2
             /usr/lib64/apache2
+	    /usr/lib/httpd/modules
 	) : qw(
 	    /usr/lib/apache
 	    /usr/libexec/httpd
