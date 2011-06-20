@@ -68,9 +68,10 @@ foreach my $day (@$days) {
 		    [qw(x2/d2/d3 x2/d2/d3/b1)],
 		    [qw(x3 x3/s1)],
 		) {
-		    assert_equals(
-			join('', sort(map(/[dx]\d+$/ ? "$_/\n" : "$_\n", @$x))),
-			scalar(`tar tzf $d/$x->[0].tgz 2>&1`),
+                    assert_equals(
+			[sort(map(/[dx]\d+$/ ? "$_/\n" : "$_\n", @$x))],
+			[sort(`tar tzf $d/$x->[0].tgz 2>&1`)],
+			"@$x",
 		    );
 		}
 		return 1;
