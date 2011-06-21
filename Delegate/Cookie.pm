@@ -75,7 +75,8 @@ sub header_out {
         : undef;
     $fields->{$self->DATE_TIME_FIELD} = $_DT->now;
     my($p) = '; path=/';
-    $p .= "; domain=$domain" if $domain;
+    $p .= (my $domain_prefix = "; domain=$domain")
+	if $domain;
     $p .= $_EXPIRES
         unless $_CFG->{is_temporary};
     _trace('data=', $fields) if $_TRACE;
@@ -92,7 +93,10 @@ sub header_out {
     _trace($value) if $_TRACE;
     $r->header_out('Set-Cookie', $value);
     map(
-	$r->header_out('Set-Cookie', "$_=; path=/"),
+	(
+	    $r->header_out('Set-Cookie', "$_=; path=/"),
+	    $domain_prefix && $r->header_out('Set-Cookie', "$_=; path=/$domain_prefix"),
+	),
 	@{$_CFG->{prior_tags}},
     ) if $fields->{$_PRIOR_TAG_FIELD};
     return 1;
