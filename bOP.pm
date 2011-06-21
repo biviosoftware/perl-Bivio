@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.87  2011/06/08 21:40:14  moeller
+  * Bivio::Biz::Model::RoleBaseList
+    added internal_cache_key() for subclasses to override if they change
+    roles_by_category()
+
   Revision 10.86  2011/06/06 20:49:22  moeller
   * Bivio::UI::HTML::Widget::Radio
     render enum as html before comparing values
