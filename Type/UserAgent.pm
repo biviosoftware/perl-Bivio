@@ -18,6 +18,7 @@ __PACKAGE__->compile([
     BROWSER_MSIE_7 => 10,
     BROWSER_MSIE_8 => 11,
     BROWSER_IPHONE => 12,
+    BROWSER_ROBOT => 13,
 ]);
 
 sub execute {
@@ -35,6 +36,8 @@ sub from_header {
 	    if $v > 8;
         return $proto->from_name("BROWSER_MSIE_$v");
     }
+    return $proto->BROWSER_ROBOT
+	if _is_robot($proto, $ua);
     return $proto->BROWSER_IPHONE
 	if $ua =~ /\biPhone\b/;
     if ($ua =~ /Mozilla\/(\d+)/) {
@@ -87,11 +90,36 @@ sub is_css_compatible {
 	BROWSER_MSIE_6
 	BROWSER_MSIE_7
 	BROWSER_MSIE_8
+	BROWSER_ROBOT
     ));
 }
 
 sub is_mobile_device {
     return shift->equals_by_name(qw(BROWSER_IPHONE));
+}
+
+sub _is_robot {
+    my($proto, $ua) = @_;
+    return $ua =~ qr{
+        googlebot
+        |mediapartners
+        |adsbot
+        |slurp
+        |yahooseeker
+        |msnbot
+        |teoma
+        |yandex
+        |bingbot
+        |((ro)?bot|spider|crawler)(\.|/)
+        |(/|:)((ro)?bot|spider|crawler)
+        |^davclnt$
+        |docomo/
+        |gt::www/
+	|tlsprober
+        |libwww-perl
+        |lwp-request
+        |magent
+    }ix ? 1 : 0;
 }
 
 1;
