@@ -34,7 +34,7 @@ Type();
 	"\x{2bc}" => "'",
 	"\x{2018}hello\x{2018}" => "'hello'",
 	"\xe2\x80\x98hello\xe2\x80\x99" => "'hello'",
-	"\x00C7" => 'AE',
+	"\x00C6" => 'AE',
 	"'x" => "'x",
 	"\223smart quotes\224" =>
 	    '"smart quotes"',
