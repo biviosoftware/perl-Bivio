@@ -28,10 +28,31 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.88  2011/06/21 17:25:29  moeller
+  * Bivio::Biz::Action::EasyForm
+    fpc: separate $form into $form and $form_param, and only return goto
+    if not $form_param
+  * Bivio::Delegate::Cookie
+    delete the prior_tag cookies for both IP and $domain (if exists)
+  * Bivio::Delegate::SimpleTypeError
+    updated FILE_NAME error message
+  * Bivio::Test::Language::HTTP
+    Add test script file name and line number to request log file for
+    test result viewer
+  * Bivio::Type::FileName
+    don't allow % in a file name
+  * Bivio::Type::UserAgent
+    added BROWSER_ROBOT
+  * Bivio::UI::FacadeBase
+    column string for email_verified_date_time
+  * Bivio::Util::HTTPD
+    added search paths for apache on CentOS 5.6
+  * Bivio::Util::ResultViewer
+    NEW
+
   Revision 10.87  2011/06/08 21:40:14  moeller
   * Bivio::Biz::Model::RoleBaseList
     added internal_cache_key() for subclasses to override if they change
