@@ -797,6 +797,7 @@ sub _file_network {
     my($self, $hostname) = @_;
     return 'etc/sysconfig/network', \(_prepend_auto_generated_header(<<"EOF"));
 NETWORKING=yes
+NETWORKING_IPV6=yes
 HOSTNAME=$hostname
 EOF
 }
