@@ -88,6 +88,10 @@ EOF
     ]));
 }
 
+sub email_verify_force {
+    return shift->internal_body(vs_simple_form('EmailVerifyForceForm'));
+}
+
 sub email_verify_mail {
     my($self) = @_;
     view_put(

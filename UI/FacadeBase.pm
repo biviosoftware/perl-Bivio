@@ -636,7 +636,6 @@ sub _cfg_blog {
 	    [acknowledgement => [
 		FORUM_BLOG_CREATE => 'The blog entry has been added.',
 		FORUM_BLOG_EDIT => 'The blog entry update has been saved.',
-		email_verified => q{Your email address has been updated.},
 	    ]],
 #TODO: Move this
 	    [FORUM_ADM_FORUM_ADD => 'Add forum'],
@@ -1150,6 +1149,12 @@ sub _cfg_mail {
 		ok_button => 'Revert',
 		prose => [
 		    prologue => q{Are you sure you want to revert file SPAN_bold(String([qw(Model.RealmFileRevertForm realm_file path)])); to version SPAN_bold(String([qw(Model.RealmFileRevertForm new_version)]));?},
+		],
+	    ]],
+	    [EmailVerifyForceForm => [
+		ok_button => 'Force Verify',
+		prose => [
+		    prologue => q{Are you sure you want to force verification of SPAN_bold(String([qw(Model.EmailVerifyForceForm display_name)]));'s email address (SPAN_bold(String([qw(Model.EmailVerifyForceForm email)]));)?},
 		],
 	    ]],
 	    [MailUnsubscribeForm => [
@@ -1705,6 +1710,7 @@ sub _cfg_user_auth {
 	    [ADM_SUBSTITUTE_USER => 'adm/su'],
 	    [DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
 	    [USER_EMAIL_VERIFY => '?/verify-email'],
+	    [USER_EMAIL_VERIFY_FORCE_FORM => undef],
 	    [USER_EMAIL_VERIFY_SENT => undef],
 	],
 	Text => [
@@ -1761,11 +1767,14 @@ sub _cfg_user_auth {
 		user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},
 		GENERAL_CONTACT => 'Your inquiry has been sent.  Thank you!',
 		USER_SETTINGS_FORM => 'Your settings have been updated.',
+		email_verified => q{Your email address has been updated.},
+		USER_EMAIL_VERIFY_FORCE_FORM => 'Email address verified.',
 	    ]],
 	    [title => [
 		GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
 		USER_CREATE_DONE => 'Registration Email Sent',
 		USER_EMAIL_VERIFY => 'Verify Email Address',
+		USER_EMAIL_VERIFY_FORCE_FORM => 'Force Verify Email Address',
 		USER_EMAIL_VERIFY_SENT => 'Check Your Email',
 	    ]],
 	    [[qw(title xlink)] => [
