@@ -28,9 +28,16 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 10.89  2011/06/22 18:04:47  schellj
+  * Bivio::Type::String
+    fixed AE transliteration, added C cedilla
+  * Bivio::Util::Forum
+    add forum_activity, cascade_forum_activity
+
   Revision 10.88  2011/06/21 17:25:29  moeller
   * Bivio::Biz::Action::EasyForm
     fpc: separate $form into $form and $form_param, and only return goto
