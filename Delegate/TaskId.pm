@@ -1495,6 +1495,15 @@ sub info_user_auth {
 	    ok_task=USER_SETTINGS_FORM
 	)],
 	[qw(
+	    USER_EMAIL_VERIFY_FORCE_FORM
+	    96
+	    ANY_OWNER
+	    ADMIN_READ&ADMIN_WRITE
+	    Model.EmailVerifyForceForm
+	    View.UserAuth->email_verify_force
+	    next=MY_SITE
+        )],
+	[qw(
 	    USER_EMAIL_VERIFY_SENT
 	    97
 	    USER
