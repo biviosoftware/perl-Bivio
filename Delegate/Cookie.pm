@@ -95,6 +95,7 @@ sub header_out {
     map(
 	(
 	    $r->header_out('Set-Cookie', "$_=; path=/"),
+	    $r->header_out('Set-Cookie', "$_=; path=/; domain=@{[$req->get('r')->hostname]}"),
 	    $domain_prefix && $r->header_out('Set-Cookie', "$_=; path=/$domain_prefix"),
 	),
 	@{$_CFG->{prior_tags}},
@@ -168,7 +169,9 @@ sub _parse {
 sub _parse_items {
     my($proto, $cookie) = @_;
     my($items) = {};
-    foreach my $f (split(/\s*[;,]\s*/, $cookie)) {
+    my($rows) = [split(/\s*[;,]\s*/, $cookie)];
+    my($ignore_prior_tags) = grep(/^$_CFG->{tag}/, @$rows) ? 1 : 0;
+    foreach my $f (@$rows) {
 	my($k, $v) = split(/\s*=\s*/, $f, 2);
 	unless (defined($k) && defined($v) && length($v)) {
 	    _trace($k, ': ignoring other element') if $_TRACE;
@@ -178,6 +181,8 @@ sub _parse_items {
 	unless ($k eq $_CFG->{tag}) {
 	    if ($_CFG->{prior_tags} && grep($k eq $_, @{$_CFG->{prior_tags}})) {
 		$items->{$_PRIOR_TAG_FIELD}++;
+		next
+		    if $ignore_prior_tags;
 	    }
 	    else {
 		_trace('tag from another server or old tag: ', $k) if $_TRACE;
