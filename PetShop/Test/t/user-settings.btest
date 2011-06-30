@@ -40,11 +40,17 @@ submit_form({
     user_id => $name,
 });
 follow_link('settings');
-verify_text(qr{[^/]$name});
+verify_form({
+    user_id => $name
+});
 do_logout();
 login_as($name);
 follow_link('settings');
-verify_no_text(qr{[^/]$name});
+test_deviance();
+verify_form({
+    user_id => $name
+});
+test_conformance();
 
 do_logout();
 go_back();
@@ -58,4 +64,46 @@ submit_form({
 });
 verify_form({
     middle => 'x',
+});
+my($email_new) = "${email}_new";
+submit_form({
+    email => $email_new,
+});
+verify_text(qr{verify email address}i);
+verify_form({
+    qr{^email}i => $email_new,
+});
+submit_form(qr{verify email}i);
+verify_text(qr{check your email}i);
+verify_text($email_new);
+follow_link('settings');
+verify_form({
+    email => $email,
+});
+visit_uri(extract_uri_from_local_mail($email_new));
+verify_text(qr{your email address has been updated}i);
+verify_form({
+    email => $email_new,
+});
+do_logout();
+login_as('root');
+follow_link('all_users');
+submit_form(refresh => {
+   _anon => $first,
+});
+follow_link($first);
+home_page();
+follow_link('settings');
+verify_form({
+    email => $email_new,
+});
+submit_form({
+    email => $email,
+});
+verify_text(qr{your settings have been updated}i);
+verify_no_text(qr{verify email address}i);
+verify_no_text($email_new);
+follow_link('settings');
+verify_form({
+    email => $email,
 });
