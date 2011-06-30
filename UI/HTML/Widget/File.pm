@@ -20,7 +20,9 @@ sub initialize {
 sub internal_input_base_render_attrs {
     my($self, $form, $field, $source, $buffer) = @_;
     shift->SUPER::internal_input_base_render_attrs(@_);
-    $$buffer .= qq{ value="@{[$form->get_field_as_html($field)]}"};
+    my($size) = $self->render_simple_attr('size', $source);
+    $$buffer .= qq{ value="@{[$form->get_field_as_html($field)]}"}
+	. qq{ size="$size"};
     return;
 }
 
