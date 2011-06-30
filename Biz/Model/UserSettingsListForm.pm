@@ -32,12 +32,17 @@ sub execute_empty_start {
 sub execute_ok_end {
     my($self) = @_;
     my($new_email) = $self->get_model_properties('Email')->{'email'};
+    return
+	unless $new_email ne $self->new_other('Email')->load->get('email');
     return {
 	task_id => 'USER_EMAIL_VERIFY',
 	query => {
 	    $_EV->EMAIL_KEY => $new_email,
 	},
-    } if $new_email ne $self->new_other('Email')->load->get('email');
+    } unless $self->req->is_substitute_user;
+    $self->new_other('Email')->load->update({
+	email => $new_email,
+    });
     return;
 }
 
