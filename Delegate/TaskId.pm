@@ -621,7 +621,51 @@ sub info_dev {
             ANYBODY
             Action.DevRestart
 	)],
-#221-229
+	[qw(
+	    DEV_ACCEPTANCE_TEST_LIST
+	    221
+	    GENERAL
+	    ANYBODY
+	    Model.AcceptanceTestList->execute_load_all
+	    View.AcceptanceTestResultViewer->acceptance_test_list
+	)],
+	[qw(
+	    DEV_ACCEPTANCE_TEST_DETAIL
+	    222
+	    GENERAL
+	    ANYBODY
+	    View.AcceptanceTestResultViewer->acceptance_test_detail
+	)],
+	[qw(
+	    DEV_ACCEPTANCE_TEST_HEADER
+	    223
+	    GENERAL
+	    ANYBODY
+	    View.AcceptanceTestResultViewer->acceptance_test_header
+	)],
+	[qw(
+	    DEV_ACCEPTANCE_TEST_TRANSACTION_LIST
+	    224
+	    GENERAL
+	    ANYBODY
+	    Model.AcceptanceTestTransactionList->execute_load_all
+	    View.AcceptanceTestResultViewer->acceptance_test_transaction_list
+	)],
+	[qw(
+	    DEV_ACCEPTANCE_TEST_REQUEST
+	    225
+	    GENERAL
+	    ANYBODY
+	    View.AcceptanceTestResultViewer->acceptance_test_request
+	)],
+	[qw(
+	    DEV_ACCEPTANCE_TEST_RESPONSE
+	    226
+	    GENERAL
+	    ANYBODY
+	    View.AcceptanceTestResultViewer->acceptance_test_response
+	)],
+#227-229
     ];
 }
 

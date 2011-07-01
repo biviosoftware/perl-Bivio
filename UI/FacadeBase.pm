@@ -865,6 +865,26 @@ sub _cfg_dev {
     return {
 	Task => [
 	    [DEV_RESTART => 'pub/restart-server'],
+	    [DEV_ACCEPTANCE_TEST_LIST => ['pub/atl', 'pub/acceptance-test-list']],
+	    [DEV_ACCEPTANCE_TEST_DETAIL => 'acceptance-test-detail/*'],
+	    [DEV_ACCEPTANCE_TEST_HEADER => 'acceptance-test-header/*'],
+	    [DEV_ACCEPTANCE_TEST_TRANSACTION_LIST => 'acceptance-test-transaction-list/*'],
+	    [DEV_ACCEPTANCE_TEST_REQUEST => 'acceptance-test-request/*'],
+	    [DEV_ACCEPTANCE_TEST_RESPONSE => 'acceptance-test-response/*'],
+	],
+	Text => [
+	    [AcceptanceTestList => [
+		age => 'Age',
+		timestamp => 'Timestamp',
+		test_name => 'Test Name',
+		outcome => 'Outcome',
+	    ]],
+	    [AcceptanceTestTransactionList => [
+		request_response_number => 'Request Response Number',
+		test_line_number => 'Test Line Number',
+		http_status => 'HTTP Status',
+		command => 'Command',
+	    ]],
 	],
     };
 }
