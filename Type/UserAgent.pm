@@ -118,6 +118,7 @@ sub _is_robot {
 	|tlsprober
         |libwww-perl
         |lwp-(?:request|trivial)
+	|libcurl
 	|wget
 	|htdig
         |magent
