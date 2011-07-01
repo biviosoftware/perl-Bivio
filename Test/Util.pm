@@ -180,6 +180,7 @@ sub nightly {
 	$self->print("export BCONF=$ENV{BCONF}\n");
 	$self->print("bivio test acceptance .\n");
         $self->print($self->acceptance('.'));
+        $self->print($self->unit('.'));
         return;
     });
     # restore state before die is rethrown
