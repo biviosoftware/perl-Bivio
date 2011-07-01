@@ -99,7 +99,7 @@ sub is_mobile_device {
 }
 
 sub _is_robot {
-    my($proto, $ua) = @_;
+    my(undef, $ua) = @_;
     return $ua =~ qr{
         googlebot
         |mediapartners
@@ -110,14 +110,16 @@ sub _is_robot {
         |teoma
         |yandex
         |bingbot
-        |((ro)?bot|spider|crawler)(\.|/)
-        |(/|:)((ro)?bot|spider|crawler)
+        |(?:(?:ro)?bot|spider|crawler)(?:\.|/)
+        |(?:/|:)(?:(?:ro)?bot|spider|crawler)
         |^davclnt$
         |docomo/
         |gt::www/
 	|tlsprober
         |libwww-perl
-        |lwp-request
+        |lwp-(?:request|trivial)
+	|wget
+	|htdig
         |magent
     }ix ? 1 : 0;
 }
