@@ -28,10 +28,21 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 10.90  2011/06/27 23:40:08  schellj
+  * Bivio::Biz::Model::EmailVerifyForceForm
+    NEW
+  * Bivio::Delegate::TaskId
+    add USER_EMAIL_VERIFY_FORCE_FORM
+  * Bivio::UI::FacadeBase
+    add force verify email
+  * Bivio::UI::View::UserAuth
+    add force verify email
+  * Bivio::Util::LinuxConfig
+    turn on NETWORKING_IPV6=yes
+
   Revision 10.89  2011/06/22 18:04:47  schellj
   * Bivio::Type::String
     fixed AE transliteration, added C cedilla
