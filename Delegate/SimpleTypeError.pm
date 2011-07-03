@@ -424,6 +424,11 @@ sub get_delegate_info {
 	undef,
 	'Your verification key is invalid.',
     ],
+    INTERNAL_SYSTEM_ERROR => [
+	81,
+	undef,
+	'Unable to perform operation due to an internal system error.  Please contact customer support.'
+    ],
 ];
 }
 
