@@ -505,7 +505,7 @@ sub _assert_expect {
     my($m) = $self->my_caller eq 'builtin_assert_equals'
 	? 'nested_differences' : 'nested_contains';
     my($res) = $_R->$m($expect, $actual);
-    $comment = defined($comment) ? "[$comment] " : '';
+    $comment = defined($comment) ? "/* $comment */ " : '';
     $_D->throw_quietly(
 	DIE => $invert
 	    ? "${comment}unexpected match: ${$_R->to_string($expect)} == ${$_R->to_string($actual)}"
