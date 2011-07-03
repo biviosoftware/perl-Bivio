@@ -16,7 +16,7 @@ my($_D) = b_use('Bivio.Die');
 my($_TI) = b_use('Agent.TaskId');
 
 sub HELP_WIKI_REALM_NAME {
-    return _site(shift, 'help');
+    return shift->internal_site_name('help');
 }
 
 sub MAIL_RECEIVE_URI_PREFIX {
@@ -31,7 +31,7 @@ sub MAIL_RECEIVE_PREFIX {
 #      be used publicly.  They are only for init.  Always use vs_constant
 #      to get the names.
 sub SITE_CONTACT_REALM_NAME {
-    return _site(shift, 'contact');
+    return shift->internal_site_name('contact');
 }
 
 sub SITE_REALM_NAME {
@@ -39,11 +39,11 @@ sub SITE_REALM_NAME {
 }
 
 sub SITE_ADMIN_REALM_NAME {
-    return _site(shift, 'admin');
+    return shift->internal_site_name('admin');
 }
 
 sub SITE_REPORTS_REALM_NAME {
-    return _site(shift, 'reports');
+    return shift->internal_site_name('reports');
 }
 
 sub BULLETIN_REALM_NAME {
@@ -2122,7 +2122,7 @@ sub _cfg_xapian {
     };
 }
 
-sub _site {
+sub internal_site_name {
     my($proto, $sub_forum) = @_;
     return $_FN->join($proto->SITE_REALM_NAME, $sub_forum);
 }
