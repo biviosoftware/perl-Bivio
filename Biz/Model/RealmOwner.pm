@@ -210,6 +210,10 @@ sub unauth_delete_realm {
     return;
 }
 
+sub unauth_load_and_get_id {
+    return shift->unauth_load_by_email_id_or_name_or_die(@_)->get('realm_id');
+}
+
 sub unauth_load_by_email {
     my($self, $email, @query) = @_;
     # Tries to load this realm using I<email> and any other I<query> parameters,
