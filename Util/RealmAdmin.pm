@@ -171,6 +171,14 @@ sub invalidate_password {
     return;
 }
 
+sub is_realm_user {
+    my($self) = @_;
+    return $self->model('RealmUser')->unauth_rows_exist({
+	realm_id => $self->req('auth_id'),
+        user_id => $self->req('auth_user_id'),
+    });
+}
+
 sub join_user {
     my($self, @roles) = shift->name_args([['Auth.Role']], \@_);
     my($req) = $self->req;
@@ -189,7 +197,6 @@ sub join_user {
 sub leave_role {
     my($self, @roles) = shift->name_args([['Auth.Role']], \@_);
     $self->assert_have_user;
-    
     foreach my $role (@roles) {
 	$self->model('RealmUser')->delete({
 	    realm_id => $self->req('auth_id'),
