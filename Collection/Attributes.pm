@@ -21,6 +21,10 @@ my($_READ_ONLY_ERROR) = 'attempt to modify read-only instance';
 # Not likely to be an attribute. NOT CHECKED.
 my($_READ_ONLY_ATTR) = "$;";
 
+sub REQ_KEY {
+    return 'req';
+}
+
 sub ancestral_get {
     my($self, $name, $default) = @_;
     # Returns the named attribute if found.  If not found, checks I<parent>'s
@@ -184,7 +188,7 @@ sub get_or_default {
 
 sub get_request {
     my($self) = @_;
-    return $self->unsafe_get('req') || shift->SUPER::get_request(@_);
+    return $self->unsafe_get($self->REQ_KEY) || shift->SUPER::get_request(@_);
 }
 
 sub get_shallow_copy {
@@ -283,6 +287,11 @@ sub put {
 	$fields->{$k} = $v;
     }
     return $self;
+}
+
+sub put_req {
+    my($self, $req) = @_;
+    return $self->put($self->REQ_KEY => $req);
 }
 
 sub put_unless_exists {
