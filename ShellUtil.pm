@@ -663,7 +663,7 @@ sub name_args {
 }
 
 sub new {
-    my($proto, $class, $argv) = @_;
+    my($proto, $class, $argv, $req) = @_;
     # Initializes a new instance with these command line arguments.
 
     if ($class && !ref($class)) {
@@ -674,7 +674,7 @@ sub new {
 	$_DIE->die($proto, ': must not be called as ShellUtil->new')
 	    if $proto eq __PACKAGE__;
     }
-    return _initialize($proto->SUPER::new, $argv);
+    return _initialize($proto->SUPER::new, $argv, $req);
 }
 
 sub new_other {
@@ -1009,10 +1009,7 @@ sub unauth_model {
 }
 
 sub unauth_realm_id {
-    my($self, $email_id_or_name) = @_;
-    return shift->model('RealmOwner')
-	->unauth_load_by_email_id_or_name_or_die($email_id_or_name)
-        ->get('realm_id');
+    return shift->model('RealmOwner')->unauth_load_and_get_id(@_);
 }
 
 sub unsafe_get {
@@ -1149,16 +1146,15 @@ sub _detach_log {
 }
 
 sub _initialize {
-    my($self, $argv) = @_;
+    my($self, $argv, $req) = @_;
     # Initializes the instance with the appropriate params.
     $argv ||= [];
     my($orig_argv) = [@$argv];
     $self->[$_IDI] ||= {};
-    $self->put(
+    return $self->put(
 	%{_parse_options($self, $argv)},
 	argv => $orig_argv,
-    );
-    return $self;
+    )->put_request($req);
 }
 
 sub _lock_files {
