@@ -207,12 +207,7 @@ sub create_test_db {
     b_die('cannot be run on production system')
 	if $req->is_production;
     $_F->do_in_dir(
-	(grep(
-	    -d $_ && glob("$_/*.sql"),
-	    glob($self->get_project_root . '/files/*/ddl'),
-	    $self->get_project_root . '/files/ddl',
-	    '.',
-	))[0],
+	$self->ddl_dir,
 	sub {
 	    $self->destroy_db;
 	    $self->create_db;
@@ -226,6 +221,16 @@ sub create_test_db {
 
 sub create_test_user {
     return shift->new_other('TestUser')->create(@_);
+}
+
+sub ddl_dir {
+    my($self) = @_;
+    $self->initialize_fully;
+    return b_use('UI.Facade')->get_local_file_name(
+	b_use('UI.LocalFileType')->DDL,
+	'',
+	$self->req,
+    );
 }
 
 sub ddl_files {
@@ -247,8 +252,12 @@ sub ddl_files {
 sub delete_realm_files {
     my($self) = @_;
     $_F->rm_children(
-	$self->use('UI.Facade')->get_local_file_name(
-	    $self->use('UI.LocalFileType')->REALM_DATA, ''));
+	b_use('UI.Facade')->get_local_file_name(
+	    b_use('UI.LocalFileType')->REALM_DATA,
+	    '',
+	    $self->req,
+	),
+    );
     return;
 }
 
