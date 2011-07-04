@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 10.91  2011/07/01 23:28:02  schellj
+  * Bivio::Biz::Model::AcceptanceTestList
+    NEW
+  * Bivio::Biz::Model::AcceptanceTestTransactionList
+    NEW
+  * Bivio::Biz::Model::UserSettingsListForm
+    don't require verification if substitute user changes email
+  * Bivio::Delegate::Cookie
+    ignore prior tag values if current tag exists
+    clear prior tags with hostname domain
+  * Bivio::Delegate::TaskId
+    Acceptance Test Result Viewer - generate view on the fly
+  * Bivio::Test::Util
+    also run unit tests in nightly
+  * Bivio::Type::UserAgent
+    _is_robot: added other robots, added (?:) to avoid setgin $n variables
+    added libcurl
+  * Bivio::UI::FacadeBase
+    Acceptance Test Result Viewer - generate view on the fly
+  * Bivio::UI::HTML::Widget::File
+    fixed missing size attribute render
+  * Bivio::UI::View::AcceptanceTestResultViewer
+    NEW
+
   Revision 10.90  2011/06/27 23:40:08  schellj
   * Bivio::Biz::Model::EmailVerifyForceForm
     NEW
