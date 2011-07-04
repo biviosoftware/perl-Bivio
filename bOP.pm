@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,31 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.0  2011/07/04 16:02:53  nagler
+  * Bivio::BConf
+    added dev_root and DELEGATE_ROOT_PREFIX
+  * Bivio::Biz::Model::RealmOwner
+    added unauth_load_and_get_id
+  * Bivio::Collection::Attributes
+    added put_req, and expose REQ_KEY
+  * Bivio::Delegate::SimpleTypeError
+    added INTERNAL_SYSTEM_ERROR for cases outside of normal syntax
+  * Bivio::ShellUtil
+    new() takes a $req so can initialize with directly linked request
+    removed get_project_root
+  * Bivio::Test::Unit
+    display comments with /* */ on cases
+  * Bivio::Test::Util
+    print for unit tests
+  * Bivio::UI::FacadeBase
+    expose internal_site_name
+  * Bivio::Util::HTTPD
+    use get_local_file_root
+  * Bivio::Util::RealmAdmin
+    added is_realm_user
+  * Bivio::Util::SQL
+    added ddl_dir() use that instead of hack to find files
+
   Revision 10.91  2011/07/01 23:28:02  schellj
   * Bivio::Biz::Model::AcceptanceTestList
     NEW
