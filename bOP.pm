@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.1  2011/07/04 16:17:12  nagler
+  * Bivio::BConf
+    added dev_root and DELEGATE_ROOT_PREFIX
+    added CURRENT_VERSION
+  * Bivio::DefaultBConf
+    NEW
+
   Revision 11.0  2011/07/04 16:02:53  nagler
   * Bivio::BConf
     added dev_root and DELEGATE_ROOT_PREFIX
