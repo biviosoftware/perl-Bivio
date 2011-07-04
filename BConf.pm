@@ -18,6 +18,10 @@ use Sys::Hostname ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub CURRENT_VERSION {
+    return 10;
+}
+
 sub DELEGATE_ROOT_PREFIX {
     return shift(@_) =~ /^(.*)::\w*BConf$/;
 }
