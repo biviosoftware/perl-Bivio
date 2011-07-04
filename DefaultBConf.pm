@@ -10,8 +10,20 @@ sub merge_overrides {
     my($proto) = @_;
     return Bivio::IO::Config->merge_list(
 	{
-	    $proto->merge_class_loader,
+	    $proto->merge_class_loader({
+		delegates => {
+		    'Bivio::Agent::TaskId' => 'Bivio::Delegate::DefaultTaskId',
+		},
+		maps => {
+		    Facade => ['Bivio::UI::Facade'],
+		},
+	    }),
 	    $proto->merge_http_log,
+	    'Bivio::UI::Facade' => {
+		default => 'Default',
+		http_suffix => 'default.bivio.biz',
+		mail_host => 'default.bivio.biz',
+	    },
 	},
 	$proto->default_merge_overrides({
 	    version => $proto->CURRENT_VERSION,
