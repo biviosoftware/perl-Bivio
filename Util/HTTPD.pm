@@ -54,7 +54,10 @@ sub internal_pre_exec {
 sub run {
     my($self, $background) = shift->name_args([[qw(background Boolean)]], \@_);
     $self->get_request;
-    my($pwd) = $self->get_project_root() . '/httpd';
+    my($pwd) = b_use('Type.FilePath')->join(
+	b_use('UI.Facade')->get_local_file_root,
+	'httpd',
+    );
 #TODO: Let ShellUtil handle options; Create a default handler for commands
     local($_);
     if ($ENV{PERLLIB}) {
