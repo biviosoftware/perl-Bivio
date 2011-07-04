@@ -18,6 +18,10 @@ use Sys::Hostname ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub DELEGATE_ROOT_PREFIX {
+    return shift(@_) =~ /^(.*)::\w*BConf$/;
+}
+
 sub default_merge_overrides {
     my($proto) = shift;
     my($args) = @_;
@@ -114,9 +118,6 @@ sub default_merge_overrides {
 	    'Bivio::SQL::PropertySupport' => {
 		unused_classes => [],
 	    },
-	    'Bivio::Biz::Model::MailReceiveDispatchForm' => {
-		ignore_dashes_in_recipient => 1,
-	    },
 	    'Bivio::Test::Language::HTTP' => {
 		deprecated_text_patterns => 0,
 	    },
@@ -133,10 +134,7 @@ sub dev {
     my($host) = Sys::Hostname::hostname();
     my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
     my($home) = $ENV{HOME} || $pwd;
-    (my $root = ref($proto) || $proto) =~ s,::,/,g;
-    $root = ($INC{"$root.pm"} =~ m{(.+)/.+?.pm})[0];
-    my($files_root) = "$root/files";
-    mkdir($files_root);
+    my($root, $files_root) = $proto->dev_root;
     return _validate_config(Bivio::IO::Config->merge_list(
 	$overrides || {},
 	Bivio::IO::Config->bconf_dir_hashes,
@@ -198,6 +196,15 @@ sub dev {
     ));
 }
 
+sub dev_root {
+    my($proto) = @_;
+    (my $root = ref($proto) || $proto) =~ s,::,/,g;
+    $root = ($INC{"$root.pm"} =~ m{(.+)/.+?.pm})[0];
+    my($files_root) = "$root/files";
+    mkdir($files_root);
+    return ($root, $files_root);
+}
+
 sub dev_overrides {
     # Returns any overrides to the development configuration, called by
     # L<dev|"dev">.  Returns an empty hash by default.
@@ -236,14 +243,33 @@ sub merge_class_loader {
     #         },
     #     }),
     #     ...
+    $overrides ||= {};
     $overrides->{delegates} = {map(
-	($_ => join('::', $proto =~ /^(.*)::BConf$/, 'Delegate', $_ =~ /(\w+)$/)),
+	($_ => join('::', $proto->DELEGATE_ROOT_PREFIX, 'Delegate', $_ =~ /(\w+)$/)),
 	@{$overrides->{delegates}},
     )} if ref($overrides->{delegates}) eq 'ARRAY';
     return (
 	'Bivio::IO::ClassLoader' => Bivio::IO::Config->merge(
-	    $overrides || {},
+	    $overrides,
 	    {
+		delegates => {
+		    'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
+		    'Bivio::Agent::TaskId' => 'Bivio::Delegate::TaskId',
+		    'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
+		    'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
+		    'Bivio::Auth::Role' => 'Bivio::Delegate::Role',
+		    'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
+		    'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
+		    'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
+		    'Bivio::Type::MotionStatus' => 'Bivio::Delegate::SimpleMotionStatus',
+		    'Bivio::Type::MotionType' => 'Bivio::Delegate::SimpleMotionType',
+		    'Bivio::Type::MotionVote' => 'Bivio::Delegate::SimpleMotionVote',
+		    'Bivio::Type::RealmDAG' => 'Bivio::Delegate::RealmDAG',
+		    'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
+		    'Bivio::Type::RowTagKey' => 'Bivio::Delegate::RowTagKey',
+		    'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
+		    'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidgetFactory',
+		},
 		maps => {
 		    Action => ['Bivio::Biz::Action'],
 		    Agent => ['Bivio::Agent'],
@@ -467,26 +493,6 @@ sub _base {
     my($proto) = @_;
     # Returns _base configuration.
     return {
-	$proto->merge_class_loader({
-	    delegates => {
-                'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
-                'Bivio::Agent::TaskId' => 'Bivio::Delegate::TaskId',
-                'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
-                'Bivio::Auth::RealmType' => 'Bivio::Delegate::RealmType',
-                'Bivio::Auth::Role' => 'Bivio::Delegate::Role',
-                'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
-                'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
-                'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
-                'Bivio::Type::MotionStatus' => 'Bivio::Delegate::SimpleMotionStatus',
-                'Bivio::Type::MotionType' => 'Bivio::Delegate::SimpleMotionType',
-                'Bivio::Type::MotionVote' => 'Bivio::Delegate::SimpleMotionVote',
-                'Bivio::Type::RealmDAG' => 'Bivio::Delegate::RealmDAG',
-                'Bivio::Type::RealmName' => 'Bivio::Delegate::SimpleRealmName',
-                'Bivio::Type::RowTagKey' => 'Bivio::Delegate::RowTagKey',
-                'Bivio::TypeError' => 'Bivio::Delegate::SimpleTypeError',
-                'Bivio::UI::HTML::WidgetFactory' => 'Bivio::Delegate::SimpleWidgetFactory',
-	    },
-	}),
 	$proto->merge_realm_role_category_map(),
 	'Bivio::Die' => {
 	    stack_trace_error => 1,
