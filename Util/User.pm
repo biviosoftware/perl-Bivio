@@ -64,6 +64,9 @@ sub merge_users {
 		my($die) = Bivio::Die->catch_quietly(sub {
 		    $m->update({
 		        $field => $target_user_id,
+			$model eq 'RealmFile'
+			    ? (override_is_read_only => 1)
+			    : (),
 		    });
 		});
 		
