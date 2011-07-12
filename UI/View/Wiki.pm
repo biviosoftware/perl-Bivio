@@ -22,7 +22,9 @@ sub edit {
     my($self) = @_;
     return shift->edit_wysiwyg(@_)
 	if $self->use_wysiwyg;
+    my($buttons) = vs_simple_form_submit();
     return $self->internal_body(vs_simple_form(WikiForm => [
+	$buttons,
 	'WikiForm.RealmFile.path_lc',
 	'WikiForm.RealmFile.is_public',
 	Join([
@@ -36,6 +38,7 @@ sub edit {
 		cols => $self->TEXT_AREA_COLS,
 	    }),
 	]),
+	$buttons,
     ]));
 }
 
