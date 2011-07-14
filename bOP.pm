@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.2  2011/07/04 16:47:25  nagler
+  * Bivio::DefaultBConf
+    added facade and taskid
+  * Bivio::Delegate::DefaultTaskId
+    NEW
+  * Bivio/UI/Facade
+    NEW
+
   Revision 11.1  2011/07/04 16:17:12  nagler
   * Bivio::BConf
     added dev_root and DELEGATE_ROOT_PREFIX
