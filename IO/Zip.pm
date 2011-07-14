@@ -4,12 +4,13 @@ package Bivio::IO::Zip;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 use Archive::Zip ();
-use Bivio::IO::File;
-use Bivio::IO::Trace;
 use IO::File ();
+b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_F) = b_use('IO.File');
 
 sub add_file {
     # Adds the named file to the archive. This is the preferable way to add a
@@ -17,7 +18,7 @@ sub add_file {
     my($self, $path, $name) = @_;
     my($fields) = $self->[$_IDI];
     _trace($path, ' ', $name) if $_TRACE;
-    Bivio::Die->die('file not found for zip: ', $path)
+    b_die('file not found for zip: ', $path)
         unless -r $path;
     $fields->{zip}->addFile($path, $name);
     return $self;
@@ -59,7 +60,7 @@ sub new {
     $self->[$_IDI] = {
         zip => Archive::Zip->new,
     };
-    Archive::Zip::setErrorHandler(sub {Bivio::Die->die(shift)});
+    Archive::Zip::setErrorHandler(sub {b_die(shift)});
     return $self;
 }
 
@@ -67,10 +68,10 @@ sub read_zip_from_string {
     # Loads the instance from an in-memory value.
     my($self, $zip_contents) = @_;
     my($fields) = $self->[$_IDI];
-    my($file) = Bivio::IO::File->temp_file(Bivio::Agent::Request->get_current);
-    Bivio::IO::File->write($file, $zip_contents);
+    my($file) = $_F->temp_file($self->req);
+    $_F->write($file, $zip_contents);
     $fields->{zip} = Archive::Zip->new;
-    Bivio::Die->die('failed to read zip from string')
+    b_die('failed to read zip from string')
 	unless $fields->{zip}->read($file) == Archive::Zip::AZ_OK();
     return $self;
 }
@@ -78,10 +79,10 @@ sub read_zip_from_string {
 sub send_zip_to_client {
     # Saves the zip file to disk, sets the file handle for the request output.
     my($self, $req) = @_;
-    my($file_name) = Bivio::IO::File->temp_file($req);
+    my($file_name) = $_F->temp_file($req);
     $self->write_to_file($file_name);
     $req->get('reply')->set_output(IO::File->new($file_name, 'r')
-	|| Bivio::Die->die('file open failed: ', $file_name))
+	|| b_die('file open failed: ', $file_name))
 	->set_output_type('application/zip');
     return $self;
 }
@@ -89,7 +90,7 @@ sub send_zip_to_client {
 sub write_to_file {
     my($self, $filename) = @_;
     my($fields) = $self->[$_IDI];
-    Bivio::Die->die('failed to write zip file')
+    b_die('failed to write zip file')
         unless $fields->{zip}->writeToFileNamed($filename)
             == Archive::Zip::AZ_OK();
     return $self;
