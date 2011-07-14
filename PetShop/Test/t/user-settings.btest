@@ -65,7 +65,7 @@ submit_form({
 verify_form({
     middle => 'x',
 });
-my($email_new) = "${email}_new";
+my($email_new) = join('_new@', split('@', $email));
 submit_form({
     email => $email_new,
 });
