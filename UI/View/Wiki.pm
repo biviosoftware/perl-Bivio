@@ -22,7 +22,12 @@ sub edit {
     my($self) = @_;
     return shift->edit_wysiwyg(@_)
 	if $self->use_wysiwyg;
-    my($buttons) = vs_simple_form_submit();
+    my($req) = $self->req;
+    my($buttons) = join(' ',
+			('*ok_button',
+			 $req->is_super_user || $req->is_substitute_user
+			     ? 'ok_no_validate_button' : (),
+			 'cancel_button'));
     return $self->internal_body(vs_simple_form(WikiForm => [
 	$buttons,
 	'WikiForm.RealmFile.path_lc',
