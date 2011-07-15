@@ -1992,6 +1992,7 @@ sub _cfg_wiki {
 		'RealmFile.path_lc' => 'Title',
 		'content' => '',
 		'RealmFile.is_public' => 'Make this article publicly available?',
+ 		'ok_no_validate_button' => 'OK (no validate)',
 	    ]],
 	    [title => [
 		FORUM_WIKI_NOT_FOUND => 'vs_ui_wiki(); Page Not Found',
