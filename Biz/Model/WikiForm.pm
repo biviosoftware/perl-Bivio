@@ -32,19 +32,20 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    my($p) = $self->unsafe_get('RealmFile.is_public') ? 1 : 0;
-    my($new) = $self->name_type
-	->to_absolute($self->get('RealmFile.path_lc'), $p);
-    my($c) = $self->get('content');
-    my($m) = $self->get('file_exists')
-	? 'update_with_content' : 'create_with_content';
-    $self->get('realm_file')->$m({
-	path => $new,
-	is_public => $p,
-    }, \$c);
+    _update_file($self);
     return $self->return_with_validate({
 	path_info => $self->get('RealmFile.path_lc'),
-    })
+    });
+}
+
+sub execute_other {
+    my($self) = @_;
+    _update_file($self);
+    b_use('Action.Acknowledgement')
+	->save_label('FORUM_WIKI_EDIT', $self->req);
+    return {
+	path_info => $self->get('RealmFile.path_lc'),
+    };
 }
 
 sub internal_initialize {
@@ -64,6 +65,11 @@ sub internal_initialize {
 	    },
 	    {
 		name => 'RealmFile.is_public',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'ok_no_validate_button',
+		type => 'FormButton',
 		constraint => 'NONE',
 	    },
 	],
@@ -119,6 +125,21 @@ sub _is_loaded {
     }) || $rf->unsafe_load({
 	path => $self->name_type->to_absolute(_authorized_name($self), 1)
     });
+}
+
+sub _update_file {
+    my($self) = @_;
+    my($p) = $self->unsafe_get('RealmFile.is_public') ? 1 : 0;
+    my($new) = $self->name_type
+	->to_absolute($self->get('RealmFile.path_lc'), $p);
+    my($c) = $self->get('content');
+    my($m) = $self->get('file_exists')
+	? 'update_with_content' : 'create_with_content';
+    $self->get('realm_file')->$m({
+	path => $new,
+	is_public => $p,
+    }, \$c);
+    return;
 }
 
 1;
