@@ -1,0 +1,38 @@
+test_setup('PetShop', 'groupware');
+home_page();
+login_as('root');
+follow_link('add_new_page');
+verify_text('OK (no validate)');
+submit_form(qr/^OK$/ => {
+    title => my $t = 'btest_' . random_string(),
+    anon => '^' . (my $l = random_string()),
+});
+verify_uri('validate');
+verify_text("$l: Not found");
+follow_link('edit_this_page');
+submit_form('OK (no validate)' => {
+    title => $t,
+    anon => "^$l",
+});
+test_deviance();
+verify_uri('validate');
+test_conformance();
+verify_no_text('Not found');
+visit_uri('/adm/su');
+submit_form(OK => {
+    email => 'site_adm',
+});
+visit_uri("/site/edit-wiki/$t");
+verify_text('OK (no validate)');
+do_logout();
+login_as('site_adm');
+visit_uri("/site/edit-wiki/$t");
+verify_no_text('OK (no validate)');
+submit_form('OK' => {
+    title => $t,
+    anon => "^$l",
+});
+verify_uri('validate');
+verify_text("$l: Not found");
+
+
