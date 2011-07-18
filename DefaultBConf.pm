@@ -13,12 +13,19 @@ sub merge_overrides {
 	    $proto->merge_class_loader({
 		delegates => {
 		    'Bivio::Agent::TaskId' => 'Bivio::Delegate::DefaultTaskId',
+		    'Bivio::Auth::Support' => 'Bivio::Delegate::NoDbAuthSupport',
 		},
 		maps => {
 		    Facade => ['Bivio::UI::Facade'],
 		},
 	    }),
 	    $proto->merge_http_log,
+	    'Bivio::Ext::DBI' => {
+		database => 'none',
+		user => 'none',
+		password => 'none',
+		connection => 'Bivio::SQL::Connection::None',
+	    },
 	    'Bivio::UI::Facade' => {
 		default => 'Default',
 		http_suffix => 'default.bivio.biz',
