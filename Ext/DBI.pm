@@ -39,9 +39,8 @@ sub connect {
     my($proto, $database) = @_;
     my($cfg) = Bivio::IO::Config->get($database);
 
-    Bivio::IO::Alert->warn(
-        "database not set, check 'BConf Bivio::Ext::DBI' section")
-            if $cfg->{database} eq 'none';
+    Bivio::Die->die("database not set, check 'BConf Bivio::Ext::DBI' section")
+        if $cfg->{database} eq 'none';
 
 #TODO: Is this really true
     # Mod_perl wipes out %ENV on each request, it seems...
