@@ -182,18 +182,20 @@ sub _next_row {
 
 sub _split {
     my($self) = @_;
-    (my $ics = ${$self->get('ics')}) =~ s/\r?\n //g;
+    (my $ics = ${$self->get('ics')}) =~ s/\r?\n( |\t)//g;
     $ics =~ s/(\r?\n)+/\n/g;
     return _header($self->put(rows => [
 	map({
 	    chomp($_);
 	    $_ =~ s/\s+$//;
 	    my($k, $v) = split(/\s*:\s*/, $_, 2);
+	    $v = defined($v) ? $v : '';
 	    $v =~ s/\\n/\n/ig;
 	    $v =~ s/\\([,;\\:"])/$1/g;
 	    # quotes are sometimes double escaped?
 	    $v =~ s/\\(["])/$1/g;
-	    [lc($k), $_HTML->unescape(${$_S->canonicalize_charset(\$v)})];
+	    [lc($k), ${$_S->canonicalize_charset(
+		$_HTML->unescape(${$_S->canonicalize_charset(\$v)}))}];
 	} split(/\r?\n/, $ics)),
     ]));
 }
