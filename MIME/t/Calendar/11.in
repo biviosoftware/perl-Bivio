@@ -1,0 +1,36 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+X-WR-CALNAME:Lannies Clocktower Cabaret
+BEGIN:VEVENT
+SUMMARY:Jill Sobule: Singer\, Songwriter\, Storyteller &#038\; Humorist
+URL;VALUE=URI:http://lannies.com/?p=9839
+SEQUENCE:
+UID:750-http://lannies.com/?p=9839
+DESCRIPTION:Friday\, June 24th at 8pm\nJill is insightful\, funny\, charism
+	atic\, charming\, and still their are no words to describe her talent.  A n
+	ationally renown recording artist in the top echelon of singer/songwriters 
+	in the country. Poignant\, topical and over-the-top brilliant. Jill's last 
+	show at Lannie's\, she teamed up with Julia Sweeney from Saturday Night Liv
+	e for an amazing sold out performance. This is her 4th appearance at Lannie
+	's. We are proud to have her back! \n [by: boxoffice]
+TRANSP:OPAQUE
+DTSTART;VALUE=DATE-TIME:20110625T020000Z
+DTEND;VALUE=DATE-TIME:20110625T020000Z
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Late Night: Midnite Martini&#8217\;s Sexy Circus Sideshow
+URL;VALUE=URI:http://lannies.com/?p=8017
+SEQUENCE:
+UID:786-http://lannies.com/?p=8017
+DESCRIPTION:NEXT SHOW - LATE NIGHT - Fri.\, July 29th at 11pm \nEVERY Frida
+	y at 11pm \nA virtual circus of mystery and fun that is sure to take you on
+	 a sensual journey into the variety/cirque world. A revolving show of varie
+	ty act artists: aerial artists\, belly dancers\, acrobats\, strong men\, ju
+	gglers\, stilt walkers\, musicians\, and comedians.  You never know what to
+	 expect. (Ask about our VIP tickets) A 21+ show - ID required. \n [by: boxo
+	ffice]
+TRANSP:OPAQUE
+DTSTART;VALUE=DATE-TIME:20110625T050000Z
+DTEND;VALUE=DATE-TIME:20110625T050000Z
+END:VEVENT
+END:VCALENDAR

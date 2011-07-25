@@ -1,0 +1,27 @@
+[
+    {
+	description => q{Friday, June 24th at 8pm
+Jill is insightful, funny, charismatic, charming, and still their are no words to describe her talent.  A nationally renown recording artist in the top echelon of singer/songwriters in the country. Poignant, topical and over-the-top brilliant. Jill's last show at Lannie's, she teamed up with Julia Sweeney from Saturday Night Live for an amazing sold out performance. This is her 4th appearance at Lannie's. We are proud to have her back!
+ [by: boxoffice]},
+	dtend => '2455738 7200',
+	dtstart => '2455738 7200',
+	sequence=> '',
+	summary=> 'Jill Sobule: Singer, Songwriter, Storyteller & Humorist',
+	time_zone => Bivio::Type::TimeZone->UTC,
+	uid => '750-http://lannies.com/?p=9839',
+	url => 'http://lannies.com/?p=9839'
+    },
+    {
+	description => q{NEXT SHOW - LATE NIGHT - Fri., July 29th at 11pm
+EVERY Friday at 11pm
+A virtual circus of mystery and fun that is sure to take you on a sensual journey into the variety/cirque world. A revolving show of variety act artists: aerial artists, belly dancers, acrobats, strong men, jugglers, stilt walkers, musicians, and comedians.  You never know what to expect. (Ask about our VIP tickets) A 21+ show - ID required.
+ [by: boxoffice]},
+	dtend => '2455738 18000',
+	dtstart => '2455738 18000',
+	sequence => '',
+	summary => q{Late Night: Midnite Martini's Sexy Circus Sideshow},
+	time_zone => Bivio::Type::TimeZone->UTC,
+	uid => '786-http://lannies.com/?p=8017',
+	url => 'http://lannies.com/?p=8017',
+    },
+];
