@@ -8,8 +8,8 @@ use Bivio::UI::DateTimeMode;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
+my($_FP) = b_use('Type.FilePath');
 my($_VT) = b_use('Type.MotionVote');
-
 
 sub WANT_COMMENT_LIST_ACTION {
     return 1;
@@ -162,8 +162,11 @@ sub internal_file_fields {
 	    ->put(cell_class => 'label label_ok'),
 	    If(['Model.MotionForm', 'Motion.motion_file_id'],
 	        Link(
-		    String([['Model.MotionForm', '->get_motion_document'],
-		        'path']),
+		    String([
+			$_FP, '->get_versionless_tail',
+			[['Model.MotionForm', '->get_motion_document'],
+			 'path'],
+		    ]),
 		    URI({
 			task_id => 'FORUM_FILE',
 			path_info => [['Model.MotionForm',
@@ -440,7 +443,7 @@ sub _file_link {
 		->load({realm_file_id => $mfid})) {
 	    if (my $path = $rf->unsafe_get('path')) {
 		return Link(
-		    String($path),
+		    String($_FP->get_versionless_tail($path)),
 		    URI({
 			task_id => 'FORUM_FILE',
 			path_info => $path,
