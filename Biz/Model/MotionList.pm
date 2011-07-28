@@ -58,7 +58,7 @@ sub internal_initialize {
 sub internal_post_load_row {
     my($self, $row) = @_;
     $row->{file_name} = defined($row->{'RealmFile.path'})
-	? $_FP->get_tail($row->{'RealmFile.path'})
+	? $_FP->get_versionless_tail($row->{'RealmFile.path'})
 	: undef;
     return shift->SUPER::internal_post_load_row(@_);
 }
