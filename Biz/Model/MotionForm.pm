@@ -95,7 +95,8 @@ sub _add_file {
 	->validate_file_name($self, 'file');
     return if $self->in_error;
     $self->req('Model.Motion')->update({
-	motion_file_id => $self->new_other('RealmFile')->create_with_content({
+	motion_file_id => $self->new_other('RealmFile')->create_or_update_with_content({
+	    override_is_read_only => 1,
 	    path => $self->MOTIONS_FOLDER . $name,
 	    is_read_only => 1,
 	}, $self->get('file')->{content})->get('realm_file_id'),
