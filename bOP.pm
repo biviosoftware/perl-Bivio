@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.3  2011/07/14 19:13:08  moeller
+  * Bivio::UI::View::Wiki
+    add buttons to top of wiki edit form
+  * Bivio::Util::User
+    when merging RealmFile records, override_is_read_only for updates
+
   Revision 11.2  2011/07/04 16:47:25  nagler
   * Bivio::DefaultBConf
     added facade and taskid
