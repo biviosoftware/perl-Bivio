@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.4  2011/07/28 20:08:24  moeller
+  * Bivio::Biz::Model::MotionForm
+    archive old same-named files when creating motion document
+  * Bivio::Biz::Model::MotionList
+    use versionless tail for file name
+  * Bivio::Biz::Model::WikiForm
+    add ok_no_validate_button
+  * Bivio::DefaultBConf
+    need to set NoDbAuthSupport explicitly
+  * Bivio::Ext::DBI
+    connect: die if db is not set
+  * Bivio::IO::Zip
+    minor refactoring
+  * Bivio::MIME::Calendar
+    allow continued line to start with a tab
+    allow empty values
+    canonicalize_charset for result from HTML->unescape()
+  * Bivio::UI::FacadeBase
+    add ok_no_validate_button to WikiForm
+  * Bivio::UI::View::Motion
+    use versionless tail when displaying motion file name
+  * Bivio::UI::View::Wiki
+    add ok_no_validate_button for sub/superusers
+
   Revision 11.3  2011/07/14 19:13:08  moeller
   * Bivio::UI::View::Wiki
     add buttons to top of wiki edit form
