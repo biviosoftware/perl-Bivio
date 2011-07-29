@@ -22,14 +22,8 @@ sub edit {
     my($self) = @_;
     return shift->edit_wysiwyg(@_)
 	if $self->use_wysiwyg;
-    my($req) = $self->req;
-    my($buttons) = join(' ',
-			('*ok_button',
-			 $req->is_super_user || $req->is_substitute_user
-			     ? 'ok_no_validate_button' : (),
-			 'cancel_button'));
     return $self->internal_body(vs_simple_form(WikiForm => [
-	$buttons,
+	_edit_wiki_buttons(),
 	'WikiForm.RealmFile.path_lc',
 	'WikiForm.RealmFile.is_public',
 	Join([
@@ -43,8 +37,8 @@ sub edit {
 		cols => $self->TEXT_AREA_COLS,
 	    }),
 	]),
-	$buttons,
-    ]));
+	_edit_wiki_buttons(),
+    ], 1));
 }
 
 sub edit_wysiwyg {
@@ -63,7 +57,8 @@ sub edit_wysiwyg {
 		cols => $self->TEXT_AREA_COLS,
 	    }),
 	]),
-    ]));
+	_edit_wiki_buttons(),
+    ], 1));
 }
 
 sub handle_config {
@@ -227,6 +222,20 @@ sub view {
 	    'b_help_wiki',
 	),
 	body => Wiki(),
+    );
+}
+
+sub _edit_wiki_buttons {
+    return If(Or(
+	['->is_super_user'],
+	['->is_substitute_user'],
+    ),
+        StandardSubmit({
+	    buttons => 'ok_button ok_no_validate_button cancel_button',
+	}),
+        StandardSubmit({
+	    buttons => 'ok_button cancel_button',
+	}),
     );
 }
 
