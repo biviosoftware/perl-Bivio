@@ -11,6 +11,7 @@ my($_T) = b_use('FacadeComponent.Text');
 my($_RM) = b_use('Action.RealmMail');
 my($_C) = b_use('IO.Config');
 my($_WN) = b_use('Type.WikiName');
+my($_ADMIN_USER_ATTR) = __PACKAGE__ . '.admin';
 
 sub ADMIN_REALM {
     return _facade()->SITE_ADMIN_REALM_NAME;
@@ -87,6 +88,11 @@ sub add_users_to_site_admin {
     return;
 }
 
+sub admin_user {
+    my($self) = @_;
+    return $self->req($_ADMIN_USER_ATTR);
+}
+
 sub forum_config {
 #TODO: NOT USED; need to convert init_realms to use this    
     my($self) = @_;
@@ -150,10 +156,11 @@ sub init_admin_user {
     my($req) = $self->initialize_fully;
     if ($req->is_test) {
 	$self->new_other('TestUser')->init_adm;
+	$self->req->put($_ADMIN_USER_ATTR => $self->req(qw(auth_user name)));
     }
     else {
 	$req->set_user(
-	    $req->get_if_exists_else_put(__PACKAGE__ . '.admin' => sub {
+	    $req->get_if_exists_else_put($_ADMIN_USER_ATTR => sub {
 	        return $req->unsafe_get_nested(qw(auth_user name))
 		    || $self->new_other('RealmAdmin')->create_user(
 			$self->convert_literal(
@@ -164,6 +171,8 @@ sub init_admin_user {
             ),
 	);
     }
+    $self->new_other('RealmRole')->make_super_user
+	unless $req->is_super_user;
     return $req;
 }
 
