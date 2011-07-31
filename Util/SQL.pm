@@ -187,7 +187,8 @@ sub create_db {
     # which contains C<*-tables.sql>, C<*-constraints.sql>, etc.
     #
     # See L<destroy_db|"destroy_db"> to see how you'd undo this operation.
-    $self->setup;
+    $self->initialize_fully;
+    $_C->rollback;
     foreach my $file (@{_ddl_files($self)}){
         # Set up new file so read_input returns new value each time
         $self->print('Executing ', $file, "\n");
@@ -281,6 +282,7 @@ sub destroy_db {
 	$_D->catch_quietly(sub {$self->run("DROP AGGREGATE $agg\n/\n");});
 	$_C->commit;
     }
+    $_C->commit;
     $self->use('Biz.File')->destroy_db;
     return;
 }
