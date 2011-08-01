@@ -161,7 +161,9 @@ sub init_admin_user {
     else {
 	$req->set_user(
 	    $req->get_if_exists_else_put($_ADMIN_USER_ATTR => sub {
-	        return $req->unsafe_get_nested(qw(auth_user name))
+	        return $req->get('auth_user_id')
+		    && !$req->get('auth_user')->is_default
+		    && $req->unsafe_get_nested(qw(auth_user name))
 		    || $self->new_other('RealmAdmin')->create_user(
 			$self->convert_literal(
 			    Email => $self->readline_stdin('Administrator email: '),
