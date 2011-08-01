@@ -229,6 +229,7 @@ sub make_super_user {
 	user_id => $self->req('auth_user_id'),
 	%$_SUPER_USER_QUERY,
     });
+    $self->req->set_user($self->req->get('auth_user'));
     return;
 }
 
@@ -287,6 +288,7 @@ sub unmake_super_user {
 	    || $self->usage_error('user not set'),
 	%$_SUPER_USER_QUERY,
     });
+    $self->req->set_user($self->req->get('auth_user'));
     return;
 }
 
