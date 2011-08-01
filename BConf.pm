@@ -102,7 +102,7 @@ sub default_merge_overrides {
 		package_filter => '/::Search/',
 	    },
 	    sql => {
-		call_filter => '$sub =~ /_trace_sql/',
+		call_filter => '$sub =~ /_trace_sql|_commit_or_rollback/',
 		package_filter => '/^Bivio::SQL::Connection$/',
 	    },
 	    stack => {
