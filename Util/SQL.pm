@@ -267,9 +267,13 @@ sub destroy_db {
     # Undoes the operations of L<create_db|"create_db">.
     $self->usage_error('You cannot destroy a production database.')
 	if $self->get_request->is_production;
-    $self->are_you_sure('DROP THE ENTIRE '
+    $self->are_you_sure(
+	'DROP THE ENTIRE '
 	. $_C->get_dbi_config->{database}
-	. ' DATABASE?');
+	. ' DATABASE and FILES AREA'
+	. b_use('Biz.File')->absolute_path('')
+        . '?',
+    );
     # We drop in opposite order.  Some constraint drops will
     # fail, but that's ok.  We need to drop the FOREIGN KEY
     # constraints so we can drop the tables.
@@ -283,7 +287,7 @@ sub destroy_db {
 	$_C->commit;
     }
     $_C->commit;
-    $self->use('Biz.File')->destroy_db;
+    b_use('Biz.File')->destroy_db;
     return;
 }
 
