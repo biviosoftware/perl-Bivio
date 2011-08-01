@@ -11,7 +11,7 @@ my($_IOF) = b_use('IO.File');
 my($_D) = b_use('Bivio.Die');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    directory => '/var/log/bop',
+    directory => $_C->REQUIRED,
     directory_mode => 0750,
     file_mode => 0640,
 });
