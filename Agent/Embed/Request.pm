@@ -14,6 +14,10 @@ sub get_form {
     return $self->get('form');
 }
 
+sub need_to_secure_task {
+    return 0;
+}
+
 sub new {
     my(undef, $req, $full_uri, $params) = @_;
     my($self) = shift->internal_new($params || {});
