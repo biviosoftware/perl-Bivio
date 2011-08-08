@@ -314,6 +314,24 @@ sub unit {
     });
 }
 
+sub weekly_build_output_to_wiki {
+    my($self, $msg) = @_;
+    $self->initialize_fully;
+    $msg ||= $self->read_input;
+    my($q) = {path => $_WN->to_absolute('WeeklyBuildOutput')};
+    my($rf) = $self->model('RealmFile');
+    my($curr) = "\@h1 WeeklyBuildOutput\n";
+    my($method) = 'create_with_content';
+    if ($rf->unsafe_load($q)) {
+	$curr = ${$rf->get_content};
+	$method = 'update_with_content';
+    }
+    $curr .= "\@pre\n${msg}\n\@\\pre\n";
+    print "$curr\n";
+    $rf->$method($q, \$curr);
+    return;
+}
+
 sub _expunge {
     my($self) = @_;
     # Deletes old test directories.
