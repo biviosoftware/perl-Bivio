@@ -1038,7 +1038,16 @@ sub info_mail {
 	    View.Mail->delete_form
 	    next=FORUM_MAIL_THREAD_ROOT_LIST
         )],
-#233-239
+	[qw(
+	    GROUP_MAIL_RECEIVE_WEEKLY_BUILD_OUTPUT
+	    234
+	    ANY_OWNER
+	    MAIL_SEND&FEATURE_MAIL
+	    Action.WeeklyBuildOutput
+	    Action.MailReceiveStatus
+	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+        )],
+#235-239
     ];
 }
 
