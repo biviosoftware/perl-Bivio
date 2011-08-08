@@ -28,9 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.5  2011/07/29 17:28:19  moeller
+  * Bivio::UI::View::Wiki
+    fixed baked in $req for wiki buttons, added wiki buttons to wysiwyg edit
+
   Revision 11.4  2011/07/28 20:08:24  moeller
   * Bivio::Biz::Model::MotionForm
     archive old same-named files when creating motion document
