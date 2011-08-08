@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::ForumUserDeleteForm;
 use strict;
-use base 'Bivio::Biz::Model::RealmUserDeleteForm';
+use Bivio::Base 'Bivio::Biz::Model::RealmUserDeleteForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -32,30 +32,17 @@ sub internal_initialize {
 
 sub _down {
     my($self) = @_;
-    foreach my $cid (@{$self->new_other('Forum')->map_iterate(
+    $self->new_other('Forum')->do_iterate(
 	sub {
-	    my($child) = @_;
-	    my($not_found) = 1;
-	    $self->new_other('RealmUser')->do_iterate(
-		sub {$not_found = 0},
-		'unauth_iterate_start',
-		'role',
-		{
-		    realm_id => $child->get('forum_id'),
-		    user_id => $self->get('User.user_id'),
-		},
-	    );
-	    return $not_found ? () : $child->get('forum_id');
+	    $self->execute($self->get_request, {
+		'User.user_id' => $self->get('User.user_id'),
+		'RealmUser.realm_id' => shift->get('forum_id'),
+	    });
 	},
 	'unauth_iterate_start',
 	'forum_id',
 	{parent_realm_id => $self->get('RealmUser.realm_id')},
-    )}) {
-	$self->execute($self->get_request, {
-	    'User.user_id' => $self->get('User.user_id'),
-	    'RealmUser.realm_id' => $cid,
-	});
-    }
+    );
     return;
 }
 
