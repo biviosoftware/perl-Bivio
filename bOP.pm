@@ -28,10 +28,44 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.6  2011/08/08 20:15:19  schellj
+  * Bivio::Agent::Embed::Request
+    override need_to_secure_task(),
+    embeded tasks don't need to switch to secure mode
+  * Bivio::BConf
+    also include commit_or_rollback in the sql filter
+  * Bivio::Biz::Model::ForumUserDeleteForm
+    fix for not finding RealmUser records in sub forums where none exist
+    in the parent forum
+  * Bivio::Biz::Util::RealmRole
+    set_user to reset cached values after un/make_super_user
+  * Bivio::IO::Log
+    require 'directory'
+  * Bivio::Test::Util
+    allow unit tests to run if acceptance tests failed
+  * Bivio::UI::FacadeBase
+    RCS file: /home/cvs/perl/Bivio/UI/FacadeBase.pm,v
+    Working file: Bivio/UI/FacadeBase.pm
+    head: 1.326
+    branch:
+    locks: strict
+    access list:
+    symbolic names:
+    keyword substitution: kv
+    total revisions: 326;	selected revisions: 0
+    description:
+  * Bivio::Util::SiteForum
+    improved init_admin_user
+    added admin_user()
+    don't set auth_user_id if the default in init_admin_user
+  * Bivio::Util::SQL
+    need to rollback on create_db, because facade init does queries which
+    are in error, and PG complains about that
+    clearer prompt on destroy_db
+
   Revision 11.5  2011/07/29 17:28:19  moeller
   * Bivio::UI::View::Wiki
     fixed baked in $req for wiki buttons, added wiki buttons to wysiwyg edit
