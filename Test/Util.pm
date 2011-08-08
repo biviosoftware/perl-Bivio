@@ -179,9 +179,19 @@ sub nightly {
 	$self->print("export PERLLIB=$ENV{PERLLIB}\n");
 	$self->print("export BCONF=$ENV{BCONF}\n");
 	$self->print("bivio test acceptance .\n");
-        $self->print($self->acceptance('.'));
+        my($acc_die) = $_D->catch(sub {
+	    $self->print($self->acceptance('.'));
+	    return;
+	});
 	$self->print("bivio test unit .\n");
-        $self->print($self->unit('.'));
+	my($unit_die) = $_D->catch(sub {
+	    $self->print($self->unit('.'));
+	    return;
+	});
+	$acc_die->throw
+	    if $acc_die;
+	$unit_die->throw
+	    if $unit_die;
         return;
     });
     # restore state before die is rethrown
