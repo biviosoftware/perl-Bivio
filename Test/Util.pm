@@ -318,16 +318,27 @@ sub weekly_build_output_to_wiki {
     my($self, $msg) = @_;
     $self->initialize_fully;
     $msg ||= $self->read_input;
+    $msg = $$msg
+	if ref($msg);
     my($q) = {path => $_WN->to_absolute('WeeklyBuildOutput')};
     my($rf) = $self->model('RealmFile');
     my($curr) = "\@h1 WeeklyBuildOutput\n";
     my($method) = 'create_with_content';
     if ($rf->unsafe_load($q)) {
-	$curr = ${$rf->get_content};
+	my($content) = ${$rf->get_content};
+	my($previous_date);
+	foreach my $line (split(/\n/, $content)) {
+	    if ($line =~ m{(\d{4}/\d{2}/\d{2}\s\d{2}:\d{2}:\d{2}).*starting}is) {
+		$previous_date = $self->convert_literal(DateTime => $1);
+		last;
+	    }
+	}
+	$curr = $content
+	    if defined($previous_date)
+		&& $_DT->delta_days($previous_date, $_DT->now) < 1;
 	$method = 'update_with_content';
     }
     $curr .= "\@pre\n${msg}\n\@\\pre\n";
-    print "$curr\n";
     $rf->$method($q, \$curr);
     return;
 }
