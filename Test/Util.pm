@@ -171,7 +171,7 @@ sub nightly {
         (my $bop = $_CFG->{nightly_cvs_dir}) =~ s{\w+$}{Bivio};
 	# Bivio/PetShop special case
 #TODO: Move Bivio/PetShop to PetShop
-	$bop =~ s{Bivio/Bivio}{Bivio};
+	my($is_petshop) = $bop =~ s{Bivio/Bivio}{Bivio};
         system("cvs -Q checkout '$_CFG->{nightly_cvs_dir}' '$bop'");
         $self->print("Completed CVS checkout of test files\n");
         $f->chdir($_CFG->{nightly_cvs_dir});
@@ -183,6 +183,9 @@ sub nightly {
 	    $self->print($self->acceptance('.'));
 	    return;
 	});
+	if ($is_petshop) {
+	    $f->chdir('..');
+	}
 	$self->print("bivio test unit .\n");
 	my($unit_die) = $_D->catch(sub {
 	    $self->print($self->unit('.'));
