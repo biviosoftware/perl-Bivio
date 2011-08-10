@@ -1101,6 +1101,7 @@ sub _cfg_mail {
 		},
 	    ),
 	    [GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT => undef],
+	    [GROUP_MAIL_RECEIVE_WEEKLY_BUILD_OUTPUT => undef],
 	    [MAIL_RECEIVE_DISPATCH =>
 		 sub {shift->get_facade->MAIL_RECEIVE_URI_PREFIX . '/*'}],
 	    [FORUM_MAIL_REFLECTOR => undef],
