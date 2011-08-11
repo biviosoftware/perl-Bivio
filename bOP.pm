@@ -28,9 +28,19 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.7  2011/08/08 23:59:32  schellj
+  * Bivio::Biz::Action::WeeklyBuildOutput
+    NEW
+  * Bivio::Delegate::TaskId
+    add GROUP_MAIL_RECEIVE_WEEKLY_BUILD_OUTPUT
+  * Bivio::Test::Util
+    add weekly_build_output_to_wiki
+    weekly_build_output_to_wiki - toss content older than one day
+
   Revision 11.6  2011/08/08 20:15:19  schellj
   * Bivio::Agent::Embed::Request
     override need_to_secure_task(),
