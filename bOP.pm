@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.8  2011/08/11 00:03:39  schellj
+  * Bivio::PetShop::Facade::PetShop
+    add GROUP_MAIL_RECEIVE_WEEKLY_BUILD_OUTPUT
+  * Bivio::Test::Util
+    run all unit tests for bOP, not just Bivio/PetShop
+  * Bivio::UI::FacadeBase
+    add GROUP_MAIL_RECEIVE_WEEKLY_BUILD_OUTPUT
+
   Revision 11.7  2011/08/08 23:59:32  schellj
   * Bivio::Biz::Action::WeeklyBuildOutput
     NEW
