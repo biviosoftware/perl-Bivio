@@ -3,10 +3,10 @@
 FieldWidget({
     field => 'gender',
     parse_return_regex =>
-	qr{^<input name="HTML_NAME"( checked="checked")? type="radio" value="(.*?)" />}s,
+	qr{^<input class="checkbox" id=".*?" type="radio" name="HTML_NAME"( checked="checked")? value="(.*?)" />}s,
 });
 [
-    [{test_value => b_use('Type.Gender')->MALE, label => 'x', value => b_use('Type.Gender')->MALE}] => ' checked="checked";2',
-    [{test_value => b_use('Type.Gender')->FEMALE, label => 'x', value => b_use('Type.Gender')->MALE}] => ';2',
-    [{test_value => undef, label => 'x', value => b_use('Type.Gender')->MALE}] => ';2',
+    [{test_value => b_use('Type.Gender')->MALE, label => 'x', on_value => b_use('Type.Gender')->MALE}] => ' checked="checked";2',
+    [{test_value => b_use('Type.Gender')->FEMALE, label => 'x', on_value => b_use('Type.Gender')->MALE}] => ';2',
+    [{test_value => undef, label => 'x', on_value => b_use('Type.Gender')->MALE}] => ';2',
 ];
