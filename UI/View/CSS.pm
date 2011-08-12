@@ -111,7 +111,7 @@ form .sep a {
 .trailer {
   margin: 1ex 0;
 }
-input.checkbox {
+.field .checkbox {
   padding: 0;
   margin: 0;
 }
@@ -120,9 +120,6 @@ span.checkbox_label {
 }
 td.checkbox {
  text-align: center;
-}
-form .check {
-  padding-left: .5em;
 }
 .acknowledgement,
 .err_title,
