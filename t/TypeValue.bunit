@@ -15,5 +15,8 @@ my($_I) = Integer();
     [Role(), Role('USER')] => [
         as_string => 'Bivio::Auth::Role[User]',
     ],
+    [Role(), [Role('USER'), Role('MEMBER')]] => [
+        as_string => 'Bivio::Auth::Role[User,Member]',
+    ],
 ];
 
