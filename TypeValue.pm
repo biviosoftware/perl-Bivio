@@ -11,7 +11,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub as_string {
     my($self) = @_;
     my($t) = $self->get('type');
-    return (ref($t) || $t) . '[' . $t->to_string($self->get('value')) . ']';
+    my($v) = $self->get('value');
+    return (ref($t) || $t)
+	. '['
+	. join(',', map($t->to_string($_), ref($v) eq 'ARRAY' ? @$v : $v))
+	. ']';
 }
 
 sub equals {
