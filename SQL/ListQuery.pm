@@ -692,8 +692,11 @@ sub _parse_order_by {
 	    _die($die, 'CORRUPT_QUERY', 'invalid order_by',
 		    $orig_value) unless $value =~ s/^(\d+)([ad])//;
 	    my($index, $dir) = ($1, $2);
-	    _die($die, 'CORRUPT_QUERY', 'unknown order_by column',
-		    $index) unless $order_by->[$index];
+	    unless ($order_by->[$index]) {
+		b_warn('unknown order_by column: ', $index);
+		@$res = ();
+		return;
+	    }
 	    push(@$res, $order_by->[$index], $dir eq 'a' ? 1 : 0);
 	}
     }
