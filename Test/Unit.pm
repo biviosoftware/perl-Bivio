@@ -54,7 +54,7 @@ use File::Spec ();
 #     ];
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS, $_SELF);
+our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS, $_SELF, $_BUNIT);
 our($_PROTO) = __PACKAGE__;
 my($_CL) = b_use('IO.ClassLoader');
 my($_A) = b_use('IO.Alert');
@@ -120,6 +120,13 @@ sub builtin_auth_realm {
 
 sub builtin_auth_user {
     return shift->builtin_req()->get('auth_user');
+}
+
+sub builtin_bunit_base_name {
+    my($self) = @_;
+    b_die('bunit_base_name: not a bunit')
+	unless $_BUNIT =~ /(\w+)\.bunit$/;
+    return $1;
 }
 
 sub builtin_case_tag {
@@ -482,6 +489,7 @@ sub run {
     local($_TYPE, $_CLASS);
     local($_OPTIONS) = {};
     local($_PROTO) = $proto->package_name;
+    local($_BUNIT) = $bunit;
     my($t) = $_D->eval_or_die(
 	"package $_PROTO;use strict;" . ${$_F->read($bunit)});
     $_TYPE ||= $_PROTO;
