@@ -14,7 +14,7 @@ sub generate_cases {
 	$_ =~ m{/(\d+)\.in$} ? ($1 => 0) : (),
 	glob(
 	    $_FP->join(
-		$self->builtin_class->simple_package_name,
+		$self->builtin_bunit_base_name,
 		'*',
 	    ),
 	),
@@ -28,13 +28,13 @@ sub new_unit {
 	    my(undef, $params) = @_;
 	    my($in) = $_F->absolute_path(
 		$_FP->join(
-		    $self->builtin_class()->simple_package_name,
+		    $self->builtin_bunit_base_name,
 		    "$params->[0].in",
 		),
 	    );
 	    $self->builtin_go_dir(
 		$_FP->join(
-		    $self->builtin_class()->simple_package_name,
+		    $self->builtin_bunit_base_name,
 		    $params->[0],
 		),
 	    );
