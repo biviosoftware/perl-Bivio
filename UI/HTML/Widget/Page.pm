@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Page;
 use strict;
@@ -115,6 +115,7 @@ sub initialize {
     $self->initialize_attr('body');
     $self->unsafe_initialize_attr('background');
     $self->unsafe_initialize_attr('body_class');
+    $self->unsafe_initialize_attr('html_tag_attrs');
     $self->internal_initialize_head_attrs(@_);
     return;
 }
@@ -181,7 +182,9 @@ sub render {
 #	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
 	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
         : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">')
-	. "\n<html><head>\n"
+	. "\n<html"
+	. $self->render_simple_attr(html_tag_attrs => $source)
+	. "><head>\n"
 	. $self->internal_render_head_attrs($source)
 	. '</head><body';
     # Always have a background color
