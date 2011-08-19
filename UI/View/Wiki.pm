@@ -156,7 +156,7 @@ sub version_list {
 		column_data_class => 'check',
 		column_heading => $_,
 		column_widget => Radio($_,
-		    [['->get_list_model'], 'RealmFile.realm_file_id']),
+		    [['->get_list_model'], 'RealmFile.realm_file_id'], ''),
 		$_ eq 'compare'
 		    ? (control => [['->get_list_model'], '->get_cursor']) : (),
 	    }, qw(selected compare)),
