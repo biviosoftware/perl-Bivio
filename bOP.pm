@@ -28,10 +28,24 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.9  2011/08/12 16:04:02  moeller
+  * Bivio::UI::HTML::Widget::Checkbox
+    refactored to allow Radio widget to subclass
+    added label tag around label text
+  * Bivio::UI::HTML::Widget::RadioGrid
+    Radio.value --> Radio.on_value
+  * Bivio::UI::HTML::Widget::Radio
+    refactored, now a subclass of Checkbox
+  * Bivio::UI::HTML::Widget::YesNo
+    refactored, now uses Radio widgets
+  * Bivio::UI::View::CSS
+    cleanup checkbox css
+  * Bivio::UI::View::Wiki
+    Radio.value --> Radio.on_value
+
   Revision 11.8  2011/08/11 00:03:39  schellj
   * Bivio::PetShop::Facade::PetShop
     add GROUP_MAIL_RECEIVE_WEEKLY_BUILD_OUTPUT
