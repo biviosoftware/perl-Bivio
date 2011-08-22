@@ -127,6 +127,7 @@ EOF
 # By: Bivio::Util::LinuxConfig
 ################################################################
 NETWORKING=yes
+NETWORKING_IPV6=yes
 HOSTNAME=one.example.com
 EOF
 	],
