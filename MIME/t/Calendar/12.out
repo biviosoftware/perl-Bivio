@@ -1,0 +1,22 @@
+[
+    {
+	description => 'Away',
+	dtend => '2455871 14400',
+	dtstart => '2455871 3600',
+	location => 'Salt Lake City  Utah',
+	summary => 'Colorado Soccer vs. *Utah',
+	time_zone => Bivio::Type::TimeZone->AMERICA_DENVER,
+	tzid => 'America/Denver',
+	uid => 'CAL.3326885.20111104',
+    },
+    {
+	description => 'Away',
+	dtend => '2455886 79199',
+	dtstart => '2455885 79199',
+	location => 'Pasadena  Calif.',
+	summary => 'Colorado Football vs. *UCLA',
+	time_zone => Bivio::Type::TimeZone->AMERICA_DENVER,
+	tzid => 'America/Denver',
+	uid => 'CAL.3229927.20111119',
+    },
+]
