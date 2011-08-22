@@ -52,7 +52,7 @@ sub internal_initialize {
             motion_id => ['PrimaryId', 'PRIMARY_KEY'],
 	    name => ['Line', 'NOT_NULL'],
 	    name_lc => ['Line', 'NOT_NULL'],
-	    question => ['Text', 'NOT_NULL'],
+	    question => ['Text64K', 'NOT_NULL'],
 	    status => ['MotionStatus', 'NOT_NULL'],
 	    type => ['MotionType', 'NOT_NULL'],
 	    start_date_time => ['DateTime', 'NONE'],

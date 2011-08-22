@@ -1578,6 +1578,16 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_motion_question_64k {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE motion_t
+    ALTER COLUMN question TYPE TEXT64K
+/
+EOF
+    return;
+}
+
 sub internal_upgrade_db_motion_vote_aff_drop_not_null {
     my($self) = @_;
     $self->initialize_fully;
