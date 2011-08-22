@@ -503,7 +503,7 @@ SSLSessionCacheTimeout 300
 v1:SSLMutex file:logs/ssl_mutex
 v2:SSLMutex sem
 v2:SSLProtocol SSLv3
-SSLLog logs/error_log
+v1:SSLLog logs/error_log
 SSLLogLevel warn
 EOF
 	$vars->{ssl_mdc}
