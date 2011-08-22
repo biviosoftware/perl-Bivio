@@ -170,7 +170,8 @@ sub _app_vars {
 	if $app eq $_HTTPD_VARS->{app};
     $vars->{content} = <<"EOF";
 PerlWarn on
-PerlFreshRestart off
+v1:PerlFreshRestart off
+v2:PerlModule Apache2::compat
 PerlSetEnv BCONF $bconf
 @{[$vars->{trans_handler} ? 'PerlTransHandler ' . $vars->{trans_handler} : '']}
 # Override the translation handler to avoid local file permission checks
