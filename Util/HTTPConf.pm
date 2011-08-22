@@ -504,7 +504,7 @@ v1:SSLMutex file:logs/ssl_mutex
 v2:SSLMutex sem
 v2:SSLProtocol SSLv3
 v1:SSLLog logs/error_log
-SSLLogLevel warn
+v1:SSLLogLevel warn
 EOF
 	$vars->{ssl_mdc}
 	    ? _replace_vars($vars->{httpd}, "httpd_content", <<'EOF') : (),
