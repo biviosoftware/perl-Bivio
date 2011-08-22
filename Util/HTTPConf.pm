@@ -711,7 +711,6 @@ STOP_TIMEOUT=${STOP_TIMEOUT-10}
 
 start() {
         echo -n $"Starting $prog: "
-        check13 || exit 1
         LANG=$HTTPD_LANG daemon --pidfile=${pidfile} $httpd -f $conffile $OPTIONS
         RETVAL=$?
         echo
