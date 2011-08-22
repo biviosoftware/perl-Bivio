@@ -703,7 +703,7 @@ fi
 HTTPD_LANG=${HTTPD_LANG-"C"}
 INITLOG_ARGS=""
 httpd=${HTTPD-/usr/sbin/httpd}
-prog=$(basename $b_httpd_app)
+prog=$(basename ${b_httpd_app-$httpd})
 pidfile=${PIDFILE-/var/run/$prog.pid}
 conffile=${CONFFILE-/etc/httpd/conf/$prog.conf}
 lockfile=${LOCKFILE-/var/lock/subsys/$prog}
