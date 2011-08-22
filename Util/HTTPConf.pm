@@ -7,6 +7,11 @@ use Bivio::Base 'Bivio.ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_SA) = b_use('Type.StringArray');
+my($_STRIP_VERSION) = b_use('Agent.Request')->if_apache_version(
+    2, 
+    qr{^\s*v1:.*\n|\bv2:}m,
+    qr{^\s*v2:.*\n|\bv1:}m,
+);
 my($_DATA);
 my($_VARS) = {
     is_production => 0,
@@ -166,7 +171,8 @@ PerlModule Bivio::Agent::HTTP::Dispatcher
 
 <Location />
     SetHandler perl-script
-    PerlHandler Bivio::Agent::HTTP::Dispatcher
+v1:    PerlHandler Bivio::Agent::HTTP::Dispatcher
+v2:    PerlResponseHandler Bivio::Agent::HTTP::Dispatcher
 </Location>
 EOF
     Bivio::Die->die(
@@ -323,8 +329,64 @@ sub _conf_txt {
 sub _httpd_conf {
     my($vars) = @_;
     return _replace_vars_for_file($vars, 'httpd_conf', <<'EOF');
-ResourceConfig /dev/null
-AccessConfig /dev/null
+v1:ResourceConfig /dev/null
+v1:AccessConfig /dev/null
+v2:
+v2:# The order of this list matters a bit
+v2:#? LoadModule actions_module modules/mod_actions.so
+v2:LoadModule alias_module modules/mod_alias.so
+v2:#? LoadModule auth_basic_module modules/mod_auth_basic.so
+v2:#? LoadModule auth_digest_module modules/mod_auth_digest.so
+v2:#? LoadModule authn_alias_module modules/mod_authn_alias.so
+v2:#? LoadModule authn_anon_module modules/mod_authn_anon.so
+v2:#? LoadModule authn_dbm_module modules/mod_authn_dbm.so
+v2:#? LoadModule authn_default_module modules/mod_authn_default.so
+v2:#? LoadModule authn_file_module modules/mod_authn_file.so
+v2:#? LoadModule authnz_ldap_module modules/mod_authnz_ldap.so
+v2:#? LoadModule authz_dbm_module modules/mod_authz_dbm.so
+v2:#? LoadModule authz_default_module modules/mod_authz_default.so
+v2:#? LoadModule authz_groupfile_module modules/mod_authz_groupfile.so
+v2:#? LoadModule authz_host_module modules/mod_authz_host.so
+v2:#? LoadModule authz_owner_module modules/mod_authz_owner.so
+v2:#? LoadModule authz_user_module modules/mod_authz_user.so
+v2:LoadModule autoindex_module modules/mod_autoindex.so
+v2:#? LoadModule cache_module modules/mod_cache.so
+v2:LoadModule cgi_module modules/mod_cgi.so
+v2:#? LoadModule dav_module modules/mod_dav.so
+v2:#? LoadModule dav_fs_module modules/mod_dav_fs.so
+v2:LoadModule deflate_module modules/mod_deflate.so
+v2:LoadModule dir_module modules/mod_dir.so
+v2:#? LoadModule disk_cache_module modules/mod_disk_cache.so
+v2:LoadModule env_module modules/mod_env.so
+v2:#? LoadModule expires_module modules/mod_expires.so
+v2:#? LoadModule ext_filter_module modules/mod_ext_filter.so
+v2:#? LoadModule file_cache_module modules/mod_file_cache.so
+v2:#? LoadModule headers_module modules/mod_headers.so
+v2:#? LoadModule include_module modules/mod_include.so
+v2:LoadModule info_module modules/mod_info.so
+v2:#? LoadModule ldap_module modules/mod_ldap.so
+v2:LoadModule log_config_module modules/mod_log_config.so
+v2:#? LoadModule logio_module modules/mod_logio.so
+v2:#? LoadModule mem_cache_module modules/mod_mem_cache.so
+v2:#? LoadModule mime_magic_module modules/mod_mime_magic.so
+v2:LoadModule mime_module modules/mod_mime.so
+v2:#? LoadModule negotiation_module modules/mod_negotiation.so
+v2:LoadModule perl_module modules/mod_perl.so
+v2:LoadModule proxy_module modules/mod_proxy.so
+v2:#? LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
+v2:#? LoadModule proxy_connect_module modules/mod_proxy_connect.so
+v2:#? LoadModule proxy_ftp_module modules/mod_proxy_ftp.so
+v2:#? LoadModule proxy_http_module modules/mod_proxy_http.so
+v2:LoadModule rewrite_module modules/mod_rewrite.so
+v2:LoadModule setenvif_module modules/mod_setenvif.so
+v2:#? LoadModule speling_module modules/mod_speling.so
+v2:LoadModule ssl_module modules/mod_ssl.so
+v2:LoadModule status_module modules/mod_status.so
+v2:#? LoadModule suexec_module modules/mod_suexec.so
+v2:#? LoadModule userdir_module modules/mod_userdir.so
+v2:#? LoadModule usertrack_module modules/mod_usertrack.so
+v2:#? LoadModule version_module modules/mod_version.so
+v2:LoadModule vhost_alias_module modules/mod_vhost_alias.so
 
 Listen $listen$ssl_listen
 
@@ -346,8 +408,8 @@ LimitRequestBody $limit_request_body
 
 ServerRoot /etc/httpd
 PidFile $pid_file
-LockFile $lock_file
-ScoreBoardFile $log_directory/apache_runtime_status
+v1:LockFile $lock_file
+v1:ScoreBoardFile $log_directory/apache_runtime_status
 TypesConfig /etc/mime.types
 DefaultType text/plain
 UseCanonicalName Off
@@ -440,7 +502,9 @@ EOF
 Listen 443
 SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
-SSLMutex file:logs/ssl_mutex
+v1:SSLMutex file:logs/ssl_mutex
+v2:SSLMutex sem
+v2:SSLProtocol SSLv3
 SSLLog logs/error_log
 SSLLogLevel warn
 EOF
@@ -501,6 +565,7 @@ sub _replace_vars {
 	defined($vars->{$1}) ? $vars->{$1}
 	    : Bivio::Die->die("$1: in template ($name), but not in ", $vars)
     }xseg;
+    $template =~ s/$_STRIP_VERSION//mg;
     return $template;
 }
 
