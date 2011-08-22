@@ -95,7 +95,6 @@ sub _event {
 	}
 	elsif ($k eq 'tzid') {
 	    $ve->{time_zone} = $_TZ->from_any($v);
-#TODO: apply time_zone to dtstart & dtend
 
 	    foreach my $key (qw(dtstart dtend)) {
 		_die($self, 'tzid found, but missing field: ', $key)
