@@ -67,6 +67,7 @@ my($_BUNDLE) = [qw(
     motion_comment
     motion3
     motion_comment_64k
+    motion_question_64k
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
