@@ -6,7 +6,7 @@ use Bivio::Base 'Bivio::ShellUtil';
 use Sys::Hostname ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_V2) = b_use('Agent.Request')->if_apache_version(2 => sub {1});
+my($_V2) = b_use('Agent.Request')->if_apache_version(2);
 my($_HTTPD) = _find_file($_V2 ? qw(
     /usr/local/apache/bin/httpd2
     /usr/sbin/httpd2
@@ -119,6 +119,7 @@ sub run {
     open(OUT, ">$pwd/$conf") || die("open $conf: $!");
     my($apache_status) = $_V2 ? 'PerlResponseHandler Apache2::Status'
 	: 'PerlHandler Apache::Status';
+    my($perl_handler) = $_V2 ? 'PerlResponseHandler' : 'PerlHandler';
     my($version_config) = $_V2 ? <<'2' : <<'1';
 PerlModule Apache2::compat
 2
@@ -282,7 +283,7 @@ ErrorDocument 413 /m/upload-too-large.html
 <VirtualHost *:$port>
     <Location />
         SetHandler perl-script
-        PerlHandler $handler
+        $perl_handler $handler
     </Location>
     <Location /s>
         SetHandler perl-script
