@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.10  2011/08/22 16:28:57  schellj
+  * Bivio::Biz::Model::Motion
+    Change motion question to Text64K
+  * Bivio::SQL::DDL
+    Change motion question to Text64K
+  * Bivio::SQL::ListQuery
+    changed CORRUPT_QUERY die to a warn when unknown order by column is
+    used. clears the order_by and continues instead.
+  * Bivio::Test::ShellUtilConf
+    use builtin_bunit_base_name not simple_package_name
+  * Bivio::Test::Unit
+    added builtin_bunit_base_name
+  * Bivio::TypeValue
+    fixed as_string() for values with multiple items
+  * Bivio::UI::HTML::Widget::Page
+    added html_tag_attrs
+  * Bivio::UI::View::Wiki
+    added blank label to version_list() radios
+  * Bivio::UI::XHTML::Widget::Page3
+    use qualified class, not package
+  * Bivio::Util::SQL
+    Change motion question to Text64K
+    add motion_question_64k to bundle
+
   Revision 11.9  2011/08/12 16:04:02  moeller
   * Bivio::UI::HTML::Widget::Checkbox
     refactored to allow Radio widget to subclass
