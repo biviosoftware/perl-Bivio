@@ -76,6 +76,7 @@ sub _event {
 		|priority
 		|transp
 	        |x-lic-error
+		|contact
 	    )(?:$|;)}x;
 	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date(?:-time)?)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
@@ -91,6 +92,17 @@ sub _event {
 	    $v = $is_date || $is_gmt
 		? $t
 		: $ve->{time_zone}->date_time_to_utc($t);
+	}
+	elsif ($k eq 'tzid') {
+	    $ve->{time_zone} = $_TZ->from_any($v);
+#TODO: apply time_zone to dtstart & dtend
+
+	    foreach my $key (qw(dtstart dtend)) {
+		_die($self, 'tzid found, but missing field: ', $key)
+		    unless $ve->{$key};
+		next if $_DT->is_date($ve->{$key});
+		$ve->{$key} = $ve->{time_zone}->date_time_to_utc($ve->{$key});
+	    }
 	}
 	elsif ($k eq 'begin') {
 	    _die($self, 'unknown event subentry')
