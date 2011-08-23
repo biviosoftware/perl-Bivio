@@ -7,18 +7,11 @@ use Bivio::Base 'Bivio.ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_SA) = b_use('Type.StringArray');
-my($_STRIP_VERSION) = b_use('Agent.Request')->if_apache_version(
-    2,
-    qr{^\s*v1:.*\n|\bv2:}m,
-    qr{^\s*v2:.*\n|\bv1:}m,
-);
+my($_V2) = b_use('Agent.Request')->if_apache_version(2, 1, 0);
+my($_STRIP_VERSION) = $_V2 ? qr{^\s*v1:.*\n|\bv2:}m : qr{^\s*v2:.*\n|\bv1:}m;
 my($_INIT_RC_V1);
 my($_INIT_RC_V2);
-my($_INIT_RC) = b_use('Agent.Request')->if_apache_version(
-    2,
-    \$_INIT_RC_V2,
-    \$_INIT_RC_V1,
-);
+my($_INIT_RC) = $_V2 ? \$_INIT_RC_V2 : \$_INIT_RC_V1;
 my($_DATA);
 my($_VARS) = {
     is_production => 0,
@@ -35,7 +28,7 @@ my($_VARS) = {
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     timeout => 120,
-    trans_handler => 'Apache::OK',
+    trans_handler => $_V2 ? 'Apache::Constants::OK' : 'Apache::OK',
     servers => 4,
     httpd_init_rc => '/etc/rc.d/init.d/httpd',
     httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
@@ -384,7 +377,7 @@ v2:LoadModule proxy_module modules/mod_proxy.so
 v2:#? LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
 v2:#? LoadModule proxy_connect_module modules/mod_proxy_connect.so
 v2:#? LoadModule proxy_ftp_module modules/mod_proxy_ftp.so
-v2:#? LoadModule proxy_http_module modules/mod_proxy_http.so
+v2:LoadModule proxy_http_module modules/mod_proxy_http.so
 v2:LoadModule rewrite_module modules/mod_rewrite.so
 v2:LoadModule setenvif_module modules/mod_setenvif.so
 v2:#? LoadModule speling_module modules/mod_speling.so
