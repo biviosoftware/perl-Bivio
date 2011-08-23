@@ -441,7 +441,7 @@ sub postgres_base {
 	$self, '/var/lib/pgsql/data/postgresql.conf',
 	['#*\s*(timezone\s*=\s*)', 'UTC'],
     ) . _replace_param($self, '/var/lib/pgsql/data/pg_hba.conf',
-	['(local.*)ident sameuser', 'trust'],
+	['(local.*)ident(?:\s+sameuser)?', 'trust'],
     ) . _optional(
 	$self, '/etc/rc.d/init.d/postgresql',
 	\&_replace_param,
