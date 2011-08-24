@@ -21,6 +21,7 @@ b_use('IO.Config')->register(my $_CFG = {
     nightly_output_dir => '/tmp/test-run',
     nightly_cvs_dir => 'perl/Bivio',
 });
+my($_F) = b_use('IO.File');
 
 sub USAGE {
     # Returns usage.
@@ -402,9 +403,12 @@ sub _make_nightly_dir {
     my($dir) = $_CFG->{nightly_output_dir} . '/' . $_DT->local_now_as_file_name;
     b_die($dir, ': dir exists; move out of the way')
         if -d $dir;
-    b_use('IO.File')->mkdir_p($dir);
-    b_use('IO.File')->chdir($dir);
+    $_F->mkdir_p($dir);
+    $_F->chdir($dir);
     $self->print("Created $dir\n");
+    $_F->chdir('..');
+    b_die($!, ': could not create symbolic link')
+	unless symlink($dir, 'latest');
     return $dir;
 }
 
