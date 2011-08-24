@@ -271,7 +271,7 @@ sub destroy_db {
     $self->are_you_sure(
 	'DROP THE ENTIRE '
 	. $_C->get_dbi_config->{database}
-	. ' DATABASE and FILES AREA'
+	. ' DATABASE and FILES AREA '
 	. b_use('Biz.File')->absolute_path('')
         . '?',
     );
