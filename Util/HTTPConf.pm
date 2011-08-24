@@ -28,7 +28,7 @@ my($_VARS) = {
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     timeout => 120,
-    trans_handler => $_V2 ? 'Apache::Constants::OK' : 'Apache::OK',
+    trans_handler => 'Bivio::Ext::ApacheConstants::OK',
     servers => 4,
     httpd_init_rc => '/etc/rc.d/init.d/httpd',
     httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
@@ -166,9 +166,10 @@ PerlWarn on
 v1:PerlFreshRestart off
 v2:PerlModule Apache2::compat
 PerlSetEnv BCONF $bconf
-@{[$vars->{trans_handler} ? 'PerlTransHandler ' . $vars->{trans_handler} : '']}
 # Override the translation handler to avoid local file permission checks
+PerlModule Bivio::Ext::ApacheConstants
 PerlModule Bivio::Agent::HTTP::Dispatcher
+@{[$vars->{trans_handler} ? 'PerlTransHandler ' . $vars->{trans_handler} : '']}
 
 <Location />
     SetHandler perl-script
