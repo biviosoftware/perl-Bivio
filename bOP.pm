@@ -28,9 +28,16 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.11  2011/08/22 18:50:24  nagler
+  * Bivio::Util::HTTPConf
+    support apache v2
+  * Bivio::Util::HTTPD
+    better support v2
+
   Revision 11.10  2011/08/22 16:28:57  schellj
   * Bivio::Biz::Model::Motion
     Change motion question to Text64K
