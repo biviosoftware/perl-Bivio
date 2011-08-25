@@ -31,7 +31,9 @@ use Bivio::Base 'UI.Widget';
 #
 # The fifth optional element is a widget value which returns the realm
 # for the task.
-
+#
+# The sixth optional element is a widget value which returns the 'path_info'
+#
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = b_use('UIHTML.ViewShortcuts');
 my($_T) = b_use('Agent.TaskId');
@@ -68,6 +70,7 @@ sub initialize {
 		    $v->[2] || 'THIS_DETAIL')),
 	    control => $v->[3],
             realm => $v->[4],
+	    path_info => $v->[5],
 	});
     }
     return;
@@ -140,6 +143,9 @@ sub _render_link {
     my($realm) = ref($v->{realm})
         ? $self->render_simple_value($v->{realm}, $source) || undef
         : $v->{realm};
+    my($path_info) = ref($v->{path_info})
+        ? $self->render_simple_value($v->{path_info}, $source) || undef
+        : $v->{path_info};
     return 0
 	unless $source->req->can_user_execute_task($v->{task_id}, $realm);
     $$buffer .= $sep
@@ -156,7 +162,7 @@ sub _render_link {
                     task_id => $v->{task_id},
                     query => undef,
                     realm => _realm_name($self, $source, $realm),
-                    path_info => undef,
+                    path_info => $path_info,
                 }),
 	    ),
 	)
