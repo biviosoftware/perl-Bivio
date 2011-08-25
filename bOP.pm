@@ -28,10 +28,36 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.12  2011/08/24 20:56:24  schellj
+  * Bivio::MIME::Calendar
+    ignore contact
+    apply tzid to dtstart, dtend if present
+    removed TODO
+  * Bivio::Test::Util
+    create symlink 'latest' to latest nightly cvs dir
+  * Bivio::Util::HTTPConf
+    interim checking for apache2 so have original /etc/rc.d/init.d/httpd
+    from apache2
+    $_INIT_RC_V2 should work for apache2
+    fpc
+    PerlFreshRestart is not an apache2 command, need Apache2::compat
+    fpc
+    no SSLLog in v2
+    no SSLLogLevel
+    need mod_authz_host
+    trans_handler by default is Apache::Constants::OK
+    trans_handler uses Ext.ApacheConstants, because v1 & v2 are so
+    different (and screwed up)
+  * Bivio::Util::LinuxConfig
+    postgres_base: need to have sameuser as optional
+  * Bivio::Util::SQL
+    fmt
+  * Bivio::Util::SSL
+    need to set_serial
+
   Revision 11.11  2011/08/22 18:50:24  nagler
   * Bivio::Util::HTTPConf
     support apache v2
