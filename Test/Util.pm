@@ -407,6 +407,8 @@ sub _make_nightly_dir {
     $_F->chdir($dir);
     $self->print("Created $dir\n");
     $_F->chdir('..');
+    unlink('latest')
+	if -l 'latest';
     b_die($!, ': could not create symbolic link')
 	unless symlink($dir, 'latest');
     return $dir;
