@@ -406,11 +406,11 @@ sub _make_nightly_dir {
     $_F->mkdir_p($dir);
     $_F->chdir($dir);
     $self->print("Created $dir\n");
-    $_F->chdir('..');
-    unlink('latest')
-	if -l 'latest';
+    my($latest_link) = $_CFG->{nightly_output_dir} . '/latest';
+    unlink($latest_link)
+	if -l $latest_link;
     b_die($!, ': could not create symbolic link')
-	unless symlink($dir, 'latest');
+	unless symlink($dir, $latest_link);
     return $dir;
 }
 
