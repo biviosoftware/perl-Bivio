@@ -154,15 +154,12 @@ sub _net {
 sub _net_ptr {
     my($zone, $cfg, $ptr_map) = @_;
     my($im) = $ptr_map->{$cfg->{cidr}};
-    my($cidr) = $cfg->{cidr};
-    my($ptr) = $ptr_map->{$cidr};
+    my($cidr_obj) = $_CIDRN->from_literal_or_die($cfg->{cidr});
+    my($ptr) = $ptr_map->{$cfg->{cidr}};
     return @{
-	$_CIDRN
-	    ->from_literal_or_die($cidr)
-	    ->map_host_addresses(sub {
+	$cidr_obj->map_host_addresses(sub {
 		my($full) = @_;
-#TODO: Should we make this work with other than Class C CIDRs?
-		my($num) = $full =~ /(\d+)$/;
+		my($num) = $cidr_obj->address_to_host_num($full);
 		my($yes) = $ptr->{$full}->{yes} || [];
 		my($no) = $ptr->{$full}->{no} || [];
 		return ()
@@ -173,8 +170,8 @@ sub _net_ptr {
 		    if !@$yes && @$no;
 		b_die($yes, ': too many PTR records for ', $full)
 		    unless @$yes <= 1;
-	        return "$num IN PTR $yes->[0]";
-	    })
+		return "$num IN PTR $yes->[0]";
+	})
     };
 }
 
@@ -304,11 +301,11 @@ sub _zone_ipv4_map {
     return map(
 	{
 	    my($cidr, $net_cfg) = ($_, $ipv4->{$_});
-	    @{$_CIDRN->from_literal_or_die($_)
-		->map_host_addresses(
+	    my($cidr_obj) = $_CIDRN->from_literal_or_die($cidr);
+	    @{$cidr_obj->map_host_addresses(
 		    sub {
 			my($ip) = @_;
-			my($num) = $ip =~ /\.(\d+)$/;
+			my($num) = $cidr_obj->address_to_host_num($ip);
 			return
 			    unless $net_cfg->{$num};
 			my($hosts) = $net_cfg->{$num};
