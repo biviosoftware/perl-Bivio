@@ -15,6 +15,18 @@ sub REGEX {
     return qr{((?:\d{1,3}\.){3}(?:\d{1,3}))/(\d{1,2})}i;
 }
 
+sub address_to_host_num {
+    my($self, $address) = @_;
+    my($places) = int($self->[$_IDI]->{bits} / 8);
+    $places = 3
+	if $places > 3;
+    $places = 4 - $places;
+    my($res) = $address =~ /((?:\.\d+){$places})$/;
+    b_die($address, ': invalid address')
+	unless defined($res);
+    return substr($res, 1);
+}
+
 sub as_string {
     my($self) = @_;
     return shift->SUPER::as_string(@_)
@@ -35,6 +47,7 @@ sub internal_post_from_literal {
     my($decimals, $bits) = $value =~ $proto->REGEX;
     return (undef, $_TE->NUMBER_RANGE)
 	unless 8 <= $bits && $bits <= 32;
+    $bits += 0;
     foreach my $i (split(/\./, $decimals)) {
 	return (undef, $_TE->NUMBER_RANGE)
 	    unless $i <= 255;
@@ -48,7 +61,8 @@ sub internal_post_from_literal {
 	$proto,
 	unpack('N', $inet),
 	unpack('N', $mask),
-	join('.', unpack('C4', $inet)) . '/' . ($bits + 0),
+	join('.', unpack('C4', $inet)) . "/$bits",
+	$bits,
     );
 }
 
@@ -76,12 +90,13 @@ sub to_literal {
 }
 
 sub _new {
-    my($proto, $number, $last, $string) = @_;
+    my($proto, $number, $last, $string, $bits) = @_;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
         min_number => $number,
 	last => $last,
 	string => $string,
+	bits => $bits,
     };
     return $self;
 }
