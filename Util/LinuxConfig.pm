@@ -653,9 +653,15 @@ sub _base_domain {
 
 sub _bits2netmask {
     my($self, $bits) = @_;
-    b_die("$bits is not between 24 and 30")
-	unless defined($bits) && $bits >= 24 && $bits <= 30;
-    return sprintf('255.255.255.%d', (1<<8) - (1<<(32-$bits)));
+    b_die("$bits is not between 8 and 30")
+	unless defined($bits) && $bits >= 8 && $bits <= 30;
+    return join(
+	'.',
+	unpack(
+	    'C4',
+	    pack('N', $bits == 32 ? 0 : 0xffffffff << (32 - $bits)),
+	),
+    );
 }
 
 sub _delete_lines {
