@@ -136,6 +136,7 @@ commands:
     build package ... -- compile & build rpms
     build_tar project ... -- build perl tar distribution
     create_stream pkg... -- generate a stream from a list of pkg names
+    run_sh script -- runs script.sh from repository
     get_projects -- returns a hash_ref of projects
     install package ... -- install rpms from network repository
     install_facades facades_dir -- install facade files into local_file_root
@@ -688,6 +689,11 @@ END
 }
 EOF
     return;
+}
+
+sub run_sh {
+    my($self, $script) = @_;
+    return $self->piped_exec('| sh -x', _http_get("$script.sh"));
 }
 
 sub _chdir {
