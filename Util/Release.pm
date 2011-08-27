@@ -693,7 +693,7 @@ EOF
 
 sub run_sh {
     my($self, $script) = @_;
-    return $self->piped_exec('| sh -x', _http_get("$script.sh"));
+    return $self->piped_exec('| sh -x', _http_get(\("$script.sh")));
 }
 
 sub _chdir {
