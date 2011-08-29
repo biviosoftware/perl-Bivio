@@ -187,11 +187,15 @@ sub nightly {
 	if ($is_petshop) {
 	    $f->chdir('..');
 	}
+	my($bconf) = $ENV{BCONF};
+	$ENV{BCONF} =~ s|\.bconf$|-unit\.bconf|;
+	my($app) = $1;
 	$self->print("bivio test unit .\n");
 	my($unit_die) = $_D->catch(sub {
 	    $self->print($self->unit('.'));
 	    return;
 	});
+	$ENV{BCONF} = $bconf;
 	$acc_die->throw
 	    if $acc_die;
 	$unit_die->throw
