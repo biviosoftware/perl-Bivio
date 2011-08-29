@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.13  2011/08/25 17:15:11  schellj
+  * Bivio::Test::Util
+    _make_nightly_dir: symlink will fail if the link already exists
+  * Bivio::UI::HTML::Widget::ListActions
+    Allow 'path_info' to be specified on ListActions
+
   Revision 11.12  2011/08/24 20:56:24  schellj
   * Bivio::MIME::Calendar
     ignore contact
