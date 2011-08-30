@@ -3,6 +3,7 @@
 package Bivio::Util::CSV;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
+use POSIX ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_QUOTE) = '"';
@@ -20,6 +21,7 @@ commands:
     from_rows array_ref -- converts an array of arrays
     parse [text.csv [want_line_numbers]] -- returns array of arrays
     parse_records [text.csv [want_line_numbers]] -- returns array of hashes
+    sort_csv -- returns sorted csv from input csv
     to_csv_text array -- returns text from array
 EOF
 }
@@ -163,6 +165,20 @@ sub parse_records {
             };
         } @$rows),
     ];
+}
+
+sub sort_csv {
+    my($self) = @_;
+    my($headings) = [];
+    my($rows) = $self->parse_records(undef, 0, $headings);
+    my($h0) = $headings->[0];
+    return join('',
+        ${$self->to_csv_text($headings)},
+	map({
+	    my($row) = $_;
+	    ${$self->to_csv_text([map($row->{$_}, @$headings)])};
+	} sort({POSIX::strcoll($a->{$h0}, $b->{$h0})} @$rows)),
+    );
 }
 
 sub to_csv_text {
