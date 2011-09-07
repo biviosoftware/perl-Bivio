@@ -10,5 +10,13 @@ options({comparator => 'nested_contains'});
 		1 .. 5,
 	    ),
 	],
+	to_text => [
+	    [] => [string_ref('')],
+	    [''] => [string_ref('""')],
+	    ['"'] => [string_ref('"\""')],
+	    [[1]] => [string_ref('["1"]')],
+	    [{a => 'b'}] => [string_ref('{"a":"b"}')],
+	    [[{a => [1, 2]}]] => [string_ref('[{"a":["1","2"]}]')],
+	],
     ],
 ];
