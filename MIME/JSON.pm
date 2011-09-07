@@ -23,6 +23,35 @@ sub from_text {
     return $res;
 }
 
+sub to_text {
+    my($proto, $value) = @_;
+    my($res);
+
+    if (! defined($value)) {
+	$res = '';
+    }
+    elsif (! ref($value)) {
+	$value =~ s{('|"|\\|\/)}{\\$1}g;
+	$res = join('', '"', $value, '"');
+    }
+    elsif (ref($value) eq 'HASH') {
+	$res = '{'
+	    . join(',',
+		   map(join(':', ${$proto->to_text($_)},
+		       ${$proto->to_text($value->{$_})}), keys(%$value)),
+	    ) . '}';
+    }
+    elsif (ref($value) eq 'ARRAY') {
+	$res = '['
+	    . join(',', map(${$proto->to_text($_)}, @$value))
+	    . ']';
+    }
+    else {
+	b_die($value);
+    }
+    return \$res;
+}
+
 sub _next_char {
     my($self, $expected_char) = @_;
     my($fields) = $self->[$_IDI];
