@@ -359,7 +359,7 @@ sub handle_config {
 	my($net, $host) = $network_ip =~ /^((?:\d{1,3}\.){3})(\d{1,3})$/;
 	$networks->{$network_ip}->{network} = $network_ip;
 	my($i) = (1<<(32-$networks->{$network_ip}->{mask}))-1;
-	while(--$i) {
+	while (--$i > 0) {
 	    $networks->{$net.++$host} = $networks->{$network_ip};
 	}
     }
