@@ -272,6 +272,10 @@ sub get_list_model {
 	|| $self->get_list_class->get_instance;
 }
 
+sub get_non_empty_result_set_size {
+    return b_debug shift->get_list_model->get_non_empty_result_set_size;
+}
+
 sub get_query {
     # Returns the
     # L<Bivio::SQL::ListQuery|Bivio::SQL::ListQuery>

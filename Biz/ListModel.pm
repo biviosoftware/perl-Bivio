@@ -351,6 +351,25 @@ sub get_load_notes {
     return $self->[$_IDI]->{load_notes};
 }
 
+sub get_non_empty_result_set_size {
+    my($self) = @_;
+    my($rows) = shift->[$_IDI]->{rows};
+    # Returns the number of rows loaded.
+    Bivio::Die->die('not loaded') unless $rows;
+    my($count) = 0;
+    foreach my $r (@$rows) {
+	foreach my $k (@{$self->get_info('primary_key_names')}) {
+	    unless ($self->get_field_type($k)->is_equal(
+		$r->{$k}, $self->EMPTY_KEY_VALUE,
+	    )) {
+		$count++;
+		last;
+	    }
+	}
+    }
+    return $count;
+}
+
 sub get_query {
     # Returns the
     # L<$_LQ|$_LQ>
