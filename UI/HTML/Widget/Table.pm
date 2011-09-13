@@ -166,6 +166,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # If true, the list's summary model will be rendered.  Will be true
 # implicitly, if I<summary_line_type> is set.
 #
+# summary_only : boolean [false]
+#
+# If true, render only the list's summary model.
+#
 # summary_line_class : string
 #
 # Class for summary lines.  Must be a string or undef, and if set,
@@ -441,10 +445,11 @@ sub get_render_state {
 	list => $list,
 	list_name => $list_name,
 	headings => $headings,
-	cells => $cells,
+	cells => $self->get_or_default('summary_only', 0) ? undef : $cells,
 	summary_cells =>
 	    ($self->get_or_default('summarize',
-		$self->unsafe_get('summary_line_type') ? 1 : 0)
+		$self->unsafe_get('summary_line_type')
+		    || $self->unsafe_get('summary_only') ? 1 : 0)
 	    ? $summary_cells : undef),
 	summary_lines => $summary_lines,
 	show_headings => $self->get_or_default('show_headings', 1),
