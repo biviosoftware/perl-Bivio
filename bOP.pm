@@ -28,9 +28,25 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.14  2011/08/29 20:37:12  nagler
+  * Bivio::Test::Util
+    don't change directory to create link
+    use unit test specific bconf
+  * Bivio::Type::CIDRNotation
+    added address_to_host_num
+  * Bivio::Util::LinuxConfig
+    _bits2netmask supports all net sizes
+  * Bivio::Util::NamedConf
+    handle larger address spaces than just class C
+  * Bivio::Util::Release
+    added run_sh
+    fpc
+    fpc
+
   Revision 11.13  2011/08/25 17:15:11  schellj
   * Bivio::Test::Util
     _make_nightly_dir: symlink will fail if the link already exists
