@@ -38,6 +38,7 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 	    [1] => qr{^https://(?!other)},
 	    [undef, 'other'] => qr{^\Qhttp://other.},
 	    [1, 'other'] => qr{^\Qhttps://other.},
+	    [undef, 'bad.facade.name'] => qr{^http://(?!other)},
 	],
     ],
 ];
