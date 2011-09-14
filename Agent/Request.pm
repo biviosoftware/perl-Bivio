@@ -479,12 +479,18 @@ sub format_http_prefix {
     # You should pass in the I<require_secure> value for the task you are
     # rendering for.
     # If is_secure is not set, default to non-secure
+
+    if ($facade_uri) {
+	my($facade) = b_use('UI.Facade')->find_by_uri_or_domain($facade_uri);
+	b_warn('no facade_uri found for value: ', $facade_uri)
+	    unless $facade;
+	$facade_uri = $facade;
+    }
     return ($self->unsafe_get('is_secure') || $require_secure
 	? 'https://' : 'http://')
         . b_use('UI.Facade')->get_value(
 	    'http_host',
-	    $facade_uri ? b_use('UI.Facade')->find_by_uri_or_domain($facade_uri)
-		: $self,
+	    $facade_uri || $self,
 	);
 }
 
