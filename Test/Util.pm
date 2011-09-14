@@ -236,7 +236,7 @@ sub nightly_output_to_wiki {
 	    $file->{$t} = 'MISSING'
 		if ($result->{$t} = $r) =~ /FAILED/i;
 	}
-	elsif ($line =~ m{^\s*(.*/t/([^/]+))$}is) {
+	elsif ($line =~ m{^\s*(.*/t/([^/]+\..+))$}is) {
 	    $file->{$2} = $1;
 	}
     }
