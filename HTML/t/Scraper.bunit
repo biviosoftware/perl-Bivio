@@ -3,8 +3,11 @@
 [
     class() => [
         to_text => [
-	    [\(<<'IN')] => [\("\na b c\n")],
+	    [\(<<'IN')] => [\("\n\na b c\n")],
 <html>
+<style>
+footer { font-family:arial;}
+</style>
 <body>
 a b
 c
