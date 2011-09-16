@@ -178,8 +178,10 @@ sub new {
 sub parse_html {
     my($self, $content) = @_;
     my($fields) = $self->[$_IDI];
-    $fields->{html_parser} = b_use('Ext.HTMLParser')->new($self)
-	unless $fields->{html_parser};
+    unless ($fields->{html_parser}) {
+	$fields->{html_parser} = b_use('Ext.HTMLParser')->new($self);
+	$fields->{html_parser}->ignore_elements(qw(script noscript object style xml));
+    }
     # ignore utf warnings
     local($SIG{__WARN__}) = sub {};
     $fields->{html_parser}->parse($$content);
