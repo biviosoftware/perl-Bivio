@@ -31,6 +31,7 @@ Type();
 	'ab cd' => 'AbCd',
     ],
     canonicalize_charset => [
+	"\x{200b}" => '',
 	"\x{2bc}" => "'",
 	"\x{2018}hello\x{2018}" => "'hello'",
 	"\xe2\x80\x98hello\xe2\x80\x99" => "'hello'",
