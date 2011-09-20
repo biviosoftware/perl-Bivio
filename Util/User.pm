@@ -46,10 +46,12 @@ sub merge_users {
 		realm_id => $_
 	    })->get('display_name'), $source_user_id, $target_user_id))
 	. '?');
+    _copy_realm_files($self, $source_user_id, $target_user_id);
 
     foreach my $property (@{_get_related_property_names($self)}) {
 	next if $property eq 'User.user_id';
  	my($model, $field) = $property =~ /(.*)\.(.*)/;
+	next if $model eq 'RealmFile';
 	$self->model($model)->do_iterate(sub {
 	    my($m) = @_;
 
@@ -64,9 +66,6 @@ sub merge_users {
 		my($die) = Bivio::Die->catch_quietly(sub {
 		    $m->update({
 		        $field => $target_user_id,
-			$model eq 'RealmFile'
-			    ? (override_is_read_only => 1)
-			    : (),
 		    });
 		});
 		
@@ -86,10 +85,6 @@ sub merge_users {
             $field => $source_user_id,
         });
     }
-    # special case for RealmFile because updates fail if is_read_only
-    b_use('SQL.Connection')->execute(
-	'UPDATE realm_file_t SET user_id = ? WHERE user_id = ?',
-	[$target_user_id, $source_user_id]);
     $self->unauth_model('User', {
 	user_id => $source_user_id,
     })->cascade_delete;
@@ -142,6 +137,36 @@ sub unsubscribe_bulletin {
 	    {realm_id => $r},
 	);
     }
+    return;
+}
+
+sub _copy_realm_files {
+    my($self, $source_user_id, $target_user_id) = @_;
+    # avoid RealmFile folder dependencies
+    $self->model('RealmFile')->do_iterate(sub {
+        my($rf) = @_;
+	return 1 if $rf->is_version;
+	return 1 if $self->model('RealmFile')->unauth_load({
+	    realm_id => $target_user_id,
+	    path_lc => $rf->get('path_lc'),
+	});
+	$self->model('RealmFile')->create_with_content({
+	    realm_id => $target_user_id,
+	    user_id => $target_user_id,
+	    map(($_ => $rf->get($_)), qw(path is_public modified_date_time)),
+	}, $rf->get_content);
+        return 1;					      
+    }, 'unauth_iterate_start', 'path_lc', {
+	realm_id => $source_user_id,
+	is_folder => 0,
+    });
+    $self->req->with_realm($source_user_id, sub {
+        $self->model('RealmFile')->delete_all;
+    });
+    # special case for RealmFile because updates fail if is_read_only
+    b_use('SQL.Connection')->execute(
+	'UPDATE realm_file_t SET user_id = ? WHERE user_id = ?',
+	[$target_user_id, $source_user_id]);
     return;
 }
 
