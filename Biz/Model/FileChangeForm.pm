@@ -75,7 +75,6 @@ sub execute_ok {
 	});
     }
     elsif ($self->is_folder) {
-
 	if ($self->get('mode')->equals_by_name(qw(UPLOAD TEXT_FILE))) {
 	    my($name, $content) = $self->get('mode')->eq_upload
 		? ($self->validate_file_name($self, 'file'),
@@ -122,6 +121,12 @@ sub execute_ok {
     }
     else {
 	die();
+    }
+    if ($self->req('task')->get_attr_as_id('next')->eq_forum_file_upload_from_wysiwyg) {
+	return {
+	    task_id => $self->req('task')->get_attr_as_id('next'),
+	    path_info => $self->req('path_info'),
+	}
     }
     return;
 }

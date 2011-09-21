@@ -767,7 +767,17 @@ sub info_file {
 	    View.File->delete_permanently_form
 	    next=FORUM_FILE_TREE_LIST
         )],
-#178-179 free
+	[qw(
+	    FORUM_FILE_UPLOAD_FROM_WYSIWYG
+	    178
+	    ANY_OWNER
+	    DATA_READ&DATA_WRITE&FEATURE_FILE
+	    Model.Lock
+	    Model.FileChangeForm
+	    View.WysiwygFile->file_upload_from_wysiwyg
+	    next=FORUM_FILE_UPLOAD_FROM_WYSIWYG
+	)],
+	#179 free
     ];
 }
 

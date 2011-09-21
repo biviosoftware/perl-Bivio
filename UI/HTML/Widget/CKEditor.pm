@@ -70,7 +70,14 @@ sub control_on_render {
 	    . 'CKEDITOR.replace("'
 	    . $form->get_field_name_for_html($field)
 	    . '", {customConfig: "/b/ckeditor/bwiki_config.js"'
-	    . ', filebrowserImageUploadUrl: "/site/change-file/Public"});' . "\n"
+            .'});' . "\n"
+	    . 'CKEDITOR.config.filebrowserImageUploadUrl = "'
+	    . $self->req->format_uri({
+		task_id => 'FORUM_FILE_UPLOAD_FROM_WYSIWYG',
+		path_info => $fields->{path_info},
+		no_context => 1,
+	      })
+	    . '"' . "\n"
 	    . 'CKEDITOR.config.contentsCss=' . $jscss. ';'
 	    . '</script>'	
 	    . $s;
@@ -86,6 +93,7 @@ sub initialize {
     ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
 	    'field', 'rows', 'cols');
     $fields->{readonly} = $self->get_or_default('readonly', 0);
+    $fields->{path_info} = $self->get_or_default('path_info', '/WikiData');
     return;
 }
 

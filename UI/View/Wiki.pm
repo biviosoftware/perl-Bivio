@@ -43,6 +43,11 @@ sub edit {
 
 sub edit_wysiwyg {
     my($self) = @_;
+    my(@attrs) = (
+	field => 'content',
+	rows => $self->TEXT_AREA_ROWS,
+	cols => $self->TEXT_AREA_COLS,
+    );
     return $self->internal_body(vs_simple_form(WikiForm => [
 	'WikiForm.RealmFile.path_lc',
 	'WikiForm.RealmFile.is_public',
@@ -51,11 +56,16 @@ sub edit_wysiwyg {
 		field => 'content',
 		label => 'text',
 	    }),
-	    CKEditor({
-		field => 'content',
-		rows => $self->TEXT_AREA_ROWS,
-		cols => $self->TEXT_AREA_COLS,
-	    }),
+	    If(['Model.WikiForm', 'RealmFile.is_public'],
+	       CKEditor({
+		   @attrs,
+		   path_info => '/Public/WikiData',
+	       }),
+	       CKEditor({
+		   @attrs,
+		   path_info => '/WikiData',
+	       }),
+	   ),
 	]),
 	_edit_wiki_buttons(),
     ], 1));

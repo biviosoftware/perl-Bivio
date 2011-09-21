@@ -912,6 +912,7 @@ sub _cfg_file {
 	    [FORUM_FILE_RESTORE_FORM => '?/restore-file/*'],
 	    [FORUM_FILE_REVERT_FORM => '?/revert-file/*'],
 	    [FORUM_FOLDER_FILE_LIST => '?/folder/*'],
+	    [FORUM_FILE_UPLOAD_FROM_WYSIWYG => '?/upload-file-from-wysiwyg/*'],
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -963,6 +964,7 @@ sub _cfg_file {
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
 		FORUM_FOLDER_FILE_LIST => q{Files for String(['Model.RealmFolderFileList', '->get_folder_path']);},
+		FORUM_FILE_UPLOAD_FROM_WYSIWYG => 'Upload',
 	    ]],
 	    [prose => [
 		'EasyForm.update_mail' => [
