@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.15  2011/09/13 20:32:15  schellj
+  * Bivio::Biz::ListFormModel
+    add get_non_empty_result_set_size
+  * Bivio::Biz::ListModel
+    add get_non_empty_result_set_size
+  * Bivio::MIME::JSON
+    added to_text()
+  * Bivio::Test::Util
+    fix for test paths that have a /t/ in the middle
+  * Bivio::UI::HTML::Widget::Table
+    add summary_only attr
+  * Bivio::Util::CSV
+    added sort_csv() utility
+  * Bivio::Util::LinuxConfig
+    while (--$i) gets into an infinite loop if the mask is 32
+
   Revision 11.14  2011/08/29 20:37:12  nagler
   * Bivio::Test::Util
     don't change directory to create link
