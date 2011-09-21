@@ -406,7 +406,7 @@ sub JAVASCRIPT_TRIM_TEXT {
     return <<'EOF';
 function b_trim_text(id, cutoff) {
   var element = document.getElementById(id);
-  if (element.innerHTML.length <= cutoff + 20)
+  if (element == null || element.innerHTML.length <= cutoff + 20)
     return;
   cutoff += Math.max(element.innerHTML.substring(cutoff).indexOf(' '), 0);
   // guard against splitting in middle of an html tag
