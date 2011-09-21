@@ -402,6 +402,32 @@ sub JAVASCRIPT_PAGE_PRINT {
     return 'function page_print_onload(){window.print()}';
 }
 
+sub JAVASCRIPT_TRIM_TEXT {
+    return <<'EOF';
+function b_trim_text(id, cutoff) {
+  var element = document.getElementById(id);
+  if (element.innerHTML.length <= cutoff + 20)
+    return;
+  cutoff += Math.max(element.innerHTML.substring(cutoff).indexOf(' '), 0);
+  // guard against splitting in middle of an html tag
+  var m = element.innerHTML.substring(cutoff).match(/^([^<]*?>)/);
+  if (m != null)
+    cutoff += m[0].length;
+  element.innerHTML = element.innerHTML.substring(0, cutoff)
+    + '<span id="' + id + '_rest" class="b_hide">'
+    + element.innerHTML.substring(cutoff) + '</span>'
+    + ' <a href="javascript:void(0)" class="dd_visible" id="'
+    + id + '_more">more&hellip;</a>';
+  element.onclick = function() {
+    b_toggle_class(document.getElementById(id + '_rest'),
+      'dd_visible', 'b_hide')
+    b_toggle_class(document.getElementById(id + '_more'),
+      'dd_visible', 'b_hide')
+  };
+}
+EOF
+}
+
 sub initialize {
     my($self) = @_;
     $self->unsafe_initialize_attr('value');
