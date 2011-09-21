@@ -29,7 +29,13 @@ sub internal_new_args {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    shift->SUPER::render(@_);
+    my($buf) = '';
+    shift->SUPER::render($source, \$buf);
+    return
+	unless defined($buf) && length($buf);
+    $$buffer .= $buf;
+    return
+	unless length($buf) > $self->get('cutoff');
     my($id) = ${$self->render_attr('ID', $source)};
     $_JS->render($source, $buffer, undef, undef,
         "b_trim_text('$id', @{[$self->get('cutoff')]});");
