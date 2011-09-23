@@ -305,6 +305,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # Determines whether the specified cell will be summarized. Only applies to
 # numeric columns. By default, numeric columns always summarize.
 #
+# column_summary_value : string ['&nbsp;']
+#
+# Value to use for the summary cell of a column that isn't summarized.
+#
 # column_want_error_widget : boolean [see create_cell]
 #
 # Force creation of error widget around the cell if true.
@@ -814,7 +818,7 @@ sub _get_summary_cell {
     }
 #TODO: optimize, could share instances with common span
     my($blank_string) = $_VS->vs_new('Join', {
-	values => ['&nbsp;'],
+	values => [$cell->get_or_default('column_summary_value', '&nbsp;')],
 	column_span => $cell->get_or_default('column_span', 1),
     });
     $self->initialize_child_widget($blank_string);
