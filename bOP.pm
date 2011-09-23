@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,41 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.16  2011/09/21 20:59:53  moeller
+  * Bivio::Agent::Request
+    warn if an unresolvable facade name is passed to format_http_prefix()
+  * Bivio::Biz::Model::FileChangeForm
+    Allow new images to be uploaded and existing images to be browsed
+    from wysiwyg editor
+  * Bivio::Delegate::TaskId
+    Allow new images to be uploaded and existing images to be browsed
+    from  wysiwyg editor
+  * Bivio::HTML::Scraper
+    instruct HTMLParser to ignore script, object, style and xml tags when
+    parsing text
+  * Bivio::Test::Util
+    fix for nightly_output_to_wiki reporting directories with /t/ in the middle
+  * Bivio::Type::String
+    transliterate "zero width space"
+  * Bivio::UI::FacadeBase
+    Allow new images to be uploaded and existing images to be browsed
+    from wysiwyg editor
+  * Bivio::UI::HTML::Widget::CKEditor
+    Allow new images to be uploaded and existing images to be browsed
+    from wysiwyg editor
+  * Bivio::UI::HTML::Widget::Script
+    added trim_text script
+  * Bivio::UI::View::Wiki
+    Allow new images to be uploaded and existing images to be browsed
+    from wysiwyg editor
+  * Bivio::UI::View::WysiwygFile
+    NEW
+  * Bivio::UI::XHTML::Widget::TrimmedText
+    NEW
+  * Bivio::Util::User
+    during merge_users(), copy user's RealmFile records rather than update
+    to avoid dependencies with nested folders
+
   Revision 11.15  2011/09/13 20:32:15  schellj
   * Bivio::Biz::ListFormModel
     add get_non_empty_result_set_size
