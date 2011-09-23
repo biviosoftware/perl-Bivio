@@ -183,8 +183,11 @@ sub command_line_args {
 
 sub get {
     my($proto, $name) = @_;
-    die($name, ': named config not found')
-	unless defined(my $res = shift->unsafe_get(@_));
+    my($res) = shift->unsafe_get(@_);
+    unless (defined($res)) {
+	_die($name, ': named config not found');
+	return {};
+    }
     return $res;
 }
 
@@ -226,7 +229,8 @@ sub introduce_values {
     # The earlier in the program's initialization process this is executed, the less
     # likely it is to cause problems.
 #TODO: Named config defaults don't get filled in
-    die('new_values must be a hash_ref') unless ref($new_values) eq 'HASH';
+    die('new_values must be a hash_ref')
+	unless ref($new_values) eq 'HASH';
     $_ACTUAL = $proto->merge($new_values, $_ACTUAL);
     _actual_changed();
     return;
@@ -400,8 +404,8 @@ sub register {
     #
     # All configuration names must be fully specified.
     my($pkg) = caller;
-    defined(&{$pkg . '::handle_config'}) || die(
-	    "&$pkg\::handle_config not defined");
+    die("&$pkg\::handle_config not defined")
+	unless defined(&{$pkg . '::handle_config'});
     push(@_REGISTERED, $pkg);
     $_SPEC{$pkg} = $spec;
     &{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
@@ -473,7 +477,7 @@ sub unsafe_get {
 	defined($cfg->{$_}) && $cfg->{$_} eq $proto->REQUIRED,
 	keys(%$cfg),
     );
-    die("$pkg.(" . join(' ', sort(@bad)), ': named config required')
+    _die("$pkg.(" . join(' ', sort(@bad)), ': named config required')
 	if @bad;
     return $cfg;
 }
@@ -500,6 +504,13 @@ sub _bconf_dir {
 	File::Basename::dirname(shift->bconf_file), 'bconf.d');
 }
 
+sub _die {
+    die(@_)
+        unless $_ACTUAL->{$_PKG}->{ignore_errors};
+    warn(@_);
+    return;
+}
+
 sub _get_pkg {
     my($pkg) = @_;
     # Returns the config for pkg
@@ -510,9 +521,10 @@ sub _get_pkg {
 	my($spec) = $_SPEC{$pkg};
 	while (my($k, $v) = each(%$spec)) {
 	    # If it is required, then it is an error
-	    if (defined($v) && $v eq &REQUIRED) {
-		defined($actual->{$k}) && next;
-		die("$pkg.$k: config parameter not defined.");
+	    if (defined($v) && $v eq __PACKAGE__->REQUIRED) {
+		_die("$pkg.$k: config parameter not defined.")
+		    unless defined($actual->{$k});
+		next;
 	    }
 	    # Have an actual value for specified config?
 	    exists($actual->{$k}) && next;
@@ -522,8 +534,8 @@ sub _get_pkg {
 	    $actual->{$k} = $v;
 	}
 	# Set the defaults for all named configuration
-	if (defined($spec->{&NAMED})) {
-	    my($named_spec) = $spec->{&NAMED};
+	if (defined($spec->{__PACKAGE__->NAMED})) {
+	    my($named_spec) = $spec->{__PACKAGE__->NAMED};
 	    # Fill in the actual for the "undef" case of &get
 	    my($undef_cfg) = {%$named_spec};
 	    while (my($k, $v) = each(%$actual)) {
@@ -537,7 +549,10 @@ sub _get_pkg {
 		}
 		# Must be a named configuration section
 		my($named_actual) = $v;
-		ref($named_actual) || die("$pkg.$k: invalid config parameter");
+		unless (ref($named_actual)) {
+		    _die("$pkg.$k: invalid config parameter");
+		    $named_actual = {};
+		}
 		while (my($nk, $nv) = each(%$named_spec)) {
 		    # If it is required, then must be defined (not just exists)
 		    if (defined($nv) && $nv eq &REQUIRED) {
@@ -548,7 +563,7 @@ sub _get_pkg {
 			    $named_actual->{$nk} = $actual->{$nk};
 			    next;
 			}
-			die("$pkg.$nk: named config parameter not defined");
+			_die("$pkg.$nk: named config parameter not defined");
 		    }
 		    else {
 			# Have an actual value for specified named config?
