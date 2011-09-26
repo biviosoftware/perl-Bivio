@@ -142,12 +142,12 @@ sub internal_prepare_statement {
 }
 
 sub render_html {
-    my($self, $body) = @_;
+    my($self, $body, $task_id) = @_;
     return $_WT->render_html({
 	value => $body || $self->get('body'),
 	name => $self->get('path_info'),
 	req => $self->get_request,
-	task_id => undef,
+	task_id => $task_id,
 	is_inline_text => 0,
 	calling_context =>
 	    $_CC->new_from_file_line($self->get('RealmFile.path'), 1),

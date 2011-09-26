@@ -97,8 +97,8 @@ sub detail {
 	    [THIS_LIST => _access_mode('FORUM_BLOG_LIST')],
 #TODO: Replace with proper blog widget that *partially* reuses wiki markup
  	    DIV_blog(
-		DIV(DIV_text([qw(Model.BlogList ->render_html)]),
-#TODO: multipel classes
+		DIV(DIV_text(['Model.BlogList', '->render_html', undef, 'FORUM_WIKI_VIEW']), 
+#TODO: multiple classes
  		{class => If(
  		    ['Model.BlogList', 'RealmFile.is_public'],
  		    'public', 'private')},
@@ -177,21 +177,28 @@ sub _access_mode {
 
 sub _edit {
     my($self, $options) = @_;
-
+    my(@attrs) = (
+	field => 'body',
+	rows => $self->TEXT_AREA_ROWS,
+	cols => $self->TEXT_AREA_COLS,
+    );
     return Join([
 	FormFieldError({
 	    field => 'body',
 	    label => 'text',
 	}),
-      	    
-	$options->{editor}->({
-	    field => 'body',
-	    rows => $self->TEXT_AREA_ROWS,
-	    cols => $self->TEXT_AREA_COLS,
-	}),
-    ], {
+	If(['Model.BlogEditForm', 'RealmFile.is_public'],
+	   $options->{editor}->({
+	       @attrs,
+	       path_info => '/Public/WikiData',	       
+	   }),
+	   $options->{editor}->({
+	       @attrs,
+	       path_info => '/WikiData',	       
+	   }),
+       ), {
 	cell_class => 'blog_textarea',
-    });
+    }]);
 }
 
 1;
