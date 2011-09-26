@@ -28,10 +28,17 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.17  2011/09/23 12:25:23  nagler
+  * Bivio::IO::Config
+    added ignore_errors config param for certain cases (link_facade_files)
+  * Bivio::UI::HTML::Widget::Script
+    trim_text guard against null element
+  * Bivio::UI::XHTML::Widget::TrimmedText
+    don't render javascript unless rendered length greater than cutoff
+
   Revision 11.16  2011/09/21 20:59:53  moeller
   * Bivio::Agent::Request
     warn if an unresolvable facade name is passed to format_http_prefix()
