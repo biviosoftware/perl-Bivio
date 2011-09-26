@@ -42,6 +42,8 @@ sub edit_wysiwyg {
 
 sub create {
     my($self) = @_;
+    return shift->create_wysiwyg(@_)
+	if b_use('View.Wiki')->use_wysiwyg;
     return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
 	'BlogEditForm.RealmFile.is_public',
@@ -51,8 +53,6 @@ sub create {
 
 sub create_wysiwyg {
     my($self) = @_;
-    return shift->create_wysiwyg(@_)
-	if b_use('View.Wiki')->use_wysiwyg;
     return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
 	'BlogEditForm.RealmFile.is_public',
