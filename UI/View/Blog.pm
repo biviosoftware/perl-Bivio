@@ -187,18 +187,19 @@ sub _edit {
 	    field => 'body',
 	    label => 'text',
 	}),
-	If(['Model.BlogEditForm', 'RealmFile.is_public'],
-	   $options->{editor}->({
-	       @attrs,
-	       path_info => '/Public/WikiData',	       
-	   }),
-	   $options->{editor}->({
-	       @attrs,
-	       path_info => '/WikiData',	       
-	   }),
-       ), {
+	If (['Model.BlogEditForm', 'RealmFile.is_public'],
+	    $options->{editor}->({
+		@attrs,
+		path_info => '/Public/WikiData',
+	    }),
+	    $options->{editor}->({
+		@attrs,
+		path_info => '/WikiData',
+	    })
+	)
+    ], {
 	cell_class => 'blog_textarea',
-    }]);
+    });
 }
 
 1;
