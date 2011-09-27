@@ -81,11 +81,16 @@ sub file_change {
 	    ['FileChangeForm.file', {
 		row_class => 'hidden_file_field',
 	    }],
-	    ['FileChangeForm.content', {
-		row_class => 'hidden_file_field',
-		rows => 30,
-		cols => 80,
-	    }],
+	    Join([
+		StandardSubmit({
+		    buttons => 'ok_button cancel_button',
+		}),
+		FormField('FileChangeForm.content', {
+		    row_class => 'hidden_file_field',
+		    rows => 30,
+		    cols => 80,
+		}),
+	    ]),
 	    _lock([
 		'FileChangeForm.comment', {
 		    row_class => 'hidden_file_field',
