@@ -15,6 +15,7 @@ my($_PARAMS) = [
     'uri',
     'xlink',
     'sort_label',
+    'link_target',
 ];
 my($_W) = b_use('UI.Widget');
 my($_CB) = b_use('HTMLWidget.ControlBase');
@@ -130,6 +131,7 @@ sub initialize {
 		    [sub {$need_sep ? 'want_sep' : ()}],
                     If($selected_cond, 'selected'),
 		], {join_separator => ' '}),
+		link_target => $cfg->{link_target},
 	    );
 	    $self->initialize_value($cfg->{label}, $w);
 	} @{$self->get('task_map')})],
