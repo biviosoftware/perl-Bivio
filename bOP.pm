@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.18  2011/09/26 16:08:43  schellj
+  * Bivio::Type::String
+    more transliteration
+  * Bivio::UI::HTML::Widget::Table
+    add column_summary_value
+  * Bivio::UI::View::Blog
+    Creating a blog entry was always non-wysiwyg even if wysiwyg mode enabled
+
   Revision 11.17  2011/09/23 12:25:23  nagler
   * Bivio::IO::Config
     added ignore_errors config param for certain cases (link_facade_files)
