@@ -41,7 +41,8 @@ sub execute_ok_end {
 sub execute_ok_row {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    return if $self->is_empty_row || $self->in_error;
+    return if ($self->is_empty_row && $self->get_list_model->is_empty_row)
+	|| $self->in_error;
     $self->internal_put_field(
 	 'TupleSlotDef.tuple_slot_num' => $fields->{current_slot}++);
 
