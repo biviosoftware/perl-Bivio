@@ -95,9 +95,11 @@ sub execute_ok_start {
 	deleted_slots => [],
     };
     my($is_editing) = _is_editing($self);
-    $self->new_other('TupleDef')->create(
-	$self->get_model_properties('TupleDef'))
-	unless $is_editing;
+    $self->new_other('TupleDef')->create_or_update({
+	%{$self->get_model_properties('TupleDef')},
+	$is_editing ?
+	    (tuple_def_id => $self->req(qw(Model.TupleDef tuple_def_id))) : (),
+    });
     $self->internal_put_field('TupleSlotDef.tuple_def_id' =>
 	$self->req(qw(Model.TupleDef tuple_def_id)));
     $self->req('Model.TupleDef')->delete_from_request
