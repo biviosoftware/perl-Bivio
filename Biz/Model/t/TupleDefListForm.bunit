@@ -67,6 +67,19 @@ my($integer_id) = req(qw(Model.TupleSlotTypeList TupleSlotType.tuple_slot_type_i
     }, {
 	'TupleSlotDef.label_1' => 'EXISTS',
     }),
+    simple_case({
+	'TupleDef.label' => 'TD2',
+	'TupleDef.moniker' => 'td2',
+	'TupleSlotDef.label_0' => 'L1',
+	'TupleSlotDef.tuple_slot_type_id_0' => $integer_id,
+	'TupleSlotDef.is_required_0' => 0,
+	'TupleSlotDef.label_1' => 'l2',
+	'TupleSlotDef.tuple_slot_type_id_1' => $integer_id,
+	'TupleSlotDef.is_required_1' => 1,
+	empty_row_count => 2,
+    }, {
+	'TupleSlotDef.label_1' => 'SYNTAX_ERROR',
+    }),
     error_case({
 	'TupleDef.label' => 'TD2',
 	'TupleDef.moniker' => 'td2',
