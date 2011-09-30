@@ -154,7 +154,8 @@ sub validate_row {
 	    unless defined(_slot_type($self)->get('default_value'));
 	return;
     }
-    $self->internal_clear_error('TupleSlotDef.label');
+    $self->internal_clear_error('TupleSlotDef.label')
+	if ! $self->get('TupleSlotDef.label');
 
     if (_has_label($self) && _has_type_changed($self)) {
 	# if type changes, ensure existing values parse OK
