@@ -97,6 +97,10 @@ sub get_icon_dir {
     return _facade_name($self, '');
 }
 
+sub get_uri {
+    return shift->internal_uri(@_);
+}
+
 sub get_value {
     # (proto, string, Collection.Attributes) : hash_ref
     # (self, string) : hash_ref
