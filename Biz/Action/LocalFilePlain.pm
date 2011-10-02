@@ -57,14 +57,10 @@ sub execute_uri_as_view {
 
 sub set_cacheable_output {
     my(undef, $output, $mime_type, $req) = @_;
-    my($reply) = $req->get('reply');
-    $reply->set_output($output)
-	->set_output_type($mime_type);
-    $reply
-	->set_header('Cache-Control', "max-age=$_MAX_AGE")
-	->set_header(Expires => $_DT->rfc822($_DT->add_seconds($_DT->now, $_MAX_AGE)))
-	if $_F->get_from_source($req)->get('want_local_file_cache');
-    return $reply;
+    return $req->get('reply')
+	->set_output($output)
+	->set_output_type($mime_type)
+	->set_cache_max_age($_MAX_AGE, $req);
 }
 
 sub _open {
