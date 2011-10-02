@@ -71,6 +71,11 @@ sub set_output_type {
     return shift->put(output_type => shift);
 }
 
+sub unsafe_get_header {
+    my($self, $name) = @_;
+    return $self->get_if_exists_else_put('headers', {})->{$name};
+}
+
 sub unsafe_get_output {
     return shift->unsafe_get('output');
 }
