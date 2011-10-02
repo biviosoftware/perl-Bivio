@@ -14,6 +14,7 @@ my($_MP) = b_use('Ext.MIMEParser');
 my($_RM) = b_use('Model.RealmMail');
 my($_T) = b_use('MIME.Type');
 my($_W) = b_use('MIME.Word');
+my($_LFP) = b_use('Action.LocalFilePlain');
 
 sub execute_from_realm_mail_list {
     my($proto, $req) = @_;
@@ -54,12 +55,14 @@ sub execute_part {
 	    entity => $q,
 	});
     }
-    $req->get('reply')
-	->set_output_type($self->get('mime_type'))
-	->set_output(\((
+    $_LFP->set_cacheable_output(
+	\((
 	    $self->get('mime_entity')->bodyhandle
 		|| $self->throw_die('MODEL_NOT_FOUND')
-	    )->as_string));
+	)->as_string),
+	$self->get('mime_type'),
+	$req,
+    )->set_last_modified($self->get_nested(qw(realm_file modified_date_time)));
     return 1;
 }
 
@@ -144,6 +147,9 @@ sub internal_initialize {
 	parent_id => 'RealmFile.realm_file_id',
 	auth_id => 'RealmFile.realm_id',
 	other_query_keys => [qw(content_ref mime_cid)],
+	other => [
+	    $self->field_decl([[qw(realm_file Model.RealmFile)]]),
+	],
     });
 }
 
@@ -153,21 +159,23 @@ sub internal_load_rows {
     my($rid) = $query->get('auth_id');
     b_die($rid, ': auth_id not same as auth_realm: ', $self->req('auth_realm'))
 	unless $query->unsafe_get('content_ref') || $self->req('auth_id') eq $rid;
+    my($rf);
     my($res) = [map({
 	$_->{index} = $index++;
 	$_->{'RealmFile.realm_id'} = $rid;
+	$_->{realm_file} = $rf;
 	$_;
     } @{_walk(
 	_parser(
 	    "Content-Type: message/rfc822\n\n"
 	    . ${$query->unsafe_get('content_ref')
-	        || $self->new_other('RealmFile')->unauth_load_or_die({
+	        || ($rf = $self->new_other('RealmFile')->unauth_load_or_die({
 		    realm_id => $query->get('auth_id'),
 		    realm_file_id => $query->get('parent_id'),
 		    $_RM->access_is_public_only($self->req)
 			? (is_public => 1)
 			: (),
-		})->get_content},
+		}))->get_content},
 	))},
     )];
     return $res
