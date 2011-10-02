@@ -115,7 +115,9 @@ sub send {
 	# we don't know the contents (typically from the database)
 	# This isn't *really* private, i.e. not setting Pragma: no-cache.
 	# This pragma screws up Netscape on animated gifs.
-	$self->set_cache_private;
+	# Don't set it if someone else has already set Cache-Control
+	$self->set_cache_private
+	    unless $self->unsafe_get_header('Cache-Control');
     }
     else {
 	$self->set_last_modified((stat(_))[9])
