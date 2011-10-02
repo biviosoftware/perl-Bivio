@@ -19,7 +19,7 @@ sub initialize {
     unless ($self->unsafe_get('html_attrs')) {
 	my($a) = $self->map_each(sub {
             my(undef, $k) = @_;
-	    return $k =~ /^[A-Z]+[0-9]?$/ ? $k : ();
+	    return $k =~ /^[A-Z][\_\-A-Z0-9]+$/ ? $k : ();
 	});
 	$self->put(html_attrs => vs_html_attrs_merge([sort(@$a)]))
 	    if @$a;
