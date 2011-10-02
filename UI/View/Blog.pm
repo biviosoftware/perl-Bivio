@@ -25,7 +25,7 @@ sub edit {
 	    size => 57,
 	}],
 	'BlogEditForm.RealmFile.is_public',
-	_edit($self, {editor => \&TextArea}),
+	_edit($self, 'BlogEditForm', {editor => \&TextArea}),
     ]));
 }
 
@@ -36,7 +36,7 @@ sub edit_wysiwyg {
 	    size => 57,
 	}],
 	'BlogEditForm.RealmFile.is_public',
-	_edit($self, {editor => \&CKEditor}),
+	_edit($self, 'BlogEditForm', {editor => \&CKEditor}),
     ]));
 }
 
@@ -46,8 +46,8 @@ sub create {
 	if b_use('View.Wiki')->use_wysiwyg;
     return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
-	'BlogEditForm.RealmFile.is_public',
-	_edit($self, {editor => \&TextArea}),
+	'BlogCreateForm.RealmFile.is_public',
+	_edit($self, 'BlogCreateForm', {editor => \&TextArea}),
     ]));
 }
 
@@ -55,8 +55,8 @@ sub create_wysiwyg {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(BlogCreateForm => [
 	'BlogCreateForm.title',
-	'BlogEditForm.RealmFile.is_public',
-	_edit($self, {editor => \&CKEditor}),
+	'BlogCreateForm.RealmFile.is_public',
+	_edit($self, 'BlogCreateForm', {editor => \&CKEditor}),
     ]));
 }
 
@@ -174,9 +174,8 @@ sub _access_mode {
     );
 }
 
-
 sub _edit {
-    my($self, $options) = @_;
+    my($self, $form, $options) = @_;
     my(@attrs) = (
 	field => 'body',
 	rows => $self->TEXT_AREA_ROWS,
@@ -187,7 +186,7 @@ sub _edit {
 	    field => 'body',
 	    label => 'text',
 	}),
-	If (['Model.BlogEditForm', 'RealmFile.is_public'],
+	If (["Model.$form", 'RealmFile.is_public'],
 	    $options->{editor}->({
 		@attrs,
 		path_info => '/Public/WikiData',
