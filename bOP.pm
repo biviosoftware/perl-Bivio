@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,41 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.20  2011/10/02 00:08:40  nagler
+  * Bivio::Agent::HTTP::Reply
+    b_use
+    return $self from a few more routines
+  * Bivio::Agent::Reply
+    added unsafe_get_header (better than explicitly touching attribute "headers")
+  * Bivio::Biz::Action::LocalFilePlain
+    added set_cacheable_output and if Facade.want_local_file_cache is
+    true, cache for 3600 seconds (setting Cache-Control and Expires) headers
+  * Bivio::Biz::Model::MailPartList
+    use LocalFilePlain.set_cacheable_output for parts
+  * Bivio::Biz::Model::TupleDefListForm
+    need to proccess the row if it was not empty previously
+    update existing label/moniker
+    only clear label errors if the field is blank
+  * Bivio::IO::t::Config::T2
+    NEW
+  * Bivio::Type::UserAgent
+    facebookexternalhit is a robot
+  * Bivio::UI::HTML::ViewShortcuts
+    allow html_attrs which contain underscores and dashes.
+    vs_html_attrs_render_one won't strip the last part if the attr is all
+    upper case.  This preserves behavior for Grid, Table, etc., but allows
+    attributes with underscores (e.g. Facebook's show_face)
+  * Bivio::UI::HTML::Widget::ControlBase
+    allow attributes with underscores and dashes
+  * Bivio::UI::HTML::Widget::Grid
+    fmt
+  * Bivio::UI::HTML::Widget::Page
+    doc
+  * Bivio::UI::HTML::Widget::Tag
+    allow tags with ':' so can support xml namespaces (e.g. FBXML)
+  * Bivio::UI::Icon
+    added get_uri
+
   Revision 11.19  2011/09/28 20:07:19  moeller
   * Bivio::Biz::Model::BlogList
     Fix images with ^href sources in blogs
