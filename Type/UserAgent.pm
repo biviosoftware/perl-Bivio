@@ -122,6 +122,7 @@ sub _is_robot {
 	|wget
 	|htdig
         |magent
+        |facebookexternalhit
     }ix ? 1 : 0;
 }
 
