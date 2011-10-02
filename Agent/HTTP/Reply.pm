@@ -150,6 +150,16 @@ sub send {
     return;
 }
 
+sub set_cache_max_age {
+    my($self, $max_age, $req) = @_;
+    return $self
+	unless b_use('UI.Facade')
+	->get_from_source($req)->get('want_local_file_cache');
+    return $self
+	->set_header('Cache-Control', "max-age=$max_age")
+        ->set_header(Expires => $_DT->rfc822($_DT->add_seconds($_DT->now, $max_age)));
+}
+
 sub set_cache_private {
     # (self) : undef
     # Do not allow shared caching of this response.
