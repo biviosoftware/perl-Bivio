@@ -43,6 +43,10 @@ sub send {
     return;
 }
 
+sub set_cache_max_age {
+    return;
+}
+
 sub set_cache_private {
     return;
 }
