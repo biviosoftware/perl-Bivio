@@ -37,7 +37,7 @@ sub control_on_render {
 	|| $self->render_simple_attr('tag_if_empty', $source);
     my($t) = lc(${$self->render_attr('tag', $source)});
     $self->die('tag', $source, $t, ': is not a valid HTML tag')
-	unless $t =~ /^[a-z]+\d*$/;
+	unless $t =~ /^([a-z\d]+:)?[a-z]+\d*$/;
     my($pre, $post) = $buf !~ qr{\w} ? ('', '')
         : $self->render_simple_attr('bracket_value_in_comment', $source)
         ? ("\n<!--\n", "\n-->\n")
