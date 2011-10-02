@@ -1,51 +1,45 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Action::LocalFilePlain;
 use strict;
 use Bivio::Base 'Biz.Action';
-use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_MAX_AGE) = 3600;
 our($_TRACE);
+b_use('IO.Trace');
 my($_T) = b_use('MIME.Type');
-my($_C) = b_use('FacadeComponent.Constant');
+my($_FCC) = b_use('FacadeComponent.Constant');
+my($_IOC) = b_use('IO.Config');
+my($_FCT) = b_use('FacadeComponent.Text');
+my($_F) = b_use('UI.Facade');
+my($_PLAIN) = b_use('UI.LocalFileType')->PLAIN;
+my($_DT) = b_use('Type.DateTime');
 
 sub execute {
-    # (self, Agent.Request, string, string) : boolean
-    # Reply with the document found in the plain files area.
-    #
-    # If I<file_name> is not supplied, I<Request.uri> will be used.
-    #
-    # If I<content_type> is not supplied, it will be determined from I<file_name>.
-    #
-    # Always returns true (stop processing).
-    my(undef, $req, $file_name, $content_type) = @_;
+    my($proto, $req, $file_name, $content_type) = @_;
+    $file_name = $req->get('uri')
+	unless defined($file_name);
     my($mime_type);
-    $file_name = $req->get('uri') unless defined($file_name);
-
-    my($res) = _open($req, $file_name, \$mime_type);
-    my($reply) = $req->get('reply');
-    $reply->set_output_type(
-	    defined($content_type) ? $content_type : $mime_type);
-    $reply->set_output($res);
+    $proto->set_cacheable_output(
+	_open($req, $file_name, \$mime_type),
+	defined($content_type) ? $content_type : $mime_type,
+	$req,
+    );
     return 1;
 }
 
 sub execute_favicon {
-    # (proto, Agent.Request) : boolean
-    # Returns the file pointed to by I<Bivio::UI::Text.favicon_uri>.
     my($proto, $req) = @_;
-    return $proto->execute(
-	$req, Bivio::UI::Text->get_value('favicon_uri', $req));
+    return $proto->execute($req, $_FCT->get_value('favicon_uri', $req));
 }
 
 sub execute_robots_txt {
     my($proto, $req) = @_;
     my($disallow) = $req->get('is_production')
-	&& $_C->get_value('robots_txt_allow_all', $req)
+	&& $_FCC->get_value('robots_txt_allow_all', $req)
 	? '' : ' /';
-    $req->get('reply')->set_output_type('text/plain');
-    $req->get('reply')->set_output(\(<<"EOF"));
+    $proto->set_cacheable_output(\(<<"EOF"), 'text/plain', $req);
 User-agent: *
 Disallow:$disallow
 EOF
@@ -53,26 +47,31 @@ EOF
 }
 
 sub execute_uri_as_view {
-    # (proto, Agent.Request) : boolean
-    # Uses I<Request.uri> as the view name and executes it.  May compile the
-    # view dynamically.  The I<Request.uri> is prefixed with
-    # I<Text.view_execute_uri_as_view_prefix>.
-    #
-    # Dies with NOT_FOUND, if uri is not found as uri.
     my($proto, $req) = @_;
-    return $proto->use('Bivio::UI::View')->execute(
-	Bivio::UI::Text->get_value('view_execute_uri_prefix', $req)
+    return b_use('UI.View')->execute(
+	$_FCC->get_value('view_execute_uri_prefix', $req)
         . '/'
 	. $req->get('uri'),
 	$req);
+}
+
+sub set_cacheable_output {
+    my(undef, $output, $mime_type, $req) = @_;
+    my($reply) = $req->get('reply');
+    $reply->set_output($output)
+	->set_output_type($mime_type);
+    $reply
+	->set_header('Cache-Control', "max-age=$_MAX_AGE")
+	->set_header(Expires => $_DT->rfc822($_DT->add_seconds($_DT->now, $_MAX_AGE)))
+	if $_F->get_from_source($req)->get('want_local_file_cache');
+    return $reply;
 }
 
 sub _open {
     # (Agent.Request, string, string_ref) : file_handle
     # Opens the file_name on the request as a document or throws NOT_FOUND
     my($req, $file_name, $mime_type) = @_;
-    my($doc) = Bivio::UI::Facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->PLAIN, $file_name, $req);
+    my($doc) = $_F->get_local_file_name($_PLAIN, $file_name, $req);
     # No files which begin with '.' or contain CVS are allowed
     if ($file_name =~ /\/\./ || $file_name =~ /\/CVS/) {
 	_trace($doc, ': invalid name') if $_TRACE;
