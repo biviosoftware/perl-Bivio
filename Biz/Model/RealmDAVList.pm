@@ -20,6 +20,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	primary_key => ['RealmOwner.name'],
+	order_by => ['RealmOwner.name'],
 	want_select_distinct => 1,
 	other => [
 	    'RealmOwner.display_name',
