@@ -297,15 +297,14 @@ sub vs_html_attrs_render_one {
     my($proto, $widget, $source, $attr) = @_;
     return ''
 	unless length(my $v = $widget->render_simple_attr($attr, $source));
-    my($k) = lc(($attr =~ /([^_]+)$/)[0]);
+    my($k) = $attr =~ /^[A-Z]/ ? lc($attr) : ($attr =~ /([^_]+)$/)[0];
     if ($k =~ /^(?:class|id)$/) {
 	_trace($k, '=', $v) if $_TRACE && !$_ATTRS->{$k}->{$v}++;
 	$v =~ s/^b_//
 	    unless $_V6;
     }
     return ' '
-	# The '_' handles row_class => class
-	. lc(($attr =~ /([^_]+)$/)[0])
+	. $k
 	. '="'
 	. Bivio::HTML->escape_attr_value($v)
 	. '"';
