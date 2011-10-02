@@ -82,9 +82,9 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # html_tag_attrs : any []
 #
-# Attributes to be applied to the html_tag used to generate the component.
-# Only currently works for I<body> components.
-#
+# Attributes to be applied to the html_tag used to generate the tag.  Works on
+# <HTML> and <BODY> tags.
+# 
 # Must have a leading space.
 #
 #
