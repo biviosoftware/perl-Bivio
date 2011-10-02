@@ -1,7 +1,8 @@
 test_setup('PetShop', 'groupware');
 home_page();
-login_as('root');
-follow_link('add_new_page');
+my($f, $uri) = create_forum();
+do_test_backdoor(RealmAdmin => "-realm $f -user site_adm join_user ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT");
+visit_uri("$uri/wiki");
 verify_text('OK (no validate)');
 submit_form(qr/^OK$/ => {
     title => my $t = 'btest_' . random_string(),
@@ -22,11 +23,11 @@ visit_uri('/adm/su');
 submit_form(OK => {
     email => 'site_adm',
 });
-visit_uri("/site/edit-wiki/$t");
+visit_uri("$uri/edit-wiki/$t");
 verify_text('OK (no validate)');
 do_logout();
 login_as('site_adm');
-visit_uri("/site/edit-wiki/$t");
+visit_uri("$uri/edit-wiki/$t");
 verify_no_text('OK (no validate)');
 submit_form('OK' => {
     title => $t,
