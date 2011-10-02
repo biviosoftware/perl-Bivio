@@ -306,8 +306,7 @@ sub render {
 		    my($b);
 		    # Only first row_class counts
 		    $row =~ s/^<tr>/<tr$b>/
-			if $b = vs_html_attrs_render_one(
-			    $w, $source, 'row_class');
+			if $b = vs_html_attrs_render_one($w, $source, 'row_class');
 		    $cell .= b_use('UI.Color')->format_html($b, 'bgcolor', $req)
 			if $b = $c->render_simple_attr('cell_bgcolor', $source);
 		    $cell .= vs_html_attrs_render_one($c, $source, 'cell_class')
