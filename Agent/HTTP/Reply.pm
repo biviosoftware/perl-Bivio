@@ -1,23 +1,19 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Reply;
 use strict;
-use Bivio::Base 'Bivio::Agent::Reply';
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::Ext::ApacheConstants;
-use Bivio::IO::Config;
-use Bivio::IO::Trace;
-use Bivio::Type::DateTime;
-use UNIVERSAL;
+use Bivio::Base 'Agent.Reply';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Trace');
 our($_TRACE);
-# Can't initialize here, because get "deep recursion".  Don't ask me
-# why...
+my($_AC) = b_use('Ext.ApacheConstants');
+my($_DT) = b_use('Type.DateTime');
+my($_DC) = b_use('Bivio.DieCode');
+my($_D) = b_use('Bivio.Die');
+my($_C) = b_use('IO.Config');
 my(%_DIE_TO_HTTP_CODE);
-my($_CFG);
-Bivio::IO::Config->register({
+$_C->register(my $_CFG = {
     additional_http_headers => undef,
 });
 
@@ -50,43 +46,34 @@ EOF
 sub die_to_http_code {
     # (proto, Bivio.Die) : int
     # (proto, Bivio.DieCode, Apache.Request) : int
-    # Translates a L<Bivio::DieCode> to an L<Apache::Constant>.
+    # Translates a L<$_DC> to an L<Apache::Constant>.
     #
-    # If I<die> is C<undef>, returns C<Bivio::Ext::ApacheConstants::OK>.
+    # If I<die> is C<undef>, returns C<$_AC::OK>.
     my(undef, $die, $r) = @_;
-    return Bivio::Ext::ApacheConstants->OK
+    return $_AC->OK
 	unless defined($die);
     $die = $die->get('code')
-	if UNIVERSAL::isa($die, 'Bivio::Die');
-    return Bivio::Ext::ApacheConstants->OK
+	if $_D->is_blessed($die);
+    return $_AC->OK
 	unless defined($die);
     %_DIE_TO_HTTP_CODE = (
 	# Keep in synch with HTTP::Dispatcher
-	Bivio::DieCode->FORBIDDEN
-	    => Bivio::Ext::ApacheConstants->FORBIDDEN,
-	Bivio::DieCode->NOT_FOUND
-	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
-	Bivio::DieCode->MODEL_NOT_FOUND
-	    => Bivio::Ext::ApacheConstants->NOT_FOUND,
-	Bivio::DieCode->CLIENT_REDIRECT_TASK
-	    => Bivio::Ext::ApacheConstants->OK,
-	Bivio::DieCode->CORRUPT_QUERY
-	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
-	Bivio::DieCode->CORRUPT_FORM
-	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
-	Bivio::DieCode->INVALID_OP
-	    => Bivio::Ext::ApacheConstants->BAD_REQUEST,
-	Bivio::DieCode->INPUT_TOO_LARGE
-	    => Bivio::Ext::ApacheConstants->HTTP_REQUEST_ENTITY_TOO_LARGE,
-	Bivio::DieCode->CLIENT_ERROR
-	    => Bivio::Ext::ApacheConstants->HTTP_SERVICE_UNAVAILABLE,
+	$_DC->FORBIDDEN => $_AC->FORBIDDEN,
+	$_DC->NOT_FOUND => $_AC->NOT_FOUND,
+	$_DC->MODEL_NOT_FOUND => $_AC->NOT_FOUND,
+	$_DC->CLIENT_REDIRECT_TASK => $_AC->OK,
+	$_DC->CORRUPT_QUERY => $_AC->BAD_REQUEST,
+	$_DC->CORRUPT_FORM => $_AC->BAD_REQUEST,
+	$_DC->INVALID_OP => $_AC->BAD_REQUEST,
+	$_DC->INPUT_TOO_LARGE => $_AC->HTTP_REQUEST_ENTITY_TOO_LARGE,
+	$_DC->CLIENT_ERROR => $_AC->HTTP_SERVICE_UNAVAILABLE,
     ) unless %_DIE_TO_HTTP_CODE;
     return _error($_DIE_TO_HTTP_CODE{$die}, $r)
 	if defined($_DIE_TO_HTTP_CODE{$die});
     # The rest get mapped to SERVER_ERROR
-    Bivio::IO::Alert->warn($die, ": unknown Bivio::DieCode")
-	    unless UNIVERSAL::isa($die, 'Bivio::DieCode');
-    return _error(Bivio::Ext::ApacheConstants::SERVER_ERROR(), $r);
+    b_warn($die, ": unknown $_DC")
+        unless $_DC->is_blessed($die);
+    return _error($_AC->SERVER_ERROR, $r);
 }
 
 sub handle_config {
@@ -122,6 +109,7 @@ sub send {
 	unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::Handle');
     my($size) = $is_scalar ? length($$o) : -s $o;
     # NOTE: The -s $o and the "stat(_)" below must be near each other
+    _cookie_check($self, $req, $r);
     if ($is_scalar) {
 	# Don't allow caching of dynamically generated replies, because
 	# we don't know the contents (typically from the database)
@@ -131,9 +119,8 @@ sub send {
     }
     else {
 	$self->set_last_modified((stat(_))[9])
-	    unless $self->get_if_exists_else_put('headers', {})->{'Last-Modified'};
+	    unless $self->unsafe_get_header('Last-Modified');
     }
-
     # Don't keep the connection open on normal replies
     $r->header_out('Connection', 'close');
 
@@ -166,7 +153,7 @@ sub set_cache_private {
     # Do not allow shared caching of this response.
     my($self) = @_;
     $self->set_header('Cache-Control', 'private');
-    return;
+    return $self;
 }
 
 sub set_expire_immediately {
@@ -174,15 +161,12 @@ sub set_expire_immediately {
     # Set the page so it will expire immediately.
     my($self) = @_;
     $self->set_header(Expires => 'Tue, 01 Apr 1980 05:00:00 GMT');
-    return;
+    return $self;
 }
 
 sub set_last_modified {
-    # (self, string) : undef
-    # (self, int) : undef
-    # Sets the last modified header.
-    shift->set_header('Last-Modified', Bivio::Type::DateTime->rfc822(shift));
-    return;
+    my($self, $value) = @_;
+    return $self->set_header('Last-Modified', $_DT->rfc822($value));
 }
 
 sub set_output {
@@ -214,6 +198,13 @@ sub _add_additional_http_headers {
     return;
 }
 
+sub _cookie_check {
+    my($self, $req, $r) = @_;
+    $self->set_cache_private
+	if $req->get('cookie')->header_out($req, $r);
+    return;
+}
+
 sub _error {
     # (int, Apache.Request) : ApacheConstants.OK
     # Workaround for apache in error mode.  Sends the reply in line.
@@ -226,7 +217,7 @@ sub _error {
     return $code
 	if defined($^V)
 	    || !exists($ENV{MOD_PERL})
-	    || $code == Bivio::Ext::ApacheConstants->OK;
+	    || $code == $_AC->OK;
     $r->status($code);
     $r->content_type('text/html');
     _send_http_header(undef, undef, $r);
@@ -234,7 +225,7 @@ sub _error {
     my($uri) = $r->uri;
 
     # Ignore HEAD.  There was an error, give the whole body
-    if ($code == Bivio::Ext::ApacheConstants->NOT_FOUND) {
+    if ($code == $_AC->NOT_FOUND) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
@@ -245,7 +236,7 @@ sub _error {
 </body></html>
 EOF
     }
-    elsif ($code == Bivio::Ext::ApacheConstants->FORBIDDEN) {
+    elsif ($code == $_AC->FORBIDDEN) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
@@ -276,7 +267,7 @@ caused the error.</p>
 EOF
     }
     # This is a workaround in older Apache versions
-    return Bivio::Ext::ApacheConstants->OK;
+    return $_AC->OK;
 }
 
 sub _send_http_header {
@@ -287,8 +278,7 @@ sub _send_http_header {
     if ($req) {
 	$r->status($self->get('status'))
 	    if $self->has_keys('status');
-	$self->set_cache_private
-	    if $req->get('cookie')->header_out($req, $r);
+	_cookie_check($self, $req, $r);
         _add_additional_http_headers($self, $r);
 	my($h) = $self->unsafe_get('headers');
 	if ($h) {
@@ -302,8 +292,7 @@ sub _send_http_header {
     # Turn off KeepAlive if there are jobs.  This is because IE doesn't
     # cycle connections.  It goes back to exactly the same one.
     $r->header_out('Connection', 'close')
-	unless Bivio::Agent::Job::Dispatcher->queue_is_empty();
-
+	unless b_use('AgentJob.Dispatcher')->queue_is_empty;
     $r->send_http_header;
     return;
 }
