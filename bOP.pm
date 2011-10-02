@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.19  2011/09/28 20:07:19  moeller
+  * Bivio::Biz::Model::BlogList
+    Fix images with ^href sources in blogs
+  * Bivio::UI::View::Blog
+    Fix images with ^href sources in blogs
+    Fix images with ^href sources in blogs
+  * Bivio::UI::View::File
+    add buttons to top of file-change edit contents form
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    Allow 'link_target' to be specified on TaskMenu items
+
   Revision 11.18  2011/09/26 16:08:43  schellj
   * Bivio::Type::String
     more transliteration
