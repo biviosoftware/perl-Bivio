@@ -188,7 +188,7 @@ sub nightly {
 	    $f->chdir('..');
 	}
 	my($bconf) = $ENV{BCONF};
-	$ENV{BCONF} =~ s|\.bconf$|-unit\.bconf|;
+	$ENV{BCONF} =~ s|\.bconf$|-bunit\.bconf|;
 	my($app) = $1;
 	$self->print("bivio test unit .\n");
 	my($unit_die) = $_D->catch(sub {
