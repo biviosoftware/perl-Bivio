@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.21  2011/10/02 03:18:43  nagler
+  * Bivio::Agent::HTTP::Reply
+    send: don't set_cache_private if already set Cache-Control and is
+    scalar, because some other module either set_cache_private or wanted
+    non-private caching
+    added set_cache_max_age
+  * Bivio::Biz::Action::LocalFilePlain
+    set_cacheable_output: Moved Cache-Control/Expires to set_cache_max_age
+
   Revision 11.20  2011/10/02 00:08:40  nagler
   * Bivio::Agent::HTTP::Reply
     b_use
