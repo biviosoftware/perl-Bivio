@@ -13,10 +13,11 @@ my($_F) = b_use('Biz.File');
 my($_E) = b_use('Type.Email');
 my($_I) = b_use('Mail.Incoming');
 my($_RI) = b_use('Agent.RequestId');
+my($_FP) = b_use('Type.FilePath');
 my($_DOMAIN_SEP) = '@';
 my($_OP_SEP) = '*';
 my($_PLUS_SEP) = '+';
-my($_FP) = b_use('Type.FilePath');
+my($_TEST_RECIPIENT_HDR) = qr{^@{[b_use('Mail.Common')->TEST_RECIPIENT_HDR]}:}m;
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     filter_spam => 0,
@@ -204,7 +205,7 @@ sub _ignore_duplicate {
     my($mi) = $self->get('mail_incoming');
     return undef
 	if $self->req->if_test(
-	sub {$mi->get('header') !~ /X-Bivio-Mail-Test/i});
+	sub {$mi->get('header') !~ $_TEST_RECIPIENT_HDR});
     return undef
 	unless $rml->unsafe_load_this_or_first
 	&& _ignore_duplicate_threshold(
