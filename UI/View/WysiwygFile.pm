@@ -21,6 +21,27 @@ sub file_upload_from_wysiwyg {
 		     ),
 		     BODY(Join([
 			 vs_simple_form(FileChangeForm => [
+				    
+                             Link([
+				 sub {
+				     my($source) = @_;
+				     return $source->unsafe_get('path_info') =~ qr{^/Public/} ?
+						'Not publically available images' : 'Publically available images';
+				 }],
+				  [
+				      sub {
+					  my($source) = @_;
+					  my($path_info) =  $source->unsafe_get('path_info');
+					  my($private) = $path_info;
+					  $private =~ s/^\/Public//;
+					  return $source->format_uri({
+					      task_id => 'FORUM_FILE_UPLOAD_FROM_WYSIWYG',
+					      path_info => $path_info eq $private ?
+						  '/Public' . $path_info : $private,
+					      no_context => 1,
+					  })
+				      }]),				     
+			     BR(),
 			     DIV_err_message(
 				 FormFieldError('RealmFile.path_lc')->put(
 				     ID => 'error_field',
@@ -106,7 +127,6 @@ div.err_message {
 div.field_err {
    display: none;
 }
-
 EOF
 }
 
