@@ -1,10 +1,11 @@
-# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::DAVList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_DT) = b_use('Type.DateTime');
 
 sub dav_is_read_only {
     return 1;
@@ -27,8 +28,7 @@ sub dav_exists {
 sub dav_propfind {
     my($self) = @_;
     return {
-	getlastmodified => $self->unsafe_get('getlastmodified')
-	    || Bivio::Type::DateTime->now,
+	getlastmodified => $self->unsafe_get('getlastmodified') || $_DT->now,
 	map(($_ => $self->unsafe_get($_)), qw(uri displayname)),
     };
 }
