@@ -9,8 +9,10 @@ CORE::system("rm -rf $_tmp; mkdir $_tmp;");
 Bivio::Util::LinuxConfig->mock_dns({
     'gw1.example.com'  => '192.168.0.33',
     'gw2.example.com'  => '192.168.0.62',
+    'gw3.example.com'  => '192.168.128.1',
     'one.example.com' => '192.168.0.34',
     'two.example.com' => '192.168.0.35',
+    'three.example.com' => '192.168.182.1',
     'ns1.example.com'  => '192.168.0.60',
     'ns2.example.com'  => '192.168.0.61',
     'gw1.private.example.com' => '192.168.1.65',
@@ -35,23 +37,15 @@ Bivio::Test->unit([
 			mask => 27,
 			gateway => 'gw1.example.com',
 		    },
+		    '192.168.128.0' => {
+			mask => 17,
+			gateway => 'gw3.example.com',
+		    },
 		},
-	    }] => sub {
-		my($case, $actual) = @_;
-		my($expect) = [{
-		    map(('192.168.0.'.(32+$_) => {
-			network => '192.168.0.32',
-			mask => 27,
-			gateway => 'gw1.example.com',
-		    }), 0..30),
-		}];
-		$case->actual_return([
-		    $case->get('object')->_get_networks_config,
-		]);
-		return $expect;
-	    },
+	    }] => undef,
 	],
 	_assert_network_configured_for => [
+	    ['three.example.com'] => undef,
 	    ['one.example.com'] => undef,
 	],
 	_assert_dns_configured_for => [
@@ -209,7 +203,6 @@ EOF
 		    [$o->_file_ifcfg(qw(eth0:1 two.example.com), $gw_seen)],
 		    [$o->_file_static_routes('eth0 one.example.com')],
 		)];
-		Bivio::IO::Alert->info('FOO', $gw_seen);
 		$case->actual_return([
 		    map([$_->[0], Bivio::IO::File->read($_->[0])],  @$expect),
 		]);
