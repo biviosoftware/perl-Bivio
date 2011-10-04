@@ -58,6 +58,26 @@ sub is_ignore {
     return $_E->is_ignore($model->get($model_prefix.'email'));
 }
 
+sub unsafe_user_id_from_email {
+    my($self, $email) = @_;
+    # guard against duplicate email, use user with role, or oldest id
+    my($user_ids) = $self->map_iterate(
+	'realm_id', 'unauth_iterate_start', 'realm_id ASC', {
+	    email => $email,
+	});
+    return undef unless @$user_ids;
+
+    if (@$user_ids > 1) {
+	foreach my $user_id (@$user_ids) {
+	    return $user_id
+		if @{$self->new_other('RealmUser')->map_iterate('role', {
+		    user_id => $user_id,
+		})};
+	}
+    }
+    return $user_ids->[0];
+}
+
 sub update {
     my($self, $values) = (shift, shift);
     return $self->SUPER::update($self->internal_prepare_query($values), @_);
