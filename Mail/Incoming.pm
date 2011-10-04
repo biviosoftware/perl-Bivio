@@ -67,22 +67,8 @@ sub get_from {
 
 sub get_from_user_id {
     my($self, $req) = @_;
-    my($user_ids) = $req->use('Model.Email')->new($req)
-	->map_iterate('realm_id', 'unauth_iterate_start', 'realm_id', {
-	    email => ($self->get_from)[0],
-	});
-    return undef unless @$user_ids;
-
-    if (@$user_ids > 1) {
-	foreach my $user_id (@$user_ids) {
-	    return $user_id
-		if @{$req->use('Model.RealmUser')->new($req)
-		     ->map_iterate('role', {
-			 user_id => $user_id,
-		     })};
-	}
-    }
-    return $user_ids->[0];
+    return b_use('Model.Email')->new($req)
+	->unsafe_user_id_from_email(($self->get_from)[0]);
 }
 
 sub get_headers {
