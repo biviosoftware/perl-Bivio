@@ -355,18 +355,16 @@ sub handle_config {
     #
     # Prefix root directory.  Used for testing, e.g. /home/nagler/tmp
     my($networks) = $cfg->{networks};
-    foreach my $network_ip (keys %$networks) {
-	my($net, $host) = $network_ip =~ /^((?:\d{1,3}\.){3})(\d{1,3})$/;
-	$networks->{$network_ip}->{network} = $network_ip;
-	my($i) = (1<<(32-$networks->{$network_ip}->{mask}))-1;
-	while (--$i > 0) {
-	    $networks->{$net.++$host} = $networks->{$network_ip};
-	}
+    foreach my $network_ip (keys(%$networks)) {
+	my($n) = $networks->{$network_ip};
+	b_use('Type.CIDRNotation')
+	    ->from_literal_or_die("$network_ip/$n->{mask}")
+	    ->map_host_addresses(sub {
+	        $networks->{shift(@_)} = $n;
+		return;
+	    });
     }
-    $_CFG = {
-	%$_CFG,
-	%$cfg
-    };
+    $_CFG = {%$_CFG, %$cfg};
     return;
 }
 
