@@ -1,0 +1,9 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+PropertyModel();
+[
+    unsafe_user_id_from_email => [
+	email('root') => realm_id('root'),
+	email('x') => [undef],
+    ],
+];
