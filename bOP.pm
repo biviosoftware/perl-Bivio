@@ -28,9 +28,25 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.22  2011/10/03 04:00:16  nagler
+  * Bivio::Agent::Reply
+    need to default set_cache_max_age
+  * Bivio::Biz::Model::DAVList
+    b_use
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    use Mail.Common->TEST_RECIPIENT_HDR (was incorrectly using X-Bivio-Mail-Test)
+  * Bivio::Biz::Model::RealmDAVList
+    need to list specific order_by, because UserRealmDAVList.bunit was
+    failing on with Postgres 8.4.  Sort order was varying without it
+    being set explicitly
+  * Bivio::UI::View::Blog
+    create*() needs to reference BlogCreateForm, not BlogEditForm.
+    _edit() needs to accept $form param
+
   Revision 11.21  2011/10/02 03:18:43  nagler
   * Bivio::Agent::HTTP::Reply
     send: don't set_cache_private if already set Cache-Control and is
