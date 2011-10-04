@@ -213,11 +213,11 @@ sub _strip_subject {
 
 sub _user_id_for_update_mail {
     my($self, $realm_mail) = @_;
-    my($e) = $self->new_other('Email');
-    return $e->unauth_load({
-        email => $self->type(Email => $realm_mail->get('from_email')),
-    }) ? (modified_by_user_id => $e->get('realm_id'))
-       : ();
+    my($user_id) = $self->new_other('Email')
+	->unsafe_user_id_from_email($realm_mail->get('from_email'));
+    return $user_id
+	? (modified_by_user_id => $user_id)
+	: ();
 }
 
 1;
