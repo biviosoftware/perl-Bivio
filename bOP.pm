@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.23  2011/10/04 00:15:42  schellj
+  * Bivio::Test::Util
+    unit test bconf suffix now "-bunit"
+    remove unnecessary var
+  * Bivio::UI::View::WysiwygFile
+    Improve private/public image upload
+
   Revision 11.22  2011/10/03 04:00:16  nagler
   * Bivio::Agent::Reply
     need to default set_cache_max_age
