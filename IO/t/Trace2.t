@@ -15,6 +15,6 @@ print "ok 1\n";
 # Verify that method is defined.
 _trace();
 
-print Bivio::IO::Trace->get_call_filter eq '$sub =~ /_trace_sql/'
+print Bivio::IO::Trace->get_call_filter eq '$sub =~ /_trace_sql|_commit_or_rollback/'
     ? 'ok 2' : 'not ok 2',
     "\n";
