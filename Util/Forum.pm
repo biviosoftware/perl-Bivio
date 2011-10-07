@@ -12,6 +12,7 @@ my($_FM) = b_use('Biz.FormModel');
 my($_R) = b_use('Auth.Role');
 my($_M) = b_use('Biz.Model');
 
+
 sub USAGE {
     return <<'EOF';
 usage: bivio Forum [options] command [args..]
