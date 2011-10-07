@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.24  2011/10/05 00:26:24  moeller
+  * Bivio::Biz::Model::CRMThread
+    now calls Email->unsafe_user_id_from_email()
+  * Bivio::Biz::Model::Email
+    added unsafe_user_id_from_email()
+  * Bivio::Mail::Incoming
+    share get_from_user_id() in Model.Email->unsafe_user_id_from_email()
+  * Bivio::Util::LinuxConfig
+    need to generate networks with Type.CIDRNotation.map_host_addresses
+    b/c was only handling 24 bit subnets or smaller
+
   Revision 11.23  2011/10/04 00:15:42  schellj
   * Bivio::Test::Util
     unit test bconf suffix now "-bunit"
