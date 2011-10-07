@@ -10,7 +10,7 @@ our($_TRACE);
 b_use('IO.Config')->register(my $_CFG = {
     root_prefix => '',
     networks => {},
-});
+}); 
 
 sub USAGE {
     return <<'EOF';
