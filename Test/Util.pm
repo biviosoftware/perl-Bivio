@@ -358,6 +358,7 @@ sub _expunge {
     my(@dirs) = glob("$_CFG->{nightly_output_dir}/2?????????????");
     while (@dirs > 7) {
 	my($dir) = shift(@dirs);
+	$self->piped_exec("chmod -R a+rwx $dir");
         $self->print("Deleting old test directory: $dir\n");
 	b_use('IO.File')->rm_rf($dir);
     }
