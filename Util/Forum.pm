@@ -16,16 +16,28 @@ sub USAGE {
     return <<'EOF';
 usage: bivio Forum [options] command [args..]
 commands
-   cascade_forum_activity -- most recent forum and subforum activity
-   delete_forum -- deletes the forum
-   forum_activity -- most recent forum activity
-   make_admin_of_forum -- make user admin of forum (and subforums)
-   reparent child-forum new-parent -- updates child-forum to point at new-parent
+    cascade_forum_activity -- most recent forum and subforum activity
+    create_realm name display_name -- set user and realm to parent
+    delete_forum -- deletes the forum
+    forum_activity -- most recent forum activity
+    make_admin_of_forum -- make user admin of forum (and subforums)
+    reparent child-forum new-parent -- updates child-forum to point at new-parent
 EOF
 }
 
 sub cascade_forum_activity {
     return _activity(shift, '_cascade');
+}
+
+sub create_realm {
+    sub CREATE_REALM {[qw(ForumName DisplayName)]}
+    my($self, $bp) = shift->parameters(\@_);
+    $self->initialize_fully;
+    $self->model('ForumForm', {
+        'RealmOwner.display_name' => $bp->{DisplayName},
+	'RealmOwner.name' => $bp->{ForumName},
+    });
+    return;
 }
 
 sub delete_forum {

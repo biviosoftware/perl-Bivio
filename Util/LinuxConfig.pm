@@ -382,7 +382,7 @@ sub ifcfg_static {
     #
     # I<gateway> is an optional number identifying the gateway on the local net.
     my($ip, $net, $mask)
-	= $ip_addr =~ m!^(((?:\d{1,3}\.){3})\d{1,3})/(\d{2})$!;
+	= $ip_addr =~ m!^(((?:\d{1,3}\.){3})\d{1,3})/(\d+)$!;
     $self->usage_error($ip_addr, ": ip address must be of form 1.2.3.4/28")
 	unless $mask;
     $self->usage_error($mask, ": network must be in range from 24-31")
