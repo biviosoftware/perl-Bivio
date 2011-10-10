@@ -340,6 +340,17 @@ sub drop_and_run {
     return $self->run($sql);
 }
 
+sub drop_constraints {
+    my($self) = @_;
+
+    foreach my $file (@{_ddl_files($self)}) {
+        next unless $file =~ /constraints/;
+	$self->put(input => $file);
+	$self->drop;
+    }
+    return;
+}
+
 sub drop_object {
     my($self, $type, @object) = @_;
     foreach my $o (@object) {
