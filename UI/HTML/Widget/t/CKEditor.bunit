@@ -5,7 +5,12 @@ my($form) = Bivio::Biz::Model->new(req(), 'BlogCreateForm');
 my($name) = $form->get_field_name_for_html('body');
 $form->put_on_request;
 req()->put(font_with_style => 1); #suppress <font> tags in rendered output
-Widget();
+Widget({
+    setup_render => sub {
+	req()->set_realm('site');
+	return;
+    },
+});
 [
     [{
 	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
@@ -15,21 +20,7 @@ Widget();
 	cols => 60,
 	wrap => '',
 	edit_attributes => ' foo="bar"',
-    }] => qr
-        {
-	    <script\stype="text/javascript"\ssrc="/b/ckeditor/ckeditor\.js\?mt=\d+"></script>
-	    <textarea\sfoo="bar"\srows="2"\scols="60"\sname="$name"></textarea>
-	    <script\stype="text/javascript">
-	        CKEDITOR\.replace\("$name",\s
-	        {
-	            customConfig:\s"/b/ckeditor/bwiki_config.js",\s
-		    filebrowserImageUploadUrl:\s"/site/change-file/Public"
-	        }\);\s*
-		CKEDITOR\.config\.contentsCss=\[
-		   '/\*\sCopyright[^']+'
-		   # expect quite a few CSS lines
-		   (\s+\+\s'[^']+'){500,}
-	       ];
-	    </script>
-	}x,
+    }] => qr{<script\stype="text/javascript"\ssrc="/b/ckeditor/ckeditor\.js\?mt=\d+"></script><textarea\sfoo="bar"\srows="2"\scols="60"\sname="$name"></textarea><script\stype="text/javascript">CKEDITOR\.replace\("$name",\s{\s*customConfig:\s"/b/ckeditor/bwiki_config.js"\s*}\);
+\s*CKEDITOR\.config\.filebrowserImageUploadUrl\s=\s"/site/upload-file-from-wysiwyg/WikiData"
+\s*CKEDITOR\.config\.contentsCss=\['/\*\sCopyright[^']+'(\s+\+\s'[^']+'){500,}\];</script>}x,
 ];
