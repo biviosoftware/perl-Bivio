@@ -239,7 +239,7 @@ sub _edit_wiki_buttons {
 	['->is_substitute_user'],
     ),
         StandardSubmit({
-	    buttons => 'ok_button ok_no_validate_button cancel_button',
+	    buttons => 'ok_no_validate_button ok_button cancel_button',
 	}),
         StandardSubmit({
 	    buttons => 'ok_button cancel_button',
