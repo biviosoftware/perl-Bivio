@@ -28,10 +28,21 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.25  2011/10/07 23:43:07  nagler
+  * Bivio::Biz::IIF
+    NEW
+  * Bivio::Test::Util
+    make sure we can delete test directories
+  * Bivio::Util::Forum
+    Added create_realm
+  * Bivio::Util::IIF
+    Moved to Biz.IIF
+  * Bivio::Util::LinuxConfig
+    loosen IP regexp
+
   Revision 11.24  2011/10/05 00:26:24  moeller
   * Bivio::Biz::Model::CRMThread
     now calls Email->unsafe_user_id_from_email()
