@@ -20,6 +20,7 @@ my($_WN) = b_use('Type.WikiName');
 b_use('IO.Config')->register(my $_CFG = {
     nightly_output_dir => '/tmp/test-run',
     nightly_cvs_dir => 'perl/Bivio',
+    unit_log_dir => 'log',
 });
 my($_F) = b_use('IO.File');
 
@@ -317,6 +318,12 @@ sub unit {
 		$max = $1;
 	    }
 	});
+	my($d) = $_CFG->{unit_log_dir};
+	if ($d) {
+	    $_F->mkdir_p($d);
+	    $test =~ /(.*)\.(?:t|bunit)$/;
+	    $_F->write("$d/$1.out", $$out);
+	}
 	return $ok == $max;
     });
 }
