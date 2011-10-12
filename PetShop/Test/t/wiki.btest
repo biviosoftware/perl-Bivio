@@ -5,7 +5,7 @@ home_page();
 my($search_key) = random_string();
 my($f, $uri) = create_forum();
 visit_uri($uri = "$uri/wiki");
-submit_form(OK => {
+submit_form(Validate => {
     public => 1,
     anon => 'Here is our ^PrivatePage! ' . $search_key,
 });
@@ -13,7 +13,7 @@ verify_no_text('inline WikiText btest');
 $uri = get_uri();
 follow_link('PrivatePage');
 verify_text('not found');
-submit_form(OK => {
+submit_form(Validate => {
     public => 0,
     anon => 'v1: go back to the ^StartPage. ' . $search_key,
 });
@@ -22,7 +22,7 @@ verify_no_text('not found');
 follow_link('edit');
 verify_text('PrivatePage');
 verify_no_text('not found');
-submit_form(OK => {
+submit_form(Validate => {
     public => 0,
     anon => 'v2: go back to the ^StartPage. ' . $search_key,
 });
@@ -51,7 +51,7 @@ login_as('root');
 visit_uri($uri);
 follow_link('PrivatePage');
 follow_link(qr{edit this page}i);
-submit_form(OK => {
+submit_form(Validate => {
     public => 0,
     anon => 'v3: go back to the ^StartPage. ' . $search_key,
 });
@@ -61,7 +61,7 @@ verify_text(qr{go back to the}i);
 follow_link('Page history');
 follow_link(qr{back to current}i);
 follow_link(qr{edit this page}i);
-submit_form(OK => {
+submit_form(Validate => {
     public => 0,
     anon => 'v4: go back to the ^StartPage. ' . $search_key,
 });
