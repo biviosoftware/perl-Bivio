@@ -169,14 +169,11 @@ sub column_exists {
             AND table_name = ?',
 	    [uc($column), uc($table)],
 	) : (
-	    'FROM pg_attribute
-	    WHERE attname = ?
-	    AND attisdropped IS FALSE
-	    AND attrelid = (
-		SELECT relfilenode
-		FROM pg_class
-		WHERE relname = ?
-	    )',
+	    'FROM pg_class c, pg_attribute a
+            WHERE a.attrelid = c.oid
+            AND a.attnum > 0
+            AND a.attname = ?
+            AND c.relname = ?',
 	    [lc($column), lc($table)],
         ),
     );
