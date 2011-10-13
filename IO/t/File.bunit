@@ -94,7 +94,9 @@ my($pwd);
 		return [IO::File->new('< File/2.txt')];
 	    } => [\("1\n2\n")],
 	    # deprecated form
-	    ['File/2.txt', IO::File->new('< File/2.txt')] => DIE(),
+	    sub {
+		return ['File/2.txt', IO::File->new('< File/2.txt')];
+	    } => DIE(),
 	    ['File/not-found/3.txt'] => IO_ERROR(),
 	    sub {
 		open(STDIN, '< File/stdout.txt') or die;
