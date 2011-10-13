@@ -28,9 +28,20 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.26  2011/10/11 16:40:04  schellj
+  * Bivio::Test::Util
+    save unit test output to unit_log_dir
+  * Bivio::UI::FacadeBase
+    change text for ok_no_validate_button, ok_button for sub/super users
+  * Bivio::UI::View::Wiki
+    switch order of ok_button, ok_no_validate_button
+  * Bivio::Util::SQL
+    added drop_constraints()
+
   Revision 11.25  2011/10/07 23:43:07  nagler
   * Bivio::Biz::IIF
     NEW
