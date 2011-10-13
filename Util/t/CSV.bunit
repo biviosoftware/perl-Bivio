@@ -34,6 +34,9 @@
             ]] => [
                 \(qq{1,,2\n,,"\n\n\n",3,4\n\n"the,end"\n}),
             ],
+	    [["some\ntext"]] => [\(qq{"some\ntext"\n})],
+	    [["some\r\ntext"]] => [\(qq{"some\r\ntext"\n})],
+	    [["some\rtext"]] => [\(qq{"some\rtext"\n})],
         ],
         parse_records => [
             [\(my $x = <<'EOF')]
