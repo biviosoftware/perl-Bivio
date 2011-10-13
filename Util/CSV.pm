@@ -48,7 +48,7 @@ sub from_one_col {
     my(undef, $col) = @_;
     return '' unless defined($col);
     return $col
-	unless $col =~ /(?:^\s|\s$|$_QUOTE|$_END_OF_VALUE)/;
+	unless $col =~ /(?:^\s|\s$|$_QUOTE|$_END_OF_VALUE|\r)/;
     $col =~ s/"/""/g;
     return qq{"$col"};
 }
