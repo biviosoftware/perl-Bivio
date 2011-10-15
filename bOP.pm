@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.27  2011/10/13 21:19:08  schellj
+  * Bivio::Util::CSV
+    cols containing \r need to be quoted
+  * Bivio::Util::SQL
+    changed column_exists() sql for pg
+
   Revision 11.26  2011/10/11 16:40:04  schellj
   * Bivio::Test::Util
     save unit test output to unit_log_dir
