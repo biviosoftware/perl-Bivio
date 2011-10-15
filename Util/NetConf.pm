@@ -15,13 +15,15 @@ sub generate {
     my($self, $bp) = shift->parameters(\@_);
     $self->put(
 	LinuxConfig => $self->new_other('LinuxConfig'),
-	net_conf => _parse_net_conf($bp->{conf}->{net} || b_die($bp->{conf}, ': no {net}')),
+	net_conf => _parse_net_conf(
+	    $bp->{conf}->{net} || b_die($bp->{conf}, ': no {net}')),
 	domains => [],
     );
-    my($hc) = $bp->{conf}->{host}->{net} || b_die($bp->{conf}, ': no conf->{host}->{net}');
+    my($devices) = $bp->{conf}->{host}->{devices}
+	|| b_die($bp->{conf}, ': no conf->{host}->{devices}');
     # Order matters: Hostname is always first network sorted alpha (eth0)
-    foreach my $device (sort(keys(%$hc))) {
-	_generate_ifcfg($self, $device, $hc->{$device});
+    foreach my $device (sort(keys(%$devices))) {
+	_generate_ifcfg($self, $device, $devices->{$device});
     }
     _generate_network($self);
     _generate_resolv_conf($self);

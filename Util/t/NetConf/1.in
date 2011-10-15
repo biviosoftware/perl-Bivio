@@ -1,6 +1,6 @@
 # -*-cperl-*-
 {
-    host => {net => {eth0 => 'www.bivio.biz', 'eth0:1' => 'bivio.biz'}},
+    host => {devices => {eth0 => 'www.bivio.biz', 'eth0:1' => 'bivio.biz'}},
     net => {
         global => {
 	    search_domain => 'bivio.biz',
