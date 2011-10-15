@@ -337,13 +337,13 @@ v2:
 v2:# The order of this list matters a bit
 v2:#? LoadModule actions_module modules/mod_actions.so
 v2:LoadModule alias_module modules/mod_alias.so
-v2:#? LoadModule auth_basic_module modules/mod_auth_basic.so
+v2:LoadModule auth_basic_module modules/mod_auth_basic.so
 v2:#? LoadModule auth_digest_module modules/mod_auth_digest.so
 v2:#? LoadModule authn_alias_module modules/mod_authn_alias.so
 v2:#? LoadModule authn_anon_module modules/mod_authn_anon.so
 v2:#? LoadModule authn_dbm_module modules/mod_authn_dbm.so
 v2:#? LoadModule authn_default_module modules/mod_authn_default.so
-v2:#? LoadModule authn_file_module modules/mod_authn_file.so
+v2:LoadModule authn_file_module modules/mod_authn_file.so
 v2:#? LoadModule authnz_ldap_module modules/mod_authnz_ldap.so
 v2:#? LoadModule authz_dbm_module modules/mod_authz_dbm.so
 v2:#? LoadModule authz_default_module modules/mod_authz_default.so
