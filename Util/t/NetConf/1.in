@@ -1,0 +1,19 @@
+# -*-cperl-*-
+{
+    host => {net => {eth0 => 'www.bivio.biz', 'eth0:1' => 'bivio.biz'}},
+    net => {
+        global => {
+	    search_domain => 'bivio.biz',
+	},
+	net1 => {
+	    cidr => '66.228.55.0/24',
+	    gateway => 'gw-li297.linode.com',
+	    dns => [qw(resolver1.dallas.linode.com resolver2.dallas.linode.com)],
+	},
+	net2 => {
+	    cidr => '96.126.116.0/24',
+	    gateway => 'gw-li341.linode.com',
+	    dns => [qw(cachens1.viawest.net cachens2.viawest.net)],
+	},
+    },
+};
