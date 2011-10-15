@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::Release;
 use strict;
@@ -517,6 +517,14 @@ sub update {
     return @$x ? $self->install(@$x) : "All packages up to date\n";
 }
 
+sub _b_release_define {
+    my($name, $string) = @_;
+    $string = ${b_use('IO.Ref')->to_string($string, undef, 0)}
+        if ref($string);
+    $string =~ s/\n/ /g;
+    return '%define ' . $name . ' ' . $string;
+}
+
 sub _b_release_files {
     my($instructions) = @_;
     # Evaluates line oriented instructions.
@@ -753,7 +761,7 @@ EOF
 	$buf .= $line
 	    unless $line =~ /^(buildroot|release|name|provides): /i;
     }
-    $buf =~ s/\b(_b_release_files\([^;]+\));/$1/eeg;
+    $buf =~ s/\b(_b_release_(?:files|define)\([^;]+\));/$1/eeg;
 
     $version = $1 if $buf =~ /\nVersion:\s*(\S+)/i;
     my($specout) = "$specin-build";
