@@ -122,6 +122,7 @@ sub run {
     my($perl_handler) = $_V2 ? 'PerlResponseHandler' : 'PerlHandler';
     my($version_config) = $_V2 ? <<'2' : <<'1';
 PerlModule Apache2::compat
+PerlTransHandler Bivio::Agent::HTTP::Dispatcher::trans_handler
 2
 ResourceConfig /dev/null
 AccessConfig /dev/null
