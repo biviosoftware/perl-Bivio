@@ -74,4 +74,9 @@ sub initialize {
     return;
 }
 
+sub trans_handler {
+    shift->filename('');
+    return Bivio::Ext::ApacheConstants->OK();
+}
+
 1;
