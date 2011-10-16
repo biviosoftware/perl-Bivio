@@ -1,5 +1,5 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.28  2011/10/15 23:26:49  nagler
+  * Bivio::Type::CIDRNotation
+    use IPAddress REGEX
+    Added get_net_mask and assert_host_address
+  * Bivio::Type::IPAddress
+    NEW
+  * Bivio::Util::HTTPConf
+    turn on basic auth
+  * Bivio::Util::NetConf
+    NEW
+  * Bivio::Util::Release
+    added _b_release_define so can have formatted %define's in spec files
+
   Revision 11.27  2011/10/13 21:19:08  schellj
   * Bivio::Util::CSV
     cols containing \r need to be quoted
