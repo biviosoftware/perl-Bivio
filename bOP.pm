@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.29  2011/10/16 04:01:07  nagler
+  * Bivio::Util::HTTPConf
+    Load mod_authz_user and mod_authn_default
+    load mod_authz_default module (with this, you'll get weird errors)
+
   Revision 11.28  2011/10/15 23:26:49  nagler
   * Bivio::Type::CIDRNotation
     use IPAddress REGEX
