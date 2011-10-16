@@ -346,7 +346,7 @@ v2:LoadModule authn_default_module modules/mod_authn_default.so
 v2:LoadModule authn_file_module modules/mod_authn_file.so
 v2:#? LoadModule authnz_ldap_module modules/mod_authnz_ldap.so
 v2:#? LoadModule authz_dbm_module modules/mod_authz_dbm.so
-v2:#? LoadModule authz_default_module modules/mod_authz_default.so
+v2:LoadModule authz_default_module modules/mod_authz_default.so
 v2:#? LoadModule authz_groupfile_module modules/mod_authz_groupfile.so
 v2:LoadModule authz_host_module modules/mod_authz_host.so
 v2:#? LoadModule authz_owner_module modules/mod_authz_owner.so
