@@ -342,7 +342,7 @@ v2:#? LoadModule auth_digest_module modules/mod_auth_digest.so
 v2:#? LoadModule authn_alias_module modules/mod_authn_alias.so
 v2:#? LoadModule authn_anon_module modules/mod_authn_anon.so
 v2:#? LoadModule authn_dbm_module modules/mod_authn_dbm.so
-v2:#? LoadModule authn_default_module modules/mod_authn_default.so
+v2:LoadModule authn_default_module modules/mod_authn_default.so
 v2:LoadModule authn_file_module modules/mod_authn_file.so
 v2:#? LoadModule authnz_ldap_module modules/mod_authnz_ldap.so
 v2:#? LoadModule authz_dbm_module modules/mod_authz_dbm.so
@@ -350,7 +350,7 @@ v2:#? LoadModule authz_default_module modules/mod_authz_default.so
 v2:#? LoadModule authz_groupfile_module modules/mod_authz_groupfile.so
 v2:LoadModule authz_host_module modules/mod_authz_host.so
 v2:#? LoadModule authz_owner_module modules/mod_authz_owner.so
-v2:#? LoadModule authz_user_module modules/mod_authz_user.so
+v2:LoadModule authz_user_module modules/mod_authz_user.so
 v2:LoadModule autoindex_module modules/mod_autoindex.so
 v2:#? LoadModule cache_module modules/mod_cache.so
 v2:LoadModule cgi_module modules/mod_cgi.so
