@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.30  2011/10/16 23:05:16  nagler
+  * Bivio::Agent::HTTP::Dispatcher
+    added a trans_handler, because apache 2.0 reports:
+    Module bug?  Request filename is missing for URI /
+    You need to set filename to something so that Apache's trans_handler
+    code doesn't produce this message
+  * Bivio::Util::HTTPConf
+    Changed trans_handler to 'Bivio::Agent::HTTP::Dispatcher::trans_handler' to fix
+    Module bug?  Request filename is missing for URI /
+  * Bivio::Util::HTTPD
+    set PerlTransHandler for 2.0 (good for testing so matches what
+    Util.HTTPConf does
+
   Revision 11.29  2011/10/16 04:01:07  nagler
   * Bivio::Util::HTTPConf
     Load mod_authz_user and mod_authn_default
