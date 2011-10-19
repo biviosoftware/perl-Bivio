@@ -57,6 +57,7 @@ sub delete_model {
 	    $req,
 	    [delete_model => $id],
 	) unless ref($proto);
+	$proto->acquire_lock($req);
 	_delete($proto, _primary_term($id));
 	return;
     });
@@ -98,6 +99,7 @@ sub get_stemmer {
 sub get_values_for_primary_id {
     my($proto, $primary_id, $model, $attr) = @_;
     my($req) = $model->req;
+    $proto->acquire_lock($req);
     my($res);
     my($die) = Bivio::Die->catch_quietly(sub {
         $res = $req->perf_time_op(__PACKAGE__, sub {
@@ -149,6 +151,7 @@ sub update_model {
 	$model->get_request,
 	[update_model => $model->simple_package_name, $model->get_primary_id],
     ) unless ref($proto);
+    $proto->acquire_lock($req);
     my($class, $id) = @_;
     $model = $_M->new($req, $class);
     return
