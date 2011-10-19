@@ -65,6 +65,7 @@ sub rebuild_realm {
 	$_A->reset_warn_counter;
 	return;
     };
+    $_X->acquire_lock($req);
     _map_classes(
 	sub {
 	    my($class) = @_;
