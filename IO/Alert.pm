@@ -503,6 +503,9 @@ sub _format_string_simple {
     local($SIG{__WARN__});
     eval {$o = $o->as_string}
 	if ref($o) && UNIVERSAL::can($o, 'as_string');
+    # Sometimes string is an object (e.g. APR::Error) which doesn't
+    # implement overloading properly so just force to be a string now.
+    $o = "$o";
     $o =~ s/[\200-\377]//g
 	if $_STRIP_BIT8;
     return length($o) > $_MAX_ARG_LENGTH
@@ -568,10 +571,9 @@ sub _timestamp {
 }
 
 sub _warn_handler {
-    # (string) : undef
     # Handler for $SIG{__WARN__}.  Reformats message.  May output stack trace
     # if $_STACK_TRACE_WARN.
-    my($msg) = @_;
+    my($msg) = __PACKAGE__->format_args($_[0]);
     # Trim perl's message format (not enough info)
     __PACKAGE__->warn(__PACKAGE__->fixup_perl_error($msg));
     __PACKAGE__->print_stack()
