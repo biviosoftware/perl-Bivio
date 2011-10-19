@@ -28,7 +28,6 @@ my($_VARS) = {
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     timeout => 120,
-    trans_handler => 'Bivio::Agent::HTTP::Dispatcher::trans_handler',
     servers => 4,
     httpd_init_rc => '/etc/rc.d/init.d/httpd',
     httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
@@ -169,7 +168,6 @@ PerlSetEnv BCONF $bconf
 # Override the translation handler to avoid local file permission checks
 PerlModule Bivio::Ext::ApacheConstants
 PerlModule Bivio::Agent::HTTP::Dispatcher
-@{[$vars->{trans_handler} ? 'PerlTransHandler ' . $vars->{trans_handler} : '']}
 
 <Location />
     SetHandler perl-script
