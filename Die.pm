@@ -97,7 +97,7 @@ sub catch {
     local($_CURRENT_SELF);
     local($_IN_CATCH) = 1;
     local($SIG{__DIE__}) = sub {
-	my($msg) = @_;
+	my($msg) = $_A->format_args($_[0]);
 	_handle_die(
 	    _new_from_core_die(
 		$proto,
