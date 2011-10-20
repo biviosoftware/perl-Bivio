@@ -138,7 +138,7 @@ PerlFreshRestart off
     close(DATA);
     if ($self->is_execute) {
 	$self->print("Starting: $_HTTPD @start_mode -d $pwd -f $pwd/$conf on port $port\n");
-	$self->print("tail -f httpd/stderr.log\n")
+	$self->print("tail -f files/httpd/stderr.log\n")
 	    if $background;
 	Bivio::IO::File->chdir($pwd);
 	while (1) {
@@ -270,6 +270,7 @@ CustomLog $log combined
 TypesConfig $mime_types
 DefaultType text/plain
 LockFile httpd.lock
+ExtendedStatus On
 
 <Directory />
     AllowOverride None
@@ -288,6 +289,10 @@ ErrorDocument 413 /m/upload-too-large.html
     </Location>
     <Location /s>
         SetHandler perl-script
+        $apache_status
+    </Location>
+    <Location /z>
+        SetHandler server-status
         $apache_status
     </Location>
     $additional_locations
