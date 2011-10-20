@@ -177,6 +177,8 @@ sub validate_uri {
 #TODO: check external links (could even check mailto: if local)
     return 1
 	if $uri =~ /^\w+:/i;
+    $uri = $self->get('uri_root') . $uri
+	unless $uri =~ m{^/};
 #TODO: Need simpler check, because not always in correct context
     return $self->call_embedded_task($uri, $wiki_state) ? 1 : 0;
 }
@@ -199,7 +201,14 @@ sub _new {
 	uri_cache => {},
 	errors => [],
 	ignore_regexp => _ignore_regexp($realm_id, $req),
+	uri_root => _uri_root($proto, $req),
     })->put_on_request($req);
+}
+
+sub _uri_root {
+    my($proto, $req) = @_;
+    my($uri) = ($req->unsafe_get('initial_uri') || '') =~ m{^.*?(/.*/)};
+    return $uri || '/';
 }
 
 sub _validate_path {
