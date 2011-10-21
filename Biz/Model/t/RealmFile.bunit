@@ -567,4 +567,30 @@ my($auth_uid) = sub {
 	],
 	get_content => 'iulv2',
     ],
+    [req()] => [
+	create_folder => [
+	    [$a->('empty')] => $commit,
+	    [$a->('empty/empty')] => $commit,
+	    [$a->('non_empty')] => $commit,
+	    [$a->('non_empty/non_empty')] => $commit,
+	],
+	create_with_content => [
+	    [$a->('non_empty/non_empty/file1'), \('file1')] => $commit,
+	],
+	load => [
+	    [$a->('empty')] => not_die(),
+	    [$a->('empty/empty')] => not_die(),
+	    [$a->('non_empty')] => not_die(),
+	    [$a->('non_empty/non_empty')] => not_die(),
+	    [$a->('non_empty/non_empty/file1')] => not_die(),
+	],
+	delete_empty_folders => $commit,
+	load => [
+	    [$a->('empty')] => MODEL_NOT_FOUND(),
+	    [$a->('empty/empty')] => MODEL_NOT_FOUND(),
+	    [$a->('non_empty')] => not_die(),
+	    [$a->('non_empty/non_empty')] => not_die(),
+	    [$a->('non_empty/non_empty/file1')] => not_die(),
+	],
+    ],
 ];
