@@ -124,6 +124,31 @@ sub delete_deep {
     return shift->unauth_delete_deep(@_);
 }
 
+sub delete_empty_folders {
+    my($self) = @_;
+    my($rf) = $self->new_other('RealmFile')->set_ephemeral;
+    my($folders) = $rf->map_iterate(sub {
+	my($it) = @_;
+	my $d = () = $it->get('path') =~ m!/!g;
+	return {
+	    depth => $d,
+	    realm_file_id => $it->get('realm_file_id'),
+	};
+    }, {
+	is_folder => 1,
+    });
+    for my $f (sort {$b->{depth} <=> $a->{depth}} @$folders) {
+	$rf->unauth_load({
+	    realm_file_id => $f->{realm_file_id},
+	});
+	$rf->delete({
+	    override_is_read_only => 1,
+	    override_versioning => 1,
+	}) if $rf->is_empty;
+    }
+    return;
+}
+
 sub get_content {
     return _read(_filename(@_));
 }
@@ -291,7 +316,10 @@ sub is_empty {
 	->set_ephemeral
 	->do_iterate(
 	    sub {$got_one++},
-	    {path_info => $self->get('path')},
+	    {
+		auth_id => $self->get('realm_id'),
+		path_info => $self->get('path')
+	    },
 	);
     return $got_one ? 0 : 1;
 }
