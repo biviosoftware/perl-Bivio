@@ -28,10 +28,24 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.31  2011/10/19 04:11:02  nagler
+  * Bivio::Die
+    format the incoming SIG{DIE} msg, because it may be an improperly
+    overloaded object (APR::Error doesn't implement "eq", for example)
+  * Bivio::IO::Alert
+    format the incoming SIG{WARN} msg, because it may be an improperly
+    overloaded object (APR::Error doesn't implement "eq", for example)
+    format_args() stringifies incoming objects.
+  * Bivio::Search::Xapian
+    acquire_lock everywhere
+  * Bivio::Util::HTTPConf
+    no trans_handler
+  * Bivio::Util::Search
+    acquire_lock at start of rebuild_realm
+
   Revision 11.30  2011/10/16 23:05:16  nagler
   * Bivio::Agent::HTTP::Dispatcher
     added a trans_handler, because apache 2.0 reports:
