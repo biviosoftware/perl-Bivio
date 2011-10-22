@@ -20,7 +20,7 @@ echo two > file2.txt
 _b_release_define(bunit_macro1 => {
     bunit_file => '/file1.txt',
     bunit_sub => sub {
-        IO_File()->write('file3.txt', 'three');
+        IO_File()->write('file3.txt', 'three') ;
 	return;
     },
 });
