@@ -28,6 +28,7 @@ _b_release_define(bunit_macro2 => '/file2.txt');
 
 /usr/bin/b-shell batch <<'EOF'
 Release();
-{%{bunit_macro1}}->{bunit_sub}->();
+my($x) = {%{bunit_macro1}};
+$x->{bunit_sub}->();
 EOF
 
