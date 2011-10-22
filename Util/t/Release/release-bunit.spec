@@ -19,12 +19,3 @@ _b_release_files(q{
     %files
 });
 
-%post
-/usr/bin/b-shell batch <<'EOF'
-Release();
-my($bm) = {%{bunit_macro1}};
-IO_File()->write(
-    $ENV{RPM_DOC_DIR},
-    IO_Ref()->to_string($bm),
-);
-EOF
