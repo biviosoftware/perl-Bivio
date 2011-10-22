@@ -16,13 +16,18 @@ mkdir $RPM_BUILD_ROOT
 cd $RPM_BUILD_ROOT
 echo one > file1.txt
 echo two > file2.txt
-echo three > file3.txt
 
 _b_release_define(bunit_macro1 => {
     bunit_file => '/file1.txt',
     bunit_sub => sub {
-        b_info('echo hello') ;
+        IO_File()->write('file3.txt', 'three');
 	return;
     },
 });
 _b_release_define(bunit_macro2 => '/file2.txt');
+
+/usr/bin/b-shell batch <<'EOF'
+Release();
+{%{bunit_macro1}}->{bunit_sub}->();
+EOF
+
