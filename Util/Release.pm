@@ -55,6 +55,7 @@ use URI::Heuristic ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+our($_MACROS);
 my($_CVS_CHECKOUT) = 'cvs -Q checkout -f -r';
 my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_FACADES_DIR) = 'facades';
@@ -519,8 +520,9 @@ sub update {
 
 sub _b_release_define {
     my($name, $string) = @_;
+    $_MACROS->{$name} = $string;
     $string = ${b_use('IO.Ref')->to_string($string, undef, 0)}
-        if ref($string);
+	if ref($string);
     $string =~ s/\n/ /g;
     return '%define ' . $name . ' ' . $string;
 }
@@ -532,7 +534,9 @@ sub _b_release_files {
     my($res) = "cd \$RPM_BUILD_ROOT\n";
     foreach my $line (split(/\n/, $instructions)) {
 	$line =~ s/^\s+|\s+$//g;
-	next unless length($line);
+	$line =~ s/^\$\{(\w+)\}(.*)/"\$_MACROS->{$1}$2 || ''"/ee;
+	next
+	    unless length($line);
 	if ($line =~ /^\%defattr/) {
 	    $res .= "echo '$line'";
 	}
@@ -761,6 +765,7 @@ EOF
 	$buf .= $line
 	    unless $line =~ /^(buildroot|release|name|provides): /i;
     }
+    local($_MACROS) = {};
     $buf =~ s/\b(_b_release_(?:files|define)\([^;]+\));/$1/eeg;
 
     $version = $1 if $buf =~ /\nVersion:\s*(\S+)/i;
