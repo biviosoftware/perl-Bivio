@@ -18,5 +18,11 @@ echo one > file1.txt
 echo two > file2.txt
 echo three > file3.txt
 
-_b_release_define(bunit_macro1 => {bunit_file => '/file1.txt'});
+_b_release_define(bunit_macro1 => {
+    bunit_file => '/file1.txt',
+    bunit_sub => sub {
+        b_info('echo hello') ;
+	return;
+    },
+});
 _b_release_define(bunit_macro2 => '/file2.txt');
