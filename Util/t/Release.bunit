@@ -9,6 +9,7 @@ config({
 	rpm_user => $ENV{USER},
 	rpm_group => $ENV{USER},
 	tmp_dir => IO_File()->mkdir_p("$tmp/build"),
+	cvs_rpm_spec_dir => 'perl/Bivio/Util/t/Release',
     },
 });
 [
