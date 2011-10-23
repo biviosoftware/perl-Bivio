@@ -9,11 +9,73 @@ config({
 	rpm_user => $ENV{USER},
 	rpm_group => $ENV{USER},
 	tmp_dir => IO_File()->mkdir_p("$tmp/build"),
-	cvs_rpm_spec_dir => 'perl/Bivio/Util/t/Release',
+	cvs_rpm_spec_dir => 'not-needed',
     },
 });
+IO_File()->chdir($tmp);
+my $spec = 'release-bunit.spec';
+IO_File()->write(
+    $spec,
+    << 'END',
+Summary: Release.bunit test data
+Group: Bivio/Test
+
+_b_release_include('release-bunit.include');
+
+_b_release_files(q{
+    %defattr(440,root,root)
+    ${bunit_macro2}
+
+    ${bunit_macro1}->{bunit_file}
+    ${bunit_macro1}->{not_found_value}
+
+    %
+    +
+
+    %files
+});
+END
+);
+IO_File()->write(
+    'release-bunit.include',
+    << 'END',
+%description
+%{summary}
+
+%prep
+
+%build
+
+%clean
+test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
+
+%install
+test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
+mkdir $RPM_BUILD_ROOT
+cd $RPM_BUILD_ROOT
+echo one > file1.txt
+echo two > file2.txt
+
+_b_release_define(bunit_macro1 => {
+    bunit_file => q{
+        %attr(444,-,-)
+        /file1.txt
+    },
+    bunit_eval => q{
+        IO_File()->write('file3.txt', 'three') ;
+    },
+});
+_b_release_define(bunit_macro2 => '/file2.txt');
+
+/usr/bin/b-shell batch <<'EOF'
+Release();
+my($x) = {%{bunit_macro1}};
+Bivio::Die->eval_or_die($x->{bunit_eval});
+EOF
+END
+);
 [
-    [qw(build release-bunit)] => sub {
+    [build => $spec] => sub {
 	my($rpm) = "$home/release-bunit-HEAD.rpm";
 	assert_equals(1, -l $rpm);
 	assert_equals("/file1.txt\n/file2.txt\n/file3.txt\n", scalar(`rpm -qlp $rpm`));
