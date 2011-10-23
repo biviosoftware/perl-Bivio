@@ -532,7 +532,7 @@ sub _b_release_files {
     # Evaluates line oriented instructions.
     my($prefix) = '';
     my($res) = "cd \$RPM_BUILD_ROOT\n";
-    my($instructions) = [split(/\n/, $instructions)];
+    $instructions = [split(/\n/, $instructions)];
     while (defined(my $line = shift(@$instructions))) {
 	$line =~ s/^\s+|\s+$//g;
 	next
