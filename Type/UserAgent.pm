@@ -63,10 +63,7 @@ sub has_table_layout_bug {
 }
 
 sub is_browser {
-    my($self, $req) = @_;
-    $self = $req->get(ref($self) || $self)
-	if $req;
-    return $self->get_name =~ /^BROWSER/ ? 1 : 0;
+    return shift->self_from_req(@_)->get_name =~ /^BROWSER/ ? 1 : 0;
 }
 
 sub is_continuous {
@@ -98,18 +95,24 @@ sub is_mobile_device {
     return shift->equals_by_name(qw(BROWSER_IPHONE));
 }
 
+sub is_real_user {
+    my($self) = shift->self_from_req(@_);
+    return $self->is_browser && !$self->eq_browser_robot ? 1 : 0;
+}
+
+sub is_robot {
+    my($self) = shift->self_from_req(@_);
+    return $self->eq_browser_robot;
+}
+
 sub _is_robot {
     my(undef, $ua) = @_;
     return $ua =~ qr{
-        googlebot
-        |mediapartners
-        |adsbot
+        mediapartners
         |slurp
         |yahooseeker
-        |msnbot
         |teoma
         |yandex
-        |bingbot
         |(?:(?:ro)?bot|spider|crawler)(?:\.|/)
         |(?:/|:)(?:(?:ro)?bot|spider|crawler)
         |^davclnt$
