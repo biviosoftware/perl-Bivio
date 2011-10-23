@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.33  2011/10/23 02:20:18  nagler
+  * Bivio::Util::Release
+    Save the values of _b_release_define() so they can not only be used in
+    other sections but also in _b_release_file.  See Release.bunit as an
+    example.
+    need to allow semicolons in arguments to _b_release_*()
+    _b_release_files: handle multi-line macro expansions
+  * Bivio/Util/t/Release
+    removed
+
   Revision 11.32  2011/10/21 23:16:20  schellj
   * Bivio::Biz::Action::WikiValidator
     added the uri root to uris missing a leading /
