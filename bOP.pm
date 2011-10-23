@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.32  2011/10/21 23:16:20  schellj
+  * Bivio::Biz::Action::WikiValidator
+    added the uri root to uris missing a leading /
+  * Bivio::Biz::Model::RealmFile
+    add delete_empty_folders
+    set auth_id to loaded realm_id on RealmFileList query in is_empty
+  * Bivio::Util::HTTPD
+    fixed "tail -f ..." message
+    added ExtendedStatus On and /z server-status location
+
   Revision 11.31  2011/10/19 04:11:02  nagler
   * Bivio::Die
     format the incoming SIG{DIE} msg, because it may be an improperly
