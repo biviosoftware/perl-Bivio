@@ -18,7 +18,10 @@ echo one > file1.txt
 echo two > file2.txt
 
 _b_release_define(bunit_macro1 => {
-    bunit_file => '/file1.txt',
+    bunit_file => q{
+        %attr(444,-,-)
+        /file1.txt
+    },
     bunit_eval => q{
         IO_File()->write('file3.txt', 'three') ;
     },
