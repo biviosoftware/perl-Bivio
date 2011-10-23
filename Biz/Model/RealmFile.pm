@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmFile;
 use strict;
@@ -127,24 +127,39 @@ sub delete_deep {
 sub delete_empty_folders {
     my($self) = @_;
     my($rf) = $self->new_other('RealmFile')->set_ephemeral;
-    my($folders) = $rf->map_iterate(sub {
-	my($it) = @_;
-	my $d = () = $it->get('path') =~ m!/!g;
-	return {
-	    depth => $d,
-	    realm_file_id => $it->get('realm_file_id'),
-	};
-    }, {
-	is_folder => 1,
-    });
-    for my $f (sort {$b->{depth} <=> $a->{depth}} @$folders) {
-	$rf->unauth_load({
-	    realm_file_id => $f->{realm_file_id},
-	});
-	$rf->delete({
-	    override_is_read_only => 1,
-	    override_versioning => 1,
-	}) if $rf->is_empty;
+    while (1) {
+	my($folders) = b_use('Type.PrimaryIdArray')
+	    ->from_literal(
+		$rf->map_iterate(
+		    sub {shift->get('realm_file_id')},
+		    {is_folder => 1},
+		),
+	    );
+	last
+	    if $folders->as_length <= 1;
+	my($to_delete) = $folders->exclude(
+	    b_use('Biz.ListModel')
+	    ->new_anonymous({
+		primary_key => ['RealmFile.folder_id'],
+		want_select_distinct => 1,
+#TODO:	            ignore_model_primary_keys => 1,
+		other => [
+		    {
+			name => 'RealmFile.realm_file_id',
+			in_select => 0,
+		    },
+		],
+		auth_id => 'RealmFile.realm_id',
+	    })->map_iterate(
+		sub {shift->get('RealmFile.folder_id')},
+	    ),
+        );
+	last
+	    if $to_delete->as_length <= 0;
+	$to_delete->do_iterate(sub {
+	    $rf->delete({realm_file_id => shift});
+	    return 1;
+        });
     }
     return;
 }
