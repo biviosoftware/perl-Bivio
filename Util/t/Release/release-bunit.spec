@@ -9,7 +9,6 @@ _b_release_files(q{
     %defattr(440,root,root)
     ${bunit_macro2}
 
-    %attr(444,-,-)
     ${bunit_macro1}->{bunit_file}
     ${bunit_macro1}->{not_found_value}
 
