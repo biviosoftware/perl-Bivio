@@ -532,11 +532,15 @@ sub _b_release_files {
     # Evaluates line oriented instructions.
     my($prefix) = '';
     my($res) = "cd \$RPM_BUILD_ROOT\n";
-    foreach my $line (split(/\n/, $instructions)) {
+    my($instructions) = [split(/\n/, $instructions)];
+    while (defined(my $line = shift(@$instructions))) {
 	$line =~ s/^\s+|\s+$//g;
-	$line =~ s/^\$\{(\w+)\}(.*)/"\$_MACROS->{$1}$2 || ''"/ee;
 	next
 	    unless length($line);
+	if ($line =~ s/^\$\{(\w+)\}(.*)/"\$_MACROS->{$1}$2 || ''"/ee) {
+	    unshift(@$instructions, split(/\n/, $line));
+	    next;
+	}
 	if ($line =~ /^\%defattr/) {
 	    $res .= "echo '$line'";
 	}
