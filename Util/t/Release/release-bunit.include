@@ -19,13 +19,15 @@ echo two > file2.txt
 
 _b_release_define(bunit_macro1 => {
     bunit_file => '/file1.txt',
-    bunit_sub => sub {},
+    bunit_eval => q{
+        IO_File()->write('file3.txt', 'three') ;
+    },
 });
 _b_release_define(bunit_macro2 => '/file2.txt');
 
 /usr/bin/b-shell batch <<'EOF'
 Release();
 my($x) = {%{bunit_macro1}};
-$x->{bunit_sub}->();
+Bivio::Die->eval_or_die($x->{bunit_eval});
 EOF
 
