@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software Inc.  All Rights Reserved.
+# Copyright (c) 2008-2011 bivio Software Inc.  All Rights Reserved.
 # $Id$
 Request();
 options({
@@ -68,6 +68,7 @@ options({
         has_table_layout_bug => 0,
         is_browser => 0,
         is_css_compatible => 0,
+	is_real_user => 0,
     ],
     'BROWSER_HTML3' => [
         has_over_caching_bug => 0,
@@ -116,5 +117,14 @@ options({
         has_table_layout_bug => 1,
         is_browser => 1,
         is_css_compatible => 1,
+	is_real_user => 1,
+    ],
+    'BROWSER_ROBOT' => [
+        has_over_caching_bug => 0,
+        has_table_layout_bug => 0,
+        is_browser => 1,
+	eq_browser_robot => 1,
+        is_css_compatible => 1,
+	is_real_user => 0,
     ],
 ];
