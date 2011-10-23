@@ -460,6 +460,13 @@ sub return_scalar_or_array {
 	    ': method must be called in array context');
 }
 
+sub self_from_req {
+    my($proto) = shift;
+    return $proto->unsafe_self_from_req(@_)
+	|| Bivio::Die->die($proto, ': not on request');
+
+}
+
 sub simple_package_name {
     return (shift->package_name =~ /([^:]+$)/)[0];
 }
@@ -472,7 +479,9 @@ sub type {
 
 sub unsafe_self_from_req {
     my($proto, $req) = @_;
-    return $req->unsafe_get($proto->as_classloader_map_name);
+    # It's really unsafe_self_from_req_or_proto, but this is a common pattern.
+    return $req ? $req->unsafe_get($proto->as_classloader_map_name)
+	: $proto;
 }
 
 sub ureq {
