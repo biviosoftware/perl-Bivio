@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.34  2011/10/23 23:28:41  nagler
+  * Bivio::Biz::Model::RealmFile
+    rewrote delete_empty_folders to not delete '/' and to not rely on
+    pattern matching or multiple questions (is_empty) on every row.
+  * Bivio::Type::UserAgent
+    added is_robot
+    added is_real_user (is_browser & is_robot)
+  * Bivio::UNIVERSAL
+    added self_from_req
+    Changed unsafe_self_from_req to work if no request is passed, similar
+    to Facade->get_from_request_or_self
+
   Revision 11.33  2011/10/23 02:20:18  nagler
   * Bivio::Util::Release
     Save the values of _b_release_define() so they can not only be used in
