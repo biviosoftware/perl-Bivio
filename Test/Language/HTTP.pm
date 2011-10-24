@@ -680,6 +680,24 @@ sub send_request {
     return;
 }
 
+sub set_user_agent_to_actual_browser {
+    my($self) = @_;
+    $self->user_agent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.5; rv:7.0.1) Gecko/20100101 Firefox/7.0.1');
+    return;
+}
+
+sub set_user_agent_to_robot_other {
+    my($self) = @_;
+    $self->user_agent(undef);
+    return;
+}
+
+sub set_user_agent_to_robot_search {
+    my($self) = @_;
+    $self->user_agent('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
+    return;
+}
+
 sub submit_form {
     my($self, $submit_button, $form_fields, $expected_content_type) = @_;
     # Submits I<form_fields> using I<submit_button> (or none, if no submit
@@ -770,10 +788,18 @@ sub uri_and_local_mail {
 }
 
 sub user_agent {
-    my($self) = @_;
-    return 'Mozilla/5.0 (compatible; '
-	. _test_script_location($self)
-	. ')';
+    my($self, $string) = @_;
+    return $self->get_or_default(
+	'user_agent_string',
+	sub {
+	    return 'Mozilla/5.0 (compatible; '
+		. _test_script_location($self)
+		. ')';
+	},
+    ) if @_ <= 1;
+    return $self->delete('user_agent_string')
+	unless $string;
+    return $self->put(user_agent_string => $string);
 }
 
 sub user_agent_instance {
