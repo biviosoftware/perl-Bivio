@@ -22,6 +22,7 @@ sub execute {
 
 sub handle_config {
     my(undef, $cfg) = @_;
+#TODO: Use Type.IPAddress and Type.CIDRNotation
     $_CACHE = {
 	map(($_ => 1),
 	    map(/^\d+\.\d+\.\d+\.\d+$/ ? $_
