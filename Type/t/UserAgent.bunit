@@ -10,15 +10,17 @@ options({
 [
     class() => [
         from_header => [
-	    map(($_ => 'BROWSER_ROBOT'),
+	    map(($_ => 'BROWSER_ROBOT_SEARCH'),
 	    	'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+		'Mozilla/5.0 (compatible; Yahoo! Slurp;http://help.yahoo.com/help/us/ysearch/slurp)',
 		'Mozilla/5.0 (compatible; YandexImages/3.0; +http://yandex.com/bots)',
 		'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
+		'Mozilla/5.0 (compatible; Ask Jeeves/Teoma; +http://about.ask.com/en/docs/about/webmasters.shtml)',
+	    ),
+	    map(($_ => 'BROWSER_ROBOT_OTHER'),
 		'Mozilla/5.0 (compatible; MJ12bot/v1.3.3; http://www.majestic12.co.uk/bot.php?+)',
 		'Mozilla/5.0 (compatible; discobot/1.1; +http://discoveryengine.com/discobot.html)',
 		'Mozilla/5.0 (compatible; Exabot/3.0; +http://www.exabot.com/go/robot)',
-		'Mozilla/5.0 (compatible; Yahoo! Slurp;http://help.yahoo.com/help/us/ysearch/slurp)',
-		'Mozilla/5.0 (compatible; Ask Jeeves/Teoma; +http://about.ask.com/en/docs/about/webmasters.shtml)',
 		'Sosospider+(+http://help.soso.com/webspider.htm)',
 		'TLSProber/0.1',
 		'Yeti/1.0 (NHN Corp.; http://help.naver.com/robots/)',
@@ -68,7 +70,7 @@ options({
         has_table_layout_bug => 0,
         is_browser => 0,
         is_css_compatible => 0,
-	is_real_user => 0,
+	is_actual_browser => 0,
     ],
     'BROWSER_HTML3' => [
         has_over_caching_bug => 0,
@@ -105,6 +107,7 @@ options({
         has_table_layout_bug => 0,
         is_browser => 1,
         is_css_compatible => 1,
+	is_actual_browser => 1,
     ],
     'BROWSER_FIREFOX_1' => [
         has_over_caching_bug => 0,
@@ -117,14 +120,24 @@ options({
         has_table_layout_bug => 1,
         is_browser => 1,
         is_css_compatible => 1,
-	is_real_user => 1,
+	is_actual_browser => 1,
     ],
-    'BROWSER_ROBOT' => [
+    'BROWSER_ROBOT_OTHER' => [
         has_over_caching_bug => 0,
         has_table_layout_bug => 0,
         is_browser => 1,
-	eq_browser_robot => 1,
+	is_robot => 1,
         is_css_compatible => 1,
-	is_real_user => 0,
+	is_actual_browser => 0,
+	is_robot_search => 0,
+    ],
+    'BROWSER_ROBOT_SEARCH' => [
+        has_over_caching_bug => 0,
+        has_table_layout_bug => 0,
+        is_browser => 1,
+	is_robot => 1,
+        is_css_compatible => 1,
+	is_actual_browser => 0,
+	is_robot_search => 1,
     ],
 ];

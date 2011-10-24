@@ -18,7 +18,8 @@ __PACKAGE__->compile([
     BROWSER_MSIE_7 => 10,
     BROWSER_MSIE_8 => 11,
     BROWSER_IPHONE => 12,
-    BROWSER_ROBOT => 13,
+    BROWSER_ROBOT_OTHER => 13,
+    BROWSER_ROBOT_SEARCH => 14,
 ]);
 
 sub execute {
@@ -36,8 +37,10 @@ sub from_header {
 	    if $v > 8;
         return $proto->from_name("BROWSER_MSIE_$v");
     }
-    return $proto->BROWSER_ROBOT
-	if _is_robot($proto, $ua);
+    return $proto->BROWSER_ROBOT_SEARCH
+	if _is_search($proto, $ua);
+    return $proto->BROWSER_ROBOT_OTHER
+	if _is_other($proto, $ua);
     return $proto->BROWSER_IPHONE
 	if $ua =~ /\biPhone\b/;
     if ($ua =~ /Mozilla\/(\d+)/) {
@@ -60,6 +63,11 @@ sub has_over_caching_bug {
 
 sub has_table_layout_bug {
     return shift->equals_by_name(qw(BROWSER_MOZILLA_1 BROWSER_FIREFOX_1));
+}
+
+sub is_actual_browser {
+    my($self) = shift->self_from_req(@_);
+    return $self->is_browser && !$self->is_robot ? 1 : 0;
 }
 
 sub is_browser {
@@ -87,7 +95,8 @@ sub is_css_compatible {
 	BROWSER_MSIE_6
 	BROWSER_MSIE_7
 	BROWSER_MSIE_8
-	BROWSER_ROBOT
+	BROWSER_ROBOT_OTHER
+        BROWSER_ROBOT_SEARCH
     ));
 }
 
@@ -95,37 +104,47 @@ sub is_mobile_device {
     return shift->equals_by_name(qw(BROWSER_IPHONE));
 }
 
-sub is_real_user {
-    my($self) = shift->self_from_req(@_);
-    return $self->is_browser && !$self->eq_browser_robot ? 1 : 0;
-}
-
 sub is_robot {
-    my($self) = shift->self_from_req(@_);
-    return $self->eq_browser_robot;
+    return shift->self_from_req(@_)->get_name =~ /^BROWSER_ROBOT/ ? 1 : 0;
 }
 
-sub _is_robot {
+sub is_robot_search {
+    return shift->self_from_req(@_)->eq_browser_robot_search;
+}
+
+sub _is_search {
     my(undef, $ua) = @_;
     return $ua =~ qr{
-        mediapartners
-        |slurp
-        |yahooseeker
+	baidu.*spider
+	|bingbot
+	|gigabot
+	|googlebot
+	|msnbot
+	|yahoo.*slurp
+	|yahooseeker
+	|yandex
+        |mediapartners
         |teoma
-        |yandex
-        |(?:(?:ro)?bot|spider|crawler)(?:\.|/)
+    }ix ? 1 : 0;
+}
+
+sub _is_other {
+    my(undef, $ua) = @_;
+    return $ua =~ qr{
+        (?:(?:ro)?bot|spider|crawler)(?:\.|/)
         |(?:/|:)(?:(?:ro)?bot|spider|crawler)
         |^davclnt$
         |docomo/
+        |facebookexternalhit
         |gt::www/
-	|tlsprober
+        |htdig
+        |libcurl
         |libwww-perl
         |lwp-(?:request|trivial)
-	|libcurl
-	|wget
-	|htdig
         |magent
-        |facebookexternalhit
+        |slurp
+        |tlsprober
+        |wget
     }ix ? 1 : 0;
 }
 
