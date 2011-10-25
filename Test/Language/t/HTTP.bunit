@@ -49,7 +49,7 @@ submit_form('submit' => {
 test_deviance('invalid uri');
 visit_uri();
 EOF
-	    [<<"EOF"] => [undef],
+ 	    [<<"EOF"] => [undef],
 test_setup('HTTP');
 use Bivio::IO::File;
 Bivio::Die->die(q{$mail_file: should not exist})
@@ -110,9 +110,22 @@ follow_link('Sign-in');
 save_excursion(sub {
     go_back();
     verify_text(qr/View.*main/);
+    follow_link('Sign-in');
+    submit_form({
+        'Email:'=> 'demo',
+        'Password:' => 'password',
+    });
+    verify_link('Sign-out');
+    follow_link('MyAccount');
+    return;
 });
+verify_no_text('MyAccount');
+verify_text('>Email:');
 go_back();
 verify_text(qr/View.*main/);
+home_page();
+verify_no_text('MyAccount');
+go_back();
 test_deviance(qr/no page to go back to/);
 go_back();
 test_conformance();
@@ -189,7 +202,7 @@ Subject: any
 
 x
 EOF
-		    $case->expect([map($msg, 1..$params->[2])])
+ 		    $case->expect([map($msg, 1..$params->[2])])
 			unless defined($case->get('expect'));
 		    write_file("$mail_dir/" . $i++, $msg);
 		}
