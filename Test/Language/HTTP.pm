@@ -10,13 +10,14 @@ use Bivio::Mail::Address;
 use Bivio::Mail::Common;
 use Bivio::Test::HTMLParser;
 use Bivio::Type::FileName;
-use HTTP::Cookies ();
 use HTTP::Request ();
 use HTTP::Request::Common ();
 use Sys::Hostname ();
 use URI ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_HTTPC) = b_use('Ext.HTTPCookies');
+my($_R) = b_use('IO.Ref');
 my($_F) = b_use('IO.File');
 my($_T) = b_use('IO.Trace');
 my($_HTML) = b_use('Bivio.HTML');
@@ -174,7 +175,7 @@ sub date_time_now {
 sub debug_print {
     my($self, $what) = @_;
     # Prints 'Forms' or 'Links' to STDOUT.
-    print(STDOUT ${Bivio::IO::Ref->to_string(
+    print(STDOUT ${$_R->to_string(
 	_assert_html($self)->get($what)->get_shallow_copy)});
     return;
 }
@@ -560,13 +561,12 @@ sub login_as {
 
 sub new {
     my($proto, $lang, $uri) = @_;
-    # Creates a new page, loaded from the specified URI.
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	cookies => HTTP::Cookies->new,
+	cookies => $_HTTPC->new,
 	user_agent => Bivio::Ext::LWPUserAgent->new,
 	history => [],
-	history_length => 3,
+	history_length => 5,
     };
     $self->put(
 	deprecated_text_patterns => $_CFG->{deprecated_text_patterns},
@@ -634,8 +634,8 @@ sub save_excursion {
     my($fields) = $self->[$_IDI];
     Bivio::Die->die('no history to save')
         unless @{$fields->{history}};
-    _save_history($fields);
-    my($save) = Bivio::IO::Ref->nested_copy($fields->{history});
+    _save_history($self);
+    my($save) = $_R->nested_copy($fields->{history});
     $self->go_back;
     $op->();
     $fields->{history} = $save;
@@ -753,6 +753,14 @@ sub submit_from_table {
     return;
 }
 
+sub temp_file {
+    my($self, $name) = @_;
+    return $_F->temp_file(
+	b_use('Test.Request')->get_current_or_new,
+	$name || ($self->test_name . '.tmp'),
+    );
+}
+
 sub text_exists {
     my($self, $pattern) = @_;
     # Returns true if I<pattern> exists in response (must be text/html),
@@ -763,9 +771,8 @@ sub text_exists {
 }
 
 sub tmp_file {
-    my($self, $name) = @_;
-    return $_F->temp_file(b_use('Test.Request')->get_current_or_new,
-	$name || 'test.txt');
+    Bivio::IO::Alert->warn_deprecated('use temp_file()');
+    return shift->temp_file(@_);
 }
 
 sub unsafe_get_uri {
@@ -995,7 +1002,7 @@ sub verify_table {
     my($first_col) = shift(@$cols);
     foreach my $e (@$expect) {
 	my($a) = _find_row($self, $table_name, $first_col, shift(@$e));
-	my($diff) = Bivio::IO::Ref->nested_differences(
+	my($diff) = $_R->nested_differences(
 	    $e,
 	    [map($a->{_key_from_hash($a, _fixup_pattern_protected($self, $_))}
 	        ->get('text'),
@@ -1337,14 +1344,14 @@ sub _option_value_list {
 }
 
 sub _save_history {
-    my($fields) = @_;
-    push(@{$fields->{history}}, {
-	map({
-	    my($x) = $fields->{$_};
-	    $fields->{$_} = undef;
-	    ($_ => $x);
-	} qw(uri response html_parser)),
-    }) if $fields->{response};
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    push(
+	@{$fields->{history}},
+	$_R->nested_copy({
+	    map(($_ => $fields->{$_}), qw(uri response html_parser cookies)),
+	}),
+    ) if $fields->{response};
     shift(@{$fields->{history}})
 	while @{$fields->{history}} > $fields->{history_length};
     return;
@@ -1360,7 +1367,7 @@ sub _send_request {
     my($prev_uri) = $self->get_or_default('referer', $fields->{uri});
     $self->delete('referer');
     my($case_tag) = $self->unsafe_get_and_delete('case_tag');
-    _save_history($fields);
+    _save_history($self);
     while () {
 	$request->header(Authorization => $self->get('Authorization'))
 	    if $self->has_keys('Authorization');
