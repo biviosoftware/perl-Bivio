@@ -625,6 +625,10 @@ sub reset_password {
     return;
 }
 
+sub reset_user_agent {
+    return shift->user_agent(undef);
+}
+
 sub save_excursion {
     my($self, $op) = @_;
     my($fields) = $self->[$_IDI];
@@ -681,21 +685,15 @@ sub send_request {
 }
 
 sub set_user_agent_to_actual_browser {
-    my($self) = @_;
-    $self->user_agent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.5; rv:7.0.1) Gecko/20100101 Firefox/7.0.1');
-    return;
+    return shift->user_agent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.5; rv:7.0.1) Gecko/20100101 Firefox/7.0.1');
 }
 
 sub set_user_agent_to_robot_other {
-    my($self) = @_;
-    $self->user_agent(undef);
-    return;
+    return shift->user_agent('libwww-perl/5.79');
 }
 
 sub set_user_agent_to_robot_search {
-    my($self) = @_;
-    $self->user_agent('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
-    return;
+    return shift->user_agent('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
 }
 
 sub submit_form {
