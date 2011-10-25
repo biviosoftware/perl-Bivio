@@ -202,6 +202,10 @@ sub FIRST_PAGE {
     return 1;
 }
 
+sub THIS_REGEX {
+    return qr{^(?:this:t)$};
+}
+
 sub as_string {
     my($self) = @_;
     my($sep) = 0;
