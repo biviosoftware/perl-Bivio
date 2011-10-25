@@ -51,7 +51,7 @@ sub nested_copy {
 	    map(($_ => $proto->nested_copy($value->{$_})),
 		keys(%{_seen($value, $seen)}))
 	} : ref($value) eq 'SCALAR' ? \(my $x = $$value)
-	: ref($value) !~ /=/ || !ref($value) ? $value
+	: !ref($value) || $value !~ /=/ ? $value
 	: $value->can('clone') ? _seen($value, $seen)->clone
 	: $value;
 }
