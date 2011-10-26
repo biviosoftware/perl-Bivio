@@ -261,7 +261,7 @@ sub file_field {
     # is supplied.
     return [$name, $name]
 	unless defined($content);
-    return [$_F->write($self->tmp_file($name), $content), $name];
+    return [$_F->write($self->temp_file($name), $content), $name];
 }
 
 sub find_page_with_text {
