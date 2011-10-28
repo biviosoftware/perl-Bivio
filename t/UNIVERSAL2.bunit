@@ -1,12 +1,12 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-
 sub _reverse_join {
     my($v1, $v2) = @_;
     return $v2 . $v1;
 };
 my($do_by_two) = 0;
+my($clone);
 [
     class() => [
 	max_number => [
@@ -68,6 +68,25 @@ my($do_by_two) = 0;
 	req => [
 	    [] => [req()],
 	    is_production => 0,
+	],
+    ],
+    sub {b_use('Bivio::t::UNIVERSAL::Clonee')->new} => [
+	equals => [
+	    sub {[Bivio::t::UNIVERSAL::Clonee->new]} => 0,
+	    sub {[$clone = shift->get('object')->clone]} => sub {
+		my($case) = @_;
+		assert_not_equals($case->get('object') . '', "$clone");
+		return [1];
+	    },
+	],
+    ],
+    sub {b_use('Bivio::t::UNIVERSAL::Clonee2')->new} => [
+	clone => [
+	    [] => sub {
+		my($case, $actual) = @_;
+		assert_equals($case->get('object') . '', "$actual->[0]");
+		return 1;
+	    },
 	],
     ],
 ];

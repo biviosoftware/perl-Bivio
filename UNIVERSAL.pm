@@ -88,10 +88,17 @@ sub call_and_do_after {
 
 sub clone {
     my($self) = @_;
-    return bless(
-	[map(($_R ||= $self->use('IO.Ref'))->nested_copy($_), @$self)],
-	ref($self),
-    );
+    return $self
+	if $self->clone_return_is_self;
+    $_R ||= $self->use('IO.Ref');
+    my($clone) = bless([], ref($self));
+    $_R->nested_copy_notify_clone($self, $clone);
+    @$clone = map($_R->nested_copy($_), @$self);
+    return $clone;
+}
+
+sub clone_return_is_self {
+    return 0;
 }
 
 sub delegate_method {
