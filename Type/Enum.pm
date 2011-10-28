@@ -67,9 +67,8 @@ sub as_xml {
     return $self->to_xml($self);
 }
 
-sub clone {
-    # Instances are constant
-    return shift;
+sub clone_return_is_self {
+    return 1;
 }
 
 sub compare {

@@ -371,9 +371,8 @@ sub client_redirect {
     return $self->server_redirect($named);
 }
 
-sub clone {
-    # We don't clone the request object, because it is a singleton.
-    return shift;
+sub clone_return_is_self {
+    return 1;
 }
 
 sub delete_from_query {

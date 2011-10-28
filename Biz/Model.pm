@@ -42,9 +42,8 @@ sub assert_not_singleton {
     return $self;
 }
 
-sub clone {
-    my($self) = shift;
-    return $self->is_instance ? $self->SUPER::clone(@_) : $self;
+sub clone_return_is_self {
+    return shift->is_instance ? 0 : 1;
 }
 
 sub delete {

@@ -84,9 +84,8 @@ my($_COLUMN_RE) = qr{(?:^|\.)(@{[b_use('Type.TupleSlotLabel')->VALID_CHAR_REGEX]
 my($_QUAL_FIELD) = qr{^($_QP)\.(\w+)$_COLUMN_RE}os;
 my($_QUAL_SUFFIX) = qr{(_\d+)$}s;
 
-sub clone {
-    # Always a singleton
-    return shift;
+sub clone_return_is_self {
+    return 1;
 }
 
 sub extract_column_name {
