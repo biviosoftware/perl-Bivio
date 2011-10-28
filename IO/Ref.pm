@@ -7,6 +7,7 @@ use Bivio::IO::Alert;
 use Data::Dumper ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_SEEN);
 
 sub nested_contains {
     # If all elements of I<subset> are contained in I<set>, returns undef.  If not,
@@ -43,17 +44,23 @@ sub nested_contains {
 }
 
 sub nested_copy {
-    my($proto, $value, $seen) = @_;
-    $seen ||= {};
-    return ref($value) eq 'ARRAY' ? [
-	    map($proto->nested_copy($_), @{_seen($value, $seen)}),
-	] : ref($value) eq 'HASH' ? {
-	    map(($_ => $proto->nested_copy($value->{$_})),
-		keys(%{_seen($value, $seen)}))
-	} : ref($value) eq 'SCALAR' ? \(my $x = $$value)
-	: !ref($value) || $value !~ /=/ ? $value
-	: $value->can('clone') ? _seen($value, $seen)->clone
-	: $value;
+    my($proto, $value) = @_;
+    return _copy($proto, $value)
+	if $_SEEN;
+    local($_SEEN) = {};
+    return _copy($proto, $value);
+}
+
+sub nested_copy_notify_clone {
+    my(undef, $orig, $clone) = @_;
+    return
+	unless $_SEEN;
+    b_die("$orig: nested_copy not called with this clone")
+	unless $_SEEN->{$orig};
+    b_die("$orig: nested_copy already made copy: $_SEEN->{$orig}")
+	if ref($_SEEN->{$orig});
+    $_SEEN->{$orig} = $clone;
+    return;
 }
 
 sub nested_differences {
@@ -139,6 +146,48 @@ sub to_string {
     $dd->Terse(1);
     my($res) = $dd->Dumpxs();
     return \$res;
+}
+
+sub _copy {
+    my($proto, $value) = @_;
+    my($clone) = sub {
+	return $_SEEN->{$value}
+	    if $_SEEN->{$value};
+	my($copy, $op) = @_;
+	$_SEEN->{$value} = $copy;
+	return $_SEEN->{$value} = $op->($copy) || $copy;
+    };
+    return ref($value) eq 'ARRAY'
+	? $clone->(
+	    [],
+	    sub {
+		@{shift(@_)} = map($proto->nested_copy($_), @$value);
+		return;
+	    },
+        )
+	: ref($value) eq 'HASH'
+	? $clone->(
+	    {},
+	    sub {
+		%{shift(@_)} = map(
+		    ($_ => $proto->nested_copy($value->{$_})),
+		    keys(%$value),
+		);
+		return;
+	    }
+	) : ref($value) eq 'SCALAR'
+	? \(my $x = $$value)
+#TODO: Do we need to deal with GLOB?  Other refs re
+        # Only blessed refs need to be copied
+	: !ref($value) || $value !~ /=/
+        ? $value
+	: $value->can('clone')
+        ? $clone->(
+	    # See nested_copy_notify_clone
+	    1,
+	    sub {$value->clone},
+        )
+	: $value;
 }
 
 sub _diff {
@@ -266,13 +315,6 @@ sub _diff_to_string {
 	: UNIVERSAL::can($s, 'as_xml') ? $s->as_xml
 	: UNIVERSAL::can($s, 'as_string') ? $s->as_string
 	: ${$proto->to_string($s, 0, 0)};
-}
-
-sub _seen {
-    my($value, $seen) = @_;
-    Bivio::Die->die($value, ': value already seen, recursion')
-        if $seen->{$value}++;
-    return $value;
 }
 
 1;
