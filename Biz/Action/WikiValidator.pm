@@ -201,14 +201,8 @@ sub _new {
 	uri_cache => {},
 	errors => [],
 	ignore_regexp => _ignore_regexp($realm_id, $req),
-	uri_root => _uri_root($proto, $req),
+	uri_root => $req->format_uri('FORUM_WIKI_VIEW') . '/',
     })->put_on_request($req);
-}
-
-sub _uri_root {
-    my($proto, $req) = @_;
-    my($uri) = ($req->unsafe_get('initial_uri') || '') =~ m{^.*?(/.*/)};
-    return $uri || '/';
 }
 
 sub _validate_path {
