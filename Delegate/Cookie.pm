@@ -14,7 +14,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_MODIFIED_FIELD) = '_modified';
 my($_PRIOR_TAG_FIELD) = '_prior_tag';
+my($_ESC) = "\027";
 my($_SEP) = "\036";
+my($_ESC_ESC) = "${_ESC}E";
+my($_ESC_SEP) = "${_ESC}S";
 my($_DT) = b_use('Type.DateTime');
 my($_S) = b_use('Type.Secret');
 #TODO: Need to format dynamically
@@ -34,6 +37,7 @@ sub DATE_TIME_FIELD {
 
 sub assert_is_ok {
     my($proto, $req) = @_;
+    b_debug($req->get('Type.UserAgent')->is_browser);
     return unless $req->get('Type.UserAgent')->is_browser;
     $req->throw_die('MISSING_COOKIES', {
 	client_addr => $req->unsafe_get('client_addr'),
@@ -120,6 +124,25 @@ sub put {
     }
     _trace(\@_) if $_TRACE;
     return $self->SUPER::put(@_, $_MODIFIED_FIELD => 1);
+}
+
+sub unsafe_get_escaped {
+    my($self) = shift;
+    my($value);
+    if ($value = $self->unsafe_get(@_)) {
+	$value =~ s/$_ESC_SEP/$_SEP/g;
+	$value =~ s/$_ESC_ESC/$_ESC/g;
+    }
+    return $value;
+}
+
+sub put_escaped {
+    my($self, %values) = @_;
+    foreach my $value (values(%values)) {
+	$value =~ s/$_ESC/$_ESC_ESC/g;
+	$value =~ s/$_SEP/$_ESC_SEP/g;
+    }
+    return $self->put(%values);
 }
 
 sub _need_header_out {
