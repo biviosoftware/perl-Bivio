@@ -28,9 +28,19 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.35  2011/10/24 03:24:51  nagler
+  * Bivio::Test::Language::HTTP
+    added set_user_agent_to_actual_browser/etc.
+  * Bivio::Type::UserAgent
+    added BROWSER_ROBOT_SEARCH
+    renamed BROWSER_ROBOT => BROWSER_ROBOT_OTHER
+    added is_robot*() routines.  Don't rely on the UA being an exact
+    value.
+
   Revision 11.34  2011/10/23 23:28:41  nagler
   * Bivio::Biz::Model::RealmFile
     rewrote delete_empty_folders to not delete '/' and to not rely on
