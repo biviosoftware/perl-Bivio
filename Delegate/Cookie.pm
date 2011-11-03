@@ -37,7 +37,6 @@ sub DATE_TIME_FIELD {
 
 sub assert_is_ok {
     my($proto, $req) = @_;
-    b_debug($req->get('Type.UserAgent')->is_browser);
     return unless $req->get('Type.UserAgent')->is_browser;
     $req->throw_die('MISSING_COOKIES', {
 	client_addr => $req->unsafe_get('client_addr'),
