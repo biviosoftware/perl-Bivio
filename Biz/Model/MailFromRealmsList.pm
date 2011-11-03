@@ -34,11 +34,12 @@ sub internal_initialize {
 	other => [
 	    @$super_order_by,
 	    [qw(RealmMail.realm_id RealmOwner.realm_id)],
+	    [qw(RealmFile_2.user_id RealmOwner_2.realm_id)],
 	    qw(
 		RealmOwner.name
 		RealmOwner.display_name
+		RealmOwner_2.display_name
 		RealmMail_2.subject
-		RealmMail_2.from_display_name
 	    ),
 	],
     });
