@@ -318,6 +318,7 @@ sub _label_field {
     # Labels all fields, checking for duplicates.  Allows _radio
     # for labels, however.
     _trace($attr) if $_TRACE;
+    return unless $fields->{current}->{$class};
     push(@{$fields->{current}->{$class}->{$attr->{label}} ||= []}, $attr);
     _trace($fields->{current}, ' ', $attr);
     $fields->{current}->{label} = $attr->{label}
