@@ -14,4 +14,14 @@ sub header_out {
     return;
 }
 
+sub put_escaped {
+    my($self) = @_;
+    return shift->put(@_);
+}
+
+sub unsafe_get_escaped {
+    my($self) = @_;
+    return shift->unsafe_get(@_);
+}
+
 1;
