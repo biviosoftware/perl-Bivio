@@ -1,0 +1,15 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Unit();
+[
+    sub {Type_Gender()->MALE} => [
+	QUERY_KEY => 'gender',
+	as_int => 2,
+	as_query => 2,
+	as_sql_param => 2,
+	as_string => 'Bivio::Type::Gender::MALE',
+	as_uri => 'male',
+	as_xml => 'MALE',
+	clone => sub {[Type_Gender()->MALE]},
+    ],
+];
