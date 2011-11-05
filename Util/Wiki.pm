@@ -3,13 +3,17 @@
 package Bivio::Util::Wiki;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
+b_use('XML::Parser');
+b_use('HTML::Entities');
 b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_BF) = b_use('Type.FilePath')->BLOG_FOLDER;
 my($_VF) = b_use('Type.FilePath')->VERSIONS_FOLDER;
-my($_WF) = b_use('Type.WikiName')->WIKI_FOLDER;
+my($_WN) = b_use('Type.WikiName');
+my($_WF) = $_WN->WIKI_FOLDER;
+my($_F) = b_use('IO.File');
 
 sub USAGE {
     return <<'EOF';
@@ -25,12 +29,9 @@ EOF
 
 sub from_xhtml {
     my($self, @files) = @_;
-    $self->use('XML::Parser');
-    $self->use('HTML::Entities');
-    $self->use('Bivio::IO::File');
     foreach my $in (@files) {
 	(my $out = $in) =~ s/\.html$//;
-	my($html) = ${Bivio::IO::File->read($in)};
+	my($html) = ${$_F->read($in)};
 	$html =~ s{\&reg\;}{(r)}g;
 	_recurse(
 	    $self,
@@ -39,7 +40,7 @@ sub from_xhtml {
 	my($wiki) = _recurse($self, \&_from_xhtml, $self->get('content'));
 	$wiki =~ s{\n{2,}}{\n}sg;
 	$wiki =~ s{\n{3,}}{\n\n}sg;
-	Bivio::IO::File->write($out, \$wiki);
+	$_F->write($out, \$wiki);
     }
     return;
 }
