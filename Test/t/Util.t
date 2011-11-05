@@ -32,6 +32,7 @@ Bivio::Test->unit([
 From: Joe <$user>
 To: Joe <$ENV{USER}+btest_bla\@localhost.localdomain>
 Subject: my subject
+X-Bivio-Test-Recipient: $ENV{USER}+btest_bla\@localhost.localdomain
 
 First message.
 EOF
@@ -44,6 +45,7 @@ EOF
 From: Joe <$ENV{USER}+btest_bounce\@localhost.localdomain>
 To: Joe <no-such-user\@localhost.localdomain>
 Subject: my subject
+X-Bivio-Test-Recipient: $ENV{USER}+btest_bounce\@localhost.localdomain
 
 Second message.
 EOF
