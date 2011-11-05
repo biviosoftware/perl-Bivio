@@ -5,8 +5,9 @@ config({
 	can_secure => 1,
     },
 });
-Request('initialize_fully');
+Request();
 req()->set_realm('site');
+req()->initialize_fully('FORUM_WIKI_VIEW');
 [
     class() => [
 	{
