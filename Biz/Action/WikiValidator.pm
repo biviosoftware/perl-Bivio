@@ -12,8 +12,6 @@ my($_FP) = b_use('Type.FilePath');
 my($_HS) = b_use('Type.HTTPStatus');
 my($_RF) = b_use('Model.RealmFile');
 my($_FCT) = b_use('FacadeComponent.Text');
-my($_WDN) = b_use('Type.WikiDataName');
-my($_WN) = b_use('Type.WikiName');
 my($_M) = b_use('Biz.Model');
 my($_QUERY_KEY) = 'validate';
 my($_T) = b_use('Agent.Task');
@@ -154,13 +152,13 @@ sub validate_realm {
     my($proto, $req) = @_;
     $proto->delete_from_req($req);
     my($die);
-    my($prev_task_id) = $req->get('task_id');
-    $req->set_task('FORUM_WIKI_VIEW');
+#TODO: Probably want call embedded_task
+    my($prev) = {map(($_ => $req->unsafe_get($_)), qw(task_id path_info query))};
     my($self) = Bivio::Die->catch_quietly(
 	sub {_validate_realm($proto, $req)},
 	\$die,
     );
-    $req->set_task($prev_task_id);
+    $req->set_task_and_uri($prev);
     ($self = _new($proto, undef, undef, $req))->validate_error(undef, $die)
 	unless $self;
     $self->put(errors => undef)
@@ -177,7 +175,7 @@ sub validate_uri {
 #TODO: check external links (could even check mailto: if local)
     return 1
 	if $uri =~ /^\w+:/i;
-    $uri = $self->get('uri_root') . $uri
+    $uri = _uri_root($self, $wiki_state->{req}) . $uri
 	unless $uri =~ m{^/};
 #TODO: Need simpler check, because not always in correct context
     return $self->call_embedded_task($uri, $wiki_state) ? 1 : 0;
@@ -201,8 +199,13 @@ sub _new {
 	uri_cache => {},
 	errors => [],
 	ignore_regexp => _ignore_regexp($realm_id, $req),
-	uri_root => $req->format_uri('FORUM_WIKI_VIEW') . '/',
     })->put_on_request($req);
+}
+
+sub _uri_root {
+    my($proto, $req) = @_;
+    my($uri) = ($req->unsafe_get('initial_uri') || '') =~ m{^.*?(/.*/)};
+    return $uri || '/';
 }
 
 sub _validate_path {
@@ -226,12 +229,13 @@ sub _validate_path {
 	    query => undef,
 	    path_info => undef,
 	)->delete('form_model');
-
 	if ($type =~ /Blog/) {
+	    $req->set_task_and_uri({task_id => 'FORUM_BLOG_DETAIL', path_info => $p});
 	    $_M->new($req, 'BlogList')->load_this({this => [$p]});
 	    $_V->call_main('Blog->detail', $req);
 	}
 	else {
+	    $req->set_task_and_uri({task_id => 'FORUM_WIKI_VIEW', path_info => $p});
 	    $_WV->execute_prepare_html($req, undef, undef, $p);
 	    $_V->call_main('Wiki->view', $req);
 	}
