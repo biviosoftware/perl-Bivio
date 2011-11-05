@@ -114,6 +114,11 @@ sub REGEX_ALERT {
     return '(\d{4})/(\d+)/(\d+) (\d+):(\d+):(\d+)';
 }
 
+sub REGEX_COMMON_LOG_FORMAT {
+    # Apache/NCSA Log Format
+    return '\[?(\d{2})/([A-Za-z]+)/(\d{4}):(\d{2}):(\d{2}):(\d{2}) ([\-\+])(\d{2})(\d{2})\]?';
+}
+
 sub REGEX_CTIME {
     # Returns the "ctime" regex.  Ignores the time zone and day of week.
     # Doesn't include begin and trailing anchors.
@@ -409,6 +414,7 @@ sub from_literal {
 	\&_from_rfc822,
 	\&_from_xml,
 	\&_from_yyyy_mm_dd_hh_mm_ss,
+	\&_from_common_log_format,
     ) {
 	return @res
 	    if @res = $method->($proto, $value);
@@ -950,12 +956,25 @@ sub _from_alert {
     return $proto->from_parts($s, $m, $h, $d, $mon, $y);
 }
 
+sub _from_common_log_format {
+        my($proto, $value, $res, $err) = @_;
+    my($d, $mon, $y, $h, $m, $s, $sign, $dh, $dm)
+	= $value =~ /^@{[$proto->REGEX_COMMON_LOG_FORMAT()]}$/;
+    return ()
+	unless defined($y);
+    return (undef, Bivio::TypeError->MONTH)
+	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
+    return $proto->add_seconds(
+	$proto->from_parts($s, $m, $h, $d, $mon, $y),
+	($sign eq '-' ? +1 : -1) * (60 * (60 * $dh + $dm)),
+    );
+}
+
 sub _from_ctime {
     my($proto, $value, $res, $err) = @_;
-    # Returns ($res, $err) if it matches the pattern.  Parses ctime format.
     my($mon, $d, $h, $m, $s, $y) = $value =~ /^@{[$proto->REGEX_CTIME()]}$/;
-    return () unless defined($y);
-
+    return ()
+	unless defined($y);
     return (undef, Bivio::TypeError->MONTH)
 	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
     return $proto->from_parts($s, $m, $h, $d, $mon, $y);
