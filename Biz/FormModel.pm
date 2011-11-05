@@ -708,7 +708,11 @@ sub merge_initialize_info {
 }
 
 sub new {
-    return shift->SUPER::new(@_)->reset_instance_state;
+    my($self) = shift->SUPER::new(@_);
+    $self->[$_IDI] = {
+	empty_properties => $self->internal_get,
+    };
+    return $self->reset_instance_state;
 }
 
 sub process {
@@ -865,9 +869,11 @@ sub put_context_fields {
 
 sub reset_instance_state {
     my($self) = @_;
+    my($empty) = $self->[$_IDI]->{empty_properties};
+    $self->internal_put({%$empty});
     $self->[$_IDI] = {
-	empty_properties => $self->internal_get,
 	stay_on_page => 0,
+	empty_properties => $empty,
     };
     return $self;
 }
