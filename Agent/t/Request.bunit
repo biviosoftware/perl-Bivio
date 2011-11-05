@@ -40,6 +40,16 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 	    [1, 'other'] => qr{^\Qhttps://other.},
 	    [undef, 'bad.facade.name'] => qr{^http://(?!other)},
 	],
+	set_task_and_uri => [
+	    [{task_id => 'SITE_WIKI_VIEW', path_info => 'hello'}] => sub {
+	        assert_equals('SITE_WIKI_VIEW', req('task_id'));
+		assert_equals('hello', req('path_info'));
+		assert_equals('/bp/hello', req('initial_uri'));
+		assert_equals('/bp/hello', req('uri'));
+		return 1;
+	    },
+	    [{}] => qr{task_id.*require}i,
+	],
     ],
 ];
 
