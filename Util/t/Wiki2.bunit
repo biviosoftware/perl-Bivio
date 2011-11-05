@@ -5,6 +5,7 @@ ShellUtil();
     [qw(-realm site validate_realm)] => sub {
 	my(undef, $actual) = @_;
 	assert_equals(qr{Not a valid.*/Wiki/index}is, $actual->[0]);
+	assert_equals(qr{'9 errors'}is, $actual->[0]);
 	return 1;
     },
     [qw(-r site-reports validate_all_realms)] => qr{
