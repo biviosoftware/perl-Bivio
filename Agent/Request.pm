@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved
 # $Id$
 package Bivio::Agent::Request;
 use strict;
@@ -1204,6 +1204,7 @@ sub set_task {
     my($self, $task_id) = @_;
     $task_id = $_TI->from_name($task_id)
 	unless ref($task_id);
+#TODO: b_use('FacadeComponent.Task')->is_defined_for_facade($tid->get_name, $self);    
     _trace($task_id) if $_TRACE;
     my($task) = $_T->get_by_id($task_id);
     $self->put_durable(
@@ -1213,6 +1214,31 @@ sub set_task {
 #TODO: This coupling needs to be explicit.  Probably with a handler.
     $self->delete(qw(list_model form_model));
     return $task;
+}
+
+sub set_task_and_uri {
+    my($self, $uri_attrs) = @_;
+    $self->set_task(
+	$uri_attrs->{task_id} || b_die($uri_attrs, ': task_id is required'),
+    );
+    return
+	unless b_use('FacadeComponent.Task')
+	->has_uri($self->get('task_id'), $self);
+    my($uri) = $self->format_uri($uri_attrs = {
+	query => undef,
+	path_info => undef,
+	%$uri_attrs,
+	task_id => $self->get('task_id'),
+    });
+#TODO: This probably wants to be with_task, just need to
+#      define the context to return to.
+    $self->put_durable(
+	map(exists($uri_attrs->{$_}) ? ($_, $uri_attrs->{$_}) : (),
+	    qw(query path_info)),
+	uri => $uri,
+	initial_uri => $uri,
+    );
+    return;
 }
 
 sub set_user {
