@@ -112,10 +112,32 @@ sub is_robot_search {
     return shift->self_from_req(@_)->eq_browser_robot_search;
 }
 
+sub is_robot_search_verified {
+    # Very narrow set of search robots are approved here.  Clients can use
+    # this for returning content they don't want out in the wild
+    my(undef, $req) = @_;
+    return 0
+	unless shift->is_robot_search(@_);
+    return 1
+	if $req->is_test;
+    return (
+	b_use('Type.IPAddress')->unsafe_to_domain(
+	    $req->ureq('client_addr') || return 0,
+        ) || return 0,
+    ) =~ m{
+	\.(?:
+        (?:gigablast|microsoft|googlebot|yahoo)\.com
+	|msn\.net
+	|baidu\.(?:com|jp)
+        |yandex\.ru)
+    $}ix ? 1 : 0;
+}
+
 sub _is_search {
     my(undef, $ua) = @_;
     return $ua =~ qr{
-	baidu.*spider
+        adsbot-google
+	|baidu.*spider
 	|bingbot
 	|gigabot
 	|googlebot
@@ -138,6 +160,7 @@ sub _is_other {
         |facebookexternalhit
         |gt::www/
         |htdig
+        |ia_archiver
         |libcurl
         |libwww-perl
         |lwp-(?:request|trivial)
