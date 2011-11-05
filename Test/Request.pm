@@ -33,7 +33,9 @@ sub capture_mail {
 }
 
 sub client_redirect {
-    return _redirect_check(shift)->server_redirect(@_);
+    my($self) = _redirect_check(shift);
+    $self->server_redirect(@_);
+    return $self->put_durable(initial_uri => $self->get('uri'));
 }
 
 sub commit {
@@ -99,11 +101,11 @@ sub initialize_fully {
     my($self) = shift(@_);
     $self = $self->get_instance
 	unless ref($self);
+    _redirect_check($self, 1);
     my($task_id, $req_attrs, $facade_name) = @_;
     ($req_attrs ||= {})->{task_id} = b_use('Agent.TaskId')->from_any(
 	$task_id || $self->unsafe_get('task_id') || 'SHELL_UTIL');
     b_use('Agent.Dispatcher')->initialize;
-    $self->put_durable(%$req_attrs);
     if ($facade_name) {
 	$self->setup_facade($facade_name);
     }
@@ -114,8 +116,11 @@ sub initialize_fully {
 	'facade not fully initialized; this method must be called before'
 	. ' any setup_facade or Bivio::ShellUtil->initialize_ui'
     ) unless b_use('UI.Facade')->is_fully_initialized;
-    $self->put_durable(uri => $self->format_uri)
-        if b_use('FacadeComponent.Task')->has_uri($self->get('task_id'), $self);
+    $self->put_durable(%$req_attrs);
+    $self->set_task_and_uri({
+	map(exists($req_attrs->{$_}) ? ($_ => $req_attrs->{$_}) : (),
+	    @{$self->FORMAT_URI_PARAMETERS}),
+    });
     return $self;
 }
 
@@ -246,6 +251,7 @@ sub setup_http {
     my($user) = $self->get('auth_user');
     $self->put_durable(
 	uri => '/',
+	initial_uri => '/',
 	path_info => $self->unsafe_get('path_info'),
 	query => $self->unsafe_get('query'),
 	cookie => b_use('AgentHTTP.Cookie')->new($self, $r),
@@ -300,13 +306,17 @@ sub _maybe_to_char {
 }
 
 sub _redirect_check {
-    my($self) = @_;
+    my($self, $reset) = @_;
     my($n) = ref($self) . '._redirect_check';
-    my($r) = $self->get_if_exists_else_put($n => 1);
+    if ($reset) {
+	$self->delete($n);
+	return;
+    }
+    my($r) = $self->get_if_exists_else_put($n => 0);
     if ((caller(1))[0]->isa('Bivio::Agent::Request')) {
 	# high number b/c client_redirect calls server_redirect
 	$self->throw_die(DIE => {
-	    message => 'too many directs',
+	    message => 'too many redirects',
 	}) if ++$r > 10;
     }
     else {
