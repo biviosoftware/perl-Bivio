@@ -17,6 +17,11 @@ req()->initialize_fully;
 		{acknowledgement => Action_Acknowledgement()->SAVE_LABEL_DEFAULT},
 		req(),
 	    ] => [undef],
+	    [{'ListQuery.this' => 111}, req()] => 't=111',
+	    [{'ListQuery.this' => undef}, req()] => 't=',
+#TODO: Can't test b/c on command line, which is a Test.Request
+#	    [{'ListQuery.this' => {}}, req()] => DIE(),
+	    [{'ListQuery.this' => Type_Gender()->MALE}, req()] => 't=2',
 	],
     ],
 ];
