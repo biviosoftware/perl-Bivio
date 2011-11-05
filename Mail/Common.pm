@@ -45,11 +45,14 @@ sub format_as_bounce {
     $u = defined($u) ? $u->name : 'uid' . $>;
     $errors_to ||= $_CFG->{errors_to};
     my($email, $name) = $proto->user_email($req);
+    my($test_recipient) = $req->is_test
+        ? "\n" . $proto->TEST_RECIPIENT_HDR . ": $errors_to"
+        : '';
     return \(<<"EOF");
 From: "$name" <$email>
 To: $errors_to
 Subject: ERROR: unable to send mail
-Sender: "$0" <$u>
+Sender: "$0" <$u>$test_recipient
 
 Error while trying to send message to $recipients:
 
