@@ -105,6 +105,7 @@ EOF
 	    [<<'EOF'] => [undef],
 test_setup('HTTP');
 home_page();
+save_cookies_in_history(1);
 verify_link('sign');
 follow_link('Sign-in');
 save_excursion(sub {
