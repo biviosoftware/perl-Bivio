@@ -25,6 +25,10 @@ sub as_facade_text_tag {
     return shift->[$_IDI];
 }
 
+sub as_string {
+    return shift->as_facade_text_default;
+}
+
 sub new {
     my($self) = shift->SUPER::new;
     b_die($self->[$_IDI], ': must be defined')
