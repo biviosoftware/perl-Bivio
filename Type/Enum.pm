@@ -27,7 +27,7 @@ sub QUERY_KEY {
 
 sub add_to_query {
     my($self, $query) = @_;
-    ($query ||= {})->{$self->QUERY_KEY} = $self->as_int;
+    ($query ||= {})->{$self->QUERY_KEY} = $self->as_query;
     return $query;
 }
 
@@ -43,6 +43,11 @@ sub as_int {
     my($self) = @_;
     # Returns integer value for enum value.
     return $self->to_sql_param($self);
+}
+
+sub as_query {
+    my($self) = @_;
+    return $self->to_query($self);
 }
 
 sub as_sql_param {
