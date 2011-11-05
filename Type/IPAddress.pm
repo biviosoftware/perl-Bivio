@@ -29,4 +29,14 @@ sub get_width {
     return 15;
 }
 
+sub to_inet {
+    my(undef, $value) = @_;
+    return pack('C4', split(/\./, $value));
+}
+
+sub unsafe_to_domain {
+    my($proto, $value) = @_;
+    return (gethostbyaddr($proto->to_inet($value), Socket::AF_INET()))[0] || undef;
+}
+
 1;
