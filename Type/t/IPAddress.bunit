@@ -10,4 +10,11 @@ Type();
 	pack('N', 0) => '0.0.0.0',
 	pack('N', 0xffffffff) => '255.255.255.255',
     ],
+    to_inet => [
+	'255.254.253.252' => pack('N', 0xfffefdfc),
+    ],
+    unsafe_to_domain => [
+	'216.87.82.83' => 'sensorimotor.org',
+	'0.0.0.0' => [undef],
+    ],
 ];
