@@ -229,8 +229,8 @@ sub _diff_hash {
     if ($method eq 'nested_differences') {
 	my(@l_keys) = sort(keys(%$left));
 	my(@r_keys) = sort(keys(%$right));
-	my($res) = $proto->$method(\@l_keys, \@r_keys, $name . '->keys()');
-	return $res
+	$res = $proto->$method(\@l_keys, \@r_keys, $name . '->keys()');
+	$res = $$res
 	    if $res;
     }
     foreach my $k (sort(keys(%$left))) {
