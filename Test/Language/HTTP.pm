@@ -629,6 +629,11 @@ sub reset_user_agent {
     return shift->user_agent(undef);
 }
 
+sub save_cookies_in_history {
+    my($self, $mode) = @_;
+    return $self->put(save_cookies_in_history => $mode);
+}
+
 sub save_excursion {
     my($self, $op) = @_;
     my($fields) = $self->[$_IDI];
@@ -1349,7 +1354,11 @@ sub _save_history {
     push(
 	@{$fields->{history}},
 	$_R->nested_copy({
-	    map(($_ => $fields->{$_}), qw(uri response html_parser cookies)),
+	    map(
+		($_ => $fields->{$_}),
+		qw(uri response html_parser),
+		$self->unsafe_get('save_cookies_in_history') ? 'cookies' : (),
+	    ),
 	}),
     ) if $fields->{response};
     shift(@{$fields->{history}})
