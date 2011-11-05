@@ -8,6 +8,7 @@ use Bivio::HTML;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 my($_LQ) = b_use('SQL.ListQuery');
+my($_U) = b_use('Bivio.UNIVERSAL');
 my($_A);
 
 sub format {
@@ -34,8 +35,17 @@ sub format {
 	    . '='
 	    # Sometimes the query value is not defined.  It may
 	    # be a corrupt query, but shouldn't blow up.
-	    . $_HTML->escape_query(defined($v) ? $v : '')
-	    . '&';
+	    . $_HTML->escape_query(
+		ref($v)
+		? $_U->is_blessed($v) && $v->can('as_query')
+		? $v->as_query
+		: $req->isa('Bivio::Test::Request')
+		? "$v"
+		: b_die($k, '=', $v, ': query value is a reference')
+		: defined($v)
+		? $v
+		: '',
+	    ) . '&';
     }
     chop($res);
     return $res;
