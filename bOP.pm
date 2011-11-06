@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,53 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.36  2011/11/02 22:45:10  schellj
+  Release notes:
+  * Bivio::Agent::Request
+    use clone_return_is_self() interface rather than explictly returning singleton
+  * Bivio::Biz::Action::AssertClient
+    *** empty log message ***
+  * Bivio::Biz::Action::WikiValidator
+    fixed uri_root
+  * Bivio::Biz::Model::MailFromRealmsList
+    NEW
+  * Bivio::Biz::Model
+    use clone_return_is_self() interface rather than explictly returning singleton
+  * Bivio::Delegate::Cookie
+    Provide methods to get/put cookie values that may contain the RS (036) character
+  * Bivio::Ext::HTTPCookies
+    NEW
+  * Bivio::IO::Ref
+    nested_copy wasn't actually cloning the object
+    nested_copy wasn't calling clone.  The test for an instance was
+    incorrect.  nested_copy was also not copying the referential structure
+    properly, that is, if a reference was copied around a structure
+    (e.g. via a Collection.Attribute "parent"), then the reference was
+    duplicated.  Now nested_copy manages references properly.  To
+    accomplish this, had to add nested_copy_notify_clone API which is
+    called by UNIVERSAL->clone to manage recursive references
+  * Bivio::SQL::ListQuery
+    added THIS_REGEX
+  * Bivio::SQL::Support
+    use clone_return_is_self() interface rather than explictly returning singleton
+  * Bivio::t::UNIVERSAL::Clonee2
+    NEW
+  * Bivio::Test::Language::HTTP
+    added reset_user_agent to set to undef
+    fixed set_user_agent_to_robot_other to set to an actual browser string.
+    save_excursion() saves cookies (uses new Bivio::Ext::HTTPCookies)
+    fixed tmp_file() call
+  * Bivio::Type::Enum
+    use clone_return_is_self() interface rather than explictly returning singleton
+  * Bivio::UNIVERSAL
+    IO.Ref->nested_copy was not calling clone (even though it was supposed
+    to) so clone wasn't really being tested.  Need to make sure that when
+    cloning, you get a new instance unless clone_return_is_self() is true
+    in which case you are returning self (which usually means the instance
+    is a singleton)
+  * Bivio/Util/t/Release
+    NEW
+
   Revision 11.35  2011/10/24 03:24:51  nagler
   * Bivio::Test::Language::HTTP
     added set_user_agent_to_actual_browser/etc.
