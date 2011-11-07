@@ -72,7 +72,7 @@ sub reply_uri {
 	realm => $realm,
 	query => {
 	    'ListQuery.this' => $message_id,
-	    'to' => $_MRW->from_any('realm')->as_urio,
+	    'to' => $_MRW->from_any('realm')->as_uri,
 	},
     });
     return;
