@@ -6,6 +6,7 @@ use Bivio::Base 'Model.MailThreadRootList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S) = b_use('Bivio.Search');
+my($_MRW) = b_use('Type.MailReplyWho');
 
 sub REALM_NAMES {
     return [];
@@ -34,12 +35,11 @@ sub internal_initialize {
 	other => [
 	    @$super_order_by,
 	    [qw(RealmMail.realm_id RealmOwner.realm_id)],
-	    [qw(RealmFile_2.user_id RealmOwner_2.realm_id)],
 	    qw(
 		RealmOwner.name
 		RealmOwner.display_name
-		RealmOwner_2.display_name
-		RealmMail_2.subject
+		RealmMail_2.from_display_name
+		RealmMail_2.from_email
 	    ),
 	],
     });
@@ -61,6 +61,20 @@ sub internal_prepare_statement {
     $stmt->where(
 	$stmt->IN('RealmOwner.name', $self->REALM_NAMES),
     );
+    return;
+}
+
+sub reply_uri {
+    my($self, $realm, $message_id) = @_;
+    my($req) = $self->req;
+    return $req->format_uri({
+	task_id => $req->get('task')->get_attr_as_id('reply_task'),
+	realm => $realm,
+	query => {
+	    'ListQuery.this' => $message_id,
+	    'to' => $_MRW->from_any('realm')->as_urio,
+	},
+    });
     return;
 }
 
