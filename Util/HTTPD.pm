@@ -17,7 +17,7 @@ my($_HTTPD) = _find_file($_V2 ? qw(
     /usr/sbin/httpd
 ));
 Bivio::IO::Config->register(my $_CFG = {
-    port => Bivio::IO::Config->REQUIRED,
+    port => undef,
     handler => 'Bivio::Agent::HTTP::Dispatcher',
     additional_locations => '',
     additional_directives => '',
@@ -88,7 +88,7 @@ sub run {
     my($mime_types) = _find_file('/etc/mime.types', '/etc/httpd/mime.types',
 			     '/usr/local/apache/conf/mime.types');
     my($keepalive) = $background ? 'on' : 'off';
-    my($port) = $_CFG->{port};
+    my($port) = $_CFG->{port} || b_die('port parameter not supplied');
     my($additional_directives) = $_CFG->{additional_directives};
     my($additional_locations) = $_CFG->{additional_locations};
     my($user) = getpwuid($>) || $>;
