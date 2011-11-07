@@ -187,7 +187,7 @@ sub internal_thread_root_list_columns {
 					 my(undef, $v) = @_;
 				         return $_E->get_local_part($v);
 				     },
-				     'RealmMail.from_email',
+				     ['RealmMail.from_email'],
 				],
 			    ),
 			    {escape_html => 1},
