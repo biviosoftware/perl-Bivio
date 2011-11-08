@@ -11,6 +11,7 @@ b_use('IO.Trace');
 my($_B) = b_use('Type.Boolean');
 my($_QUERY_KEY) = 'b_mobile';
 my($_COOKIE_KEY) = 'mobile';
+my($_MOBILE_CLASS) = 'Mobile';
 b_use('Agent.Task')->register(__PACKAGE__);
 my($_SCRIPT) = _init_script(__PACKAGE__);
 
@@ -29,10 +30,10 @@ sub uri_args_for {
 	    %{$req->unsafe_get('query') || {}},
 	    $_QUERY_KEY => $which eq 'mobile' ? 1 : 0,
 	},
+	carry_path_info => 1,
 	control => b_use('UI.Facade')->get_from_source($req)
 	    ->get('Task')
 	    ->has_uri($req->get('task_id')),
-	carry_path_info => 1,
     };
 }
 
@@ -42,7 +43,7 @@ sub handle_pre_execute_task {
     return
 	unless defined($value);
     my($f) = b_use('UI.Facade')->get_from_source($req);
-    my($m) = $f->get_instance('Mobile');
+    my($m) = $f->get_instance($_MOBILE_CLASS);
     return
 	unless $value xor $f == $m;
     $f = $value ? $m : $m->get('parent');
@@ -70,6 +71,25 @@ sub initialize {
 	}),
     );
     return shift->SUPER::initialize(@_);
+}
+
+sub robot_redirect_for_desktop {
+    my($proto, $req) = @_;
+    my($f) = b_use('UI.Facade')->get_from_source($req);
+    return
+	unless $f->matches_class_name($_MOBILE_CLASS);
+    $f->get('parent')->setup_request($req);
+    if (my $cookie = $req->unsafe_get('cookie')) {
+	$cookie->put($_COOKIE_KEY, 0);
+    }
+    return {
+	require_absolute => 1,
+	task_id => $req->get('task_id'),
+	carry_query => 0,
+	carry_path_info => 0,
+	http_status_code => b_use('Ext.ApacheConstants')
+	    ->HTTP_MOVED_PERMANENTLY,
+    };
 }
 
 sub _init_script {
