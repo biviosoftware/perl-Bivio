@@ -145,15 +145,23 @@ sub _event {
 sub _header {
     my($self) = @_;
     _assert($self, [begin => 'vcalendar']);
+    my($end_vcalendar) = 0;
     _do_until($self, 'begin', sub {
 	my($k, $v) = @_;
+
+	if ($k eq 'end' && lc($v) eq 'vcalendar') {
+	    $end_vcalendar = 1;
+	    return 0;
+	}
 	_die($self, 'unknown element')
 	    unless $k =~ /^(version|prodid|method|calscale|(x-wr-.*))$/;
 	return 1;
     });
+    return $self
+	if $end_vcalendar;
     _do_until($self, 'end', sub {
 	my($k, $v) = @_;
-	_die($self, 'expecting begin')
+	_die($self, 'expecting begin but found: ', $k)
 	    unless $k eq 'begin';
 	my($type) = lc($v);
 
