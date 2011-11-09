@@ -9,4 +9,10 @@ Type();
 	f => 'FEMALE',
 	x => NOT_FOUND(),
     ],
+    unsafe_from_any => [
+	male => 'MALE',
+	female => 'FEMALE',
+	m => 'MALE',
+	f => 'FEMALE',
+    ],
 ];
