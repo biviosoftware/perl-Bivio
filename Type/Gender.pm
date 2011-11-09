@@ -7,8 +7,8 @@ use Bivio::Base 'Type.Enum';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [0, 'Unspecified'],
-    FEMALE => [1],
-    MALE => [2],
+    FEMALE => [1, undef, undef, 'F'],
+    MALE => [2, undef, undef, 'M'],
 ]);
 
 sub from_literal {
