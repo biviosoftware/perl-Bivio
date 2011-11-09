@@ -28,10 +28,60 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.37  2011/11/06 16:29:36  nagler
+  * Bivio::Agent::HTTP::Query
+    die if a value is a reference when formatting (and not a command line)
+  * Bivio::Agent::Request
+    added set_task_and_uri used by Test.Request to correctly set the task
+  * Bivio::Biz::Action::WikiValidator
+    _uri_root() must be dynamically computed, because initial_uri will
+    change for each path.
+    Use set_task_and_uri() to set the task
+  * Bivio::Biz::FormModel
+    set empty_properties properly
+  * Bivio::Biz::Model::MailFromRealmsList
+    get message sender display_name from file, not message
+    from_display_name, which isn't a required field
+  * Bivio::Delegate::Cookie
+    removed b_debug()
+  * Bivio::Delegate::NoCookie
+    stubbed out put_escaped() and unsafe_get_escaped()
+  * Bivio::Ext::HTTPCookies
+    fixed clone to really delete temp files.  HTTP::Coookies will save to
+    the file always if there's a $self->{file}
+  * Bivio::IO::Ref
+    nested_differences documents the differences in keys of a hash, even
+    if the number of keys is different
+  * Bivio::Mail::Common
+    need to set test-recipient
+  * Bivio::SQL::ListQuery
+    THIS_REGEX not needed
+  * Bivio::Test::HTMLParser::Forms
+    don't label a field if no class is being parsed
+  * Bivio::Test::Language::HTTP
+    added save_cookies_in_history() -- don't save cookies in the history
+    by default, because too many tests depend on go_back() to stay logged in
+  * Bivio::Test::Request
+    use set_task_and_uri() to set the task
+  * Bivio::Type::DateTime
+    added common_log_format (Apache/NCSA) parsing
+  * Bivio::Type::Enum
+    added as_query
+  * Bivio::Type::HTTPStatus
+    added as_string
+  * Bivio::Type::IPAddress
+    added to_inet & unsafe_to_domain
+  * Bivio::Type::UserAgent
+    added is_robot_search_verified() to verify ip addresses of (popular)
+    robots
+  * Bivio/UI-xml
+    NEW
+  * Bivio::Util::Wiki
+    b_use
+
   Revision 11.36  2011/11/02 22:45:10  schellj
   Release notes:
   * Bivio::Agent::Request
