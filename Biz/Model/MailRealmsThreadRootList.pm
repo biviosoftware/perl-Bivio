@@ -7,6 +7,7 @@ use Bivio::Base 'Model.MailThreadRootList';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S) = b_use('Bivio.Search');
 my($_MRW) = b_use('Type.MailReplyWho');
+my($_B) = b_use('Type.Boolean');
 
 sub REALM_NAMES {
     return [];
@@ -26,6 +27,7 @@ sub internal_initialize {
     my($self) = @_;
     my($info) = $self->SUPER::internal_initialize;
     delete($info->{auth_id});
+    delete($info->{where});
     my($super_order_by) = delete($info->{order_by});
     return $self->merge_initialize_info($info, {
         version => 1,
@@ -35,12 +37,25 @@ sub internal_initialize {
 	other => [
 	    @$super_order_by,
 	    [qw(RealmMail.realm_id RealmOwner.realm_id)],
+	    ['RealmFile.is_public', [$_B->TRUE]],
 	    qw(
 		RealmOwner.name
 		RealmOwner.display_name
 		RealmMail_2.from_display_name
 		RealmMail_2.from_email
 	    ),
+	],
+	where => [
+	    'RealmMail_2.realm_file_id', '=', <<'EOF',
+	    (
+		SELECT MAX(rm.realm_file_id)
+		FROM realm_mail_t rm, realm_file_t rf
+		WHERE rm.realm_file_id = rf.realm_file_id
+                AND rm.thread_root_id = realm_mail_t.thread_root_id
+                AND rm.realm_id = realm_mail_t.realm_id
+                AND rf.is_public = 1
+	    )
+EOF
 	],
     });
 }
