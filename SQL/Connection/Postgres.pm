@@ -29,8 +29,32 @@ sub REQUIRE_COMMIT_OR_ROLLBACK {
 sub get_dbi_prefix {
     # (proto, hash_ref) : string
     # Returns the PostgreSQL DBI connection prefix.
-#TODO: add host & port to prefix using cfg
-    return 'dbi:Pg:dbname=';
+    my($self, $cfg) = @_;
+    my($res) = 'dbi:Pg:';
+    if ($cfg->{host}) {
+	$res .= "host=$cfg->{host};";
+	if ($cfg->{host}) {
+	    $res .= "port=$cfg->{port};";
+	}
+    }
+    $res .= 'dbname=';
+    return $res;
+}
+
+sub get_settings {
+    # (self) : hash_ref
+    # Returns the postgres config (aka 'settings')
+    my($self) = @_;
+    my($res);
+    $self->do_execute_rows(
+	sub {
+	    my($row) = @_;
+	    $res->{$row->{name}} = $row->{setting};
+	    return 1;
+	},
+	'select name, setting from pg_settings'
+    );
+    return $res;
 }
 
 sub internal_execute {
