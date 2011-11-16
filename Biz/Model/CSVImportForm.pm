@@ -10,6 +10,7 @@ my($_T) = b_use('Bivio::Type');
 my($_FF) = b_use('Type.FileField');
 my($_CONFIG) = {};
 my($_A) = b_use('IO.Alert');
+my($_F) = b_use('IO.File');
 
 # subclasses must define COLUMNS with the expected format:
 #
@@ -161,9 +162,11 @@ sub _parse_rows {
     my($self) = @_;
     my($rows);
     my($die) = Bivio::Die->catch(sub {
-        $rows = b_use('ShellUtil.CSV')->parse(
-	    $self->get('source')->{content},
-	);
+	# write to temp file first - source->{content}
+	# takes too long to read for large input...
+	my($f) = $_F->temp_file($self->req);
+	$_F->write($f, $self->get('source')->{content});
+	$rows = b_use('ShellUtil.CSV')->parse($_F->read($f));
 	return;
     });
     return $self->internal_source_error(
