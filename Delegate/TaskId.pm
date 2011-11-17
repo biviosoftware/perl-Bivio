@@ -690,6 +690,7 @@ sub info_file {
 	    170
 	    ANY_OWNER
 	    ANYBODY&FEATURE_FILE
+	    Action.AssertNotRobot
 	    Action.RealmFile->access_controlled_execute
 	    Model.RealmFileTreeList->execute_load_all_with_query
 	    View.File->tree_list
