@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.38  2011/11/09 22:59:28  schellj
+  * Bivio::Biz::Model::MailFromRealmsList
+    removed
+  * Bivio::Biz::Model::MailRealmsThreadRootList
+    NEW
+  * Bivio::Type::Gender
+    match "M" and "F" literals
+    use "M" and "F" as MALE and FEMALE string names, respectively
+  * Bivio::UI::View::Mail
+    sytax error in internal_thread_root_list
+  * Bivio::UI::XHTML::Widget::MobileDetector
+    added robot_redirect_for_desktop
+  * Bivio::Util::HTTPD
+    don't require port
+  * Bivio/Util/t/Release
+    NEW
+
   Revision 11.37  2011/11/06 16:29:36  nagler
   * Bivio::Agent::HTTP::Query
     die if a value is a reference when formatting (and not a command line)
