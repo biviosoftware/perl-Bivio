@@ -16,6 +16,7 @@ options({
 		'Mozilla/5.0 (compatible; YandexImages/3.0; +http://yandex.com/bots)',
 		'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
 		'Mozilla/5.0 (compatible; Ask Jeeves/Teoma; +http://about.ask.com/en/docs/about/webmasters.shtml)',
+		'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)'
 	    ),
 	    map(($_ => 'BROWSER_ROBOT_OTHER'),
 		'Mozilla/5.0 (compatible; MJ12bot/v1.3.3; http://www.majestic12.co.uk/bot.php?+)',
