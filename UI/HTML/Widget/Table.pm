@@ -21,6 +21,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # List we are rendering.  I<source_name> is a table attribute.
 #
 # I<source_name>.table_max_rows : int
+# table_max_rows : int
 #
 # Maximum number of I<source_name> rows to render.
 #
@@ -656,7 +657,8 @@ sub render {
     my($list_size) = $_INFINITY_ROWS;
     $list_size = $_RT->new($req)->row_tag_get_for_auth_user('page_size')
         if $self->get_or_default('repeat_headings', 0);
-    my($max_rows) = $req->unsafe_get($state->{list_name}.'.table_max_rows');
+    my($max_rows) = $req->unsafe_get($state->{list_name}.'.table_max_rows')
+	|| $self->unsafe_get('table_max_rows');
     $max_rows = $_INFINITY_ROWS unless $max_rows && $max_rows > 0;
     my($row_count) = 0;
 
