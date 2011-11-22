@@ -28,9 +28,28 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.39  2011/11/17 17:26:26  moeller
+  * Bivio::Biz::Action::AssertNotRobot
+    NEW
+  * Bivio::Biz::Model::CSVImportForm
+    work-around for slow unicode value parsing, write and then read back
+    the csv file before parsing
+  * Bivio::Biz::Model::MailRealmsThreadRootList
+    only allow public messages
+  * Bivio::Delegate::TaskId
+    added Action.AssertNotRobot to FORUM_FILE_TREE_LIST
+  * Bivio::MIME::Calendar
+    handle empty VCALENDAR case
+  * Bivio::SQL::Connection::Postgres
+    Allow connection host and port to be specified. Method to get
+    postgres settings
+  * Bivio::Util::PGStandby
+    NEW
+
   Revision 11.38  2011/11/09 22:59:28  schellj
   * Bivio::Biz::Model::MailFromRealmsList
     removed
