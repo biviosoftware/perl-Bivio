@@ -9,6 +9,10 @@ my($_S) = b_use('Bivio.Search');
 my($_MRW) = b_use('Type.MailReplyWho');
 my($_B) = b_use('Type.Boolean');
 
+sub LOAD_COUNT {
+    return undef;
+}
+
 sub REALM_NAMES {
     return [];
 }
@@ -21,6 +25,16 @@ sub drilldown_uri {
 	realm => $self->get('RealmOwner.name'),
 	query => $self->format_query('THIS_CHILD_LIST'),
     });
+}
+
+sub execute_load_recent {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    my($query) = $self->parse_query_from_request;
+    $query->put(count => $self->LOAD_COUNT)
+	if defined($self->LOAD_COUNT);
+    $self->load_page($query);
+    return 0;
 }
 
 sub internal_initialize {
