@@ -29,7 +29,8 @@ sub get_widget_value {
 	unless defined($dt);
     $mode = defined($mode) ? $_DTM->from_any($mode) : $_DTM->get_default;
     my($op) = '_to_' . lc($mode->get_name);
-    return (\&{$op})->($_DT->to_parts($dt), $dt) . ($no_timezone ? '': ' GMT');
+    return (\&{$op})->($_DT->to_parts($dt), $dt)
+	. ($no_timezone || $op eq '_to_rfc822' ? '' : ' GMT');
 }
 
 sub _am_pm {
