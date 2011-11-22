@@ -79,6 +79,10 @@ function dt(m,j,t,gmt){
         :m==8?dt_mn(d)
         :m==9?dt_n(d.getDate())+'-'+dt_mn3(d)+'-'+dt_y(d)
         :m==10?dt_n(d.getDate())+'-'+dt_mn3(d)+'-'+dt_y(d)+' '+dt_n(d.getHours())+':'+dt_n(d.getMinutes())
+        :m==11?gmt
+        :m==12?dt_n(d.getDate())+'-'+dt_mn3(d)+'-'+dt_y(d)+' '+dt_n(dt_th(d))+':'+dt_n(d.getMinutes())+':'+dt_n(d.getSeconds())+' '+dt_am_pm(d)
+        :m==13?dt_mn(d)+' '+dt_n(d.getDate())+', '+dt_y(d)
+        :m==14?dt_th(d)+':'+dt_n(d.getMinutes())+' '+dt_am_pm(d)
         :'');
 }
 
@@ -114,6 +118,31 @@ function dt_mn(d){
 }
 function dt_mn3(d){
     return dt_mn(d).substring(0, 3);
+}
+function dt_dow(d){
+    switch(d.getDay()){
+    case 0: return 'Sunday';
+    case 1: return 'Monday';
+    case 2: return 'Tuesday';
+    case 3: return 'Wednesday';
+    case 4: return 'Thursday';
+    case 5: return 'Friday';
+    case 6: return 'Saturday';
+    }
+    return 'N/A';
+}
+function dt_dow3(d){
+    return dt_dow(d).substring(0, 3);
+}
+function dt_am_pm(d){
+    if (d.getHours() > 11 && d.getHours() < 24){
+        return 'pm';
+    } else {
+        return 'am';
+    }
+}
+function dt_th(d){
+    return d.getHours() % 12;
 }
 EOF
 
