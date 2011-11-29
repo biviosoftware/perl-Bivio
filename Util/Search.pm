@@ -3,6 +3,7 @@
 package Bivio::Util::Search;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
+b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_X) = b_use('Search.Xapian');
@@ -10,6 +11,13 @@ my($_D) = b_use('Type.Date');
 my($_RT) = b_use('Auth.RealmType');
 my($_A) = b_use('IO.Alert');
 my($_CL) = b_use('IO.ClassLoader');
+my($_C) = b_use('IO.Config');
+
+$_C->register(my $_CFG = {
+    xapian_replicate_server_port => 1315,
+    db_path => $_X->get_db_path,
+    snapshot_dir => $_X->get_db_path . '/snapshot',
+});
 
 sub USAGE {
     return <<'EOF';
@@ -17,7 +25,14 @@ usage: b-search [options] command [args..]
 commands
   rebuild_db [after_date] -- reload entire search database, optionally files modified after date
   rebuild_realm [after_date] -- reindex all files in the current realm, optionally files modified after date
+  replicate_db [failover_host] -- create/update local online snapshot and optionally rsync it to 'failover-host' 
 EOF
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub rebuild_db {
@@ -95,6 +110,80 @@ sub rebuild_realm {
     $commit->();
     return $self->req(qw(auth_realm owner))->as_string . ": $j objects";
 }
+
+sub replicate_db {
+    my($self) = @_;
+    sub REPLICATE_DB {[[qw(?failover_host String)]]}
+    
+    my($self, $bp) = shift->parameters(\@_);
+    _make_db_snapshot($self);
+    return
+	unless defined($bp->{failover_host});
+    _copy_db_snapshot_to_failover($self, $bp->{failover_host});
+    return;		       
+}
+
+sub  _copy_db_snapshot_to_failover {
+    my($self, $failover_host) = @_;
+    my($replica_dir);
+    for my $suffix (0 .. 9) {
+	my($d) = $_CFG->{snapshot_dir} . '/replica_' . $suffix;
+	if (-e $d) {
+	    $replica_dir = $d;
+	    last;
+	}
+    }
+    b_die('replica directory does not exist')
+	unless defined($replica_dir);
+    my($output) = $self->piped_exec([
+	'rsync',
+	'-avrzS',
+	'--delete',
+	$replica_dir,
+	$failover_host
+	    . ':'
+	    . $_CFG->{db_path},
+    ]);
+    _trace($$output);
+    return;
+}
+
+sub _make_db_snapshot {
+    my($self) = @_;
+    my($pid) = fork();
+    b_die('cannot fork')
+	unless defined ($pid);
+    if ($pid == 0) {
+	my($output) = $self->piped_exec([
+	    'xapian-replicate-server',
+	    '-I',
+	    '127.0.0.1',
+	    '-p',
+	    $_CFG->{xapian_replicate_server_port},
+	    '--one-shot',
+	    $_CFG->{db_path},
+	]);
+	_trace($$output);
+	exit(0);
+    }
+    my($output) = $self->piped_exec([
+	'xapian-replicate',
+	'--verbose',
+	'--one-shot',
+	'-h',
+	'127.0.0.1',
+	'-p',
+	 $_CFG->{xapian_replicate_server_port},
+	'-m',
+	'.',
+	$_CFG->{snapshot_dir},
+    ]);
+    _trace($$output);
+    # --one-shot means server should exit x    
+    kill(9, $pid);    
+    return;
+}
+
 
 sub _map_classes {
     my($op) = @_;

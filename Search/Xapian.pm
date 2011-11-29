@@ -35,6 +35,7 @@ my($_VALUE_MAP) = {
 };
 b_use('IO.Config')->register(my $_CFG = {
     db_path => b_use('Biz.File')->absolute_path('Xapian'),
+    max_changesets => 10,
 });
 my($_L) = b_use('Model.Lock');
 my($_DT) = b_use('Type.DateTime');
@@ -77,6 +78,7 @@ sub execute {
     my($self) = $req->get(ref($proto) || $proto);
     $proto->acquire_lock($req);
     unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
+    $ENV{XAPIAN_MAX_CHANGESETS} = $_CFG->{max_changesets};
     $req->perf_time_op(__PACKAGE__, sub {
         my($db) = Search::Xapian::WritableDatabase->new(
 	    $_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
@@ -90,6 +92,10 @@ sub execute {
 	$db->flush;
     });
     return 0;
+}
+
+sub get_db_path {
+    return $_CFG->{db_path};
 }
 
 sub get_stemmer {
