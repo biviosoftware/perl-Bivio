@@ -25,7 +25,7 @@ sub compile {
 	    my($x) = $_;
 	    $x =~ s/\W/_/g;
 	    (uc($x) => [$i++, $_]);
-	} DateTime::TimeZone->all_names),
+	} grep(!/UTC/, DateTime::TimeZone->all_names)),
     ]);
 }
 
