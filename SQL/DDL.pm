@@ -1033,8 +1033,13 @@ CREATE SEQUENCE motion_comment_s
   CACHE 1 INCREMENT BY 100000
 /
 
+CREATE SEQUENCE failover_work_queue_s
+  MINVALUE 100012
+  CACHE 1 INCREMENT BY 100000
+/
+
 --
--- 100012-14 available
+-- 100013-14 available
 --
 
 CREATE SEQUENCE ec_payment_s
@@ -1193,6 +1198,15 @@ CREATE TABLE email_t (
   email VARCHAR(100) NOT NULL,
   want_bulletin NUMERIC(1) NOT NULL,
   CONSTRAINT email_t1 PRIMARY KEY(realm_id, location)
+)
+/
+
+CREATE TABLE failover_work_queue_t (
+  entry_id NUMERIC(18) NOT NULL,
+  creation_date_time timestamp DEFAULT now(),
+  operation integer,
+  file_name text,
+  CONSTRAINT failover_work_queue_t1 PRIMARY KEY (entry_id)
 )
 /
 

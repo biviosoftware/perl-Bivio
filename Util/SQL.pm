@@ -68,6 +68,7 @@ my($_BUNDLE) = [qw(
     motion3
     motion_comment_64k
     motion_question_64k
+    failover_work_queue
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -923,6 +924,26 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_failover_work_queue {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE failover_work_queue_t (
+  entry_id NUMERIC(18) NOT NULL,
+  creation_date_time timestamp DEFAULT now(),
+  operation integer,
+  file_name text,
+  CONSTRAINT failover_work_queue_t1 PRIMARY KEY (entry_id)
+)
+/
+
+CREATE SEQUENCE failover_work_queue_s
+  MINVALUE 100012
+  CACHE 1 INCREMENT BY 100000
+/
+EOF
+    return;
+}
+
 sub internal_upgrade_db_email_verify {
     my($self) = @_;
     $self->run(<<'EOF');
@@ -951,6 +972,7 @@ CREATE INDEX email_verify_t3 ON email_verify_t (
 EOF
     return;
 }
+
 
 sub internal_upgrade_db_feature_group_admin {
     my($self) = @_;

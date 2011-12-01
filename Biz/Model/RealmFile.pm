@@ -15,6 +15,7 @@ my($_DFN) = b_use('Type.DocletFileName');
 my($_DT) = b_use('Type.DateTime');
 my($_FP) = b_use('Type.FilePath');
 my($_IOF) = b_use('IO.File');
+my($_FWQ) = b_use('Biz.FailoverWorkQueue');
 my($_T) = b_use('MIME.Type');
 my($_WN) = b_use('Type.WikiName');
 my($_TXN_PREFIX);
@@ -215,6 +216,7 @@ sub handle_commit {
 	    _trace('rename(', $txn_file, ', ', $file, ')') if $_TRACE;
 	    unlink($file);
 	    $_IOF->rename($txn_file, $file);
+	    $_FWQ->create_file($file);	    
 	    return;
 	},
 	sub {
@@ -222,6 +224,7 @@ sub handle_commit {
 	    _trace('unlink(', $txn_file, ', ', $file, ')') if $_TRACE;
 	    unlink($file);
 	    unlink($txn_file);
+	    $_FWQ->delete_file($file);	    
 	    return;
 	}
     );

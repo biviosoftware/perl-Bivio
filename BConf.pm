@@ -264,6 +264,7 @@ sub merge_class_loader {
 		    'Bivio::Auth::Role' => 'Bivio::Delegate::Role',
 		    'Bivio::Auth::Support' => 'Bivio::Delegate::SimpleAuthSupport',
 		    'Bivio::Type::ECService' => 'Bivio::Delegate::NoECService',
+		    'Bivio::Type::FailoverWorkQueueOperation' => 'Bivio::Delegate::FailoverWorkQueueOperation',
 		    'Bivio::Type::Location' => 'Bivio::Delegate::SimpleLocation',
 		    'Bivio::Type::MotionStatus' => 'Bivio::Delegate::SimpleMotionStatus',
 		    'Bivio::Type::MotionType' => 'Bivio::Delegate::SimpleMotionType',
