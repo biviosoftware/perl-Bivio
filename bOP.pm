@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.41  2011/12/05 19:42:16  moeller
+  * Bivio::BConf
+    Synchronize newly created/deleted realm files with failover host
+  * Bivio::Biz::FailoverWorkQueue
+    NEW
+  * Bivio::Biz::Model::RealmFile
+    Synchronize newly created/deleted realm files with failover host
+  * Bivio::Delegate::FailoverWorkQueueOperation
+    NEW
+  * Bivio::Search::Xapian
+    Xapian DB replication to failover host using xapian-replicate(-server) and rs
+  ync
+  * Bivio::SQL::DDL
+    Synchronize newly created/deleted realm files with failover host
+  * Bivio::Type::FailoverWorkQueueOperation
+    NEW
+  * Bivio::Type::TimeZone
+    UTC now included in DateTime::TimeZone->all_names
+  * Bivio::Util::FailoverWorkQueue
+    NEW
+  * Bivio::Util::Search
+    Xapian DB replication to failover host using xapian-replicate(-server) and rs
+  ync
+  * Bivio::Util::SQL
+    Synchronize newly created/deleted realm files with failover host
+
   Revision 11.40  2011/11/22 20:49:31  schellj
   * Bivio::Biz::Model::MailRealmsThreadRootList
     move execute_load_recent here from subclasses
