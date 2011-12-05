@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.40  2011/11/22 20:49:31  schellj
+  * Bivio::Biz::Model::MailRealmsThreadRootList
+    move execute_load_recent here from subclasses
+  * Bivio::UI::HTML::Format::DateTime
+    don't add 'GMT' when using rfc822 mode (already included)
+  * Bivio::UI::HTML::Widget::DateTime
+    add previously unsupported date modes
+  * Bivio::UI::HTML::Widget::Table
+    allow use of table_max_rows without explicit source_name
+
   Revision 11.39  2011/11/17 17:26:26  moeller
   * Bivio::Biz::Action::AssertNotRobot
     NEW
