@@ -201,7 +201,6 @@ my($_C) = b_use('IO.Config');
 my($_V1) = $_C->if_version(1);
 my($_V7) = $_C->if_version(7);
 $_C->register(my $_CFG = {
-    is_production => 0,
     can_secure => 1,
     apache_version => 1,
 });
@@ -946,10 +945,10 @@ sub is_http_method {
 
 sub is_production {
     my($self) = @_;
-    $_CFG->{is_production} ||= $_C->is_production;
+#TODO: probably should not is_production on request, but use config({}) in tests
     return ref($self)
-	? $self->get_if_exists_else_put(is_production => $_CFG->{is_production})
-	: $_CFG->{is_production};
+	? $self->get_if_exists_else_put(is_production => $_C->is_production)
+	: $_C->is_production;
 }
 
 sub is_site_admin {
