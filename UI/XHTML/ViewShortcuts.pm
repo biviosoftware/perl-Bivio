@@ -663,6 +663,22 @@ sub vs_tree_list_control {
     };
 }
 
+sub vs_trimmed_text_column {
+    my(undef, $field, $attr) = @_;
+    my($id) = $field =~ /\.(\w+)/;
+    $id ||= $field;
+    return [$field, {
+	column_widget => TrimmedText(String([$field]), {
+	    ID => Join([
+		$id,
+		['->get_cursor'],
+	    ]),
+	}),
+	column_data_class => 'small_boxed_text',
+	$attr ? %$attr : (),
+    }];
+}
+
 sub vs_tuple_use_list_as_task_menu_list {
     my(undef, $req) = @_;
     return @{
