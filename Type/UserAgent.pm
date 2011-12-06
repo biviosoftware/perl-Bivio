@@ -100,6 +100,10 @@ sub is_css_compatible {
     ));
 }
 
+sub is_mail_agent {
+    return shift->self_from_req(@_)->eq_mail;
+}
+
 sub is_mobile_device {
     return shift->equals_by_name(qw(BROWSER_IPHONE));
 }
