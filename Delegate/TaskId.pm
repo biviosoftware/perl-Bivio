@@ -924,6 +924,7 @@ sub info_mail {
 	    ANY_OWNER
 	    MAIL_SEND&FEATURE_MAIL
 	    Action.RealmMail->execute_reflector
+	    Action.MailReceiveStatus
 	)],
 	[qw(
 	    FORUM_MAIL_THREAD_ROOT_LIST
@@ -987,6 +988,7 @@ sub info_mail {
 	    ANY_OWNER
 	    ADMIN_READ&ADMIN_WRITE&FEATURE_MAIL&FEATURE_BULLETIN
 	    Action.RealmMail->execute_reflector
+	    Action.MailReceiveStatus
 	)],
 	[qw(
 	    ADMIN_REALM_MAIL_RECEIVE
@@ -1004,6 +1006,7 @@ sub info_mail {
 	    ANY_OWNER
 	    MAIL_SEND&FEATURE_MAIL
 	    Action.AdminRealmMail->execute_reflector
+	    Action.MailReceiveStatus
 	)],
 	[qw(
 	    BOARD_REALM_MAIL_RECEIVE
