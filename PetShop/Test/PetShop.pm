@@ -2,11 +2,11 @@
 # $Id$
 package Bivio::PetShop::Test::PetShop;
 use strict;
-use Bivio::Base 'Bivio::Test::Language::HTTP';
+use Bivio::Base 'TestLanguage.HTTP';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_SQL) = __PACKAGE__->use('ShellUtil.SQL');
+my($_SQL) = b_use('ShellUtil.SQL');
 my($_CSV) = b_use('ShellUtil.CSV');
 
 sub add_to_cart {
