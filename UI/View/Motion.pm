@@ -115,23 +115,17 @@ sub internal_comment_fields {
     my($self, $model) = @_;
     return [
 	'RealmOwner.display_name',
-	['MotionComment.comment', {
-	    column_widget =>
-		If([
-		    sub {
-			return (shift->get('comment_trimmed') || '') =~ /\.\.\.$/ ? 1 : 0;
-		    }],
-		   Link(['comment_trimmed'],
-			['->format_uri', 'THIS_DETAIL', 'FORUM_MOTION_COMMENT_DETAIL']),
-		   String(['comment_trimmed']),
-	       ),
-	    column_expand => 1,
-	}],
-	map([$_, {
-	    wf_type => $model->get_field_type($_),
-	    column_heading =>
-		String(vs_text($model->simple_package_name, $_)),
-	}], $model->tuple_tag_field_check),
+	vs_trimmed_text_column('MotionComment.comment'),
+	map($model->get_field_type($_) =~ /TupleSlot/
+	    ? vs_trimmed_text_column($_, {
+		column_heading =>
+		    String(vs_text($model->simple_package_name, $_)),
+	    })
+	    : [$_, {
+		wf_type => $model->get_field_type($_),
+		column_heading =>
+		    String(vs_text($model->simple_package_name, $_)),
+	    }], $model->tuple_tag_field_check),
     ];
 }
 
