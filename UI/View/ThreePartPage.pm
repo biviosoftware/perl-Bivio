@@ -25,7 +25,7 @@ sub internal_xhtml_adorned {
     return Page({
 	style => view_widget_value('xhtml_style'),
 	head => Join([
-	    vs_text_as_prose('xhtml_head_title'),
+	    view_widget_value('xhtml_adorned_title'),
 	    view_widget_value('xhtml_head_tags'),
 	    vs_rss_task_in_head(),
 	]),
@@ -48,6 +48,7 @@ sub internal_xhtml_adorned_attrs {
     view_put(
 	xhtml_title => vs_xhtml_title(),
 	vs_pager => '',
+	xhtml_adorned_title => vs_text_as_prose('xhtml_head_title'),
 	xhtml_body_class => '',
 	xhtml_head_tags => '',
 	xhtml_rss_task => '',
