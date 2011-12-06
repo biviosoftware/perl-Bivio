@@ -57,8 +57,8 @@ sub new_unit {
 		},
 	    );
 	    my($diff) = scalar(
-		`diff '--ignore-matching-lines=^#' -r ../$d .`,
-	    );
+		Bivio::ShellUtil->do_backticks(
+		    qq{diff '--ignore-matching-lines=^#' -r '../$d' .}));
 	    $_F->chdir('../..');
 	    return $diff ? [$diff] : [];
 	},
