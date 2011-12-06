@@ -52,10 +52,12 @@ my($_TRANSLITERATE) = {
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub canonicalize_and_excerpt {
-    my($proto, $value, $max_words) = @_;
+    my($proto, $value, $max_words, $no_ellipsis) = @_;
     my($v, $return) = _ref($value);
     return $v
 	if $return;
+    # So we are re-entrant.  If there was an ellipsis in the actual text, so be it.
+    $$v =~ s/\s+\.{3}$//;
     $max_words ||= 45;
 #TODO: Split on paragraphs first.  Google groups seems to do this
     my($words) = [grep(
@@ -64,12 +66,14 @@ sub canonicalize_and_excerpt {
 	    ' ',
 	    ${$proto->canonicalize_charset(
 		$proto->canonicalize_newlines($v),
-	    )}, $max_words,
+	    )},
+	    $max_words + 1,
 	),
     )];
-    if (@$words >= $max_words) {
+    if (@$words > $max_words) {
 	pop(@$words);
-	push(@$words, '...');
+	push(@$words, '...')
+	    unless $no_ellipsis;
     }
     return \(join(' ', @$words));
 }
