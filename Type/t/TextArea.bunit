@@ -8,6 +8,8 @@ req();
 	"\n" => UNDEF(),
 	"  \n" => UNDEF(),
 	'x' => "x\n",
+	"x\n" x (32 * 1024 - 1) => "x\n" x (32 * 1024 - 1),
+	"x\n" x (32 * 1024) => [undef, 'TOO_LONG'],
     ],
     canonicalize_newlines => [
 	'' => '',
