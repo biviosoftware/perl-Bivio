@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.42  2011/12/05 20:16:59  moeller
+  * ckeditor.js
+    render underlined text correctly
+
   Revision 11.41  2011/12/05 19:42:16  moeller
   * Bivio::BConf
     Synchronize newly created/deleted realm files with failover host
