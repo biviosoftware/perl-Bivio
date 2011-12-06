@@ -11,6 +11,7 @@ my($_C) = b_use('IO.Config');
 my($_D) = b_use('Bivio.Die');
 my($_CL) = b_use('IO.ClassLoader');
 my($_F) = b_use('UI.Facade');
+my($_SU) = b_use('Bivio.ShellUtil');
 my($_IGNORE_POD) = {
     '=for' => 1,
     '=over' => 1,
@@ -49,7 +50,7 @@ sub render {
     $_D->throw('NOT_FOUND')
 	 unless my $file = _file($package, $req);
 #TODO: remove this and do it inline always
-    my($lines) = [`/usr/local/bin/perl2html -c -s < '$file'`];
+    my($lines) = [$_SU->do_backticks("/usr/local/bin/perl2html -c -s < '$file'")];
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package, $req);
     $lines = join('', @$lines);

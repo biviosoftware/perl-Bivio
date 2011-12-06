@@ -60,6 +60,7 @@ EOF
 
 #=IMPORTS
 use Bivio::IO::File;
+use Bivio::ShellUtil;
 use HTML::Entities ();
 use XML::Parser ();
 
@@ -184,7 +185,8 @@ my($_XML_TO_HTML_PROGRAM) = {
 	my($attr, $html, $clipboard) = @_;
 	my($glob) = $clipboard->{xml_file};
 	$glob =~ s,[^/]+(?=\.xml$),\*,;
-	my($target) = `fgrep -i -l 'id="$attr->{linkend}">' $glob`;
+	my($target) = Bivio::ShellUtil
+	    ->do_backticks(qq{fgrep -i -l 'id="$attr->{linkend}">' $glob});
 	die($attr->{linkend}, ': not found in ', $glob)
 	    unless $target;
 	chomp($target);
