@@ -312,6 +312,12 @@ sub detach_process {
     return;
 }
 
+sub do_backticks {
+    my($self, $command) = @_;
+    my($res) = $self->piped_exec($command, undef, 1);
+    return wantarray ? split(/(?<=\n)/, $$res) : $$res;
+}
+
 sub do_sh {
     my($self, @cmd) = shift->name_args(['LongText'], \@_);
     return join('', map(${$self->piped_exec($_)}, @cmd));
