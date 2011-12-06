@@ -12,12 +12,12 @@ IN
 OUT
     <<'IN' => <<'OUT',
 @b-def name=m_3 params="p3_1 p3_2 p3_3"
-c3@p3_1@p3_2@p3_2not
+c3@p3_1@p3_2@p3_2not@{p3_2}yes
 @p3_3
 @/b-def
 @b-call name=m_3 p3_1=3.1 p3_2=3.2
 IN
-<p class="b_prose">c33.13.2@p3_2not
+<p class="b_prose">c33.13.2@p3_2not3.2yes
 </p>
 
 OUT

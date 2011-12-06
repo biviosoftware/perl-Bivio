@@ -64,9 +64,10 @@ sub _op_call {
     return $proto->parameters_error($error, $args)
 	if %$error;
     (my $content = $def->{content}) =~ s{
-        \@(\w+)
+        \@(?:(\w+)|\{(\w+)\})
     }{
-	defined($values->{$1}) ? $values->{$1} : "\@$1"
+	my($x) = defined($1) ? $1 : $2;
+	defined($values->{$x}) ? $values->{$x} : "\@$x"
     }exsg;
     $state->{proto}->include_content($content, $def->{calling_context}, $state);
     return;
