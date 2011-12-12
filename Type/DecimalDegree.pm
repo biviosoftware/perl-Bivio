@@ -7,7 +7,7 @@ use Bivio::Base 'Type.Number';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_decimals {
-    return 6;
+    return 8;
 }
 
 sub get_min {
@@ -19,11 +19,11 @@ sub get_max {
 }
 
 sub get_precision {
-    return 9;
+    return 11;
 }
 
 sub get_width {
-    return 11;
+    return 13;
 }
 
 1;
