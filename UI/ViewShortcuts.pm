@@ -1,14 +1,12 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::ViewShortcuts;
 use strict;
 use Bivio::Base 'UI.ViewShortcutsBase';
 
-# C<Bivio::UI::ViewShortcuts> is a collection of common helper routines.  Typical
-# applications will subclass this class.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_W) = b_use('UI.Widget');
+my($_DT) = b_use('Type.DateTime');
 
 sub vs_call {
     my(undef, $method, @args) = @_;
@@ -96,6 +94,10 @@ sub vs_model {
 	    unless defined($field);
 	return $req->get_nested("Model.$model", $field);
     }, @_);
+}
+
+sub vs_now_as_year {
+    return [sub {$_DT->now_as_year}];
 }
 
 sub vs_realm {
