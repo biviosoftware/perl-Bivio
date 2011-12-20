@@ -181,40 +181,43 @@ sub init_admin_user {
 sub init_bulletin {
     my($self, $name, $display_name) = @_;
     my($req) = $self->initialize_fully;
-    $self->set_user_to_any_online_admin;
     $name ||= b_use('FacadeComponent.Constant')->get_value('bulletin_realm_name', $req);
     $display_name ||= _site_name_prefix(ucfirst($name), $req);
-    $req->with_realm(undef, sub {
-        $self->model('ForumForm', {
-	   'RealmOwner.display_name' => $display_name,
-	   'RealmOwner.name' => $name,
-	   mail_want_reply_to => 1,
-	});
-	$self->model('RowTag')->map_invoke(create_value => [
-	    [MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
-	    [BULLETIN_MAIL_MODE => 1],
-	    [BULLETIN_BODY_TEMPLATE => 1],
-	]);
-	$self->new_other('RealmRole')
-	    ->edit_categories([qw(+mail_send_access_nobody +feature_bulletin)]);
-	$self->model('EmailAlias')->create({
-	    incoming => $req->format_email($req->format_email),
-	    outgoing => _support_email($req),
-	});
-	$self->model('ForumForm', {
-	    'RealmOwner.display_name' => $display_name . ' Staging',
-	    'RealmOwner.name' => $self->add_default_staging_suffix($name),
-	    mail_want_reply_to => 1,
-	});
-	$self->model('RowTag')->map_invoke(create_value => [
-	    [MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
-	    [BULLETIN_MAIL_MODE => 1],
-	    [BULLETIN_BODY_TEMPLATE => 1],
-	]);
-	$self->new_other('RealmRole')->edit_categories('+feature_bulletin');
-	return;
-    });
-    return;
+    $req->with_realm(
+	undef,
+	sub {
+	    $self->set_user_to_any_online_admin;
+	    $self->model('ForumForm', {
+	       'RealmOwner.display_name' => $display_name,
+	       'RealmOwner.name' => $name,
+	       mail_want_reply_to => 1,
+	    });
+	    $self->model('RowTag')->map_invoke(create_value => [
+		[MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
+		[BULLETIN_MAIL_MODE => 1],
+		[BULLETIN_BODY_TEMPLATE => 1],
+	    ]);
+	    $self->new_other('RealmRole')
+		->edit_categories([qw(+mail_send_access_nobody +feature_bulletin)]);
+	    $self->model('EmailAlias')->create({
+		incoming => $req->format_email($req->format_email),
+		outgoing => _support_email($req),
+	    });
+	    $self->model('ForumForm', {
+		'RealmOwner.display_name' => $display_name . ' Staging',
+		'RealmOwner.name' => $self->add_default_staging_suffix($name),
+		mail_want_reply_to => 1,
+	    });
+	    $self->model('RowTag')->map_invoke(create_value => [
+		[MAIL_SUBJECT_PREFIX => $_RM->EMPTY_SUBJECT_PREFIX],
+		[BULLETIN_MAIL_MODE => 1],
+		[BULLETIN_BODY_TEMPLATE => 1],
+	    ]);
+	    $self->new_other('RealmRole')->edit_categories('+feature_bulletin');
+	    return;
+	},
+    );
+    return $name;
 }
 
 sub init_files {
