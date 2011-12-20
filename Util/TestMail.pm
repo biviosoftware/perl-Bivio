@@ -205,8 +205,8 @@ my($_AUTHORS) = {
 };
 
 sub create_messages {
-    my($self, $max_msgs) = @_;
-    $max_msgs ||= 100;
+    my($self, $num_msgs, $want_threads) = @_;
+    $num_msgs ||= 50;
     $self->initialize_fully;
     my($req) = $self->req;
     my($ra) = $self->new_other('RealmAdmin');
@@ -235,7 +235,7 @@ sub create_messages {
 	my($date) = $_DT->rfc822($now);
 	my($in_reply_to) = '';
 	my($msg_id) = $mo->generate_message_id($req);
-	if (@$msgs > 3 && $_R->integer(100) < 95) {
+	if ($want_threads && @$msgs > 3 && $_R->integer(100) < 95) {
 	    ($subject, $in_reply_to) = @{$pick->($msgs)};
 	    $in_reply_to = "\nIn-Reply-To: $in_reply_to";
 	    $subject =~ s/^Re: //;
@@ -253,7 +253,7 @@ $body
 EOF
         return $now;
     };
-    for (my $i = $_R->integer($max_msgs, 2); $i > 0; $i--) {
+    for (my $i = $num_msgs; $i > 0; $i--) {
 	$now = $msg->($msgs)
     }
     return;
