@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,39 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.43  2011/12/06 03:06:59  nagler
+  * Bivio::Agent::Request
+    removed is_production config param
+  * Bivio::Biz::Action::RealmMail
+    Don't queue a job if the user agent is_mail_agent so that we lock up
+    an apache process
+  * Bivio::Biz::Model::MailRealmsThreadRootList
+    removed
+  * Bivio::Delegate::TaskId
+    reflectors need MailReceiveStatus
+  * Bivio::PetShop::Test::PetShop
+    b_use
+  * Bivio::ShellUtil
+    added do_backticks
+  * Bivio::Test::ShellUtilConf
+    call do_backticks
+  * Bivio::Type::String
+    canonicalize_and_excerpt is now re-entrant
+  * Bivio::Type::UserAgent
+    added is_mail_agent
+  * Bivio::UI::HTML::Widget::SourceCode
+    use do_backticks
+  * Bivio::UI::View::ThreePartPage
+    indirect the xhtml_head_title in xhtml_head_tags
+  * Bivio::UI::XHTML::Widget::WikiText::Macro
+    allow for @{param} in text so can be inline with other \w chars
+  * Bivio/UI-xml
+    NEW
+  * Bivio::Util::TestMail
+    NEW
+  * Bivio::XML::DocBook
+    use do_backticks
+
   Revision 11.42  2011/12/05 20:16:59  moeller
   * ckeditor.js
     render underlined text correctly
