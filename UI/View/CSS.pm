@@ -888,6 +888,9 @@ sub _site_mail {
 .msg_compose .textarea .label {
   vertical-align: top;
 }
+td.b_msg_summary {
+  CSS('msg_summary');
+}
 .b_msg_summary div.b_excerpt {
   Font('msg_excerpt');
 }
