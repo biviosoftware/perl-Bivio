@@ -26,6 +26,7 @@ commands
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
   import_mbox -- imports mbox input file
   import_bulletins -- imports old Bulletins into forum mail files
+  toggle_is_public_for_all -- toggles is_public for all emails
 EOF
 }
 
