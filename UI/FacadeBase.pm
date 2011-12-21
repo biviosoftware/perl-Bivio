@@ -1085,6 +1085,11 @@ sub _cfg_mail {
 	    [msg_byline => 0x0],
 	    [mail_msg_border => __PACKAGE__->init_from_prior_group('form_sep_border')],
 	],
+	CSS => [
+	    [msg_summary => q{
+	        width: 50em;
+	    }],
+	],
 	Task => [
 	    __PACKAGE__->mail_receive_task_list(
 		'FORUM_MAIL_RECEIVE',
