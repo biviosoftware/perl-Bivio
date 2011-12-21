@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.44  2011/12/20 01:38:21  nagler
+  * Bivio::Biz::Model::RealmMail
+    Deleting root RealmMail of ticket did not work
+  * Bivio::Type::DecimalDegree
+    compute to 8 decimal places
+  * Bivio::UI::FacadeBase
+    added xhtml_copyright_qualifier which can be overwritten
+  * Bivio::UI::View::Motion
+    use TrimmedText widget for comment and text columns
+  * Bivio::UI::ViewShortcuts
+    added vs_now_as_year
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_trimmed_text_column()
+  * Bivio::UI::XHTML::Widget::XLink
+    factored out XLinkURI
+  * Bivio::UI::XHTML::Widget::XLinkURI
+    NEW
+  * Bivio/UI-xml
+    NEW
+  * Bivio::Util::SiteForum
+    init_bulletin: moved set_user_to_any_online_admin inside with_realm so
+    would get a user in general realm.
+    fixed formatting
+  * Bivio::Util::TestMail
+    num_msgs is now fixed (not random)
+
   Revision 11.43  2011/12/06 03:06:59  nagler
   * Bivio::Agent::Request
     removed is_production config param
