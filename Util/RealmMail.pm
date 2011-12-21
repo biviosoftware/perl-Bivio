@@ -170,6 +170,18 @@ sub import_rfc822 {
     return;
 }
 
+sub toggle_is_public_for_all {
+    my($self) = @_;
+    $self->model('RealmMailList')
+	->do_iterate(
+	    sub {
+		my($rf) = shift->get_model('RealmFile');
+		$rf->toggle_is_public;
+		return 1;
+	    },
+	);
+}
+
 sub _create_from_rfc822 {
     my($self, $rm, $m, $t, $n) = @_;
     my($die) = Bivio::Die->catch(
