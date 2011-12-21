@@ -91,6 +91,7 @@ sub delete_message {
 	$self->new_other('RealmMail')->do_iterate(sub {
 	    my($it) = @_;
 	    $it->update({
+		thread_root_id => $self->get('thread_root_id'),
 		thread_parent_id => $parent_id,
 	    });
 	    return 1;
@@ -114,21 +115,20 @@ sub delete_message {
 	    } else {
 		$new_root_id = $it->get('RealmMail.realm_file_id');
 	    }
-	    $self->new_other('RealmMail')->load({
-		realm_file_id => $it->get('RealmMail.realm_file_id'),
-	    })->update({
+	    $it->get_model('RealmMail')->update({
 		thread_root_id => $new_root_id,
 		thread_parent_id => $new_parent_id,
 	    });
 	    return 1;
 	});
-	my($crmt) =  $self->new_other('CRMThread')->unauth_load_or_die({
+	my($crmt) = $self->new_other('CRMThread');
+	$crmt->unauth_load({
 	    thread_root_id => $self->get('thread_root_id'),
 	});
 	if (defined($new_root_id)) {
 	    $crmt->update({
 		thread_root_id => $new_root_id,
-	    });
+	    }) if $crmt->is_loaded;
 	    $self->new_other('RealmMail')->do_iterate(
 		sub {
 		    my($it) = @_;
@@ -139,10 +139,11 @@ sub delete_message {
 		    return 1;
 		}, {
 		    'thread_root_id' => $this_id,
-		});	
+		});
 	}
 	else {
-	    $crmt->delete;
+	    $crmt->delete
+		if $crmt->is_loaded;
 	}
     }
     $self->delete;
