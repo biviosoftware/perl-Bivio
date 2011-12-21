@@ -1,4 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText::Widget;
 use strict;
@@ -7,6 +7,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_W) = b_use('UI.Widget');
+my($_D) = b_use('Bivio.Die');
 
 sub handle_register {
     return [qw(b-widget)];
@@ -19,8 +20,9 @@ sub render_html {
 	unless $proto;
     my($value) =  $attrs->{value};
     my($v);
-    my($die) = Bivio::Die->catch_quietly(sub {
+    $_D->catch_quietly_unless_test(sub {
         $v = view_get("wiki_widget_$value");
+	return;
     });
     return $args->{proto}->render_error($value, 'widget not found', $args)
 	unless defined($v);
