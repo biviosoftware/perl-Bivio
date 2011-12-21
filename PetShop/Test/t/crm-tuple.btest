@@ -2,6 +2,7 @@
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
+do_test_backdoor(TestData => '-realm crm_tuple_forum clear_crm_threads');
 my($forum) = generate_remote_email('crm_tuple_forum');
 my($cust1) = generate_local_email('crm_cust1');
 my($tech1) = generate_local_email('crm_tech1');

@@ -13,13 +13,27 @@ sub USAGE {
     return <<'EOF';
 usage: bivio TestData [options] command [args..]
 commands
-  clear_calendar_btest
+  clear_crm_threads
   init
   init_calendar_btest
   init_mail_references
   init_search -- files for realm-file-search.btest
   init_seo_btest
+  reset_calendar_btest
 EOF
+}
+
+sub clear_crm_threads {
+    my($self) = @_;
+    $self->assert_test;
+    $self->model('CRMThread')
+	->do_iterate(
+	    sub {
+		shift->cascade_delete;
+		return 1;
+	    },
+	);
+    return;
 }
 
 sub init {
