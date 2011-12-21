@@ -66,7 +66,7 @@ EOF
 		return [$actual->[0]->get(qw(excerpt author_user_id author))];
 	    },
 	} => [
-	    'excerpt.bwiki' => [qr{^w1( w\d+){42} w44 \.\.\.$}s, realm_id('demo'), ''],
+	    'excerpt.bwiki' => [qr{^w1( w\d+){42} w44 w45 \.\.\.$}s, realm_id('demo'), ''],
 	    'excerpt.eml' => ['html body', realm_id('demo'), 'Freddy'],
 	],
     ],
