@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'XHTMLWidget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_D) = b_use('Bivio.Die');
 my($_A) = b_use('IO.Alert');
 my($_C) = b_use('IO.Config');
 my($_CA) = b_use('Collection.Attributes');
@@ -503,6 +504,7 @@ sub prepare_html {
 	realm_id => $req->get('auth_id'),
 	user_id => $req->get('auth_user_id'),
 	proto => $proto,
+	task_id => $task_id,
     );
     $args = $args->internal_get;
     return $args
@@ -537,11 +539,11 @@ sub prepare_html {
 sub register_tag {
     my(undef, $tag, $class) = @_;
     $tag = lc($tag);
-    Bivio::Die->die($tag, ': invalid tag format: ', $class)
+    b_die($tag, ': invalid tag format: ', $class)
         unless $tag =~ /^[a-z][-\w]+$/ && $tag =~ /-/;
-    Bivio::Die->die($class, ': does not implement render_html')
+    b_die($class, ': does not implement render_html')
 	unless $class->can('render_html');
-    Bivio::Die->die(
+    b_die(
 	$tag, ': already registered by ', $_MY_TAGS->{$tag},
 	' cannot register to: ', $class,
     ) if $_MY_TAGS->{$tag}
@@ -634,7 +636,7 @@ sub render_plain_text {
 sub _call_my_tag {
     my($state, $tag, $method, $args) = @_;
     my($die);
-    my($res) = Bivio::Die->catch_quietly(
+    my($res) = $_D->catch_quietly_unless_test(
 	sub {$_MY_TAGS->{$tag}->$method($args)},
 	\$die,
     );
@@ -1257,6 +1259,8 @@ sub _task_id {
     return $_TI->from_any($args->{task_id})
 	if $args->{task_id};
     my($t) = $args->{req}->get('task_id');
+    return $t
+	if $t->get_name =~ /WIKI_VIEW/;
 #TODO: This is really dicey
     return $t->get_name =~ /BLOG|WIKI|HELP/ ? $t : 'FORUM_WIKI_VIEW';
 }
