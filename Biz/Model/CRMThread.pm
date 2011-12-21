@@ -35,6 +35,20 @@ sub USER_ID_FIELD {
     return '';
 }
 
+sub cascade_delete {
+    my($self, $query) = @_;
+    $self->new->do_iterate(
+        sub {
+	    my($it) = @_;
+	    $self->new_other('TupleTag')
+		->delete_all({primary_id => $it->get('thread_root_id')});
+	    return 1;
+        },
+        $query || {thread_root_id => $self->get('thread_root_id')},
+    );
+    return shift->SUPER::cascade_delete(@_);
+}
+
 sub clean_subject {
     my(undef, $subject) = @_;
     $subject =~ s{.*$_SUBJECT_RE\s*}{};
