@@ -149,6 +149,11 @@ sub catch_quietly {
     return shift->catch(@_);
 }
 
+sub catch_quietly_unless_test {
+    my($method) = Bivio::IO::Config->is_test ? 'catch' : 'catch_quietly';
+    return shift->$method(@_);
+}
+
 sub destroy {
     # (self) : undef
     # Destroys self and removes from the current chain.  The initial error is not
