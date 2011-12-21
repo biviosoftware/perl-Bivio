@@ -1,13 +1,13 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Type::GeomPoint;
 use strict;
 use Bivio::Base 'Type.Geom';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TE) = __PACKAGE__->use('Bivio::TypeError');
-my($_GN) = __PACKAGE__->use('Type.GeomNumber');
-my($_DD) = __PACKAGE__->use('Type.DecimalDegree');
+my($_TE) = b_use('Bivio::TypeError');
+my($_GN) = b_use('Type.GeomNumber');
+my($_DD) = b_use('Type.DecimalDegree');
 
 sub TYPE {
     return 'POINT';
