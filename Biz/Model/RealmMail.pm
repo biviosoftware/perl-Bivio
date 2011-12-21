@@ -83,6 +83,8 @@ sub create_from_rfc822 {
     # DOES NOT RETURN
 }
 
+#TODO: this needs a better name that describes the function.  Probably is just "delete",
+# just like when you delete a file, it has to audit properly.
 sub delete_message {
     my($self) = @_;
     my($this_id) = $self->get('realm_file_id');
@@ -121,6 +123,7 @@ sub delete_message {
 	    });
 	    return 1;
 	});
+#TODO: Delete the CRMThread if there are no mail messages
 	my($crmt) = $self->new_other('CRMThread');
 	$crmt->unauth_load({
 	    thread_root_id => $self->get('thread_root_id'),
