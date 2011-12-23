@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,33 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.45  2011/12/21 23:58:42  nagler
+  * Bivio::Biz::Model::CRMThread
+    Added cascade_delete to remove TupleTags
+  * Bivio::Biz::Model::RealmMail
+    delete_message: fix updating of non-root messages, CRMThreads aren't
+    always associated with a given message
+    todos
+  * Bivio::Die
+    added catch_quietly_unless_test
+  * Bivio::PetShop::Util::TestData
+    added clear_crm_threads
+  * Bivio::Type::GeomPoint
+    b_use
+  * Bivio::UI::FacadeBase
+    msg_summary is 50em
+  * Bivio::UI::View::CSS
+    added CSS for msg_summary
+  * Bivio::UI::XHTML::Widget::WikiText::Widget
+    call catch_quietly_unless_test so get errors to logs in dev/test
+  * Bivio::UI::XHTML::Widget::WikiText
+    clean up _task_id() so returns SITE_WIKI_VIEW if in that context
+    wasn't cascading $task_id in all places
+    call catch_quietly_unless_test so get errors to logs in dev/test
+  * Bivio::Util::RealmMail
+    added toggle_is_public_for_all
+    added USAGE
+
   Revision 11.44  2011/12/20 01:38:21  nagler
   * Bivio::Biz::Model::RealmMail
     Deleting root RealmMail of ticket did not work
