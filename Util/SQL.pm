@@ -69,6 +69,7 @@ my($_BUNDLE) = [qw(
     motion_comment_64k
     motion_question_64k
     failover_work_queue
+    tuple_boolean_type
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -584,6 +585,12 @@ sub initialize_tuple_slot_types {
 	},
 	Email => {
 	    type_class => 'Email',
+	    default_value => undef,
+	    choices => undef,
+	    is_required => 0,
+	},
+	Boolean => {
+	    type_class => 'Boolean',
 	    default_value => undef,
 	    choices => undef,
 	    is_required => 0,
@@ -2190,6 +2197,43 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_tuple_boolean_type {
+    my($self) = @_;
+    my($existing_booleans) = $self->model('TupleSlotType')->map_iterate(
+	'tuple_slot_type_id', 'unauth_iterate_start', {
+	    label => 'Boolean',
+	});
+    my($boolean_id);
+    $self->req->with_realm(undef, sub {
+        $self->model('TupleSlotType')->create_from_hash({
+	    Boolean => {
+	        type_class => 'Boolean',
+		default_value => undef,
+		choices => undef,
+		is_required => 0,
+	    },
+	});
+	$boolean_id = $self->req(qw(Model.TupleSlotType tuple_slot_type_id));
+    });
+    b_die() unless $boolean_id;
+
+    foreach my $id (@$existing_booleans) {
+	$self->model('TupleSlotDef')->do_iterate(sub {
+            my($def) = @_;
+	    $def->update({
+		tuple_slot_type_id => $boolean_id,
+	    });
+	    return 1;
+        }, 'unauth_iterate_start', {
+	    tuple_slot_type_id => $id,
+	});
+	$self->model('TupleSlotType')->unauth_load_or_die({
+	    tuple_slot_type_id => $id,
+	})->delete;
+    }
+    return;
+}
+
 sub internal_upgrade_db_website {
     my($self) = @_;
     $self->run(<<'EOF');
@@ -2692,6 +2736,15 @@ sub _sentinel_site_forum {
     (my $forum = $type) =~ s/_forum$//;
     $forum =~ s/_/-/g;
     return $self->model('RealmOwner')->unauth_load({name => $forum});
+}
+
+sub _sentinel_tuple_boolean_type {
+    my($self) = @_;
+    return $self->req->with_realm(undef, sub {
+        return $self->model('TupleSlotType')->unsafe_load({
+	    label => 'Boolean',
+	});
+    });
 }
 
 sub _user_exists {
