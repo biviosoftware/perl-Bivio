@@ -192,9 +192,9 @@ sub vs_descriptive_field {
         : ref($field) ? @$field : $field;
     $attrs ||= {};
     $name =~ /^(\w+)\.(.+)/;
-    my($label, $input) = !$attrs->{wf_type}
-	&& !$attrs->{wf_class}
-	&& Bivio::Biz::Model->get_instance($1)->get_field_type($2)
+    my($label, $input) = !$attrs->{wf_class}
+	&& ($attrs->{wf_type} || 
+	    Bivio::Biz::Model->get_instance($1)->get_field_type($2))
 	    ->isa('Bivio::Type::Boolean') ? (
 	    undef,
 	    FormField($name, $attrs),
