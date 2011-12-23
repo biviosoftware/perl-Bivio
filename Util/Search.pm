@@ -114,8 +114,8 @@ sub rebuild_realm {
 sub replicate_db {
     my($self) = @_;
     sub REPLICATE_DB {[[qw(?failover_host String)]]}
-    
-    my($self, $bp) = shift->parameters(\@_);
+    my($bp);
+    ($self, $bp) = shift->parameters(\@_);
     _make_db_snapshot($self);
     return
 	unless defined($bp->{failover_host});
