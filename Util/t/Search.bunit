@@ -4,6 +4,8 @@ ShellUtil();
 # DO NOT TEST rebuild_db.  It's tested in realm-file-search.btest
 [
     rebuild_realm => DIE(),
-    [qw(-realm xapian_demo rebuild_realm 12/1/2009)] => qr{xapian_demo.*: 3 object}s,
-    [qw(-realm xapian_demo rebuild_realm)] => qr{xapian_demo.*: 3 object}s,
+    # will have 3 objects after create_test_db()
+    # will have 6 objects after Search/t/Xapian.btest is run
+    [qw(-realm xapian_demo rebuild_realm 12/1/2009)] => qr{xapian_demo.*: [36] object}s,
+    [qw(-realm xapian_demo rebuild_realm)] => qr{xapian_demo.*: [36] object}s,
 ];
