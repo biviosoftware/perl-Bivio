@@ -4,7 +4,7 @@ ListModel();
 [
     load_all => [
 	[] => [map(+{'TupleSlotType.type_class' => $_},
-		   sort(qw(String Date Integer Email)))],
+		   sort(qw(String Boolean Date Integer Email)))],
     ],
     is_upgrade => [
 	[qw(String String)] => 0,
