@@ -1,0 +1,116 @@
+test_setup('PetShop');
+home_page();
+my($uri) = get_uri() . '/dbaccess';
+foreach my $model (
+    qw(Address
+       Bulletin
+       CRMThread
+       CalendarEvent
+       Cart
+       CartItem
+       Category
+       Club
+       DbUpgrade
+       ECCheckPayment
+       ECCreditCardPayment
+       ECPayment
+       ECSubscription
+       Email
+       EmailAlias
+       EmailVerify
+       Forum
+       Inventory
+       Item
+       JobLock
+       Lock
+       Motion
+       MotionComment
+       MotionVote
+       NonuniqueEmail
+       OTP
+       Order
+       Phone
+       Product
+       RealmDAG
+       RealmFile
+       RealmFileLock
+       RealmMail
+       RealmMailBounce
+       RealmOwner
+       RealmRole
+       RealmUser),
+#       RowTag - there are two options labeled 'EMail'
+    qw(TaskLog
+       Tuple
+       TupleDef
+       TupleSlotDef
+       TupleSlotType
+       TupleTag
+       TupleUse
+       User
+       UserAccount
+       Website
+  )) {
+    visit_uri($uri);
+    follow_link($model);
+}
+visit_uri($uri);
+follow_link('Product');
+follow_link('name:');
+submit_form('Search', {
+    'name:' => 'Poodle',
+});
+verify_text('Displaying row 1 of 1');
+verify_text('Cute');
+follow_link('Category');
+verify_text('Various Breeds');
+follow_link('Product');
+verify_text('Displaying row 1 of 5');
+verify_text('Corgi');
+submit_form('>');
+verify_text('Dalmation');
+submit_form('>>|');
+verify_text('Labrador Retriever');
+submit_form('<');
+verify_text('German Shepherd');
+submit_form('|<<');
+verify_text('Corgi');
+follow_link('description:');
+submit_form('Update', {
+    'description:' => 'Often seen around Buckingham Palace',
+});
+verify_text('Updated');
+verify_text('Buckingham Palace');
+follow_link('category id:');
+submit_form('Search', {
+    'category id:' => 'DOGS',
+});
+verify_text('Displaying row 1 of 5');
+follow_link('show in table');
+verify_text('Great hunting dog');
+follow_link(5);
+verify_text('Displaying row 5 of 5');
+verify_text('Great hunting dog');
+follow_link('Model list');
+follow_link('Category');
+verify_text('Displaying row 1 of 5');
+verify_text('Birds');
+submit_form('Clear Form');
+verify_no_text('Birds');
+follow_link('category id:', 'description:', 'name:');
+submit_form('Create', {
+    'category id:' => 'AMPHIBIANS',
+    'description:' => 'Frogs, newts etc.',
+     'name:' => 'Amphibians',    
+});
+verify_text('Created');
+submit_form('Search');
+verify_text('Displaying row 1 of 6');
+verify_text('Amphibians');
+submit_form('Delete');
+verify_no_text('Amphibians');
+submit_form('Search');
+verify_text('Displaying row 1 of 5');
+
+
+
