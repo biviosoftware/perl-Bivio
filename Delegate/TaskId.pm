@@ -665,7 +665,31 @@ sub info_dev {
 	    ANYBODY
 	    View.AcceptanceTestResultViewer->acceptance_test_response
 	)],
-#227-229
+	[qw(
+	    DEV_DBACCESS_MODEL_LIST
+	    227
+	    GENERAL
+	    ANYBODY
+	    Model.DBAccessModelList->execute_load_all
+	    View.DBAccess->dbaccess_model_list
+	)],
+	[qw(
+	    DEV_DBACCESS_MODEL_FORM
+	    228
+	    GENERAL
+	    ANYBODY
+	    Model.DBAccessModelForm
+	    View.DBAccess->dbaccess_model_form
+	    next=DEV_DBACCESS_MODEL_FORM
+	)],
+	[qw(
+	    DEV_DBACCESS_ROW_LIST
+	    229
+	    GENERAL
+	    ANYBODY
+	    Model.DBAccessRowList->execute_load_all
+	    View.DBAccess->dbaccess_row_list
+	)],
     ];
 }
 
