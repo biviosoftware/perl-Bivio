@@ -1,0 +1,25 @@
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop', 'groupware');
+home_page();
+my($e, $n) = create_user();
+login_as('root');
+foreach my $f (qw(fourem$ fourem-sub1$ fourem-sub2)) {
+    follow_link($f, qw(roster add_member));
+    submit_form(Add => {
+	email => $e,
+	full_name => $n
+    });
+    verify_text($e);
+}
+do_test_backdoor(ForumUserDeleteForm => {
+    realm => 'fourem',
+    'Email.email' => $e,
+});
+home_page();
+follow_link(qw(fourem$ roster));
+verify_no_text($e);
+follow_link(qw(fourem-sub1$ roster));
+verify_no_text($e);
+follow_link(qw(fourem-sub2 roster));
+verify_no_text($e);
