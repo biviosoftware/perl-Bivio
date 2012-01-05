@@ -17,9 +17,7 @@ do_test_backdoor(ForumUserDeleteForm => {
     'Email.email' => $e,
 });
 home_page();
-follow_link(qw(fourem$ roster));
-verify_no_text($e);
-follow_link(qw(fourem-sub1$ roster));
-verify_no_text($e);
-follow_link(qw(fourem-sub2 roster));
-verify_no_text($e);
+foreach my $f (qw(fourem$ fourem-sub1$ fourem-sub2)) {
+    follow_link($f, 'roster');
+    verify_no_text($e);
+}
