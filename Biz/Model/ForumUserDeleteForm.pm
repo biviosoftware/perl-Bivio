@@ -36,8 +36,9 @@ sub _down {
 	sub {
 	    $self->execute($self->get_request, {
 		'User.user_id' => $self->get('User.user_id'),
-		'RealmUser.realm_id' => shift->get('forum_id'),
+		'RealmUser.realm_id' => b_debug(shift->get('forum_id')),
 	    });
+	    return 1;
 	},
 	'unauth_iterate_start',
 	'forum_id',
