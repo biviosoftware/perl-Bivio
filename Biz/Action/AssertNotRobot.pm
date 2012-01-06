@@ -9,10 +9,12 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($proto, $req) = @_;
-    return if $req->ureq('auth_user_id');
-    return unless $req->ureq('Type.UserAgent');
-    Bivio::DieCode->FORBIDDEN->throw_die('Assert not robot')
-	if $req->req('Type.UserAgent')->is_robot;
+    return
+	if $req->ureq('auth_user_id');
+    return
+	unless my $ua = $req->ureq('Type.UserAgent');
+    Bivio::DieCode->NOT_FOUND->throw_die('Assert not robot')
+	if $ua->is_robot;
     return;
 }
 

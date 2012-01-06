@@ -7,14 +7,14 @@
 	    [req()] => [],
 	],
 	sub {
-	    b_use('Type.UserAgent')->BROWSER_ROBOT_SEARCH->execute(req());
+	    Type_UserAgent('BROWSER_ROBOT_SEARCH')->execute(req());
 	    return 1;
 	} => 1,
 	execute => [
-	    [req()] => qr/FORBIDDEN/,
+	    [req()] => NOT_FOUND(),
 	],
 	sub {
-	    req()->set_user('root');
+	    req()->set_user('guest');
 	    return 1;
 	} => 1,
 	execute => [
