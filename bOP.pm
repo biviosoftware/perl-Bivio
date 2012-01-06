@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.46  2011/12/23 17:36:53  moeller
+  * Bivio::UI::XHTML::ViewShortcuts
+    vs_descriptive_field() - don't show label if wf_type is Boolean
+  * Bivio::Util::Search
+    fixed dup declaration
+  * Bivio::Util::SQL
+    added upgrade_db tuple_boolean_type
+
   Revision 11.45  2011/12/21 23:58:42  nagler
   * Bivio::Biz::Model::CRMThread
     Added cascade_delete to remove TupleTags
