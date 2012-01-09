@@ -49,7 +49,7 @@ sub link_facade_files {
 			my($destination) = $prefix . $file;
 			next
 			    if -e $destination;
-			if (-d $File::Find::name) {
+			if (-d $File::Find::name && ! -l $File::Find::name) {
 			    Bivio::IO::File->mkdir_p($destination);
 			    next;
 			}
