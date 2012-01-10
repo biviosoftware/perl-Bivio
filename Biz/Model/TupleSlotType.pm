@@ -78,8 +78,12 @@ sub validate_slot {
     return ($v, undef)
 	unless defined($v)
 	and (my $c = $model->get($prefix . 'choices'))->is_specified;
-    return @{$c->map_iterate(sub {$t->is_equal($v, $_[0]) ? 1 : ()})}
-	? ($v, undef)
+    my($match) = @{$c->map_iterate(
+	sub {
+	    $t->is_equal($v, $_[0]) ? $_[0] : ();
+	})};
+    return defined($match)
+	? ($match, undef)
 	: (undef, $_TE->NOT_FOUND);
 }
 
