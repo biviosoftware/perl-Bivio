@@ -315,7 +315,7 @@ sub list {
 
 sub status {
     my($self) = @_;
-
+    vs_put_pager('MotionCommentList');
     return shift->internal_put_base_attr(
 	tools => TaskMenu([
 	    {
@@ -422,7 +422,6 @@ sub vote_result_csv {
 
 sub _comment_list {
     my($req, $self, $model, $type) = @_;
-
     return vs_paged_list(
 	MotionCommentList => $self->internal_comment_fields($model, $type),
         {
