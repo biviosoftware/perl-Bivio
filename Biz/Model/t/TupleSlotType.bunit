@@ -15,7 +15,7 @@ my($tsa) = class('Type.TupleSlotArray');
 	}],
     ],
     validate_slot => [
-	x => [undef, Bivio::TypeError->INTEGER],
+	x => [undef, 'INTEGER'],
 	1 => [1, undef],
 	[''] => [undef, undef],
     ],
@@ -29,7 +29,7 @@ my($tsa) = class('Type.TupleSlotArray');
     ],
     validate_slot => [
 	1 => [1, undef],
-	3 => [undef, Bivio::TypeError->NOT_FOUND],
+	3 => [undef, 'NOT_FOUND'],
     ],
     create_from_hash => [
 	[{TST3 => {
@@ -41,8 +41,22 @@ my($tsa) = class('Type.TupleSlotArray');
     ],
     validate_slot => [
 	'9/1/2006' => ['2453980 79199', undef],
-	'9/2/2006' => [undef, Bivio::TypeError->NOT_FOUND],
-	'9/2' => [undef, Bivio::TypeError->DATE],
+	'9/2/2006' => [undef, 'NOT_FOUND'],
+	'9/2' => [undef, 'DATE'],
+    ],
+    create_from_hash => [
+	[{TST4 => {
+	    type_class => 'String',
+	    choices => "A$;b$;c",
+	}}] => [{
+	    choices => $tsa->new(['A', 'b', 'c',]),
+	}],
+    ],
+    validate_slot => [
+	'a' => ['A', undef],
+	'A' => ['A', undef],
+	'B' => ['b', undef],
+	'x' => [undef, 'NOT_FOUND'],
     ],
     create_from_hash => [
 	[{Tst4 => {
