@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.47  2012/01/06 00:42:23  nagler
+  * Bivio::Biz::Action::AssertNotRobot
+    return NOT_FOUND so search engines do not get to login page
+  * Bivio::Biz::Model::DBAccessModelForm
+    NEW
+  * Bivio::Biz::Model::DBAccessModelList
+    NEW
+  * Bivio::Biz::Model::DBAccessRowList
+    NEW
+  * Bivio::Biz::Model::ForumUserDeleteForm
+    need to return 1 from Forum->do_iterate
+  * Bivio::Delegate::TaskId
+    DBAccess utility'
+  * Bivio::UI::FacadeBase
+    DBAccess utility'
+  * Bivio::UI::View::DBAccess
+    NEW
+
   Revision 11.46  2011/12/23 17:36:53  moeller
   * Bivio::UI::XHTML::ViewShortcuts
     vs_descriptive_field() - don't show label if wf_type is Boolean
