@@ -1172,7 +1172,7 @@ sub info_motion {
 	    MOTION_READ&FEATURE_MOTION
 	    Model.Motion->execute_load_parent
 	    Model.MotionVoteList->execute_load_all_with_query
-	    Model.MotionCommentList->execute_page
+	    Model.MotionCommentList->execute_load_page
 	    View.Motion->status
 	)],
 	[qw(
