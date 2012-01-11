@@ -104,7 +104,7 @@ sub file_manager {
 		    return 'var b_can_write = '
 			   . ($can_write ? 'true' : 'false')
 			   . ";\n"
-                           . "var b_filemanager_root = $_FILEMANAGER_ROOT;";
+                           . qq{var b_filemanager_root = '$_FILEMANAGER_ROOT/';};
 		}], {
 		    TYPE => 'text/javascript',
 		}),	    
