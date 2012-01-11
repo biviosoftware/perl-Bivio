@@ -134,8 +134,7 @@ sub get_qualified_fields {
 
 sub get_related {
     my($proto, $model_name, $field) = @_;
-    b_debug("$model_name, $field");
-    return b_debug(get_all_fields()->{$model_name}->{$field}->{related});
+    return get_all_fields()->{$model_name}->{$field}->{related};
 }
 
 sub internal_initialize {
@@ -183,7 +182,6 @@ sub internal_initialize {
 sub relation_exists {
     my($self, $qualified_field_name, $related_model, $related_field) = @_;
     my($exists) = 0;
-    b_debug($related_model);
     $self->new_other($related_model)->do_iterate(
 	sub {
 	    $exists = 1;
@@ -332,7 +330,6 @@ sub _handle_search_button {
 	$res->{$field} = $value; 
     }
     $res->{c} =  _get_row_count($self, $res, $model_name);
-    b_debug($res);
     return $res;
 }
 
