@@ -77,7 +77,7 @@ submit_form('|<<');
 verify_text('Corgi');
 follow_link('description:');
 submit_form('Update', {
-    'description:' => 'Often seen around Buckingham Palace',
+    'description:' => 'Friendly dog from Wales. Often seen around Buckingham Palace',
 });
 verify_text('Updated');
 verify_text('Buckingham Palace');
