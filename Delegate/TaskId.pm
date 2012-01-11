@@ -802,7 +802,22 @@ sub info_file {
 	    View.WysiwygFile->file_upload_from_wysiwyg
 	    next=FORUM_FILE_UPLOAD_FROM_WYSIWYG
 	)],
-	#179 free
+#179 free	
+	[qw(
+	    FORUM_FILE_MANAGER
+	    250
+	    ANY_OWNER
+	    ANYBODY&FEATURE_FILE&TEST_TRANSIENT
+	    View.FileManager->file_manager
+	    write_task=FORUM_FILE_CHANGE
+	)],	
+	[qw(
+	    FORUM_FILE_MANAGER_AJAX
+	    251
+	    ANY_OWNER
+	    ANYBODY&FEATURE_FILE&TEST_TRANSIENT
+	    Action.FileManagerAjax
+	)],
     ];
 }
 
