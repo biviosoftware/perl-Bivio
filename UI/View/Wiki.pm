@@ -6,8 +6,15 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+
+my($_FP) = b_use('Type.FilePath');
+
 b_use('IO.Config')->register(my $_CFG = {
     use_wysiwyg => 0,
+    public_image_folder => $_FP->join($_FP->PUBLIC_FOLDER_ROOT,
+				      $_FP->WIKI_DATA_FOLDER),
+    private_image_folder => $_FP->WIKI_DATA_FOLDER,
+    show_image_upload_tab => 1,
 });
 
 sub TEXT_AREA_COLS {
@@ -43,11 +50,6 @@ sub edit {
 
 sub edit_wysiwyg {
     my($self) = @_;
-    my(@attrs) = (
-	field => 'content',
-	rows => $self->TEXT_AREA_ROWS,
-	cols => $self->TEXT_AREA_COLS,
-    );
     return $self->internal_body(vs_simple_form(WikiForm => [
 	'WikiForm.RealmFile.path_lc',
 	'WikiForm.RealmFile.is_public',
@@ -56,19 +58,24 @@ sub edit_wysiwyg {
 		field => 'content',
 		label => 'text',
 	    }),
-	    If(['Model.WikiForm', 'RealmFile.is_public'],
-	       CKEditor({
-		   @attrs,
-		   path_info => '/Public/WikiData',
-	       }),
-	       CKEditor({
-		   @attrs,
-		   path_info => '/WikiData',
-	       }),
-	   ),
+	    CKEditor({
+		field => 'content',
+		use_public_image_folder => ['Model.WikiForm', 'RealmFile.is_public'],
+		show_image_upload_tab => $_CFG->{show_image_upload_tab},
+		rows => $self->TEXT_AREA_ROWS,
+		cols => $self->TEXT_AREA_COLS,
+		%{$self->get_image_folders},
+	    }),
 	]),
 	_edit_wiki_buttons(),
     ], 1));
+}
+
+sub get_image_folders {
+    return {
+	public_image_folder => $_CFG->{public_image_folder},
+	private_image_folder => $_CFG->{private_image_folder},
+    };
 }
 
 sub handle_config {

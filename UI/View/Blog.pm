@@ -7,6 +7,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
+my($_FP) = b_use('Type.FilePath');
 
 sub TEXT_AREA_COLS {
     return 80;
@@ -176,26 +177,18 @@ sub _access_mode {
 
 sub _edit {
     my($self, $form, $options) = @_;
-    my(@attrs) = (
-	field => 'body',
-	rows => $self->TEXT_AREA_ROWS,
-	cols => $self->TEXT_AREA_COLS,
-    );
     return Join([
 	FormFieldError({
 	    field => 'body',
 	    label => 'text',
 	}),
-	If (["Model.$form", 'RealmFile.is_public'],
-	    $options->{editor}->({
-		@attrs,
-		path_info => '/Public/WikiData',
-	    }),
-	    $options->{editor}->({
-		@attrs,
-		path_info => '/WikiData',
-	    })
-	)
+	$options->{editor}->({
+	    field => 'body',
+	    rows => $self->TEXT_AREA_ROWS,
+	    cols => $self->TEXT_AREA_COLS,
+	    %{b_use('View.Wiki')->get_image_folders},
+	    use_public_image_folder => ["Model.$form", 'RealmFile.is_public'],
+	}),
     ], {
 	cell_class => 'blog_textarea',
     });

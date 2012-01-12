@@ -7,6 +7,7 @@ use File::stat;
 use IO::File;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_FP) = b_use('Type.FilePath');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
@@ -53,7 +54,9 @@ sub control_on_render {
        unless (defined $fh);
     my($mt) = stat($fh)->mtime;
     undef $fh;
-       
+    my($use_public_image_folder) = ref($fields->{use_public_image_folder}) eq 'ARRAY'
+	? $self->req->get_widget_value(@{$fields->{use_public_image_folder}})
+	: $fields->{use_public_image_folder};       
     $$buffer .= '<script type="text/javascript"'
 	    . ' src="'
 	    . $uri
@@ -71,13 +74,21 @@ sub control_on_render {
 	    . $form->get_field_name_for_html($field)
 	    . '", {customConfig: "/b/ckeditor/bwiki_config.js"'
             .'});' . "\n"
-	    . 'CKEDITOR.config.filebrowserImageUploadUrl = "'
-	    . $self->req->format_uri({
-		task_id => 'FORUM_FILE_UPLOAD_FROM_WYSIWYG',
-		path_info => $fields->{path_info},
-		no_context => 1,
-	      })
-	    . '"' . "\n"
+	    . (
+		$fields->{show_image_upload_tab}
+		    ? 'CKEDITOR.config.filebrowserImageUploadUrl = "'
+			   . $self->req->format_uri({
+			       task_id => 'FORUM_FILE_UPLOAD_FROM_WYSIWYG',
+			       path_info => $use_public_image_folder
+				   ? $fields->{public_image_folder}
+				   : $fields->{private_image_folder},
+			       query => $use_public_image_folder
+				   ? {private => $fields->{private_image_folder}}
+				   : {public=> $fields->{public_image_folder}},
+			      })
+       	                    . '"' . "\n"			     
+		    : q{}
+		)
 	    . 'CKEDITOR.config.contentsCss=' . $jscss. ';'
 	    . '</script>'	
 	    . $s;
@@ -93,7 +104,11 @@ sub initialize {
     ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
 	    'field', 'rows', 'cols');
     $fields->{readonly} = $self->get_or_default('readonly', 0);
-    $fields->{path_info} = $self->get_or_default('path_info', '/WikiData');
+    $fields->{public_image_folder} = $self->get_or_default('public_image_folder',
+							   $_FP->PUBLIC_FOLDER_ROOT);
+    $fields->{private_image_folder} = $self->get_or_default('private_image_folder', '/');
+    $fields->{use_public_image_folder} = $self->get_or_default('use_public_image_folder', 0);
+    $fields->{show_image_upload_tab} = $self->get_or_default('show_image_upload_tab', 1);
     return;
 }
 

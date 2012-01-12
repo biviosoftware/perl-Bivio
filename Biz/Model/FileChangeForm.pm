@@ -126,6 +126,7 @@ sub execute_ok {
 	return {
 	    task_id => $self->req('task')->get_attr_as_id('next'),
 	    path_info => $self->req('path_info'),
+	    query => $self->req('query'),
 	}
     }
     return;
