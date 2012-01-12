@@ -13,7 +13,7 @@ sub file_manager {
     my($self, $model) = @_;
 # from src/javascript/simogeofm/index.html
     return shift->internal_body(
-	DIV_file_manager(Join([
+	DIV_filemanager(Join([
 	    _css(
 		'scripts/jquery.filetree/jqueryFileTree.css',
 		'scripts/jquery.contextmenu/jquery.contextMenu-1.01.css',
@@ -119,7 +119,9 @@ sub file_manager {
 		'filemanager.config.js',
 		'filemanager.js',
 	    ),
-    ]))
+    ]), {
+	ID => 'filemanager',
+    })
   );
 }
 
