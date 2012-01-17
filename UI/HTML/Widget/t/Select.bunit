@@ -2,7 +2,8 @@
 # $Id$
 Widget();
 model(TestWidgetForm => {
-    'User.gender' => class('Type.Gender')->MALE,
+    'User.gender' => Type_Gender('MALE'),
+    user_agent => undef,
 });
 [
     [{
@@ -16,4 +17,18 @@ model(TestWidgetForm => {
 	form_model => ['Model.TestWidgetForm'],
 	unknown_label => 'Hello',
     }] => qr{<select name="\w+" size="1">\n<option value="">Hello</option>\n<option value="1">Female</option>\n<option value="2" selected="selected">Male</option>\n</select>}s,
+    [{
+	field => 'user_agent',
+	choices => 'Type.UserAgent',
+	enum_sort => 'as_int',
+	show_unknown => 0,
+	form_model => ['Model.TestWidgetForm'],
+    }] => qr{<select name="\w+" size="1">\n<option value="2">Mail</option>\n<option value="3">Job<}s,
+    [{
+	field => 'user_agent',
+	choices => 'Type.UserAgent',
+	enum_sort => 'get_short_desc',
+	show_unknown => 0,
+	form_model => ['Model.TestWidgetForm'],
+    }] => qr{size="1">\n<option value="8">Browser Firefox 1<}s,
 ];
