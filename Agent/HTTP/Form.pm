@@ -31,7 +31,7 @@ my($_FORM_DATA_MULTIPART_MIXED)
 my($_HTML) = b_use('Bivio.HTML');
 
 sub parse {
-    my(undef, $req) = @_;
+    my(undef, $req, $options) = @_;
     my($r) = $req->get('r');
     my($m) = lc($r->method);
     unless ($m eq 'post') {
@@ -46,7 +46,7 @@ sub parse {
     my($ct) = $r->header_in('content-type') || '';
     return $_HTML->parse_www_form_urlencoded(${$req->get_content})
 	if $ct =~ /^\s*application\/x-www-form-urlencoded/i;
-    return _parse($req, $r)
+    return _parse($req, $r, $options)
 	if $ct =~ /^\s*multipart\/form-data/i;
     b_warn($ct, ': unknown Content-Type');
     return undef;
@@ -61,11 +61,11 @@ sub _err {
 }
 
 sub _parse {
-    my($req, $r) = @_;
+    my($req, $r, $options) = @_;
     # Returns the parsed multipart/form-data.  See RFC1867 for a spec.
-    my($max_field_size)
-	= ($req->unsafe_get('form_model') || b_use('Biz.FormModel'))
-	->MAX_FIELD_SIZE;
+    my($max_field_size)	= ($options || {})->{max_field_size}
+			       || ($req->unsafe_get('form_model')
+			       || b_use('Biz.FormModel'))->MAX_FIELD_SIZE;
     my($buf) = $req->get_content;
     # We destroy content so we have to clear it here.
     $req->delete('content');

@@ -20,55 +20,73 @@ sub file_manager {
 		'styles/filemanager.css',
 	     ),
 	    FORM(Join([
-		H1(),
-		DIV(q{}, {ID => 'uploadresponse'}),
 		BUTTON(q{}, {
-		    ID => "home",
-		    NAME => "home",
-		    TYPE => "button",
+		    ID => 'home',
+		    NAME => 'home',
+		    TYPE => 'button',
 		    VALUE => 'Home',
 		}),
+		H1(),
+		DIV(q{}, {ID => 'uploadresponse'}),
 		INPUT({
-		    ID => "mode",
-		    NAME => "mode",
-		    TYPE => "hidden",
-		    VALUE => "add",
+		    ID => 'mode',
+		    NAME => 'mode',
+		    TYPE => 'hidden',
+		    VALUE => 'add',
 		}),
 		INPUT({
-		    ID => "currentpath",
-		    NAME => "currentpath",
-		    TYPE => "hidden",
+		    ID => 'currentpath',
+		    NAME => 'currentpath',
+		    TYPE => 'hidden',
+		}),
+		DIV(Join([
+		DIV(q{}, {
+		    ID => 'upload',
+		    CLASS => 'loading',
+		}),
+		DIV_newfile(Join([
+		    INPUT({
+			ID => 'newfile',
+			NAME => 'newfile',
+			TYPE => 'file',
+		    }),
+		    DIV(Join([
+			DIV('Upload', {
+			    ID => 'pseudo_upload_button_label',
+			}),
+		    ]), {
+			ID => 'pseudo_upload_button', 
+		    }),		    
+		    ]), {
+			ID => 'newfile_composite',
+		}),
+		INPUT({
+		    ID => 'droppedfiles',
+		    NAME => 'droppedfiles',
+		    TYPE => 'hidden',		    
 		}),		
-		INPUT({
-		    ID => "newfile",
-		    NAME => "newfile",
-		    TYPE => "file",
-		}),
 		BUTTON(q{}, {
-		    ID => "upload",
-		    NAME => "upload",
-		    TYPE => "submit",
-		    VALUE => 'Upload',
-		}),
-		BUTTON(q{}, {
-		    ID => "newfolder",
-		    NAME => "newfolder",
-		    TYPE => "button",
+		    ID => 'newfolder',
+		    NAME => 'newfolder',
+		    TYPE => 'button',
 		    VALUE => 'New Folder',
 		}),
 		BUTTON(q{}, {
-		    ID => "grid",
+		    ID => 'grid',
 		    CLASS => 'ON',
-		    TYPE => "button",
+		    TYPE => 'button',
 		}),
 		BUTTON(q{}, {
-		    ID => "list",
-		    TYPE => "button",
-		}),		
+		    ID => 'list',
+		    TYPE => 'button',
+		}),
+		]), {
+		    ID => 'controls',
+		}),
 		
 	    ]), {
-		ID => "uploader",
-		METHOD => "POST",
+		ID => 'uploader',
+		METHOD => 'POST',
 	    }),
 	    DIV(Join([
 		DIV(q{}, {

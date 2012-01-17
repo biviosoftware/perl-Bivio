@@ -5,6 +5,7 @@ use strict;
 
 use Bivio::Base 'Biz.Action';
 use Bivio::DieCode;
+use MIME::Base64;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -33,13 +34,16 @@ my($_PREVIEW_IMAGES) = {
 
 $_C->register(my $_CFG = {
     filemanager_root => '/b/simogeofm',
+    max_field_size => 10_000_000,
 });
 
 
 sub execute {
     my($proto, $req) = @_;
     my($query) = lc($req->get('r')->method) eq 'post'
-	? b_use('Bivio::Agent::HTTP::Form')->parse($req)
+	? b_use('Bivio::Agent::HTTP::Form')->parse($req, {
+	    max_field_size => $_CFG->{max_field_size},
+	})
 	: $req->get('query'); 
     b_die('unknown mode: ' . $query->{mode})
 	unless $query->{mode} =~ $_MODES;
@@ -58,33 +62,60 @@ sub handle_config {
     return;
 }
 
-sub _handle_mode_add {
-    my($proto, $req, $query) = @_;
-    return _set_json_error($req, 'Browse for a local file before uploading', 1)
-	if $query->{newfile}->{filename} =~ /^\s*$/;
-    my($rf) = $_RF->new($req);
-    return _set_json_error($req, 'Unknown folder: '. $query->{currentpath}, 1)
-    	unless $rf->unsafe_load({
-    	    path_lc => lc($query->{currentpath}),
+sub _add_file {
+    my($req, $folder, $filename, $data) = @_;
+
+    return {
+	Code => -1,
+	Error => "$filename is a folder"
+    } if length($data) == 0 && $filename !~ /\..{1,4}$/;
+    my($rf) = $_RF->new($req);    
+    b_die('Cannot find folder', $folder)
+	unless $rf->unsafe_load({
+    	    path_lc => lc($folder),
     	    is_folder => 1,
     	});
-     my($folder_id) = $rf->get('realm_file_id');
-     my($path) = $_RF->parse_path($_FP->join($query->{currentpath}, $query->{newfile}->{filename}));
-     $path =~ s/['-]/_/g;
-     $rf->create_or_update_with_content({
-     	folder_id => $folder_id,
+    my($folder_id) = $rf->get('realm_file_id');
+    my($path) = $_RF->parse_path($_FP->join($folder, $filename));
+    #TODO: fix filemanager.js to handle quotes and operators in filenames
+    $path =~ s/['-]/_/g;
+    $rf->create_or_update_with_content({
+	folder_id => $folder_id,
 	user_id => $req->get('auth_user_id'),
 	path => $path,
 	is_read_only => 0,
 	is_folder => 0,
-     }, $query->{newfile}->{content});
-    _set_json_response($req, {
-	Path => $query->{currentpath},
-	Name => $query->{newfile}->{filename},
+    }, $data);
+    return  {
+	Path => $folder,
+	Name => $filename,
 	Error => q{},
 	Code => 0,	
-    }, 1);
-    return;
+    };
+}
+
+sub _handle_mode_add {
+    my($proto, $req, $query) = @_;
+    return _set_json_response($req, [
+	_add_file($req,
+		  $query->{currentpath},
+		  $query->{newfile}->{filename},
+		  $query->{newfile}->{content}),
+    ],	1)
+	if $query->{newfile}->{filename};
+    return _set_json_response($req, [{
+	Error => 'Browse for a local file before uploading',
+	Code => -1,
+    }], 1) unless $query->{droppedfiles};
+    return _set_json_response(
+	$req, [
+	    map(_add_file($req,
+			  $_->{folder},
+			  $_->{name},
+			  MIME::Base64::decode($_->{data})),
+		@{$_MJ->from_text(\$query->{droppedfiles})}
+	    )],
+	1);
 }
 
 sub _handle_mode_addfolder {
