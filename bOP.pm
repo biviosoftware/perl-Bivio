@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.48  2012/01/10 16:17:15  moeller
+  * Bivio::Biz::Model::TupleSlotType
+    validate_slot() returns choice value which matched
+  * Bivio::Delegate::TaskId
+    load paged list for FORUM_MOTION_STATUS
+    fpc
+  * Bivio::UI::View::Motion
+    added pager to status page
+  * Bivio::Util::Project
+    if the directory is a link, don't mkdir, rather link to it
+
   Revision 11.47  2012/01/06 00:42:23  nagler
   * Bivio::Biz::Action::AssertNotRobot
     return NOT_FOUND so search engines do not get to login page
