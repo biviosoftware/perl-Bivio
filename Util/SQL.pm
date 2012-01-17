@@ -268,10 +268,12 @@ sub destroy_db {
     $self->usage_error('You cannot destroy a production database.')
 	if $self->get_request->is_production;
     $self->are_you_sure(
-	'DROP THE ENTIRE '
+	'DROP ENTIRE '
 	. $_C->get_dbi_config->{database}
-	. ' DATABASE and FILES AREA '
+	. ' DB and FILES '
 	. b_use('Biz.File')->absolute_path('')
+	. ' and LOGS '
+	. b_use('IO.Log')->file_name('.')
         . '?',
     );
     # We drop in opposite order.  Some constraint drops will
