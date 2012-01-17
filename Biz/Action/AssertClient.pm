@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::AssertClient;
 use strict;
@@ -13,11 +13,20 @@ my($_CACHE);
 
 sub execute {
     my($proto, $req) = @_;
-    $req->throw_die(FORBIDDEN => {
-	message => 'not in addresses',
-	entity => $req->get('client_addr'),
-    }) unless $proto->is_valid_address($req->get('client_addr'));
+    $req->throw_die(
+	'FORBIDDEN',
+	{
+	    message => 'not in addresses',
+	    entity => $req->get('client_addr'),
+	},
+    ) unless $proto->is_valid_address($req->get('client_addr'));
     return 0;
+}
+
+sub execute_is_test {
+    my($proto, $req) = @_;
+    $req->assert_test;
+    return shift->execute(@_);
 }
 
 sub handle_config {
