@@ -222,6 +222,7 @@ sub rm_children {
 
 sub rm_rf {
     my(undef, $path) = @_;
+#TODO: piped_exec
     system('rm', '-rf', $path = _assert_not_root($path));
     return $path;
 }
