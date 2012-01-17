@@ -8,7 +8,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_C) = b_use('IO.Config');
-my($_WIKI_DATA_FOLDER) = b_use('Type.WikiDataName')->PRIVATE_FOLDER;
 my($_EASY_FORM_DIR) = 'Forms';
 my($_RN) = b_use('Type.RealmName');
 my($_FN) = b_use('Type.ForumName');
@@ -77,7 +76,7 @@ sub internal_base_tasks {
 	[FAVICON_ICO => 'favicon.ico'],
 	[FORBIDDEN => undef],
 	[PUBLIC_PING => 'pub/ping'],
-	[LOCAL_FILE_PLAIN => ['i/*', 'f/*', 'b/*',]],
+	[LOCAL_FILE_PLAIN => ['i/*', 'f/*', __PACKAGE__->get_local_file_plain_common_uri('*')]],
 	[MY_CLUB_SITE => undef],
 	[MY_SITE => 'my-site/*'],
 	[CLIENT_REDIRECT_PERMANENT_MAP => undef],
@@ -85,11 +84,9 @@ sub internal_base_tasks {
 	[SHELL_UTIL => undef],
 	[SITE_CSS => 'pub/site.css'],
 	[SITE_ROOT => '*'],
-	[TEST_BACKDOOR => ['test-backdoor', 'test_backdoor']],
 	[USER_HOME => '?'],
 	[UNADORNED_PAGE => 'rp/*'],
 	[PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
-	[TEST_TRACE => 'test-trace/*'],
     ];
 }
 
@@ -863,9 +860,11 @@ sub _cfg_dav {
 }
 
 
-sub _cfg_dev {
+sub _cfg_test {
     return {
 	Task => [
+	    [TEST_BACKDOOR => ['test-backdoor', 'test_backdoor']],
+	    [TEST_TRACE => 'test-trace/*'],
 	    [DEV_RESTART => 'pub/restart-server'],
 	    [DEV_ACCEPTANCE_TEST_LIST => ['pub/atl', 'pub/acceptance-test-list']],
 	    [DEV_ACCEPTANCE_TEST_DETAIL => 'acceptance-test-detail/*'],
