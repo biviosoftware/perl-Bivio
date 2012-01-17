@@ -82,6 +82,7 @@ b_use('Bivio::IO::Trace');
 # be the simple package name for the Component.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_FP) = b_use('Type.FilePath');
 my($_LFT) = b_use('UI.LocalFileType');
 my($_C) = b_use('IO.Config');
 my($_CL) = b_use('IO.ClassLoader');
@@ -187,9 +188,17 @@ sub get_local_file_name {
     # May not be called statically if I<req> is C<undef>.
     $self = $self->get_from_request_or_self($req)
 	if defined($req) || !ref($self);
-    return $self->get_local_file_root . $self->get('local_file_prefix')
-	. $_LFT->from_any($type)->get_path
-	. $name;
+    return $_FP->join(
+	$self->get_local_file_root,
+	$self->get('local_file_prefix'),
+	$_LFT->from_any($type)->get_path,
+	$name,
+    );
+}
+
+sub get_local_file_plain_common_uri {
+    my(undef, $file) = @_;
+    return $_FP->join('/b', $file);
 }
 
 sub get_local_file_root {
@@ -285,11 +294,6 @@ sub initialize {
     return;
 }
 
-sub matches_uri_or_domain {
-    my($self, $uri_or_domain) = @_;
-    return ($self->find_by_uri_or_domain($uri_or_domain) || 0) == $self;
-}
-
 sub is_fully_initialized {
     # Returns true if the Facade was has been completely initialized.
     return $_IS_FULLY_INITIALIZED;
@@ -305,6 +309,11 @@ sub make_groups {
 sub matches_class_name {
     my($self, $class) = @_;
     return $self->simple_package_name eq $class;
+}
+
+sub matches_uri_or_domain {
+    my($self, $uri_or_domain) = @_;
+    return ($self->find_by_uri_or_domain($uri_or_domain) || 0) == $self;
 }
 
 sub new {
