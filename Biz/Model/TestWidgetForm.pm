@@ -12,6 +12,9 @@ sub internal_initialize {
         version => 1,
         visible => [
 	    'User.gender',
+	    $self->field_decl([
+		[qw(user_agent UserAgent NONE)],
+	    ]),
 	],
     });
 }
