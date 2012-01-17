@@ -17,6 +17,7 @@ use URI ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTTPC) = b_use('Ext.HTTPCookies');
+my($_E) = b_use('Type.Email');
 my($_R) = b_use('IO.Ref');
 my($_F) = b_use('IO.File');
 my($_T) = b_use('IO.Trace');
@@ -339,8 +340,14 @@ sub follow_menu_link {
 
 sub generate_local_email {
     my($self, $suffix, $domain) = @_;
+    if ($_E->is_valid($suffix)) {
+	return $suffix
+	    unless $domain;
+	$suffix = $_E->get_local_part($suffix);
+	$suffix =~ s{.*\Q\$_CFG->{email_tag}}{};
+    }
     # Returns an email address based on I<email_user> and I<suffix>.
-    Bivio::Die->die('missing suffix')
+    b_die('missing suffix')
 	unless defined($suffix);
     return lc($_CFG->{email_user}
 	. $_CFG->{email_tag}
@@ -353,6 +360,11 @@ sub generate_local_email {
 
 sub generate_remote_email {
     my($self, $base, $facade_uri) = @_;
+    if ($_E->is_valid($base)) {
+	return $base
+	    unless $facade_uri;
+	$base = $_E->get_local_part($base);
+    }
     # Generates an email for the remote server.  Appends  @I<remote_mail_host> with
     # I<facade_uri>. prefix if it is supplied.
     return _facade($self, "$base\@$_CFG->{remote_mail_host}", $self, $facade_uri);
@@ -497,13 +509,15 @@ sub home_page {
     my($self) = shift;
     return $self->visit_uri($self->home_page_uri(@_));
 }
+
 sub home_page_uri {
     my($self, $facade) = @_;
     return _facade(
 	$self,
 	$_CFG->{home_page_uri},
 	$self,
-	@_ > 1 ? $facade : $self->http_facade);
+	$self->http_facade(@_ > 1 ? $facade : ()),
+    );
 }
 
 sub http_facade {
@@ -546,9 +560,13 @@ sub is_local_email {
     return $email =~ /\@\Q$suffix\E$/ ? 1 : 0;
 }
 
+sub local_mail_host {
+    return $_CFG->{local_mail_host};
+}
+
 sub login_as {
     my($self, $email, $password, $facade) = @_;
-    $self->home_page($facade);
+    $self->home_page($facade ? $facade : ());
     $self->visit_uri('/pub/login')
 	unless $self->unsafe_op(follow_link => qr{login}i);
     $self->submit_form(Login => {
