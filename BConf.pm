@@ -432,14 +432,16 @@ sub merge_realm_role_category_map {
     my($proto, $new) = @_;
     return 'Bivio::Biz::Util::RealmRole' => {
 	category_map => sub {return [
-	    map([
-		$_->as_realm_role_category =>
-		    ['*everybody-' . $_->as_realm_role_category_role_group
-			 => [qw(-MAIL_SEND -MAIL_POST)]],
-		    ['*' . $_->as_realm_role_category_role_group
-			 => [qw(+MAIL_SEND +MAIL_POST)]],
-	    ], Bivio::IO::ClassLoader->map_require('Type.MailSendAccess')
-		->get_non_zero_list,
+	    map(
+		[
+		    $_->as_realm_role_category =>
+			['*everybody-' . $_->as_realm_role_category_role_group
+			     => [qw(-MAIL_SEND -MAIL_POST)]],
+			['*' . $_->as_realm_role_category_role_group
+			     => [qw(+MAIL_SEND +MAIL_POST)]],
+		],
+		Bivio::IO::ClassLoader->map_require('Type.MailSendAccess')
+		    ->get_non_zero_list,
 	    ),
             map([
 		"feature_$_" => ['*everybody' => uc("feature_$_")],

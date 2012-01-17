@@ -8,7 +8,7 @@ use Bivio::Base 'Model.UserRegisterForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RU) = b_use('ShellUtil.RealmUser');
-my($_A) = b_use('IO.Alert');
+my($_R) = b_use('Auth.Role');
 
 sub copy_admins {
     my($self, $realm_id, $admin_user_id) = @_;
@@ -40,7 +40,7 @@ sub execute_ok {
 sub internal_get_roles {
     my($self) = @_;
     return [
-	map(Bivio::Auth::Role->$_(),
+	map($_R->from_name($_),
 	    $self->unsafe_get('not_mail_recipient') ? () : 'MAIL_RECIPIENT',
 	    $self->unsafe_get('administrator') ? qw(ADMINISTRATOR FILE_WRITER) : (
 		'MEMBER',
