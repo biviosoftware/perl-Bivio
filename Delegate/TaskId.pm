@@ -140,15 +140,7 @@ sub info_base {
 	    ANYBODY
 	    Action.LocalFilePlain->execute_robots_txt
 	)],
-	[qw(
-	    TEST_BACKDOOR
-	    16
-	    GENERAL
-	    TEST_TRANSIENT
-	    Action.AssertClient
-	    Action.TestBackdoor
-	    Action.MailReceiveStatus
-	)],
+	# 16: TEST_BACKDOOR
 	[qw(
 	    FORUM_HOME
 	    17
@@ -234,14 +226,7 @@ sub info_base {
 	    ANYBODY
 	    Action.Error
 	)],
-	[qw(
-	    TEST_TRACE
-	    59
-	    GENERAL
-	    TEST_TRANSIENT
-	    Action.TestTrace
-	    Action.EmptyReply
-	)],
+	# 59: TEST_TRACE
 	[qw(
 	    DEFAULT_ERROR_REDIRECT
 	    190
@@ -609,87 +594,97 @@ sub info_dav {
     ];
 }
 
-sub info_dev {
+sub info_test {
     my($self) = @_;
     return
 	if $_C->is_production || !-w __FILE__;
     return [
-	[qw(
-	    DEV_RESTART
-            220
-            GENERAL
-            ANYBODY
-            Action.DevRestart
-	)],
-	[qw(
-	    DEV_ACCEPTANCE_TEST_LIST
-	    221
-	    GENERAL
-	    ANYBODY
-	    Model.AcceptanceTestList->execute_load_all
-	    View.AcceptanceTestResultViewer->acceptance_test_list
-	)],
-	[qw(
-	    DEV_ACCEPTANCE_TEST_DETAIL
-	    222
-	    GENERAL
-	    ANYBODY
-	    View.AcceptanceTestResultViewer->acceptance_test_detail
-	)],
-	[qw(
-	    DEV_ACCEPTANCE_TEST_HEADER
-	    223
-	    GENERAL
-	    ANYBODY
-	    View.AcceptanceTestResultViewer->acceptance_test_header
-	)],
-	[qw(
-	    DEV_ACCEPTANCE_TEST_TRANSACTION_LIST
-	    224
-	    GENERAL
-	    ANYBODY
-	    Model.AcceptanceTestTransactionList->execute_load_all
-	    View.AcceptanceTestResultViewer->acceptance_test_transaction_list
-	)],
-	[qw(
-	    DEV_ACCEPTANCE_TEST_REQUEST
-	    225
-	    GENERAL
-	    ANYBODY
-	    View.AcceptanceTestResultViewer->acceptance_test_request
-	)],
-	[qw(
-	    DEV_ACCEPTANCE_TEST_RESPONSE
-	    226
-	    GENERAL
-	    ANYBODY
-	    View.AcceptanceTestResultViewer->acceptance_test_response
-	)],
-	[qw(
-	    DEV_DBACCESS_MODEL_LIST
-	    227
-	    GENERAL
-	    ANYBODY
-	    Model.DBAccessModelList->execute_load_all
-	    View.DBAccess->dbaccess_model_list
-	)],
-	[qw(
-	    DEV_DBACCESS_MODEL_FORM
-	    228
-	    GENERAL
-	    ANYBODY
-	    Model.DBAccessModelForm
-	    View.DBAccess->dbaccess_model_form
-	    next=DEV_DBACCESS_MODEL_FORM
-	)],
-	[qw(
-	    DEV_DBACCESS_ROW_LIST
-	    229
-	    GENERAL
-	    ANYBODY
-	    Model.DBAccessRowList->execute_load_all
-	    View.DBAccess->dbaccess_row_list
-	)],
+	map(
+	    {
+		splice(
+		    @$_,
+		    2,
+		    0,
+		    qw(
+			GENERAL
+			TEST_TRANSIENT
+		        Action.AssertClient->execute_is_test
+		    ),
+		);
+		$_;
+	    }
+	    [qw(
+		TEST_BACKDOOR
+		16
+		Action.AssertClient->execute_is_test
+		Action.TestBackdoor
+		Action.MailReceiveStatus
+	    )],
+
+	    [qw(
+		TEST_TRACE
+		59
+		Action.AssertClient->execute_is_test
+		Action.TestTrace
+		Action.EmptyReply
+	    )],
+	    [qw(
+		DEV_RESTART
+		220
+		Action.DevRestart
+	    )],
+	    [qw(
+		DEV_ACCEPTANCE_TEST_LIST
+		221
+		Model.AcceptanceTestList->execute_load_all
+		View.AcceptanceTestResultViewer->acceptance_test_list
+	    )],
+	    [qw(
+		DEV_ACCEPTANCE_TEST_DETAIL
+		222
+		View.AcceptanceTestResultViewer->acceptance_test_detail
+	    )],
+	    [qw(
+		DEV_ACCEPTANCE_TEST_HEADER
+		223
+		View.AcceptanceTestResultViewer->acceptance_test_header
+	    )],
+	    [qw(
+		DEV_ACCEPTANCE_TEST_TRANSACTION_LIST
+		224
+		Model.AcceptanceTestTransactionList->execute_load_all
+		View.AcceptanceTestResultViewer->acceptance_test_transaction_list
+	    )],
+	    [qw(
+		DEV_ACCEPTANCE_TEST_REQUEST
+		225
+		View.AcceptanceTestResultViewer->acceptance_test_request
+	    )],
+	    [qw(
+		DEV_ACCEPTANCE_TEST_RESPONSE
+		226
+		View.AcceptanceTestResultViewer->acceptance_test_response
+	    )],
+	    [qw(
+		DEV_DBACCESS_MODEL_LIST
+		227
+		Model.DBAccessModelList->execute_load_all
+		View.DBAccess->dbaccess_model_list
+	    )],
+	    [qw(
+		DEV_DBACCESS_MODEL_FORM
+		228
+		Model.DBAccessModelForm
+		View.DBAccess->dbaccess_model_form
+		next=DEV_DBACCESS_MODEL_FORM
+	    )],
+	    [qw(
+		DEV_DBACCESS_ROW_LIST
+		229
+		Model.DBAccessRowList->execute_load_all
+		View.DBAccess->dbaccess_row_list
+	    )],
+        ),
     ];
 }
 
