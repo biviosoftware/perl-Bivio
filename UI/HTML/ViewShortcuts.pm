@@ -290,7 +290,6 @@ sub vs_html_attrs_render {
 	map($proto->vs_html_attrs_render_one($widget, $source, $_),
 	    @{$attrs || $proto->vs_html_attrs_merge}),
     );
-    return;
 }
 
 sub vs_html_attrs_render_one {
