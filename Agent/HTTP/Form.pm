@@ -63,9 +63,10 @@ sub _err {
 sub _parse {
     my($req, $r, $options) = @_;
     # Returns the parsed multipart/form-data.  See RFC1867 for a spec.
-    my($max_field_size)	= ($options || {})->{max_field_size}
-			       || ($req->unsafe_get('form_model')
-			       || b_use('Biz.FormModel'))->MAX_FIELD_SIZE;
+    my($max_field_size)	=
+	($options || {})->{max_field_size}
+	|| ($req->unsafe_get('form_model') || b_use('Biz.FormModel'))
+	    ->MAX_FIELD_SIZE;
     my($buf) = $req->get_content;
     # We destroy content so we have to clear it here.
     $req->delete('content');
@@ -81,13 +82,22 @@ sub _parse {
 	    unless (my $i = index($$buf, $boundary)) >= 0;
 	my($content) = substr($$buf, 0, $i);
 	substr($$buf, 0, $i + length($boundary)) = '';
-	$form->{$field->{name}} = keys(%$field) > 1 ? {
+	my($value) = keys(%$field) > 1 ? {
 	    %$field,
 	    $field->{error} ? () : (content => \$content),
 	} : length($content) > $max_field_size ? {
 	    %$field,
 	    error => $_TOO_LONG
 	} : $content;
+	my($name) = $field->{name};
+	if (defined($form->{$name})) {
+	    $form->{$name} = [$form->{$name}]
+		unless ref($form->{$name}) eq 'ARRAY';
+	    push(@{$form->{$name}}, $value);
+	}
+	else {
+	    $form->{$name} = $value;
+	}	
 	next if $$buf =~ s/^\r\n//s;
 	last if $$buf =~ s/^--//s;
 	_err($req, 'invalid encapsulation or closing boundary', $buf);

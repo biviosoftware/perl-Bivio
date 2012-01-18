@@ -23,7 +23,7 @@ Request();
 		return [
 		    req(),
 		    # Ease debugging test so pass extra (not used) arg
-		    $params->[0],
+		    {test_name => $params->[0]},
 		];
 	    },
 	} => [
