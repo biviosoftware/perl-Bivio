@@ -2,15 +2,15 @@
 # $Id$
 package Bivio::Biz::Model::ConfirmableForm;
 use strict;
-use base 'Bivio::Biz::FormModel';
-use Bivio::Agent::TaskId;
+use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_TI) = b_use('Agent.TaskId');
 
 sub check_redirect_to_confirmation_form {
     my($self, $task) = @_;
     return if $self->unsafe_get('is_confirmed');
-    $self->req->server_redirect(Bivio::Agent::TaskId->from_name($task));
+    $self->req->server_redirect($_TI->from_name($task));
     # DOES NOT RETURN
 }
 
@@ -18,8 +18,9 @@ sub execute_unwind {
     my($self) = @_;
 
     if ($self->get('is_confirmed')) {
-	return $self->validate_and_execute_ok
-	    || $self->internal_redirect_next;
+	my($res) = $self->validate_and_execute_ok;
+	return if $self->in_error;
+	return $res || $self->internal_redirect_next;
     }
     return shift->SUPER::execute_unwind(@_);
 }
