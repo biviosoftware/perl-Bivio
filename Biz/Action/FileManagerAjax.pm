@@ -64,7 +64,6 @@ sub handle_config {
 
 sub _add_file {
     my($req, $folder, $filename, $data) = @_;
-
     return {
 	Code => -1,
 	Error => "$filename is a folder"
@@ -97,12 +96,20 @@ sub _add_file {
 sub _handle_mode_add {
     my($proto, $req, $query) = @_;
     return _set_json_response($req, [
+	map(_add_file($req,
+		      $query->{currentpath},
+		      $_->{filename},
+		      $_->{content}),
+	    @{$query->{newfile}}
+	  )],	1)
+	if ref($query->{newfile}) eq 'ARRAY';
+    return _set_json_response($req, [
 	_add_file($req,
-		  $query->{currentpath},
-		  $query->{newfile}->{filename},
-		  $query->{newfile}->{content}),
-    ],	1)
-	if $query->{newfile}->{filename};
+		      $query->{currentpath},
+		      $query->{newfile}->{filename},
+		      $query->{newfile}->{content}),
+	  ],	1)
+	if $query->{newfile}->{filename};    
     return _set_json_response($req, [{
 	Error => 'Browse for a local file before uploading',
 	Code => -1,
@@ -202,7 +209,7 @@ sub _handle_mode_getfolder {
 	'unauth_iterate_start', 'path', {
 	    realm_id => $req->get('auth_id'),
 	    folder_id => $rf->get('realm_file_id'),
-	});
+	});    
     _set_json_response($req, $json);
     return;
 }
