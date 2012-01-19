@@ -6,7 +6,7 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
+my($_FP) = b_use('Type.FilePath');
 my($_FILEMANAGER_ROOT) = b_use('Action.FileManagerAjax')->get_root;
 
 sub file_manager {
@@ -49,6 +49,7 @@ sub file_manager {
 			ID => 'newfile',
 			NAME => 'newfile',
 			TYPE => 'file',
+			MULTIPLE => 'multiple',
 		    }),
 		    DIV(Join([
 			DIV('Upload', {
@@ -119,10 +120,19 @@ sub file_manager {
 		    my($source) = @_;
 		    my($can_write) = $source->req->can_user_execute_task(
 			    $source->req('task')->get_attr_as_task('write_task'));
+		    my($filesystem_root) = $source->req('path_info');
+		    my($file_connector) = $source->req->format_uri({
+			task_id => 'FORUM_FILE_MANAGER_AJAX',
+			path_info => '',
+			query => {},
+		    });
+		    b_debug($file_connector);
 		    return 'var b_can_write = '
 			   . ($can_write ? 'true' : 'false')
 			   . ";\n"
-                           . qq{var b_filemanager_root = '$_FILEMANAGER_ROOT/';};
+                           . qq{var b_filemanager_root = '$_FILEMANAGER_ROOT/';\n}
+			   . qq{var b_filesystem_root = '$filesystem_root';\n}
+			   . qq{var b_file_connector = '$file_connector';\n};
 		}], {
 		    TYPE => 'text/javascript',
 		}),	    
