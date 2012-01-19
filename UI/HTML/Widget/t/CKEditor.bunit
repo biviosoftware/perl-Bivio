@@ -11,16 +11,49 @@ Widget({
 	return;
     },
 });
-[
-    [{
-	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
+my(@widget_params) = (
+   	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
 	model => 'BlogCreateForm',
 	field => 'body',
 	rows => 2,
 	cols => 60,
 	wrap => '',
-	edit_attributes => ' foo="bar"',
-    }] => qr{<script\stype="text/javascript"\ssrc="/b/ckeditor/ckeditor\.js\?mt=\d+"></script><textarea\sfoo="bar"\srows="2"\scols="60"\sname="$name"></textarea><script\stype="text/javascript">CKEDITOR\.replace\("$name",\s{\s*customConfig:\s"/b/ckeditor/bwiki_config.js"\s*}\);
-\s*CKEDITOR\.config\.filebrowserImageUploadUrl\s=\s"/site/upload-file-from-wysiwyg/WikiData"
-\s*CKEDITOR\.config\.contentsCss=\['/\*\sCopyright[^']+'(\s+\+\s'[^']+'){500,}\];</script>}x,
+	edit_attributes => ' foo="bar"', 
+);
+sub _expected_widget_content {
+    my($path) = @_;
+    return qr{
+		 <script\stype="text/javascript"\ssrc="/b/ckeditor/ckeditor\.js\?mt=\d+"></script>
+		 <textarea\sfoo="bar"\srows="2"\scols="60"\sname="$name"></textarea>
+		 <script\stype="text/javascript">
+		 \s*CKEDITOR\.replace\("$name",\s{\s*customConfig:\s"/b/ckeditor/bwiki_config.js"\s*}\);
+		 \s*CKEDITOR\.config\.filebrowserImageUploadUrl\s=\s"/site/upload-file-from-wysiwyg$path&fc=[^"]*"
+		 \s*CKEDITOR\.config\.contentsCss=\['/\*\sCopyright[^']+'(\s+\+\s'[^']+'){500,}\];
+		 </script>
+	 }x;
+}
+[
+    [{
+	@widget_params,
+    }] =>  _expected_widget_content('\?public=/Public'),
+    [{
+	@widget_params,
+	use_public_image_folder => 0,
+    }] => _expected_widget_content('\?public=/Public'),
+    [{
+	@widget_params,
+	use_public_image_folder => 1,
+    }] => _expected_widget_content('/Public\?private=/'),
+    [{
+	@widget_params,
+	use_public_image_folder => 0,
+	public_image_folder => '/x',
+	private_image_folder => '/y',
+    }] => _expected_widget_content('/y\?public=/x'),
+    [{
+	@widget_params,
+	use_public_image_folder => 1,
+	public_image_folder => '/x',
+	private_image_folder => '/y',
+    }] => _expected_widget_content('/x\?private=/y'),
 ];
