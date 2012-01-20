@@ -803,7 +803,9 @@ sub info_file {
 	    250
 	    ANY_OWNER
 	    ANYBODY&FEATURE_FILE&TEST_TRANSIENT
+	    Action.RealmFile->access_controlled_execute
 	    View.FileManager->file_manager
+	    want_folder_fall_thru=1
 	    write_task=FORUM_FILE_CHANGE
 	)],	
 	[qw(

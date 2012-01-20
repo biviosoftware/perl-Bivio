@@ -983,7 +983,7 @@ sub _cfg_file {
 	    [title => [
 		FORUM_FILE => 'File',
 		FORUM_FILE_TREE_LIST => 'Files',
-		FORUM_FILE_MANAGER => 'File Manager',
+		FORUM_FILE_MANAGER => 'Files',
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',

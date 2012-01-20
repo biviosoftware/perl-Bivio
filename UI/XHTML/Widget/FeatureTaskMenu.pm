@@ -7,6 +7,9 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = b_use('Agent.TaskId');
+b_use('IO.Config')->register(my $_CFG = {
+    use_file_manager => 0,
+});
 
 sub NEW_ARGS {
     return [qw(?class)];
@@ -20,6 +23,12 @@ sub exclude_tasks {
 	      : $tasks_to_exclude->{lc($_)}),
 	@$tasks,
     )];
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub initialize {
@@ -78,7 +87,7 @@ sub internal_selected_item_map {
 	qr{^FORUM_BLOG_} => 'FORUM_BLOG_LIST',
 	qr{^FORUM_CALENDAR_} => 'FORUM_CALENDAR',
 	qr{^FORUM_CRM_} => 'FORUM_CRM_THREAD_ROOT_LIST',
-	qr{^FORUM_FILE_} => 'FORUM_FILE_TREE_LIST',
+	qr{^FORUM_FILE_} => _file_manager_task_id(),
 	qr{^FORUM_MAIL_} => 'FORUM_MAIL_THREAD_ROOT_LIST',
 	qr{^FORUM_MOTION_} => 'FORUM_MOTION_LIST',
 	qr{^FORUM_TUPLE_} => 'FORUM_TUPLE_USE_LIST',
@@ -115,7 +124,9 @@ sub internal_tasks {
 	    },
 	    qw(
 		FORUM_EDIT_FORM
-		FORUM_FILE_TREE_LIST
+	    ),
+	    _file_manager_task_id(),
+	    qw(
 		GROUP_TASK_LOG
 		FORUM_MAIL_THREAD_ROOT_LIST
 		FORUM_CREATE_FORM
@@ -126,6 +137,12 @@ sub internal_tasks {
 	    ),
 	),
     ];
+}
+
+sub _file_manager_task_id {
+    return $_CFG->{use_file_manager}
+	? 'FORUM_FILE_MANAGER'
+	: 'FORUM_FILE_TREE_LIST';
 }
 
 sub _sort_label {

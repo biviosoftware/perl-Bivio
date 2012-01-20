@@ -13,9 +13,12 @@ my($_C) = b_use('IO.Config');
 my($_DT) = b_use('Type.DateTime');
 my($_FP) = b_use('Type.FilePath');
 my($_MJ) = b_use('MIME.JSON');
+my($_MT) = b_use('MIME.Type');
 my($_RF) = b_use('Model.RealmFile');
+my($_RFTL) = b_use('Model.RealmFileTreeList');
+my($_WT) = b_use('XHTMLWidget.WikiText');
 
-my($_MODES) = qr{^(add|addfolder|delete|download|getfolder|getinfo|rename)$};
+my($_MODES) = qr{^(add|addfolder|delete|download|getfolder|getinfo|rename|wikipreview)$};
 
 my($_PREVIEW_IMAGES) = {
     map(($_ => $_ . '.png'),
@@ -164,11 +167,18 @@ sub _handle_mode_delete {
     return _set_json_error($req, 'No such file or folder: '. $path)
     	unless $rf->unsafe_load({
     	    path_lc => lc($path),
-    	});     
+    	});
     my($realm_file_id) = $rf->get('realm_file_id');
     return _set_json_error($req, 'Folder not empty: '. $path)
-	unless $rf->is_empty;
-    $rf->delete;
+    unless $rf->is_empty;
+    $rf->delete({
+	($_RFTL->is_archive($path)
+	    ? (
+		override_is_read_only => 1,
+		override_versioning => 1,
+   	      )
+	    : ()),	    
+    });
     _set_json_response($req, {
 	Path => $query->{path},
 	Error => q{},
@@ -176,8 +186,6 @@ sub _handle_mode_delete {
     });
     return;
 }
-
-
 
 sub _handle_mode_download {
     my($proto, $req, $query) = @_;
@@ -187,7 +195,11 @@ sub _handle_mode_download {
 	unless $rf->unsafe_load({
 	    path_lc => lc($path),
 	});
-    $req->get('reply')->set_output_type('application/x-download')->set_output($rf->get_content);
+    $req->get('reply')->set_output_type(
+	exists($query->{preserve_type})
+	    ? $_MT->from_extension($path)
+	    : 'application/x-download'
+	)->set_output($rf->get_content);
     return;
 }
 
@@ -209,7 +221,7 @@ sub _handle_mode_getfolder {
 	'unauth_iterate_start', 'path', {
 	    realm_id => $req->get('auth_id'),
 	    folder_id => $rf->get('realm_file_id'),
-	});    
+	});
     _set_json_response($req, $json);
     return;
 }
@@ -254,6 +266,26 @@ sub _handle_mode_rename {
     return;
 }
 
+sub _handle_mode_wikipreview {
+    my($proto, $req, $query) = @_;
+    my($rf) = $_RF->new($req);    
+    my($path) = $_RF->parse_path($query->{path}); 
+    return _set_json_error($req, 'no such file: ' . $query->{path})
+	unless $rf->load({
+	    path => $path,
+	});
+    _set_json_response($req, {
+	Content => MIME::Base64::encode($_WT->render_html({
+	    value => ${$rf->get_content},
+	    req => $req,
+	}), ''),
+	Path => $path,
+	Error => q{},
+	Code => 0,	
+    });
+    return;
+}
+
 sub _json_for_realm_file {
     my($req, $realm_file) = @_;
     my($path) = $realm_file->get('path');
@@ -262,6 +294,8 @@ sub _json_for_realm_file {
     my($clean_path) = $path;
     $clean_path =~ s/^\///;
     $clean_path =~ s/\/*$/\//;
+    my($content) = ${$realm_file->get_content}
+	unless $is_folder;
     return {
 	Error => q{},
 	Code => 0,
@@ -270,12 +304,20 @@ sub _json_for_realm_file {
 	'File Type' => $is_folder ? 'dir' : $_FP->get_suffix($path),
 	Preview => _preview_image($req, $is_folder, $path),
 	Properties=> {
-	    'Date Modified' => $_DT->to_local_string($realm_file->get('modified_date_time')), 
-	    Size => $is_folder ? 0 : $_RF->get_content_length(undef, '', $values),
+	    'Date Modified' => $_DT->to_alert($realm_file->get('modified_date_time')), 
+	    Size => $is_folder ? '' : $_RF->get_content_length(undef, '', $values),
 	    User => b_use('Model.RealmOwner')->new($req)->unauth_load_or_die({
 		realm_id => $realm_file->get('user_id'),
 	    })->get('display_name'),
-	},		
+	    Type => $is_folder
+	        ? 'folder'
+	        : $content =~ /^[[:graph:][:space:]]+$/
+	 	? $content =~ /^\s*@/m
+	 	? 'wiki'
+	 	: 'text'
+	 	: 'binary',
+	 },	
+	
     };
 }
 
@@ -295,7 +337,6 @@ sub _preview_image {
     }
     return $prefix . 'default.png';
 }
-
 
 sub _set_json_error {
     my($req, $msg, $in_textarea) = @_;

@@ -199,8 +199,8 @@ sub internal_root_parent_node_id {
 }
 
 sub is_archive {
-    my($self) = @_;
-    return $self->get('RealmFile.path') =~ $_VERSIONS_FOLDER_RE ? 1 : 0;
+    my($self, $path) = @_;
+    return ($path || $self->get('RealmFile.path')) =~ $_VERSIONS_FOLDER_RE ? 1 : 0;
 }
 
 sub is_file {

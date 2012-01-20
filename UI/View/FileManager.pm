@@ -20,69 +20,60 @@ sub file_manager {
 		'styles/filemanager.css',
 	     ),
 	    FORM(Join([
-		BUTTON(q{}, {
-		    ID => 'home',
-		    NAME => 'home',
-		    TYPE => 'button',
-		    VALUE => 'Home',
-		}),
-		H1(),
-		DIV(q{}, {ID => 'uploadresponse'}),
-		INPUT({
-		    ID => 'mode',
-		    NAME => 'mode',
-		    TYPE => 'hidden',
-		    VALUE => 'add',
-		}),
-		INPUT({
-		    ID => 'currentpath',
-		    NAME => 'currentpath',
-		    TYPE => 'hidden',
+		DIV(Join([
+		    _pseudo_button({
+			id => 'home',
+		    }),
+		    SPAN(q{}, {ID => 'displaycurrentpath'}),
+		    DIV(q{}, {ID => 'uploadresponse'}),
+		    INPUT({
+			ID => 'mode',
+			NAME => 'mode',
+			TYPE => 'hidden',
+			VALUE => 'add',
+		    }),
+		    INPUT({
+			ID => 'currentpath',
+			NAME => 'currentpath',
+			TYPE => 'hidden',
+		    }),
+		]), {
+		    ID => 'leftcontrols',
 		}),
 		DIV(Join([
-		DIV(q{}, {
-		    ID => 'upload',
-		    CLASS => 'loading',
-		}),
-		DIV_newfile(Join([
-		    INPUT({
-			ID => 'newfile',
-			NAME => 'newfile',
-			TYPE => 'file',
-			MULTIPLE => 'multiple',
+		    DIV(q{}, {
+			ID => 'uploadstatus',
+			CLASS => 'loading',
 		    }),
-		    DIV(Join([
-			DIV('Upload', {
-			    ID => 'pseudo_upload_button_label',
-			}),
-		    ]), {
-			ID => 'pseudo_upload_button', 
+		    _pseudo_button({
+			id => 'pseudo_upload_button',
+			content => Join([
+			    'Upload',
+			    INPUT({
+				ID => 'newfile',
+				NAME => 'newfile',
+				TYPE => 'file',
+				MULTIPLE => 'multiple',
+			    }),			
+			]),
 		    }),		    
-		    ]), {
-			ID => 'newfile_composite',
-		}),
-		INPUT({
-		    ID => 'droppedfiles',
-		    NAME => 'droppedfiles',
-		    TYPE => 'hidden',		    
-		}),		
-		BUTTON(q{}, {
-		    ID => 'newfolder',
-		    NAME => 'newfolder',
-		    TYPE => 'button',
-		    VALUE => 'New Folder',
-		}),
-		BUTTON(q{}, {
-		    ID => 'grid',
-		    CLASS => 'ON',
-		    TYPE => 'button',
-		}),
-		BUTTON(q{}, {
-		    ID => 'list',
-		    TYPE => 'button',
-		}),
+		    INPUT({
+			ID => 'droppedfiles',
+			NAME => 'droppedfiles',
+			TYPE => 'hidden',		    
+		    }),
+		    _pseudo_button({
+			id => 'newfolder',
+		    }),		
+		    _pseudo_button({
+			id => 'grid',
+			class => 'ON',
+		    }),
+		    _pseudo_button({
+			id => 'list',
+		    }),
 		]), {
-		    ID => 'controls',
+		    ID => 'rightcontrols',
 		}),
 		
 	    ]), {
@@ -144,6 +135,7 @@ sub file_manager {
 		'jquery.contextmenu/jquery.contextMenu-1.01.js',
 		'jquery.impromptu-3.1.min.js',
 		'jquery.tablesorter-2.0.5b.min.js',
+		'base64.js',
 		'filemanager.config.js',
 		'filemanager.js',
 	    ),
@@ -161,6 +153,21 @@ sub _css {
         HREF =>  $_FILEMANAGER_ROOT . '/' . $_,
 	value => undef,
 	}), @stylesheets);
+}
+
+sub _pseudo_button {
+    my($options) = @_;
+    my($content) = $options->{content} || ' ';
+    my($class) = 'button';
+    $class .= ' ' . $options->{class}
+	if $options->{class};
+    return 
+	DIV_button_background(
+	    DIV($content, {
+		ID => $options->{id},
+		CLASS => $class,
+	    }),
+	);
 }
 
 sub _script {
