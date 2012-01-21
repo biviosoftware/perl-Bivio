@@ -242,7 +242,7 @@ sub handle_ping_reply {
 sub handle_piped_exec_child {
     foreach my $self (values(%$_CONNECTIONS)) {
 	next
-v	    unless my $fields = $self->[$_IDI];
+	    unless my $fields = $self->[$_IDI];
 	$fields->{connection}->{InactiveDestroy} = 1;
 	$fields->{connection} = undef;
     }
