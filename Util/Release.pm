@@ -86,6 +86,7 @@ $_C->register(my $_CFG = {
     projects => [
 	[Bivio => b => 'bivio Software, Inc.'],
     ],
+    yum_update_conflicts => [],
 });
 
 sub OPTIONS {
@@ -150,6 +151,7 @@ commands:
     list_projects_el -- get project list for Lisp setq
     list_updates stream_name -- list packages that need to updated
     update stream_name -- retrieve and apply updates
+    yum_update -- bracket with magic to make yum update work
 EOF
 }
 
@@ -710,6 +712,18 @@ EOF
 sub run_sh {
     my($self, $script) = @_;
     return $self->piped_exec('sh -x', _http_get(\("$script.sh")));
+}
+
+sub yum_update {
+    my($self) = @_;
+    my($yuc) = $_CFG->{yum_update_conflicts};
+    system([qw(rpm --erase --justdb --nodeps), @$yuc])
+	if @$yuc;
+    system(['yum', $self->unsafe_get('force') ? '-y' : (), 'update']);
+    $self->put(-force => 1, -nodeps => 1);
+    $self->install(@$yuc);
+    $self->install_host_stream;
+    return;
 }
 
 sub _chdir {
