@@ -9,11 +9,12 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
+    b_debug(@_);
     $self->put(
 	values => [
 	    _edit($self, 'month', $self->unsafe_get('want_two_digit_month'),
 		  $self->unsafe_get('month_choices')),
-	    _edit($self, 'year'),
+	    _edit($self, 'year', undef, $self->unsafe_get('year_choices')),
 	],
 	join_separator => Join([
 	    vs_blank_cell(2),
@@ -33,6 +34,8 @@ sub internal_new_args {
 
 sub _edit {
     my($self, $suffix, $want_two_digit_month, $choices) = @_;
+    b_debug($choices);
+    b_debug($self->get_keys);
     return vs_edit(join('',
 	$self->ancestral_get('form_class'), '.',
 	$self->get('base_field'), '_', $suffix), {
