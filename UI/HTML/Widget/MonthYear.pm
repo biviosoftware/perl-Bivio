@@ -34,8 +34,6 @@ sub internal_new_args {
 
 sub _edit {
     my($self, $suffix, $want_two_digit_month, $choices) = @_;
-    b_debug($choices);
-    b_debug($self->get_keys);
     return vs_edit(join('',
 	$self->ancestral_get('form_class'), '.',
 	$self->get('base_field'), '_', $suffix), {
