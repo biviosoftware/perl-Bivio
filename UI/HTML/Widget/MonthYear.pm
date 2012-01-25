@@ -9,7 +9,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
-    b_debug(@_);
     $self->put(
 	values => [
 	    _edit($self, 'month', $self->unsafe_get('want_two_digit_month'),
