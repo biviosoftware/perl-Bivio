@@ -370,7 +370,7 @@ sub merge_http_log {
 		    '\[notice\] Accept mutex',
 		    'Dispatcher::.* JOB_(?:START|END):',
 		    # Virii and such
-		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida|/sumthin|/scripts|/cgi|root.exe|/instmsg|/favicon2|site_root/default.bview|\.php$)',
+		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida|/sumthin|/scripts|/cgi|root.exe|/instmsg|/favicon2|site_root/default.bview|\.php$|Assert not robot)',
 		    '::NOT_FOUND:.*view..site_root/(\w+.html|robots.txt).bview',
 		    'DAVList:.*::MODEL_NOT_FOUND',
 		    'DieCode::MISSING_COOKIES',
@@ -378,6 +378,7 @@ sub merge_http_log {
 		    'mod_ssl: SSL handshake timed out',
 		    'mod_ssl: SSL handshake failed: HTTP spoken on HTTPS port',
 		    'mod_ssl: SSL handshake interrupted by system',
+		    'Apache2::RequestIO.*Software caused connection abort',	    
 		    'request failed: URI too long',
 		    'Invalid method in request',
 		    'Bivio::UI::Task::.* unknown facade uri',
