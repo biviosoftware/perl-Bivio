@@ -936,6 +936,7 @@ sub _cfg_file {
 	    [FORUM_FILE_REVERT_FORM => '?/revert-file/*'],
 	    [FORUM_FOLDER_FILE_LIST => '?/folder/*'],
 	    [FORUM_FILE_UPLOAD_FROM_WYSIWYG => '?/upload-file-from-wysiwyg/*'],
+	    [ROBOT_FILE_LIST => undef],
 	],
 	Text => [
 	    [FileChangeForm => [
@@ -982,8 +983,11 @@ sub _cfg_file {
 	    ]],
 	    [title => [
 		FORUM_FILE => 'File',
-		FORUM_FILE_TREE_LIST => 'Files',
-		FORUM_FILE_MANAGER => 'Files',
+		[qw(
+                    FORUM_FILE_TREE_LIST
+                    ROBOT_FILE_LIST
+                    FORUM_FILE_MANAGER
+                )] => 'Files',
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
 		FORUM_FILE_OVERRIDE_LOCK => 'Override Lock',
