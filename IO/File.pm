@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::File;
 use strict;
