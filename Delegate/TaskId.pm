@@ -716,6 +716,7 @@ sub info_file {
 	    want_folder_fall_thru=1
 	    next=FORUM_FILE
 	    write_task=FORUM_FILE_CHANGE
+            robot_task=ROBOT_FILE_LIST
 	)],
 # TODO: Separate tree list so permissions check by task data explore
 #	is a bit on the file?  STill need data_explore on the task
@@ -797,16 +798,27 @@ sub info_file {
 	    View.WysiwygFile->file_upload_from_wysiwyg
 	    next=FORUM_FILE_UPLOAD_FROM_WYSIWYG
 	)],
-#179 free	
+	[qw(
+	    ROBOT_FILE_LIST
+	    179
+	    ANY_OWNER
+	    ANYBODY&FEATURE_FILE
+	    Model.RobotRealmFileList->execute_load_page
+            View.File->robot_list
+            file_tree_task=FORUM_FILE_TREE_LIST
+	    file_task=FORUM_FILE
+	)],
 	[qw(
 	    FORUM_FILE_MANAGER
 	    250
 	    ANY_OWNER
 	    ANYBODY&FEATURE_FILE&TEST_TRANSIENT
+	    Action.AssertNotRobot
 	    Action.RealmFile->access_controlled_execute
 	    View.FileManager->file_manager
 	    want_folder_fall_thru=1
 	    write_task=FORUM_FILE_CHANGE
+            robot_task=ROBOT_FILE_LIST
 	)],	
 	[qw(
 	    FORUM_FILE_MANAGER_AJAX
