@@ -117,7 +117,6 @@ sub _app_bconf {
 use $root_prefix::BConf;
 $root_prefix::BConf->merge_dir({
     'Bivio::Agent::Request' => {
-        is_production => $is_production,
         can_secure => $can_secure,
     },
     'Bivio::IO::Config' => {
@@ -393,7 +392,7 @@ Listen $listen$ssl_listen
 User apache
 Group apache
 ServerAdmin $server_admin
-ServerTokens Min
+ServerTokens ProductOnly
 
 Timeout $timeout
 KeepAlive On
