@@ -32,6 +32,9 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 		return qr{^http:/.*/pub/logout$};
 	    },
 	    LOGOUT => '/pub/logout',
+	    [{task_id => 'LOCAL_FILE_PLAIN', query => {ignore => 1}}] => '/i',
+	    inline_case(sub {req()->initialize_fully('LOCAL_FILE_PLAIN')}),
+	    [{uri => '/i', query => {x => 3}}] => '/i?x=3',
 	],
 	format_http_prefix => [
 	    [] => qr{^http://(?!other)},
