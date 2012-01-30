@@ -149,13 +149,22 @@ sub revert_form {
 sub robot_list {
 #TODO: RobotPage (end in _robot)
     return shift->internal_body(
-	WithModel(
-	    'RobotRealmFileList',
-	    Link(
-		String(['RealmFile.path']),
-		['detail_uri'],
+	Join([
+	    WithModel(
+		'RobotRealmFileList',
+		Link(
+		    String(['RealmFile.path']),
+		    ['detail_uri'],
+		),
 	    ),
-	),
+	    If(
+		[qw(Model.RobotRealmFileList ->has_next)],
+		Link(
+		    'next',
+		    ['Model.RobotRealmFileList', '->format_uri', 'NEXT_LIST', 'FORUM_FILE_TREE_LIST'],
+		),
+	    ),
+	]),
     );
 }
 
