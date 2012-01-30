@@ -793,6 +793,10 @@ sub print {
     return print(STDERR @_);
 }
 
+sub print_line {
+    return shift->print(@_, "\n");
+}
+
 sub put {
     my($self) = shift;
     # If called statically, has no effect.  Otherwise, just calls
