@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,64 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.49  2012/01/17 00:14:53  nagler
+  * Bivio::BConf
+    fmt
+  * Bivio::Biz::Action::AssertClient
+    added execute_is_test
+  * Bivio::Biz::Action::FileManagerAjax
+    NEW
+  * Bivio::Biz::Model::DBAccessModelForm
+    Remove debug
+  * Bivio::Biz::Model::FileChangeForm
+    Refactor image upload in wysiwig editor, make image upload locations configurable, make 'upload image' tab optional
+  * Bivio::Biz::Model::RealmUserAddForm
+    fmt
+  * Bivio::Biz::Model::TestWidgetForm
+    added another test field
+  * Bivio::Delegate::TaskId
+    Support for Simon Georget's File Manager (https://github.com/simogeo/Filemanager)
+    info_dev => info_test
+    gather all test tasks in info_test
+    Added AssertClient->execute_is_test to all test tasks
+  * Bivio::IO::File
+    comment
+  * Bivio::Test::Language::HTTP
+    added local_mail_host()
+    home_page_uri($facade) calls http_facade() if $facade is passed,
+    because http_facade wasn't sticky otherwise
+    generate_local/remote_email accept email addresses as first args and
+    will replace with facade domain if specified
+  * Bivio::UI::FacadeBase
+    Support for Simon Georget's File Manager (https://github.com/simogeo/Filemanager)
+    encapsulate "/b" from CKEditor in get_local_file_plain_common_uri()
+    _cfg_dev => _cfg_test
+  * Bivio::UI::Facade
+    added get_local_file_plain_common_uri which encapsulates "/b" from CKEditor
+    fmt
+  * Bivio::UI::HTML::ViewShortcuts
+    cruft
+  * Bivio::UI::HTML::Widget::CKEditor
+    Refactor image upload in wysiwig editor, make image upload locations configurable, make 'upload image' tab optional
+  * Bivio::UI::HTML::Widget::MultipleChoice
+    fixed enum sorting to work if enum_sort is as_int (not just defaulted)
+    cleaned up formatting
+  * Bivio::UI::View::Blog
+    Refactor image upload in wysiwig editor, make image upload locations configurable, make 'upload image' tab optional
+  * Bivio::UI::View::FileManager
+    NEW
+  * Bivio::UI::View::Wiki
+    Refactor image upload in wysiwig editor, make image upload locations configurable, make 'upload image' tab optional
+  * Bivio::UI::View::WysiwygFile
+    Refactor image upload in wysiwig editor, make image upload locations configurable, make 'upload image' tab optional
+  * Bivio::Util::Project
+    creates "/b" link in files/<default>/plain for CKEditor if it doesn't
+    exist -- assumes files structure is $ENV{HOME}/src/perl/Bivio
+    Symlinks of directories stay symlinks (not directories, because "/b"
+    wasn't working)
+  * Bivio::Util::SQL
+    delete log files in destroy_db
+
   Revision 11.48  2012/01/10 16:17:15  moeller
   * Bivio::Biz::Model::TupleSlotType
     validate_slot() returns choice value which matched
