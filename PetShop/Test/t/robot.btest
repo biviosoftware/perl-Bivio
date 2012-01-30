@@ -3,6 +3,8 @@
 test_setup('PetShop');
 set_user_agent_to_robot_search();
 home_page();
-visit_uri('/fourem/files');
+visit_uri('/fourem/files?c=2');
+verify_link('next');
+find_page_with_text('EasyForm-btest-done.html');
 verify_link(qr{^/Public/EasyForm-btest-done.html$}i);
 verify_text(qr{/Public/EasyForm-btest-done.html</a><a href=\"/fourem/file/Public}i);
