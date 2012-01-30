@@ -7,6 +7,7 @@ use Bivio::Base 'Biz.ListModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTTP_MOVED_PERMANENTLY) = b_use('Ext.ApacheConstants')->HTTP_MOVED_PERMANENTLY;
 my($_PAGE) = b_use('SQL.ListQuery')->to_char('page_number');
+my($_COUNT) = b_use('SQL.ListQuery')->to_char('count');
 my($_NOT_LIKE) = [
     b_use('Type.MailFileName')->to_sql_like_path,
     b_use('Type.MailFileName')->to_sql_like_path(1),
@@ -19,9 +20,10 @@ sub PAGE_SIZE {
 
 sub execute_load_page {
     my($self) = @_;
-    my($p);
+    my($p, $c);
     if (my $q = $self->ureq('query') or my $pi = $self->ureq('path_info')) {
 	$p = delete($q->{$_PAGE});
+	$c = delete($q->{$_COUNT});
 	return {
 	    method => 'client_redirect',
 	    task_id => 'file_tree_task',
@@ -30,8 +32,11 @@ sub execute_load_page {
 	    http_status_code => $_HTTP_MOVED_PERMANENTLY,
 	} if %$q || defined($pi);
     }
-    $self->req->put(query => {$_PAGE => $p})
-	if defined($p);
+    $self->req->put_durable(
+	query => {
+	    $p ? ($_PAGE => $p) : (),
+	    $c ? ($_COUNT => $c) : (),
+    });
     return shift->SUPER::execute_load_page(@_);
 }
 
