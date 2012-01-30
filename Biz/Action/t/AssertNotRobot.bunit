@@ -1,24 +1,26 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2011-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-
+Request();
+req()->set_realm('fourem');
+initialize_fully('SHELL_UTIL');
 [
     class() => [
-	execute => [
-	    [req()] => [],
-	],
-	sub {
-	    Type_UserAgent('BROWSER_ROBOT_SEARCH')->execute(req());
-	    return 1;
-	} => 1,
-	execute => [
-	    [req()] => NOT_FOUND(),
-	],
-	sub {
-	    req()->set_user('guest');
-	    return 1;
-	} => 1,
-	execute => [
-	    [req()] => [],
+	{
+	    method => 'execute',
+	    compute_params => sub {[req()]},
+        } => [
+	    [] => [],
+	    inline_case(sub {Type_UserAgent('BROWSER_ROBOT_SEARCH')->execute(req())}),
+	    [] => NOT_FOUND(),
+	    inline_case(sub {initialize_fully('FORUM_FILE_TREE_LIST')}),
+	    [] => [{
+		task_id => Agent_TaskId('ROBOT_FILE_LIST'),
+	        carry_query => 1,
+		carry_path_info => 1,
+	        method => 'server_redirect',
+	    }],
+	    inline_case(sub {req()->set_user('guest')}),
+	    [] => [],
 	],
     ],
 ];

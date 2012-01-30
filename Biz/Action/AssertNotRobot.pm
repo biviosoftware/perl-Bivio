@@ -3,7 +3,6 @@
 package Bivio::Biz::Action::AssertNotRobot;
 use strict;
 use Bivio::Base 'Biz.Action';
-use Bivio::DieCode;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -13,9 +12,16 @@ sub execute {
 	if $req->ureq('auth_user_id');
     return
 	unless my $ua = $req->ureq('Type.UserAgent');
-    Bivio::DieCode->NOT_FOUND->throw_die('Assert not robot')
-	if $ua->is_robot;
-    return;
+    return
+	unless $ua->is_robot;
+    b_die('NOT_FOUND', 'Assert not robot')
+        unless my $rt = $req->req('task')->unsafe_get_attr_as_id('robot_task');
+    return {
+	method => 'server_redirect',
+	task_id => $rt,
+	carry_query => 1,
+	carry_path_info => 1,
+    };
 }
 
 1;
