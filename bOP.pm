@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,193 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.50  2012/01/30 02:03:51  nagler
+  * Bivio::Agent::HTTP::Form
+    Allow one or more files to be dragged onto the file manager for upload
+    Add support for the 'multiple' attribute on 'file' input
+    fields that allows more than one file to be
+    selected. Browser each file in a 'part' but all parts have
+    the same name. Create an array containing the parts with the
+    same name.
+  * Bivio::Agent::Request
+    internal_copy_implicit: don't clear the query if there's a uri in named
+    Don't use $a, rather $attr
+  * Bivio::BConf
+    ignore AssertNotRobot and connection aborts errors
+  * Bivio::Biz::Action::AssertNotRobot
+    server_redirect if there's a robot_task
+  * Bivio::Biz::Action::FileManagerAjax
+    Allow one or more files to be dragged onto the file manager for upload
+    Support 'multiple' on file input control'
+    o Added timeouts and error handling to all Ajax calls
+    o Can pass 'root' folder in URL path
+      http://bop2.local:8042/site/file-manager/Public
+    o To use file manager instead of the file tree list,
+      configure
+      'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
+          use_file_manager => 1,
+       }
+    o Drag item out of file manager onto desktop or folder to
+      download it.
+      (Chrome only)
+    o Image preview and file name are links to the content
+      with the correct content type so items can easily be
+      downloaded with 'Save link as ..' or opened in a
+      new tab.
+    o Can select multiple files in dialg box for for upload
+      (Chrome and Firefox)
+    o Content that looks like 'wiki' markup will rendered in the
+      preview pane.
+      (Preview cannot be resized in IE)
+    o Deletion of 'archived' files is permanent
+    o icon for 'Archive' is an upright trash can (kicked
+      over trash can when expanded).
+  * Bivio::Biz::Model::ConfirmableForm
+    don't redirect in execute_unwind() if the form is in error
+  * Bivio::Biz::Model::RealmFileTreeList
+    o Added timeouts and error handling to all Ajax calls
+    o Can pass 'root' folder in URL path
+      http://bop2.local:8042/site/file-manager/Public
+    o To use file manager instead of the file tree list,
+      configure
+      'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
+          use_file_manager => 1,
+       }
+    o Drag item out of file manager onto desktop or folder to
+      download it.
+      (Chrome only)
+    o Image preview and file name are links to the content
+      with the correct content type so items can easily be
+      downloaded with 'Save link as ..' or opened in a
+      new tab.
+    o Can select multiple files in dialg box for for upload
+      (Chrome and Firefox)
+    o Content that looks like 'wiki' markup will rendered in the
+      preview pane.
+      (Preview cannot be resized in IE)
+    o Deletion of 'archived' files is permanent
+    o icon for 'Archive' is an upright trash can (kicked
+      over trash can when expanded).
+  * Bivio::Biz::Model::RobotRealmFileList
+    NEW
+  * Bivio::Delegate::TaskId
+    o Added timeouts and error handling to all Ajax calls
+    o Can pass 'root' folder in URL path
+      http://bop2.local:8042/site/file-manager/Public
+    o To use file manager instead of the file tree list,
+      configure
+      'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
+          use_file_manager => 1,
+       }
+    o Drag item out of file manager onto desktop or folder to
+      download it.
+      (Chrome only)
+    o Image preview and file name are links to the content
+      with the correct content type so items can easily be
+      downloaded with 'Save link as ..' or opened in a
+      new tab.
+    o Can select multiple files in dialg box for for upload
+      (Chrome and Firefox)
+    o Content that looks like 'wiki' markup will rendered in the
+      preview pane.
+      (Preview cannot be resized in IE)
+    o Deletion of 'archived' files is permanent
+    o icon for 'Archive' is an upright trash can (kicked
+      over trash can when expanded).
+    FORUM_FILE_TREE_LIST/MANAGER redirect to ROBOT_FILE_LIST if UserAgent
+    is a Robot.  This displays public files only.
+  * Bivio::IO::File
+    copy
+  * Bivio::ShellUtil
+    added print_line
+  * Bivio::SQL::Connection
+    there was a missing "v"
+  * Bivio::Type::VersionsFileName
+    NEW
+  * Bivio::UI::FacadeBase
+    o Added timeouts and error handling to all Ajax calls
+    o Can pass 'root' folder in URL path
+      http://bop2.local:8042/site/file-manager/Public
+    o To use file manager instead of the file tree list,
+      configure
+      'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
+          use_file_manager => 1,
+       }
+    o Drag item out of file manager onto desktop or folder to
+      download it.
+      (Chrome only)
+    o Image preview and file name are links to the content
+      with the correct content type so items can easily be
+      downloaded with 'Save link as ..' or opened in a
+      new tab.
+    o Can select multiple files in dialg box for for upload
+      (Chrome and Firefox)
+    o Content that looks like 'wiki' markup will rendered in the
+      preview pane.
+      (Preview cannot be resized in IE)
+    o Deletion of 'archived' files is permanent
+    o icon for 'Archive' is an upright trash can (kicked
+      over trash can when expanded).
+    ROBOT_FILE_LIST
+  * Bivio::UI::HTML::Widget::MonthYear
+    Allow year range to be explicitly specified
+    Allow year range to be explicitly specified
+    Remove b_debug
+  * Bivio::UI::View::FileManager
+    Allow one or more files to be dragged onto the file manager for upload
+    Eliminate some hard coded paths
+    o Added timeouts and error handling to all Ajax calls
+    o Can pass 'root' folder in URL path
+      http://bop2.local:8042/site/file-manager/Public
+    o To use file manager instead of the file tree list,
+      configure
+      'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
+          use_file_manager => 1,
+       }
+    o Drag item out of file manager onto desktop or folder to
+      download it.
+      (Chrome only)
+    o Image preview and file name are links to the content
+      with the correct content type so items can easily be
+      downloaded with 'Save link as ..' or opened in a
+      new tab.
+    o Can select multiple files in dialg box for for upload
+      (Chrome and Firefox)
+    o Content that looks like 'wiki' markup will rendered in the
+      preview pane.
+      (Preview cannot be resized in IE)
+    o Deletion of 'archived' files is permanent
+    o icon for 'Archive' is an upright trash can (kicked
+      over trash can when expanded).
+  * Bivio::UI::View::File
+    added robot_list (ROBOT_FILE_LIST)
+  * Bivio::UI::XHTML::Widget::FeatureTaskMenu
+    o Added timeouts and error handling to all Ajax calls
+    o Can pass 'root' folder in URL path
+      http://bop2.local:8042/site/file-manager/Public
+    o To use file manager instead of the file tree list,
+      configure
+      'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
+          use_file_manager => 1,
+       }
+    o Drag item out of file manager onto desktop or folder to
+      download it.
+      (Chrome only)
+    o Image preview and file name are links to the content
+      with the correct content type so items can easily be
+      downloaded with 'Save link as ..' or opened in a
+      new tab.
+    o Can select multiple files in dialg box for for upload
+      (Chrome and Firefox)
+    o Content that looks like 'wiki' markup will rendered in the
+      preview pane.
+      (Preview cannot be resized in IE)
+    o Deletion of 'archived' files is permanent
+    o icon for 'Archive' is an upright trash can (kicked
+      over trash can when expanded).
+  * Bivio::Util::Release
+    adde
+
   Revision 11.49  2012/01/17 00:14:53  nagler
   * Bivio::BConf
     fmt
