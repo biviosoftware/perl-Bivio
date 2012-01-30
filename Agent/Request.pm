@@ -747,20 +747,21 @@ sub internal_client_redirect_args {
 sub internal_copy_implicit {
     my($self, $named) = @_;
 #TODO: I think carry_query should override anything if it is set
-    foreach my $a (qw(query path_info)) {
-	my($carry) = exists($named->{"carry_$a"}) && $named->{"carry_$a"};
+    foreach my $attr (qw(query path_info)) {
+	my($carry) = exists($named->{"carry_$attr"}) && $named->{"carry_$attr"};
 	if (!$carry
-	    && $a eq 'query'
+	    && $attr eq 'query'
 	    && $named->{task_id}
+	    && !$named->{uri}
 	    && !$_T->get_by_id($named->{task_id})->get('want_query')
 	) {
 	    $named->{query} = undef;
 	    next;
 	}
 	next
-	    if exists($named->{$a})
- 	    || exists($named->{"carry_$a"}) && !$named->{"carry_$a"};
-	$named->{$a} = $self->get($a)
+	    if exists($named->{$attr})
+ 	    || exists($named->{"carry_$attr"}) && !$named->{"carry_$attr"};
+	$named->{$attr} = $self->get($attr)
     }
     return;
 }
