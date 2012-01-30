@@ -146,6 +146,19 @@ sub revert_form {
     return $self->internal_body($self->internal_revert_form(@_));
 }
 
+sub robot_list {
+#TODO: RobotPage (end in _robot)
+    return shift->internal_body(
+	WithModel(
+	    'RobotRealmFileList',
+	    Link(
+		String(['RealmFile.path']),
+		['detail_uri'],
+	    ),
+	),
+    );
+}
+
 sub tree_list {
     my($self, $model) = @_;
     return shift->internal_body(
