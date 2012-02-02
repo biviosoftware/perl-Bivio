@@ -12,6 +12,7 @@ use Bivio::Test::HTMLParser;
 use Bivio::Type::FileName;
 use HTTP::Request ();
 use HTTP::Request::Common ();
+use IO::Uncompress::Unzip();
 use Sys::Hostname ();
 use URI ();
 
@@ -1063,6 +1064,42 @@ sub verify_uri {
     return;
 }
 
+sub verify_zip {
+    my($self, $expected) = @_;    
+    # Recursively unzips the current response and compares against the
+    # expected zip file contents passed as an array ref in I<expected>.
+    # The array contains pairs of expected member names and expected
+    # member content.
+    # The member name is a string or a regexp.
+    # The expected content is one of:
+    #
+    # o A string that must be exectly equal to the entire zip member content
+    #
+    # o A regexp that must match the zip member content
+    #
+    # o An array reference specifying the content of an embedded zip file
+    #
+    # o undefined, meaning that the member content can be anything.
+    #
+    # 'expected' example:
+    #  [
+    #     'myfile.bin' => undef,
+    #     'hello.txt' => 'Hello World',
+    #     'goodbye.txt' => qr/bye/,
+    #      qr/file-\d\d\d.pdf/ => qr/^%PDF/,
+    #     'a.zip' => [
+    # 	      'a.txt' => undef,
+    # 	      'b.zip' => [
+    # 	          'b1.txt' => undef,            
+    # 	      ],
+    # 	      'c.txt' => undef,
+    #      ],
+    # ];	
+    _verify_zip($self, $self->get_content(), $expected, $self->get_uri);
+    return;
+}
+
+
 sub visit_uri {
     my($self, $uri) = @_;
     # Loads the page using the specified URI.
@@ -1447,7 +1484,7 @@ sub _unsafe_html_get {
 
 sub _validate_text_field {
     my($field, $value) = @_;
-    # Dies if the text field has multipel lines.
+    # Dies if the text field has multiple lines.
     Bivio::Die->die('text input must be a single line: ', $field->{label})
         if $field->{type} eq 'text' && ($value || '') =~ /\n/;
     return;
@@ -1480,6 +1517,52 @@ sub _verify_form_option {
 	    if $control->{options}->{$o}->{selected};
     }
     return undef;
+}
+
+sub _verify_zip {
+    my($self, $compressed, $expected, $zip_name) = @_;
+    my($remaining) = [@$expected];
+    my($z) = new IO::Uncompress::Unzip(\$compressed, {
+	Append => 1,
+    }) or b_die('unzip failed: ', $IO::Uncompress::Unzip::UnzipError);
+    until ($z->eof) {
+	my($name) = $z->getHeaderInfo()->{Name};
+        my($value, $content);
+	$self->do_by_two(
+		  sub {
+		      my($n, $v, $i) = @_;
+		      return 1
+			  if (ref($n) eq 'Regexp' && $name !~ $n)
+			  || (ref($n) eq '' && $name ne $n);
+		      $value = $v;
+		      splice(@$remaining, $i * 2, 2);
+		      return 0;
+		 }, $remaining);
+	while ($z->read($content) > 0) {
+	};
+	if (ref($value) eq 'ARRAY') {
+	    _verify_zip($self, $content, $value, $name);
+	}
+        elsif (ref($value) eq 'Regexp') {
+	    b_die($value, ': text not found in member: ', $name)
+		unless $content =~ $value;
+	}
+	elsif (ref($value) eq '') {
+	    b_die($value, ': is not equal to contents of member: ', $name, $content)
+	        if defined($value) && $content ne $value;
+	}
+	else {
+	    b_die($value, ' is a ', ref($value), ' expected ARRAY, Regexp, string or undefined')
+	}
+	$z->nextStream;
+    }
+    b_die(join(',', @{$self->map_by_two(
+	sub {
+	    my($n, $v, $i) = @_;
+	    return $n;
+	}, $remaining)}), ': member(s) not found in file: ', $zip_name)
+	if int(@$remaining) > 0;
+    return;
 }
 
 sub _wait_for_server {
