@@ -820,6 +820,15 @@ sub to_local_string {
     return _to_string($proto, _adjust_to_local($proto, $date_time));
 }
 
+sub to_mm_dd_yyyy {
+    my($proto, $value, $sep) = @_;
+    # Returns date in MM DD YYYY format
+    $sep ||= '/';
+    my($mday, $mon, $year) = ($proto->to_parts($value))[3..5];
+    my($format) = "%02d${sep}%02d${sep}%04d";
+    return sprintf($format, $mon, $mday, $year);
+}
+
 sub to_parts {
     my($proto, $value) = @_;
     # Returns the date/time in parts in the same order as C<gmtime>
