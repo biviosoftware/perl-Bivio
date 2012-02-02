@@ -28,10 +28,15 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.51  2012/01/30 02:37:49  nagler
+  * Bivio::Biz::Model::RobotRealmFileList
+    ignore count in query as well so can test small page sizes
+  * Bivio::UI::View::File
+    robot_list: added pager
+
   Revision 11.50  2012/01/30 02:03:51  nagler
   * Bivio::Agent::HTTP::Form
     Allow one or more files to be dragged onto the file manager for upload
