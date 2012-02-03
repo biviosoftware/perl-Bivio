@@ -120,7 +120,11 @@ sub can_next_row {
 sub do_rows {
     my(undef, $delegator, $do_rows_handler) = shift->delegated_args(@_);
     $delegator->reset_cursor;
-    0 while $delegator->next_row && $do_rows_handler->($delegator);
+
+    while ($delegator->next_row) {
+	last unless $delegator->internal_verify_do_iterate_result(
+	    $do_rows_handler->($delegator));
+    }
     return $delegator;
 }
 
