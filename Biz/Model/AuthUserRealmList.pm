@@ -27,7 +27,11 @@ sub can_user_execute_task_in_any_realm {
     my($self, $task) = @_;
     my($res) = 0;
     $self->do_rows(
-	sub {!($res = shift->can_user_execute_task_in_this_realm($task))},
+	sub {
+	    return ($res = shift->can_user_execute_task_in_this_realm($task))
+		? 0
+		: 1;
+	},
     );
     $self->reset_cursor;
     return $res;
