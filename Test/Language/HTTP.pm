@@ -1077,6 +1077,10 @@ sub verify_zip {
     #
     # o A regexp that must match the zip member content
     #
+    # o A hash reference with optional keys 'present' and 'absent' whose
+    #   values are regexps specifying text that must respectively be present
+    #   in, and absent from, the member content.
+    #
     # o An array reference specifying the content of an embedded zip file
     #
     # o undefined, meaning that the member content can be anything.
@@ -1086,6 +1090,10 @@ sub verify_zip {
     #     'myfile.bin' => undef,
     #     'hello.txt' => 'Hello World',
     #     'goodbye.txt' => qr/bye/,
+    #     'cake.txt' => {
+    #          present => qr/flour/,
+    #          absent => qr/sand/,
+    #      },
     #      qr/file-\d\d\d.pdf/ => qr/^%PDF/,
     #     'a.zip' => [
     # 	      'a.txt' => undef,
@@ -1547,12 +1555,22 @@ sub _verify_zip {
 	    b_die($value, ': text not found in member: ', $name)
 		unless $content =~ $value;
 	}
+	elsif (ref($value) eq 'HASH') {
+	    b_die($value->{present}, ': text not found in member: ', $name)
+		if $value->{present} && $content !~ $value->{present};
+	    b_die($value->{absent}, ': text found in member: ', $name)
+		if $value->{absent} && $content =~ $value->{absent};
+	    my(%unknown) = %$value;
+	    delete(@unknown{qw(present absent)});
+	    b_die(join(',', keys(%unknown)), ': unknown hash key(s)')
+		if int(keys(%unknown)) > 0;
+	}
 	elsif (ref($value) eq '') {
 	    b_die($value, ': is not equal to contents of member: ', $name, $content)
 	        if defined($value) && $content ne $value;
 	}
 	else {
-	    b_die($value, ' is a ', ref($value), ' expected ARRAY, Regexp, string or undefined')
+	    b_die($value, ' is a ', ref($value), ' expected ARRAY, HASH, Regexp, string or undefined')
 	}
 	$z->nextStream;
     }
