@@ -72,7 +72,9 @@ sub dbaccess_model_form {
 				[
 				    Join([_label($_)])->put(
 					row_control => _row_enabled($_),
-					row_class => _row_class($_),
+					row_class => If(_read_only($_),
+					       'row_read_only',
+					       'row_editable'),
 				    ),
 				    DIV_field_value(
 					If (_read_only($_),
@@ -233,7 +235,7 @@ sub _related_link {
 	. $related->{model}
 	. ($duplicate ? ('(' . $related->{field} . ')') : '')
 	. ' ';
-    return LI(If(And(['Model.DBAccessModelForm', $qualified_field],
+    return LI(If(And(['Model.DBAccessModelForm', '->has_fields', $qualified_field],
 		  [['Model.DBAccessModelForm', 
 		      '->relation_exists', $qualified_field, $related->{model}, $related->{field},
 		      ]],
@@ -254,19 +256,6 @@ sub _related_link {
 	  )); 
 }
 
-sub _row_class {
-    my($qualified_field) = @_;
-    return [
-	sub {
-	    my($source) = @_;
-	    my($field) = $qualified_field =~ qr{[^\.]*\.(.*)};
-	    return (($source->req('query') || {})->{'_' . $field} == 0) ?
-		'row_read_only' : 'row_editable';
-	}
-    ];
-}
-
-
 sub _row_enabled {
     my($field) = @_;
     return [
@@ -284,7 +273,7 @@ sub _read_only {
 	sub {
 	    my($source) = @_;
 	    my($field) = $qualified_field =~ qr{[^\.]*\.(.*)};
-	    return (($source->req('query') || {})->{'_' . $field} == 0) ? 1 : 0;
+	    return ((($source->req('query') || {})->{'_' . $field} || 0) == 0) ? 1 : 0;
 	}
     ];
 }
@@ -299,7 +288,7 @@ sub _label {
 	    $label =~ s/_/ /g;
 	    my($query) = {%{$source->req('query') || {}}};
 	    my($p) = '_' . $field;
-	    $query->{$p} = 1 unless delete($query->{$p}) == 1;
+	    $query->{$p} = 1 unless (delete($query->{$p}) || 0 == 1);
 	    my($link) = DIV(Link($label . ': ', URI({
 		path_info => $source->req('path_info'),
 		query => $query,
