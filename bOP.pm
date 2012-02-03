@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,38 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.52  2012/02/02 21:10:06  schellj
+  * Bivio::Test::Language::HTTP
+    'verify_zip' recursively unzips the current response and compares against
+    the expected zip file contents passed as an array ref in I<expected>.
+    The array contains pairs of expected member names and expected
+    member content.
+    The member name is a string or a regexp.
+    The expected content is one of:
+    o A string that must be exectly equal to the entire zip member content
+    o A regexp that must match the zip member content
+    o An array reference specifying the content of an embedded zip file
+    o undefined, meaning that the member content can be anything.
+    'expected' example:
+    [
+        'myfile.bin' => undef,
+        'hello.txt' => 'Hello World',
+        'goodbye.txt' => qr/bye/,
+        qr/file-\d\d\d.pdf/ => qr/^%PDF/,
+        'a.zip' => [
+            'a.txt' => undef,
+            'b.zip' => [
+                'b1.txt' => undef,
+            ],
+            'c.txt' => undef,
+         ],
+    ];
+  * Bivio::Type::DateTime
+    add to_mm_dd_yyyy
+  * Bivio::Util::HTTPConf
+    ServerTokens ProductOnly (avoids PCI scan issues)
+    is_production only set for IO.Config
+
   Revision 11.51  2012/01/30 02:37:49  nagler
   * Bivio::Biz::Model::RobotRealmFileList
     ignore count in query as well so can test small page sizes
