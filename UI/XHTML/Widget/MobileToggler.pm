@@ -23,11 +23,12 @@ sub initialize {
 		    task_map => [
 			map(
 			    {
+				my($uri_args) = $_MD->uri_args_for($_, $req);
 				my($x) = [
-				    Link(
+				    If($uri_args->{control}, Link(
 					vs_text_as_prose('MobileToggler', $_),
-					URI($_MD->uri_args_for($_, $req)),
-				    ),
+					URI($uri_args),
+				    )),
 				    SPAN_selected(
 					vs_text_as_prose('MobileToggler', $_)),
 				];
