@@ -4,6 +4,7 @@ Request();
 config({
     class() => {
 	hosts => [qw(www.bivio.biz localhost.localdomain)],
+	addresses => [qw(96.126.116.242)],
     },
 });
 [
