@@ -82,7 +82,8 @@ sub do_iterate {
     $self->$iterate_start(@_);
     while ($self->iterate_next_and_load) {
 	next
-	    if $do_iterate_handler->($self);
+	    if $self->internal_verify_do_iterate_result(
+		$do_iterate_handler->($self));
 	$self->put_on_request($self)
 	    unless $self->is_ephemeral;
 	last;
@@ -389,6 +390,13 @@ sub internal_put_iterator {
     my($self, $it) = @_;
     # Sets the iterator and returns its argument.
     return $self->[$_IDI]->{iterator} = $it;
+}
+
+sub internal_verify_do_iterate_result {
+    my($proto, $value) = @_;
+    b_warn('iterate handler returned invalid value: ', $value)
+	unless defined($value) && $value =~ /^(0|1)$/;
+    return $value;
 }
 
 sub is_ephemeral {
