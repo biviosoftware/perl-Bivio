@@ -12,7 +12,6 @@ use Bivio::Test::HTMLParser;
 use Bivio::Type::FileName;
 use HTTP::Request ();
 use HTTP::Request::Common ();
-use IO::Uncompress::Unzip();
 use Sys::Hostname ();
 use URI ();
 
@@ -1102,7 +1101,8 @@ sub verify_zip {
     # 	      ],
     # 	      'c.txt' => undef,
     #      ],
-    # ];	
+    # ];
+    b_use('IO::Uncompress::Unzip');
     _verify_zip($self, $self->get_content(), $expected, $self->get_uri);
     return;
 }
