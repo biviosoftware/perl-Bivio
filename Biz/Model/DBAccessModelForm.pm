@@ -226,7 +226,7 @@ sub _get_nth_row {
     my($res) = $self->new_other($model_name);
     $res->do_iterate(
 	sub {
-	    return ++$i < $query->{n};
+	    return (++$i < $query->{n}) ? 1 : 0;
 	}, 'unauth_iterate_start', undef, _get_iterator_params($query, $model_name)
     );
     return $i == $query->{n} ? $res : undef;
@@ -326,7 +326,7 @@ sub _handle_search_button {
 	my($value) = _value_form_to_query($model_name, $field,
 					  $self->unsafe_get("$model_name.$field"));
 	next unless defined($value);
-	next unless ($query || {})->{'_' . $field} == 1; 
+	next unless (($query || {})->{'_' . $field} || 0) == 1; 
 	$res->{$field} = $value; 
     }
     $res->{c} =  _get_row_count($self, $res, $model_name);
