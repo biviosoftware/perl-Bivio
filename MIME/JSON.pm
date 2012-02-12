@@ -11,11 +11,12 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 # expanded to allow strings in single quote and unquoted object keys
 
 sub from_text {
-    my($proto, $text) = @_;
+    my($proto, $text, $options) = @_;
     my($self) = $proto->new;
     my($fields) = $self->[$_IDI] = {
 	text => ref($text) ? $text : \$text,
 	char_count => 0,
+	options => $options || {},
     };
     my($res) = _parse_text($self);
     b_die('leftover data at char index: ', $fields->{char_count})
@@ -79,10 +80,13 @@ sub _parse_array {
 
 sub _parse_constant {
     my($self, $expected_value) = @_;
-
+    my($fields) = $self->[$_IDI];
+    my($literal_values) = $fields->{options}->{literal_values} || {};
     foreach my $expected_char (split('', $expected_value)) {
 	_next_char($self, $expected_char);
     }
+    return $literal_values->{$expected_value}
+	if exists($literal_values->{$expected_value});
     return $expected_value;
 }
 
