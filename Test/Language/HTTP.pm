@@ -4,7 +4,6 @@ package Bivio::Test::Language::HTTP;
 use strict;
 use Bivio::Base 'Test.Language';
 use Bivio::Ext::LWPUserAgent;
-use Bivio::IO::Ref;
 use Bivio::IO::Trace;
 use Bivio::Mail::Address;
 use Bivio::Mail::Common;
@@ -165,7 +164,7 @@ sub clear_local_mail {
 
 sub date_time_now {
     my($self, $now) = @_;
-    $now = $_DT->set_test_now($now, b_use('Test.Request')->get_current_or_new);
+    $now = $_DT->set_test_now($now, _req($self));
     $self->clear_extra_query_params;
     $self->extra_query_params(
 	$_DT->TEST_NOW_QUERY_KEY => $now,
@@ -217,7 +216,7 @@ sub do_test_backdoor {
 	        : ref($args) eq ''
 		? {shell_util => $op, command => $args}
 		: b_die($args, ': unable to parse args'),
-	    b_use('Agent.Request')->get_current,
+	    _req($self),
 	)
     );
     return;
@@ -670,9 +669,8 @@ sub send_mail {
     my($self, $from_email, $to_email, $headers, $body) = @_;
     # Send a message.  Returns the object.  Sets subject and body to unique values.
     my($r) = $self->random_string();
-    my($req) = b_use('Test.Request')->get_current_or_new;
     my($o) = b_use('Mail.Outgoing')->new;
-    $o->set_recipients($to_email, $req);
+    $o->set_recipients($to_email, _req($self));
     $o->set_header(To => ref($to_email) ? join(',', @$to_email) : $to_email);
     $headers = {
 	Subject => "subj-$r",
@@ -682,8 +680,8 @@ sub send_mail {
 	$o->set_header($k, $headers->{$k});
     }
     $o->set_body($body || "Any unique $r body\n");
-    $o->add_missing_headers($req, $from_email);
-    $o->send($req);
+    $o->add_missing_headers(_req($self), $from_email);
+    $o->send(_req($self));
     return $o;
 }
 
@@ -778,10 +776,7 @@ sub submit_from_table {
 
 sub temp_file {
     my($self, $name) = @_;
-    return $_F->temp_file(
-	b_use('Test.Request')->get_current_or_new,
-	$name || ($self->test_name . '.tmp'),
-    );
+    return $_F->temp_file(_req($self), $name || ($self->test_name . '.tmp'));
 }
 
 sub text_exists {
@@ -1102,8 +1097,7 @@ sub verify_zip {
     # 	      'c.txt' => undef,
     #      ],
     # ];
-    b_use('IO::Uncompress::Unzip');
-    _verify_zip($self, $self->get_content(), $expected, $self->get_uri);
+    _verify_zip($self, $self->get_content, $expected);
     return;
 }
 
@@ -1411,6 +1405,11 @@ sub _option_value_list {
     return sort({length($a) <=> length($b) || $a cmp $b} keys(%$options));
 }
 
+sub _req {
+    my($self) = @_;
+    return b_use('Test.Request')->get_current_or_new;
+}
+
 sub _save_history {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
@@ -1528,58 +1527,55 @@ sub _verify_form_option {
 }
 
 sub _verify_zip {
-    my($self, $compressed, $expected, $zip_name) = @_;
-    my($remaining) = [@$expected];
-    my($z) = new IO::Uncompress::Unzip(\$compressed, {
-	Append => 1,
-    }) or b_die('unzip failed: ', $IO::Uncompress::Unzip::UnzipError);
-    until ($z->eof) {
-	my($name) = $z->getHeaderInfo()->{Name};
-        my($value, $content);
-	$self->do_by_two(
-		  sub {
-		      my($n, $v, $i) = @_;
-		      return 1
-			  if (ref($n) eq 'Regexp' && $name !~ $n)
-			  || (ref($n) eq '' && $name ne $n);
-		      $value = $v;
-		      splice(@$remaining, $i * 2, 2);
-		      return 0;
-		 }, $remaining);
-	while ($z->read($content) > 0) {
-	};
-	if (ref($value) eq 'ARRAY') {
-	    _verify_zip($self, $content, $value, $name);
-	}
-        elsif (ref($value) eq 'Regexp') {
-	    b_die($value, ': text not found in member: ', $name)
-		unless $content =~ $value;
-	}
-	elsif (ref($value) eq 'HASH') {
-	    b_die($value->{present}, ': text not found in member: ', $name)
-		if $value->{present} && $content !~ $value->{present};
-	    b_die($value->{absent}, ': text found in member: ', $name)
-		if $value->{absent} && $content =~ $value->{absent};
-	    my(%unknown) = %$value;
-	    delete(@unknown{qw(present absent)});
-	    b_die(join(',', keys(%unknown)), ': unknown hash key(s)')
-		if int(keys(%unknown)) > 0;
-	}
-	elsif (ref($value) eq '') {
-	    b_die($value, ': is not equal to contents of member: ', $name, $content)
-	        if defined($value) && $content ne $value;
+    my($self, $compressed, $expected) = @_;
+    _req($self);
+    my($zip) = b_use('IO.Zip')->new;
+    $zip->read_zip_from_string($compressed);
+    my($values) = b_use('Collection.Attributes')->new({});
+    $zip->iterate_members(sub {
+        my($name, $value) = @_;
+	$values->put($name => $value);
+	return 1;
+    });
+    my($present) = {};
+    $self->do_by_two(sub {
+        my($name, $value) = @_;
+	my($v);
+	if (ref($name) eq 'Regexp') {
+	    $v = $values->get_by_regexp($name);
 	}
 	else {
-	    b_die($value, ' is a ', ref($value), ' expected ARRAY, HASH, Regexp, string or undefined')
+	    $v = $values->get($name);
 	}
-	$z->nextStream;
-    }
-    b_die(join(',', @{$self->map_by_two(
-	sub {
-	    my($n, $v, $i) = @_;
-	    return $n;
-	}, $remaining)}), ': member(s) not found in file: ', $zip_name)
-	if int(@$remaining) > 0;
+	return 1 unless defined($value);
+	if (ref($value) eq 'ARRAY') {
+	    _verify_zip($self, $v, $value);
+	}
+	elsif (ref($value) eq 'Regexp') {
+	    b_die($value, ': did not match contents of member: ',
+		$name, ' ', $v)
+		unless $$v =~ $value;
+	}
+	elsif (ref($value) eq 'HASH') {
+	    b_die($value->{absent}, ': matches absent value: ', $name, ' ', $v)
+		if $value->{absent} && $$v =~ $value->{absent};
+	    my($p) = $value->{present};
+	    if ($p) {
+		$present->{$p} ||= 1;
+		$present->{$p} = 2
+		    if $$v =~ $p;
+	    }
+	}
+	else {
+	    b_die($value, ': is not equal to contents of member: ',
+		$name, ' ', $v)
+	        unless $$v eq $value;
+	}
+	return 1;
+    }, $expected);
+    my($remaining) = [map($present->{$_} eq 1 ? $_ : (), keys(%$present))];
+    b_die('unmatched present: ', $remaining)
+	if @$remaining;
     return;
 }
 
