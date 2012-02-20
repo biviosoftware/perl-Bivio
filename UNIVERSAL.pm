@@ -225,6 +225,16 @@ sub internal_data_section {
     return $op ? $f->do_lines($h, $op) : ${$f->read($h)};
 }
 
+sub internal_verify_do_iterate_result {
+    my($proto, $value) = @_;
+    $proto->use('IO.Alert')->warn(
+	$value,
+	': handler must return 0 or 1; caller=',
+	$proto->my_caller(1),
+    ) unless defined($value) && $value =~ /^(?:0|1)$/;
+    return $value;
+}
+
 sub is_blessed {
     my($proto, $value, $object) = @_;
     $object ||= $proto;
