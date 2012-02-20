@@ -218,8 +218,8 @@ my($counter) = 0;
 	    },
 	    compute_return => sub {[$counter]},
 	} => [
-	    [sub {++$counter}, Date('1/1/2009'), Date('1/3/2009')] => 3,
-	    [sub {$counter++}, Date('1/1/2009'), Date('1/3/2009')] => 1,
+	    [sub {++$counter ? 1 : 0}, Date('1/1/2009'), Date('1/3/2009')] => 3,
+	    [sub {$counter++ ? 1 : 0}, Date('1/1/2009'), Date('1/3/2009')] => 1,
 	],
     ],
 ];
