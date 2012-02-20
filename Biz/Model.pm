@@ -392,13 +392,6 @@ sub internal_put_iterator {
     return $self->[$_IDI]->{iterator} = $it;
 }
 
-sub internal_verify_do_iterate_result {
-    my($proto, $value) = @_;
-    b_warn('iterate handler returned invalid value: ', $value)
-	unless defined($value) && $value =~ /^(0|1)$/;
-    return $value;
-}
-
 sub is_ephemeral {
     my($self) = @_;
     return $self->[$_IDI]->{ephemeral} ? 1 : 0;
