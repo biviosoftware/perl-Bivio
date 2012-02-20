@@ -331,7 +331,7 @@ sub do_iterate {
     my($proto, $op, $begin, $end) = @_;
     while ($proto->is_less_than_or_equals($begin, $end)) {
 	return
-	    unless $op->($begin);
+	    unless $proto->internal_verify_do_iterate_result($op->($begin));
 	$begin = $proto->add_days($begin, 1);
     }
     return;

@@ -107,7 +107,8 @@ sub do_iterate {
     my($self, $op) = @_;
     my($a) = $self->as_array;
     foreach my $v (@$a) {
-	return unless $op->($v);
+	return
+	    unless $self->internal_verify_do_iterate_result($op->($v));
     }
     return;
 }
