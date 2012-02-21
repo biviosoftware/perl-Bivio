@@ -11,8 +11,8 @@
 	    dns => [qw(resolver1.dallas.linode.com resolver2.dallas.linode.com)],
 	},
 	net2 => {
-	    cidr => '96.126.116.0/24',
-	    gateway => 'gw-li341.linode.com',
+	    cidr => '216.87.82.64/27',
+	    gateway => 'gw1.apa.bivio.biz',
 	    dns => [qw(cachens1.viawest.net cachens2.viawest.net)],
 	},
     },
