@@ -236,10 +236,14 @@ sub internal_verify_do_iterate_result {
 }
 
 sub is_blessed {
+    return shift->is_blesser_of(@_);
+}
+
+sub is_blesser_of {
     my($proto, $value, $object) = @_;
     $object ||= $proto;
     my($v) = $value;
-    return ref($value) && $v =~ /=/ && $object->is_subclass($value) ? 1 : 0;
+    return ref($value) && $v =~ /=/ && $object->is_super_of($value) ? 1 : 0;
 }
 
 sub is_simple_package_name {
@@ -248,8 +252,13 @@ sub is_simple_package_name {
 }
 
 sub is_subclass {
-    my($proto, $value) = @_;
-    return defined($value) && UNIVERSAL::isa($value, ref($proto) || $proto)
+    Bivio::IO::Alert->warn_deprecated('use is_super_of');
+    return shift->is_super_of(@_);
+}
+
+sub is_super_of {
+    my($proto, $other) = @_;
+    return defined($other) && UNIVERSAL::isa($other, ref($proto) || $proto)
 	? 1 : 0;
 }
 
