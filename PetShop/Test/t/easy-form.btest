@@ -21,7 +21,7 @@ submit_form(OK => {
 });
 verify_text('wiki completed');
 verify_local_mail(qr{root}, qr{submission.*$input}s);
-follow_link('fourem$', 'files', 'forms', 'btest.csv');
+visit_realm_file('fourem', 'forms/btest.csv');
 verify_text(qr{\n.*,$r,OK\n.*,[^,]+root\@[^,]+,root$r,OK\n.*easyform$r,OK\n}s);
 do_test_backdoor(RealmFile => '-r fourem delete_deep ' . $form_uri);
 visit_uri('/fourem/bp/EasyForm_btest');
