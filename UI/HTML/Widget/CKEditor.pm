@@ -1,121 +1,134 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2011-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::CKEditor;
 use strict;
 use Bivio::Base 'HTMLWidget.ControlBase';
-use File::stat;
-use IO::File;
+use File::stat ();
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_F) = b_use('UI.Facade');
 my($_FP) = b_use('Type.FilePath');
-my($_IDI) = __PACKAGE__->instance_data_index;
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
+my($_IOF) = b_use('IO.File');
+my($_HTML) = b_use('Bivio.HTML');
+my($_DT) = b_use('Type.DateTime');
+my($_PUBLIC) = b_use('Type.WikiDataName')->to_absolute(undef, 1);
+my($_PRIVATE) = b_use('Type.WikiDataName')->to_absolute;
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    $self->SUPER::control_on_render($source, $buffer);
-    my($fields) = $self->[$_IDI];
-    my($req) = $source->get_request;
-    my($form) = $req->get_widget_value(@{$fields->{model}});
-    my($field) = $fields->{field};
-
-    my($css) = '';
-    b_use('XHTMLWidget.RealmCSS')->new->initialize_with_parent(undef)
-	     ->render_tag_value($req, \$css);
-    my(@lines) = split('\n', $css);
-    my($jscss) = q{['} . join(qq{'\n + '}, @lines) . q{']};
-
-    # need first time initialization to get field name from form model
-    unless ($fields->{initialized}) {
-	my($type) = $fields->{type} = $form->get_field_type($field);
-	my($attributes) = '';
-	$self->unsafe_render_attr('edit_attributes', $source, \$attributes);
-#TODO: need get_width or is it something else?
-	$fields->{prefix} = '<textarea' . $attributes
-	    . ($_VS->vs_html_attrs_render($self, $source) || '')
-	    . join('', map(qq{ $_="$fields->{$_}"}, qw(rows cols)));
-        $fields->{prefix} .= ' readonly="readonly"'
-	    if $fields->{readonly};
-	$fields->{initialized} = 1;
-    }
-    my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
-
-    my($fh, $uri, $lfn);
-    EDITOR_SOURCE:
-    for my $i ("/b/ckeditor/ckeditor.js", "/b/ckeditor/ckeditor_source.js" ) {
-	$lfn = Bivio::UI::Facade->get_local_file_name(
-	    Bivio::UI::LocalFileType->PLAIN, $i, $req);
-	$uri = $i;
-	$fh = IO::File->new($lfn, 'r');
-	last EDITOR_SOURCE
-	    if (defined $fh);
-    }
-    $req->throw_die('NOT_FOUND', {entity => $lfn})
-       unless (defined $fh);
-    my($mt) = stat($fh)->mtime;
-    undef $fh;
-    my($use_public_image_folder) = ref($fields->{use_public_image_folder}) eq 'ARRAY'
-	? $self->req->get_widget_value(@{$fields->{use_public_image_folder}})
-	: $fields->{use_public_image_folder};       
-    $$buffer .= '<script type="text/javascript"'
-	    . ' src="'
-	    . $uri
-	    . '?mt='
-	    . $mt
-	    . '"></script>'
-            . $p.$fields->{prefix}
-	    . ' name="'
-	    . $form->get_field_name_for_html($field)
-	    . '">'
-	    . $form->get_field_as_html($field)
-	    . '</textarea>'
-            . '<script type="text/javascript">'
-	    . 'CKEDITOR.replace("'
-	    . $form->get_field_name_for_html($field)
-	    . '", {customConfig: "/b/ckeditor/bwiki_config.js"'
-            .'});' . "\n"
-	    . (
-		$fields->{show_image_upload_tab}
-		    ? 'CKEDITOR.config.filebrowserImageUploadUrl = "'
-			   . $self->req->format_uri({
-			       task_id => 'FORUM_FILE_UPLOAD_FROM_WYSIWYG',
-			       path_info => $use_public_image_folder
-				   ? $fields->{public_image_folder}
-				   : $fields->{private_image_folder},
-			       query => $use_public_image_folder
-				   ? {private => $fields->{private_image_folder}}
-				   : {public=> $fields->{public_image_folder}},
-			      })
-       	                    . '"' . "\n"			     
-		    : q{}
-		)
-	    . 'CKEDITOR.config.contentsCss=' . $jscss. ';'
-	    . '</script>'	
-	    . $s;
+    my($html_attrs) = '';
+    $self->SUPER::control_on_render($source, \$html_attrs);
+    my($form) = $self->resolve_ancestral_attr('form_model', $source->req);
+    my($field) = $self->render_simple_attr('field', $source);
+    my($f) = $_F->get_from_source($source);
+    $$buffer .= '<script type="text/javascript" src="'
+	. _src_attr($self, $f, $source)
+	. '"></script><textarea'
+	. $html_attrs
+	. join(
+	    '',
+	    map(_render_num_attr($self, $_, $source),
+		qw(rows cols readonly)),
+	)
+	. ' name="'
+	. $form->get_field_name_for_html($field)
+	. '">'
+	. $form->get_field_as_html($field)
+	. '</textarea><script type="text/javascript">'
+	. 'CKEDITOR.replace("'
+	. $form->get_field_name_for_html($field)
+	. '", {customConfig: "'
+	. $f->get_local_file_plain_common_uri('ckeditor/bwiki_config.js')
+	. qq["});\n]
+	. _image_upload_tab($self, $source)
+	. 'CKEDITOR.config.contentsCss='
+	. _jscss($source)
+	. ';</script>';
     return;
 }
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{model};
-    $self->unsafe_initialize_attr('edit_attributes');
-    $fields->{model} = $self->ancestral_get('form_model');
-    ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
-	    'field', 'rows', 'cols');
-    $fields->{readonly} = $self->get_or_default('readonly', 0);
-    $fields->{public_image_folder} = $self->get_or_default('public_image_folder',
-							   $_FP->PUBLIC_FOLDER_ROOT);
-    $fields->{private_image_folder} = $self->get_or_default('private_image_folder', '/');
-    $fields->{use_public_image_folder} = $self->get_or_default('use_public_image_folder', 0);
-    $fields->{show_image_upload_tab} = $self->get_or_default('show_image_upload_tab', 1);
-    return;
+    $self->initialize_attr('field');
+    $self->initialize_attr('cols');
+    $self->initialize_attr('rows');
+    $self->initialize_attr('readonly', 0);
+    $self->initialize_attr('public_image_folder', $_PUBLIC);
+    $self->initialize_attr('private_image_folder', $_PRIVATE);
+    $self->initialize_attr('use_public_image_folder', 0);
+    $self->initialize_attr('show_image_upload_tab', 1);
+    return shift->SUPER::initialize(@_);
 }
 
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] ||= {};
-    return $self;
+sub _image_upload_tab {
+    my($self, $source) = @_;
+    return ''
+	unless $self->render_simple_attr('show_image_upload_tab', $source);
+    my($which) = $self->render_simple_attr('use_public_image_folder', $source)
+	? 'public' : 'private';
+    my($query) = {
+	public => $self->render_simple_attr('public_image_folder', $source),
+	private => $self->render_simple_attr('private_image_folder', $source),
+    };
+    return 'CKEDITOR.config.filebrowserImageUploadUrl = "'
+	. $source->req->format_stateless_uri({
+	    task_id => 'FORUM_FILE_UPLOAD_FROM_WYSIWYG',
+	    path_info => delete($query->{$which}),
+	    query => $query,
+	    no_context => 1,
+	})
+	. qq{";\n};
+}
+
+sub _jscss {
+    my($source) = @_;
+    my($css) = '';
+    RealmCSS()
+	->initialize_with_parent(undef)
+	->render_tag_value($source->req, \$css);
+    return q{['} . join("'\n+'", split(/\n/, $css)) . q{']};
+}
+
+sub _render_num_attr {
+    my($self, $attr, $source) = @_;
+    my($n) = $self->render_simple_attr($attr, $source);
+    if ($attr eq 'readonly') {
+	return ''
+	    unless $n;
+	$n = 'readonly';
+    }
+    elsif ($n !~ /^\d+$/s) {
+	b_warn($n, ': ', $attr, ' rendered improperly')
+	    if defined($n);
+	return '';
+    }
+    # Don't need to escape, because syntax of $n checked above.
+    return qq{ $attr="$n"};
+}
+
+sub _src_attr {
+    my($self, $facade, $source) = @_;
+    foreach my $i ('ckeditor/ckeditor.js', 'ckeditor/ckeditor_source.js') {
+	next
+	    unless my $mt = $_IOF->get_modified_date_time(
+		$facade->get_local_file_name(
+		    'PLAIN',
+		    my $uri = $facade->get_local_file_plain_common_uri($i),
+		),
+	    );
+	return $_HTML->escape_attr_value(
+	    $source->req->format_uri({
+		no_context => 1,
+		uri => $uri,
+		query => {
+		    mt => $_DT->to_unix($mt),
+		},
+	    }),
+	);
+    }
+    b_die('ckeditor/ckeditor*.js: not found');
+    # DOES NOT RETURN
 }
 
 1;

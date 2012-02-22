@@ -8,6 +8,9 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DBAMF) = b_use('Model.DBAccessModelForm');
 
+#TODO: Can do this more clearly by returning a widget value for xhtml.
+# Seems like these could be their own page type, but not sure why it needs its own css, could
+# just be in View.CSS (perhaps conditionally)
 sub absolute_path {
     # mega-kluge to disable caching
     return shift->get('view_method') . '(0x0)';
@@ -84,10 +87,12 @@ sub dbaccess_model_form {
 				    ),
 				    _related_links($_),
 				],				
-				$_DBAMF->get_qualified_fields)
+				@{$_DBAMF->get_qualified_fields},
+			    ),
 			]),
-		    ], 1), 
-		])),
+		    ],
+		    1,
+		)])),
 	    ]));
     return;		     
 }
@@ -127,54 +132,55 @@ sub dbaccess_model_list {
 }
 
 sub dbaccess_row_list {
-    view_put(xhtml =>
-		 Join([
-		     HEAD(
-			 Join([
-			     TITLE(Join([[\&_model_name], String(' List')])),
-			     STYLE(_css(), {
-				 TYPE => 'text/css',
-			     }),
-			 ]),
-		     ),
-		     BODY(Join([
-			 DIV_header_panel(
-			     Join([
-				 H1(Join([String('Model: '), [\&_model_name]])),
-				 Grid([[
-				     Link('Model list', 'DEV_DBACCESS_MODEL_LIST'),
-				 ]]),
-			     ])
-			 ),
-			 vs_paged_list('DBAccessRowList', [
-			     ['index', {
-			 	 column_widget => 				     
-				     Link({
-					 value  =>  String(['index']),
-					 href => URI({
-					     task_id => 'DEV_DBACCESS_MODEL_FORM',
-					     path_info => ['->req', 'path_info'],
-					     query => [
-						 sub {
-						     my($source) = @_;
-						     my($query)= $source->req('query');
-						     $query->{n} = $source->get('index');
-						     return $query;							 					     }],
-					 }),
-				     }),
-				 column_data_class => 'index',		
-				}],
-			     map(
-			     	 [
-			     	     $_, {
-					 column_heading => String(_unqualified($_)),
-			     	     }
-			     	 ],
-			     	 $_DBAMF->get_qualified_fields)
-			     
-			 ]),
-		     ])),
-		 ]));
+    view_put(xhtml => Join([
+	HEAD(
+	    Join([
+		TITLE(Join([[\&_model_name], String(' List')])),
+		STYLE(_css(), {
+		    TYPE => 'text/css',
+		}),
+	    ]),
+	),
+	BODY(Join([
+	    DIV_header_panel(
+		Join([
+		    H1(Join([String('Model: '), [\&_model_name]])),
+		    Grid([[
+			Link('Model list', 'DEV_DBACCESS_MODEL_LIST'),
+		    ]]),
+		])
+	    ),
+	    vs_paged_list('DBAccessRowList', [
+		['index', {
+		    column_widget => 				     
+			Link({
+			    value  =>  String(['index']),
+			    href => URI({
+				task_id => 'DEV_DBACCESS_MODEL_FORM',
+				path_info => [\&_model_name],
+				query => [
+				    sub {
+					my($source) = @_;
+					my($query)= $source->req('query');
+#TODO: Should be computed in DBAccessRowList
+					$query->{n} = $source->get('index');
+					return $query;
+				    },
+				],
+			    }),
+			}),
+		    column_data_class => 'index',		
+		}],
+		map(
+		    [
+			$_,
+			{column_heading => String(_unqualified($_))},
+		    ],
+		    @{$_DBAMF->get_qualified_fields},
+		),
+	    ]),
+	])),
+    ]));
     return;
 }
 
@@ -223,24 +229,41 @@ sub _related_links {
     my($related) = $_DBAMF->get_related($model_name, $field);
     my($count) = {};
     map($count->{$_->{model}}++,  @$related); 
-    return DIV_related_links(UL(Join([map(_related_link($qualified_field, $_, $count->{$_->{model}} > 1),
-		     sort({$a->{model} cmp $b->{model}} @$related))])));
+    return DIV_related_links(
+	UL(
+	    Join([
+		map(
+		    _related_link($qualified_field, $_, $count->{$_->{model}} > 1),
+		    sort(
+			{$a->{model} cmp $b->{model}}
+			@$related,
+		    ),
+		),
+	    ]),
+	),
+    );
 }
 
 sub _related_link {
     my($qualified_field, $related, $duplicate) = @_;
-    
-    my($label) =
-	' '
+    my($label)
+	= ' '
 	. $related->{model}
-	. ($duplicate ? ('(' . $related->{field} . ')') : '')
+	. ($duplicate ? "($related->{field})" : '')
 	. ' ';
-    return LI(If(And(['Model.DBAccessModelForm', '->has_fields', $qualified_field],
-		  [['Model.DBAccessModelForm', 
-		      '->relation_exists', $qualified_field, $related->{model}, $related->{field},
-		      ]],
-	      ),
-	      Link($label, [ 		 
+    return LI(
+	If(
+	    [
+		'Model.DBAccessModelForm',
+		'->relation_exists',
+		$qualified_field,
+		$related->{model},
+		$related->{field},
+	    ],
+	    Link(
+		String($label),
+#TODO: should be encapsulated in DBAccessModelForm -- if uri is undef then won't render link
+		[ 	 
 		  sub {
 		      my($source) = @_;
 		      return {
@@ -250,10 +273,12 @@ sub _related_link {
 			      $related->{field} => $source->req('Model.DBAccessModelForm', $qualified_field),
 			  },
 		      };
-		  }]
-	       ),
-	      String($label),
-	  )); 
+		  },
+	        ],
+	    ),
+	    String($label),
+	),
+    ); 
 }
 
 sub _row_enabled {

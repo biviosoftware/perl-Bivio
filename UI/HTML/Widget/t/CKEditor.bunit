@@ -1,59 +1,61 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2011-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-req()->initialize_fully;
-my($form) = Bivio::Biz::Model->new(req(), 'BlogCreateForm');
-my($name) = $form->get_field_name_for_html('body');
-$form->put_on_request;
-req()->put(font_with_style => 1); #suppress <font> tags in rendered output
+my($form);
 Widget({
+    new_params => sub {
+	my(undef, $params) = @_;
+	return [{
+	    form_model => [$form->package_name],
+	    model => $form->simple_package_name,
+	    field => 'body',
+	    rows => 2,
+	    cols => 60,
+	    %{$params->[0]},
+	}];
+    },
     setup_render => sub {
+	my(undef, undef, $params) = @_;
 	req()->set_realm('site');
+	req()->initialize_fully('FORUM_BLOG_CREATE');
+	$form->process;
 	return;
     },
+    view_class_map => 'XHTMLWidget',
+    check_return => sub {
+	my($case) = @_;
+	my($is_public, $public, $private) = $case->get('object')
+	    ->get(qw(use_public_image_folder public_image_folder private_image_folder));
+	return qr{
+	    <script\s+type="text/javascript"\s+src="/b/ckeditor/ckeditor\.js\?mt=\d+"></script>
+	    <textarea\s+rows="2"\s+cols="60"\s+name="\w+"></textarea>
+	    <script\s+type="text/javascript">
+	    \s*CKEDITOR\.replace\("\w+",\s*\{\s*customConfig:\s*"/b/ckeditor/bwiki_config.js"\s*\}\);
+	    \s*CKEDITOR\.config\.filebrowserImageUploadUrl\s*=\s*"/site/upload-file-from-wysiwyg
+	    @{[$is_public ? $public : $private]}
+	    \?@{[$is_public ? "private=$private" : "public=$public"]}";
+	    \s*CKEDITOR\.config\.contentsCss=\['/\*\s*Copyright[^']+'(\s*\+\s*'[^']+'){500,}\];
+	    </script>
+        }xs,
+    },
 });
-my(@widget_params) = (
-   	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
-	model => 'BlogCreateForm',
-	field => 'body',
-	rows => 2,
-	cols => 60,
-	wrap => '',
-	edit_attributes => ' foo="bar"', 
-);
-sub _expected_widget_content {
-    my($path) = @_;
-    return qr{
-		 <script\stype="text/javascript"\ssrc="/b/ckeditor/ckeditor\.js\?mt=\d+"></script>
-		 <textarea\sfoo="bar"\srows="2"\scols="60"\sname="$name"></textarea>
-		 <script\stype="text/javascript">
-		 \s*CKEDITOR\.replace\("$name",\s{\s*customConfig:\s"/b/ckeditor/bwiki_config.js"\s*}\);
-		 \s*CKEDITOR\.config\.filebrowserImageUploadUrl\s=\s"/site/upload-file-from-wysiwyg$path&fc=[^"]*"
-		 \s*CKEDITOR\.config\.contentsCss=\['/\*\sCopyright[^']+'(\s+\+\s'[^']+'){500,}\];
-		 </script>
-	 }x;
-}
+$form = model('BlogCreateForm');
+my($name) = $form->get_field_name_for_html('body');
 [
+    [{}] => '',
     [{
-	@widget_params,
-    }] =>  _expected_widget_content('\?public=/Public'),
-    [{
-	@widget_params,
 	use_public_image_folder => 0,
-    }] => _expected_widget_content('\?public=/Public'),
+    }] => '',
     [{
-	@widget_params,
 	use_public_image_folder => 1,
-    }] => _expected_widget_content('/Public\?private=/'),
+    }] => '',
     [{
-	@widget_params,
 	use_public_image_folder => 0,
 	public_image_folder => '/x',
 	private_image_folder => '/y',
-    }] => _expected_widget_content('/y\?public=/x'),
+    }] => '',
     [{
-	@widget_params,
 	use_public_image_folder => 1,
 	public_image_folder => '/x',
 	private_image_folder => '/y',
-    }] => _expected_widget_content('/x\?private=/y'),
+    }] => '',
 ];
