@@ -7,6 +7,7 @@ use Bivio::Base 'Biz.Model';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
+my($_PI) = b_use('Type.PrimaryId');
 my($_PS) = b_use('SQL.PropertySupport');
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 b_use('Bivio.Cache')->init;
@@ -120,6 +121,7 @@ sub delete_all {
     # partial key) query. Returns the number of models deleted.
     $self = $self->new
 	unless ref($self);
+# Should not be a lot except in test case
     my($rows) =  $self->internal_get_sql_support->delete_all(
 	$self->internal_prepare_query($query = _add_auth_id($self, $query)),
 	$self,
@@ -251,7 +253,9 @@ sub internal_initialize_sql_support {
     die('cannot create anonymous PropertyModels') if $config;
     $config = $proto->internal_initialize;
     $config->{class} = ref($proto) || $proto;
-    return $_PS->new($config);
+    my($support) = $_PS->new($config);
+    _register_with_parents($proto, $support);
+    return $support;
 }
 
 sub internal_load_properties {
@@ -419,7 +423,11 @@ sub new {
 }
 
 sub register_child_model {
-    return shift->internal_get_sql_support_no_assert->register_child_model(@_);
+    my($self, $class) = @_;
+    return
+	if $self->simple_package_name eq $class;
+    return shift->internal_get_sql_support_no_assert
+	->register_child_model(@_);
 }
 
 sub register_handler {
@@ -520,6 +528,20 @@ sub unauth_delete {
 	$self->internal_prepare_query({%$load_args}));
     $self->internal_data_modification(delete => $load_args);
     return $res;
+}
+
+sub unauth_delete_by_realm_id {
+    my($self, $field, $auth_id) = @_;
+    _assert_realm_id_field($self, $field);
+    $self->new->do_iterate(
+	sub {
+	    shift->unauth_delete;
+	    return 1;
+	},
+	'unauth_iterate_start',
+	{$field => $auth_id},
+    );
+    return;
 }
 
 sub unauth_iterate_start {
@@ -717,6 +739,24 @@ sub _add_auth_id {
     return $query;
 }
 
+sub _assert_realm_id_field {
+    my($self, $field) = @_;
+    if (my $aid = $self->internal_get_sql_support->get('auth_id')) {
+	return
+	    if $aid->{name} eq $field;
+    }
+    foreach my $sanity (0 .. 20) {
+	# dies if there's no parent
+	my($pf) = $self->get_field_info($field, 'parent_field');
+	my($pm) = $self->get_field_info($field, 'parent_model');
+	return
+	    if $pm eq 'RealmOwner'
+	    || $pf eq 'realm_id';
+    }
+    $self->die($field, ': not a RealmOwner.realm_id');
+    # DOES NOT RETURN
+}
+
 sub _default_order_by {
     return join(
 	',',
@@ -845,6 +885,16 @@ sub _query_err {
     # Outputs a warning and returns undef.
     $self->get_request->warn($self, ' query error: ', $msg);
     return undef;
+}
+
+sub _register_with_parents {
+    my($proto, $support) = @_;
+    my($class, $parents) = $support->get(qw(class parents));
+    while (my($parent, $key_map) = each(%$parents)) {
+	$proto->get_instance($parent)
+	    ->register_child_model($class, $key_map);
+    }
+    return;
 }
 
 sub _unload {
