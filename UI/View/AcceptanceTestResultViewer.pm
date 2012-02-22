@@ -264,8 +264,8 @@ function display(element, req, res, path) {
    }
    selected = element;
    selected.className = "selected";
-   top.frames['req'].location.href = "/acceptance-test-request" + path + "?q=" + req + "&s=" + res;
-   top.frames['res'].location.href = "/acceptance-test-response" + path + "?q=" + req + "&s=" + res;
+   top.frames['req'].location.href = "/t*acceptance-test-request" + path + "?q=" + req + "&s=" + res;
+   top.frames['res'].location.href = "/t*acceptance-test-response" + path + "?q=" + req + "&s=" + res;
    return 0;
 }
 var selected;
