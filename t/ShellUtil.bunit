@@ -2,14 +2,14 @@
 # $Id$
 Request();
 # Needed for the usage_error (DIE below).  Take out for debugging
-#Bivio::IO::Alert->set_printer(sub {});
+# Bivio::IO::Alert->set_printer(sub {});
 my($myarg_re) = qr/@{[join('.*', map("myarg=$_\n", 0..4))]}/s;
 my($email) = email('shellutil');
 my($_G) = __PACKAGE__->use('Type.Gender');
 config({
     'Bivio::IO::ClassLoader' => {
 	maps => {
-	    ShellUtil => ['Bivio::t::ShellUtil', 'Bivio::Util'],
+	    ShellUtil => ['Bivio::t::ShellUtil', 'Bivio::Util', 'Bivio::Biz::Util'],
 	},
     },
 });
