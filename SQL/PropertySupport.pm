@@ -329,12 +329,11 @@ sub update {
 }
 
 sub _add_parent_model {
-    my($attrs, $field, $parent_model, $parent_field) = @_;
-    my($parents) = $attrs->{parents};
-    $parents->{$parent_model} ||= {};
-    $parent_model .= " $field"
-	if grep(/$field/, values(%{$parents->{$parent_model}}));
-    $parents->{$parent_model}->{$field} = $parent_field;
+    my($attrs, $col, $parent_model, $parent_field) = @_;
+    ($attrs->{parents}->{$parent_model} ||= {})->{$col->{name}}
+	= $parent_field;
+    $col->{parent_model} = $parent_model;
+    $col->{parent_field} = $parent_field;
     return;
 }
 
@@ -361,32 +360,21 @@ sub _init_columns {
 	    constraint => $cfg->[1],
 	};
 	my($type_decl) = $col->{type};
-	$attrs->{columns}->{$n} = $attrs->{column_aliases}->{$n} = $col;
-	$proto->init_type($col, $col->{type});
-	$col->{constraint} = $_C->from_any($col->{constraint});
 	$col->{sql_name} = $col->{name} = $n;
+	$attrs->{columns}->{$n} = $attrs->{column_aliases}->{$n} = $col;
+	$col->{constraint} = $_C->from_any($col->{constraint});
+	$proto->init_type($col, $type_decl);
+	_add_parent_model($attrs, $col, $1, $2)
+	    if $type_decl =~ /^(.*)\.(.*)$/;
 	$col->{is_searchable} = $col->{is_searchable} ? 1 : 0;
 	$col->{sql_pos_param} = $col->{type}->to_sql_value('?');
 	$col->{sql_pos_param_for_insert} ||= $col->{type}->to_sql_value('?');
 	$attrs->{has_blob} = 1
-	    if $_BLOB->is_subclass($col->{type});
+	    if $_BLOB->is_super_of($col->{type});
 	$col->{is_primary_key} = $col->{constraint}->eq_primary_key;
 	push(@{$attrs->{primary_key}}, $col)
 	    if $col->{is_primary_key};
-	_add_parent_model($attrs, $n, $1, $2)
-	    if $type_decl =~ /^(.*)\.(.*)$/;
-
-# 	# related model field type
-# 	if ($cfg->[0] =~ /^(.*)\.(.*)$/) {
-# 	    my($parent_model, $parent_field) = ($1, $2);
-# 	    _add_parent_model($attrs, $n, $parent_model, $parent_field);
-# 	    if ($attrs->{class} eq 'Bivio::Biz::Model::User') {
-# 		__PACKAGE__->init_column($attrs, $cfg->[0], 'other', 1);
-# 		$attrs->{column_aliases}->{$cfg->[0]} = $col;
-# 	    }
-# 	}
     }
-    _register_with_parents($attrs);
     b_die($attrs->{table_name}, ': too many BLOBs')
 	if $attrs->{has_blob} > 1;
     b_die($attrs->{table_name}, ': no primary keys')
@@ -468,19 +456,6 @@ sub _prepare_where {
 		sort(keys(%$query)),
 	    ),
 	);
-}
-
-sub _register_with_parents {
-    my($attrs) = @_;
-    return if grep(
-	!$attrs->{class} || $_ eq $attrs->{class}->simple_package_name,
-	@{$_CFG->{unused_classes}},
-    );
-    while (my($parent, $key_map) = each(%{$attrs->{parents}})) {
-	b_use('Biz.Model')->get_instance($parent =~ /^(\S+)/)
-	    ->register_child_model($attrs->{class}, $key_map);
-    }
-    return;
 }
 
 1;
