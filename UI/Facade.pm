@@ -447,7 +447,7 @@ sub register {
 
     # Assert that this component is kosher.
     b_die($class, ': is not a FacadeComponent')
-	unless b_use('UI.FacadeComponent')->is_subclass($class);
+	unless b_use('UI.FacadeComponent')->is_super_of($class);
     b_die($class, ': already registered')
 	if $_COMPONENTS{$simple_class};
 
@@ -462,7 +462,7 @@ sub setup_request {
     my($arg1) = shift;
     if (ref($arg1)) {
 	b_die($arg1, ': first arg is not a Request')
-	    unless $_R->is_blessed($arg1);
+	    unless $_R->is_blesser_of($arg1);
 	b_die('must not be called statically')
 	    unless ref($proto);
 	return _setup_request($proto, $arg1);
@@ -568,7 +568,7 @@ sub _load {
     my($clone) = @_;
     my($c) = b_use('Facade', $clone);
     b_die($c, ': not a ')
-	unless __PACKAGE__->is_subclass($c);
+	unless __PACKAGE__->is_super_of($c);
     b_die($c, ": did not call this module's new (non-production Facade?")
 	unless ref($_CLASS_MAP->{$clone});
     return $_CLASS_MAP->{$clone};
