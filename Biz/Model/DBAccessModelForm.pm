@@ -6,18 +6,17 @@ use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_E) = b_use('Type.Enum');
-my($_T) = b_use('Bivio.Type');
-my($_DT) = b_use('Type.DateTime');
-my($_CL) = b_use('IO.ClassLoader');
-my($_ES) = b_use('Type.EnumSet');
-my($_PN) = b_use('Type.PerlName');
-my($_PM) = b_use('Biz.PropertyModel');
-my($_SEARCH) = b_use('SQL.ListQuery')->to_char('search');
-my($_PAGE) = b_use('SQL.ListQuery')->to_char('page_number');
-my($_COUNT) = b_use('SQL.ListQuery')->to_char('count');
 my($_A) = b_use('Action.Acknowledgement');
+my($_CL) = b_use('IO.ClassLoader');
+my($_COUNT) = b_use('SQL.ListQuery')->to_char('count');
+my($_DT) = b_use('Type.DateTime');
 my($_E) = b_use('Type.Enum');
+my($_ES) = b_use('Type.EnumSet');
+my($_PAGE) = b_use('SQL.ListQuery')->to_char('page_number');
+my($_PM) = b_use('Biz.PropertyModel');
+my($_PN) = b_use('Type.PerlName');
+my($_SEARCH) = b_use('SQL.ListQuery')->to_char('search');
+my($_T) = b_use('Bivio.Type');
 my($_CANCEL_BUTTONS) = [map(
     $_ . '_button',
     qw(clear_form first prev next last delete),
