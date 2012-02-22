@@ -8,7 +8,7 @@ my($new) = "file$$";
 send_request(
     PUT => "/dav/remote_copy_btest/Files/RemoteCopyBtest/$new", undef, random_string());
 my($cfg) = sub {
-    my($uri) = shift || 'http://petshop.bivio.biz';
+    my($uri) = shift || 'https://petshop.bivio.biz';
     send_request(PUT =>
         '/dav/site/site-admin/Files/Settings/RemoteCopy.csv', undef, <<"EOF");
 Realm,Folders,User,Password,URI
@@ -20,7 +20,7 @@ EOF
     return;
 };
 home_page();
-follow_link(qw(remote_copy_btest files RemoteCopyBtest));
+visit_realm_folder('remote_copy_btest', 'RemoteCopyBtest');
 verify_no_text(qr{file4\b});
 $cfg->('http://no-such-host.bivio.biz');
 follow_link('remote_copy$');
@@ -33,7 +33,7 @@ submit_form(prepare => {});
 verify_text(qr{remote_copy_btest.*delete:.*$new.*copy:.*file4\b.*remote_copy_bunit.*up to date}is);
 verify_no_text(qr{\bto replace\b}i);
 submit_form(Copy => {});
-follow_link(qw(remote_copy_btest files RemoteCopyBtest));
+visit_realm_folder('remote_copy_btest', 'RemoteCopyBtest');
 verify_no_text(qr{file99\b});
 verify_text(qr{file4\b});
 follow_link(qr{^file3$});
