@@ -1,0 +1,28 @@
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    class() => [
+	get_all_fields => sub {
+	    my(undef, $actual) = @_;
+	    my($f) = $actual->[0];
+	    assert_equals(
+		[],
+		[grep(
+		    !Biz_PropertyModel()
+			->is_super_of(model($_)),
+		    sort(keys(%{$actual->[0]})),
+		)],
+	    );
+	    assert_equals(
+		{
+		    related => [{model => 'RealmOwner', field => 'realm_id'}],
+		    type => Type_PrimaryId(),
+		    constraint => 'NOT_NULL',
+		},
+		$actual->[0]->{RealmFile}->{realm_id},
+	    );
+	    return 1;
+	},
+    ],
+];
