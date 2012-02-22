@@ -2,23 +2,14 @@
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
-visit_uri('/btest_read/public-file/file.txt');
-verify_content_type('text/plain');
-verify_text('text/plain');
-test_deviance();
-visit_uri('/btest_read/public-file/private/file.html');
-visit_uri('/btest_read/private/file.html');
-test_conformance();
-home_page();
-login_as('btest_read');
-visit_uri('/btest_read/file/private/file.html');
-verify_content_type('text/html');
-verify_text('text/html');
-visit_uri('/btest_read/file/private/image.gif');
-verify_content_type('image/gif');
+visit_realm_file('fourem', 'my.css');
+verify_content_type('text/css');
+verify_text('_my_');
+visit_realm_file('fourem', 'Settings/RealmSettingList1.csv');
+verify_text('Please sign in');
 home_page();
 login_as('root');
-visit_uri('/fourem/files');
+visit_uri(my $files_root = '/fourem/files');
 
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
     follow_link_in_table('Name', 'Name', qr{realm-file-btest.txt},
@@ -39,7 +30,7 @@ submit_form(OK => {
 follow_link('realm-file-btest.txt');
 verify_text($c);
 
-visit_uri('/fourem/files');
+visit_uri($files_root);
 follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
 fixup_files_uri('ADD_SUBFOLDER');
 submit_form(OK => {
@@ -58,13 +49,13 @@ submit_form(OK => {
 follow_link('Empty Folder');
 follow_link('no-longer-empty.txt');
 verify_text($c2);
-visit_uri('/fourem/files');
+visit_uri($files_root);
 follow_link_in_table('Name', 'Name', 'Empty Folder', 'Actions', 'Modify');
 fixup_files_uri('DELETE');
 submit_form(OK => {
     'Comments:' => 'cleanup for next test run',
 });
-follow_link(qr/^site$/, 'Files', 'Public', 'WikiData');
+visit_realm_folder('site', '/Public/WikiData');
 verify_table('Name', [
     ['Name', 'Size'],
     ['logo.pdf', '9 KB'],
@@ -74,7 +65,7 @@ my($subj) = random_string();
 do_test_backdoor(RealmFile => "-realm demo send_file_via_mail $email $subj /private/image.gif");
 my($msg) = verify_local_mail($email, $subj);
 test_equals(qr{filename="image.gif"}, $msg);
-visit_uri('/fourem/files');
+visit_uri($files_root);
 my($folder) = 'folder ' . random_string();
 
 unless (text_exists($folder)) {
@@ -96,7 +87,7 @@ submit_form('OK');
 verify_no_text($folder);
 follow_link('Archived', $folder, "$f1;1");
 verify_text($c3);
-visit_uri('/fourem/files');
+visit_uri($files_root);
 follow_link('Archived', $folder);
 verify_table('Name', [
     ['Name', 'Actions'],
@@ -122,6 +113,6 @@ follow_link_in_table('Name', 'Name', $folder,
 		     'Actions', 'Delete Permanently');
 verify_text(qr{delete.*/Archived/$folder.*permanently});
 submit_form('Delete Permanently');
-follow_link(qr/^fourem$/, 'Files', $folder);
+visit_realm_folder('fourem', $folder);
 follow_link($f1);
 verify_text($c3);
