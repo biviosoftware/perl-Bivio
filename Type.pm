@@ -286,7 +286,7 @@ sub row_tag_get {
     my($req) = pop;
     my($model_or_id) = @_;
     $_A->bootstrap_die($req, ': last arg must be a Bivio::Agent::Request')
-	unless Bivio::Agent::Request->is_blessed($req);
+	unless Bivio::Agent::Request->is_blesser_of($req);
     my($v) = $proto->from_sql_column(
 	Bivio::Biz::Model->new($req, 'RowTag')
 	    ->get_value($model_or_id, $proto->ROW_TAG_KEY));
@@ -298,7 +298,7 @@ sub row_tag_replace {
     my($req) = pop;
     my($model_or_id, $value) = @_ > 1 ? @_ : (undef, @_);
     $_A->bootstrap_die($req, ': last arg must be a Bivio::Agent::Request')
-	unless Bivio::Agent::Request->is_blessed($req);
+	unless Bivio::Agent::Request->is_blesser_of($req);
     Bivio::Biz::Model->new($req, 'RowTag')->replace_value(
 	$model_or_id,
 	$proto->ROW_TAG_KEY,

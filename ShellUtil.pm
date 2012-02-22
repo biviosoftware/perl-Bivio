@@ -936,7 +936,7 @@ sub send_mail {
 	$body->($msg);
     }
     elsif ($_CL->was_required('Model.RealmFile')
-        && b_use('Model.RealmFile')->is_blessed($body),
+        && b_use('Model.RealmFile')->is_blesser_of($body),
     ) {
 	$msg->set_content_type('multipart/mixed');
 	$msg->attach({

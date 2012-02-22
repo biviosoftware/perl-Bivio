@@ -586,7 +586,7 @@ sub _die {
 
 sub _die_stack {
     my($actual) = @_;
-    my($s) = Bivio::Die->is_blessed($actual) && $actual->unsafe_get('stack');
+    my($s) = Bivio::Die->is_blesser_of($actual) && $actual->unsafe_get('stack');
     return $s ? "\n-- begin stack --\n" . $s . "\n-- end stack --\n" : '';
 }
 
@@ -850,7 +850,7 @@ sub _eval_result {
 
 sub _load_class {
     my($thing) = @_;
-    my($is_hash) = !Bivio::UNIVERSAL->is_blessed($thing);
+    my($is_hash) = !Bivio::UNIVERSAL->is_blesser_of($thing);
     my($c) = $is_hash ? $thing->{object} : $thing->unsafe_get('class_name');
     return 1
 	unless $c;
