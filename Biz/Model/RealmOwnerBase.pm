@@ -5,8 +5,8 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RT) = __PACKAGE__->use('Auth.RealmType');
-my($_R) = __PACKAGE__->use('Auth.Role');
+my($_RT) = b_use('Auth.RealmType');
+my($_R) = b_use('Auth.Role');
 
 sub REALM_TYPE {
     my($self) = @_;
