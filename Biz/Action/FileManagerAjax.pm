@@ -2,13 +2,10 @@
 # $Id$
 package Bivio::Biz::Action::FileManagerAjax;
 use strict;
-
 use Bivio::Base 'Biz.Action';
-use Bivio::DieCode;
-use MIME::Base64;
+use MIME::Base64 ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
 my($_C) = b_use('IO.Config');
 my($_DT) = b_use('Type.DateTime');
 my($_FP) = b_use('Type.FilePath');
@@ -17,9 +14,7 @@ my($_MT) = b_use('MIME.Type');
 my($_RF) = b_use('Model.RealmFile');
 my($_RFTL) = b_use('Model.RealmFileTreeList');
 my($_WT) = b_use('XHTMLWidget.WikiText');
-
 my($_MODES) = qr{^(add|addfolder|delete|download|getfolder|getinfo|rename|wikipreview)$};
-
 my($_PREVIEW_IMAGES) = {
     map(($_ => $_ . '.png'),
 	qw(aac avi bmp chm css def dll doc fla gif htm html ini
@@ -29,29 +24,27 @@ my($_PREVIEW_IMAGES) = {
     ),
     map(($_ . 'x' => $_ . '.png'),
 	qw(doc ppt xls)
-    ),    
+    ),
     map(($_  => 'zip.png'),
 	qw(rar tar iso tgz gz bz2 7z)
-    ), 
+    ),
 };
-
 $_C->register(my $_CFG = {
-    filemanager_root => '/b/simogeofm',
+    filemanager_root => b_use('UI.Facade')->get_local_file_plain_common_uri('simogeofm'),
     max_field_size => 10_000_000,
 });
-
 
 sub execute {
     my($proto, $req) = @_;
     my($query) = lc($req->get('r')->method) eq 'post'
-	? b_use('Bivio::Agent::HTTP::Form')->parse($req, {
+	? b_use('AgentHTTP.Form')->parse($req, {
 	    max_field_size => $_CFG->{max_field_size},
 	})
 	: $req->get('query'); 
     b_die('unknown mode: ' . $query->{mode})
 	unless $query->{mode} =~ $_MODES;
-    my($handle_mode) = '_handle_mode_' . $query->{mode};
-    $proto->$handle_mode($req, $query);
+    my($sub) = \&{'_handle_mode_' . $query->{mode}};
+    $sub->($proto, $req, $query);
     return;
 }
 
@@ -92,7 +85,7 @@ sub _add_file {
 	Path => $folder,
 	Name => $filename,
 	Error => q{},
-	Code => 0,	
+	Code => 0,
     };
 }
 
@@ -112,7 +105,7 @@ sub _handle_mode_add {
 		      $query->{newfile}->{filename},
 		      $query->{newfile}->{content}),
 	  ],	1)
-	if $query->{newfile}->{filename};    
+	if $query->{newfile}->{filename};
     return _set_json_response($req, [{
 	Error => 'Browse for a local file before uploading',
 	Code => -1,
@@ -137,7 +130,7 @@ sub _handle_mode_addfolder {
     	unless $rf->unsafe_load({
     	    path_lc => lc($query->{path}),
     	    is_folder => 1,
-    	});	    
+    	});
     my($parent_folder_id) = $rf->get('realm_file_id');
     my($path) =  $_RF->parse_path($_FP->join($query->{path}, $query->{name}));
     return _set_json_error($req, 'Folder already exists: '. $path)
@@ -155,7 +148,7 @@ sub _handle_mode_addfolder {
 	Parent => $query->{path},
 	Name => $query->{name},
 	Error => q{},
-	Code => 0,	
+	Code => 0,
     });
     return;
 }
@@ -177,12 +170,12 @@ sub _handle_mode_delete {
 		override_is_read_only => 1,
 		override_versioning => 1,
    	      )
-	    : ()),	    
+	    : ()),
     });
     _set_json_response($req, {
 	Path => $query->{path},
 	Error => q{},
-	Code => 0,	
+	Code => 0,
     });
     return;
 }
@@ -246,7 +239,7 @@ sub _handle_mode_rename {
     return _set_json_error($req, 'No such file or folder: '. $old_path)
     	unless $rf->unsafe_load({
     	    path_lc => lc($old_path),
-    	});        
+    	});
     return _set_json_error($req, q{New name contains '/': }. $new_name)
     	if $new_name =~ qr{/};
     my(@parts) = split('/', $rf->get('path'));
@@ -261,14 +254,14 @@ sub _handle_mode_rename {
 	'New Path' => '/' . $new_path,
 	'New Name' => $new_name,
 	Error => q{},
-	Code => 0,	
+	Code => 0,
     });
     return;
 }
 
 sub _handle_mode_wikipreview {
     my($proto, $req, $query) = @_;
-    my($rf) = $_RF->new($req);    
+    my($rf) = $_RF->new($req);
     my($path) = $_RF->parse_path($query->{path}); 
     return _set_json_error($req, 'no such file: ' . $query->{path})
 	unless $rf->load({
@@ -281,7 +274,7 @@ sub _handle_mode_wikipreview {
 	}), ''),
 	Path => $path,
 	Error => q{},
-	Code => 0,	
+	Code => 0,
     });
     return;
 }
@@ -303,7 +296,7 @@ sub _json_for_realm_file {
 	Filename => $_FP->get_tail($path),
 	'File Type' => $is_folder ? 'dir' : $_FP->get_suffix($path),
 	Preview => _preview_image($req, $is_folder, $path),
-	Properties=> {
+	Properties => {
 	    'Date Modified' => $_DT->to_alert($realm_file->get('modified_date_time')), 
 	    Size => $is_folder ? '' : $_RF->get_content_length(undef, '', $values),
 	    User => b_use('Model.RealmOwner')->new($req)->unauth_load_or_die({
@@ -316,8 +309,7 @@ sub _json_for_realm_file {
 	 	? 'wiki'
 	 	: 'text'
 	 	: 'binary',
-	 },	
-	
+	 },
     };
 }
 
@@ -356,5 +348,5 @@ sub _set_json_response {
     $req->get('reply')->set_output(\$output);
     return;
 }
-    
+
 1;
