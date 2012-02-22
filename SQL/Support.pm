@@ -315,7 +315,7 @@ sub init_type {
 	$type_cfg = $field !~ /^[a-z]/ ? $proto->use($type_cfg)
 	    : b_use('Biz.Model')->get_instance($model)->get_field_type($field);
     }
-    $col->{type} = $_U->is_subclass($type_cfg)
+    $col->{type} = $_U->is_super_of($type_cfg)
 	? $type_cfg
 	: $_T->get_instance($type_cfg);
     $col->{sort_order} = $_LQ->get_sort_order_for_type($col->{type});

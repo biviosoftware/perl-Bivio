@@ -35,7 +35,7 @@ sub new_unit {
 	my($object) = $case->get('class_name')->new(
 	    @{$args->{new_params} ? $args->{new_params}->(@_) : $params},
 	);
-	return !Bivio::UI::Widget->is_blessed($object) ? $object
+	return !Bivio::UI::Widget->is_blesser_of($object) ? $object
 	    : $object->initialize_with_parent(undef);
     };
     $args->{compute_return} ||= sub {

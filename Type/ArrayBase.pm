@@ -122,7 +122,7 @@ sub exclude {
     my($self, $subtrahend) = @_;
     my($base) = $self->as_hash;
     $subtrahend = $self->from_literal_or_die($subtrahend, 1)
-	unless $self->is_blessed($subtrahend);
+	unless $self->is_blesser_of($subtrahend);
     $subtrahend = $subtrahend->as_hash;
     return $self->new(
 	$self->map_iterate(sub {
@@ -220,7 +220,7 @@ sub _clean_copy {
     my($proto, $value) = @_;
     return []
 	unless defined($value);
-    if (__PACKAGE__->is_blessed($value)) {
+    if (__PACKAGE__->is_blesser_of($value)) {
 	return $value->as_array
 	    if ref($value) eq ref($proto);
 	$value = $value->as_array;

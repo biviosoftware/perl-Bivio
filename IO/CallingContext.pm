@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::IO::CallingContext;
 use strict;
@@ -17,7 +17,7 @@ sub calling_context_get {
 sub equals {
     my($self, $that) = @_;
     return 0
-	unless $self->is_blessed($that);
+	unless $self->is_blesser_of($that);
     foreach my $f (qw(file line)) {
 	return 0
 	    unless $self->get($f) eq $that->get($f);

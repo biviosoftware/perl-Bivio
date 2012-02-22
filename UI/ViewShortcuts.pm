@@ -145,7 +145,7 @@ sub vs_task_has_uri {
 sub vs_text {
     my($proto, @tag) = @_;
     # Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
-    return $proto->is_blessed($tag[0], 'Bivio::Agent::Request')
+    return $proto->is_blesser_of($tag[0], 'Bivio::Agent::Request')
 	? _fc(\@_, 'Text', '->get_widget_value')
 	: _fc([$proto], 'Text', [sub {shift; @_}, @tag]);
 }
@@ -153,7 +153,7 @@ sub vs_text {
 sub vs_text_as_prose {
     my($proto, @tag) = @_;
     # Prefixes "Prose." onto I<tag> and passes to Prose widget.
-    splice(@tag, $proto->is_blessed($tag[0], 'Bivio::Agent::Request')
+    splice(@tag, $proto->is_blesser_of($tag[0], 'Bivio::Agent::Request')
                ? 1 : 0, 0, 'prose');
     return $proto->vs_call(Prose => $proto->vs_text(@tag));
 }
@@ -166,7 +166,7 @@ sub _fc {
     my($args) = shift;
     my($proto) = shift(@$args);
     return $proto->vs_req('Bivio::UI::Facade', @_, @$args)
-        unless $proto->is_blessed($args->[0], 'Bivio::Agent::Request');
+        unless $proto->is_blesser_of($args->[0], 'Bivio::Agent::Request');
     my($component, $method) = @_;
     my($fc) = shift(@$args)->req('Bivio::UI::Facade', $component);
     $method =~ s/^\-\>// || Bivio::Die->die($method, ': bad method');

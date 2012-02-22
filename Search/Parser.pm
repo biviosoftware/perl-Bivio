@@ -55,7 +55,7 @@ sub xapian_terms_and_postings {
 
 sub _do {
     my($proto, $model) = @_;
-    my($parseable) = $_P->is_blessed($model) ? $model : $_P->new($model);
+    my($parseable) = $_P->is_blesser_of($model) ? $model : $_P->new($model);
     $model = $parseable->get('model');
     my($method) = 'handle_' . $proto->my_caller;
     my($die);

@@ -50,7 +50,7 @@ sub get_request {
 sub new {
     my($proto, $model_or_attr) = @_;
     return $proto->SUPER::new(
-	Bivio::UNIVERSAL->is_blessed($model_or_attr) ? {
+	Bivio::UNIVERSAL->is_blesser_of($model_or_attr) ? {
 	    map(($_ => $model_or_attr->get($_)),
 		@{$model_or_attr->get_keys}),
 	    model => $model_or_attr,

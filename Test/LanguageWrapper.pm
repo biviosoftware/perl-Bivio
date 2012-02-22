@@ -50,7 +50,7 @@ sub AUTOLOAD {
 sub _check_autoload {
     my($self, $func) = @_;
     return 'test_setup() must be first function called in test script'
-	unless $_L->is_blessed($self) || $func eq 'test_setup';
+	unless $_L->is_blesser_of($self) || $func eq 'test_setup';
     return 'language function cannot begin with handle_ or internal_'
 	if $func =~ /^(?:handle|internal)_/;
     return 'test function must be all lower case and begin with letter'

@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::ListQuery;
 use strict;
@@ -457,7 +457,7 @@ sub to_char {
 
 sub unauth_new {
     my($proto, $attrs, $support, $model) = @_;
-    if ($proto->is_blessed($support, 'Bivio::Biz::Model')) {
+    if ($proto->is_blesser_of($support, 'Bivio::Biz::Model')) {
 	$_A->warn_deprecated('switch $model and $support');
 	($support, $model) = ($model, $support);
     }

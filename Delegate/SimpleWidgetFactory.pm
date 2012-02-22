@@ -29,7 +29,7 @@ sub create {
     return $widget || $proto->internal_create_edit(
 	$model, $field_name, $field_type, $attrs
     ) if !$attrs->{wf_want_display}
-	&& $_FM->is_blessed($model);
+	&& $_FM->is_blesser_of($model);
 #TODO: This is broken in the case of $attrs->{value} existing.  Hack for now
     $widget = $proto->internal_create_display(
 	$model, $field_name, $field_type, $attrs,

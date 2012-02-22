@@ -31,7 +31,7 @@ sub s2 {
 	unless @{$bp->{p2}};
     foreach my $p2 (@{$bp->{p2}}) {
 	b_b_die($p2, ': p2 element not Month')
-	    unless Bivio::Type::Month->is_blessed($p2);
+	    unless Bivio::Type::Month->is_blesser_of($p2);
     }
     return ($bp->{p1}, $bp->{p2});
 }
@@ -45,7 +45,7 @@ sub s3 {
 	unless @{$bp->{p1}};
     foreach my $p1 (@{$bp->{p1}}) {
 	b_b_die($p1, ': p1 element not Month')
-	    unless Bivio::Type::Month->is_blessed($p1);
+	    unless Bivio::Type::Month->is_blesser_of($p1);
     }
     return $bp->{p1};
 }

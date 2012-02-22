@@ -371,7 +371,7 @@ sub do_parse_lines {
 	my($line) = shift(@{$state->{lines}});
 	return
 	    unless defined($line);
-	if ($_CC->is_blessed($line)) {
+	if ($_CC->is_blesser_of($line)) {
 	    $state->{calling_context} = $line;
 	    next;
 	}
@@ -471,7 +471,7 @@ sub prepare_html {
 	    unless $arg1->{req};
 	$args->internal_put($arg1);
     }
-    elsif (Bivio::UNIVERSAL->is_blessed($arg1)) {
+    elsif (Bivio::UNIVERSAL->is_blesser_of($arg1)) {
 	$rf = $arg1;
     }
     elsif (ref($arg1) eq 'SCALAR') {

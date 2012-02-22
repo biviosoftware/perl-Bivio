@@ -226,7 +226,7 @@ sub get_unix_mailbox {
 sub initialize {
     my($self, $rfc822, $offset) = @_;
     $rfc822 = $rfc822->get_rfc822
-	if Bivio::UNIVERSAL->is_blessed($rfc822);
+	if Bivio::UNIVERSAL->is_blesser_of($rfc822);
     my($r) = ref($rfc822) ? $rfc822 : \$rfc822;
     # Initializes the object with the reference supplied.
     #

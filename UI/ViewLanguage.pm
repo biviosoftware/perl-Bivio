@@ -100,7 +100,7 @@ sub eval {
     #
     #
     # Compiles I<code> within context of the current view being compiled.
-    return b_use('UI.View')->is_blessed($value) ? _eval_view($value)
+    return b_use('UI.View')->is_blesser_of($value) ? _eval_view($value)
 	: ref($value) eq 'SCALAR' ? _eval_code($value)
 	: _die('eval: invalid argument (not a string_ref or view)');
 }
@@ -320,7 +320,7 @@ sub _initialize {
     my($values) = $view->get_shallow_copy;
     while (my($k, $v) = each(%$values)) {
 	$v->initialize_with_parent(undef)
-	    if __PACKAGE__->is_blessed($v, 'Bivio::UI::Widget');
+	    if __PACKAGE__->is_blesser_of($v, 'Bivio::UI::Widget');
     }
     _die('view_main or view_parent must be specified')
 	unless $view->has_keys('view_main') || $view->has_keys('view_parent');

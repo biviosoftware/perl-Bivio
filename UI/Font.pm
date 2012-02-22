@@ -153,7 +153,7 @@ sub format_html {
     # If set to true, the fonts will be rendered assuming the default font
     # was set in an inline style.
     my($proto, $name, $req) = @_;
-    unless (Bivio::Agent::Request->is_blessed($req)) {
+    unless (Bivio::Agent::Request->is_blesser_of($req)) {
         b_warn('pass $source->req, not $source');
         $req = $req->req;
     }

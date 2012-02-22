@@ -33,7 +33,7 @@ sub initialize {
 	return SPAN_b_radio(Radio({
 	    field => $self->get('field'),
 	    on_value => $k,
-	    label => b_use('UI.Widget')->is_blessed($v)
+	    label => b_use('UI.Widget')->is_blesser_of($v)
 		? _max_width(\$max_width, $v)
 	        : SPAN_b_item(_max_width(\$max_width, $v)),
 	    auto_submit => $self->get_or_default('auto_submit', 0),

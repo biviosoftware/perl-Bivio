@@ -211,7 +211,7 @@ sub _diff_array {
 
 sub _diff_eval {
     my($proto, $left, $right, $name, $method) = @_;
-    return ref($left) eq 'HASH' && Bivio::UNIVERSAL->is_blessed($right)
+    return ref($left) eq 'HASH' && Bivio::UNIVERSAL->is_blesser_of($right)
 	&& $right->can('get_shallow_copy')
 	    ? _diff_similar($proto, $left, $right->get_shallow_copy, $name, $method)
 	: ref($left) eq 'CODE' && (return

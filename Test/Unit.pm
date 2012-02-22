@@ -419,7 +419,7 @@ sub builtin_var {
 	my($c) = (caller(1))[3];
 	return _var_get_or_put($proto, $name, $_[0])
 	    if $c eq 'Bivio::IO::Ref::_diff_eval';
-	if ($proto->is_blessed($_[0], 'Bivio::Test::Case')) {
+	if ($proto->is_blesser_of($_[0], 'Bivio::Test::Case')) {
 	    foreach my $i (0 .. 10) {
 		$c = (caller($i))[3];
 		return _var_get($proto, $name)

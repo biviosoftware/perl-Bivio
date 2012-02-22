@@ -137,7 +137,7 @@ sub initialize {
         action => [['->get_request'], '->format_uri'], $source);
     my($a) = $self->get('action');
     $self->put(action => [['->get_request'], '->format_stateless_uri', $a])
-	if $self->is_blessed($a, 'Bivio::Agent::TaskId');
+	if $self->is_blesser_of($a, 'Bivio::Agent::TaskId');
     my($p) = '<form method="'
 	. lc($self->ancestral_get('form_method', 'post'))
         . '"'

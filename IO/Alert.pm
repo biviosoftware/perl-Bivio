@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Alert;
 use strict;
@@ -274,7 +274,7 @@ sub info {
 
 sub is_calling_context {
     my(undef, $value) = @_;
-    return $_CC->is_blessed($value);
+    return $_CC->is_blesser_of($value);
 }
 
 sub print_literally {
@@ -524,7 +524,7 @@ sub _format_string_with_type {
 
 sub _has_calling_context {
     my($msg) = @_;
-    return $_CC->is_blessed($msg->[0]);
+    return $_CC->is_blesser_of($msg->[0]);
 }
 
 sub _log_apache {

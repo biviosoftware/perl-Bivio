@@ -26,7 +26,7 @@ sub to_widget_value {
     $error ||= $form->get_field_error($field);
     my($detail) = $form->get_field_error_detail($field);
     $detail = String($detail, {hard_newlines => 1})
-	if $detail && !$_W->is_blessed($detail);
+	if $detail && !$_W->is_blesser_of($detail);
     my($v) = $self->unsafe_get_value(
 	$form->simple_package_name,
 	$field,

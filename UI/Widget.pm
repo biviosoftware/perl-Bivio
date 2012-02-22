@@ -215,7 +215,7 @@ sub initialize_attr {
 sub initialize_value {
     my($self, $attr_name, $value, $source) = @_;
     return $value
-	unless __PACKAGE__->is_blessed($value);
+	unless __PACKAGE__->is_blesser_of($value);
     return $value->initialize_with_parent($self, $source);
 }
 
@@ -391,7 +391,7 @@ sub unsafe_render_value {
     $value = $proto->unsafe_resolve_widget_value($value, $source);
     return 0
 	unless defined($value);
-    if (__PACKAGE__->is_blessed($value)) {
+    if (__PACKAGE__->is_blesser_of($value)) {
 	$value->initialize_and_render($source, $buffer);
     }
 # removed until all director widgets are fixed up

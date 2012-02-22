@@ -202,7 +202,7 @@ sub render {
     $$buffer .= vs_html_attrs_render_one(
 	$self, $source, 'body_class');
     $self->get('body')->unsafe_render_attr('html_tag_attrs', $source, $buffer)
-	if Bivio::UI::Widget->is_blessed($self->get('body'))
+	if Bivio::UI::Widget->is_blesser_of($self->get('body'))
 	&& $self->get('body')->can('unsafe_render_attr');
     $$buffer .= ">\n$$body\n</body></html>\n";
     $_HANDLERS->do_filo(handle_page_render_end => [$source, $buffer]);

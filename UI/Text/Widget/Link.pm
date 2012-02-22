@@ -33,7 +33,7 @@ sub _initialize_value {
     my($self) = @_;
     my($v) = $self->initialize_attr('value');
     return [['->req'], '->format_stateless_uri', $_TI->from_any($v)]
-	if $_TI->is_blessed($v) || $_TI->is_valid_name($v);
+	if $_TI->is_blesser_of($v) || $_TI->is_valid_name($v);
     return $v;
 }
 

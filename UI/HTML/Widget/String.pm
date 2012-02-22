@@ -108,7 +108,7 @@ sub initialize {
     if ($fields->{is_literal} = !ref($fields->{value})) {
         # do nothing, formatter may be dynamic
     }
-    elsif ($fields->{is_widget} = $_W->is_blessed($fields->{value})) {
+    elsif ($fields->{is_widget} = $_W->is_blesser_of($fields->{value})) {
 	$fields->{value}->initialize_with_parent($self);
     }
     b_warn('is_widget and has formatter')
@@ -147,7 +147,7 @@ sub render {
 	$v = $self->unsafe_resolve_widget_value(
 	    $fields->{undef_value}, $source,
 	) unless defined($v);
-	if (ref($v) && $_W->is_blessed($v)) {
+	if (ref($v) && $_W->is_blesser_of($v)) {
 	    $self->initialize_value($v);
 	    $v->initialize_with_parent($self);
 	    $v->render($source, \$b);
@@ -189,7 +189,7 @@ sub _format {
     }
     if (ref($value)) {
 	b_die('got ref where scalar expected: ', $value)
-	    unless Bivio::UNIVERSAL->is_blessed($value)
+	    unless Bivio::UNIVERSAL->is_blesser_of($value)
 	    && $value->can('as_html');
 	return $value->as_html;
     }

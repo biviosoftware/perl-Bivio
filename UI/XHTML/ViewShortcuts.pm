@@ -559,14 +559,14 @@ sub vs_simple_form {
 	    Grid([
 		map({
 		    my($x);
-		    if ($_FF->is_blessed($_)) {
+		    if ($_FF->is_blesser_of($_)) {
 			$_->put_unless_exists(cell_class => 'field'),
 			$x = [
 			    Simple('', {cell_class => 'label label_ok'}),
 			    $_,
 			];
 		    }
-		    elsif ($_W->is_blessed($_)) {
+		    elsif ($_W->is_blesser_of($_)) {
 			$x = [$_->put_unless_exists(cell_colspan => 2)];
 		    }
 		    elsif ($_ =~ s/^-//) {
@@ -577,7 +577,7 @@ sub vs_simple_form {
 		    }
 		    elsif ($_ =~ s/^\Q$_SUBMIT_CHAR//) {
 			$_ = 'ok_button add_rows cancel_button'
-			    if !$_ && $_ELFM->is_blessed($m);
+			    if !$_ && $_ELFM->is_blesser_of($m);
 			$x = [StandardSubmit({
 			    cell_colspan => 2,
 			    $_ ? (buttons => $_) : (),
@@ -754,7 +754,7 @@ sub vs_xhtml_title {
 sub _has_submit {
     my($proto, $rows) = @_;
     return grep(
-	ref($_) ? Bivio::UNIVERSAL->is_blessed($_)
+	ref($_) ? Bivio::UNIVERSAL->is_blesser_of($_)
 	    ? $_->simple_package_name eq 'StandardSubmit'
 	    : ref($_) eq 'ARRAY' && _has_submit($proto, $_)
 	    : $_ =~ /^\*/, @$rows) ? 1 : 0;

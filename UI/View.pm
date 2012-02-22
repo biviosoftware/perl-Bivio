@@ -335,7 +335,7 @@ sub _clear_children {
 	    ref($v) eq 'ARRAY' ? @$v : ref($v) eq 'HASH' ? values(%$v) : $v,
 	) {
 	    _clear_children($o, $seen)
-		if $object->is_blessed($o, 'Bivio::Collection::Attributes');
+		if $object->is_blesser_of($o, 'Bivio::Collection::Attributes');
 	}
     }
     return;

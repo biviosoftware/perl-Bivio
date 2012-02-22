@@ -312,14 +312,14 @@ sub from_literal {
     $proto->internal_from_literal_warning
         unless wantarray;
     return $value
-	if $proto->is_blessed($value);
+	if $proto->is_blesser_of($value);
     return ()
 	unless defined($value) && $value ne '';
     my($info);
     if ($value =~ /^-?\d+$/) {
 	$info = _get_info($proto, $value, 1);
     }
-    elsif ($proto->is_blessed($value, $proto)) {
+    elsif ($proto->is_blesser_of($value, $proto)) {
 	return $value;
     }
     else {

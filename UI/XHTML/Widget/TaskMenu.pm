@@ -68,7 +68,7 @@ sub initialize {
 	task_map => [map({
 	    my(undef, $cfg) = $self->name_parameters(
 		$_PARAMS, ref($_) eq 'ARRAY' ? $_
-		    : [$_W->is_blessed($_) ? {xlink => $_}
+		    : [$_W->is_blesser_of($_) ? {xlink => $_}
 		    : $_],
 	    );
 	    if ($cfg->{task_id}) {
@@ -97,7 +97,7 @@ sub initialize {
 	    $self->initialize_value('sort_label', $cfg->{sort_label});
 	    # Note that 'realm' is initialized, b/c URI has reference, not deep copy
             my($selected_cond) = ['->ureq', _selected_attr($self, $cfg)];
- 	    my($w) = $_W->is_blessed($cfg->{xlink})
+ 	    my($w) = $_W->is_blesser_of($cfg->{xlink})
 		? $cfg->{xlink}
 		: $cfg->{xlink} ? XLink($cfg->{xlink})
 		: $cfg->{task_id} ? Link(
@@ -110,7 +110,7 @@ sub initialize {
 	        ) : $self->die(
 		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
 	    $w = DIV_task_menu_wrapper($w)
-		if $cfg->{xlink} && !$_CB->is_blessed($w);
+		if $cfg->{xlink} && !$_CB->is_blesser_of($w);
 	    my($class) = $w->unsafe_get('class');
 	    $w->put(
 		_task_menu_cfg => $cfg,

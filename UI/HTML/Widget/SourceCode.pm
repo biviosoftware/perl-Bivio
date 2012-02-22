@@ -68,7 +68,7 @@ sub render_source_link {
 	$name,
 	URI({
 	    task_id => 'SOURCE',
-	    path_info => Bivio::UNIVERSAL->is_subclass($source)
+	    path_info => Bivio::UNIVERSAL->is_super_of($source)
 	       ? $source->as_classloader_map_name : $source,
 	}),
     )->initialize_and_render($req, $buffer);

@@ -29,7 +29,7 @@ sub initialize {
 		if $_TI->is_valid_name($c);
 	}
 	$self->put(control => [['->req'], '->can_user_execute_task', $c])
-	    if $_TI->is_blessed($c);
+	    if $_TI->is_blesser_of($c);
     }
     $self->map_invoke(
 	unsafe_initialize_attr => [qw(control control_off_value)],
@@ -42,7 +42,7 @@ sub is_control_on {
     my($c) = $self->unsafe_get('control');
     return !defined($c)
 	|| ($c = $self->unsafe_resolve_widget_value($c, $source))
-	&& (!$self->is_blessed($c, 'Bivio::UI::Widget')
+	&& (!$self->is_blesser_of($c, 'Bivio::UI::Widget')
         || $self->render_simple_value($c, $source))
 	? 1 : 0;
 }

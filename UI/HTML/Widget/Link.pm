@@ -121,7 +121,7 @@ sub _render_href {
     # Returns a string.  May format it using format_uri or format_stateless_uri
     my($href) = $self->unsafe_resolve_widget_value(
         $self->get('href'), $source);
-    if (Bivio::UI::Widget->is_blessed($href)) {
+    if (Bivio::UI::Widget->is_blesser_of($href)) {
 	my($v) = $href;
 	$href = undef;
 	$self->unsafe_render_value('href', $v, $source, \$href);

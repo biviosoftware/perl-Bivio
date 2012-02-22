@@ -64,12 +64,12 @@ sub _init_label {
 	    $self->get('field'));
     if ($_V5) {
 	return SPAN_checkbox_label(
-	    Bivio::UI::Widget->is_blessed($l)
+	    Bivio::UI::Widget->is_blesser_of($l)
 	        ? $l
 		: Prose($l),
 	);
     }
-    return Bivio::UI::Widget->is_blessed($l)
+    return Bivio::UI::Widget->is_blesser_of($l)
 	? $l
 	: Join(["\n", String($l, 'checkbox')]);
 }
