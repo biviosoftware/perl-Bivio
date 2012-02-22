@@ -4,6 +4,7 @@
 use strict;
 use Bivio::Test;
 use Bivio::UNIVERSAL;
+use Bivio::DieCode;
 
 package Bivio::t::UNIVERSAL::t1;
 $Bivio::t::UNIVERSAL::t1::VERSION = 3.154;
@@ -61,7 +62,7 @@ Bivio::Test->unit([
 	    [sub {join('', @_)}, [qw(a 1 x b 2 y)]] => [[qw(a10 xb1 2y2)]],
 	    [sub {join('', @_)}, [qw(a 1 x b 2 y)], 3] => [[qw(a1x0 b2y1)]],
 	],
-	is_blessed => [
+	is_blesser_of => [
 	    [undef] => 0,
 	    [''] => 0,
 	    [qr{any}] => 0,
@@ -70,16 +71,27 @@ Bivio::Test->unit([
 	    [Bivio::UNIVERSAL->new] => 1,
 	    [Bivio::UNIVERSAL->new, 'Bivio::Type'] => 0,
 	    [Bivio::UNIVERSAL->new, 'Bivio::UNIVERSAL'] => 1,
+	    [Bivio::DieCode->DIE, 'Bivio::Type'] => 1,
 	],
-	is_subclass => [
+	is_super_of => [
 	    [undef] => 0,
 	    [''] => 0,
 	    [qr{any}] => 0,
 	    [Bivio::UNIVERSAL->new] => 1,
-	    [Bivio::UNIVERSAL->new, 'Bivio::Type'] => 1,
-	]
+	    ['Bivio::Type'] => 1,
+	],
      ],
     'Bivio::t::UNIVERSAL::t1' => [
+	is_super_of => [
+	    ['Bivio::t::UNIVERSAL::t2'] => 1,
+	    [Bivio::UNIVERSAL->new] => 0,
+	    ['Bivio::Type'] => 0,
+	],
+	is_blesser_of => [
+	    ['Bivio::t::UNIVERSAL::t2'] => 0,
+	    [Bivio::UNIVERSAL->new] => 0,
+	    [Bivio::DieCode->DIE] => 0,
+	],
 	inheritance_ancestors => [
 	    [] => [[qw(Bivio::UNIVERSAL)]],
 	],
