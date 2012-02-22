@@ -234,7 +234,7 @@ sub new {
 sub new_static {
     my($proto, $facade) = @_;
     $proto->die($facade, 'missing or invalid facade')
-	unless b_use('UI.Facade')->is_subclass($facade);
+	unless b_use('UI.Facade')->is_super_of($facade);
     my($self) = shift->SUPER::new;
     $self->[$_IDI] = {
 	facade => $facade,
