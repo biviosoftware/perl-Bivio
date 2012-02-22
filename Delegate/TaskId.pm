@@ -819,7 +819,7 @@ sub info_file {
 	    want_folder_fall_thru=1
 	    write_task=FORUM_FILE_CHANGE
             robot_task=ROBOT_FILE_LIST
-	)],	
+	)],
 	[qw(
 	    FORUM_FILE_MANAGER_AJAX
 	    251
