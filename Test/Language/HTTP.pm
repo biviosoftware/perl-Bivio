@@ -209,7 +209,7 @@ sub do_test_backdoor {
     my($self, $op, $args) = @_;
     # Executes ShellUtil or FormModel based on $args.
     $self->visit_uri(
-	'/test-backdoor?'
+	'/t*backdoor?'
 	. b_use('AgentHTTP.Query')->format(
 	    ref($args) eq 'HASH'
 		? {%$args, form_model => $op}
@@ -229,7 +229,7 @@ sub do_test_trace {
     $_T->set_named_filters($named_filter)
         if $named_filter;
     $_T->set_filters(@$prev);
-    $self->visit_uri("/test-trace/$named_filter");
+    $self->visit_uri("/t*trace/$named_filter");
     $self->go_back;
     return;
 }
@@ -1101,6 +1101,22 @@ sub verify_zip {
     return;
 }
 
+
+sub visit_realm_file {
+    my($self, $realm, $path) = @_;
+    return $self->visit_uri("/$realm/file/$path");
+}
+
+sub visit_realm_folder {
+    my($self, $realm, $path) = @_;
+    $self->visit_uri("/$realm/files");
+    foreach my $folder (split(qr{/+}, $path)) {
+	next
+	    unless length($folder);
+	$self->follow_link(qr{^\Q$folder\E$}i);
+    }
+    return;
+}
 
 sub visit_uri {
     my($self, $uri) = @_;
