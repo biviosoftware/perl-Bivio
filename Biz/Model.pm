@@ -1,9 +1,8 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::IO::Trace;
 
 # C<Bivio::Biz::Model> is more interface than implementation, it provides
 # a common set of methods for L<Bivio::Biz::PropertyModel>,
@@ -11,8 +10,8 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_IDI) = __PACKAGE__->instance_data_index;
 my($_LOADED_ALL_PROPERTY_MODELS);
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_S) = b_use('SQL.Support');
 my($_SS) = b_use('SQL.Statement');
 my($_CL) = b_use('IO.ClassLoader');
@@ -90,6 +89,18 @@ sub do_iterate {
     }
     $self->iterate_end;
     return $self;
+}
+
+sub do_iterate_model_subclasses {
+    my($proto, $op) = @_;
+    foreach my $m (@{$_CL->map_require_all('Model')}) {
+	next
+	    if !$proto->is_super_of($m)
+	    || _is_base_class($m);
+	last
+	    unless $op->($m, $m->simple_package_name);
+    }
+    return;
 }
 
 sub field_decl {
@@ -306,6 +317,10 @@ sub get_request {
 }
 
 sub handle_call_autoload {
+    my($proto) = @_;
+    return $proto
+	if _is_base_class($proto)
+	|| $proto->can('internal_initialize') == \&Bivio::Biz::Model::internal_initialize;
     return _new_with_query(@_);
 }
 
@@ -615,15 +630,16 @@ sub _as_string_fields {
 
 sub _assert_class_name {
     my($class) = @_;
-    # Ensures that the class conforms to the naming conventions.
-    Bivio::Die->die($class, ': is a base class; it cannot be initialized'
-	    .' as a model')
-		if $class =~ /Base$/;
-    my($super) = 'Bivio::Biz::'
-	    .($class =~ /(ListForm|Form|List)$/ ? $1 : 'Property')
-	    .'Model';
-    Bivio::Die->die($class, ': must be a ', $super)
-	    unless UNIVERSAL::isa($class, $super);
+    b_die(
+	$class,
+	': is a base class; it cannot be initialized as a model',
+    ) if _is_base_class($class);
+    my($super) = b_use(
+	'Biz',
+	(_class_suffix($class) || 'Property') . 'Model',
+    );
+    b_die($class, ': must be a ', $super)
+	unless $super->is_super_of($class);
     return;
 }
 
@@ -636,13 +652,18 @@ sub _class {
     return ref($class) || $class;
 }
 
+sub _class_suffix {
+    my($class) = @_;
+    return $class =~ /(ListForm|Form|List)$/ ? $1 : '';
+}
+
 sub _get_class_info {
     my($class) = @_;
-    no strict qw(refs);
-#TODO: Name should be something like Bivio::Biz::Model::_class_info, not _CLASS_INFO
-    _initialize_class_info($class)
-	unless defined(*{$class . '::'}{HASH}->{_CLASS_INFO});
-    return *{$class . '::'}{HASH}->{_CLASS_INFO};
+    no strict 'refs';
+    my($var) = \${*{$class . '::'}}{HASH}->{_CLASS_INFO};
+    _initialize_class($class, $var)
+        unless $$var;
+    return $$var;
 }
 
 sub _get_model_query {
@@ -680,58 +701,52 @@ sub _get_model_query {
     return ($query, $mi);
 }
 
-sub _initialize_class_info {
-    my($class, $config) = @_;
+sub _initialize_class {
+    my($class, $var) = @_;
+    _load_all_property_models();
+    return
+	if $$var;
     # Initializes from class or from config.  config is supplied for
     # anonymous models (currently, only ListModels).
     # This may load the models and we'll try to get the class_info
     # again after the models are loaded.
-    _load_all_property_models();
-
-    # Have here for safety to avoid infinite recursion if called badly.
-    {
-	no strict qw(refs);
-        return if !$config && defined *{$class . '::'}{HASH}->{_CLASS_INFO};
-    }
-
-    _assert_class_name($class) unless $config;
-
-    my($stmt) = $_SS->new();
-    my($sql_support) = $class->internal_initialize_sql_support($stmt, $config);
-    my($ci) = {
-	sql_support => $sql_support,
-        statement => $stmt,
-	as_string_fields => _as_string_fields($sql_support),
-	# Is an array, because faster than a hash_ref for our purposes
-	properties => [map {
-		($_, undef);
-	    } @{$sql_support->get('column_names')},
-	],
-    };
-    return $ci if $config;
-    {
-	no strict qw(refs);
-        *{$class . '::'}{HASH}->{_CLASS_INFO} = $ci;
-    }
+    _assert_class_name($class);
+    my($ci) = _initialize_class_info($class);
+    $$var = $ci;
     $ci->{singleton} = $class->new;
     delete($ci->{singleton}->[$_IDI]->{request});
     $ci->{singleton}->[$_IDI]->{is_singleton} = 1;
     return;
 }
 
+sub _initialize_class_info {
+    my($class, $config) = @_;
+    my($stmt) = $_SS->new;
+    my($sql_support) = $class->internal_initialize_sql_support($stmt, $config);
+    return {
+	sql_support => $sql_support,
+        statement => $stmt,
+	as_string_fields => _as_string_fields($sql_support),
+	# Is an array, because faster than a hash_ref for our purposes
+	properties => [map(($_, undef), @{$sql_support->get('column_names')})],
+    };
+}
+
+sub _is_base_class {
+    my($class) = @_;
+    return $class =~ qr{Base(@{[_class_suffix($class)]})?$} ? 1 : 0;
+}
+
 sub _load_all_property_models {
-    return if $_LOADED_ALL_PROPERTY_MODELS;
+    return
+	if $_LOADED_ALL_PROPERTY_MODELS;
     $_LOADED_ALL_PROPERTY_MODELS = 1;
-    my($models) = $_CL->map_require_all(
-	'Model',
+    b_use('Biz.PropertyModel')->do_iterate_model_subclasses(
 	sub {
-	    my($class, $file) = @_;
-	    # We don't load classes which end in List, Form, or Base.
-	    return $class =~ /(Form|List|Base)$/ ? 0 : 1;
-	});
-    foreach my $class (@$models) {
-	$class->get_instance;
-    }
+	    shift->get_instance;
+	    return 1;
+	},
+    );
     return;
 }
 
