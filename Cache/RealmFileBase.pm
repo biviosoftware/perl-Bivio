@@ -12,9 +12,9 @@ sub handle_property_model_modification {
 	unless $model->simple_package_name eq 'RealmFile';
     return
 	unless _path_matches_pessimistically($proto, $query, $model);
-    $model->req->push_txn_resource(
-	$proto->new(
-	    {realm_id => $query->{realm_id} || $model->get('realm_id')}));
+    return b_warn($op, ' ', $query, ': missing_realm_id')
+	unless my $rid = $query->{realm_id} || $model->get('realm_id');
+    $model->req->push_txn_resource($proto->new({realm_id => $rid}));
     return;
 }
 
