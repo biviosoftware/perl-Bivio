@@ -2,7 +2,8 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-my($uri) = get_uri() . '/dbaccess';
+visit_uri('/t*dbaccess');
+my($uri) = get_uri();
 foreach my $model (
     qw(Address
        Bulletin
@@ -103,7 +104,7 @@ follow_link('category id:', 'description:', 'name:');
 submit_form('Create', {
     'category id:' => 'AMPHIBIANS',
     'description:' => 'Frogs, newts etc.',
-     'name:' => 'Amphibians',    
+     'name:' => 'Amphibians',
 });
 verify_text('Created');
 submit_form('Search');
@@ -113,6 +114,3 @@ submit_form('Delete');
 verify_no_text('Amphibians');
 submit_form('Search');
 verify_text('Displaying row 1 of 5');
-
-
-
