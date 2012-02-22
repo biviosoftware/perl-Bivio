@@ -517,8 +517,6 @@ sub _init_from_uri {
     # Creates the from_uri map.
     my($fields) = $self->[$_IDI];
     my(%from_uri);
-#TODO: Remove
-#    my(%path_info_uri);
     foreach my $group (@$groups) {
 	next unless $group->{is_valid} && $group->{aliases};
 	my($rti) = $group->{realm_type}->as_int;
