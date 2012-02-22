@@ -863,18 +863,18 @@ sub _cfg_dav {
 sub _cfg_test {
     return {
 	Task => [
-	    [TEST_BACKDOOR => ['test-backdoor', 'test_backdoor']],
-	    [TEST_TRACE => 'test-trace/*'],
-	    [DEV_RESTART => 'pub/restart-server'],
-	    [DEV_ACCEPTANCE_TEST_LIST => ['pub/atl', 'pub/acceptance-test-list']],
-	    [DEV_ACCEPTANCE_TEST_DETAIL => 'acceptance-test-detail/*'],
-	    [DEV_ACCEPTANCE_TEST_HEADER => 'acceptance-test-header/*'],
-	    [DEV_ACCEPTANCE_TEST_TRANSACTION_LIST => 'acceptance-test-transaction-list/*'],
-	    [DEV_ACCEPTANCE_TEST_REQUEST => 'acceptance-test-request/*'],
-	    [DEV_ACCEPTANCE_TEST_RESPONSE => 'acceptance-test-response/*'],
-	    [DEV_DBACCESS_MODEL_LIST => 'pub/dbaccess'],
-	    [DEV_DBACCESS_MODEL_FORM => 'dbaccess-model-form/*'],
-	    [DEV_DBACCESS_ROW_LIST => 'dbaccess-row-list/*'],
+	    [TEST_BACKDOOR => 't*backdoor'],
+	    [TEST_TRACE => 't*trace/*'],
+	    [DEV_RESTART => 't*restart-server'],
+	    [DEV_ACCEPTANCE_TEST_LIST => 't*atl'],
+	    [DEV_ACCEPTANCE_TEST_DETAIL => 't*acceptance-test-detail/*'],
+	    [DEV_ACCEPTANCE_TEST_HEADER => 't*acceptance-test-header/*'],
+	    [DEV_ACCEPTANCE_TEST_TRANSACTION_LIST => 't*acceptance-test-transaction-list/*'],
+	    [DEV_ACCEPTANCE_TEST_REQUEST => 't*acceptance-test-request/*'],
+	    [DEV_ACCEPTANCE_TEST_RESPONSE => 't*acceptance-test-response/*'],
+	    [DEV_DBACCESS_MODEL_LIST => 't*dbaccess'],
+	    [DEV_DBACCESS_MODEL_FORM => 't*dbaccess-model-form/*'],
+	    [DEV_DBACCESS_ROW_LIST => 't*dbaccess-row-list/*'],
 	],
 	Text => [
 	    [AcceptanceTestList => [
@@ -890,7 +890,7 @@ sub _cfg_test {
 		command => 'Command',
 	    ]],
 	    [DBAccessModelList => [
-		name => 'Name',		
+		name => 'Name',
 	    ]],
 	    [DBAccessModelForm => [
 		clear_form_button => 'Clear Form',
@@ -904,7 +904,7 @@ sub _cfg_test {
 		update_button => 'Update',
 	    ]],
 	    [DBAccessRowList => [
-		index => 'Index',		
+		index => 'Index',
 	    ]],
 	],
     };
