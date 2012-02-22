@@ -1,9 +1,9 @@
-# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::UserLoginForm;
 use strict;
 use Bivio::Base 'Model.UserLoginBaseForm';
-use Bivio::IO::Trace;
+b_use('IO.Trace');
 
 # C<Bivio::Biz::Model::UserLoginForm> is used to login which changes the
 # cookie.  Modules which "login" users should call <tt>execute</tt>
@@ -60,15 +60,6 @@ sub execute_ok {
     };
 }
 
-sub get_basic_authorization_realm {
-    my($self) = shift;
-    my($ro) = $self->unsafe_get('realm_owner');
-    return $ro && $ro->require_otp
-	# Extra space helps out on Mac, which puts a '.' right after realm
-	? 'Challenge: ' . $self->req('Model.OTP')->get_challenge . ' '
-	: '*';
-}
-
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
@@ -89,13 +80,6 @@ sub handle_cookie_in {
     _su_logout($proto->new($req))
 	if $req->is_substitute_user && ! $req->get('auth_user');
     return;
-}
-
-sub internal_validate_login_value {
-    my($self, $value) = @_;
-    my($owner) = $self->new_other('RealmOwner');
-    my($err) = $owner->validate_login($value);
-    return $err ? (undef, $err) : ($owner, undef);
 }
 
 sub substitute_user {
@@ -132,40 +116,6 @@ sub unsafe_get_cookie_user_id {
     my($proto, $req) = @_;
     # Returns user_id in cookie independent of login state.
     return _get($req->unsafe_get('cookie'), $proto->USER_FIELD);
-}
-
-sub validate {
-    my($self, $login, $password) = @_;
-    # Checks the form property values.  Puts errors on the fields
-    # if there are any.
-    if (@_ == 3) {
-	$self->internal_put_field(login => $login);
-	$self->internal_put_field('RealmOwner.password' => $password);
-    }
-    _validate($self);
-    # don't send password back to client in error case
-    if ($self->in_error) {
-	$self->internal_put_field('RealmOwner.password' => undef);
-	$self->internal_clear_literal('RealmOwner.password');
-    }
-    return;
-}
-
-sub validate_login {
-    my($self, $model_or_login, $field) = @_;
-    $field ||= 'login';
-    my($model) = ref($model_or_login) ? $model_or_login : $self;
-    $model->internal_put_field($field => $model_or_login)
-	if defined($model_or_login) && !ref($model_or_login);
-    $model->internal_put_field(validate_called => 1);
-    my($login) = $model->get($field);
-    return undef
-	unless defined($login);
-    my($realm, $err) = $self->internal_validate_login_value($login);
-    $model->internal_put_error($field => $err)
-	if $err;
-    $model->internal_put_field(realm_owner => $realm);
-    return $realm;
 }
 
 sub _assert_login {
@@ -308,28 +258,6 @@ sub _su_logout {
 sub _super_user_field {
     # Returns SUPER_USER_FIELD
     return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
-}
-
-sub _validate {
-    my($self) = @_;
-    my($owner) = $self->validate_login;
-    return
-	if !$owner || ($self->in_error && !$owner->require_otp);
-    unless ($owner->get_field_type('password')->is_equal(
-	$owner->get('password'),
-	$self->get('RealmOwner.password'),
-    )) {
-	return $self->internal_put_error(
-	    'RealmOwner.password', 'PASSWORD_MISMATCH',
-	) unless $owner->require_otp;
-	return $self->internal_put_error(
-	    'RealmOwner.password' => 'OTP_PASSWORD_MISMATCH'
-	) unless $self->new_other('OTP')->unauth_load_or_die({
-	    user_id => $owner->get('realm_id')
-	})->verify($self->get('RealmOwner.password'));
-    }
-    $self->internal_put_field(validate_called => 1);
-    return;
 }
 
 sub _validate_cookie_password {
