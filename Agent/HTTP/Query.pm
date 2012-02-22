@@ -37,7 +37,7 @@ sub format {
 	    # be a corrupt query, but shouldn't blow up.
 	    . $_HTML->escape_query(
 		ref($v)
-		? $_U->is_blessed($v) && $v->can('as_query')
+		? $_U->is_blesser_of($v) && $v->can('as_query')
 		? $v->as_query
 		: $req->isa('Bivio::Test::Request')
 		? "$v"

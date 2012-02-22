@@ -92,7 +92,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'lock_t',
 	columns => {
-            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
 	},
 	auth_id => 'realm_id',
     };
@@ -146,7 +146,7 @@ sub _is_equal {
 sub _map_txn_resources {
     my($self, $op) = @_;
     return map(
-	$self->is_blessed($_) ? $op->($_) : (),
+	$self->is_blesser_of($_) ? $op->($_) : (),
 	@{$self->req('txn_resources')},
     );
 }

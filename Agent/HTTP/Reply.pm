@@ -53,7 +53,7 @@ sub die_to_http_code {
     return $_AC->OK
 	unless defined($die);
     $die = $die->get('code')
-	if $_D->is_blessed($die);
+	if $_D->is_blesser_of($die);
     return $_AC->OK
 	unless defined($die);
     %_DIE_TO_HTTP_CODE = (
@@ -72,7 +72,7 @@ sub die_to_http_code {
 	if defined($_DIE_TO_HTTP_CODE{$die});
     # The rest get mapped to SERVER_ERROR
     b_warn($die, ": unknown $_DC")
-        unless $_DC->is_blessed($die);
+        unless $_DC->is_blesser_of($die);
     return _error($_AC->SERVER_ERROR, $r);
 }
 

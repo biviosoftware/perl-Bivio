@@ -6,7 +6,7 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_TST) = __PACKAGE__->use('Type.TupleSlotType');
+my($_TST) = b_use('Type.TupleSlotType');
 
 sub EMPTY_KEY_VALUE {
     return -1;
@@ -47,7 +47,7 @@ sub load_all_from_slot_type {
 sub _list {
     my($source) = @_;
     my($c, $tc);
-    if ($_TST->is_blessed($source)) {
+    if ($_TST->is_blesser_of($source)) {
 	($c, $tc) = map($source->get($_), qw(choices class));
     }
     else {

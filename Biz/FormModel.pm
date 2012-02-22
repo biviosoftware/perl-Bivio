@@ -1030,7 +1030,7 @@ sub _apply_type_error {
     _trace($attrs) if $_TRACE;
     my($err) = $attrs->{type_error};
     b_die($err, ': die type_error not a ', $_TE->package_name)
-	unless $_TE->is_blessed($err);
+	unless $_TE->is_blesser_of($err);
     my($table, $columns) = @{$attrs}{'table','columns'};
     $die->throw_die() unless defined($table);
     my($sql_support) = $self->internal_get_sql_support();

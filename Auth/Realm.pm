@@ -199,9 +199,9 @@ sub id_from_any {
     # model with realm_id, instance, or self.
     my($realm_or_id) = @_ ? @_ : $proto;
     return ref($realm_or_id)
-	? __PACKAGE__->is_blessed($realm_or_id)
+	? __PACKAGE__->is_blesser_of($realm_or_id)
         ? $realm_or_id->get('id')
-	: $_M->is_blessed($realm_or_id)
+	: $_M->is_blesser_of($realm_or_id)
 	? $realm_or_id->get('realm_id')
         : b_die($realm_or_id, ': unhandled reference type')
 	: $_PI->is_specified($realm_or_id) || $proto->is_default_id($realm_or_id)
@@ -236,7 +236,7 @@ sub new {
         unless $owner;
     if (ref($owner)) {
 	return $proto->new(lc($owner->get_name), $req)
-	    if $_RT->is_blessed($owner);
+	    if $_RT->is_blesser_of($owner);
     }
     else {
 #TODO: Deprecate default names to be special, e.g. =user
@@ -249,7 +249,7 @@ sub new {
 	    ->get_cache_value($owner, $req);
     }
     return $owner->clone
-	if __PACKAGE__->is_blessed($owner);
+	if __PACKAGE__->is_blesser_of($owner);
     return _new($proto, $owner, $req);
 }
 
@@ -289,7 +289,7 @@ sub _new {
 	return $self;
     }
     b_die($owner, ': owner not a Model::RealmOwner')
-        unless $_RO->is_blessed($owner);
+        unless $_RO->is_blesser_of($owner);
 
 #TODO: Change this so everyone knows realm_id?
     my($id) = $owner->get('realm_id');

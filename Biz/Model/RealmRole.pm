@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::RealmRole;
 use strict;
@@ -24,7 +24,7 @@ sub add_permissions {
 sub get_permission_map {
     my($self, $realm) = @_;
     $realm = Bivio::Auth::Realm->new($realm, $self->get_request)
-	unless $self->is_blessed($realm, 'Bivio::Auth::Realm');
+	unless $self->is_blesser_of($realm, 'Bivio::Auth::Realm');
     return {
 	%{$self->EMPTY_PERMISSION_MAP},
 	$realm->is_default ? ()

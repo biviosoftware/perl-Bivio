@@ -886,7 +886,7 @@ sub unauth_load_page {
 
 sub unauth_parse_query {
     my($self, $query) = @_;
-    return $_LQ->is_blessed($query) ? $query
+    return $_LQ->is_blesser_of($query) ? $query
 	: $_LQ->new($query || {}, $self->internal_get_sql_support, $self);
 }
 

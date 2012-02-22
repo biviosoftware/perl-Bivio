@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RowTag;
 use strict;
@@ -109,7 +109,7 @@ sub _do {
 sub _primary_id {
     my($self, $model_or_id) = @_;
     return $model_or_id->get_primary_id
-	if $_M->is_blessed($model_or_id);
+	if $_M->is_blesser_of($model_or_id);
     return $self->req('auth_id')
 	unless defined($model_or_id);
     return $model_or_id

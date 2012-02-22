@@ -55,7 +55,7 @@ sub execute {
 	if ($n eq 'SERVER_REDIRECT_TASK') {
 	    my($x) = $die->unsafe_get('attrs');
 	    $x &&= $x->{task_id};
-	    $x &&= $proto->is_blessed($x, 'Bivio::Agent::TaskId')
+	    $x &&= $proto->is_blesser_of($x, 'Bivio::Agent::TaskId')
 		&& $x->get_name;
 	    $n = $x
 		if ($x ||= '') =~ s/^DEFAULT_ERROR_REDIRECT_//;

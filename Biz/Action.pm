@@ -40,7 +40,7 @@ sub get_request {
 sub new {
     my(undef, $req) = @_;
     return shift->SUPER::new->put_on_request(@_)
-	if b_use('Agent.Request')->is_blessed($req);
+	if b_use('Agent.Request')->is_blesser_of($req);
     return shift->SUPER::new(@_);
 }
 

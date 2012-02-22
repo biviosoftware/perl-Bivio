@@ -139,7 +139,7 @@ sub parse_item_result {
 	$params = {task_id => $params};
 	$override = $_IMPLICIT_OVERRIDE;
     }
-    unless ($params->{uri} || $_TI->is_blessed($params->{task_id})) {
+    unless ($params->{uri} || $_TI->is_blesser_of($params->{task_id})) {
 	if (($params->{task_id} || '') =~ $task->TASK_ATTR_RE) {
 	    $params = {
 		%{$task->dep_get_attr(delete($params->{task_id}))},
