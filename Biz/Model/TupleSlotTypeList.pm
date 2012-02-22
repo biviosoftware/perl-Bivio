@@ -2,10 +2,9 @@
 # $Id$
 package Bivio::Biz::Model::TupleSlotTypeList;
 use strict;
-use base 'Bivio::Biz::Model::AscendingAuthList';
+use Bivio::Base 'Model.AscendingAuthBaseList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TST) = __PACKAGE__->get_instance('TupleSlotType');
 
 sub AUTH_ID_FIELD {
     return 'TupleSlotType.realm_id';
@@ -23,7 +22,7 @@ sub internal_initialize {
         order_by => [qw(
 	    TupleSlotType.label
 	)],
-	other => $_TST->LIST_FIELDS,
+	other => $self->get_instance('TupleSlotType')->LIST_FIELDS,
     });
 }
 
