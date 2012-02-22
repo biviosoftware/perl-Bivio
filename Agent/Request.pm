@@ -262,20 +262,29 @@ sub as_string {
     # returned: task, user, referer, uri, query, and form.
     my($r) = $self->unsafe_get('r');
     my($t) = $self->unsafe_get('task_id');
-    return 'Request['.$_A->format_args(
-	    'task=', $t ? $t->get_name : undef,
-	    ' user=', $self->unsafe_get_nested(qw(auth_user name))
-		|| $r && $r->connection->user,
-	    ' realm=',
-	        ($self->unsafe_get_nested(qw(auth_realm owner_name))
-		|| ($self->unsafe_get('auth_realm')
-                    ? $self->get_nested(qw(auth_realm type))->get_name
-                    : undef)),
-	    ' referer=', $self->unsafe_get('referer'),
-	    ' uri=', $self->unsafe_get('uri'),
-	    ' query=', $self->unsafe_get('query'),
-	    ' form=', _form_for_warning($self),
-	   ).']';
+    return $_A->format_args(
+	'Request[',
+	'task=',
+	$t ? $t->get_name : undef,
+	' user=',
+	$self->unsafe_get_nested(qw(auth_user name))
+	    || $r && $r->connection->user,
+	' realm=',
+	($self->unsafe_get_nested(qw(auth_realm owner_name))
+	     || ($self->unsafe_get('auth_realm')
+	     ? $self->get_nested(qw(auth_realm type))->get_name
+	     : undef),
+        ),
+	' referer=',
+	$self->unsafe_get('referer'),
+	' uri=',
+	$self->unsafe_get('uri'),
+	' query=',
+	$self->unsafe_get('query'),
+	' form=',
+	_form_for_warning($self),
+	']',
+    );
 }
 
 sub assert_http_method {
@@ -306,7 +315,7 @@ sub can_secure {
 sub can_user_execute_task {
     my($self, $task, $realm) = @_;
     $task = $_T->get_by_id($_TI->from_any($task))
-	unless $_T->is_blessed($task);
+	unless $_T->is_blesser_of($task);
     my($tid) = $task->get('id');
     return 0
 	if $_V7
@@ -1430,7 +1439,7 @@ sub _http {
 
 sub _load_realm {
     my($self, $new_realm) = @_;
-    return b_use('Auth.Realm')->is_blessed($new_realm) ? $new_realm
+    return b_use('Auth.Realm')->is_blesser_of($new_realm) ? $new_realm
 	: defined($new_realm)
 	? b_use('Auth.Realm')->new($new_realm, $self)
 	: b_use('Auth.Realm')->get_general
