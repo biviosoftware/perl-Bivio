@@ -100,7 +100,7 @@ sub unsafe_load_error_list {
 sub validate_error {
     my($self, $entity, $message, $wiki_state) = @_;
     my($req) = $wiki_state && $wiki_state->{req} || $self->req;
-    if ($_D->is_blessed($message)
+    if ($_D->is_blesser_of($message)
         and my $prev_err = $message->get('attrs')->{$_PKG}
     ) {
 	$message = $prev_err->{message};
@@ -109,7 +109,7 @@ sub validate_error {
     $message = $_A->format_args(@$message)
 	if ref($message) eq 'ARRAY';
     $message = $_FCT->facade_text_for_object(
-	$_D->is_blessed($message) ? $message->get('code') : $message, $req,
+	$_D->is_blesser_of($message) ? $message->get('code') : $message, $req,
     ) if ref($message);
     if ($message =~ s/(\w+(?:\:\:|\-\>)\w+.*)//) {
 	b_warn($message, ': removed Perl junk: ', $1, '; ', $req);

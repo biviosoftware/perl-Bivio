@@ -58,6 +58,7 @@ sub local_list {
 	    },
 	    {path_info => $fp},
 	);
+	return 1;
     });
     return $res;
 }
