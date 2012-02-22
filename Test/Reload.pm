@@ -19,7 +19,7 @@ my($_DDL);
 my($_DONE) = 1;
 $_R->if_apache_version(2 => sub {
     use attributes ();
-	Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
+    Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
     $_DONE = b_use('Ext.ApacheConstants')->OK;
     return;
 });
