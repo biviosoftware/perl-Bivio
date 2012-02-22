@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::Lock;
 use strict;
