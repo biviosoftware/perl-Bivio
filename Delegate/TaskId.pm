@@ -1827,6 +1827,16 @@ sub _component_info {
 sub _merge_modifiers {
     my($self, $cfg) = @_;
     my($map) = {};
+    my($validate) = sub {
+	my($elem) = @_;
+	my($missing) = [grep(
+	    !defined($elem->{$_}),
+	    qw(name int realm_type permission_set items),
+	)];
+	b_die($missing, ': missing elements in ', $elem)
+	    if @$missing && !$map->{$elem->{name}};
+	return %$elem;
+    };
     foreach my $c (reverse(@$cfg)) {
 	if (ref($c) eq 'HASH') {
 	    if ($c->{permissions}) {
@@ -1834,8 +1844,8 @@ sub _merge_modifiers {
 		$c->{permission_set} = delete($c->{permissions});
 	    }
 	    $map->{$c->{name}} = {
-		%{$map->{$c->{name}} || b_die($c->{name}, ': not found')},
-		%$c,
+		%{$map->{$c->{name}} || {}},
+		$validate->($c),
 	    };
 	}
 	elsif (ref($c) eq 'ARRAY') {
