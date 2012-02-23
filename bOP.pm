@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.53  2012/02/03 22:33:58  moeller
+  * Bivio::Biz::ListModel
+    now calls internal_verify_do_iterate_result()
+  * Bivio::Biz::Model::AuthUserRealmList
+    explicit 0|1 return from do_rows() call
+  * Bivio::Biz::Model::DBAccessModelForm
+    do_iterate() now expects a 0|1 value
+  * Bivio::Biz::Model
+    added internal_verify_do_iterate_result() to ensure
+    do_iterate() and do_rows() handler returns a valid boolean
+  * Bivio::Test::Language::HTTP
+    verify_zip: allow specification of text that must be absent from zip member c
+  ontent.
+    dynamically include IO::Uncompress::Unzip
+  * Bivio::UI::XHTML::Widget::MobileToggler
+    don't render link unless control is set
+
   Revision 11.52  2012/02/02 21:10:06  schellj
   * Bivio::Test::Language::HTTP
     'verify_zip' recursively unzips the current response and compares against
