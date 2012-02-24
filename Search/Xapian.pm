@@ -78,7 +78,7 @@ sub execute {
     my($self) = $req->get(ref($proto) || $proto);
     $proto->acquire_lock($req);
     unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
-    $ENV{XAPIAN_MAX_CHANGESETS} = $_CFG->{max_changesets};
+    local($ENV{XAPIAN_MAX_CHANGESETS}) = $_CFG->{max_changesets};
     $req->perf_time_op(__PACKAGE__, sub {
         my($db) = Search::Xapian::WritableDatabase->new(
 	    $_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
@@ -103,24 +103,9 @@ sub get_stemmer {
 }
 
 sub get_values_for_primary_id {
-    my($proto, $primary_id, $model, $attr) = @_;
-    my($req) = $model->req;
-    $proto->acquire_lock($req);
-    my($res);
-    my($die) = Bivio::Die->catch_quietly(sub {
-        $res = $req->perf_time_op(__PACKAGE__, sub {
-	    if (my $query_result = _find($primary_id)) {
-		if (my $res =
-		    _query_result($proto, $query_result, $req, $attr || {})) {
-		    return $res;
-		}
-	    }
-	});
-    });
-    b_warn($die->get('attrs')->{message}) if $die;
-    return ($die || ! $res)
-	? shift->SUPER::get_values_for_primary_id(@_)
-	: $res;
+    my($proto) = shift;
+    return $proto->unsafe_get_values_for_primary_id(@_)
+	|| $proto->SUPER::get_values_for_primary_id(@_);
 }
 
 sub handle_prepare_commit {
@@ -237,6 +222,29 @@ sub query {
     return $res;
 }
 
+sub unsafe_get_values_for_primary_id {
+    my($proto, $primary_id, $model, $attr) = @_;
+    my($req) = $model->req;
+    $proto->acquire_lock($req);
+    my($res);
+    my($die) = Bivio::Die->catch_quietly(sub {
+        $res = $req->perf_time_op(
+	    __PACKAGE__,
+	    sub {
+		return undef
+		    unless my $query_result = _find($primary_id);
+		return _query_result($proto, $query_result, $req, $attr || {})
+		    || undef;
+	    },
+	);
+	return;
+    });
+    return $res
+	unless $die;
+    b_warn($die->get('attrs')->{message});
+    return undef;
+}
+
 sub _delete {
     my($self, $primary_term, $req) = @_;
     return
@@ -247,7 +255,7 @@ sub _delete {
 
 sub _find {
     my($primary_id) = @_;
-    return (
+	return (
 	Search::Xapian::Database->new($_CFG->{db_path})
 	    ->enquire(Search::Xapian::Query->new(_primary_term($primary_id)))
 	    ->matches(0, 1),
