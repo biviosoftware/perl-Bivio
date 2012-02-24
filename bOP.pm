@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,203 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.54  2012/02/23 18:32:35  nagler
+  * Bivio::Agent::HTTP::Query
+    is_blesser_of deprecates is_blessed
+  * Bivio::Agent::HTTP::Reply
+    is_blesser_of deprecates is_blessed
+  * Bivio::Agent::Job::Dispatcher
+    is_blesser_of deprecates is_blessed
+  * Bivio::Agent::Request
+    as_string was not printing all in one line (format_args was putting in
+    newline before "]")
+    is_blesser_of deprecates is_blessed
+  * Bivio::Agent::TaskEvent
+    is_blesser_of deprecates is_blessed
+  * Bivio::Auth::Realm
+    is_blesser_of deprecates is_blessed
+  * Bivio::Biz::Action::DAV
+    is_blesser_of deprecates is_blessed
+  * Bivio::Biz::Action::FileManagerAjax
+    fmt
+  * Bivio::Biz::Action::RealmMailBase
+    is_blesser_of deprecates is_blessed
+  * Bivio::Biz::Action::RemoteCopy
+    do_iterate handler must return 1
+  * Bivio::Biz::Action::WikiValidator
+    do_iterate handler must return 1
+  * Bivio::Biz::Action
+    is_blesser_of deprecates is_blessed
+  * Bivio::Biz::FormModel
+    is_blesser_of deprecates is_blessed
+  * Bivio::Biz::ListModel
+    is_blesser_of deprecates is_blessed
+  * Bivio::Biz::Model::AscendingAuthBaseList
+    NEW
+  * Bivio::Biz::Model::AscendingAuthList
+    removed
+  * Bivio::Biz::Model::DBAccessModelForm
+    refactored to be in a cleaner style
+    removed dup var
+  * Bivio::Biz::Model::DBAccessModelList
+    refactored to be in a cleaner style
+  * Bivio::Biz::Model::Lock
+    is_blesser_of deprecates is_blessed
+    copy
+    fpc: chain RealmOwner.realm_id
+  * Bivio::Biz::Model::RealmOwnerBase
+    b_use
+  * Bivio::Biz::Model::RealmRole
+    is_blesser_of deprecates is_blessed
+  * Bivio::Biz::Model::RowTag
+    is_blesser_of deprecates is_blessed
+  * Bivio/Biz/Model/t/AscendingAuthBaseList
+    NEW
+  * Bivio::Biz::Model::TupleDefList
+    AscendingAuthBaseList replaces AscendingAuthList
+  * Bivio::Biz::Model::TupleSlotChoiceList
+    is_blesser_of deprecates is_blessed
+  * Bivio::Biz::Model::TupleSlotTypeList
+    b_use
+  * Bivio::Biz::Model::UserLoginBaseForm
+    push up get_basic_authorization_realm, internal_validate_login_value,
+    and validate_login from UserLoginForm so can be used by other apps
+  * Bivio::Biz::Model::UserLoginForm
+    push up get_basic_authorization_realm, internal_validate_login_value,
+    and validate_login to UserLoginBaseForm so can be used by other apps
+  * Bivio::Biz::Model
+    moved internal_verify_do_iterate_result to Bivio.UNIVERSAL
+    Added do_iterate_model_subclasses
+    _load_all_property_models uses do_iterate_model_subclasses
+    better encapsulation of symtab manipulations
+  * Bivio::Biz::PropertyModel
+    added unauth_delete_by_realm_id
+    register_child_model does the work of registration, not PropertySupport
+  * Bivio::Cache::RealmFileBase
+    put warning if missing realm_id in handle_property_model_modification
+  * Bivio::Delegate::SimpleWidgetFactory
+    is_blesser_of deprecates is_blessed
+  * Bivio::Delegate::TaskId
+    fmt
+    _merge_modifiers needs to allow for the case where the hash holds an
+    entire task entry, and there is no "parent" to modify
+  * Bivio::IO::Alert
+    is_blesser_of deprecates is_blessed
+  * Bivio::IO::CallingContext
+    is_blesser_of deprecates is_blessed
+  * Bivio::IO::Ref
+    is_blesser_of deprecates is_blessed
+  * Bivio::Mail::Incoming
+    is_blesser_of deprecates is_blessed
+  * Bivio::MIME::JSON
+    Allow values for the 'literals' (true, false, null) to be specified on 'fromText'. This allows disambiguation of e.g. null from a string containing the word 'null'.
+  * Bivio::PetShop::BConf
+    enable use_file_manager
+  * Bivio::PetShop::Util::SQL
+    needs to be https://petshop.bivio.biz
+  * Bivio::Search::Parseable
+    is_blesser_of deprecates is_blessed
+  * Bivio::Search::Parser
+    is_blesser_of deprecates is_blessed
+  * Bivio::ShellUtil
+    is_blessed => is_blesser_of
+  * Bivio::SQL::ListQuery
+    is_blesser_of deprecates is_blessed
+  * Bivio::SQL::PropertySupport
+    register_child_model moved to PropertyModel
+    Multiple files sharing the same model work with cascade_delete (the
+    "parent_model $field" thing didn't work right
+  * Bivio::SQL::Support
+    is_blesser_of deprecates is_blessed
+  * Bivio::t::Parameters::T1
+    is_blesser_of deprecates is_blessed
+  * Bivio::Test::Language::HTTP
+    rework verify_zip() to use IO.Zip
+    added visit_realm_file/folder so tests can be independent of FileManager
+    configuration.
+    Changed test uris to be /t*<command>
+  * Bivio::Test::LanguageWrapper
+    is_blesser_of deprecates is_blessed
+  * Bivio::Test::Reload
+    fpt
+  * Bivio::Test::Unit
+    is_blesser_of deprecates is_blessed
+  * Bivio::Test::Util
+    b_use
+  * Bivio::Test::Widget
+    is_blesser_of deprecates is_blessed
+  * Bivio::Test
+    is_blessed => is_blesser_of
+  * Bivio::Type::ArrayBase
+    do_iterate checks result with internal_verify_do_iterate_result
+    is_blesser_of deprecates is_blessed
+  * Bivio::Type::DateTime
+    do_iterate checks result with internal_verify_do_iterate_result
+  * Bivio::Type::Enum
+    is_blesser_of deprecates is_blessed
+  * Bivio::Type
+    is_blessed => is_blesser_of
+  * Bivio::UI::FacadeBase
+    normalize all test/dev tasks to use /t*<command> namespace to avoid
+    conflicts with other uris
+  * Bivio::UI::FacadeComponent
+    is_super_of deprecates is_subclass
+  * Bivio::UI::Facade
+    is_blesser_of deprecates is_blessed
+    is_super_of deprecates is_subclass
+  * Bivio::UI::Font
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::FormError
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::HTML::Format
+    is_super_of deprecates is_subclass
+  * Bivio::UI::HTML::Widget::Checkbox
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::HTML::Widget::CKEditor
+    refactored to be in a cleaner style
+  * Bivio::UI::HTML::Widget::Form
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::HTML::Widget::Link
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::HTML::Widget::Page
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::HTML::Widget::RadioGrid
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::HTML::Widget::SourceCode
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::HTML::Widget::String
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::HTML
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::Task
+    cruft
+  * Bivio::UI::Text::Widget::Link
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::View::AcceptanceTestResultViewer
+    test uri changed
+  * Bivio::UI::View::DBAccess
+    refactored to be in a cleaner style
+  * Bivio::UI::ViewLanguage
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::View
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::ViewShortcuts
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::Widget::ControlBase
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::Widget
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::XHTML::ViewShortcuts
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    is_blesser_of deprecates is_blessed
+  * Bivio::UI::XHTML::Widget::WikiText
+    is_blesser_of deprecates is_blessed
+  * Bivio::UNIVERSAL
+    moved internal_verify_do_iterate_result from Biz.Model, and added caller=
+    is_super_of deprecates is_subclass
+    is_blesser_of deprecates is_blessed
+
   Revision 11.53  2012/02/03 22:33:58  moeller
   * Bivio::Biz::ListModel
     now calls internal_verify_do_iterate_result()
