@@ -17,7 +17,7 @@ sub internal_initialize {
 	    affiliated_realm_id => ['RealmOwner.realm_id', 'NONE'],
 	    vote => ['MotionVote', 'NOT_NULL'],
 	    creation_date_time => ['DateTime', 'NOT_NULL'],
-	    comment => ['Text', 'NONE'],
+	    comment => ['Text64K', 'NONE'],
 	},
     });
 }
