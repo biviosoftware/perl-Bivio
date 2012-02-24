@@ -47,8 +47,7 @@ sub audit_realm {
 #We'll verify after deleting all docids
 #b_info(Search::Xapian::Database->new($_CFG->{db_path})->get_doccount);
 #b_info(Search::Xapian::Database->new($_CFG->{db_path})->get_lastdocid);
-#b_info(Bivio::Die->eval(sub {Search::Xapian::Database->new($_CFG->{db_path})->get_document(9999
-9)}));
+#b_info(Bivio::Die->eval(sub {Search::Xapian::Database->new($_CFG->{db_path})->get_document(99999)}));
 #enquire->get_mset->begin->inc->get_document (++)? then ->end
     return _do_realm(
 	$self,
