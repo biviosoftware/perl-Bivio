@@ -92,7 +92,7 @@ sub internal_initialize {
 	version => 1,
 	table_name => 'lock_t',
 	columns => {
-            realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+            realm_id => ['PrimaryId', 'PRIMARY_KEY'],
 	},
 	auth_id => 'realm_id',
     };
