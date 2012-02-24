@@ -604,8 +604,13 @@ sub poll_page {
     return;
 }
 
+#TODO: Would be good to share with Test.Unit
 sub random_integer {
     return shift->use('Biz.Random')->integer(@_);
+}
+
+sub random_alpha_string {
+    return shift->random_string(undef, ['a' .. 'z']);
 }
 
 sub random_string {
@@ -771,6 +776,20 @@ sub submit_from_table {
 
     _trace("row = ", $row) if $_TRACE;
     $self->submit_form($submit_name . '_' . $row->{_row_index} => $form_values);
+    return;
+}
+
+sub submit_realm_file_plain_text {
+    my($self, $realm, $folder, $file, $text) = @_;
+    $self->visit_realm_folder($realm, $folder);
+    $self->follow_link_in_table(
+	'Name', 'Name', $folder ? File::Basename::basename($folder) : '/', 'Actions', 'Modify');
+    $self->visit_realm_file_change_mode('TEXT_FILE');
+    $self->submit_form(ok => {
+	'Name:' => $file,
+	_anon => $text,
+	'Comments:' => 'n/a',
+    });
     return;
 }
 
@@ -1107,10 +1126,23 @@ sub visit_realm_file {
     return $self->visit_uri("/$realm/file/$path");
 }
 
+sub visit_realm_file_change_mode {
+    my($self, $mode) = @_;
+    return $self->visit_uri(
+	join('',
+	     $self->get_uri(),
+	     '&',
+	     b_use('Model.FileChangeForm')->QUERY_KEY,
+	     '=',
+	     $mode,
+	),
+    );
+}
+
 sub visit_realm_folder {
     my($self, $realm, $path) = @_;
     $self->visit_uri("/$realm/files");
-    foreach my $folder (split(qr{/+}, $path)) {
+    foreach my $folder (split(qr{/+}, defined($path) ? $path : '')) {
 	next
 	    unless length($folder);
 	$self->follow_link(qr{^\Q$folder\E$}i);
