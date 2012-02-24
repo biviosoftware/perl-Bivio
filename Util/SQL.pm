@@ -70,6 +70,8 @@ my($_BUNDLE) = [qw(
     motion_question_64k
     failover_work_queue
     tuple_boolean_type
+    display_name
+    text_size
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -880,6 +882,14 @@ sub internal_upgrade_db_data_browse {
     return;
 }
 
+sub internal_upgrade_db_display_name {
+    my($self) = @_;
+    _expand_text_size($self, [
+	qw(realm_owner_t.display_name realm_mail_t.from_display_name),
+    ]);
+    return;
+}
+
 sub internal_upgrade_db_drop_member_if_administrator {
     my($self) = @_;
     my($realms) = {};
@@ -1518,11 +1528,7 @@ EOF
 
 sub internal_upgrade_db_motion_comment_64k {
     my($self) = @_;
-    $self->run(<<'EOF');
-ALTER TABLE motion_comment_t
-    ALTER COLUMN comment TYPE TEXT64K
-/
-EOF
+    _expand_text_size($self, ['motion_comment_t.comment']);
     return;
 }
 
@@ -1620,11 +1626,7 @@ EOF
 
 sub internal_upgrade_db_motion_question_64k {
     my($self) = @_;
-    $self->run(<<'EOF');
-ALTER TABLE motion_t
-    ALTER COLUMN question TYPE TEXT64K
-/
-EOF
+    _expand_text_size($self, ['motion_t.question']);
     return;
 }
 
@@ -1951,6 +1953,19 @@ CREATE SEQUENCE task_log_s
   CACHE 1 INCREMENT BY 100000
 /
 EOF
+    return;
+}
+
+sub internal_upgrade_db_text_size {
+    my($self) = @_;
+    _expand_text_size($self, [
+	qw(job_lock_t.message motion_vote_t.comment),
+	@{b_use('Type.TupleSlotNum')->map_list(
+	    sub {
+		my($f) = @_;
+		return ("tuple_t.$f", "tuple_tag_t.$f");
+	    })},
+    ]);
     return;
 }
 
@@ -2593,6 +2608,19 @@ sub _exists {
 	'SELECT COUNT(*) ' . shift(@_),
 	@_,
     )->[0] ? 1 : 0;
+}
+
+sub _expand_text_size {
+    my($self, $names) = @_;
+
+    foreach my $name (@$names) {
+	my($table, $col) = split(/\./, $name);
+	$self->run(<<"EOF");
+ALTER TABLE $table ALTER COLUMN $col TYPE TEXT64K
+/
+EOF
+    }
+    return;
 }
 
 sub _init_postgis {
