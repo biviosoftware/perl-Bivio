@@ -1,0 +1,31 @@
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+options({
+    method_is_autoloaded => 1,
+    comparator => 'nested_contains',
+});
+req()->set_realm('fourem');
+my($wiki) = model(RealmFile => {path_lc => '/wiki/index'});
+my($logo) = model(RealmFile => {path_lc => '/public/logo.png'});
+[
+    class() => [
+	get_values_for_primary_id => [
+	    [$wiki->get('realm_file_id'), model('RealmFile'), {}] => [{
+		author => 'Btest_read User',
+		title => 'Sweet Home',
+	    }],
+	],
+	unsafe_get_values_for_primary_id => [
+	    [$wiki->get('realm_file_id'), model('RealmFile'), {}] => [{
+		title => 'Sweet Home',
+	    }],
+	],
+	get_values_for_primary_id => [
+	    [realm_id('demo'), model('RealmFile'), {}] => MODEL_NOT_FOUND(),
+	],
+	unsafe_get_values_for_primary_id => [
+	    [realm_id('demo'), model('RealmFile'), {}] => [undef]
+	],
+    ],
+];
