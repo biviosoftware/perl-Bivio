@@ -83,7 +83,7 @@ sub internal_initialize {
             hostname => ['Line', 'NOT_NULL'],
             pid => ['Integer', 'NOT_NULL'],
             percent_complete => ['Amount', 'NONE'],
-            message => ['Text', 'NONE'],
+            message => ['Text64K', 'NONE'],
             die_code => [b_use('Bivio.DieCode'), 'NONE'],
 	},
 	auth_id => 'realm_id',
