@@ -9,19 +9,20 @@ visit_realm_file('fourem', 'Settings/RealmSettingList1.csv');
 verify_text('Please sign in');
 home_page();
 login_as('root');
-visit_uri(my $files_root = '/fourem/files');
+visit_realm_folder('fourem')
+my($files_root) = get_uri();
 
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
     follow_link_in_table('Name', 'Name', qr{realm-file-btest.txt},
 	'Actions', 'Modify');
-    fixup_files_uri('DELETE');
+    visit_realm_file_change_mode('DELETE');
     submit_form(OK => {
 	'Comments:' => 'deleted by acceptance test',
     });
 }
 
 follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
-fixup_files_uri('TEXT_FILE');
+visit_realm_file_change_mode('TEXT_FILE');
 submit_form(OK => {
     'Name:' => 'realm-file-btest.txt',
     _anon => my $c = random_string(),
@@ -32,7 +33,7 @@ verify_text($c);
 
 visit_uri($files_root);
 follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
-fixup_files_uri('ADD_SUBFOLDER');
+visit_realm_file_change_mode('ADD_SUBFOLDER');
 submit_form(OK => {
     'Name:' => 'Empty Folder',
 });
@@ -40,7 +41,7 @@ test_deviance();
 follow_link('Empty Folder');
 test_conformance();
 follow_link_in_table('Name', 'Name', 'Empty Folder', 'Actions', 'Modify');
-fixup_files_uri('TEXT_FILE');
+visit_realm_file_change_mode('TEXT_FILE');
 submit_form(OK => {
     'Name:' => 'no-longer-empty.txt',
     _anon => my $c2 = random_string(),
@@ -51,7 +52,7 @@ follow_link('no-longer-empty.txt');
 verify_text($c2);
 visit_uri($files_root);
 follow_link_in_table('Name', 'Name', 'Empty Folder', 'Actions', 'Modify');
-fixup_files_uri('DELETE');
+visit_realm_file_change_mode('DELETE');
 submit_form(OK => {
     'Comments:' => 'cleanup for next test run',
 });
@@ -70,19 +71,19 @@ my($folder) = 'folder ' . random_string();
 
 unless (text_exists($folder)) {
     follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
-    fixup_files_uri('ADD_SUBFOLDER');
+    visit_realm_file_change_mode('ADD_SUBFOLDER');
     submit_form(OK => {
 	'Name:' => $folder,
     });
 }
 follow_link_in_table('Name', 'Name', $folder, 'Actions', 'Modify');
-fixup_files_uri('TEXT_FILE');
+visit_realm_file_change_mode('TEXT_FILE');
 submit_form(OK => {
     'Name:' => my $f1 = random_string(),
     _anon => my $c3 = random_string(),
 });
 follow_link_in_table('Name', 'Name', $folder, 'Actions', 'Modify');
-fixup_files_uri('DELETE');
+visit_realm_file_change_mode('DELETE');
 submit_form('OK');
 verify_no_text($folder);
 follow_link('Archived', $folder, "$f1;1");

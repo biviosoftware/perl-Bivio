@@ -137,16 +137,6 @@ sub do_logout {
     return;
 }
 
-sub fixup_files_uri {
-    my($self, $mode) = @_;
-    $self->visit_uri(
-	join('',
-	     $self->get_uri(), '&',
-	     $self->use('Model.FileChangeForm')->QUERY_KEY,
-	     '=', $mode));
-    return;
-}
-
 sub groupware_check {
     my($self) = @_;
     $self->home_page

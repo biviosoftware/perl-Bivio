@@ -12,10 +12,10 @@ submit_form(Send => {
 poll_page(verify_text => $code);
 visit_uri("$uri/files");
 follow_link_in_table("Name", "Name", "/", "Actions", "Modify");
-fixup_files_uri('ADD_SUBFOLDER');
+visit_realm_file_change_mode('ADD_SUBFOLDER');
 submit_form(OK => {'Name:' => "Wiki"});
 follow_link_in_table("Name", "Name", "Wiki", "Actions", "Modify");
-fixup_files_uri('TEXT_FILE');
+visit_realm_file_change_mode('TEXT_FILE');
 my($unique) = random_string();
 submit_form(OK => {
     'Name:' => "cool_$code",
