@@ -313,9 +313,9 @@ sub _file {
 }
 
 sub _importing_pkg {
-    foreach my $x (2..20) {
+    foreach my $depth (2..20) {
 	last
-	    unless my $pkg = (caller($x))[0];
+	    unless my $pkg = (caller($depth))[0];
 	return $pkg
 	    unless $pkg
 	    =~ /^(?:Bivio::Die|Bivio::Base|Bivio::UNIVERSAL|Bivio::IO::ClassLoader)$/;
