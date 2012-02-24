@@ -5,10 +5,11 @@ use strict;
 use Bivio::Base 'Type.Line';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_N) = __PACKAGE__->use('Type.Name');
+my($_N) = b_use('Type.Name');
+my($_WIDTH) = b_use('Type.Text64K')->get_width;
 
 sub get_width {
-    return 500;
+    return $_WIDTH;
 }
 
 sub parse_to_names {

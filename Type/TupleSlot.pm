@@ -5,13 +5,14 @@ use strict;
 use Bivio::Base 'Type.Line';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_WIDTH) = b_use('Type.Text64K')->get_width;
 
 sub compare_defined {
     return shift->SUPER::compare_defined(map(lc($_), @_));
 }
 
 sub get_width {
-    return 500;
+    return $_WIDTH;
 }
 
 1;
