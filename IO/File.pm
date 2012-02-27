@@ -235,6 +235,13 @@ sub set_modified_date_time {
     return;
 }
 
+sub symlink {
+    my(undef, $old, $new) = @_;
+    symlink($old, $new)
+	|| b_die("symlink($old, $new): $!");
+    return;
+}
+
 sub temp_file {
     my($proto, $req, $suffix) = @_;
     # Returns the name of a temp file. If a request is passed, the file
