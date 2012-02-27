@@ -25,18 +25,19 @@ sub link_facade_files {
 	$default->get_local_file_root,
 	sub {
 	    my($default_prefix) = $default->get('local_file_prefix');
-	    b_die($default_prefix, ': local_file_prefix not found')
-		unless -d $default_prefix;
+	    unless (-d $default_prefix) {
+	        b_die($default_prefix, ': local_file_prefix not found')
+		    unless -d 'ddl';
+		(my $d = $default_prefix) =~ s{/}{}g;
+		$_F->symlink('.', $d);
+	    }
 	    if ($_C->is_dev) {
 		my($common) = "$ENV{HOME}/src/perl/Bivio/files";
 		my($common_b) = $default->get_local_file_name(
 		    'PLAIN',
 		    $default->get_local_file_plain_common_uri,
 		);
-		unless (-l $common_b) {
-		    b_die("symlink($common_b): $!")
-			unless symlink($common, $common_b);
-		}
+		$_F->symlink($common, $common_b);
 	    }
 	    my($prefixes) = [
 		grep(
@@ -68,8 +69,7 @@ sub link_facade_files {
 			    my($up) = $File::Find::dir;
 			    $up =~ s,[^/]+,..,g;
 			    next if $File::Find::name =~ /\.cvsignore/;
-			    b_die($!)
-				unless symlink("$up/$File::Find::name", $destination);
+			    $_F->symlink("$up/$File::Find::name", $destination);
 			}
 			return;
 		    },
