@@ -4,7 +4,7 @@ Request();
 config({
     'Bivio::UI::Facade' => {
 	mail_host => 'petshop.local',
-	http_suffix => 'anyhost.com',
+	http_host => 'anyhost.com',
     },
 });
 req()->initialize_fully;
