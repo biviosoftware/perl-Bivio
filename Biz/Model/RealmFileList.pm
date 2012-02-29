@@ -1,13 +1,13 @@
-# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmFileList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_RF) = b_use('Biz.Model')->get_instance('RealmFile');
-my($_FP) = $_RF->get_field_type('path');
-my($_ARF) = b_use('Action.RealmFile');
+my($_RF);
+my($_FP);
+my($_ARF);
 
 sub delete {
     my($self) = @_;
@@ -35,6 +35,9 @@ sub get_os_path {
 
 sub internal_initialize {
     my($self) = @_;
+    $_RF = $self->get_instance('RealmFile');
+    $_FP = $_RF->get_field_type('path');
+    $_ARF = b_use('Action.RealmFile');
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	can_iterate => 1,
