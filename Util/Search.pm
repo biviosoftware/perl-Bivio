@@ -42,7 +42,7 @@ sub audit_db {
 
 sub audit_realm {
     my($self) = @_;
-#Need to get all the docs for a realm, but how?
+#TODO: Need to get all the docs for a realm, but how?
 #Get a list of all docids in one go -- so we know what to delete.
 #We'll verify after deleting all docids
 #b_info(Search::Xapian::Database->new($_CFG->{db_path})->get_doccount);
@@ -157,6 +157,8 @@ sub _do_realm {
 	return;
     };
     $_X->acquire_lock($req);
+    my($rn) = $req->req(qw(auth_realm owner name));
+    b_info("$rn: starting");
     _map_classes(
 	sub {
 	    my($class) = @_;
@@ -181,7 +183,7 @@ sub _do_realm {
 	},
     );
     $commit->();
-    return $self->req(qw(auth_realm owner))->as_string . ": $j objects";
+    return "$rn: updated $j objects";
 }
 
 sub _iterate_realms {
