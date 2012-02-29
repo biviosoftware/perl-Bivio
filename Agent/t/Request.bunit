@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2005-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 Request();
 req()->initialize_fully;
@@ -23,7 +23,7 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 	    [{
 		task_id => 'LOGOUT',
 		facade_uri => 'other',
-	    }] => qr{^http://other.*/pub/logout$},
+	    }] => qr{^http://(?:test\.)?other.*/pub/logout$},
 	    sub {
 		shift->get('object')->put(req()->REQUIRE_ABSOLUTE_GLOBAL => 1);
 		return ['LOGOUT'];
@@ -37,11 +37,11 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 	    [{uri => '/i', query => {x => 3}}] => '/i?x=3',
 	],
 	format_http_prefix => [
-	    [] => qr{^http://(?!other)},
-	    [1] => qr{^https://(?!other)},
-	    [undef, 'other'] => qr{^\Qhttp://other.},
-	    [1, 'other'] => qr{^\Qhttps://other.},
-	    [undef, 'bad.facade.name'] => qr{^http://(?!other)},
+	    [] => qr{^http://(?!test\.other|other)},
+	    [1] => qr{^https://(?!test\.other|other)},
+	    [undef, 'other'] => qr{^http://(?:test\.)?other\.},
+	    [1, 'other'] => qr{^https://(?:test\.)?other\.},
+	    [undef, 'bad.facade.name'] => qr{^http://(?!test\.other|other)},
 	],
 	set_task_and_uri => [
 	    [{task_id => 'SITE_WIKI_VIEW', path_info => 'hello'}] => sub {
