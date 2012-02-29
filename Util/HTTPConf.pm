@@ -129,7 +129,7 @@ $root_prefix::BConf->merge_dir({
         local_file_root => '/var/www/facades',
         want_local_file_cache => 1,
         # Only used on test systems
-        http_suffix => '$http_suffix',
+        http_host => '$http_host',
         mail_host => '$mail_host',
     },
     'Bivio::Util::HTTPLog' => {
@@ -175,14 +175,14 @@ v2:    PerlResponseHandler Bivio::Agent::HTTP::Dispatcher
 </Location>
 EOF
     Bivio::Die->die(
-	$app, ': virtual_hosts and mail_host/http_suffix incompatible'
-    ) if $vars->{virtual_hosts} && ($vars->{mail_host} || $vars->{http_suffix});
+	$app, ': virtual_hosts and mail_host/http_host incompatible'
+    ) if $vars->{virtual_hosts} && ($vars->{mail_host} || $vars->{http_host});
 #TODO: Deprecate non-virtual_hosts config
     $vars->{virtual_hosts} ||= [
-	$vars->{http_suffix} =~ /^(?:www\.)?\Q$vars->{mail_host}\E$/
-	    ? ('@' . $vars->{http_suffix} => $app)
+	$vars->{http_host} =~ /^(?:www\.)?\Q$vars->{mail_host}\E$/
+	    ? ('@' . $vars->{http_host} => $app)
 	    : (
-		$vars->{http_suffix} => $app,
+		$vars->{http_host} => $app,
 		'@' . $vars->{mail_host} => $app,
 	    ),
     ];
@@ -199,8 +199,8 @@ EOF
 	    my($is_mail) = $left =~ s/^\@//;
 	    my($mh) = $left =~ /^www\.(.+)$/;
 	    my($cfg) = ref($right) ? $right : {facade_uri => $right};
-	    $cfg->{http_suffix} ||= $left;
-	    $cfg->{mail_host} ||= $mh || $cfg->{http_suffix};
+	    $cfg->{http_host} ||= $left;
+	    $cfg->{mail_host} ||= $mh || $cfg->{http_host};
 	    __PACKAGE__->map_by_two(
 		sub {
 		    my($k, $v) = @_;
@@ -215,9 +215,9 @@ EOF
 		    rewrite_icons => 1,
 		],
 	    );
-	    map($vars->{$_} ||= $cfg->{$_}, qw(http_suffix mail_host));
-	    _push($httpd_vars, uris => $cfg->{http_suffix});
-	    my($http) = "http://$cfg->{http_suffix}:$vars->{listen}\$1";
+	    map($vars->{$_} ||= $cfg->{$_}, qw(http_host mail_host));
+	    _push($httpd_vars, uris => $cfg->{http_host});
+	    my($http) = "http://$cfg->{http_host}:$vars->{listen}\$1";
 	    if ($is_mail) {
 		foreach my $h (
 		    $cfg->{mail_host}, @{$cfg->{mail_aliases} || []}
@@ -226,7 +226,7 @@ EOF
 		    _push($vars, mail_receive => "$h $http");
 		}
 	    }
-	    my($seen) = {$cfg->{http_suffix} => 1};
+	    my($seen) = {$cfg->{http_host} => 1};
 	    foreach my $a (
 		$mh ? $mh : (),
 		map(($_, $_ =~ /^www\.(.+)$/),
@@ -236,7 +236,7 @@ EOF
 	        $redirects .= <<"EOF";
 <VirtualHost *>
     ServerName $a
-    RedirectPermanent / http://$cfg->{http_suffix}/
+    RedirectPermanent / http://$cfg->{http_host}/
 </VirtualHost>
 EOF
 	    }
@@ -257,7 +257,7 @@ EOF
     ProxyIOBufferSize 4194304};
 	    my($hc) = <<"EOF";
 <VirtualHost *>
-    ServerName $cfg->{http_suffix}$proxy
+    ServerName $cfg->{http_host}$proxy
     RewriteEngine On
     RewriteOptions inherit
 $rules</VirtualHost>
@@ -270,7 +270,7 @@ EOF
 		    : "\n    SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}";
 		(my $key = $cfg->{ssl_crt}) =~ s/crt$/key/;
 		$vars->{ssl_mdc} ? $hc =~ s{\*\>}{*:443>}
-		    : $hc =~ s{\*\>}{$cfg->{http_suffix}:443>};
+		    : $hc =~ s{\*\>}{$cfg->{http_host}:443>};
 		(my $https = $http) =~ s{(?<=\:)(\d+)}{$1 + 1}e;
 		$hc =~ s{\Q$http\E}{$https}g;
 		$hc =~ s{(?=^\s+Rewrite)}{

@@ -35,7 +35,7 @@
         legacy_rewrite_rules => 
              'RewriteRule ^(/[^/]+\.html)$ /hm$1 [R=permanent,L]',
         mail_host => 'a2.com',
-        http_suffix => 'a2.com',
+        http_host => 'a2.com',
         servers => 333,
         limit_request_body => 1_000_000_000,
         timeout => 1_000,
