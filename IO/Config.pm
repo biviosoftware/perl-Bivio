@@ -265,7 +265,7 @@ sub merge {
     #     use OurSite::BConf;
     #     OurSite::BConf->merge({
     # 	'Bivio::UI::Facade' => {
-    # 	    http_suffix => 'myhost.oursite.com:8888',
+    # 	    http_host => 'myhost.oursite.com:8888',
     # 	    mail_host => 'myhost.oursite.com',
     # 	},
     # 	'Bivio::UI::FacadeComponent' => {
@@ -285,7 +285,7 @@ sub merge {
     # 		die_on_error => 0,
     # 	    },
     # 	    'Bivio::UI::Facade' => {
-    # 		http_suffix => 'www.oursite.com',
+    # 		http_host => 'www.oursite.com',
     # 		mail_host => 'oursite.com',
     # 	    },
     # 	    'Bivio::Die' => {
