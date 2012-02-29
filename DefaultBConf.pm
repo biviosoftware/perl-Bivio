@@ -28,7 +28,7 @@ sub merge_overrides {
 	    },
 	    'Bivio::UI::Facade' => {
 		default => 'Default',
-		http_suffix => 'default.bivio.biz',
+		http_host => 'default.bivio.biz',
 		mail_host => 'default.bivio.biz',
 	    },
 	},

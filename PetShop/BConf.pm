@@ -63,7 +63,7 @@ sub merge_overrides {
 	},
 	'Bivio::UI::Facade' => {
 	    default => 'PetShop',
-	    http_suffix => 'bivio.biz',
+	    http_host => 'bivio.biz',
 	    mail_host => 'bivio.biz',
 	},
 	'Bivio::UI::View::ThreePartPage' => {

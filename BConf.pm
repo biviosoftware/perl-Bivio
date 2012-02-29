@@ -173,7 +173,7 @@ sub dev {
 	    'Bivio::UI::Facade' => {
 		local_file_root => $files_root,
 		want_local_file_cache => 0,
-		http_suffix => "$host:$http_port",
+		http_host => "$host:$http_port",
 		mail_host => $host,
 	    },
 	    'Bivio::Util::HTTPLog' => {
@@ -523,7 +523,7 @@ sub _base {
 	},
 	'Bivio::UI::Facade' => {
 	    local_file_root => '/var/www/facades',
-	    http_suffix => 'localhost.localdomain',
+	    http_host => 'localhost.localdomain',
 	    mail_host => 'localhost.localdomain',
 	},
 	'Bivio::Util::Release' => {

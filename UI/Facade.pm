@@ -103,7 +103,9 @@ $_C->register(my $_CFG = {
     local_file_root => $_C->REQUIRED,
     want_local_file_cache => 1,
     mail_host => $_C->REQUIRED,
-    http_suffix => $_C->REQUIRED,
+    http_host => $_C->REQUIRED,
+    # Deprecated
+    http_suffix => undef,
 });
 my($_IS_FULLY_INITIALIZED) = 0;
 
@@ -221,7 +223,7 @@ sub handle_config {
     # not found.  C<Bivio::UI::Facade::> will be inserted if not
     # a fully qualified class name.
     #
-    # http_suffix : string (required)
+    # http_host : string (required)
     #
     # Host to create absolute URIs.  May contain a port number.  Used only in
     # non-production mode.
@@ -244,11 +246,13 @@ sub handle_config {
     # cache all icon sizes.
     #
     # For development, you probably want to set I<want_local_file_cache> to false.
+    Bivio::IO::Alert->warn_deprecated($cfg->{http_suffix}, ': use http_host')
+        if $cfg->{http_suffix};
     b_warn(
 	$cfg->{local_file_root}, ': local_file_root is not a directory'
     ) unless $cfg->{local_file_root} && -d $cfg->{local_file_root};
-    $cfg->{local_file_root} = $_FN->add_trailing_slash($cfg->{local_file_root});
     $_CFG = {%{$cfg}};
+    $_CFG->{local_file_root} = $_FN->add_trailing_slash($_CFG->{local_file_root});
     return;
 }
 
