@@ -745,13 +745,15 @@ sub _assert_realm_id_field {
 	return
 	    if $aid->{name} eq $field;
     }
+    my($which) = $self;
     foreach my $sanity (0 .. 20) {
 	# dies if there's no parent
-	my($pf) = $self->get_field_info($field, 'parent_field');
-	my($pm) = $self->get_field_info($field, 'parent_model');
+	my($pf) = $which->get_field_info($field, 'parent_field');
+	my($pm) = $which->get_field_info($field, 'parent_model');
 	return
 	    if $pm eq 'RealmOwner'
 	    || $pf eq 'realm_id';
+	$which = $which->get_instance($pm);
     }
     $self->die($field, ': not a RealmOwner.realm_id');
     # DOES NOT RETURN
