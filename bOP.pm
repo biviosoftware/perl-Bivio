@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,35 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.55  2012/02/24 20:36:21  moeller
+  * Bivio::Biz::Model::JobLock
+    job_lock_t.message is now Text64K
+  * Bivio::Biz::Model::Lock
+    changed realm_id type back to PrimaryId to avoid cascade_delete()
+    clearing the current lock
+  * Bivio::Biz::Model::MotionVote
+    motion_vote_t.comment is now Text64K
+  * Bivio::PetShop::Test::PetShop
+    moved fixup_files_uri to TestLanguage.HTTP->visit_realm_file_change_mode
+  * Bivio::Search::Xapian
+    added unsafe_get_values_for_primary_id
+    added local() to $ENV
+  * Bivio::SQL::DDL
+    change VARCHAR(500) fields to TEXT64K
+  * Bivio::Test::Language::HTTP
+    added submit_realm_file_plain_text, random_alpha_string,
+    visit_realm_file_change_mode (was fixup_files_uri in
+    TestLanguage.PetShop)
+    fixed case in visit_realm_folder to allow undef $folder meaning root
+  * Bivio::Type::DisplayName
+    use Text64K width
+  * Bivio::Type::TupleSlot
+    use Text64K width
+  * Bivio::Util::Search
+    added audit_db/realm
+  * Bivio::Util::SQL
+    added display_name and text_size bundle upgrades, changes size to Text64K
+
   Revision 11.54  2012/02/23 18:32:35  nagler
   * Bivio::Agent::HTTP::Query
     is_blesser_of deprecates is_blessed
