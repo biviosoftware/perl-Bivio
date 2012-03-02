@@ -9,7 +9,7 @@ visit_realm_file('fourem', 'Settings/RealmSettingList1.csv');
 verify_text('Please sign in');
 home_page();
 login_as('root');
-visit_realm_folder('fourem')
+visit_realm_folder('fourem');
 my($files_root) = get_uri();
 
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
