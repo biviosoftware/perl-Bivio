@@ -270,8 +270,8 @@ function display(element, requri, resuri) {
    }
    selected = element;
    selected.className = "selected";
-   top.frames['req'].location.href = "/t*acceptance-test-request" + path + "?q=" + req + "&s=" + res;
-   top.frames['res'].location.href = "/t*acceptance-test-response" + path + "?q=" + req + "&s=" + res;
+   top.frames['req'].location.href = requri;
+   top.frames['res'].location.href = resuri;
    return 0;
 }
 var selected;
