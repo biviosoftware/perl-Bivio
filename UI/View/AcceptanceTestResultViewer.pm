@@ -157,12 +157,19 @@ sub acceptance_test_transaction_list {
 				     value => Join([['request_number'], String('/'), ['response_number']]),
 				     href => '#nonesuch',
 				     ONCLICK =>  Join([
-					 'display(this.parentNode.parentNode, ',
-					 ['request_number'],
-					 ', ',
-					 ['response_number'],
-					 ', ',
-					 q{'}, ['->req', 'path_info'], q{'},
+					 'display(this.parentNode.parentNode',
+                                         map((
+                                             q{, '},
+                                             URI({
+                                                 task_id => $_,
+                                                 path_info => ['->req', 'path_info'],
+                                                 query => {
+                                                     q => ['request_number'],
+                                                     s => ['response_number'],
+                                                 },
+                                             }),
+                                             q{'}
+                                         ), qw(DEV_ACCEPTANCE_TEST_REQUEST DEV_ACCEPTANCE_TEST_RESPONSE)), 
 					 ');',
 				     ]),
 				 }),
@@ -257,20 +264,22 @@ EOF
 
 sub _javascript {
    return <<'EOF';
-<!--
-function display(element, req, res, path) {
+function display(element, requri, resuri) {
    if (selected != null) {
         selected.className = "unselected"; 
    }
    selected = element;
    selected.className = "selected";
+<<<<<<< AcceptanceTestResultViewer.pm
+   top.frames['req'].location.href = requri;
+   top.frames['res'].location.href = resuri;
+=======
    top.frames['req'].location.href = "/t*acceptance-test-request" + path + "?q=" + req + "&s=" + res;
    top.frames['res'].location.href = "/t*acceptance-test-response" + path + "?q=" + req + "&s=" + res;
+>>>>>>> 1.3
    return 0;
 }
 var selected;
-
--->
 EOF
 }
 

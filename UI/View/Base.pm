@@ -170,8 +170,22 @@ sub pre_compile {
     view_parent(
 	$self->PARENT_CLASS
 	. '->'
-	. ($n =~ /_(imail|js|mail|csv|rss|css|xml|xhtml_widget)$/ ? $1 : 'xhtml')
+	. ($n =~ /_(imail|js|mail|csv|rss|css|xml|xhtml_widget|qooxdoo)$/ ? $1 : 'xhtml')
     ) unless $self->use('View.' . $self->PARENT_CLASS)->can($n);
+    return;
+}
+
+
+sub qooxdoo {
+    my($self) = @_;
+    my($self) = @_;
+    view_class_map('QooxdooWidget');
+    view_shortcuts('UIQooxdoo.ViewShortcuts');
+    view_declare('qooxdoo');
+    view_main(SimplePage({
+	content_type => 'application/json',
+	value => view_widget_value('qooxdoo'),
+    }));
     return;
 }
 
