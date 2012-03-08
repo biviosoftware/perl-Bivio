@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::Release;
 use strict;
@@ -716,12 +716,14 @@ sub run_sh {
 
 sub yum_update {
     my($self) = @_;
-    my($yuc) = $_CFG->{yum_update_conflicts};
-    system(qw(rpm --erase --justdb --nodeps), @$yuc)
-	if @$yuc;
+    my($restore) = [];
+    foreach my $rpm (@{$_CFG->{yum_update_conflicts} || []}) {
+	push(@$restore, $rpm)
+	    if system(qw(rpm --erase --justdb --nodeps), $rpm) == 0;
+    }
     system('yum', $self->unsafe_get('force') ? '-y' : (), 'update');
     $self->put(force => 1, nodeps => 1);
-    $self->install(@$yuc);
+    $self->install(@$restore);
     $self->install_host_stream;
     return;
 }
@@ -762,6 +764,8 @@ sub _create_rpm_spec {
     my($provides) = _search('provides', $base_spec) || $name;
     my($buf) = <<"EOF" . _perl_make() . _perl_build();
 %define suse_check echo not calling /usr/sbin/Check
+%define __perl_provides %{nil}
+%define __perl_requires %{nil}
 %define _sourcedir .
 %define _topdir .
 %define _srcrpmdir .
