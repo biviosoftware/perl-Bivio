@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.ConfirmableForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_A) = b_use('Type.Amount');
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
 my($_PM) = b_use('Type.ECPaymentMethod');
@@ -62,41 +61,19 @@ sub internal_initialize {
 }
 
 sub process_payment {
-    my($proto, $form, $payment) = @_;
+    my($proto, $form, $payment_info) = @_;
     # returns 1 on success, 0 if double clicked or error
-    # <payment> should contain ECPayment values (service, amount, ...)
-    return 0 if _possible_double_click($proto, $form, $payment->{amount});
-    $form->new_other('ECCreditCardPayment')->create({
+    # <payment_info> should contain ECPayment values (service, amount, ...)
+    return 0 if _possible_double_click($proto, $form, $payment_info->{amount});
+    return $form->new_other('ECCreditCardPayment')->create({
         %{$form->get_model_properties('ECCreditCardPayment')},
         ec_payment_id => $form->new_other('ECPayment')->create({
             point_of_sale => b_use('Type.ECPointOfSale')->INTERNET,
-	    %$payment,
+	    %$payment_info,
             method => $_PM->CREDIT_CARD,
             status => b_use('Type.ECPaymentStatus')->TRY_CAPTURE,
         })->get('ec_payment_id'),
-    });
-
-    # pay in the user's realm
-    my($req) = $form->req;
-    $req->with_realm($req->get('auth_user'), sub {
-        Bivio::Die->catch(sub {
-            b_use('Action.ECCreditCardProcessor')->execute_process($req);
-            my($payment) = $req->get('Model.ECPayment');
-
-            if ($payment->get('status')->eq_declined) {
-                $form->internal_put_error(processor_error => 'NULL');
-                $form->internal_put_field(processor_error =>
-                    $payment->get_model('ECCreditCardPayment')
-                        ->get('processor_response') || 'Card declined');
-            }
-	    else {
-		b_info('credit card processed: ',
-		    join(' ', $payment->get(qw(realm_id user_id)),
-			'$' . $_A->to_literal($payment->get('amount'))));
-	    }
-        });
-    });
-    return $form->in_error ? 0 : 1;
+    })->process_payment($form);
 }
 
 sub validate {
