@@ -72,6 +72,7 @@ my($_BUNDLE) = [qw(
     tuple_boolean_type
     display_name
     text_size
+    payment_currency
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
 qw(
@@ -1695,6 +1696,19 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_payment_currency {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE ec_payment_t ADD COLUMN currency_name VARCHAR(3)
+/
+UPDATE ec_payment_t SET currency_name = 'USD'
+/
+ALTER TABLE ec_payment_t ALTER COLUMN currency_name SET NOT NULL
+/
+EOF
+    return;
+}
+
 sub internal_upgrade_db_permissions51 {
     my($self) = @_;
     my($ap) = $self->use('Auth.Permission');
@@ -2725,6 +2739,10 @@ sub _sentinel_motion3 {
 
 sub _sentinel_motion_vote_comment {
     return shift->column_exists(qw(motion_vote_t comment));
+}
+
+sub _sentinel_payment_currency {
+    return shift->column_exists(qw(ec_payment_t currency_name));
 }
 
 sub _sentinel_permissions51 {
