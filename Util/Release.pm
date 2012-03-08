@@ -730,7 +730,6 @@ sub yum_update {
 
 sub _chdir {
     my($dir, $output) = @_;
-    # Change to dir, and write to output.
     b_use('IO.File')->chdir($dir);
     _output($output, "cd $dir\n");
     return $dir;
