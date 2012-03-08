@@ -29,6 +29,10 @@ my($_AUTHORIZE_NET_MAP) = {
     TRY_VOID => 'VOID',
     TRY_CREDIT => 'CREDIT',
 };
+my($_PAYPAL_MAP) = {
+    TRY_CAPTURE => 'DoDirectPayment',
+    TRY_CREDIT => 'RefundTransaction',
+};
 my($_NEEDS_PROCESSING_LIST) = [map {__PACKAGE__->$_()}
     qw(TRY_CAPTURE TRY_VOID TRY_CREDIT)];
 my($_APPROVED_SET, $_BAD_SET, $_NEEDS_PROCESSING_SET);
@@ -37,6 +41,11 @@ sub get_authorize_net_type {
     # (self) : string
     # Return the appropriate Authorize.Net transaction type
     return _map(shift, $_AUTHORIZE_NET_MAP);
+}
+
+sub get_paypal_type {
+    my($self) = @_;
+    return _map(shift, $_PAYPAL_MAP);
 }
 
 sub get_success_state {
