@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,34 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.56  2012/03/02 02:43:04  nagler
+  * Bivio::BConf
+    Bivio::UI::Facade.http_suffix is deprecated
+  * Bivio::Biz::Model::RealmFileList
+    defer initialization of global vars ($_RF, $_FP, $_ARF) to avoid
+    circular initialization in Bivio::Biz::Model::_load_all_property_models
+  * Bivio::Biz::PropertyModel
+    _assert_realm_id_field() was not iterating properly
+  * Bivio::DefaultBConf
+    Bivio::UI::Facade.http_suffix is deprecated
+  * Bivio::IO::Config
+    doc
+  * Bivio::IO::File
+    added symlink
+  * Bivio::PetShop::BConf
+    Bivio::UI::Facade.http_suffix is deprecated
+  * Bivio::Test::Request
+    $req => $self in get_instance
+  * Bivio::UI::Facade
+    Bivio::UI::Facade.http_suffix is deprecated
+  * Bivio::Util::HTTPConf
+    http_suffix is deprecated
+  * Bivio::Util::Project
+    link default_prefix to '.' if not there and local_file_root has a
+    "ddl" folder
+  * Bivio::Util::Search
+    cleaner output
+
   Revision 11.55  2012/02/24 20:36:21  moeller
   * Bivio::Biz::Model::JobLock
     job_lock_t.message is now Text64K
