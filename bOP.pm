@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,31 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.58  2012/03/08 20:38:43  moeller
+  * Bivio::Biz::Action::ECPayPalProcessor
+    NEW
+  * Bivio::Biz::Model::ECCreditCardPaymentForm
+    now uses ECCreditCardPayment->process_payment()
+  * Bivio::Biz::Model::ECCreditCardPayment
+    rm pod
+    refactored
+    added process_payment()
+  * Bivio::Biz::Model::ECCreditCardRefundForm
+    now calls process_payment() directly
+  * Bivio::Biz::Model::ECPayment
+    added currency_name field
+  * Bivio::SQL::DDL
+    added ec_payment_t.currency_name
+  * Bivio::Type::CurrencyName
+    added is_valid_paypal()
+  * Bivio::Type::ECPaymentStatus
+    added get_paypal_type()
+  * Bivio::Util::Release
+    yum_update: fpc (was passing array_ref to system)
+    yum_update: -force/-nodeps => force/nodeps
+  * Bivio::Util::SQL
+    added payment_currency db upgrade
+
   Revision 11.57  2012/03/08 01:38:48  nagler
   * Bivio::UI::View::AcceptanceTestResultViewer
     Adapt to 't*' in URI by creating URI in perl instead of in JavaScript
