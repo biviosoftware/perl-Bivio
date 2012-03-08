@@ -191,8 +191,12 @@ sub xml {
 #TODO: Real XML support
     view_class_map('XMLWidget');
     view_declare('xml_body');
+    view_put(xml_content_encoding => '');
     view_shortcuts($self->VIEW_SHORTCUTS);
-    view_main(Page(view_widget_value('xml_body')));
+    view_main(Page({
+	value => view_widget_value('xml_body'),
+	content_encoding => view_widget_value('xml_content_encoding'),
+    }));
     return;
 }
 

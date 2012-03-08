@@ -8,13 +8,17 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
-    $self->put_unless_exists(content_type => 'text/xml');
+    $self->initialize_attr(content_type => 'text/xml');
+    $self->initialize_attr(content_encoding => '');
     return shift->SUPER::initialize(@_);
 }
 
 sub render {
     my($self, $source, $buffer) = @_;
-    $$buffer .= qq{<?xml version="1.0" encoding="UTF-8"?>\n};
+    $$buffer .= q{<?xml version="1.0" encoding="}
+	. ($self->render_simple_attr('content_encoding', $source, $buffer)
+	   || 'ISO-8859-1')
+	. qq{"?>\n};
     return shift->SUPER::render(@_);
 }
 
