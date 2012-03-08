@@ -1171,6 +1171,7 @@ CREATE TABLE ec_payment_t (
   salesperson_id NUMERIC(18),
   service NUMERIC(2) NOT NULL,
   point_of_sale NUMERIC(2) NOT NULL,
+  currency_name VARCHAR(3) NOT NULL,
   CONSTRAINT ec_payment_t1 PRIMARY KEY(ec_payment_id)
 )
 /
