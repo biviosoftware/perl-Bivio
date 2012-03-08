@@ -5,8 +5,9 @@ use strict;
 use Bivio::Base 'Model.RealmBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_ECPOS) = __PACKAGE__->use('Type.ECPointOfSale');
-my($_ECPS) = __PACKAGE__->use('Type.ECPaymentStatus');
+my($_CN) = b_use('Type.CurrencyName');
+my($_ECPOS) = b_use('Type.ECPointOfSale');
+my($_ECPS) = b_use('Type.ECPaymentStatus');
 
 sub create {
     my($self, $values) = @_;
@@ -14,6 +15,7 @@ sub create {
 	unless defined($values->{description});
     $values->{status} ||= $_ECPS->CAPTURED;
     $values->{point_of_sale} ||= $_ECPOS->INTERNET;
+    $values->{currency_name} ||= $_CN->get_default;
     return shift->SUPER::create(@_);
 }
 
@@ -21,11 +23,11 @@ sub get_amount_sum {
     # Returns the sum of all payments in this realm.  Returns 0 if no payments
     # for this realm.
     my($self) = @_;
-    return (Bivio::SQL::Connection->execute_one_row(
+    return (b_use('SQL.Connection')->execute_one_row(
 	'SELECT SUM(amount)
          FROM ec_payment_t
          WHERE realm_id = ?',
-	[$self->get_request->get('auth_id')])
+	[$self->req('auth_id')])
 	|| [0])->[0];
 }
 
@@ -51,6 +53,7 @@ sub internal_initialize {
 	    salesperson_id => ['PrimaryId', 'NONE'],
 	    service => ['ECService', 'NOT_NULL'],
 	    point_of_sale => ['ECPointOfSale', 'NOT_NULL'],
+	    currency_name => ['CurrencyName', 'NOT_NULL'],
         },
         auth_id => 'realm_id',
     };
