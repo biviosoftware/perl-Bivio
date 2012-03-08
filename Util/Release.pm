@@ -717,9 +717,9 @@ sub run_sh {
 sub yum_update {
     my($self) = @_;
     my($yuc) = $_CFG->{yum_update_conflicts};
-    system([qw(rpm --erase --justdb --nodeps), @$yuc])
+    system(qw(rpm --erase --justdb --nodeps), @$yuc)
 	if @$yuc;
-    system(['yum', $self->unsafe_get('force') ? '-y' : (), 'update']);
+    system('yum', $self->unsafe_get('force') ? '-y' : (), 'update');
     $self->put(-force => 1, -nodeps => 1);
     $self->install(@$yuc);
     $self->install_host_stream;
