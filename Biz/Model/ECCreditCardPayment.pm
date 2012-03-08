@@ -2,74 +2,26 @@
 # $Id$
 package Bivio::Biz::Model::ECCreditCardPayment;
 use strict;
-$Bivio::Biz::Model::ECCreditCardPayment::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::ECCreditCardPayment::VERSION;
+use Bivio::Base 'Biz.PropertyModel';
 
-=head1 NAME
-
-Bivio::Biz::Model::ECCreditCardPayment - credit card payment info
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Model::ECCreditCardPayment;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::ECCreditCardPayment::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::ECCreditCardPayment>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="create"></a>
-
-=head2 create(hash_ref new_values) : Model.ECCreditCardPayment
-
-Creates a new credit card payment record. Defaults the realm_id.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_A) = b_use('Type.Amount');
 
 sub create {
     my($self, $new_values) = @_;
-    $new_values->{realm_id} ||= $self->get_request->get('auth_id');
-    return $self->SUPER::create($new_values);
+    $new_values->{realm_id} ||= $self->req('auth_id');
+    return shift->SUPER::create(@_);
 }
 
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
+sub get_payment_processor {
+    my($self) = @_;
+    return b_use('Action.ECCreditCardProcessor');
+}
 
 sub internal_initialize {
-
     # none of the related fields are linked here
     # need to always preserve ECPayments, so deleting them
     # via cascade_delete() should always fail
-
     return {
 	version => 1,
 	table_name => 'ec_credit_card_payment_t',
@@ -89,16 +41,30 @@ sub internal_initialize {
     };
 }
 
-#=PRIVATE SUBROUTINES
+sub process_payment {
+    my($self, $form) = @_;
+    $self->req->with_realm($self->req('auth_user'), sub {
+        Bivio::Die->catch(sub {
+	    $self->get_payment_processor->execute_process($self->req);
+            my($payment) = $self->req('Model.ECPayment');
 
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+            if ($payment->get('status')->eq_declined) {
+                $form->internal_put_error(processor_error => 'NULL');
+                $form->internal_put_field(processor_error =>
+                    $payment->get_model('ECCreditCardPayment')
+                        ->get('processor_response') || 'Card declined');
+            }
+	    else {
+		b_info('credit card processed: ',
+		    join(' ',
+			 $payment->get(qw(realm_id user_id currency_name)),
+			 $_A->to_literal($payment->get('amount')),
+		    ),
+		);
+	    }
+        });
+    });
+    return $form->in_error ? 0 : 1;
+}
 
 1;
