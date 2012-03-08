@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.57  2012/03/08 01:38:48  nagler
+  * Bivio::UI::View::AcceptanceTestResultViewer
+    Adapt to 't*' in URI by creating URI in perl instead of in JavaScript
+    Adapt to 't*' in URI by creating URI in perl instead of in JavaScript
+    Adapt to 't*' in URI by creating URI in perl instead of in JavaScript
+  * Bivio::UI::View::Base
+    Adapt to 't*' in URI by creating URI in perl instead of in JavaScript
+    Backout previous check-in
+    allow xml views to set content_encoding.  Default to ISO-8859-1
+  * Bivio::UI::XML::Widget::Page
+    allow xml views to set content_encoding.  Default to ISO-8859-1
+
   Revision 11.56  2012/03/02 02:43:04  nagler
   * Bivio::BConf
     Bivio::UI::Facade.http_suffix is deprecated
