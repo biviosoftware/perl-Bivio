@@ -720,7 +720,7 @@ sub yum_update {
     system(qw(rpm --erase --justdb --nodeps), @$yuc)
 	if @$yuc;
     system('yum', $self->unsafe_get('force') ? '-y' : (), 'update');
-    $self->put(-force => 1, -nodeps => 1);
+    $self->put(force => 1, nodeps => 1);
     $self->install(@$yuc);
     $self->install_host_stream;
     return;
