@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.59  2012/03/08 23:11:26  moeller
+  * Bivio::Util::Release
+    build: __perl_provides and __perl_requires are set to nil.  The
+    rpmbuild perl parser is a regexp and really flakey so it wasn't
+    completing the build
+    yum_update checks yum_update_conflicts and only reinstalls pkgs that
+    were installed before
+
   Revision 11.58  2012/03/08 20:38:43  moeller
   * Bivio::Biz::Action::ECPayPalProcessor
     NEW
