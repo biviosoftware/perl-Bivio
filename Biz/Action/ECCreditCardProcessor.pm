@@ -27,7 +27,10 @@ sub execute_process {
     # Process credit card payment online by contacting the payment gateway
     # for the current ECPayment.
     my($proto, $req) = @_;
-    _process_payment($proto, $req->get('Model.ECPayment'));
+    my($payment) = $req->get('Model.ECPayment');
+    b_die('invalid currency, expect USD: ', $payment)
+	unless $payment->get('currency_name') eq 'USD';
+    _process_payment($proto, $payment);
     return;
 }
 
