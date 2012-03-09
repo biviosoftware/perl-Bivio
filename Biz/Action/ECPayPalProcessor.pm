@@ -163,7 +163,7 @@ sub _process_payment {
     }
     $payment->get_model('ECCreditCardPayment')->update({
 	processed_date_time => b_use('Type.DateTime')->now,
-	processor_response => $res->{L_LONGMESSAGE0},
+	processor_response => $res->{L_LONGMESSAGE0} || $res->{ACK},
 	$res->{TRANSACTIONID}
 	    ? (processor_transaction_number => $res->{TRANSACTIONID})
 	    : (),
