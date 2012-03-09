@@ -4,21 +4,11 @@ package Bivio::Biz::Action::ECPaymentProcessAll;
 use strict;
 use Bivio::Base 'Action.JobBase';
 
-# C<Bivio::Biz::Action::ECPaymentProcessAll> sets up a background job to
+# ECPaymentProcessAll sets up a background job to
 # process all pending credit card payments. The job will process and commit
 # one payment at a time.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_PROCESSOR);
-Bivio::IO::Config->register({
-    processor => 'Bivio::Biz::Action::ECCreditCardProcessor',
-});
-
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_PROCESSOR = b_use($cfg->{processor});
-    return;
-}
 
 sub internal_execute {
     # Go through list of all payments which need to be processed.
@@ -30,7 +20,8 @@ sub internal_execute {
 	$ecp->put_on_request;
         $req->set_user($ecp->get('user_id'));
         $req->set_realm($ecp->get('realm_id'));
-        $_PROCESSOR->execute_process($req);
+	$ecp->get_model('ECCreditCardPayment')->get_payment_processor
+	    ->execute_process($req);
 	return 1;
     }, 'unauth_iterate_start', 'creation_date_time asc', {
 	status => b_use('Type.ECPaymentStatus')->needs_processing_list,
