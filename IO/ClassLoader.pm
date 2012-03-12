@@ -157,6 +157,11 @@ sub is_map_configured {
     return $_CFG->{maps}->{$map_name} ? 1 : 0;
 }
 
+sub is_valid_map_class_name {
+    my($self, $class) = @_;
+    return $class =~ /^\w+\.\w+$/ ? 1 : 0;
+}
+
 sub list_simple_packages_in_map {
     my($proto, $map_name, $filter) = @_;
     my($seen) = {};

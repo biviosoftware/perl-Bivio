@@ -101,5 +101,10 @@ my($importers) = sub {
 	    'Bivio::IO::t::ClassLoader::Valid' => 'ClassLoaderBunit',
 	    'Bivio::IO::t::NotFound' => [undef],
 	],
+	is_valid_map_class_name => [
+	    'Foo.Bar' => 1,
+	    'Foo::Bar' => 0,
+	    'Foo' => 0,
+	],
     ],
 ];
