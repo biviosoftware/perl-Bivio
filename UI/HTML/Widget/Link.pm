@@ -5,10 +5,7 @@ use strict;
 use Bivio::Base 'HTMLWidget.ControlBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-# C<Bivio::UI::HTML::Widget::Link> implements an HTML C<A> tag with
-# an C<HREF> attribute.
-#
-#
+# HTMLWidget.Link implements an HTML A tag with an HREF attribute.
 #
 # attributes : string []
 #
@@ -21,53 +18,57 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # control : any
 #
-# See L<Bivio::UI::Widget::ControlBase|Bivio::UI::Widget::ControlBase>.
+# See UIWidget.ControlBase.
 #
 # event_handler : Bivio::UI::Widget []
 #
 # If set, this widget will be initialized as a child and must
-# support a method C<get_html_field_attributes> which returns a
+# support a method get_html_field_attributes() which returns a
 # string to be inserted in this fields declaration.
-# I<event_handler> will be rendered before this field.
+# event_handler will be rendered before this field.
 #
 # href : any (required)
 #
-# Value to use for C<HREF> attribute of C<A> tag.  If I<href> renders to a valid
-# enum name or is an L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>,
-# I<href> will be passed passed
-# using L<Bivio::Agent::Request::format_stateless_uri|Bivio::Agent::Request/"format_stateless_uri">
-# If I<href> renders as a hash_ref, it will passed to
-# L<Bivio::Agent::Request::format_uri|Bivio::Agent::Request/"format_uri">.
-# Otherwise, I<href> will be treated as a literal uri.
+# Value to use for HREF attribute of A tag.  If href renders to a valid
+# enum name or is Agent.TaskId, href will be passed passed
+# using Agent.Request->format_stateless_uri().
+# If href renders as a hash_ref, it will passed to Agent.Request->format().
+# Otherwise, href will be treated as a literal uri.
 #
 # link_target : any [] (inherited)
 #
-# The value to be passed to the C<TARGET> attribute of C<A> tag.
+# The value to be passed to the TARGET attribute of A tag.
 #
 # name : any []
 #
 # Anchor name.
 #
+# tooltip : any []
+#
+# Value shown when hovering over the link text.
+#
 # value : any (required)
 #
-# The value between the C<A> tags aka the label.  May be any
-# renderable value
-# (see L<Bivio::UI::Widget::render_value|Bivio::UI::Widget/"render_value">).
-# If not a widget, will be wrapped in a I<Widget.String>.
+# The value between the A tags aka the label.  May be any
+# renderable value (see UIWidget->render_value().
+# If not a widget, will be wrapped in a Widget.String.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IDI) = __PACKAGE__->instance_data_index;
 my($_HTML) = b_use('Bivio.HTML');
+my($_TI) = b_use('Agent.TaskId');
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;
-    # Render the link.
     $$buffer .= '<a' . vs_link_target_as_html($self, $source);
     $self->SUPER::control_on_render($source, $buffer);
     $self->unsafe_render_attr('attributes', $source, $buffer);
-    my($n) = '';
-    $$buffer .= ' name="' . Bivio::HTML->escape_attr_value($n) . '"'
-	if $self->unsafe_render_attr('name', $source, \$n);
+
+    foreach my $attr ([qw(name name)], [qw(tooltip title)]) {
+	my($n) = '';
+	$$buffer .= ' ' . $attr->[1] . '="'
+	    . $_HTML->escape_attr_value($n) . '"'
+		if $self->unsafe_render_attr($attr->[0], $source, \$n);
+    }
     my($href) = _render_href($self, $source);
     $$buffer .= qq{ href="@{[_escape($href)]}"}
         if defined($href);
@@ -99,13 +100,12 @@ sub initialize {
 }
 
 sub internal_as_string {
-    # Returns this widget's config for
-    # L<Bivio::UI::Widget::as_string|Bivio::UI::Widget/"as_string">.
+    # Returns this widget's config for UIWidget->as_string.
     return shift->unsafe_get('value', 'href');
 }
 
 sub internal_new_args {
-    # Implements positional argument parsing for L<new|"new">.
+    # Implements positional argument parsing for new.
     return shift->internal_compute_new_args([qw(value href ?class)], \@_);
 }
 
@@ -120,7 +120,7 @@ sub _render_href {
     my($self, $source) = @_;
     # Returns a string.  May format it using format_uri or format_stateless_uri
     my($href) = $self->unsafe_resolve_widget_value(
-        $self->get('href'), $source);
+	$self->get('href'), $source);
     if (Bivio::UI::Widget->is_blesser_of($href)) {
 	my($v) = $href;
 	$href = undef;
@@ -129,11 +129,10 @@ sub _render_href {
     return undef
 	unless defined($href) && length($href);
     return $href
-	unless ref($href) || Bivio::Agent::TaskId->is_valid_name($href);
-    my($req) = $source->get_request;
-    return $req->format_stateless_uri($href)
-	if !ref($href) || UNIVERSAL::isa($href, 'Bivio::Agent::TaskId');
-    return $req->format_uri($href)
+	unless ref($href) || $_TI->is_valid_name($href);
+    return $source->req->format_stateless_uri($href)
+	if !ref($href) || UNIVERSAL::isa($href, $_TI);
+    return $source->req->format_uri($href)
 	if ref($href) eq 'HASH';
     $self->die(
 	'href', $source,
