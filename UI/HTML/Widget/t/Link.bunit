@@ -6,11 +6,10 @@ Widget({
 [
     ['txt', '#anchor'] => '<a href="#anchor">txt</a>',
     ['txt', '#', 'foo'] => '<a class="foo" href="#">txt</a>',
-    ['txt', '#', {id => 'id6'}]
-	=> '<a id="id6" href="#">txt</a>',
+    ['txt', '#', {id => 'id6'}] => '<a id="id6" href="#">txt</a>',
     ['txt', '#', {link_target => [sub {''}]}] => '<a href="#">txt</a>',
-    ['txt', [sub {'/url'}]]
-	=> '<a href="/url">txt</a>',
+    ['txt', [sub {'/url'}]] => '<a href="/url">txt</a>',
+    ['txt', '#', {tooltip => 'hover'}] => '<a title="hover" href="#">txt</a>',
     map(($_ => qr{^<a href="/pub/login\?fc=[^"]+">txt</a>$}s),
 	['txt', 'LOGIN'],
 	['txt', [sub {'LOGIN'}]],
