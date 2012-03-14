@@ -205,7 +205,9 @@ sub vs_descriptive_field {
 	$label ? ($label->put(cell_class => 'label label_ok')) : (),
 	Join([
 	    $input,
-	    $proto->vs_field_description($name),
+            $attrs->{vs_descriptive_field_no_description}
+                ? ()
+	        : $proto->vs_field_description($name),
 	], {
 	    cell_class => 'field',
 	    $label ? () : (cell_colspan => 2),
