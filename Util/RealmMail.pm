@@ -22,6 +22,7 @@ commands
   anonymize_emails -- anonymize emails in the database
   audit_threads -- reconnect thread_root_id and thread_parent_id
   audit_threads_all_realms -- audit_threads for all realms with mail
+  clear_junk_messages -- removes out of office and delivery failed mail
   delete_message_id message_id ... -- Message-ID: based removal of threads/msgs
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
   import_mbox -- imports mbox input file
@@ -89,6 +90,27 @@ EOF
 	);
 	$self->commit_or_rollback($die);
     }
+    return;
+}
+
+sub clear_junk_messages {
+    my($self) = @_;
+    $self->model('RealmMail')->do_iterate(sub {
+        my($rm) = @_;
+	return 1
+	    unless _is_undelivered($rm)
+		|| _is_out_of_office($rm)
+		|| _is_noreply($rm);
+	my($crm) = $rm->new_other('CRMThread');
+	if ($crm->unauth_load({
+	    thread_root_id => $rm->get('realm_file_id'),
+	})) {
+	    $self->print(join(' ', $rm->get(qw(realm_file_id subject))), "\n");
+	    $crm->delete;
+	    $rm->delete;
+	}
+	return 1;
+    }, 'realm_file_id');
     return;
 }
 
@@ -207,6 +229,38 @@ sub _import_rfc822_validate {
 	if $self->model('RealmMail')
 	    ->unsafe_load({message_id => my $id = $in->get_message_id});
     return [$d, $in->get_date_time];
+}
+
+sub _is_noreply {
+    my($rm) = @_;
+    return $rm->get('from_email') =~ /^noreply\@/i
+	? 1 : 0;
+}
+
+sub _is_out_of_office {
+    my($rm) = @_;
+    my($subject) = $rm->get('subject');
+    return 0
+	unless $subject =~ /\#\d+/;
+    return 1
+	if $subject =~ /auto.*?\:.*?out of.*?office/i;
+    return 1
+	if $subject =~ /out of (the )?office$/i;
+    return 1
+	if $subject =~ /out of office/i
+	    && $subject =~ /accountsync|(new user)|auto/i;
+    return 1
+	if $subject =~ /\b(automatic reply|autoreply)\:/i;
+    return 0;
+}
+
+sub _is_undelivered {
+    my($rm) = @_;
+    my($subject, $from) = $rm->get(qw(subject from_email));
+    return $subject =~ /undeliver|(delivery status)|(failure notice)|(mail system)|rejected|(delivery (has )?failed)/i
+	&& $from =~ /(daemon|postmaster)/i
+	&& $subject =~ /\#\d+/
+	    ? 1 : 0;
 }
 
 1;
