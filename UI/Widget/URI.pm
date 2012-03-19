@@ -46,9 +46,17 @@ sub internal_new_args {
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($method) = $self->render_simple_attr('format_method', $source);
-    $$buffer .= $source->get_request->$method(
-	_render_hash(
+
+    if ($self->get('format_uri_hash')->{query_type}) {
+	$$buffer .= $source->$method(
+	    $self->get('format_uri_hash')->{query_type},
+	    $self->get('format_uri_hash')->{task_id},
+	);
+    }
+    else {
+	$$buffer .= $source->req->$method(_render_hash(
 	    $self, 'format_uri_hash', $self->get('format_uri_hash'), $source));
+    }
     return;
 }
 
