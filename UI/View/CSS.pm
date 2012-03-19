@@ -711,6 +711,9 @@ div.b_mobile_toggler span.selected {
 div.b_mobile_toggler a {
   Font('b_mobile_toggler_a');
 }
+a.list_action {
+  Font('b_list_action');
+}
 EOF
 }
 
