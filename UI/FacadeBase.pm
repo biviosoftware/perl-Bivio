@@ -281,6 +281,7 @@ sub _cfg_base {
 	    [b_sort_arrow => []],
 	    [b_mobile_toggler_selected => 'bold'],
 	    [b_mobile_toggler_a => []],
+	    [b_list_action => '85%'],
 	    # Historical font names
 	    map([$_->[0] => [qq{class=$_->[1]}]],
 		[error => 'field_err'],
