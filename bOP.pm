@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.60  2012/03/09 23:41:37  moeller
+  * Bivio::Biz::Action::ECCreditCardProcessor
+    die unless currency is USD
+  * Bivio::Biz::Action::ECPaymentProcessAll
+    removed processor config
+    let the ECCreditCardPayment model determine the processor used
+  * Bivio::Biz::Action::ECPayPalProcessor
+    use ACK as processor_response if L_LONGMESSAGE0 is not present
+  * Bivio/Util/t/Release
+    NEW
+  * Bivio::Util::User
+    add detach_user
+
   Revision 11.59  2012/03/08 23:11:26  moeller
   * Bivio::Util::Release
     build: __perl_provides and __perl_requires are set to nil.  The
