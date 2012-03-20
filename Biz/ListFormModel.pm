@@ -273,7 +273,7 @@ sub get_list_model {
 }
 
 sub get_non_empty_result_set_size {
-    return b_debug shift->get_list_model->get_non_empty_result_set_size;
+    return shift->get_list_model->get_non_empty_result_set_size;
 }
 
 sub get_query {
