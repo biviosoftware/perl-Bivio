@@ -19,7 +19,7 @@ sub execute {
 		realm => $req->unsafe_get_nested(qw(auth_user name)),
 		task_id => $t,
 		path_info => undef,
-		query => undef,
+		query => $req->ureq('query'),
 	    }
 	}
     }
