@@ -10,6 +10,7 @@ options({comparator => 'nested_contains'});
 		my(undef, $params) = @_;
 		req()->set_user($params->[0]);
 		req()->put(path_info => $params->[1]);
+		req()->put(query => $params->[2]);
 		return [req()];
 	    },
 	} => [
@@ -37,6 +38,14 @@ options({comparator => 'nested_contains'});
 	    [qw(guest not-found-task)] => [{
 		realm => 'guest',
 		task_id => 'USER_PASSWORD',
+	    }],
+	    [qw(guest settings t=1)] => [{
+		realm => 'guest',
+		task_id => Agent_TaskId()->USER_SETTINGS_FORM,
+		query => {
+		    t => 1,
+		},
+		path_info => undef,
 	    }],
 	],
     ],
