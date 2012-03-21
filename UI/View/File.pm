@@ -59,7 +59,7 @@ sub file_change {
 				    . _javascript_form_object()
 				    . $source->req('Model.FileChangeForm')
 					->get_field_name_for_html('cancel_button')
-				    . '.click()"';
+				    . '[0].click()"';
 			    }]),
 			),
 		    ], String(' - ')),
