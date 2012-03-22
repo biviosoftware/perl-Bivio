@@ -15,7 +15,7 @@ my($_A) = b_use('IO.Alert');
 my($_M) = b_use('Biz.Model');
 my($_LOCK_ID);
 #TODO: What is the actual max term length; I've seen errors in the 400 range
-my($_MAX_WORD) = 240;
+my($_MAX_WORD) = 80;
 my($_LENGTH) = b_use('Type.PageSize')->get_default;
 my($_STEMMER) = Search::Xapian::Stem->new('english');
 my($_FLAGS) = 0;
