@@ -61,7 +61,6 @@ sub _dot {
     $name .= '.'
 	unless $name =~ /\.$/;
     return $name;
-   
 }
 
 sub _local_cfg {
