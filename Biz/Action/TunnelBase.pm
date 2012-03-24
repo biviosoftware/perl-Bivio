@@ -10,7 +10,7 @@ use LWP::UserAgent ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-my($_READ_SIZE) = 4096;
+my($_READ_SIZE) = 100_000;
 
 sub clear_cookie {
     my($proto, $req) = @_;
@@ -64,19 +64,23 @@ sub internal_proxy_request {
 	$self->req->get_content($fh);
 	$fh->close;
 	$fh = IO::File->new($file, 'r');
-	$request->content(sub {
+	$request->content('');
+	my($res);
+	while (1) {
 	    my($buf) = '';
-
-	    unless ($fh->read($buf, $_READ_SIZE)) {
-		$fh->close;
-		_trace('read finished') if $_TRACE;
-		return '';
-	    }
-	    return $buf;
-	});
+	    last
+		unless $res = $fh->read($buf, $_READ_SIZE);
+	    $request->add_content($buf);
+	}
+	b_use('Bivio.Die')->throw_die(IO_ERROR => {
+	    message => "$!",
+	    operation => 'read',
+	    entity => $file,
+	}) unless defined($res);
+	$fh->close;
     }
     else {
-	$request->content($req->get_content);
+	$request->content(${$req->get_content});
     }
     my(%h) = $r->headers_in;
     foreach my $name (keys(%h)) {
