@@ -82,10 +82,10 @@ sub internal_proxy_request {
     else {
 	$request->content(${$req->get_content});
     }
-    my(%h) = $r->headers_in;
-    foreach my $name (keys(%h)) {
-	$request->header($name => $r->header_in($name));
-    }
+    $r->headers_in->do(sub {
+        $request->push_header(shift(@_), shift(@_));
+        return 1;
+    });
     return $request;
 }
 
