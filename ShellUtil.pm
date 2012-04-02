@@ -1221,7 +1221,7 @@ sub _other {
     return $_DIE->catch_quietly(
 	sub {b_use($class)},
 	\$die,
-    ) || $_DIE->die($class, ": $_ not found or syntax error: ", $die);
+    ) || $_DIE->die($class, ": not found or syntax error: ", $die);
 }
 
 sub _parse_option_value {
