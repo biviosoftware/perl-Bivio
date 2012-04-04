@@ -188,8 +188,55 @@ sub _dynamic_modules {
             alias
         ),
         $_V2 ? qw(
-            log_config:mod_log_config:mod_log_config.c
+	    actions
+	    auth_basic
+	    auth_digest
+	    authn_alias
+	    authn_anon
+	    authn_dbm
+	    authn_default
+	    authn_file
+	    authnz_ldap
+	    authz_dbm
+	    authz_default
+	    authz_groupfile
+	    authz_host
+	    authz_owner
+	    authz_user
+	    autoindex
+	    cache
+	    cgi
+	    dav
+	    dav_fs
+	    deflate
+	    dir
+	    disk_cache
+	    expires
+	    ext_filter
+	    file_cache
+	    headers
+	    include
+	    info
+	    ldap
+	    log_config
+	    logio
+	    mem_cache
+	    mime_magic
+	    negotiation
 	    perl
+	    proxy
+	    proxy_balancer
+	    proxy_connect
+	    proxy_ftp
+	    proxy_http
+	    speling
+	    ssl
+	    suexec
+	    userdir
+	    usertrack
+	    version
+	    vhost_alias
+	    php5:libphp5:libphp5.c
 	) : qw(
 	    info
 	    config_log:mod_log_config:mod_log_config.c
