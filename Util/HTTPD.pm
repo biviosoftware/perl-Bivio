@@ -178,6 +178,8 @@ sub _dynamic_modules {
     } split("\n", `$httpd -l`)};
     my($load);
     my($add);
+#TODO: wordpress requires mod_dir, but including it causes a
+#      slash to be appended to image paths
     foreach my $module (
 	qw(
 	    env
@@ -209,7 +211,6 @@ sub _dynamic_modules {
 	    dav
 	    dav_fs
 	    deflate
-	    dir
 	    disk_cache
 	    expires
 	    ext_filter
