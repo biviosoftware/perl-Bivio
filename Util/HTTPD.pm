@@ -180,6 +180,8 @@ sub _dynamic_modules {
     my($add);
 #TODO: wordpress requires mod_dir, but including it causes a
 #      slash to be appended to image paths
+#TODO: wordpress requires mod_php5:libphp5:libphp5.c, but it
+#      causes the server to crash
     foreach my $module (
 	qw(
 	    env
@@ -237,7 +239,6 @@ sub _dynamic_modules {
 	    usertrack
 	    version
 	    vhost_alias
-	    php5:libphp5:libphp5.c
 	) : qw(
 	    info
 	    config_log:mod_log_config:mod_log_config.c
