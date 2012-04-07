@@ -28,6 +28,9 @@ sub cascade_delete {
 		[qw(RowTag primary_id)],
 		[qw(RealmUser realm_id)],
 		[qw(RealmUser user_id)],
+		[qw(CRMThread realm_id)],
+		[qw(RealmMail realm_id)],
+		[qw(RealmRole realm_id)],
 	    ) {
 		$self->new_other($x->[0])
 		    ->do_iterate(
@@ -40,6 +43,7 @@ sub cascade_delete {
 			{$x->[1] => $pid},
 		    );
 	    }
+	    $self->new_other('RealmFile')->delete_all;
 	    $self->SUPER::cascade_delete;
 	    $self->req(qw(auth_realm owner))->cascade_delete;
 	},
