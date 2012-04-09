@@ -28,9 +28,32 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.61  2012/03/19 20:37:50  moeller
+  * Bivio::IO::ClassLoader
+    added is_valid_map_class_name
+  * Bivio::UI::FacadeBase
+    added b_list_action font
+  * Bivio::UI::HTML::Widget::Link
+    added tooltip attribute
+  * Bivio::UI::HTML::Widget::ListAction
+    NEW
+  * Bivio::UI::HTML::Widget::YesNo
+    Allow event_handler to be specified
+  * Bivio::UI::View::CSS
+    added a.list_action
+  * Bivio::UI::Widget::URI
+    added query_type param, if present calls format_uri() on source
+  * Bivio::UI::XHTML::ViewShortcuts
+    Add 'vs_descriptive_field_no_description' to
+    'vs_descriptive_field'. Suppresses the description below the input
+    field (analogous to 'vs_descriptive_field_no_label').
+  * Bivio::Util::RealmMail
+    added clear_junk_messages()
+
   Revision 11.60  2012/03/09 23:41:37  moeller
   * Bivio::Biz::Action::ECCreditCardProcessor
     die unless currency is USD
