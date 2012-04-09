@@ -22,6 +22,14 @@ sub cascade_delete {
     $self->req->with_realm(
 	$pid,
 	sub {
+	    $self->new_other('MotionVote')->do_iterate(sub {
+		shift->update({
+		    affiliated_realm_id => undef,
+		});
+		return 1;
+	    }, 'unauth_iterate_start', 'affiliated_realm_id', {
+		affiliated_realm_id => $pid,
+	    });
 	    foreach my $x (
 		[qw(RealmDAG child_id)],
 		[qw(RealmDAG parent_id)],
@@ -31,6 +39,8 @@ sub cascade_delete {
 		[qw(CRMThread realm_id)],
 		[qw(RealmMail realm_id)],
 		[qw(RealmRole realm_id)],
+		[qw(MotionVote realm_id)],
+		[qw(Motion realm_id)],
 	    ) {
 		$self->new_other($x->[0])
 		    ->do_iterate(
