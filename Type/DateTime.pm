@@ -608,6 +608,17 @@ sub is_valid_specified {
     return defined((_from_literal(@_))[0]) ? 1 : 0;
 }
 
+sub is_weekday {
+    my($proto, $date_time) = @_;
+    return $proto->is_weekend($date_time) ? 0 : 1;
+}
+
+sub is_weekend {
+    my($proto, $date_time) = @_;
+    return $proto->english_day_of_week($date_time)
+	=~ /(@{[$_DAY_OF_WEEK->[0]]}|@{[$_DAY_OF_WEEK->[6]]})/;
+}
+
 sub local_end_of_today {
     # Returns the date/time for the last second in the user's "today".
     # Used to generate reports that includes the "end of business".
