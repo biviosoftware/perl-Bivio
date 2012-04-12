@@ -19,43 +19,28 @@ sub REALM_TYPE {
 sub cascade_delete {
     my($self) = @_;
     my($pid) = $self->get_primary_id;
-    $self->req->with_realm(
-	$pid,
-	sub {
-	    foreach my $x (
-		[qw(RealmDAG child_id)],
-		[qw(RealmDAG parent_id)],
-		[qw(RowTag primary_id)],
-		[qw(RealmUser realm_id)],
-		[qw(RealmUser user_id)],
-		[qw(CRMThread realm_id)],
-		[qw(RealmMail realm_id)],
-		[qw(RealmRole realm_id)],
-		[qw(MotionVote affiliated_realm_id), sub {
-		    shift->update({
-			affiliated_realm_id => undef,
-		    });
-		    return 1;
-		}],
-		[qw(MotionVote realm_id)],
-		[qw(Motion realm_id)],
-	    ) {
-		$self->new_other($x->[0])
-		    ->do_iterate(
-			$x->[2] || sub {
-			    shift->unauth_delete;
-			    return 1;
-			},
-			'unauth_iterate_start',
-			$x->[1],
-			{$x->[1] => $pid},
-		    );
-	    }
-	    $self->new_other('RealmFile')->delete_all;
-	    $self->SUPER::cascade_delete;
-	    $self->req(qw(auth_realm owner))->cascade_delete;
-	},
-    );
+    $self->req->with_realm($pid, sub {
+	foreach my $x (
+	    [qw(RealmDAG child_id)],
+	    [qw(RealmDAG parent_id)],
+	    [qw(RowTag primary_id)],
+	    [qw(RealmUser realm_id)],
+	    [qw(RealmUser user_id)],
+	) {
+	    $self->new_other($x->[0])
+		->do_iterate(
+		    sub {
+			shift->unauth_delete;
+			return 1;
+		    },
+		    'unauth_iterate_start',
+		    $x->[1],
+		    {$x->[1] => $pid},
+		);
+	}
+	$self->SUPER::cascade_delete;
+	$self->req(qw(auth_realm owner))->cascade_delete;
+    });
     return;
 }
 
