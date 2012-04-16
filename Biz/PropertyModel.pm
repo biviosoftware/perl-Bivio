@@ -30,12 +30,12 @@ sub cascade_delete {
     foreach my $c (@{$support->get_children}) {
 	my($child) = $self->new_other($c->[0]);
 	my($key_map) = $c->[1];
-	map({
-	    my($ck) = $key_map->{$_};
-	    $child->$method({
-		exists($properties->{$ck}) ? ($_ => $properties->{$ck}) : (),
-	    });
-	} keys(%$key_map)),
+	$child->$method({
+	    map({
+		my($ck) = $key_map->{$_};
+		exists($properties->{$ck}) ? ($_ => $properties->{$ck}) : ();
+	    } keys(%$key_map)),
+	});
     }
     $query ? $self->delete_all($query) : $self->delete;
     return;
