@@ -70,6 +70,10 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 #
 # Name of the L<Bivio::UI::Icon|Bivio::UI::Icon> to use.
 #
+# tooltip string
+#
+# Mouse-over text.
+#
 # width : int [src's width]
 #
 # See B<height>.
@@ -96,6 +100,9 @@ sub control_on_render {
     $self->SUPER::control_on_render($source, \$b);
     $b .= qq{ class="$src_name"}
 	if $b !~ /class=|id=/ && $_VS->vs_xhtml($source);
+    if ($self->has_keys('tooltip')) {
+	$b .= ' title="' . ${$self->render_attr('tooltip', $source)} . '"';
+    }
     $$buffer .= $b;
     my($alt) = $self->has_keys('alt')
 	? $self->render_simple_attr('alt', $source)
