@@ -232,6 +232,7 @@ sub _dynamic_modules {
 	    proxy_connect
 	    proxy_ftp
 	    proxy_http
+            reqtimeout
 	    speling
 	    ssl
 	    suexec
@@ -304,6 +305,7 @@ StartServers 1
 MaxClients 4
 MaxRequestsPerChild 100000
 LimitRequestBody 4194304
+RequestReadTimeout header=1
 
 ServerRoot $pwd
 # This is technically incorrect.
@@ -352,4 +354,3 @@ BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 force-response-1.0
 BrowserMatch "RealPlayer 4\.0" force-response-1.0
 BrowserMatch "Java/1\.0" force-response-1.0
 BrowserMatch "JDK/1\.0" force-response-1.0
-BrowserMatch "Chrome/" nokeepalive force-response-1.0
