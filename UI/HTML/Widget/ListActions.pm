@@ -35,10 +35,12 @@ use Bivio::Base 'UI.Widget';
 # The sixth optional element is a widget value which returns the 'path_info'
 #
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = b_use('UIHTML.ViewShortcuts');
-my($_T) = b_use('Agent.TaskId');
-my($_HTML) = b_use('Bivio.HTML');
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_HTML) = b_use('Bivio.HTML');
+my($_PI) = b_use('Type.PrimaryId');
+my($_RO) = b_use('Cache.RealmOwner');
+my($_T) = b_use('Agent.TaskId');
+my($_VS) = b_use('UIHTML.ViewShortcuts');
 
 sub initialize {
     my($self) = @_;
@@ -121,16 +123,8 @@ sub _realm_name {
     return undef
         unless $realm;
 
-    if (Bivio::Type->get_instance('PrimaryId')->is_valid($realm)) {
-        # chances are, it is already on the request at this point
-        # (loaded from can_user_execute_task())
-        if ($source->req->unsafe_get('Model.RealmOwner')
-            && $source->req(qw(Model.RealmOwner realm_id)) eq $realm) {
-            return $source->req(qw(Model.RealmOwner name));
-        }
-        # otherwise go to the database
-        return Bivio::Biz::Model->new($source->req, 'RealmOwner')
-            ->unauth_load_by_id_or_name_or_die($realm)->get('name');
+    if ($_PI->is_valid($realm)) {
+	return $_RO->get_cache_value($realm, $source->req)->get('name');
     }
     return $realm;
 }
