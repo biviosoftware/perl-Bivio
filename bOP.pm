@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,36 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.62  2012/04/09 15:58:59  schellj
+  * Bivio::Biz::Action::MySite
+    pass query along for user tasks
+  * Bivio::Biz::Action::TunnelBase
+    call HTTP::Request->add_content explicitly instead of passing a sub
+    can't pass scalar ref to HTTP::Request->content
+    change to Apache2::RequestReq API for headers_in.  Returns a
+    APR::Table
+  * Bivio::Biz::ListFormModel
+    remove b_debug
+  * Bivio::Biz::Model::RealmOwnerBase
+    delete realm CRMThread, RealmMail, RealmRole, RealmFile on cascade_delete
+    remove MotionVotes, nullify MotionVote.affiliated_realm_id as
+    necessary, remove Motions on cascade_delete
+    fpc
+  * Bivio::Search::Xapian
+    MAX_WORD at 240 is too long for a UTF8 string.  80 seems to work.
+  * Bivio::ShellUtil
+    no $_ in _other
+  * Bivio::UI::View::File
+    fixed unlock javascript - now there are two cancel buttons
+  * Bivio::Util::HTTPConf
+    added php
+  * Bivio::Util::HTTPD
+    added all modules including php for v2
+    remove mod_dir from apache V2 (see TODO)
+    remove mod_php5:libphp5:libphp5.c from V2 modules
+  * Bivio::Util::NamedConf
+    fmt
+
   Revision 11.61  2012/03/19 20:37:50  moeller
   * Bivio::IO::ClassLoader
     added is_valid_map_class_name
