@@ -84,6 +84,14 @@ open afa0
 disk list
 exit
 EOF
+    push(
+	@$err,
+	grep(
+	    /^u\d+\s/ && !/^u\d+\s+\S+\s+OK/,
+	    split(/\n/, $$d),
+	),
+    ) if $test_data || -x '/sbin/tw_cli'
+	and $d = _data($self, $test_data, '/sbin/tw_cli /c0 show unitstatus', '');
     return join('', map("DRIVE FAILURE: $_\n", @$err));
 }
 
