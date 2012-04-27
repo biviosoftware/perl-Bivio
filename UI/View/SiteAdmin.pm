@@ -8,6 +8,13 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AUL) = __PACKAGE__->use('Model.AdmUserList');
 
+sub email_alias_list_form {
+    return shift->internal_body(vs_list_form(EmailAliasListForm => [qw(
+	EmailAliasListForm.EmailAlias.incoming
+	EmailAliasListForm.EmailAlias.outgoing
+    )]));
+}
+
 sub remote_copy_form {
     return shift->internal_body(vs_simple_form(RemoteCopyListForm => [
 	List(RemoteCopyListForm => [
