@@ -1470,6 +1470,7 @@ sub _cfg_site_admin {
 	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => => '?/admin-applicants'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => => '?/admin-assign-applicant'],
+	    [EMAIL_ALIAS_LIST_FORM => '?/email-aliases'],
 	],
 	Text => [
             [xlink => [
@@ -1482,6 +1483,12 @@ sub _cfg_site_admin {
 	    [[qw(AdmUserList UnapprovedApplicantList)] => [
 		display_name => 'Name',
 		privileges => 'Privileges',
+	    ]],
+	    [EmailAliasList => [
+		EmailAlias => [
+		    incoming => 'From Email',
+		    outgoing => 'To Email or vs_ui_forum();',
+		],
 	    ]],
 	    [UnapprovedApplicantList => [
                 'RealmOwner.creation_date_time' => 'Registration Date',
@@ -1523,6 +1530,7 @@ EOF
 		SITE_ADMIN_SUBSTITUTE_USER => 'Act as User',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => 'Site Applicants',
 		SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => q{Applicant String(['->req', 'Model.UnapprovedApplicantList', 'RealmOwner.display_name']);},
+		EMAIL_ALIAS_LIST_FORM => 'Email Aliases',
 	    ]],
 	    [prose => [
 		unapproved_applicant_form_mail_subject => 'vs_site_name(); Registration Confirmed',
@@ -1532,6 +1540,7 @@ EOF
 	    [acknowledgement => [
 		REMOTE_COPY_FORM => 'Local system updated.',
 		REMOTE_COPY_FORM_no_update => 'Remote and local systems are identical.  Nothing to update.',
+		EMAIL_ALIAS_LIST_FORM => 'Email Aliases Updated',
 	    ]],
 	],
     };
