@@ -172,6 +172,7 @@ sub _is_other {
         |slurp
         |tlsprober
         |wget
+	|ultraseek
     }ix ? 1 : 0;
 }
 
