@@ -1,7 +1,9 @@
 # Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+my($_DT) = b_use('Type.DateTime');
 req()->put(query => {timezone => 1});
 req()->set_realm(qw(demo));
+
 [
     class() => [
 	from_literal => [
@@ -32,6 +34,17 @@ req()->set_realm(qw(demo));
 	row_tag_get => [
 	    [req()] => [class()->EUROPE_LONDON],
 	],
+	sub {
+	    # ensure all names are valid with
+	    # current DateTime::TimeZone version
+	    my($dt) = $_DT->now;
+
+	    foreach my $tz (class()->get_list) {
+		next if $tz->as_int <= 1;
+		$tz->date_time_from_utc($dt);
+	    }
+	    return 1;
+	} => 1,
     ],
     sub {class()->UTC} => [
 	date_time_to_utc => [
