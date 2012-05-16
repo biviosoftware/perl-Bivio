@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.63  2012/04/25 18:27:21  moeller
+  * Bivio::Type::DateTime
+    add is_weekday and is_weekend
+  * Bivio::UI::HTML::Widget::Image
+    added tooltip
+  * Bivio::UI::HTML::Widget::ListActions
+    use Cache.RealmOwner when looking up realm
+  * Bivio::Util::HTTPConf
+    removed php
+  * Bivio::Util::HTTPD
+    Chrome BrowserMatch with reqtimeout header=1
+
   Revision 11.62  2012/04/09 15:58:59  schellj
   * Bivio::Biz::Action::MySite
     pass query along for user tasks
