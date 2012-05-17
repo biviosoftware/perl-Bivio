@@ -74,11 +74,12 @@ sub internal_prepare_statement {
     ]));
     return;
 }
+
 sub is_open {
     my($self) = @_;
     my($end) = $self->get('Motion.end_date_time');
     return 1 unless $end;
-    return $_DT->compare_defined($end, $_DT->now) > 0;
+    return $_DT->compare_defined($end, $_DT->now) > 0 ? 1 : 0;
 }
 
 sub vote_count_field {
@@ -94,7 +95,7 @@ sub vote_count_field {
                 WHERE mv.motion_id = motion_t.motion_id
                 AND mv.vote = ' . $vote->as_sql_param
 		 . ') AS ' . lc($vote->get_name) . '_count'
-    };	    
+    };
 }
 
 1;
