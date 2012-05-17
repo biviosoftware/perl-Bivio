@@ -63,6 +63,12 @@ sub execute {
     return;
 }
 
+sub execute_auth_user {
+    my($proto, $req) = @_;
+    $proto->new($req)->acquire($req->get('auth_user_id'));
+    return;
+}
+
 sub execute_general {
     my($proto, $req) = @_;
     $proto->new($req)->acquire_general;
