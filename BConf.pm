@@ -44,6 +44,9 @@ sub default_merge_overrides {
 	    root => "/var/db/$uri",
 	    backup_root => "/var/bkp/$uri",
 	},
+	'Bivio::Biz::Model::AcceptanceTestList' => {
+	    root => $args->{root},
+	},
 	'Bivio::Ext::DBI' => {
 	    database => $args->{prefix},
 	    user => "$args->{prefix}user",
