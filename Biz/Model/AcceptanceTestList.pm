@@ -6,6 +6,9 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
+b_use('IO.Config')->register(my $_CFG = {
+    root => b_use('IO.Config')->REQUIRED,
+});
 
 sub internal_initialize {
     my($self) = @_;
@@ -40,7 +43,6 @@ sub internal_initialize {
         });
     return;
 }
-
 
 sub internal_load_rows {
      my($self) = @_;
@@ -77,12 +79,15 @@ sub internal_load_rows {
 sub get_result_directory {
     my($self, $test_name) = @_;
     my($home) = $ENV{HOME} . '/src/perl/';
-    my($root) = b_use('UI.Facade')->get_local_file_root;
-    my($project) = $root =~ qr{$home(\w+)};
-    my($result) = $home . $project . '/Test/t/log';
-    $result .= '/'. $test_name if $test_name; 
+    my($result) = $home . $_CFG->{root} . '/Test/t/log';
+    $result .= '/'. $test_name if $test_name;
     return $result;
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
 
 1;
