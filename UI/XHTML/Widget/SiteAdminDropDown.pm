@@ -12,23 +12,26 @@ sub NEW_ARGS {
 }
 
 sub TASK_MENU_LIST {
-    return map(
-        {
-	    xlink => XLink({
-		facade_label => $_,
-		control => vs_constant("want_$_"),
-	    }),
-	    sort_label => "xlink.$_",
-	    label => 'none',
-	},
-	qw(
-	    substitute_user
-	    all_users
-	    remote_copy
-	    applicants
-	    task_log
-	    site_reports
+    return (
+	map(
+	    {
+		xlink => XLink({
+		    facade_label => $_,
+		    control => vs_constant("want_$_"),
+		}),
+		sort_label => "xlink.$_",
+		label => 'none',
+	    },
+	    qw(
+		substitute_user
+		all_users
+		remote_copy
+		applicants
+		task_log
+		site_reports
+	    ),
 	),
+	'EMAIL_ALIAS_LIST_FORM',
     );
 }
 
