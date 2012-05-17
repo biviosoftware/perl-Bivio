@@ -1305,8 +1305,8 @@ sub info_site_admin {
 	[qw(
 	    EMAIL_ALIAS_LIST_FORM
 	    167
-	    ANY_OWNER
-	    ADMIN_READ&ADMIN_WRITE&FEATURE_SITE_ADMIN
+	    GENERAL
+	    ADMIN_READ&ADMIN_WRITE
 	    Model.EmailAliasList->execute_load_all
 	    Model.EmailAliasListForm
 	    View.SiteAdmin->email_alias_list_form

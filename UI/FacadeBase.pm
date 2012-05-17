@@ -1453,6 +1453,7 @@ sub _cfg_site_admin {
 		    'SITE_REPORTS_REALM_NAME',
 		],
             ),
+	    [xlink_email_alias => 'EMAIL_ALIAS_LIST_FORM'],
         ],
 	FormError => [
 	    ['RemoteCopyListForm.want_realm' => [
@@ -1470,7 +1471,7 @@ sub _cfg_site_admin {
 	    [SITE_ADMIN_SUBSTITUTE_USER_DONE => '?/admin-su-exit'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_LIST => => '?/admin-applicants'],
 	    [SITE_ADMIN_UNAPPROVED_APPLICANT_FORM => => '?/admin-assign-applicant'],
-	    [EMAIL_ALIAS_LIST_FORM => '?/email-aliases'],
+	    [EMAIL_ALIAS_LIST_FORM => 'adm/email-aliases'],
 	],
 	Text => [
             [xlink => [
