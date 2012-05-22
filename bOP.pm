@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.64  2012/05/16 17:38:00  moeller
+  * Bivio::Biz::Model::EmailAliasListForm
+    NEW
+  * Bivio::Delegate::TaskId
+    add EMAIL_ALIAS_LIST_FORM
+  * Bivio::Type::TimeZone
+    now uses static time zone list, compatible with DateTime::TimeZone
+    versions 0.48 and 1.39
+  * Bivio::Type::UserAgent
+    added ultraseek to list of robots
+  * Bivio::UI::FacadeBase
+    add EMAIL_ALIAS_LIST_FORM
+  * Bivio::UI::View::SiteAdmin
+    add email_alias_list_form
+  * Bivio::Util::Disk
+    added tw_cli test
+
   Revision 11.63  2012/04/25 18:27:21  moeller
   * Bivio::Type::DateTime
     add is_weekday and is_weekend
