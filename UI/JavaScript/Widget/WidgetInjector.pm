@@ -20,49 +20,35 @@ sub NEW_ARGS {
 sub control_off_render {
     my($self, $source, $buffer) = @_;
     $$buffer .= $_JS->strip(<<'EOF');
-(function () {
-    var prev_onload = window.onload;
-    window.onload = function () {
-        if (prev_onload) {
-            prev_onload();
-        }
-	var elements = document.getElementsByTagName("script");
-	elements = document.getElementsByTagName("body")[0].getElementsByTagName("*");
-	var query = '';
-	var sep = '?';
-	for (i = 0; i < elements.length; i++) {
-	    var id = elements[i].id;
-	    if (id && /^bivio_/.test(id)) {
-		query = query + sep + escape(id) + '=';
-		sep = '&';
-	    }
+function b_injection_callback(element_id, element_html) {
+   document.getElementById(element_id).innerHTML = element_html;
+}
+var b_scripts = document.getElementsByTagName("script");
+var b_script_uri = b_scripts[b_scripts.length - 1].src;
+var b_prev_onload = window.onload;
+window.onload = function () {
+    if (b_prev_onload) {
+        b_prev_onload();
+    }
+    var elements = document.getElementsByTagName("body")[0].getElementsByTagName("*");
+    var query = '';
+    var sep = '?';
+    for (i = 0; i < elements.length; i++) {
+	var id = elements[i].id;
+	if (id && /^bivio_/.test(id)) {
+	    query = query + sep + escape(id) + '=';
+	    sep = '&';
 	}
-	if (!query) {
-	    return;
-	}
-	var req = (function () {
-	    try {return new XMLHttpRequest();} catch (e) {}
-	    try {return new ActiveXObject("Msxml2.XMLHTTP.6.0");} catch (e) {}
-	    try {return new ActiveXObject("Msxml2.XMLHTTP.3.0");} catch (e) {}
-	    try {return new ActiveXObject("Msxml2.XMLHTTP");} catch (e) {}
-	    return;
-	})();
-	if (!req) {
-	    return;
-	} 
-	req.onreadystatechange = function () {
-	    if (req.readyState == 4 && req.status == 200) {
-		eval(req.responseText);
-	    }
-	    return;
-	};
-	var scripts = document.getElementsByTagName("script");
-	var uri = scripts[scripts.length-1].src;
-	req.open("GET", uri + query, true);
-	req.send(null);
+    }
+    if (!query) {
 	return;
-    };
-})();
+    }
+    var uri = b_script_uri + query;
+    var script_obj = document.createElement("script");
+    script_obj.setAttribute("type", "text/javascript");
+    script_obj.setAttribute("src", uri);
+    document.getElementsByTagName("head").item(0).appendChild(script_obj);
+};
 EOF
     return;
 }
@@ -71,20 +57,18 @@ sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($query) = $source->req('query');
     Join([
-	map(
-	    {
-		$source->req->put($_QUERY_VALUE_KEY => $query->{$_});
-		my($id, $v) = _render_view($self, $_, $source);
-		(
-		    'document.getElementById("',
-		    $id,
-		    '").innerHTML = ',
-		    $_QV->escape_value($v),
-		    ";\n",
-		);
-	    }
+ 	map(
+ 	    {
+ 		$source->req->put($_QUERY_VALUE_KEY => $query->{$_});
+ 		my($id, $v) = _render_view($self, $_, $source);
+ 		(
+ 		    "b_injection_callback('$id', ",
+ 		    $_QV->escape_value($v),
+ 		    ");\n",
+ 		);
+ 	    }
 	    sort(keys(%$query)),
-	),
+ 	),
     ])->initialize_and_render($source, $buffer);
     return;
 }
