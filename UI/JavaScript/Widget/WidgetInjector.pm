@@ -12,6 +12,7 @@ my($_QV) = b_use('JavaScriptWidget.QuotedValue');
 my($_PN) = b_use('Type.PerlName');
 my($_NULL) = b_use('Bivio.TypeError')->NULL;
 my($_QUERY_VALUE_KEY) = __PACKAGE__ . '.query_value';
+my($_D) = b_use('Bivio.Die');
 
 sub NEW_ARGS {
     return [qw(view_class view_name_prefix view_name_suffix)];
@@ -20,8 +21,14 @@ sub NEW_ARGS {
 sub control_off_render {
     my($self, $source, $buffer) = @_;
     $$buffer .= $_JS->strip(<<'EOF');
-function b_injection_callback(element_id, element_html) {
-   document.getElementById(element_id).innerHTML = element_html;
+function b_injection_callback(element_id, element_html, element_javascript) {
+    document.getElementById(element_id).innerHTML = element_html;
+    if (element_javascript) {
+        var script_obj = document.createElement("script");
+        script_obj.setAttribute("type", "text/javascript");
+        script_obj.appendChild(document.createTextNode(element_javascript));
+        document.getElementsByTagName("head").item(0).appendChild(script_obj);
+    }
 }
 var b_scripts = document.getElementsByTagName("script");
 var b_script_uri = b_scripts[b_scripts.length - 1].src;
@@ -60,10 +67,11 @@ sub control_on_render {
  	map(
  	    {
  		$source->req->put($_QUERY_VALUE_KEY => $query->{$_});
- 		my($id, $v) = _render_view($self, $_, $source);
+ 		my($id, $v, $j) = _render_view($self, $_, $source);
  		(
  		    "b_injection_callback('$id', ",
- 		    $_QV->escape_value($v),
+ 		    $_QV->escape_value($v), ', ',
+		    $_QV->escape_value($j),
  		    ");\n",
  		);
  	    }
@@ -85,6 +93,20 @@ sub query_value {
     return $source->req($_QUERY_VALUE_KEY);
 }
 
+sub _do_render_view {
+    my($self, $name, $source) = @_;
+    return ${$_V->render(
+	$self->render_simple_attr('view_class', $source),
+	$self->render_simple_attr('view_name_prefix', $source)
+	    . '_'
+	    . $name
+	    . '_'
+	    . $self->render_simple_attr(
+	    'view_name_suffix', $source),
+	$source,
+    )};
+}
+
 sub _render_view {
     my($self, $id, $source) = @_;
     my($req) = $source->req;
@@ -96,17 +118,15 @@ sub _render_view {
 		entity => $id,
 		message => 'not a Type.PerlName: ' . ($err || $_NULL)->get_name,
 	    }) unless $name;
+	    my($javascript);
+	    $_D->catch_quietly(sub {
+		$javascript = _do_render_view(
+		    $self, $name . '_javascript', $source);
+	    });
 	    return (
 		$id,
-		${$_V->render(
-		    $self->render_simple_attr('view_class', $source),
-		    $self->render_simple_attr('view_name_prefix', $source)
-			. '_'
-			. $name
-			. '_'
-			. $self->render_simple_attr('view_name_suffix', $source),
-		    $source,
-		)},
+		_do_render_view($self, $name, $source),
+		$javascript,
 	    );
 	},
     );
