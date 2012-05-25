@@ -31,19 +31,20 @@ my($ids) = [map({
 	    ->merge_users(req(qw(Model.User user_id)), $ids->[0]);
 	return 1;
     },
-    [qw(-user demo detach_user)] => sub {
-	foreach my $x (b_use('Util.User')->DETACH_USER_MODELS) {
-	    my($m) = model($x->[0]);
-	    $m->unauth_load({$x->[1] => $ids->[0]});
-	    next
-		unless $m->is_loaded;
-	    foreach my $f (@{$x->[2]}) {
-		return 0
-		    if $f eq 'gender'
-			? $m->get($f)->as_int
-			: $m->get($f);
-	    }
-	}
-	return 1;
-    }
+#TODO: removed this, breakouts all other tests which depend on demo user
+    # ['-user', $email, 'detach_user'] => sub {
+    # 	foreach my $x (b_use('Util.User')->DETACH_USER_MODELS) {
+    # 	    my($m) = model($x->[0]);
+    # 	    $m->unauth_load({$x->[1] => $ids->[0]});
+    # 	    next
+    # 		unless $m->is_loaded;
+    # 	    foreach my $f (@{$x->[2]}) {
+    # 		return 0
+    # 		    if $f eq 'gender'
+    # 			? $m->get($f)->as_int
+    # 			: $m->get($f);
+    # 	    }
+    # 	}
+    # 	return 1;
+    # }
 ];
