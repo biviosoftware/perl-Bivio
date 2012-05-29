@@ -145,75 +145,81 @@ my($_SUBJECTS) = [
     q{Without faith or law},
     q{I'm your man},
 ];
-my($_AUTHORS) = {
-    'george.read@delaware.us' => 'George Read',
-    'caesar.rodney@delaware.us' => 'Caesar Rodney',
-    'thomas.mckean@delaware.us' => 'Thomas McKean',
-    'george.clymer@pennsylvania.us' => 'George Clymer',
-    'benjamin.franklin@pennsylvania.us' => 'Benjamin Franklin',
-    'robert.morris@pennsylvania.us' => 'Robert Morris',
-    'john.morton@pennsylvania.us' => 'John Morton',
-    'benjamin.rush@pennsylvania.us' => 'Benjamin Rush',
-    'george.ross@pennsylvania.us' => 'George Ross',
-    'james.smith@pennsylvania.us' => 'James Smith',
-    'james.wilson@pennsylvania.us' => 'James Wilson',
-    'george.taylor@pennsylvania.us' => 'George Taylor',
-    'john.adams@massachusetts.us' => 'John Adams',
-    'samuel.adams@massachusetts.us' => 'Samuel Adams',
-    'john.hancock@massachusetts.us' => 'John Hancock',
-    'robert.paine@massachusetts.us' => 'Robert Paine',
-    'elbridge.gerry@massachusetts.us' => 'Elbridge Gerry',
-    'josiah.bartlett@newhampshire.us' => 'Josiah Bartlett',
-    'william.whipple@newhampshire.us' => 'William Whipple',
-    'matthew.thornton@newhampshire.us' => 'Matthew Thornton',
-    'stephen.hopkins@rhodeisland.us' => 'Stephen Hopkins',
-    'william.ellery@rhodeisland.us' => 'William Ellery',
-    'lewis.morris@newyork.us' => 'Lewis Morris',
-    'philip.livingston@newyork.us' => 'Philip Livingston',
-    'francis.lewis@newyork.us' => 'Francis Lewis',
-    'william.floyd@newyork.us' => 'William Floyd',
-    'button.gwinnett@georgia.us' => 'Button Gwinnett',
-    'lyman.hall@georgia.us' => 'Lyman Hall',
-    'george.walton@georgia.us' => 'George Walton',
-    'richard.lee@virginia.us' => 'Richard Lee',
-    'francis.lee@virginia.us' => 'Francis Lee',
-    'carter.braxton@virginia.us' => 'Carter Braxton',
-    'benjamin.harrison@virginia.us' => 'Benjamin Harrison',
-    'thomas.jefferson@virginia.us' => 'Thomas Jefferson',
-    'george.wythe@virginia.us' => 'George Wythe',
-    'thomas.nelson@virginia.us' => 'Thomas Nelson',
-    'william.hooper@northcarolina.us' => 'William Hooper',
-    'john.penn@northcarolina.us' => 'John Penn',
-    'joseph.hewes@northcarolina.us' => 'Joseph Hewes',
-    'edward.rutledge@southcarolina.us' => 'Edward Rutledge',
-    'arthur.middleton@southcarolina.us' => 'Arthur Middleton',
-    'thomas.lynch@southcarolina.us' => 'Thomas Lynch',
-    'thomas.heyward@southcarolina.us' => 'Thomas Heyward',
-    'abraham.clark@newjersey.us' => 'Abraham Clark',
-    'john.hart@newjersey.us' => 'John Hart',
-    'francis.hopkinson@newjersey.us' => 'Francis Hopkinson',
-    'richard.stockton@newjersey.us' => 'Richard Stockton',
-    'john.witherspoon@newjersey.us' => 'John Witherspoon',
-    'samuel.huntington@connecticut.us' => 'Samuel Huntington',
-    'roger.sherman@connecticut.us' => 'Roger Sherman',
-    'william.williams@connecticut.us' => 'William Williams',
-    'oliver.wolcott@connecticut.us' => 'Oliver Wolcott',
-    'charles.carroll@maryland.us' => 'Charles Carroll',
-    'samuel.chase@maryland.us' => 'Samuel Chase',
-    'thomas.stone@maryland.us' => 'Thomas Stone',
-    'william.paca@maryland.us' => 'William Paca',
-};
+
+sub AUTHORS {
+    return {
+	'george.read@delaware.us' => 'George Read',
+	'caesar.rodney@delaware.us' => 'Caesar Rodney',
+	'thomas.mckean@delaware.us' => 'Thomas McKean',
+	'george.clymer@pennsylvania.us' => 'George Clymer',
+	'benjamin.franklin@pennsylvania.us' => 'Benjamin Franklin',
+	'robert.morris@pennsylvania.us' => 'Robert Morris',
+	'john.morton@pennsylvania.us' => 'John Morton',
+	'benjamin.rush@pennsylvania.us' => 'Benjamin Rush',
+	'george.ross@pennsylvania.us' => 'George Ross',
+	'james.smith@pennsylvania.us' => 'James Smith',
+	'james.wilson@pennsylvania.us' => 'James Wilson',
+	'george.taylor@pennsylvania.us' => 'George Taylor',
+	'john.adams@massachusetts.us' => 'John Adams',
+	'samuel.adams@massachusetts.us' => 'Samuel Adams',
+	'john.hancock@massachusetts.us' => 'John Hancock',
+	'robert.paine@massachusetts.us' => 'Robert Paine',
+	'elbridge.gerry@massachusetts.us' => 'Elbridge Gerry',
+	'josiah.bartlett@newhampshire.us' => 'Josiah Bartlett',
+	'william.whipple@newhampshire.us' => 'William Whipple',
+	'matthew.thornton@newhampshire.us' => 'Matthew Thornton',
+	'stephen.hopkins@rhodeisland.us' => 'Stephen Hopkins',
+	'william.ellery@rhodeisland.us' => 'William Ellery',
+	'lewis.morris@newyork.us' => 'Lewis Morris',
+	'philip.livingston@newyork.us' => 'Philip Livingston',
+	'francis.lewis@newyork.us' => 'Francis Lewis',
+	'william.floyd@newyork.us' => 'William Floyd',
+	'button.gwinnett@georgia.us' => 'Button Gwinnett',
+	'lyman.hall@georgia.us' => 'Lyman Hall',
+	'george.walton@georgia.us' => 'George Walton',
+	'richard.lee@virginia.us' => 'Richard Lee',
+	'francis.lee@virginia.us' => 'Francis Lee',
+	'carter.braxton@virginia.us' => 'Carter Braxton',
+	'benjamin.harrison@virginia.us' => 'Benjamin Harrison',
+	'thomas.jefferson@virginia.us' => 'Thomas Jefferson',
+	'george.wythe@virginia.us' => 'George Wythe',
+	'thomas.nelson@virginia.us' => 'Thomas Nelson',
+	'william.hooper@northcarolina.us' => 'William Hooper',
+	'john.penn@northcarolina.us' => 'John Penn',
+	'joseph.hewes@northcarolina.us' => 'Joseph Hewes',
+	'edward.rutledge@southcarolina.us' => 'Edward Rutledge',
+	'arthur.middleton@southcarolina.us' => 'Arthur Middleton',
+	'thomas.lynch@southcarolina.us' => 'Thomas Lynch',
+	'thomas.heyward@southcarolina.us' => 'Thomas Heyward',
+	'abraham.clark@newjersey.us' => 'Abraham Clark',
+	'john.hart@newjersey.us' => 'John Hart',
+	'francis.hopkinson@newjersey.us' => 'Francis Hopkinson',
+	'richard.stockton@newjersey.us' => 'Richard Stockton',
+	'john.witherspoon@newjersey.us' => 'John Witherspoon',
+	'samuel.huntington@connecticut.us' => 'Samuel Huntington',
+	'roger.sherman@connecticut.us' => 'Roger Sherman',
+	'william.williams@connecticut.us' => 'William Williams',
+	'oliver.wolcott@connecticut.us' => 'Oliver Wolcott',
+	'charles.carroll@maryland.us' => 'Charles Carroll',
+	'samuel.chase@maryland.us' => 'Samuel Chase',
+	'thomas.stone@maryland.us' => 'Thomas Stone',
+	'william.paca@maryland.us' => 'William Paca',
+    };
+}
 
 sub create_messages {
-    my($self, $num_msgs, $want_threads) = @_;
+    my($self, $num_msgs, $want_threads, $percent_replies) = @_;
     $num_msgs ||= 50;
+    $percent_replies ||= 95;
     $self->initialize_fully;
     my($req) = $self->req;
     my($ra) = $self->new_other('RealmAdmin');
     my($users) = [];
-    while (my($email, $name) = each(%$_AUTHORS)) {
+    my($authors) = $self->AUTHORS;
+    while (my($email, $name) = each(%$authors)) {
         $ra->create_user($email, $name, undef, undef)
 	    unless $self->model('Email')->unauth_load({email => $email});
+
         push(@$users, [qq{"$name" <$email>}, $self->req('Model.Email')]);
     }
     $_BODIES ||= [grep(/\n/, split(/\n\n/, $self->internal_data_section))];
@@ -235,7 +241,8 @@ sub create_messages {
 	my($date) = $_DT->rfc822($now);
 	my($in_reply_to) = '';
 	my($msg_id) = $mo->generate_message_id($req);
-	if ($want_threads && @$msgs > 3 && $_R->integer(100) < 95) {
+	if ($want_threads && @$msgs > 3
+		&& $_R->integer(100) < $percent_replies) {
 	    ($subject, $in_reply_to) = @{$pick->($msgs)};
 	    $in_reply_to = "\nIn-Reply-To: $in_reply_to";
 	    $subject =~ s/^Re: //;
