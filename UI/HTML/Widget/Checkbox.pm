@@ -11,8 +11,10 @@ my($_V5) = b_use('IO.Config')->if_version(5);
 
 sub initialize {
     my($self) = @_;
-    $self->put(label => LABEL(_init_label($self))
-        ->put(FOR => $self->initialize_attr(ID => 'b_cb' . ++$_ID)));
+    my($id) = $self->unsafe_get('ID')
+	? $self->get('ID')
+	: $self->initialize_attr(ID => 'b_cb' . ++$_ID);
+    $self->put(label => LABEL(_init_label($self))->put(FOR => $id));
     $self->initialize_attr('label');
     $self->initialize_attr(class => 'checkbox');
     $self->initialize_attr(TYPE => 'checkbox');
