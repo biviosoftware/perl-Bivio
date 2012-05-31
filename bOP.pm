@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.65  2012/05/22 16:30:08  moeller
+  * Bivio::BConf
+    added Model.AcceptanceTestList root config value
+  * Bivio::Biz::Model::AcceptanceTestList
+    added root config value, allows use with Bivio/PetShop
+  * Bivio::Biz::Model::Lock
+    added execute_auth_user()
+  * Bivio::Biz::Model::MotionList
+    fixed boolean return value
+  * Bivio::Delegate::TaskId
+    move EMAIL_ALIAS_LIST_FORM to adm
+  * Bivio::UI::FacadeBase
+    move EMAIL_ALIAS_LIST_FORM to adm
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    add EMAIL_ALIAS_LIST_FORM
+
   Revision 11.64  2012/05/16 17:38:00  moeller
   * Bivio::Biz::Model::EmailAliasListForm
     NEW
