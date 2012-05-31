@@ -5,9 +5,8 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_FP) = b_use('Type.FilePath');
 my($_DT) = b_use('Type.DateTime');
-my($_VT) = b_use('Type.MotionVote');
+my($_FP) = b_use('Type.FilePath');
 
 sub can_comment {
     my($self) = @_;
@@ -48,9 +47,8 @@ sub internal_initialize {
 		type => 'FileName',
 		constraint => 'NONE',
 	    },
-	    $self->vote_count_field($_VT->YES),
-	    $self->vote_count_field($_VT->NO),
-	    $self->vote_count_field($_VT->ABSTAIN),
+	    map($self->vote_count_field($_),
+		b_use('Type.MotionVote')->get_list),
 	],
     });
 }
