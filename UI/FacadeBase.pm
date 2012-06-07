@@ -1304,6 +1304,7 @@ sub _cfg_motion {
 	    ]],
 	    [MotionComment => [
 		comment => 'Comment',
+		creation_date_time => 'Date',
 	    ]],
 	    [MotionCommentList => [
 		'RealmOwner.display_name' => 'Name',
