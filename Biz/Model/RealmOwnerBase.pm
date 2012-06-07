@@ -26,6 +26,11 @@ sub cascade_delete {
 	    [qw(RowTag primary_id)],
 	    [qw(RealmUser realm_id)],
 	    [qw(RealmUser user_id)],
+	    [qw(CRMThread realm_id)],
+	    [qw(RealmMail realm_id)],
+	    [qw(RealmRole realm_id)],
+	    [qw(MotionVote realm_id)],
+	    [qw(Motion realm_id)],
 	) {
 	    $self->new_other($x->[0])
 		->do_iterate(
