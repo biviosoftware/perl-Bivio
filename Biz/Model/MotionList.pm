@@ -18,6 +18,15 @@ sub can_vote {
     return $self->is_open;
 }
 
+sub execute_load_this_for_parent {
+    my($proto, $req) = @_;
+    my($self) = $proto->new($req);
+    my($query) = $self->parse_query_from_request;
+    $query->put(this => [$query->get('parent_id')]);
+    $self->load_this($query);
+    return;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
