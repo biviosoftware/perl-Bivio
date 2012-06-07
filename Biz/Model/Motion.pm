@@ -67,7 +67,12 @@ sub internal_initialize {
     });
 }
 
-
+sub is_open {
+    my($self) = @_;
+    my($end) = $self->get('end_date_time');
+    return 1 unless $end;
+    return $_DT->compare_defined($end, $_DT->now) > 0 ? 1 : 0;
+}
 
 sub vote_count {
     my($self,  $vote_type) = @_;
@@ -82,9 +87,11 @@ sub vote_count {
 sub vote_count_abstain {
     return shift->vote_count($_VT->ABSTAIN);
 }
+
 sub vote_count_no {
     return shift->vote_count($_VT->NO);
 }
+
 sub vote_count_yes {
     return shift->vote_count($_VT->YES);
 }
