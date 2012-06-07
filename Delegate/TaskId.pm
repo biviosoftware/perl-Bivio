@@ -1138,7 +1138,7 @@ sub info_motion {
 	    112
 	    ANY_OWNER
 	    MOTION_WRITE&FEATURE_MOTION
-	    Model.MotionList->execute_load_this
+	    Model.MotionList->execute_load_this_for_parent
 	    Model.MotionCommentForm
 	    View.Motion->comment_form
 	    next=FORUM_MOTION_LIST
