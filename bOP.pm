@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.66  2012/05/31 20:49:36  moeller
+  * Bivio::Biz::Model::MotionList
+    enumerate vote types for count field
+  * Bivio::UI::HTML::Widget::Checkbox
+    allow overriding ID value
+  * Bivio::UI::JavaScript::Widget::WidgetInjector
+    rework to allow cross-domain injection
+    allow for the injection of javascript with the widget
+  * Bivio::Util::TestMail
+    add $percent_replies to create_messages
+
   Revision 11.65  2012/05/22 16:30:08  moeller
   * Bivio::BConf
     added Model.AcceptanceTestList root config value
