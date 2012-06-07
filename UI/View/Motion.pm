@@ -198,7 +198,7 @@ sub internal_list_actions {
 	    [
 		'Comment', 
 		'FORUM_MOTION_COMMENT',
-		'THIS_DETAIL',
+		'THIS_AS_PARENT',
 		['->can_comment'],
 	    ] : (),
 	[
