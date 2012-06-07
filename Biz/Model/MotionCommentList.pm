@@ -33,9 +33,10 @@ sub internal_initialize {
 	    'MotionComment.motion_comment_id',
 	    'MotionComment.comment',
 	    'RealmOwner.display_name',
+	    'MotionComment.creation_date_time',
 	],
 	other => [
-	    [qw(MotionComment.user_id RealmOwner.realm_id)],	    
+	    [qw(MotionComment.user_id RealmOwner.realm_id)],
 	    {
 		name => 'comment_trimmed',
 		type => 'String',
@@ -53,9 +54,9 @@ sub internal_post_load_row {
 	my($ellipses) = '...';
 	$comment = substr($comment, 0, MAX_TRIMMED_COMMENT_SIZE - length($ellipses));
 	$comment =~ s/\s*$/$ellipses/;
-    }	
-     $row->{comment_trimmed} = $comment;
-     return 1;
+    }
+    $row->{comment_trimmed} = $comment;
+    return 1;
 }
 
 1;
