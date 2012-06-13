@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.67  2012/06/07 00:33:20  moeller
+  * Bivio::Biz::Model::MotionCommentForm
+    now derives from FormModeBaseForm
+  * Bivio::Biz::Model::MotionCommentList
+    added MotionCommentList.creation_date_time
+  * Bivio::Biz::Model::MotionList
+    added execute_load_this_for_parent()
+  * Bivio::Biz::Model::Motion
+    added is_open()
+  * Bivio::Biz::Model::RealmOwnerBase
+    added model defs back to cascade_delete()
+  * Bivio::Delegate::TaskId
+    for motion comments, load this from parent id
+  * Bivio::Type::String
+    transliterate unicode thin space
+  * Bivio::UI::View::Motion
+    comment form now takes THIS_AS_PARENT
+
   Revision 11.66  2012/05/31 20:49:36  moeller
   * Bivio::Biz::Model::MotionList
     enumerate vote types for count field
