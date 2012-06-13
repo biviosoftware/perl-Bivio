@@ -19,7 +19,7 @@ my($_MAX_WORD) = 80;
 my($_LENGTH) = b_use('Type.PageSize')->get_default;
 my($_STEMMER) = Search::Xapian::Stem->new('english');
 my($_FLAGS) = 0;
-foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD)) {
+foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD FLAG_PURE_NOT)) {
     $_FLAGS |= Search::Xapian->$f();
 }
 my($_VALUE_MAP) = {
