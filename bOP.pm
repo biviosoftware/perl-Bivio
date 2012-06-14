@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.68  2012/06/13 22:56:25  nagler
+  * Added files/qooxdoo
+  * Bivio::BConf
+    set default database and connection
+  * Bivio::Search::Xapian
+    Allow queries of the form 'a OR NOT b'
+
   Revision 11.67  2012/06/07 00:33:20  moeller
   * Bivio::Biz::Model::MotionCommentForm
     now derives from FormModeBaseForm
