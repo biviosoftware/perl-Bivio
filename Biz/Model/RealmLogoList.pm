@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::RealmLogoList;
 use strict;
-use Bivio::Base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 use Image::Size ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);

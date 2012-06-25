@@ -2,8 +2,9 @@
 # $Id$
 package Bivio::Biz::Model::MailReceiveBaseForm;
 use strict;
-$Bivio::Biz::Model::MailReceiveBaseForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::MailReceiveBaseForm::VERSION;
+use Bivio::Base 'Biz.FormModel';
+
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
@@ -24,9 +25,6 @@ bOP
 L<Bivio::Biz::FormModel>
 
 =cut
-
-use Bivio::Biz::FormModel;
-@Bivio::Biz::Model::MailReceiveBaseForm::ISA = ('Bivio::Biz::FormModel');
 
 =head1 DESCRIPTION
 

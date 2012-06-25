@@ -30,6 +30,7 @@ my($_REALM_OWNER_FIELDS) = [qw(
 my($_FP) = b_use('Type.FilePath');
 my($_R) = b_use('Auth.Realm');
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_D) = b_use('Bivio.Die');
 
 sub format_uri_params_with_row {
     my($self, $row) = @_;
@@ -124,13 +125,22 @@ sub internal_load_rows {
 	unless defined(($_TS->from_literal($s))[0]);
     my($x) = _b_realm_only($self, $query);
     $self->[$_IDI] = {map(($_ => 1), @{$x->{private_realm_ids}})};
-    my($rows) = $_S->query({
-	phrase => $s,
-	offset => ($pn - 1) * $c,
-	length => $c + 1,
-	req => $self->req,
-	%$x,
+    my($rows);
+    my($die) = $_D->catch_quietly(sub {
+	$rows = $_S->query({
+	    phrase => $s,
+	    offset => ($pn - 1) * $c,
+	    length => $c + 1,
+	    req => $self->req,
+	    %$x,
+	});
+	return;
     });
+    if ($die) {
+b_info($die->get_shallow_copy);
+	$self->req->put('search_error', $die);
+	return [];
+    }
     if (@$rows > $c) {
 	$query->put(
 	    has_next => 1,

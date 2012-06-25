@@ -16,6 +16,7 @@ sub internal_initialize {
         visible => [
 	    {
 		name => 'ok_button',
+		type => 'OKButton',
 		form_name => 'b_ok',
 	    },
 	],

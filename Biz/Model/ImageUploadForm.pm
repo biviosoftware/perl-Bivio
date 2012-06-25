@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::ImageUploadForm;
 use strict;
-use Bivio::Base 'Bivio::Biz::FormModel';
+use Bivio::Base 'Biz.FormModel';
 use Image::Magick ();
 use Bivio::Biz::Random;
 use Bivio::Biz::Action;

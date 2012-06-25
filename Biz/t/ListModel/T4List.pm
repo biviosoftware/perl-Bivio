@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::t::ListModel::T4List;
 use strict;
-use Bivio::Base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
