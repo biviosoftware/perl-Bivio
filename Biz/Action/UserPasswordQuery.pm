@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Action::UserPasswordQuery;
 use strict;
-use base ('Bivio::Biz::Action');
+use Bivio::Base 'Biz.Action';
 use Bivio::Biz::Random;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
