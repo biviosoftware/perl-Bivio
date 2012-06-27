@@ -13,12 +13,13 @@ sub PASSWORD_FIELD_LIST {
 sub execute_ok {
     my($self) = @_;
     # Updates the password in the database and the cookie.
+    my($res) = shift->SUPER::execute_ok(@_);
     my($req) = $self->get_request;
     $self->get_instance('UserLoginForm')->execute($req, {
 	realm_owner => $req->get_nested(qw(auth_realm owner))
 	    ->update_password($self->get('new_password')),
     });
-    return;
+    return $res;
 }
 
 sub internal_initialize {
