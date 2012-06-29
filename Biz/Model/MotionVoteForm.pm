@@ -16,9 +16,10 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    return unless $self->req('Model.MotionList')->can_vote;
+    my($res) = shift->SUPER::execute_ok(@_);
+    return $res unless $self->req('Model.MotionList')->can_vote;
     $self->create_or_update_model_properties('MotionVote');
-    return;
+    return $res;
 }
 
 sub internal_initialize {

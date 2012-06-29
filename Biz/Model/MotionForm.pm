@@ -37,7 +37,7 @@ sub execute_ok_create {
     my($self) = @_;
      $self->new_other('Motion')->create($self->get_model_properties('Motion'));
     _add_file($self);
-     return;
+     return shift->SUPER::execute_ok_create;
 }
 
 sub execute_ok_edit {
