@@ -1,42 +1,46 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Class;
 use strict;
-use base 'Bivio::ShellUtil';
-use Bivio::UI::Facade;
-use Bivio::Agent::TaskId;
+use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IDI) = __PACKAGE__->instance_data_index;
+my($_CL) = b_use('IO.ClassLoader');
 
 sub USAGE {
     return <<'EOF';
 usage: b-class [options] command [args..]
 commands
   info class -- return information about the class
-  qualified_name class -- return fully qualified name for class
-  super package -- return the list of superclasses for given package
+  name class -- return fully qualified name for class
+  super class -- return the list of superclasses for given package
 EOF
 }
 
-sub info {
+sub u_info {
     my($self, $class) = @_;
-    return
-	unless my $pkg = Bivio::IO::ClassLoader->unsafe_map_require($class);
+    my($pkg) = _load($class);
     my($file) = "$pkg.pm";
     $file =~ s{::}{/}g;
     no strict 'refs';
     return ${\${$pkg . '::VERSION'}} . ' ' . $INC{$file};
 }
 
-sub qualified_name {
-    my($self, $name) = @_;
-    return $self->use($name);
+sub u_name {
+    my($self, $class) = @_;
+    return _load($class);
 }
 
-sub super {
-    my($self, $package) = @_;
-    return $self->use($package)->inheritance_ancestors;
+sub u_super {
+    my($self, $class) = @_;
+    return _load($class)->inheritance_ancestors;
+}
+
+sub _load {
+    my($class) = @_;
+    return $_CL->map_require($class)
+	if $_CL->is_valid_map_class_name($class);
+    return $_CL->simple_require($class);
 }
 
 1;
