@@ -125,9 +125,12 @@ config({
 	required_main => [
 	    [] => DIE(),
 	    Class => DIE(),
-	    [qw(Class qualified_name ShellUtil.Class)] => 'Bivio::Util::Class',
-	    [qw(class qualified_name ShellUtil.Class)] => 'Bivio::Util::Class',
-	    [qw(Bivio::Util::Class qualified_name ShellUtil.Class)] => 'Bivio::Util::Class',
+	    [qw(Class u_name ShellUtil.Class)] => 'Bivio::Util::Class',
+	    [qw(class name ShellUtil.Class)] => 'Bivio::Util::Class',
+	    [qw(Bivio::Util::Class name ShellUtil.Class)] => 'Bivio::Util::Class',
+	    [qw(Bivio::Util::Class package_name ShellUtil.Class)] => DIE(),
+	    [qw(Bivio::Util::Class model ShellUtil.Class)] => DIE(),
+	    [qw(Bivio::Util::Class not_a_command ShellUtil.Class)] => DIE(),
 	],
     ],
     class('ShellUtil.T2') => [
