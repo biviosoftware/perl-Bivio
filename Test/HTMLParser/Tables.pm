@@ -126,6 +126,8 @@ sub html_parser_text {
 
 sub new {
     my($proto, $parser) = @_;
+    return undef
+	if $parser->is_not_bivio_html;
     # Parses cleaned html for forms.
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {};
@@ -237,9 +239,9 @@ sub _found_table {
 	    label => $id,
 	};
     }
-    elsif ($fields->{in_data_table} > 1) {
-	die('nested data tables not supported');
-    }
+#    elsif ($fields->{in_data_table} > 1) {
+#	die('nested data tables not supported');
+#    }
     return;
 }
 
