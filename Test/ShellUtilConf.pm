@@ -22,6 +22,8 @@ sub generate_cases {
 }
 
 sub new_unit {
+    my(undef, undef, $attrs) = @_;
+    my($setup_case) = $attrs && delete($attrs->{setup_case});
     my($self) = shift->SUPER::new_unit(@_);
     $self->builtin_options({
 	compute_params => sub {
@@ -32,12 +34,12 @@ sub new_unit {
 		    "$params->[0].in",
 		),
 	    );
-	    $self->builtin_go_dir(
-		$_FP->join(
-		    $self->builtin_bunit_base_name,
-		    $params->[0],
-		),
-	    );
+	    $self->builtin_go_dir($self->builtin_bunit_base_name);
+	    system("tar xzf $params->[0].tgz")
+		if -f "$params->[0].tgz";
+	    $self->builtin_go_dir($params->[0]);
+	    $setup_case->(@_)
+		if $setup_case;
 	    return [
 		'-input',
 		$in,
