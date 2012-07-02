@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::HTMLParser::Forms;
 use strict;
@@ -10,8 +10,9 @@ b_use('IO.Trace');
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
-__PACKAGE__->register(['Cleaner']);
-Bivio::IO::Config->register(my $_CFG = {
+my($_HTML) = b_use('Bivio.HTML');
+my($_R) = b_use('IO.Ref');
+b_use('IO.Config')->register(my $_CFG = {
     error_color => '#993300',
     # Set by XHTMLWidget.FormFieldError
     error_class => 'field_err',
@@ -19,6 +20,7 @@ Bivio::IO::Config->register(my $_CFG = {
     label_class => 'label',
     disable_checkbox_heading => {},
 });
+__PACKAGE__->register(['Cleaner']);
 
 sub get_by_field_names {
     my($self, @name) = @_;
@@ -39,7 +41,7 @@ sub get_field {
     # Calls L<unsafe_get_field|"unsafe_get_field"> and dies unless matches
     # fields exactly.
     my($res) = shift->unsafe_get_field(@_);
-    Bivio::Die->die($name, ': ',
+    b_die($name, ': ',
 	(@$res ? ('matches too many fields: ', @$res) : 'field not found'),
 	' in ', $form->{label})
         unless @$res == 1;
@@ -53,7 +55,7 @@ sub get_ok_button {
     $form = $self->get_by_field_names($form)
 	unless ref($form) eq 'HASH';
     my(@ok) = grep(!/cancel/i, keys(%{$form->{submit}}));
-    Bivio::Die->die('must not be more than one submit ', \@ok)
+    b_die('must not be more than one submit ', \@ok)
         if @ok > 1;
     return $ok[0];
 }
@@ -130,19 +132,22 @@ sub html_parser_text {
     my($fields) = $self->[$_IDI];
     if ($fields->{textarea}) {
 	$fields->{textarea}->{value}
-	    .= defined($text) ? Bivio::HTML->unescape($text) : '';
+	    .= defined($text) ? $_HTML->unescape($text) : '';
 	return;
     }
     $text = $self->get('cleaner')->text($text);
     # We never label fields with blanks.  There are occassions where blanks
     # are upcalled just after the actual text.
     # Select widgets may have an empty value.
-    return unless length($text) || $fields->{option};
+    return
+	unless length($text) || $fields->{option};
     $fields->{text} .= $text;
-
-    return if _have_prefix_label($fields);
-    return _label_option($fields) if $fields->{option} || $fields->{radio};
-    return _label_visible($fields) if $fields->{input};
+    return
+	if _have_prefix_label($fields);
+    return _label_option($fields)
+	if $fields->{option} || $fields->{radio};
+    return _label_visible($fields)
+	if $fields->{input};
     return;
 }
 
@@ -150,7 +155,9 @@ sub new {
     my($proto, $parser) = @_;
     # Parses cleaned html for forms.
     my($self) = $proto->SUPER::new;
-    $self->[$_IDI] = {};
+    $self->[$_IDI] = {
+	is_not_bivio_html => $parser->is_not_bivio_html,
+    };
     return $self;
 }
 
@@ -164,7 +171,7 @@ sub unsafe_get_by_field_names {
 	    next FORM
 		unless @{$self->unsafe_get_field($values, $n)};
 	}
-	Bivio::Die->die(\@name, ': too many forms matched fields')
+	b_die(\@name, ': too many forms matched fields')
 	    if $found;
 	$found = $values;
     }
@@ -201,10 +208,10 @@ sub _end_form {
     my($self) = @_;
     # Ends the form and puts in $fields->{current}.
     my($fields) = $self->[$_IDI];
-    if ($fields->{input}) {
+    if (!$fields->{is_not_bivio_html} && $fields->{input}) {
 	my($attr) = $fields->{input};
 	delete($fields->{input});
-	$attr->{label} = $attr->{name};
+	$attr->{label} ||= $attr->{name};
 	_label_field($fields, 'visible', $attr);
     }
     _unwind_duplicates($fields);
@@ -215,7 +222,7 @@ sub _end_form {
 	my($e) = $self->get('elements');
 	# If there is a complete duplicate, then we ignore.
 	if ($e->{$label}) {
-	    if (Bivio::IO::Ref->nested_equals($e->{$label}, $curr)) {
+	    if ($_R->nested_equals($e->{$label}, $curr)) {
 		_trace('ignoring duplicate form: ', $curr) if $_TRACE;
 		return;
 	    }
@@ -230,12 +237,14 @@ sub _end_form {
 	}
         $self->get('elements')->{$curr->{label}} = $curr;
     }
-    _trace($curr) if $_TRACE;
+    _trace($_R->to_string($curr)) if $_TRACE;
     return;
 }
 
 sub _end_maybe_err {
     my($fields) = @_;
+    return 0
+	if $fields->{is_not_bivio_html};
     # Ends the current tag which may contain err.
     my($f) = pop(@{$fields->{maybe_err}});
     $fields->{current}->{error_title_seen}++
@@ -261,6 +270,8 @@ sub _end_select {
 
 sub _end_table {
     my($fields) = @_;
+    return
+	if $fields->{is_not_bivio_html};
     # The only tables we track are "data" tables.
     $fields->{in_data_table}-- if $fields->{in_data_table};
     return;
@@ -279,6 +290,8 @@ sub _end_textarea {
 
 sub _end_th {
     my($fields) = @_;
+    return
+	if $fields->{is_not_bivio_html};
     # Ends the "th".
     # There's a weird case where {text} will be the empty string,
     # but that's ok in this case.
@@ -295,20 +308,23 @@ sub _fixup_attr {
     # Lowercases all attr values which we care about.  Sets type
     # for select and textarea.
     while (my($k, $v) = each(%$attr)) {
-	$attr->{$k} = lc($v) if $k =~ /^(?:method|name|type)$/;
+	$attr->{$k} = lc($v) if $k =~ /^(?:method|type)$/;
     }
     $attr->{type} = $tag if $tag =~ /^(?:select|textarea)$/;
     $attr->{type} = 'submit'
 	if $tag eq 'input' && $attr->{type} && $attr->{type} eq 'image';
 
     # HTML::Parser sets these values to "checked" or "selected"
-    $attr->{selected} = $attr->{checked} = 1 if $attr->{checked};
+    $attr->{selected} = $attr->{checked} = 1
+	if $attr->{checked};
     $attr->{selected} = 1 if $attr->{selected};
     return;
 }
 
 sub _have_prefix_label {
     my($fields) = @_;
+    return 0
+	if $fields->{is_not_bivio_html};
     # Returns true if $fields->{text} is a prefix label (ends with colon)
     return $fields->{text} && $fields->{text} =~ /:$/;
 }
@@ -318,21 +334,14 @@ sub _label_field {
     # Labels all fields, checking for duplicates.  Allows _radio
     # for labels, however.
     _trace($attr) if $_TRACE;
-    return unless $fields->{current}->{$class};
+    return
+	unless $fields->{current}->{$class};
     push(@{$fields->{current}->{$class}->{$attr->{label}} ||= []}, $attr);
     _trace($fields->{current}, ' ', $attr);
     $fields->{current}->{label} = $attr->{label}
 	unless $fields->{current}->{label}
 	    || $attr->{label} =~ /^_anon/
 	    || $class eq 'hidden';
-    return;
-}
-
-sub _label_hidden {
-    my($fields, $attr) = @_;
-    # Labels the hidden fields.
-    $attr->{label} = $attr->{name};
-    _label_field($fields, 'hidden', $attr);
     return;
 }
 
@@ -348,7 +357,7 @@ sub _label_option {
     my($o) = $fields->{$which};
     $o->{label} = _text($fields, $fields->{option} ? 1 : 0);
     _trace($o) if $_TRACE;
-    Bivio::Die->die('duplicate ', $which, ': ', $o, ' select: ', $group)
+    b_die('duplicate ', $which, ': ', $o, ' select: ', $group)
 	if $group->{options}->{$o->{label}};
     $group->{options}->{$o->{label}} = $o;
     $group->{value} = $o->{value}
@@ -395,10 +404,15 @@ sub _label_visible {
     my($fields) = @_;
     # Labels the current input field.
     my($label) = _text($fields);
-
     # We don't label selects with blanks.  Rather with the selected value.
-    return if !length($label) && $fields->{input}->{type} eq 'select';
-
+    if ($fields->{is_not_bivio_html} && $fields->{input}->{type} ne 'radio') {
+#FIX
+	return $fields->{input} = undef
+	    if $fields->{input}->{label};
+	$label = $fields->{input}->{name};
+    }
+    return
+	if !length($label) && $fields->{input}->{type} eq 'select';
     $fields->{input}->{label} = $label;
     _label_field($fields, 'visible', $fields->{input});
     if ($fields->{input_error}) {
@@ -407,6 +421,14 @@ sub _label_visible {
 	$fields->{input_error} = undef;
     }
     $fields->{input} = undef;
+    return;
+}
+
+sub _label_with_name {
+    my($fields, $attr) = @_;
+    # Labels the hidden fields.
+    $attr->{label} = $attr->{name};
+    _label_field($fields, $attr->{type} eq 'hidden' ? 'hidden' : 'visible', $attr);
     return;
 }
 
@@ -432,6 +454,7 @@ sub _start_form {
     };
     $fields->{text} = $fields->{prev_cell_text} = undef;
     $fields->{radios} = {};
+    _trace($fields->{current}) if $_TRACE;
     return;
 }
 
@@ -441,27 +464,28 @@ sub _start_input {
     # have labels after.  Some have labels as the column header.
     $attr->{type} ||= 'text';
     my($fields) = $self->[$_IDI];
-    _trace($fields->{text}, ' ', $fields->{input}, ' ',
-	$fields->{prev_cell_text}, ' ', $attr)
-	if $_TRACE;
-    _leftover_input($fields) if $fields->{input};
-
-    return _label_hidden($fields, $attr) if $attr->{type} eq 'hidden';
-
-    # If a ListForm field, we grab the index from the header.
-    $attr->{index} = $1 if $attr->{name} && $attr->{name} =~ /_(\d+)$/;
-
-    return _label_submit($self, $attr) if $attr->{type} eq 'submit';
-
+    unless ($fields->{is_not_bivio_html}) {
+	_trace($fields->{text}, ' ', $fields->{input}, ' ',
+	       $fields->{prev_cell_text}, ' ', $attr)
+	    if $_TRACE;
+	_leftover_input($fields) if $fields->{input};
+	return _label_with_name($fields, $attr)
+	    if $attr->{type} eq 'hidden';
+	# If a ListForm field, we grab the index from the header.
+	$attr->{index} = $1
+	    if $attr->{name} && $attr->{name} =~ /_(\d+)$/;
+    }
+    return _label_submit($self, $attr)
+	if $attr->{type} eq 'submit';
     # visible field
     $fields->{input} = $attr;
-
-    return _start_radio($fields) if $attr->{type} eq 'radio';
-
     # Text areas and select are special
     $fields->{$attr->{type}} = $attr
 	if $attr->{type} =~ /^(?:select|textarea)$/;
-
+    return _label_with_name($fields, $attr)
+	if $fields->{is_not_bivio_html} && $attr->{type} ne 'option';
+    return _start_radio($fields)
+	if $attr->{type} eq 'radio';
     # Visible list form field is labeled with the header
     # if there is one.
 #TODO: Deal with the case when no header and not a checkbox
@@ -490,6 +514,8 @@ sub _start_input {
 
 sub _start_maybe_err {
     my($fields, $attr) = @_;
+    return
+	if $fields->{is_not_bivio_html};
     # Saves current tag info.
     if (($fields->{text} || '') =~ m/:$/) {
 	$fields->{prev_cell_text} = $fields->{text};
@@ -505,7 +531,7 @@ sub _start_maybe_err {
 sub _start_option {
     my($fields, $attr) = @_;
     # Handles an OPTION tag.
-    Bivio::Die->die('not in a select: ', $fields)
+    b_die('not in a select: ', $fields)
 	unless $fields->{select};
     $fields->{text} = undef;
     $fields->{select}->{options} ||= {};
@@ -535,6 +561,8 @@ sub _start_radio {
 
 sub _start_tx {
     my($fields, $attr, $tag) = @_;
+    return
+	if $fields->{is_not_bivio_html};
     # Starts a TD, TH, TR, or TABLE.
     if ($tag =~ /th|td/) {
 	$fields->{prev_cell_text} = $fields->{text}
@@ -573,7 +601,7 @@ sub _text {
 	: !_empty($fields->{prev_cell_text})
 	    ? $fields->{prev_cell_text}
         : $no_die ? ''
-	: Bivio::Die->die('no text field: ', $fields);
+	: b_die('no text field: ', $fields);
     $fields->{prev_cell_text} = $fields->{text} = undef;
     return $res;
 }
@@ -591,7 +619,7 @@ sub _unwind_duplicates {
 		next;
 	    }
 	    # If all values are identical, only save one
-	    if (grep(Bivio::IO::Ref->nested_equals($found->[0], $_), @$found)
+	    if (grep($_R->nested_equals($found->[0], $_), @$found)
 		== @$found) {
 		_trace('all duplicates ', $k) if $_TRACE;
 		$c->{$k} = {%{$found->[0]}, label => $k};

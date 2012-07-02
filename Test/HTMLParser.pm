@@ -44,17 +44,21 @@ sub internal_new {
     # C<Cleaner>, and I<elements> is a hash which will be put as the attributes of
     # I<self> when parsing is complete.
     my($proto, $parser) = @_;
-    my($self) = $proto->new;
+    return undef
+	unless my $self = $proto->new($parser);
     $self->internal_put({
 	cleaner => $parser->get('Cleaner'),
 	elements => {},
     });
-
     my($p) = $_HP->new($self);
     $p->ignore_elements(qw(script style));
     $p->parse($self->get('cleaner')->get('html'));
     $self->internal_put($self->get('elements'));
     return $self->set_read_only;
+}
+
+sub is_not_bivio_html {
+    return shift->unsafe_get('is_not_bivio_html') ? 1 : 0;
 }
 
 sub new {
@@ -68,8 +72,11 @@ sub new {
     return $proto->SUPER::new(@_)
        unless (ref($proto) || $proto) eq __PACKAGE__;
 
-    my($html) = shift;
-    my($self) = $proto->SUPER::new({html => $$html});
+    my($html, $attrs) = @_;
+    my($self) = $proto->SUPER::new({
+	%{$attrs || {}},
+	html => $$html,
+    });
     foreach my $c (@_CLASSES) {
 	$self->put($c->simple_package_name => $c->internal_new($self));
     }

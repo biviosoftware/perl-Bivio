@@ -1,44 +1,44 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Language::HTTP;
 use strict;
 use Bivio::Base 'Test.Language';
-use Bivio::Ext::LWPUserAgent;
-use Bivio::IO::Trace;
-use Bivio::Mail::Address;
-use Bivio::Mail::Common;
-use Bivio::Test::HTMLParser;
-use Bivio::Type::FileName;
+b_use('IO.Trace');
 use HTTP::Request ();
 use HTTP::Request::Common ();
 use Sys::Hostname ();
 use URI ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
 my($_HTTPC) = b_use('Ext.HTTPCookies');
 my($_E) = b_use('Type.Email');
 my($_R) = b_use('IO.Ref');
 my($_F) = b_use('IO.File');
+my($_HTMLF) = b_use('TestHTMLParser.Forms');
 my($_T) = b_use('IO.Trace');
+my($_HTMLP) = b_use('Test.HTMLParser');
 my($_HTML) = b_use('Bivio.HTML');
 my($_DT) = b_use('Type.DateTime');
+my($_FN) = b_use('Type.FileName');
 my($_IDI) = __PACKAGE__->instance_data_index;
-Bivio::IO::Config->register(my $_CFG = {
+my($_C) = b_use('IO.Config');
+$_C->register(my $_CFG = {
     # NOTE: There is no ENV when loaded under apache
     email_user => $ENV{USER} || 'btest',
     server_startup_timeout => 0,
-    home_page_uri => Bivio::IO::Config->REQUIRED,
+    home_page_uri => $_C->REQUIRED,
     local_mail_host => Sys::Hostname::hostname(),
     remote_mail_host => undef,
     mail_dir => $ENV{HOME} ? "$ENV{HOME}/btest-mail/" : '',
     mail_tries => 60,
     email_tag => '+btest_',
-    deprecated_text_patterns => Bivio::IO::Config->if_version(
+    deprecated_text_patterns => $_C->if_version(
 	4 => sub {0},
 	sub {1},
     ),
 });
-my($_VERIFY_MAIL_HEADERS) = [Bivio::Mail::Common->TEST_RECIPIENT_HDR, 'To'];
+my($_VERIFY_MAIL_HEADERS) = [b_use('Mail.Common')->TEST_RECIPIENT_HDR, 'To'];
 
 sub LOCAL_EMAIL_DOMAIN_RE {
     # Must be synchronized with generate_local_email
@@ -52,7 +52,7 @@ sub absolute_uri {
     my($u) = URI->new($uri = $self->internal_append_query($uri));
     return defined($u->scheme) ? $uri : $u->abs(
 	$self->[$_IDI]->{uri}
-	|| Bivio::Die->die($uri, ': unable to make absolute; no prior URI')
+	|| b_die($uri, ': unable to make absolute; no prior URI')
     )->canonical->as_string;
 }
 
@@ -319,7 +319,7 @@ sub follow_link_in_table {
 	    $self,
 	    defined($link_heading) ? $link_heading : $find_heading),
     );
-    Bivio::Die->die($link_heading, ': column empty')
+    b_die($link_heading, ': column empty')
         unless defined($row->{$link_heading});
     my($links) = $row->{$link_heading}->get('Links');
     my($k) = $links->get_keys;
@@ -388,7 +388,7 @@ sub get_html_parser {
 
 sub get_response {
     # Returns the current page response, or dies if response not valid.
-    return shift->[$_IDI]->{response} || Bivio::Die->die('no valid response');
+    return shift->[$_IDI]->{response} || b_die('no valid response');
 }
 
 sub get_table_row {
@@ -411,7 +411,7 @@ sub get_table_row {
 
 sub get_uri {
     # Returns the uri for the current page.  Blows up if no current uri.
-    return shift->unsafe_get_uri || Bivio::Die->die('no current uri');
+    return shift->unsafe_get_uri || b_die('no current uri');
 }
 
 sub get_uri_for_link {
@@ -480,12 +480,12 @@ sub handle_config {
     # remote_mail_host : string [host of home_page_uri]
     #
     # You can set the uri of the remote host.
-    Bivio::Die->die($cfg->{email_user}, ': email_user must be an alphanum')
+    b_die($cfg->{email_user}, ': email_user must be an alphanum')
         if ($cfg->{email_user} || '') =~ /\W/;
-    Bivio::Die->die($cfg->{mail_tries},
+    b_die($cfg->{mail_tries},
 	': mail_tries must be a postive integer')
         if $cfg->{mail_tries} =~ /\D/ || $cfg->{mail_tries} <= 0;
-    Bivio::Die->die($cfg->{server_startup_timeout},
+    b_die($cfg->{server_startup_timeout},
 	': server_startup_timeout must be a postive integer')
         if $cfg->{server_startup_timeout} =~ /\D/
 	    || $cfg->{server_startup_timeout} < 0;
@@ -581,7 +581,7 @@ sub new {
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
 	cookies => $_HTTPC->new,
-	user_agent => Bivio::Ext::LWPUserAgent->new,
+	user_agent => b_use('Ext.LWPUserAgent')->new,
 	history => [],
 	history_length => 5,
     };
@@ -659,7 +659,7 @@ sub save_cookies_in_history {
 sub save_excursion {
     my($self, $op) = @_;
     my($fields) = $self->[$_IDI];
-    Bivio::Die->die('no history to save')
+    b_die('no history to save')
         unless @{$fields->{history}};
     _save_history($self);
     my($save) = $_R->nested_copy($fields->{history});
@@ -708,6 +708,10 @@ sub send_request {
 	    ),
     );
     return;
+}
+
+sub set_is_not_bivio_html {
+    return shift->put(is_not_bivio_html => 1);
 }
 
 sub set_user_agent_to_actual_browser {
@@ -859,7 +863,7 @@ sub verify_content_type {
     my($self, $mime_type) = @_;
     # Verifies the Content-Type of the reply.
     my($ct) = $self->get_response->content_type;
-    Bivio::Die->die($ct, ': response not ', $mime_type)
+    b_die($ct, ': response not ', $mime_type)
 	unless $ct eq $mime_type;
     return;
 }
@@ -880,7 +884,7 @@ sub verify_form {
 	    result => '',
 	};
 	_verify_form_field($self, $control, $case);
-	Bivio::Die->die($control->{type}, ' ', $field, ' expected: ',
+	b_die($control->{type}, ' ', $field, ' expected: ',
 	    $case->{expected}, ' but got: ', $case->{result})
 		unless
 		    (ref($case->{expected}) eq 'Regexp'
@@ -893,7 +897,7 @@ sub verify_form {
 sub verify_link {
     my($self, $link_text, $pattern) = @_;
     my($href) = _html_get($self, Links => $link_text)->{href};
-    Bivio::Die->die($href, ': does not match pattern: ', $pattern)
+    b_die($href, ': does not match pattern: ', $pattern)
 	if $pattern && $href !~ $pattern;
     return;
 }
@@ -924,7 +928,7 @@ sub verify_local_mail {
     $email = [map(ref($_) || $_ =~ /\@/ ? $_
         : $self->generate_local_email($_), @$email)];
     my($found) = [];
-    my($die) = sub {Bivio::Die->die(@_, "\n", $found)};
+    my($die) = sub {b_die(@_, "\n", $found)};
     for (my $i = $_CFG->{mail_tries}; $i-- > 0;) {
 	# It takes a certain amount of time to hit, and on the same machine
 	# we're going to be competing for the CPU so let b-sendmail-http win
@@ -973,10 +977,10 @@ sub verify_no_link {
     my($self, $link_text, $pattern) = @_;
     my($link) = _unsafe_html_get($self, Links => $link_text);
     return unless defined($link);
-    Bivio::Die->die('found link "', $link_text, '".')
+    b_die('found link "', $link_text, '".')
 	if !defined($pattern);
     my($href) = $link->{href};
-    Bivio::Die->die($href, ': matches pattern: ', $pattern)
+    b_die($href, ': matches pattern: ', $pattern)
 	if defined($href) && $href =~ $pattern;
     return;
 }
@@ -984,7 +988,7 @@ sub verify_no_link {
 sub verify_no_text {
     my($self, $text) = @_;
     # Verifies that I<text> DOES NOT appear on the page.
-    Bivio::Die->die($text, ': text found in response')
+    b_die($text, ': text found in response')
 	if $self->text_exists($text);
     return;
 }
@@ -996,11 +1000,11 @@ sub verify_options {
     my($form) = _assert_html($self)->get('Forms')
 	->get_by_field_names($select_field);
     my($f) = _assert_form_field($form, $select_field);
-    Bivio::Die->die(
+    b_die(
 	'Select field "', $select_field, '" does not contain any options.',
     ) unless $f->{options};
     foreach my $option (@$options) {
-	Bivio::Die->die(
+	b_die(
 	    'Select field "', $select_field, '" does not contain option "',
 	    $option, '".',
 	) unless $f->{options}->{$option};
@@ -1016,10 +1020,10 @@ sub verify_pdf {
     $self->verify_content_type('application/pdf');
     my($f) = _log($self, 'pdf', $self->get_content);
     system("pdftotext '$f'") == 0
-	or Bivio::Die->die($f, ': unable to convert pdf to text');
+	or b_die($f, ': unable to convert pdf to text');
     $f =~ s/pdf$/txt/;
     my($pdf_text) = ${$_F->read($f)};
-    Bivio::Die->die($text, ': text not found in response ', $f)
+    b_die($text, ': text not found in response ', $f)
 	unless $pdf_text =~ /$text/s;
     return $pdf_text;
 }
@@ -1034,7 +1038,7 @@ sub verify_table {
     # the form (though the expected values do need to correspond to the expected
     # column labels).
     my($cols) = shift(@$expect);
-    Bivio::Die->die('missing rows values')
+    b_die('missing rows values')
         unless int(@$expect);
     my($first_col) = shift(@$cols);
     foreach my $e (@$expect) {
@@ -1046,7 +1050,7 @@ sub verify_table {
 		@$cols,
 	    )],
 	);
-	Bivio::Die->die($diff)
+	b_die($diff)
 	    if $diff;
     }
     return;
@@ -1055,7 +1059,7 @@ sub verify_table {
 sub verify_text {
     my($self, $text) = @_;
     # Verifies I<text> appears on the page.
-    Bivio::Die->die($text, ': text not found in response')
+    b_die($text, ': text not found in response')
 	unless $self->text_exists($text);
     return;
 }
@@ -1063,7 +1067,7 @@ sub verify_text {
 sub verify_title {
     my($self, $title) = @_;
     # Verifies that the specified title appears on the page.
-    Bivio::Die->die($title, ': title not found in response')
+    b_die($title, ': title not found in response')
 	    unless $self->get_content =~ /\<title\>.*$title.*\<\/title\>/i;
     return;
 }
@@ -1072,7 +1076,7 @@ sub verify_uri {
     my($self, $uri) = @_;
     # Verifies that the current uri (not including http://.../) matches I<uri>.
     my($current_uri) = $self->get_uri;
-    Bivio::Die->die('Current uri ', $current_uri, ' does not match ', $uri)
+    b_die('Current uri ', $current_uri, ' does not match ', $uri)
 	unless $current_uri =~ $uri;
     return;
 }
@@ -1161,7 +1165,7 @@ sub visit_uri {
 
 sub _assert_form_field {
     # Returns the named field from form->class or dies.
-    return Bivio::Test::HTMLParser::Forms->get_field(@_);
+    return $_HTMLF->get_field(@_);
 }
 
 sub _assert_form_response {
@@ -1185,7 +1189,7 @@ sub _assert_form_response {
     }
     else {
 	my($content_type) = $self->get_response->content_type;
-	Bivio::Die->die($content_type, ': response not ',
+	b_die($content_type, ': response not ',
 	    $expected_content_type)
 		if $content_type ne $expected_content_type;
     }
@@ -1195,7 +1199,7 @@ sub _assert_form_response {
 sub _assert_html {
     my($self) = @_;
     # Asserts HTML and returns parser
-    return $self->[$_IDI]->{html_parser} || Bivio::Die->die(
+    return $self->[$_IDI]->{html_parser} || b_die(
 	$self->get_response->content_type, ': response not html');
 }
 
@@ -1236,7 +1240,7 @@ sub _facade {
     )->get_default->get('uri');
     $to_fix =~ s{^(.*?)\b$default\b}{$1$facade_uri}ix
 	|| $to_fix =~ s{(?<=\://)|(?<=\@)}{$facade_uri.}ix
-	|| Bivio::Die->die($to_fix, ': unable to fixup uri with ', $facade_uri)
+	|| b_die($to_fix, ': unable to fixup uri with ', $facade_uri)
 	unless $default eq $facade_uri;
     return $to_fix
 }
@@ -1356,7 +1360,7 @@ sub _grep_msgs {
 	my($res);
 	foreach my $k (@$_VERIFY_MAIL_HEADERS) {
 	    next unless $hdr =~ /^$k:\s*(.*)/mi;
-	    my($e) = Bivio::Mail::Address->parse_list($1);
+	    my($e) = b_use('Mail.Address')->parse_list($1);
 	    die("$hdr: malformed-header")
 		unless $e && ($e = lc($e->[0]));
 	    my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
@@ -1381,8 +1385,10 @@ sub _html_get {
 sub _html_parser {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    return Bivio::Test::HTMLParser->new(
-	$self->internal_assert_no_prose($fields->{response}->content_ref));
+    return $_HTMLP->new(
+	$self->internal_assert_no_prose($fields->{response}->content_ref),
+	{is_not_bivio_html => $self->unsafe_get('is_not_bivio_html') ? 1 : 0},
+    );
 }
 
 sub _key_from_hash {
@@ -1398,7 +1404,7 @@ sub _key_from_hash {
 	return $key
 	    if exists($hash->{$key});
     }
-    Bivio::Die->die($key, ': name not found in ', [sort(keys(%$hash))]);
+    b_die($key, ': name not found in ', [sort(keys(%$hash))]);
     # DOES NOT RETURN
 }
 
@@ -1434,7 +1440,7 @@ sub _lookup_option_value {
             if $_TRACE;
         return $v;
     }
-    Bivio::Die->die('option value not found: ', $value);
+    b_die('option value not found: ', $value);
 }
 
 sub _map_mail_dir {
@@ -1442,7 +1448,7 @@ sub _map_mail_dir {
     # Returns results of grep on mail_dir files.  Only includes valid
     # mail files.
     return map(
-	Bivio::Type::FileName->get_tail($_) =~ /^\d+$/ ? $op->($_) : (),
+	$_FN->get_tail($_) =~ /^\d+$/ ? $op->($_) : (),
 	glob("$_CFG->{mail_dir}/*"),
     );
 }
@@ -1500,7 +1506,7 @@ sub _send_request {
 	_log($self, 'res', $fields->{response}, $case_tag);
 	last
 	    unless $fields->{response}->is_redirect;
-	Bivio::Die->die('too many redirects ', $request)
+	b_die('too many redirects ', $request)
 	    if $redirect_count++ > 5;
 	$fields->{cookies}->extract_cookies($fields->{response});
 	my($uri) = $fields->{response}->as_string
@@ -1511,7 +1517,7 @@ sub _send_request {
     $fields->{html_parser} = _html_parser($self)
         if $fields->{response}->content_type eq 'text/html';
     $fields->{redirect_count} = $redirect_count;
-    Bivio::Die->die(
+    b_die(
 	$request->uri,
 	': uri request failed: ',
 	$fields->{response}->code,
@@ -1540,7 +1546,7 @@ sub _unsafe_html_get {
 sub _validate_text_field {
     my($field, $value) = @_;
     # Dies if the text field has multiple lines.
-    Bivio::Die->die('text input must be a single line: ', $field->{label})
+    b_die('text input must be a single line: ', $field->{label})
         if $field->{type} eq 'text' && ($value || '') =~ /\n/;
     return;
 }
