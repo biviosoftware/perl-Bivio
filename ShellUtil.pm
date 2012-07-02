@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::ShellUtil;
 use strict;
@@ -575,8 +575,8 @@ sub main {
 
     my($cmd, $res);
     my($die) = $_DIE->catch(sub {
-	if (@argv && _method_ok($self, $argv[0])) {
-	    $cmd = shift(@argv);
+	if (@argv and $cmd = _method_ok($self, $argv[0])) {
+	    shift(@argv);
 	}
 	else {
 	    $self->usage(@argv ? ($argv[0], ': unknown command')
@@ -1183,17 +1183,20 @@ sub _lock_warning {
 
 sub _method_ok {
     my($self, $method) = @_;
-    # Returns true if the public method exists in subclass or if the
-    # method is 'usage'.
-    return 0 unless $method =~ /^([a-z]\w*)$/i;
-    return 0 if $method =~ /^handle_/;
-    return 1 if $method eq 'usage';
+    return undef
+	unless $method =~ /^([a-z]\w*)$/i;
+    return undef
+	if $method =~ /^handle_/;
+    return $method
+	if $method eq 'usage';
     foreach my $c (ref($self), @{$self->inheritance_ancestors}) {
-	last if $c eq __PACKAGE__;
-#TODO: Need to deprecate calls which __PACKAGE__->can($method) && $c->can.
-	return 1 if $c->can($method);
+	last
+	    if $c =~ /::ShellUtil$/;
+	my($m) = $c->grep_subroutines(qr{^(?:u_)?\Q$method\E$});
+	return $m->[0]
+	    if @$m;
     }
-    return 0;
+    return undef;
 }
 
 sub _monitor_daemon_children {
