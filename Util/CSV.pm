@@ -168,9 +168,9 @@ sub parse_records {
 }
 
 sub sort_csv {
-    my($self) = @_;
+    my($self, $csv_text) = @_;
     my($headings) = [];
-    my($rows) = $self->parse_records(undef, 0, $headings);
+    my($rows) = $self->parse_records($csv_text, 0, $headings);
     my($h0) = $headings->[0];
     return join('',
         ${$self->to_csv_text($headings)},
