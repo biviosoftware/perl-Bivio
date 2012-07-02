@@ -534,9 +534,18 @@ sub _grep_sub {
     no strict 'refs';
     return ($_SA ||= $proto->use('Type.StringArray'))->sort_unique([
 	map($_ =~ $to_match ? defined($+) ? $+ : $_ : (),
-	    map(keys(%{*{$_ . '::'}}),
+	    map(
+		{
+		    my($stab) = \%{$_ . '::'};
+		    grep(
+			!ref($stab->{$_}) && ref(*{$stab->{$_}}{CODE}) eq 'CODE',
+			keys(%$stab),
+		    );
+		}
 	        $proto->package_name,
-		$ancestors ? @$ancestors : ())),
+		$ancestors ? @$ancestors : (),
+	    ),
+	),
     ]);
 }
 
