@@ -715,13 +715,15 @@ sub run_sh {
 }
 
 sub yum_update {
-    my($self) = @_;
+    my($self, @command) = @_;
     my($restore) = [];
     foreach my $rpm (@{$_CFG->{yum_update_conflicts} || []}) {
 	push(@$restore, $rpm)
 	    if system(qw(rpm --erase --justdb --nodeps), $rpm) == 0;
     }
-    system('yum', $self->unsafe_get('force') ? '-y' : (), 'update');
+    system('yum',
+	   $self->unsafe_get('force') ? '-y' : (),
+	   @command ? @command : 'update');
     $self->put(force => 1, nodeps => 1);
     $self->install(@$restore);
     $self->install_host_stream;
