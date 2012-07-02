@@ -1,0 +1,1063 @@
+HTTP/1.1 200 OK
+Connection: close
+Date: Wed, 09 May 2012 01:40:56 GMT
+Server: Apache/2.2.3 (CentOS) DAV/2 mod_ssl/2.2.3 OpenSSL/0.9.8e-fips-rhel5 PHP/5.1.6 mod_perl/2.0.4 Perl/v5.8.8
+Content-Type: text/html; charset=UTF-8
+Content-Type: text/html; charset=UTF-8
+Client-Date: Wed, 09 May 2012 01:40:56 GMT
+Client-Peer: 216.87.82.87:80
+Client-Response-Num: 1
+Client-Transfer-Encoding: chunked
+Link: <http://xyz.bivio.biz/bugzilla/>; rel="Top"
+Link: <buglist.cgi?resolution=---&emailassigned_to1=1&emailreporter1=1&emailtype1=exact&email1=nobody%40bivio.biz>; rel="Saved Searches"; title="My Bugs"
+Link: <editparams.cgi>; rel="Administration"; title="Parameters"
+Link: <editusers.cgi>; rel="Administration"; title="Users"
+Link: <editproducts.cgi>; rel="Administration"; title="Products"
+Link: <editflagtypes.cgi>; rel="Administration"; title="Flag Types"
+Link: <editgroups.cgi>; rel="Administration"; title="Groups"
+Link: <editkeywords.cgi>; rel="Administration"; title="Keywords"
+Link: <editwhines.cgi>; rel="Administration"; title="Whining"
+Link: <sanitycheck.cgi>; rel="Administration"; title="Sanity Check"
+Link: <skins/standard/global.css>; rel="alternate stylesheet"; title="Classic"
+Link: <js/yui/assets/skins/sam/autocomplete.css>; rel="stylesheet"; type="text/css"
+Link: <js/yui/assets/skins/sam/calendar.css>; rel="stylesheet"; type="text/css"
+Link: <js/yui/assets/skins/sam/datatable.css>; rel="stylesheet"; type="text/css"
+Link: <js/yui/assets/skins/sam/button.css>; rel="stylesheet"; type="text/css"
+Link: <skins/standard/global.css>; rel="stylesheet"; type="text/css"
+Link: <skins/standard/attachment.css>; rel="stylesheet"; type="text/css"
+Link: <skins/standard/enter_bug.css>; rel="stylesheet"; type="text/css"
+Link: <skins/contrib/Dusk/global.css>; rel="stylesheet"; title="Dusk"; type="text/css"
+Link: <./search_plugin.cgi>; rel="search"; title="Bugzilla"; type="application/opensearchdescription+xml"
+Link: <images/favicon.ico>; rel="shortcut icon"
+Title: Enter Bug: TestProduct
+X-Frame-Options: SAMEORIGIN
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                      "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+  <head>
+    <title>Enter Bug: TestProduct</title>
+
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+<link rel="Top" href="http://xyz.bivio.biz/bugzilla/">
+
+  
+
+
+  
+
+
+  
+    <link rel="Saved&nbsp;Searches" title="My Bugs"
+          href="buglist.cgi?resolution=---&amp;emailassigned_to1=1&amp;emailreporter1=1&amp;emailtype1=exact&amp;email1=nobody%40bivio.biz">
+
+
+   <link rel="Administration" title="Parameters"    
+                  href="editparams.cgi"><link rel="Administration" title="Users"    
+                  href="editusers.cgi"><link rel="Administration" title="Products" href="editproducts.cgi"><link rel="Administration" title="Flag Types"   
+                  href="editflagtypes.cgi"><link rel="Administration" title="Groups"        
+                  href="editgroups.cgi"><link rel="Administration" title="Keywords"      
+                  href="editkeywords.cgi"><link rel="Administration" title="Whining"       
+                  href="editwhines.cgi"><link rel="Administration" title="Sanity Check"  
+                  href="sanitycheck.cgi">
+
+
+
+    
+    
+    <link href="skins/standard/global.css"
+          rel="alternate stylesheet" 
+          title="Classic"><link href="js/yui/assets/skins/sam/autocomplete.css" rel="stylesheet"
+        type="text/css" ><link href="js/yui/assets/skins/sam/calendar.css" rel="stylesheet"
+        type="text/css" ><link href="js/yui/assets/skins/sam/datatable.css" rel="stylesheet"
+        type="text/css" ><link href="js/yui/assets/skins/sam/button.css" rel="stylesheet"
+        type="text/css" ><link href="skins/standard/global.css" rel="stylesheet"
+        type="text/css" ><link href="skins/standard/attachment.css" rel="stylesheet"
+        type="text/css" ><link href="skins/standard/enter_bug.css" rel="stylesheet"
+        type="text/css" ><!--[if lte IE 7]>
+      
+
+
+
+  <link href="skins/standard/IE-fixes.css" rel="stylesheet"
+        type="text/css" >
+<![endif]-->
+
+    <link href="skins/contrib/Dusk/global.css" rel="stylesheet"
+        type="text/css" title="Dusk">
+
+
+    
+
+    
+
+    
+<script type="text/javascript" src="js/yui/yahoo-dom-event/yahoo-dom-event.js"></script><script type="text/javascript" src="js/yui/cookie/cookie-min.js"></script><script type="text/javascript" src="js/yui/datasource/datasource-min.js"></script><script type="text/javascript" src="js/yui/connection/connection-min.js"></script><script type="text/javascript" src="js/yui/json/json-min.js"></script><script type="text/javascript" src="js/yui/autocomplete/autocomplete-min.js"></script><script type="text/javascript" src="js/yui/calendar/calendar-min.js"></script><script type="text/javascript" src="js/yui/element/element-min.js"></script><script type="text/javascript" src="js/yui/datatable/datatable-min.js"></script><script type="text/javascript" src="js/yui/button/button-min.js"></script><script type="text/javascript" src="js/global.js"></script>
+
+    <script type="text/javascript">
+    <!--
+        YAHOO.namespace('bugzilla');
+        YAHOO.util.Event.addListener = function (el, sType, fn, obj, overrideContext) {
+               if ( ("onpagehide" in window || YAHOO.env.ua.gecko) && sType === "unload") { sType = "pagehide"; };
+               var capture = ((sType == "focusin" || sType == "focusout") && !YAHOO.env.ua.ie) ? true : false;
+               return this._addListener(el, this._getType(sType), fn, obj, overrideContext, capture);
+         };
+        if ( "onpagehide" in window || YAHOO.env.ua.gecko) {
+            YAHOO.util.Event._simpleRemove(window, "unload", 
+                                           YAHOO.util.Event._unload);
+        }
+        
+        function unhide_language_selector() { 
+            YAHOO.util.Dom.removeClass(
+                'lang_links_container', 'bz_default_hidden'
+            ); 
+        } 
+        YAHOO.util.Event.onDOMReady(unhide_language_selector);
+
+        
+        var BUGZILLA = {
+            param: {
+                cookiepath: '\/',
+                maxusermatches: 1000
+            },
+            constant: {
+                COMMENT_COLS: 80
+            },
+            string: {
+                
+
+                attach_desc_required:
+                    'You must enter a Description for this attachment.',
+                component_required:
+                    'You must select a Component for this bug.',
+                description_required:
+                    'You must enter a Description for this bug.',
+                short_desc_required:
+                    'You must enter a Summary for this bug.',
+                version_required:
+                    'You must select a Version for this bug.'
+            }
+        };
+BUGZILLA.value_descs = {bug_status: {
+    },resolution: {
+        '':
+        '---'
+    }
+};
+    // -->
+    </script>
+<script type="text/javascript" src="js/attachment.js"></script><script type="text/javascript" src="js/util.js"></script><script type="text/javascript" src="js/field.js"></script><script type="text/javascript" src="js/TUI.js"></script><script type="text/javascript" src="js/bug.js"></script>
+
+    
+
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+                       title="Bugzilla" href="./search_plugin.cgi">
+    <link rel="shortcut icon" href="images/favicon.ico" >
+  </head>
+
+
+
+  <body onload="set_assign_to(); hideElementById('attachment_true');
+                showElementById('attachment_false'); showElementById('btn_no_attachment');"
+        class="xyz-bivio-biz-bugzilla yui-skin-sam">
+
+
+
+<div id="header">
+<div id="banner">
+  </div>
+
+<table border="0" cellspacing="0" cellpadding="0" id="titles">
+<tr>
+    <td id="title">
+      <p>Bugzilla &ndash; Enter Bug: TestProduct</p>
+    </td>
+
+
+</tr>
+</table>
+
+<table id="lang_links_container" cellpadding="0" cellspacing="0"
+       class="bz_default_hidden"><tr><td>
+</td></tr></table>
+<ul class="links">
+  <li><a href="./">Home</a></li>
+  <li><span class="separator">| </span><a href="enter_bug.cgi">New</a></li>
+  <li><span class="separator">| </span><a href="describecomponents.cgi">Browse</a></li>
+  <li><span class="separator">| </span><a href="query.cgi">Search</a></li>
+
+  <li class="form">
+    <span class="separator">| </span>
+    <form action="buglist.cgi" method="get"
+        onsubmit="if (this.quicksearch.value == '')
+                  { alert('Please enter one or more search terms first.');
+                    return false; } return true;">
+    <input class="txt" type="text" id="quicksearch_top" name="quicksearch" 
+           title="Quick Search" value="">
+    <input class="btn" type="submit" value="Search" 
+           id="find_top"></form>
+  <a href="page.cgi?id=quicksearch.html" title="Quicksearch Help">[?]</a></li>
+
+  <li><span class="separator">| </span><a href="report.cgi">Reports</a></li>
+
+  <li></li>
+
+    <li><span class="separator">| </span><a href="userprefs.cgi">Preferences</a></li>
+      <li><span class="separator">| </span><a href="admin.cgi">Administration</a></li>
+<li>
+        <span class="separator">| </span>
+        <a href="docs/en/html/bugreports.html" target="_blank">Help</a>
+      </li>
+
+    <li>
+      <span class="separator">| </span>
+        <a href="index.cgi?logout=1">Log&nbsp;out</a>
+        nobody&#64;bivio.biz</li>
+</ul>
+</div> 
+
+<div id="bugzilla-body">
+
+<script type="text/javascript">
+<!--
+
+var initialowners = new Array(1);
+var last_initialowner;
+var initialccs = new Array(1);
+var components = new Array(1);
+var comp_desc = new Array(1);
+var flags = new Array(1);
+    components[0] = "TestComponent";
+    comp_desc[0] = "This is a test component in the test product database. This ought to be blown away and replaced with real stuff in a finished installation of Bugzilla.";
+    initialowners[0] = "nobody\x40bivio.biz";
+    flags[0] = [];
+
+    initialccs[0] = "";
+
+
+function set_assign_to() {
+    // Based on the selected component, fill the "Assign To:" field
+    // with the default component owner, and the "QA Contact:" field
+    // with the default QA Contact. It also selectively enables flags.
+    var form = document.Create;
+    var assigned_to = form.assigned_to.value;
+
+
+    var index = -1;
+    if (form.component.type == 'select-one') {
+        index = form.component.selectedIndex;
+    } else if (form.component.type == 'hidden') {
+        // Assume there is only one component in the list
+        index = 0;
+    }
+    if (index != -1) {
+        var owner = initialowners[index];
+        var component = components[index];
+        if (assigned_to == last_initialowner
+            || assigned_to == owner
+            || assigned_to == '') {
+            form.assigned_to.value = owner;
+            last_initialowner = owner;
+        }
+
+        document.getElementById('initial_cc').innerHTML = initialccs[index];
+        document.getElementById('comp_desc').innerHTML = comp_desc[index];
+
+
+        // First, we disable all flags. Then we re-enable those
+        // which are available for the selected component.
+        var inputElements = document.getElementsByTagName("select");
+        var inputElement, flagField;
+        for ( var i=0 ; i<inputElements.length ; i++ ) {
+            inputElement = inputElements.item(i);
+            if (inputElement.name.search(/^flag_type-(\d+)$/) != -1) {
+                var id = inputElement.name.replace(/^flag_type-(\d+)$/, "$1");
+                inputElement.disabled = true;
+                // Also hide the requestee field, if it exists.
+                inputElement = document.getElementById("requestee_type-" + id);
+                if (inputElement)
+                  YAHOO.util.Dom.addClass(inputElement.parentNode, 'bz_default_hidden');
+            }
+        }
+        // Now enable flags available for the selected component.
+        for (var i = 0; i < flags[index].length; i++) {
+            flagField = document.getElementById("flag_type-" + flags[index][i]);
+            // Do not enable flags the user cannot set nor request.
+            if (flagField && flagField.options.length > 1) {
+                flagField.disabled = false;
+                // Re-enabling the requestee field depends on the status
+                // of the flag.
+                toggleRequesteeField(flagField, 1);
+            }
+        }
+    }
+}
+
+var status_comment_required = new Array();
+  status_comment_required['UNCONFIRMED'] = false
+  status_comment_required['CONFIRMED'] = false
+  status_comment_required['IN_PROGRESS'] = false
+
+TUI_alternates['expert_fields'] = 'Show Advanced Fields';
+// Hide the Advanced Fields by default, unless the user has a cookie
+// that specifies otherwise.
+TUI_hide_default('expert_fields');
+// Also hide the "Paste text as attachment" textarea by default.
+TUI_hide_default('attachment_text_field');
+-->
+</script>
+
+<form name="Create" id="Create" method="post" action="post_bug.cgi"
+      class="enter_bug_form" enctype="multipart/form-data"
+      onsubmit="return validateEnterBug(this)">
+<input type="hidden" name="product" value="TestProduct">
+<input type="hidden" name="token" value="AFkdYrhQHF">
+
+<table>
+<tbody>
+  <tr>
+    <td colspan="4">
+    Before reporting a bug, please read the 
+<a href="page.cgi?id=bug-writing.html">bug writing guidelines</a>, please look at the list of
+<a href="duplicates.cgi">most frequently reported bugs</a>, and please
+<a href="query.cgi">search</a> for the bug.
+    </td>
+  </tr>
+
+  <tr>
+    <td colspan="2">
+      <a id="expert_fields_controller" class="controller bz_default_hidden"
+         href="javascript:TUI_toggle_class('expert_fields')">Hide
+        Advanced Fields</a>
+      
+      <script type="text/javascript">
+        YAHOO.util.Dom.removeClass('expert_fields_controller', 
+                                   'bz_default_hidden');
+      </script>
+    </td>
+    <td colspan="2">
+      (<span class="required_star">*</span> =
+      <span class="required_explanation">Required Field</span>)
+   </td>
+  </tr>
+
+  <tr><th class="field_label  required"
+    id="field_label_product">
+
+
+  <a 
+      title="Bugs are categorised into Products and Components."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#product"
+  >Product:</a>
+
+</th>
+  <td class="field_value "
+      id="field_container_product" >TestProduct</td><th class="field_label "
+    id="field_label_reporter">
+
+
+  <a 
+      title="The person who filed this bug."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#reporter"
+  >Reporter:</a>
+
+</th>
+  <td class="field_value "
+      id="field_container_reporter" >nobody&#64;bivio.biz</td>
+  </tr>
+
+  
+  <tr><th class="field_label  required"
+    id="field_label_component">
+
+    <label for="component">
+
+  <a 
+      title="Components are second-level categories; each belongs to a particular Product. Select a Product to narrow down this list."
+      class="field_help_link"
+      href="      describecomponents.cgi?product=TestProduct"
+  >Component:</a>
+</label>
+</th>      
+    <td id="field_container_component">
+      <select name="component" id="component" onchange="set_assign_to();"
+              size="7" aria-required="true" class="required">
+        
+
+          <option value="TestComponent"
+                  id="v1_component"
+              
+              selected="selected">TestComponent          </option>
+      </select>
+
+      <script type="text/javascript">
+       <!--
+         
+       //-->
+       </script>
+    </td>
+
+    <td colspan="2" id="comp_desc_container">
+      
+      <table>
+        <tr>
+          <td>
+            <fieldset>
+              <legend>Component Description</legend>
+              <div id="comp_desc" class="comment">Select a component to read its description.</div>
+            </fieldset>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr><th class="field_label  required"
+    id="field_label_version" rowspan="3">
+
+    <label for="version">
+
+  <a 
+      title="The version field defines the version of the software the bug was found in."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#version"
+  >Version:</a>
+</label>
+</th>
+    <td rowspan="3">
+      <select name="version" id="version" size="5">
+          <option value="unspecified" selected="selected">unspecified          </option>
+      </select>
+    </td>
+<th class="field_label "
+    id="field_label_bug_severity">
+
+    <label for="bug_severity">
+
+  <a 
+      title="How severe the bug is, or whether it's an enhancement."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#bug_severity"
+  >Severity:</a>
+</label>
+</th>
+  <td class="field_value "
+      id="field_container_bug_severity" >
+        <select id="bug_severity" 
+                name="bug_severity" 
+                >
+            <option value="blocker"
+                    id="v1_bug_severity"
+              >blocker</option>
+            <option value="critical"
+                    id="v2_bug_severity"
+              >critical</option>
+            <option value="major"
+                    id="v3_bug_severity"
+              >major</option>
+            <option value="normal"
+                    id="v4_bug_severity"
+              >normal</option>
+            <option value="minor"
+                    id="v5_bug_severity"
+              >minor</option>
+            <option value="trivial"
+                    id="v6_bug_severity"
+              >trivial</option>
+            <option value="enhancement"
+                    id="v7_bug_severity"
+              
+                selected="selected">enhancement</option>
+        </select>
+        
+
+        <script type="text/javascript">
+        <!--
+          initHidingOptionsForIE('bug_severity');
+          
+        //-->
+        </script>
+</td>
+  </tr>
+
+  <tr><th class="field_label "
+    id="field_label_rep_platform">
+
+    <label for="rep_platform">
+
+  <a 
+      title="The hardware platform the bug was observed on. Note: When searching, selecting the option &quot;All&quot; only finds bugs whose value for this field is literally the word &quot;All&quot;."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#rep_platform"
+  >Hardware:</a>
+</label>
+</th>
+  <td class="field_value "
+      id="field_container_rep_platform" >
+        <select id="rep_platform" 
+                name="rep_platform" 
+                >
+            <option value="All"
+                    id="v1_rep_platform"
+              >All</option>
+            <option value="PC"
+                    id="v2_rep_platform"
+              >PC</option>
+            <option value="Macintosh"
+                    id="v3_rep_platform"
+              >Macintosh</option>
+            <option value="Other"
+                    id="v4_rep_platform"
+              
+                selected="selected">Other</option>
+        </select>
+        
+
+        <script type="text/javascript">
+        <!--
+          initHidingOptionsForIE('rep_platform');
+          
+        //-->
+        </script>
+</td>
+  </tr>
+
+  <tr><th class="field_label "
+    id="field_label_op_sys">
+
+    <label for="op_sys">
+
+  <a 
+      title="The operating system the bug was observed on. Note: When searching, selecting the option &quot;All&quot; only finds bugs whose value for this field is literally the word &quot;All&quot;."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#op_sys"
+  >OS:</a>
+</label>
+</th>
+  <td class="field_value "
+      id="field_container_op_sys" >
+        <select id="op_sys" 
+                name="op_sys" 
+                >
+            <option value="All"
+                    id="v1_op_sys"
+              >All</option>
+            <option value="Windows"
+                    id="v2_op_sys"
+              >Windows</option>
+            <option value="Mac OS"
+                    id="v3_op_sys"
+              >Mac OS</option>
+            <option value="Linux"
+                    id="v4_op_sys"
+              >Linux</option>
+            <option value="Other"
+                    id="v5_op_sys"
+              
+                selected="selected">Other</option>
+        </select>
+        
+
+        <script type="text/javascript">
+        <!--
+          initHidingOptionsForIE('op_sys');
+          
+        //-->
+        </script>
+</td>
+  </tr>
+    <tr>
+      <th colspan="3">&nbsp;</th>
+      <td id="os_guess_note" class="comment">
+        <div>We've made a guess at your
+          operating system and platform. Please check them
+        and make any corrections if necessary.</div>
+      </td>
+    </tr>
+</tbody>
+
+<tbody class="expert_fields">
+  <tr>
+      <td colspan="2">&nbsp;</td>
+<th class="field_label "
+    id="field_label_priority">
+
+    <label for="priority">
+
+  <a 
+      title="Engineers prioritize their bugs using this field."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#priority"
+  >Priority:</a>
+</label>
+</th>
+  <td class="field_value "
+      id="field_container_priority" >
+        <select id="priority" 
+                name="priority" 
+                >
+            <option value="Highest"
+                    id="v1_priority"
+              >Highest</option>
+            <option value="High"
+                    id="v2_priority"
+              >High</option>
+            <option value="Normal"
+                    id="v3_priority"
+              >Normal</option>
+            <option value="Low"
+                    id="v4_priority"
+              >Low</option>
+            <option value="Lowest"
+                    id="v5_priority"
+              >Lowest</option>
+            <option value="---"
+                    id="v6_priority"
+              
+                selected="selected">---</option>
+        </select>
+        
+
+        <script type="text/javascript">
+        <!--
+          initHidingOptionsForIE('priority');
+          
+        //-->
+        </script>
+</td>
+  </tr>
+</tbody>
+
+<tbody class="expert_fields">
+  <tr>
+    <td colspan="4">&nbsp;</td>
+  </tr>
+
+  <tr><th class="field_label "
+    id="field_label_bug_status">
+
+    <label for="bug_status">
+
+  <a 
+      title="A bug may be in any of a number of states."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#bug_status"
+  >Status:</a>
+</label>
+</th>
+  <td class="field_value "
+      id="field_container_bug_status" >
+        <select id="bug_status" 
+                name="bug_status" 
+                >
+            <option value="UNCONFIRMED"
+                    id="v1_bug_status"
+              >UNCONFIRMED</option>
+            <option value="CONFIRMED"
+                    id="v2_bug_status"
+              
+                selected="selected">CONFIRMED</option>
+            <option value="IN_PROGRESS"
+                    id="v3_bug_status"
+              >IN_PROGRESS</option>
+        </select>
+        
+
+        <script type="text/javascript">
+        <!--
+          initHidingOptionsForIE('bug_status');
+          
+        //-->
+        </script>
+</td>
+
+    <td>&nbsp;</td>
+    
+
+    <td rowspan="9">
+    </td>
+  </tr>
+
+  <tr><th class="field_label "
+    id="field_label_assigned_to">
+
+    <label for="assigned_to">
+
+  <a 
+      title="The person in charge of resolving the bug."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#assigned_to"
+  >Assignee:</a>
+</label>
+</th>
+    <td colspan="2"><input
+    name="assigned_to"
+    value="" size="30"  id="assigned_to" 
+  >
+      <noscript>(Leave blank to assign to component's default assignee)</noscript>
+    </td>
+  </tr>
+  
+
+  <tr><th class="field_label "
+    id="field_label_cc">
+
+    <label for="cc">
+
+  <a 
+      title="Users who may not have a direct role to play on this bug, but who are interested in its progress."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#cc"
+  >CC:</a>
+</label>
+</th>
+    <td colspan="2"><input
+    name="cc"
+    value="" size="30"  id="cc" 
+  >
+    </td>
+  </tr>
+
+  <tr>
+    <th>Default CC:</th>
+    <td colspan="2">
+      <div id="initial_cc">
+      </div>
+   </td>
+  </tr>
+  
+  <tr>
+    <td colspan="3">&nbsp;</td>
+  </tr>
+
+  <tr><th class="field_label "
+    id="field_label_estimated_time">
+
+    <label for="estimated_time">
+
+  <a 
+      title="The amount of time that has been estimated it will take to resolve this bug."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#estimated_time"
+  >Orig. Est.:</a>
+</label>
+</th>
+    <td colspan="2">
+      <input name="estimated_time" size="6" maxlength="6" value="">
+    </td>
+  </tr>
+  <tr><th class="field_label "
+    id="field_label_deadline">
+
+    <label for="deadline">
+
+  <a 
+      title="The date that this bug must be resolved by, entered in YYYY-MM-DD format."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#deadline"
+  >Deadline:</a>
+</label>
+</th>
+  <td class="field_value "
+      id="field_container_deadline"  colspan="2">
+      <input name="deadline" size="20"
+             id="deadline"
+             value=""
+             onchange="updateCalendarFromField(this)">
+      <button type="button" class="calendar_button"
+              id="button_calendar_deadline"
+              onclick="showCalendar('deadline')">
+        <span>Calendar</span>
+      </button>
+
+      <div id="con_calendar_deadline"></div>
+
+      <script type="text/javascript">
+        createCalendar('deadline')
+      </script></td> 
+  </tr>
+
+  <tr>
+    <td colspan="3">&nbsp;</td>
+  </tr>
+
+
+  <tr><th class="field_label "
+    id="field_label_bug_file_loc">
+
+    <label for="bug_file_loc">
+
+  <a 
+      title="Bugs can have a URL associated with them - for example, a pointer to a web site where the problem is seen."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#bug_file_loc"
+  >URL:</a>
+</label>
+</th>
+    <td colspan="2" class="field_value">
+      <input name="bug_file_loc" id="bug_file_loc" class="text_input"
+             size="40" value="http://">
+    </td>
+  </tr>
+</tbody>
+
+<tbody>
+
+</tbody>
+
+<tbody>
+
+  <tr><th class="field_label  required"
+    id="field_label_short_desc">
+
+    <label for="short_desc">
+
+  <a 
+      title="The bug summary is a short sentence which succinctly describes what the bug is about."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#short_desc"
+  >Summary:</a>
+</label>
+</th>
+    <td colspan="3" class="field_value">
+      <input name="short_desc" size="70" value=""
+             maxlength="255" spellcheck="true" aria-required="true"
+             class="required text_input" id="short_desc">
+    </td>
+  </tr>
+
+
+  <tr>
+    <th>Description:</th>
+    <td colspan="3">
+<textarea name="comment" id="comment"
+            rows="10"
+          cols="80"
+            onFocus="this.rows=25"></textarea>
+      <br>
+    </td>
+  </tr>
+
+
+  <tr>
+    <th>Attachment:</th>
+    <td colspan="3">
+      <div id="attachment_false" class="bz_default_hidden">
+        <input type="button" value="Add an attachment" onClick="handleWantsAttachment(true)">
+      </div>
+
+      <div id="attachment_true">
+        <input type="button" id="btn_no_attachment" value="Don't add an attachment"
+               class="bz_default_hidden"  onClick="handleWantsAttachment(false)">
+        <fieldset>
+          <legend>Add an attachment</legend>
+          <table class="attachment_entry"><tr class="attachment_data">
+  <th><label for="data">File</label>:</th>
+  <td>
+    <em>Enter the path to the file on your computer</em> (or
+    <a id="attachment_data_controller" href="javascript:TUI_toggle_class('attachment_text_field');
+                                             javascript:TUI_toggle_class('attachment_data')"
+    >paste text as attachment</a>).<br>
+    <input type="file" id="data" name="data" size="50" onchange="DataFieldHandler()">
+  </td>
+</tr>
+<tr class="attachment_text_field">
+  <th><label for="attach_text">File</label>:</th>
+  <td>
+    <em>Paste the text to be added as an attachment</em> (or
+    <a id="attachment_text_field_controller" href="javascript:TUI_toggle_class('attachment_text_field');
+                                                   javascript:TUI_toggle_class('attachment_data')"
+    >attach a file</a>).<br>
+    <textarea id="attach_text" name="attach_text" cols="80" rows="15"
+              onkeyup="TextFieldHandler()" onblur="TextFieldHandler()"></textarea>
+  </td>
+</tr>
+<tr>
+  <th class="required"><label for="description">Description</label>:</th>
+  <td>
+    <em>Describe the attachment briefly.</em><br>
+    <input type="text" id="description" name="description" class="required"
+           size="60" maxlength="200">
+  </td>
+</tr>
+<tr class="expert_fields">
+  <th>Content Type:</th>
+  <td>
+    <em>If the attachment is a patch, check the box below.</em><br>
+    <input type="checkbox" id="ispatch" name="ispatch" value="1"
+           onchange="setContentTypeDisabledState(this.form);">
+    <label for="ispatch">patch</label><br><br>
+    
+    <script type="text/javascript">
+      YAHOO.util.Event.onDOMReady(function() {
+          bz_fireEvent(document.getElementById('ispatch'), 'change');
+      });
+    </script>
+
+    <em>Otherwise, choose a method for determining the content type.</em><br>
+    <input type="radio" id="autodetect"
+           name="contenttypemethod" value="autodetect" checked="checked">
+      <label for="autodetect">auto-detect</label><br>
+    <input type="radio" id="list"
+           name="contenttypemethod" value="list">
+      <label for="list">select from list</label>:
+      <select name="contenttypeselection" id="contenttypeselection"
+              onchange="this.form.contenttypemethod[1].checked = true;"><option value="text/plain">plain text (text/plain)</option>
+    <option value="text/html">HTML source (text/html)</option>
+    <option value="application/xml">XML source (application/xml)</option>
+    <option value="image/gif">GIF image (image/gif)</option>
+    <option value="image/jpeg">JPEG image (image/jpeg)</option>
+    <option value="image/png">PNG image (image/png)</option>
+    <option value="application/octet-stream">binary file (application/octet-stream)</option>
+      </select><br>
+    <input type="radio" id="manual"
+                 name="contenttypemethod" value="manual">
+      <label for="manual">enter manually</label>:
+      <input type="text" name="contenttypeentry" id="contenttypeentry"
+             size="30" maxlength="200"
+             onchange="if (this.value) this.form.contenttypemethod[2].checked = true;">
+  </td>
+</tr>
+<tr class="expert_fields">
+  <td> </td>
+  <td>
+  </td>
+</tr>
+          </table>
+        </fieldset>
+      </div>
+    </td>
+  </tr>
+</tbody>
+
+<tbody class="expert_fields">
+
+    <tr><th class="field_label "
+    id="field_label_dependson">
+
+    <label for="dependson">
+
+  <a 
+      title="The bugs listed here must be resolved before this bug can be resolved."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#dependson"
+  >Depends on:</a>
+</label>
+</th>
+      <td colspan="3">
+        <input name="dependson" accesskey="d" value="">
+      </td>
+    </tr>
+    <tr><th class="field_label "
+    id="field_label_blocked">
+
+    <label for="blocked">
+
+  <a 
+      title="This bug must be resolved before the bugs listed in this field can be resolved."
+      class="field_help_link"
+      href="page.cgi?id=fields.html#blocked"
+  >Blocks:</a>
+</label>
+</th>
+      <td colspan="3">
+        <input name="blocked" accesskey="b" value="">
+      </td>
+    </tr>
+</tbody>
+
+<tbody class="expert_fields">
+</tbody>
+
+<tbody>
+  
+
+  <tr>
+    <th>&nbsp;</th>
+    <td colspan="3">
+      <input type="submit" id="commit" value="Submit Bug">
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      <input type="submit" name="maketemplate" id="maketemplate"
+             value="Remember values as bookmarkable template"
+             onclick="bz_no_validate_enter_bug=true" class="expert_fields">
+    </td>
+  </tr>
+</tbody>
+  </table>
+  <input type="hidden" name="form_name" value="enter_bug">
+</form>
+
+
+</div>
+
+
+
+<div id="footer">
+  <div class="intro"></div>
+
+
+
+
+<ul id="useful-links">
+  <li id="links-actions"><ul class="links">
+  <li><a href="./">Home</a></li>
+  <li><span class="separator">| </span><a href="enter_bug.cgi">New</a></li>
+  <li><span class="separator">| </span><a href="describecomponents.cgi">Browse</a></li>
+  <li><span class="separator">| </span><a href="query.cgi">Search</a></li>
+
+  <li class="form">
+    <span class="separator">| </span>
+    <form action="buglist.cgi" method="get"
+        onsubmit="if (this.quicksearch.value == '')
+                  { alert('Please enter one or more search terms first.');
+                    return false; } return true;">
+    <input class="txt" type="text" id="quicksearch_bottom" name="quicksearch" 
+           title="Quick Search" value="">
+    <input class="btn" type="submit" value="Search" 
+           id="find_bottom"></form>
+  <a href="page.cgi?id=quicksearch.html" title="Quicksearch Help">[?]</a></li>
+
+  <li><span class="separator">| </span><a href="report.cgi">Reports</a></li>
+
+  <li></li>
+
+    <li><span class="separator">| </span><a href="userprefs.cgi">Preferences</a></li>
+      <li><span class="separator">| </span><a href="admin.cgi">Administration</a></li>
+<li>
+        <span class="separator">| </span>
+        <a href="docs/en/html/bugreports.html" target="_blank">Help</a>
+      </li>
+
+    <li>
+      <span class="separator">| </span>
+        <a href="index.cgi?logout=1">Log&nbsp;out</a>
+        nobody&#64;bivio.biz</li>
+</ul>
+  </li>
+
+  
+    
+    <li id="links-saved">
+      <ul class="links">
+          <li><a href="buglist.cgi?resolution=---&amp;emailassigned_to1=1&amp;emailreporter1=1&amp;emailtype1=exact&amp;email1=nobody%40bivio.biz">My Bugs</a></li>
+
+      </ul>
+    </li>
+
+  
+
+
+  
+</ul>
+
+  <div class="outro"></div>
+</div>
+
+
+</body>
+</html>
