@@ -9,8 +9,10 @@ config({
 options({
     create_object => sub {
 	my($case, $params) = @_;
-	my($o) = Bivio::Test::HTMLParser->new(
-	    Bivio::IO::File->read("HTMLParser/$params->[0].html"));
+	my($o) = class()->new(
+	    IO_File()->read("HTMLParser/$params->[0].html"),
+	    {is_not_bivio_html => $params->[0] =~ /bugzilla/ ? 1 : 0},
+	);
 	return $params->[1] ? $o->get($params->[1]) : $o;
     },
 });
@@ -20,14 +22,18 @@ options({
 	    get_nested => $_->[1],
         ];
     } [
- 	'all-users' => [
- 	    ['Forms', 'Any Privilege', 'visible', '_anon', 'name',] => 'b_filter',
+ 	'bugzilla-bug' => [
+ 	    ['Forms', 'component', 'visible', 'bug_severity', 'type'] => 'select',
 	],
-    ],[
+    ], [
+ 	'all-users' => [
+ 	    ['Forms', 'Any Privilege', 'visible', '_anon', 'name'] => 'b_filter',
+	],
+    ], [
  	'chooser-label' => [
  	    ['Forms', 'Refresh', 'visible', '_anon', 'type'] => 'select',
 	],
-    ],[
+    ], [
  	'first-option-label' => [
  	    ['Forms', 'Refresh', 'visible', '_anon', 'options', 'A1', 'value'] => 'a1',
 	],
