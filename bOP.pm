@@ -28,10 +28,12 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.69  2012/06/14 16:27:41  nagler
+  * Fix qooxdoo build to only include necessary files
+
   Revision 11.68  2012/06/13 22:56:25  nagler
   * Added files/qooxdoo
   * Bivio::BConf
