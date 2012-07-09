@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,65 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.70  2012/07/05 20:02:47  schellj
+  Release notes:
+  * Bivio::Biz::Action::UserPasswordQuery
+    Bivio::Base
+  * Bivio::Biz::Model::ConfirmationForm
+    Bivio::Base
+  * Bivio::Biz::Model::ForumDeleteForm
+    Bivio::Base
+  * Bivio::Biz::Model::ImageUploadForm
+    Bivio::Base
+  * Bivio::Biz::Model::MailReceiveBaseForm
+    Bivio::Base
+  * Bivio::Biz::Model::MotionForm
+    Call 'execute_ ... ' methods in super class
+  * Bivio::Biz::Model::MotionVoteForm
+    Call 'execute_ ... ' methods in super class
+  * Bivio::Biz::Model::RealmLogoList
+    Bivio::Base
+  * Bivio::Biz::Model::RealmMailBounceList
+    Bivio::Base
+  * Bivio::Biz::Model::RealmUserDeleteForm
+    Bivio::Base
+  * Bivio::Biz::Model::SearchForm
+    Bivio::Base
+  * Bivio::Biz::Model::SearchList
+    Bivio::Base
+  * Bivio::Biz::Model::TestWidgetForm
+    Bivio::Base
+  * Bivio::Biz::Model::TupleSlotTypeClassList
+    Bivio::Base
+  * Bivio::Biz::Model::TupleUseList
+    Bivio::Base
+  * Bivio::Biz::Model::UserPasswordForm
+    Bivio::Base
+    call super
+  * Bivio::Biz::t::ListModel::T4List
+    Bivio::Base
+  * Bivio::ShellUtil
+    _method_ok returns the method found
+  * Bivio::Test::HTMLParser::Forms
+    support is_not_bivio_html
+  * Bivio::Test::HTMLParser::Tables
+    support is_not_bivio_html
+  * Bivio::Test::HTMLParser
+    support is_not_bivio_html
+  * Bivio::Test::Language::HTTP
+    support is_not_bivio_html
+  * Bivio::Test::ShellUtilConf
+    added setup_case
+  * Bivio::UNIVERSAL
+    bug: grep_methods and grep_subroutines weren't handling hierarchy right
+  * Bivio::Util::Class
+    renamed methods u_* so wouldn't collide with methods in
+    Bivio::UNIVERSAL.  ShellUtil will check for u_* methods first
+  * Bivio::Util::CSV
+    fix for sort_csv
+  * Bivio::Util::Release
+    add optional command to yum_update
+
   Revision 11.69  2012/06/14 16:27:41  nagler
   * Fix qooxdoo build to only include necessary files
 
