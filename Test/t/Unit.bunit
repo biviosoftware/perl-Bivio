@@ -76,7 +76,7 @@ req()->set_realm('btest_read');
 	    '' => [\''],
 	],
 	builtin_shell_util => [
-	    [Class => [qw(qualified_name Model.RealmOwner)]] => qr{RealmOwner},
+	    [Class => [qw(u_name Model.RealmOwner)]] => qr{RealmOwner},
 	],
 	builtin_random_string => [
 	    [] => qr{^.{8}$}s,
