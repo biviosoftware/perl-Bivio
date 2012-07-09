@@ -2,13 +2,13 @@
 # $Id$
 ShellUtil();
 [
-    [qw(super ShellUtil.Class)] => qr{
+    [qw(u_super ShellUtil.Class)] => qr{
         .*Bivio::ShellUtil
 	.*Bivio::Collection::Attributes
         .*Bivio::UI::WidgetValueSource
         .*Bivio::UNIVERSAL
     }xs,
-    [qw(info ShellUtil.Class)] => qr{^\d+.\d+ .*/Bivio/Util/Class\.pm$},
-    [qw(info Bivio::UNIVERSAL)] => qr{^\d+.\d+ .*/Bivio/UNIVERSAL\.pm$},
-    [qw(info Bivio::Not_A_Class)] => [],
+    [qw(u_info ShellUtil.Class)] => qr{^\d+.\d+ .*/Bivio/Util/Class\.pm$},
+    [qw(u_info Bivio::UNIVERSAL)] => qr{^\d+.\d+ .*/Bivio/UNIVERSAL\.pm$},
+    [qw(u_info Bivio::Not_A_Class)] => [],
 ];
