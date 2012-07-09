@@ -4,9 +4,8 @@ Widget();
 my($args) = [qw(WidgetInjector public xhtml_widget)];
 req()->initialize_fully('LOGIN');
 [
-#     [@$args] => qr{XMLHttpRequest},
     inline_case(sub {req()->put(query => {bivio_login_form => ''})}),
-    [@$args] => qr{^document.getElementById.* = "<form.*Email:.*Password:.*</form>";\n$}s,
+    [@$args] => qr{^b_injection_callback.*?, "<form.*Email:.*Password:.*</form>", ""\);$}s,
     [qw(WidgetInjectorXXX public xhtml_widget)] => NOT_FOUND(),
     [qw(WidgetInjectorXXX public not_it)] => NOT_FOUND(),
 ];
