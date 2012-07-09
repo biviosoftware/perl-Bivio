@@ -2,6 +2,7 @@
 # $Id$
 ShellUtil();
 [
+    [qw(-realm fourem edit *all_admins +ADMIN_WRITE)] => not_die(),
     [qw(-realm fourem list *all_members)] => qr{MEMBER -\s.*ACCOUNTANT -\s.*ADMINISTRATOR -\s}is,
     [qw(-realm fourem list *all_members-all_admins)] => sub {
 	my(undef, $actual) = @_;
@@ -9,7 +10,6 @@ ShellUtil();
 	assert_equals(qr{MEMBER -\s}is, $actual->[0]);
 	return 1;
     },
-    [qw(-realm fourem edit *all_admins +ADMIN_WRITE)] => not_die(),
     map((
     	['-realm', $_, 'list_enabled_categories'] => sub {
     	    my(undef, $actual) = @_;
