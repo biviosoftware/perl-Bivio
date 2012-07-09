@@ -11,8 +11,20 @@ sub execute_empty {
     return _dispatch(@_);
 }
 
+sub execute_empty_create {
+}
+
+sub execute_empty_edit {
+}
+
 sub execute_ok {
     return _dispatch(@_);
+}
+
+sub execute_ok_create {
+}
+
+sub execute_ok_edit {
 }
 
 sub internal_initialize {
