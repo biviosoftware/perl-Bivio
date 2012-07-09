@@ -19,6 +19,8 @@ EOF
 
 sub u_info {
     my($self, $class) = @_;
+    return
+	unless $_CL->unsafe_map_require($class);
     my($pkg) = _load($class);
     my($file) = "$pkg.pm";
     $file =~ s{::}{/}g;
