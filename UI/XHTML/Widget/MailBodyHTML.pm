@@ -8,10 +8,16 @@ use HTML::Parser ();
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 my($_EMPTY_TAG) = _hash(qw(
+    area
+    base
     br
     col
     hr
     img
+    input
+    link
+    meta
+    param
 ));
 my($_OUTER_TAG) = _hash(qw(body html));
 my($_SAFE_TAG) = _hash(qw(
@@ -335,7 +341,8 @@ sub _clean_start {
     _clean_start_not_nesting($state, $tag);
     unshift(@{$state->{stack}}, $tag);
     if ($state->{ignore} || !$_SAFE_TAG->{$tag}) {
-	$state->{ignore}++;
+	$state->{ignore}++
+	    unless $_EMPTY_TAG->{$tag};
 	return;
     }
     return if $_OUTER_TAG->{$tag};
