@@ -32,12 +32,28 @@ sub link_facade_files {
 		$_F->symlink('.', $d);
 	    }
 	    if ($_C->is_dev) {
-		my($common) = "$ENV{HOME}/src/perl/Bivio/files";
+		my($src) = "$ENV{HOME}/src";
+		my($common) = "$src/perl/Bivio/files";
+		$_F->mkdir_p($common);
+		foreach my $j (grep($_ !~ /CVS$/ && -d $_, glob("$src/javascript/*"))) {
+		    my($dest) = "$common/" . ($j =~ m{([^/]+)$})[0];
+		    $_F->do_in_dir(
+			$j,
+			sub {
+			    b_info("$j: make");
+			    $self->piped_exec('make');
+			    return;
+			},
+		    ) if -f "$j/Makefile";
+		    $_F->symlink($j, $dest)
+			unless -d $dest;
+		}
 		my($common_b) = $default->get_local_file_name(
 		    'PLAIN',
 		    $default->get_local_file_plain_common_uri,
 		);
-		$_F->symlink($common, $common_b);
+		$_F->symlink($common, $common_b)
+		    unless -d $common_b;
 	    }
 	    my($prefixes) = [
 		grep(
@@ -63,13 +79,14 @@ sub link_facade_files {
 			    next
 				if -e $destination;
 			    if (-d $File::Find::name && ! -l $File::Find::name) {
-				Bivio::IO::File->mkdir_p($destination);
+				$_F->mkdir_p($destination);
 				next;
 			    }
 			    my($up) = $File::Find::dir;
 			    $up =~ s,[^/]+,..,g;
 			    next if $File::Find::name =~ /\.cvsignore/;
-			    $_F->symlink("$up/$File::Find::name", $destination);
+			    $_F->symlink("$up/$File::Find::name", $destination)
+				unless -f $destination;
 			}
 			return;
 		    },
