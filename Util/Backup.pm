@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Backup;
 use strict;
@@ -32,7 +32,6 @@ commands:
     archive_mirror_link root date -- tar "link" to "weekly" or "archive"
     compress_log_dirs root [max_days] -- tars and gzips log dirs
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
-    remote_archive root date host dev -- copies dirs to remote system
     trim_directories dir max -- returns directories to trim
 EOF
 }
@@ -214,82 +213,6 @@ sub mirror {
     return \$res;
 }
 
-sub remote_archive {
-    my($self, $root, $date, $host, $dev) = shift->name_args(
-	['String', 'Date', 'String', 'String'],
-	\@_,
-    );
-    return $self->lock_action(sub {
-	$date = $_D->to_file_name($date);
-	$root = $_F->absolute_path($root);
-	my($link) = "$root/mirror/$_LINK/$date";
-	$self->usage_error($link, ': does not exist')
-	    unless -d $link;
-	my($mount) = "$root/remote_archive";
-	my($archive) = "$mount/$date";
-	$self->piped_exec_remote($host, "umount $dev", undef, 1);
-	$self->piped_exec_remote($host, "umount $mount", undef, 1);
-	$self->piped_exec_remote($host, "mke2fs -b 4096 -m 0 -N 4194304 -O dir_index -O sparse_super $dev", "y\n");
-	$self->piped_exec_remote($host, "mkdir -p $mount");
-	$self->piped_exec_remote($host, "mount $dev $mount");
-	my($ls) = [split(' ', ${$self->piped_exec_remote($host, "ls $mount")})];
-	b_die($ls, ': incorrect number of files')
-	    unless "@$ls" eq 'lost+found';
-	my($done);
-	foreach my $other ("$root/weekly", "$root/archive") {
-	    next
-		unless -d (my $src = "$other/$date");
-	    $self->piped_exec("rsync -a -e ssh --timeout 43200 $src $host:$mount");
-	    $done = 1;
-	    last;
-	}
-	my($link_size) = split(' ', `du -s $link`);
-	$_F->do_in_dir($link, sub {
-	    foreach my $top (glob('*')) {
-		my($dirs) = [];
-		my($du) = IO::File->new;
-		Bivio::die->die($top, ": du failed: $!")
-		    unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
-		while (defined(my $line = readline($du))) {
-		    my($n, $d) = split(/\s+/, $line, 2);
-		    chomp($d);
-		    last
-			if @$dirs && $n < $_CFG->{min_kb};
-		    push(@$dirs, $d);
-		}
-		# Directories with same size may come out in any order
-		$dirs = [sort(@$dirs)];
-		$du->close;
-		while (my $src = shift(@$dirs)) {
-		    my($dst) = _safe_path("$archive/$src.tgz");
-		    my($die) = Bivio::Die->catch(sub {
-			$self->piped_exec_remote(
-			    $host,
-			    "mkdir -p '" .  File::Basename::dirname($dst) . "'",
-			);
-			$self->piped_exec(
-			    "tar cfX - - @{[_quote($src)]} | "
-			    . qq{ssh $host sh -c "gzip -c > '$dst'" 2> /dev/null},
-			    \(join("\n", @$dirs)),
-			);
-		    });
-		    b_warn($dst, ': ', $die)
-			if $die;
-		}
-	    }
-	    return;
-	}) unless $done;
-	my($archive_size) = split(
-	    ' ',
-	    ${$self->piped_exec_remote($host, "du -s $archive")},
-	);
-	$self->piped_exec_remote($host, "chmod -R -w $archive; umount $dev");
-	b_warn("ERROR: $archive size ($archive_size) << ($link_size) $link size")
-	    if $archive_size / $link_size < 0.25;
-	return $archive;
-    });
-}
-
 sub trim_directories {
     my($self, $root, $num_keep) = shift->name_args([
 	[qw(root String)],
@@ -323,17 +246,15 @@ sub _safe_path {
 
 sub _which_archive {
     my($self, $root, $date) = @_;
-    my($archive) = "$root/archive/$date";
-    (my $glob = $archive) =~ s/\d\d$/??/;
-    return $archive
-	unless @{[glob($glob)]};
-    $archive = "$root/weekly/$date";
+    my($archive) = "$root/weekly/$date";
     $date = $_D->from_literal_or_die($date);
     my($dow) = $_D->english_day_of_week($date);
     foreach my $d ($_D->english_day_of_week_list) {
 	my($x) = "$root/weekly/" . $_D->to_file_name($date);
-	return if -e $x;
-	last if $d eq $dow;
+	return
+	    if -e $x;
+	last
+	    if $d eq $dow;
 	$date = $_D->add_days($date, -1);
     }
     return $archive;
