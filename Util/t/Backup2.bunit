@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
 config({
@@ -6,11 +6,11 @@ config({
 	min_kb => 100,
     },
 });
-my($now) = Date('20080301');
+my($now) = Date('20080227');
 my($days) = [map(Date()->to_file_name(Date()->add_days($now, $_)), 0 .. 40)];
 my($tmp) = 'Backup2';
 system("chmod -R a+rxw $tmp 2>/dev/null; rm -rf $tmp");
-Bivio::IO::File->mkdir_p($tmp);
+IO_File()->mkdir_p($tmp);
 foreach my $day (@$days) {
     my($kb) = 1;
     foreach my $d (qw{
@@ -44,14 +44,10 @@ foreach my $day (@$days) {
 	    },
 	    check_return => sub {
 		my($date) = shift->get('params')->[1];
-		my($d) = $date =~ /01$/
-		    ? "$tmp/archive/$date"
-		    : grep($date eq $_,
-		        map("2008$_", qw(0302 0309 0316 0323 0330 0406)))
+		my($d) = grep($date eq $_, map("2008$_", qw(0227 0302 0309 0316 0323 0330 0406)))
 		    ? "$tmp/weekly/$date"
 		    : 0;
 		unless ($d) {
-		    assert_eval("! -d '$tmp/archive/$date'");
 		    assert_eval("! -d '$tmp/weekly/$date'");
 		    return 1;
 		}
