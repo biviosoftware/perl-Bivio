@@ -1343,6 +1343,12 @@ sub _cfg_motion {
 		FORUM_MOTION_VOTE =>
 		    'Thank you for your participation in the poll.',
 	    ]],
+	    [list_action => [
+		FORUM_MOTION_FORM => 'Edit',
+		FORUM_MOTION_VOTE => 'Vote',
+		FORUM_MOTION_COMMENT => 'Comment',
+		FORUM_MOTION_STATUS => 'Status',
+	    ]],
 	    [title => [
 		FORUM_MOTION_LIST => 'Polls',
 		FORUM_MOTION_FORM => 'New Poll',
