@@ -4,7 +4,6 @@ package Bivio::UI::View::Motion;
 use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
-use Bivio::UI::DateTimeMode;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
@@ -73,7 +72,7 @@ sub comment_result {
 	    'FORUM_MOTION_LIST',
 	]),
 	$self->internal_topic_from_motion,
-	body => [ \&_comment_list,  [qw(Model.MotionCommentList)], $self, [qw(Model.Motion type)]],
+	body => [\&_comment_list, [qw(Model.MotionCommentList)], $self, [qw(Model.Motion type)]],
     );
 }
 
@@ -179,11 +178,11 @@ sub internal_list_actions {
     my($self) = @_;
     return [
 	[
-	    'Edit',
+	    vs_text_as_prose('list_action.FORUM_MOTION_FORM'),
 	    'FORUM_MOTION_FORM',
 	],
 	[
-	    'Vote',
+	    vs_text_as_prose('list_action.FORUM_MOTION_VOTE'),
 	    'FORUM_MOTION_VOTE',
 	    URI({
 		task_id => 'FORUM_MOTION_VOTE',
@@ -196,13 +195,13 @@ sub internal_list_actions {
 	],
 	$self->WANT_COMMENT_LIST_ACTION ?
 	    [
-		'Comment', 
+		vs_text_as_prose('list_action.FORUM_MOTION_COMMENT'),
 		'FORUM_MOTION_COMMENT',
 		'THIS_AS_PARENT',
 		['->can_comment'],
 	    ] : (),
 	[
-	    'Status',
+	    vs_text_as_prose('list_action.FORUM_MOTION_STATUS'),
 	    'FORUM_MOTION_STATUS',
 	    'THIS_AS_PARENT',
 	],
@@ -281,14 +280,12 @@ sub list {
 		    ),
 		    column_order_by => ['RealmFile.path_lc'],
 		}],
-		[ 'Motion.status', {
-		    column_widget =>	
-			If( [ '->is_open' ] ,	
-			    String("Open"),	
-			    String("Closed"))
-		    }
-	        ],
-		[ 'Motion.start_date_time', {
+		['Motion.status', {
+		    column_widget => If(['->is_open'],
+		        'Open',
+			'Closed'),
+		}],
+		['Motion.start_date_time', {
 		    $self->internal_date_time_attr,
 		    value => ['Motion.start_date_time'],
 		}],
@@ -298,13 +295,13 @@ sub list {
 		}],
 		[ 'vote_count', {
 		    column_data_class => 'vote_count',
-		        column_widget => Join([       
+		        column_widget => Join([
 			    Integer("yes_count"),
-			    String("/"),	
+			    '/',
 			    Integer("no_count"),
-			    String("/"),
+			    '/',
 			    Integer("abstain_count"),
-			]), 
+			]),
 		    }
 	        ],
 		vs_actions_column($self->internal_list_actions),
@@ -349,9 +346,9 @@ sub status {
 		       'open',
 		    ),
 		)],
-		[ _label_cell(vs_text('MotionStatus.yes_count')),  _value_cell([ 'Model.Motion', '->vote_count_yes' ], ), ],  	
-		[ _label_cell(vs_text('MotionStatus.no_count')),  _value_cell([ 'Model.Motion', '->vote_count_no' ], ), ],  	
-		[ _label_cell(vs_text('MotionStatus.abstain_count')),  _value_cell([ 'Model.Motion', '->vote_count_abstain' ], ),  ],  	
+		[_label_cell(vs_text('MotionStatus.yes_count')),  _value_cell([ 'Model.Motion', '->vote_count_yes' ])],
+		[_label_cell(vs_text('MotionStatus.no_count')),  _value_cell([ 'Model.Motion', '->vote_count_no'])],
+		[_label_cell(vs_text('MotionStatus.abstain_count')),  _value_cell([ 'Model.Motion', '->vote_count_abstain'])],
 	    ],
 		 {
 		     class => 'simple',
@@ -403,7 +400,7 @@ sub vote_result {
 	    'FORUM_MOTION_LIST',
 	]),
 	$self->internal_topic_from_motion,
-	body => [ \&_vote_list, $self ]
+	body => [\&_vote_list, $self],
     );
 }
 
@@ -413,11 +410,10 @@ sub vote_result_csv {
 	[sub {
 	     my($source, $type) = @_;
 	     return CSV(MotionVoteList =>
-			    $self->internal_vote_result_csv_fields($type)
-			);
-	 },	 
+	         $self->internal_vote_result_csv_fields($type));
+	 },
 	 ['Model.Motion', 'type'],
-	 ]);
+     ]);
 }
 
 sub _comment_list {
@@ -441,7 +437,7 @@ sub _file_link {
 			task_id => 'FORUM_FILE',
 			path_info => $path,
 		    }),
-  		),		
+  		),
 	    }
 	}
     }
@@ -463,12 +459,9 @@ sub _value_cell {
 
 sub _vote_list {
     my ($req, $self) = @_;
-    return vs_paged_list(
-	    MotionVoteList => $self->internal_vote_list_fields,
-	    {
-		no_pager => 1,
-	    }
-	);
+    return vs_paged_list(MotionVoteList => $self->internal_vote_list_fields, {
+	no_pager => 1,
+    });
 }
 
 1;
