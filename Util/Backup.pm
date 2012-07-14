@@ -3,12 +3,12 @@
 package Bivio::Util::Backup;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
-b_use('Bivio::IO::Trace');
 use File::Find ();
 use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+b_use('IO.Trace');
 my($_C) = b_use('IO.Config');
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
@@ -36,6 +36,7 @@ commands:
     trim_directories dir max -- returns directories to trim
     zfs_trim_file_systems root num_keep -- trims file systems with this root
     zfs_snapshot_and_export root date num_keep dev... -- take a snapshot and export on Sundays
+    zfs_snapshot_mount root date -- mounts a snapshot readonly
 EOF
 }
 
