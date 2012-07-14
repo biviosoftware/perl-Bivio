@@ -9,20 +9,21 @@ use IO::File ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_C) = b_use('IO.Config');
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
 my($_F) = b_use('IO.File');
 my($_LINK) = 'link';
 my($_DATE_RE) = qr{(.+)/(\d{8}(?:\d{6})?)};
-Bivio::IO::Config->register(my $_CFG = {
-    Bivio::IO::Config->NAMED => {
-	mirror_dest_host => Bivio::IO::Config->REQUIRED,
-	mirror_include_dirs => Bivio::IO::Config->REQUIRED,
-	mirror_dest_dir => Bivio::IO::Config->REQUIRED,
+$_C->register(my $_CFG = {
+    $_C->NAMED => {
+	mirror_dest_host => $_C->REQUIRED,
+	mirror_include_dirs => $_C->REQUIRED,
+	mirror_dest_dir => $_C->REQUIRED,
 	rsync_flags => '-azlSR --delete',
     },
-    min_kb => 0x40000,
-});
+    min_kb => 0x40000,}
+);
 
 sub USAGE {
     return <<'EOF';
@@ -33,6 +34,8 @@ commands:
     compress_log_dirs root [max_days] -- tars and gzips log dirs
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
     trim_directories dir max -- returns directories to trim
+    zfs_trim_file_systems root num_keep -- trims file systems with this root
+    zfs_snapshot_and_export root date num_keep dev... -- take a snapshot and export on Sundays
 EOF
 }
 
@@ -187,7 +190,7 @@ sub mirror {
     # Uses the command: rsync -e ssh -azlSR --delete --timeout 43200
     my($res) = '';
     foreach my $cfg_name (@cfg_name ? @cfg_name : ('')) {
-	my($cfg) = Bivio::IO::Config->get($cfg_name);
+	my($cfg) = $_C->($cfg_name);
 	my($host, $dir, $flags)
 	    = @$cfg{qw(mirror_dest_host mirror_dest_dir rsync_flags)};
 	if ($host) {
@@ -232,6 +235,97 @@ sub trim_directories {
     });
 }
 
+sub zfs_trim_file_systems {
+    sub ZFS_TRIM_FILE_SYSTEMS {[
+	[qw(root String)],
+	[qw(num_keep Integer)],
+    ]}
+    my($self, $bp) = shift->parameters(\@_);
+    return $self->lock_action(sub {
+	my($file_systems) = [reverse(
+	    sort(map(
+		$_ =~ qr{^(\Q$bp->{root}\E[0-9]{8})\b}s ? $1 : (),
+		_do_back_ticks($self, [qw(zfs list -t all)]),
+	    )),
+	)];
+	return
+ 	    if @$file_systems <= $bp->{num_keep};
+	$file_systems = [reverse(splice(@$file_systems, $bp->{num_keep}))];
+	my($clone) = {map(
+	    # Doesn't handle clones which share same origin, but that's not typical.
+	    $_ =~ /^(\S+)\s+\S+\s+(\S+)/ ? ($2 => $1) : (),
+	    _do_back_ticks($self, [qw(zfs get origin)]),
+	)};
+	my($res) = [];
+	foreach my $fs (@$file_systems) {
+	    push(@$res, _zfs_destroy($self, $clone->{$fs}))
+		if $clone->{$fs};
+	    push(@$res, _zfs_destroy($self, $fs));
+	}
+	return 'Removed: ' . join(' ', @$res) . "\n";
+    });
+}
+
+sub zfs_snapshot_and_export {
+    sub ZFS_SNAPSHOT_AND_EXPORT {[
+	[qw(root String)],
+	[qw(snapshot_date Date)],
+	[qw(snapshot_keep PositiveInteger)],
+	[qw(archive_devices String)],
+    ]}
+    my($self, $bp) = shift->parameters(\@_);
+    $self->usage_error('archive_devices: may not be empty')
+	unless $bp->{archive_devices} =~ /\w/;
+    my($dow) = $_D->english_day_of_week($bp->{snapshot_date});
+    $bp->{snapshot_date} = $_D->to_file_name($bp->{snapshot_date});
+    return $self->lock_action(sub {
+        my($res) = $self->zfs_trim_file_systems("$bp->{root}/mirror\@", $bp->{snapshot_keep});
+	my($snapshot) = "$bp->{root}/mirror\@$bp->{snapshot_date}";
+	b_info("Snapshot: $snapshot");
+	_do_back_ticks($self, [qw(zfs snapshot), $snapshot]);
+	$res .= "Created: $snapshot\n";
+	return $res
+	    unless $dow =~ /sun/i;
+	foreach my $dev (split(' ', $bp->{archive_devices})) {
+	    my($archive) = "archive/$bp->{snapshot_date}";
+	    b_info("Creating: $archive");
+	    _do_back_ticks($self, [qw(zpool create archive), $dev]);
+	    _do_back_ticks($self, [qw(zfs create -o compression=gzip-9), $archive]);
+	    _do_back_ticks($self, "zfs send '$snapshot' | zfs receive '$archive'");
+	    _do_back_ticks($self, [qw(zfs set), $archive, 'readonly=on']);
+	    _do_back_ticks($self, [qw(zfs export archive)]);
+	}
+	b_info('Done');
+	return $res . "Exported: $bp->{archive_devices}\n";
+    });
+}
+
+sub zfs_snapshot_mount {
+    sub ZFS_SNAPSHOT_MOUNT {[
+	[qw(root String)],
+	[qw(snapshot_date Date)],
+    ]}
+    my($self, $bp) = shift->parameters(\@_);
+    my($date) = $_D->to_file_name($bp->{snapshot_date});
+    my($clone) = "$bp->{root}/snapshot/$date";
+    _do_back_ticks($self, [qw(zfs clone -o readonly=on), "$bp->{root}/mirror\@$date", $clone]);
+    return "Mounted: /$clone\nTo unmount use: zfs destroy $clone";
+}
+
+sub _do_back_ticks {
+    my($self, $cmd) = @_;
+    $_C->is_test && $self->ureq('bunit');
+    return $self->do_back_ticks($cmd)
+	unless my $res = $self->ureq('backup_bunit');
+    $cmd = "@$cmd"
+	if ref($cmd);
+    return @{
+	shift(@{$res->{_do_back_ticks}->{$cmd}})
+	    || $cmd =~ $res->{_do_back_ticks}->{ignore} && []
+	    || b_die($cmd, ': no backup_bunit data')
+    };
+}
+
 sub _quote {
     my($path) = @_;
     $path =~ s/'/'"'"'/g;
@@ -250,14 +344,30 @@ sub _which_archive {
     $date = $_D->from_literal_or_die($date);
     my($dow) = $_D->english_day_of_week($date);
     foreach my $d ($_D->english_day_of_week_list) {
-	my($x) = "$root/weekly/" . $_D->to_file_name($date);
-	return
-	    if -e $x;
-	last
-	    if $d eq $dow;
-	$date = $_D->add_days($date, -1);
+ 	my($x) = "$root/weekly/" . $_D->to_file_name($date);
+  	return
+  	    if -e $x;
+  	last
+  	    if $d eq $dow;
+  	$date = $_D->add_days($date, -1);
     }
     return $archive;
+}
+
+sub _zfs_destroy {
+    my($self, $fs) = @_;
+    my($cmd) = [qw(zfs destroy), $fs];
+    my($out);
+    foreach my $try (1 .. 3) {
+	$out = [_do_back_ticks($self, $cmd)];
+	return $fs
+	    unless @$out;
+	last
+	    unless grep($_ =~ /dataset is busy/, @$out);
+	sleep(1);
+    }
+    b_die($cmd, ': failed: ', $out);
+    # DOES NOT RETURN
 }
 
 1;
