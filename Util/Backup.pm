@@ -246,7 +246,7 @@ sub zfs_trim_file_systems {
 	my($file_systems) = [reverse(
 	    sort(map(
 		$_ =~ qr{^(\Q$bp->{root}\E[0-9]{8})\b}s ? $1 : (),
-		_do_back_ticks($self, [qw(zfs list -t all)]),
+		_do_backticks($self, [qw(zfs list -t all)]),
 	    )),
 	)];
 	return
@@ -255,7 +255,7 @@ sub zfs_trim_file_systems {
 	my($clone) = {map(
 	    # Doesn't handle clones which share same origin, but that's not typical.
 	    $_ =~ /^(\S+)\s+\S+\s+(\S+)/ ? ($2 => $1) : (),
-	    _do_back_ticks($self, [qw(zfs get origin)]),
+	    _do_backticks($self, [qw(zfs get origin)]),
 	)};
 	my($res) = [];
 	foreach my $fs (@$file_systems) {
@@ -283,18 +283,18 @@ sub zfs_snapshot_and_export {
         my($res) = $self->zfs_trim_file_systems("$bp->{root}/mirror\@", $bp->{snapshot_keep});
 	my($snapshot) = "$bp->{root}/mirror\@$bp->{snapshot_date}";
 	b_info("Snapshot: $snapshot");
-	_do_back_ticks($self, [qw(zfs snapshot), $snapshot]);
+	_do_backticks($self, [qw(zfs snapshot), $snapshot]);
 	$res .= "Created: $snapshot\n";
 	return $res
 	    unless $dow =~ /sun/i;
 	foreach my $dev (split(' ', $bp->{archive_devices})) {
 	    my($archive) = "archive/$bp->{snapshot_date}";
 	    b_info("Creating: $archive");
-	    _do_back_ticks($self, [qw(zpool create archive), $dev]);
-	    _do_back_ticks($self, [qw(zfs create -o compression=gzip-9), $archive]);
-	    _do_back_ticks($self, "zfs send '$snapshot' | zfs receive '$archive'");
-	    _do_back_ticks($self, [qw(zfs set), $archive, 'readonly=on']);
-	    _do_back_ticks($self, [qw(zfs export archive)]);
+	    _do_backticks($self, [qw(zpool create archive), $dev]);
+	    _do_backticks($self, [qw(zfs create -o compression=gzip-9), $archive]);
+	    _do_backticks($self, "zfs send '$snapshot' | zfs receive '$archive'");
+	    _do_backticks($self, [qw(zfs set), $archive, 'readonly=on']);
+	    _do_backticks($self, [qw(zfs export archive)]);
 	}
 	b_info('Done');
 	return $res . "Exported: $bp->{archive_devices}\n";
@@ -309,20 +309,20 @@ sub zfs_snapshot_mount {
     my($self, $bp) = shift->parameters(\@_);
     my($date) = $_D->to_file_name($bp->{snapshot_date});
     my($clone) = "$bp->{root}/snapshot/$date";
-    _do_back_ticks($self, [qw(zfs clone -o readonly=on), "$bp->{root}/mirror\@$date", $clone]);
+    _do_backticks($self, [qw(zfs clone -o readonly=on), "$bp->{root}/mirror\@$date", $clone]);
     return "Mounted: /$clone\nTo unmount use: zfs destroy $clone";
 }
 
-sub _do_back_ticks {
+sub _do_backticks {
     my($self, $cmd, $ignore_exit_code) = @_;
     $_C->is_test && $self->ureq('bunit');
-    return $self->do_back_ticks($cmd, $ignore_exit_code)
+    return $self->do_backticks($cmd, $ignore_exit_code)
 	unless my $res = $self->ureq('backup_bunit');
     $cmd = "@$cmd"
 	if ref($cmd);
     return @{
-	shift(@{$res->{_do_back_ticks}->{$cmd}})
-	    || $cmd =~ $res->{_do_back_ticks}->{ignore} && []
+	shift(@{$res->{_do_backticks}->{$cmd}})
+	    || $cmd =~ $res->{_do_backticks}->{ignore} && []
 	    || b_die($cmd, ': no backup_bunit data')
     };
 }
@@ -360,7 +360,7 @@ sub _zfs_destroy {
     my($cmd) = [qw(zfs destroy), $fs];
     my($out);
     foreach my $try (1 .. 3) {
-	$out = [_do_back_ticks($self, $cmd)];
+	$out = [_do_backticks($self, $cmd)];
 	return $fs
 	    unless @$out;
 	last

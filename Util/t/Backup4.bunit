@@ -3,7 +3,7 @@
 Request();
 my($split) = sub {[split(/(?<=\n)/, shift)]};
 req()->put(backup_bunit => {
-    _do_back_ticks => {
+    _do_backticks => {
 #	Uncomment this when building new tests
 #	ignore => qr{.},
 	'zfs list -t all' => [
