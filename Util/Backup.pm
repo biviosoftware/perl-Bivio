@@ -314,9 +314,9 @@ sub zfs_snapshot_mount {
 }
 
 sub _do_back_ticks {
-    my($self, $cmd) = @_;
+    my($self, $cmd, $ignore_exit_code) = @_;
     $_C->is_test && $self->ureq('bunit');
-    return $self->do_back_ticks($cmd)
+    return $self->do_back_ticks($cmd, $ignore_exit_code)
 	unless my $res = $self->ureq('backup_bunit');
     $cmd = "@$cmd"
 	if ref($cmd);
