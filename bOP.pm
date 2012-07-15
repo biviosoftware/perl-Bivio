@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.71  2012/07/09 17:59:17  moeller
+  * Bivio::Biz::Model::FormModeBaseForm
+    stub out dispatched methods
+  * Bivio::Util::Class
+    u_info() allows unknown classes, per bunit
+
   Revision 11.70  2012/07/05 20:02:47  schellj
   Release notes:
   * Bivio::Biz::Action::UserPasswordQuery
