@@ -313,8 +313,8 @@ sub detach_process {
 }
 
 sub do_backticks {
-    my($self, $command) = @_;
-    my($res) = $self->piped_exec($command, undef, 1);
+    my($self, $command, $ignore_exit_code) = @_;
+    my($res) = $self->piped_exec($command, undef, $ignore_exit_code);
     return wantarray ? split(/(?<=\n)/, $$res) : $$res;
 }
 
