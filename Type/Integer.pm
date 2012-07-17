@@ -53,6 +53,8 @@ sub from_literal {
     return undef unless defined($value) && $value =~ /\S/;
     # Get rid of all blanks to be nice to user
     $value =~ s/\s+//g;;
+    # remove trailing 0 decimals
+    $value =~ s/(\d)\.0+$/$1/;
     return (undef, Bivio::TypeError->INTEGER)
 	unless $value =~ /^[-+]?\d+$/;
     # Return as a string, so we avoid perl turning 0 into ''.
