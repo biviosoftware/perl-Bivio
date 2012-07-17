@@ -31,6 +31,8 @@ Bivio::Test->unit([
 	    ['+999999999'] => [999999999],
 	    ['+1000000000'] => [undef, Bivio::TypeError->NUMBER_RANGE],
 	    ['-1000000000'] => [undef, Bivio::TypeError->NUMBER_RANGE],
+	    ['1.1'] => [undef, Bivio::TypeError->INTEGER],
+	    ['1.00'] => [1],
 	],
     ],
     Bivio::Type::Integer->new(1,10) => [
