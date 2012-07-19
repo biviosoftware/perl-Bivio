@@ -714,6 +714,80 @@ div.b_mobile_toggler a {
 a.list_action {
   Font('b_list_action');
 }
+img.date_picker {
+  position: relative;
+  bottom: -0.8ex;
+}
+div.b_dp_hidden {
+  display: none;
+}
+div.b_dp_visible {
+  display: block;
+}
+div.b_dp_month {
+  border: 1px solid #888;
+  background-color: #fff;
+  font-size: 100%;
+  cursor: default;
+  position: absolute;
+  top: 3ex;
+  right: -1em;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+div.b_dp_holder {
+  display: inline;
+  position: relative;
+}
+div.b_dp_cell {
+  padding: 0.5ex 1.0ex;
+  background-color: #fff;
+  font-size: 85%;
+  text-align: center;
+  cursor: default;
+}
+div.b_dp_month_label {
+  background-color: #fff;
+  font-weight: bold;
+  font-size: 100%;
+  cursor: default;
+}
+div.b_dp_arrow {
+  background-color: #ddd;
+  font-size: 100%;
+  cursor: pointer;
+}
+div.b_dp_arrow:hover {
+  background-color: #bbb;
+}
+div.b_dp_dow {
+  background-color: #777;
+  color: #fff;
+}
+div.b_dp_day:hover {
+  background-color: #aaf;
+  font-style: normal;
+  color: #fff;
+}
+div.b_dp_weekend {
+  background-color: #e7e7e7;
+}
+div.b_dp_in_month {
+  cursor: pointer;
+}
+div.b_dp_not_in_month {
+  background-color: #c5c5c5;
+  color: #888;
+  font-style: italic;
+  cursor: pointer;
+}
+div.b_dp_today {
+  outline: 1px solid #f00;
+}
 EOF
 }
 
