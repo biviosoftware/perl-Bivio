@@ -88,7 +88,9 @@ sub _link {
     return A(
 	Join([
 	    $self->get('label'),
-	    SPAN_dd_arrow(vs_text_as_prose('drop_down_arrow')),
+	    $self->unsafe_get('no_arrow')
+		? ()
+		: SPAN_dd_arrow(vs_text_as_prose('drop_down_arrow')),
 	]),
 	{
 	    HREF => '#',
