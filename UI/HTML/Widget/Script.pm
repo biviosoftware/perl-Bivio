@@ -274,6 +274,40 @@ function show_drop_down(field, block_clear) {
 EOF
 }
 
+sub JAVASCRIPT_B_DATE_PICKER {
+    return <<'EOF';
+function b_dp_stop_propagation(event) {
+    if (!event) var event = window.event;
+    event.cancelBubble = true;
+    if (event.stopPropagation) event.stopPropagation();
+}
+function b_dp_select(field, value) {
+    document.getElementsByName(field)[0].value = value;
+    var holder = document.getElementById('b_dp_holder_' + field);
+    b_remove_class(holder, 'dd_visible');
+    b_add_class(holder, 'dd_hidden');
+}
+function b_dp_change_month(event, field, month) {
+    b_dp_set_month(field, month);
+    b_dp_stop_propagation(event);
+}
+function b_dp_set_month(field, month) {
+    var holder = document.getElementById('b_dp_holder_' + field);
+    b_remove_class(holder, 'dd_hidden');
+    b_add_class(holder, 'dd_visible');
+    var calendars = holder.childNodes;
+    for (i in calendars) {
+        var c = calendars.item(i);
+        b_remove_class(c, 'b_dp_hidden');
+        b_remove_class(c, 'b_dp_visible');
+        c.id == 'b_dp_' + field + '_' + month
+            ? b_add_class(c, 'b_dp_visible')
+            : b_add_class(c, 'b_dp_hidden');
+    }
+}
+EOF
+}
+
 sub JAVASCRIPT_COMMON {
     return <<'EOF';
 function b_escape_html (value) {
