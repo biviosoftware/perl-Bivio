@@ -770,25 +770,19 @@ div.b_dp_dow {
 }
 div.b_dp_active_day:hover {
   background-color: #aaf;
-  font-style: normal;
+  cursor: pointer;
   color: #fff;
+}
+div.b_dp_inactive_day {
+  background-color: #fff;
+  cursor: default;
 }
 div.b_dp_weekend {
   background-color: #e7e7e7;
 }
-div.b_dp_in_month {
-  cursor: pointer;
-}
 div.b_dp_not_in_month {
-  background-color: #c5c5c5;
-  color: #888;
+  color: #c2c2c2;
   font-style: italic;
-  cursor: pointer;
-}
-div.b_dp_inactive_day {
-  background-color: #555;
-  color: #888;
-  cursor: default;
 }
 div.b_dp_today {
   outline: 1px solid #f00;
