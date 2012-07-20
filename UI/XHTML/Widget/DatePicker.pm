@@ -74,7 +74,9 @@ sub _create_month {
 	    push(
 		@$row,
 		DIV(
-		    String($_D->get_parts($day, 'day')),
+		    $in_range
+			? String($_D->get_parts($day, 'day'))
+			: String(' '),
 		    {
 			class => 'b_dp_cell'
 			    . ($in_range
@@ -82,7 +84,7 @@ sub _create_month {
 				   : ' b_dp_inactive_day')
 			    . ($_D->is_weekend($day)
 				   ? ' b_dp_weekend'
-				   : '')
+				   : ' b_dp_weekday')
 			    . ($_D->delta_days($day, $bom) <= 0
 				   && $_D->delta_days($day, $eom) >= 0
 				   ? ' b_dp_in_month'
