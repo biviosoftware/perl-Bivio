@@ -27,6 +27,8 @@ sub cascade_delete {
 	    [qw(RealmUser realm_id)],
 	    [qw(RealmUser user_id)],
 	    [qw(CRMThread realm_id)],
+	    [qw(Tuple realm_id)],
+	    [qw(CalendarEvent realm_id)],
 	    [qw(RealmMail realm_id)],
 	    [qw(RealmRole realm_id)],
 	    [qw(MotionVote realm_id)],
