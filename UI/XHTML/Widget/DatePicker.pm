@@ -32,8 +32,8 @@ sub initialize {
 		_get_month_days($date),
 		$date,
 		$today,
-		$has_prev,
-		$has_next,
+		$start,
+		$end,
 	    )
 	);
 	$has_prev = 1;
@@ -60,29 +60,38 @@ sub initialize {
 }
 
 sub _create_month {
-    my($form_field, $month_days, $date, $today, $has_prev, $has_next) = @_;
+    my($form_field, $month_days, $date, $today, $start, $end) = @_;
     my($bom) = $_D->set_beginning_of_month($date);
     my($eom) = $_D->set_end_of_month($date);
+    my($has_prev) = $_D->delta_days($start, $bom) > 0;
+    my($has_next) = $_D->delta_days($end, $eom) < 0;
     my($day_grid) = [];
     foreach my $week (@$month_days) {
 	my($row) = [];
 	foreach my $day (@$week) {
+	    my($in_range) = $_D->delta_days($day, $start) <= 0
+		&& $_D->delta_days($day, $end) >= 0;
 	    push(
 		@$row,
 		DIV(
 		    String($_D->get_parts($day, 'day')),
 		    {
-			class => 'b_dp_cell b_dp_day'
+			class => 'b_dp_cell'
+			    . ($in_range
+				   ? ' b_dp_active_day'
+				   : ' b_dp_inactive_day')
 			    . ($_D->is_weekend($day)
 				   ? ' b_dp_weekend'
 				   : '')
-			    . ($_D->delta_days($day, $bom) > 0
-				   || $_D->delta_days($day, $eom) < 0
-				   ? ' b_dp_not_in_month'
-				   : ' b_dp_in_month')
+			    . ($_D->delta_days($day, $bom) <= 0
+				   && $_D->delta_days($day, $eom) >= 0
+				   ? ' b_dp_in_month'
+				   : ' b_dp_not_in_month')
 			    . ($_D->delta_days($day, $today) == 0
 				   ? ' b_dp_today' : ''),
-			ONCLICK => "b_dp_select('$form_field', '@{[$_D->to_mm_dd_yyyy($day)]}')",
+			$in_range
+			    ? (ONCLICK => "b_dp_select('$form_field', '@{[$_D->to_mm_dd_yyyy($day)]}')")
+			    : (),
 		    },
 		),
 	    );
