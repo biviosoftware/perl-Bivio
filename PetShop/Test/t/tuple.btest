@@ -111,10 +111,19 @@ follow_link('Schemas');
 follow_link_in_table('Schema Name', 'Schema Name', 'Database1',
     'Actions', 'Modify');
 
+test_deviance('at least two characters');
+submit_form(Save => {
+    Field_1 => 'aa bb',
+});
+test_conformance();
+
 submit_form(Save => {
     Field_1 => undef,
+    Type_1 => 'select',
     Field_2 => undef,
+    Type_2 => 'select',
     Field_4 => undef,
+    Type_4 => 'select',
 });
 
 follow_link('Tables');
