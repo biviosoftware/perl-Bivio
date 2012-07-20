@@ -768,7 +768,7 @@ div.b_dp_dow {
   background-color: #777;
   color: #fff;
 }
-div.b_dp_day:hover {
+div.b_dp_active_day:hover {
   background-color: #aaf;
   font-style: normal;
   color: #fff;
@@ -784,6 +784,11 @@ div.b_dp_not_in_month {
   color: #888;
   font-style: italic;
   cursor: pointer;
+}
+div.b_dp_inactive_day {
+  background-color: #555;
+  color: #888;
+  cursor: default;
 }
 div.b_dp_today {
   outline: 1px solid #f00;
