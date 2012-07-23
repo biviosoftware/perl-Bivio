@@ -55,6 +55,7 @@ sub edit {
 		my($it) = @_;
 		my($label) = _sub_spaces($lm->get('TupleSlotDef.label'));
 		my($field) = $it->get_field_name_in_list('slot');
+		my($type) = $it->get_list_model->type_class_instance;
 		return [
 		    FormFieldLabel({
 			field => $field,
@@ -75,8 +76,11 @@ sub edit {
 			    list_id_field => 'choice',
 			    list_display_field => 'choice',
 			}) : vs_edit("TupleSlotListForm.$field", {
-			    wf_type => $it->get_list_model->type_class_instance,
+			    wf_type => $type,
 			    allow_undef => 1,
+			    $type =~ /Boolean/
+				? (label => '')
+				: (),
 			}),
 		       $lm->get('TupleSlotDef.is_required') ? SPAN_required(
 			   String('*'),
