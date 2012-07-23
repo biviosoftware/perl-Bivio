@@ -14,7 +14,7 @@ sub initialize {
     my($today) = $_D->local_today;
     my($start) = $self->get('start_date');
     my($end) = $self->get('end_date');
-    my($field) = $self->resolve_ancestral_attr('form_model', $self->req)
+    my($field) = $self->resolve_form_model($self)
 	->get_field_name_for_html($self->get('field'));
     my($date) = $_D->set_beginning_of_month($start);
     my($months) = [];
