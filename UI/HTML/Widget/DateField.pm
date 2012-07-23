@@ -6,6 +6,19 @@ use Bivio::Base 'HTMLWidget.InputTextBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
+my($_VS) = b_use('UIHTML.ViewShortcuts');
+
+sub control_on_render {
+    my($self, $source, $buffer) = @_;
+    shift->SUPER::control_on_render($source, $buffer);
+    $_VS->vs_new('DatePicker', {
+	map({
+	    $_ => $self->get($_);
+	} qw(form_model field start_date end_date)),
+    })->initialize_and_render($source, $buffer)
+	if $self->unsafe_get('want_picker');
+    return;
+}
 
 sub internal_input_base_render_attrs {
     my($self, $form, $field, $source, $buffer) = @_;
