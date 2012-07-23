@@ -742,6 +742,11 @@ div.b_dp_month {
 div.b_dp_holder {
   display: inline;
   position: relative;
+  z-index: 1000;
+}
+div.b_dp_holder td {
+  padding: 0;
+  margin: 0;
 }
 div.b_dp_cell {
   padding: 0.5ex 1.0ex;
