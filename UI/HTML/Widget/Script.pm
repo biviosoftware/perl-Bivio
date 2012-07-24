@@ -274,6 +274,7 @@ function show_drop_down(field, block_clear) {
 EOF
 }
 
+#TODO: Consolidate date functions with those in HTMLWidget.DateTime
 sub JAVASCRIPT_B_DATE_PICKER {
     return <<'EOF';
 function b_dp_stop_propagation(event) {
@@ -281,29 +282,174 @@ function b_dp_stop_propagation(event) {
     event.cancelBubble = true;
     if (event.stopPropagation) event.stopPropagation();
 }
-function b_dp_select(field, value) {
-    document.getElementsByName(field)[0].value = value;
+function b_dp_set_day(field, date) {
+    document.getElementsByName(field)[0].value =
+        (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear();
     var holder = document.getElementById('b_dp_holder_' + field);
     b_remove_class(holder, 'dd_visible');
     b_add_class(holder, 'dd_hidden');
 }
-function b_dp_change_month(event, field, month) {
-    b_dp_set_month(field, month);
-    b_dp_stop_propagation(event);
-}
-function b_dp_set_month(field, month) {
-    var holder = document.getElementById('b_dp_holder_' + field);
-    b_remove_class(holder, 'dd_hidden');
-    b_add_class(holder, 'dd_visible');
-    var calendars = holder.childNodes;
-    for (i in calendars) {
-        var c = calendars.item(i);
-        b_remove_class(c, 'b_dp_hidden');
-        b_remove_class(c, 'b_dp_visible');
-        c.id == 'b_dp_' + field + '_' + month
-            ? b_add_class(c, 'b_dp_visible')
-            : b_add_class(c, 'b_dp_hidden');
+function b_dp_set_month(field, date, start_date, end_date) {
+    var current_value = document.getElementsByName(field)[0].value;
+    var selection = current_value ? b_dp_get_date(current_value) : null;
+    if (!date) {
+        current_value
+            ? date = b_dp_get_date(current_value) : date = b_dp_get_date();
     }
+    var today = b_dp_get_date();
+    document.getElementById('b_dp_' + field + '_month').innerHTML
+        = b_dp_get_month_name(date) + ' ' + date.getFullYear();
+    var left_arrow = document.getElementById('b_dp_' + field + '_left_arrow');
+    var prev_month = b_dp_get_bom(date);
+    prev_month.setMonth(prev_month.getMonth() - 1);
+    if (start_date && prev_month.getTime() < start_date.getTime()) {
+        left_arrow.innerHTML = '&nbsp;';
+        b_remove_class(left_arrow, 'b_dp_arrow');
+        left_arrow.onclick = null;
+    } else {
+        left_arrow.innerHTML = '<';
+        b_add_class(left_arrow, 'b_dp_arrow');
+        left_arrow.onclick
+            = (function(field, date, start_date, end_date) {
+                return function() {
+                    b_dp_set_month(field, date, start_date, end_date);
+                };
+            })(field, prev_month, start_date, end_date);
+    }
+    var right_arrow = document.getElementById('b_dp_' + field + '_right_arrow');
+    var next_month = b_dp_get_bom(date);
+    next_month.setMonth(next_month.getMonth() + 1);
+    if (end_date && next_month.getTime() > end_date.getTime()) {
+        right_arrow.innerHTML = '&nbsp;';
+        b_remove_class(right_arrow, 'b_dp_arrow');
+        right_arrow.onclick = null;
+    } else {
+        right_arrow.innerHTML = '>';
+        b_add_class(right_arrow, 'b_dp_arrow');
+        right_arrow.onclick
+            = (function(field, date, start_date, end_date) {
+                return function() {
+                    b_dp_set_month(field, date, start_date, end_date);
+                };
+            })(field, next_month, start_date, end_date);
+    }
+    var month = b_dp_get_month(date);
+    for (var i = 0; i < month.length; i++) {
+        for (var j = 0; j < month[i].length; j++) {
+            var id = 'b_dp_holder_' + field + '_' + i + j;
+            var element = document.getElementById(id);
+            var d = month[i][j];
+            b_add_class(element, 'b_dp_active_day');
+            b_remove_class(element, 'b_dp_in_month');
+            b_remove_class(element, 'b_dp_not_in_month');
+            d.getMonth() == date.getMonth()
+                ? b_add_class(element, 'b_dp_in_month')
+                : b_add_class(element, 'b_dp_not_in_month');
+            if (d.getTime() == today.getTime()) {
+                b_add_class(element, 'b_dp_today');
+            } else {
+                b_remove_class(element, 'b_dp_today');
+            }
+            if (selection && d.getTime() == selection.getTime()) {
+                b_add_class(element, 'b_dp_selected');
+            } else {
+                b_remove_class(element, 'b_dp_selected');
+            }
+            if ((start_date && d.getTime() < start_date.getTime())
+                || (end_date && d.getTime() > end_date.getTime())) {
+                element.innerHTML = '&nbsp;';
+                b_remove_class(element, 'b_dp_active_day');
+                b_add_class(element, 'b_dp_inactive_day');
+                element.onclick = null;
+            } else {
+                element.innerHTML = d.getDate();
+                b_add_class(element, 'b_dp_active_day');
+                b_remove_class(element, 'b_dp_inactive_day');
+                element.onclick = (function(field, date) {
+                    return function() {
+                        b_dp_set_day(field, date);
+                    };
+                })(field, d);
+            }
+        }
+    }
+}
+function b_dp_get_week(date) {
+    var dow = date.getDay();
+    date.setDate(date.getDate() - dow);
+    var week = new Array();
+    var d = b_dp_get_date(date);
+    for (var i = 0; i < 7; i++) {
+        week.push(d);
+        d = b_dp_get_date(d);
+        d.setDate(d.getDate() + 1);
+    }
+    return week;
+}
+function b_dp_get_month(date) {
+    var bom = b_dp_get_bom(date);
+    var eom = b_dp_get_eom(date);
+    var d = b_dp_get_date(bom);
+    var month = new Array();
+    while (d.getTime() < eom.getTime()) {
+        month.push(b_dp_get_week(d));
+        d.setDate(d.getDate() + 7);
+    }
+    while (month.length < 6) {
+        var fd = month[0][0];
+        var le = month.length - 1;
+        var ld = month[le][month[le].length - 1];
+        if (bom.getTime() - fd.getTime() > ld.getTime() - eom.getTime()) {
+            ld = b_dp_get_date(ld);
+            ld.setDate(ld.getDate() + 7);
+            month.push(b_dp_get_week(ld));
+        } else {
+            fd = b_dp_get_date(fd);
+            fd.setDate(fd.getDate() - 7);
+            month.unshift(b_dp_get_week(fd));
+        }
+    }
+    return month;
+}
+function b_dp_get_date(date) {
+    var d = typeof(date) == 'object'
+        ? new Date(date.getTime())
+        : typeof(date) == 'string'
+            ? new Date(date)
+            : new Date();
+    d.setUTCHours(21);
+    d.setUTCMinutes(59);
+    d.setUTCSeconds(59);
+    d.setUTCMilliseconds(0);
+    return d;
+}
+function b_dp_get_bom(date) {
+    var bom = b_dp_get_date(date);
+    bom.setDate(1);
+    return bom;
+}
+function b_dp_get_eom(date) {
+    var eom = b_dp_get_date(b_dp_get_bom(date));
+    eom.setMonth(eom.getMonth() + 1);
+    eom.setDate(eom.getDate() - 1);
+    return eom;
+}
+function b_dp_get_month_name(d){
+    switch(d.getMonth()){
+    case 0: return 'January';
+    case 1: return 'February';
+    case 2: return 'March';
+    case 3: return 'April';
+    case 4: return 'May';
+    case 5: return 'June';
+    case 6: return 'July';
+    case 7: return 'August';
+    case 8: return 'September';
+    case 9: return 'October';
+    case 10: return 'November';
+    case 11: return 'December';
+    }
+    return 'N/A';
 }
 EOF
 }
