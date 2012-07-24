@@ -29,7 +29,7 @@ sub initialize {
 	    ),
 	    {
 		no_arrow => 1,
-		link_onclick => "b_dp_set_month('$field', null, new Date('@{[$_DT->to_string($start)]}'), new Date('@{[$_DT->to_string($end)]}'));",
+		link_onclick => "b_dp_set_month('$field', null, new Date('@{[$_DT->to_string($start)]}'), new Date('@{[$_DT->to_string($end)]}'))",
 	    },
 	),
     ]);
