@@ -14,7 +14,11 @@ sub control_on_render {
     $_VS->vs_new('DatePicker', {
 	map({
 	    $_ => $self->get($_);
-	} qw(form_model field start_date end_date)),
+	} qw(form_model field)),
+	map({
+	    my($v) = $self->unsafe_get($_);
+	    $v ? ($_ => $v) : ();
+	} qw(start_date end_date)),
     })->initialize_and_render($source, $buffer)
 	if $self->unsafe_get('want_picker');
     return;
