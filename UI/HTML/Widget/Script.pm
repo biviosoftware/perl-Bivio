@@ -283,8 +283,8 @@ function b_dp_stop_propagation(event) {
     if (event.stopPropagation) event.stopPropagation();
 }
 function b_dp_set_day(field, date) {
-    document.getElementsByName(field)[0].value =
-        (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear();
+    document.getElementsByName(field)[0].value
+        = b_dp_n(date.getMonth() + 1) + '/' + b_dp_n(date.getDate()) + '/' + date.getFullYear();
     var holder = document.getElementById('b_dp_holder_' + field);
     b_remove_class(holder, 'dd_visible');
     b_add_class(holder, 'dd_hidden');
@@ -433,6 +433,9 @@ function b_dp_get_eom(date) {
     eom.setMonth(eom.getMonth() + 1);
     eom.setDate(eom.getDate() - 1);
     return eom;
+}
+function b_dp_n(n){
+    return n < 10 ? '0' + n : n;
 }
 function b_dp_get_month_name(d){
     switch(d.getMonth()){
