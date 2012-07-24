@@ -716,7 +716,8 @@ a.list_action {
 }
 img.date_picker {
   position: relative;
-  bottom: -0.8ex;
+  bottom: -0.5ex;
+  left: 0.3ex;
 }
 div.b_dp_hidden {
   display: none;
