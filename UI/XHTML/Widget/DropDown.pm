@@ -94,7 +94,9 @@ sub _link {
 	]),
 	{
 	    HREF => '#',
-	    ONCLICK => "this.blur(); $local.toggle(event); return false",
+	    ONCLICK => join(';',
+		($self->unsafe_get('link_onclick') || ''),
+		"this.blur(); $local.toggle(event); return false"),
 	    class => $self->get('link_class'),
 	},
     );
