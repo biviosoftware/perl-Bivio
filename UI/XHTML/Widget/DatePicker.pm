@@ -11,8 +11,8 @@ my($_HTMLDT) = b_use('HTMLWidget.DateTime');
 
 sub initialize {
     my($self, $source) = @_;
-    my($start) = $self->get('start_date');
-    my($end) = $self->get('end_date');
+    my($start) = $self->unsafe_get('start_date');
+    my($end) = $self->unsafe_get('end_date');
     my($field) = $self->resolve_form_model($self)
 	->get_field_name_for_html($self->get('field'));
     $self->put_unless_exists(values => [
@@ -29,7 +29,15 @@ sub initialize {
 	    ),
 	    {
 		no_arrow => 1,
-		link_onclick => "b_dp_set_month('$field', null, new Date('@{[$_DT->to_string($start)]}'), new Date('@{[$_DT->to_string($end)]}'))",
+		link_onclick => "b_dp_set_month('$field', null, "
+		    . join(', ',
+			   $start
+			       ? "new Date('@{[$_DT->to_string($start)]}')"
+			       : "null",
+			   $end
+			       ? "new Date('@{[$_DT->to_string($end)]}')"
+			       : "null")
+		    . ')',
 	    },
 	),
     ]);
