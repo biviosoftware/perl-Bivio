@@ -27,10 +27,32 @@ cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.72  2012/07/15 15:54:03  nagler
+  * Bivio::ShellUtil
+    do_backticks takes ignore_exit_code parameter
+  * Bivio::UI::FacadeBase
+    added Motion list_action labels
+  * Bivio::UI::View::Motion
+    use Motion list_action facade values
+  * Bivio::UI::XHTML::Widget::MailBodyHTML
+    Was not rendering HTML (from Word) with embedded meta and link tags.
+    Added these and other empty elements.  Was incrementing
+    $state->{ignore} when empty tag, and that means everything that
+    follows, say, meta, would be ignored.  The parser needs to deal with
+    incorrect html better.
+  * Bivio::Util::Backup
+    removed "archive/" directory concept in trim_directories and
+    archive_mirror_link. Only keep weeklies online.
+    remove remote_archive() unused
+    added support for zfs backups
+    doc
+    _do_back_ticks needs ignore_exit_code
+  * Bivio::Util::Project
+    create ~/src/perl/Bivio/files and run make in javascript directory
+
   Revision 11.71  2012/07/09 17:59:17  moeller
   * Bivio::Biz::Model::FormModeBaseForm
     stub out dispatched methods
