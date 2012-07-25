@@ -417,10 +417,7 @@ function b_dp_get_date(date) {
         : typeof(date) == 'string'
             ? new Date(date)
             : new Date();
-    d.setUTCHours(21);
-    d.setUTCMinutes(59);
-    d.setUTCSeconds(59);
-    d.setUTCMilliseconds(0);
+    d.setHours(21, 59, 59, 0);
     return d;
 }
 function b_dp_get_bom(date) {
