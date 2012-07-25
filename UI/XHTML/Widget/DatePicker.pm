@@ -32,10 +32,10 @@ sub initialize {
 		link_onclick => "b_dp_set_month('$field', null, "
 		    . join(', ',
 			   $start
-			       ? "new Date('@{[$_DT->to_string($start)]}')"
+			       ? "b_dp_get_date('@{[$_DT->to_mm_dd_yyyy($start)]}')"
 			       : "null",
 			   $end
-			       ? "new Date('@{[$_DT->to_string($end)]}')"
+			       ? "b_dp_get_date('@{[$_DT->to_mm_dd_yyyy($end)]}')"
 			       : "null")
 		    . ')',
 	    },
