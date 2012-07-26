@@ -95,7 +95,6 @@ sub _create_month {
 	]),
 	{
 	    class => 'b_dp_month',
-	    id => "b_dp_${form_field}",
 	    ONCLICK => 'b_dp_stop_propagation(event)',
 	},
     );
