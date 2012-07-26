@@ -731,8 +731,7 @@ div.b_dp_month {
   font-size: 100%;
   cursor: default;
   position: absolute;
-  top: 3ex;
-  right: -1em;
+  right: -Icon('date_picker', 'width');px;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -743,6 +742,7 @@ div.b_dp_month {
 div.b_dp_holder {
   display: inline;
   position: relative;
+  left: 0.3ex;
   z-index: 1000;
 }
 div.b_dp_holder td {
