@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -30,6 +30,43 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.73  2012/07/25 19:04:25  andrews
+  Release notes:
+  * Bivio::Biz::Model::MailForm
+    Respect the super class's return value in execute_ok and execute_cancel
+  * Bivio::Biz::Model::RealmOwnerBase
+    more manual model clean up during cascade_delete()
+  * Bivio::Biz::Model::TupleDefListForm
+    don't clear label error, can cause row to get deleted
+    if an invalid label is edited
+  * Bivio::Type::Integer
+    remove trailing 0 decimals before validating
+  * Bivio::UI::HTML::Widget::DateField
+    add optional DatePicker
+    DatePicker start_date, end_date now optional
+  * Bivio::UI::HTML::Widget::Script
+    add DatePicker functions
+    moved much of the DatePicker logic here to allow for acceptable
+    rendering times and less rendered html with multiple pickers
+    zero pad DatePicker dates
+    manipulate dates in local timezone
+  * Bivio::UI::View::CSS
+    add styles for DatePicker
+    add b_dp_inactive_day
+    adjust colors
+    specify z-index for DatePicker
+    adjust colors, add b_dp_selected state
+    adjust DatePicker icon placement
+  * Bivio::UI::View::Tuple
+    fixed tuple editor for Boolean types
+  * Bivio::UI::XHTML::Widget::DatePicker
+    NEW
+  * Bivio::UI::XHTML::Widget::DropDown
+    add 'no_arrow' option
+    allow for link_onclick attr
+  * Bivio::Util::Backup
+    do_backticks (not back_ticks)
+
   Revision 11.72  2012/07/15 15:54:03  nagler
   * Bivio::ShellUtil
     do_backticks takes ignore_exit_code parameter
