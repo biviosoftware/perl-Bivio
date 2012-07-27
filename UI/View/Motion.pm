@@ -128,7 +128,6 @@ sub internal_comment_fields {
     ];
 }
 
-
 sub internal_comment_csv_fields {
     my($self, $model) = @_;
     return [
@@ -206,14 +205,6 @@ sub internal_list_actions {
 	    'THIS_AS_PARENT',
 	],
     ];
-}
-
-sub internal_motion_initiator {
-    return;
-}
-
-sub internal_motion_type {
-    return;
 }
 
 sub internal_topic_from_list {
@@ -327,10 +318,8 @@ sub status {
 	]),
 	body => Join( [
 	    Grid([
-		$self->internal_motion_initiator(\&_label_cell, \&_value_cell),
 		[ _label_cell(vs_text('MotionStatus.name')), _value_cell([qw(Model.Motion name)] )],
 		[ _label_cell(vs_text('MotionStatus.question')), _value_cell([qw(Model.Motion question)]) ],
-		$self->internal_motion_type(\&_label_cell, \&_value_cell),
 		[ _label_cell(vs_text('MotionStatus.file')), _value_cell([\&_file_link, [qw(Model.Motion)]]) ],
 		[ _label_cell(vs_text('MotionStatus.start_date_time')), _value_cell(
 		    vs_display('Motion.start_date_time', {
