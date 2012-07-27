@@ -16,7 +16,10 @@ sub def_edit {
 	    field => 'TupleSlotDef.label',
 	    event_handler => NewEmptyRowHandler(),
 	},
-	'TupleDefListForm.TupleSlotDef.is_required',
+	{
+	    field => 'TupleSlotDef.is_required',
+	    ID => ''
+	},
 	{
 	    field => 'TupleSlotDef.tuple_slot_type_id',
 	    choices => ['Model.TupleSlotTypeList'],
