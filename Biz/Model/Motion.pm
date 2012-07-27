@@ -63,6 +63,7 @@ sub internal_initialize {
 	other => [
 	    [qw(realm_id RealmOwner.realm_id)],
 	    [qw(motion_file_id RealmFile.realm_file_id)],
+	    [qw(tuple_def_id TupleDef.tuple_def_id)],
 	],
     });
 }
