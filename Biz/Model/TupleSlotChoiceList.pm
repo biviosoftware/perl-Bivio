@@ -21,7 +21,7 @@ sub internal_initialize {
 	    type => 'Integer',
 	    constraint => 'NOT_NULL',
 	}],
-	order_by => [{
+	other => [{
 	    name => 'choice',
 	    type => 'TupleSlot',
 	    constraint => 'NOT_NULL',
