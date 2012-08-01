@@ -314,13 +314,12 @@ sub detach_process {
 
 sub do_backticks {
     my($self, $command, $ignore_exit_code) = @_;
-    my($res) = $self->piped_exec($command, undef, $ignore_exit_code);
+    my($res) = $self->piped_exec(
+	_sh_quote($command),
+	undef,
+	$ignore_exit_code,
+    );
     return wantarray ? split(/(?<=\n)/, $$res) : $$res;
-}
-
-sub do_sh {
-    my($self, @cmd) = shift->name_args(['LongText'], \@_);
-    return join('', map(${$self->piped_exec($_)}, @cmd));
 }
 
 sub finish {
@@ -1401,6 +1400,14 @@ sub _setup_for_main {
     ) unless $self->unsafe_get('req');
     $self->set_realm_and_user(map(_parse_realm($self, $_), qw(realm user)));
     return;
+}
+
+sub _sh_quote {
+    my($command) = @_;
+    return $command
+	if ref($command);
+    $command =~ s/'/'"\\'"'/g;
+    return qq{sh -c \$'$command'};
 }
 
 sub _special_handling_to_append_argv0_for_bivio {
