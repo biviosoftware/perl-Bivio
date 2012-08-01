@@ -19,7 +19,7 @@ EOF
 
 sub read_crt {
     my($self, $crt) = @_;
-    return $self->do_sh("openssl x509 -text -in $crt");
+    return scalar($self->do_backticks("openssl x509 -text -in $crt", 0));
 }
 
 sub self_signed_crt {
@@ -47,7 +47,7 @@ EOF
 
 sub _do {
     my($self, $base, $rest) = @_;
-    return $self->do_sh("openssl req -x509 -nodes -days 9999 -set_serial @{[time]} -newkey rsa:1024 -keyout $base.key -out $base.crt $rest");
+    return scalar($self->do_backticks("openssl req -x509 -nodes -days 9999 -set_serial @{[time]} -newkey rsa:1024 -keyout $base.key -out $base.crt $rest", 0));
 }
 
 1;
