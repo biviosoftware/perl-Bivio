@@ -1407,7 +1407,7 @@ sub _sh_quote {
     return $command
 	if ref($command);
     $command =~ s/'/'"\\'"'/g;
-    return qq{sh -c \$'$command'};
+    return qq{sh -c '$command'};
 }
 
 sub _special_handling_to_append_argv0_for_bivio {
