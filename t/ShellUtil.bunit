@@ -192,6 +192,7 @@ commands:
 		unlink('T1.tmp');
 		[qw(-detach -output T1.tmp echo), var(now => time)];
 	    } => sub {
+		sleep(1);
 		assert_equals(var('now'), ${read_file('T1.tmp')});
 		return qr{^\d+$};
 	    },
