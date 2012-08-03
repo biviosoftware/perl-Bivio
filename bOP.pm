@@ -27,9 +27,32 @@ cohesive infrastructure for any Perl application.
 
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.75  2012/08/03 18:15:31  nagler
+  * Bivio::Biz::ListModel
+    refactor _format_uri_args into internal_format_uri_args so can be
+    overriden by subclass.
+    Added internal_format_uri_get_path_info for RealmFileVersionsList,
+    because it is a list which requires path_info
+    fmt
+  * Bivio::Biz::Model::RealmFileVersionsList
+    Added internal_format_uri_get_path_info to add the path_info for
+    next_detail, etc.
+    Must have a path_info on request
+  * Bivio::Biz::QueryType
+    added can_take_path_info for RealmFileVersionsList
+  * Bivio::ShellUtil
+    removed do_sh, do_backticks does more
+    do_backticks now tries to quote the string and pass it to sh -c
+    don't need $' for _sh_quote().
+  * Bivio::UI::XHTML::ViewShortcuts
+    add option to vs_list_form to place the list before other form fields
+  * Bivio::Util::SSL
+    use do_backticks instead do_sh (obsolete)
+
   Revision 11.74  2012/07/27 21:17:08  moeller
   * Bivio::Biz::Model::Motion
     added "other" ref to TupleDef.tuple_def_id
