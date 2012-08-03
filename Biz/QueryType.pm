@@ -22,6 +22,11 @@ __PACKAGE__->compile([
     THIS_AS_PARENT => [14, 'format_uri_for_this_as_parent', 'parent_uri'],
 ]);
 
+sub can_take_path_info {
+    my($self) = @_;
+    return $self->get_name =~ /^(?:NEXT|PREV|THIS)_(?:DETAIL|LIST)$/ ? 1 : 0;
+}
+
 sub get_method {
     return shift->get_short_desc;
 }
