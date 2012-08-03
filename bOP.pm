@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -30,6 +30,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.74  2012/07/27 21:17:08  moeller
+  * Bivio::Biz::Model::Motion
+    added "other" ref to TupleDef.tuple_def_id
+  * Bivio::Biz::Model::TupleSlotChoiceList
+    changed order_by to other, sorting not implemented
+  * Bivio::Biz::Model::TupleSlotChoiceSelectList
+    changed order_by to other, sorting not implemented
+  * Bivio::UI::View::CSS
+    adjust placement of DatePicker
+  * Bivio::UI::View::Motion
+    removed internal_motion_initiator() and internal_motion_type()
+  * Bivio::UI::View::Tuple
+    added dummy ID to list form checkbox
+  * Bivio::UI::XHTML::Widget::DatePicker
+    don't need id on month
+
   Revision 11.73  2012/07/25 19:04:25  andrews
   Release notes:
   * Bivio::Biz::Model::MailForm
