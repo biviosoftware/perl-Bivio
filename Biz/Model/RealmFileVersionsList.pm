@@ -10,6 +10,17 @@ my($_RFL) = b_use('Model.RealmFileLock');
 my($_LOCK) = $_RFL->if_enabled;
 my($_DEFAULT_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
 
+sub internal_format_uri_get_path_info {
+    my($self) = shift;
+    if (my $pi = $self->SUPER::internal_format_uri_get_path_info(@_)) {
+	return $pi;
+    }
+    my($type) = @_;
+    return
+	unless $type->can_take_path_info;
+    return $self->req('path_info');
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
@@ -67,7 +78,8 @@ sub internal_post_load_row {
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $self->prepare_statement_for_realm_file_lock($stmt, 1);
-    my($p) = $self->req('path_info') || '';
+    $self->throw_die('CORRUPT_QUERY', 'must have path_info')
+	unless my $p = $self->req('path_info');
     my(@parts) = split('/', $p);
     my($name) = pop(@parts);
     $stmt->where(
