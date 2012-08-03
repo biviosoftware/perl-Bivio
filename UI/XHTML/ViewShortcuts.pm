@@ -351,7 +351,7 @@ sub vs_list {
 }
 
 sub vs_list_form {
-    my($proto, $form, $fields, $table_attrs) = @_;
+    my($proto, $form, $fields, $table_attrs, $list_first) = @_;
     # Elements in $fields which are hash_refs or are "in_list" appear
     # as columns.  Elements which are arrays or are not "in_list" appear
     # as simple form entries.
@@ -359,77 +359,80 @@ sub vs_list_form {
     my($lm) = $_M->get_instance($fm->get_list_class);
     my($list) = [];
     my($submit);
+    my(@form_fields) = (map(
+	{
+	    my($d) = $_;
+	    my($field) = ref($d) eq 'HASH'
+		? $d
+		: ref($d) eq 'ARRAY'
+		? {
+		    field => $d->[0],
+		    %{$d->[1] || {}},
+		}
+		: !ref($d)
+		? {
+		    field => ($d =~ /^\w+\.(\w+\.\w+)$/)[0] || $d,
+		}
+		: b_die($d, ': unknown field format');
+	    if (!$field->{field} || $field->{column_widget}) {
+		push(@$list, $field);
+		$d = undef;
+	    }
+	    elsif ($fm->has_fields($field->{field})) {
+		if ($fm->get_field_info($field->{field}, 'in_list')) {
+		    push(@$list, $field);
+		    $d = undef;
+		}
+	    }
+	    elsif ($lm->has_fields($field->{field})) {
+		push(
+		    @$list,
+		    {
+			%$field,
+			wf_want_display => 1,
+			column_widget => $_WF->create(
+			    $lm->simple_package_name . ".$field->{field}",
+			    {
+				source_is_list_model => 1,
+				field => $field->{field},
+				%$field,
+			    },
+			),
+		    },
+		);
+		$d = undef;
+	    }
+	    elsif ($field->{field} =~ /^\*/) {
+		if (@$list) {
+		    $submit = $field->{field};
+		    $d = undef;
+		}
+	    }
+	    $d ? $d : ();
+	}
+	@$fields,
+    ));
+    my($list_form) = @$list ? Table(
+	$form,
+	[map(
+	    {
+		my($x) = !ref($_) ? {field => $_} : $_;
+		$x->{column_class} ||= 'field';
+		# So checkboxes don't have labels in the fields, just hdr
+		$x->{label} = ''
+		    unless exists($x->{label});
+		$x;
+	    }
+		@$list,
+	)],
+	$proto->vs_table_attrs($form, list => $table_attrs),
+    ) : ();
     return $proto->vs_simple_form(
 	$form,
 	[
-	    map(
-		{
-		    my($d) = $_;
-		    my($field) = ref($d) eq 'HASH'
-			? $d
-			: ref($d) eq 'ARRAY'
-			? {
-			    field => $d->[0],
-			    %{$d->[1] || {}},
-			}
-			: !ref($d)
-			? {
-			    field => ($d =~ /^\w+\.(\w+\.\w+)$/)[0] || $d,
-			}
-			: b_die($d, ': unknown field format');
-		    if (!$field->{field} || $field->{column_widget}) {
-			push(@$list, $field);
-			$d = undef;
-		    }
-		    elsif ($fm->has_fields($field->{field})) {
-			if ($fm->get_field_info($field->{field}, 'in_list')) {
-			    push(@$list, $field);
-			    $d = undef;
-			}
-		    }
-		    elsif ($lm->has_fields($field->{field})) {
-			push(
-			    @$list,
-			    {
-				%$field,
-				wf_want_display => 1,
-				column_widget => $_WF->create(
-				    $lm->simple_package_name . ".$field->{field}",
-				    {
-					source_is_list_model => 1,
-					field => $field->{field},
-					%$field,
-				    },
-				),
-			    },
-			);
-			$d = undef;
-		    }
-		    elsif ($field->{field} =~ /^\*/) {
-			if (@$list) {
-			    $submit = $field->{field};
-			    $d = undef;
-			}
-		    }
-		    $d ? $d : ();
-		}
-		@$fields,
-	    ),
-	    @$list ? Table(
-		$form,
-		[map(
-		    {
-			my($x) = !ref($_) ? {field => $_} : $_;
-			$x->{column_class} ||= 'field';
-			# So checkboxes don't have labels in the fields, just hdr
-			$x->{label} = ''
-			    unless exists($x->{label});
-			$x;
-		    }
-		    @$list,
-		)],
-		$proto->vs_table_attrs($form, list => $table_attrs),
-	    ) : (),
+	    $list_first
+		? ($list_form, @form_fields)
+		: (@form_fields, $list_form),
 	    $submit ? $submit : (),
 	],
     );
