@@ -786,6 +786,9 @@ div.b_dp_inactive_day {
 div.b_dp_weekend {
   background-color: #e7e7e7;
 }
+div.b_dp_in_month {
+  width: 2ex;
+}
 div.b_dp_not_in_month {
   color: #c2c2c2;
   font-style: italic;
