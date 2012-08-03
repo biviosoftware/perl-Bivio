@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListModel;
 use strict;
@@ -39,6 +39,9 @@ my($_LQ) = b_use('SQL.ListQuery');
 my($_QT) = b_use('Biz.QueryType');
 my($_S) = b_use('SQL.Statement');
 my($_Q) = b_use('AgentHTTP.Query');
+my($_TI) = b_use('Agent.TaskId');
+my($_A) = b_use('IO.Alert');
+my($_HTML) = b_use('Bivio.HTML');
 
 sub EMPTY_KEY_VALUE {
     # The value used to populate keys for rows added by append_empty_rows().
@@ -187,7 +190,6 @@ sub find_row_by {
 		return 1
 		    unless $self->get_field_type($field)
 		    ->is_equal($self->get($field), $query->{$field});
-		
 	    }
 	    return 0;
 	},
@@ -226,7 +228,7 @@ sub format_query {
 }
 
 sub format_uri {
-    my($self, $type, $uri, $query_args, $req) = _format_uri_args(@_);
+    my($self, $type, $uri, $query_args) = shift->internal_format_uri_args(@_);
     # Returns the formatted uri for I<type> based on the existing query
     # bound to this model.  If I<uri_or_task> is not supplied,
     # uses current request's I<task_id>.
@@ -246,25 +248,10 @@ sub format_uri {
     # B<DEPRECATED USAGE:> If I<uri_or_task> is not supplied, gets
     # I<detail_uri> or I<list_uri> from the request.  See
     # L<$_QT|$_QT>.
-    my($fields) = $self->[$_IDI];
-
-    if ($type->get_name =~ /PATH/) {
-	my($c) = $fields->{cursor};
-	die('no cursor') unless defined($c) && $c >= 0;
-	my($pi) = $self->get('path_info');
-	Bivio::Die->die('row ', $c, ': no path_info at cursor')
-		    unless defined($pi);
-	if (length($pi) && $pi ne '/') {
-	    Bivio::IO::Alert->warn_deprecated(
-		    'path_info does not begin with leading /')
-			if $pi =~ s!^([^/])!/$1!;
-	    $uri .= Bivio::HTML->escape_uri($pi);
-	}
-    }
+    $uri .= $self->internal_format_uri_get_path_info($type, $uri, $query_args) || '';
     my($query) = $self->format_query($type, $query_args);
-
-    return $uri unless $query;
-
+    return $uri
+	unless $query;
     # Push the query on the front of the form context.
     $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
     return $uri;
@@ -428,6 +415,48 @@ sub has_next {
 sub has_prev {
     # Is there prev page or item to this list model?
     return shift->[$_IDI]->{query}->get('has_prev');
+}
+
+sub internal_format_uri_args {
+    my($self, $type, $uri, $query_args) = @_;
+    my($req) = $self->req;
+    $type = $_QT->from_name($type)
+	unless ref($type);
+    $self->die('query_args ', $query_args, ' not allowed for ', $type)
+	    if $query_args && $type != $_QT->THIS_LIST;
+    if (defined($uri)) {
+	$uri = $_TI->from_name($uri)
+	    if !ref($uri) && $_TI->is_valid_name($uri);
+        if ($_TI->is_super_of($uri)) {
+	    $uri = $req->format_stateless_uri($uri);
+	}
+	else {
+	    $self->die($uri, ': unknown type for uri_or_task')
+                if ref($uri);
+	}
+    }
+    else {
+	# Need to get the list_uri or detail_uri from the request?
+	# If specific uri not found, use current task.
+#TODO: DEPRECATED usage if there is a detail_uri or list_uri.
+	$uri = $req->unsafe_get($type->get_uri_attr) ||
+	    $req->format_stateless_uri($req->get('task_id'));
+    }
+    return ($self, $type, $uri, $query_args);
+}
+
+sub internal_format_uri_get_path_info {
+    my($self, $type) = @_;
+    return
+	unless $type->get_name =~ /PATH/;
+    $self->assert_has_cursor;
+    $self->die('row ', $self->get_cursor, ': no path_info at cursor')
+	unless defined(my $pi = $self->get('path_info'));
+    if (length($pi) && $pi ne '/') {
+	$_A->warn_deprecated('path_info does not begin with leading /')
+	    if $pi =~ s!^([^/])!/$1!;
+    }
+    return $pi;
 }
 
 sub internal_get_rows {
@@ -928,41 +957,6 @@ sub _execute_clear_this {
 	$self->parse_query_from_request($query_method)->put(this => undef),
     );
     return 0;
-}
-
-sub _format_uri_args {
-    my($self, $type, $uri, $query_args) = @_;
-    # Returns ($self, $type, $uri, $query_args, $req) from the arguments.
-    my($req) = $self->get_request;
-
-    # Convert to enum unless already converted
-    $type = $_QT->from_name($type) unless ref($type);
-
-    Bivio::Die->die('query_args ', $query_args, ' not allowed for ', $type)
-	    if $query_args && $type != $_QT->THIS_LIST;
-
-    if (defined($uri)) {
-	if (!ref($uri)) {
-	    $uri = Bivio::Agent::TaskId->$uri()
-		    if Bivio::Agent::TaskId->is_valid_name($uri);
-	}
-
-        if (ref($uri) eq 'Bivio::Agent::TaskId') {
-	    $uri = $req->format_stateless_uri($uri);
-	}
-	else {
-	    $self->die('unknown type for uri_or_task: ', $uri)
-                if ref($uri);
-	}
-    }
-    else {
-	# Need to get the list_uri or detail_uri from the request?
-	# If specific uri not found, use current task.
-#TODO: DEPRECATED usage if there is a detail_uri or list_uri.
-	$uri = $req->unsafe_get($type->get_uri_attr) ||
-		$req->format_stateless_uri($req->get('task_id'));
-    }
-    return ($self, $type, $uri, $query_args, $req);
 }
 
 sub _iterate_start {
