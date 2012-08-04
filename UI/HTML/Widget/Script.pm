@@ -355,14 +355,13 @@ function b_dp_set_month(field, date, start_date, end_date) {
             } else {
                 b_remove_class(element, 'b_dp_selected');
             }
+            element.innerHTML = d.getDate();
             if ((start_date && d.getTime() < start_date.getTime())
                 || (end_date && d.getTime() > end_date.getTime())) {
-                element.innerHTML = '&nbsp;';
                 b_remove_class(element, 'b_dp_active_day');
                 b_add_class(element, 'b_dp_inactive_day');
                 element.onclick = null;
             } else {
-                element.innerHTML = d.getDate();
                 b_add_class(element, 'b_dp_active_day');
                 b_remove_class(element, 'b_dp_inactive_day');
                 element.onclick = (function(field, date) {
