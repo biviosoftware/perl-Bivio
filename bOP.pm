@@ -28,9 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.76  2012/08/03 23:05:24  schellj
+  * Bivio::UI::View::CSS
+    specify width for days in month
+
   Revision 11.75  2012/08/03 18:15:31  nagler
   * Bivio::Biz::ListModel
     refactor _format_uri_args into internal_format_uri_args so can be
