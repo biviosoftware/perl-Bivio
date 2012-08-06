@@ -8,7 +8,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     my($self) = @_;
+    my($res) = shift->SUPER::execute_ok(@_);
     $self->get('realm_mail')->delete_message;
+    return $res
+        if defined($res);
     return;
 }
 
