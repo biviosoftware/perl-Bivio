@@ -64,6 +64,7 @@ my($_F) = b_use('IO.File');
 my($_M) = b_use('Biz.Model');
 my($_DC) = b_use('Bivio.DieCode');
 my($_D) = b_use('Bivio.Die');
+my($_R) = b_use('Biz.Random');
 
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
@@ -334,18 +335,23 @@ sub builtin_options {
     return {%{$_OPTIONS = {%$_OPTIONS, $options ? %$options : ()}}};
 }
 
-sub builtin_random_string {
-    shift;
-    return b_use('Biz.Random')->string(@_);
-}
-
 sub builtin_random_alpha_string {
     shift;
-    return b_use('Biz.Random')->string(shift(@_), ['a' .. 'z']);
+    return $_R->string(shift(@_), ['a' .. 'z']);
+}
+
+sub builtin_random_integer {
+    shift;
+    return $_R->integer(@_);
 }
 
 sub builtin_random_realm_name {
     return shift->builtin_random_alpha_string(@_);
+}
+
+sub builtin_random_string {
+    shift;
+    return $_R->string(@_);
 }
 
 sub builtin_read_file {
