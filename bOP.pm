@@ -28,9 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.78  2012/08/06 09:06:45  andrews
+  * Bivio::Biz::Model::RealmMailDeleteForm
+    Call execute_ok from super class
+
   Revision 11.77  2012/08/04 00:14:51  schellj
   * Bivio::UI::HTML::Widget::Script
     include text for inactive days (presumably visually differentiated
