@@ -315,7 +315,7 @@ sub detach_process {
 sub do_backticks {
     my($self, $command, $ignore_exit_code) = @_;
     my($res) = $self->piped_exec(
-	_sh_quote($command),
+	$command,
 	undef,
 	$ignore_exit_code,
     );
@@ -1031,10 +1031,9 @@ sub usage {
 
 sub usage_error {
     my(undef, @args) = @_;
-    push(@args, "\n")
-	unless ($args[$#args] || '') =~ /\n$/s;
-    $_A->print_literally('ERROR: ', @args);
-    $_DIE->throw_quietly('DIE');
+    my($msg) = $_A->format_args(@args);
+    $_A->print_literally('ERROR: ', $msg);
+    $_DIE->throw_quietly('DIE', {message => $msg});
     # DOES NOT RETURN
 }
 
@@ -1400,14 +1399,6 @@ sub _setup_for_main {
     ) unless $self->unsafe_get('req');
     $self->set_realm_and_user(map(_parse_realm($self, $_), qw(realm user)));
     return;
-}
-
-sub _sh_quote {
-    my($command) = @_;
-    return $command
-	if ref($command);
-    $command =~ s/'/'"\\'"'/g;
-    return qq{sh -c '$command'};
 }
 
 sub _special_handling_to_append_argv0_for_bivio {
