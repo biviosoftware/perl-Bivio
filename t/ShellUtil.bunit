@@ -23,18 +23,18 @@ config({
 	    'false' => DIE(),
 	],
 	do_backticks => [
-	    q{echo x'} => "x'\n",
-	    '(echo x; echo y)' => ["x\n", "y\n"],
-	    '(echo x; false)' => DIE(),
-	    ['(echo x; false)', 0] => DIE(),
-	    ['(echo x; false)', 1] => "x\n",
-#TODO:	    q{echo "'"} => "'\n",
+	    q{echo x\\'} => "x'\n",
+	    'sh -c "(echo x; echo y)"' => ["x\n", "y\n"],
+	    'sh -c "(echo x; false)"' => DIE(),
+	    ['sh -c "(echo x; false)"', 0] => DIE(),
+	    ['sh -c "(echo x; false)"', 1] => "x\n",
+	    q{sh -c "echo \\'"} => "'\n",
 	],
 	{
 	    method => 'do_backticks',
 	    want_scalar => 1,
 	} => [
-	    '(echo x; echo y)' => "x\ny\n",
+	    'sh -c "(echo x; echo y)"' => "x\ny\n",
 	],
 	name_args => [
 	    [['String'], ['a']] => [class(), 'a'],
