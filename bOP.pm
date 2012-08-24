@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.79  2012/08/20 16:33:29  schellj
+  Release notes:
+  * Bivio::Test::Unit
+    add builtin_random_integer
+    fpc
+
   Revision 11.78  2012/08/06 09:06:45  andrews
   * Bivio::Biz::Model::RealmMailDeleteForm
     Call execute_ok from super class
