@@ -28,10 +28,16 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.80  2012/08/24 15:23:10  nagler
+  * Bivio::ShellUtil
+    do_backticks: don't try quoting command or calling sh -c
+    usage_error: set message on "DIE" as the error so when -live code
+    executes, you get something reasonable in the output (e.g. if
+    processing an email)
+
   Revision 11.79  2012/08/20 16:33:29  schellj
   Release notes:
   * Bivio::Test::Unit
