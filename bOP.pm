@@ -28,9 +28,48 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.81  2012/08/27 12:27:11  andrews
+  *   Add code to base qooxdoo to check that table is still available in
+      "_getAvailableWidth". Very occasionally it is null which result in a
+      console error. _getAvailableWidth is called from a timer so it is
+      diffuclt to see what the cause is. Seems to occur when tables are
+      destroyed and redisplayed.
+
+  *   Shorter URIs esp. in registration mails
+
+  *   Maintain list position when flipping between table and list views
+
+  *   Use 'legacy' upload for IE 9 which does not support the HTML 5 file
+      API. FileDropComposite is also a form and UploadButton becomes a
+      regular file button.
+
+  *   Load spinning wheel for upload button in legacy mode
+
+  *   Fix file drag and drop for Chrome.
+
+  *   Only display the "drag file here" instructions on browsers that
+      support drag and drop.
+
+  *   Add 'readOnly' attribute similar to textField's to DateField and
+      SelectBox
+
+  *   Double clicking row executes first permitted action from context menu
+
+  *   Allow tables to have selection disabled. Value is focused row
+
+  *   Popup from previous form would sometimes appear due to left-over context in URI
+
+  *   Move to Qooxdoo 2.0.1
+
+  *   Indicate empty list with 'No items to display' or similar
+      specifiable string
+
+  *   Parse error when day of month had a single digit
+
   Revision 11.80  2012/08/24 15:23:10  nagler
   * Bivio::ShellUtil
     do_backticks: don't try quoting command or calling sh -c
