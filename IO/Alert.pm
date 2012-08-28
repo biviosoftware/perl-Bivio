@@ -294,7 +294,7 @@ sub print_stack {
 #     is not pretty either.
     # Doesn't trim stack trace, so may be really long.  Have an
     # absolute limit?
-    &$_LOGGER(Carp::longmess(''));
+    $_LOGGER->(Carp::longmess(''));
     return;
 }
 
@@ -325,7 +325,7 @@ sub set_printer {
     }
     elsif ($logger eq 'FILE') {
 	$proto->bootstrap_die('Must specify log file with FILE as printer')
-		    unless defined($log_file);
+	    unless defined($log_file);
 	$_LOG_FILE = $log_file;
 	$_LOGGER = \&_log_file;
     }
