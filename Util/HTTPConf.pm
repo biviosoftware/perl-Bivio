@@ -493,7 +493,9 @@ SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
 v1:SSLMutex file:logs/ssl_mutex
 v2:SSLMutex sem
-v2:SSLProtocol SSLv3
+v2:SSLProtocol All -SSLv2
+v2:SSLHonorCipherOrder On
+v2:SSLCipherSuite DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:EDH-RSA-DES-CBC3-SHA:RC4-SHA:HIGH:!ADH
 v1:SSLLog logs/error_log
 v1:SSLLogLevel warn
 EOF
