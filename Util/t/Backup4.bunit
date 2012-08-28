@@ -35,7 +35,7 @@ EOF
 	'zfs snapshot bkp/mirror@20120708' => [[]],
 	'zpool create archive vdev1' => [[]],
 	'zfs create -o compression=gzip-9 archive/20120708' => [[]],
-	"zfs send 'bkp/mirror\@20120708' | zfs receive 'archive/20120708'" => [[]],
+	q{zfs send 'bkp/mirror@20120708' | zfs receive -F 'archive/20120708'} => [[]],
 	'zfs set archive/20120708 readonly=on' => [[]],
 	'zfs export archive' => [[]],
     },

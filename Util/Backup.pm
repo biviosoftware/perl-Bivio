@@ -292,7 +292,7 @@ sub zfs_snapshot_and_export {
 	    b_info("Creating: $archive");
 	    _do_backticks($self, [qw(zpool create archive), $dev]);
 	    _do_backticks($self, [qw(zfs create -o compression=gzip-9), $archive]);
-	    _do_backticks($self, "zfs send '$snapshot' | zfs receive '$archive'");
+	    _do_backticks($self, "zfs send '$snapshot' | zfs receive -F '$archive'");
 	    _do_backticks($self, [qw(zfs set), $archive, 'readonly=on']);
 	    _do_backticks($self, [qw(zfs export archive)]);
 	}
