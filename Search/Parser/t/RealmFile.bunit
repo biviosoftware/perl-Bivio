@@ -58,6 +58,7 @@ EOF
 	    't.doc' => 'application/msword',
 	    't.xls' => ['application/vnd.ms-excel', 'TITLE', "some,text"],
 	    't.docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', ''],
+	    't1.eml' => ['message/rfc822', 'Options and Investment Clubs', qr{fan of combining}],
 	],
 	{
 	    method => 'new_excerpt',
