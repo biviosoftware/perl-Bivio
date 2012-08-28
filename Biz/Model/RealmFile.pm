@@ -216,7 +216,7 @@ sub handle_commit {
 	    _trace('rename(', $txn_file, ', ', $file, ')') if $_TRACE;
 	    unlink($file);
 	    $_IOF->rename($txn_file, $file);
-	    $_FWQ->create_file($file);	    
+	    $_FWQ->create_file($file);
 	    return;
 	},
 	sub {
@@ -224,7 +224,7 @@ sub handle_commit {
 	    _trace('unlink(', $txn_file, ', ', $file, ')') if $_TRACE;
 	    unlink($file);
 	    unlink($txn_file);
-	    $_FWQ->delete_file($file);	    
+	    $_FWQ->delete_file($file);
 	    return;
 	}
     );
