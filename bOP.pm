@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.82  2012/08/27 17:28:54  andrews
+  * Add FileDropInstructionLabel.js
+    A label that is invisible unless
+    the browser supports file drag and
+    drop for uploads
+
   Revision 11.81  2012/08/27 12:27:11  andrews
   *   Add code to base qooxdoo to check that table is still available in
       "_getAvailableWidth". Very occasionally it is null which result in a
