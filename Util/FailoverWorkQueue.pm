@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::FailoverWorkQueue;
 use strict;
