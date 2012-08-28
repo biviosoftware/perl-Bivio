@@ -331,28 +331,27 @@ sub serial_console {
     return _edit($self, '/etc/securetty', ['$', "ttyS0\n", "ttyS0\n"])
 	. _edit($self, '/etc/inittab',
 	    ['(?<=getty tty6\n)(S0:[^\n]+\n)?',
-		"S0:2345:respawn:/sbin/agetty ttyS0 $speed\n",
-		"S0:2345:respawn:/sbin/agetty -L -i ttyS0 $speed\n",
+		"S0:2345:respawn:/sbin/agetty -i -L ttyS0 $speed\n",
 		'S0.*agetty',
 	    ],
-	    ["ttyS0 \\d+\n", "-L -i ttyS0 $speed\n"],
-	   )
-        . _edit($self, '/boot/grub/menu.lst',
-	    ['?(?<!\#)splashimage', '#splashimage'],
-	    ["(?=\n\\s*initrd)", " console=ttyS0,$speed",
+	    ["(?:-i -L |-L -i )?ttyS0 \\d+\n", "-i -L ttyS0 $speed\n"],
+	)
+	. _edit($self, '/boot/grub/menu.lst',
+	    ['(?<!\#)splashimage', '#splashimage'],
+	    ["(?=\n\tinitrd)", " console=ttyS0,$speed",
 		'console=ttyS0,'
 	    ],
 	    ['console=ttyS0,\d+', "console=ttyS0,$speed",
-	         "console=ttyS0,$speed"],
+		 "console=ttyS0,$speed"],
 	    ["\ntimeout=\\d+\n", "\ntimeout=5\n"],
 	    ["(?<=\ntimeout=5\n)", "serial --unit=0 --speed=$speed\n",
 		"serial --unit=0 --speed=",
 	    ],
-  	    ['serial --unit=0 --speed=\d+', "serial --unit=0 --speed=$speed"],
-  	    ["(?<=serial --unit=0 --speed=$speed\n)",
-  		"terminal --timeout=1 serial\n",
-  	    ],
-        );
+	    ['serial --unit=0 --speed=\d+', "serial --unit=0 --speed=$speed"],
+	    ["(?<=serial --unit=0 --speed=$speed\n)",
+		"terminal --timeout=1 serial\n",
+	    ],
+	);
 }
 
 sub sh_param {
