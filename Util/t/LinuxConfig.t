@@ -66,7 +66,7 @@ Bivio::Test->unit([
 	], [
 	    'serial_console', [] => [
 		['etc/securetty', '(?<!/dev/)ttyS0'],
-		['etc/inittab', 'getty -L -i ttyS0'],
+		['etc/inittab', 'getty -i -L ttyS0'],
 		['boot/grub/menu.lst', '#splash'],
 		['boot/grub/menu.lst', 'serial\s+--unit=0'],
 		['boot/grub/menu.lst', 'md2 console=ttyS0,38400'],
@@ -74,7 +74,7 @@ Bivio::Test->unit([
 	], [
 	    'serial_console', [9600] => [
 		['etc/securetty', '(?<!/dev/)ttyS0'],
-		['etc/inittab', 'getty -L -i ttyS0'],
+		['etc/inittab', 'getty -i -L ttyS0'],
 		['boot/grub/menu.lst', '#splash'],
 		['boot/grub/menu.lst', 'serial\s+--unit=0'],
 		['boot/grub/menu.lst', 'md2 console=ttyS0,9600'],
