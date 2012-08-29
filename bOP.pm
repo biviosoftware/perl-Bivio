@@ -29,9 +29,30 @@ We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.83  2012/08/28 16:43:54  nagler
+  * Bivio::Biz::Model::RealmFile
+    added FailoverWorkQueue support
+  * Bivio::IO::Alert
+    fmt
+  * Bivio::Util::Backup
+    added -F to zfs receive
+  * Bivio::Util::FailoverWorkQueue
+    copy
+  * Bivio::Util::HTTPConf
+    generate restricted SSL ciphers to protect against beast attack:
+    https://community.qualys.com/blogs/securitylabs/2011/10/17/mitigating-the-beast-attack-on-tls
+  * Bivio::Util::LinuxConfig
+    removed sendmail and network support, not used
+    fpc: serial_console was messed up
+  * Bivio::Util::PGStandby
+    not sure the status, but want to checkin.  Not in use yet
+  * Bivio::Util::Task
+    NEW
+
   Revision 11.82  2012/08/27 17:28:54  andrews
   * Add FileDropInstructionLabel.js
     A label that is invisible unless
