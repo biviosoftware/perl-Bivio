@@ -97,6 +97,8 @@ my($importers) = sub {
 	    ['ANYTHING::not_valid', [], []] => qr{not_valid:.*not found},
 	    ['Bivio_Test', []] => 'Bivio::Test',
 	    ['ClassLoader_Bunit_BConf', []] => 'Bivio::PetShop::BConf',
+	    ['ClassLoader_Bunit2_UserRegisterForm', []]
+		=> 'Bivio::PetShop::Model::UserRegisterForm()',
 	],
 	$importers->(1),
 	unsafe_map_for_package => [
