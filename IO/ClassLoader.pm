@@ -75,7 +75,7 @@ sub call_autoload {
     return
 	if $func eq 'DESTROY';
     my($map, $class)
-	= $func =~ /^(?:^|::)([A-Z][a-zA-Z]+)_([A-Z][A-Za-z0-9]+)$/;
+	= $func =~ /^([A-Z][a-zA-Z_]+)_([A-Z][A-Za-z0-9]+)$/;
     if ($map) {
 	_die($autoload, ': no such mapped class')
 	    unless $proto->is_map_configured($map)
