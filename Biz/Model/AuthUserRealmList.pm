@@ -57,6 +57,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+	can_iterate => 0,
 	other_query_keys => ['task_id'],
 	other => [
 	    # Add all fields so get_model does not hit db
@@ -72,7 +73,7 @@ sub internal_post_load_row {
     my($self, $row) = @_;
     return 0
 	unless shift->SUPER::internal_post_load_row(@_);
-    my($fields) = $self->[$_IDI];
+    my($fields) = $self->[$_IDI] || b_die('must call load_all_for_task');
     return $fields->{is_defined_for_facade}
 	&& $_R->new($self->new_other('RealmOwner')->load_from_properties($row))
 	->can_user_execute_task($fields->{task}, $self->req);
