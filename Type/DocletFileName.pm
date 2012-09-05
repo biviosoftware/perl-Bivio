@@ -69,8 +69,9 @@ sub to_sql_like_path {
 sub uri_hash_for_realm_and_path {
     my($self, $realm_name, $realm_file_path) = @_;
     return {
-	task_id =>
-	    $self->req('Bivio::UI::Facade')->is_site_realm_name($realm_name)
+	task_id => b_use('UI.Facade')
+	    ->get_from_source($self->req)
+	    ->is_site_realm_name($realm_name)
 		? 'SITE_WIKI_VIEW'
 		: 'FORUM_WIKI_VIEW',
 	realm => $realm_name,
