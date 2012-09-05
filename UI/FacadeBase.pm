@@ -50,9 +50,7 @@ sub BULLETIN_REALM_NAME {
 }
 
 sub auth_realm_is_site {
-    my($self, $req) = @_;
-    my($r) = $req->get('auth_realm');
-    return $r->has_owner && $self->is_site_realm_name($r->get('owner_name'));
+    return _auth_realm_is(site => @_);
 }
 
 sub auth_realm_is_site_admin {
@@ -142,19 +140,7 @@ sub internal_merge {
 }
 
 sub is_site_realm_name {
-    my($self, $realm_name) = @_;
-    return $_RN->is_equal(
-	$realm_name, $self->get('Constant')->get_value('site_realm_name'));
-}
-
-sub is_special_realm_name {
-    my($self, $realm_name) = @_;
-    $realm_name = lc($realm_name);
-    my($c) = $self->get('Constant');
-    return grep(
-	($c->unsafe_get_value($_) || '') eq $realm_name,
-	$self->grep_methods(qr{_REALM_NAME$}),
-    ) ? 1 : 0;
+    return shift->special_realm_name_equals(site => shift(@_));
 }
 
 sub mail_receive_task_list {
@@ -192,11 +178,7 @@ sub new {
 sub _auth_realm_is {
     my($which, $self, $req) = @_;
     my($r) = $req->get('auth_realm');
-    return $r->has_owner
-	&& $_RN->is_equal(
-	    $r->get('owner_name'),
-	    $self->get('Constant')->get_value($which . '_realm_name'),
-	);
+    return $r->has_owner && $self->special_realm_name_equals($which, $r->get('owner_name'));
 }
 
 sub _cfg_base {
@@ -2185,6 +2167,14 @@ sub _cfg_xapian {
 sub internal_site_name {
     my($proto, $sub_forum) = @_;
     return $_FN->join($proto->SITE_REALM_NAME, $sub_forum);
+}
+
+sub special_realm_name_equals {
+    my($self, $which, $realm_name) = @_;
+    return $_RN->is_equal(
+	$realm_name,
+	$self->get('Constant')->get_value($which . '_realm_name'),
+    );
 }
 
 sub _unsafe_call {
