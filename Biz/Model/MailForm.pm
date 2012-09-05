@@ -24,10 +24,7 @@ sub VIEW_CLASS {
 sub execute_cancel {
     my($self) = @_;
     $self->clear_errors;
-    my($res) = shift->SUPER::execute_cancel(@_);
-    return $res
-        if defined($res);
-    return $self->internal_return_value;
+    return shift->internal_return_value;
 }
 
 sub execute_empty {
@@ -110,11 +107,8 @@ sub execute_ok {
 	->set_envelope_from($from_email)
 	->enqueue_send($req)
 	if $other_recipients->as_length;
-    my($res) = shift->SUPER::execute_ok(@_);
-    return $res
-        if defined($res);
     return $self->internal_return_value;
-} 
+}
 
 sub get_realm_emails {
     my($self) = @_;
