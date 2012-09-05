@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -33,6 +33,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.84  2012/08/29 17:02:15  andrews
+  * "burrito"is the default realm in Application.js doer now so that
+     demo does not get 404. Needs to be configurable and passed
+     to client code.
+
   Revision 11.83  2012/08/28 16:43:54  nagler
   * Bivio::Biz::Model::RealmFile
     added FailoverWorkQueue support
