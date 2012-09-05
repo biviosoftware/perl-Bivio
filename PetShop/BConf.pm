@@ -56,8 +56,6 @@ sub merge_overrides {
 		TestLanguage => ['Bivio::PetShop::Test'],
 		Type => ['Bivio::PetShop::Type'],
 		View => ['Bivio::PetShop::View'],
-		ClassLoader_Bunit => ['Bivio::PetShop'],
-		ClassLoader_Bunit2 => ['Bivio::PetShop::Model'],
 	    },
 	}),
 	'Bivio::Test::HTMLParser::Forms' => {
