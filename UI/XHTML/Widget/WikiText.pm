@@ -1170,8 +1170,15 @@ sub _parse_stack_top {
 sub _parse_tag_attrs {
     my($state, $line) = @_;
     my($attrs) = {};
-    while ($$line =~ s/^\.([\w\-]+)//s) {
-	$attrs->{class} .= (defined($attrs->{class}) ? ' ' : '') . $1;
+    while ($$line =~ s/^([\.\#])([\w\-]+)//s) {
+	if ($1 eq '#') {
+	    $state->{proto}->render_error($1 . $2, 'only one id attribute allowed', $state)
+		if $attrs->{id};
+	    $attrs->{id} = $2;
+	}
+	else {
+	    $attrs->{class} .= (defined($attrs->{class}) ? ' ' : '') . $2;
+	}
     }
     while ($$line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+|(?=(?:\s|$)))|(?:(\w+)=)"([^\"]*)("?))//s) {
 	if (defined($3) && !$5) {
