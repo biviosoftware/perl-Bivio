@@ -29,10 +29,22 @@ We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.85  2012/09/05 00:50:42  nagler
+  * Bivio::IO::ClassLoader
+    call_autoload wasn't handling maps with underscores and had dead part
+    of regex /^(?:^|::)...
+    call_autoload handles maps with numbers in them (CAL54)
+  * Bivio::PetShop::BConf
+    added classloader bunit support
+  * Bivio::Type::DocletFileName
+    use is_site_realm_name
+  * Bivio::UI::FacadeBase
+    normalized the names of site_* queries
+    added special_realm_name_equals
+
   Revision 11.84  2012/08/29 17:02:15  andrews
   * "burrito"is the default realm in Application.js doer now so that
      demo does not get 404. Needs to be configurable and passed
