@@ -475,7 +475,7 @@ Unfortunately, this doesn't always work. perl's autoload feature is abused
 by many third party packages, e.g. GDBM, and you must pollute your namespace.
 In general, wrap third party modules
 
-when possible to avoid general name space pollution and tight coupling.
+when possible to avoid general name space pollution and implicit coupling.
 This allows us to maintain stable interfaces in the face of third party
 API changes.
 
@@ -714,6 +714,12 @@ If you can continue, but would like to log the error use
 
    Bivio::IO::Alert->warn
 
+=item *
+
+If you can continue, but would like to log the error use
+
+   Bivio::IO::Alert->warn
+
 =back
 
 =head2 Arguments
@@ -722,7 +728,7 @@ If you can continue, but would like to log the error use
 
 =item *
 
-Always unwrap arguments as the first statement.
+Try to always unwrap arguments as the first statement.
 
 
      sub foo {
@@ -757,6 +763,77 @@ state</a>). If you don't need $self, you may use:
 =back
 
 =cut
+
+=head2 Explicit Coupling
+
+=over 4
+
+=item *
+
+Avoid implicit coupling in code.  Here's a subtle example of implicit
+coupling that was in Model.AuthUserRealmList.  It's caused by the
+implicit coupling natural to the use of inheritance:
+
+    sub internal_post_load_row {
+	my($self, $row) = @_;
+	return 0
+	    unless shift->SUPER::internal_post_load_row(@_);
+	my($fields) = $self->[$_IDI];
+	return $fields->{is_defined_for_facade}
+	    && $_R->new($self->new_other('RealmOwner')->load_from_properties($row))
+	    ->can_user_execute_task($fields->{task}, $self->req);
+    }
+
+What's happening here is that it assumes $fields is defined.  That's not
+necessarily the case.  Perl autovivifies the $fields hash, which means
+that is_defined_for_facade is false even if you don't enter this routine:
+
+    sub load_all_for_task {
+	my($self, $task_id) = @_;
+	$task_id = $_TI->from_any($task_id || $self->req('task_id'));
+	$self->[$_IDI] = _init($self, $task_id);
+	return $self->req->with_realm(
+	    $self->req('auth_user'),
+	    sub {
+		return $self->load_all({
+		    task_id => $task_id,
+		});
+	    },
+	);
+    }
+
+There are many other entry points that will call internal_post_load_row to be
+called.  Therefore, you need to protect against $fields not being defined, like
+this in internal_post_load_row:
+
+    my($fields) = $self->[$_IDI] || b_die('must call load_all_for_task');
+
+This way if anybody calls internal_post_load_row via iterate or load_all
+(methods which are implicitly coupled via inheritance), we detect the
+incorrect entry point (only one is load_all_for_task) and fail fast.
+
+You don't need to protect against every incorrect parameter to every entry
+point.  Rather, just protect what is implicitly coupled.  Someone can
+read load_all_for_task, and figure out what the required parameters are.
+That's normal programming.  They can also write a test for their module
+so that it tests that the result of load_all_for_task is something they
+expect (via the chain of use).  However, they can't know that load_all
+is the wrong thing to call by looking at the module.  Even a comment
+"must call load_all_for_task" is insufficient, because you might not see
+it.  The new assertion protects against the implicit coupling that
+is the benefit of inheritance.
+
+=item *
+
+Implicit coupling is ok in tests and test data.  While it makes it hard
+to update tests sometimes, tests are supposed to break when you change
+things.  It's often good to revisit a test if the test data changes.
+
+This isn't to say that you should try to couple implicitly, but rather
+you can be lazy with tests, and it won't affect the reliability of the
+system.
+
+=back
 
 =head1 COPYRIGHT
 
