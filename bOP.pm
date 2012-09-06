@@ -28,10 +28,24 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 11.86  2012/09/05 19:41:43  schellj
+  * Bivio::Biz::Model::AuthUserRealmList
+    added assertion in internal_post_load_row to check that
+    load_all_for_task was called.  Without that assertion, you'd never
+    know that calling load_all is doing the wrong thing.  This explicitly
+    couples the two routines.
+  * Bivio::HOWTO::CodingStyle
+    added section on implicit coupling
+  * Bivio::PetShop::BConf
+    can't use Bivio::Biz::Model in ClassLoader_Bunit test map, because
+    Bivio.Universal->CLASSLOADER_MAP_NAME tries to extract the class name
+    out of the maps, and picks up the wrong map (not Model)
+  * Bivio::UI::XHTML::Widget::WikiText
+    added ability to say @tag#id
+
   Revision 11.85  2012/09/05 00:50:42  nagler
   * Bivio::IO::ClassLoader
     call_autoload wasn't handling maps with underscores and had dead part
