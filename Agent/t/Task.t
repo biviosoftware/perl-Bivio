@@ -86,6 +86,8 @@ Bivio::Test->new({
 	get => [
 	    form_model => 'Bivio::Biz::Model::UserLoginForm',
 	    next => [Bivio::Agent::TaskId->REDIRECT_TEST_5],
+	    attr_string => 'abc',
+	    attr_hash => [{a => 1}],
 	],
 	{
 	    method => 'dep_get_attr',
