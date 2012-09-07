@@ -73,6 +73,10 @@ b_use('AgentHTTP.Cookie')->register(__PACKAGE__);
 my($_V1) = b_use('IO.Config')->if_version(1);
 my($_V9) = b_use('IO.Config')->if_version(9);
 
+sub CANCEL_BUTTON_NAME {
+    return 'cancel_button';
+}
+
 sub CONTEXT_FIELD {
     return 'c';
 }
@@ -321,6 +325,7 @@ sub get_field_error_detail {
 
 sub get_field_name_for_html {
     my($self, $name) = @_;
+#TODO: get_column_name_for_html?
     return $self->get_field_info($name)->{form_name}
         || b_die($name, ': is not a visible or hidden field');
 }
@@ -507,20 +512,12 @@ sub internal_get_visible_field_names {
 }
 
 sub internal_initialize {
-    # B<FOR INTERNAL USE ONLY>
+    my($self) = @_;
     return {
-	visible => [
-	    {
-		name => shift->OK_BUTTON_NAME,
-		type => 'OKButton',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'cancel_button',
-		type => 'CancelButton',
-		constraint => 'NONE',
-	    },
-	],
+	$self->field_decl(visible => [
+	    [$self->OK_BUTTON_NAME, 'OKButton'],
+	    [$self->CANCEL_BUTTON_NAME, 'CancelButton'],
+	]),
     };
 }
 
