@@ -58,14 +58,18 @@ sub get_delegate_info {
 		return "no_such_task";
 	    },
 	],
-	[qw(
-	    TEST_TRANSIENT
-	    505
-	    GENERAL
-	    TEST_TRANSIENT
-            Action.ClientRedirect->execute_next
-            next=SITE_ROOT
-	)],
+	[
+	    qw(
+		TEST_TRANSIENT
+		505
+		GENERAL
+		TEST_TRANSIENT
+		Action.ClientRedirect->execute_next
+		next=SITE_ROOT
+		attr_string=abc
+	    ),
+	    [attr_hash => {a => 1}],
+	],
 	[qw(
 	    UNSAFE_GET_REDIRECT
 	    506

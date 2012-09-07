@@ -666,37 +666,26 @@ sub _op {
 
 sub _parse_map_item {
     my($attrs, $cause, $params) = @_;
-    # Parses a new map item for this task.
-    return _put_attr(
-	$attrs,
-	$cause,
-	$_B->from_literal_or_die($params),
-    ) if $cause =~ /^(?:require_|want_)[a-z0-9_]+$/;
-    return _put_attr(
-	$attrs,
-	$cause,
-	_extra_auth($attrs, $params),
-    ) if $cause eq 'extra_auth';
-    $params = $_TE->parse_item($cause, $params);
-    return _put_attr($attrs, $cause, $params)
-	if $cause =~ $_TASK_ATTR_RE;
-    b_die($cause, ': params must be specified with a task_id: ', $params)
-	unless $params->{task_id};
-    return _put_attr(
-	$attrs, 'die_actions', $_DC->from_name($cause)->get_name, $params);
+    foreach my $x (
+	[qr{^(?:require_|want_)[a-z0-9_]+$}, sub {$_B->from_literal_or_die($params)}],
+	[qr{^attr_[a-z0-9_]+$}, sub {$params}],
+	[qr{^extra_auth$}, sub {_extra_auth($attrs, $params)}],
+	[$_TASK_ATTR_RE, sub {$_TE->parse_item($cause, $params)}],
+    ) {
+	return _put_attr($attrs, $cause, $x->[1]->())
+	    if $cause =~ $x->[0];
+    }
+    my($p) = $_TE->parse_item($cause, $params);
+    b_die($cause, ': value must be a task_id: ', $params)
+	unless $p->{task_id};
+    return _put_attr($attrs->{die_actions}, $_DC->from_name($cause)->get_name, $params);
 }
 
 sub _put_attr {
-    my($attrs, @keys) = @_;
-    my($a) = $attrs;
-    my($value) = pop(@keys);
-    my($final) = pop(@keys);
-    foreach my $k (@keys) {
-	$a = $a->{$k};
-    }
-    b_die([@keys, $final], ': attribute already exists for ', $attrs->{id})
-	if defined($a->{$final});
-    $a->{$final} = $value;
+    my($attrs, $key, $value) = @_;
+    b_die($key, ': attribute already exists for ', $attrs->{id})
+	if defined($attrs->{$key});
+    $attrs->{$key} = $value;
     return;
 }
 
