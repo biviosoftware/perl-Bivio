@@ -28,6 +28,8 @@ options({
 		'libwww-perl/5.79',
 		'lwp-request/2.06',
 		'psbot/0.1 (+http://www.picsearch.com/bot.html)',
+		'WikiDo/Nutch-1.4 (http://wikido.com; crawler@wikido.com)',
+		'A browser with just an email@address.com',
 	    ),
             map(($_ => 'BROWSER_FIREFOX_1'),
                 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.7.12) Gecko/20050915 Firefox/1.0.7',

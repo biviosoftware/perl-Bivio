@@ -143,6 +143,7 @@ sub _is_search {
         adsbot-google
 	|baidu.*spider
 	|bingbot
+	|ezooms.bot
 	|gigabot
 	|googlebot
 	|msnbot
@@ -160,6 +161,9 @@ sub _is_other {
         (?:(?:ro)?bot|spider|crawler)(?:\.|/)
         |(?:/|:)(?:(?:ro)?bot|spider|crawler)
         |^davclnt$
+	|http://
+	|\w+\@\w+.com
+        |^-$
         |docomo/
         |facebookexternalhit
         |gt::www/
