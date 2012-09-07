@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved
 # $Id$
 package Bivio::Agent::Request;
 use strict;
@@ -198,6 +198,8 @@ my($_TI) = b_use('Agent.TaskId');
 my($_T) = b_use('Agent.Task');
 my($_UA) = b_use('Type.UserAgent');
 my($_C) = b_use('IO.Config');
+my($_HTML) = b_use('Bivio.HTML');
+my($_M) = b_use('Biz.Model');
 my($_V1) = $_C->if_version(1);
 my($_V7) = $_C->if_version(7);
 $_C->register(my $_CFG = {
@@ -410,7 +412,7 @@ sub format_email {
 	unless defined($email);
     return $email
 	if $email =~ /\@/;
-    my($f) =  $self->unsafe_get('Bivio::UI::Facade');
+    my($f) =  $self->unsafe_get('UI.Facade');
     return $f->get('Email')->format($email)
         if $f && $f->unsafe_get('Email');
     return $email . '@' . Sys::Hostname::hostname();
@@ -665,7 +667,6 @@ sub get_fields {
 }
 
 sub get_form {
-    # Returns undef.
     return undef;
 }
 
@@ -730,7 +731,7 @@ sub internal_client_redirect_args {
     my($first) = @_;
     my(undef, $named) = $self->internal_get_named_args(
  	ref($first) && (ref($first) ne 'HASH' || $first->{task_id})
-	    || Bivio::Agent::TaskId->is_valid_name($first)
+	    || $_TI->is_valid_name($first)
 	    ? $self->CLIENT_REDIRECT_PARAMETERS
 	    : [qw(uri query no_context task_id realm path_info),
 	       $self->EXTRA_URI_PARAM_LIST],
@@ -784,7 +785,7 @@ sub internal_get_named_args {
     my($self, $named) = shift->name_parameters(@_);
 #TODO: Make a Type
     $named->{task_id} = !$named->{task_id} ? $self->get('task_id')
-	: UNIVERSAL::isa($named->{task_id}, 'Bivio::Agent::TaskId')
+	: $_TI->is_blesser_of($named->{task_id})
 	? $named->{task_id}
 	: $_TI->from_name($named->{task_id})
 	if grep($_ eq 'task_id', @$names);
@@ -839,7 +840,7 @@ sub internal_initialize_with_uri {
     delete($query->{auth_id})
 	if $query;
     return $self->put_durable(
-	uri => $uri && Bivio::HTML->escape_uri($uri),
+	uri => $uri && $_HTML->escape_uri($uri),
 	initial_uri => $initial_uri,
 	query => $query,
 	path_info => $path_info,
@@ -870,7 +871,7 @@ sub internal_new {
 	perf_time => {},
     );
     # Make sure a value gets set
-    Bivio::Type::UserAgent->execute_unknown($self);
+    $_UA->execute_unknown($self);
     _trace($self) if $_TRACE;
     return $self;
 }
@@ -984,7 +985,7 @@ sub is_super_user {
 	    && $user_id eq $self->get('auth_user_id'))
 	? _get_role($self, $_GENERAL->as_int)
 	    ->equals_by_name('ADMINISTRATOR')
-	: Bivio::Biz::Model->new($self, 'RealmUser')->unauth_load({
+	: $_M->new($self, 'RealmUser')->unauth_load({
 	    realm_id => $_GENERAL->as_int,
 	    user_id => $user_id,
 	    role => $_ADMINISTRATOR,
@@ -1140,7 +1141,7 @@ sub put_durable_server_redirect_state {
 }
 
 sub realm_cache {
-    Bivio::IO::Alert->warn_deprecated('use cache_for_auth_realm');
+    $_A->warn_deprecated('use cache_for_auth_realm');
     return shift->cache_for_auth_realm(@_);
 }
 
@@ -1270,7 +1271,7 @@ sub set_user {
     # Returns I<auth_user>, which my be C<undef>.
     # We don't set the role if there's not auth_realm
     my($dont_set_role) = $self->unsafe_get('auth_realm') ? 0 : 1;
-    $user = Bivio::Biz::Model->new($self, 'RealmOwner')
+    $user = $_M->new($self, 'RealmOwner')
 	->unauth_load_by_id_or_name_or_die($user, 'USER')
         unless ref($user) || !defined($user);
     # DON'T CHECK CURRENT USER.  Always reread DB.
@@ -1278,7 +1279,7 @@ sub set_user {
     _trace($user) if $_TRACE;
     if ($user) {
 	# Load the UserRealmList for this user.
-	my($list) = Bivio::Biz::Model->new($self, 'UserRealmList');
+	my($list) = $_M->new($self, 'UserRealmList');
 	$list->unauth_load_all({auth_id => $user->get('realm_id')});
 	$user_realms = $list->map_primary_key_to_rows;
     }
@@ -1286,7 +1287,7 @@ sub set_user {
 	$user_realms = {};
     }
     b_die($user, ': not a RealmOwner')
-        if defined($user) && !$user->isa('Bivio::Biz::Model');
+        if defined($user) && !$_M->is_blesser_of($user);
 #TODO: remove after realm_cache proven
     $self->delete_all_by_regexp(qr{^auth_user\.});
     $self->put_durable(
