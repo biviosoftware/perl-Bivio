@@ -255,7 +255,6 @@ sub info_base {
 	    ANYBODY
 	    View.WidgetInjector->public_xhtml_widget_js
 	)],
-	
 #194-199 free
     ];
 }
