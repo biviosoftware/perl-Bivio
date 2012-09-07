@@ -17,8 +17,8 @@ my($_MWRT) = b_use('Type.MailWantReplyTo');
 my($_BRM) = b_use('Action.BoardRealmMail');
 my($_FM) = b_use('Type.FormMode');
 
-sub CALL_SUPER_ATTR_HACK {
-    return __PACKAGE__ . '.call_super';
+sub CALL_SUPER_HACK {
+    return 0;
 }
 
 sub VIEW_CLASS {
@@ -28,7 +28,7 @@ sub VIEW_CLASS {
 sub execute_cancel {
     my($self) = @_;
     $self->clear_errors;
-    if ($self->ureq($self->CALL_SUPER_ATTR_HACK)) {
+    if ($self->CALL_SUPER_HACK) {
 	my($res) = shift->SUPER::execute_cancel(@_);
 	return $res
 	    if defined($res);
@@ -116,7 +116,7 @@ sub execute_ok {
 	->set_envelope_from($from_email)
 	->enqueue_send($req)
 	if $other_recipients->as_length;
-    if ($self->ureq($self->CALL_SUPER_ATTR_HACK)) {
+    if ($self->CALL_SUPER_HACK) {
 	my($res) = shift->SUPER::execute_ok(@_);
 	return $res
 	    if defined($res);
