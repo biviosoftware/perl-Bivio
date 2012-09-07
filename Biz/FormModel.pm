@@ -1199,7 +1199,6 @@ sub _parse_cols {
 	    : 'internal_get_visible_field_names';
     my($null_set) = {};
     foreach my $n (@{$self->$method()}) {
-	$n =~ s/^(.*)\.x\=/$1/;
 	my($fn) = $self->get_field_name_for_html($n);
 	# Handle complex form fields.  Avoid copies of huge data, so
 	# don't assign to temporary until kind (complex/simple) is known.
