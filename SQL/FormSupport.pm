@@ -1,11 +1,9 @@
-# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::FormSupport;
 use strict;
 use Bivio::Base 'SQL.Support';
-use Bivio::Biz::Model;
-use Bivio::IO::Trace;
-use Bivio::Type::PrimaryId;
+b_use('IO.Trace');
 
 # C<Bivio::SQL::FormSupport> is the meta-data model for
 # L<Bivio::Biz::FormModel>s.  This module does not execute SQL.
@@ -119,8 +117,9 @@ use Bivio::Type::PrimaryId;
 #
 # Let's you specify form names explicitly for special cases, e.g.
 # incoming mail via b-sendmail-agent.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = b_use('IO.Config');
+my($_M) = b_use('Biz.Model');
 our($_TRACE);
 my($_CLASSES) = [qw(auth_id visible hidden primary_key other)];
 
@@ -245,17 +244,20 @@ sub _init_column_classes {
 	    Bivio::Biz::FormModel->TIMEZONE_FIELD() => 1,);
     foreach my $col (@{$attrs->{visible}}, @{$attrs->{hidden}}) {
 	if ($col->{form_name}) {
-	    # Check syntax of user designated fields
-	    die($col->{name}, ': duplicate form name (',
-		    $col->{form_name}, ')') if $form_names{$col->{form_name}};
-	    die($col->{name}, q{: form name cannot be fNN. You probably have a field in both the 'visible' and 'hidden' sections of your form definition.  OR, you may be trying to edit the primary key field of a ListFormModel's ListModel.})
-		    if $col->{form_name} =~ /^f\d+/;
-	    $form_names{$col->{form_name}} = 1;
+	    b_die(
+		$col->{name},
+		q{: form name cannot be fNN. You probably have a field in both the 'visible' and 'hidden' sections of your form definition.  OR, you may be trying to edit the primary key field of a ListFormModel's ListModel.}
+	    ) if $col->{form_name} =~ /^f\d+$/;
 	}
 	else {
-	    # Can't just use a number here
-	    $col->{form_name} = 'f'.$i++;
+	    $col->{form_name} = $_C->is_dev ? $col->{name} : 'f' . $i++;
 	}
+	b_die(
+	    $col->{name},
+	    ': duplicate form name (',
+	    $col->{form_name},
+	    ')',
+	) if $form_names{$col->{form_name}}++;
 	$attrs->{column_aliases}->{$col->{form_name}} = $col;
 	if ($col->{is_file_field} = UNIVERSAL::isa($col->{type},
 		'Bivio::Type::FileField') ? 1 : 0) {
@@ -296,7 +298,7 @@ sub _init_list_class {
     # No list
     return unless $decl->{list_class};
 
-    my($lm) = Bivio::Biz::Model->get_instance($decl->{list_class});
+    my($lm) = $_M->get_instance($decl->{list_class});
     $attrs->{list_class} = ref($lm);
 
     # Set the primary_key by copying the list_class's primary key
