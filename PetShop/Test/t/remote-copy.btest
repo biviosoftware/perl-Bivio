@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
@@ -25,11 +25,11 @@ verify_no_text(qr{file4\b});
 $cfg->('http://no-such-host.bivio.biz');
 follow_link('remote_copy$');
 test_deviance(qr{\Qhttp://no-such-host});
-submit_form(prepare => {});
+submit_form('prepare$' => {});
 test_conformance();
 go_back();
 $cfg->();
-submit_form(prepare => {});
+submit_form('prepare$' => {});
 verify_text(qr{remote_copy_btest.*delete:.*$new.*copy:.*file4\b.*remote_copy_bunit.*up to date}is);
 verify_no_text(qr{\bto replace\b}i);
 submit_form(Copy => {});
@@ -40,9 +40,9 @@ follow_link(qr{^file3$});
 verify_text(qr{^file3$}m);
 go_back();
 follow_link('remote_copy$');
-submit_form(prepare => {});
+submit_form('prepare$' => {});
 verify_text(qr{nothing to update}i);
 login_as('root');
 follow_link('remote_copy');
 test_deviance(qr{not.*write access.*local realm}i);
-submit_form(prepare => {});
+submit_form('prepare$' => {});
