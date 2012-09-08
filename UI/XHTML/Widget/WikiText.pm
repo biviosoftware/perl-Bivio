@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::Widget::WikiText;
 use strict;
@@ -1170,14 +1170,21 @@ sub _parse_stack_top {
 sub _parse_tag_attrs {
     my($state, $line) = @_;
     my($attrs) = {};
-    while ($$line =~ s/^([\.\#])([\w\-]+)//s) {
-	if ($1 eq '#') {
-	    $state->{proto}->render_error($1 . $2, 'only one id attribute allowed', $state)
-		if $attrs->{id};
-	    $attrs->{id} = $2;
+    my($postfix) = $$line =~ s/^(\S+)//s ? $1 : '';
+    while (length($postfix)) {
+	if ($postfix =~ s/^\.(\w[\w\-]*)//is) {
+	    $attrs->{class} .= (defined($attrs->{class}) ? ' ' : '') . $1;
+	}
+	elsif ($postfix =~ s/^\#([\:\_a-z][\-\.\:\w]*)//is) {
+	    if ($attrs->{id}) {
+		$state->{proto}->render_error('#' . $1, 'only one id attribute allowed', $state);
+		last;
+	    }
+	    $attrs->{id} = $1;
 	}
 	else {
-	    $attrs->{class} .= (defined($attrs->{class}) ? ' ' : '') . $2;
+	    $state->{proto}->render_error($postfix, 'invalid tag postfix', $state);
+	    last;
 	}
     }
     while ($$line =~ s/^\s+(?:(?:(\w+)=)([^"\s]+|(?=(?:\s|$)))|(?:(\w+)=)"([^\"]*)("?))//s) {

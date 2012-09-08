@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 WikiText({die_on_validate_error => 1});
 [
@@ -39,4 +39,6 @@ IN
 @h2 Important Telephone Numbers
 @/code
 IN
+    '@br.' => qr{<inline>, line 1: \.: invalid tag postfix},
+    '@br.a:' => qr{<inline>, line 1: :: invalid tag postfix},
 ];
