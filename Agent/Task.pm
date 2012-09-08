@@ -678,7 +678,7 @@ sub _parse_map_item {
     my($p) = $_TE->parse_item($cause, $params);
     b_die($cause, ': value must be a task_id: ', $params)
 	unless $p->{task_id};
-    return _put_attr($attrs->{die_actions}, $_DC->from_name($cause)->get_name, $params);
+    return _put_attr($attrs->{die_actions}, $_DC->from_name($cause)->get_name, $p);
 }
 
 sub _put_attr {
