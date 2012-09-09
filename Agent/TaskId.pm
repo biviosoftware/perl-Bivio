@@ -27,7 +27,14 @@ use Bivio::Base 'Type.EnumDelegator';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CFG) = b_use('IO.ClassLoader')->delegate_require_info(__PACKAGE__);
 __PACKAGE__->compile([
-    map(($_->{name}, [$_->{int}]), @{__PACKAGE__->get_cfg_list})]);
+    map(
+	(
+	    $_->{name},
+	    [$_->{int} || b_die($_, ': missing int')],
+	),
+	@{__PACKAGE__->get_cfg_list},
+    ),
+]);
 
 sub get_cfg_list {
     return $_CFG;
