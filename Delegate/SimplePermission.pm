@@ -1,8 +1,8 @@
-# Copyright (c) 2001-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::SimplePermission;
 use strict;
-use base 'Bivio::Delegate';
+use Bivio::Base 'Type.EnumDelegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

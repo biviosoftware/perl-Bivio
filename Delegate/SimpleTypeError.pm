@@ -1,8 +1,8 @@
-# Copyright (c) 2001-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegate::SimpleTypeError;
 use strict;
-use Bivio::Base 'Bivio::Delegate';
+use Bivio::Base 'Type.EnumDelegate';
 
 # C<Bivio::Delegate::SimpleTypeError> returns default TypeErrors for
 # simplest bOP site.

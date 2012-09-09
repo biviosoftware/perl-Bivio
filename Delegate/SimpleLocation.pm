@@ -1,8 +1,8 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::SimpleLocation;
 use strict;
-use Bivio::Base 'Bivio.Delegate';
+use Bivio::Base 'Type.EnumDelegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

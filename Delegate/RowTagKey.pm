@@ -1,8 +1,8 @@
-# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Delegate::RowTagKey;
 use strict;
-use Bivio::Base 'Bivio.Delegate';
+use Bivio::Base 'Type.EnumDelegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
