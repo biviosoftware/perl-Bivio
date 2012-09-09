@@ -263,6 +263,7 @@ sub merge_class_loader {
 	    $overrides,
 	    {
 		delegates => {
+		    'Bivio::Search' => 'Bivio::Search::None',
 		    'Bivio::Agent::HTTP::Cookie' => 'Bivio::Delegate::Cookie',
 		    'Bivio::Agent::TaskId' => 'Bivio::Delegate::TaskId',
 		    'Bivio::Auth::Permission' => 'Bivio::Delegate::SimplePermission',
