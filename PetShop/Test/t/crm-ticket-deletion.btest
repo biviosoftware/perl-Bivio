@@ -1,31 +1,33 @@
 # Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-test_setup('PetShop');
+test_setup('PetShop', 'groupware');
 home_page();
 login_as('crm_tech1');
 
 my($tests) = [
-    {	
+    {
 	link_suffix => ['', '', '', ''],
 	deleted => ['A', 'B', 'C'],
     },
     {
-	link_suffix => ['_3', '_2', '_1', ''],	
+	link_suffix => ['_3', '_2', '_1', ''],
 	deleted => ['D', 'C', 'B'],
     },
     {
-	link_suffix => ['_3', '', '_1', ''],	
+	link_suffix => ['_3', '', '_1', ''],
 	deleted => ['D', 'A', 'C'],
     },
 ];
 
+follow_menu_link(qw(^crm_forum$ ^tickets$));
+my($tickets_uri) = get_uri();
 foreach my $test (@$tests) {
     my($subject) = 'Subject ' . random_string();
     my($text) = 'text '.  random_string();
-    visit_uri('/crm_forum/tickets');
+    visit_uri($tickets_uri);
     follow_link('new_ticket');
     submit_form('Send', {
-	'To:' => 'nemo@acme.com',
+	'To:' => generate_local_email(random_string()),
 	'Subject:' => $subject,
 	'Text:' => $text . ' A',
     });
@@ -37,13 +39,13 @@ foreach my $test (@$tests) {
 	    'Text:' => $text . ' ' . $suffix,
 	});
     }
-    visit_uri('/crm_forum/tickets');
+    visit_uri($tickets_uri);
     follow_link($subject);
     my(@deleted) = @{$test->{deleted}};
     foreach my $suffix (@{$test->{link_suffix}}) {
 	follow_link('delete_message' . $suffix . '$');
 	submit_form('Delete');
-        visit_uri('/crm_forum/tickets');
+	visit_uri($tickets_uri);
 	if (my $d = shift(@deleted)) {
 	    follow_link($subject);
 	    verify_no_text($text . ' ' . $d);
