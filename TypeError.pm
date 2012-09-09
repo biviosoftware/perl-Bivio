@@ -7,7 +7,7 @@ use base 'Bivio::Type::Enum';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile(
-    Bivio::IO::ClassLoader->delegate_require_info(__PACKAGE__));
+    Bivio::IO::ClassLoader->delegate_require(__PACKAGE__)->get_delegate_info);
 
 sub is_continuous {
     return 0;
