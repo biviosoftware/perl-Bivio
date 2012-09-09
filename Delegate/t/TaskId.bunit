@@ -6,6 +6,45 @@
 	included_components => [
 	    [] => [[]],
 	],
+	canonicalize_task_info => [
+	    [[
+		{
+		    name => 'F1',
+		    int => 1,
+		    permission_set => [qw(ANYBODY)],
+		},
+		[qw(
+		    F2
+		    2
+		    GENERAL
+		    ANYBODY
+		    Action.EmptyReply
+	        )],
+	    ]] => [[
+		{
+		    name => 'F1',
+		    int => 1,
+		    permission_set => [qw(ANYBODY)],
+		},
+		{
+		    name => 'F2',
+		    int => 2,
+		    realm_type => 'GENERAL',
+		    permission_set => 'ANYBODY',
+		    items => [qw(Action.EmptyReply)],
+	        },
+	    ]],
+	    [[
+		{
+		    name => 'G1',
+		    int => 1,
+		},
+		[qw(
+		    G1
+		    2
+	        )],
+	    ]] => qr{duplicate}i,
+	],
 	merge_task_info => [
 	    xapian => [[
 		{
