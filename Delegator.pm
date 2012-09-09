@@ -1,27 +1,24 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Delegator;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 
-# C<Bivio::Delegator> delegates implementation to another class. Subclasses
-# must have an entry in ClassLoader.delegates.
-
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
+our($_PREV_AUTOLOAD) = '';
 my($_CL) = b_use('IO.ClassLoader');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_MAP) = {};
-our($last) = '';
 
 sub AUTOLOAD {
     my($proto) = shift;
     my($method) = $AUTOLOAD =~ /([^:]+)$/;
     return
 	if $method eq 'DESTROY';
-    die($AUTOLOAD)
-	if $AUTOLOAD eq $last;
-    local($last) = $AUTOLOAD;
+    die($AUTOLOAD, ': infinite delegation loop')
+	if $AUTOLOAD eq $_PREV_AUTOLOAD;
+    local($_PREV_AUTOLOAD) = $AUTOLOAD;
     return (
 	ref($proto) ? $proto->[$_IDI]->{delegate}
 	    : $proto->internal_delegate_package
