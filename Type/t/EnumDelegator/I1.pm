@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Type::t::EnumDelegator::I1;
 use strict;
-use Bivio::Base 'Bivio::Delegate';
+use Bivio::Base 'Type.EnumDelegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
