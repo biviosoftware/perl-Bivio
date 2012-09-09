@@ -100,23 +100,25 @@ sub call_autoload {
     return $class;
 }
 
-sub delegate_require {
-    my($proto, $class) = @_;
-    # Returns the delegate for the specified class.
-    return $proto->simple_require($_CFG->{delegates}->{$class}
-	|| _die($class, ': delegates not configured'));
+sub delegate_get_map_entry {
+    my(undef, $delegator) = @_;
+    return $_CFG->{delegates}->{$delegator}
+	    || _die($delegator, ': delegate not configured'),    
 }
 
-sub delegate_require_info {
-    # Returns the class specific delegate information. The delegate should
-    # define L<get_delegate_info|"get_delegate_info">.
-    return shift->delegate_require(shift)->get_delegate_info;
+sub delegate_replace_map_entry {
+    my($proto, $delegator, $delegate) = @_;
+    $_CFG->{delegates}->{$delegator->package_name} = $delegate;
+    return;
+}
+
+sub delegate_require {
+    my($proto, $delegator) = @_;
+    return $proto->simple_require($proto->delegate_get_map_entry($delegator));
 }
 
 sub delete_require {
     my(undef, $pkg) = @_;
-    # Clears the state of I<pkg> (which must be a fully qualified class)
-    # so that it can be reloaded.
     _pre_delete_require($pkg);
     while (my($k, $v) = each(%$_MAP_CLASS)) {
 	delete($_MAP_CLASS->{$k})
