@@ -21,6 +21,11 @@ sub as_classloader_map_name {
 	. $proto->simple_package_name;
 }
 
+sub as_classloader_mapped_package {
+    my($proto) = @_;
+    return $proto->use($proto->as_classloader_map_name);
+}
+
 sub as_req_key_value_list {
     my($proto) = @_;
     my($pkg) = $proto->package_name;
