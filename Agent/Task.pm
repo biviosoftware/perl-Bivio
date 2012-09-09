@@ -351,16 +351,22 @@ sub initialize {
 	if $_INITIALIZED;
     $_INITIALIZED = 1;
     foreach my $cfg (map(+{%$_}, @{$_T->get_cfg_list})) {
-	my($ps) = delete($cfg->{permission_set});
+	my($validate) = sub {
+	    my($key) = @_;
+	    b_die($key, ': missing from ', $cfg)
+		unless defined($cfg->{$key});
+	    return delete($cfg->{$key});
+	};
+	my($ps) = $validate->('permission_set');
 	delete($cfg->{int});
 	$proto->new(
-	    $_T->from_any(delete($cfg->{name})),
-	    $_RT->from_any(delete($cfg->{realm_type})),
+	    $_T->from_any($validate->('name')),
+	    $_RT->from_any($validate->('realm_type')),
 	    ${$_PS->from_array(
 		ref($ps) eq 'ARRAY' ? $ps : [split(/\&/, $ps)],
 	    )},
 	    $partially ? ()
-		: (@{delete($cfg->{items})}, $cfg),
+		: (@{$validate->('items')}, $cfg),
 	);
     };
     return;
