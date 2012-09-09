@@ -7,8 +7,8 @@ use Bivio::Base 'Type.EnumDelegator';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ROLE_GROUP_RE) = qr{^\*(.*)};
 my($_A) = b_use('Type.Array');
-__PACKAGE__->compile;
 my($_CACHE) = b_use('Collection.Attributes')->new;
+__PACKAGE__->compile;
 
 sub calculate_expression {
     my($proto, $name) = @_;
