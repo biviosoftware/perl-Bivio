@@ -207,7 +207,7 @@ sub _validate_record {
     my($self, $row, $columns, $count) = @_;
     foreach my $name (keys(%$columns)) {
 	my($type) = $columns->{$name}->{type};
-	my($v, $err);
+	my($v, $err, $no_error);
 	if ($type->isa('Bivio::Type::Enum') && defined($row->{$name})) {
 	    $row->{$name} =~ s/^\s+|\s+$//g;
 	    if (length($row->{$name})) {
@@ -238,7 +238,12 @@ sub _validate_record {
 		$e->get_long_desc,
 	    );
 	}
+	else {
+	    $no_error = 1;
+	}
 	$row->{$name} = $v;
+	$self->validate_record($row, $count)
+	    if $no_error && $self->can('validate_record');
     }
     return;
 }
