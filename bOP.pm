@@ -28,9 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 11.87  2012/09/06 01:26:29  schellj
+  * Bivio::Biz::Model::MailForm
+    revert previous change, altered behavior
+
   Revision 11.86  2012/09/05 19:41:43  schellj
   * Bivio::Biz::Model::AuthUserRealmList
     added assertion in internal_post_load_row to check that
