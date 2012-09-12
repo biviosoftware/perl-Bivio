@@ -174,12 +174,19 @@ sub nightly {
 	# Bivio/PetShop special case
 #TODO: Move Bivio/PetShop to PetShop
 	my($is_petshop) = $bop =~ s{Bivio/Bivio}{Bivio};
+	my($need_selenium) = $ENV{BCONF} =~ /normforge/;
         system("cvs -Q checkout '$_CFG->{nightly_cvs_dir}' '$bop'");
         $self->print("Completed CVS checkout of test files\n");
         $f->chdir($_CFG->{nightly_cvs_dir});
 	$self->print("cd " . $f->pwd . "\n");
 	$self->print("export PERLLIB=$ENV{PERLLIB}\n");
 	$self->print("export BCONF=$ENV{BCONF}\n");
+        #TODO: make a service for the selenium server
+	if ($need_selenium) {
+	    my($ps) = $self->piped_exec('ps ax');
+	    system('bivio selenium run_headless > /dev/null 2>&1 &')
+		unless ($$ps =~ /selenium-server-standalone/);
+	}
 	$self->print("bivio test acceptance .\n");
         my($acc_die) = $_D->catch(sub {
 	    $self->print($self->acceptance('.'));
