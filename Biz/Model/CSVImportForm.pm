@@ -212,7 +212,7 @@ sub _validate_record {
 	    $row->{$name} =~ s/^\s+|\s+$//g;
 	    if (length($row->{$name})) {
 		$v = $type->unsafe_from_any($row->{$name});
-		$err = Bivio::TypeError->NOT_FOUND
+		$err = Bivio::TypeError->SYNTAX_ERROR
 		    unless $v;
 	    }
 	}
@@ -227,7 +227,7 @@ sub _validate_record {
 		defined($row->{$name}) && length($row->{$name})
 		    ? ($row->{$name}, ', ')
 		    : (),
-		$err->get_short_desc,
+		$err->get_long_desc,
 	    );
 	}
 	elsif (my $e = $columns->{$name}->{constraint}->check_value($type, $v)) {
