@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,132 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.88  2012/09/12 21:56:45  schellj
+  * Bivio::Agent::Request
+    b_use
+  * Bivio::Agent::t::Mock::TaskId
+    added ability to have arbitrary attributes (attr_*) on tasks
+    refactored _put_attr to be cleaner (unnecessarily complexity for
+    die_actions chaining
+  * Bivio/Agent/t/TaskId
+    NEW
+  * Bivio::Agent::TaskId
+    validate 'int' attribute supplied
+    Took business logic from Delegate.TaskId and moved here.  This was
+    allowed by having Delegate.TaskId subclass Type.EnumDelegate so that
+    methods could be called from the enum directly.
+    merge_task_info was computing $_INCLUDED_COMPONENT (was $_INCLUDED),
+    but this was wrong since merge_task_info is simply stateless business
+    logic.  Rather have _compile() set that.  In order to make that work,
+    needed to create dummy config _TASK_COMPONENT_<name> which gets set by
+    merge_task_info when components are referenced.  These are then
+    stripped by _compile()
+  * Bivio::Agent::Task
+    added ability to have arbitrary attributes (attr_*) on tasks
+    refactored _put_attr to be cleaner (unnecessarily complexity for
+    die_actions chaining
+    die_actions parsing wasn't working.  The TaskEvent wasn't being passed
+    to _put_attr (the original value was [just the task name])
+    validate that the attributes (name, int, etc.) are defined in the
+    values passed to new()
+  * Bivio::Auth::Role
+    call compile after all inititialization is complete
+  * Bivio::BConf
+    default Bivio::Search to Bivio::Search::None, since this is the
+    default case
+    deprecated NoECService: using ECService
+  * Bivio::Biz::FormModel
+    added CANCEL_BUTTON_NAME; used to declare in internal_initialize and overridable
+    don't need '.x' stripping on field names in _parse_cols; it's a no-op
+  * Bivio::Biz::Model::CSVImportForm
+    added validate_record() call for subclasses
+  * Bivio::Biz::Model::MailForm
+    added CALL_SUPER_ATTR_HACK so that execute_cancel and execute_ok call
+    SUPER and return if there's a result.  This is need for an app which
+    overrides Biz.FormModel, temporarily
+    renamed CALL_SUPER_ATTR_HACK, and define as constant method (doesn't
+    need to be on request)
+  * Bivio::Delegate::ECService
+    NEW
+  * Bivio::Delegate::FailoverWorkQueueOperation
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::NoDbAuthSupport
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::NoECService
+    rmpod
+    subclass Type.EnumDelegate
+    deprecated: use ECService
+  * Bivio::Delegate::RealmDAG
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::RealmType
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::Role
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::RowTagKey
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::SimpleLocation
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::SimpleMotionStatus
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::SimpleMotionType
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::SimpleMotionVote
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::SimplePermission
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::SimpleTypeError
+    subclass Type.EnumDelegate
+  * Bivio::Delegate::TaskId
+    fmt
+    Refactored canonicalize_task_info from _merge_modifiers so that
+    applications could normalize the task list into hashes thus easier to
+    manipulate task lists.  Moved validation into Agent.Task, since that's
+    where it belongs.  Don't allow a single "info" structure to have
+    duplicate names (they should be merged already).
+    Moved all info_* methods out of this module into
+    Agent.TaskComponents.  This file has the business logic, and the other
+    now just describes the components.
+    move the business logic into Agent.TaskId so that testing is cleaner.
+    Delegates shouldn't have a lot of logic
+    Take the definitions back from TaskComponents (obsolete)
+  * Bivio::Delegator
+    Use global variable name $_PREV_AUTOLOAD instead of $last for
+    recursion sentinnel
+  * Bivio::IO::ClassLoader
+    removed delegate_require_info, because only used by EnumDelegator
+    added delegate_get_map_entry and delegate_replace_map_entry to support
+    Bivio.Search->delegate_search_xapian.
+    Some refactoring and cleanup
+  * Bivio::Search
+    Added delegate_search_xapian so that TaskId could replace the map
+    entry to Bivio::Search::Xapian if info_xapian component is included.
+  * Bivio::SQL::FormSupport
+    use field names as $col->{form_name} during development to make
+    debugging easier
+  * Bivio::Test::Util
+    make sure selenium server is running for apps that need it
+  * Bivio::Type::EnumDelegate
+    NEW
+  * Bivio::Type::EnumDelegator
+    Delegates can now call back into Delegator via AUTOLOAD or directly
+    internal_delegate_package calls Type.EnumDelegate->internal_set_delegator_package
+    Put in check for infinite delegation loop, just like Bivio.Delegator
+  * Bivio::Type::t::EnumDelegator::I1
+    must subclass EnumDelegate
+  * Bivio::Type::UserAgent
+    There are too many robots, but they seem to have http:// or an email
+    in the string so map those to robot_other
+  * Bivio::TypeError
+    delegate_require_info is gone, because not directly related to
+    ClassLoader.  Just call get_delegate_info directly, since only used in
+    EnumDelegator case.
+  * Bivio::UI::XHTML::Widget::WikiText
+    cleaned up "tag postfix" code.  id regexp expanded to include ":" and
+    ".".  Classes need to appear before "#id", but no way to check for
+    that, just in documentation
+  * Bivio::UNIVERSAL
+    added as_classloader_mapped_package
+
   Revision 11.87  2012/09/06 01:26:29  schellj
   * Bivio::Biz::Model::MailForm
     revert previous change, altered behavior
