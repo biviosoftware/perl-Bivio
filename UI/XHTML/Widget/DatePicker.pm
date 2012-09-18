@@ -13,8 +13,9 @@ sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($start) = $self->unsafe_get('start_date');
     my($end) = $self->unsafe_get('end_date');
+    my($form_name) = $self->ancestral_get('form_name');
     my($field) = $self->resolve_form_model($self)
- 	->get_field_name_for_html($self->get('field'));
+	->get_field_name_for_html($self->get('field'));
     my($id) = JavaScript()->unique_html_id;
     my($b) = '';
     map({
@@ -33,7 +34,7 @@ sub control_on_render {
 	    ),
 	    {
 		no_arrow => 1,
-		link_onclick => "b_dp_set_month('$field', '$id', null, "
+		link_onclick => "b_dp_set_month('$form_name', '$field', '$id', null, "
 		    . join(', ',
 			   $start
 			       ? "b_dp_get_date('@{[$_DT->to_mm_dd_yyyy($start)]}')"
