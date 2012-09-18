@@ -282,14 +282,14 @@ function b_dp_stop_propagation(event) {
     event.cancelBubble = true;
     if (event.stopPropagation) event.stopPropagation();
 }
-function b_dp_set_day(field, date) {
+function b_dp_set_day(field, id, date) {
     document.getElementsByName(field)[0].value
         = b_dp_n(date.getMonth() + 1) + '/' + b_dp_n(date.getDate()) + '/' + date.getFullYear();
-    var holder = document.getElementById('b_dp_holder_' + field);
+    var holder = document.getElementById(id);
     b_remove_class(holder, 'dd_visible');
     b_add_class(holder, 'dd_hidden');
 }
-function b_dp_set_month(field, date, start_date, end_date) {
+function b_dp_set_month(field, id, date, start_date, end_date) {
     var current_value = document.getElementsByName(field)[0].value;
     var selection = current_value ? b_dp_get_date(current_value) : null;
     if (!date) {
@@ -297,9 +297,9 @@ function b_dp_set_month(field, date, start_date, end_date) {
             ? date = b_dp_get_date(current_value) : date = b_dp_get_date();
     }
     var today = b_dp_get_date();
-    document.getElementById('b_dp_' + field + '_month').innerHTML
+    document.getElementById(id + '_month').innerHTML
         = b_dp_get_month_name(date) + ' ' + date.getFullYear();
-    var left_arrow = document.getElementById('b_dp_' + field + '_left_arrow');
+    var left_arrow = document.getElementById(id + '_left_arrow');
     var prev_month = b_dp_get_bom(date);
     prev_month.setMonth(prev_month.getMonth() - 1);
     if (start_date && prev_month.getTime() < start_date.getTime()) {
@@ -310,13 +310,13 @@ function b_dp_set_month(field, date, start_date, end_date) {
         left_arrow.innerHTML = '<';
         b_add_class(left_arrow, 'b_dp_arrow');
         left_arrow.onclick
-            = (function(field, date, start_date, end_date) {
+            = (function(field, id, date, start_date, end_date) {
                 return function() {
-                    b_dp_set_month(field, date, start_date, end_date);
+                    b_dp_set_month(field, id, date, start_date, end_date);
                 };
-            })(field, prev_month, start_date, end_date);
+            })(field, id, prev_month, start_date, end_date);
     }
-    var right_arrow = document.getElementById('b_dp_' + field + '_right_arrow');
+    var right_arrow = document.getElementById(id + '_right_arrow');
     var next_month = b_dp_get_bom(date);
     next_month.setMonth(next_month.getMonth() + 1);
     if (end_date && next_month.getTime() > end_date.getTime()) {
@@ -327,17 +327,16 @@ function b_dp_set_month(field, date, start_date, end_date) {
         right_arrow.innerHTML = '>';
         b_add_class(right_arrow, 'b_dp_arrow');
         right_arrow.onclick
-            = (function(field, date, start_date, end_date) {
+            = (function(field, id, date, start_date, end_date) {
                 return function() {
-                    b_dp_set_month(field, date, start_date, end_date);
+                    b_dp_set_month(field, id, date, start_date, end_date);
                 };
-            })(field, next_month, start_date, end_date);
+            })(field, id, next_month, start_date, end_date);
     }
     var month = b_dp_get_month(date);
     for (var i = 0; i < month.length; i++) {
         for (var j = 0; j < month[i].length; j++) {
-            var id = 'b_dp_holder_' + field + '_' + i + j;
-            var element = document.getElementById(id);
+            var element = document.getElementById(id + '_' + i + j);
             var d = month[i][j];
             b_add_class(element, 'b_dp_active_day');
             b_remove_class(element, 'b_dp_in_month');
@@ -364,11 +363,11 @@ function b_dp_set_month(field, date, start_date, end_date) {
             } else {
                 b_add_class(element, 'b_dp_active_day');
                 b_remove_class(element, 'b_dp_inactive_day');
-                element.onclick = (function(field, date) {
+                element.onclick = (function(field, id, date) {
                     return function() {
-                        b_dp_set_day(field, date);
+                        b_dp_set_day(field, id, date);
                     };
-                })(field, d);
+                })(field, id, d);
             }
         }
     }
