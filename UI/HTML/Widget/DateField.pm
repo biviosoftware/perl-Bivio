@@ -3,6 +3,7 @@
 package Bivio::UI::HTML::Widget::DateField;
 use strict;
 use Bivio::Base 'HTMLWidget.InputTextBase';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
@@ -11,16 +12,7 @@ my($_VS) = b_use('UIHTML.ViewShortcuts');
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     shift->SUPER::control_on_render($source, $buffer);
-    $_VS->vs_new('DatePicker', {
-	map({
-	    $_ => $self->get($_);
-	} qw(form_model field)),
-	map({
-	    my($v) = $self->unsafe_get($_);
-	    $v ? ($_ => $v) : ();
-	} qw(start_date end_date)),
-    })->initialize_and_render($source, $buffer)
-	if $self->unsafe_get('want_picker');
+    $self->unsafe_render_attr('_date_picker', $source, $buffer);
     return;
 }
 
@@ -47,6 +39,15 @@ sub initialize {
             ->form_model_for_initialize($self, $source)
             ->get_field_constraint($f)->eq_none;
     }, $source);
+    $self->initialize_attr(_date_picker => DatePicker({
+	map({
+	    $_ => $self->get($_);
+	} qw(form_model field)),
+	map({
+	    my($v) = $self->unsafe_get($_);
+	    $v ? ($_ => $v) : ();
+	} qw(start_date end_date)),
+    })) if $self->unsafe_get('want_picker');
     return shift->SUPER::initialize(@_);
 }
 
