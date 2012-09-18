@@ -2,34 +2,38 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::DatePicker;
 use strict;
-use Bivio::Base 'Widget.Join';
+use Bivio::Base 'Widget.ControlBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_HTMLDT) = b_use('HTMLWidget.DateTime');
 
-sub initialize {
-    my($self, $source) = @_;
+sub control_on_render {
+    my($self, $source, $buffer) = @_;
     my($start) = $self->unsafe_get('start_date');
     my($end) = $self->unsafe_get('end_date');
     my($field) = $self->resolve_form_model($self)
-	->get_field_name_for_html($self->get('field'));
-    $self->put_unless_exists(values => [
+ 	->get_field_name_for_html($self->get('field'));
+    my($id) = JavaScript()->unique_html_id;
+    my($b) = '';
+    map({
+	$self->unsafe_render_value(undef, $_, $source, \$b);
+    } (
 	Script('common'),
 	Script('b_date_picker'),
 	DropDown(
 	    Image('date_picker'),
 	    DIV(
-		_create_month($field),
+		_create_month($id),
 		{
 		    class => 'b_dp_holder dd_hidden',
-		    id => "b_dp_holder_$field",
+		    id => $id,
 		},
 	    ),
 	    {
 		no_arrow => 1,
-		link_onclick => "b_dp_set_month('$field', null, "
+		link_onclick => "b_dp_set_month('$field', '$id', null, "
 		    . join(', ',
 			   $start
 			       ? "b_dp_get_date('@{[$_DT->to_mm_dd_yyyy($start)]}')"
@@ -37,15 +41,16 @@ sub initialize {
 			   $end
 			       ? "b_dp_get_date('@{[$_DT->to_mm_dd_yyyy($end)]}')"
 			       : "null")
-		    . ')',
+			. ')',
 	    },
 	),
-    ]);
+    ));
+    $$buffer .= $b;
     return;
 }
 
 sub _create_month {
-    my($form_field) = @_;
+    my($id) = @_;
     my($day_grid) = [];
     foreach my $week (0 .. 5) {
 	my($row) = [];
@@ -59,7 +64,7 @@ sub _create_month {
 			    . ($day == 0 || $day == 6
 				   ? ' b_dp_weekend'
 				   : ' b_dp_weekday'),
-			id => "b_dp_holder_${form_field}_${week}${day}",
+			id => "${id}_${week}${day}",
 		    },
 		),
 	    );
@@ -71,19 +76,19 @@ sub _create_month {
 	    [
 		DIV(String('<'), {
 		    class => 'b_dp_cell b_dp_arrow',
-		    id => "b_dp_${form_field}_left_arrow",
+		    id => "${id}_left_arrow",
 		}),
 		DIV(
 		    String('month'),
 		    {
 			class => 'b_dp_cell b_dp_month_label',
-			id => "b_dp_${form_field}_month",
+			id => "${id}_month",
 			cell_colspan => 5,
 		    },
 		),
 		DIV(String('>'), {
 		    class => 'b_dp_cell b_dp_arrow',
-		    id => "b_dp_${form_field}_right_arrow",
+		    id => "${id}_right_arrow",
 		}),
 	    ],
 	    [map({
