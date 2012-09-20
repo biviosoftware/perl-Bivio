@@ -25,6 +25,7 @@ bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
+
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
@@ -32,6 +33,11 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.89  2012/09/14 17:42:32  moeller
+  * Bivio::Biz::Model::CSVImportForm
+    show error long description for record errors
+    changed invalid enum error from NOT_FOUND to SYNTAX_ERROR
+
   Revision 11.88  2012/09/12 21:56:45  schellj
   * Bivio::Agent::Request
     b_use
