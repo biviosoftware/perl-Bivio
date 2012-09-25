@@ -947,11 +947,14 @@ sub internal_set_current {
     return $_CURRENT = $self;
 }
 
+sub is_http_content_type {
+    my($self, $type) = @_;
+    return _is_r_value($self, 'content_type', qr{^\Q$type\E(?:[;\s]|$)}is, '');
+}
+
 sub is_http_method {
     my($self, $method) = @_;
-    return $method =~ /^get$/i ? 1 : 0
-	unless my $r = $self->unsafe_get('r');
-    return $r->method =~ /^\Q$method\E$/i;
+    return _is_r_value($self, 'method', qr{^\Q$method\E$}i, 'get');
 }
 
 sub is_production {
@@ -1436,6 +1439,13 @@ sub _get_roles {
 sub _http {
     my($self, $uri) = @_;
     return $uri =~ /^\w+:/ ? $uri : $self->format_http_prefix . $uri;
+}
+
+sub _is_r_value {
+    my($self, $which, $expect, $default) = @_;
+    return $default =~ $expect ? 1 : 0
+	unless my $r = $self->unsafe_get('r');
+    return $r->$which =~ $expect ? 1 : 0;
 }
 
 sub _load_realm {
