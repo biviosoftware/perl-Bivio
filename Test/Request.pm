@@ -221,6 +221,7 @@ sub setup_http {
     my($ip) = '127.0.0.1';
     my($addr) = Socket::pack_sockaddr_in(80, Socket::inet_aton($ip));
     my($method) = 'GET';
+    my($content_type);
     my($header) = {};
     # header_in and header_out have different names
     my($header_op) = sub {
@@ -245,6 +246,10 @@ sub setup_http {
 	'header_out()' => $header_op,
 	'hostname()' => ['localhost.localdomain'],
 	'get_server_port()' => [80],
+	'content_type()' => sub {
+	    my($args) = @_;
+	    return @$args ? ($content_type = $args->[0]) : $content_type;
+	},
     });
     $self->put_durable(r => $r);
     # Cookie overwrites, so we have to reset below
