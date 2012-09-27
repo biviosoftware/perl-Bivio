@@ -162,6 +162,17 @@ sub equals {
     return $self eq $that ? 1 : 0;
 }
 
+sub equals_class_name {
+    my($proto, $class) = @_;
+    return $proto->boolean(
+	$proto->is_simple_package_name($class)
+	    ? $proto->simple_package_name eq $class
+	    : _classloader()->is_valid_map_class_name($class)
+	    ? $proto->as_classloader_map_name eq $class
+	    : $proto->package_name eq $class,
+    );
+}
+
 sub grep_methods {
     my($proto) = shift;
     return _grep_sub($proto, $proto->inheritance_ancestors, @_);
@@ -530,8 +541,7 @@ sub want_scalar {
 }
 
 sub _classloader {
-    return $_CL
-	||= Bivio::IO::ClassLoader->map_require('IO.ClassLoader');
+    return $_CL ||= Bivio::IO::ClassLoader->map_require('IO.ClassLoader');
 }
 
 sub _grep_sub {
