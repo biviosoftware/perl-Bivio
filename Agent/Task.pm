@@ -4,13 +4,13 @@ package Bivio::Agent::Task;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-# C<Bivio::Agent::Task> defines a tuple which is configured by
-# L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>.
+# C<Agent.Task> defines a tuple which is configured by
+# L<Agent.TaskId|Agent.TaskId>.
 #
 # The following fields are returned by L<get|"get">:
 #
 #
-# cancel : Bivio::Agent::TaskId [next]
+# cancel : Agent.TaskId [next]
 #
 # The task_id to go to in other cases.  In the case forms, is the "Cancel" task
 # of a form.
@@ -20,22 +20,22 @@ use Bivio::Base 'Collection.Attributes';
 # The map of die codes (any enums, actually) to tasks executed when
 # the die code is encountered for this task.  I<Only maps if the
 # request is from HTTP.>
-# Specified in L<Bivio::Agent::TaskId|Bivio::Agent::TaskId>
+# Specified in L<Agent.TaskId|Agent.TaskId>
 # and passed to L<new|"new"> as:
 #
 #     DIE_CODE=TASK_ID
 #
-# The name of a L<Bivio::DieCode|Bivio::DieCode> or a fully
-# specified enum, e.g. C<Bivio::TypeError::EXISTS>.  The action
+# The name of a L<DieCode|Bivio.DieCode> or a fully
+# specified enum, e.g. C<TypeError.EXISTS>.  The action
 # will be executed if this enum is thrown.
 #
-# form_model : Bivio::Biz::FormModel (computed)
+# form_model : Biz.FormModel (computed)
 #
 # The form model in I<items> or C<undef>.
 #
-# id : Bivio::Agent::TaskId (required)
+# id : Agent.TaskId (required)
 #
-# L<Bivio::Agent::TaskId|Bivio::Agent::TaskId> for this task.
+# L<Agent.TaskId|Agent.TaskId> for this task.
 #
 # items : array_ref (required)
 #
@@ -45,7 +45,7 @@ use Bivio::Base 'Collection.Attributes';
 # it means the method is a subroutine to be called without
 # an instance.
 #
-# next : Bivio::Agent::TaskId []
+# next : Agent.TaskId []
 #
 # The next task_id to go to in certain cases.  Required only if
 # there is a FormModel in I<items>.

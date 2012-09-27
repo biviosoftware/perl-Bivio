@@ -3,17 +3,15 @@
 package Bivio::Biz::FormContext;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::IO::Trace;
-use Bivio::MIME::Base64;
 
-# C<Bivio::Biz::FormContext> is a utility module for
-# L<Bivio::Biz::FormModel|Bivio::Biz::FormModel>.  It initializes,
+# C<Biz.FormContext> is a utility module for
+# L<Biz.FormModel|Biz.FormModel>.  It initializes,
 # parses, and stringifies a form's context.  FormModel sets the
 # context from the form state in
-# L<Bivio::Biz::FormModel::get_context_from_request|Bivio::Biz::FormModel/"get_context_from_request">.
+# L<Biz.FormModel::get_context_from_request|Biz.FormModel/"get_context_from_request">.
 # The two classes are therefore very tightly coupled.
 #
-# A form context is a Bivio::Collection::Attributes which tell the
+# A form context is a Collection.Attributes which tell the
 # FormModel how to "unwind", i.e. how to go back to what the user
 # was doing before the current form.  Contexts may be nested, which
 # adds to the complexity.
@@ -24,12 +22,12 @@ use Bivio::MIME::Base64;
 #    <char><http-base64> "!" <char><http-base64> ...
 #
 # The http-base64 encoding may contain a serialized hash, realm name, or
-# nested context.  See L<Bivio::MIME::Base64|Bivio::MIME::Base64> for
+# nested context.  See L<MIME.Base64|MIME.Base64> for
 # a description of http-base64.
 #
 #
 #
-# cancel_task : Bivio::Agent::TaskId
+# cancel_task : TaskId
 #
 # When the form's cancel button is hit, this task will be executed.
 # Defaults to I<unwind_task>.
@@ -56,18 +54,19 @@ use Bivio::MIME::Base64;
 # Passed to client or server_redirect during unwind.
 # May be C<undef>.
 #
-# realm : Bivio::Auth::Realm
+# realm : Realm
 #
 # Specifies the realm in which the I<unwind_task> or I<cancel_task> are
 # executed.  Is C<undef> for the GENERAL realm.
 #
-# unwind_task : Bivio::Agent::TaskId
+# unwind_task : TaskId
 #
 # When the form's OK button is hit, this task will be executed.
 # Is always defined.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+b_use('IO.Trace');
 my(%_CHAR_TO_KEY) = (
     "a" => 'unwind_task',
     "b" => 'cancel_task',
@@ -86,10 +85,14 @@ my($_CHARS) = join('', @_CHARS);
 my($_SEPARATOR) = '!';
 # This character shouldn't collide with anything in a form or query.
 # Forms don't have binary data.
-# Tightly coupled with $Bivio::SQL::ListQuery::_SEPARATOR.
+# Tightly coupled with $SQL.ListQuery::_SEPARATOR.
 my($_HASH_CHAR) = "\01";
-my($_AR) = __PACKAGE__->use('Auth.Realm');
-my($_R) = __PACKAGE__->use('IO.Ref');
+my($_AR) = b_use('Auth.Realm');
+my($_R) = b_use('IO.Ref');
+my($_B) = b_use('MIME.Base64');
+my($_TI) = b_use('Agent.TaskId');
+my($_T) = b_use('Agent.Task');
+my($_M) = b_use('Biz.Model');
 
 sub as_literal {
     # (self, Agent.Request) : string
@@ -197,7 +200,7 @@ sub new_from_literal {
 	}
 
 	$which = $_CHAR_TO_KEY{$which};
-	$c->{$which} = Bivio::MIME::Base64->http_decode($enc);
+	$c->{$which} = $_B->http_decode($enc);
 	return _parse_error($proto, $model, $item, $which, 'http_decode error')
 		unless defined($c->{$which});
     }
@@ -227,7 +230,7 @@ sub new_from_literal {
 	$c->{form_context} = undef;
     }
 
-    $c->{form_model} = Bivio::Agent::Task->get_by_id($c->{unwind_task})
+    $c->{form_model} = $_T->get_by_id($c->{unwind_task})
 	->get('form_model');
     return $proto->new($c);
 }
@@ -304,7 +307,7 @@ sub _format_string {
     # Formats the string Base64 and appends to $res if defined.
     my($res, $which, $value) = @_;
     $$res .= $_KEY_TO_CHAR{$which}
-	. Bivio::MIME::Base64->http_encode($value)
+	. $_B->http_encode($value)
 	. $_SEPARATOR
 	if defined($value) && length($value);
     return;
@@ -324,7 +327,7 @@ sub _parse_error {
     # Output a warning and return the empty context if requested.  $proto
     # only needed if you want an new_empty() call.
     my($proto, $model, $value, $which, $msg) = @_;
-    Bivio::IO::Alert->warn(ref($model), ': attr=', $which,
+    b_warn(ref($model), ': attr=', $which,
 	', value=', $value, ', msg=', $msg);
     # Don't do any work if in a void context
     return $proto && $proto->new_empty($model);
@@ -384,7 +387,7 @@ sub _parse_realm {
 	$c->{realm} = $realm;
 	return;
     }
-    my($o) = Bivio::Biz::Model->new($req, 'RealmOwner');
+    my($o) = $_M->new($req, 'RealmOwner');
     if ($o->unauth_load(name => $v)) {
 	# This will blow if $o is "general".  Someone had to have hacked it.
 	$c->{realm} = $_AR->new($o);
@@ -414,7 +417,7 @@ sub _parse_task {
 	$c->{$which} = undef;
 	return 0;
     }
-    $c->{$which} = Bivio::Agent::TaskId->unsafe_from_any($num);
+    $c->{$which} = $_TI->unsafe_from_any($num);
     unless ($c->{$which}) {
 	_parse_error(undef, $model, $num, $which, 'task not found');
 	return 0;

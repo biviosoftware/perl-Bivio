@@ -3,11 +3,7 @@
 package Bivio::Test;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::Die;
-use Bivio::DieCode;
-use Bivio::IO::Ref;
-use Bivio::IO::Trace;
-use Bivio::Test::Case;
+b_use('Bivio::IO::Trace');
 
 # C<Bivio::Test> supports declarative unit testing.  A declarative test allows
 # you to define what you want to test very succinctly.  Here's an example:
@@ -279,13 +275,18 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_CASE);
 our($_SELF);
 my($_IDI) = __PACKAGE__->instance_data_index;
-use vars ('$_TRACE');
-Bivio::IO::Trace->register;
+our($_TRACE);
+b_use('IO.Trace');
 my(@_CALLBACKS) = qw(check_return check_die_code compute_params compute_return create_object);
 my(@_PLAIN_OPTIONS) = qw(method_is_autoloaded class_name want_scalar want_void comparator);
 my(@_ALL_OPTIONS) = (@_CALLBACKS, 'print', @_PLAIN_OPTIONS);
 my(@_CASE_OPTIONS) = grep($_ ne 'print', @_ALL_OPTIONS);
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
+my($_D) = b_use('Bivio.Die');
+my($_CL) = b_use('IO.ClassLoader');
+my($_U) = b_use('Bivio.UNIVERSAL');
+my($_C) = b_use('Test.Case');
+my($_DC) = b_use('Bivio.DieCode');
 
 sub IGNORE_RETURN {
     # B<EXPERIMENTAL>
@@ -296,12 +297,12 @@ sub IGNORE_RETURN {
 
 sub current_case {
     # Returns current case or dies.
-    return $_CASE || Bivio::Die->die('no current case');
+    return $_CASE || b_die('no current case');
 }
 
 sub current_self {
     # Returns current running instance of this class or dies.
-    return $_SELF || Bivio::Die->die('no current self');
+    return $_SELF || b_die('no current self');
 }
 
 sub default_create_object {
@@ -346,15 +347,6 @@ sub register_handler {
 
 sub unit {
     my($self, $tests) = @_;
-    # Evaluates I<tests> which are defined as tuples of tuples of tuples.
-    # see L<DESCRIPTION|"DESCRIPTION"> for the syntax.
-    #
-    # The tests are suitable for processing by
-    # L<Bivio::Util::Test::unit|Bivio::Util::Test/"unit">
-    # (command C<b-test unit>) or C<Test::Harness> (a standard CPAN module).
-    #
-    # If I<class_name> is supplied, will pass to L<new|"new"> or simply "put" on
-    # self.
     return ref($self) ? _eval($self, _compile($self, $tests))
 	: $self->new->unit($tests);
 }
@@ -397,10 +389,10 @@ sub _assert_options {
 
 sub _catch {
     return
-	unless my $die = Bivio::Die->catch_quietly(@_);
-    Bivio::Agent::Task->rollback(Bivio::Agent::Request->get_current)
-        if UNIVERSAL::isa('Bivio::Agent::Request', 'Bivio::UNIVERSAL')
-	&& UNIVERSAL::isa('Bivio::Agent::Task', 'Bivio::UNIVERSAL');
+	unless my $die = $_D->catch_quietly(@_);
+    b_use('Agent.Task')->rollback(b_use('Agent.Request')->get_current)
+        if $_CL->was_required('Agent.Request')
+	&& $_CL->was_required('Agent.Task');
     return $die;
 }
 
@@ -445,9 +437,9 @@ sub _compile_case {
     $state->{case_num}++;
     $params = [$params]
 	if defined($params) && !ref($params);
-    _compile_die($state, 'params must be array_ref, Bivio::DieCode, or CODE')
+    _compile_die($state, 'params must be array_ref, DieCode, or CODE')
 	unless ref($params) =~ /^(ARRAY|CODE)$/;
-    push(@$tests, my $case = Bivio::Test::Case->new({
+    push(@$tests, my $case = $_C->new({
 	%$state,
 	params => $params,
     }));
@@ -460,7 +452,7 @@ sub _compile_die {
     my($state, @msg) = @_;
     # Calls _die() with msg and state of compilation.
     _die('Error compiling ', ref($state) eq 'HASH'
-	? Bivio::Test::Case->new({%$state}) : $state, ': ', @msg);
+	? $_C->new({%$state}) : $state, ': ', @msg);
     # DOES NOT RETURN
 }
 
@@ -474,7 +466,7 @@ sub _compile_method {
 	_compile_assert_even($cases, $state);
     }
     elsif (!ref($cases) || ref($cases) =~ /^(?:CODE|Regexp)$/
-	|| UNIVERSAL::isa($cases, 'Bivio::DieCode')) {
+	|| $_DC->is_blesser_of($cases)) {
 	# Shortcut: scalar, construct the cases.  Handle undef as ignore case
 	$cases = [
 	    [] => defined($cases) ? ref($cases) ? $cases : [$cases] : undef,
@@ -482,7 +474,7 @@ sub _compile_method {
     }
     else {
 	_compile_die($state,
-	    'cases is not an ARRAY, CODE, Regexp, Bivio::DieCode, scalar or undef: ',
+	    'cases is not an ARRAY, CODE, Regexp, DieCode, scalar or undef: ',
 	    $cases);
     }
     my(@cases) = @$cases;
@@ -580,13 +572,13 @@ sub _default_print {
 sub _die {
     my(@msg) = @_;
     # Calls die for now.  Eventually, will tell more.
-    Bivio::Die->die(@msg);
+    b_die(@msg);
     # DOES NOT RETURN
 }
 
 sub _die_stack {
     my($actual) = @_;
-    my($s) = Bivio::Die->is_blesser_of($actual) && $actual->unsafe_get('stack');
+    my($s) = $_D->is_blesser_of($actual) && $actual->unsafe_get('stack');
     return $s ? "\n-- begin stack --\n" . $s . "\n-- end stack --\n" : '';
 }
 
@@ -710,15 +702,15 @@ sub _eval_custom {
 	$$err = 'an array_ref, Regexp, or boolean (0 or 1)';
     }
     elsif ($which =~ /die/
-	&& (ref($res) ? !UNIVERSAL::isa($res, 'Bivio::DieCode')
+	&& (ref($res) ? !$_DC->is_blesser_of($res)
 	    : defined($res) ? $res !~ /^[01]$/ : 1)) {
-	$$err = 'a Bivio::DieCode or boolean (0 or 1)';
+	$$err = 'a DieCode or boolean (0 or 1)';
     }
     else {
 	return $res;
     }
     $$err = "$which did not return ${$err}: "
-	. Bivio::IO::Ref->to_short_string($res);
+	. b_use('IO.Ref')->to_short_string($res);
     return undef;
 }
 
@@ -782,9 +774,9 @@ sub _eval_result {
     # Assumes type of result was already verified.
     my($custom);
     my($show);
-    my($result, $actual_which) = ref($actual) eq 'Bivio::Die'
+    my($result, $actual_which) = $_D->is_blesser_of($actual)
 	? ($actual->get('code'), 'die_code') : ($actual, 'return');
-    my($expect_which) = UNIVERSAL::isa($case->get('expect'), 'Bivio::DieCode')
+    my($expect_which) = $_DC->is_blesser_of($case->get('expect'))
 	? 'die_code' : 'return';
     if ($expect_which eq 'return') {
 	my($err) = _eval_compute_return($case, \$actual);
@@ -824,20 +816,20 @@ sub _eval_result {
 	else {
 	    return $res ? undef
 		: "check_$expect_which returned false for result: "
-		    . Bivio::IO::Ref->to_short_string(
+		    . b_use('IO.Ref')->to_short_string(
 			$case->get($actual_which));
 
 	}
     }
     my($e) = $case->get('expect');
     if (ref($e) eq 'CODE') {
-	return "unexpected die: " . Bivio::IO::Ref->to_short_string($result)
+	return "unexpected die: " . b_use('IO.Ref')->to_short_string($result)
 	    . _die_stack($actual);
     }
     my($x);
     my($comparator) = $case->get('comparator');
     my($diff_die) = _catch(sub {
-        $x = Bivio::IO::Ref->$comparator(
+        $x = b_use('IO.Ref')->$comparator(
 	    $e,
 	    ref($result) eq 'ARRAY' && @$result == 1 && ref($e) eq 'Regexp'
 		? $result->[0] : $result,
@@ -850,12 +842,12 @@ sub _eval_result {
 
 sub _load_class {
     my($thing) = @_;
-    my($is_hash) = !Bivio::UNIVERSAL->is_blesser_of($thing);
+    my($is_hash) = !$_U->is_blesser_of($thing);
     my($c) = $is_hash ? $thing->{object} : $thing->unsafe_get('class_name');
     return 1
 	unless $c;
     return 0
-	unless $c = Bivio::IO::ClassLoader->unsafe_map_require($c);
+	unless $c = $_CL->unsafe_map_require($c);
     $is_hash ? $thing->{object} = $c : $thing->put(class_name => $c);
     return 1;
 }

@@ -2,10 +2,10 @@
 # $Id$
 package Bivio::Biz::Action::RealmlessRedirect;
 use strict;
-use Bivio::Base 'Bivio::Biz::Action';
+use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_DT) = b_use('Type.DateTime');
 
 sub execute {
     my($proto, $req) = @_;
@@ -16,7 +16,7 @@ sub execute {
 	: $req->get('auth_user')
 	? _set_realm($proto, $req, $t->get_attr_as_id('home_task'))
 	|| 'unauth_task'
-	: Bivio::Agent::TaskId->LOGIN;
+	: b_use('Agent.TaskId')->LOGIN;
 }
 
 sub _choose_realm {
@@ -35,7 +35,7 @@ sub _choose_realm {
 
 sub _set_realm {
     my($proto, $req, $task) = @_;
-    $task = Bivio::Agent::Task->get_by_id($task);
+    $task = b_use('Agent.Task')->get_by_id($task);
     $req->set_realm(_choose_realm($proto, $req, $task) || return);
     return $task->get('id');
 }

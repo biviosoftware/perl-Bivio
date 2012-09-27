@@ -4,7 +4,7 @@ package Bivio::Agent::Request;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-# C<Bivio::Agent::Request> Request provides a common interface for http,...
+# C<Agent.Request> Request provides a common interface for http,...
 # requests to the application.  The transport specific
 # Request implementation initializes most of these values
 #
@@ -17,7 +17,7 @@ use Bivio::Base 'Collection.Attributes';
 # can be found easily in the code and to avoid name space collisions.
 # They should be documented in the class which sets them under
 # the B<REQUEST ATTRIBUTES> heading.  See, for example,
-# L<Bivio::Biz::Model::FilePathList|Bivio::Biz::Model::FilePathList>.
+# L<Biz.Model::FilePathList|Biz.Model::FilePathList>.
 #
 # Task specific attributes should be avoided in general.  Try to
 # put the state in a model, e.g. a FormModel or ListModel with local
@@ -28,16 +28,16 @@ use Bivio::Base 'Collection.Attributes';
 #
 # Value of C<auth_realm->get('id')>.
 #
-# auth_realm : Bivio::Auth::Realm
+# auth_realm : Auth.Realm
 #
 # The realm in which the request operates.
 #
-# auth_role : Bivio::Auth::Role
+# auth_role : Auth.Role
 #
 # Role I<auth_user> is allowed to play in I<auth_realm>.
-# Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
+# Set by L<Agent.Dispatcher|Agent.Dispatcher>.
 #
-# auth_user : Bivio::Biz::Model::RealmOwner
+# auth_user : Biz.Model::RealmOwner
 #
 # The user authenticated with the request.
 #
@@ -46,7 +46,7 @@ use Bivio::Base 'Collection.Attributes';
 # The user id authenticated with the request.  Set before I<auth_user>
 # as a part of cookie processing.
 #
-# Bivio::Type::UserAgent : Bivio::Type::UserAgent
+# Type.UserAgent : Type.UserAgent
 #
 # The type of the user agent for this request.
 #
@@ -58,7 +58,7 @@ use Bivio::Base 'Collection.Attributes';
 #
 # Client's network address if available.
 #
-# cookie : Bivio::Agent::Cookie
+# cookie : Agent.Cookie
 #
 # This is the cookie that came in the HTTP header.  It may be
 # C<undef> only if the protocol doesn't support cookies.
@@ -68,7 +68,7 @@ use Bivio::Base 'Collection.Attributes';
 #
 # Any fields set in the request cookie will be set in the reply,
 # i.e. there is only one cookie for request/reply.
-# See L<Bivio::Agent::HTTP::Cookie|Bivio::Agent::HTTP::Cookie>
+# See L<Agent.HTTP::Cookie|Agent.HTTP::Cookie>
 # for details.
 #
 # form : hash_ref
@@ -114,37 +114,37 @@ use Bivio::Base 'Collection.Attributes';
 #
 # NOTE: Query strings must always have unique value names.
 #
-# reply : Bivio::Agent::Reply
+# reply : Agent.Reply
 #
-# L<Bivio::Agent::Reply|Bivio::Agent::Reply> for this request.
+# L<Agent.Reply|Agent.Reply> for this request.
 #
-# request : Bivio::Agent::Request
+# request : Agent.Request
 #
 # Always C<$self>.  Convenient for L<get_widget_value|"get_widget_value">.
 #
 # start_time : array_ref
 #
 # The time the request started as an array of seconds and microseconds.
-# See L<Bivio::Type::DateTime->gettimeofday|Bivio::Util/"gettimeofday">.
+# See L<Type.DateTime->gettimeofday|Util/"gettimeofday">.
 #
-# target_realm_owner : Bivio::Biz::Model::RealmOwner
+# target_realm_owner : Bivio.Biz::Model::RealmOwner
 #
-# Set by L<Bivio::Biz::Action::TargetRealm|Bivio::Biz::Action::TargetRealm>.
+# Set by L<Biz.Action::TargetRealm|Biz.Action::TargetRealm>.
 # Used to allow a different realm to be operated on within the current
 # realm.  Allows shareable code for AddressForm and such.
 #
 # You can use I<target_realm_owner> as an "authenticated" value, because
 # C<TargetRealm> checks permissions properly.  Don't use "this" as
 # an authenticated value.  See
-# L<Bivio::UI::HTML::Club::UserDetail|Bivio::UI::HTML::Club::UserDetail>
+# L<UI.HTML::Club::UserDetail|UI.HTML::Club::UserDetail>
 # for an example when it loads C<TaxId>.
 #
-# task : Bivio::Agent::Task
+# task : Agent.Task
 #
 # Tuple containing the Action and View to be executed.
-# Set by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher>.
+# Set by L<Agent.Dispatcher|Agent.Dispatcher>.
 #
-# task_id : Bivio::Agent::TaskId
+# task_id : Agent.TaskId
 #
 # Same as I<task>'s I<id>.
 #
@@ -152,7 +152,7 @@ use Bivio::Base 'Collection.Attributes';
 #
 # The user's timezone (if available).  The timezone is an offsite in
 # minutes from GMT.  See use in
-# L<Bivio::Type::DateTime|Bivio::Type::DateTime>.
+# L<Type.DateTime|Type.DateTime>.
 #
 # txn_resources : array_ref
 #
@@ -160,9 +160,9 @@ use Bivio::Base 'Collection.Attributes';
 # (handle_commit and handle_rollback).  The handlers are called before
 # any commit or rollback.
 #
-# Handlers are called and cleared by L<Bivio::Agent::Task|Bivio::Agent::Task>.
+# Handlers are called and cleared by L<Agent.Task|Agent.Task>.
 #
-# user_state : Bivio::Type::UserState
+# user_state : Type.UserState
 #
 # Is the user just a visitor, logged in, or out?  Set by LoginForm.
 #
@@ -170,12 +170,12 @@ use Bivio::Base 'Collection.Attributes';
 #
 # URI from the incoming request unmodified.  It is already "escaped".
 #
-# E<lt>ModuleE<gt> : Bivio::UNIVERSAL
+# E<lt>ModuleE<gt> : UNIVERSAL
 #
 # Maps I<E<lt>ModuleE<gt>> to an instance of that modules.  Facade, Actions
 # and Views will put instances as they are initialized on to the request.
 # If there is an owner to the I<auth_realm>, this will be the first
-# L<Bivio::Biz::Model|Bivio::Biz::Model> added to the request.
+# L<Bivio.Biz::Model|Biz.Model> added to the request.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # We don't import any UI components here, because they are
@@ -352,7 +352,7 @@ sub clear_current {
 
 sub clear_nondurable_state {
     my($self) = @_;
-    # Clears out models (Bivio::Biz::*) and any other nondurable state.  This
+    # Clears out models (Biz.*) and any other nondurable state.  This
     # method will be expanded over time.
     my($dk) = $self->get('durable_keys');
     my($ndk) = [grep(!$dk->{$_}, @{$self->get_keys})];
@@ -780,7 +780,7 @@ sub internal_get_named_args {
     my(undef, $names, $argv) = @_;
     b_die($argv, ': too many positional parameters')
 	if @$argv > 5;
-    # Calls name_parameters in L<Bivio::UNIVERSAL|Bivio::UNIVERSAL> then
+    # Calls name_parameters in L<UNIVERSAL|Bivio.UNIVERSAL> then
     # converts I<task_id> to a L<$_TI|$_TI>.
     my($self, $named) = shift->name_parameters(@_);
 #TODO: Make a Type
@@ -1257,7 +1257,7 @@ sub set_task_and_uri {
 sub set_user {
     my($self, $user) = @_;
     # B<Use
-    # L<Bivio::Biz::Model::LoginForm|Bivio::Biz::Model::LoginForm>
+    # L<Biz.Model::LoginForm|Biz.Model::LoginForm>
     # to change users so the cookie gets updated.>
     # This is used to set the user temporarily and is called by
     # LoginForm, which manages the cookie as well.

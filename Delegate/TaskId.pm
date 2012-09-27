@@ -4,15 +4,15 @@ package Bivio::Delegate::TaskId;
 use strict;
 use Bivio::Base 'Type.EnumDelegate';
 
-# C<Bivio::Agent::TaskId> defines all possible "tasks" within bOP site.  A
-# structure of a task is defined in L<Bivio::Agent::TaskBivio::Agent::Task>.
+# C<TaskId> defines all possible "tasks" within bOP site.  A
+# structure of a task is defined in L<Task>.
 #
 # The syntax of the configuration table is defined as follows:
 #
 #     NAME_OF_TASK
 #     <unique number for enumerated type>
-#     <Bivio::Auth::RealmType>
-#     <Bivio::Auth::PermissionSet>
+#     <RealmType>
+#     <PermissionSet>
 #     <executable object1>
 #     <executable object2>
 #     ...
@@ -22,7 +22,7 @@ use Bivio::Base 'Type.EnumDelegate';
 #
 # The first two entries are what defines the TaskId enumerated type.
 # The subsequent entries are configuration for the Task instance itself.
-# See L<Bivio::Agent::Task|Bivio::Agent::Task> for a description.
+# See L<Task> for a description.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');

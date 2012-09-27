@@ -4,11 +4,11 @@ package Bivio::SQL::Connection;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 
-# C<Bivio::SQL::Connection> is used to transact with the database. Instances
+# C<SQL.Connection> is used to transact with the database. Instances
 # of this module maintains one connection to the database at all times.  They
 # will reset the connection if the database the connection is lost.
 #
-# B<Bivio::Agent::Task> depends on the fact that this is the only module
+# B<Agent.Task> depends on the fact that this is the only module
 # which modifies the database. 
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -19,6 +19,8 @@ my($_D) = b_use('Bivio.Die');
 my($_A) = b_use('IO.Alert');
 my($_DBI) = b_use('Ext.DBI');
 my($_CL) = b_use('IO.ClassLoader');
+my($_C) = b_use('IO.Config');
+my($_DC) = b_use('Bivio.DieCode');
 my($_R);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CONNECTIONS) = {};
@@ -68,7 +70,7 @@ sub commit {
 
 sub create {
     # B<DEPRECATED: Use L<get_instance|"get_instance">>.
-    Bivio::IO::Alert->warn_deprecated('use get_instance()');
+    $_A->warn_deprecated('use get_instance()');
     return shift->get_instance(@_);
 }
 
@@ -99,7 +101,7 @@ sub execute {
     #
     # B<NOTE: All calls must go through this>
     #
-    # I<die> must implement L<Bivio::Die::die|Bivio::Die/"die">.
+    # I<die> must implement L<Die.die|Die/"die">.
     #
     # If I<has_blob> is specified, the arguments are scanned for a scalar_ref.
     # If found, the positional parameter is bound properly.  If no scalar_ref
@@ -145,7 +147,7 @@ sub execute {
 	    last TRY;
 	}
 	if (++$retries > $_MAX_RETRIES) {
-	    Bivio::IO::Alert->warn($errstr, '; max retries hit');
+	    b_warn($errstr, '; max retries hit');
 	    last TRY;
 	}
 	# Don't do anything with statement, it will be garbage collected.
@@ -201,20 +203,19 @@ sub execute_one_row {
 
 sub get_dbi_config {
     my($self) = shift;
-    return Bivio::Ext::DBI->get_config(
+    return $_DBI->get_config(
 	@_ ? @_
 	    : ref($self) ? $self->[$_IDI]->{dbi_name}
-	    : Bivio::IO::Config->DEFAULT_NAME,
+	    : $_C->DEFAULT_NAME,
     );
 }
 
 sub get_instance {
     my($proto, $dbi_name) = @_;
-    $dbi_name = Bivio::IO::Config->DEFAULT_NAME
+    $dbi_name = $_C->DEFAULT_NAME
 	unless defined($dbi_name);
     unless ($_CONNECTIONS->{$dbi_name}) {
-	my($module) = $proto->get_dbi_config($dbi_name)->{connection};
-	Bivio::IO::ClassLoader->simple_require($module);
+	my($module) = b_use($proto->get_dbi_config($dbi_name)->{connection});
 	_trace($module) if $_TRACE;
 	$_CONNECTIONS->{$dbi_name} = $module->internal_new($dbi_name);
     }
@@ -311,7 +312,7 @@ sub internal_get_error_code {
     # should override this to handle constraint violations.
     $die_attrs->{program_error} = 1;
     # Unexpected error is treated as an assertion fault
-    return Bivio::DieCode->DB_ERROR;
+    return $_DC->DB_ERROR;
 }
 
 sub internal_get_retry_sleep {
@@ -422,7 +423,7 @@ sub rollback {
 
 sub set_dbi_name {
     my(undef, $name) = @_;
-    # Sets the name of the L<Bivio::Ext::DBI|Bivio::Ext::DBI> configuration
+    # Sets the name of the L<Ext.DBI|Ext.DBI> configuration
     # to use.  The default is C<undef>.  Returns the previous name.
     #
     # Doesn't do anything if I<name> is not different from the current name.
@@ -484,15 +485,15 @@ sub _get_connection {
 		$fields->{connection}->ping
 			&& $fields->{connection}->rollback});
 	    $_D->eval(sub {$fields->{connection}->disconnect});
-	    Bivio::IO::Alert->warn("reconnecting to database: pid=$$");
+	    b_warn("reconnecting to database: pid=$$");
 	    # Make sure we don't enter this code again.
 	    $fields->{connection} = undef;
 	}
 	_trace("creating connection: pid=$$") if $_TRACE;
 	$fields->{connection} =
 	    $self->internal_dbi_connect($fields->{dbi_name});
-	$fields->{db_is_read_only} = Bivio::Ext::DBI->get_config(
-		$fields->{dbi_name})->{is_read_only};
+	$fields->{db_is_read_only}
+	    = $_DBI->get_config($fields->{dbi_name})->{is_read_only};
 	# Got a connection which will be reused on next call.  We don't
 	# need to ping it (just in case parent process had an error on
 	# the connection).

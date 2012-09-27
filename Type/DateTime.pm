@@ -644,10 +644,9 @@ sub local_to_parts {
 sub now {
     my($proto) = @_;
     # Returns date/time for now.
-    if ($_IS_TEST && ! $_IS_REGISTERED_WITH_TASK
-	&& UNIVERSAL::can('Bivio::Agent::Task', 'register')) {
+    if ($_IS_TEST && ! $_IS_REGISTERED_WITH_TASK) {
 	$_IS_REGISTERED_WITH_TASK = 1;
-	b_use('Bivio::Agent::Task')->register(__PACKAGE__);
+	b_use('Agent.Task')->register(__PACKAGE__);
     }
     return $_IS_TEST && $_TEST_NOW || __PACKAGE__->from_unix(time);
 }

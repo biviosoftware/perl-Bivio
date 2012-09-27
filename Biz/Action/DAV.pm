@@ -2,13 +2,12 @@
 # $Id$p
 package Bivio::Biz::Action::DAV;
 use strict;
-use base 'Bivio::Biz::Action';
-use Bivio::IO::Trace;
-use Bivio::Biz::Model;
+use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_DT) = Bivio::Type->get_instance('DateTime');
+my($_DT) = b_use('Type.DateTime');
 our($_TRACE);
+b_use('IO.Trace');
 my($_DIE) = {
     ALREADY_EXISTS => 'HTTP_PRECONDITION_FAILED',
 #
@@ -37,7 +36,7 @@ sub execute {
 	uri => $req->get('uri'),
 	path_info => $req->get('path_info'),
     };
-    my($die) = Bivio::Die->catch(sub {
+    my($die) = b_catch(sub {
         return unless $s->{list} = _load(
 	    $s, $req->get('auth_realm'), $req->get('path_info'));
 	$s->{content} = $req->get_content;
@@ -55,7 +54,7 @@ sub execute {
 	if ($n eq 'SERVER_REDIRECT_TASK') {
 	    my($x) = $die->unsafe_get('attrs');
 	    $x &&= $x->{task_id};
-	    $x &&= $proto->is_blesser_of($x, 'Bivio::Agent::TaskId')
+	    $x &&= b_use('Agent.TaskId')->is_blesser_of($x)
 		&& $x->get_name;
 	    $n = $x
 		if ($x ||= '') =~ s/^DEFAULT_ERROR_REDIRECT_//;
@@ -74,19 +73,19 @@ sub _call {
     }
     $method = "dav_$method";
     _trace($list, "->$method", \@_) if $_TRACE;
-    Bivio::Die->throw(FORBIDDEN => "$s->{method} not permitted on: $s->{uri}")
+    b_use('Bivio.Die')->throw(FORBIDDEN => "$s->{method} not permitted on: $s->{uri}")
         unless $list->can($method);
     return $list->$method(@_);
 }
 
 sub _copy_move {
     my($s) = @_;
-    my($d) = Bivio::HTML->unescape_uri($s->{r}->header_in('destination') || '');
+    my($d) = b_use('Bivio.HTML')->unescape_uri($s->{r}->header_in('destination') || '');
     return _output($s, BAD_REQUEST => "cannot move across servers: $d")
 	unless $d =~ s/^\Q@{[_fix_http($s, $s->{req}->format_http_prefix)]}//;
     return _output($s, HTTP_NOT_IMPLEMENTED => 'Depth 0 unsupported for COPY')
 	if $s->{method} eq 'copy' && !_depth($s);
-    my($t, $r, $path_info) = Bivio::UI::Task->parse_uri($d, $s->{req});
+    my($t, $r, $path_info) = b_use('FacadeComponent.Task')->parse_uri($d, $s->{req});
     return _output(
 	$s, FORBIDDEN => "cannot $s->{method} across file system tasks"
     ) unless $t == $s->{req}->get('task_id');
@@ -161,7 +160,7 @@ sub _dav_lock {
 			 [timeout => 'Second-1000000'],
 			 [locktocken => [
 			     [href => 'opaquelocktoken:' .
-				 Bivio::Type::DateTime->now_as_file_name
+				 $_DT->now_as_file_name
 				 . '-'
 				 . int(rand(1_000_000_000))],
 			 ]],
@@ -283,7 +282,7 @@ sub _fix_http {
     my($s, $v) = @_;
     # Must match what the user asked for exactly
     $v =~ s{^https?://[^/]+}{@{[$s->{req}->format_http_prefix]}}
-	|| Bivio::Die->throw_die(DIE => $v);
+	|| b_use('Bivio.Die')->throw(DIE => $v);
     return $v;
 }
 
@@ -302,11 +301,11 @@ sub _format_http {
 sub _has_write_permission {
     my($realm, $task, $req) = @_;
     return $realm->does_user_have_permissions(
-	${Bivio::Auth::PermissionSet->from_array(
-	    [map(Bivio::Auth::Permission->$_(),
+	${b_use('Auth.PermissionSet')->from_array(
+	    [map(b_use('Auth.Permission')->$_(),
 		 grep(s/_READ$/_WRITE/,
 		      map($_->get_name,
-			  @{Bivio::Auth::PermissionSet->to_array(
+			  @{b_use('Auth.PermissionSet')->to_array(
 			      $task->get('permission_set'))})))])},
 	$req,
     );
@@ -322,7 +321,7 @@ sub _load {
     while ($tid) {
 	_trace($tid, ' ', $req) if $_TRACE;
 #TODO: Does not work with new Task->execute_items which return HASH
-	my($t) = Bivio::Agent::Task->get_by_id($tid);
+	my($t) = b_use('Agent.Task')->get_by_id($tid);
 #TODO: It's not clear if this is over-restrictive.  However, 
 	last unless $req->get('auth_realm')->can_user_execute_task($t, $req);
 	$req->put(task_id => $tid, task => $t);
@@ -332,7 +331,7 @@ sub _load {
 	    $tid &&= $tid->get('task_id');
 	    next;
 	}
-	Bivio::Biz::Model->get_instance('AnyTaskDAVList')->execute($req);
+	b_use('Biz.Model')->get_instance('AnyTaskDAVList')->execute($req);
 	$tid = undef;
 	last;
     }
@@ -370,8 +369,8 @@ sub _other_op {
 
 sub _output {
     my($s, $status, $msg_or_type, $buf) = @_;
-    my($n) = Bivio::Ext::ApacheConstants->$status();
-    Bivio::IO::Alert->warn(
+    my($n) = b_use('Ext.ApacheConstants')->$status();
+    b_warn(
 	$status, ' ', $s->{method}, ' ', $s->{uri}, ' ', $msg_or_type,
     ) if $status =~ /HTTP_PRECONDITION_FAILED|BAD_REQUEST|HTTP_NOT_IMPLEMENTED|HTTP_NOT_MODIFIED|HTTP_REQUEST_ENTITY_TOO_LARGE|FORBIDDEN|HTTP_CONFLICT/;
     $status =~ s/_/-/g;
@@ -453,7 +452,7 @@ sub _xml_render {
 	defined($v) && length($v)
 	   ? (
 	       "<D:$t>",
-	       ref($v) ? ("\n", _xml_render(@$v)) : Bivio::HTML->escape($v),
+	       ref($v) ? ("\n", _xml_render(@$v)) : b_use('Bivio.HTML')->escape($v),
 	       "</D:$t>\n"
 	   ) : "<D:$t/>\n";
     } @_);

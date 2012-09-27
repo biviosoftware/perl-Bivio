@@ -7,6 +7,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
+my($_T) = b_use('Agent.Task');
+my($_TI) = b_use('Agent.TaskId');
 
 sub control_off_render {
     return _do(sub {
@@ -32,10 +34,10 @@ sub initialize {
     my($self) = @_;
     my($v);
     if ($v = $self->unsafe_get('value')
-        and Bivio::Agent::TaskId->is_valid_name($v),
+        and $_TI->is_valid_name($v),
     ) {
-	$v = Bivio::Agent::TaskId->from_name($v);
-	my($rt) = Bivio::Agent::Task->get_by_id($v)->get('realm_type');
+	$v = $_TI->from_name($v);
+	my($rt) = $_T->get_by_id($v)->get('realm_type');
 	$self->put(value => And(
 #TODO: This doesn't seem private enough, but it simplifies ThreePartPage
 	    # General renders always.  Unless doesn't have uri
@@ -47,7 +49,7 @@ sub initialize {
     }
     $self->initialize_attr('value');
     $self->initialize_attr(control => [
-	['->get_request'], 'Bivio::UI::Facade', 'want_local_file_cache',
+	['->req', 'UI.Facade'], 'want_local_file_cache',
     ]);
     return shift->SUPER::initialize(@_);
 }

@@ -23,7 +23,10 @@ sub execute_cancel {
 sub execute_home_page_if_site_root {
     my($proto, $req) = @_;
     return {
-	uri => _uri($req, Bivio::UI::Text->get_value('home_page_uri', $req)),
+	uri => _uri(
+	    $req,
+	    b_use('FacadeComponent.Text')->get_value('home_page_uri', $req),
+	),
 	query => undef,
     } if $req->get('uri') =~ m!^/?$!;
     return;
@@ -89,19 +92,19 @@ sub execute_unauth_role_in_realm {
 
 sub get_realm_for_task {
     my($proto, $task, $req) = @_;
-    my($t) = Bivio::Agent::Task->get_by_id($task);
+    my($t) = b_use('Agent.Task')->get_by_id($task);
     my($rt) = $t->get('realm_type');
     my($done);
     return $req->map_user_realms(sub {
 	 my($row) = @_;
 	 return
 	     if $done;
-	 my($realm) = Bivio::Auth::Realm->new($row->{'RealmOwner.name'}, $req);
+	 my($realm) = b_use('Auth.Realm')->new($row->{'RealmOwner.name'}, $req);
 	 return $realm->can_user_execute_task($t, $req) ? $realm : ();
     }, {
 	'RealmOwner.realm_type' => $rt->self_or_any_group,
-    })->[0] || $rt->eq_general && Bivio::Auth::Realm->get_general
-    || Bivio::Die->throw(NOT_FOUND => {
+    })->[0] || $rt->eq_general && b_use('Auth.Realm')->get_general
+    || b_use('Bivio.Die')->throw(NOT_FOUND => {
 	entity => $task,
 	message => 'no appropriate realm for task',
     });
@@ -122,7 +125,7 @@ sub _role_in_realm {
     )];
     return @$r == 0 ? 'next'
 	: @$r == 1 ? $r->[0]
-        : Bivio::Die->die($r, ': too many roles match task attributes');
+        : b_die($r, ': too many roles match task attributes');
 }
 
 sub _role_in_realm_user_state {
@@ -131,7 +134,7 @@ sub _role_in_realm_user_state {
     return $us->eq_just_visitor ? 'just_visitor_task'
 	: $us->eq_logged_in ? _role_in_realm($req)
         : $req->with_user(
-	    Bivio::Biz::Model->new($req, 'UserLoginForm')
+	    b_use('Biz.Model')->new($req, 'UserLoginForm')
 	        ->unsafe_get_cookie_user_id($req),
 	    sub {_role_in_realm($req)},
 	);

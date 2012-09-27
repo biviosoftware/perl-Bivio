@@ -3,11 +3,10 @@
 package Bivio::Auth::Realm;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::IO::Trace;
 
-# C<Bivio::Auth::Realm> defines the authorization policy for
-# L<Bivio::Auth::Role|Bivio::Auth::Role> and
-# L<Bivio::Agent::Task|Bivio::Agent::Task>.
+# C<Auth.Realm> defines the authorization policy for
+# L<Auth.Role|Auth.Role> and
+# L<Agent.Task|Agent.Task>.
 # A task is authorized by
 # L<can_user_execute_task|"can_user_execute_task">.
 #
@@ -19,7 +18,7 @@ use Bivio::IO::Trace;
 #
 # Primary id of the owner or the RealmType as an int.
 #
-# owner : Bivio::Biz::Model::RealmOwner
+# owner : Biz.Model::RealmOwner
 #
 # The particular instance of this realm.  Only used in the case of
 # clubs and users.  General does not have an owner.
@@ -29,12 +28,13 @@ use Bivio::IO::Trace;
 # Named retrieved from realm owner.  Not defined for the general realm.
 # Always use this value instead of owner-E<gt>get('name').
 #
-# type : Bivio::Auth::RealmType
+# type : Auth.RealmType
 #
 # Type of this realm.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+b_use('IO.Trace');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_INITIALIZED) = 0;
 my($_GENERAL);

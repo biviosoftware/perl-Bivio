@@ -163,8 +163,6 @@ sub put_client_redirect_state {
 }
 
 sub reset_reply {
-    # (self) : undef
-    # Clears the current reply and sets a new one on this request.
     my($self) = @_;
     $self->put(reply => $_R->new($self->get('r')));
     return;

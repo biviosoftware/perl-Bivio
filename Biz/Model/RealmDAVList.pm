@@ -49,14 +49,14 @@ sub load_dav {
     my($self) = @_;
     my($req) = $self->get_request;
     my($this, $next) = $req->get('path_info') =~ m{^/([^/]+)(.*)};
-    my($rt) = Bivio::Agent::Task->get_by_id(
+    my($rt) = b_use('Agent.Task')->get_by_id(
 	$req->get('task')->get_attr_as_id('next')
     )->get('realm_type');
     unless ($this) {
 	$self->load_all({path_info => '', realm_type => $rt});
 	return 1;
     }
-    Bivio::Die->throw_quietly(MODEL_NOT_FOUND => {
+    b_use('Bivio.Die')->throw_quietly(MODEL_NOT_FOUND => {
 	class => ref($self),
 	entity => [$rt, $this],
     }) unless $this

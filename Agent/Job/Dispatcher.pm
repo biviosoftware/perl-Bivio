@@ -4,9 +4,9 @@ package Bivio::Agent::Job::Dispatcher;
 use strict;
 use Bivio::Base 'Agent.Dispatcher';
 
-# C<Bivio::Agent::Job::Dispatcher> is used to queue tasks at the end
+# C<Agent.Job::Dispatcher> is used to queue tasks at the end
 # of other dispatcher tasks.  There is only one queue.  It is cleared
-# by L<Bivio::Agent::Task|Bivio::Agent::Task> on errors.  You may
+# by L<Agent.Task|Agent.Task> on errors.  You may
 # not queue new jobs during L<execute_queue|"execute_queue">.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -46,13 +46,13 @@ sub enqueue {
     #
     # May not be called during L<execute_queue|"execute_queue">.
     my($self, $req, $task_id, $params) = @_;
-    Bivio::Die->die('not allowed to call enqueue in execute_queue')
+    Die->die('not allowed to call enqueue in execute_queue')
 	if $_IN_EXECUTE;
 
     # No models please
     while (my($k, $v) = each(%$params)) {
-	Bivio::Die->die('models may not be queued: ', $k, '=', $v)
-	    if UNIVERSAL::isa($v, 'Bivio::Biz::Model');
+	b_die('models may not be queued: ', $k, '=', $v)
+	    if b_use('Biz.Model')->is_super_of($v);
     }
 
     # Validate task
@@ -62,7 +62,8 @@ sub enqueue {
     $params->{task_id} = $task_id;
     my($u) = $req->get('auth_user');
     $params->{auth_user_id} ||= $u ? $u->get('realm_id') : undef;
-    foreach my $p (qw(auth_id Bivio::UI::Facade is_secure client_addr)) {
+#TODO: Need to define this list more clearly
+    foreach my $p (qw(auth_id Bivio::UI::Facade UI.Facade is_secure client_addr)) {
 	$params->{$p} = $req->unsafe_get($p)
 	    unless exists($params->{$p});
     }
@@ -84,14 +85,12 @@ sub execute_queue {
     # Iterate through each item in the queue
     while (@_QUEUE) {
 	my($params) = shift(@_QUEUE);
-	Bivio::IO::Alert->warn($$, ' JOB_START: ', $params);
+	b_info($$, ' JOB_START: ', $params);
 	my($die) = $_SELF->process_request({%{$params}});
-	if ($die) {
-	    Bivio::IO::Alert->warn($$, ' JOB_ERROR: ', $params, ' ', $die);
-	}
-	else {
-	    Bivio::IO::Alert->warn($$, ' JOB_END: ', $params);
-	}
+	b_info(
+	    $$,
+	    $die ? (' JOB_ERROR: ', $params, ' ', $die) : ('JOB_END: ', $params),
+	);
     }
     $_IN_EXECUTE = 0;
     return;

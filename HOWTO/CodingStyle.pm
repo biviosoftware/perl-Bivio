@@ -335,7 +335,7 @@ Exceptions are managed by C<Bivio::Die>. Modules which would like
 to catch exceptions "along the way" should define a handle_die method.
 This method will be called if a method "up the stack" calls
 C<Bivio::Die-E<gt>catch>.
-See C<Bivio::Agent::Dispatcher>, it calls catch. See C<Bivio::Agent::Task>,
+See C<Agent.Dispatcher>, it calls catch. See C<Agent.Task>,
 it defines a
 C<handle_die>. For the brave, check out the implementation
 of
