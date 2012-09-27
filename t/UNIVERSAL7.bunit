@@ -6,5 +6,11 @@
 	CLASSLOADER_MAP_NAME => 'Type',
 	as_classloader_map_name => 'Type.Enum',
 	as_classloader_mapped_package => 'Bivio::Type::Enum',
+	equals_class_name => [
+	    'Bivio::Type::Enum' => 1,
+	    'Type.Enum' => 1,
+	    'Enum' => 1,
+	    'Type' => 0,
+	],
     ],
 ];
