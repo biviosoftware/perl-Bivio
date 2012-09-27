@@ -140,18 +140,14 @@ sub get_default {
 
 sub get_from_request_or_self {
     my($proto, $req_or_facade) = @_;
-    # Returns facade from the I<req_or_facade> or just I<req_or_facade> if
-    # it isa Facade.
-    #
-    # If I<req_or_facade> is C<undef>, uses
-    # L<Bivio::Agent::Request::get_current|Bivio::Agent::Request/"get_current">.
-    if (ref($req_or_facade)) {
-	return $req_or_facade
-	    if UNIVERSAL::isa($req_or_facade, __PACKAGE__);
-    }
-    else {
+    unless ($req_or_facade || ref($proto)) {
+	$_A->warn_deprecated('must pass req or facade');
 	$req_or_facade = $_R->get_current;
     }
+    return $req_or_facade
+	if __PACKAGE__->is_blesser_of($req_or_facade);
+    $req_or_facade = $_R->get_current
+	unless $_R->is_blesser_of($req_or_facade);
     return $proto->get_from_source($req_or_facade);
 }
 
@@ -210,8 +206,10 @@ sub get_local_file_root {
 
 sub get_value {
     my($proto, $name, $req_or_facade) = @_;
-    # Return an attribute of the current facade.
-    # Make a copy for safety reasons
+    unless ($req_or_facade || ref($proto)) {
+	$_A->warn_deprecated('must pass req or facade');
+	$req_or_facade = $_R->get_current;
+    }
     return $proto->get_from_request_or_self($req_or_facade)->get($name);
 }
 

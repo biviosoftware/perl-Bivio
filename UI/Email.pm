@@ -13,6 +13,10 @@ sub initialize_by_facade {
 
 sub format {
     my($self, $local_part_or_email, $req_or_facade) = @_;
+    unless ($req_or_facade || ref($self)) {
+	IO_Alert()->warn_deprecated('must pass req or facade');
+	$req_or_facade = b_use('Agent.Request')->get_current;
+    }
     return shift->internal_get_self(pop(@_))->format(@_)
 	unless ref($self);
     return $local_part_or_email =~ /\@/ ? $local_part_or_email
