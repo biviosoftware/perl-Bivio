@@ -43,9 +43,9 @@ sub handle_pre_execute_task {
     return
 	unless defined($value);
     my($f) = b_use('UI.Facade')->get_from_source($req);
-    my($m) = $f->get_instance($_MOBILE_CLASS);
     return
-	unless $value xor $f == $m;
+	unless $value xor $f->equals_class_name($_MOBILE_CLASS);
+    my($m) = $f->get_instance($_MOBILE_CLASS);
     $f = $value ? $m : $m->get('parent');
     _trace($f) if $_TRACE;
     $f->setup_request($req);
