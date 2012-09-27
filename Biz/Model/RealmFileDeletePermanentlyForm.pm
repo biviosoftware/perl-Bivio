@@ -8,9 +8,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     my($self) = @_;
-    $self->new_other('RealmFile')->load({
+    my($rf) = $self->new_other('RealmFile')->load({
 	path => $self->req('path_info'),
-    })->delete({
+    });
+    $self->internal_put_field(realm_file => $rf);
+    $rf->delete({
 	override_is_read_only => 1,
 	override_versioning => 1,
     });
@@ -22,6 +24,9 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	require_context => 1,
+	$self->field_decl(other => [
+	    [qw(realm_file Model.RealmFile)],
+	]),
     });
 }
 
