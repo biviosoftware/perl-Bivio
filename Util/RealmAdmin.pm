@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_C) = b_use('SQL.Connection');
 my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');
 my($_L) = b_use('Type.Location');
@@ -20,13 +21,14 @@ commands:
     delete_email_verify -- delete email verification record for auth_realm
     diff_users left_realm right_realm -- report differences between rosters
     force_email_verify -- creates/updates email verification record for auth_realm
+    info -- dump info on a realm
     invalidate_email -- invalidate a user's email
     invalidate_password -- invalidates a user's password
     join_user roles... -- adds specified user role to realm
     leave_role -- remove one user role from a realm
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
-    info -- dump info on a realm
+    scan_realm_id -- checks for auth_id in all table fields
     to_id realm -- returns the id for the realm passed as an argument
     users [role] -- dump users in realm [with a specific role]
 EOF
@@ -233,6 +235,33 @@ sub reset_password {
     _validate_user($self, 'Reset Password')->update({
         password => b_use('Type.Password')->encrypt($password),
     });
+    return;
+}
+
+sub scan_realm_id {
+    my($self) = @_;
+    # Scans all bivio tables, looking for realm_id.
+    my($id) = $self->req('auth_id');
+    $self->usage_error('missing realm')
+	unless $id && $id > 1;
+    my($tables) = $_C->map_execute(
+	'SELECT relname FROM pg_class WHERE relname LIKE ? ORDER BY relname',
+	['%_t']);
+
+    foreach my $table (@$tables) {
+	my($count) = 0;
+	$_C->do_execute(sub {
+	    my($row) = @_;
+
+	    foreach my $v (grep($_, @$row)) {
+		$count++
+		    if $v eq $id;
+	    }
+	    return 1;
+	}, "SELECT * FROM $table");
+	$self->print(join(',', $table, $count), "\n")
+	    if $count;
+    }
     return;
 }
 
