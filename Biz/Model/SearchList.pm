@@ -137,7 +137,6 @@ sub internal_load_rows {
 	return;
     });
     if ($die) {
-b_info($die->get_shallow_copy);
 	$self->req->put('search_error', $die);
 	return [];
     }
