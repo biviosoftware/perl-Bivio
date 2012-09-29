@@ -7,6 +7,7 @@ use Bivio::Base 'Model.TreeList';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_R) = b_use('Auth.Role');
+my($_GENERAL_ID);
 
 sub PARENT_NODE_ID_FIELD {
     return 'Forum.parent_realm_id';
@@ -85,7 +86,7 @@ sub internal_prepare_statement {
 }
 
 sub internal_root_parent_node_id {
-    return Bivio::Auth::Realm->get_general->get('id');
+    return $_GENERAL_ID ||= b_use('Auth.Realm')->get_general->get('id');
 }
 
 sub parent_and_children {
