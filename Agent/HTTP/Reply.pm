@@ -3,6 +3,7 @@
 package Bivio::Agent::HTTP::Reply;
 use strict;
 use Bivio::Base 'Agent.Reply';
+use APR::Status ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
@@ -139,8 +140,16 @@ sub send {
 	_trace($o) if $_TRACE;
     }
     else {
-	$r->send_fd($o, $size);
-	close($o);
+	Bivio::Die->eval(
+	    sub {
+		$r->send_fd($o, $size);
+		close($o);
+	    });
+	if ($@) {
+	    die $@
+		unless ref($@) eq 'APR::Error'
+		    && APR::Status::is_ECONNABORTED($@);
+	}
     }
 
     # don't let any more data be sent.  Don't clear early in case
