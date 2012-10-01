@@ -67,7 +67,7 @@ sub wrap_methods {
 sub handle_internal_unsafe_lc_get_value {
     my($proto, $fc, $name, $value) = @_;
     return
-	unless $fc->simple_package_name eq 'Text'
+	unless $fc->equals_class_name('Text')
 	and !$value
 	and my $n = _parse_field($name);
     (my $x = $n->{field}) =~ s/_/ /g;
