@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -33,6 +33,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.90  2012/09/20 10:43:09  andrews
+  Release notes:
+  * b_agent various changes to improce 'enter' key handling
+  * Bivio::UI::HTML::Widget::DateField
+    need to initialize _date_picker to set up pa
+  * Bivio::UI::HTML::Widget::Script
+    use unique id for datepicker elements
+    use form name to lookup fields
+  * Bivio::UI::XHTML::Widget::DatePicker
+    use control_on_render instead of initialize
+    use generated unique ids instead of field name (previous
+    commit).
+    use form_name to lookup fields.
+
   Revision 11.89  2012/09/14 17:42:32  moeller
   * Bivio::Biz::Model::CSVImportForm
     show error long description for record errors
