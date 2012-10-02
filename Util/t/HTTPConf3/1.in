@@ -41,4 +41,17 @@
         timeout => 1_000,
         trans_handler => '',
     },
+    a5 => {
+	ssl_only => 1,
+        cookie_tag => 'A5T',
+        listen => 2130,
+        root_prefix => 'A5',
+        server_admin => 'a5@a5.com',
+        virtual_hosts => [
+            '@www.a5.com' => {
+                facade_uri => 'a5',
+                ssl_crt => 'www1.a5.com.crt',
+            },
+        ],
+    },
 };
