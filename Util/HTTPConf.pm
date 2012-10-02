@@ -159,6 +159,8 @@ sub _app_vars {
     );
     return $vars
 	if $app eq $_HTTPD_VARS->{app};
+    $vars->{can_secure} = 1
+	if $vars->{ssl_only};
     $vars->{content} = <<"EOF";
 PerlWarn on
 v1:PerlFreshRestart off
@@ -217,26 +219,32 @@ EOF
 	    );
 	    map($vars->{$_} ||= $cfg->{$_}, qw(http_host mail_host));
 	    _push($httpd_vars, uris => $cfg->{http_host});
-	    my($http) = "http://$cfg->{http_host}:$vars->{listen}\$1";
+	    my($back_http) = "http://$cfg->{http_host}:$vars->{listen}\$1";
 	    if ($is_mail) {
 		foreach my $h (
 		    $cfg->{mail_host}, @{$cfg->{mail_aliases} || []}
 		) {
 		    _push($vars, mail_hosts => $h);
-		    _push($vars, mail_receive => "$h $http");
+		    _push($vars, mail_receive => "$h $back_http");
 		}
 	    }
-	    my($seen) = {$cfg->{http_host} => 1};
-	    foreach my $a (
+	    my($seen) = $vars->{ssl_only} ? {} : {$cfg->{http_host} => 1};
+	    my($front_http) = ($vars->{ssl_only} ? 'https' : 'http')
+		. "://$cfg->{http_host}";
+	    foreach my $h (
 		$mh ? $mh : (),
-		map(($_, $_ =~ /^www\.(.+)$/),
-		    sort(@{$cfg->{aliases} || []})),
+		$vars->{ssl_only} ? $cfg->{http_host} : (),
+		map(
+		    ($_, $_ =~ /^www\.(.+)$/),
+		    sort(@{$cfg->{aliases} || []}),
+		),
 	    ) {
-		next if $seen->{$a}++;
+		next
+		    if $seen->{$h}++;
 	        $redirects .= <<"EOF";
 <VirtualHost *>
-    ServerName $a
-    RedirectPermanent / http://$cfg->{http_host}/
+    ServerName $h
+    RedirectPermanent / $front_http/
 </VirtualHost>
 EOF
 	    }
@@ -250,7 +258,7 @@ EOF
     RewriteRule ^/./ - [L]
     RewriteRule .*favicon.ico$ /i/favicon.ico [L]
 EOF
-		. "    RewriteRule ^(.*) $http \[proxy\]\n"));
+		. "    RewriteRule ^(.*) $back_http \[proxy\]\n"));
 	    my($proxy) = $cfg->{no_proxy} ? '' : qq{
     DocumentRoot /var/www/facades/$cfg->{local_file_prefix}/plain
     ProxyVia on
@@ -263,7 +271,7 @@ EOF
 $rules</VirtualHost>
 EOF
 	    $vars->{httpd_content} .= $hc
-		unless $cfg->{ssl_only};
+		unless $vars->{ssl_only};
             if ($cfg->{ssl_crt}) {
 		$vars->{ssl_listen} = "\nListen " . ($vars->{listen} + 1);
 		my($chain) = !$cfg->{ssl_chain} ? ''
@@ -271,8 +279,8 @@ EOF
 		(my $key = $cfg->{ssl_crt}) =~ s/crt$/key/;
 		$vars->{ssl_mdc} ? $hc =~ s{\*\>}{*:443>}
 		    : $hc =~ s{\*\>}{$cfg->{http_host}:443>};
-		(my $https = $http) =~ s{(?<=\:)(\d+)}{$1 + 1}e;
-		$hc =~ s{\Q$http\E}{$https}g;
+		(my $back_https = $back_http) =~ s{(?<=\:)(\d+)}{$1 + 1}e;
+		$hc =~ s{\Q$back_http\E}{$back_https}g;
 		$hc =~ s{(?=^\s+Rewrite)}{
 		    my($x) = qq(    SSLEngine on
     SSLCertificateFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_crt}
