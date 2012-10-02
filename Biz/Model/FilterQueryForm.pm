@@ -19,7 +19,7 @@ my($_DI) = b_use('Type.DateInterval');
 sub clear_on_focus_hint {
     my($self) = @_;
     return $_T->get_value(join('.',
-	'clear_on_focus_hint', $self->req('task_id')->get_name));
+	'clear_on_focus_hint', $self->req('task_id')->get_name), $self->req);
 }
 
 sub default_date_filter {
