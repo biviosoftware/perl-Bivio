@@ -89,7 +89,7 @@ sub execute_queue {
 	my($die) = $_SELF->process_request({%{$params}});
 	b_info(
 	    $$,
-	    $die ? (' JOB_ERROR: ', $params, ' ', $die) : ('JOB_END: ', $params),
+	    $die ? (' JOB_ERROR: ', $params, ' ', $die) : (' JOB_END: ', $params),
 	);
     }
     $_IN_EXECUTE = 0;
