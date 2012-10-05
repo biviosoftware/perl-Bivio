@@ -25,7 +25,6 @@ bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
 cohesive infrastructure for any Perl application.
 
-
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
@@ -33,6 +32,76 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.91  2012/10/02 19:07:32  nagler
+  * Bivio::Agent::HTTP::Reply
+    wrap $r->send_fd() in Die->eval() to catch APR connection errors
+  * Bivio::Agent::HTTP::Request
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Agent::Job::Dispatcher
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Agent::Request
+    added is_http_content_type and refactored is_http_method
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Agent::Task
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Auth::Permission
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Auth::Realm
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Biz::Action::ClientRedirect
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Biz::Action::DAV
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Biz::Action::RealmlessRedirect
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Biz::FormContext
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Biz::Model::ForumTreeList
+    b_use
+  * Bivio::Biz::Model::RealmDAVList
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Biz::Model::RealmFileDeletePermanentlyForm
+    save realm_file in other field so can be used atomically after file is
+    deleted
+  * Bivio::Biz::Model::SearchList
+    removed b_info
+  * Bivio::ClassWrapper::TupleTag
+    used equals_class_name
+  * Bivio::Delegate::TaskId
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::HOWTO::CodingStyle
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::PetShop::Test::Request
+    rmpod
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::SQL::Connection
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Test::Request
+    added content_type call for is_http_content_type testing
+  * Bivio::Test
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::Type::DateTime
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::UI::Email
+    deprecate passing req_or_facade as undef and not an instance (does Request->get_current)
+  * Bivio::UI::Facade
+    deprecate passing req_or_facade as undef and not an instance (does Request->get_current)
+  * Bivio::UI::HTML::Widget::StyleSheet
+    b_use so that Agent.Task can be overridden by an application
+  * Bivio::UI::XHTML::Widget::BasicPage
+    removed
+  * Bivio::UI::XHTML::Widget::MobileDetector
+    use equals_class_name instead of == on the facade instances
+  * Bivio::UNIVERSAL
+    added equals_class_name for class/package comparisons with proto/self
+    so, e.g. MobileDetector can do simpler compares
+  * Bivio::Util::HTTPConf
+    ssl_only needs to generate redirect for http://http_host to https
+  * Bivio::Util::RealmAdmin
+    added scan_realm_id() to search for a realm_id across all tables
+  * Bivio::Util::SiteForum
+    change Web Site to Site Management
+
   Revision 11.90  2012/09/20 10:43:09  andrews
   Release notes:
   * b_agent various changes to improce 'enter' key handling
