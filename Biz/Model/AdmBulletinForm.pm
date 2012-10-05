@@ -148,7 +148,8 @@ sub read_body {
     # Returns the current message body.
     my($self, $body_file) = @_;
     return $_IOF->read($_UIF->get_local_file_name(
-	$_LFT->CACHE, 'bulletin/' . ($body_file || $self->get('body_file'))));
+	$_LFT->CACHE, 'bulletin/' . ($body_file || $self->get('body_file')),
+	$self->req));
 }
 
 sub validate {
@@ -179,9 +180,9 @@ sub _copy_attachments {
     foreach my $file (split("\t", $self->get('attachment_files'))) {
         _write_file($self, $_UIF->get_local_file_name(
             $_LFT->REALM_DATA, 'bulletin/'
-            . $bulletin_id . '/' . $file),
+            . $bulletin_id . '/' . $file, $self->req),
             $_IOF->read($_UIF->get_local_file_name(
-                $_LFT->CACHE, 'bulletin/' . $file)));
+                $_LFT->CACHE, 'bulletin/' . $file, $self->req)));
     }
     return;
 }
@@ -227,7 +228,7 @@ sub _write_cache_file {
     my($name) = $_DT->local_now_as_file_name
         . "-$$-" . $self->get($field)->{filename};
     my($file) = $_UIF->get_local_file_name(
-        $_LFT->CACHE, 'bulletin/' . $name);
+        $_LFT->CACHE, 'bulletin/' . $name, $self->req);
     _write_file($self, $file, $self->get($field)->{content});
     return $name;
 }
