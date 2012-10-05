@@ -923,7 +923,7 @@ sub internal_server_redirect {
     $self->internal_redirect_realm($named->{task_id}, $named->{realm});
     $named->{path_info} = undef
 	unless exists($named->{path_info}) || exists($named->{carry_path_info});
-    $named->{uri} = b_use('FacadeComponent.Task')->has_uri($named->{task_id})
+    $named->{uri} = b_use('FacadeComponent.Task')->has_uri($named->{task_id}, $self)
 	? $self->format_uri({
 	    map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
 		@{$self->FORMAT_URI_PARAMETERS}),
