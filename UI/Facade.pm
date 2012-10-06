@@ -213,6 +213,13 @@ sub get_value {
     return $proto->get_from_request_or_self($req_or_facade)->get($name);
 }
 
+sub handle_call_autoload {
+    my($proto) = @_;
+    return $proto
+	if $proto->equals_class_name(__PACKAGE__);
+    return $proto->get_instance($proto->simple_package_name);
+}
+
 sub handle_config {
     my(undef, $cfg) = @_;
     # default : string (required)
