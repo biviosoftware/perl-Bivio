@@ -55,12 +55,12 @@ sub is_top {
 
 sub join {
     my($proto, @parts) = @_;
-    return join($_SEP, @parts);
+    return lc(join($_SEP, @parts));
 }
 
 sub split {
     my($proto, $value) = @_;
-    return split($_SEP, $value);
+    return split($_SEP, lc($value));
 }
 
 1;
