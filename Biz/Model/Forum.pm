@@ -1,15 +1,21 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::Forum;
 use strict;
 use Bivio::Base 'Model.RealmOwnerBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_PI) = b_use('Type.PrimaryId');
+my($_ROOT_ID);
+
+sub ROOT_FORUM_PARENT_ID {
+    return $_ROOT_ID ||= b_use('Auth.Realm')->get_general->get('id');
+}
 
 sub create {
     my($self, $values) = @_;
     return $self->SUPER::create({
-	parent_realm_id => Bivio::Auth::Realm->get_general->get('id'),
+	parent_realm_id => $self->ROOT_FORUM_PARENT_ID,
 	require_otp => 0,
 	%$values,
     });
@@ -72,8 +78,7 @@ sub is_leaf {
 
 sub is_root {
     my($self) = @_;
-    return $self->get('parent_realm_id')
-	== Bivio::Auth::RealmType->GENERAL->as_int ? 1 : 0;
+    return $_PI->is_equal($self->get('parent_realm_id'), $self->ROOT_FORUM_PARENT_ID);
 }
 
 sub unauth_cascade_delete {
