@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserPasswordQueryForm;
 use strict;
@@ -6,7 +6,7 @@ use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = __PACKAGE__->use('Type.Email');
-my($_USER_FIELD) = __PACKAGE__->use('Model.UserLoginForm')->USER_FIELD;
+my($_USER_FIELD) = b_use('Model.UserLoginForm')->USER_FIELD;
 
 sub QUERY_KEY {
     return 'email';
