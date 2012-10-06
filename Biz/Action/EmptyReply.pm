@@ -11,7 +11,7 @@ b_use('Action.BasicAuthorization');
 
 sub execute {
     my($proto, $req, $status, $output) = @_;
-    $status ||= 'HTTP_OK';
+    $status = $status ? uc($status) : 'HTTP_OK';
     $status = 'NOT_FOUND'
 	if $status =~ /NOT_FOUND/;
     $status = 'SERVER_ERROR'
