@@ -17,10 +17,15 @@ req(); #the last case of ->get_domain() needs Test.Request loaded
 	[undef] => [undef],
 	'' => [undef],
 	'a@a.a' => 'a.a',
+	'a@a.A' => 'a.a',
 	'a=b.com@c.d' => 'b.com',
     ],
     replace_domain => [
-	[qw(a@a.a b.b)] => 'a@b.b',
+	[qw(a@A.a b.b)] => 'a@b.b',
 	[qw(a.a b.b)] => DIE(),
+    ],
+    equals_domain => [
+	[qw(a@b.c b.c)] => 1,
+	[qw(a@b.c b.)] => 0,
     ],
 ];
