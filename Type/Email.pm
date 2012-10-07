@@ -5,11 +5,11 @@ use strict;
 use Bivio::Base 'Type.Line';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_HTML) = __PACKAGE__->use('Bivio.HTML');
-my($_TE) = __PACKAGE__->use('Bivio.TypeError');
-my($_IGNORE) = __PACKAGE__->IGNORE_PREFIX;
-my($_INVALID) = __PACKAGE__->INVALID_PREFIX;
-my($_ATOM_ONLY_ADDR) = __PACKAGE__->use('Mail.RFC822')->ATOM_ONLY_ADDR;
+my($_DN) = b_use('Type.DomainName');
+my($_C) = b_use('IO.Config');
+my($_HTML) = b_use('Bivio.HTML');
+my($_TE) = b_use('Bivio.TypeError');
+my($_ATOM_ONLY_RE) = qr{^@{[b_use('Mail.RFC822')->ATOM_ONLY_ADDR]}$}ois;
 
 sub IGNORE_PREFIX {
     return 'ignore-';
@@ -22,6 +22,11 @@ sub INVALID_PREFIX {
 sub compare_defined {
     my(undef, $left, $right) = @_;
     return lc($left) cmp lc($right);
+}
+
+sub equals_domain {
+    my($proto, $value, $domain) = @_;
+    return lc($domain) eq $proto->get_domain_part($value) ? 1 : 0
 }
 
 sub format_ignore {
@@ -42,16 +47,16 @@ sub from_literal {
 	if length($value) > $proto->get_width;
     $value = lc($value);
     return $value
-	if $value =~ /^$_ATOM_ONLY_ADDR$/os && $value =~ /.+\..*/;
+	if $value =~ $_ATOM_ONLY_RE
+	&& $value =~ /.+\..*/;
     return (undef, $_TE->EMAIL);
 }
 
 sub get_domain_part {
     my($proto, $value) = @_;
-    return $1
+    return lc($1)
         if $value
-        && UNIVERSAL::isa('Bivio::Agent::Request', 'Bivio::UNIVERSAL')
-        && Bivio::Agent::Request->is_test
+        && $_C->is_test
         && $proto->get_local_part($value)
 	=~ b_use('TestLanguage.HTTP')->LOCAL_EMAIL_DOMAIN_RE;
     return (shift->split_parts(@_))[1];
@@ -63,19 +68,23 @@ sub get_local_part {
 
 sub invalidate {
     my($proto, $email) = @_;
-    $$email = substr($_INVALID . $$email, 0, $proto->get_width);
-    return;
+    $$email = substr(
+	$proto->INVALID_PREFIX . $$email,
+	0,
+	$proto->get_width,
+    );
+    return $$email;
 }
 
 sub is_ignore {
     my($proto, $email) = @_;
     return !$proto->is_valid($email) ? 1
-	: $email =~ /^$_IGNORE/ios ? 1 : 0;
+	: $email =~ /^@{[$proto->IGNORE_PREFIX]}/ios ? 1 : 0;
 }
 
 sub is_valid {
     my($proto, $email) = @_;
-    return defined($email) && $email =~ /^$_ATOM_ONLY_ADDR$/os ? 1 : 0;
+    return defined($email) && $email =~ $_ATOM_ONLY_RE ? 1 : 0;
 }
 
 sub join_parts {
@@ -93,7 +102,9 @@ sub replace_domain {
 
 sub split_parts {
     my(undef, $value) = @_;
-    return $value && $value =~ /^(.+?)\@(.+)$/ ? ($1, $2) : (undef, undef);
+    return $value && $value =~ /^(.+?)\@(.+)$/
+	? (lc($1), lc($2))
+	: (undef, undef);
 }
 
 sub to_xml {
