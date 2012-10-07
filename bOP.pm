@@ -28,10 +28,33 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.0  2012/10/07 18:23:08  nagler
+  * Bivio::Biz::Action::EmptyReply
+    uc(status) since the code depends on this
+  * Bivio::Biz::Action::Error
+    factored out internal_render_content so that subclasses can override
+    if they want to just return the forbidden error
+  * Bivio::Biz::Model::Bulletin
+    rm pod, refactor
+    added $req to get_local_file_name() call
+  * Bivio::Biz::Model::Forum
+    modularize ROOT_FORUM_PARENT_ID
+  * Bivio::Biz::Model::UserPasswordQueryForm
+    b_use
+  * Bivio::Type::Email
+    added equals_domain
+    downcase result of split_parts
+    simplified is_test to use Config
+    removed hardwired calls to package's methods in init (doesn't allow override)
+    b_use
+  * Bivio::Type::ForumName
+    downcase output of split and join
+  * Bivio::UI::Facade
+    added handle_call_autoload so can get instance in tests
+
   Revision 11.92  2012/10/05 20:11:45  andrews
   Release notes:
   * b_agent fixes for beta 1
