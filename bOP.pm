@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 11.92  2012/10/05 20:11:45  andrews
+  Release notes:
+  * b_agent fixes for beta 1
+  * Bivio::Agent::Job::Dispatcher
+    fixed formatting on JOB_END
+  * Bivio::Agent::Request
+    Task->has_uri requires $reqw
+  * Bivio::Biz::Model::FilterQueryForm
+    avoid deprecated value warning with UI.Text->get_value
+  * Bivio::Type::FilePath
+    get_suffix wasn't allowing foo..bar (double dot)
+  * Bivio::Util::RealmAdmin
+    skip task_log_t when scanning realm_ids, too much data there
+
   Revision 11.91  2012/10/02 19:07:32  nagler
   * Bivio::Agent::HTTP::Reply
     wrap $r->send_fd() in Die->eval() to catch APR connection errors
