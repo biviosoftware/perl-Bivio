@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.1  2012/10/07 21:49:49  andrews
+  * b_agent changes to prevent duplicate popups and improve handling of
+    error on first request.
+
   Revision 12.0  2012/10/07 18:23:08  nagler
   * Bivio::Biz::Action::EmptyReply
     uc(status) since the code depends on this
