@@ -15,20 +15,14 @@ my($_WARNINGS) = {};
 
 sub execute {
     my($proto, $req) = @_;
-    my($status) = $req->get('task_id')->get_name
-	=~ /^DEFAULT_ERROR_REDIRECT_?(.*)/s
-	? $1 : 'SERVER_ERROR';
-    return $proto->internal_render_content($req, $status)
-	|| $proto->SUPER::execute($req, $status);
-}
-
-sub internal_render_content {
-    my($proto, $req, $status) = @_;
-    my($r) = $req->unsafe_get('r');
+    my($status) = lc($req->get('task_id')->get_name);
+    $status =~ s/^default_error_redirect_?//s;
+    $status ||= 'server_error';
+    my($r);
     my($self) = $proto->new({
 	status => $status,
-	uri => $r && $r->header_in('Referer'),
-    })->put_on_req($req);
+	uri => ($r = $req->unsafe_get('r') and $r = $r->header_in('Referer')),
+    })->put_on_request($req);
     my($reply) = $req->get('reply');
     $reply->delete_output;
     my($die) = Bivio::Die->catch_quietly(sub {_wiki($self, $req)});
@@ -37,8 +31,8 @@ sub internal_render_content {
     $_V->execute(
 	$_FC->get_value('ActionError_default_view', $req),
 	$req,
-    ) if $die || !$reply->unsafe_get_output;
-    return 1;
+    ) if $die || ! $reply->unsafe_get_output;
+    return $proto->SUPER::execute($req, uc($status));
 }
 
 sub _wiki {
