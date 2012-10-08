@@ -405,12 +405,12 @@ sub _init_admin_features {
 
 sub _site_name_prefix {
     my($suffix, $req) = @_;
-    return b_use('FacadeComponent.Text')->get_value('site_name', $req) . " $suffix";
+    return $_T->get_value('site_name', $req) . " $suffix";
 }
 
 sub _support_email {
     my($req) = @_;
-    return $req->format_email($_T->get_value('support_email'), $req);
+    return $req->format_email($_T->get_value('support_email', $req));
 }
 
 1;

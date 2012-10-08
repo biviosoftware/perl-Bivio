@@ -158,8 +158,7 @@ sub reset_seo_btest {
 	    $self->model('RealmFile')->create_or_update_with_content({
 		path => '/Public/Wiki/StartPage',
 	    }, \('content does not matter'));
-	    $req->set_realm(
-		$_C->get_value('site_realm_name'), $req);
+	    $req->set_realm($_C->get_value('site_realm_name', $req));
 	    # Didn't want to export from SEOPrefixList, because no need except
 	    # for this class (private unless necessary public)
 	    $self->model('RealmFile')->create_or_update_with_content({
