@@ -55,7 +55,8 @@ sub to_widget_value {
 #TODO: use Enum widget (can't now, b/c defaults to short_desc)
 	String($error->get_long_desc),
 	$detail
-	    ? ($_T->get_widget_value('FormError.prose.detail_prefix'), $detail)
+	    ? ($_T->get_widget_value(
+		'FormError.prose.detail_prefix', $source->req), $detail)
 	    : (),
     ]);
 }
