@@ -231,7 +231,7 @@ Normally, we don't "protect" a protected method with an assertion like this.
 
 =item *
 
-Write the code so that it doesn't need to be 
+Write the code so that it doesn't need to be commented.
 
 =item *
 
@@ -271,38 +271,32 @@ below. This comment is left justified, so it is easily recognizable.
 
 =item *
 
-Factories should be documented in the FACTORIES section. In cperl-mode,
-if you define new it will be put in the FACTORIES section with the appropriate
-super call.
+Code which depends on a future release of bOP should get:
+
+    #BEBOP-11.99 remove this method
 
 =item *
 
-Bivio::IO::Alert-E<gt>warn should
+b_warn should
 be used instead of perl's warn. We catch perl's warn and output a stack
-trace, because it indicates a program error of some sort. Explicit warnings
-should not need a stack trace. Note that
-C<Bivio::IO::Alert-E<gt>warn>
-inserts the location of the message and the newline, so you don't have
-to. Warning messages should contain dynamic data, but use commas to separate
-the variables.
-C<Bivio::IO::Alert-E<gt>warn> automatically truncates
-long values and unwraps hash_refs and array_refs.
+trace, because it indicates a program error of some sort.
+
+b_info should be used for normal logging.
 
 =item *
 
-C<Bivio::IO::Trace> for debugging output.
+IO.Trace for debugging output.
 Don't check in libraries that use C<print STDERR> for debugging
 statements.  You'll never find the print statements again.
 
 If you define the subroutine _trace in cperl-mode, it will automatically
 insert the following statements:
 
-     use Bivio::IO::Trace;
-     use vars qw($_TRACE);
-     Bivio::IO::Trace->register;
+    b_use('IO.Trace');
+    our($_TRACE);
 
-register creates private routine _trace and defines the variable
-C<$_TRACE>.
+This creates private routine _trace and defines the variable C<$_TRACE>.
+
 Both of these are local to the module in which register is called. The
 value of C<$_TRACE> and the implementation of _trace are dynamically
 modified with the value of the trace parameters. See the module documentation
@@ -312,34 +306,35 @@ Usage:
 
      _trace($bla) if $_TRACE;
 
+In emacs this can be inserted with C-c t.
+
 =item *
 
 Configuration is handled by registering with
-C<Bivio::IO::Config>.
+C<IO.Config>.
 If you define the method
 C<handle_config> in cperl-mode, it automatically
 inserts the following code:
 
 
-     use Bivio::IO::Config;
-     Bivio::IO::Config->register;
 
-and the method handle_config which takes specific parameters. Look around
-for modules that use configuration, e.g. C<Bivio::IO::Trace>
-and C< Bivio::Ext::DBI>. Read the perldoc of C<Bivio::IO::Config>
-for how to configuration your system.
+     b_use('IO.Config')->register(my $_CFG = {
+        param1 => 'default1',
+     });
+
+and the method handle_config which takes specific parameters.
+
+You can insert this with C-c s handle_config [return]
 
 =item *
 
-Exceptions are managed by C<Bivio::Die>. Modules which would like
+Exceptions are managed by C<Bivio.Die>. Modules which would like
 to catch exceptions "along the way" should define a handle_die method.
 This method will be called if a method "up the stack" calls
 C<Bivio::Die-E<gt>catch>.
 See C<Agent.Dispatcher>, it calls catch. See C<Agent.Task>,
 it defines a
-C<handle_die>. For the brave, check out the implementation
-of
-C<Bivio::Die>.
+C<handle_die>.
 
 =item *
 
@@ -832,6 +827,20 @@ things.  It's often good to revisit a test if the test data changes.
 This isn't to say that you should try to couple implicitly, but rather
 you can be lazy with tests, and it won't affect the reliability of the
 system.
+
+=back
+
+=head2 Statefulness
+
+=over 4
+
+=item *
+
+Try to protect global state changes (e.g. set_realm) with b_catch calls.
+In the set_realm case, use with_realm except when you are sure you need
+set_realm.
+
+#TODO: There should be more with_* methods.
 
 =back
 
