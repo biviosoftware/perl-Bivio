@@ -2,6 +2,7 @@
     server_admin => 'default@default.com',
     limit_request_body => 9999,
     timeout => 99,
+    global_params => 'RequestReadTimeout header=1',
     httpd => {
         host_name => 'proxy.com',
     },

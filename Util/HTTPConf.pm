@@ -16,6 +16,7 @@ my($_DATA);
 my($_VARS) = {
     is_production => 0,
     can_secure => 0,
+    global_params => '',
     legacy_rewrite_rules => '',
     cookie_tag => undef,
     cookie_domain => '',
@@ -412,6 +413,7 @@ StartServers $servers
 MaxClients $servers
 MaxRequestsPerChild 120
 LimitRequestBody $limit_request_body
+$global_params
 
 ServerRoot /etc/httpd
 PidFile $pid_file
