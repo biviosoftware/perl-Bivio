@@ -8,7 +8,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_IN_EVAL);
 my($_D) = b_use('Bivio.Die');
-my($_T) = b_use('FacadeComponent.Text');
 my($_W) = b_use('UI.Widget');
 
 sub field_value {
@@ -55,8 +54,11 @@ sub to_widget_value {
 #TODO: use Enum widget (can't now, b/c defaults to short_desc)
 	String($error->get_long_desc),
 	$detail
-	    ? ($_T->get_widget_value(
-		'FormError.prose.detail_prefix', $source->req), $detail)
+	    ? (
+		$source->req(qw(UI.Facade Text))
+		   ->get_widget_value('FormError.prose.detail_prefix'),
+		$detail,
+	    )
 	    : (),
     ]);
 }
