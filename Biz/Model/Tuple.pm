@@ -152,7 +152,9 @@ sub split_rfc822 {
 sub _create_or_update_slots {
     my($state, $slots) = @_;
     my($self) = $state->{self};
-    $slots = $self->map_by_two(sub {[lc($_[0]), $_[1]]}, $slots);
+    $slots = $self->map_by_two(
+	sub {[lc($_[0]), $_[1]]},
+	$slots);
     my($tsdl) = $state->{self}->new_other('TupleSlotDefList')->load_all({
 	parent_id => $state->{tuple_def_id},
     });
@@ -198,7 +200,7 @@ sub _parse_slots {
     my($body) = @_;
     $$body =~ s/^.*?(?=$_SLOT_RE)//s;
     my($slots) = [split($_SLOT_RE, (split(/\n\n/, $$body, 2))[0] || '')];
-    return
+    return []
 	unless @$slots > 1;
     shift(@$slots);
     return $slots;
