@@ -305,7 +305,7 @@ StartServers 1
 MaxClients 4
 MaxRequestsPerChild 100000
 LimitRequestBody 4194304
-RequestReadTimeout header=1
+RequestReadTimeout header=2
 
 ServerRoot $pwd
 # This is technically incorrect.
