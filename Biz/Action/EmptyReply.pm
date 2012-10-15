@@ -16,7 +16,11 @@ sub execute {
 	if $status =~ /NOT_FOUND/;
     $status = 'SERVER_ERROR'
 	if $status eq 'UPDATE_COLLISION';
-    my($reply) = $req->get('reply')->set_http_status($_AC->$status());
+    unless ($_AC->can($status)) {
+	b_warn($status, ': unknown ApacheConstants method');
+	$status = 'SERVER_ERROR';
+    }
+    my($reply) = $req->get('reply')->set_http_status($_AC->$status);
     return
 	if $reply->unsafe_get_output;
     $output ||= '';
