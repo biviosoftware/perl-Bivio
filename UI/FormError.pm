@@ -7,14 +7,13 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_IN_EVAL);
-my($_D) = b_use('Bivio.Die');
 my($_W) = b_use('UI.Widget');
 
 sub field_value {
     my(undef, $item) = @_;
-    $_D->die($item, ': FormError not evaluating')
+    b_die($item, ': FormError not evaluating')
         unless $_IN_EVAL;
-    $_D->die($item, ': no such FormError attribute')
+    b_die($item, ': no such FormError attribute')
 	unless exists($_IN_EVAL->{$item});
     return $_IN_EVAL->{$item};
 }
@@ -38,7 +37,7 @@ sub to_widget_value {
 	    error => $error,
 	    detail => $detail,
 	};
-	my($die) = $_D->catch(
+	my($die) = b_catch(
 	    sub {
 		Prose($v)
 		    ->initialize_with_parent(undef)
@@ -55,8 +54,8 @@ sub to_widget_value {
 	String($error->get_long_desc),
 	$detail
 	    ? (
-		$source->req(qw(UI.Facade Text))
-		   ->get_widget_value('FormError.prose.detail_prefix'),
+	        $self->get_facade->get('Text')
+		    ->get_widget_value('FormError.prose.detail_prefix'),
 		$detail,
 	    )
 	    : (),
