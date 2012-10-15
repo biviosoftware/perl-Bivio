@@ -1,9 +1,8 @@
-# Copyright (c) 2000-2011 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Facade;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-b_use('Bivio::IO::Trace');
 
 # C<Bivio::UI::Facade> is a collection of instances which present a uniform
 # view.  Typically, a Facade is used to represent UI components.  An
@@ -82,6 +81,8 @@ b_use('Bivio::IO::Trace');
 # be the simple package name for the Component.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Trace');
+our($_TRACE);
 my($_FP) = b_use('Type.FilePath');
 my($_LFT) = b_use('UI.LocalFileType');
 my($_C) = b_use('IO.Config');
@@ -89,7 +90,6 @@ my($_CL) = b_use('IO.ClassLoader');
 my($_R) = b_use('Agent.Request');
 my($_A) = b_use('IO.Alert');
 my($_FN) = b_use('Type.FileName');
-our($_TRACE);
 my($_INITIALIZED) = 0;
 my($_CLASS_MAP) = {};
 my($_URI_MAP) = {};
@@ -144,6 +144,8 @@ sub get_from_request_or_self {
 	$_A->warn_deprecated('must pass req or facade');
 	$req_or_facade = $_R->get_current;
     }
+    return $proto
+	if __PACKAGE__->is_blesser_of($proto);
     return $req_or_facade
 	if __PACKAGE__->is_blesser_of($req_or_facade);
     $req_or_facade = $_R->get_current
@@ -206,10 +208,6 @@ sub get_local_file_root {
 
 sub get_value {
     my($proto, $name, $req_or_facade) = @_;
-    unless ($req_or_facade || ref($proto)) {
-	$_A->warn_deprecated('must pass req or facade');
-	$req_or_facade = $_R->get_current;
-    }
     return $proto->get_from_request_or_self($req_or_facade)->get($name);
 }
 
