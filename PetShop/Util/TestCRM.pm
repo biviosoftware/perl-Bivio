@@ -81,7 +81,7 @@ sub _init_btest {
 	    });
 	    return;
 	}) if $forum eq 'CRM_TUPLE_FORUM';
-	$self->new_other('CRM')->setup_realm;
+	$self->new_other('CRM')->setup_realm(undef, undef);
 	if ($forum eq 'CRM_FORUM') {
 	    my($alias);
 	    foreach my $a (qw(acrm crm)) {
@@ -142,9 +142,11 @@ EOF
 
 sub _init_bunit {
     my($self) = @_;
-    $self->top_level_forum('crm_tuple_bunit',
-                           [$self->CRM_TECH(1)], [$self->CRM_TECH(2)]);
-    $self->new_other('CRM')->setup_realm;
+    $self->top_level_forum(
+	'crm_tuple_bunit',
+	[$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
+    );
+    $self->new_other('CRM')->setup_realm(undef, undef);
     $self->model('TupleDef')->create_from_hash({
         'b_ticket#Ticket' => [
             {
