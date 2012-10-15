@@ -68,7 +68,7 @@ sub _email {
 	sub {
 	    return $rf->new_other('EmailAlias')->format_realm_as_incoming(
 		$rf->new_other('RealmOwner')->unauth_load_or_die({
-		    realm_id => $_C->get_value('site_contact_realm_id')}),
+		    realm_id => $_C->get_value('site_contact_realm_id', $rf->req)}),
 	    );
 	},
     );
