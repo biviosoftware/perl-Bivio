@@ -147,14 +147,14 @@ sub init {
     $self->init_admin_user;
     $self->init_realms;
     $self->init_files
-	if $self->req->is_test;
+	if $_C->is_test;
     return;
 }
 
 sub init_admin_user {
     my($self) = @_;
-    my($req) = $self->initialize_fully;
-    if ($req->is_test) {
+    my($req) = $self->get_request;
+    if ($_C->is_test) {
 	$self->new_other('TestUser')->init_adm;
 	$self->req->put($_ADMIN_USER_ATTR => $self->req(qw(auth_user name)));
     }
@@ -262,6 +262,7 @@ sub init_forum {
     my($post_create) = delete($cfg->{post_create}) || [];
     $self->req->with_realm_and_user(
         $_FN->is_top($forum) ? undef : $_FN->extract_top($forum),
+#TODO: This shoulnd't be ADM but init_admin_user
 	$self->new_other('TestUser')->ADM,
         sub {
             $self->model(ForumForm => $cfg)
@@ -274,7 +275,7 @@ sub init_forum {
 		    $self->new_other('RealmFile')->import_tree('/');
 		    return;
 		},
-            ) if $self->req->is_test && -d $forum;
+            ) if $_C->is_test && -d $forum;
             foreach my $op (@$post_create) {
                 $op->($cfg);
             }
