@@ -31,14 +31,23 @@ sub cascade_forum_activity {
 }
 
 sub create_realm {
-    sub CREATE_REALM {[qw(ForumName DisplayName)]}
+    sub CREATE_REALM {[
+	'ForumName',
+	'DisplayName',
+	[qw(?parent_realm ForumName)],
+    ]}
     my($self, $bp) = shift->parameters(\@_);
     $self->initialize_fully;
-    $self->model('ForumForm', {
-        'RealmOwner.display_name' => $bp->{DisplayName},
-	'RealmOwner.name' => $bp->{ForumName},
-    });
-    return;
+    my($do) = sub {
+	$self->model('ForumForm', {
+	    'RealmOwner.display_name' => $bp->{DisplayName},
+	    'RealmOwner.name' => $bp->{ForumName},
+	});
+	return;
+    };
+    return $do->()
+	unless $bp->{parent_realm};
+    return $self->req->with_realm($bp->{parent_realm}, $do);
 }
 
 sub delete_forum {
