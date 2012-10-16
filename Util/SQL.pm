@@ -555,6 +555,7 @@ sub initialize_db {
     foreach my $x (@$_INITIALIZE_SENTINEL) {
 	_default_sentinel($self, $x);
     }
+    $self->req->set_realm(undef);
     return;
 }
 
