@@ -38,6 +38,7 @@ b_use('IO.Trace');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_INITIALIZED) = 0;
 my($_GENERAL);
+my($_GENERAL_NAME);
 my($_PI) = b_use('Type.PrimaryId');
 my(@_USED_ROLES) = b_use('Auth.Role')->get_non_zero_list;
 my($_RT) = b_use('Auth.RealmType');
@@ -45,6 +46,10 @@ my($_PS) = b_use('Auth.PermissionSet');
 my($_RO) = b_use('Model.RealmOwner');
 my($_S) = b_use('Auth.Support');
 my($_M) = b_use('Biz.Model');
+
+sub GENERAL_NAME {
+    return $_GENERAL_NAME ||= lc($_RT->GENERAL->get_name);
+}
 
 sub as_string {
     my($self) = @_;
@@ -114,7 +119,7 @@ sub equals_by_name_or_id {
     my($self, $name_or_id) = @_;
     $name_or_id = ''
 	if !defined($name_or_id)
-        || $name_or_id eq $self->get_general->get_default_name;
+        || $name_or_id eq $self->GENERAL_NAME;
     return grep(($self->unsafe_get($_) || '') eq $name_or_id, qw(owner_name id))
 	? 1 : 0;
 }
@@ -244,7 +249,7 @@ sub new {
 	    unless ref($req);
 	my($g) = $proto->get_general;
 	return $g
-	    if $g->get('id') eq $owner || $owner eq 'general';
+	    if $g->get('id') eq $owner || $owner eq $proto->GENERAL_NAME;
 	$owner = b_use('Cache.RealmOwner')
 	    ->get_cache_value($owner, $req);
     }
