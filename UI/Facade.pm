@@ -83,6 +83,7 @@ use Bivio::Base 'Collection.Attributes';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
+my($_D) = b_use('Bivio.Die');
 my($_FP) = b_use('Type.FilePath');
 my($_LFT) = b_use('UI.LocalFileType');
 my($_C) = b_use('IO.Config');
@@ -114,11 +115,22 @@ sub as_string {
     return 'Facade[' . $self->simple_package_name . ']';
 }
 
+sub map_iterate_with_setup_request {
+    my($proto, $req, $op) = @_;
+    return [map(
+	$proto->with_setup_request($_, $req, $op),
+	@{$proto->get_all_classes},
+    )];
+}
+
 sub find_by_uri_or_domain {
     my($proto, $uri_or_domain) = @_;
     return $_CLASS_MAP->{$_CFG->{default}}
 	unless defined($uri_or_domain);
-    $uri_or_domain = lc($uri_or_domain);
+    if ($uri_or_domain =~ /[A-Z]/) {
+	$_A->warn_deprecated($uri_or_domain, ': domain must be lower case');
+	$uri_or_domain = lc($uri_or_domain);
+    }
     foreach my $uri (@$_URI_SEARCH_LIST) {
 	return $_URI_MAP->{$uri}
 	    if $uri_or_domain =~ /(?:^|\.)$uri(?:$|\.)/;
@@ -159,13 +171,14 @@ sub get_from_source {
 }
 
 sub get_instance {
-    my($proto, $simple_class) = @_;
-    # Returns facade instance for I<simple_class>.  Facade must be initialized.
-    # Returns default facade, if I<simple_class> is C<undef> or false.
-    return $simple_class
-	? $_CLASS_MAP->{$simple_class}
-	    || b_die($simple_class, ': no such facade')
-	: $proto->get_default
+    my($proto, $uri_or_domain_or_class) = @_;
+    return $proto->get_default
+	unless $uri_or_domain_or_class;
+    return $_CLASS_MAP->{$uri_or_domain_or_class}
+	|| b_die($uri_or_domain_or_class, ': no such facade class')
+	if $uri_or_domain_or_class =~ /^[A-Z]/;
+    return $proto->find_by_uri_or_domain($uri_or_domain_or_class)
+	|| b_die($uri_or_domain_or_class, ': no such facade uri');
 }
 
 sub get_local_file_name {
@@ -486,6 +499,21 @@ sub setup_request {
 sub unsafe_get_from_source {
     my(undef, $source) = @_;
     return $source->ureq(__PACKAGE__);
+}
+
+sub with_setup_request {
+    my($proto, $uri_or_domain_or_class, $req, $op) = @_;
+    my($prev) = $proto->get_from_source($req);
+    return $_D->catch_and_rethrow(
+	sub {
+	    return $op->(
+		$proto->get_instance($uri_or_domain_or_class)
+		    ->setup_request($req),
+	    );
+	},
+	sub {$prev->setup_request($req)},
+    );
+    return;
 }
 
 sub _fixup_test_uri {
