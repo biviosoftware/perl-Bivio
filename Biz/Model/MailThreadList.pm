@@ -42,6 +42,10 @@ sub internal_initialize {
                 name => 'RealmFile.modified_date_time',
                 sort_order => $self->DATE_SORT_ORDER,
             },
+	    {
+		name => 'RealmMail.realm_file_id',
+		sort_order => $self->DATE_SORT_ORDER,
+	    },
 	    'RealmMail.from_email',
             'RealmMail.subject_lc',
 	],
