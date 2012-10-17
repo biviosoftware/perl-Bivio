@@ -814,6 +814,9 @@ sub _cfg_crm {
 		action_id => 'Action',
 		ok_button => 'Send',
 		update_only => 'Update Fields Only',
+		crm_thread_status => 'Status',
+		owner_user_id => 'Owner',
+		empty_label => 'none',
 	    ]],
 	    ['task_menu.title' => [
 		'FORUM_CRM_FORM.reply_all' => 'Answer',
