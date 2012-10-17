@@ -150,7 +150,7 @@ sub _field_info {
 	    tuple_tag_slot_field => $_TSN->field_name($sn),
 	    tuple_tag_slot_field_qualified => $sfq,
 	    tuple_tag_slot_num => $sn,
-	    tuple_tag_label => $parsed->{$field},
+	    tuple_tag_label => $parsed->{field},
 	    tuple_tag_default_value => $d->get('TupleSlotType.default_value'),
 	    name => $sfq,
 	    constraint => $d->get('TupleSlotDef.is_required')
@@ -281,8 +281,12 @@ sub _prefix {
 
 sub _update_properties {
     my($self, $wp) = @_;
-    return
-	unless my $d = _defs($self, $wp);
+    my($d);
+    unless ($d = _defs($self, $wp)) {
+	$wp->handle_tuple_tag_update_properties()
+	    if $wp->can('handle_tuple_tag_update_properties');
+	return;
+    }
     my($fields) = _field_check($self, $wp, []);
     my($v) = {
 	primary_id => $wp->get($self->get('primary_id_field')),
@@ -301,13 +305,20 @@ sub _update_properties {
 	$tt = $wp->new_other('TupleTag');
 	$exists = $tt->unsafe_load($v);
     }
+    my($existing) = {%$v};
+    my($info) = {};
     foreach my $f (@$fields) {
 	my($i) = _field_info($self, $wp, $f);
 	$v->{$i->{tuple_tag_slot_field}}
 	    = $wp->unsafe_get($i->{tuple_tag_slot_field_qualified});
+	$existing->{$i->{tuple_tag_slot_field}}
+	    = $tt->unsafe_get($i->{tuple_tag_slot_field});
+	$info->{$i->{tuple_tag_slot_field}} = $i;
     }
     if ($exists) {
 	$tt->update($v);
+	$wp->handle_tuple_tag_update_properties($existing, $v, $info)
+	    if $wp->can('handle_tuple_tag_update_properties');
 	return;
     }
     $d->do_rows(sub {
@@ -319,6 +330,8 @@ sub _update_properties {
     });
     my($method) = $tt->is_loaded ? 'update' : 'create';
     $tt->$method($v);
+    $wp->handle_tuple_tag_update_properties($existing, $v, $info)
+	if $wp->can('handle_tuple_tag_update_properties');
     return;
 }
 
