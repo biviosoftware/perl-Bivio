@@ -1,6 +1,7 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-my($ctid, $who);
+my($_R) = b_use('Biz.Random');
+my($ctid, $who, $body);
 FormModel({
     setup_request => sub {
 	my(undef, $params) = @_;
@@ -15,7 +16,7 @@ req()->set_realm_and_user(qw(crm_forum crm_tech1))
     ->initialize_fully('FORUM_CRM_FORM');
 my($crm_alias) = EmailArray(remote_email('crm'));
 my($cal) = model('CRMActionList')->load_all;
-my($board) = remote_email('board.crm_forum');
+my($board) = remote_email('board*crm_forum');
 my($demo) = EmailArray(email('demo'));
 [
     empty_case({
@@ -24,7 +25,7 @@ my($demo) = EmailArray(email('demo'));
 	cc => $crm_alias,
     }),
     [{
-	to => $demo, 
+	to => $demo,
 	cc => $crm_alias,
 	subject => 's1',
 	body => 'b1',
@@ -56,24 +57,46 @@ my($demo) = EmailArray(email('demo'));
 	action_id => $cal->id_to_name(-CRMThreadStatus('CLOSED')->as_int),
 	to => EmailArray([$board]),
 	subject => 's2',
-	body => 'b1',
+	body => sub {$body = $_R->string},
     }] => [{
 	'Model.CRMThread' => {
 	    crm_thread_status => CRMThreadStatus('CLOSED'),
 	    modified_by_user_id => realm_id('crm_tech1'),
 	},
-	'Model.RealmMail' => {
-	    from_email => sub {
-		assert_equals(
-		    qr{\QTo: $board\E},
-		    model(RealmFile => {
-			realm_file_id => req(qw(Model.RealmMail realm_file_id)),
-		    })->get_content,
-		);
-		return $crm_alias->get_element(0);
-	    },
-	},
     }],
+    inline_case(sub {
+	my($count) = 0;
+	my($mtl) = model('MailThreadList')->do_iterate(sub {
+	    my($it) = @_;
+	    $count++;
+	    b_die('too many messages')
+		if $count > 3;
+	    next
+		if $count < 2;
+	    assert_equals(
+		$it->get('RealmMail.from_email'),
+		$crm_alias->get_element(0),
+	    );
+	    assert_equals(
+		$it->get('RealmMail.from_display_name'),
+		'crm_tech1',
+	    );
+	    my($content) = model(RealmFile => {
+		realm_file_id => $it->get('RealmMail.realm_file_id'),
+	    })->get_content;
+	    if ($count == 2) {
+		assert_equals(qr{\QTo: $board\E}, $content);
+		assert_equals(qr{$body}, $content);
+	    }
+	    elsif ($count == 3) {
+		assert_equals(qr{\QTo: $board\E}, $content);
+		assert_equals(qr{Status: Closed\s+Owner: none\s+Status changed from Locked to Closed\s*$}s, $content);
+	    }
+	    return 1;
+	}, 'unauth_iterate_start', {
+	    parent_id => $ctid,
+	});
+    }),
     empty_case({
 	to => $crm_alias,
 	action_id => $cal->id_to_name(-CRMThreadStatus('CLOSED')->as_int),
