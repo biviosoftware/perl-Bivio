@@ -6,7 +6,76 @@ use Bivio::Base 'View.Mail';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_T) = b_use('MIME.Type');
 my($_M) = b_use('Biz.Model');
+my($_CTS) = b_use('Type.CRMThreadStatus');
+my($_UIT) = b_use('UI.Text');
+my($_DT) = b_use('Type.DateTime');
+
+sub field_updates_imail {
+    my($self) = @_;
+    return $self->internal_put_base_attr(
+	from => [qw(Model.CRMForm ->mail_header_from)],
+	headers_object => ['Model.CRMForm'],
+	body => [sub {
+            my($source) = @_;
+	    my($old) = $source->req(qw(Model.CRMForm old_fields));
+	    my($new) = $source->req(qw(Model.CRMForm new_fields));
+	    my($buffer) = '';
+	    my($skip) = 0;
+	    foreach my $which (qw(status change)) {
+		last
+		    if $skip;
+		foreach my $k (sort({
+		    $a eq 'crm_thread_status' && $b eq 'owner_user_id' ? -1
+		    : $b eq 'crm_thread_status' && $a eq 'owner_user_id' ? 1
+		    : $a =~ /^(crm_thread_status|owner_user_id)$/ ? -1
+		    : $b =~ /^(crm_thread_status|owner_user_id)$/ ? 1
+		    : $a cmp $b;
+		} keys(%$new))) {
+		    my($label, $ov, $nv) = (
+			ref($new->{$k}) eq 'ARRAY'
+			    ? $k : $_UIT->get_value("CRMForm.$k", $source->req),
+			$old->{$k},
+			$new->{$k},
+		    );
+		    _update_text($which, $label, map({
+			my($x) = $_;
+			if ($k eq 'crm_thread_status') {
+			    $skip++
+				if $x->eq_unknown;
+			    $x = $x->get_short_desc;
+			}
+			elsif ($k eq 'owner_user_id') {
+			    $x = $source->req('Model.CRMForm')
+				->new_other('RealmOwner')
+				->unauth_load_or_die(
+				    realm_id => $x,
+				)->get('name')
+				    if $x;
+			}
+			else {
+			    $x = $x->[0] && $x->[1] =~ /Date/
+				? $_DT->to_mm_dd_yyyy($x->[0])
+				: $x->[0];
+			}
+			$x = $_UIT->get_value('CRMForm.empty_label', $source->req)
+			    unless $x;
+			$x;
+		    } ($ov, $nv)),
+		    \$buffer);
+		}
+		$buffer .= "\n"
+		    if $which eq 'status';
+	    }
+	    return MIMEEntity({
+		mime_type => 'text/plain',
+		mime_data => $buffer,
+		mime_encoding => $_T->suggest_encoding('text/plain', \$buffer),
+	    });
+	}],
+    );
+}
 
 sub internal_crm_send_form_buttons {
     my(undef, $model) = @_;
@@ -164,6 +233,15 @@ sub thread_root_list_csv {
 	    want_iterate_start => 1,
 	}),
     );
+}
+
+sub _update_text {
+    my($which, $label, $old, $new, $buffer) = @_;
+    $$buffer .= "$label: $new\n"
+	if $which eq 'status';
+    $$buffer .= "$label changed from $old to $new\n"
+	if $which eq 'change' && $old ne $new;
+    return;
 }
 
 sub _update_uri_column {
