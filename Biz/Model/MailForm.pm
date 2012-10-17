@@ -57,53 +57,10 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    my($req) = $self->req;
-    my($id) = $req->unsafe_get_nested(qw(Model.RealmMail message_id));
-    my($to, $cc, $realm_email, $realm_emails)
-	= $self->get(qw(to cc realm_email realm_emails));
-    my($board_email) = $_BRM->format_email_for_realm($req);
-    my($from) = $self->internal_format_from($realm_email);
-    my($from_email) = $_MA->parse($from);
-
-    unless ($from_email) {
-	$self->internal_put_error(from_email => 'INVALID_SENDER');
-	return;
-    }
-    my($sender) = $self->internal_format_sender($realm_email);
-    my($reply_to) = $self->internal_format_reply_to($realm_email);
-    my($other_recipients, $removed_sender)
-	= _remove_emails($to->append($cc), $realm_emails);
-    my($removed_board);
-    ($other_recipients, $removed_board)
-	= _remove_emails($other_recipients, $board_email);
-    my($board_only) = $removed_board
-        || $self->unsafe_get('board_only')
-	|| (!$removed_sender && $self->unsafe_get('board_always'));
-    if ($board_only) {
-	if ($removed_sender) {
-	    $to = $to->exclude($realm_emails);
-	    $cc = $cc->exclude($realm_emails);
-	}
-	unless ($removed_board) {
-	    if ($to->as_length) {
-		$cc = $cc->append($board_email);
-	    }
-	    else {
-		$to = $to->append($board_email);
-	    }
-	}
-    }
-    $self->internal_put_field(headers => {
-	_from => $from,
-	_recipients => $other_recipients->as_literal,
-	Sender => $sender,
-	To => $to->as_literal,
-	$reply_to ? ('Reply-To' => $reply_to) : (),
-	$cc->as_length ? (Cc => $cc->as_literal) : (),
-	Subject => $self->internal_format_subject,
-	'Message-Id' => $_O->generate_message_id($req),
-	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
-    });
+    my($board_only, $removed_sender, $other_recipients, $from_email)
+	= $self->internal_set_headers;
+    return
+	if $self->in_error;
     my($msg) = $self->internal_format_incoming;
     if ($board_only) {
 	$msg = $self->internal_send_to_board($msg);
@@ -114,7 +71,7 @@ sub execute_ok {
     $_O->new($msg)
 	->set_recipients($other_recipients->as_literal)
 	->set_envelope_from($from_email)
-	->enqueue_send($req)
+	->enqueue_send($self->req)
 	if $other_recipients->as_length;
     if ($self->CALL_SUPER_HACK) {
 	my($res) = shift->SUPER::execute_ok(@_);
@@ -235,6 +192,62 @@ sub internal_send_to_realm {
     my($req) = $self->req;
     $_ARM->execute_receive($req, $rfc822);
     return $req->get('Model.RealmMail')->get_rfc822;
+}
+
+sub internal_set_headers {
+    my($self) = @_;
+    my($req) = $self->req;
+    my($id) = $req->unsafe_get_nested(qw(Model.RealmMail message_id));
+    my($to, $cc, $realm_email, $realm_emails)
+	= $self->get(qw(to cc realm_email realm_emails));
+    my($board_email) = $_BRM->format_email_for_realm($req);
+    my($from) = $self->internal_format_from($realm_email);
+    my($from_email) = $_MA->parse($from);
+    unless ($from_email) {
+	$self->internal_put_error(from_email => 'INVALID_SENDER');
+	return;
+    }
+    my($sender) = $self->internal_format_sender($realm_email);
+    my($reply_to) = $self->internal_format_reply_to($realm_email);
+    my($other_recipients, $removed_sender)
+	= _remove_emails($to->append($cc), $realm_emails);
+    my($removed_board);
+    ($other_recipients, $removed_board)
+	= _remove_emails($other_recipients, $board_email);
+    my($board_only) = $removed_board
+        || $self->unsafe_get('board_only')
+	|| (!$removed_sender && $self->unsafe_get('board_always'));
+    if ($board_only) {
+	if ($removed_sender) {
+	    $to = $to->exclude($realm_emails);
+	    $cc = $cc->exclude($realm_emails);
+	}
+	unless ($removed_board) {
+	    if ($to->as_length) {
+		$cc = $cc->append($board_email);
+	    }
+	    else {
+		$to = $to->append($board_email);
+	    }
+	}
+    }
+    $self->internal_put_field(headers => {
+	_from => $from,
+	_recipients => $other_recipients->as_literal,
+	Sender => $sender,
+	To => $to->as_literal,
+	$reply_to ? ('Reply-To' => $reply_to) : (),
+	$cc->as_length ? (Cc => $cc->as_literal) : (),
+	Subject => $self->internal_format_subject,
+	'Message-Id' => $_O->generate_message_id($req),
+	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
+    });
+    return (
+	$board_only,
+	$removed_sender,
+	$other_recipients,
+	$from_email,
+    );
 }
 
 sub is_reply {
