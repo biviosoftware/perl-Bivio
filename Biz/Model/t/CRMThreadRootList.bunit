@@ -54,23 +54,23 @@ my($email_mod_dt) = DateTime()->now;
 [
     load_all => [
         [] => [{
-            'RealmMail.subject' => qr{$subject},
-            'RealmFile.modified_date_time' => $init_dt,
-            'CRMThread.modified_date_time' => $mod_dt,
-            modified_by_name => qr{crm_tech1},
-            owner_name => qr{crm_tech2},
-            'RealmMail.from_email' => qr{demo},
-        }, {
             'RealmMail.subject' => qr{$subject2},
             'RealmFile.modified_date_time' => $email_init_dt,
             'CRMThread.modified_date_time' => $email_mod_dt,
             modified_by_name => qr{crm_tech1},
             owner_name => undef,
             'RealmMail.from_email' => qr{demo},
+        }, {
+            'RealmMail.subject' => qr{$subject},
+            'RealmFile.modified_date_time' => $init_dt,
+            'CRMThread.modified_date_time' => $mod_dt,
+            modified_by_name => qr{crm_tech1},
+            owner_name => qr{crm_tech2},
+            'RealmMail.from_email' => qr{demo},
         }],
     ],
     set_cursor_or_die => [
-	0 => not_die(),
+	1 => not_die(),
     ],
     get => [
 	'b_ticket.TupleTag.Priority' => 'Medium',
