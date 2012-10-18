@@ -3,7 +3,7 @@
 package Bivio::UI::HTML::ViewShortcuts;
 use strict;
 #TODO: Should be UI.ViewShortcuts or UIHTML, but can't do this right now
-use Bivio::Base 'Bivio::UI::ViewShortcuts';
+use Bivio::Base 'UIHTML';
 use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
