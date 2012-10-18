@@ -126,7 +126,7 @@ sub _format_name {
     my($fields) = $self->[$_IDI];
     return ($fields && $fields->{names_only}
 		? '' : _labels($self)->{assign_to})
-	. $row->get('display_name') . ' (' . $row->get('Email.email') . ')';
+	. $row->get('display_name') . ' <' . $row->get('Email.email') . '>';
 }
 
 sub _get_label {
