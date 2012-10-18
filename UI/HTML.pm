@@ -1,23 +1,8 @@
-# Copyright (c) 2000-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML;
-use strict;
-use Bivio::Base 'FacadeComponent.Constant';
+use Bivio::Base 'Bivio::UI::FacadeComponent::HTML';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-sub handle_register {
-    my($proto) = @_;
-    b_use('UI.Facade')->register($proto, [qw(Color Font Text Constant)]);
-    return;
-}
-
-sub internal_initialize_value {
-    my($self, $value) = @_;
-    shift->SUPER::internal_initialize_value(@_);
-    $value->{value}->initialize
-	if $self->is_blesser_of($value->{value}, 'Bivio::UI::Widget');
-    return;
-}
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /d+/g);
 
 1;

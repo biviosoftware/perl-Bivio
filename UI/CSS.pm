@@ -1,15 +1,8 @@
-# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::CSS;
-use strict;
-use Bivio::Base 'FacadeComponent.Constant';
-use Bivio::UI::ViewLanguageAUTOLOAD;
+use Bivio::Base 'Bivio::UI::FacadeComponent::CSS';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_R) = b_use('Agent.Request');
-
-sub format_css {
-    return Prose(shift->get_value(@_));
-}
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /d+/g);
 
 1;
