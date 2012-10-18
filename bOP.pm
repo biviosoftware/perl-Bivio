@@ -28,9 +28,18 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.2  2012/10/08 15:15:58  nagler
+  * Bivio::Biz::Action::Error
+    revert 1.7
+  * Bivio::PetShop::Util::TestData
+    fixed incorrect get_value call
+  * Bivio::Util::SiteForum
+    fixed incorrect get_value call
+
   Revision 12.1  2012/10/07 21:49:49  andrews
   * b_agent changes to prevent duplicate popups and improve handling of
     error on first request.
