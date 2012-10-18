@@ -85,7 +85,7 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_OLD_HTML) = [qw(hspace vspace width height border align attributes)];
-my($_A) = b_use('FacadeComponent.Align');
+my($_A) = b_use('UI.Align');
 my($_I) = b_use('FacadeComponent.Icon');
 my($_HTML) = b_use('Bivio.HTML');
 
