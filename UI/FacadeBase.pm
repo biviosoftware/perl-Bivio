@@ -185,6 +185,8 @@ sub _cfg_base {
     return {
 	clone => undef,
 	is_production => 1,
+	Icon => [],
+	Email => [],
 	Color => [
 	    [[qw(
 		table_separator
