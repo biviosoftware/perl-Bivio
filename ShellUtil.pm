@@ -3,7 +3,6 @@
 package Bivio::ShellUtil;
 use strict;
 use Bivio::Base 'Collection.Attributes';
-use Bivio::IO::Trace;
 use File::Spec ();
 use POSIX ();
 use Sys::Hostname ();
@@ -103,6 +102,8 @@ use Sys::Hostname ();
 # as defined by
 # L<Bivio::Biz::Model::RealmAdminList|Bivio::Biz::Model::RealmAdminList>.
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Trace');
+our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Map of class to Attributes which contains result of _parse_options()
 my(%_DEFAULT_OPTIONS);
@@ -238,7 +239,7 @@ sub arg_list {
 
 sub assert_have_user {
     my($self) = @_;
-    $self->usage_error('must select a realm with -realm')
+    $self->usage_error('must select a user with -user')
 	unless $self->req('auth_user');
     return;
 }
@@ -304,7 +305,7 @@ sub detach_process {
     $| = 1;
     select(STDOUT);
     $| = 1;
-    Bivio::IO::Alert->set_printer('FILE', $log);
+    $_A->set_printer('FILE', $log);
     eval {
 	require POSIX;
 	POSIX::setsid();
@@ -354,6 +355,10 @@ sub group_args {
     push(@$res, [splice(@$args, 0, $group_size)])
 	while @$args;
     return $res;
+}
+
+sub handle_call_autoload {
+    return shift->new(\@_, b_use('Agent.Request')->get_current_or_die);
 }
 
 sub handle_config {
