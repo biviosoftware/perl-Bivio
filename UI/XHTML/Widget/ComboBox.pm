@@ -15,7 +15,8 @@ sub initialize {
     return
 	if $self->is_initialized;
     $self->initialize_attr(auto_submit => 0);
-    $self->initialize_attr(size => 50);
+#TODO: Make size dynamic to fit given list items
+    $self->initialize_attr(size => 80);
 #TODO: Add list_id_field like Select().  See Pethop AdmSubstituteUserForm.
     my($ldf) = $self->initialize_attr('list_display_field');
     $self->put_unless_exists(
