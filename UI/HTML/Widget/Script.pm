@@ -62,8 +62,13 @@ window.bivio.combobox.key_down = function(key, field, init_values) {
         init_drop_down(field, init_values);
     field.key_code = key;
 
-    if (key == key_codes.TAB)
+    if (key == key_codes.TAB) {
+        if (field.drop_down.childNodes.length == 1) {
+            set_selected(field.drop_down.firstChild);
+            save_selected(field);
+        }
         field.clear_list();
+    }
     else if (key == key_codes.UP_ARROW || key == key_codes.DOWN_ARROW) {
         select_next_item(key == key_codes.UP_ARROW, field);
         set_timeout(field, 300);
