@@ -80,16 +80,11 @@ sub execute {
     unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
     local($ENV{XAPIAN_MAX_CHANGESETS}) = $_CFG->{max_changesets};
     $req->perf_time_op(__PACKAGE__, sub {
-        my($db) = Search::Xapian::WritableDatabase->new(
-	    $_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN);
-	$self->put(db => $db);
 	foreach my $op (@{$self->get('ops')}) {
 	    _trace($op) if $_TRACE;
 	    my($method) = shift(@$op);
 	    $self->$method($req, @$op);
 	}
-	$self->delete('db');
-	$db->flush;
     });
     return 0;
 }
@@ -178,7 +173,6 @@ sub query {
 	    _trace($attr, ': no realms and not public') if $_TRACE;
 	    return [];
 	}
-	my($db) = Search::Xapian::Database->new($_CFG->{db_path});
 	my($qp) = Search::Xapian::QueryParser->new;
 	$qp->set_stemmer($_STEMMER);
 	$qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
@@ -213,7 +207,7 @@ sub query {
 	);
 	# Need to make a copy.  Xapian is using the Tie interface, and it's
 	# implementing it in a strange way.
-	my(@res) = $db->enquire($q)->matches($attr->{offset}, $attr->{length});
+	my(@res) = _read(enquire => $q)->matches($attr->{offset}, $attr->{length});
 	return [map(_query_result($proto, $_, $attr->{req}, $attr), @res)];
     });
     _trace([$q->get_terms], '->[', $attr->{offset}, '..',
@@ -249,15 +243,14 @@ sub _delete {
     my($self, $primary_term, $req) = @_;
     return
 	unless $primary_term;
-    $self->get('db')->delete_document_by_term($primary_term);
+    _write(delete_document_by_term => $primary_term);
     return;
 }
 
 sub _find {
     my($primary_id) = @_;
-	return (
-	Search::Xapian::Database->new($_CFG->{db_path})
-	    ->enquire(Search::Xapian::Query->new(_primary_term($primary_id)))
+    return (
+	_read(enquire => Search::Xapian::Query->new(_primary_term($primary_id)))
 	    ->matches(0, 1),
     )[0];
 }
@@ -339,6 +332,11 @@ sub _query_result {
     );
 }
 
+sub _read {
+    my($op) = shift;
+    return Search::Xapian::Database->new($_CFG->{db_path})->$op(@_);
+}
+
 sub _replace {
     my($self, $req, $model, $parser) = @_;
     return
@@ -366,7 +364,17 @@ sub _replace {
 	}
 	$i++;
     }
-    $self->get('db')->replace_document_by_term($primary_term, $doc);
+    _write(replace_document_by_term => $primary_term, $doc);
+    return;
+}
+
+sub _write {
+    my($op) = shift;
+    my($db) = Search::Xapian::WritableDatabase->new(
+	$_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN,
+    );
+    $db->$op(@_);
+    $db->flush;
     return;
 }
 
