@@ -6,7 +6,7 @@ use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FCT) = b_use('FacadeComponent.Text');
-my($_F) = b_use('FacadeComponent.Facade');
+my($_F) = b_use('UI.Facade');
 my($_O) = b_use('Mail.Outgoing');
 my($_IOF) = b_use('IO.File');
 my($_FP) = b_use('Type.FilePath');
