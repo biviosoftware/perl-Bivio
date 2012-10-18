@@ -2,13 +2,14 @@
 # $Id$
 ShellUtil();
 [
-    [qw(-realm site validate_realm)] => sub {
-	my(undef, $actual) = @_;
-	assert_equals(qr{Not a valid.*/Wiki/index}is, $actual->[0]);
-	assert_equals(qr{'9 errors'}is, $actual->[0]);
-	return 1;
-    },
-    [qw(-r site-reports validate_all_realms)] => qr{
+    [qw(-realm site validate_realm)] => qr{
+	base.css:.Not.a.valid
+	.*
+	/Wiki/index:.Same.name
+	.*
+	'9.errors'
+    }xis,
+    [qw(-realm site-reports validate_all_realms)] => qr{
         fourem:.\d+.errors
 	.*
         site-help:.2.errors
