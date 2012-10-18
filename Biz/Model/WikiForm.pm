@@ -40,6 +40,7 @@ sub execute_ok {
 
 sub execute_other {
     my($self) = @_;
+    return if $self->in_error;
     _update_file($self);
     b_use('Action.Acknowledgement')
 	->save_label('FORUM_WIKI_EDIT', $self->req);
