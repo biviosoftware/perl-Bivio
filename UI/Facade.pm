@@ -97,7 +97,6 @@ my($_URI_MAP) = {};
 my($_URI_SEARCH_LIST) = [];
 my(%_COMPONENTS);
 my(@_COMPONENTS);
-my($_STATIC_COMPONENTS) = [qw(Email Icon View)];
 $_C->register(my $_CFG = {
     default => $_C->REQUIRED,
     # Always ends in a trailing slash
@@ -299,11 +298,6 @@ sub initialize {
 	$_CFG->{default}, ': unable to find or load default Facade',
     ) unless ref($_CLASS_MAP->{$_CFG->{default}});
     foreach my $f (sort(values(%$_CLASS_MAP))) {
-	foreach my $c (@$_STATIC_COMPONENTS) {
-	    $f->put($c => Bivio::IO::ClassLoader->map_require(
-		'FacadeComponent', $c
-	    )->initialize_by_facade($f));
-	}
 	foreach my $c (@_COMPONENTS) {
 	    b_die($f, ': ', $c, ': failed to load component')
 	        unless $f->unsafe_get($c);
@@ -430,9 +424,11 @@ sub new {
     }
 
     # Load all components before initializing.  Modifies @ & %_COMPONENTS.
-    foreach my $c (sort(keys(%$config))) {
-	Bivio::IO::ClassLoader->map_require('FacadeComponent', $c)
-	    ->handle_register;
+    my($components) = [map(b_use('FacadeComponent', $_), sort(keys(%$config)))];
+    foreach my $c (@$components) {
+	# Certain apps refer to Bivio::UI::<comp> without using
+	b_use('UI', $c->simple_package_name);
+	$c->handle_register;
     }
     _initialize($self, $config, $clone);
 
@@ -555,12 +551,6 @@ sub _init_hosts {
 
 sub _initialize {
     my($self, $config, $clone) = @_;
-    foreach my $c (@$_STATIC_COMPONENTS) {
-	$self->put(
-	    $c,
-	    b_use('FacadeComponent', $c)->initialize_by_facade($self),
-       );
-    }
     foreach my $c (@_COMPONENTS) {
 	# Get the config for this component (or force to exist)
 	my($cfg) = $config->{$c} || {initialize => sub {}};
