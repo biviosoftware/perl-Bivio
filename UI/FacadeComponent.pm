@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::FacadeComponent;
 use strict;
@@ -30,6 +30,10 @@ my($_HANDLERS) = b_use('Biz.Registrar')->new;
 b_use('IO.Config')->register(my $_CFG = {
     die_on_error => 0,
 });
+
+sub REGISTER_PREREQUISITES {
+    return [];
+}
 
 sub UNDEF_CONFIG {
     # The configuration to be used when a value can't be found.  A
@@ -133,6 +137,12 @@ sub handle_init_from_prior_group {
     )->{config});
 }
 
+sub handle_register {
+    my($proto) = @_;
+    b_use('UI.Facade')->register($proto, $proto->REGISTER_PREREQUISITES);
+    return;
+}
+
 sub initialization_complete {
     my($fields) = shift->[$_IDI];
     # Called by the Facade after all initialization is complete.
@@ -212,14 +222,23 @@ sub new {
     # Instantiate the component and set its facade.  I<clone> is used as the
     # base initialization, if supplied,
     # and then I<initialize> is called, if supplied.
-    my($self) = $proto->new_static($facade);
-    my($fields) = $self->[$_IDI];
-    $fields->{map} = {};
-    $fields->{dynamic_init} = [];
-    $fields->{clone} = $clone;
-    $fields->{initialize} = $initialize;
-    $fields->{undef_value}
-	= _initialize_value($self, {orig_config => $self->UNDEF_CONFIG, names => []});
+    $proto->die($facade, 'missing or invalid facade')
+	unless b_use('UI.Facade')->is_super_of($facade);
+    my($self) = shift->SUPER::new;
+    my($fields) = $self->[$_IDI] = {
+	facade => $facade,
+	map => {},
+	dynamic_init => [],
+	clone => $clone,
+	initialize => $initialize,
+	undef_value =>  _initialize_value(
+	    $self,
+	    {
+		orig_config => $self->UNDEF_CONFIG,
+		names => [],
+	    },
+	),
+    };
     _init_from_clone($self, $clone);
     $initialize->($self)
 	if $initialize;
@@ -228,17 +247,6 @@ sub new {
 	$self->internal_initialize_value($value);
     }
     $self->initialization_complete;
-    return $self;
-}
-
-sub new_static {
-    my($proto, $facade) = @_;
-    $proto->die($facade, 'missing or invalid facade')
-	unless b_use('UI.Facade')->is_super_of($facade);
-    my($self) = shift->SUPER::new;
-    $self->[$_IDI] = {
-	facade => $facade,
-    };
     return $self;
 }
 
