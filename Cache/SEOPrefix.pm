@@ -47,7 +47,8 @@ sub internal_compute {
 sub internal_realm_id {
     my($proto, $req) = @_;
     return ref($proto) ? $proto->get('realm_id')
-	: $_C->get_value('site_realm_id', $req);
+	: $_C->get_value('site_realm_id', $req)
+	|| shift->SUPER::internal_realm_id(@_);
 }
 
 sub _clean {
