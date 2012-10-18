@@ -3,8 +3,6 @@
 package Bivio::Test::Unit;
 use strict;
 use Bivio::Base 'Bivio.Test';
-use Bivio::DieCode;
-use Bivio::IO::File;
 use File::Basename ();
 use File::Spec ();
 
@@ -69,7 +67,8 @@ my($_BR) = b_use('Biz.Random');
 sub AUTOLOAD {
     my($func) = $AUTOLOAD;
     $func =~ s/.*:://;
-    return if $func eq 'DESTROY';
+    return
+	if $func eq 'DESTROY';
     my($b) = "builtin_$func";
     return $_PROTO->can($b)
 	? $_PROTO->$b(@_)

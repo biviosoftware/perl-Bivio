@@ -5,11 +5,12 @@ use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-Bivio::IO::Config->register(my $_CFG = {
-    root => Bivio::IO::Config->REQUIRED,
-    backup_root => Bivio::IO::Config->REQUIRED,
-});
 my($_F) = b_use('IO.File');
+my($_C) = b_use('IO.Config');
+$_C->register(my $_CFG = {
+    root => $_C->REQUIRED,
+    backup_root => $_C->REQUIRED,
+});
 
 sub handle_config {
     my(undef, $cfg) = @_;

@@ -279,8 +279,7 @@ sub execute_task_item {
 }
 
 sub initialize_by_facade {
-    my($proto, $facade) = @_;
-    return $proto;
+    return shift;
 }
 
 sub internal_set_parent {
