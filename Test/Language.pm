@@ -163,6 +163,7 @@ sub test_run {
     my($proto, $script) = @_;
     # Runs a script.  Cannot be called from within a script.  Returns undef if
     # everything goes ok.  Otherwise, returns the die instance created by the script.
+    b_use('Bivio.ShellUtil')->get_request_or_new;
     local($_SELF_IN_EVAL);
     my($script_name) = ref($script) ? $_INLINE++ : $script;
     my($die) = Bivio::Die->catch(sub {
