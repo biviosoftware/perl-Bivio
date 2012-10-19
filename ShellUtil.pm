@@ -334,6 +334,10 @@ sub finish {
     return;
 }
 
+sub get_request_or_new {
+    return b_use('Agent.Request')->get_current_or_new;
+}
+
 sub get_request {
     my($self) = @_;
     return $self->unsafe_get('req') || $self->setup->get('req')
