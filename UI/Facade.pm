@@ -603,7 +603,7 @@ sub _setup_request {
     my($self, $req) = @_;
     $req->put_durable(
 	__PACKAGE__, $self,
-	'UI.Facade' => $self,
+	__PACKAGE__->as_classloader_map_name => $self,
     );
     _trace($self) if $_TRACE;
     return $self;
