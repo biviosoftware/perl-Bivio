@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,82 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.3  2012/10/18 17:25:59  schellj
+  * Bivio::Auth::Realm
+    added GENERAL_NAME
+  * Bivio::Biz::Action::EasyForm
+    pass req to FacadeComponent.Constant->get_value
+  * Bivio::Biz::Action::EmptyReply
+    print a warning if the incoming status is not known
+  * Bivio::Biz::Action::Error
+    internal_render_content can change $status
+    deal with DEFAULT_ERROR_REDIRECT_*
+  * Bivio/Biz/Action/t
+    NEW
+  * Bivio::Biz::Model::CRMActionList
+    format displaay names as "name <email>", not "name (email)"
+  * Bivio::Biz::Model::CRMForm
+    - change from_display_name to be user, not realm.
+    - send message to board or realm with current status and updated
+    fields if any changed.
+  * Bivio::Biz::Model::MailForm
+    move header setting logic to internal_set_headers
+  * Bivio::Biz::Model::MailThreadList
+    sort by RealmMail.realm_file_id for messages that arrived withing the
+    same second
+  * Bivio::Biz::Model::Tuple
+    fix _parse_slots to always return an array ref, because map_by_two
+    requires an array ref always (even if empty)
+  * Bivio::ClassWrapper::TupleTag
+    - fix bug with tuple_tag_label not getting set in _field_info
+    - add hook to _update_properties for classes to use old/new field values
+  * Bivio::HOWTO::CodingStyle
+    Added Statelfulness section
+    discussed with_* approach
+    cleaned up some old paradigms.
+  * Bivio::PetShop::Util::TestCRM
+    CRM->setup_realm sets priority and prefix so needed to change uses to
+    match was there before
+  * Bivio::Search::Xapian
+    wrap calls to open read/write xapian db so always atomic.  There are
+    times (e.g. during create_test_db) where there are reads overlapping
+    with writes during a transaction.
+  * Bivio::UI::FacadeBase
+    labels for CRMForm field update mail
+  * Bivio::UI::Facade
+    remove deprecated warning in get_value, because covered by get_from_request_or_self
+    get_instance accepts a uri, domain, or class.  class must begin with
+    upper case letter.  find_by_uri_or_domain can now only accept lower
+    case uri or domain (deprecated for now)
+    added map_iterate_with_setup_request and with_setup_request
+  * Bivio::UI::FormError
+    fixed deprecated warning on UI.Text->get_widget_value()
+    fpc
+    fmt
+    b_use
+  * Bivio::UI::HTML::Widget::Script
+    combobox: if one item matches search and tab is pressed, complete with that item
+  * Bivio::UI::View::CRM
+    add field_updates_imail
+  * Bivio::UI::XHTML::Widget::ComboBox
+    make wider
+  * Bivio::Util::CRM
+    removed setup_realm_with_priority
+    setup_realm takes a priority and CRM_SUBJECT_PREFIX but defaults to priority 1-3.
+  * Bivio::Util::Forum
+    can pass parent_realm as 3rd arg, and will be used with_realm
+  * Bivio::Util::HTTPConf
+    added global_params
+  * Bivio::Util::HTTPD
+    got a read request timeout so bump header=2
+  * Bivio::Util::RealmMail
+    wrong class map for Facade.pm
+  * Bivio::Util::SiteForum
+    use IO.Config->is_test not req->is_test
+  * Bivio::Util::SQL
+    clear the realm set by initialize_db (probably the last default realm
+    created, e.g. forum)
+
   Revision 12.2  2012/10/08 15:15:58  nagler
   * Bivio::Biz::Action::Error
     revert 1.7
