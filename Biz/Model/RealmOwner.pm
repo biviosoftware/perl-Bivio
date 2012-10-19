@@ -286,6 +286,18 @@ sub unauth_load_by_id_or_name_or_die {
     return $self;
 }
 
+sub unauth_load_by_name_and_type_or_die {
+    my($self, $name, $type) = @_;
+    $type = $_RT->from_any($type)
+	unless ref($type);
+    $self->throw_die(MODEL_NOT_FOUND => {entity => $name, realm_type => $type})
+	unless $self->unauth_load({
+	    name => $name,
+	    realm_type => $type,
+	});
+    return $self;
+}
+
 sub unsafe_get_model {
     my($self, $name) = @_;
     # Overridden to support getting the related User or Club.

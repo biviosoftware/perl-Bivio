@@ -30,6 +30,11 @@ my($_RT) = __PACKAGE__->use('Auth.RealmType');
 	    $id => $name,
 	    $email => $name,
 	],
+	unauth_load_by_name_and_type_or_die => [
+	    [$name, 'user'] => $name,
+	    [$name, 'forum'] => MODEL_NOT_FOUND(),
+	    [$name, Auth_RealmType()->USER] => $name,
+	],
 	create => [
 	    [{
 		realm_id => '12345',
