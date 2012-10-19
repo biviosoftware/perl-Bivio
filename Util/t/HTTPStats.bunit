@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2005-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 ShellUtil();
 req()->initialize_fully;
@@ -9,6 +9,7 @@ config({
     },
 });
 my($write_log) = sub {
+    my($date, $bytes) = @_;
     go_dir(
 	FilePath()->join(
 	    $dir,
@@ -16,11 +17,17 @@ my($write_log) = sub {
 	),
 	sub {
 	    my($host) = UI_Facade()->get_default->get('http_host');
+	    $date = Date($date);
+	    my($d, $m, $y) = Date()->get_parts($date, qw(day month year));
+	    $d = sprintf('%02d', $d);
+	    $y = sprintf('%04d', $y);
+	    my($mmm) = Date()->english_month3($m);
 	    system(
 		'gzip',
 		IO_File()->write(
-		    '20120903123456-access_log',
-		    qq{$host 1.2.3.4 1234 - li-200001 [02/Sep/2012:18:55:30 -0600] "GET /Page10240 HTTP/1.1" 200 10240 "http://$host/bp/StartPage" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:15.0) Gecko/20100101 Firefox/15.0.1"\n},
+		    Date()->to_local_file_name(Date()->add_days($date, 1))
+			. '123456-access_log',
+		    qq{$host 1.2.3.4 1234 - li-200001 [$d/$mmm/$y:18:55:30 -0600] "GET /Page$bytes HTTP/1.1" 200 $bytes "http://$host/bp/StartPage" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:15.0) Gecko/20100101 Firefox/15.0.1"\n},
 		),
 	    );
 	}
@@ -34,17 +41,26 @@ map(
     @{Util_RealmFile()->list_folder('/')},
 );
 rm_rf(b_use('Biz.File')->absolute_path('HTTPStats'));
-$write_log->();
+
 [
     [qw(init_forum site-reports-fail)] => DIE(),
     [qw(-user root init_forum notfound-reports)] => MODEL_NOT_FOUND(),
     [qw(-user root init_forum), 'site-reports-' . random_string()] => not_die(),
     [qw(-user root init_forum site-reports)] => not_die(),
-    [qw(-realm site-reports import_history 9/30/2012)] => sub {
+    inline_case(sub {$write_log->('8/21/2012', 10240)}),
+    [qw(-realm site-reports import_history 8 2012)] => sub {
 	assert_equals(
-	    qr{Sep 2012.*10.00 KB}m,
-	    Util_RealmFile()->read('/20120930.html'),
+	    qr{Aug 2012.*\b10.00 KB}m,
+	    Util_RealmFile()->read('/20120831.html'),
 	);
 	return 1;
+    },
+    inline_case(sub {$write_log->('9/13/2012', 5120)}),
+    [qw(-realm site-reports daily_report 9/14/2012)] => sub {
+    	assert_equals(
+    	    qr{Sep 2012.*\b5.00 KB}m,
+    	    Util_RealmFile()->read('/20120930.html'),
+    	);
+    	return 1;
     },
 ];
