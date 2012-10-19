@@ -334,8 +334,8 @@ sub finish {
     return;
 }
 
-sub get_request_or_new {
-    return b_use('Agent.Request')->get_current_or_new;
+sub shell_util_request_instance {
+    return b_use('Test.Request')->get_instance->put_durable(is_secure => 1);
 }
 
 sub get_request {
