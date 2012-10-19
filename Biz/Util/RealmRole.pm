@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Util::RealmRole;
 use strict;
@@ -35,6 +35,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-role [options] command [args...]
 commands:
+    clear_unused_permissions -- clear permission named UNUSED_...
     copy_all src dst -- copies all records from src to dst realm
     edit role|group operation ... -- changes the permissions for realm/role|group
     edit_categories [category_op ...] -- disable or enable permission categories
@@ -44,10 +45,36 @@ commands:
     list_enabled_categories -- list enabled permission categories for this realm
     list_roles role|group -- roles for category role group designator
     make_super_user -- gives current user super_user privileges
+    permission_count -- show count by permission used in entire database
     roles_for_permissions permission... -- list roles which have permission(s)
     set_same old new - copies permission old to new for ALL realms
     unmake_super_user -- drops current user's super_user privileges
 EOF
+}
+
+sub clear_unused_permissions {
+    my($self) = @_;
+    my($perms) = [grep($_->get_name =~ /^UNUSED_\d+$/, $_P->get_list)];
+    $self->model('RealmRole')->do_iterate(sub {
+        my($rr) = @_;
+	my($set) = $rr->get('permission_set');
+	my($changed) = 0;
+
+	foreach my $p (@$perms) {
+	    next unless $_PS->is_set($set, [$p]);
+	    $changed = 1;
+	    b_info($p);
+	    $set = $_PS->clear($set, [$p]);
+	}
+
+	if ($changed) {
+	    $rr->update({
+		permission_set => $$set,
+	    });
+	}
+	return 1;
+    }, 'unauth_iterate_start');
+    return;
 }
 
 sub copy_all {
@@ -241,6 +268,30 @@ sub new {
     return $self;
 }
 
+sub permission_count {
+    my($self) = @_;
+    my($perms) = [sort({$a->as_int <=> $b->as_int} $_P->get_list)];
+    my($perm_count) = {
+	map(($_->as_int => 0), @$perms),
+    };
+    $self->model('RealmRole')->do_iterate(sub {
+        my($rr) = @_;
+	my($set) = $rr->get('permission_set');
+
+	foreach my $p (@$perms) {
+	    $perm_count->{$p->as_int}++
+		if $_PS->is_set($set, [$p]);
+	}
+	return 1;
+    }, 'unauth_iterate_start');
+    my($res) = [['count', 'permission']];
+
+    foreach my $p (@$perms) {
+	push(@$res, [$perm_count->{$p->as_int}, $p->get_name]);
+    }
+    return $self->new_other('CSV')->to_csv_text($res);
+}
+
 sub set_same {
     # (self, string, string) : undef
     # Sets I<new> permission to same value as I<old> permission.  This is used
@@ -353,7 +404,7 @@ sub _get_permission_set {
 	if $rr->unauth_load(realm_id => $realm_id, role => $role);
     $self->usage($role->as_string, ": not set for realm: ", $realm_id)
 	unless $dont_die;
-    return $_PS->get_min
+    return $_PS->get_min;
 }
 
 sub _init_category_map {
