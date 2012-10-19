@@ -80,6 +80,7 @@ qw(
     !mail_admin
     !row_tag_value_64k
     !mail_from_display_name
+    http_stats_biz_file
 )
 ];
 #    crm_mail
@@ -1137,6 +1138,21 @@ STYPE = text
 /
 EOF
     }
+    return;
+}
+
+sub internal_upgrade_db_http_stats_biz_file {
+    my($self) = @_;
+    return
+	unless my $src = _sentinel_http_stats_biz_file($self);
+    my($dst) = b_use('Biz.File')->absolute_path('HTTPStats');
+    if (glob("$dst/*")) {
+	my($dst_old) = $dst . '-old';
+	b_warn($dst, ': files exist, renaming to ', $dst_old);
+	b_use('IO.File')->rename($dst, $dst_old);
+    }
+    b_use('IO.File')->rename($src, $dst);
+    rmdir(File::Basename::dirname($src));
     return;
 }
 
@@ -2728,6 +2744,12 @@ sub _sentinel_file_writer {
 	{role => $_R->FILE_WRITER},
     );
     return $ok;
+}
+
+sub _sentinel_http_stats_biz_file {
+    my($self) = @_;
+    my($d) = b_use('IO.Log')->file_name('HTTPStats/data', $self->req);
+    return -d $d ? $d : 0;
 }
 
 sub _sentinel_motion2 {
