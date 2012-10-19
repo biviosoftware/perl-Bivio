@@ -1,9 +1,50 @@
 # Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 ShellUtil();
-my($f) = random_string();
+req()->initialize_fully;
+my($dir) = tmp_dir();
+config({
+    class() => {
+	log_base => $dir,
+    },
+});
+my($write_log) = sub {
+    go_dir(
+	FilePath()->join(
+	    $dir,
+	    UI_Facade()->get_default->get('local_file_prefix'),
+	),
+	sub {
+	    my($host) = UI_Facade()->get_default->get('http_host');
+	    system(
+		'gzip',
+		IO_File()->write(
+		    '20120903123456-access_log',
+		    qq{$host 1.2.3.4 1234 - li-200001 [02/Sep/2012:18:55:30 -0600] "GET /Page10240 HTTP/1.1" 200 10240 "http://$host/bp/StartPage" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:15.0) Gecko/20100101 Firefox/15.0.1"\n},
+		),
+	    );
+	}
+    );
+};
+req()->set_realm('site-reports');
+Util_RealmFile()->delete_deep('/detail');
+Util_RealmFile()->delete_deep('/icon');
+map(
+    $_ =~ m{/\d+.html$} && Util_RealmFile()->delete_deep($_),
+    @{Util_RealmFile()->list_folder('/')},
+);
+rm_rf(b_use('Biz.File')->absolute_path('HTTPStats'));
+$write_log->();
 [
     [qw(init_forum site-reports-fail)] => DIE(),
-    [qw(-user root init_forum), "notfound-reports"] => MODEL_NOT_FOUND(),
-    [qw(-user root init_forum), "site-reports-$f"] => not_die(),
+    [qw(-user root init_forum notfound-reports)] => MODEL_NOT_FOUND(),
+    [qw(-user root init_forum), 'site-reports-' . random_string()] => not_die(),
+    [qw(-user root init_forum site-reports)] => not_die(),
+    [qw(-realm site-reports import_history 9/30/2012)] => sub {
+	assert_equals(
+	    qr{Sep 2012.*10.00 KB}m,
+	    Util_RealmFile()->read('/20120930.html'),
+	);
+	return 1;
+    },
 ];
