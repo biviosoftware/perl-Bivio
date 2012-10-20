@@ -254,8 +254,11 @@ sub builtin_from_type {
 }
 
 sub builtin_go_dir {
-    my(undef, $dir) = @_;
-    return $_F->chdir($_F->mkdir_p($_F->absolute_path($dir)));
+    my(undef, $dir, $op) = @_;
+    my($d) = $_F->mkdir_p($_F->absolute_path($dir));
+    return $_F->chdir($d)
+	unless $op;
+    return IO_File()->do_in_dir($d, $op);
 }
 
 sub builtin_inline_case {
