@@ -4,6 +4,7 @@ package Bivio::IO::ClassLoader;
 use strict;
 use base 'Bivio::UNIVERSAL';
 use Bivio::IO::Config;
+use Bivio::IO::Alert;
 use Bivio::IO::Trace;
 
 # C<Bivio::IO::ClassLoader> implements dynamic class loading.
@@ -22,6 +23,7 @@ use Bivio::IO::Trace;
 # implement the class.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_WARNED) = {};
 our($_TRACE);
 # Bivio::Die can't be loaded at startup, but it can be loaded before
 # the first *_require.  We load it dynamically, because Bivio::Type
@@ -36,7 +38,6 @@ Bivio::IO::Config->register(my $_CFG = {
     maps => Bivio::IO::Config->REQUIRED,
     delegates => Bivio::IO::Config->REQUIRED,
 });
-my($_WARNED);
 
 sub MAP_SEPARATOR {
     # Returns the separator character (.)
@@ -290,7 +291,7 @@ sub unsafe_required_class {
     return $_MAP_CLASS->{$class}
 	if $class =~ /\Q$_SEP/o;
     return $_SIMPLE_CLASS->{$class}
-	|| (UNIVERSAL::isa($class, 'Bivio::UNIVERSAL') && $class);
+	|| (Bivio::UNIVERSAL->is_super_of($class) ? $class : undef);
 }
 
 sub unsafe_simple_require {
@@ -311,6 +312,7 @@ sub _catch {
 
 sub _die {
     Bivio::IO::Alert->bootstrap_die(@_);
+    # DOES NOT RETURN
 }
 
 sub _file {
@@ -356,7 +358,7 @@ sub _map_init {
     my($map_name, $paths) = @_;
     return $map_name => [map(
 	_map_glob($map_name, $_) ? $_
-	    : ($_WARNED ||= {})->{$_}++ ? ()
+	    : $_WARNED->{$_}++ ? ()
 	    : Bivio::IO::Alert->warn($_, ': empty path in map ', $map_name),
 	@$paths,
     )];
@@ -390,7 +392,7 @@ sub _post_require {
 sub _require {
     my($proto, $pkg, $die_if_not_found) = @_;
     return _post_require($pkg)
-	if UNIVERSAL::isa($pkg, 'Bivio::UNIVERSAL') || $_SIMPLE_CLASS->{$pkg};
+	if $proto->was_required($pkg);
     _die($pkg, ': invalid class name')
 	unless $pkg =~ /^(\w+::)*\w+$/;
     my($file) = _file($pkg);

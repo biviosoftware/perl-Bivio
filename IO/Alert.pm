@@ -93,10 +93,8 @@ sub bootstrap_die {
     # This method tries to call L<Bivio::Die::die|Bivio::Die/"die"> if
     # it is defined and loaded.  Bivio::Die does not call this method.
     my($proto) = shift;
-    Bivio::Die->throw_or_die(
-	$proto->calling_context,
-	@_,
-    ) if UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
+    Bivio::Die->throw_or_die($proto->calling_context, @_)
+        if UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
 	&& UNIVERSAL::can('Bivio::Die', 'throw_or_die');
     CORE::die(_call_format($proto, \@_, 0));
     # DOES NOT RETURN
