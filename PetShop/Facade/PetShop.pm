@@ -8,7 +8,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SHARED_VALUES) = [
     [qw(shared_value1 shared_value2)] => 'PetShop',
     [qw(shared_value3 shared_value4)] => 'PetShop',
-    want_secure => 0,
     table_default_align => 'left',
     page_left_margin => 20,
 ];
