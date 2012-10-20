@@ -143,7 +143,10 @@ sub delete_from_req {
 
 sub die {
     shift;
-    Bivio::Die->throw_or_die(@_);
+    Bivio::Die->throw_or_die(
+	Bivio::IO::Alert->calling_context,
+	@_,
+    );
     # DOES NOT RETURN
 }
 
@@ -567,7 +570,6 @@ sub _grep_sub {
 sub _ureq {
     my($method, $proto, @args) = @_;
     my($req) = ref($proto) && $proto->can('get_request') && $proto->get_request
-# deprecate
 	|| Bivio::Agent::Request->get_current
 	|| Bivio::Die->die('no request');
     return @args ? $req->$method(@args) : $req
