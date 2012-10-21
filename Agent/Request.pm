@@ -50,10 +50,6 @@ use Bivio::Base 'Collection.Attributes';
 #
 # The type of the user agent for this request.
 #
-# can_secure : boolean
-#
-# Can this server function in secure mode?
-#
 # client_addr : string
 #
 # Client's network address if available.
@@ -217,6 +213,13 @@ sub CLIENT_REDIRECT_PARAMETERS {
     ];
 }
 
+sub CLIENT_REDIRECT_PARAMETERS_WITHOUT_TASK_ID {
+    return [
+	qw(uri query no_context task_id realm path_info),
+	shift->EXTRA_URI_PARAM_LIST,
+    ];
+}
+
 sub EXTRA_URI_PARAM_LIST {
     # Only useful to this class and subclasses.  Use FORMAT_URI_PARAMETERS
     return qw(
@@ -224,7 +227,7 @@ sub EXTRA_URI_PARAM_LIST {
 	uri form_in_query require_absolute no_form
         carry_query carry_path_info _server_redirect
         seo_uri_prefix facade_uri acknowledgement
-	http_status_code
+	http_status_code require_secure
     );
 }
 
@@ -253,9 +256,8 @@ sub SERVER_REDIRECT_PARAMETERS {
     ];
 }
 
-sub if_apache_version {
-    my($proto, $expect) = (shift, shift);
-    return $proto->if_then_else($_CFG->{apache_version} >= $expect, @_);
+sub agent_execution_is_secure {
+    return shift->get('is_secure');
 }
 
 sub as_string {
@@ -308,10 +310,6 @@ sub cache_for_auth_user {
 
 sub cache_for_auth_realm {
     return _realm_cache('auth_id', @_);
-}
-
-sub can_secure {
-    return $_CFG->{can_secure};
 }
 
 sub can_user_execute_task {
@@ -418,89 +416,10 @@ sub format_email {
     return $email . '@' . Sys::Hostname::hostname();
 }
 
-sub format_help_uri {
-    my($self, $task_id) = @_;
-    # Formats the uri for I<task_id> (defaults to task_id on request).  If the task
-    # doesn't have a help entry, defaults to default help page.
-    #
-    # I<task_id> may be a widget value, string (the name), or
-    # a L<$_TI|$_TI>.
-    $task_id = $task_id ? ref($task_id) ? $task_id
-	: $_TI->from_any($task_id)
-	: $self->get('task_id');
-    return b_use('FacadeComponent.Task')->format_help_uri($task_id, $self);
-}
-
 sub format_http {
-    my($self) = shift;
-    # Creates an http URI.  See L<format_uri|"format_uri"> for argument descriptions.
-    #
-    # Handles I<require_secure> according to rules in L<format_uri|"format_uri">.
-    # Must be @_ so format_uri handles overloading properly
-    return _http($self, $self->format_uri(@_));
-}
-
-sub format_http_insecure {
-    my($self) = shift;
-    # Creates an http URI.  Forces http not https.
-    my($uri) = $self->format_uri(@_);
-    return $uri
-	if $uri =~ s/^https:/http:/;
-    return 'http://'
-	. b_use('UI.Facade')->get_value('http_host', $self)
-        . $uri;
-}
-
-sub format_http_toggling_secure {
-    b_die('format_uri handles toggling secure automatically')
-	if $_V1;
-    # (self) : string
-    # Formats the uri for this request, but toggles secure mode.  This
-    # is a very special and only used in one location.
-    my($self, $host) = @_;
-    my($is_secure, $r, $redirect_count, $uri, $query) = $self->get(
-	    qw(is_secure r redirect_count uri query));
-    $host ||= b_use('UI.Facade')->get_value('http_host', $self);
-
-    # This is particularly strange.  FormModel deletes the incoming
-    # query context.   If we haven't internally redirected, we use
-    # the original query string so we get the format_context.  If
-    # we redirected, don't bother with the form_context.
-#TODO: This is screwed up.  Probably best to take the current
-#      form's context and shove it on the URL.  Wouldn't hurt if not
-#      really the form_model.
-#      RJN 12/13/00 For require_secure, shouldn't grab form context,
-#      because we don't even want to pretend to process it.
-    $query = $redirect_count ? b_use('AgentHTTP.Query')->format($query, $self)
-	    : $r->args;
-    $uri =~ s/\?/\?$query&/ || ($uri .= '?'.$query)
-	if $query;
-    $uri =~ s{https?://[^/]+/?}{/};
-    # Go into secure if not secure and vice-versa
-    return ($is_secure ? 'http://' : 'https://'). $host . $uri;
-}
-
-sub format_http_prefix {
-    my($self, $require_secure, $facade_uri) = @_;
-    # Returns the http or https prefix for this I<Text.http_host>.  Does not add
-    # trailing '/'.
-    #
-    # You should pass in the I<require_secure> value for the task you are
-    # rendering for.
-    # If is_secure is not set, default to non-secure
-
-    if ($facade_uri) {
-	my($facade) = b_use('UI.Facade')->find_by_uri_or_domain($facade_uri);
-	b_warn('no facade_uri found for value: ', $facade_uri)
-	    unless $facade;
-	$facade_uri = $facade;
-    }
-    return ($self->unsafe_get('is_secure') || $require_secure
-	? 'https://' : 'http://')
-        . b_use('UI.Facade')->get_value(
-	    'http_host',
-	    $facade_uri || $self,
-	);
+    my($self, $named) = _uri_args('FORMAT_URI_PARAMETERS', @_);
+    $named->{require_absolute} = 1;
+    return $self->format_uri($named);
 }
 
 sub format_mailto {
@@ -509,7 +428,7 @@ sub format_mailto {
     # I<auth_realm> owner's name.   If I<email> is missing a host, uses
     # I<Text.mail_host>.
     my($res) = 'mailto:'
-	    . $_HTML->escape_uri($self->format_email($email));
+	. $_HTML->escape_uri($self->format_email($email));
     if (defined($subject)) {
 	# This is a bug.  Currently Outlook doesn't understand
 	# escaped URIs in mailtos.  We should be escap_uri'ing the subject.
@@ -554,24 +473,17 @@ sub format_uri {
     # I<anchor> will be appended last.
     #
     # I<no_context> and I<require_context> as described by FacadeComponent.Task
-    my($self) = shift;
-    my($named);
-    ($self, $named) = $self->internal_get_named_args(
-	$self->FORMAT_URI_PARAMETERS,
-	\@_);
+    my($self, $named) = _uri_args('FORMAT_URI_PARAMETERS', @_);
     my($uri);
     b_die($named, ': must supply query with form_in_query')
         if $named->{form_in_query} && ref($named->{query}) ne 'HASH';
+    my($require_secure) = $named->{require_secure};
     if (defined($uri = $named->{uri})) {
-	b_die($named, ': require secure not supported')
-	    if defined($named->{require_secure});
 	$named->{no_context} = 1
 	    unless defined($named->{no_context})
 	    || defined($named->{require_context});
 	$named->{uri} = $uri;
 	$self->internal_copy_implicit($named);
-	$self->internal_call_handlers(handle_format_uri_named => [$named, $self]);
-	$uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
     }
     else {
 	$named->{task_id} = $self->unsafe_get('task_id')
@@ -580,13 +492,10 @@ sub format_uri {
 	$named->{realm} = $self->internal_get_realm_for_task($named->{task_id})
 	    unless defined($named->{realm});
 	$named->{no_form} = 0
-	    if my $ncst = $self->need_to_secure_task(
-		$_T->get_by_id($named->{task_id}));
-	$self->internal_call_handlers(handle_format_uri_named => [$named, $self]);
-	$uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
-	$uri = $self->format_http_prefix(1, $named->{facade_uri}) . $uri
-	    if $ncst;
+	    if $require_secure ||= _need_to_secure_task($self, $named->{task_id});
     }
+    $self->internal_call_handlers(handle_format_uri_named => [$named, $self]);
+    $uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
     if (defined($named->{query})) {
 	$named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1
 	    if $named->{form_in_query};
@@ -597,10 +506,9 @@ sub format_uri {
     }
     $uri .= '#' . $_HTML->escape_query($named->{anchor})
         if defined($named->{anchor}) && length($named->{anchor});
-#TODO: Handle case with a uri which is already absolute
-    $uri = $self->format_http_prefix(undef, $named->{facade_uri}) . $uri
-	if $named->{facade_uri};
-    return $named->{require_absolute} ? _http($self, $uri) : $uri;
+    return _absolute_uri($self, $uri, $require_secure, $named->{facade_uri})
+	if $require_secure || $named->{facade_uri} || $named->{require_absolute};
+    return $uri;
 }
 
 sub get_auth_role {
@@ -709,6 +617,11 @@ sub handle_config {
     return;
 }
 
+sub if_apache_version {
+    my($proto, $expect) = (shift, shift);
+    return $proto->if_then_else($_CFG->{apache_version} >= $expect, @_);
+}
+
 sub if_test {
     my($self) = shift;
     return $self->if_then_else($self->is_test, @_);
@@ -733,8 +646,7 @@ sub internal_client_redirect_args {
  	ref($first) && (ref($first) ne 'HASH' || $first->{task_id})
 	    || $_TI->is_valid_name($first)
 	    ? $self->CLIENT_REDIRECT_PARAMETERS
-	    : [qw(uri query no_context task_id realm path_info),
-	       $self->EXTRA_URI_PARAM_LIST],
+	    : $self->CLIENT_REDIRECT_PARAMETERS_WITHOUT_TASK_ID,
 	\@_,
     );
     if (defined($named->{uri})) {
@@ -790,7 +702,8 @@ sub internal_get_named_args {
 	: $_TI->from_name($named->{task_id})
 	if grep($_ eq 'task_id', @$names);
     $named->{require_absolute} = 1
-	if !defined($named->{require_absolute})
+	if $named->{require_secure}
+	|| !defined($named->{require_absolute})
 	&& $self->unsafe_get($self->REQUIRE_ABSOLUTE_GLOBAL);
     _trace((caller(1))[3], $named) if $_TRACE;
     return ($self, $named);
@@ -866,7 +779,6 @@ sub internal_new {
 	request => $self,
 	is_production => $proto->is_production,
 	txn_resources => [],
-	can_secure => $proto->can_secure,
 	start_time => $_DT->gettimeofday,
 	perf_time => {},
     );
@@ -907,11 +819,7 @@ sub internal_redirect_user_realm {
 }
 
 sub internal_server_redirect {
-    my($self) = shift;
-    my(undef, $named) = $self->internal_get_named_args(
-	$self->SERVER_REDIRECT_PARAMETERS,
-	\@_,
-    );
+    my($self, $named) = _uri_args('SERVER_REDIRECT_PARAMETERS', @_);
     b_use('FacadeComponent.Task')
 	->assert_defined_for_facade($named->{task_id}, $self);
     $self->internal_copy_implicit($named);
@@ -1028,17 +936,15 @@ sub map_user_realms {
     return [map($op->($_), @$atomic_copy)];
 }
 
-sub need_to_secure_task {
-    my($self, $task) = @_;
-    return !$self->unsafe_get('is_secure')
-	&& $self->get('can_secure')
-	&& $task->get('require_secure')
-	? 1 : 0
-}
-
 sub match_user_realms {
     my($self) = shift;
     return @{$self->map_user_realms(sub {1}, @_)} ? 1 : 0;
+}
+
+sub need_to_secure_agent_execution {
+    my($self, $task) = @_;
+    return !$self->agent_execution_is_secure
+	&& _need_to_secure_task($self, $task);
 }
 
 sub new {
@@ -1165,21 +1071,15 @@ sub register_handler {
 }
 
 sub server_redirect {
-    my($self) = shift;
-    my(undef, $named) = $self->internal_get_named_args(
-	$self->SERVER_REDIRECT_PARAMETERS,
-	\@_,
-    );
+    my($self, $named) = _uri_args('SERVER_REDIRECT_PARAMETERS', @_);
     # Do not recurse
     b_die($named, ': recursive redirects')
 	if $named->{_server_redirect}++;
-    if ($self->need_to_secure_task($_T->get_by_id($named->{task_id}))) {
-	return $self->client_redirect($named);
-    }
-    my($task) = $self->internal_server_redirect(@_);
+    return $self->client_redirect($named)
+	if $self->need_to_secure_agent_execution($named->{task_id});
     $_D->throw_quietly(
 	$_DC->SERVER_REDIRECT_TASK,
-	{task_id => $task},
+	{task_id => $self->internal_server_redirect($named)},
     );
     # DOES NOT RETURN
 }
@@ -1436,9 +1336,59 @@ sub _get_roles {
     return [$_ROLE_USER];
 }
 
-sub _http {
-    my($self, $uri) = @_;
-    return $uri =~ /^\w+:/ ? $uri : $self->format_http_prefix . $uri;
+sub _absolute_uri {
+    my($self, $uri, $require_secure, $facade_uri) = @_;
+    my($facade) = $facade_uri ? b_use('UI.Facade')->get_instance($facade_uri)
+	: b_use('UI.Facade')->get_from_source($self);
+    my($host, $rel_uri) = _absolute_uri_validate($self, $uri, $facade_uri, $facade);
+    return $uri
+	unless $rel_uri;
+    return _absolute_uri_http($self, $require_secure, $facade)
+	. '://'
+	. $host
+	. $rel_uri;
+}
+
+sub _absolute_uri_http {
+    my($self, $require_secure, $facade) = @_;
+    return $_CFG->{can_secure}
+	&& (
+	    $require_secure
+	    || $self->unsafe_get('is_secure')
+	    || $facade->get('Constant')->get_value('require_secure')
+        ) ? 'https' : 'http';
+}
+
+sub _absolute_uri_validate {
+    my($self, $uri, $facade_uri, $facade) = @_;
+    my($host);
+    if ($uri =~ s/^https?://) {
+	b_die($uri, ': invalid http uri passed to format_uri')
+	    unless $uri =~ s{^//([^/]+)}{};
+	$host = $1;
+    }
+    elsif ($uri =~ /^\w+:/) {
+#TODO: Verify this doesn't happen in the logs
+	b_warn($uri, ': format_uri passed a non-http uri');
+	return;
+    }
+    return (
+	_absolute_uri_validate_host($self, $host, $facade_uri, $facade),
+	$uri || '/',
+    );
+}
+
+sub _absolute_uri_validate_host {
+    my($self, $host, $facade_uri, $facade) = @_;
+    return $facade->get('http_host')
+	unless $host;
+    unless (b_use('UI.Facade')->find_by_uri_or_domain($host =~ /^([^:]+)/)) {
+	b_warn($host, ': host does not match any facade');
+    }
+    if ($facade_uri && $host && $host ne $facade->get('http_host')) {
+	b_warn($facade_uri, ': facade_uri does not equal host=', $host);
+    }
+    return $host;
 }
 
 sub _is_r_value {
@@ -1454,6 +1404,18 @@ sub _load_realm {
 	: defined($new_realm)
 	? b_use('Auth.Realm')->new($new_realm, $self)
 	: b_use('Auth.Realm')->get_general
+}
+
+sub _need_to_secure_task {
+    my($self, $task) = @_;
+    $task = $_T->get_by_id($task)
+	unless $_T->is_blesser_of($task);
+    return $_CFG->{can_secure}
+	&& !$self->unsafe_get('is_secure')
+	&& ($task->get('require_secure')
+	    || b_use('FacadeComponent.Constant')
+		->get_value('require_secure', $self)
+	);
 }
 
 sub _perf_time_info {
@@ -1488,6 +1450,11 @@ sub _realm_cache {
 	$compute,
     );
     return;
+}
+
+sub _uri_args {
+    my($decl, $self) = (shift, shift);
+    return $self->internal_get_named_args($self->$decl, \@_);
 }
 
 sub _with {
