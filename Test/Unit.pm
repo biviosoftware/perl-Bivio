@@ -173,6 +173,15 @@ sub builtin_config {
     return b_use('IO.Config')->introduce_values(@_);
 }
 
+sub builtin_config_can_secure {
+    my($self, $bool) = @_;
+    return $self->builtin_config({
+	'Bivio::Agent::Request' => {
+	    can_secure => $bool ? 1 : 0,
+	},
+    });
+}
+
 sub builtin_create_mail {
     my($self, $from_email, $to_email, $headers, $body) = @_;
     my($r) = $self->builtin_random_string;
