@@ -41,7 +41,6 @@ map(
     @{Util_RealmFile()->list_folder('/')},
 );
 rm_rf(b_use('Biz.File')->absolute_path('HTTPStats'));
-
 [
     [qw(init_forum site-reports-fail)] => DIE(),
     [qw(-user root init_forum notfound-reports)] => MODEL_NOT_FOUND(),
