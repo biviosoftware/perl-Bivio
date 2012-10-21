@@ -11,6 +11,10 @@ my($_RI) = b_use('Agent.RequestId');
 b_use('Bivio.Test')->register_handler(__PACKAGE__);
 my($_CL) = b_use('IO.ClassLoader');
 
+sub agent_execution_is_secure {
+    return 1;
+}
+
 sub get_instance {
     my($self) = shift->get_current_or_new(@_);
     $self->require_no_cookie
