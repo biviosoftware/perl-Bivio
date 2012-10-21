@@ -156,7 +156,8 @@ sub _create_report {
 	},
     );
     foreach my $x (@{_domain_forum_map($self)}) {
-	my($domain, $forum_name) = @$x;
+	my($facade, $forum_name) = @$x;
+	my($domain) = $facade->get('http_host');
 	$self->print("creating report for $domain in $forum_name\n");
 	$self->req->set_realm_and_user($forum_name);
 	my($tmp_dir) = $_F->mkdir_p($_F->temp_file);
@@ -184,20 +185,29 @@ EOF
 
 sub _domain_forum_map {
     my($self) = @_;
-    return $_UIF->map_iterate_with_setup_request(
-	$self->req,
-	sub {_domain_has_forum($self, shift)},
-    );
+    my($seen) = {};
+    return [
+	grep(
+	    !$seen->{$_->[1]}++,
+	    sort(
+		_sort_default_facade_first
+		@{$_UIF->map_iterate_with_setup_request(
+		    $self->req,
+		    sub {_domain_forum_map_one($self, shift)},
+		)},
+	    ),
+	),
+    ];
 }
 
-sub _domain_has_forum {
+sub _domain_forum_map_one {
     my($self, $facade) = @_;
     return undef
-	unless $facade->can('SITE_REPORTS_REALM_NAME');
-    my($realm) = $facade->SITE_REPORTS_REALM_NAME;
+	unless my $realm = $facade->get('Constant')
+	->unsafe_get_value('site_reports_realm_name');
     return undef
 	unless _forum_exists($self, $realm);
-    return [$facade->get('http_host'), $realm];
+    return [$facade, $realm];
 }
 
 sub _end_of_month {
@@ -253,6 +263,14 @@ sub _organize_files {
 sub _previous_days_log {
     my($self, $today) = @_;
     return $_D->to_file_name($today) . $_ACCESS_LOG_GLOB;
+}
+
+sub _sort_default_facade_first {
+    my($af) = $a->[0];
+    my($bf) = $b->[0];
+    return $af->get('is_default') ? -1
+	: $bf->get('is_default') ? 1
+        : $af->simple_package_name cmp $bf->simple_package_name;
 }
 
 sub _user_email {
