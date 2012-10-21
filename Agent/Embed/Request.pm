@@ -9,13 +9,13 @@ my($_HTML) = b_use('Bivio.HTML');
 my($_F) = b_use('UI.Facade');
 my($_R) = b_use('AgentEmbed.Reply');
 
+sub agent_execution_is_secure {
+    return 1;
+}
+
 sub get_form {
     my($self) = @_;
     return $self->get('form');
-}
-
-sub need_to_secure_task {
-    return 0;
 }
 
 sub new {
