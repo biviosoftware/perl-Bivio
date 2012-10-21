@@ -1,11 +1,7 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-config({
-    'Bivio::Agent::Request' => {
-	can_secure => 1,
-    },
-});
 Request();
+config_can_secure(1);
 req()->set_realm('site');
 req()->initialize_fully('FORUM_WIKI_VIEW');
 [
