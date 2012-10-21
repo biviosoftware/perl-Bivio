@@ -3,25 +3,19 @@
 package Bivio::UI::FacadeComponent::Task;
 use strict;
 use Bivio::Base 'UI.FacadeComponent';
-use Bivio::IO::Trace;
 
 # C<Bivio::UI::Task> provides URIs for tasks.  There are two uris currently
-# provided: L<format_uri|"format_uri"> and L<format_help_uri|"format_help_uri">.
+# provided: L<format_uri|"format_uri">
 #
 # Tasks are configured as follows:
 #
 #      group(<TASK_NAME> => <uri>);
 #      group(<TASK_NAME> => {
 #          uri => <uri>,
-#          help => <help-path-info>,
 #      });
 #      group(<TASK_NAME> => {
 #          uri => [<primary-uri>, <alias1>, <alias2>, ...],
-#          help => <help-path-info>,
 #      });
-#
-# The first case is simply a shorthand for the second without a I<help>
-# attribute.
 #
 # The I<uri> is a relative path to the task which starts at the root of the site
 # (/).  The I<uri> may be a list in which case the first URI is the one returned
@@ -53,22 +47,15 @@ use Bivio::IO::Trace;
 #
 # *
 #
-# May appear as the trailing component of the URI, e.g. /help/*.  We restrict
+# May appear as the trailing component of the URI, e.g. /bp/*.  We restrict
 # path info to the second component in ownerless URIs (no question marks) and the
 # third component in ROR uris.  An incoming URI will be parsed and the
 # I<path_info> will be placed on the request.  An outgoing URI will have
 # I<path_info> appended (see L<format_uri|"format_uri">).
 #
-#
-#
-#
-# HELP
-#
-# The task which L<format_help_uri|"format_help_uri"> uses to format uris.
-# This task must have a I<help> attribute which is where help is routed
-# to.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Trace');
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_RN) = b_use('Type.RealmName');
@@ -85,15 +72,6 @@ my($_TI) = b_use('Agent.TaskId');
 my($_FCT) = b_use('FacadeComponent.Text');
 my($_AT) = b_use('Agent.Task');
 my($_SEOP) = b_use('Cache.SEOPrefix');
-
-sub HELP {
-    return $_TI->HELP_START_PAGE;
-}
-
-sub HELP_INDEX {
-    # Index for help tree.
-    return '/index.html';
-}
 
 sub REGISTER_PREREQUISITES {
     return ['Text'];
@@ -140,25 +118,6 @@ sub format_css {
 	query => undef,
 	no_context => 1,
     }, $req);
-}
-
-sub format_help_uri {
-    my($self, $task, $req) = @_;
-    return shift->internal_get_self($req)->format_help_uri(@_)
-	unless ref($self);
-    my($info) = $task
-	? $self->internal_get_value(ref($task) ? $task->get_name  : $task)
-	: undef;
-    return $self->format_uri(
-	{
-	    task_id => $self->HELP,
-	    realm => undef,
-	    path_info => $info && $info->{help} ? $info->{help}
-		: $_FCT->get_value('help_index_path_info', $req),
-	    no_context => 0,
-	},
-	$req,
-    );
 }
 
 sub format_realmless_uri {
@@ -231,13 +190,6 @@ sub format_uri {
 	    $req->get_form_context_from_named($named),
 	    $req,
 	);
-}
-
-sub has_help {
-    my($self, undef, $req) = @_;
-    return shift->internal_get_self($req)->has_help(@_)
-	unless ref($self);
-    return _has('help', @_);
 }
 
 sub has_uri {
@@ -463,16 +415,11 @@ sub _has {
 
 sub _init_config {
     my($fields, $value) = @_;
-    # Canonicalizes $value->{config} so that $value contains "uri" (array_ref)
-    # and maybe "help".
+    # Canonicalizes $value->{config} so that $value contains "uri" (array_ref);
     #
     # Returns error message or success (undef).
     my($c) = $value->{config};
     if (ref($c) eq 'HASH') {
-	b_die($c, ': no help configuration')
-	    unless $c->{help};
-	# path_info must begin with '/'
-	($value->{help} = $c->{help}) =~ s!^([^\/])!/$1!;
 	# Must be last line, because we overwrite
 	$c = $c->{uri};
     }
