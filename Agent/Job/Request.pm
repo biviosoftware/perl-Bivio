@@ -7,6 +7,10 @@ use Bivio::Base 'Agent.Request';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IGNORE_REDIRECTS) = __PACKAGE__.'.ignore_redirects';
 
+sub agent_execution_is_secure {
+    return 1;
+}
+
 sub client_redirect {
     # (self, ...) : undef
     # Will set redirect values but not throw the exception if
