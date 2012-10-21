@@ -14,6 +14,7 @@ my($_SELF) = __PACKAGE__->new({
     Color => [],
     Constant => [
 	[site_realm_id => 1],
+	[require_secure => 0],
     ],
     Font => {
 	initialize => sub {
