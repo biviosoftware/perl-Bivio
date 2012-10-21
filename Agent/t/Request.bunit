@@ -1,8 +1,18 @@
 # Copyright (c) 2005-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
-Request();
-req()->initialize_fully;
+Request('initialize_fully');
+config_can_secure(1);
 my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
+my($uri_qr) = sub {
+    my($ssl, $facade, $uri) = @_;
+    return qr{
+        ^http
+	@{[$ssl ? 's' : '']}
+	://
+	@{[UI_Facade()->get_instance($facade || undef)->get('http_host')]}
+	@{[$uri || '/']}
+    }isx;
+};
 [
     sub {req()} => [
 	{
@@ -23,25 +33,31 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 	    [{
 		task_id => 'LOGOUT',
 		facade_uri => 'other',
-	    }] => qr{^http://(?:test\.)?other.*/pub/logout$},
+	    }] => $uri_qr->(qw(0 Other /pub/logout$)),
 	    sub {
 		shift->get('object')->put(req()->REQUIRE_ABSOLUTE_GLOBAL => 1);
 		return ['LOGOUT'];
 	    } => sub {
-		shift->get('object')->delete(req()->REQUIRE_ABSOLUTE_GLOBAL);
-		return qr{^http:/.*/pub/logout$};
+		return $uri_qr->(qw(0 0 /pub/logout$));
 	    },
+	    inline_case(sub {
+	        shift->get('object')->delete(req()->REQUIRE_ABSOLUTE_GLOBAL);
+		return;
+	    }),
 	    LOGOUT => '/pub/logout',
 	    [{task_id => 'LOCAL_FILE_PLAIN', query => {ignore => 1}}] => '/i',
 	    inline_case(sub {req()->initialize_fully('LOCAL_FILE_PLAIN')}),
 	    [{uri => '/i', query => {x => 3}}] => '/i?x=3',
-	],
-	format_http_prefix => [
-	    [] => qr{^http://(?!test\.other|other)},
-	    [1] => qr{^https://(?!test\.other|other)},
-	    [undef, 'other'] => qr{^http://(?:test\.)?other\.},
-	    [1, 'other'] => qr{^https://(?:test\.)?other\.},
-	    [undef, 'bad.facade.name'] => qr{^http://(?!test\.other|other)},
+	    LOGIN => $uri_qr->(qw(1 0 /pub/login\?fc=)),
+	    [{task_id => 'LOGIN', require_secure => 0}] => $uri_qr->(1),
+	    [{task_id => 'LOGIN', no_context => 1}] => $uri_qr->(qw(1 0 /pub/login$)),
+	    [{task_id => 'LOGIN', query => 'x'}] => $uri_qr->(qw(1 0 /pub/login\?x\&fc=)),
+	    inline_case(sub {req()->put(query => {y => 2})}),
+	    [{task_id => 'LOGIN'}] => qr{\?y=2\&},
+	    [{task_id => 'LOGIN', carry_query => 0}] => qr{\?fc=},
+	    inline_case(sub {req()->put(path_info => '/x')}),
+	    [] => '/i/x',
+	    [{carry_path_info => 0}] => '/i',
 	],
 	set_task_and_uri => [
 	    [{task_id => 'SITE_WIKI_VIEW', path_info => 'hello'}] => sub {
@@ -52,6 +68,41 @@ my($resource) = class('Bivio::Agent::t::Mock::Resource')->new;
 		return 1;
 	    },
 	    [{}] => qr{task_id.*require}i,
+	],
+	{
+	    method => 'format_http',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		return [{
+		    $params->[0] ? (require_secure => 1) : (),
+		    facade_uri => $params->[1],
+		}];
+	    },
+	} => [
+	    [] => $uri_qr->(),
+	    [1] => $uri_qr->(1),
+	    inline_case(sub {Facade_BeforeOther()->setup_request(req())}),
+	    [] => $uri_qr->(qw(0 BeforeOther)),
+	    [qw(0 other)] => $uri_qr->(qw(0 Other)),
+	    [qw(1 other)] => $uri_qr->(qw(1 Other)),
+	    [qw(0 unknown)] => qr{no such facade uri},
+	    [qw(0 requiresecure)] => $uri_qr->(qw(1 RequireSecure)),
+	    inline_case(sub {
+	        req()->put(is_secure => 1);
+		UI_Facade()->setup_request(undef, req());
+		return;
+	    }),
+	    [] => $uri_qr->(1),
+	    inline_case(sub {
+		config_can_secure(0);
+	        req()->put(is_secure => 1);
+		return;
+	    }),
+	    [] => $uri_qr->(),
+	    [qw(0 requiresecure)] => $uri_qr->(qw(0 RequireSecure)),
+	    sub {[{uri => 'http://yahoo.com'}]} => 'http://yahoo.com/',
+#TODO: need_to_secure_agent_execution tests
+#TODO: can_secure
 	],
     ],
 ];
