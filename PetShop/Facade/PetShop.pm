@@ -16,6 +16,7 @@ __PACKAGE__->new({
     uri => 'petshop',
     http_host => 'petshop.bivio.biz',
     mail_host => 'bivio.biz',
+    is_production => 1,
     Color => [
 	[page_link => 0x330099],
 	[['page_vlink', 'page_alink'] => 0x330099],

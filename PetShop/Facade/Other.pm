@@ -10,6 +10,7 @@ __PACKAGE__->new({
     uri => 'other',
     http_host => 'other.bivio.biz',
     mail_host => 'other.bivio.biz',
+    is_production => 1,
     clone => 'PetShop',
     HTML => __PACKAGE__->make_groups(__PACKAGE__->bunit_shared_values),
     Color => [

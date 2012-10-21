@@ -10,6 +10,7 @@ __PACKAGE__->new({
     uri => 'beforeother',
     http_host => 'beforeother.bivio.biz',
     mail_host => 'beforeother.bivio.biz',
+    is_production => 1,
     clone => 'Other',
     Constant => __PACKAGE__->make_groups([
 	@{__PACKAGE__->bunit_shared_values},
