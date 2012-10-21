@@ -2749,7 +2749,7 @@ sub _sentinel_file_writer {
 sub _sentinel_http_stats_biz_file {
     my($self) = @_;
     my($d) = b_use('IO.Log')->file_name('HTTPStats/data', $self->req);
-    return -d $d ? $d : 0;
+    return -d $d ? 0 : $d;
 }
 
 sub _sentinel_motion2 {
