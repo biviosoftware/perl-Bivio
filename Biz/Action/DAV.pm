@@ -82,7 +82,7 @@ sub _copy_move {
     my($s) = @_;
     my($d) = b_use('Bivio.HTML')->unescape_uri($s->{r}->header_in('destination') || '');
     return _output($s, BAD_REQUEST => "cannot move across servers: $d")
-	unless $d =~ s/^\Q@{[_fix_http($s, $s->{req}->format_http_prefix)]}//;
+	unless $d =~ s{^\Q@{[$s->{req}->format_http({uri => '/'})]}}{/};
     return _output($s, HTTP_NOT_IMPLEMENTED => 'Depth 0 unsupported for COPY')
 	if $s->{method} eq 'copy' && !_depth($s);
     my($t, $r, $path_info) = b_use('FacadeComponent.Task')->parse_uri($d, $s->{req});
@@ -278,24 +278,18 @@ sub _depth {
     return defined($x) && length($x) ? $x : 'infinity';
 }
 
-sub _fix_http {
-    my($s, $v) = @_;
-    # Must match what the user asked for exactly
-    $v =~ s{^https?://[^/]+}{@{[$s->{req}->format_http_prefix]}}
-	|| b_use('Bivio.Die')->throw(DIE => $v);
-    return $v;
-}
-
 sub _format_http {
     my($s, $x) = @_;
     my($res) = $s->{req}->format_http({
 	task_id => $s->{req}->get('task_id'),
 	query => undef,
 	path_info => "$s->{path_info}/$x->{uri}",
+	require_absolute => 1,
+	no_context => 1,
     });
     $res .= '/'
 	unless $res =~ m{/$} || $x->{getcontenttype};
-    return _fix_http($s, $res);
+    return $res;
 }
 
 sub _has_write_permission {
