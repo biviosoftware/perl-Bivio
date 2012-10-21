@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,62 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.4  2012/10/19 02:13:23  nagler
+  * Bivio::BConf
+    FacadeComponent is no its own directory
+    UIXHTML and UIHTML need to include UI in path
+  * Bivio::Biz::File
+    fmt
+  * Bivio::Biz::Model::RealmOwner
+    added unauth_load_by_name_and_type_or_die
+  * Bivio::Biz::Model::WikiForm
+    don't execute_other() if form is in_error()
+  * Bivio::Cache::SEOPrefix
+    if no site_realm_id, return SUPER's internal_realm_id
+  * Bivio::ShellUtil
+    added handle_call_autoload which returns instance, instead of class
+    name.  This allows attributes calls (get('-force')) which is necessary
+    on some calls
+  * Bivio::Test::Unit
+    fmt
+  * Bivio::UI::Color
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::Constant
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::CSS
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::Email
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::FacadeBase
+    added Icon and Email, because they need to be initialized.  They used
+    to be initialized because they were hardwired static components
+  * Bivio/UI/FacadeComponent
+    NEW
+  * Bivio::UI::FacadeComponent
+    removed static components so that can prepare for dynamic facades
+    changed registration mechanism to be simpler in components
+  * Bivio::UI::Facade
+    no longer have static components to prepare for fully dynamic facades
+    use as_classloader_map_name in put_on_req
+  * Bivio::UI::Font
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::FormError
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::HTML::ViewShortcuts
+    use class path (UIHTML)
+  * Bivio::UI::HTML::Widget::Image
+    incorrect map name on Align
+  * Bivio::UI::HTML
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::Icon
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::Task
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::Text
+    moved to Bivio/FacadeComponent
+  * Bivio::UI::View
+    fmt
+
   Revision 12.3  2012/10/18 17:25:59  schellj
   * Bivio::Auth::Realm
     added GENERAL_NAME
