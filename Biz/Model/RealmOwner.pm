@@ -50,8 +50,7 @@ sub format_http {
     # HACK!
     #
     # See L<format_name|"format_name"> for params.
-    return $model->get_request->format_http_prefix
-        . $proto->format_uri($model, $model_prefix);
+    return $proto->format_uri($model, $model_prefix, {require_absolute => 1});
 }
 
 sub format_mailto {
@@ -81,9 +80,6 @@ sub format_name {
 
 sub format_uri {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    # Returns the URI to access the HOME task for this realm.
-    #
-    # See L<format_name|"format_name"> for params.
     my($name) = $proto->format_name($model, $model_prefix);
     b_die($model->get($model_prefix . 'name'),
         ': must not be offline user') unless $name;
@@ -91,7 +87,12 @@ sub format_uri {
     b_die($model->get($model_prefix . 'name'), ', ',
         $model->get($model_prefix . 'realm_type'),
         ': invalid realm type') unless $task;
-    return $model->get_request->format_uri($task, undef, $name, undef);
+    return $model->get_request->format_uri({
+	task_id => $task,
+	realm => $name,
+	query => undef,
+	path_info => undef,
+    });
 }
 
 sub has_valid_password {
