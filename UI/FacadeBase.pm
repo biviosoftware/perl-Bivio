@@ -352,6 +352,7 @@ sub _cfg_base {
 		task_id => 'SITE_ROOT',
 	    }],
 	    [my_site_redirect_map => []],
+	    [require_secure => 0],
 	    [ThreePartPage_want_UserState => 1],
 	    [ThreePartPage_want_ForumDropDown => 0],
 	    [ThreePartPage_want_dock_left_standard => 0],
@@ -418,7 +419,6 @@ sub _cfg_base {
 	    ['EmailAlias.incoming.SYNTAX_ERROR' => 'vs_fe("label"); must be in name@domain format or just an @domain'],
 	],
 	HTML => [
-	    [want_secure => 0],
 	    [table_default_align => 'left'],
 	],
 	Task => __PACKAGE__->internal_base_tasks,
