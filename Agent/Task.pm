@@ -304,7 +304,7 @@ sub handle_die {
 sub handle_pre_auth_task {
     my(undef, $task, $req) = @_;
     return
-	unless $req->need_to_secure_task($task);
+	unless $req->need_to_secure_agent_execution($task);
     return {
 	method => 'client_redirect',
 	task_id => $task->get('id'),
@@ -318,7 +318,6 @@ sub handle_pre_execute_task {
     my(undef, $task, $req) = @_;
     return
 	if $req->unsafe_get_and_delete($_UNAUTH_EXECUTE);
-
     unless ($req->get('auth_realm')->can_user_execute_task($task, $req)) {
 	# make sure the form makes it into the form context
 	Bivio::Die->throw_quietly(FORBIDDEN => {

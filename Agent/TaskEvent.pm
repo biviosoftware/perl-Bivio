@@ -95,7 +95,7 @@ sub parse_die {
 	    if $_TRACE;
 	return;
     }
-    if ($req->need_to_secure_task($task->get_by_id($params->{task_id}))) {
+    if ($req->need_to_secure_agent_execution($params->{task_id})) {
 	$req->put_client_redirect_state($params);
 	$die->set_code($_DC->CLIENT_REDIRECT_TASK);
 	return;
