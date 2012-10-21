@@ -13,8 +13,7 @@ foreach my $msg (glob('RealmFile3/Mail/*/*.eml')) {
 IO_File()->chdir('RealmFile3');
 [
     sub {
-	return Bivio_ShellUtil()->new_other(class())
-	    ->put(force => 1);
+	return class()->new->put(force => 1);
     } => [
 	import_tree => [
 	    '/' => sub {
