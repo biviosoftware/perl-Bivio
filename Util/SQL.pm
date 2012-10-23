@@ -70,8 +70,8 @@ my($_BUNDLE) = [qw(
     motion_question_64k
     failover_work_queue
     tuple_boolean_type
-    display_name
-    text_size
+    !display_name
+    !text_size
     payment_currency
 ),
     $_IC->if_version(10, '!site_admin_forum_users2'),
