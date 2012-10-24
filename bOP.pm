@@ -28,10 +28,86 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.5  2012/10/21 20:10:16  nagler
+  * Bivio::Agent::Embed::Request
+    removed need_to_secure_task override (obsolete) and replaced with
+    agent_execution_is_secure, which is always true since the task is
+    executing within the server only
+  * Bivio::Agent::Job::Request
+    Added agent_execution_is_secure set to true since the task is
+    executing within the server only
+  * Bivio::Agent::Request
+    Changed how "can_secure" works.  There are two paths:
+    need_to_secure_agent_execution, which happens when a task is executing
+    or a redirect is about to happen.  format_uri behaves differently,
+    because if you are executing in a non-http environment, you still want
+    to generate https:// uris for tasks that require them.
+    Added can_secure to facades so that an entire facade can be secured
+    Cleaned up format_uri so that require_absolute is observed for both
+    task_id and uri cases. Refactored the code so the paths are clearer
+  * Bivio::Agent::t::Mock::Facade::Mock
+    test require_secure
+  * Bivio::Agent::TaskEvent
+    call need_to_secure_agent_execution instead of need_to_secure_task
+  * Bivio::Agent::Task
+    call need_to_secure_agent_execution instead of need_to_secure_task
+  * Bivio::Base
+    remove cruft
+  * Bivio::Biz::Action::DAV
+    format_http_prefix is obsolete;
+    code now does "the right thing" with secure links
+  * Bivio::Biz::Model::RealmOwner
+    format_http_prefix is obsolete; call format_uri appropriately
+  * Bivio::Biz::Util::RealmRole
+    added clear_unused_permissions() and permission_count()
+  * Bivio::IO::Alert
+    fmt
+  * Bivio::IO::ClassLoader
+    fmt
+  * Bivio::PetShop::Facade::BeforeOther
+    is_production true
+  * Bivio::PetShop::Facade::Other
+    is_production true
+  * Bivio::PetShop::Facade::PetShop
+    removed want_secure (cruft)
+    is_production true
+  * Bivio::PetShop::Facade::RequireSecure
+    NEW
+  * Bivio::ShellUtil
+    add get_request_or_new
+    get_request_or_new -> shell_util_request_instance, use Test.Request,
+    not Agent.Request
+  * Bivio::Test::Language
+    make sure there's a request before running tests
+    ShellUtil->get_request_or_new -> shell_util_request_instance
+  * Bivio::Test::Request
+    Added agent_execution_is_secure set to true since the task is
+    executing in a shell, which is secure
+  * Bivio::Test::Unit
+    go_dir takes an op, and if present, calls do_in_dir
+    added builtin_config_can_secure
+  * Bivio::UI::FacadeBase
+    added require_secure
+    want_secure removed, because was unused
+  * Bivio::UI::FacadeComponent::Task
+    removed "help" feature, not used
+  * Bivio::UNIVERSAL
+    fmt
+    die(): now passes calling_context
+  * Bivio::Util::HTTPStats
+    removed v3(), no longer any apps at this level
+    fixed daily_report and import_history to deal with date argument properly
+    Cleaned up facade iteration, forum lookup, etc.
+    facades can share the site_reports_realm_name forum. We want the
+    default facade in this case to generate the report.  Otherwise, the
+    last facade overwrites all the other facade reports.  Only generate
+    reports for the first seen (alphabetically with default first) forum.
+  * Bivio::Util::SQL
+    added internal_upgrade_db_http_stats_biz_file
+
   Revision 12.4  2012/10/19 02:13:23  nagler
   * Bivio::BConf
     FacadeComponent is no its own directory
