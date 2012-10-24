@@ -51,7 +51,7 @@ sub field_updates_imail {
 				->new_other('RealmOwner')
 				->unauth_load_or_die(
 				    realm_id => $x,
-				)->get('name')
+				)->get('display_name')
 				    if $x;
 			}
 			else {
