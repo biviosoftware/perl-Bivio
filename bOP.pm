@@ -28,9 +28,17 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.6  2012/10/24 10:54:04  andrews
+  * Bivio::Util::SQL
+    display_name and text_size upgrades need "!" sentinels
+  * b_agent
+    calendar enhancements and readOnly atribute
+    improve server error handling
+
   Revision 12.5  2012/10/21 20:10:16  nagler
   * Bivio::Agent::Embed::Request
     removed need_to_secure_task override (obsolete) and replaced with
