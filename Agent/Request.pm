@@ -200,7 +200,7 @@ my($_V1) = $_C->if_version(1);
 my($_V7) = $_C->if_version(7);
 $_C->register(my $_CFG = {
     can_secure => 1,
-    apache_version => 1,
+    apache_version => 2,
 });
 my($_CURRENT);
 
