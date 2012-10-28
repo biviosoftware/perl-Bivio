@@ -39,11 +39,11 @@ my($_VARS) = {
     server_status_location => '/s',
     servers => 4,
     ssl_chain => '',
-    ssl_crt => '',
+    # ssl_crt is not defined so it can't be present at global level
     ssl_listen => '',
     ssl_mdc => 0,
+    ssl_multi_crt => '',
     ssl_only => 0,
-    ssl_wildcard => 0,
     timeout => 120,
     uris_txt => '/etc/httpd/conf/uris.txt',
     # Users can supply certain params here
@@ -334,7 +334,8 @@ sub _app_vars_ssl {
     my($vars, $cfg, $httpd_vars) = @_;
     my($hc) = $cfg->{vhost};
     return $hc
-	unless _app_vars_ssl_crt($vars, $cfg, $httpd_vars);
+	if $cfg->{no_proxy}
+	|| !_app_vars_ssl_crt($vars, $cfg, $httpd_vars);
     _app_vars_ssl_addr_port($cfg);
 #output for app.conf
     $vars->{ssl_listen} ||= "\nListen " . ($cfg->{listen} + 1);
@@ -353,7 +354,7 @@ sub _app_vars_ssl_addr_port {
     b_die($addr, ': no reverse dns entry')
 	unless $cfg->{ssl_default_host} = Type_IPAddress()->unsafe_to_domain($addr);
     b_die($cfg->{http_host}, ': http_host may not be reverse dns (PTR) entry')
-	if $cfg->{ssl_multi}
+	if $cfg->{ssl_multi_crt}
 	&& Type_DomainName()->is_equal($cfg->{ssl_default_host}, $cfg->{http_host});
     return;
 }
@@ -363,12 +364,18 @@ sub _app_vars_ssl_crt {
 #TODO: Remove once system.*spec packages updated for ssl_mdc
     if ($cfg->{ssl_mdc} && $cfg->{ssl_mdc} eq '1') {
 	delete($cfg->{ssl_mdc});
-	$cfg->{ssl_mdc} = $cfg->{ssl_crt}
-	    if $cfg->{ssl_crt};
+	$cfg->{ssl_multi_crt} = $cfg->{ssl_crt}
+	    if $cfg->{ssl_crt} && !$cfg->{ssl_multi_crt};
     }
-    $cfg->{ssl_multi} = $cfg->{ssl_mdc} || $cfg->{ssl_wildcard};
+    # Subtle: ssl_crt only really should apply to a single virtual host
+    # so you want to allow people to clear it for a virtual host if the
+    # ssl_multi_crt is set globally
+    $cfg->{ssl_crt} = $cfg->{ssl_multi_crt}
+	unless defined($cfg->{ssl_crt});
     return $cfg->{ssl_only} = 0
-	unless $cfg->{ssl_crt} ||= $cfg->{ssl_multi};
+	unless $cfg->{ssl_crt} ||= $cfg->{ssl_multi_crt};
+    $cfg->{ssl_multi_crt} = undef
+	unless Type_String()->is_equal($cfg->{ssl_crt}, $cfg->{ssl_multi_crt});
     $vars->{can_secure} = 1;
     foreach my $x (qw(ssl_crt ssl_chain)) {
 	$cfg->{$x} .= '.crt'
@@ -395,7 +402,7 @@ EOF
 # need to dig -x to get reverse dns
 # forward dns
     return
-	unless $cfg->{ssl_multi};
+	unless $cfg->{ssl_multi_crt};
     my($vh) = <<"EOF";
 NameVirtualHost $cfg->{ssl_addr_port}
 <VirtualHost $cfg->{ssl_addr_port}>
