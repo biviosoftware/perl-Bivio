@@ -2,6 +2,8 @@
     server_admin => 'default@default.com',
     limit_request_body => 9999,
     timeout => 99,
+    ssl_chain => 'gd_bundle.crt',
+    ssl_mdc => 1,
     httpd => {
         host_name => 'proxy.com',
     },
@@ -13,10 +15,9 @@
         server_admin => 'a1@a1.com',
         aux_http_conf => 'ScriptAlias /cgi-bin/foo.pl /usr/local/bin/bar',
         virtual_hosts => [
-            '@www.a1.com' => {
+            '@www.bivio.biz' => {
                 facade_uri => 'a1',
-                ssl_crt => 'www1.a1.com.crt',
-                ssl_chain => 'sf_issuing.crt',
+                ssl_wildcard => 'star.bivio.biz.crt',
                 aliases => [qw(www.a3.com a4.com)],
 		mail_aliases => ['mail.a1.com'],
             },
@@ -48,10 +49,25 @@
         root_prefix => 'A5',
         server_admin => 'a5@a5.com',
         virtual_hosts => [
-            '@www.a5.com' => {
+            '@dav.bivio.biz' => {
                 facade_uri => 'a5',
-                ssl_crt => 'www1.a5.com.crt',
+                ssl_wildcard => 'star.bivio.biz',
             },
+        ],
+    },
+    bivio => {
+        cookie_tag => 'B1',
+	cookie_domain => 'bivio.biz',
+        root_prefix => 'Bivio::PetShop',
+        listen => 1020,
+        virtual_hosts => [
+	    map(
+		("\@$_.bivio.biz" => {
+		    facade_uri => $_,
+		    ssl_wildcard => 'star.bivio.biz',
+		}),
+		qw(other petshop),
+	    ),
         ],
     },
 };

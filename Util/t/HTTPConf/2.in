@@ -13,7 +13,7 @@
         root_prefix => 'A3',
         listen => 1012,
         virtual_hosts => [
-            'www.a3.com' => {
+            'petshop.bivio.biz' => {
                 facade_uri => 'a3',
                 ssl_crt => 'mdc.crt',
             },
@@ -26,7 +26,7 @@
         root_prefix => 'A4',
         listen => 1014,
         virtual_hosts => [
-            'www.a4.com' => {
+            'm.petshop.bivio.biz' => {
                 facade_uri => 'a4',
                 ssl_crt => 'mdc.crt',
             },

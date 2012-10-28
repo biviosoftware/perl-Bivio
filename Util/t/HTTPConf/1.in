@@ -14,9 +14,9 @@
         server_admin => 'a1@a1.com',
         aux_http_conf => 'ScriptAlias /cgi-bin/foo.pl /usr/local/bin/bar',
         virtual_hosts => [
-            '@www.a1.com' => {
+            '@www.bivio.biz' => {
                 facade_uri => 'a1',
-                ssl_crt => 'www1.a1.com.crt',
+                ssl_crt => 'www.bivio.biz.crt',
                 ssl_chain => 'sf_issuing.crt',
                 aliases => [qw(www.a3.com a4.com)],
 		mail_aliases => ['mail.a1.com'],
@@ -40,6 +40,5 @@
         servers => 333,
         limit_request_body => 1_000_000_000,
         timeout => 1_000,
-        trans_handler => '',
     },
 };
