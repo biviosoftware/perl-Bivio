@@ -1,8 +1,9 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::HTTPConf;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
@@ -14,35 +15,42 @@ my($_INIT_RC_V2);
 my($_INIT_RC) = $_V2 ? \$_INIT_RC_V2 : \$_INIT_RC_V1;
 my($_DATA);
 my($_VARS) = {
-    is_production => 0,
+    aliases => [],
+    app_names_txt => '/etc/httpd/conf/app-names.txt',
+    aux_http_conf => '',
     can_secure => 0,
-    global_params => '',
-    legacy_rewrite_rules => '',
-    cookie_tag => undef,
     cookie_domain => '',
+    cookie_tag => undef,
+    facade_redirects => '',
+    facade_uri => 1,
+    global_params => '',
+    httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
+    httpd_init_rc => '/etc/rc.d/init.d/httpd',
+    is_production => 0,
+    legacy_rewrite_rules => '',
+    limit_request_body => 50_000_000,
     listen => undef,
+    mail_aliases => [],
+    mail_hosts_txt => '/etc/httpd/conf/local-host-names.txt',
+    no_proxy => 0,
     root_prefix => undef,
     server_admin => undef,
-    ssl_listen => '',
-    ssl_only => 0,
-    ssl_mdc => 0,
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
-    timeout => 120,
     servers => 4,
-    httpd_init_rc => '/etc/rc.d/init.d/httpd',
-    httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
-    mail_hosts_txt => '/etc/httpd/conf/local-host-names.txt',
-    app_names_txt => '/etc/httpd/conf/app-names.txt',
+    ssl_chain => '',
+    ssl_crt => '',
+    ssl_listen => '',
+    ssl_mdc => 0,
+    ssl_only => 0,
+    ssl_wildcard => 0,
+    timeout => 120,
     uris_txt => '/etc/httpd/conf/uris.txt',
-    limit_request_body => 50_000_000,
     # Users can supply certain params here
     httpd => my $_HTTPD_VARS = {
 	app => 'httpd',
 	listen => '80',
     },
-    aux_http_conf => '',
-    facade_redirects => '',
     # Trick to help _replace_vars
     '$' => '$',
 };
@@ -140,33 +148,37 @@ $root_prefix::BConf->merge_dir({
 EOF
 }
 
+sub _app_init_rc {
+    my($vars) = @_;
+    return _replace_vars_for_file($vars, init_rc => <<'EOF');
+#!/bin/bash
+#
+# Startup script for the $app App Server
+#
+# chkconfig: 345 84 16
+# description: $app Application Server
+# processname: $app
+# pidfile: $pid_file
+# config: $httpd_conf
+
+b_httpd_app=$app
+
+# Source function library.
+. $httpd_init_rc
+EOF
+}
+
 sub _app_vars {
     my($vars, $httpd_vars) = @_;
     # Augments vars for a single app ($vars->{$app}) to include _app_vars.  Returns
     # a $vars with updated config.
+    $vars = _file_name_vars($vars);
     my($app) = $vars->{app};
-    my($bconf) = "/etc/$app.bconf";
-    %$vars = (
-	%$vars,
-	bconf => $bconf,
-	document_root => "/var/www/facades/$app/plain",
-	httpd_conf => "/etc/httpd/conf/$app.conf",
-	init_rc => "/etc/rc.d/init.d/$app",
-	lock_file => "/var/lock/subsys/$app",
-	log_directory => "/var/log/$app",
-	logrotate => "/etc/logrotate.d/$app",
-	pid_file => "/var/run/$app.pid",
-	process_name => "$app-httpd",
-    );
-    return $vars
-	if $app eq $_HTTPD_VARS->{app};
-    $vars->{can_secure} = 1
-	if $vars->{ssl_only};
     $vars->{content} = <<"EOF";
 PerlWarn on
 v1:PerlFreshRestart off
 v2:PerlModule Apache2::compat
-PerlSetEnv BCONF $bconf
+PerlSetEnv BCONF $vars->{bconf}
 # Override the translation handler to avoid local file permission checks
 PerlModule Bivio::Ext::ApacheConstants
 PerlModule Bivio::Agent::HTTP::Dispatcher
@@ -191,19 +203,21 @@ EOF
     ];
     $vars->{cookie_domain_cfg} = !$vars->{cookie_domain} ? ''
 	: "\n        domain => '$vars->{cookie_domain}',";
-    Bivio::Die->die(
-	$app, ': virtual_hosts must be an array_ref of pairs'
-    ) unless ref($vars->{virtual_hosts}) eq 'ARRAY'
+    b_die($app, ': virtual_hosts must be an array_ref of pairs')
+	unless ref($vars->{virtual_hosts}) eq 'ARRAY'
         && @{$vars->{virtual_hosts}} % 2 == 0;
-    my($redirects) = '';
+    $vars->{httpd_redirects} = '';
+    $vars->{can_secure} = 0;
+    $httpd_vars->{ssl_global} ||= {};
     __PACKAGE__->map_by_two(
 	sub {
 	    my($left, $right) = @_;
 	    my($is_mail) = $left =~ s/^\@//;
 	    my($mh) = $left =~ /^www\.(.+)$/;
-	    my($cfg) = ref($right) ? $right : {facade_uri => $right};
+	    my($cfg) = ref($right) eq 'HASH' ? $right : {facade_uri => $right};
 	    $cfg->{http_host} ||= $left;
 	    $cfg->{mail_host} ||= $mh || $cfg->{http_host};
+	    $cfg->{www_stripped_host} = $mh;
 	    __PACKAGE__->map_by_two(
 		sub {
 		    my($k, $v) = @_;
@@ -218,112 +232,214 @@ EOF
 		    rewrite_icons => 1,
 		],
 	    );
+	    $cfg = {%$vars, %$cfg};
 	    map($vars->{$_} ||= $cfg->{$_}, qw(http_host mail_host));
 	    _push($httpd_vars, uris => $cfg->{http_host});
-	    my($back_http) = "http://$cfg->{http_host}:$vars->{listen}\$1";
+	    $cfg->{back_http} = "http://$cfg->{http_host}:$vars->{listen}\$1";
 	    if ($is_mail) {
 		foreach my $h (
 		    $cfg->{mail_host}, @{$cfg->{mail_aliases} || []}
 		) {
 		    _push($vars, mail_hosts => $h);
-		    _push($vars, mail_receive => "$h $back_http");
+		    _push($vars, mail_receive => "$h $cfg->{back_http}");
 		}
 	    }
-	    my($seen) = $vars->{ssl_only} ? {} : {$cfg->{http_host} => 1};
-	    my($front_http) = ($vars->{ssl_only} ? 'https' : 'http')
-		. "://$cfg->{http_host}";
-	    foreach my $h (
-		$mh ? $mh : (),
-		$vars->{ssl_only} ? $cfg->{http_host} : (),
-		map(
-		    ($_, $_ =~ /^www\.(.+)$/),
-		    sort(@{$cfg->{aliases} || []}),
-		),
-	    ) {
-		next
-		    if $seen->{$h}++;
-	        $redirects .= <<"EOF";
+	    _app_vars_vhost($vars, $cfg);
+	    $vars->{httpd_content} .= _app_vars_ssl($vars, $cfg, $httpd_vars);
+	    _app_vars_redirects($vars, $cfg);
+	    return;
+	},
+	$vars->{virtual_hosts},
+    );
+    $vars->{httpd_content} .= $vars->{httpd_redirects};
+    return $vars;
+}
+
+sub _app_vars_document_root {
+    my($vars, $cfg) = @_;
+    return ''
+	unless $cfg->{local_file_prefix};
+    return <<"EOF";
+    DocumentRoot /var/www/facades/$cfg->{local_file_prefix}/plain
+EOF
+}
+
+sub _app_vars_legacy {
+    my($vars, $cfg) = @_;
+    return ''
+	unless my $res = $cfg->{legacy_rewrite_rules};
+    _app_vars_rewrite_engine($vars, $cfg);
+    $res =~ s{(?<=[^\n])$}{\n}s;
+    return $res;
+}
+
+sub _app_vars_proxy {
+    my($vars, $cfg) = @_;
+    return ''
+	if $cfg->{no_proxy};
+    return <<"EOF"
+    ProxyVia on
+    ProxyIOBufferSize 4194304
+    RewriteRule ^(.*) $cfg->{back_http} [proxy]
+EOF
+}
+
+sub _app_vars_redirects {
+    my($vars, $cfg) = @_;
+    my($seen) = $cfg->{ssl_only} ? {} : {$cfg->{http_host} => 1};
+    my($front_http) = ($cfg->{ssl_only} ? 'https' : 'http') . "://$cfg->{http_host}";
+    foreach my $h (
+	$cfg->{www_stripped_host},
+	$vars->{ssl_only} && $cfg->{http_host},
+	map(
+	    ($_, $_ =~ /^www\.(.+)$/),
+	    sort(@{$cfg->{aliases} || []}),
+	),
+    ) {
+	next
+	    if !$h || $seen->{$h}++;
+	$vars->{httpd_redirects} .= <<"EOF";
 <VirtualHost *>
     ServerName $h
     RedirectPermanent / $front_http/
 </VirtualHost>
 EOF
-	    }
-	    my($lrr) = $cfg->{legacy_rewrite_rules}
-		 || $vars->{legacy_rewrite_rules};
-	    $lrr =~ s{(?<=[^\n])$}{\n}s;
-	    my($rules) = ($lrr || '')
-	        . ($cfg->{no_proxy} ? ''
-	            : (($cfg->{rewrite_icons} ? <<'EOF' : '')
+    }
+    return;
+}
+
+sub _app_vars_rewrite {
+    my($vars, $cfg) = @_;
+    return ''
+	if $cfg->{no_proxy} || !$cfg->{rewrite_icons};
+    _app_vars_rewrite_engine($vars, $cfg);
+    return <<'EOF';
     RewriteRule ^/_.* - [forbidden]
     RewriteRule ^/./ - [L]
     RewriteRule .*favicon.ico$ /i/favicon.ico [L]
 EOF
-		. "    RewriteRule ^(.*) $back_http \[proxy\]\n"));
-	    my($proxy) = $cfg->{no_proxy} ? '' : qq{
-    DocumentRoot /var/www/facades/$cfg->{local_file_prefix}/plain
-    ProxyVia on
-    ProxyIOBufferSize 4194304};
-	    my($hc) = <<"EOF";
-<VirtualHost *>
-    ServerName $cfg->{http_host}$proxy
+    return;
+}
+
+sub _app_vars_rewrite_engine {
+    my($vars, $cfg) = @_;
+    $cfg->{rewrite_engine} ||= <<"EOF";
     RewriteEngine On
     RewriteOptions inherit
-$rules</VirtualHost>
 EOF
-	    $vars->{httpd_content} .= $hc
-		unless $vars->{ssl_only};
-            if ($cfg->{ssl_crt}) {
-		$vars->{ssl_listen} = "\nListen " . ($vars->{listen} + 1);
-		my($chain) = !$cfg->{ssl_chain} ? ''
-		    : "\n    SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}";
-		(my $key = $cfg->{ssl_crt}) =~ s/crt$/key/;
-		$vars->{ssl_mdc} ? $hc =~ s{\*\>}{*:443>}
-		    : $hc =~ s{\*\>}{$cfg->{http_host}:443>};
-		(my $back_https = $back_http) =~ s{(?<=\:)(\d+)}{$1 + 1}e;
-		$hc =~ s{\Q$back_http\E}{$back_https}g;
-		$hc =~ s{(?=^\s+Rewrite)}{
-		    my($x) = qq(    SSLEngine on
+    return;
+}
+
+sub _app_vars_ssl {
+    my($vars, $cfg, $httpd_vars) = @_;
+    my($hc) = $cfg->{vhost};
+    return $hc
+	unless _app_vars_ssl_crt($vars, $cfg, $httpd_vars);
+    _app_vars_ssl_addr_port($cfg);
+#output for app.conf
+    $vars->{ssl_listen} ||= "\nListen " . ($cfg->{listen} + 1);
+    $hc =~ s{\*\>}{$cfg->{ssl_addr_port}>};
+    ($cfg->{back_https} = $cfg->{back_http}) =~ s{(?<=\:)(\d+)}{$1 + 1}e;
+    $hc =~ s{\Q$cfg->{back_http}\E}{$cfg->{back_https}}g;
+    $hc =~ s{(?=^\s+Rewrite)}{_app_vars_ssl_directives($cfg)}mex;
+    _app_vars_ssl_global($cfg, $httpd_vars);
+    return ($cfg->{ssl_only} ? '' : $cfg->{vhost}) . $hc;
+}
+
+sub _app_vars_ssl_addr_port {
+    my($cfg) = @_;
+    my($addr) = Type_IPAddress()->from_domain($cfg->{http_host});
+    $cfg->{ssl_addr_port} = "$addr:443";
+    b_die($addr, ': no reverse dns entry')
+	unless $cfg->{ssl_default_host} = Type_IPAddress()->unsafe_to_domain($addr);
+    b_die($cfg->{http_host}, ': http_host may not be reverse dns (PTR) entry')
+	if $cfg->{ssl_multi}
+	&& Type_DomainName()->is_equal($cfg->{ssl_default_host}, $cfg->{http_host});
+    return;
+}
+
+sub _app_vars_ssl_crt {
+    my($vars, $cfg) = @_;
+#TODO: Remove once system.*spec packages updated for ssl_mdc
+    if ($cfg->{ssl_mdc} && $cfg->{ssl_mdc} eq '1') {
+	delete($cfg->{ssl_mdc});
+	$cfg->{ssl_mdc} = $cfg->{ssl_crt}
+	    if $cfg->{ssl_crt};
+    }
+    $cfg->{ssl_multi} = $cfg->{ssl_mdc} || $cfg->{ssl_wildcard};
+    return $cfg->{ssl_only} = 0
+	unless $cfg->{ssl_crt} ||= $cfg->{ssl_multi};
+    $vars->{can_secure} = 1;
+    foreach my $x (qw(ssl_crt ssl_chain)) {
+	$cfg->{$x} .= '.crt'
+	    if $cfg->{$x} && $cfg->{$x} !~ /\.crt$/;
+    }
+    ($cfg->{ssl_key} = $cfg->{ssl_crt}) =~ s/crt$/key/;
+    return 1;
+}
+
+sub _app_vars_ssl_global {
+    my($cfg, $httpd_vars, $hc) = @_;
+    $httpd_vars->{ssl_global}->{''} = <<'EOF';
+Listen 443
+SSLSessionCache shm:logs/ssl_scache(512000)
+SSLSessionCacheTimeout 300
+v1:SSLMutex file:logs/ssl_mutex
+v2:SSLMutex sem
+v2:SSLProtocol All -SSLv2
+v2:SSLHonorCipherOrder On
+v2:SSLCipherSuite DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:EDH-RSA-DES-CBC3-SHA:RC4-SHA:HIGH:!ADH
+v1:SSLLog logs/error_log
+v1:SSLLogLevel warn
+EOF
+# need to dig -x to get reverse dns
+# forward dns
+    return
+	unless $cfg->{ssl_multi};
+    my($vh) = <<"EOF";
+NameVirtualHost $cfg->{ssl_addr_port}
+<VirtualHost $cfg->{ssl_addr_port}>
+    ServerName $cfg->{ssl_default_host}
+    DocumentRoot /var/www/html
+@{[_app_vars_ssl_directives($cfg)]}</VirtualHost>
+EOF
+    my($vh2) = $httpd_vars->{ssl_global}->{$cfg->{ssl_addr_port}} ||= $vh;
+    b_die($cfg->{ssl_addr_port}, ': ssl config must be identical for vhosts')
+	unless $vh2 eq $vh;
+    return;
+}
+
+sub _app_vars_ssl_directives {
+    my($cfg) = @_;
+    my($chain) = $cfg->{ssl_chain} ? <<"EOF" : '';
+    SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}
+EOF
+    return <<"EOF";
+    SSLEngine on
     SSLCertificateFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_crt}
-    SSLCertificateKeyFile /etc/httpd/conf/ssl.key/$key$chain
-    SetEnv nokeepalive 1
+    SSLCertificateKeyFile /etc/httpd/conf/ssl.key/$cfg->{ssl_key}
+$chain    SetEnv nokeepalive 1
     SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
     <Location />
 	SSLRequireSSL
 	SSLOptions +StrictRequire
     </Location>
-);
-                    $httpd_vars->{ssl} ||= $x;
-                    $x;
-}mex;
-		$vars->{httpd_content} .= $hc;
-	    }
-	    return;
-	},
-	$vars->{virtual_hosts},
-    );
-    $vars->{httpd_content} .= $redirects;
-    return $vars;
+EOF
 }
 
-sub _app_init_rc {
-    my($vars) = @_;
-    return _replace_vars_for_file($vars, init_rc => <<'EOF');
-#!/bin/bash
-#
-# Startup script for the $app App Server
-#
-# chkconfig: 345 84 16
-# description: $app Application Server
-# processname: $app
-# pidfile: $pid_file
-# config: $httpd_conf
-
-b_httpd_app=$app
-
-# Source function library.
-. $httpd_init_rc
+sub _app_vars_vhost {
+    my($vars, $cfg) = @_;
+    $cfg->{document_root} = _app_vars_document_root($vars, $cfg);
+    $cfg->{rewrite_engine} = '';
+    $cfg->{vhost_rules} = _app_vars_legacy($vars, $cfg)
+	. _app_vars_rewrite($vars, $cfg)
+	. _app_vars_proxy($vars, $cfg);
+    $cfg->{vhost} = <<"EOF";
+<VirtualHost *>
+    ServerName $cfg->{http_host}
+$cfg->{document_root}$cfg->{rewrite_engine}$cfg->{vhost_rules}</VirtualHost>
 EOF
+    return;
 }
 
 sub _conf_txt {
@@ -332,6 +448,24 @@ sub _conf_txt {
 	$vars->{$which . '_txt'},
 	\(join("\n", sort(@{$vars->{$which}}), '')),
     );
+}
+
+sub _file_name_vars {
+    my($vars) = @_;
+    my($app) = $vars->{app};
+    %$vars = (
+	%$vars,
+	bconf => "/etc/$app.bconf",
+	document_root => "/var/www/facades/$app/plain",
+	httpd_conf => "/etc/httpd/conf/$app.conf",
+	init_rc => "/etc/rc.d/init.d/$app",
+	lock_file => "/var/lock/subsys/$app",
+	log_directory => "/var/log/$app",
+	logrotate => "/etc/logrotate.d/$app",
+	pid_file => "/var/run/$app.pid",
+	process_name => "$app-httpd",
+    );
+    return $vars;
 }
 
 sub _httpd_conf {
@@ -436,7 +570,6 @@ DocumentRoot /var/www/html
 </Directory>
 
 $content
-
 <Location $server_status_location>
     SetHandler server-status
     deny from all
@@ -486,47 +619,30 @@ sub _httpd_vars {
         )),
 	%$v,
     );
-    _app_vars($v);
+    $v = _file_name_vars($v);
     $v->{content} = join(
 	"\n",
-	_replace_vars($vars->{httpd}, "httpd_content", <<'EOF'),
+	_replace_vars($v, "httpd_content", <<'EOF'),
 NameVirtualHost *
 <VirtualHost *>
     ServerName $host_name
     DocumentRoot /var/www/html
 </VirtualHost>
 EOF
-	$vars->{httpd}->{ssl}
-	    ? _replace_vars($vars->{httpd}, "httpd_content", <<'EOF') : (),
-Listen 443
-SSLSessionCache shm:logs/ssl_scache(512000)
-SSLSessionCacheTimeout 300
-v1:SSLMutex file:logs/ssl_mutex
-v2:SSLMutex sem
-v2:SSLProtocol All -SSLv2
-v2:SSLHonorCipherOrder On
-v2:SSLCipherSuite DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:EDH-RSA-DES-CBC3-SHA:RC4-SHA:HIGH:!ADH
-v1:SSLLog logs/error_log
-v1:SSLLogLevel warn
-EOF
-	$vars->{ssl_mdc}
-	    ? _replace_vars($vars->{httpd}, "httpd_content", <<'EOF') : (),
-NameVirtualHost *:443
-<VirtualHost *:443>
-    ServerName $host_name
-    DocumentRoot /var/www/html
-$ssl</VirtualHost>
-EOF
+	map(
+	    $v->{ssl_global}->{$_},
+	    sort(keys(%{$v->{ssl_global}})),
+	),
 	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
 	join('',
 	    <<'EOF',
 <VirtualHost *>
     ServerName localhost.localdomain
     DocumentRoot /var/www/html
-    ProxyVia on
-    ProxyIOBufferSize 4194304
     RewriteEngine On
     RewriteOptions inherit
+    ProxyVia on
+    ProxyIOBufferSize 4194304
 EOF
 	     map({
 		 my($mh, $vh) = split(' ', $_);
@@ -534,7 +650,10 @@ EOF
 	     } sort(map(
 		 @{$vars->{$_}->{mail_receive} || []}, @{$vars->{apps}},
 	     ))),
-	     "</VirtualHost>\n",
+	     <<'EOF',
+    RewriteRule .* - [forbidden]
+</VirtualHost>
+EOF
         ),
     );
     $v->{mail_hosts} = [sort(
