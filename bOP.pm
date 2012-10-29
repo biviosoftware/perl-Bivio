@@ -28,10 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.7  2012/10/26 16:26:00  schellj
+  * Bivio::UI::View::CRM
+    use display_name for owner
+  * b_agent
+
   Revision 12.6  2012/10/24 10:54:04  andrews
   * Bivio::Util::SQL
     display_name and text_size upgrades need "!" sentinels
