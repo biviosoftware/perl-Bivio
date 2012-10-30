@@ -28,9 +28,31 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.8  2012/10/29 18:05:56  schellj
+  * Bivio::Agent::Request
+    default to apache_version 2
+  * Bivio::IO::ClassLoaderAUTOLOAD
+    NEW
+  * Bivio::PetShop::Facade::RequireSecure
+    is_production needs to be true
+  * Bivio::Test::ShellUtilConf
+    when a case would fail, pwd was messed up.  Also, delete the
+    target directory, because it can get cluttered with old junk
+  * Bivio::Util::HTTPConf
+    broke apart _app_vars so could implement ssl_wildcard
+    ssl_mdc is now a crt, not a boolean, but backwards compatible for now
+    ssl_chain and others can be set globally
+    can_secure is computed from ssl_*
+    ssl_wildcard supports wildcard certificates (technically identical to ssl_mdc)
+    cleaned up some formatting
+    remove ssl_wildcard/mdc and now just ssl_multi_crt
+    ssl_multi_crt can be set globally, and overridden locally or
+    overridden with a specific ssl_crt
+
   Revision 12.7  2012/10/26 16:26:00  schellj
   * Bivio::UI::View::CRM
     use display_name for owner
