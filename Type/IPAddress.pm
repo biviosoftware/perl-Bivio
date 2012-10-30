@@ -3,6 +3,7 @@
 package Bivio::Type::IPAddress;
 use strict;
 use Bivio::Base 'Type.SyntacticString';
+use Socket ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
