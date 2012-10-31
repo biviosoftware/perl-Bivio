@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Outgoing;
 use strict;
@@ -18,29 +18,28 @@ my($_I) = b_use('Mail.Incoming');
 my($_A) = b_use('Mail.Address');
 my($_IOT) = b_use('IO.Template');
 my($_DT) = b_use('Type.DateTime');
-# Some of these were taken from majordomo's resend.  Others, just make
-# sense.  Check set_headers_for_list_send for headers which set but
-# not in this list.
-#
-# NOTE: This list is sorted for maintenance convenience.
-# cc and to are optional, see below
-my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
-    approved
-    encoding
-    errors-to flags
-    priority
-    received
-    reply-to
-    return-path
-    return-receipt-to
-    x-ack
-    x-confirm-reading-to
-    x-mozilla-status
-    x-mozilla-status2
-    x-pmrqc
-),
-    Bivio::Mail::Common->TEST_RECIPIENT_HDR,
-)];
+my($_KEEP_HEADERS_LIST_SEND_RE) = qr{
+    ^(?:
+    @{[join(
+        '|',
+	qw(
+	    cc
+	    comments
+	    content-.+
+	    date
+	    from
+	    in-reply-to
+	    keywords
+	    message-id
+	    mime-version
+	    references
+	    reply-to
+	    subject
+	    to
+        ),
+    )]}
+    )$
+}six;
 
 # 822:
 # Due to an artifact of the notational conventions, the syn-
@@ -57,7 +56,7 @@ my($_REMOVE_FOR_LIST_RESEND) = [map(lc($_), qw(
 # specified here, and their use is discouraged.
 #
 # NOTE: This is list is sorted as described above!
-my(@_FIRST_HEADERS) = qw(
+my($_FIRST_HEADERS) = [qw(
     return-path
     received
     message-id
@@ -72,7 +71,7 @@ my(@_FIRST_HEADERS) = qw(
     content-type
     content-transfer-encoding
     content-length
-);
+)];
 
 sub add_missing_headers {
     my($self, $req, $from_email) = @_;
@@ -102,8 +101,11 @@ sub as_string {
     my($headers) = {%{$self->get('headers')}};
     my($res) = join(
 	'',
-	map(delete($headers->{$_}) || '',
-	    @_FIRST_HEADERS, sort(keys(%$headers))),
+	map(
+	    delete($headers->{$_}) || '',
+	    @$_FIRST_HEADERS,
+	    sort(keys(%$headers)),
+	),
     );
     my($body, $ct, $parts) = $self->unsafe_get(qw(body content_type parts));
     if ($parts) {
@@ -253,8 +255,8 @@ sub set_header {
 sub set_headers_for_forward {
     my($self) = @_;
     return $self->set_header(
-	'X-Bivio-Forwarded',
-	($self->unsafe_get_header('X-Bivio-Forwarded') || 0) + 1,
+	$self->FORWARDING_HDR,
+	($self->unsafe_get_header($self->FORWARDING_HDR) || 0) + 1,
     );
 }
 
@@ -271,11 +273,14 @@ sub set_headers_for_list_send {
     $bp->{sender} ||= $bp->{list_email};
     $bp->{reply_to} ||= $bp->{list_email};
     my($headers) = $self->get('headers');
+    grep(
+	$_ !~ $_KEEP_HEADERS_LIST_SEND_RE && delete($headers->{$_}),
+	keys(%$headers),
+    );
     $self->set_header(
 	To => $self->unsafe_get_header('cc') || $bp->{list_email},
     ) unless $self->unsafe_get_header('to');
     $self->set_headers_for_forward;
-    delete(@$headers{@$_REMOVE_FOR_LIST_RESEND});
     $self->set_header(Sender => $bp->{sender});
     $self->set_header('Reply-To', $bp->{reply_to})
 	if $bp->{reply_to_list};
