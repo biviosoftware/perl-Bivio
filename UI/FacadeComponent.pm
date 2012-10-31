@@ -123,6 +123,14 @@ sub group {
     return;
 }
 
+sub handle_call_autoload {
+    my($self) = shift->get_from_source(b_use('Agent.Request')->get_current_or_die);
+    return $self
+	unless @_;
+#TODO: This doesn't always work.  Really need a callback that does something by default
+    return $self->get_value(@_);
+}
+
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
