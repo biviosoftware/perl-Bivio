@@ -1,8 +1,9 @@
-# Copyright (c) 1999,2000 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::RealmUser;
 use strict;
 use Bivio::Base 'Model.RealmBase';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ROLES) = join(
@@ -93,6 +94,27 @@ sub is_sole_admin {
         AND realm_owner_t.name NOT LIKE '$_OFFLINE\%'",
         [$model->get($model_prefix . 'realm_id',
             $model_prefix . 'user_id')])->[0] ? 0 : 1;
+}
+
+sub is_user_attached_to_other_realms {
+    my($self, $user_id) = @_;
+    my($ignore) = {
+	$user_id => 1,
+	FacadeComponent_Constant()->unsafe_get_value('site_admin_realm_id') => 1,
+    };
+    my($res) = 0;
+    $self->do_iterate(
+	sub {
+	    my($it) = @_;
+	    return 1
+		if $ignore->{$it->get('realm_id')};
+	    $res = 1;
+	    return 0;
+	},
+	'unauth_iterate_start',
+	{user_id => $user_id},
+    );
+    return $res;
 }
 
 sub unauth_delete_user {
