@@ -64,6 +64,14 @@ sub as_string {
         ) . ']';
 }
 
+sub assert_type {
+    my($self, $expect) = @_;
+    $expect = $_RT->from_any($expect);
+    b_die($self, ': not expected ', $expect)
+	unless $self->get('type')->equals($expect);
+    return;
+}
+
 sub can_user_execute_task {
     my($self, $task, $req) = @_;
     unless ($task->has_realm_type($self->get('type'))) {
