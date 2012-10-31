@@ -1,6 +1,7 @@
 # Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 PropertyModel();
+my($uid) = create_user('realm_user_bunit')->get('realm_id');
 [
     {
 	method => 'is_sole_admin',
@@ -20,10 +21,13 @@ PropertyModel();
 	[qw(demo demo)] => 1,
 	[qw(fourem-sub2 btest_admin)] => 0,
     ],
+    is_user_attached_to_other_realms => [
+	realm_id('demo') => 1,
+	$uid => 0,
+    ],
     unauth_delete_user => [
 	sub {
 	    my($case) = @_;
-	    my($uid) = create_user('realm_user_bunit')->get('realm_id');
 	    foreach my $r (map(class('Auth.Role')->$_(), qw(MEMBER GUEST))) {
 		model('RealmUser')->create({
 		    realm_id => realm_id('demo'),
