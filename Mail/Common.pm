@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Common;
 use strict;
@@ -12,13 +12,22 @@ use User::pwent ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
-Bivio::IO::Config->register(my $_CFG = {
+my($_FORWARDING_HDR_RE);
+b_use('IO.Config')->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
 });
 #TODO: get rid of global state - put it on the request instead
 my($_IDI) = __PACKAGE__->instance_data_index;
+
+sub FORWARDING_HDR_RE {
+    return $_FORWARDING_HDR_RE ||= qr{^\Q@{[shift->FORWARDING_HDR]}\E:\s*(\d*)}im;
+}
+
+sub FORWARDING_HDR {
+    return 'X-Bivio-Forwarded';
+}
 
 sub TEST_RECIPIENT_HDR {
     # Returns header where recipient is inserted into msg.  Only if
