@@ -3,6 +3,7 @@
 package Bivio::Util::RealmAdmin;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('SQL.Connection');
@@ -93,10 +94,13 @@ sub delete_auth_realm_and_users {
 
 sub delete_auth_user {
     my($self) = @_;
-    return $self->req->with_realm(
-	$self->req('auth_user'),
-	sub {$self->delete_auth_realm},
-    );
+    my($u) = $self->req('auth_user');
+    my($req) = $self->req;
+    $req->set_user(undef);
+    $req->set_realm(undef)
+	if Type_PrimaryId()->is_equal($u->get('realm_id'), $req->get('auth_id'));
+    $u->unauth_delete_realm;
+    return;
 }
 
 sub delete_email_verify {
