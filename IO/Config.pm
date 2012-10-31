@@ -160,7 +160,7 @@ sub bconf_dir_hashes {
 	. '-only.bconf';
     return map({
 	my($file) = $_;
-	my($data) = do($file) || die($@);
+	my($data) = do($file) || die("$file: $@");
 	die($file, ': did not return a hash_ref')
 	    unless ref($data) eq 'HASH';
 	$data;
