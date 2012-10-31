@@ -69,11 +69,12 @@ sub AUTOLOAD {
     $func =~ s/.*:://;
     return
 	if $func eq 'DESTROY';
-    my($b) = "builtin_$func";
-    return $_PROTO->can($b)
-	? $_PROTO->$b(@_)
-        : $_TYPE && $_TYPE->can('handle_test_unit_autoload_ok')
-	    && $_TYPE->handle_test_unit_autoload_ok($func)
+    my($builtin) = "builtin_$func";
+    return $_PROTO->can($builtin)
+	? $_PROTO->$builtin(@_)
+        : $_TYPE
+	&& $_TYPE->can('handle_test_unit_autoload_ok')
+	&& $_TYPE->handle_test_unit_autoload_ok($func)
         ? $_TYPE->handle_test_unit_autoload($func, \@_)
 	: $_DC->is_valid_name($func) && $_DC->can($func)
 	? $_DC->$func()
@@ -218,16 +219,12 @@ sub builtin_create_mail {
 sub builtin_create_user {
     my($self, $user) = @_;
     my($req) = $self->builtin_req->initialize_fully;
-    $_D->eval(sub {
-        $req->set_user(
-	    $_M->new('RealmOwner')->unauth_load({
-		name => $user,
-		realm_type => b_use('Auth.RealmType')->USER,
-	    }) ? $user : return,
-	);
-        $req->set_realm($user);
-	$req->get('auth_user')->cascade_delete;
-    });
+    my($u) = $_M->new('RealmOwner');
+    $u->unauth_delete_realm
+	if $u->unauth_load({
+	    name => $user,
+	    realm_type => b_use('Auth.RealmType')->USER,
+	});
     b_use('ShellUtil.RealmAdmin')
 	->create_user($self->builtin_email($user), $user, 'password', $user);
     $req->set_realm_and_user($user, $user);
