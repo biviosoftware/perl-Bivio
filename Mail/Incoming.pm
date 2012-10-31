@@ -1,19 +1,19 @@
-# Copyright (c) 1999-2006 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Mail::Incoming;
 use strict;
 use Bivio::Base 'Mail.Common';
-use Bivio::IO::Trace;
 use IO::Scalar ();
 require 'ctime.pl';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+our($_TRACE);
+b_use('IO.Trace');
 my($_A) = b_use('Mail.Address');
 my($_DT) = b_use('Type.DateTime');
 my($_RFC) = b_use('Mail.RFC822');
 my($_MS) = b_use('Type.MailSubject');
 my($_E) = b_use('Type.Email');
-our($_TRACE);
 my($_EA) = b_use('Type.EmailArray');
 my($_M) = b_use('Biz.Model');
 my($_SA) = b_use('Type.StringArray');
@@ -271,6 +271,11 @@ sub initialize {
 	body_offset => $i,
 	time => time,
     );
+}
+
+sub is_forwarding_loop {
+    my($self) = @_;
+    return $self->get('header') =~ $self->FORWARDING_HDR_RE && $1 > 3 ? 1 : 0;
 }
 
 sub new {
