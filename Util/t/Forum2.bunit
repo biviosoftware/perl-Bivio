@@ -1,0 +1,29 @@
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ShellUtil();
+Bivio_Die()->eval(sub {
+    ShellUtil_Forum()->main(qw(-realm forum2 cascade_delete_forum_and_users));
+    return;
+});
+create_user('forum2_adm');
+create_user('forum2_user');
+[
+    [qw(-user forum2_adm create_forum forum2 Forum2_Bunit)] => not_die(),
+    [qw(-user forum2_adm create_forum forum2-s1 Forum2_S1 forum2)] => not_die(),
+    inline_case(sub {
+        ShellUtil_RealmAdmin()->main(qw(-realm forum2-s1 -user forum2_user join_user member));
+        ShellUtil_RealmAdmin()->main(qw(-realm forum2-s1 -user demo join_user member));
+	return;
+    }),
+    [qw(-realm forum2 cascade_delete_forum_and_users)] => not_die(),
+    inline_case(sub {
+        foreach my $x (map("forum2$_", '', qw(-s1 _user _adm)), 'demo') {
+            assert_equals(
+		$x eq 'demo' ? 1 : 0,
+		model('RealmOwner')->unauth_rows_exist({name => $x}),
+		$x,
+	    );
+	}
+	return;
+    }),
+];
