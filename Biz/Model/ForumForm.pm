@@ -58,7 +58,7 @@ sub execute_ok {
 }
 
 sub internal_admin_user_id {
-    return undef;
+    return shift->unsafe_get('admin_user_id');
 }
 
 sub internal_initialize {
@@ -68,11 +68,11 @@ sub internal_initialize {
 	require_validate => 1,
         visible => [
 	    'RealmOwner.display_name',
-	    {
-		name => 'RealmOwner.name',
-		type => 'ForumName',
-	    },
+	    $self->field_decl([[qw(RealmOwner.name ForumName)]]),
 	    'Forum.require_otp',
+	],
+	other => [
+	    $self->field_decl([[qw(admin_user_id User.user_id)]]),
 	],
 	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
     });
