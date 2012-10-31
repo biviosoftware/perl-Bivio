@@ -1,8 +1,9 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Forum;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
@@ -11,37 +12,55 @@ my($_FP) = b_use('Type.FilePath');
 my($_FM) = b_use('Biz.FormModel');
 my($_R) = b_use('Auth.Role');
 my($_M) = b_use('Biz.Model');
-
+my($_REALM_ID_TYPE) = Model_UserRealmList()->get_field_type('RealmUser.realm_id');
 
 sub USAGE {
     return <<'EOF';
 usage: bivio Forum [options] command [args..]
 commands
+    cascade_delete_forum_and_users -- delete auth realm, children, and users
     cascade_forum_activity -- most recent forum and subforum activity
-    create_realm name display_name -- set user and realm to parent
+    create_forum name display_name -- set user and realm to parent
     delete_forum -- deletes the forum
     forum_activity -- most recent forum activity
     make_admin_of_forum -- make user admin of forum (and subforums)
     reparent child-forum new-parent -- updates child-forum to point at new-parent
+    tree_paths child-forum
 EOF
+}
+
+sub cascade_delete_forum_and_users {
+    my($self) = @_;
+    my($req) = $self->req;
+    $req->get('auth_realm')->assert_type('forum');
+    $self->are_you_sure('Delete forum, users, and children of ' . $self->req(qw(auth_realm owner_name)));
+    $self->put(force => 1);
+    _cascade_delete_forum($self, my $users = {});
+    _delete_unattached_users($self, $users);
+    return;
 }
 
 sub cascade_forum_activity {
     return _activity(shift, '_cascade');
 }
 
-sub create_realm {
-    sub CREATE_REALM {[
+sub create_forum {
+    sub CREATE_FORUM {[
 	'ForumName',
 	'DisplayName',
 	[qw(?parent_realm ForumName)],
     ]}
     my($self, $bp) = shift->parameters(\@_);
+    $self->assert_have_user;
     $self->initialize_fully;
     my($do) = sub {
+	return $bp->{ForumName} . ': already exists'
+	    if $self->model('RealmOwner')
+	    ->unauth_rows_exist({name => $bp->{ForumName}});
 	$self->model('ForumForm', {
 	    'RealmOwner.display_name' => $bp->{DisplayName},
 	    'RealmOwner.name' => $bp->{ForumName},
+	    admin_user_id => $self->req('auth_user_id'),
 	});
 	return;
     };
@@ -52,14 +71,10 @@ sub create_realm {
 
 sub delete_forum {
     my($self) = @_;
-    my($id) = $self->model('Forum', {})->get('forum_id');
-    # cascade delete doesn't pick up DAGs correctly
-    $self->model('RealmDAG')->delete_all({
-	child_id => $id,
-    });
-    $self->model('RealmOwner')->unauth_delete_realm({
-	realm_id => $id,
-    });
+    $self->req('auth_realm')->assert_type('forum');
+    $self->are_you_sure('Delete forum ' . $self->req(qw(auth_realm owner_name)));
+    $self->model('RealmOwner')
+	->unauth_delete_realm({realm_id => $self->req('auth_id')});
     return;
 }
 
@@ -111,8 +126,9 @@ sub reparent {
 }
 
 sub tree_paths {
-    my($self, $top) = shift->name_args([[qw(child ForumName)]], \@_);
-    return [_tree_paths($self, $self->unauth_realm_id($top), '/')];
+    sub TREE_PATHS {[[qw(child ForumName)]]}
+    my($self, $bp) = shift->parameters(\@_);
+    return [_tree_paths($self, $self->unauth_realm_id($bp->{child}), '/')];
 }
 
 sub _activity {
@@ -130,6 +146,36 @@ sub _activity {
 	$buf .= "\n";
     }
     return $buf;
+}
+
+sub _cascade_delete_forum {
+    my($self, $users) = @_;
+    my($req) = $self->req;
+    $self->model('Forum')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    $req->with_realm(
+		$it->get('forum_id'),
+		sub {
+		    $self->model('RealmUserList')
+			->do_iterate(
+			    sub {
+				$users->{shift->get('RealmUser.user_id')}++;
+				return 1;
+			    },
+			);
+		    _cascade_delete_forum($self, $users);
+		    return;
+		},
+	    );
+	    return 1;
+	},
+	'unauth_iterate_start',
+	{parent_realm_id => $req->get('auth_id')},
+    );
+    $self->delete_forum;
+    $self->commit_or_rollback;
+    return;
 }
 
 sub _cascade_forum_activity {
@@ -151,6 +197,18 @@ sub _cascade_forum_activity {
 	parent_realm_id => $req->get('auth_id'),
     });
     _forum_activity($self, $activity);
+    return;
+}
+
+sub _delete_unattached_users {
+    my($self, $users) = @_;
+    my($req) = $self->req;
+    my($ru) = $self->model('RealmUser');
+    foreach my $uid (sort(keys(%$users))) {
+	next
+	    if $ru->is_user_attached_to_other_realms($uid);
+	$self->model('RealmOwner')->unauth_delete_realm({realm_id => $uid});
+    }
     return;
 }
 
