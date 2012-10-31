@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::MailReceiveDispatchForm;
 use strict;
@@ -233,10 +233,8 @@ sub _ignore_email {
 
 sub _ignore_forwarded {
     my($self) = @_;
-#TODO: Couple with Mail.Common
-    return $self->get('mail_incoming')->get('header')
-	=~ /^X-Bivio-Forwarded:\s*(\d*)/im
-	&& $1 > 3 ? 'too-many-forwards' : undef;
+    return $self->get('mail_incoming')->is_forwarding_loop
+        ? 'too-many-forwards' : undef;
 }
 
 sub _ignore_spam {
