@@ -536,6 +536,8 @@ v2:#? LoadModule userdir_module modules/mod_userdir.so
 v2:#? LoadModule usertrack_module modules/mod_usertrack.so
 v2:#? LoadModule version_module modules/mod_version.so
 v2:LoadModule vhost_alias_module modules/mod_vhost_alias.so
+v2:LoadModule reqtimeout_module modules/mod_reqtimeout.so
+
 
 Listen $listen$ssl_listen
 
