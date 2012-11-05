@@ -28,10 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.9  2012/10/30 17:56:34  schellj
+  * Bivio::Type::IPAddress
+    missing Socket
+  * b_agent
+
   Revision 12.8  2012/10/29 18:05:56  schellj
   * Bivio::Agent::Request
     default to apache_version 2
