@@ -54,6 +54,18 @@
             },
         ],
     },
+    a8 => {
+        cookie_tag => 'A8T',
+        listen => 2140,
+        root_prefix => 'A8',
+	ssl_crt => '',
+        virtual_hosts => [
+            'extremeperl.org' => {
+	    	rewrite_icons => 0,
+                facade_uri => 'a8',
+            },
+        ],
+    },
     bivio => {
         cookie_tag => 'B1',
 	cookie_domain => 'bivio.biz',
