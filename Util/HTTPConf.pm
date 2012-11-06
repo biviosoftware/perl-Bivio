@@ -277,6 +277,7 @@ sub _app_vars_proxy {
     my($vars, $cfg) = @_;
     return ''
 	if $cfg->{no_proxy};
+    _app_vars_rewrite_engine($vars, $cfg);
     return <<"EOF"
     ProxyVia on
     ProxyIOBufferSize 4194304
@@ -373,7 +374,7 @@ sub _app_vars_ssl_crt {
     $cfg->{ssl_crt} = $cfg->{ssl_multi_crt}
 	unless defined($cfg->{ssl_crt});
     return $cfg->{ssl_only} = 0
-	unless $cfg->{ssl_crt} ||= $cfg->{ssl_multi_crt};
+	unless $cfg->{ssl_crt};
     $cfg->{ssl_multi_crt} = undef
 	unless Type_String()->is_equal($cfg->{ssl_crt}, $cfg->{ssl_multi_crt});
     $vars->{can_secure} = 1;
