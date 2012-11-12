@@ -58,6 +58,13 @@ sub join {
     return lc(join($_SEP, @parts));
 }
 
+sub join_top_unless_exists {
+    my($proto, $top, $value) = @_;
+    return $value
+	if $proto->is_equal($proto->extract_top($value), $top);
+    return $proto->join($top, $value);
+}
+
 sub split {
     my($proto, $value) = @_;
     return split($_SEP, lc($value));

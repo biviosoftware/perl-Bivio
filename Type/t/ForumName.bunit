@@ -23,6 +23,10 @@ Type();
 	    'abc-def' => 'def',
 	    'abc-def-ghi' => 'def-ghi',
 	],
+	join_top_unless_exists => [
+	    [qw(abc abc-def)] => 'abc-def',
+	    [qw(abc def)] => 'abc-def',
+	],
 	is_top => [
 	    'abc-def' => 0,
 	    'abc' => 1,
