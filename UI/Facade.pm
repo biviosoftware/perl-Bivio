@@ -224,10 +224,22 @@ sub get_value {
 }
 
 sub handle_call_autoload {
-    my($proto) = @_;
-    return $proto
-	if $proto->equals_class_name(__PACKAGE__);
-    return $proto->get_instance($proto->simple_package_name);
+    my($proto) = shift;
+    my($self) = $proto->equals_class_name(__PACKAGE__)
+	? $proto
+	: $proto->get_instance($proto->simple_package_name);
+    return $self
+	unless @_;
+    my($uri_or_domain_or_class, $req) = @_;
+    if ($_R->is_blesser_of($uri_or_domain_or_class)) {
+	$req = $uri_or_domain_or_class;
+	b_die('UI.Facade(req): is illegal calling form')
+	    unless ref($self);
+    }
+    else {
+	$self = $self->get_instance($uri_or_domain_or_class);
+    }
+    return $self->setup_request($req);
 }
 
 sub handle_config {
