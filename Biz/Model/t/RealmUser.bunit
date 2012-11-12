@@ -22,28 +22,26 @@ my($uid) = create_user('realm_user_bunit')->get('realm_id');
 	[qw(fourem-sub2 btest_admin)] => 0,
     ],
     is_user_attached_to_other_realms => [
-	realm_id('demo') => 1,
+	realm_id('root') => 1,
 	$uid => 0,
     ],
     unauth_delete_user => [
-	sub {
-	    my($case) = @_;
-	    foreach my $r (map(class('Auth.Role')->$_(), qw(MEMBER GUEST))) {
-		model('RealmUser')->create({
-		    realm_id => realm_id('demo'),
-		    user_id => $uid,
-		    role => $r,
-		});
-	    }
-	    $case->put(object => req('Model.RealmUser'));
-	    return [];
-	} => not_die(),
+    	sub {
+    	    my($case) = @_;
+    	    foreach my $r (map(class('Auth.Role')->$_(), qw(MEMBER GUEST))) {
+    		model('RealmUser')->create({
+    		    realm_id => realm_id('demo'),
+    		    user_id => $uid,
+    		    role => $r,
+    		});
+    	    }
+    	    $case->put(object => req('Model.RealmUser'));
+    	    return [];
+    	} => not_die(),
     ],
     inline_case(sub {
-        assert_equals(
-	    0,
-	    unauth_model('RealmOwner')->unauth_load({name => 'realm_user_bunit'}),
-	);
+        assert_equals(0, realm_id_exists('realm_user_bunit'));
+        assert_equals(1, realm_id_exists('demo'));
 	return;
     }),
     {
