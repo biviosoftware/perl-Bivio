@@ -332,6 +332,12 @@ sub can_user_execute_task {
         : 0;
 }
 
+sub clear_cache_for_auth_realm {
+    my($self) = @_;
+    _clear_realm_cache($self, $self->get('auth_id'));
+    return;
+}
+
 sub clear_cache_for_auth_user {
     my($self) = @_;
     my($u) = $self->get('auth_user');
