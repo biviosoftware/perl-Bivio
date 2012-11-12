@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::RealmOwnerBase;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = b_use('Auth.RealmType');
@@ -19,36 +20,54 @@ sub REALM_TYPE {
 sub cascade_delete {
     my($self) = @_;
     my($pid) = $self->get_primary_id;
-    $self->req->with_realm($pid, sub {
-	foreach my $x (
-	    [qw(RealmDAG child_id)],
-	    [qw(RealmDAG parent_id)],
-	    [qw(RowTag primary_id)],
-	    [qw(RealmUser realm_id)],
-	    [qw(RealmUser user_id)],
-	    [qw(CRMThread realm_id)],
-	    [qw(Tuple realm_id)],
-	    [qw(CalendarEvent realm_id)],
-	    [qw(RealmMail realm_id)],
-	    [qw(RealmRole realm_id)],
-	    [qw(MotionVote realm_id)],
-	    [qw(Motion realm_id)],
-	) {
-	    $self->new_other($x->[0])
-		->do_iterate(
-		    sub {
-			shift->unauth_delete;
-			return 1;
-		    },
-		    'unauth_iterate_start',
-		    $x->[1],
-		    {$x->[1] => $pid},
-		);
-	}
-	$self->SUPER::cascade_delete;
-	$self->req(qw(auth_realm owner))->cascade_delete;
-    });
+    $self->req->with_realm(
+	$pid,
+	sub {
+	    my($ro) = $self->req(qw(auth_realm owner));
+	    foreach my $x (
+		$self->cascade_delete_model_list,
+	    ) {
+		$self->new_other($x->[0])
+		    ->do_iterate(
+			sub {
+			    my($it) = @_;
+			    if (Model_RealmOwnerBase()->is_blesser_of($it)) {
+				$it->unauth_delete_realm($it->get_primary_id);
+			    }
+			    else {
+				$it->unauth_delete;
+			    }
+			    return 1;
+			},
+			'unauth_iterate_start',
+			$x->[1],
+			{$x->[1] => $pid},
+		    );
+	    }
+	    $self->SUPER::cascade_delete;
+	    $self->req->clear_cache_for_auth_realm;
+	    $ro->cascade_delete;
+	    return;
+	},
+    );
     return;
+}
+
+sub cascade_delete_model_list {
+    return (
+	[qw(RealmDAG child_id)],
+	[qw(RealmDAG parent_id)],
+	[qw(RowTag primary_id)],
+	[qw(RealmUser realm_id)],
+	[qw(RealmUser user_id)],
+	[qw(CRMThread realm_id)],
+	[qw(Tuple realm_id)],
+	[qw(CalendarEvent realm_id)],
+	[qw(RealmMail realm_id)],
+	[qw(RealmRole realm_id)],
+	[qw(MotionVote realm_id)],
+	[qw(Motion realm_id)],
+    );
 }
 
 sub create_realm {
@@ -78,9 +97,12 @@ sub internal_create_realm_administrator_id {
 }
 
 sub unauth_delete_realm {
-    my($self, $realm_owner) = @_;
+    my($self, $realm_owner_or_id) = @_;
     $self->unauth_load_or_die({
-	$self->get_primary_id_name => $realm_owner->get('realm_id'),
+	$self->get_primary_id_name
+	    => ref($realm_owner_or_id)
+	    ? $realm_owner_or_id->get('realm_id')
+	    : $realm_owner_or_id,
     })->cascade_delete;
     return;
 }
