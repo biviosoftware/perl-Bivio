@@ -271,11 +271,17 @@ sub scan_realm_id {
 }
 
 sub to_id {
-    my($self, $name_or_email) = shift->name_args(['String'], \@_);
+    return shift->unsafe_to_id(@_)
+	|| b_die(shift, ': not found');
+}
+
+sub unsafe_to_id {
+    sub UNSAFE_TO_ID {[[qw(anything Line)]]}
+    my($self, $bp) = shift->parameters(\@_);
     my($r) = $self->model('RealmOwner');
-    b_die($name_or_email, ': not found')
-	unless $r->unauth_load_by_email_id_or_name($name_or_email)
-	|| $r->unauth_load({display_name => $name_or_email});
+    return undef
+	unless $r->unauth_load_by_email_id_or_name($bp->{anything})
+	|| $r->unauth_load({display_name => $bp->{anything}});
     return $r->get('realm_id');
 }
 
