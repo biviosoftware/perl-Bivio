@@ -469,6 +469,11 @@ sub builtin_realm_id {
     return b_use('ShellUtil.RealmAdmin')->to_id(@_);
 }
 
+sub builtin_realm_id_exists {
+    shift;
+    return b_use('ShellUtil.RealmAdmin')->unsafe_to_id(@_) ? 1 : 0;
+}
+
 sub builtin_remote_email {
     shift;
     return b_use('TestLanguage.HTTP')->generate_remote_email(@_);
