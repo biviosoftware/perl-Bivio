@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,44 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.10  2012/11/05 17:34:40  schellj
+  * Bivio::Auth::Realm
+    added assert_type
+  * Bivio::Biz::Model::ForumForm
+    allow admin_user_id to be set
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    couple X-Bivio-Forwarded explicitly with Mail.Incoming->is_forwarding_loop
+  * Bivio::Biz::Model::RealmUser
+    added is_user_attached_to_other_realms so you can determine if the
+    user can be deleted.
+  * Bivio::IO::Config
+    include file in die() when do() in bconf_dir_hashes fails
+  * Bivio::Mail::Common
+    export FORWARDING_HDR/_RE so can have explicit coupling
+  * Bivio::Mail::Incoming
+    added is_forwarding_loop for explicit coupling with MailReceiveDispatchForm
+  * Bivio::Mail::Outgoing
+    $_KEEP_HEADERS_LIST_SEND_RE replaces $_REMOVE_FOR_LIST_RESEND.  There
+    are too many headers to track, which shouldn't be passed, e.g. DKIM*.
+    MIME reserves all Content-* headers, and those are all kept.
+    Use FORWARDING_HDR instead of hardcoded X-Bivio-Forwarded
+  * Bivio::ShellUtil
+    handle_call_autoload protects against passing arguments so that we can
+    eventually add the case which executes like main but without the
+    commit and returning the result.  A bit too complicated to do right now.
+  * Bivio::Test::Unit
+    builtin_create_user was using incorrect method for deleting user
+    fmt
+  * Bivio::UI::FacadeComponent
+    added handle_call_autoload which returns instead of component from request
+  * Bivio::Util::Forum
+    Added cascade_delete_forum_and_users
+    delete_forum corrected and added an are_you_sure
+  * Bivio::Util::HTTPConf
+    need mod_reqtimeout
+  * Bivio::Util::RealmAdmin
+    delete_auth_user wasn't working right if the user was a member of realms
+
   Revision 12.9  2012/10/30 17:56:34  schellj
   * Bivio::Type::IPAddress
     missing Socket
