@@ -1,14 +1,75 @@
 # Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
 # $Id$
+my($_DT) = b_use('Type.DateTime');
+my($_TZ) = b_use('Type.TimeZone');
 my($_F) = b_use('IO.File');
 options({comparator => 'nested_contains'});
 [
     class() => [
-	from_ics => [
-	    map(
-		([$_F->read("Calendar/$_.in")] => [do("Calendar/$_.out")]),
-		1 .. 13,
-	    ),
-	],
+        vevents_from_ics => [
+            map(
+        	([$_F->read("Calendar/$_.in")] => [do("Calendar/$_.out")]),
+        	1 .. 17,
+            ),
+        ],
     ],
+     sub {class()->from_ics($_F->read("Calendar/14.in"))} => [
+         get => [
+             ['method'] => 'REQUEST',
+             ['time_zone_id'] => 'Mountain',
+         ],
+         guess_time_zone => [
+             [$_DT->from_literal('2012-01-01 00:00')] => [$_TZ->AMERICA_DENVER],
+             [$_DT->from_literal('2012-07-01 00:00')] => [$_TZ->AMERICA_DENVER],
+         ],
+         to_utc => [
+            [$_DT->from_literal('2015-03-08 01:59')] => $_DT->from_literal('2015-03-08 08:59'),
+            [$_DT->from_literal('2015-03-08 02:00')] => $_DT->from_literal('2015-03-08 08:00'),
+            [$_DT->from_literal('2015-03-08 03:00')] => $_DT->from_literal('2015-03-08 09:00'),
+            [$_DT->from_literal('2015-11-01 01:59')] => $_DT->from_literal('2015-11-01 07:59'),
+            [$_DT->from_literal('2015-11-01 02:00')] => $_DT->from_literal('2015-11-01 09:00'),
+         ],
+     ],
+     sub {class()->from_ics($_F->read("Calendar/15.in"))} => [
+         get => [
+             ['method'] => 'REQUEST',
+             ['time_zone_id'] => 'Etc/GMT-1',
+         ],
+         guess_time_zone => [
+             [$_DT->from_literal('2012-01-01 00:00')] => [$_TZ->EUROPE_BERLIN],
+             # This ics omits daylight saving transition because the event is in winter
+             [$_DT->from_literal('2012-07-01 00:00')] => [$_TZ->UTC],
+         ],
+         to_utc => [
+            [$_DT->from_literal('2012-01-01 12:00')] => $_DT->from_literal('2012-01-01 11:00'),
+            [$_DT->from_literal('2012-06-01 12:00')] => $_DT->from_literal('2012-06-01 11:00'),
+         ],
+     ],
+     sub {class()->from_ics($_F->read("Calendar/16.in"))} => [
+         get => [
+             ['method'] => 'REQUEST',
+             ['time_zone_id'] => 'W. Europe Standard Time',
+         ],
+         guess_time_zone => [
+             [$_DT->from_literal('2012-01-01 00:00')] => [$_TZ->EUROPE_BERLIN],
+             [$_DT->from_literal('2012-07-01 00:00')] => [$_TZ->EUROPE_BERLIN],
+         ],
+         to_utc => [
+            [$_DT->from_literal('2012-03-25 01:59')] => $_DT->from_literal('2012-03-25 00:59'),
+            [$_DT->from_literal('2012-03-25 02:00')] => $_DT->from_literal('2012-03-25 00:00'),
+            [$_DT->from_literal('2012-03-25 03:00')] => $_DT->from_literal('2012-03-25 01:00'),
+            [$_DT->from_literal('2012-10-28 02:59')] => $_DT->from_literal('2012-10-28 00:59'),
+            [$_DT->from_literal('2012-10-28 03:00')] => $_DT->from_literal('2012-10-28 02:00'),
+         ],
+     ],
+     sub {class()->from_ics($_F->read("Calendar/17.in"))} => [
+         get => [
+             ['method'] => 'CANCEL',
+             ['time_zone_id'] => 'Europe/Zurich',
+         ],
+         guess_time_zone => [
+             [$_DT->from_literal('2012-01-01 00:00')] => [$_TZ->EUROPE_ZURICH],
+             [$_DT->from_literal('2012-07-01 00:00')] => [$_TZ->EUROPE_ZURICH],
+         ],
+     ],
 ];

@@ -1,0 +1,13 @@
+ [
+     {
+         'sequence' => '1',
+         'uid' => '8275f0b2-e3cf-468e-b84b-fec1c65814c7',
+         'status' => 'CONFIRMED',
+         'description' => 'RSVP: http://calendar.yahoo.com/andrewcharlesschofield_1999/rsvp?e=andrew.schofield@bluewin.ch&uid=8275f0b2-e3cf-468e-b84b-fec1c65814c7&tk=FgWbSiVR_xD.s_Qqz9H4Q4u5Shg-&hh=Tft916rr2AMl2VA.kQvNKxlR5fA-',
+         'summary' => 'From Yahoo',
+         'dtend' => '2456244 39600',
+         'class' => 'PUBLIC',
+         'dtstart' => '2456244 37800',
+	time_zone => Bivio::Type::TimeZone->EUROPE_BERLIN,
+     }
+ ]

@@ -1,0 +1,14 @@
+[
+    {
+        'sequence' => '1',
+        'location' => 'Home',
+        'uid' => 'hpjn6r83b8ihr84aih3truq108@google.com',
+        'status' => 'CANCELLED',
+        'rrule' => 'FREQ=WEEKLY;BYDAY=TU,FR',
+        'description' => 'Lunch at the savoy',
+        'summary' => 'Repeating',
+        'dtend' => '2456246 79199',
+        'dtstart' => '2456245 79199',
+	time_zone => Bivio::Type::TimeZone->EUROPE_ZURICH,
+    }
+]

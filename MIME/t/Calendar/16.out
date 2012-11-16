@@ -1,0 +1,14 @@
+[
+     {
+         'uid' => '91f6lovgecb4bqsloubs5cb35s@google.com',
+         'sequence' => '0',
+         'location' => 'Test',
+         'recurrence-id' => '2456243 82800',
+         'description' => 'more details',
+         'summary' => 'Invitation: (No Subject) @ Weekly on Monday (andrew.schofield@bluewin.ch)',
+         'class' => 'PUBLIC',
+         'dtstart' => '2456244 79199',
+         'dtend' => '2456245 79199',
+	time_zone => Bivio::Type::TimeZone->EUROPE_BERLIN,
+     }
+]

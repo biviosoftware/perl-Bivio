@@ -1,0 +1,19 @@
+[
+    {
+        'sequence' => '598113136',
+        'location' => 'WebEx Online',
+        'summary' => 'Weekly NF dev meeting',
+        'uid' => 'M3SF01N3W30IU07OTJGZYXZ9XL-3865',
+        'dtend' => '2456245 63000',
+        'class' => 'PUBLIC',
+	time_zone => Bivio::Type::TimeZone->AMERICA_DENVER,
+        'description' => 'Hi,
+
+David Bruhwiler is inviting you to this WebEx meeting:
+
+Weekly NF dev meeting
+Tue, Nov 13, 9:30 am | 1 hr
+Denver (Mountain Standard Time, GMT-07:00)',
+        'dtstart' => '2456245 59400'
+    }
+]
