@@ -30,7 +30,8 @@ commands:
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
     scan_realm_id -- checks for auth_id in all table fields
-    to_id realm -- returns the id for the realm passed as an argument
+    to_id anything -- the id for the realm passed as an argument
+    unsafe_to_id anything -- to_id if it exists else undef
     users [role] -- dump users in realm [with a specific role]
 EOF
 }
