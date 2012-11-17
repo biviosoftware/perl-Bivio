@@ -501,7 +501,7 @@ sub _run {
 sub _unit {
     my($test) = @_;
     # If test ends in bunit, need to construct '.t'
-    my($unit) = __PACKAGE__->use('TestUnit.Unit');
+    my($unit) = b_use('TestUnit.Unit');
     return $test =~ /bunit$/ ? ('-', <<"EOF") : ($test, undef);
 use strict;
 use $unit;
