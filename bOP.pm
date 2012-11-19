@@ -28,9 +28,31 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.11  2012/11/13 00:09:15  nagler
+  * Bivio::Agent::Request
+    added clear_cache_for_auth_realm
+  * Bivio::Biz::Model::RealmOwnerBase
+    factored out cascade_delete_model_list so that subclasses could augment
+  * Bivio::Test::Unit
+    added builtin_realm_id_exists
+  * Bivio::Type::DomainNameArray
+    NEW
+  * Bivio::Type::ForumName
+    added join_top_unless_exists
+  * Bivio::UI::Facade
+    handle_call_autoload allows uri passed in
+  * Bivio::Util::Forum
+    assert test for cascade_delete_forum_and_users
+  * Bivio::Util::HTTPConf
+    need to added rewrite_engine if there's a proxy to a backend
+    ssl_crt was being overwritten when it shouldn't have been
+  * Bivio::Util::RealmAdmin
+    added unsafe_to_id
+
   Revision 12.10  2012/11/05 17:34:40  schellj
   * Bivio::Auth::Realm
     added assert_type
