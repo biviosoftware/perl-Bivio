@@ -54,20 +54,23 @@ sub create_forum {
     my($self, $bp) = shift->parameters(\@_);
     $self->assert_have_user;
     $self->initialize_fully;
-    my($do) = sub {
-	return $bp->{ForumName} . ': already exists'
-	    if $self->model('RealmOwner')
-	    ->unauth_rows_exist({name => $bp->{ForumName}});
-	$self->model('ForumForm', {
-	    'RealmOwner.display_name' => $bp->{DisplayName},
-	    'RealmOwner.name' => $bp->{ForumName},
-	    admin_user_id => $self->req('auth_user_id'),
-	});
-	return;
-    };
-    return $do->()
-	unless $bp->{parent_realm};
-    return $self->req->with_realm($bp->{parent_realm}, $do);
+    return $self->req->with_realm(
+	$bp->{parent_realm} || $self->req('auth_realm'),
+	sub {
+	    return $bp->{ForumName} . ': already exists'
+		if $self->model('RealmOwner')
+		->unauth_rows_exist({name => $bp->{ForumName}});
+	    $self->model(
+		'ForumForm',
+		{
+		    'RealmOwner.display_name' => $bp->{DisplayName},
+		    'RealmOwner.name' => $bp->{ForumName},
+		    admin_user_id => $self->req('auth_user_id'),
+		},
+	    );
+	    return;
+	},
+    );
 }
 
 sub delete_forum {
