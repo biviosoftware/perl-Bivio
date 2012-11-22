@@ -41,6 +41,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
 	table_name => 'calendar_event_t',
+
         columns => {
 	    calendar_event_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
@@ -66,7 +67,7 @@ sub update_from_ics {
 	@{$self->new_other('CalendarEventList')->map_iterate},
     )};
     my($ce) = $self->new;
-    foreach my $v (@{$_MC->from_ics($ics)}) {
+    foreach my $v (@{$_MC->vevents_from_ics($ics)}) {
         if (my $x = delete($old->{$v->{uid}})) {
 	    $ce->load({calendar_event_id => $x->{'CalendarEvent.calendar_event_id'}})
 		->update_from_vevent($v);
