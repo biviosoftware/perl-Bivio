@@ -9,7 +9,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub call_fifo {
     my($self, $method, $args) = @_;
-    my($q) = $self->[$_IDI];
+    my($q) = [@{$self->[$_IDI]}];
     $args ||= [];
     return [map(
 	!$_->can($method) ? ()
@@ -21,7 +21,7 @@ sub call_fifo {
 sub do_filo {
     my($self, $method, $args) = @_;
     $args ||= [];
-    foreach my $h (reverse(@{$self->[$_IDI]})) {
+    foreach my $h (reverse(@{[@{$self->[$_IDI]}]})) {
 	next
 	    unless $h->can($method);
 	my($res) = $h->$method(ref($args) eq 'CODE' ? @{$args->()} : @$args);
