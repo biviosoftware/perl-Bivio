@@ -1074,6 +1074,15 @@ application/vnd.openxmlformats-officedocument.spreadsheetml.sheet xlsx
 application/vnd.openxmlformats-officedocument.spreadsheetml.template xltx
 application/vnd.openxmlformats-officedocument.wordprocessingml.document docx
 application/vnd.openxmlformats-officedocument.wordprocessingml.template dotx
+application/vnd.ms-word.document.macroEnabled.12 docm
+application/vnd.ms-powerpoint.template.macroEnabled.12 potm
+application/vnd.ms-powerpoint.addin.macroEnabled.12 ppam
+application/vnd.ms-powerpoint.slideshow.macroEnabled.12 ppsm
+application/vnd.ms-powerpoint.presentation.macroEnabled.12 pptm
+application/vnd.ms-excel.addin.macroEnabled.12 xlam
+application/vnd.ms-excel.sheet.binary.macroEnabled.12 xlsb
+application/vnd.ms-excel.sheet.macroEnabled.12 xlsm
+application/vnd.ms-excel.template.macroEnabled.12 xltm
 application/wordperfect5.1			wp
 application/x-asap				asp
 application/x-compress				z
