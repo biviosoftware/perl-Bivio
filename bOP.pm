@@ -28,10 +28,22 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.12  2012/11/19 23:21:32  schellj
+  * Bivio::MIME::Calendar
+    Move NormForge MIME::Calendar extensions to bOP
+  * Bivio::Test::Util
+    b_use
+  * Bivio::Type::DomainName
+    add to_http_uri
+  * Bivio::Util::Forum
+    Always set the parent realm in create_forum.
+    Rob
+  * Bivio::Util::RealmAdmin
+    doc
+
   Revision 12.11  2012/11/13 00:09:15  nagler
   * Bivio::Agent::Request
     added clear_cache_for_auth_realm
