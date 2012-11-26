@@ -13,6 +13,7 @@ Type();
 	dat => 'application/octet-stream',
 	# Support Microsoft ClickOnce deployments
 	deploy => 'application/octet-stream',
+	docm => 'application/vnd.ms-word.document.macroenabled.12',
     ],
     suggest_encoding => [
 	map((
