@@ -22,7 +22,8 @@ sub execute_ok {
     my($cc_payment) = $payment->get_model('ECCreditCardPayment');
     my($values) = $payment->get_shallow_copy;
     $values->{amount} = $_A->neg($self->get('ECPayment.amount'));
-    $values->{description} .= ' Refund';
+    $values->{description} = _append_text(
+	$self, $payment, 'description', ' Refund');
     $values->{status} = $_ECPS->TRY_CREDIT;
     $values->{remark} = "Refund for payment on "
 	. $_D->to_string($payment->get('creation_date_time'));
@@ -57,6 +58,17 @@ sub validate {
 	    && $_A->compare($self->get('ECPayment.amount'),
 		$self->req(qw(Model.ECPayment amount))) > 0;
     return;
+}
+
+sub _append_text {
+    my($self, $model, $field, $text) = @_;
+    my($value) = $model->get($field) || '';
+    my($size) = $model->get_field_type($field)->get_width;
+
+    if (length($value . $text) > $size) {
+	$value = substr($value, 0, $size - (length($value . $text) - $size));
+    }
+    return $value . $text;
 }
 
 1;
