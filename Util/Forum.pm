@@ -32,7 +32,7 @@ EOF
 sub cascade_delete_forum_and_users {
     my($self) = @_;
     IO_Config()->assert_test;
-    my($req) = $self->req;
+    my($req) = $self->initialize_fully;
     $req->get('auth_realm')->assert_type('forum');
     $self->are_you_sure('Delete forum, users, and children of ' . $self->req(qw(auth_realm owner_name)));
     $self->put(force => 1);
