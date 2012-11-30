@@ -66,7 +66,7 @@ sub _append_text {
     my($size) = $model->get_field_type($field)->get_width;
 
     if (length($value . $text) > $size) {
-	$value = substr($value, 0, $size - (length($value . $text) - $size));
+	$value = substr($value, 0, $size - length($text));
     }
     return $value . $text;
 }
