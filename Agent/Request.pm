@@ -998,6 +998,7 @@ sub push_txn_resource {
     my($self, $resource) = @_;
     # Adds a new transaction resource to this request.  I<resource> must
     # support C<handle_commit> and C<handle_rollback>.
+#TODO: use Biz.Registrar
     my($tr) = $self->get('txn_resources');
     return
 	if grep($_ eq $resource, @$tr);
