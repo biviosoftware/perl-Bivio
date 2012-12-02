@@ -430,6 +430,7 @@ sub put_attr_for_test {
 
 sub register {
     my($proto, $handler) = @_;
+#TODO: Use Biz.Registrar (see _op() - registrar needs to allow iterate handlers)
     push(@$_HANDLERS, $handler)
 	unless grep($_ eq $handler, @$_HANDLERS);
     return;
