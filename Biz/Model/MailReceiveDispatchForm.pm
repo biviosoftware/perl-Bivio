@@ -4,6 +4,7 @@ package Bivio::Biz::Model::MailReceiveDispatchForm;
 use strict;
 use Bivio::Base 'Model.MailReceiveBaseForm';
 b_use('IO.Trace');
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -14,12 +15,8 @@ my($_E) = b_use('Type.Email');
 my($_I) = b_use('Mail.Incoming');
 my($_RI) = b_use('Agent.RequestId');
 my($_FP) = b_use('Type.FilePath');
-my($_DOMAIN_SEP) = '@';
-my($_OP_SEP) = '*';
-my($_PLUS_SEP) = '+';
 my($_TEST_RECIPIENT_HDR) = qr{^@{[b_use('Mail.Common')->TEST_RECIPIENT_HDR]}:}m;
-my($_C) = b_use('IO.Config');
-$_C->register(my $_CFG = {
+b_use('IO.Config')->register(my $_CFG = {
     filter_spam => 0,
     duplicate_threshold_seconds => 3600,
 });
@@ -39,16 +36,16 @@ sub execute_ok {
     #
     # I<op> must contain only \w and dashes (-).
     my($req) = $self->req;
-    Bivio::Type::UserAgent->MAIL->execute($req, 1);
+    Type_UserAgent()->MAIL->execute($req, 1);
     $req->put_durable(client_addr => $self->get('client_addr'));
     $self->put_on_request(1);
-    my($redirect, $realm, $op, $plus_tag) = _email_alias($self);
+    my($redirect, undef, $realm, $plus, $op) = _email_alias($self);
     return _redirect($redirect)
 	if $redirect;
     my($mi) = $_I->new($self->get('message')->{content});
     $self->internal_put_field(
 	mail_incoming => $mi,
-	plus_tag => $plus_tag,
+	plus_tag => $plus,
     );
     return _redirect('ignore_task')
 	if _ignore($self, \&_ignore_email, \&_ignore_forwarded, \&_ignore_spam);
@@ -76,11 +73,13 @@ sub execute_ok {
 }
 
 sub format_recipient {
-    my($self, $realm, $op, $plus_part) = @_;
-    return $self->req->format_email(
-	($op ? $op . $_OP_SEP : '')
-	. $realm
-	. ($plus_part ? $_PLUS_SEP . $plus_part : ''),
+    my($self, $realm, $plus, $op) = @_;
+    return $_E->format_email(
+	$realm,
+	undef,
+	$plus,
+	$op,
+	$self->req,
     );
 }
 
@@ -98,29 +97,14 @@ sub internal_get_login {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	other => [
-	    {
-		name => 'mail_incoming',
-		type => $_I,
-		constraint => 'NONE',
-	    },
-	    {
-		# User we authenticated (or not)
-		name => 'from_email',
-		type => 'Email',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'task_id',
-		type => 'Bivio::Agent::TaskId',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'plus_tag',
-		type => 'String',
-		constraint => 'NONE',
-	    },
-	],
+	$self->field_decl(
+	    other => [
+		['mail_incoming', $_I],
+		['from_email', 'Email'],
+		['task_id', 'Agent.TaskId'],
+		['plus_tag', 'String'],
+	    ],
+	),
     });
 }
 
@@ -138,31 +122,12 @@ sub internal_set_realm {
     return;
 }
 
-sub parse_recipient {
-    my($self) = @_;
-    my($to) = $self->get('recipient');
-    _trace('to: ', $to) if $_TRACE;
-    my($domain) = $1
-	if $to =~ s/\Q$_DOMAIN_SEP\E(.*)$//o;
-    my($plus_tag) = $1
-	if $to =~ s/\Q$_PLUS_SEP\E(.*)$//o;
-    my($op, $name) = $to =~/^(?:(\w+)\Q$_OP_SEP\E)?(.+)$/o;
-    $self->throw_die('NOT_FOUND', {
-	entity => $to,
-        message => 'invalid recipient',
-    }) unless defined($name);
-    _trace('name: ', $name, ' op: ', $op, ' plus_tag: ', $plus_tag,
-	' domain: ', $domain)
-	if $_TRACE;
-    return ($name, $op, $plus_tag, $domain);
-}
-
 sub _email_alias {
     my($self) = @_;
     my($req) = $self->req;
-    my($realm, $op, $plus_tag, $domain) = $self->parse_recipient;
+    my($domain, $realm, $plus, $op) = _parse_recipient($self);
     Bivio::UI::Facade->setup_request($domain, $req);
-    return (undef, $realm, $op, $plus_tag)
+    return (undef, $domain, $realm, $plus, $op)
 	unless $req->get('task')->unsafe_get_redirect('email_alias_task', $req)
 	and my $new = $self->new_other('EmailAlias')
 	->incoming_to_outgoing($self->get('recipient'));
@@ -172,7 +137,7 @@ sub _email_alias {
 	return 'email_alias_task';
     }
     $self->internal_put_field(recipient => $_E->join_parts($new, $domain));
-    return (undef, $self->parse_recipient);
+    return (undef, _parse_recipient($self));
 }
 
 sub _from_email {
@@ -242,6 +207,20 @@ sub _ignore_spam {
     return $_CFG->{filter_spam}
 	&& $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s*Y/im
 	? 'spam' : undef;
+}
+
+sub _parse_recipient {
+    my($self) = @_;
+    my($to) = $self->get('recipient');
+    my(undef, $domain, $name, $plus, $op) = $_E->split_parts($to);
+    $self->throw_die(
+	'NOT_FOUND',
+	{
+	    entity => $to,
+	    message => 'invalid recipient',
+	},
+    ) unless defined($name);
+    return ($domain, $name, $plus, $op);
 }
 
 sub _redirect {
