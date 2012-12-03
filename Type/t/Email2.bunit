@@ -1,7 +1,15 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
-req(); #the last case of ->get_domain() needs Test.Request loaded
+req();
+my($round_up) = sub {
+    my($expect) = @_;
+    return $expect
+	unless ref($expect) eq 'ARRAY';
+    push(@$expect, undef)
+	while @$expect < 5;
+    return $expect;
+};
 [
     get_local_part => [
 	[undef] => [undef],
@@ -9,16 +17,26 @@ req(); #the last case of ->get_domain() needs Test.Request loaded
 	'a@a.a' => 'a',
     ],
     split_parts => [
-	[undef] => [undef, undef],
-	'' => [undef, undef],
-	'a@b.c' => ['a', 'b.c'],
+	map(
+	    ($_->[0], $round_up->($_->[1])),
+	    [[undef] => []],
+	    ['' => []],
+	    ['a@b.c' => ['a', 'b.c', 'a']],
+	    ['a@a.A' => ['a', 'a.a', 'a']],
+	    ['foo+btest_a=b.com@bivio.biz' => ['a', 'b.com', 'a']],
+	    ['admin*fourem@bivio.biz'
+		 => ['admin*fourem', 'bivio.biz', 'fourem', undef, 'admin']],
+	    ['admin*fourem+hello@bivio.biz'
+		 => ['admin*fourem+hello', 'bivio.biz', 'fourem', 'hello', 'admin']],
+	    [foo => []],
+	    ['foo@' => []],
+	    ['@x.x' => []],
+	),
     ],
     get_domain_part => [
 	[undef] => [undef],
 	'' => [undef],
 	'a@a.a' => 'a.a',
-	'a@a.A' => 'a.a',
-	'a=b.com@c.d' => 'b.com',
     ],
     replace_domain => [
 	[qw(a@A.a b.b)] => 'a@b.b',
