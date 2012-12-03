@@ -10,6 +10,8 @@ my($_C) = b_use('IO.Config');
 my($_HTML) = b_use('Bivio.HTML');
 my($_TE) = b_use('Bivio.TypeError');
 my($_ATOM_ONLY_RE) = qr{^@{[b_use('Mail.RFC822')->ATOM_ONLY_ADDR]}$}ois;
+my($_OP_SEP) = '*';
+my($_PLUS_SEP) = '+';
 
 sub IGNORE_PREFIX {
     return 'ignore-';
@@ -30,8 +32,18 @@ sub equals_domain {
 }
 
 sub format_ignore {
-    my($proto, $base, $req) = @_;
-    return $req->format_email($proto->IGNORE_PREFIX . $base);
+    my($proto, $local, $req) = @_;
+    return $req->format_email($proto->IGNORE_PREFIX . $local);
+}
+
+sub format_email {
+    my($proto, $local_or_realm_or_email, $domain, $plus, $op, $req) = @_;
+    return $local_or_realm_or_email
+	if /\@/;
+    my($local) = ($op ? $op . $_OP_SEP : '')
+	. $local_or_realm_or_email
+	. ($plus ? $_PLUS_SEP . $plus : '');
+    return $domain ? $proto->join_parts($local, $domain) : $req->format_email($local);
 }
 
 sub from_literal {
@@ -54,11 +66,6 @@ sub from_literal {
 
 sub get_domain_part {
     my($proto, $value) = @_;
-    return lc($1)
-        if $value
-        && $_C->is_test
-        && $proto->get_local_part($value)
-	=~ b_use('TestLanguage.HTTP')->LOCAL_EMAIL_DOMAIN_RE;
     return (shift->split_parts(@_))[1];
 }
 
@@ -68,6 +75,7 @@ sub get_local_part {
 
 sub invalidate {
     my($proto, $email) = @_;
+#TODO: elimnate reference
     $$email = substr(
 	$proto->INVALID_PREFIX . $$email,
 	0,
@@ -102,9 +110,21 @@ sub replace_domain {
 
 sub split_parts {
     my(undef, $value) = @_;
-    return $value && $value =~ /^(.+?)\@(.+)$/
-	? (lc($1), lc($2))
-	: (undef, undef);
+    return (undef, undef, undef, undef, undef)
+	unless $value;
+    return ($1, $2, $1, undef, undef)
+        if $_C->is_test
+        && $value =~ b_use('TestLanguage.HTTP')->LOCAL_EMAIL_RE;
+    my($local, $domain) = lc($value) =~ /^(.+?)\@(.+)$/;
+    return (undef, undef, undef, undef, undef)
+	unless $domain;
+    my($base) = $local;
+    my($plus) = $1
+	if $base =~ s/\Q$_PLUS_SEP\E(.+)$//o;
+    my($op) = $1
+	if $base =~ s/^(\w+?)\Q$_OP_SEP\E//o;
+    return length($base) ? ($local, $domain, $base, $plus, $op)
+	: ($local, $domain, undef, undef, undef);
 }
 
 sub to_xml {
