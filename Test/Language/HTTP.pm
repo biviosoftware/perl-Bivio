@@ -40,9 +40,9 @@ $_C->register(my $_CFG = {
 });
 my($_VERIFY_MAIL_HEADERS) = [b_use('Mail.Common')->TEST_RECIPIENT_HDR, 'To'];
 
-sub LOCAL_EMAIL_DOMAIN_RE {
+sub LOCAL_EMAIL_RE {
     # Must be synchronized with generate_local_email
-    return qr{=(\w+\.(?:org|com|net))$};
+    return qr{\Q$_CFG->{email_tag}\E(.+?)=(.+?\.(?:\w+))\@}i;
 }
 
 sub absolute_uri {
