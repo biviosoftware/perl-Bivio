@@ -73,28 +73,5 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 	    [qw(demo demo), "\nX-Spam-Flag: Y"]
 		=> [undef, undef, 'ignore_task'],
 	],
-	{
-	    method => 'parse_recipient',
-	    compute_params => sub {
-		req()->set_user(undef);
-		shift->get('object')->internal_put_field(recipient => shift->[0]),
-		return [1];
-	    },
-	} => [
-	    'a*b+c@d.d' => [qw(b a c d.d)],
-	    'a@b.b' => ['a', undef, undef, 'b.b'],
-	],
-	{
-	    method => 'parse_recipient',
-	    compute_params => sub {
-		req()->set_user(undef);
-		shift->get('object')->internal_put_field(recipient => shift->[0]),
-		return [0];
-	    },
-	} => [
-	    'b*a+c@d.d' => [qw(a b c d.d)],
-	    'a@b.b' => ['a', undef, undef, 'b.b'],
-            'a*b-c@d.d' => [qw(b-c a), undef, 'd.d'],
-	],
     ],
 ];
