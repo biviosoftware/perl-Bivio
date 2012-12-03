@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::EmailAlias;
 use strict;
@@ -60,8 +60,13 @@ sub incoming_to_outgoing {
     return $self->get('outgoing')
 	if $self->unsafe_load({incoming => $recipient});
     my($local, $domain) = $_E->split_parts($recipient);
-    return $local . $self->get('outgoing')
-	if $self->unsafe_load({incoming => '@' . $domain});
+    return
+	unless $local;
+    my($t) = $self->get_field_type('outgoing');
+    return $_E->join_parts(
+	$local,
+	$t->get_domain_part($self->get('outgoing')),
+    ) if $self->unsafe_load({incoming => $t->format_domain($domain)});
     return;
 }
 
