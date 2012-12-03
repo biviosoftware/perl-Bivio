@@ -16,6 +16,7 @@ sub format_email_for_realm {
 	->format_recipient(
 #TODO: This needs to be coupled with the actual task's uri, not the constant here
 	    $realm->get('name'),
+	    undef,
 	    $proto->TASK_URI,
 	);
 }
