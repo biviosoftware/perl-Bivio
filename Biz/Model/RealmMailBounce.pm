@@ -77,8 +77,8 @@ sub return_path {
     return $self->new_other('MailReceiveDispatchForm')
 	->format_recipient(
 	    $user_id,
-	    $self->TASK_URI,
 	    $realm_file_id . '-' . $email,
+	    $self->TASK_URI,
 	);
 }
 
