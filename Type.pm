@@ -100,6 +100,14 @@ sub from_literal {
     return shift;
 }
 
+sub from_literal_for_model_value {
+    my($v, $e) = shift->from_literal(@_);
+    Bivio::IO::Alert->warn_deprecated(
+	\@_, ': from_literal_for_model_value failed with: ', $e)
+        unless defined($v);
+    return $v;
+}
+
 sub from_literal_or_die {
     # (proto, string, boolean) : any
     # Checks the return value of L<from_literal|"from_literal">
