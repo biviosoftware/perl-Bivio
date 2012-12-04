@@ -406,6 +406,22 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	), sub {Bivio::Die->throw_die('SERVER_REDIRECT_TASK')}],
+	[qw(
+	    TEST_WANT_INSECURE
+	    551
+	    GENERAL
+	    ANYBODY
+	    Action.EmptyReply
+	    want_insecure=1
+	)],
+	[qw(
+	    TEST_REQUIRE_SECURE
+	    552
+	    GENERAL
+	    ANYBODY
+	    Action.EmptyReply
+	    require_secure=1
+	)],
     ]);
 }
 

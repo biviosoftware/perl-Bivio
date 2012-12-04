@@ -134,7 +134,8 @@ __PACKAGE__->new({
 	[FIELD_TEST_FORM => 'pub/field-test-form'],
 	[TEST_MULTI_ROLES1 => undef],
 	[TEST_MULTI_ROLES2 => undef],
-	[CLIENT_REDIRECT_PERMANENT_MAP => 'permanent-redirect/*'],
+	[TEST_WANT_INSECURE => '/pub/test-want-insecure'],
+	[TEST_REQUIRE_SECURE => '/pub/test-require-secure'],
     ],
     Constant => __PACKAGE__->make_groups([
 	@{__PACKAGE__->bunit_shared_values},
