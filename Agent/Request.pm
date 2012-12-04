@@ -1418,6 +1418,7 @@ sub _need_to_secure_task {
     $task = $_T->get_by_id($task)
 	unless $_T->is_blesser_of($task);
     return $_CFG->{can_secure}
+	&& !$task->get('want_insecure')
 	&& !$self->unsafe_get('is_secure')
 	&& ($task->get('require_secure')
 	    || b_use('FacadeComponent.Constant')
