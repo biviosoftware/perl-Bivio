@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.13  2012/11/26 21:15:14  schellj
+  * Bivio::Biz::Model::CalendarEvent
+    'from_ics' renamed 'vevents_from_ics'
+  * Bivio::Biz::Registrar
+    Eliminate Heisenbug when calling handle_mail_post_create
+  * Bivio::MIME::Type
+    added docm and related macroEnabled MIME types
+  * b_agent
+
   Revision 12.12  2012/11/19 23:21:32  schellj
   * Bivio::MIME::Calendar
     Move NormForge MIME::Calendar extensions to bOP
