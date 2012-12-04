@@ -907,6 +907,7 @@ sub info_mail {
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
 	    email_alias_task=MAIL_RECEIVE_FORWARD
 	    ignore_task=MAIL_RECEIVE_IGNORE
+	    want_insecure=1
 	)],
 	[qw(
 	    MAIL_RECEIVE_NO_RESOURCES
@@ -914,6 +915,7 @@ sub info_mail {
 	    GENERAL
 	    ANYBODY
 	    Action.MailReceiveStatus->execute_no_resources
+	    want_insecure=1
 	)],
 	[qw(
 	    MAIL_RECEIVE_NOT_FOUND
@@ -921,6 +923,7 @@ sub info_mail {
 	    GENERAL
 	    ANYBODY
 	    Action.MailReceiveStatus->execute_not_found
+	    want_insecure=1
 	)],
 	[qw(
 	    MAIL_RECEIVE_IGNORE
@@ -928,6 +931,7 @@ sub info_mail {
 	    USER
 	    ANYBODY
 	    Action.MailReceiveStatus
+	    want_insecure=1
 	)],
 	[qw(
 	    MAIL_RECEIVE_FORWARD
@@ -936,6 +940,7 @@ sub info_mail {
 	    ANYBODY
 	    Action.MailForward
 	    Action.MailReceiveStatus
+	    want_insecure=1
 	)],
 	[qw(
 	    FORUM_MAIL_RECEIVE
@@ -946,6 +951,7 @@ sub info_mail {
 	    Action.MailReceiveStatus
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
 	    mail_reflector_task=FORUM_MAIL_REFLECTOR
+	    want_insecure=1
 	)],
 	[qw(
 	    USER_MAIL_BOUNCE
@@ -954,6 +960,7 @@ sub info_mail {
 	    ANYBODY
 	    Model.RealmMailBounce
 	    Action.MailReceiveStatus
+	    want_insecure=1
 	)],
 	[qw(
 	    MAIL_RECEIVE_FORBIDDEN
@@ -961,6 +968,7 @@ sub info_mail {
 	    GENERAL
 	    ANYBODY
 	    Action.MailReceiveStatus->execute_forbidden
+	    want_insecure=1
 	)],
 	[qw(
 	    FORUM_MAIL_REFLECTOR
@@ -969,6 +977,7 @@ sub info_mail {
 	    MAIL_SEND&FEATURE_MAIL
 	    Action.RealmMail->execute_reflector
 	    Action.MailReceiveStatus
+	    want_insecure=1
 	)],
 	[qw(
 	    FORUM_MAIL_THREAD_ROOT_LIST
@@ -1043,6 +1052,7 @@ sub info_mail {
 	    Action.MailReceiveStatus
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
 	    mail_reflector_task=ADMIN_REALM_MAIL_REFLECTOR
+	    want_insecure=1
 	)],
 	[qw(
 	    ADMIN_REALM_MAIL_REFLECTOR
@@ -1051,6 +1061,7 @@ sub info_mail {
 	    MAIL_SEND&FEATURE_MAIL
 	    Action.AdminRealmMail->execute_reflector
 	    Action.MailReceiveStatus
+	    want_insecure=1
 	)],
 	[qw(
 	    BOARD_REALM_MAIL_RECEIVE
@@ -1060,6 +1071,7 @@ sub info_mail {
 	    Action.BoardRealmMail->execute_receive
 	    Action.MailReceiveStatus
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+	    want_insecure=1
 	)],
 	[qw(
 	    GROUP_MAIL_RECEIVE_NIGHTLY_TEST_OUTPUT
@@ -1069,6 +1081,7 @@ sub info_mail {
 	    Action.NightlyTestOutput
 	    Action.MailReceiveStatus
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+	    want_insecure=1
         )],
 	[qw(
 	    GROUP_MAIL_TOGGLE_PUBLIC
@@ -1104,6 +1117,7 @@ sub info_mail {
 	    Action.WeeklyBuildOutput
 	    Action.MailReceiveStatus
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
+	    want_insecure=1
         )],
 #235-239
     ];
