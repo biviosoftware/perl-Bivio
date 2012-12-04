@@ -8,8 +8,8 @@ config({
 ShellUtil();
 write_file('HTTPConf/ping.txt', <<'EOF');
 petshop.bivio.biz
-yahoo.com
+google.com
 EOF
 [
-    [qw(do_ping HTTPConf/ping.txt)] => "yahoo.com: 404 Not Found\n",
+    [qw(do_ping HTTPConf/ping.txt)] => "google.com: 404 Not Found\n",
 ];
