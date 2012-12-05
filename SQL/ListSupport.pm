@@ -735,13 +735,13 @@ sub _prepare_query_values {
 }
 
 sub _prepare_statement {
-    my($self, $query, $stmt, $_where, $_params, $die) = @_;
-    _trace('_where: ', $_where);
+    my($self, $query, $stmt, $_where_in, $params_in, $die) = @_;
+    _trace('_where: ', $_where_in);
     $stmt ||= Bivio::SQL::Statement->new;
     _prepare_query_values($self, $stmt, $query);
     my($where, $params) = $stmt->build_for_list_support_prepare_statement(
-        $self, $self->get('statement'), _merge_where($self, $_where),
-	$_params);
+        $self, $self->get('statement'), _merge_where($self, $_where_in),
+	$params_in);
 
     _trace('where: ', $where);
     return ($where . _prepare_ordinal_clauses($self, $query), $params, undef)
