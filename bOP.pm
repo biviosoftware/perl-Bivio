@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,55 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.14  2012/12/04 21:29:05  nagler
+  * Bivio::Agent::Request
+    todo
+    Added ability to want_secure on a task.  This is necessary for mail
+    tasks (see Agent.TaskId)
+  * Bivio::Agent::Task
+    tod
+  * Bivio::Biz::Action::RealmMailBase
+    normalize format_recipient to include domain
+  * Bivio::Biz::Model::ECCreditCardRefundForm
+    ensure ECPayment.description doesn't exceed field size
+    fpc
+  * Bivio::Biz::Model::EmailAlias
+    Push format_domain into EmailAliasOutgoing
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    moved email parsing to Type.Email
+    refactored field_decl
+    took parse_recipient private
+  * Bivio::Biz::Model::RealmMailBounce
+    format_recipient params normalized
+  * Bivio::Delegate::TaskId
+    added want_insecure=1 to mail tasks.  If the facade is set to
+    require_secure=1 (e.g. PetShop::Facade::RequireSecure) then mail tasks
+    will fail with a redirect to https when b-sendmail-agent POSTs an
+    email to a mail task.
+  * Bivio::PetShop::Delegate::TaskId
+    test tasks for require_secure and want_insecure
+  * Bivio::PetShop::Facade::PetShop
+    test tasks for require_secure and want_insecure
+  * Bivio::SQL::PropertySupport
+    _prepare_select_param was assuming you could just call from_literal on
+    any type.  from_literal has specific semantics, which could return
+    failure.  Replaced with from_literal_for_model_value, which provides
+    override in type, names the concept, can be used in ListSupport (not
+    done yet), and protects against invalid values
+  * Bivio::Test::Language::HTTP
+    change LOCAL_EMAIL_DOMAIN_RE to LOCAL_EMAIL_RE so that entire address
+    can be parsed in Type.Email
+  * Bivio::Type::EmailAliasOutgoing
+    added format_domain
+  * Bivio::Type::Email
+    moved parsing of emails from MailReceiveDispatchForm to split_parts
+    Normalized parameterse of format_email to align with split_parts
+    moved LOCAL_EMAIL_RE parsing to split_parts
+  * Bivio::Type
+    added from_literal_for_model_value
+  * Bivio::Util::Forum
+    cascade_delete_forum_and_users: must initialize_fully
+
   Revision 12.13  2012/11/26 21:15:14  schellj
   * Bivio::Biz::Model::CalendarEvent
     'from_ics' renamed 'vevents_from_ics'
