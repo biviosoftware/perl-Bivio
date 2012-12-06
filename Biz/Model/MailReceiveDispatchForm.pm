@@ -51,7 +51,7 @@ sub execute_ok {
 	if _ignore($self, \&_ignore_email, \&_ignore_forwarded, \&_ignore_spam);
     $self->internal_set_realm($realm);
     return _redirect('ignore_task')
-	if _ignore($self, \&_ignore_duplicate);
+	if _ignore($self, \&_ignore_duplicate, \&_ignore_mailer_daemon);
     $self->internal_put_field(
 	task_id => _task($self, $op),
 	from_email => ($mi->get_from)[0],
@@ -146,6 +146,11 @@ sub _from_email {
     return $from && lc($from);
 }
 
+sub _from_mailer_daemon {
+    return shift->get('mail_incoming')->get('header')
+	    =~ /^Return-Path:\s*<MAILER-DAEMON>/im;
+}
+
 sub _ignore {
     my($self, @ops) = @_;
     foreach my $op (@ops) {
@@ -202,6 +207,24 @@ sub _ignore_forwarded {
         ? 'too-many-forwards' : undef;
 }
 
+sub _ignore_mailer_daemon {
+    my($self) = @_;
+    return undef
+	unless $self->new_other('RowTag')->get_value(
+	    $self->req('auth_id'),
+	    Type_RowTagKey()->FILTER_MAILER_DAEMON,
+	);
+    return undef
+	unless _from_mailer_daemon($self);
+    foreach my $id (_related_message_ids($self)) {
+	return undef
+	    if $self->new_other('RealmMail')->unsafe_load({
+		message_id => $id,
+	    });
+    }
+    return 'mailer-daemon';
+}
+
 sub _ignore_spam {
     my($self) = @_;
     return $_CFG->{filter_spam}
@@ -231,6 +254,11 @@ sub _redirect {
 	task_id => $task,
 	query => undef,
     };
+}
+
+sub _related_message_ids {
+    return (shift->get('mail_incoming')->get_rfc822
+		=~ /^Message-Id:\s+<(.+?)>/mig);
 }
 
 sub _task {
