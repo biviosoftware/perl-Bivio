@@ -6,6 +6,24 @@ config({
     },
 });
 Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
+my($mid) = random_string() . '@domain.com';
+my($email_to) = email('fourem-mail-filtering');
+my($email_from) = email('root');
+my($subject) = 'bunit subject ' . random_string();
+req()->with_realm(
+    'fourem-mail-filtering',
+    sub {
+	model('RealmMail')->create_from_rfc822(\(<<"EOF"));
+To: $email_to
+From: $email_from
+Message-ID: <$mid>
+Subject: subject
+
+body
+EOF
+    },
+);
+commit();
 [
     [req()] => [
 	{
@@ -72,6 +90,10 @@ Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 		=> [qw(demo demo USER_MAIL_RECEIVE)],
 	    [qw(demo demo), "\nX-Spam-Flag: Y"]
 		=> [undef, undef, 'ignore_task'],
+	    [qw(root fourem-mail-filtering), "\nReturn-Path: <MAILER-DAEMON>\nMessage-Id: <$mid>"]
+		=> [qw(root fourem-mail-filtering FORUM_MAIL_RECEIVE)],
+	    [qw(root fourem-mail-filtering), "\nReturn-Path: <MAILER-DAEMON>"]
+		=> [undef, qw(fourem-mail-filtering ignore_task)],
 	],
     ],
 ];
