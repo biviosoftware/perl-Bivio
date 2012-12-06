@@ -3,6 +3,7 @@
 package Bivio::PetShop::Util::SQL;
 use strict;
 use Bivio::Base 'ShellUtil';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 # export BCONF=~/bconf/petshop.bconf
 # cd files/ddl
@@ -611,6 +612,16 @@ EOF
     $self->model('ForumUserAddForm', {
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
+    });
+    $req->set_realm($self->FOUREM);
+    $self->model('ForumForm', {
+	'RealmOwner.display_name' => 'Unit Test Forum Mail Filtering',
+	'RealmOwner.name' => $self->FOUREM . '-mail-filtering',
+    });
+    $self->model('RowTag')->create({
+	primary_id => $req->get('auth_id'),
+	key => Type_RowTagKey()->FILTER_MAILER_DAEMON,
+	value => 1,
     });
     foreach my $realm (
 	$self->new_other('SiteForum')->SITE_REALM,
