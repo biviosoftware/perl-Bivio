@@ -32,7 +32,8 @@ sub link_facade_files {
 		$_F->symlink('.', $d);
 	    }
 	    if ($_C->is_dev) {
-		my($src) = "$ENV{HOME}/src";
+		my($src) = $ENV{PERLLIB} =~ /src/ ? "$ENV{PERLLIB}/.."
+		    : "$ENV{HOME}/src";
 		my($common) = "$src/perl/Bivio/files";
 		$_F->mkdir_p($common);
 		foreach my $j (grep($_ !~ /CVS$/ && -d $_, glob("$src/javascript/*"))) {
