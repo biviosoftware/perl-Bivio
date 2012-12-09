@@ -16,7 +16,8 @@ sub create_from_rfc822 {
     my($c) = $mr->get('message')->{content};
     my($uid) = _log($mr->req('auth_id'), $c);
     my($rfid, $email) = ($mr->get('plus_tag') || '') =~ /^(\d+)-(.+)$/;
-    if ($email && $email =~ s/(.*)=/$1@/) {
+    if ($email && $email =~ s/=/@/) {
+	$email =~ s/\#/+/;
 	my($rm) = $self->new_other('RealmMail');
 	if ($rm->unauth_load({realm_file_id => $rfid})) {
 	    my($rid) = $rm->get('realm_id');
@@ -74,6 +75,8 @@ sub internal_initialize {
 sub return_path {
     my($self, $user_id, $email, $realm_file_id) = @_;
     $email =~ s/\@/=/;
+    $email =~ s/\+/#/;
+b_info($email);
     return $self->new_other('MailReceiveDispatchForm')
 	->format_recipient(
 	    $user_id,
