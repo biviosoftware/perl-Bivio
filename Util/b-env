@@ -1,0 +1,119 @@
+#!/usr/bin/perl -w
+#!perl -w
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+use strict;
+
+=head1 NAME
+
+b-env - sets up BCONF, PERLLIB, BPREFIX, BROOT
+
+=head1 SYNOPSIS
+
+b-env prefix [RootPkg] [src_tree]
+
+=head1 DESCRIPTION
+
+Examples:
+
+    eval $(b-env pet Bivio/PetShop)
+    eval $(b-env b '' test)
+
+=cut
+
+#=IMPORTS
+
+#=VARIABLES
+main(@ARGV);
+
+sub main {
+    my($prefix, $root_pkg, $src_tree) = _args(@_);
+    my($src, $perllib) = _src($prefix, $src_tree);
+    print(
+	"export PERLLIB=$perllib BCONF=",
+	_bconf($prefix, $src),
+	_broot($prefix, $root_pkg, $perllib),
+	"\n",
+    );
+    return;
+}
+
+sub _args {
+    my($prefix, $root_pkg, $src_tree) = @_;
+    $src_tree =~ s{.*src_(?=\w+)$}{}
+	if $src_tree;
+    $root_pkg = 'Bivio/PetShop'
+	if ($root_pkg || '') eq 'Bivio';
+    return ($prefix, $root_pkg, $src_tree)
+	if ($prefix || '') =~ /^\w+$/;
+    _err("usage: prefix [RootPkg] [src_tree]");
+    # DOES NOT RETURN
+}
+
+sub _bconf {
+    my($prefix, $src) = @_;
+    my($bconf) = "$src/bconf/$prefix.bconf";
+    return $bconf
+	if -f $bconf;
+    my($try) = [$bconf];
+    if ($src =~ m{/src$}) {
+	return $bconf
+	    if -f ($bconf = "$ENV{HOME}/bconf/$prefix.bconf");
+	push(@$try, $bconf);
+    }
+    _err("$prefix.bconf: not found in: @$try");
+    # DOES NOT RETURN
+}
+
+sub _broot {
+    my($prefix, $root_pkg, $perllib) = @_;
+    return ''
+	unless $root_pkg;
+    my($dir) = "$perllib/$root_pkg";
+    _err("$dir: directory not found")
+	unless -d $dir;
+    return " BROOT=$root_pkg;cd $dir";
+}
+
+sub _err {
+    print(STDERR map("$_\n", @_));
+    CORE::exit(1);
+    # DOES NOT RETURN
+}
+
+sub _src {
+    my($prefix, $src_tree) = @_;
+    my($try) = [map(
+	"$ENV{HOME}/src$_",
+	$src_tree ? "_$src_tree" : (),
+	"_$prefix",
+	'',
+    )];
+    foreach my $src (@$try) {
+	next
+	    unless -d (my $perllib = "$src/perl");
+	return ($src, $perllib);
+    }
+    _err("perl: dir not found in: @$try");
+    # DOES NOT RETURN
+}
+
+=head1 SEE ALSO
+
+Bivio::Util::Project
+
+=head1 COPYRIGHT
+
+Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+
+=head1 VERSION
+
+$Id$
+
+=cut
+
+#Local Variables:
+#mode:cperl
+#End:
+
+1;
