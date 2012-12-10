@@ -6,8 +6,7 @@ use Bivio::Base 'Bivio::ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-
-my($root) = "$ENV{HOME}/src/perl/$ENV{BROOT}/Test/t";
+my($root) = "$ENV{PERLLIB}/$ENV{BROOT}/Test/t";
 my($log_dir_name) = $root . '/log';
 my($index_page_name) = $log_dir_name . '/index.html';
 my($our_name) = __PACKAGE__ =~ /::(\w+)$/;
