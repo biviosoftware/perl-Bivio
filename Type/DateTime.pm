@@ -38,12 +38,12 @@ my($_TIME_SUFFIX) = __PACKAGE__->internal_join('', __PACKAGE__->DEFAULT_TIME);
 my($_DATE_PREFIX) = __PACKAGE__->internal_join(__PACKAGE__->FIRST_DATE_IN_JULIAN_DAYS, '');
 my($_BEGINNING_OF_DAY) = 0;
 my($_END_OF_DAY) = __PACKAGE__->SECONDS_IN_DAY-1;
-my(@_DOW) = ('Sun','Mon','Tue','Wed','Thu','Fri','Sat');
-my($_DAY_OF_WEEK) = [qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)];
+my($_DAY_OF_WEEK, $_DAY_OF_WEEK3) = _init_english(
+    [qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)]);
+my($_NUM_TO_MONTH, $_NUM_TO_MONTH3) = _init_english(
+    [qw(January February March April May June July August September October November December)]);
 my($_IS_REGISTERED_WITH_TASK) = 0;
-my($_NUM_TO_MONTH3) = [qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)];
 my($_MONTH3_TO_NUM) = _make_map($_NUM_TO_MONTH3);
-my($_NUM_TO_MONTH) = [qw(January February March April May June July August September October November December)];
 my($_MONTH_TO_NUM) = _make_map($_NUM_TO_MONTH);
 my($_PART_NUMBER) = _make_map([qw(second minute hour day month year)]);
 my($_LOCAL_TIMEZONE);
@@ -339,7 +339,6 @@ sub do_iterate {
 
 sub english_day_of_week {
     my($proto, $date) = @_;
-    # Returns day of week for date.
     return $_DAY_OF_WEEK->[_dow($proto, $date)];
 }
 
@@ -348,19 +347,11 @@ sub english_day_of_week_list {
 }
 
 sub english_month {
-    my(undef, $month) = @_;
-    # Returns I<month> as a three character string with first letter caps.
-    Bivio::Die->die('month out of range: ', $month)
-        unless 1 <= $month && $month <= 12;
-    return $_NUM_TO_MONTH->[$month - 1];
+    return _english_month($_NUM_TO_MONTH, @_);
 }
 
 sub english_month3 {
-    my(undef, $month) = @_;
-    # Returns I<month> as a three character string with first letter caps.
-    Bivio::Die->die('month out of range: ', $month)
-        unless 1 <= $month && $month <= 12;
-    return $_NUM_TO_MONTH3->[$month - 1];
+    return _english_month($_NUM_TO_MONTH3, @_);
 }
 
 sub english_month3_list {
@@ -681,7 +672,7 @@ sub rfc822 {
     my($sec, $min, $hour, $mday, $mon, $year, $wday)
 	    = gmtime($unix_time);
     return sprintf('%s, %2d %s %04d %02d:%02d:%02d GMT',
-	    $_DOW[$wday], $mday, $_NUM_TO_MONTH3->[$mon], $year + 1900,
+	    $_DAY_OF_WEEK3->[$wday], $mday, $_NUM_TO_MONTH3->[$mon], $year + 1900,
 	    $hour, $min, $sec);
 }
 
@@ -967,6 +958,13 @@ sub _dow {
     return (gmtime($proto->to_unix($date)))[6];
 }
 
+sub _english_month {
+    my($array, undef, $month) = @_;
+    b_die('month out of range: ', $month)
+        unless 1 <= $month && $month <= 12;
+    return $array->[$month - 1];
+}
+
 sub _from_alert {
     my($proto, $value, $res, $err) = @_;
     # Returns ($res, $err) if it matches the pattern.  Parses alert format.
@@ -1080,6 +1078,14 @@ sub _from_yyyy_mm_dd_hh_mm_ss {
     my($proto, $value) = @_;
     my($y, $mon, $d, $h, $m, $s) = $value =~ /(\d{4})\W(\d{1,2})\W(\d{1,2})\W(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/;
     return defined($y) ? $proto->from_parts($s || 0, $m, $h, $d, $mon, $y) : ();
+}
+
+sub _init_english {
+    my($words) = @_;
+    return (
+	$words,
+	[map(substr($_, 0, 3), @$words)],
+    );
 }
 
 sub _initialize {
