@@ -1,16 +1,12 @@
-# Copyright (c) 2010 bivio Software Inc.  All Rights Reserved.
+# Copyright (c) 2010-2012 bivio Software Inc.  All Rights Reserved.
 # $Id$
 package Bivio::MIME::RRule;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
-my($_DOW) = {
-    map(($_ => lc(substr($_, 0, 2))),
-	 qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday)),
-};
 my($_MONTH_PARTS) = {};
 
     # rrules:
@@ -43,7 +39,7 @@ sub month_parts {
 
     while ($_D->compare($current, $end) <= 0) {
 	my($index) = $_D->get_parts($current, 'day');
-	my($day) = $_DOW->{$_D->english_day_of_week($current)};
+	my($day) = lc(substr($_D->english_day_of_week($current), 0, 2));
 	$res->[$index] = [
 	    $day,
 	    (++($count_by_day->{$day} ||= 0)) . $day,
@@ -62,7 +58,7 @@ sub month_parts_for_day {
 sub process_rrule {
     my($proto, $vevent, $end_date_time) = @_;
     my($rrule) = {
-	map(lc($_), map(split('=', $_), split(';', $vevent->{rrule}))),
+	map($_, map(split(/=/, $_), split(/;/, lc($vevent->{rrule})))),
     };
     return [] unless _is_valid_rrule($rrule, $vevent);
     my($res) = [];
@@ -105,42 +101,40 @@ sub _calculate_rrule_until {
 
 sub _is_excluded_date {
     my($proto, $date, $exdates) = @_;
-    return 0 unless $exdates;
-    return grep($_ eq $date, @$exdates) ? 1 : 0;
+    return grep($_ eq $date, @{$exdates || []}) ? 1 : 0;
 }
 
 sub _is_valid_rrule {
     my($rrule, $vevent) = @_;
-
-    unless ($rrule->{freq}) {
-	b_warn('rrule missing freq: ', $vevent);
-	return 0;
-    }
-
-    unless ($rrule->{freq} =~ /^(yearly|monthly|weekly|daily)$/) {
-	b_warn('invalid rrule freq: ', $vevent);
-	return 0;
-    }
-
-    if ($rrule->{wkst} && $rrule->{wkst} ne 'su') {
-	if ($rrule->{byday} && $rrule->{byday} =~ /,/) {
-	    b_warn('unsupported rrule wkst: ', $vevent);
-	    return 0;
-	}
-    }
-
-    if ($rrule->{interval} && $rrule->{interval} ne '1') {
-	b_warn('rrule interval not yet supported: ', $vevent);
-	return 0;
-    }
-
-    if ($rrule->{'recurrence-id'}) {
-	b_warn('recurrence-id with rrule not supported: ', $vevent);
-	return 0;
-    }
-
-    if ($_DT->is_date($vevent->{dtstart})) {
-	b_warn('skipping date-only rrule: ', $vevent);
+    foreach my $test (
+	[
+	    !($rrule->{freq}
+		&& $rrule->{freq} =~ /^(yearly|monthly|weekly|daily)$/),
+	     'rrule missing freq',
+	],
+	[
+	    $rrule->{wkst} && $rrule->{wkst} ne 'su'
+		&& ($rrule->{byday} || '') =~ /,/,
+	    'unsupported rrule wkst',
+	],
+	[
+	    $rrule->{interval}
+		&& $rrule->{interval} ne '1',
+	    'rrule interval not yet supported',
+	],
+	[
+	    $rrule->{'recurrence-id'},
+	    'recurrence-id with rrule not supported',
+	],
+	[
+	    $_DT->is_date($vevent->{dtstart}),
+	    'skipping date-only rrule',
+	],
+    ) {
+	my($cond, $err) = @$test;
+	next
+	    unless $cond;
+	b_warn($err, ': ', $vevent);
 	return 0;
     }
     return 1;
@@ -157,33 +151,28 @@ sub _last_day_index {
 sub _next_date {
     my($proto, $rrule, $date, $tz) = @_;
     $date = $tz->date_time_from_utc($date);
-
+    my($err) = 'unhandled rrule';
     if ($rrule->{freq} eq 'weekly' || $rrule->{freq} eq 'monthly') {
 	if ($rrule->{byday}) {
-	    my(@days) = split(',', $rrule->{byday});
-
-	    foreach my $d (1 .. 365) {
+	    my($days) = [split(/,/, $rrule->{byday})];
+	    foreach my $d (1 .. 366) {
 		my($current) = $_DT->add_days($date, $d);
 		return $tz->date_time_to_utc($current)
 		    if grep({
 			my($part) = $_;
-			grep($part eq $_, @days);
+			grep($part eq $_, @$days);
 		    } @{$proto->month_parts_for_day($current)});
 	    }
-	    b_warn("failed to find byday date: ", $rrule, ' ', $date);
-	    return $_DT->get_max;
+	    $err = 'failed to find byday date';
 	}
-	b_warn("unhandled weekly: ", $rrule, ' ', $date);
-	return $_DT->get_max;
+	$err = 'unhandled weekly';
     }
-    elsif ($rrule->{freq} eq 'daily') {
-	unless ($rrule->{until}) {
-	    b_warn("unhandled daily without until: ", $rrule, ' ', $date);
-	    return $_DT->get_max;
-	}
-	return $tz->date_time_to_utc($_DT->add_days($date, 1));
+    if ($rrule->{freq} eq 'daily') {
+	return $tz->date_time_to_utc($_DT->add_days($date, 1))
+	    if $rrule->{until};
+	$err = 'unhandled daily without until';
     }
-    b_warn("unhandled rrule: ", $rrule, ' ', $date);
+    b_warn($err, ': ', $rrule, ' ', $date);
     return $_DT->get_max;
 }
 
