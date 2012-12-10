@@ -23,7 +23,7 @@ sub CURRENT_VERSION {
 }
 
 sub DELEGATE_ROOT_PREFIX {
-    return shift(@_) =~ /^(.*)::\w*BConf$/;
+    return (shift(@_) =~ /^(.*)::\w*BConf$/)[0];
 }
 
 sub default_merge_overrides {
