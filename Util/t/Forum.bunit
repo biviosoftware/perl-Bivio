@@ -6,6 +6,7 @@ Request();
 	tree_paths => [
 	    fourem => [[qw(
 		/fourem
+		/fourem/fourem-mail-filtering
                 /fourem/fourem-sub1
 		/fourem/fourem-sub1/fourem-sub1-1
 		/fourem/fourem-sub2
