@@ -28,9 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.15  2012/12/05 14:15:14  nagler
+  * Bivio::Agent::Request
+    unsafe_get(want_insecure), because not always there
+
   Revision 12.14  2012/12/04 21:29:05  nagler
   * Bivio::Agent::Request
     todo
