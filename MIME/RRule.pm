@@ -113,8 +113,8 @@ sub _is_valid_rrule {
 	     'rrule missing freq',
 	],
 	[
-	    $rrule->{wkst} && $rrule->{wkst} ne 'su'
-		&& ($rrule->{byday} || '') =~ /,/,
+	    ($rrule->{wkst} && $rrule->{wkst} ne 'su'
+		&& ($rrule->{byday} || '') =~ /,/) ? 1 : 0,
 	    'unsupported rrule wkst',
 	],
 	[
