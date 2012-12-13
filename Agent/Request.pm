@@ -947,10 +947,11 @@ sub match_user_realms {
     return @{$self->map_user_realms(sub {1}, @_)} ? 1 : 0;
 }
 
-sub need_to_secure_agent_execution {
+sub need_to_toggle_secure_agent_execution {
     my($self, $task) = @_;
-    return !$self->agent_execution_is_secure
-	&& _need_to_secure_task($self, $task);
+    my($is_secure) = $self->agent_execution_is_secure;
+    return !$is_secure && _need_to_secure_task($self, $task)
+	|| $is_secure && _need_insecure_task($self, $task);
 }
 
 sub new {
@@ -1083,7 +1084,7 @@ sub server_redirect {
     b_die($named, ': recursive redirects')
 	if $named->{_server_redirect}++;
     return $self->client_redirect($named)
-	if $self->need_to_secure_agent_execution($named->{task_id});
+	if $self->need_to_toggle_secure_agent_execution($named->{task_id});
     $_D->throw_quietly(
 	$_DC->SERVER_REDIRECT_TASK,
 	{task_id => $self->internal_server_redirect($named)},
@@ -1411,6 +1412,15 @@ sub _load_realm {
 	: defined($new_realm)
 	? b_use('Auth.Realm')->new($new_realm, $self)
 	: b_use('Auth.Realm')->get_general
+}
+
+sub _need_insecure_task {
+    my($self, $task) = @_;
+    $task = $_T->get_by_id($task)
+	unless $_T->is_blesser_of($task);
+    return $_CFG->{can_secure}
+	&& $task->unsafe_get('want_insecure')
+	&& $self->unsafe_get('is_secure');
 }
 
 sub _need_to_secure_task {
