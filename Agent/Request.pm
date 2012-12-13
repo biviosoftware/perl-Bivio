@@ -951,7 +951,7 @@ sub need_to_toggle_secure_agent_execution {
     my($self, $task) = @_;
     my($is_secure) = $self->agent_execution_is_secure;
     return !$is_secure && _need_to_secure_task($self, $task)
-	|| $is_secure && _need_insecure_task($self, $task);
+	|| $is_secure && _need_to_make_task_insecure($self, $task);
 }
 
 sub new {
@@ -1414,7 +1414,7 @@ sub _load_realm {
 	: b_use('Auth.Realm')->get_general
 }
 
-sub _need_insecure_task {
+sub _need_to_make_task_insecure {
     my($self, $task) = @_;
     $task = $_T->get_by_id($task)
 	unless $_T->is_blesser_of($task);
