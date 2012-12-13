@@ -304,7 +304,7 @@ sub handle_die {
 sub handle_pre_auth_task {
     my(undef, $task, $req) = @_;
     return
-	unless $req->need_to_secure_agent_execution($task);
+	unless $req->need_to_toggle_secure_agent_execution($task);
     return {
 	method => 'client_redirect',
 	task_id => $task->get('id'),
