@@ -127,12 +127,9 @@ sub create_user {
 sub do_logout {
     my($self) = @_;
     $self->basic_authorization;
-    if ($self->text_exists('Sign-out')) {
-	$self->follow_link('Sign-out');
-    }
-    elsif ($self->text_exists(qr{>Logout<}i)) {
-	$self->follow_link('Logout');
-    }
+    $self->visit_uri('/pub/logout')
+	unless $self->unsafe_op(follow_link => qr{Sign-out}i)
+	    || $self->unsafe_op(follow_link => qr{Logout}i);
     $self->groupware_check;
     return;
 }
