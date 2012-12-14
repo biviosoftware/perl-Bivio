@@ -70,6 +70,7 @@ visit_uri($mail_uri);
 visit_uri($msg_uri);
 visit_uri($image_uri);
 visit_uri($original_uri);
+verify_text('Please sign into');
 home_page();
 login_as($from);
 visit_uri($msg_uri);
@@ -82,4 +83,7 @@ verify_no_text($msg_uri);
 test_deviance(qr{not.found}i);
 visit_uri($msg_uri);
 visit_uri($image_uri);
+test_conformance();
 visit_uri($original_uri);
+verify_text('Please sign into');
+

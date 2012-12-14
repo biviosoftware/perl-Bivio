@@ -1022,7 +1022,7 @@ sub info_mail {
 	    144
 	    ANY_OWNER
 	    ANYBODY&FEATURE_MAIL
-	    Model.RealmMail->assert_mail_visibility
+	    Model.RealmMail->assert_original_visibility
 	    Action.RealmFile->execute_show_original
 	)],
 	[qw(

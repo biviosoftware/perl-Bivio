@@ -278,6 +278,10 @@ sub _msg {
 				label => _name($self, 'FORUM_XX_FORM.view_rfc822'),
 				query => undef,
 				path_info => ['RealmFile.path'],
+				control => [sub {
+				    return b_use('Model.RealmMail')
+					->can_view_original(shift->req);
+				}],
 			    },
 			    {
 				task_id => 'GROUP_MAIL_DELETE_FORM',

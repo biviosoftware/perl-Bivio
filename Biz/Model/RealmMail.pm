@@ -38,6 +38,13 @@ sub assert_mail_visibility {
     return;
 }
 
+sub assert_original_visibility {
+    my($proto, $req) = @_;
+    $proto->throw_die('FORBIDDEN', 'Not authorized to view original')
+	unless _original_visibility($req);
+    return;
+}
+
 sub audit_threads {
     my($self) = @_;
     $self->new_other('RealmMailList')
@@ -61,6 +68,11 @@ sub audit_threads {
 	    },
 	);
     return;
+}
+
+sub can_view_original {
+    my(undef, $req) = @_;
+    return _original_visibility($req);
 }
 
 sub create_from_rfc822 {
@@ -259,6 +271,15 @@ sub _create_file {
 	    modified_date_time => $date,
 	}, $rfc822),
     );
+}
+
+sub _original_visibility {
+    my($req) = @_;
+    return $req->unsafe_get('auth_user_id')
+	&& $req->can_user_execute_task(
+	    'GROUP_USER_LIST',
+	    $req->get('auth_id'),
+	);
 }
 
 sub _thread_values {
