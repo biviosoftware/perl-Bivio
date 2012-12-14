@@ -28,10 +28,37 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.16  2012/12/12 03:25:16  schellj
+  * Bivio::BConf
+    DELEGATE_ROOT_PREFIX must return scalar, because used in context which
+    is an list
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    add mailer-daemon filtering
+  * Bivio::Biz::Model::RealmMailBounce
+    need to escape plus tags, too
+  * Bivio::Delegate::RowTagKey
+    add FILTER_MAILER_DAEMON
+  * Bivio::MIME::RRule
+    share code in parsing routines so errors come out from one place and
+    parse loop is cleaner
+    use DateTime->english_day_of_week instead of redefining here
+  * Bivio::PetShop::Facade::PetShop
+    CLIENT_REDIRECT_PERMANENT_MAP had been removed by mistake.
+  * Bivio::PetShop::Util::SQL
+    add fourem-mail-filtering forum
+  * Bivio::SQL::ListSupport
+    style: rename $_where and $_params, because $_<word> variables are
+    supposed to be globals
+  * Bivio::Type::DateTime
+    refactored "english" month & week to share code for lookup and generation
+  * Bivio::Util::Project
+    use PERLLIB for $src so that can have multiple trees
+  * Bivio::Util::ResultViewer
+    removed
+
   Revision 12.15  2012/12/05 14:15:14  nagler
   * Bivio::Agent::Request
     unsafe_get(want_insecure), because not always there
