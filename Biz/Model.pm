@@ -21,10 +21,14 @@ sub as_string {
     my($ci) = $self->[$_IDI]->{class_info};
     return ref($self)
 	. '('
-	. join(',',
-	    map($self->get_field_type($_)->to_string($self->unsafe_get($_)),
-		@{$ci->{as_string_fields}}),
-	) . ')';
+	. join(
+	    ',',
+	    map(
+		$self->get_field_type($_)->to_string($self->unsafe_get($_)),
+		@{$ci->{as_string_fields}},
+	    ),
+	)
+        . ')';
 }
 
 sub assert_is_instance {
@@ -68,21 +72,12 @@ sub die {
 }
 
 sub do_iterate {
-    #(self, code_ref, string, hash_ref) : self
-    #(self, code_ref, string, string, hash_ref) : self
-    my($self, $do_iterate_handler) = (shift, shift);
-    # Like L<map_iterate|"map_iterate"> but does not return anything.  For each row,
-    # calls L<iterate_next_and_load|"iterate_next_and_load"> followed by
-    # L<do_iterate_handler|"do_iterate_handler">.  Terminates the iteration with
-    # L<iterate_end|"iterate_end"> when there are no more rows or if
-    # I<do_iterate_handler> returns false.
-    my($iterate_start) = $_[0] && !ref($_[0]) && $_[0] =~ /iterate_start/
-	&& $self->can($_[0]) ? shift : 'iterate_start';
-    $self->$iterate_start(@_);
+    my($self, $handler) = _iterate_args_and_start(@_);
     while ($self->iterate_next_and_load) {
 	next
 	    if $self->internal_verify_do_iterate_result(
-		$do_iterate_handler->($self));
+		$handler->($self),
+	    );
 	$self->put_on_request($self)
 	    unless $self->is_ephemeral;
 	last;
@@ -117,10 +112,13 @@ sub field_decl {
 	    my($i) = 0;
 	    ref($_) eq 'HASH' ? {%$defaults, %$decl} : +{
 		%$defaults,
-		map({
-		    my($d) = $decl->[$i++];
-		    ref($d) eq 'HASH' ? %$d : defined($d) ? ($_ => $d) : ();
-		} qw(name type constraint)),
+		map(
+		    {
+			my($d) = $decl->[$i++];
+			ref($d) eq 'HASH' ? %$d : defined($d) ? ($_ => $d) : ();
+		    }
+		    qw(name type constraint),
+		),
 	    };
 	} @$decls);
     }
@@ -451,26 +449,9 @@ sub local_field {
 }
 
 sub map_iterate {
-    my($self, $map_iterate_handler) = (shift, shift);
-    # Calls L<iterate_start|"iterate_start"> or I<iterate_start> (if supplied)
-    # to start the iteration with I<iterate_args>.  For each row, calls
-    # L<iterate_next_and_load|"iterate_next_and_load"> followed by
-    # L<map_iterate_handler|"map_iterate_handler">.  Terminates the iteration with
-    # L<iterate_end|"iterate_end">.
-    #
-    # Returns the aggregated result of L<map_iterate_handler|"map_iterate_handler">
-    # as an array_ref, calling L<get_shallow_copy|"get_shallow_copy"> to get each
-    # row's values.
-    #
-    # If I<map_iterate_handler> is C<undef>, the default handler simply returns all
-    # the rows.
-    my($iterate_start) = $_[0] && !ref($_[0]) && $_[0] =~ /iterate_start/
-	&& $self->can($_[0]) ? shift : 'iterate_start';
+    my($self, $handler) = _iterate_args_and_start(@_);
     my($res) = [];
-    $self->$iterate_start(@_);
-    my($op) = ref($map_iterate_handler) ? $map_iterate_handler
-	: defined($map_iterate_handler) ? sub {shift->get($map_iterate_handler)}
-	: sub {shift->get_shallow_copy};
+    my($op) = _map_iterate_handler($handler);
     while ($self->iterate_next_and_load) {
 	push(@$res, $op->($self));
     }
@@ -737,6 +718,14 @@ sub _is_base_class {
     return $class =~ qr{Base(@{[_class_suffix($class)]})?$} ? 1 : 0;
 }
 
+sub _iterate_args_and_start {
+    my($self, $handler, @args) = @_;
+    my($start) = $self->b_can($args[0]) && $args[0] =~ /iterate_start/
+	? shift(@args) : 'iterate_start';
+    $self->$start(@args);
+    return ($self, $handler);
+}
+
 sub _load_all_property_models {
     return
 	if $_LOADED_ALL_PROPERTY_MODELS;
@@ -768,6 +757,15 @@ sub _load_other_model {
 	    ($k => $values->{$k});
 	 } @{$mi->get_info('column_names')}),
     });
+}
+
+sub _map_iterate_handler {
+    my($handler) = @_;
+    return $handler
+	if ref($handler);
+    return sub {shift->get($handler)}
+	if defined($handler);
+    return {shift->get_shallow_copy};
 }
 
 sub _new_args {
