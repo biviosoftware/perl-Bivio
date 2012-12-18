@@ -765,7 +765,7 @@ sub _map_iterate_handler {
 	if ref($handler);
     return sub {shift->get($handler)}
 	if defined($handler);
-    return {shift->get_shallow_copy};
+    return sub {shift->get_shallow_copy};
 }
 
 sub _new_args {
