@@ -39,6 +39,7 @@ sub internal_initialize {
             delete($info->{primary_key})->[0],
 	    'CRMThread.subject',
 	    ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
+	    ['RealmMail.realm_id', 'CRMThread.realm_id'],
 	    _do(sub {
 	        my($name, $model) = @_;
 	        return (
