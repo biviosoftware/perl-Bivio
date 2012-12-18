@@ -12,5 +12,11 @@
 	    'Enum' => 1,
 	    'Type' => 0,
 	],
+	b_can => [
+	    'equals_class_name' => 1,
+	    [undef] => 0,
+	    1 => 0,
+	    [{}] => 0,
+	],
     ],
 ];
