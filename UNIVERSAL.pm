@@ -62,8 +62,9 @@ sub as_string {
 }
 
 sub b_can {
-    my($proto, $method) = @_;
-    return $proto->can($method) ? 1 : 0;
+    my($proto, $method, $object) = @_;
+    $object ||= $proto;
+    return defined($method) && !ref($method) && $object->can($method) ? 1 : 0;
 }
 
 sub boolean {
