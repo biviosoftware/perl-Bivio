@@ -484,6 +484,7 @@ sub format_uri {
     b_die($named, ': must supply query with form_in_query')
         if $named->{form_in_query} && ref($named->{query}) ne 'HASH';
     my($require_secure) = $named->{require_secure};
+    my($want_insecure);
     if (defined($uri = $named->{uri})) {
 	$named->{no_context} = 1
 	    unless defined($named->{no_context})
@@ -497,8 +498,10 @@ sub format_uri {
 	$self->internal_copy_implicit($named);
 	$named->{realm} = $self->internal_get_realm_for_task($named->{task_id})
 	    unless defined($named->{realm});
+	$require_secure	||= _need_to_secure_task($self, $named->{task_id});
+	$want_insecure ||= _need_to_make_task_insecure($self, $named->{task_id});
 	$named->{no_form} = 0
-	    if $require_secure ||= _need_to_secure_task($self, $named->{task_id});
+	    if $require_secure || $want_insecure;
     }
     $self->internal_call_handlers(handle_format_uri_named => [$named, $self]);
     $uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
@@ -512,8 +515,8 @@ sub format_uri {
     }
     $uri .= '#' . $_HTML->escape_query($named->{anchor})
         if defined($named->{anchor}) && length($named->{anchor});
-    return _absolute_uri($self, $uri, $require_secure, $named->{facade_uri})
-	if $require_secure || $named->{facade_uri} || $named->{require_absolute};
+    return _absolute_uri($self, $uri, $require_secure, $want_insecure, $named->{facade_uri})
+	if $require_secure || $want_insecure || $named->{facade_uri} || $named->{require_absolute};
     return $uri;
 }
 
@@ -1345,21 +1348,22 @@ sub _get_roles {
 }
 
 sub _absolute_uri {
-    my($self, $uri, $require_secure, $facade_uri) = @_;
+    my($self, $uri, $require_secure, $want_insecure, $facade_uri) = @_;
     my($facade) = $facade_uri ? b_use('UI.Facade')->get_instance($facade_uri)
 	: b_use('UI.Facade')->get_from_source($self);
     my($host, $rel_uri) = _absolute_uri_validate($self, $uri, $facade_uri, $facade);
     return $uri
 	unless $rel_uri;
-    return _absolute_uri_http($self, $require_secure, $facade)
+    return _absolute_uri_http($self, $require_secure, $want_insecure, $facade)
 	. '://'
 	. $host
 	. $rel_uri;
 }
 
 sub _absolute_uri_http {
-    my($self, $require_secure, $facade) = @_;
+    my($self, $require_secure, $want_insecure, $facade) = @_;
     return $_CFG->{can_secure}
+	&& !$want_insecure
 	&& (
 	    $require_secure
 	    || $self->unsafe_get('is_secure')
