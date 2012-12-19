@@ -92,14 +92,18 @@ sub execute_ok {
 	if $self->get('recurrence')->eq_unknown;
     $_FM->execute_create($self->req);
     my($days) = $self->get('recurrence')->period_in_days;
+    b_debug($days);
     my($recur_end) = $self->get('recurrence_end_date');
+    b_debug($recur_end);
     while (1) {
 	foreach my $field (qw(start_date end_date)) {
+            b_debug( $_DT->add_days($self->get($field), $days));
 	    $self->internal_put_field(
 		$field => $_DT->add_days($self->get($field), $days));
 	}
 	last
 	    if $_DT->is_less_than($recur_end, $self->get('end_date'));
+        b_debug('creating');
 	_create_or_update($self);
     }
     return _ack_and_redirect($self, $redirect);
@@ -217,7 +221,7 @@ sub _create_or_update {
     my($start) = $_DT->from_date_and_time($self->get(qw(start_date start_time)));
     my($end) = $_DT->from_date_and_time($self->get(qw(end_date end_time)));
     return $self->internal_put_error(end_date => 'MUTUALLY_EXCLUSIVE')
-	if $_DT->is_greater_than_or_equals($start, $end);
+	if $_DT->is_greater_than($start, $end);
     $self->internal_put_field(
 	'CalendarEvent.dtstart' =>
 	    $self->get('CalendarEvent.time_zone')->date_time_to_utc($start),
