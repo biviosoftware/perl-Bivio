@@ -28,9 +28,31 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.17  2012/12/14 19:05:01  schellj
+  * Bivio::Agent::Request
+    replace need_to_secure_agent_execution with need_to_toggle_secure_agent_execution
+    tweak naming
+  * Bivio::Agent::TaskEvent
+    replace need_to_secure_agent_execution with need_to_toggle_secure_agent_execution
+  * Bivio::Agent::Task
+    replace need_to_secure_agent_execution with
+    need_to_toggle_secure_agent_execution
+  * Bivio::Biz::Model::RealmMail
+    make mail original only visible to logged in users with access to GROUP_USER_LIST
+  * Bivio::Delegate::TaskId
+    make mail original only visible to logged in users with access to GROUP_USER_LIST
+  * Bivio::MIME::RRule
+    fpc
+  * Bivio::PetShop::Test::PetShop
+    fix do_logout to work on pages that don't have logout links (e.g.,
+    mail message original)
+  * Bivio::UI::View::Mail
+    make mail original only visible to logged in users with access to GROUP_USER_LIST
+
   Revision 12.16  2012/12/12 03:25:16  schellj
   * Bivio::BConf
     DELEGATE_ROOT_PREFIX must return scalar, because used in context which
