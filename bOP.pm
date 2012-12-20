@@ -28,10 +28,23 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.18  2012/12/19 16:46:27  schellj
+  * Bivio::Biz::Model::CalendarEventForm
+    Allow end time and start time to be equal to imply zero or irrelevant
+    duration
+  * Bivio::Biz::Model::CRMThreadRootList
+    added missing join on RealmMail.realm_id to CRMThread.realm_id
+  * Bivio::Biz::Model
+    refactoring *_iterate to be clearer
+    _map_iterate_handler was returning hash instead of sub in undef
+    handler case
+  * Bivio::UNIVERSAL
+    b_can allows $object (defaults $proto)
+    allows invalid method (undef or ref) to be tested
+
   Revision 12.17  2012/12/14 19:05:01  schellj
   * Bivio::Agent::Request
     replace need_to_secure_agent_execution with need_to_toggle_secure_agent_execution
