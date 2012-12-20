@@ -35,6 +35,10 @@ sub ignore_redirects {
     return;
 }
 
+sub need_to_toggle_secure_agent_execution {
+    return 0;
+}
+
 sub new {
     # (proto, hash_ref) : Job.Request
     # Creates a Request from the queued I<params>.
