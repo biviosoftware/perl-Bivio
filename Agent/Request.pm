@@ -770,6 +770,13 @@ sub internal_initialize_with_uri {
     )->internal_initialize($auth_realm, $self->unsafe_get('auth_user'));
 }
 
+sub internal_need_to_toggle_secure_agent_execution {
+    my($self, $task) = @_;
+    my($is_secure) = $self->agent_execution_is_secure;
+    return !$is_secure && _need_to_secure_task($self, $task)
+	|| $is_secure && _need_to_make_task_insecure($self, $task);
+}
+
 sub internal_new {
     my($proto, $attributes) = @_;
     # B<Don't call unless you are a subclass.>
@@ -951,10 +958,7 @@ sub match_user_realms {
 }
 
 sub need_to_toggle_secure_agent_execution {
-    my($self, $task) = @_;
-    my($is_secure) = $self->agent_execution_is_secure;
-    return !$is_secure && _need_to_secure_task($self, $task)
-	|| $is_secure && _need_to_make_task_insecure($self, $task);
+    return shift->internal_need_to_toggle_secure_agent_execution(@_);
 }
 
 sub new {
