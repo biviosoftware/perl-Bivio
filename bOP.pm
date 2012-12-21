@@ -28,9 +28,19 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.19  2012/12/20 21:42:19  schellj
+  * Bivio::Agent::Job::Request
+    return 0 from need_to_toggle_secure_agent_execution; don't need to
+    toggle jobs
+  * Bivio::Agent::Request
+    need to calculate abolute uri when redirecting with want_insecure
+  * Bivio::PetShop::Test::PetShop
+    fpc, didn't work with some of the control logic links
+
   Revision 12.18  2012/12/19 16:46:27  schellj
   * Bivio::Biz::Model::CalendarEventForm
     Allow end time and start time to be equal to imply zero or irrelevant
