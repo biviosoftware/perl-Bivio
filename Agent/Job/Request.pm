@@ -35,7 +35,7 @@ sub ignore_redirects {
     return;
 }
 
-sub need_to_toggle_secure_agent_execution {
+sub internal_need_to_toggle_secure_agent_execution {
     return 0;
 }
 
