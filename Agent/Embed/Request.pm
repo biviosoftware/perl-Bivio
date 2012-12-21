@@ -18,6 +18,10 @@ sub get_form {
     return $self->get('form');
 }
 
+sub internal_need_to_toggle_secure_agent_execution {
+    return 0;
+}
+
 sub new {
     my(undef, $req, $full_uri, $params) = @_;
     my($self) = shift->internal_new($params || {});
