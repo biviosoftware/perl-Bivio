@@ -11,6 +11,7 @@ my($v) = {
     summary => 'sum',
     description => 'desc',
     url => 'http://www.example.com',
+    uid => 'uid',
 };
 [
     [req()] => [
