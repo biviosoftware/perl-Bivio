@@ -51,7 +51,7 @@ sub vcalendar_list {
 		[qw(CREATED RealmOwner.creation_date_time)],
 		[qw(LAST-MODIFIED CalendarEvent.modified_date_time)],
 		[qw(DTSTAMP CalendarEvent.modified_date_time)],
-		[qw(UID uid)],
+		[qw(UID CalendarEvent.uid)],
 		[qw(SUMMARY RealmOwner.display_name)],
 		qw(dtstart dtend location url description),
 	    ),
