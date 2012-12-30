@@ -5,10 +5,11 @@ foreach my $r (qw(fourem fourem-sub2 fourem-sub1)) {
     model('CalendarEvent')->test_unauth_delete_all({realm_id => realm_id($r)});
 }
 my($create) = sub {
-    my($realm, $start, $end) = @_;
+    my($realm, $start, $end, $recurrence, $recurrence_end_date) = @_;
     req()->set_realm_and_user($realm)
 	->initialize_fully('FORUM_CALENDAR_EVENT_FORM');
     $end ||= $start;
+    $recurrence ||= 'UNKNOWN';
     my($tag) = random_string();
     model(CalendarEventForm => {
 	'RealmOwner.display_name' => "DN $tag",
@@ -18,7 +19,8 @@ my($create) = sub {
 	start_time => Time('9:00'),
 	end_date => Date($end),
 	end_time => Time('10:00'),
-	recurrence => CalendarEventRecurrence('UNKNOWN'),
+	recurrence => CalendarEventRecurrence($recurrence),
+        recurrence_end_date => $recurrence_end_date && Date($recurrence_end_date),
     });
     return req('Model.CalendarEvent');
 };
