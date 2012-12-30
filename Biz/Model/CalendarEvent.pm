@@ -8,12 +8,13 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_RO);
 my($_MC) = b_use('MIME.Calendar');
-my($_UID) = 'bce';
+my($_REALM_OWNER_NAME_PREFIX) = 'bce';
 
 sub create {
     my($self, $values) = (shift, shift);
     $values->{modified_date_time} ||= $_DT->now;
     $values->{realm_id} ||= $self->req('auth_id');
+    $values->{uid} ||= Mail_Outgoing()->generate_addr_spec($self->req);
     return $self->SUPER::create($values, @_);
 }
 
@@ -25,15 +26,16 @@ sub create_from_vevent {
 sub create_realm {
     my($self, $calendar_event, $realm_owner) = (shift, shift, shift);
     my(@res) = $self->create($calendar_event)->SUPER::create_realm({
-	name => $self->id_to_uid,
+	name => $self->id_to_realm_owner_name,
 	%$realm_owner,
     }, @_);
     return @res;
 }
 
-sub id_to_uid {
+sub id_to_realm_owner_name {
     my($self, $id) = @_;
-    return $_UID . ($id || $self->get('calendar_event_id'));
+    return $_REALM_OWNER_NAME_PREFIX
+        . ($id || $self->get('calendar_event_id'));
 }
 
 sub internal_initialize {
@@ -49,6 +51,7 @@ sub internal_initialize {
 	    dtstart => ['DateTime', 'NOT_NULL'],
 	    dtend => ['DateTime', 'NOT_NULL'],
 	    time_zone => ['TimeZone', 'NONE'],
+            uid => ['String', 'NONE'],
 	    location => ['Text', 'NONE'],
 	    description => ['LongText', 'NONE'],
 	    url => ['HTTPURI', 'NONE'],
@@ -103,7 +106,7 @@ sub _from_vevent {
     my($self, $vevent) = @_;
     return ({
 	_map_field($self, $vevent,
-	    [qw(dtstart dtend location url description time_zone)]),
+	    [qw(dtstart dtend location url description time_zone uid)]),
     }, {
 	_map_field(
 	    $_RO ||= b_use('Model.RealmOwner')->get_instance,
