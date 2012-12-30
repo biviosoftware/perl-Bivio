@@ -14,6 +14,7 @@ my($_FM) = b_use('Type.FormMode');
 my($_A) = b_use('Action.Acknowledgement');
 my($_CEMF) = b_use('Model.CalendarEventMonthForm');
 my($_USLF) = b_use('Model.UserSettingsListForm');
+my($_O) = b_use('Mail.Outgoing');
 
 sub CREATE_DATE_QUERY_KEY {
     return 'b_create_date';
@@ -73,6 +74,10 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     $self->internal_put_field(
+	'CalendarEvent.uid' =>
+            $_O->generate_addr_spec($self->req),
+    ) if $self->is_create;
+    $self->internal_put_field(
 	'CalendarEvent.time_zone' => $self->req('Model.TimeZoneList')
 	    ->enum_for_display_name($self->get('time_zone_selector')),
     );
@@ -92,18 +97,18 @@ sub execute_ok {
 	if $self->get('recurrence')->eq_unknown;
     $_FM->execute_create($self->req);
     my($days) = $self->get('recurrence')->period_in_days;
-    b_debug($days);
     my($recur_end) = $self->get('recurrence_end_date');
-    b_debug($recur_end);
+    $self->internal_put_field(
+	'CalendarEvent.uid' =>
+            $self->req('Model.CalendarEvent', 'uid'),
+    );
     while (1) {
 	foreach my $field (qw(start_date end_date)) {
-            b_debug( $_DT->add_days($self->get($field), $days));
 	    $self->internal_put_field(
 		$field => $_DT->add_days($self->get($field), $days));
 	}
 	last
 	    if $_DT->is_less_than($recur_end, $self->get('end_date'));
-        b_debug('creating');
 	_create_or_update($self);
     }
     return _ack_and_redirect($self, $redirect);
@@ -144,6 +149,7 @@ sub internal_initialize {
 	    'CalendarEvent.dtstart',
 	    'CalendarEvent.time_zone',
 	    'CalendarEvent.dtend',
+            'CalendarEvent.uid',
 	 ],
     });
 }
