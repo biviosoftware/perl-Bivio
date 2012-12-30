@@ -53,6 +53,7 @@ sub decl_for_internal_initialize {
 		CalendarEvent.description
 		CalendarEvent.url
 		CalendarEvent.time_zone
+                CalendarEvent.uid
 	    ),
 	    [qw(CalendarEvent.realm_id owner.RealmOwner.realm_id)],
 	    $proto->field_decl([
@@ -93,7 +94,7 @@ sub internal_post_load_row {
     my($self, $row) = @_;
     return 0
 	unless shift->SUPER::internal_post_load_row(@_);
-    $row->{uid} = $_CE->id_to_uid($row->{'CalendarEvent.calendar_event_id'});
+    $row->{uid} = $row->{'CalendarEvent.calendar_event_id'};
     my($tz) = $row->{'CalendarEvent.time_zone'} || $_UTC;
     $row->{time_zone} = $self->req('Model.TimeZoneList')
 	->display_name_for_enum($tz);
