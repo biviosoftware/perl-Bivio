@@ -139,12 +139,17 @@ sub edit_body {
     return;
 }
 
-sub generate_message_id {
+sub generate_addr_spec {
     my(undef, $req) = @_;
-    return '<' .
-	$req->format_email(
+    return $req->format_email(
 	    $_DT->to_file_name($_DT->now) . '.' . $_R->string(16)
-	) . '>';
+	);
+}
+
+sub generate_message_id {
+    return '<' 
+        . shift->generate_addr_spec(@_)
+        . '>';
 }
 
 sub get_body {
