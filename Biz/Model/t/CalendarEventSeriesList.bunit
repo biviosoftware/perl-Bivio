@@ -1,0 +1,16 @@
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+my(undef, undef, $create) = do('./CalendarEvent.PL');
+req()->set_realm_and_user(qw(fourem btest_admin))
+    ->initialize_fully('FORUM_CALENDAR');
+my($uid) = $create->('fourem', '1/1/2013', undef, 'EVERY_WEEK', '1/15/2013')->get('uid');
+$create->('fourem', '2/1/2013', undef, 'EVERY_WEEK', '2/15/2013');
+[
+        {
+            method => 'load_all',
+        } => [
+            [] => [map({series_count => $_}, (0 .. 2, 0 .. 2))],
+            [{uid => $uid}]  => [map({series_count => $_, 'CalendarEvent.uid' => $uid}, (0 .. 2))],
+        ],
+];
