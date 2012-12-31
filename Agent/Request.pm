@@ -179,7 +179,8 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_HANDLERS) = b_use('Biz.Registrar')->new;
+my($_R) = b_use('Biz.Registrar');
+my($_HANDLERS) = $_R->new;
 my($_A) = b_use('IO.Alert');
 my($_D) = b_use('Bivio.Die');
 my($_DC) = b_use('Bivio.DieCode');
@@ -310,6 +311,28 @@ sub cache_for_auth_user {
 
 sub cache_for_auth_realm {
     return _realm_cache('auth_id', @_);
+}
+
+sub call_process_cleanup {
+    my($self, $die) = @_;
+    $self->get_and_delete('process_cleanup')
+	->call_fifo(
+	    'handle_process_cleanup',
+	    [$self, $die],
+	    sub {
+		my($op) = @_;
+		my($die2) = $_D->catch(sub {$op->()});
+		b_warn($die2, ': process_cleanup handler error')
+		    if $die2;
+		my($method) = $die2 ? 'rollback' : 'commit';
+		$_T->$method($self);
+		return;
+	    },
+	);
+    _init_process_cleanup($self);
+    _perf_time_info($self)
+	if $_TRACE;
+    return;
 }
 
 sub can_user_execute_task {
@@ -790,7 +813,6 @@ sub internal_new {
     # I<attributes> is put_durable.
     my($self) = $proto->SUPER::new;
     $self->put_durable(
-	# Initial keys 
 	%$attributes,
 	request => $self,
 	is_production => $proto->is_production,
@@ -798,6 +820,7 @@ sub internal_new {
 	start_time => $_DT->gettimeofday,
 	perf_time => {},
     );
+    _init_process_cleanup($self);
     # Make sure a value gets set
     $_UA->execute_unknown($self);
     _trace($self) if $_TRACE;
@@ -988,17 +1011,9 @@ sub perf_time_op {
     return $self->return_scalar_or_array($res);
 }
 
-sub process_cleanup {
-    my($self, $die) = @_;
-    my($ops) = $self->unsafe_get('process_cleanup') || [];
-    my($method) = 'commit';
-    foreach my $cleaner (@$ops) {
-	$method = 'rollback'
-	    if $_D->catch(sub {$cleaner->($self, $die)});
-    }
-    $_T->$method($self);
-    _perf_time_info($self)
-	if $_TRACE;
+sub push_process_cleanup {
+    my($self, $handler) = @_;
+    $self->get('process_cleanup')->push_object($handler);
     return;
 }
 
@@ -1405,6 +1420,15 @@ sub _absolute_uri_validate_host {
 	b_warn($facade_uri, ': facade_uri does not equal host=', $host);
     }
     return $host;
+}
+
+sub _init_process_cleanup {
+    my($self) = @_;
+    my($process_cleanup) = $self->unsafe_get_and_delete('process_cleanup');
+    $self->put_durable(process_cleanup => $_R->new);
+    $self->push_process_cleanup($process_cleanup)
+	if $process_cleanup;
+    return;
 }
 
 sub _is_r_value {
