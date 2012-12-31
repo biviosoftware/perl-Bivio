@@ -22,6 +22,17 @@ Bivio::IO::Config->register(my $_CFG = {
     timeout => 60,
 });
 
+sub bivio_http_get {
+    my($proto, $uri) = @_;
+    my($response) = $proto->new(1)
+	->request(
+	    HTTP::Request->new('GET', $uri),
+	);
+    Bivio::Die->die($response)
+	unless $response->is_success;
+    return \($response->content);
+}
+
 sub handle_config {
     # (proto, hash) : undef
     # http_proxy : string [undef]
