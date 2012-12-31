@@ -220,6 +220,10 @@ sub HTTP_SWITCHING_PROTOCOLS {
     return 101;
 }
 
+sub HTTP_TOO_MANY_REQUESTS {
+    return 429;
+}
+
 sub HTTP_UNAUTHORIZED {
     return 401;
 }
