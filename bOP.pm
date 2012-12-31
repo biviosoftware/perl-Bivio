@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.20  2012/12/21 23:14:00  schellj
+  * Bivio::Agent::Embed::Request
+    add internal_need_to_toggle_secure_agent_execution
+  * Bivio::Agent::Job::Request
+    need_to_toggle_secure_agent_execution ->
+    internal_need_to_toggle_secure_agent_execution
+  * Bivio::Agent::Request
+    need_to_toggle_secure_agent_execution uses
+    internal_need_to_toggle_secure_agent_execution
+
   Revision 12.19  2012/12/20 21:42:19  schellj
   * Bivio::Agent::Job::Request
     return 0 from need_to_toggle_secure_agent_execution; don't need to
