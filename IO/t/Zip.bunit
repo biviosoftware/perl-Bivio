@@ -31,7 +31,7 @@ write_file('file.txt', $file_txt);
 	    ]),
 	sub {
 	    # cleanup tmp files
-	    req()->process_cleanup;
+	    req()->call_process_cleanup;
 	    return 1;
 	} => 1,
     ],
