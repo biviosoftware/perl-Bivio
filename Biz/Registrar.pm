@@ -1,30 +1,24 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Registrar;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub call_fifo {
-    my($self, $method, $args) = @_;
+    my($self, $method, $args, $call_wrapper) = @_;
     my($q) = [@{$self->[$_IDI]}];
     $args ||= [];
-    return [map(
-	!$_->can($method) ? ()
-	    : $_->$method(ref($args) eq 'CODE' ? @{$args->()} : @$args),
-	@$q,
-    )];
+    return [map(_call($_, $method, $args, $call_wrapper), @$q)];
 }
 
 sub do_filo {
-    my($self, $method, $args) = @_;
+    my($self, $method, $args, $call_wrapper) = @_;
     $args ||= [];
     foreach my $h (reverse(@{[@{$self->[$_IDI]}]})) {
-	next
-	    unless $h->can($method);
-	my($res) = $h->$method(ref($args) eq 'CODE' ? @{$args->()} : @$args);
+	my($res) = _call($h, $method, $args, $call_wrapper);
 	return $res
 	    if defined($res);
     }
@@ -45,6 +39,25 @@ sub push_object {
     push(@$q, $object)
 	unless grep($_ eq $object, @$q);
     return;
+}
+
+sub _call {
+    my($object, $method, $args, $call_wrapper) = @_;
+    $call_wrapper ||= sub {shift->()};
+    return $call_wrapper->(
+	sub {
+	    return $object->($method, @{_call_args($args)})
+		if ref($object) eq 'CODE';
+	    return $object->$method(@{_call_args($args)})
+		if $object->can($method);
+	    return;
+	},
+    );
+}
+
+sub _call_args {
+    my($args) = @_;
+    return [ref($args) eq 'CODE' ? @{$args->()} : @$args];
 }
 
 1;

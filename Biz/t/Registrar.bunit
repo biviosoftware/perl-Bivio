@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 my($o1) = class('Collection.Attributes')->new;
 my($o2) = class('Collection.Attributes')->new;
@@ -12,6 +12,7 @@ my($i) = 0;
 	    [put => [a => 1]] => not_die(),
 	],
 	push_object => [
+	    [sub {shift}] => not_die(),
 	    [$o2] => not_die(),
 	],
 	call_fifo => [
@@ -19,8 +20,8 @@ my($i) = 0;
 	    not_a_method => not_die(),
 	],
 	do_filo => [
-	    [unsafe_get => ['b']] => 2,
-	    [unsafe_get => ['a']] => 1,
+	    [unsafe_get => ['b']] => 3,
+	    [unsafe_get => ['a']] => 'unsafe_get',
 	],
     ],
     sub {$o1} => [
@@ -32,7 +33,7 @@ my($i) = 0;
     sub {$o2} => [
 	unsafe_get => [
 	    a => [undef],
-	    b => 2,
+	    b => 3,
 	],
     ],
 ];
