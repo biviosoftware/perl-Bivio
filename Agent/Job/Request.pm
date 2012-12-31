@@ -55,20 +55,12 @@ sub new {
 	# Needed by Task->execute, but not used here
 	reply => b_use('Agent.Reply')->new,
     });
-    Bivio::Type::UserAgent->execute_job($self);
-    $self->put_durable(
-	%$params,
-	start_time => $self->get('start_time'),
-	form => $self->get('form'),
-	query => $self->get('query'),
-	reply => $self->get('reply'),
-    );
-    $self->get('Bivio::Type::UserAgent')->put_on_request($self, 1);
+    b_use('Type.UserAgent')->execute_job($self, 1);
     my($realm) = $params->{auth_id}
 	&& $params->{auth_id} != b_use('Auth.RealmType')->GENERAL->as_default_owner_id
 	? b_use('Auth.Realm')->new($params->{auth_id}, $self)
 	: b_use('Auth.Realm')->get_general;
-    $self->internal_set_current();
+    $self->internal_set_current;
     my($auth_user);
     if ($params->{auth_user_id}) {
 	$auth_user = Bivio::Biz::Model->new($self, 'RealmOwner')
