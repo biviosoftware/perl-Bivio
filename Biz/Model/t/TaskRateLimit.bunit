@@ -1,0 +1,62 @@
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+config({
+    class() => {
+	buckets => [
+	    [qr{^User-.+}, 1, 2],
+	],
+    },
+});
+# multiple users same task
+# multiple tasks same user
+# same task same user
+# b-sendmail-agent
+options({
+    compute_params => sub {
+	my($case, $params) = @_;
+#set cookie - user and no user
+	req()->initialize_fully(
+	    $params->[0],
+	    {
+		class() . '.queue' => undef,
+		client_addr => $params->[2],
+	    },
+	);
+	UserLoginForm({
+	    validate_called => 1,
+	    realm_owner => $params->[1]
+		&& unauth_model('RealmOwner', {name => $params->[1]}),
+	});
+	req('r')->header_in('user-agent' => $params->[3]);
+	return [req('task'), req()];
+    },
+    compute_return => sub {
+	my(undef, $actual) = @_;
+	req()->call_process_cleanup;
+	return $actual;
+    },
+});
+my($inc_time) = sub {
+    return inline_case(
+	sub {
+	    DateTime()->set_test_now(
+		DateTime()->add_seconds(
+		    DateTime()->now,
+		    1,
+		),
+	    );
+	    return;
+	},
+    );
+};
+[
+    class() => [
+	handle_pre_execute_task => [
+	    $inc_time->(),
+	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => [],
+	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
+	    $inc_time->(),
+	],
+    ],
+];
