@@ -65,7 +65,7 @@ sub run {
 	-x $httpd && ($_HTTPD = $httpd);
     }
     if ($self->is_execute) {
-        -f "$pwd/httpd.pid" && (kill('TERM', `cat $pwd/httpd.pid`), sleep(5));
+        -f "$pwd/httpd.pid" && (kill('QUIT', `cat $pwd/httpd.pid`), sleep(5));
 	Bivio::IO::File->rm_rf($pwd);
 	Bivio::IO::File->mkdir_p($pwd);
 	CORE::system("cd $pwd; rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem modules");
