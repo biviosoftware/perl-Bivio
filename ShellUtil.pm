@@ -328,7 +328,7 @@ sub finish {
     # Calls L<commit_or_rollback|"commit_or_rollback"> and undoes setup.
     my($fields) = $self->[$_IDI];
     $self->commit_or_rollback($abort);
-    $self->get_request->process_cleanup;
+    $self->get_request->call_process_cleanup;
     b_use('SQL.Connection')->set_dbi_name($fields->{prior_db})
 	if $fields->{prior_db};
     return;
@@ -413,6 +413,13 @@ sub handle_config {
     $_DIE->die($cfg->{lock_directory}, ': not absolute')
 	unless File::Spec->file_name_is_absolute($cfg->{lock_directory});
     $_CFG = $cfg;
+    return;
+}
+
+sub if_option_execute {
+    my($self, $op) = @_;
+    return $op->()
+	unless $self->unsafe_get('noexecute');
     return;
 }
 
