@@ -1,11 +1,39 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::SQL::DDL;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_F) = __PACKAGE__->use('IO.File');
+
+sub ddl_for_task_rate_limit {
+    my(undef, $which) = @_;
+    my($ddl) = {
+	tables => <<'EOF',
+CREATE TABLE task_rate_limit_t (
+  bucket_key VARCHAR(100) NOT NULL,
+  bucket_allowance NUMERIC(20,6) NOT NULL,
+  bucket_date_time DATE NOT NULL,
+  CONSTRAINT task_rate_limit_t1 primary key(bucket_key)
+)
+/
+EOF
+	constraints => <<'EOF',
+CREATE INDEX task_rate_limit_t2 ON task_rate_limit_t (
+  bucket_date_time
+)
+/
+EOF
+	sequences => '',
+    };
+    return $ddl->{$which}
+	if $which;
+    return join(
+	'',
+	map($ddl->{$_}, qw(tables constraints sequences)),
+    );
+}
 
 sub write_files {
     my($self) = @_;
@@ -19,13 +47,14 @@ sub write_files {
 	my($sub) = \&{"_file_$x"};
 	my($f) = "bOP-$x.sql";
 	unlink($f);
-	$_F->write($f, $header . $sub->());
+	IO_File()->write($f, $header . $sub->($self));
     }
     return;
 }
 
 sub _file_constraints {
-    return <<'EOF';
+    my($proto) = @_;
+    return <<'EOF' . $proto->ddl_for_task_rate_limit('constraints');
 -- Constraints & Indexes for common bOP Models
 --
 -- * This file is sorted alphabetically by table
@@ -964,7 +993,8 @@ EOF
 }
 
 sub _file_sequences {
-    return <<'EOF';
+    my($proto) = @_;
+    return <<'EOF' . $proto->ddl_for_task_rate_limit('sequences');
 -- Sequences for common bOP Models
 -- 
 -- * All sequences are unique for all sites.
@@ -1056,7 +1086,8 @@ EOF
 }
 
 sub _file_tables {
-    return <<'EOF';
+    my($proto) = @_;
+    return <<'EOF' . $proto->ddl_for_task_rate_limit('tables');
 -- Data Definition Language for common bOP Models
 --
 -- * Tables are named after their models, but have underscores where
