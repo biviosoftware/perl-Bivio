@@ -634,12 +634,12 @@ sub local_to_parts {
 
 sub now {
     my($proto) = @_;
-    # Returns date/time for now.
-    if ($_IS_TEST && ! $_IS_REGISTERED_WITH_TASK) {
-	$_IS_REGISTERED_WITH_TASK = 1;
-	b_use('Agent.Task')->register(__PACKAGE__);
+    if ($_IS_TEST) {
+	$proto->register_with_agent_task;
+	return $_TEST_NOW
+	    if $_TEST_NOW;
     }
-    return $_IS_TEST && $_TEST_NOW || __PACKAGE__->from_unix(time);
+    return __PACKAGE__->from_unix(time);
 }
 
 sub now_as_file_name {
@@ -658,6 +658,15 @@ sub now_as_year {
     my($proto) = @_;
     # Returns the year from L<now|"now">.
     return $proto->get_part($proto->now, 'year');
+}
+
+sub register_with_agent_task {
+    my($self) = @_;
+    return
+	unless $_IS_TEST && ! $_IS_REGISTERED_WITH_TASK;
+    $_IS_REGISTERED_WITH_TASK = 1;
+    b_use('Agent.Task')->register(__PACKAGE__);
+    return;
 }
 
 sub rfc822 {
