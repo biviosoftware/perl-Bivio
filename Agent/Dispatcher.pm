@@ -84,7 +84,7 @@ sub process_request {
 	    redo TRY;
 	}
     }
-    $req->process_cleanup($die)
+    $req->call_process_cleanup($die)
         if $req;
     $_R->clear_current;
     $_A->reset_warn_counter;
