@@ -7,18 +7,16 @@ use Bivio::Base 'Biz.PropertyModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REQ_KEY) = __PACKAGE__ . '.state';
 my($_DT) = b_use('Type.DateTime');
+$_DT->register_with_agent_task;
 b_use('Agent.Task')->register(__PACKAGE__)
     if b_use('Agent.TaskId')->unsafe_from_name('SITE_ADMIN_TASK_LOG');
 
 sub handle_post_execute_task {
     my($proto, $task, $req) = @_;
     # create model in post execute so it survies a form error rollback
-    # set date_time in post execute so acceptance test can set_test_now
-    $proto->new($req)->create({
-        %{$req->get($_REQ_KEY)},
-	date_time => $_DT->now,
-    })
-	if $req->unsafe_get($_REQ_KEY);
+    return
+	unless my $values = $req->unsafe_get($_REQ_KEY);
+    $proto->new($req)->create($values);
     return;
 }
 
@@ -40,6 +38,7 @@ sub handle_pre_execute_task {
 		? ('?' . $query)
 		: '')),
 	client_address => $req->unsafe_get('client_addr') || '',
+	date_time => $_DT->now,
     });
     return;
 }
