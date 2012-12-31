@@ -19,7 +19,6 @@ my($_V) = b_use('UI.View');
 my($_WV) = b_use('Action.WikiView');
 my($_A) = b_use('IO.Alert');
 my($_TYPES) = [map(b_use("Type.$_"), qw(WikiName BlogFileName))];
-my($_ER) = b_use('Action.EmptyReply');
 my($_AA) = b_use('Action.Acknowledgement');
 my($_R) = b_use('Agent.Request');
 my($_PKG) = __PACKAGE__;
