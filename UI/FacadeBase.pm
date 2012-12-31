@@ -459,6 +459,7 @@ sub _cfg_base {
 	    [country => 'Country'],
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
+	    [http_too_many_requests => 'Too many requests'],
 	    ['FormError.prose.detail_prefix' => '; additional info: '],
 	    [[qw(actions list_actions)] => 'Actions'],
 	    [[qw(time_zone time_zone_selector)] => 'Time Zone'],
