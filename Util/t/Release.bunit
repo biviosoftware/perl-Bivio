@@ -1,14 +1,13 @@
-# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
 my($tmp) = tmp_dir();
 config({
     'Bivio::Util::Release' => {
-	rpm_arch => 'i386',
-	rpm_home_dir => my $home = IO_File()->mkdir_p("$tmp/home"),
+	rpm_home_dir => my $home = IO_File()->mkdir_p("$tmp/b-release/rpms"),
 	rpm_user => $ENV{USER},
 	rpm_group => $ENV{USER},
-	tmp_dir => IO_File()->mkdir_p("$tmp/build"),
+	tmp_dir => IO_File()->mkdir_p("$tmp/b-release/tmp"),
 	cvs_rpm_spec_dir => 'not-needed',
     },
 });
@@ -45,14 +44,23 @@ IO_File()->write(
 %prep
 
 %build
+one=/tmp/release-bunit-one$$
+touch $one
+two=/tmp/release-bunit$$
+three=/var/tmp/release-bunit$$
+mkdir -p $two $three || exit 1
+%{safe_rm} $one
+test -r $one && (echo $one: safe_rm failure; exit 1)
+%{safe_rm} $two || true
+test -d $two || (echo $two: safe_rm failure; exit 1)
+rmdir $two
+%{safe_rm} $three
+test -d $three && (echo $three: safe_rm failure; exit 1)
 
 %clean
-test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
 
 %install
-test "$RPM_BUILD_ROOT" != "/" && rm -rf $RPM_BUILD_ROOT
-mkdir $RPM_BUILD_ROOT
-cd $RPM_BUILD_ROOT
+cd %{buildroot}
 echo one > file1.txt
 echo two > file2.txt
 
