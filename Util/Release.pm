@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::Release;
 use strict;
@@ -7,6 +7,7 @@ use Config ();
 use File::Find ();
 use Sys::Hostname ();
 use URI::Heuristic ();
+b_use('IO.ClassLoaderAUTOLOAD');
 
 # C<Bivio::Util::Release> Build and Release Management with b-release
 #
@@ -58,11 +59,10 @@ our($_TRACE);
 our($_MACROS);
 my($_CVS_CHECKOUT) = 'cvs -Q checkout -f -r';
 my($_DT) = __PACKAGE__->use('Type.DateTime');
-my($_FACADES_DIR) = 'facades';
-my($_FILES_LIST) = '%{build_root}/../b_release_files.list';
-my($_EXCLUDE_LIST) = '%{build_root}/../b_release_files.exclude';
-my($_PACKLIST) = ' find $RPM_BUILD_ROOT -name "*.bs" '
-    . " -o -name .packlist -o -name perllocal.pod | xargs rm -f\n";
+my($_FILES_LIST_BASE) = 'b_release_files.list';
+my($_FILES_LIST) = '%{_builddir}/' . $_FILES_LIST_BASE;
+my($_EXCLUDE_LIST) = '%{_builddir}/b_release_files.exclude';
+my($_NEED_BUILD_ROOT) = `rpmbuild --version` =~ /version 4\.[0-4]\./ ? 1 : 0;
 my($_R) = b_use('IO.Ref');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
@@ -72,15 +72,10 @@ $_C->register(my $_CFG = {
     rpm_http_root => undef,
     rpm_user => $_C->REQUIRED,
     rpm_group => undef,
-    rpm_arch => 'i586',
     http_realm => undef,
     http_user => undef,
     http_password => undef,
     install_umask => 022,
-    facades_dir => '/var/www/facades',
-    facades_user => undef,
-    facades_group => undef,
-    facades_umask => 027,
     tmp_dir => "/var/tmp/build-$$",
     https_ca_file => undef,
     projects => [
@@ -136,15 +131,12 @@ sub USAGE {
 usage: b-release [options] command [args...]
 commands:
     build package ... -- compile & build rpms
-    build_tar project ... -- build perl tar distribution
     create_stream pkg... -- generate a stream from a list of pkg names
     run_sh script -- runs script.sh from repository
     get_projects -- returns a hash_ref of projects
     install package ... -- install rpms from network repository
-    install_facades facades_dir -- install facade files into local_file_root
     install_host_stream -- executes "-force install_stream $(hostname)"
     install_stream stream_name -- installs all rpms in a stream
-    install_tar project ... -- install perl tars from network repository
     list [uri] -- displays packages in network repository
     list_installed match -- lists packages which match pattern
     list_projects -- get project list as an array_ref
@@ -176,11 +168,8 @@ sub build {
 	unless $rpm_stage =~ /^[pcib]$/;
     return _do_in_tmp($self, 1, sub {
 	my($tmp, $output, $pwd) = @_;
-	my($arch) = $_CFG->{rpm_arch};
-	_system("ln -s . $arch", $output)
-	    unless -d $arch;
 	for my $specin (@packages) {
-	    my($specout, $base, $fullname) = _create_rpm_spec(
+	    my($specout, $base) = _create_rpm_spec(
 		$self, $specin, $output, $pwd);
 	    my($rpm_command) = "rpmbuild -b$rpm_stage $specout";
 	    if ($self->get('noexecute')) {
@@ -188,32 +177,9 @@ sub build {
 		next;
 	    }
 	    _system($rpm_command, $output);
-	    _save_rpm_file("$arch/$fullname.$arch.rpm", $output);
-	    _link_base_version("$fullname.$arch.rpm", "$base.rpm", $output);
-	}
-	return;
-    });
-}
-
-sub build_tar {
-    my($self, @projects) = _project_args(1, @_);
-    # Builds a perl tar file suitable for use by L<install_tar|"install_tar">.
-    return _do_in_tmp($self, 1, sub {
-        my($tmp, $output) = @_;
-	_umask('install_umask', $output);
-	my($cvs_version) = $self->get('version');
-	(my $file_version = _get_date_format()) =~ s/_/./;
-	for my $project (@projects) {
-	    my($cvs) = "$_CFG->{cvs_perl_dir}/$project->[0]";
-	    my($b) = "$project->[0]-$cvs_version";
-	    my($bv) = "$b-$file_version";
-	    my($tgt) = File::Spec->rel2abs(b_use('IO.File')->mkdir_p($bv));
-	    _system(join(' ', $_CVS_CHECKOUT, $cvs_version, $cvs), $output);
-	    _build_tar_copy($_CFG->{cvs_perl_dir}, $project, $tgt);
-	    _build_tar_makefile($self, $project, $file_version, $tgt);
-	    _system("cd $tgt/.. && tar czf"
-		. " '$_CFG->{rpm_home_dir}/$bv.tar.gz' '$bv'", $output);
-	    _link_base_version("$bv.tar.gz", "$b.tar.gz", $output);
+	    my($rpm_file) = $$output =~ /.*Wrote:\s+(\S+\.rpm)\n/is;
+	    _save_rpm_file($rpm_file, $output);
+	    _link_base_version(Type_FilePath()->get_tail($rpm_file), "$base.rpm", $output);
 	}
 	return;
     });
@@ -242,24 +208,6 @@ sub handle_config {
     #
     # Path from cvs repository root to perl project directories.
     #
-    # facades_dir : string [/var/www/facades]
-    #
-    # Directory where I<Project/files> directory will be installed.
-    #
-    # facades_group : string [rpm_group]
-    #
-    # Group to install facades files as.
-    #
-    # facades_umask : int [027]
-    #
-    # Umask for creation of files and directories in I<facades_dir>.  There may be
-    # cached user data in this directory so it's best for it not to be publicy
-    # writable.
-    #
-    # facades_user : string [rpm_user]
-    #
-    # User to install facades files as.
-    #
     # http_password : string [undef]
     #
     # Password used if I<http_realm> set.
@@ -275,8 +223,7 @@ sub handle_config {
     #
     # install_umask : int [022]
     #
-    # Umask for builds and installs of binaries and libraries.  See also
-    # I<facades_umask>.
+    # Umask for builds and installs of binaries and libraries.
     #
     # projects : array_ref [[[Bivio => b => 'bivio Software, Inc.']]]
     #
@@ -286,8 +233,7 @@ sub handle_config {
     #        [ProjectRootPkg => shell-util-prefix => 'Copyright Owner, Inc.'],
     #     ]
     #
-    # This list is used by L<list_projects_el|"list_projects_el"> and
-    # L<build_tar|"build_tar">.
+    # This list is used by L<list_projects_el|"list_projects_el">.
     #
     # rpm_home_dir : string (required)
     #
@@ -321,8 +267,6 @@ sub handle_config {
     $_CFG->{rpm_http_root} = $_CFG->{rpm_home_dir}
 	unless defined($_CFG->{rpm_http_root});
     $_CFG->{rpm_group} ||= $_CFG->{rpm_user};
-    $_CFG->{facades_user} ||= $_CFG->{rpm_user};
-    $_CFG->{facades_group} ||= $_CFG->{facades_user};
     return;
 }
 
@@ -366,7 +310,7 @@ sub install {
     }
 
 #TODO: download srcrpm and build/install
-    _umask('install_umask');
+    _umask();
     my($run) = sub {
 	my($op) = @_;
 	my($err) = $?
@@ -407,24 +351,6 @@ sub install {
     return;
 }
 
-sub install_facades {
-    my($self, $facades_dir) = @_;
-    # Usually called from Makefile/.PL created by L<build_tar|"build_tar">.
-    # Looks for a subdirectory "facades" in current directory and copies
-    # all files in that directory to I<facades_dir> using
-    # I<facades_user>, I<facades_group>, and I<facades_umask>.
-    _do_output(sub {
-	my($output) = @_;
-	my($r) = b_use('UI.Facade')->get_local_file_root;
-	_umask('facades_umask');
-	_chdir($facades_dir, $output);
-	_system("chown -h -R '$_CFG->{facades_user}' .", $output);
-	_system("chgrp -h -R '$_CFG->{facades_group}' .", $output);
-	_system("tar cf - . | (cd '$r' && tar xpf -)", $output);
-	return;
-    });
-}
-
 sub install_host_stream {
     # Forces install of all host packages in stream.
     return shift->put(force => 1)->install_stream(Sys::Hostname::hostname());
@@ -434,36 +360,6 @@ sub install_stream {
     my($self) = @_;
     # Installs the entire stream.
     return $self->install(@{_get_update_list(1, @_)});
-}
-
-sub install_tar {
-    my($self, @projects) = _project_args(0, @_);
-    # Installs I<version> (HEAD) of I<project>.  I<project> may be an explicit
-    # tar.gz file, a shell_util_prefix abbreviation (e.g, b), or a simple
-    # name (no tar.gz) suffix.  If not found in I<projects> config, will be
-    # looked up explictly.
-    return _do_in_tmp($self, 0, sub {
-        my($tmp, $output) = @_;
-	_umask('install_umask');
-	my($cvs_version) = $self->get('version');
-	for my $project (map(ref($_) ? $_->[0] : $_, @projects)) {
-	    my($tgz) = $project =~ /(?:\.tar\.gz|\.tgz)$/ ? $project
-		: "$project-$cvs_version.tar.gz";
-	    b_use('IO.File')->write($tgz, _http_get(\$tgz, $output));
-	    _system("tar xpzf '$tgz'", $output);
-	    chomp(my $dir = `ls -t | grep -v '$tgz' | head -1`);
-	    b_die($dir, ': not a directory, expecting it to be one')
-	       unless -d $dir;
-	    my($cmd) = "cd '$dir' && perl Makefile.PL < /dev/null "
-		. " && make POD2MAN=true install";
-	    if ($self->get('noexecute')) {
-		_would_run("cd $tmp && $cmd", $output);
-		next;
-	    }
-	    _system($cmd, $output);
-	}
-	return;
-    });
 }
 
 sub list {
@@ -531,9 +427,14 @@ sub _b_release_define {
 
 sub _b_release_files {
     my($instructions) = @_;
-    # Evaluates line oriented instructions.
+    $instructions ||= <<'EOF';
++
+%files
+EOF
+    $instructions .= "\%files\n"
+	unless $instructions =~ /\%files\b/;
     my($prefix) = '';
-    my($res) = "cd \$RPM_BUILD_ROOT\n";
+    my($res) = "cd \%{buildroot}\n";
     $instructions = [split(/\n/, $instructions)];
     while (defined(my $line = shift(@$instructions))) {
 	$line =~ s/^\s+|\s+$//g;
@@ -553,7 +454,7 @@ test -s '$_FILES_LIST' || {
     exit 1
 }
 
-\%files -f $_FILES_LIST
+\%files -f $_FILES_LIST_BASE
 EOF
             next;
         }
@@ -574,14 +475,15 @@ EOF
 } > $_EXCLUDE_LIST
 (
     # Protect against error exit
-    %{allfiles} | fgrep -x -v -f $_EXCLUDE_LIST
+    %{allfiles} | fgrep -x -v -f $_EXCLUDE_LIST || true
 EOF
             $res .= ') ';
             if ($prefix) {
 		my($p) = $prefix;
 		$p =~ s/(\W)/\\$1/g;
-		$res .= "| perl -p -e 's#^#\Q$prefix\E#'";
+		$res .= "| perl -p -e 's{^}{\Q$prefix\E}'";
 	    }
+	    $res .= q{| perl -p -e 'm{/man\d[a-z]?/.*\.\d+} && s{$}{*}m'};
 	}
 	elsif ($line =~ m#^/#) {
 	    if ($line =~ /[\?\*\[\]]/) {
@@ -611,102 +513,15 @@ sub _b_release_include {
     return ${b_use('IO.File')->read("$spec_dir$to_include")};
 }
 
-sub _build_root {
+sub _build_macros {
     my($build_root) = @_;
-    $build_root ||= 'install';
-    $build_root = b_use('IO.File')->pwd.'/'.$build_root
-	unless $build_root =~ m,^/,;
-    return <<"EOF"
-BuildRoot: $build_root
-\%define build_root $build_root
-\%define files_list $_FILES_LIST
-EOF
+    return ($_NEED_BUILD_ROOT ? "BuildRoot: $build_root\n" : '')
+	. '%define build_root %{buildroot}'
+	. "\n"
         . <<'EOF';
-%define allfiles cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\\.//'
-%define allcfgs cd %{build_root}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\\./%config /'
+%define allfiles cd %{buildroot}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\\.//'
+%define allcfgs cd %{buildroot}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\\./%config /'
 EOF
-}
-
-sub _build_tar_copy {
-    my($cvs_dir, $project, $tgt) = @_;
-    # Copy files from cvs_dir to tgt for $project.
-#     my($uri) = grep
-# 	b_use('IO.File')->read("$cvs_dir/$project->[0]/Facades/$project->[0].pm");
-    File::Find::find(sub {
-
-	# The alg fails with '.'
-	return if $_ eq '.';
-	my($dst);
-	my($file) = $File::Find::name;
-        if ($file =~ m#(?:^|/)(?:CVS|.*\.old|old)/#) {
-	    $File::Find::prune = 1;
-	    return;
-	}
-	$file =~ s{^\Q$cvs_dir/}{};
-	if ($file =~ m#^$project->[0]/files(?:/|$)(.*)#) {
-	    # If there's no local_file_root, we have to insert one
-	    ($dst = $1) =~ s{^(?=@{[
-                join('|',
-	            map($_->get_path,
-	                b_use('UI.LocalFileType')->get_list,
-                    ),
-                ),
-            ]}/)}{@{[
-                lc($project->[0])
-            ]}/}x;
-	    $dst = "$tgt/$_FACADES_DIR/$dst";
-	}
-	elsif ($file =~ m#/t(?:/|$)#) {
-	    $dst = "$tgt/tests/$file";
-	}
-	elsif ($file =~ m#(?:^|/)($project->[1]-[-\w]+)$#) {
-	    $dst = "$tgt/bin/$1";
-	}
-	elsif ($file =~ /\.pm$/) {
-	    $dst = "$tgt/lib/$file";
-	}
-	if (-d $_) {
-	    # Always ignore directories, but may want to prune
-	    $File::Find::prune = 1
-		unless $_ =~ /^[A-Z]/ || $dst;
-	    return;
-	}
-	unless ($dst) {
-	    _trace($file, ': ignoring') if $_TRACE;
-	    return;
-	}
-	b_use('IO.File')->mkdir_parent_only($dst);
-	b_use('IO.File')->write($dst, b_use('IO.File')->read($_));
-	return;
-    }, "$cvs_dir/$project->[0]");
-    return;
-}
-
-sub _build_tar_makefile {
-    my($self, $project, $file_version, $tgt) = @_;
-    # Creates Makefile.PL
-    b_use('IO.File')->write("$tgt/Makefile.PL", <<"EOF");
-# Copyright (c) @{[$_DT->now_as_year]} $project->[2].  All Rights Reserved.
-use strict;
-use ExtUtils::MakeMaker ();
-ExtUtils::MakeMaker::WriteMakefile(
-    NAME => '$project->[0]',
-    EXE_FILES => [<bin/$project->[1]-*>],
-    AUTHOR => q{$project->[2]},
-    dist => {COMPRESS => 'gzip -f', SUFFIX => 'gz'},
-    ABSTRACT => q{$project->[0] Application},
-    VERSION => $file_version,
-    PREREQ_PM => {},
-    PMLIBDIRS => ['lib'],
-);
-sub MY::postamble {
-    return <<'END';
-install::
-	@{[$self->get_or_default('program', 'b-release')]} install_facades $_FACADES_DIR
-END
-}
-EOF
-    return;
 }
 
 sub run_sh {
@@ -739,11 +554,8 @@ sub _chdir {
 
 sub _create_rpm_spec {
     my($self, $specin, $output, $pwd) = @_;
-    # Creates an rpm spec using the generic spec file specified.
-    # Appends build info to the output buffer.
-    # Returns (output spec file name, base name, full name).
+    my($build_root) = _mkdir_rpmbuild($self);
     my($version) = $self->get('version');
-
     my($cvs) = 0;
     if ($specin =~ /\.spec$/) {
 	$specin = $pwd.'/'.$specin
@@ -763,35 +575,41 @@ sub _create_rpm_spec {
     my($name) = _search('name', $base_spec)
 	|| (b_use('Type.FileName')->get_tail($specin) =~ /(.*)\.spec$/);
     my($provides) = _search('provides', $base_spec) || $name;
-    my($buf) = <<"EOF" . _perl_make() . _perl_build();
-%define suse_check echo not calling /usr/sbin/Check
-%define __perl_provides %{nil}
-%define __perl_requires %{nil}
-%define _sourcedir .
-%define _topdir .
-%define _srcrpmdir .
-%define _rpmdir $_CFG->{tmp_dir}
-%define _builddir .
-%define cvs $_CVS_CHECKOUT $version
+    my($buf) = <<"EOF" . _perl_macros();
+\%define suse_check echo not calling /usr/sbin/Check
+\%define cvs $_CVS_CHECKOUT $version
+%define rm_cvs_dirs (cd %{_builddir} && find '%{cvs_dir}' -type d -name CVS -exec %{safe_rm} '{}' ';' -prune) || exit 1
 Release: $release
 Name: $name
 Provides: $provides
 EOF
+    # This is a different version
     $buf .= "Version: $version\n"
 	unless _search('version', $base_spec);
     $buf .= "License: N/A\n"
 	unless _search('license', $base_spec);
-    $buf .= _build_root(_search('buildroot', $base_spec));
+    $buf .= _build_macros($build_root);
     for my $line (@$base_spec) {
         0 while $line =~ s{^\s*_b_release_include\((.+?)\);}
 	    {"_b_release_include($1, \$spec_dir, \$cvs ? \$version : 0, \$output)"}xeemg;
 	$buf .= $line
-	    unless $line =~ /^(buildroot|release|name|provides): /i;
+	    unless $line =~ /^(release|name|provides): /i;
     }
     local($_MACROS) = {};
-    $buf =~ s/\b(_b_release_(?:files|define)\(.+?\));/$1/eegs;
-
-    $version = $1 if $buf =~ /\nVersion:\s*(\S+)/i;
+    $buf =~ s/\b(_b_release_(?:files|define)\(.*?\));/$1/eegs;
+    my($safe_rm) = "b-release-safe_rm-$$-" . Biz_Random()->string;
+    b_die('%prep', ': missing from spec file')
+	unless $buf =~ s{(\n\%prep\s*?)\n}{$1
+cd /tmp
+@{[_safe_rm($safe_rm)]}
+./$safe_rm \%{_builddir} \%{buildroot}
+mkdir -p \%{_builddir} %{buildroot}
+mv $safe_rm \%{_builddir}
+cd \%{_builddir}
+\%define safe_rm \%{_builddir}/$safe_rm
+}s;
+    $version = $1
+	if $buf =~ /\nVersion:\s*(\S+)/i;
     my($specout) = "$specin-build";
     b_use('IO.File')->write($specout, \$buf);
     return ($specout, "$name-$version", "$name-$version-$release");
@@ -926,6 +744,32 @@ sub _link_base_version {
     return;
 }
 
+sub _mkdir_rpmbuild {
+    my($self) = @_;
+    my($map) = {${$self->piped_exec('rpmbuild --showrc')} =~ /:\s+(_[a-z]+)\s+(\S+)/g};
+    my($lookup) = sub {
+	my($name) = @_;
+	b_die($name, ': not found in `rpmbuild --showrc`')
+	    unless my $d = $map->{$name};
+	return $d
+	    if $name eq '_topdir';
+	b_die($d, ": $name does not begin with _topdir")
+	    unless $d =~ /^\%{_topdir}(.+)/;
+	return $map->{_topdir} . $1;
+    };
+    my($top) = $lookup->('_topdir');
+    foreach my $dir (qw(
+	_builddir
+	_rpmdir
+	_sourcedir
+	_specdir
+	_srcrpmdir
+    )) {
+	IO_File()->mkdir_p($top . $lookup->($dir));
+    }
+    return $lookup->('_builddir') . '/install';
+}
+
 sub _output {
     my($output) = shift;
     # Appends output with arg(s).
@@ -934,37 +778,63 @@ sub _output {
 	if $output;
     return;
 }
-
-sub _perl_build {
-    return
-	'%define perl_build umask '
-	. _umask_string()
-	. " && perl Build.PL < /dev/null\n"
-	. '%define perl_build_install umask '
-	. _umask_string()
-	. '; ./Build install --destdir $RPM_BUILD_ROOT && '
-	# rm manified files - couldn't find flag to turn off manify
-	. ' rm -rf $RPM_BUILD_ROOT/usr/share/man && '
-	. $_PACKLIST
+sub _perl_macros {
+    return join(
+	'',
+	map(
+	    '%define ' . $_ . " \%{nil}\n",
+	    '__perl_provides',
+	    '__perl_requires',
+	),
+	map(
+	    _perl_macros_one(@$_),
+	    [
+		'perl_build',
+		'Build.PL --destdir %{buildroot} --installdirs vendor',
+		'./Build code',
+		'./Build',
+	    ],
+	    [
+		'perl_make',
+		'Makefile.PL DESTDIR=%{buildroot} INSTALLDIRS=vendor',
+		'make POD2MAN=true',
+		'make POD2MAN=true',
+	    ],
+	),
+    );
 }
 
-sub _perl_make {
-    # Define the %define values for perl_make, perl_make_install and now
-    # perl_build_install for Module::Build compatibility.
-    return
-	'%define perl_make umask '
-	. _umask_string()
-	. " && perl Makefile.PL < /dev/null && make POD2MAN=true\n"
-	. '%define perl_make_install umask '
-	. _umask_string()
-	. '; make '
-	. join(' ', map {
-	     uc($_) . '=$RPM_BUILD_ROOT' . $Config::Config{$_};
-	} grep($_ =~ /^install(?!style)/
-	    && $Config::Config{$_} && $Config::Config{$_} =~ m!^/!,
-	    sort(keys(%Config::Config))))
-	.  ' POD2MAN=true pure_install && '
-	. $_PACKLIST;
+sub _perl_macros_one {
+    my($name, $make_make, $make, $install) = @_;
+    my($def) = sub {
+	return (
+	    '%define ',
+	    $name,
+	    shift(@_),
+	    ' ',
+	    _umask_string(),
+	    ' && ',
+	    @_,
+	    "\n",
+	);
+    };
+    return (
+	$def->(
+	    '',
+	    'perl ',
+	    $make_make,
+	    ' < /dev/null',
+	    ' && ',
+	    $make
+	),
+	$def->(
+	    '_install',
+	    $install,
+	    ' pure_install',
+	    ' && %{safe_rm} %{buildroot}/usr/share/man %{buildroot}/usr/man',
+	    q{ && find %{buildroot} -name '*.bs' -o -name .packlist -o -name perllocal.pod | xargs rm -f},
+	),
+    );
 }
 
 sub _project_args {
@@ -1001,14 +871,37 @@ sub _rpm_uri_to_filename {
 	. '/'. b_use('Type.FileName')->get_tail($uri);
 }
 
+sub _safe_rm {
+    my($name) = @_;
+    return <<"END1" . <<'END2';
+cat > $name <<'EOF' && chmod +x $name
+END1
+#!/usr/bin/perl -w
+use strict;
+foreach my $f (@ARGV) {
+    next
+        unless -r $f;
+    if (-f $f || -l $f && ! -d $f) {
+        unlink($f);
+    }
+    elsif (`cd '$f' && pwd` =~ m{^(/[^/]+){3,}}s) {
+        system(qw(rm -rf), $f);
+    }
+    else {
+        die("$f: not deleting\n");
+    }
+}
+EOF
+END2
+}
+
 sub _save_rpm_file {
     my($rpm_file, $output) = @_;
-    # Saves the named rpm file into _RPM_HOME_DIR.
-    b_die("Missing rpm file $rpm_file") unless -f $rpm_file;
-
+    b_die($rpm_file, ': missing rpm file')
+	unless -f $rpm_file;
     $$output .= "SAVING RPM $rpm_file in $_CFG->{rpm_home_dir}\n";
     _system("chown $_CFG->{rpm_user}.$_CFG->{rpm_group} $rpm_file", $output);
-    _system("cp -p $rpm_file $_CFG->{rpm_home_dir}", $output);
+    _system("mv -f $rpm_file $_CFG->{rpm_home_dir}", $output);
     return;
 }
 
@@ -1031,28 +924,26 @@ sub _system {
 	_output($output, ${__PACKAGE__->piped_exec("sh -ec '$command' 2>&1")});
 	return;
     });
-    return unless $die;
+    return
+	unless $die;
     _output($output, ${$die->get('attrs')->{output}});
     $die->throw;
     # DOES NOT RETURN
 }
 
 sub _umask {
-    my($umask_name, $output) = @_;
-    # Sets umask and indicates in output
-    umask($_CFG->{$umask_name});
-    _output($output, 'umask ' . _umask_string($umask_name) . "\n");
+    my($output) = @_;
+    umask($_CFG->{install_umask});
+    _output($output, _umask_string() . "\n");
     return;
 }
 
 sub _umask_string {
-    # Returns string version of install_umask
-    return sprintf('0%o', $_CFG->{shift || 'install_umask'});
+    return sprintf('umask 0%o', $_CFG->{install_umask});
 }
 
 sub _would_run {
     my($cmd, $output) = @_;
-    # Returns command as "Would run: $cmd"
     _output($output, "Would run: $cmd\n");
     return;
 }
