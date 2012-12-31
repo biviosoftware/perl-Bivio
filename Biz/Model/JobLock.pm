@@ -30,28 +30,27 @@ sub acquire_or_load {
     });
     b_use('AgentJob.Dispatcher')->enqueue(
 	$self->req,
-        $task_id, {
+        $task_id,
+	{
             %$job_attributes,
-            process_cleanup => [
-                sub {
-                    my($req, $die) = @_;
-                    my($job_lock) = $self->new->unauth_load_or_die({
-                            realm_id => $realm_id,
-                            task_id => $task_id,
-                        });
-
-                    if ($die) {
-                        $job_lock->update({
-                            die_code => $die->get('code'),
-                        });
-                    }
-                    else {
-                        $job_lock->delete;
-                    }
-                    return;
-                },
-            ],
-        });
+            process_cleanup => sub {
+		my(undef, $req, $die) = @_;
+		my($job_lock) = $self->new->unauth_load_or_die({
+		    realm_id => $realm_id,
+		    task_id => $task_id,
+		});
+		if ($die) {
+		    $job_lock->update({
+			die_code => $die->get('code'),
+		    });
+		}
+		else {
+		    $job_lock->delete;
+		}
+		return;
+	    },
+        },
+    );
     return 1;
 }
 
