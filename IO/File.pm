@@ -14,6 +14,12 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_DT) = b_use('Type.DateTime');
+my($_FP) = b_use('Type.FilePath');
+my($_D) = b_use('Bivio.Die');
+my($_R) = b_use('Biz.Random');
+b_use('IO.Config')->register(my $_CFG = {
+    tmp_dir => '/tmp',
+});
 
 sub absolute_path {
     my(undef, $file_name, $base) = @_;
@@ -74,7 +80,7 @@ sub do_in_dir {
     # if that's what happened.
     my($pwd) = $proto->pwd;
     $proto->chdir($dir);
-    return Bivio::Die->catch_and_rethrow(
+    return $_D->catch_and_rethrow(
 	$op,
 	sub {$proto->chdir($pwd)},
     );
@@ -167,6 +173,12 @@ sub get_modified_date_time {
     return $_DT->from_unix((stat($file))[9]);
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub pwd {
     return Cwd::getcwd() || b_die("couldn't get cwd");
 }
@@ -243,22 +255,28 @@ sub symlink {
 }
 
 sub temp_file {
-    my($proto, $req, $suffix) = @_;
-    # Returns the name of a temp file. If a request is passed, the file
-    # is automatically removed when the request is completed.
-    my($name) = '/tmp/' . Bivio::Type::DateTime->local_now_as_file_name
-        . '-' . $$ . '-' . rand() . (defined($suffix) ? $suffix : '');
+    return shift->tmp_path(@_);
+}
 
-    if ($req) {
-        $req->put(process_cleanup => [])
-            unless $req->unsafe_get('process_cleanup');
-        push(@{$req->get('process_cleanup')},
-            sub {
-                _trace('removing ', $name) if $_TRACE;
-                unlink($name);
-            });
-    }
-    return $name;
+sub tmp_path {
+    my($proto, $req, $suffix) = @_;
+    my($path) = $_FP->join(
+	$_CFG->{tmp_dir},
+	$_DT->local_now_as_file_name
+            . '-'
+	    . $$
+	    . '-'
+	    . $_R->string
+	    . (defined($suffix) ? $suffix : ''),
+    );
+    $req->push_process_cleanup(
+    	sub {
+    	    _trace('removing ', $path) if $_TRACE;
+    	    $proto->rm_rf($path);
+    	    return;
+    	},
+    ) if $req;
+    return $path;
 }
 
 sub unique_name_for_process {
@@ -311,7 +329,7 @@ sub _err {
     my($err) = "$!";
     close($file)
 	if $file;
-    Bivio::Die->throw_die(IO_ERROR => {
+    b_die(IO_ERROR => {
 	message => $err,
 	method => __PACKAGE__->my_caller,
 	operation => $op,
