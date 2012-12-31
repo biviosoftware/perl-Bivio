@@ -434,7 +434,7 @@ sub go_back {
 sub handle_cleanup {
     my($self) = @_;
     my($req) = b_use('Test.Request')->get_current;
-    $req->process_cleanup
+    $req->call_process_cleanup
 	if $req;
     return shift->SUPER::handle_cleanup(@_);
 }

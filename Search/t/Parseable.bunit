@@ -38,7 +38,7 @@ my($txt) = model(RealmFile => {path => '/Public/file.txt'});
 	],
 	sub {
 	    # cleanup tmp files
-	    req()->process_cleanup;
+	    req()->call_process_cleanup;
 	    return 1;
 	} => 1,
     ],
