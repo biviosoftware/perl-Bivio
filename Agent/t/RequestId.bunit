@@ -1,0 +1,10 @@
+# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    class() => [
+	current => [
+	    [req()] => qr{^[0-9a-h]{40}$},
+	],
+    ],
+];
