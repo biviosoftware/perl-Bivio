@@ -188,17 +188,11 @@ sub execute {
 }
 
 sub execute_one_row {
-    my($self) = shift;
-    # Calls L<execute|"execute"> and returns the first row as an array_ref.
-    # If there is no row, returns C<undef>.
-    return _get_instance($self)->execute_one_row(@_)
-	unless ref($self);
-    my($sth) = $self->execute(@_);
-    return $self->perf_time_op(sub {
-	my($row) = $sth->fetchrow_arrayref;
-        $sth->finish;
-	return $row;
-    });
+    return _execute_one_row('fetchrow_arrayref', @_);
+}
+
+sub execute_one_row_hashref {
+    return _execute_one_row('fetchrow_hashref', @_);
 }
 
 sub get_dbi_config {
@@ -467,6 +461,18 @@ sub _do_execute {
 #TODO: Clears cached handle
 #    $self->finish_statement($st);
     return;
+}
+
+sub _execute_one_row {
+    my($method, $self) = (shift, shift);
+    return _execute_one_row($method, _get_instance($self), @_)
+	unless ref($self);
+    my($sth) = $self->execute(@_);
+    return $self->perf_time_op(sub {
+	my($row) = $sth->$method;
+        $sth->finish;
+	return $row;
+    });
 }
 
 sub _get_connection {
