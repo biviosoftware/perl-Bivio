@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -32,6 +32,98 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.21  2012/12/31 18:01:10  nagler
+  * Bivio::Agent::Dispatcher
+    renamed process_cleanup => call_process_cleanupC
+  * Bivio::Agent::RequestId
+    don't truncate the md5, because needs to be globally unique, and
+    better for it to be longer (using for TaskRateLimit user id when there
+    is no cookie)
+  * Bivio::Agent::Request
+    renamed process_cleanup => call_process_cleanup (to standardize name
+    and also to detect uses)
+    call_process_cleanup commits or rollbacks after every call.  This way
+    one process cleanup error doesn't screw up other tasks.  TaskRateLimit
+    and TaskLog want to always do somet cleanup.
+    call_process_cleanup uses Biz.Registrar
+  * Bivio::Biz::Action::WikiValidator
+    cruft
+  * Bivio::Biz::Model::CalendarEventDAVList
+    Take 'uid' from CalendarEvent.
+  * Bivio::Biz::Model::CalendarEventForm
+    Generate uid according to spec instead of using prefixed realm id.
+    uid now stored in CalendarEvent.
+  * Bivio::Biz::Model::CalendarEventList
+    Take 'uid' from CalendarEvent instead of RealmOwner
+  * Bivio::Biz::Model::CalendarEvent
+    Add explicit 'uid' field to replace use of realm owner name.
+    This allows multiple calendar events to have the same 'uid'
+    which is needed for series.
+  * Bivio::Biz::Model::CalendarEventSeriesList
+    NEW
+  * Bivio::Biz::Model::JobLock
+    process_cleanup now gets object as first argument
+  * Bivio::Biz::Model::TaskLog
+    make sure DateTime registers with Agent.Task before this module so
+    that it can use the date_time on entry, not exit
+  * Bivio::Biz::Model::TaskRateLimitObsoleteList
+    NEW
+  * Bivio::Biz::Model::TaskRateLimit
+    NEW
+  * Bivio::Biz::Registrar
+    factor out _call and _call_args to be cleaner code
+    allow $object to be CODE
+  * Bivio::Ext::ApacheConstants
+    added HTTP_TOO_MANY_REQUESTS for TaskRateLimt
+  * Bivio::Ext::LWPUserAgent
+    added convience routine bivio_http_get
+  * Bivio::IO::File
+    tmp_path deprecates temp_file (naming consistency, and it doesn't
+    actually create the file)
+    use push_process_cleanup (new in Request), and rm_rf $path
+    make tmp_dir configurable
+  * Bivio::Mail::Outgoing
+    Added 'generate_addr_spec' that returns a message_id without the enclosing
+    '<...>'. This is the recommended format for icalendar UIDs.
+  * Bivio::ShellUtil
+    added if_option_execute()
+  * Bivio::SQL::Connection
+    Added execute_one_row_hashref()
+  * Bivio::SQL::DDL
+    Add explicit 'uid' column to calendar_event_t to replace use of
+    realm_owner_t.name. This allows multiple calendar events to have the
+    same 'uid' which is needed when series are to be modified or deleted.
+    added task_rate_limit
+    factored out so easier to use in a upgrade_db
+  * Bivio::Test::Language::HTTP
+    renamed process_cleanup => call_process_cleanup
+  * Bivio::Type::DateTime
+    added register_with_agent_task so other registrants can force
+    registration. This allows modules to use now() and get test_now if
+    need be
+  * Bivio::UI::FacadeBase
+    http_too_many_requests
+  * Bivio::Util::CPAN
+    NEW
+  * Bivio::Util::HTTPD
+    need to kill QUIT old process
+  * Bivio::Util::PropertyModel
+    NEW
+  * Bivio::Util::Release
+    removed install/build_tar and the associated "facades" stuff (hasn't
+    been used since we stopped supporting solaris)
+    upgraded to be more portable and safer across perl and rpm versions
+    perl_make/build now uses vendor layout for installs, because CentOS
+    6.2 doesn't seem to support 'site' correctly
+    added %{safe_rm} macro to rpm spec which doesn't allow removal of any
+    directory which is less than three deep
+    Fixed up BuildRoot code, because that isn't right for rpm 4.8*
+  * Bivio::Util::SQL
+    internal_upgrade_db_calendar_event_uid adds the 'uid' column to calendar_event_t
+    removed old upgrades
+    Added task_rate_limit lock
+    Added calendar_event_uid sentinel
+
   Revision 12.20  2012/12/21 23:14:00  schellj
   * Bivio::Agent::Embed::Request
     add internal_need_to_toggle_secure_agent_execution
