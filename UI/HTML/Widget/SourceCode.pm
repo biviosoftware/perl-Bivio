@@ -192,6 +192,9 @@ sub _reformat_pod {
 
 sub _require {
     my($pkg) = @_;
+    # avoid autoloading other modules and corrupting this one
+    return ''
+	if $pkg =~ /AUTOLOAD/;
     return $_D->eval(sub {$_CL->unsafe_map_require($pkg)});
 }
 
