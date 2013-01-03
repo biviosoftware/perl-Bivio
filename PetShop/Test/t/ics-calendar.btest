@@ -10,6 +10,7 @@ send_request(GET => $calendar_ics);
 get_content() =~ /BEGIN:VCALENDAR.*END:VCALENDAR/s || die;
 get_content() !~ /BEGIN:VEVENT/s || die;
 # Verify that admin can put a 2-event .ics, simulating Sunbird output
+my($now) = Type_DateTime()->now;
 send_request(PUT => $calendar_ics, undef, <<'EOF');
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -50,6 +51,7 @@ send_request(GET => $calendar_ics);
 get_content() =~ /BEGIN:VEVENT.*SUMMARY:Event(1|2).*BEGIN:VEVENT.*SUMMARY:Event(1|2)/s || die;
 # Verify putting unmodified .ics
 my($ics) = get_content();
+date_time_now($now);
 send_request(PUT => $calendar_ics, undef, $ics);
 send_request(GET => $calendar_ics);
 get_content() eq $ics || die;
