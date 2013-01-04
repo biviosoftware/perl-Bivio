@@ -3,6 +3,6 @@
 package Bivio::UI::Font;
 use Bivio::Base 'Bivio::UI::FacadeComponent::Font';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /d+/g);
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;
