@@ -195,7 +195,6 @@ my($_TI) = b_use('Agent.TaskId');
 my($_T) = b_use('Agent.Task');
 my($_UA) = b_use('Type.UserAgent');
 my($_C) = b_use('IO.Config');
-my($_HTML) = b_use('Bivio.HTML');
 my($_M) = b_use('Biz.Model');
 my($_V1) = $_C->if_version(1);
 my($_V7) = $_C->if_version(7);
