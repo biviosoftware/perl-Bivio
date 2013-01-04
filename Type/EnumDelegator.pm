@@ -40,7 +40,7 @@ sub compile {
 }
 
 sub internal_delegate_package {
-    my($proto, $delegator) = @_;
+    my($proto) = @_;
     my($delegator) = $proto->package_name;
     ($_MAP->{$delegator} = $_CL->delegate_require($delegator))
 	->internal_set_delegator_package($delegator)
