@@ -3,6 +3,6 @@
 package Bivio::UI::Task;
 use Bivio::Base 'Bivio::UI::FacadeComponent::Task';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /d+/g);
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;
