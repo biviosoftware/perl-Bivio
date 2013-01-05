@@ -12,7 +12,6 @@ my($_C) = b_use('SQL.Connection');
 my($_D) = b_use('Type.Date');
 my($_F) = b_use('IO.File');
 my($_FP) = b_use('Type.FilePath');
-my($_FP) = b_use('Type.FilePath');
 my($_FN) = b_use('Type.ForumName');
 my($_UIF) = b_use('UI.Facade');
 my($_ACCESS_LOG_GLOB) = '*-access_log.gz';
