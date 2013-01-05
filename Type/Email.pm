@@ -39,7 +39,7 @@ sub format_ignore {
 sub format_email {
     my($proto, $local_or_realm_or_email, $domain, $plus, $op, $req) = @_;
     return $local_or_realm_or_email
-	if /\@/;
+	if $local_or_realm_or_email =~ /\@/;
     my($local) = ($op ? $op . $_OP_SEP : '')
 	. $local_or_realm_or_email
 	. ($plus ? $_PLUS_SEP . $plus : '');

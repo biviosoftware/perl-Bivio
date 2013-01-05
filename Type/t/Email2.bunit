@@ -46,4 +46,7 @@ my($round_up) = sub {
 	[qw(a@b.c b.c)] => 1,
 	[qw(a@b.c b.)] => 0,
     ],
+    format_email => [
+	'a@b.c' => 'a@b.c',
+    ],
 ];
