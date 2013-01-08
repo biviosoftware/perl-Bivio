@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 use Digest::MD5 ();
 b_use('IO.ClassLoaderAUTOLOAD');
+b_use('IO.Trace');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -21,10 +22,21 @@ IO_Config()->register(my $_CFG = {
 	[qr{^Client-.+}, 20, 1],
     ],
 });
+our($_TRACE);
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    $_CFG = $cfg;
+    $_CFG = {
+	register_with_agent_task => $cfg->{register_with_agent_task},
+	buckets => [map(
+	    +{
+		regexp => $_->[0],
+		allowance => $_->[1],
+		seconds => $_->[2],
+	    },
+	    @{$cfg->{buckets}},
+	)],
+    };
     if ($_CFG->{register_with_agent_task}) {
 	Type_DateTime()->register_with_agent_task;
 	Agent_Task()->register(__PACKAGE__);
@@ -63,8 +75,11 @@ sub handle_process_cleanup {
     return
 	if $fields->{is_create} && _create($self, $req);
     _load_for_update($self);
+    _trace($fields->{bucket_date_time}) if $_TRACE;
     _calculate($self);
+    $fields->{bucket_date_time} = $fields->{now};
     $self->update(_values($fields));
+    _trace($fields->{bucket_date_time}) if $_TRACE;
     return;
 }
 
@@ -99,7 +114,8 @@ sub _buckets_ok {
     ) {
 	foreach my $bucket (@{$_CFG->{buckets}}) {
 	    next
-		unless $key =~ $bucket->[0];
+		unless $key =~ $bucket->{regexp};
+	    _trace($bucket) if $_TRACE;
 	    next
 		unless my $x
 		= _is_bucket_allowance_exceeded($proto, $key, $bucket, $now, $req);
@@ -114,11 +130,11 @@ sub _buckets_ok {
 sub _calculate {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    $fields->{bucket_allowance}
-	+= Type_DateTime()->diff_seconds($fields->{now}, $fields->{bucket_date_time})
-	* ($fields->{count} / $fields->{seconds});
+    my($d) = Type_DateTime()->diff_seconds($fields->{now}, $fields->{bucket_date_time});
+    $fields->{bucket_allowance} += $d * ($fields->{count} / $fields->{seconds});
     $fields->{bucket_allowance} = $fields->{count}
 	if $fields->{bucket_allowance} > $fields->{count};
+    _trace({diff_seconds => $d, allowance => $fields->{bucket_allowance}}) if $_TRACE;
     return 1
 	if $fields->{bucket_allowance} < 1;
     $fields->{bucket_allowance}--;
@@ -140,10 +156,13 @@ sub _create {
     my($self, $req) = @_;
     my($fields) = $self->[$_IDI];
     _calculate($self);
-    return 1
-	unless Bivio_Die()->catch(
-	    sub {$self->new($req)->create(_values($fields))},
-	);
+    unless (Bivio_Die()->catch(
+	sub {$self->create(_values($fields))},
+    )) {
+	_trace($self->get_shallow_copy) if $_TRACE;
+	return 1;
+    }
+    _trace('create failed: rollback') if $_TRACE;
     Agent_Task()->rollback($req);
     return 0;
 }
@@ -163,10 +182,10 @@ sub _init {
     my($self) = $proto->new($req);
     my($fields) = $self->[$_IDI] = {
 	bucket_key => $key,
-	bucket_allowance => $bucket->[1],
+	bucket_allowance => $bucket->{allowance},
 	bucket_date_time => $now,
-	count => $bucket->[1],
-	seconds => $bucket->[2],
+	count => $bucket->{allowance},
+	seconds => $bucket->{seconds},
 	now => $now,
 	is_create => 1,
     };
@@ -224,6 +243,7 @@ sub _update_fields {
 	    return;
 	},
     );
+    _trace($self->get_shallow_copy) if $_TRACE;
     return;
 }
 
