@@ -24,6 +24,7 @@ my($_BUNDLE) = [
     $_IC->if_version(10, '!site_admin_forum_users2'),
     'task_rate_limit',
     '!calendar_event_uid',
+    '!calendar_event_uid_index',
 ];
 my($_AGGREGATES) = [qw(
     group_concat(text)
@@ -635,6 +636,17 @@ sub internal_upgrade_db_calendar_event_uid {
     my($self) = @_;
     $self->run(<<'EOF');
 ALTER TABLE calendar_event_t ADD COLUMN uid VARCHAR(500)
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_calendar_event_uid_index {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE INDEX calendar_event_t7 ON calendar_event_t (
+  uid
+)
 /
 EOF
     return;

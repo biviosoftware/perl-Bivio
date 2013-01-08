@@ -109,6 +109,10 @@ CREATE INDEX calendar_event_t6 ON calendar_event_t (
   dtend
 )
 /
+CREATE INDEX calendar_event_t7 ON calendar_event_t (
+  uid
+)
+/
 
 --
 -- crm_thread_t
