@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::BConf;
 use strict;
@@ -385,7 +385,7 @@ sub merge_http_log {
 		    'mod_ssl: SSL handshake timed out',
 		    'mod_ssl: SSL handshake failed: HTTP spoken on HTTPS port',
 		    'mod_ssl: SSL handshake interrupted by system',
-		    'Apache2::RequestIO.*Software caused connection abort',	    
+		    'Apache2::RequestIO.*Software caused connection abort',
 		    'request failed: URI too long',
 		    'Invalid method in request',
 		    'Bivio::UI::Task::.* unknown facade uri',
