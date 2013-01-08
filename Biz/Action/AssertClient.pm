@@ -6,7 +6,7 @@ use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
-    hosts => [qw(localhost.localdomain)],
+    hosts => [qw(localhost.localdomain), Sys::Hostname::hostname()],
     addresses => [],
 });
 my($_CACHE);
