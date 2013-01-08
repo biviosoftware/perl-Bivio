@@ -28,10 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.22  2012/12/31 18:08:16  nagler
+  * Bivio::Agent::Job::Request
+    removed some of the put_durable calls, because they could be
+    overridden, and they are already durable in super
+
   Revision 12.21  2012/12/31 18:01:10  nagler
   * Bivio::Agent::Dispatcher
     renamed process_cleanup => call_process_cleanupC
