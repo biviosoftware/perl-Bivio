@@ -76,7 +76,6 @@ sub return_path {
     my($self, $user_id, $email, $realm_file_id) = @_;
     $email =~ s/\@/=/;
     $email =~ s/\+/#/;
-b_info($email);
     return $self->new_other('MailReceiveDispatchForm')
 	->format_recipient(
 	    $user_id,
