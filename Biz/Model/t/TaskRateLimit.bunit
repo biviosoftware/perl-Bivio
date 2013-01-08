@@ -12,10 +12,14 @@ config({
 # multiple tasks same user
 # same task same user
 # b-sendmail-agent
+
+#count requests outstanding; handle apache dying (no process cleanup)
+# apache read request timeout for multiple slow connections
 options({
     compute_params => sub {
 	my($case, $params) = @_;
 #set cookie - user and no user
+	req('reply')->delete_output;
 	req()->initialize_fully(
 	    $params->[0],
 	    {
@@ -56,7 +60,13 @@ my($inc_time) = sub {
 	    $inc_time->(),
 	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => [],
 	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
+	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
 	    $inc_time->(),
+	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
+	    $inc_time->(),
+	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => [],
+	    $inc_time->(),
+	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
 	],
     ],
 ];
