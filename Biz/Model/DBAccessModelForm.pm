@@ -29,7 +29,7 @@ my($_ALL_FIELDS);
 
 sub execute_empty {
     my($self) = @_;
-    my($model_name) = b_debug _model_from_path_info($self);
+    my($model_name) = _model_from_path_info($self);
     my($query) = $self->req('query');
 #TODO: User data needs to be type-checked
     my($status) = $query->{$_SEARCH};
