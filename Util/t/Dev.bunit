@@ -1,0 +1,24 @@
+# Copyright (c) 2013 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Unit();
+my($dir) = tmp_dir();
+system("cp -a $ENV{HOME}/.cvspass $dir");
+my($db) = Ext_DBI()->get_config->{database} . 'devbunit';
+system("dropdb -U postgres $db 2>/dev/null");
+$ENV{HOME} = $dir;
+[
+    class() => [
+	setup => [
+	    [{
+		cvs_module => 'perl/Bivio',
+		create_test_db_args => " --Bivio::Ext::DBI.database=$db",
+	    }] => sub {
+		assert_file(qr{^btest-mail/}m, "$ENV{HOME}/.procmailrc");
+		assert_file(qr{stack_trace_warn}, "$ENV{HOME}/bconf.d/defaults.bconf");
+		assert_file(qr{package Bivio::BConf}, "$ENV{HOME}/src/perl/Bivio/BConf.pm");
+		return 1;
+	    },
+	],
+    ],
+];
+
