@@ -28,9 +28,67 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.23  2013/01/08 17:31:26  schellj
+  * Bivio::Agent::Request
+    extra $_HTML
+  * Bivio::BConf
+    spc
+    copy
+  * Bivio::Biz::Action::AssertClient
+    added hostname to default list of hosts
+  * Bivio::Biz::Model::DBAccessModelForm
+    remove b_debug
+  * Bivio::Biz::Model::RealmMailBounce
+    remove b_info
+  * Bivio::Biz::Model::TaskRateLimit
+    added tracing (probably too much)
+    bunit working
+  * Bivio::SQL::DDL
+    Add index on calendar evetn uid
+  * Bivio::SuperAUTOLOAD
+    removed
+  * Bivio::Type::Email
+    format_email had pattern match on $_
+  * Bivio::Type::EnumDelegator
+    duplicate $delegator
+  * Bivio::Type::String
+    added more transliterations
+  * Bivio::UI::Color
+    missing "\" before "d"
+  * Bivio::UI::Constant
+    extra $_HTML
+  * Bivio::UI::CSS
+    missing "\" before "d"
+  * Bivio::UI::Email
+    missing '\' before d
+  * Bivio::UI::Font
+    missing '\' before d
+  * Bivio::UI::FormError
+    missing "\" before "d"
+  * Bivio::UI::HTML::Widget::SourceCode
+    avoid calling unsafe_map_require() on AUTOLOAD modules
+  * Bivio::UI::HTML
+    missing "\" before "d"
+  * Bivio::UI::Icon
+    missing '\' before d
+  * Bivio::UI::Task
+    missing "\" before "d"
+  * Bivio::UI::Text
+    missing '\' before d
+  * Bivio::Util::HTTPD
+    removed PerlTransHandler
+  * Bivio::Util::HTTPStats
+    extra $_FP
+  * Bivio::Util::LinuxConfig
+    ensure --encoding=SQL_ASCII for initdb, because later versions of
+    Postgres/CentOS default to UTF8
+  * Bivio::Util::SQL
+    Add index on calendar evetn uid
+
   Revision 12.22  2012/12/31 18:08:16  nagler
   * Bivio::Agent::Job::Request
     removed some of the put_durable calls, because they could be
