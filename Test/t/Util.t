@@ -17,8 +17,6 @@ Bivio::IO::Config->introduce_values({
 	mail_tries => 30,
      },
 });
--r ($ENV{ORIGINAL_BCONF} = $ENV{BCONF}) || die('$BCONF must be set');
-$ENV{BCONF} = File::Spec->rel2abs('Util.bconf');
 Bivio::IO::File->chdir('Util');
 my($user) = "$ENV{USER}\@localhost.localdomain";
 Bivio::Test->unit([
