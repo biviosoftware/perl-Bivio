@@ -4,6 +4,7 @@ package Bivio::Util::HTTPD;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 use Sys::Hostname ();
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_V2) = b_use('Agent.Request')->if_apache_version(2);
@@ -72,6 +73,7 @@ sub run {
 	Bivio::IO::File->mkdir_p("$pwd/files");
 	_symlink($pwd, "$pwd/logs");
 	_symlink(_find_file($_V2 ? qw(
+            /usr/lib64/httpd/modules
             /usr/lib/apache2/modules
             /usr/lib64/apache2/modules
             /usr/local/apache2/libexec
@@ -99,14 +101,7 @@ sub run {
     my(@start_mode) = $background ? () : ('-X');
 
     # write custom bconf
-    my($bconf_data) = Bivio::IO::File->read($ENV{'BCONF'});
-    Bivio::IO::File->write("$pwd/httpd$$.bconf", $bconf_data);
-    _symlink(
-	Bivio::IO::File->absolute_path(File::Basename::dirname($ENV{'BCONF'}))
-	    . '/bconf.d',
-	"$pwd/bconf.d",
-    ) unless -l "$pwd/bconf.d";
-    my($bconf) = "PerlSetEnv BCONF $pwd/httpd$$.bconf";
+    my($bconf) = 'PerlSetEnv BCONF ' . IO_Config()->bconf_file;
     my($reload) = 'PerlInitHandler Bivio::Test::Reload';
     my($modules) = _dynamic_modules($_HTTPD);
     my($pass_env) = join(
@@ -215,14 +210,12 @@ sub _dynamic_modules {
 	    disk_cache
 	    expires
 	    ext_filter
-	    file_cache
 	    headers
 	    include
 	    info
 	    ldap
 	    log_config
 	    logio
-	    mem_cache
 	    mime_magic
 	    negotiation
 	    perl
