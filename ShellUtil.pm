@@ -363,9 +363,11 @@ sub group_args {
 
 sub handle_call_autoload {
     my($proto) = shift;
-    b_die($proto->package_name, ': arguments not allowed')
+    b_die($proto, ': arguments not allowed')
 	if @_;
-    return $proto->new(\@_, b_use('Agent.Request')->get_current_or_die);
+    return $proto
+	unless my $req = b_use('Agent.Request')->get_current;
+    return $proto->new(\@_, $req);
 }
 
 sub handle_config {
