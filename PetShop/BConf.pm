@@ -1,19 +1,10 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::BConf;
 use strict;
 use base 'Bivio::BConf';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-
-sub dev_overrides {
-    my($proto, $pwd, $host) = @_;
-    return {
-	'Bivio::UI::HTML::Widget::SourceCode' => {
-	    source_dir => "$pwd/src",
-	},
-    };
-}
 
 sub merge_overrides {
     my($proto) = @_;
@@ -43,7 +34,7 @@ sub merge_overrides {
 		'Bivio::Auth::Permission',
 		'Bivio::Auth::Role',
 		'Bivio::Type::ECService',
-		'Bivio::Type::Location', 
+		'Bivio::Type::Location',
 		'Bivio::TypeError',
 	    ],
 	    maps => {
