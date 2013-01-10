@@ -112,7 +112,7 @@ sub run {
     my($pass_env) = join(
 	"\n",
 	map(("PassEnv $_", "PerlPassEnv $_"),
-	    grep(exists($ENV{$_}), qw(ORACLE_HOME DBI_USER DBI_PASS HOME PERL5OPT BIVIODB_BREAKPOINT)),
+	    grep(exists($ENV{$_}), qw(ORACLE_HOME DBI_USER DBI_PASS HOME PERL5OPT BIVIODB_BREAKPOINT BIVIO_HTTPD_PORT)),
 	),
     );
     my($conf) = $self->is_execute ? "httpd$$.conf" : "&STDOUT";
