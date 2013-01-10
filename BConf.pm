@@ -138,17 +138,24 @@ sub default_merge_overrides {
 
 sub dev {
     my($proto, $http_port, $overrides) = @_;
+    $http_port ||= $ENV{BIVIO_HTTPD_PORT};
+    die(__PACKAGE__, '->dev(port): missing port param or set $ENV{BIVIO_HTTPD_PORT}')
+	unless $http_port;
     print(STDERR $http_port, ": using odd numbered port not advised, will be 'secure'\n")
 	if $http_port % 2;
-    my($pwd) = Cwd::getcwd();
     my($host) = Sys::Hostname::hostname();
-    my($user) = eval{getpwuid($>)} || $ENV{USER} || 'nobody';
-    my($home) = $ENV{HOME} || $pwd;
-    my($root, $files_root) = $proto->dev_root;
+    my($user) = eval {getpwuid($>)} || $ENV{USER} || 'nobody';
+    my($home) = $ENV{HOME} || (-w "/home/$user/." ? "/home/$user" : Cwd::getcwd());
+    my($files_root) = Bivio::IO::Config->bootstrap_package_dir($proto) . '/files';
+    my($perl_lib) = Bivio::IO::Config->bootstrap_package_dir(__PACKAGE__) =~ m{(.+)/Bivio$};
+    my($merge_overrides) = $proto->merge_overrides($host);
+    my($db) = ($merge_overrides->{'Bivio::Ext::DBI'} || {})->{database};
+    $db =~ s/(?=\w)db$//
+	if $db;
     return _validate_config(Bivio::IO::Config->merge_list(
 	$overrides || {},
 	Bivio::IO::Config->bconf_dir_hashes,
-	$proto->dev_overrides($pwd, $host, $user, $http_port),
+	$proto->dev_overrides($home, $host, $user, $http_port, $files_root, $perl_lib),
 	{
 	    'Bivio::Agent::Request' => {
 		can_secure => 0,
@@ -157,8 +164,16 @@ sub dev {
 		root => "$files_root/db",
 		backup_root => "$files_root/bkp",
 	    },
+	    'Bivio::Biz::Model::MailReceiveDispatchForm' => {
+		duplicate_threshold_seconds => 20,
+	    },
+	    'Bivio::Ext::DBI' => {
+		$db ? (database => $db . $user) : (),
+	    },
 	    'Bivio::IO::Alert' => {
-		want_time => 0,
+		strip_bit8 => 1,
+		want_pid => 0,
+		want_time => 1,
 	    },
 	    'Bivio::IO::Config' => {
 		is_dev => 1,
@@ -172,6 +187,10 @@ sub dev {
 	    'Bivio::Test::Language::HTTP' => {
 		home_page_uri => "http://$host:$http_port",
 		server_startup_timeout => 60,
+		mail_tries => 30,
+		remote_mail_host => $host,
+		local_mail_host => $host,
+		email_user => $user,
 	    },
 	    'Bivio::UI::FacadeComponent' => {
 		die_on_error => 1,
@@ -181,6 +200,12 @@ sub dev {
 		want_local_file_cache => 0,
 		http_host => "$host:$http_port",
 		mail_host => $host,
+	    },
+	    'Bivio::UI::HTML::Widget::Page' => {
+		show_time => 1,
+	    },
+	    'Bivio::UI::HTML::Widget::SourceCode' => {
+		source_dir => $perl_lib,
 	    },
 	    'Bivio::Util::HTTPLog' => {
 		email => '',
@@ -201,18 +226,9 @@ sub dev {
 		port => $http_port,
 	    },
 	},
-	$proto->merge_overrides($host),
+	$merge_overrides,
 	_base($proto),
     ));
-}
-
-sub dev_root {
-    my($proto) = @_;
-    (my $root = ref($proto) || $proto) =~ s,::,/,g;
-    $root = ($INC{"$root.pm"} =~ m{(.+)/.+?.pm})[0];
-    my($files_root) = "$root/files";
-    mkdir($files_root);
-    return ($root, $files_root);
 }
 
 sub dev_overrides {
