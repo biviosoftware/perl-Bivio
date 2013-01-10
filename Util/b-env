@@ -1,12 +1,12 @@
 #!/usr/bin/perl -w
 #!perl -w
-# Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2012-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 
 =head1 NAME
 
-b-env - sets up BCONF, PERLLIB, BPREFIX, BROOT
+b-env - sets up BCONF and PERLLIB
 
 =head1 SYNOPSIS
 
@@ -27,52 +27,66 @@ Examples:
 main(@ARGV);
 
 sub main {
-    my($prefix, $root_pkg, $src_tree) = _args(@_);
+    my($is_env, $prefix, $root_pkg, $src_tree) = _args(@_);
     my($src, $perllib) = _src($prefix, $src_tree);
+    my($env) = "PERLLIB='$perllib' BCONF='"
+	. _bconf($prefix, $root_pkg, $src)
+	. q{'};
     print(
-	"export PERLLIB=$perllib BCONF=",
-	_bconf($prefix, $src),
-	_broot($prefix, $root_pkg, $perllib),
-	"\n",
+	$is_env ? ('env ', $env, ' ')
+	    : ('export ', $env, _cd($root_pkg, $perllib)),
     );
     return;
 }
 
 sub _args {
+    my($is_env) = ($_[0] || '') =~ /^-env$/ ? shift(@_) && 1 : 0;
     my($prefix, $root_pkg, $src_tree) = @_;
     $src_tree =~ s{.*src_(?=\w+)$}{}
 	if $src_tree;
     $root_pkg = 'Bivio/PetShop'
 	if ($root_pkg || '') eq 'Bivio';
-    return ($prefix, $root_pkg, $src_tree)
-	if ($prefix || '') =~ /^\w+$/;
-    _err("usage: prefix [RootPkg] [src_tree]");
+    return ($is_env, $prefix, $root_pkg, $src_tree)
+	if ($prefix || '') =~ /^[a-z0-9]+$/;
+    return ($is_env, undef, $prefix)
+	if ($prefix || '') =~ /^[A-Z]\w+/;
+    _err("usage: prefix [RootPkg] [src_tree] | RootPkg");
     # DOES NOT RETURN
 }
 
 sub _bconf {
-    my($prefix, $src) = @_;
-    my($bconf) = "$src/bconf/$prefix.bconf";
-    return $bconf
-	if -f $bconf;
-    my($try) = [$bconf];
-    if ($src =~ m{/src$}) {
+    my($prefix, $root_pkg, $src) = @_;
+    my($try) = [];
+    if ($prefix) {
+	my($bconf) = "$src/bconf/$prefix.bconf";
 	return $bconf
-	    if -f ($bconf = "$ENV{HOME}/bconf/$prefix.bconf");
+	    if -f $bconf;
 	push(@$try, $bconf);
+	if ($src =~ m{/src$}) {
+	    return $bconf
+		if -f ($bconf = "$ENV{HOME}/bconf/$prefix.bconf");
+	    push(@$try, $bconf);
+	}
+	return $bconf
+	    if -r ($bconf = "/etc/$prefix.bconf");
+	push(@$try, $bconf);
+    }
+    if ($ENV{BIVIO_HTTPD_PORT} && $root_pkg) {
+	(my $x = $root_pkg) =~ s{/}{::}g;
+	return $x;
     }
     _err("$prefix.bconf: not found in: @$try");
     # DOES NOT RETURN
 }
 
-sub _broot {
-    my($prefix, $root_pkg, $perllib) = @_;
+sub _cd {
+    my($root_pkg, $perllib) = @_;
     return ''
 	unless $root_pkg;
     my($dir) = "$perllib/$root_pkg";
     _err("$dir: directory not found")
 	unless -d $dir;
-    return " BROOT=$root_pkg;cd $dir";
+    return " && cd $dir";
 }
 
 sub _err {
@@ -86,7 +100,7 @@ sub _src {
     my($try) = [map(
 	"$ENV{HOME}/src$_",
 	$src_tree ? "_$src_tree" : (),
-	"_$prefix",
+	$prefix ? "_$prefix" : (),
 	'',
     )];
     foreach my $src (@$try) {
@@ -104,7 +118,7 @@ Bivio::Util::Project
 
 =head1 COPYRIGHT
 
-Copyright (c) 2012 bivio Software, Inc.  All Rights Reserved.
+Copyright (c) 2012-2013 bivio Software, Inc.  All Rights Reserved.
 
 =head1 VERSION
 
