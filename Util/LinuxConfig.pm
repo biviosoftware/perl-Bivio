@@ -46,7 +46,7 @@ sub add_bashrc_d {
     my($self) = @_;
     # Updates /etc/bashrc to search /etc/bashrc.d.
     return _mkdir($self, '/etc/bashrc.d', 0755)
-	. _edit($self, '/etc/bashrc', ['$', <<'EOF', qr#/etc/bashrc.d/#]);
+	. _edit($self, '/etc/bashrc', ['$', <<'EOF', qr{/etc/bashrc.d/}]);
 
 # Load local bashrcs
 for i in /etc/bashrc.d/*.sh ; do
@@ -112,10 +112,10 @@ sub add_sendmail_http_agent {
 	[qr{(?<=Fw/etc/mail/local-host-names\n)},
 	    "FP/etc/mail/local-host-names\n"],
 	# Sets $h to host part if we have host
-	[qr/R\$\+ < \@ \$=w \. \>\s+\$#(?:local|bsendmailhttp) \$: \$1/,
+	[qr{R\$\+ < \@ \$=w \. \>\s+\$#(?:local|bsendmailhttp) \$: \$1},
 	    'R$+ < @ $=w . >		$#bsendmailhttp $@ $2 $: $1'],
 	# No host, set to $j (canonical host)
-	[qr/R\$\+\s+\$#(?:local|bsendmailhttp) \$: \$1/,
+	[qr{R\$\+\s+\$#(?:local|bsendmailhttp) \$: \$1}m,
 	    'R$+		$#bsendmailhttp $@ $j $: $1'],
 	# Remove any existing bsendmailhttp, and append new
 	[sub {
@@ -169,9 +169,9 @@ sub add_users_to_group {
     my($res) = _edit($self, '/etc/group', map {
 	my($user) = $_;
 	[
-	    qr/^($group:.*:)(.*)/m,
+	    qr{^($group:.*:)(.*)}m,
 	    sub {$1 . (length($2) ? "$2,$user" : "$user")},
-	    qr/^$group:.*[:,]$user(,|$)/m,
+	    qr{^$group:.*[:,]$user(,|$)}m,
 	];
     } @user);
     $res .= _exec($self, 'grpconv')
@@ -189,7 +189,7 @@ sub append_lines {
 
 sub delete_aliases {
     my($self) = shift;
-    return _delete_lines($self, '/etc/aliases', [map(qr/^$_\:[^\n]+$/, @_)]);
+    return _delete_lines($self, '/etc/aliases', [map(qr{^$_\:[^\n]+$}m, @_)]);
 }
 
 sub delete_file {
@@ -476,7 +476,7 @@ sub _delete_lines {
 	     my($data) = @_;
 	     my($got);
 	     foreach my $l (@$lines) {
-		 my($x) = ref($l) ? $l : qr{^\Q$l\E(\n|$)};
+		 my($x) = ref($l) ? $l : qr{^\Q$l\E(\n|$)}m;
 		 $$data =~ s/$x//mg and $got++;
 	     }
 	     return $got;
@@ -538,7 +538,7 @@ sub _edit {
 	    my($optional);
 	    unless (ref($where)) {
 		$optional = $where =~ s/^\?//s;
-		$where = qr/$where/s;
+		$where = qr{$where}s;
 	    }
 	    b_die($file, ": didn't find /$where/\n")
 		unless $$data =~ s/$where/ref($value) ? $value->() : $value/eg
@@ -662,7 +662,7 @@ sub _gateway_for {
 }
 
 sub _gen_append_cmds {
-    return map(['$', "$_\n", qr/^\Q$_\E$/m], @_);
+    return map(['$', "$_\n", qr{^\Q$_\E$}m], @_);
 }
 
 sub _get_networks_config {
