@@ -1,4 +1,3 @@
 # $Id$
-test_setup('T1', 'x1');
+test_setup('Bivio::Test::t::Language::T1', 'x1');
 assert_config("'foo'");
-
