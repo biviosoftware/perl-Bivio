@@ -1,14 +1,11 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2013x bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ImageUploadForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
-use Image::Magick ();
-use Bivio::Biz::Random;
-use Bivio::Biz::Action;
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IFN) = Bivio::Type->get_instance('ImageFileName');
 
 sub execute_ok {
     my($self) = @_;
@@ -49,8 +46,11 @@ sub internal_image_max_width {
 }
 
 sub internal_image_path {
-    return $_IFN->to_absolute(
-	$_IFN->get_clean_tail(shift->get('image_file')->{filename}));
+    return Type_ImageFileName()->to_absolute(
+	Type_ImageFileName()->get_clean_tail(
+	    shift->get('image_file')->{filename},
+	),
+    );
 }
 
 sub internal_image_properties {
@@ -107,7 +107,7 @@ sub validate {
 	    if $self->internal_image_is_required;
 	return;
     }
-    my($im) = Image::Magick->new;
+    my($im) = b_use('Image::Magick')->new;
     my($e);
     return _e($self, 'SYNTAX_ERROR', $e || 'unknown format')
 	if $e = $im->BlobToImage(${$f->{content}}) or !$im->Get('magick');
