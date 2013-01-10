@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2013x bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::ImageUploadForm;
 use strict;
