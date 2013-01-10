@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Unit;
 use strict;
@@ -109,6 +109,11 @@ sub builtin_assert_eval {
 		$die ? (': died with: ', $die) : ': returned false',
 	    ),
 	);
+}
+
+sub builtin_assert_file {
+    my($self, $contains, $file) = @_;
+    return $self->builtin_assert_contains($contains, $self->builtin_read_file($file), $file);
 }
 
 sub builtin_assert_not_equals {
