@@ -408,6 +408,14 @@ sub list_updates {
     return join('', map("$_\n", @{_get_update_list(0, @_)}));
 }
 
+sub map_projects {
+    my($proto, $op) = @_;
+    return [map(
+	$op->(@$_),
+	@{$proto->list_projects},
+    )];
+}
+
 sub update {
     my($self) = @_;
     # Download and apply package updates for the current stream.  Does not install
