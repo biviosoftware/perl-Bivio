@@ -625,11 +625,14 @@ sub _initialize {
 	my($class) = $_BCONF =~ /(.+::\w+)/;
 	$_BCONF .= '->dev'
 	    unless $_BCONF =~ /\-\>/;
-	$_BCONF_DIR = (grep(
-	    -d $_,
-	    "$ENV{HOME}/bconf.d",
-	    "$ENV{HOME}/bconf/bconf.d",
-	))[0];
+	# $_BCONF_DIR must be set to something
+	$_BCONF_DIR = (
+	    grep(
+		-d $_,
+		"$ENV{HOME}/bconf.d",
+		"$ENV{HOME}/bconf/bconf.d",
+	    ))[0]
+	    || "$ENV{HOME}/bconf.d";
 	eval("
 	    use $class;
 	    \$_ACTUAL = $_BCONF;
