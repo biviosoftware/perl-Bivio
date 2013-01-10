@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::Config;
 use strict;
@@ -107,6 +107,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 #=VARIABLES
 my($_PKG) = __PACKAGE__;
 my($_BCONF) = undef;
+my($_BCONF_DIR) = undef;
 # The configuration read off disk or passed in
 my($_ACTUAL) = {};
 my($_COMMAND_LINE_ARGS) = [];
@@ -155,8 +156,9 @@ sub assert_version {
 sub bconf_dir_hashes {
     my($proto) = @_;
     # Returns list of hashes from bconf dir in sorted order.
-    my($dir) = _bconf_dir($proto);
-    my($only) = "$dir/" . File::Basename::basename(bconf_file(), '.bconf')
+    my($dir) = $_BCONF_DIR;
+    my($only) = "$dir/"
+	. (File::Basename::basename($proto->bconf_file(), '.bconf') || 'ignore this')
 	. '-only.bconf';
     return map({
 	my($file) = $_;
@@ -174,6 +176,11 @@ sub bconf_file {
     # Returns the bconf_file used by this module during initialization.
     # It is available during initialization, i.e., in the I<bconf_file> itself.
     return $_BCONF;
+}
+
+sub bootstrap_package_dir {
+    my(undef, $proto) = @_;
+    return (_class_to_file(ref($proto) || $proto) =~ m{(.+)/.+?.pm$})[0];
 }
 
 sub command_line_args {
@@ -498,10 +505,15 @@ sub _actual_changed {
     return;
 }
 
-sub _bconf_dir {
-    # Returns the bconf.d directory relative to the file that was loaded.
-    return File::Spec->catfile(
-	File::Basename::dirname(shift->bconf_file), 'bconf.d');
+sub _class_to_file {
+    my($class) = @_;
+    return $INC{
+	join(
+	    '/',
+	    split(/::/, $class),
+	)
+	. '.pm'
+    } || die("$class: package not in \$INC\n");
 }
 
 sub _die {
@@ -599,28 +611,39 @@ sub _initialize {
     # /etc/bivio.bconf is last resort if the file doesn't exist.
     $_BCONF = $ENV{BCONF};
     if ($is_setuid && defined($_BCONF)) {
-	warn('Ignoring $BCONF while running setuid');
-	$_BCONF = undef;
+	warn("$ENV{BCONF}: ignoring \$BCONF while running setuid\n");
+	$ENV{BCONF} = $_BCONF = undef;
     }
-    unless (defined($_BCONF) && -f $_BCONF && -r $_BCONF) {
-	$_BCONF = '/etc/bivio.bconf'
-	    if -r '/etc/bivio.bconf';
+    my($bconf_exists) = sub {
+	my($bconf) = @_;
+	return defined($bconf) && -f $bconf && -r $bconf ? $bconf : undef;
+    };
+    $_BCONF ||= $bconf_exists->('/etc/bivio.bconf') || 'Bivio::DefaultBConf->merge';
+    if ($ENV{BIVIO_HTTPD_PORT} && $_BCONF =~ /(?:\:\:|^[A-Z]\w+$)/) {
+	$_BCONF .= '::BConf'
+	    unless $_BCONF =~ /::BConf(?:$|\-\>)/;
+	my($class) = $_BCONF =~ /(.+::\w+)/;
+	$_BCONF .= '->dev'
+	    unless $_BCONF =~ /\-\>/;
+	$_BCONF_DIR = (grep(
+	    -d $_,
+	    "$ENV{HOME}/bconf.d",
+	    "$ENV{HOME}/bconf/bconf.d",
+	))[0];
+	eval("
+	    use $class;
+	    \$_ACTUAL = $_BCONF;
+	");
     }
-    if (defined($_BCONF)) {
+    elsif ($bconf_exists->($_BCONF)) {
 	$_BCONF = File::Spec->rel2abs($_BCONF);
+	$_BCONF_DIR = File::Spec->catfile(
+	    File::Basename::dirname($_BCONF),
+	    'bconf.d',
+	);
 	$_ACTUAL = do($_BCONF);
     }
-    else {
-	# If there's no configuration, this will be {} as init'd above
-	# We don't do a eval with {}, because we want the use to happen
-	# dynamically.
-	eval('
-	    use Bivio::BConf;
-	    $_ACTUAL = Bivio::BConf->merge({});
-	');
-	$_BCONF = File::Spec->rel2abs($INC{'Bivio/BConf.pm'});
-    }
-    die("$_BCONF error: ", $@ || 'Must return hash ref')
+    die($_BCONF || '<undef>', ': bconf error: ', $@ || 'Must return hash ref')
 	unless ref($_ACTUAL) eq 'HASH';
     ($_ACTUAL->{$_PKG} ||= {})->{bconf_file} = $_BCONF;
     # Only process arguments in not_setuid case
