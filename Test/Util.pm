@@ -275,7 +275,7 @@ sub nightly_output_to_wiki {
 sub remote_trace {
     my($self, $named) = shift->name_args(['?PerlName'], \@_);
     $self->initialize_fully;
-    my($ua) = b_use('Ext.LWPUserAgent')->new;
+    my($ua) = b_use('Ext.LWPUserAgent')->new(1);
     $ua->agent('bivio test remote_trace');
     $ua->timeout(5);
     my($resp) = $ua->request(
