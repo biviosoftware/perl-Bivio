@@ -28,10 +28,56 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.24  2013/01/10 17:13:45  schellj
+  * Bivio::BConf
+    dev_overrides() params changed to ($home, $host, $user, $http_port, $files_root, $perl_lib)
+    Do not rely on $pwd.
+    Removed dev_root()
+    Default more in dev() to make it so you don't need a custom *.bconf
+    for most development purposes
+  * Bivio::Biz::Model::ImageUploadForm
+    make use of Image::Magick dynamic. CentOS 6.2 has a problem with
+    multiple clients of libuuid.  Importing Search::Xapian and
+    Image::Magick into the same program causes a SEGV.
+    fmt
+  * Bivio::IO::Config
+    If $ENV{BIVIO_HTTPD_PORT} is set, module is in "dev" mode, which
+    allows $ENV{BCONF} to be a *::BConf, e.g. Bivio::PetShop::BConf (or
+    Bivio::PetShop).  ->dev is automatically appended, or another method
+    can be specfied.  ~/bconf.d (or ~/bconf/bconf.d) is the bconf_dir
+    Added bootstrap_package_dir for Bivio::BConf
+    $_BCONF_DIR must always be set to something, because bconf_dir_hashes
+    relies on it being defined
+  * Bivio::PetShop::BConf
+    removed dev_overrides (SourceCode override is now in Bivio::BConf)
+  * Bivio::ShellUtil
+    handle_call_autoload: if there's no request, just return the clas()
+  * Bivio::Test::Unit
+    added builtin_assert_file (used by Dev.bunit)
+  * Bivio::Test::Util
+    remote_trace didn't set "want_redirects" to be true for LWPUserAgent
+  * Bivio::Util::Dev
+    removed project_aliases (unused)
+    Added setup* to create dev env
+    Added bashrc_b_env_aliases to create aliases for development
+  * Bivio::Util::HTTPD
+    passes BIVIO_HTTPD_PORT
+    don't need to write a custom bconf.  New IO.Config causes problems
+    with that.
+    file_cache and mem_cache aren't part of CentOS 6.2, and we aren't
+    using them right now so don't include
+  * Bivio::Util::LinuxConfig
+    be explicit about "m" or "s" on compiled regexps (qr{}), because there
+    was a subtle change in the way substitutions with compiled regexps
+    overrides "m" and "s". if you have $re = qr{^a\n}; s{$re}{}m, the "m"
+    doesn't override the implicit "s".  This is on CentOS 6.2 (perl
+    5.10.1).
+  * Bivio::Util::Release
+    added map_projects for Util.Dev
+
   Revision 12.23  2013/01/08 17:31:26  schellj
   * Bivio::Agent::Request
     extra $_HTML
