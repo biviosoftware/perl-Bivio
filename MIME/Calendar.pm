@@ -285,7 +285,7 @@ sub _parse_value_params {
 sub _seconds_from_hhmmss {
     my($self, $value) = @_;
     my($hours, $minutes, $seconds) = ($value || '') =~ /^([+\-]\d\d)(\d\d)?(\d\d)?/;
-    return (($hours * 60) + $minutes) * 60 + $seconds;
+    return (($hours * 60) + ($minutes || 0)) * 60 + ($seconds || 0);
 }
 
 sub _split {
