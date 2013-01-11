@@ -37,12 +37,12 @@ sub execute {
     }
     $proto->new({password => $pw})->put_on_request($req, 1);
     $proto->get_instance('Acknowledgement')->save_label($req);
-    $req->server_redirect({
+    return {
+	method => 'server_redirect',
 #TODO: get_attr and set no_context on the password_task
         task_id => $req->get('task')->get_attr_as_id('password_task'),
         no_context => 1,
-    });
-    # DOES NOT RETURN
+    };
 }
 
 sub format_uri {
