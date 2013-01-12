@@ -155,26 +155,27 @@ sub assert_version {
 
 sub bconf_dir_hashes {
     my($proto) = @_;
-    # Returns list of hashes from bconf dir in sorted order.
+    return
+	unless $_BCONF_DIR && -r $_BCONF_DIR && -d $_BCONF_DIR;
     my($dir) = $_BCONF_DIR;
-    my($only) = "$dir/"
-	. (File::Basename::basename($proto->bconf_file(), '.bconf') || 'ignore this')
-	. '-only.bconf';
-    return map({
-	my($file) = $_;
-	my($data) = do($file) || die("$file: $@");
-	die($file, ': did not return a hash_ref')
-	    unless ref($data) eq 'HASH';
-	$data;
-    }
-       -r $only ? $only : (),
-       sort(grep(!/-only.bconf$/, glob("$dir/*.bconf"))),
+    my($bconf) = $proto->bconf_file;
+    $bconf &&= File::Basename::basename($bconf, '.bconf');
+    my($only) = -r  $bconf ? "$dir/$bconf-only.bconf" : undef;
+    return map(
+	{
+	    my($file) = $_;
+	    my($data) = do($file) || die("$file: $@");
+	    die($file, ': did not return a hash_ref')
+		unless ref($data) eq 'HASH';
+	    $data;
+	}
+	$only && -r $only ? $only : (),
+        sort(grep(!/-only.bconf$/, glob("$dir/*.bconf"))),
     );
 }
 
 sub bconf_file {
-    # Returns the bconf_file used by this module during initialization.
-    # It is available during initialization, i.e., in the I<bconf_file> itself.
+    # Do not rely on this being an actual file
     return $_BCONF;
 }
 
@@ -618,21 +619,23 @@ sub _initialize {
 	my($bconf) = @_;
 	return defined($bconf) && -f $bconf && -r $bconf ? $bconf : undef;
     };
-    $_BCONF ||= $bconf_exists->('/etc/bivio.bconf') || 'Bivio::DefaultBConf->merge';
-    if ($ENV{BIVIO_HTTPD_PORT} && $_BCONF =~ /(?:\:\:|^[A-Z]\w+$)/) {
+    $_BCONF ||= $bconf_exists->('/etc/bivio.bconf');
+    if (!$_BCONF
+        || $ENV{BIVIO_HTTPD_PORT} && $_BCONF =~ /(?:\:\:|^[A-Z]\w+$)/
+    ) {
+	$_BCONF ||= 'Bivio::DefaultBConf->merge';
 	$_BCONF .= '::BConf'
 	    unless $_BCONF =~ /::BConf(?:$|\-\>)/;
 	my($class) = $_BCONF =~ /(.+::\w+)/;
 	$_BCONF .= '->dev'
 	    unless $_BCONF =~ /\-\>/;
 	# $_BCONF_DIR must be set to something
-	$_BCONF_DIR = (
-	    grep(
+	$_BCONF_DIR = $is_setuid ? ()
+	    : (grep(
 		-d $_,
 		"$ENV{HOME}/bconf.d",
 		"$ENV{HOME}/bconf/bconf.d",
-	    ))[0]
-	    || "$ENV{HOME}/bconf.d";
+	    ))[0];
 	eval("
 	    use $class;
 	    \$_ACTUAL = $_BCONF;
