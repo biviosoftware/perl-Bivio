@@ -1,0 +1,5 @@
+{
+    'Bivio::IO::Config::t::T1' => {
+	p5 => 'not seen',
+    },
+};
