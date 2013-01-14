@@ -99,15 +99,24 @@ sub run {
     my($handler) = $_CFG->{handler};
     my($perl_module) = $handler =~ /^\+/ ? "" : "PerlModule $_CFG->{handler}";
     my(@start_mode) = $background ? () : ('-X');
-
-    # write custom bconf
-    my($bconf) = 'PerlSetEnv BCONF ' . IO_Config()->bconf_file;
     my($reload) = 'PerlInitHandler Bivio::Test::Reload';
     my($modules) = _dynamic_modules($_HTTPD);
     my($pass_env) = join(
 	"\n",
 	map(("PassEnv $_", "PerlPassEnv $_"),
-	    grep(exists($ENV{$_}), qw(ORACLE_HOME DBI_USER DBI_PASS HOME PERL5OPT BIVIODB_BREAKPOINT BIVIO_HTTPD_PORT)),
+	    grep(
+		exists($ENV{$_}),
+		qw(
+		    BCONF
+		    BIVIODB_BREAKPOINT
+		    BIVIO_HTTPD_PORT
+		    DBI_PASS
+		    DBI_USER
+		    HOME
+		    ORACLE_HOME
+		    PERL5OPT
+	        ),
+	    ),
 	),
     );
     my($conf) = $self->is_execute ? "httpd$$.conf" : "&STDOUT";
@@ -283,7 +292,6 @@ ServerAdmin $user
 
 PerlWarn on
 # Can't be on and use PERLLIB.
-$bconf
 $reload
 $perl_module
 $pass_env
