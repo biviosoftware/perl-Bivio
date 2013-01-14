@@ -159,8 +159,9 @@ sub bconf_dir_hashes {
 	unless $_BCONF_DIR && -r $_BCONF_DIR && -d $_BCONF_DIR;
     my($dir) = $_BCONF_DIR;
     my($bconf) = $proto->bconf_file;
-    $bconf &&= File::Basename::basename($bconf, '.bconf');
-    my($only) = -r  $bconf ? "$dir/$bconf-only.bconf" : undef;
+    my($only) = -r $bconf
+	? "$dir/" . File::Basename::basename($bconf, '.bconf') . '-only.bconf'
+	: undef;
     return map(
 	{
 	    my($file) = $_;
@@ -485,7 +486,7 @@ sub unsafe_get {
 	defined($cfg->{$_}) && $cfg->{$_} eq $proto->REQUIRED,
 	keys(%$cfg),
     );
-    _die("$pkg.(" . join(' ', sort(@bad)), ': named config required')
+    _die("$pkg.(" . join(' ', sort(@bad)), '): named config required')
 	if @bad;
     return $cfg;
 }
