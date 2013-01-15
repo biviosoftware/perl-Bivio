@@ -11,4 +11,5 @@ ShellUtil();
     [qw(u_info ShellUtil.Class)] => qr{^\d+.\d+ .*/Bivio/Util/Class\.pm$},
     [qw(u_info Bivio::UNIVERSAL)] => qr{^\d+.\d+ .*/Bivio/UNIVERSAL\.pm$},
     [qw(u_info Bivio::Not_A_Class)] => [],
+    [qw(u_find_all Bivio::BConf)] => qr{'/home/.*\n\s*'/usr/}s,
 ];
