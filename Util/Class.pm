@@ -11,10 +11,20 @@ sub USAGE {
     return <<'EOF';
 usage: b-class [options] command [args..]
 commands
-  info class -- return information about the class
-  name class -- return fully qualified name for class
-  super class -- return the list of superclasses for given package
+  find_all class -- list of all libraries found by this name
+  info class -- information about the class
+  name class -- fully qualified name for class
+  super class -- the list of superclasses for given package
 EOF
+}
+
+sub u_find_all {
+    my($self, $class) = @_;
+    $class =~ s{-|::}{/}g;
+    return [grep(
+	-f $_,
+	map("$_/$class.pm", @INC),
+    )];
 }
 
 sub u_info {
