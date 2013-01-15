@@ -552,9 +552,9 @@ sub _edit {
 	if $self->unsafe_get('noexecute');
     # Delete the backup file.  This has side effects for add_crontab_line
     # which needs to modify /var/spool/cron for cron to "wakeup" and reread
-    # all crontabs.  $file.bak may be read-only
-    unlink("$file.bak");
-    system("cp -pR $file $file.bak");
+    # all crontabs.
+    unlink("$file.rpmsave");
+    system("cp -pR $file $file.rpmsave");
     Bivio::IO::File->write($file, $data);
     return "Updated: $file\n";
 }
