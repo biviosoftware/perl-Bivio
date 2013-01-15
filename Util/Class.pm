@@ -3,6 +3,7 @@
 package Bivio::Util::Class;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
+use File::Find ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CL) = b_use('IO.ClassLoader');
@@ -11,7 +12,8 @@ sub USAGE {
     return <<'EOF';
 usage: b-class [options] command [args..]
 commands
-  find_all class -- list of all libraries found by this name
+  find_all class -- list of all modules found by this name
+  find_all_duplicates -- list all duplicate files in @INC
   info class -- information about the class
   name class -- fully qualified name for class
   super class -- the list of superclasses for given package
@@ -24,6 +26,41 @@ sub u_find_all {
     return [grep(
 	-f $_,
 	map("$_/$class.pm", @INC),
+    )];
+}
+
+sub u_find_all_duplicates {
+    my($self) = @_;
+    my($modules) = {};
+    foreach my $dir (@INC) {
+	next
+	    if $dir eq '.';
+	File::Find::find(
+	    {
+		no_chdir => 1,
+		follow => 0,
+		wanted => sub {
+		    my($file) = $File::Find::name;
+		    my($name) = $_;
+		    return
+			if $file =~ m{/CVS(?:/|$)}
+			|| $name =~ m{(^|/)(\..*|.*~|#.*)$}
+			|| -d $file;
+		    if ($name =~ /^CVS$/) {
+			$File::Find::prune = 1;
+			return;
+		    }
+		    $file =~ s{^\Q$dir\E}{};
+		    push(@{$modules->{$file} ||= []}, $File::Find::name);
+		    return;
+		},
+	    },
+	    $dir,
+	);
+    }
+    return [map(
+	@{$modules->{$_}} > 1 ? $modules->{$_} : (),
+	sort(keys(%$modules)),
     )];
 }
 
