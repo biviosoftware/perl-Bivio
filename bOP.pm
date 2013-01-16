@@ -28,9 +28,17 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.25  2013/01/11 22:00:04  schellj
+  * Bivio::Biz::Action::UserPasswordQuery
+    changed call to req->server_redirect(), use task item return value instead
+  * Bivio::MIME::Calendar
+    _seconds_from_hhmmss may get undef values for $minutes and $seconds so
+    need to protect from undef in addition (perl 5.10/centos 6.2)
+
   Revision 12.24  2013/01/10 17:13:45  schellj
   * Bivio::BConf
     dev_overrides() params changed to ($home, $host, $user, $http_port, $files_root, $perl_lib)
