@@ -1,25 +1,19 @@
-# Copyright (c) 2003 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2003-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
-#
-#
-use Bivio::Test;
-use Bivio::SQL::Connection;
-
-sub _is_postgres {
-    return Bivio::SQL::Connection->get_instance->isa(
-        'Bivio::SQL::Connection::Postgres') ? 1 : 0;
-};
-
-map({
-    my($n) = $_;
-    Bivio::Die->eval(sub {
-	Bivio::SQL::Connection->execute("drop table t_leftjoin_t$n");
-	Bivio::SQL::Connection->commit;
-    });
-    Bivio::Die->eval(sub {Bivio::SQL::Connection->rollback;});
-} 1..4);
-Bivio::Test->unit([
-    'Bivio::SQL::Connection' => [
+Unit();
+my($is_postgres) = SQL_Connection()->get_instance =~ /Postgres/;
+foreach my $n (1..4) {
+    rollback()
+	if Bivio_Die()->catch_quietly(
+	    sub {
+		SQL_Connection()->execute("drop table t_leftjoin_t$n");
+		commit();
+		return;
+	    },
+	);
+}
+[
+    class() => [
 	execute => [
 	    # We expect to get a statement back.
 	    map({
@@ -60,13 +54,19 @@ Bivio::Test->unit([
 	    'select count(*) from t_leftjoin_t1, t_leftjoin_t4' => [[9]],
 	    # Two left with two different sets of tables
 	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+)' => [[9]],
-            (_is_postgres()
-                ? ('select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+) order by t_leftjoin_t1.f1' => [[9]],
-	    'select count(*), (select sum(f1) from t_leftjoin_t4
-			       where t_leftjoin_t4.f2 > 1) as f3
-	     from t_leftjoin_t1, t_leftjoin_t2
-	     where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[3, 5]])
-                : ()),
+            !$is_postgres ? () : (
+		'select count(*)
+		    from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4
+		    where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)
+		    and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+)
+		    order by t_leftjoin_t1.f1'
+		=> [[9]],
+		'select count(*),
+		    (select sum(f1) from t_leftjoin_t4 where t_leftjoin_t4.f2 > 1) as f3
+		    from t_leftjoin_t1, t_leftjoin_t2
+		    where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)',
+		=> [[3, 5]],
+	    ),
 	    'select t_leftjoin_t1.f1,
 		   (select sum(t_leftjoin_t3.f2) from t_leftjoin_t3
 		    where t_leftjoin_t3.f1=t_leftjoin_t1.f1) as f3
@@ -85,4 +85,5 @@ Bivio::Test->unit([
             'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t2.f2 = t_leftjoin_t3.f2(+)' => [[3]],
        ],
     ],
-]);
+];
+
