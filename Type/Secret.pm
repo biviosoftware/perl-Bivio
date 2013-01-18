@@ -153,7 +153,18 @@ sub _call {
 }
 
 sub _cbc_new {
-    return Crypt::CBC->new(shift, shift->{algorithm});
+    my($key) = shift;
+    my($algorithm) = shift->{algorithm};
+    return Crypt::CBC->new(
+	Crypt::CBC->can('header_mode') ? (
+	    -key => $key,
+	    -cipher => $algorithm,
+	    -header => 'randomiv',
+        ) : (
+	    $key,
+	    $algorithm,
+	)
+    );
 }
 
 sub _decrypt {
