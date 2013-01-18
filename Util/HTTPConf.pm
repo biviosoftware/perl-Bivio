@@ -105,7 +105,7 @@ sub validate_vars {
     $vars ||= ${$self->read_input};
     $vars = {
 	%$_VARS,
-	%{Bivio::Die->eval_or_die($vars)},
+	%{Bivio::Die->eval_or_die(sub {$vars})},
     };
     foreach my $app (
 	@{$vars->{apps} = [sort(grep(!exists($_VARS->{$_}), sort(keys(%$vars))))]},
