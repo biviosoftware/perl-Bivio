@@ -1,4 +1,4 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::SQL::Connection::Postgres;
 use strict;
@@ -185,20 +185,7 @@ sub _fixup_outer_join {
     #     WHERE broker_t.user_id=broker_tax_payment_t.broker_user_id
     #
     my($relations) = [];
-    my($prefix, $from_where)
-	# This only handles two levels of parens in SELECTs with AS clauses
-	= $sql =~ /^(
-           (?:
-              [^()]+
-              | \([^()]+\)+
-              | \((?:
-                  [^()]+
-                  |\([^()]+\)
-                )+\)
-           )+
-        )(\sFROM\s.*)/six;
-    Bivio::Die->die('could not find FROM in: ', $sql)
-	unless $from_where;
+    my($prefix, $from_where) = _split_at_from($sql);
     _trace('prefix=', $prefix, '; from_where=', $from_where) if $_TRACE;
     while ($from_where =~ /\(\+\)/) {
 	$from_where =~ s/\b(FROM)(?:POSTGRES-FIXME)?\b(.+?)([\w\.]+)\s*\=\s*([\w\.]+)\(\+\)(?:\s+AND\b)?/FROMPOSTGRES-FIXME$2/is
@@ -206,7 +193,7 @@ sub _fixup_outer_join {
 	push(@$relations, [$3, $4]);
     }
     return unless @$relations;
-    Bivio::Die->die('too weird outer join: ', $from_where)
+    b_die('too weird outer join: ', $from_where)
 	if $from_where =~ /POSTGRES-FIXME.*POSTGRES-FIXME/s;
     _trace('from_where=', $from_where, '; relations=', $relations) if $_TRACE;
     my($joins) = {};
@@ -307,6 +294,21 @@ sub _parse_table_name {
     $str =~ /^(\w+)\./
 	|| Bivio::Die->die("didn't find table: ", $str);
     return $1;
+}
+
+sub _split_at_from {
+    my($sql) = @_;
+    my($from_re) = qr{(\sFROM\s)}i;
+    my($parts) = [split($from_re, $sql)];
+    my($prefix) = '';
+    while (defined(my $p = shift(@$parts))) {
+	return ($prefix, join('', $p, @$parts))
+	    if $p =~ $from_re
+	    && @{[$prefix =~ /\(/sg]} == @{[$prefix =~ /\)/sg]};
+	$prefix .= $p;
+    }
+    b_die('could not find FROM in: ', $sql);
+    # DOES NOT RETURN
 }
 
 1;
