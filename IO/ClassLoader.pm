@@ -334,7 +334,7 @@ sub _importing_pkg {
 
 sub _map_args {
     my($proto, $map_name, $class_name) = @_;
-    return ($class_name || $map_name) =~ /^(\w+::)+\w+$/
+    return ($class_name || $map_name) =~ /::/
 	? ($proto, undef, $class_name || $map_name, undef)
 	: $map_name && $class_name
         ? ($proto, $map_name, $class_name, "$map_name$_SEP$class_name")
