@@ -28,10 +28,26 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.26  2013/01/16 04:29:01  schellj
+  * Bivio::IO::Config
+    bconf_dir_hashes deals with bconf_file not being a file and there
+    being no bconf.d.
+    when no $BCONF or /etc/bivio.bconf, use Bivio::DefaultBConf->merge
+    even if $BIVIO_HTTPD_PORT is not set.  This allows bootstrap on
+    systems without bOP installed
+    bconf_dir_hashes was broken: wasn't checking bconf_file correctly
+  * Bivio::Util::Class
+    added u_find_all to identify duplicates
+    added u_find_all_duplicates
+  * Bivio::Util::HTTPD
+    use $ENV{BCONF} literally.  We don't modify it so just use it literally
+  * Bivio::Util::LinuxConfig
+    use .rpmsave, not .bak, because new cron says:
+    (root.bak) ORPHAN (no passwd entry)
+
   Revision 12.25  2013/01/11 22:00:04  schellj
   * Bivio::Biz::Action::UserPasswordQuery
     changed call to req->server_redirect(), use task item return value instead
