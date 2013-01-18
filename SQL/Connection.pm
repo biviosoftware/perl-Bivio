@@ -27,7 +27,6 @@ my($_CONNECTIONS) = {};
 my($_DEFAULT_DBI_NAME);
 # Number of times we retry a single statement.
 my($_MAX_RETRIES) = 3;
-my($_MAX_BLOB) = int(MAX_BLOB() * 1.1);
 b_use('Action.PingReply')->register_handler(__PACKAGE__);
 b_use('Bivio.ShellUtil')->register_handler(__PACKAGE__);
 b_use('IO.Config')->register(my $_CFG = {
@@ -346,7 +345,7 @@ sub internal_prepare_blob {
 	# Returns a value.  For older DBD::Oracle implementations, we
 	# need to set the value on every $statement.  Newer imps,
 	# set it once per connection.
-	$$statement->{LongReadLen} = $_MAX_BLOB;
+	$$statement->{LongReadLen} = int($self->MAX_BLOB * 1.1);
 	$$statement->{LongTruncOk} = 0;
 	return $params;
     }
