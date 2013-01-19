@@ -266,7 +266,6 @@ sub postgres_base {
 	$self, '/etc/rc.d/init.d/postgresql',
 	\&_replace_param,
 	['(#\s*chkconfig:\s*)', '345 84 16'],
-	['(.*PGENGINE/initdb )', ' --encoding=SQL_ASCII'],
     );
 }
 
