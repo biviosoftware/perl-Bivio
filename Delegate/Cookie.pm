@@ -58,8 +58,6 @@ sub delete_all {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    b_die($cfg->{domain}, ': domain must begin with dot (.)')
-        if defined($cfg->{domain}) && $cfg->{domain} !~ /^\./;
     $cfg->{session_update_seconds} = int($cfg->{session_timeout_seconds}/20)
 	if $cfg->{session_timeout_seconds}
 	&& !defined($cfg->{session_update_seconds});
@@ -192,7 +190,7 @@ sub _parse_items {
     my($proto, $cookie) = @_;
     my($items) = {};
     my($rows) = [split(/\s*[;,]\s*/, $cookie)];
-    my($ignore_prior_tags) = grep(/^$_CFG->{tag}/, @$rows) ? 1 : 0;
+    my($ignore_prior_tags) = grep(/^\s*$_CFG->{tag}\s*=/, @$rows) ? 1 : 0;
     foreach my $f (@$rows) {
 	my($k, $v) = split(/\s*=\s*/, $f, 2);
 	unless (defined($k) && defined($v) && length($v)) {
