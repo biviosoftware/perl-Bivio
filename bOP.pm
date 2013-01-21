@@ -20,6 +20,7 @@ bOP
 
 =head1 DESCRIPTION
 
+
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
@@ -31,6 +32,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.27  2013/01/18 00:46:18  schellj
+  qx changes
+
   Revision 12.26  2013/01/16 04:29:01  schellj
   * Bivio::IO::Config
     bconf_dir_hashes deals with bconf_file not being a file and there
