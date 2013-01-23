@@ -60,7 +60,7 @@ sub password_query_ack {
 }
 
 sub password_query_mail {
-    return _mail(shift(@_), 'UserPasswordQueryForm');
+    return shift->internal_mail('UserPasswordQueryForm');
 }
 
 sub create {
@@ -74,7 +74,7 @@ sub create_done {
 }
 
 sub create_mail {
-    return _mail(shift(@_), 'UserRegisterForm');
+    return shift->internal_mail('UserRegisterForm');
 }
 
 sub email_verify {
@@ -111,6 +111,16 @@ An email has been sent to String(['Model.EmailVerifyForm', 'Email.email']);.
 Please click on the link in the email message to complete the verification
 process.
 EOF
+}
+
+sub internal_mail {
+    my($self, $form) = @_;
+    my($n) = $self->my_caller;
+    view_put(
+	mail_to => Mailbox(["Model.$form", 'Email.email']),
+	mail_subject => _prose($n, 'subject'),
+    );
+    return $self->internal_body_prose(_prose($n, 'body'));
 }
 
 sub internal_settings_form_extra_fields {
@@ -176,16 +186,6 @@ Link(URI({
 }));
 EOF
     );
-}
-
-sub _mail {
-    my($self, $form) = @_;
-    my($n) = $self->my_caller;
-    view_put(
-	mail_to => Mailbox(["Model.$form", 'Email.email']),
-	mail_subject => _prose($n, 'subject'),
-    );
-    return $self->internal_body_prose(_prose($n, 'body'));
 }
 
 sub _password_fields {
