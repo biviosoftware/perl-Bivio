@@ -15,34 +15,42 @@ sub acceptance_test_detail {
 		    NAME => 'header',
 		    SRC => ['->format_uri', 'DEV_ACCEPTANCE_TEST_HEADER'],
 		}),
-		FRAME({
-		    NAME => 'transaction_list',
-		    SRC => ['->format_uri', 'DEV_ACCEPTANCE_TEST_TRANSACTION_LIST'],
-		}),
 		FRAMESET(
 		    Join([
-			FRAME({
-			    NAME => 'req',
-			}),
+                        FRAMESET(
+                            Join([
+                                FRAME({
+                                    NAME => 'transaction_list',
+                                    SRC => ['->format_uri', 'DEV_ACCEPTANCE_TEST_TRANSACTION_LIST'],
+                                }),
+                                FRAME({
+                                    NAME => 'req',
+                                }),
+
+                            ]),
+                            {
+                                ROWS => '100%,80px',
+                            },
+                        ),
 			FRAME({
 			    NAME => 'res',
 			 }),
 		     ]),
 		    {
 			COLS => '30%, 70%'
-		    },	    
+		    },
 		),
 	    ]),
-	    {
-		ROWS => '80px,20%,45%',
-	    }
+            {
+                ROWS => '80px,100%',
+            }
 	),
     );
     return;
 }
 
 sub acceptance_test_header {
-     view_put(xhtml => 
+     view_put(xhtml =>
 		  Join([
 		      HEAD(
 			  STYLE(_css(), {
@@ -77,7 +85,7 @@ sub acceptance_test_list {
 			     TYPE => 'text/css',
 			 }),
 		     ),
-		     BODY(Join([		     
+		     BODY(Join([
 			 H1('Acceptance Test Results'),
 			 vs_paged_list('AcceptanceTestList', [
 			     ['test_name', {
@@ -88,16 +96,16 @@ sub acceptance_test_list {
 					 path_info => ['test_name'],
 				     }),
 				 }),
-				 column_data_class => 'test_name',		
+				 column_data_class => 'test_name',
 			     }],
 			     ['age', {
-				 column_data_class => 'age',		
+				 column_data_class => 'age',
 			     }],
 			     ['timestamp', {
-				 column_data_class => 'timestamp',		
+				 column_data_class => 'timestamp',
 			     }],
 			     ['outcome', {
-				 column_data_class => 'outcome',		
+				 column_data_class => 'outcome',
 			     }],
 			 ]),
 		     ])),
@@ -114,13 +122,14 @@ sub acceptance_test_request {
 			 }),
 		     ),
 		     BODY(
-			 PRE([b_use('Model.AcceptanceTestTransactionList'), '->get_http_request',
-			      ['->req', 'path_info'],
-			      ['->req', 'query', 'q'],
-			      ['->req', 'query', 's'],
-			  ], {
-			      CLASS => 'headers',
-			  }),
+                         If(Not(['->req', 'query', 'd']),
+                            PRE([b_use('Model.AcceptanceTestTransactionList'), '->get_http_request',
+                                 ['->req', 'path_info'],
+                                 ['->req', 'query', 'q'],
+                             ], {
+                                 CLASS => 'headers',
+                             }),
+                        ),
 		     ),
 		 ]),
 	 );
@@ -129,16 +138,21 @@ sub acceptance_test_request {
 
 sub acceptance_test_response {
     view_put(xhtml =>
-		 [b_use('Model.AcceptanceTestTransactionList'), '->get_http_response',
-		  ['->req', 'path_info'],
-		  ['->req', 'query', 'q'],
-		  ['->req', 'query', 's'],
-	      ]);
+                 If(['->req', 'query', 'd'],
+                    [b_use('Model.AcceptanceTestTransactionList'), '->get_dom_dump',
+                     ['->req', 'path_info'],
+                     ['->req', 'query', 'q'],
+                 ],
+                    [b_use('Model.AcceptanceTestTransactionList'), '->get_http_response',
+                     ['->req', 'path_info'],
+                     ['->req', 'query', 'q'],
+                     ['->req', 'query', 's'],
+                 ]));
     return;
  }
 
 sub acceptance_test_transaction_list {
-    view_put(xhtml =>    
+    view_put(xhtml =>
 		 Join([
 		     HEAD(
 			 Join([
@@ -154,7 +168,10 @@ sub acceptance_test_transaction_list {
 			 vs_list('AcceptanceTestTransactionList', [
 			     ['request_response_number', {
 				 column_widget => Link({
-				     value => Join([['request_number'], String('/'), ['response_number']]),
+				     value => If(['is_dom_dump'],
+                                                 ['request_number'],
+                                                 Join([['request_number'], String('/'), ['response_number']]),
+                                             ),
 				     href => '#nonesuch',
 				     ONCLICK =>  Join([
 					 'display(this.parentNode.parentNode',
@@ -166,23 +183,26 @@ sub acceptance_test_transaction_list {
                                                  query => {
                                                      q => ['request_number'],
                                                      s => ['response_number'],
+                                                     d => ['is_dom_dump'],
                                                  },
                                              }),
                                              q{'}
-                                         ), qw(DEV_ACCEPTANCE_TEST_REQUEST DEV_ACCEPTANCE_TEST_RESPONSE)), 
+                                         ), qw(DEV_ACCEPTANCE_TEST_REQUEST DEV_ACCEPTANCE_TEST_RESPONSE)),
+                                         q{, },
+                                         ['is_dom_dump'],
 					 ');',
 				     ]),
 				 }),
 				 column_data_class => 'request_response_number',
 			     }],
 			     ['test_line_number', {
-				 column_data_class => 'test_line_number',		
+				 column_data_class => 'test_line_number',
 			 }],
 			     ['http_status', {
-				 column_data_class => 'http_status',		
+				 column_data_class => 'http_status',
 			     }],
 			     ['command', {
-				 column_data_class => 'command',		
+				 column_data_class => 'command',
 			     }],
 			 ]),
 		     ])),
@@ -264,9 +284,9 @@ EOF
 
 sub _javascript {
    return <<'EOF';
-function display(element, requri, resuri) {
+function display(element, requri, resuri, is_dom_dump) {
    if (selected != null) {
-        selected.className = "unselected"; 
+        selected.className = "unselected";
    }
    selected = element;
    selected.className = "selected";

@@ -9,6 +9,19 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATL) = b_use('Model.AcceptanceTestList');
 
 
+sub get_dom_dump {
+    my($proto, $path, $req_nr) = @_;
+    my($fn) = glob($_ATL->get_result_directory(sprintf('%s/html-%04d-*.html', $path, $req_nr)));
+    return join('', map(
+        {
+            my($res) = $_;
+            $res =~ s{<script.*</script>}{}i;
+            $res =~ s{<head>}{<head><base href="/"/>}i;
+            $res;
+        }
+        _read_file($fn)));
+}
+
 sub get_http_request {
     my($proto, $path, $req_nr) = @_;
     my($fn) = $_ATL->get_result_directory(sprintf('%s/http-%05d.req', $path, $req_nr));
@@ -43,7 +56,7 @@ sub get_test_name {
 
 sub internal_initialize {
     my($self) = @_;
-    b_use('IO.Config')->assert_test;  
+    b_use('IO.Config')->assert_test;
     return $self->merge_initialize_info($self->SUPER::internal_initialize,
         {
 	    version => '1',
@@ -83,6 +96,33 @@ sub internal_load_rows {
      my($self) = @_;
      my($result) = [];
      my($test_name) = $self->req('path_info');
+     push(@$result, @{_process_req_res_files($self, $test_name)});
+     push(@$result, @{_process_dom_dump_files($self, $test_name)});
+     return $result;
+}
+
+sub _process_dom_dump_files {
+     my($self, $test_name) = @_;
+     my($result) = [];
+     my(@dom_files) = glob($_ATL->get_result_directory($test_name .  '/html*.html'));
+     foreach my $dom_file (@dom_files) {
+	my($req_nr, $test_line_number) = $dom_file =~ /html-(\d+)-(\d+)/;
+	my($res_nr) = sprintf('%05d', $req_nr);
+	push(@$result, {
+	     request_number => int($req_nr),
+	     response_number => int($res_nr),
+	     test_line_number => $test_line_number,
+	     http_status => '',
+             command => 'DOM dump',
+             is_dom_dump => 1,
+	 });
+     }
+     return $result;
+}
+
+sub _process_req_res_files {
+     my($self, $test_name) = @_;
+     my($result) = [];
      my(@req_files) = glob($_ATL->get_result_directory($test_name .  '/http*.req'));
      foreach my $req_file (@req_files) {
 	my($req_nr) = $req_file =~ /http-(\d+)/;
@@ -99,6 +139,7 @@ sub internal_load_rows {
 	     test_line_number => $test_line_number,
 	     http_status => $http_status,
              command => $command,
+             is_dom_dump => 0,
 	 });
      }
      return $result;
