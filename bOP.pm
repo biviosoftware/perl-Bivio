@@ -20,6 +20,7 @@ bOP
 
 =head1 DESCRIPTION
 
+
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
@@ -31,6 +32,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.29  2013/01/28 02:59:10  schellj
+  * Bivio::Biz::Model::AcceptanceTestTransactionList
+    Allow selenium test results to be viewed.
+  * Bivio::Biz::Model::RealmFeatureForm
+    call super from execute_ok
+  * Bivio::UI::View::AcceptanceTestResultViewer
+    Allow selenium test results to be viewed.
+  * Bivio::UI::View::UserAuth
+    _mail -> internal_mail
+
   Revision 12.28  2013/01/21 01:46:59  schellj
   * Bivio::Delegate::Cookie
     'domain must begin with dot (.)' doesn't work always.  Using a foo.org
