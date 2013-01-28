@@ -58,6 +58,7 @@ sub execute_ok {
     my($self) = @_;
     b_die('cannot be executed in the general realm')
 	if $self->req('auth_realm')->is_general;
+    my($res) = shift->SUPER::execute_ok(@_);
     my($ev) = _empty_values($self);
     $self->map_feature_type(sub {
         my($field, $type) = @_;
@@ -82,7 +83,7 @@ sub execute_ok {
 	);
 	return;
     });
-    return;
+    return $res;
 }
 
 sub internal_allow_field_value {
