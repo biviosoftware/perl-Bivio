@@ -20,7 +20,6 @@ bOP
 
 =head1 DESCRIPTION
 
-
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
@@ -32,6 +31,36 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.28  2013/01/21 01:46:59  schellj
+  * Bivio::Delegate::Cookie
+    'domain must begin with dot (.)' doesn't work always.  Using a foo.org
+    as a cookie domain requires it go back to foo.org (.foo.org will not
+    be returned to foo.org)
+  * Bivio::IO::ClassLoader
+    _map_args() was too strict on checks for package style name.  Just
+    need to check for ::
+  * Bivio::SQL::Connection::Postgres
+    perl 5.10 has problems with recursive regular expressions (no longer
+    recursive).  See http://www.perlmonks.org/?node_id=810857
+    Need to change parsing of FROM in _fixup_outer_join
+  * Bivio::SQL::Connection
+    move $_MAX_BLOB to where it is used so subclasses can override.
+    Calling MAX_BLOB() without an object is cruft
+  * Bivio::Type::Secret
+    After Crypt::CBC 2.17, header_mode must be set to randomiv to be
+    backwards compatible with old encryptions.  There is a bug with non
+    8-byte ciphers when randomiv is used, but this only effects obscure
+    ciphers.
+  * Bivio::Util::HTTPConf
+    eval_or_die doesn't report errors nicely if the code is not in a sub
+    {}.  On RH 6.2 it says
+    Attempt to reload Scalar/Util.pm aborted.
+    Compilation failed in require at /usr/share/perl5/overload.pm line 94.
+    fpc: that didn't fix it.  The problem was a map({}, ()), where the
+    extra comma was causing the Scalar::Util message.
+  * Bivio::Util::LinuxConfig
+    bug in 2.47; --encoding=SQL_ASCII handled in system pkgs
+
   Revision 12.27  2013/01/18 00:46:18  schellj
   qx changes
 
