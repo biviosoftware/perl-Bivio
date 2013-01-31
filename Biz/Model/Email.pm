@@ -14,6 +14,14 @@ sub create {
     return $self->SUPER::create($self->internal_prepare_query($values), @_);
 }
 
+sub email_for_auth_user {
+    my($self) = @_;
+    return $self->unauth_load_or_die({
+	realm_id => $self->req('auth_user_id'),
+	location => $self->DEFAULT_LOCATION,
+    })->get('email');
+}
+
 sub internal_initialize {
     return {
 	version => 2,
