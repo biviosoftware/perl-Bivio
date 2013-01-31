@@ -11,18 +11,9 @@ sub NEW_ARGS {
     return [qw(value ?class)];
 }
 
-sub initialize {
-    my($self) = @_;
-    $self->put_unless_exists(
-	tag => 'div',
-	class => 'text_plain',
-    );
-    return shift->SUPER::initialize(@_);
-}
-
-sub render_tag_value {
-    my($self, $source, $buffer) = @_;
-    $$buffer .= join(
+sub format_plain_text {
+    my($proto, $value) = @_;
+    return join(
 	"<br />\n",
 	map({
 	    $_ = Text::Tabs::expand($_);
@@ -39,8 +30,23 @@ sub render_tag_value {
             }exsg;
 	    $_ =~ s/^(\s+)/'&nbsp;' x length($1)/es;
 	    $_;
-	} split(/\n/, $self->render_simple_attr('value', $source))),
+	} split(/\n/, $value)),
     );
+}
+
+sub initialize {
+    my($self) = @_;
+    $self->put_unless_exists(
+	tag => 'div',
+	class => 'text_plain',
+    );
+    return shift->SUPER::initialize(@_);
+}
+
+sub render_tag_value {
+    my($self, $source, $buffer) = @_;
+    $$buffer .= $self->format_plain_text(
+	$self->render_simple_attr('value', $source));
     return;
 }
 
