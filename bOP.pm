@@ -20,7 +20,6 @@ bOP
 
 =head1 DESCRIPTION
 
-
 C<bOP> is a multi-dimensional, application framework.  At the highest level,
 bOP provides support for web-delivered applications based on a
 Model-View-Controller (MVC) architecture.  At the lowest level, bOP provides a
@@ -32,6 +31,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.30  2013/01/28 04:01:01  schellj
+  qx changes
+
   Revision 12.29  2013/01/28 02:59:10  schellj
   * Bivio::Biz::Model::AcceptanceTestTransactionList
     Allow selenium test results to be viewed.
