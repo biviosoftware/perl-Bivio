@@ -28,9 +28,18 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.31  2013/02/01 01:34:31  schellj
+  * Bivio::Biz::Model::Email
+    add email_for_auth_user
+  * Bivio::UI::HTML::Widget::LineCell
+    fixed unreplaced PAGE_BG, refactored
+  * Bivio::UI::XHTML::Widget::MailBodyPlain
+    modularize text formatting
+
   Revision 12.30  2013/01/28 04:01:01  schellj
   qx changes
 
