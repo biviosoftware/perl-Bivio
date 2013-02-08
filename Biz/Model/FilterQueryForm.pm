@@ -72,6 +72,7 @@ sub _filter {
 	if $args->{date_time} && $word =~ s/^($_DATE_OP_RE)//o;
     my($method) = $word =~ s/^-// ? 'NOT_ILIKE' : 'ILIKE';
     $word =~ s/\%/_/g;
+    $word =~ s/^\*//g;
     my($res);
     __PACKAGE__->do_by_two(sub {
         my($regexp, $field) = @_;
