@@ -1,6 +1,12 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
+my($now) = DateTime()->now;
+DateTime()->set_test_now($now);
+my($yesterday, $today, $tomorrow) = map(
+    Date()->to_literal(Date()->add_days($now, $_)),
+    (-1, 0, 1));
+
 my($files) = require('xapian.PL');
 my($demo) = unauth_model('RealmOwner', {name => 'xapian_demo'})
     ->get('realm_id');
@@ -44,6 +50,21 @@ my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})
  	    ['"place for"', 0, 0, [], [$demo]] => 5,
  	    ['"place for"', 0, 0, [$demo], [$guest]] => [7, 5, 4],
 	    ['abcz', 0, 0, [$demo]] => 1,
+            map(
+                ([$_,  0, 0, [], [$demo]] => 5), (
+                    "words ..$today",
+                    "words $today..",
+                    "words ..$tomorrow",
+                    "words $yesterday..",
+                    "words $yesterday..$tomorrow",
+                )
+            ),
+            map(
+                ([$_,  0, 0, [], [$demo]] => []), (
+                    "words ..$yesterday",
+                    "words $tomorrow..",
+                )
+            ),
 	    sub {
 		unauth_model('RealmFile', {realm_file_id => $files->[1]})
 		    ->delete;
