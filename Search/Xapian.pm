@@ -31,13 +31,14 @@ my($_VALUE_MAP) = {
     author_user_id => 5,
     author => 6,
     author_email => 7,
-    modified_date_time => 8,
+    modified_date_time => [8, 9],
 };
 b_use('IO.Config')->register(my $_CFG = {
     db_path => b_use('Biz.File')->absolute_path('Xapian'),
     max_changesets => 10,
 });
 my($_L) = b_use('Model.Lock');
+my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
 
 sub EXEC_REALM {
@@ -177,13 +178,18 @@ sub query {
 	$qp->set_stemmer($_STEMMER);
 	$qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
 	$qp->set_default_op(Search::Xapian->OP_AND);
-	my($date_proc) = Search::Xapian::DateValueRangeProcessor->new(
-	    8, 1, $_DT->now_as_year - 80);
-	$qp->add_valuerangeprocessor($date_proc);
+	foreach my $field (keys(%$_VALUE_MAP)) {
+            $qp->add_valuerangeprocessor(
+                Search::Xapian::DateValueRangeProcessor->new(
+                    $_VALUE_MAP->{$field}->[1],
+                    1,
+                    $_DT->now_as_year - 80
+                ))
+                if ref($_VALUE_MAP->{$field}) eq 'ARRAY';
+	}
 	my($phrase) = $attr->{phrase};
 	$phrase =~ s/_/ /g;
-	$q = Search::Xapian::Query->new(
-	    Search::Xapian->OP_AND,
+	$q = Search::Xapian::Query->new( Search::Xapian->OP_AND,
 	    $qp->parse_query($phrase, $_FLAGS),
 	    $attr->{simple_class}
 	    	? Search::Xapian::Query->new('XSIMPLECLASS:' . lc($attr->{simple_class}))
@@ -326,7 +332,11 @@ sub _query_result {
 	    simple_class => $d->get_value(0),
 	    'RealmOwner.realm_id' => $d->get_value(1),
 	    primary_id => $d->get_value(2),
-	    map(($_ => $d->get_value($_VALUE_MAP->{$_})), keys(%$_VALUE_MAP)),
+	    map(($_ => $d->get_value(
+                ref($_VALUE_MAP->{$_}) eq 'ARRAY'
+                ? $_VALUE_MAP->{$_}->[0]
+                : $_VALUE_MAP->{$_}
+            )), keys(%$_VALUE_MAP)),
 	},
 	$attr,
     );
@@ -345,6 +355,10 @@ sub _replace {
     $doc->set_data('');
     while (my($field, $index) = each(%$_VALUE_MAP)) {
         my($v) = $parser->get($field);
+        if (ref($index) eq 'ARRAY') {
+            $doc->add_value($index->[1],  $_D->to_file_name($v));
+            $index = $index->[0];
+        }
 	$doc->add_value($index, defined($v) ? $v : '');
     }
     my($primary_term) = _primary_term($model->get_primary_id);
