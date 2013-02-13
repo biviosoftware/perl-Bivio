@@ -16,14 +16,14 @@ sub render {
     $_JS->render($source, $buffer, $self->package_name, <<'EOF');
 var mc_last_check = -1;
 function mc_checked(c, e) {
-  var index = parseInt(c.name.substr(c.name.indexOf('_') + 1));
+  var index = parseInt(c.name.substr(c.name.lastIndexOf('_') + 1));
 
   if (e.shiftKey && mc_last_check != -1) {
-
     for (var i = (mc_last_check < index ? mc_last_check : index);
       i <= (mc_last_check > index ? mc_last_check : index); i++) {
+
       if (i != index)
-        c.form[c.name.substr(0, c.name.indexOf('_') + 1) + i].checked = c.checked;
+        c.form[c.name.substr(0, c.name.lastIndexOf('_') + 1) + i].checked = c.checked;
     }
   }
   mc_last_check = index;
