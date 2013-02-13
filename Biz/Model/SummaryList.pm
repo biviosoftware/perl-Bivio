@@ -1,17 +1,17 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::Model::SummaryList;
 use strict;
-use Bivio::Base 'Bivio::Collection::Attributes';
+use Bivio::Base 'Collection.Attributes';
 
-# C<Bivio::Biz::Model::SummaryList> summarizes columns from a list model
+# SummaryList summarizes columns from a list model
 # and implements a ListModel-like interface so it can be used in Tables.
 #
 # Note: SummaryList provides a summary only for the values currently loaded
 # by the source ListModel(s). If it has only loaded a page of data, then only
 # the page will be summarized.
 #
-# SummaryList L<get|"get"> will reset the cursor in the ListModel to the
+# SummaryList->get() will reset the cursor in the ListModel to the
 # beginning of the list each time a value is requested - don't call this
 # methods while iterating through the source(s).
 
@@ -19,7 +19,6 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub get {
-    # (self, string, ...) : (string, ...)
     # Overrides Attributes get to dynamically create a summary value for the
     # named column.
     my($self, @keys) = @_;
@@ -33,30 +32,26 @@ sub get {
 }
 
 sub get_cursor {
-    # (self) : int
-    # Returns the position.  Returns -1 before the list is read and
-    # undef after the list is read.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return $fields->{loaded} ? -1 : 0;
 }
 
-sub get_request {
-    # (self) : Agent.Request
-    # Returns the request associated with this list.
+sub get_list_model {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return $fields->{request};
+    return $self;
+}
+
+sub get_request {
+    my($self) = @_;
+    return $self->get_source_list_model->req;
 }
 
 sub get_result_set_size {
-    # (self) : int
-    # Returns the number of rows loaded.
     return 1;
 }
 
 sub get_source_list_model {
-    # (self) : Biz.ListModel
     # Returns the (first) source list model for this SummaryList.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
@@ -105,18 +100,15 @@ sub new {
     my($self) = $proto->SUPER::new($static_properties);
     $self->[$_IDI] = {
 	source => $source,
-	request => $source->[0]->get_request,
 	loaded => 1,
     };
     return $self;
 }
 
 sub next_row {
-    # (self) : boolean
-    # Summary lists return only one row.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    Bivio::Die->die('no cursor')unless defined($fields->{loaded});
+    b_die('no cursor')unless defined($fields->{loaded});
 
     if ($fields->{loaded}) {
 	$fields->{loaded} = 0;
@@ -127,8 +119,6 @@ sub next_row {
 }
 
 sub reset_cursor {
-    # (self) : undef
-    # Places the cursor at the start of the list.
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{loaded} = 1;
