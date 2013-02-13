@@ -13,7 +13,13 @@ sub initialize {
     my($self) = @_;
     my($id) = $self->unsafe_get('ID')
 	? $self->get('ID')
-	: $self->initialize_attr(ID => 'b_cb' . ++$_ID);
+	: $self->initialize_attr(ID => _is_list_form($self)
+	    ? Join([
+		'b_cb',
+		[['->get_list_model'], '->get_cursor'],
+	    ])
+	    : ('b_cb' . ++$_ID),
+	);
     $self->put(label => LABEL(_init_label($self))->put(FOR => $id));
     $self->initialize_attr('label');
     $self->initialize_attr(class => 'checkbox');
@@ -51,11 +57,10 @@ sub internal_is_checked {
 
 sub internal_want_multi_check_handler {
     my($self) = @_;
-    my($form) = $self->ancestral_get('form_class');
-    return $form->isa('Bivio::Biz::ListFormModel')
-	&& $form->get_instance
+    return _is_list_form($self)
+	&& $self->ancestral_get('form_class')->get_instance
 	    ->get_field_info($self->get('field'), 'in_list')
-	? 1 : 0;
+		? 1 : 0;
 }
 
 sub _init_label {
@@ -74,6 +79,12 @@ sub _init_label {
     return Bivio::UI::Widget->is_blesser_of($l)
 	? $l
 	: Join(["\n", String($l, 'checkbox')]);
+}
+
+sub _is_list_form {
+    my($self) = @_;
+    my($form) = $self->ancestral_get('form_class');
+    return $form->isa('Bivio::Biz::ListFormModel');
 }
 
 1;
