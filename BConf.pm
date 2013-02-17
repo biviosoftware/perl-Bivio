@@ -413,6 +413,11 @@ sub merge_http_log {
 		    'Directory index forbidden by rule:',
 		    '_update_status.*DECLINED:',
 		    'command died with non-zero status entity=>(?:catdoc|catppt|docx2txt|ldat|pdfinfo|pdftotext)',
+		    'Init: Session Cache is not configured',
+		    'Apache configure -- resuming normal operations',
+		    'Bivio::DieCode::NOT_FOUND: view not found class=>Bivio::UI::View::SiteRoot',
+		    'Software caused connection abort: cache: error returned while trying to return disk cached data',
+		    'Directory index forbidden by Options directive',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
