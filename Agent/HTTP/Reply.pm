@@ -131,27 +131,25 @@ sub send {
     $r->content_type($self->get_output_type());
     _send_http_header($self, $req, $r);
 
-    # M_HEAD not defined, so can't use method_number12
-    if (uc($r->method) eq 'HEAD') {
-	# No body, just header
-    }
-    elsif ($is_scalar) {
-	$r->print($$o);
-	_trace($o) if $_TRACE;
-    }
-    else {
-	Bivio::Die->eval(
-	    sub {
-		$r->send_fd($o, $size);
-		close($o);
-	    });
-	if ($@) {
-	    die $@
-		unless ref($@) eq 'APR::Error'
-		    && APR::Status::is_ECONNABORTED($@);
+    Bivio::Die->eval(sub {
+	# M_HEAD not defined, so can't use method_number12
+	if (uc($r->method) eq 'HEAD') {
+	    # No body, just header
 	}
+	elsif ($is_scalar) {
+	    $r->print($$o);
+	    _trace($o) if $_TRACE;
+	}
+	else {
+	    $r->send_fd($o, $size);
+	    close($o);
+	}
+    });
+    if ($@) {
+	die $@
+	    unless ref($@) eq 'APR::Error'
+		&& APR::Status::is_ECONNABORTED($@);
     }
-
     # don't let any more data be sent.  Don't clear early in case
     # there is an error and we get called back in die_to_http_code
     # (then _error()).
