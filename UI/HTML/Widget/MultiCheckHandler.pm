@@ -22,8 +22,11 @@ function mc_checked(c, e) {
     for (var i = (mc_last_check < index ? mc_last_check : index);
       i <= (mc_last_check > index ? mc_last_check : index); i++) {
 
-      if (i != index)
-        c.form[c.name.substr(0, c.name.lastIndexOf('_') + 1) + i].checked = c.checked;
+      if (i != index) {
+        var field = c.name.substr(0, c.name.lastIndexOf('_') + 1) + i;
+        if (c.form[field])
+          c.form[field].checked = c.checked;
+      }
     }
   }
   mc_last_check = index;
