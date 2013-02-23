@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.34  2013/02/14 01:04:56  moeller
+  * Bivio::Biz::Model::FilterQueryForm
+    remove leading * from search words
+  * Bivio::Biz::Model::SummaryList
+    added get_list_model()
+  * Bivio::Search::Xapian
+    Make date ranges such as 2010/01/31..2012/12/31 and ..12/31/2012 work.
+  * Bivio::UI::HTML::Widget::Checkbox
+    generate html ID using list model cursor for ListFormModels
+  * Bivio::UI::HTML::Widget::MultiCheckHandler
+    fixed case where form field name contained an underscore
+
   Revision 12.33  2013/02/05 19:08:32  schellj
   qx changes
 
