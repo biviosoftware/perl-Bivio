@@ -111,6 +111,17 @@ sub audit_user {
     return $res;
 }
 
+sub delete_unattached_users {
+    my($self, $users) = @_;
+    my($ru) = $self->model('RealmUser');
+    foreach my $uid (@$users) {
+	next
+	    if $ru->is_user_attached_to_other_realms($uid);
+	$self->model('RealmOwner')->unauth_delete_realm({realm_id => $uid});
+    }
+    return;
+}
+
 sub handle_config {
     my($proto, $cfg) = @_;
     $_CFG = $cfg;
