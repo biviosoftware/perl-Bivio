@@ -28,9 +28,22 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.35  2013/02/23 01:22:34  moeller
+  * Bivio::Agent::HTTP::Reply
+    moved send_fd() eval around $r->print() to catch and ignore client drops
+  * Bivio::Agent::Request
+    need to use b_can for delegated types
+  * Bivio::BConf
+    added more errors to ignore
+  * Bivio::UI::HTML::Widget::Checkbox
+    use dynamic checkbox id on for ListFormModel fields with in_list set
+  * Bivio::UI::HTML::Widget::MultiCheckHandler
+    fixed multi-check for non sequential list fields
+
   Revision 12.34  2013/02/14 01:04:56  moeller
   * Bivio::Biz::Model::FilterQueryForm
     remove leading * from search words
