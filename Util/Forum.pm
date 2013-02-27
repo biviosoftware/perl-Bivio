@@ -18,6 +18,7 @@ sub USAGE {
     return <<'EOF';
 usage: bivio Forum [options] command [args..]
 commands
+    cascade_delete_forum -- delete auth realm and children
     cascade_delete_forum_and_users -- delete auth realm, children, and users
     cascade_forum_activity -- most recent forum and subforum activity
     create_forum name display_name -- set user and realm to parent
@@ -29,6 +30,36 @@ commands
 EOF
 }
 
+sub cascade_delete_forum {
+    my($self, $users) = @_;
+    my($req) = $self->req;
+    $self->model('Forum')->do_iterate(
+	sub {
+	    my($it) = @_;
+	    $req->with_realm(
+		$it->get('forum_id'),
+		sub {
+		    $self->model('RealmUserList')
+			->do_iterate(
+			    sub {
+				$users->{shift->get('RealmUser.user_id')}++;
+				return 1;
+			    },
+			);
+		    $self->cascade_delete_forum($users);
+		    return;
+		},
+	    );
+	    return 1;
+	},
+	'unauth_iterate_start',
+	{parent_realm_id => $req->get('auth_id')},
+    );
+    $self->delete_forum;
+    $self->commit_or_rollback;
+    return;
+}
+
 sub cascade_delete_forum_and_users {
     my($self) = @_;
     IO_Config()->assert_test;
@@ -36,8 +67,9 @@ sub cascade_delete_forum_and_users {
     $req->get('auth_realm')->assert_type('forum');
     $self->are_you_sure('Delete forum, users, and children of ' . $self->req(qw(auth_realm owner_name)));
     $self->put(force => 1);
-    _cascade_delete_forum($self, my $users = {});
-    _delete_unattached_users($self, $users);
+    $self->cascade_delete_forum(my $users = {});
+    $self->new_other('RealmUser')
+	->delete_unattached_users([sort(keys(%$users))]);
     return;
 }
 
@@ -152,36 +184,6 @@ sub _activity {
     return $buf;
 }
 
-sub _cascade_delete_forum {
-    my($self, $users) = @_;
-    my($req) = $self->req;
-    $self->model('Forum')->do_iterate(
-	sub {
-	    my($it) = @_;
-	    $req->with_realm(
-		$it->get('forum_id'),
-		sub {
-		    $self->model('RealmUserList')
-			->do_iterate(
-			    sub {
-				$users->{shift->get('RealmUser.user_id')}++;
-				return 1;
-			    },
-			);
-		    _cascade_delete_forum($self, $users);
-		    return;
-		},
-	    );
-	    return 1;
-	},
-	'unauth_iterate_start',
-	{parent_realm_id => $req->get('auth_id')},
-    );
-    $self->delete_forum;
-    $self->commit_or_rollback;
-    return;
-}
-
 sub _cascade_forum_activity {
     my($self, $activity) = @_;
     my($req) = $self->req;
@@ -201,18 +203,6 @@ sub _cascade_forum_activity {
 	parent_realm_id => $req->get('auth_id'),
     });
     _forum_activity($self, $activity);
-    return;
-}
-
-sub _delete_unattached_users {
-    my($self, $users) = @_;
-    my($req) = $self->req;
-    my($ru) = $self->model('RealmUser');
-    foreach my $uid (sort(keys(%$users))) {
-	next
-	    if $ru->is_user_attached_to_other_realms($uid);
-	$self->model('RealmOwner')->unauth_delete_realm({realm_id => $uid});
-    }
     return;
 }
 
