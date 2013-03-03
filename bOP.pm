@@ -28,10 +28,18 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.36  2013/02/27 21:08:46  schellj
+  * Bivio::Util::Forum
+    make cascade_delete_forum public
+    move delete_unattached_users to Util.RealmUser
+  * Bivio::Util::RealmUser
+    delete_unattached_users moved from Util.Forum
+
+    qx_changes
+
   Revision 12.35  2013/02/23 01:22:34  moeller
   * Bivio::Agent::HTTP::Reply
     moved send_fd() eval around $r->print() to catch and ignore client drops
