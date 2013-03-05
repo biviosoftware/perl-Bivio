@@ -12,6 +12,7 @@ my($_ATL) = b_use('Model.AcceptanceTestList');
 sub get_dom_dump {
     my($proto, $path, $req_nr) = @_;
     my($fn) = glob($_ATL->get_result_directory(sprintf('%s/html-%04d-*.html', $path, $req_nr)));
+    my($anchor, $title, @lines) = _read_file($fn);
     return join('', map(
         {
             my($res) = $_;
@@ -19,7 +20,7 @@ sub get_dom_dump {
             $res =~ s{<head>}{<head><base href="/"/>}i;
             $res;
         }
-        _read_file($fn)));
+        @lines));
 }
 
 sub get_http_request {
@@ -52,7 +53,6 @@ sub get_test_name {
     $result =~ s|/*||;
     return $result;
 }
-
 
 sub internal_initialize {
     my($self) = @_;
@@ -101,6 +101,7 @@ sub internal_load_rows {
      return $result;
 }
 
+
 sub _process_dom_dump_files {
      my($self, $test_name) = @_;
      my($result) = [];
@@ -108,12 +109,13 @@ sub _process_dom_dump_files {
      foreach my $dom_file (@dom_files) {
 	my($req_nr, $test_line_number) = $dom_file =~ /html-(\d+)-(\d+)/;
 	my($res_nr) = sprintf('%05d', $req_nr);
+        my($anchor, $title) = _read_file($dom_file);
 	push(@$result, {
 	     request_number => int($req_nr),
 	     response_number => int($res_nr),
 	     test_line_number => $test_line_number,
 	     http_status => '',
-             command => 'DOM dump',
+             command => "#$anchor",
              is_dom_dump => 1,
 	 });
      }
