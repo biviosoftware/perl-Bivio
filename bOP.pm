@@ -28,10 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.38  2013/03/06 02:49:28  schellj
+  * Bivio::Biz::Model::AcceptanceTestTransactionList
+    Display current URI anchor for each  interaction to make results
+    easier to read.
+
   Revision 12.37  2013/03/03 21:52:47  schellj
   qx changes
 
