@@ -28,9 +28,13 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.37  2013/03/03 21:52:47  schellj
+  qx changes
+
   Revision 12.36  2013/02/27 21:08:46  schellj
   * Bivio::Util::Forum
     make cascade_delete_forum public
