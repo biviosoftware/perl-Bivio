@@ -12,7 +12,7 @@ b_use('IO.Config')->register(my $_CFG = {
 
 sub internal_initialize {
     my($self) = @_;
-    b_use('IO.Config')->assert_test;  
+    b_use('IO.Config')->assert_test;
     return $self->merge_initialize_info($self->SUPER::internal_initialize,
         {
 	    version => '1',
@@ -38,7 +38,7 @@ sub internal_initialize {
 		     name => 'outcome',
 		     type => 'String',
 		     constraint => 'NONE',
-                },		
+                },
 	    ],
         });
     return;
