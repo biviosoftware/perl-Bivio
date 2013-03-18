@@ -58,7 +58,6 @@ Bivio::Test->unit([
 	} [
 	    'postgres_base', [] => [
 		['etc/rc.d/init.d/postgresql', qr{^# chkconfig: 345 84 16}m],
-		['etc/rc.d/init.d/postgresql', qr{initdb.*--encoding=SQL_ASCII}],
 		['var/lib/pgsql/data/postgresql.conf', qr{^timezone = UTC}m],
 		['var/lib/pgsql/data/pg_hba.conf', qr{^local\s+all\s+all\s+trust}m],
 		['var/lib/pgsql/data/pg_hba.conf', qr{host.*127.0..*password}],
