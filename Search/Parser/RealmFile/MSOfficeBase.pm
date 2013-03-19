@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_get_title {
     my($proto, $parseable) = @_;
-    return $proto->internal_run_parser('ldat <path>', $parseable)
+    return $proto->internal_run_parser('ldat <path>', $parseable, qr{Error!})
 	=~ /^\s*Title:\s*(.*)/im
         ? $1 : undef;
 }
