@@ -262,6 +262,19 @@ sub write_file {
     return;
 }
 
+sub _clean_quoted_cookie_values {
+    my($cookie_jar) = @_;
+    # prevent escape quote in misquoted values
+    $cookie_jar->scan(
+	sub {
+	    if ($_[2] =~ s/^"|"$//g) {
+		$cookie_jar->set_cookie(@_);
+	    }
+	},
+    );
+    return;
+}
+
 sub _format_form {
     my($form) = @_;
     # Returns URL encoded form.
@@ -298,6 +311,7 @@ sub _http_request {
 	Bivio::Die->catch_quietly(sub {
 	    local($SIG{__WARN__}) = sub {};
 	    $self->get('cookie_jar')->extract_cookies($hres);
+	    _clean_quoted_cookie_values($self->get('cookie_jar'));
 	});
 	if ($hres->is_redirect) {
 	    $uri = $hres->header('Location');
