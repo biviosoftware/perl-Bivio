@@ -7,6 +7,14 @@ b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub ANY_SEPARATOR_REGEX {
+    return shift->LITERAL_SEPARATOR_REGEX;
+}
+
+sub LITERAL_SEPARATOR_REGEX {
+    return qr{\s*,\s*|\s+};
+}
+
 sub UNDERLYING_TYPE {
     return Type_DomainName();
 }
