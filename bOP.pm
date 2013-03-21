@@ -28,10 +28,21 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.40  2013/03/19 16:52:23  schellj
+  * Bivio::Biz::Model::AcceptanceTestList
+    Whitespace
+  * Bivio::HTML::Scraper
+    remove leading/trailing quotes from misquoted cookie values
+  * Bivio::Search::Parser::RealmFile::MSOfficeBase
+    add error pattern
+  * Bivio::Test::Util
+    selenium now runs as a service and gets restarted nightly
+
+    qx changes
+
   Revision 12.39  2013/03/06 22:46:16  schellj
   qx changes - tablet support
 
