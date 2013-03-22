@@ -28,9 +28,16 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.41  2013/03/21 00:45:40  schellj
+  * Bivio::Type::DomainNameArray
+    allow comma or space separator
+
+    qx changes
+
   Revision 12.40  2013/03/19 16:52:23  schellj
   * Bivio::Biz::Model::AcceptanceTestList
     Whitespace
