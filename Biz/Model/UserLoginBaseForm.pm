@@ -40,7 +40,7 @@ sub internal_initialize {
 	visible => [
 	    {
 		name => 'login',
-		type => 'Line',
+		type => 'LoginName',
 		constraint => 'NOT_NULL',
                 form_name => 'x1',
 	    },

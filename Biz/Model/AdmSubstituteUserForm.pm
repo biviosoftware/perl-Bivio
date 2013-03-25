@@ -57,7 +57,7 @@ sub internal_initialize {
 	    visible => [
 		{
 		    name => 'login',
-		    type => 'Line',
+		    type => 'LoginName',
 		    constraint => 'NOT_NULL',
 		},
 	    ],
