@@ -1,0 +1,13 @@
+# Copyright (c) 2013 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    from_literal => [
+	'a@b.c' => 'a@b.c',
+	'a@b' => SYNTAX_ERROR(),
+	'abc' => 'abc',
+	'ab' => SYNTAX_ERROR(),
+	'1' => '1',
+	'-1' => SYNTAX_ERROR(),
+    ],
+];
