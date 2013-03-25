@@ -35,6 +35,7 @@ sub disable_assert_cookie {
 
 sub execute_ok {
     my($self) = @_;
+    my($res) = shift->SUPER::execute_ok(@_);
     my($req) = $self->get_request;
     my($realm) = $self->unsafe_get('validate_called')
 	? $self->get('realm_owner')
@@ -48,9 +49,9 @@ sub execute_ok {
 	if !$realm && $req->is_substitute_user;
     _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
     _set_cookie_user($self, $req, $realm);
-    return 0
+    return $res
 	unless $realm && $realm->require_otp;
-    return 0
+    return $res
 	unless $self->new_other('OTP')->unauth_load_or_die({
 	    user_id => $realm->get('realm_id'),
 	})->should_reinit;
