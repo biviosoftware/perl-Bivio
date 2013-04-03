@@ -146,7 +146,6 @@ sub _parse_object {
 
 sub _parse_string {
     my($self, $end_char) = @_;
-
     if (_peek_char($self) =~ /'|"/) {
 	$end_char = _next_char($self);
     }
@@ -154,36 +153,32 @@ sub _parse_string {
 	b_die('invalid quote char')
 	    unless $end_char;
     }
-    my($res) = '';
+    my($res) = _parse_unescaped_string($self, $end_char);
+    unless (defined($res)) {
+        $res = '';
+        while (_peek_char($self) ne $end_char) {
+            my($c) = _next_char($self);
 
-    while (_peek_char($self) ne $end_char) {
-	my($c) = _next_char($self);
+            if ($c eq '\\') {
+                $c = _next_char($self);
 
-	if ($c eq '\\') {
-	    $c = _next_char($self);
-
-	    if ($c eq 'n') {
-		$res .= "\n";
-	    }
-	    elsif ($c eq 't') {
-		$res .= "\t";
-	    }
-	    elsif ($c =~ /b|f|r/) {
-		# ignore formfeed or backspace
-	    }
-	    elsif ($c =~ /'|"|\\|\//) {
-		$res .= $c;
-	    }
-	    elsif ($c eq 'u') {
-		$res .= _parse_unicode_char($self);
-	    }
-	    else {
-		b_die('unexpected char: ', $c);
-	    }
-	}
-	else {
-	    $res .= $c;
-	}
+                if ($c eq 'n') {
+                    $res .= "\n";
+                } elsif ($c eq 't') {
+                    $res .= "\t";
+                } elsif ($c =~ /b|f|r/) {
+                    # ignore formfeed or backspace
+                } elsif ($c =~ /'|"|\\|\//) {
+                    $res .= $c;
+                } elsif ($c eq 'u') {
+                    $res .= _parse_unicode_char($self);
+                } else {
+                    b_die('unexpected char: ', $c);
+                }
+            } else {
+                $res .= $c;
+            }
+        }
     }
     _next_char($self, $end_char)
 	if $end_char =~ /'|"/;
@@ -210,6 +205,18 @@ sub _parse_text {
     b_die('invalid value start: ', $c);
 }
 
+sub _parse_unescaped_string {
+    # optimization for e.g. large base64 strings
+    my($self, $end_char) = @_;
+    my($fields) = $self->[$_IDI];
+    my($value, $terminator) = substr(${$fields->{text}}, $fields->{char_count})
+        =~ /^([^\\$end_char]*)([\\$end_char])/;
+    return
+        unless $terminator eq $end_char;
+    $fields->{char_count} += length($value);
+    return $value;
+}
+
 sub _parse_unicode_char {
     my($self) = @_;
     my($hex) = join('', map(_next_char($self), 1 .. 4));
@@ -227,6 +234,7 @@ sub _peek_char {
 	? ''
 	: substr(${$fields->{text}}, $fields->{char_count}, 1);
 }
+
 
 sub _skip_whitespace {
     my($self) = @_;
