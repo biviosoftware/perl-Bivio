@@ -18,5 +18,7 @@ login_as('', 'password');
 
 test_deviance('not found');
 login_as('notuser', 'password');
+
+test_deviance('invalid login');
 login_as("demo'||'", 'password');
 login_as('demo%', 'password');
