@@ -17,42 +17,56 @@ sub execute_empty_row {
 
 sub execute_empty_start {
     my($self) = @_;
-    foreach my $m (qw(RealmOwner User Email)) {
-	$self->load_from_model_properties($self->new_other($m)->load);
-    }
-    $self->internal_put_field(
-	_map_row_tags($self, sub {
-           my($field, $type) = @_;
-	   return ($field => $type->row_tag_get($self->req));
-	}),
+    # subclasses might be in different realm
+    _with_realm_as_user(
+	$self,
+	sub {
+	    foreach my $m (qw(RealmOwner User Email)) {
+		$self->load_from_model_properties($self->new_other($m)->load);
+	    }
+	    $self->internal_put_field(
+		_map_row_tags(
+		    $self,
+		    sub {
+			my($field, $type) = @_;
+			return ($field => $type->row_tag_get($self->req));
+		    }),
+	    );
+	},
     );
     return;
 }
 
 sub execute_ok_end {
     my($self) = @_;
-    my($new_email) = $self->get_model_properties('Email')->{'email'};
-    return
-	unless $new_email ne $self->new_other('Email')->load->get('email');
-    return {
-	task_id => 'USER_EMAIL_VERIFY',
-	query => {
-	    $_EV->EMAIL_KEY => $new_email,
-	},
-    } unless $self->req->is_substitute_user;
-    $self->new_other('Email')->load->update({
-	email => $new_email,
-    });
-    return;
+    return _with_realm_as_user(
+	$self,
+	sub {
+	    my($new_email) = $self->get('Email.email');
+	    return
+		if $new_email eq $self->new_other('Email')->load->get('email');
+	    return {
+		task_id => 'USER_EMAIL_VERIFY',
+		query => {
+		    $_EV->EMAIL_KEY => $new_email,
+		},
+	    } unless $self->req->is_substitute_user;
+	    $self->new_other('Email')->load->update({
+		email => $new_email,
+	    });
+	    return;
+	}
+    );
 }
 
 sub execute_ok_row {
     my($self) = @_;
-    my($method) = $self->unsafe_get('is_subscribed') ? 'unauth_create_or_update'
+    my($method) = $self->unsafe_get('is_subscribed')
+	? 'unauth_create_or_update'
 	: 'unauth_delete';
     $self->new_other('RealmUser')->$method({
 	realm_id => $self->get_list_model->get('RealmUser.realm_id'),
-	user_id => $self->req('auth_id'),
+	user_id => $self->req('auth_user_id'),
 	role => $_MAIL_RECIPIENT,
     });
     return;
@@ -60,16 +74,24 @@ sub execute_ok_row {
 
 sub execute_ok_start {
     my($self) = @_;
-    $self->new_other('User')->load->update($self->get_model_properties('User'));
-    my($ro) = $self->new_other('RealmOwner')->load;
-    _map_row_tags($self, sub {
-        my($field, $type) = @_;
-	$type->row_tag_replace($self->get($field), $self->req);
-	return;
-    });
-    if ($self->unsafe_get('show_name')) {
-	$ro->update($self->get_model_properties('RealmOwner'));
-    }
+    _with_realm_as_user(
+	$self,
+	sub {
+	    $self->new_other('User')->load
+		->update($self->get_model_properties('User'));
+	    _map_row_tags(
+		$self,
+		sub {
+		    my($field, $type) = @_;
+		    $type->row_tag_replace($self->get($field), $self->req);
+		    return;
+		});
+	    if ($self->unsafe_get('show_name')) {
+		$self->new_other('RealmOwner')->load
+		    ->update($self->get_model_properties('RealmOwner'));
+	    }
+	},
+    );
     return;
 }
 
@@ -163,6 +185,14 @@ sub _map_row_tags {
     return map(
 	$op->($_, $self->get_field_type($_)),
 	qw(page_size time_zone_selector),
+    );
+}
+
+sub _with_realm_as_user {
+    my($self, $op) = @_;
+    return $self->req->with_realm(
+	$self->req('auth_user_id'),
+	$op,
     );
 }
 
