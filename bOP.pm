@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.43  2013/04/02 16:48:10  schellj
+  * Bivio::Biz::Model::AdmSubstituteUserForm
+    use LoginName type
+  * Bivio::Biz::Model::UserLoginBaseForm
+    use LoginName type
+  * Bivio::Biz::Model::UserLoginForm
+    call super from execute_ok
+  * Bivio::Type::LoginName
+    NEW
+  * Bivio::UI::FacadeBase
+    add FormError.login.SYNTAX_ERROR
+
+    qx changes
+
   Revision 12.42  2013/03/22 00:37:48  schellj
   qx changes
 
