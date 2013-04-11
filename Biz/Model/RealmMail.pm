@@ -1,14 +1,11 @@
-# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::RealmMail;
 use strict;
 use Bivio::Base 'Model.RealmBase';
-use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($_TRACE);
 my($_D) = b_use('Bivio.Die');
-my($_DT) = b_use('Type.DateTime');
 my($_E) = b_use('Type.Email');
 my($_F) = b_use('Biz.File');
 my($_FP) = b_use('Type.FilePath');
