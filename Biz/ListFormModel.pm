@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::ListFormModel;
 use strict;
@@ -201,38 +201,26 @@ sub format_uri_for_sort {
 sub get_field_info {
     my($self, $name) = (shift, shift);
     # Returns I<attr> for I<field>.
-    $name =~ s/$_SEP\d+$//o;
+    ($name) = _parse_name($name);
     return $self->SUPER::get_field_info($name, @_);
 }
 
 sub get_field_name_for_html {
     my($self, $name) = @_;
-    # Returns the html name for this field with appropriate
-    # row id.
-
-    # Parse out the row number
+    my($fields) = $self->[$_IDI];
     my($row);
-    $name =~ s/$_SEP(\d+)$//o && ($row = $1);
+    ($name, $row) = _parse_name($name);
+    my($form_name) = $self->SUPER::get_field_name_for_html($name);
 
-    # Get the column info and return if not in_list
-    my($col) = $self->get_field_info($name);
-    unless ($col->{in_list}) {
-	die($name, ': not in_list and row specified')
-		if defined($row);
-	return $col->{form_name};
+    unless ($self->get_field_info($name)->{in_list}) {
+	b_die($name, ': not in_list and row specified')
+	    if defined($row);
+	return $form_name;
     }
-
-    # Row specified?
-    unless (defined($row)) {
-	my($fields) = $self->[$_IDI];
-	die('no cursor') unless defined($fields->{cursor})
-		&& $fields->{cursor} >= 0;
-	$row = $fields->{cursor};
-    }
-
-    # Finally, return the row-qualified form field name
-    Bivio::Die->die($col) unless $col->{form_name};
-    return $col->{form_name} . $_SEP . $row;
+    return $self->internal_in_list_name(
+	$form_name,
+	defined($row) ? $row : $fields->{cursor},
+    );
 }
 
 sub get_field_name_in_list {
@@ -251,7 +239,10 @@ sub get_fields_for_primary_keys {
     my($row) = 0;
     $list->do_rows(sub {
         push(@list_keys,
-	    map(($_.$_SEP.$row => $list->get($_)), @$primary_key_names),
+	    map(
+		($self->internal_in_list_name($_, $row) => $list->get($_)),
+		@$primary_key_names,
+	    ),
 	);
 	$row++;
 	return 1;
@@ -294,7 +285,7 @@ sub has_fields {
     # possibility of having these fields, not whether they are in the list.
     my(@args) = map {
 	my($x) = $_;
-	$x =~ s/$_SEP\d+$//o;
+	($x) = _parse_name($x);
 	$x;
     } @_;
     return $self->SUPER::has_fields(@args);
@@ -331,9 +322,16 @@ sub internal_get_visible_field_names {
     return shift->[$_IDI]->{visible_field_names};
 }
 
+sub internal_in_list_name {
+    my($self, $name, $cursor) = @_;
+    b_die('no cursor')
+	unless defined($cursor) && $cursor >= 0;
+    return $name . $_SEP . $cursor;
+}
+
 sub internal_initialize_list {
     my($self) = @_;
-    my($lm) = $self->get_request->get($self->get_info('list_class'));
+    my($lm) = $self->req($self->get_info('list_class'));
     $lm->reset_cursor;
     return $lm;
 }
@@ -373,18 +371,15 @@ sub is_empty_row {
 }
 
 sub iterate_end {
-    $_A->warn_deprecated('should not call this');
-    return;
+    b_die('should not call this');
 }
 
 sub iterate_next_and_load {
-    $_A->warn_deprecated('should not call this');
-    return shift->next_row;
+    b_die('should not call this');
 }
 
 sub iterate_start {
-    $_A->warn_deprecated('should not call this');
-    return shift;
+    b_die('should not call this');
 }
 
 sub load_from_list_model_properties {
@@ -478,7 +473,7 @@ sub validate {
     foreach ($row = 0; $lm->next_row; $row++) {
 	foreach my $pk (@$primary_key) {
 	    my($n) = $pk->{name};
-	    my($nr) = $n.$_SEP.$row;
+	    my($nr) = $self->internal_in_list_name($n, $row);
 	    _collision($self, 'missing', $row)
 		    unless defined($properties->{$nr});
 #TODO: Should this be "is_equal"?  This is probably "good enough".
@@ -492,7 +487,9 @@ sub validate {
     # No more rows should exist
     foreach my $pk (@$primary_key) {
 	_collision($self, 'extra', $row)
-		if exists($properties->{$pk->{name}.$_SEP.$row});
+	    if exists($properties->{
+		$self->internal_in_list_name($pk->{name}, $row),
+	    });
     }
 
 #TODO: Optimize.  Don't make calls if method doesn't exist
@@ -556,11 +553,7 @@ sub _execute_init {
     my($self) = @_;
     return $self->get_list_model
 	if $self->[$_IDI] && $self->[$_IDI]->{list_model};
-    # Finds the list model by looking up list_class in the request.
     # Initializes rows and cursor.
-    my($req) = $self->get_request;
-
-    # Get the the list_class instance
     my($lm) = $self->internal_initialize_list;
     # Get the field names based on list instance
     my($sql_support) = $self->internal_get_sql_support();
@@ -586,7 +579,7 @@ sub _execute_init {
     # Initialize in_list visible and hidden names
     for (my($row) = $lm->get_result_set_size - 1; $row >= 0; $row--) {
 	foreach my $c (@in_list) {
-	    my($nr) = $c->{name}.$_SEP.$row;
+	    my($nr) = $self->internal_in_list_name($c->{name}, $row);
 	    push(@{$c->{is_visible} ? $visible : $hidden}, $nr);
 	    push(@file_fields, $nr) if $c->{is_file_field};
 	}
@@ -618,15 +611,13 @@ sub _names {
 	unless $name;
 
     my($sql_support) = $self->internal_get_sql_support;
-
-    # Parse out the row number
     my($row);
-    $name =~ s/$_SEP(\d+)$//o && ($row = $1);
+    ($name, $row) = _parse_name($name);
 
     # Get the column info and return if not in_list
     my($col) = $sql_support->get_column_info($name);
     unless ($col->{in_list}) {
-	die($name, ': not in_list and row specified')
+	b_die($name, ': not in_list and row specified')
 	    if defined($row);
 	# No qualified name
 	return ($name, undef);
@@ -638,17 +629,21 @@ sub _names {
 	if (defined($fields->{cursor}) && $fields->{cursor} >= 0) {
 	    # If there is a cursor and it matches the row, then
 	    # return unqualified and qualified names.
-	    return ($name, $name.$_SEP.$row)
+	    return ($name, $self->internal_in_list_name($name, $row))
 		if $fields->{cursor} == $row;
 	}
 	# No unqualified name
-	return (undef, $name.$_SEP.$row);
+	return (undef, $self->internal_in_list_name($name, $row));
     }
-
     # No row specified, must be a cursor and must return both forms
-    die('no cursor') unless defined($fields->{cursor})
-	&& $fields->{cursor} >= 0;
-    return ($name, $name.$_SEP.$fields->{cursor});
+    return ($name, $self->internal_in_list_name($name, $fields->{cursor}));
+}
+
+sub _parse_name {
+    my($name) = @_;
+    return $name =~ s/$_SEP(\d+)$//o
+	? ($name, $1)
+	: ($name, undef);
 }
 
 sub _set_row {
@@ -659,10 +654,12 @@ sub _set_row {
     my($errors) = $self->get_errors;
     foreach my $f (@{$self->get_info('in_list')}) {
 	my($n, $fn) = @{$f}{'name', 'form_name'};
-	my($nr) = $n.$_SEP.$cursor;
+	my($nr) = $self->internal_in_list_name($n, $cursor);
 	$values->{$n} = $values->{$nr};
 	# No literals for "other" entries
-	$literals->{$fn} = $literals->{"$fn$_SEP$cursor"}
+	$literals->{$fn} = $literals->{
+	    $self->internal_in_list_name($fn, $cursor),
+	}
 	    if defined($fn);
 	$errors->{$n} = $errors->{$nr}
 	    if $errors;
