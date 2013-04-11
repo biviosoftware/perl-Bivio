@@ -1135,6 +1135,7 @@ sub _get_literal {
     my($value) = $fields->{literals}->{$form_name};
     return '' unless defined($value);
     return $value unless ref($value);
+    return '' unless ref($value) eq 'HASH';
 
     # If a complex form field has a filename, return it.  Otherwise,
     # return nothing.  We never return the "content" back to the user
