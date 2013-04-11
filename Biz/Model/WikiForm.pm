@@ -1,16 +1,18 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::WikiForm;
 use strict;
 use Bivio::Base 'Model.WikiBaseForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_WN) = b_use('Type.WikiName');
 
 sub execute_cancel {
     my($self) = @_;
     return {
 	task_id => 'next',
-	path_info => $self->unsafe_get('file_exists') ? _authorized_name($self)
+	path_info => $self->unsafe_get('file_exists')
+	    ? $self->internal_authorized_name
 	    : undef,
     };
 }
@@ -18,7 +20,8 @@ sub execute_cancel {
 sub execute_empty {
     my($self) = @_;
     return unless _is_edit($self);
-    $self->internal_put_field('RealmFile.path_lc' => _authorized_name($self));
+    $self->internal_put_field(
+	'RealmFile.path_lc' => $self->internal_authorized_name);
     if ($self->get('file_exists')) {
 	$self->internal_put_field(
 	    content => ${$self->get('realm_file')->get_content},
@@ -42,11 +45,22 @@ sub execute_other {
     my($self) = @_;
     return if $self->in_error;
     _update_file($self);
-    b_use('Action.Acknowledgement')
-	->save_label('FORUM_WIKI_EDIT', $self->req);
+    b_use('Action.Acknowledgement')->save_label('FORUM_WIKI_EDIT', $self->req);
     return {
 	path_info => $self->get('RealmFile.path_lc'),
     };
+}
+
+sub internal_authorized_name {
+    # SECURITY: By validating the name, we are sure that we aren't opening
+    # up writes in any other directory.
+    my($self) = @_;
+    my($value, $err) = $self->name_type->from_literal(
+	$self->req('path_info') =~ m{^/*(.+)});
+    $self->throw_die('NOT_FOUND', {
+	message => 'literal error: ' . $err->get_name,
+    }) if $err;
+    return $value;
 }
 
 sub internal_initialize {
@@ -99,32 +113,21 @@ sub internal_pre_execute {
 }
 
 sub name_type {
-    return Bivio::Type->get_instance('WikiName');
-}
-
-sub _authorized_name {
-    # SECURITY: By validating the name, we are sure that we aren't opening
-    # up writes in any other directory.
-    my($self) = @_;
-    my($value, $err) = $self->name_type->from_literal(
-	$self->req('path_info') =~ m{^/*(.+)});
-    $self->throw_die('NOT_FOUND', {
-	message => 'literal error: ' . $err->get_name,
-    }) if $err;
-    return $value;
+    return $_WN;
 }
 
 sub _is_edit {
-    return shift->get_request->unsafe_get('path_info') ? 1 : 0;
+    return shift->ureq('path_info') ? 1 : 0;
 }
 
 sub _is_loaded {
     my($self) = @_;
     my($rf) = $self->get('realm_file');
     return $rf->unsafe_load({
-	path => $self->name_type->to_absolute(_authorized_name($self))
+	path => $self->name_type->to_absolute($self->internal_authorized_name)
     }) || $rf->unsafe_load({
-	path => $self->name_type->to_absolute(_authorized_name($self), 1)
+	path => $self->name_type->to_absolute(
+	    $self->internal_authorized_name, 1)
     });
 }
 
