@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.44  2013/04/09 23:55:14  moeller
+  * Bivio::Biz::Model::UserSettingsListForm
+    execute methods using auth_user_id as auth_id to support subclasses
+    which operate in a different realm
+  * Bivio::MIME::JSON
+    Optimize parsing of strings which do not contain backslash escaping
+    (such as base64 encoded data). This reduced the cpu consumption for a
+    2.4MB string from 16 secs to 30mS.
+
   Revision 12.43  2013/04/02 16:48:10  schellj
   * Bivio::Biz::Model::AdmSubstituteUserForm
     use LoginName type
