@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::LocationBase;
 use strict;
-use Bivio::Base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_L) = b_use('Type.Location');

@@ -1,8 +1,8 @@
-# Copyright (c) 2007 bivio Software Artisans, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2013 bivio Software Artisans, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::OTP;
 use strict;
-use base 'Bivio::Biz::PropertyModel';
+use Bivio::Base 'Biz.PropertyModel';
 use Bivio::Biz::RFC2289;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);

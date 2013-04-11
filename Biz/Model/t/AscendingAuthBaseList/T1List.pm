@@ -1,8 +1,8 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::t::AscendingAuthBaseList::T1List;
 use strict;
-use base 'Bivio::Biz::Model::AscendingAuthBaseList';
+use Bivio::Base 'Model.AscendingAuthBaseList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

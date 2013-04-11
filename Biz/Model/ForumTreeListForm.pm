@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::ForumTreeListForm;
 use strict;
-use base 'Bivio::Biz::ListFormModel';
+use Bivio::Base 'Biz.ListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

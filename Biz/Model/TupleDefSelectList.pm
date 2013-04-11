@@ -1,8 +1,8 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TupleDefSelectList;
 use strict;
-use base 'Bivio::Biz::Model::TupleDefList';
+use Bivio::Base 'Model.TupleDefList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

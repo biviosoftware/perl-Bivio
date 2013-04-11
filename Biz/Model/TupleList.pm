@@ -1,11 +1,11 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TupleList;
 use strict;
-use base 'Bivio::Biz::ListModel';
+use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_TSN) = Bivio::Type->get_instance('TupleSlotNum');
+my($_TSN) = b_use('Type.TupleSlotNum');
 
 sub execute_load_history_list {
     my($proto, $req) = @_;
@@ -67,8 +67,7 @@ sub is_slot_defined {
 }
 
 sub _slot_row {
-    return shift->get_request->get('Model.TupleSlotDefList')
-	->find_row_by_num(@_);
+    return shift->req('Model.TupleSlotDefList')->find_row_by_num(@_);
 }
 
 1;

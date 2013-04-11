@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::EmailAliasEditDAVList;
 use strict;
-use base 'Bivio::Biz::Model::EditDAVList';
+use Bivio::Base 'Model.EditDAVList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

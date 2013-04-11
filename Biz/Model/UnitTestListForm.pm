@@ -1,8 +1,8 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UnitTestListForm;
 use strict;
-use Bivio::Base 'Bivio::Biz::ListFormModel';
+use Bivio::Base 'Biz.ListFormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

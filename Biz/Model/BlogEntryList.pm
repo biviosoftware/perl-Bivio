@@ -2,10 +2,10 @@
 # $Id$
 package Bivio::Biz::Model::BlogEntryList;
 use strict;
-use base 'Bivio::Biz::Model::RealmFileList';
+use Bivio::Base 'Model.RealmFileList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_BN) = Bivio::Type->get_instance('BlogName');
+my($_BN) = b_use('Type.BlogName');
 
 sub execute_load_entry_or_page {
     my($proto, $req) = @_;
@@ -43,10 +43,8 @@ sub internal_initialize {
 	    }
 	],
     });
-
     # realm_file_id is a proxy for creation_date_time
     $conf->{order_by} = ['RealmFile.realm_file_id'];
-
     return $conf;
 }
 
@@ -58,7 +56,6 @@ sub internal_post_load_row {
 
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
-    my($req) = $self->get_request();
     shift->SUPER::internal_prepare_statement(@_);
     $stmt->where(['RealmFile.path', [$query->get('entry')]])
 	if $query->unsafe_get('entry');

@@ -2,13 +2,12 @@
 # $Id$
 package Bivio::Biz::Model::ForumUserDeleteForm;
 use strict;
-use Bivio::Base 'Bivio::Biz::Model::RealmUserDeleteForm';
+use Bivio::Base 'Model.RealmUserDeleteForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     my($self) = @_;
-    my($req) = $self->get_request;
     my(@res) = shift->SUPER::execute_ok(@_);
 #TODO: Need to look at other children such as CalendarEvent
     _down($self)
@@ -34,7 +33,7 @@ sub _down {
     my($self) = @_;
     $self->new_other('Forum')->do_iterate(
 	sub {
-	    $self->execute($self->get_request, {
+	    $self->execute($self->req, {
 		'User.user_id' => $self->get('User.user_id'),
 		'RealmUser.realm_id' => shift->get('forum_id'),
 	    });

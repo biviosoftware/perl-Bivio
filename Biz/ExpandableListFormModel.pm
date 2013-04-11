@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::ExpandableListFormModel;
 use strict;
-use Bivio::Base 'Bivio::Biz::ListFormModel';
+use Bivio::Base 'Biz.ListFormModel';
 
 # C<Bivio::Biz::ExpandableListFormModel> list form which can have extra rows
 

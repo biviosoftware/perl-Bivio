@@ -1,8 +1,8 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::TupleSlotTypeListForm;
 use strict;
-use base 'Bivio::Biz::Model::TupleExpandableListForm';
+use Bivio::Base 'Model.TupleExpandableListForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
