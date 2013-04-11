@@ -3,6 +3,12 @@
 options({
     class_name => 'Bivio::Biz::t::ListFormModel::T1ListForm',
 });
+b_use('IO.Config')->introduce_values({
+    'Bivio::IO::Config' => {
+	# use production field names for get_field_name_for_html()
+	is_dev => 0,
+    },
+});
 req()->initialize_fully();
 model('NumberedList')->load_page({count=> 3});
 [
@@ -33,5 +39,17 @@ model('NumberedList')->load_page({count=> 3});
 	    );
 	    return 1;
 	},
+	get_field_name_for_html => [
+	    'RealmOwner.name' => 'f0',
+	    cancel_button => 'f1',
+	    form_index_1 => 'f2_1',
+	    ok_button => 'f3',
+	],
+	set_cursor => [
+	    2 => not_die(),
+	],
+	get_field_name_for_html => [
+	    form_index => 'f2_2',
+	],
     ],
 ];

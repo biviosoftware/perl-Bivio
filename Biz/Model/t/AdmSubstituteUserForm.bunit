@@ -2,8 +2,14 @@
 # Copyright (c) 2002 bivio Software, Inc.  All rights reserved.
 Request('initialize_fully');
 req()->set_realm_and_user('general', 'root');
+b_use('IO.Config')->introduce_values({
+    'Bivio::IO::Config' => {
+	# use production field names for get_field_name_for_html()
+	is_dev => 0,
+    },
+});
 [
-    class() => [
+    [req()] => [
 	execute => [
 	    [req(), {
 		login => 'demo',
@@ -23,5 +29,10 @@ req()->set_realm_and_user('general', 'root');
 		0);
 	    return 1;
 	} => 1,
+	get_field_name_for_html => [
+	    cancel_button => 'f0',
+	    login => 'f1',
+	    ok_button => 'f2',
+	],
     ],
 ];
