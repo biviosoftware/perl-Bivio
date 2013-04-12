@@ -6,13 +6,16 @@ use Bivio::Base 'Bivio.ShellUtil';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = b_use('Type.Email');
+b_use('IO.Config')->register(my $_CFG = {
+    default_password => 'password',
+});
 
 sub ADM {
     return 'adm';
 }
 
 sub DEFAULT_PASSWORD {
-    return 'password';
+    return $_CFG->{default_password};
 }
 
 sub USAGE {
@@ -51,6 +54,12 @@ sub format_email {
     my($self, $base, $domain) = @_;
     return $_E->is_valid($base) ? $base
 	: (b_use('TestLanguage.HTTP')->generate_local_email($base, $domain))[0],
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub init {
