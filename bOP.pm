@@ -28,9 +28,34 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.45  2013/04/11 15:25:46  moeller
+  * Bivio::Biz::ExpandableListFormModel
+  * Bivio::Biz::Model::BlogEntryList
+  * Bivio::Biz::Model::EmailAliasEditDAVList
+  * Bivio::Biz::Model::ForumTreeListForm
+  * Bivio::Biz::Model::ForumUserDeleteForm
+  * Bivio::Biz::Model::LocationBase
+  * Bivio::Biz::Model::OTP
+  * Bivio::Biz::Model::TupleDefSelectList
+  * Bivio::Biz::Model::TupleHistoryList
+  * Bivio::Biz::Model::TupleList
+  * Bivio::Biz::Model::TupleSlotTypeListForm
+    use Bivio::Base
+  * Bivio::Biz::FormModel
+    get_literal() returns '' for ref types
+  * Bivio::Biz::ListFormModel
+    get_field_name_for_html() now calls superclass
+    refactored $_SEP parsing into one method
+    added internal_in_list_name()
+  * Bivio::Biz::Model::BlogForm
+    replaced call to private superclass method _authorized_name()
+  * Bivio::Biz::Model::WikiForm
+    renamed _authorized_name() to internal_authorized_name() for subclasses
+
   Revision 12.44  2013/04/09 23:55:14  moeller
   * Bivio::Biz::Model::UserSettingsListForm
     execute methods using auth_user_id as auth_id to support subclasses
