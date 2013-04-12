@@ -28,10 +28,15 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.46  2013/04/12 23:19:44  schellj
+  * Bivio::Type::LoginName
+    add get_width
+  * Bivio::Util::TestUser
+    added default_password config value
+
   Revision 12.45  2013/04/11 15:25:46  moeller
   * Bivio::Biz::ExpandableListFormModel
   * Bivio::Biz::Model::BlogEntryList
