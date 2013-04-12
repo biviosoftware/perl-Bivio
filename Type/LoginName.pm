@@ -17,4 +17,13 @@ sub from_literal {
     return (undef, Bivio_TypeError()->SYNTAX_ERROR);
 }
 
+sub get_width {
+    my($w) = 'get_width';
+    return Bivio_Type()->max(
+	Type_Email()->$w,
+	Type_RealmName()->$w,
+	Type_PrimaryId()->$w,
+    );
+}
+
 1;
