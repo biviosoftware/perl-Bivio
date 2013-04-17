@@ -6,6 +6,13 @@ use Bivio::Base 'Bivio::Type';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub add_regexp_modifiers {
+    my($self, $value, $modifiers) = @_;
+    $value = $self->from_literal_or_die($value);
+    ($value = "$value") =~ s{-([xism]+)}{_add_regexp_modifiers($1, $modifiers)}e;
+    return $self->from_literal_or_die($value);
+}
+
 sub from_literal {
     my($self, $value) = @_;
     return !defined($value) || !length($value) ? (undef, undef)
@@ -38,6 +45,18 @@ sub to_sql_param {
 
 sub to_string {
     return shift->to_literal(@_);
+}
+
+sub _add_regexp_modifiers {
+    my($curr, $add) = @_;
+    return "-$curr"
+	unless $add;
+    return join(
+	'',
+	map($curr =~ s{([$add])}{} && $1, 1 .. length($add)),
+	'-',
+	$curr,
+    );
 }
 
 sub _compile {
