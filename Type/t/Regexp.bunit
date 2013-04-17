@@ -23,4 +23,14 @@ Type();
     quote_string => [
         '[' => '\[',
     ],
+    {
+	method => 'add_regexp_modifiers',
+	compute_return => sub {
+	    my(undef, $actual) = @_;
+	    return [$actual->[0] . ''];
+	},
+    } => [
+	[qr{zz}, 'ism'] => '(?-xism:(?ism-x:zz))',
+	[qr{yy}, ''] => '(?-xism:yy)',
+    ],
 ];
