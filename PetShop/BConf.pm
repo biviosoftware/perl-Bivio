@@ -46,6 +46,7 @@ sub merge_overrides {
 		ShellUtil => ['Bivio::PetShop::Util'],
 		TestLanguage => ['Bivio::PetShop::Test'],
 		Type => ['Bivio::PetShop::Type'],
+		Util => ['Bivio::PetShop::Util'],
 		View => ['Bivio::PetShop::View'],
 	    },
 	}),
