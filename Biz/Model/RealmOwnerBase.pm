@@ -96,6 +96,28 @@ sub internal_create_realm_administrator_id {
     return;
 }
 
+sub internal_initialize_by_realm_type {
+    my($self, $info) = @_;
+    my($table, $id) = map(lc($self->REALM_TYPE->get_name) . $_, qw(_t _id));
+    return $self->merge_initialize_info(
+	shift->SUPER::internal_initialize(@_),
+	$self->merge_initialize_info(
+	    {
+		version => 1,
+		table_name => $table,
+		columns => {
+		    $id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
+		},
+		other => [
+		    [$id, qw(RealmOwner.realm_id)],
+		],
+		auth_id => $id,
+	    },
+	    $info,
+	),
+    );
+}
+
 sub unauth_delete_realm {
     my($self, $realm_owner_or_id) = @_;
     $self->unauth_load_or_die({
