@@ -3,6 +3,7 @@
 package Bivio::Type::Email;
 use strict;
 use Bivio::Base 'Type.Line';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DN) = b_use('Type.DomainName');
@@ -31,11 +32,6 @@ sub equals_domain {
     return lc($domain) eq $proto->get_domain_part($value) ? 1 : 0
 }
 
-sub format_ignore {
-    my($proto, $local, $req) = @_;
-    return $req->format_email($proto->IGNORE_PREFIX . $local);
-}
-
 sub format_email {
     my($proto, $local_or_realm_or_email, $domain, $plus, $op, $req) = @_;
     return $local_or_realm_or_email
@@ -44,6 +40,17 @@ sub format_email {
 	. $local_or_realm_or_email
 	. ($plus ? $_PLUS_SEP . $plus : '');
     return $domain ? $proto->join_parts($local, $domain) : $req->format_email($local);
+}
+
+sub format_ignore {
+    my($proto, $local, $req) = @_;
+    return $req->format_email($proto->IGNORE_PREFIX . $local);
+}
+
+sub format_ignore_random {
+    my($proto, $base, $req) = @_;
+    $base ||= 'nobody';
+    return $proto->format_ignore("$base-" . Biz_Random()->hex_digits(8), $req);
 }
 
 sub from_literal {

@@ -49,4 +49,7 @@ my($round_up) = sub {
     format_email => [
 	'a@b.c' => 'a@b.c',
     ],
+    format_ignore_random => [
+	[undef, req()] => qr{\w+-\w+\@},
+    ],
 ];
