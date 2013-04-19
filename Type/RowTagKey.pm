@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile();
 
 sub get_type {
-    return b_use('Type', shift->get_short_desc);
+    return b_use('Type', shift->internal_get_type);
 }
 
 sub is_continuous {
