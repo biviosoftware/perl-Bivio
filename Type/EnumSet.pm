@@ -34,7 +34,6 @@ sub from_array {
 
 sub from_literal {
     my($proto, $value) = @_;
-    # Returns set from a string.	
     $proto->internal_from_literal_warning
         unless wantarray;
     return $proto->from_sql_column($value);
