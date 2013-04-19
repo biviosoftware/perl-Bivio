@@ -18,6 +18,13 @@ use Bivio::IO::Alert;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # also uses Bivio::TypeError dynamically.  Used by DieCode and
 # therefore Bivio::Die, so don't import Bivio::Die.
+my($_WHICH) = {
+    int => 0,
+    short_desc => 1,
+    long_desc => 2,
+    name => 3,
+};
+my($_INT_RE) = qr{^[-+]?\d+$}s;
 my(%_MAP);
 
 sub QUERY_KEY {
@@ -41,7 +48,6 @@ sub as_facade_text_tag {
 
 sub as_int {
     my($self) = @_;
-    # Returns integer value for enum value.
     return $self->to_sql_param($self);
 }
 
@@ -57,9 +63,7 @@ sub as_sql_param {
 }
 
 sub as_string {
-    my($self) = shift;
-    # Returns fully-qualified string representation of enum value.
-    return _get_info($self, undef)->[4];
+    return _get(shift(@_), 'as_string');
 }
 
 sub as_uri {
@@ -128,108 +132,124 @@ sub compile {
     # Reference an Enum value with:
     #
     #     __PACKAGE__->NAME1;
-    Bivio::IO::Alert->bootstrap_die($pkg, ': already compiled')
-        if defined($_MAP{$pkg});
-    Bivio::IO::Alert->bootstrap_die(
-	$pkg, ': first argument must be an array_ref'
-    ) if ref($args) ne 'ARRAY';
-    my($found) = {};
-    my($info) = {@{$pkg->map_by_two(
-	sub {
-	    my($k, $v) = @_;
-	    Bivio::IO::Alert->bootstrap_die($k, ': duplicate entry')
-	        if $found->{$k}++;
-	    return ($k, ref($v) ? $v : [$v]);
-	},
-	$args,
-    )}};
-    my($eval) = "package $pkg;\nmy(\$_INFO) = \$info;\n";
+    my($decl) = _compile_decl($pkg, $args);
+    my($eval) = "package $pkg;\n";
     my($min, $max);
-    my($list) = [];
-    my($info_copy) = {%$info};
     my($name_width) = 0;
     my($short_width) = 0;
     my($long_width) = 0;
     my($can_be_zero) = 0;
-    while (my($name, $d) = each(%$info_copy)) {
+    my($map) = {};
+    while (my($name, $d) = each(%$decl)) {
 	Bivio::IO::Alert->bootstrap_die(
 	    $pkg, '::', $name, ': does not point to an array',
 	) unless ref($d) eq 'ARRAY';
-	$d->[1] = $pkg->format_short_desc($name)
-	    unless defined($d->[1]);
-	$short_width = length($d->[1]) if length($d->[1]) > $short_width;
-	$d->[2] = $d->[1] unless defined($d->[2]);
-	$long_width = length($d->[2]) if length($d->[2]) > $long_width;
-	my(@aliases) = splice(@$d, 3);
+	my($attr) = {
+	    int => shift(@$d),
+	    short_desc => shift(@$d),
+	    long_desc => shift(@$d),
+	    name => $name,
+	};
+	my($aliases) = $d;
+	$attr->{short_desc} = $pkg->format_short_desc($name)
+	    unless defined($attr->{short_desc});
+	$attr->{long_desc} = $attr->{short_desc}
+	    unless defined($attr->{long_desc});
+	$short_width = length($attr->{short_desc})
+	    if length($attr->{short_desc}) > $short_width;
+	$long_width = length($attr->{long_desc})
+	    if length($attr->{long_desc}) > $long_width;
 	Bivio::IO::Alert->bootstrap_die(
-	    $pkg, '::', $name, ': invalid number "', $d->[0], '"',
-	) unless defined($d->[0]) && $d->[0] =~ /^[-+]?\d+$/;
+	    $pkg, '::', $name, ': invalid number "', $attr->{int}, '"',
+	) unless defined($attr->{int}) && $attr->{int} =~ $_INT_RE;
 	Bivio::IO::Alert->bootstrap_die(
 	    $pkg, '::', $name, ': invalid enum name',
 	) unless $pkg->is_valid_name($name);
-	push(@$d, $name);
-	$name_width = length($name) if length($name) > $name_width;
-	my($as_string) = $pkg.'::'.$name;
-	push(@$d, $as_string);
-	push(@$list, $as_string);
+	$name_width = length($name)
+	    if length($name) > $name_width;
+	my($as_string) = $pkg . '::' . $name;
+	$attr->{as_string} = $as_string;
 	if (defined($min)) {
-	    $d->[0] < $min->[0] && ($min = $d);
-	    $d->[0] > $max->[0] && ($max = $d);
+	    $min = $attr
+		if $attr->{int} < $min->{int};
+	    $max = $attr
+		if $attr->{int} > $max->{int};
 	}
 	else {
-	    $min = $max = $d;
+	    $min = $max = $attr;
 	}
-	$can_be_zero = 1 if $d->[0] == 0;
-	Bivio::IO::Alert->bootstrap_die(
-	    $pkg, '::', $d->[0],
-	    ': duplicate int value (',
-	    $d->[3], ' and ', $info->{$d->[0]}->[3], ')',
-	) if defined($info->{$d->[0]});
-	$info->{$d->[0]} = $d;
-	$info->{uc($d->[1])} = $d
-	    unless defined($info->{uc($d->[1])});
-	$info->{uc($d->[2])} = $d
-	    unless defined($info->{uc($d->[2])});
-	foreach my $alias (@aliases) {
-	    Bivio::IO::Alert->bootstrap_die($pkg, '::', $alias,
-		    ': duplicate alias')
-			if defined($info->{uc($alias)});
-	    $info->{uc($alias)} = $d;
+	$can_be_zero = 1
+	    if $attr->{int} == 0;
+	foreach my $x (
+	    ['int', $attr->{int}],
+	    ['desc', map(uc($_), $attr->{long_desc}, $attr->{short_desc}, @$aliases)],
+	    ['not_desc', $attr->{int}, uc($attr->{as_string}), $attr->{name}],
+	    ['name', $attr->{name}],
+	    ['as_string', $attr->{as_string}],
+	) {
+	    my($kind) = shift(@$x);
+	    foreach my $key (@$x) {
+		my($dup) = $map->{$kind}->{$key};
+		Bivio::IO::Alert->bootstrap_die(
+		    $pkg,
+		    '::',
+		    $key,
+		    ": duplicate $kind value (",
+		    $attr->{name},
+		    ' and ',
+		    $dup->{name},
+		    ')',
+		) if $dup && $dup != $attr;
+		$map->{$kind}->{$key} = $attr;
+	    }
 	}
 	my($ln) = lc($name);
 	$eval .= <<"EOF";
 	    sub $name {return \\&$name;}
-	    push(\@{\$_INFO->{'$name'}}, bless(&$name));
-	    \$_INFO->{&$name} = \$_INFO->{'$name'};
+            bless(&$name);
             sub execute_$ln {shift; return ${pkg}::${name}()->execute(\@_)}
-	    sub eq_$ln {return ${pkg}::${name}() == shift(\@_) ? 1 : 0}
+	    sub eq_$ln {return ${pkg}::${name}->equals(\@_)}
 EOF
     }
     defined($min) || Bivio::IO::Alert->bootstrap_die($pkg, ': no values');
     if ($pkg->is_continuous) {
 	my($n);
-	foreach $n ($min->[0] .. $max->[0]) {
-            Bivio::IO::Alert->bootstrap_die($pkg,
-                ': missing number (', $n, ') in enum')
-	        unless defined($info->{$n});
+	foreach $n ($min->{int} .. $max->{int}) {
+            Bivio::IO::Alert->bootstrap_die(
+		$pkg,
+                ': missing number (',
+		$n,
+		') in enum',
+	    ) unless $map->{int}->{$n};
 	}
     }
     die("$pkg: compilation failed: $@")
 	unless eval($eval . '; 1');
-    $_MAP{$pkg} = $info;
+    $_MAP{$pkg} = $map;
+    my($list) = [map(
+	{
+	    my($attr) = $map->{name}->{$_};
+	    my($self) = $pkg->$_();
+	    $attr->{self} = $self;
+	    $map->{self}->{$self} = $attr;
+	    $map->{not_desc}->{$self} = $attr;
+	    $self;
+	}
+	keys(%{$map->{name}}),
+    )];
     # Must happen last after enum references are defined.
-    my($can_be_negative) = $min->[0] < 0;
-    my($can_be_positive) = $max->[0] > 0;
+    my($can_be_negative) = $min->{int} < 0;
+    my($can_be_positive) = $max->{int} > 0;
     # Compute number of digits in maximum sized integer
-    my($precision) = abs($max->[0]);
-    $precision = abs($min->[0]) if abs($min->[0]) > $precision;
+    my($precision) = abs($max->{int});
+    $precision = abs($min->{int}) if abs($min->{int}) > $precision;
     $precision = length($precision);
-    $min = $min->[3];
-    $max = $max->[3];
+    $min = $min->{name};
+    $max = $max->{name};
     my($get_list) = join(
 	',',
 	map($pkg . '::' . $_->get_name . '()',
-	    sort {$a->as_int <=> $b->as_int} map($pkg->$_(), @$list)),
+	    sort({$a->as_int <=> $b->as_int} @$list)),
     );
     my($count) = scalar(@$list);
     die("$pkg: compilation failed: $@")
@@ -296,15 +316,12 @@ sub format_short_desc {
 
 sub from_any {
     my($proto, $thing) = @_;
-    # Returns enum value for specified name, short description, long description,
-    # enum, or integer in a case-insensitive manner.
-    ref($thing) || ($thing = uc($thing));
-    return _get_info($proto, $thing)->[5];
+    return _unsafe_from($proto, $thing, 0);
 }
 
 sub from_int {
-    # Returns enum value for specified integer.
-    return _get_info(shift(@_), shift(@_) + 0)->[5];
+    my($proto, $int) = @_;
+    return $proto->from_any($int + 0);
 }
 
 sub from_literal {
@@ -315,38 +332,42 @@ sub from_literal {
 	if $proto->is_blesser_of($value);
     return ()
 	unless defined($value) && $value ne '';
-    my($info);
-    if ($value =~ /^-?\d+$/) {
-	$info = _get_info($proto, $value, 1);
+    my($self);
+    if ($value =~ $_INT_RE) {
+	$self = _unsafe_from($proto, $value);
     }
-    elsif ($proto->is_blesser_of($value, $proto)) {
+    elsif ($proto->is_blesser_of($value)) {
 	return $value;
     }
     else {
-	$info = _get_info($proto, $value = uc($value), 1);
-	$info = undef
-	    if $info && $info->[3] ne $value;
+	$self = _unsafe_from($proto, $value);
+	return $self
+	    if $self && _eq_name($self, $value);
+	$self = undef;
     }
-    return $info ? $info->[5]
+    return $self ?  $self
         : (undef, $proto->use('Bivio::TypeError')->NOT_FOUND);
 }
 
 sub from_name {
     my($proto, $name) = @_;
     # Returns enum value for specified name in a case-insensitive manner.
-    Bivio::IO::Alert->bootstrap_die($name, ': is not a string') if ref($name);
-    $name = uc($name);
-    my($info) = _get_info($proto, $name);
-    Bivio::IO::Alert->bootstrap_die($name, ': is not the name of an ',
-	    ref($proto) || $proto) unless $name eq $info->[3];
-    return $info->[5];
+    Bivio::IO::Alert->bootstrap_die($name, ': is not a string')
+        if ref($name);
+    my($self) = $proto->from_any($name);
+    Bivio::IO::Alert->bootstrap_die(
+	$name,
+	': is not the name of an ',
+	ref($proto) || $proto,
+    ) unless $self && _eq_name($self, $name);
+    return $self;
 }
 
 sub from_sql_column {
     my($proto, $value) = @_;
-    # Returns the enum for this value.
-    return undef unless defined($value);
-    return _get_info($proto, $value + 0)->[5];
+    return undef
+	unless defined($value);
+    return $proto->from_int($value);
 }
 
 sub get_count {
@@ -355,7 +376,6 @@ sub get_count {
 }
 
 sub get_decimals {
-    # Returns 0.
     return 0;
 }
 
@@ -366,13 +386,12 @@ sub get_list {
 }
 
 sub get_long_desc {
-    # Returns the long description for the enum value.
-    return _get_info(shift(@_), undef)->[2];
+    return _get(shift(@_), 'long_desc')
 }
 
 sub get_name {
     # Returns the string name of the enumerated value.
-    return _get_info(shift(@_), undef)->[3];
+    return _get(shift(@_), 'name');
 }
 
 sub get_non_zero_list {
@@ -386,7 +405,7 @@ sub get_self {
 
 sub get_short_desc {
     # Returns the short description for the enum value.
-    return _get_info(shift(@_), undef)->[1];
+    return _get(shift(@_), 'short_desc');
 }
 
 sub get_widget_value {
@@ -431,6 +450,10 @@ sub is_valid_name {
     return $name && $name =~ /^[A-Z][A-Z0-9_]*$/ ? 1 : 0;
 }
 
+sub new {
+    die('you cannot call new on an enum');
+}
+
 sub to_literal {
     my($proto, $value) = @_;
     # Return the integer representation of I<value>
@@ -442,35 +465,28 @@ sub to_literal {
 
 sub to_sql_param {
     my($proto, $value) = @_;
-    # Return the integer representation of I<value>
-    return undef unless defined($value);
-    Bivio::IO::Alert->warn_deprecated($value, ': enum ref required')
-        unless ref($value);
-    return _get_info($proto, $value)->[0];
+    return undef
+	unless defined($value);
+    return _get($value, 'int');
 }
 
 sub to_string {
     my($proto, $value) = @_;
-    # Returns the string representation of the value.
-    return '' unless defined($value);
+    return ''
+	unless defined($value);
     return $value->get_short_desc;
 }
 
 sub to_xml {
     my($proto, $value) = @_;
-    # Returns the name of I<value>.
-    return '' unless defined($value);
-    return _get_info($proto, $value)->[3];
+    return ''
+	unless defined($value);
+    return $value->get_name;
 }
 
 sub unsafe_from_any {
     my($proto, $thing) = @_;
-    # Returns enum value for specified name, short description, long description,
-    # enum, or integer in a case-insensitive manner.  If not found, returns
-    # C<undef>.
-    ref($thing) || ($thing = uc($thing));
-    my($info) = _get_info($proto, $thing, 1);
-    return $info ? $info->[5] : undef;
+    return _unsafe_from($proto, $thing);
 }
 
 sub unsafe_from_int {
@@ -484,23 +500,65 @@ sub unsafe_from_name {
     my($proto, $name) = @_;
     Bivio::IO::Alert->bootstrap_die($name, ': is not a string')
         if ref($name);
-    return _unsafe_from($proto, uc($name));
+    return _unsafe_from($proto, $name);
 }
 
-sub _get_info {
-    my($self, $ident, $dont_die) = @_;
-    # Finds info for I<ident> in I<self> (can be a proto) or dies.
-    my($info) = $_MAP{ref($self) || $self};
-    die($self, ': not an enumerated type') unless defined($info);
-    defined($ident) || ($ident = $self);
-    return $info->{$ident} if defined($info->{$ident});
-    Bivio::IO::Alert->bootstrap_die($ident, ': no such ', ref($self) || $self)
-		unless $dont_die;
-    return undef;
+sub _compile_decl {
+    my($pkg, $args) = @_;
+    Bivio::IO::Alert->bootstrap_die($pkg, ': already compiled')
+        if defined($_MAP{$pkg});
+    Bivio::IO::Alert->bootstrap_die(
+	$pkg, ': first argument must be an array_ref'
+    ) if ref($args) ne 'ARRAY';
+    my($found) = {};
+    return {@{$pkg->map_by_two(
+	sub {
+	    my($k, $v) = @_;
+	    Bivio::IO::Alert->bootstrap_die($k, ': duplicate entry')
+	        if $found->{$k}++;
+	    return ($k, ref($v) ? $v : [$v]);
+	},
+	$args,
+    )}};
+}
+
+sub _eq_name {
+    my($self, $name) = @_;
+    return $self->get_name eq uc($name);
+}
+
+sub _get {
+    my($self, $which) = @_;
+    return _map($self)->{self}->{$self}->{$which};
+}
+
+sub _lookup {
+    my($self, $thing, $dont_die) = @_;
+    my($map) = _map($self);
+    my($res) = $map->{not_desc}->{$thing}
+	|| $map->{desc}->{$thing};
+    Bivio::IO::Alert->bootstrap_die(
+	$thing,
+	': no such ',
+	ref($self) || $self,
+    ) unless $res || $dont_die;
+    return $res;
+}
+
+sub _map {
+    my($self) = @_;
+    return $_MAP{ref($self) || $self}
+	|| die ($self, ': not an enumerated type');
 }
 
 sub _unsafe_from {
-    return (_get_info(@_, 1) || [])->[5];
+    my($proto, $thing, $dont_die) = @_;
+    my($res) = _lookup(
+	$proto,
+	!$thing || ref($thing) ? $thing : uc($thing),
+	defined($dont_die) ? $dont_die : 1,
+    );
+    return $res ? $res->{self} : undef;
 }
 
 1;
