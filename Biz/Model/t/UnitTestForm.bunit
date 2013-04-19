@@ -1,0 +1,10 @@
+# Copyright (c) 2013 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+FormModel();
+[
+    error_case({
+	'User.first_name' => 'ignored',
+    } => {
+	'User.first_name' => 'EXISTS',
+    }),
+];
