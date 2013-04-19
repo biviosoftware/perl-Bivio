@@ -4,6 +4,7 @@ package Bivio::Biz::Model::UserCreateForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 use Bivio::IO::Trace;
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DN) = b_use('Type.DisplayName');
@@ -70,12 +71,7 @@ sub internal_create_models {
     $e->create({
 	realm_id => $user->get('user_id'),
 	email => $self->unsafe_get('Email.email')
-	    || $et->format_ignore(
-		$realm->get('name')
-		    . '-'
-		    . $self->use('Bivio::Biz::Random')->hex_digits(8),
-		$req,
-	    ),
+	    || $et->format_ignore_random($realm->get('name'), $req),
 	want_bulletin => defined($params->{'Email.want_bulletin'})
 	    ? $params->{'Email.want_bulletin'} : 1,
     }) unless ($self->unsafe_get('Email.email') || '') eq $et->IGNORE_PREFIX;
@@ -149,7 +145,6 @@ sub parse_to_names {
 
 sub validate {
     my($self) = @_;
-    # Ensures the fields are valid.
     $self->internal_put_error('RealmOwner.password', 'CONFIRM_PASSWORD')
 	unless $self->get_field_error('RealmOwner.password')
 	    || $self->get_field_error('confirm_password')
