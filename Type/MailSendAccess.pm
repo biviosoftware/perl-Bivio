@@ -15,6 +15,9 @@ __PACKAGE__->compile([
     EVERYBODY => [5, 'Anybody (even non-users) can send mail'],
     NOBODY => [6, 'Nobody (not even admins) can send mail'],
 ]);
+b_use('IO.Config')->register(my $_CFG = {
+    default => 'ALL_MEMBERS',
+});
 
 sub as_realm_role_category {
     return $_CATEGORY_PREFIX . shift->as_realm_role_category_role_group;
@@ -36,7 +39,13 @@ sub from_realm_role_enabled_categories {
 }
 
 sub get_default {
-    return shift->ALL_MEMBERS;
+    return $_CFG->{default};
+}
+
+sub handle_config {
+    my($proto, $cfg) = @_;
+    $_CFG->{default} = $proto->from_any($cfg->{default});
+    return;
 }
 
 1;
