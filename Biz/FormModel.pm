@@ -1035,7 +1035,8 @@ sub _apply_type_error {
     my($got_one) = 0;
     foreach my $n (sort(keys(%$models))) {
 	my($m) = $models->{$n}->{instance};
-	next unless $table eq $m->get_info('table_name');
+	next
+	    unless $table eq $m->get_info('table_name');
 	foreach my $c (@$columns) {
 	    my($my_col) = "$n.$c";
 	    foreach my $d (values(%{$sql_support->get('columns')})) {
