@@ -1,4 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Action::Error;
 use strict;
@@ -33,6 +33,9 @@ sub internal_render_content {
     })->put_on_req($req);
     my($reply) = $req->get('reply');
     $reply->delete_output;
+    return
+	unless $_C->if_version(6)
+	&& $_FC->get_value('ActionError_want_wiki_view', $req);
     my($die) = Bivio::Die->catch_quietly(sub {_wiki($self, $req)});
     b_warn($status, ': wiki rendering error: ', $die)
         if $die && !$_WARNINGS->{$status}++;
@@ -45,9 +48,6 @@ sub internal_render_content {
 
 sub _wiki {
     my($self, $req) = @_;
-    return
-	unless $_C->if_version(6)
-	&& $_FC->get_value('ActionError_want_wiki_view', $req);
     return $req->with_realm(
 	$_FC->get_value('site_realm_id', $req),
 	sub {
