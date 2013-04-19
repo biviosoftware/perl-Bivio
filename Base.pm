@@ -23,7 +23,7 @@ sub import {
 	) . "';1",
     );
     {
-	foreach my $n (qw(b_catch b_debug b_die b_info b_trace b_use b_warn)) {
+	foreach my $n (qw(b_catch b_debug b_die b_info b_print b_trace b_use b_warn)) {
 	    # Special case call because $pkg has yet to initialize
 	    Bivio::UNIVERSAL::replace_subroutine($pkg, $n, \&{$n});
 	}
@@ -45,6 +45,10 @@ sub b_die {
 
 sub b_info {
     return Bivio::IO::Alert->info(Bivio::IO::Alert->calling_context, @_);
+}
+
+sub b_print {
+    Bivio::IO::ClassLoader->use('IO.Ref')->print_string(@_);
 }
 
 sub b_trace {
