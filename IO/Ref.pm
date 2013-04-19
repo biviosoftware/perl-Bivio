@@ -114,6 +114,12 @@ sub nested_equals {
     return $left eq $right ? 1 : 0;
 }
 
+sub print_string {
+    my($proto) = shift;
+    b_use('IO.Alert')->print_literally(map(${$proto->to_string($_)}, @_));
+    return wantarray ? @_ : $_[0];
+}
+
 sub to_scalar_ref {
     my(undef, $scalar) = @_;
     # DEPRECATED: Use \('bla').
