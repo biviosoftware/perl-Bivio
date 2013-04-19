@@ -13,6 +13,7 @@ my($_RN) = b_use('Type.RealmName');
 my($_FN) = b_use('Type.ForumName');
 my($_D) = b_use('Bivio.Die');
 my($_TI) = b_use('Agent.TaskId');
+my($_SITE_WIKI_VIEW_URI) = '/bp';
 
 sub HELP_WIKI_REALM_NAME {
     return shift->internal_site_name('help');
@@ -359,6 +360,7 @@ sub _cfg_base {
 	    [robots_txt_allow_all => 1],
             [ActionError_default_view => 'Error->default'],
             [ActionError_want_wiki_view => 1],
+	    [ViewBase_mobile_app_page => 0],
 	],
 	CSS => [
 	    [b_table_footer => q{
@@ -428,7 +430,7 @@ sub _cfg_base {
 	    [support_name => 'vs_site_name(); Support'],
 #TODO:	    [support_phone => '(800) 555-1212'],
 	    [[qw(prologue epilogue)] => ''],
-	    [home_page_uri => '/hm/index'],
+	    [home_page_uri => $_SITE_WIKI_VIEW_URI],
 	    [view_execute_uri_prefix => 'SiteRoot->'],
 	    [favicon_uri => '/i/favicon.ico'],
 	    [form_error_title => 'Please correct the errors below:'],
@@ -1987,7 +1989,7 @@ sub _cfg_wiki {
 	    [FORUM_WIKI_VERSIONS_DIFF => '?/wiki-diff'],
 	    [HELP => '?/help/*'],
 	    [HELP_NOT_FOUND => undef],
-	    [SITE_WIKI_VIEW => 'bp/*'],
+	    [SITE_WIKI_VIEW => $_SITE_WIKI_VIEW_URI . '/*'],
 	],
 	Color => [
 	    [same_background => 0xF2F2F2],
