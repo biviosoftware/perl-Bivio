@@ -83,6 +83,7 @@ my($_QUAL_PREFIX) = qr{^($_QP)\.}os;
 my($_COLUMN_RE) = qr{(?:^|\.)(@{[b_use('Type.TupleSlotLabel')->VALID_CHAR_REGEX]}+)$}os;
 my($_QUAL_FIELD) = qr{^($_QP)\.(\w+)$_COLUMN_RE}os;
 my($_QUAL_SUFFIX) = qr{(_\d+)$}s;
+my($_OTHER_CLASS) = 'other';
 
 sub clone_return_is_self {
     return 1;
@@ -212,8 +213,9 @@ sub init_column_classes {
 	    $class, ': is not an ARRAY; forgot square brackets?',
 	) unless ref($list) eq 'ARRAY';
 	foreach my $decl (@$list) {
-	    my(@aliases) = ref($decl) eq 'ARRAY' ? @$decl : ($decl);
-	    my($col) = _init_column_from_decl($proto, $attrs, shift(@aliases),
+	    $decl = _restructure_decl_aliases($decl);
+	    my($aliases) = ref($decl) eq 'ARRAY' ? [@$decl] : [$decl];
+	    my($col) = _init_column_from_decl($proto, $attrs, shift(@$aliases),
 	        $class, 0);
 	    b_warn(
 		$attrs->{class}, ' ', $col->{name},
@@ -226,7 +228,7 @@ sub init_column_classes {
 
 	    # manually handle left joins, record aliases
 	    my(@equivs) = ();
-	    foreach my $alias (@aliases) {
+	    foreach my $alias (@$aliases) {
 		if (ref($alias)) {
 		    push(@equivs, $alias);
 		    next;
@@ -300,7 +302,7 @@ sub init_model_primary_key_maps {
 	foreach $pk (@{$m->{instance}->get_info('primary_key_names')}) {
 	    my($cn) = $m->{name}.'.'.$pk;
 	    $attrs->{column_aliases}->{$cn} = $proto->init_column(
-		    $attrs, $cn, 'other', 0)
+		    $attrs, $cn, $_OTHER_CLASS, 0)
 		    unless $attrs->{column_aliases}->{$cn};
 	    $m->{primary_key_map}->{$pk} = $attrs->{column_aliases}->{$cn};
 	}
@@ -416,7 +418,7 @@ sub _init_column_from_decl {
 }
 
 sub _init_column_from_hash {
-    my(undef, $attrs, $decl, $class, $is_alias) = @_;
+    my($proto, $attrs, $decl, $class, $is_alias) = @_;
     # Initializes the column from a hash reference of (name, type, constraint).
     # $is_alias is unused; it is a placeholder to match init_column args
     my($col);
@@ -465,9 +467,21 @@ sub _init_column_from_hash {
     $col->{form_name} = $decl->{form_name} if $decl->{form_name};
     $col->{default_value} = exists($decl->{default_value})
         ? $decl->{default_value} : undef;
+    $proto->init_column($attrs, $decl->{constraining_field}, $_OTHER_CLASS, 1)
+	if $decl->{constraining_field};
     $col->{constraining_field} = $decl->{constraining_field} || $col->{name};
     _add_to_class($attrs, $class, $col);
     return $col;
+}
+
+sub _restructure_decl_aliases {
+    my($decl) = @_;
+    return $decl
+	unless ref($decl) eq 'HASH' && ref($decl->{name}) eq 'ARRAY';
+    my($n) = shift(@{$decl->{name}});
+    my($o) = $decl->{name};
+    $decl->{name} = $n;
+    return [$decl, @$o];
 }
 
 1;
