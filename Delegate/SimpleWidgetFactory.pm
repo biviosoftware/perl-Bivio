@@ -42,7 +42,7 @@ sub create {
 	if defined($wll) && !ref($wll);
     $widget = $_VS->vs_new('Link', {
 	href => ['->format_uri',
-	    $_QT->from_any($wll->{query}),
+	    $_QT->from_any($wll->{query} || 'NO_QUERY'),
 	    $wll->{task} ? ($_TI->from_any($wll->{task}))
 	    : $wll->{uri} ? $wll->{uri} : (),
 	],
