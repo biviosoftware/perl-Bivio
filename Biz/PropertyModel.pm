@@ -245,6 +245,10 @@ sub internal_get_target {
     );
 }
 
+sub internal_initialize {
+    return {};
+}
+
 sub internal_initialize_sql_support {
     my($proto, $stmt, $config) = @_;
     # Returns the L<Bivio::SQL::PropertySupport|Bivio::SQL::PropertySupport>
