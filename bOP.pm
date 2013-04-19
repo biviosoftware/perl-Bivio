@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.48  2013/04/18 22:47:18  moeller
+  * Bivio::Type::LoginName
+    fixed get_width() to use integer comparison
+  * Bivio::Type::Regexp
+    added add_regexp_modifiers to allow you to structure regexps better.
+    Parsing from the regexp itself didn't work right, because the nested
+    regexp didn't see the modifies
+
   Revision 12.47  2013/04/12 23:53:43  schellj
   qx changes
 
