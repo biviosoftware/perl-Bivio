@@ -1,4 +1,4 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
 [
@@ -12,6 +12,8 @@ Type();
 	[1, 2, 3] => 2,
 	[0, 2, 3] => 3,
 	[sub {1}, sub {2}, sub {3}] => 2,
+	[1, sub {shift}] => class(),
+	[0, undef, sub {shift}] => class(),
 	[0, sub {2}, sub {3}] => 3,
 	[0, undef] => [],
 	[1, undef] => [undef],

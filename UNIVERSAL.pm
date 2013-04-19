@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UNIVERSAL;
 use strict;
@@ -191,11 +191,11 @@ sub if_then_else {
     my($proto, $condition, $then, $else) = @_;
     $then = 1
 	unless @_ >= 3;
-    return ref($then) eq 'CODE' ? $then->() : $then
-	if ref($condition) eq 'CODE' ? $condition->() : $condition;
+    return ref($then) eq 'CODE' ? $then->($proto) : $then
+	if ref($condition) eq 'CODE' ? $condition->($proto) : $condition;
     return
 	unless @_ >= 4;
-    return ref($else) eq 'CODE' ? $else->() : $else;
+    return ref($else) eq 'CODE' ? $else->($proto) : $else;
 }
 
 sub inheritance_ancestors {
