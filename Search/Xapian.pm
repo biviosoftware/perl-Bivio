@@ -169,6 +169,8 @@ sub query {
 	$attr->{length} ||= $_LENGTH;
 	$attr->{private_realm_ids} ||= [];
 	$attr->{public_realm_ids} ||= [];
+        $attr->{percent_cuttoff} ||= 0;
+        $attr->{weight_cutoff} ||= 0;
 	unless (@{$attr->{private_realm_ids}} || @{$attr->{public_realm_ids}}
 		    || $attr->{want_all_public}) {
 	    _trace($attr, ': no realms and not public') if $_TRACE;
@@ -188,9 +190,29 @@ sub query {
                 if ref($_VALUE_MAP->{$field}) eq 'ARRAY';
 	}
 	my($phrase) = $attr->{phrase};
-	$phrase =~ s/_/ /g;
+        my($elite_set) = $attr->{elite_set};
+        my($main_query);
+        b_die("phrase and elite set are mutually incompatible")
+            if defined($phrase) && defined($elite_set);
+        b_die("one of phrase or elite_set is required")
+            unless defined($phrase) || defined($elite_set);
+        if (defined($phrase)) {
+            $phrase =~ s/_/ /g;
+            $main_query = $qp->parse_query($phrase, $_FLAGS);
+        }
+        else {
+            $main_query = Search::Xapian::Query->new(
+                Search::Xapian->OP_ELITE_SET,
+                map(Search::Xapian::Query->new($_),
+                    @$elite_set));
+        }
 	$q = Search::Xapian::Query->new( Search::Xapian->OP_AND,
-	    $qp->parse_query($phrase, $_FLAGS),
+	    defined($elite_set)
+                ? Search::Xapian::Query->new(
+                    Search::Xapian->OP_ELITE_SET,
+                    map(Search::Xapian::Query->new($_),
+                        @$elite_set))
+                : $qp->parse_query($phrase, $_FLAGS),
 	    $attr->{simple_class}
 	    	? Search::Xapian::Query->new('XSIMPLECLASS:' . lc($attr->{simple_class}))
 	    	: (),
@@ -213,7 +235,9 @@ sub query {
 	);
 	# Need to make a copy.  Xapian is using the Tie interface, and it's
 	# implementing it in a strange way.
-	my(@res) = _read(enquire => $q)->matches($attr->{offset}, $attr->{length});
+        my($enq) = _read(enquire => $q);
+        $enq->set_cutoff($attr->{percent_cutoff}, $attr->{weight_cutoff});
+	my(@res) = $enq->matches($attr->{offset}, $attr->{length});
 	return [map(_query_result($proto, $_, $attr->{req}, $attr), @res)];
     });
     _trace([$q->get_terms], '->[', $attr->{offset}, '..',
@@ -328,7 +352,7 @@ sub _query_result {
 	    map({
 		my($m) = "get_$_";
 		($_  => $query_result->$m());
-	    } qw(percent rank collapse_count)),
+	    } qw(percent rank collapse_count weight)),
 	    simple_class => $d->get_value(0),
 	    'RealmOwner.realm_id' => $d->get_value(1),
 	    primary_id => $d->get_value(2),
