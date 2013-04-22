@@ -9,8 +9,7 @@ Request();
 	    assert_equals(
 		[],
 		[grep(
-		    !Biz_PropertyModel()
-			->is_super_of(model($_)),
+		    ! UNIVERSAL::isa(model($_), 'Bivio::Biz::PropertyModel'),
 		    sort(keys(%{$actual->[0]})),
 		)],
 	    );
