@@ -518,6 +518,11 @@ sub _cfg_base {
 		title => q{String(vs_site_name()); vs_text_as_prose('xhtml_title');},
 	    ]],
 	    [EmailVerifyForm => [
+		'prose.prologue' => <<'EOF',
+To change your email address you must first verify that you have access
+to the given account.  Click 'Verify Email' to send a message containing
+a link that will allow you to verify your access and change your email address.
+EOF
 		ok_button => 'Verify Email',
 	    ]],
 	    [MobileToggler => [
@@ -1871,6 +1876,7 @@ sub _cfg_user_auth {
 			subject => q{vs_site_name(); Web Contact},
 		    ],
 		    password_query_mail => [
+			to => q{Mailbox(['Model.UserPasswordQueryForm', 'Email.email']);},
 			subject => 'vs_site_name(); Password Assistance',
 			body => <<'EOF',
 Please follow the link to reset your password:
@@ -1893,6 +1899,7 @@ Please follow the instructions in this email message to complete
 your registration with vs_site_name();.
 EOF
 		    create_mail => [
+			to => q{Mailbox(['Model.UserRegisterForm', 'Email.email']);},
 			subject => 'vs_site_name(); Registration Verification',
 			body => <<'EOF',
 Thank you for registering with vs_site_name();.
