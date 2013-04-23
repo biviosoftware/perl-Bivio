@@ -523,6 +523,12 @@ sub type {
     return @_ ? $class->from_literal_or_die(@_) : $class;
 }
 
+sub unsafe_get_request {
+    my($proto) = @_;
+    return $proto->is_super_of('Bivio::Agent::Request')
+	&& Bivio::Agent::Request->get_current;
+}
+
 sub unsafe_self_from_req {
     my($proto, $req) = @_;
     # It's really unsafe_self_from_req_or_proto, but this is a common pattern.
