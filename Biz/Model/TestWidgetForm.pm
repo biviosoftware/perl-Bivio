@@ -14,6 +14,7 @@ sub internal_initialize {
 	    'User.gender',
 	    $self->field_decl([
 		[qw(user_agent UserAgent NONE)],
+		[qw(bunit_enum BunitEnum NONE)],
 	    ]),
 	],
     });

@@ -4,6 +4,7 @@ Widget();
 model(TestWidgetForm => {
     'User.gender' => Type_Gender('MALE'),
     user_agent => undef,
+    bunit_enum => undef,
 });
 [
     [{
@@ -31,4 +32,9 @@ model(TestWidgetForm => {
 	show_unknown => 0,
 	form_model => ['Model.TestWidgetForm'],
     }] => qr{size="1">\n<option value="8">Browser Firefox 1<}s,
+    [{
+	field => 'bunit_enum',
+	choices => 'Type.BunitEnum',
+	form_model => ['Model.TestWidgetForm'],
+    }] => qr{<select name="\S+" size="1">\n<option value="0">Undetermined</option>\n<option value="1">1st</option>\n<option value="2">2nd</option>\n</select>}s,
 ];

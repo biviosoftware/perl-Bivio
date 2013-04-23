@@ -19,6 +19,7 @@ sub internal_initialize {
 	    [qw(text Text)],
 	    [qw(required_date Date NOT_NULL)],
 	    [qw(gender Gender)],
+	    [qw(bunit_enum BunitEnum)],
 	], undef, 'NONE'),
     });
 }
