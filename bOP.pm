@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,29 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.49  2013/04/19 21:28:58  moeller
+  * Bivio::Biz::QueryType
+    Descriptions can't be duplicates so explicitly code method and uri_attr
+  * Bivio::Delegate::RowTagKey
+    Don't rely on get_short_desc being anything other than a
+    (non-duplicate) string.
+    added internal_get_type to get the type
+  * Bivio::Delegate::SimpleWidgetFactory
+    use NO_QUERY for missing query type
+  * Bivio::Type::Enum
+    Restructured to use hash instead of array for info as first step
+    towards dynamic values from facade
+  * Bivio::Type::EnumSet
+    removed comment
+  * Bivio::Type::MailSendAccess
+    use config for default
+  * Bivio::Type::RowTagKey
+    use internal_get_type to get the type
+  * Bivio::UI::Align
+    description now must be unique, map no_css text separately
+  * Bivio::UNIVERSAL
+    if_then_else now passes $proto to code_refs
+
   Revision 12.48  2013/04/18 22:47:18  moeller
   * Bivio::Type::LoginName
     fixed get_width() to use integer comparison
