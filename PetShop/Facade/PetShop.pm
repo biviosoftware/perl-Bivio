@@ -284,7 +284,16 @@ __PACKAGE__->new({
 		303 => 'BUNIT found',
 	    ],
 	]],
-     ],
+    ],
+    b_use('FacadeComponent.Enum')->make_facade_decl([
+	Type => [
+	    BunitEnum => [
+		[UNKNOWN => 'Undetermined', 'Undetermined Description'],
+		[NAME1 => '1st', 'First Description'],
+		[NAME2 => '2nd'],
+	    ],
+	],
+    ]),
 });
 
 sub bunit_shared_values {
