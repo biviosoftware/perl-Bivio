@@ -18,12 +18,6 @@ use Bivio::IO::Alert;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # also uses Bivio::TypeError dynamically.  Used by DieCode and
 # therefore Bivio::Die, so don't import Bivio::Die.
-my($_WHICH) = {
-    int => 0,
-    short_desc => 1,
-    long_desc => 2,
-    name => 3,
-};
 my($_INT_RE) = qr{^[-+]?\d+$}s;
 my(%_MAP);
 
@@ -527,16 +521,28 @@ sub _eq_name {
     return $self->get_name eq uc($name);
 }
 
+sub _facade_lookup {
+    my($self, $method, $thing) = @_;
+    my($req) = Bivio::UNIVERSAL->unsafe_get_request;
+    my($fc);
+    return undef
+	unless $req and $fc = $req->ureq(qw(UI.Facade Enum));
+    return $fc->$method($self, $thing)
+}
+
 sub _get {
     my($self, $which) = @_;
-    return _map($self)->{self}->{$self}->{$which};
+    return $which =~ /desc$/
+	&& _facade_lookup($self, 'unsafe_desc_from_enum', $which)
+	|| _map($self)->{self}->{$self}->{$which};
 }
 
 sub _lookup {
     my($self, $thing, $dont_die) = @_;
     my($map) = _map($self);
-    my($res) = $map->{not_desc}->{$thing}
-	|| $map->{desc}->{$thing};
+    my($res) = $map->{not_desc}->{$thing}->{self}
+	|| _facade_lookup($self, 'unsafe_enum_from_desc', $thing)
+	|| $map->{desc}->{$thing}->{self};
     Bivio::IO::Alert->bootstrap_die(
 	$thing,
 	': no such ',
@@ -558,7 +564,7 @@ sub _unsafe_from {
 	!$thing || ref($thing) ? $thing : uc($thing),
 	defined($dont_die) ? $dont_die : 1,
     );
-    return $res ? $res->{self} : undef;
+    return $res;
 }
 
 1;
