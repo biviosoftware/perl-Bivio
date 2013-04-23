@@ -60,7 +60,7 @@ sub password_query_ack {
 }
 
 sub password_query_mail {
-    return shift->internal_mail('UserPasswordQueryForm');
+    return shift->internal_mail;
 }
 
 sub create {
@@ -74,16 +74,11 @@ sub create_done {
 }
 
 sub create_mail {
-    return shift->internal_mail('UserRegisterForm');
+    return shift->internal_mail;
 }
 
 sub email_verify {
     return shift->internal_body(vs_simple_form(EmailVerifyForm => [
-	P_prose(<<'EOF'),
-To change your email address you must first verify that you have access
-to the given account.  Click 'Verify Email' to send a message containing
-a link that will allow you to verify your access and change your email address.
-EOF
 	'EmailVerifyForm.Email.email',
     ]));
 }
@@ -114,12 +109,9 @@ EOF
 }
 
 sub internal_mail {
-    my($self, $form) = @_;
+    my($self) = @_;
     my($n) = $self->my_caller;
-    view_put(
-	mail_to => Mailbox(["Model.$form", 'Email.email']),
-	mail_subject => _prose($n, 'subject'),
-    );
+    view_put(map(("mail_$_" => _prose($n, $_)), qw(to subject)));
     return $self->internal_body_prose(_prose($n, 'body'));
 }
 
