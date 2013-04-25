@@ -134,7 +134,6 @@ sub list {
 		    ])),
 		    DIV_text(Join([
 			DIV_excerpt(String(['->get_rss_summary'])),
-			' ... ',
 			Link('[more]', URI({
 			    task_id => _access_mode('FORUM_BLOG_DETAIL'),
 			    path_info => ['path_info'],
