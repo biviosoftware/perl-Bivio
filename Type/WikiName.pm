@@ -7,9 +7,13 @@ use Bivio::Base 'Type.DocletFileName';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WIDTH) = __PACKAGE__->get_instance('FileName')->get_width;
 my($_HELP) = '_Help';
+b_use('IO.Config')->register(my $_CFG = {
+    start_page => 'StartPage',
+});
 
 sub DEFAULT_START_PAGE_PATH {
-    return shift->to_absolute('DefaultStartPage');
+    my($proto) = @_;
+    return $proto->to_absolute('Default' . $proto->START_PAGE);
 }
 
 sub ERROR {
@@ -25,7 +29,7 @@ sub REGEX {
 }
 
 sub START_PAGE {
-    return 'StartPage';
+    return $_CFG->{start_page};
 }
 
 sub TITLE_TAG {
@@ -42,6 +46,12 @@ sub from_literal_stripper {
 
 sub get_width {
     return $_WIDTH;
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub title_to_help {
