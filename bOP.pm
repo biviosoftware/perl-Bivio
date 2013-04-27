@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,35 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.50  2013/04/23 00:46:26  moeller
+  * Bivio::Base
+    added b_print()
+  * Bivio::Biz::Action::Error
+    fixed internal_render_content to do the right thing when
+    ActionError_want_wiki_view is false
+  * Bivio::Biz::Model::RealmOwnerBase
+    added internal_initialize_by_realm_type
+  * Bivio::Biz::Model::UnitTestForm
+    NEW
+  * Bivio::Biz::Model::UserCreateForm
+    use format_ignore_random
+  * Bivio::Biz::PropertyModel
+    default internal_initialize
+  * Bivio::IO::Ref
+    added print_string
+  * Bivio::PetShop::BConf
+    Added Util map name
+  * Bivio::Search::Xapian
+    Allow 'elite_set' search
+    Allow 'weight' and 'percent' cutoff to be specified.
+  * Bivio::SQL::Support
+    constraining_field was not being initialized
+  * Bivio::Type::Email
+    added format_ignore_random
+  * Bivio::UI::FacadeBase
+    added support for mobile apps.
+    Changed default uri to /bp (no apps are using /hm/index)
+
   Revision 12.49  2013/04/19 21:28:58  moeller
   * Bivio::Biz::QueryType
     Descriptions can't be duplicates so explicitly code method and uri_attr
