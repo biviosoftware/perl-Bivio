@@ -1,26 +1,28 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::Item;
 use strict;
 use Bivio::Base 'Bivio::Biz::PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_IS) = b_use('Type.ItemStatus');
 
 sub create {
     my($self, $values) = @_;
-    return $self->SUPER::create({
-	status => Bivio::Type->get_instance('ItemStatus')->OK,
-	%$values,
-    });
+    $values->{status} ||= $_IS->OK;
+    return shift->SUPER::create(@_);
 }
 
 sub format_name {
     my($self, $attr1, $product_name) = @_;
     return join(' ', $attr1, $product_name) if defined($attr1);
-    Bivio::Die->die("expected item instance") unless ref($self);
+    b_die('expected item instance')
+	unless ref($self);
     # call method again with arguments from instance
-    return $self->format_name($self->get('attr1'),
-	    $self->get_model('Product')->get('name'));
+    return $self->format_name(
+	$self->get('attr1'),
+	$self->get_model('Product')->get('name'),
+    );
 }
 
 sub internal_initialize {
@@ -39,7 +41,6 @@ sub internal_initialize {
 	    attr4 => ['Line', 'NONE'],
 	    attr5 => ['Line', 'NONE'],
 	},
-#TODO: this should be automatic, driven by the related field above
 	other => [['product_id', 'Product.product_id']],
     };
 }

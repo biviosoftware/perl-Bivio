@@ -1,54 +1,10 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::UserAccount;
 use strict;
-$Bivio::PetShop::Model::UserAccount::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::UserAccount::VERSION;
+use Bivio::Base 'Biz.PropertyModel';
 
-=head1 NAME
-
-Bivio::PetShop::Model::UserAccount - user account for ordering
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::UserAccount;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::PetShop::Model::UserAccount::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::UserAccount>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     return {
@@ -62,17 +18,5 @@ sub internal_initialize {
 	auth_id => 'user_id',
     };
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

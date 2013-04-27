@@ -1,73 +1,21 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::CartItemList;
 use strict;
-$Bivio::PetShop::Model::CartItemList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::CartItemList::VERSION;
+use Bivio::Base 'Biz.ListModel';
 
-=head1 NAME
-
-Bivio::PetShop::Model::CartItemList - items in a cart
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::CartItemList;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::ListModel>
-
-=cut
-
-use Bivio::Biz::ListModel;
-@Bivio::PetShop::Model::CartItemList::ISA = ('Bivio::Biz::ListModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::CartItemList>
-
-=cut
-
-#=IMPORTS
-use Bivio::PetShop::Model::Item;
-use Bivio::PetShop::Type::Price;
-use Bivio::PetShop::Type::StockStatus;
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute_load_for_order"></a>
-
-=head2 static execute_load_for_order(Bivio::Agent::Request req)
-
-Loads the list for the order present on the request.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_P) = b_use('Type.Price');
+my($_SS) = b_use('Type.StockStatus');
 
 sub execute_load_for_order {
+    # Loads the list for the order present on the request.
     my($proto, $req) = @_;
-    # store the cart_id on the request, used in internal_pre_load()
-    $req->put(cart_id => $req->get('Model.Order')->get('cart_id'));
-    $proto->new($req)->load_all;
-    return;
+    # load the order's cart on the request
+    # used in internal_prepare_statement()
+    $req->req('Model.Order')->get_model('Cart');
+    return shift->execute_load_all(@_);
 }
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref;
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
 
 sub internal_initialize {
     return {
@@ -111,53 +59,29 @@ sub internal_initialize {
     };
 }
 
-=for html <a name="internal_pre_load"></a>
-
-=head2 internal_pre_load(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
-
-Adds the current cart_id to the query.
-
-=cut
-
-sub internal_pre_load {
-    my($self, $query, $support, $params) = @_;
-    # use the cart_id on the request, otherwise from the cookie
-    push(@$params, $self->get_request->unsafe_get('cart_id')
-	|| $self->new_other('Cart')->load_from_cookie->get('cart_id'));
-    return 'cart_item_t.cart_id=?';
-}
-
-=for html <a name="internal_post_load_row"></a>
-
-=head2 internal_post_load_row(hash_ref row) : boolean
-
-Computes the total cost for the row.
-
-=cut
-
 sub internal_post_load_row {
+    # Computes the total cost for the row.
     my($self, $row) = @_;
-    $row->{total_cost} = Bivio::PetShop::Type::Price->mul(
-	    $row->{'CartItem.quantity'}, $row->{'CartItem.unit_price'});
+    $row->{total_cost} = $_P->mul(
+	$row->{'CartItem.quantity'}, $row->{'CartItem.unit_price'});
     $row->{in_stock} = $row->{'Inventory.quantity'}
-	    - $row->{'CartItem.quantity'} >= 0
-		    ? Bivio::PetShop::Type::StockStatus->IN_STOCK
-		    : Bivio::PetShop::Type::StockStatus->NOT_IN_STOCK;
-    $row->{item_name} = Bivio::PetShop::Model::Item->format_name(
-	    $row->{'Item.attr1'}, $row->{'Product.name'});
+	- $row->{'CartItem.quantity'} >= 0
+	    ? $_SS->IN_STOCK
+	    : $_SS->NOT_IN_STOCK;
+    $row->{item_name} = b_use('Model.Item')->format_name(
+	$row->{'Item.attr1'}, $row->{'Product.name'});
     return 1;
 }
 
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
+sub internal_prepare_statement {
+    my($self, $stmt) = @_;
+    # use the cart_id on the request, otherwise from the cookie
+    $stmt->where([
+	'CartItem.cart_id',
+	[$self->ureq(qw(Model.Cart cart_id))
+	     || $self->new_other('Cart')->load_from_cookie->get('cart_id')],
+    ]);
+    return shift->SUPER::internal_prepare_statement(@_);
+}
 
 1;

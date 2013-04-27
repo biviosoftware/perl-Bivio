@@ -1,54 +1,15 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::Order;
 use strict;
-$Bivio::PetShop::Model::Order::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::Order::VERSION;
+use Bivio::Base 'Model.RealmOwnerBase';
 
-=head1 NAME
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-Bivio::PetShop::Model::Order - user account order
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::Order;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::PetShop::Model::Order::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::Order>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
+sub create_realm {
+    my($self, $order) = (shift, shift);
+    return $self->create($order)->SUPER::create_realm(@_);
+}
 
 sub internal_initialize {
     return {
@@ -60,20 +21,11 @@ sub internal_initialize {
             bill_to_name => ['Line', 'NOT_NULL'],
 	    ship_to_name => ['Line', 'NOT_NULL'],
 	},
+	other => [
+	    [cart_id => 'Cart.cart_id'],
+	],
 	auth_id => 'order_id',
     };
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

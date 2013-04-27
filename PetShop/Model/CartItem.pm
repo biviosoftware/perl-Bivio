@@ -1,54 +1,10 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::CartItem;
 use strict;
-$Bivio::PetShop::Model::CartItem::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::CartItem::VERSION;
+use Bivio::Base 'Biz.PropertyModel';
 
-=head1 NAME
-
-Bivio::PetShop::Model::CartItem - order line item
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::CartItem;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::PetShop::Model::CartItem::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::CartItem>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     return {
@@ -63,17 +19,5 @@ sub internal_initialize {
 	},
     };
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

@@ -1,77 +1,26 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::CartItemListForm;
 use strict;
-$Bivio::PetShop::Model::CartItemListForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::CartItemListForm::VERSION;
+use Bivio::Base 'Biz.ListFormModel';
 
-=head1 NAME
-
-Bivio::PetShop::Model::CartItemListForm - editable cart item list
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::CartItemListForm;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::ListFormModel>
-
-=cut
-
-use Bivio::Biz::ListFormModel;
-@Bivio::PetShop::Model::CartItemListForm::ISA = ('Bivio::Biz::ListFormModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::CartItemListForm>
-
-=cut
-
-#=IMPORTS
-use Bivio::Agent::TaskId;
-use Bivio::PetShop::Type::Price;
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="execute_empty_row"></a>
-
-=head2 execute_empty_row()
-
-Sets the quantity in the form row for editing.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_P) = b_use('Type.Price');
 
 sub execute_empty_row {
+    # Sets the quantity in the form row for editing.
     my($self) = @_;
     $self->internal_put_field('CartItem.quantity' =>
-	    $self->get_list_model->get('CartItem.quantity'));
+	$self->get_list_model->get('CartItem.quantity'));
     return;
 }
 
-=for html <a name="execute_ok_end"></a>
-
-=head2 execute_ok_end()
-
-Redirects to the checkout form if OK is pressed.
-
-=cut
-
 sub execute_ok_end {
+    # Redirects to the checkout form if OK is pressed.
     my($self) = @_;
 
     # ensure the the cart grand total doesn't exceed the Price precision
-    my($value, $err) = Bivio::PetShop::Type::Price->from_literal(
+    my($value, $err) = $_P->from_literal(
 	$self->new_other('Cart')->load_from_cookie->get_total);
 
     if ($err) {
@@ -85,20 +34,15 @@ sub execute_ok_end {
 
     if ($self->get('ok_button')) {
 	# redirect to the checkout page
-	$self->get_request->client_redirect(Bivio::Agent::TaskId->CHECKOUT);
+	return {
+	    task_id => 'CHECKOUT',
+	};
     }
     return;
 }
 
-=for html <a name="execute_ok_row"></a>
-
-=head2 execute_ok_row()
-
-Updates or deletes the current row depending on the button selected.
-
-=cut
-
 sub execute_ok_row {
+    # Updates or deletes the current row depending on the button selected.
     my($self) = @_;
     my($cart_item) = $self->get_list_model->get_model('CartItem');
 
@@ -112,14 +56,6 @@ sub execute_ok_row {
     }
     return;
 }
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref;
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
 
 sub internal_initialize {
     my($self) = @_;
@@ -145,17 +81,5 @@ sub internal_initialize {
 	],
     });
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

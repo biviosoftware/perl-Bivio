@@ -1,71 +1,17 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Model::ItemSearchList;
 use strict;
-$Bivio::PetShop::Model::ItemSearchList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::ItemSearchList::VERSION;
+use Bivio::Base 'Model.ItemList';
 
-=head1 NAME
+# ItemSearchList produces a list of items to found by keyword.
 
-Bivio::PetShop::Model::ItemSearchList - search items by keywords
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::ItemSearchList;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::PetShop::Model::ItemList>
-
-=cut
-
-use Bivio::PetShop::Model::ItemList;
-@Bivio::PetShop::Model::ItemSearchList::ISA = ('Bivio::PetShop::Model::ItemList');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::ItemSearchList> produces a list of items to found by
-keyword.
-
-=cut
-
-=head1 CONSTANTS
-
-=cut
-
-=for html <a name="PAGE_SIZE"></a>
-
-=head2 PAGE_SIZE : int
-
-Returns a low number so we can demonstrate paging on search page.
-
-=cut
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub PAGE_SIZE {
+    # Returns a low number so we can demonstrate paging on search page.
     return 8;
 }
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref;
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
 
 sub internal_initialize {
     my($self) = @_;
@@ -78,18 +24,11 @@ sub internal_initialize {
     });
 }
 
-=for html <a name="internal_pre_load"></a>
-
-=head2 internal_pre_load(Bivio::SQL::ListQuery query, Bivio::SQL::ListSupport support, array_ref params) : string
-
-Uses the category search parameter to refine the query if present.
-
-=cut
-
 sub internal_pre_load {
+    # Uses the category search parameter to refine the query if present.
     my($self, $query, $support, $params) = @_;
-
     my($where) = '';
+
     # search for any word across name/description/category
     foreach my $word (split(' ', $query->get('search') || '')) {
 	$where .= ' AND '
@@ -104,17 +43,5 @@ sub internal_pre_load {
     }
     return $where && "($where)";
 }
-
-#=PRIVATE SUBROUTINES
-
-=head1 COPYRIGHT
-
-Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;

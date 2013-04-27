@@ -1,54 +1,24 @@
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Model::Product;
 use strict;
-$Bivio::PetShop::Model::Product::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Model::Product::VERSION;
+use Bivio::Base 'Biz.PropertyModel';
 
-=head1 NAME
+our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-Bivio::PetShop::Model::Product - product description
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::PetShop::Model::Product;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::PetShop::Model::Product::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::PetShop::Model::Product>
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
+sub get_image_url {
+    my($self) = @_;
+    return $self->req->format_uri({
+	task_id => 'FORUM_FILE',
+	realm => $self->req('UI.Facade')->SITE_REALM_NAME,
+	path_info => join(
+	    '',
+	    'images/',
+	    $self->get('image_name'),
+	    '.gif',
+	),
+    });
+}
 
 sub internal_initialize {
     return {
@@ -63,17 +33,5 @@ sub internal_initialize {
 	},
     };
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
