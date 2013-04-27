@@ -1,30 +1,33 @@
-# Copyright (c) 2001-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Widget::Search;
 use strict;
-use Bivio::Base 'UI.Widget';
+use Bivio::Base 'Widget.Simple';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_F) = b_use('FacadeComponent.Font');
-my($_ITEM_SEARCH) = b_use('Agent.TaskId')->ITEM_SEARCH;
 
-sub render {
-    my($self, $source, $buffer) = @_;
-    my($req) = $source->get_request;
-    my($field_prefix, $field_suffix) = $_F->format_html('input_field', $req);
-    $$buffer .= '<br /><form method="get" action="'
-	    .$req->format_stateless_uri($_ITEM_SEARCH)
-	    .'">'
-	    .$field_prefix
-	    .'<input type="text" size="14" class="b_align_w" name="'
-	    .Bivio::SQL::ListQuery->to_char('search')
-	    .'" />'
-	    .$field_suffix
-	    .' '
-	    .'<input type="image" alt="Search" class="b_align_w"'
-		    .'src="/i/search.gif" />'
-	    .'</form>';
-    return;
+sub initialize {
+    my($self) = @_;
+    return if $self->unsafe_get('value');
+    $self->put(value => FORM(Join([
+	BR(),
+	INPUT({
+	    TYPE => 'text',
+	    SIZE => 20,
+	    NAME => b_use('SQL.ListQuery')->to_char('search'),
+	}),
+	vs_blank_cell(),
+	INPUT({
+	    TYPE => 'submit',
+	    CLASS => 'submit',
+	    VALUE => 'Search',
+	}),
+    ]), {
+	METHOD => 'get',
+	ACTION => ['->format_uri', 'ITEM_SEARCH'],
+    }));
+    return shift->SUPER::initialize(@_);
 }
 
 1;
