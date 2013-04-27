@@ -1,6 +1,7 @@
 # Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
+my($_D) = b_use('Type.Date');
 home_page();
 follow_link('Birds');
 follow_link('Finch');
@@ -23,6 +24,7 @@ submit_form(continue => {
 test_conformance();
 reload_page();
 submit_form(continue => {
+    '_anon#0' => $_D->get_parts($_D->now, 'year') + 1,
     'Street Address:' => 'Address',
     'City:' => 'City',
     'State/Province:' => 'ST',
