@@ -14,7 +14,7 @@ sub get_delegate_info {
 	    items => [qw(
 		Action.UserLogout
 		Model.UserLoginForm
-		View.login
+		View.PetShop->login
 	    )],
 	    next => 'CART',
 	},
@@ -28,7 +28,7 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	    Model.ProductList->execute_load_all_with_query
-	    View.products
+	    View.PetShop->products
 	)],
 	[qw(
 	    ITEM_SEARCH
@@ -37,7 +37,7 @@ sub get_delegate_info {
 	    ANYBODY
 	    Model.ItemSearchList->execute_load_page
             Model.ItemSearchListForm
-	    View.search
+	    View.PetShop->search
             next=CART
 	)],
 	[qw(
@@ -47,7 +47,7 @@ sub get_delegate_info {
 	    ANYBODY
 	    Model.ItemList->execute_load_all_with_query
 	    Model.ItemListForm
-	    View.items
+	    View.PetShop->items
 	    next=CART
 	)],
 	[qw(
@@ -58,7 +58,7 @@ sub get_delegate_info {
 	    Model.Item->execute_load_parent
 	    Model.Inventory->execute_load_parent
 	    Model.ItemForm
-	    View.item
+	    View.PetShop->item
 	    next=CART
 	)],
 	[qw(
@@ -68,7 +68,7 @@ sub get_delegate_info {
 	    ANYBODY
 	    Model.CartItemList->execute_load_all
 	    Model.CartItemListForm
-	    View.cart
+	    View.PetShop->cart
 	    next=CART
 	    want_query=0
 	)],
@@ -78,7 +78,7 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	    Model.CartItemList->execute_load_all
-	    View.checkout
+	    View.PetShop->checkout
 	)],
 	[qw(
 	    PLACE_ORDER
@@ -86,7 +86,7 @@ sub get_delegate_info {
 	    USER
 	    DATA_WRITE&DATA_READ
 	    Model.OrderForm
-	    View.place-order
+	    View.PetShop->place_order
 	    next=ORDER_COMMIT
 	)],
 	[qw(
@@ -95,7 +95,7 @@ sub get_delegate_info {
 	    USER
 	    DATA_WRITE&DATA_READ
 	    Model.ShippingAddressForm
-	    View.shipping-address
+	    View.PetShop->shipping_address
 	    next=PLACE_ORDER
 	)],
 	[qw(
@@ -103,8 +103,8 @@ sub get_delegate_info {
 	    508
 	    USER
 	    DATA_WRITE&DATA_READ
-	    Model.OrderConfirmationForm
-	    View.order-confirmation
+	    Model.ConfirmationForm
+	    View.PetShop->order_confirmation
 	    next=ORDER_DETAILS
 	)],
 	[qw(
@@ -119,7 +119,8 @@ sub get_delegate_info {
 	    510
 	    GENERAL
 	    ANYBODY
-	    View.main
+	    Model.CategoryList->execute_load_all
+	    View.PetShop->main
 	)],
 	[qw(
 	    USER_ACCOUNT_CREATE
@@ -128,7 +129,7 @@ sub get_delegate_info {
 	    ANYBODY
 	    Action.UserLogout
 	    Model.UserAccountForm
-	    View.account
+	    View.PetShop->account
 	    next=USER_ACCOUNT_CREATED
 	)],
 	[qw(
@@ -137,7 +138,7 @@ sub get_delegate_info {
 	    USER
 	    DATA_WRITE&DATA_READ
 	    Model.UserAccountForm
-	    View.account
+	    View.PetShop->account
 	    next=USER_ACCOUNT_UPDATED
 	    extra_auth=realm_bunit
 	)],
@@ -146,14 +147,14 @@ sub get_delegate_info {
 	    513
 	    USER
 	    DATA_READ
-	    View.account-created
+	    View.PetShop->account_created
 	)],
 	[qw(
 	    USER_ACCOUNT_UPDATED
 	    514
 	    USER
 	    DATA_READ
-	    View.account-updated
+	    View.PetShop->account_updated
 	)],
 	[qw(
 	    ORDER_COMMIT
@@ -164,7 +165,7 @@ sub get_delegate_info {
 	    Model.CartItemList->execute_load_for_order
             Model.ECPayment->execute_load
             Model.ECCreditCardPayment->execute_load
-	    View.order-commit
+	    View.PetShop->order_commit
 	)],
 	[qw(
             SOURCE
@@ -180,7 +181,7 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	    Model.UserAccountForm
-	    View.account
+	    View.PetShop->account
 	    next=PLACE_ORDER
 	)],
 	[qw(
@@ -189,7 +190,7 @@ sub get_delegate_info {
 	    USER
 	    SUPER_USER_TRANSIENT
 	    Model.UserAccountForm
-	    View.account
+	    View.PetShop->account
 	    next=SITE_ROOT
 	)],
 	# This isn't fully implemented
@@ -198,7 +199,7 @@ sub get_delegate_info {
 	    526
 	    USER
 	    DATA_READ&DATA_WRITE&SUBSTITUTE_USER_TRANSIENT
-	    View.account
+	    View.PetShop->account
 	    next=SITE_ROOT
 	)],
 	# used by Model.RealmOwner
@@ -216,7 +217,7 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	    Model.WorkflowCallerForm
-	    View.workflow-caller
+	    View.PetShop->workflow_caller
 	    next=CART
 	    cancel=SITE_ROOT
 	)],
@@ -226,7 +227,7 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	    Model.WorkflowStepForm
-	    View.workflow-step
+	    View.PetShop->workflow_step
 	    next=WORKFLOW_STEP_2
 	    cancel=USER_ACCOUNT_CREATE
 	    want_workflow=1
@@ -237,7 +238,7 @@ sub get_delegate_info {
 	    GENERAL
 	    ANYBODY
 	    Model.WorkflowStepForm
-	    View.workflow-step
+	    View.PetShop->workflow_step
 	    next=LOGIN
 	    cancel=USER_ACCOUNT_CREATE
 	)],
@@ -367,7 +368,7 @@ sub get_delegate_info {
 	    ANYBODY
 	    Action.UserLogout
 	    Model.UserLoginForm
-	    View.login
+	    View.PetShop->login
 	    next=CART
 	    form_error_task=SITE_ROOT
 	)],
