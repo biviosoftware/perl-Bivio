@@ -36,30 +36,27 @@ view_main(Page({
 }));
 EOF
 	    =>  qr{hello.*goodbye}s,
-            ['main', req()] => undef,
 	    [sub {
-		 # Can't AUTOLOAD, because Bivio::Test::Unit already has it.
-		 # This works well enough, but normally, you would just
-		 # "use Bivio::UI::ViewLanguageAUTOLOAD;" to get this behavior.
-		 package Bivio::UI::ViewLanguage;
-		 view_class_map('HTMLWidget');
-		 view_shortcuts('UIHTML.ViewShortcuts');
-		 view_main(SimplePage('Simple'));
+	    	 # Can't AUTOLOAD, because Bivio::Test::Unit already has it.
+	    	 # This works well enough, but normally, you would just
+	    	 # "use Bivio::UI::ViewLanguageAUTOLOAD;" to get this behavior.
+	    	 package Bivio::UI::ViewLanguage;
+	    	 view_class_map('HTMLWidget');
+	    	 view_shortcuts('UIHTML.ViewShortcuts');
+	    	 view_main(SimplePage('Simple'));
 	    }, req()] => qr{^Simple$}s,
 	],
     ],
     sub {class('View.T1')} => [
-	execute => [
-	    [t1_html => req()] => qr{^t1$}s,
-	    [t2_html => req()] => qr{Pet Shop Demo.*<div>t2</div>}is,
-	    [t3_html => req()] => qr{^main$}s,
-	],
-	render => [
-	    [t1_html => req()] => DIE(),
-	],
-	inline_case(sub {req()->get('reply')->delete_output}),
-	render => [
-	    [t1_html => req()] => qr{^t1$}s,
-	],
+    	execute => [
+    	    [t1_html => req()] => qr{^t1$}s,
+    	],
+    	render => [
+    	    [t1_html => req()] => DIE(),
+    	],
+    	inline_case(sub {req()->get('reply')->delete_output}),
+    	render => [
+    	    [t1_html => req()] => qr{^t1$}s,
+    	],
     ],
 ];
