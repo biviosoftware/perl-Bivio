@@ -308,15 +308,18 @@ sub _init_default_tuple {
 
 sub _init_demo_categories {
     my($self) = @_;
-    # Initializes Model.Category.
-    my($model) = Bivio::Biz::Model->new($self->get_request, 'Category');
-    foreach my $enum (b_use('Type.Category')->get_list) {
-	# Don't create the '0' (UNKNOWN) case
-	next if $enum->as_int == 0;
-	$model->create({
-	    category_id => $enum->get_name,
-	    name => $enum->get_short_desc,
-	    description => $enum->get_long_desc,
+
+    foreach my $category (
+	['Birds', 'Exotic Varieties'],
+	['Cats', 'Various Breeds, Exotic Varieties'],
+	['Dogs', 'Various Breeds'],
+	['Fish', 'Saltwater, Freshwater'],
+	['Reptiles', 'Lizards, Turtles, Snakes'],
+    ) {
+	$self->model('Category')->create({
+	    category_id => uc($category->[0]),
+	    name => $category->[0],
+	    description => $category->[1],
 	});
     }
     return;
