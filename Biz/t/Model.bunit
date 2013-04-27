@@ -196,7 +196,8 @@ my($category_count) = 0;
 	    [
 		sub {
 		    $category_count++;
-		    return shift->get('name') ne $categories->[2]->{name};
+		    return shift->get('name') ne $categories->[2]->{name}
+			? 1 : 0;
 		},
 		'name asc',
 	    ] => sub {
