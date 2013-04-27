@@ -32,6 +32,7 @@ __PACKAGE__->new({
 	[table_separator => 0x000000],
 	[summary_line => 0x66CC66],
 	[header_background => 0xEDE4B5],
+	[[qw(header submit_border)] => 0x782E1D],
 	[category_background => 0xD5EEFF],
 	[acknowledgement => 0x009900],
 	[bunit_complex => 0xFF0000],
@@ -61,31 +62,12 @@ __PACKAGE__->new({
 	[['list_error', 'checkbox_error'] => ['color=error', 'smaller']],
 	[italic => ['italic']],
 	[[qw(strong table_row_title)] => ['bold']],
-	[[qw(
-	    form_field_description
-	    form_field_label
-	    table_cell
-	    number_cell
-	    action_button
-	    radio
-	    descriptive_page
-	    page_legend
-	    checkbox
-	    page_text
-	    input_field
-	    search_field
-	    mailto
-	    link
-	    form_submit
-	    list_action
-	)] => []],
 	[menu_link => ['smaller']],
 	[heading_link => ['larger', 'bold']],
-	[main_description_text => ['smaller']],
 	[string_test1 => ['family=', 'class=string_test1']],
+	[submit => ['family=Comic Sans MS,arial,sans-serif', 'color=header', 'bold', 'italic']],
     ],
     FormError => [
-	[NULL => 'You must supply a value for vs_fe("label");.'],
 	['UserLoginForm.RealmOwner.password.NULL' => 'Please enter a password.'],
 	['UserCreateForm.no_such_field.NULL' => 'vs_syntax(err or)'],
     ],
@@ -109,7 +91,6 @@ __PACKAGE__->new({
 	[USER_ACCOUNT_CREATED => '?/account-created'],
 	[USER_ACCOUNT_UPDATED => '?/account-updated'],
 	[ORDER_COMMIT => '?/commit-order'],
-	[DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'pub/missing-cookies'],
 	[SOURCE => 'src/*'],
 	__PACKAGE__->mail_receive_task_list(
 	    'MAIL_RECEIVE_IGNORE',
@@ -165,6 +146,10 @@ __PACKAGE__->new({
             empty_sub => sub {},
 	],
     ]),
+    CSS => [
+	[b_logo_su_logo => ''],
+	[b_td_header_left => ''],
+    ],
     Text => [
 	@{__PACKAGE__->make_groups(__PACKAGE__->bunit_shared_values)},
 	[bunit_simple => 'simple text'],
@@ -180,6 +165,11 @@ __PACKAGE__->new({
 	# the "site_root" directory.
 	[view_execute_uri_prefix => 'site_root/'],
 	[sep => 'foot2_menu_sep'],
+	[separator => [
+	    credit_card => 'Credit Card Information',
+	    billing_address => 'Billing Address',
+	    shipping_address => 'Shipping Address',
+	]],
 	[[qw(Address Address_2)] => [
 	    street1 => 'Street Address',
 	    state => 'State/Province',
@@ -191,6 +181,7 @@ __PACKAGE__->new({
 	]],
 	[ECCreditCardPayment => [
 	    card_number => 'Card Number',
+            card_expiration_date => 'Card Expiration Date',
 	]],
 	[Item => [
 	    item_id => 'Item ID',
@@ -222,16 +213,31 @@ __PACKAGE__->new({
 	[ship_to_billing_address => 'Ship to Billing Address'],
 	[total_cost => 'Total Cost'],
 	[update_cart => 'Update Cart'],
+	[CartItemListForm => [
+	    ok_button => 'Proceed to Checkout',
+	    remove => 'Remove',
+	]],
+	[[qw(ConfirmationForm OrderForm ShippingAddressForm)] => [
+	    ok_button => 'Continue',
+	]],
+	[ItemForm => [
+	    ok_button => 'Add to Cart',
+	]],
+	[UserAccountForm => [
+	    ok_button => 'Submit',
+	]],
 	[UserPasswordForm => [
 	    ok_button => 'Change',
 	]],
 	[UserLoginForm => [
-	    ok_button => '  OK  ',
+	    ok_button => 'Submit',
 	    'StandardSubmit.bunit' => 'bunit',
+	    prose => [
+		prologue => q{String('Please sign into the bOP Pet Shop Demo', 'page_heading');},
+		epilogue => '',
+	    ],
 	]],
 	# Table headings
-	['ItemListForm.add_to_cart' => ' '],
-	['CartItemListForm.remove' => ' '],
 	[Image_alt => [
 	    bivio_power => 'Powered by bivio Software, Inc.',
 	    image_bunit => 'Image.bunit',
@@ -245,7 +251,29 @@ __PACKAGE__->new({
 	[acknowledgement => [
 	    SHELL_UTIL => 'shell util ack',
 	]],
+	[[qw(page3.title xhtml.title)] => [
+	    LOGIN => 'Sign In',
+	]],
 	[title => [
+	    WORKFLOW_CALLER => 'Workflow Caller',
+	    WORKFLOW_STEP_1 => 'Workflow Step 1',
+	    WORKFLOW_STEP_2 => 'Workflow Step 2',
+	    USER_ACCOUNT_CREATE_AND_PLACE_ORDER => 'Account Created',
+	    USER_ACCOUNT_CREATED => 'Account Created',
+	    USER_ACCOUNT_UPDATED => 'Account Updated',
+	    USER_ACCOUNT_CREATE => 'Account',
+	    LOGIN => 'Sign In',
+	    CART => 'Cart',
+	    CHECKOUT => 'Check Out',
+	    PLACE_ORDER => 'Enter Your Information',
+	    MAIN => 'Welcome to the bOP Pet Shop Demo',
+	    ORDER_CONFIRMATION => 'Confirm Shipping Data',
+	    ORDER_COMMIT => 'Order Shipped',
+	    ITEM_SEARCH => 'Search Results',
+	    PRODUCTS => 'Product Category',
+	    ITEMS => 'Product Category',
+	    ITEM_DETAIL => 'Product Information',
+	    SHIPPING_ADDRESS => 'Enter Shipping Information',
 	    SHELL_UTIL => 'shell util',
 	    USER_HOME => 'user home',
 	    EXAMPLE_EG1 => 'Example 1',
@@ -256,6 +284,15 @@ __PACKAGE__->new({
 	    bunit1 => 'one',
 	    SITE_ROOT => 'home',
 	    bunit2 => 'anchor',
+	]],
+	[[qw(xlink title)] => [
+	    SITE_WIKI_VIEW => 'Groupware',
+	    CART => 'Cart',
+	    USER_ACCOUNT_EDIT => 'MyAccount',
+	    LOGIN => 'Sign-in',
+	    LOGOUT => 'Sign-out',
+	    USER_ACCOUNT_CREATE => 'New User',
+	    GENERAL_USER_PASSWORD_QUERY => 'Forgot Password?',
 	]],
 	[SiteRoot => [
 	    hm_bunit1 => 'bunit1',
