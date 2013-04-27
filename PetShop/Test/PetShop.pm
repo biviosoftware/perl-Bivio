@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::PetShop::Test::PetShop;
 use strict;
@@ -8,6 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SQL) = b_use('ShellUtil.SQL');
 my($_CSV) = b_use('ShellUtil.CSV');
+my($_D) = b_use('Type.Date');
 
 sub add_to_cart {
     my($self, $item_name) = @_;
@@ -28,14 +29,15 @@ sub add_to_cart {
 	    $button .= "_$i";
 	    last;
 	}
-	die($item_name, ': not found in table')
+	b_die($item_name, ': not found in table')
 	    unless $price;
     }
     else {
 	my($row) = $self->get_html_parser
 	    ->get_nested('Tables', 'item', 'rows', 0);
-	$item_name = $row->[0]->get('text');
-	$price = $row->[1]->get('text');
+	($item_name) = $self->get_content() =~ /pet_title">(.*?)</;
+	$price = $row->[2]->get('text');
+	$price =~ s/\s+.*//;
     }
     $self->submit_form($button => {});
     (($fields->{cart} ||= {})->{$item_name} ||= {
@@ -60,10 +62,11 @@ sub checkout_as_demo {
     $self->follow_link('continue');
     # Is filled in by default
     $self->verify_text('Credit Card Information');
-    $self->submit_form('continue');
+    $self->submit_form('continue', {
+	'_anon#0' => $_D->get_parts($_D->now, 'year') + 1,
+    });
     $self->verify_text('Shipping Address');
     $self->submit_form('continue');
-#   $self->verify_order();
     $self->delete($fields->{cart});
     return;
 }
@@ -262,8 +265,8 @@ sub verify_cart {
     my($cart) = {%{$fields->{cart}}};
     # Tables are named by their first column by default
     my($t) = _cart($self)->get_html_parser->get('Tables')
-	->unsafe_get('Remove');
-    Bivio::Die->die('cart is empty, expecting items: ', $cart)
+	->unsafe_get('Item ID');
+    b_die('cart is empty, expecting items: ', $cart)
 	unless $t;
     my($rows) = [@{$t->{rows}}];
     my($i) = 0;
@@ -271,15 +274,15 @@ sub verify_cart {
     my($ta) = $self->use('Type.Amount');
     foreach my $item (sort({$a->{name} cmp $b->{name}} values(%$cart))) {
 	my($r) = shift(@$rows);
-	Bivio::Die->die("too few rows ($i); missing items: ", $cart)
+	b_die("too few rows ($i); missing items: ", $cart)
 	    unless $r;
-	Bivio::Die->die("missing item: ", $item)
+	b_die("missing item: ", $item)
 	    unless $r->[2]->get('text') eq $item->{name};
-	Bivio::Die->die("incorrect quantity (",
+	b_die("incorrect quantity (",
             $r->[5]->get('text'), ") for: ", $item)
 	    unless $r->[5]->get('text') == $item->{quantity};
 	my($t) = $ta->mul($item->{quantity}, $item->{price});
-	Bivio::Die->die("incorrect total cost (",
+	b_die("incorrect total cost (",
             $r->[6]->get('text'), ") for: ", $item)
 	    unless $ta->compare($r->[6]->get('text'), $t) == 0;
 	$total = $ta->add($total, $t);
@@ -288,10 +291,10 @@ sub verify_cart {
 	delete($cart->{$item->{name}});
 	$i++;
     }
-    Bivio::Die->die("too many rows (expected $i); extra items: ", $rows)
+    b_die("too many rows (expected $i); extra items: ", $rows)
 	if @$rows != 1 || $rows->[0]->[1]->get('text') ne 'Total:';
-    Bivio::Die->die("incorrect total ($rows->[0]->[6]), expected ", $total)
-	unless $ta->compare($rows->[0]->[6]->get('text'), $total) == 0;
+    b_die("incorrect total ($rows->[0]->[6]), expected ", $total)
+	unless $ta->compare($rows->[0]->[2]->get('text'), $total) == 0;
     return;
 }
 
@@ -317,18 +320,18 @@ sub _find_in_cart {
     # Returns item in internal cart.
     my($fields) = $self->[$_IDI];
     my($t) = _cart($self)->get_html_parser->get('Tables')
-	->unsafe_get('Remove');
+	->unsafe_get('Item ID');
     my($i) = -1;
     foreach my $row (@{$t->{rows}}) {
 	$i++;
 	next unless $row->[2]->get('text') eq $item_name;
 	$op->($i);
-	die('no items in internal cart')
+	b_die('no items in internal cart')
 	    unless $fields->{cart} && %{$fields->{cart}};
 	return $fields->{cart}->{$item_name}
-	    || die(qq{item "$item_name" not in internal cart});
+	    || b_die(qq{item "$item_name" not in internal cart});
     }
-    die(qq{item "$item_name" not in cart});
+    b_die(qq{item "$item_name" not in cart});
     # DOES NOT RETURN
 }
 
