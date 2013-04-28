@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::ViewLanguage;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 use Bivio::IO::Trace;
 
 # C<Bivio::UI::ViewLanguage> defines the language used by
@@ -40,21 +40,24 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 our($_VIEW_IN_EVAL);
 our($_TRACE);
+our($_WIDGET_LABEL);
 my($_CL) = b_use('IO.ClassLoader');
 my($_R) = b_use('Agent.Request');
 my($_V) = b_use('UI.View');
+my($_W) = b_use('UI.Widget');
 my($_D) = b_use('Bivio.Die');
 
 sub AUTOLOAD {
     # The widget and shortcut methods are dynamically loaded.
-    return __PACKAGE__->call_method($AUTOLOAD, _args(@_));
+    my($args) = [_args(@_)];
+    return b_use('UI.ViewLanguage')->call_method($AUTOLOAD, shift(@$args), $args);
 }
 
 sub call_method {
-    my(undef, $autoload, $proto, @args) = @_;
+    my(undef, $autoload, $proto, $args) = @_;
     return $_CL->call_autoload(
 	$autoload,
-	\@args,
+	$args,
 	sub {
 	    # Calls method or class contained in I<autoload>.  Using I<proto>
 	    # and passing I<args> as appropriate.
@@ -64,18 +67,22 @@ sub call_method {
 	    # I<autoload> begins with C<vs_> it is found in the view_shortcuts
 	    # map.  Otherwise, I<autoload> must begin with C<view_>, and is
 	    # called in this module.
-	    my($method, $args) = @_;
+	    my($method, $args2) = @_;
 	    my($view) = _assert_in_eval($autoload);
-	    if ($method =~ /^[A-Z]/) {
+	    _die("$method: invalid autoload of private method (spelling error?)")
+		if $proto->is_private_method_name($method);
+	    local($_WIDGET_LABEL) = $method;
+	    my($simple_method, $suffix) = $method =~ /^([A-Z].*?)(?:_(.*))?$/s;
+	    if ($simple_method) {
 		my($map) = $view->ancestral_get('view_class_map', undef);
 		_die("$method: view_class_map() or view_parent() must be called first")
 		    unless $map;
-		my($class) = $_CL->unsafe_map_require($map, $method);
-		return $class->new(@$args)
+		my($class) = $_CL->unsafe_map_require($map, $simple_method);
+		return $class->new(@$args2)
 		    if $class;
 	    }
 	    elsif ($method =~ /^view_/) {
-		return $proto->$method(@$args)
+		return $proto->$method(@$args2)
 		    if $proto->can($method);
 	    }
 	    my($vs) = $view->ancestral_get('view_shortcuts', undef);
@@ -84,10 +91,10 @@ sub call_method {
 		    unless $vs;
 		_die("$method is not implemented by $vs or its superclass(es)")
 		    unless $vs->can($method);
-		return $vs->$method(@$args);
+		return $vs->$method(@$args2);
 	    }
 	    return ($vs || b_use('UI.ViewShortcutsBase'))
-		->view_autoload($method, \@$args);
+		->view_autoload($method, \@$args2, $simple_method, $suffix);
 	},
     );
 }
@@ -103,6 +110,13 @@ sub eval {
     return b_use('UI.View')->is_blesser_of($value) ? _eval_view($value)
 	: ref($value) eq 'SCALAR' ? _eval_code($value)
 	: _die('eval: invalid argument (not a string_ref or view)');
+}
+
+sub get_b_widget_label_and_clear {
+    # Called from UI.Widget, and probably shouldn't be called elsewhere
+    my($res) = $_WIDGET_LABEL;
+    $_WIDGET_LABEL = undef;
+    return $res;
 }
 
 sub new {
