@@ -2,15 +2,15 @@
 # $Id$
 package Bivio::UI::CSS::ViewShortcuts;
 use strict;
-use Bivio::Base 'Bivio::UI::ViewShortcuts';
+use Bivio::Base 'UI.ViewShortcuts';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub view_autoload {
-    my($proto, $method, $args) = @_;
-    if ($method =~ /^[A-Z]/) {
-	my($fc) = Bivio::Agent::Request->get_current->get('Bivio::UI::Facade')
-	    ->unsafe_get($method);
+    my($proto, undef, $args, $simple_method) = @_;
+    if ($simple_method =~ /^[A-Z]/) {
+	my($fc) = b_use('Agent.Request')->get_current_or_die->get('UI.Facade')
+	    ->unsafe_get($simple_method);
 	return $fc->format_css(@$args)
 	    if $fc
     }
