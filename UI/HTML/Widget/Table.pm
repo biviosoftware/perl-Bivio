@@ -632,7 +632,7 @@ sub new {
     return $self;
 }
 
-sub render {
+sub control_on_render {
     # (self, any, string_ref) : undef
     # Draws the table upon the output buffer.
     my($self, $source, $buffer) = @_;
