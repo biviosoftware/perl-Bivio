@@ -17,6 +17,8 @@ EOF
 	    [\(<<'EOF'), req()] => '<p class="zz">x</p>',
 view_class_map('XHTMLWidget');
 view_shortcuts('Bivio::UI::XHTML::ViewShortcuts');
+b_die(P_zz('x')->b_widget_label, ': bad b_widget_label')
+    unless P_zz('x')->b_widget_label eq 'Tag_P_zz';
 view_main(SimplePage(P_zz('x')));
 EOF
 	],
