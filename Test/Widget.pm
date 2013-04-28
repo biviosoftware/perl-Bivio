@@ -35,6 +35,8 @@ sub new_unit {
 	my($object) = $case->get('class_name')->new(
 	    @{$args->{new_params} ? $args->{new_params}->(@_) : $params},
 	);
+	$args->{widget_post_new}->($case, $params, $object)
+	    if $args->{widget_post_new};
 	return !Bivio::UI::Widget->is_blesser_of($object) ? $object
 	    : $object->initialize_with_parent(undef);
     };
