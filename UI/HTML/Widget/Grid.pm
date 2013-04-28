@@ -283,7 +283,7 @@ sub new {
     return $self;
 }
 
-sub render {
+sub control_on_render {
     # (self, string_ref) : undef
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];

@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Widget::TableBase;
 use strict;
-use Bivio::Base 'UI.Widget';
+use Bivio::Base 'Widget.ControlBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::TableBase>
