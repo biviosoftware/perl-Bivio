@@ -146,6 +146,20 @@ sub accepts_attribute {
     return 0;
 }
 
+sub b_widget_label {
+    my($self, $name, $calling_context) = @_;
+    return $self->get('b_widget_label')
+	unless @_ > 1;
+    if ($name) {
+	$name = $self->simple_package_name . "_$name"
+	    unless ($name =~ /^([^_]+)/)[0] eq $self->simple_package_name;
+	$self->put(b_widget_label => $name);
+    }
+    $self->put_unless_exists(b_widget_calling_context => $calling_context)
+	if $calling_context;
+    return $self;
+}
+
 sub die {
     my($proto, $entity, $source, @msg) = @_;
     # Dies with I<msg> and context including I<attr_name> and I<source>
@@ -279,22 +293,23 @@ sub new {
     # Same as other two versions, but L<internal_new_args|"internal_new_args">
     # is called to get the hash_ref to pass to
     # L<Bivio::Collection::Attributes|Bivio::Collection::Attributes>.
-    return shift->SUPER::new({})
-	if int(@_) == 1;
-    return shift->SUPER::new(@_)
+    my($label) = _label($_[0]);
+    return shift->SUPER::new({})->b_widget_label(@$label)
+	if scalar(@_) == 1;
+    return shift->SUPER::new(@_)->b_widget_label(@$label)
 	if ref($_[1]) eq 'HASH';
     # Handles weird case where undef is passed to mean "no value"
-    return shift->SUPER::new(@_)
-	if int(@_) == 2 && !defined($_[1]);
+    return shift->SUPER::new(@_)->b_widget_label(@$label)
+	if scalar(@_) == 2 && !defined($_[1]);
     my($proto) = shift;
     my($res) = $proto->can('internal_new_args')
 	? $proto->internal_new_args(@_)
 	: $proto->can('NEW_ARGS')
 	? $proto->internal_compute_new_args($proto->NEW_ARGS, \@_)
 	: b_die($proto, '->new: only accepts a hash_ref argument');
-    Bivio::Die->die($proto, '->new: ', $res)
+    b_die($proto, '->new: ', $res)
 	unless ref($res) eq 'HASH';
-    return $proto->SUPER::new($res);
+    return $proto->SUPER::new($res)->b_widget_label(@$label);
 }
 
 sub obsolete_attr {
@@ -425,6 +440,18 @@ sub unsafe_resolve_widget_value {
 	) if --$i < 0;
     }
     return $value;
+}
+
+sub _label {
+    my($proto) = @_;
+    my($p) = $proto->simple_package_name;
+    $_A->warn_deprecated($p, ': widget name may not contain underscore (_)')
+	if $p =~ /_/;
+    return [
+	b_use('UI.ViewLanguage')->get_b_widget_label_and_clear || $p,
+	b_use('UI.ViewLanguageAUTOLOAD')->unsafe_calling_context
+	    || $_A->calling_context($proto->inheritance_ancestors),
+    ];
 }
 
 sub _resolve_attr {
