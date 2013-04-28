@@ -73,22 +73,19 @@ sub boolean {
 
 sub call_and_do_after {
     my($proto, $op_or_method, $args, $do_after) = @_;
-    # This routine is here to preserve the calling context.  If
-    # you wanted to modify the result, just call $op_or_method inline.
-    # This method observes all of Perl's wantarray behavior.
     my($op) = sub {ref($op_or_method) ? $op_or_method->(@$args) : $proto->$op_or_method(@$args)};
     if (wantarray) {
 	my($res) = [$op->()];
-	$do_after->();
+	$do_after->($res, 1);
 	return @$res;
     }
     if (defined(wantarray)) {
 	my($res) = scalar($op->());
-	$do_after->();
+	$do_after->(\$res, 0);
 	return $res;
     }
     $op->();
-    $do_after->();
+    $do_after->(undef, undef);
     return;
 }
 
@@ -264,6 +261,11 @@ sub is_blesser_of {
     $object ||= $proto;
     my($v) = $value;
     return ref($value) && $v =~ /=/ && $object->is_super_of($value) ? 1 : 0;
+}
+
+sub is_private_method_name {
+    my(undef, $method) = @_;
+    return $method && $method =~ /^_/ ? 1 : 0;
 }
 
 sub is_simple_package_name {
