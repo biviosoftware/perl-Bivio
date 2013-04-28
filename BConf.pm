@@ -337,6 +337,7 @@ sub merge_class_loader {
 		    TextWidget => ['Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
 		    Type => ['Bivio::Type', 'Bivio::Auth'],
 		    UI => ['Bivio::UI'],
+		    # CSS has no general widgets so don't put Bivio::UI in path
 		    UICSS => ['Bivio::UI::CSS'],
 		    UIHTML => ['Bivio::UI::HTML', 'Bivio::UI'],
 		    UIXHTML => ['Bivio::UI::XHTML', 'Bivio::UI::HTML'],
