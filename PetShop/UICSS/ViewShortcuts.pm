@@ -38,15 +38,18 @@ input.submit, .button_link a {
   Color('header-background');
   Font('submit');
   cursor: pointer;
-  Color('submit-border');
+  border-right: 2px solid #782E1D;
+  border-bottom: 2px solid #782E1D;
+  border-left: 2px solid #E89E9D;
+  border-top: 2px solid #E89E9D;
   padding: 0 1em;
   margin: 0;
 }
 .button_link a {
   text-decoration: none;
   border: 2px solid;
-  border-left: 2px solid #eee;
-  border-top: 2px solid #eee;
+  border-left: 2px solid #E89E9D;
+  border-top: 2px solid #E89E9D;
 }
 table.main {
   margin-top: 0;
