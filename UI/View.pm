@@ -319,8 +319,6 @@ sub render {
 
 sub unsafe_get_current {
     # Gets the view being rendered or evaled.  May return C<undef>.
-    #
-    # B<Use for debugging only.>
     return $_CURRENT;
 }
 
