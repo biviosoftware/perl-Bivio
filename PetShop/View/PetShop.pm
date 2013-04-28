@@ -270,7 +270,7 @@ sub main {
 		    Cats:243,204,345,279
 		    Birds:267,124,369,200
 		)),
-	    ]))->put(ID => 'mainmap'),
+	    ]))->put(ID => 'mainmap', NAME => 'mainmap'),
 	    Image('main', 'none')->put(attributes => ' usemap="#mainmap"'),
 	]),
     ]], {
