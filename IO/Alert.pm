@@ -101,9 +101,15 @@ sub bootstrap_die {
 }
 
 sub calling_context {
-    my($proto, $skip_package) = @_;
-    return $_CC->new_from_caller(
-	[__PACKAGE__, $skip_package ? $skip_package : ()]);
+    my($proto, $skip_packages) = @_;
+    return $_CC->new_from_caller([
+	__PACKAGE__,
+	ref($skip_packages) eq 'ARRAY'
+	    ? @$skip_packages
+	    : $skip_packages
+	    ? $skip_packages
+	    : (),
+    ]);
 }
 
 sub debug {

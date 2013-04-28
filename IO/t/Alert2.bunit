@@ -33,6 +33,22 @@ options({
 		sub => qr{\(eval\)},
 	    },
 	],
+	'Bivio::Test' => [
+	    {
+		sub => 'Bivio::Die::catch',
+	    },
+	    {
+		sub => 'Bivio::Die::catch_quietly',
+	    },
+	],
+	[['Bivio::Test', 'Bivio::Die']] => [
+	    {
+		sub => 'Bivio::Test::Unit::run_unit',
+	    },
+	    {
+		sub => 'Bivio::Test::Unit::run',
+	    },
+	],
     ],
     warn_exactly_once => [
 	hello => qr{\d+ hello$},
