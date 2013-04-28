@@ -5,16 +5,13 @@ use strict;
 use Bivio::Base 'UI.ViewShortcutsBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_A) = b_use('IO.Alert');
 my($_W) = b_use('UI.Widget');
 my($_DT) = b_use('Type.DateTime');
 
 sub vs_call {
     my(undef, $method, @args) = @_;
-    # Calls I<method> as it would be called from a I<bview> file.  Only works when
-    # called within views.
-    # Fake an AUTOLOAD
-    local($Bivio::UI::ViewLanguage::AUTOLOAD) = $method;
-    return Bivio::UI::ViewLanguage->AUTOLOAD(@args);
+    return b_use('UI.ViewLanguageAUTOLOAD')->call_autoload($method, \@args, $_A->calling_context);
 }
 
 sub vs_constant {
