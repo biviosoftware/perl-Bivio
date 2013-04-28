@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::ViewLanguageAUTOLOAD;
 use strict;
@@ -9,13 +9,16 @@ our($AUTOLOAD);
 our($_CALLING_CONTEXT);
 our($_CALLING_CONTEXT_METHOD);
 my($_A) = b_use('IO.Alert');
-my($_VL);
 
 sub AUTOLOAD {
-    local($_CALLING_CONTEXT) = $_A->calling_context;
-    local($_CALLING_CONTEXT_METHOD) = $AUTOLOAD;
-    $_VL ||= b_use('UI.ViewLanguage');
-    return $_VL->call_method($AUTOLOAD, $_VL, @_);
+    return b_use('UI.ViewLanguageAUTOLOAD')->call_autoload($AUTOLOAD, \@_, $_A->calling_context);
+}
+
+sub call_autoload {
+    my($proto, $method, $args, $calling_context) = @_;
+    local($_CALLING_CONTEXT) = $calling_context;
+    local($_CALLING_CONTEXT_METHOD) = $method;
+    return b_use('UI.ViewLanguage')->call_method($method, b_use('UI.ViewLanguage'), $args);
 }
 
 sub import {
