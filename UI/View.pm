@@ -245,7 +245,7 @@ sub call_main {
 	$req->delete(__PACKAGE__);
     }
     if ($die) {
-	push(@{$die->get('attrs')->{view_stack} ||= []}, $self->as_string);
+	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
 	$die->throw;
 	# DOES NOT RETURN
     }
@@ -340,7 +340,7 @@ sub _clear_children {
 
 sub _destroy {
     my($self, $die) = @_;
-    push(@{$die->get('attrs')->{view_stack} ||= []}, $self->as_string)
+    push(@{$die->get('attrs')->{view_stack} ||= []}, $self)
 	if $die;
     delete($_CACHE->{$self->get_or_default(view_cache_name => '')});
     if (my $req = $_R->get_current) {
