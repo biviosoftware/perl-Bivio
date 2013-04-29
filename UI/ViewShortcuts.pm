@@ -11,7 +11,7 @@ my($_DT) = b_use('Type.DateTime');
 
 sub vs_call {
     my(undef, $method, @args) = @_;
-    return b_use('UI.ViewLanguageAUTOLOAD')->call_autoload($method, \@args, $_A->calling_context);
+    return b_use('UI.ViewLanguageAUTOLOAD')->call_autoload($method, \@args);
 }
 
 sub vs_constant {
