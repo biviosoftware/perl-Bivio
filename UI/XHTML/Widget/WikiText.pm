@@ -452,7 +452,7 @@ sub new {
     my($self) = shift->SUPER::new(@_);
     $self->put_unless_exists(
 	calling_context =>
-	    sub {Bivio::UI::ViewLanguageAUTOLOAD->unsafe_calling_context},
+	    sub {Bivio::UI::ViewLanguageAUTOLOAD->unsafe_calling_context_for_wiki_text},
     );
     return $self;
 }
