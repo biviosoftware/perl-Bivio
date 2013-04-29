@@ -34,7 +34,7 @@ sub initialize {
     $self->map_invoke(
 	unsafe_initialize_attr => [qw(control control_off_value)],
     );
-    return;
+    return shift->SUPER::initialize(@_);
 }
 
 sub is_control_on {
