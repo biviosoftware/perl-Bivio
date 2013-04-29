@@ -12,7 +12,7 @@ Widget({
 [
     'abc' => sub {
 	my($o) = shift->get('object');
-	assert_equals('Simple', $o->get('b_widget_label'));
+	assert_equals('', $o->get('b_widget_label'));
 	assert_equals(
 	    'Bivio::Test',
 	    $o->get('b_widget_calling_context')->get('package'),
@@ -21,7 +21,7 @@ Widget({
     },
     'label_def' => sub {
 	my($o) = shift->get('object');
-	assert_equals('Simple_label_def', $o->get('b_widget_label'));
+	assert_equals('label_def', $o->get('b_widget_label'));
 	assert_equals(
 	    'Bivio::Test',
 	    $o->get('b_widget_calling_context')->get('package'),
