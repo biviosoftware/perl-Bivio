@@ -419,6 +419,7 @@ sub merge_http_log {
 		    'Bivio::DieCode::NOT_FOUND: view not found class=>Bivio::UI::View::SiteRoot',
 		    'Software caused connection abort: cache: error returned while trying to return disk cached data',
 		    'Directory index forbidden by Options directive',
+		    'cannot mail to a default realm',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
