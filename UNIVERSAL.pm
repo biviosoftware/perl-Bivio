@@ -64,7 +64,8 @@ sub as_string {
 sub b_can {
     my($proto, $method, $object) = @_;
     $object ||= $proto;
-    return defined($method) && !ref($method) && $object->can($method) ? 1 : 0;
+    return defined($method) && !ref($method)
+	&& __PACKAGE__->is_super_of($object) && $object->can($method) ? 1 : 0;
 }
 
 sub boolean {
