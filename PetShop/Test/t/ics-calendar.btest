@@ -1,6 +1,13 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 test_setup('PetShop');
+
+my($clear_seconds) = sub {
+    my($ics) = @_;
+    $ics =~ s/(T\d{4})\d{2}(Z)/$1$2/g || die;
+    return $ics;
+};
+
 my(undef, undef, $dav_forum_uri) = create_forum();
 my($calendar_ics) = "$dav_forum_uri/Calendar.ics";
 # Verify that admin can view and get .ics with no calendar
@@ -54,7 +61,8 @@ my($ics) = get_content();
 date_time_now($now);
 send_request(PUT => $calendar_ics, undef, $ics);
 send_request(GET => $calendar_ics);
-get_content() eq $ics || die;
+$clear_seconds->(get_content()) eq $clear_seconds->($ics) || die;
+
 # Verify adding calendar
 (my $new_ics = $ics) =~ s/END:VCALENDAR\r\n//m;
 Bivio::IO::Alert->info($new_ics);
