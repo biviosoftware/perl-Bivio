@@ -36,15 +36,15 @@ sub b_catch {
 }
 
 sub b_debug {
-    return Bivio::IO::Alert->debug(Bivio::IO::Alert->calling_context, @_);
+    return Bivio::IO::Alert->debug(_cc(), @_);
 }
 
 sub b_die {
-    return Bivio::Die->throw_or_die(Bivio::IO::Alert->calling_context, @_);
+    return Bivio::Die->throw_or_die(_cc(), @_);
 }
 
 sub b_info {
-    return Bivio::IO::Alert->info(Bivio::IO::Alert->calling_context, @_);
+    return Bivio::IO::Alert->info(_cc(), @_);
 }
 
 sub b_print {
@@ -66,7 +66,11 @@ sub b_use {
 }
 
 sub b_warn {
-    return Bivio::IO::Alert->warn(Bivio::IO::Alert->calling_context, @_);
+    return Bivio::IO::Alert->warn(_cc(), @_);
+}
+
+sub _cc {
+    return Bivio::IO::Alert->calling_context([__PACKAGE__]);
 }
 
 1;
