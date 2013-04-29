@@ -140,17 +140,22 @@ sub internal_xhtml_adorned_body {
 
 sub internal_xhtml_grid3 {
     my(undef, $name) = @_;
-    return Grid([[
-	map(
-	    Join([
-		view_widget_value("xhtml_${name}_$_"),
-	    ], {cell_class => "${name}_$_"}),
+    return Grid(
+	[[map(
+	    {
+		my($n) = "${name}_$_";
+		Join(
+		    [view_widget_value("xhtml_$n")],
+		    {cell_class => $n},
+		)->b_widget_label($n);
+	    }
 	    'left', _center_replaces_middle('middle'), 'right',
-	),
-    ]], {
-	class => $name,
-	hide_empty_cells => 1,
-    });
+	)]],
+	{
+	    class => $name,
+	    hide_empty_cells => 1,
+	},
+    )->b_widget_label($name);
 }
 
 sub _center_replaces_middle {
