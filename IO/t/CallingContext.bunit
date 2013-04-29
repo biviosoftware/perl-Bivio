@@ -1,10 +1,10 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 my($new) = sub {class()->new_from_file_line(@_)};
-my($here) = sub {class()->new_from_caller};
+my($here) = sub {class()->new_from_caller(@_)};
 [
     sub {$new->('f', 3)} => [
-	as_string => 'CallingContext(f,3)',
+	as_string => 'f:3',
 	equals => [
 	    [$new->('f', 3)] => 1,
 	    [undef] => 0,
@@ -17,6 +17,9 @@ my($here) = sub {class()->new_from_caller};
 	],
     ],
     sub {$here->()} => [
-	as_string => qr{^CallingContext\(\(eval \d+\),\d+\)$},
+	as_string => qr{^Bivio::Test::Unit::__ANON__:\(eval \d+\):\d+$},
+    ],
+    sub {$here->([qr{Hello|Bivio::Test|Goodbye$}])} => [
+	as_string => qr{Die.pm:\d+},
     ],
 ];
