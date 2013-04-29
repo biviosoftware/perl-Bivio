@@ -26,27 +26,27 @@ options({
 	[] => [
 	    {
 		package => 'Bivio::Test',
-		sub => qr{__ANON__},
+		sub => qr{_eval_method},
 	    },
 	    {
 		package => 'Bivio::Test',
-		sub => qr{\(eval\)},
+		sub => qr{__ANON__},
 	    },
 	],
 	'Bivio::Test' => [
 	    {
-		sub => 'Bivio::Die::catch',
+		sub => 'Bivio::Die::_eval',
 	    },
 	    {
-		sub => 'Bivio::Die::catch_quietly',
+		sub => 'Bivio::Die::catch',
 	    },
 	],
 	[['Bivio::Test', 'Bivio::Die']] => [
 	    {
-		sub => 'Bivio::Test::Unit::run_unit',
+		sub => 'Bivio::Test::Type::unit',
 	    },
 	    {
-		sub => 'Bivio::Test::Unit::run',
+		sub => 'Bivio::Test::Unit::run_unit',
 	    },
 	],
     ],
