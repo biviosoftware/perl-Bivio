@@ -33,7 +33,7 @@ our($_IN_HANDLE_DIE);
 our($_CATCH_QUIETLY);
 my($_STACK_TRACE) = 0;
 my($_STACK_TRACE_ERROR) = 0;
-my($_STACK_TRACE_SEPARATOR) = join('', '      -'x10, "\n");
+my($_STACK_TRACE_SEPARATOR) = "\t" . join('', '-' x 64, "\n");
 my($_A) = 'Bivio::IO::Alert';
 Bivio::IO::Config->register({
     'stack_trace' => $_STACK_TRACE,
@@ -458,11 +458,7 @@ sub _handle_die {
 	local($SIG{__DIE__});
 	my($self) = @_;
 	_print_stack($self)
-	    if $_TRACE
-	    || $_STACK_TRACE
-	    || $_STACK_TRACE_ERROR
-	    && ($self->unsafe_get('attrs') || {program_error => 1})
-		->{program_error};
+	    if _want_stack_trace($self);
 	my($i) = 0;
 	my(@a);
 	my($prev_proto) = '';
@@ -529,6 +525,8 @@ sub _handle_die {
 		);
 	    }
 	}
+	_print_stack_other($self)
+	    if _want_stack_trace($self);
 	1;
     } || warn($@);
     return;
@@ -643,6 +641,38 @@ sub _print_stack {
 	$_STACK_TRACE_SEPARATOR,
     );
     $self->put(stack_printed => 1);
+    return;
+}
+
+sub _print_stack_other {
+    my($self) = @_;
+    return
+	unless Bivio::UNIVERSAL->is_super_of('Bivio::IO::Ref')
+	and my $attrs = $self->unsafe_get('attrs');
+    return $_A->print_literally(
+	map(
+	    {
+		my($stack) = $attrs->{$_};
+		(
+		    $_, ":\n",
+		    map(
+			"\t" . ($self->b_can('as_string_for_stack_trace', $_) ? $_->as_string_for_stack_trace : $_->as_string) . "\n",
+			@$stack,
+		    ),
+		     $_STACK_TRACE_SEPARATOR,
+		);
+	    }
+	    grep($_ =~ /_stack$/ && ref($attrs->{$_}) eq 'ARRAY', sort(keys(%$attrs))),
+	),
+    );
+}
+
+sub _want_stack_trace {
+    my($self) = @_;
+    return $_TRACE
+	|| $_STACK_TRACE
+	|| $_STACK_TRACE_ERROR
+	&& ($self->unsafe_get('attrs') || {program_error => 1})->{program_error};
     return;
 }
 
