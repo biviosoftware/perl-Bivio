@@ -179,9 +179,11 @@ sub _event {
 	elsif ($k =~ /^(summary)(;language=(.*))?$/) {
 	    $k = $1;
 	}
+	elsif ($k =~ /^(description)(;language=(.*))?$/) {
+	    $k = $1;
+	}
 	elsif ($k !~ m{^(?:
-	    description
-	    |location
+	    location
             |method
 	    |class
 	    |url
