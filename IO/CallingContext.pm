@@ -9,6 +9,19 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = 'Bivio::IO::Alert';
 
+sub as_string {
+    my($self) = @_;
+    return shift->SUPER::as_string(@_)
+	unless ref($self);
+    my($file, $line, $sub) = $self->get(qw(file line sub));
+    return join(
+	':',
+	$file =~ /\(eval/ && $sub ne '(eval)' ? $sub : (),
+	$file,
+	$line,
+    );
+}
+
 sub calling_context_get {
     $_A->warn_deprecated('use get');
     return shift->get(@_);
@@ -47,22 +60,20 @@ sub inc_line {
     );
 }
 
-sub internal_as_string {
-    my($self) = @_;
-    return $self->get(qw(file line));
-}
-
 sub new_from_caller {
     my($proto, $skip_packages) = @_;
     my($frame) = 0;
     if ($skip_packages) {
-	while (my $p = caller($frame)) {
+	while (1) {
+	    my($p, $f) = caller($frame);
 	    last
-		unless grep($p eq $_, @$skip_packages);
+		unless grep(ref($_) ? $p =~ $_ || $f =~ $_ : $p eq $_, @$skip_packages);
 	    $frame++;
 	}
     }
-    $frame++;
+    else {
+	$frame++;
+    }
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = [
 	map(+{
@@ -82,6 +93,8 @@ sub new_from_file_line {
     $self->[$_IDI] = [{
 	file => $file,
 	line => $line,
+	sub => '',
+	package => '',
     }];
     return $self;
 }
