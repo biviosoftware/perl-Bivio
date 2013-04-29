@@ -146,13 +146,20 @@ sub accepts_attribute {
     return 0;
 }
 
+sub as_string_for_stack_trace {
+    my($self) = @_;
+    return $self->as_string
+	unless ref($self);
+    my($cc) = $self->unsafe_get('b_widget_calling_context');
+    return ($cc ? $cc->as_string . ' ' : '') . $self->as_string;
+}
+
 sub b_widget_label {
     my($self, $name, $calling_context) = @_;
     return $self->get('b_widget_label')
 	unless @_ > 1;
     if ($name) {
-	$name = $self->simple_package_name . "_$name"
-	    unless ($name =~ /^([^_]+)/)[0] eq $self->simple_package_name;
+	$name =~ s/^@{[$self->simple_package_name]}_?//s;
 	$self->put(b_widget_label => $name);
     }
     $self->put_unless_exists(b_widget_calling_context => $calling_context)
@@ -242,16 +249,11 @@ sub initialize_with_parent {
 
 sub internal_as_string {
     my($self) = @_;
-    # Returns a list of values to be joined which describe this widgets
-    # configuration.  You should limit the configuration list to one or
-    # at most two items.
-    #
-    # Looks for I<field> or I<value> attributes.
-    foreach my $a (qw(field value)) {
-	my($v) = $self->unsafe_get($a);
-	return ($v) if defined($v);
-    }
-    return ();
+    return grep(
+	defined($_) && (ref($_) && ref($_) ne 'CODE' || length($_)),
+	$self->unsafe_get('b_widget_label'),
+	$self->unsafe_get('field') || $self->unsafe_get('value'),
+    );
 }
 
 sub internal_compute_new_args {
@@ -450,7 +452,7 @@ sub _label {
     return [
 	b_use('UI.ViewLanguage')->get_b_widget_label_and_clear || $p,
 	b_use('UI.ViewLanguageAUTOLOAD')->unsafe_calling_context
-	    || $_A->calling_context($proto->inheritance_ancestors),
+	    || b_use('UI.ViewLanguageAUTOLOAD')->widget_new_calling_context,
     ];
 }
 
