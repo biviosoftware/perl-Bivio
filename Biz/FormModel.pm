@@ -130,6 +130,37 @@ sub create_or_update_model_properties {
     return _do_model_properties(create_or_update => @_);
 }
 
+sub enum_set_fields_decl {
+    my($self, $model, $field) = @_;
+    my($type) = $self->new_other($model)->get_field_type($field);
+    return (
+	{
+	    name => "$model.$field",
+	    constraint => 'NONE',
+	},
+	$self->field_decl([
+	    map(
+		[join('_', $field, $_->as_int), 'Boolean'],
+		$type->get_enum_type->get_non_zero_list,
+	    ),
+	]),
+    );
+}
+
+sub enum_set_from_fields {
+    my($self, $model, $field) = @_;
+    my($type) = $self->new_other($model)->get_field_type($field);
+    return ${$type->from_array([
+	$type->get_enum_type->do_non_zero_list(
+	    sub {
+		my($enum) = @_;
+		return $self->get(join('_', $field, $enum->as_int))
+		    ? $enum : ();
+	    },
+	),
+    ])};
+}
+
 sub execute {
     my($proto, $req, $values) = @_;
     # There are two modes:
