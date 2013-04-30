@@ -227,6 +227,18 @@ sub internal_create_edit {
 	    %$attrs,
 	});
     }
+    if (UNIVERSAL::isa($type, 'Bivio::Type::EnumSet')) {
+	my(@f) = reverse(split('\.', $field));
+	return $_VS->vs_new('CheckboxGrid', {
+	    field => $f[0],
+	    choices => $_TV->new(
+		$type,
+		$type->from_array([
+		    $type->get_enum_type->get_non_zero_list,
+		]),
+	    ),
+	});
+    }
     if ($type->can('provide_select_choices')) {
 	return $_VS->vs_new('Select', {
 	    field => $field,
