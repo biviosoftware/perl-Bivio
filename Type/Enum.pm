@@ -277,6 +277,14 @@ sub compile_with_numbers {
     } @$names]);
 }
 
+sub do_list {
+    return _do('get_list', @_);
+}
+
+sub do_non_zero_list {
+    return _do('get_non_zero_list', @_);
+}
+
 sub equals_by_name {
     my($self) = shift;
     foreach my $name (@_) {
@@ -514,6 +522,11 @@ sub _compile_decl {
 	},
 	$args,
     )}};
+}
+
+sub _do {
+    my($method, $proto, $op) = @_;
+    return map($op->($_), $proto->$method);
 }
 
 sub _eq_name {
