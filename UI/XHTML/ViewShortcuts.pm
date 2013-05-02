@@ -545,7 +545,13 @@ sub vs_selector_form {
 }
 
 sub vs_simple_form {
-    my($proto, $form, $rows, $no_submit) = @_;
+    my($proto, $form, $rows, $attrs) = @_;
+    $attrs ||= {};
+    unless (ref($attrs)) {
+	b_die('expected boolean')
+	    unless $attrs =~ /^(1|0)$/;
+	$attrs = {no_submit => 1};
+    }
     my($have_submit) = 0;
     my($m) = Bivio::Biz::Model->get_instance($form);
     unshift(@$rows, q{'prologue})
@@ -557,7 +563,7 @@ sub vs_simple_form {
 	q{'epilogue},
     ) unless grep(!ref($_) && $_ eq q{'epilogue}, @$rows);
     push(@$rows, $proto->vs_simple_form_submit)
-        unless $no_submit || _has_submit($proto, $rows);
+        unless $attrs->{no_submit} || _has_submit($proto, $rows);
     return Form(
 	$form,
 	Join([
