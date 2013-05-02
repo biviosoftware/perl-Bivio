@@ -5,23 +5,23 @@ home_page();
 follow_link('Sign-in');
 follow_link('New User');
 #TODO: do_register, re-use name
-submit_form(submit => {
+submit_form(update => {
     'Email:' => (generate_local_email(random_string()))[0],
     'Password:' => 'password',
     'First Name:' => 'test-first',
     'Last Name:' => 'test-last',
 });
 follow_link('MyAccount');
-verify_text(qr/First Name:.*test-first.*Last Name:.*test-last/s);
-submit_form(submit => {
+verify_text(qr/First Name.*test-first.*Last Name.*test-last/s);
+submit_form(update => {
     'First Name:' => 'test-start',
     'Last Name:' => 'test-end',
 });
 follow_link('MyAccount');
-verify_text(qr/First Name:.*test-start.*Last Name:.*test-end/s);
+verify_text(qr/First Name.*test-start.*Last Name.*test-end/s);
 
 test_deviance('text input must be a single line');
-submit_form(submit => {
+submit_form(update => {
     'City:' => <<'EOF',
 Multiple
 Lines

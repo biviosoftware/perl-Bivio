@@ -191,7 +191,7 @@ sub login_as {
     $self->follow_link('register')
 	if $self->text_exists(qr{>register<}i);
     $self->follow_link($self->text_exists('Sign-in') ? 'Sign-in' : 'login');
-    $self->submit_form(submit => {
+    $self->submit_form(sign_in => {
         'Email:' => $user,
 	'Password:' => defined($password) ? $password : $_SQL->PASSWORD,
     });
