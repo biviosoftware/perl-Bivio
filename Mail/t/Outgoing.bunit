@@ -52,6 +52,8 @@ Reply-To: some-list@example.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+List-Id: <some-list.example.com>
+Precedence: list
 X-Bivio-Forwarded: 1
 
 Four score and seven years ago...
@@ -62,7 +64,7 @@ EOF
 
 my($_WITH_CC) = <<'EOF';
 Message-ID: <123@example.com>
-From: from@from.from
+From: from@google.com
 Cc: cc@cc.cc
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 
@@ -83,6 +85,7 @@ my($_BODY) = 'what a body';
     [Bivio::Mail::Incoming->new(\$_IN)] => [
 	set_headers_for_list_send => [
 	    [{
+		req => req(),
 		list_email => 'some-list@example.com',
 		sender => 'some-list-owner@a.a',
 		subject_prefix => '[abc] ',
@@ -134,6 +137,7 @@ my($_BODY) = 'what a body';
     [Bivio::Mail::Incoming->new(\$_IN)] => [
 	set_headers_for_list_send => [
 	    [{
+		req => req(),
 		list_email => 'some-list@example.com',
 		reply_to_list => 0,
 		sender => 'a@a.a',
@@ -157,23 +161,30 @@ my($_BODY) = 'what a body';
     [Bivio::Mail::Incoming->new(\$_WITH_CC)] => [
 	set_headers_for_list_send => [
 	    [{
+		req => req(),
 		list_email => 'some-list@example.com',
 	    }] => undef,
 	],
 	unsafe_get_header => [
 	    to => 'cc@cc.cc',
 	    cc => undef,
+	    from => 'ignore-from-google-com@dfw4.bivio.biz',
 	],
     ],
     [Bivio::Mail::Incoming->new(\$_WITHOUT_CC)] => [
+	get_from_email => [
+	    [req()] => 'from@from.from',
+	],
 	set_headers_for_list_send => [
 	    [{
+		req => req(),
 		list_email => 'some-list@example.com',
 	    }] => undef,
 	],
 	unsafe_get_header => [
 	    to => 'some-list@example.com',
 	    cc => undef,
+	    from => 'from@from.from',
 	],
     ],
 ];

@@ -18,6 +18,7 @@ my($_I) = b_use('Mail.Incoming');
 my($_A) = b_use('Mail.Address');
 my($_IOT) = b_use('IO.Template');
 my($_DT) = b_use('Type.DateTime');
+my($_E) = b_use('Type.Email');
 my($_KEEP_HEADERS_LIST_SEND_RE) = qr{
     ^(?:
     @{[join(
@@ -76,11 +77,7 @@ my($_FIRST_HEADERS) = [qw(
 sub add_missing_headers {
     my($self, $req, $from_email) = @_;
     # Sets Date, Message-ID, From and Return-Path if not set.
-    $from_email ||= ($_A->parse(
-	$self->unsafe_get_header('From')
-	|| $self->unsafe_get_header('Apparently-From')
-	|| ($self->user_email($req))[0],
-    ))[0];
+    $from_email ||= $self->get_from_email($req);
     my($now) = $_DT->now;
     foreach my $x (
 	[Date => $_DT->rfc822($now)],
@@ -155,6 +152,15 @@ sub generate_message_id {
 sub get_body {
     # Returns the receiver's body.
     return shift->get('body');
+}
+
+sub get_from_email {
+    my($self, $req) = @_;
+    return ($_A->parse(
+	$self->unsafe_get_header('from')
+	|| $self->unsafe_get_header('Apparently-From')
+	|| ($self->user_email($req))[0],
+    ))[0];
 }
 
 sub new {
@@ -258,15 +264,21 @@ sub set_header {
 }
 
 sub set_headers_for_forward {
-    my($self) = @_;
-    return $self->set_header(
+    my($self, $req) = shift->internal_req(@_);
+    $self->set_header(
 	$self->FORWARDING_HDR,
 	($self->unsafe_get_header($self->FORWARDING_HDR) || 0) + 1,
     );
+    my($from) = $self->get_from_email($req);
+    if ($from =~ $self->internal_get_config->{rewrite_from_domains_re}) {
+	$self->set_header('From', $_E->format_ignore($from, $req));
+    }
+    return $self;
 }
 
 sub set_headers_for_list_send {
     sub SET_HEADERS_FOR_LIST_SEND {[
+	[qw(req Agent.Request)],
 	[qw(list_email Email)],
 	[qw(?reply_to Email)],
 	[qw(?reply_to_list Boolean)],
@@ -285,19 +297,20 @@ sub set_headers_for_list_send {
     $self->set_header(
 	To => $self->unsafe_get_header('cc') || $bp->{list_email},
     ) unless $self->unsafe_get_header('to');
-    $self->set_headers_for_forward;
     $self->set_header(Sender => $bp->{sender});
+    $self->set_header('Precedence', 'list');
+    $self->set_header('List-Id', _list_id($bp->{list_email}));
     $self->set_header('Reply-To', $bp->{reply_to})
 	if $bp->{reply_to_list};
     $self->set_header(From => $bp->{sender})
 	unless $headers->{from};
     $self->set_header(
 	'Return-Path',
-	'<' . (
-	    $bp->{return_path} || ($_A->parse(
-		    $self->unsafe_get_header('from')))[0]
-	 ) . '>',
+	'<'
+	. ($bp->{return_path} || $self->get_from_email($bp->{req}))
+	. '>',
     );
+    $self->set_headers_for_forward($bp->{req});
     return $self
 	unless $bp->{subject_prefix};
     my($s) = $self->unsafe_get_header('subject');
@@ -356,6 +369,12 @@ EOF
     }
     $$buf .= "--$boundary--\n";
     return;
+}
+
+sub _list_id {
+    my($list_email) = @_;
+    $list_email =~ s/[^-\w]+/./g;
+    return "<$list_email>";
 }
 
 1;
