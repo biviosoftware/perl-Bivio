@@ -17,6 +17,7 @@ b_use('IO.Config')->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
+    rewrite_from_domains => [qw(google.com ebay.com paypal.com)],
 });
 #TODO: get rid of global state - put it on the request instead
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -98,12 +99,17 @@ sub handle_config {
     Bivio::Die->die($cfg->{errors_to}, ': invalid errors_to')
         if $cfg->{errors_to} =~ /['\\]/;
     $_CFG = $cfg;
+    $_CFG->{rewrite_from_domains_re} = qr{[\@\.]@{[join('|', @{$cfg->{rewrite_from_domains} || []})]}\$}is;
     return;
 }
 
 sub handle_rollback {
     # Do nothing.
     return;
+}
+
+sub internal_get_config {
+    return $_CFG;
 }
 
 sub internal_req {
