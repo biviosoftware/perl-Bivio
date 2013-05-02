@@ -11,13 +11,9 @@ sub IS_PETSHOP_KEY {
     return __PACKAGE__ . 'is_petshop';
 }
 
-sub VIEW_SHORTCUTS {
-    return b_use('Bivio::PetShop::ViewShortcuts');
-}
-
 sub internal_xhtml_adorned {
-    my($self) = shift;
-    my(@res) = $self->SUPER::internal_xhtml_adorned(@_);
+    my($self) = @_;
+    my(@res) = shift->SUPER::internal_xhtml_adorned(@_);
     view_unsafe_put(
 	is_petshop => [
 	    sub {
@@ -31,9 +27,7 @@ sub internal_xhtml_adorned {
     view_unsafe_put(
 	_groupware_only([
 	    ['xhtml_title'],
-	    [xhtml_dock_left => [sub {
-	        return vs_text_as_prose('xhtml_dock_left_standard');
-	    }]],
+	    ['xhtml_dock_left'],
 	    [xhtml_dock_center => Link(String('PetShop'), 'SITE_ROOT')],
 	    ['xhtml_dock_right'],
 	    [xhtml_footer_center => MobileToggler()],
@@ -41,7 +35,7 @@ sub internal_xhtml_adorned {
 	]),
 	xhtml_header_center => If(
 	    view_widget_value('is_petshop'),
-	    Search({}),
+	    b_use('Bivio::PetShop::Widget::Search')->new({}),
 	    IfWiki(
 		'/StartPage',
 		WikiText('@h2 inline WikiText btest'),
