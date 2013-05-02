@@ -3,6 +3,7 @@
 package Bivio::Type::Email;
 use strict;
 use Bivio::Base 'Type.Line';
+use Sys::Hostname ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -13,6 +14,7 @@ my($_TE) = b_use('Bivio.TypeError');
 my($_ATOM_ONLY_RE) = qr{^@{[b_use('Mail.RFC822')->ATOM_ONLY_ADDR]}$}ois;
 my($_OP_SEP) = '*';
 my($_PLUS_SEP) = '+';
+my($_MAX_LOCAL_IN_IGNORE) = 30;
 
 sub IGNORE_PREFIX {
     return 'ignore-';
@@ -34,17 +36,28 @@ sub equals_domain {
 
 sub format_email {
     my($proto, $local_or_realm_or_email, $domain, $plus, $op, $req) = @_;
-    return $local_or_realm_or_email
+    return lc($local_or_realm_or_email)
 	if $local_or_realm_or_email =~ /\@/;
     my($local) = ($op ? $op . $_OP_SEP : '')
 	. $local_or_realm_or_email
 	. ($plus ? $_PLUS_SEP . $plus : '');
-    return $domain ? $proto->join_parts($local, $domain) : $req->format_email($local);
+    return $proto->join_parts($local, $domain)
+	if $domain;
+    return FacadeComponent_Email()->format($local, $req)
+        if $req->unsafe_get('UI.Facade');
+    return $proto->join_parts($local, Sys::Hostname::hostname());
 }
 
 sub format_ignore {
     my($proto, $local, $req) = @_;
-    return $req->format_email($proto->IGNORE_PREFIX . $local);
+    $local =~ s/\W/-/g;
+    return $proto->format_email(
+	$proto->IGNORE_PREFIX . substr($local, 0, $_MAX_LOCAL_IN_IGNORE),
+	undef,
+	undef,
+	undef,
+	$req,
+    );
 }
 
 sub format_ignore_random {
