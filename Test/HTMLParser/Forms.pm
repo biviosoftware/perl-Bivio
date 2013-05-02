@@ -17,7 +17,6 @@ b_use('IO.Config')->register(my $_CFG = {
     # Set by XHTMLWidget.FormFieldError
     error_class => 'field_err',
     error_title_class => 'err_title',
-    label_class => 'label',
     disable_checkbox_heading => {},
 });
 __PACKAGE__->register(['Cleaner']);
@@ -83,6 +82,8 @@ sub html_parser_end {
     my($self, $tag) = @_;
     # Dispatch to the _end_XXX routines.
     my($fields) = $self->[$_IDI];
+    return _end_label($fields)
+	if $tag eq 'label';
     return _end_th($fields)
 	if $tag eq 'th';
     return _end_table($fields)
@@ -106,6 +107,8 @@ sub html_parser_start {
     if (($attr->{class} || '') eq 'label') {
 	$fields->{text} = undef;
     }
+    return _start_label($fields, $attr)
+	if $tag eq 'label';
     return _start_tx($fields, $attr, $tag)
 	if $tag =~ /^t(?:d|r|h|able)$/;
     return _start_form($fields, $attr)
@@ -141,7 +144,7 @@ sub html_parser_text {
     # Select widgets may have an empty value.
     return
 	unless length($text) || $fields->{option};
-    $fields->{text} .= $text;
+    $fields->{text} .= $text . ($fields->{in_label} ? ':' : '');
     return
 	if _have_prefix_label($fields);
     return _label_option($fields)
@@ -238,6 +241,12 @@ sub _end_form {
         $self->get('elements')->{$curr->{label}} = $curr;
     }
     _trace($_R->to_string($curr)) if $_TRACE;
+    return;
+}
+
+sub _end_label {
+    my($fields) = @_;
+    $fields->{in_label} = 0;
     return;
 }
 
@@ -506,9 +515,17 @@ sub _start_input {
     # A field has a label if the word preceding it ends with a ':'
     return _label_visible($fields)
         if ($fields->{text} || $fields->{prev_cell_text}) =~ /\:\s*$/
-            && $attr->{type} !~ /checkbox/;
+	    && $attr->{type} !~ /checkbox/;
 
     # Unlabeled field.  Will be dealt with on closing tag or next text
+    return;
+}
+
+sub _start_label {
+    my($fields, $attr) = @_;
+    $fields->{text} = undef;
+    $fields->{in_label} = 1
+	unless $attr->{for};
     return;
 }
 
