@@ -13,7 +13,7 @@ set_realm_and_user(qw(demo demo));
 	vs_text => [
 	    bunit_simple => 'simple text',
 	    [[sub {'bunit_simple'}]] => 'simple text',
-	    [[sub {'Address'}], 'street1'] => 'Street Address',
+	    [[sub {'Address'}], 'street1'] => 'Street',
 	],
 	vs_constant => [
 	    view_shortcuts1 => 'one',
