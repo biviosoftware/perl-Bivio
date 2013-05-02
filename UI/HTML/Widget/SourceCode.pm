@@ -53,6 +53,7 @@ sub render {
     my($lines) = [$_SU->do_backticks("/usr/local/bin/perl2html -c -s < '$file'")];
     _reformat_pod($self, $lines);
     _add_links($self, $lines, $package, $req);
+    _add_method_anchors($self, $lines);
     $lines = join('', @$lines);
     $lines =~ s{<pre[^>]*}{<div class="b_literal"}ig;
     $lines =~ s{</pre>}{</div>}ig;
@@ -121,6 +122,15 @@ sub _add_links {
 	    | (\$_[A-Z0-9]+\b)
             | (?<=[^:])(\b[A-Z]\w+)(?=\()
 	}{$render->($1, $2, $3, $4, $5)}exg;
+    }
+    return;
+}
+
+sub _add_method_anchors {
+    my($self, $lines) = @_;
+
+    foreach my $line (@$lines) {
+	$line =~ s{>(sub (\w+) <)}{><a name="$2"></a>$1};
     }
     return;
 }
