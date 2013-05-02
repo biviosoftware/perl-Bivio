@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.51  2013/04/27 23:17:34  moeller
+  * Bivio::PetShop::*
+    converted PetShop bview to View::PetShop
+    added XHTMLWidget and UICSS maps
+    refactor models
+  * Bivio::Type::Enum
+    get strings from facade if possible
+  * Bivio::Type::WikiName
+    added configuration param for Default/StartPage
+  * Bivio::UI::FacadeBase
+    add EmailVerifyForm.prose.prologue
+    password_query_mail.to, create_mail.to
+  * Bivio::UI::FacadeComponent::Enum
+    NEW
+  * Bivio::UI::Facade
+    don't try to pre-load UI.Enum
+  * Bivio::UI::View::Blog
+    ' ... ' is redundant
+  * Bivio::UI::View::UserAuth
+    move email_verify prose to facade
+    move internal_mail 'to' field to facade
+  * Bivio::UNIVERSAL
+    add unsafe_get_request
+
   Revision 12.50  2013/04/23 00:46:26  moeller
   * Bivio::Base
     added b_print()
