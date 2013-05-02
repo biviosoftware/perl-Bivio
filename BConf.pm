@@ -100,7 +100,7 @@ sub default_merge_overrides {
 		call_filter => '$sub =~ /vs_html_attrs_render_one/',
 		package_filter => '/^Bivio::UI::HTML::ViewShortcuts$/',
 	    },
-	    perf => {
+	    perf_time => {
 		call_filter => '$sub =~ /\bperf_time/',
 		package_filter => '/^Bivio::Agent::Request$/',
 	    },
