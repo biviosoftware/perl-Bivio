@@ -40,8 +40,7 @@ sub merge_overrides {
 	    maps => {
 		Delegate => ['Bivio::PetShop::Delegate'],
 		Facade => ['Bivio::PetShop::Facade'],
-		HTMLWidget => ['Bivio::PetShop::Widget'],
-		XHTMLWidget => ['Bivio::PetShop::Widget'],
+		PetShopWidget => ['Bivio::PetShop::Widget', 'Bivio::UI::XHTML::Widget', 'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
 		Model => ['Bivio::PetShop::Model'],
 		ShellUtil => ['Bivio::PetShop::Util'],
 		TestLanguage => ['Bivio::PetShop::Test'],
