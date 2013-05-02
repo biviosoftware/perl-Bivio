@@ -60,6 +60,12 @@ sub s5 {
     return _check(shift->parameters(\@_));
 }
 
+sub s6 {
+    sub S6 {[['req', 'Agent.Request']]}
+    my($self, $bp) = shift->parameters(\@_);
+    return 'ok';
+}
+
 sub _check {
     my($self, $bp) = @_;
     b_die('Month not array')

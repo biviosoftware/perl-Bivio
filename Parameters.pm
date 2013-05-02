@@ -1,14 +1,15 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2009-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Parameters;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
+use Bivio::Base 'Bivio.UNIVERSAL';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_NULL) = b_use('Bivio.TypeError')->NULL;
 my($_TOO_MANY) = $_NULL->TOO_MANY;
 my($_NOT_FOUND) = $_NULL->NOT_FOUND;
+my($_SYNTAX_ERROR) = $_NULL->SYNTAX_ERROR;
 
 sub internal_as_string {
     my($decls) = shift->[$_IDI];
@@ -187,7 +188,12 @@ sub _self {
 
 sub _value {
     my($value, $decl, $caller_proto, $error) = @_;
-    my($v, $e) = $decl->{type} ? $decl->{type}->from_literal($$value) : $$value;
+    my($v, $e) = !$decl->{type} ? $$value
+	: $caller_proto->b_can('from_literal', $decl->{type})
+	? $decl->{type}->from_literal($$value)
+	: $decl->{type}->is_blesser_of($$value)
+        ? $$value
+	: (undef, $_SYNTAX_ERROR);
     return _error($$value, $decl, $e, $error)
 	if $e;
     unless (defined($v)) {

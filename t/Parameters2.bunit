@@ -1,6 +1,6 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-Unit();
+Request();
 [
     sub {b_use('Bivio::t::Parameters::T1')} => [
 	s1 => [
@@ -31,6 +31,10 @@ Unit();
 	s5 => [
 	    [] => [[Month('MARCH'), Month('JULY')]],
 	    [qw(may june)] => [[Month('MAY'), Month('JUNE')]],
+	],
+	s6 => [
+	    [] => DIE(),
+	    [req()] => 'ok',
 	],
     ],
 ];
