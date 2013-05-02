@@ -15,26 +15,31 @@ sub account {
 	'',
 	vs_simple_form('UserAccountForm', [
 	    _demo_warning(),
-	    If(['auth_user'],
-	       Link(
-		   If([['auth_user'], '->require_otp'],
-		      'Reset OTP',
-		      'Convert your account to OTP',
-		   ),
-		  'USER_OTP')),
 	    vs_blank_cell(),
-	    String('Account Information:', 'page_heading', {
-		cell_colspan => 2,
-	    }),
-	    'UserAccountForm.Email.email',
-	    If(['auth_user'],
-	       Link('Click here to change your password', 'USER_PASSWORD')),
-	    ['UserAccountForm.RealmOwner.password', {
-		row_control => ['!', 'task_id', '->eq_user_account_edit'],
-	    }],
-	    String('Address:', 'page_heading'),
+	    '-account_information',
 	    'UserAccountForm.User.first_name',
 	    'UserAccountForm.User.last_name',
+	    'UserAccountForm.Email.email',
+	    ['UserAccountForm.RealmOwner.password', {
+		wf_widget => Link('Change password', 'USER_PASSWORD'),
+		row_control => If(['auth_user'], 1),
+		cell_class => 'field',
+	    }],
+	    [
+		vs_blank_cell(),
+		Link(
+		    If ([['auth_user'], '->require_otp'],
+			'Reset OTP',
+			'Convert your account to OTP',
+		    ),
+		    'USER_OTP',
+		)->put(row_control => If(['auth_user'], 1)),
+	    ],
+	    ['UserAccountForm.RealmOwner.password', {
+		row_control => If(['auth_user'], 0, 1),
+	    }],
+	    vs_blank_cell(),
+	    '-address',
 	    vs_address_fields('UserAccountForm', ''),
 	    vs_blank_cell(),
 	    '*ok_button',
@@ -109,10 +114,8 @@ sub cart {
 		    }),
 		]]),
 		vs_blank_cell(),
-		FormField('CartItemListForm.ok_button', {
-		    class => 'submit',
-		}),
-	    ], 1),
+		'*ok_button',
+	    ]),
 
 	    # Else
 	    'Your shopping cart is empty.',
@@ -157,7 +160,7 @@ sub checkout {
 		    'USER_ACCOUNT_CREATE_AND_PLACE_ORDER',
 		    'PLACE_ORDER',
 		),
-	    )),
+	    ))->put(cell_class => 'button_link'),
 	]]),
     );
 }
@@ -426,9 +429,10 @@ sub order_confirmation {
 		    BR(),
 		]),
 	    ),
-	    String([$order_field, 'Address' . $address . '.city']),
-	    ', ',
-	    String([$order_field, 'Address' . $address . '.state']),
+	    Join([
+		String([$order_field, 'Address' . $address . '.city']),
+		String([$order_field, 'Address' . $address . '.state']),
+	    ], ', '),
 	    vs_blank_cell(2),
 	    String([$order_field, 'Address' . $address . '.zip']),
 	]));
@@ -459,7 +463,9 @@ sub place_order {
 	vs_simple_form('OrderForm', [
 	    _demo_warning(),
 	    '-credit_card',
-	    'OrderForm.ECCreditCardPayment.card_number',
+	    ['OrderForm.ECCreditCardPayment.card_number', {
+		size => 30,
+	    }],
 	    ['OrderForm.ECCreditCardPayment.card_expiration_date', {
 		wf_class => 'MonthYear',
 		base_field => 'card_exp',
@@ -473,11 +479,18 @@ EOF
 	    'OrderForm.Order.bill_to_name',
 	    vs_address_fields('OrderForm'),
 	    vs_blank_cell(),
-	    'OrderForm.ship_to_billing_address',
+	    [vs_blank_cell(), FormField('OrderForm.ship_to_billing_address')],
 	    vs_blank_cell(),
 	    '*ok_button',
 	]),
     );
+}
+
+sub pre_compile {
+    my($self) = @_;
+    view_class_map('PetShopWidget');
+    view_shortcuts('Bivio::PetShop::ViewShortcuts');
+    return shift->SUPER::pre_compile(@_);
 }
 
 sub products {
