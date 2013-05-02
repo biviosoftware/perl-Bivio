@@ -31,10 +31,7 @@ sub get_label_and_field {
     # Creates a label for the field, and returns the (label, field) pair.
     return ($_VS->vs_new('FormFieldLabel', {
 	field => _get_field_name($self),
-	label => $_VS->vs_new(After =>
-	    $_VS->vs_new('Simple', $self->internal_get_label_value),
-	    ':',
-	),
+	label => $self->internal_get_label_widget,
 	map({
 	    my($v) = $self->unsafe_get($_);
 	    $v ? ($_ => $v) : ();
@@ -47,6 +44,14 @@ sub internal_get_label_value {
     # Returns the widget value which access the label.
     return $_VS->vs_new('Prose', $_VS->vs_text(
 	$self->get_or_default('form_field_label', $self->get('field'))));
+}
+
+sub internal_get_label_widget {
+    my($self) = @_;
+    return $_VS->vs_new(After =>
+	$_VS->vs_new('Simple', $self->internal_get_label_value),
+	':',
+    );
 }
 
 sub internal_new_args {
