@@ -140,6 +140,7 @@ __PACKAGE__->new({
  	    [qw(USER ADMINISTRATOR SITE_ROOT)],
 	]},
 	threepartpage_want_ForumDropDown => 1,
+	ThreePartPage_want_dock_left_standard => 1,
 	constant_bunit => [
 	    undef => undef,
 	    three => 3,
@@ -169,9 +170,11 @@ __PACKAGE__->new({
 	    credit_card => 'Credit Card Information',
 	    billing_address => 'Billing Address',
 	    shipping_address => 'Shipping Address',
+	    account_information => 'Account Information',
+	    address => 'Address',
 	]],
 	[[qw(Address Address_2)] => [
-	    street1 => 'Street Address',
+	    street1 => 'Street',
 	    state => 'State/Province',
 	    zip => 'Postal Code',
 	]],
@@ -190,7 +193,7 @@ __PACKAGE__->new({
 	[Order => [
 	    [qw(bill_to_name ship_to_name)] => 'Name',
 	]],
-	[[qw(Phone.phone Phone_2.phone)] => 'Telephone Number'],
+	[[qw(Phone.phone Phone_2.phone)] => 'Phone'],
 	[Product => [
 	    description => 'Description',
 	    name => 'Product Name',
@@ -224,13 +227,13 @@ __PACKAGE__->new({
 	    ok_button => 'Add to Cart',
 	]],
 	[UserAccountForm => [
-	    ok_button => 'Submit',
+	    ok_button => 'Update MyAccount',
 	]],
 	[UserPasswordForm => [
 	    ok_button => 'Change',
 	]],
 	[UserLoginForm => [
-	    ok_button => 'Submit',
+	    ok_button => 'Sign In',
 	    'StandardSubmit.bunit' => 'bunit',
 	    prose => [
 		prologue => q{String('Please sign into the bOP Pet Shop Demo', 'page_heading');},
