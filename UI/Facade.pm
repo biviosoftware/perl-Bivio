@@ -439,8 +439,8 @@ sub new {
     my($components) = [map(b_use('FacadeComponent', $_), sort(keys(%$config)))];
     foreach my $c (@$components) {
 	# Certain apps refer to Bivio::UI::<comp> without using
-	b_use('UI', $c->simple_package_name)
-	    unless b_use('FacadeComponent.Enum')->is_super_of($c);
+	$_CL->unsafe_map_require('UI', $c->simple_package_name)
+	    || $_CL->unsafe_map_require('FacadeComponent', $c->simple_package_name);
 	$c->handle_register;
     }
     _initialize($self, $config, $clone);
