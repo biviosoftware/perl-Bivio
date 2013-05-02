@@ -52,4 +52,7 @@ my($round_up) = sub {
     format_ignore_random => [
 	[undef, req()] => qr{\w+-\w+\@},
     ],
+    format_ignore => [
+	['a@B.C', req()] => qr{^ignore-a-b-c\@[^\@]+$}s,
+    ],
 ];
