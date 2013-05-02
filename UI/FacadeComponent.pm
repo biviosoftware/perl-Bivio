@@ -116,7 +116,7 @@ sub group {
 	    $name,
 	    _initialize_value($self, {
 		orig_config => $value,
-		names => [$name],
+		names => [lc($name)],
 	    }),
 	);
     }
