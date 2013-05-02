@@ -195,6 +195,7 @@ my($_TI) = b_use('Agent.TaskId');
 my($_T) = b_use('Agent.Task');
 my($_UA) = b_use('Type.UserAgent');
 my($_C) = b_use('IO.Config');
+my($_E) = b_use('Type.Email');
 my($_M) = b_use('Biz.Model');
 my($_V1) = $_C->if_version(1);
 my($_V7) = $_C->if_version(7);
@@ -436,12 +437,7 @@ sub format_email {
     # Will bomb if no auth_realm.
     return $self->get('auth_realm')->format_email
 	unless defined($email);
-    return $email
-	if $email =~ /\@/;
-    my($f) =  $self->unsafe_get('UI.Facade');
-    return $f->get('Email')->format($email)
-        if $f && $f->unsafe_get('Email');
-    return $email . '@' . Sys::Hostname::hostname();
+    return $_E->format_email($email, undef, undef, undef, $self);
 }
 
 sub format_http {
