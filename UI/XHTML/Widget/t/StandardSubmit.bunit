@@ -20,10 +20,10 @@ Widget({
 [
     ['ContactForm'] => qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="\s*\w+\s*"\s+class="submit" />.*<input type="submit" name="\S+" value="\s*Cancel\s*" onclick="reset\(\)" class="submit" />.*</div>},
     ['ContactForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="\s*\w+\s*"\s+class="submit" />.*</div>},
-    ['UserLoginForm'] => qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="\s*\w+\s*"\s+class="submit" />.*<input type="submit" name="\S+" value="\s*Cancel\s*" onclick="reset\(\)" class="submit" />.*</div>},
+    ['UserLoginForm'] => qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="[\s\w+]+"\s+class="submit" />.*<input type="submit" name="\S+" value="\s*Cancel\s*" onclick="reset\(\)" class="submit" />.*</div>},
     ['UserLoginForm', ''] => '',
-    ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="\s*\w+\s*"\s+class="submit" />.*</div>},
-    ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="\s*\w+\s*"\s+class="submit" />.*</div>},
+    ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="[\w\s]+"\s+class="submit" />.*</div>},
+    ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="[\w\s]+"\s+class="submit" />.*</div>},
     ['UserLoginForm', 'ok_button', {labels => {ok_button => 'StandardSubmit.bunit'}}]
 	=> qr{<div class="standard_submit">.*<input type="submit" name="\S+" value="bunit" class="submit" />.*</div>},
 ];
