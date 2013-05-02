@@ -13,7 +13,7 @@ Request('initialize_fully');
 		return [req('reply')->get(qw(output_type output))];
 	    },
 	} => [
-	    [path_info => '/pub/login'] => ['text/html', qr{Password:}i],
+	    [path_info => '/pub/login'] => ['text/html', qr{Password}i],
 	    [path_info => '/not-found'] => ['text/html', qr{not found}i],
 	    [path_info => '/fourem/file/private/image.gif'] => MODEL_NOT_FOUND(),
 	    [path_info => '/fourem/users'] => FORBIDDEN(),
