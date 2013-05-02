@@ -4,6 +4,7 @@ package Bivio::Delegate::SimpleWidgetFactory;
 use strict;
 use Bivio::Base 'UI.Widget';
 use Bivio::IO::Trace;
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -228,9 +229,8 @@ sub internal_create_edit {
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::EnumSet')) {
-	my(@f) = reverse(split('\.', $field));
 	return $_VS->vs_new('CheckboxGrid', {
-	    field => $f[0],
+	    field => SQL_Support()->extract_column_name($field),
 	    choices => $_TV->new(
 		$type,
 		$type->from_array([
