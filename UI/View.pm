@@ -319,7 +319,8 @@ sub render {
 
 sub unsafe_get_current {
     # Gets the view being rendered or evaled.  May return C<undef>.
-    return $_CURRENT;
+    # Sometimes $_CURRENT is -1, which doesn't make sense to return
+    return ref($_CURRENT) ? $_CURRENT : undef;
 }
 
 sub _clear_children {
