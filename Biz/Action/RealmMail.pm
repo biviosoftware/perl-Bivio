@@ -41,6 +41,7 @@ sub execute_receive {
     my($ea) = $rm->new_other('EmailAlias');
     my($email) = $ea->format_realm_as_incoming;
     my($out) = $_O->new($in)->set_headers_for_list_send({
+	req => $req,
 	list_email => $email,
 	sender => $ea->format_realm_as_sender($email),
 	reply_to_list => $proto->want_reply_to($req)
