@@ -91,10 +91,13 @@ sub cart {
 				task => 'ITEM_DETAIL',
 			    },
 			}],
-			'in_stock',
+			['in_stock', {
+			    column_heading => '',
+			}],
 			'CartItem.unit_price',
 			['CartItem.quantity', {
 			    size => 4,
+			    class => 'b_align_e',
 			}],
 			'total_cost',
 		    ], {
@@ -137,7 +140,9 @@ sub checkout {
 			task => 'ITEM_DETAIL',
 		    },
 		}],
-		'in_stock',
+		['in_stock', {
+		    column_heading => '',
+		}],
 		'CartItem.unit_price',
 		'CartItem.quantity',
 		'total_cost',
