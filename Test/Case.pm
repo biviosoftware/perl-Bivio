@@ -86,6 +86,10 @@ sub expect {
     return;
 }
 
+sub get_test {
+    return shift->get('test');
+}
+
 sub is_method {
     my($self, $method) = @_;
     return $self->get('method') eq $method ? 1 : 0;
