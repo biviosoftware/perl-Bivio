@@ -17,17 +17,19 @@ BEGIN {
 	},
     });
 }
-use Bivio::Test;
-use Bivio::Test::Unit;
-use Bivio::Test::Request;
-use Bivio::Agent::Task;
-my($req) = Bivio::Test::Request->initialize_fully;
-Bivio::Agent::Task->initialize;
+use Bivio::IO::ClassLoader;
+my($_CL) = Bivio::IO::ClassLoader->map_require('IO.ClassLoader');
+my($_DC) = $_CL->map_require('Bivio.DieCode');
+my($_U) = $_CL->map_require('TestUnit.Unit');
+my($_TI) = $_CL->map_require('Agent.TaskId');
+my($_AT) = $_CL->map_require('Agent.Task');
+my($req) = $_CL->map_require('Test.Request')->initialize_fully;
+$_AT->initialize;
 $req->setup_facade->ignore_redirects(0);
-Bivio::Test->new({
+$_CL->map_require('Bivio.Test')->new({
     create_object => sub {
 	my($case, $object) = @_;
-	return Bivio::Agent::Task->get_by_id($object->[0]);
+	return $_AT->get_by_id($object->[0]);
     },
     compute_params => sub {
 	my($case, $params, $method) = @_;
@@ -44,7 +46,7 @@ Bivio::Test->new({
 	my($t) = $req->get('task_id');
 	return 0
 	    unless $t;
-	Bivio::Test::Unit->builtin_assert_equals(
+	$_U->builtin_assert_equals(
 	    $case->get('expected_task'), $t->get_name);
 	return 1;
     },
@@ -53,7 +55,7 @@ Bivio::Test->new({
 	my($this, $next) = @$_;
 	$this => [
 	    execute => [
-		$next => $next eq 'FORBIDDEN' ? Bivio::DieCode->FORBIDDEN
+		$next => $next eq 'FORBIDDEN' ? $_DC->FORBIDDEN
 		    : [],
 	    ],
 	];
@@ -75,17 +77,17 @@ Bivio::Test->new({
  	    sub {
  		$req->put(is_test => 0);
  		return [$req];
- 	    } => Bivio::DieCode->FORBIDDEN,
+ 	    } => $_DC->FORBIDDEN,
  	],
 	put_attr_for_test => [
 	    [
 		form_model => 'Bivio::Biz::Model::UserLoginForm',
-		next => Bivio::Agent::TaskId->REDIRECT_TEST_5,
+		next => $_TI->REDIRECT_TEST_5,
 	    ] => undef,
 	],
 	get => [
 	    form_model => 'Bivio::Biz::Model::UserLoginForm',
-	    next => [Bivio::Agent::TaskId->REDIRECT_TEST_5],
+	    next => [$_TI->REDIRECT_TEST_5],
 	    attr_string => 'abc',
 	    attr_hash => [{a => 1}],
 	],
@@ -94,18 +96,18 @@ Bivio::Test->new({
 	    comparator => 'nested_contains',
 	} => [
 	    next => [{
-		task_id => Bivio::Agent::TaskId->REDIRECT_TEST_5,
+		task_id => $_TI->REDIRECT_TEST_5,
 	    }],
 	],
 	get_attr_as_id => [
-	    next => [Bivio::Agent::TaskId->REDIRECT_TEST_5],
+	    next => [$_TI->REDIRECT_TEST_5],
 	],
 	get_attr_as_task => [
-	    next => [Bivio::Agent::Task->get_by_id(Bivio::Agent::TaskId->REDIRECT_TEST_5)],
+	    next => [$_AT->get_by_id($_TI->REDIRECT_TEST_5)],
 	],
     ],
     DEVIANCE_1 => [
- 	execute => => Bivio::DieCode->DIE,
+ 	execute => => $_DC->DIE,
     ],
     UNSAFE_GET_REDIRECT => [
  	{
