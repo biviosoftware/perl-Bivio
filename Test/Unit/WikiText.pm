@@ -1,6 +1,6 @@
 # Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::WikiText;
+package Bivio::Test::Unit::WikiText;
 use strict;
 use Bivio::Base 'TestUnit.Widget';
 

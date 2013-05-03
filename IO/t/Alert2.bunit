@@ -46,7 +46,7 @@ options({
 		sub => 'Bivio::Test::Type::unit',
 	    },
 	    {
-		sub => 'Bivio::Test::Unit::run_unit',
+		sub => 'Bivio::Test::Unit::Unit::run_unit',
 	    },
 	],
     ],

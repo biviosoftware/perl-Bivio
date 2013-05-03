@@ -1,6 +1,6 @@
 # Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::ListModel;
+package Bivio::Test::Unit::ListModel;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 

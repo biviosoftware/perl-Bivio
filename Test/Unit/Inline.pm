@@ -1,6 +1,6 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::Inline;
+package Bivio::Test::Unit::Inline;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
@@ -10,11 +10,11 @@ sub run_unit {
     return shift->SUPER::run_unit(@_)
 	if @_ == 3;
     my($self, $sub_or_cases) = @_;
-    my($req) = $self->use('Bivio::Test::Request')->initialize_fully;
+    my($req) = b_use('Test.Request')->initialize_fully;
     return $self->SUPER::run_unit([
 	map({
 	    my($op) = $_;
-	    Bivio::Die->die($op, ': imperative cases are subs only')
+	    b_die($op, ': imperative cases are subs only')
 	        unless ref($op) eq 'CODE';
 	    ($self->builtin_class() => sub {
 		$op->();

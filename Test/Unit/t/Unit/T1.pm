@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::t::Unit::T1;
+package Bivio::Test::Unit::t::Unit::T1;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 

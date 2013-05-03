@@ -1,6 +1,6 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::ShellUtil;
+package Bivio::Test::Unit::ShellUtil;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 

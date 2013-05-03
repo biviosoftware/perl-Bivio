@@ -1,6 +1,6 @@
 # Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::ForumUserUnit;
+package Bivio::Test::Unit::ForumUserUnit;
 use strict;
 use Bivio::Base 'Test.Request';
 

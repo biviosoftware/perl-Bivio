@@ -1,6 +1,6 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::FieldWidget;
+package Bivio::Test::Unit::FieldWidget;
 use strict;
 use Bivio::Base 'TestUnit.Widget';
 

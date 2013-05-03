@@ -1,12 +1,12 @@
 # Copyright (c) 2005-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::Unit;
+package Bivio::Test::Unit::Unit;
 use strict;
 use Bivio::Base 'Bivio.Test';
 use File::Basename ();
 use File::Spec ();
 
-# C<Bivio::Test::Unit> is a simple wrapper for
+# C<Bivio::Test::Unit::Unit> is a simple wrapper for
 # L<Bivio::Test::unit|Bivio::Test/"unit"> that allows you to declare different
 # test types.  You create a ".bunit" file which looks like:
 #
@@ -442,7 +442,7 @@ sub builtin_var {
 	    foreach my $i (0 .. 10) {
 		$c = (caller($i))[3];
 		return _var_get($proto, $name)
-		    if $c =~ /^Bivio::Test::FormModel::__ANON__/;
+		    if $c =~ /^Bivio::Test::Unit::FormModel::__ANON__/;
 		next unless $c =~ /^Bivio::Test::_eval_(\w+)$/;
 		$c = $1;
 		return _var_get($proto, $name)
@@ -532,6 +532,19 @@ sub run_unit {
     )->unit(@_);
 }
 
+sub unit_from_method_group {
+    return shift->SUPER::unit(@_)
+	if @_ > 2;
+    my($self, $group) = @_;
+    my($c) = $self->builtin_class;
+    return $self->SUPER::unit(ref($group->[0]) eq 'ARRAY' ? $group : [
+	map({
+	    my($next) = [splice(@$group, 0, 2)];
+	    $c eq $next->[0] ? @$next : ($c => $next);
+	} 1 .. @$group/2),
+    ]);
+}
+
 sub _assert_expect {
     my($invert, $self, $expect, $actual, $comment) = @_;
     my($m) = $self->my_caller eq 'builtin_assert_equals'
@@ -553,7 +566,7 @@ sub _called_in_closure {
     foreach my $i (3..5) {
 	my($sub) = (caller($i))[3];
 	return 1
-	    if $sub =~ qr{^\w+::Test::Unit::__ANON__$};
+	    if $sub =~ qr{^\w+::(?:Test::Unit|Test|TestUnit)::Unit::__ANON__$};
 	last unless $sub =~ /AUTOLOAD|__ANON__/;
     }
     return 0;

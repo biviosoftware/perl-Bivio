@@ -5,9 +5,9 @@ my($var) = 0;
 [
     class() => [
 	eval => [
-	    [sub {(caller)[0]}] => 'Bivio::Test',
-	    ['(caller)[0]'] => 'Bivio::Test',
-	    [sub {$sub->()}] => 'Bivio::Test::Unit',
+	    [sub {(caller)[0]}] => Bivio_Test()->package_name,
+	    ['(caller)[0]'] => Bivio_Test()->package_name,
+	    [sub {$sub->()}] => TestUnit_Unit()->package_name,
 	],
 	catch_and_rethrow => [
 	    [sub {'a'}, sub {$var = 1}] => sub {

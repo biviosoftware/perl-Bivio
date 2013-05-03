@@ -1,6 +1,6 @@
 # Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::Widget;
+package Bivio::Test::Unit::Widget;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
@@ -63,14 +63,14 @@ sub run_unit {
 	if @_ == 3;
     my($self, $cases) = @_;
     my($fields) = $self->[$_IDI];
-    my($req) = Bivio::Test::Request->get_instance;
+    my($req) = b_use('Test.Request')->get_instance;
     my($i) = 0;
     my($res);
     my($pkg) = __PACKAGE__;
     $req->put(
 	"$pkg.view_pre_compile" => $fields->{view_pre_compile},
 	$pkg => sub {
-	    $res = Bivio::Test->new({
+	    $res = b_use('Bivio.Test')->new({
 		map($fields->{$_} ? ($_ => $fields->{$_}) : (), qw(
 		    class_name
 		    create_object
@@ -89,7 +89,7 @@ sub run_unit {
 view_class_map(q{$fields->{view_class_map}});
 view_shortcuts(q{$fields->{view_shortcuts}});
 (sub {
-    my(\$req) = Bivio::Test::Request->get_instance;
+    my(\$req) = b_use('Test.Request')->get_instance;
     \$req->get('$pkg.view_pre_compile')->(
         Bivio::UI::ViewLanguage->unsafe_get_eval,
         \$req,

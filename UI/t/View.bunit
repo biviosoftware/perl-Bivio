@@ -37,7 +37,7 @@ view_main(Page({
 EOF
 	    =>  qr{hello.*goodbye}s,
 	    [sub {
-	    	 # Can't AUTOLOAD, because Bivio::Test::Unit already has it.
+	    	 # Can't AUTOLOAD, because TestUnit.Unit already has it.
 	    	 # This works well enough, but normally, you would just
 	    	 # "use Bivio::UI::ViewLanguageAUTOLOAD;" to get this behavior.
 	    	 package Bivio::UI::ViewLanguage;

@@ -1,6 +1,6 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::PropertyModel;
+package Bivio::Test::Unit::PropertyModel;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
@@ -48,7 +48,7 @@ sub _walk_tree_actual {
 	       keys(%$e))}
 	: @$names == 1 && $o->has_fields($names->[0])
 	? $o->get($names->[0])
-	: Bivio::Test::Request->get_instance->unsafe_get_nested(@$names);
+	: b_use('Test.Request')->get_instance->unsafe_get_nested(@$names);
 }
 
 sub _walk_tree_expect {

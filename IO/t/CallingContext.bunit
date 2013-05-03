@@ -17,7 +17,7 @@ my($here) = sub {class()->new_from_caller(@_)};
 	],
     ],
     sub {$here->()} => [
-	as_string => qr{^Bivio::Test::Unit::__ANON__:\(eval \d+\):\d+$},
+	as_string => qr{^Bivio::Test::Unit::Unit::__ANON__:\(eval \d+\):\d+$},
     ],
     sub {$here->([qr{Hello|Bivio::Test|Goodbye$}])} => [
 	as_string => qr{Die.pm:\d+},

@@ -1,6 +1,6 @@
 # Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::Type;
+package Bivio::Test::Unit::Type;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
@@ -27,16 +27,7 @@ sub handle_test_unit_autoload_ok {
 }
 
 sub unit {
-    return shift->SUPER::unit(@_)
-	if @_ > 2;
-    my($self, $group) = @_;
-    my($c) = $self->builtin_class;
-    return $self->SUPER::unit(ref($group->[0]) eq 'ARRAY' ? $group : [
-	map({
-	    my($next) = [splice(@$group, 0, 2)];
-	    $c eq $next->[0] ? @$next : ($c => $next);
-	} 1 .. @$group/2),
-    ]);
+    return shift->unit_from_method_group(@_);
 }
 
 1;

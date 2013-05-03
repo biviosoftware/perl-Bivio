@@ -1,6 +1,6 @@
 # Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::Test::FormModel;
+package Bivio::Test::Unit::FormModel;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
@@ -134,7 +134,7 @@ sub run_unit {
     return shift->SUPER::run_unit(@_)
 	if @_ == 3;
     my($self, $case_group) = @_;
-    my($req) = Bivio::Test::Request->initialize_fully;
+    my($req) = b_use('Test.Request')->initialize_fully;
     return $self->SUPER::run_unit(
 	$self->map_by_two(sub {
             my($params, $return) = @_;

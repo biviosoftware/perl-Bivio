@@ -333,7 +333,7 @@ sub merge_class_loader {
 		    Test => ['Bivio::Test'],
 		    TestHTMLParser => ['Bivio::Test::HTMLParser'],
 		    TestLanguage => ['Bivio::Test::Language'],
-		    TestUnit => ['Bivio::Test'],
+		    TestUnit => ['Bivio::Test::Unit'],
 		    TextWidget => ['Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
 		    Type => ['Bivio::Type', 'Bivio::Auth'],
 		    UI => ['Bivio::UI'],
