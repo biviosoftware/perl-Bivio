@@ -489,6 +489,7 @@ sub _compile_object {
     my($self, $state, $tests, $object, $methods) = @_;
     # Validates $object and sets object info on state.  Compiles methods.
     $state = _compile_options($state, 'object', $object);
+    $state->{test} = $self;
     if ($state->{class_name}) {
 	$state->{create_object} = \&default_create_object
 	    unless $state->{create_object};
