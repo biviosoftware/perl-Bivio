@@ -227,7 +227,7 @@ __PACKAGE__->new({
 	    ok_button => 'Add to Cart',
 	]],
 	[UserAccountForm => [
-	    ok_button => 'Update MyAccount',
+	    ok_button => q{If(['auth_user_id'], 'Update MyAccount', 'Create MyAccount');},
 	]],
 	[UserPasswordForm => [
 	    ok_button => 'Change',
