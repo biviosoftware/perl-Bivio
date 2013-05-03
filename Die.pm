@@ -102,11 +102,10 @@ sub catch {
 	    _new_from_core_die(
 		$proto,
 		Bivio::DieCode->DIE,
-		{
+		_add_program_error({
 		    message => $msg eq "\n" ? $_A->get_last_warning
 			: $_A->fixup_perl_error($msg, 1),
-		    program_error => 1,
-		},
+		}),
 		(caller)[0,1,2],
 		Carp::longmess("die"),
 	       ),
@@ -197,10 +196,8 @@ sub die {
 	? shift : $_A->calling_context;
     $proto->throw(
         $cc,
-	Bivio::DieCode->DIE, {
-	    message => $_A->format_args(@_),
-	    program_error => 1,
-	},
+	Bivio::DieCode->DIE,
+	_add_program_error({message => $_A->format_args(@_)}),
 	Carp::longmess('Bivio::Die::die'),
     );
     # DOES NOT RETURN
@@ -386,6 +383,14 @@ sub throw_quietly {
     # DOES NOT RETURN
 }
 
+sub _add_program_error {
+    my($attrs) = @_;
+    $attrs ||= {};
+    $attrs->{program_error} = 1
+	unless exists($attrs->{program_error});
+    return $attrs;
+}
+
 sub _as_string_args {
     my($self) = @_;
     my($attrs) = {%{$self->unsafe_get('attrs') || {}}};
@@ -421,7 +426,7 @@ sub _check_code {
     # Validates code and sets attributes to error state if invalid.
     my($code, $attrs) = @_;
     unless (defined($code)) {
-	$attrs->{program_error} = 1;
+	$attrs = _add_program_error($attrs);
 	return Bivio::DieCode->UNKNOWN;
     }
     return $code
@@ -429,7 +434,8 @@ sub _check_code {
     my($c) = Bivio::DieCode->unsafe_from_any($code);
     return $c
 	if $c;
-    %$attrs = (code => $code, attrs => {%$attrs}, program_error => 1);
+    %$attrs = (code => $code, attrs => {%$attrs});
+    $attrs = _add_program_error($attrs);
     return Bivio::DieCode->INVALID_DIE_CODE;
 }
 
@@ -457,8 +463,7 @@ sub _handle_die {
     eval {
 	local($SIG{__DIE__});
 	my($self) = @_;
-	_print_stack($self)
-	    if _want_stack_trace($self);
+	_print_stack($self);
 	my($i) = 0;
 	my(@a);
 	my($prev_proto) = '';
@@ -513,20 +518,18 @@ sub _handle_die {
 		_new_from_core_die(
 		    $self,
 		    Bivio::DieCode->DIE_WITHIN_HANDLE_DIE,
-		    {
+		    _add_program_error({
 			message => $msg,
 			proto => $proto,
-			program_error => 1,
 			file => $1,
 			line => $2,
-		    },
+		    }),
 		    ref($proto) || $proto, $1, $2,
 		    Carp::longmess('Bivio::Die::_handle_die'),
 		);
 	    }
 	}
-	_print_stack_other($self)
-	    if _want_stack_trace($self);
+	_print_stack_other($self, 'stack_other');
 	1;
     } || warn($@);
     return;
@@ -556,9 +559,9 @@ sub _new {
 	$_CURRENT_SELF = $self;
     }
     _trace($self) if $_TRACE;
-    # After trace, so not too verbose
+    # After trace, since we print stack separately
     $self->put(stack => $stack || '');
-    _print_stack($self) if $_TRACE || $_STACK_TRACE;
+    _print_stack($self);
     return $self;
 }
 
@@ -590,19 +593,13 @@ sub _new_from_eval_syntax_error {
     my($self) = _new_from_throw(
 	$proto,
 	Bivio::DieCode->DIE,
-	{
-	    message => $msg,
-	    program_error => 1,
-	},
+	_add_program_error({message => $msg}),
 	undef,
 	undef,
 	undef,
 	Carp::longmess($msg),
     );
-    _print_stack($self)
-	if $_TRACE || $_STACK_TRACE || $_STACK_TRACE_ERROR
-	&& ($self->unsafe_get('attrs') || {program_error => 1})
-	->{program_error};
+    _print_stack($self);
     return $self;
 }
 
@@ -627,20 +624,30 @@ sub _new_from_throw {
 }
 
 sub _print_stack {
-    # (self) : undef
-    # Prints the stack trace.
-    my($self) = @_;
-    my($sp, $tq) = $self->unsafe_get('stack_printed', 'throw_quietly');
+    my($self, $which) = @_;
+    $which ||= 'stack';
+    my($key) = $which . '_printed';
+    my($sp, $tq) = $self->unsafe_get($key, 'throw_quietly');
     return
 	if $sp;
     return
-	unless $_TRACE || $_STACK_TRACE || !$tq && !$_CATCH_QUIETLY;
-    $_A->print_literally(
-	$self->as_string, "\n",
-	$self->unsafe_get('stack'),
-	$_STACK_TRACE_SEPARATOR,
-    );
-    $self->put(stack_printed => 1);
+	unless $_TRACE
+	|| $_STACK_TRACE
+	|| !$tq
+	&& !$_CATCH_QUIETLY
+	&& $_STACK_TRACE_ERROR
+	&& _add_program_error($self->unsafe_get('attrs'))->{program_error};
+    if ($which eq 'stack') {
+	$_A->print_literally(
+	    $self->as_string, "\n",
+	    $self->unsafe_get('stack'),
+	    $_STACK_TRACE_SEPARATOR,
+	);
+    }
+    else {
+	_print_stack_other($self);
+    }
+    $self->put($key => 1);
     return;
 }
 
@@ -667,13 +674,5 @@ sub _print_stack_other {
     );
 }
 
-sub _want_stack_trace {
-    my($self) = @_;
-    return $_TRACE
-	|| $_STACK_TRACE
-	|| $_STACK_TRACE_ERROR
-	&& ($self->unsafe_get('attrs') || {program_error => 1})->{program_error};
-    return;
-}
 
 1;
