@@ -242,8 +242,13 @@ sub join_tag {
 	(my $n = $r->get('owner_name')) =~ s/\W/_/g;
 	unshift(@tag, 'realm_owner_' . $n);
     }
-    return int(@tag) == 1 && $tag[0] =~ /^[a-z0-9_.]+$/ ? $tag[0]
+    return int(@tag) == 1 && $tag[0] =~ /^[a-z0-9_\.]+$/ ? $tag[0]
 	: join($proto->SEPARATOR, map((length($_) ? $_ : ()), @tag));
+}
+
+sub split_tag {
+    my($self, $tag) = @_;
+    return [split(/\./, $tag)];
 }
 
 sub unsafe_get_value {
