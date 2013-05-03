@@ -2,7 +2,7 @@
 # $Id$
 Request('setup_facade');
 [
-    sub {req('Bivio::UI::Facade', 'Icon')} => [
+    sub {class()->get_from_source(req())} => [
 	format_css => [
 	    [logo => req()] => 'url(/i/logo.gif)',
 	    logo => 'url(/i/logo.gif)',

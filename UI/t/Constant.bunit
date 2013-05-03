@@ -2,7 +2,7 @@
 # $Id$
 Request('setup_facade');
 [
-    sub {req('Bivio::UI::Facade', 'Constant')} => [
+    sub {class()->get_from_source(req())} => [
 	get_value => [
 	    [qw(constant_bunit undef)] => [undef],
 	    [qw(constant_bunit three)] => 3,
