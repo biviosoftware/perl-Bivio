@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2011 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::Widget::ControlBase;
 use strict;
@@ -7,6 +7,7 @@ use Bivio::Base 'UI.Widget';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = b_use('Agent.TaskId');
 my($_A) = b_use('IO.Alert');
+my($_WS) = b_use('FacadeComponent.WidgetSubstitute');
 
 sub control_off_render {
     my($self, $source, $buffer) = @_;
@@ -49,6 +50,10 @@ sub is_control_on {
 
 sub render {
     my($self, $source, $buffer) = @_;
+    if (defined(my $ws = $_WS->get_widget_substitute_value($self, $source))) {
+	$$buffer .= $ws;
+	return;
+    }
     my($method) = $self->is_control_on($source)
 	? 'control_on_render' : 'control_off_render';
     return $self->$method($source, $buffer);
