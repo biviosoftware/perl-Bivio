@@ -4,6 +4,7 @@ package Bivio::Biz::FormModel;
 use strict;
 use Bivio::Base 'Biz.Model';
 use Bivio::IO::Trace;
+b_use('IO.ClassLoaderAUTOLOAD');
 
 # C<Bivio::Biz::FormModel> is the business logic behind HTML forms.  A FormModel
 # has fields like other models.  Fields are either I<visible> or
@@ -72,6 +73,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 b_use('AgentHTTP.Cookie')->register(__PACKAGE__);
 my($_V1) = b_use('IO.Config')->if_version(1);
 my($_V9) = b_use('IO.Config')->if_version(9);
+my($_ENUM_SET_SEP) = '_';
 
 sub CANCEL_BUTTON_NAME {
     return 'cancel_button';
@@ -131,34 +133,33 @@ sub create_or_update_model_properties {
 }
 
 sub enum_set_fields_decl {
-    my($self, $model, $field) = @_;
-    my($type) = $self->new_other($model)->get_field_type($field);
-    return (
-	{
-	    name => "$model.$field",
-	    constraint => 'NONE',
+    my($self, $qualified_field) = @_;
+    return _with_enum_set_field(
+	$self,
+	$qualified_field,
+	sub {
+	    my($type, $column_name) = @_;
+	    return (
+		{
+		    name => $qualified_field,
+		    constraint => 'NONE',
+		},
+		$self->field_decl([
+		    map(
+			[
+			    join(
+				$_ENUM_SET_SEP,
+				$column_name,
+				$_->as_int,
+			    ),
+			    'Boolean',
+			],
+			$type->get_enum_type->get_non_zero_list,
+		    ),
+		]),
+	    );
 	},
-	$self->field_decl([
-	    map(
-		[join('_', $field, $_->as_int), 'Boolean'],
-		$type->get_enum_type->get_non_zero_list,
-	    ),
-	]),
     );
-}
-
-sub enum_set_from_fields {
-    my($self, $model, $field) = @_;
-    my($type) = $self->new_other($model)->get_field_type($field);
-    return ${$type->from_array([
-	$type->get_enum_type->do_non_zero_list(
-	    sub {
-		my($enum) = @_;
-		return $self->get(join('_', $field, $enum->as_int))
-		    ? $enum : ();
-	    },
-	),
-    ])};
 }
 
 sub execute {
@@ -623,6 +624,35 @@ sub internal_pre_parse_columns {
     return;
 }
 
+sub internal_put_enum_set_from_fields {
+    my($self, $qualified_field) = @_;
+    _with_enum_set_field(
+	$self,
+	$qualified_field,
+	sub {
+	    my($type, $column_name) = @_;
+	    $self->internal_put_field(
+		$qualified_field,
+		${$type->from_array([
+		    $type->get_enum_type->do_non_zero_list(
+			sub {
+			    my($enum) = @_;
+			    return $self->get(
+				join(
+				    $_ENUM_SET_SEP,
+				    $column_name,
+				    $enum->as_int,
+				)
+			    ) ? $enum : ();
+			},
+		    ),
+		])},
+	    );
+	},
+    );
+    return;
+}
+
 sub internal_put_error {
     return shift->internal_put_error_and_detail(shift, shift);
 }
@@ -649,6 +679,24 @@ sub internal_put_field {
         $self->internal_get->{$k} = $v;
 	return;
     }, \@_);
+    return;
+}
+
+sub internal_put_fields_from_enum_set {
+    my($self, $qualified_field, $set) = @_;
+    _with_enum_set_field(
+	$self,
+	$qualified_field,
+	sub {
+	    my($type, $column_name) = @_;
+	    $self->internal_put_field(
+		map(
+		    (join($_ENUM_SET_SEP, $column_name, $_->as_int) => 1),
+		    @{$type->to_array($set)},
+		),
+	    );
+	},
+    );
     return;
 }
 
@@ -1451,6 +1499,12 @@ sub _validate {
 	unless my $e = $op->($self->unsafe_get($field));
     $self->internal_put_error($field, $e);
     return 0;
+}
+
+sub _with_enum_set_field {
+    my($self, $qualified_field, $op) = @_;
+    my($info) = SQL_Support()->parse_column_name($qualified_field);
+    return $op->($info->{type}, $info->{column_name});
 }
 
 1;
