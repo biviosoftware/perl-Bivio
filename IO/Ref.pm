@@ -39,7 +39,7 @@ sub nested_contains {
     # enums get_name(), then the match is ok.
     #
     # The purpose of contains is to find a general matching of values for unit
-    # testing.  See Bivio::Test::Unit::assert_contains for details.
+    # testing.  See TestUnit.Unit->assert_contains for details.
     return _diff(@_);
 }
 
