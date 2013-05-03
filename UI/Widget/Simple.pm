@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::Widget::Simple;
 use strict;
-use Bivio::Base 'UI.Widget';
+use Bivio::Base 'Widget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -19,10 +19,12 @@ sub execute {
 }
 
 sub initialize {
-    return shift->initialize_attr('value');
+    my($self) = @_;
+    $self->initialize_attr('value');
+    return shift->SUPER::initialize(@_);
 }
 
-sub render {
+sub control_on_render {
     shift->render_attr('value', @_);
     return;
 }
