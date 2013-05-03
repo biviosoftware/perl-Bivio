@@ -27,7 +27,7 @@ sub NEW_ARGS {
 }
 
 sub control_on_render {
-    my($self, $source, $buffer) = @_;
+    my($self, $source, $wo) = shift->widget_render_args(@_);
     my($buf) = '';
     $self->can('render_tag_value') ? $self->render_tag_value($source, \$buf)
 	: $self->render_attr('value', $source, \$buf);
@@ -47,8 +47,10 @@ sub control_on_render {
           );
     my($v) = '';
     $self->internal_tag_render_attrs($source, \$v);
-    $$buffer .= "<$t$v"
-	. (length($buf) || !_empty($t) ? ">$pre$buf$post</$t>" : ' />');
+    $wo->append_buffer(
+	"<$t$v",
+	(length($buf) || !_empty($t) ? ('>', \$pre, \$buf, \$post, "</$t>") : ' />'),
+    );
     return;
 }
 
