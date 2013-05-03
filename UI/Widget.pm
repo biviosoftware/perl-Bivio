@@ -138,6 +138,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 my($_V1) = b_use('IO.Config')->if_version(1);
 my($_CL) = b_use('IO.ClassLoader');
+my($_WO) = b_use('UI.WidgetOutput');
 
 sub accepts_attribute {
     # Does the widget accept this attribute?
@@ -442,6 +443,10 @@ sub unsafe_resolve_widget_value {
 	) if --$i < 0;
     }
     return $value;
+}
+
+sub widget_render_args {
+    return (shift, shift, $_WO->new_from_buffer(shift), @_);
 }
 
 sub _label {
