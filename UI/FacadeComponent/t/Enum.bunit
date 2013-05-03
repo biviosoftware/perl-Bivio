@@ -2,7 +2,7 @@
 # $Id$
 Request('setup_facade');
 [
-    sub {req('Bivio::UI::Facade', 'Enum')} => [
+    sub {class()->get_from_source(req())} => [
 	facade_text_for_object => [
 	    [Type_BunitEnum('NAME1'), req()] => 'First Description',
 	],

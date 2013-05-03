@@ -2,7 +2,7 @@
 # $Id$
 Request('initialize_fully');
 [
-    sub {req('Bivio::UI::Facade', 'Color')} => [
+    sub {class()->get_from_source(req())} => [
 	format_css => [
 	    'bunit-border' => 'border-color: #00FF00;',
 	    bunit_border => 'color: #00FF00;',
@@ -12,7 +12,7 @@ Request('initialize_fully');
     ],
     sub {
 	req()->setup_facade('other');
-	return req('Bivio::UI::Facade', 'Color');
+	return class()->get_from_source(req());
     } => [
 	format_css => [
 	    b_day_of_month_create_hidden => 'color: #FF88FF;',

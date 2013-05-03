@@ -13,7 +13,7 @@ config({
 });
 req()->initialize_fully;
 [
-    sub {req('Bivio::UI::Facade', 'Icon')} => [
+    sub {class()->get_from_source(req())} => [
 	format_css => [
 	    my_icon => 'url(/i/my_icon.gif)',
 	    my_icon => 'url(/i/my_icon.gif)',

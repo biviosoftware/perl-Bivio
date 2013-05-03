@@ -2,7 +2,7 @@
 # $Id$
 Request('setup_facade');
 [
-    sub {req('Bivio::UI::Facade', 'Text')} => [
+    sub {class()->get_from_source(req())} => [
 	get_value => [
 	    test_text => 'Global',
 	    'Test_Text_Parent.test_text' => 'Child',

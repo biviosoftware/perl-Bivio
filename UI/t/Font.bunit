@@ -2,7 +2,7 @@
 # $Id$
 Request('setup_facade');
 [
-    sub {req('Bivio::UI::Facade', 'Font')} => [
+    sub {class()->get_from_source(req())} => [
 	format_html => [
 	    ['page_text', req()] => ['<font face="arial,sans-serif" color="#000000">', '</font>'],
 	],
