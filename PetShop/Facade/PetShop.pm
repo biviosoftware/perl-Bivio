@@ -156,6 +156,20 @@ __PACKAGE__->new({
 	[bunit_simple => 'simple text'],
 	[bunit_escape => '"quoted"\backslash'],
 	[bunit_newline => "new\nline"],
+	[realm_owner_demo => [
+	    bunit_level1 => [
+		'' => 'demo_1',
+		bunit_level2 => [
+		    bunit_level3 => 'demo_3',
+		],
+	    ],
+	]],
+	[bunit_level1 => [
+	    '' => 'anon_1',
+	    bunit_level2 => [
+		bunit_level3 => 'anon_3',
+	    ],
+	]],
 	# Where to redirect to when coming in via /,
 	# i.e. http://petshop.bivio.biz
 	[home_page_uri => '/pub'],
@@ -333,6 +347,9 @@ __PACKAGE__->new({
 		[NAME2 => '2nd'],
 	    ],
 	],
+    ]),
+    b_use('FacadeComponent.WidgetSubstitute')->make_facade_decl([
+	[qw(Simple bunit_label1 bunit_v1)],
     ]),
 });
 
