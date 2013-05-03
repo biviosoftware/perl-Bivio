@@ -1,0 +1,23 @@
+# Copyright (c) 2013 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Unit();
+my($buffer) = 'a';
+[
+    sub {
+	class()->new_from_buffer(\$buffer);
+    } => [
+	{
+	    method => 'append_buffer',
+	    compute_return => sub {
+		return [$buffer];
+	    },
+	} => [
+	    [undef] => 'a',
+	    'b' => 'ab',
+	    ['c', \('d')] => 'abcd',
+	    [\(undef)] => 'abcd',
+	    [\('e')] => 'abcde',
+	    [Type_Gender('MALE')] => DIE(),
+	],
+    ],
+];
