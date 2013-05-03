@@ -194,8 +194,6 @@ form span.error_arrow{
  top: -6px;
  right: -10px;
 }
-td.error_bubble {
-}
 td.error_arrow {
  padding-top: 2ex;
  vertical-align: top;
@@ -216,6 +214,9 @@ form input, form textarea, form select{
  padding:5px
 }
 form input:hover, form textarea:hover, form select:hover{
+ border:1px solid #a0a0a0
+}
+form input:focus, form textarea:focus, form select:focus{
  border:1px solid #a0a0a0
 }
 .standard_submit, form .submit {
