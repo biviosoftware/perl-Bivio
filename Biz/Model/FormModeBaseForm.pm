@@ -28,30 +28,33 @@ sub execute_ok_edit {
 }
 
 sub internal_initialize {
-    my($self) = @_;
-    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-        version => 1,
-        other => [
-	    $self->field_decl([
-		[qw(form_mode FormMode)],
-		['list_model', 'Model.' . $self->LIST_MODEL],
-	    ]),
-	],
-    });
+    my(undef, $delegator, $info) = shift->delegated_args(@_);
+    return $delegator->merge_initialize_info(
+	$info || $delegator->SUPER::internal_initialize,
+	{
+	    version => 1,
+	    other => [
+		$delegator->field_decl([
+		    [qw(form_mode FormMode)],
+		    ['list_model', 'Model.' . $delegator->LIST_MODEL],
+		]),
+	    ],
+	},
+    );
 }
 
 sub internal_pre_execute {
-    my($self) = @_;
-    my(@res) = shift->SUPER::internal_pre_execute(@_);
-    my($lm) = $self->new_other($self->LIST_MODEL);
-    my($fm) = $_FM->setup_by_list_this($lm, $self->PROPERTY_MODEL);
-    $self->internal_put_field(
+    my(undef, $delegator) = shift->delegated_args(@_);
+    my(@res) = $delegator->SUPER::internal_pre_execute(@_);
+    my($lm) = $delegator->new_other($delegator->LIST_MODEL);
+    my($fm) = $_FM->setup_by_list_this($lm, $delegator->PROPERTY_MODEL);
+    $delegator->internal_put_field(
 	map(
 	    ($_ => $lm->get($_)),
 	    @{$lm->get_info('primary_key_names')},
 	),
     ) if $fm->eq_edit;
-    $self->internal_put_field(
+    $delegator->internal_put_field(
 	form_mode => $fm,
 	list_model => $lm,
     );
@@ -59,11 +62,13 @@ sub internal_pre_execute {
 }
 
 sub is_create {
-    return shift->get('form_mode')->eq_create;
+    my(undef, $delegator) = shift->delegated_args(@_);
+    return $delegator->get('form_mode')->eq_create;
 }
 
 sub is_edit {
-    return shift->get('form_mode')->eq_edit;
+    my(undef, $delegator) = shift->delegated_args(@_);
+    return $delegator->get('form_mode')->eq_edit;
 }
 
 sub _dispatch {
