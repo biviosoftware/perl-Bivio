@@ -189,7 +189,8 @@ sub _self {
 sub _value {
     my($value, $decl, $caller_proto, $error) = @_;
     my($v, $e) = !$decl->{type} ? $$value
-	: $caller_proto->b_can('from_literal', $decl->{type})
+	: ($caller_proto->b_can('from_literal', $decl->{type})
+	       || UNIVERSAL::isa($decl->{type}, 'Bivio::Delegator'))
 	? $decl->{type}->from_literal($$value)
 	: $decl->{type}->is_blesser_of($$value)
         ? $$value
