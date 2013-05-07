@@ -634,7 +634,7 @@ sub internal_put_enum_set_from_fields {
 	    $self->internal_put_field(
 		$qualified_field,
 		${$type->from_array([
-		    $type->get_enum_type->do_non_zero_list(
+		    $type->get_enum_type->map_non_zero_list(
 			sub {
 			    my($enum) = @_;
 			    return $self->get(
