@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,89 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.53  2013/05/07 22:29:44  moeller
+  * Bivio::Agent::Task
+  * Bivio::Biz::Action::ECSecureSourceProcessor
+  * Bivio::Biz::Action::SiteRoot
+  * Bivio::Biz::Action::WikiView
+  * Bivio::Biz::Model::CRMActionList
+  * Bivio::Ext::NetFTP
+  * Bivio::UI::HTML::Format::Link
+  * Bivio::UI::HTML::Widget::Grid
+  * Bivio::UI::HTML::Widget::ImageFormButton
+  * Bivio::UI::HTML::Widget::Image
+  * Bivio::UI::HTML::Widget::LineCell
+  * Bivio::UI::HTML::Widget::Page
+  * Bivio::UI::HTML::Widget::Select
+  * Bivio::UI::HTML::Widget::String
+  * Bivio::UI::HTML::Widget::Style
+  * Bivio::UI::HTML::Widget::TableBase
+  * Bivio::UI::HTML::Widget::Table
+  * Bivio::UI::HTML::Widget::TextArea
+  * Bivio::UI::View::CRM
+  * Bivio::UI::XHTML::ViewShortcuts
+    b_use(FacadeComponent.*)
+  * Bivio::BConf
+    Moved TestUnit map classes to Bivio::Test::Unit
+    added Bivio::UI::CSS::Widget to CSSWidget map
+  * Bivio::Biz::FormModel
+    change enum_set_fields_decl to take qualified field
+    move enum_set_from_fields to internal_put_enum_set_from_fields
+    add internal_put_fields_from_enum_set
+    do_non_zero_list -> map_non_zero_list
+    b_use(FacadeComponent.*)
+  * Bivio::Biz::Model::FormModeBaseForm
+    make delegatable
+  * Bivio::Die
+    print other attributes named "stack" as stack traces
+  * Bivio::Test::Case
+    added get_test
+  * Bivio::Test
+    added test ($self) attr onto case
+  * Bivio::Type::Enum
+    do_list -> map_list, do_non_zero_list -> map_non_zero_list
+  * Bivio::UI::CSS::ViewShortcuts
+    added vs_css_color()
+  * Bivio::UI::FacadeBase
+    added WidgetSubstitute (empty)
+    added FacadeComponent.ViewSupport
+    added default colors for fancy_input
+  * Bivio::UI::FacadeComponent::Text
+    join_tag optimization was broken: had "." instead of \.
+    added split_tag
+  * Bivio::UI::FacadeComponent::ViewSupport
+    NEW
+  * Bivio::UI::FacadeComponent::WidgetSubstitute
+    NEW
+  * Bivio::UI::HTML::Widget::FormField
+    added fancy_input config value, shows error in left bubble
+  * Bivio::UI::HTML::Widget::SourceCode
+    added method anchor for Views
+  * Bivio::UI::HTML::Widget::Tag
+    use WidgetOutput instead of appending to buffer directly
+  * Bivio::UI::HTML::Widget::TaskInfo
+    refactored
+    added method anchors for Views
+  * Bivio::UI::View::CSS
+    added fancy_input config
+  * Bivio::UI::View
+    move the cache to FacadeComponent.ViewSupport so facades are doing the
+    caching which will allow different view_class_map (etc.) per facade.
+  * Bivio::UI::Widget::ControlBase
+    use WidgetSubstitute as override for widget
+  * Bivio::UI::Widget::Simple
+    subclass ControlBase.  This doesn't always make subclasses of this
+    class work right, because they call render, not control_on_render
+  * Bivio::UI::WidgetOutput
+    NEW
+  * Bivio::UI::Widget
+    added widget_render_args which calls WidgetOutput
+  * Bivio::UI::XHTML::Widget::FormFieldLabel
+    added error bubble for fancy_input
+    set class label on error_bubble
+  * Bivio::UI::XHTML::Widget::StandardSubmit
+    added b_ok_button class to ok button
+
   Revision 12.52  2013/05/02 17:13:14  moeller
   * Bivio::Agent::Request
     Push format_email code mostly to Type.Email
