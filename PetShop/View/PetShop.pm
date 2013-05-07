@@ -159,14 +159,16 @@ sub checkout {
 	], [
 	    vs_blank_cell(),
 	], [
-	    SPAN_button_link(Link(
+	    SPAN_b_button_link(Link(
 		'Continue',
 		If(['user_state', '->eq_just_visitor'],
 		    'USER_ACCOUNT_CREATE_AND_PLACE_ORDER',
 		    'PLACE_ORDER',
 		),
-	    ))->put(cell_class => 'button_link'),
-	]]),
+	    ))->put(cell_class => 'b_button_link'),
+	]], {
+	    class => 'simple',
+	}),
     );
 }
 
@@ -175,9 +177,10 @@ sub item {
     _with_menu(
 	$self,
 	['Model.Item', '->format_name'],
-	Form('ItemForm', Grid([[
+	vs_simple_form('ItemForm', [[
 	    Image(
-		[['Model.Item', '->get_model', 'Product'], '->get_image_url'],
+		[['Model.Item', '->get_model', 'Product'],
+	            '->get_product_image_url'],
 		{
 		    alt => Join([
 			String(['Model.Item', '->format_name']),
@@ -202,15 +205,13 @@ sub item {
 		),
 		BR(),
 		BR(),
-		FormField('ItemForm.ok_button', {
-		    class => 'submit',
-		}),
+		StandardSubmit('ok_button'),
 	    ]),
 	], [
 	    String(['Model.Product', 'description'])->put(cell_colspan => 3),
 	]], {
-	    id => 'item',
-	})),
+	    no_submit => 1,
+	}),
     );
 }
 
@@ -588,8 +589,20 @@ EOF
 
 sub _category_link {
     return Link(
-	String(['Category.name'], 'heading_link'),
+	Join([
+	    Image(
+		['->get_image_name'],
+		{
+		    alt => ['Category.name'],
+		},
+	    ),
+	    vs_blank_cell(),
+	    String(['Category.name'], 'heading_link'),
+	]),
 	['->format_uri', 'THIS_AS_PARENT', 'PRODUCTS'],
+	{
+	    class => 'pet_category_link',
+	},
     );
 }
 
@@ -603,7 +616,6 @@ EOF
 sub _with_menu {
     my($self, $title, $content) = @_;
     return shift->internal_body(DIV_pet_content(Join([
-	DIV_pet_title(String($title)),
 	[sub {
 	    my($req) = @_;
 	    b_use('Model.CategoryList')->new($req)->load_all;
@@ -612,9 +624,9 @@ sub _with_menu {
 	List('CategoryList', [
 	    _category_link(),
 	], {
-	    row_separator => Simple(' | '),
+	    row_separator => vs_blank_cell(4),
 	}),
-	BR(),
+	DIV_pet_title($title ? String($title) : vs_blank_cell()),
 	BR(),
 	$content,
     ])));
