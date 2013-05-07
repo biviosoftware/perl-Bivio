@@ -277,12 +277,12 @@ sub compile_with_numbers {
     } @$names]);
 }
 
-sub do_list {
-    return _do('get_list', @_);
+sub map_list {
+    return _map_enums('get_list', @_);
 }
 
-sub do_non_zero_list {
-    return _do('get_non_zero_list', @_);
+sub map_non_zero_list {
+    return _map_enums('get_bnon_zero_list', @_);
 }
 
 sub equals_by_name {
@@ -524,11 +524,6 @@ sub _compile_decl {
     )}};
 }
 
-sub _do {
-    my($method, $proto, $op) = @_;
-    return map($op->($_), $proto->$method);
-}
-
 sub _eq_name {
     my($self, $name) = @_;
     return $self->get_name eq uc($name);
@@ -568,6 +563,11 @@ sub _map {
     my($self) = @_;
     return $_MAP{ref($self) || $self}
 	|| die ($self, ': not an enumerated type');
+}
+
+sub _map_enums {
+    my($method, $proto, $op) = @_;
+    return [map($op->($_), $proto->$method)];
 }
 
 sub _unsafe_from {
