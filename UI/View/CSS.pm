@@ -13,12 +13,111 @@ my($_SITE) = join('', map({
 } @{b_use('Agent.TaskId')->included_components}));
 
 sub internal_site_css {
-    return $_SITE;
+    return $_SITE
+	. (b_use('HTMLWidget.FormField')->is_fancy_input
+	    ? _fancy_input()
+	    : '');
 }
 
 sub site_css {
     my($self) = @_;
     return $self->internal_body(Prose([sub {$self->internal_site_css(shift)}]));
+}
+
+sub _fancy_input {
+    return <<'EOF';
+Button();
+OKButton();
+form .field_err {
+ width: auto;
+}
+form table.b_label_group {
+  margin-right: 0;
+  margin-left: auto;
+  max-width: 25em;
+  min-width: 20em;
+}
+form div.b_error_bubble {
+ font-size: 95%;
+ Border({
+  radius => '3px',
+ });
+ padding: 0.5ex 0.5em;
+ Color('error-background');
+ border:1px solid;
+ Color('error-border');
+ margin: 2px 0;
+}
+form div.b_error_arrow_holder {
+ position: relative;
+ margin-right: 1em;
+}
+form span.b_error_arrow_border{
+ border-color:transparent;
+ Color('error_arrow-border-left');
+ border-style:solid;
+ border-width:6px;
+ font-size: 0;
+ position: absolute;
+ top: -6px;
+}
+form span.b_error_arrow{
+ border-color:transparent;
+ Color('error_background-border-left');
+ border-style:solid;
+ border-width:6px;
+ font-size: 0;
+ position: absolute;
+ top: -6px;
+ right: -10px;
+}
+td.b_error_arrow {
+ padding-top: 2ex;
+ vertical-align: top;
+}
+form input, form textarea, form select {
+  border:1px solid;
+  Color('input-border');
+  padding:5px;
+  Border({
+    radius => '3px',
+  });
+  Shadow({
+    box => '0 0 0 #000, inset 0px 3px 3px #eee',
+  });
+}
+form input:hover, form textarea:hover, form select:hover{
+ border:1px solid;
+ Color('input_focus-border');
+}
+form input:focus, form textarea:focus, form select:focus{
+ border:1px solid;
+ Color('input_focus-border');
+}
+.standard_submit, form .submit {
+ text-align: right;
+}
+table.list tr.b_heading_row, table.paged_list tr.b_heading_row  {
+  Color('list_heading-background');
+  border: 1px solid;
+  Color('list_heading-border');
+  Color('list_heading-border-top');
+  Color('list_heading-border-bottom');
+  Shadow({
+    box => '0 1px 1px rgba(0,0,0,0.12),inset 0 0 0 #000',
+  });
+}
+table.list th b, table.paged_list th b {
+ font-weight: normal;
+}
+table.list tr, table.paged_list tr {
+  border:1px solid #edf1f5;
+  border-width:1px 0;
+}
+table.list .b_even_row, table.paged_list .b_even_row  {
+  background-color: transparent;
+}
+EOF
 }
 
 sub _site_base {
