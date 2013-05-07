@@ -64,6 +64,9 @@ sub merge_overrides {
 	'Bivio::UI::View::Wiki' => {
 	    use_wysiwyg => 1,
 	},
+	'Bivio::UI::HTML::Widget::FormField' => {
+	    fancy_input => 1,
+	},
 	'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
 	    use_file_manager => 1,
 	},
