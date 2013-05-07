@@ -32,7 +32,7 @@ sub initialize {
 
 sub _error_bubble {
     my($self) = @_;
-    $self->put(cell_class => '');
+    $self->put(cell_class => 'label');
     return Grid([[
     	IfFieldError(
     	    $self->get('field'),
