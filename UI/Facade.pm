@@ -269,7 +269,7 @@ sub handle_config {
     # The default value for I<Facade.want_local_file_cache>.  If true, local file
     # information will be cached by users.  This can be a performance benefit at the
     # expense of memory consumption.  L<Bivio::UI::View|Bivio::UI::View> will
-    # pre-compile all views.  L<Bivio::UI::Icon|Bivio::UI::Icon> will
+    # pre-compile all views.  L<FacadeComponent.Icon> will
     # cache all icon sizes.
     #
     # For development, you probably want to set I<want_local_file_cache> to false.
