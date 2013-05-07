@@ -31,6 +31,9 @@ OKButton();
 form .field_err {
  width: auto;
 }
+form td.b_label_group {
+ vertical-align: top;
+}
 form table.b_label_group {
   margin-right: 0;
   margin-left: auto;
@@ -59,7 +62,7 @@ form span.b_error_arrow_border{
  border-width:6px;
  font-size: 0;
  position: absolute;
- top: -6px;
+ top: -2px;
 }
 form span.b_error_arrow{
  border-color:transparent;
@@ -68,7 +71,7 @@ form span.b_error_arrow{
  border-width:6px;
  font-size: 0;
  position: absolute;
- top: -6px;
+ top: -2px;
  right: -10px;
 }
 td.b_error_arrow {
@@ -265,7 +268,7 @@ form .field_err {
 form .label_ok,
 form .label_err,
 form .field {
-  padding-top: 0.5em;
+  padding-top: 1.5ex;
   padding-bottom: 0.5em;
 }
 .simple .field,
