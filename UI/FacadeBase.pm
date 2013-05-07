@@ -189,6 +189,7 @@ sub _cfg_base {
 	Email => [],
 	Icon => [],
 	WidgetSubstitute => [],
+	ViewSupport => [],
 	Color => [
 	    [[qw(
 		table_separator
