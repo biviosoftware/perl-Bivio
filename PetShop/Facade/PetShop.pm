@@ -31,13 +31,25 @@ __PACKAGE__->new({
 	[table_odd_row_bg => 0xD5EEFF],
 	[table_separator => 0x000000],
 	[summary_line => 0x66CC66],
-	[header_background => 0xEDE4B5],
-	[[qw(header submit_border)] => 0x782E1D],
-	[category_background => 0xD5EEFF],
+	[category_background => 0xF0F9FF],
 	[acknowledgement => 0x009900],
 	[bunit_complex => 0xFF0000],
 	[bunit_border => 0x00ff00],
 	[example_background => 0xFFFFFF],
+	[submit => 0x777777],
+	[submit_background => 0xe4e4e4],
+	[ok_button => 0xffffff],
+	[ok_button_background => 0x2181cf],
+	[[qw(error_background error_background_border_left)] => 0xfff4f4],
+        [[qw(error_border error_arrow_border_left)] => 0xd58a8a],
+
+	[input_border => 0xbfbfbf],
+	[input_focus_border => 0xa0a0a0],
+
+	[list_heading_background => 0xf0f9ff],
+	[list_heading_border => 0xe7f2fb],
+	[list_heading_border_top => 0x82cffa],
+	[list_heading_border_bottom => 0x96c4ea],
     ],
     Font => [
 	map(["bunit_$_" => [$_]], qw(
@@ -65,7 +77,6 @@ __PACKAGE__->new({
 	[menu_link => ['smaller']],
 	[heading_link => ['larger', 'bold']],
 	[string_test1 => ['family=', 'class=string_test1']],
-	[submit => ['family=Comic Sans MS,arial,sans-serif', 'color=header', 'bold', 'italic']],
     ],
     FormError => [
 	['UserLoginForm.RealmOwner.password.NULL' => 'Please enter a password.'],
@@ -301,6 +312,7 @@ __PACKAGE__->new({
 	    bunit1 => 'one',
 	    SITE_ROOT => 'home',
 	    bunit2 => 'anchor',
+	    xhtml_logo_normal => q{If(view_widget_value('is_petshop'), Join([SPAN_logo_title('bOP Pet Shop'), BR(), SPAN_logo_demo('demo')]), ' ');},
 	]],
 	[[qw(xlink title)] => [
 	    SITE_WIKI_VIEW => 'Groupware',
