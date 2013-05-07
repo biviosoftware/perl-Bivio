@@ -307,7 +307,7 @@ sub merge_class_loader {
 		    Auth => ['Bivio::Auth'],
 		    Bivio => ['Bivio'],
 		    Biz => ['Bivio::Biz'],
-		    CSSWidget => ['Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
+		    CSSWidget => ['Bivio::UI::CSS::Widget', 'Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
 		    Cache => ['Bivio::Cache'],
 		    ClassWrapper => ['Bivio::ClassWrapper'],
 		    Collection => ['Bivio::Collection'],
