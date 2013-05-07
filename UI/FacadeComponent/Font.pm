@@ -222,8 +222,6 @@ sub internal_initialize_value {
 }
 
 sub _initialize {
-    # (UI.Font, hash_ref, hash_ref) : undef
-    # Intializes the value.
     my($self, $value, $default) = @_;
     return
 	if $value->{html};
