@@ -53,7 +53,10 @@ sub _buttons {
 			    $form->simple_package_name,
 			    $labels->{$_} || $_,
 			)),
-			class => 'submit',
+			class => 'submit'
+			    . ($_ eq 'ok_button'
+				   ? ' b_ok_button'
+				   : ''),
 			map(($_ => $self->ancestral_get($_)),
 			    qw(form_class form_model)),
 		    },
