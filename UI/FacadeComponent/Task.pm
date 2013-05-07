@@ -4,7 +4,7 @@ package Bivio::UI::FacadeComponent::Task;
 use strict;
 use Bivio::Base 'UI.FacadeComponent';
 
-# C<Bivio::UI::Task> provides URIs for tasks.  There are two uris currently
+# C<b_use('FacadeComponent.Task')> provides URIs for tasks.  There are two uris currently
 # provided: L<format_uri|"format_uri">
 #
 # Tasks are configured as follows:

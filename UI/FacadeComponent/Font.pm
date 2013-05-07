@@ -4,7 +4,7 @@ package Bivio::UI::FacadeComponent::Font;
 use strict;
 use Bivio::Base 'UI.FacadeComponent';
 
-# C<Bivio::UI::Font> is a map of font names to html values.
+# C<b_use('FacadeComponent.Font')> is a map of font names to html values.
 #
 # The configuration of a font is an array_ref.  The elements are
 # either C<key=value>, e.g. C<face=verdana,arial> and C<size=2>,

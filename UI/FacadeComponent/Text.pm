@@ -5,7 +5,7 @@ use strict;
 use Bivio::Base 'UI.FacadeComponent';
 use Bivio::IO::Trace;
 
-# C<Bivio::UI::Text> maps internal names to UI strings.  In the
+# C<b_use('FacadeComponent.Text')> maps internal names to UI strings.  In the
 # simple case, names map to values, e.g.
 #
 #      group(my_name => 'my name for the UI');
