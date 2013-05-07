@@ -56,7 +56,7 @@ sub vs_ui_wiki {
 
 sub vs_html {
     # Returns a widget value to retrieve I<attr> using
-    # L<Bivio::UI::HTML::get_value|Bivio::UI::HTML/"get_value">.
+    # L<Bivio::UI::HTML::get_value|b_use('FacadeComponent.HTML')/"get_value">.
     return _fc(\@_, qw(HTML ->get_value));
 }
 
