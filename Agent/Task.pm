@@ -479,7 +479,7 @@ sub unsafe_get_redirect {
 	unless $attr =~ $_TASK_ATTR_RE;
     return undef
 	unless my $v = $self->dep_unsafe_get_attr($attr);
-    return Bivio::UI::Task->is_defined_for_facade($v->{task_id}, $req)
+    return b_use('FacadeComponent.Task')->is_defined_for_facade($v->{task_id}, $req)
 	? $v : undef;
 }
 

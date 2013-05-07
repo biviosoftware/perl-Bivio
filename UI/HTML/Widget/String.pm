@@ -46,7 +46,7 @@ use Bivio::Base 'UI.Widget';
 #
 # string_font : string [] (inherited, dynamic)
 #
-# The value to be passed to L<Bivio::UI::Font|Bivio::UI::Font>.
+# The value to be passed to L<b_use('FacadeComponent.Font')|Bivio::UI::Font>.
 #
 # undef_value : string ['']
 #

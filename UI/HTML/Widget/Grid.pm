@@ -35,7 +35,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # cell_bgcolor : array_ref [] (dynamic)
 #
 # The value to be passed to the C<BGCOLOR> attribute of the C<TD> tag.
-# See L<Bivio::UI::Color|Bivio::UI::Color>.
+# See L<b_use('FacadeComponent.Color')|Bivio::UI::Color>.
 #
 # cell_class : any [] (dynamic)
 #
@@ -70,7 +70,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # Sets the cell height explicitly from a widget value.  The
 # widget value must return the full attribute, e.g. use
-# L<Bivio::UI::Icon::get_height_as_html|Bivio::UI::Icon/"get_height_as_html">.
+# L<Bivio::UI::Icon::get_height_as_html|b_use('FacadeComponent.Icon')/"get_height_as_html">.
 #
 # cell_nowrap : boolean [false]
 #
@@ -88,7 +88,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # Sets the cell width explicitly from a widget value.  The
 # widget value must return the full attribute, e.g. use
-# L<Bivio::UI::Icon::get_width_as_html|Bivio::UI::Icon/"get_width_as_html">.
+# L<Bivio::UI::Icon::get_width_as_html|b_use('FacadeComponent.Icon')/"get_width_as_html">.
 #
 # row_control : array_ref []
 #
@@ -307,7 +307,7 @@ sub control_on_render {
 		    # Only first row_class counts
 		    $row =~ s/^<tr>/<tr$b>/
 			if $b = vs_html_attrs_render_one($w, $source, 'row_class');
-		    $cell .= b_use('UI.Color')->format_html($b, 'bgcolor', $req)
+		    $cell .= b_use('FacadeComponent.Color')->format_html($b, 'bgcolor', $req)
 			if $b = $c->render_simple_attr('cell_bgcolor', $source);
 		    $cell .= vs_html_attrs_render_one($c, $source, 'cell_class')
 		        . '>';

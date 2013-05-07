@@ -14,7 +14,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # L<Bivio::UI::HTML::Widget::FormButton|Bivio::UI::HTML::Widget::FormButton>.
 #
 # The link, bg, and text colors are specified by the
-# L<Bivio::UI::Color|Bivio::UI::Color> names:
+# L<b_use('FacadeComponent.Color')|Bivio::UI::Color> names:
 # page_bg, page_text, page_link, page_vlink, and page_alink.
 # page_bg must be defined, but the others may be undefined iwc
 # the color defaults to the browser default.
@@ -90,7 +90,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 #
 #
-# Bivio::UI::Color.page_link : string
+# b_use('FacadeComponent.Color').page_link : string
 #
 # Color of links.
 #
@@ -188,15 +188,15 @@ sub render {
 	. $self->internal_render_head_attrs($source)
 	. '</head><body';
     # Always have a background color
-    $$buffer .= Bivio::UI::Color->format_html(
+    $$buffer .= b_use('FacadeComponent.Color')->format_html(
 	$self->get_or_default('page_bgcolor', 'page_bg'), 'bgcolor', $req);
     foreach my $c ('text', 'link', 'alink', 'vlink') {
 	my($n) = 'page_'.$c;
-	$$buffer .= Bivio::UI::Color->format_html(
+	$$buffer .= b_use('FacadeComponent.Color')->format_html(
 	    $self->get_or_default($n.'_color', $n), $c, $req);
     }
     my($x) = '';
-    $$buffer .= Bivio::UI::Icon->format_html_attribute(
+    $$buffer .= b_use('FacadeComponent.Icon')->format_html_attribute(
 	$x, 'background', $req
     ) if $self->unsafe_render_attr('background', $source, \$x) && $x;
     $$buffer .= vs_html_attrs_render_one(

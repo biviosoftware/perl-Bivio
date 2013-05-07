@@ -9,7 +9,7 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_LIST) = [grep(!$_->eq_new, $_CTS->get_non_zero_list)];
 my($_NAMES) = [map($_->get_name, @$_LIST)];
-my($_T) = b_use('UI.Text');
+my($_T) = b_use('FacadeComponent.Text');
 my($_E) = b_use('Type.Email');
 my($_R) = b_use('Auth.Role');
 

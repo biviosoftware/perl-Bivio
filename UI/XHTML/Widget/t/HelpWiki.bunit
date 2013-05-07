@@ -12,7 +12,7 @@ Widget({
 	    $req->initialize_fully('HELP');
 	    $req->put(
 		path_info => class('Type.WikiName')->title_to_help(
-		    Bivio::UI::Text->get_value('title', $t->get_name, $req))),
+		    b_use('FacadeComponent.Text')->get_value('title', $t->get_name, $req))),
 	}
 	else {
 	    $req->set_realm('fourem');

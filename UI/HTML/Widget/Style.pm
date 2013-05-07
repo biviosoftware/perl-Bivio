@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Widget::Style;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget';
+use Bivio::Base 'UI.Widget';
 
 # C<Bivio::UI::HTML::Widget::Style> generates an inline style sheet.
 # Appropriate for use with

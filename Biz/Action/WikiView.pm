@@ -74,7 +74,7 @@ sub execute_prepare_html {
     unless ($name) {
 	# To avoid name space issues, there always needs to be a path_info
 	$req->put(path_info => $_FP->to_absolute(
-	    Bivio::UI::Text->get_value('WikiView.start_page', $req)));
+	    b_use('FacadeComponent.Text')->get_value('WikiView.start_page', $req)));
 	return {
 # should be able to handle realm_id and convert automatically
 	    realm => $req->with_realm($realm_id, sub {$req->get_nested(qw(auth_realm owner_name))}),
@@ -180,7 +180,7 @@ sub _create_default_start_page {
     my($rid) = b_use('Model.RealmOwner')->new($req)
 	->unauth_load_or_die({
 	    name => $_CFG->{default_start_page_realm}
-	    || b_use('UI.Constant') ->get_value('site_realm_name', $req),
+	    || b_use('FacadeComponent.Constant') ->get_value('site_realm_name', $req),
 	})->get('realm_id');
     $path = $_WN->DEFAULT_START_PAGE_PATH;
     my($rf) = b_use('Model.RealmFile')->new($req);

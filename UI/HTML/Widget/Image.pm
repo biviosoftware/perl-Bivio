@@ -63,12 +63,12 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 #
 # Image to use for C<SRC> attribute of C<IMG> tag.  I<src>'s
 # get_widget_value returns a string,  which is looked up via
-# L<Bivio::UI::Icon|Bivio::UI::Icon> if it is a qualified name
+# L<b_use('FacadeComponent.Icon')|Bivio::UI::Icon> if it is a qualified name
 # or it is used verbatim if it is a URI.
 #
 # src : string
 #
-# Name of the L<Bivio::UI::Icon|Bivio::UI::Icon> to use.
+# Name of the L<b_use('FacadeComponent.Icon')|Bivio::UI::Icon> to use.
 #
 # tooltip string
 #
@@ -106,7 +106,7 @@ sub control_on_render {
     $$buffer .= $b;
     my($alt) = $self->has_keys('alt')
 	? $self->render_simple_attr('alt', $source)
-	: Bivio::UI::Text->get_from_source($source)
+	: b_use('FacadeComponent.Text')->get_from_source($source)
 	    ->unsafe_get_widget_value_by_name(
 		'Image_alt.'
 		. (defined($self->unsafe_get('alt_text'))

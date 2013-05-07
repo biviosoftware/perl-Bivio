@@ -24,7 +24,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # bgcolor : any [] (dynamic)
 #
 # The value to be passed to the C<BGCOLOR> attribute of the C<TABLE> tag.
-# See L<Bivio::UI::Color|Bivio::UI::Color>.
+# See L<b_use('FacadeComponent.Color')|Bivio::UI::Color>.
 #
 # border : any [0]
 #
@@ -53,7 +53,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # expand : boolean [false]
 #
 # If true, the table C<WIDTH> will be C<95%> or C<100%> depending
-# on Bivio::UI::HTML.page_left_margin.
+# on b_use('FacadeComponent.HTML').page_left_margin.
 #
 # height : any []
 #
@@ -153,8 +153,8 @@ sub render_start_tag {
 		   $self->unsafe_render_attr($attr, $source, \$b) && $b
 		       ? b_use($class)->$method($b, $attr, $req) : '',
 	       }
-		   [qw(UI.Color format_html bgcolor)],
-		   [qw(UI.Icon format_html_attribute background)],
+		   [qw(FacadeComponent.Color format_html bgcolor)],
+		   [qw(FacadeComponent.Icon format_html_attribute background)],
 		   [qw(UI.Align as_html align)],
 	       ),
 	       '>',

@@ -46,10 +46,10 @@ sub render {
     my($value) = $self->get('value');
     my($c) = $self->get_or_default('color', 'table_separator');
     $c = $c
-	? Bivio::UI::Color->format_html($c, 'bgcolor', $source->req)
+	? b_use('FacadeComponent.Color')->format_html($c, 'bgcolor', $source->req)
 	: '';
     $value =~ s/!COLOR!/$c/g;
-    $c = Bivio::UI::Color->format_html('page_bg', 'bgcolor', $source->req)
+    $c = b_use('FacadeComponent.Color')->format_html('page_bg', 'bgcolor', $source->req)
 	|| '';
     $value =~ s/!PAGE_BG!/$c/g;
     $$buffer .= $value;

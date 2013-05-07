@@ -26,7 +26,7 @@ sub bivio_get {
 	$user,
 	defined($args->{password}) ? $args->{password}
 	    : $args->{req}->format_email(
-		Bivio::UI::Text->get_value('support_email', $args->{req})),
+		b_use('FacadeComponent.Text')->get_value('support_email', $args->{req})),
     ) || _bivio_die($self, "login: $user");
     $self->cwd($args->{cwd}) || _bivio_die($self, "cwd: $args->{cwd}");
     my($type) = $args->{type} || 'binary';

@@ -240,7 +240,7 @@ sub field_error_equals {
 
 sub format_context_as_query {
     my($proto, $fc, $req) = @_;
-    # B<Only to be called by Bivio::UI::Task.>
+    # B<Only to be called by b_use('FacadeComponent.Task').>
     #
     # Takes context (which may be null), and formats as query string.
     return $fc ? '?'

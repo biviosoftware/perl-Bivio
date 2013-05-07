@@ -132,7 +132,7 @@ sub vs_acknowledgement {
 		     'String',
 		     __PACKAGE__->vs_call(
 			 'Prose',
-			 Bivio::UI::Text->get_value(
+			 b_use('FacadeComponent.Text')->get_value(
 			     'acknowledgement',
 			     $req->get_nested(
 				 'Action.Acknowledgement', 'label'),

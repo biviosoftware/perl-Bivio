@@ -9,7 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('MIME.Type');
 my($_M) = b_use('Biz.Model');
 my($_CTS) = b_use('Type.CRMThreadStatus');
-my($_UIT) = b_use('UI.Text');
+my($_UIT) = b_use('FacadeComponent.Text');
 my($_DT) = b_use('Type.DateTime');
 
 sub field_updates_imail {

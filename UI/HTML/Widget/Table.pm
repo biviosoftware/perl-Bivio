@@ -8,11 +8,11 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # C<Bivio::UI::HTML::Widget::Table> renders a
 # L<Bivio::Biz::ListModel|Bivio::Biz::ListModel> in a table.
 #
-# Bivio::UI::HTML.table_default_align : string
+# b_use('FacadeComponent.HTML').table_default_align : string
 #
 # Default table alignment name.
 #
-# Bivio::UI::HTML.page_left_margin : int
+# b_use('FacadeComponent.HTML').page_left_margin : int
 #
 # If greater than zero, expand to "95%".  Otherwise, "100%"?
 #
@@ -25,7 +25,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # Maximum number of I<source_name> rows to render.
 #
-# align : string [Bivio::UI::HTML.table_align]
+# align : string [b_use('FacadeComponent.HTML').table_align]
 #
 # How to align the table.  The allowed (case
 # insensitive) values are defined in
@@ -78,7 +78,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # even_row_bgcolor : string [table_even_row_bg]
 #
 # The stripe color to use for even rows as defined by
-# L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
+# L<b_use('FacadeComponent.Color')|Bivio::UI::Color>.  If the color is
 # undefined, no striping will occur.
 #
 # even_row_class : any []
@@ -120,7 +120,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # odd_row_bgcolor : string [table_odd_row_bg]
 #
 # The stripe color to use for odd rows as defined by
-# L<Bivio::UI::Color|Bivio::UI::Color>.  If the color is
+# L<b_use('FacadeComponent.Color')|Bivio::UI::Color>.  If the color is
 # undefined, no striping will occur.
 #
 # odd_row_class : any []
@@ -322,7 +322,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = b_use('UIHTML.ViewShortcuts');
 my($_WF) = b_use('UIHTML.WidgetFactory');
 my($_A) = b_use('UI.Align');
-my($_C) = b_use('UI.Color');
+my($_C) = b_use('FacadeComponent.Color');
 my($_TRC) = b_use('UI.TableRowClass');
 my($_INFINITY_ROWS) = 0x7fffffff;
 my($_IDI) = __PACKAGE__->instance_data_index;

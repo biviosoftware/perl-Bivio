@@ -33,7 +33,7 @@ my(@_ATTRS) = qw(
     show_unknown
     size
 );
-my($_F) = b_use('UI.Font');
+my($_F) = b_use('FacadeComponent.Font');
 
 sub accepts_attribute {
     # (proto, string) : boolean

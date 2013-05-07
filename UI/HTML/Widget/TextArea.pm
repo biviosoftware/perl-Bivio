@@ -58,7 +58,7 @@ sub control_on_render {
 	    if $fields->{readonly};
 	$fields->{initialized} = 1;
     }
-    my($p, $s) = Bivio::UI::Font->format_html('input_field', $req);
+    my($p, $s) = b_use('FacadeComponent.Font')->format_html('input_field', $req);
     $$buffer .= $p.$fields->{prefix}
 	    . ' name="'
 	    . $form->get_field_name_for_html($field)

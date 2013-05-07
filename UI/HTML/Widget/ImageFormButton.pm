@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::UI::HTML::Widget::ImageFormButton;
 use strict;
-use base 'Bivio::UI::HTML::Widget::ControlBase';
+use Bivio::Base 'HTMLWidget.ControlBase';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -18,7 +18,7 @@ sub control_on_render {
     $$buffer .= '<input type="image" name="'
 	. $field
 	. '" src="'
-	. Bivio::UI::Icon->get_value(
+	. b_use('FacadeComponent.Icon')->get_value(
 	    ${$self->render_attr('image', $source)}, $req)->{uri}
 	. (length($alt) ? '" alt="' . Bivio::HTML->escape_attr_value($alt) : '')
 	. ($super =~ /id=/ ? '' : ('" id="' . $field))

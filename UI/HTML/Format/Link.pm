@@ -21,7 +21,7 @@ sub get_widget_value {
     # Not an offsite uri?  Just return $href.
     return $href unless $href =~ /^\w+:/;
 
-    return Bivio::UI::Task->format_realmless_uri(
+    return b_use('FacadeComponent.Task')->format_realmless_uri(
 	Bivio::Agent::TaskId->CLIENT_REDIRECT, undef,
 	$source->get_request)
 	. '?' . Bivio::Biz::Action::ClientRedirect->QUERY_TAG

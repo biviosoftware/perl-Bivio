@@ -22,7 +22,7 @@ sub internal_get_additional_form_data {
 		[x_State => $address->get('state')],
 		[x_Country => $address->get('country')],
 		[x_Phone => $phone->get('phone')],
-		[x_Email => b_use('UI.Text')
+		[x_Email => b_use('FacadeComponent.Text')
 		     ->get_value('support_email', $payment->req)],
 	    ),
 	];
