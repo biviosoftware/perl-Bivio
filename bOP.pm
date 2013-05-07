@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,136 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.52  2013/05/02 17:13:14  moeller
+  * Bivio::Agent::Request
+    Push format_email code mostly to Type.Email
+  * Bivio::Base
+    calling context needs to exclude the current pacakge
+  * Bivio::BConf
+    document why Bivio::UI not in UICSS map (CSS doesn't use ordinary widgets)
+    ignore error message for mail to default realm
+    rename trace filter perf to perf_time
+  * Bivio::Biz::Action::MailForward
+    pass req to set_headers_for_forward
+  * Bivio::Biz::Action::RealmMail
+    pass req to set_headers_for_list_send
+  * Bivio::Biz::FormModel
+    add enum_set_fields_decl, enum_set_from_fields
+  * Bivio::Delegate::SimpleWidgetFactory
+    create CheckboxGrid from EnumSet
+    use SQL_Support()->extract_column_name for CheckboxGrid field
+  * Bivio::Die
+    added _print_stack_other() to print widget/view_stack in a more
+    readable format
+  * Bivio::IO::Alert
+    calling_context takes skip_packages which may be array_ref. Was only
+    treating as scalar before, but IO.CallingContext accepted array
+  * Bivio::IO::CallingContext
+    changed as_string to make it useful for printing context in alerts (see Die::
+  _print_stack_other)
+    new_from_file_line sets sub & package, too, just to make it easier to manage
+  * Bivio::Mail::Common
+    export config
+    added rewrite_from_domains
+  * Bivio::Mail::Outgoing
+    set_headers_for_list_send now puts in List-ID and Precedence: List
+    From: email addresses are rewritten if rewrite_from_domains matches address
+  * Bivio::MIME::Calendar
+    Allow language to be specified on 'description'.
+  * Bivio::Parameters
+    allow parameters to be any object.  Verifies is_blesser_of
+  * Bivio::PetShop::BConf
+    removed unused Action map
+    added class map for PetShopWidget
+  * Bivio::PetShop::UICSS::ViewShortcuts
+    fancy form and list css
+  * Bivio::PetShop::View::Base
+    moved xhtml_dock_left_standard to facade config
+    no longer uses petshop view shortcuts
+  * Bivio::PetShop::View::PetShop
+    chrome/safari need named MAP
+    use PetShopWidget class map and PetShop.ViewShortcuts
+    rearranged user account page
+  * Bivio::Test::HTMLParser::Forms
+    handle form labels within <label> with no ":"
+  * Bivio::Test::Widget
+    added widget_post_new
+  * Bivio::Type::Email
+    format_email takes over work for req->format_email
+  * Bivio::Type::Enum
+    add do_list, do_non_zero_list
+  * Bivio::UI::CSS::ViewShortcuts
+    view_autoload interface changed to pass in simple_method and suffix as
+    well as method.
+  * Bivio::UI::FacadeComponent::Email
+    Push format_email code mostly to Type.Email
+  * Bivio::UI::FacadeComponent
+    downcase 'names' value used in group() to initialize the group the
+    first time.
+  * Bivio::UI::Facade
+    Search for FacadeComponent in UI first (deprecated usage) and then FacadeComp
+  onent
+  * Bivio::UI::HTML::Widget::CheckboxGrid
+    NEW
+  * Bivio::UI::HTML::Widget::FormField
+    added internal_get_label_widget() for subclasses
+  * Bivio::UI::HTML::Widget::Grid
+    subclasses ControlBase now
+  * Bivio::UI::HTML::Widget::MultipleChoiceGridBase
+    NEW
+  * Bivio::UI::HTML::Widget::RadioGrid
+    push common logic down to MultipleChoiceGridBase
+  * Bivio::UI::HTML::Widget::SourceCode
+    added anchors at method definitions
+  * Bivio::UI::HTML::Widget::TableBase
+    subclasses ControlBase now
+  * Bivio::UI::HTML::Widget::Table
+    subclasses ControlBase
+  * Bivio::UI::View::ThreePartPage
+    label ThreePartPage Grid widgets
+  * Bivio::UI::ViewLanguageAUTOLOAD
+    added call_autoload so can be called from UI.ViewShortcuts to save
+    calling context.
+    renamed unsafe_calling_context to unsafe_calling_context_for_wiki_text
+    because it is an odd routine, and only was used by WikiText
+    Added unsafe_calling_context which just returns $_CALLING_CONTEXT
+    Added widget_new_calling_context to strip out all the irrelevant packages
+  * Bivio::UI::ViewLanguage
+    added labelling of widgets (b_widget_label).  This will be used to
+    control rendering and will improve debugging.  Also save calling
+    context of where widget new() is called
+  * Bivio::UI::View
+    unsafe_get_current is being used for more than debuggin
+    push the views on the view_stack as instances, not strings so
+    Die::_print_other_stack will do the right thing
+    unsafe_get_current will not return -1, which is when the view is being
+    evaled but hasn't gotten to the instance stage.
+  * Bivio::UI::ViewShortcuts
+    save calling context
+    don't need to pass calling_context in vs_call, because
+    ViewLanguageAUTOLOAD can figure out the calling context by stripping
+    packages using IO.CallingContext features
+  * Bivio::UI::Widget::ControlBase
+    call SUPER::initialize
+  * Bivio::UI::Widget
+    added b_widget_label which returns the label or allows you to label
+    the widget and set calling context.  This gets done automatically in
+    new() based on state saved by UI.ViewLanguage
+    add as_string_for_stack_trace so stack trace does the right thing
+    internal_as_string includes the label
+    use widget_new_calling_context in new() (don't call calling_context directly)
+  * Bivio::UI::XHTML::ViewShortcuts
+    view_autoload interface changed to pass in simple_method and suffix as
+    well as method so parsing is done in ViewLanguage, not here
+    changed $no_submit arg for vs_simple_form() to $attrs,
+    map old boolean value to no_submit key
+  * Bivio::UI::XHTML::Widget::WikiText
+    renamed unsafe_calling_context to unsafe_calling_context_for_wiki_text
+    because it is an odd routine, and only was used by WikiText
+  * Bivio::UNIVERSAL
+    call_and_do_after gets result and wantarray so can modify result
+    b_can needs to check $other is an object
+
   Revision 12.51  2013/04/27 23:17:34  moeller
   * Bivio::PetShop::*
     converted PetShop bview to View::PetShop
