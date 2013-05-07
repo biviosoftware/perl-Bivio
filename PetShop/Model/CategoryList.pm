@@ -6,6 +6,11 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub get_image_name {
+    my($self) = @_;
+    return lc($self->get('Category.name'));
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
