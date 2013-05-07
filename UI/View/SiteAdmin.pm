@@ -20,6 +20,7 @@ sub remote_copy_form {
 	List(RemoteCopyListForm => [
 	    SPAN_field(
 		Join([
+		    FormFieldError('want_realm'),
 		    vs_descriptive_field('RemoteCopyListForm.want_realm')->[0],
 		    String([['->get_list_model'], 'realm']),
 		]),
