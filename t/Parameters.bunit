@@ -5,6 +5,7 @@ my($empty) = class()->new([]);
 my($simple) = class()->new([
     'p1',
     [qw(gender Gender), Type_Gender()->FEMALE],
+    [qw(name RealmName), 'site'],
     [qw(*repeat Integer), sub {99}],
 ]);
 my($error);
@@ -25,11 +26,13 @@ my($error);
 	[['value1'], $simple] => [class(), {
 	    p1 => 'value1',
 	    gender => Type_Gender()->FEMALE,
+	    name => 'site',
 	    repeat => [99],
 	}],
-	[[Type_Month()->MAY, qw(male 1 2 3)], $simple] => [class(), {
+	[[Type_Month()->MAY, qw(male club 1 2 3)], $simple] => [class(), {
 	    p1 => Type_Month()->MAY,
 	    gender => Type_Gender()->MALE,
+	    name => 'club',
 	    repeat => [1, 2, 3],
 	}],
 	sub {[[qw(v1 not-gender)], $simple, $error = {}]} => sub {
