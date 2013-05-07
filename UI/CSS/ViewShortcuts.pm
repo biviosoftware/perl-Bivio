@@ -22,4 +22,9 @@ sub vs_add {
     return [sub {$_[1] + $_[2]}, @_];
 }
 
+sub vs_css_color {
+    my($self, $value) = @_;
+    return sprintf('#%06X', $value);
+}
+
 1;
