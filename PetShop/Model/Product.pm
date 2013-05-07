@@ -7,17 +7,21 @@ use Bivio::Base 'Biz.PropertyModel';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_image_url {
-    my($self) = @_;
-    return $self->req->format_uri({
+    my($proto, $name, $req) = @_;
+    return $req->format_uri({
 	task_id => 'FORUM_FILE',
-	realm => $self->req('UI.Facade')->SITE_REALM_NAME,
+	realm => $req->get('UI.Facade')->SITE_REALM_NAME,
 	path_info => join(
 	    '',
 	    'images/',
-	    $self->get('image_name'),
-	    '.gif',
+	    $name,
 	),
     });
+}
+
+sub get_product_image_url {
+    my($self) = @_;
+    return $self->get_image_url($self->get('image_name') . '.gif', $self->req);
 }
 
 sub internal_initialize {
