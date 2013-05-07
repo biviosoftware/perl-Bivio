@@ -111,7 +111,7 @@ verify_text('initial message');
 verify_form({
     topic => "Re: $reply_subject",
 });
-verify_text(qr{To:.*\Q$user1_email}s);
+verify_text(qr{To.*\Q$user1_email}s);
 go_back();
 follow_link('original');
 my($original_uri) = get_uri();
