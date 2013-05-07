@@ -64,13 +64,14 @@ sub render {
 }
 
 sub render_source_link {
-    my($proto, $req, $source, $name, $buffer) = @_;
+    my($proto, $req, $source, $name, $buffer, $method) = @_;
     Link(
 	$name,
 	URI({
 	    task_id => 'SOURCE',
 	    path_info => Bivio::UNIVERSAL->is_super_of($source)
 	       ? $source->as_classloader_map_name : $source,
+	    $method ? (anchor => $method) : (),
 	}),
     )->initialize_and_render($req, $buffer);
     return;
