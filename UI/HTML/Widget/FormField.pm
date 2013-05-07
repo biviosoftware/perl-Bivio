@@ -2,8 +2,8 @@
 # $Id$
 package Bivio::UI::HTML::Widget::FormField;
 use strict;
-use Bivio::Base 'Bivio::UI::Widget::Join';
-use Bivio::UI::HTML::WidgetFactory;
+use Bivio::Base 'Widget.Join';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::FormField>
 #
@@ -24,12 +24,14 @@ use Bivio::UI::HTML::WidgetFactory;
 # Widget value boolean which dynamically determines if the row should render.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_VS) = __PACKAGE__->use('Bivio::UI::HTML::ViewShortcuts');
+b_use('IO.Config')->register(my $_CFG = {
+    fancy_input => 0,
+});
 
 sub get_label_and_field {
     my($self) = @_;
     # Creates a label for the field, and returns the (label, field) pair.
-    return ($_VS->vs_new('FormFieldLabel', {
+    return (FormFieldLabel({
 	field => _get_field_name($self),
 	label => $self->internal_get_label_widget,
 	map({
@@ -39,19 +41,24 @@ sub get_label_and_field {
     }), $self);
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub internal_get_label_value {
     my($self) = @_;
     # Returns the widget value which access the label.
-    return $_VS->vs_new('Prose', $_VS->vs_text(
+    return Prose(vs_text(
 	$self->get_or_default('form_field_label', $self->get('field'))));
 }
 
 sub internal_get_label_widget {
     my($self) = @_;
-    return $_VS->vs_new(After =>
-	$_VS->vs_new('Simple', $self->internal_get_label_value),
-	':',
-    );
+    return LABEL($self->internal_get_label_value)
+	if $_CFG->{fancy_input};
+    return After(Simple($self->internal_get_label_value), ':');
 }
 
 sub internal_new_args {
@@ -64,6 +71,11 @@ sub internal_new_args {
     };
 }
 
+sub is_fancy_input {
+    my($self) = @_;
+    return $_CFG->{fancy_input};
+}
+
 sub new {
     my($self) = shift->SUPER::new(@_);
     # Creates a new FormField widget. Call
@@ -71,12 +83,16 @@ sub new {
     # field automatically.
     # adds the error widget and the edit widget
     $self->put(values => [
-	$_VS->vs_new('FormFieldError', {
-	    field => _get_field_name($self),
-	    label => $self->internal_get_label_value,
-	}),
-	Bivio::UI::HTML::WidgetFactory->create($self->get('field'),
-		$self->get_or_default('edit_attributes', {}))
+	$_CFG->{fancy_input}
+	    ? ()
+	    : FormFieldError({
+		field => _get_field_name($self),
+		label => $self->internal_get_label_value,
+	    }),
+	vs_edit(
+	    $self->get('field'),
+	    $self->get_or_default('edit_attributes', {}),
+	),
     ]);
     return $self;
 }
