@@ -2,7 +2,7 @@
 # $Id$
 test_setup('PetShop');
 home_page();
-follow_menu_link('Fish');
+follow_link('Fish');
 follow_link(qr{ProductList});
 verify_text('Bivio::PetShop::Model::ProductList');
 follow_menu_link('Biz.ListModel');
