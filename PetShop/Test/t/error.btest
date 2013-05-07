@@ -13,7 +13,7 @@ visit_uri('/fourem/file/NoFileHere');
 test_conformance();
 test_equals(404, get_response()->code());
 follow_link('go_back.*previous');
-follow_link('fish');
+follow_link('Fish');
 test_deviance();
 visit_uri('/not-found-uri');
 test_conformance();
