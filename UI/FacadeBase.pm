@@ -228,6 +228,18 @@ sub _cfg_base {
 	    [[qw(dd_menu_selected dd_menu_background)] => 0xffffff],
 	    [dd_menu_border => 0x888888],
 	    [dd_menu_selected_background => 0x888888],
+	    [submit => 0x777777],
+	    [submit_background => 0xe4e4e4],
+	    [ok_button => 0xffffff],
+	    [ok_button_background => 0x2181cf],
+	    [[qw(error_background error_background_border_left)] => 0xfff4f4],
+	    [[qw(error_border error_arrow_border_left)] => 0xd58a8a],
+	    [input_border => 0xbfbfbf],
+	    [input_focus_border => 0xa0a0a0],
+	    [list_heading_background => 0xf0f9ff],
+	    [list_heading_border => 0xe7f2fb],
+	    [list_heading_border_top => 0x82cffa],
+	    [list_heading_border_bottom => 0x96c4ea],
 	],
 	Font => [
 	    # See Bivio::UI::View::CSS
