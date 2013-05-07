@@ -198,7 +198,7 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE, $_CURRENT, $_CURRENT_FACADE);
-my($_CACHE) = {};
+my($_VS) = b_use('FacadeComponent.ViewSupport');
 my($_CLASSES);
 my($_R) = b_use('Agent.Request');
 
@@ -343,7 +343,6 @@ sub _destroy {
     my($self, $die) = @_;
     push(@{$die->get('attrs')->{view_stack} ||= []}, $self)
 	if $die;
-    delete($_CACHE->{$self->get_or_default(view_cache_name => '')});
     if (my $req = $_R->get_current) {
 	$req->delete(__PACKAGE__);
     }
@@ -379,9 +378,9 @@ sub _get_instance {
 	|| !$proto->isa('Bivio::UI::View::LocalFile')
 	&& $proto->use('View.LocalFile')->unsafe_new($name_arg, $facade);
     my($unique) = join('->', ref($self), $self->absolute_path);
-    if ($_CACHE->{$unique}) {
+    if (my $cache = $_VS->view_cache_unsafe_get($unique, $facade)) {
 	$proto->compile_die($name_arg, ': called recursively')
-	    unless ref(my $cache = $_CACHE->{$unique});
+	    unless ref($cache);
 	_trace($unique, ': cache hit=', $cache) if $_TRACE;
 	return $cache;
     }
@@ -390,11 +389,12 @@ sub _get_instance {
 	view_cache_name => $unique,
     );
     my($die) = do {
-	local($_CURRENT) = $_CACHE->{$unique} = -1;
+	local($_CURRENT) = -1;
+	$_VS->view_cache_put($unique, $_CURRENT, $facade);
 	local($_CURRENT_FACADE) = $facade;
 	b_use('UI.ViewLanguage')->eval($self);
     };
-    delete($_CACHE->{$unique});
+    $_VS->view_cache_delete($unique, $facade);
     _destroy($self, $die)
 	if $die;
     # Don't store if $unique contains a stringified reference
@@ -402,8 +402,10 @@ sub _get_instance {
 	if $unique =~ /\(0x\w+\)/i
 	|| !$facade->get('want_local_file_cache');
     _trace($unique, ': cached as ', $self) if $_TRACE;
-    return $_CACHE->{$unique} = $self->internal_clear_read_only
+    $_VS->view_cache_put($unique, $self, $facade);
+    return $self->internal_clear_read_only
 	->put(view_is_cached => 1)->set_read_only;
+    return;
 }
 
 sub _pre_execute {
