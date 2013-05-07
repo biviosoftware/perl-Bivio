@@ -33,11 +33,8 @@ sub add_to_cart {
 	    unless $price;
     }
     else {
-	my($row) = $self->get_html_parser
-	    ->get_nested('Tables', 'item', 'rows', 0);
 	($item_name) = $self->get_content() =~ /pet_title">(.*?)</;
-	$price = $row->[2]->get('text');
-	$price =~ s/\s+.*//;
+	($price) = $self->get_content() =~ />(\d+\.\d{2})</;
     }
     $self->submit_form($button => {});
     (($fields->{cart} ||= {})->{$item_name} ||= {
