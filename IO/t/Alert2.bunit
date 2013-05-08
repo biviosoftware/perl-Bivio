@@ -43,10 +43,10 @@ options({
 	],
 	[['Bivio::Test', 'Bivio::Die']] => [
 	    {
-		sub => 'Bivio::Test::Type::unit',
+		sub => TestUnit_Unit()->package_name . '::unit_from_method_group',
 	    },
 	    {
-		sub => 'Bivio::Test::Unit::Unit::run_unit',
+		sub => TestUnit_Type()->package_name . '::unit',
 	    },
 	],
     ],
