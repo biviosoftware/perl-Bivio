@@ -147,11 +147,7 @@ sub enum_set_fields_decl {
 		$self->field_decl([
 		    map(
 			[
-			    join(
-				$_ENUM_SET_SEP,
-				$column_name,
-				$_->as_int,
-			    ),
+			    $self->format_enum_set_field($column_name, $_),
 			    'Boolean',
 			],
 			$type->get_enum_type->get_non_zero_list,
@@ -247,6 +243,15 @@ sub format_context_as_query {
 	 . $proto->FORM_CONTEXT_QUERY_KEY
 	 . '='
 	 . $_HTML->escape_query($fc->as_literal($req)) : '';
+}
+
+sub format_enum_set_field {
+    my(undef, $column_name, $enum_or_int) = @_;
+    return join(
+	$_ENUM_SET_SEP,
+	$column_name,
+	ref($enum_or_int) ? $enum_or_int->as_int : $enum_or_int,
+    );
 }
 
 sub get_context_from_request {
@@ -633,20 +638,17 @@ sub internal_put_enum_set_from_fields {
 	    my($type, $column_name) = @_;
 	    $self->internal_put_field(
 		$qualified_field,
-		${$type->from_array([
+		${$type->from_array(
 		    $type->get_enum_type->map_non_zero_list(
 			sub {
 			    my($enum) = @_;
 			    return $self->get(
-				join(
-				    $_ENUM_SET_SEP,
-				    $column_name,
-				    $enum->as_int,
-				)
+				$self->format_enum_set_field(
+				    $column_name, $enum),
 			    ) ? $enum : ();
 			},
 		    ),
-		])},
+		)},
 	    );
 	},
     );
@@ -691,7 +693,7 @@ sub internal_put_fields_from_enum_set {
 	    my($type, $column_name) = @_;
 	    $self->internal_put_field(
 		map(
-		    (join($_ENUM_SET_SEP, $column_name, $_->as_int) => 1),
+		    ($self->format_enum_set_field($column_name, $_) => 1),
 		    @{$type->to_array($set)},
 		),
 	    );
