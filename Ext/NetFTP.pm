@@ -4,6 +4,7 @@ package Bivio::Ext::NetFTP;
 use strict;
 use base 'Net::FTP';
 use Bivio::IO::Trace;
+use Bivio::UI::FacadeComponent::Text;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -11,6 +12,7 @@ Bivio::IO::Config->register(my $_CFG = {
     active_ports => [8100 .. 8199],
     timeout => 60,
 });
+my($_T) = 'Bivio::UI::FacadeComponent::Text';
 
 sub bivio_get {
     my($proto, $args) = @_;
@@ -26,7 +28,7 @@ sub bivio_get {
 	$user,
 	defined($args->{password}) ? $args->{password}
 	    : $args->{req}->format_email(
-		b_use('FacadeComponent.Text')->get_value('support_email', $args->{req})),
+		$_T->get_value('support_email', $args->{req})),
     ) || _bivio_die($self, "login: $user");
     $self->cwd($args->{cwd}) || _bivio_die($self, "cwd: $args->{cwd}");
     my($type) = $args->{type} || 'binary';
