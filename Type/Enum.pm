@@ -282,7 +282,7 @@ sub map_list {
 }
 
 sub map_non_zero_list {
-    return _map_enums('get_bnon_zero_list', @_);
+    return _map_enums('get_non_zero_list', @_);
 }
 
 sub equals_by_name {
