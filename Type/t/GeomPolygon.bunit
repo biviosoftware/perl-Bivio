@@ -11,7 +11,7 @@ Type();
 	method => 'from_shape',
 	compute_params => sub {
 	    my(undef, $params) = @_;
-	    my($b) = class('TestUnit.Bean');
+	    my($b) = class('Test.Bean');
 	    my($copy) = [@$params];
 	    return [$b->new({
 		'points()' => sub {
