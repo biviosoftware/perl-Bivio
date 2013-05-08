@@ -7,6 +7,7 @@ b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_V) = b_use('UI.View');
+my($_F) = b_use('UI.Facade');
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub REGISTER_PREREQUISITES {
@@ -16,7 +17,9 @@ sub REGISTER_PREREQUISITES {
 sub get_widget_substitute_value {
     my($proto, $widget, $source) = @_;
 #    my($v) = $_V->unsafe_get_current;
-    my($map) = $proto->get_from_source($source)->[$_IDI];
+    return undef
+	unless my $facade = $_F->unsafe_get_from_source($source);
+    my($map) = $proto->get_from_facade($facade)->[$_IDI];
     foreach my $n (
 	$widget->b_widget_label,
 	$widget->simple_package_name,
