@@ -2,6 +2,7 @@
 # $Id$
 my($sub) = sub {(caller)[0]};
 my($var) = 0;
+Unit();
 [
     class() => [
 	eval => [
