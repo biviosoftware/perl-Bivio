@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.54  2013/05/07 23:36:23  moeller
+  * Bivio::Parameters
+    fpc - allow Delegate type
+
   Revision 12.53  2013/05/07 22:29:44  moeller
   * Bivio::Agent::Task
   * Bivio::Biz::Action::ECSecureSourceProcessor
