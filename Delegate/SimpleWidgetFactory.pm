@@ -237,6 +237,7 @@ sub internal_create_edit {
 		    $type->get_enum_type->get_non_zero_list,
 		]),
 	    ),
+	    %$attrs,
 	});
     }
     if ($type->can('provide_select_choices')) {
