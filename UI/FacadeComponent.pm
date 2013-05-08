@@ -100,6 +100,11 @@ sub get_facade {
     return shift->[$_IDI]->{facade};
 }
 
+sub get_from_facade {
+    my($proto, $facade) = @_;
+    return $facade->get($proto->simple_package_name);
+}
+
 sub get_from_source {
     my($proto, $source) = @_;
     return b_use('UI.Facade')->get_from_request_or_self($source)
