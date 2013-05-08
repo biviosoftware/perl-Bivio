@@ -277,14 +277,6 @@ sub compile_with_numbers {
     } @$names]);
 }
 
-sub map_list {
-    return _map_enums('get_list', @_);
-}
-
-sub map_non_zero_list {
-    return _map_enums('get_non_zero_list', @_);
-}
-
 sub equals_by_name {
     my($self) = shift;
     foreach my $name (@_) {
@@ -454,6 +446,14 @@ sub is_valid_name {
 
 sub new {
     die('you cannot call new on an enum');
+}
+
+sub map_list {
+    return _map_enums('get_list', @_);
+}
+
+sub map_non_zero_list {
+    return _map_enums('get_non_zero_list', @_);
 }
 
 sub to_literal {
