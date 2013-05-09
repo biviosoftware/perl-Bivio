@@ -50,10 +50,10 @@ sub is_control_on {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    if (defined(my $ws = $_WS->get_widget_substitute_value($self, $source))) {
-	$$buffer .= $ws;
-	return;
-    }
+#    if (defined(my $ws = $_WS->get_widget_substitute_value($self, $source))) {
+#	$$buffer .= $ws;
+#	return;
+#    }
     my($method) = $self->is_control_on($source)
 	? 'control_on_render' : 'control_off_render';
     return $self->$method($source, $buffer);
