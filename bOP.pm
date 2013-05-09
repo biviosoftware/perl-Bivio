@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.55  2013/05/08 19:22:19  moeller
+  * Bivio::Biz::FormModel
+    encapsulate format_enum_set_field
+  * Bivio::Delegate::SimpleWidgetFactory
+    pass attrs to CheckboxGrid
+  * Bivio::Type::Enum
+    fix sub order
+  * Bivio::UI::FacadeComponent::WidgetSubstitute
+    if there is no facade then get_widget_substitute_value returns undef (no op)
+    Some older apps initialize widgets during Task initialization when the
+    facade is yet initialized.
+  * Bivio::UI::FacadeComponent
+    added get_from_facade
+  * Bivio::UI::HTML::Widget::CheckboxGrid
+    use Biz_FormModel->format_enum_set_field
+
   Revision 12.54  2013/05/07 23:36:23  moeller
   * Bivio::Parameters
     fpc - allow Delegate type
