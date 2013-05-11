@@ -228,6 +228,13 @@ sub map_require_all {
     ];
 }
 
+sub require_external_module_quietly {
+    my(undef, $module) = @_;
+    _die("$module: $@\n")
+	unless Bivio::Die->eval("use strict; use $module (); 1;");
+    return;
+}
+
 sub simple_require {
     my($proto, @package) = @_;
     # Loads the packages and throws an exception if any one couldn't be loaded.

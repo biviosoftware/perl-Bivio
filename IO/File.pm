@@ -8,7 +8,7 @@ use File::Basename ();
 use File::Path ();
 use File::Spec ();
 use IO::File ();
-use IO::Dir ();
+b_use('IO.ClassLoader')->require_external_module_quietly('IO::Dir');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
