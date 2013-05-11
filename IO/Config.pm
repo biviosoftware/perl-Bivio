@@ -117,7 +117,7 @@ my(@_REGISTERED) = ();
 my(%_SPEC) = ();
 # Has a package been configured?
 my(%_CONFIGURED) = ();
-_initialize(defined(@main::ARGV) ? \@main::ARGV : []);
+_initialize(@main::ARGV ? \@main::ARGV : []);
 __PACKAGE__->register(my $_CFG = {
     is_production => 0,
     is_dev => 0,
