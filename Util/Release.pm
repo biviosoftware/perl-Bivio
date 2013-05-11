@@ -915,11 +915,8 @@ sub _save_rpm_file {
 
 sub _search {
     my($tag, $source) = @_;
-    # Searches for the specified tag in the source array. Returns the
-    # value or undef if not found.
-
-    grep(/^$tag: (.+)/i && (return $1), @$source);
-    return undef;
+    my($res) = [map(/^$tag: (.+)/i ? $1 : (), @$source)];
+    return @$res ? join(', ', @$res) : undef;
 }
 
 sub _system {
