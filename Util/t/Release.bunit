@@ -18,6 +18,8 @@ IO_File()->write(
     << 'END',
 Summary: Release.bunit test data
 Group: Bivio/Test
+Provides: provides-aa
+Provides: provides-bb
 
 _b_release_include('release-bunit.include');
 
@@ -87,6 +89,10 @@ END
 	my($rpm) = "$home/release-bunit-HEAD.rpm";
 	assert_equals(1, -l $rpm);
 	assert_equals("/file1.txt\n/file2.txt\n/file3.txt\n", scalar(`rpm -qlp $rpm`));
+	assert_equals(
+	    qr{^provides-aa\s*\nprovides-bb\s*\nrelease-bunit = HEAD-\d+_\d+$}s,
+	    scalar(`rpm -qp --provides $rpm`),
+	);
 	return 1;
     },
 ];
