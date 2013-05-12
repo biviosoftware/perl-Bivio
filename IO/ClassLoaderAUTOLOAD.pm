@@ -14,10 +14,7 @@ sub AUTOLOAD {
 
 sub handle_class_loader_require {
     my($proto, $pkg) = @_;
-    {
-	no strict qw(refs);
-	*{$pkg . '::AUTOLOAD'} = \&AUTOLOAD;
-    }
+    ($pkg || $proto->my_caller)->replace_subroutine(AUTOLOAD => \&AUTOLOAD);
     return;
 }
 
