@@ -74,6 +74,8 @@ sub new {
 	$self->max_redirect(0);
 	$self->requests_redirectable([]);
     }
+    $self->bivio_ssl_no_check_certificate
+	if Bivio::IO::Config->is_test;
     LWP::Debug::level("+debug") if $_TRACE;
     return $self;
 }
