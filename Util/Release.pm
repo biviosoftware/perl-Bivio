@@ -723,6 +723,7 @@ sub _http_get {
     ($$uri = _create_uri($$uri)) =~ /^\w+:/
 	or $$uri = URI::Heuristic::uf_uri($$uri)->as_string;
     _output($output, "GET $$uri\n");
+    local($ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}) = 0;
     local($ENV{HTTPS_CA_FILE}) = $_CFG->{https_ca_file}
 	if $_CFG->{https_ca_file};
     my($ua) = b_use('Ext.LWPUserAgent')->new(1);
