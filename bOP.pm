@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.56  2013/05/09 22:48:24  nagler
+  * Bivio::UI::Widget::ControlBase
+    WidgetSubstitute is slowing things down
+
   Revision 12.55  2013/05/08 19:22:19  moeller
   * Bivio::Biz::FormModel
     encapsulate format_enum_set_field
