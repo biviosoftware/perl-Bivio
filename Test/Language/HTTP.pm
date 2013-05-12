@@ -581,7 +581,8 @@ sub new {
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
 	cookies => $_HTTPC->new,
-	user_agent => b_use('Ext.LWPUserAgent')->new,
+	user_agent => b_use('Ext.LWPUserAgent')->new
+	    ->bivio_ssl_no_check_certificate,
 	history => [],
 	history_length => 5,
     };
