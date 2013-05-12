@@ -723,10 +723,12 @@ sub _http_get {
     ($$uri = _create_uri($$uri)) =~ /^\w+:/
 	or $$uri = URI::Heuristic::uf_uri($$uri)->as_string;
     _output($output, "GET $$uri\n");
-    local($ENV{PERL_LWP_SSL_VERIFY_HOSTNAME}) = 0;
     local($ENV{HTTPS_CA_FILE}) = $_CFG->{https_ca_file}
 	if $_CFG->{https_ca_file};
-    my($ua) = b_use('Ext.LWPUserAgent')->new(1);
+    my($ua) = b_use('Ext.LWPUserAgent')
+	->new
+	->bivio_ssl_no_check_certificate
+	->bivio_redirect_automatically;
     $ua->credentials(
 	URI->new($$uri)->host_port,
 	@$_CFG{qw(http_realm http_user http_password)},
