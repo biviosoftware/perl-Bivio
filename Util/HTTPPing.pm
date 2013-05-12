@@ -58,7 +58,8 @@ sub page {
     # Truncate data returned from the server at 512 bytes.
     my($self, @pages) = @_;
     $self->initialize_ui;
-    my($user_agent) = b_use('Ext.LWPUserAgent')->new(1),
+    my($user_agent) = b_use('Ext.LWPUserAgent')->new
+	->bivio_redirect_automatically;
     my($status) = '';
     foreach my $page (@pages) {
         my($host) = $page =~ m!^\w+://([^:/]+)!;
