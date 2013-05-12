@@ -68,7 +68,7 @@ sub _process_payment {
     $hreq->content_type('application/x-www-form-urlencoded');
     $hreq->content(_transact_form_data($proto, $payment));
     _trace($hreq) if $_TRACE;
-    my($response) = b_use('Bivio::Ext::LWPUserAgent')->new->request($hreq);
+    my($response) = b_use('Ext.LWPUserAgent')->new->request($hreq);
     my($response_string) = $response->as_string;
     _trace($response_string) if $_TRACE;
     b_die('request failed: ', $response_string)
