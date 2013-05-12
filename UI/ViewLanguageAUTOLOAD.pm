@@ -9,27 +9,28 @@ our($AUTOLOAD);
 our($_CALLING_CONTEXT);
 our($_CALLING_CONTEXT_METHOD);
 my($_A) = b_use('IO.Alert');
+my($_VLA) = b_use('UI.ViewLanguageAUTOLOAD');
+my($_VL) = b_use('UI.ViewLanguage');
 
 sub AUTOLOAD {
-    return b_use('UI.ViewLanguageAUTOLOAD')->call_autoload($AUTOLOAD, \@_);
+    return $_VLA->call_autoload($AUTOLOAD, \@_);
 }
 
 sub call_autoload {
     my($proto, $method, $args, $calling_context) = @_;
-    local($_CALLING_CONTEXT) = $calling_context || b_use('UI.ViewLanguageAUTOLOAD')->widget_new_calling_context;
+    local($_CALLING_CONTEXT) = $calling_context || $_VLA->widget_new_calling_context;
     local($_CALLING_CONTEXT_METHOD) = $method;
-    return b_use('UI.ViewLanguage')->call_method($method, b_use('UI.ViewLanguage'), $args);
+    return $_VL->call_method($method, $_VL, $args);
 }
 
-sub widget_new_calling_context {
-    return $_A->calling_context([qr{::Widget$|WidgetFactory|ViewShortcuts|ViewLanguage|UI::View$|ClassLoader$}]);
+sub handle_class_loader_require {
+    my($proto, $pkg) = @_;
+    ($pkg || $proto->my_caller)->replace_subroutine(AUTOLOAD => \&AUTOLOAD);
+    return;
 }
 
 sub import {
-    my($pkg) = caller();
-    no strict qw(refs);
-    *{$pkg.'::AUTOLOAD'} = \&AUTOLOAD;
-    return;
+    return shift->handle_class_loader_require((caller())[0]);
 }
 
 sub unsafe_calling_context {
@@ -42,6 +43,10 @@ sub unsafe_calling_context_for_wiki_text {
 	&& (caller)[0]->simple_package_name
         eq ($_CALLING_CONTEXT_METHOD =~ /(\w+)$/)[0];
     return $_CALLING_CONTEXT || b_die('no calling context');
+}
+
+sub widget_new_calling_context {
+    return $_A->calling_context([qr{::Widget$|WidgetFactory|ViewShortcuts|ViewLanguage|UI::View$|ClassLoader$}]);
 }
 
 1;
