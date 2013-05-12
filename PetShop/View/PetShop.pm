@@ -261,24 +261,25 @@ sub main {
 	vs_blank_cell(),
 	Join([
 	    MAP(Join([
-		map({
-		    my($product, $coords) = split(/:/, $_);
-		    AREA({
-			HREF => ['->format_uri', 'PRODUCTS', {
-			    'ListQuery.parent_id' => uc($product),
-			}],
-			ALT => $product,
-			COORDS => $coords,
-		    }),
-		} qw(
-		    Dogs:116,6,255,210
-		    Dogs:255,22,306,123
-		    Fish:2,124,104,200
-		    Dogs:38,204,141,281
-		    Reptiles:141,237,243,314
-		    Cats:243,204,345,279
-		    Birds:267,124,369,200
-		)),
+		map(
+		    {
+			my($product, $coords) = split(/:/, $_);
+			AREA({
+			    HREF => ['->format_uri', 'PRODUCTS', {
+				'ListQuery.parent_id' => uc($product),
+			    }],
+			    ALT => $product,
+			    COORDS => $coords,
+			}),
+		    }
+		    'Dogs:116,6,255,210',
+		    'Dogs:255,22,306,123',
+		    'Fish:2,124,104,200',
+		    'Dogs:38,204,141,281',
+		    'Reptiles:141,237,243,314',
+		    'Cats:243,204,345,279',
+		    'Birds:267,124,369,200',
+		),
 	    ]))->put(ID => 'mainmap', NAME => 'mainmap'),
 	    Image('main', 'none')->put(attributes => ' usemap="#mainmap"'),
 	]),
