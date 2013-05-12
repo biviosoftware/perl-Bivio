@@ -39,17 +39,8 @@ sub generate {
 
 sub root_file {
     my($self) = @_;
-    my($response) = b_use('Ext.LWPUserAgent')
-	->new(1)
-	->request(
-	    HTTP::Request->new(
-		'GET',
-		'http://www.internic.net/zones/named.root',
-	    ),
-	);
-    b_die($response)
-	unless $response->is_success;
-    return $response->content;
+    return ${b_use('Ext.LWPUserAgent')
+	->bivio_http_get('http://www.internic.net/zones/named.root')};
 }
 
 sub _dot {
