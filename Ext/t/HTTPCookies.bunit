@@ -1,14 +1,12 @@
 # Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Unit();
-use HTTP::Request;
-use Bivio::Ext::LWPUserAgent;
 [
     [any_param => 33] => [
 	extract_cookies => [
 	    sub {
 		return [
-		    Bivio::Ext::LWPUserAgent->new
+		    Ext_LWPUserAgent()->new
 		    ->request(HTTP::Request->new(GET => 'http://www.bivio.biz')),
 		];
 	    } => not_die(),
