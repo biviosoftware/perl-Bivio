@@ -175,6 +175,12 @@ sub equals_class_name {
     );
 }
 
+sub global_variable_ref {
+    my($proto, $var_name) = @_;
+    no strict 'refs';
+    return \${$proto->package_name . '::' . $var_name};
+}
+
 sub grep_methods {
     my($proto) = shift;
     return _grep_sub($proto, $proto->inheritance_ancestors, @_);
@@ -465,8 +471,7 @@ sub package_name {
 }
 
 sub package_version {
-    no strict 'refs';
-    return ${\${shift->package_name . '::VERSION'}};
+    return ${shift->global_variable_ref('VERSION')};
 }
 
 sub parameters {
