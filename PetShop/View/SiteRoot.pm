@@ -2,7 +2,8 @@
 # $Id$
 package Bivio::PetShop::View::SiteRoot;
 use strict;
-use Bivio::Base 'Bivio::UI::View::SiteRoot';
+use Bivio::Base 'View';
+b_use('UI.ViewLanguageAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 

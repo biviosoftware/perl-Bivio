@@ -3,10 +3,10 @@
 package Bivio::PetShop::View::Example;
 use strict;
 use Bivio::Base 'View.Base';
-use Bivio::UI::ViewLanguageAUTOLOAD;
+b_use('UI.ViewLanguageAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-b_use('Action.PingReply')->register_handler(__PACKAGE__);
+Action_PingReply()->register_handler(__PACKAGE__);
 
 sub eg1 {
     return shift->internal_body(Join([
