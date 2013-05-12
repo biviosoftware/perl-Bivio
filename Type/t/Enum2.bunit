@@ -11,5 +11,8 @@ Unit();
 	as_uri => 'male',
 	as_xml => 'MALE',
 	clone => sub {[Type_Gender()->MALE]},
+	unsafe_from_any => [
+	    [undef] => [undef],
+	]
     ],
 ];

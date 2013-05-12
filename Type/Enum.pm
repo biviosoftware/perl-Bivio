@@ -547,10 +547,13 @@ sub _get {
 
 sub _lookup {
     my($self, $thing, $dont_die) = @_;
-    my($map) = _map($self);
-    my($res) = $map->{not_desc}->{$thing}->{self}
-	|| _facade_lookup($self, 'unsafe_enum_from_desc', $thing)
-	|| $map->{desc}->{$thing}->{self};
+    my($res);
+    if (defined($thing)) {
+	my($map) = _map($self);
+	$res = $map->{not_desc}->{$thing}->{self}
+	    || _facade_lookup($self, 'unsafe_enum_from_desc', $thing)
+	    || $map->{desc}->{$thing}->{self};
+    }
     Bivio::IO::Alert->bootstrap_die(
 	$thing,
 	': no such ',
