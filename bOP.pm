@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.58  2013/05/13 02:53:05  nagler
+  * Bivio::Ext::LWPUserAgent
+    Set bivio_ssl_no_check_certificate if is_test, because
+    remote-copy.btest was failing, since remote system didn't have valid cert
+  * Bivio::PetShop::Util::TestCRM
+    use req->format_email for EmailAlias (not Test)
+  * Bivio::Util::Backup
+    restructured zfs_* routines
+  * Bivio::Util::Disk
+    added zpool status check
+    removed rd (old controller)
+    refactored to be cleaner
+
   Revision 12.57  2013/05/12 20:42:42  nagler
   * Moved javascript to Bivio-bOP-javascript.rpm
   * Bivio::Biz::Action::ECCreditCardProcessor
