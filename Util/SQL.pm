@@ -171,12 +171,12 @@ sub create_test_user {
 }
 
 sub ddl_dir {
-    my($self) = @_;
-    $self->initialize_fully;
+    my($self, $shell_util) = @_;
+    $shell_util ||= $self;
     return b_use('UI.Facade')->get_local_file_name(
 	b_use('UI.LocalFileType')->DDL,
 	'',
-	$self->req,
+	$shell_util->req,
     );
 }
 
