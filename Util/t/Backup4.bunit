@@ -6,7 +6,7 @@ req()->put(backup_bunit => {
     _do_backticks => {
 #	Uncomment this when building new tests
 #	ignore => qr{.},
-	'zfs list -t all' => [
+	'zfs list -t snapshot' => [
 	    $split->(<<'EOF'),
 NAME                  USED  AVAIL  REFER  MOUNTPOINT
 bkp/mirror@20120711  29.9K      -  34.9K  -
@@ -15,41 +15,17 @@ bkp/mirror@20120713  29.9K      -  34.9K  -
 EOF
 	    [],
 	],
-	'zfs get origin' => [
-	    $split->(<<'EOF'),
-NAME                   PROPERTY  VALUE                SOURCE
-bkp                    origin    -                    -
-bkp/archive            origin    -                    -
-bkp/mirror             origin    -                    -
-bkp/mirror@20120712    origin    -                    -
-bkp/snapshot           origin    -                    -
-bkp/snapshot/20120712  origin    bkp/mirror@20120712  -
-EOF
-	    [],
-	],
 	'zfs destroy bkp/mirror@20120711' => [[]],
 	'zfs destroy bkp/mirror@20120712' => [[]],
-	'zfs destroy bkp/snapshot/20120712' => [[]],
-	'zfs destroy bkp/weekly/20120711' => [[]],
-	'zfs snapshot bkp/mirror@20120712' => [[]],
-	'zfs snapshot bkp/mirror@20120708' => [[]],
-	'zpool create archive vdev1' => [[]],
-	'zfs create -o compression=gzip-9 archive/20120708' => [[]],
-	q{zfs send 'bkp/mirror@20120708' | zfs receive -F 'archive/20120708'} => [[]],
-	'zfs set archive/20120708 readonly=on' => [[]],
-	'zfs export archive' => [[]],
+	'zfs snapshot bkp/mirror@20120713' => [[]],
     },
 });
 [
     class() => [
-	zfs_snapshot_and_export => [
-	    [qw(bkp 20120712 1 vdev1)] => <<'EOF',
-Removed: bkp/mirror@20120711 bkp/snapshot/20120712 bkp/mirror@20120712
-Created: bkp/mirror@20120712
-EOF
-	    [qw(bkp 20120708 1 vdev1)] => <<'EOF',
-Created: bkp/mirror@20120708
-Exported: vdev1
+	zfs_snapshot => [
+	    [qw(bkp/mirror 20120713 1)] => <<'EOF',
+Created: bkp/mirror@20120713
+Removed: bkp/mirror@20120711 bkp/mirror@20120712
 EOF
 	],
     ],
