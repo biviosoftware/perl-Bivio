@@ -1,4 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 config({
     'Bivio::Util::Disk' => {
@@ -47,56 +47,6 @@ md2 : active raid1 sdb3[1] sda3[0]
       
 unused devices: <none>
 EOF
-		'/proc/rd/c0/current_status' => <<'EOF',
-***** DAC960 RAID Driver Version 2.4.11 of 11 October 2001 *****
-Copyright 1998-2001 by Leonard N. Zubkoff <lnz@dandelion.com>
-Configuring Mylex DAC1164P PCI RAID Controller
-  Firmware Version: 5.08-0-87, Channels: 2, Memory Size: 32MB
-  PCI Bus: 3, Device: 8, Function: 0, I/O Address: Unassigned
-  PCI Address: 0xF9FFFC00 mapped at 0xE08EDC00, IRQ Channel: 5
-  Controller Queue Depth: 128, Maximum Blocks per Command: 128
-  Driver Queue Depth: 127, Scatter/Gather Limit: 33 of 33 Segments
-  Stripe Size: 64KB, Segment Size: 8KB, BIOS Geometry: 128/32
-  SAF-TE Enclosure Management Enabled
-  Physical Devices:
-    0:0  Vendor: SEAGATE   Model: ST318203LC        Revision: 0001
-         Serial Number: LRE278100000103716RV
-         Disk Status: Online, 35565568 blocks
-    0:1  Vendor: SEAGATE   Model: ST318203LC        Revision: 0001
-         Serial Number: LRE21233000010371EAB
-         Disk Status: Online, 35565568 blocks
-    0:2  Vendor: SEAGATE   Model: ST318203LC        Revision: 0001
-         Serial Number: LRE25585000010371HUE
-         Disk Status: Online, 35565568 blocks
-    0:3  Vendor: SEAGATE   Model: ST318203LC        Revision: 0001
-         Serial Number: LRE17138000010371ECD
-         Disk Status: Online, 35565568 blocks
-    0:4  Vendor: IBM       Model: DMVS18D           Revision: 0100
-         Serial Number:       F80241587A
-         Disk Status: Standby, 35843670 blocks
-    0:7  Vendor: MYLEX     Model: DAC1164P          Revision: 0508
-         Serial Number:   
-    0:15 Vendor: Dell      Model: 12 BAY U2W CU     Revision: 0205
-    1:7  Vendor: MYLEX     Model: DAC1164P          Revision: 0508
-         Serial Number:   
-    1:8  Vendor: FUJITSU   Model: MAS3184NC         Revision: 5B08
-         Serial Number: A2M7P48003JE
-         Disk Status: Online, 35565568 blocks
-    1:9  Vendor: FUJITSU   Model: MAS3184NC         Revision: 5B08
-         Serial Number: A2M7P48003HV
-         Disk Status: Online, 35565568 blocks
-    1:10 Vendor: IBM       Model: DMVS18D           Revision: 0100
-         Serial Number:       F80245F87A
-         Disk Status: Online, 35842048 blocks
-    1:11 Vendor: IBM       Model: DMVS18D           Revision: 0100
-         Serial Number:       F8025D0F7A
-         Disk Status: Online, 35565568 blocks
-    1:15 Vendor: Dell      Model: 12 BAY U2W CU     Revision: 0205
-  Logical Drives:
-    /dev/rd/c0d0: RAID-5, Online, 248958976 blocks, Write Thru
-    /dev/rd/c0d1: RAID-5, Critical, 248958976 blocks, Write Thru
-  No Rebuild or Consistency Check in Progress
-EOF
 		'/usr/sbin/afacli' => <<'EOF',
 [?1048h[?1047h[1;27r[m[4l[?7h[H[2J[?1h=[27;73H<INS>[H--------------------------------------------------------------------------------[2;1H
 DELL PowerEdge Expandable RAID Controller 2 Command Line Interface
@@ -136,13 +86,46 @@ u0    RAID-5    OK             -      256K    1396.95   ON     OFF      OFF
 u1    RAID-5    OK             -      256K    1396.95   ON     OFF      OFF
 u2    RAID-5    DEGRADED       -      256K    1862.62   ON     OFF      OFF
 EOF
+		'/sbin/zpool status -x' => <<'EOF',
+  pool: zp1
+ state: ONLINE
+   see: http://zfsonlinux.org/msg/ZFS-8000-EY
+  scan: none requested
+config:
+
+NAME                                              STATE     READ WRITE CKSUM
+zp1                                               ONLINE       0     0     0
+  raidz1-0                                        ONLINE       0     0     0
+    wwn-0x600188b03890880018a7c8d238bc921e-part2  ONLINE       0     0     0
+    wwn-0x600188b03890880018a7c8ef14ce30dd-part2  ONLINE       0     0     0
+    wwn-0x600188b038908800192032412e5a0847-part2  ONLINE       0     0     0
+
+  pool: zp2
+ state: DEGRADED
+   see: http://zfsonlinux.org/msg/ZFS-8000-EY
+  scan: none requested
+config:
+
+NAME                                              STATE     READ WRITE CKSUM
+zp2                                               ONLINE       0     0     0
+  raidz1-0                                        ONLINE       0     0     0
+EOF
 	    }] => <<'EOF',
 DRIVE FAILURE: md0 : active raid1 sdb2[1] sda2[0]
       2096384 blocks [1/2] [U_]
-DRIVE FAILURE: /dev/rd/c0d1: RAID-5, Critical, 248958976 blocks, Write Thru
 DRIVE FAILURE: 0:01:0	 Disk	 71132959  512 Unconfigured    	NO     160 
 DRIVE FAILURE:   100	Rebuild	 20.9% 0	   RUN	 00000000  00000000 
 DRIVE FAILURE: u2    RAID-5    DEGRADED       -      256K    1862.62   ON     OFF      OFF
+DRIVE FAILURE: pool: zp2
+ state: DEGRADED
+   see: http://zfsonlinux.org/msg/ZFS-8000-EY
+  scan: none requested
+config:
+
+NAME                                              STATE     READ WRITE CKSUM
+zp2                                               ONLINE       0     0     0
+  raidz1-0                                        ONLINE       0     0     0
+
 EOF
 	],
     ],
