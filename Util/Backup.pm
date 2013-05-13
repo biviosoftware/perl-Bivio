@@ -1,10 +1,11 @@
-# Copyright (c) 2002-2012 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::Backup;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 use File::Find ();
 use IO::File ();
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -31,12 +32,12 @@ usage: b-backup [options] command [args...]
 commands:
     archive_logs mirror_dir archive_dir -- copy gz files in /var/log
     archive_mirror_link root date -- tar "link" to "weekly" or "archive"
+    archive_weekly snapshot weekly -- tar "snapshot" to "weekly"
     compress_log_dirs root [max_days] -- tars and gzips log dirs
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
     trim_directories dir max -- returns directories to trim
-    zfs_trim_file_systems root num_keep -- trims file systems with this root
-    zfs_snapshot_and_export root date num_keep dev... -- take a snapshot and export on Sundays
-    zfs_snapshot_mount root date -- mounts a snapshot readonly
+    zfs_snapshot file_system snapshot_date num_keep ... -- take a snapshot
+    zfs_snapshot_trim file_system num_keep -- trims snapshots with this root
 EOF
 }
 
@@ -77,45 +78,35 @@ sub archive_mirror_link {
 	['String', 'Date'],
 	\@_,
     );
-    return $self->lock_action(sub {
-	$date = $_D->to_file_name($date);
-	$root = $_F->absolute_path($root);
-	my($link) = "$root/mirror/$_LINK/$date";
-	$self->usage_error($link, ': does not exist')
-	    unless -d $link;
-	return
-	    unless my $archive = _which_archive($self, $root, $date);
-	$_F->mkdir_p($archive, 0700);
-	$_F->do_in_dir($link, sub {
-	    foreach my $top (glob('*')) {
-		my($dirs) = [];
-		my($du) = IO::File->new;
-		Bivio::die->die($top, ": du failed: $!")
-		    unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
-		while (defined(my $line = readline($du))) {
-		    my($n, $d) = split(/\s+/, $line, 2);
-		    chomp($d);
-		    last
-			if @$dirs && $n < $_CFG->{min_kb};
-		    push(@$dirs, $d);
-		}
-		# Directories with same size may come out in any order
-		$dirs = [sort(@$dirs)];
-		$du->close;
-		while (my $src = shift(@$dirs)) {
-		    my($dst) = _safe_path("$archive/$src.tgz");
-		    $_F->mkdir_parent_only($dst, 0700);
-		    $self->piped_exec(
-			['tar', 'czfX', $dst, '-', $src],
-			\(join("\n", @$dirs)),
-		    );
-		}
-	    }
-	    return;
-	});
-	$self->piped_exec("chmod -R -w $archive");
+    return $self->archive_weekly(
+	"$root/mirror/$_LINK/" . $_D->to_file_name($date),
+	"$root/weekly",
+    );
+}
+
+sub archive_weekly {
+   sub ARCHIVE_WEEKLY {[
+	[qw(snapshot String)],
+	[qw(weekly String)],
+   ]}
+   my($self, $bp) = shift->parameters(\@_);
+   return $self->lock_action(sub {
+	$self->usage_error($bp->{snapshot}, ': does not exist')
+	    unless -d $bp->{snapshot};
+	return ''
+	    unless my $archive
+	    = _archive_if_none_this_week(
+		$self,
+		Type_FilePath()->add_trailing_slash(
+		    $_F->absolute_path($bp->{weekly})),
+		$_D->from_literal_or_die($bp->{snapshot} =~ /(\d+)$/),
+	    );
+	$_F->do_in_dir(
+	    $bp->{snapshot},
+	    sub {_archive_create($self, $archive)},
+	);
 	return $archive;
-    });
+   });
 }
 
 sub compress_and_trim_log_dirs {
@@ -236,81 +227,91 @@ sub trim_directories {
     });
 }
 
-sub zfs_trim_file_systems {
-    sub ZFS_TRIM_FILE_SYSTEMS {[
-	[qw(root String)],
-	[qw(num_keep Integer)],
-    ]}
-    my($self, $bp) = shift->parameters(\@_);
-    return $self->lock_action(sub {
-	my($file_systems) = [reverse(
-	    sort(map(
-		$_ =~ qr{^(\Q$bp->{root}\E[0-9]{8})\b}s ? $1 : (),
-		_do_backticks($self, [qw(zfs list -t all)]),
-	    )),
-	)];
-	return
- 	    if @$file_systems <= $bp->{num_keep};
-	$file_systems = [reverse(splice(@$file_systems, $bp->{num_keep}))];
-	my($clone) = {map(
-	    # Doesn't handle clones which share same origin, but that's not typical.
-	    $_ =~ /^(\S+)\s+\S+\s+(\S+)/ ? ($2 => $1) : (),
-	    _do_backticks($self, [qw(zfs get origin)]),
-	)};
-	my($res) = [];
-	foreach my $fs (@$file_systems) {
-	    push(@$res, _zfs_destroy($self, $clone->{$fs}))
-		if $clone->{$fs};
-	    push(@$res, _zfs_destroy($self, $fs));
-	}
-	return 'Removed: ' . join(' ', @$res) . "\n";
-    });
-}
-
-sub zfs_snapshot_and_export {
-    sub ZFS_SNAPSHOT_AND_EXPORT {[
-	[qw(root String)],
+sub zfs_snapshot {
+    sub ZFS_SNAPSHOT {[
+	[qw(file_system String)],
 	[qw(snapshot_date Date)],
 	[qw(snapshot_keep PositiveInteger)],
-	[qw(archive_devices String)],
-    ]}
-    my($self, $bp) = shift->parameters(\@_);
-    $self->usage_error('archive_devices: may not be empty')
-	unless $bp->{archive_devices} =~ /\w/;
-    my($dow) = $_D->english_day_of_week($bp->{snapshot_date});
-    $bp->{snapshot_date} = $_D->to_file_name($bp->{snapshot_date});
-    return $self->lock_action(sub {
-        my($res) = $self->zfs_trim_file_systems("$bp->{root}/mirror\@", $bp->{snapshot_keep});
-	my($snapshot) = "$bp->{root}/mirror\@$bp->{snapshot_date}";
-	b_info("Snapshot: $snapshot");
-	_do_backticks($self, [qw(zfs snapshot), $snapshot]);
-	$res .= "Created: $snapshot\n";
-	return $res
-	    unless $dow =~ /sun/i;
-	foreach my $dev (split(' ', $bp->{archive_devices})) {
-	    my($archive) = "archive/$bp->{snapshot_date}";
-	    b_info("Creating: $archive");
-	    _do_backticks($self, [qw(zpool create archive), $dev]);
-	    _do_backticks($self, [qw(zfs create -o compression=gzip-9), $archive]);
-	    _do_backticks($self, "zfs send '$snapshot' | zfs receive -F '$archive'");
-	    _do_backticks($self, [qw(zfs set), $archive, 'readonly=on']);
-	    _do_backticks($self, [qw(zfs export archive)]);
-	}
-	b_info('Done');
-	return $res . "Exported: $bp->{archive_devices}\n";
-    });
-}
-
-sub zfs_snapshot_mount {
-    sub ZFS_SNAPSHOT_MOUNT {[
-	[qw(root String)],
-	[qw(snapshot_date Date)],
     ]}
     my($self, $bp) = shift->parameters(\@_);
     my($date) = $_D->to_file_name($bp->{snapshot_date});
-    my($clone) = "$bp->{root}/snapshot/$date";
-    _do_backticks($self, [qw(zfs clone -o readonly=on), "$bp->{root}/mirror\@$date", $clone]);
-    return "Mounted: /$clone\nTo unmount use: zfs destroy $clone";
+    my($fs) = _zfs_file_system($bp);
+    return $self->lock_action(sub {
+	my($snapshot) = $fs . '@' . $date;
+	_do_backticks($self, [qw(zfs snapshot), $snapshot]);
+	return "Created: $snapshot\n"
+	    . $self->zfs_snapshot_trim($fs, $bp->{snapshot_keep});
+    });
+}
+
+sub zfs_snapshot_trim {
+    sub ZFS_SNAPSHOT_TRIM {[
+	[qw(file_system String)],
+	[qw(num_keep PositiveInteger)],
+    ]}
+    my($self, $bp) = shift->parameters(\@_);
+    my($fs) = _zfs_file_system($bp);
+    return $self->lock_action(sub {
+	my($snapshots) = [reverse(
+	    sort(map(
+		$_ =~ qr{^(\Q$fs\E\@[0-9]{8})\b}s ? $1 : (),
+		_do_backticks($self, [qw(zfs list -t snapshot)]),
+	    )),
+	)];
+	return
+ 	    if @$snapshots <= $bp->{num_keep};
+	return 'Removed: '
+	    . _zfs_destroy_snapshots(
+		$self,
+		[reverse(splice(@$snapshots, $bp->{num_keep}))],
+	    )
+	    . "\n";
+    });
+}
+
+sub _archive_create {
+    my($self, $archive) = @_;
+    $_F->mkdir_p($archive, 0700);
+    foreach my $top (glob('*')) {
+	my($dirs) = [];
+	my($du) = IO::File->new;
+	b_die($top, ": du failed: $!")
+	    unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
+	while (defined(my $line = readline($du))) {
+	    my($n, $d) = split(/\s+/, $line, 2);
+	    chomp($d);
+	    last
+		if @$dirs && $n < $_CFG->{min_kb};
+	    push(@$dirs, $d);
+	}
+	$du->close;
+	# Directories with same size may come out in any order
+	$dirs = [sort(@$dirs)];
+	while (my $src = shift(@$dirs)) {
+	    my($dst) = _safe_path("$archive/$src.tgz");
+	    $_F->mkdir_parent_only($dst, 0700);
+	    $self->piped_exec(
+		['tar', 'czfX', $dst, '-', $src],
+		\(join("\n", @$dirs)),
+	    );
+	}
+    }
+    $self->piped_exec("chmod -R -w $archive");
+    return;
+}
+
+sub _archive_if_none_this_week {
+    my($self, $weekly, $date) = @_;
+    my($archive) = $weekly . $_D->to_file_name($date);
+    foreach my $count (1 .. 7) {
+	return undef
+	    if -e ($weekly . $_D->to_file_name($date));
+	return $archive
+	    if $_D->english_day_of_week($date) =~ /sun/i;
+  	$date = $_D->add_days($date, -1);
+    }
+    b_die($archive, ': unable to find Sunday');
+    # DOES NOT RETURN
 }
 
 sub _do_backticks {
@@ -339,22 +340,6 @@ sub _safe_path {
     return $path;
 }
 
-sub _which_archive {
-    my($self, $root, $date) = @_;
-    my($archive) = "$root/weekly/$date";
-    $date = $_D->from_literal_or_die($date);
-    my($dow) = $_D->english_day_of_week($date);
-    foreach my $d ($_D->english_day_of_week_list) {
- 	my($x) = "$root/weekly/" . $_D->to_file_name($date);
-  	return
-  	    if -e $x;
-  	last
-  	    if $d eq $dow;
-  	$date = $_D->add_days($date, -1);
-    }
-    return $archive;
-}
-
 sub _zfs_destroy {
     my($self, $fs) = @_;
     my($cmd) = [qw(zfs destroy), $fs];
@@ -369,6 +354,22 @@ sub _zfs_destroy {
     }
     b_die($cmd, ': failed: ', $out);
     # DOES NOT RETURN
+}
+
+sub _zfs_destroy_snapshots {
+    my($self, $snapshots) = @_;
+    return join(
+	' ',
+	map(
+	    _zfs_destroy($self, $_),
+	    @$snapshots,
+	),
+    );
+}
+
+sub _zfs_file_system {
+    my($bp) = @_;
+    return ($bp->{file_system} =~ m{^/*?(.+?/.+?)\@?$})[0] || b_die($bp->{file_system}, ': invalid syntax');
 }
 
 1;
