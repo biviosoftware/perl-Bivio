@@ -1,5 +1,5 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,65 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.57  2013/05/12 20:42:42  nagler
+  * Moved javascript to Bivio-bOP-javascript.rpm
+  * Bivio::Biz::Action::ECCreditCardProcessor
+    b_use
+  * Bivio::Ext::LWPUserAgent
+    added bivio_ssl_no_check_certificate and bivio_redirect_automatically
+    new: want_redirects param is deprecated.  Default is still redirects
+    off.
+    Added POST to valid redirects, because you probably redirect after a
+    form POST.
+    LWP 6.x switched to ssl cert checking by default so need to set
+    bivio_ssl_no_check_certificate explicitly in a few cases
+  * Bivio::IO::ClassLoaderAUTOLOAD
+    use replace_subroutine
+  * Bivio::IO::ClassLoader
+    IO::Dir calls File:stat which tests some state in an eval(), which
+    causes Bivio::Die to die (can't seem to detect this case) so need to
+    protect with require_external_module_quietly
+  * Bivio::IO::Config
+    defined(@array) is deprecated so just check for arguments (not defined)
+  * Bivio::IO::File
+    IO::Dir calls File:stat which tests some state in an eval(), which
+    causes Bivio::Die to die (can't seem to detect this case) so need to
+    protect with require_external_module_quietly
+  * Bivio::PetShop::View::CSS
+    b_use; fix ViewLanguageAUTOLOAD
+  * Bivio::PetShop::View::Example
+    b_use; fix ViewLanguageAUTOLOAD
+  * Bivio::PetShop::View::PetShop
+    don't put commas "Dogs:111,6,..." in a qw(), because Perl will complain
+  * Bivio::PetShop::View::SiteRoot
+    b_use; fix ViewLanguageAUTOLOAD
+  * Bivio::PetShop::View::Source
+    b_use; fix ViewLanguageAUTOLOAD
+  * Bivio::PetShop::View::UserAuth
+    b_use; fix ViewLanguageAUTOLOAD
+  * Bivio::Test::Language::HTTP
+    Use bivio_ssl_no_check_certificate
+  * Bivio::Test::Util
+    Use bivio_ssl_no_check_certificate and bivio_redirect_automatically
+  * Bivio::Type::Enum
+    unsafe_from_any might be passed undef
+  * Bivio::UI::ViewLanguageAUTOLOAD
+    added handle_class_loader_require (import() calls this)
+    use replace_subroutine
+  * Bivio::UNIVERSAL
+    added global_variable_ref which is used by package_version
+  * Bivio::Util::CPAN
+    added more uri_lookaside_map
+  * Bivio::Util::HTTPPing
+    set bivio_redirect_automatically
+  * Bivio::Util::NamedConf
+    use LWPUserAgent->bivio_http_get
+  * Bivio::Util::Release
+    allow multiple Provides: lines (gets merged onto a single line)
+    set PERL_LWP_SSL_VERIFY_HOSTNAME to 0, because we use self-signed
+    certs mostly.  LWP 6.0 requires this.
+    Use bivio_ssl_no_check_certificate and bivio_redirect_automatically
+
   Revision 12.56  2013/05/09 22:48:24  nagler
   * Bivio::UI::Widget::ControlBase
     WidgetSubstitute is slowing things down
