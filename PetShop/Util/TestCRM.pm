@@ -83,17 +83,16 @@ sub _init_btest {
 	}) if $forum eq 'CRM_TUPLE_FORUM';
 	$self->new_other('CRM')->setup_realm(undef, undef);
 	if ($forum eq 'CRM_FORUM') {
-	    my($alias);
-	    foreach my $a (qw(acrm crm)) {
+	    my($last_alias);
+	    foreach my $name (qw(acrm crm)) {
 		$self->model('EmailAlias')->create({
-		    incoming => $alias = $self->use('TestLanguage.HTTP')
-			    ->generate_remote_email($a),
+		    incoming => $last_alias = $self->req->format_email($name),
 		    outgoing => $self->req(qw(auth_realm owner name)),
 		});
 	    }
 	    $self->model('RowTag')->create_value(
 		$self->req('auth_id'), 'CANONICAL_EMAIL_ALIAS',
-		$alias);
+		$last_alias);
 	    $self->req(qw(auth_realm owner))->update({
 		display_name => 'PetShop Support',
 	    });
