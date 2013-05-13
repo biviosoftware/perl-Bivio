@@ -16,12 +16,12 @@ config({
     class() => [
         check_use => [
 	    [{
-		'df -k' => <<'EOF',
+		'/bin/df -k' => <<'EOF',
 /dev/1 x x x 81% /a
 /dev/2 x x x 79% /aa
 /dev/3 x x x 91% /c
 EOF
-		'df -i' => <<'EOF',
+		'/bin/df -i' => <<'EOF',
 /dev/4 x x x 96% /bb
 /dev/5 x x x 79% /cc
 EOF
@@ -48,7 +48,7 @@ md2 : active raid1 sdb3[1] sda3[0]
 unused devices: <none>
 EOF
 		'/usr/sbin/afacli' => <<'EOF',
-[?1048h[?1047h[1;27r[m[4l[?7h[H[2J[?1h=[27;73H<INS>[H--------------------------------------------------------------------------------[2;1H
+[?1048h[?1047h[1;27r[m[4l[?7h[H[2J[?1h=[27;73H<INS>[H--------------------------------------------------------------------------------[2;1H
 DELL PowerEdge Expandable RAID Controller 2 Command Line Interface
 Copyright 1998-2001 Adaptec, Inc. All rights reserved
 --------------------------------------------------------------------------------[6;1H

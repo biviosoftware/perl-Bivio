@@ -40,7 +40,7 @@ sub check_use {
 	        }
 		$r ? $r : ();
 	    } @$cfg) : ();
-	} split(/\n/, ${_data($self, $test_data, "df $flag", '')})),
+	} split(/\n/, ${_data($self, $test_data, "/bin/df $flag", '')})),
     }
 	[capacity => '-k'],
 	[iuse => '-i'],
