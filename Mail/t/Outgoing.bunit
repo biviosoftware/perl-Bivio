@@ -168,7 +168,7 @@ my($_BODY) = 'what a body';
 	unsafe_get_header => [
 	    to => 'cc@cc.cc',
 	    cc => undef,
-	    from => 'ignore-from-google-com@dfw4.bivio.biz',
+	    from => qr/ignore-from-google-com@/,
 	],
     ],
     [Bivio::Mail::Incoming->new(\$_WITHOUT_CC)] => [
