@@ -71,7 +71,9 @@ sub new {
 	$self->bivio_redirect_automatically;
     }
     else {
-	$self->max_redirect(0);
+	# Get: Client-Warning: Redirect loop detected (max_redirect = 0)
+	# when set to zero, which isn't right, because manually handling redirects
+	$self->max_redirect(1);
 	$self->requests_redirectable([]);
     }
     $self->bivio_ssl_no_check_certificate
