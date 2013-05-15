@@ -201,10 +201,10 @@ sub _domain_forum_map {
 
 sub _domain_forum_map_one {
     my($self, $facade) = @_;
-    return undef
+    return
 	unless my $realm = $facade->get('Constant')
 	->unsafe_get_value('site_reports_realm_name');
-    return undef
+    return
 	unless _forum_exists($self, $realm);
     return [$facade, $realm];
 }
