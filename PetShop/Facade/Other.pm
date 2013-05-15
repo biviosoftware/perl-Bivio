@@ -20,6 +20,7 @@ __PACKAGE__->new({
 	@{__PACKAGE__->bunit_shared_values},
 	shared_value2 => 'Other',
 	robots_txt_allow_all => 0,
+	site_reports_realm_name => undef,
     ]),
     Text => __PACKAGE__->make_groups([
 	@{__PACKAGE__->bunit_shared_values},
