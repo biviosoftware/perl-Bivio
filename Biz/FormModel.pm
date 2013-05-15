@@ -133,15 +133,14 @@ sub create_or_update_model_properties {
 }
 
 sub enum_set_fields_decl {
-    my($self, $qualified_field) = @_;
+    my($self, $field, $type) = @_;
     return _with_enum_set_field(
-	$self,
-	$qualified_field,
 	sub {
-	    my($type, $column_name) = @_;
+	    my($column_type, $column_name) = @_;
 	    return (
 		{
-		    name => $qualified_field,
+		    name => $field,
+		    type => $column_type,
 		    constraint => 'NONE',
 		},
 		$self->field_decl([
@@ -155,6 +154,9 @@ sub enum_set_fields_decl {
 		]),
 	    );
 	},
+	$self,
+	$field,
+	$type,
     );
 }
 
@@ -630,27 +632,26 @@ sub internal_pre_parse_columns {
 }
 
 sub internal_put_enum_set_from_fields {
-    my($self, $qualified_field) = @_;
+    my($self, $field) = @_;
     _with_enum_set_field(
-	$self,
-	$qualified_field,
 	sub {
 	    my($type, $column_name) = @_;
 	    $self->internal_put_field(
-		$qualified_field,
+		$field,
 		${$type->from_array(
 		    $type->get_enum_type->map_non_zero_list(
 			sub {
 			    my($enum) = @_;
-			    return $self->get(
-				$self->format_enum_set_field(
-				    $column_name, $enum),
+			    return $self->unsafe_get(
+				$self->format_enum_set_field($column_name, $enum),
 			    ) ? $enum : ();
 			},
 		    ),
 		)},
 	    );
 	},
+	$self,
+	$field,
     );
     return;
 }
@@ -685,10 +686,8 @@ sub internal_put_field {
 }
 
 sub internal_put_fields_from_enum_set {
-    my($self, $qualified_field, $set) = @_;
+    my($self, $field, $set) = @_;
     _with_enum_set_field(
-	$self,
-	$qualified_field,
 	sub {
 	    my($type, $column_name) = @_;
 	    $self->internal_put_field(
@@ -698,6 +697,8 @@ sub internal_put_fields_from_enum_set {
 		),
 	    );
 	},
+	$self,
+	$field,
     );
     return;
 }
@@ -1504,9 +1505,16 @@ sub _validate {
 }
 
 sub _with_enum_set_field {
-    my($self, $qualified_field, $op) = @_;
-    my($info) = SQL_Support()->parse_column_name($qualified_field);
-    return $op->($info->{type}, $info->{column_name});
+    my($op, $self, $field, $type) = @_;
+    if ($type) {
+	return $op->($type, $field);
+    }
+    else {
+	my($info) = SQL_Support()->is_qualified_model_name($field)
+	    ? SQL_Support()->parse_column_name($field)
+	    : $self->get_field_info($field);
+	return $op->($info->{type}, $info->{name});
+    }
 }
 
 1;
