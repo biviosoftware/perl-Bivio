@@ -63,7 +63,6 @@ sub _select {
 	my($x) = $self->map_by_two(
 	    sub {
 		my($k, $v) = @_;
-b_info($k, $v);
 		return
 		    unless (ref($k) ? $ctl =~ $k : $k eq $ctl) && defined($v);
 		return ($v || undef, $k);
