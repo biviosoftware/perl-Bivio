@@ -29,6 +29,7 @@ my($_TOO_LONG) = b_use('Bivio.TypeError')->TOO_LONG;
 my($_FORM_DATA_MULTIPART_MIXED)
     = b_use('Bivio.TypeError')->FORM_DATA_MULTIPART_MIXED;
 my($_HTML) = b_use('Bivio.HTML');
+my($_JSON) = b_use('MIME.JSON');
 
 sub parse {
     my(undef, $req, $options) = @_;
@@ -43,11 +44,20 @@ sub parse {
 	$req->put(query => {});
 	return $q;
     }
-    my($ct) = $r->header_in('content-type') || '';
-    return $_HTML->parse_www_form_urlencoded(${$req->get_content})
-	if $ct =~ /^\s*application\/x-www-form-urlencoded/i;
-    return _parse($req, $r, $options)
-	if $ct =~ /^\s*multipart\/form-data/i;
+    my($ct) = lc($r->header_in('content-type') || '');
+    $ct =~ s/;.*//;
+    $ct =~ s/\s//g;
+    foreach my $x (
+	[qr{^\s*application/x-www-form-urlencoded}, \&_parse_url],
+	[qr{^\s*multipart/form-data}, \&_parse_multipart],
+	[qr{^\s*application/json}, \&_parse_json],
+    ) {
+	next
+	    unless $ct =~ $x->[0];
+	my($res) = $x->[1]->($req, $r, $options);
+	$res->{b_use('Biz.FormModel')->CONTENT_TYPE_FIELD} = $ct;
+	return $res;
+    }
     b_warn($ct, ': unknown Content-Type');
     return undef;
 }
@@ -60,7 +70,13 @@ sub _err {
     });
 }
 
-sub _parse {
+sub _parse_json {
+    my($req) = @_;
+    $req->put(form_is_json => 1);
+    return $_JSON->from_text($req->get_content);
+}
+
+sub _parse_multipart {
     my($req, $r, $options) = @_;
     # Returns the parsed multipart/form-data.  See RFC1867 for a spec.
     my($max_field_size)	=
@@ -77,7 +93,7 @@ sub _parse {
     _trace('boundary=', $boundary) if $_TRACE;
     my($form) = {};
     while (1) {
-	my($field) = _parse_headers($buf, $req);
+	my($field) = _parse_multipart_headers($buf, $req);
  	_err($req, 'missing form boundary: ' . $boundary, $buf)
 	    unless (my $i = index($$buf, $boundary)) >= 0;
 	my($content) = substr($$buf, 0, $i);
@@ -97,7 +113,7 @@ sub _parse {
 	}
 	else {
 	    $form->{$name} = $value;
-	}	
+	}
 	next if $$buf =~ s/^\r\n//s;
 	last if $$buf =~ s/^--//s;
 	_err($req, 'invalid encapsulation or closing boundary', $buf);
@@ -105,7 +121,7 @@ sub _parse {
     return $form;
 }
 
-sub _parse_headers {
+sub _parse_multipart_headers {
     my($buf, $req) = @_;
     $req->throw_die(CORRUPT_FORM => {
 	message => 'missing header separator',
@@ -163,6 +179,11 @@ sub _parse_headers {
     _err($req, 'field missing "name" attribute', $field)
         unless defined($field->{name});
     return $field;
+}
+
+sub _parse_url {
+    my($req) = @_;
+    return $_HTML->parse_www_form_urlencoded(${$req->get_content});
 }
 
 1;
