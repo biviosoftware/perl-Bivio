@@ -79,6 +79,10 @@ sub CANCEL_BUTTON_NAME {
     return 'cancel_button';
 }
 
+sub CONTENT_TYPE_FIELD {
+    return '_b_form_model_content_type';
+}
+
 sub CONTEXT_FIELD {
     return 'c';
 }
@@ -288,7 +292,7 @@ sub get_context_from_request {
     }
     elsif ($self = $req->get('task')->get('form_model')) {
 	$self = $self->get_instance;
-	$form = $req->get_form;
+	$form = _get_form($self, $req);
 	_trace('model from task: ', $form) if $_TRACE;
     }
 
@@ -864,7 +868,7 @@ sub process {
     # Bivio::Agent::Request->as_string).
     $req->put(form_model => $self);
 
-    my($input) = $req->get_form;
+    my($input) = _get_form($self, $req);
     # Parse context from the query string, if any
     my($query) = $req->unsafe_get('query');
     if ($query
@@ -886,7 +890,6 @@ sub process {
     # User submitted a form, parse, validate, and execute
     # Cancel causes an immediate redirect.  parse() returns false
     # on SUBMIT_UNWIND
-    $input = {%$input};
     $fields->{literals} = $input;
 
     my($res) = _parse($self, $input);
@@ -1209,6 +1212,22 @@ sub _execute_ok_in_error {
 	$self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
     }
     return;
+}
+
+sub _get_form {
+    my($self, $req) = @_;
+    my($form) = $req->get_form;
+    return $form
+	unless $form;
+    my($fields) = $self->[$_IDI];
+    return $form
+	unless $fields->{form_is_json}
+	= ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ ? 1 : 0;
+    my($map) = $self->get_info('json_form_name_map');
+    return {map(
+	(($map->{$_} ? $map->{$_}->{form_name} : $_) => $form->{$_}),
+	keys(%$form),
+    )};
 }
 
 sub _get_literal {
