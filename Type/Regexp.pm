@@ -34,6 +34,12 @@ sub get_width {
     return 500;
 }
 
+sub is_stringified_regexp {
+    my(undef, $value) = @_;
+    return !$value ? 0
+	: $value =~ /^\(\?.*\)$/s ? 1 : 0;
+}
+
 sub quote_string {
     my(undef, $value) = @_;
     $value =~ s/(\W)/\\$1/sg;

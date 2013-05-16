@@ -23,7 +23,7 @@ sub initialize {
     my($values) = $self->get('values');
     $self->put(_value_array => [map({
 	my($k) = $_;
-	my($r) = $k =~ /^\(\?.+\)$/s ? $_R->from_literal($k) : ();
+	my($r) = $_R->is_stringified_regexp($k) ? $_R->from_literal_or_die($k) : ();
 	($r || $k => $self->initialize_value($k, $values->{$_}));
     } sort(keys(%$values)))]);
     return;
@@ -63,6 +63,7 @@ sub _select {
 	my($x) = $self->map_by_two(
 	    sub {
 		my($k, $v) = @_;
+b_info($k, $v);
 		return
 		    unless (ref($k) ? $ctl =~ $k : $k eq $ctl) && defined($v);
 		return ($v || undef, $k);
