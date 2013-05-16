@@ -11,6 +11,8 @@ follow_link(qw(^bulletin$ mail$));
 verify_no_text('new.topic');
 follow_link(qw(bulletin_staging mail$ new_topic));
 my($s) = random_string();
+# NOTE: If mail is bouncing to root, submitting this form will cause root to be remove entirely from
+# the forum on bulletin bounces.  Check your procmailrc
 submit_form({
     topic => $s,
     text => 'nothing $unsubscribe',
