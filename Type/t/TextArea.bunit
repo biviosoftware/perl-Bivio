@@ -10,16 +10,14 @@ req();
 	'x' => "x\n",
 	"x\n" x (32 * 1024 - 1) => "x\n" x (32 * 1024 - 1),
 	"x\n" x (32 * 1024) => [undef, 'TOO_LONG'],
-    ],
-    canonicalize_newlines => [
-	'' => '',
-	"a\r\n" => "a\n",
-	"a\r" => "a\n",
-	"  \n	\n \r \n\r" => '',
-	'  x1  ' => "  x1  \n",
-	"  \r\n	  \nx2\n\r" => "\n\nx2\n",
-	"\n\nx3\n\n" => "\n\nx3\n",
-	"  x4\n\n" => "  x4\n",
-	"\n\n  x5\ry5\n\r\n" => "\n\n  x5\ny5\n",
+	"abc d e f \223ghi\224\r\n123456789 1212\r" => qq{abc d e f "ghi"\n123456789 1212\n},
+	inline_case(
+	    sub {
+		req()->set_user('demo');
+		model('RowTag')->row_tag_replace_for_auth_user(TEXTAREA_WRAP_LINES => 1);
+		return;
+	    },
+	),
+	["abc d e f \223ghi\224\r\n123456789 1212\r", 5] => qq{abc d\ne f\n"ghi"\n123456789\n1212\n},
     ],
 ];
