@@ -212,6 +212,27 @@ sub new {
     return $proto->SUPER::new($attrs);
 }
 
+sub _form_name {
+    my($col, $i, $form_names) = @_;
+    if ($col->{form_name}) {
+	b_die(
+	    $col->{name},
+	    q{: form name cannot be fNN. You probably have a field in both the 'visible' and 'hidden' sections of your form definition.  OR, you may be trying to edit the primary key field of a ListFormModel's ListModel.}
+	) if $col->{form_name} =~ /^f\d+$/;
+    }
+    else {
+	$col->{form_name} = $_C->is_dev ? $col->{name} : ('f' . $i++);
+    }
+    b_die(
+	$col->{name},
+	': duplicate form name (',
+	$col->{form_name},
+	')',
+    ) if $form_names->{$col->{form_name}}++;
+    ($col->{json_form_name} = lc($col->{name})) =~ s/\W/_/g;
+    return $i;
+}
+
 sub _init_column_classes {
     # (hash_ref, hash_ref) : undef
     # Initialize the column classes (auth_id, visible, hidden, etc.)
@@ -239,32 +260,18 @@ sub _init_column_classes {
     my($i) = 0;
     $attrs->{file_fields} = undef;
 #TODO: These must agree with FormModel
-    my(%form_names) = (Bivio::Biz::FormModel->VERSION_FIELD() => 1,
+    my($form_names) = {(Bivio::Biz::FormModel->VERSION_FIELD() => 1,
 	    Bivio::Biz::FormModel->CONTEXT_FIELD() => 1,
-	    Bivio::Biz::FormModel->TIMEZONE_FIELD() => 1,);
+	    Bivio::Biz::FormModel->TIMEZONE_FIELD() => 1,)};
+    $attrs->{json_form_name_map} = {};
     foreach my $col (@{$attrs->{visible}}, @{$attrs->{hidden}}) {
-	if ($col->{form_name}) {
-	    b_die(
-		$col->{name},
-		q{: form name cannot be fNN. You probably have a field in both the 'visible' and 'hidden' sections of your form definition.  OR, you may be trying to edit the primary key field of a ListFormModel's ListModel.}
-	    ) if $col->{form_name} =~ /^f\d+$/;
-	}
-	else {
-	    $col->{form_name} = $_C->is_dev ? $col->{name} : 'f' . $i++;
-	}
-	b_die(
-	    $col->{name},
-	    ': duplicate form name (',
-	    $col->{form_name},
-	    ')',
-	) if $form_names{$col->{form_name}}++;
+	$i = _form_name($col, $i, $form_names);
+	$attrs->{json_form_name_map}->{$col->{json_form_name}} = $col;
 	$attrs->{column_aliases}->{$col->{form_name}} = $col;
-	if ($col->{is_file_field} = UNIVERSAL::isa($col->{type},
-		'Bivio::Type::FileField') ? 1 : 0) {
-	    $attrs->{file_fields} = [] unless $attrs->{file_fields};
-	    push(@{$attrs->{file_fields}}, $col);
-	}
-	$attrs->{has_secure_data} = 1 if $col->{type}->is_secure_data;
+	push(@{$attrs->{file_fields} ||= []}, $col)
+	    if $col->{is_file_field} = b_use('Type.FileField')->is_super_of($col->{type});
+	$attrs->{has_secure_data} = 1
+	    if $col->{type}->is_secure_data;
 	# Defaults to false and overwritten below
 	$col->{is_hidden} = 0;
     }
