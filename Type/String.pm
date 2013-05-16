@@ -148,23 +148,6 @@ sub to_camel_case_identifier {
     return _camel_case($_[1], '');
 }
 
-sub wrap_lines {
-    my($proto, $value, $width) = @_;
-    $width = 72 unless $width;
-    my(@lines) = (split /\n/, ref($value) ? $$value : $value);
-    @lines = Text::Tabs::expand(@lines);
-    my($formatted) = [];
-    my($indent) = 0;
-    foreach my $line (@lines) {
-        $line =~ s/\s+$//;
-        while (defined($line) && length($line) > $width) {
-            _wrap_line($formatted, \$line, $indent, $width);
-        }
-        push(@$formatted, $line) if defined($line);
-    }
-    return join("\n", @$formatted, '');
-}
-
 sub _camel_case {
     my($value, $sep) = @_;
     return !$value ? $value
@@ -224,26 +207,6 @@ sub _ref {
 	if defined($$v) && length($$v);
     $$v = '';
     return ($v, 1);
-}
-
-sub _wrap_line {
-    my($formatted, $line, $indent, $width) = @_;
-    $$line =~ /(^\s*(|[\-\*])\s+)/;
-    $indent = defined($1) ? substr($1, 0, $width) : '';
-    my($white_pos) = rindex($$line, ' ', $width);
-    $white_pos = index($$line, ' ', $width) if $white_pos < length($indent);
-    # Line cannot be broken if no white-space found or quoted
-    if ($white_pos == -1 || $$line =~ /^\s*[>]/) {
-        push(@$formatted, $$line);
-        undef($$line);
-    }
-    else {
-        my($wrapped) = substr($$line, 0, $white_pos);
-        push(@$formatted, $wrapped);
-        $$line = substr($$line, $white_pos);
-        $$line =~ s/^\s+/' ' x length($indent)/e;
-    }
-    return;
 }
 
 1;
