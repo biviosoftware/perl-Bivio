@@ -626,7 +626,7 @@ sub _initialize {
     ) {
 	$_BCONF ||= 'Bivio::DefaultBConf->merge';
 	$_BCONF .= '::BConf'
-	    unless $_BCONF =~ /::BConf(?:$|\-\>)/;
+	    unless $_BCONF =~ /BConf(?:$|\-\>)/;
 	my($class) = $_BCONF =~ /(.+::\w+)/;
 	$_BCONF .= '->dev'
 	    unless $_BCONF =~ /\-\>/;
