@@ -8,8 +8,9 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub add_regexp_modifiers {
     my($self, $value, $modifiers) = @_;
-    $value = $self->from_literal_or_die($value);
-    ($value = "$value") =~ s{-([xism]+)}{_add_regexp_modifiers($1, $modifiers)}e;
+    $value = $self->from_literal_or_die($value) . '';
+    $value =~ s{\(\?\^([a-z]*)}{\(?${1}d-xism}sg;
+    $value =~ s{\(\?([a-z]*)(?:-([a-z]+))?}{'(?' . _add_regexp_modifiers($1, $2, $modifiers)}e;
     return $self->from_literal_or_die($value);
 }
 
@@ -48,26 +49,26 @@ sub to_string {
 }
 
 sub _add_regexp_modifiers {
-    my($curr, $add) = @_;
-    return "-$curr"
-	unless $add;
+    my($curr_plus, $curr_minus, $add) = @_;
+    $curr_minus ||= '';
+    $add .= $curr_plus || '';
     return join(
 	'',
-	map($curr =~ s{([$add])}{} && $1, 1 .. length($add)),
-	'-',
-	$curr,
+	map($curr_minus =~ s{([$add])}{} && $1, 1 .. length($add)),
+	$curr_minus ? "-$curr_minus" : (),
     );
 }
 
 sub _compile {
     my($value) = @_;
-    return (undef, Bivio::TypeError->PERMISSION_DENIED)
-	if $value =~ /\(\?(?!\<\!|\<\=|\!|=|\w|\:|\#|\-)/;
-    # Perl puts an extra (?-xism:) in front of all variables converted to
+    # Perl puts an extra (?-xism:) or (?^:) [perl 5.14+] in front of all
+    # variables converted to
     # regular expressions.  This is problematic as the value would grow
     # every time from_sql_column is called.  This prevents this, but
-    # depends on the fact that the unique leading value is (-xism:
-    $value =~ s/^\(\?\-xism\:(.*)\)$/$1/si;
+    # depends on the fact that the unique leading value is (?-xism: or (?^
+    $value =~ s/^\(\?(?:\-xism|\^)\:(.*)\)$/$1/si;
+    return (undef, Bivio::TypeError->PERMISSION_DENIED)
+	if $value =~ /\(\?(?!\<\!|\<\=|\!|=|\w|\:|\#|\-|\^)/;
     return (undef, undef)
 	unless length($value);
     my($res) = Bivio::Die->eval(sub {qr{$value}});

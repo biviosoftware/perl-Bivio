@@ -1,16 +1,23 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
+my($perl_5_14) = eval('qr{(?^)}') ? 1 : 0;
+my($fix) = sub {
+    my($v) = @_;
+    $v =~ s/\(\?\^/(?-xism/g
+	if $perl_5_14;
+    return $v;
+};
 [
-    {
+   {
 	method => 'from_literal',
 	compute_return => sub {
 	    my(undef, $actual) = @_;
-	    return ref($actual->[0]) eq 'Regexp' ? ["$actual->[0]"] : $actual;
+	    return ref($actual->[0]) eq 'Regexp' ? [$fix->("$actual->[0]")] : $actual;
 	},
-    } => [
-        '' => UNDEF(),
-        '(?-xism:)' => UNDEF(),
+   } => [
+       '' => UNDEF(),
+       '(?-xism:)' => UNDEF(),
 	'a' => '(?-xism:a)',
 	'(?-xism:a)' => '(?-xism:a)',
 	'(?s-xim:a)' => '(?-xism:(?s-xim:a))',
@@ -19,15 +26,15 @@ Type();
 	'(?>a)' => PERMISSION_DENIED(),
 	'(?&a)' => PERMISSION_DENIED(),
 	'(' => SYNTAX_ERROR(),
-    ],
-    quote_string => [
-        '[' => '\[',
-    ],
+   ],
+   quote_string => [
+       '[' => '\[',
+   ],
     {
 	method => 'add_regexp_modifiers',
 	compute_return => sub {
 	    my(undef, $actual) = @_;
-	    return [$actual->[0] . ''];
+	    return [$fix->($actual->[0] . '')];
 	},
     } => [
 	[qr{zz}, 'ism'] => '(?-xism:(?ism-x:zz))',
