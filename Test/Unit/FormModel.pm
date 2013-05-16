@@ -35,6 +35,7 @@ sub new_unit {
     my($setup_request) = delete($attrs->{setup_request});
     $attrs = {}
 	unless ref($attrs);
+    my($form_is_json) = delete($attrs->{form_is_json}) || 0;
     my($req) = b_use('Test.Request')->get_instance;
     return $proto->SUPER::new({
 	class_name => $_M->get_instance($class)->package_name,
@@ -67,17 +68,23 @@ sub new_unit {
 	    return [$req->put(
 		form => {
 		    $object->VERSION_FIELD => $object->get_info('version'),
-		    map({
-			my($t) = $object->get_field_type($_);
-			my($v) = $hash->{$_};
-			$v = $v->($case)
-			    if ref($v) eq 'CODE';
-			($object->get_field_name_for_html($_) =>
-			     ($t->isa('Bivio::Type::FileField')
-				  ? $v
-				  : $t->to_literal($v)));
-		    } keys(%$hash),
-		    )},
+		    $form_is_json ? (
+			%$hash,
+			b_use('Biz.FormModel')->CONTENT_TYPE_FIELD => 'application/json',
+		    ) : map(
+			{
+			    my($t) = $object->get_field_type($_);
+			    my($v) = $hash->{$_};
+			    $v = $v->($case)
+				if ref($v) eq 'CODE';
+			    ($object->get_field_name_for_html($_) =>
+				 ($t->isa('Bivio::Type::FileField')
+				      ? $v
+				      : $t->to_literal($v)));
+			}
+			keys(%$hash),
+		    ),
+		},
 	    )];
 	},
 	check_return => sub {
