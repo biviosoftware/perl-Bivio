@@ -77,7 +77,8 @@ sub internal_initialize_list {
     # Appends empty rows to the list.
     my($list) = $self->SUPER::internal_initialize_list(@_);
     my($req) = $self->get_request;
-    my($form) = $req->get_form;
+    # COUPLING: FormModel caches the form for us so we can modify in place
+    my($form) = $self->internal_get_form($req);
     my($prev_self) = $req->unsafe_get(_key($self));
     my($erc) = $prev_self ? $prev_self->get('empty_row_count')
 	: $form ? $form->{$self->get_field_name_for_html('empty_row_count')}
