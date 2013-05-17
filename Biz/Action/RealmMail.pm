@@ -72,7 +72,8 @@ sub execute_reflector {
     my($rmb) = $_M->new($req, 'RealmMailBounce');
     my($bulletin) = $_BMM->row_tag_get($req);
     my($muf) = $rmb->new_other('MailUnsubscribeForm');
-    my $f = ($_A->parse($out->unsafe_get_header('From')))[1]
+    my($f);
+    $f = ($_A->parse($out->unsafe_get_header('From')))[1]
 	if $bulletin;
     $rmb->new_other($self->EMAIL_LIST)->get_recipients(sub {
 	my($it) = @_;
