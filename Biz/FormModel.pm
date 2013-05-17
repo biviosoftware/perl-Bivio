@@ -292,7 +292,7 @@ sub get_context_from_request {
     }
     elsif ($self = $req->get('task')->get('form_model')) {
 	$self = $self->get_instance;
-	$form = _get_form($self, $req);
+	$form = $self->internal_get_form($req);
 	_trace('model from task: ', $form) if $_TRACE;
     }
 
@@ -531,6 +531,33 @@ sub internal_get_file_field_names {
     #
     # Returns I<file_field_names> attribute.
     return shift->internal_get_sql_support()->unsafe_get('file_field_names');
+}
+
+sub internal_get_form {
+    my($self, $req) = @_;
+    my($fields) = $self->[$_IDI];
+    # COUPLING: ExpandableListFormModel modifies the form in place so we have to cache here,
+    # if not a singleton (iwc ExpandableListFormModel->internal_initialize_list is not called).
+    return $fields->{internal_get_form}
+	if $fields->{internal_get_form};
+    my($form) = $req->get_form;
+    return $form
+	unless $form;
+    # Make shallow copy, because we are going to be editting keys and because ExpandableListFormModel
+    # adds to $form.
+    $form = {%$form};
+    if ($fields->{form_is_json}
+        = ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ ? 1 : 0
+    ) {
+	my($map) = $self->get_info('json_form_name_map');
+	$form = {map(
+	    (($map->{$_} ? $map->{$_}->{form_name} : $_) => $form->{$_}),
+	    keys(%$form),
+	)};
+    }
+    $fields->{internal_get_form} = $form
+	if $self->is_instance;
+    return $form;
 }
 
 sub internal_get_hidden_field_names {
@@ -868,7 +895,7 @@ sub process {
     # Bivio::Agent::Request->as_string).
     $req->put(form_model => $self);
 
-    my($input) = _get_form($self, $req);
+    my($input) = $self->internal_get_form($req);
     # Parse context from the query string, if any
     my($query) = $req->unsafe_get('query');
     if ($query
@@ -1212,22 +1239,6 @@ sub _execute_ok_in_error {
 	$self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
     }
     return;
-}
-
-sub _get_form {
-    my($self, $req) = @_;
-    my($form) = $req->get_form;
-    return $form
-	unless $form;
-    my($fields) = $self->[$_IDI];
-    return $form
-	unless $fields->{form_is_json}
-	= ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ ? 1 : 0;
-    my($map) = $self->get_info('json_form_name_map');
-    return {map(
-	(($map->{$_} ? $map->{$_}->{form_name} : $_) => $form->{$_}),
-	keys(%$form),
-    )};
 }
 
 sub _get_literal {
