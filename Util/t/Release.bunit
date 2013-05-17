@@ -90,7 +90,7 @@ END
 	assert_equals(1, -l $rpm);
 	assert_equals("/file1.txt\n/file2.txt\n/file3.txt\n", scalar(`rpm -qlp $rpm`));
 	assert_equals(
-	    qr{^provides-aa\s*\nprovides-bb\s*\nrelease-bunit = HEAD-\d+_\d+$}s,
+	    qr{^provides-aa\s*\nprovides-bb\s*\nrelease-bunit = HEAD-\d+_\d+}s,
 	    scalar(`rpm -qp --provides $rpm`),
 	);
 	return 1;
