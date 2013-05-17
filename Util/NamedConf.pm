@@ -30,7 +30,7 @@ sub generate {
     $_F->mkdir_p('etc');
     $_F->mkdir_p($_ZONE_DIR);
     _write({
-	'etc/named.conf' => _conf($cfg),
+	'etc/named.conf' => _conf($self, $cfg),
 	$_ROOT_FILE => $self->root_file,
 	_zones($cfg),
     });
@@ -90,7 +90,13 @@ sub _local_cfg {
 }
 
 sub _conf {
-    my($cfg) = @_;
+    my($self, $cfg) = @_;
+    my($other_logging) = <<'EOF';
+  category cname { null; };
+  category response-checks { null; };
+EOF
+    $other_logging = "\n"
+	if ($self->do_backticks('/usr/sbin/named -v') =~ /(\d+\.\d+)/)[0] > 9.4;
     return <<"EOF" . _conf_zones($cfg);
 options {
   directory "/$_ZONE_DIR";
@@ -100,10 +106,7 @@ options {
   version "n/a";
 };
 logging {
-  category cname { null; };
-  category lame-servers { null; };
-  category response-checks { null; };
-};
+  category lame-servers { null; };$other_logging};
 zone "." in {
   type hint;
   file "$_ROOT_FILE";
