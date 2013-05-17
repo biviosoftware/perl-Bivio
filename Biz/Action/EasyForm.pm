@@ -15,6 +15,7 @@ my($_MT) = b_use('MIME.Type');
 my($_RI) = b_use('Agent.RequestId');
 my($_TA) = b_use('Type.TextArea');
 my($_V) = b_use('UI.View');
+my($_CONTENT_TYPE_FIELD)= b_use('Biz.FormModel')->CONTENT_TYPE_FIELD;
 
 sub execute {
     my($proto, $req, $base_name, $no_update_mail, $form_param) = @_;
@@ -78,7 +79,8 @@ sub _form {
     my($rf, $form) = @_;
     my($e) = $rf->new_other('Email');
     my($uid) = $rf->req->get('auth_user_id');
-    $form ||= $rf->req->get_form || {};
+    $form ||= {%{$rf->req->get_form}} || {};
+    delete($form->{$_CONTENT_TYPE_FIELD});
     return {
 	map(_form_value($form, $_, $rf), keys(%$form)),
 	'&date' => $_DT->now_as_string,
