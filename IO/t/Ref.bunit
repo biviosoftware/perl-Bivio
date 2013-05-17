@@ -44,7 +44,7 @@ EOF
 	[qr/abc/, {abc => 1}] => [undef],
 	[{abc => qr/^def$/}, {abc => 'def'}] => [undef],
 	[qr/^\[1\]$/, [1]] => [undef],
-	[qr/abc/, qr/abd/] => [\('(?-xism:abc) != (?-xism:abd)')],
+	[qr/abc/, qr/abd/] => qr{\(\?[^:]+:abc\) != \(\?[^:]+:abd\)},
 	Bivio::IO::ClassLoader->unsafe_simple_require('Algorithm::Diff')
 	        ? ([<<'LEFT', <<'RIGHT'] => [\<<'EOF']) : (),
 Line 1 agrees
@@ -76,7 +76,7 @@ EOF
 	[{a => sub {2}}, {a => 2, b => 1}] => [undef],
 	[{a => sub {shift}}, {a => 3, b => 1}] => [undef],
 	[{a => qr{\d}}, {a => 1, b => 2}] => [undef],
-	[{a => qr{a}}, {a => 1, b => 2}] => q{(?-xism:a) != 1 at ->{'a'}},
+	[{a => qr{a}}, {a => 1, b => 2}] => qr{\(\?[^:]+:a\) != 1 at ->{'a'}},
 	['a', \('a')] => [undef],
 	[{a => sub {'1'}}, {a => 2, b => 2}] => q{1 != 2 at ->{'a'}->()},
     ],
