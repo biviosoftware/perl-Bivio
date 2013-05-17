@@ -45,6 +45,14 @@ require 'RealmFile.PL';
 	    path => '/Image/t2.png',
         },
     }],
+    [{
+	image_file => file_field('ImageUploadForm/t3.tif'),
+    }] => [{
+	'Model.RealmFile' => {
+	    # Update touches /Image last
+	    path => '/Image/t3.tif',
+        },
+    }],
     map(
 	error_case({
 	    image_file => file_field("ImageUploadForm/$_->[0]"),
@@ -52,7 +60,6 @@ require 'RealmFile.PL';
 	    image_file => $_->[1],
 	}),
 	[qw(t2.png EXISTS)],
-	[qw(t3.tif SYNTAX_ERROR)],
 	[qw(t4m.gif TOO_MANY)],
     ),
 ];
