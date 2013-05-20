@@ -296,41 +296,40 @@ sub _zone_ipv4_map {
 	    my($cidr, $net_cfg) = ($_, $ipv4->{$_});
 	    my($cidr_obj) = $_CIDRN->from_literal_or_die($cidr);
 	    @{$cidr_obj->map_host_addresses(
-		    sub {
-			my($ip) = @_;
-			my($num) = $cidr_obj->address_to_host_num($ip);
-			return
-			    unless $net_cfg->{$num};
-			my($hosts) = $net_cfg->{$num};
-			$hosts = [$hosts]
-			    unless ref($hosts);
-			my($not_first_host) = 0;
-			return map(
-			    {
-				$op->(@$_, $ip, $cidr);
-			    }
-			    sort(
-				{$a->[0] cmp $b->[0]}
-				map(
-				    {
-					$_ = (ref($_) ? $_ : [$_]);
-					$_->[1] = {
-					    %$cfg,
-					    %{$_->[1] || {}},
-					};
-					$_->[1]->{ptr} = 1
-					    if $_->[0] =~ s/^\@(?=[\w\@])//;
-					$_->[0] = $zone
-					    if $_->[0] eq '@';
-					$_;
-				    }
-				    @$hosts,
-				),
+		sub {
+		    my($ip) = @_;
+		    my($num) = $cidr_obj->address_to_host_num($ip);
+		    return
+			unless $net_cfg->{$num};
+		    my($hosts) = $net_cfg->{$num};
+		    $hosts = [$hosts]
+			unless ref($hosts);
+		    my($not_first_host) = 0;
+		    return map(
+			{
+			    $op->(@$_, $ip, $cidr);
+			}
+			sort(
+			    {$a->[0] cmp $b->[0]}
+			    map(
+				{
+				    $_ = (ref($_) ? $_ : [$_]);
+				    $_->[1] = {
+					%$cfg,
+					%{$_->[1] || {}},
+				    };
+				    $_->[1]->{ptr} = 1
+					if $_->[0] =~ s/^\@(?=[\w\@])//;
+				    $_->[0] = $zone
+					if $_->[0] eq '@';
+				    $_;
+				}
+				@$hosts,
 			    ),
-			);
-		    },
-		)
-	    };
+			),
+		    );
+		},
+	    )};
 	}
 	sort(keys(%$ipv4)),
     );
