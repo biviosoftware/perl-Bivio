@@ -281,7 +281,7 @@ sub tmp_path {
 
 sub unique_name_for_process {
     # Unique file name for (host/process).
-    return $$ . '#' . Sys::Hostname::hostname();
+    return $$ . '#' . b_use('Bivio.BConf')->bconf_host_name;
 }
 
 sub write {

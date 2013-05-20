@@ -3,7 +3,6 @@
 package Bivio::Type::Email;
 use strict;
 use Bivio::Base 'Type.Line';
-use Sys::Hostname ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -45,7 +44,7 @@ sub format_email {
 	if $domain;
     return FacadeComponent_Email()->format($local, $req)
         if $req->unsafe_get('UI.Facade');
-    return $proto->join_parts($local, Sys::Hostname::hostname());
+    return $proto->join_parts($local, b_use('Bivio.BConf')->bconf_host_name);
 }
 
 sub format_ignore {

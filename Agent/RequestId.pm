@@ -4,7 +4,6 @@ package Bivio::Agent::RequestId;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 use Digest::MD5 ();
-use Sys::Hostname ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_COUNT) = 0;
@@ -15,7 +14,7 @@ sub current {
     return $req->get_if_exists_else_put($proto->package_name => sub {
 	return (
 	    $_BASE ||= Digest::MD5::md5_hex(
-		Sys::Hostname::hostname()
+		b_use('Bivio.BConf')->bconf_host_name
 	            . b_use('Type.DateTime')->now_as_file_name
 		    . $$,
 	    ),

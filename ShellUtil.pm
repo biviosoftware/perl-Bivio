@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 use File::Spec ();
 use POSIX ();
-use Sys::Hostname ();
 
 # C<Bivio::ShellUtil> is the base class for command line utilities.
 # All shell utilities take a I<command> as their first argument
@@ -507,6 +506,7 @@ sub lock_action {
     return _deprecated_lock_action($op || (caller(1))[3])
 	unless ref($op) eq 'CODE';
     my($lock_dir, $lock_pid) = _lock_files($name || (caller(1))[3]);
+    my($this_host) = b_use('Bivio.BConf')->bconf_host_name;
     foreach my $retry (1, 0) {
 	last
 	    if mkdir($lock_dir, 0700);
@@ -517,7 +517,7 @@ sub lock_action {
 	    return;
 	}
 	my($pid, $host) = -r $lock_pid ? split(/\s+/, ${$_F->read($lock_pid)}) : ();
-	if (($host && $host ne Sys::Hostname::hostname()) || _process_exists($pid)) {
+	if (($host && $host ne $this_host) || _process_exists($pid)) {
 	    _lock_warning($lock_dir)
 		unless $no_warn;
 	    return;
@@ -528,7 +528,7 @@ sub lock_action {
 	rmdir($lock_dir);
     }
     # Write host after pid to be backwards compatible with just pid format.
-    $_F->write($lock_pid, $$ . ' ' . Sys::Hostname::hostname());
+    $_F->write($lock_pid, $$ . ' ' . $this_host);
     my($prev) = $SIG{TERM};
     local($SIG{TERM}) = sub {
 	unlink($lock_pid);

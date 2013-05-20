@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 use Config ();
 use File::Find ();
-use Sys::Hostname ();
 use URI::Heuristic ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
@@ -353,7 +352,7 @@ sub install {
 
 sub install_host_stream {
     # Forces install of all host packages in stream.
-    return shift->put(force => 1)->install_stream(Sys::Hostname::hostname());
+    return shift->put(force => 1)->install_stream(b_use('Bivio.BConf')->bconf_host_name);
 }
 
 sub install_stream {

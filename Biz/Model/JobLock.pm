@@ -3,7 +3,6 @@
 package Bivio::Biz::Model::JobLock;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
-use Sys::Hostname ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -25,7 +24,7 @@ sub acquire_or_load {
         realm_id => $realm_id,
         task_id => $task_id,
         modified_date_time => b_use('Type.DateTime')->now,
-        hostname => Sys::Hostname::hostname(),
+        hostname => b_use('Bivio.BConf')->bconf_host_name,
         pid => $$,
     });
     b_use('AgentJob.Dispatcher')->enqueue(

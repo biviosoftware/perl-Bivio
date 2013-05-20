@@ -6,7 +6,6 @@ use Bivio::Base 'Test.Language';
 b_use('IO.Trace');
 use HTTP::Request ();
 use HTTP::Request::Common ();
-use Sys::Hostname ();
 use URI ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -28,7 +27,7 @@ $_C->register(my $_CFG = {
     email_user => $ENV{USER} || 'btest',
     server_startup_timeout => 0,
     home_page_uri => $_C->REQUIRED,
-    local_mail_host => Sys::Hostname::hostname(),
+    local_mail_host => b_use('Bivio.BConf')->bconf_host_name,
     remote_mail_host => undef,
     mail_dir => $ENV{HOME} ? "$ENV{HOME}/btest-mail/" : '',
     mail_tries => 60,
