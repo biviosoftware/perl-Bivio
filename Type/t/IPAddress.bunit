@@ -4,7 +4,7 @@ Type();
 [
     from_domain => [
 	localhost => '127.0.0.1',
-	'bivio.biz' => '66.228.55.113',
+	'bivio.biz' => '216.87.82.75',
     ],
     from_inet => [
 	pack('N', 0) => '0.0.0.0',
