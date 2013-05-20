@@ -151,7 +151,7 @@ sub has_columns {
 }
 
 sub init_column {
-    my($proto, $attrs, $qual_col, $class, $is_alias) = @_;
+    my($proto, $attrs, $qual_col, $class, $is_alias, $is_constraining_field) = @_;
     # B<INTERNAL USE ONLY>
     #
     # Initializes I<qual_col> which is of the form C<Model_N.column> or
@@ -176,7 +176,8 @@ sub init_column {
 	    sql_name => $cn->{model_name} =~ /List$/ ? '' : $cn->{model_sql},
 	    column_names_referenced => [],
 	};
-	push(@{$model->{column_names_referenced}}, $cn->{column_name});
+	push(@{$model->{column_names_referenced}}, $cn->{column_name})
+	    unless $is_constraining_field;
 	$col = {
 	    map(($_ => $cn->{$_}),
 		qw(name type constraint sql_name column_name)),
@@ -467,7 +468,7 @@ sub _init_column_from_hash {
     $col->{form_name} = $decl->{form_name} if $decl->{form_name};
     $col->{default_value} = exists($decl->{default_value})
         ? $decl->{default_value} : undef;
-    $proto->init_column($attrs, $decl->{constraining_field}, $_OTHER_CLASS, 1)
+    $proto->init_column($attrs, $decl->{constraining_field}, $_OTHER_CLASS, 1, 1)
 	if $decl->{constraining_field};
     $col->{constraining_field} = $decl->{constraining_field} || $col->{name};
     _add_to_class($attrs, $class, $col);

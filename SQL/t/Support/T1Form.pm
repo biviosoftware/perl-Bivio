@@ -12,6 +12,11 @@ sub internal_initialize {
         version => 1,
         visible => [
 	    'Address_1.city',
+	    {
+		name => 'Address_1.state',
+		constraining_field => 'User.first_name',
+	    },
+	    'User.last_name',
 	],
 	hidden => [
 	    [
