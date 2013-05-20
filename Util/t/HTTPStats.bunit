@@ -47,7 +47,7 @@ rm_rf(b_use('Biz.File')->absolute_path('HTTPStats'));
     [qw(-user root init_forum), 'site-reports-' . random_string()] => not_die(),
     [qw(-user root init_forum site-reports)] => not_die(),
     inline_case(sub {$write_log->('8/21/2012', 10240)}),
-    [qw(-realm site-reports import_history 8 2012)] => sub {
+    [qw(import_history 8 2012)] => sub {
 	assert_equals(
 	    qr{Aug 2012.*\b10.00 KB}m,
 	    Util_RealmFile()->read('/20120831.html'),
@@ -55,7 +55,7 @@ rm_rf(b_use('Biz.File')->absolute_path('HTTPStats'));
 	return 1;
     },
     inline_case(sub {$write_log->('9/13/2012', 5120)}),
-    [qw(-realm site-reports daily_report 9/14/2012)] => sub {
+    [qw(daily_report 9/14/2012)] => sub {
     	assert_equals(
     	    qr{Sep 2012.*\b5.00 KB}m,
     	    Util_RealmFile()->read('/20120930.html'),
