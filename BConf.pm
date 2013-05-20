@@ -143,7 +143,7 @@ sub dev {
 	unless $http_port;
     print(STDERR $http_port, ": using odd numbered port not advised, will be 'secure'\n")
 	if $http_port % 2;
-    my($host) = Sys::Hostname::hostname();
+    my($host) = $proto->bconf_host_name;
     my($user) = eval {getpwuid($>)} || $ENV{USER} || 'nobody';
     my($home) = $ENV{HOME} || (-w "/home/$user/." ? "/home/$user" : Cwd::getcwd());
     my($files_root) = Bivio::IO::Config->bootstrap_package_dir($proto) . '/files';
@@ -237,13 +237,17 @@ sub dev_overrides {
     return {};
 }
 
+sub bconf_host_name {
+    return $ENV{BIVIO_HOST_NAME} || Sys::Hostname::hostname();
+}
+
 sub merge {
     my($proto, $overrides) = @_;
     # Uses I<overrides> config to override default config defined in this
     # module.
     return Bivio::IO::Config->merge_list(
 	$overrides || {},
-	$proto->merge_overrides(Sys::Hostname::hostname()),
+	$proto->merge_overrides($proto->bconf_host_name),
 	_base($proto),
     );
 }
@@ -362,7 +366,7 @@ sub merge_dir {
     return Bivio::IO::Config->merge_list(
 	$overrides || {},
 	Bivio::IO::Config->bconf_dir_hashes,
-	$proto->merge_overrides(Sys::Hostname::hostname()),
+	$proto->merge_overrides($proto->bconf_host_name),
 	_base($proto));
 }
 
