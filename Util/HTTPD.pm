@@ -3,7 +3,6 @@
 package Bivio::Util::HTTPD;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
-use Sys::Hostname ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
@@ -95,7 +94,7 @@ sub run {
     my($additional_locations) = $_CFG->{additional_locations};
     my($user) = getpwuid($>) || $>;
     my($group) = getgrgid($)) || $);
-    my($hostname) = Sys::Hostname::hostname();
+    my($hostname) = b_use('Bivio.BConf')->bconf_host_name;
     my($handler) = $_CFG->{handler};
     my($perl_module) = $handler =~ /^\+/ ? "" : "PerlModule $_CFG->{handler}";
     my(@start_mode) = $background ? () : ('-X');
@@ -110,6 +109,7 @@ sub run {
 		    BCONF
 		    BIVIODB_BREAKPOINT
 		    BIVIO_HTTPD_PORT
+		    BIVIO_HOST_NAME
 		    DBI_PASS
 		    DBI_USER
 		    HOME

@@ -8,7 +8,6 @@ use Bivio::IO::Trace;
 use Bivio::Type::DateTime;
 use Bivio::Type::Integer;
 use IO::File ();
-use Sys::Hostname ();
 
 # C<Bivio::Util::HTTPLog> manipulates HTTP logs.
 
@@ -305,7 +304,7 @@ sub _report {
 
 sub _subject {
     my($subject) = @_;
-    return (Sys::Hostname::hostname() =~ /^([^\.]+)/)[0]
+    return (b_use('Bivio.BConf')->bconf_host_name =~ /^([^\.]+)/)[0]
 	. ($subject ? (' ' . $subject) : '')
 ;
 }
