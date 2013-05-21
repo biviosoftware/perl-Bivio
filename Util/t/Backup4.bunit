@@ -23,7 +23,7 @@ EOF
 [
     class() => [
 	zfs_snapshot => [
-	    [qw(bkp/mirror 20120713 1)] => <<'EOF',
+	    [qw(/bkp/mirror 20120713 1)] => <<'EOF',
 Created: bkp/mirror@20120713
 Removed: bkp/mirror@20120711 bkp/mirror@20120712
 EOF
