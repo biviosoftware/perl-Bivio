@@ -316,7 +316,6 @@ sub _archive_if_none_this_week {
 
 sub _do_backticks {
     my($self, $cmd, $ignore_exit_code) = @_;
-    $_C->is_test && $self->ureq('bunit');
     return $self->do_backticks($cmd, $ignore_exit_code)
 	unless my $res = $self->ureq('backup_bunit');
     $cmd = "@$cmd"
@@ -369,7 +368,7 @@ sub _zfs_destroy_snapshots {
 
 sub _zfs_file_system {
     my($bp) = @_;
-    return ($bp->{file_system} =~ m{^/*?(.+?/.+?)\@?$})[0] || b_die($bp->{file_system}, ': invalid syntax');
+    return ($bp->{file_system} =~ m{^/*(.+?/.+?)\@?$})[0] || b_die($bp->{file_system}, ': invalid syntax');
 }
 
 1;
