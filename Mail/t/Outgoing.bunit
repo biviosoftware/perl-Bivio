@@ -107,6 +107,18 @@ my($_BODY) = 'what a body';
 	    'Date' => "Thu, 1 Jul 1999 09:33:35 -0400",
 	    'Not_Found' => [undef],
 	],
+	set_header => [
+	    ['x-PrioritY', 33] => not_die(),
+	],
+	unsafe_get_header => [
+	    'X-PRIority' => 33,
+	],
+	remove_headers => [
+	    'x-priOrity' => not_die(),
+	],
+	unsafe_get_header => [
+	    'X-PRIority' => [undef],
+	],
 	format_as_bounce => [
 	    ['bad, bad, bad', undef, undef, undef, req()]
 		=> qr{ERROR.*$_USER.*bad, bad, bad.*Original}s,

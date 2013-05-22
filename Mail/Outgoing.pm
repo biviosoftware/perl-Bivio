@@ -197,9 +197,9 @@ sub new {
 
 sub remove_headers {
     my($self, @names) = @_;
-    # Removes the named header fields.
+    my($h) = $self->get('headers');
     foreach my $name (@names) {
-	$self->delete(lc($name));
+	delete($h->{lc($name)});
     }
     return;
 }
@@ -223,9 +223,7 @@ sub set_content_type {
     my($self, $value) = @_;
     # Sets the Content-Type header field. Any previous setting is overridden.
     # Remove possibly existing Content-Type setting from the headers
-    if (my $h = $self->unsafe_get('headers')) {
-	delete($h->{'content-type'});
-    }
+    $self->remove_headers('content-type');
     $self->put(content_type => $value);
     return;
 }
