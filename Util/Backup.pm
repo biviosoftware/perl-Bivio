@@ -235,7 +235,7 @@ sub zfs_snapshot {
     ]}
     my($self, $bp) = shift->parameters(\@_);
     my($date) = $_D->to_file_name($bp->{snapshot_date});
-    my($fs) = _zfs_file_system($bp);
+    my($fs) = _zfs_file_system($self, $bp);
     return $self->lock_action(sub {
 	my($snapshot) = $fs . '@' . $date;
 	_do_backticks($self, [qw(zfs snapshot), $snapshot]);
@@ -250,7 +250,7 @@ sub zfs_snapshot_trim {
 	[qw(num_keep PositiveInteger)],
     ]}
     my($self, $bp) = shift->parameters(\@_);
-    my($fs) = _zfs_file_system($bp);
+    my($fs) = _zfs_file_system($self, $bp);
     return $self->lock_action(sub {
 	my($snapshots) = [reverse(
 	    sort(map(
@@ -258,7 +258,7 @@ sub zfs_snapshot_trim {
 		_do_backticks($self, [qw(zfs list -t snapshot)]),
 	    )),
 	)];
-	return
+	return ''
  	    if @$snapshots <= $bp->{num_keep};
 	return 'Removed: '
 	    . _zfs_destroy_snapshots(
@@ -317,14 +317,18 @@ sub _archive_if_none_this_week {
 sub _do_backticks {
     my($self, $cmd, $ignore_exit_code) = @_;
     return $self->do_backticks($cmd, $ignore_exit_code)
-	unless my $res = $self->ureq('backup_bunit');
+	unless my $data = $self->ureq('backup_bunit');
     $cmd = "@$cmd"
 	if ref($cmd);
-    return @{
-	shift(@{$res->{_do_backticks}->{$cmd}})
-	    || $cmd =~ $res->{_do_backticks}->{ignore} && []
-	    || b_die($cmd, ': no backup_bunit data')
-    };
+    my($res) = shift(@{$data->{_do_backticks}->{$cmd}});
+    unless (defined($res)) {
+	if (defined(my $re = $data->{_do_backticks}->{ignore})) {
+	    return
+		if $cmd =~ $re;
+	}
+	b_die($cmd, ': no backup_bunit data');
+    }
+    return wantarray ? split(/(?<=\n)/, $res) : $res;
 }
 
 sub _quote {
@@ -367,8 +371,18 @@ sub _zfs_destroy_snapshots {
 }
 
 sub _zfs_file_system {
-    my($bp) = @_;
-    return ($bp->{file_system} =~ m{^/*(.+?/.+?)\@?$})[0] || b_die($bp->{file_system}, ': invalid syntax');
+    my($self, $bp) = @_;
+    my($fs) = $bp->{file_system};
+    if ($fs =~ m{^/}) {
+	return $1
+	    if _do_backticks($self, 'mount -t zfs') =~ m{^(\S+)\s+on\s+\Q$fs\E\s}m;
+	$self->usage_error($fs, ': not a zfs file system');
+    }
+    return $fs
+	if _do_backticks($self, "zfs list $fs") =~ m{^$fs\s+\d+}m;
+    # Probably won't get here, because zfs list will fail and produce an error message
+    $self->usage_error($fs, ': not a zfs dataset');
+    # DOES NOT RETURN
 }
 
 1;

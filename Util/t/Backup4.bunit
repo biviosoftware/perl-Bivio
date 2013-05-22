@@ -1,32 +1,54 @@
 # Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-my($split) = sub {[split(/(?<=\n)/, shift)]};
+my($double) = sub {($_[0], $_[0])};
 req()->put(backup_bunit => {
     _do_backticks => {
 #	Uncomment this when building new tests
 #	ignore => qr{.},
-	'zfs list -t snapshot' => [
-	    $split->(<<'EOF'),
-NAME                  USED  AVAIL  REFER  MOUNTPOINT
-bkp/mirror@20120711  29.9K      -  34.9K  -
-bkp/mirror@20120712  29.9K      -  34.9K  -
-bkp/mirror@20120713  29.9K      -  34.9K  -
+	ignore => qr{zfs snapshot|zfs destroy},
+	'mount -t zfs' => [
+	    <<'EOF',
+zp1/mirror on /bkp/mirror type zfs (rw)
+zp1/other on /bkp/other type zfs (rw)
 EOF
-	    [],
 	],
-	'zfs destroy bkp/mirror@20120711' => [[]],
-	'zfs destroy bkp/mirror@20120712' => [[]],
-	'zfs snapshot bkp/mirror@20120713' => [[]],
+	'zfs list zp1/other' => [
+	    <<'EOF',
+NAME      USED  AVAIL  REFER  MOUNTPOINT
+zp1/other 988M   525G   988M  legacy
+EOF
+	],
+	'zfs list zp1/mirror' => [
+	    $double->(<<'EOF'),
+NAME      USED  AVAIL  REFER  MOUNTPOINT
+zp1/mirror 988M   525G   988M  legacy
+EOF
+	],
+	'zfs list -t snapshot' => [
+	    <<'EOF',
+NAME                  USED  AVAIL  REFER  MOUNTPOINT
+zp1/mirror@20120711  29.9K      -  34.9K  -
+zp1/mirror@20120712  29.9K      -  34.9K  -
+zp1/mirror@20120713  29.9K      -  34.9K  -
+EOF
+	    <<'EOF',
+NAME                  USED  AVAIL  REFER  MOUNTPOINT
+bkp/other@20120711  29.9K      -  34.9K  -
+EOF
+	],
     },
 });
 [
     class() => [
 	zfs_snapshot => [
-	    [qw(/bkp/mirror 20120713 1)] => <<'EOF',
-Created: bkp/mirror@20120713
-Removed: bkp/mirror@20120711 bkp/mirror@20120712
+	    [qw(zp1/mirror 20120713 1)] => <<'EOF',
+Created: zp1/mirror@20120713
+Removed: zp1/mirror@20120711 zp1/mirror@20120712
+EOF
+	    [qw(/bkp/other 20120711 1)] => <<'EOF',
+Created: zp1/other@20120711
 EOF
 	],
     ],
-],
+];
