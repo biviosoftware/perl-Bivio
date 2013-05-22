@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.59  2013/05/13 23:23:34  nagler
+  * Bivio::Util::Disk
+    df needs to be a hardwired executable for _data to work right
+  * Bivio::Util::SQL
+    allow ddl_dir to be called from other utils
+
   Revision 12.58  2013/05/13 02:53:05  nagler
   * Bivio::Ext::LWPUserAgent
     Set bivio_ssl_no_check_certificate if is_test, because
