@@ -1,11 +1,15 @@
 # Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 Request('initialize_fully');
-
+config({
+    'Bivio::Mail::Common' => {
+	sendmail => 'echo -- > /dev/null',
+    },
+});
 # use User::pwent ();
 # my($_USER) = $ENV{LOGNAME} || $ENV{USER} || User::pwent::getpwuid($>)->name;
 # Bivio::IO::Alert->warn('You will receive two identical mail messages');
-my($_USER) = 'nobody@example.com';
+my($_USER) = 'bunit@bivio.biz';
 
 my($_IN) = <<'EOF';
 Received: (from majordomo@localhost)
@@ -55,12 +59,14 @@ Content-Transfer-Encoding: 7bit
 List-Id: <some-list.example.com>
 Precedence: list
 X-Bivio-Forwarded: 1
+X-Mailer: Bivio-Mail-Outgoing ${Bivio::Mail::Outgoing::VERSION}
 
 Four score and seven years ago...
 
 Fan Tango
 $somevar
 EOF
+$_OUT =~ s/(\$\{.+?\})/$1/eeg;
 
 my($_WITH_CC) = <<'EOF';
 Message-ID: <123@example.com>
