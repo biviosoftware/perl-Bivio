@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.62  2013/05/22 22:12:40  nagler
+  * Bivio::Mail::Outgoing
+    remove_headers was not working
+    Added X-Mailer on set_headers_for_list_send
+    use remove_headers in set_headers_for_list_send
+
   Revision 12.61  2013/05/22 16:23:26  nagler
   * Bivio::Biz::FormModel
     Factored internal_get_form from _get_form, because needed to cache the
