@@ -288,13 +288,12 @@ sub set_headers_for_list_send {
     $bp->{sender} ||= $bp->{list_email};
     $bp->{reply_to} ||= $bp->{list_email};
     my($headers) = $self->get('headers');
-    grep(
-	$_ !~ $_KEEP_HEADERS_LIST_SEND_RE && delete($headers->{$_}),
-	keys(%$headers),
-    );
+    $self->remove_headers(
+	grep($_ !~ $_KEEP_HEADERS_LIST_SEND_RE, keys(%$headers)));
     $self->set_header(
 	To => $self->unsafe_get_header('cc') || $bp->{list_email},
     ) unless $self->unsafe_get_header('to');
+    $self->set_header('X-Mailer', "Bivio-Mail-Outgoing $VERSION");
     $self->set_header(Sender => $bp->{sender});
     $self->set_header('Precedence', 'list');
     $self->set_header('List-Id', _list_id($bp->{list_email}));
