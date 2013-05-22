@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,98 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.60  2013/05/22 00:25:53  nagler
+  * Bivio::Agent::HTTP::Form
+    added _b_form_model_content_type to form values so we can detect what
+    type the form is in FormModel
+    Added application/json parsing
+    Refactored to be cleaned dispatch
+  * Bivio::Agent::RequestId
+    use Bivio.BConf->bconf_host_name
+  * Bivio::BConf
+    added bconf_host_name, which should be used in place of
+    Sys::Hostname::hostname(). $ENV{BIVIO_HOST_NAME} should be set for
+    dev environments
+  * Bivio::Biz::Action::AssertClient
+    use Bivio.BConf->bconf_host_name
+  * Bivio::Biz::Action::EasyForm
+    delete FormModel->CONTENT_TYPE_FIELD from get_form so doesn't show up
+    in csv
+  * Bivio::Biz::Action::RealmMail
+    local variable issue with perl 5.16
+  * Bivio::Biz::ExpandableListFormModel
+    call internal_get_form, which caches the result (see FormModel)
+  * Bivio::Biz::Model::JobLock
+    use Bivio.BConf->bconf_host_name
+  * Bivio::Ext::LWPUserAgent
+    max_redirect(1) even when want_redirects is false because getting:
+    Client-Warning: Redirect loop detected (max_redirect = 0)
+    in the headers from LWP even when requests_redirectable() is empty.
+  * Bivio::IO::Config
+    fix case when DefaultBConf->merge is used. The pattern match was
+    expecting ::BConf, when should have been BConf.
+  * Bivio::IO::File
+    use Bivio.BConf->bconf_host_name
+  * Bivio::PetShop::Facade::Other
+    added case for HTTPStats where site_reports_realm_name is undef
+  * Bivio::ShellUtil
+    use Bivio.BConf->bconf_host_name
+  * Bivio::SQL::FormSupport
+    modularized _form_name() and added json_form_name
+  * Bivio::SQL::Support
+    FormModel->get_model_properties error:
+    Attributes.pm:205 Use of uninitialized value $_ in exists
+    caused by FormModel->get_model_properties() referencing
+    constraining_field which is not an alias nor really referenced
+  * Bivio::SQL::t::Support::T1Form
+    FormModel->get_model_properties error:
+    Attributes.pm:205 Use of uninitialized value $_ in exists
+    caused by FormModel->get_model_properties() referencing
+    constraining_field which is not an alias nor really referenced
+  * Bivio::Test::Language::HTTP
+    use Bivio.BConf->bconf_host_name
+  * Bivio::Test::Unit::FormModel
+    added form_is_json option for testing
+  * Bivio::Test::Util
+    remove cruft
+  * Bivio::Type::Email
+    use Bivio.BConf->bconf_host_name
+  * Bivio::Type::Regexp
+    Handle new charset modifiers in perl 5.14: ?^ means ?d-imsx
+    The ?^ was causing PERMISSION_DENIED.
+    added is_stringified_regexp
+  * Bivio::Type::String
+    move wrap_newlines to TextArea
+  * Bivio::Type::TextArea
+    String->wrap_lines became TextArea::_wrap_lines, because wasn't used
+    anywhere.
+    _wrap_lines calls canonicalize_charset
+    from_literal only appends newline if there isn't already a newline
+  * Bivio::UI::Widget::Director
+    added is_stringified_regexp
+    fpc: from_literal_or_die on the Regexp, since it should convert
+    correctly if is_stringified_regexp
+  * Bivio::Util::Backup
+    leading slash wasn't getting removed on _zfs_file_system parse
+  * Bivio::Util::HTTPD
+    use Bivio.BConf->bconf_host_name
+    PassEnv BIVIO_HTTPD_PORT
+  * Bivio::Util::HTTPLog
+    use Bivio.BConf->bconf_host_name
+    PassEnv BIVIO_HTTPD_PORT
+  * Bivio::Util::HTTPStats
+    site_reports_realm_name may be undef, then _domain_forum_map_one was
+    return undef, not empty array so map had undef, and this caused
+    _sort_default_facade_first to dereference undef
+  * Bivio::Util::NamedConf
+    category cname and response-checks aren't defined in RH6.2 (bind 9.8)
+    so don't add them
+    fmt
+  * Bivio::Util::Release
+    use Bivio.BConf->bconf_host_name
+  * Bivio::Util::SQL
+    ddl_dir must initialize_fully
+
   Revision 12.59  2013/05/13 23:23:34  nagler
   * Bivio::Util::Disk
     df needs to be a hardwired executable for _data to work right
