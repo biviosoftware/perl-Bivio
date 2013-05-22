@@ -351,8 +351,7 @@ sub install {
 }
 
 sub install_host_stream {
-    # Forces install of all host packages in stream.
-    return shift->put(force => 1)->install_stream(b_use('Bivio.BConf')->bconf_host_name);
+    return shift->put(force => 1)->install_stream(Sys::Hostname::hostname());
 }
 
 sub install_stream {
