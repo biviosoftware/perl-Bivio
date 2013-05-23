@@ -2,9 +2,10 @@
 # $Id$
 test_setup('PetShop');
 home_page();
+follow_link('sign_in');
 send_request(
     'POST',
-    '/pub/login',
+    get_uri(),
     ['content-type' => 'application/json'],
     '{ "v" : "1", "login" : "demo", "realmowner_password" : "password" }',
 );
