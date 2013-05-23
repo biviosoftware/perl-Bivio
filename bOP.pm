@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.63  2013/05/22 22:22:28  nagler
+  * Bivio::Util::Release
+    hostname for install_host_stream must be Sys::Hostname::hostname
+
   Revision 12.62  2013/05/22 22:12:40  nagler
   * Bivio::Mail::Outgoing
     remove_headers was not working
