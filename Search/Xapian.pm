@@ -236,7 +236,8 @@ sub query {
 	# Need to make a copy.  Xapian is using the Tie interface, and it's
 	# implementing it in a strange way.
         my($enq) = _read(enquire => $q);
-        $enq->set_cutoff($attr->{percent_cutoff}, $attr->{weight_cutoff});
+        $enq->set_cutoff($attr->{percent_cutoff}, $attr->{weight_cutoff})
+	    if $attr->{percent_cutoff} || $attr->{weight_cutoff};
 	my(@res) = $enq->matches($attr->{offset}, $attr->{length});
 	return [map(_query_result($proto, $_, $attr->{req}, $attr), @res)];
     });
