@@ -662,6 +662,16 @@ sub internal_pre_parse_columns {
     return;
 }
 
+sub internal_process_args {
+    my($self, $req, $values) = @_;
+    if (ref($req) eq 'HASH') {
+	$values = $req;
+	$req = undef;
+    }
+    $req ||= $self->get_request;
+    return ($self, $req, $values);
+}
+
 sub internal_put_enum_set_from_fields {
     my($self, $field) = @_;
     _with_enum_set_field(
@@ -826,14 +836,9 @@ sub new {
 }
 
 sub process {
-    my($self, $req, $values) = @_;
+    my($self, $req, $values) = shift->internal_process_args(@_);
     $self->assert_not_singleton;
     # Does the work for L<execute|"execute"> after execute creates a I<self>.
-    if (ref($req) eq 'HASH') {
-	$values = $req;
-	$req = undef;
-    }
-    $req ||= $self->get_request;
     my($fields) = $self->[$_IDI];
 
     # Save in request
