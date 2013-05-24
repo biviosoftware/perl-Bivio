@@ -419,6 +419,17 @@ sub next_row {
     return _set_row($self, ++$fields->{cursor})
 }
 
+sub process {
+    my($self, $req, $values) = shift->internal_process_args(@_);
+    if ($values) {
+	$values = {
+	    %{$self->get_fields_for_primary_keys},
+	    %$values,
+	};
+    }
+    return $self->SUPER::process($req, $values);
+}
+
 sub reset_cursor {
     my($self) = @_;
     # Places the cursor at the start of the list.  Also resets cursor
