@@ -11,6 +11,10 @@ sub REALM_ID_FIELD {
     return 'realm_id';
 }
 
+sub REALM_ID_FIELD_TYPE {
+    return 'RealmOwner.realm_id';
+}
+
 sub USER_ID_FIELD {
     return 'user_id';
 }
@@ -33,7 +37,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
 	columns => {
-	    $self->REALM_ID_FIELD => ['RealmOwner.realm_id', 'NOT_NULL'],
+	    $self->REALM_ID_FIELD => [$self->REALM_ID_FIELD_TYPE, 'NOT_NULL'],
         },
 	auth_id => $self->REALM_ID_FIELD,
     });
