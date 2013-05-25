@@ -1,0 +1,28 @@
+# Copyright (c) 2013 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Unit();
+my($case) = sub {
+    my($object, $exists) = @_;
+    return (
+	sub {$object} => [
+	    unsafe_get_request => [
+		[] => $exists ? qr{Request} : [undef],
+	    ],
+	],
+    );
+};
+[
+    $case->(Collection_Attributes()),
+    $case->(Bivio_ShellUtil()),
+    $case->(Bivio_UNIVERSAL()),
+    $case->(Bivio_ShellUtil()->new('Shell')),
+    class() => [
+	inline_case(sub {Test_Request()->get_instance}),
+    ],
+    $case->(Bivio_ShellUtil(), 1),
+    $case->(Bivio_ShellUtil()->new('Shell'), 1),
+    $case->(Collection_Attributes(), 1),
+    $case->(Collection_Attributes()->new, 1),
+    $case->(Bivio_UNIVERSAL(), 1),
+    $case->(Bivio_UNIVERSAL()->new, 1),
+];
