@@ -317,7 +317,8 @@ sub _archive_if_none_this_week {
 sub _do_backticks {
     my($self, $cmd, $ignore_exit_code) = @_;
     return $self->do_backticks($cmd, $ignore_exit_code)
-	unless my $data = $self->ureq('backup_bunit');
+	unless $self->unsafe_get_request
+        and my $data = $self->ureq('backup_bunit');
     $cmd = "@$cmd"
 	if ref($cmd);
     my($res) = shift(@{$data->{_do_backticks}->{$cmd}});
