@@ -404,6 +404,10 @@ sub max_number {
     return $max;
 }
 
+sub method_that_does_nothing {
+    return;
+}
+
 sub my_caller {
     my(undef, $depth) = @_;
     # IMPLEMENTATION RESTRICTION: Does not work for evals.
@@ -532,9 +536,8 @@ sub type {
 }
 
 sub unsafe_get_request {
-    my($proto) = @_;
-    return $proto->is_super_of('Bivio::Agent::Request')
-	&& Bivio::Agent::Request->get_current;
+    return __PACKAGE__->is_super_of('Bivio::Agent::Request')
+	? __PACKAGE__->use('Agent.Request')->get_current : undef;
 }
 
 sub unsafe_self_from_req {
