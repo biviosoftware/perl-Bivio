@@ -168,7 +168,7 @@ sub dev {
 		duplicate_threshold_seconds => 20,
 	    },
 	    'Bivio::Ext::DBI' => {
-		$db ? (database => $db . $user) : (),
+		$db && $db ne 'none' ? (database => $db . $user) : (),
 	    },
 	    'Bivio::IO::Alert' => {
 		strip_bit8 => 1,
