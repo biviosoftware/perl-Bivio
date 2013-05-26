@@ -365,7 +365,8 @@ sub handle_call_autoload {
     b_die($proto, ': arguments not allowed')
 	if @_;
     return $proto
-	unless my $req = b_use('Agent.Request')->get_current;
+	unless !$proto->equals_class_name('ShellUtil')
+	and my $req = b_use('Agent.Request')->get_current;
     return $proto->new(\@_, $req);
 }
 
