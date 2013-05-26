@@ -40,13 +40,21 @@ Bivio::Test->unit([
 			    print(STDERR "custom expect failed for $file\n");
 			    return 0;
 			}
-			unless ($$data =~ /$exp/s) {
-			    print(STDERR "$exp: not found in $file\n");
-			    return 0;
+			if (!ref($exp) && $exp =~ s/^!//) {
+			    if ($$data =~ /$exp/s) {
+				print(STDERR "$exp: found in $file\n");
+				return 0;
+			    }
 			}
-			if ($$data =~ /$exp.*$exp/s) {
-			    print(STDERR "$exp: repeated in $file\n");
-			    return 0;
+			else {
+			    unless ($$data =~ /$exp/s) {
+				print(STDERR "$exp: not found in $file\n");
+				return 0;
+			    }
+			    if ($$data =~ /$exp.*$exp/s) {
+				print(STDERR "$exp: repeated in $file\n");
+				return 0;
+			    }
 			}
 		    }
 		    return 1;
@@ -66,18 +74,19 @@ Bivio::Test->unit([
 	], [
 	    'serial_console', [] => [
 		['etc/securetty', '(?<!/dev/)ttyS0'],
-		['etc/inittab', 'getty -i -L ttyS0'],
 		['boot/grub/menu.lst', '#splash'],
 		['boot/grub/menu.lst', 'serial\s+--unit=0'],
-		['boot/grub/menu.lst', 'md2 console=ttyS0,38400'],
+		['boot/grub/menu.lst', 'NO_DM console=ttyS0,57600'],
 	    ],
 	], [
 	    'serial_console', [9600] => [
 		['etc/securetty', '(?<!/dev/)ttyS0'],
-		['etc/inittab', 'getty -i -L ttyS0'],
 		['boot/grub/menu.lst', '#splash'],
+		['boot/grub/menu.lst', '#hidden'],
 		['boot/grub/menu.lst', 'serial\s+--unit=0'],
-		['boot/grub/menu.lst', 'md2 console=ttyS0,9600'],
+		['boot/grub/menu.lst', 'NO_DM console=ttyS0,9600'],
+		['boot/grub/menu.lst', '!rhgb'],
+		['boot/grub/menu.lst', '!quiet'],
 	    ],
 	], [
 	    'add_bashrc_d', [] => [
