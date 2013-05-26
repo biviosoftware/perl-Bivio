@@ -65,24 +65,7 @@ my($_D) = b_use('Bivio.Die');
 my($_BR) = b_use('Biz.Random');
 
 sub AUTOLOAD {
-    my($func) = $AUTOLOAD;
-    $func =~ s/.*:://;
-    return
-	if $func eq 'DESTROY';
-    my($builtin) = "builtin_$func";
-    return $_PROTO->can($builtin)
-	? $_PROTO->$builtin(@_)
-        : $_TYPE
-	&& $_TYPE->can('handle_test_unit_autoload_ok')
-	&& $_TYPE->handle_test_unit_autoload_ok($func)
-        ? $_TYPE->handle_test_unit_autoload($func, \@_)
-	: $_DC->is_valid_name($func) && $_DC->can($func)
-	? $_DC->$func()
-	: $_TYPE
-	? $_TYPE->can($func) || $_TYPE_CAN_AUTOLOAD
-        ? $_TYPE->$func(@_)
-	: $_CL->call_autoload($func, \@_, [qw(Type Model)])
-	: _load_type_class($func, \@_);
+    __PACKAGE__->call_autoload($AUTOLOAD, \@_);
 }
 
 sub builtin_assert_contains {
@@ -497,6 +480,28 @@ sub builtin_to_string {
 sub builtin_verify_local_mail {
     shift;
     return b_use('TestLanguage.HTTP')->verify_local_mail(@_);
+}
+
+sub call_autoload {
+    my(undef, $autoload, $args) = @_;
+    my($func) = $autoload;
+    $func =~ s/.*:://;
+    return
+	if $func eq 'DESTROY';
+    my($builtin) = "builtin_$func";
+    return $_PROTO->can($builtin)
+	? $_PROTO->$builtin(@$args)
+        : $_TYPE
+	&& $_TYPE->can('handle_test_unit_autoload_ok')
+	&& $_TYPE->handle_test_unit_autoload_ok($func)
+        ? $_TYPE->handle_test_unit_autoload($func, $args)
+	: $_DC->is_valid_name($func) && $_DC->can($func)
+	? $_DC->$func()
+	: $_TYPE
+	? $_TYPE->can($func) || $_TYPE_CAN_AUTOLOAD
+        ? $_TYPE->$func(@$args)
+	: $_CL->call_autoload($func, $args, [qw(Type Model)])
+	: _load_type_class($func, $args);
 }
 
 sub new_unit {
