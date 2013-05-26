@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2009 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::LinuxConfig;
 use strict;
@@ -30,13 +30,12 @@ commands:
     enable_service service ... -- enables service
     rename_rpmnew all | file.rpmnew... -- renames rpmnew to orig and rpmsaves orig
     replace_file file owner group perms content -- replaces file with content
-    serial_console [speed] -- configure grub and init for serial port console
+    serial_console [speed] -- configure grub and securetty for serial port console
     sh_param file param value ... -- updates an sh-style config file
     split_file file -- splits a file into an array, ignoring # comments
     sshd_param param value ... -- add or delete a parameter from sshd config
 EOF
 }
-
 sub add_aliases {
     # Adds aliases: 'foo: bar'.  Ensures a \t is between : and destination.
     return _add_aliases('/etc/aliases', ':', @_);
@@ -98,42 +97,6 @@ sub add_sendmail_class_line {
     # creating if it doesn't exist.
     return $self->append_lines("/etc/mail/$file", 'root', 'mail', 0640,
 	@value);
-}
-
-sub add_sendmail_http_agent {
-    my($self, $uri, $program) = @_;
-    # Sets up C<b-sendmail-http> agent interface in sendmail.cf.
-    $program ||= '/usr/bin/b-sendmail-http';
-    die($program, ': not executable or not an absolute path')
-	unless -x $program && ! -d $program && $program =~ m{^/};
-    my($progbase) = $program =~ m{([^/]+)$};
-    return _edit($self, _sendmail_cf(),
-	# Force all local hosts to be seen as canonical hosts
-	[qr{(?<=Fw/etc/mail/local-host-names\n)},
-	    "FP/etc/mail/local-host-names\n"],
-	# Sets $h to host part if we have host
-	[qr{R\$\+ < \@ \$=w \. \>\s+\$#(?:local|bsendmailhttp) \$: \$1},
-	    'R$+ < @ $=w . >		$#bsendmailhttp $@ $2 $: $1'],
-	# No host, set to $j (canonical host)
-	[qr{R\$\+\s+\$#(?:local|bsendmailhttp) \$: \$1}m,
-	    'R$+		$#bsendmailhttp $@ $j $: $1'],
-	# Remove any existing bsendmailhttp, and append new
-	[sub {
-	     my($data) = @_;
-	     $$data =~ s/Mbsendmailhttp[^\n]+\n(?:[^\n]+\n){3}//g;
-	     # We don't set "w", sendmail-http looks up in /etc/passwd itself
-	     # Don't use ruleset 5 (F=5), because it overwrites $h which is
-	     # set properly by the line above.  Also, pass full user to
-	     # procmail, and b-sendmail-http will trim it
-	     $$data .= <<"EOF";
-Mbsendmailhttp,	P=$program,
-		F=9:|/\@ADFhlMnsPqS,
-		S=EnvFromL/HdrFromL, R=EnvToL/HdrToL, T=DNS/RFC822/X-Unix,
-		A=$progbase \${client_addr} \$u\@\$h $uri /usr/bin/procmail -t -Y -a \$h -d \$u\@\$h
-EOF
-	     return 1;
-	}],
-    );
 }
 
 sub add_user {
@@ -322,22 +285,13 @@ sub replace_file {
     return $self->delete_file($_[0]) . _add_file($self, @_);
 }
 
-
 sub serial_console {
     my($self, $speed) = @_;
-    # Makes a serial console on ttyS0.  Modifies grub.conf, securetty, and
-    # inittab.   May be called repeatedly.  I<speed> defaults to 38400.
-    $speed ||= '38400';
+    $speed ||= '57600';
     return _edit($self, '/etc/securetty', ['$', "ttyS0\n", "ttyS0\n"])
-	. _edit($self, '/etc/inittab',
-	    ['(?<=getty tty6\n)(S0:[^\n]+\n)?',
-		"S0:2345:respawn:/sbin/agetty -i -L ttyS0 $speed\n",
-		'S0.*agetty',
-	    ],
-	    ["(?:-i -L |-L -i )?ttyS0 \\d+\n", "-i -L ttyS0 $speed\n"],
-	)
 	. _edit($self, '/boot/grub/menu.lst',
 	    ['(?<!\#)splashimage', '#splashimage'],
+	    ['(?<!\#)hiddenmenu', '#hiddenmenu'],
 	    ["(?=\n\tinitrd)", " console=ttyS0,$speed",
 		'console=ttyS0,'
 	    ],
@@ -351,6 +305,8 @@ sub serial_console {
 	    ["(?<=serial --unit=0 --speed=$speed\n)",
 		"terminal --timeout=1 serial\n",
 	    ],
+	    ['? rhgb ', ' '],
+	    ['? quiet ', ' '],
 	);
 }
 
@@ -731,12 +687,6 @@ sub _replace_param {
             return $got;
         }))],
     );
-}
-
-sub _sendmail_cf {
-    return (grep(
-        -f _prefix_file($_),
-	qw(/etc/sendmail.cf /etc/mail/sendmail.cf)))[0];
 }
 
 sub _static_routes_for {
