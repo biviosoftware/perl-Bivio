@@ -29,7 +29,7 @@ sub internal_render_content {
     my($r) = $req->unsafe_get('r');
     my($self) = $proto->new({
 	status => $status,
-	uri => $r && $r->header_in('Referer'),
+	uri => $r && $r->header_in('Referer') || undef,
     })->put_on_req($req);
     my($reply) = $req->get('reply');
     $reply->delete_output;
