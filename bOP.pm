@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved. 
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.65  2013/05/26 01:58:36  nagler
+  * Bivio::Biz::FormModel
+    add internal_process_args
+  * Bivio::Biz::ListFormModel
+    add get_fields_for_primary_keys to values if process called internally
+  * Bivio::Biz::Model::RealmBase
+    add REALM_ID_FIELD_TYPE
+  * Bivio::Search::Xapian
+    Was getting "use of uninitialized value in subroutine entry" in call
+    to set_cuff where weight_cutoff and percent_cutoff were 0.  This was a
+    guess.  The "use of..." call happens in the XS code somewhere when
+    these are 0.
+  * Bivio::UI::Widget::ControlBase
+    take out widget substitute for now
+  * Bivio::UNIVERSAL
+    added method_that_does_nothing()
+    unsafe_request didn't work if class wasn't a super class of
+    Agent.Request.  Also now always return undef (sometimes was returning 0)
+  * Bivio::Util::Backup
+    _do_backticks: Call unsafe_get_request to see if there's a request so
+    we can execute statically
+  * Bivio::Util::LinuxConfig
+    upgraded serial_console for RH6.2 with serial redirect from BIOS (Dell
+    supports this)
+    removed sendmail cruft
+
   Revision 12.64  2013/05/23 19:34:02  nagler
   * Bivio-bOP.spec
     points files/petshop/plain/b to /usr/share/Bivio-bOP-javascript
