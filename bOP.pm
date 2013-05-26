@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved. 
 # $Id$ 
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.64  2013/05/23 19:34:02  nagler
+  * Bivio-bOP.spec
+    points files/petshop/plain/b to /usr/share/Bivio-bOP-javascript
+
   Revision 12.63  2013/05/22 22:22:28  nagler
   * Bivio::Util::Release
     hostname for install_host_stream must be Sys::Hostname::hostname
