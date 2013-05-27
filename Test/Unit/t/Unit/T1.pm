@@ -10,4 +10,19 @@ sub echo {
     return $_[1];
 }
 
+sub method1 {
+    shift;
+    return @_;
+}
+
+sub method2 {
+    shift;
+    return @_;
+}
+
+sub method3 {
+    b_die(\@_, ': should not be called');
+    # DOES NOT RETURN
+}
+
 1;
