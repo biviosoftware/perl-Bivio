@@ -1,15 +1,11 @@
 # Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-config({
-    'Bivio::Agent::Request' => {
-	apache_version => 1,
-    },
-});
 ShellUtil();
-write_file('HTTPConf/ping.txt', <<'EOF');
-petshop.bivio.biz
-google.com
-EOF
+mock_methods({
+    'IO.File->map_lines' => [
+	['/etc/httpd/conf/uris.txt' => ['HTTPConf2/uris.txt']],
+    ],
+});
 [
-    [qw(do_ping HTTPConf/ping.txt)] => "google.com: 404 Not Found\n",
+    [qw(foreach_ping HTTPConf/ping.txt)] => "google.com: 404 Not Found\n",
 ];
