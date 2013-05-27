@@ -1,7 +1,23 @@
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Request();
-class('Bivio::Test::Unit::t::Unit::T1');
+options({
+    class_name => 'Bivio::Test::Unit::t::Unit::T1',
+});
+mock_methods({
+    'Bivio::Test::Unit::t::Unit::T1->method1' => [
+	['1_1' => ['mock_1_1_1', 'mock_1_1_2']],
+	['1_2' => ['mock_1_2_1']],
+    ],
+    'Bivio::Test::Unit::t::Unit::T1->method2' => [
+	['2_1' => [mock_return('mock_2_1_1')]],
+	['2_2' => ['mock_2_2_1']],
+	[qr{ignore} => [mock_return()]],
+    ],
+    'Bivio::Test::Unit::t::Unit::T1->method3' => [
+	['3_1' => [mock_return(['mock_3_1_1', 'mock_3_1_2'])]],
+    ],
+});
 [
     class() => [
 	echo => [
@@ -16,6 +32,20 @@ class('Bivio::Test::Unit::t::Unit::T1');
 	    Type_Integer('9') => 9,
 	    Type_Integer()->get_min => class('Type.Integer')->get_min,
 	    [Auth_RealmType()->GENERAL] => 'GENERAL',
+	],
+	method1 => [
+	    ['any'] => ['any'],
+	    ['1_1', undef, '1_2'] => ['mock_1_1_1', undef, 'mock_1_2_1'],
+	    ['1_1', undef, '1_2'] => ['mock_1_1_2', undef, 'mock_1_2_1'],
+	    ['1_1', undef, '1_2'] => ['mock_1_1_2', undef, 'mock_1_2_1'],
+	],
+	method2 => [
+	    ['2_1', 'not seen'] => ['mock_2_1_1'],
+	    ['2_2', 'seen'] => ['mock_2_2_1', 'seen'],
+	    ['ignore_this'] => [],
+	],
+	method3 => [
+	    ['3_1', 'not seen'] => ['mock_3_1_1', 'mock_3_1_2'],
 	],
     ],
 ];
