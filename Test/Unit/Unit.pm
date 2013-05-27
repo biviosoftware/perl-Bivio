@@ -279,12 +279,6 @@ sub builtin_inline_rollback {
     } => $proto->IGNORE_RETURN;
 }
 
-sub builtin_trace {
-    shift;
-    b_use('IO.Trace')->set_named_filters(@_);
-    return;
-}
-
 sub builtin_inline_trace {
     my($proto, @args) = @_;
     return sub {
@@ -302,6 +296,29 @@ sub builtin_mock {
 #TODO: Not elegant, but works.  Think about testing structure for mocking objects
     $i->internal_put($values);
     return $i;
+}
+
+sub builtin_mock_methods {
+    my($self, $map) = @_;
+    foreach my $x (keys(%$map)) {
+	my($class, $method) = $x =~ /^([\w\.\:]+)->(\w+)$/;
+	b_die($x, ': invalid mock_methods configuration')
+	    unless $class;
+	_verify_mock_method($x, $map->{$x});
+	b_use('Bivio.ClassWrapper')->wrap_methods(
+	    b_use($class),
+	    {mock_data => $map->{$x}},
+	    {$method => \&_mock_method},
+	);
+    }
+    return;
+}
+
+sub builtin_mock_return {
+    my($self, $return) = @_;
+    b_die($return, ': must be scalar or array_ref')
+	if ref($return) && ref($return) ne 'ARRAY';
+    return b_use('Test.MockReturn')->new(@_ > 1 ? {return => $return} : {});
 }
 
 sub builtin_model {
@@ -400,6 +417,12 @@ sub builtin_tmp_dir {
     my($self) = @_;
     return $_F->mkdir_p(
 	$self->builtin_rm_rf($self->builtin_class->simple_package_name . '.tmp'));
+}
+
+sub builtin_trace {
+    shift;
+    b_use('IO.Trace')->set_named_filters(@_);
+    return;
 }
 
 sub builtin_unauth_model {
@@ -589,6 +612,40 @@ sub _load_type_class {
     return $_TYPE;
 }
 
+sub _mock_method {
+    my($class_wrapper, $args) = @_;
+    my($md) = $class_wrapper->get(qw(mock_data));
+    my($return);
+    my($grep) = sub {
+	my($arg) = shift;
+	foreach my $x (@$md) {
+	    my($expect, $value) = @$x;
+	    next
+		unless ref($expect) ? $arg =~ $expect : $arg eq $expect;
+	    my($v) = @$value > 1 ? shift(@$value)
+		: $value->[0];
+	    return $v
+		unless b_use('Test.MockReturn')->is_blesser_of($v);
+	    b_die($expect, ': too many matches for mock_return')
+		if $return;
+	    $return = $v;
+	    return undef;
+	}
+	return $arg;
+    };
+    my($args2) = [map(
+	ref($_) || !defined($_) ? $_ : $grep->($_),
+	@$args,
+    )];
+    if ($return) {
+	return
+	    unless $return->has_keys('return');
+	my($res) = $return->get('return');
+	return ref($res) ? @$res : $res;
+    }
+    return $class_wrapper->call_method($args2);
+}
+
 sub _model {
     my($proto, $model, $name, $query, $expect) = @_;
     return $model
@@ -669,6 +726,18 @@ sub _var_put {
     b_die($name, ': var may only be set once')
 	if _var_exists($proto, $name);
     return _var_hash($proto)->{$name} = $value;
+}
+
+sub _verify_mock_method {
+    my($method, $args) = @_;
+    foreach my $x (@$args) {
+	my($expect, $value) = @$x;
+	b_die($expect, ': invalid expected argument for ', $method)
+	    unless ref($expect) ? ref($expect) eq 'Regexp' : defined($expect);
+	b_die($value, ': value must be array_ref for ', $method)
+	    unless (ref($value) || '') eq 'ARRAY';
+    }
+    return;
 }
 
 1;
