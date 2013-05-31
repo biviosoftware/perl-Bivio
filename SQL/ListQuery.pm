@@ -495,6 +495,8 @@ sub _format_uri {
 	my($ob) = $attrs->{order_by};
 	my($s) = 'o=';
 	for (my($i) = 0; $i < int(@$ob); $i += 2) {
+	    b_die('order by column missing index: ', $ob->[$i])
+		unless defined($columns->{$ob->[$i]}->{order_by_index});
 	    $s .= $columns->{$ob->[$i]}->{order_by_index}
 		    . ($ob->[$i+1] ? 'a' : 'd');
 	}
