@@ -1,0 +1,11 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request();
+[
+    [req()] => [
+	return_path => [
+	    ['10001', 'username+a@a.a', '10003']
+		=> qr/^\Qbounce*10001+10003-username#a=a.a@/,
+	],
+    ],
+];
