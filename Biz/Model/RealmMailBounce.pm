@@ -6,6 +6,7 @@ use Bivio::Base 'Biz.PropertyModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
+my($_FILE_ID_SUFFIX) = '00003';
 
 sub TASK_URI {
     return 'bounce';
@@ -18,6 +19,8 @@ sub create_from_rfc822 {
     my($rfid, $email) = ($mr->get('plus_tag') || '') =~ /^(\d+)-(.+)$/;
     if ($email && $email =~ s/=/@/) {
 	$email =~ s/\#/+/;
+	$rfid .= $_FILE_ID_SUFFIX
+	    unless $rfid =~ /$_FILE_ID_SUFFIX$/;
 	my($rm) = $self->new_other('RealmMail');
 	if ($rm->unauth_load({realm_file_id => $rfid})) {
 	    my($rid) = $rm->get('realm_id');
@@ -76,6 +79,7 @@ sub return_path {
     my($self, $user_id, $email, $realm_file_id) = @_;
     $email =~ s/\@/=/;
     $email =~ s/\+/#/;
+    $realm_file_id =~ s/$_FILE_ID_SUFFIX$//;
     return $self->new_other('MailReceiveDispatchForm')
 	->format_recipient(
 	    $user_id,
