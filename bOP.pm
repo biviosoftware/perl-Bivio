@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.66  2013/05/26 20:43:49  nagler
+  * Bivio::BConf
+    don't insert DBI config if db eq non
+  * Bivio::Biz::Action::Error
+    head_in(referrer) can return () so need to force to be scalar
+  * Bivio::Biz::FormModel
+    RCS file: /home/cvs/perl/Bivio/Biz/FormModel.pm,v
+    Working file: Bivio/Biz/FormModel.pm
+    head: 2.104
+    branch:
+    locks: strict
+    access list:
+    symbolic names:
+    keyword substitution: kv
+    total revisions: 199;	selected revisions: 0
+    description:
+  * Bivio::Biz::Model::CalendarEvent
+    fixed inherited autoload
+  * Bivio::ShellUtil
+    handle_call_autoload: return $proto if class is ShellUtil
+  * Bivio::Test::Unit::Unit
+    moved AUTOLOAD to call_autoload so can call from subclasses, since
+    AUTOLOAD can't be inherited
+
   Revision 12.65  2013/05/26 01:58:36  nagler
   * Bivio::Biz::FormModel
     add internal_process_args
