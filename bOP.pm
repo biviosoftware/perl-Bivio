@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.67  2013/06/04 16:05:16  moeller
+  * Bivio::Biz::Model::RealmMailBounce
+    strip file suffix from bounce email to shorten
+  * Bivio::SQL::ListQuery
+    die if column in order by, but missing from model def
+  * Bivio::Test::MockReturn
+    NEW
+  * Bivio::Test::Unit::t::Unit::T1
+    test mock_methods
+  * Bivio::Test::Unit::Unit
+    added builtin_mock_methods
+
   Revision 12.66  2013/05/26 20:43:49  nagler
   * Bivio::BConf
     don't insert DBI config if db eq non
