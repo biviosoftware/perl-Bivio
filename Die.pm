@@ -463,7 +463,8 @@ sub _handle_die {
     eval {
 	local($SIG{__DIE__});
 	my($self) = @_;
-	_print_stack($self);
+	_print_stack($self)
+	    if _want_stack_trace($self);
 	my($i) = 0;
 	my(@a);
 	my($prev_proto) = '';
@@ -529,7 +530,8 @@ sub _handle_die {
 		);
 	    }
 	}
-	_print_stack_other($self, 'stack_other');
+	_print_stack_other($self, 'stack_other')
+	    if _want_stack_trace($self);
 	1;
     } || warn($@);
     return;
@@ -561,7 +563,7 @@ sub _new {
     _trace($self) if $_TRACE;
     # After trace, since we print stack separately
     $self->put(stack => $stack || '');
-    _print_stack($self);
+    _print_stack($self) if $_TRACE || $_STACK_TRACE;
     return $self;
 }
 
@@ -599,7 +601,8 @@ sub _new_from_eval_syntax_error {
 	undef,
 	Carp::longmess($msg),
     );
-    _print_stack($self);
+    _print_stack($self)
+	if _want_stack_trace($self);
     return $self;
 }
 
@@ -674,5 +677,14 @@ sub _print_stack_other {
     );
 }
 
+
+sub _want_stack_trace {
+    my($self) = @_;
+    return $_TRACE
+	|| $_STACK_TRACE
+	|| $_STACK_TRACE_ERROR
+	&& ($self->unsafe_get('attrs') || {program_error => 1})
+	    ->{program_error};
+}
 
 1;
