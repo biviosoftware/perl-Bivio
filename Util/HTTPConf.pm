@@ -59,13 +59,40 @@ sub USAGE {
     return <<'EOF';
 usage: b-http-conf [options] command [args...]
 commands:
-    do_ping [list.txt] -- pings apps in list
+    foreach_command command  -- replaces ${app} in command, sets BCONF, do_backticks command
+    foreach_ping [list.txt] -- pings apps in list
     generate app-name [root-prefix] -- writes config for app-name
     validate_vars vars -- validates configuration
 EOF
 }
 
-sub do_ping {
+sub foreach_command {
+   sub FOREACH_COMMAND {[
+	[qw(command Text)],
+   ]}
+   my($self, $bp) = shift->parameters(\@_);
+   $self->get_request;
+   my($res) = '';
+   my($bconf) = $ENV{BCONF};
+   $_F->do_lines(
+       $_VARS->{app_names_txt},
+       sub {
+	   my($l) = @_;
+	   unless ($l =~ /^\s*#/) {
+	       local($ENV{BCONF}) = $bconf;
+	       $ENV{BCONF} =~ s{[^/]+(?=\.bconf)$}{$l};
+	       (my $c = $bp->{command}) =~ s/\$\{app\}/$l/g;
+	       $res .= $self->do_backticks($c);
+	   }
+	   return 1;
+       },
+   );
+   return $res
+       if length($res);
+   return;
+}
+
+sub foreach_ping {
     my($self, $list) = @_;
     $self->get_request;
     my($uris);
@@ -450,6 +477,11 @@ EOF
     return;
 }
 
+sub _bconf_file {
+    my($app) = @_;
+    return "/etc/$app.bconf";
+}
+
 sub _conf_txt {
     my($which, $vars) = @_;
     return (
@@ -463,7 +495,7 @@ sub _file_name_vars {
     my($app) = $vars->{app};
     %$vars = (
 	%$vars,
-	bconf => "/etc/$app.bconf",
+	bconf => _bconf_file($app),
 	document_root => "/var/www/facades/$app/plain",
 	httpd_conf => "/etc/httpd/conf/$app.conf",
 	init_rc => "/etc/rc.d/init.d/$app",
