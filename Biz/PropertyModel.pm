@@ -223,6 +223,27 @@ sub get_qualified_field_name_list {
     return map($self->get_qualified_field_name($_), @{$self->get_keys});
 }
 
+sub generate_unique_for_field {
+    my($self, $field, $generate_method, $check_method) = @_;
+    $generate_method ||= 'generate';
+    $check_method ||= 'unauth_load';
+    my($type) = $self->get_field_type($field);
+    my($value);
+    my($i) = 0;
+    until ($value) {
+	b_die($type, ': infinite loop generating value')
+	    if ++$i > 10;
+	my($v) = $type->$generate_method;
+	$value = ref($check_method) eq 'CODE'
+	    ? $check_method->($v)
+	    : $self->$check_method({
+		$field => $v,
+	    }) ? undef
+	    : $v;
+    }
+    return $value;
+}
+
 sub internal_data_modification {
     my($self, $op, $query) = @_;
     $_HANDLERS->call_fifo(
