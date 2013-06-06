@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::UserRegisterForm;
 use strict;
 use Bivio::Base 'Model.UserCreateForm';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Action.Acknowledgement');
@@ -37,7 +38,7 @@ sub internal_create_models {
     my($self) = @_;
     $self->internal_put_field(
 	'RealmOwner.display_name' => substr(
-	    ($self->get('Email.email') =~ /^(.*)\@/)[0] || 'x',
+	    Type_Email()->get_local_part($self->get('Email.email')) || 'x',
 	    0,
 	    $self->get_instance('User')->get_field_type('last_name')->get_width,
 	 ),
