@@ -189,6 +189,16 @@ sub create_stream {
     return `rpm -q @pkg --queryformat '%{NAME} %{VERSION}-%{RELEASE} %{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm\n' | sort`;
 }
 
+sub download_file {
+    sub DOWNLOAD_FILE {[
+	[qw(file_name Text)],
+    ]}
+    my($self, $bp) = shift->parameters(\@_);
+    my($uri) = $bp->{file_name};
+    IO_File()->write($bp->{file_name}, _http_get($uri));
+    return;
+}
+
 sub get_projects {
     # Returns a map of root packages names and long names.
     #     {
