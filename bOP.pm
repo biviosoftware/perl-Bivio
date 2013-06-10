@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.68  2013/06/05 23:25:13  moeller
+  * Bivio::Die
+    put stack trace guards back
+  * Bivio::Util::HTTPConf
+    added foreach_ping(), foreach_command()
+
   Revision 12.67  2013/06/04 16:05:16  moeller
   * Bivio::Biz::Model::RealmMailBounce
     strip file suffix from bounce email to shorten
