@@ -203,7 +203,9 @@ sub vs_descriptive_field {
     $label = undef
 	if $attrs->{vs_descriptive_field_no_label};
     return [
-	$label ? ($label->put(cell_class => 'label label_ok')) : (),
+	$label
+	    ? ($label->put(cell_class => 'label label_ok'))
+	    : vs_blank_cell(),
 	Join([
 	    $input,
             $attrs->{vs_descriptive_field_no_description}
@@ -352,7 +354,12 @@ sub vs_list {
 }
 
 sub vs_list_form {
-    my($proto, $form, $fields, $table_attrs, $list_first) = @_;
+    my($proto, $form, $fields, $table_attrs, $options) = @_;
+    $options = defined($options) && ref($options) eq 'HASH'
+	? $options
+	: {
+	    list_first => $options,
+	};
     # Elements in $fields which are hash_refs or are "in_list" appear
     # as columns.  Elements which are arrays or are not "in_list" appear
     # as simple form entries.
@@ -428,12 +435,15 @@ sub vs_list_form {
 	)],
 	$proto->vs_table_attrs($form, list => $table_attrs),
     ) : ();
+    if ($options->{indent_list} && $list_form) {
+	$list_form = [vs_blank_cell(), $list_form];
+    }
     return $proto->vs_simple_form(
 	$form,
 	[
-	    $list_first
-		? ($list_form, @form_fields)
-		: (@form_fields, $list_form),
+	        $options->{list_first}
+		    ? ($list_form, @form_fields)
+		    : (@form_fields, $list_form),
 	    $submit ? $submit : (),
 	],
     );
