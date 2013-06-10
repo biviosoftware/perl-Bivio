@@ -128,7 +128,9 @@ sub settings_form {
 	'UserSettingsListForm.User.middle_name',
 	'UserSettingsListForm.User.last_name',
         'UserSettingsListForm.page_size',
-        'UserSettingsListForm.time_zone_selector',
+        ['UserSettingsListForm.time_zone_selector', {
+	    size => 40,
+	}],
         @$extra_fields,
 	['UserSettingsListForm.RealmOwner.name', {
 	    row_control => [qw(Model.UserSettingsListForm show_name)],
@@ -147,6 +149,8 @@ sub settings_form {
 	},
     ], {
 	empty_list_widget => Simple(''),
+    }, {
+	indent_list => 1,
     }));
 }
 
