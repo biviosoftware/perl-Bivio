@@ -211,6 +211,7 @@ sub internal_create_edit {
 	    field => $field,
 	    list_class => 'TimeZoneList',
 	    list_display_field => ['display_name'],
+	    %$attrs,
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::Enum')) {
