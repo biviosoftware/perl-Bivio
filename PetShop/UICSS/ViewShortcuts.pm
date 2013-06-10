@@ -97,6 +97,10 @@ div.pet_title {
   text-align: left;
   white-space: nowrap;
 }
+.pet_heading {
+  font-weight: bold;
+  font-size: 120%;
+}
 .pet_order td {
   padding: 1ex;
 }
