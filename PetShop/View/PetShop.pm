@@ -598,7 +598,7 @@ sub _category_link {
 		},
 	    ),
 	    vs_blank_cell(),
-	    String(['Category.name'], 'heading_link'),
+	    SPAN_pet_heading(String(['Category.name'])),
 	]),
 	['->format_uri', 'THIS_AS_PARENT', 'PRODUCTS'],
 	{
