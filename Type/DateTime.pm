@@ -406,6 +406,7 @@ sub from_literal {
 	\&_from_xml,
 	\&_from_yyyy_mm_dd_hh_mm_ss,
 	\&_from_common_log_format,
+	\&_from_dd_mmm_yyyy_hh_mm_ss,
     ) {
 	return @res
 	    if @res = $method->($proto, $value);
@@ -983,7 +984,7 @@ sub _from_alert {
 }
 
 sub _from_common_log_format {
-        my($proto, $value, $res, $err) = @_;
+    my($proto, $value, $res, $err) = @_;
     my($d, $mon, $y, $h, $m, $s, $sign, $dh, $dm)
 	= $value =~ /^@{[$proto->REGEX_COMMON_LOG_FORMAT()]}$/;
     return ()
@@ -1004,6 +1005,17 @@ sub _from_ctime {
     return (undef, Bivio::TypeError->MONTH)
 	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
     return $proto->from_parts($s, $m, $h, $d, $mon, $y);
+}
+
+sub _from_dd_mmm_yyyy_hh_mm_ss {
+    my($proto, $value) = @_;
+    # ex. 07-Jun-2013 13:56:17
+    my($d, $mon, $y, $h, $m, $s) = $value =~ /(\d\d?)\-(\w+)\-(\d{4}) (\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/;
+    return ()
+	unless defined($y);
+    return (undef, Bivio::TypeError->MONTH)
+	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
+    return $proto->from_parts($s || 0, $m, $h, $d, $mon, $y);
 }
 
 sub _from_file_name {
