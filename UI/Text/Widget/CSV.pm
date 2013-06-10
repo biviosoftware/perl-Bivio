@@ -98,7 +98,7 @@ sub render {
 
     if ($self->unsafe_get('want_iterate_start')) {
 	$list = _list_class($self)->new($self->req);
-	$list->iterate_start;
+	$list->iterate_start($list->parse_query_from_request);
     }
     else {
 	$list = $source->get_widget_value(ref(_list_class($self)));
