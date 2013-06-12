@@ -35,27 +35,27 @@ Widget({
 	{border => 1},
     ),
     map({
-	my($left, $right) = @$_;
-	([$left] => _t($right));
+    	my($left, $right) = @$_;
+    	([$left] => _t($right));
     }
-	[{align => 'n'}, {class => 'b_align_n'}],
-	[{expand => 1}, {width => '95%', class => 'b_align_left'}],
-	[{title => 'Reptiles'}, {title => qq{\n<tr class="b_title_row"><td colspan="2"><div><font face="arial,sans-serif"><b>Reptiles</b></font></div></td>\n</tr>}, class => 'b_align_left'}],
+    	[{align => 'n'}, {class => 'b_align_n'}],
+    	[{expand => 1}, {width => '95%', class => 'b_align_left'}],
+    	[{title => 'Reptiles'}, {title => qq{\n<tr class="b_title_row"><td colspan="2"><div>Reptiles</div></td>\n</tr>}, class => 'b_align_left'}],
     ),
     [{class => 'reptiles'}] => _chomp(<<'EOF'),
 
 <table class="reptiles">
 <tr class="b_heading_row">
-<th><a href="/pub/products?p=REPTILES&amp;o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th><a href="/pub/products?p=REPTILES&amp;o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="b_sort_arrow ascend"> &#9650;</span></a></th>
+<th><a href="/pub/products?p=REPTILES&amp;o=1a">Product ID</a></th>
+<th><a href="/pub/products?p=REPTILES&amp;o=0d">Product Name<span class="b_sort_arrow ascend"> &#9650;</span></a></th>
 </tr>
 <tr class="b_data_row b_odd_row">
-<td><font face="arial,sans-serif">RP-LI-02</font></td>
-<td><font face="arial,sans-serif">Iguana</font></td>
+<td>RP-LI-02</td>
+<td>Iguana</td>
 </tr>
 <tr class="b_data_row b_even_row">
-<td><font face="arial,sans-serif">RP-SN-01</font></td>
-<td><font face="arial,sans-serif">Rattlesnake</font></td>
+<td>RP-SN-01</td>
+<td>Rattlesnake</td>
 </tr>
 </table>
 EOF
@@ -64,18 +64,18 @@ EOF
 
 <table class="reptiles">
 <tr class="b_heading_row">
-<th><a href="/pub/products?p=REPTILES&amp;o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th><a href="/pub/products?p=REPTILES&amp;o=0d"><font face="arial,sans-serif"><b>Product Name</b></font><span class="b_sort_arrow ascend"> &#9650;</span></a></th>
+<th><a href="/pub/products?p=REPTILES&amp;o=1a">Product ID</a></th>
+<th><a href="/pub/products?p=REPTILES&amp;o=0d">Product Name<span class="b_sort_arrow ascend"> &#9650;</span></a></th>
 </tr>
 <tr><td colspan="2">FOO</td></tr>
 <tr class="b_data_row b_odd_row">
-<td><font face="arial,sans-serif">RP-LI-02</font></td>
-<td><font face="arial,sans-serif">Iguana</font></td>
+<td>RP-LI-02</td>
+<td>Iguana</td>
 </tr>
 <tr><td colspan="2">FOO</td></tr>
 <tr class="b_data_row b_even_row">
-<td><font face="arial,sans-serif">RP-SN-01</font></td>
-<td><font face="arial,sans-serif">Rattlesnake</font></td>
+<td>RP-SN-01</td>
+<td>Rattlesnake</td>
 </tr>
 </table>
 EOF
@@ -90,11 +90,11 @@ EOF
 <table class="reptiles">
 <tr class="b_data_row b_odd_row">
 <td class="ping">&nbsp;</td>
-<td class="zing"><font face="arial,sans-serif">Iguana</font></td>
+<td class="zing">Iguana</td>
 </tr>
 <tr class="b_data_row b_even_row">
 <td class="ping">&nbsp;</td>
-<td class="zing"><font face="arial,sans-serif">Rattlesnake</font></td>
+<td class="zing">Rattlesnake</td>
 </tr>
 </table>
 EOF
@@ -112,19 +112,19 @@ sub _t {
 
 <table border="0" cellpadding="5" cellspacing="0" valign="NOP" width="NOP" class="NOP"> title=NOP
 <tr class="b_heading_row">
-<th class="b_align_s"><a href="/pub/products?p=REPTILES&amp;o=1a"><font face="arial,sans-serif"><b>Product ID</b></font></a></th>
-<th class="b_align_s"><a href="/pub/products?p=REPTILES&amp;o=0d"><font face="arial,sans-serif"><b>Product Name</b></font> <img alt="This column sorted in ascending order" class="b_align_bottom" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
+<th class="b_align_s"><a href="/pub/products?p=REPTILES&amp;o=1a">Product ID</a></th>
+<th class="b_align_s"><a href="/pub/products?p=REPTILES&amp;o=0d">Product Name <img alt="This column sorted in ascending order" class="b_align_bottom" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
 </tr>
 <tr class="b_heading_separator_row"><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
 <tr bgcolor="#000000"><td class="line_cell"><img class="b_clear_dot" alt="dot" height="1" src="/i/dot.gif" width="1" /></td></tr></table></td>
 </tr>
 <tr bgcolor="#D5EEFF" class="b_data_row b_odd_row">
-<td class="b_align_left"><font face="arial,sans-serif">RP-LI-02</font></td>
-<td class="b_align_left"><font face="arial,sans-serif">Iguana</font></td>
+<td class="b_align_left">RP-LI-02</td>
+<td class="b_align_left">Iguana</td>
 </tr>
 <tr bgcolor="#F0F9FF" class="b_data_row b_even_row">
-<td class="b_align_left"><font face="arial,sans-serif">RP-SN-01</font></td>
-<td class="b_align_left"><font face="arial,sans-serif">Rattlesnake</font></td>
+<td class="b_align_left">RP-SN-01</td>
+<td class="b_align_left">Rattlesnake</td>
 </tr>
 </table>
 EOF
