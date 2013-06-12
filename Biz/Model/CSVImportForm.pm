@@ -75,7 +75,7 @@ sub internal_source_error {
     my($oed) = $self->get_field_error_detail('source');
     $self->internal_put_error_and_detail(
 	source => 'SYNTAX_ERROR',
-	($oed ? "$oed\n" : '') . $ed,
+	($oed || "\n") . $ed,
     );
     return;
 }
@@ -205,9 +205,11 @@ sub _validate_columns {
 
 sub _validate_record {
     my($self, $row, $columns, $count) = @_;
+    my($no_error) = 1;
+
     foreach my $name (keys(%$columns)) {
 	my($type) = $columns->{$name}->{type};
-	my($v, $err, $no_error);
+	my($v, $err);
 	if ($type->isa('Bivio::Type::Enum') && defined($row->{$name})) {
 	    $row->{$name} =~ s/^\s+|\s+$//g;
 	    if (length($row->{$name})) {
@@ -220,6 +222,7 @@ sub _validate_record {
 	    ($v, $err) = $type->from_literal($row->{$name});
 	}
 	if ($err) {
+	    $no_error = 0;
 	    $self->internal_source_error(
 		$count,
 		$name,
@@ -231,6 +234,7 @@ sub _validate_record {
 	    );
 	}
 	elsif (my $e = $columns->{$name}->{constraint}->check_value($type, $v)) {
+	    $no_error = 0;
 	    $self->internal_source_error(
 		$count,
 		$name,
@@ -238,13 +242,10 @@ sub _validate_record {
 		$e->get_long_desc,
 	    );
 	}
-	else {
-	    $no_error = 1;
-	}
 	$row->{$name} = $v;
-	$self->validate_record($row, $count)
-	    if $no_error && $self->can('validate_record');
     }
+    $self->validate_record($row, $count)
+	if $no_error && $self->can('validate_record');
     return;
 }
 
