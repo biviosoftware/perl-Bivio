@@ -4,7 +4,7 @@ Request('setup_facade');
 [
     sub {class()->get_from_source(req())} => [
 	format_html => [
-	    ['page_text', req()] => ['<font face="arial,sans-serif" color="#000000">', '</font>'],
+	    ['bunit_complex', req()] => ['<font face="arial" color="#FF0000" style="text-align: center">', '</font>'],
 	],
 	format_css => [
 	    page_text => 'color: #000000;',
