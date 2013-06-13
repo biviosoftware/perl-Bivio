@@ -12,9 +12,13 @@ sub execute {
     my($mr) = $req->get('Model.MailReceiveDispatchForm');
     Mail_Outgoing()->new(
 	Mail_Incoming()->new($mr->get('message')->{content}),
-    )->set_recipients($mr->get('recipient'), $req)
-	->set_headers_for_forward($req)
-        ->enqueue_send($req);
+    )->set_recipients(
+	$mr->get('recipient'),
+	$req,
+    )->set_headers_for_forward(
+	$mr->unsafe_get('email_alias_incoming'),
+	$req,
+    )->enqueue_send($req);
     return;
 }
 
