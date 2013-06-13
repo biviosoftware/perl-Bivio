@@ -103,6 +103,7 @@ sub internal_initialize {
 		['from_email', 'Email'],
 		['task_id', 'Agent.TaskId'],
 		['plus_tag', 'String'],
+		['email_alias_incoming', 'Email'],
 	    ],
 	),
     });
@@ -131,6 +132,7 @@ sub _email_alias {
 	unless $req->get('task')->unsafe_get_redirect('email_alias_task', $req)
 	and my $new = $self->new_other('EmailAlias')
 	->incoming_to_outgoing($self->get('recipient'));
+    $self->internal_put_field(email_alias_incoming => $self->get('recipient'));
     if ($_E->is_valid($new)) {
 	_trace($self->get('recipient'), ' => ', $new) if $_TRACE;
 	$self->internal_put_field(recipient => $new);
