@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.69  2013/06/10 17:39:38  moeller
+  * Bivio::Biz::Model::UserRegisterForm
+    internal_create_models: use Type_Email()->get_local_part instead of regex
+  * Bivio::Biz::PropertyModel
+    add generate_unique_for_field
+  * Bivio::Delegate::SimpleWidgetFactory
+    pass attrs to time zone combo
+  * Bivio::Type::DateTime
+    allow parsing from dd_mm_yyyy_hh_mm_ss format
+  * Bivio::UI::Text::Widget::CSV
+    iterate with request query
+  * Bivio::UI::View::UserAuth
+    indent the user settings forum list
+  * Bivio::UI::XHTML::ViewShortcuts
+    added indent_list option to vs_list_form()
+    position label-less fields under input fields
+  * Bivio::Util::Release
+    added download_file (untested)
+
   Revision 12.68  2013/06/05 23:25:13  moeller
   * Bivio::Die
     put stack trace guards back
