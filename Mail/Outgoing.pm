@@ -262,11 +262,13 @@ sub set_header {
 }
 
 sub set_headers_for_forward {
-    my($self, $req) = shift->internal_req(@_);
+    my($self, $sender, $req) = @_;
     $self->set_header(
 	$self->FORWARDING_HDR,
 	($self->unsafe_get_header($self->FORWARDING_HDR) || 0) + 1,
     );
+    $self->set_header('Sender', $sender)
+	if $sender;
     my($from) = $self->get_from_email($req);
     if ($from =~ $self->internal_get_config->{rewrite_from_domains_re}) {
 	$self->set_header('From', $_E->format_ignore($from, $req));
@@ -294,7 +296,6 @@ sub set_headers_for_list_send {
 	To => $self->unsafe_get_header('cc') || $bp->{list_email},
     ) unless $self->unsafe_get_header('to');
     $self->set_header('X-Mailer', "Bivio-Mail-Outgoing $VERSION");
-    $self->set_header(Sender => $bp->{sender});
     $self->set_header('Precedence', 'list');
     $self->set_header('List-Id', _list_id($bp->{list_email}));
     $self->set_header('Reply-To', $bp->{reply_to})
@@ -307,7 +308,7 @@ sub set_headers_for_list_send {
 	. ($bp->{return_path} || $self->get_from_email($bp->{req}))
 	. '>',
     );
-    $self->set_headers_for_forward($bp->{req});
+    $self->set_headers_for_forward($bp->{sender}, $bp->{req});
     return $self
 	unless $bp->{subject_prefix};
     my($s) = $self->unsafe_get_header('subject');
