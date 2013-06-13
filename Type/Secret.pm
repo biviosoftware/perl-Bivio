@@ -176,9 +176,10 @@ sub _decrypt {
     # Decrypt and make sure surrounded by magic and a time not before now
     foreach my $cipher (@{$_CFG->{cipher}}) {
         next unless ref($cipher->{key});
-        my($s) = $is_hex ? _call($cipher, decrypt_hex => $encoded)
+        my($s) = ($is_hex
+	    ? _call($cipher, decrypt_hex => $encoded)
             : _call($cipher, decrypt =>
-                Bivio::MIME::Base64->http_decode($encoded) || '');
+                Bivio::MIME::Base64->http_decode($encoded) || '')) || '';
         my($magic) = $cipher->{magic};
 
         unless ($s =~ s/^\Q$magic\E//o && $s =~ s/\Q$magic\E(\d+)$//o
