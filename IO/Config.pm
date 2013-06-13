@@ -159,9 +159,11 @@ sub bconf_dir_hashes {
 	unless $_BCONF_DIR && -r $_BCONF_DIR && -d $_BCONF_DIR;
     my($dir) = $_BCONF_DIR;
     my($bconf) = $proto->bconf_file;
-    my($only) = -r $bconf
-	? "$dir/" . File::Basename::basename($bconf, '.bconf') . '-only.bconf'
-	: undef;
+    $bconf = $1
+	if $bconf =~ /^(\w+)::.+->/;
+    my($only) = "$dir/"
+	. File::Basename::basename($bconf, '.bconf')
+	. '-only.bconf';
     return map(
 	{
 	    my($file) = $_;
