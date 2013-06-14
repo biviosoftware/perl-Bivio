@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.70  2013/06/13 16:34:59  moeller
+  * Bivio::Biz::Model::CSVImportForm
+    moved validate_record() out of columns loop
+    improved error detail formatting
+  * Bivio::IO::Config
+    allow Root-only.bconf if BCONF is Root::.*->
+  * Bivio::UI::Text::Widget::CSV
+    fpc
+
   Revision 12.69  2013/06/10 17:39:38  moeller
   * Bivio::Biz::Model::UserRegisterForm
     internal_create_models: use Type_Email()->get_local_part instead of regex
