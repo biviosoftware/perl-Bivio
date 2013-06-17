@@ -213,7 +213,6 @@ sub vs_descriptive_field {
 	        : $proto->vs_field_description($name),
 	], {
 	    cell_class => 'field',
-	    $label ? () : (cell_colspan => 2),
 #TODO: Should this be on label, since it is the first cell in the row?
 	    map(($_ => $attrs->{$_}), grep(/^row_\w+$/, keys(%$attrs))),
 	}),
