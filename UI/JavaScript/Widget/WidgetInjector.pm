@@ -126,7 +126,7 @@ sub _render_view {
 	    return (
 		$id,
 		_do_render_view($self, $name, $source),
-		$javascript,
+		$javascript || '',
 	    );
 	},
     );
