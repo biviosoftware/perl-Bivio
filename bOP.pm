@@ -28,9 +28,21 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.71  2013/06/14 16:51:38  moeller
+  * Bivio::Biz::Action::MailForward
+    use email_alias_incoming to pass to set_headers_for_forward so that
+    the sender is set.  This may help mitigate SPF problesm with forwarding
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    set email_alias_incoming so that MailForward can set Sender
+  * Bivio::Mail::Outgoing
+    set_headers_for_forward now sets Sender:
+  * Bivio::Type::Secret
+    fixed uninitialized warning if decryption fails
+
   Revision 12.70  2013/06/13 16:34:59  moeller
   * Bivio::Biz::Model::CSVImportForm
     moved validate_record() out of columns loop
