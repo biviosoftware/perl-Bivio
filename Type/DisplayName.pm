@@ -8,6 +8,18 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_N) = b_use('Type.Name');
 my($_WIDTH) = b_use('Type.Text64K')->get_width;
 
+sub from_names {
+    my($proto, @names) = @_;
+    b_die('must provide at least one name')
+	if @names < 1;
+    b_die('must provide at most three names')
+	if @names > 3;
+    my($dn) = join(' ', @names);
+    $dn =~ s/\s+/ /g;
+    $dn =~ s/^\s+|\s+$//g;
+    return $dn;
+}
+
 sub get_width {
     return $_WIDTH;
 }
