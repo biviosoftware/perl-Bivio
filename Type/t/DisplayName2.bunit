@@ -1,0 +1,15 @@
+# Copyright (c) 2013 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    from_names => [
+	[] => DIE(),
+        ['last'] => 'last',
+        ['', 'last'] => 'last',
+        ['first', ''] => 'first',
+        ['first', 'last'] => 'first last',
+        ['first', '', 'last'] => 'first last',
+        ['first', 'middle', 'last'] => 'first middle last',
+	['first', 'middle', 'last', 'other'] => DIE(),
+    ],
+];
