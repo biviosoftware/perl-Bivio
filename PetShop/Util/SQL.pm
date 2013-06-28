@@ -616,16 +616,6 @@ EOF
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
     });
-    $req->set_realm($self->FOUREM);
-    $self->model('ForumForm', {
-	'RealmOwner.display_name' => 'Unit Test Forum Mail Filtering',
-	'RealmOwner.name' => $self->FOUREM . '-mail-filtering',
-    });
-    $self->model('RowTag')->create({
-	primary_id => $req->get('auth_id'),
-	key => Type_RowTagKey()->FILTER_MAILER_DAEMON,
-	value => 1,
-    });
     foreach my $realm (
 	$self->new_other('SiteForum')->SITE_REALM,
 	$self->FOUREM,
@@ -712,6 +702,20 @@ sub _init_mail {
     my($self) = @_;
     $self->top_level_forum(
 	$self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+    $self->req->with_realm(
+	$self->MAIL_FORUM,
+	sub {
+	    $self->model('ForumForm', {
+		'RealmOwner.display_name' => 'Unit Test Forum Mail Filtering',
+		'RealmOwner.name' => $self->MAIL_FORUM . '-filtering',
+	    });
+	    $self->model('RowTag')->create({
+		primary_id => $self->req->get('auth_id'),
+		key => Type_RowTagKey()->FILTER_MAILER_DAEMON,
+		value => 1,
+	    });
+	},
+    );
     my($mv) = b_use('Type.MailVisibility');
     $self->top_level_forum(
 	$self->MAIL_FORUM_PUBLIC, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
