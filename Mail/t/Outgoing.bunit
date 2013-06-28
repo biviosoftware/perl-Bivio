@@ -58,6 +58,7 @@ Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 List-Id: <some-list.example.com>
 Precedence: list
+X-Auto-Response-Suppress: OOF
 X-Bivio-Forwarded: 1
 X-Mailer: Bivio-Mail-Outgoing ${Bivio::Mail::Outgoing::VERSION}
 
