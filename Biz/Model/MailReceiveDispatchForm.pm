@@ -18,6 +18,7 @@ my($_FP) = b_use('Type.FilePath');
 my($_TEST_RECIPIENT_HDR) = qr{^@{[b_use('Mail.Common')->TEST_RECIPIENT_HDR]}:}m;
 b_use('IO.Config')->register(my $_CFG = {
     filter_spam => 0,
+    filter_out_of_office => 1,
     duplicate_threshold_seconds => 3600,
 });
 
@@ -48,7 +49,13 @@ sub execute_ok {
 	plus_tag => $plus,
     );
     return _redirect('ignore_task')
-	if _ignore($self, \&_ignore_email, \&_ignore_forwarded, \&_ignore_spam);
+	if _ignore(
+	    $self,
+	    \&_ignore_email,
+	    \&_ignore_forwarded,
+	    \&_ignore_spam,
+	    \&_ignore_out_of_office,
+	);
     $self->internal_set_realm($realm);
     return _redirect('ignore_task')
 	if _ignore($self, \&_ignore_duplicate, \&_ignore_mailer_daemon);
@@ -227,10 +234,18 @@ sub _ignore_mailer_daemon {
     return 'mailer-daemon';
 }
 
+sub _ignore_out_of_office {
+    my($self) = @_;
+    return $_CFG->{filter_out_of_office}
+	&& $self->get('mail_incoming')->get('header')
+	    =~ /^Subject:\s+out\s+of\s+office(\s+autoreply)?:/im
+	? 'out-of-office' : undef;
+}
+
 sub _ignore_spam {
     my($self) = @_;
     return $_CFG->{filter_spam}
-	&& $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s*Y/im
+	&& $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s+Y/im
 	? 'spam' : undef;
 }
 
