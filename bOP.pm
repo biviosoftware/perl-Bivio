@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.72  2013/06/21 17:25:10  schellj
+  * Bivio::Type::DisplayName
+    add from_names
+  * Bivio::UI::JavaScript::Widget::WidgetInjector
+    fix uninitialized value in concatenation error when javascript view not present
+  * Bivio::UI::XHTML::ViewShortcuts
+    don't include colspan, labelless items are aligned under fields
+
   Revision 12.71  2013/06/14 16:51:38  moeller
   * Bivio::Biz::Action::MailForward
     use email_alias_incoming to pass to set_headers_for_forward so that
