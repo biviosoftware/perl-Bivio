@@ -16,12 +16,12 @@ config({
     class() => [
         check_use => [
 	    [{
-		'/bin/df -k' => <<'EOF',
+		'/bin/df --portability -k' => <<'EOF',
 /dev/1 x x x 81% /a
 /dev/2 x x x 79% /aa
 /dev/3 x x x 91% /c
 EOF
-		'/bin/df -i' => <<'EOF',
+		'/bin/df --portability -i' => <<'EOF',
 /dev/4 x x x 96% /bb
 /dev/5 x x x 79% /cc
 EOF
