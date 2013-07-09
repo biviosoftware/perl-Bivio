@@ -150,7 +150,7 @@ sub _update_status {
     }
     elsif ($result_code eq '3') {
         # Error. Keep existing status except for the following fatal cases
-        $status = $error_code =~ /^([5-9]|1[079]|2[01235678]|3[5])$/
+        $status = $error_code =~ /^([5-9]|1[07]|2[4789]|35|54)$/
 	    ? $_ECPS->FAILED
 	    : $payment->get('status');
 	b_warn($status, ': ', $details, ' ', $payment);
