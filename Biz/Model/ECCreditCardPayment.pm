@@ -48,7 +48,7 @@ sub process_payment {
 	    $self->get_payment_processor->execute_process($self->req);
             my($payment) = $self->req('Model.ECPayment');
 
-            if ($payment->get('status')->eq_declined) {
+            if ($payment->get('status')->is_bad) {
                 $form->internal_put_error(processor_error => 'NULL');
                 $form->internal_put_field(processor_error =>
                     $payment->get_model('ECCreditCardPayment')
