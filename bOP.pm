@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.73  2013/07/03 15:47:37  moeller
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    add out of office filtering
+  * Bivio::Mail::Outgoing
+    add X-Auto-Response-Supress: OOF to set_headers_for_list_send
+  * Bivio::PetShop::Util::SQL
+    fourem-mail-filtering -> mail_forum-filtering
+  * Bivio::UI::HTML::Widget::GoogleAnalytics
+    NEW
+
   Revision 12.72  2013/06/21 17:25:10  schellj
   * Bivio::Type::DisplayName
     add from_names
