@@ -19,7 +19,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     $_JS->render($source, $buffer, $self->package_name, <<'EOF');
 function ner_match_name(n) {
-  return new RegExp("(f\\d+\\_)(\\d+)$").exec(n);
+  return new RegExp("(.+\\_)(\\d+)$").exec(n);
 }
 
 function ner_next_name(n) {
