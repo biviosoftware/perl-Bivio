@@ -65,9 +65,8 @@ window.bivio.combobox.key_down = function(key, field, init_values) {
     if (key == key_codes.TAB) {
         if (field.drop_down.childNodes.length == 1) {
             set_selected(field.drop_down.firstChild);
-            save_selected(field);
         }
-        field.clear_list();
+        save_selected(field);
     }
     else if (key == key_codes.UP_ARROW || key == key_codes.DOWN_ARROW) {
         select_next_item(key == key_codes.UP_ARROW, field);
@@ -104,14 +103,14 @@ window.bivio.combobox.key_up = function(key, field) {
 }
 
 window.bivio.combobox.arrow_mouse_down = function(arrow, init_values) {
-    var field = get_sibling(arrow, false, 'INPUT');
+    var field = b_get_sibling(arrow, false, 'INPUT');
     if (! field.drop_down)
         init_drop_down(field, init_values);
     return true;
 }
 
 window.bivio.combobox.arrow_mouse_up = function(arrow) {
-    var field = get_sibling(arrow, false, 'INPUT');
+    var field = b_get_sibling(arrow, false, 'INPUT');
 
     if (active_timer)
         window.clearTimeout(active_timer);
@@ -132,18 +131,9 @@ window.bivio.combobox.arrow_mouse_up = function(arrow) {
     return true;
 }
 
-function get_sibling(obj, next, nodeName) {
-    var sibling;
-    sibling = next ? obj.nextSibling : obj.previousSibling;
-    while (sibling.nodeName != nodeName) {
-        sibling = next ? sibling.nextSibling : sibling.previousSibling;
-    }
-    return sibling;
-}
-
 function init_drop_down(field, init_values) {
-    var arrow = get_sibling(field, true, 'DIV');
-    var drop_down = get_sibling(arrow, true, 'DIV');
+    var arrow = b_get_sibling(field, true, 'DIV');
+    var drop_down = b_get_sibling(arrow, true, 'DIV');
 
     drop_down.style.width = (field.clientWidth + arrow.offsetWidth) + 'px';
     drop_down.style.left = (position(field, drop_down.offsetParent)[0] - 1) + 'px';
@@ -219,9 +209,10 @@ function position(obj, commonParent) {
 }
 
 function save_selected(field) {
-    if (selected) {
+    if (selected && field.typed_value != selected.real_value) {
         field.value = selected.real_value;
         field.typed_value = field.value;
+        field.onchange();
     }
     field.clear_list();
     if (field.auto_submit)
@@ -514,6 +505,14 @@ function b_all_elements_by_class(tag_name, class_name) {
             elements.push(tags[i]);
     }
     return elements;
+}
+function b_get_sibling(obj, next, nodeName) {
+    var sibling;
+    sibling = next ? obj.nextSibling : obj.previousSibling;
+    while (sibling.nodeName != nodeName) {
+        sibling = next ? sibling.nextSibling : sibling.previousSibling;
+    }
+    return sibling;
 }
 EOF
 }
