@@ -89,6 +89,7 @@ sub _text {
 	ONKEYUP => "return $_PREFIX.key_up(event.keyCode, this)",
 	AUTOCOMPLETE => 'off',
 	size => $self->get('size'),
+	%{$self->unsafe_get('text_attrs') || {}},
     });
 }
 
