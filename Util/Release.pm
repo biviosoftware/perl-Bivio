@@ -195,7 +195,7 @@ sub download_file {
     ]}
     my($self, $bp) = shift->parameters(\@_);
     my($uri) = $bp->{file_name};
-    IO_File()->write($bp->{file_name}, _http_get($uri));
+    IO_File()->write($bp->{file_name}, _http_get(\$uri));
     return;
 }
 
