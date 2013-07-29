@@ -25,6 +25,7 @@ my($_BUNDLE) = [
     'task_rate_limit',
     '!calendar_event_uid',
     '!calendar_event_uid_index',
+    '!failover_work_queue_fixup',
 ];
 my($_AGGREGATES) = [qw(
     group_concat(text)
@@ -648,6 +649,16 @@ sub internal_upgrade_db_calendar_event_uid_index {
 CREATE INDEX calendar_event_t7 ON calendar_event_t (
   uid
 )
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_failover_work_queue_fixup {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE failover_work_queue_t
+RENAME COLUMN entry_id to failover_work_queue_id
 /
 EOF
     return;
