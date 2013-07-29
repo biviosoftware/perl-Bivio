@@ -1239,11 +1239,11 @@ CREATE TABLE email_t (
 /
 
 CREATE TABLE failover_work_queue_t (
-  entry_id NUMERIC(18) NOT NULL,
+  failover_work_queue_id NUMERIC(18) NOT NULL,
   creation_date_time timestamp DEFAULT now(),
   operation integer,
   file_name text,
-  CONSTRAINT failover_work_queue_t1 PRIMARY KEY (entry_id)
+  CONSTRAINT failover_work_queue_t1 PRIMARY KEY (failover_work_queue_id)
 )
 /
 
