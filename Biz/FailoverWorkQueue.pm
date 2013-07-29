@@ -38,7 +38,7 @@ sub _insert_into_work_queue {
 	unless $_CFG->{enable};
     _trace($file_name, $operation) if $_TRACE;
     b_use('SQL.Connection')->execute(
-	q{INSERT INTO  failover_work_queue_t (entry_id, operation, file_name)
+	q{INSERT INTO  failover_work_queue_t (failover_work_queue_id, operation, file_name)
 	      VALUES  (nextval('failover_work_queue_s'), ?, ?)},
 	[$operation, $file_name]);
     return;

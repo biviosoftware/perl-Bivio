@@ -40,7 +40,7 @@ sub live_process_failover_work_items {
     my($connection) = b_use('SQL.Connection')->get_instance;
     while (1) {
 	my($statement) = $connection->execute(
-	    'SELECT entry_id, operation, file_name from failover_work_queue_t LIMIT ?',
+	    'SELECT failover_work_queue_id, operation, file_name from failover_work_queue_t LIMIT ?',
 	    [$_CFG->{work_items_per_run}]
 	);
 	my($file_names) = [];
