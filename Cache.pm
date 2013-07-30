@@ -53,7 +53,7 @@ sub _compute {
     $_F->mkdir_parent_only($fp, 0750);
     my($res) = $proto->internal_compute($req, @$extra);
     my($tmp) = "$fp.tmp";
-    $_F->write($tmp, Storable::freeze($res));
+    $_F->write($tmp, Storable::nfreeze($res));
     $_F->rename($tmp, $fp);
     $req->put($fp => $res);
     return $res;
