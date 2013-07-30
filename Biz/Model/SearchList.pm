@@ -55,8 +55,11 @@ sub format_uri_params_with_row {
 	sub {
 	    my($crm) = $req->get('auth_realm')
 		->does_user_have_permissions(['FEATURE_CRM'], $req);
-	    my($realm_mail) = $self->new_other('RealmMail')->load({
-		realm_file_id => $row->{'RealmFile.realm_file_id'}});
+	    my($realm_mail) = $self->new_other('RealmMail');
+	    return undef
+		unless $realm_mail->unsafe_load({
+		    realm_file_id => $row->{'RealmFile.realm_file_id'},
+		});
 	    my($pid) = $realm_mail->get('thread_root_id');
 #TODO: Is this necessary now that we're caching?
 #	    $row->{result_title} = $realm_mail->get('subject');
@@ -212,8 +215,10 @@ sub load_row_with_model {
 	->get('display_name');
     $row->{result_excerpt} = length($row->{excerpt}) ? $row->{excerpt}
 	: '<No excerpt>';
-    $row->{result_uri} = $self->req->format_uri(
-	$self->format_uri_params_with_row($row));
+    my($params) = $self->format_uri_params_with_row($row);
+    return 0
+	unless $params;
+    $row->{result_uri} = $self->req->format_uri($params);
     return 1;
 }
 
