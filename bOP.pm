@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.74  2013/07/10 20:11:01  moeller
+  * Bivio::Biz::Action::ECCreditCardProcessor
+    map error code 54 (invalid credit) to a failure status
+  * Bivio::Biz::Model::ECCreditCardPayment
+    use is_bad() rather than eq_declined() to determine if payment/credit failed
+  * Bivio::UI::HTML::Widget::NewEmptyRowHandler
+    match_name() now works for dev or prod form field names
+  * Bivio::UI::HTML::Widget::Script
+    made get_sibling() public as b_get_sibling()
+    combo box saves selected on tab key
+    combo box calls field.onchange() when saved
+  * Bivio::UI::XHTML::Widget::ComboBox
+    added text_attrs value
+  * Bivio::Util::Disk
+    added --portability so wouldn't break lines with long directory names
+
   Revision 12.73  2013/07/03 15:47:37  moeller
   * Bivio::Biz::Model::MailReceiveDispatchForm
     add out of office filtering
