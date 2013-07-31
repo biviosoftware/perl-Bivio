@@ -73,6 +73,12 @@ sub internal_base_tasks {
 	[DEFAULT_ERROR_REDIRECT_MODEL_NOT_FOUND => undef],
 	[DEFAULT_ERROR_REDIRECT_UPDATE_COLLISION => undef],
 	[FAVICON_ICO => 'favicon.ico'],
+	[APPLE_TOUCH_ICON => [
+	    map((
+		"apple-touch-icon${_}.png",
+		"apple-touch-icon${_}-precomposed.png",
+	    ), '', qw(-144x144 -114x114 -72x72)),
+	]],
 	[FORBIDDEN => undef],
 	[PUBLIC_PING => 'pub/ping'],
 	[LOCAL_FILE_PLAIN => ['i/*', 'f/*', __PACKAGE__->get_local_file_plain_common_uri('*')]],
@@ -447,6 +453,7 @@ sub _cfg_base {
 	    [home_page_uri => $_SITE_WIKI_VIEW_URI],
 	    [view_execute_uri_prefix => 'SiteRoot->'],
 	    [favicon_uri => '/i/favicon.ico'],
+	    [apple_touch_icon_prefix => '/i/apple-touch-icon'],
 	    [form_error_title => 'Please correct the errors below:'],
 	    [form_stale_data_title => 'The page contents were modified by another request. Please resubmit the form with new data.'],
 	    [none => ' '],

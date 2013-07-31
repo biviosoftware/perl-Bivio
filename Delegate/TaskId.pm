@@ -252,7 +252,14 @@ sub info_base {
 	    ANYBODY
 	    View.WidgetInjector->public_xhtml_widget_js
 	)],
-#194-199 free
+	[qw(
+	    APPLE_TOUCH_ICON
+	    194
+	    GENERAL
+	    ANYBODY
+	    Action.LocalFilePlain->execute_apple_touch_icon
+	)],
+#195-199 free
     ];
 }
 
