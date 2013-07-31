@@ -29,6 +29,27 @@ sub execute {
     return 1;
 }
 
+sub execute_apple_touch_icon {
+    my($proto, $req) = @_;
+    my($file_name) = $_FCT->get_value('apple_touch_icon_prefix', $req);
+    b_die('invalid apple touch uri: ', $req->get('uri'))
+	unless $req->get('uri') =~ m,/apple-touch-icon(.*?\.png)$,;
+    my($suffix) = $1;
+    my($res);
+    my($die) = Bivio::Die->catch_quietly(
+	sub {
+	    $res = $proto->execute($req, $file_name . $suffix);
+	},
+    );
+    if ($die) {
+	# avoid warning in logs
+	return 'DEFAULT_ERROR_REDIRECT_NOT_FOUND'
+	    if $die->unsafe_get('code') && $die->get('code')->eq_not_found;
+	$die->throw;
+    }
+    return $res;
+}
+
 sub execute_favicon {
     my($proto, $req) = @_;
     return $proto->execute($req, $_FCT->get_value('favicon_uri', $req));
