@@ -429,6 +429,11 @@ sub get_delegate_info {
 	undef,
 	'Unable to perform operation due to an internal system error.  Please contact customer support.'
     ],
+    FILE_NAME_LEADING_DOT => [
+	82,
+	undef,
+	'File names may not contain a leading dot.',
+    ],
 ];
 }
 
