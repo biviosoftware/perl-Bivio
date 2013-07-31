@@ -170,8 +170,8 @@ sub internal_initialize {
 		type => $_->[1],
 		constraint => 'NONE',
 	    }, (
-		[qw(name FileName)],
-		[qw(rename_name FileName)],
+		[qw(name NonHiddenFileName)],
+		[qw(rename_name NonHiddenFileName)],
 		[qw(folder_id RealmFile.realm_file_id)],
 		[qw(file FileField)],
 		[qw(comment RealmFileLock.comment)],
