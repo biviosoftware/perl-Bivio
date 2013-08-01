@@ -27,6 +27,12 @@ EOF
 sub vs_petshop_css {
     my($self) = @_;
     return Prose(<<'EOF');
+form input, form textarea, form select {
+  padding: 5px;
+}
+td.label {
+  padding-top: 3px;
+}
 a:link, a:visited, a:hover, a:active {
   text-decoration: none;
   color: blue;
