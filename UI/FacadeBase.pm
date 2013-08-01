@@ -287,6 +287,8 @@ sub _cfg_base {
 	    [b_mobile_toggler_selected => 'bold'],
 	    [b_mobile_toggler_a => []],
 	    [b_list_action => '85%'],
+	    [input_field => 'style=padding:2px'],
+
 	    # Historical font names
 	    map([$_->[0] => [qq{class=$_->[1]}]],
 		[error => 'field_err'],
@@ -300,7 +302,6 @@ sub _cfg_base {
 		form_field_checkbox
 		form_field_description
 		form_submit
-		input_field
 		mailto
 		number_cell
 		page_heading
