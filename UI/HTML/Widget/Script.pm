@@ -134,8 +134,7 @@ window.bivio.combobox.arrow_mouse_up = function(arrow) {
 function init_drop_down(field, init_values) {
     var arrow = b_get_sibling(field, true, 'DIV');
     var drop_down = b_get_sibling(arrow, true, 'DIV');
-
-    drop_down.style.width = (field.clientWidth + arrow.offsetWidth) + 'px';
+    drop_down.style.width = field.clientWidth + 'px';
     drop_down.style.left = (position(field, drop_down.offsetParent)[0] - 1) + 'px';
     field.drop_down = drop_down;
     field.auto_submit = init_values.auto_submit;
