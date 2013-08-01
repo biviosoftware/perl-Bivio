@@ -18,7 +18,8 @@ sub def_edit {
 	},
 	{
 	    field => 'TupleSlotDef.is_required',
-	    ID => ''
+	    ID => '',
+	    column_data_class => 'checkbox',
 	},
 	{
 	    field => 'TupleSlotDef.tuple_slot_type_id',
