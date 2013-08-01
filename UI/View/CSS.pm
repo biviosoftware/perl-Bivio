@@ -686,6 +686,13 @@ div.cb_menu {
   max-height: 10em;
   overflow: auto;
   z-index: 1000;
+  Shadow({
+    box => '3px 3px 3px 3px rgba(102, 102, 102, 0.6)',
+  });
+  Border({
+    radius => '3px',
+  });
+  padding: 0.2ex 0.5ex;
 }
 div.cb_selected {
   Color('dd_menu_selected-background');
