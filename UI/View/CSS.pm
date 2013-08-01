@@ -83,7 +83,7 @@ td.b_error_arrow {
 form input, form textarea, form select {
   border:1px solid;
   Color('input-border');
-  padding:5px;
+  Font('input_field');
   Border({
     radius => '3px',
   });
@@ -272,10 +272,6 @@ form .label_err,
 form .field {
   padding-top: 1ex;
   padding-bottom: 0.5em;
-}
-.simple .field,
-form .field {
-  padding-top: 0.5ex;
 }
 form .footer {
   Font('form_footer');
@@ -662,6 +658,9 @@ div.dd_menu a:hover {
   Color('dd_menu_selected');
   text-decoration: none;
 }
+input.cb_text {
+  padding-right: 20px;
+}
 div.cb_arrow {
   cursor: pointer;
   display: inline;
@@ -671,6 +670,10 @@ div.cb_arrow {
   Color('body');
   -webkit-user-select: none;
   -moz-user-select: none;
+  border: none;
+  position: relative;
+  left: -20px;
+  margin-right: -15px;
 }
 div.cb_menu {
   display: inline;
@@ -1241,12 +1244,24 @@ sub _site_xapian {
 td.header_right form.search {
   margin-top: 1ex;
 }
+td.header_right form.search input.enabled, td.header_right form.search input.disabled  {
+  padding-right: 20px;
+}
 td.header_right form.search input.go {
-  margin-left: .3em;
+  border: none;
+  position: relative;
+  left: -20px;
+  margin-right: -15px;
+  Shadow({
+    box => '0px 0px 0px 0px',
+  });
+  Border({
+    radius => '0px',
+  });
+ vertical-align: text-bottom;
 }
 form.search div.b_realm_only {
   padding-top: .5ex;
-  padding-right: vs_add(Icon('magnifier', 'width'), 2);px;
   text-align: right;
 }
 form.search div.b_realm_only input {
