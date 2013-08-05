@@ -67,6 +67,9 @@ sub cascade_delete_model_list {
 	[qw(RealmRole realm_id)],
 	[qw(MotionVote realm_id)],
 	[qw(Motion realm_id)],
+	[qw(UserRealmSubscription realm_id)],
+	[qw(UserRealmSubscription user_id)],
+	[qw(UserDefaultSubscription user_id)],
     );
 }
 
