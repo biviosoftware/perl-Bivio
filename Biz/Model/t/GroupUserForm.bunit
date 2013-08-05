@@ -17,12 +17,12 @@ FormModel();
 	    return Auth_Role('ADMINISTRATOR');
 	},
 	file_writer => 1,
-	mail_recipient => 1,
+	is_subscribed => 1,
     }),
     req_state_merge({query => {this => realm_id('btest_read')}}),
     empty_case({
 	'RealmUser.role' => Auth_Role('MEMBER'),
 	file_writer => 0,
-	mail_recipient => 1,
+	is_subscribed => 1,
     }),
 ];
