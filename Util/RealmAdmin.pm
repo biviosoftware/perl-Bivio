@@ -30,8 +30,10 @@ commands:
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
     scan_realm_id -- checks for auth_id in all table fields
+    subscribe_user_to_realm -- subscribe given user to given realm
     to_id anything -- the id for the realm passed as an argument
     unsafe_to_id anything -- to_id if it exists else undef
+    unsubscribe_user_from_realm -- unsubscribe given user from given realm
     users [role] -- dump users in realm [with a specific role]
 EOF
 }
@@ -271,6 +273,11 @@ sub scan_realm_id {
     return;
 }
 
+sub subscribe_user_to_realm {
+    _subscription(shift, 1);
+    return;
+}
+
 sub to_id {
     return shift->unsafe_to_id(@_)
 	|| b_die(shift, ': not found');
@@ -284,6 +291,11 @@ sub unsafe_to_id {
 	unless $r->unauth_load_by_email_id_or_name($bp->{anything})
 	|| $r->unauth_load({display_name => $bp->{anything}});
     return $r->get('realm_id');
+}
+
+sub unsubscribe_user_from_realm {
+    _subscription(shift, 0);
+    return;
 }
 
 sub users {
@@ -333,6 +345,25 @@ sub _info {
 	    {realm_id => $user->get('realm_id')},
 	)},
     );
+}
+
+sub _subscription {
+    my($self, $subscribed) = @_;
+    $self->assert_not_general;
+    $self->assert_have_user;
+    $self->model('UserRealmSubscription')->create_or_update({
+	user_id => $self->req('auth_user_id'),
+	realm_id => $self->req('auth_id'),
+	is_subscribed => $subscribed,
+    });
+    return
+	unless $subscribed;
+    b_warn('user does not have MAIL_RECIPIENT role in this realm, will not receive mail')
+	unless $self->model('RealmUser')->unsafe_load({
+	    user_id => $self->req('auth_user_id'),
+	    role => Auth_Role('MAIL_RECIPIENT'),
+	});
+    return;
 }
 
 sub _validate_user {
