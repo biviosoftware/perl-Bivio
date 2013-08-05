@@ -6,7 +6,7 @@ use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FM) = b_use('Type.FormMode');
-my($_AUX) = [qw(file_writer mail_recipient)];
+my($_AUX) = [qw(is_subscribed file_writer)];
 my($_R) = b_use('Auth.Role');
 my($_F) = b_use('UI.Facade');
 my($_UNAPPROVED) = $_R->UNAPPROVED_APPLICANT;
@@ -57,9 +57,13 @@ sub execute_empty {
     my($main, $aux) = $self->req('Model.' . $self->USER_LIST_CLASS)
 	->roles_by_category;
     $self->internal_put_field('RealmUser.role' => $main->[0]);
-    foreach my $f (@$_AUX) {
-	$self->internal_put_field($f =>
-	    grep($_->equals_by_name($f), @$aux) ? 1 : 0);
+    foreach my $f (@{$self->internal_aux_fields}) {
+	$self->internal_put_field(
+	    $f => $f eq 'is_subscribed'
+		? _do_subscribed(
+		    $self, 'unsafe_load', $self->get('RealmUser.user_id'), 1)
+		: grep($_->equals_by_name($f), @$aux) ? 1 : 0,
+	);
     }
     return;
 }
@@ -74,7 +78,6 @@ sub execute_ok {
 	$old_main = $self->get('current_main_role');
     }
     my($uid) = $self->get('RealmUser.user_id');
-    my($rid) = $self->req('auth_id');
     my($main) = $self->get('RealmUser.role');
     my($ru) = $self->new_other('RealmUser');
 
@@ -84,7 +87,6 @@ sub execute_ok {
 	    return _audit_user($self, $uid)
 		if $main->eq_unknown;
 	    $ru->create({
-		realm_id => $rid,
 		user_id => $uid,
 		role => $main,
 	    });
@@ -97,17 +99,24 @@ sub execute_ok {
 #TODO: when transitioning from unapproved to other state, send email
 #      except unknown.  Have code in place to transition, but the views
 #      can be empty.
-	$self->internal_put_field(file_writer => 1)
-	    if $main->in_category_role_group('all_admins');
+	map(
+	    _put_if_in_group($self, $main, @$_),
+	    [qw(file_writer all_admins)],
+	    [qw(mail_recipient all_members)],
+	);
     }
-    foreach my $f (@{$self->internal_aux_fields}) {
-	my($method) = $self->unsafe_get($f) ? 'unauth_create_or_update'
-	    : 'delete';
-	$ru->$method({
-	    realm_id => $rid,
-	    user_id => $uid,
-	    role => $_R->from_any($f),
-	});
+    foreach my $f (@{$self->internal_aux_fields}, 'mail_recipient') {
+	if ($f eq 'is_subscribed') {
+	    _do_subscribed(
+		$self, 'create_or_update', $uid, $self->unsafe_get($f));
+	}
+	else {
+	    my($method) = $self->unsafe_get($f) ? 'create_or_update' : 'delete';
+	    $ru->$method({
+		user_id => $uid,
+		role => $_R->from_any($f),
+	    });
+	}
     }
     _audit_user($self, $uid);
     return;
@@ -135,6 +144,7 @@ sub internal_initialize {
 	other => [
 	    'RealmUser.user_id',
 	    $self->field_decl([[qw(current_main_role Auth.Role)]]),
+	    $self->field_decl([[qw(mail_recipient Boolean NOT_NULL)]]),
 	],
     });
 }
@@ -185,6 +195,21 @@ sub _audit_user {
     $self->req->with_user($uid, sub {
         b_use('ShellUtil.RealmUser')->new->audit_user;
     });
+    return;
+}
+
+sub _do_subscribed {
+    my($self, $method, $uid, $is_subscribed) = @_;
+    return $self->new_other('UserRealmSubscription')->$method({
+	user_id => $uid,
+	is_subscribed => $is_subscribed,
+    });
+}
+
+sub _put_if_in_group {
+    my($self, $role, $field, $group) = @_;
+    $self->internal_put_field($field => 1)
+	if $role->in_category_role_group($group);
     return;
 }
 
