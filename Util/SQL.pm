@@ -735,7 +735,7 @@ CREATE INDEX user_default_subscription_t5 ON user_default_subscription_t (
 /
 EOF
     $self->print_line('user_realm_subscription_t and user_default_subscription_t created');
-    my($ru) = $self->new_other('RealmUser');
+    my($ru) = $self->model('RealmUser');
     my($subscriptions) = $ru->map_iterate(
 	undef,
 	'unauth_iterate_start',
@@ -743,7 +743,7 @@ EOF
 	    role => Auth_Role('MAIL_RECIPIENT'),
 	},
     );
-    my($urs) = $self->new_other('UserRealmSubscription');
+    my($urs) = $self->model('UserRealmSubscription');
     my($i) = 0;
     my($rows) = scalar(@$subscriptions);
     foreach my $s (@$subscriptions) {
