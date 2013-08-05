@@ -1,0 +1,18 @@
+# Copyright (c) 2013 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+req()->set_realm('site-reports');
+model('RealmUser')->delete({
+    user_id => realm_id('task_log_user'),
+    role => Auth_Role('MAIL_RECIPIENT'),
+});
+model(UserRealmSubscription => {
+    user_id => realm_id('remote_copy_user'),
+})->update({
+    is_subscribed => 0,
+});
+[
+    get_recipients => [
+        [] => [[email('root'), remote_email('support')]],
+    ],
+];
