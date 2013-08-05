@@ -3,13 +3,19 @@
 package Bivio::Biz::Model::GroupUserQueryForm;
 use strict;
 use Bivio::Base 'Model.FilterQueryForm';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('FacadeComponent.Text');
+my($_SUBSCRIBED) = 'is_subscribed';
 
 sub get_privilege_role {
-    my($self) = @_;
-    return _role_map($self)->{$self->unsafe_get('b_privilege') || ''};
+    return _specified_role(shift);
+}
+
+sub get_subscribed {
+    my($role) = _specified_role(shift);
+    return defined($role) && $role eq $_SUBSCRIBED;
 }
 
 sub internal_query_fields {
@@ -20,7 +26,8 @@ sub internal_query_fields {
 }
 
 sub internal_roles {
-    return b_use('Model.RoleBaseList')->ROLES_ORDER;
+    return [grep(
+	!$_->eq_mail_recipient, @{b_use('Model.RoleBaseList')->ROLES_ORDER})];
 }
 
 sub provide_select_choices {
@@ -35,11 +42,21 @@ sub to_html {
 
 sub _role_map {
     my($self) = @_;
-    return {map({
-	my($v) = $_T->get_from_source($self->req)
-	    ->unsafe_get_value('GroupUserList.privileges_name',	$_->get_name);
-	$v ? ($v => $_) : ();
-    } @{$self->internal_roles})};
+    return {
+	map({
+	    my($v) = Model_GroupUserList()
+		->privilege_name($_->get_name, $self->req);
+	    $v ? ($v => $_) : ();
+	} @{$self->internal_roles}),
+	Model_GroupUserList()
+	    ->privilege_name('UserRealmSubscription.is_subscribed', $self->req)
+	    => $_SUBSCRIBED,
+    };
+}
+
+sub _specified_role {
+    my($self) = @_;
+    return _role_map($self)->{$self->unsafe_get('b_privilege') || ''};
 }
 
 1;
