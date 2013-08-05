@@ -127,15 +127,25 @@ sub update {
 
 sub _delete_children {
     my($self) = @_;
+    my($urs) = $self->new_other('UserRealmSubscription');
     $self->new_other('Forum')->do_iterate(
 	sub {
-	    shift->unauth_cascade_delete;
+	    my($f) = @_;
+	    _delete_subscriptions($self, $urs, $f->get('forum_id'));
+	    $f->unauth_cascade_delete;
 	    return 1;
 	},
         'unauth_iterate_start',
         'forum_id',
 	{parent_realm_id => $self->get('forum_id')},
     );
+    _delete_subscriptions($self, $urs, $self->get('forum_id'));
+    return;
+}
+
+sub _delete_subscriptions {
+    my($self, $model, $realm_id) = @_;
+    $model->unauth_delete_by_realm_id('realm_id', $realm_id);
     return;
 }
 
