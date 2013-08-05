@@ -28,10 +28,37 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.75  2013/07/31 23:09:16  moeller
+  * Bivio::Biz::Action::LocalFilePlain
+    added execute_apple_touch_icon()
+  * Bivio::Biz::FailoverWorkQueue
+    renamed failover_work_queue_t primary id
+  * Bivio::Biz::Model::FileChangeForm
+    changed name and rename_name fields to NonHiddenFileName type
+  * Bivio::Biz::Model::SearchList
+    filter out rows where the RealmMail record is missing
+  * Bivio::Cache
+    use nfreeze() for 64 bit compatibility
+  * Bivio::Delegate::SimpleTypeError
+    added FILE_NAME_LEADING_DOT
+  * Bivio::Delegate::TaskId
+    added APPLE_TOUCH_ICON task
+  * Bivio::SQL::DDL
+    rename failover_work_queue_t primary id
+  * Bivio::Type::NonHiddenFileName
+    NEW
+  * Bivio::UI::FacadeBase
+    added APPLE_TOUCH_ICON task
+  * Bivio::Util::FailoverWorkQueue
+    renamed failover_work_queue_t primary id
+  * Bivio::Util::Release
+    download_file wasn't passing correct param to http_get
+  * Bivio::Util::SQL
+    added db upgrade to fix failover_work_queue_t primary key
+
   Revision 12.74  2013/07/10 20:11:01  moeller
   * Bivio::Biz::Action::ECCreditCardProcessor
     map error code 54 (invalid credit) to a failure status
