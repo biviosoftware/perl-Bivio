@@ -132,9 +132,7 @@ sub make_admin_of_forum {
     $_M->new($req, 'RealmUser')->delete_main_roles($fid, $uid);
     $_FM->new($req, 'ForumUserAddForm')->process({
 	administrator => 1,
-	# Won't add MAIL_RECIPIENT role, but also
-	# won't remove existing MAIL_RECIPIENT roles.
-	not_mail_recipient => 1,
+	dont_add_subscription => 1,
 	'RealmUser.realm_id' => $fid,
 	'User.user_id' => $uid,
     });
