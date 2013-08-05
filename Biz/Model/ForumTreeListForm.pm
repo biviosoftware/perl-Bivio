@@ -8,18 +8,17 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty_row {
     my($self) = @_;
-    $self->internal_put_field(mail_recipient => _mail_recipient($self));
+    $self->internal_put_field(is_subscribed => _is_subscribed($self));
     return;
 }
 
 sub execute_ok_row {
     my($self) = @_;
-    return if _mail_recipient($self) eq $self->get('mail_recipient');
-    my($method) = $self->get('mail_recipient') ? 'create' : 'unauth_delete';
-    $self->new_other('RealmUser')->$method({
+    return if _is_subscribed($self) eq $self->get('is_subscribed');
+    $self->new_other('UserRealmSubscription')->unauth_create_or_update({
 	realm_id => $self->get_list_model->get('Forum.forum_id'),
 	user_id => $self->get_list_model->get_query->get('auth_id'),
-	role => Bivio::Auth::Role->MAIL_RECIPIENT,
+	is_subscribed => $self->get('is_subscribed'),
     });
     return;
 }
@@ -31,7 +30,7 @@ sub internal_initialize {
         list_class => 'ForumTreeList',
 	visible => [
 	    {
-		name => 'mail_recipient',
+		name => 'is_subscribed',
 		type => 'Boolean',
 		constraint => 'NONE',
 		in_list => 1,
@@ -40,8 +39,8 @@ sub internal_initialize {
     });
 }
 
-sub _mail_recipient {
-    return shift->get_list_model->get('mail_recipient');
+sub _is_subscribed {
+    return shift->get_list_model->get('is_subscribed');
 }
 
 1;
