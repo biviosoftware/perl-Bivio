@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::GroupUserList;
 use strict;
 use Bivio::Base 'Model.RoleBaseList';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AUL) = b_use('Model.AdmUserList');
@@ -75,6 +76,24 @@ sub internal_initialize {
                 type => 'Boolean',
                 constraint => 'NONE',
             },
+	    'UserRealmSubscription.is_subscribed',
+	    [qw(RealmUser.realm_id UserRealmSubscription.realm_id(+))],
+	    [qw(RealmUser.user_id UserRealmSubscription.user_id(+))],
+	],
+	group_by => [
+	    @{$self->NAME_SORT_COLUMNS},
+	    @{$self->NAME_COLUMNS},
+	    qw(
+		RealmUser.user_id
+		RealmUser.realm_id
+		RealmUser.role
+		RealmUser.creation_date_time
+		RealmOwner.display_name
+		RealmOwner.name
+		Email.email
+		Email.location
+		UserRealmSubscription.is_subscribed
+	    ),
 	],
 	other_query_keys => [qw(b_filter b_privilege)],
 	auth_id => ['RealmUser.realm_id'],
@@ -95,12 +114,16 @@ sub internal_pre_load {
     my($super) = shift->SUPER::internal_pre_load(@_);
     return $super
 	unless my $qf = $self->ureq('Model.GroupUserQueryForm');
+    my($role) = $qf->get_privilege_role;
     return $super
-	unless my $role = $qf->get_privilege_role;
-    return join(' AND ',
+	unless $role;
+    $super = join(
+	' AND ',
         $super || (),
-	$self->internal_role_exists_statement($role),
+	$self->internal_role_exists_statement(
+	    $qf->get_subscribed ? Auth_Role('MAIL_RECIPIENT') : $role),
     );
+    return $super;
 }
 
 sub internal_prepare_statement {
@@ -116,6 +139,9 @@ sub internal_prepare_statement {
 		qr/^\w/ => 'RealmOwner.display_name',
 	    ],
 	});
+	$stmt->where([
+	    'UserRealmSubscription.is_subscribed' => [1],
+	]) if $qf->get_subscribed;
     }
     return $self->SUPER::internal_prepare_statement(@_);
 }
@@ -123,7 +149,8 @@ sub internal_prepare_statement {
 sub internal_qualifying_roles {
     my($self) = @_;
     my($m) = $self->ureq('Model.GroupUserQueryForm');
-    return $m && $m->get_privilege_role && $m->get_privilege_role->eq_withdrawn
+    my($role) = $m && $m->get_privilege_role;
+    return $role && ref($role) && $role->eq_withdrawn
         ? shift->SUPER::internal_qualifying_roles(@_)
         : [grep(! $_->eq_withdrawn, @{$self->ROLES_ORDER})];
 }
@@ -141,20 +168,32 @@ sub internal_role_exists_statement {
 EOF
 }
 
+sub privilege_name {
+    my(undef, $name, $req) = @_;
+    return (FacadeComponent_Text()->get_from_source($req)
+	->unsafe_get_value("GroupUserList.privileges_name.$name"))[0];
+}
+
 sub _privileges {
     my($self, $row) = @_;
     my($main, $aux) = $self->roles_by_category($row->{roles});
     $row->{is_not_withdrawn} = 1;
-    my($text) = $_T->get_from_source($self->req);
-    $row->{privileges} = $_SA->new([map({
-        $row->{is_not_withdrawn} = 0
-            if $_->eq_withdrawn;
-	$text->unsafe_get_value('GroupUserList.privileges_name.' . $_->get_name)
-	    || $_->get_short_desc,
-    }
-	@$main ? $main->[0] : (),
-	@$aux,
-    )]);
+    $row->{privileges} = $_SA->new([
+	map({
+	    $row->{is_not_withdrawn} = 0
+		if $_->eq_withdrawn;
+	    $self->privilege_name($_->get_name, $self->req)
+		|| $_->get_short_desc,
+	}
+	    @$main ? $main->[0] : (),
+	    grep(!$_->eq_mail_recipient, @$aux),
+	),
+	grep($_->eq_mail_recipient, @$aux)
+	    && $row->{'UserRealmSubscription.is_subscribed'}
+		? $self->privilege_name(
+		    'UserRealmSubscription.is_subscribed', $self->req)
+		: (),
+    ]);
     return;
 }
 
