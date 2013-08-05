@@ -26,6 +26,7 @@ my($_BUNDLE) = [
     '!calendar_event_uid',
     '!calendar_event_uid_index',
     '!failover_work_queue_fixup',
+    'user_realm_subscription',
 ];
 my($_AGGREGATES) = [qw(
     group_concat(text)
@@ -673,6 +674,105 @@ sub internal_upgrade_db_site_admin_forum_users2 {
 sub internal_upgrade_db_task_rate_limit {
     my($self) = @_;
     $self->run(SQL_DDL()->ddl_for_task_rate_limit);
+    return;
+}
+
+sub internal_upgrade_db_user_realm_subscription {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE user_realm_subscription_t (
+  user_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  is_subscribed NUMERIC(1) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  CONSTRAINT user_realm_subscription_t1 primary key(user_id, realm_id)
+)
+/
+ALTER TABLE user_realm_subscription_t
+  ADD CONSTRAINT user_realm_subscription_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX user_realm_subscription_t3 ON user_realm_subscription_t (
+  realm_id
+)
+/
+ALTER TABLE user_realm_subscription_t
+  ADD CONSTRAINT user_realm_subscription_t4
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_realm_subscription_t5 ON user_realm_subscription_t (
+  user_id
+)
+/
+
+CREATE TABLE user_default_subscription_t (
+  user_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  subscribed_by_default NUMERIC(1) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  CONSTRAINT user_default_subscription_t1 primary key(user_id, realm_id)
+)
+/
+ALTER TABLE user_default_subscription_t
+  ADD CONSTRAINT user_default_subscription_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX user_default_subscription_t3 ON user_default_subscription_t (
+  realm_id
+)
+/
+ALTER TABLE user_default_subscription_t
+  ADD CONSTRAINT user_default_subscription_t4
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_default_subscription_t5 ON user_default_subscription_t (
+  user_id
+)
+/
+EOF
+    $self->print_line('user_realm_subscription_t and user_default_subscription_t created');
+    my($ru) = $self->new_other('RealmUser');
+    my($subscriptions) = $ru->map_iterate(
+	undef,
+	'unauth_iterate_start',
+	{
+	    role => Auth_Role('MAIL_RECIPIENT'),
+	},
+    );
+    my($urs) = $self->new_other('UserRealmSubscription');
+    my($i) = 0;
+    my($rows) = scalar(@$subscriptions);
+    foreach my $s (@$subscriptions) {
+	$urs->create({
+	    user_id => $s->{user_id},
+	    realm_id => $s->{realm_id},
+	    is_subscribed => 1,
+	});
+	$self->print_line("$i of $rows subscriptions created")
+	    if ++$i % 1000 == 0;
+    }
+    my($qualified_users) = $ru->map_iterate(
+	undef,
+	'unauth_iterate_start',
+	{
+	    role => [Auth_Role()->get_category_role_group('all_members')],
+	},
+    );
+    $i = 0;
+    $rows = scalar(@$qualified_users);
+    foreach my $qu (@$qualified_users) {
+	$ru->unauth_create_unless_exists({
+	    user_id => $qu->{'user_id'},
+	    realm_id => $qu->{'realm_id'},
+	    role => Auth_Role('MAIL_RECIPIENT'),
+	});
+	$self->print_line("$i of $rows qualified users roles processed")
+	    if ++$i % 1000 == 0;
+    }
     return;
 }
 
