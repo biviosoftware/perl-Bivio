@@ -6,6 +6,7 @@ my($new_user) = generate_local_email('bulletin_btest');
 do_test_backdoor(TestUser => 'leave_and_delete bulletin_btest');
 do_test_backdoor(TestUser => "create $new_user");
 do_test_backdoor(RealmAdmin => "-realm bulletin -user $new_user join_user MEMBER MAIL_RECIPIENT");
+do_test_backdoor(RealmAdmin => "-realm bulletin -user $new_user subscribe_user_to_realm");
 login_as('root');
 follow_link(qw(^bulletin$ mail$));
 verify_no_text('new.topic');
