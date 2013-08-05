@@ -37,11 +37,13 @@ sub internal_initialize {
 	       RealmUser.role
 	       Forum.parent_realm_id
 	    ),
-	    {
-		name => 'mail_recipient',
-		type => 'Boolean',
-		constraint => 'NOT_NULL',
-	    },
+	    $self->field_decl(
+		[qw(mail_recipient is_subscribed)],
+		{
+		    type => 'Boolean',
+		    constraint => 'NOT_NULL',
+		},
+	    ),
 	],
     });
 }
@@ -66,6 +68,7 @@ sub internal_load_rows {
 	map({
 	    $_->{mail_recipient}
 		= $map->{$_->{'Forum.forum_id'}}->{mail_recipient};
+	    $_->{is_subscribed} = _is_subscribed($self, $_);
 	    $_;
 	} $ok ? grep($ok->{$_->{'Forum.forum_id'}}, @$rows) : @$rows),
     ];
@@ -133,6 +136,15 @@ sub parent_map {
 	$v->{children} = $pid_map->{$k} || [];
     }
     return $self->[$_IDI] = $map;
+}
+
+sub _is_subscribed {
+    my($self, $row) = @_;
+    return $self->new_other('UserRealmSubscription')->unauth_load({
+	user_id => $row->{'RealmUser.user_id'},
+	realm_id => $row->{'Forum.forum_id'},
+	is_subscribed => 1,
+    });
 }
 
 1;
