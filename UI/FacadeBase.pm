@@ -117,7 +117,7 @@ sub internal_dav_text {
 	    'Forum.forum_id' => 'Database Key',
 	]],
 	[ForumUserList => [
-	    mail_recipient => 'Subscribed?',
+	    is_subscribed => 'Subscribed?',
 	    file_writer => 'Write Files?',
 	    administrator => 'Administrator?',
 	    [qw(User.user_id RealmUser.user_id)] => 'Database Key',
@@ -1055,8 +1055,8 @@ sub _cfg_group_admin {
 		    FILE_WRITER => 'Editor',
 		    ACCOUNTANT => 'Deputy',
 		    ADMINISTRATOR => 'Admin',
-		    MAIL_RECIPIENT => 'Subscribed',
 		    UNAPPROVED_APPLICANT => 'Requested Access',
+		    'UserRealmSubscription.is_subscribed' => 'Subscribed',
 		],
 	    ],
 	    [RealmUserAddform => [
@@ -1077,11 +1077,18 @@ sub _cfg_group_admin {
                 'RealmOwner.creation_date_time' => 'Registration Date',
 		display_name => 'Last, First Name',
 		privileges => 'Privileges',
+		'UserRealmSubscription.is_subscribed' => 'Subscribed',
+		subscribed => 'Subscribed',
+		unsubscribed => '',
+		list_actions => 'Actions',
+		list_action => [
+		    edit => 'Edit',
+		],
 	    ]],
 	    [[qw(UnapprovedApplicantForm GroupUserForm)] => [
 		'RealmUser.role' => 'Access Level',
 		file_writer => 'Write access to files (Editor)',
-		mail_recipient => 'Receive mail sent to vs_ui_forum(); (Subscribed)',
+		is_subscribed => 'Receive mail sent to vs_ui_forum(); (Subscribed)',
 	    ]],
  	    ['Forum.require_otp' => 'Require OTP?'],
 	    [mail_send_access => 'Mail Sending Mode'],
@@ -1547,7 +1554,7 @@ EOF
 		],
 		'RealmUser.role' => 'Access Level',
 		file_writer => 'Write access to files (Editor)',
-		mail_recipient => 'Receive mail sent to group (Subscribed)',
+		is_subscribed => 'Receive mail sent to group (Subscribed)',
 	    ]],
 
 	    [title => [
@@ -1834,7 +1841,9 @@ sub _cfg_user_auth {
 	    [[qw(UserSettingsListForm UserSubscriptionList)] => [
 		'RealmOwner.name' => 'User Id',
 		'RealmOwner.display_name' => 'vs_ui_forum();',
-		'is_subscribed' => 'Subscribed?',
+		is_subscribed => 'Subscribed?',
+		'UserDefaultSubscription.subscribed_by_default'
+		    => 'Subscribe by default when added to a new forum?',
 		'RealmOwner.name.desc' => 'Field only visible to system administrators.',
 		'separator.password' => 'Fill in to change your password; otherwise, leave blank',
 		prose => [
