@@ -599,12 +599,15 @@ EOF
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	'User.user_id' => $req->get('auth_user_id'),
     });
-    $req->set_realm($self->FOUREM);
-    $self->model('ForumForm', {
-        'RealmOwner.display_name' => 'Unit Test Forum Sub2',
-	'RealmOwner.name' => $self->FOUREM . '-sub2',
-        mail_want_reply_to => 0,
-    });
+    map({
+	$req->set_realm($self->FOUREM);
+	$self->model('ForumForm', {
+	    'RealmOwner.display_name' => "Unit Test Forum Sub$_",
+	    'RealmOwner.name' => $self->FOUREM . "-sub$_",
+	    mail_want_reply_to => 0,
+	}),
+	} 2 .. 4);
+    $req->set_realm($self->FOUREM . '-sub2');
     $req->set_user($self->BTEST_ADMIN);
     $self->model('ForumUserAddForm', {
 	'RealmUser.realm_id' => $req->get('auth_id'),
