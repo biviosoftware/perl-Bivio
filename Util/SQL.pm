@@ -759,7 +759,7 @@ EOF
 	undef,
 	'unauth_iterate_start',
 	{
-	    role => [Auth_Role()->get_category_role_group('all_members')],
+	    role => Auth_Role()->get_category_role_group('all_members'),
 	},
     );
     $i = 0;
