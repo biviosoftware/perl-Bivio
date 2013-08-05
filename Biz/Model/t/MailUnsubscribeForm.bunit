@@ -1,8 +1,19 @@
 # Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 FormModel();
+my($exising_mail_recipient_realms) = sub {
+    return model('RealmUser')->map_iterate(
+	'realm_id',
+	'unauth_iterate_start',
+	'realm_id',
+	{
+	    user_id => realm_id(shift),
+	    role => Auth_Role('MAIL_RECIPIENT'),
+	},
+    );
+};
 my($case) = sub {
-    my($realm, $user, $button, @roles) = @_;
+    my($realm, $user, $button, $roles, $mail_recipient_realms) = @_;
     req()->set_realm_and_user($realm, $user);
     my($date) = class('Type.DateTime')->rfc822(DateTime()->now);
     my($message_id) = random_string() . '@bivio.biz';
@@ -22,35 +33,62 @@ EOF
 	    path_info => '/' . $rm->get('realm_file_id'),
 	}),
 	[{$button => 1}] => sub {
+	    my($user_id) = realm_id($user);
 	    req()->set_realm($realm);
 	    assert_equals(
-		\@roles,
-		model('RealmUser')->map_iterate(
-		    sub {shift->get('role')},
-		    'role',
-		    {user_id => realm_id($user)},
-		),
+		0,
+		model('UserRealmSubscription')->unsafe_load({
+		    user_id => $user_id,
+		    is_subscribed => 1,
+		}),
 	    );
 	    assert_equals(
-		[],
+		$roles || [],
 		model('RealmUser')->map_iterate(
-		    sub {shift->get('realm_id')},
+		    'role',
+		    'role',
+		    {user_id => $user_id},
+		),
+	    );
+	    $button eq 'all_button'
+		? assert_equals(
+		    [],
+		    model('UserRealmSubscription')->map_iterate(
+			'realm_id',
+			'unauth_iterate_start',
+			'realm_id',
+			{
+			    user_id => $user_id,
+			    is_subscribed => 1,
+			},
+		    ),
+		)
+		: assert_equals(
+		    0,
+		    model('UserRealmSubscription')->unsafe_load({
+			user_id => $user_id,
+			is_subscribed => 1,
+		    }),
+		);
+	    assert_equals(
+		$mail_recipient_realms || [],
+		model('RealmUser')->map_iterate(
+		    'realm_id',
 		    'unauth_iterate_start',
 		    'realm_id',
 		    {
-			user_id => realm_id($user),
+			user_id => $user_id,
 			role => Auth_Role('MAIL_RECIPIENT'),
 		    },
 		),
-	    ) if $button eq 'all_button';
+	    ) if $mail_recipient_realms;
 	    return 1;
 	},
     );
-	
 };
 [
-    $case->(qw(mail_forum mail_user1 ok_button ADMINISTRATOR FILE_WRITER)),
+    $case->(qw(mail_forum mail_user1 ok_button), [qw(ADMINISTRATOR MAIL_RECIPIENT FILE_WRITER)], $exising_mail_recipient_realms->('mail_user1')),
     $case->(qw(bulletin bulletin_user ok_button)),
-    $case->(qw(mail_forum mail_user1 all_button ADMINISTRATOR FILE_WRITER)),
+    $case->(qw(mail_forum mail_user1 all_button), [qw(ADMINISTRATOR MAIL_RECIPIENT FILE_WRITER)], $exising_mail_recipient_realms->('mail_user1')),
     $case->(qw(bulletin bulletin_user all_button)),
 ];
