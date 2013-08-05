@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::UserSubscriptionList;
 use strict;
 use Bivio::Base 'Model.AuthUserGroupList';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
@@ -14,6 +15,23 @@ sub internal_initialize {
         order_by => [qw(
 	    RealmOwner.display_name
         )],
+	other => [
+	    'UserRealmSubscription.is_subscribed',
+	    [qw(RealmUser.realm_id UserRealmSubscription.realm_id(+))],
+	    [qw(RealmUser.user_id UserRealmSubscription.user_id(+))],
+	],
+	group_by => [qw(
+	    RealmOwner.display_name
+	    RealmOwner.name
+	    RealmOwner.password
+	    RealmOwner.realm_type
+	    RealmOwner.creation_date_time
+	    RealmUser.realm_id
+	    RealmUser.user_id
+	    RealmUser.role
+	    RealmUser.creation_date_time
+	    UserRealmSubscription.is_subscribed
+	)],
     });
 }
 
