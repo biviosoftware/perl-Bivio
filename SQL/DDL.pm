@@ -993,6 +993,50 @@ CREATE INDEX email_verify_t3 ON email_verify_t (
   location
 )
 /
+
+--
+-- user_realm_subscription_t
+--
+ALTER TABLE user_realm_subscription_t
+  ADD CONSTRAINT user_realm_subscription_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX user_realm_subscription_t3 ON user_realm_subscription_t (
+  realm_id
+)
+/
+ALTER TABLE user_realm_subscription_t
+  ADD CONSTRAINT user_realm_subscription_t4
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_realm_subscription_t5 ON user_realm_subscription_t (
+  user_id
+)
+/
+
+--
+-- user_default_subscription_t
+--
+ALTER TABLE user_default_subscription_t
+  ADD CONSTRAINT user_default_subscription_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX user_default_subscription_t3 ON user_default_subscription_t (
+  realm_id
+)
+/
+ALTER TABLE user_default_subscription_t
+  ADD CONSTRAINT user_default_subscription_t4
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_default_subscription_t5 ON user_default_subscription_t (
+  user_id
+)
+/
 EOF
 }
 
@@ -1574,6 +1618,24 @@ CREATE TABLE email_verify_t (
   email_verify_key VARCHAR(10) NOT NULL,
   email_verified_date_time DATE,
   CONSTRAINT email_verify_t1 primary key(realm_id, location)
+)
+/
+
+CREATE TABLE user_realm_subscription_t (
+  user_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  is_subscribed NUMERIC(1) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  CONSTRAINT user_realm_subscription_t1 primary key(user_id, realm_id)
+)
+/
+
+CREATE TABLE user_default_subscription_t (
+  user_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  subscribed_by_default NUMERIC(1) NOT NULL,
+  modified_date_time DATE NOT NULL,
+  CONSTRAINT user_default_subscription_t1 primary key(user_id, realm_id)
 )
 /
 EOF
