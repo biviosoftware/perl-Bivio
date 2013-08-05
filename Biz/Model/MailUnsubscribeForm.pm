@@ -16,32 +16,17 @@ sub execute_ok {
     my($rids) = [$self->get('realm_id')];
     if ($button eq 'all_button') {
 	$ack = 'user_mail_unsubscribed_all';
-	$rids = $self->new_other('RealmUser')
-	    ->map_iterate(
-		sub {
-		    shift->get('realm_id');
-		},
-		'unauth_iterate_start',
-		{
-		    user_id => $uid,
-		    role => $_MAIL_RECIPIENT,
-		},
-	    );
-    }
-    foreach my $rid (@$rids) {
-	$self->req->with_realm(
-	    $rid,
-	    sub {
-		my($role) = $_BMM->should_leave_realm($self->req) ? []
-		    : [role => $_MAIL_RECIPIENT];
-		$self->new_other('RealmUser')
-		    ->delete_all({
-			@$role,
-			user_id => $uid,
-		    });
-		return;
+	$rids = $self->new_other('UserRealmSubscription')->map_iterate(
+	    'realm_id',
+	    'unauth_iterate_start',
+	    {
+		user_id => $uid,
+		is_subscribed => 1,
 	    },
 	);
+    }
+    foreach my $rid (@$rids) {
+	$self->unsubscribe_from_bulletin_realm($uid, $rid);
     }
     return {
 	acknowledgement => $ack,
@@ -91,36 +76,28 @@ sub internal_pre_execute {
 }
 
 sub is_subscribed_to_bulletin_realm {
-    my($self, $user_id, $realm_id) = @_;
-    return $self->new_other('RealmUser')->unauth_rows_exist({
-	realm_id => _bulletin_id($self, $realm_id), 
-	user_id => $user_id,
-    });
+    return _do_bulletin_realm('unauth_load', @_);
 }
 
 sub subscribe_to_bulletin_realm {
-    my($self, $user_id, $realm_id) = @_;
-    $self->new_other('RealmUser')->unauth_create_unless_exists({
-	realm_id => _bulletin_id($self, $realm_id),
-	user_id => $user_id,
-	role => $_MAIL_RECIPIENT,
-    });
-    return;
+    return _do_bulletin_realm('unauth_create_or_update', @_);
 }
 
 sub unsubscribe_from_bulletin_realm {
     my($self, $user_id, $realm_id) = @_;
     $realm_id = _bulletin_id($self, $realm_id);
-    $self->req
-	->with_realm(
-	    $realm_id,
-	    sub {
-		$self->new_other('RealmUser')
-		    ->delete_all({user_id => $user_id});
-		return;
-	    },
-	)
-	if $_BMM->should_leave_realm($realm_id, $self->req);
+    $self->req->with_realm(
+	$realm_id,
+	sub {
+	    $self->new_other('UserRealmSubscription')->create_or_update({
+		user_id => $user_id,
+		is_subscribed => 0,
+	    });
+	    $self->new_other('RealmUser')->delete_all({user_id => $user_id})
+		 if $_BMM->should_leave_realm($realm_id, $self->req);
+	    return;
+	},
+    );
     return;
 }
 
@@ -130,6 +107,21 @@ sub _bulletin_id {
 	|| b_use('FacadeComponent.Constant')
 	    ->get_value('bulletin_realm_id', $self->req)
 	|| b_die('no bulletin_realm_id');
+}
+
+sub _do_bulletin_realm {
+    my($method, $self, $user_id, $realm_id) = @_;
+    my($bulletin_id) = _bulletin_id($self, $realm_id);
+    return $self->new_other('RealmUser')->$method({
+	realm_id => $bulletin_id,
+	user_id => $user_id,
+	role => $_MAIL_RECIPIENT,
+    })
+    && $self->new_other('UserRealmSubscription')->$method({
+	realm_id => $bulletin_id,
+	user_id => $user_id,
+	is_subscribed => 1,
+    });
 }
 
 1;
