@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Model.UserRegisterForm';
 #TODO: Problably should not subclass UserRegisterForm, but should call
 #      UserCreateForm to create the user
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RU) = b_use('ShellUtil.RealmUser');
@@ -29,11 +30,13 @@ sub copy_admins {
 
 sub execute_ok {
     my($self) = @_;
-    _join_user(
+    my(@args) = (
 	$self,
 	$self->internal_user_id || return,
 	$self->internal_realm_id,
     );
+    _join_user(@args);
+    _set_subscription(@args);
     return;
 }
 
@@ -41,11 +44,11 @@ sub internal_get_roles {
     my($self) = @_;
     return [
 	map($_R->from_name($_),
-	    $self->unsafe_get('not_mail_recipient') ? () : 'MAIL_RECIPIENT',
 	    $self->unsafe_get('administrator') ? qw(ADMINISTRATOR FILE_WRITER) : (
 		'MEMBER',
 		$self->unsafe_get('file_writer') ? 'FILE_WRITER' : (),
 	    ),
+	    'MAIL_RECIPIENT',
 	),
     ];
 }
@@ -56,7 +59,7 @@ sub internal_initialize {
         version => 1,
         require_context => 1,
 	$self->field_decl(visible =>
-	    [qw(not_mail_recipient administrator file_writer)],
+	    [qw(dont_add_subscription administrator file_writer)],
 	    qw(Boolean NONE),
 	),
 	other => [
@@ -111,6 +114,14 @@ sub _admin_list {
     )};
 }
 
+sub _is_subscription_status_set {
+    my($self, $user_id, $realm_id) = @_;
+    return $self->new_other('UserRealmSubscription')->unauth_load({
+	user_id => $user_id,
+	realm_id => $realm_id,
+    });
+}
+
 sub _join_user {
     my($self, $user_id, $realm_id) = @_;
     $self->internal_put_field('RealmUser.realm_id' => $realm_id);
@@ -132,6 +143,17 @@ sub _join_user {
     $self->req->with_realm_and_user($realm_id, $user_id, sub {
         $_RU->new->audit_user;
     }) if $_RU->IS_AUDIT_ENABLED;
+    return;
+}
+
+sub _set_subscription {
+    my($self, $user_id, $realm_id) = @_;
+    return
+	if $self->unsafe_get('dont_add_subscription');
+    $self->new_other('UserRealmSubscription')->create({
+	user_id => $user_id,
+	realm_id => $realm_id,
+    }) unless _is_subscription_status_set($self, $user_id, $realm_id);
     return;
 }
 
