@@ -78,13 +78,13 @@ sub user_form {
 	        '->is_field_editable', 'RealmUser.role'],
 	}],
 	'GroupUserForm.file_writer',
-	'GroupUserForm.mail_recipient',
+	'GroupUserForm.is_subscribed',
     ]));
 }
 
 sub user_list {
     my($self, $extra_columns, $other_tools, $list) = @_;
-    $list ||= 'GroupUserList'; 
+    $list ||= 'GroupUserList';
     $self->internal_put_base_attr(selector =>
 	vs_filter_query_form('GroupUserQueryForm', [
 	    Select({
@@ -100,11 +100,11 @@ sub user_list {
 	[
 	    @{$extra_columns || []},
 	    [privileges => {
-		wf_list_link => {
-		    query => 'THIS_DETAIL',
-		    task => 'GROUP_USER_FORM',
-		    control => [qw(->can_change_privileges GROUP_USER_FORM)],
-		},
+ 		wf_list_link => {
+  		    query => 'THIS_DETAIL',
+ 		    task => 'GROUP_USER_FORM',
+  		    control => [qw(->can_change_privileges GROUP_USER_FORM)],
+  		},
 	    }],
 	],
 	$other_tools || [TaskMenu(['GROUP_USER_ADD_FORM'])],
