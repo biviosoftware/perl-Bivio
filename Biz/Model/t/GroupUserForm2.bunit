@@ -12,6 +12,14 @@ FormModel({
 	    );
 	    return 1;
 	}
+	my($is_subscribed) = shift(@$expect);
+	assert_equals(
+	    $is_subscribed,
+	    model('UserRealmSubscription')->unsafe_load({
+		user_id => req('auth_user_id'),
+		is_subscribed => 1,
+	    }),
+	);
 	model('GroupUserList')->execute_load_this;
 	assert_equals(
 	    $expect,
@@ -30,17 +38,17 @@ FormModel({
     [{
 	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
 	file_writer => 1,
-	mail_recipient => 0,
-    }] => [qw(ADMINISTRATOR FILE_WRITER)],
+	is_subscribed => 0,
+    }] => [qw(0 ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT)],
     [{
 	'RealmUser.role' => Auth_Role('MEMBER'),
 	file_writer => 1,
-	mail_recipient => 0,
-    }] => [qw(MEMBER FILE_WRITER)],
+	is_subscribed => 0,
+    }] => [qw(0 MEMBER FILE_WRITER MAIL_RECIPIENT)],
     error_case({
 	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
 	file_writer => 1,
-	mail_recipient => 0,
+	is_subscribed => 0,
     } => {
 	'RealmUser.role' => 'NOT_FOUND',
     }),
@@ -48,11 +56,11 @@ FormModel({
     [{
 	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
 	file_writer => 1,
-	mail_recipient => 0,
-    }] => [qw(ADMINISTRATOR FILE_WRITER)],
+	is_subscribed => 0,
+    }] => [qw(0 ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT)],
     [{
 	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
 	file_writer => 0,
-	mail_recipient => 1,
-    }] => [qw(ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT)],
+	is_subscribed => 1,
+    }] => [qw(1 ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT)],
 ];
