@@ -8,7 +8,7 @@ my($mode) = sub {
     my($m) = @_;
     return (
 	sub {
-	    Bivio::Type->get_instance('FormMode')->$m()->execute(req(), 1);
+	    Bivio_Type()->get_instance('FormMode')->$m()->execute(req(), 1);
 	    return 1;
 	 } => 1,
     );
@@ -69,7 +69,7 @@ my($check_perms) = sub {
 	feature_tuple => 1,
     }] => [{
 	'Model.Forum' => {
-	    parent_realm_id => Bivio::Auth::Realm->get_general->get('id'),
+	    parent_realm_id => Auth_Realm()->get_general->get('id'),
 	    forum_id => var('parent'),
 	},
 	auth_realm => {
@@ -78,7 +78,7 @@ my($check_perms) = sub {
         'Model.RealmUser' => {
             user_id => req()->get('auth_user_id'),
 	    # Last role found for forum admin user
-            role => Bivio::Auth::Role->FILE_WRITER,
+            role => Auth_Role('MAIL_RECIPIENT'),
             realm_id => sub {
                 return req()->get_nested('Model.Forum', 'forum_id');
             },
