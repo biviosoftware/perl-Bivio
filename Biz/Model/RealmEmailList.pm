@@ -13,9 +13,10 @@ sub get_recipients {
     my($t) = $self->get_field_type('Email.email');
     return $self->$method(sub {
         my($e) = $self->get('Email.email');
-	return $t->is_ignore($e) ? ()
-	    : $iterate_handler ? $iterate_handler->($self)
-	    : $e;
+	return $t->is_ignore($e)
+	    || !$self->get('UserRealmSubscription.is_subscribed')
+	    ? () : $iterate_handler
+	    ? $iterate_handler->($self) : $e;
     });
 }
 
@@ -36,7 +37,10 @@ sub internal_initialize {
 	    )],
 	    other => [
 		'Email.location',
+		'UserRealmSubscription.is_subscribed',
 		[qw(RealmUser.user_id Email.realm_id(+))],
+		[qw(RealmUser.user_id UserRealmSubscription.user_id(+))],
+		[qw(RealmUser.realm_id UserRealmSubscription.realm_id(+))],
 		{
 		    name => 'RealmUser.role',
 		    in_select => 0,
@@ -49,6 +53,7 @@ sub internal_initialize {
 		RealmOwner.name
 		RealmUser.realm_id
 		RealmUser.user_id
+		UserRealmSubscription.is_subscribed
 	    )],
 	},
     );
