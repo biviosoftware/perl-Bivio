@@ -28,9 +28,82 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.76  2013/08/05 17:58:09  schellj
+  * Bivio::Biz::Model::Forum
+    delete subscriptions when deleting children
+  * Bivio::Biz::Model::ForumTreeListForm
+    user UserRealmSubscription instead of MAIL_RECIPIENT
+  * Bivio::Biz::Model::ForumTreeList
+    use UserRealmSubscription
+  * Bivio::Biz::Model::ForumUserEditDAVList
+    mail_recipient -> is_subscribed
+  * Bivio::Biz::Model::ForumUserList
+    mail_recipient -> is_subscribed, use UserRealmSubscription instead of MAIL_RECIPIENT
+  * Bivio::Biz::Model::GroupUserForm
+    updates for UserRealmSubscription
+  * Bivio::Biz::Model::GroupUserList
+    left join UserRealmSubscription, update privileges calculation
+  * Bivio::Biz::Model::GroupUserQueryForm
+    replace MAIL_RECIPIENT with UserRealmSubscription.is_subscribed
+  * Bivio::Biz::Model::MailUnsubscribeForm
+    updates for UserRealmSubscription
+  * Bivio::Biz::Model::RealmBase
+    add internal_set_default_values so subclasses don't have to repeat
+    code when overriding create
+  * Bivio::Biz::Model::RealmEmailList
+    left join UserRealmSubscription.is_subscribed, update get_recipients
+    to return addresses of users that are UserRealmSubscription.is_subscribed
+  * Bivio::Biz::Model::RealmOwnerBase
+    add UserRealmSubscription, UserDefaultSubscription to cascade_delete_model_list
+  * Bivio::Biz::Model::RealmUserAddForm
+    set subscription, always add MAIL_RECIPIENT
+  * Bivio::Biz::Model::UnapprovedApplicantList
+    need to add RealmOwner.creation_date_time to group_by with left join
+    on UserRealmSubscription in GroupUserList
+  * Bivio::Biz::Model::UserDefaultSubscription
+    NEW
+  * Bivio::Biz::Model::UserRealmSubscription
+    NEW
+  * Bivio::Biz::Model::UserSettingsListForm
+    add UserDefaultSubscription, update to use UserRealmSubscription
+    instead of MAIL_RECIPIENT for forum subscriptions
+  * Bivio::Biz::Model::UserSubscriptionList
+    left join UserRealmSubscription.is_subscribed
+  * Bivio::PetShop::UICSS::ViewShortcuts
+    overrides for larger petshop field padding
+  * Bivio::PetShop::Util::SQL
+    add fourem-sub3, fourem-sub4
+  * Bivio::SQL::DDL
+    add user_realm_subscription_t, user_default_subscription_t
+  * Bivio::UI::FacadeBase
+    added input_field font def
+    MAIL_RECIPIENT -> UserRealmSubscription.is_subscribed
+  * Bivio::UI::HTML::Widget::Script
+    combo box dropdown now sizes to text width, dropdown arrow now within bounds
+  * Bivio::UI::View::CSS
+    form input now uses input_field facade font def
+    moved combo box arrow within text field bounds
+    moved search button within search field bounds
+    added combobox dropdown shading
+  * Bivio::UI::View::GroupAdmin
+    user_form GroupUserForm.mail_recipient -> GroupUserForm.is_subscribed
+  * Bivio::UI::View::Tuple
+    center checkbox
+  * Bivio::UI::View::UserAuth
+    settings_form add UserDefaultSubscription.subscribed_by_default
+  * Bivio::UI::XHTML::Widget::ComboBox
+    text field now has cb_text class
+  * Bivio::Util::Forum
+    not_mail_recipient -> dont_add_subscription
+  * Bivio::Util::RealmAdmin
+    add subscribe_user_to_realm, unsubscribe_user_from_realm
+  * Bivio::Util::SQL
+    add internal_upgrade_db_user_realm_subscription
+
   Revision 12.75  2013/07/31 23:09:16  moeller
   * Bivio::Biz::Action::LocalFilePlain
     added execute_apple_touch_icon()
