@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
 
 sub CSV_COLUMNS {
-    return [qw(Email.email mail_recipient file_writer administrator RealmUser.user_id)];
+    return [qw(Email.email is_subscribed file_writer administrator RealmUser.user_id)];
 }
 
 sub LIST_CLASS {
@@ -23,7 +23,7 @@ sub row_create {
 	'Email.email' => $new->{'Email.email'},
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	map(($_ => $new->{$_}), qw(administrator file_writer)),
-	not_mail_recipient => !$new->{mail_recipient},
+	dont_add_subscription => !$new->{is_subscribed},
     });
     return;
 }
@@ -43,7 +43,7 @@ sub row_update {
     return 'Email may not be updated via this interface'
 	unless $new->{'Email.email'} eq $old->{'Email.email'};
     $self->new_other('GroupUserForm')->process({
-	map(($_ => $new->{$_}), (qw(mail_recipient file_writer))),
+	map(($_ => $new->{$_}), (qw(is_subscribed file_writer))),
 	'RealmUser.role' => _role($new),
 	'RealmUser.user_id' => $old->{'RealmUser.user_id'},
 	current_main_role => _role($old),
