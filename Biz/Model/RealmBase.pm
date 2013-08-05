@@ -21,15 +21,7 @@ sub USER_ID_FIELD {
 
 sub create {
     my($self, $values) = @_;
-    my($req) = $self->get_request;
-    $values->{$self->REALM_ID_FIELD} ||= $req->get('auth_id');
-    $values->{$self->USER_ID_FIELD} ||= $req->get('auth_user_id')
-	if $self->USER_ID_FIELD && $self->has_fields($self->USER_ID_FIELD);
-    my($t);
-    foreach my $f (qw(modified_date_time creation_date_time)) {
-	$values->{$f} ||= ($t ||= $_DT->now)
-	    if $self->has_fields($f);
-    }
+    $self->internal_set_default_values($values);
     return shift->SUPER::create(@_);
 }
 
@@ -41,6 +33,20 @@ sub internal_initialize {
         },
 	auth_id => $self->REALM_ID_FIELD,
     });
+}
+
+sub internal_set_default_values {
+    my($self, $values) = @_;
+    my($req) = $self->get_request;
+    $values->{$self->REALM_ID_FIELD} ||= $req->get('auth_id');
+    $values->{$self->USER_ID_FIELD} ||= $req->get('auth_user_id')
+	if $self->USER_ID_FIELD && $self->has_fields($self->USER_ID_FIELD);
+    my($t);
+    foreach my $f (qw(modified_date_time creation_date_time)) {
+	$values->{$f} ||= ($t ||= $_DT->now)
+	    if $self->has_fields($f);
+    }
+    return;
 }
 
 sub update {
