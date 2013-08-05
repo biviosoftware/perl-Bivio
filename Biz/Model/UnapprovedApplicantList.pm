@@ -15,6 +15,7 @@ sub internal_initialize {
     delete($info->{order_by});
     return $self->merge_initialize_info($info, {
  	order_by => [@order],
+	group_by => ['RealmOwner.creation_date_time'],
     });
 }
 
