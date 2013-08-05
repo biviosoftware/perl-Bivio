@@ -28,10 +28,13 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.77  2013/08/05 18:13:19  schellj
+  * Bivio::Util::SQL
+    internal_upgrade_db_user_realm_subscription new_other -> model
+
   Revision 12.76  2013/08/05 17:58:09  schellj
   * Bivio::Biz::Model::Forum
     delete subscriptions when deleting children
