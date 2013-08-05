@@ -24,6 +24,18 @@ submit_form({
     name => $name,
 });
 follow_link('roster');
+find_page_with_text($name);
+submit_form(Refresh => {
+    'privilege' => 'Subscribed',
+});
 follow_link_in_table('first', 'first', $name, 'privileges', 'member');
-#TODO: test changing privs
+submit_form({
+    subscribed => 0,
+});
+submit_form(Refresh => {
+    'privilege' => 'Subscribed',
+});
+test_deviance();
+find_page_with_text($name);
+test_conformance();
 #TODO: Test can't escalate privs higher than current user
