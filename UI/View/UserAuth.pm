@@ -136,6 +136,7 @@ sub settings_form {
 	    row_control => [qw(Model.UserSettingsListForm show_name)],
 	}],
 	'UserSettingsListForm.Email.email',
+	'UserSettingsListForm.UserDefaultSubscription.subscribed_by_default',
 	{
 	    column_heading_class => 'left',
 	    column_heading => 'RealmOwner.display_name',
