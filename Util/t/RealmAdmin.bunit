@@ -29,5 +29,21 @@ my($uid);
         return;
     }),
     sub {[-realm => $uid, 'delete_auth_realm_and_users']} => not_die(),
+    [qw(-realm fourem -user root unsubscribe_user_from_realm)] => sub {
+	unauth_model(UserRealmSubscription => {
+	    user_id => realm_id('root'),
+	    realm_id => realm_id('fourem'),
+	    is_subscribed => 0,
+	});
+	return 1;
+    },
+    [qw(-realm fourem -user root subscribe_user_to_realm)] => sub {
+	unauth_model(UserRealmSubscription => {
+	    user_id => realm_id('root'),
+	    realm_id => realm_id('fourem'),
+	    is_subscribed => 1,
+	});
+	return 1;
+    },
 ];
 
