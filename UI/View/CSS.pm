@@ -91,18 +91,18 @@ form input, form textarea, form select {
     box => '0 0 0 #000, inset 0px 3px 3px #eee',
   });
 }
-form input:hover, form textarea:hover, form select:hover{
+form input:hover, form textarea:hover, form select:hover {
  border:1px solid;
  Color('input_focus-border');
 }
-form input:focus, form textarea:focus, form select:focus{
+form input:focus, form textarea:focus, form select:focus {
  border:1px solid;
  Color('input_focus-border');
 }
 .standard_submit, form .submit {
  text-align: right;
 }
-table.list tr.b_heading_row, table.paged_list tr.b_heading_row  {
+table.list tr.b_heading_row, table.paged_list tr.b_heading_row {
   Color('list_heading-background');
   border: 1px solid;
   Color('list_heading-border');
@@ -112,12 +112,19 @@ table.list tr.b_heading_row, table.paged_list tr.b_heading_row  {
     box => '0 1px 1px rgba(0,0,0,0.12),inset 0 0 0 #000',
   });
 }
+table.list tr.b_data_row:hover, table.paged_list tr.b_data_row:hover {
+  Color('list_row_hover-background');
+  border: 1px solid;
+  Color('list_row_hover-border');
+  border-width: 1px 0;
+}
 table.list th b, table.paged_list th b {
  font-weight: normal;
 }
 table.list tr, table.paged_list tr {
-  border:1px solid #edf1f5;
-  border-width:1px 0;
+  border:1px solid;
+  Color('list_row-border');
+  border-width: 1px 0;
 }
 table.list .b_even_row, table.paged_list .b_even_row  {
   background-color: transparent;

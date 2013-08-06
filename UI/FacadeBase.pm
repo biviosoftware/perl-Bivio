@@ -246,6 +246,9 @@ sub _cfg_base {
 	    [list_heading_border => 0xe7f2fb],
 	    [list_heading_border_top => 0x82cffa],
 	    [list_heading_border_bottom => 0x96c4ea],
+	    [list_row_border => 0xedf1f5],
+	    [list_row_hover_background => 0xf5fbfe],
+	    [list_row_hover_border => 0xc6d8e4],
 	],
 	Font => [
 	    # See Bivio::UI::View::CSS
