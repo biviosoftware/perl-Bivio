@@ -8,10 +8,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 
-sub NEW_ARGS {
-    return [qw(field ?class)];
-}
-
 sub initialize {
     my($self) = @_;
     $self->initialize_attr(TYPE => 'submit');
@@ -34,6 +30,10 @@ sub internal_input_base_render_attrs {
     $$buffer .= qq{ $attr}
 	if $attr;
     return;
+}
+
+sub internal_new_args {
+    return shift->internal_compute_new_args([qw(field ?class)], \@_);
 }
 
 1;
