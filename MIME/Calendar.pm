@@ -228,7 +228,7 @@ sub _header {
             return 1;
         }
 	_die($self, 'unknown element')
-	    unless $k =~ /^(version|prodid|calscale|(x-wr-.*)|(x-ms-.*))$/;
+	    unless $k =~ /^(version|prodid|calscale|(x-wr-.*)|(x-ms-.*)|(x-from-.*))$/;
 	return 1;
     });
     return $self
