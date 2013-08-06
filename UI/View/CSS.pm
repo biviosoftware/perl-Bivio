@@ -83,7 +83,7 @@ td.b_error_arrow {
 form input, form textarea, form select {
   border:1px solid;
   Color('input-border');
-  Font('input_field');
+  CSS('b_input_field');
   Border({
     radius => '3px',
   });
@@ -681,6 +681,7 @@ div.cb_arrow {
   position: relative;
   left: -20px;
   margin-right: -15px;
+  white-space: nowrap;
 }
 div.cb_menu {
   display: inline;
@@ -1272,7 +1273,8 @@ td.header_right form.search input.go {
   Border({
     radius => '0px',
   });
- vertical-align: text-bottom;
+  vertical-align: text-bottom;
+  white-space: nowrap;
 }
 form.search div.b_realm_only {
   padding-top: .5ex;
