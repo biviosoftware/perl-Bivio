@@ -29,7 +29,7 @@ sub initialize {
     );
     $self->initialize_attr(labels => {});
     $self->initialize_attr('buttons');
-    return $self->SUPER::initialize;
+    return shift->SUPER::initialize(@_);
 }
 
 sub internal_new_args {
@@ -47,23 +47,22 @@ sub _buttons {
 		$_WF->create(
 		    $form->simple_package_name . ".$_",
 		    {
-			($form->get_field_type($_)->isa($_CB)
-			     ? (attributes => 'onclick="reset()"') : ()),
-			label => Prose(vs_text(
-			    $form->simple_package_name,
-			    $labels->{$_} || $_,
-			)),
-			class => 'submit'
-			    . ($_ eq 'ok_button'
-				   ? ' b_ok_button'
-				   : ''),
+			$form->get_field_type($_)->isa($_CB)
+			    ? (attributes => 'onclick="reset()"')
+			    : (),
+			$labels->{$_}
+			    ? (label => vs_text_as_prose(
+				$form->simple_package_name,
+				$labels->{$_},
+			    ))
+			    : (),
 			map(($_ => $self->ancestral_get($_)),
 			    qw(form_class form_model)),
 		    },
 		),
 		split(' ', ${$self->render_attr('buttons', $source)}),
 	    ),
-	]);
+	])->initialize_with_parent($self, $source);
     }];
 }
 
