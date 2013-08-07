@@ -141,6 +141,7 @@ sub _event {
                 |x-microsoft-[^;]*
                 |x-ms-[^;]*
 		|contact
+		|exrule
 	    )(?:$|;)}x;
 	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date(?:-time)?)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
