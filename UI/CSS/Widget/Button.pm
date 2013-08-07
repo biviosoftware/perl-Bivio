@@ -38,9 +38,6 @@ input.submit, .b_button_link a{
   font-weight:600;
   cursor:pointer;
   overflow:visible;
-}
-input.submit {
-  border: 1px solid;
   Color('submit');
   border-color: vs_css_color($_COLORS->{border});;
   border-top-color: vs_css_color($_COLORS->{border_top});;
