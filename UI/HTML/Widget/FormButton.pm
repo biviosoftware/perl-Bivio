@@ -10,12 +10,18 @@ my($_HTML) = b_use('Bivio.HTML');
 
 sub initialize {
     my($self) = @_;
+    $self->put_unless_exists(
+	is_primary => $self->get('field') eq 'ok_button' ? 1 : 0);
     $self->initialize_attr(TYPE => 'submit');
-    $self->initialize_attr(class => 'submit');
-    $self->put_unless_exists(label => Prose(vs_text(
+    $self->initialize_attr(
+	class => $self->get('is_primary')
+	    ? 'submit b_ok_button'
+	    : 'submit',
+    );
+    $self->put_unless_exists(label => vs_text_as_prose(
 	$self->ancestral_get('form_class')->simple_package_name,
 	$self->get('field'),
-    )));
+    ));
     $self->map_invoke(unsafe_initialize_attr => [qw(label attributes)]);
     return shift->SUPER::initialize(@_);
 }
