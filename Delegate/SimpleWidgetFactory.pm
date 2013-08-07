@@ -323,7 +323,6 @@ sub internal_create_edit {
 	$attrs->{label_on_field} = 0;
 	return $_VS->vs_new('FormButton', {
 	    field => $field,
-	    label => $_VS->vs_text($model->simple_package_name, $field),
 	    %$attrs,
 	});
     }
