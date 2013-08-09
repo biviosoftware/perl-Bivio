@@ -13,8 +13,7 @@ sub get_recipients {
     my($t) = $self->get_field_type('Email.email');
     return $self->$method(sub {
         my($e) = $self->get('Email.email');
-	return $t->is_ignore($e)
-	    || !$self->get('UserRealmSubscription.is_subscribed')
+	return $t->is_ignore($e) || !$self->internal_is_subscribed
 	    ? () : $iterate_handler
 	    ? $iterate_handler->($self) : $e;
     });
@@ -57,6 +56,10 @@ sub internal_initialize {
 	    )],
 	},
     );
+}
+
+sub internal_is_subscribed {
+    return shift->get('UserRealmSubscription.is_subscribed');
 }
 
 sub internal_post_load_row {
