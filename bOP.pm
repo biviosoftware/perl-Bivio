@@ -28,9 +28,15 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.78  2013/08/05 18:24:09  schellj
+  * Bivio::Util::SQL
+    internal_upgrade_db_user_realm_subscription category_role_group
+    already array ref
+
   Revision 12.77  2013/08/05 18:13:19  schellj
   * Bivio::Util::SQL
     internal_upgrade_db_user_realm_subscription new_other -> model
