@@ -735,43 +735,73 @@ CREATE INDEX user_default_subscription_t5 ON user_default_subscription_t (
 /
 EOF
     $self->print_line('user_realm_subscription_t and user_default_subscription_t created');
+    my($realms) = $self->model('RealmOwner')->map_iterate(
+	undef,
+	'unauth_iterate_start',
+	'name',
+    );
     my($ru) = $self->model('RealmUser');
-    my($subscriptions) = $ru->map_iterate(
-	undef,
-	'unauth_iterate_start',
-	{
-	    role => Auth_Role('MAIL_RECIPIENT'),
-	},
-    );
     my($urs) = $self->model('UserRealmSubscription');
-    my($i) = 0;
-    my($rows) = scalar(@$subscriptions);
-    foreach my $s (@$subscriptions) {
-	$urs->create({
-	    user_id => $s->{user_id},
-	    realm_id => $s->{realm_id},
-	    is_subscribed => 1,
-	});
-	$self->print_line("$i of $rows subscriptions created")
-	    if ++$i % 1000 == 0;
-    }
-    my($qualified_users) = $ru->map_iterate(
-	undef,
-	'unauth_iterate_start',
-	{
-	    role => Auth_Role()->get_category_role_group('all_members'),
-	},
-    );
-    $i = 0;
-    $rows = scalar(@$qualified_users);
-    foreach my $qu (@$qualified_users) {
-	$ru->unauth_create_unless_exists({
-	    user_id => $qu->{'user_id'},
-	    realm_id => $qu->{'realm_id'},
-	    role => Auth_Role('MAIL_RECIPIENT'),
-	});
-	$self->print_line("$i of $rows qualified users roles processed")
-	    if ++$i % 1000 == 0;
+    foreach my $ro (@$realms) {
+	my($realm_id) = $ro->{'realm_id'};
+	my($current_subscribers) = {@{$ru->map_iterate(
+	    sub {
+		return (shift->get('user_id') => 1);
+	    },
+	    'unauth_iterate_start',
+	    {
+		realm_id => $realm_id,
+		role => Auth_Role('MAIL_RECIPIENT'),
+	    },
+	)}};
+	next
+	    unless scalar(keys(%$current_subscribers));
+	$self->print_line(join(' ',
+	    $ro->{'name'},
+	    scalar(keys(%$current_subscribers)),
+	    'current subscribers',
+	));
+	my(@main_roles) = Auth_Role()->get_main_list;
+	my($subscriber_roles) = Auth_Role()->get_category_role_group(
+	    $self->package_name =~ /^IEEE_ISTO/
+		&& $self->model('ForumAux')->unauth_load({
+		    forum_id => $realm_id,
+		    allow_guests => 1,
+		})
+		? 'all_guests' : 'all_members',
+	);
+	my($possible_subscribers) = {@{$ru->map_iterate(
+	    sub {
+		my($user_id) = shift->get('user_id');
+		return (
+		    $user_id => $current_subscribers->{$user_id} ? 1 : 0,
+		);
+	    },
+	    'unauth_iterate_start',
+	    {
+		realm_id => $realm_id,
+		role => $subscriber_roles,
+	    },
+	)}};
+	foreach my $ps_user_id (keys(%$possible_subscribers)) {
+	    $ru->unauth_create_unless_exists({
+		user_id => $ps_user_id,
+		realm_id => $realm_id,
+		role => Auth_Role('MAIL_RECIPIENT'),
+	    });
+	    $urs->create({
+		user_id => $ps_user_id,
+		realm_id => $realm_id,
+		is_subscribed => $possible_subscribers->{$ps_user_id},
+	    });
+	}
+	$self->print_line(
+	    '  ',
+	    scalar(keys(%$possible_subscribers)),
+	    ' users (',
+	    join(' ', map($_->get_name, @$subscriber_roles)),
+	    ') processed',
+	);
     }
     return;
 }
