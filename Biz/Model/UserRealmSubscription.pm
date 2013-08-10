@@ -10,9 +10,10 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 sub create {
     my($self, $values) = @_;
     $self->internal_set_default_values($values);
-    $values->{is_subscribed} ||= $self->new_other('UserDefaultSubscription')
+    $values->{is_subscribed} = $self->new_other('UserDefaultSubscription')
 	->user_default_subscription_status(
-	    $values->{user_id}, $values->{realm_id});
+	    $values->{user_id}, $values->{realm_id})
+	unless defined($values->{is_subscribed});
     return shift->SUPER::create(@_);
 }
 
