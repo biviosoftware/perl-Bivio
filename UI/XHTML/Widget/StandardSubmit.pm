@@ -56,6 +56,9 @@ sub _buttons {
 				$labels->{$_},
 			    ))
 			    : (),
+			class => $_ eq 'ok_button'
+			    ? 'submit b_ok_button'
+			    : 'submit',
 			map(($_ => $self->ancestral_get($_)),
 			    qw(form_class form_model)),
 		    },
