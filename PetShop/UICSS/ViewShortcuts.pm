@@ -67,7 +67,7 @@ td.header_left a.logo {
 .logo_title {
   font-size: 200%;
   font-weight: bold;
-  Shadow({
+  ShadowAttr({
     text => 'rgba(0,0,0,0.2) 3px 3px 2px',
   });
 }
@@ -80,10 +80,10 @@ td.header_left a.logo {
 div.pet_categories {
   Color('category-background');
   padding: 1ex 1em;
-  Border({
+  BorderAttr({
     radius => '10px',
   });
-  Shadow({
+  ShadowAttr({
     box => '0 0 3px 1px #82cffa,inset 0 0 3px 0 #f0f9ff',
   });
   width: 80%;
