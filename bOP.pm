@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,37 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.79  2013/08/10 00:59:52  schellj
+  * Bivio::Biz::Model::RealmEmailList
+    add internal_is_subscribed
+  * Bivio::Biz::Model::UserRealmSubscription
+    fix bug for assigning default is_subscribed when given value is 0
+  * Bivio::Delegate::SimpleWidgetFactory
+    don't default FormButton label
+  * Bivio::MIME::Calendar
+    ignore x-from- tags
+    ignore exrule
+  * Bivio::UI::CSS::Widget::Button
+    combined input.submit def
+  * Bivio::UI::FacadeBase
+    add fancy data row hover highlight
+    moved input_field Font to CSS section
+  * Bivio::UI::HTML::Widget::FormButton
+    now derived from InputBase
+    moved NEW_ARGS() into internal_new_args() used by superclass
+    added is_primary attribute
+  * Bivio::UI::View::CSS
+    add fancy data row hover highlight
+    moved input_field Font to CSS
+    added nowrap to combo and search buttons
+  * Bivio::UI::XHTML::Widget::StandardSubmit
+    moved default button class to FormButton
+    call initialize_with_parent() on button list
+  * Bivio::Util::SQL
+    rework internal_upgrade_db_user_realm_subscription to only process
+    realms with an existing MAIL_RECIPIENT, handle ISTO forums that allow
+    GUEST subscribers
+
   Revision 12.78  2013/08/05 18:24:09  schellj
   * Bivio::Util::SQL
     internal_upgrade_db_user_realm_subscription category_role_group
