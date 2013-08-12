@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.81  2013/08/12 16:38:19  moeller
+  * Bivio::UI::CSS::Widget::Button
+    renamed Border to BorderAttr
+  * Bivio::UI::CSS::Widget::ShadowAttr
+    renamed Border to BorderAttr
+
   Revision 12.80  2013/08/12 16:30:40  moeller
   * Bivio::UI::CSS::Widget::BorderAttr
     renamed from Bivio::UI::CSS::Widget::Border
