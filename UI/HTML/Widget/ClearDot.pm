@@ -47,7 +47,7 @@ sub as_html {
     elsif (!ref($self)) {
 	b_die('must pass width and height if called statically');
     }
-    $self->initialize_with_parent(parent => undef);
+    $self->initialize_with_parent(undef);
     my($b) = '';
     $self->render($_R->get_current, \$b);
     return $b;
