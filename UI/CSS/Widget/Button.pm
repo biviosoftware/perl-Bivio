@@ -28,8 +28,8 @@ sub initialize {
     my($self) = @_;
     $self->put_unless_exists(value => Prose(<<"EOF"));
 input.submit, .b_button_link a{
-  border: 1px solid;
   Border({
+    border => '1px solid',
     radius => '3px',
   });
   text-align:center;
@@ -43,7 +43,7 @@ input.submit, .b_button_link a{
   border-top-color: vs_css_color($_COLORS->{border_top});;
   border-bottom-color: vs_css_color($_COLORS->{border_bottom});;
   Gradient(@{[$_COLORS->{gradient_start}, ',', $_COLORS->{gradient_end}]});
-  Shadow({
+  ShadowAttr({
     box => '0 1px 0px #efefef,inset 0 1px 0px #fff',
     text => '#fff 0 1px 0',
   });
@@ -58,7 +58,7 @@ input.submit:active {
   border-color: vs_css_color($_COLORS->{active_border});;
   border-top-color: vs_css_color($_COLORS->{active_border_top});;
   border-bottom-color: vs_css_color($_COLORS->{active_border_bottom});;
-  Shadow({
+  ShadowAttr({
     box => '0 1px 0 #fff,inset 0 1px 3px rgba(101,101,101,0.3)',
   });
 }
