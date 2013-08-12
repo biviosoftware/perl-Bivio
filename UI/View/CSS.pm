@@ -45,7 +45,7 @@ form table.b_label_group {
 }
 form div.b_error_bubble {
  font-size: 95%;
- Border({
+ BorderAttr({
   radius => '3px',
  });
  padding: 0.5ex 0.5em;
@@ -84,10 +84,10 @@ form input, form textarea, form select {
   border:1px solid;
   Color('input-border');
   CSS('b_input_field');
-  Border({
+  BorderAttr({
     radius => '3px',
   });
-  Shadow({
+  ShadowAttr({
     box => '0 0 0 #000, inset 0px 3px 3px #eee',
   });
 }
@@ -108,7 +108,7 @@ table.list tr.b_heading_row, table.paged_list tr.b_heading_row {
   Color('list_heading-border');
   Color('list_heading-border-top');
   Color('list_heading-border-bottom');
-  Shadow({
+  ShadowAttr({
     box => '0 1px 1px rgba(0,0,0,0.12),inset 0 0 0 #000',
   });
 }
@@ -694,10 +694,10 @@ div.cb_menu {
   max-height: 10em;
   overflow: auto;
   z-index: 1000;
-  Shadow({
+  ShadowAttr({
     box => '3px 3px 3px 3px rgba(102, 102, 102, 0.6)',
   });
-  Border({
+  BorderAttr({
     radius => '3px',
   });
   padding: 0.2ex 0.5ex;
@@ -1267,10 +1267,10 @@ td.header_right form.search input.go {
   position: relative;
   left: -20px;
   margin-right: -15px;
-  Shadow({
+  ShadowAttr({
     box => '0px 0px 0px 0px',
   });
-  Border({
+  BorderAttr({
     radius => '0px',
   });
   vertical-align: text-bottom;
