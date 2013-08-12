@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,24 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.80  2013/08/12 16:30:40  moeller
+  * Bivio::UI::CSS::Widget::BorderAttr
+    renamed from Bivio::UI::CSS::Widget::Border
+  * Bivio::UI::CSS::Widget::Button
+    renamed Shadow to ShadowAttr
+  * Bivio::UI::CSS::Widget::OKButton
+    renamed Shadow widget to ShadowAttr
+  * Bivio::UI::CSS::Widget::ShadowAttr
+    renamed from Bivio::UI::CSS::Widget::Shadow
+  * Bivio::UI::HTML::Widget::ClearDot
+    fixed initialize_with_parent() call
+  * Bivio::UI::HTML::Widget::FormButton
+    removed default class and is_primary
+  * Bivio::UI::View::CSS
+    renamed Border to BorderAttr, Shadow to ShadowAttr
+  * Bivio::UI::XHTML::Widget::StandardSubmit
+    put button class back
+
   Revision 12.79  2013/08/10 00:59:52  schellj
   * Bivio::Biz::Model::RealmEmailList
     add internal_is_subscribed
