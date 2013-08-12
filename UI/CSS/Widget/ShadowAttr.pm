@@ -1,6 +1,6 @@
 # Copyright (c) 2013 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-package Bivio::UI::CSS::Widget::Shadow;
+package Bivio::UI::CSS::Widget::ShadowAttr;
 use strict;
 use Bivio::Base 'Widget.Simple';
 use Bivio::UI::ViewLanguageAUTOLOAD;
