@@ -6,7 +6,7 @@ use Bivio::Base 'Widget.Simple';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_B) = b_use('CSSWidget.Border');
+my($_B) = b_use('CSSWidget.BorderAttr');
 
 sub initialize {
     my($self) = @_;

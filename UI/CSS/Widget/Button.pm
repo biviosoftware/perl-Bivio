@@ -28,7 +28,7 @@ sub initialize {
     my($self) = @_;
     $self->put_unless_exists(value => Prose(<<"EOF"));
 input.submit, .b_button_link a{
-  Border({
+  BorderAttr({
     border => '1px solid',
     radius => '3px',
   });
