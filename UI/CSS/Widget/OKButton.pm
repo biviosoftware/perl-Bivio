@@ -27,7 +27,7 @@ input.b_ok_button, .b_button_link a{
   border-top-color: vs_css_color($_COLORS->{border_top});;
   border-bottom-color: vs_css_color($_COLORS->{border_bottom});;
   Gradient(@{[$_COLORS->{gradient_start}, ',', $_COLORS->{gradient_end}]});
-  Shadow({
+  ShadowAttr({
     box => '0 1px 0 #ddd,inset 0 1px 0 rgba(255,255,255,0.2)',
     text => 'rgba(0,0,0,0.2) 0 1px 0',
   });
@@ -45,8 +45,8 @@ input.b_ok_button:active,.b_button_link a:active {
   Gradient(@{[$_COLORS->{hover_gradient_start}, ',', $_COLORS->{hover_gradient_end}]});
 }
 input.b_ok_button:focus, .b_button_link a:focus {
-  Shadow({
-    box => '0 0 3px 1px #33a0e8,inset 0 0 3px 0 #35bff4',
+  ShadowAttr({
+    box => '0 0 3px 1px #33a0e8, 0 0 3px 0 #35bff4 inset',
   });
 }
 .b_button_link a:hover{
