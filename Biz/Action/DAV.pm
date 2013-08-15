@@ -371,7 +371,7 @@ sub _output {
     $s->{req}->get('reply')->set_http_status($n)
 	->set_output_type(
 	    ref($buf) && $msg_or_type ? $msg_or_type : 'text/plain'
-	)->set_header(DAV => 2)
+	)->set_header(DAV => '1,2')
 	->set_header('MS-Author-Via' => 'DAV')
         ->set_output(
 	    ref($buf) ? $buf
