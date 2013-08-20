@@ -96,11 +96,7 @@ sub internal_prepare_statement {
 	    expand => join(',', @{_parents($self, $this->[0])}),
 	);
     }
-    my($e) = [split(
-	/,+/,
-	$query->get_if_exists_else_put(expand =>
-	    join(',', @{$self->internal_default_expand})),
-    )];
+    my($e) = _parse_expand($self, $query);
     $self->[$_IDI] = [@$e];
     my($rpid) = $self->internal_root_parent_node_id;
     $stmt->where(
@@ -121,6 +117,25 @@ sub _parents {
 	$_PI->is_equal($pid, $self->internal_root_parent_node_id) ? ()
 	    : @{_parents($self, $pid)},
     ];
+}
+
+sub _parse_expand {
+    my($self, $query) = @_;
+    my($res) = [];
+
+    foreach my $id (split(
+	/,+/,
+	$query->get_if_exists_else_put(
+	    expand => join(',', @{$self->internal_default_expand})))) {
+	my($v, $err) = $_PI->from_literal($id);
+	$self->throw_die('CORRUPT_QUERY', {
+	    message => 'invalid id in expand',
+	    type_error => $err,
+	    query => $self->ureq('query'),
+	}) if $err;
+	push(@$res, $v);
+    }
+    return $res;
 }
 
 sub _sort {
