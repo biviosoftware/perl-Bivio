@@ -24,9 +24,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # Widget value boolean which dynamically determines if the row should render.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-b_use('IO.Config')->register(my $_CFG = {
-    fancy_input => 0,
-});
 
 sub get_label_and_field {
     my($self) = @_;
@@ -41,12 +38,6 @@ sub get_label_and_field {
     }), $self);
 }
 
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_CFG = $cfg;
-    return;
-}
-
 sub internal_get_label_value {
     my($self) = @_;
     # Returns the widget value which access the label.
@@ -57,7 +48,7 @@ sub internal_get_label_value {
 sub internal_get_label_widget {
     my($self) = @_;
     return LABEL($self->internal_get_label_value)
-	if $_CFG->{fancy_input};
+	if b_use('UI.Facade')->is_html5;
     return After(Simple($self->internal_get_label_value), ':');
 }
 
@@ -71,11 +62,6 @@ sub internal_new_args {
     };
 }
 
-sub is_fancy_input {
-    my($self) = @_;
-    return $_CFG->{fancy_input};
-}
-
 sub new {
     my($self) = shift->SUPER::new(@_);
     # Creates a new FormField widget. Call
@@ -83,7 +69,7 @@ sub new {
     # field automatically.
     # adds the error widget and the edit widget
     $self->put(values => [
-	$_CFG->{fancy_input}
+	b_use('UI.Facade')->is_html5
 	    ? ()
 	    : FormFieldError({
 		field => _get_field_name($self),
