@@ -36,6 +36,15 @@ sub initialize {
 		    border-radius
 	        )],
 	    ),
+	    $self->unsafe_get('color')
+		? (
+		    'border-color: ', $self->get('color'), ";\n",
+		    'border-top-color: ',
+		        vs_lighter_color($self->get('color'), 0x1c), ";\n",
+		    'border-border-color: ',
+		        vs_lighter_color($self->get('color'), -0x1c), ";\n",
+		)
+		: (),
 	]),
     );
     return;
