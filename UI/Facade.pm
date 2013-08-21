@@ -104,6 +104,7 @@ $_C->register(my $_CFG = {
     want_local_file_cache => 1,
     mail_host => $_C->REQUIRED,
     http_host => $_C->REQUIRED,
+    is_html5 => 0,
     # Deprecated
     http_suffix => undef,
 });
@@ -323,6 +324,10 @@ sub initialize {
 sub is_fully_initialized {
     # Returns true if the Facade was has been completely initialized.
     return $_IS_FULLY_INITIALIZED;
+}
+
+sub is_html5 {
+    return $_CFG->{is_html5};
 }
 
 sub make_groups {
