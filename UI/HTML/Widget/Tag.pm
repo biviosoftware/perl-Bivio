@@ -51,6 +51,12 @@ sub control_on_render {
 	"<$t$v",
 	(length($buf) || !_empty($t) ? ('>', \$pre, \$buf, \$post, "</$t>") : ' />'),
     );
+    if ($self->unsafe_get('class')) {
+	foreach my $class (
+	    split(' ', $self->render_simple_attr('class', $source))) {
+	    _add_to_view_css($self, $class, $source);
+	}
+    }
     return;
 }
 
@@ -101,6 +107,28 @@ sub internal_as_string {
 sub internal_tag_render_attrs {
     my($self, $source, $buffer) = @_;
     $self->SUPER::control_on_render($source, $buffer);
+    return;
+}
+
+sub _add_to_view_css {
+    my($self, $class, $source) = @_;
+    my($path) = [join('.', $self->get('tag'), $class)];
+    my($current) = $self->unsafe_get('parent');
+
+    while ($current) {
+	if ($current->isa('Bivio::UI::HTML::Widget::Tag')
+		|| $current->isa('Bivio::UI::HTML::Widget::TableBase')) {
+	    my($tag) = $current->unsafe_get('tag') || '';
+	    my($class) = $current->unsafe_get('class')
+		? split(' ', $current->render_simple_attr('class', $source))
+		    : '';
+	    my($id) = $tag . ($class ? ".$class" : '');
+	    unshift(@$path, $id)
+		if $id;
+	}
+	$current = $current->unsafe_get('parent');
+    }
+    b_use('View.CSS')->add_to_css($self, join(' ', @$path), $class, $source);
     return;
 }
 
