@@ -57,15 +57,13 @@ sub merge_overrides {
 	    default => 'PetShop',
 	    http_host => 'bivio.biz',
 	    mail_host => 'bivio.biz',
+	    is_html5 => 1,
 	},
 	'Bivio::UI::View::ThreePartPage' => {
 	    center_replaces_middle => 1,
 	},
 	'Bivio::UI::View::Wiki' => {
 	    use_wysiwyg => 1,
-	},
-	'Bivio::UI::HTML::Widget::FormField' => {
-	    fancy_input => 1,
 	},
 	'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
 	    use_file_manager => 1,
