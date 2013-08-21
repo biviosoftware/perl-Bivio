@@ -14,8 +14,8 @@ sub NEW_ARGS {
 
 sub initialize {
     my($self) = @_;
-    my($from) = vs_css_color($self->get('from_color'));
-    my($to) = vs_css_color($self->get('to_color'));
+    my($from) = $self->get('from_color');
+    my($to) = $self->get('to_color');
     $self->put_unless_exists(
 	value => Join([
 	    'background:', $to, ';', "\n",
