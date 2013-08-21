@@ -7,7 +7,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CB) = b_use('XHTMLWidget.ControlBase');
-my($_IS_FANCY) = b_use('XHTMLWidget.FormField')->is_fancy_input;
+my($_IS_HTML5) = b_use('UI.Facade')->is_html5;
 
 sub internal_as_string {
     my($self) = @_;
@@ -23,7 +23,7 @@ sub initialize {
     my($self) = @_;
     $self->initialize_attr('field');
     $self->put_unless_exists(
-	value => $_IS_FANCY
+	value => $_IS_HTML5
 	    ? _error_bubble($self)
 	    : _error_indicator($self)
 	);
