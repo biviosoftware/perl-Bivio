@@ -28,6 +28,12 @@ sub initialize {
 		    -moz-text-shadow
 	        )],
 	    ),
+	    $self->unsafe_get('gradient')
+		? Gradient(
+		    vs_lighter_color($self->get('gradient')),
+		    $self->get('gradient'),
+		)
+		: (),
 	]),
     );
     return;
