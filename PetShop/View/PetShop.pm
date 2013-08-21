@@ -159,13 +159,13 @@ sub checkout {
 	], [
 	    vs_blank_cell(),
 	], [
-	    SPAN_b_button_link(Link(
-		'Continue',
-		If(['user_state', '->eq_just_visitor'],
-		    'USER_ACCOUNT_CREATE_AND_PLACE_ORDER',
-		    'PLACE_ORDER',
+	    DIV(A('Continue', {
+		HREF => If(['user_state', '->eq_just_visitor'],
+		    ['->format_uri', 'USER_ACCOUNT_CREATE_AND_PLACE_ORDER'],
+		    ['->format_uri', 'PLACE_ORDER'],
 		),
-	    ))->put(cell_class => 'b_button_link'),
+	    })->put(class => 'b_button_link b_ok_button_link'))
+		->put(cell_class => 'b_align_e'),
 	]], {
 	    class => 'simple',
 	}),
