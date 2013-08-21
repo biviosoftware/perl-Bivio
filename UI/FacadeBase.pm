@@ -146,6 +146,11 @@ sub internal_merge {
     return $child;
 }
 
+sub internal_site_name {
+    my($proto, $sub_forum) = @_;
+    return $_FN->join($proto->SITE_REALM_NAME, $sub_forum);
+}
+
 sub is_site_realm_name {
     return shift->special_realm_name_equals(site => shift(@_));
 }
@@ -177,8 +182,19 @@ sub new {
 		my($x) = \&{"_cfg_$_"};
 		defined(&$x) ? $x->($proto) : ();
 	    } @{b_use('Agent.TaskId')->included_components}),
+	    $proto->is_html5
+		? _html5_css($proto)
+		: (),
 	    $config,
 	),
+    );
+}
+
+sub special_realm_name_equals {
+    my($self, $which, $realm_name) = @_;
+    return $_RN->is_equal(
+	$realm_name,
+	$self->get('Constant')->get_value($which . '_realm_name'),
     );
 }
 
@@ -387,6 +403,16 @@ sub _cfg_base {
 	    [ViewBase_mobile_app_page => 0],
 	],
 	CSS => [
+	    ['FormButton.submit' => q{
+                margin: .5em;
+                padding: 0 .5em;
+                text-align: center;
+	    }],
+	    ['StandardSubmit.standard_submit' => q{
+                margin: .5em;
+                padding: 0 .5em;
+                text-align: center;
+            }],
 	    [b_table_footer => q{
 		text-align: center;
 		border-top: 1px solid;
@@ -2217,17 +2243,74 @@ sub _cfg_xapian {
     };
 }
 
-sub internal_site_name {
-    my($proto, $sub_forum) = @_;
-    return $_FN->join($proto->SITE_REALM_NAME, $sub_forum);
-}
-
-sub special_realm_name_equals {
-    my($self, $which, $realm_name) = @_;
-    return $_RN->is_equal(
-	$realm_name,
-	$self->get('Constant')->get_value($which . '_realm_name'),
-    );
+sub _html5_css {
+    return {
+	CSS => [
+	    [b_submit_button => q{
+                padding:5px 16px;
+                font-size:13px;
+                font-weight:600;
+                cursor:pointer;
+                overflow:visible;
+                Color('submit');
+            }],
+	    [['FormButton.submit', 'Tag.b_button_link'] => {
+		'' => q{
+	            BorderAttr({
+	                border => '1px solid',
+		        radius => '3px',
+		        color => vs_color('submit'),
+	            });
+                    ShadowAttr({
+                        box => '0 1px 0px #efefef,inset 0 1px 0px #fff',
+                        text => '#fff 0 1px 0',
+		        gradient => vs_color('submit_background'),
+	            });
+                    margin: .5em;
+                    padding: 0 .5em;
+                    text-align: center;
+                    CSS('b_submit_button');
+                    text-decoration: none;
+                },
+		hover => q{
+	            BorderAttr({
+		        color => vs_lighter_color(vs_color('submit'), -0x22),
+	            });
+                    ShadowAttr({
+		        gradient => vs_lighter_color(vs_color('submit_background'), 0x0a),
+	            });
+                },
+		active => q{
+	            BorderAttr({
+		        color => vs_lighter_color(vs_color('submit'), -0x22),
+	            });
+                    ShadowAttr({
+                        box => '0 1px 0 #fff,inset 0 1px 3px rgba(101,101,101,0.3)',
+                    });
+                }
+	    }],
+	    [['FormButton.b_ok_button', 'Tag.b_ok_button_link'] => {
+		'' => q{
+		    Color('ok_button');
+                    ShadowAttr({
+                        box => '0 1px 0 #ddd,inset 0 1px 0 rgba(255,255,255,0.2)',
+                        text => 'rgba(0,0,0,0.2) 0 1px 0',
+		        gradient => vs_color('ok_button_background'),
+	            });
+                },
+		hover => q{
+                    ShadowAttr({
+		        gradient => vs_lighter_color(vs_color('ok_button_background'), 0x0a),
+	            });
+                },
+	    }],
+	    ['StandardSubmit.standard_submit' => q{
+                margin: .5em;
+                padding: 0 .5em;
+                text-align: right;
+            }],
+	],
+    };
 }
 
 sub _unsafe_call {
