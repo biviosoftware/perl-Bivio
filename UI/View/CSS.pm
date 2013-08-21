@@ -7,27 +7,66 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
+my($_F) = b_use('UI.Facade');
+my($_REQ_KEY) = __PACKAGE__ . 'css';
 my($_SITE) = join('', map({
     my($x) = \&{"_site_$_"};
     defined(&$x) ? $x->() : '';
 } @{b_use('Agent.TaskId')->included_components}));
 
+sub add_to_css {
+    my($proto, $widget, $selector, $class, $source) = @_;
+    my($info) = $source->req->get_if_defined_else_put($_REQ_KEY => {
+	render_order => [],
+	visited => {},
+    });
+    my($name) = $widget->simple_package_name;
+    my($key) = $selector . '[' . $name . ']';
+    return if $info->{visited}->{$key};
+    $info->{visited}->{$key} = 1;
+    push(@{$info->{render_order}}, [$selector, $name, $class]);
+    return;
+}
+
 sub internal_site_css {
     return $_SITE
-	. (b_use('HTMLWidget.FormField')->is_fancy_input
-	    ? _fancy_input()
+	. ($_F->is_html5
+	    ? _html5_css()
 	    : '');
 }
 
 sub site_css {
     my($self) = @_;
-    return $self->internal_body(Prose([sub {$self->internal_site_css(shift)}]));
+    return $self->internal_body(Join([
+	Prose([sub {
+	    my($source) = @_;
+	    my($res) = '';
+	    my($info) = $source->ureq($_REQ_KEY);
+	    return '' unless $info;
+	    my($facade) = $_F->get_from_source($source)->get('CSS');
+
+	    foreach my $path (@{$info->{render_order}}) {
+		my($selector, $widget, $class) = @$path;
+		my($css) = $facade->unsafe_get_value($widget, $class);
+		next unless $css;
+		if (ref($css)) {
+		    foreach my $pseudo_class (keys(%$css)) {
+			$res .= join(':', $selector, $pseudo_class || ())
+			    . ' {' . $css->{$pseudo_class} . "}\n";
+		    }
+		}
+		else {
+		    $res .= $selector . ' {' . $css . "}\n";
+		}
+	    }
+	    return $res;
+	}]),
+	Prose([sub {$self->internal_site_css(shift)}]),
+    ]));
 }
 
-sub _fancy_input {
+sub _html5_css {
     return <<'EOF';
-Button();
-OKButton();
 form .field_err {
  width: auto;
 }
@@ -98,9 +137,6 @@ form input:hover, form textarea:hover, form select:hover {
 form input:focus, form textarea:focus, form select:focus {
  border:1px solid;
  Color('input_focus-border');
-}
-.standard_submit, form .submit {
- text-align: right;
 }
 table.list tr.b_heading_row, table.paged_list tr.b_heading_row {
   Color('list_heading-background');
@@ -543,12 +579,6 @@ form .sep {
 }
 .warn {
   Font('warn');
-}
-.standard_submit,
-form .submit {
-  margin: .5em;
-  padding: 0 .5em;
-  text-align: center;
 }
 .empty_list,
 .page_error {
