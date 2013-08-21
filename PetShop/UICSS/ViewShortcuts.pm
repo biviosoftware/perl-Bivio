@@ -40,9 +40,6 @@ a:link, a:visited, a:hover, a:active {
 a:hover {
   text-decoration: underline;
 }
-.b_button_link a{
-  Color('ok_button');
-}
 table.main {
   margin-top: 0;
 }
