@@ -165,6 +165,14 @@ table.list tr, table.paged_list tr {
 table.list .b_even_row, table.paged_list .b_even_row  {
   background-color: transparent;
 }
+div.dd_menu, div.cb_menu {
+  ShadowAttr({
+    box => '3px 3px 3px 3px rgba(102, 102, 102, 0.6)',
+  });
+  BorderAttr({
+    radius => '3px',
+  });
+}
 EOF
 }
 
@@ -695,14 +703,6 @@ div.dd_menu a:hover {
   Color('dd_menu_selected');
   text-decoration: none;
 }
-div.dd_menu {
-  ShadowAttr({
-    box => '3px 3px 3px 3px rgba(102, 102, 102, 0.6)',
-  });
-  BorderAttr({
-    radius => '3px',
-  });
-}
 input.cb_text {
   padding-right: 20px;
 }
@@ -732,12 +732,6 @@ div.cb_menu {
   max-height: 10em;
   overflow: auto;
   z-index: 1000;
-  ShadowAttr({
-    box => '3px 3px 3px 3px rgba(102, 102, 102, 0.6)',
-  });
-  BorderAttr({
-    radius => '3px',
-  });
   padding: 0.2ex 0.5ex;
 }
 div.cb_selected {
