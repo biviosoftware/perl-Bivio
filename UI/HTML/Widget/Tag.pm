@@ -119,9 +119,12 @@ sub _add_to_view_css {
 	if ($current->isa('Bivio::UI::HTML::Widget::Tag')
 		|| $current->isa('Bivio::UI::HTML::Widget::TableBase')) {
 	    my($tag) = $current->unsafe_get('tag') || '';
+#TODO: can't render complex values using render_simple_attr()
+# because we don't know which source was used to render the value	    
 	    my($class) = $current->unsafe_get('class')
-		? split(' ', $current->render_simple_attr('class', $source))
-		    : '';
+		&& ! ref($current->get('class'))
+		? split(' ', $current->get('class'))
+		: '';
 	    my($id) = $tag . ($class ? ".$class" : '');
 	    unshift(@$path, $id)
 		if $id;
