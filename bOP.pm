@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,40 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.83  2013/08/21 22:17:20  moeller
+  * Bivio::Biz::Action::DAV
+    set DAV header to "1,2", allows "mount -t davfs" to work
+  * Bivio::Biz::Model::TreeList
+    parse "expand" query arg and throw a CORRUPT_QUERY if invalid
+  * Bivio::MIME::Calendar
+    ignore x-published-*
+  * Bivio::PetShop::BConf
+    fancy_input --> is_html5
+  * Bivio::UI::CSS::ViewShortcuts
+    removed vs_css_color()
+    added vs_color() and vs_lighter_color()
+  * Bivio::UI::CSS::Widget::BorderAttr
+    added color attr
+  * Bivio::UI::CSS::Widget::Button
+  * Bivio::UI::CSS::Widget::OKButton
+  * Bivio::UI::HTML::Widget::FormFieldLabel
+  * Bivio::UI::HTML::Widget::StandardSubmit
+    removed
+  * Bivio::UI::CSS::Widget::ShadowAttr
+    added gradient attr
+  * Bivio::UI::FacadeBase
+    added _html5_css() definition
+  * Bivio::UI::Facade
+    added is_html5 config attr
+  * Bivio::UI::HTML::Widget::FormField
+    moved "fancy_input" config value to UI.Facade->is_html5
+  * Bivio::UI::HTML::Widget::Tag
+    register widget CSS selector with View.CSS
+  * Bivio::UI::View::CSS
+    added add_to_css() for registering widget css during render()
+  * Bivio::UI::XHTML::Widget::FormFieldLabel
+    moved html5 config to UI.Facade
+
   Revision 12.82  2013/08/12 16:47:11  moeller
   * Bivio::PetShop::UICSS::ViewShortcuts
     renamed Shadow to ShadowAttr
