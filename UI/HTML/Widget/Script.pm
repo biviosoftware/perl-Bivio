@@ -211,7 +211,8 @@ function save_selected(field) {
     if (selected && field.typed_value != selected.real_value) {
         field.value = selected.real_value;
         field.typed_value = field.value;
-        field.onchange();
+        if (field.onchange)
+          field.onchange();
     }
     field.clear_list();
     if (field.auto_submit)
