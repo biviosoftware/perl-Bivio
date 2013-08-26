@@ -72,6 +72,7 @@ sub handle_mail_post_create {
 	unless $proto->is_enabled_for_auth_realm($req);
     my($v) = {
 	subject => $proto->clean_subject($realm_mail->get('subject')),
+	_user_id_for_mail($realm_mail),
     };
     my($self, $tid);
     if ($self = $req->unsafe_get($_REQ_ATTR)) {
@@ -82,7 +83,6 @@ sub handle_mail_post_create {
 	}) unless $tid eq $realm_mail->get('thread_root_id');
 	$self->update({
 	    %$v,
-            _user_id_for_update_mail($self, $realm_mail),
 	    _status_for_update_mail($self, $realm_mail),
 	});
 #TODO: Create tuple tag?
@@ -225,9 +225,9 @@ sub _strip_subject {
     return $_MS->clean_and_trim(shift->clean_subject(shift));
 }
 
-sub _user_id_for_update_mail {
-    my($self, $realm_mail) = @_;
-    my($user_id) = $self->new_other('Email')
+sub _user_id_for_mail {
+    my($realm_mail) = @_;
+    my($user_id) = $realm_mail->new_other('Email')
 	->unsafe_user_id_from_email($realm_mail->get('from_email'));
     return $user_id
 	? (modified_by_user_id => $user_id)
