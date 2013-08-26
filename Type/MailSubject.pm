@@ -2,9 +2,10 @@
 # $Id$
 package Bivio::Type::MailSubject;
 use strict;
-use base 'Bivio::Type::Line';
+use Bivio::Base 'Type.Line';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_W) = b_use('MIME.Word');
 
 sub CLEAN_REGEX {
     return qr{\s$|/|@{[shift->get_instance('FilePath')->ILLEGAL_CHAR_REGEXP]}}o;
@@ -15,11 +16,15 @@ sub EMPTY_VALUE {
 }
 
 sub clean_and_trim {
-    return lc(shift->trim_literal($_[0], 1));
+    my($proto, $value) = @_;
+    return lc($proto->trim_literal($value, 1));
 }
 
 sub trim_literal {
     my($proto, $value, $clean) = @_;
+    if ($value && $value =~ /\=\?[A-Z0-9\-]+\?/i) {
+	$value = ${$proto->canonicalize_charset($_W->decode($value) || '')};
+    }
     $value = ''
 	unless defined($value);
     $value =~ s/\s+/ /;
