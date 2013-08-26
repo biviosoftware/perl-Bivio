@@ -3,6 +3,7 @@
 package Bivio::MIME::Word;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
+use Encode();
 use MIME::Base64 ();
 
 # See RFC 2047
@@ -30,8 +31,14 @@ sub _decode_q {
 
 sub _strip {
     my($encoding, $value) = @_;
-    $value =~ s{[\x80-\xFF]}{\?}g
-	unless $encoding =~ /^(ISO-8859-1|US-ASCII)$/i;
+    unless ($encoding =~ /^(ISO-8859-1|US-ASCII)$/i) {
+	if ($encoding =~ /^UTF-8$/i) {
+	    utf8::decode($value);
+	}
+	else {
+	    $value =~ s{[\x80-\xFF]}{\?}g
+	}
+    }
     $value =~ s{\x00}{\?}g;
     return $value;
 }
