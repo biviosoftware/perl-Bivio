@@ -139,6 +139,7 @@ sub internal_thread_root_list_columns {
 		String(['CRMThread.subject']),
 		['->drilldown_uri'],
 	    ),
+	    column_data_class => 'b_word_break_all',
  	}],
  	'CRMThread.modified_date_time',
  	'modified_by_name',
