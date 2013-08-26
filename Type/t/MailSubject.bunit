@@ -9,6 +9,7 @@ Type();
 	'Re: hello' => 'hello',
 	'aw: hello' => 'hello',
 	'aw: fwd: hello' => 'hello',
+	'=?UTF-8?B?QXZlYyBNdXR1ZWxsZSBCbGV1ZSwgcHJlbmV6IHZvdHJlIHNhbnTDqSBlbiBtYWlu?=' => 'Avec Mutuelle Bleue, prenez votre sante en main',
     ],
     clean_and_trim => [
 	'' => '(no subject)',
