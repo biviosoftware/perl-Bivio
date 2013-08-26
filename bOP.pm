@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.84  2013/08/22 20:13:32  moeller
+  * Bivio::UI::HTML::Widget::Tag
+    no longer eval class for parent selector path, don't know the source
+  * Bivio::UI::View::CSS
+    added rounded bounder and shadow to dd_menu for html5
+
   Revision 12.83  2013/08/21 22:17:20  moeller
   * Bivio::Biz::Action::DAV
     set DAV header to "1,2", allows "mount -t davfs" to work
