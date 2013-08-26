@@ -578,6 +578,9 @@ p.prose {
   width: 40em;
   padding-bottom: .5ex;
 }
+.b_word_break_all {
+  word-break: break-all;
+}
 form .sep {
   text-align: left;
   font-weight: normal;
