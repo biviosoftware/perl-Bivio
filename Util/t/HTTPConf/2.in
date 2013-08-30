@@ -1,6 +1,5 @@
 {
     server_admin => 'default@default.com',
-    ssl_mdc => 1,
     limit_request_body => 0,
     httpd => {
         host_name => 'proxy.com',
@@ -15,7 +14,7 @@
         virtual_hosts => [
             'petshop.bivio.biz' => {
                 facade_uri => 'a3',
-                ssl_crt => 'mdc.crt',
+                ssl_multi_crt => 'mdc.crt',
             },
         ],
     },
@@ -28,7 +27,7 @@
         virtual_hosts => [
             'm.petshop.bivio.biz' => {
                 facade_uri => 'a4',
-                ssl_crt => 'mdc.crt',
+                ssl_multi_crt => 'mdc.crt',
             },
         ],
     },
