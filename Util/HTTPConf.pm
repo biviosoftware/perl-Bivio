@@ -318,7 +318,7 @@ sub _app_vars_redirects {
     my($front_http) = ($cfg->{ssl_only} ? 'https' : 'http') . "://$cfg->{http_host}";
     foreach my $h (
 	$cfg->{www_stripped_host},
-	$vars->{ssl_only} && $cfg->{http_host},
+	$cfg->{ssl_only} && $cfg->{http_host},
 	map(
 	    ($_, $_ =~ /^www\.(.+)$/),
 	    sort(@{$cfg->{aliases} || []}),
@@ -389,12 +389,6 @@ sub _app_vars_ssl_addr_port {
 
 sub _app_vars_ssl_crt {
     my($vars, $cfg) = @_;
-#TODO: Remove once system.*spec packages updated for ssl_mdc
-    if ($cfg->{ssl_mdc} && $cfg->{ssl_mdc} eq '1') {
-	delete($cfg->{ssl_mdc});
-	$cfg->{ssl_multi_crt} = $cfg->{ssl_crt}
-	    if $cfg->{ssl_crt} && !$cfg->{ssl_multi_crt};
-    }
     # Subtle: ssl_crt only really should apply to a single virtual host
     # so you want to allow people to clear it for a virtual host if the
     # ssl_multi_crt is set globally
