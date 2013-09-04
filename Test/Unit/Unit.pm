@@ -545,7 +545,9 @@ sub run {
     my($t) = $_D->eval_or_die(
 	"package $_PROTO;use strict;" . ${$_F->read($bunit)});
     $_TYPE ||= $_PROTO;
-    return $_TYPE->run_unit($t);
+    my($res) = $_TYPE->run_unit($t);
+    b_use('Test.Request')->get_instance->call_process_cleanup;
+    return $res;
 }
 
 sub run_unit {
