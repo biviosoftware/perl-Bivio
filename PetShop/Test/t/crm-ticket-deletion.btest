@@ -31,7 +31,7 @@ foreach my $test (@$tests) {
 	'Subject:' => $subject,
 	'Text:' => $text . ' A',
     });
-    foreach my $suffix qw(B C D) {
+    foreach my $suffix (qw(B C D)) {
 	follow_link_in_table('Ticket', 'Subject', $subject);
 	follow_link('Answer');
 	submit_form('Send', {
