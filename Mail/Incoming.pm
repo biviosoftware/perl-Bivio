@@ -130,7 +130,7 @@ sub get_reply_email_arrays {
     my($self, $who, $canonical_email, $realm_emails, $req) = @_;
     return ($_EA->new($canonical_email), $_EA->new([]))
 	unless ref($self) and !$who->eq_realm;
-    my($reply_to) = lc($self->get_reply_to);
+    my($reply_to) = lc($self->get_reply_to || '');
     $reply_to = undef
 	if grep($_E->is_equal($reply_to, $_), @$realm_emails);
     my($from) = lc($reply_to || $self->get_from);
