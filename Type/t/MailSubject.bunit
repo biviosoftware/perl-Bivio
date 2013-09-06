@@ -10,6 +10,7 @@ Type();
 	'aw: hello' => 'hello',
 	'aw: fwd: hello' => 'hello',
 	'=?UTF-8?B?QXZlYyBNdXR1ZWxsZSBCbGV1ZSwgcHJlbmV6IHZvdHJlIHNhbnTDqSBlbiBtYWlu?=' => 'Avec Mutuelle Bleue, prenez votre sante en main',
+	'=?WINDOWS-1252?Q?Derivative_problem_=96_another_financial_crisis?= =?WINDOWS-1252?Q?_looming?=' => 'Derivative problem - another financial crisis looming',
     ],
     clean_and_trim => [
 	'' => '(no subject)',
