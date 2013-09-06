@@ -118,7 +118,7 @@ sub _add_links {
 	$vars->{$1} = $2
 	    if $line =~ m{my.*?\((\$_\w+)\).*use\(.*?'(\w+\.\w+)};
 	$line =~ s{
-	    ((?:use|require|Bivio::Base)\b.*?')([A-Z]\w+\.[A-Z]\w+)
+	    (\b|'|")([A-Z]\w+\.[A-Z]\w+)
 	    | ((?:[A-Z]\w+::)+[A-Z]\w+)
 	    | (\$_[A-Z0-9]+\b)
             | (?<=[^:])(\b[A-Z]\w+)(?=\()
