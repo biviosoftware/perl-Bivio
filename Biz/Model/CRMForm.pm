@@ -17,6 +17,9 @@ b_use('ClassWrapper.TupleTag')->wrap_methods(
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
 my($_TS) = b_use('Type.TupleSlot');
+b_use('IO.Config')->register(my $_CFG = {
+    want_status_email => 0,
+});
 
 sub TUPLE_TAG_INFO {
     return {
@@ -103,6 +106,12 @@ sub execute_ok {
     return $res;
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub handle_tuple_tag_update_properties {
     my($self, $old, $new, $info) = @_;
     return
@@ -119,7 +128,9 @@ sub handle_tuple_tag_update_properties {
 	    });
 	} (['old_fields', $old], ['new_fields', $new])),
     );
-    if (_fields_changed($self->get('old_fields'), $self->get('new_fields'))) {
+    if ($_CFG->{want_status_email}
+        && _fields_changed($self->get('old_fields'), $self->get('new_fields'))
+    ) {
 	my($board_only) = $self->internal_set_headers;
 	return
 	    if $self->in_error;
