@@ -71,7 +71,7 @@ my($demo) = EmailArray(email('demo'));
 	    $count++;
 	    b_die('too many messages')
 		if $count > 3;
-	    return
+	    return 0
 		if $count < 2;
 	    assert_equals(
 		$it->get('RealmMail.from_email'),
