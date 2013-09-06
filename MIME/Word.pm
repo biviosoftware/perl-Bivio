@@ -35,6 +35,9 @@ sub _strip {
 	if ($encoding =~ /^UTF-8$/i) {
 	    utf8::decode($value);
 	}
+	elsif ($encoding =~ /^WINDOWS-1252/i) {
+	    $value = Encode::decode('WINDOWS-1252', $value);
+	}
 	else {
 	    $value =~ s{[\x80-\xFF]}{\?}g
 	}
