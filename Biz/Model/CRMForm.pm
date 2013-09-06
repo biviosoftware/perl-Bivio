@@ -18,7 +18,7 @@ b_use('ClassWrapper.TupleTag')->wrap_methods(
 #TODO: Bounce handling
 my($_TS) = b_use('Type.TupleSlot');
 b_use('IO.Config')->register(my $_CFG = {
-    want_status_email => 0,
+    want_status_email => 1,
 });
 
 sub TUPLE_TAG_INFO {
