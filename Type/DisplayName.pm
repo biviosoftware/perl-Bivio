@@ -111,8 +111,9 @@ sub _parse_last {
     $name->{last_name} = $last;
 
     if (scalar(@$parts)) {
-        while ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|pe|I|IV|V|\d..)$|\.|^I{2,}/i
-            || ((@$parts)[-1] && (@$parts)[-1] =~ /\,$/)) {
+        while (@$parts
+	    && ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|pe|I|IV|V|\d..)$|\.|^I{2,}/i
+	        || ((@$parts)[-1] && (@$parts)[-1] =~ /\,$/))) {
             $last = pop(@$parts);
             $name->{last_name} = $last . ($last =~ /\,$/ ? ' ' : ', ')
                 . $name->{last_name};
