@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.85  2013/08/26 16:43:25  moeller
+  * Bivio::Biz::Model::CRMThread
+    set modified_by_user_id using from_email on create
+  * Bivio::MIME::Word
+    detect and decode UTF-8 encoding
+  * Bivio::Type::MailSubject
+    decode RFC 2047 subjects during trim_literal()
+  * Bivio::UI::HTML::Widget::Script
+    only call onchange() if the function is defined
+  * Bivio::UI::View::CRM
+    added column class for word breaks to CRM subject
+  * Bivio::UI::View::CSS
+    added b_word_break_all
+
   Revision 12.84  2013/08/22 20:13:32  moeller
   * Bivio::UI::HTML::Widget::Tag
     no longer eval class for parent selector path, don't know the source
