@@ -36,7 +36,7 @@ EOF
 	    my($user_id) = realm_id($user);
 	    req()->set_realm($realm);
 	    assert_equals(
-		0,
+		$realm =~ /bulletin/ ? 0 : 1,
 		model('UserRealmSubscription')->unsafe_load({
 		    user_id => $user_id,
 		    is_subscribed => 1,
@@ -59,12 +59,12 @@ EOF
 			'realm_id',
 			{
 			    user_id => $user_id,
-			    is_subscribed => 1,
+			    is_subscribed => $realm =~ /bulletin/ ? 1 : 0,
 			},
 		    ),
 		)
 		: assert_equals(
-		    0,
+		    $realm =~ /bulletin/ ? 0 : 1,
 		    model('UserRealmSubscription')->unsafe_load({
 			user_id => $user_id,
 			is_subscribed => 1,
@@ -87,8 +87,8 @@ EOF
     );
 };
 [
-    $case->(qw(mail_forum mail_user1 ok_button), [qw(ADMINISTRATOR MAIL_RECIPIENT FILE_WRITER)], $exising_mail_recipient_realms->('mail_user1')),
-    $case->(qw(bulletin bulletin_user ok_button)),
-    $case->(qw(mail_forum mail_user1 all_button), [qw(ADMINISTRATOR MAIL_RECIPIENT FILE_WRITER)], $exising_mail_recipient_realms->('mail_user1')),
-    $case->(qw(bulletin bulletin_user all_button)),
+   $case->(qw(mail_forum mail_user1 ok_button), [qw(ADMINISTRATOR MAIL_RECIPIENT FILE_WRITER)], $exising_mail_recipient_realms->('mail_user1')),
+   $case->(qw(bulletin bulletin_user ok_button)),
+   $case->(qw(mail_forum mail_user1 all_button), [qw(ADMINISTRATOR MAIL_RECIPIENT FILE_WRITER)], $exising_mail_recipient_realms->('mail_user1')),
+   $case->(qw(bulletin bulletin_user all_button)),
 ];
