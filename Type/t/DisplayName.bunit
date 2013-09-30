@@ -11,6 +11,7 @@ Type();
 		: [@$a{qw(first_name middle_name last_name)}];
 	},
     } => [
+	'Dr. Android.' => ['', '', 'Dr., Android.'],
 	'Dr. John' => ['Dr.', '', 'John'],
 	'Hot, Dog' => ['Dog', '', 'Hot'],
 	'Mary J. Keene, M.D.' => ['Mary', 'J.', 'Keene, M.D.'],
