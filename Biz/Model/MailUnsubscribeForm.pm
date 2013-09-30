@@ -86,6 +86,7 @@ sub subscribe_to_bulletin_realm {
 sub unsubscribe_from_bulletin_realm {
     my($self, $user_id, $realm_id) = @_;
     $realm_id = _bulletin_id($self, $realm_id);
+    return unless $_BMM->should_leave_realm($realm_id, $self->req);
     $self->req->with_realm(
 	$realm_id,
 	sub {
@@ -93,8 +94,7 @@ sub unsubscribe_from_bulletin_realm {
 		user_id => $user_id,
 		is_subscribed => 0,
 	    });
-	    $self->new_other('RealmUser')->delete_all({user_id => $user_id})
-		 if $_BMM->should_leave_realm($realm_id, $self->req);
+	    $self->new_other('RealmUser')->delete_all({user_id => $user_id});
 	    return;
 	},
     );
