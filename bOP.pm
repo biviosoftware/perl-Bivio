@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,25 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.86  2013/09/30 21:44:48  moeller
+  * Bivio::Biz::Model::CRMForm
+    added want_status_email config value
+  * Bivio::Biz::Model::MailUnsubscribeForm
+    don't unsubscribe unless it is a bulletin realm
+  * Bivio::Mail::Incoming
+    fixed uninitialized warning
+  * Bivio::MIME::Word
+    encode WINDOWS-1252
+  * Bivio::Test::Unit::Unit
+    call_process_cleanup at the end of unit tests
+  * Bivio::Type::DisplayName
+    fixed uninitialized value
+  * Bivio::UI::HTML::Widget::SourceCode
+    loosened module name match so TaskId renders item links
+  * Bivio::Util::HTTPConf
+    ssl_mdc is gone
+    ssl_only wasn't working for hosts for which it wasn't set globally
+
   Revision 12.85  2013/08/26 16:43:25  moeller
   * Bivio::Biz::Model::CRMThread
     set modified_by_user_id using from_email on create
