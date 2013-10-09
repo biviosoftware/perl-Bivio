@@ -448,6 +448,48 @@ function b_dp_get_month_name(d){
 EOF
 }
 
+sub JAVASCRIPT_B_SLIDE_OUT_SEARCH_FORM {
+    return <<'EOF';
+function b_sosf_focus(field_id, other_ids) {
+    var field = document.getElementById(field_id);
+    b_add_class(field, 'b_sosf_active');
+    other_ids = other_ids || [];
+    for (var i = 0; i < other_ids.length; i++) {
+        b_add_class(
+            document.getElementById(other_ids[i]), 'b_sosf_active');
+    }
+    if (field === document.activeElement) {
+        return;
+    }
+    field.focus();
+    return;
+}
+function b_sosf_mouseout(field_id, container_id) {
+    var field = document.getElementById(field_id);
+    if (field.isSameNode(document.activeElement)) return;
+    if (field.value == '') {
+        b_remove_class(
+            document.getElementById(container_id), 'b_sosf_container_active');
+        b_remove_class(field, 'b_sosf_field_active');
+        field.blur();
+    }
+    return;
+}
+function b_sosf_blur(field_id, other_ids) {
+    var field = document.getElementById(field_id);
+    if (field.value == '') {
+        b_remove_class(field, 'b_sosf_active');
+        other_ids = other_ids || [];
+        for (var i = 0; i < other_ids.length; i++) {
+            b_remove_class(
+                document.getElementById(other_ids[i]), 'b_sosf_active');
+        }
+    }
+    return;
+}
+EOF
+}
+
 sub JAVASCRIPT_COMMON {
     return <<'EOF';
 function b_escape_html (value) {
