@@ -13,11 +13,7 @@ sub initialize {
     $self->put_unless_exists(values => [
 	Script('b_clear_on_focus'),
 	$self->get('widget')->put(
-	    ONFOCUS => Join([
-		'b_clear_on_focus(this, "',
-		JavaScriptString($self->get('hint_text')),
-		'")',
-            ]),
+	    ONFOCUS => _onfocus($self),
 	    class => _class($self),
 	    id => $id,
 	),
@@ -45,6 +41,17 @@ sub _class {
     my($self) = @_;
     my($c) = $self->get('widget')->unsafe_get('class');
     return !$c ? 'disabled' : Join([$c, 'disabled'], ' ');
+}
+
+sub _onfocus {
+    my($self) = @_;
+    my($of) = $self->get('widget')->unsafe_get('ONFOCUS');
+    my($default) = Join([
+	'b_clear_on_focus(this, "',
+	JavaScriptString($self->get('hint_text')),
+	'")',
+    ]);
+    return $of ? Join([$of, $default], '; ') : $default;
 }
 
 1;
