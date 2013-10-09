@@ -20,6 +20,7 @@ __PACKAGE__->compile([
     BROWSER_IPHONE => 12,
     BROWSER_ROBOT_OTHER => 13,
     BROWSER_ROBOT_SEARCH => 14,
+    BROWSER_ANDROID => 15,
 ]);
 
 sub execute {
@@ -43,6 +44,8 @@ sub from_header {
 	if _is_other($proto, $ua);
     return $proto->BROWSER_IPHONE
 	if $ua =~ /\biPhone\b/;
+    return $proto->BROWSER_IPHONE
+	if $ua =~ /\bAndroid\b/;
     if ($ua =~ /Mozilla\/(\d+)/) {
         return $proto->BROWSER_HTML3
             if $1 < 5;
