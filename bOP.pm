@@ -28,10 +28,12 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.87  2013/10/07 20:51:02  moeller
+    * b-sendmail-http converts a 503 to EX_TEMPFAIL rather than mailbox full
+
   Revision 12.86  2013/09/30 21:44:48  moeller
   * Bivio::Biz::Model::CRMForm
     added want_status_email config value
