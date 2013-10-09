@@ -28,9 +28,18 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.88  2013/10/09 18:12:02  schellj
+  * Bivio::Type::UserAgent
+    add BROWSER_ANDROID
+  * Bivio::UI::HTML::Widget::Script
+    add JAVASCRIPT_B_SLIDE_OUT_SEARCH_FORM
+  * Bivio::UI::XHTML::Widget::ClearOnFocus
+    allow specification of ONFOCUS attribute
+
   Revision 12.87  2013/10/07 20:51:02  moeller
     * b-sendmail-http converts a 503 to EX_TEMPFAIL rather than mailbox full
 
