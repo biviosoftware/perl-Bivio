@@ -20,7 +20,9 @@ __PACKAGE__->compile([
     BROWSER_IPHONE => 12,
     BROWSER_ROBOT_OTHER => 13,
     BROWSER_ROBOT_SEARCH => 14,
-    BROWSER_ANDROID => 15,
+    BROWSER_ANDROID_STOCK => 15,
+    BROWSER_CHROME_PHONE => 16,
+    BROWSER_CHROME_TABLET => 17,
 ]);
 
 sub execute {
@@ -44,8 +46,12 @@ sub from_header {
 	if _is_other($proto, $ua);
     return $proto->BROWSER_IPHONE
 	if $ua =~ /\biPhone\b/;
-    return $proto->BROWSER_IPHONE
-	if $ua =~ /\bAndroid\b/;
+    return $proto->BROWSER_ANDROID_STOCK
+	if $ua =~ /U; Android/;
+    return $proto->BROWSER_CHROME_PHONE
+	if $ua =~  /Android.*Chrome\/[.0-9]* Mobile/;
+    return $proto->BROWSER_CHROME_TABLET
+	if $ua =~  /Android.*Chrome\/[.0-9]* (?!Mobile)/;
     if ($ua =~ /Mozilla\/(\d+)/) {
         return $proto->BROWSER_HTML3
             if $1 < 5;
@@ -108,7 +114,11 @@ sub is_mail_agent {
 }
 
 sub is_mobile_device {
-    return shift->equals_by_name(qw(BROWSER_IPHONE));
+    return shift->equals_by_name(qw(
+	BROWSER_IPHONE
+	BROWSER_ANDROID_STOCK
+	BROWSER_CHROME_PHONE
+    ));
 }
 
 sub is_robot {
