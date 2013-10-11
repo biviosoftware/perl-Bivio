@@ -23,6 +23,14 @@ __PACKAGE__->compile([
     BROWSER_ANDROID_STOCK => 15,
     BROWSER_CHROME_PHONE => 16,
     BROWSER_CHROME_TABLET => 17,
+    BROWSER_OPERA_MOBILE => 18,
+    BROWSER_UC_BROWSER => 19,
+    BROWSER_NOKIA => 20,
+    BROWSER_BLACKBERRY_6_7 => 21,
+    BROWSER_BB10 => 22,
+    BROWSER_NETFRONT => 23,
+    BROWSER_IPOD => 24,
+    BROWSER_IEMOBILE => 25,
 ]);
 
 sub execute {
@@ -32,6 +40,25 @@ sub execute {
 sub from_header {
     my($proto, $ua) = @_;
     $ua ||= '';
+    foreach my $t (
+	['BROWSER_ROBOT_SEARCH', _is_search($proto, $ua)],
+	['BROWSER_ROBOT_OTHER', _is_other($proto, $ua)],
+	['BROWSER_IPHONE', $ua =~ /\biPhone\b/],
+	['BROWSER_IPOD', $ua =~ /\biPod\b/],
+	['BROWSER_CHROME_PHONE', $ua =~  /Android.*Chrome\/[.0-9]* Mobile/],
+	['BROWSER_CHROME_TABLET', $ua =~  /Android.*Chrome\/[.0-9]* (?!Mobile)/],
+	['BROWSER_OPERA_MOBILE', $ua =~ /\bOpera Mobi\b/],
+	['BROWSER_UC_BROWSER', $ua =~ /\bUCBrowser\b/],
+	['BROWSER_NOKIA', $ua =~ /\bNokia/],
+	['BROWSER_BLACKBERRY_6_7', $ua =~ /\bBlackBerry\b/],
+	['BROWSER_BB10', $ua =~ /\bBB10\b.*\bMobile\b/],
+	['BROWSER_NETFRONT', $ua =~ /\bNetFront\b/],
+	['BROWSER_IEMOBILE', $ua =~ /\bIEMobile\b/],
+	['BROWSER_ANDROID_STOCK', $ua =~ /\bAndroid\b/],
+    ) {
+	return $proto->from_name($t->[0])
+	    if $t->[1];
+    }
     if ($ua =~ /\bMSIE (\d+)/) {
 	my($v) = $1;
         return $proto->BROWSER_HTML3
@@ -40,18 +67,6 @@ sub from_header {
 	    if $v > 8;
         return $proto->from_name("BROWSER_MSIE_$v");
     }
-    return $proto->BROWSER_ROBOT_SEARCH
-	if _is_search($proto, $ua);
-    return $proto->BROWSER_ROBOT_OTHER
-	if _is_other($proto, $ua);
-    return $proto->BROWSER_IPHONE
-	if $ua =~ /\biPhone\b/;
-    return $proto->BROWSER_ANDROID_STOCK
-	if $ua =~ /U; Android/;
-    return $proto->BROWSER_CHROME_PHONE
-	if $ua =~  /Android.*Chrome\/[.0-9]* Mobile/;
-    return $proto->BROWSER_CHROME_TABLET
-	if $ua =~  /Android.*Chrome\/[.0-9]* (?!Mobile)/;
     if ($ua =~ /Mozilla\/(\d+)/) {
         return $proto->BROWSER_HTML3
             if $1 < 5;
@@ -118,6 +133,14 @@ sub is_mobile_device {
 	BROWSER_IPHONE
 	BROWSER_ANDROID_STOCK
 	BROWSER_CHROME_PHONE
+	BROWSER_OPERA_MOBILE
+	BROWSER_UC_BROWSER
+	BROWSER_NOKIA
+	BROWSER_BLACKBERRY_6_7
+	BROWSER_BB10
+	BROWSER_NETFRONT
+	BROWSER_IPOD
+	BROWSER_IEMOBILE
     ));
 }
 
