@@ -83,6 +83,15 @@ sub subscribe_to_bulletin_realm {
     return _do_bulletin_realm('unauth_create_or_update', @_);
 }
 
+sub unsubscribe {
+    my($self, $user_id) = @_;
+    $self->new_other('UserRealmSubscription')->create_or_update({
+	user_id => $user_id || $self->req('auth_user_id'),
+	is_subscribed => 0,
+    });
+    return;
+}
+
 sub unsubscribe_from_bulletin_realm {
     my($self, $user_id, $realm_id) = @_;
     $realm_id = _bulletin_id($self, $realm_id);
@@ -90,10 +99,7 @@ sub unsubscribe_from_bulletin_realm {
     $self->req->with_realm(
 	$realm_id,
 	sub {
-	    $self->new_other('UserRealmSubscription')->create_or_update({
-		user_id => $user_id,
-		is_subscribed => 0,
-	    });
+	    $self->unsubscribe($user_id);
 	    $self->new_other('RealmUser')->delete_all({user_id => $user_id});
 	    return;
 	},
