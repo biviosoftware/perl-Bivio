@@ -153,23 +153,22 @@ sub merge_users {
 sub realms {
     my($self) = @_;
     my($realms) = {};
-    my($req) = $self->get_request;
-    my($ru) = Bivio::Biz::Model->new($req, 'RealmUser');
-    $ru->do_iterate(
+    $self->model('RealmUser')->do_iterate(
 	sub {
-	    my($it) = @_;
-	    push(@{$realms->{$it->get('realm_id')} ||= []},
-		 $it->get('role')->get_name
+	    my($ru) = @_;
+	    push(@{$realms->{$ru->get('realm_id')} ||= []},
+		 $ru->get('role')->get_name
 		 . ' '
-		 . $_DT->to_xml($it->get('creation_date_time'))
+		 . $_DT->to_xml($ru->get('creation_date_time'))
+ 		 . $self->subscribe_info($ru),
 	    );
 	    return 1;
 	},
 	'unauth_iterate_start',
 	'role asc',
-	{user_id => $req->get('auth_user_id')},
+	{user_id => $self->req('auth_user_id')},
     );
-    my($ro) = $ru->new_other('RealmOwner');
+    my($ro) = $self->model('RealmOwner');
     my($ra) = $self->new_other('RealmAdmin');
     return join('',
         map($ra->info($ro->unauth_load_or_die({realm_id => $_}))
@@ -179,6 +178,18 @@ sub realms {
 	    sort(keys(%$realms)),
 	),
     );
+}
+
+sub subscribe_info {
+    my($self, $ru) = @_;
+    return '' unless $ru->get('role')->eq_mail_recipient;
+    my($sub) = $self->unauth_model(UserRealmSubscription => {
+	realm_id => $ru->get('realm_id'),
+	user_id => $ru->get('user_id'),
+    });
+    return ' ('
+	. ($sub->get('is_subscribed') ? 'subscribed' : 'not-subscribed')
+	. ' ' . $_DT->to_xml($sub->get('modified_date_time')) . ')';
 }
 
 sub unsubscribe_bulletin {
