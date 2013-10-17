@@ -49,17 +49,25 @@ commit();
 	    },
 	    check_return => sub {
 		my($case, $actual, $expect) = @_;
+		my($subscription) = model('UserRealmSubscription');
+		$subscription->unsafe_load({
+		    user_id => req('auth_user_id'),
+		}) if req('auth_id') && req('auth_user_id');
+		my($is_subscribed) = $subscription->is_loaded
+		    ? $subscription->get('is_subscribed')
+		    : 0;
 		$case->actual_return([
-		    req()->get('auth_user') && req()->get('auth_user')->get('name'),
-		    req()->get('auth_realm')->unsafe_get('owner_name'),
+		    ureq(qw(auth_user name)),
+		    ureq(qw(auth_realm owner_name)),
 		    $actual->[0]->{task_id},
 		    $case->get('object')->get('recipient'),
+		    $is_subscribed,
 		]);
 		return [
 		    @$expect[0,1],
 		    $expect->[2] || 'MAIL_RECEIVE_IGNORE',
 		    $expect->[3] || $case->get('object')->get('recipient'),
-
+		    defined($expect->[4]) ? $expect->[4] : $is_subscribed,
 		];
 	    },
 	} => [
@@ -104,10 +112,16 @@ commit();
 		=> [undef, undef, 'ignore_task'],
 	    [qw(root mail_forum-filtering), "\nSubject: Out of Office:"]
 		=> [undef, undef, 'ignore_task'],
+	    [qw(root mail_forum-filtering), "\nSubject: out of the office"]
+		=> [undef, undef, 'ignore_task'],
 	    [qw(root mail_forum-filtering), "\nSubject: Out of Office AutoReply:"]
 		=> [undef, undef, 'ignore_task'],
 	    [qw(root mail_forum-filtering), "\nSubject: I'm going to be out of office"]
 		=> [qw(root mail_forum-filtering FORUM_MAIL_RECEIVE)],
+	    [qw(mail_user1 mail_forum-filtering), "\nSubject: pls unsub me"]
+	     	=> [qw(mail_user1 mail_forum-filtering FORUM_MAIL_RECEIVE), undef, 1],
+	    [qw(mail_user1 mail_forum-filtering), "\nSubject: pls unsubscribe me"]
+	     	=> [qw(mail_user1 mail_forum-filtering ignore_task), undef, 0],
 	],
     ],
 ];
