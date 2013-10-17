@@ -302,13 +302,16 @@ sub users {
     my($self, $role) = @_;
     # Users for realm.  Filter by role
     $role &&= uc($role);
+    my($util) = $self->new_other('User');
     my($roles) = {};
     $self->model('RealmUser')->do_iterate(
 	sub {
-	    my($it) = @_;
-	    push(@{$roles->{$it->get('user_id')} ||= []},
-		 [$it->get('role')->get_name, $_DT->to_xml($it->get('creation_date_time'))],
-	    );
+	    my($ru) = @_;
+	    push(@{$roles->{$ru->get('user_id')} ||= []}, [
+		$ru->get('role')->get_name,
+		$_DT->to_xml($ru->get('creation_date_time'))
+		    . $util->subscribe_info($ru),
+	    ]);
 	    return 1;
 	},
 	'role asc',
