@@ -236,10 +236,20 @@ sub _ignore_mailer_daemon {
 
 sub _ignore_out_of_office {
     my($self) = @_;
-    return $_CFG->{filter_out_of_office}
-	&& $self->get('mail_incoming')->get('header')
-	    =~ /^Subject:\s+out\s+of\s+office(\s+autoreply)?:/im
-	? 'out-of-office' : undef;
+    return undef
+	unless $_CFG->{filter_out_of_office};
+    my($header) = $self->get('mail_incoming')->get('header');
+    map({
+	return 'out-of-office'
+	    if $header =~ /$_/im;
+    } (
+	'^Auto-Submitted:\s+auto-generated',
+	'Auto-Submitted:\s+auto-replied',
+	'X-GeneratedBy:\s+OOService',
+	'X-Autoreply:\s+yes',
+	'Subject:\s+out\s+of\s+office(\s+autoreply)?:',
+    ));
+    return undef;
 }
 
 sub _ignore_spam {
