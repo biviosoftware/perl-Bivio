@@ -94,6 +94,14 @@ commit();
 		=> [qw(root mail_forum-filtering FORUM_MAIL_RECEIVE)],
 	    [qw(root mail_forum-filtering), "\nReturn-Path: <MAILER-DAEMON>"]
 		=> [undef, qw(mail_forum-filtering ignore_task)],
+	    [qw(root mail_forum-filtering), "\nAuto-Submitted: auto-generated"]
+		=> [undef, undef, 'ignore_task'],
+	    [qw(root mail_forum-filtering), "\nAuto-Submitted: auto-replied"]
+		=> [undef, undef, 'ignore_task'],
+	    [qw(root mail_forum-filtering), "\nX-GeneratedBy: OOService"]
+		=> [undef, undef, 'ignore_task'],
+	    [qw(root mail_forum-filtering), "\nX-Autoreply: yes"]
+		=> [undef, undef, 'ignore_task'],
 	    [qw(root mail_forum-filtering), "\nSubject: Out of Office:"]
 		=> [undef, undef, 'ignore_task'],
 	    [qw(root mail_forum-filtering), "\nSubject: Out of Office AutoReply:"]
