@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.89  2013/10/09 18:20:00  schellj
+  * Bivio::UI::HTML::Widget::SlideOutSearchForm
+    NEW
+
   Revision 12.88  2013/10/09 18:12:02  schellj
   * Bivio::Type::UserAgent
     add BROWSER_ANDROID
