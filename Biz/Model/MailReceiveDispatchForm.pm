@@ -72,6 +72,11 @@ sub execute_ok {
 	login => $self->internal_get_login($mi),
 	via_mta => 1,
     });
+    return _redirect('ignore_task')
+	if _ignore(
+	    $self,
+	    \&_ignore_unsubscribe,
+	);
     return {
 	method => 'server_redirect',
 	task_id => $self->get('task_id'),
@@ -202,7 +207,6 @@ sub _ignore_duplicate_threshold {
     ) > 0;
 }
 
-
 sub _ignore_email {
     my($self) = @_;
     return undef
@@ -247,7 +251,7 @@ sub _ignore_out_of_office {
 	'Auto-Submitted:\s+auto-replied',
 	'X-GeneratedBy:\s+OOService',
 	'X-Autoreply:\s+yes',
-	'Subject:\s+out\s+of\s+office(\s+autoreply)?:',
+	'Subject:\s+out\s+of\s+(the\s+)?office',
     ));
     return undef;
 }
@@ -257,6 +261,28 @@ sub _ignore_spam {
     return $_CFG->{filter_spam}
 	&& $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s+Y/im
 	? 'spam' : undef;
+}
+
+sub _ignore_unsubscribe {
+    my($self) = @_;
+    return undef
+	unless $self->req('auth_user_id')
+	    && $self->get('mail_incoming')->get('header')
+		=~ /^Subject:\s+(.*?\bunsubscribe\b.*)/im;
+    my($subject) = $1 || b_die();
+    my($subscription) = $self->new_other('UserRealmSubscription');
+    if ($subscription->unsafe_load({
+	user_id => $self->req('auth_user_id'),
+	is_subscribed => 1,
+    })) {
+	$subscription->req->warn(
+	    'unsubscribing user from realm, subject: ',
+	    $subject,
+	);
+	$self->new_other('MailUnsubscribeForm')->unsubscribe;
+	return 'unsubscribe';
+    }
+    return 'not-subscribed';
 }
 
 sub _parse_recipient {
