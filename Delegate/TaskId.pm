@@ -259,7 +259,14 @@ sub info_base {
 	    ANYBODY
 	    Action.LocalFilePlain->execute_apple_touch_icon
 	)],
-#195-199 free
+	[qw(
+	    JAVASCRIPT_LOG_ERROR
+	    195
+	    GENERAL
+	    ANYBODY
+	    Action.Error->execute_from_javascript
+	)],
+#196-199 free
     ];
 }
 

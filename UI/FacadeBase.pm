@@ -92,6 +92,7 @@ sub internal_base_tasks {
 	[USER_HOME => '?'],
 	[UNADORNED_PAGE => 'rp/*'],
 	[PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
+	[JAVASCRIPT_LOG_ERROR => 'pub/javascript-error'],
     ];
 }
 
