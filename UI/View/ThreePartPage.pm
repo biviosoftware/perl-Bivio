@@ -84,6 +84,7 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_body_first => Join([
 	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
             vs_first_focus(view_widget_value('xhtml_want_first_focus')),
+	    Script('b_log_errors'),
 	]),
 	xhtml_header_right => $_C->if_version(
 	    7 => sub {_if_want(qw(SearchForm SEARCH_LIST))},
