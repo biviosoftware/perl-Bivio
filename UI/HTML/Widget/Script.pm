@@ -448,6 +448,28 @@ function b_dp_get_month_name(d){
 EOF
 }
 
+sub JAVASCRIPT_B_LOG_ERRORS {
+    return <<'EOF';
+window.onerror = function (errorMsg, url, lineNumber) {
+    var req;
+    try {
+        req = new XMLHttpRequest();
+    }
+    catch (e) {
+        return false;
+    }
+    req.open("POST", "/pub/javascript-error", false);
+    req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    req.send("json=" + JSON.stringify({
+        'errorMsg': errorMsg,
+        'url': url,
+        'lineNumber': lineNumber,
+    }));
+    return false;
+}
+EOF
+}
+
 sub JAVASCRIPT_B_SLIDE_OUT_SEARCH_FORM {
     return <<'EOF';
 function b_sosf_focus(field_id, other_ids) {
