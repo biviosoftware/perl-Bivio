@@ -24,6 +24,12 @@ sub execute {
     );
 }
 
+sub execute_from_javascript {
+    my($proto, $req) = @_;
+    b_warn('javascript error: ', $req->get_form->{json});
+    return shift->SUPER::execute(@_);
+}
+
 sub internal_render_content {
     my($proto, $req, $status) = @_;
     my($r) = $req->unsafe_get('r');
