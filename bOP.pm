@@ -28,10 +28,25 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 12.90  2013/10/17 23:17:54  moeller
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    add more rules for filtering out of office messages
+    added automatic unsubscribe handling
+    loosened out-of-office match
+  * Bivio::Biz::Model::MailUnsubscribeForm
+    added unsubscribe()
+  * Bivio::Type::UserAgent
+    BROWSER_ANDROID -> BROWSER_ANDROID_STOCK, add BROWSER_CHROME_PHONE, BROWSER_C
+  HROME_TABLET
+    more mobile browsers
+  * Bivio::Util::RealmAdmin
+    include UserRealmSubscription info in users()
+  * Bivio::Util::User
+    show UserRealmSubscription info in realms()
+
   Revision 12.89  2013/10/09 18:20:00  schellj
   * Bivio::UI::HTML::Widget::SlideOutSearchForm
     NEW
