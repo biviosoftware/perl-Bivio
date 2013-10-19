@@ -23,7 +23,7 @@ sub row_create {
 	'Email.email' => $new->{'Email.email'},
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	map(($_ => $new->{$_}), qw(administrator file_writer)),
-	dont_add_subscription => !$new->{is_subscribed},
+	is_subscribed => $new->{is_subscribed},
     });
     return;
 }
