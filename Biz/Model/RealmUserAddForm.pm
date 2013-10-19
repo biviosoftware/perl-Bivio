@@ -59,7 +59,7 @@ sub internal_initialize {
         version => 1,
         require_context => 1,
 	$self->field_decl(visible =>
-	    [qw(dont_add_subscription administrator file_writer)],
+	    [qw(is_subscribed administrator file_writer)],
 	    qw(Boolean NONE),
 	),
 	other => [
@@ -73,6 +73,11 @@ sub internal_initialize {
 		# Match RealmUserDeleteForm
 		name => 'other_roles',
 		type => 'Array',
+		constraint => 'NONE',
+	    },
+	    {
+		name => 'dont_add_subscription',
+		type => 'Boolean',
 		constraint => 'NONE',
 	    },
 	    'RealmUser.realm_id',
@@ -153,6 +158,7 @@ sub _set_subscription {
     $self->new_other('UserRealmSubscription')->create({
 	user_id => $user_id,
 	realm_id => $realm_id,
+	is_subscribed => $self->unsafe_get('is_subscribed'),
     }) unless _is_subscription_status_set($self, $user_id, $realm_id);
     return;
 }
