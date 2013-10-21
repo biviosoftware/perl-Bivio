@@ -462,7 +462,7 @@ window.onerror = function (errorMsg, url, lineNumber) {
     req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
     req.send("json=" + JSON.stringify({
         'errorMsg': errorMsg,
-        'url': url,
+        'url': encodeURIComponent(url),
         'lineNumber': lineNumber,
     }));
     return false;
