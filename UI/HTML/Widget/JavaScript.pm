@@ -44,8 +44,9 @@ sub render {
 	    || defined($script)
 	    || defined($no_script_html);
 
-    # Render common code
-    my($defns) = $req->get_if_exists_else_put($_COMMON_CODE, {});
+    # Render common code (on parent request if embedded)
+    my($root_req) = $req->unsafe_get_current_root || $req;
+    my($defns) = $root_req->get_if_exists_else_put($_COMMON_CODE, {});
     $defns->{$module_tag} ||= $common_code
 	if defined($module_tag) && defined($common_code);
 
