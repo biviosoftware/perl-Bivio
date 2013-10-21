@@ -268,7 +268,7 @@ sub _ignore_unsubscribe {
     return undef
 	unless $self->req('auth_user_id')
 	    && $self->get('mail_incoming')->get('header')
-		=~ /^Subject:\s+(.*?\bunsubscribe\b.*)/im;
+		=~ /^Subject:\s+(unsubscribe)\s*$/im;
     my($subject) = $1 || b_die();
     my($subscription) = $self->new_other('UserRealmSubscription');
     if ($subscription->unsafe_load({
