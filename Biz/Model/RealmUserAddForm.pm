@@ -80,6 +80,11 @@ sub internal_initialize {
 		type => 'Boolean',
 		constraint => 'NONE',
 	    },
+	    {
+		name => 'override_default_subscription',
+		type => 'Boolean',
+		constraint => 'NONE',
+	    },
 	    'RealmUser.realm_id',
 	],
     });
@@ -158,7 +163,8 @@ sub _set_subscription {
     $self->new_other('UserRealmSubscription')->create({
 	user_id => $user_id,
 	realm_id => $realm_id,
-	is_subscribed => $self->unsafe_get('is_subscribed'),
+	is_subscribed => $self->unsafe_get('override_default_subscription')
+	    ? $self->unsafe_get('is_subscribed') : undef,
     }) unless _is_subscription_status_set($self, $user_id, $realm_id);
     return;
 }
