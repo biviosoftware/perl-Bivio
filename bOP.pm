@@ -28,9 +28,28 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 12.91  2013/10/19 01:37:15  schellj
+  Release notes:
+  * Bivio::Biz::Action::Error
+    added execute_from_javascript()
+  * Bivio::Biz::Model::ForumUserEditDAVList
+    is_subscribed now a field in RealmUserAddForm, use it instead of dont_add_subscription
+  * Bivio::Biz::Model::RealmUserAddForm
+    add is_subscribed field in addition to dont_add_subscription, these
+    need to be separate
+  * Bivio::Delegate::TaskId
+    added JAVASCRIPT_LOG_ERROR task
+  * Bivio::UI::FacadeBase
+    added JAVASCRIPT_LOG_ERROR task
+  * Bivio::UI::HTML::Widget::Script
+    added b_log_errors script
+  * Bivio::UI::View::ThreePartPage
+    added v_log_errors script
+
   Revision 12.90  2013/10/17 23:17:54  moeller
   * Bivio::Biz::Model::MailReceiveDispatchForm
     add more rules for filtering out of office messages
