@@ -29,12 +29,13 @@ commands:
     leave_role -- remove one user role from a realm
     leave_user -- removes all user roles from realm
     reset_password password -- reset a user's password
-    scan_realm_id -- checks for auth_id in all table fields
+    scan_realm_id [realm_id] -- checks for auth_id in all table fields
     subscribe_user_to_realm -- subscribe given user to given realm
     to_id anything -- the id for the realm passed as an argument
     unsafe_to_id anything -- to_id if it exists else undef
     unsubscribe_user_from_realm -- unsubscribe given user from given realm
     users [role] -- dump users in realm [with a specific role]
+    verify_realm_owners -- ensures RealmOwner has associated owner model
 EOF
 }
 
@@ -246,9 +247,9 @@ sub reset_password {
 }
 
 sub scan_realm_id {
-    my($self) = @_;
+    my($self, $realm_id) = @_;
     # Scans all bivio tables, looking for realm_id.
-    my($id) = $self->req('auth_id');
+    my($id) = $realm_id || $self->req('auth_id');
     $self->usage_error('missing realm')
 	unless $id && $id > 1;
     my($tables) = $_C->map_execute(
@@ -328,6 +329,68 @@ sub users {
 		: grep(grep($_->[0] eq $role, @{$roles->{$_}}), keys(%$roles)),
 	)),
     );
+}
+
+sub verify_realm_owners {
+    my($self) = @_;
+    my($owner_models) = {};
+    b_use('Biz.PropertyModel')->do_iterate_model_subclasses(
+	sub {
+	    my($proto) = @_;
+	    if (UNIVERSAL::isa($proto, b_use('Model.RealmOwnerBase'))) {
+		my($m) = $proto->new($self->req);
+		my($key_names) = $m->get_info('primary_key_names');
+		b_die($proto)
+		    if @$key_names != 1;
+		$owner_models->{$proto} = {
+		    primary_id => $key_names->[0],
+		    model => $m,
+		    table => $m->get_info('table_name'),
+		};
+	    }
+	    return 1;
+	},
+    );
+
+    foreach my $info (values(%$owner_models)) {
+	my($table, $column) = ($info->{table}, $info->{primary_id});
+	b_use('SQL.Connection')->do_execute(
+	    sub {
+		my($row) = @_;
+		$self->print($table, ' ', $column, ': ', $row->[0], "\n");
+		return 1;
+	    },
+	    <<"EOF",
+	        SELECT $column FROM $table
+                WHERE NOT EXISTS (
+                    SELECT ro.realm_id FROM realm_owner_t ro
+                    WHERE ro.realm_id = $table.$column
+                )
+EOF
+	);
+    }
+    $self->model('RealmOwner')->do_iterate(
+	sub {
+	    my($ro) = @_;
+	    return 0
+		if $ro->get('realm_id') < 100;
+	    foreach my $info (values(%$owner_models)) {
+		next unless $info->{model}->unauth_load({
+		    $info->{primary_id} => $ro->get('realm_id'),
+		});
+		return 1;
+	    }
+	    $self->print(
+		$ro->get('realm_type')->get_name,
+		' ',
+		$ro->get('realm_id'),
+		"\n");
+	    return 1;
+	},
+	'unauth_iterate_start',
+	'realm_id DESC',
+    );
+    return;
 }
 
 sub _info {
