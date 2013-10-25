@@ -289,6 +289,10 @@ sub handle_unload_package {
     return;
 }
 
+sub if_html5 {
+    return shift->if_then_else($_CFG->{is_html5}, @_);
+}
+
 sub init_from_prior_group {
     my($self, $name) = @_;
     return sub {shift->handle_init_from_prior_group($name)};
@@ -443,9 +447,7 @@ sub new {
     # Load all components before initializing.  Modifies @ & %_COMPONENTS.
     my($components) = [map(b_use('FacadeComponent', $_), sort(keys(%$config)))];
     foreach my $c (@$components) {
-	# Certain apps refer to Bivio::UI::<comp> without using
-	$_CL->unsafe_map_require('UI', $c->simple_package_name)
-	    || $_CL->unsafe_map_require('FacadeComponent', $c->simple_package_name);
+	$_CL->unsafe_map_require('FacadeComponent', $c->simple_package_name);
 	$c->handle_register;
     }
     _initialize($self, $config, $clone);
