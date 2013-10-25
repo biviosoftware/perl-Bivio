@@ -42,9 +42,9 @@ sub site_css {
 	    my($source) = @_;
 	    my($res) = '';
 	    my($info) = $source->ureq($_REQ_KEY);
-	    return '' unless $info;
+	    return ''
+		unless $info;
 	    my($facade) = $_F->get_from_source($source)->get('CSS');
-
 	    foreach my $path (@{$info->{render_order}}) {
 		my($selector, $widget, $class) = @$path;
 		my($css) = $facade->unsafe_get_value($widget, $class);
