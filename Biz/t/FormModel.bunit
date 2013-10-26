@@ -16,7 +16,7 @@ FormModel({
 	return [0];
     },
     [FORM_MODEL_BUNIT_LOGIN => {
-	login => 'no such user',
+	login => 'nosuchuser',
 	'RealmOwner.password' => 'no match',
     }] => sub {
 	return [{
