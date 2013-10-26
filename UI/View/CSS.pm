@@ -29,10 +29,7 @@ sub add_to_css {
 }
 
 sub internal_site_css {
-    return $_SITE
-	. ($_F->is_html5
-	    ? _html5_css()
-	    : '');
+    return $_SITE . $_F->if_html5(\&_html5_css, '');
 }
 
 sub site_css {
