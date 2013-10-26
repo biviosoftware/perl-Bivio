@@ -14,14 +14,15 @@ my($_DC) = b_use('Bivio.DieCode');
 my($_FCT) = b_use('FacadeComponent.Task');
 my($_PARAMS) = [
     @{Bivio::Agent::Request->FORMAT_URI_PARAMETERS},
-    qw(no_form method),
+    qw(no_form method form_model_state),
 ];
 my($_DEFAULTS) = {
     map(($_ => undef), @$_PARAMS),
     method => 'client_redirect',
 };
 my($_EXPECTED) = {
-    put_durable_server_redirect_state => [@$_PARAMS, qw(form form_model)],
+    put_durable_server_redirect_state => [@$_PARAMS, qw()],
+    method_that_does_nothing => [],
     server_redirect => [qw(
         task_id realm query form path_info no_context require_context no_form
 	carry_path_info carry_query facade_uri
@@ -35,6 +36,12 @@ my($_IMPLICIT_OVERRIDE) = {
     carry_query => 1,
     carry_path_info => 1,
 };
+
+sub TASK_EXECUTE_STOP {
+    return {
+	method => 'method_that_does_nothing',
+    };
+}
 
 sub internal_as_string {
     my($self) = @_;
@@ -131,15 +138,20 @@ sub parse_item_result {
 	$params->{task_id} ||= 'next'
 	    unless $params->{uri};
     }
+    elsif ($params eq '1') {
+	$params = $proto->TASK_EXECUTE_STOP;
+    }
     else {
-	return 1
-	    if $params eq '1';
 	b_die('server_redirect.*: invalid form, use a hash')
 	    if $params =~ /^(server_redirect)\./;
 	$params = {task_id => $params};
 	$override = $_IMPLICIT_OVERRIDE;
     }
-    unless ($params->{uri} || $_TI->is_blesser_of($params->{task_id})) {
+    unless (
+	($params->{method} || '') eq 'method_that_does_nothing'
+	|| $params->{uri}
+	|| $_TI->is_blesser_of($params->{task_id})
+    ) {
 	if (($params->{task_id} || '') =~ $task->TASK_ATTR_RE) {
 	    $params = {
 		%{$task->dep_get_attr(delete($params->{task_id}))},
