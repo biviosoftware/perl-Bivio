@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Biz::FormModel;
 use strict;
@@ -68,10 +68,13 @@ my($_FS) = b_use('SQL.FormSupport');
 my($_HTML) = b_use('Bivio.HTML');
 my($_I) = b_use('Type.Integer');
 my($_T) = b_use('Agent.Task');
+my($_FB) = b_use('Type.FormButton');
+my($_OKB) = b_use('Type.OKButton');
+my($_CB) = b_use('Type.CancelButton');
 my($_TE) = b_use('Bivio.TypeError');
+my($_ATE) = b_use('Agent.TaskEvent');
 my($_IDI) = __PACKAGE__->instance_data_index;
 b_use('AgentHTTP.Cookie')->register(__PACKAGE__);
-my($_V1) = b_use('IO.Config')->if_version(1);
 my($_V9) = b_use('IO.Config')->if_version(9);
 my($_ENUM_SET_SEP) = '_';
 
@@ -838,56 +841,13 @@ sub new {
 sub process {
     my($self, $req, $values) = shift->internal_process_args(@_);
     $self->assert_not_singleton;
-    # Does the work for L<execute|"execute"> after execute creates a I<self>.
-    my($fields) = $self->[$_IDI];
-
-    # Save in request
     $self->put_on_request;
-
-    # Called as an action internally, process values.  Do no validation.
-    if ($values) {
-	$values = {
-	    $self->OK_BUTTON_NAME => 1,
-	    %$values,
-	};
-	$self->internal_pre_parse_columns;
-	$self->internal_post_parse_columns($values);
-	$fields->{literals} = {};
-	# Forms called internally don't have a context.  Form models
-	# should blow up.
-	my($res) = _call_execute_ok(
-	    $self, $self->OK_BUTTON_NAME, $self->get_info('require_validate'));
-	return $res || 0
-	    unless $self->in_error;
-	if ($_TRACE) {
-	    my($msg) = '';
-	    my($e) = $self->get_errors;
-	    foreach my $field (keys(%$e)) {
-		$msg .= $field.' '.$e->{$field}->get_name."\n";
-	    }
-	    _trace($msg);
-	}
-	b_die(
-	    $self,
-	    ': called with invalid values, ',
-	    $self->get_errors,
-	    ' ',
-	    $self->get_error_details || '',
-	    ' ',
-	    $self->internal_get,
-	);
-	# DOES NOT RETURN
-    }
-    if ($self->is_auxiliary_on_task) {
-	$fields->{want_context} = $self->get_info('require_context');
-	# Auxiliary forms are not the "main" form models on the page
-	# and therefore, do not have any input.  They always return
-	# back to this page, if they require_context.
-	$fields->{literals} = {};
-	$fields->{context} = $self->get_context_from_request({}, $req)
-	    if $fields->{want_context};
-	return _call_execute($self, 'execute_empty');
-    }
+    return _process_with_values($self, $values)
+	if $values;
+    return _process_as_auxiliary($self)
+	if $self->is_auxiliary_on_task;
+    $req ||= $self->get_request;
+    my($fields) = $self->[$_IDI];
     $fields->{want_context} = $self->get_info('require_context')
 	&& $self->req(qw(task require_context));
     _trace(
@@ -934,18 +894,18 @@ sub process {
     }
 
     # determine the selected button, default is ok
-    my($button, $button_type) = ($self->OK_BUTTON_NAME, 'Bivio::Type::OKButton');
+    my($button, $button_type) = ($self->OK_BUTTON_NAME, $_OKB);
     foreach my $field (@{$self->get_keys}) {
 	if (defined($self->get($field))) {
 	    my($type) = $self->get_field_type($field);
 	    ($button, $button_type) = ($field, $type)
-		if $type->isa('Bivio::Type::FormButton');
+		if $_FB->is_super_of($type);
 	}
     }
     return $self->validate_and_execute_ok($button)
-	if $button_type->isa('Bivio::Type::OKButton');
+	if $_OKB->is_super_of($button_type);
     return _call_execute($self, 'execute_cancel', $button)
-	if $button_type->isa('Bivio::Type::CancelButton');
+	if $_CB->is_super_of($button_type);
     return _call_execute($self, 'execute_other', $button);
 }
 
@@ -1052,49 +1012,39 @@ sub validate_and_execute_ok {
     my($fields) = $self->[$_IDI];
     my($res) = _call_execute_ok($self, $form_button, 1);
     unless ($self->in_error || $fields->{stay_on_page}) {
-	if (ref($res) eq 'HASH') {
-	    $self->die($res, ': both query or carry_query set in result')
-		if $res->{carry_query} && $res->{query};
-	    $res->{query} = $req->unsafe_get('query')
-		if delete($res->{carry_query});
-	}
-	elsif ($res) {
-	    return 1
-		if $res eq 1;
-	    my($carry) = _carry_path_info_and_query();
-	    $res = {
-		task_id => $res,
-		query => {
-		    delete($carry->{carry_query})
-		        ? %{$self->req('query') || {}} : (),
-		},
-	    };
-	}
 	return $self->internal_redirect_next({
 	    acknowledgement => $_A->SAVE_LABEL_DEFAULT,
-	}) unless $res;
+	}) if _task_result_is_false($res);
+	$self->die($res, ': both query or carry_query set in result')
+	    if $res->{carry_query} && $res->{query};
+	$res->{query} = $req->unsafe_get('query')
+	    if delete($res->{carry_query});
 	($res->{query} ||= {})->{acknowledgement} ||= $_A->SAVE_LABEL_DEFAULT;
 	return $res;
     }
-    $self->die($res, ': non-zero result and stay_on_page or error')
-	if $_V1 && $res;
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
 	if $self->in_error;
-    return 0
+    $self->die($res, ': non-zero result and stay_on_page or error')
+	unless _task_result_is_false($res);
+    return _task_result($self, 'stay_on_page', 0)
 	if $fields->{stay_on_page};
     _execute_ok_in_error($self);
     $_T->rollback($req);
-    return 0
+    return _task_result($self, 'form_error', 0)
 	unless my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task');
     $self->put_on_request(1);
-    return {
-	method => 'server_redirect',
-	task_id => $t,
-	map(($_ => $req->unsafe_get($_)), qw(
-	    query
-	    path_info
-	)),
-    };
+    return _task_result(
+	$self,
+	'form_error',
+	{
+	    method => 'server_redirect',
+	    task_id => $t,
+	    map(($_ => $req->unsafe_get($_)), qw(
+		query
+		path_info
+	    )),
+	},
+    );
 }
 
 sub validate_greater_than_zero {
@@ -1173,21 +1123,32 @@ sub _apply_type_error {
 
 sub _call_execute {
     my($self, $method) = (shift, shift);
-    return $self->internal_pre_execute($method)
-	|| _post_execute($self, $method, $self->$method(@_));
+    my($res) = _pre_execute($self, $method);
+    return $res
+	unless _task_result_is_false($res);
+    return _post_execute(
+	$self,
+	$method,
+	_task_result($self, $method, $self->$method(@_)),
+    );
 }
 
 sub _call_execute_ok {
     my($self, $form_button, $validate) = @_;
     my($method) = $validate ? 'validate_and_execute_ok' : 'execute_ok';
-    my($res) = $self->internal_pre_execute($method);
+    my($res) = _pre_execute($self, $method);
     return $res
-	if $res;
+	unless _task_result_is_false($res);
+    $res = undef;
     $self->validate($form_button)
 	if $validate;
     unless ($self->in_error) {
 	my($die) = $_D->catch(sub {
-	    $res = $self->want_scalar($self->execute_ok($form_button));
+	    $res = _task_result(
+		$self,
+		'ok',
+		$self->want_scalar($self->execute_ok($form_button)),
+	    );
 	    return;
 	});
 	if ($die) {
@@ -1244,6 +1205,22 @@ sub _execute_ok_in_error {
 	$self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
     }
     return;
+}
+
+sub _get_form {
+    my($self, $req) = @_;
+    my($form) = $req->get_form;
+    return $form
+	unless $form;
+    my($fields) = $self->[$_IDI];
+    return $form
+	unless $fields->{form_is_json}
+	= ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ ? 1 : 0;
+    my($map) = $self->get_info('json_form_name_map');
+    return {map(
+	(($map->{$_} ? $map->{$_}->{form_name} : $_) => $form->{$_}),
+	keys(%$form),
+    )};
 }
 
 sub _get_literal {
@@ -1462,7 +1439,70 @@ sub _parse_version {
 
 sub _post_execute {
     my($self, $method, $res) = @_;
-    return $self->internal_post_execute($method, $res) || $res;
+    my($res2) = _task_result(
+	$self,
+	'post_execute',
+	$self->internal_post_execute($method, $res),
+    );
+    return _task_result_is_false($res2) ? $res : $res2;
+}
+
+sub _pre_execute {
+    my($self, $method) = @_;
+    return _task_result(
+	$self,
+	'pre_execute',
+	$self->internal_pre_execute($method),
+    );
+}
+
+sub _process_as_auxiliary {
+    my($self) = @_;
+    my($fields) = $self->[$_IDI];
+    $fields->{want_context} = $self->get_info('require_context');
+    # Auxiliary forms are not the "main" form models on the page
+    # and therefore, do not have any input.  They always return
+    # back to this page, if they require_context.
+    $fields->{literals} = {};
+    $fields->{context} = $self->get_context_from_request({}, $self->req)
+	if $fields->{want_context};
+    return _call_execute($self, 'execute_empty');
+}
+
+sub _process_with_values {
+    my($self, $values) = @_;
+    my($fields) = $self->[$_IDI];
+    $values = {
+	$self->OK_BUTTON_NAME => 1,
+	%$values,
+    };
+    $self->internal_pre_parse_columns;
+    $self->internal_post_parse_columns($values);
+    $fields->{literals} = {};
+    # Forms called internally don't have a context.  Form models
+    # should blow up.
+    my($res) = _call_execute_ok(
+	$self, $self->OK_BUTTON_NAME, $self->get_info('require_validate'));
+    return $res
+	unless $self->in_error;
+    if ($_TRACE) {
+	my($msg) = '';
+	my($e) = $self->get_errors;
+	foreach my $field (keys(%$e)) {
+	    $msg .= $field.' '.$e->{$field}->get_name."\n";
+	}
+	_trace($msg);
+    }
+    b_die(
+	$self,
+	': called with invalid values, ',
+	$self->get_errors,
+	' ',
+	$self->get_error_details || '',
+	' ',
+	$self->internal_get,
+    );
+    # DOES NOT RETURN
 }
 
 sub _put_literal {
@@ -1490,24 +1530,34 @@ sub _redirect {
 	%{$extra_query || {}},
     };
     $fields->{redirecting} = 1;
-    return {
-	%$carry,
-	%$query ? (query => $query) : (),
-	task_id => $req->get('task')->get_attr_as_id($which),
-    } unless $fields->{context};
-    return $fields->{context}->return_redirect(
+    return _task_result(
 	$self,
 	$which,
-	$extra_query,
+	{
+	    %$carry,
+	    %$query ? (query => $query) : (),
+	},
+    ) unless $fields->{context};
+    return _task_result(
+	$self,
+	$which,
+	$fields->{context}->return_redirect(
+	    $self,
+	    $which,
+	    $extra_query,
+	),
     ) unless $req->unsafe_get_nested(qw(task want_workflow));
     _trace('continue workflow') if $_TRACE;
-    return {
-	%$carry,
-	%$query ? (query => $query) : (),
-	method => 'server_redirect',
-	task_id => $req->get('task')->get_attr_as_id($which),
-	require_context => 1,
-    };
+    return _task_result(
+	$self,
+	$which,
+	{
+	    %$carry,
+	    %$query ? (query => $query) : (),
+	    method => 'server_redirect',
+	    require_context => 1,
+	},
+    );
 }
 
 sub _redirect_same {
@@ -1517,14 +1567,41 @@ sub _redirect_same {
     my($req) = $self->get_request;
     # The form was corrupt.  Throw away the context and
     # the form and redirect back to this task.
+    return _task_result(
+	$self,
+	'update_collision',
+	{
+	    method => 'server_redirect',
+	    task_id => $req->get('task_id'),
+	    realm => undef,
+	    query => $req->get('query'),
+	    form => undef,
+	    path_info => $req->get('path_info'),
+	},
+    );
+}
+
+sub _task_result {
+    my($self, $which, $res) = @_;
+    return 0
+	unless $res;
+    return $res
+	if ref($res);
+    return $_ATE->TASK_EXECUTE_STOP
+	if $res eq '1';
+    my($carry) = _carry_path_info_and_query();
     return {
-	method => 'server_redirect',
-	task_id => $req->get('task_id'),
-	realm => undef,
-	query => $req->get('query'),
-	form => undef,
-	path_info => $req->get('path_info'),
+	task_id => $res,
+	query => {
+	    delete($carry->{carry_query})
+		? %{$self->req('query') || {}} : (),
+	},
     };
+}
+
+sub _task_result_is_false {
+    my($res) = @_;
+    return $res ? 0 : 1;
 }
 
 sub _validate {
@@ -1545,7 +1622,7 @@ sub _with_enum_set_field {
 	return $op->($type, $field);
     }
     else {
-	my($info) = SQL_Support()->is_qualified_model_name($field)
+	my($info) = b_debug(SQL_Support()->is_qualified_model_name($field))
 	    ? SQL_Support()->parse_column_name($field)
 	    : $self->get_field_info($field);
 	return $op->($info->{type}, $info->{name});
