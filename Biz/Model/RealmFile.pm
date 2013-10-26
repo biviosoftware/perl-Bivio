@@ -19,6 +19,7 @@ my($_FWQ) = b_use('Biz.FailoverWorkQueue');
 my($_T) = b_use('MIME.Type');
 my($_WN) = b_use('Type.WikiName');
 my($_TXN_PREFIX);
+my($_TXN_FILE_PATTERN_RE) = qr{(?:^|/)\..+\#[^/]+$}s;
 my($_S) = b_use('Bivio.Search');
 my($_VERSIONS_FOLDER) = $_FP->VERSIONS_FOLDER;
 my($_VERSION_REGEX) = $_FP->VERSION_REGEX;
@@ -33,6 +34,10 @@ sub MAIL_FOLDER {
 sub PUBLIC_FOLDER {
     # Always is_public => 1
     return $_DFN->PUBLIC_FOLDER_ROOT;
+}
+
+sub TXN_FILE_PATTERN_RE {
+    return $_TXN_FILE_PATTERN_RE
 }
 
 sub append_content {
