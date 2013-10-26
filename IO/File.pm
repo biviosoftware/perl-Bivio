@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2012 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2000-2013 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::IO::File;
 use strict;
@@ -7,6 +7,7 @@ use Cwd ();
 use File::Basename ();
 use File::Path ();
 use File::Spec ();
+use File::Find ();
 use IO::File ();
 b_use('IO.ClassLoader')->require_external_module_quietly('IO::Dir');
 
@@ -20,6 +21,10 @@ my($_R) = b_use('Biz.Random');
 b_use('IO.Config')->register(my $_CFG = {
     tmp_dir => '/tmp',
 });
+
+sub DO_FIND_PRUNE {
+    return \&DO_FIND_PRUNE;
+}
 
 sub absolute_path {
     my(undef, $file_name, $base) = @_;
@@ -70,6 +75,40 @@ sub chown_by_name {
 	CORE::chown($o, $g, $file)
 	    or b_die($file, ": unable to set owner: $!");
     }
+    return;
+}
+
+sub do_find {
+    my($proto, $op, $dirs, $options) = @_;
+    my($terminate);
+    File::Find::find(
+	{
+	    no_chdir => 1,
+	    follow => 0,
+	    wanted => sub {
+		if ($terminate) {
+		    $File::Find::prune = 1;
+		    return;
+		}
+		my($res) = $op->($_);
+		if (!$res) {
+		    $terminate = 1;
+		    $File::Find::prune = 1;
+		    return;
+		}
+		return
+		    if $res eq '1';
+		if ($res eq $proto->DO_FIND_PRUNE) {
+		    $File::Find::prune = 1;
+		    return;
+		}
+		b_die($res, ': unknown result from op');
+		# DOES NOT RETURN
+	    },
+	    $options ? %$options : (),
+	},
+	@$dirs,
+    );
     return;
 }
 
