@@ -138,7 +138,6 @@ sub update_model {
 	$model->get_request,
 	[update_model => $model->simple_package_name, $model->get_primary_id],
     ) unless ref($proto);
-    $proto->acquire_lock($req);
     my($class, $id) = @_;
     $model = $_M->new($req, $class);
     return
@@ -148,12 +147,14 @@ sub update_model {
 	$proto->delete_model($req, $model);
 	return;
     }
+    my($postings) = $_P->xapian_terms_and_postings($model);
+    $proto->acquire_lock($req);
     $req->perf_time_op(__PACKAGE__, sub {
 	_replace(
 	    $proto,
 	    $req,
 	    $model,
-	    $_P->xapian_terms_and_postings($model),
+	    $postings,
 	);
 	return;
     });
