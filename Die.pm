@@ -218,6 +218,7 @@ sub eval {
     #
     # Returns C<undef> in the event of an error, just like C<CORE::eval>.
     my(undef, $code) = @_;
+    local($_CATCH_QUIETLY) = 1;
     local($SIG{__DIE__});
     local($_CURRENT_SELF) = $_CURRENT_SELF;
     return _eval($code);
