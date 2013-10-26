@@ -20,7 +20,7 @@ sub append_buffer {
 	    if defined($$ref);
 	shift(@_);
     }
-    return $self;
+    return;
 }
 
 sub new {
