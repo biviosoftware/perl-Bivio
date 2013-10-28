@@ -483,17 +483,10 @@ div.pager {
   Font('tools');
 }
 div.main_body {
-  margin-top: 1ex;
-  margin-bottom: 1ex;
-}
-div.main_body {
   width: 100%;
   text-align: left;
-  margin-top: 1ex;
-  margin-bottom: 1ex;
-}
-div.main_top {
   margin-top: .5ex;
+  margin-bottom: 1ex;
 }
 div.main_top div.topic,
 div.main_top div.byline,
@@ -959,33 +952,32 @@ EOF
 
 sub _site_blog {
     return <<'EOF';
-div.blog div.list div.menu {
-  text-align: right;
-  text-transform: lowercase;
+div.blog_title {
+  Font('title');
+  margin-bottom: 1ex;
 }
-div.blog div.list div.text {
+div.blog {
+  margin-left: 3em;
+}
+div.blog div.text {
   text-align: left;
-}
-div.blog .list {
-  margin: 1ex;
+  width: 50em;
 }
 div.blog div.list div.heading {
   Font('blog_list_heading');
   text-align: left;
   margin: 1ex 0 0 0;
 }
-div.blog div.list p.b_prose,
-div.blog div.list p.prose {
-  margin: .5ex 0 .5ex 0;
+div.blog_byline .blog_img {
+  margin-right: 1em;
+  float: left;
 }
-table.simple td.blog_textarea {
-  margin: 0;
-  padding: 0;
+div.blog_byline .blog_author {
+  Color('text_byline');
+  float: left;
 }
-div.blog .sidebar ul {
-  margin: 0;
-  padding: 0;
-  list-style-type: none;
+div.blog_byline .clear {
+  clear: both;
 }
 EOF
 }
