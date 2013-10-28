@@ -97,7 +97,6 @@ sub internal_xhtml_adorned {
 	xhtml_topic => '',
 	xhtml_byline => '',
 	vs_pager => '',
-	xhtml_menu => $_WANT_USER_AUTH ? TaskMenu(['USER_PASSWORD']) : '',
 	xhtml_want_first_focus => 1,
 	xhtml_body_first => Join([
 	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
@@ -108,7 +107,6 @@ sub internal_xhtml_adorned {
 	body_first => view_widget_value('xhtml_body_first'),
 	head2 => Join([
 	    P_realm(view_widget_value('xhtml_realm')),
-	    P_menu(view_widget_value('xhtml_menu')),
 	    P_title(vs_text_as_prose('xhtml_title')),
 	]),
 	head3 => $_WANT_USER_AUTH ? Director(['user_state', '->get_name'], {
