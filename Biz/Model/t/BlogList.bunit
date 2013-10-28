@@ -13,12 +13,6 @@ my($entry) = require 'BlogList.PL';
 	map(([{this => $entry->[$_]->{path_info}}] => [$entry->[$_]]),
 	    0 .. $#$entry),
     ],
-    render_html => trim_space(<<'EOF'),
-<p class="b_prose">body
-body
-body
-</p>
-EOF
     execute_load_this => [
 	sub {[req()->put(
 	    query => undef,
