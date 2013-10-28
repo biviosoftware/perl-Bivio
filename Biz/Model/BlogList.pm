@@ -9,9 +9,8 @@ my($_ARF) = b_use('Action.RealmFile');
 my($_BC) = b_use('Type.BlogContent');
 my($_BFN) = b_use('Type.BlogFileName');
 my($_DT) = b_use('Type.DateTime');
+my($_FP) = b_use('Type.FilePath');
 my($_RF) = b_use('Model.RealmFile');
-my($_WT) = b_use('XHTMLWidget.WikiText');
-my($_CC) = b_use('IO.CallingContext');
 my($_S) = b_use('Bivio.Search');
 
 sub PAGE_SIZE {
@@ -87,6 +86,7 @@ sub internal_initialize {
 	    [qw(RealmFile.user_id RealmOwner.realm_id Email.realm_id)],
 	    'Email.email',
 	    'RealmOwner.display_name',
+	    'RealmOwner.name',
 	    {
 		name => 'title',
 		type => 'BlogTitle',
@@ -134,25 +134,28 @@ sub internal_post_load_row {
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    $self->new_other('RealmFileList')->prepare_statement_for_access_mode($stmt, $_BFN);
-    $stmt->where(
-	['Email.location', [$self->get_instance('Email')->DEFAULT_LOCATION]],
-    );
+    $self->new_other('RealmFileList')
+	->prepare_statement_for_access_mode($stmt, $_BFN);
+    $stmt->where(['Email.location', [b_use('Model.Email')->DEFAULT_LOCATION]]);
     return shift->SUPER::internal_prepare_statement(@_);
 }
 
-sub render_html {
-    my($self, $body, $task_id) = @_;
-    return $_WT->render_html({
-	value => $body || $self->get('body'),
-	name => $self->get('path_info'),
-	req => $self->get_request,
-	task_id => $task_id,
-	is_inline_text => 0,
-	calling_context =>
-	    $_CC->new_from_file_line($self->get('RealmFile.path'), 1),
-	map(($_ => $self->get("RealmFile.$_")), qw(is_public realm_id path)),
-    });
+sub unsafe_get_author_image_uri {
+    my($self) = @_;
+#TODO: should come from the user's file area, user avatar
+    my($file) = 'avatar_' . $self->get('RealmOwner.name') . '.png';
+    my($path) = $_FP->join($_FP->WIKI_DATA_FOLDER, $file);
+    my($uri) = $self->req->format_uri('FORUM_WIKI_VIEW', undef, undef, $file);
+    my($die_code);
+    if ($_ARF->access_controlled_load(
+	$self->req('auth_id'),
+	$path,
+	$self->req,
+	\$die_code,
+    )) {
+	return $uri;
+    }
+    return undef;
 }
 
 1;
