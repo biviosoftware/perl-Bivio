@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.92  2013/10/22 19:02:56  schellj
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    tighten unsubscribe filtering to subjects with "unsubscribe" as only text
+  * Bivio::Biz::Model::RealmUserAddForm
+    add override_default_subscription for forms that have an explicit
+    is_subscribed field, otherwise use default
+  * Bivio::UI::HTML::Widget::JavaScript
+    render common code on the root request (for embedded items)
+  * Bivio::UI::HTML::Widget::Script
+    call encodeURIComponent() on JSON uri data
+
   Revision 12.91  2013/10/19 01:37:15  schellj
   Release notes:
   * Bivio::Biz::Action::Error
