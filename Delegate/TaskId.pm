@@ -292,106 +292,35 @@ sub info_blog {
             cancel=FORUM_BLOG_LIST
 	    want_query=0
 	)],
-	$_C->if_version(
-	    3 => sub {
-		return (
-		    [qw(
-			FORUM_BLOG_DETAIL
-			102
-			ANY_OWNER
-			FEATURE_BLOG
-			Model.BlogRecentList->execute_load_all
-			Model.BlogList->execute_load_this
-			View.Blog->detail
-		    )],
-		    [qw(
-			FORUM_BLOG_LIST
-			103
-			ANY_OWNER
-			FEATURE_BLOG
-			Model.BlogRecentList->execute_load_all
-			Model.BlogList->execute_load_page
-			View.Blog->list
-		    )],
-		    [qw(
-			FORUM_BLOG_RSS
-			107
-			ANY_OWNER
-			FEATURE_BLOG
-			Model.BlogList->execute_load_page
-			View.Blog->list_rss
-			html_task=FORUM_BLOG_LIST
-                        html_detail_task=FORUM_BLOG_DETAIL
-		    )],
-		);
-	    },
-	    sub {
-		return (
-		    [qw(
-			FORUM_BLOG_DETAIL
-			102
-			ANY_OWNER
-			DATA_READ&FEATURE_BLOG
-			Type.AccessMode->execute_private
-			Model.BlogRecentList->execute_load_all
-			Model.BlogList->execute_load_this
-			View.Blog->detail
-		    )],
-		    [qw(
-			FORUM_BLOG_LIST
-			103
-			ANY_OWNER
-			DATA_READ&FEATURE_BLOG
-			Type.AccessMode->execute_private
-			Model.BlogRecentList->execute_load_all
-			Model.BlogList->execute_load_page
-			View.Blog->list
-		    )],
-		    [qw(
-			FORUM_PUBLIC_BLOG_LIST
-			104
-			ANY_OWNER
-			ANYBODY&FEATURE_BLOG
-			Type.AccessMode->execute_public
-			Model.BlogRecentList->execute_load_all
-			Model.BlogList->execute_load_page
-			View.Blog->list
-		    )],
-		    [qw(
-			FORUM_PUBLIC_BLOG_DETAIL
-			105
-			ANY_OWNER
-			ANYBODY&FEATURE_BLOG
-			Type.AccessMode->execute_public
-			Model.BlogRecentList->execute_load_all
-			Model.BlogList->execute_load_this
-			View.Blog->detail
-		    )],
-		    [qw(
-			FORUM_PUBLIC_BLOG_RSS
-			106
-			ANY_OWNER
-			ANYBODY&FEATURE_BLOG
-			Type.AccessMode->execute_public
-			Model.BlogList->execute_load_page
-			View.Blog->list_rss
-			html_task=FORUM_PUBLIC_BLOG_LIST
-                        html_detail_task=FORUM_PUBLIC_BLOG_DETAIL
-		    )],
-		    [qw(
-			FORUM_BLOG_RSS
-			107
-			ANY_OWNER
-			DATA_READ&FEATURE_BLOG
-			Type.AccessMode->execute_private
-			Model.BlogList->execute_load_page
-			View.Blog->list_rss
-                        html_task=FORUM_BLOG_LIST
-			html_detail_task=FORUM_BLOG_DETAIL
-		    )],
-		);
-	    },
-	),
+	[qw(
+	    FORUM_BLOG_DETAIL
+	    102
+	    ANY_OWNER
+	    FEATURE_BLOG
+	    Model.BlogRecentList->execute_load_all
+	    Model.BlogList->execute_load_this
+	    View.Blog->detail
+       )],
+       [qw(
+	    FORUM_BLOG_LIST
+	    103
+	    ANY_OWNER
+	    FEATURE_BLOG
+	    Model.BlogRecentList->execute_load_all
+	    Model.BlogList->execute_load_page
+	    View.Blog->list
+       )],
+#104-106 free
+       [qw(
+	    FORUM_BLOG_RSS
+	    107
+	    ANY_OWNER
+	    FEATURE_BLOG
+	    Model.BlogList->execute_load_page
+	    View.Blog->list_rss
+	    html_task=FORUM_BLOG_LIST
+	    html_detail_task=FORUM_BLOG_DETAIL
+       )],
 #108-109 free
     ];
 }
@@ -1673,48 +1602,16 @@ sub info_wiki {
 	    ANYBODY&FEATURE_WIKI
 	    View.Wiki->help
 	)],
-	$_C->if_version(
-	    3 => sub {
-		return (
-		    [qw(
-			FORUM_WIKI_VIEW
-			48
-			ANY_OWNER
-			ANYBODY&FEATURE_WIKI
-			Action.WikiView->execute_prepare_html
-			View.Wiki->view
-			MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
-			want_author=1
-		    )],
-		);
-	    },
-	    sub {
-		return (
-		    [qw(
-			FORUM_PUBLIC_WIKI_VIEW
-			120
-			ANY_OWNER
-			ANYBODY&FEATURE_WIKI
-			Action.WikiView->execute_prepare_html
-			View.Wiki->view
-			MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
-			edit_task=FORUM_WIKI_EDIT
-			want_author=1
-		    )],
-		    [qw(
-			FORUM_WIKI_VIEW
-			48
-			ANY_OWNER
-			DATA_READ&FEATURE_WIKI
-			Action.WikiView->execute_prepare_html
-			View.Wiki->view
-			MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
-			edit_task=FORUM_WIKI_EDIT
-			want_author=1
-		    )],
-		);
-	    },
-	),
+	[qw(
+	    FORUM_WIKI_VIEW
+	    48
+	    ANY_OWNER
+	    ANYBODY&FEATURE_WIKI
+	    Action.WikiView->execute_prepare_html
+	    View.Wiki->view
+	    MODEL_NOT_FOUND=FORUM_WIKI_NOT_FOUND
+	    want_author=1
+        )],
 	[qw(
 	    FORUM_WIKI_EDIT
 	    49
