@@ -644,24 +644,9 @@ sub _cfg_blog {
 	Task => [
 	    [FORUM_BLOG_CREATE => '?/add-blog-entry'],
 	    [FORUM_BLOG_EDIT => '?/edit-blog-entry/*'],
-	    $_C->if_version(3 => sub {
-		    return (
-			[FORUM_BLOG_LIST => ['?/blog', '?/public-blog']],
-			[FORUM_BLOG_DETAIL => ['?/blog-entry/*', '?/public-blog-entry/*']],
-			[FORUM_BLOG_RSS => ['?/blog.atom', '?/blog.rss', '?/public-blog.rss']],
-		    );
-		},
-		sub {
-		    return (
-			[FORUM_BLOG_LIST => '?/blog'],
-			[FORUM_BLOG_DETAIL => '?/blog-entry/*'],
-			[FORUM_BLOG_RSS => '?/blog.rss'],
-			[FORUM_PUBLIC_BLOG_LIST => '?/public-blog'],
-			[FORUM_PUBLIC_BLOG_DETAIL => '?/public-blog-entry/*'],
-			[FORUM_PUBLIC_BLOG_RSS => '?/public-blog.rss'],
-		    );
-		},
-	    ),
+	    [FORUM_BLOG_LIST => ['?/blog', '?/public-blog']],
+	    [FORUM_BLOG_DETAIL => ['?/blog-entry/*', '?/public-blog-entry/*']],
+	    [FORUM_BLOG_RSS => ['?/blog.atom', '?/blog.rss', '?/public-blog.rss']],
 	],
 	Text => [
 	    [[qw(BlogCreateForm BlogEditForm)] => [
@@ -673,10 +658,8 @@ sub _cfg_blog {
 		empty_list_prose => 'No entries in this blog.',
 	    ]],
 	    [title => [
-		[qw(FORUM_BLOG_LIST FORUM_PUBLIC_BLOG_LIST FORUM_BLOG_RSS FORUM_PUBLIC_BLOG_RSS)]
-		    => 'Blog',
-		[qw(FORUM_BLOG_DETAIL FORUM_PUBLIC_BLOG_DETAIL)]
-		    => 'Blog Detail',
+		[qw(FORUM_BLOG_LIST FORUM_BLOG_RSS)] => 'Blog',
+		FORUM_BLOG_DETAIL => 'Blog Detail',
 	    ]],
 	    [FORUM_BLOG_EDIT => 'Edit this entry'],
 	    [FORUM_BLOG_CREATE => 'New blog entry'],
@@ -2042,19 +2025,7 @@ sub _cfg_wiki {
     return {
 	Task => [
 	    [FORUM_WIKI_EDIT => '?/edit-wiki/*'],
-	    $_C->if_version(3 => sub {
-		    return (
-			[FORUM_WIKI_VIEW => [
-			    '?/bp/*', '?/wiki/*', '?/public-wiki/*']],
-		    );
-		},
-		sub {
-		    return (
-			[FORUM_WIKI_VIEW => ['?/wiki/*']],
-			[FORUM_PUBLIC_WIKI_VIEW => ['?/public-wiki/*']],
-		    );
-		},
-	    ),
+	    [FORUM_WIKI_VIEW => ['?/bp/*', '?/wiki/*', '?/public-wiki/*']],
 	    [FORUM_WIKI_NOT_FOUND => undef],
 	    [FORUM_WIKI_VERSIONS_LIST => '?/wiki-history/*'],
 	    [FORUM_WIKI_VERSIONS_DIFF => '?/wiki-diff'],
@@ -2122,7 +2093,7 @@ sub _cfg_wiki {
 		FORUM_WIKI_EDIT => 'Edit vs_ui_wiki(); Page',
 		FORUM_WIKI_VERSIONS_LIST => 'vs_ui_wiki(); Page History',
 		FORUM_WIKI_VERSIONS_DIFF => 'vs_ui_wiki(); Versions Comparison',
-		[qw(FORUM_WIKI_VIEW FORUM_PUBLIC_WIKI_VIEW)] => 'vs_ui_wiki();',
+		FORUM_WIKI_VIEW => 'vs_ui_wiki();',
 		SITE_WIKI_VIEW => '',
 		forum_wiki_data => 'Files',
 	    ]],
