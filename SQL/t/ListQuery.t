@@ -96,8 +96,8 @@ Bivio::Test->new('Bivio::SQL::ListQuery')->unit([
     ],
     'Bivio::SQL::ListQuery' => [
 	clean_raw => [
-	    [{auth_id => 1}] => [{}],
-	    [{auth_id => 1, count => 1}] => [{count => 1}],
+	    [{auth_id => 1}, $_SUPPORT1] => [{}],
+	    [{auth_id => 1, count => 1}, $_SUPPORT1] => [{count => 1}],
 	],
     ],
     [
