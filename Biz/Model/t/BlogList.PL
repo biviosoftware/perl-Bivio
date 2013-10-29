@@ -4,7 +4,7 @@ require 'Blog.PL';
 [map({
     my($x) = {
 	title => "Title $_ *?:/",
-	body => "body\n" x $_,
+	content => "body\n" x $_,
     };
     Bivio::Biz::Model->new(req(), 'BlogCreateForm')->process($x);
     $x->{path_info} = Bivio::Type->get_instance('BlogFileName')->from_absolute(

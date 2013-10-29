@@ -8,7 +8,7 @@ require 'Blog.PL';
 	my($p) = $x % 2 ? 1 : 0;
 	[{
 	    title => "t$x",
-	    body => "b$x",
+	    content => "b$x",
 	    'RealmFile.is_public' => $p,
 	}] => [{
 	    'Model.RealmFile' => {
