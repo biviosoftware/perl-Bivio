@@ -18,7 +18,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         require_validate => 1,
-	$self->local_field(other => [qw(f1 f2 validate)], 'String'),
+	$self->field_decl(other => [qw(f1 f2 validate)], 'String'),
     });
 }
 
