@@ -30,12 +30,14 @@ sub cascade_delete {
     foreach my $c (@{$support->get_children}) {
 	my($child) = $self->new_other($c->[0]);
 	my($key_map) = $c->[1];
-	$child->$method({
+	my($child_query) = {
 	    map({
 		my($ck) = $key_map->{$_};
 		exists($properties->{$ck}) ? ($_ => $properties->{$ck}) : ();
 	    } keys(%$key_map)),
-	});
+	};
+	$child->$method($child_query)
+	    if %$child_query;
     }
     $query ? $self->delete_all($query) : $self->delete;
     return;
@@ -117,6 +119,8 @@ sub delete {
 
 sub delete_all {
     my($self, $query) = @_;
+    Bivio::IO::Alert->warn_deprecated('missing query args')
+	unless $query && %$query;
     # Deletes all the models of this type with the specified (possibly
     # partial key) query. Returns the number of models deleted.
     $self = $self->new
