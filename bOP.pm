@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,42 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.93  2013/10/28 20:16:01  moeller
+  * Bivio::Agent::TaskEvent
+    added TASK_EXECUTE_STOP (clearer marker than 1)
+    added form_model_state
+  * Bivio::Biz::FormModel
+    support from_is_json
+  * Bivio::Biz::Model::BlogList
+    removed render_html(), replaced by UI widget
+    added unsafe_get_author_image_uri()
+  * Bivio::Biz::Model::RealmFile
+    export TXN_FILE_PATTERN_RE
+  * Bivio::Delegate::TaskId
+    removed config v3 tasks for Blog/Wiki
+  * Bivio::Die
+    eval should $_CATCH_QUIETLY
+  * Bivio::IO::File
+    added do_find
+  * Bivio::Search::Xapian
+    acquire_lock after computing postings
+  * Bivio::UI::FacadeBase
+    removed config v3 tasks for Blog/Wikig
+  * Bivio::UI::Facade
+    added if_html5
+  * Bivio::UI::View::Base
+    removed unused xhtml_menu
+  * Bivio::UI::View::Blog
+    new layout for blog list and detail pages
+    removed old v3 config
+  * Bivio::UI::View::CSS
+    use if_html5
+    reformat blog css
+  * Bivio::UI::WidgetOutput
+    return $self
+  * Bivio::Util::RealmAdmin
+    added verify_realm_owners()
+
   Revision 12.92  2013/10/22 19:02:56  schellj
   * Bivio::Biz::Model::MailReceiveDispatchForm
     tighten unsubscribe filtering to subjects with "unsubscribe" as only text
