@@ -118,9 +118,9 @@ sub delete_message_id {
     my($self, @message_id) = @_;
     my($req) = $self->get_request;
     foreach my $id (@message_id) {
-	$self->model('RealmMail')->cascade_delete({
+	$self->model('RealmMail', {
 	    message_id => $id,
-	});
+	})->cascade_delete;
     }
     return;
 }
