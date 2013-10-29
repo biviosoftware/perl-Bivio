@@ -3,7 +3,7 @@
 Request('initialize_fully');
 set_realm_and_user(qw(fourem-sub1 root));
 model('Bulletin')->delete_all;
-model('RealmMail')->delete_all;
+model('RealmMail')->delete_all({realm_id => req('auth_id')});
 my($domain) = 'Util.RealmMail.bunit';
 my($data) = [
     ['2008-05-12', 'plain subject', 'text/plain', 'plain body'],
@@ -64,7 +64,7 @@ foreach my $item (@$data) {
         ],
     ],
     inline_case(sub {
-        model('RealmMail')->delete_all;
+        model('RealmMail')->delete_all({realm_id => req('auth_id')});
         model('Bulletin')->delete_all;
     }),
     {
