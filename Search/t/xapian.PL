@@ -29,7 +29,7 @@ do {
     ) {
 	my($user, $data) = @$op;
 	req()->set_realm_and_user($user, $user);
- 	model('RealmMail')->delete_all;
+ 	model('RealmMail')->delete_all({realm_id => req('auth_id')});
  	model('RealmFile')->delete_all;
 	foreach my $x (@$data) {
 	    push(@$files, model('RealmFile')->create_with_content(
