@@ -10,32 +10,7 @@ my($_DT) = b_use('Type.DateTime');
 
 sub edit {
     my($self, $form) = @_;
-    $form ||= 'BlogEditForm';
-    my($editor) = b_use('View.Wiki')->use_wysiwyg
-	? \&CKEditor
-	: \&TextArea;
-    return $self->internal_body(vs_simple_form($form => [
-	["$form.title", {
-	    size => 57,
-	}],
-	"$form.RealmFile.is_public",
-	Join([
-	    FormFieldError({
-		field => 'body',
-		label => 'text',
-	    }),
-	    $editor->({
-		field => 'body',
-		rows => 30,
-		cols => 80,
-		%{b_use('View.Wiki')->get_image_folders},
-		use_public_image_folder =>
-		    ["Model.$form", 'RealmFile.is_public'],
-	    }),
-	], {
-	    cell_class => 'blog_textarea',
-	}),
-    ]));
+    return b_use('View.Wiki')->edit($self, $form || 'BlogEditForm');
 }
 
 sub create {
@@ -59,7 +34,7 @@ sub detail {
 		WithModel('BlogList', _blog_byline()),
 		DIV_text(
 		    WikiText({
-			value => ['Model.BlogList', 'body'],
+			value => ['Model.BlogList', 'content'],
 			name => ['Model.BlogList', 'path_info'],
 		    }),
 		    {
