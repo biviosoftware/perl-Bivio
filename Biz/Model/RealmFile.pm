@@ -120,7 +120,9 @@ sub delete_all {
     my($op) = sub {
 	my($d) = _realm_dir($req->get('auth_id'));
 	_txn($self, _search_delete($self, [delete => glob("$d/[0-9]*[0-9]")]));
-	return $self->SUPER::delete_all;
+	return $self->SUPER::delete_all({
+	    realm_id => $req->get('auth_id'),
+	});
     };
     return $realm ? $req->with_realm($realm, $op) : $op->();
 }
