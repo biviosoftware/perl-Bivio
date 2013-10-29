@@ -1274,6 +1274,11 @@ div.b_main_errors * {
 .b_main_errors .b_item {
   margin-left: 2em;
 }
+! don't show the CKEditor until the skin is loaded
+! avoids some of the page jumping around while loading
+.cke_toolbar {
+  display: none;
+}
 
 EOF
 }
