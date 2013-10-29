@@ -13,6 +13,15 @@ sub create {
     return shift->SUPER::create(@_);
 }
 
+sub delete_all {
+    my($self) = @_;
+    $self->do_iterate(sub {
+        my($bulletin) = @_;
+	$bulletin->delete;
+    });
+    return;
+}
+
 sub get_attachment_file_names {
     # Returns an array of attachment file names.
     my($self) = @_;
