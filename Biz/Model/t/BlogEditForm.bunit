@@ -11,7 +11,7 @@ require 'Blog.PL';
 my($entry) = [map(
     +{
 	title => "Edit $_ Title",
-	body => "Edit\nbody $_\n",
+	content => "Edit\nbody $_\n",
 	'RealmFile.is_public' => $_,
     }, 0, 1,
 )];
@@ -26,7 +26,7 @@ $this = Type_BlogFileName()->from_absolute(req(qw(Model.RealmFile path)));
 		path => sub {
 		    assert_equals(
 			Type_BlogContent()->join(
-			    @{$entry->[$x]}{qw(title body)},
+			    @{$entry->[$x]}{qw(title content)},
 			),
 			req('Model.RealmFile')->get_content,
 		    );
