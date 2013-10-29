@@ -18,6 +18,7 @@ sub delete_all {
     $self->do_iterate(sub {
         my($bulletin) = @_;
 	$bulletin->delete;
+	return 1;
     });
     return;
 }
