@@ -23,7 +23,7 @@ sub execute_ok {
 	};
 	unless ($rf->unsafe_load($v)) {
 	    $rf->create_with_content(
-		$v, $_BC->join($self->get(qw(title body))));
+		$v, $_BC->join($self->get(qw(title content))));
 	    $self->get_request->put();
 	    return $self->return_with_validate({
 		path_info => $bfn,
@@ -49,7 +49,7 @@ sub internal_initialize {
 		constraint => 'NOT_NULL',
 	    },
 	    {
-		name => 'body',
+		name => 'content',
 		type => 'BlogBody',
 		constraint => 'NOT_NULL',
 	    },

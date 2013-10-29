@@ -18,7 +18,7 @@ sub execute_cancel {
 sub execute_empty {
     my($self) = @_;
     my($l) = $self->get_request->get('Model.BlogList');
-    foreach my $f (qw(title body RealmFile.is_public)) {
+    foreach my $f (qw(title content RealmFile.is_public)) {
 	$self->internal_put_field($f => $l->get($f));
     }
     return;
@@ -34,7 +34,7 @@ sub execute_ok {
     })->update_with_content({
 	path => $_BFN->to_absolute($fn, $public),
 	'RealmFile.is_public' => $public,
-    }, $_BC->join($self->get(qw(title body))))
+    }, $_BC->join($self->get(qw(title content))))
 	->put_on_request;
     return $self->return_with_validate({
         carry_path_info => 1,
@@ -53,7 +53,7 @@ sub internal_initialize {
 		constraint => 'NOT_NULL',
 	    },
 	    {
-		name => 'body',
+		name => 'content',
 		type => 'BlogBody',
 		constraint => 'NOT_NULL',
 	    },
