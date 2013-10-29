@@ -71,7 +71,7 @@ options({
 	create_folder => [
 	    [$path->()] => $commit,
 	],
-  	delete_deep => $commit,
+  	unauth_delete_deep => $commit,
 	unsafe_load => [
 	    [$path->()] => 0,
 	    [$path->(4)] => 0,
@@ -87,7 +87,7 @@ options({
 	    [$path->('file/bar')] => '123',
 	    [$path->()] => [{is_folder => 1}],
 	],
-  	delete_deep => $commit,
+  	unauth_delete_deep => $commit,
 	unsafe_load => [
 	    [$path->()] => 0,
 	],
@@ -110,7 +110,7 @@ options({
 	load => [
 	    [$path->()] => 'foo5',
 	],
-  	delete_deep => $commit,
+  	unauth_delete_deep => $commit,
 	unsafe_load => [
 	    [$path->()] => 0,
 	],
@@ -131,7 +131,7 @@ options({
 	    [$path->('dir/file')] => 'bar2',
 	    [$path->('dir')] => not_die(),
 	],
-	copy_deep => [
+	unauth_copy_deep => [
  	    [$path->('dir2')] => $commit,
  	    [$path->('dir3')] => $commit,
 	],
@@ -161,7 +161,7 @@ options({
 	    [$path->('dir3/file')] => 'bar2',
 	    [$path->('dir2')] => not_die(),
 	],
-	copy_deep => [
+	unauth_copy_deep => [
 	    [$path->('dir3')] => $commit,
 	],
 	load => [
