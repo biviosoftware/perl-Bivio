@@ -651,7 +651,7 @@ sub _cfg_blog {
 	Text => [
 	    [[qw(BlogCreateForm BlogEditForm)] => [
 		'title' => 'Title',
-		'body' => '',
+		'content' => '',
 		'RealmFile.is_public' => 'Public?',
 	    ]],
 	    [BlogList => [
