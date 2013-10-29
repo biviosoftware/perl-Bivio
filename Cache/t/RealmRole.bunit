@@ -19,7 +19,7 @@ req()->initialize_fully;
 	    }),
 	    [qw(demo demo USER_PASSWORD)] => 0,
 	    inline_case(sub {
-	        model('RealmRole')->delete_all;
+	        model('RealmRole')->delete_all({realm_id => req('auth_id')});
 		return;
 	    }),
 	    [qw(demo demo USER_PASSWORD)] => 1,

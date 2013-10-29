@@ -2,8 +2,8 @@
 # $Id$
 PropertyModel();
 req()->set_realm_and_user(qw(fourem-sub1 root));
-model('Tuple')->delete_all;
-model('TupleUse')->delete_all;
+model('Tuple')->delete_all({realm_id => req('auth_id')});
+model('TupleUse')->delete_all({realm_id => req('auth_id')});
 [
     create_from_label => [
 	PetShopReport => [{

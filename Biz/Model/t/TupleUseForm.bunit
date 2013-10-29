@@ -7,8 +7,8 @@ my($psr) = model('TupleDef', {
     label => 'PetShopReport',
 })->get('tuple_def_id');
 req()->set_realm('fourem-sub1');
-model('Tuple')->delete_all;
-model('TupleUse')->delete_all;
+model('Tuple')->delete_all({realm_id => req('auth_id')});
+model('TupleUse')->delete_all({realm_id => req('auth_id')});
 [
     empty_case({
 	'TupleUse.tuple_def_id' => undef,

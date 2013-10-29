@@ -15,7 +15,7 @@ req()->set_realm_and_user(qw(fourem btest_read));
 req()->initialize_fully('FORUM_TUPLE_EDIT');
 $tdid = model(TupleUseList => {auth_id => req('auth_id')})
     ->moniker_to_id('psr');
-model('Tuple')->delete_all;
+model('Tuple')->delete_all({realm_id => req('auth_id')});
 [
     [{
 	comment => 'hello1',
