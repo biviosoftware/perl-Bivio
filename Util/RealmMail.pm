@@ -118,9 +118,11 @@ sub delete_message_id {
     my($self, @message_id) = @_;
     my($req) = $self->get_request;
     foreach my $id (@message_id) {
-	$self->model('RealmMail', {
+	my($mail) = $self->model('RealmMail');
+	next unless $mail->unsafe_load({
 	    message_id => $id,
-	})->cascade_delete;
+	});
+	$mail->cascade_delete;
     }
     return;
 }
