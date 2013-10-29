@@ -11,71 +11,43 @@ my($_FP) = b_use('Type.FilePath');
 
 b_use('IO.Config')->register(my $_CFG = {
     use_wysiwyg => 0,
-    public_image_folder => $_FP->join($_FP->PUBLIC_FOLDER_ROOT,
-				      $_FP->WIKI_DATA_FOLDER),
+    public_image_folder => $_FP->join(
+	$_FP->PUBLIC_FOLDER_ROOT, $_FP->WIKI_DATA_FOLDER),
     private_image_folder => $_FP->WIKI_DATA_FOLDER,
     show_image_upload_tab => 1,
 });
 
-sub TEXT_AREA_COLS {
-    return 80;
-}
-
-sub TEXT_AREA_ROWS {
-    return 30;
-}
-
 sub edit {
-    my($self) = @_;
-    return shift->edit_wysiwyg(@_)
-	if $self->use_wysiwyg;
-    return $self->internal_body(vs_simple_form(WikiForm => [
-	_edit_wiki_buttons(),
-	'WikiForm.RealmFile.path_lc',
-	'WikiForm.RealmFile.is_public',
+    my($self, $view, $form) = @_;
+    # shared with View.Blog
+    $view ||= $self;
+    $form ||= 'WikiForm';
+    my($editor) = $_CFG->{use_wysiwyg}
+	? \&CKEditor
+	: \&TextArea;
+    my($title_field) = $form =~ /Wiki/ ? 'RealmFile.path_lc' : 'title';
+    return $view->internal_body(vs_simple_form($form => [
+	_edit_wiki_buttons($form),
+	["$form.$title_field", {
+	    size => 57,
+	}],
+	"$form.RealmFile.is_public",
 	Join([
 	    FormFieldError({
 		field => 'content',
 		label => 'text',
 	    }),
-	    TextArea({
+	    $editor->({
 		field => 'content',
-		rows => $self->TEXT_AREA_ROWS,
-		cols => $self->TEXT_AREA_COLS,
+		rows => $_CFG->{use_wysiwyg} ? 20 : 30,
+		cols => 80,
+		%{_image_folders($self)},
+		use_public_image_folder =>
+		    ["Model.$form", 'RealmFile.is_public'],
 	    }),
 	]),
-	_edit_wiki_buttons(),
+	_edit_wiki_buttons($form),
     ], 1));
-}
-
-sub edit_wysiwyg {
-    my($self) = @_;
-    return $self->internal_body(vs_simple_form(WikiForm => [
-	'WikiForm.RealmFile.path_lc',
-	'WikiForm.RealmFile.is_public',
-	Join([
-	    FormFieldError({
-		field => 'content',
-		label => 'text',
-	    }),
-	    CKEditor({
-		field => 'content',
-		use_public_image_folder => ['Model.WikiForm', 'RealmFile.is_public'],
-		show_image_upload_tab => $_CFG->{show_image_upload_tab},
-		rows => $self->TEXT_AREA_ROWS,
-		cols => $self->TEXT_AREA_COLS,
-		%{$self->get_image_folders},
-	    }),
-	]),
-	_edit_wiki_buttons(),
-    ], 1));
-}
-
-sub get_image_folders {
-    return {
-	public_image_folder => $_CFG->{public_image_folder},
-	private_image_folder => $_CFG->{private_image_folder},
-    };
 }
 
 sub handle_config {
@@ -116,10 +88,6 @@ EOF
 
 sub site_view {
     return shift->view(@_);
-}
-
-sub use_wysiwyg {
-    return $_CFG->{use_wysiwyg};
 }
 
 sub validator_all_mail {
@@ -241,6 +209,10 @@ sub view {
 }
 
 sub _edit_wiki_buttons {
+    my($form) = @_;
+    return StandardSubmit({
+	buttons => 'ok_button cancel_button',
+    }) unless $form =~ /Wiki/;
     return If(Or(
 	['->is_super_user'],
 	['->is_substitute_user'],
@@ -252,6 +224,13 @@ sub _edit_wiki_buttons {
 	    buttons => 'ok_button cancel_button',
 	}),
     );
+}
+
+sub _image_folders {
+    return {
+	public_image_folder => $_CFG->{public_image_folder},
+	private_image_folder => $_CFG->{private_image_folder},
+    };
 }
 
 1;
