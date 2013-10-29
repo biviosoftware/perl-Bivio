@@ -93,7 +93,7 @@ sub internal_initialize {
 		constraint => 'NOT_NULL',
 	    },
 	    {
-		name => 'body',
+		name => 'content',
 		type => 'BlogBody',
 		constraint => 'NOT_NULL',
 	    },
@@ -127,7 +127,7 @@ sub internal_post_load_row {
 	$self->req->if_test(sub {b_die('file format error')});
 	return 0;
     }
-    ($row->{title}, $row->{body}) = @$res;
+    ($row->{title}, $row->{content}) = @$res;
     $row->{query} = undef;
     return 1;
 }
