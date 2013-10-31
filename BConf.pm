@@ -394,9 +394,11 @@ sub merge_http_log {
 		ignore_list => [
 		    # Standard apache debug and info
 		    '\] \[(?:info|debug)\] ',
-		    '\[notice\] Apache/\S+ configured -- resuming normal operations',
+		    'Apache configured -- resuming normal operations',
 		    '\[notice\] Accept mutex',
 		    'Dispatcher::.* JOB_(?:START|END):',
+		    ' CommonName .* does NOT match server name!',
+		    '\[error\].*File does not exist\:/',
 		    # Virii and such
 		    '(?:File does not exist:|DieCode::NOT_FOUND:).*(?:robots.txt|system32|\.asp|_vti|default\.ida|/sumthin|/scripts|/cgi|root.exe|/instmsg|/favicon2|site_root/default.bview|\.php$|Assert not robot)',
 		    '::NOT_FOUND:.*view..site_root/(\w+.html|robots.txt).bview',
@@ -424,6 +426,7 @@ sub merge_http_log {
 		    'Software caused connection abort: cache: error returned while trying to return disk cached data',
 		    'Directory index forbidden by Options directive',
 		    'cannot mail to a default realm',
+		    'reconnecting to database: pid=',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
@@ -447,7 +450,6 @@ sub merge_http_log {
 		    'request aborted, rolling back',
 		    'Unable to parse address',
                     'Connection reset by peer',
-		    'reconnecting to database: pid=',
 		    'caught SIGTERM, shutting down',
 		    'server reached MaxClients setting, consider raising',
 		],
