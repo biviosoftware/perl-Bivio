@@ -129,6 +129,7 @@ sub delete_message_id {
 
 sub import_bulletins {
     my($self) = @_;
+    $self->assert_not_root;
     my($req) = $self->initialize_fully;
     my($rm) = $self->use('Model.RealmMail')->new($req);
     my($t) = 0;
@@ -169,6 +170,7 @@ sub import_bulletins {
 
 sub import_mbox {
     my($self) = @_;
+    $self->assert_not_root;
     my($rm) = $self->model('RealmMail');
     my($t) = 0;
     my($n) = 0;
@@ -180,6 +182,7 @@ sub import_mbox {
 
 sub import_rfc822 {
     my($self, $dir) = @_;
+    $self->assert_not_root;
     my($req) = $self->get_request;
     $dir ||= '.';
     my($i) = 0;
