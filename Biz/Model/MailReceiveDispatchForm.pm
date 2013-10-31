@@ -243,15 +243,18 @@ sub _ignore_out_of_office {
     return undef
 	unless $_CFG->{filter_out_of_office};
     my($header) = $self->get('mail_incoming')->get('header');
+#TODO: refactor so that apps can customize filters
+    return undef
+	if $header =~ /^X-Bugzilla/im;
     map({
 	return 'out-of-office'
 	    if $header =~ /$_/im;
     } (
 	'^Auto-Submitted:\s+auto-generated',
-	'Auto-Submitted:\s+auto-replied',
-	'X-GeneratedBy:\s+OOService',
-	'X-Autoreply:\s+yes',
-	'Subject:\s+out\s+of\s+(the\s+)?office',
+	'^Auto-Submitted:\s+auto-replied',
+	'^X-GeneratedBy:\s+OOService',
+	'^X-Autoreply:\s+yes',
+	'^Subject:\s+out\s+of\s+(the\s+)?office',
     ));
     return undef;
 }
