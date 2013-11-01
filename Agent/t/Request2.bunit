@@ -13,7 +13,7 @@ Request();
 	    demo => 'USER',
 	    fourem => 'FORUM',
 	    1 => 'GENERAL',
-	    2 => 'USER',
+	    user => 'USER',
 	],
 	with_realm => [
 	    [undef, sub {req('auth_realm')->is_general}] => 1,
