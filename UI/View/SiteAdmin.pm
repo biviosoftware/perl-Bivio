@@ -21,7 +21,8 @@ sub remote_copy_form {
 	    SPAN_field(
 		Join([
 		    FormFieldError('want_realm'),
-		    vs_descriptive_field('RemoteCopyListForm.want_realm')->[0],
+		    Checkbox('want_realm'),
+		    vs_blank_cell(),
 		    String([['->get_list_model'], 'realm']),
 		]),
 	    ),
