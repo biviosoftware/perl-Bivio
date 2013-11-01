@@ -394,7 +394,7 @@ sub merge_http_log {
 		ignore_list => [
 		    # Standard apache debug and info
 		    '\] \[(?:info|debug)\] ',
-		    'Apache configured -- resuming normal operations',
+		    '\[notice\] Apache.*configured -- resuming normal operations',
 		    '\[notice\] Accept mutex',
 		    'Dispatcher::.* JOB_(?:START|END):',
 		    ' CommonName .* does NOT match server name!',
