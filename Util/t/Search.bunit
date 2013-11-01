@@ -2,13 +2,22 @@
 # $Id$
 ShellUtil();
 # DO NOT TEST rebuild_db.  It's tested in realm-file-search.btest
+my($update_regexp) = sub {
+    my($number) = @_;
+    # will have 3 objects after create_test_db()
+    # will have 5 objects after Search/t/Xapian.btest is run
+    $number //= '[35]';
+    return qr{xapian_demo.*: updated $number object}s;
+};
 [
     rebuild_realm => DIE(),
-    # will have 2 objects after create_test_db()
-    # will have 5 objects after Search/t/Xapian.btest is run
-    [qw(-realm xapian_demo rebuild_realm 12/1/2009)] => qr{xapian_demo.*: updated [25] object}s,
-    [qw(-realm xapian_demo rebuild_realm)] => qr{xapian_demo.*: updated [25] object}s,
-    [qw(-realm xapian_demo audit_realm)] => qr{xapian_demo.*: updated 0 object}s,
+    [qw(-realm xapian_demo rebuild_realm 12/1/2009)] => $update_regexp->(),
+    [qw(-realm xapian_demo rebuild_realm)] => $update_regexp->(),
+    [qw(-realm xapian_demo rebuild_realm 12/1/2009 0.5)] => $update_regexp->(),
+    [qw(-realm xapian_demo rebuild_realm), "", '0'] => $update_regexp->(),
+    [qw(-realm xapian_demo rebuild_realm), "", '0.5'] => $update_regexp->(),
+    [qw(-realm xapian_demo audit_realm)] => $update_regexp->('0'),
+    [qw(-realm xapian_demo audit_realm 0.5)] => $update_regexp->('0'),
     inline_case(sub {
 	Search_Xapian()->delete_model(
 	    req(),
@@ -17,5 +26,6 @@ ShellUtil();
 	commit();
 	return;
     }),
-    [qw(-realm xapian_demo audit_realm)] => qr{xapian_demo.*: updated 1 object}s,
+    [qw(-realm xapian_demo audit_realm)] => $update_regexp->('1'),
+    [qw(-realm xapian_demo audit_realm 0.5)] => $update_regexp->('0'),
 ];
