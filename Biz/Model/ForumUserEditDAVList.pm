@@ -24,6 +24,7 @@ sub row_create {
 	'RealmUser.realm_id' => $req->get('auth_id'),
 	map(($_ => $new->{$_}), qw(administrator file_writer)),
 	is_subscribed => $new->{is_subscribed},
+	override_default_subscription => 1,
     });
     return;
 }
@@ -47,6 +48,7 @@ sub row_update {
 	'RealmUser.role' => _role($new),
 	'RealmUser.user_id' => $old->{'RealmUser.user_id'},
 	current_main_role => _role($old),
+	override_default_subscription => 1,
     });
     return;
 }
