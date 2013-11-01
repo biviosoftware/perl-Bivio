@@ -25,23 +25,25 @@ sub USAGE {
     return <<'EOF';
 usage: b-search [options] command [args..]
 commands
-  audit_db -- verify/fix all documents in all realms against search db
-  audit_realm -- verify/fix a realm's documents
-  rebuild_db [after_date] -- reload entire search database, optionally files modified after date
-  rebuild_realm [after_date] -- reindex all files in the current realm, optionally files modified after date
+  audit_db [sleep]-- verify/fix all documents in all realms against search db, optionally sleep between commits
+  audit_realm [sleep]-- verify/fix a realm's documents, optionally sleep between commits
+  rebuild_db [after_date [sleep]] -- reload entire search database, optionally files modified after date, optionally sleep between commits
+  rebuild_realm [after_date [sleep]] -- reindex all files in the current realm, optionally files modified after date, optionally sleep between commits
   replicate_db [failover_host] -- create/update local online snapshot and optionally rsync it to 'failover-host' 
 EOF
 }
 
 sub audit_db {
-    my($self) = @_;
+    sub AUDIT_DB {[[qw(?sleep Amount)]]}
+    my($self, $bp) = shift->parameters(\@_);
     my($req) = $self->req;
     $_X->acquire_lock($req);
-    return _iterate_realms($self, 'audit_realm', []);
+    return _iterate_realms($self, 'audit_realm', [$bp->{sleep}]);
 }
 
 sub audit_realm {
-    my($self) = @_;
+    sub AUDIT_REALM {[[qw(?sleep Amount)]]}
+    my($self, $bp) = shift->parameters(\@_);
 #TODO: Need to get all the docs for a realm, but how?
 #Get a list of all docids in one go -- so we know what to delete.
 #We'll verify after deleting all docids
@@ -71,6 +73,7 @@ sub audit_realm {
 		$it->get('realm_id'),
 	    ) ? 0 : 1;
 	},
+	$bp->{sleep},
     );
 }
 
@@ -81,7 +84,7 @@ sub handle_config {
 }
 
 sub rebuild_db {
-    sub REBUILD_DB {[[qw(?after_date Date)]]}
+    sub REBUILD_DB {[[qw(?after_date Date)], [qw(?sleep Amount)]]}
     my($self, $bp) = shift->parameters(\@_);
     $self->are_you_sure('Rebuild Xapian database?');
     my($req) = $self->req;
@@ -91,7 +94,7 @@ sub rebuild_db {
 }
 
 sub rebuild_realm {
-    sub REBUILD_REALM {[[qw(?after_date Date)]]}
+    sub REBUILD_REALM {[[qw(?after_date Date)], [qw(?sleep Amount)]]}
     my($self, $bp) = shift->parameters(\@_);
     return _do_realm(
 	$self,
@@ -103,6 +106,7 @@ sub rebuild_realm {
 		    $bp->{after_date},
 		) ? 0 : 1;
 	},
+	$bp->{sleep},
     );
 }
 
@@ -144,7 +148,7 @@ sub _copy_db_snapshot_to_failover {
 }
 
 sub _do_realm {
-    my($self, $cond) = @_;
+    my($self, $cond, $sleep) = @_;
     $self->assert_not_root;
     $self->usage_error('realm must be specified')
 	if $self->req('auth_realm')->is_default;
@@ -154,6 +158,8 @@ sub _do_realm {
     my($commit) = sub {
 	$self->commit_or_rollback;
 	$_A->reset_warn_counter;
+	select(undef, undef, undef, $sleep)
+	    if defined($sleep) && $sleep >= 0;
 	return;
     };
     $_X->acquire_lock($req);
