@@ -25,10 +25,10 @@ sub USAGE {
     return <<'EOF';
 usage: b-search [options] command [args..]
 commands
-  audit_db [sleep]-- verify/fix all documents in all realms against search db, optionally sleep between commits
-  audit_realm [sleep]-- verify/fix a realm's documents, optionally sleep between commits
-  rebuild_db [after_date [sleep]] -- reload entire search database, optionally files modified after date, optionally sleep between commits
-  rebuild_realm [after_date [sleep]] -- reindex all files in the current realm, optionally files modified after date, optionally sleep between commits
+  audit_db [sleep]-- verify/fix all documents in all realms against search db, optionally sleep given seconds between commits
+  audit_realm [sleep]-- verify/fix a realm's documents, optionally sleep given seconds between commits
+  rebuild_db [after_date [sleep]] -- reload entire search database, optionally files modified after date, optionally sleep given seconds between commits
+  rebuild_realm [after_date [sleep]] -- reindex all files in the current realm, optionally files modified after date, optionally sleep given seconds between commits
   replicate_db [failover_host] -- create/update local online snapshot and optionally rsync it to 'failover-host' 
 EOF
 }
