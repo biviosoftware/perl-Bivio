@@ -507,6 +507,10 @@ sub lock_action {
     return _deprecated_lock_action($op || (caller(1))[3])
 	unless ref($op) eq 'CODE';
     my($lock_dir, $lock_pid) = _lock_files($name || (caller(1))[3]);
+    my($clean) = sub {
+	$_F->rm_rf($lock_dir);
+	return;
+    };
     my($this_host) = b_use('Bivio.BConf')->bconf_host_name;
     foreach my $retry (1, 0) {
 	last
@@ -525,26 +529,18 @@ sub lock_action {
 	}
 	b_warn($pid, ": process doesn't exist, removing ", $lock_dir);
 	# Don't test results, because there may be contention
-	unlink($lock_pid);
-	rmdir($lock_dir);
+	$clean->();
     }
     # Write host after pid to be backwards compatible with just pid format.
     $_F->write($lock_pid, $$ . ' ' . $this_host);
     my($prev) = $SIG{TERM};
     local($SIG{TERM}) = sub {
-	unlink($lock_pid);
-	rmdir($lock_dir);
+	$clean->();
 	$SIG{TERM} = $prev;
 	kill('TERM', $$);
 	return;
     };
-    my($die);
-    my(@res) = $_DIE->catch($op, \$die);
-    unlink($lock_pid);
-    rmdir($lock_dir);
-    $die->throw
-	if $die;
-    return $proto->return_scalar_or_array(@res);
+    return $_DIE->catch_and_rethrow($op, $clean);
 }
 
 sub lock_realm {
