@@ -23,7 +23,7 @@ sub execute_load_this {
     my($query) = $self->parse_query_from_request;
     unless ($query->unsafe_get('this')) {
 	my($t) = $_BFN->from_literal($req->unsafe_get('path_info'));
-	return shift->SUPER::execute_load_this(@_)
+	return 'DEFAULT_ERROR_REDIRECT_NOT_FOUND'
 	    unless $t;
 	$query->put(this => [$t]);
     }
