@@ -56,8 +56,8 @@ req()->initialize_fully('FORUM_WIKI_VIEW');
 		{
 		    entity => '/site/bp/NoSuchWiki',
 		    message => 'Not found',
-		    line_num => 2,
-		    path => '/Blog/200905/25123456',
+		    line_num => 23,
+		    path => qr{View/Blog.pm},
 		},
 	    ],
 	],
