@@ -172,7 +172,7 @@ sub ddl_files {
 sub delete_all_tuples {
     my($self) = @_;
     my($req) = $self->initialize_ui;
-    $self->model('Tuple')->delete_all;
+    $self->model('Tuple')->delete_all({realm_id => $req->get('auth_id')});
     return;
 }
 
