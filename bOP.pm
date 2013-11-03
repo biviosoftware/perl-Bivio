@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.94  2013/10/29 23:34:11  moeller
+  * Bivio::Biz::Model::BlogCreateForm
+  * Bivio::Biz::Model::BlogEditForm
+  * Bivio::Biz::Model::BlogList
+    renamed body field to content to match WikiForm
+  * Bivio::Biz::Model::Bulletin
+    override delete_all(), delete all bulletins in db - no auth_id
+  * Bivio::Biz::Model::RealmFile
+    ensure there are query args to SUPER::delete_all()
+  * Bivio::Biz::PropertyModel
+    added deprecated warning to delete_all() if no query is passed
+    don't call delete_all() from cascade_delete() if no child keys match
+  * Bivio::UI::FacadeBase
+    changed Blog.body to Blog.content
+  * Bivio::UI::View::Blog
+    moved edit() code to View.Wiki
+  * Bivio::UI::View::CSS
+    wiki config - hide .cke_toolbar until CKEditor skin is loaded
+  * Bivio::UI::View::Wiki
+    combined edit() and edit_wysiwyg(), now shares with View.Blog
+  * Bivio::Util::RealmMail
+    delete_message_id: call cascade_delete on loaded model to ensure
+    children get deleted correctly
+
   Revision 12.93  2013/10/28 20:16:01  moeller
   * Bivio::Agent::TaskEvent
     added TASK_EXECUTE_STOP (clearer marker than 1)
