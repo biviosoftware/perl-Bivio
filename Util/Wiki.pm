@@ -128,7 +128,7 @@ sub validate_all_realms {
 	    $self->req(qw(auth_realm owner))->format_email,
 	    $all_txt,
 	);
-    return $all_res;
+    return [$all_res, $all_txt];
 }
 
 sub validate_realm {
