@@ -1536,6 +1536,7 @@ sub _redirect {
 	{
 	    %$carry,
 	    %$query ? (query => $query) : (),
+	    task_id => $req->get('task')->get_attr_as_id($which),
 	},
     ) unless $fields->{context};
     return _task_result(
@@ -1555,6 +1556,7 @@ sub _redirect {
 	    %$carry,
 	    %$query ? (query => $query) : (),
 	    method => 'server_redirect',
+	    task_id => $req->get('task')->get_attr_as_id($which),
 	    require_context => 1,
 	},
     );
@@ -1583,6 +1585,7 @@ sub _redirect_same {
 
 sub _task_result {
     my($self, $which, $res) = @_;
+#TODO: $which not used?
     return 0
 	unless $res;
     return $res
