@@ -6,6 +6,7 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_CC) = b_use('IO.CallingContext');
 my($_DT) = b_use('Type.DateTime');
 
 sub edit {
@@ -36,6 +37,9 @@ sub detail {
 		    WikiText({
 			value => ['Model.BlogList', 'content'],
 			name => ['Model.BlogList', 'path_info'],
+			task_id => 'FORUM_WIKI_VIEW',
+			is_inline_text => 0,
+			path => ['Model.BlogList', 'RealmFile.path'],
 		    }),
 		    {
 			ITEMSCOPE => 'itemscope',
