@@ -26,7 +26,9 @@ sub execute {
 
 sub execute_from_javascript {
     my($proto, $req) = @_;
-    b_warn('javascript error: ', $req->get_form->{json});
+    my($form) = $req->get_form;
+    b_warn('javascript error: ', $req->get_form->{json})
+	if $form;
     return shift->SUPER::execute(@_);
 }
 
