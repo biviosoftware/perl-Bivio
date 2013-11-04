@@ -2,7 +2,7 @@
 # $Id$
 req()->initialize_fully;
 my($form) = Bivio::Biz::Model->new(req(), 'BlogCreateForm');
-my($name) = $form->get_field_name_for_html('body');
+my($name) = $form->get_field_name_for_html('content');
 $form->put_on_request;
 req()->put(font_with_style => 1); #suppress <font> tags in rendered output
 Widget();
@@ -10,7 +10,7 @@ Widget();
     [{
 	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
 	model => 'BlogCreateForm',
-	field => 'body',
+	field => 'content',
 	rows => 2,
 	cols => 60,
 	wrap => '',
@@ -19,7 +19,7 @@ Widget();
     [{
 	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
 	model => 'BlogCreateForm',
-	field => 'body',
+	field => 'content',
 	rows => 5,
 	cols => 20,
     }] => qq(<textarea rows="5" cols="20" name="$name"></textarea>),
