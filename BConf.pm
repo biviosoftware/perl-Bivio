@@ -427,6 +427,7 @@ sub merge_http_log {
 		    'Directory index forbidden by Options directive',
 		    'cannot mail to a default realm',
 		    'reconnecting to database: pid=',
+		    'from_literal failed:.*no-message-id',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
