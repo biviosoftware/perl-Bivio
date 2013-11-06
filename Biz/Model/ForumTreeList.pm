@@ -94,10 +94,11 @@ sub internal_root_parent_node_id {
 
 sub parent_and_children {
     my($self, $parent_id) = @_;
+    my($map) = $self->parent_map;
     return [
-	$parent_id,
+	$map->{$parent_id} ? $parent_id : (),
 	map(@{$self->parent_and_children($_)},
-	    @{$self->parent_map->{$parent_id}->{children}}),
+	    @{$map->{$parent_id}->{children}}),
     ];
 }
 
