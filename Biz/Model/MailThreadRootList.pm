@@ -54,6 +54,7 @@ sub internal_initialize {
                     SELECT COUNT(*) - 1
                     FROM realm_mail_t rm
                     WHERE rm.thread_root_id = realm_mail_t.thread_root_id
+                    AND rm.realm_id = realm_mail_t.realm_id
                  ) AS reply_count",
 	    },
 	],
