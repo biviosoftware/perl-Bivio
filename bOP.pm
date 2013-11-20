@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,35 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.95  2013/11/03 22:11:55  moeller
+  * Bivio::BConf
+    added more ignore errors
+  * Bivio::Biz::FormModel
+    put task_id back on response during redirect, fixes workflow cancel
+  * Bivio::Biz::Model::BlogList
+    return NOT_FOUND for missing this
+  * Bivio::Biz::Model::ForumUserEditDAVList
+    override_default_subscription when create/edit
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    don't let ooo filter ignore bugzilla messages
+  * Bivio::PetShop::Util::SQL
+    pass query to delete_all()
+  * Bivio::ShellUtil
+    refactored lock_action to reuse cleanup
+    use rm_rf so any junk is cleaned, too
+    use catch_and_rethrow
+  * Bivio::UI::View::Blog
+    added extra args to WikiText()
+  * Bivio::UI::View::SiteAdmin
+    fixed checkbox on remote_copy_form
+  * Bivio::Util::RealmMail
+    assert_not_root for import methods
+  * Bivio::Util::Search
+    add sleep parameter to audit_db, audit_realm, rebuild_db, rebuild_realm
+    clarify command descriptions
+  * Bivio::Util::Wiki
+    include all_txt in validate_all_realms result
+
   Revision 12.94  2013/10/29 23:34:11  moeller
   * Bivio::Biz::Model::BlogCreateForm
   * Bivio::Biz::Model::BlogEditForm
