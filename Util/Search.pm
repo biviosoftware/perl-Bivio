@@ -158,8 +158,6 @@ sub _do_realm {
     my($commit) = sub {
 	$self->commit_or_rollback;
 	$_A->reset_warn_counter;
-	select(undef, undef, undef, $sleep)
-	    if defined($sleep) && $sleep >= 0;
 	return;
     };
     $_X->acquire_lock($req);
@@ -172,15 +170,19 @@ sub _do_realm {
 		sub {
 		    my($it) = @_;
 		    if (0 == ++$i % 100) {
-			$commit->();
-			$_X->acquire_lock($req);
 			b_info($i)
 		            if $i > 1;
+		    }
+		    if (0 == $i % 10) {
+			select(undef, undef, undef, $sleep)
+			    if defined($sleep) && $sleep >= 0;
 		    }
 		    return 1
 			unless $it->is_searchable
 			&& $cond->($it);
 		    $_X->update_model($req, $it);
+		    $commit->();
+		    $_X->acquire_lock($req);
 		    $j++;
 		    return 1;
 		},
