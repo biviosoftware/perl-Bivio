@@ -5,10 +5,8 @@ use strict;
 use Bivio::Base 'Model.MailThreadRootList';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CAL) = b_use('Model.CRMActionList');
-my($_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;
-my($_TSN) = b_use('Type.TupleSlotNum');
+my($_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION->as_sql_param;
 my($_CRMQF) = b_use('Model.CRMQueryForm');
 b_use('ClassWrapper.TupleTag')->wrap_methods(
     __PACKAGE__, b_use('Model.CRMForm')->TUPLE_TAG_INFO);
@@ -27,11 +25,7 @@ sub internal_initialize {
 	    CRMThread.modified_date_time
 	    CRMThread.crm_thread_num
             CRMThread.crm_thread_status
-	    owner.Email.email
-	    modified_by.Email.email
 	    CRMThread.subject_lc
-	    customer.RealmOwner.name
-	    customer.RealmOwner.display_name
 	)],
         other_query_keys => $self->get_instance(
 	    $self->LIST_QUERY_FORM_CLASS)->filter_keys,
@@ -41,13 +35,25 @@ sub internal_initialize {
 	    ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
 	    ['RealmMail.realm_id', 'CRMThread.realm_id'],
 	    _do(sub {
-	        my($name, $model) = @_;
+	        my($name, $field) = @_;
 	        return (
 		    {
 			name => $name,
 			type => 'Name',
 			constraint => 'NONE',
 		    },
+		    {
+			name => "${field}_email",
+			type => 'Email.email',
+			constraint => 'NONE',
+			in_select => 1,
+			select_value => "(
+                            SELECT e.email
+                            FROM email_t e
+                            WHERE e.realm_id = crm_thread_t.${field}_user_id
+                            AND e.location = $_LOCATION
+                        ) AS ${field}_email",
+		    },		    
 		);
 	    }),
 	],
@@ -59,29 +65,15 @@ sub internal_post_load_row {
     return 0
 	unless shift->SUPER::internal_post_load_row(@_);
     _do(sub {
-        my($name, $model) = @_;
-	my($e) = $row->{"$model.email"};
-	$row->{$name} = $_CAL->owner_email_to_name($e);
-	return;
+        my($name, $field) = @_;
+    	$row->{$name} = $_CAL->owner_email_to_name($row->{"${field}_email"});
+    	return;
     });
     return 1;
 }
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    $stmt->from(
-	$stmt->LEFT_JOIN_ON(qw(CRMThread owner.Email), [
-	    ['CRMThread.owner_user_id', 'owner.Email.realm_id'],
-	    ['owner.Email.location', [$_LOCATION]],
-	]),
-	$stmt->LEFT_JOIN_ON(qw(CRMThread modified_by.Email), [
-	    ['CRMThread.modified_by_user_id', 'modified_by.Email.realm_id'],
-	    ['modified_by.Email.location', [$_LOCATION]],
-	]),
-	$stmt->LEFT_JOIN_ON(qw(CRMThread customer.RealmOwner), [
-	    ['CRMThread.customer_realm_id', 'customer.RealmOwner.realm_id'],
-	]),
-    );
     if (my $qf = $self->req->unsafe_get($self->LIST_QUERY_FORM_CLASS)) {
 	my($status, $owner) = $qf->unsafe_get(qw(b_status b_owner_name));
 	my($cal) = $self->new_other('CRMActionList');
@@ -99,7 +91,7 @@ sub internal_prepare_statement {
 
 sub _do {
     my($op) = @_;
-    return map($op->($_ . '_name', "$_.Email"), qw(owner modified_by));
+    return map($op->($_ . '_name', $_), qw(owner modified_by));
 }
 
 1;
