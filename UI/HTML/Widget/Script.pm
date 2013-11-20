@@ -451,21 +451,19 @@ EOF
 sub JAVASCRIPT_B_LOG_ERRORS {
     return <<'EOF';
 window.onerror = function (errorMsg, url, lineNumber) {
-    var req;
     try {
-        req = new XMLHttpRequest();
+        var req = new XMLHttpRequest();
+        req.open("POST", "/pub/javascript-error", false);
+        req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        req.send("json=" + JSON.stringify({
+            'errorMsg': errorMsg,
+            'url': encodeURIComponent(url),
+            'lineNumber': lineNumber,
+        }));
     }
     catch (e) {
-        return false;
     }
-    req.open("POST", "/pub/javascript-error", false);
-    req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-    req.send("json=" + JSON.stringify({
-        'errorMsg': errorMsg,
-        'url': encodeURIComponent(url),
-        'lineNumber': lineNumber,
-    }));
-    return false;
+    return true;
 }
 EOF
 }
