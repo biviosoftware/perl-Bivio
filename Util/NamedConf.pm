@@ -65,6 +65,7 @@ sub _local_cfg {
 	refresh => '1D',
 	retry => '1D',
 	spf1 => undef,
+	dkim1 => undef,
 	ttl => '1D',
     };
     my($net) = '127.0.0.0/31';
@@ -80,6 +81,7 @@ sub _local_cfg {
 		    ['@', {
 			mx => undef,
 			spf1 => undef,
+			dkim1 => undef,
 			ptr => 1,
 		    }],
 		],
@@ -235,6 +237,7 @@ sub _zone {
 		_zone_cname($zone_dot, $cfg, $ptr_map),
 		_zone_mx($zone_dot, $cfg, $ptr_map),
 		_zone_spf1($zone_dot, $cfg, $ptr_map),
+		_zone_dkim1($zone_dot, $cfg, $ptr_map),
 	    ),
 	),
     );
@@ -268,6 +271,23 @@ sub _zone_cname {
     return map(
 	"$_ IN CNAME $cname->{$_}",
 	keys(%$cname),
+    );
+}
+
+sub _zone_dkim1 {
+    return _zone_ipv4_map(
+	@_,
+	sub {
+	    my($host, $host_cfg, $ip) = @_;
+	    return
+		unless my $dkim = $host_cfg->{dkim1};
+	    return join(
+		' ',
+		$dkim->{host},
+		'IN TXT',
+		'"v=DKIM1\\; k=rsa\\; p=' . $dkim->{p} . '\\;"',
+	    );
+	},
     );
 }
 
