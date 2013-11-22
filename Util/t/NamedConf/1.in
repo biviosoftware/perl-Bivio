@@ -25,6 +25,10 @@ my($net1) = '111.22.33.24/29';
 				'mail',
 				[qw(mail.other.com. 20)],
 			    ],
+			    dkim1 => {
+				host => 'mydkimhost._domainkey',
+				p => 'PXWifNHWcbJ8y/Q1AQAB',
+			    },
 			}],
 		    ],
 		    25 => [
