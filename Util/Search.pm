@@ -20,6 +20,8 @@ $_C->register(my $_CFG = {
     db_path => $_X->get_db_path,
     snapshot_dir => $_X->get_db_path . '/snapshot',
 });
+my($_F) = b_use('IO.File');
+my($_SA) = b_use('Type.StringArray');
 
 sub USAGE {
     return <<'EOF';
@@ -169,14 +171,12 @@ sub _do_realm {
 	    $class->do_iterate_realm_models(
 		sub {
 		    my($it) = @_;
-		    if (0 == ++$i % 100) {
-			b_info($i)
-		            if $i > 1;
-		    }
-		    if (0 == $i % 10) {
-			select(undef, undef, undef, $sleep)
-			    if defined($sleep) && $sleep >= 0;
-		    }
+		    $_X->acquire_lock($req);
+		    $i++;
+		    b_info($i)
+			if $i % 100 == 0;
+		    select(undef, undef, undef, $sleep)
+			if $i % 10 == 0 && defined($sleep) && $sleep >= 0;
 		    return 1
 			unless $it->is_searchable
 			&& $cond->($it);
@@ -198,9 +198,31 @@ sub _iterate_realms {
     my($self, $method, $method_args) = @_;
     $self->assert_not_root;
     my($req) = $self->req;
-    my($realms) = b_use('Type.StringArray')
+    my($last_realm_file_name) = $self->my_caller . "-last-processed-realm";
+    my($last_realm);
+    if (-f $last_realm_file_name) {
+	my($answer) = $self->unsafe_get('force')
+	    ? 'y'
+	    : $self->readline_stdin(
+		"Continue from last processed realm? (y or n) ");
+	if ($answer =~ /^y$/i) {
+	    $last_realm = ${$_F->read($last_realm_file_name)};
+	    $self->print_line('Continuing from last processed realm');
+	} else {
+	    $self->print_line('Starting from first realm');
+	}
+    }
+    my($realms) = $_SA
 	->new(_map_classes(sub {@{shift->realms_for_rebuild_db($req)}}))
 	->sort_unique;
+    $realms = $_SA->new(
+	$realms->map_iterate(
+	    sub {
+		my($r) = @_;
+		$_SA->UNDERLYING_TYPE->compare($r, $last_realm) >= 0 ? $r : ();
+	    },
+	),
+    ) if defined($last_realm);
     $self->commit_or_rollback;
     b_info($realms->as_length, ' realms');
     $realms->do_iterate(
@@ -208,6 +230,7 @@ sub _iterate_realms {
 	    my($r) = @_;
 	    return 1
 		if $_RT->is_default_id($r);
+	    $_F->write($last_realm_file_name, $r);
 	    $req->with_realm(
 		$r,
 		sub {
@@ -218,7 +241,9 @@ sub _iterate_realms {
 	    return 1;
 	},
     );
-    return;
+    unlink($last_realm_file_name)
+	if -f $last_realm_file_name;
+    return $realms->as_array;
 }
 
 sub _make_db_snapshot {
