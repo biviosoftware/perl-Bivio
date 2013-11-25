@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,23 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.96  2013/11/20 21:44:27  moeller
+  * Bivio::BConf
+    ignore no-message-id errors
+  * Bivio::Biz::Action::Error
+    fixed error in execute_from_javascript() for GET requests
+  * Bivio::Biz::Model::CRMThreadRootList
+    postgres performance - replaced left joins with subselects
+    removed customer.RealmOwner
+  * Bivio::Biz::Model::ForumTreeList
+    parent_and_children: don't assume that user has access to parent forum
+  * Bivio::Biz::Model::MailThreadRootList
+    added missing realm_id to subselect
+  * Bivio::UI::HTML::Widget::Script
+    window.onerror() wrap whole method in try/catch
+  * Bivio::Util::Search
+    commit every document, sleep after every 10 documents
+
   Revision 12.95  2013/11/03 22:11:55  moeller
   * Bivio::BConf
     added more ignore errors
