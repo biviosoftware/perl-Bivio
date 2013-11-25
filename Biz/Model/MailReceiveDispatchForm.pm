@@ -244,8 +244,13 @@ sub _ignore_out_of_office {
 	unless $_CFG->{filter_out_of_office};
     my($header) = $self->get('mail_incoming')->get('header');
 #TODO: refactor so that apps can customize filters
-    return undef
-	if $header =~ /^X-Bugzilla/im;
+    map({
+	return undef
+	    if $header =~ /$_/im;
+    } (
+	'^X-Bugzilla',
+	'^Sender:\s+.*calendar-notification\@google.com',
+    ));
     map({
 	return 'out-of-office'
 	    if $header =~ /$_/im;
