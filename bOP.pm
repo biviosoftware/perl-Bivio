@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 12.97  2013/11/25 16:56:25  moeller
+  * Bivio::Util::NamedConf
+    allow DKIM1 TXT records to be added using kdim1 config value
+  * Bivio::Util::Search
+    make rebuild_db, audit_db resumable
+
   Revision 12.96  2013/11/20 21:44:27  moeller
   * Bivio::BConf
     ignore no-message-id errors
