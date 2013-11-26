@@ -238,7 +238,7 @@ __PACKAGE__->compile([
     VA => [227, 'Holy See (Vatican City State)'],
     VE => [228, 'Venezuela'],
     VN => [229, 'Vietnam'],
-    VG => [230, 'Virgin Islands'],
+    VG => [230, 'Virgin Islands (British)'],
     VI => [231, 'Virgin Islands (U.S.)'],
     WF => [232, 'Wallis and Futuna'],
     EH => [233, 'Western Sahara'],
@@ -263,7 +263,7 @@ __PACKAGE__->compile([
     SX => [252, 'Sint Maarten (Dutch Part)'],
     GS => [253, 'South Georgia And The South Sandwich Islands'],
     SS => [254, 'South Sudan'],
-    TL => [255, ' Timor-Leste'],
+    TL => [255, 'Timor-Leste'],
 ]);
 
 1;
