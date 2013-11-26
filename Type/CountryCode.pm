@@ -252,7 +252,7 @@ __PACKAGE__->compile([
     RS => [241, 'Serbia'],
     AX => [242, 'Aland Islands'],
     BQ => [243, 'Bonaire, Sint Eustatius And Saba'],
-    CD => [244, 'Congo'],
+    CD => [244, 'Congo, Democratic Republic'],
     CW => [245, 'Curacao'],
     GG => [246, 'Guernsey'],
     IM => [247, 'Isle Of Man'],
