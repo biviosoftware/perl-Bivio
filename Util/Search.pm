@@ -40,7 +40,7 @@ sub audit_db {
     my($self, $bp) = shift->parameters(\@_);
     my($req) = $self->req;
     $_X->acquire_lock($req);
-    return _iterate_realms($self, 'audit_realm', [$bp->{sleep}]);
+    return _iterate_realms($self, 'audit_realm', [$bp->{sleep}], _resume($self));
 }
 
 sub audit_realm {
@@ -90,9 +90,14 @@ sub rebuild_db {
     my($self, $bp) = shift->parameters(\@_);
     $self->are_you_sure('Rebuild Xapian database?');
     my($req) = $self->req;
-    $_X->acquire_lock($req);
-    $_X->destroy_db($req);
-    return _iterate_realms($self, 'rebuild_realm', [$bp->{after_date}]);
+    my($last_realm) = _resume($self);
+    unless ($last_realm) {
+	$self->are_you_sure('Are you sure you want to destroy the Xapian database?');
+	$_X->acquire_lock($req);
+	$_X->destroy_db($req);
+    }
+    return _iterate_realms(
+	$self, 'rebuild_realm', [$bp->{after_date}], $last_realm);
 }
 
 sub rebuild_realm {
@@ -195,23 +200,9 @@ sub _do_realm {
 }
 
 sub _iterate_realms {
-    my($self, $method, $method_args) = @_;
+    my($self, $method, $method_args, $last_realm) = @_;
     $self->assert_not_root;
     my($req) = $self->req;
-    my($last_realm_file_name) = $self->my_caller . "-last-processed-realm";
-    my($last_realm);
-    if (-f $last_realm_file_name) {
-	my($answer) = $self->unsafe_get('force')
-	    ? 'y'
-	    : $self->readline_stdin(
-		"Continue from last processed realm? (y or n) ");
-	if ($answer =~ /^y$/i) {
-	    $last_realm = ${$_F->read($last_realm_file_name)};
-	    $self->print_line('Continuing from last processed realm');
-	} else {
-	    $self->print_line('Starting from first realm');
-	}
-    }
     my($realms) = $_SA
 	->new(_map_classes(sub {@{shift->realms_for_rebuild_db($req)}}))
 	->sort_unique;
@@ -225,6 +216,7 @@ sub _iterate_realms {
     ) if defined($last_realm);
     $self->commit_or_rollback;
     b_info($realms->as_length, ' realms');
+    my($last_realm_file_name) = _last_realm_file_name($self->my_caller);
     $realms->do_iterate(
 	sub {
 	    my($r) = @_;
@@ -244,6 +236,11 @@ sub _iterate_realms {
     unlink($last_realm_file_name)
 	if -f $last_realm_file_name;
     return $realms->as_array;
+}
+
+sub _last_realm_file_name {
+    my($method) = @_;
+    return "$method-last-processed-realm";
 }
 
 sub _make_db_snapshot {
@@ -289,6 +286,25 @@ sub _map_classes {
 	$op->(b_use('SearchParser', $_)),
 	@{$_CL->list_simple_packages_in_map('SearchParser')},
     )];
+}
+
+sub _resume {
+    my($self) = @_;
+    my($last_realm_file_name) = _last_realm_file_name($self->my_caller);
+    my($last_realm);
+    if (-f $last_realm_file_name) {
+	my($answer) = $self->unsafe_get('force')
+	    ? 'y'
+	    : $self->readline_stdin(
+		"Continue from last processed realm? (y or n) ");
+	if ($answer =~ /^y$/i) {
+	    $last_realm = ${$_F->read($last_realm_file_name)};
+	    $self->print_line('Continuing from last processed realm');
+	} else {
+	    $self->print_line('Starting from first realm');
+	}
+    }
+    return $last_realm;
 }
 
 1;
