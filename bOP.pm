@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.0  2013/11/25 17:34:05  nagler
+  Rollover to 13.0
+
   Revision 12.97  2013/11/25 16:56:25  moeller
   * Bivio::Util::NamedConf
     allow DKIM1 TXT records to be added using kdim1 config value
