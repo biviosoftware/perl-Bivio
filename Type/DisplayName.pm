@@ -141,11 +141,4 @@ sub _parse_middle {
     return;
 }
 
-sub _trim {
-    my($value) = @_;
-    # Trims the field to the correct size.
-    return undef unless defined($value);
-    return substr($value, 0, $_N->get_width);
-}
-
 1;
