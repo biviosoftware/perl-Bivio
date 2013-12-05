@@ -1,8 +1,10 @@
 # Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Type();
+use utf8;
+
 [
-    trim_literal => [
+    clean_and_trim => [
 	'' => '(No Subject)',
 	'x' => 'x',
 	'x' => 'x',
@@ -11,9 +13,8 @@ Type();
 	'aw: fwd: hello' => 'hello',
 	'=?UTF-8?B?QXZlYyBNdXR1ZWxsZSBCbGV1ZSwgcHJlbmV6IHZvdHJlIHNhbnTDqSBlbiBtYWlu?=' => 'Avec Mutuelle Bleue, prenez votre sante en main',
 	'=?WINDOWS-1252?Q?Derivative_problem_=96_another_financial_crisis?= =?WINDOWS-1252?Q?_looming?=' => 'Derivative problem - another financial crisis looming',
-    ],
-    clean_and_trim => [
-	'' => '(no subject)',
-	'What?*/' => 'what',
+	'What?*/' => 'What?*/',
+	['What?*/', 1] => 'What',
+	('מערכת' x 11) => ('מערכת' x 10),
     ],
 ];
