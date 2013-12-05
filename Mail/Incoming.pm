@@ -162,7 +162,7 @@ sub get_reply_email_arrays {
 
 sub get_reply_subject {
     my($self) = @_;
-    my($s) = ($_MS->trim_literal(_get_field($self, 'subject:')))[0]
+    my($s) = ($_MS->clean_and_trim(_get_field($self, 'subject:')))[0]
 	|| $_MS->EMPTY_VALUE;
     return 'Re: ' . $s;
 }

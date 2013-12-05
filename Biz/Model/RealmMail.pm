@@ -215,8 +215,8 @@ sub register {
 sub update {
     my($self, $values) = @_;
     if (defined($values->{subject})) {
-	$values->{subject} = $_MS->trim_literal($values->{subject});
-	$values->{subject_lc} = $_MS->clean_and_trim($values->{subject});
+	$values->{subject} = $_MS->clean_and_trim($values->{subject});
+	$values->{subject_lc} = lc($_MS->clean_and_trim($values->{subject}, 1));
     }
     $self->die(
 	$values,
@@ -242,8 +242,8 @@ sub _create {
 		$_MI->clean_and_trim($in->get_message_id)),
 	    from_email => substr(lc($email), 0, $_MAX_EMAIL),
 	    from_display_name => substr($name || '', 0, $_MAX_NAME),
-	    subject => $_MS->trim_literal($in->get_subject),
-	    subject_lc => $_MS->clean_and_trim($in->get_subject),
+	    subject => $_MS->clean_and_trim($in->get_subject),
+	    subject_lc => lc($_MS->clean_and_trim($in->get_subject, 1)),
 	}, $in),
     );
     _call_handlers(handle_mail_post_create => $self, $in, $file);
