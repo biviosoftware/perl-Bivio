@@ -1,0 +1,25 @@
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+PropertyModel();
+my($root);
+my($domain) = '@model.realmmail.bunit';
+use utf8;
+my($subject) = 'מערכ ת' x 10;
+[
+    create_from_rfc822 => [
+	[\(<<"EOF")]
+From: a$domain
+Message-ID: <a$domain>
+Date: Sun, 1 May 2005 10:11:41 -0600
+Subject: $subject
+
+Body
+EOF
+	    => [{
+		'Model.RealmMail' => {
+		    # verify the value was not trimmed inside unicode character
+		    subject => 'מערכ ת' x 9,
+		},
+	    }],
+    ],
+];
