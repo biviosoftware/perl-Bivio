@@ -42,6 +42,7 @@ sub internal_load_rows {
     my($rows) = [];
     my($today) = $_D->from_datetime(
 	$month_list->auth_user_time_zone->date_time_from_utc($_DT->now));
+    my($prev_dow) = '';
     $_DT->do_iterate(
 	sub {
 	    my($dt) = @_;
@@ -49,7 +50,8 @@ sub internal_load_rows {
 		if $month_list->is_time_zone;
 	    my($dow) = lc($_DT->english_day_of_week($dt));
 	    push(@$rows, {})
-		if $dow eq 'sunday';
+		if $dow eq 'sunday' && $dow ne $prev_dow;
+	    $prev_dow = $dow;
 	    my($month, $day) = $_DT->get_parts($dt, 'month', 'day');
 	    my($date) = $_D->from_datetime($dt);
 	    $rows->[$#$rows] = {
