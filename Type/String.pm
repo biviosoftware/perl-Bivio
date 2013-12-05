@@ -106,7 +106,9 @@ sub clean_and_trim {
 	if $return;
     $value .= $value
 	while length($value) < $proto->get_min_width;
-    return substr($value, 0, $proto->get_width);
+    return utf8::is_utf8($value)
+	? _trim_utf8($proto, $value)
+	: substr($value, 0, $proto->get_width);
 }
 
 sub compare {
@@ -207,6 +209,23 @@ sub _ref {
 	if defined($$v) && length($$v);
     $$v = '';
     return ($v, 1);
+}
+
+sub _size_in_bytes {
+    my($proto, $value) = @_;
+    use bytes;
+    return bytes::length($value);
+}
+
+sub _trim_utf8 {
+    my($proto, $value) = @_;
+    my($width) = $proto->get_width;
+    my($current) = $width;
+
+    while (_size_in_bytes($proto, $value) > $width) {
+	$value = substr($value, 0, --$current);
+    }
+    return $value;
 }
 
 1;
