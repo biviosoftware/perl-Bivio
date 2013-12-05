@@ -16,12 +16,7 @@ sub EMPTY_VALUE {
 }
 
 sub clean_and_trim {
-    my($proto, $value) = @_;
-    return lc($proto->trim_literal($value, 1));
-}
-
-sub trim_literal {
-    my($proto, $value, $clean) = @_;
+    my($proto, $value, $extra_clean) = @_;
     if ($value && $value =~ /\=\?[A-Z0-9\-]+\?/i) {
 	$value = ${$proto->canonicalize_charset($_W->decode($value) || '')};
     }
@@ -30,9 +25,11 @@ sub trim_literal {
     $value =~ s/\s+/ /;
     0 while $value =~ s/^(\s+|\[\S*\]|[a-z]{1,3}(:|\[\d+\])|\.)//i;
     $value =~ s{@{[$proto->CLEAN_REGEX]}}{}g
-	if $clean;
-    return length($value) ? substr($value, 0, $proto->get_width)
+	if $extra_clean;
+    $value = length($value)
+	? $value
 	: $proto->EMPTY_VALUE;
+    return $proto->SUPER::clean_and_trim($value);
 }
 
 1;
