@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+METHOD:PUBLISH
+X-WR-CALNAME:Boulder Book Store |  December 06 2013- January 05 2014
+PRODID:-//strange bird labs//Drupal iCal API//EN
+BEGIN:VEVENT
+DTSTAMP;VALUE=DATE-TIME:20131206T223632Z
+DTSTART;VALUE=DATE-TIME:20131219T192200Z
+DTEND;VALUE=DATE-TIME:20020203
+UID:http://www.boulderbookstore.net/event/used-book-office-closed-2
+URL;VALUE=URI:http://www.boulderbookstore.net/event/used-book-office-closed-2
+SUMMARY:Used Book Office Closed
+DESCRIPTION:<p>The Used Book Office will be closed from December 19th to the 26th.</p>
+
+END:VEVENT
+END:VCALENDAR

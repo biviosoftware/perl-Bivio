@@ -1,0 +1,11 @@
+[
+    {
+	description => '<p>The Used Book Office will be closed from December 19th to the 26th.</p>',
+	dtend => '2452309 79199',
+	dtstart => '2456646 69720',
+	summary => 'Used Book Office Closed',
+	time_zone => Bivio::Type::TimeZone->UTC,
+	uid => 'http://www.boulderbookstore.net/event/used-book-office-closed-2',
+	url => 'http://www.boulderbookstore.net/event/used-book-office-closed-2',
+    }
+]
