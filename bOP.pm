@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.1  2013/11/27 17:06:00  moeller
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    exempt messages from calendar-notification@google.com from
+    out-of-office filter
+  * Bivio::Type::CountryCode
+    added new countries from ISO 3166-1-alpha-2 code list
+  * Bivio::Util::Search
+    don't destroy db if resuming rebuild_db
+
   Revision 13.0  2013/11/25 17:34:05  nagler
   Rollover to 13.0
 
