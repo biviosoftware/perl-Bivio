@@ -14,6 +14,9 @@ use Bivio::Base 'Type.DateTime';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DATE_PREFIX) = __PACKAGE__->FIRST_DATE_IN_JULIAN_DAYS . ' ';
 my($_MAX) = $_DATE_PREFIX . (__PACKAGE__->SECONDS_IN_DAY - 1);
+b_use('IO.Config')->register(my $_CFG = {
+    time_format_24 => 1,
+});
 
 sub from_datetime {
     my($proto, $date_time) = @_;
@@ -75,6 +78,12 @@ sub get_width {
     return 13;
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub now {
     my($proto) = @_;
     return $proto->from_datetime($proto->SUPER::now);
@@ -87,7 +96,17 @@ sub to_literal {
     return shift->SUPER::to_literal(@_)
 	unless defined($value);
     my($s, $m, $h) = $proto->to_parts($value);
-    return sprintf('%02d:%02d' . ($s ? ':%02d' : ''), $h, $m, $s ? $s : ());
+    return sprintf('%02d:%02d' . ($s ? ':%02d' : ''), $h, $m, $s ? $s : ())
+	if $_CFG->{time_format_24};
+    my($am_pm) = 'am';
+    if ($h > 12) {
+	$h -= 12;
+	$am_pm = 'pm';
+    }
+    return $h
+	. (($s || $m) ? (':' . sprintf('%02d', $m)) : '')
+	. ($s ? (':' . sprintf('%02d', $s)) : '')
+	. $am_pm;
 }
 
 sub to_literal_dammit {
