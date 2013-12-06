@@ -145,7 +145,7 @@ sub _event {
 	    )(?:$|;)}x;
 	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date(?:-time)?)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
-	    my($is_date) = $2 && $2 =~ /date$/ ? 1 : 0;
+	    my($is_date) = ($2 && $2 =~ /date$/) || $v =~ /\b\d{8}\b/ ? 1 : 0;
 	    my($tz) = $3 ? $4 : $self->unsafe_get('time_zone_id');
 	    my($is_gmt) = $v =~ /Z$/;
 	    my($t, $e) = ($is_date ? $_D : $_DT)->from_literal(
