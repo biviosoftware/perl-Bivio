@@ -6,7 +6,8 @@ use Bivio::Base 'Bivio.Type';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_DT) = b_use('Type.DateTime');
+my($_D) = b_use('Type.Date');
+my($_T) = b_use('Type.Time');
 
 sub as_date_time {
     my($self) = @_;
@@ -16,7 +17,8 @@ sub as_date_time {
 
 sub as_literal {
     my($self) = @_;
-    return substr($_DT->to_string($self->as_date_time, 0), 0, -3);
+    my($dt) = $self->as_date_time;
+    return $_D->to_string($dt) . ' ' . $_T->to_string($dt);
 }
 
 sub from_literal {
