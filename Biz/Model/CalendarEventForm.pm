@@ -5,16 +5,15 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_CEMF) = b_use('Model.CalendarEventMonthForm');
 my($_CER) = b_use('Type.CalendarEventRecurrence');
-my($_DT) = b_use('Type.DateTime');
 my($_D) = b_use('Type.Date');
+my($_DT) = b_use('Type.DateTime');
+my($_FM) = b_use('Type.FormMode');
+my($_O) = b_use('Mail.Outgoing');
 my($_T) = b_use('Type.Time');
 my($_TZ) = b_use('Type.TimeZone');
-my($_FM) = b_use('Type.FormMode');
-my($_A) = b_use('Action.Acknowledgement');
-my($_CEMF) = b_use('Model.CalendarEventMonthForm');
 my($_USLF) = b_use('Model.UserSettingsListForm');
-my($_O) = b_use('Mail.Outgoing');
 
 sub CREATE_DATE_QUERY_KEY {
     return 'b_create_date';
@@ -25,7 +24,8 @@ sub execute_empty {
     $self->internal_put_field(recurrence => $_CER->from_name('UNKNOWN'));
     if ($self->is_create) {
 	$self->internal_put_field(
-	    'CalendarEvent.time_zone' => $_TZ->get_default,
+	    'CalendarEvent.time_zone' => $self
+		->new_other('CalendarEventMonthList')->auth_user_time_zone,
 	    'CalendarEvent.realm_id' =>
 		$self->req(qw(auth_realm type))->eq_user ? undef
 	        : $self->req('auth_id'),
@@ -93,6 +93,7 @@ sub execute_ok {
     my($redirect) = _create_or_update($self, 1);
     return
 	if $self->in_error;
+    _set_default_user_time_zone($self);
     return _ack_and_redirect($self, $redirect)
 	if $self->get('recurrence')->eq_unknown;
     $_FM->execute_create($self->req);
@@ -255,6 +256,17 @@ sub _create_or_update {
 	    ->get('name'),
 	query => $_CEMF->date_to_query($ce->get('dtstart')),
     };
+}
+
+sub _set_default_user_time_zone {
+    my($self) = @_;
+    my($tz) = $self->get('CalendarEvent.time_zone');
+    my($user_tz) = $_TZ->row_tag_get($self->req('auth_user_id'), $self->req);
+
+    if ($tz && ($user_tz eq $_TZ->get_default)) {
+	$_TZ->row_tag_replace($self->req('auth_user_id'), $tz, $self->req);
+    }
+    return;
 }
 
 1;
