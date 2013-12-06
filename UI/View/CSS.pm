@@ -985,13 +985,15 @@ EOF
 sub _site_calendar {
     return <<'EOF';
 table.b_month_calendar {
+  border: 1px solid;
   width: 70em;
+  Color('b_month_calendar_td-border');
 }
 .b_month_calendar td {
   vertical-align: top;
   width: 5em;
   padding: .5em;
-  border: 2px solid;
+  border: 1px solid;
   Color('b_month_calendar_td-border');
 }
 .b_month_calendar th {
