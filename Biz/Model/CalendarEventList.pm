@@ -5,11 +5,8 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_CE) = b_use('Model.CalendarEvent');
 my($_T) = b_use('Type.Time');
-my($_D) = b_use('Type.Date');
 my($_UTC) = b_use('Type.TimeZone')->UTC;
-my($_DT) = b_use('Type.DateTime');
 my($_DTWTZ) = b_use('Type.DateTimeWithTimeZone');
 my($_EDIT_TASK) = 'FORUM_CALENDAR_EVENT_FORM';
 
@@ -106,7 +103,7 @@ sub internal_post_load_row {
     }
     $row->{path_info} = undef;
     $row->{time_and_name}
-	= sprintf('%02d:%02d', $_DT->get_parts($row->{dtstart_tz}, qw(hour minute)))
+	= $_T->to_string($row->{dtstart_tz})
 	. ' '
 	. $row->{'RealmOwner.display_name'};
     $row->{query} = $self->get_query->format_uri_for_this(
