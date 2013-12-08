@@ -56,7 +56,7 @@ submit_form({
     show => 1,
     list => 0,
 });
-verify_text(qr{Show in UTC time}i);
+verify_text(qr{Show in MST time}i);
 verify_text(qr{sunday}i);
 follow_link('[change]');
 submit_form({
