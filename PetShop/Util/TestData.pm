@@ -128,6 +128,10 @@ EOF
 
 sub reset_calendar_btest {
     my($self) = @_;
+    $self->req->with_realm('calendar_btest_user', sub {
+        b_use('Type.TimeZone')->row_tag_replace(
+	    $self->req('auth_user_id'), $self->req);
+    });
     return _do_calendar_btest(sub {
 	return $self->req->with_realm(shift, sub {
 	    $self->model('CalendarEvent')->do_iterate(
