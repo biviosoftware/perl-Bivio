@@ -261,7 +261,9 @@ EOF
         return $now;
     };
     for (my $i = $num_msgs; $i > 0; $i--) {
-	$now = $msg->($msgs)
+	$now = $msg->($msgs);
+	$self->print_line($i)
+	    if $i && $i % 100 == 0;
     }
     return;
 }
