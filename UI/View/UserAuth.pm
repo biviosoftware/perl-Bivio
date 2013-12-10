@@ -13,56 +13,6 @@ sub adm_substitute_user {
     }]));
 }
 
-sub general_contact_mail {
-    return shift->internal_put_base_attr(
-	from => ['Model.ContactForm', 'from'],
-	to => Mailbox(
-	    vs_text('support_email'),
-	    vs_text_as_prose('support_name'),
-	),
-	subject => ['Model.ContactForm', 'subject'],
-	body => ['Model.ContactForm', 'text'],
-    );
-}
-
-sub general_contact {
-    return shift->internal_body(vs_simple_form(ContactForm => [qw(
-        ContactForm.from
-	ContactForm.text
-    )]));
-}
-
-sub login {
-    return shift->internal_body(vs_simple_form(UserLoginForm => [qw(
-        UserLoginForm.login
-	UserLoginForm.RealmOwner.password
-    )]));
-}
-
-sub missing_cookies {
-    return shift->internal_body(DIV_prose(_prose('missing_cookies.body')));
-}
-
-sub password {
-    return shift->internal_body(vs_simple_form(UserPasswordForm => [
-        _password_fields('UserPasswordForm'),
-    ]));
-}
-
-sub password_query {
-    return shift->internal_body(vs_simple_form(UserPasswordQueryForm => [
-	'UserPasswordQueryForm.Email.email',
-    ]));
-}
-
-sub password_query_ack {
-    return shift->internal_body('');
-}
-
-sub password_query_mail {
-    return shift->internal_mail;
-}
-
 sub create {
     return shift->internal_body(vs_simple_form(UserRegisterForm => [
 	'UserRegisterForm.Email.email',
@@ -108,6 +58,25 @@ process.
 EOF
 }
 
+sub general_contact_mail {
+    return shift->internal_put_base_attr(
+	from => ['Model.ContactForm', 'from'],
+	to => Mailbox(
+	    vs_text('support_email'),
+	    vs_text_as_prose('support_name'),
+	),
+	subject => ['Model.ContactForm', 'subject'],
+	body => ['Model.ContactForm', 'text'],
+    );
+}
+
+sub general_contact {
+    return shift->internal_body(vs_simple_form(ContactForm => [qw(
+        ContactForm.from
+	ContactForm.text
+    )]));
+}
+
 sub internal_mail {
     my($self) = @_;
     my($n) = $self->my_caller;
@@ -117,6 +86,37 @@ sub internal_mail {
 
 sub internal_settings_form_extra_fields {
     return [];
+}
+
+sub login {
+    return shift->internal_body(vs_simple_form(UserLoginForm => [qw(
+        UserLoginForm.login
+	UserLoginForm.RealmOwner.password
+    )]));
+}
+
+sub missing_cookies {
+    return shift->internal_body(DIV_prose(_prose('missing_cookies.body')));
+}
+
+sub password {
+    return shift->internal_body(vs_simple_form(UserPasswordForm => [
+        _password_fields('UserPasswordForm'),
+    ]));
+}
+
+sub password_query {
+    return shift->internal_body(vs_simple_form(UserPasswordQueryForm => [
+	'UserPasswordQueryForm.Email.email',
+    ]));
+}
+
+sub password_query_ack {
+    return shift->internal_body('');
+}
+
+sub password_query_mail {
+    return shift->internal_mail;
 }
 
 sub settings_form {
