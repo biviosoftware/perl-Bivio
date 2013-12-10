@@ -6,7 +6,7 @@ my($update_regexp) = sub {
     my($number) = @_;
     # will have 3 objects after create_test_db()
     # will have 5 objects after Search/t/Xapian.btest is run
-    $number //= '[35]';
+    $number = defined($number) ? $number : '[35]';
     return qr{xapian_demo.*: updated $number object}s;
 };
 [
