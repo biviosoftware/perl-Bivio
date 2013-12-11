@@ -3,6 +3,7 @@
 package Bivio::Biz::Action::ClientRedirect;
 use strict;
 use Bivio::Base 'Biz.Action';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTTP_MOVED_PERMANENTLY) = b_use('Ext.ApacheConstants')->HTTP_MOVED_PERMANENTLY;
@@ -77,6 +78,16 @@ sub execute_query_or_path_info {
     } : {
 	task_id => 'next',
 	query => undef,
+    };
+}
+
+sub execute_query_redirect {
+    my($proto, $req) = @_;
+    my($query) = $req->get('query');
+    b_die('missing QUERY_TAG')
+	unless my $uri = delete($query->{$proto->QUERY_TAG});
+    return {
+	uri => Type_HTTPURI()->from_literal_or_die($uri),
     };
 }
 
