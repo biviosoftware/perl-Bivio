@@ -93,6 +93,7 @@ sub internal_base_tasks {
 	[UNADORNED_PAGE => 'rp/*'],
 	[PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
 	[JAVASCRIPT_LOG_ERROR => 'pub/javascript-error'],
+ 	[LOGGED_QUERY_REDIRECT => 'pub/go'],
     ];
 }
 
@@ -1968,7 +1969,7 @@ EOF
 Join([
     P('It seems that your browser does not support cookies, or cookies have been disabled. Cookies are required for you to sign-in.'),
     H3('Enabling Cookies in your Browser'),
-    P(q{This application requires the use of Cookies. By default, cookies are enabled in your browser. If you were directed to this page by our software, you or someone else has disable cookies in your browser. The following instructions are meant as a guide only. Please consult your browser's help system for a complete description. Scroll down this page until you find your browser. We apologize if your browser isn't in our list yet.}),
+    P(q{This application requires the use of Cookies. By default, cookies are enabled in your browser. If you were directed to this page by our software, you or someone else has disabled cookies in your browser. The following instructions are meant as a guide only. Please consult your browser's help system for a complete description. Scroll down this page until you find your browser. We apologize if your browser isn't in our list yet.}),
     map((
 	H4(shift(@$_)),
 	OL(Join([map(LI($_), @$_)])),
