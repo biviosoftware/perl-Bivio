@@ -266,6 +266,13 @@ sub info_base {
 	    ANYBODY
 	    Action.Error->execute_from_javascript
 	)],
+ 	[qw(
+ 	    LOGGED_QUERY_REDIRECT
+ 	    196
+ 	    GENERAL
+ 	    ANYBODY
+ 	    Action.ClientRedirect->execute_query_redirect
+        )],
 #196-199 free
     ];
 }
