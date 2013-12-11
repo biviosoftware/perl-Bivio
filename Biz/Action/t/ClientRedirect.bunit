@@ -43,5 +43,23 @@ set_user('btest_read');
 	    [qw(logged_in root)] => 'next',
 	    [qw(logged_out root)] => 'next',
 	],
+	{
+	    method => 'execute_query_redirect',
+	    compute_params => sub {
+		my(undef, $params) = @_;
+		req()->put(query => {
+		    Action_ClientRedirect()->QUERY_TAG => $params->[0],
+		});
+		return [req()];
+	    },
+	    compute_return => sub {
+		my(undef, $actual) = @_;
+		return [$actual->[0]->{uri}];
+	    },
+	} => [
+	    '' => DIE(),
+	    'google.com' => DIE(),
+	    'http://google.com' => 'http://google.com',
+	],
     ],
 ];
