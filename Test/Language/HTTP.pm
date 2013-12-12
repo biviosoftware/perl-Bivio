@@ -7,6 +7,7 @@ b_use('IO.Trace');
 use HTTP::Request ();
 use HTTP::Request::Common ();
 use URI ();
+use Email::MIME::Encodings ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
@@ -828,8 +829,12 @@ sub unsafe_op {
 
 sub uri_and_local_mail {
     my($m) = shift->verify_local_mail(@_);
+#TODO: Type_HTTPURI should probably be a SyntacticString with a REGEX method
+#      that would be used here, but the regex defined by rfc2396 isn't sufficient
+#      to use for parsing html pages for links as double quotes ('"') are allowed
+#      in URIs.
     b_die('missing uri in mail: ', $m)
-	unless $m =~ /(https?:\S+)/;
+	unless $m =~ /(https?:[^\s"]+)/;
     return ($1, $m);
 }
 
@@ -1356,6 +1361,8 @@ sub _grep_msgs {
         my($file) = @_;
 	return unless -M $file <= 0;
 	my($msg) = $_F->read($file);
+	$$msg = MIME::QuotedPrint::decode($$msg)
+	    if $$msg =~ qr{Content-Transfer-Encoding:\s+quoted-printable};
 	my($hdr) = split(/^$/m, $$msg, 2);
 	my($res);
 	foreach my $k (@$_VERIFY_MAIL_HEADERS) {
