@@ -28,10 +28,34 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 13.2  2013/12/06 21:29:59  moeller
+  * Bivio::Biz::Model::CalendarEventForm
+    default the time-zone to the user's time-zone creating.
+    save user time-zone from event time-zone if user tz is tz default
+  * Bivio::Biz::Model::CalendarEventList
+    format time with Type.Time
+  * Bivio::Biz::Model::CalendarEventWeekList
+    #855 fix daylight savings iterate bug
+  * Bivio::Biz::Model::RealmMail
+  * Bivio::Mail::Incoming
+    renamed Type.MailSubject trim_literal() to clean_and_trim()
+  * Bivio::Type::DateTimeWithTimeZone
+    use Type.Date and Type.Time when formatting literal
+  * Bivio::Type::MailSubject
+    combined trim_literal() and clean_and_trim()
+  * Bivio::Type::String
+    trim utf8 strings to correct byte length
+  * Bivio::Type::Time
+    added time_format_24 config value, default is 1
+    allows literal form with am/pm
+  * Bivio::UI::FacadeBase
+    updated calendar border color
+  * Bivio::UI::View::CSS
+    improved calendar border
+
   Revision 13.1  2013/11/27 17:06:00  moeller
   * Bivio::Biz::Model::MailReceiveDispatchForm
     exempt messages from calendar-notification@google.com from
