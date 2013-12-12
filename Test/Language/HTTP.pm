@@ -829,12 +829,11 @@ sub unsafe_op {
 
 sub uri_and_local_mail {
     my($m) = shift->verify_local_mail(@_);
-#TODO: Type_HTTPURI should probably be a SyntacticString with a REGEX method
-#      that would be used here, but the regex defined by rfc2396 isn't sufficient
-#      to use for parsing html pages for links as double quotes ('"') are allowed
-#      in URIs.
+    $m =~ qr{<html>}
+	? $m =~ qr{<a[^>]+href="(https?.+?)"}
+	: $m =~ qr{(https?:\S+)};
     b_die('missing uri in mail: ', $m)
-	unless $m =~ /(https?:[^\s"]+)/;
+	unless $1;
     return ($1, $m);
 }
 
