@@ -452,8 +452,9 @@ sub widget_render_args {
 sub _label {
     my($proto) = @_;
     my($p) = $proto->simple_package_name;
-    $_A->warn_deprecated($p, ': widget name may not contain underscore (_)')
-	if $p =~ /_/;
+#TODO: removed this, too noisy    
+#    $_A->warn_deprecated($p, ': widget name may not contain underscore (_)')
+#	if $p =~ /_/;
     return [
 	b_use('UI.ViewLanguage')->get_b_widget_label_and_clear || $p,
 	b_use('UI.ViewLanguageAUTOLOAD')->unsafe_calling_context
