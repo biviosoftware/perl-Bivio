@@ -16,10 +16,25 @@ my($_I) = b_use('Mail.Incoming');
 my($_RI) = b_use('Agent.RequestId');
 my($_FP) = b_use('Type.FilePath');
 my($_TEST_RECIPIENT_HDR) = qr{^@{[b_use('Mail.Common')->TEST_RECIPIENT_HDR]}:}m;
+my($_OUT_OF_OFFICE_FILTER_CLASSES) = [qw(
+    out_of_office_negatives
+    out_of_office_positives
+)];
 b_use('IO.Config')->register(my $_CFG = {
     filter_spam => 0,
     filter_out_of_office => 1,
     duplicate_threshold_seconds => 3600,
+    out_of_office_negatives => [
+	[qw(X-Bugzilla)],
+	[qw(Sender calendar-notification@google.com)]
+    ],
+    out_of_office_positives => [
+	[qw(Auto-Submitted auto-generated)],
+	[qw(Auto-Submitted auto-replied)],
+	[qw(X-GeneratedBy OOService)],
+	[qw(X-Autoreply yes)],
+	[qw(Subject out\s+of\s+(the\s+)?office)],
+    ],
 });
 
 sub execute_ok {
@@ -98,6 +113,22 @@ sub format_recipient {
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
+    foreach my $fc (@{$_OUT_OF_OFFICE_FILTER_CLASSES}) {
+	$_CFG->{$fc} = b_debug([map({
+	    my($fa) = $_;
+	    grep(ref($_) eq 'Regexp', @$fa)
+		? $fa
+		: [map({
+		    my($f) = $_;
+		    ref($f) ? () : _compile_filter($f);
+		} (
+		    $fa->[0],
+		    join(':\s+', @$fa),
+		))];
+	} (
+	    @{$_CFG->{$fc} || []},
+	))]);
+    }
     return;
 }
 
@@ -133,6 +164,13 @@ sub internal_set_realm {
     }) if $realm->is_default || $realm->is_offline_user;
     $self->req->set_realm($realm);
     return;
+}
+
+sub _compile_filter {
+    my($filter) = @_;
+    return undef
+	unless my $res = Type_Regexp()->from_literal_or_die($filter, 1);
+    return Type_Regexp()->add_regexp_modifiers($res, 'is');
 }
 
 sub _email_alias {
@@ -242,25 +280,18 @@ sub _ignore_out_of_office {
     my($self) = @_;
     return undef
 	unless $_CFG->{filter_out_of_office};
-    my($header) = $self->get('mail_incoming')->get('header');
-#TODO: refactor so that apps can customize filters
-    map({
-	return undef
-	    if $header =~ /$_/im;
-    } (
-	'^X-Bugzilla',
-	'^Sender:\s+.*calendar-notification\@google.com',
-    ));
-    map({
-	return 'out-of-office'
-	    if $header =~ /$_/im;
-    } (
-	'^Auto-Submitted:\s+auto-generated',
-	'^Auto-Submitted:\s+auto-replied',
-	'^X-GeneratedBy:\s+OOService',
-	'^X-Autoreply:\s+yes',
-	'^Subject:\s+out\s+of\s+(the\s+)?office',
-    ));
+    my($mi) = $self->get('mail_incoming');
+    foreach my $fc (@{$_OUT_OF_OFFICE_FILTER_CLASSES}) {
+	foreach my $filter (@{$_CFG->{$fc}}) {
+	    my($match) = $mi->grep_headers(@$filter);
+	    next
+		unless @$match;
+	    _trace($filter, ': match ', $match) if $_TRACE;
+	    return $fc =~ qr{negative}
+		? undef
+		: 'out-of-office';
+	}
+    }
     return undef;
 }
 
