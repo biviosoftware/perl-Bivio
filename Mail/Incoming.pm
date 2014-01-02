@@ -223,6 +223,12 @@ sub get_unix_mailbox {
 	    . (substr(${$self->get('rfc822')}, -1) eq "\n" ? '' : "\n");
 }
 
+sub grep_headers {
+    my($self, $key_re, $value_re) = @_;
+    my($headers) = $self->get_headers;
+    return [grep($_ =~ $key_re && $headers->{$_} =~ $value_re, keys(%$headers))];
+}
+
 sub initialize {
     my($self, $rfc822, $offset) = @_;
     $rfc822 = $rfc822->get_rfc822
