@@ -22,6 +22,11 @@ EOF
 	get_message_id => 'm@m',
 	get_date_time => '2453670 29987',
 	get_reply_subject => 'Re: should bounce',
+	grep_headers => [
+	    [qr{subj}i, qr{should}i] => [['subject']],
+	    [qr{subj}i, qr{should not}i] => [[]],
+	    [qr{badheader}i, qr{should}i] => [[]],
+	],
     ],
     [\(<<'EOF')] => [
 Message-ID: <m@m>
