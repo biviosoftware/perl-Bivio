@@ -301,36 +301,7 @@ sub follow_link_in_mail {
 
 sub follow_link_in_table {
     my($self) = shift;
-    # Finds the row identified by I<find_value> in column I<find_heading> of
-    # I<table_name> using I<_find_row>.
-    # If I<table_name> is undef, uses I<find_heading>.
-    #
-    # Then clicks on I<link_name> in column I<link_heading>.  I<link_heading>
-    # defaults to I<find_heading>.  If I<link_name> is C<undef>, expects one and only
-    # one link, and clicks on that.
-    my($table_name) = @_ > 2 ? shift : $_[0];
-    my($find_heading, $find_value, $link_heading, $link_name) = @_;
-    $table_name = $find_heading
-	unless defined($table_name);
-    my($row) = _find_row($self, $table_name, $find_heading, $find_value);
-    $link_heading = _key_from_hash(
-	$row,
-	_fixup_pattern_protected(
-	    $self,
-	    defined($link_heading) ? $link_heading : $find_heading),
-    );
-    b_die($link_heading, ': column empty')
-        unless defined($row->{$link_heading});
-    my($links) = $row->{$link_heading}->get('Links');
-    my($k) = $links->get_keys;
-    return $self->visit_uri((
-	!defined($link_name) && @$k == 1 ? $links->get($k->[0])
-	    : _get_attr(
-		$links,
-		_fixup_pattern_protected(
-		    $self,
-		    defined($link_name) ? $link_name : $find_value)),
-    )->{href});
+    return $self->visit_uri($self->get_link_in_table(@_));
 }
 
 sub follow_menu_link {
@@ -384,6 +355,33 @@ sub get_html_parser {
     my($self) = @_;
     # Returns the HTML parser for the current page.
     return _assert_html($self);
+}
+
+sub get_link_in_table {
+    my($self) = shift;
+    my($table_name) = @_ > 2 ? shift : $_[0];
+    my($find_heading, $find_value, $link_heading, $link_name) = @_;
+    $table_name = $find_heading
+	unless defined($table_name);
+    my($row) = _find_row($self, $table_name, $find_heading, $find_value);
+    $link_heading = _key_from_hash(
+	$row,
+	_fixup_pattern_protected(
+	    $self,
+	    defined($link_heading) ? $link_heading : $find_heading),
+    );
+    b_die($link_heading, ': column empty')
+        unless defined($row->{$link_heading});
+    my($links) = $row->{$link_heading}->get('Links');
+    my($k) = $links->get_keys;
+    return (
+	!defined($link_name) && @$k == 1 ? $links->get($k->[0])
+	    : _get_attr(
+		$links,
+		_fixup_pattern_protected(
+		    $self,
+		    defined($link_name) ? $link_name : $find_value)),
+    )->{href};
 }
 
 sub get_response {
