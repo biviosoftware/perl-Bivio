@@ -114,7 +114,7 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     foreach my $fc (@{$_OUT_OF_OFFICE_FILTER_CLASSES}) {
-	$_CFG->{$fc} = b_debug([map({
+	$_CFG->{$fc} = [map({
 	    my($fa) = $_;
 	    grep(ref($_) eq 'Regexp', @$fa)
 		? $fa
@@ -127,7 +127,7 @@ sub handle_config {
 		))];
 	} (
 	    @{$_CFG->{$fc} || []},
-	))]);
+	))];
     }
     return;
 }
