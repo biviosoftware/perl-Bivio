@@ -28,9 +28,30 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 13.3  2013/12/12 18:50:34  schellj
+  * Bivio::Biz::Action::ClientRedirect
+    add execute_query_redirect
+  * Bivio::Delegate::TaskId
+    add LOGGED_QUERY_REDIRECT
+  * Bivio::MIME::Calendar
+    allow date values which are mislabeled as date-time
+  * Bivio::PetShop::Util::TestData
+    reset calendar_btest_user's time zone
+  * Bivio::Test::Language::HTTP
+    decode html emails
+    fix for getting uri from html emails
+    uri_and_local_mail: use different regex for html vs plain text email
+  * Bivio::UI::FacadeBase
+    add LOGGED_QUERY_REDIRECT, grammar in no cookies text
+  * Bivio::UI::View::UserAuth
+    alphabetize subs
+  * Bivio::Util::TestMail
+    print every 100 generated test messages
+
   Revision 13.2  2013/12/06 21:29:59  moeller
   * Bivio::Biz::Model::CalendarEventForm
     default the time-zone to the user's time-zone creating.
