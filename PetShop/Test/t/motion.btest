@@ -32,7 +32,8 @@ submit_form({
     document => file_field('doc.txt', 'a new document'),
 });
 
-follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Vote');
+my($vl) = get_link_in_table('Name', 'Name', $motion, 'Actions', 'Vote');
+visit_uri($vl);
 submit_form({
     _radio => 'Yes',
     comment => 'green rules!',
@@ -41,7 +42,8 @@ verify_table('Name', [
     ['Name', qr/Votes/, 'Actions'],
     [$motion, '1/0/0', qr/vote/i],
 ]);
-follow_link_in_table('Name', 'Name', $motion, 'Actions', 'Comment');
+my($cl) = get_link_in_table('Name', 'Name', $motion, 'Actions', 'Comment');
+visit_uri($cl);
 submit_form({
     comment => 'x',
 });
@@ -70,3 +72,8 @@ verify_text(qr/yes.*green rules/i);
 go_back();
 follow_link('comment_spreadsheet');
 verify_text(qr/Root User,x/i);
+
+visit_uri($vl);
+verify_text(qr/votes and comments are no longer being accepted/i);
+visit_uri($cl);
+verify_text(qr/votes and comments are no longer being accepted/i);
