@@ -1322,6 +1322,7 @@ sub _cfg_motion {
 	    [FORUM_MOTION_COMMENT_LIST_CSV => '?/poll-comments.csv'],
 	    [FORUM_MOTION_STATUS => '?/poll-status'],
 	    [FORUM_MOTION_COMMENT_DETAIL => '?/poll-comment-detail'],
+	    [FORUM_MOTION_IS_CLOSED => '?/poll-is-closed'],
 	],
 	Text => [
 	    [Motion => [
@@ -1333,6 +1334,7 @@ sub _cfg_motion {
 		start_date_time => 'Start',
 		end_date_time => 'End',
 		tuple_def_id => 'Comment Format',
+		is_closed => 'The requested poll is now closed.  Votes and comments are no longer being accepted.',
 	    ]],
 	    [MotionForm => [
 		file => q{If(And(
@@ -1400,6 +1402,7 @@ sub _cfg_motion {
 		FORUM_MOTION_COMMENT_LIST => 'Poll Comments',
 		FORUM_MOTION_STATUS => 'Poll Status',
 		FORUM_MOTION_COMMENT_DETAIL => 'Poll Comment Detail',
+		FORUM_MOTION_IS_CLOSED => 'Poll is Closed',
 	    ]],
 	    ['task_menu.title' => [
 		FORUM_MOTION_VOTE_LIST_CSV => 'Vote spreadsheet',
