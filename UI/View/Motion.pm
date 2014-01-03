@@ -251,6 +251,10 @@ sub internal_vote_result_csv_fields {
     ];
 }
 
+sub is_closed {
+    return shift->internal_body(vs_text('Motion.is_closed'));
+}
+
 sub list {
     my($self) = @_;
     return shift->internal_put_base_attr(
