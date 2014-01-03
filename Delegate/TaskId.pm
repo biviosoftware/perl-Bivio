@@ -1099,9 +1099,11 @@ sub info_motion {
 	    ANY_OWNER
 	    MOTION_WRITE&FEATURE_MOTION
 	    Model.MotionList->execute_load_this_for_parent
+	    Action.MotionList->execute_redirect_if_closed
 	    Model.MotionCommentForm
 	    View.Motion->comment_form
 	    next=FORUM_MOTION_LIST
+	    closed_task=FORUM_MOTION_IS_CLOSED
 	)],
 	[qw(
 	    FORUM_MOTION_VOTE
@@ -1109,9 +1111,11 @@ sub info_motion {
 	    ANY_OWNER
             MOTION_WRITE&FEATURE_MOTION
 	    Model.MotionList->execute_load_this
+	    Action.MotionList->execute_redirect_if_closed
 	    Model.MotionVoteForm
 	    View.Motion->vote_form
 	    next=FORUM_MOTION_LIST
+	    closed_task=FORUM_MOTION_IS_CLOSED
 	)],
 	[qw(
 	    FORUM_MOTION_VOTE_LIST
@@ -1168,6 +1172,13 @@ sub info_motion {
 	    Model.MotionCommentList->execute_load_this
 	    View.Motion->comment_detail
 	)],
+	[qw(
+	    FORUM_MOTION_IS_CLOSED
+	    120
+	    ANY_OWNER
+	    MOTION_WRITE&FEATURE_MOTION
+	    View.Motion->is_closed
+        )],
     ];
 }
 
