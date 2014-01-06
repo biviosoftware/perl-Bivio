@@ -21,7 +21,6 @@ function dy_complete_date(s) {
         return;
     var c_year = new Date().getFullYear() + '';
     var century = c_year.substring(0, 2);
-    var century 
     var pattern = new RegExp('^[0-9]?[0-9][/\.][0-9]?[0-9][/\.]?[0-9]?[0-9]?$');
     if (!pattern.test(s.value)) {
         pattern = new RegExp('^[0-9][0-9][0-9][0-9]$');
@@ -52,8 +51,17 @@ function dy_complete_date(s) {
     }
     if (s_month.length > 2 || s_day.length > 2)
         return;
-    if (sep_2 == -1)
+    if (sep_2 == -1) {
+        var arr = s.value.match(/^([0-9]?[0-9])\/([0-9]?[0-9])$/);
+        if (arr) {
+            // default year to previous if compute date is 300 days out
+            // helpful when entering december dates in january
+            if ((new Date(c_year, arr[1] - 1, + arr[2]) - new Date())
+                / (1000 * 60 * 60 * 24) > 300)
+                c_year -= 1;
+        }
         s.value = s.value + sep + c_year;
+    }
     else if (s_year.length == 0)
         s.value = s.value + c_year;
     else if (s_year.length <= 2)
