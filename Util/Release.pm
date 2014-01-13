@@ -717,6 +717,8 @@ sub _get_update_list {
     return [
 	map({
 	    my($base, $version, $rpm) = split(/\s+/, $_);
+	    $version ||= 'HEAD';
+	    $rpm ||= "$base-$version.rpm";
 	    !$local_rpms->{"$base $version"}
 	        && ($install || $local_rpms->{$base})
 	        ? $rpm : ();
