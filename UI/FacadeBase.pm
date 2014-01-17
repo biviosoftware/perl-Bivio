@@ -15,8 +15,16 @@ my($_D) = b_use('Bivio.Die');
 my($_TI) = b_use('Agent.TaskId');
 my($_SITE_WIKI_VIEW_URI) = '/bp';
 
+sub BULLETIN_REALM_NAME {
+    return 'bulletin';
+}
+
 sub HELP_WIKI_REALM_NAME {
     return shift->internal_site_name('help');
+}
+
+sub IS_2014STYLE {
+    return 0;
 }
 
 sub MAIL_RECEIVE_URI_PREFIX {
@@ -46,10 +54,6 @@ sub SITE_REPORTS_REALM_NAME {
     return shift->internal_site_name('reports');
 }
 
-sub BULLETIN_REALM_NAME {
-    return 'bulletin';
-}
-
 sub auth_realm_is_site {
     return _auth_realm_is(site => @_);
 }
@@ -60,6 +64,11 @@ sub auth_realm_is_site_admin {
 
 sub auth_realm_is_help_wiki {
     return _auth_realm_is(help_wiki => @_);
+}
+
+sub if_2014style {
+    my($proto, $then, $else) = @_;
+    return $proto->if_then_else($proto->IS_2014STYLE, $then, $else);
 }
 
 sub internal_base_tasks {
