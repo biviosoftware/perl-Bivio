@@ -75,6 +75,14 @@ sub vs_is_current_facade {
     ];
 }
 
+sub vs_local_file_plain_common_uri {
+    my($self, $file) = @_;
+    return [
+	sub {shift->req('UI.Facade')->get_local_file_plain_common_uri(shift)},
+	$file,
+    ];
+}
+
 sub vs_mail_host {
     # Returns a widget value for mail_host.
     return _fc(\@_, qw(mail_host));
