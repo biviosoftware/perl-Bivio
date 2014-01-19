@@ -58,7 +58,10 @@ sub site_css {
 	    }
 	    return $res;
 	}]),
-	Prose([sub {$self->internal_site_css(shift)}]),
+	[sub {
+	    my($css) = $self->internal_site_css(shift);
+	    return ref($css) ? $css : Prose($css);
+	}],
     ]));
 }
 
