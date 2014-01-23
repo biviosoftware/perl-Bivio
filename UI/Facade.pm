@@ -105,6 +105,7 @@ $_C->register(my $_CFG = {
     mail_host => $_C->REQUIRED,
     http_host => $_C->REQUIRED,
     is_html5 => 0,
+    is_2014style => 0,
     # Deprecated
     http_suffix => undef,
 });
@@ -293,6 +294,11 @@ sub if_html5 {
     return shift->if_then_else($_CFG->{is_html5}, @_);
 }
 
+sub if_2014style {
+    my($proto, $then, $else) = @_;
+    return $proto->if_then_else($_CFG->{is_2014style}, $then, $else);
+}
+
 sub init_from_prior_group {
     my($self, $name) = @_;
     return sub {shift->handle_init_from_prior_group($name)};
@@ -323,6 +329,10 @@ sub initialize {
     }
     $_IS_FULLY_INITIALIZED = $partially ? 0 : 1;
     return;
+}
+
+sub is_2014style {
+    return $_CFG->{is_2014style};
 }
 
 sub is_fully_initialized {
