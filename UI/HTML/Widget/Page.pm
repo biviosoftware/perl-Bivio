@@ -97,10 +97,9 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # INCOMPLETE
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-our($_TRACE);
-b_use('IO.Trace');
 my($_CL) = b_use('IO.ClassLoader');
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
+my($_F) = b_use('UI.Facade');
 
 sub execute {
     my($self, $req) = @_;
@@ -178,10 +177,7 @@ sub render {
     my($req) = $source->get_request;
     my($xhtml) = $self->internal_setup_xhtml($req);
     my($body) = $self->render_attr('body', $source);
-    $$buffer .= ($xhtml
-#	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
-	? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-        : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">')
+    $$buffer .= _doc_type($self, $source, $xhtml)
 	. "\n<html"
 	. $self->render_simple_attr(html_tag_attrs => $source)
 	. "><head>\n"
@@ -224,6 +220,15 @@ sub register_handler {
     shift;
     $_HANDLERS->push_object(@_);
     return;
+}
+
+sub _doc_type {
+    my($self, $source, $xhtml) = @_;
+    return $_F->is_2014style
+	? '<!DOCTYPE html>'
+	: $xhtml
+	    ? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+	    : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
 }
 
 1;
