@@ -70,6 +70,7 @@ my($_HTML_TAGS) = join('|', qw(
     MAP
     MENU
     META
+    NAV
     NOFRAMES
     NOSCRIPT
     OBJECT
