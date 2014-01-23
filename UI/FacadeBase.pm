@@ -23,10 +23,6 @@ sub HELP_WIKI_REALM_NAME {
     return shift->internal_site_name('help');
 }
 
-sub IS_2014STYLE {
-    return 0;
-}
-
 sub MAIL_RECEIVE_URI_PREFIX {
     return '_mail_receive';
 }
@@ -64,11 +60,6 @@ sub auth_realm_is_site_admin {
 
 sub auth_realm_is_help_wiki {
     return _auth_realm_is(help_wiki => @_);
-}
-
-sub if_2014style {
-    my($proto, $then, $else) = @_;
-    return $proto->if_then_else($proto->IS_2014STYLE, $then, $else);
 }
 
 sub internal_base_tasks {
