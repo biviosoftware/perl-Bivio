@@ -14,7 +14,7 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	control => [[qw(->ureq UI.Facade)], '->IS_2014STYLE']);
+	control => [[qw(->ureq UI.Facade)], '->is_2014style']);
     return shift->SUPER::initialize(@_);
 }
 
