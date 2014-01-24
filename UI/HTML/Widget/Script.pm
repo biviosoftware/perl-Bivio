@@ -592,7 +592,9 @@ EOF
 
 sub JAVASCRIPT_FIRST_FOCUS {
     # Forces focus to first text input field, if there is one.
-    return <<'EOF';
+    my($search_field_name) = b_use('Model.SearchForm')
+	->get_instance->get_field_name_for_html('search');
+    return <<"EOF";
 function first_focus_onload() {
     for (var i = 0; i < document.forms.length; i++) {
         var fields = document.forms[i].elements;
@@ -600,6 +602,7 @@ function first_focus_onload() {
             if ((fields[j].type == 'text'
                 || fields[j].type == 'textarea')
                 && !fields[j].onfocus
+                && fields[j].name != '$search_field_name'
             ) {
                 try {
                     fields[j].focus();
