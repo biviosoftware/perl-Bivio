@@ -49,6 +49,7 @@ sub initialize {
 	class => 'task_menu',
 	tag_if_empty => 0,
 	tag => 'div',
+	selected_class => 'selected',
     );
     $self->initialize_attr('selected_item', ['->req', 'task_id']);
     $self->initialize_attr(show_current_task => 1);
@@ -109,8 +110,7 @@ sub initialize {
 		    $cfg->{uri},
 	        ) : $self->die(
 		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
-	    $w = DIV_task_menu_wrapper($w)
-		if $cfg->{xlink} && !$_CB->is_blesser_of($w);
+	    $w = $self->internal_wrap_widget($w, $cfg);
 	    my($class) = $w->unsafe_get('class');
 	    $w->put(
 		_task_menu_cfg => $cfg,
@@ -129,7 +129,7 @@ sub initialize {
 		class => Join([
 		    defined($class) ? $class : (),
 		    [sub {$need_sep ? 'want_sep' : ()}],
-                    If($selected_cond, 'selected'),
+                    If($selected_cond, $self->get('selected_class')),
 		], {join_separator => ' '}),
 		link_target => $cfg->{link_target},
 	    );
@@ -137,6 +137,27 @@ sub initialize {
 	} @{$self->get('task_map')})],
     );
     return shift->SUPER::initialize(@_);
+}
+
+sub internal_drop_down_widget {
+    my($self, $buffers) = @_;
+    return DIV(
+	DropDown(
+	    $self->get('want_more_label'),
+	    DIV_dd_menu(
+		Join($buffers),
+	    ),
+	),
+	{class => 'task_menu_wrapper want_sep'},
+    );
+}
+
+sub internal_wrap_widget {
+    my($self, $w, $cfg) = @_;
+    if ($cfg->{xlink} && !$_CB->is_blesser_of($w)) {
+	return DIV_task_menu_wrapper($w);
+    }
+    return $w;
 }
 
 sub render_tag_value {
@@ -235,15 +256,8 @@ sub _want_more {
     return
 	unless @$buffers > 1 + ($wmc ||= $_DEFAULT_WANT_MORE_THRESHOLD);
     my($b) = '';
-    DIV(
-	DropDown(
-	    $self->get('want_more_label'),
-	    DIV_dd_menu(
-		Join([splice(@$buffers, $wmc)]),
-	    ),
-	),
-	{class => 'task_menu_wrapper want_sep'},
-    )->initialize_and_render($source, \$b);
+    $self->internal_drop_down_widget([splice(@$buffers, $wmc)])
+	->initialize_and_render($source, \$b);
     push(@$buffers, $b);
     return;
 }
