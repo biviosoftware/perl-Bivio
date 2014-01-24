@@ -29,6 +29,7 @@ my($_VARS) = {
     is_production => 0,
     legacy_rewrite_rules => '',
     limit_request_body => 50_000_000,
+    request_read_timeout => 'header=5',
     listen => undef,
     mail_aliases => [],
     mail_hosts_txt => '/etc/httpd/conf/local-host-names.txt',
@@ -199,6 +200,7 @@ sub _app_vars {
     my($vars, $httpd_vars) = @_;
     # Augments vars for a single app ($vars->{$app}) to include _app_vars.  Returns
     # a $vars with updated config.
+    $vars = _fixup_common_vars($vars);
     $vars = _file_name_vars($vars);
     my($app) = $vars->{app};
     $vars->{content} = <<"EOF";
@@ -502,6 +504,17 @@ sub _file_name_vars {
     return $vars;
 }
 
+sub _fixup_common_vars {
+    my($vars, $v) = @_;
+    $v ||= $vars;
+    foreach my $p (qw(global_params request_read_timeout)) {
+	$v->{$p} = exists($v->{$p}) ? $v->{$p} || '' : $vars->{$p};
+    }
+    substr($v->{request_read_timeout}, 0, 0) = 'RequestReadTimeout '
+	if $v->{request_read_timeout};
+    return $v;
+}
+
 sub _httpd_conf {
     my($vars) = @_;
     return _replace_vars_for_file($vars, 'httpd_conf', <<'EOF');
@@ -583,6 +596,7 @@ StartServers $servers
 MaxClients $servers
 MaxRequestsPerChild 120
 LimitRequestBody $limit_request_body
+$request_read_timeout
 $global_params
 
 ServerRoot /etc/httpd
@@ -655,6 +669,7 @@ sub _httpd_vars {
         )),
 	%$v,
     );
+    $v = _fixup_common_vars($vars, $v);
     $v = _file_name_vars($v);
     $v->{content} = join(
 	"\n",
