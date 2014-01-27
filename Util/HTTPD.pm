@@ -109,6 +109,7 @@ sub run {
 		    BCONF
 		    BIVIODB_BREAKPOINT
 		    BIVIO_HTTPD_PORT
+		    BIVIO_IS_2014STYLE
 		    BIVIO_HOST_NAME
 		    DBI_PASS
 		    DBI_USER
