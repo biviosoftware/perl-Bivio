@@ -2209,6 +2209,8 @@ sub _cfg_xapian {
 	    [SEARCH_LIST => 'pub/search'],
 	    [GROUP_SEARCH_LIST => '?/search'],
 	    [JOB_XAPIAN_COMMIT => undef],
+	    [SEARCH_SUGGEST_LIST_JSON => 'pub/search-suggest-json'],
+	    [GROUP_SEARCH_SUGGEST_LIST_JSON => '?/search-suggest-json'],
 	],
 	Text => [
 	    [SearchList => [
@@ -2220,7 +2222,7 @@ sub _cfg_xapian {
 		ok_button => 'Search',
 	    ]],
 	    [title => [
-		[qw(SEARCH_LIST GROUP_SEARCH_LIST)] => 'Search Results',
+		[qw(SEARCH_LIST GROUP_SEARCH_LIST SEARCH_SUGGEST_LIST_JSON GROUP_SEARCH_SUGGEST_LIST_JSON)] => 'Search Results',
 	    ]],
 	],
     };
