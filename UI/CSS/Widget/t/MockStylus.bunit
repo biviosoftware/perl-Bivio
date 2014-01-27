@@ -1,0 +1,20 @@
+Widget();
+[
+    <<'IN' => <<'OUT',
+.a .b
+  border 1px solid
+
+.c
+  color red
+  border-radius 1px
+// ignore
+.d
+  color rgba(255, 0, 0, .5)
+.e
+  Color title
+IN
+.a .b{border:1px solid;}
+.c{color:red;border-radius:1px;-ms-border-radius:1px;-o-border-radius:1px;-moz-border-radius:1px;-webkit-border-radius:1px;}
+.d{color:rgba(255, 0, 0, .5);}
+OUT
+];

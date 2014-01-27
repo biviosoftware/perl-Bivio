@@ -10,4 +10,6 @@ config({
 ShellUtil();
 [
     [qw(-input Shell/t1.pl batch)] => not_die(),
+    [qw(prefix_path_env PATH /tmp /)] => "export PATH='/:/tmp:$ENV{PATH}'",
+    [qw(prefix_path_env FOO_PATH /tmp /not-there)] => "export FOO_PATH='/tmp'",
 ];
