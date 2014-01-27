@@ -3,6 +3,7 @@
 package Bivio::Biz::Model::SearchList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MTL) = b_use('Model.MailThreadList');
@@ -35,61 +36,68 @@ my($_D) = b_use('Bivio.Die');
 sub format_uri_params_with_row {
     my($self, $row) = @_;
     my($req) = $self->req;
+    my($type) = _type_for_path($row->{'RealmFile.path'});
     # Order needs to be clear.  Possibly by registration order or dependencies?
-    return $_BFN->is_absolute($row->{'RealmFile.path'}) ? {
+    return Type_BlogFileName()->is_super_of($type)
+	? {
 # What if I removed realm from the task?  What would happen?
-	task_id => 'FORUM_BLOG_DETAIL',
-	realm => $row->{'RealmOwner.name'},
-	query => undef,
-	path_info => $_BFN->from_absolute($row->{'RealmFile.path'}),
-    } : $_WN->is_absolute($row->{'RealmFile.path'}) ?
-	$_WN->uri_hash_for_realm_and_path(
+	    task_id => 'FORUM_BLOG_DETAIL',
+	    realm => $row->{'RealmOwner.name'},
+	    query => undef,
+	    path_info => Type_BlogFileName()
+		->from_absolute($row->{'RealmFile.path'}),
+	}
+	: Type_WikiName()->is_super_of($type)
+	? Type_WikiName()->uri_hash_for_realm_and_path(
 	    $row->{'RealmOwner.name'},
 	    $row->{'RealmFile.path'})
-      : $_WDN->is_absolute($row->{'RealmFile.path'}) ?
-	$_WDN->uri_hash_for_realm_and_path(
+	: Type_WikiDataName()->is_super_of($type)
+	? Type_WikiDataName()->uri_hash_for_realm_and_path(
 	    $row->{'RealmOwner.name'},
 	    $row->{'RealmFile.path'})
-      : $_MFN->is_absolute($row->{'RealmFile.path'}) ? $req->with_realm(
-	$row->{'RealmOwner.name'},
-	sub {
-	    my($crm) = $req->get('auth_realm')
-		->does_user_have_permissions(['FEATURE_CRM'], $req);
-	    my($realm_mail) = $self->new_other('RealmMail');
-	    return undef
-		unless $realm_mail->unsafe_load({
-		    realm_file_id => $row->{'RealmFile.realm_file_id'},
-		});
-	    my($pid) = $realm_mail->get('thread_root_id');
-#TODO: Is this necessary now that we're caching?
-#	    $row->{result_title} = $realm_mail->get('subject');
-	    if ($crm) {
-		my($m) = $self->new_other('CRMThread');
-		# Remote possibility that the message isn't a CRMThread
-		# due to switchover after realm had mail.
-		$pid = $m->get('crm_thread_num')
-		    if $m->unsafe_load({thread_root_id => $pid});
-	    }
-	    return {
-		task_id => $crm ? 'FORUM_CRM_THREAD_LIST'
-		    : 'FORUM_MAIL_THREAD_LIST',
-		realm => $row->{'RealmOwner.name'},
-		query => {'ListQuery.parent_id' => $pid},
-#TODO: Integrate with View.Mail->internal_part_list (need <a name=>)
-		anchor => $_MTL->get_message_anchor($row->{'RealmFile.realm_file_id'}),
-	    };
-	},
-    ) : {
-	task_id => 'FORUM_FILE',
-	realm => $row->{'RealmOwner.name'},
-	query => undef,
-	path_info => $row->{'RealmFile.path'},
-    };
+	: Type_MailFileName()->is_super_of($type)
+	? $req->with_realm(
+	    $row->{'RealmOwner.name'},
+	    sub {
+		my($crm) = $req->get('auth_realm')
+		    ->does_user_have_permissions(['FEATURE_CRM'], $req);
+		my($realm_mail) = $self->new_other('RealmMail');
+		return undef
+		    unless $realm_mail->unsafe_load({
+			realm_file_id => $row->{'RealmFile.realm_file_id'},
+		    });
+		my($pid) = $realm_mail->get('thread_root_id');
+		#TODO: Is this necessary now that we're caching?
+		#	    $row->{result_title} = $realm_mail->get('subject');
+		if ($crm) {
+		    my($m) = $self->new_other('CRMThread');
+		    # Remote possibility that the message isn't a CRMThread
+		    # due to switchover after realm had mail.
+		    $pid = $m->get('crm_thread_num')
+			if $m->unsafe_load({thread_root_id => $pid});
+		}
+		return {
+		    task_id => $crm ? 'FORUM_CRM_THREAD_LIST'
+			: 'FORUM_MAIL_THREAD_LIST',
+		    realm => $row->{'RealmOwner.name'},
+		    query => {'ListQuery.parent_id' => $pid},
+		    #TODO: Integrate with View.Mail->internal_part_list (need <a name=>)
+		    anchor => Model_MailThreadList()
+			->get_message_anchor($row->{'RealmFile.realm_file_id'}),
+		};
+	    },
+	)
+	: {
+	    task_id => 'FORUM_FILE',
+	    realm => $row->{'RealmOwner.name'},
+	    query => undef,
+	    path_info => $row->{'RealmFile.path'},
+	};
 }
 
 sub internal_initialize {
     my($self) = @_;
-    return $_S->query_list_model_initialize(
+    return Bivio_Search()->query_list_model_initialize(
 	$self,
 	$self->merge_initialize_info($self->SUPER::internal_initialize, {
 	    other => [
@@ -101,6 +109,7 @@ sub internal_initialize {
                             result_excerpt
                             result_author
                             result_realm_uri
+			    result_type
                         ),
 			[qw(show_byline Boolean)],
 		    ],
@@ -129,16 +138,18 @@ sub internal_load_rows {
     my($x) = _b_realm_only($self, $query);
     $self->[$_IDI] = {map(($_ => 1), @{$x->{private_realm_ids}})};
     my($rows);
-    my($die) = $_D->catch_quietly(sub {
-	$rows = $_S->query({
-	    phrase => $s,
-	    offset => ($pn - 1) * $c,
-	    length => $c + 1,
-	    req => $self->req,
-	    %$x,
-	});
-	return;
-    });
+    my($die) = $_D->catch_quietly(
+	sub {
+	    $rows = $_S->query({
+		phrase => $s,
+		offset => ($pn - 1) * $c,
+		length => $c + 1,
+		req => $self->req,
+		%$x,
+	    });
+	    return;
+	},
+    );
     if ($die) {
 	$self->req->put('search_error', $die);
 	return [];
@@ -219,6 +230,8 @@ sub load_row_with_model {
     return 0
 	unless $params;
     $row->{result_uri} = $self->req->format_uri($params);
+    $row->{result_type}
+	= _type_for_path($row->{'RealmFile.path'})->simple_package_name;
     return 1;
 }
 
@@ -235,6 +248,20 @@ sub _b_realm_only {
 	public_realm_ids => [$aid],
 	want_all_public => 0,
     };
+}
+
+sub _type_for_path {
+    my($path) = @_;
+    map({
+	return $_
+	    if $_->is_absolute($path);
+    } (
+	Type_BlogFileName(),
+	Type_WikiName(),
+	Type_WikiDataName(),
+	Type_MailFileName(),
+    ));
+    return Type_FileName();
 }
 
 1;
