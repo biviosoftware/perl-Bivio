@@ -2,12 +2,11 @@
 # $Id$
 package Bivio::UI::HTML::Widget::TextArea;
 use strict;
-use Bivio::Base 'HTMLWidget.ControlBase';
+use Bivio::Base 'HTMLWidget.InputBase';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 # C<Bivio::UI::HTML::Widget::TextArea> draws a C<INPUT> tag with
 # attribute C<TYPE=TEXTAREA>.
-#
-#
 #
 # field : string (required)
 #
@@ -28,63 +27,31 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 # readonly : boolean (optional) [0]
 #
 # Don't allow text-editing
-#
-# wrap : string (optional) [VIRTUAL]
-#
-# The text wrapping mode.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IDI) = __PACKAGE__->instance_data_index;
-my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
-
-sub control_on_render {
-    my($self, $source, $buffer) = @_;
-    $self->SUPER::control_on_render($source, $buffer);
-    my($fields) = $self->[$_IDI];
-    my($req) = $source->get_request;
-    my($form) = $req->get_widget_value(@{$fields->{model}});
-    my($field) = $fields->{field};
-
-    # need first time initialization to get field name from form model
-    unless ($fields->{initialized}) {
-	my($type) = $fields->{type} = $form->get_field_type($field);
-	my($attributes) = '';
-	$self->unsafe_render_attr('edit_attributes', $source, \$attributes);
-#TODO: need get_width or is it something else?
-	$fields->{prefix} = '<textarea' . $attributes
-	    . ($_VS->vs_html_attrs_render($self, $source) || '')
-	    . join('', map(qq{ $_="$fields->{$_}"}, qw(rows cols)));
-        $fields->{prefix} .= ' readonly="readonly"'
-	    if $fields->{readonly};
-	$fields->{initialized} = 1;
-    }
-    my($p, $s) = b_use('FacadeComponent.Font')->format_html('input_field', $req);
-    $$buffer .= $p.$fields->{prefix}
-	    . ' name="'
-	    . $form->get_field_name_for_html($field)
-	    . '">'
-	    . $form->get_field_as_html($field)
-	    . '</textarea>'
-	    . $s;
-    return;
-}
+my($_A) = b_use('IO.Alert');
 
 sub initialize {
     my($self) = @_;
-    my($fields) = $self->[$_IDI];
-    return if $fields->{model};
-    $self->unsafe_initialize_attr('edit_attributes');
-    $fields->{model} = $self->ancestral_get('form_model');
-    ($fields->{field}, $fields->{rows}, $fields->{cols}) = $self->get(
-	    'field', 'rows', 'cols');
-    $fields->{readonly} = $self->get_or_default('readonly', 0);
-    return;
-}
-
-sub new {
-    my($self) = shift->SUPER::new(@_);
-    $self->[$_IDI] ||= {};
-    return $self;
+    $_A->warn_deprecated(
+	'edit_attributes not supported, use ATTR => value form instead')
+	if $self->unsafe_get('edit_attributes');
+    return shift->put_unless_exists(
+	tag => 'textarea',
+	$self->unsafe_get('readonly')
+	    ? (READONLY => 'readonly')
+	    : (),
+	map(
+	    $self->unsafe_get($_)
+		? (uc($_) => $self->get($_))
+		: (),
+	    qw(rows cols)),
+	value => [
+	    $self->ancestral_get('form_model'),
+	    '->get_field_as_html',
+	    $self->get('field'),
+	],
+    )->SUPER::initialize(@_);
 }
 
 1;
