@@ -633,6 +633,13 @@ vs_text_as_prose('xhtml_copyright_qualifier');
 EOF
 		])},
 	    ]],
+	    [ECCreditCardPayment => [
+		card_zip => "Card Owner's Zip Code",
+		card_name => 'Full Name on Card',
+		card_number => 'Credit Card Number',
+		card_expiration_date => 'Card Expiration Date',
+		processor_response => 'Processor Response',
+	    ]],
 	],
     };
 }
