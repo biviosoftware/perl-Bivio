@@ -65,7 +65,7 @@ sub _buttons {
 		),
 		split(' ', ${$self->render_attr('buttons', $source)}),
 	    ),
-	])->initialize_with_parent($self, $source);
+	], ' ')->initialize_with_parent($self, $source);
     }];
 }
 
