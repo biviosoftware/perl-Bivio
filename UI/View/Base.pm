@@ -156,6 +156,18 @@ sub js {
     return;
 }
 
+sub json {
+    my($self) = @_;
+    view_class_map('XHTMLWidget');
+    view_declare('json_body');
+    view_shortcuts($self->VIEW_SHORTCUTS);
+    view_main(SimplePage({
+	content_type => 'application/json',
+	value => view_widget_value('json_body'),
+    }));
+    return;
+}
+
 sub mail {
     my($self) = @_;
     view_main(_mail($self));
@@ -168,7 +180,7 @@ sub pre_compile {
     view_parent(
 	$self->PARENT_CLASS
 	. '->'
-	. ($n =~ /_(imail|js|mail|csv|rss|css|xml|xhtml_widget)$/ ? $1 : 'xhtml')
+	. ($n =~ /_(imail|js|mail|csv|rss|css|xml|xhtml_widget|json)$/ ? $1 : 'xhtml')
     ) unless $self->use('View.' . $self->PARENT_CLASS)->can($n);
     return;
 }
