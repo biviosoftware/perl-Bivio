@@ -41,4 +41,24 @@ sub batch {
     );
 }
 
+sub u_prefix_path_env {
+    sub U_PREFIX_PATH_ENV {[
+	[qw(var Name)],
+	[qw(+dir FilePath)]
+    ]}
+    my($self, $bp) = shift->parameters(\@_);
+    my($res) = $ENV{$bp->{var}} ||= '';
+    foreach my $d (@{$bp->{dir}}) {
+        next
+	    unless $d
+	    && -d $d
+	    && !grep($_ =~ m{^\Q$d\E$}s, split(/:/, $res));
+	$res = ":$res"
+	    if $res;
+	$res = $d . $res;
+    }
+    return $res ne $ENV{$bp->{var}}
+	? qq{export $bp->{var}='$res'} : ();
+}
+
 1;
