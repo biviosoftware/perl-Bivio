@@ -19,7 +19,7 @@ my($_MAX_WORD) = 80;
 my($_LENGTH) = b_use('Type.PageSize')->get_default;
 my($_STEMMER) = Search::Xapian::Stem->new('english');
 my($_FLAGS) = 0;
-foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD FLAG_PURE_NOT)) {
+foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD FLAG_PURE_NOT FLAG_PARTIAL)) {
     $_FLAGS |= Search::Xapian->$f();
 }
 my($_VALUE_MAP) = {
@@ -181,6 +181,8 @@ sub query {
 	$qp->set_stemmer($_STEMMER);
 	$qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
 	$qp->set_default_op(Search::Xapian->OP_AND);
+	my($db) = Search::Xapian::Database->new($proto->get_db_path);
+	$qp->set_database($db);
 	foreach my $field (keys(%$_VALUE_MAP)) {
             $qp->add_valuerangeprocessor(
                 Search::Xapian::DateValueRangeProcessor->new(
