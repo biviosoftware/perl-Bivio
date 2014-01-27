@@ -578,7 +578,7 @@ sub vs_simple_form {
 	$form,
 	Join([
 	    $proto->vs_form_error_title($form),
-	    Grid([
+	    $proto->vs_simple_form_container([
 		map({
 		    my($x);
 		    if ($_FF->is_blesser_of($_)) {
@@ -619,11 +619,16 @@ sub vs_simple_form {
 		    }
 		    $x;
 		} @$rows),
-	    ], {
-		class => 'simple',
-	    }),
+	    ], $attrs),
 	]),
     );
+}
+
+sub vs_simple_form_container {
+    my($self, $values, $form_attrs) = @_;
+    return Grid($values, {
+	class => 'simple',
+    });
 }
 
 sub vs_simple_form_submit {
