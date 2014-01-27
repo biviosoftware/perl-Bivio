@@ -1721,6 +1721,22 @@ sub info_xapian {
 	    View.Search->list
 	    next=GROUP_SEARCH_LIST
 	)],
+ 	[qw(
+ 	    SEARCH_SUGGEST_LIST_JSON
+ 	    63
+ 	    GENERAL
+ 	    ANYBODY
+ 	    Model.SearchSuggestList->execute_load_page
+ 	    View.Search->suggest_list_json
+        )],
+	[qw(
+	    GROUP_SEARCH_SUGGEST_LIST_JSON
+	    64
+	    ANY_OWNER
+	    ANYBODY
+	    Model.SearchSuggestList->execute_load_page
+	    View.Search->suggest_list_json
+	)],
 #62-69 free
     ];
 }
