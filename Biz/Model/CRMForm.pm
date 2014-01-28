@@ -162,7 +162,6 @@ sub internal_format_field_updates {
     my($self) = @_;
     return b_use('UI.View')->render(
 	$self->VIEW_CLASS . '->field_updates_imail', $self->req);
-    return;
 }
 
 sub internal_format_from {
