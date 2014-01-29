@@ -1,0 +1,9 @@
+# Copyright (c) 2014 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    [{view_values => [HTMLWidget_InlineCSS('.unit1 {unit2: unit3}')]}] => '',
+    [{widget_values => [HTMLWidget_InlineJavaScript('function unit4(){}')]}] => '',
+    [{base_values => ['unit5.js']}] => qr{unit5.js.*function unit4}s,
+    [{base_values => ['unit6.css']}] => qr{unit6.css.*unit2:}s,
+];
