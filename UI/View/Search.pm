@@ -63,13 +63,13 @@ sub suggest_list_json {
 					]),
 				    }),
 				    {
-					class => 'col-xs-1',
+					class => 'col-xs-2',
 				    },
 				),
 				DIV(
 				    SPAN_title(String(['result_title'])),
 				    {
-					class => 'col-xs-11',
+					class => 'col-xs-10',
 				    },
 				),
 			    ]),
