@@ -23,9 +23,9 @@ sub initialize {
 	    value => Join([
 		"var b_clear_on_focus_value = document.getElementById('$id');\n",
                 "if (b_clear_on_focus_value && !b_clear_on_focus_value.value.length)\n",
-                'b_clear_on_focus_value.value = "',
+                'b_clear_on_focus_value.value = ',
                 JavaScriptString($self->get('hint_text')),
-		qq{";\n},
+		";\n",
 	    ]),
 	}),
     ]);
