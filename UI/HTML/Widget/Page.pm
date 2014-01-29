@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2014 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::UI::HTML::Widget::Page;
 use strict;
@@ -224,11 +224,12 @@ sub register_handler {
 
 sub _doc_type {
     my($self, $source, $xhtml) = @_;
-    return $_F->is_2014style
-	? '<!DOCTYPE html>'
-	: $xhtml
+    return $_F->get_from_source($source)->if_2014style(
+	'<!DOCTYPE html>',
+	$xhtml
 	    ? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-	    : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
+	    : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">',
+    );
 }
 
 1;
