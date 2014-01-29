@@ -79,6 +79,7 @@ sub internal_xhtml_adorned_attrs {
 	_center_replaces_middle('xhtml_footer_middle') => '',
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
 	xhtml_want_first_focus => 1,
+	xhtml_body_last => '',
     );
     view_put(
 	xhtml_body_first => Join([
@@ -136,6 +137,7 @@ sub internal_xhtml_adorned_body {
 	$self->internal_xhtml_grid3('header'),
 	$self->internal_xhtml_grid3('main'),
 	$self->internal_xhtml_grid3('footer'),
+	view_widget_value('xhtml_body_last'),
     ]);
 }
 
