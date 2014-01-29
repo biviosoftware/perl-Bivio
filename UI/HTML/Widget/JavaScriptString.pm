@@ -20,7 +20,9 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($x) = $self->render_simple_attr('value', $source);
     $x =~ s/([\\\"\'])/\\$1/sg;
+    $$buffer .= '"';
     $$buffer .= $x;
+    $$buffer .= '"';
     return;
 }
 
