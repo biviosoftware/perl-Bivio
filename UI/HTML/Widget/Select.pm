@@ -58,7 +58,12 @@ sub render {
     $$buffer .= ' '
 	. $self->get('event_handler')->get_html_field_attributes($field, $source)
 	if $self->unsafe_get('event_handler');
-    $$buffer .= ' size="' .$self->get_or_default('size', 1) . '"';
+    my($class) = $self->render_simple_attr('class', $source);
+    $$buffer .= (' class="' . $class . '"')
+	if $class;
+    if ($self->get_or_default('size', 1) ne '1') {
+	$$buffer .= ' size="' . $self->get('size') . '"';
+    }
     $$buffer .= ' disabled="disabled"'
 	if $self->get_or_default('disabled', 0);
     $$buffer .= ' onchange="submit()"' if $self->unsafe_get('auto_submit');
