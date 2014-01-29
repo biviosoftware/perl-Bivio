@@ -210,9 +210,12 @@ sub get_local_file_name {
     );
 }
 
+sub get_local_file_plain_app_uri {
+    return _local_file_uri('/f', @_);
+}
+
 sub get_local_file_plain_common_uri {
-    my(undef, $file) = @_;
-    return $_FP->join('/b', $file);
+    return _local_file_uri('/b', @_);
 }
 
 sub get_local_file_root {
@@ -296,7 +299,7 @@ sub if_html5 {
 
 sub if_2014style {
     my($proto, $then, $else) = @_;
-    return $proto->if_then_else($_CFG->{is_2014style}, $then, $else);
+    return $proto->if_then_else($proto->is_2014style, $then, $else);
 }
 
 sub init_from_prior_group {
@@ -332,7 +335,9 @@ sub initialize {
 }
 
 sub is_2014style {
-    return $_CFG->{is_2014style};
+    my($proto) = @_;
+    return ref($proto) ? $proto->get('Constant')->get_value('is_2014style')
+	: $_CFG->{is_2014style};
 }
 
 sub is_fully_initialized {
@@ -627,6 +632,11 @@ sub _load {
     b_die($c, ": did not call this module's new (non-production Facade?")
 	unless ref($_CLASS_MAP->{$clone});
     return $_CLASS_MAP->{$clone};
+}
+
+sub _local_file_uri {
+    my($prefix, undef, $file) = @_;
+    return $_FP->join($prefix, $file);
 }
 
 sub _setup_request {
