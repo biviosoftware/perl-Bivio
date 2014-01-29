@@ -2,60 +2,58 @@
 # $Id$
 package Bivio::UI::XHTML::Widget::SearchSuggestAddon;
 use strict;
-use Bivio::Base 'Widget.ControlBase';
+use Bivio::Base 'HTMLWidget.InlineJavaScript';
 b_use('UI.ViewLanguageAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_SEARCH_LIST) = b_use('Agent.TaskId')->SEARCH_SUGGEST_LIST_JSON;
-my($_GROUP_SEARCH_LIST) = b_use('Agent.TaskId')->GROUP_SEARCH_SUGGEST_LIST_JSON;
-my($_JS) = b_use('HTMLWidget.JavaScript');
 
 sub NEW_ARGS {
     return [qw(search_field_id)];
 }
 
-sub control_on_render {
-    my($self, $source, $buffer) = @_;
-    my($search_field_id) = $self->get('search_field_id');
-    my($source_uri) = ${$self->render_attr('source_uri', $source)};
-    $_JS->render($source, $buffer, undef, undef, <<"EOF");
-\$("#$search_field_id").autocomplete({
+sub initialize {
+    my($self, $source) = @_;
+    $self->initialize_attr(
+	value => Join([
+	    <<'EOF',
+(function($, search_field_id, source_uri) {
+$("#" + search_field_id).autocomplete({
   focus: function(event, ui) {
     return false;
   },
-  source: "$source_uri",
+  source: source_uri,
   select: function(event, ui) {
     window.location = ui.item.value;
     return false;
   }
 });
-(function(\$) {
-var proto = \$.ui.autocomplete.prototype;
-\$.extend(proto, {
+var proto = $.ui.autocomplete.prototype;
+$.extend(proto, {
   _renderItem: function(ul, item) {
-    return \$("<li></li>")
+    return $("<li></li>")
       .data("item.autocomplete", item)
-      .append(\$("<a></a>")["html"](item.label))
+      .append($("<a></a>")["html"](item.label))
       .appendTo(ul);
   }
 });
-})(jQuery);
+})(jQuery,
 EOF
-    return;
-}
-
-sub initialize {
-    my($self) = @_;
-    $self->put(source_uri => [
-	sub {
-	    my($req) = shift->req;
-	    return $req->format_stateless_uri({
-		task_id => $req->get('auth_realm')->has_owner
-		    ? $_GROUP_SEARCH_LIST : $_SEARCH_LIST,
-	    });
-	},
-    ]);
-    return;
+	    JavaScriptString($self->get('search_field_id')),
+	    ',',
+	    JavaScriptString(
+		URI({
+		    task_id => [sub {
+			return shift->req('auth_realm')->has_owner
+			    ? 'GROUP_SEARCH_SUGGEST_LIST_JSON'
+			    : 'SEARCH_SUGGEST_LIST_JSON';
+		    }],
+		}),
+	    ),
+	    ");\n",
+	]),
+	$source,
+    );
+    return shift->SUPER::initialize(@_);
 }
 
 1;
