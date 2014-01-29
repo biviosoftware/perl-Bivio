@@ -55,6 +55,10 @@ sub initialize {
     return shift->SUPER::initialize(@_);
 }
 
+sub internal_cb_text_class {
+    return 'cb_text';
+}
+
 sub render {
     my($self, $source, $buffer) = @_;
     my($module_tag) = $self->package_name
@@ -89,7 +93,7 @@ sub _text {
 	ONKEYUP => "return $_PREFIX.key_up(event.keyCode, this)",
 	AUTOCOMPLETE => 'off',
 	size => $self->get('size'),
-	class => 'cb_text',
+	class => $self->internal_cb_text_class,
 	%{$self->unsafe_get('text_attrs') || {}},
     });
 }
