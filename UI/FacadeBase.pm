@@ -81,7 +81,11 @@ sub internal_base_tasks {
 	]],
 	[FORBIDDEN => undef],
 	[PUBLIC_PING => 'pub/ping'],
-	[LOCAL_FILE_PLAIN => ['i/*', 'f/*', __PACKAGE__->get_local_file_plain_common_uri('*')]],
+	[LOCAL_FILE_PLAIN => [
+	    'i/*',
+	    __PACKAGE__->get_local_file_plain_app_uri('*'),
+	    __PACKAGE__->get_local_file_plain_common_uri('*'),
+	]],
 	[MY_CLUB_SITE => undef],
 	[MY_SITE => 'my-site/*'],
 	[CLIENT_REDIRECT_PERMANENT_MAP => undef],
@@ -360,6 +364,7 @@ sub _cfg_base {
 	    [b_abtest_a_selected => 'bold'],
 	],
 	Constant => [
+	    [is_2014style => __PACKAGE__->is_2014style],
 	    map({
 		my($id, $name) = @$_;
 		(
