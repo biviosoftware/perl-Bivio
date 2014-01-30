@@ -103,12 +103,7 @@ sub internal_xhtml_adorned_attrs {
 	    Acknowledgement(),
 	    MainErrors(),
 	    DIV_main_top(Join([
-		DIV_tools(Join([
-		    view_widget_value('xhtml_tools'),
-		    view_widget_value('vs_pager'),
-		], {
-		    join_separator => DIV_sep(''),
-		})),
+		$self->internal_xhtml_tools(1),
 		DIV_title(view_widget_value('xhtml_title')),
 		DIV_selector(
 		    view_widget_value('xhtml_selector')),
@@ -117,12 +112,7 @@ sub internal_xhtml_adorned_attrs {
 	    ])),
 	    DIV_main_body(view_widget_value('xhtml_body')),
 	    DIV_main_bottom(
-		DIV_tools(Join([
-		    view_widget_value('xhtml_tools'),
-		    view_widget_value('vs_pager'),
-		], {
-		    join_separator => EmptyTag(DIV => 'sep'),
-		})),
+	        $self->internal_xhtml_tools(0),
 	    ),
 	]),
     );
@@ -159,6 +149,18 @@ sub internal_xhtml_grid3 {
 	    hide_empty_cells => 1,
 	},
     )->b_widget_label($name);
+}
+
+sub internal_xhtml_tools {
+    my($self, $is_header) = @_;
+    return DIV_tools(Join([
+	view_widget_value('xhtml_tools'),
+	view_widget_value('vs_pager'),
+    ], {
+	join_separator => $is_header
+	    ? DIV_sep('')
+	    : EmptyTag(DIV => 'sep'),
+    }));
 }
 
 sub _center_replaces_middle {
