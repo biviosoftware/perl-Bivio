@@ -111,6 +111,20 @@ sub event_list_rss {
     return shift->internal_body(AtomFeed('CalendarEventList'));
 }
 
+sub full_calendar_list_json {
+    my($self) = @_;
+    return $self->internal_body(Simple(
+	[
+	    sub {
+		my($source) = @_;
+		return ${MIME_JSON()->to_text(
+		    $source->req('Model.FullCalendarList')->as_json_ref,
+		)};
+	    },
+	],
+    ));
+}
+
 sub list {
     my($self) = @_;
     view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
