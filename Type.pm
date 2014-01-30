@@ -332,6 +332,11 @@ sub to_html {
     return $_HTML->escape($self->to_literal($value));
 }
 
+sub to_json {
+    my($self, $value) = @_;
+    return $self->to_xml($value);
+}
+
 sub to_literal {
     # (proto, any) : string
     # Converts from internal form to a literal string value.
