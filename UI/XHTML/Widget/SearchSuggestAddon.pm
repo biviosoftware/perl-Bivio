@@ -21,6 +21,11 @@ $("#" + search_field_id).autocomplete({
   focus: function(event, ui) {
     return false;
   },
+  position: {
+    my: "right top",
+    at: "right bottom",
+    collision: "flipfit none",
+  },
   source: source_uri,
   select: function(event, ui) {
     window.location = ui.item.value;
@@ -34,6 +39,18 @@ $.extend(proto, {
       .data("item.autocomplete", item)
       .append($("<a></a>")["html"](item.label))
       .appendTo(ul);
+  },
+  _renderMenu: function(ul, items) {
+    var that = this;
+    $.each(items, function(index, item) {
+      that._renderItemData(ul, item);
+    });
+    $(ul).addClass("dropdown-menu");
+  },
+  _resizeMenu: function() {
+    this.menu.element.outerWidth(
+      Math.min(738, $(window).width() - 30)
+    );
   }
 });
 })(jQuery,
