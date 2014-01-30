@@ -8,6 +8,11 @@ use Bivio::Base 'Collection.Attributes';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
+sub as_json {
+    my($self) = @_;
+    return $self->get('type')->to_json($self->get('value'));
+}
+
 sub as_string {
     my($self) = @_;
     my($t) = $self->get('type');
