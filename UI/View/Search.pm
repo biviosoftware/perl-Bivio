@@ -53,7 +53,7 @@ sub suggest_list_json {
 					my($source) = @_;
 					return $_GLYPH_MAP->{
 					    $source->get('result_uri')
-						=~ /jpg|jpeg|gif|bmp|png/
+						=~ /\.(jpg|jpeg|gif|bmp|png)$/
 						    ? 'image'
 							: lc($source->get('result_type'))
 						    };
