@@ -146,10 +146,16 @@ sub split_parts {
 	: ($local, $domain, undef, undef, undef);
 }
 
+sub to_json {
+    my($proto, $value) = @_;
+    return ''
+	if !defined($value) || $proto->is_ignore($value);
+    return $value;
+}
+
 sub to_xml {
     my($proto, $value) = @_;
-    return !defined($value) || $proto->is_ignore($value) ? ''
-	: $_HTML->escape($value);
+    return $_HTML->escape($proto->to_json($value));
 }
 
 1;
