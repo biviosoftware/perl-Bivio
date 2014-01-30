@@ -44,78 +44,30 @@ sub suggest_list_json {
 	value_widget => String(['result_uri']),
 	label_widget => Join([
 	    Link(
-		Join([
-		    DIV_row(
-			SPAN_headline(
-			    Join([
-				DIV(
-				    SPAN('', {
-					class => String([
-					    sub {
-						my($source) = @_;
-						return $_GLYPH_MAP->{
-						    $source->get('result_uri')
-							=~ /jpg|jpeg|gif|bmp|png/
-							? 'image'
+		DIV_row(
+		    DIV(
+			Join([
+			    SPAN('', {
+				class => String([
+				    sub {
+					my($source) = @_;
+					return $_GLYPH_MAP->{
+					    $source->get('result_uri')
+						=~ /jpg|jpeg|gif|bmp|png/
+						    ? 'image'
 							: lc($source->get('result_type'))
 						    };
-					    },
-					]),
-				    }),
-				    {
-					class => 'col-xs-2',
 				    },
-				),
-				DIV(
-				    SPAN_title(String(['result_title'])),
-				    {
-					class => 'col-xs-10',
-				    },
-				),
-			    ]),
-			),
-		    ),
-		    DIV_row(
-			DIV(
-			    SPAN_excerpt(String([
-				sub {
-				    my($excerpt) = shift->get('result_excerpt');
-				    my($ellipsis) = length($excerpt) >= 57
-					? '...' : '';
-				    return join(
-					'',
-					substr($excerpt, 0, 57),
-					$ellipsis,
-				    );
-				},
-			    ])),
-			    {
-				class => 'col-xs-12',
-			    },
-			),
-		    ),
-		    DIV_row(
-			SPAN_byline(
-			    Join([
-				DIV(
-				    SPAN_author(String(['result_author'])),
-				    {
-					class => 'col-xs-5',
-				    },
-				),
-				DIV(
-				    SPAN_realm(String(['RealmOwner.display_name'])),
-				    {
-					class => 'col-xs-7',
-				    },
-				),
-			    ]),
-			),
+				]),
+			    }),
+			    SPAN_bivio_suggest_title(String(['result_title'])),
+			    SPAN_bivio_suggest_excerpt(String(['result_excerpt'])),
+			], ' '),
 			{
-			    control => $self->internal_byline_control,
+			    class => 'col-xs-12 bivio_suggest_headline',
 			},
 		    ),
-		]),
+		),
 		['result_uri'],
 	    ),
 	]),
