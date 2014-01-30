@@ -739,6 +739,7 @@ sub _cfg_calendar {
 	    [FORUM_CALENDAR_EVENT_ICS => ['?/calendar-event.ics', '?/event.ics']],
 	    [FORUM_CALENDAR_EVENT_LIST_RSS => ['?/calendar.atom', '?/calendar.rss', '?/my-calendar.atom', '?/my-calendar.rss']],
 	    [FORUM_CALENDAR_EVENT_LIST_ICS => ['?/calendar.ics', '?/events.ics']],
+	    [FULL_CALENDAR_LIST_JSON => '?/fullcalendar-list.json'],
 	],
 	Text => [
 	    [[qw(dtstart_tz dtstart_with_tz)] => 'Start'],

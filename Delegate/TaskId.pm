@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2012 bivio Software, Inc.	All Rights Reserved.
+# Copyright (c) 2007-2014 bivio Software, Inc.	All Rights Reserved.
 # $Id$
 package Bivio::Delegate::TaskId;
 use strict;
@@ -402,7 +402,15 @@ sub info_calendar {
 	    Action.CalendarEventICS
             want_basic_authorization=1
 	)],
-# 186-189 free
+ 	[qw(
+ 	    FULL_CALENDAR_LIST_JSON
+ 	    186
+ 	    ANY_OWNER
+ 	    DATA_READ&FEATURE_CALENDAR
+ 	    Model.FullCalendarList->execute_load_all
+ 	    View.Calendar->full_calendar_list_json
+        )],
+# 187-189 free
     ];
 }
 
