@@ -13,7 +13,7 @@ my($_GLYPH_MAP) = {
 	[qw(wikidataname cog)],
 	[qw(mailfilename envelope)],
 	[qw(filename file)],
-	[qw(wikiname star)],
+	[qw(wikiname paperclip)],
 	[qw(blogfilename comment)],
 	[qw(image picture)],
     )),
