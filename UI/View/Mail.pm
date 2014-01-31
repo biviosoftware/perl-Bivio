@@ -159,10 +159,14 @@ sub internal_subject_body_attachments {
 
 sub internal_thread_root_list {
     my($self, $columns) = @_;
+    my($name) = _name($self, 'XxThreadRootList');
     return vs_paged_list(
-	_name($self, 'XxThreadRootList'),
+	$name,
 	$columns || $self->internal_thread_root_list_columns,
-	{no_pager => 1},
+	{
+	    no_pager => 1,
+	    show_headings => $name =~ /Mail/ ? 0 : 1,
+	},
     );
 }
 
