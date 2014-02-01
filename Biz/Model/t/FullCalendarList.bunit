@@ -1,0 +1,31 @@
+# Copyright (c) 2014 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ListModel();
+my($create_list, $rows) = do('./CalendarEvent.PL');
+$create_list->();
+req()->set_realm_and_user(qw(fourem btest_admin));
+[
+    load_all => [
+        [{
+	    full_calendar_start => '1214870400',
+	    full_calendar_end => '1217548799',
+	}] => [{
+	    'CalendarEvent.dtstart' => DateTime('07/16/2008 09:00:00'),
+	}, {
+	    'CalendarEvent.dtstart' => DateTime('07/15/2008 09:00:00'),
+	}],
+    ],
+    as_json_ref => [
+	[] => [[{
+	    id => qr{\@},
+	    title => qr{DN },
+	    end => qr{Z},
+	    start => DateTime()->to_xml(DateTime('07/16/2008 09:00:00')),
+	}, {
+	    id => qr{\@},
+	    title => qr{DN },
+	    end => qr{Z},
+	    start => DateTime()->to_xml(DateTime('07/15/2008 09:00:00')),
+	}]],
+    ],
+];
