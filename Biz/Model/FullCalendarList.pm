@@ -10,45 +10,45 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub as_json_ref {
     my($self) = @_;
-    return [
-	{
-	    title => 'Day30',
-	    start => '2014-01-30T20:00:00Z',
-	    end => '2014-01-30T22:00:00Z',
-	},
-    ];
+    return $self->map_rows(sub {
+	my($it) = @_;
+        return {map(
+	    ($_->[1] => $it->get_field_type($_->[0])->to_json($it->get($_->[0]))),
+	    [qw(CalendarEvent.uid id)],
+	    [qw(RealmOwner.display_name title)],
+	    [qw(CalendarEvent.dtstart start)],
+	    [qw(CalendarEvent.dtend end)],
+#TODO: url, description
+	)};
+    });
 }
 
-sub execute_load_all {
-    my($proto, $req) = @_;
-    $proto->new($req)->put_on_req($req);
-    return;
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+        other_query_keys => [qw(full_calendar_start full_calendar_end)],
+    });
 }
 
-# sub internal_prepare_statement {
-#     my($self) = @_;
-#     my($self, $stmt, $query) = @_;
-#     my($bom) = _query($self, 'b_month');
-#     $self->new_other('MonthList')->load_all({b_month => $bom});
-#     my($begin) = $_DT->set_beginning_of_week($bom);
-#     my($end) = $_DT->set_end_of_week(
-# 	$_DT->set_end_of_day($_DT->set_end_of_month($bom)));
-#     _if_tz($self, sub {
-#         my($tz) = @_;
-# 	$begin = $tz->date_time_to_utc($begin);
-# 	$end = $tz->date_time_to_utc($end);
-# 	return;
-#     });
-#     $self->[$_IDI] = [$begin, $end];
-#     $stmt->where(
-# 	$stmt->OR(
-# 	    map($stmt->AND(
-# 		$stmt->GTE("CalendarEvent.$_", [$begin]),
-# 		$stmt->LTE("CalendarEvent.$_", [$end]),
-# 	    ), qw(dtstart dtend)),
-# 	),
-#     );
-#     return shift->SUPER::internal_prepare_statement(@_);
-# }
+sub internal_prepare_statement {
+    my($self, $stmt, $query) = @_;
+    my($q) = {map(
+	($_ => Type_DateTime()->from_unix($query->get("full_calendar_$_"))),
+	qw(start end),
+    )};
+    $stmt->where(
+	$stmt->OR(
+	    map(
+		$stmt->AND(
+		    $stmt->GTE("CalendarEvent.$_", [$q->{start}]),
+		    $stmt->LTE("CalendarEvent.$_", [$q->{end}]),
+		),
+		qw(dtstart dtend),
+	    ),
+	),
+    );
+    return shift->SUPER::internal_prepare_statement(@_);
+}
 
 1;
