@@ -36,7 +36,8 @@ sub validate_end_date {
 	unless $recurrence_end_date;
     my($dd) = $_DT->delta_days($end_date, $recurrence_end_date);
     return $dd < 7 ? $_TOO_SHORT
-	: $dd >= 365 ? $_TOO_LONG
+#TODO: Need to have better algorithm for inputting recurrences
+	: $dd >= 800 ? $_TOO_LONG
 	: undef,
 }
 
