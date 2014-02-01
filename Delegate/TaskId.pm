@@ -407,7 +407,7 @@ sub info_calendar {
  	    186
  	    ANY_OWNER
  	    DATA_READ&FEATURE_CALENDAR
- 	    Model.FullCalendarList->execute_load_all
+ 	    Model.FullCalendarList->execute_load_all_with_query
  	    View.Calendar->full_calendar_list_json
         )],
 # 187-189 free
