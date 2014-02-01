@@ -447,9 +447,8 @@ sub from_sql_value {
 
 sub from_unix {
     my($proto, $unix_time) = @_;
-    # Returns date/time for I<unix_time>.
-    return undef
-	unless defined($unix_time);
+    b_die($unix_time, ': must be an unsigned integer')
+	unless defined($unix_time) && $unix_time =~ /^(\d+)$/;
     my($s) = int($unix_time % $proto->SECONDS_IN_DAY() + 0.5);
     my($j) = int(($unix_time - $s)/$proto->SECONDS_IN_DAY() + 0.5)
 	    + $proto->UNIX_EPOCH_IN_JULIAN_DAYS();
