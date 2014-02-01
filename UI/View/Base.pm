@@ -158,6 +158,7 @@ sub js {
 
 sub json {
     my($self) = @_;
+#TODO: Errors are caught and render as simple strings, no body; with tracing in log
     view_class_map('XHTMLWidget');
     view_declare('json_body');
     view_shortcuts($self->VIEW_SHORTCUTS);
