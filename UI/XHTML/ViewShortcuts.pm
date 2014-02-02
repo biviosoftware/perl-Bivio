@@ -446,6 +446,7 @@ sub vs_list_form {
 		    : (@form_fields, $list_form),
 	    $submit ? $submit : (),
 	],
+	$options,
     );
 }
 
