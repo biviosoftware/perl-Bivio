@@ -434,7 +434,7 @@ sub get_render_state {
 	    next unless $enabler->enable_column($col, $self);
         }
 	if ($control = $all_cells->[$i]->unsafe_get('column_control')) {
-	    next unless $self->unsafe_resolve_widget_value($control, $source);
+	    next unless b_debug($self->render_simple_value($control, $source));
 	}
         push(@$headings, $all_headings->[$i]);
         push(@$cells, $all_cells->[$i]);
