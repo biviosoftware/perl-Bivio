@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2013 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved. x
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.4  2014/01/03 02:38:01  schellj
+  * Bivio::Biz::Action::MotionBase
+    NEW
+  * Bivio::Biz::Action::MotionList
+    NEW
+  * Bivio::Biz::Action::Motion
+    NEW
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    make ooo filter configurable
+    remove b_debug
+  * Bivio::Delegate::TaskId
+    redirect to FORUM_MOTION_IS_CLOSED when attempting to vote or comment
+    on a closed motion
+  * Bivio::Mail::Incoming
+    add grep_headers
+  * Bivio::Test::Language::HTTP
+    add get_link_in_table
+  * Bivio::UI::FacadeBase
+    add FORUM_MOTION_IS_CLOSED
+  * Bivio::UI::View::Motion
+    add is_closed
+  * Bivio::UI::Widget
+    commented-out deprecated warning for widget with "_" in name
+
   Revision 13.3  2013/12/12 18:50:34  schellj
   * Bivio::Biz::Action::ClientRedirect
     add execute_query_redirect
