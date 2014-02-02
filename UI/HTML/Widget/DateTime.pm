@@ -142,7 +142,7 @@ function dt_am_pm(d){
     }
 }
 function dt_th(d){
-    return d.getHours() % 12;
+    return (d.getHours() % 12) || 12;
 }
 EOF
 
