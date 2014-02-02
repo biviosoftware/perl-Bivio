@@ -12,14 +12,17 @@ sub as_json_ref {
     my($self) = @_;
     return $self->map_rows(sub {
 	my($it) = @_;
-        return {map(
-	    ($_->[1] => $it->get_field_type($_->[0])->to_json($it->get($_->[0]))),
-	    [qw(CalendarEvent.uid id)],
-	    [qw(RealmOwner.display_name title)],
-	    [qw(CalendarEvent.dtstart start)],
-	    [qw(CalendarEvent.dtend end)],
+        return {
+	    className => 'b_full_calendar_event',
+	    map(
+		($_->[1] => $it->get_field_type($_->[0])->to_json($it->get($_->[0]))),
+		[qw(CalendarEvent.calendar_event_id id)],
+		[qw(RealmOwner.display_name title)],
+		[qw(CalendarEvent.dtstart start)],
+		[qw(CalendarEvent.dtend end)],
 #TODO: url, description
-	)};
+	    ),
+	};
     });
 }
 
