@@ -817,6 +817,11 @@ sub to_ical {
     return $value . 'Z';
 }
 
+sub to_local {
+    my($proto, $date_time, $tz) = @_;
+    return _adjust_to_local($proto, $date_time, $tz);
+}
+
 sub to_local_file_name {
     my($proto, $date_time, $tz) = @_;
     # Converts to a local time file name. I<tz> is optional timezone.  Defaults to
