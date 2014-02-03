@@ -637,6 +637,49 @@ sub vs_simple_form_submit {
     return $_SUBMIT_CHAR . join(' ', @{$fields || []});
 }
 
+#TODO: clean up, make into widget
+sub vs_smart_date {
+    my($self, $field) = @_;
+    $field ||= 'RealmFile.modified_date_time';
+    return Simple([
+	sub {
+	    my($source) = @_;
+	    my($dt) = $source->get($field);
+	    return ''
+		if !defined($dt);
+	    my($now) = Type_DateTime()->now;
+	    return DateTime([$field], 'FULL_MONTH_DAY_AND_YEAR')
+		if Type_DateTime()->get_part(
+		    Type_DateTime()->to_local($dt), 'year')
+		    != Type_DateTime()->get_part(
+			Type_DateTime()->to_local($now), 'year');
+	    my($dd) = Type_DateTime()->delta_days(
+		Type_DateTime()->set_local_end_of_day($dt),
+		Type_DateTime()->local_end_of_today,
+	    );
+	    return DateTime([$field], 'MONTH_NAME_AND_DAY_NUMBER')
+		if $dd > 7;
+	    return Type_DateTime()->english_day_of_week(
+		Type_DateTime()->to_local($dt),
+	    ) if $dd > 1;
+	    my($ds) = Type_DateTime()->diff_seconds($now, $dt);
+	    return Type_Integer()->round($ds / 60 / 60) . ' hours ago'
+		if $ds > Type_DateTime()->SECONDS_IN_DAY / 24
+		    && $ds < Type_DateTime()->SECONDS_IN_DAY;
+	    return Type_Integer()->round($ds / 60) . ' minutes ago'
+		if $ds > 60 && $ds < Type_DateTime()->SECONDS_IN_DAY / 24;
+	    return Join([
+		'Yesterday',
+		DateTime([$field], 'HOUR_MINUTE_AM_PM_LC'),
+	    ], ' ')
+		if $dd > 0;
+	    return DateTime([$field], 'HOUR_MINUTE_AM_PM_LC')
+		if $ds > Type_DateTime()->SECONDS_IN_DAY / 24;
+	    return 'Just now';
+	},
+    ]);
+}
+
 sub vs_table_attrs {
     my($proto, $model, $class, $attrs) = @_;
     return {
