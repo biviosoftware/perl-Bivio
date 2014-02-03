@@ -663,10 +663,12 @@ sub vs_smart_date {
 		Type_DateTime()->to_local($dt),
 	    ) if $dd > 1;
 	    my($ds) = Type_DateTime()->diff_seconds($now, $dt);
-	    return Type_Integer()->round($ds / 60 / 60) . ' hours ago'
+	    return _format_integer_ago(
+		Type_Integer()->round($ds / 60 / 60), 'hour')
 		if $ds > Type_DateTime()->SECONDS_IN_DAY / 24
-		    && $ds < Type_DateTime()->SECONDS_IN_DAY;
-	    return Type_Integer()->round($ds / 60) . ' minutes ago'
+			&& $ds < Type_DateTime()->SECONDS_IN_DAY;
+	    return _format_integer_ago(
+		Type_Integer()->round($ds / 60), 'minute')
 		if $ds > 60 && $ds < Type_DateTime()->SECONDS_IN_DAY / 24;
 	    return Join([
 		'Yesterday',
@@ -820,6 +822,11 @@ sub vs_xhtml_title {
 	],
 	{join_separator => ' '},
     );
+}
+
+sub _format_integer_ago {
+    my($int, $unit) = @_;
+    return join(' ', $int, $int == 1 ? $unit : $unit . 's', 'ago');
 }
 
 sub _has_submit {
