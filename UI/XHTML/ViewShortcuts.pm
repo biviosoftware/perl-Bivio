@@ -641,7 +641,7 @@ sub vs_simple_form_submit {
 sub vs_smart_date {
     my($self, $field) = @_;
     $field ||= 'RealmFile.modified_date_time';
-    return Simple([
+    return SPAN_bivio_smart_date(Simple([
 	sub {
 	    my($source) = @_;
 	    my($dt) = $source->get($field);
@@ -677,7 +677,7 @@ sub vs_smart_date {
 		if $ds > Type_DateTime()->SECONDS_IN_DAY / 24;
 	    return 'Just now';
 	},
-    ]);
+    ]));
 }
 
 sub vs_table_attrs {
