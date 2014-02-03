@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved. x
+# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,137 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.5  2014/02/02 16:29:15  nagler
+  * Bivio::Biz::Model::CRMForm
+    superfluous return
+  * Bivio::Biz::Model::FullCalendarList
+    NEW
+  * Bivio::Biz::Model::SearchList
+    simplify format_uri_params_with_row, add result_type
+  * Bivio::Biz::Model::SearchSuggestList
+    NEW
+  * Bivio::bOP
+    RCS file: /home/cvs/perl/Bivio/bOP.pm,v
+    Working file: Bivio/bOP.pm
+    head: 13.4
+    branch:
+    locks: strict
+    access list:
+    symbolic names:
+    keyword substitution: kv
+    total revisions: 1139;	selected revisions: 0
+    description:
+  * Bivio::Delegate::TaskId
+    add SEARCH_SUGGEST_LIST_JSON, GROUP_SEARCH_SUGGEST_LIST_JSON
+    added FULL_CALENDAR_LIST_JSON
+    fix FULL_CALENDAR_LIST_JSON
+  * Bivio::Search::Xapian
+    allow results from partial queries
+  * Bivio::Type::CalendarEventRecurrence
+    extend period of valid dates
+  * Bivio::Type::DateTime
+    test from_unix() arg validaity
+    add to_local
+  * Bivio::Type::Email
+    added to_json
+  * Bivio::Type
+    added to_json which defaults to_xml
+  * Bivio::TypeValue
+    added as_json
+  * Bivio::UI::CSS::Widget::MockStylus
+    NEW
+  * Bivio::UI::CSS::Widget::VendorPrefixBase
+    NEW
+  * Bivio::UI::FacadeBase
+    add IS_2014STYLE, if_2014style
+    moved 2014STYLE to superclass
+    added ECCreditCardPayment text
+    add SEARCH_SUGGEST_LIST_JSON, GROUP_SEARCH_SUGGEST_LIST_JSON
+    use get_local_file_plain_app_uri to set LOCAL_FILE_PLAIN uri for /f/
+    define is_2014style as constant
+    added FULL_CALENDAR_LIST_JSON
+  * Bivio::UI::Facade
+    moved is_2014style() from FacadeBase
+    added get_local_file_plain_app_uri used by LocalFileLink
+    if_2014style uses is_2014style() so modular
+    is_2014style gets facade from source if possible
+  * Bivio::UI::HTML::Widget::DateTime
+    fix for am/pm when time % 12 == 0
+  * Bivio::UI::HTML::Widget::DateYearHandler
+    when defaulting year, use 300 day window so entering a Dec date in Jan
+    defaults to the previous year
+  * Bivio::UI::HTML::Widget::InlineCSS
+    NEW
+  * Bivio::UI::HTML::Widget::InlineJavaScript
+    NEW
+  * Bivio::UI::HTML::Widget::JavaScriptString
+    Put in "" so uses don't have to
+  * Bivio::UI::HTML::Widget::LocalFileAggregator
+    NEW
+  * Bivio::UI::HTML::Widget::LocalFileLink
+    NEW
+  * Bivio::UI::HTML::Widget::Page
+    use html5 doctype for is_2014style()
+    use if_2014style and get_from_source
+  * Bivio::UI::HTML::Widget::Script
+    don't first-focus to the SearchForm.search field
+  * Bivio::UI::HTML::Widget::Select
+    removed default size=1, only show size if != 1
+    added "class" attr
+  * Bivio::UI::HTML::Widget::TextArea
+    refactored, now derived from InputBase
+  * Bivio::UI::View::Base
+    add json
+    doc
+  * Bivio::UI::View::Calendar
+    added full_calendar_list_json
+  * Bivio::UI::View::CSS
+    if internal_site_css returns a reference, then don't add it to Prose,
+    just interpret literally
+  * Bivio::UI::View::Mail
+    don't show_headings for Mail list
+  * Bivio::UI::View::Search
+    add suggest_list_json
+    adjust column classes for suggest title - bootstrap doesn't display
+    col-xs-1 and col-xs-11 well at small sizes
+    tweak look and feel of search suggest
+    replace star with paperclip for wiki pages
+    fix image regex
+  * Bivio::UI::View::ThreePartPage
+    added xhtml_body_last
+    added internal_xhtml_tools() hook for subclasses
+  * Bivio::UI::ViewShortcuts
+    vs_local_file_plain_common_uri
+  * Bivio::UI::Widget::If2014Style
+    NEW
+  * Bivio::UI::Widget::WidgetSubstitute
+    NEW
+  * Bivio::UI::XHTML::ViewShortcuts
+    added NAV tag
+    added hook for subclasses - vs_simple_form_container()
+  * Bivio::UI::XHTML::Widget::ClearOnFocus
+    JavaScriptString now puts in ""
+  * Bivio::UI::XHTML::Widget::ComboBox
+    added internal_cb_text_class() for subclasses
+  * Bivio::UI::XHTML::Widget::JSONValueLabelPairList
+    NEW
+  * Bivio::UI::XHTML::Widget::SearchSuggestAddon
+    NEW
+  * Bivio::UI::XHTML::Widget::StandardSubmit
+    added space between buttons
+  * Bivio::UI::XHTML::Widget::TaskMenu
+    made selected class configurable
+    added hooks internal_drop_down_widget() and internal_wrap_widget()
+    for subclasses
+  * Bivio::Util::HTTPConf
+    added request_read_timeout constant as header=5 so produces RequestReadTimeout header=5
+  * Bivio::Util::HTTPD
+    added $ENV{BIVIO_IS_2014STYLE} lookup so can override without checking in
+  * Bivio::Util::Release
+    _get_update_list: added defaulting of $version and $rpm
+  * Bivio::Util::Shell
+    added u_prefix_path_env
+
   Revision 13.4  2014/01/03 02:38:01  schellj
   * Bivio::Biz::Action::MotionBase
     NEW
