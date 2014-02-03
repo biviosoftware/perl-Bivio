@@ -25,15 +25,23 @@ sub internal_byline_control {
 
 sub list {
     my($self) = @_;
+    my($list) = 'SearchList';
     return $self->internal_body(
-	vs_paged_list(
-	    'SearchList',
-	    _list($self),
-	    {
-		class => 'paged_list b_search_results',
-		show_headings => 0,
-	    },
-	),
+	Join([
+	    If(
+		Or(_has_query($list, 'prev'), _has_query($list, 'next')),
+		SPAN_pagination(' '),
+	    ),
+	    vs_paged_list(
+		$list,
+		_list($self),
+		{
+		    b_use('UI.Facade')->is_2014style
+			? () : (class => 'paged_list b_search_results'),
+		    show_headings => 0,
+		},
+	    ),
+	]),
     ),
 }
 
@@ -75,6 +83,11 @@ sub suggest_list_json {
     return;
 }
 
+sub _has_query {
+    my($list, $dir) = @_;
+    return [["Model.$list", '->get_query'], "has_$dir"];
+}
+
 sub _list {
     my($self) = @_;
     return [
@@ -90,7 +103,12 @@ sub _list {
 		DIV_byline(
 		    Join([
 			SPAN_author(String(['result_author'])),
-			DIV_date(DateTime(['RealmFile.modified_date_time'])),
+			DIV_date(
+			    If2014Style(
+				vs_smart_date(),
+				DateTime(['RealmFile.modified_date_time']),
+			    ),
+			),
 			DIV_uri(String(['result_uri'])),
 			Link(
 			    String(['RealmOwner.display_name']),
