@@ -333,8 +333,7 @@ sub to_html {
 }
 
 sub to_json {
-    my($self, $value) = @_;
-    return $self->to_xml($value);
+    return shift->to_literal(shift);
 }
 
 sub to_literal {

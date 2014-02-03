@@ -456,6 +456,10 @@ sub map_non_zero_list {
     return _map_enums('get_non_zero_list', @_);
 }
 
+sub to_json {
+    return shift->to_xml(shift);
+}
+
 sub to_literal {
     my($proto, $value) = @_;
     # Return the integer representation of I<value>

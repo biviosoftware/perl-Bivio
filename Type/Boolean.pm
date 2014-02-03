@@ -65,6 +65,10 @@ sub get_width {
     return 1;
 }
 
+sub to_json {
+    return shift->to_xml(shift);
+}
+
 sub to_sql_param {
     shift;
     my($v) = shift;

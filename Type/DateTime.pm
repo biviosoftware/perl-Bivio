@@ -817,6 +817,10 @@ sub to_ical {
     return $value . 'Z';
 }
 
+sub to_json {
+    return shift->to_xml(shift);
+}
+
 sub to_local {
     my($proto, $date_time, $tz) = @_;
     return _adjust_to_local($proto, $date_time, $tz);

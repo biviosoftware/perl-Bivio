@@ -95,6 +95,11 @@ sub to_hash {
     };
 }
 
+sub to_json {
+    my(undef, $value) = @_;
+    return b_use('IO.Ref')->nested_copy($value);
+}
+
 sub to_literal {
     # (proto, array_ref) : string
     # Returns printable string.
