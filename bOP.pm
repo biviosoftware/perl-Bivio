@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.6  2014/02/03 04:00:23  nagler
+  * Bivio::UI::HTML::Widget::Table
+    column_control is called with render_simple_value so you can have a
+    widget as the value
+  * Bivio::UI::XHTML::ViewShortcuts
+    pass options attrs to vs_simple_form() in vs_list_form()
+
   Revision 13.5  2014/02/02 16:29:15  nagler
   * Bivio::Biz::Model::CRMForm
     superfluous return
