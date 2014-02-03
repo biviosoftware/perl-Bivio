@@ -197,7 +197,12 @@ sub internal_thread_root_list_columns {
 			    {escape_html => 1},
 			),
 		    ),
-		    DIV_date(DateTime(['RealmFile.modified_date_time'])),
+		    DIV_date(
+			If2014Style(
+			    vs_smart_date(),
+			    DateTime(['RealmFile.modified_date_time']),
+			),
+		    ),
 		])),
 		Link(
 		    Join([

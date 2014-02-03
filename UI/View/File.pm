@@ -219,12 +219,20 @@ sub version_list {
 }
 
 sub _file_date {
-    return DateTime(['RealmFile.modified_date_time'])
-	unless $_LOCK;
+    return If2014Style(
+	vs_smart_date(),
+	DateTime(['RealmFile.modified_date_time']),
+    ) unless $_LOCK;
     return If(
 	['RealmFileLock.modified_date_time'],
-	DateTime(['RealmFileLock.modified_date_time']),
-	DateTime(['RealmFile.modified_date_time']),
+	If2014Style(
+	    vs_smart_date('RealmFileLock.modified_date_time'),
+	    DateTime(['RealmFileLock.modified_date_time']),
+	),
+	If2014Style(
+	    vs_smart_date(),
+	    DateTime(['RealmFile.modified_date_time']),
+	),
     );
 }
 
