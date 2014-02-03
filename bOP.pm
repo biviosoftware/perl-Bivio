@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -32,6 +32,32 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.7  2014/02/03 05:21:22  nagler
+  * Bivio::Biz::Model::FullCalendarList
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+  * Bivio::MIME::JSON
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+  * Bivio::Type::Array
+    to_json must not escape by default
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+  * Bivio::Type::Boolean
+    to_json must not escape by default
+  * Bivio::Type::DateTime
+    to_json must not escape by default
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+  * Bivio::Type::Email
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+  * Bivio::Type::Enum
+    to_json must not escape by default
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+  * Bivio::Type::Integer
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+  * Bivio::Type
+    to_json must not escape by default
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+  * Bivio::UI::View::Calendar
+    JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
+
   Revision 13.6  2014/02/03 04:00:23  nagler
   * Bivio::UI::HTML::Widget::Table
     column_control is called with render_simple_value so you can have a
