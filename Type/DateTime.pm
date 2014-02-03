@@ -818,7 +818,7 @@ sub to_ical {
 }
 
 sub to_json {
-    return shift->to_xml(shift);
+    return ${b_use('MIME.JSON')->to_text(shift->to_xml(shift))};
 }
 
 sub to_local {

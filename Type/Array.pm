@@ -96,8 +96,7 @@ sub to_hash {
 }
 
 sub to_json {
-    my(undef, $value) = @_;
-    return b_use('IO.Ref')->nested_copy($value);
+    b_die('not supported');
 }
 
 sub to_literal {

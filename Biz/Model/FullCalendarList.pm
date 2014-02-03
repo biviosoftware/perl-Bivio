@@ -8,14 +8,18 @@ b_use('IO.ClassLoaderAUTOLOAD');
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # Supports fullcalendar.js
 
-sub as_json_ref {
+sub as_type_values {
     my($self) = @_;
     return $self->map_rows(sub {
 	my($it) = @_;
         return {
-	    className => 'b_full_calendar_event',
+	    className => Bivio_TypeValue()->new(Type_Line(), 'b_full_calendar_event'),
+	    allDay => Bivio_TypeValue()->new(Type_Boolean(), Type_Boolean()->FALSE),
 	    map(
-		($_->[1] => $it->get_field_type($_->[0])->to_json($it->get($_->[0]))),
+		($_->[1] => Bivio_TypeValue()->new(
+		    $it->get_field_type($_->[0]),
+		    $it->get($_->[0]),
+		)),
 		[qw(CalendarEvent.calendar_event_id id)],
 		[qw(RealmOwner.display_name title)],
 		[qw(CalendarEvent.dtstart start)],

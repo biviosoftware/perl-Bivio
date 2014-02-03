@@ -148,14 +148,19 @@ sub split_parts {
 
 sub to_json {
     my($proto, $value) = @_;
-    return ''
-	if !defined($value) || $proto->is_ignore($value);
-    return $value;
+    return ${b_use('MIME.JSON')->to_text(_to_xml($proto, $value))};
 }
 
 sub to_xml {
     my($proto, $value) = @_;
-    return $_HTML->escape($proto->to_json($value));
+    return $_HTML->escape(_to_xml($proto, $value));
+}
+
+sub _to_xml {
+    my($proto, $value) = @_;
+    return ''
+	if !defined($value) || $proto->is_ignore($value);
+    return $value;
 }
 
 1;

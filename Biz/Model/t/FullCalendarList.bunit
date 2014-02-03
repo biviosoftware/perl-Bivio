@@ -15,19 +15,21 @@ req()->set_realm_and_user(qw(fourem btest_admin));
 	    'CalendarEvent.dtstart' => DateTime('07/15/2008 09:00:00'),
 	}],
     ],
-    as_json_ref => [
+    as_type_values => [
 	[] => [[{
-	    id => qr{^\d+$},
+	    allDay => 'Bivio::Type::Boolean[0]',
+	    className => 'Bivio::Type::Line[b_full_calendar_event]',
+	    end => qr{DateTime},
+	    id => qr{PrimaryId},
+	    start => qr{07/16/2008 09:00:00},
 	    title => qr{DN '},
-	    end => qr{Z},
-	    start => DateTime()->to_xml(DateTime('07/16/2008 09:00:00')),
-	    className => 'b_full_calendar_event',
 	}, {
-	    id => qr{^\d+$},
-	    title => qr{DN },
-	    end => qr{Z},
-	    start => DateTime()->to_xml(DateTime('07/15/2008 09:00:00')),
-	    className => 'b_full_calendar_event',
+	    allDay => 'Bivio::Type::Boolean[0]',
+	    className => 'Bivio::Type::Line[b_full_calendar_event]',
+	    end => qr{DateTime},
+	    id => qr{PrimaryId},
+	    start => qr{07/15/2008 09:00:00},
+	    title => qr{DN '},
 	}]],
     ],
 ];

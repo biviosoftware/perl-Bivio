@@ -457,7 +457,7 @@ sub map_non_zero_list {
 }
 
 sub to_json {
-    return shift->to_xml(shift);
+    return ${b_use('MIME.JSON')->to_text(shift->to_xml(shift))};
 }
 
 sub to_literal {

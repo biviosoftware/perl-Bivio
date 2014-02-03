@@ -33,6 +33,7 @@ sub to_text {
     }
     elsif (! ref($value)) {
 	$value =~ s{('|"|\\|\/)}{\\$1}g;
+#TODO: Why is this a join
 	$res = join('', '"', $value, '"');
     }
     elsif (ref($value) eq 'HASH') {
@@ -46,6 +47,9 @@ sub to_text {
 	$res = '['
 	    . join(',', map(${$proto->to_text($_)}, @$value))
 	    . ']';
+    }
+    elsif (Bivio::UNIVERSAL->b_can('as_json', $value)) {
+	$res = $value->as_json;
     }
     else {
 	b_die($value);

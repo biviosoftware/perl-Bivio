@@ -13,6 +13,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # can't use b_use.  This package is very early on in import order.
 my($_HTML) = 'Bivio::HTML';
 my($_A) = 'Bivio::IO::Alert';
+my($_MJ);
 my($_RT);
 
 sub CLASSLOADER_MAP_NAME {
@@ -333,7 +334,10 @@ sub to_html {
 }
 
 sub to_json {
-    return shift->to_literal(shift);
+    my($proto, $value) = @_;
+    return ${($_MJ ||= $proto->use('MIME.JSON'))->to_text(
+	$proto->to_literal($value),
+    )};
 }
 
 sub to_literal {

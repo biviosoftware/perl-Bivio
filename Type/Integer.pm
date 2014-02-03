@@ -134,4 +134,8 @@ sub new {
     return $self;
 }
 
+sub to_json {
+    return shift->to_literal(shift);
+}
+
 1;

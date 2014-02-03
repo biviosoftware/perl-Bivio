@@ -118,7 +118,7 @@ sub full_calendar_list_json {
 	    sub {
 		my($source) = @_;
 		return ${MIME_JSON()->to_text(
-		    $source->req('Model.FullCalendarList')->as_json_ref,
+		    $source->req('Model.FullCalendarList')->as_type_values,
 		)};
 	    },
 	],
