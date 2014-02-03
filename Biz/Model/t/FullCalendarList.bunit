@@ -17,15 +17,17 @@ req()->set_realm_and_user(qw(fourem btest_admin));
     ],
     as_json_ref => [
 	[] => [[{
-	    id => qr{\@},
-	    title => qr{DN },
+	    id => qr{^\d+$},
+	    title => qr{DN '},
 	    end => qr{Z},
 	    start => DateTime()->to_xml(DateTime('07/16/2008 09:00:00')),
+	    className => 'b_full_calendar_event',
 	}, {
-	    id => qr{\@},
+	    id => qr{^\d+$},
 	    title => qr{DN },
 	    end => qr{Z},
 	    start => DateTime()->to_xml(DateTime('07/15/2008 09:00:00')),
+	    className => 'b_full_calendar_event',
 	}]],
     ],
 ];
