@@ -29,14 +29,13 @@ options({
 	} => [
 	    [] => [undef],
 	],
-    ],
-    [] => [
-	x => [
+	test_bean_register_callback => [
+	    ['z', ['q'], sub {return $_[0]->[1]}] => not_die(),
+	],
+	z => [
 	    [] => [],
-	    a => [],
-	    [] => 'a',
-	    b => 'a',
-	    c => 'b',
+	    'q' => [undef],
+	    ['q', 'r'] => 'r',
 	],
     ],
 ];
