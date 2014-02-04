@@ -47,9 +47,9 @@ sub _onfocus {
     my($self) = @_;
     my($of) = $self->get('widget')->unsafe_get('ONFOCUS');
     my($default) = Join([
-	'b_clear_on_focus(this, "',
+	'b_clear_on_focus(this, ',
 	JavaScriptString($self->get('hint_text')),
-	'")',
+	')',
     ]);
     return $of ? Join([$of, $default], '; ') : $default;
 }
