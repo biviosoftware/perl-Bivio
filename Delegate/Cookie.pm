@@ -93,14 +93,14 @@ sub header_out {
 	. $p;
     _trace($value) if $_TRACE;
     $r->header_out('Set-Cookie', $value);
-    map(
-	(
-	    $r->header_out('Set-Cookie', "$_=; path=/"),
-	    $r->header_out('Set-Cookie', "$_=; path=/; domain=@{[$req->get('r')->hostname]}"),
-	    $domain_prefix && $r->header_out('Set-Cookie', "$_=; path=/$domain_prefix"),
-	),
-	@{$_CFG->{prior_tags}},
-    ) if $fields->{$_PRIOR_TAG_FIELD};
+    if ($fields->{$_PRIOR_TAG_FIELD}) {
+	foreach my $prior_tag (@{$_CFG->{prior_tags}}) {
+	    my($tag, $domain) = @$prior_tag;
+	    $r->header_out('Set-Cookie', "$tag=; path=/");
+	    $r->header_out('Set-Cookie', "$tag=; path=/; domain=@{[$req->get('r')->hostname]}");
+	    $r->header_out('Set-Cookie', "$tag=; path=/; domain=$domain");
+	}
+    }
     return 1;
 }
 
@@ -199,7 +199,7 @@ sub _parse_items {
 	}
 	$k = uc($k);
 	unless ($k eq $_CFG->{tag}) {
-	    if ($_CFG->{prior_tags} && grep($k eq $_, @{$_CFG->{prior_tags}})) {
+	    if ($_CFG->{prior_tags} && grep($k eq $_->[0], @{$_CFG->{prior_tags}})) {
 		$items->{$_PRIOR_TAG_FIELD}++;
 		next
 		    if $ignore_prior_tags;

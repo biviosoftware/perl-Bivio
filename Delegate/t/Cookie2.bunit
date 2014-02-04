@@ -4,7 +4,9 @@ require './Cookie.PL';
 config({
     'Bivio::Delegate::Cookie' => {
 	tag => 'TAG2',
-	prior_tags => ['TAG1'],
+	prior_tags => [
+	    ['TAG1', 'cookiedomain.com'],
+	],
     },
 });
 my($encrypted);
