@@ -58,10 +58,18 @@ sub delete_all {
 
 sub handle_config {
     my(undef, $cfg) = @_;
+    $cfg = b_use('IO.Ref')->nested_copy($cfg);
     $cfg->{session_update_seconds} = int($cfg->{session_timeout_seconds}/20)
 	if $cfg->{session_timeout_seconds}
 	&& !defined($cfg->{session_update_seconds});
-    $_CFG = {%{$cfg}, tag => uc($cfg->{tag})};
+    $cfg->{prior_tags} = $cfg->{prior_tags} && @{$cfg->{prior_tags}}
+	? [map(
+	    ref($_) ? [uc($_->[0]), lc($_->[1])] : [uc($_)],
+	    @{$cfg->{prior_tags}}
+	)]
+	: undef;
+    $cfg->{tag} = uc($cfg->{tag});
+    $_CFG = $cfg;
     return;
 }
 
@@ -93,14 +101,8 @@ sub header_out {
 	. $p;
     _trace($value) if $_TRACE;
     $r->header_out('Set-Cookie', $value);
-    if ($fields->{$_PRIOR_TAG_FIELD}) {
-	foreach my $prior_tag (@{$_CFG->{prior_tags}}) {
-	    my($tag, $domain) = @$prior_tag;
-	    $r->header_out('Set-Cookie', "$tag=; path=/");
-	    $r->header_out('Set-Cookie', "$tag=; path=/; domain=@{[$req->get('r')->hostname]}");
-	    $r->header_out('Set-Cookie', "$tag=; path=/; domain=$domain");
-	}
-    }
+    _clear_prior_tags($req)
+        if $fields->{$_PRIOR_TAG_FIELD};
     return 1;
 }
 
@@ -140,6 +142,30 @@ sub put_escaped {
 	$value =~ s/$_SEP/$_ESC_SEP/g;
     }
     return $self->put(%values);
+}
+
+sub _clear_prior_tags {
+    my($req) = @_;
+    my($r) = $req->get('r');
+    foreach my $prior_tag (@{$_CFG->{prior_tags}}) {
+	my($tag, $domain) = @$prior_tag;
+	my($h) = $r->hostname;
+	foreach my $d (
+	    undef,
+	    $h,
+	    !$domain ? ()
+		: $domain eq $h
+		? ()
+		: $domain,
+	) {
+	    $r->header_out(
+		'Set-Cookie',
+		"$tag=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+		    . ($d ? "; domain=$d" : ''),
+	    );
+	}
+    }
+    return;
 }
 
 sub _need_header_out {
