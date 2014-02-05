@@ -248,6 +248,7 @@ sub setup_http {
 	'uri()' => ['/'],
 	'header_in()' => $header_op,
 	'header_out()' => $header_op,
+	'headers_out()' => [b_use('Test.Bean')->new({})],
 	'hostname()' => ['localhost.localdomain'],
 	'get_server_port()' => [80],
 	'content_type()' => sub {
