@@ -148,7 +148,6 @@ sub _clear_prior_tags {
     my($req) = @_;
     my($r) = $req->get('r');
     # cookie has already been set, need to append multiple Set-Cookie vlaues
-    my($value) = $r->header_out('Set-Cookie');
     foreach my $prior_tag (@{$_CFG->{prior_tags}}) {
 	my($tag, $domain) = @$prior_tag;
 	my($h) = $r->hostname;
@@ -160,12 +159,13 @@ sub _clear_prior_tags {
 		? ()
 		: $domain,
 	) {
-	    $value .= "\r\nSet-Cookie: " 
-		. "$tag=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
-		. ($d ? "; domain=$d" : ''),
+	    $r->headers_out->add(
+		'Set-Cookie',
+		"$tag=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+		    . ($d ? "; domain=$d" : ''),
+	    );
 	}
     }
-    $r->header_out('Set-Cookie', $value);
     return;
 }
 
