@@ -147,6 +147,8 @@ sub put_escaped {
 sub _clear_prior_tags {
     my($req) = @_;
     my($r) = $req->get('r');
+    # cookie has already been set, need to append multiple Set-Cookie vlaues
+    my($value) = $r->header_out('Set-Cookie');
     foreach my $prior_tag (@{$_CFG->{prior_tags}}) {
 	my($tag, $domain) = @$prior_tag;
 	my($h) = $r->hostname;
@@ -158,13 +160,12 @@ sub _clear_prior_tags {
 		? ()
 		: $domain,
 	) {
-	    $r->header_out(
-		'Set-Cookie',
-		"$tag=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
-		    . ($d ? "; domain=$d" : ''),
-	    );
+	    $value .= "\r\nSet-Cookie: " 
+		. "$tag=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+		. ($d ? "; domain=$d" : ''),
 	}
     }
+    $r->header_out('Set-Cookie', $value);
     return;
 }
 
@@ -236,6 +237,7 @@ sub _parse_items {
 	    }
 	}
         if (exists($items->{$k})) {
+#TODO: use the largest DATE_TIME value in the cookie to solve collisions
 	    b_warn('duplicate cookie value for key: ', $k,
                 ', ', $items->{$k}, ' and ', $v);
             next;
