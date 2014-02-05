@@ -14,8 +14,8 @@ config({
 });
 my($encrypted);
 my($cookies) = [];
-req('r')->test_bean_register_callback(
-    'header_out',
+req('r')->headers_out()->test_bean_register_callback(
+    'add',
     ['Set-Cookie'],
     sub {
 	my($args) = @_;
