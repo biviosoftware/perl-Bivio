@@ -100,7 +100,7 @@ sub header_out {
 	. '=' . $_S->encrypt_http_base64($clear_text)
 	. $p;
     _trace($value) if $_TRACE;
-    $r->header_out('Set-Cookie', $value);
+    $r->headers_out->add('Set-Cookie', $value);
     _clear_prior_tags($req)
         if $fields->{$_PRIOR_TAG_FIELD};
     return 1;
