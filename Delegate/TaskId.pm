@@ -1745,6 +1745,7 @@ sub info_xapian {
 	    Model.SearchSuggestList->execute_load_page
 	    View.Search->suggest_list_json
 	)],
+	# If you add more tasks here, fix TaskId.t
 #62-69 free
     ];
 }
