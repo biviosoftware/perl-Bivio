@@ -55,6 +55,11 @@ sub initialize {
     return shift->SUPER::initialize(@_);
 }
 
+sub internal_cb_size {
+    my($self) = @_;
+    return $self->get('size');
+}
+
 sub internal_cb_text_class {
     return 'cb_text';
 }
@@ -92,7 +97,7 @@ sub _text {
 	]),
 	ONKEYUP => "return $_PREFIX.key_up(event.keyCode, this)",
 	AUTOCOMPLETE => 'off',
-	size => $self->get('size'),
+	size => $self->internal_cb_size,
 	class => $self->internal_cb_text_class,
 	%{$self->unsafe_get('text_attrs') || {}},
     });
