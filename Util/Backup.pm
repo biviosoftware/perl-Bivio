@@ -276,7 +276,7 @@ sub _archive_create {
 	my($dirs) = [];
 	my($du) = IO::File->new;
 	b_die($top, ": du failed: $!")
-	    unless $du->open("du -k @{[_quote($top)]} | sort -nr |");
+	    unless $du->open("du -k --apparent-size @{[_quote($top)]} | sort -nr |");
 	while (defined(my $line = readline($du))) {
 	    my($n, $d) = split(/\s+/, $line, 2);
 	    chomp($d);
