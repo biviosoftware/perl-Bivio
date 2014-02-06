@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2011 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2014 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Reply;
 use strict;
@@ -27,7 +27,7 @@ sub client_redirect {
 
     # have to do it the long way, there is a bug in using the REDIRECT
     # return value when handling a form
-    $r->header_out(Location => $uri);
+    $self->send_append_header($r, Location => $uri);
     $r->status($status);
     _send_http_header($self, $req, $r);
     # make it look like apache's redirect.  Ignore HEAD, because this
@@ -50,7 +50,7 @@ sub die_to_http_code {
     # Translates a L<$_DC> to an L<Apache::Constant>.
     #
     # If I<die> is C<undef>, returns C<$_AC::OK>.
-    my(undef, $die, $r) = @_;
+    my($proto, $die, $r) = @_;
     return $_AC->OK
 	unless defined($die);
     $die = $die->get('code')
@@ -69,12 +69,12 @@ sub die_to_http_code {
 	$_DC->INPUT_TOO_LARGE => $_AC->HTTP_REQUEST_ENTITY_TOO_LARGE,
 	$_DC->CLIENT_ERROR => $_AC->HTTP_SERVICE_UNAVAILABLE,
     ) unless %_DIE_TO_HTTP_CODE;
-    return _error($_DIE_TO_HTTP_CODE{$die}, $r)
+    return _error($proto, $_DIE_TO_HTTP_CODE{$die}, $r)
 	if defined($_DIE_TO_HTTP_CODE{$die});
     # The rest get mapped to SERVER_ERROR
     b_warn($die, ": unknown $_DC")
         unless $_DC->is_blesser_of($die);
-    return _error($_AC->SERVER_ERROR, $r);
+    return _error($proto, $_AC->SERVER_ERROR, $r);
 }
 
 sub handle_config {
@@ -103,6 +103,7 @@ sub send {
     # Sends the buffered reply data.
     my($self, $req) = @_;
     my($r, $o) = $self->unsafe_get(qw(r output));
+    $r ||= $req->get('r');
 
     my($is_scalar) = ref($o) eq 'SCALAR';
     die('no reply generated, missing UI item on Task: ',
@@ -125,9 +126,9 @@ sub send {
 	    unless $self->unsafe_get_header('Last-Modified');
     }
     # Don't keep the connection open on normal replies
-    $r->header_out('Connection', 'close');
+    $self->send_append_header($r, 'Connection', 'close');
 
-    $r->header_out('Content-Length', $size);
+    $self->send_append_header($r, 'Content-Length', $size);
     $r->content_type($self->get_output_type());
     _send_http_header($self, $req, $r);
 
@@ -154,6 +155,12 @@ sub send {
     # there is an error and we get called back in die_to_http_code
     # (then _error()).
     $self->internal_put({});
+    return;
+}
+
+sub send_append_header {
+    my(undef, $r, $key, $value) = @_;
+    $r->headers_out->add($key, $value);
     return;
 }
 
@@ -202,21 +209,6 @@ sub set_output {
     return shift->SUPER::set_output(@_);
 }
 
-sub _add_additional_http_headers {
-    # (self, Apache.Request) : undef
-    # Adds any additional http headers from the configuration.
-    my($self, $r) = @_;
-    return unless $_CFG->{additional_http_headers};
-
-    foreach my $pair (@{$_CFG->{additional_http_headers}}) {
-        my($key, $value) = @$pair;
-        $r->header_out($key => defined($r->header_out($key))
-            ? $r->header_out($key) . "\r\n$key: $value"
-            : $value);
-    }
-    return;
-}
-
 sub _cookie_check {
     my($self, $req, $r) = @_;
     $self->set_cache_private
@@ -228,7 +220,7 @@ sub _error {
     # (int, Apache.Request) : ApacheConstants.OK
     # Workaround for apache in error mode.  Sends the reply in line.
     # This is due to a bug in apache which uses a form.  See Req#21
-    my($code, $r) = @_;
+    my($proto, $code, $r) = @_;
 #TODO: Older mod_perl versions had Apache::Constants bugs when not
 #      running in apache.  If you're using 5.6.* or higher, you're
 #      probably using a newer apache.  $^V was only defined after 5.005,
@@ -239,7 +231,7 @@ sub _error {
 	    || $code == $_AC->OK;
     $r->status($code);
     $r->content_type('text/html');
-    _send_http_header(undef, undef, $r);
+    _send_http_header($proto, undef, $r);
     # make it look like apache's redirect
     my($uri) = $r->uri;
 
@@ -298,11 +290,10 @@ sub _send_http_header {
 	$r->status($self->get('status'))
 	    if $self->has_keys('status');
 	_cookie_check($self, $req, $r);
-        _add_additional_http_headers($self, $r);
 	my($h) = $self->unsafe_get('headers');
 	if ($h) {
 	    foreach my $k (sort(keys(%$h))) {
-		$r->header_out($k, $h->{$k});
+		$self->send_append_header($r, $k, $h->{$k});
 	    }
 	}
 	_trace($self->unsafe_get('status'), ' ', $h) if $_TRACE;
@@ -310,7 +301,7 @@ sub _send_http_header {
 
     # Turn off KeepAlive if there are jobs.  This is because IE doesn't
     # cycle connections.  It goes back to exactly the same one.
-    $r->header_out('Connection', 'close')
+    $self->send_append_header($r, 'Connection', 'close')
 	unless b_use('AgentJob.Dispatcher')->queue_is_empty;
     $r->send_http_header;
     return;
