@@ -1,10 +1,15 @@
-# Copyright (c) 2002-2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2014 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Reply;
 use strict;
 use Bivio::Base 'Agent.Reply';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+
+sub send_append_header {
+    shift;
+    return b_use('AgentHTTP.Reply')->send_append_header(@_);
+}
 
 sub set_cache_private {
     my($self) = @_;
