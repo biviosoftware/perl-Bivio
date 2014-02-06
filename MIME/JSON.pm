@@ -32,7 +32,7 @@ sub to_text {
 	$res = '';
     }
     elsif (! ref($value)) {
-	$value =~ s{('|"|\\|\/)}{\\$1}g;
+	$value =~ s{("|\\|/)}{\\$1}g;
 #TODO: Why is this a join
 	$res = join('', '"', $value, '"');
     }
