@@ -170,9 +170,9 @@ sub thread_root_list {
     $self->internal_put_base_attr(
         selector => [sub {
 	    my($f) = $_M->from_req(shift->req, 'CRMQueryForm');
-	    Form(
+	    vs_inline_form(
 		$f->simple_package_name,
-		Join([
+		[
 		    map(
 			Select({
 			    %{$f->get_select_attrs($_)},
@@ -200,12 +200,7 @@ sub thread_root_list {
 			alt_widget => FormButton('ok_button')
 			    ->put(label => 'Refresh'),
 		    }),
-		]),
-		{
-		    form_method => 'get',
-		    want_timezone => 0,
-		    want_hidden_fields => 0,
-		},
+		],
 	    ),
 	}],
     );
