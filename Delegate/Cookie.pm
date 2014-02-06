@@ -100,7 +100,7 @@ sub header_out {
 	. '=' . $_S->encrypt_http_base64($clear_text)
 	. $p;
     _trace($value) if $_TRACE;
-    $r->headers_out->add('Set-Cookie', $value);
+    $req->get('reply')->send_append_header($r, 'Set-Cookie', $value);
     _clear_prior_tags($req)
         if $fields->{$_PRIOR_TAG_FIELD};
     return 1;
@@ -159,7 +159,8 @@ sub _clear_prior_tags {
 		? ()
 		: $domain,
 	) {
-	    $r->headers_out->add(
+	    $req->get('reply')->send_append_header(
+		$r,
 		'Set-Cookie',
 		"$tag=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
 		    . ($d ? "; domain=$d" : ''),
