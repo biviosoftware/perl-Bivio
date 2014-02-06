@@ -15,21 +15,6 @@ sub agent_execution_is_secure {
     return 1;
 }
 
-sub get_instance {
-    my($self) = shift->get_current_or_new(@_);
-    $self->require_no_cookie
-	if $self->can('require_no_cookie');
-    return $self;
-}
-
-sub new_unit {
-    my($proto, $class_name, $method, @args) = @_;
-    b_die('request already exists: ', $proto->get_current)
-        if $proto->get_current;
-    $method ||= 'get_instance';
-    return $proto->$method(@args)->put(class_name => $class_name);
-}
-
 sub capture_mail {
     my($self) = @_;
     $self->unsafe_get_captured_mail;
@@ -93,6 +78,13 @@ sub get_form {
     return shift->unsafe_get('form');
 }
 
+sub get_instance {
+    my($self) = shift->get_current_or_new(@_);
+    $self->require_no_cookie
+	if $self->can('require_no_cookie');
+    return $self;
+}
+
 sub handle_prepare_case {
     my($proto) = @_;
     return
@@ -139,6 +131,14 @@ sub internal_redirect_user_realm {
 sub is_test {
     my($self) = @_;
     return $self->get_or_default('is_test', shift->SUPER::is_test(@_));
+}
+
+sub new_unit {
+    my($proto, $class_name, $method, @args) = @_;
+    b_die('request already exists: ', $proto->get_current)
+        if $proto->get_current;
+    $method ||= 'get_instance';
+    return $proto->$method(@args)->put(class_name => $class_name);
 }
 
 sub put_form {
