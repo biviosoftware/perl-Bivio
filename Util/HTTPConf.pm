@@ -421,7 +421,7 @@ v2:SSLProtocol All -SSLv2
 v2:SSLHonorCipherOrder On
 v2:SSLCipherSuite DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:EDH-RSA-DES-CBC3-SHA:RC4-SHA:HIGH:!ADH
 v1:SSLLog logs/error_log
-v1:SSLLogLevel warn
+SSLLogLevel warn
 EOF
 # need to dig -x to get reverse dns
 # forward dns
