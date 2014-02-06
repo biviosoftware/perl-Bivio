@@ -336,6 +336,20 @@ sub vs_header_su_link {
     ));
 }
 
+sub vs_inline_form {
+    my($self, $model, $cols, $attrs) = @_;
+    return Form(
+	$model,
+	Join($cols),
+	{
+	    form_method => 'get',
+	    want_timezone => 0,
+	    want_hidden_fields => 0,
+	    $attrs ? %$attrs : (),
+	},
+    );
+}
+
 sub vs_label_cell {
     my($self, $model_field) = @_;
     return (FormField("$model_field")->get_label_and_field)[0]
