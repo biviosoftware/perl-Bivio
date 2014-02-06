@@ -97,6 +97,26 @@ Bivio::Test->new({
 		    )],
 		    next => 'GROUP_SEARCH_LIST',
 		},
+		{
+		    name => 'SEARCH_SUGGEST_LIST_JSON',
+		    int => 63,
+		    realm_type => 'GENERAL',
+		    permission_set => 'ANYBODY',
+		    items => [qw(
+			Model.SearchSuggestList->execute_load_page
+			View.Search->suggest_list_json
+		    )],
+		},
+		{
+		    name => 'GROUP_SEARCH_SUGGEST_LIST_JSON',
+		    int => 64,
+		    realm_type => 'ANY_OWNER',
+		    permission_set => 'ANYBODY',
+		    items => [qw(
+			Model.SearchSuggestList->execute_load_page
+			View.Search->suggest_list_json
+		    )],
+		},
 	    ]],
 	    [[[a => 1]], [[b => 2]]] => [[{
 		name => 'a',
