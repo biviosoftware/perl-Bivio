@@ -23,13 +23,11 @@ sub client_redirect {
     my($r) = $self->get('r');
     $self->internal_put({});
     my($uri, $status) = @$named{qw(uri http_status_code)};
-    $status ||= 302;
-
+    $status ||= $_AC->HTTP_MOVED_TEMPORARILY;
     # have to do it the long way, there is a bug in using the REDIRECT
     # return value when handling a form
     $self->send_append_header($r, Location => $uri);
-    $r->status($status);
-    _send_http_header($self, $req, $r);
+    _send_http_header($self, $req, $r, $status);
     # make it look like apache's redirect.  Ignore HEAD, because this
     # is like an error.
     $r->print(<<"EOF");
@@ -110,8 +108,6 @@ sub send {
         $req->get('task_id')->get_name)
 	unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::Handle');
     my($size) = $is_scalar ? length($$o) : -s $o;
-    # NOTE: The -s $o and the "stat(_)" below must be near each other
-    _cookie_check($self, $req, $r);
     if ($is_scalar) {
 	# Don't allow caching of dynamically generated replies, because
 	# we don't know the contents (typically from the database)
@@ -122,7 +118,7 @@ sub send {
 	    unless $self->unsafe_get_header('Cache-Control');
     }
     else {
-	$self->set_last_modified((stat(_))[9])
+	$self->set_last_modified((stat($o))[9])
 	    unless $self->unsafe_get_header('Last-Modified');
     }
     # Don't keep the connection open on normal replies
@@ -130,7 +126,7 @@ sub send {
 
     $self->send_append_header($r, 'Content-Length', $size);
     $r->content_type($self->get_output_type());
-    _send_http_header($self, $req, $r);
+    _send_http_header($self, $req, $r, $self->get_or_default('status', $_AC->HTTP_OK));
 
     Bivio::Die->eval(sub {
 	# M_HEAD not defined, so can't use method_number12
@@ -220,23 +216,22 @@ sub _error {
     # (int, Apache.Request) : ApacheConstants.OK
     # Workaround for apache in error mode.  Sends the reply in line.
     # This is due to a bug in apache which uses a form.  See Req#21
-    my($proto, $code, $r) = @_;
+    my($proto, $status, $r) = @_;
 #TODO: Older mod_perl versions had Apache::Constants bugs when not
 #      running in apache.  If you're using 5.6.* or higher, you're
 #      probably using a newer apache.  $^V was only defined after 5.005,
 #      so this check is good enough.
-    return $code
+    return $status
 	if defined($^V)
 	    || !exists($ENV{MOD_PERL})
-	    || $code == $_AC->OK;
-    $r->status($code);
+	    || $status == $_AC->OK;
     $r->content_type('text/html');
-    _send_http_header($proto, undef, $r);
+    _send_http_header($proto, undef, $r, $status);
     # make it look like apache's redirect
     my($uri) = $r->uri;
 
     # Ignore HEAD.  There was an error, give the whole body
-    if ($code == $_AC->NOT_FOUND) {
+    if ($status == $_AC->NOT_FOUND) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
@@ -247,7 +242,7 @@ sub _error {
 </body></html>
 EOF
     }
-    elsif ($code == $_AC->FORBIDDEN) {
+    elsif ($status == $_AC->FORBIDDEN) {
 	$r->print(<<"EOF");
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
@@ -282,13 +277,9 @@ EOF
 }
 
 sub _send_http_header {
-    # (HTTP.Reply, Agent.Request, Apache) : undef
-    # Sends the header, turning off keep alive (if necessary) and set cookie
-    # (if req)
-    my($self, $req, $r) = @_;
-    if ($req) {
-	$r->status($self->get('status'))
-	    if $self->has_keys('status');
+    my($self, $req, $r, $status) = @_;
+    $r->status($status);
+    if (ref($self) && $req) {
 	_cookie_check($self, $req, $r);
 	my($h) = $self->unsafe_get('headers');
 	if ($h) {
@@ -298,7 +289,6 @@ sub _send_http_header {
 	}
 	_trace($self->unsafe_get('status'), ' ', $h) if $_TRACE;
     }
-
     # Turn off KeepAlive if there are jobs.  This is because IE doesn't
     # cycle connections.  It goes back to exactly the same one.
     $self->send_append_header($r, 'Connection', 'close')
