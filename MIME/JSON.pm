@@ -25,11 +25,13 @@ sub from_text {
 }
 
 sub to_text {
+    b_die('must pass value')
+	if @_ < 2;
     my($proto, $value) = @_;
     my($res);
 
     if (! defined($value)) {
-	$res = '';
+	$res = 'null';
     }
     elsif (! ref($value)) {
 	$value =~ s{("|\\|/)}{\\$1}g;
