@@ -171,13 +171,15 @@ sub _parse_string {
                 } elsif ($c eq 't') {
                     $res .= "\t";
                 } elsif ($c =~ /b|f|r/) {
-                    # ignore formfeed or backspace
-                } elsif ($c =~ /'|"|\\|\//) {
+                    # ignore backspace, formfeed, or cr
+                } elsif ($c =~ m{"|\\|/}) {
                     $res .= $c;
                 } elsif ($c eq 'u') {
                     $res .= _parse_unicode_char($self);
+		} elsif ($c eq "'" && $end_char eq "'") {
+                    $res .= $c;
                 } else {
-                    b_die('unexpected char: ', $c);
+                    b_die('unexpected char prefixed with backslash: ', $c);
                 }
             } else {
                 $res .= $c;
