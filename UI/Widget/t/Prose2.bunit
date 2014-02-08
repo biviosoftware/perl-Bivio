@@ -1,0 +1,10 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Widget();
+[
+    [''] => '',
+    ['a'] => 'a',
+    [q{a-<{ Join(['b']) }>-c}] => 'a-b-c',
+    [q{Join(['b']);}] => q{Join(['b']);},
+    [[sub {q{d-<{ Join(['e']) }>-f}}]] => 'd-e-f',
+];
