@@ -103,9 +103,18 @@ sub is_continuous {
 }
 
 sub is_msie_6_or_before {
-    shift->equals_by_name(qw(
+    return shift->equals_by_name(qw(
         BROWSER_MSIE_5
         BROWSER_MSIE_6
+    ));
+}
+
+sub is_msie_8_or_before {
+    return shift->equals_by_name(qw(
+        BROWSER_MSIE_5
+        BROWSER_MSIE_6
+        BROWSER_MSIE_7
+        BROWSER_MSIE_8
     ));
 }
 
