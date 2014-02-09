@@ -72,7 +72,6 @@ sub _err {
 
 sub _parse_json {
     my($req) = @_;
-    $req->put(form_is_json => 1);
     return $_JSON->from_text($req->get_content);
 }
 
