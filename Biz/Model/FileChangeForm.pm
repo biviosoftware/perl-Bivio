@@ -176,6 +176,7 @@ sub internal_initialize {
 		[qw(file FileField)],
 		[qw(comment RealmFileLock.comment)],
 		[qw(content Text64K)],
+		[qw(override_mode FileChangeMode)],
 	    )),
 	],
 	hidden => [
@@ -210,10 +211,13 @@ sub internal_pre_execute {
     my($self) = @_;
     my(@res) = shift->SUPER::internal_pre_execute(@_);
     $self->internal_put_field(
-	realm_file =>
-	$self->new_other('RealmFile')->load({
+	realm_file => $self->new_other('RealmFile')->load({
 	    path => $self->req('path_info') || '/',
 	}),
+	# allow form post to specify the mode
+	$self->unsafe_get('override_mode')
+	    ? (mode => $self->get('override_mode'))
+	    : (),
     );
     return
 	unless $_LOCK;
