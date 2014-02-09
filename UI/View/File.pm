@@ -17,6 +17,7 @@ sub delete_permanently_form {
 }
 
 sub file_change {
+    my($self) = @_;
     view_put(xhtml_title => Join([
 	vs_text('title.FORUM_FILE_CHANGE'),
 	' ',
@@ -38,7 +39,7 @@ sub file_change {
 			_link('Delete', 'DELETE')),
 		], String(' - ')),
 		Join([
-		    _last_updated('FileChangeForm'),
+		    $self->last_updated_widget,
 		    String("\n"),
 		    Join([
 			If(['Model.FileChangeForm', '->is_text_content_type'],
@@ -134,6 +135,17 @@ sub internal_restore_form {
 
 sub internal_revert_form {
     return vs_simple_form('RealmFileRevertForm');
+}
+
+sub last_updated_widget {
+    my($self, $extra_widgets) = @_;
+    return DIV_prose(Join([
+	'Last updated by ',
+	_mailto('FileChangeForm'),
+	' on ',
+	DateTime(['Model.FileChangeForm', 'realm_file', 'modified_date_time']),
+	$extra_widgets ? @$extra_widgets : (),
+    ]));
 }
 
 sub restore_form {
@@ -331,16 +343,6 @@ sub _javascript_function_name {
 sub _javascript_link_name {
     my($mode) = @_;
     return 'file_link_' . lc($mode->get_name);
-}
-
-sub _last_updated {
-    my($form) = @_;
-    return DIV_prose(Join([
-	'Last updated by ',
-	_mailto($form),
-	' on ',
-	DateTime(['Model.' . $form, 'realm_file', 'modified_date_time']),
-    ]));
 }
 
 sub _link {
