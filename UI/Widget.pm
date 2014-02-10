@@ -452,7 +452,7 @@ sub widget_render_args {
 sub _label {
     my($proto) = @_;
     my($p) = $proto->simple_package_name;
-#TODO: removed this, too noisy    
+#TODO: removed this, too noisy (for PDF widgets)
 #    $_A->warn_deprecated($p, ': widget name may not contain underscore (_)')
 #	if $p =~ /_/;
     return [
