@@ -96,8 +96,9 @@ sub internal_base_tasks {
 	[USER_HOME => '?'],
 	[UNADORNED_PAGE => 'rp/*'],
 	[PUBLIC_WIDGET_INJECTOR => 'pub/widget.js'],
-	[JAVASCRIPT_LOG_ERROR => 'pub/javascript-error'],
+	[JAVASCRIPT_LOG_ERROR_JSON => 'pub/javascript-error'],
  	[LOGGED_QUERY_REDIRECT => 'pub/go'],
+	[API_JSON => 'api/*'],
     ];
 }
 
@@ -740,6 +741,7 @@ sub _cfg_calendar {
 	    [FORUM_CALENDAR_EVENT_LIST_RSS => ['?/calendar.atom', '?/calendar.rss', '?/my-calendar.atom', '?/my-calendar.rss']],
 	    [FORUM_CALENDAR_EVENT_LIST_ICS => ['?/calendar.ics', '?/events.ics']],
 	    [FULL_CALENDAR_LIST_JSON => '?/fullcalendar-list.json'],
+	    [FULL_CALENDAR_FORM_JSON => '?/fullcalendar.json'],
 	],
 	Text => [
 	    [[qw(dtstart_tz dtstart_with_tz)] => 'Start'],
