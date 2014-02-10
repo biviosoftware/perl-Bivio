@@ -5,6 +5,8 @@ use strict;
 use Bivio::Base 'Type.EnumDelegator';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_JSON_SUFFIX) = '_JSON';
+my($_JSON_RE) = qr{$_JSON_SUFFIX$}ois;
 my($_INFO_RE) = qr{^info_(.*)};
 my($_INCLUDED_COMPONENT) = {};
 my($_PS) = b_use('Auth.PermissionSet');
@@ -28,33 +30,34 @@ sub bunit_validate_all {
     return;
 }
 
+sub canonicalize_task_decl {
+    my($proto, $cfg) = @_;
+    if (ref($cfg) eq 'HASH') {
+	if ($cfg->{permissions}) {
+	    $_A->warn_deprecated(
+		$cfg->{name},
+		': permissions deprecated, use permission_set',
+	    );
+	    $cfg->{permission_set} = delete($cfg->{permissions});
+	}
+	return $cfg;
+    }
+    if (ref($cfg) eq 'ARRAY') {
+	return {
+	    name => shift(@$cfg),
+	    int => shift(@$cfg),
+	    realm_type => shift(@$cfg),
+	    permission_set => shift(@$cfg),
+	    items => [grep(!/=/, @$cfg)],
+	    map(split(/=/, $_, 2), grep(/=/, @$cfg)),
+	};
+    }
+    b_die($cfg, ': invalid config format');
+    # DOES NOT RETURN
+}
+
 sub canonicalize_task_info {
     my($proto, $info) = @_;
-    my($canonicalize) = sub {
-	my($cfg) = @_;
-	if (ref($cfg) eq 'HASH') {
-	    if ($cfg->{permissions}) {
-		$_A->warn_deprecated(
-		    $cfg->{name},
-		    ': permissions deprecated, use permission_set',
-		);
-		$cfg->{permission_set} = delete($cfg->{permissions});
-	    }
-	    return $cfg;
-	}
-	if (ref($cfg) eq 'ARRAY') {
-	    return {
-		name => shift(@$cfg),
-		int => shift(@$cfg),
-		realm_type => shift(@$cfg),
-		permission_set => shift(@$cfg),
-		items => [grep(!/=/, @$cfg)],
-		map(split(/=/, $_, 2), grep(/=/, @$cfg)),
-	    };
-	}
-	b_die($cfg, ': invalid config format');
-        # DOES NOT RETURN
-    };
     my($seen) = {};
     my($validate) = sub {
 	my($cfg) = @_;
@@ -64,15 +67,30 @@ sub canonicalize_task_info {
 	    if $seen->{$cfg->{name}}++;
 	return $cfg;
     };
-    return [map($validate->($canonicalize->($_)), @$info)];
+    return [map($validate->($proto->canonicalize_task_decl($_)), @$info)];
 }
 
 sub get_cfg_list {
     return $_CFG;
 }
 
+sub if_task_is_json {
+    my($self) = shift;
+    return $self->if_then_else($self->get_name =~ $_JSON_RE || 0, @_);
+}
+
 sub included_components {
     return [sort _sort keys(%$_INCLUDED_COMPONENT)];
+}
+
+sub internal_json_decl {
+    my($proto, $decl) = @_;
+    $decl = $proto->canonicalize_task_decl($decl);
+    b_die($decl->{name}, ": does not match $_JSON_RE")
+	unless $decl->{name} =~ $_JSON_RE;
+    # JSON tasks just return "OK" unless 
+    push(@{$decl->{items}}, 'Action.EmptyReply->http_ok');
+    return $decl;
 }
 
 sub is_component_included {
