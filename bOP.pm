@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.8  2014/02/03 13:51:44  nagler
+  * Bivio::UI::View::File
+    use vs_smart_date if_2014style
+  * Bivio::UI::View::Mail
+    use vs_smart_date if_2014style
+  * Bivio::UI::View::Search
+    use vs_smart_date if_2014style, fix placement of paging arrows
+  * Bivio::UI::XHTML::ViewShortcuts
+    add vs_smart_date
+
   Revision 13.7  2014/02/03 05:21:22  nagler
   * Bivio::Biz::Model::FullCalendarList
     JSON conversion has to happen as TypeValues, because boolean and integer have to appear as literals, not strings
