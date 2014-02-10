@@ -204,6 +204,7 @@ $_C->register(my $_CFG = {
     apache_version => 2,
 });
 my($_CURRENT);
+my($_JSON_ATTR) = 'req_is_json';
 
 sub CLIENT_REDIRECT_PARAMETERS {
     # Order and names of params passed to client_redirect().
@@ -649,6 +650,11 @@ sub if_apache_version {
     return $proto->if_then_else($_CFG->{apache_version} >= $expect, @_);
 }
 
+sub if_req_is_json {
+    my($self) = shift;
+    return $self->if_then_else($self->unsafe_get($_JSON_ATTR), @_);
+}
+
 sub if_test {
     my($self) = shift;
     return $self->if_then_else($self->is_test, @_);
@@ -1074,6 +1080,10 @@ sub put_durable_server_redirect_state {
     return;
 }
 
+sub put_req_is_json {
+    return shift->put_durable($_JSON_ATTR => 1)
+}
+
 sub realm_cache {
     $_A->warn_deprecated('use cache_for_auth_realm');
     return shift->cache_for_auth_realm(@_);
@@ -1145,6 +1155,7 @@ sub set_task {
 #TODO: b_use('FacadeComponent.Task')->is_defined_for_facade($tid->get_name, $self);    
     _trace($task_id) if $_TRACE;
     my($task) = $_T->get_by_id($task_id);
+    $task_id->if_task_is_json(sub {$self->put_req_is_json});
     $self->put_durable(
 	task_id => $task_id,
 	task => $task,
