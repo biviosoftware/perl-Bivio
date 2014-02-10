@@ -70,13 +70,6 @@ sub _is_inline {
     return $value =~ m{[\n<]};
 }
 
-sub _new {
-    my($self, $values) = @_;
-    return $self->new({
-	$self->my_caller => $values,
-    });
-}
-
 sub _render {
     my($self, $rendered, $source, $buffer) = @_;
     my($seen) = {};
