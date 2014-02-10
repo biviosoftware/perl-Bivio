@@ -45,7 +45,7 @@ sub edit {
 		use_public_image_folder =>
 		    ["Model.$form", 'RealmFile.is_public'],
 	    }),
-	]),
+	], b_use('UI.Facade')->if_2014style({edit_col_class => 'col-sm-9'})),
 	_edit_wiki_buttons($form),
     ], 1));
 }
