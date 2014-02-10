@@ -89,7 +89,7 @@ sub internal_json_decl {
     b_die($decl->{name}, ": does not match $_JSON_RE")
 	unless $decl->{name} =~ $_JSON_RE;
     # JSON tasks just return "OK" unless 
-    push(@{$decl->{items}}, 'Action.EmptyReply->http_ok');
+    push(@{$decl->{items}}, 'Action.JSONReply->http_ok');
     return $decl;
 }
 
