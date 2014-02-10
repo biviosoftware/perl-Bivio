@@ -184,7 +184,7 @@ sub internal_send_form_email_field {
 
 sub internal_standard_tools {
     my($self, $extra_tools) = @_;
-    $self->internal_put_base_attr(tools => TaskMenu([
+    my(@tasks) = (
         {
 	    task_id => _name($self, 'FORUM_XX_FORM'),
 	    control => ['!', 'task_id', _name($self, '->eq_forum_xx_form')],
@@ -199,6 +199,11 @@ sub internal_standard_tools {
 	    ],
 	    query => undef,
 	},
+    );
+    @tasks = reverse(@tasks)
+	if b_use('UI.Facade')->if_2014style;
+    $self->internal_put_base_attr(tools => TaskMenu([
+	@tasks,
 	@{$extra_tools || []},
     ]));
     return;
