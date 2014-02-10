@@ -140,9 +140,6 @@ sub from_literal {
 	unless defined($v);
     return (undef, Bivio::TypeError->REALM_NAME)
         unless $proto->internal_is_realm_name($v);
-    if (my $e = $proto->check_reserved_name($v)) {
-	return (undef, $e);
-    }
     return $proto->process_name($v);
 }
 
