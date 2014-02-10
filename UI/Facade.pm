@@ -298,8 +298,8 @@ sub if_html5 {
 }
 
 sub if_2014style {
-    my($proto, $then, $else) = @_;
-    return $proto->if_then_else($proto->is_2014style, $then, $else);
+    my($proto) = shift;
+    return $proto->if_then_else($proto->is_2014style, @_);
 }
 
 sub init_from_prior_group {
