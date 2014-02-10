@@ -11,25 +11,23 @@ my($_FC) = b_use('FacadeComponent.Constant');
 my($_T) = b_use('FacadeComponent.Text');
 my($_V) = b_use('UI.View');
 my($_WV) = b_use('Action.WikiView');
+my($_JR) = b_use('Action.JSONReply');
 my($_WARNINGS) = {};
 
 sub execute {
     my($proto, $req) = @_;
-    my($status) = $req->get('task_id')->get_name;
-    $status = $1 || 'SERVER_ERROR'
-	if $status =~ /^DEFAULT_ERROR_REDIRECT_?(.*)/s;
-    return $proto->SUPER::execute(
+    return $_JR->execute_check_req_is_json(
 	$req,
-	$proto->internal_render_content($req, $status) || $status,
+	sub {
+	    my($status) = $req->get('task_id')->get_name;
+	    $status = $1 || 'SERVER_ERROR'
+		if $status =~ /^DEFAULT_ERROR_REDIRECT_?(.*)/s;
+	    return $proto->SUPER::execute(
+		$req,
+		$proto->internal_render_content($req, $status) || $status,
+	    );
+	},
     );
-}
-
-sub execute_from_javascript {
-    my($proto, $req) = @_;
-    my($form) = $req->get_form;
-    b_warn('javascript error: ', $req->get_form->{json})
-	if $form;
-    return shift->SUPER::execute(@_);
 }
 
 sub internal_render_content {
