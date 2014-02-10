@@ -233,7 +233,9 @@ sub internal_thread_root_list {
 	$columns || $self->internal_thread_root_list_columns,
 	{
 	    no_pager => 1,
-	    show_headings => $name =~ /Mail/ ? 0 : 1,
+	    show_headings => $name =~ /Mail/
+		? (b_use('UI.Facade')->is_2014style ? 0 : 1)
+		: 1,
 	},
     );
 }
