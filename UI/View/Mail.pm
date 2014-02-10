@@ -87,6 +87,69 @@ sub internal_part_list {
     );
 }
 
+sub internal_reply_links {
+    my($self) = @_;
+    return RoundedBox(
+	TaskMenu([
+	    map(+{
+		task_id => _name($self, 'FORUM_XX_FORM'),
+		label =>
+		    _name($self, 'FORUM_XX_FORM.reply_') . $_,
+		query => $_MF->reply_query($_),
+	    }, $self->internal_reply_list),
+	    {
+		task_id => 'FORUM_MAIL_SHOW_ORIGINAL_FILE',
+		label => _name($self, 'FORUM_XX_FORM.view_rfc822'),
+		query => undef,
+		path_info => ['RealmFile.path'],
+		control => [sub {
+		    return b_use('Model.RealmMail')
+			->can_view_original(shift->req);
+		}],
+	    },
+	    {
+		task_id => 'GROUP_MAIL_DELETE_FORM',
+		query => {
+		    'ListQuery.this' => ['RealmMail.realm_file_id'],
+		},
+		control => [sub {
+		    my($source) = @_;
+		    return ! $source->new_other('CRMThread')->unsafe_load({
+			thread_root_id => $source->get_query->get('parent_id'),
+		    });
+		}],
+	    },
+	    {
+		task_id => 'GROUP_MAIL_TOGGLE_PUBLIC',
+		label => If(
+		    ['RealmFile.is_public'],
+		    vs_text_as_prose('realm_mail_make_private'),
+		    vs_text_as_prose('realm_mail_make_public'),
+		),
+		query => {
+		    'ListQuery.this' => ['RealmMail.realm_file_id'],
+		},
+		control => Or(
+		    ['RealmFile.is_public'],
+		    [
+			b_use('Model.RealmMailPublicForm'),
+			'->can_toggle_public',
+			['->req'],
+		    ],
+		),
+	    },
+	    {
+		task_id => 'GROUP_BULLETIN_FORM',
+		query => {
+		    'ListQuery.this' => ['RealmMail.realm_file_id'],
+		},
+		control => vs_can_group_bulletin_form(),
+	    },
+	]),
+	'actions',
+    );
+}
+
 sub internal_reply_list {
     return qw(realm all author);
 }
@@ -157,6 +220,11 @@ sub internal_subject_body_attachments {
     );
 }
 
+sub internal_thread_list {
+    my($self) = @_;
+    return _msg($self, 0);
+}
+
 sub internal_thread_root_list {
     my($self, $columns) = @_;
     my($name) = _name($self, 'XxThreadRootList');
@@ -180,6 +248,7 @@ sub internal_thread_root_list_columns {
 		    ['->drilldown_uri'],
 		   {class => 'b_subject'},
 		),
+#TODO: class is misspelled		
 		DIV_b_exerpt(String(['excerpt'])),
 		DIV_byline(Join([
 		    SPAN_author(
@@ -248,7 +317,7 @@ sub send_form {
 sub thread_list {
     my($self) = @_;
     vs_put_pager(_name($self, 'XxThreadList'));
-    return $self->internal_body(_msg($self, 0));
+    return $self->internal_body($self->internal_thread_list);
 }
 
 sub thread_root_list {
@@ -274,69 +343,7 @@ sub _msg {
 	    DIV_msg(
 		$msg_only ? $self->internal_part_list : Join([
 		    $self->internal_part_list,
-		    RoundedBox(
-			TaskMenu([
-			    map(+{
-				task_id => _name($self, 'FORUM_XX_FORM'),
-				label =>
-				    _name($self, 'FORUM_XX_FORM.reply_') . $_,
-				query => $_MF->reply_query($_),
-			    }, $self->internal_reply_list),
-			    {
-				task_id => 'FORUM_MAIL_SHOW_ORIGINAL_FILE',
-				label => _name($self, 'FORUM_XX_FORM.view_rfc822'),
-				query => undef,
-				path_info => ['RealmFile.path'],
-				control => [sub {
-				    return b_use('Model.RealmMail')
-					->can_view_original(shift->req);
-				}],
-			    },
-			    {
-				task_id => 'GROUP_MAIL_DELETE_FORM',
-				query => {
-				    'ListQuery.this'
-					=> ['RealmMail.realm_file_id'],
-				},
-				control => [sub {
-				   my($source) = @_;
-				   return ! $source->new_other('CRMThread')
-				       ->unsafe_load({
-					   thread_root_id =>
-					       $source->get_query
-						   ->get('parent_id'),
-				       });
-			        }],
-			    },
-			    {
-				task_id => 'GROUP_MAIL_TOGGLE_PUBLIC',
-				label => If(
-				    ['RealmFile.is_public'],
-				    vs_text_as_prose('realm_mail_make_private'),
-				    vs_text_as_prose('realm_mail_make_public'),
-				),
-				query => {
-				    'ListQuery.this' => ['RealmMail.realm_file_id'],
-				},
-				control => Or(
-				    ['RealmFile.is_public'],
-				    [
-					b_use('Model.RealmMailPublicForm'),
-					'->can_toggle_public',
-					['->req'],
-				    ],
-				),
-			    },
-			    {
-				task_id => 'GROUP_BULLETIN_FORM',
-				query => {
-				    'ListQuery.this' => ['RealmMail.realm_file_id'],
-				},
-				control => vs_can_group_bulletin_form(),
-			    },
-			]),
-			'actions',
-		    ),
+		    $self->internal_reply_links,
 		]),
 	    ),
 	]),
