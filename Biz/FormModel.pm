@@ -77,6 +77,8 @@ my($_IDI) = __PACKAGE__->instance_data_index;
 b_use('AgentHTTP.Cookie')->register(__PACKAGE__);
 my($_V9) = b_use('IO.Config')->if_version(9);
 my($_ENUM_SET_SEP) = '_';
+#TODO: Make an enum
+my($_FORM_ERROR_IDENT) = 'form_error';
 
 sub CANCEL_BUTTON_NAME {
     return 'cancel_button';
@@ -552,6 +554,8 @@ sub internal_get_form {
     if ($fields->{form_is_json}
         = ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ ? 1 : 0
     ) {
+	# This may be redundant with AgentHTTP.Form, but that's ok
+	$req->put_req_is_json;
 	my($map) = $self->get_info('json_form_name_map');
 	$form = {map(
 	    (($map->{$_} ? $map->{$_}->{form_name} : $_) => $form->{$_}),
@@ -1030,12 +1034,12 @@ sub validate_and_execute_ok {
 	if $fields->{stay_on_page};
     _execute_ok_in_error($self);
     $_T->rollback($req);
-    return _task_result($self, 'form_error', 0)
+    return _task_result($self, $_FORM_ERROR_IDENT, 0)
 	unless my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task');
     $self->put_on_request(1);
     return _task_result(
 	$self,
-	'form_error',
+	$_FORM_ERROR_IDENT,
 	{
 	    method => 'server_redirect',
 	    task_id => $t,
@@ -1123,6 +1127,7 @@ sub _apply_type_error {
 
 sub _call_execute {
     my($self, $method) = (shift, shift);
+    _trace($method) if $_TRACE;
     my($res) = _pre_execute($self, $method);
     return $res
 	unless _task_result_is_false($res);
@@ -1585,21 +1590,31 @@ sub _redirect_same {
 
 sub _task_result {
     my($self, $which, $res) = @_;
-#TODO: $which not used?
-    return 0
-	unless $res;
-    return $res
-	if ref($res);
-    return $_ATE->TASK_EXECUTE_STOP
-	if $res eq '1';
-    my($carry) = _carry_path_info_and_query();
-    return {
-	task_id => $res,
-	query => {
-	    delete($carry->{carry_query})
-		? %{$self->req('query') || {}} : (),
+    return $self->req->if_req_is_json(
+	sub {
+	    return Action_API()->task_error($self->req) 
+		if $which eq $_FORM_ERROR_IDENT;
+	    # Always fall through, even on GET
+	    return 0;
 	},
-    };
+	sub {
+#TODO: $which not used?
+	    return 0
+		unless $res;
+	    return $res
+		if ref($res);
+	    return $_ATE->TASK_EXECUTE_STOP
+		if $res eq '1';
+	    my($carry) = _carry_path_info_and_query();
+	    return {
+		task_id => $res,
+		query => {
+		    delete($carry->{carry_query})
+			? %{$self->req('query') || {}} : (),
+		},
+	    };
+	},
+    );
 }
 
 sub _task_result_is_false {
