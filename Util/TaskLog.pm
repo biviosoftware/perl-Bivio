@@ -26,7 +26,7 @@ sub import_access_log {
     foreach my $line (split("\n", ${$self->read_input})) {
 	my($user, $date, $method, $uri, $response_code) =
 	    $line =~ /^\S+ [\d\.]+ \d+ \- (\S+) \[(.*?)\] \"(\w+) (\S+) .*?" (\d+)/;
-	next unless $response_code && $response_code =~ /200|302/;
+	next unless $response_code && $response_code =~ /^[23]\d+$/s;
 	my(undef, $su_id, $u_id) = $user =~ /^(su-(\d+)-)?li-(\d+)$/;
 	my($task_id, $auth_realm) = b_use('FacadeComponent.Task')
 	    ->parse_uri($uri, $self->req);
