@@ -32,6 +32,7 @@ sub get_delegate_info {
 }
 
 sub info_base {
+    my($proto) = @_;
     return [
 	[qw(
 	    SHELL_UTIL
@@ -119,6 +120,7 @@ sub info_base {
 	    13
 	    GENERAL
 	    ANYBODY
+	    Action.JSONReply->execute_check_req_is_json
 	    Model.ForbiddenForm
 	    next=FORBIDDEN
 	    login_task=LOGIN
@@ -259,13 +261,13 @@ sub info_base {
 	    ANYBODY
 	    Action.LocalFilePlain->execute_apple_touch_icon
 	)],
-	[qw(
-	    JAVASCRIPT_LOG_ERROR
+	$proto->internal_json_decl([qw(
+	    JAVASCRIPT_LOG_ERROR_JSON
 	    195
 	    GENERAL
 	    ANYBODY
-	    Action.Error->execute_from_javascript
-	)],
+	    Action.JSONReply->execute_javascript_log_error
+	)]),
  	[qw(
  	    LOGGED_QUERY_REDIRECT
  	    196
@@ -273,7 +275,22 @@ sub info_base {
  	    ANYBODY
  	    Action.ClientRedirect->execute_query_redirect
         )],
-#196-199 free
+	[qw(
+	    API_JSON
+	    197
+	    GENERAL
+	    ANYBODY
+	    Action.API->execute_json
+	    require_secure=1
+        )],
+	$proto->internal_json_decl([qw(
+	    REPLY_OK_JSON
+	    198
+	    GENERAL
+	    ANYBODY
+	    require_secure=1
+        )]),
+#199 free
     ];
 }
 
@@ -333,6 +350,7 @@ sub info_blog {
 }
 
 sub info_calendar {
+    my($proto) = @_;
     return [
 	[qw(
 	    FORUM_CALENDAR_EVENT_LIST_RSS
@@ -402,15 +420,23 @@ sub info_calendar {
 	    Action.CalendarEventICS
             want_basic_authorization=1
 	)],
- 	[qw(
+ 	$proto->internal_json_decl([qw(
  	    FULL_CALENDAR_LIST_JSON
  	    186
  	    ANY_OWNER
  	    DATA_READ&FEATURE_CALENDAR
  	    Model.FullCalendarList->execute_load_all_with_query
  	    View.Calendar->full_calendar_list_json
-        )],
-# 187-189 free
+        )]),
+ 	$proto->internal_json_decl([qw(
+ 	    FULL_CALENDAR_FORM_JSON
+ 	    187
+ 	    ANY_OWNER
+ 	    DATA_READ&DATA_WRITE&FEATURE_CALENDAR
+ 	    Model.FullCalendarForm
+	    next=REPLY_OK_JSON
+        )]),
+#188-189 free
     ];
 }
 
@@ -1525,6 +1551,7 @@ sub info_user_auth {
 	    23
 	    GENERAL
 	    ANYBODY
+	    Action.JSONReply->execute_check_req_is_json
 	    View.UserAuth->missing_cookies
 	)],
 	[qw(
@@ -1652,6 +1679,7 @@ sub info_wiki {
 	    50
 	    ANY_OWNER
 	    ANYBODY&FEATURE_WIKI
+	    Action.JSONReply->execute_check_req_is_json
 	    Action.WikiView->execute_not_found
 	    View.Wiki->not_found
 	    edit_task=FORUM_WIKI_EDIT
@@ -1700,6 +1728,7 @@ sub info_wiki {
 }
 
 sub info_xapian {
+    my($proto) = @_;
     b_use('Bivio.Search')->delegate_search_xapian;
     return [
 	[qw(
@@ -1729,22 +1758,22 @@ sub info_xapian {
 	    View.Search->list
 	    next=GROUP_SEARCH_LIST
 	)],
- 	[qw(
+ 	$proto->internal_json_decl([qw(
  	    SEARCH_SUGGEST_LIST_JSON
  	    63
  	    GENERAL
  	    ANYBODY
  	    Model.SearchSuggestList->execute_load_page
  	    View.Search->suggest_list_json
-        )],
-	[qw(
+        )]),
+	$proto->internal_json_decl([qw(
 	    GROUP_SEARCH_SUGGEST_LIST_JSON
 	    64
 	    ANY_OWNER
 	    ANYBODY
 	    Model.SearchSuggestList->execute_load_page
 	    View.Search->suggest_list_json
-	)],
+	)]),
 	# If you add more tasks here, fix TaskId.t
 #62-69 free
     ];
