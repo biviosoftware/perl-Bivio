@@ -20,11 +20,14 @@ sub execute {
 	b_warn($status, ': unknown ApacheConstants method');
 	$status = 'SERVER_ERROR';
     }
-    my($reply) = $req->get('reply')->set_http_status($_AC->$status);
-    return
-	if $reply->unsafe_get_output;
-    $output ||= '';
-    $reply->set_output(\$output);
+    my($reply) = $req->get('reply');
+    unless ($reply->unsafe_get_output) {
+	$output ||= '';
+	$reply->set_output(\$output);
+	$status = 'HTTP_NO_CONTENT'
+	    if $status eq 'HTTP_OK' && !(defined($output) && length($output));
+    }
+    $reply->set_http_status($_AC->$status);	
     return 1;
 }
 
