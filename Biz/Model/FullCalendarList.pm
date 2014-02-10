@@ -15,6 +15,8 @@ sub as_type_values {
         return {
 	    className => Bivio_TypeValue()->new(Type_Line(), 'b_full_calendar_event'),
 	    allDay => Bivio_TypeValue()->new(Type_Boolean(), Type_Boolean()->FALSE),
+#TODO: calculate
+	    editable => Bivio_TypeValue()->new(Type_Boolean(), Type_Boolean()->TRUE),
 	    map(
 		($_->[1] => Bivio_TypeValue()->new(
 		    $it->get_field_type($_->[0]),
