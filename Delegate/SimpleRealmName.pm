@@ -2,10 +2,103 @@
 # $Id$
 package Bivio::Delegate::SimpleRealmName;
 use strict;
-use Bivio::Base 'Bivio::Type::Name';
-use Bivio::TypeError;
+use Bivio::Base 'Type.Name';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_TE) = b_use('Bivio.TypeError');
+my($_RESERVED) = {map(($_ => 1), qw(
+    abuse
+    admin
+    administrator
+    amanda
+    apache
+    api
+    beta
+    bin
+    bounce
+    cvs
+    daemon
+    dav
+    dba
+    dbus
+    decode
+    demo
+    dump
+    dumper
+    email
+    etc
+    ftp
+    games
+    gdm
+    general
+    gopher
+    goto
+    guest
+    haldaemon
+    halt
+    help
+    home
+    hostmaster
+    httpd
+    ignore
+    info
+    ingres
+    ldap
+    login
+    logout
+    lp
+    mail
+    mailnull
+    majordomo
+    manager
+    messages
+    mgfs
+    my_club
+    my_club_site
+    my_site
+    mysql
+    naic
+    named
+    news
+    nfs
+    nobody
+    ntp
+    operator
+    oracle
+    oraoper
+    owner
+    pilot
+    postfix
+    postgres
+    postmaster
+    pub
+    public
+    reqtrack
+    research
+    root
+    rpcuser
+    sales
+    setup
+    shutdown
+    site
+    squid
+    sshd
+    sync
+    sys
+    sysop
+    system
+    toor
+    ultra
+    unsubscribe
+    user
+    usr
+    uucp
+    var
+    vcsa
+    webmaster
+    webmistress
+    xfs
+))};
 
 sub OFFLINE_PREFIX {
     # Returns prefix character for offline names.
@@ -27,20 +120,19 @@ sub SPECIAL_SEPARATOR {
     return '-';
 }
 
+sub check_reserved_name {
+    my(undef, $value) = @_;
+    return $_RESERVED->{$value} ? $_TE->EXISTS : undef;
+}
+
 sub clean_and_trim {
-    my($self, $value) = @_;
+    my($proto, $value) = @_;
     $value =~ s/\W+//g;
     return shift->SUPER::clean_and_trim(lc($value));
 }
 
 sub from_literal {
     my($proto, $value) = @_;
-    # Trims whitespace and checks syntax an returns (value).
-    #
-    # Returns C<undef> if the name is empty or zero length.
-    #
-    # Return (C<undef>, L<Bivio::TypeError::REALM_NAME|Bivio::TypeError::REALM_NAME>)
-    # if the syntax check fails.
     $value =~ s/^\s+|\s+$//g
 	if defined($value);
     my($v, $e) = $proto->SUPER::from_literal($value);
@@ -48,6 +140,9 @@ sub from_literal {
 	unless defined($v);
     return (undef, Bivio::TypeError->REALM_NAME)
         unless $proto->internal_is_realm_name($v);
+    if (my $e = $proto->check_reserved_name($v)) {
+	return (undef, $e);
+    }
     return $proto->process_name($v);
 }
 
