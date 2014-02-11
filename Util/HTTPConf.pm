@@ -421,7 +421,6 @@ v2:SSLProtocol All -SSLv2
 v2:SSLHonorCipherOrder On
 v2:SSLCipherSuite DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:EDH-RSA-DES-CBC3-SHA:RC4-SHA:HIGH:!ADH
 v1:SSLLog logs/error_log
-SSLLogLevel warn
 EOF
 # need to dig -x to get reverse dns
 # forward dns
@@ -609,7 +608,7 @@ UseCanonicalName Off
 LogFormat "%V %h %P %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 CustomLog $log_directory/access_log combined
 ErrorLog $log_directory/error_log
-LogLevel info
+LogLevel warn
 ExtendedStatus On
 
 DocumentRoot /var/www/html
