@@ -30,9 +30,8 @@ sub execute_check_req_is_json {
 
 sub execute_javascript_log_error {
     my($proto, $req) = @_;
-    my($form) = $req->get_form;
-    b_warn('javascript error: ', $req->get_form->{json})
-	if $form;
+    $req->warn('javascript error')
+	if $req->get_form;
     return $proto->execute($req, 'HTTP_OK');
 }
 
