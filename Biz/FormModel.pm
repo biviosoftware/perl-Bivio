@@ -552,13 +552,14 @@ sub internal_get_form {
     # adds to $form.
     $form = {%$form};
     if ($fields->{form_is_json}
-        = ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ ? 1 : 0
+        = ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ || $req->if_req_is_json
+	? 1 : 0
     ) {
 	# This may be redundant with AgentHTTP.Form, but that's ok
 	$req->put_req_is_json;
 	my($map) = $self->get_info('json_form_name_map');
 	$form = {map(
-	    (($map->{$_} ? $map->{$_}->{form_name} : $_) => $form->{$_}),
+	    (($map->{lc($_)} ? $map->{lc($_)}->{form_name} : lc($_)) => $form->{$_}),
 	    keys(%$form),
 	)};
     }
@@ -1210,22 +1211,6 @@ sub _execute_ok_in_error {
 	$self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
     }
     return;
-}
-
-sub _get_form {
-    my($self, $req) = @_;
-    my($form) = $req->get_form;
-    return $form
-	unless $form;
-    my($fields) = $self->[$_IDI];
-    return $form
-	unless $fields->{form_is_json}
-	= ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ ? 1 : 0;
-    my($map) = $self->get_info('json_form_name_map');
-    return {map(
-	(($map->{$_} ? $map->{$_}->{form_name} : $_) => $form->{$_}),
-	keys(%$form),
-    )};
 }
 
 sub _get_literal {
