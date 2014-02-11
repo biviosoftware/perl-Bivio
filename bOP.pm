@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,122 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.9  2014/02/10 21:59:30  moeller
+  * Bivio::Agent::HTTP::Form
+    remove form_is_json (not correct)
+    json support: put_req_is_json if _parse_json
+  * Bivio::Agent::HTTP::Reply
+    factored out send_append_header, which calls $r->headers_out->add(),
+    which allows you to have multiple headers with the same name.
+    Remove _add_additional_http_headers(), unused
+    Fixed a bug in $r handling in send() -- client_redirection clears all
+    attributes before calling send() so need to pull $r from $req
+    cleaned up $status setting including using constants always
+    Only have one call to _cookie_check()
+    removed the dependency with stat(_) since the comment indicated an
+    over-optimization
+  * Bivio::Agent::Request
+    json support: if_req_is_json and put_req_is_json
+  * Bivio::Agent::TaskId
+    json support: if_task_is_json and internal_json_decl
+  * Bivio::Biz::Action::API
+    NEW
+  * Bivio::Biz::Action::EmptyReply
+    empty HTTP_OK replies need to return HTTP_NO_CONTENT, because jQuery complain
+  s
+    with 'syntax error unexpected end of file'
+  * Bivio::Biz::Action::Error
+    json support: call JSONReply->execute_check_req_is_json on all
+    execute, because just want to reply with the error, not a wiki page or
+    other error page
+    execute_from_javascript => JSONReply->execute_javascript_log_error
+  * Bivio::Biz::Action::JSONReply
+    NEW
+  * Bivio::Biz::FormModel
+    json support: if_req_is_json then different _task_result()
+  * Bivio::Biz::Model::FileChangeForm
+    added override_mode which allows form to post mode outside hidden value
+  * Bivio::Biz::Model::FullCalendarForm
+    NEW
+  * Bivio::Biz::Model::FullCalendarList
+    all events are editable
+  * Bivio::Delegate::Cookie
+    add domain to prior tags
+    factored out _clear_prior_tags with handling duplicate and missing
+    domains as well as setting Expires to a past date which will force the
+    cookie to expire.
+    append cookie header values in _clear_prior_tags(), don't replace
+    changed cookie append hack to use $r->headers_out->add()
+    always call headers_out->add
+    call $reply->send_append_header which allows multiple Set-Cookie headers
+  * Bivio::Delegate::SimpleRealmName
+    added check_reserved_name() so can lock out names like api, pub, etc.
+    check_reserved_name can't be called from_literal
+  * Bivio::Delegate::TaskId
+    doc dependency with TaskId.t
+    json support: internal_json_decl around all json requests
+    added FULL_CALENDAR_FORM_JSON
+    added execute_check_req_is_json on certain tasks (errors) which don't
+    go through Action.Error->execute (which calls execute_check_req_is_json)
+  * Bivio::MIME::JSON
+    to_text: do not escape ' (single quote)
+    JSON is strict with escaping.  However some servers return single
+    quoted strings (disallowed) so we have to be flexible to accept them.
+    Improved error when backslash followed by unknown char
+    to_text must be supplied a $value argument
+    to_text(undef) returns 'null'
+  * Bivio::Test::Bean
+    the old mode of return values passed as first argument is no longer
+    valid.  Added test_bean_register_callback to allow dynamic additions
+    to the interface without having to know the argument syntax.
+  * Bivio::Test::Reply
+    added send_append_header, simulating what HTTP::Reply does
+  * Bivio::Test::Request
+    r->headers_out() returns a Test.Bean (same one each time)
+    need "add()" callback on $reply->headers_out since Reply->send_append_header
+    uses headers_out()->add() now
+    fix order of subs
+  * Bivio::Type::UserAgent
+    added is_msie_8_or_before
+  * Bivio::UI::FacadeBase
+    added FULL_CALENDAR_FORM_JSON
+    renamed JAVASCRIPT_LOG_ERROR to JAVASCRIPT_LOG_ERROR_JSON
+    added API_JSON
+  * Bivio::UI::Facade
+    make if_2014style work correctly with no args
+  * Bivio::UI::HTML::Widget::LocalFileAggregator
+    cruft
+  * Bivio::UI::View::CRM
+    uses new vs_inline_form() for selector
+  * Bivio::UI::View::File
+    made _last_updated() public for subclasses
+  * Bivio::UI::View::Mail
+    added internal_reply_links() and internal_thread_list() for subclasses
+    hide empty mail headings only for 2014style
+    put root list task before form task for standard tools if_2014style
+  * Bivio::UI::View::Wiki
+    make wiki editor wider if 2014style
+  * Bivio::UI::Widget::Prose2
+    NEW
+  * Bivio::UI::Widget
+    better doc a "widget name may not contain underscore"
+  * Bivio::UI::XHTML::ViewShortcuts
+    wrap smart date in bivio_smart_date span
+    fix singular text for 'hours' and 'minutes'
+    added vs_inline_form()
+  * Bivio::UI::XHTML::Widget::ClearOnFocus
+    fixed another double-quoted value
+  * Bivio::UI::XHTML::Widget::ComboBox
+    added internal_cb_size() for subclasses
+  * Bivio::Util::Backup
+    use need to use --apparent-size on du, because file systems can compress
+  * Bivio::Util::HTTPConf
+    SSLLogLevel needs to be set for v2, because it outputs "info" by default
+  * Bivio::Util::TaskLog
+    response_code is successful if matches 2xx or 3xx
+  * Bivio::Util::TestMail
+    make $_SUBJECTS a sub so that it can be overridden
+
   Revision 13.8  2014/02/03 13:51:44  nagler
   * Bivio::UI::View::File
     use vs_smart_date if_2014style
