@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.10  2014/02/11 03:49:24  moeller
+  * Bivio::Agent::TaskId
+    use JSONReply instead of EmptyReply
+  * Bivio::Biz::FormModel
+    form_is_json is true either if the CONTENT_TYPE_FIELD is json or
+    if_req_is_json. jQuery sends url-encoded for ajax requests so we need
+    to tell FormModel to use json_form_name_map instead of normal names
+    removed cruft (_get_form)
+  * Bivio::UI::HTML::Widget::Table
+    remove debug
+  * Bivio::Util::HTTPConf
+    remove SSLLogLevel, not supported; set LogLevel to info to reduce
+    logging noise
+
   Revision 13.9  2014/02/10 21:59:30  moeller
   * Bivio::Agent::HTTP::Form
     remove form_is_json (not correct)
