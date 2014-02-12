@@ -19,6 +19,7 @@ req()->set_realm_and_user(qw(fourem btest_admin));
 	[] => [[{
 	    allDay => 'Bivio::Type::Boolean[0]',
 	    className => 'Bivio::Type::Line[b_full_calendar_event]',
+	    editable => 'Bivio::Type::Boolean[1]',
 	    end => qr{DateTime},
 	    id => qr{PrimaryId},
 	    start => qr{07/16/2008 09:00:00},
@@ -26,6 +27,7 @@ req()->set_realm_and_user(qw(fourem btest_admin));
 	}, {
 	    allDay => 'Bivio::Type::Boolean[0]',
 	    className => 'Bivio::Type::Line[b_full_calendar_event]',
+	    editable => 'Bivio::Type::Boolean[1]',
 	    end => qr{DateTime},
 	    id => qr{PrimaryId},
 	    start => qr{07/15/2008 09:00:00},
