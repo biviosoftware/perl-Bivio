@@ -21,7 +21,7 @@ sub bunit_validate_all {
     my($seen) = {};
     foreach my $c (@{$proto->standard_components}) {
 	foreach my $t (@{_component_info($proto, $c) || []}) {
-	    my($n) = $t->[0];
+	    my($n) = ref($t) eq 'ARRAY' ? $t->[0] : $t->{name};
 	    Bivio::Die->die($c, ' and ', $seen->{$n}, ': both define ', $n)
 	        if $seen->{$n};
 	    $seen->{$n} = $c;
