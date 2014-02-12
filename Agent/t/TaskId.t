@@ -105,6 +105,7 @@ Bivio::Test->new({
 		    items => [qw(
 			Model.SearchSuggestList->execute_load_page
 			View.Search->suggest_list_json
+			Action.JSONReply->http_ok
 		    )],
 		},
 		{
@@ -115,6 +116,7 @@ Bivio::Test->new({
 		    items => [qw(
 			Model.SearchSuggestList->execute_load_page
 			View.Search->suggest_list_json
+			Action.JSONReply->http_ok
 		    )],
 		},
 	    ]],
