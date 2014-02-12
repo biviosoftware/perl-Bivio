@@ -3,12 +3,12 @@
 package Bivio::SQL::Statement;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
-use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_S) = __PACKAGE__->use('SQL.Support');
-my($_N) = __PACKAGE__->use('Type.Number');
+my($_A) = b_use('IO.Alert');
+my($_N) = b_use('Type.Number');
+my($_S) = b_use('SQL.Support');
 
 sub AND {
     my($proto) = shift;
@@ -180,6 +180,7 @@ sub PARENS {
 
 sub SELECT_AS {
     my($proto, $column, $alias) = @_;
+    $_A->warn_deprecated('method to be removed');
     # Return the select object
     return {
 	columns => [$column],
