@@ -311,7 +311,8 @@ sub _http_request {
 	Bivio::Die->catch_quietly(sub {
 	    local($SIG{__WARN__}) = sub {};
 	    $self->get('cookie_jar')->extract_cookies($hres);
-	    _clean_quoted_cookie_values($self->get('cookie_jar'));
+#TODO: this breaks societas html scraper
+#	    _clean_quoted_cookie_values($self->get('cookie_jar'));
 	});
 	if ($hres->is_redirect) {
 	    $uri = $hres->header('Location');
