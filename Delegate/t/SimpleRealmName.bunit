@@ -10,7 +10,7 @@ Type();
 	    [undef] => UNDEF(),
 	    [' '] => UNDEF(),
 	    0 => TOO_SHORT(),
-	    'api' => EXISTS(),
+	    'api' => 'api',
 	],
         unsafe_from_uri => [
 	    ab => [undef],
