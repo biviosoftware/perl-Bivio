@@ -7,7 +7,7 @@ Widget({
 	return [{
 	    form_model => [$form->package_name],
 	    model => $form->simple_package_name,
-	    field => 'body',
+	    field => 'content',
 	    rows => 2,
 	    cols => 60,
 	    %{$params->[0]},
@@ -39,7 +39,7 @@ Widget({
     },
 });
 $form = model('BlogCreateForm');
-my($name) = $form->get_field_name_for_html('body');
+my($name) = $form->get_field_name_for_html('content');
 [
     [{}] => '',
     [{
