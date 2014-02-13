@@ -756,7 +756,7 @@ sub _write {
     $_F->mkdir_parent_only($name);
     my($generator) = ('$Header$' =~ m{Header:\s*(.+?)\s*\$}i)[0]
 	|| __PACKAGE__;
-    $$data =~ s{^(#!.+?\n|)}{$1 . <<"EOF"}es;
+    $$data =~ s{^(#!.+?\n|^(?!\<html))}{$1 . <<"EOF"}es;
 ################################################################
 # Automatically Generated File; LOCAL CHANGES WILL BE LOST!
 # By: $generator
