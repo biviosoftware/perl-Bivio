@@ -3,6 +3,14 @@
 Request('initialize_fully');
 req()->set_realm_and_user(qw(fourem demo));
 my($dir) = '/search-parser-realm-file/';
+my($_EMAIL_FILE) = 'excerpt.eml';
+my($rf) = model('RealmFile');
+$rf->delete
+    if $rf->unsafe_load({
+	path_lc => "$dir$_EMAIL_FILE",
+    });
+b_use('Agent.Task')->commit(req());
+
 [
     {
 	object => class(),
@@ -68,7 +76,7 @@ EOF
 	    },
 	} => [
 	    'excerpt.bwiki' => [qr{^w1( w\d+){42} w44 w45 \.\.\.$}s, realm_id('demo'), ''],
-	    'excerpt.eml' => ['html body', realm_id('demo'), 'Freddy'],
+	    $_EMAIL_FILE => ['html body', realm_id('demo'), 'Freddy'],
 	],
     ],
 ];
