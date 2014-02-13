@@ -47,6 +47,8 @@ my($_VARS) = {
     ssl_only => 0,
     timeout => 120,
     uris_txt => '/etc/httpd/conf/uris.txt',
+    maintenance_html => '/f/maintenance.html',
+    maintenance_logo => '/i/logo.gif',
     # Users can supply certain params here
     httpd => my $_HTTPD_VARS = {
 	app => 'httpd',
@@ -117,6 +119,7 @@ sub generate {
 	_write(_app_bconf($v));
 	_write(_app_init_rc($v));
 	_write(_logrotate($v));
+	_write_maintenance_html($v);
     }
     _httpd_vars($vars);
     _write($vars->{httpd_init_rc}, $_INIT_RC);
@@ -288,9 +291,7 @@ sub _app_vars_document_root {
     my($vars, $cfg) = @_;
     return ''
 	unless $cfg->{local_file_prefix};
-    return <<"EOF";
-    DocumentRoot /var/www/facades/$cfg->{local_file_prefix}/plain
-EOF
+    return "/var/www/facades/$cfg->{local_file_prefix}/plain";
 }
 
 sub _app_vars_legacy {
@@ -460,6 +461,11 @@ EOF
 sub _app_vars_vhost {
     my($vars, $cfg) = @_;
     $cfg->{document_root} = _app_vars_document_root($vars, $cfg);
+    my($dr) = $cfg->{document_root} ? <<"EOF" : '';
+    DocumentRoot $cfg->{document_root}
+    ErrorDocument 502 $cfg->{maintenance_html}
+    ErrorDocument 503 $cfg->{maintenance_html}
+EOF
     $cfg->{rewrite_engine} = '';
     $cfg->{vhost_rules} = _app_vars_legacy($vars, $cfg)
 	. _app_vars_rewrite($vars, $cfg)
@@ -467,7 +473,7 @@ sub _app_vars_vhost {
     $cfg->{vhost} = <<"EOF";
 <VirtualHost *>
     ServerName $cfg->{http_host}
-$cfg->{document_root}$cfg->{rewrite_engine}$cfg->{vhost_rules}</VirtualHost>
+$dr$cfg->{rewrite_engine}$cfg->{vhost_rules}</VirtualHost>
 EOF
     return;
 }
@@ -757,6 +763,35 @@ sub _write {
 ################################################################
 EOF
     return $_F->write($name, $$data);
+}
+
+sub _write_maintenance_html {
+    my($vars) = @_;
+    return
+        unless $vars->{document_root};
+    return _write(
+	Type_FilePath()->join(
+	    $vars->{document_root}, $vars->{maintenance_html}),
+	\(_replace_vars($vars, 'maintenance_html', <<'EOF')));
+<html>
+<head>
+<title>Site Maintenance</title>
+<style type="text/css">
+body {font-family: arial, sans-serif; font-size: 15px}
+.logo {width: 100%; height: 150px; background: url("$maintenance_logo") no-repeat center}
+.center {text-align: center}
+</style>
+</head>
+<body>
+<div class="center">
+<div class="logo"></div>
+<h1>Our site is undergoing maintenance.</h1>
+<p >We will be back online shortly.</p>
+<p>We apologize for the inconvenience.</p>
+</div>
+</body>
+</html>
+EOF
 }
 
 $_INIT_RC_V1 = <<'EOF';
