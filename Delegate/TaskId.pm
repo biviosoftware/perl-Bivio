@@ -574,6 +574,18 @@ sub info_dav {
     ];
 }
 
+sub info_dev {
+    return [
+	[qw(
+	    GENERATE_BOOTSTRAP_CSS
+	    300
+	    GENERAL
+	    ANYBODY
+	    Action.Bootstrap->execute_generate_css
+        )],
+    ];
+}
+
 sub info_test {
     my($self) = @_;
     return
