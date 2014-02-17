@@ -14,36 +14,39 @@ sub USAGE {
     return <<'EOF';
 usage: bivio Project [options] command [args..]
 commands
+  generate_bootstrap_css [facade_uri [output_path]]
   link_facade_files
 EOF
 }
 
 sub generate_bootstrap_css {
-    my($self, $facade) = @_;
-    $self->initialize_fully;
-    my($f) = UI_Facade()->get_instance($facade);
-    IO_File()->do_in_dir(
-	_join_with_plain($f, $f->get_local_file_plain_app_uri()),
+    my($self, $facade_uri, $output_path) = @_;
+    $self->assert_dev;
+    my($facade);
+    if ($self->ureq('UI.Facade')) {
+	$facade = $self->req('UI.Facade');
+    } else {
+	$self->initialize_fully;
+	$facade = UI_Facade()->get_instance($facade_uri);
+    }
+    return IO_File()->do_in_dir(
+	_join_with_plain($facade),
 	sub {
-	    my($out) = _join_with_plain(
-		$f, $f->get_local_file_plain_app_uri('/css/bootstrap.min.css'));
-	    $self->are_you_sure("overwrite $out?")
-		if -f $out;
-	    my($b) = '';
-	    _add_import_line('bootstrap.less', \$b);
-	    foreach my $l (glob('less/*.less')) {
-		_add_import_line($l, \$b);
-	    }
-	    _add_import_line('utilities.less', \$b);
+	    $output_path
+		||= $facade->get_local_file_plain_app_uri('/css/bootstrap.min.css');
+	    my($pwd) = IO_File()->pwd;
+	    $self->are_you_sure("overwrite $pwd$output_path?")
+		if -f $pwd . $output_path;
 	    my($include) = _join_with_plain(
-		$f, $f->get_local_file_plain_common_uri('/bootstrap/less'));
-	    my($tmp) = IO_File()->tmp_path($self->req);
-	    IO_File()->write($tmp, \$b);
-	    $self->piped_exec("lessc -x --include-path=$include $tmp $out");
-	    $self->print_line("generation successful");
+		$facade,
+		$facade->get_local_file_plain_common_uri('/bootstrap/less'),
+	    );
+	    my($less_path) = _write_less($self, $facade);
+	    $self->piped_exec(
+		"lessc -x --include-path=$include $less_path ./$output_path");
+	    return $output_path;
 	},
     );
-    return;
 }
 
 sub link_facade_files {
@@ -141,7 +144,26 @@ sub _add_import_line {
 
 sub _join_with_plain {
     my($facade, $path) = @_;
-    return Type_FilePath()->join($facade->get_local_file_name('PLAIN'), $path);
+    return Type_FilePath()->join(
+	$facade->get_local_file_name(UI_LocalFileType()->PLAIN), $path);
+}
+
+sub _write_less {
+    my($self, $facade) = @_;
+    my($b) = '';
+    _add_import_line('bootstrap.less', \$b);
+    $b .= '@icon-font-path: "'
+	. $facade->get_local_file_plain_common_uri('/bootstrap/fonts/')
+	. "\";\n";
+    foreach my $l (glob(
+	'.' . $facade->get_local_file_plain_app_uri('/less/*.less')
+    )) {
+	_add_import_line($l, \$b);
+    }
+    _add_import_line('utilities.less', \$b);
+    my($output_path) = IO_File()->tmp_path($self->req);
+    IO_File()->write($output_path, \$b);
+    return $output_path;
 }
 
 1;
