@@ -138,6 +138,13 @@ sub REQUIRED {
     return \&REQUIRED;
 }
 
+sub assert_dev {
+    my($proto) = @_;
+    b_die('may only be run on dev')
+	unless $proto->is_dev;
+    return;
+}
+
 sub assert_test {
     my($proto) = @_;
     die('may not be run on production')
