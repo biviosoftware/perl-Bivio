@@ -50,7 +50,27 @@ sub internal_xhtml_adorned_attrs {
 	vs_pager => '',
 	xhtml_adorned_title => vs_text_as_prose('xhtml_head_title'),
 	xhtml_body_class => '',
-	xhtml_head_tags => '',
+	xhtml_head_tags => If2014Style(
+	    If(
+		And(
+		    $_C->is_dev,
+		    [['UI.Facade'], '->if_want_generate_bootstrap_css'],
+		),
+		Tag({
+		    tag => 'link',
+		    HREF => URI({
+			task_id => 'GENERATE_BOOTSTRAP_CSS',
+		    }),
+		    REL => 'stylesheet',
+		    TYPE => 'text/css',
+		}),
+		LocalFileAggregator({
+		    base_values => [
+			'bootstrap.min.css',
+		    ],
+		}),
+	    ),
+	),
 	xhtml_rss_task => '',
 	xhtml_tools => '',
 	xhtml_nav => '',
