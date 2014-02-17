@@ -12,9 +12,10 @@ my($_VERSION_PREFIX) = '/v1';
 sub execute_json {
     my($proto, $req) = @_;
     $req->put_req_is_json;
-    return _error($req, 'no path_info')
+    return $proto->task_error($req, 'no path_info')
 	unless my $pi = $req->get('path_info');
-    return _error($req, $pi, ": invalid or missing version (expecting $_VERSION_PREFIX)")
+    return $proto->task_error(
+	$req, $pi, ": invalid or missing version (expecting $_VERSION_PREFIX)")
 	unless $pi =~ s{^$_VERSION_PREFIX(?=/)}{}so;
     my($t, $r, $p) = b_use('FacadeComponent.Task')->parse_uri($pi, $req);
     return {
