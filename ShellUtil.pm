@@ -236,6 +236,10 @@ sub arg_list {
     return $proto->name_args($decls, $args);
 }
 
+sub assert_dev {
+    return $_C->assert_dev;
+}
+
 sub assert_have_user {
     my($self) = @_;
     $self->usage_error('must select a user with -user')
