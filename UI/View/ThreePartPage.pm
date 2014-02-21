@@ -52,10 +52,7 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_body_class => '',
 	xhtml_head_tags => If2014Style(
 	    If(
-		And(
-		    $_C->is_dev,
-		    [['UI.Facade'], '->if_want_generate_bootstrap_css'],
-		),
+		$_C->is_dev,
 		Tag({
 		    tag => 'link',
 		    HREF => URI({

@@ -102,7 +102,6 @@ $_C->register(my $_CFG = {
     # Always ends in a trailing slash
     local_file_root => $_C->REQUIRED,
     want_local_file_cache => 1,
-    want_generate_bootstrap_css => 0,
     mail_host => $_C->REQUIRED,
     http_host => $_C->REQUIRED,
     is_html5 => 0,
@@ -301,11 +300,6 @@ sub if_html5 {
 sub if_2014style {
     my($proto) = shift;
     return $proto->if_then_else($proto->is_2014style, @_);
-}
-
-sub if_want_generate_bootstrap_css {
-    my($proto) = shift;
-    return $proto->if_then_else($_CFG->{want_generate_bootstrap_css}, @_);
 }
 
 sub init_from_prior_group {
