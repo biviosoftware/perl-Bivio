@@ -44,7 +44,6 @@ sub vs_paged_list {
 
 sub vs_placeholder_form {
     my($proto, $model, $rows, $attrs) = @_;
-    b_info('here');
     $attrs ||= {};
     $attrs->{is_placeholder_form} = 1;
 
