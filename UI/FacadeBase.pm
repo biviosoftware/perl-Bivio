@@ -656,11 +656,17 @@ EOF
 		    xhtml_head_title => q{Title([vs_site_name(), vs_text_as_prose('xhtml_title')]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
 		    xhtml_copyright_qualifier => q{Link('Software by bivio', 'http://www.bivio.biz');},
-		    xhtml_copyright => <<"EOF",
+		    _2014style([
+			xhtml_copyright => <<"EOF",
+&copy; vs_text_as_prose('site_copyright');
+EOF
+		    ],  [
+			xhtml_copyright => <<"EOF",
 Copyright &copy; vs_now_as_year(); vs_text_as_prose('site_copyright');<br />
 All rights reserved.<br />
 vs_text_as_prose('xhtml_copyright_qualifier');
 EOF
+		    ]),
 		])},
 	    ]],
 	    [ECCreditCardPayment => [
@@ -669,6 +675,12 @@ EOF
 		card_number => 'Credit Card Number',
 		card_expiration_date => 'Card Expiration Date',
 		processor_response => 'Processor Response',
+	    ]],
+	    [icon => [
+		pager_next => 'glyphicon-chevron-right',
+		pager_prev => 'glyphicon-chevron-left',
+		LOGOUT => 'glyphicon-log-out',
+		LOGIN => 'glyphicon-log-in',
 	    ]],
 	],
     };
@@ -704,6 +716,9 @@ sub _cfg_blog {
 	    [acknowledgement => [
 		FORUM_BLOG_CREATE => 'The blog entry has been added.',
 		FORUM_BLOG_EDIT => 'The blog entry update has been saved.',
+	    ]],
+	    [icon => [
+		FORUM_BLOG_LIST => 'glyphicon-bullhorn',
 	    ]],
 #TODO: Move this
 	    [FORUM_ADM_FORUM_ADD => 'Add forum'],
@@ -860,6 +875,9 @@ sub _cfg_calendar {
 		    recurrence => 'The recurring events were added.',
 		],
 	    ]],
+	    [icon => [
+		FORUM_CALENDAR => 'glyphicon-calendar',
+	    ]],
 	],
     };
 }
@@ -921,6 +939,10 @@ sub _cfg_crm {
 	    ]],
 	    [acknowledgement => [
 		FORUM_CRM_FORM => 'Your message was sent.',
+	    ]],
+	    [icon => [
+		'forum.crm_thread_root_list' => 'glyphicon-tags',
+		FORUM_CRM_THREAD_ROOT_LIST => 'glyphicon-arrow-left',
 	    ]],
 	],
     };
@@ -1076,6 +1098,9 @@ sub _cfg_file {
 		    subject => q{String(['Action.EasyForm', 'file_path']); submission},
 		    body => q{With(['Action.EasyForm', 'hash_list'], Join([['key'], ': ', ['value'], "\n"]));},
 		],
+	    ]],
+	    [icon => [
+		FORUM_FILE_TREE_LIST => 'glyphicon-folder-open',
 	    ]],
         ],
     };
@@ -1344,6 +1369,10 @@ sub _cfg_mail {
 		user_mail_unsubscribed => q{You have been unsubscribed.},
 		user_mail_unsubscribed_all => q{You have been unsubscribed from ALL MAILINGS from String(vs_site_name());},
 	    ]],
+	    [icon => [
+		'forum.mail_thread_root_list' => 'glyphicon-envelope',
+		FORUM_MAIL_THREAD_ROOT_LIST => 'glyphicon-arrow-left',
+	    ]],
 	],
     };
 }
@@ -1446,6 +1475,9 @@ sub _cfg_motion {
 	    ['task_menu.title' => [
 		FORUM_MOTION_VOTE_LIST_CSV => 'Vote spreadsheet',
 		FORUM_MOTION_COMMENT_LIST_CSV => 'Comment spreadsheet',
+	    ]],
+	    [icon => [
+		FORUM_MOTION_LIST => 'glyphicon-thumbs-up',
 	    ]],
 	],
     };
@@ -1791,6 +1823,9 @@ sub _cfg_tuple {
 		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Type definition has been saved.',
 		FORUM_TUPLE_USE_EDIT => 'Table definition has been saved.',
 		FORUM_TUPLE_EDIT => 'The record has been saved.',
+	    ]],
+	    [icon => [
+		FORUM_TUPLE_USE_LIST => 'glyphicon-tasks',
 	    ]],
 	],
 	FormError => [
@@ -2208,6 +2243,9 @@ sub _cfg_wiki {
                 xhtml_site_admin_drop_down_standard => q{SiteAdminDropDown();},
 		xhtml_dock_left_standard => q{FeatureTaskMenu();},
 	    ]],
+	    [icon => [
+		FORUM_WIKI_VIEW => 'glyphicon-file',
+	    ]],
 #DEPRECATED:
 	    [HelpWiki => [
 		header => 'Help',
@@ -2255,6 +2293,9 @@ sub _cfg_xapian {
 	    ]],
 	    [title => [
 		[qw(SEARCH_LIST GROUP_SEARCH_LIST SEARCH_SUGGEST_LIST_JSON GROUP_SEARCH_SUGGEST_LIST_JSON)] => 'Search Results',
+	    ]],
+	    [icon => [
+		SEARCH => 'glyphicon-search',
 	    ]],
 	],
     };
