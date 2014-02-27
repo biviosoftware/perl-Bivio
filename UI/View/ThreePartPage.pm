@@ -19,6 +19,32 @@ sub handle_config {
     return;
 }
 
+sub internal_2014style_search_form {
+    return SearchForm({
+	value => DIV(
+	    DIV(
+		Join([
+		    FormField('SearchForm.search', {
+			class => 'form-control',
+			PLACEHOLDER => 'Search',
+			ID => 'bivio_search_field',
+		    }),
+		    DIV(
+			BUTTON(
+			    LinkIcon('SEARCH'),
+			    'btn btn-default', {
+				TYPE => 'submit',
+			    }),
+			'input-group-btn',
+		    ),
+		]),
+		'input-group',
+	    ),
+	    'form-group',
+	),
+    })->put(class => 'navbar-form navbar-right');
+}
+
 sub internal_xhtml_adorned {
     my($self) = @_;
     $self->internal_xhtml_adorned_attrs;
@@ -50,6 +76,7 @@ sub internal_xhtml_adorned_attrs {
 	vs_pager => '',
 	xhtml_adorned_title => vs_text_as_prose('xhtml_head_title'),
 	xhtml_body_class => '',
+	bootstrap_tab_bar => '',
 	xhtml_head_tags => If2014Style(Join([
 	    If(
 		$_C->is_dev,
@@ -120,7 +147,7 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_want_page_print => 0,
 	xhtml_main_left => '',
 	xhtml_main_right => '',
-	xhtml_footer_left => XLink('back_to_top'),
+	xhtml_footer_left => If2014Style('', XLink('back_to_top')),
 	_center_replaces_middle('xhtml_footer_middle') => '',
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
 	xhtml_want_first_focus => 1,
@@ -175,14 +202,40 @@ sub internal_xhtml_adorned_attrs {
 
 sub internal_xhtml_adorned_body {
     my($self) = @_;
-    return Join([
-	view_widget_value('xhtml_body_first'),
-	$_C->if_version(7 => sub {$self->internal_xhtml_grid3('dock')}),
-	$self->internal_xhtml_grid3('header'),
-	$self->internal_xhtml_grid3('main'),
-	$self->internal_xhtml_grid3('footer'),
-	view_widget_value('xhtml_body_last'),
-    ]);
+    return If2014Style(
+	Join([
+	    DIV_b_nav_and_content(Join([
+		view_widget_value('xhtml_body_first'),
+		Join([
+		    view_widget_value('xhtml_dock_left'),
+		])->b_widget_label('dock_left'),
+		DIV_main_middle(DIV_container(Join([
+		    view_widget_value('bootstrap_tab_bar'),
+		    view_widget_value('xhtml_main_middle'),
+		])->b_widget_label('main_middle'))),
+	    ])),
+	    DIV_b_nav_and_footer(
+		DIV_container(Join([
+		    $self->internal_xhtml_tools(1),
+		    ' ',
+		    DIV(
+			view_widget_value('xhtml_footer_right'),
+			'b_footer pull-right',
+		    ),
+		])),
+	    ),
+	    view_widget_value('xhtml_body_last'),
+	]),
+	# not 2014 style
+	Join([
+	    view_widget_value('xhtml_body_first'),
+	    $_C->if_version(7 => sub {$self->internal_xhtml_grid3('dock')}),
+	    $self->internal_xhtml_grid3('header'),
+	    $self->internal_xhtml_grid3('main'),
+	    $self->internal_xhtml_grid3('footer'),
+	    view_widget_value('xhtml_body_last'),
+	]),
+    );
 }
 
 sub internal_xhtml_grid3 {
@@ -207,14 +260,27 @@ sub internal_xhtml_grid3 {
 
 sub internal_xhtml_tools {
     my($self, $is_header) = @_;
-    return DIV_tools(Join([
-	view_widget_value('xhtml_tools'),
-	view_widget_value('vs_pager'),
-    ], {
-	join_separator => $is_header
-	    ? DIV_sep('')
-	    : EmptyTag(DIV => 'sep'),
-    }));
+    return If2014Style(
+	$is_header
+	    ? Join([
+		TaskMenuOverride(
+		    view_widget_value('xhtml_tools'),
+		    {
+			class => 'pagination',
+		    },
+		),
+		view_widget_value('vs_pager'),
+	    ])
+	    : '',
+	DIV_tools(Join([
+	    view_widget_value('xhtml_tools'),
+	    view_widget_value('vs_pager'),
+	], {
+	    join_separator => $is_header
+		? DIV_sep('')
+		    : EmptyTag(DIV => 'sep'),
+	})),
+    );
 }
 
 sub _center_replaces_middle {
