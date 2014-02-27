@@ -17,7 +17,6 @@ use Sys::Hostname ();
 #    export BCONF=$PWD/bivio.bconf
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_IS_2014STYLE) = $ENV{BIVIO_IS_2014STYLE} || 0;
 
 sub CURRENT_VERSION {
     return 10;
@@ -345,20 +344,12 @@ sub merge_class_loader {
 		    # CSS has no general widgets so don't put Bivio::UI in path
 		    UICSS => ['Bivio::UI::CSS'],
 		    UIHTML => ['Bivio::UI::HTML', 'Bivio::UI'],
-		    UIXHTML => [
-			$_IS_2014STYLE
-			    ? 'Bivio::UI::Bootstrap'
-			    : (),
-			'Bivio::UI::XHTML', 'Bivio::UI::HTML'],
+		    UIXHTML => ['Bivio::UI::XHTML', 'Bivio::UI::HTML'],
 		    Util => ['Bivio::Util', 'Bivio::Biz::Util'],
 		    View => ['Bivio::UI::View'],
 		    Widget => ['Bivio::UI::Widget'],
 		    WikiText => ['Bivio::UI::XHTML::Widget::WikiText'],
-		    XHTMLWidget => [
-			$_IS_2014STYLE
-			    ? 'Bivio::UI::Bootstrap::Widget'
-			    : (),
-			'Bivio::UI::XHTML::Widget', 'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
+		    XHTMLWidget => ['Bivio::UI::XHTML::Widget', 'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
 		    XMLWidget => ['Bivio::UI::XML::Widget', 'Bivio::UI::XHTML::Widget', 'Bivio::UI::HTML::Widget', 'Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
 		},
 	    },
