@@ -50,7 +50,7 @@ sub internal_xhtml_adorned_attrs {
 	vs_pager => '',
 	xhtml_adorned_title => vs_text_as_prose('xhtml_head_title'),
 	xhtml_body_class => '',
-	xhtml_head_tags => If2014Style(
+	xhtml_head_tags => If2014Style(Join([
 	    If(
 		$_C->is_dev,
 		Tag({
@@ -67,7 +67,35 @@ sub internal_xhtml_adorned_attrs {
 		    ],
 		}),
 	    ),
-	),
+
+
+		    META({
+			'HTTP-EQUIV' => 'X-UA-Compatible',
+			CONTENT => 'IE=edge',
+		    }),
+		    META({
+			NAME => 'viewport',
+			CONTENT => 'width=device-width,initial-scale=1.0',
+		    }),
+		    LocalFileAggregator({
+			base_values => [
+			    'jquery-ui.min.css',
+			    InlineCSS([sub {
+#TODO: Widget.RenderView
+				my($source) = @_;
+			        my($res) = UI_View()->render(
+				    'CSS->render_2014style_css',
+				    $source->req,
+				);
+#TODO: Need to add this to InlineCSS from RealmCSS
+				$$res =~ s/^\!.*\n//mg;
+				return $$res;
+			    }]),
+			    IfUserAgent('is_msie_8_or_before', 'msie8shim.js'),
+			],
+		    }),
+	    
+	])),
 	xhtml_rss_task => '',
 	xhtml_tools => '',
 	xhtml_nav => '',
@@ -96,7 +124,16 @@ sub internal_xhtml_adorned_attrs {
 	_center_replaces_middle('xhtml_footer_middle') => '',
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
 	xhtml_want_first_focus => 1,
-	xhtml_body_last => '',
+	xhtml_body_last => If2014Style(
+	    LocalFileAggregator({
+		base_values => [
+		    'jquery.min.js',
+		    'bootstrap.min.js',
+		    'jquery-ui.min.js',
+		    SearchSuggestAddon('bivio_search_field'),
+		],
+	    }),
+	),
     );
     view_put(
 	xhtml_body_first => Join([
