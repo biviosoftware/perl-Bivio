@@ -211,7 +211,8 @@ sub internal_xhtml_adorned_body {
 		])->b_widget_label('dock_left'),
 		DIV_main_middle(DIV_container(Join([
 		    view_widget_value('bootstrap_tab_bar'),
-		    view_widget_value('xhtml_main_middle'),
+		    view_widget_value(
+			_center_replaces_middle('xhtml_main_middle')),
 		])->b_widget_label('main_middle'))),
 	    ])),
 	    DIV_b_nav_and_footer(
