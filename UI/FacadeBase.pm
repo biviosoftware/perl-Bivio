@@ -206,6 +206,22 @@ sub special_realm_name_equals {
     );
 }
 
+sub _2014style {
+    my($then, $else) = @_;
+    my($res) = sub {
+	my($v) = shift;
+	return @$v
+	    if ref($v) eq 'ARRAY';
+	return $v->()
+	    if ref($v) eq 'CODE';
+	return defined($v) ? $v : ();
+    };
+    return __PACKAGE__->if_2014style(
+	sub {$res->($then)},
+	sub {$res->($else)},
+    );
+}
+
 sub _auth_realm_is {
     my($which, $self, $req) = @_;
     my($r) = $req->get('auth_realm');
@@ -412,6 +428,13 @@ sub _cfg_base {
 	    [ViewBase_mobile_app_page => 0],
 	],
 	CSS => [
+	    _2014style([
+		[footer_height => '79px'],
+		[error_background => '#c12929'],
+		[empty_color => 'rgba<(>0, 0, 0, 0)'],
+		['FormButton.submit' => ''],
+		['StandardSubmit.standard_submit' => ''],
+	    ]),
 	    ['FormButton.submit' => q{
                 margin: .5em;
                 padding: 0 .5em;
@@ -2202,7 +2225,7 @@ sub _cfg_wiki {
 sub _cfg_xapian {
     return {
 	Constant => [
-	    [ThreePartPage_want_SearchForm => 1],
+	    [ThreePartPage_want_SearchForm => _2014style(0, 1)],
 	],
 	Color => [
 	    [[qw(search_result_title search_result_excerpt)] => 0],
