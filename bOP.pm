@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,14 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.11  2014/02/12 17:52:09  moeller
+  * Bivio::Agent::TaskId
+    bunit_validate_all() now allows for hash TaskId def
+  * Bivio::Biz::Action::JSONReply
+    use $req->warn() for javascript errors so realm/user info is logged
+  * Bivio::SQL::Statement
+    deprecated SELECT_AS()
+
   Revision 13.10  2014/02/11 03:49:24  moeller
   * Bivio::Agent::TaskId
     use JSONReply instead of EmptyReply
