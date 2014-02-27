@@ -511,6 +511,11 @@ sub vs_phone {
     return $proto->vs_call(Join => [$proto->vs_text('support_phone')]);
 }
 
+sub vs_placeholder_form {
+    my($proto) = @_;
+    return shift->vs_simple_form(@_);
+}
+
 sub vs_prose {
     my(undef, $prose) = @_;
     return Tag(div => Prose($prose), 'prose');
