@@ -13,6 +13,7 @@ my($_SITE) = join('', map({
     my($x) = \&{"_site_$_"};
     defined(&$x) ? $x->() : '';
 } @{b_use('Agent.TaskId')->included_components}));
+my($_UIF) = b_use('UI.Facade');
 
 sub add_to_css {
     my($proto, $widget, $selector, $class, $source) = @_;
@@ -29,7 +30,11 @@ sub add_to_css {
 }
 
 sub internal_site_css {
-    return $_SITE . $_F->if_html5(\&_html5_css, '');
+    my($self, $source) = @_;
+    return $_UIF->get_from_source($source)->if_2014style(
+	'',
+	$_SITE . $_F->if_html5(\&_html5_css, ''),
+    );
 }
 
 sub render_2014style_css {
