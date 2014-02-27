@@ -32,6 +32,325 @@ sub internal_site_css {
     return $_SITE . $_F->if_html5(\&_html5_css, '');
 }
 
+sub render_2014style_css {
+    return shift->internal_body(Prose(<<'EOF'));
+! override bootstrap.css, allow mobile nav submenu to be larger
+.navbar-collapse.in {
+  overflow-y: inherit;
+  max-height: none;
+}
+! hard-code search form in nav for chrome/safari
+! probably could set col class on item instead
+nav.navbar div.input-group {
+  width: 250px;
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  nav.navbar div.input-group {
+    width: 200px;
+  }
+}
+@media (max-width: 767px) {
+  nav.navbar div.input-group {
+    width: 100%;
+  }
+}
+! set btn min width
+.standard_submit button.btn {
+  min-width: 10em;
+}
+! admin submenu headings
+.dropdown-header {
+  white-space: nowrap;
+}
+!TODO: hacked radio display - ex. ?/member-edit
+.b_radio .checkbox {
+  display: inline;
+}
+input[type="checkbox"], input[type="radio"] {
+  margin: 0.5ex;
+}
+! sticky footer
+html, body {
+  height: 100%;
+  padding-top: 35px;
+}
+div.b_nav_and_content {
+  height: auto;
+  margin: 0 auto -CSS('footer_height');;
+  min-height: 100%;
+  padding: 0 0 CSS('footer_height');;
+}
+div.b_nav_and_footer {
+  min-height: CSS('footer_height');;
+}
+div.b_footer {
+  font-size: 90%;
+  margin-top: 40px;
+}
+! tighten up forum select widget to match tabbed view
+div.b_forum_tabs div.form-group {
+  margin-bottom: 8px;
+}
+! error bubble
+.form-group .b_form_field_error:after {
+  border-bottom: 6px solid CSS('error_background');;
+  border-left: 6px solid CSS('empty_color');;
+  border-right: 6px solid CSS('empty_color');;
+  content: "";
+  display: inline-block;
+  left: 3px;
+  position: absolute;
+  top: -6px;
+}
+.form-group .b_form_field_error {
+  background: none repeat scroll 0 0 padding-box CSS('error_background');;
+  border-radius: 4px;
+  Color('body_background');
+  display: inline-block !important;
+  font-size: 12px;
+  font-weight: 600;
+  list-style: none outside none;
+  margin: 0;
+  padding: 2px 10px;
+  position: relative;
+}
+div.task_menu a {
+  padding: 1ex;
+}
+div.b_logo {
+  background: Icon('logo'); left no-repeat;
+  height: Icon(qw(logo height));px;
+  width: Icon(qw(logo width));px;
+}
+ul.ui-autocomplete {
+! need to manage these somehow
+  z-index: 10000;
+}
+.bivio_suggest_headline,
+.bivio_suggest_excerpt {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bivio_suggest_title {
+  font-weight: bold;
+}
+.bivio_suggest_excerpt {
+  color: rgba<(>0, 0, 0, 0.5<)>;
+  display: inline;
+}
+@media (max-width: 768px) {
+  .bivio_suggest_excerpt {
+    display: block;
+  }
+}
+input.b_input_file {
+  padding: 6px;
+}
+!TODO: ComboBox, copied by css pre 2014, need to share def
+! replaced ShadowAttr to match bootstrap .form-control:focus
+div.dd_menu, div.cb_menu {
+  ShadowAttr({
+    box => 'inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6)',
+  });
+}
+input.cb_text {
+  padding-right: 20px;
+}
+div.cb_arrow {
+  cursor: pointer;
+  display: inline;
+  position: absolute;
+  border: 1px outset;
+  Color('dd_menu-border');
+  Color('body');
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  border: none;
+  position: relative;
+  left: -20px;
+  margin-right: -15px;
+  white-space: nowrap;
+}
+div.cb_menu {
+  display: inline;
+  position: absolute;
+  visibility: hidden;
+  Color('dd_menu-background');
+  border: 1px solid;
+  Color('dd_menu-border');
+  width: 15em;
+  max-height: 10em;
+  overflow: auto;
+  z-index: 1000;
+  padding: 0.2ex 0.5ex;
+}
+div.cb_selected {
+  Color('dd_menu_selected-background');
+  Color('dd_menu_selected');
+  text-decoration: none;
+}
+! override boostrap display: block
+input.cb_text {
+  display: inline;
+}
+!TODO: ComboBox carat not aligning correctly with IE (due to width: 100%)
+! need to add nowrap container for ComboBox
+div.b_forum_name {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+div.b_forum_name h4 {
+  white-space: nowrap;
+  margin-top: 5px;
+}
+div.b_forum_tabs {
+  margin-bottom: 1ex;
+}
+div.b_forum_tabs form {
+  margin-right: 15px;
+}
+div.b_alert {
+  margin-bottom: 1ex;
+}
+h3.b_title {
+  margin-top: 0;
+}
+img.b_profile_label_avatar {
+  width: 36px;
+  height: 36px
+  display: block;
+  If([sub {shift->req(qw(UI.Facade uri)) =~ 'mipi|c1787'}], Simple(q{
+  border-top-left-radius: 18px;
+  -webkit-border-top-left-radius: 18px;
+  -moz-border-top-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  -webkit-border-bottom-right-radius: 18px;
+  -moz-border-bottom-right-radius: 18px;
+  border-radius: 18px;
+  -webkit-border-radius: 18px;
+  -moz-border-radius: 18px;
+}));
+! avatar position hack
+  position: absolute;
+  top: 7px;
+}
+@media (max-width: 767px) {
+  img.b_profile_label_avatar {
+    top: 2px;
+  }
+}
+
+.table > tbody > tr > td.bivio_recent_date_cell {
+  text-align: right;
+  border: none;
+  white-space: nowrap;
+}
+.table > tbody > tr > td.bivio_recent_update_cell {
+  border: none;
+!  word-break: break-all;
+}
+.bivio_recent_date {
+  font-weight: bold;
+}
+.bivio_smart_date {
+  white-space: nowrap;
+}
+.bivio_recent_owner,
+.bivio_recent_model,
+.bivio_recent_forum {
+  color: #000;
+}
+.bivio_recent_action {
+  color: #888;
+}
+.b_tree_node .b_sp {
+  padding-left: 1em;
+}
+.tree_list .check {
+  text-align: center;
+}
+.tree_list {
+  margin: 2em 0 0 0;
+}
+.tree_list .node {
+  white-space: nowrap;
+}
+.tree_list .node .name, td a span.name {
+  padding-left: 4px;
+  white-space: nowrap;
+}
+.tree_list .node .sp {
+  padding-left: 20px;
+}
+.tree_list td, .tree_list th {
+  padding: .3ex .8em;
+}
+.amount_cell {
+  text-align: right;
+}
+td.b_msg_summary {
+  CSS('msg_summary');
+}
+!TODO: class is mispelled in bOP, don't want fixed width anyway
+!.b_msg_summary div.b_excerpt {
+!  Font('msg_excerpt');
+!}
+.b_exerpt {
+!  word-break: break-all;
+}
+.b_msg_summary .byline,
+.b_msg_summary .date {
+  display: inline;
+}
+.b_msg_summary span.author,
+.b_msg_summary div.date {
+  padding-right: 1em;
+}
+.b_msg_summary div.byline {
+  Font('msg_summary_byline');
+}
+table.table td a span.title {
+  display: block;
+  margin-bottom: .3ex;
+}
+table.table td a span.excerpt {
+  display: block;
+  margin-bottom: .5ex;
+  Font('search_result_excerpt');
+}
+table.table td div.byline {
+  margin-bottom: 1ex;
+  Font('search_result_byline');
+}
+table.table td div.byline span.author {
+  margin-right: 1em;
+}
+table.table div.date {
+  display: inline;
+  margin-right: 1em;
+}
+table.table div.uri {
+  display: inline;
+  margin-right: 1em;
+}
+div.main_top > div.selector {
+  margin-bottom: 1ex;
+}
+textarea.b_no_resize_text {
+  resize: none;
+}
+.cke_contents {
+! have to override inline style for height with !important
+  height: 28em !important;
+}
+.paged_list th,
+.paged_list td {
+  padding: .1em .5em;
+}
+EOF
+}
+
 sub site_css {
     my($self) = @_;
     return $self->internal_body(Join([
