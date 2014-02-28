@@ -41,6 +41,7 @@ sub get_delegate_info {
 	FEATURE_TASK_LOG => [31],
 	FEATURE_BULLETIN => [32],
 	FEATURE_GROUP_ADMIN => [33],
+	DEV_TRANSIENT => [34],
 	LAST_RESERVED_VALUE => [50],
     ];
 }
