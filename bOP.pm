@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -32,6 +32,53 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.12  2014/02/27 19:37:05  moeller
+  * Bivio::Biz::Action::API
+    fixed missing method
+  * Bivio::Biz::Action::Bootstrap
+    NEW
+  * Bivio::Delegate::TaskId
+    add GENERATE_BOOTSTRAP_CSS
+  * Bivio::HTML::Scraper
+    removed quoted cookie cleanup, breaks some html scrapers
+  * Bivio::IO::Config
+    add assert_dev
+  * Bivio::ShellUtil
+    add assert_dev
+  * Bivio::UI::FacadeBase
+    add GENERATE_BOOTSTRAP_CSS
+    added 2014style attrs
+    added 2014style copyright
+    added icons for each category
+  * Bivio::UI::Facade
+    add want_generate_bootstrap_css config, if_want_generate_bootstrap_css
+    remove want_generate_bootstrap_css config
+  * Bivio::UI::View::CSS
+    added render_2014style_css()
+    2014style doesn't use site css
+  * Bivio::UI::View::Mail
+    added WANT_BOARD_ONLY_OPTION for subclasses
+  * Bivio::UI::View::ThreePartPage
+    use bootstrap css generation or local file
+    remove want_generate_bootstrap_css config
+    added 2014style head tags
+    added 2014style layout items
+  * Bivio::UI::XHTML::ViewShortcuts
+    added stub for vs_placeholder_form()
+  * Bivio::UI::XHTML::Widget::LinkIcon
+    NEW
+  * Bivio::UI::XHTML::Widget::NavContainer
+    NEW
+  * Bivio::UI::XHTML::Widget::TaskMenuOverride
+    NEW
+  * Bivio::Util::HTTPConf
+    generate maintenance.html and set ErrorDocument on VirtualHost
+    don't write the header if begins with <html
+  * Bivio::Util::Project
+    add generate_bootstrap_css
+    better modularization
+    add bootstrap_css_path, bootstrap_less_path
+
   Revision 13.11  2014/02/12 17:52:09  moeller
   * Bivio::Agent::TaskId
     bunit_validate_all() now allows for hash TaskId def
