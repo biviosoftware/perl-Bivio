@@ -575,21 +575,8 @@ sub info_dav {
 }
 
 sub info_dev {
-    return [
-	[qw(
-	    GENERATE_BOOTSTRAP_CSS
-	    300
-	    GENERAL
-	    ANYBODY
-	    Action.Bootstrap->execute_generate_css
-        )],
-    ];
-}
-
-sub info_test {
-    my($self) = @_;
     return
-	if $_C->is_production || !-w __FILE__;
+	if !$_C->is_dev || !-w __FILE__;
     return [
 	map(
 	    {
@@ -599,26 +586,16 @@ sub info_test {
 		    0,
 		    qw(
 			GENERAL
-			TEST_TRANSIENT
-		        Action.AssertClient->execute_is_test
+			DEV_TRANSIENT
+		        Action.AssertClient->execute_is_dev
 		    ),
 		);
 		$_;
 	    }
 	    [qw(
-		TEST_BACKDOOR
-		16
-		Action.AssertClient->execute_is_test
-		Action.TestBackdoor
-		Action.MailReceiveStatus
-	    )],
-
-	    [qw(
-		TEST_TRACE
-		59
-		Action.AssertClient->execute_is_test
-		Action.TestTrace
-		Action.EmptyReply
+		GENERATE_BOOTSTRAP_CSS
+		300
+		Action.Bootstrap->execute_generate_css
 	    )],
 	    [qw(
 		DEV_RESTART
@@ -675,6 +652,44 @@ sub info_test {
 		229
 		Model.DBAccessRowList->execute_load_all
 		View.DBAccess->dbaccess_row_list
+	    )],
+	),
+    ];
+}
+
+sub info_test {
+    my($self) = @_;
+    return
+	if !$_C->is_test || !-w __FILE__;
+    return [
+	map(
+	    {
+		splice(
+		    @$_,
+		    2,
+		    0,
+		    qw(
+			GENERAL
+			TEST_TRANSIENT
+		        Action.AssertClient->execute_is_test
+		    ),
+		);
+		$_;
+	    }
+	    [qw(
+		TEST_BACKDOOR
+		16
+		Action.AssertClient->execute_is_test
+		Action.TestBackdoor
+		Action.MailReceiveStatus
+	    )],
+
+	    [qw(
+		TEST_TRACE
+		59
+		Action.AssertClient->execute_is_test
+		Action.TestTrace
+		Action.EmptyReply
 	    )],
         ),
     ];
