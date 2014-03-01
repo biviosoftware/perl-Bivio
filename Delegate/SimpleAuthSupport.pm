@@ -7,6 +7,7 @@ use Bivio::IO::Trace;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
+my($_C) = b_use('IO.Config');
 my($_RT) = b_use('Model.RowTag');
 my($_RO) = b_use('Model.RealmOwner');
 my($_RR) = b_use('Model.RealmRole');
@@ -64,11 +65,11 @@ sub task_permission_ok {
     # Returns true if I<user> has all permissions in I<task>.
     # Computes SUPER_USER_TRANSIENT and SUBSTITUTE_USER_TRANSIENT.
     my($proto, $user, $task, $req) = @_;
-    foreach my $op ('', qw(super_user substitute_user test)) {
+    foreach my $op ('', qw(super_user substitute_user test dev)) {
 	if ($op) {
 	    my($method) = 'is_' . $op;
 	    next
-		unless $req->$method();
+		unless ($op =~ /^su/ ? $req : $_C)->$method();
 	    $_PS->set(
 		\$user,
 		$_P->from_name($op . '_transient'));
