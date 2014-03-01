@@ -5,7 +5,8 @@ use strict;
 use Bivio::Base 'Biz.Action';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-Bivio::IO::Config->register(my $_CFG = {
+my($_C) = b_use('IO.Config');
+$_C->register(my $_CFG = {
     hosts => [qw(localhost.localdomain), b_use('Bivio.BConf')->bconf_host_name],
     addresses => [],
 });
@@ -23,9 +24,13 @@ sub execute {
     return 0;
 }
 
+sub execute_is_dev {
+    $_C->assert_dev;
+    return shift->execute(@_);
+}
+
 sub execute_is_test {
-    my($proto, $req) = @_;
-    $req->assert_test;
+    $_C->assert_test;
     return shift->execute(@_);
 }
 
