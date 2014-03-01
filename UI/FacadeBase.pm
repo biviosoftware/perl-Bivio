@@ -957,11 +957,9 @@ sub _cfg_dav {
 }
 
 
-sub _cfg_test {
+sub _cfg_dev {
     return {
 	Task => [
-	    [TEST_BACKDOOR => 't*backdoor'],
-	    [TEST_TRACE => 't*trace/*'],
 	    [DEV_RESTART => 't*restart-server'],
 	    [DEV_ACCEPTANCE_TEST_LIST => 't*atl'],
 	    [DEV_ACCEPTANCE_TEST_DETAIL => 't*acceptance-test-detail/*'],
@@ -972,6 +970,7 @@ sub _cfg_test {
 	    [DEV_DBACCESS_MODEL_LIST => 't*dbaccess'],
 	    [DEV_DBACCESS_MODEL_FORM => 't*dbaccess-model-form/*'],
 	    [DEV_DBACCESS_ROW_LIST => 't*dbaccess-row-list/*'],
+
 	],
 	Text => [
 	    [AcceptanceTestList => [
@@ -1003,6 +1002,15 @@ sub _cfg_test {
 	    [DBAccessRowList => [
 		index => 'Index',
 	    ]],
+	],
+    };
+}
+
+sub _cfg_test {
+    return {
+	Task => [
+	    [TEST_BACKDOOR => 't*backdoor'],
+	    [TEST_TRACE => 't*trace/*'],
 	],
     };
 }
