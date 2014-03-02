@@ -26,7 +26,8 @@ b_use('IO.Config')->register(my $_CFG = {
     duplicate_threshold_seconds => 3600,
     out_of_office_negatives => [
 	[qw(X-Bugzilla)],
-	[qw(Sender calendar-notification@google.com)]
+	[qw(Sender calendar-notification@google.com)],
+	[qw(To bounce\*)],
     ],
     out_of_office_positives => [
 	[qw(Auto-Submitted auto-generated)],
