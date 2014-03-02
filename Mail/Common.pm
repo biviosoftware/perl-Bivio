@@ -63,6 +63,7 @@ From: "$name" <$email>
 To: $errors_to
 Subject: ERROR: unable to send mail
 Sender: "$0" <$u>$test_recipient
+Auto-Submitted: auto-replied
 
 Error while trying to send message to $recipients:
 
