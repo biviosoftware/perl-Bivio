@@ -323,6 +323,7 @@ TypesConfig $mime_types
 DefaultType text/plain
 LockFile httpd.lock
 ExtendedStatus On
+AddOutputFilterByType DEFLATE application/json
 
 <Directory />
     AllowOverride None
