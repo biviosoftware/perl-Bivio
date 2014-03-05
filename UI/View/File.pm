@@ -23,89 +23,10 @@ sub file_change {
 	' ',
 	String([qw(Model.FileChangeForm realm_file path)]),
     ])),
-    return shift->internal_body(Join([
-	[\&_javascript_field_selector],
-	vs_simple_form(FileChangeForm => [
-	    If(['Model.FileChangeForm', '->is_folder'],
-		Join([
-		    _link('Add file', 'UPLOAD'),
-		    _link('Add text file', 'TEXT_FILE'),
-		    _link('Add subfolder', 'ADD_SUBFOLDER'),
-		    If(['!', 'Model.FileChangeForm', '->is_root'],
-			_link('Rename folder', 'RENAME')),
-		    If(['!', 'Model.FileChangeForm', '->is_root'],
-			_link('Move folder', 'MOVE')),
-		    If(['!', 'Model.FileChangeForm', '->is_root'],
-			_link('Delete', 'DELETE')),
-		], String(' - ')),
-		Join([
-		    $self->last_updated_widget,
-		    String("\n"),
-		    Join([
-			If(['Model.FileChangeForm', '->is_text_content_type'],
-			    _link('Edit contents', 'TEXT_FILE')),
-			_link('Replace contents', 'UPLOAD'),
-			_link('Rename file', 'RENAME'),
-			_link('Move file', 'MOVE'),
-			_link('Delete', 'DELETE'),
-			_lock(
-			    Link('Leave file locked', URI({
-				task_id => 'FORUM_FILE_TREE_LIST',
-				query => [['Model.FileChangeForm',
-				    '->unsafe_get_context'], 'query'],
-			    })),
-			    Link('Unlock', '#')->put(attributes => [sub {
-				my($source) = @_;
-				return ' onclick="'
-				    . _javascript_form_object()
-				    . $source->req('Model.FileChangeForm')
-					->get_field_name_for_html('cancel_button')
-				    . '[0].click()"';
-			    }]),
-			),
-		    ], String(' - ')),
-		]),
-	    ),
-	    vs_blank_cell(),
-	    FormFieldError('RealmFile.path_lc'),
-	    ['FileChangeForm.name', {
-		row_class => 'hidden_file_field',
-	    }],
-	    ['FileChangeForm.rename_name', {
-		row_class => 'hidden_file_field',
-	    }],
-	    ['FileChangeForm.folder_id', {
-		row_class => 'hidden_file_field',
-		choices => ['Model.RealmFolderList'],
-		list_display_field => 'RealmFile.path',
-	    }],
-	    ['FileChangeForm.file', {
-		row_class => 'hidden_file_field',
-	    }],
-	    Join([
-		StandardSubmit({
-		    buttons => 'ok_button cancel_button',
-		}),
-		FormField('FileChangeForm.content', {
-		    row_class => 'hidden_file_field',
-		    rows => 30,
-		    cols => 80,
-		}),
-	    ]),
-	    _lock([
-		'FileChangeForm.comment', {
-		    row_class => 'hidden_file_field',
-		    rows => 2,
-		},
-	    ]),
-	])->put(form_name => 'file_form'),
-	"\n" . '<script type="text/javascript">' . "\n",
-	[sub {
-	     my($source, $mode) = @_;
-	     return _javascript_function_name($mode);
-	 }, [qw(Model.FileChangeForm mode)]],
-	"\n</script>\n",
-    ]));
+    return shift->internal_body(If2014Style(
+	_2014_style_file_change($self),
+	_file_change($self),
+    ));
 }
 
 sub file_unlock {
@@ -228,6 +149,185 @@ sub version_list {
 	vs_file_versions_actions_column(),
 #TODO: sorting isn't preserving path_info
     ])->put(want_sorting => 0));
+}
+
+sub _2014_style_file_change {
+    my($self) = @_;
+    return Join([
+	LocalFileAggregator({
+	    view_values => [
+		InlineJavaScript(
+		    Prose2(<<'EOF'),
+$('#b_file_nav a.b_tab_link').click(function (e) {
+  e.preventDefault();
+  $(this).tab('show');
+});
+$('#b_unlock_link').click(function (e) {
+  e.preventDefault();
+  $('button[name="<{ Simple(
+      ['Model.FileChangeForm', '->get_field_name_for_html', 'cancel_button']
+  ) }>"]')[0].click();
+});
+EOF
+
+		),
+	    ],
+	}),
+	UL(
+	    If(['Model.FileChangeForm', '->is_folder'],
+		Join([
+		    _tab('Add file', 'upload'),
+		    _tab('Add text file', 'text_file'),
+		    _tab('Add subfolder', 'add_subfolder'),
+		    If(['!', 'Model.FileChangeForm', '->is_root'], Join([
+		        _tab('Rename folder', 'rename'),
+		        _tab('Move folder', 'move'),
+		        _tab('Delete', 'delete'),
+		    ])),
+		]),
+		Join([
+		    $self->last_updated_widget([
+			' - ',
+			Link('Leave file locked', URI({
+			    task_id => 'FORUM_FILE_TREE_LIST',
+			    query => [['Model.FileChangeForm',
+				       '->unsafe_get_context'], 'query'],
+			})),
+			' - ',
+			Link('Unlock', '#')->put(ID => 'b_unlock_link'),
+		    ]),
+		    BR(),
+		    Join([
+			If(
+			    ['Model.FileChangeForm', '->is_text_content_type'],
+			    _tab('Edit contents', 'text_file'),
+			),
+			_tab('Replace contents', 'upload'),
+			_tab('Rename file', 'rename'),
+			_tab('Move file', 'move'),
+			_tab('Delete', 'delete'),
+		    ]),
+		]),
+	    ),
+	    'nav nav-tabs',
+	)->put(ID => 'b_file_nav'),
+	BR(),
+	DIV(Join([
+	    _tab_pane(upload => [
+		'FileChangeForm.file',
+	    ]),
+	    _tab_pane(text_file => [
+		['FileChangeForm.name', {
+		    row_control => [
+			['Model.FileChangeForm', 'realm_file'], 'is_folder'],
+		}],
+		['FileChangeForm.content', {
+		    rows => 30,
+		    cols => 80,
+		}],
+	    ]),
+	    _tab_pane(add_subfolder => [
+		'FileChangeForm.name',
+	    ]),
+	    _tab_pane(rename => [
+		'FileChangeForm.rename_name',
+	    ]),
+	    _tab_pane(move => [
+		['FileChangeForm.folder_id', {
+		    choices => ['Model.RealmFolderList'],
+		    list_display_field => 'RealmFile.path',
+		}],
+	    ]),
+	    _tab_pane(delete => []),
+	]), 'tab-content'),
+    ]);
+}
+
+sub _file_change {
+    my($self) = @_;
+    return Join([
+	[\&_javascript_field_selector],
+	vs_simple_form(FileChangeForm => [
+	    If(['Model.FileChangeForm', '->is_folder'],
+		Join([
+		    _link('Add file', 'UPLOAD'),
+		    _link('Add text file', 'TEXT_FILE'),
+		    _link('Add subfolder', 'ADD_SUBFOLDER'),
+		    If(['!', 'Model.FileChangeForm', '->is_root'],
+			_link('Rename folder', 'RENAME')),
+		    If(['!', 'Model.FileChangeForm', '->is_root'],
+			_link('Move folder', 'MOVE')),
+		    If(['!', 'Model.FileChangeForm', '->is_root'],
+			_link('Delete', 'DELETE')),
+		], String(' - ')),
+		Join([
+		    $self->last_updated_widget,
+		    String("\n"),
+		    Join([
+			If(['Model.FileChangeForm', '->is_text_content_type'],
+			    _link('Edit contents', 'TEXT_FILE')),
+			_link('Replace contents', 'UPLOAD'),
+			_link('Rename file', 'RENAME'),
+			_link('Move file', 'MOVE'),
+			_link('Delete', 'DELETE'),
+			_lock(
+			    Link('Leave file locked', URI({
+				task_id => 'FORUM_FILE_TREE_LIST',
+				query => [['Model.FileChangeForm',
+				    '->unsafe_get_context'], 'query'],
+			    })),
+			    Link('Unlock', '#')->put(attributes => [sub {
+				my($source) = @_;
+				return ' onclick="'
+				    . _javascript_form_object()
+				    . $source->req('Model.FileChangeForm')
+					->get_field_name_for_html('cancel_button')
+				    . '[0].click()"';
+			    }]),
+			),
+		    ], String(' - ')),
+		]),
+	    ),
+	    vs_blank_cell(),
+	    FormFieldError('RealmFile.path_lc'),
+	    ['FileChangeForm.name', {
+		row_class => 'hidden_file_field',
+	    }],
+	    ['FileChangeForm.rename_name', {
+		row_class => 'hidden_file_field',
+	    }],
+	    ['FileChangeForm.folder_id', {
+		row_class => 'hidden_file_field',
+		choices => ['Model.RealmFolderList'],
+		list_display_field => 'RealmFile.path',
+	    }],
+	    ['FileChangeForm.file', {
+		row_class => 'hidden_file_field',
+	    }],
+	    Join([
+		StandardSubmit({
+		    buttons => 'ok_button cancel_button',
+		}),
+		FormField('FileChangeForm.content', {
+		    row_class => 'hidden_file_field',
+		    rows => 30,
+		    cols => 80,
+		}),
+	    ]),
+	    _lock([
+		'FileChangeForm.comment', {
+		    row_class => 'hidden_file_field',
+		    rows => 2,
+		},
+	    ]),
+	])->put(form_name => 'file_form'),
+	"\n" . '<script type="text/javascript">' . "\n",
+	[sub {
+	     my($source, $mode) = @_;
+	     return _javascript_function_name($mode);
+	 }, [qw(Model.FileChangeForm mode)]],
+	"\n</script>\n",
+    ]);
 }
 
 sub _file_date {
@@ -364,6 +464,40 @@ sub _simple_tree {
 	_file_link_column(1),
 	'RealmFile.modified_date_time',
     ]);
+}
+
+sub _tab {
+    my($text, $mode) = @_;
+    return LI(
+	Link($text, '#' . $mode)->put(class => 'b_tab_link'),
+	If(['Model.FileChangeForm', 'mode', '->equals_by_name', uc($mode)],
+	   'active'),
+    );
+}
+
+sub _tab_pane {
+    my($mode, $fields) = @_;
+    return DIV(
+	vs_simple_form(FileChangeForm => [
+	    INPUT('', {
+	    	TYPE => 'hidden',
+	    	NAME => [
+		    'Model.FileChangeForm', '->get_field_name_for_html',
+		    'override_mode',
+		],
+	    	VALUE => b_use('Type.FileChangeMode')->from_name(uc($mode))
+	    	    ->as_int,
+	    }),
+	    @$fields,
+	    ['FileChangeForm.comment', {
+		rows => 2,
+	    }],
+	]),
+	If(['Model.FileChangeForm', 'mode', '->equals_by_name', uc($mode)],
+	   'tab-pane fade active in',
+	   'tab-pane fade'
+       ),
+    )->put(ID => $mode);
 }
 
 sub _tree_list {
