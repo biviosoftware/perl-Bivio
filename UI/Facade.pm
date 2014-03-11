@@ -116,12 +116,10 @@ sub as_string {
     return 'Facade[' . $self->simple_package_name . ']';
 }
 
-sub map_iterate_with_setup_request {
-    my($proto, $req, $op) = @_;
-    return [map(
-	$proto->with_setup_request($_, $req, $op),
-	@{$proto->get_all_classes},
-    )];
+sub delete_from_request {
+    my(undef, $req) = @_;
+    $req->delete(_req_keys());
+    return;
 }
 
 sub find_by_uri_or_domain {
@@ -349,11 +347,27 @@ sub is_html5 {
     return $_CFG->{is_html5};
 }
 
+sub join_with_local_file_plain {
+    my($self, $path) = @_;
+    return b_use('Type.FilePath')->join(
+	$self->get_local_file_name(b_use('UI.LocalFileType')->PLAIN),
+	$path,
+    );
+}
+
 sub make_groups {
     my($proto, $items) = @_;
     b_die('uneven number of items in array: ', $items)
         unless @$items % 2 == 0;
     return $proto->map_by_two(sub {[$_[0], $_[1]]}, $items);
+}
+
+sub map_iterate_with_setup_request {
+    my($proto, $req, $op) = @_;
+    return [map(
+	$proto->with_setup_request($_, $req, $op),
+	@{$proto->get_all_classes},
+    )];
 }
 
 sub matches_class_name {
@@ -534,15 +548,19 @@ sub unsafe_get_from_source {
 
 sub with_setup_request {
     my($proto, $uri_or_domain_or_class, $req, $op) = @_;
-    my($prev) = $proto->get_from_source($req);
+    my($prev) = $proto->unsafe_get_from_source($req);
+    my($facade)
+	= $proto->get_instance($uri_or_domain_or_class)->setup_request($req);
     return $_D->catch_and_rethrow(
 	sub {
-	    return $op->(
-		$proto->get_instance($uri_or_domain_or_class)
-		    ->setup_request($req),
-	    );
+	    return $op->($facade);
 	},
-	sub {$prev->setup_request($req)},
+	sub {
+	    $prev
+		? $prev->setup_request($req)
+		: $facade->delete_from_request($req);
+	    return;
+	},
     );
     return;
 }
@@ -639,12 +657,17 @@ sub _local_file_uri {
     return $_FP->join($prefix, $file);
 }
 
+sub _req_keys {
+    my($self) = @_;
+    return (
+	__PACKAGE__, $self || (),
+	__PACKAGE__->as_classloader_map_name => $self || (),
+    );
+}
+
 sub _setup_request {
     my($self, $req) = @_;
-    $req->put_durable(
-	__PACKAGE__, $self,
-	__PACKAGE__->as_classloader_map_name => $self,
-    );
+    $req->put_durable(_req_keys($self));
     _trace($self) if $_TRACE;
     return $self;
 }
