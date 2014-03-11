@@ -593,11 +593,6 @@ sub info_dev {
 		$_;
 	    }
 	    [qw(
-		GENERATE_BOOTSTRAP_CSS
-		300
-		Action.Bootstrap->execute_generate_css
-	    )],
-	    [qw(
 		DEV_RESTART
 		220
 		Action.DevRestart
