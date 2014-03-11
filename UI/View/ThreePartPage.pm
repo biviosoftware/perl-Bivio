@@ -78,50 +78,32 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_body_class => '',
 	bootstrap_tab_bar => '',
 	xhtml_head_tags => If2014Style(Join([
-	    If(
-		$_C->is_dev,
-		Tag({
-		    tag => 'link',
-		    HREF => URI({
-			task_id => 'GENERATE_BOOTSTRAP_CSS',
-		    }),
-		    REL => 'stylesheet',
-		    TYPE => 'text/css',
-		}),
-		LocalFileAggregator({
-		    base_values => [
-			'bootstrap.min.css',
-		    ],
-		}),
-	    ),
-
-
-		    META({
-			'HTTP-EQUIV' => 'X-UA-Compatible',
-			CONTENT => 'IE=edge',
-		    }),
-		    META({
-			NAME => 'viewport',
-			CONTENT => 'width=device-width,initial-scale=1.0',
-		    }),
-		    LocalFileAggregator({
-			base_values => [
-			    'jquery-ui.min.css',
-			    InlineCSS([sub {
+	    META({
+		'HTTP-EQUIV' => 'X-UA-Compatible',
+		CONTENT => 'IE=edge',
+	    }),
+	    META({
+		NAME => 'viewport',
+		CONTENT => 'width=device-width,initial-scale=1.0',
+	    }),
+	    LocalFileAggregator({
+		base_values => [
+		    'bootstrap.min.css',
+		    'jquery-ui.min.css',
+		    InlineCSS([sub {
 #TODO: Widget.RenderView
-				my($source) = @_;
-			        my($res) = UI_View()->render(
-				    'CSS->render_2014style_css',
-				    $source->req,
-				);
+				   my($source) = @_;
+				   my($res) = UI_View()->render(
+				       'CSS->render_2014style_css',
+				       $source->req,
+				   );
 #TODO: Need to add this to InlineCSS from RealmCSS
-				$$res =~ s/^\!.*\n//mg;
-				return $$res;
-			    }]),
-			    IfUserAgent('is_msie_8_or_before', 'msie8shim.js'),
-			],
-		    }),
-	    
+				   $$res =~ s/^\!.*\n//mg;
+				   return $$res;
+			       }]),
+		    IfUserAgent('is_msie_8_or_before', 'msie8shim.js'),
+		],
+	    }),
 	])),
 	xhtml_rss_task => '',
 	xhtml_tools => '',
