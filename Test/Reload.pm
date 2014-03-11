@@ -9,6 +9,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CL) = b_use('IO.ClassLoader');
 my($_R) = b_use('Agent.Request');
 my($_LAST_TIME) = time;
+my($_LESS_SIG);
 my($_WATCH) = [grep(s{/BConf.pm$}{}, @{[values(%INC)]})];
 # File::Find doesn't put '.' in the Path
 #TODO: Use "relative_path", which I think File::Find uses
@@ -39,6 +40,17 @@ sub handler {
 	    create_or_update => $path,
 	);
     }
+    b_use('UI.Facade')->map_iterate_with_setup_request(
+	$_R->get_current_or_new,
+	sub {
+	    my($facade) = @_;
+	    if (my $less_sig = _modified_less($facade)) {
+		b_use('ShellUtil.Project')->generate_bootstrap_css;
+		$_LESS_SIG->{$facade->as_string} = $less_sig;
+	    }
+	    return;
+	},
+    );
     $_LAST_TIME = time;
     $_R->clear_current;
     return $_DONE;
@@ -57,6 +69,21 @@ sub _do {
 	$_CL->$method($m);
     }
     return;
+}
+
+sub _less_sig {
+    my($facade) = @_;
+    my($req) = $_R->get_current_or_new;
+    return join(
+	' ',
+	map({
+	    b_use('IO.File')->get_modified_date_time($_) => $_;
+	} glob($facade->get_local_file_name(
+	    b_use('UI.LocalFileType')->PLAIN,
+	    b_use('ShellUtil.Project')->bootstrap_less_path,
+	    $req,
+	))),
+    );
 }
 
 sub _modified_ddl {
@@ -86,6 +113,13 @@ sub _modified_ddl {
 sub _modified_ddl_file {
     my($realm, $path, $file) = @_;
     return _newer($file) ? Bivio::IO::Alert->debug([$realm, $path, $file]) : ();
+}
+
+sub _modified_less {
+    my($facade) = @_;
+    my($new_sig) = _less_sig($facade);
+    return $new_sig ne ($_LESS_SIG->{$facade->as_string} || '')
+	? $new_sig : undef;
 }
 
 sub _modified_pm {
