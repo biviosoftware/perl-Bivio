@@ -99,7 +99,6 @@ sub internal_base_tasks {
 	[JAVASCRIPT_LOG_ERROR_JSON => 'pub/javascript-error'],
  	[LOGGED_QUERY_REDIRECT => 'pub/go'],
 	[API_JSON => 'api/*'],
-	[GENERATE_BOOTSTRAP_CSS => 'pub/bootstrap.min.css'],
     ];
 }
 
