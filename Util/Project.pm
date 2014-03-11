@@ -70,7 +70,6 @@ sub link_facade_files {
 		foreach my $j (grep(
 		    $_ !~ /CVS$/ && -d $_,
 		    glob("$src/javascript/*"),
-		    "$src/external/bootstrap",
 		)) {
 		    my($dest) = "$common/" . ($j =~ m{([^/]+)$})[0];
 		    $_F->do_in_dir(
@@ -165,10 +164,7 @@ sub _join_with_plain {
     my($facade, $path, $which) = @_;
     $which ||= 'app';
     my($method) = "get_local_file_plain_${which}_uri";
-    return Type_FilePath()->join(
-	$facade->get_local_file_name(UI_LocalFileType()->PLAIN),
-	$facade->$method($path),
-    );
+    return $facade->join_with_local_file_plain($facade->$method($path));
 }
 
 sub _write_less {
