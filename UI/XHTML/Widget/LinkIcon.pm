@@ -19,10 +19,7 @@ sub initialize {
 	Join([
 	    SPAN(
 		'',
-		Join([
-		    'glyphicon ',
-		    vs_text('icon.' . $self->get('icon')),
-		]),
+		vs_text('icon.' . $self->get('icon')),
 	    ),
 	    ' ',
 	]),
