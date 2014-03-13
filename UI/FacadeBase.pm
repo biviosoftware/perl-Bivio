@@ -676,10 +676,10 @@ EOF
 		processor_response => 'Processor Response',
 	    ]],
 	    [icon => [
-		pager_next => 'glyphicon-chevron-right',
-		pager_prev => 'glyphicon-chevron-left',
-		LOGOUT => 'glyphicon-log-out',
-		LOGIN => 'glyphicon-log-in',
+		pager_next => 'b_icon_chevron_right',
+		pager_prev => 'b_icon_chevron_left',
+		LOGOUT => 'b_icon_logout',
+		LOGIN => 'b_icon_login',
 	    ]],
 	],
     };
@@ -717,7 +717,7 @@ sub _cfg_blog {
 		FORUM_BLOG_EDIT => 'The blog entry update has been saved.',
 	    ]],
 	    [icon => [
-		FORUM_BLOG_LIST => 'glyphicon-bullhorn',
+		FORUM_BLOG_LIST => 'b_icon_megaphone',
 	    ]],
 #TODO: Move this
 	    [FORUM_ADM_FORUM_ADD => 'Add forum'],
@@ -875,7 +875,7 @@ sub _cfg_calendar {
 		],
 	    ]],
 	    [icon => [
-		FORUM_CALENDAR => 'glyphicon-calendar',
+		FORUM_CALENDAR => 'b_icon_calendar',
 	    ]],
 	],
     };
@@ -940,8 +940,8 @@ sub _cfg_crm {
 		FORUM_CRM_FORM => 'Your message was sent.',
 	    ]],
 	    [icon => [
-		'forum.crm_thread_root_list' => 'glyphicon-tags',
-		FORUM_CRM_THREAD_ROOT_LIST => 'glyphicon-arrow-left',
+		'forum.crm_thread_root_list' => 'b_icon_tags',
+		FORUM_CRM_THREAD_ROOT_LIST => 'b_icon_arrow_left',
 	    ]],
 	],
     };
@@ -1107,7 +1107,7 @@ sub _cfg_file {
 		],
 	    ]],
 	    [icon => [
-		FORUM_FILE_TREE_LIST => 'glyphicon-folder-open',
+		FORUM_FILE_TREE_LIST => 'b_icon_folder_open',
 	    ]],
         ],
     };
@@ -1377,8 +1377,8 @@ sub _cfg_mail {
 		user_mail_unsubscribed_all => q{You have been unsubscribed from ALL MAILINGS from String(vs_site_name());},
 	    ]],
 	    [icon => [
-		'forum.mail_thread_root_list' => 'glyphicon-envelope',
-		FORUM_MAIL_THREAD_ROOT_LIST => 'glyphicon-arrow-left',
+		'forum.mail_thread_root_list' => 'b_icon_envelope',
+		FORUM_MAIL_THREAD_ROOT_LIST => 'b_icon_arrow_left',
 	    ]],
 	],
     };
@@ -1484,7 +1484,7 @@ sub _cfg_motion {
 		FORUM_MOTION_COMMENT_LIST_CSV => 'Comment spreadsheet',
 	    ]],
 	    [icon => [
-		FORUM_MOTION_LIST => 'glyphicon-thumbs-up',
+		FORUM_MOTION_LIST => 'b_icon_thumbs_up',
 	    ]],
 	],
     };
@@ -1832,7 +1832,7 @@ sub _cfg_tuple {
 		FORUM_TUPLE_EDIT => 'The record has been saved.',
 	    ]],
 	    [icon => [
-		FORUM_TUPLE_USE_LIST => 'glyphicon-tasks',
+		FORUM_TUPLE_USE_LIST => 'b_icon_tasks',
 	    ]],
 	],
 	FormError => [
@@ -2251,7 +2251,7 @@ sub _cfg_wiki {
 		xhtml_dock_left_standard => q{FeatureTaskMenu();},
 	    ]],
 	    [icon => [
-		FORUM_WIKI_VIEW => 'glyphicon-file',
+		FORUM_WIKI_VIEW => 'b_icon_file',
 	    ]],
 #DEPRECATED:
 	    [HelpWiki => [
@@ -2302,7 +2302,7 @@ sub _cfg_xapian {
 		[qw(SEARCH_LIST GROUP_SEARCH_LIST SEARCH_SUGGEST_LIST_JSON GROUP_SEARCH_SUGGEST_LIST_JSON)] => 'Search Results',
 	    ]],
 	    [icon => [
-		SEARCH => 'glyphicon-search',
+		SEARCH => 'b_icon_search',
 	    ]],
 	],
     };
