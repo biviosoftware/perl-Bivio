@@ -28,10 +28,13 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 13.13  2014/02/28 00:41:21  moeller
+  * Bivio::UI::View::ThreePartPage
+    fixed missing _center_replaces_middle()
+
   Revision 13.12  2014/02/27 19:37:05  moeller
   * Bivio::Biz::Action::API
     fixed missing method
