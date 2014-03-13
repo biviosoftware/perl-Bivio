@@ -19,6 +19,7 @@ sub initialize {
 	value => Join([
 	    A(Join([
 		$self->get('label'),
+		' ',
 		$self->unsafe_get('no_arrow')
 		    ? ()
 		    : B('', 'caret'),
