@@ -90,6 +90,7 @@ sub internal_xhtml_adorned_attrs {
 		base_values => [
 		    'bootstrap.min.css',
 		    'jquery-ui.min.css',
+		    'fontello/css/b_icon.css',
 		    InlineCSS([sub {
 #TODO: Widget.RenderView
 				   my($source) = @_;
