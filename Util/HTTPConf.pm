@@ -616,6 +616,7 @@ CustomLog $log_directory/access_log combined
 ErrorLog $log_directory/error_log
 LogLevel warn
 ExtendedStatus On
+TraceEnable off
 v2:AddOutputFilterByType DEFLATE application/json application/xml text/css text/csv text/html text/javascript text/plain
 
 DocumentRoot /var/www/html
