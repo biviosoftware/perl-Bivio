@@ -353,6 +353,10 @@ textarea.b_no_resize_text {
 .paged_list td {
   padding: .1em .5em;
 }
+[class^="b_icon_"]:before, [class*=" b_icon_"]:before {
+  margin-left: 0;
+  margin-right: 0;
+}
 EOF
 }
 
