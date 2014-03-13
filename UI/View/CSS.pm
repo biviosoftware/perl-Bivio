@@ -354,6 +354,9 @@ textarea.b_no_resize_text {
   padding: .1em .5em;
 }
 [class^="b_icon_"]:before, [class*=" b_icon_"]:before {
+  position: relative;
+  top: 0;
+  vertical-align: baseline;
   margin-left: 0;
   margin-right: 0;
 }
