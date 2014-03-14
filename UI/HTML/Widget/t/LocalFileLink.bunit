@@ -4,4 +4,5 @@ Widget();
 [
     ['unit-test.css'] => '<link href="/f/css/unit-test.css" rel="stylesheet" type="text/css" />',
     ['unit-test.js'] => '<script src="/f/js/unit-test.js" type="text/javascript"></script>',
+    ['does-not-exist.css'] => DIE(),
 ];
