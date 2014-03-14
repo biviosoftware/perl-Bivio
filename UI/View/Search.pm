@@ -8,7 +8,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_GLYPH_MAP) = {
     map({
-	$_->[0] => 'glyphicon glyphicon-' . $_->[1];
+	$_->[0] => 'b_icon_' . $_->[1];
     } (
 	[qw(wikidataname cog)],
 	[qw(mailfilename envelope)],
