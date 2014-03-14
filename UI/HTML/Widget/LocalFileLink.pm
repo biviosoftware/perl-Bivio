@@ -21,14 +21,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fn) = $self->render_simple_attr('file_name', $source);
     my($type) = $self->to_html_type_attr($fn);
-#TODO: Look in app and then common.  If not found, throw err
-    my($uri) = UI_Facade()->get_from_source($source)
-	->get_local_file_plain_app_uri(
-	    Type_FilePath()->join(
-		Type_FilePath()->get_suffix($fn),
-		$fn,
-	    ),
-	);
+    my($uri) = _get_uri_or_die($source, $fn);
     HTMLWidget_Tag({
 	tag => $type =~ /javascript/ ? (
 	    'script',
@@ -51,6 +44,31 @@ sub to_html_type_attr {
 	? 'text/javascript'
 	: 'text/css'
 	: b_die($file, ': unrecognized file suffix');
+}
+
+sub _get_uri_or_die {
+    my($source, $file_name) = @_;
+    my($facade) = UI_Facade()->get_from_source($source);
+    my($uri);
+    foreach my $l (qw(app common)) {
+	my($method) = "get_local_file_plain_${l}_uri";
+	my($u) = $facade->$method(_path_by_location($l, $file_name));
+	if (-f $facade->join_with_local_file_plain($u)) {
+	    $uri = $u;
+	    last;
+	}
+    }
+    b_die($file_name, ': local file not found')
+	unless $uri;
+    return $uri;
+}
+
+sub _path_by_location {
+    my($location, $file_name) = @_;
+    return $location eq 'app'
+	? Type_FilePath()->join(
+	    Type_FilePath()->get_suffix($file_name), $file_name)
+	: $file_name;
 }
 
 1;
