@@ -32,6 +32,7 @@ sub parse_data {
     # Calls L<new|"new"> and then I<parse_data> with I<data> if called statically.
     # Otherwise, simply calls parse_data.
     my($proto) = shift;
+    local($SIG{__WARN__}) = sub {};
     return (ref($proto) ? $proto : $proto->new)->SUPER::parse_data(@_);
 }
 
