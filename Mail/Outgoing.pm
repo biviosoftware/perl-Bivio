@@ -270,7 +270,7 @@ sub set_headers_for_forward {
     $self->set_header('Sender', $sender)
 	if $sender;
     my($from) = $self->get_from_email($req);
-    if ($from =~ $self->internal_get_config->{rewrite_from_domains_re}) {
+    if ($from && ($from =~ $self->internal_get_config->{rewrite_from_domains_re})) {
 	$self->set_header('From', $_E->format_ignore($from, $req));
     }
     return $self;
