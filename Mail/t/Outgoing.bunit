@@ -86,6 +86,15 @@ Date: Thu, 1 Jul 1999 09:33:35 -0400
 body
 EOF
 
+my($_BAD_FROM) = <<'EOF';
+Message-ID: <123@example.com>
+From: <<from@from.from>>
+Date: Thu, 1 Jul 1999 09:33:35 -0400
+
+body
+EOF
+
+
 
 my($_BODY) = 'what a body';
 [
@@ -204,6 +213,19 @@ my($_BODY) = 'what a body';
 	    to => 'some-list@example.com',
 	    cc => undef,
 	    from => 'from@from.from',
+	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_BAD_FROM)] => [
+	get_from_email => [
+	    [req()] => [undef],
+	],
+	set_headers_for_forward => [
+	    [undef, req()] => undef,
+	],
+	unsafe_get_header => [
+	    to => undef,
+	    cc => undef,
+	    from => '<<from@from.from>>',
 	],
     ],
 ];
