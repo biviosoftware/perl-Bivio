@@ -1,0 +1,50 @@
+Return-Path: <noone@bellsouth.net>
+Delivered-To: noone@bivio.biz
+Received: from nm9-vm1.access.bullet.mail.bf1.yahoo.com (nm9-vm1.access.bullet.mail.bf1.yahoo.com [216.109.114.192])
+	by apa10.bivio.biz (Postfix) with ESMTP id 32CCE4A5063
+	for <fortune20@bivio.biz>; Sun,  9 Mar 2014 13:23:13 -0600 (MDT)
+Received: from [66.196.81.157] by nm9.access.bullet.mail.bf1.yahoo.com with NNFMP; 09 Mar 2014 19:23:04 -0000
+Received: from [66.196.81.138] by tm3.access.bullet.mail.bf1.yahoo.com with NNFMP; 09 Mar 2014 19:23:04 -0000
+Received: from [127.0.0.1] by omp1014.access.mail.bf1.yahoo.com with NNFMP; 09 Mar 2014 19:23:04 -0000
+Received: (qmail 41412 invoked by uid 60001); 9 Mar 2014 19:23:04 -0000
+Received: from [74.229.151.11] by web181504.mail.ne1.yahoo.com via HTTP; Sun, 09 Mar 2014 12:23:03 PDT
+X-Mailer: YahooMailWebService/0.8.177.636
+Message-ID: <1394392983.12570.YahooMailNeo@web181504.mail.ne1.yahoo.com>
+Date: Sun, 9 Mar 2014 12:23:03 -0700 (PDT)
+From: John Doe <noone@bellsouth.net>
+Reply-To: John Doe <noone@bellsouth.net>
+Subject: Meeting notice and minutes
+To: "noone@bivio.biz" <noone@bivio.biz>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="-2076221306-645610419-1394392983=:12570"
+
+---2076221306-645610419-1394392983=:12570
+Content-Type: multipart/alternative; boundary="-2076221306-1254630216-1394392983=:12570"
+
+---2076221306-1254630216-1394392983=:12570
+Content-Type: text/plain; charset=us-ascii
+
+---2076221306-1254630216-1394392983=:12570
+Content-Type: text/html; charset=us-ascii
+
+<html><body><div style="color:#000; background-color:#fff; font-family:times new roman, new york, times, serif;font-size:14pt"><div></div></div></body></html>
+---2076221306-1254630216-1394392983=:12570--
+---2076221306-645610419-1394392983=:12570
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document; name="March 2014.docx"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="f20 notice March 2014.docx"
+
+UEsDBBQABgAIAAAAIQD4K3FghQEAAI4FAAATAAgCW0NvbnRlbnRfVHlwZXNd
+LnhtbCCiBAIooAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAA=
+
+---2076221306-645610419-1394392983=:12570
+Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document; name="Monthly Meeting Minutes February 2014.docx"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="Monthly Meeting Minutes February 2014.docx"
+
+UEsDBBQABgAIAAAAIQBhKvXWmgEAABIGAAATAAgCW0NvbnRlbnRfVHlwZXNd
+LnhtbCCiBAIooAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+ANwDAAAxPgAAAAA=
+
+---2076221306-645610419-1394392983=:12570--
