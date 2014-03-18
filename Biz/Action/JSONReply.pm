@@ -3,9 +3,9 @@
 package Bivio::Biz::Action::JSONReply;
 use strict;
 use Bivio::Base 'Action.EmptyReply';
-b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_JSON) = b_use('MIME.JSON');
 
 sub execute_api {
     my($proto, $req, $status) = @_;
@@ -30,8 +30,13 @@ sub execute_check_req_is_json {
 
 sub execute_javascript_log_error {
     my($proto, $req) = @_;
-    $req->warn('javascript error')
-	if $req->get_form;
+    my($json_text) = ($req->get_form || {})->{json};
+    if ($json_text) {
+	my($json) = $_JSON->from_text($json_text);
+	$req->warn('javascript error')
+	    if ref($json) eq 'HASH'
+		&& $json->{errorMsg} && $json->{url} && $json->{lineNumber};
+    }
     return $proto->execute($req, 'HTTP_OK');
 }
 
