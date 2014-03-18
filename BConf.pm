@@ -428,6 +428,7 @@ sub merge_http_log {
 		    'cannot mail to a default realm',
 		    'reconnecting to database: pid=',
 		    'from_literal failed:.*no-message-id',
+		    'Cookie:.* duplicate cookie value for key',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
