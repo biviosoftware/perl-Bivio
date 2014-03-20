@@ -62,6 +62,22 @@ sub auth_realm_is_help_wiki {
     return _auth_realm_is(help_wiki => @_);
 }
 
+sub if_2014style {
+    my(undef, $then, $else) = @_;
+    my($res) = sub {
+	my($v) = shift;
+	return @$v
+	    if ref($v) eq 'ARRAY';
+	return $v->()
+	    if ref($v) eq 'CODE';
+	return defined($v) ? $v : ();
+    };
+    return shift->SUPER::if_2014style(
+	sub {$res->($then)},
+	sub {$res->($else)},
+    );
+}
+
 sub internal_base_tasks {
     return [
 	[CLIENT_REDIRECT => ['go/*', 'goto/*']],
