@@ -797,7 +797,7 @@ sub info_file {
 	    DATA_READ&DATA_WRITE&FEATURE_FILE
 	    Model.Lock
 	    Model.FileChangeForm
-	    View.WysiwygFile->file_upload_from_wysiwyg
+	    View.WYSIWYGFile->file_upload_from_wysiwyg
 	    next=FORUM_FILE_UPLOAD_FROM_WYSIWYG
 	)],
 	[qw(
