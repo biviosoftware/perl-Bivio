@@ -17,7 +17,7 @@ sub initialize {
     return shift->put(
 	tag => 'div',
 	value => ref($items) eq 'ARRAY' ? Join($items) : $items,
-	class => $self->internal_with_additional_classes('btn-group'),
+	class => $self->internal_class_with_additional('btn-group'),
     );
 }
 
