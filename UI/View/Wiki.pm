@@ -23,7 +23,7 @@ sub edit {
     $view ||= $self;
     $form ||= 'WikiForm';
     my($editor) = $_CFG->{use_wysiwyg}
-	? \&CKEditor
+	? \&WYSIWYGEditor
 	: \&TextArea;
     my($title_field) = $form =~ /Wiki/ ? 'RealmFile.path_lc' : 'title';
     return $view->internal_body(vs_simple_form($form => [
@@ -39,11 +39,13 @@ sub edit {
 	    }),
 	    $editor->({
 		field => 'content',
-		rows => $_CFG->{use_wysiwyg} ? 20 : 30,
-		cols => 80,
-		%{_image_folders($self)},
-		use_public_image_folder =>
-		    ["Model.$form", 'RealmFile.is_public'],
+		%{b_use('UI.Facade')->if_2014style({}, {
+		    rows => $_CFG->{use_wysiwyg} ? 20 : 30,
+		    cols => 80,
+		    %{_image_folders($self)},
+		    use_public_image_folder =>
+			["Model.$form", 'RealmFile.is_public'],
+		})},
 	    }),
 	], b_use('UI.Facade')->if_2014style({edit_col_class => 'col-sm-9'})),
 	_edit_wiki_buttons($form),
