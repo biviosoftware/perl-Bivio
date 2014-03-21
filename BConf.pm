@@ -26,6 +26,10 @@ sub DELEGATE_ROOT_PREFIX {
     return (shift(@_) =~ /^(.*)::\w*BConf$/)[0];
 }
 
+sub IS_2014STYLE {
+    return $ENV{BIVIO_IS_2014STYLE} || 0;
+}
+
 sub default_merge_overrides {
     my($proto) = shift;
     my($args) = @_;
@@ -77,6 +81,7 @@ sub default_merge_overrides {
 	},
 	'Bivio::UI::Facade' => {
 	    default => $args->{root},
+	    is_2014style => $proto->IS_2014STYLE,
 	},
 	'Bivio::Util::Release' => {
 	    projects => [
@@ -344,12 +349,24 @@ sub merge_class_loader {
 		    # CSS has no general widgets so don't put Bivio::UI in path
 		    UICSS => ['Bivio::UI::CSS'],
 		    UIHTML => ['Bivio::UI::HTML', 'Bivio::UI'],
-		    UIXHTML => ['Bivio::UI::XHTML', 'Bivio::UI::HTML'],
+		    UIXHTML => [
+			$proto->IS_2014STYLE
+			    ? 'Bivio::UI::Bootstrap'
+			    : (),
+			'Bivio::UI::XHTML', 'Bivio::UI::HTML',
+		    ],
 		    Util => ['Bivio::Util', 'Bivio::Biz::Util'],
 		    View => ['Bivio::UI::View'],
 		    Widget => ['Bivio::UI::Widget'],
 		    WikiText => ['Bivio::UI::XHTML::Widget::WikiText'],
-		    XHTMLWidget => ['Bivio::UI::XHTML::Widget', 'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
+		    XHTMLWidget => [
+			$proto->IS_2014STYLE
+			    ? 'Bivio::UI::Bootstrap::Widget'
+			    : (),
+			'Bivio::UI::XHTML::Widget',
+			'Bivio::UI::HTML::Widget',
+			'Bivio::UI::Widget',
+		    ],
 		    XMLWidget => ['Bivio::UI::XML::Widget', 'Bivio::UI::XHTML::Widget', 'Bivio::UI::HTML::Widget', 'Bivio::UI::Text::Widget', 'Bivio::UI::Widget'],
 		},
 	    },
