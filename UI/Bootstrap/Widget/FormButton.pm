@@ -17,21 +17,12 @@ sub initialize {
 	    $self->ancestral_get('form_class')->simple_package_name,
 	    $self->get('field'),
 	),
-	class => _class(
-	    $self,
+	class => $self->internal_class_with_additional(
 	    $self->get('field') eq 'ok_button'
 		? 'btn btn-primary'
 		: 'btn btn-default',
 	),
     )->SUPER::initialize(@_);
-}
-
-sub _class {
-    my($self, $class) = @_;
-    my($additional_classes) = $self->unsafe_get('additional_classes');
-    return $additional_classes
-	? "$class $additional_classes"
-	: $class;
 }
 
 1;
