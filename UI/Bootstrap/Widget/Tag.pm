@@ -29,4 +29,12 @@ sub initialize {
     return;
 }
 
+sub internal_class_with_additional {
+    my($self, $class) = @_;
+    my($additional_classes) = $self->unsafe_get('additional_classes');
+    return $additional_classes
+	? "$class $additional_classes"
+	: $class;
+}
+
 1;
