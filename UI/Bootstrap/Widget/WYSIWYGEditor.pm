@@ -60,7 +60,7 @@ EOF
 	}),
 	TextArea({
 	    field => $self->get('field'),
-	    %{UI_Facade()->if_2014style({STYLE => 'display: none;'}, {})},
+	    STYLE => 'display: none;',
 	}),
 	DIV(
 	    Join([
