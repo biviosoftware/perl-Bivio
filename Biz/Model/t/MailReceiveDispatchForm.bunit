@@ -120,6 +120,8 @@ commit();
 	     	=> [qw(root mail_forum-filtering FORUM_MAIL_RECEIVE)],
 	    [qw(root mail_forum-filtering), "\nSender: calendar-notification\@google.com\nAuto-Submitted: auto-generated"]
 	     	=> [qw(root mail_forum-filtering FORUM_MAIL_RECEIVE)],
+	    [qw(root mail_forum-filtering), "\nSender: Google Calendar <calendar-notification\@google.com>\nAuto-Submitted: auto-generated"]
+	     	=> [qw(root mail_forum-filtering FORUM_MAIL_RECEIVE)],
 	    [qw(root mail_forum-filtering), "\nSubject: I'm going to be out of office"]
 		=> [qw(root mail_forum-filtering FORUM_MAIL_RECEIVE)],
 	    [qw(mail_user1 mail_forum-filtering), "\nSubject: pls unsubscribe me"]
