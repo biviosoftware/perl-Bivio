@@ -5,71 +5,25 @@ my($_F) = b_use('IO.File');
 my($last_realm_file_name) = 'rebuild_db-last-processed-realm';
 unlink($last_realm_file_name)
     if -f $last_realm_file_name;
-my($total_realms) = [
-    '1000004',
-    '100004',
-    '1100004',
-    '1200001',
-    '1200004',
-    '1300004',
-    '1400004',
-    '1500004',
-    '1600004',
-    '1700004',
-    '1800004',
-    '1900004',
-    '2000004',
-    '200004',
-    '2100004',
-    '2200004',
-    '2300004',
-    '2400004',
-    '2500004',
-    '2600004',
-    '2700004',
-    '2800004',
-    '2900004',
-    '3000004',
-    '300004',
-    '3100004',
-    '3200004',
-    '3300004',
-    '3400004',
-    '400004',
-    '500001',
-    '500004',
-    '600001',
-    '600004',
-    '700001',
-    '700004',
-    '800001',
-    '800004',
-    '900004',
-];
-my($resume_realms) = [
-    '300004',
-    '3100004',
-    '3200004',
-    '3300004',
-    '3400004',
-    '400004',
-    '500001',
-    '500004',
-    '600001',
-    '600004',
-    '700001',
-    '700004',
-    '800001',
-    '800004',
-    '900004',
-];
+my($realms_with_files) = {};
+model('RealmFile')->do_iterate(
+    sub {
+	my($rf) = @_;
+	$realms_with_files->{$rf->get('realm_id')} = 1;
+	return 1;
+    },
+    'unauth_iterate_start',
+);
+my($total_realms) = [sort({$a cmp $b} keys(%$realms_with_files))];
+my($resume_realms) = [(@$total_realms)[-5 .. -1]];
+
 [
     [qw(-realm xapian_demo rebuild_db)] => [IO_Ref()->to_string($total_realms)],
     inline_case(
 	sub {
 	    b_die($last_realm_file_name, ' still exists')
 		if -f $last_realm_file_name;
-	    $_F->write($last_realm_file_name, '300004');
+	    $_F->write($last_realm_file_name, $resume_realms->[0]);
 	},
     ),
     [qw(-force -realm xapian_demo rebuild_db)]
