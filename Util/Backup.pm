@@ -135,7 +135,10 @@ sub compress_and_trim_log_dirs {
 	    my($sort) = [sort(@{$dirs->{$dir}})];
 	    pop(@$sort);
 	    foreach my $d (map("$dir/$_", @$sort)) {
-		$self->piped_exec("tar czf '$d.tgz' '$d' 2>&1 && chmod -w '$d.tgz'");
+		$self->piped_exec("tar czf '$d.tgz' '$d' 2>&1");
+		$self->piped_exec("chmod -w '$d.tgz'");
+		b_die('backup is writable: ', "$d.tgz")
+		    if -w "$d.tgz";
 		$compressed .= " $d";
 		Bivio::IO::File->rm_rf($d);
 	    }
