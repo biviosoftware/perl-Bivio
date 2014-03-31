@@ -73,12 +73,6 @@ $_CL->map_require('Bivio.Test')->new({
  	[qw(TEST_TRANSIENT SITE_ROOT)],
     ),
     TEST_TRANSIENT => [
- 	execute => [
- 	    sub {
- 		$req->put(is_test => 0);
- 		return [$req];
- 	    } => $_DC->FORBIDDEN,
- 	],
 	put_attr_for_test => [
 	    [
 		form_model => 'Bivio::Biz::Model::UserLoginForm',
@@ -105,6 +99,16 @@ $_CL->map_require('Bivio.Test')->new({
 	get_attr_as_task => [
 	    next => [$_AT->get_by_id($_TI->REDIRECT_TEST_5)],
 	],
+ 	execute => [
+ 	    sub {
+		Bivio::IO::Config->introduce_values({
+		    'Bivio::IO::Config' => {
+			is_production => 1,
+		    },
+		});
+ 		return [$req];
+ 	    } => $_DC->FORBIDDEN,
+ 	],
     ],
     DEVIANCE_1 => [
  	execute => => $_DC->DIE,
