@@ -75,11 +75,12 @@ sub link_facade_files {
 		    $_F->do_in_dir(
 			$j,
 			sub {
-			    b_info("$j: make");
-			    $self->piped_exec('make');
+			    b_info("$j: make clean && make");
+			    $self->piped_exec("sh -c 'make clean && make'");
 			    return;
 			},
 		    ) if -f "$j/Makefile";
+		    $j =~ s/javascript/javascript-install/;
 		    $_F->symlink($j, $dest)
 			unless -d $dest;
 		}
