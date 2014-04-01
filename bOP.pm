@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,52 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.14  2014/03/13 18:59:34  schellj
+  * Bivio::Biz::Action::AssertClient
+    added assert_is_dev for TaskId
+  * Bivio::Biz::Action::Bootstrap
+    removed
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    allow bounce* address to get past oof filter so RealmMailBounce is created
+  * Bivio::Delegate::SimpleAuthSupport
+    added DEV_TRANSIENT
+  * Bivio::Delegate::SimplePermission
+    added DEV_TRANSIENT
+  * Bivio::Delegate::TaskId
+    info_dev now holds all DEV_* tasks and asserts dev
+    remove GENERATE_BOOTSTRAP_CSS
+  * Bivio::Mail::Common
+    added "Auto-Submitted: auto-replied" to bounce header to simulate
+    the mail server response
+  * Bivio::Test::Reload
+    generate bootstrap css if needed
+  * Bivio::UI::Bootstrap::Widget::DropDown
+    add space between label and caret
+    fix for space between caret and label
+  * Bivio::UI::FacadeBase
+    added _cfg_dev to group all dev tasks
+    remove GENERATE_BOOTSTRAP_CSS
+    glyphicon -> b_icon
+  * Bivio::UI::Facade
+    fix for using with_setup_request when a facade isn't on the request yet
+  * Bivio::UI::View::CSS
+    remove left and right margin for b_icons
+    adjust vertical alignment of b_icons
+  * Bivio::UI::View::File
+    added 2014 style file change view
+  * Bivio::UI::View::ThreePartPage
+    now generating bootstrap css in Test.Reload
+    add fontello b_icon.css
+  * Bivio::UI::XHTML::Widget::LinkIcon
+    remove glyphicon class
+  * Bivio::Util::HTTPConf
+    added AddOutputByFileType DEFLATE
+    turn off TraceEnable
+  * Bivio::Util::HTTPD
+    added DEFLATE filter for json data
+  * Bivio::Util::Project
+    bootstrap moved to src/javascript
+
   Revision 13.13  2014/02/28 00:41:21  moeller
   * Bivio::UI::View::ThreePartPage
     fixed missing _center_replaces_middle()
