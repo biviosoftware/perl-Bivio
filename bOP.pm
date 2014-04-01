@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,63 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.15  2014/04/01 15:56:34  moeller
+  * Bivio::BConf
+    ignore duplicate cookie errors
+    add IS_2014STYLE, update UIXHTML & XHTMLWidget maps
+    default to use_wysiwyg editor if 2014style
+  * Bivio::Biz::Action::JSONReply
+    only warn on javascript errors if json has errorMsg, url and linNumber
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    fix to filter google calendar notifications in the form "Sender: Google
+    Calendar <calendar-notification@google.com>"
+  * Bivio::Biz::Model::WikiForm
+    remove b_debug
+  * Bivio::Delegate::TaskId
+    View.WysiwygFile -> View.WYSIWYGFile
+  * Bivio::Ext::MIMEParser
+    catch warnings from MIME::Parser for uninitialized values
+  * Bivio::Mail::Outgoing
+    fixed uninitialized warning in set_headers_for_forward() with invalid "from"
+  * Bivio::UI::Bootstrap::Widget::ButtonGroup
+    NEW
+  * Bivio::UI::Bootstrap::Widget::DropDownIconButton
+    NEW
+  * Bivio::UI::Bootstrap::Widget::FormButton
+    _class moved to Tag->internal_class_with_additional
+  * Bivio::UI::Bootstrap::Widget::IconButton
+    NEW
+  * Bivio::UI::Bootstrap::Widget::SearchSuggestAddon
+    NEW
+  * Bivio::UI::Bootstrap::Widget::Tag
+    add internal_class_with_additional
+  * Bivio::UI::Bootstrap::Widget::WYSIWYGEditor
+    NEW
+  * Bivio::UI::HTML::Widget::CKEditor
+    removed
+  * Bivio::UI::HTML::Widget::InputBase
+    need to subclass from XHTMLWidget.Tag to allow for bootstrap override
+  * Bivio::UI::HTML::Widget::LocalFileLink
+    look in app, then common, die if not found
+  * Bivio::UI::HTML::Widget::WYSIWYGEditor
+    NEW
+  * Bivio::UI::View::Search
+    glyphicon -> b_icon
+  * Bivio::UI::View::ThreePartPage
+    update file paths, move jquery-ui into SearchSuggestAddon
+  * Bivio::UI::View::Wiki
+    CKEditor renamed to WYSIWYGEditor, don't pass params if_2014style
+  * Bivio::UI::View::WysiwygFile
+    removed
+  * Bivio::UI::View::WYSIWYGFile
+    NEW
+  * Bivio::UI::XHTML::Widget::SearchSuggestAddon
+    removed
+  * Bivio::Util::Backup
+    fixed piped_exec() with ignored && clause, split into two parts
+  * Bivio::Util::Project
+    use javascript-install path
+
   Revision 13.14  2014/03/13 18:59:34  schellj
   * Bivio::Biz::Action::AssertClient
     added assert_is_dev for TaskId
