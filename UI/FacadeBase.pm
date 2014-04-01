@@ -221,22 +221,6 @@ sub special_realm_name_equals {
     );
 }
 
-sub _2014style {
-    my($then, $else) = @_;
-    my($res) = sub {
-	my($v) = shift;
-	return @$v
-	    if ref($v) eq 'ARRAY';
-	return $v->()
-	    if ref($v) eq 'CODE';
-	return defined($v) ? $v : ();
-    };
-    return __PACKAGE__->if_2014style(
-	sub {$res->($then)},
-	sub {$res->($else)},
-    );
-}
-
 sub _auth_realm_is {
     my($which, $self, $req) = @_;
     my($r) = $req->get('auth_realm');
@@ -443,7 +427,7 @@ sub _cfg_base {
 	    [ViewBase_mobile_app_page => 0],
 	],
 	CSS => [
-	    _2014style([
+	    __PACKAGE__->if_2014style([
 		[footer_height => '79px'],
 		[error_background => '#c12929'],
 		[empty_color => 'rgba<(>0, 0, 0, 0)'],
@@ -604,6 +588,11 @@ sub _cfg_base {
 		[qw(LOGOUT user_logged_in)] => 'Logout',
 		[qw(USER_CREATE user_just_visitor)] => 'Register',
 	    ]],
+	    __PACKAGE__->if_2014style([
+		[xlink => [
+		    user_logged_out => q{LinkIcon('LOGIN');Login},
+		]]
+	    ]),
 	    [SHELL_UTIL => ''],
 	    [DieCode => [
 		MODEL_NOT_FOUND => 'Not found',
@@ -650,6 +639,9 @@ EOF
 		[qw(sort_eighth sort_label_17)] => "\21",
 		[qw(sort_ninth sort_label_18)] => "\22",
 		[qw(sort_ninth sort_label_19)] => "\23",
+		__PACKAGE__->if_2014style([
+		    [qw(user_logged_in LOGOUT)] => q{LinkIcon('LOGOUT');Logout},
+		]),
 	    ]],
 	    [prose => [
 		ascend => ' &#9650;',
@@ -671,11 +663,11 @@ EOF
 		    xhtml_head_title => q{Title([vs_site_name(), vs_text_as_prose('xhtml_title')]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
 		    xhtml_copyright_qualifier => q{Link('Software by bivio', 'http://www.bivio.biz');},
-		    _2014style([
+		    __PACKAGE__->if_2014style([
 			xhtml_copyright => <<"EOF",
 &copy; vs_text_as_prose('site_copyright');
 EOF
-		    ],  [
+		    ], [
 			xhtml_copyright => <<"EOF",
 Copyright &copy; vs_now_as_year(); vs_text_as_prose('site_copyright');<br />
 All rights reserved.<br />
@@ -737,6 +729,11 @@ sub _cfg_blog {
 	    ]],
 #TODO: Move this
 	    [FORUM_ADM_FORUM_ADD => 'Add forum'],
+	    __PACKAGE__->if_2014style([
+		['task_menu.title' => [
+		    FORUM_BLOG_LIST => q{LinkIcon('FORUM_BLOG_LIST');Blog},
+		]],
+	    ]),
 	],
     };
 }
@@ -871,6 +868,12 @@ sub _cfg_calendar {
 		'FORUM_CALENDAR_EVENT_DELETE' => 'Delete',
 		'FORUM_CALENDAR.user' => 'All vs_ui_forum();s',
 	    ]],
+	    __PACKAGE__->if_2014style([
+		['task_menu.title' => [
+		    FORUM_CALENDAR => q{LinkIcon('FORUM_CALENDAR');Calendar},
+		    'forum.calendar' => q{LinkIcon('FORUM_CALENDAR');Events},
+		]],
+	    ]),
 	    [[qw(title xlink)] => [
 		[qw(
 		    FORUM_CALENDAR
@@ -944,6 +947,10 @@ sub _cfg_crm {
 		'FORUM_CRM_FORM.reply_all' => 'Answer',
 		'FORUM_CRM_FORM.reply_realm' => 'Discuss Internally',
 		FORUM_CRM_FORM => 'New Ticket',
+		__PACKAGE__->if_2014style([
+		    FORUM_CRM_THREAD_ROOT_LIST => q{LinkIcon('FORUM_CRM_THREAD_ROOT_LIST');},
+		    'forum.crm_thread_root_list' => q{LinkIcon('forum.crm_thread_root_list');Tickets},
+		]),
 	    ]],
 	    [[qw(title xlink)] => [
 #TODO: Make into shortcut of widget
@@ -1064,7 +1071,7 @@ sub _cfg_file {
 		rename_name => 'New Name',
 		file => 'File to upload',
 		comment => 'Comments',
-		content => '',
+		content => __PACKAGE__->if_2014style('Text', ''),
 		folder_id => 'New Parent Folder',
 	    ]],
 	    [[qw(RealmFileList RealmFileTreeList RealmFolderFileList)] => [
@@ -1114,6 +1121,11 @@ sub _cfg_file {
 		FORUM_FOLDER_FILE_LIST => q{Files for String(['Model.RealmFolderFileList', '->get_folder_path']);},
 		FORUM_FILE_UPLOAD_FROM_WYSIWYG => 'Upload',
 	    ]],
+	    __PACKAGE__->if_2014style([
+		['task_menu.title' => [
+		    FORUM_FILE_TREE_LIST => q{LinkIcon('FORUM_FILE_TREE_LIST');Files},
+		]],
+	    ]),
 	    [prose => [
 		'EasyForm.update_mail' => [
 		    from => q{Mailbox(['->format_email']);},
@@ -1369,7 +1381,12 @@ sub _cfg_mail {
 		'FORUM_MAIL_FORM.reply_author' => 'Reply to Author',
 		'FORUM_MAIL_FORM.reply_realm' => 'Reply',
 		FORUM_MAIL_FORM => 'New Topic',
-		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
+		__PACKAGE__->if_2014style([
+		    FORUM_MAIL_THREAD_ROOT_LIST => q{LinkIcon('FORUM_MAIL_THREAD_ROOT_LIST');},
+		    'forum.mail_thread_root_list' => q{LinkIcon('forum.mail_thread_root_list');Mail},
+		], [
+		    FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
+		]),
 	    ]],
 	    [title => [
 		FORUM_MAIL_FORM => q{If(['->has_keys', 'Model.RealmMailList'], 'Reply', 'New Topic');},
@@ -1498,6 +1515,10 @@ sub _cfg_motion {
 	    ['task_menu.title' => [
 		FORUM_MOTION_VOTE_LIST_CSV => 'Vote spreadsheet',
 		FORUM_MOTION_COMMENT_LIST_CSV => 'Comment spreadsheet',
+		__PACKAGE__->if_2014style([
+		    FORUM_MOTION_LIST => q{LinkIcon('FORUM_MOTION_LIST');Polls},
+		    FORUM_MOTION_FORM => 'New',
+		]),
 	    ]],
 	    [icon => [
 		FORUM_MOTION_LIST => 'b_icon_thumbs_up',
@@ -1766,11 +1787,15 @@ sub _cfg_tuple {
 		FORUM_TUPLE_SLOT_TYPE_EDIT => 'Add type',
 		FORUM_TUPLE_SLOT_TYPE_LIST => 'Types',
 		FORUM_TUPLE_USE_EDIT => 'Add table',
-		FORUM_TUPLE_USE_LIST => 'Tables',
 		TupleHistoryList => [
 		    FORUM_TUPLE_EDIT => 'Modify record',
 		    FORUM_TUPLE_LIST => 'Back to list',
 		],
+		__PACKAGE__->if_2014style([
+		    FORUM_TUPLE_USE_LIST => q{LinkIcon('FORUM_TUPLE_USE_LIST');Tables},
+		], [
+		    FORUM_TUPLE_USE_LIST => 'Tables',
+		]),
 	    ]],
 	    [TupleHistoryList => [
 		'RealmFile.modified_date_time' => 'Date',
@@ -1940,13 +1965,34 @@ sub _cfg_user_auth {
 	    [password => 'Password'],
 	    [confirm_password => 'Re-enter Password'],
 	    ['confirm_password.field_description' => q{Enter your password again.}],
-	    [[qw(UserCreateForm UserRegisterForm)]  => [
+	    [[qw(UserCreateForm UserRegisterForm)] => [
 		ok_button => 'Register',
 		prose => [
-		    prologue => q{P(XLink('GENERAL_USER_PASSWORD_QUERY'));},
+		    prologue => __PACKAGE__->if_2014style(
+			'', q{P(XLink('GENERAL_USER_PASSWORD_QUERY'));}),
 		    epilogue => q{P(XLink('login_no_context'));},
 		],
 	    ]],
+	    __PACKAGE__->if_2014style([
+		[UserCreateForm => [
+		    'confirm_password.desc' => q{Re-enter your password},
+		    prose => [
+			epilogue => '',
+		    ],
+		]],
+		[UserRegisterForm => [
+		    prose => [
+			epilogue => q{
+			DIV_trailer(
+			    Link(
+				'Already registered?',
+				'LOGIN',
+			    ),
+			);
+		    },
+		    ],
+		]],
+	    ]),
 	    [old_password => 'Current Password'],
 	    [new_password => 'New Password'],
 	    [confirm_new_password => 'Re-enter New Password'],
@@ -2007,13 +2053,23 @@ sub _cfg_user_auth {
 		user_create_no_context => 'Not registered? Click here to register.',
 		USER_CREATE_DONE => 'Check Your Email',
 	    ]],
-	    [[qw(page3.title xhtml.title)] => [
-		LOGIN => 'Please Login',
-		USER_CREATE => 'Please Register',
-		GENERAL_CONTACT => 'Please Contact Us',
-		USER_PASSWORD  => 'Your Password',
-		SITE_ROOT => '',
-	    ]],
+	    __PACKAGE__->if_2014style([
+		['xhtml.title' => [
+		    LOGIN => 'vs_site_name(); Login',
+		    USER_CREATE => 'vs_site_name(); Registration',
+		    GENERAL_CONTACT => 'Contact',
+		    USER_PASSWORD  => 'Password',
+		    SITE_ROOT => '',
+		]],
+	    ], [
+		[[qw(page3.title xhtml.title)] => [
+		    LOGIN => 'Please Login',
+		    USER_CREATE => 'Please Register',
+		    GENERAL_CONTACT => 'Please Contact Us',
+		    USER_PASSWORD  => 'Your Password',
+		    SITE_ROOT => '',
+		]],
+	    ]),
 	    [[qw(task_menu.title HelpWiki.title)] => [
 		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Browser Missing Cookies',
 		USER_SETTINGS_FORM => 'Settings',
@@ -2203,11 +2259,19 @@ sub _cfg_wiki {
 		user => 'User',
 	    ]],
 	    ['task_menu.title' => [
-		FORUM_WIKI_EDIT => 'Add new page',
-		FORUM_WIKI_EDIT_PAGE => 'Edit this page',
-		FORUM_WIKI_VERSIONS_LIST => 'Page history',
-		FORUM_WIKI_CURRENT => 'Back to current',
 		SITE_WIKI_VIEW => 'Home',
+		__PACKAGE__->if_2014style([
+		    FORUM_WIKI_VIEW => q{LinkIcon('FORUM_WIKI_VIEW');vs_ui_wiki();},
+		    FORUM_WIKI_EDIT => 'New',
+		    FORUM_WIKI_EDIT_PAGE => 'Edit',
+		    FORUM_WIKI_VERSIONS_LIST => 'History',
+		    FORUM_WIKI_CURRENT => 'Back',
+		], [
+		    FORUM_WIKI_EDIT => 'Add new page',
+		    FORUM_WIKI_EDIT_PAGE => 'Edit this page',
+		    FORUM_WIKI_VERSIONS_LIST => 'Page history',
+		    FORUM_WIKI_CURRENT => 'Back to current',
+		]),
 	    ]],
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
@@ -2286,7 +2350,7 @@ sub _cfg_wiki {
 sub _cfg_xapian {
     return {
 	Constant => [
-	    [ThreePartPage_want_SearchForm => _2014style(0, 1)],
+	    [ThreePartPage_want_SearchForm => __PACKAGE__->if_2014style(0, 1)],
 	],
 	Color => [
 	    [[qw(search_result_title search_result_excerpt)] => 0],
