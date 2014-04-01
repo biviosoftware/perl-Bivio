@@ -13,8 +13,8 @@ sub initialize {
     $self->put_unless_exists(values => [
 	LocalFileAggregator({
 	    widget_values => [
-		'bootstrap-wysiwyg/bootstrap-wysiwyg.js',
-		'jquery-hotkeys/jquery.hotkeys.js',
+		'bootstrap-wysiwyg/bootstrap-wysiwyg.min.js',
+		'jquery-hotkeys/jquery-hotkeys.min.js',
 	    ],
 	}),
 	LocalFileAggregator({
