@@ -89,8 +89,7 @@ sub internal_xhtml_adorned_attrs {
 	    LocalFileAggregator({
 		base_values => [
 		    'bootstrap.min.css',
-		    'jquery-ui.min.css',
-		    'fontello/css/b_icon.css',
+		    'fontello/css/b_icon.min.css',
 		    InlineCSS([sub {
 #TODO: Widget.RenderView
 				   my($source) = @_;
@@ -137,9 +136,8 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_body_last => If2014Style(
 	    LocalFileAggregator({
 		base_values => [
-		    'jquery.min.js',
-		    'bootstrap.min.js',
-		    'jquery-ui.min.js',
+		    'jquery/jquery.min.js',
+		    'bootstrap/dist/js/bootstrap.min.js',
 		    SearchSuggestAddon('bivio_search_field'),
 		],
 	    }),
