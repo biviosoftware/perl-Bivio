@@ -2,6 +2,12 @@
 # $Id$
 test_setup('PetShop');
 home_page();
+
+unless (b_use('IO.Config')->is_dev) {
+    b_info('test only enabled on dev');
+    return;
+}
+
 visit_uri('/t*dbaccess');
 my($uri) = get_uri();
 foreach my $model (
