@@ -35,6 +35,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-realm-role [options] command [args...]
 commands:
+    audit_feature_categories -- audit enabled categories for a realm
     clear_unused_permissions -- clear permission named UNUSED_...
     copy_all src dst -- copies all records from src to dst realm
     edit role|group operation ... -- changes the permissions for realm/role|group
@@ -50,6 +51,23 @@ commands:
     set_same old new - copies permission old to new for ALL realms
     unmake_super_user -- drops current user's super_user privileges
 EOF
+}
+
+sub audit_feature_categories {
+    my($self) = @_;
+    my($categories) = $self->list_enabled_categories;
+
+    foreach my $perm (@{
+	$_PS->to_array($self->model('RealmRole', {
+	    role => $_R->ANONYMOUS,
+	})->get('permission_set'))
+    }) {
+	my($name) = lc($perm->get_name);
+	next unless $name =~ /^feature_/;
+	next if grep($_ eq $name, @$categories);
+	$self->print('corrupt feature: ', $name, "\n");
+    }
+    return;
 }
 
 sub clear_unused_permissions {
