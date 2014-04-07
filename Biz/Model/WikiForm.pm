@@ -136,7 +136,7 @@ sub _update_file {
     my($p) = $self->unsafe_get('RealmFile.is_public') ? 1 : 0;
     my($new) = $self->name_type
 	->to_absolute($self->get('RealmFile.path_lc'), $p);
-    my($c) = b_debug($self->get('content'));
+    my($c) = $self->get('content');
     my($m) = $self->get('file_exists')
 	? 'update_with_content' : 'create_with_content';
     $self->get('realm_file')->$m({
