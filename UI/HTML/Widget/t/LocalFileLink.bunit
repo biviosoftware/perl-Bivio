@@ -4,7 +4,7 @@ Widget();
 [
     ['unit-test.css'] => '<link href="/f/css/unit-test.css" rel="stylesheet" type="text/css" />',
     ['unit-test.js'] => '<script src="/f/js/unit-test.js" type="text/javascript"></script>',
-    ['fontello/css/b_icon.css'] => '<link href="/b/fontello/css/b_icon.css" rel="stylesheet" type="text/css" />',
+    ['fontello/css/b_icon.min.css'] => '<link href="/b/fontello/css/b_icon.min.css" rel="stylesheet" type="text/css" />',
 
     ['does-not-exist.css'] => DIE(),
 ];
