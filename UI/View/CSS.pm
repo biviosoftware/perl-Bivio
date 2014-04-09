@@ -360,6 +360,10 @@ textarea.b_no_resize_text {
   margin-left: 0;
   margin-right: 0;
 }
+#b_wysiwyg_editor {
+  width: 100%;
+  height: 30em;
+}
 EOF
 }
 
