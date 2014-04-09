@@ -83,11 +83,6 @@ sub default_merge_overrides {
 	    default => $args->{root},
 	    is_2014style => $proto->IS_2014STYLE,
 	},
-	$proto->IS_2014STYLE
-	    ? ('Bivio::UI::View::Wiki' => {
-		use_wysiwyg => 1,
-	    })
-	    : (),
 	'Bivio::Util::Release' => {
 	    projects => [
 		[$args->{root}, $args->{prefix}, $args->{owner}],
