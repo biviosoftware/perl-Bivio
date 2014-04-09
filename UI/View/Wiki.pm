@@ -39,13 +39,19 @@ sub edit {
 	    }),
 	    $editor->({
 		field => 'content',
-		%{b_use('UI.Facade')->if_2014style({}, {
-		    rows => $_CFG->{use_wysiwyg} ? 20 : 30,
+		id => 'b_wysiwyg_editor',
+		@{b_use('UI.Facade')->if_2014style([], [
 		    cols => 80,
-		    %{_image_folders($self)},
-		    use_public_image_folder =>
-			["Model.$form", 'RealmFile.is_public'],
-		})},
+		    $_CFG->{use_wysiwyg}
+			? (
+			    rows => 20,
+			    _image_folders($self),
+			    use_public_image_folder =>
+				["Model.$form", 'RealmFile.is_public'],
+			) : (
+			    rows => 30,
+			),
+		])},
 	    }),
 	], b_use('UI.Facade')->if_2014style({edit_col_class => 'col-sm-9'})),
 	_edit_wiki_buttons($form),
@@ -229,10 +235,10 @@ sub _edit_wiki_buttons {
 }
 
 sub _image_folders {
-    return {
+    return (
 	public_image_folder => $_CFG->{public_image_folder},
 	private_image_folder => $_CFG->{private_image_folder},
-    };
+    );
 }
 
 1;
