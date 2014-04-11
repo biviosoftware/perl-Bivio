@@ -1,0 +1,44 @@
+# Copyright (c) 2014 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    validate_main_args => [
+    	[] => [75],
+    	['192.168.0.2', 'fourem@x.x', 'localhost:80/mail/%s'] => [
+    	    0,
+    	    '192.168.0.2',
+    	    'fourem@x.x',
+    	    'localhost:80/mail/fourem@x.x',
+    	],
+    	['192.168.0.2', 'fourem@x.x', 'localhost'] => [78],
+    	['192.168.0.2', 'fourem@x.x', 'localhost/mail'] => [71],
+    	['192.168.0.2', 'x' x 256, 'localhost/mail/%s'] => [71],
+    	['192.168.0.2', 'moeller@x.x', 'localhost/mail/%s'] => [69],
+    ],
+    create_http_request => [
+	['192.168.0.2', 'fourem@x.x', 'localhost:80/mail/fourem@x.x', \('message')] => qr{^POST http://localhost:80/mail/fourem\@x.x
+Via: 192.168.0.2
+Content-Length: 314
+Content-Type: multipart/form-data; boundary=xYzZY
+
+--xYzZY\s
+Content-Disposition: form-data; name="v"\s
+\s
+2\s
+--xYzZY\s
+Content-Disposition: form-data; name="client_addr"\s
+\s
+192.168.0.2\s
+--xYzZY\s
+Content-Disposition: form-data; name="recipient"\s
+\s
+fourem\@x.x\s
+--xYzZY\s
+Content-Disposition: form-data; name="message"\s
+Content-Type: message/rfc822\s
+\s
+message\s
+--xYzZY--\s
+$}s,
+    ],
+];
