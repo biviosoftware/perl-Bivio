@@ -38,7 +38,7 @@ my($_SYSEXIT) = {
 
 sub create_http_request {
     my($proto, $client_addr, $recipient, $url, $msg) = @_;
-    my($r) = HTTP::Request::Common::POST(
+    return HTTP::Request::Common::POST(
 	'http://' . $url,
 	Content_Type => 'form-data',
 	Content => [
@@ -53,8 +53,6 @@ sub create_http_request {
 	],
 	Via => $client_addr,
     );
-    $_F->write('/home/moeller/tmp/out.txt', $r->as_string);
-    return $r;
 }
 
 sub main {
