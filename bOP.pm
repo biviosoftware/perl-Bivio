@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.17  2014/04/11 16:25:54  moeller
+  * Bivio::BConf
+    turn off use_wysiwyg in 2014style
+  * Bivio::Biz::Model::WikiForm
+    remove debug
+  * Bivio::Biz::Util::RealmRole
+    added audit_feature_categories() to detect incorrectly enabled realm features
+  * Bivio::UI::View::CSS
+    set size of wysiwyg_editor in 2014style
+  * Bivio::UI::View::Wiki
+    give editor an id, set args based on use_wysiwyg and 2014style
+  * Bivio::Util::SendmailHTTP
+    NEW, replaces b-sendmail-http.c
+
   Revision 13.16  2014/04/01 16:13:44  moeller
   * Bivio::UI::Bootstrap::Widget::SearchSuggestAddon
     removed
