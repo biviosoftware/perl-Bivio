@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.16  2014/04/01 16:13:44  moeller
+  * Bivio::UI::Bootstrap::Widget::SearchSuggestAddon
+    removed
+  * Bivio::UI::XHTML::Widget::SearchSuggestAddon
+    moved from Bootstrap widget path because XHTML apps need the widget available
+
   Revision 13.15  2014/04/01 15:56:34  moeller
   * Bivio::BConf
     ignore duplicate cookie errors
