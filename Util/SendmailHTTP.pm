@@ -67,6 +67,7 @@ sub main {
 	: _map_http_reply(
 	    $proto,
 	    _send_http_request(
+		$proto,
 		$proto->create_http_request(
 		    $client_addr, $recipient, $url, $_F->read('-'),
 		),
