@@ -13,7 +13,9 @@ Type();
     	['192.168.0.2', 'fourem@x.x', 'localhost'] => [78],
     	['192.168.0.2', 'fourem@x.x', 'localhost/mail'] => [71],
     	['192.168.0.2', 'x' x 256, 'localhost/mail/%s'] => [71],
-    	['192.168.0.2', 'moeller@x.x', 'localhost/mail/%s'] => [69],
+    	['192.168.0.2', 'apache', 'localhost/mail/%s'] => [69],
+    	['192.168.0.2', 'apache@x.x', 'localhost/mail/%s'] => [69],
+    	['192.168.0.2', 'apache+123@x.x', 'localhost/mail/%s'] => [69],
     ],
     create_http_request => [
 	['192.168.0.2', 'fourem@x.x', 'localhost:80/mail/fourem@x.x', \('message')] => qr{^POST http://localhost:80/mail/fourem\@x.x
@@ -45,5 +47,6 @@ $}s,
 	['192.168.0.2', 'fourem@x.x', 'localhost:80/mail/%s'] => [67],
 	['192.168.0.2', 'fourem@x.x', 'badhostname12345:80/mail/%s'] => [70],
 	['192.168.0.2', 'fourem@petshop.bivio.biz', 'petshop.bivio.biz:80/_mail_receive/%s'] => [77],
+	['192.168.0.2', 'ignore-fourem@x.x', 'localhost:80/mail/%s'] => [0],
     ],
 ];
