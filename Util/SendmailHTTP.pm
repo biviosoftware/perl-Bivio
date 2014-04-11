@@ -162,7 +162,11 @@ sub _send_http_request {
     my($agent) = LWP::UserAgent->new;
     $agent->requests_redirectable([]);
     $agent->agent('b-sendmail-http');
-    return $agent->request($http_req)->code;
+    my($response) = $agent->request($http_req);
+    # if response has no headers, it has a status "200 Assumed OK"
+    return $response->status_line =~ /assumed ok/i
+	? 500
+	: $response->code;
 }
 
 1;
