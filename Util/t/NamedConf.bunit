@@ -3,3 +3,15 @@
 ShellUtilConf();
 DateTime()->set_test_now('2/9/2010 9:41:30', req());
 generate_cases();
+
+# If you see something like this, it's because the named.root has changed.  To update, do this:
+# cd NamedConf && rm -rf 1-out && mv 1 1-out && tar xzf 1-out.tgz && cvs commit -m 'root file changed'
+#
+#  12,13c12,13
+#  < ;       last update:    Jan 3, 2013
+#  < ;       related version of root zone:   2013010300
+#  ---
+#  > ;       last update:    Mar 26, 2014
+#  > ;       related version of root zone:   2014032601
+#  29a30
+#  > C.ROOT-SERVERS.NET.      3600000      AAAA  2001:500:2::C
