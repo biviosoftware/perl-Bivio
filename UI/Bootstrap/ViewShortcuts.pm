@@ -105,7 +105,9 @@ sub vs_simple_form_container {
 	}
 	else {
 	    my($edit_col_class)
-		= $label->unsafe_get('edit_col_class') || $_EDIT_COL_CLASS;
+		= $label->unsafe_get('edit_col_class')
+		    || $form_attrs->{edit_col_class}
+		    || $_EDIT_COL_CLASS;
 	    $row = DIV(Join([
 		$form_field
 		    ? $label
