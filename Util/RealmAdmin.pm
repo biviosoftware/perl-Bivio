@@ -200,6 +200,9 @@ sub join_user {
 	};
 	$self->model('RealmUser')->create($v)
 	    unless $self->model('RealmUser')->unauth_load($v);
+	$self->model('RealmUserAddForm')->set_subscription(
+	    $req->get('auth_user_id'), $req->get('auth_id'))
+	    if $role->eq_mail_recipient;
     }
     return;
 }
