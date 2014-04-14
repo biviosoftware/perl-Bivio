@@ -31,12 +31,11 @@ sub copy_admins {
 sub execute_ok {
     my($self) = @_;
     my(@args) = (
-	$self,
 	$self->internal_user_id || return,
 	$self->internal_realm_id,
     );
-    _join_user(@args);
-    _set_subscription(@args);
+    _join_user($self, @args);
+    $self->set_subscription(@args);
     return;
 }
 
@@ -115,6 +114,19 @@ sub internal_user_id {
     return $id;
 }
 
+sub set_subscription {
+    my($self, $user_id, $realm_id) = @_;
+    return
+	if $self->unsafe_get('dont_add_subscription');
+    $self->new_other('UserRealmSubscription')->create({
+	user_id => $user_id,
+	realm_id => $realm_id,
+	is_subscribed => $self->unsafe_get('override_default_subscription')
+	    ? $self->unsafe_get('is_subscribed') : undef,
+    }) unless _is_subscription_status_set($self, $user_id, $realm_id);
+    return;
+}
+
 sub _admin_list {
     my($self) = @_;
     return @{$self->new_other('RealmAdminList')->map_iterate(
@@ -153,19 +165,6 @@ sub _join_user {
     $self->req->with_realm_and_user($realm_id, $user_id, sub {
         $_RU->new->audit_user;
     }) if $_RU->IS_AUDIT_ENABLED;
-    return;
-}
-
-sub _set_subscription {
-    my($self, $user_id, $realm_id) = @_;
-    return
-	if $self->unsafe_get('dont_add_subscription');
-    $self->new_other('UserRealmSubscription')->create({
-	user_id => $user_id,
-	realm_id => $realm_id,
-	is_subscribed => $self->unsafe_get('override_default_subscription')
-	    ? $self->unsafe_get('is_subscribed') : undef,
-    }) unless _is_subscription_status_set($self, $user_id, $realm_id);
     return;
 }
 
