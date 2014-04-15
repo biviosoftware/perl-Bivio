@@ -121,6 +121,7 @@ sub mock_sendmail {
 		\$die,
 	    );
 	$http =~ s{^http://}{};
+	$http .= '/%s';
 	my($res) = $self->piped_exec(
 	    "b-sendmail-http 127.0.0.1 '$r' '$http'"
 		. " /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
