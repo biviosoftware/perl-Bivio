@@ -76,13 +76,13 @@ sub main {
 }
 
 sub validate_main_args {
-    my($proto, $client_addr, $recipient, $http_server) = @_;
+    my($proto, $client_addr, $recipient, $http_server, @local_agent) = @_;
 
     unless ($http_server) {
 	return _fail_with_error(
 	    'EX_TEMPFAIL',
 	    "Error: too few arguments\n",
-	    "Usage: b-sendmail-http client-addr recipient host:port/url",
+	    "Usage: b-sendmail-http client-addr recipient host:port/url local_agent local_agent_args...",
 	);
     }
     my($res, $url) = _parse_url($proto, $http_server, $recipient);
@@ -96,11 +96,7 @@ sub validate_main_args {
 	);
     }
     if (_is_local_user($proto, $recipient)) {
-#TODO: need to ask postfix to use the next handler	
-	return _fail_with_error(
-	    'EX_UNAVAILABLE',
-	    'local user mail',
-	);
+	exec(@local_agent);
     }
     return ($res, $client_addr || '127.0.0.1', $recipient, $url);
 }
