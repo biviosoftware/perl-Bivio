@@ -57,7 +57,7 @@ EOF
 	verify_local_mail => [
 	    ["$ENV{USER}+btest_bla\@localhost.localdomain", qr{First message.}i] => undef,
 	    # Want to make sure hits procmail
-	    ["$ENV{USER}+btest_bounce\@localhost.localdomain", qr{internal error}i] => undef,
+	    ["$ENV{USER}+btest_bounce\@localhost.localdomain", qr{internal server error}i] => undef,
 	],
     ],
     Bivio::Test::Util->new => [
