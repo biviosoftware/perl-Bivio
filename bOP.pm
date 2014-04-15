@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.18  2014/04/11 17:05:17  moeller
+  * Bivio::Util::SendmailHTTP
+    fpc
+
   Revision 13.17  2014/04/11 16:25:54  moeller
   * Bivio::BConf
     turn off use_wysiwyg in 2014style
