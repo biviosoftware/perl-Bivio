@@ -18,7 +18,7 @@ my($_MAP_REPLY) = {
     403 => [EX_NOPERM => 'Access Forbidden'],
     404 => [EX_NOUSER => 'User Not Found'],
     409 => [EX_TEMPFAIL => 'Resource Conflict'],
-    500 => [EX_SOFTWARE => 'Internal Server Error'],
+    500 => [EX_TEMPFAIL => 'Internal Server Error'],
     502 => [EX_TEMPFAIL => 'Gateway not reachable'],
     503 => [EX_TEMPFAIL => 'Gateway not reachable'],
 };
@@ -26,12 +26,7 @@ my($_SYSEXIT) = {
     EX_OK => 0,
     EX_DATAERR => 65,
     EX_NOUSER => 67,
-    EX_UNAVAILABLE => 69,
-    EX_SOFTWARE => 70,
-    EX_OSERR => 71,
-    EX_IOERR => 74,
     EX_TEMPFAIL => 75,
-    EX_PROTOCOL => 76,
     EX_NOPERM => 77,
     EX_CONFIG => 78,
 };
@@ -91,7 +86,7 @@ sub validate_main_args {
 
     if (length($recipient) > 255) {
 	return _fail_with_error(
-	    'EX_OSERR',
+	    'EX_DATAERR',
 	    'recipient name (len=', length($recipient), ") too long",
 	);
     }
@@ -123,7 +118,7 @@ sub _map_http_reply {
     my($proto, $code) = @_;
     my($reply) = $_MAP_REPLY->{$code};
     return _fail_with_error(
-	'EX_UNAVAILABLE',
+	'EX_TEMPFAIL',
 	'Unknown server reply code: ', $code,
     ) unless $reply;
     my($res, $err) = @$reply;
@@ -143,7 +138,7 @@ sub _parse_url {
     }
     unless ($url =~ /\%s/) {
 	return _fail_with_error(
-	    'EX_OSERR',
+	    'EX_CONFIG',
 	    'url missing %s: ', $url,
 	);
     }
