@@ -31,6 +31,8 @@ __PACKAGE__->compile([
     BROWSER_NETFRONT => 23,
     BROWSER_IPOD => 24,
     BROWSER_IEMOBILE => 25,
+    BROWSER_MSIE_9 => 26,
+    BROWSER_MSIE_10 => 27,
 ]);
 
 sub execute {
@@ -63,8 +65,8 @@ sub from_header {
 	my($v) = $1;
         return $proto->BROWSER_HTML3
             if $v < 5;
-	$v = 8
-	    if $v > 8;
+	$v = 10
+	    if $v > 10;
         return $proto->from_name("BROWSER_MSIE_$v");
     }
     if ($ua =~ /Mozilla\/(\d+)/) {
@@ -128,6 +130,8 @@ sub is_css_compatible {
 	BROWSER_MSIE_6
 	BROWSER_MSIE_7
 	BROWSER_MSIE_8
+	BROWSER_MSIE_9
+	BROWSER_MSIE_10
 	BROWSER_ROBOT_OTHER
         BROWSER_ROBOT_SEARCH
     ));
