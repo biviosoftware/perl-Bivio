@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.19  2014/04/15 20:16:01  moeller
+   * Bivio::Util::SendmailHTTP
+     translate "200 Assumed OK" response to a server error
+     added local_agent and local_agent_args handling
+     use EX_TEMPFAIL for most errors
+   * Bivio::UI::Bootstrap::ViewShortcuts
+     allow setting edit_col_class on form attrs
+   * Bivio::Util::RealmAdmin
+     need to set subscription if join_user with MAIL_RECIPIENT
+   * Bivio::Biz::Model::RealmUserAddForm
+     make _set_subscription public for use in Util.RealmAdmin
+   * Bivio::Test::Util
+     include %s in _mail_receive url
+
   Revision 13.18  2014/04/11 17:05:17  moeller
   * Bivio::Util::SendmailHTTP
     fpc
