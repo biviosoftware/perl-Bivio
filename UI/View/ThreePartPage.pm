@@ -101,6 +101,11 @@ sub internal_xhtml_adorned_attrs {
 				   $$res =~ s/^\!.*\n//mg;
 				   return $$res;
 			       }]),
+		],
+	    }),
+#TODO: need to be in separate aggregator - other InlineCSS() does not render?
+	    LocalFileAggregator({
+		base_values => [
 		    IfUserAgent('is_msie_8_or_before', 'msie8shim/msie8shim.min.js'),
 		],
 	    }),
