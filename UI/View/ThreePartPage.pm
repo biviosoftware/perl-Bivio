@@ -101,7 +101,7 @@ sub internal_xhtml_adorned_attrs {
 				   $$res =~ s/^\!.*\n//mg;
 				   return $$res;
 			       }]),
-		    IfUserAgent('is_msie_8_or_before', 'msie8shim.js'),
+		    IfUserAgent('is_msie_8_or_before', 'msie8shim/msie8shim.min.js'),
 		],
 	    }),
 	])),
