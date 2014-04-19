@@ -28,9 +28,18 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 13.20  2014/04/18 17:55:09  moeller
+  Release notes:
+  * Bivio::Type::UserAgent
+    added BROWSER_MSIE_9 and BROWSER_MSIE_10
+  * Bivio::UI::View::ThreePartPage
+    moved msie8shim to a separate LocalFileAggregator to avoid missing CSS
+    in IE8
+
   Revision 13.19  2014/04/15 20:16:01  moeller
    * Bivio::Util::SendmailHTTP
      translate "200 Assumed OK" response to a server error
