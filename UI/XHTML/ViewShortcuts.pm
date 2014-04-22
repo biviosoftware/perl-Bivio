@@ -28,6 +28,7 @@ my($_HTML_TAGS) = join('|', qw(
     BODY
     BR
     BUTTON
+    CANVAS
     CAPTION
     CENTER
     CITE
