@@ -565,6 +565,12 @@ sub _base {
 	    user => 'none',
 	    password => 'none',
 	    connection => 'Bivio::SQL::Connection::None',
+	    none => {
+		database => 'none',
+		user => 'none',
+		password => 'none',
+		connection => 'Bivio::SQL::Connection::None',
+	    },
 	},
 	'Bivio::IO::Alert' => {
 	    intercept_warn => 1,
