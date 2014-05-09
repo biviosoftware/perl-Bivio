@@ -28,9 +28,16 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 13.22  2014/04/25 03:01:55  schellj
+  * Bivio::UI::XHTML::ViewShortcuts
+    added CANVAS html element
+  * Bivio::UI::XHTML::Widget::NavContainer
+    support altering NAV and container div classes
+
   Revision 13.21  2014/04/19 00:09:08  schellj
   * Bivio::UI::CSS::Widget::TransformAttr
     NEW
