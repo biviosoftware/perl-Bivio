@@ -11,7 +11,7 @@ sub initialize {
     my($self) = @_;
     return shift->put(
 	tag => 'button',
-	TYPE => 'submit',
+	TYPE => $self->get('field') eq 'ok_button' ? 'submit' : 'button',
 	VALUE => 1,
 	value => vs_text_as_prose(
 	    $self->ancestral_get('form_class')->simple_package_name,
