@@ -9,9 +9,11 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;
+    $self->put_unless_exists(
+	TYPE => 'submit',
+    );
     return shift->put(
 	tag => 'button',
-	TYPE => 'submit',
 	VALUE => 1,
 	value => vs_text_as_prose(
 	    $self->ancestral_get('form_class')->simple_package_name,
