@@ -28,9 +28,14 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
+
 =head1 CHANGES
 
   $Log$
+  Revision 13.24  2014/05/10 02:21:39  schellj
+  * Bivio::UI::XHTML::Widget::ModalDialog
+    set body ID
+
   Revision 13.23  2014/05/09 21:49:56  schellj
   * Bivio::BConf
     added named config "none" for Bivio::Ext::DBI so can call from command line
