@@ -28,10 +28,19 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 13.23  2014/05/09 21:49:56  schellj
+  * Bivio::BConf
+    added named config "none" for Bivio::Ext::DBI so can call from command line
+  * Bivio::UI::Bootstrap::Widget::FormButton
+    generally only the ok_button should be a "submit" button
+    revert last commit (incorrect)
+    allow instances to set their TYPE
+  * Bivio::UI::XHTML::Widget::ModalDialog
+    NEW
+
   Revision 13.22  2014/04/25 03:01:55  schellj
   * Bivio::UI::XHTML::ViewShortcuts
     added CANVAS html element
