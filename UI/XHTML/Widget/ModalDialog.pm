@@ -23,7 +23,10 @@ sub initialize {
 		    ),
 		    DIV(
 			$self->get('body_content'),
-			'modal-body',
+			{
+			    class => 'modal-body',
+			    ID => $self->get('id') . '_body_content',
+			},
 		    ),
 		    $self->unsafe_get('footer_content')
 			? DIV(
