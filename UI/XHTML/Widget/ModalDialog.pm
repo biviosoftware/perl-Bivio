@@ -19,7 +19,10 @@ sub initialize {
 		Join([
 		    DIV(
 			H4($self->get('title'), 'modal-title'),
-			'modal-header',
+			{
+			    class => 'modal-header',
+			    ID => $self->get('id') . '_header',
+			},
 		    ),
 		    DIV(
 			$self->get('body_content'),
@@ -31,7 +34,10 @@ sub initialize {
 		    $self->unsafe_get('footer_content')
 			? DIV(
 			    $self->get('footer_content'),
-			    'modal-footer',
+			    {
+				class => 'modal-footer',
+				ID => $self->get('id') . '_footer_content',
+			    },
 			) : (),
 		]),
 		'modal-content',
