@@ -28,10 +28,13 @@ cohesive infrastructure for any Perl application.
 We'll be writing more here later.  Please visit
 http://www.bivio.biz for more info.
 
-
 =head1 CHANGES
 
   $Log$
+  Revision 13.25  2014/05/10 02:38:23  schellj
+  * Bivio::UI::XHTML::Widget::ModalDialog
+    give ID to header and footer
+
   Revision 13.24  2014/05/10 02:21:39  schellj
   * Bivio::UI::XHTML::Widget::ModalDialog
     set body ID
