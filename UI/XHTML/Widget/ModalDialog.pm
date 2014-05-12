@@ -8,7 +8,7 @@ b_use('UI.ViewLanguageAUTOLOAD');
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
-    return [qw(id title body_content ?footer_content)];
+    return [qw(id ?header ?body ?footer)];
 }
 
 sub initialize {
@@ -17,28 +17,17 @@ sub initialize {
 	DIV(
 	    DIV(
 		Join([
-		    DIV(
-			H4($self->get('title'), 'modal-title'),
-			{
-			    class => 'modal-header',
-			    ID => $self->get('id') . '_header',
-			},
+		    map(
+			$self->unsafe_get($_)
+			    ? DIV(
+				$self->get($_),
+				{
+				    class => "modal-$_",
+				    ID => join('_', $self->get('id'), $_),
+				},
+			    ) : (),
+			qw(header body footer),
 		    ),
-		    DIV(
-			$self->get('body_content'),
-			{
-			    class => 'modal-body',
-			    ID => $self->get('id') . '_body_content',
-			},
-		    ),
-		    $self->unsafe_get('footer_content')
-			? DIV(
-			    $self->get('footer_content'),
-			    {
-				class => 'modal-footer',
-				ID => $self->get('id') . '_footer_content',
-			    },
-			) : (),
 		]),
 		'modal-content',
 	    ),
