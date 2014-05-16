@@ -71,6 +71,7 @@ sub execute_ok {
 	    \&_ignore_forwarded,
 	    \&_ignore_spam,
 	    \&_ignore_out_of_office,
+	    \&_ignore_no_message_id,
 	);
     $self->internal_set_realm($realm);
     return _redirect('ignore_task')
@@ -275,6 +276,14 @@ sub _ignore_mailer_daemon {
 	    });
     }
     return 'mailer-daemon';
+}
+
+sub _ignore_no_message_id {
+    my($self) = @_;
+    my($mi) = $self->get('mail_incoming');
+    return $mi->get_message_id eq $mi->NO_MESSAGE_ID
+	? 'no-message-id'
+	: undef;
 }
 
 sub _ignore_out_of_office {
