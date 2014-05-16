@@ -220,7 +220,7 @@ sub _parse_unescaped_string {
     my($value, $terminator) = substr(${$fields->{text}}, $fields->{char_count})
         =~ /^([^\\$end_char]*)([\\$end_char])/;
     return
-        unless $terminator eq $end_char;
+        unless $terminator && ($terminator eq $end_char);
     $fields->{char_count} += length($value);
     return $value;
 }
