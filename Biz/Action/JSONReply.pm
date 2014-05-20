@@ -32,7 +32,10 @@ sub execute_javascript_log_error {
     my($proto, $req) = @_;
     my($json_text) = ($req->get_form || {})->{json};
     if ($json_text) {
-	my($json) = $_JSON->from_text($json_text);
+	my($json);
+	b_use('Bivio.Die')->catch_quietly(sub {
+	    $json = $_JSON->from_text($json_text);
+	});
 	$req->warn('javascript error')
 	    if ref($json) eq 'HASH'
 		&& $json->{errorMsg} && $json->{url} && $json->{lineNumber};
