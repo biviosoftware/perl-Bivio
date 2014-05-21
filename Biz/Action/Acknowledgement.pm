@@ -27,6 +27,12 @@ sub execute {
     return 0;
 }
 
+sub exists_in_facade {
+    my($proto, $req, $label) = @_;
+    return $_T->get_from_source($req)->unsafe_get_widget_value_by_name(
+	"acknowledgement." . $label);
+}
+
 sub extract_and_delete_label {
     my($proto, $req) = @_;
     my($label) = $proto->extract_label($req);
@@ -77,9 +83,8 @@ sub save_label {
     my($proto, $label, $req, $query) = @_ >= 3 ? @_ : (shift(@_), undef, @_);
     unless ($label) {
 	return
-	    unless $_T->get_from_source($req)->unsafe_get_widget_value_by_name(
-		"acknowledgement." . $req->get('task_id')->get_name,
-	    );
+	    unless $proto
+		->exists_in_facade($req, $req->get('task_id')->get_name);
 	$label = $req->get('task_id');
     }
     unless (ref($label)) {
@@ -115,14 +120,23 @@ sub save_label_and_execute {
 
 sub _extract {
     my($proto, $req) = @_;
+    my($id) = delete(
+	($req->unsafe_get('query') || {})->{$proto->QUERY_KEY});
     return undef
-	unless my $l = delete(
-	    ($req->unsafe_get('query') || {})->{$proto->QUERY_KEY});
-    $l = $_TI->from_int($l)->get_name
-	if $l && $l =~ /^\d+$/;
-    $proto->new($req)->put_on_request($req)->put(label => $l);
-    _trace($proto->QUERY_KEY, '=', $l) if $_TRACE;
-    return $l;
+	unless $id;
+    my($label);
+    if ($id =~ /^\d+$/) {
+	b_use('Bivio.Die')->catch_quietly(sub {
+            $label = $_TI->from_int($id)->get_name
+	});
+    }
+    else {
+    	$label = $id;
+    }
+    $proto->new($req)->put_on_request($req)->put(label => $label)
+	if $label;
+    _trace($proto->QUERY_KEY, '=', $label) if $_TRACE;
+    return $label;
 }
 
 1;
