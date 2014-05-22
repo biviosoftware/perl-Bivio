@@ -142,6 +142,19 @@ $check_for_loop->();
 $send_mail->(qw(ar.eml user1 forum));
 $check_for_loop->();
 clear_local_mail();
+
+follow_link(qw(^mail_forum$ ^mail$));
+follow_link($subject);
+follow_link('reply$');
+my($off_topic_reply) = 'off topic ' . random_string();
+submit_form(Send => {
+    topic => $off_topic_reply,
+    text => 'reply text',
+});
+verify_text($off_topic_reply);
+verify_text($reply_subject);
+verify_local_mail(qr{.}, qr{.}, 2);
+
 # Test handling of other type of loop messages with different bodies
 %$vars = (
     %$vars,
