@@ -212,11 +212,16 @@ sub register {
     return;
 }
 
+sub to_subject_lc {
+    my($proto, $subject) = @_;
+    return lc($_MS->clean_and_trim($subject, 1));
+}
+
 sub update {
     my($self, $values) = @_;
     if (defined($values->{subject})) {
 	$values->{subject} = $_MS->clean_and_trim($values->{subject});
-	$values->{subject_lc} = lc($_MS->clean_and_trim($values->{subject}, 1));
+	$values->{subject_lc} = $self->to_subject_lc($values->{subject});
     }
     $self->die(
 	$values,
@@ -283,6 +288,11 @@ sub _thread_values {
     my($self, $in, $values) = @_;
     my($l) = $self->new_other('RealmMailReferenceList')
 	->load_first_from_incoming($in);
+
+    if ($l && ! $_MS->subject_lc_matches(
+	$values->{subject_lc}, $l->get('RealmMail.subject_lc'))) {
+	$l = undef;
+    }
     $values->{thread_parent_id} = $l ? $l->get('RealmMail.realm_file_id')
 	: undef;
     $values->{thread_root_id} = $l ? $l->get('RealmMail.thread_root_id')
