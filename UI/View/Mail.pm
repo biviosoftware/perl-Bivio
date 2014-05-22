@@ -282,7 +282,7 @@ sub internal_thread_root_list_columns {
 		    DIV_date(
 			If2014Style(
 			    vs_smart_date(),
-			    DateTime(['RealmFile.modified_date_time']),
+			    DateTime(['RealmFile_2.modified_date_time']),
 			),
 		    ),
 		])),
