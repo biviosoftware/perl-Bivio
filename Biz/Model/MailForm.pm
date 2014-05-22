@@ -16,6 +16,7 @@ my($_QUERY_WHO) = 'to';
 my($_MWRT) = b_use('Type.MailWantReplyTo');
 my($_BRM) = b_use('Action.BoardRealmMail');
 my($_FM) = b_use('Type.FormMode');
+my($_MS) = b_use('Type.MailSubject');
 
 sub CALL_SUPER_HACK {
     return 0;
@@ -196,11 +197,9 @@ sub internal_send_to_realm {
 
 sub internal_set_headers {
     my($self) = @_;
-    my($req) = $self->req;
-    my($id) = $req->unsafe_get_nested(qw(Model.RealmMail message_id));
     my($to, $cc, $realm_email, $realm_emails)
 	= $self->get(qw(to cc realm_email realm_emails));
-    my($board_email) = $_BRM->format_email_for_realm($req);
+    my($board_email) = $_BRM->format_email_for_realm($self->req);
     my($from) = $self->internal_format_from($realm_email);
     my($from_email) = $_MA->parse($from);
     unless ($from_email) {
@@ -231,6 +230,7 @@ sub internal_set_headers {
 	    }
 	}
     }
+    my($subject) = $self->internal_format_subject;
     $self->internal_put_field(headers => {
 	_from => $from,
 	_recipients => $other_recipients->as_literal,
@@ -238,9 +238,9 @@ sub internal_set_headers {
 	To => $to->as_literal,
 	$reply_to ? ('Reply-To' => $reply_to) : (),
 	$cc->as_length ? (Cc => $cc->as_literal) : (),
-	Subject => $self->internal_format_subject,
-	'Message-Id' => $_O->generate_message_id($req),
-	$id ? ('In-Reply-To' => $_RFC->format_angle_brackets($id)) : (),
+	Subject => $subject,
+	'Message-Id' => $_O->generate_message_id($self->req),
+	_in_reply_to_value($self, $subject),
     });
     return (
 	$board_only,
@@ -296,6 +296,19 @@ sub validate {
 	);
     }
     return;
+}
+
+sub _in_reply_to_value {
+    my($self, $subject) = @_;
+    my($rm) = $self->ureq('Model.RealmMail');
+    return ()
+	unless $rm;
+    return ()
+	unless $_MS->subject_lc_matches(
+	    $rm->to_subject_lc($subject), $rm->get('subject_lc'));
+    return (
+	'In-Reply-To' => $_RFC->format_angle_brackets($rm->get('message_id')),
+    );
 }
 
 sub _remove_emails {
