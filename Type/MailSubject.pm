@@ -32,4 +32,15 @@ sub clean_and_trim {
     return $proto->SUPER::clean_and_trim($value);
 }
 
+sub subject_lc_matches {
+    my($self, $lc1, $lc2) = @_;
+    return 1
+	if $lc1 eq $lc2;
+    return 1
+	if $lc1 =~ /\Q$lc2/;
+    return 1
+	if $lc2 =~ /\Q$lc1/;
+    return 0;
+}
+
 1;
