@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.26  2014/05/12 21:15:21  schellj
+  * Bivio::UI::XHTML::Widget::ModalDialog
+    make all content sections optional, standardize
+
   Revision 13.25  2014/05/10 02:38:23  schellj
   * Bivio::UI::XHTML::Widget::ModalDialog
     give ID to header and footer
