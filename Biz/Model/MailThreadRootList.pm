@@ -44,7 +44,7 @@ sub internal_initialize {
     my($self) = @_;
     my($info) = $self->SUPER::internal_initialize;
     delete($info->{parent_id});
-    return $self->merge_initialize_info($info, {
+    my($ii) = $self->merge_initialize_info($info, {
 	order_by => [
 	    {
 		name => 'reply_count',
@@ -86,6 +86,9 @@ sub internal_initialize {
 EOF
 	],
     });
+    # order list by most recent message or reply date
+    unshift(@{$ii->{order_by}}, 'RealmFile_2.modified_date_time');
+    return $ii;
 }
 
 sub internal_post_load_row {
