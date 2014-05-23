@@ -37,6 +37,7 @@ my($_RECORD_PREFIX) = '^(?:\[('
     . _clean_regexp(Bivio::Type::DateTime->REGEX_ALERT)
     . '))';
 my($_REGEXP);
+my($_DT) = b_use('Type.DateTime');
 
 sub USAGE {
     # : string
@@ -248,6 +249,13 @@ sub _parse_errors_init {
     my($err);
 
     if ($self->req->is_production && ! -s $_CFG->{error_file}) {
+	if (abs($_DT->diff_seconds(
+	    $_DT->now,
+	    $_DT->set_local_beginning_of_day($_DT->now),
+	)) < 300) {
+	    # log file may be rotating 
+	    return 0;
+	}
 	$err = "$_CFG->{error_file}: error file missing or empty";
     }
     elsif (! $fields->{fh}->open($_CFG->{error_file})) {
