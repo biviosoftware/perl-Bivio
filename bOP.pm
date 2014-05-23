@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.27  2014/05/22 19:47:43  moeller
+  * Bivio::Biz::Action::Acknowledgement
+    quietly catch invalid task ids from uri value
+    made exists_in_facade() public
+  * Bivio::Biz::Action::JSONReply
+    catch JSON parse errors quietly during execute_javascript_log_error()
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    ignore messages with the "no-message-id" message id
+  * Bivio::MIME::JSON
+    guard against uninitialized $terminator
+  * Bivio::UI::XHTML::Widget::Acknowledgement
+    don't die if the acknowldgement label is invalid, could be a bad uri.
+    warn instead
+
   Revision 13.26  2014/05/12 21:15:21  schellj
   * Bivio::UI::XHTML::Widget::ModalDialog
     make all content sections optional, standardize
