@@ -669,7 +669,7 @@ sub _get_model_query {
 	    # primary key.
 	    my($auth_id) = $mi->get_info('auth_id');
 	    unless ($auth_id && $pk eq $auth_id->{name}) {
-		Bivio::IO::Alert->warn(
+		$self->req->warn(
 		    $self,
 		    ': loading ', $m->{instance}, ' missing key ',
 		    $map->{$pk}->{name});
