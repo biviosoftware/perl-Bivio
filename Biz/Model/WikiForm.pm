@@ -44,7 +44,13 @@ sub execute_ok {
 sub execute_other {
     my($self) = @_;
     return if $self->in_error;
-    _update_file($self);
+    $self->internal_catch_field_constraint_error(
+	'RealmFile.path_lc' => sub {
+	    _update_file($self);
+	    return;
+	}
+    );
+    return if $self->in_error;
     b_use('Action.Acknowledgement')->save_label('FORUM_WIKI_EDIT', $self->req);
     return {
 	path_info => $self->get('RealmFile.path_lc'),
