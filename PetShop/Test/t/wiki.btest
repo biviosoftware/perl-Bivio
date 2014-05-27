@@ -13,6 +13,16 @@ verify_no_text('inline WikiText btest');
 $uri = get_uri();
 follow_link('PrivatePage');
 verify_text('not found');
+test_deviance('Title already exists');
+# ensure Save button triggers "exists" constraint
+submit_form(Save => {
+    public => 1,
+    title => 'StartPage',
+    anon => 'x',
+});
+test_conformance();
+submit_form('Cancel');
+follow_link('PrivatePage');
 submit_form(Validate => {
     public => 0,
     anon => 'v1: go back to the ^StartPage. ' . $search_key,
