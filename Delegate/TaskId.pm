@@ -1125,7 +1125,17 @@ sub info_mail {
 	    FORBIDDEN=MAIL_RECEIVE_FORBIDDEN
 	    want_insecure=1
         )],
-#235-239
+	[qw(
+	    REWRITE_FROM_DOMAIN_REFLECTOR
+	    235
+	    USER
+	    ANY_USER
+	    Action.MailForward->execute_rewrite_from_domain
+	    Action.MailReceiveStatus
+	    want_insecure=1
+	)],
+
+#236-239
     ];
 }
 
