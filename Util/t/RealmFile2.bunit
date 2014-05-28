@@ -11,7 +11,7 @@ my($_F) = b_use('IO.File');
 [
     class() => [
         inline_case(sub {
-            my($tmp) = $_F->temp_file();
+            my($tmp) = $_F->temp_file(req());
             $_F->mkdir_p($tmp);
             $_F->do_in_dir($tmp, sub {
                 class()->export_tree(qw(/ 1));
@@ -21,7 +21,7 @@ my($_F) = b_use('IO.File');
             return;
         }),
         inline_case(sub {
-            my($tmp) = $_F->temp_file();
+            my($tmp) = $_F->temp_file(req());
             $_F->mkdir_p($tmp);
             $_F->do_in_dir($tmp, sub {
                 class()->export_tree('/');
