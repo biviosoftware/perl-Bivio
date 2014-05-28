@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::PetShop::Delegate::Location;
 use strict;
-use Bivio::Base 'Bivio::Delegate';
+use Bivio::Base 'Type.EnumDelegate';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
