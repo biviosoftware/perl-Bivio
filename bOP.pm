@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.28  2014/05/23 00:21:41  moeller
+  * Bivio::Biz::Model::MailForm
+    don't set In-Reply-To if subject has changed
+  * Bivio::Biz::Model::MailThreadRootList
+    order by most recent reply
+  * Bivio::Biz::Model::RealmMail
+    don't set threaded values if mail subject has changed
+  * Bivio::Type::MailSubject
+    added subject_lc_matches()
+  * Bivio::UI::View::Mail
+    show date of most recent reply in formatted message
+
   Revision 13.27  2014/05/22 19:47:43  moeller
   * Bivio::Biz::Action::Acknowledgement
     quietly catch invalid task ids from uri value
