@@ -48,9 +48,10 @@ sub new {
         from => $self->get_if_defined_else_put(
             from_email => 'software@bivio.biz'),
         cookie_jar => {
-            file => $self->get_if_defined_else_put(
-                cookies => b_use('IO.File')->temp_file),
-            autosave => 1,
+#TODO: need to cleanup tmp files	    
+#            file => $self->get_if_defined_else_put(
+#                cookies => b_use('IO.File')->temp_file),
+#            autosave => 1,
             ignore_discard => 1,
         },
     ))
