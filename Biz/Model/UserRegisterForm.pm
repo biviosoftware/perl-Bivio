@@ -15,6 +15,7 @@ my($_UPQF) = b_use('Model.UserPasswordQueryForm');
 sub execute_ok {
     my($self, ) = @_;
     my($r) = $self->internal_create_models;
+    return if $self->in_error;
     $self->req->set_realm($r);
     return
 	if $self->unsafe_get('password_ok');
