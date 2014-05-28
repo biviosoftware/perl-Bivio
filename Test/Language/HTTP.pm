@@ -942,11 +942,12 @@ sub verify_local_mail {
 	    unless defined($expect_count);
 	$i -= int($i/2);
     }
+    my($matched_emails) = [sort(keys(%$match))];
     return undef
-	if defined($expect_count) && $count == 0 && !%$match;
+	if defined($expect_count) && $count == 0 && !@$matched_emails;
     $die->(%$match
         ? ('Found mail for "', $email, '", but does not match ',
-	   $body_re, ' matches=', $match)
+	   $body_re, ' matches=', $matched_emails)
 	: ('No mail for "', $email, '" found in ', $_CFG->{mail_dir}),
     ) unless @$found;
     $die->(
@@ -959,8 +960,8 @@ sub verify_local_mail {
 	'correct number of messages, but emails expected != actual: ',
 	[sort(@$email)],
 	' != ',
-	$match,
-    ) unless @$email == keys(%$match);
+	$matched_emails,
+    ) unless @$email == @$matched_emails;
     foreach my $f (@$found) {
 	unlink($f->[0]);
 	_log($self, 'eml', $f->[1])
