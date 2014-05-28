@@ -12,9 +12,16 @@ verify_text('seems that your browser');
 clear_cookies();
 home_page();
 follow_link('register');
+my($email) = generate_local_email('demo');
+test_deviance('name is too long');
+submit_form({
+    name => 'My Name My Name My Name My Name My Name My Name My Name',
+    email => $email,
+});
+test_conformance();
 submit_form({
     name => 'My Name',
-    email => generate_local_email('demo'),
+    email => $email,
 });
 verify_text('already in the database');
 verify_form({
