@@ -263,16 +263,12 @@ sub set_header {
 
 sub set_headers_for_forward {
     my($self, $sender, $req) = @_;
-    $self->set_header(
-	$self->FORWARDING_HDR,
-	($self->unsafe_get_header($self->FORWARDING_HDR) || 0) + 1,
-    );
+    _inc_forward_header($self);
     $self->set_header('Sender', $sender)
 	if $sender;
     my($from) = $self->get_from_email($req);
-    if ($from && ($from =~ $self->internal_get_config->{rewrite_from_domains_re})) {
-	$self->set_header('From', $_E->format_ignore($from, $req));
-    }
+    _rewrite_from($self, $from, $req)
+	if $from && ($from =~ $self->internal_get_config->{rewrite_from_domains_re});
     return $self;
 }
 
@@ -370,10 +366,44 @@ EOF
     return;
 }
 
+sub _inc_forward_header {
+    my($self) = @_;
+    return $self->set_header(
+	$self->FORWARDING_HDR,
+	($self->unsafe_get_header($self->FORWARDING_HDR) || 0) + 1,
+    );
+}
+
 sub _list_id {
     my($list_email) = @_;
     $list_email =~ s/[^-\w]+/./g;
     return "<$list_email>";
+}
+
+sub _rewrite_from {
+    my($self, $email, $req) = @_;
+    my($full_from) = $self->unsafe_get_header('from');
+    my($name) = $full_from ? ($_A->parse($full_from))[1] : undef;
+    my($ro) = b_use('Model.RealmOwner')->new($req);
+    if ($ro->unauth_load_by_email($email)) {
+        $email = b_use('Model.MailReceiveDispatchForm')->new($req)
+	    ->format_recipient(
+		$ro->get('realm_id'),
+		undef,
+		b_use('Action.MailForward')->REWRITE_FROM_DOMAIN_URI,
+	    );
+	$name ||= $ro->get('display_name');
+    }
+    else {
+	$name ||= $_E->get_local_part($email);
+	$email = $_E->format_ignore($email, $req);
+    }
+    $name .= ' via ' . b_use('UI.Facade')->get_value('mail_host', $req);
+    $self->set_header(
+	'From',
+	b_use('Mail.RFC822')->format_mailbox($email, $name),
+    );
+    return;
 }
 
 1;
