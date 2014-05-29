@@ -1,0 +1,15 @@
+# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+test_setup('PetShop');
+home_page();
+my($forum) = generate_remote_email('rewrite_from_domain_forum');
+my($home) = generate_local_email('rewrite_from_domain');
+my($work) = 'rewrite_from_domain@yahoo.com';
+my($other) = generate_local_email('site_adm');
+my($subj) = send_mail($work, $forum)->unsafe_get_header('subject');
+my($msg) = verify_local_mail([$other, $home], $subj);
+b_die('From: not rewritten properly: ', $msg)
+    unless $msg =~ m{From: "rewrite_from_domain via \S+.\S+" <(user\*.+?)>};
+my($from) = $1;
+$subj = send_mail($other, $from)->unsafe_get_header('subject');
+verify_local_mail([$home], $subj);
