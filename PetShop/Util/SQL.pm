@@ -207,6 +207,7 @@ sub initialize_test_data {
     _init_demo_files($self);
     _init_forum($self);
     _init_email_alias($self);
+    _init_rewrite_from_domain($self);
     _init_tuple($self);
     _init_logo($self);
     _init_default_tuple($self);
@@ -794,6 +795,19 @@ EOF
 	    ),
 	});
 	return;
+    });
+    return;
+}
+
+sub _init_rewrite_from_domain {
+    my($self) = @_;
+    $self->top_level_forum(
+	'rewrite_from_domain_forum', [$self->SITE_ADM], ['rewrite_from_domain']);
+    my($e) = $self->model('Email');
+    $e->create({
+	realm_id => $self->unauth_realm_id('rewrite_from_domain'),
+	location => $e->get_field_type('location')->first_alternative_location,
+	email => 'rewrite_from_domain@yahoo.com',
     });
     return;
 }
