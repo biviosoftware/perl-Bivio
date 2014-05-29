@@ -80,7 +80,7 @@ EOF
 
 my($_REWRITE_FROM) = <<'EOF';
 Message-ID: <123@example.com>
-From: outgoing_bunit@yahoo.com
+From: rewrite_from_domain@yahoo.com
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 
 body
@@ -215,7 +215,7 @@ my($_BODY) = 'what a body';
 	    }] => undef,
 	],
 	unsafe_get_header => [
-	    from => qr{^"outgoing_bunit via \S+ <user\*\d+@.*>$},
+	    from => qr{^"rewrite_from_domain via \S+ <user\*\d+@.*>$},
 	],
     ],
     [Bivio::Mail::Incoming->new(\$_WITHOUT_CC)] => [
