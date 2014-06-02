@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.29  2014/05/28 18:05:29  moeller
+  * Bivio::Biz::Model::UserRegisterForm
+    internal_create_models() may return undef and set error,
+    stop execution in execute_ok() if that happens
+  * Bivio::Biz::Model::WikiForm
+    catch constraint errors during "Save" button
+  * Bivio::Biz::Model
+    improved "missing key" warning
+  * Bivio::Util::HTTPLog
+    ignore missing error file if missing in first 5 minutes of the day
+  * Bivio::Util::Spider
+    don't persist cookie file
+
   Revision 13.28  2014/05/23 00:21:41  moeller
   * Bivio::Biz::Model::MailForm
     don't set In-Reply-To if subject has changed
