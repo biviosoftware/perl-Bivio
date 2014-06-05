@@ -5,7 +5,7 @@ DateTime()->set_test_now('2/9/2010 9:41:30', req());
 generate_cases();
 
 # If you see something like this, it's because the named.root has changed.  To update, do this:
-# cd NamedConf && rm -rf 1-out && mv 1 1-out && tar xzf 1-out.tgz && cvs commit -m 'root file changed'
+# cd NamedConf && rm -rf 1-out && mv 1 1-out && tar xcf 1-out.tgz 1-out && cvs commit -m 'root file changed'
 #
 #  12,13c12,13
 #  < ;       last update:    Jan 3, 2013
