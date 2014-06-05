@@ -1,0 +1,11 @@
+# Copyright (c) 2014 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Type();
+[
+    from_literal => [
+        '' => [undef, 'NULL'],
+	('x' x 11) => [undef, 'TOO_LONG'],
+	x => [undef, 'EMAIL_VERIFY_KEY'],
+	('a' x 10) => ('a' x 10),
+    ],
+];
