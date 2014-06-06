@@ -98,7 +98,7 @@ sub header_out {
     chop($clear_text);
     my($value) = $_CFG->{tag}
 	. '=' . $_S->encrypt_http_base64($clear_text)
-	. $p;
+	. $p . '; HttpOnly';
     _trace($value) if $_TRACE;
     $req->get('reply')->send_append_header($r, 'Set-Cookie', $value);
     _clear_prior_tags($req)
