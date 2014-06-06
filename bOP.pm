@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.30  2014/06/02 15:25:53  moeller
+  * Bivio::Biz::Action::MailForward
+    added support for REWRITE_FROM_DOMAIN_REFLECTOR task
+  * Bivio::Delegate::TaskId
+    added REWRITE_FROM_DOMAIN_REFLECTOR to handle
+    user*<realm_id>@<mail_host> emails
+  * Bivio::Mail::Common
+    added yahoo and aol as rewrite_from_domains
+  * Bivio::Mail::Outgoing
+    added _rewrite_from for REWRITE_FROM_DOMAIN support
+    modularized _inc_forward_header() to be clearer
+  * Bivio::PetShop::Delegate::Location
+    make subclass of Type.EnumDelegate so missing call errors are clearer
+  * Bivio::PetShop::Util::SQL
+    support testing rewrite-from-domain.test
+  * Bivio::Test::Language::HTTP
+    verify_mail: improve error message when emails don't match.  Printing
+    the hash was the wrong thing, because the number is confusing
+    (meaningless, actually, except as a boolean)
+  * Bivio::Type::Location
+    added first_alternative_location
+  * Bivio::UI::FacadeBase
+    added REWRITE_FROM_DOMAIN_REFLECTOR
+
   Revision 13.29  2014/05/28 18:05:29  moeller
   * Bivio::Biz::Model::UserRegisterForm
     internal_create_models() may return undef and set error,
