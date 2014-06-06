@@ -53,6 +53,7 @@ Type();
 	"\221a  short text." => [\(q{'a short text.})],
 	join(' ', 1 .. 50) => [\(join(' ', 1 .. 45) . ' ...')],
 	[join(' ', 1 .. 10), 5, 1],  => [\(join(' ', 1 .. 5))],
+	'some text --- and the end.' => [\(q{some text and the end.})],
     ],
     canonicalize_newlines => [
 	'' => '',
