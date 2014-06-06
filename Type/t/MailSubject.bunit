@@ -16,6 +16,7 @@ use utf8;
 	'What?*/' => 'What?*/',
 	['What?*/', 1] => 'What',
 	('מערכת' x 11) => ('מערכת' x 10),
+	'=?iso-8859-1?Q?Ted_Kr=FChler?=' => 'Ted Kruhler',
     ],
     subject_lc_matches => [
 	['x', 'x'] => 1,
