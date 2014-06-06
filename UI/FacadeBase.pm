@@ -1653,7 +1653,7 @@ sub _cfg_site_admin {
 		display_name => 'Name',
 		privileges => 'Privileges',
 	    ]],
-	    [EmailAliasList => [
+	    [[qw(EmailAliasList EmailAliasListForm)] => [
 		EmailAlias => [
 		    incoming => 'From Email',
 		    outgoing => 'To Email or vs_ui_forum();',
