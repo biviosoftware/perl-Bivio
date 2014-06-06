@@ -58,6 +58,8 @@ sub canonicalize_and_excerpt {
 	if $return;
     # So we are re-entrant.  If there was an ellipsis in the actual text, so be it.
     $$v =~ s/\s+\.{3}$//;
+    # remove repeating symbols, ex ---
+    $$v =~ s/[#\$\%&*+\-.:^_~<=>@~]{2,}/ /g;
     $max_words ||= 45;
 #TODO: Split on paragraphs first.  Google groups seems to do this
     my($words) = [grep(
