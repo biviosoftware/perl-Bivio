@@ -6,9 +6,9 @@ use Bivio::Base 'Biz.ListModel';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
-sub execute {
+sub execute_load_page_for_parent {
     my($proto, $req) = @_;
-    $proto->new($req)->load_all({
+    $proto->new($req)->load_page({
 	parent_id => $req->get_nested(
 	    qw(Model.RealmMailList RealmMail.realm_file_id)),
     });
