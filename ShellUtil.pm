@@ -1192,11 +1192,11 @@ sub _lock_files {
 
 sub _lock_warning {
     my($lock_dir) = @_;
+    my($seconds) = (stat($lock_dir))[9];
     b_warn(
 	$lock_dir,
 	': not acquired; lock age=',
-	time - (stat($lock_dir))[9],
-	's',
+	defined($seconds) ? ((time - $seconds) . 's') : 'unknown',
     );
     return;
 }
