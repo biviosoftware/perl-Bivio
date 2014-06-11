@@ -101,7 +101,8 @@ sub internal_tasks {
 	map(
 	    ref($_) || $_TI->unsafe_from_name($_) ? $_ : (),
 	    {
-		xlink => vs_text_as_prose('xhtml_site_admin_drop_down_standard'),
+		xlink => vs_text_as_prose('xhtml_site_admin_drop_down_standard')
+		    ->put(task_menu_no_wrap => 1),
 		label => 'SiteAdminDropDown_label',
 		sort_label => 'sort_label_02',
 	    },
