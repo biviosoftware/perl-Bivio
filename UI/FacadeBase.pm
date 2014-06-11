@@ -686,6 +686,7 @@ EOF
 	    [icon => [
 		pager_next => 'b_icon_chevron_right',
 		pager_prev => 'b_icon_chevron_left',
+		back_to_list => 'b_icon_arrow_left',
 		LOGOUT => 'b_icon_logout',
 		LOGIN => 'b_icon_login',
 	    ]],
@@ -948,8 +949,17 @@ sub _cfg_crm {
 		'FORUM_CRM_FORM.reply_realm' => 'Discuss Internally',
 		FORUM_CRM_FORM => 'New Ticket',
 		__PACKAGE__->if_2014style([
-		    FORUM_CRM_THREAD_ROOT_LIST => q{LinkIcon('FORUM_CRM_THREAD_ROOT_LIST');},
-		    'forum.crm_thread_root_list' => q{LinkIcon('forum.crm_thread_root_list');Tickets},
+		    [
+			'FORUM_CRM_THREAD_ROOT_LIST',
+			'forum.crm_thread_root_list',
+		    ] => q{LinkIcon('FORUM_CRM_THREAD_ROOT_LIST');Tickets},
+		    CRMThreadList => [
+			FORUM_CRM_THREAD_ROOT_LIST => q{LinkIcon('back_to_list');},
+		    ],
+		], [
+		    CRMThreadList => [
+			FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
+		    ],
 		]),
 	    ]],
 	    [[qw(title xlink)] => [
@@ -963,8 +973,7 @@ sub _cfg_crm {
 		FORUM_CRM_FORM => 'Your message was sent.',
 	    ]],
 	    [icon => [
-		'forum.crm_thread_root_list' => 'b_icon_tags',
-		FORUM_CRM_THREAD_ROOT_LIST => 'b_icon_arrow_left',
+		FORUM_CRM_THREAD_ROOT_LIST => 'b_icon_tags',
 	    ]],
 	],
     };
@@ -1383,10 +1392,18 @@ sub _cfg_mail {
 		'FORUM_MAIL_FORM.reply_realm' => 'Reply',
 		FORUM_MAIL_FORM => 'New Topic',
 		__PACKAGE__->if_2014style([
-		    FORUM_MAIL_THREAD_ROOT_LIST => q{LinkIcon('FORUM_MAIL_THREAD_ROOT_LIST');},
-		    'forum.mail_thread_root_list' => q{LinkIcon('forum.mail_thread_root_list');Mail},
+		    [
+			'FORUM_MAIL_THREAD_ROOT_LIST',
+			'forum.mail_thread_root_list',
+		    ] => q{LinkIcon('FORUM_MAIL_THREAD_ROOT_LIST');Mail},
+		    MailThreadList => [
+			FORUM_MAIL_THREAD_ROOT_LIST => q{LinkIcon('back_to_list');},
+		    ],
 		], [
 		    FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
+		    MailThreadList => [
+			FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
+		    ],
 		]),
 	    ]],
 	    [title => [
@@ -1411,8 +1428,7 @@ sub _cfg_mail {
 		user_mail_unsubscribed_all => q{You have been unsubscribed from ALL MAILINGS from String(vs_site_name());},
 	    ]],
 	    [icon => [
-		'forum.mail_thread_root_list' => 'b_icon_envelope',
-		FORUM_MAIL_THREAD_ROOT_LIST => 'b_icon_arrow_left',
+		FORUM_MAIL_THREAD_ROOT_LIST => 'b_icon_envelope',
 	    ]],
 	],
     };
