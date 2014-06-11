@@ -40,12 +40,13 @@ sub initialize {
     $self->put_unless_exists(
 	control_on_value => DropDown(
 	    vs_text_as_prose('SiteAdminDropDown_label'),
-	    DIV_dd_menu(TaskMenu([
+	    TaskMenu([
 		@{$self->get_or_default(extra_items => [])},
                 $self->TASK_MENU_LIST,
 	    ], {
 		want_sorting => 1,
-	    })),
+		class => 'dd_menu',
+	    })
 	),
     );
     return shift->SUPER::initialize(@_);
