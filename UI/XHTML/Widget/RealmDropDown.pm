@@ -6,6 +6,7 @@ use Bivio::Base 'Widget.If';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+my($_F) = b_use('UI.Facade');
 my($_RT) = b_use('Auth.RealmType');
 my($_R) = b_use('Auth.Role');
 my($_REQUIRED_ROLE_GROUP) = b_use('Model.UserForumList')
@@ -19,46 +20,12 @@ sub initialize {
     my($self) = @_;
     b_die('pass realm_types instead of realm_type')
         if $self->unsafe_get('realm_type');
-    my($rt) = _realm_types($self);
-    my($first_rt) = $rt->[0];
     $self->put_unless_exists(
 	control => [sub {$self->internal_control_value(@_)}],
 	control_on_value => If(
 	    [sub {_one_choice($self, shift)}],
 	    SPAN(_curr_realm(), {class => 'dd_link'}),
-	    DIV_task_menu_wrapper(
-		DropDown(
-		    If([[qw(->req auth_realm type)], '->equals_by_name', @$rt],
-		       _curr_realm(),
-		       Prose(vs_text('RealmDropDown', $first_rt)),
-		    ),
-		    DIV_dd_menu(
-			[sub {
-			     my($source) = @_;
-			     my($realms) = _choices($self, $source);
-			     my($r) = $source->req('auth_realm');
-			     $r = $r->get('type')->equals_by_name(@$rt)
-				 ? $r->get('owner_name')
-				 : '';
-			     return Join([
-				 map(
-				     Link(String(_value($_, 'display_name')) => URI({
-					 realm => _value($_, 'name'),
-					 task_id => _value($_, 'task_id')
-					     || $self->render_simple_attr(
-						 task_id => $source,
-					     ) || ($first_rt . '_HOME'),
-					 query => undef,
-					 path_info => undef,
-				     })),
-				     grep(_eq($_, $r), @$realms),
-				     grep(!_eq($_, $r), @$realms),
-				 ),
-			     ]);
-			}],
-		    ),
-		),
-	    ),
+	    _drop_down($self),
 	),
     );
     return shift->SUPER::initialize(@_);
@@ -92,6 +59,49 @@ sub _choices {
 
 sub _curr_realm {
     return String([qw(->req auth_realm owner_name)]);
+}
+
+sub _drop_down {
+    my($self) = @_;
+    my($rt) = _realm_types($self);
+    my($first_rt) = $rt->[0];
+    my($res) = DropDown(
+	If([[qw(->req auth_realm type)], '->equals_by_name', @$rt],
+	   _curr_realm(),
+	   Prose(vs_text('RealmDropDown', $first_rt)),
+        ),
+	TaskMenu([
+	    Simple([sub {
+		        my($source) = @_;
+			my($realms) = _choices($self, $source);
+			my($r) = $source->req('auth_realm');
+			$r = $r->get('type')->equals_by_name(@$rt)
+			    ? $r->get('owner_name')
+				: '';
+			return Join([
+			    map(
+				Link(String(_value($_, 'display_name')) => URI({
+				    realm => _value($_, 'name'),
+				    task_id => _value($_, 'task_id')
+					|| $self->render_simple_attr(
+					    task_id => $source,
+					) || ($first_rt . '_HOME'),
+				    query => undef,
+				    path_info => undef,
+				})),
+				grep(_eq($_, $r), @$realms),
+				grep(!_eq($_, $r), @$realms),
+			    ),
+			]);
+		    }]),
+	], {
+	    class => 'dd_menu',
+	}),
+    );
+    return $_F->if_2014style(
+	$res,
+	DIV_task_menu_wrapper($res),
+    );
 }
 
 sub _eq {
