@@ -198,6 +198,8 @@ sub internal_standard_tools {
 	},
         {
 	    task_id => _name($self, 'FORUM_XX_THREAD_ROOT_LIST'),
+	    label => _name($self, 'XxThreadList') . '.'
+		. _name($self, 'FORUM_XX_THREAD_ROOT_LIST'),
 	    control => [
 		'!',
 		'task_id',
