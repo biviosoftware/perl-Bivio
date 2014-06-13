@@ -100,7 +100,7 @@ sub handle_config {
     Bivio::Die->die($cfg->{errors_to}, ': invalid errors_to')
         if $cfg->{errors_to} =~ /['\\]/;
     $_CFG = $cfg;
-    $_CFG->{rewrite_from_domains_re} = qr{[\@\.]@{[join('|', @{$cfg->{rewrite_from_domains} || []})]}$}is;
+    $_CFG->{rewrite_from_domains_re} = qr{[\@\.](?:@{[join('|', @{$cfg->{rewrite_from_domains} || []})]})$}is;
     return;
 }
 
