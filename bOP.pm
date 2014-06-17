@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.31  2014/06/06 17:52:18  moeller
+  * Bivio::Delegate::Cookie
+    #874 set HttpOnly tag on Set-Cookie
+  * Bivio::Type::EmailVerifyKey
+    #880 if SUPER returns error, return (undef, $err)
+  * Bivio::Type::String
+    #873 remove common repeating symbols from excerpt
+  * Bivio::UI::FacadeBase
+    #908 added missing label for EmailAliasListForm
+
   Revision 13.30  2014/06/02 15:25:53  moeller
   * Bivio::Biz::Action::MailForward
     added support for REWRITE_FROM_DOMAIN_REFLECTOR task
