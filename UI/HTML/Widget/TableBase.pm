@@ -84,7 +84,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # Set the width of the table explicitly.
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_HTML_ATTRS) = [qw(border cellpadding cellspacing width height style class id)];
+my($_HTML_ATTRS) = b_use('UI.Facade')->if_2014style(
+    [qw(style class id)],
+    [qw(border cellpadding cellspacing width height style class id)],
+);
 
 sub initialize_html_attrs {
     # (self) : undef
