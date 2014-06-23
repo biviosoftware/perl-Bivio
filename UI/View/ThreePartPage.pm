@@ -55,6 +55,7 @@ sub internal_xhtml_adorned {
 	    view_widget_value('xhtml_head_tags'),
 	    vs_rss_task_in_head(),
 	]),
+	html_tag_attrs => view_widget_value('xhtml_tag_attrs'),
 	body => $self->internal_xhtml_adorned_body,
 	body_class => view_widget_value('xhtml_body_class'),
 	xhtml => 1,
@@ -76,6 +77,7 @@ sub internal_xhtml_adorned_attrs {
 	vs_pager => '',
 	xhtml_adorned_title => vs_text_as_prose('xhtml_head_title'),
 	xhtml_body_class => '',
+	xhtml_tag_attrs => '',
 	bootstrap_tab_bar => '',
 	xhtml_head_tags => If2014Style(Join([
 	    META({
@@ -150,7 +152,10 @@ sub internal_xhtml_adorned_attrs {
     );
     view_put(
 	xhtml_body_first => Join([
-	    EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
+	    If2014Style(
+		'',
+		EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
+	    ),
             vs_first_focus(view_widget_value('xhtml_want_first_focus')),
 	    Script('b_log_errors'),
 	]),
