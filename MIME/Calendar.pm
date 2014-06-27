@@ -142,6 +142,7 @@ sub _event {
                 |x-ms-[^;]*
 		|contact
 		|exrule
+		|x-cost
 	    )(?:$|;)}x;
 	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date(?:-time)?)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
