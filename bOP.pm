@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,27 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.32  2014/06/17 20:05:57  moeller
+  * Bivio::Biz::Model::RealmMailBounceList
+    replace execute with execute_load_page_for_parent
+  * Bivio::Mail::Common
+    #984 fix rewrite_from_domains_re
+    handle_config: need to group domains in re so that [@.] is required
+    prior to domain
+  * Bivio::ShellUtil
+    fix uninitialized value if lock file is missing for stat()
+  * Bivio::UI::FacadeBase
+    moved arrow icon to icon named back_to_list
+    Mail/CRM detail pages use back_to_list icon
+  * Bivio::UI::View::Mail
+    added label for "back to list"
+  * Bivio::UI::XHTML::Widget::FeatureTaskMenu
+    added task_menu_no_wrap option for 2014style
+  * Bivio::UI::XHTML::Widget::RealmDropDown
+    only wrap in DIV_task_menu_wrapper() for non 2014style
+  * Bivio::UI::XHTML::Widget::SiteAdminDropDown
+    unwrapped DIV around TaskMenu
+
   Revision 13.31  2014/06/06 17:52:18  moeller
   * Bivio::Delegate::Cookie
     #874 set HttpOnly tag on Set-Cookie
