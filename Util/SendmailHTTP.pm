@@ -30,6 +30,7 @@ my($_SYSEXIT) = {
     EX_NOPERM => 77,
     EX_CONFIG => 78,
 };
+my($_LWP_TIMEOUT) = 10 * 60;
 
 sub create_http_request {
     my($proto, $client_addr, $recipient, $url, $msg) = @_;
@@ -151,6 +152,7 @@ sub _parse_url {
 sub _send_http_request {
     my($proto, $http_req) = @_;
     my($agent) = LWP::UserAgent->new;
+    $agent->timeout($_LWP_TIMEOUT);
     $agent->requests_redirectable([]);
     $agent->agent('b-sendmail-http');
     my($response) = $agent->request($http_req);
