@@ -14,7 +14,7 @@ Type();
 	'255.254.253.252' => pack('N', 0xfffefdfc),
     ],
     unsafe_to_domain => [
-	'216.87.82.71' => 'apa12.bivio.biz',
+	'216.87.82.87' => 'apa7.bivio.biz',
 	'0.0.0.0' => [undef],
     ],
 ];
