@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,17 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.33  2014/06/27 15:19:06  moeller
+  * Bivio::MIME::Calendar
+    ignore x-cost
+  * Bivio::UI::HTML::Widget::TableBase
+    don't include old html table attrs for 2014 style
+  * Bivio::UI::View::ThreePartPage
+    don't show "top" tag for 2014 style
+    added xhtml_tag_attrs
+  * Bivio::Util::SendmailHTTP
+    added LWP timeout
+
   Revision 13.32  2014/06/17 20:05:57  moeller
   * Bivio::Biz::Model::RealmMailBounceList
     replace execute with execute_load_page_for_parent
