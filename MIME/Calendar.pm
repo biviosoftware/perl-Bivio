@@ -143,6 +143,7 @@ sub _event {
 		|contact
 		|exrule
 		|x-cost
+		|x-google-[^;]*
 	    )(?:$|;)}x;
 	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date(?:-time)?)?(;tzid=(.*))?$/) {
 	    my($w) = $1;
