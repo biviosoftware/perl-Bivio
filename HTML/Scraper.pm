@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 use HTTP::Cookies ();
 use HTTP::Request ();
+use HTTP::Message ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
@@ -52,8 +53,10 @@ sub encode_form_as_query {
 }
 
 sub extract_content {
-    my(undef, $http_response) = @_;
-    return \($http_response->content);
+    my($self, $http_response) = @_;
+    return $self->unsafe_get('accept_encoding')
+	? \($http_response->decoded_content(charset => 'none'))
+	: \($http_response->content);
 }
 
 sub file_name {
@@ -104,10 +107,10 @@ sub html_parser_text {
 
 sub http_get {
     my($self, $uri, $file_name) = @_;
-    return $self->http_request(
-	HTTP::Request->new(GET => $self->abs_uri($uri)),
-	$file_name,
-    );
+    my($request) = HTTP::Request->new(GET => $self->abs_uri($uri));
+    $request->header('Accept-Encoding' => HTTP::Message::decodable)
+	if $self->unsafe_get('accept_encoding');
+    return $self->http_request($request, $file_name);
 }
 
 sub http_post {
@@ -170,7 +173,7 @@ sub new {
 	login_ok => 0,
     );
     $self->get('user_agent')->agent(
-	'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)');
+	'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko');
     $self->[$_IDI] = {};
     return $self;
 }
