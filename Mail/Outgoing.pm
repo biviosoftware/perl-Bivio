@@ -19,6 +19,7 @@ my($_A) = b_use('Mail.Address');
 my($_IOT) = b_use('IO.Template');
 my($_DT) = b_use('Type.DateTime');
 my($_E) = b_use('Type.Email');
+my($_RFC) = b_use('Mail.RFC822');
 my($_KEEP_HEADERS_LIST_SEND_RE) = qr{
     ^(?:
     @{[join(
@@ -206,8 +207,7 @@ sub remove_headers {
 
 sub send {
     my($self, $req) = shift->internal_req(@_);
-    # Sends the message.  Recipients must be set.  Errors are
-    # e-mailed except if recipients are not set.
+    _rewrite_from($self, $req);
     return $self->SUPER::send(undef, undef, 0, $self->unsafe_get('envelope_from'), $req);
 }
 
@@ -266,9 +266,6 @@ sub set_headers_for_forward {
     _inc_forward_header($self);
     $self->set_header('Sender', $sender)
 	if $sender;
-    my($from) = $self->get_from_email($req);
-    _rewrite_from($self, $from, $req)
-	if $from && ($from =~ $self->internal_get_config->{rewrite_from_domains_re});
     return $self;
 }
 
@@ -381,9 +378,31 @@ sub _list_id {
 }
 
 sub _rewrite_from {
-    my($self, $email, $req) = @_;
+    my($self, $req) = @_;
     my($full_from) = $self->unsafe_get_header('from');
-    my($name) = $full_from ? ($_A->parse($full_from))[1] : undef;
+    b_die('missing from header: ', $self)
+	unless $full_from;
+    my($old_email, $old_name) = $_A->parse($full_from);
+    b_die($full_from, ': from header missing email')
+	unless $old_email;
+    # We assume that if From does NOT need to be rewritten, then nothing needs a rewrite
+    return
+	unless $old_email =~ $self->internal_get_config->{rewrite_from_domains_re};
+    my($new_email, $new_name) = _rewrite_from_generate($self, $old_email, $old_name, $req);
+    $self->set_header('Reply-To', $old_email)
+	unless $self->unsafe_get_header('reply-to');
+    my($rp) = $self->unsafe_get_header('return-path');
+    $self->set_header('Return-Path', $_RFC->format_angle_brackets($new_email))
+	if !$rp || $rp eq $old_email;
+    my($ef) = $self->unsafe_get('envelope_from');
+    $self->set_envelope_from($new_email)
+	if !$ef || $ef eq $old_email;
+    $self->set_header('From', $_RFC->format_mailbox($new_email, $new_name));
+    return;
+}
+
+sub _rewrite_from_generate {
+    my($self, $email, $name, $req) = @_;
     my($ro) = b_use('Model.RealmOwner')->new($req);
     if ($ro->unauth_load_by_email($email)) {
         $email = b_use('Model.MailReceiveDispatchForm')->new($req)
@@ -399,11 +418,7 @@ sub _rewrite_from {
 	$email = $_E->format_ignore($email, $req);
     }
     $name .= ' via ' . b_use('UI.Facade')->get_value('mail_host', $req);
-    $self->set_header(
-	'From',
-	b_use('Mail.RFC822')->format_mailbox($email, $name),
-    );
-    return;
+    return ($email, $name);
 }
 
 1;
