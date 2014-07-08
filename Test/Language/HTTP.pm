@@ -674,6 +674,7 @@ sub send_mail {
     # Send a message.  Returns the object.  Sets subject and body to unique values.
     my($r) = $self->random_string();
     my($o) = b_use('Mail.Outgoing')->new;
+    $o->test_language_setup;
     $o->set_recipients($to_email, _req($self));
     $o->set_header(To => ref($to_email) ? join(',', @$to_email) : $to_email);
     $headers = {
