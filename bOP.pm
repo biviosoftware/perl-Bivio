@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.34  2014/07/02 20:01:16  moeller
+  * Bivio::HTML::Scraper
+    allow setting Accept-Encoding header for websites which only return
+    gzip data.
+  * Bivio::MIME::Calendar
+    ignore x-google- extensions
+
   Revision 13.33  2014/06/27 15:19:06  moeller
   * Bivio::MIME::Calendar
     ignore x-cost
