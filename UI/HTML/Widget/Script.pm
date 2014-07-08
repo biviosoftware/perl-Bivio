@@ -458,7 +458,7 @@ window.onerror = function (errorMsg, url, lineNumber) {
         req.send("json=" + JSON.stringify({
             'errorMsg': errorMsg,
             'url': encodeURIComponent(url),
-            'lineNumber': lineNumber,
+            'lineNumber': lineNumber
         }));
     }
     catch (e) {
