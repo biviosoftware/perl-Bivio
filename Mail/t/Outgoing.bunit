@@ -195,11 +195,17 @@ my($_BODY) = 'what a body';
 	get_body => qr{ReplacedVar},
     ],
     [Bivio::Mail::Incoming->new(\$_WITH_CC)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
 	set_headers_for_list_send => [
 	    [{
 		req => req(),
 		list_email => 'some-list@example.com',
 	    }] => undef,
+	],
+	send => [
+	    [req()] => undef,
 	],
 	unsafe_get_header => [
 	    to => 'cc@cc.cc',
@@ -208,14 +214,34 @@ my($_BODY) = 'what a body';
 	],
     ],
     [Bivio::Mail::Incoming->new(\$_REWRITE_FROM)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
 	set_headers_for_list_send => [
 	    [{
 		req => req(),
 		list_email => 'some-list@example.com',
+		reply_to_list => 1,
 	    }] => undef,
+	],
+	send => [
+	    [req()] => undef,
 	],
 	unsafe_get_header => [
 	    from => qr{^"rewrite_from_domain via \S+ <user\*\d+@.*>$},
+	    'reply-to' => 'some-list@example.com',
+	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_REWRITE_FROM)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
+	send => [
+	    [req()] => undef,
+	],
+	get_from_email => qr{user\*\d+@.*$},
+	unsafe_get_header => [
+	    'reply-to' => 'rewrite_from_domain@yahoo.com',
 	],
     ],
     [Bivio::Mail::Incoming->new(\$_WITHOUT_CC)] => [
