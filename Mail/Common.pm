@@ -178,6 +178,16 @@ sub set_recipients {
     ));
 }
 
+sub test_language_setup {
+    my($self) = @_;
+    b_use('IO.Config')->introduce_values({
+	'Bivio::Mail::Common' => {
+	    rewrite_from_domains => [],
+	},
+    }) if @{$self->internal_get_config->{rewrite_from_domains}};
+    return;
+}
+
 sub unsafe_get_recipients {
     # Returns recipients.
     return shift->unsafe_get('recipients');
