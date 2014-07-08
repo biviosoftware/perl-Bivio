@@ -25,6 +25,7 @@ my($test) = 2;
 my($m) = Bivio::Mail::Outgoing->new;
 my($req) = Bivio::IO::ClassLoader->simple_require('Bivio::Test::Request')
     ->get_current_or_new;
+$m->set_header('From', 'anybody@example.com');
 $m->set_recipients($_USER, $req);
 $m->set_content_type('multipart/alternative');
 my($t) = 'abc';
@@ -35,6 +36,7 @@ $m->send($req);
 my($out) = $m->as_string;
 my($boundary) = $out =~ /boundary="(\w+)"/;
 my($exp_out) = <<"EOF";
+From: anybody\@example.com
 MIME-Version: 1.0
 Content-Type: multipart/alternative; boundary="$boundary"
 
@@ -73,6 +75,7 @@ fn:Some User
 end:vcard
 EOF
 my($m2) = Bivio::Mail::Outgoing->new;
+$m2->set_header('From', 'anybody@example.com');
 $m2->set_recipients($_USER, $req);
 $m2->set_content_type('multipart/mixed');
 my($img);
