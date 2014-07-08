@@ -7,7 +7,8 @@ my($forum) = generate_remote_email('crm_tuple_forum');
 my($cust1) = generate_local_email('crm_cust1');
 my($tech1) = generate_local_email('crm_tech1');
 my($msg) = send_mail($cust1, $forum);
-my($ticket) = verify_local_mail($tech1, qr{.}, 1) =~ m{#(\d+)\]}i;
+my($body) = ${$msg->get_body};
+my($ticket) = verify_local_mail($tech1, qr/\Q$body/, 1) =~ m{#(\d+)\]}i;
 die('no ticket')
     unless $ticket;
 login_as('crm_tech1');
