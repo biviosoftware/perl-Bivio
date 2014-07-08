@@ -27,6 +27,7 @@ sub internal_post_load_row {
     foreach my $x (qw(administrator file_writer)) {
 	$row->{$x} = grep($_->equals_by_name($x), @{$row->{roles}}) ? 1 : 0;
     }
+#TODO: remove, already have UserRealmSubscription.is_subscribed
     $row->{is_subscribed}
 	= $self->new_other('UserRealmSubscription')->unauth_load({
 	    realm_id => $row->{'RealmUser.realm_id'},
