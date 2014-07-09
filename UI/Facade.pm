@@ -208,6 +208,11 @@ sub get_local_file_name {
     );
 }
 
+sub get_local_plain_file_name {
+    my($self, $path, $req) = @_;
+    return $self->get_local_file_name(b_use('UI.LocalFileType')->PLAIN, $path, $req);
+}
+
 sub get_local_file_plain_app_uri {
     return _local_file_uri('/f', @_);
 }
@@ -345,14 +350,6 @@ sub is_fully_initialized {
 
 sub is_html5 {
     return $_CFG->{is_html5};
-}
-
-sub join_with_local_file_plain {
-    my($self, $path) = @_;
-    return b_use('Type.FilePath')->join(
-	$self->get_local_file_name(b_use('UI.LocalFileType')->PLAIN),
-	$path,
-    );
 }
 
 sub make_groups {
