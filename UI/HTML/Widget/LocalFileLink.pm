@@ -53,8 +53,9 @@ sub _get_uri_or_die {
     foreach my $l (qw(app common)) {
 	my($method) = "get_local_file_plain_${l}_uri";
 	my($u) = $facade->$method(_path_by_location($l, $file_name));
-	if (-f $facade->join_with_local_file_plain($u)) {
-	    $uri = $u;
+	if (my $tagged_uri = Type_CacheTagFilePath()->from_local_path(
+	    $facade->get_local_plain_file_name($u), $u)) {
+	    $uri = $tagged_uri;
 	    last;
 	}
     }
