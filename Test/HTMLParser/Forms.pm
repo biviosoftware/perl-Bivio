@@ -4,6 +4,7 @@ package Bivio::Test::HTMLParser::Forms;
 use strict;
 use Bivio::Base 'Test.HTMLParser';
 b_use('IO.Trace');
+b_use('IO.ClassLoaderAUTOLOAD');
 
 # C<Bivio::Test::HTMLParser::Forms> models the forms on a page.
 
@@ -606,6 +607,7 @@ sub _start_tx {
 sub _submit_label_clean {
     my($src) = @_;
     # Grabs icon name.
+    $src = Type_CacheTagFilePath()->to_untagged_path($src);
     $src =~ /(?:.*\/)?([^\/]+)\.\w+$/;
     return $1;
 }
