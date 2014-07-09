@@ -3,9 +3,11 @@
 package Bivio::Biz::Action::LocalFilePlain;
 use strict;
 use Bivio::Base 'Biz.Action';
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MAX_AGE) = 3600;
+my($_TAGGED_MAX_AGE) = 60 * 60 * 24 * 365;
 our($_TRACE);
 b_use('IO.Trace');
 my($_T) = b_use('MIME.Type');
@@ -20,10 +22,19 @@ sub execute {
     my($proto, $req, $file_name, $content_type) = @_;
     $file_name = $req->get('uri')
 	unless defined($file_name);
+    my($tagged);
+    if (Type_CacheTagFilePath()->is_tagged_path($file_name)) {
+	$file_name = Type_CacheTagFilePath()->to_untagged_path($file_name);
+	$tagged = 1;
+    }
+    else {
+	_trace($file_name, ': missing cache tag') if $_TRACE;
+    }
     my($mime_type);
     $proto->set_cacheable_output(
 	_open($req, $file_name, \$mime_type),
 	defined($content_type) ? $content_type : $mime_type,
+	$tagged ? $_TAGGED_MAX_AGE : $_MAX_AGE,
 	$req,
     );
     return 1;
@@ -77,11 +88,14 @@ sub execute_uri_as_view {
 }
 
 sub set_cacheable_output {
-    my(undef, $output, $mime_type, $req) = @_;
+    my(undef, $output, $mime_type, $max_age, $req) = @_;
+    $req = $max_age
+	if ref($max_age);
+    $max_age ||= $_MAX_AGE;
     return $req->get('reply')
 	->set_output($output)
 	->set_output_type($mime_type)
-	->set_cache_max_age($_MAX_AGE, $req);
+	->set_cache_max_age($max_age, $req);
 }
 
 sub _open {
