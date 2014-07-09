@@ -39,7 +39,7 @@ sub generate_bootstrap_css {
 	    my($pwd) = IO_File()->pwd;
 	    $self->are_you_sure("overwrite $pwd$output_path?")
 		if -f $pwd . $output_path;
-	    my($include) = _join_with_plain($facade, '/bootstrap/less', 'common'),
+	    my($include) = _get_plain($facade, '/bootstrap/less', 'common'),
 	    my($less_path) = _write_less($self, $facade);
 	    $self->piped_exec(
 		"lessc -x --include-path=$include $less_path ./$output_path");
@@ -161,11 +161,11 @@ sub _facade_and_args {
     return ($self, $facade, @_);
 }
 
-sub _join_with_plain {
+sub _get_plain {
     my($facade, $path, $which) = @_;
     $which ||= 'app';
     my($method) = "get_local_file_plain_${which}_uri";
-    return $facade->join_with_local_file_plain($facade->$method($path));
+    return $facade->get_local_plain_file_name($facade->$method($path));
 }
 
 sub _write_less {
