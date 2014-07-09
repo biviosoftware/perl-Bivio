@@ -2,6 +2,8 @@
 # $Id$
 test_setup('PetShop');
 home_page();
+b_die('bad favicon')
+    unless get_content() =~ qr{<link href="/i/favicon\.@{[b_use('Type.CacheTag')->REGEX]}\.ico" rel="shortcut icon" type="image/x-icon" />};
 visit_uri('/pub/ping');
 test_deviance('precondition');
 visit_uri('/pub/ping?View.Example=1');
