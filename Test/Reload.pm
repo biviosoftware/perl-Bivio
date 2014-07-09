@@ -78,10 +78,8 @@ sub _less_sig {
 	' ',
 	map({
 	    b_use('IO.File')->get_modified_date_time($_) => $_;
-	} glob($facade->get_local_file_name(
-	    b_use('UI.LocalFileType')->PLAIN,
+	} glob($facade->get_local_plain_file_name(
 	    b_use('ShellUtil.Project')->bootstrap_less_path,
-	    $req,
 	))),
     );
 }
