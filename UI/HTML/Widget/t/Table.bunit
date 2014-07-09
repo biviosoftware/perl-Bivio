@@ -18,13 +18,6 @@ Widget({
 	    return [ProductList => @$params];
 	}
     },
-    check_return => sub {
-	my($case, $actual, $expect) = @_;
-	my($expect_args) = $case->unsafe_get('_expect_args');
-	return defined($expect->[0])
-	    ? $expect
-	    : [_t($expect_args)];
-    },
 });
 [
     map(([$_] => undef),
@@ -108,15 +101,16 @@ sub _chomp {
 
 sub _t {
     my($exp) = @_;
-    my($x) = _chomp(<<'EOF');
+    my($ctre) = Type_CacheTag()->REGEX;
+    my($x) = _chomp(<<"EOF");
 
 <table border="0" cellpadding="5" cellspacing="0" valign="NOP" width="NOP" class="NOP"> title=NOP
 <tr class="b_heading_row">
-<th class="b_align_s"><a href="/pub/products?p=REPTILES&amp;o=1a">Product ID</a></th>
-<th class="b_align_s"><a href="/pub/products?p=REPTILES&amp;o=0d">Product Name <img alt="This column sorted in ascending order" class="b_align_bottom" border="0" src="/i/sort_down.gif" width="10" height="8" /></a></th>
+<th class="b_align_s"><a href="/pub/products\\?p=REPTILES&amp;o=1a">Product ID</a></th>
+<th class="b_align_s"><a href="/pub/products\\?p=REPTILES&amp;o=0d">Product Name <img alt="This column sorted in ascending order" class="b_align_bottom" border="0" src="/i/sort_down\.$ctre\.gif" width="10" height="8" /></a></th>
 </tr>
 <tr class="b_heading_separator_row"><td colspan="2"><table width="100%" cellspacing="0" cellpadding="0" border="0">
-<tr bgcolor="#000000"><td class="line_cell"><img class="b_clear_dot" alt="dot" height="1" src="/i/dot.gif" width="1" /></td></tr></table></td>
+<tr bgcolor="#000000"><td class="line_cell"><img class="b_clear_dot" alt="dot" height="1" src="/i/dot\.gif" width="1" /></td></tr></table></td>
 </tr>
 <tr bgcolor="#D5EEFF" class="b_data_row b_odd_row">
 <td class="b_align_left">RP-LI-02</td>
@@ -134,5 +128,5 @@ EOF
     }
     $x =~ s/ \w+="?NOP"?//g;
     $x =~ s/ title=//g;
-    return $x;
+    return qr{$x};
 }
