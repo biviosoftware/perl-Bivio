@@ -1,6 +1,7 @@
 # Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget();
+my($ctre) = Type_CacheTag()->REGEX;
 [
     [[[prose('x', {row_control => 0})]]] => '',
     [[[prose('x', {row_control => 1})]]] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},
@@ -15,7 +16,7 @@ Widget();
     [[['x']], {id => 'ego'}] => qq{<table border="0" cellpadding="0" cellspacing="0" id="ego"><tr>\n<td>x</td>\n</tr></table>},
     [[['x']], {align => 'N'}] => qq{<table border="0" cellpadding="0" cellspacing="0" class="b_align_n"><tr>\n<td>x</td>\n</tr></table>},
     [[['x']], {bgcolor => 'error'}] => qq{<table border="0" cellpadding="0" cellspacing="0" bgcolor="#993300"><tr>\n<td>x</td>\n</tr></table>},
-    [[['x']], {background => 'logo'}] => qq{<table border="0" cellpadding="0" cellspacing="0" background="/i/logo.gif"><tr>\n<td>x</td>\n</tr></table>},
+    [[['x']], {background => 'logo'}] => qr{<table border="0" cellpadding="0" cellspacing="0" background="/i/logo\.$ctre\.gif"><tr>\n<td>x</td>\n</tr></table>},
     [[['x']], {start_tag => 1}] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},
     [[['x']], {start_tag => 1}] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},
     [[['x']], {end_tag => 1}] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},

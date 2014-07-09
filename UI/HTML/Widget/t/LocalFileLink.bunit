@@ -1,10 +1,11 @@
 # Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget();
+my($ctre) = Type_CacheTag()->REGEX;
 [
-    ['unit-test.css'] => '<link href="/f/css/unit-test.css" rel="stylesheet" type="text/css" />',
-    ['unit-test.js'] => '<script src="/f/js/unit-test.js" type="text/javascript"></script>',
-    ['fontello/css/b_icon.min.css'] => '<link href="/b/fontello/css/b_icon.min.css" rel="stylesheet" type="text/css" />',
+    ['unit-test.css'] => qr{<link href="/f/css/unit-test\.$ctre\.css" rel="stylesheet" type="text/css" />},
+    ['unit-test.js'] => qr{<script src="/f/js/unit-test\.$ctre\.js" type="text/javascript"></script>},
+    ['fontello/css/b_icon.min.css'] => qr{<link href="/b/fontello/css/b_icon.min\.$ctre\.css" rel="stylesheet" type="text/css" />},
 
     ['does-not-exist.css'] => DIE(),
 ];

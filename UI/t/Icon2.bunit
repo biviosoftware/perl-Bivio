@@ -12,11 +12,12 @@ config({
     },
 });
 req()->initialize_fully;
+my($ctre) = Type_CacheTag()->REGEX;
 [
     sub {class()->get_from_source(req())} => [
-	format_css => [
-	    my_icon => 'url(/i/my_icon.gif)',
-	    my_icon => 'url(/i/my_icon.gif)',
+ 	format_css => [
+	    my_icon => qr{url\(/i/my_icon\.$ctre\.gif\)},
+	    my_icon => qr{url\(/i/my_icon\.$ctre\.gif\)},
 	    sub {
 		unlink($my_icon);
 		return ['my_icon'];
