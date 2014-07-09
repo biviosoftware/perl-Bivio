@@ -4,6 +4,7 @@ package Bivio::UI::FacadeComponent::Icon;
 use strict;
 use Bivio::Base 'UI.FacadeComponent';
 use Image::Size ();
+b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
@@ -87,6 +88,13 @@ sub get_clear_dot {
     # read-only and is constant.
     # Make a copy just in case
     return {%$_CLEAR_DOT};
+}
+
+sub get_favicon_uri {
+    my($proto, $req) = @_;
+    my($uri) = FacadeComponent_Text()->get_value('favicon_uri', $req);
+    return Type_CacheTagFilePath()->from_local_path(
+	$req->req('UI.Facade')->get_local_plain_file_name($uri), $uri);
 }
 
 sub get_height {
@@ -208,15 +216,13 @@ sub internal_initialize_value {
 
 sub internal_uri {
     my($file_name) = shift->internal_file_name(@_);
+    $file_name = Type_CacheTagFilePath()->from_local_path($file_name);
     return $file_name =~ m{([^/]+)$} ? "$_URI$1" : $_MISSING;
 }
 
 sub _facade_name {
     my($self, $name) = @_;
-    return $self->get_facade->get_local_file_name(
-	Bivio::UI::LocalFileType->PLAIN,
-	"$_URI$name",
-    );
+    return $self->get_facade->get_local_plain_file_name("$_URI$name");
 }
 
 sub _find {
