@@ -52,6 +52,7 @@ sub internal_xhtml_adorned {
 	style => view_widget_value('xhtml_style'),
 	head => Join([
 	    view_widget_value('xhtml_adorned_title'),
+	    view_widget_value('xhtml_favicon_tag'),
 	    view_widget_value('xhtml_head_tags'),
 	    vs_rss_task_in_head(),
 	]),
@@ -65,7 +66,7 @@ sub internal_xhtml_adorned {
 
 sub internal_xhtml_adorned_attrs {
     my($self) = @_;
-   view_pre_execute(sub {
+    view_pre_execute(sub {
 	my($req) = shift->get_request;
 	Bivio::Biz::Model->new($req, 'SearchForm')->process
 	    unless $req->unsafe_get('Model.SearchForm');
@@ -92,26 +93,33 @@ sub internal_xhtml_adorned_attrs {
 		base_values => [
 		    'bootstrap.min.css',
 		    'fontello/css/b_icon.min.css',
-		    InlineCSS([sub {
-#TODO: Widget.RenderView
-				   my($source) = @_;
-				   my($res) = UI_View()->render(
-				       'CSS->render_2014style_css',
-				       $source->req,
-				   );
-#TODO: Need to add this to InlineCSS from RealmCSS
-				   $$res =~ s/^\!.*\n//mg;
-				   return $$res;
-			       }]),
+		    InlineCSS([
+			sub {
+			    #TODO: Widget.RenderView
+			    my($source) = @_;
+			    my($res) = UI_View()->render(
+				'CSS->render_2014style_css',
+				$source->req,
+			    );
+			    #TODO: Need to add this to InlineCSS from RealmCSS
+			    $$res =~ s/^\!.*\n//mg;
+			    return $$res;
+			},
+		    ]),
 		],
 	    }),
-#TODO: need to be in separate aggregator - other InlineCSS() does not render?
+	    #TODO: need to be in separate aggregator - other InlineCSS() does not render?
 	    LocalFileAggregator({
 		base_values => [
 		    IfUserAgent('is_msie_8_or_before', 'msie8shim/msie8shim.min.js'),
 		],
 	    }),
 	])),
+	xhtml_favicon_tag => LINK({
+	    REL => 'shortcut icon',
+	    TYPE => 'image/x-icon',
+	    HREF => [sub {FacadeComponent_Icon()->get_favicon_uri(shift->req)}],
+	}),
 	xhtml_rss_task => '',
 	xhtml_tools => '',
 	xhtml_nav => '',
