@@ -279,6 +279,33 @@ sub initialize {
     );
 }
 
+sub is_duplicate {
+    my($self, $req) = @_;
+    my($res) = 0;
+    my($count) = 0;
+    my($body, $date_time) = ($self->get_body, $self->get_date_time);
+    b_use('Model.RealmMail')->new($req)->set_ephemeral->do_iterate(
+	sub {
+	    my($rm) = @_;
+	    return 0 if ++$count > 10;
+	    my($rf) = $rm->get_model('RealmFile');
+	    return 1
+		if abs($_DT->diff_seconds(
+		    $date_time,
+		    $rf->get('modified_date_time')
+		)) > 3600;
+	    
+	    if ($self->new($rf->get_content)->get_body eq $body) {
+		$res = 1;
+		return 0;
+	    }
+	    return 1;
+	},
+	'realm_file_id DESC',
+    );
+    return $res;
+}
+
 sub is_forwarding_loop {
     my($self) = @_;
     return $self->get('header') =~ $self->FORWARDING_HDR_RE && $1 > 3 ? 1 : 0;
