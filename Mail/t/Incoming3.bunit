@@ -1,0 +1,87 @@
+# Copyright (c) 2005-2006 bivio Software, Inc.  All Rights Reserved.
+# $Id$
+Request('initialize_fully');
+
+req()->set_realm_and_user(qw(mail_forum mail_user1));
+
+my($create_mail) = sub {
+    my($rfc) = @_;
+    model('RealmMail')->create_from_rfc822($rfc);
+    return;
+};
+
+my($create_rfc) = sub {
+    my($date, $body) = @_;
+    $date ||= 'Wed, 26 Oct 2005 04:19:47 EDT';
+    $body ||= 'any body';
+    my($email) = unauth_model(Email => {
+	realm_id => req('auth_user_id'),
+    })->get('email');
+    return <<"EOF",
+From: $email
+To: mail_forum\@localhost.localdomain
+Subject: msg
+Date: $date
+Message-ID: <m\@m>
+
+$body
+EOF
+};
+
+my($msgs) = [
+    $create_rfc->(),
+    $create_rfc->('Wed, 26 Oct 2005 05:19:47 EDT'),
+    $create_rfc->('Wed, 26 Oct 2005 05:19:48 EDT'),
+    $create_rfc->(undef, 'a different body'),
+];
+
+[
+    [$msgs->[0]] => [
+	is_duplicate => 0,
+    ],
+    [$msgs->[1]] => [
+	is_duplicate => 0,
+    ],
+    [$msgs->[2]] => [
+	is_duplicate => 0,
+    ],
+    [$msgs->[3]] => [
+	is_duplicate => 0,
+    ],
+    inline_case(
+	sub {
+	    $create_mail->($msgs->[0]);
+	    return 1;
+	},
+    ),
+    [$msgs->[0]] => [
+	is_duplicate => 1,
+    ],
+    [$msgs->[1]] => [
+	is_duplicate => 1,
+    ],
+    [$msgs->[2]] => [
+	is_duplicate => 0,
+    ],
+    [$msgs->[3]] => [
+	is_duplicate => 0,
+    ],
+    inline_case(
+	sub {
+	    $create_mail->($msgs->[3]);
+	    return 1;
+	},
+    ),
+    [$msgs->[0]] => [
+	is_duplicate => 1,
+    ],
+    [$msgs->[1]] => [
+	is_duplicate => 1,
+    ],
+    [$msgs->[2]] => [
+	is_duplicate => 0,
+    ],
+    [$msgs->[3]] => [
+	is_duplicate => 1,
+    ],
+];
