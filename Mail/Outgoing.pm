@@ -380,10 +380,15 @@ sub _list_id {
 sub _rewrite_from {
     my($self, $req) = @_;
     my($full_from) = $self->unsafe_get_header('from');
-    b_die('missing from header: ', $self)
+    $req->throw_die('FORBIDDEN', {
+	message => 'missing from header',
+    })
 	unless $full_from;
     my($old_email, $old_name) = $_A->parse($full_from);
-    b_die($full_from, ': from header missing email')
+    $req->throw_die('FORBIDDEN', {
+	message => 'from header missing email',
+	entity => $full_from,
+    })
 	unless $old_email;
     # We assume that if From does NOT need to be rewritten, then nothing needs a rewrite
     return
