@@ -23,6 +23,7 @@ commands
   audit_threads -- reconnect thread_root_id and thread_parent_id
   audit_threads_all_realms -- audit_threads for all realms with mail
   clear_junk_messages -- removes out of office and delivery failed mail
+  clear_duplicate_messages -- remove duplicate mail from realm
   delete_message_id message_id ... -- Message-ID: based removal of threads/msgs
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
   import_mbox -- imports mbox input file
@@ -89,6 +90,60 @@ EOF
 	    },
 	);
 	$self->commit_or_rollback($die);
+    }
+    return;
+}
+
+sub clear_duplicate_messages {
+    my($self) = @_;
+    my($rm) = $self->model('RealmMail');
+    my($bodies) = [];
+    $self->model('RealmFile')->do_iterate(
+	sub {
+	    my($rf) = @_;
+	    return 1 unless $rm->unsafe_load({
+		realm_file_id => $rf->get('realm_file_id'),
+	    });
+	    push(@$bodies, {
+		map(
+		    ($_ => $rf->get($_)),
+		    qw(realm_file_id path modified_date_time),
+		),
+		body => $_I->new($rf->get_content)->get_body,
+	    });
+	    return 1;
+	},
+	'modified_date_time ASC',
+    );
+
+    for (my $i = 0; $i < scalar(@$bodies); $i++) {
+	my($body) = $bodies->[$i];
+
+	for (my $j = $i + 1; $j < scalar(@$bodies); $j++) {
+	    my($body2) = $bodies->[$j];
+	    next if $body2->{is_duplicate};
+	    last if abs($_DT->diff_seconds(
+		$body->{modified_date_time},
+		$body2->{modified_date_time}
+	    )) > 3600;
+	    if ($body->{body} eq $body2->{body}) {
+		$body2->{is_duplicate} = 1;
+	    }
+	}
+    }
+
+    for (my $i = 0; $i < scalar(@$bodies); $i++) {
+	my($body) = $bodies->[$i];
+	$self->print(
+	    $body->{is_duplicate} ? 'DUP ' : '    ',
+	    $body->{realm_file_id}, ' ', $body->{path},
+	    "\n");
+
+	if ($body->{is_duplicate}) {
+	    $rm->load({
+		realm_file_id => $body->{realm_file_id},
+	    })->delete;
+	}
     }
     return;
 }
