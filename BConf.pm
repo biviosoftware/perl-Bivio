@@ -169,9 +169,6 @@ sub dev {
 		root => "$files_root/db",
 		backup_root => "$files_root/bkp",
 	    },
-	    'Bivio::Biz::Model::MailReceiveDispatchForm' => {
-		duplicate_threshold_seconds => 20,
-	    },
 	    'Bivio::Ext::DBI' => {
 		$db && $db ne 'none' ? (database => $db . $user) : (),
 	    },
