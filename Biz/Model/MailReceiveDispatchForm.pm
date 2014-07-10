@@ -23,7 +23,6 @@ my($_OUT_OF_OFFICE_FILTER_CLASSES) = [qw(
 b_use('IO.Config')->register(my $_CFG = {
     filter_spam => 0,
     filter_out_of_office => 1,
-    duplicate_threshold_seconds => 3600,
     out_of_office_negatives => [
 	[qw(X-Bugzilla)],
 	[qw(Sender .*calendar-notification@google.com)],
@@ -225,26 +224,11 @@ sub _ignore {
 
 sub _ignore_duplicate {
     my($self) = @_;
-    my($rml) = $self->new_other('RealmMailList');
     my($mi) = $self->get('mail_incoming');
     return undef
 	if $self->req->if_test(
 	sub {$mi->get('header') !~ $_TEST_RECIPIENT_HDR});
-    return undef
-	unless $rml->unsafe_load_this_or_first
-	&& _ignore_duplicate_threshold(
-	    $rml->get('RealmFile.modified_date_time'));
-#TODO: Should we decode body?
-    return $_I->new($rml->get_rfc822)->get_body eq $mi->get_body
-	? 'duplicate' : undef;
-}
-
-sub _ignore_duplicate_threshold {
-    my($prev) = @_;
-    return $_DT->compare(
-	$_DT->add_seconds($prev, $_CFG->{duplicate_threshold_seconds}),
-	$_DT->now,
-    ) > 0;
+    return $mi->is_duplicate($self->req) ? 'duplicate' : undef;
 }
 
 sub _ignore_email {
