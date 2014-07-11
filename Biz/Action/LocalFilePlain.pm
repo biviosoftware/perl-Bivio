@@ -22,7 +22,7 @@ sub execute {
     my($proto, $req, $file_name, $content_type) = @_;
     $file_name = $req->get('uri')
 	unless defined($file_name);
-    my($tagged);
+    my($tagged) = 0;
     if (Type_CacheTagFilePath()->is_tagged_path($file_name)) {
 	$file_name = Type_CacheTagFilePath()->to_untagged_path($file_name);
 	$tagged = 1;
@@ -34,8 +34,8 @@ sub execute {
     $proto->set_cacheable_output(
 	_open($req, $file_name, \$mime_type),
 	defined($content_type) ? $content_type : $mime_type,
-	$tagged ? $_TAGGED_MAX_AGE : $_MAX_AGE,
 	$req,
+	$tagged,
     );
     return 1;
 }
@@ -88,14 +88,15 @@ sub execute_uri_as_view {
 }
 
 sub set_cacheable_output {
-    my(undef, $output, $mime_type, $max_age, $req) = @_;
-    $req = $max_age
-	if ref($max_age);
-    $max_age ||= $_MAX_AGE;
+    my(undef, $output, $mime_type, $req, $never_expire) = @_;
     return $req->get('reply')
 	->set_output($output)
 	->set_output_type($mime_type)
-	->set_cache_max_age($max_age, $req);
+	->set_cache_max_age(
+	    $never_expire ? $_TAGGED_MAX_AGE : $_MAX_AGE,
+	    $req,
+	    $never_expire,
+	);
 }
 
 sub _open {
