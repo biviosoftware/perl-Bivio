@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,21 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.35  2014/07/08 21:02:31  nagler
+  * Bivio::Mail::Common
+    rewrite_from_domain: need to clear rewrite_from_domains for acceptance
+    tests so they don't rewrite on sends to the server
+  * Bivio::Mail::Outgoing
+    moved _rewrite_from moved into send() so all From (and Return-Path,
+    envelope_from, and Reply-To) get (re)written for alias sends and
+    generated emails
+  * Bivio::Test::Language::HTTP
+    rewrite_from_domain: call Mail.Outgoing test_language_setup so that it
+    gets a chance to modify configuration
+  * Bivio::UI::HTML::Widget::Script
+    removed trailing ',' from javascript hash to avoid errors
+    in MSIE browsers with compatibility mode turned on
+
   Revision 13.34  2014/07/02 20:01:16  moeller
   * Bivio::HTML::Scraper
     allow setting Accept-Encoding header for websites which only return
