@@ -161,10 +161,12 @@ sub send_append_header {
 }
 
 sub set_cache_max_age {
-    my($self, $max_age, $req) = @_;
-    return $self
-	unless b_use('UI.Facade')
-	->get_from_source($req)->get('want_local_file_cache');
+    my($self, $max_age, $req, $always_cache) = @_;
+    unless ($always_cache) {
+	return $self
+	    unless b_use('UI.Facade')
+		->get_from_source($req)->get('want_local_file_cache');
+    }
     return $self
 	->set_header('Cache-Control', "max-age=$max_age")
         ->set_header(Expires => $_DT->rfc822($_DT->add_seconds($_DT->now, $max_age)));
