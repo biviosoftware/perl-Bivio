@@ -6,6 +6,9 @@ use Bivio::Base 'Type.FilePath';
 b_use('IO.ClassLoaderAUTOLOAD');
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
+b_use('IO.Config')->register(my $_CFG = {
+    use_cached_path => 0,
+});
 
 sub REGEX {
     return qr{\.@{[Type_CacheTag()->REGEX]}\.[^\.]+$};
@@ -16,17 +19,27 @@ sub from_literal {
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
 	unless defined($v);
-    return (undef, $proto->ERROR)
-    	unless $v =~ $proto->REGEX;
+    if ($_CFG->{use_cached_path}) {
+	return (undef, $proto->ERROR)
+	    unless $v =~ $proto->REGEX;
+    }
     return $v;
 }
 
 sub from_local_path {
     my($proto, $path, $uri) = @_;
+    return ($uri || $path)
+	unless $_CFG->{use_cached_path};
     my($tag) = Type_CacheTag()->from_local_path($path);
     return undef
 	unless $tag;
     return _format_with_tag($proto, $uri || $path, $tag);
+}
+
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
 }
 
 sub is_tagged_path {
