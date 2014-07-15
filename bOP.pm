@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,45 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.36  2014/07/11 17:05:55  moeller
+  * Bivio::Agent::HTTP::Reply
+    added always_cache arg to set_cache_max_age() to force caching
+    for tagged files running on dev
+  * Bivio::BConf
+    removed duplicate_threshold_seconds config
+  * Bivio::Biz::Action::LocalFilePlain
+    strip cache tag and set far-future max age (if applicable)
+    pass "never_expire" boolean to Reply->set_cache_max_age() for tagged files
+  * Bivio::Biz::Model::MailReceiveDispatchForm
+    moved duplicate mail detection to Mail.Incoming
+  * Bivio::Mail::Incoming
+    moved duplicate checking from Model.MailReceiveDispatchForm
+    looks through last 10 messages for duplicate match,
+    comparing body and message date_time
+  * Bivio::Mail::Outgoing
+    changed b_die() to die FORBIDDEN for missing or invalid from header
+  * Bivio::Test::HTMLParser::Forms
+    strip cache tag from submit icon src
+  * Bivio::Test::Reload
+    use get_local_plain_file_name
+  * Bivio::Type::CacheTag
+  * Bivio::Type::CacheTagFilePath
+    NEW
+  * Bivio::UI::FacadeComponent::Icon
+    add get_favicon_uri, use cache tag for icon uris
+  * Bivio::UI::Facade
+    join_with_local_file_plain -> get_local_plain_file_name
+  * Bivio::UI::HTML::Widget::LocalFileLink
+    use cache tagged uris
+  * Bivio::UI::View::ThreePartPage
+    add favicon link to head
+  * Bivio::Util::Project
+    join_with_local_file_plain moved to get_local_plain_file_name
+  * Bivio::Util::RealmMail
+    added clear_duplicate_messages()
+  * Bivio::Util::SendmailHTTP
+    changed server error to EX_SOFTWARE
+
   Revision 13.35  2014/07/08 21:02:31  nagler
   * Bivio::Mail::Common
     rewrite_from_domain: need to clear rewrite_from_domains for acceptance
