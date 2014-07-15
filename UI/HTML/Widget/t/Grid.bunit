@@ -1,6 +1,11 @@
 # Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 Widget();
+config({
+    'Bivio::Type::CacheTagFilePath' => {
+	use_cached_path => 1,
+    },
+});
 my($ctre) = Type_CacheTag()->REGEX;
 [
     [[[prose('x', {row_control => 0})]]] => '',
