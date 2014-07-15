@@ -793,9 +793,12 @@ sub _get_heading {
 	    }, $sort_fields->[0]],
 	    @$sort_fields,
 	],
-	$cell->unsafe_get('column_heading_class') ? {
-	    column_heading_class => $cell->get('column_heading_class'),
-	} : (),
+	{
+	    REL => 'nofollow',
+	    $cell->unsafe_get('column_heading_class')
+		? (column_heading_class => $cell->get('column_heading_class'))
+		: (),
+	},
     ) if $sort_fields && @$sort_fields;
     $heading->put(
 	column_align => $cell->get_or_default(
