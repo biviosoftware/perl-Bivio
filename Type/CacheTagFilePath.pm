@@ -28,8 +28,11 @@ sub from_literal {
 
 sub from_local_path {
     my($proto, $path, $uri) = @_;
-    return ($uri || $path)
-	unless $_CFG->{use_cached_path};
+    unless ($_CFG->{use_cached_path}) {
+	return -f $path
+	    ? ($uri || $path)
+	    : undef;
+    }
     my($tag) = Type_CacheTag()->from_local_path($path);
     return undef
 	unless $tag;
