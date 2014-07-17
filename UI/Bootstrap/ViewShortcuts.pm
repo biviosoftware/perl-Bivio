@@ -66,11 +66,12 @@ sub vs_placeholder_form {
 }
 
 sub vs_put_pager {
-    my(undef, $model, $attrs) = @_;
+    my($proto, $model, $attrs) = @_;
     view_put(vs_pager => Pager({
 	list_class => $model,
 	$attrs ? %$attrs : (),
     }));
+    $proto->vs_put_seo_list_links($model);
     return;
 }
 
