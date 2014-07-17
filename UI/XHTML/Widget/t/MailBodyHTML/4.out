@@ -1,4 +1,4 @@
-<div class="text_html">
+<div class="text_html" itemprop="text">
 <div>div1</div>
 <div style="color:blue;background:blue">div2</div>
 <div>div3</div>
