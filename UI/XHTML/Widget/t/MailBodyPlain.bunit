@@ -2,7 +2,7 @@
 # $Id$
 Widget();
 [
-    "x\n\ny\n" => qq{<div class="text_plain">x<br />\n<br />\ny</div>},
+    "x\n\ny\n" => qq{<div class="text_plain" itemprop="text">x<br />\n<br />\ny</div>},
     '&http://www.bivio.biz?' => qr{\&amp;.*href="http://www.bivio.biz\?"}s,
     'www.bivio.biz?' => qr{href="http://www.bivio.biz".*</a>\?}s,
     '<www.bivio.biz>' => qr{href="http://www.bivio.biz".*</a>&gt;}s,
