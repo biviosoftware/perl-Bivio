@@ -39,6 +39,7 @@ sub initialize {
     $self->put_unless_exists(
 	tag => 'div',
 	class => 'text_plain',
+	ITEMPROP => 'text',
     );
     return shift->SUPER::initialize(@_);
 }
