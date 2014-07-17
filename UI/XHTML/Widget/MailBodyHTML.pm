@@ -202,9 +202,12 @@ sub NEW_ARGS {
 
 sub initialize {
     my($self) = @_;
-    $self->put_unless_exists(tag => 'div');
-    $self->put_unless_exists(tag_if_empty => 1);
-    $self->put_unless_exists(class => 'text_html');
+    $self->put_unless_exists(
+	tag => 'div',
+	tag_if_empty => 1,
+	class => 'text_html',
+	ITEMPROP => 'text',
+    );
     $self->initialize_attr('mime_cid_task');
     return shift->SUPER::initialize(@_);
 }
