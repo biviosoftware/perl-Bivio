@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,12 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.37  2014/07/15 16:58:52  moeller
+  * Bivio::Type::CacheTagFilePath
+    added use_cached_path config value to enable cached paths
+  * Bivio::UI::HTML::Widget::Table
+    added rel="nofollow" attribute to column sorting links
+
   Revision 13.36  2014/07/11 17:05:55  moeller
   * Bivio::Agent::HTTP::Reply
     added always_cache arg to set_cache_max_age() to force caching
