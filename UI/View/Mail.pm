@@ -6,10 +6,11 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-my($_T) = b_use('MIME.Type');
-my($_MF) = b_use('Model.MailForm');
-my($_M) = b_use('Biz.Model');
+my($_DT) = b_use('Type.DateTime');
 my($_E) = b_use('Type.Email');
+my($_M) = b_use('Biz.Model');
+my($_MF) = b_use('Model.MailForm');
+my($_T) = b_use('MIME.Type');
 
 sub DEFAULT_COLS {
     return 80;
@@ -235,7 +236,16 @@ sub internal_subject_body_attachments {
 
 sub internal_thread_list {
     my($self) = @_;
-    return _msg($self, 0);
+    return DIV(Join([
+	META({
+	    ITEMPROP => 'name',
+	    CONTENT => String(['Model.MailThreadList', '->get_subject']),
+	}),
+	_msg($self, 0),
+    ]), {
+	ITEMSCOPE => 'itemscope',
+	ITEMTYPE => 'http://schema.org/Article',
+    });
 }
 
 sub internal_thread_root_list {
@@ -258,13 +268,19 @@ sub internal_thread_root_list_columns {
 	['excerpt', {
 	    column_heading => '',
 	    column_data_class => 'b_msg_summary',
-	    column_widget => Join([
-		Link(String(['RealmMail.subject']),
+	    column_widget => DIV(Join([
+		Link(
+		    String(['RealmMail.subject']),
 		    ['->drilldown_uri'],
-		   {class => 'b_subject'},
+		   {
+		       class => 'b_subject',
+		       ITEMPROP => 'name',
+		   },
 		),
 #TODO: class is misspelled		
-		DIV_b_exerpt(String(['excerpt'])),
+		DIV_b_exerpt(String(['excerpt']), {
+		    ITEMPROP => 'description',
+		}),
 		DIV_byline(Join([
 		    SPAN_author(
 			String(
@@ -280,13 +296,22 @@ sub internal_thread_root_list_columns {
 			    ),
 			    {escape_html => 1},
 			),
+			{
+			    ITEMPROP => 'creator',
+			},
 		    ),
 		    DIV_date(
 			If2014Style(
-			    vs_smart_date(),
+			    vs_smart_date('RealmFile_2.modified_date_time'),
 			    DateTime(['RealmFile_2.modified_date_time']),
 			),
 		    ),
+		    META({
+			ITEMPROP => 'dateCreated',
+			CONTENT => [
+			    $_DT, '->to_xml',
+			    ['RealmFile.modified_date_time']],
+		    }),
 		])),
 		Link(
 		    Join([
@@ -304,7 +329,17 @@ sub internal_thread_root_list_columns {
 		    ['->drilldown_uri'],
 		    {class => 'b_count'},
 		),
-	    ]),
+		META({
+		    ITEMPROP => 'interactionCount',
+		    CONTENT => Join([
+			'UserComments:',
+			['message_count'],
+		    ]),
+		}),
+	    ]), {
+		ITEMSCOPE => 'itemscope',
+		ITEMTYPE => 'http://schema.org/Article',
+	    }),
 	}],
     ];
 }
@@ -360,6 +395,11 @@ sub _msg {
 		    $self->internal_part_list,
 		    $self->internal_reply_links,
 		]),
+		{
+		    ITEMSCOPE => 'itemscope',
+		    ITEMTYPE => 'http://schema.org/Comment',
+		    ITEMPROP => 'comment',
+		},
 	    ),
 	]),
     );
