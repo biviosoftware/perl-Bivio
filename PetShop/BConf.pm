@@ -65,9 +65,9 @@ sub merge_overrides {
 	'Bivio::UI::View::Wiki' => {
 	    use_wysiwyg => 1,
 	},
-	'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
-	    use_file_manager => 1,
-	},
+	# 'Bivio::UI::XHTML::Widget::FeatureTaskMenu' => {
+	#     use_file_manager => 1,
+	# },
 	'Bivio::Util::RealmUser' => {
 	    audit_map => [
 		'site-admin' => [
