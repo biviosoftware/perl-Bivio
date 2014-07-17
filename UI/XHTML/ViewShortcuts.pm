@@ -109,6 +109,13 @@ my($_HTML_TAGS) = join('|', qw(
 ));
 my($_SUBMIT_CHAR) = '*';
 my($_LM) = b_use('Biz.ListModel');
+my($_DYNAMIC_QUERY_KEYS) = [
+    b_use('Biz.FormModel')->FORM_CONTEXT_QUERY_KEY,
+    map(
+	b_use('SQL.ListQuery')->to_char($_),
+	qw(order_by search),
+    ),
+];
 
 sub view_autoload {
     my($proto, $method, $args, $simple_method, $suffix) = @_;
@@ -523,11 +530,40 @@ sub vs_prose {
 }
 
 sub vs_put_pager {
-    my(undef, $model, $attrs) = @_;
+    my($proto, $model, $attrs) = @_;
     view_put(vs_pager => DIV_pager(Pager({
 	list_class => $model,
 	$attrs ? %$attrs : (),
     })));
+    $proto->vs_put_seo_list_links($model);
+    return;
+}
+
+sub vs_put_seo_list_links {
+    my($self, $list_model) = @_;
+    my($value) = ref($list_model) ? $list_model : ["Model.$list_model"];
+    view_put(
+	xhtml_seo_head_links => Join([
+	    map(
+		If(
+		    [[$value, '->get_query'], "has_$_"],
+		    LINK({
+			REL => $_,
+			HREF => URI({
+			    require_absolute => 1,
+			    query => [
+				$value,
+				'->format_query',
+				uc($_) . '_LIST',
+			    ],
+			}),
+		    }),
+		),
+		qw(prev next),
+	    ),
+	    _canonical_link(),
+	]),
+    );
     return;
 }
 
@@ -660,15 +696,16 @@ sub vs_simple_form_submit {
 #TODO: clean up, make into widget
 sub vs_smart_date {
     my($self, $field) = @_;
-    $field ||= 'RealmFile.modified_date_time';
+    my($value) = ref($field)
+	? $field
+	: [$field || 'RealmFile.modified_date_time'];
     return SPAN_bivio_smart_date(Simple([
 	sub {
-	    my($source) = @_;
-	    my($dt) = $source->get($field);
+	    my($source, $dt) = @_;
 	    return ''
 		if !defined($dt);
 	    my($now) = Type_DateTime()->now;
-	    return DateTime([$field], 'FULL_MONTH_DAY_AND_YEAR')
+	    return DateTime($value, 'FULL_MONTH_DAY_AND_YEAR')
 		if Type_DateTime()->get_part(
 		    Type_DateTime()->to_local($dt), 'year')
 		    != Type_DateTime()->get_part(
@@ -677,7 +714,7 @@ sub vs_smart_date {
 		Type_DateTime()->set_local_end_of_day($dt),
 		Type_DateTime()->local_end_of_today,
 	    );
-	    return DateTime([$field], 'MONTH_NAME_AND_DAY_NUMBER')
+	    return DateTime($value, 'MONTH_NAME_AND_DAY_NUMBER')
 		if $dd > 7;
 	    return Type_DateTime()->english_day_of_week(
 		Type_DateTime()->to_local($dt),
@@ -692,13 +729,14 @@ sub vs_smart_date {
 		if $ds > 60 && $ds < Type_DateTime()->SECONDS_IN_DAY / 24;
 	    return Join([
 		'Yesterday',
-		DateTime([$field], 'HOUR_MINUTE_AM_PM_LC'),
+		DateTime($value, 'HOUR_MINUTE_AM_PM_LC'),
 	    ], ' ')
 		if $dd > 0;
-	    return DateTime([$field], 'HOUR_MINUTE_AM_PM_LC')
+	    return DateTime($value, 'HOUR_MINUTE_AM_PM_LC')
 		if $ds > Type_DateTime()->SECONDS_IN_DAY / 24;
 	    return 'Just now';
 	},
+	$value,
     ]));
 }
 
@@ -842,6 +880,27 @@ sub vs_xhtml_title {
 	],
 	{join_separator => ' '},
     );
+}
+
+sub _canonical_link {
+    return LINK({
+	REL => 'canonical',
+	HREF => URI({
+	    require_absolute => 1,
+	    query => [
+		sub {
+		    my($source) = @_;
+		    my($query) = $source->ureq('query');
+		    if (ref($query) eq 'HASH') {
+			foreach my $key (@$_DYNAMIC_QUERY_KEYS) {
+			    delete($query->{$key});
+			}
+		    }
+		    return $query;
+		},
+	    ],
+	}),
+    });
 }
 
 sub _format_integer_ago {
