@@ -100,6 +100,7 @@ sub run {
     my(@start_mode) = $background ? () : ('-X');
     my($reload) = 'PerlInitHandler Bivio::Test::Reload';
     my($modules) = _dynamic_modules($_HTTPD);
+    my($max_requests_per_child) = $background ? 120 : 100000;
     my($pass_env) = join(
 	"\n",
 	map(("PassEnv $_", "PerlPassEnv $_"),
@@ -304,7 +305,7 @@ MinSpareServers 1
 MaxSpareServers 4
 StartServers 1
 MaxClients 4
-MaxRequestsPerChild 10000
+MaxRequestsPerChild $max_requests_per_child
 LimitRequestBody 4194304
 RequestReadTimeout header=2
 
