@@ -304,7 +304,7 @@ MinSpareServers 1
 MaxSpareServers 4
 StartServers 1
 MaxClients 4
-MaxRequestsPerChild 120
+MaxRequestsPerChild 10000
 LimitRequestBody 4194304
 RequestReadTimeout header=2
 
