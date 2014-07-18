@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,26 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.38  2014/07/17 22:18:46  moeller
+  * Bivio::PetShop::BConf
+    disable use_file_manager
+  * Bivio::Type::CacheTagFilePath
+    fixed from_local_path() when not use_cached_path
+  * Bivio::UI::Bootstrap::ViewShortcuts
+    add seo links during vs_put_pager()
+  * Bivio::UI::FacadeBase
+    added microformat to Mail byline
+  * Bivio::UI::View::Mail
+    added microformat tags to message board
+  * Bivio::UI::View::ThreePartPage
+    added xhtml_seo_head_links view attr
+  * Bivio::UI::XHTML::ViewShortcuts
+    added vs_put_seo_list_links() to add pager and canonical head links
+  * Bivio::UI::XHTML::Widget::MailBodyHTML
+    added ITEMPROP attr for microformats
+  * Bivio::UI::XHTML::Widget::MailBodyPlain
+    set ITEMPROP="text" for microformats
+
   Revision 13.37  2014/07/15 16:58:52  moeller
   * Bivio::Type::CacheTagFilePath
     added use_cached_path config value to enable cached paths
