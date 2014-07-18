@@ -239,7 +239,7 @@ sub internal_thread_list {
     return DIV(Join([
 	META({
 	    ITEMPROP => 'name',
-	    CONTENT => String(['Model.MailThreadList', '->get_subject']),
+	    CONTENT => String(['Model.' . _name($self, 'XxThreadList'), '->get_subject']),
 	}),
 	_msg($self, 0),
     ]), {
