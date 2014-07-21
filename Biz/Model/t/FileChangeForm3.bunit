@@ -16,4 +16,17 @@ require 'RealmFile.PL';
 	$f->execute_empty;
 	return $f->get('realm_file_lock') ? 1 : 0;
     } => 1,
+    sub {
+	model('RealmFile')->create_with_content({
+	    path => '/foo2.txt',
+	}, \("\x{10}\x{0}a"));
+        req()->put(path_info => '/foo2.txt'),
+	return 1;
+    } => 1,
+    sub {
+	my($f) = class()->new(req());
+	$f->internal_pre_execute();
+	$f->execute_empty;
+	return $f->is_text_content_type ? 0 : 1;
+    } => 1,
 ];
