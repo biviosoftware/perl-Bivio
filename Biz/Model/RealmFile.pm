@@ -374,6 +374,11 @@ sub is_text_content_type {
 	? 1 : 0;
 }
 
+sub is_text_file {
+    my($self) = @_;
+    return -T $self->get_os_path ? 1 : 0;
+}
+
 sub is_version {
     return _path(@_) =~ m{^\Q@{[$_FP->VERSIONS_FOLDER]}\E(?:/|$)}i ? 1 : 0;
 }
