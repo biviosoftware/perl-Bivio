@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.39  2014/07/18 22:47:07  moeller
+  * Bivio::UI::View::Mail
+    use XxThreadList var for ITEMPROP value, could be Mail or CRM model
+
   Revision 13.38  2014/07/17 22:18:46  moeller
   * Bivio::PetShop::BConf
     disable use_file_manager
