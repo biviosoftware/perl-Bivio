@@ -540,8 +540,10 @@ sub vs_put_pager {
 }
 
 sub vs_put_seo_list_links {
-    my($self, $list_model) = @_;
-    my($value) = ref($list_model) ? $list_model : ["Model.$list_model"];
+    my($self, $model) = @_;
+    my($value) = ref($model)
+	? $model
+	: ["Model.$model", '->get_list_model'];
     view_put(
 	xhtml_seo_head_links => Join([
 	    map(
