@@ -268,6 +268,7 @@ sub is_text_content_type {
     my($rf) = $self->get('realm_file');
     return !$rf->get('is_folder')
 	&& $rf->is_text_content_type
+        && $rf->is_text_file
 	&& $rf->get_content_length < $_TA->get_width; 
 }
 
