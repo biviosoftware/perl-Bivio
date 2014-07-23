@@ -2271,6 +2271,9 @@ sub _cfg_wiki {
 		SITE_WIKI_VIEW => '',
 		forum_wiki_data => 'Files',
 	    ]],
+	    ['xhtml.title' => [
+		[qw(FORUM_WIKI_VIEW SITE_WIKI_VIEW)] => q{If(['->ureq', 'Action.WikiView', 'title'], Simple(['Action.WikiView', 'title']));},
+	    ]],
 	    [RealmDropDown => [
 		forum => 'vs_ui_forum();',
 		user => 'User',
