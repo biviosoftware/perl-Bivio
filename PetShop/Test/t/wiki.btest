@@ -28,6 +28,7 @@ submit_form(Validate => {
     anon => 'v1: go back to the ^StartPage. ' . $search_key,
 });
 verify_uri(qr{/PrivatePage});
+verify_title('Petshop - PrivatePage');
 verify_no_text('not found');
 follow_link('edit');
 verify_text('PrivatePage');
@@ -37,6 +38,7 @@ submit_form(Validate => {
     anon => 'v2: go back to the ^StartPage. ' . $search_key,
 });
 follow_link('StartPage');
+verify_title('Petshop - StartPage');
 submit_form({_anon => $search_key});
 my($search_page) = get_uri();
 verify_text('Here is our');
