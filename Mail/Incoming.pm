@@ -23,18 +23,6 @@ sub NO_MESSAGE_ID {
     return 'no-message-id';
 }
 
-sub get_all_addresses {
-    my($self) = @_;
-    my($r) = $self->get_reply_to;
-    return $_SA->sort_unique([
-	map(lc($_),
-	    ($self->get_from)[0],
-	    $r ? $r : (),
-	    map(@{$_A->parse_list(_get_field($self, "$_:"))}, qw(to cc)),
-	),
-    ]);
-}
-
 sub get_body {
     my($self, $body) = @_;
     # Returns the body of the message or puts a copy in I<body>.

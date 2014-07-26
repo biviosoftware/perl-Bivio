@@ -50,13 +50,6 @@ EOF
 	get_message_id => [
 	    [] => ['no-message-id'],
 	],
-	get_all_addresses => [
-	    [] => [[qw(
-                cc@cc.com
-                john@localhost.localdomain
-                private_forum@localhost.localdomain
-	    )]],
-	],
 	get_references => [
 	    [] => [[qw(d@d c@c b@b a@a)]],
 	],
