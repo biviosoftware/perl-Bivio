@@ -31,6 +31,7 @@ X-MSMail-Priority: Normal
 X-Mimeole: Produced By Microsoft MimeOLE V4.72.3110.3
 List-Unsubscribe: <mailto:leave-some-list-14220S@example.com>
 CC: cc@example.com
+BCC: bcc@example.com
 Subject: This is my subject
 Reply-To: " Some-List" <some-list@example.com>
 Sender: owner-some-list@bivio.com
@@ -52,6 +53,7 @@ Subject: [abc] This is my subject
 Sender: some-list-owner@a.a
 To: "Some-List" <some-list@example.com>, to@example.com
 CC: cc@example.com
+BCC: bcc@example.com
 Reply-To: some-list@example.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
@@ -184,6 +186,7 @@ my($_BODY) = 'what a body';
 	unsafe_get_header => [
 	    to => '"Some-List" <some-list@example.com>, to@example.com',
 	    cc => 'cc@example.com',
+	    bcc => 'bcc@example.com',
 	    'return-path' => '<c@c.c>',
 	    from => '"Fan Tango" <foo_bar@example.net>',
 	    sender => 'a@a.a',

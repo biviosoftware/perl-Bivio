@@ -25,6 +25,7 @@ my($_KEEP_HEADERS_LIST_SEND_RE) = qr{
     @{[join(
         '|',
 	qw(
+	    bcc
 	    cc
 	    comments
 	    content-.+
@@ -68,6 +69,7 @@ my($_FIRST_HEADERS) = [qw(
     sender
     to
     cc
+    bcc
     reply-to
     mime-version
     content-type

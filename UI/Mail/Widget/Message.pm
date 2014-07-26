@@ -26,6 +26,7 @@ sub initialize {
     $self->map_invoke(unsafe_initialize_attr => [qw(
 	body
 	cc
+	bcc
 	headers_object
 	recipients
 	subject
@@ -56,7 +57,7 @@ sub _render {
     my($recips) = [];
     $msg->set_header('X-Originating-IP', $req->get('client_addr'))
 	if $req->has_keys('client_addr');
-    foreach my $header (qw(to cc subject)) {
+    foreach my $header (qw(to cc bcc subject)) {
 	my($value) = '';
 	if ($self->unsafe_render_attr($header, $req, \$value) && $value) {
 	    $msg->set_header(ucfirst($header), $value);

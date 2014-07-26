@@ -244,7 +244,7 @@ sub _mail {
     my($self) = @_;
     view_class_map('MailWidget');
     view_shortcuts($self->VIEW_SHORTCUTS);
-    my($a) = [qw(body to cc headers_object subject)];
+    my($a) = [qw(body to cc bcc headers_object subject)];
     $self->internal_put_base_attr(
 	map(($_ => ''), @$a),
 	from => Mailbox(
