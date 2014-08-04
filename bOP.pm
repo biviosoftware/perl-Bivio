@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,13 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.40  2014/07/21 15:47:21  moeller
+  * Bivio::UI::XHTML::ViewShortcuts
+    model passed to vs_put_seo_list_links() may be a ListFormModel,
+    call ->get_list_model() to get the underlying list
+  * Bivio::Util::HTTPD
+    set MaxRequestsPerChild based on running in background or not
+
   Revision 13.39  2014/07/18 22:47:07  moeller
   * Bivio::UI::View::Mail
     use XxThreadList var for ITEMPROP value, could be Mail or CRM model
