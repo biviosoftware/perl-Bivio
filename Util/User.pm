@@ -183,10 +183,12 @@ sub realms {
 sub subscribe_info {
     my($self, $ru) = @_;
     return '' unless $ru->get('role')->eq_mail_recipient;
-    my($sub) = $self->unauth_model(UserRealmSubscription => {
-	realm_id => $ru->get('realm_id'),
-	user_id => $ru->get('user_id'),
-    });
+    my($sub) = $self->model('UserRealmSubscription');
+    return ' (NO SUBSCRIPTION)'
+	unless $sub->unauth_load({
+	    realm_id => $ru->get('realm_id'),
+	    user_id => $ru->get('user_id'),
+	});
     return ' ('
 	. ($sub->get('is_subscribed') ? 'subscribed' : 'not-subscribed')
 	. ' ' . $_DT->to_xml($sub->get('modified_date_time')) . ')';
