@@ -1414,6 +1414,9 @@ sub _site_mail {
 .msg .text_plain {
   Font('pre_text');
 }
+.msg pre {
+  white-space: pre-line;
+}
 .msg .attachment {
   margin-top: 2ex;
   border-top: 1px dashed;
