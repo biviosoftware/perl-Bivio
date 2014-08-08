@@ -7,6 +7,7 @@ use HTML::Parser ();
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
+my($_S) = b_use('Type.String');
 my($_EMPTY_TAG) = _hash(qw(
     area
     base
@@ -263,6 +264,7 @@ sub _clean {
 	while _top($state);
     $state->{buffer} =~ s/[\n\r][\t ]+|[\t ]+[\n\r]/\n/sg;
     $state->{buffer} =~ s/\n\n+/\n/sg;
+    $_S->canonicalize_charset(\($state->{buffer}));
     $$buffer .= $state->{buffer};
     return;
 }
