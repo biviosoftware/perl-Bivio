@@ -143,7 +143,7 @@ function @{[$self->RESIZE_FUNCTION]}() {
     var b = help_wiki_iframe.document.body;
     o.style.height = b.scrollHeight;
     o.style.width = b.scrollWidth;
-    o.style.height = b.scrollHeight + (b.offsetHeight - b.clientHeight);
+    o.style.height = b.scrollHeight + (b.offsetHeight - b.clientHeight) + 'px';
   }
   else {
     o.style.height = o.contentDocument.body.scrollHeight + 'px';
