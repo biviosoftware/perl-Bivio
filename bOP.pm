@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,22 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.41  2014/08/04 17:24:07  moeller
+  * Bivio::Biz::Model::FileChangeForm
+    is_text_content_type() checks if file contents looks likes text
+  * Bivio::Biz::Model::RealmFile
+    added is_text_file() which uses -T heuristic
+  * Bivio::Mail::Incoming
+    remove get_all_addresses (unused)
+  * Bivio::Mail::Outgoing
+    add bcc support
+  * Bivio::UI::FacadeBase
+    set wiki page titles from Action.WikiView title
+  * Bivio::UI::Mail::Widget::Message
+    add bcc support
+  * Bivio::UI::View::Base
+    add bcc support
+
   Revision 13.40  2014/07/21 15:47:21  moeller
   * Bivio::UI::XHTML::ViewShortcuts
     model passed to vs_put_seo_list_links() may be a ListFormModel,
