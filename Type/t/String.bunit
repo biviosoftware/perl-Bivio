@@ -54,6 +54,7 @@ Type();
 	join(' ', 1 .. 50) => [\(join(' ', 1 .. 45) . ' ...')],
 	[join(' ', 1 .. 10), 5, 1],  => [\(join(' ', 1 .. 5))],
 	'some text --- and the end.' => [\(q{some text and the end.})],
+	'special dividend of $.50/share' => 'special dividend of $.50/share',
     ],
     canonicalize_newlines => [
 	'' => '',
