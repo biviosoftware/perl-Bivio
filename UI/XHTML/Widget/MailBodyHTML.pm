@@ -132,8 +132,12 @@ my($_SAFE_PROPERTY) = _hash(qw(
     background
     background-color
     border
+    border-bottom
     border-collapse
     border-color
+    border-left
+    border-radius
+    border-right
     border-spacing
     border-style
     border-top
@@ -181,6 +185,7 @@ my($_SAFE_PROPERTY) = _hash(qw(
     outline-width
     overflow
     padding
+    padding-bottom
     padding-top
     table-layout
     text-align
@@ -263,7 +268,8 @@ sub _clean {
     _clean_end($state)
 	while _top($state);
     $state->{buffer} =~ s/[\n\r][\t ]+|[\t ]+[\n\r]/\n/sg;
-    $state->{buffer} =~ s/\n\n+/\n/sg;
+#TODO: this causes formatting problems with "pre" tags, is it needed?    
+#    $state->{buffer} =~ s/\n\n+/\n/sg;
     $_S->canonicalize_charset(\($state->{buffer}));
     $$buffer .= $state->{buffer};
     return;
