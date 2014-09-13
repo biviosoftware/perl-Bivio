@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,16 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.42  2014/08/08 22:15:10  moeller
+  * Bivio::UI::View::CSS
+    display mail messages with PRE tags using white-space: pre-line
+  * Bivio::UI::XHTML::Widget::HelpWiki
+    use 'px' suffix when setting help window height for older MSIE
+  * Bivio::UI::XHTML::Widget::MailBodyHTML
+    canonicalize_charset on message to clean up utf-8 characters
+  * Bivio::Util::User
+    subscribe_info() returns NO SUBSCRIPTION if user has no UserRealmSubscription
+
   Revision 13.41  2014/08/04 17:24:07  moeller
   * Bivio::Biz::Model::FileChangeForm
     is_text_content_type() checks if file contents looks likes text
