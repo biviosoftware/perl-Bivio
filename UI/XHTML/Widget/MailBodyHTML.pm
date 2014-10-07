@@ -171,6 +171,9 @@ my($_SAFE_PROPERTY) = _hash(qw(
     list-style-position
     list-style-type
     margin
+    margin-bottom
+    margin-left
+    margin-right
     margin-top
     marker-offset
     marks
@@ -186,6 +189,8 @@ my($_SAFE_PROPERTY) = _hash(qw(
     overflow
     padding
     padding-bottom
+    padding-left
+    padding-right
     padding-top
     table-layout
     text-align
