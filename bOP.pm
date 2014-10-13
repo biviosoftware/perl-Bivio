@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,15 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.43  2014/09/13 19:36:56  nagler
+  * Bivio::Type::String
+    remove 3 repeating symbol, not 2 - allows text like $.20 and 4 <= 5
+  * Bivio::UI::XHTML::Widget::MailBodyHTML
+    added more safe css properties
+    removed newline condensing, added TODO
+  * Bivio::Util::SendmailHTTP
+    added lwp_timeout_seconds
+
   Revision 13.42  2014/08/08 22:15:10  moeller
   * Bivio::UI::View::CSS
     display mail messages with PRE tags using white-space: pre-line
