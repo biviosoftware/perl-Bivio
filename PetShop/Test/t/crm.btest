@@ -88,3 +88,9 @@ verify_local_mail($tech1, qr{Status: Open\s+Owner: crm_tech1\s*$}s, 1);
 visit_uri('/crm_forum/tickets');
 follow_link_in_table('Ticket', 'Subject', $bug_subject);
 follow_link('discuss_internally_2');
+
+visit_uri('/crm_forum/tickets');
+follow_link_in_table('Ticket', 'Subject', $bug_subject, 'Actions', 'close');
+verify_text($bug_subject);
+submit_form('OK');
+verify_no_text($bug_subject);
