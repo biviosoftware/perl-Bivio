@@ -12,6 +12,19 @@ my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_UIT) = b_use('FacadeComponent.Text');
 my($_DT) = b_use('Type.DateTime');
 
+sub close_form {
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form('CRMCloseForm', [
+	Join([
+	    'Close ticket #',
+	    String(['Model.CRMThread', 'crm_thread_num']),
+	    ' - ',
+	    String(['Model.CRMThread', 'subject']),
+	    '?',
+	]),
+    ]));
+}
+
 sub field_updates_imail {
     my($self) = @_;
     return $self->internal_put_base_attr(
@@ -143,6 +156,9 @@ sub internal_thread_root_list_columns {
  	}],
  	'CRMThread.modified_date_time',
  	'modified_by_name',
+	vs_actions_column([
+	    ['close', 'FORUM_CRM_CLOSE', 'THIS_AS_PARENT'],
+	]),
     ];
 }
 
