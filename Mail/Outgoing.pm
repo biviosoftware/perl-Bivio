@@ -135,6 +135,12 @@ sub attach {
 sub edit_body {
     my($self, $vars) = @_;
     my($body) = ${$self->get_body};
+    # fix vars cut-off by quoted printable formatting
+    my($count) = 0;
+    while ($body =~ s/( quoted-printable.*?\$\w*)\=\n(\w+)/$1$2/s) {
+	b_die('too many vars replaced')
+	    if ++$count > 10;
+    }
     $self->set_body($_IOT->replace_in_string(\$body, $vars));
     return;
 }
