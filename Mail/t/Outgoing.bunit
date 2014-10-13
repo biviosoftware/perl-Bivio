@@ -104,6 +104,27 @@ Date: Thu, 1 Jul 1999 09:33:35 -0400
 body
 EOF
 
+my($_QUOTED_PRINTABLE) = <<'EOF';
+Message-ID: <123@example.com>
+From: <<from@from.from>>
+Date: Thu, 1 Jul 1999 09:33:35 -0400
+Content-Type: multipart/alternative; boundary=001a11c3e682ee25060502a42c67
+
+--001a11c3e682ee25060502a42c67
+Content-Type: text/plain; charset=UTF-8
+
+The quick brown fox $jumps over the $lazy dog.
+
+--001a11c3e682ee25060502a42c67
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+The quick brown fox $jum=
+ps over the $=
+lazy dog.
+
+--001a11c3e682ee25060502a42c67--
+EOF
 
 
 my($_BODY) = 'what a body';
@@ -275,5 +296,14 @@ my($_BODY) = 'what a body';
 	    cc => undef,
 	    from => '<<from@from.from>>',
 	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_QUOTED_PRINTABLE)] => [
+	edit_body => [
+	    [{
+		jumps => 'hurdles',
+		lazy => 'slumbering',
+	    }] => not_die(),
+	],
+	get_body => qr{slumbering},
     ],
 ];
