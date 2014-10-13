@@ -912,6 +912,7 @@ sub _cfg_crm {
 	    [FORUM_CRM_THREAD_LIST => '?/ticket'],
 	    [FORUM_CRM_FORM => '?/compose-ticket-msg'],
 	    [FORUM_CRM_THREAD_ROOT_LIST_CSV => '?/tickets.csv'],
+	    [FORUM_CRM_CLOSE => '?/close-ticket'],
 	],
 	Text => [
 	    [CRMQueryForm => [
@@ -968,6 +969,7 @@ sub _cfg_crm {
 		FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
 		FORUM_CRM_THREAD_ROOT_LIST_CSV => 'Spreadsheet',
 		FORUM_CRM_THREAD_LIST => q{Enum(['Model.CRMThreadList', '->get_crm_thread_status']); Ticket #String(['Model.CRMThreadList', '->get_crm_thread_num']); String(['Model.CRMThreadList', '->get_subject']);},
+		FORUM_CRM_CLOSE => 'Close Ticket',
 	    ]],
 	    [acknowledgement => [
 		FORUM_CRM_FORM => 'Your message was sent.',
