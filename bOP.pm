@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,20 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.44  2014/10/13 23:27:31  moeller
+  * Bivio::Biz::Model::CRMCloseForm
+    NEW
+  * Bivio::Delegate::TaskId
+    added FORUM_CRM_CLOSE task
+  * Bivio::Mail::Outgoing
+    fixup cut-off variable names in quoted printable in edit_body()
+  * Bivio::UI::FacadeBase
+    added FORUM_CRM_CLOSE
+  * Bivio::UI::View::CRM
+    added 'close' actions link to CRM list
+  * Bivio::UI::XHTML::Widget::MailBodyHTML
+    added more safe properties
+
   Revision 13.43  2014/09/13 19:36:56  nagler
   * Bivio::Type::String
     remove 3 repeating symbol, not 2 - allows text like $.20 and 4 <= 5
