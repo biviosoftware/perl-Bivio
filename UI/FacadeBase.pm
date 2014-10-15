@@ -547,6 +547,7 @@ sub _cfg_base {
 	    [country => 'Country'],
             [phone => 'Phone'],
 	    [empty_list_prose => 'This list is empty.'],
+	    [do_not_show_again => 'Do not show this message again.'],
 	    [http_too_many_requests => 'Too many requests'],
 	    ['FormError.prose.detail_prefix' => '; additional info: '],
 	    [[qw(actions list_actions)] => 'Actions'],
