@@ -31,6 +31,7 @@ sub u_find_all {
 
 sub u_find_all_duplicates {
     my($self) = @_;
+    my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     my($modules) = {};
     foreach my $dir (@INC) {
 	next
@@ -43,10 +44,10 @@ sub u_find_all_duplicates {
 		    my($file) = $File::Find::name;
 		    my($name) = $_;
 		    return
-			if $file =~ m{/CVS(?:/|$)}
+			if $file =~ $vc_re
 			|| $name =~ m{(^|/)(\..*|.*~|#.*)$}
 			|| -d $file;
-		    if ($name =~ /^CVS$/) {
+		    if ($name =~ $vc_re) {
 			$File::Find::prune = 1;
 			return;
 		    }

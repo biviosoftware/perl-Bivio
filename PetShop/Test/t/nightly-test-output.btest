@@ -8,7 +8,7 @@ my($now) = type('DateTime')->now;
 my($now_fn) = type('DateTime')->to_file_name($now);
 send_mail($user, "nightly_test_output*$forum", {}, <<"EOF");
 Created /petshop/$now_fn
-Completed CVS checkout of test files
+Completed VC checkout of test files
 cd /home/btest/petshop/$now_fn/perl/Bivio/PetShop
 export PERLLIB=/petshop/$now_fn/perl
 export BCONF=/petshop.bconf

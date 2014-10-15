@@ -51,6 +51,7 @@ sub generate_bootstrap_css {
 sub link_facade_files {
     my($self) = @_;
     $self->initialize_fully;
+    my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     my($default) = b_use('UI.Facade')->get_instance;
     $_F->do_in_dir(
 	$default->get_local_file_root,
@@ -68,7 +69,7 @@ sub link_facade_files {
 		my($common) = "$src/perl/Bivio/files";
 		$_F->mkdir_p($common);
 		foreach my $j (grep(
-		    $_ !~ /CVS$/ && -d $_,
+		    $_ !~ $vc_re && -d $_,
 		    glob("$src/javascript/*"),
 		)) {
 		    my($dest) = "$common/" . ($j =~ m{([^/]+)$})[0];
@@ -107,7 +108,7 @@ sub link_facade_files {
 		    wanted => sub {
 			my($file) = $File::Find::name;
 			return
-			    if $file =~ m{/CVS(?:/|$)} || $file =~ /\~$/;
+			    if $file =~ $vc_re || $file =~ /\~$/;
 			return
 			    unless $file =~ s,^$default_prefix,,;
 			foreach my $prefix (@$prefixes) {

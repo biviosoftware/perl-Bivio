@@ -2,6 +2,7 @@
 # $Id$
 use strict;
 use Bivio::Test;
+use Bivio::Util::VC;
 use Bivio::Util::LinuxConfig;
 my($_tmp) = "$ENV{PWD}/LinuxConfig.tmp/";
 Bivio::IO::Config->introduce_values({
@@ -9,7 +10,8 @@ Bivio::IO::Config->introduce_values({
 	root_prefix => $_tmp,
     },
 });
-CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -pR LinuxConfig/* $_tmp; find $_tmp -name CVS -exec rm -rf {} \\; -prune");
+my($vc_re) = Bivio::Util::VC->CONTROL_DIR_GLOB;
+CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -pR LinuxConfig/* $_tmp; find $_tmp -name '$vc_glob' -exec rm -rf {} \\; -prune");
 
 my($_true) = grep(-x $_, qw(/bin/true /usr/bin/true));
 my($user) = $ENV{USER};

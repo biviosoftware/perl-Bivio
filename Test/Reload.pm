@@ -89,11 +89,12 @@ sub _modified_ddl {
 	unless -d
         ($_DDL ||= Bivio::UI::Facade->get_default->get_local_file_name('DDL', ''));
     my($res) = [];
+    my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     File::Find::find({
 	no_chdir => 1,
 	wanted => sub {
 	    my($p) = $File::Find::name;
-	    if ($p =~ m{(?:^|/)(?:\.|CVS$)}) {
+	    if ($p =~ $vc_re || $p =~ m{(?:^|/)(?:\.$)}) {
 		$File::Find::prune = 1;
 		return;
 	    }
@@ -122,12 +123,14 @@ sub _modified_less {
 
 sub _modified_pm {
     my($res) = [];
+    my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     File::Find::find({
 	no_chdir => 1,
 	wanted => sub {
 	    push(@$res, _modified_pm_path($_))
 		unless $File::Find::prune
-	        = $_ =~ m{(?:^|/)(?:Test|files|CVS|t|\..*)$}s;
+	        = ($_ =~ m{(?:^|/)(?:Test|files|t|\..*)$}s
+		  || $_ =~ $vc_re);
 	    return;
 	},
     }, @$_WATCH);

@@ -31,7 +31,7 @@ usage: b-test [options] command [args...]
 commands:
     acceptance tests/dirs... - runs the tests (*.btest) under Bivio::Test::Language
     mock_sendmail -ffrom@email.com recipient1,recipient2,... -- bypasses MTA for acceptance tests
-    nightly -- runs all acceptance tests with current tests from CVS
+    nightly -- runs all acceptance tests with current tests from VC
     remote_trace [named_filters] -- turn on tracing on a server
     task name query path_info facade -- executes task in context supplied returns output
     unit tests/dirs... -- runs the tests (*.t) and print cummulative results
@@ -170,13 +170,14 @@ sub nightly {
     $ENV{PERLLIB} = $f->pwd . $_PERL_DIR
 	. ($ENV{PERLLIB} ? ":$ENV{PERLLIB}" : '');
     my($die) = $_D->catch(sub {
-        # CVS checkout
+        # VC checkout
         (my $bop = $_CFG->{nightly_cvs_dir}) =~ s{\w+$}{Bivio};
 	# Bivio/PetShop special case
 #TODO: Move Bivio/PetShop to PetShop
 	my($is_petshop) = $bop =~ s{Bivio/Bivio}{Bivio};
-        system("cvs -Q checkout '$_CFG->{nightly_cvs_dir}' '$bop'");
-        $self->print("Completed CVS checkout of test files\n");
+        system('bivio', 'vc', 'checkout', $_CFG->{nightly_cvs_dir});
+        system('bivio', 'vc', 'checkout', $bop);
+        $self->print("Completed VC checkout of test files\n");
         $f->chdir($_CFG->{nightly_cvs_dir});
 	$self->print("cd " . $f->pwd . "\n");
 	$self->print("export PERLLIB=$ENV{PERLLIB}\n");
@@ -383,6 +384,7 @@ sub _find_files {
 	unless @$args;
     my($tests) = {};
     my($pwd) = b_use('IO.File')->pwd;
+    my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     foreach my $arg (@$args) {
 	$arg = "t/$arg"
 	    if !-e $arg && $arg =~ $pattern && -e "t/$arg";
@@ -393,7 +395,8 @@ sub _find_files {
 		my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
 		if (-d $File::Find::name) {
 		    $File::Find::prune = 1
-			if $f =~ /(?:^CVS|^old|-|\.old|^realm-data|.*\.tmp)$/;
+			if $f =~ $vc_re
+			|| $f =~ /(?:^old|-|\.old|^realm-data|.*\.tmp)$/;
 		    return;
 		}
 		return

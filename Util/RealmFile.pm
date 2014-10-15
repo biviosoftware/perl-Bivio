@@ -196,11 +196,12 @@ sub import_tree {
     $folder = $folder ? $self->convert_literal(FilePath => $folder) : '/';
     my($folders) = [];
     my($files) = [];
+    my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     File::Find::find(
 	{
 	    wanted => sub {
 		my($name) = $_;
-		if ($name =~ /^CVS$/) {
+		if ($name =~ $vc_re) {
 		    $File::Find::prune = 1;
 		    return;
 		}

@@ -33,7 +33,7 @@ use Bivio::Biz::PropertyModel;
 C<Bivio::Biz::Model::DbUpgrade> database upgrade indicator.  Applications
 should create a program, e.g. db-upgrade, which contains the current upgrade.
 When the upgrade is complete (before the commit), this table should be updated
-with the CVS revision of the upgrade.  Since there is a unique key on
+with the VC revision of the upgrade.  Since there is a unique key on
 db_upgrade_t.version, an upgrade can't run twice.
 
 =cut

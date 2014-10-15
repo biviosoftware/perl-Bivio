@@ -26,7 +26,7 @@ sub OPTIONS_USAGE {
     my($proto) = @_;
     return <<'EOF'.$proto->SUPER::OPTIONS_USAGE;
 special options:
-    -checkout - runs cvs checkout on package_dir first
+    -checkout - runs vc checkout on package_dir first
     -package_dir dir - limits the operation to this package's directory
 EOF
 }
@@ -245,7 +245,7 @@ sub _checkout {
     my($pkg) = $self->unsafe_get('package_dir');
     $self->usage('package must be supplied with -checkout') unless $pkg;
     Bivio::IO::File->mkdir_p($input_dir);
-    system("cd $input_dir && cvs -Q checkout $pkg") == 0
+    system("cd $input_dir && bivio vc checkout $pkg") == 0
 	    || Bivio::Die->die('checkout ', $pkg, ' failed');
     return;
 }
@@ -257,7 +257,8 @@ sub _find_files {
 	sub {
 	    my($n) = $File::Find::name;
 	    return $File::Find::prune = 1
-		unless ! -d || !/^CVS$/ && /^(?:\.|[A-Z]\w*)$/;
+		unless ! -d $_ || $_ !~ b_use('Util.VC')->CONTROL_DIR_RE
+		&& $_ =~ /^(?:\.|[A-Z]\w*)$/;
 	    return unless -r && -f;
 
 	    # Legitimate perl file

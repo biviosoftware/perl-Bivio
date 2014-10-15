@@ -56,7 +56,7 @@ b_use('IO.ClassLoaderAUTOLOAD');
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 our($_MACROS);
-my($_CVS_CHECKOUT) = 'cvs -Q checkout -f -r';
+my($_VC_CHECKOUT) = 'bivio vc checkout';
 my($_DT) = __PACKAGE__->use('Type.DateTime');
 my($_FILES_LIST_BASE) = 'b_release_files.list';
 my($_FILES_LIST) = '%{_builddir}/' . $_FILES_LIST_BASE;
@@ -523,20 +523,21 @@ EOF
 sub _b_release_include {
     my($to_include, $spec_dir, $version, $output) = @_;
     # Returns contents of $to_include
-    _system("cd $_CFG->{tmp_dir} && cvs checkout -f -r $version"
-	. " $_CFG->{cvs_rpm_spec_dir}/$to_include", $output)
-	if $version;
+#    _system("cd $_CFG->{tmp_dir} && bivio vc checkout $version"
+#	. " $_CFG->{cvs_rpm_spec_dir}/$to_include", $output)
+#	if $version;
     return ${b_use('IO.File')->read("$spec_dir$to_include")};
 }
 
 sub _build_macros {
     my($build_root) = @_;
+    my($vc_glob) = b_use('Util.VC')->CONTROL_DIR_GLOB;
     return ($_NEED_BUILD_ROOT ? "BuildRoot: $build_root\n" : '')
 	. '%define build_root %{buildroot}'
 	. "\n"
-        . <<'EOF';
-%define allfiles cd %{buildroot}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\\.//'
-%define allcfgs cd %{buildroot}; find . -name CVS -prune -o -type l -print -o -type f -print | sed -e 's/^\\./%config /'
+        . <<"EOF";
+\%define allfiles cd \%{buildroot}; find . -name '$vc_glob' -prune -o -type l -print -o -type f -print | sed -e 's/^\\.//'
+\%define allcfgs cd \%{buildroot}; find . -name '$vc_glob' -prune -o -type l -print -o -type f -print | sed -e 's/^\\./%config /'
 EOF
 }
 
@@ -578,8 +579,9 @@ sub _create_rpm_spec {
 	    unless $specin =~ m!^/!;
     }
     else {
-        $specin = "$_CFG->{cvs_rpm_spec_dir}/$specin.spec";
-        _system("cvs checkout -f -r $version $specin", $output);
+	my($spec_dir) = $_CFG->{cvs_rpm_spec_dir};
+        $specin = "$spec_dir/$specin.spec";
+        _system("bivio vc checkout '$version' '$spec_dir'", $output);
 	$specin = b_use('IO.File')->pwd.'/'.$specin
 	    unless $specin =~ m!^/!;
 	$cvs = 1;
@@ -591,10 +593,11 @@ sub _create_rpm_spec {
     my($name) = _search('name', $base_spec)
 	|| (b_use('Type.FileName')->get_tail($specin) =~ /(.*)\.spec$/);
     my($provides) = _search('provides', $base_spec) || $name;
+    my($vc_glob) = $self->new_other('VC')->CONTROL_DIR_GLOB;
     my($buf) = <<"EOF" . _perl_macros();
 \%define suse_check echo not calling /usr/sbin/Check
-\%define cvs $_CVS_CHECKOUT $version
-%define rm_cvs_dirs (cd %{_builddir} && find '%{cvs_dir}' -type d -name CVS -exec %{safe_rm} '{}' ';' -prune) || exit 1
+\%define cvs $_VC_CHECKOUT $version
+\%define rm_cvs_dirs (cd \%{_builddir} && find '\%{cvs_dir}' -type d -name '$vc_glob' -exec \%{safe_rm} '{}' ';' -prune) || exit 1
 Release: $release
 Name: $name
 Provides: $provides

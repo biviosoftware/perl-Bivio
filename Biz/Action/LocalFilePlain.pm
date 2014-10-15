@@ -104,8 +104,8 @@ sub _open {
     # Opens the file_name on the request as a document or throws NOT_FOUND
     my($req, $file_name, $mime_type) = @_;
     my($doc) = $_F->get_local_file_name($_PLAIN, $file_name, $req);
-    # No files which begin with '.' or contain CVS are allowed
-    if ($file_name =~ /\/\./ || $file_name =~ /\/CVS/) {
+    # No files which begin with '.' or contain VC are allowed
+    if ($file_name =~ /\/\./ || $file_name =~ b_use('Util.VC')->CONTROL_DIR_RE) {
 	_trace($doc, ': invalid name') if $_TRACE;
     }
     else {
