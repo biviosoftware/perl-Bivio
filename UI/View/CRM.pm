@@ -22,6 +22,7 @@ sub close_form {
 	    String(['Model.CRMThread', 'subject']),
 	    '?',
 	]),
+	'CRMCloseForm.do_not_show_again',
     ]));
 }
 
