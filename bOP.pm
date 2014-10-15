@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved. 
+# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,9 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.46  2014/10/15 22:02:53  nagler
+  * Removed license in each file.  Too noisy and unnecessary
+
   Revision 13.45  2014/10/15 17:45:07  moeller
   * Bivio::Biz::Model::ConfirmationForm
     added NO_CONFIRM_TASKS user preference which allows skipping
