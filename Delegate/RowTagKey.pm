@@ -41,6 +41,7 @@ sub _init {
 	    [MAIL_VISIBILITY => 15, 'MailVisibility'],
 	    [BULLETIN_BODY_TEMPLATE => 16, 'BulletinBodyTemplate'],
 	    [FILTER_MAILER_DAEMON => 17, 'BooleanFalseDefault'],
+	    [NO_CONFIRM_TASKS => 18, 'TaskIdArray'],
 	    [LAST_RESERVED_VALUE => 99],
 	)],
 	$type,
