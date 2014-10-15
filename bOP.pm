@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
+# Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved. 
 # $Id$
 package Bivio::bOP;
 use strict;
@@ -31,6 +31,19 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.45  2014/10/15 17:45:07  moeller
+  * Bivio::Biz::Model::ConfirmationForm
+    added NO_CONFIRM_TASKS user preference which allows skipping
+    confirmation pages
+  * Bivio::Biz::Model::CRMCloseForm
+    now derived from ConfirmationForm
+  * Bivio::Delegate::RowTagKey
+    added NO_CONFIRM_TASKS
+  * Bivio::UI::FacadeBase
+    added do_no_show_again message
+  * Bivio::UI::View::CRM
+    added "do not show again" field to CRMCloseForm
+
   Revision 13.44  2014/10/13 23:27:31  moeller
   * Bivio::Biz::Model::CRMCloseForm
     NEW
