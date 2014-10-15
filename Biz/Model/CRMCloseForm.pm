@@ -2,7 +2,7 @@
 # $Id$
 package Bivio::Biz::Model::CRMCloseForm;
 use strict;
-use Bivio::Base 'Model.ConfirmableForm';
+use Bivio::Base 'Model.ConfirmationForm';
 
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
@@ -11,7 +11,7 @@ sub execute_ok {
     $self->req('Model.CRMThread')->update({
 	crm_thread_status => b_use('Type.CRMThreadStatus')->CLOSED,
     });
-    return;
+    return shift->SUPER::execute_ok(@_);
 }
 
 sub internal_initialize {
