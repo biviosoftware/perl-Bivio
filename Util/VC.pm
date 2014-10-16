@@ -59,8 +59,8 @@ sub u_checkout {
    $version ||= 'HEAD';
    if ($git_dir) {
        $self->piped_exec([qw(git clone), $version eq 'HEAD' ? () : (-b => $version), $repo]);
-       IO_File->mkdir_parent_only($module);
-       IO_File->rename($git_dir, $module);
+       IO_File()->mkdir_parent_only($module);
+       IO_File()->rename($git_dir, $module);
        return;
    }
    $self->piped_exec([qw(cvs -Q checkout -f -r), $version, $repo]);
