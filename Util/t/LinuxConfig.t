@@ -10,7 +10,7 @@ Bivio::IO::Config->introduce_values({
 	root_prefix => $_tmp,
     },
 });
-my($vc_re) = Bivio::Util::VC->CONTROL_DIR_GLOB;
+my($vc_glob) = Bivio::Util::VC->CONTROL_DIR_GLOB;
 CORE::system("rm -rf $_tmp; mkdir $_tmp; cp -pR LinuxConfig/* $_tmp; find $_tmp -name '$vc_glob' -exec rm -rf {} \\; -prune");
 
 my($_true) = grep(-x $_, qw(/bin/true /usr/bin/true));
