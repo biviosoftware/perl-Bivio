@@ -7,15 +7,38 @@ use Bivio::Base 'Bivio.ShellUtil';
 our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_T) = b_use('Type.Text');
+my($_TI) = b_use('Agent.TaskId');
 
 sub USAGE {
     my($proto) = @_;
     return <<"EOF";
 usage: bivio @{[$proto->simple_package_name]} [options] command [args..]
 commands
+    clear_missing_task_ids -- removes TaskLog entries for invalid TaskIds
     import_access_log -- import access_log data from STDIN
     test_reset -- remove all entries [test only]
 EOF
+}
+
+sub clear_missing_task_ids {
+    my($self) = @_;
+    b_use('SQL.Connection')->do_execute(
+	sub {
+	    my($row) = @_;
+	    return 1
+		if $_TI->unsafe_from_int($row->[0]);
+	    print('removing missing task id: ', $row->[0], "\n");
+	    b_use('SQL.Connection')->execute(
+		'DELETE FROM task_log_t WHERE task_id = ?',
+		[$row->[0]]);
+	    return 1;
+	},
+	'SELECT DISTINCT task_id FROM task_log_t'
+    );
+#TODO: not sure why this needs to be here, commit is missing otherwise
+    b_use('SQL.Connection')->commit
+	unless $self->unsafe_get('noexecute');
+    return;
 }
 
 sub import_access_log {
