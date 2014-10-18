@@ -531,13 +531,13 @@ sub _b_release_include {
 
 sub _build_macros {
     my($build_root) = @_;
-    my($vc_glob) = b_use('Util.VC')->CONTROL_DIR_GLOB;
+    my($vc_find) = b_use('Util.VC')->CONTROL_DIR_FIND_PREDICATE;
     return ($_NEED_BUILD_ROOT ? "BuildRoot: $build_root\n" : '')
 	. '%define build_root %{buildroot}'
 	. "\n"
         . <<"EOF";
-\%define allfiles cd \%{buildroot}; find . -name '$vc_glob' -prune -o -type l -print -o -type f -print | sed -e 's/^\\.//'
-\%define allcfgs cd \%{buildroot}; find . -name '$vc_glob' -prune -o -type l -print -o -type f -print | sed -e 's/^\\./%config /'
+\%define allfiles cd \%{buildroot}; find . $vc_find -prune -o -type l -print -o -type f -print | sed -e 's/^\\.//'
+\%define allcfgs cd \%{buildroot}; find . -name $vc_find -prune -o -type l -print -o -type f -print | sed -e 's/^\\./%config /'
 EOF
 }
 
@@ -593,11 +593,11 @@ sub _create_rpm_spec {
     my($name) = _search('name', $base_spec)
 	|| (b_use('Type.FileName')->get_tail($specin) =~ /(.*)\.spec$/);
     my($provides) = _search('provides', $base_spec) || $name;
-    my($vc_glob) = $self->new_other('VC')->CONTROL_DIR_GLOB;
+    my($vc_find) = $self->new_other('VC')->CONTROL_DIR_FIND_PREDICATE;
     my($buf) = <<"EOF" . _perl_macros();
 \%define suse_check echo not calling /usr/sbin/Check
 \%define cvs $_VC_CHECKOUT $version
-\%define rm_cvs_dirs (cd \%{_builddir} && find '\%{cvs_dir}' -type d -name '$vc_glob' -exec \%{safe_rm} '{}' ';' -prune) || exit 1
+\%define rm_cvs_dirs (cd \%{_builddir} && find '\%{cvs_dir}' -type d $vc_find -exec \%{safe_rm} '{}' ';' -prune) || exit 1
 Release: $release
 Name: $name
 Provides: $provides
