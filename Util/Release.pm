@@ -161,6 +161,7 @@ sub build {
     #   myproject
     #
     # Returns information about the commands executed.
+    $self->assert_not_root;
     $self->usage_error("Missing spec file\n") unless @packages;
     my($rpm_stage) = $self->get('build_stage');
     $self->usage_error("Invalid build_stage ", $rpm_stage, "\n")
