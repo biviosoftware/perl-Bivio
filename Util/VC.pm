@@ -12,8 +12,8 @@ b_use('IO.Config')->register(my $_CFG = {
     },
 });
 
-sub CONTROL_DIR_GLOB {
-    return '{CVS,.git}';
+sub CONTROL_DIR_FIND_PREDICATE {
+    return q{'(' -name CVS -o -name .git ')'};
 }
 
 sub CONTROL_DIR_RE {
