@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
-# $Id$ 
+# $Id$
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,18 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.48  2014/10/18 02:43:29  nagler
+  * Bivio::Util::Release
+    use CONTROL_DIR_FIND_PREDICATE instead of a glob
+  * Bivio::Util::TaskLog
+    added clear_missing_task_ids()
+  * Bivio::Util::VC
+    added primitive git support
+    fpc
+    fpc
+    find doesn't accept {} glob expansions so CONTROL_DIR_GLOB removed
+    and CONTROL_DIR_FIND_PREDICATE added.
+
   Revision 13.47  2014/10/15 22:23:01  nagler
   * Bivio::Biz::Action::LocalFilePlain
     modularized cvs into Util.VC
