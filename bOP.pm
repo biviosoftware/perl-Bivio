@@ -1,5 +1,5 @@
 # Copyright (c) 2001-2014 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# $Id$ 
 package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -31,6 +31,30 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.47  2014/10/15 22:23:01  nagler
+  * Bivio::Biz::Action::LocalFilePlain
+    modularized cvs into Util.VC
+  * Bivio::Biz::Model::DbUpgrade
+    modularized cvs into Util.VC
+  * Bivio::Test::Reload
+    modularized cvs into Util.VC
+  * Bivio::Test::Util
+    modularized cvs into Util.VC
+  * Bivio::Util::Class
+    modularized cvs into Util.VC
+  * Bivio::Util::DarwinConfig
+    removed
+  * Bivio::Util::POD
+    modularized cvs into Util.VC
+  * Bivio::Util::Project
+    modularized cvs into Util.VC
+  * Bivio::Util::RealmFile
+    modularized cvs into Util.VC
+  * Bivio::Util::Release
+    modularized cvs into Util.VC
+  * Bivio::Util::VC
+    NEW
+
   Revision 13.46  2014/10/15 22:02:53  nagler
   * Removed license in each file.  Too noisy and unnecessary
 
