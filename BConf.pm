@@ -443,6 +443,7 @@ sub merge_http_log {
 		    'reconnecting to database: pid=',
 		    'from_literal failed:.*no-message-id',
 		    'Cookie:.* duplicate cookie value for key',
+		    'Bivio::Mail::Incoming::_check_message_id.* invalid Message-Id',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
