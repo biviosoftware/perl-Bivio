@@ -520,7 +520,7 @@ sub _format_string_simple {
 sub _format_string_with_type {
     my($value) = @_;
 #TODO: DateTime should be an object
-    return $Bivio::Type::DateTime::VERSION
+    return Bivio::UNIVERSAL->b_can('is_valid_specified', 'Bivio::Type::DateTime')
 	&& Bivio::Type::DateTime->is_valid_specified($value)
 	? Bivio::Type::DateTime->to_string($value) . " [$value]"
         : $value;
