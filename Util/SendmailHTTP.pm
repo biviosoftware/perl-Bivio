@@ -32,7 +32,7 @@ my($_SYSEXIT) = {
     EX_CONFIG => 78,
 };
 b_use('IO.Config')->register(my $_CFG = {
-    lwp_timeout_seconds => 600,
+    lwp_timeout_seconds => 1800,
 });
 
 sub create_http_request {
