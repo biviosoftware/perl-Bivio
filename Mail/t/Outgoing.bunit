@@ -62,7 +62,7 @@ List-Id: <some-list.example.com>
 Precedence: list
 X-Auto-Response-Suppress: OOF
 X-Bivio-Forwarded: 1
-X-Mailer: Bivio-Mail-Outgoing ${Bivio::Mail::Outgoing::VERSION}
+X-Mailer: Bivio-Mail-Outgoing
 
 Four score and seven years ago...
 

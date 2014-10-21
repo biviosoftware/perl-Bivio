@@ -296,7 +296,7 @@ sub set_headers_for_list_send {
     $self->set_header(
 	To => $self->unsafe_get_header('cc') || $bp->{list_email},
     ) unless $self->unsafe_get_header('to');
-    $self->set_header('X-Mailer', "Bivio-Mail-Outgoing $VERSION");
+    $self->set_header('X-Mailer', "Bivio-Mail-Outgoing");
     $self->set_header('Precedence', 'list');
     $self->set_header('X-Auto-Response-Suppress', 'OOF');
     $self->set_header('List-Id', _list_id($bp->{list_email}));
