@@ -8,7 +8,7 @@ our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 
-Bivio::bOP - bivio OLTP Platform (bOP) overview and version 
+Bivio::bOP - bivio OLTP Platform (bOP) overview and version
 
 =head1 RELEASE SCOPE
 
@@ -31,6 +31,10 @@ http://www.bivio.biz for more info.
 =head1 CHANGES
 
   $Log$
+  Revision 13.49  2014/10/18 17:32:07  nagler
+  * Bivio::Util::Release
+    don't run build as root now
+
   Revision 13.48  2014/10/18 02:43:29  nagler
   * Bivio::Util::Release
     use CONTROL_DIR_FIND_PREDICATE instead of a glob
