@@ -25,6 +25,7 @@ commands
   clear_junk_messages -- removes out of office and delivery failed mail
   clear_duplicate_messages -- remove duplicate mail from realm
   delete_message_id message_id ... -- Message-ID: based removal of threads/msgs
+  list_realms_by_mail_count -- list all realms by RealmMail count
   import_rfc822 [<dir>] -- imports RFC822 files in <dir>
   import_mbox -- imports mbox input file
   import_bulletins -- imports old Bulletins into forum mail files
@@ -250,6 +251,25 @@ sub import_rfc822 {
 	$self->commit_or_rollback
 	    if ++$i % 100 == 0;
     }
+    return;
+}
+
+sub list_realms_by_mail_count {
+    my($self) = @_;
+    b_use('SQL.Connection')->do_execute(
+	sub {
+	    my($row) = @_;
+	    my($name, $count) = @$row;
+	    $self->print($count, ' ', $name, "\n");
+	    return 1;
+	},
+	'SELECT name, COUNT(*) FROM realm_owner_t, realm_mail_t
+            WHERE realm_owner_t.realm_id = realm_mail_t.realm_id
+            AND realm_type in (?, ?)
+            GROUP BY name
+            ORDER BY COUNT(*) DESC',
+	[map(b_use('Auth.RealmType')->from_name($_)->as_int, qw(CLUB FORUM))],
+    );
     return;
 }
 
