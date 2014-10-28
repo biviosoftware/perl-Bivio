@@ -6,7 +6,6 @@ use Bivio::Base 'HTMLWidget.Page';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 use URI ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATTRS) = [qw(view_attr_prefix realm_id path default_path)];
 my($_FP) = Bivio::Type->get_instance('FilePath');
 my($_HTML) = b_use('Bivio.HTML');

@@ -4,7 +4,6 @@ package Bivio::Test::Unit::FormModel;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_M) = b_use('Biz.Model');
 my($_A) = b_use('IO.Alert');
 my($_R) = b_use('IO.Ref');

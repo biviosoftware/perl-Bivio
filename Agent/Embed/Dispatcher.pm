@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Agent.Dispatcher';
 use Bivio::Agent::Embed::Request;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_SELF) = __PACKAGE__->initialize;
 
 sub call_task {

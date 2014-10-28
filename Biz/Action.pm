@@ -4,7 +4,6 @@ package Bivio::Biz::Action;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CLASS_TO_SINGLETON) = {};
 
 sub CLASSLOADER_MAP_NAME {

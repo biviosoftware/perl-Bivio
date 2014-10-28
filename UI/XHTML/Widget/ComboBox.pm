@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.Join';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_JS) = b_use('HTMLWidget.JavaScript');
 my($_QV) = b_use('JavaScriptWidget.QuotedValue');
 my($_PREFIX) = 'window.bivio.combobox';

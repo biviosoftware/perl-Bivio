@@ -8,9 +8,8 @@ ShellUtil();
         .*Bivio::UI::WidgetValueSource
         .*Bivio::UNIVERSAL
     }xs,
-    [qw(u_info ShellUtil.Class)] => qr{^\d+.\d+ .*/Bivio/Util/Class\.pm$},
-    [qw(u_info Bivio::UNIVERSAL)] => qr{^\d+.\d+ .*/Bivio/UNIVERSAL\.pm$},
+    [qw(u_info ShellUtil.Class)] => qr{^.*/Bivio/Util/Class\.pm$},
+    [qw(u_info Bivio::UNIVERSAL)] => qr{^.*/Bivio/UNIVERSAL\.pm$},
     [qw(u_info Bivio::Not_A_Class)] => [],
-    [qw(u_find_all Bivio::BConf)] => qr{'/home/.*\n\s*'/usr/}s,
-    [qw(u_find_all_duplicates)] => qr{'/home/.*\n\s*'/usr/}s,
+    #TODO: test find_all/_duplicates robustly (modify @INC)
 ];

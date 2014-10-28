@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::Enum;
 use strict;
 use Bivio::Base 'HTMLWidget.String';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
     return ['field'];

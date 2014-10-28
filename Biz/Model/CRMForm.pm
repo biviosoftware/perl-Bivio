@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CRMForm;
 use strict;
 use Bivio::Base 'Model.MailForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = b_use('Mail.RFC822');
 my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_CT) = b_use('Model.CRMThread');

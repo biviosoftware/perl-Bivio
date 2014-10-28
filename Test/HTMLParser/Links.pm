@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Test.HTMLParser';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);

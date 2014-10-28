@@ -23,7 +23,6 @@ use Bivio::Base 'UI.WidgetValueSource';
 # L<internal_initialize_value|"internal_initialize_value"> for
 # more details.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_R) = b_use('IO.Ref');
 my($_HANDLERS) = b_use('Biz.Registrar')->new;

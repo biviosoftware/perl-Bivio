@@ -8,7 +8,6 @@ use Bivio::Base 'Type.Line';
 # last name, account identifier, and login name.  If you want
 # a compound name, use L<Bivio::Type::Line|Bivio::Type::Line>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_width {
     return 30;

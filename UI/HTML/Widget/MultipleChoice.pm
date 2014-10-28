@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::MultipleChoice;
 use strict;
 use Bivio::Base 'UI.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = b_use('Type.Enum');
 my($_HTML) = b_use('Bivio.HTML');
 

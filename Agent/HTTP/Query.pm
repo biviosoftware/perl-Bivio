@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 use Bivio::HTML;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 my($_LQ) = b_use('SQL.ListQuery');
 my($_U) = b_use('Bivio.UNIVERSAL');

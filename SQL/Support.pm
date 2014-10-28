@@ -68,7 +68,6 @@ use Bivio::Base 'Collection.Attributes';
 # True means ascending (normal) and false means descending.
 # NOT NORMALLY USED.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_LQ) = b_use('SQL.ListQuery');
 my($_C) = b_use('SQL.Constraint');

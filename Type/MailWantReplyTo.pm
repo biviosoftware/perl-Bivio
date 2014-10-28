@@ -4,7 +4,6 @@ package Bivio::Type::MailWantReplyTo;
 use strict;
 use Bivio::Base 'Type.Boolean';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = b_use('Model.RowTag');
 
 sub ROW_TAG_KEY {

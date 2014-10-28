@@ -10,7 +10,6 @@ use Bivio::IO::Trace;
 use IO::File ();
 use User::pwent ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_FORWARDING_HDR_RE);
 b_use('IO.Config')->register(my $_CFG = {

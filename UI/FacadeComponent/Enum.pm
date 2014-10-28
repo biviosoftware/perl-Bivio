@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'FacadeComponent.Text';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DESC_PREFIX) = '_desc';
 
 sub make_facade_decl {

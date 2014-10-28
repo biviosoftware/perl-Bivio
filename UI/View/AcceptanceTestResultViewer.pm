@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub acceptance_test_detail {
     view_put(

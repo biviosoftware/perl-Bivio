@@ -8,7 +8,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # Atom Format, RFC 4287
 # validator at http://validator.w3.org/feed/
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
     return ['list_class'];

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MotionCommentList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('ClassWrapper.TupleTag')->wrap_methods(
     __PACKAGE__, b_use('Model.MotionCommentForm')->TUPLE_TAG_INFO);
 

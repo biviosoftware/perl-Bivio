@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::IO::Alert;
 use Data::Dumper ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_SEEN);
 
 sub nested_contains {

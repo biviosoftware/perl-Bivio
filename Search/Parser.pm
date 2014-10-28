@@ -4,7 +4,6 @@ package Bivio::Search::Parser;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');
 my($_P) = b_use('Search.Parseable');

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 our($_SELF_IN_EVAL);
 Bivio::IO::Config->register(my $_CFG = {

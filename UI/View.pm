@@ -196,7 +196,6 @@ use Bivio::IO::Trace;
 #
 # The root of all views returned by L<execute_uri|"execute_uri">.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE, $_CURRENT, $_CURRENT_FACADE);
 my($_VS) = b_use('FacadeComponent.ViewSupport');
 my($_CLASSES);

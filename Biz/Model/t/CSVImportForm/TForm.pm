@@ -4,7 +4,6 @@ package Bivio::Biz::Model::t::CSVImportForm::TForm;
 use strict;
 use Bivio::Base 'Model.CSVImportForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     my($self) = @_;

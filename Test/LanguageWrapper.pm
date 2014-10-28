@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 b_use('IO.Trace');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 my($_CL) = b_use('IO.ClassLoader');
 my($_L) = b_use('Test.Language');

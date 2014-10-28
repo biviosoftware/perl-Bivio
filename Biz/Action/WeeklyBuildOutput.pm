@@ -4,7 +4,6 @@ package Bivio::Biz::Action::WeeklyBuildOutput;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($proto, $req) = @_;

@@ -4,7 +4,6 @@ package Bivio::Biz::Action::Error;
 use strict;
 use Bivio::Base 'Action.EmptyReply';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 my($_SF) = b_use('Action.SiteForum');
 my($_FC) = b_use('FacadeComponent.Constant');

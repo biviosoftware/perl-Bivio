@@ -6,7 +6,6 @@ use Bivio::Base 'Biz.FormModel';
 use Bivio::IO::Trace;
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DN) = b_use('Type.DisplayName');
 my($_A) = b_use('IO.Alert');
 my($_GUEST) = b_use('Auth.Role')->GUEST;

@@ -8,7 +8,6 @@ b_use('IO.ClassLoaderAUTOLOAD');
 
 # C<Bivio::Test::HTMLParser::Forms> models the forms on a page.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_HTML) = b_use('Bivio.HTML');

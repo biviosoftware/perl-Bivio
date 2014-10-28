@@ -4,7 +4,6 @@ package Bivio::Biz::Model::Email;
 use strict;
 use Bivio::Base 'Model.LocationBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = b_use('Type.Email');
 
 sub create {

@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::MultiCheckHandler;
 use strict;
 use Bivio::Base 'UI.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_JS) = b_use('HTMLWidget.JavaScript');
 
 sub get_html_field_attributes {

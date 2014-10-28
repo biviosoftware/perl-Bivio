@@ -4,7 +4,6 @@ package Bivio::Type::WikiName;
 use strict;
 use Bivio::Base 'Type.DocletFileName';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WIDTH) = __PACKAGE__->get_instance('FileName')->get_width;
 my($_HELP) = '_Help';
 b_use('IO.Config')->register(my $_CFG = {

@@ -4,7 +4,6 @@ package Bivio::Biz::t::ListModel::T3List;
 use strict;
 use base 'Bivio::Biz::Model::NumberedList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     my($self) = @_;

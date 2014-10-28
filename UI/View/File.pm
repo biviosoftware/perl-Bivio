@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 my($_FCF) = b_use('Model.FileChangeForm');
 my($_FCM) = b_use('Type.FileChangeMode');

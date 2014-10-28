@@ -9,7 +9,6 @@ use HTTP::Request::Common ();
 use URI ();
 use Email::MIME::Encodings ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_HTTPC) = b_use('Ext.HTTPCookies');
 my($_E) = b_use('Type.Email');

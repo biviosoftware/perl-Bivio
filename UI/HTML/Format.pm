@@ -14,7 +14,6 @@ use Bivio::Base 'UI.WidgetValueSource';
 # involve querying user preferences to determine how the user likes to
 # see things, e.g. date/time format.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_instance {
     my($proto, $class) = @_;

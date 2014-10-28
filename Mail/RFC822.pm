@@ -4,7 +4,6 @@ package Bivio::Mail::RFC822;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATOM_ONLY_PHRASE) = ATOM_ONLY_PHRASE();
 
 sub ADDRESS {

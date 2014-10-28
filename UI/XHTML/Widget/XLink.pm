@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
     return [qw(facade_label ?class)];

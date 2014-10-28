@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.StringArray';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ANY_SEPARATOR_REGEX {
     return shift->LITERAL_SEPARATOR_REGEX;

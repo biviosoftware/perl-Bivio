@@ -4,7 +4,6 @@ package Bivio::Util::TaskLog;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_T) = b_use('Type.Text');
 my($_TI) = b_use('Agent.TaskId');

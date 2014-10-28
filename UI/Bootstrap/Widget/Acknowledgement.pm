@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = __PACKAGE__->use('Action.Acknowledgement');
 
 sub new {

@@ -4,7 +4,6 @@ package Bivio::Type::GeomPoint;
 use strict;
 use Bivio::Base 'Type.Geom';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = b_use('Bivio::TypeError');
 my($_GN) = b_use('Type.GeomNumber');
 my($_DD) = b_use('Type.DecimalDegree');

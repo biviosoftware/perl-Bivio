@@ -4,7 +4,6 @@ package Bivio::UI::Widget::SimplePage;
 use strict;
 use Bivio::Base 'Widget.Simple';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     my($self, $req) = @_;

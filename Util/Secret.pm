@@ -4,7 +4,6 @@ package Bivio::Util::Secret;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S) = __PACKAGE__->use('Type.Secret');
 my($_R) = __PACKAGE__->use('Biz.Random');
 

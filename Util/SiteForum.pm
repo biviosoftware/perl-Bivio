@@ -4,7 +4,6 @@ package Bivio::Util::SiteForum;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_FN) = b_use('Type.ForumName');
 my($_T) = b_use('FacadeComponent.Text');

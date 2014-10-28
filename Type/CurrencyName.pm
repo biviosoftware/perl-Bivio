@@ -4,7 +4,6 @@ package Bivio::Type::CurrencyName;
 use strict;
 use Bivio::Base 'Type.SyntacticString';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PAYPAL_CURRENCIES) = {
     map(($_ => 1),
 	qw(AUD CAD CZK DKK EUR HKD HUF JPY NOK NZD PLN GBP SGD SEK CHF USD)),

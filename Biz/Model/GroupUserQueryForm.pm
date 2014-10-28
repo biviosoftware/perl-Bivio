@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.FilterQueryForm';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('FacadeComponent.Text');
 my($_SUBSCRIBED) = 'is_subscribed';
 

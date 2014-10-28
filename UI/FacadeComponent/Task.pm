@@ -54,7 +54,6 @@ use Bivio::Base 'UI.FacadeComponent';
 # I<path_info> appended (see L<format_uri|"format_uri">).
 #
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;

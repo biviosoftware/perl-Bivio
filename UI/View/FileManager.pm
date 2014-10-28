@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 my($_FILEMANAGER_ROOT) = b_use('Action.FileManagerAjax')->get_root;
 

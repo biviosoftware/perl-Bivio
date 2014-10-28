@@ -4,7 +4,6 @@ package Bivio::UI::Facade::Default;
 use strict;
 use Bivio::Base 'UI.FacadeBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 __PACKAGE__->new({
     is_production => 1,

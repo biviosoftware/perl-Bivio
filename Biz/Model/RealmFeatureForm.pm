@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFeatureForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RR) = b_use('ShellUtil.RealmRole');
 my($_MSA) = b_use('Type.MailSendAccess');
 my($_F) = b_use('UI.Facade');

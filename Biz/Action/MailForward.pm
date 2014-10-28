@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REWRITE_FROM_DOMAIN_URI {
     return 'user';

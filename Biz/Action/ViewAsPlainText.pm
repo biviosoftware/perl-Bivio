@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Biz::Action::ViewAsPlainText;
 use strict;
-$Bivio::Biz::Action::ViewAsPlainText::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Action::ViewAsPlainText::VERSION;
-
 =head1 NAME
 
 Bivio::Biz::Action::ViewAsPlainText - renders view source as plain text

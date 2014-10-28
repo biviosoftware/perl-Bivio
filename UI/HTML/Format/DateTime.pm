@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Format::DateTime;
 use strict;
 use Bivio::Base 'UIHTML.Format';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MONTHS) = [qw(
     N/A
     January

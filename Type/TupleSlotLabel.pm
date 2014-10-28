@@ -4,7 +4,6 @@ package Bivio::Type::TupleSlotLabel;
 use strict;
 use Bivio::Base 'Type.TupleLabel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CHAR) = qr{[-\w]};
 my($_REGEX) = qr{[A-Z](?:$_CHAR)+}o;
 

@@ -4,7 +4,6 @@ package Bivio::Util::TestMail;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Biz.Random');
 my($_DT) = b_use('Type.DateTime');
 my($_BODIES);

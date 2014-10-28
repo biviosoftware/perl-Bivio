@@ -4,7 +4,6 @@ package Bivio::Type::DecimalDegree;
 use strict;
 use Bivio::Base 'Type.Number';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_decimals {
     return 8;

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TaskLog;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REQ_KEY) = __PACKAGE__ . '.state';
 my($_DT) = b_use('Type.DateTime');
 $_DT->register_with_agent_task;

@@ -4,7 +4,6 @@ package Bivio::Type::ECCreditCardNumber;
 use strict;
 use Bivio::Base 'Type.Secret';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = b_use('Bivio.TypeError');
 
 sub TEST_NUMBER {

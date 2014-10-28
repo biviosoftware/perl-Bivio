@@ -4,7 +4,6 @@ package Bivio::PetShop::Util::TestCRM;
 use strict;
 use Bivio::Base 'ShellUtil.SQL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_EA) = b_use('Type.EmailArray');
 my($_CTS) = b_use('Type.CRMThreadStatus');

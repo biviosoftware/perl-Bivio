@@ -4,7 +4,6 @@ package Bivio::UI::XHTML::Widget::WikiText::Option;
 use strict;
 use Bivio::Base 'XHTMLWidget.WikiTextTag';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub handle_register {
     return [qw(b-option)];

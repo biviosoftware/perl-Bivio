@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Biz::Model::FacadeClassList;
 use strict;
-$Bivio::Biz::Model::FacadeClassList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::FacadeClassList::VERSION;
-
 =head1 NAME
 
 Bivio::Biz::Model::FacadeClassList - list of all facades suitable for rendering

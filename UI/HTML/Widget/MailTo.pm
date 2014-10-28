@@ -40,7 +40,6 @@ use Bivio::Base 'UI.Widget';
 #
 # By default, render as a link.  Otherwise, just render the email address.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_E) = b_use('Type.Email');
 my($_S) = b_use('HTMLWidget.String');

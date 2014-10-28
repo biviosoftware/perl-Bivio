@@ -11,7 +11,6 @@ use Bivio::Base 'Collection.Attributes';
 # attribute is unique and won't conflict with future attributes on
 # cases, begin the attribute with I<my_>, e.g. C<my_buf>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('IO.Ref');
 
 sub actual_return {

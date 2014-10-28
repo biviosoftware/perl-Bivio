@@ -6,7 +6,6 @@ use Bivio::Base 'Type.Enum';
 
 # http://www.iso.org/iso/home/standards/country_codes/country_names_and_code_elements_txt.htm
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [0, 'Select Country'],
     AF => [1, 'Afghanistan'],

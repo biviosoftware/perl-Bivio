@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Biz::Model::AdmBulletinAttachmentList;
 use strict;
-$Bivio::Biz::Model::AdmBulletinAttachmentList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::AdmBulletinAttachmentList::VERSION;
-
 =head1 NAME
 
 Bivio::Biz::Model::AdmBulletinAttachmentList - attachments for current bulletin

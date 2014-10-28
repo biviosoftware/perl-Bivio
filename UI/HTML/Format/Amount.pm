@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Format::Amount;
 use strict;
-$Bivio::UI::HTML::Format::Amount::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Format::Amount::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Format::Amount - formats numeric values

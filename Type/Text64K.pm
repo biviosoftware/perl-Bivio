@@ -4,6 +4,5 @@ package Bivio::Type::Text64K;
 use strict;
 use Bivio::Base 'Type.TextArea';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

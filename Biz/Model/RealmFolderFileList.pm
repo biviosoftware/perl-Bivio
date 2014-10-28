@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFolderFileList;
 use strict;
 use Bivio::Base 'Model.RealmFileTreeList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub PAGE_SIZE {
     return 200;

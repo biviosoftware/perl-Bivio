@@ -4,7 +4,6 @@ package Bivio::UI::XHTML::Widget::WikiText;
 use strict;
 use Bivio::Base 'XHTMLWidget.ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Bivio.Die');
 my($_A) = b_use('IO.Alert');
 my($_C) = b_use('IO.Config');

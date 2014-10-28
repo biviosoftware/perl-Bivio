@@ -134,7 +134,6 @@ use Bivio::Base 'Collection.Attributes';
 # See
 # L<Bivio::Collection::Attributes::ancestral_get|Bivio::Collection::Attributes/"ancestral_get">.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 my($_V1) = b_use('IO.Config')->if_version(1);
 my($_CL) = b_use('IO.ClassLoader');

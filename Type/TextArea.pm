@@ -4,7 +4,6 @@ package Bivio::Type::TextArea;
 use strict;
 use Bivio::Base 'Type.Text';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub LINE_WIDTH {
     return 60;

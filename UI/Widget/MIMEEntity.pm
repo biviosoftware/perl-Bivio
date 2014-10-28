@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.Join';
 use MIME::Entity ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATTR) = [qw(Type Encoding Filename Disposition Charset Path Data)];
 
 sub initialize {

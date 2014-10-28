@@ -7,7 +7,6 @@ use Bivio::IO::Trace;
 use File::Spec ();
 use Search::Xapian ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_F) = b_use('IO.File');
 my($_P) = b_use('Search.Parser');

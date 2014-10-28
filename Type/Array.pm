@@ -4,7 +4,6 @@ package Bivio::Type::Array;
 use strict;
 use Bivio::Base 'Bivio.Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S) = b_use('Type.String');
 
 #TODO: This class is deprecated.  Use ArrayBase, StringArray, etc.

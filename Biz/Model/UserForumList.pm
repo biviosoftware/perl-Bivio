@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserForumList;
 use strict;
 use Bivio::Base 'Model.UserRealmList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REQUIRED_ROLE_GROUP)
     = b_use('Auth.Role')->get_category_role_group('all_guests');
 

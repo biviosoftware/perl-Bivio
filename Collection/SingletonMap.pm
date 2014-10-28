@@ -15,7 +15,6 @@ use Bivio::Base 'Bivio.UNIVERSAL';
 # singletons are instantiated.  Currently, there is only way
 # to instantiate.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(%_MAP);
 
 sub get {

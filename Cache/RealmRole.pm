@@ -4,7 +4,6 @@ package Bivio::Cache::RealmRole;
 use strict;
 use Bivio::Base 'Bivio.Cache';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RR) = b_use('Model.RealmRole');
 my($_RT) = b_use('Auth.RealmType');
 b_use('IO.Config')->register(my $_CFG = {

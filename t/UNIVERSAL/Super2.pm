@@ -4,6 +4,5 @@ package Bivio::t::UNIVERSAL::Super2;
 use strict;
 use Bivio::Base 'Bivio::t::UNIVERSAL::Super1';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

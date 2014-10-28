@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MailPartList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = b_use('Mail.Address');
 my($_DT) = b_use('Type.DateTime');

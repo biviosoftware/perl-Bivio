@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CalendarEventList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('Type.Time');
 my($_UTC) = b_use('Type.TimeZone')->UTC;
 my($_DTWTZ) = b_use('Type.DateTimeWithTimeZone');

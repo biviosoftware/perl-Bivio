@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CalendarEventMonthList;
 use strict;
 use Bivio::Base 'Model.CalendarEventList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_DT) = b_use('Type.DateTime');
 my($_D) = b_use('Type.Date');

@@ -4,7 +4,6 @@ package Bivio::Search::None;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_P) = b_use('Search.Parser');
 
 sub acquire_lock {

@@ -4,7 +4,6 @@ package Bivio::PetShop::Delegate::TaskId;
 use strict;
 use Bivio::Base 'Delegate';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     my($proto) = @_;

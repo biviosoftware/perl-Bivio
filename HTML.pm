@@ -6,7 +6,6 @@ use base 'Bivio::UNIVERSAL';
 use HTML::Entities ();
 use URI::Escape ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub escape {
     my(undef, $text) = @_;

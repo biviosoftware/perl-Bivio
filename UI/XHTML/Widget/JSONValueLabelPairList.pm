@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.ControlBase';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_M) = b_use('Biz.Model');
 my($_JSON) = b_use('MIME.JSON');
 

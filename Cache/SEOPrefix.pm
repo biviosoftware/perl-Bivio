@@ -4,7 +4,6 @@ package Bivio::Cache::SEOPrefix;
 use strict;
 use Bivio::Base 'Cache.RealmFileBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('FacadeComponent.Constant');
 my($_RSL) = b_use('Model.RealmSettingList');
 my($_BASE) = 'SEOPrefix';

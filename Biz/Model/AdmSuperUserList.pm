@@ -4,7 +4,6 @@ package Bivio::Biz::Model::AdmSuperUserList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_GENERAL_ID) = b_use('Auth.Realm')->get_general->get('id');
 my($_ADMINISTRATOR) = b_use('Auth.Role')->ADMINISTRATOR;
 

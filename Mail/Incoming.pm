@@ -6,7 +6,6 @@ use Bivio::Base 'Mail.Common';
 use IO::Scalar ();
 require 'ctime.pl';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_A) = b_use('Mail.Address');

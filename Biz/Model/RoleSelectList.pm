@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RoleSelectList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
 my($_T) = b_use('FacadeComponent.Text');
 

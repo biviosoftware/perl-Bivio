@@ -4,7 +4,6 @@ package Bivio::Type::CalendarEventMonthDate;
 use strict;
 use Bivio::Base 'Type.DateTime';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
 
 sub from_literal {

@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio::Test::HTMLParser';
 use Bivio::IO::Trace;
 use Bivio::Test::HTMLParser::Tables::Cell;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 __PACKAGE__->register(['Cleaner']);
 

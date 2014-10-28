@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Director';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CB) = __PACKAGE__->use('XHTMLWidget.ControlBase');
 
 sub initialize {

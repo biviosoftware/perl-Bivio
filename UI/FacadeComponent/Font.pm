@@ -74,7 +74,6 @@ use Bivio::Base 'UI.FacadeComponent';
 # L<Bivio::UI::HTML::Widget::Style|Bivio::UI::HTML::Widget::Style>.
 # We set the C<font-family> in the Style, if there is a style.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_A) = b_use('IO.Alert');
 my($_C) = b_use('FacadeComponent.Color');

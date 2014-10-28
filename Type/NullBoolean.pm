@@ -4,7 +4,6 @@ package Bivio::Type::NullBoolean;
 use strict;
 use Bivio::Base 'Type.Boolean';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     my($self, $value) = @_;

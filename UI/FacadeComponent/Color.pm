@@ -4,7 +4,6 @@ package Bivio::UI::FacadeComponent::Color;
 use strict;
 use Bivio::Base 'UI.FacadeComponent';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub UNDEF_CONFIG {
     return -1;

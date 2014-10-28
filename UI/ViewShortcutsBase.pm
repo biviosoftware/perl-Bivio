@@ -15,7 +15,6 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 # You may specify the shortcuts by
 # L<Bivio::UI::ViewLanguage::view_shortcuts|Bivio::UI::ViewLanguage/"view_shortcuts">.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new {
     b_die(

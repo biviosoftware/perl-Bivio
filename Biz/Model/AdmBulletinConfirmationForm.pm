@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Biz::Model::AdmBulletinConfirmationForm;
 use strict;
-$Bivio::Biz::Model::AdmBulletinConfirmationForm::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::AdmBulletinConfirmationForm::VERSION;
-
 =head1 NAME
 
 Bivio::Biz::Model::AdmBulletinConfirmationForm - confirm bulletin

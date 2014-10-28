@@ -8,7 +8,6 @@ use Bivio::Base 'Type.Name';
 # valid.  See also
 # L<Bivio::Biz::Model::FacadeClassList|Bivio::Biz::Model::FacadeClassList>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     # (proto, string) : array

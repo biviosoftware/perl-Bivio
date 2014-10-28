@@ -4,7 +4,6 @@ package Bivio::Type::Year;
 use strict;
 use Bivio::Base 'Type.Integer';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = __PACKAGE__->use('Type.DateTime');
 
 sub WINDOW_SIZE {

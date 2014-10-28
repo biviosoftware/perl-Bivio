@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio.UNIVERSAL';
 use File::Spec ();
 use IO::File ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IOF) = b_use('IO.File');
 my($_D) = b_use('Bivio.Die');
 my($_C) = b_use('IO.Config');

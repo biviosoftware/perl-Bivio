@@ -4,7 +4,6 @@ package Bivio::Biz::t::ExpandableListFormModel::T1ListForm;
 use strict;
 use Bivio::Base 'Biz.ExpandableListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub CLASSLOADER_MAP_NAME {
     return 'Model';

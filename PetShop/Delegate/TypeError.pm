@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::PetShop::Delegate::TypeError;
 use strict;
-$Bivio::PetShop::Delegate::TypeError::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Delegate::TypeError::VERSION;
-
 =head1 NAME
 
 Bivio::PetShop::Delegate::TypeError - Pet Shop type errors

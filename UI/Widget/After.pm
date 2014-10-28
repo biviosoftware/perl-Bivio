@@ -4,7 +4,6 @@ package Bivio::UI::Widget::After;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget::ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = shift;

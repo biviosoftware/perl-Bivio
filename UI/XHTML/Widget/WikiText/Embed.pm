@@ -4,7 +4,6 @@ package Bivio::UI::XHTML::Widget::WikiText::Embed;
 use strict;
 use Bivio::Base 'XHTMLWidget.WikiTextTag';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub handle_register {
     return [qw(b-embed ins-page)];

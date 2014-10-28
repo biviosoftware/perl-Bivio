@@ -4,7 +4,6 @@ package Bivio::Type::FileArg;
 use strict;
 use Bivio::Base 'Type.FileField';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     return shift->unsafe_from_disk(@_);

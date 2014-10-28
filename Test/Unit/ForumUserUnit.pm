@@ -4,7 +4,6 @@ package Bivio::Test::Unit::ForumUserUnit;
 use strict;
 use Bivio::Base 'Test.Request';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
 my($_M) = b_use('Biz.Model');
 

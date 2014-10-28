@@ -4,7 +4,6 @@ package Bivio::UI::JavaScript::Widget::QuotedValue;
 use strict;
 use Bivio::Base 'UI.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
     return [qw(value)];

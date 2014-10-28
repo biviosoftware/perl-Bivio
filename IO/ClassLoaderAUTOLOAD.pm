@@ -4,7 +4,6 @@ package Bivio::IO::ClassLoaderAUTOLOAD;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 my($_CL) = b_use('IO.ClassLoader');
 

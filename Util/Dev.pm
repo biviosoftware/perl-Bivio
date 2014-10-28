@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub USAGE {
     return <<'EOF';
@@ -15,7 +14,6 @@ commands
   setup - calls other setup_* methods
   setup_bconf_d_defaults_bconf - creates ~/bconf.d/defaults.bconf
   setup_btest_mail - creates ~/btest-mail/ and ~/.procmailrc
-  setup_src_perl - creates ~/src/perl and create_test_db
 EOF
 }
 
@@ -37,7 +35,6 @@ sub setup {
     my($proto, $bunit_args) = @_;
     $proto->setup_btest_mail;
     $proto->setup_bconf_d_defaults_bconf;
-    $proto->setup_src_perl($bunit_args);
     return;
 }
 
@@ -103,37 +100,6 @@ EOF
 	IO_File()->write($rc, $rc_content),
     );
     $proto->print("Created: $rc\n");
-    return;
-}
-
-sub setup_src_perl {
-    my($proto, $bunit_args) = @_;
-    my($perllib) = "$ENV{HOME}/src/perl";
-    return
-	if -r $perllib;
-    $proto->print("Created: $perllib\n");
-    my($ba) = sub {
-	return ($bunit_args || {})->{shift(@_)} || shift(@_);
-    };
-    IO_File()->do_in_dir(
-	IO_File()->mkdir_parent_only($perllib),
-	sub {
-	    my($module) = $ba->('cvs_module', 'perl');
-	    my($arg) = $ba->('create_test_db_args', '');
-	    foreach my $cmd (
-		"cvs checkout $module",
-		"bivio sql init_dbms$arg",
-		"bivio project link_facade_files$arg",
-		$arg ? () : 'bivio sql -force create_test_db',
-	    ) {
-		$proto->print("Created: $cmd\n");
-		$proto->piped_exec("env PERLLIB=$perllib BCONF=Bivio::PetShop $cmd 2>&1");
-		# DEBUG: You may need to do something like this to debug some of this:
-		# system("cp /home/nagler/src/perl/Bivio/Util/Project.pm $perllib/Bivio/Util");
-	    }
-	    return;
-	},
-    );
     return;
 }
 

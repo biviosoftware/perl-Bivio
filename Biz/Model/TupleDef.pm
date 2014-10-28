@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleDef;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub create_from_hash {
     my($self, $defs) = @_;

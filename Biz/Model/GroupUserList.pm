@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.RoleBaseList';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AUL) = b_use('Model.AdmUserList');
 my($_R) = b_use('Auth.Role');
 my($_SA) = b_use('Type.StringArray');

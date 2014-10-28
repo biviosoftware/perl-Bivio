@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ECCreditCardPayment;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Type.Amount');
 
 sub create {

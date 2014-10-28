@@ -15,7 +15,6 @@ use Socket;
 # understand the distinction, but there is a distinction and RFC2616 uses
 # URI for the most part, so we do, too.]
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # needed for is_https_port()
 our($_TRACE);
 my($_C) = b_use('AgentHTTP.Cookie');

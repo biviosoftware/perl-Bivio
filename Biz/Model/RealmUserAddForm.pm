@@ -7,7 +7,6 @@ use Bivio::Base 'Model.UserRegisterForm';
 #      UserCreateForm to create the user
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RU) = b_use('ShellUtil.RealmUser');
 my($_R) = b_use('Auth.Role');
 

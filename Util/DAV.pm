@@ -5,7 +5,6 @@ use strict;
 use base 'Bivio::ShellUtil';
 use Bivio::Ext::LWPUserAgent;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub USAGE {
     return <<'EOF';

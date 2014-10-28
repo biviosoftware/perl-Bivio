@@ -4,7 +4,6 @@ package Bivio::Auth::PermissionSet;
 use strict;
 use Bivio::Base 'Type.EnumSet';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_P) = b_use('Auth.Permission');
 __PACKAGE__->initialize();
 

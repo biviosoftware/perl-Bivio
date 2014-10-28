@@ -4,7 +4,6 @@ package Bivio::Type::YearWindow;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile(0, 9);
 
 sub compile {

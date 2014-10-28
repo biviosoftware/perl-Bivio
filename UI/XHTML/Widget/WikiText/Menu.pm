@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.WikiTextTag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WDN) = b_use('Type.WikiDataName');
 my($_WN) = b_use('Type.WikiName');
 my($_R) = b_use('Type.Regexp');

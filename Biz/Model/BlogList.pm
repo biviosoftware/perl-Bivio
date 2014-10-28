@@ -4,7 +4,6 @@ package Bivio::Biz::Model::BlogList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ARF) = b_use('Action.RealmFile');
 my($_BC) = b_use('Type.BlogContent');
 my($_BFN) = b_use('Type.BlogFileName');

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::DBAccessModelList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DBAMF) = b_use('Model.DBAccessModelForm');
 
 sub internal_initialize {

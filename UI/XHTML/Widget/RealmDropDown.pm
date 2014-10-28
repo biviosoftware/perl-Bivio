@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.If';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('UI.Facade');
 my($_RT) = b_use('Auth.RealmType');
 my($_R) = b_use('Auth.Role');

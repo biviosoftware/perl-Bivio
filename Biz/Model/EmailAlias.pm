@@ -4,7 +4,6 @@ package Bivio::Biz::Model::EmailAlias;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = b_use('Type.Email');
 
 sub internal_initialize {

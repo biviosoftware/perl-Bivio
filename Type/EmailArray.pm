@@ -4,7 +4,6 @@ package Bivio::Type::EmailArray;
 use strict;
 use Bivio::Base 'Type.StringArray';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = b_use('Type.Email');
 
 sub UNDERLYING_TYPE {

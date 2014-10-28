@@ -49,7 +49,6 @@ my($_TRANSLITERATE) = {
     'y' => [qr{\x{00FD}}, qr{\xFD}],
 };
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub canonicalize_and_excerpt {
     my($proto, $value, $max_words, $no_ellipsis) = @_;

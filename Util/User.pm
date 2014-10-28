@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::IO::TTY;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub DETACH_USER_MODELS {

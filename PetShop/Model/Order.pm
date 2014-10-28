@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::Order;
 use strict;
 use Bivio::Base 'Model.RealmOwnerBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub create_realm {
     my($self, $order) = (shift, shift);

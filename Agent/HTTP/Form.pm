@@ -18,7 +18,6 @@ b_use('IO.Trace');
 # L<Bivio::Type::FileField|Bivio::Type::FileField>.  The hash_ref
 # contains the attributes: name, content_type, filename, and content.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 # Taken from RFC1521.  NOT the same as 822_ATOM, btw.
 my($_TOKEN) = '([^][()<>@,;:\\\\"/?=\\000-\\040\\177-\\377]+)';

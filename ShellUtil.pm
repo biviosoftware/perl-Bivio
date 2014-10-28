@@ -100,7 +100,6 @@ use POSIX ();
 # I<realm> is set, will be implicitly set to the first_admin
 # as defined by
 # L<Bivio::Biz::Model::RealmAdminList|Bivio::Biz::Model::RealmAdminList>.
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;

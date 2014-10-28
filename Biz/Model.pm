@@ -8,7 +8,6 @@ use Bivio::Base 'Collection.Attributes';
 # a common set of methods for L<Bivio::Biz::PropertyModel>,
 # L<Bivio::Biz::ListModel>, L<Bivio::Biz::FormModel>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_LOADED_ALL_PROPERTY_MODELS);
 my($_IDI) = __PACKAGE__->instance_data_index;

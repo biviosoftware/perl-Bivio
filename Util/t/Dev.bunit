@@ -15,7 +15,6 @@ $ENV{HOME} = $dir;
 	    }] => sub {
 		assert_file(qr{^btest-mail/}m, "$ENV{HOME}/.procmailrc");
 		assert_file(qr{stack_trace_warn}, "$ENV{HOME}/bconf.d/defaults.bconf");
-		assert_file(qr{package Bivio::BConf}, "$ENV{HOME}/src/perl/Bivio/BConf.pm");
 		return 1;
 	    },
 	],

@@ -4,7 +4,6 @@ package Bivio::Type::MailSubject;
 use strict;
 use Bivio::Base 'Type.Line';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_W) = b_use('MIME.Word');
 
 sub CLEAN_REGEX {

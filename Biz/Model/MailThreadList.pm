@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MailThreadList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RM) = b_use('Model.RealmMail');
 
 sub DATE_SORT_ORDER {

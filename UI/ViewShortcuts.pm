@@ -4,7 +4,6 @@ package Bivio::UI::ViewShortcuts;
 use strict;
 use Bivio::Base 'UI.ViewShortcutsBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 my($_W) = b_use('UI.Widget');
 my($_DT) = b_use('Type.DateTime');

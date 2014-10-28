@@ -4,7 +4,6 @@ package Bivio::UI::XML::Widget::XMLDocument;
 use strict;
 use Bivio::Base 'Widget.Simple';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
     return [qw(value ?version ?encoding)];

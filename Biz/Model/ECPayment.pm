@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ECPayment;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CN) = b_use('Type.CurrencyName');
 my($_ECPOS) = b_use('Type.ECPointOfSale');
 my($_ECPS) = b_use('Type.ECPaymentStatus');

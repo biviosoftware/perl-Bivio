@@ -4,7 +4,6 @@ package Bivio::Biz::Action::RealmFile;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 my($_DATA_READ) = ${b_use('Auth.PermissionSet')->from_array(['DATA_READ'])};
 my($_RF) = b_use('Model.RealmFile');

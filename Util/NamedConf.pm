@@ -4,7 +4,6 @@ package Bivio::Util::NamedConf;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Bivio.Die');
 my($_F) = b_use('IO.File');
 my($_ZONE_DIR) = 'var/named';

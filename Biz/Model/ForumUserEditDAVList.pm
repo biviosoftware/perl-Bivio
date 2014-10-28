@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ForumUserEditDAVList;
 use strict;
 use Bivio::Base 'Model.EditDAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
 
 sub CSV_COLUMNS {

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Agent.Reply';
 use APR::Status ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
 my($_AC) = b_use('Ext.ApacheConstants');

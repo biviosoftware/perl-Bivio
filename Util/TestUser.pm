@@ -4,7 +4,6 @@ package Bivio::Util::TestUser;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = b_use('Type.Email');
 b_use('IO.Config')->register(my $_CFG = {
     default_password => 'password',

@@ -4,7 +4,6 @@ package Bivio::Agent::t::Task::T1;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('Agent.Task')->register(__PACKAGE__);
 my($_CALLS) = 0;
 

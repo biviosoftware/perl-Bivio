@@ -4,7 +4,6 @@ package Bivio::Biz::Model::SearchForm;
 use strict;
 use Bivio::Base 'Model.ListQueryForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub CLEAR_ON_FOCUS_HINT {
     return 'Search';

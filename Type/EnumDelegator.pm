@@ -4,7 +4,6 @@ package Bivio::Type::EnumDelegator;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 our($_PREV_AUTOLOAD) = '';
 my($_MAP) = {};

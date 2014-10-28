@@ -6,7 +6,6 @@ use Bivio::Base 'Model.MailReceiveBaseForm';
 b_use('IO.Trace');
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_A) = b_use('Mail.Address');
 my($_DT) = b_use('Type.DateTime');

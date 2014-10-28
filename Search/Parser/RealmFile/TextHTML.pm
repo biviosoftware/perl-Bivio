@@ -4,7 +4,6 @@ package Bivio::Search::Parser::RealmFile::TextHTML;
 use strict;
 use Bivio::Base 'SearchParser.RealmFile';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub CONTENT_TYPE_LIST {
     return 'text/html';

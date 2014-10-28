@@ -4,7 +4,6 @@ package Bivio::Type::MailFileName;
 use strict;
 use Bivio::Base 'Type.DocletFileName';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_UNIQUE);
 my($_R) = b_use('Biz.Random');

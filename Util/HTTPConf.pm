@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_SA) = b_use('Type.StringArray');
 my($_V2) = b_use('Agent.Request')->if_apache_version(2, 1, 0);

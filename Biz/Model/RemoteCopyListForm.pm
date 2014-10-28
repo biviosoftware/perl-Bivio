@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RemoteCopyListForm;
 use strict;
 use Bivio::Base 'Biz.ListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FPA) = b_use('Type.FilePathArray');
 my($_RFC) = b_use('Action.RemoteCopy');
 my($_A) = b_use('Action.Acknowledgement');

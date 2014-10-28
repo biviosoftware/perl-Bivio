@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ForumForm;
 use strict;
 use Bivio::Base 'Model.RealmFeatureForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FN) = b_use('Type.ForumName');
 my($_R) = b_use('Auth.Realm');
 

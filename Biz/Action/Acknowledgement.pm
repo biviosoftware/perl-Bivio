@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = b_use('Agent.TaskId');
 my($_T) = b_use('FacadeComponent.Text');
 my($_HTML) = b_use('Bivio.HTML');

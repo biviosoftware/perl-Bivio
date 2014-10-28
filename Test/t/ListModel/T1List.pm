@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Test::t::ListModel::T1List;
 use strict;
-$Bivio::Test::t::ListModel::T1List::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::t::ListModel::T1List::VERSION;
-
 =head1 NAME
 
 Bivio::Test::t::ListModel::T1List - test

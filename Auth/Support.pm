@@ -4,7 +4,6 @@ package Bivio::Auth::Support;
 use strict;
 use Bivio::Base 'Bivio.Delegator';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 # See Delegate.NoDbAuthSupport or Delegate.SimpleAuthSupport
 # for example methods.

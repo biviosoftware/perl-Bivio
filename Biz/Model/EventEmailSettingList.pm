@@ -4,7 +4,6 @@ package Bivio::Biz::Model::EventEmailSettingList;
 use strict;
 use Bivio::Base 'Model.RealmSettingList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub event_email_for_auth_realm {
     my($self, $module, $event) = @_;

@@ -4,7 +4,6 @@ package Bivio::Type::FileChangeMode;
 use strict;
 use Bivio::Base 'Bivio::Type::Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 __PACKAGE__->compile([
     # folder:

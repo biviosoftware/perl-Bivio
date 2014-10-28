@@ -3,6 +3,5 @@
 package Bivio::UI::CSS;
 use Bivio::Base 'Bivio::UI::FacadeComponent::CSS';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

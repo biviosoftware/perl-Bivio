@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'HTMLWidget.MultipleChoiceGridBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 # C<Bivio::UI::HTML::Widget::RadioGrid> create a grid of radio
 # buttons.  The grid is shaped according to the length and width

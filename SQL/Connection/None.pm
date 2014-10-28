@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::SQL::Connection::None;
 use strict;
-$Bivio::SQL::Connection::None::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::SQL::Connection::None::VERSION;
-
 =head1 NAME
 
 Bivio::SQL::Connection::None - connection to no database

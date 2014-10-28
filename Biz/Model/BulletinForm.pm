@@ -4,7 +4,6 @@ package Bivio::Biz::Model::BulletinForm;
 use strict;
 use Bivio::Base 'Model.MailForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = b_use('Mail.RFC822');
 my($_I) = b_use('Mail.Incoming');
 my($_O) = b_use('Mail.Outgoing');

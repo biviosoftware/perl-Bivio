@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     my($self) = @_;

@@ -20,7 +20,6 @@ use Time::HiRes ();
 # i.e. same as C<TO_CHAR('J SSSSS')> in SQL.
 # A C<DateTime> is not a L<Bivio::Type::Number|Bivio::Type::Number>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IS_TEST) = b_use('IO.Config')->is_test;
 my($_TEST_NOW);
 my($_MIN) = FIRST_DATE_IN_JULIAN_DAYS().' 0';

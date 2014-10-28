@@ -4,7 +4,6 @@ package Bivio::Type::Amount;
 use strict;
 use Bivio::Base 'Type.Number';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub can_be_negative {
     return 1;

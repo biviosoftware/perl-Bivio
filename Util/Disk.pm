@@ -4,7 +4,6 @@ package Bivio::Util::Disk;
 use strict;
 use base 'Bivio::ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
     check_use_capacity => [
 	[qr{.} => 90],

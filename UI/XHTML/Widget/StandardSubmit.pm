@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WF) = b_use('Bivio::UI::HTML::WidgetFactory');
 my($_CB) = b_use('Type.CancelButton');
 my($_M) = b_use('Biz.Model');

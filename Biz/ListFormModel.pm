@@ -34,7 +34,6 @@ b_use('IO.Trace');
 # "too much" form data, it will be checked at the end of the iterations.
 # If there is too little, it will blow up.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 # Separates row index from simple field name.  Must not be a regexp

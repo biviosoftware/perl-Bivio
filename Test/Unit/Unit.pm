@@ -51,7 +51,6 @@ use File::Spec ();
 # 	], '-'] => 'a-b',
 #     ];
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD, $_TYPE, $_TYPE_CAN_AUTOLOAD, $_CLASS, $_PM, $_OPTIONS, $_SELF, $_BUNIT);
 our($_PROTO) = __PACKAGE__;
 my($_CL) = b_use('IO.ClassLoader');

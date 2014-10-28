@@ -8,7 +8,6 @@ use HTTP::Request ();
 use IO::File ();
 use LWP::UserAgent ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_READ_SIZE) = 100_000;
 

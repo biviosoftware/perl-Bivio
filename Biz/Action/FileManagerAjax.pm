@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 use MIME::Base64 ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 my($_DT) = b_use('Type.DateTime');
 my($_FP) = b_use('Type.FilePath');

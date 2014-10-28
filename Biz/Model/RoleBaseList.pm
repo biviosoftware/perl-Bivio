@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RoleBaseList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('SQL.Connection');
 my($_R) = b_use('Auth.Role');
 b_die('v0: no longer supported')

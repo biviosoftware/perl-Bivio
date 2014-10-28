@@ -7,7 +7,6 @@ use Bivio::Base 'Bivio::UI::HTML::Format';
 # C<Bivio::UI::HTML::Format::Link> formats external hrefs as /goto
 # links.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_widget_value {
     # (proto, any) : string

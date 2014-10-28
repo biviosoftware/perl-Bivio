@@ -4,7 +4,6 @@ package Bivio::Biz::Action::AssertClient;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     hosts => [qw(localhost.localdomain), b_use('Bivio.BConf')->bconf_host_name],

@@ -4,7 +4,6 @@ package Bivio::IO::Template;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 
 sub replace_in_file {

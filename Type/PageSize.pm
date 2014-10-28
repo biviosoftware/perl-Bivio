@@ -4,7 +4,6 @@ package Bivio::Type::PageSize;
 use strict;
 use Bivio::Base 'Type.Integer';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ROW_TAG_KEY {
     return 'PAGE_SIZE';

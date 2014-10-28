@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('SQL.Connection');
 my($_DT) = b_use('Type.DateTime');
 my($_M) = b_use('Biz.Model');

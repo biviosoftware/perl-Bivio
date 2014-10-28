@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 b_use('IO.Trace');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 Bivio::IO::Trace->register;

@@ -4,7 +4,6 @@ package Bivio::UI::Widget::WithModel;
 use strict;
 use Bivio::Base 'Widget.With';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_new_args {
     my(undef, $model_class, $value, $attributes) = @_;

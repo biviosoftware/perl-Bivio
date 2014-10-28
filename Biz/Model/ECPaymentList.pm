@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ECPaymentList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RO) = __PACKAGE__->use('Model.RealmOwner');
 
 sub format_name {

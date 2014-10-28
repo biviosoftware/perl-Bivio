@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmMailBounceList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_load_page_for_parent {
     my($proto, $req) = @_;

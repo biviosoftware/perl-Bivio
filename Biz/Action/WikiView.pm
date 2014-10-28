@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 my($_ARF) = b_use('Action.RealmFile');
 my($_C) = b_use('FacadeComponent.Constant');

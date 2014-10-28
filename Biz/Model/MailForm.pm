@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MailForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_EA) = b_use('Type.EmailArray');
 my($_I) = b_use('Mail.Incoming');
 my($_O) = b_use('Mail.Outgoing');

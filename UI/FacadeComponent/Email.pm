@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UI.FacadeComponent';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = Type_Email();
 my($_R) = Agent_Request();
 

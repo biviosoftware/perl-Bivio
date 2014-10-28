@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::WorkflowStepForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     # Stuffs current task in context.

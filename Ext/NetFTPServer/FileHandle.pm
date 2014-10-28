@@ -5,7 +5,6 @@ use strict;
 use base 'Net::FTPServer::FileHandle';
 use IO::Scalar;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 # Return the directory handle for this file.
 

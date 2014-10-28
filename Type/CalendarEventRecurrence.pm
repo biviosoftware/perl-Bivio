@@ -4,7 +4,6 @@ package Bivio::Type::CalendarEventRecurrence;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_TOO_SHORT) = b_use('Bivio.TypeError')->TOO_SHORT;
 my($_TOO_LONG) = b_use('Bivio.TypeError')->TOO_LONG;

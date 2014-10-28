@@ -4,7 +4,6 @@ package Bivio::Biz::Model::AdmUserList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_NAME_SORT_COLS) = [map("User.${_}_name_sort", qw(last first middle))];
 my($_NAME_COLS) = [grep(s/_sort//, @$_NAME_SORT_COLS)];
 my($_U) = b_use('Model.User');

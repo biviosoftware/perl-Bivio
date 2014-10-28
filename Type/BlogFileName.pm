@@ -4,7 +4,6 @@ package Bivio::Type::BlogFileName;
 use strict;
 use Bivio::Base 'Type.DocletFileName';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = Bivio::Type->get_instance('DateTime');
 
 sub ERROR {

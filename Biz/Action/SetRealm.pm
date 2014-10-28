@@ -4,7 +4,6 @@ package Bivio::Biz::Action::SetRealm;
 use strict;
 use base 'Bivio::Biz::Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_from_uri {
     my($self, $req) = @_;

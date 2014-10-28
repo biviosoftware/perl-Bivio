@@ -4,7 +4,6 @@ package Bivio::Biz::Action::EmptyReply;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AC) = b_use('Ext.ApacheConstants');
 b_use('Agent.Task')->register(__PACKAGE__);
 b_use('Action.BasicAuthorization');

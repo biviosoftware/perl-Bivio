@@ -4,7 +4,6 @@ package Bivio::IO::t::ClassLoader::Valid;
 use strict;
 use base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IMPORTERS) = [];
 
 sub get_importers {

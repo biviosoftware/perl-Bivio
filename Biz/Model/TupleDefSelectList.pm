@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleDefSelectList;
 use strict;
 use Bivio::Base 'Model.TupleDefList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_load_rows {
     my($self) = shift;

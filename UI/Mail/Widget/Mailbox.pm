@@ -4,7 +4,6 @@ package Bivio::UI::Mail::Widget::Mailbox;
 use strict;
 use Bivio::Base 'UI.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RFC) = __PACKAGE__->use('Mail.RFC822');
 
 sub NEW_ARGS {

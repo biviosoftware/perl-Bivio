@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleTag;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TSN) = b_use('Type.TupleSlotNum');
 
 sub LIST_FIELDS {

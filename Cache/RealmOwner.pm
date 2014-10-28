@@ -4,7 +4,6 @@ package Bivio::Cache::RealmOwner;
 use strict;
 use Bivio::Base 'Bivio.Cache';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RO) = b_use('Model.RealmOwner');
 b_use('Biz.PropertyModel')->register_handler(__PACKAGE__);
 

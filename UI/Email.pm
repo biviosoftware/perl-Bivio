@@ -3,6 +3,5 @@
 package Bivio::UI::Email;
 use Bivio::Base 'Bivio::UI::FacadeComponent::Email';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

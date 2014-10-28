@@ -4,7 +4,6 @@ package Bivio::Agent::Reply;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AC) = b_use('Ext.ApacheConstants');
 
 sub delete_output {

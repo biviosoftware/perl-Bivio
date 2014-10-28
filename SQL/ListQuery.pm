@@ -163,7 +163,6 @@ use Bivio::Base 'Collection.Attributes';
 # want_page_count : boolean (optional)
 #
 # Set this to true if you want to count the number of pages.
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = __PACKAGE__->use('IO.Alert');
 my($_D) = __PACKAGE__->use('Type.Date');
 my($_DI) = __PACKAGE__->use('Type.DateInterval');

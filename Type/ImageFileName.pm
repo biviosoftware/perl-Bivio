@@ -4,7 +4,6 @@ package Bivio::Type::ImageFileName;
 use strict;
 use Bivio::Base 'Type.DocletFileName';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ERROR {
     return Bivio::TypeError->FILE_NAME;

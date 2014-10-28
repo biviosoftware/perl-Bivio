@@ -18,7 +18,6 @@ use Bivio::Base 'Type.Enum';
 #
 # User is logged in
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     JUST_VISITOR => [1],
     LOGGED_OUT => [2],

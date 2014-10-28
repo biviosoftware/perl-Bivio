@@ -4,7 +4,6 @@ package Bivio::Agent::Embed::Reply;
 use strict;
 use Bivio::Base 'Agent.Reply';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub set_output {
     my($self, $value) = @_;

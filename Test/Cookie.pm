@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Test::Cookie;
 use strict;
-$Bivio::Test::Cookie::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::Cookie::VERSION;
-
 =head1 NAME
 
 Bivio::Test::Cookie - mock cookie object

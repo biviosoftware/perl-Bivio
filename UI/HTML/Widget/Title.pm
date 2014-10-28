@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Widget::Title;
 use strict;
-$Bivio::UI::HTML::Widget::Title::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::Title::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Widget::Title - renders title from subtopic, topic, and realm

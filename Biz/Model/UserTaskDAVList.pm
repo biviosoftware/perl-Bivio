@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserTaskDAVList;
 use strict;
 use Bivio::Base 'Model.DAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AT) = b_use('Agent.Task');
 my($_MT) = b_use('MIME.Type');
 my($_DT) = b_use('Type.DateTime');

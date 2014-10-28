@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Util::Host;
 use strict;
-$Bivio::Util::Host::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Util::Host::VERSION;
-
 =head1 NAME
 
 Bivio::Util::Host - control commands on this host

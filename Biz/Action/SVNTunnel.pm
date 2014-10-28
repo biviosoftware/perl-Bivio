@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Action.TunnelBase';
 use MIME::Base64 ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
     host => Bivio::IO::Config->REQUIRED,
     scheme => 'https',

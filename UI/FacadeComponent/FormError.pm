@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'FacadeComponent.Text';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_IN_EVAL);
 my($_W) = b_use('UI.Widget');
 

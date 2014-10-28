@@ -4,7 +4,6 @@ package Bivio::UI::Text::Widget::Link;
 use strict;
 use Bivio::Base 'UI.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_W) = b_use('UI.Widget');
 my($_TI) = b_use('Agent.TaskId');
 

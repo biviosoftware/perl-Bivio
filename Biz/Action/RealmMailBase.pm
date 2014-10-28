@@ -4,7 +4,6 @@ package Bivio::Biz::Action::RealmMailBase;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_M) = b_use('Biz.Model');
 
 sub format_email_for_realm {

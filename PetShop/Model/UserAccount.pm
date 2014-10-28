@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::UserAccount;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     return {

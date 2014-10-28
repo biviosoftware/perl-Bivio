@@ -4,7 +4,6 @@ package Bivio::PetShop::Delegate::Role;
 use strict;
 use Bivio::Base 'Delegate';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     return [

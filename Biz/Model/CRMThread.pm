@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CRMThread;
 use strict;
 use Bivio::Base 'Model.OrdinalBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PS) = ${b_use('Auth.PermissionSet')->from_array(
     ['FEATURE_CRM'],
 )} if b_use('Auth.Permission')->unsafe_from_name('FEATURE_CRM');

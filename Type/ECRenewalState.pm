@@ -4,7 +4,6 @@ package Bivio::Type::ECRenewalState;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [0],
     OK => [1],

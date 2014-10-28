@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::Cart;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('AgentHTTP.Cookie')->register(__PACKAGE__);
 my($_P) = b_use('Type.Price');
 my($_D) = b_use('Type.Date');

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFolderList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = __PACKAGE__->use('Type.FilePath');
 
 sub internal_initialize {

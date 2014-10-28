@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TimeZoneList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('FacadeComponent.Constant');
 my($_R) = b_use('IO.Ref');
 my($_TZ) = b_use('Type.TimeZone');

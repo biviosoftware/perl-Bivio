@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RowTag;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PI) = b_use('Type.PrimaryId');
 my($_RTK) = b_use('Type.RowTagKey');
 my($_M) = b_use('Biz.Model');

@@ -4,7 +4,6 @@ package Bivio::Type::Line;
 use strict;
 use Bivio::Base 'Type.String';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     my($proto, $value) = @_;

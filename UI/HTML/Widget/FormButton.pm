@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'HTMLWidget.InputBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 
 sub initialize {

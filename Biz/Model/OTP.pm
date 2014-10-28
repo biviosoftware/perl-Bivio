@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 use Bivio::Biz::RFC2289;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Bivio::IO::Config->register(my $_CFG = {
     login_timeout_seconds => 3600,
     reinitialize_sequence => 10,

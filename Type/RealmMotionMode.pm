@@ -4,7 +4,6 @@ package Bivio::Type::RealmMotionMode;
 use strict;
 use base 'Bivio::Type::Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 __PACKAGE__->compile([
     UNKNOWN => [0, "Select Option"],

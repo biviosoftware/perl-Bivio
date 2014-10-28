@@ -4,7 +4,6 @@ package Bivio::UI::Widget::Equals;
 use strict;
 use Bivio::Base 'UI.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S) = b_use('Type.String');
 
 sub NEW_ARGS {

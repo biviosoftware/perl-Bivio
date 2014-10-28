@@ -10,7 +10,6 @@ use MIME::QuotedPrint ();
 # One can resend an existing mail message or simply create one from
 # scratch.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('MIME.Type');
 my($_R) = b_use('Biz.Random');
 my($_FP) = b_use('Type.FilePath');

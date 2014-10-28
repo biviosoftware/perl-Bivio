@@ -4,7 +4,6 @@ package Bivio::Biz::Model::Website;
 use strict;
 use Bivio::Base 'Model.LocationBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     return {

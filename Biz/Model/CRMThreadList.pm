@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CRMThreadList;
 use strict;
 use Bivio::Base 'Model.MailThreadList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub PROPERTY_CLASS {
     return 'CRMThread';

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Base';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
 
 sub account {

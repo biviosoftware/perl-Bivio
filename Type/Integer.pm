@@ -13,7 +13,6 @@ use Bivio::TypeError;
 # boundaries for the integer.
 # Dynamic subranges may be created using L<new|"new">.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub compare_defined {

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleHistoryList;
 use strict;
 use Bivio::Base 'Model.MailThreadList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('Model.Tuple');
 
 sub internal_initialize {

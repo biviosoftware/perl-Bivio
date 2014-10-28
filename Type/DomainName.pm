@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.SyntacticString';
 use Socket ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGEX {
     return qr/((?:[-a-z0-9]{1,63})(?:\.[-a-z0-9]{1,63})+)/is;

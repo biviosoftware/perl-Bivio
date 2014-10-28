@@ -7,7 +7,6 @@ use Archive::Zip ();
 use IO::File ();
 b_use('IO.Trace');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_F) = b_use('IO.File');

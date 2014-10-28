@@ -4,7 +4,6 @@ package Bivio::Type::BLOB;
 use strict;
 use Bivio::Base 'Bivio.Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     return defined($_[1]) ? \$_[1] : undef;

@@ -4,7 +4,6 @@ package Bivio::Util::TestRealm;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub USAGE {
     return <<'EOF';

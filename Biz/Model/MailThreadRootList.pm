@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MailThreadRootList;
 use strict;
 use Bivio::Base 'Model.MailThreadList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Mail.Address');
 my($_P) = b_use('Search.Parser');
 my($_MF) = b_use('Model.MailForm');

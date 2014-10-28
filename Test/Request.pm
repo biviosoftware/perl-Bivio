@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'AgentJob.Request';
 use Socket ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_B) = b_use('Test.Bean');
 my($_RI) = b_use('Agent.RequestId');
 b_use('Bivio.Test')->register_handler(__PACKAGE__);

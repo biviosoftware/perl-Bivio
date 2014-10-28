@@ -46,7 +46,6 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 #
 # Insert the result in the methods section.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ACCESS_CONF {
     return 64;

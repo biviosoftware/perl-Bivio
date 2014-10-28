@@ -4,7 +4,6 @@ package Bivio::UI::XHTML::Widget::UserState;
 use strict;
 use Bivio::Base 'XHTMLWidget.XLink';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 use POSIX ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_QUOTE) = '"';
 my($_END_OF_VALUE) = qr/[\,\n]/;
 my($_END_OF_LINE) = qr/\n/;

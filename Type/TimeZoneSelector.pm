@@ -4,7 +4,6 @@ package Bivio::Type::TimeZoneSelector;
 use strict;
 use Bivio::Base 'Type.DisplayName';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TZ) = b_use('Type.TimeZone');
 
 sub row_tag_get {

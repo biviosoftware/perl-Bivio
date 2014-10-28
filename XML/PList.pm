@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::IO::File;
 use XML::Parser ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub to_tree {
     my(undef, $xml) = @_;

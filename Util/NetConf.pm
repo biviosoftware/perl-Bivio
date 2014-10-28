@@ -4,7 +4,6 @@ package Bivio::Util::NetConf;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DIE) = b_use('Bivio.Die');
 my($_CIDRN) = b_use('Type.CIDRNotation');
 my($_IPA) = b_use('Type.IPAddress');

@@ -4,7 +4,6 @@ package Bivio::Biz::t::Model::T1Form;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty {
     my($self) = @_;

@@ -4,7 +4,6 @@ package Bivio::t::Parameters::T1;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S1) = 0;
 my($_M) = b_use('Type.Month');
 

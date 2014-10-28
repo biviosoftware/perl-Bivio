@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Tag';
 use HTML::Parser ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 my($_S) = b_use('Type.String');
 my($_EMPTY_TAG) = _hash(qw(

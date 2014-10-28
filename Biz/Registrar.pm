@@ -4,7 +4,6 @@ package Bivio::Biz::Registrar;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub call_fifo {

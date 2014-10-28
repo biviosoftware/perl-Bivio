@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Base';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 Action_PingReply()->register_handler(__PACKAGE__);
 
 sub eg1 {

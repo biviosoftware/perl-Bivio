@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.Simple';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATTR_KEY) = __PACKAGE__ . 'attr';
 
 sub NEW_ARGS {

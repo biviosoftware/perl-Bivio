@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::Radio;
 use strict;
 use Bivio::Base 'HTMLWidget.Checkbox';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 my($_HTML) = b_use('Bivio.HTML');
 

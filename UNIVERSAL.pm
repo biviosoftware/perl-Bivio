@@ -3,7 +3,6 @@
 package Bivio::UNIVERSAL;
 use strict;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A, $_R, $_SA, $_P, $_CL);
 my($_CLASSLOADER_MAP_NAME) = {};
 
@@ -472,10 +471,6 @@ sub new {
 sub package_name {
     my($proto) = @_;
     return ref($proto) || $proto;
-}
-
-sub package_version {
-    return ${shift->global_variable_ref('VERSION')};
 }
 
 sub parameters {

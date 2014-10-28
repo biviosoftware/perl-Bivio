@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RobotRealmFileList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTTP_MOVED_PERMANENTLY) = b_use('Ext.ApacheConstants')->HTTP_MOVED_PERMANENTLY;
 my($_PAGE) = b_use('SQL.ListQuery')->to_char('page_number');
 my($_COUNT) = b_use('SQL.ListQuery')->to_char('count');

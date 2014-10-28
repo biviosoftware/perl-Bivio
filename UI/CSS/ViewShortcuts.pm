@@ -4,7 +4,6 @@ package Bivio::UI::CSS::ViewShortcuts;
 use strict;
 use Bivio::Base 'UI.ViewShortcuts';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub view_autoload {
     my($proto, undef, $args, $simple_method) = @_;

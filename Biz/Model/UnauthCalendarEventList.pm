@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UnauthCalendarEventList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub IS_COPY_QUERY_KEY {
     return 'b_is_copy';

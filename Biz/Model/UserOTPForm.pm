@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.UserPasswordForm';
 use Bivio::Biz::RFC2289;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     my($self) = @_;

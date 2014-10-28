@@ -24,7 +24,6 @@ use Bivio::Base 'Type.EnumDelegate';
 # The subsequent entries are configuration for the Task instance itself.
 # See L<Task> for a description.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 
 sub get_delegate_info {

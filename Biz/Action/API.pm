@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_API_JSON) = b_use('Agent.TaskId')->API_JSON;
 my($_VERSION_PREFIX) = '/v1';
 

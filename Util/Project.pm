@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio.ShellUtil';
 use File::Find ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_C) = b_use('IO.Config');
 

@@ -4,7 +4,6 @@ package Bivio::PetShop::Facade::BeforeOther;
 use strict;
 use Bivio::Base 'Facade.Other';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 __PACKAGE__->new({
     uri => 'beforeother',

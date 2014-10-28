@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 use Digest::MD5 ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_COUNT) = 0;
 my($_BASE);
 

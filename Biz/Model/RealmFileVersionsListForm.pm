@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFileVersionsListForm;
 use strict;
 use Bivio::Base 'Biz.ListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub execute_empty_row {

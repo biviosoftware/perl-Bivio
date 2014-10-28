@@ -10,7 +10,6 @@ use Bivio::IO::Trace;
 use HTTP::Headers ();
 use HTTP::Request ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 Bivio::IO::Config->register(my $_CFG = {
     host_map => {},

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmDropDownList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = b_use('Auth.RealmType');
 my($_REQUIRED_ROLE_GROUP) = b_use('Model.UserForumList')
     ->REQUIRED_ROLE_GROUP;

@@ -4,7 +4,6 @@ package Bivio::Search::Parser::RealmFile;
 use strict;
 use Bivio::Base 'Search.Parser';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_M) = b_use('Biz.Model');
 my($_FP) = b_use('Type.FilePath');
 my($_S) = b_use('Type.String');

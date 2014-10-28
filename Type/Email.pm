@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.Line';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DN) = b_use('Type.DomainName');
 my($_C) = b_use('IO.Config');
 my($_HTML) = b_use('Bivio.HTML');

@@ -11,7 +11,6 @@ use Bivio::Base 'Bivio.UNIVERSAL';
 # B<Agent.Task> depends on the fact that this is the only module
 # which modifies the database. 
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_DT) = b_use('Type.DateTime');

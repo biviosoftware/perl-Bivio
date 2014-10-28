@@ -4,7 +4,6 @@ package Bivio::Test::Reply;
 use strict;
 use Bivio::Base 'Agent.Reply';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub send_append_header {
     shift;

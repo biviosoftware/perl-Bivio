@@ -4,7 +4,6 @@ package Bivio::IO::t::ClassLoader::SyntaxError;
 use strict;
 use base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub some_sub {
     return;

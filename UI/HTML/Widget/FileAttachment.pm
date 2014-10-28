@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Widget::FileAttachment;
 use strict;
-$Bivio::UI::HTML::Widget::FileAttachment::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::FileAttachment::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Widget::FileAttachment - a file widget for attaching files to email

@@ -4,7 +4,6 @@ package Bivio::Search::Parser::RealmFile::CommandBase;
 use strict;
 use Bivio::Base 'SearchParser.RealmFile';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SU) = b_use('Bivio.ShellUtil');
 my($_D) = b_use('Bivio.Die');
 my($_S) = b_use('Type.String');

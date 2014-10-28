@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserRealmList;
 use strict;
 use Bivio::Base 'Model.RoleBaseList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub find_row_by_type {
     return shift->find_row_by('RealmOwner.realm_type', shift);

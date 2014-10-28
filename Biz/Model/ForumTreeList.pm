@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ForumTreeList;
 use strict;
 use Bivio::Base 'Model.TreeList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_R) = b_use('Auth.Role');
 my($_GENERAL_ID);

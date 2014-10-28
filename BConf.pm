@@ -16,7 +16,6 @@ use Sys::Hostname ();
 #
 #    export BCONF=$PWD/bivio.bconf
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub CURRENT_VERSION {
     return 10;

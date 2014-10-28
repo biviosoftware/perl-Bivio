@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::File;
 use strict;
 use Bivio::Base 'HTMLWidget.InputBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_attributes {
     return [@{shift->SUPER::internal_attributes(@_)}, qw(size)];

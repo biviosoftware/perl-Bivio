@@ -4,7 +4,6 @@ package Bivio::Type::FilePathArg;
 use strict;
 use Bivio::Base 'Type.FilePath';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     my($proto, $value) = @_;

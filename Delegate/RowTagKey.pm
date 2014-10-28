@@ -4,7 +4,6 @@ package Bivio::Delegate::RowTagKey;
 use strict;
 use Bivio::Base 'Type.EnumDelegate';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_INFO, $_TYPE) = _init();
 
 sub get_delegate_info {

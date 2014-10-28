@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::JavaScript;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_COMMON_CODE) = __PACKAGE__ . '.common_code';
 my($_ID) = 0;
 

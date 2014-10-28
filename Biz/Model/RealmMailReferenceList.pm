@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmMailReferenceList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_MI) = b_use('Type.MessageId');
 

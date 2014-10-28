@@ -4,7 +4,6 @@ package Bivio::Biz::t::ExpandableListFormModel::T2ListForm;
 use strict;
 use Bivio::Base 'Biz.ExpandableListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub EMPTY_AND_CANNOT_BE_SPECIFIED_FIELDS {
     return [qw(aux1 aux2)];

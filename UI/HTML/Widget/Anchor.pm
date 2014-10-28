@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Widget::Anchor;
 use strict;
-$Bivio::UI::HTML::Widget::Anchor::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::Anchor::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Widget::Anchor - a link target anchor

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTTP_MOVED_PERMANENTLY) = b_use('Ext.ApacheConstants')->HTTP_MOVED_PERMANENTLY;
 b_use('IO.Config')->register(my $_CFG = {
     permanent_map => {},

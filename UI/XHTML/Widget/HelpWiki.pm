@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.If';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = b_use('Type.WikiName');
 my($_WT) = b_use('XHTMLWidget.WikiText');
 my($_RF) = b_use('Action.RealmFile');

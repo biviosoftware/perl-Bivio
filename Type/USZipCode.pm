@@ -4,7 +4,6 @@ package Bivio::Type::USZipCode;
 use strict;
 use Bivio::Base 'Type.SyntacticString';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PI_180) = atan2(1, 1) * 4 / 180.0;
 
 sub REGEX {

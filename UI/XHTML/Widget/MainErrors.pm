@@ -4,7 +4,6 @@ package Bivio::UI::XHTML::Widget::MainErrors;
 use strict;
 use Bivio::Base 'HTMLWidget.Tag';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 b_use('XHTMLWidget.Page')->register_handler(__PACKAGE__);
 b_use('IO.ClassLoader')->map_require_all(__PACKAGE__->simple_package_name);

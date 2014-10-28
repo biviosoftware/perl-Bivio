@@ -8,7 +8,6 @@ use GMP::Mpf ();
 # C<Bivio::Type::Number> is the abstract base class for all number types.
 # It provides arbitrary precision arithmetic for like-based numbers.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # also uses Bivio::TypeError dynamically
 my($_FUDGE) = _mpf('0.00000000000000000001');
 my($_HALF) = _mpf('0.5');

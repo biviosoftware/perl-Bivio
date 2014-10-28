@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_R) = b_use('IO.Ref');
 my($_S) = b_use('Type.String');

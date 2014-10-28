@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.Simple';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_static_attrs {
     my($proto, $value, $attrs) = @_;

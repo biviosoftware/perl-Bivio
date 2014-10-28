@@ -4,7 +4,6 @@ package Bivio::Type::Regexp;
 use strict;
 use Bivio::Base 'Bivio::Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub add_regexp_modifiers {
     my($self, $value, $modifiers) = @_;

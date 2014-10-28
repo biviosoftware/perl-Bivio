@@ -4,7 +4,6 @@ package Bivio::Biz::Action::SiteRealmLock;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_L) = b_use('Model.Lock');
 my($_C) = b_use('FacadeComponent.Constant');
 

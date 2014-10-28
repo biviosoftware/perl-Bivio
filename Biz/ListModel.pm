@@ -27,7 +27,6 @@ use Bivio::IO::Trace;
 #    $list->set_cursor_or_die(0);
 #    print $list->get('my_attr'), "\n";
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_LOAD_ALL_DIE_FACTOR) = 2;

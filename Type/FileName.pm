@@ -4,7 +4,6 @@ package Bivio::Type::FileName;
 use strict;
 use Bivio::Base 'Type.FilePath';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ERROR {
     return Bivio::TypeError->FILE_NAME;

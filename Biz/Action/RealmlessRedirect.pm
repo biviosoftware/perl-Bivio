@@ -4,7 +4,6 @@ package Bivio::Biz::Action::RealmlessRedirect;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 
 sub execute {

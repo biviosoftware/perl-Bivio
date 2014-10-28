@@ -7,7 +7,6 @@ use Digest::MD5 ();
 b_use('IO.ClassLoaderAUTOLOAD');
 b_use('IO.Trace');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_COOKIE_KEY) = 'b_trl';
 my($_REQ_KEY) = __PACKAGE__ . '.queue';

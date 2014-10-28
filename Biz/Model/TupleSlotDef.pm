@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleSlotDef;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TST) = b_use('Model.TupleSlotType');
 
 sub LIST_FIELDS {

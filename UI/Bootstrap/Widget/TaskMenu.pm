@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TMO) = b_use('XHTMLWidget.TaskMenuOverride');
 
 sub initialize {

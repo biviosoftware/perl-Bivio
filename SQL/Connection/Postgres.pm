@@ -11,7 +11,6 @@ use DBI ();
 
 # C<Bivio::SQL::Connection::Postgres>
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 
 sub CAN_LIMIT_AND_OFFSET {

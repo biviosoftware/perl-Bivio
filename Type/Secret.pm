@@ -20,7 +20,6 @@ use Crypt::CBC;
 # Subclasses should define L<get_width|"get_width"> to be the value
 # that the user enters.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_CFG);
 my($_DEFAULT_VALUES) = {

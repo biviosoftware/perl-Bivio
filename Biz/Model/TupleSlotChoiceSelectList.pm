@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleSlotChoiceSelectList;
 use strict;
 use Bivio::Base 'Model.TupleSlotChoiceList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub EMPTY_KEY_VALUE {
     return '';

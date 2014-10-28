@@ -4,7 +4,6 @@ package Bivio::Type::ExistingFolderArg;
 use strict;
 use Bivio::Base 'Type.FolderArg';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_NOT_FOUND) = b_use('Bivio.TypeError')->NOT_FOUND;
 
 sub from_literal {

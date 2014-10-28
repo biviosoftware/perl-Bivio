@@ -4,7 +4,6 @@ package Bivio::UI::Widget::ControlBase;
 use strict;
 use Bivio::Base 'UI.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = b_use('Agent.TaskId');
 my($_A) = b_use('IO.Alert');
 

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmDAVList;
 use strict;
 use Bivio::Base 'Model.DAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RT) = b_use('Auth.RealmType');
 
 sub dav_propfind {

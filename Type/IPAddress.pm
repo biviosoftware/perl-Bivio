@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.SyntacticString';
 use Socket ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGEX {
     return qr{(?:\d{1,3}\.){3}\d{1,3}}i;

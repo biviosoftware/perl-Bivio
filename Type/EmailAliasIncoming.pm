@@ -4,7 +4,6 @@ package Bivio::Type::EmailAliasIncoming;
 use strict;
 use Bivio::Base 'Type.EmailAliasOutgoing';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ERR) = b_use('Bivio.TypeError')->SYNTAX_ERROR;
 
 sub from_literal {

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ddl_for_task_rate_limit {
     my(undef, $which) = @_;

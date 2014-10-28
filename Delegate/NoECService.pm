@@ -4,7 +4,6 @@ package Bivio::Delegate::NoECService;
 use strict;
 use Bivio::Base 'Delegate.ECService';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 # DEPRECATED: Use Delegate.ECService
 

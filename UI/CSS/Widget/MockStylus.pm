@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'CSSWidget.Simple';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CSS2_PROPERTIES) = {map(
     ($_ => 1),
     qw(

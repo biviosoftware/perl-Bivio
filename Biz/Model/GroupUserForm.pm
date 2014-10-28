@@ -4,7 +4,6 @@ package Bivio::Biz::Model::GroupUserForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FM) = b_use('Type.FormMode');
 my($_AUX) = [qw(is_subscribed file_writer)];
 my($_R) = b_use('Auth.Role');

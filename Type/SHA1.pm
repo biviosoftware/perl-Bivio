@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.Name';
 use Digest::SHA1 ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub compare {
     my($proto, $sha1, $incoming) = @_;

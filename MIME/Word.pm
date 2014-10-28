@@ -8,7 +8,6 @@ use MIME::Base64 ();
 
 # See RFC 2047
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub decode {
     my(undef, $value) = @_;

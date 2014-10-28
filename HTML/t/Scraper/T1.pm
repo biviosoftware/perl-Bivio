@@ -4,7 +4,6 @@ package Bivio::HTML::t::Scraper::T1;
 use strict;
 use Bivio::Base 'HTML.Scraper';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_HTTP) = b_use('TestLanguage.HTTP');
 

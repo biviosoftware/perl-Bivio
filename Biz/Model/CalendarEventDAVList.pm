@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CalendarEventDAVList;
 use strict;
 use Bivio::Base 'Model.AnyTaskDAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_D) = b_use('Type.Date');
 

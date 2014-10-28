@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::Mail::Widget::UserMailbox;
 use strict;
-$Bivio::UI::Mail::Widget::UserMailbox::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Mail::Widget::UserMailbox::VERSION;
-
 =head1 NAME
 
 Bivio::UI::Mail::Widget::UserMailbox - Mailbox for a User

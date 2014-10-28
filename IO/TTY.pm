@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::IO::TTY;
 use strict;
-$Bivio::IO::TTY::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::IO::TTY::VERSION;
-
 =head1 NAME
 
 Bivio::IO::TTY - perform actions on a tty

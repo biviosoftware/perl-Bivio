@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.CalendarEventList';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # Supports fullcalendar.js
 
 sub as_type_values {

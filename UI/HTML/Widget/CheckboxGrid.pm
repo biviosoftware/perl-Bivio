@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'HTMLWidget.MultipleChoiceGridBase';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub GRID_CLASS {
     return 'b_checkbox_grid';

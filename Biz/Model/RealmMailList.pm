@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmMailList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RM) = b_use('Model.RealmMail');
 my($_MTL) = b_use('Model.MailThreadList');
 

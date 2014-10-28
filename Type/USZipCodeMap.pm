@@ -4,7 +4,6 @@ package Bivio::Type::USZipCodeMap;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_MAP) = {
 '00210', [71.0132, 43.00589],

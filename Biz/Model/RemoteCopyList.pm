@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RemoteCopyList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_COLS) = [
     [qw(realm Name)],
     [qw(user RealmName)],

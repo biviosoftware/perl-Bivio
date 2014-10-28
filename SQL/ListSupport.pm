@@ -195,7 +195,6 @@ use Bivio::Base 'SQL.Support';
 # is the C<primary_key> for this ListSupport.  It is guaranteed to be
 # unique to each row of the ListSupport.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_PRIMARY_ID_SQL_VALUE) = b_use('Type.PrimaryId')->to_sql_value('?');

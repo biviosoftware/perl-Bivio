@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UI.Widget';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TI) = b_use('Agent.TaskId');
 
 sub NEW_ARGS {

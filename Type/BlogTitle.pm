@@ -4,7 +4,6 @@ package Bivio::Type::BlogTitle;
 use strict;
 use Bivio::Base 'Type.Line';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_BC) = __PACKAGE__->use('Type.BlogContent');
 
 sub empty_value {

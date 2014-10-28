@@ -4,7 +4,6 @@ package Bivio::UI::View::LocalFile;
 use strict;
 use Bivio::Base 'UI.View';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub SUFFIX {
     return '.bview';

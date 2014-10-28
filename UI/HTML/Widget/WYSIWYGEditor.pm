@@ -6,7 +6,6 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 use File::stat ();
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('UI.Facade');
 my($_FP) = b_use('Type.FilePath');
 my($_IOF) = b_use('IO.File');

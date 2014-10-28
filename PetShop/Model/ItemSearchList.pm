@@ -6,7 +6,6 @@ use Bivio::Base 'Model.ItemList';
 
 # ItemSearchList produces a list of items to found by keyword.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub PAGE_SIZE {
     # Returns a low number so we can demonstrate paging on search page.

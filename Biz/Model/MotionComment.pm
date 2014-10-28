@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MotionComment;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('ClassWrapper.TupleTag')->wrap_methods(__PACKAGE__,  {
     moniker => __PACKAGE__->TUPLE_TAG_PREFIX,
     primary_id_field => 'motion_comment_id',

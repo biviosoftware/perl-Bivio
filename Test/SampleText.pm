@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::Biz::Random;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_DATA) = {
     title => [split(/\n/, <<'EOF')],

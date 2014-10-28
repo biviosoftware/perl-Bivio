@@ -111,7 +111,6 @@ use Bivio::Base 'Collection.Attributes';
 #
 # Custom task value for redirects.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
 my($_T) = b_use('Agent.TaskId');

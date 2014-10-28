@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::IO::Format;
 use strict;
-$Bivio::IO::Format::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::IO::Format::VERSION;
-
 =head1 NAME
 
 Bivio::IO::Format - uses formline to generate paged string output

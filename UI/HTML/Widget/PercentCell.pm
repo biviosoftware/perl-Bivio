@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Widget::PercentCell;
 use strict;
-$Bivio::UI::HTML::Widget::PercentCell::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::PercentCell::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Widget::PercentCell - formats a cell with a number

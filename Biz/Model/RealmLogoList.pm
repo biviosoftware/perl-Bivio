@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 use Image::Size ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PUBLIC) = Bivio::Type->get_instance('DocletFileName')->PUBLIC_FOLDER_ROOT;
 my($_BASE) = $_PUBLIC . '/logo';
 

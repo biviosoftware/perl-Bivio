@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Action.Acknowledgement');
 my($_T) = b_use('FacadeComponent.Text');
 

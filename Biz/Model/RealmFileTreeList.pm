@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFileTreeList;
 use strict;
 use Bivio::Base 'Model.TreeList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FN) = b_use('Type.FileName');
 my($_FP) = b_use('Type.FilePath');

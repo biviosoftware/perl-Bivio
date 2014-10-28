@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.ControlBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_HTMLDT) = b_use('HTMLWidget.DateTime');
 

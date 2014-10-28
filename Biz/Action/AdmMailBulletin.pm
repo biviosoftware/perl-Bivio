@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::Biz::Action';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_M) = __PACKAGE__->use('Biz.Model');
 my($_F) = __PACKAGE__->use('IO.File');

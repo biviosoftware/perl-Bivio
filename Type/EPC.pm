@@ -4,7 +4,6 @@ package Bivio::Type::EPC;
 use strict;
 use Bivio::Base 'Type.SyntacticString';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGEX {
     return qr{[0-9a-f]{24}}i;

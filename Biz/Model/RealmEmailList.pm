@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmEmailList;
 use strict;
 use Bivio::Base 'Model.RealmUserList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = Bivio::Biz::Model->get_instance('Email')->get_field_type('email');
 
 sub get_recipients {

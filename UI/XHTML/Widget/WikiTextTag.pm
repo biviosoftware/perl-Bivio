@@ -4,7 +4,6 @@ package Bivio::UI::XHTML::Widget::WikiTextTag;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ACCEPTS_CHILDREN {
     return 0;

@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::UserAccountForm;
 use strict;
 use Bivio::Base 'Model.UserCreateForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty {
     my($self) = @_;

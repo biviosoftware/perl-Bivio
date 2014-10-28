@@ -4,7 +4,6 @@ package Bivio::Util::HTTPStats;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($AUTOLOAD);
 our($_TRACE);

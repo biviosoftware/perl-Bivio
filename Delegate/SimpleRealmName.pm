@@ -4,7 +4,6 @@ package Bivio::Delegate::SimpleRealmName;
 use strict;
 use Bivio::Base 'Type.Name';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = b_use('Bivio.TypeError');
 my($_RESERVED) = {map(($_ => 1), qw(
     abuse

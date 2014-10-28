@@ -4,7 +4,6 @@ package Bivio::UI::Mail::Widget::ExtraHeaders;
 use strict;
 use Bivio::Base 'UI.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;

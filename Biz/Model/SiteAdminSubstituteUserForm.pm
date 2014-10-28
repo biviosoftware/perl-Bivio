@@ -4,7 +4,6 @@ package Bivio::Biz::Model::SiteAdminSubstituteUserForm;
 use strict;
 use Bivio::Base 'Model.AdmSubstituteUserForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('FacadeComponent.Constant');
 
 sub can_substitute_user {

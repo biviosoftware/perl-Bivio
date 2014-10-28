@@ -12,7 +12,6 @@ b_use('IO.Trace');
 # A user is logged in if his PASSWORD_FIELD is set in the cookie.  We keep the
 # user_id in the cookie so we can track logged out users.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Config')->register(my $_CFG = {
     register_with_cookie => 1,

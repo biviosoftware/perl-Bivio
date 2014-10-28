@@ -4,7 +4,6 @@ package Bivio::Type::CRMActionId;
 use strict;
 use Bivio::Base 'Type.Number';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PI) = __PACKAGE__->use('Type.PrimaryId');
 
 sub get_decimals {

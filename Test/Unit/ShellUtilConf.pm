@@ -4,7 +4,6 @@ package Bivio::Test::Unit::ShellUtilConf;
 use strict;
 use Bivio::Base 'TestUnit.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 my($_F) = b_use('IO.File');
 

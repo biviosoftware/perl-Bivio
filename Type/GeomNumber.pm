@@ -4,7 +4,6 @@ package Bivio::Type::GeomNumber;
 use strict;
 use Bivio::Base 'Bivio::Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     my($proto, $value) = @_;

@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::PetShop::Delegate::Permission;
 use strict;
-$Bivio::PetShop::Delegate::Permission::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::PetShop::Delegate::Permission::VERSION;
-
 =head1 NAME
 
 Bivio::PetShop::Delegate::Permission - unit test permissions

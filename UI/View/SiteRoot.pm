@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub VALID_METHOD_REGEXP {
     return qr{^hm_}s;

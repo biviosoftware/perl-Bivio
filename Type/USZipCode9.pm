@@ -4,7 +4,6 @@ package Bivio::Type::USZipCode9;
 use strict;
 use Bivio::Base 'Type.USZipCode';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGEX {
     return qr{(\d{9})};

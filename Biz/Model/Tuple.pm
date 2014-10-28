@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.OrdinalBase';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('Model.RealmMail')->register('Model.Tuple');
 my($_SLOT_RE)
     = qr{^\s*(@{[b_use('Type.TupleSlotLabel')->REGEX]}):\s*}om;

@@ -4,7 +4,6 @@ package Bivio::t::UNIVERSAL::DelegateSuper;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub as_string {
     my(undef, $delegator) = shift->delegated_args(@_);

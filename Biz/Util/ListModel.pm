@@ -7,7 +7,6 @@ use Bivio::Biz::Action;
 use Bivio::IO::Trace;
 use Bivio::Util::CSV;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_Q) = b_use('AgentHTTP.Query');
 

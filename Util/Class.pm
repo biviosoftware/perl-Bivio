@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 use File::Find ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CL) = b_use('IO.ClassLoader');
 
 sub USAGE {
@@ -73,7 +72,7 @@ sub u_info {
     my($file) = "$pkg.pm";
     $file =~ s{::}{/}g;
     no strict 'refs';
-    return ${\${$pkg . '::VERSION'}} . ' ' . $INC{$file};
+    return $INC{$file};
 }
 
 sub u_name {

@@ -28,7 +28,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # Don't allow text-editing
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('IO.Alert');
 
 sub initialize {

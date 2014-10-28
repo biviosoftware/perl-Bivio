@@ -23,7 +23,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # The height of a single line of the two lines and the space in between
 # in pixels.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     # (self) : undef

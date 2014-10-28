@@ -4,7 +4,6 @@ package Bivio::UI::XML::Widget::String;
 use strict;
 use Bivio::Base 'XMLWidget.Simple';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_S) = b_use('Type.String');
 
 sub render {

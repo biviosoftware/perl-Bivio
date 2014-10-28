@@ -4,7 +4,6 @@ package Bivio::Ext::HTTPCookies;
 use strict;
 use base 'HTTP::Cookies';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = Bivio::UNIVERSAL->use('IO.File');
 my($_D) = Bivio::UNIVERSAL->use('Bivio.Die');
 

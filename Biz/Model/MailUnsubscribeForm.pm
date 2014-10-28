@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MailUnsubscribeForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MAIL_RECIPIENT) = b_use('Auth.Role')->MAIL_RECIPIENT;
 my($_BMM) = b_use('Type.BulletinMailMode');
 

@@ -6,7 +6,6 @@ use Bivio::Base 'UI.FacadeComponent';
 use Image::Size ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 my($_URI) = '/i';
 my($_CLEAR_DOT) = {

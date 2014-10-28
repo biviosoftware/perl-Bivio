@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MotionCommentForm;
 use strict;
 use Bivio::Base 'Model.FormModeBaseForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MC) = b_use('Model.MotionComment');
 my($_TAG_ID) = 'MotionComment.motion_comment_id';
 b_use('ClassWrapper.TupleTag')->wrap_methods(

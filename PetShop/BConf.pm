@@ -4,7 +4,6 @@ package Bivio::PetShop::BConf;
 use strict;
 use base 'Bivio::BConf';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub merge_overrides {
     my($proto) = @_;

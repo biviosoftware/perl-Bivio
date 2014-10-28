@@ -4,7 +4,6 @@ package Bivio::Type::BlogName;
 use strict;
 use base 'Bivio::Type::FileName';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = Bivio::Type->get_instance('FilePath');
 
 sub ERROR {

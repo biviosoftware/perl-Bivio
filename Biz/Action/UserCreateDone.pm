@@ -4,7 +4,6 @@ package Bivio::Biz::Action::UserCreateDone;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_V) = b_use('UI.View');
 my($_UCF) = b_use('Model.UserCreateForm');
 

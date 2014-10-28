@@ -4,7 +4,6 @@ package Bivio::Search::Parseable;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_S) = b_use('Type.String');
 

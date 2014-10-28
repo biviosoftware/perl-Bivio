@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.Director';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_KEY) = 'b_abtest';
 my($_DEFAULT);
 

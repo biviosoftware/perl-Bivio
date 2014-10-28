@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.FilePath';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Config')->register(my $_CFG = {
     use_cached_path => 0,
 });

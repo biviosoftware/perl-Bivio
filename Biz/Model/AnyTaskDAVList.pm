@@ -4,7 +4,6 @@ package Bivio::Biz::Model::AnyTaskDAVList;
 use strict;
 use Bivio::Base 'Model.UserTaskDAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AT) = b_use('Agent.Task');
 my($_RF) = b_use('Model.RealmFile');
 

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::EmailVerifyForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ULF) = b_use('Model.UserLoginForm');
 my($_A) = b_use('Biz.Action');
 my($_EV) = b_use('Model.EmailVerify');

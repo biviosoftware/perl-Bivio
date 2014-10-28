@@ -4,7 +4,6 @@ package Bivio::Biz::Model::WikiForm;
 use strict;
 use Bivio::Base 'Model.WikiBaseForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = b_use('Type.WikiName');
 
 sub execute_cancel {

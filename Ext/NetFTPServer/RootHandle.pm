@@ -5,7 +5,6 @@ use strict;
 use base 'Bivio::Ext::NetFTPServer::DirHandle';
 use Bivio::Biz::ListModel;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get {
     my($self, $filename) = @_;

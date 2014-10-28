@@ -4,7 +4,6 @@ package Bivio::Auth::RoleSet;
 use strict;
 use Bivio::Base 'Type.EnumSet';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
 __PACKAGE__->initialize;
 

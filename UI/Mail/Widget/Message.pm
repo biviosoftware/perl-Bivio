@@ -4,7 +4,6 @@ package Bivio::UI::Mail::Widget::Message;
 use strict;
 use Bivio::Base 'Widget.ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_O) = b_use('Mail.Outgoing');
 my($_A) = b_use('Mail.Address');
 my($_L) = b_use('IO.Log');

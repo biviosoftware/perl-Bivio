@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 use Digest::MD5 ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF) = b_use('Model.RealmFile');
 my($_FP) = b_use('Type.FilePath');
 my($_IDI) = __PACKAGE__->instance_data_index;

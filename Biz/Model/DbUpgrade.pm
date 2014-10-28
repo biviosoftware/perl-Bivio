@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Biz::Model::DbUpgrade;
 use strict;
-$Bivio::Biz::Model::DbUpgrade::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::DbUpgrade::VERSION;
-
 =head1 NAME
 
 Bivio::Biz::Model::DbUpgrade - maintains current database DDL version

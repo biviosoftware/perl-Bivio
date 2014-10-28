@@ -4,7 +4,6 @@ package Bivio::Biz::Action::SiteRoot;
 use strict;
 use Bivio::Base 'Action.RealmFile';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_realm_file {
     my($self, $req) = @_;

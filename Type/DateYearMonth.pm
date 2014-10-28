@@ -4,7 +4,6 @@ package Bivio::Type::DateYearMonth;
 use strict;
 use Bivio::Base 'Type.Date';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub FROM_SQL_FORMAT {
     return 'YYYYMM';

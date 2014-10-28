@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub file_upload_from_wysiwyg {
     view_put(xhtml => 

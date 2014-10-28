@@ -4,7 +4,6 @@ package Bivio::Type::BlogContent;
 use strict;
 use Bivio::Base 'Type.Text64K';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 my($_TE) = b_use('Bivio.TypeError');
 my($_TITLE_PREFIX) = $_C->if_version(

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'MailWidget.List';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_new_args {
     my($proto, $list_class, $attributes) = @_;

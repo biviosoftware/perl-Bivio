@@ -4,7 +4,6 @@ package Bivio::Test::HTMLParser::Frames;
 use strict;
 use Bivio::Base 'Bivio::Test::HTMLParser';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->register(['Cleaner']);
 
 sub html_parser_start {

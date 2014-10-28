@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmMailPublicForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MV) = b_use('Type.MailVisibility');
 
 sub can_toggle_public {

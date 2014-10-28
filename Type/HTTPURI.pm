@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.String';
 use URI ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     # (proto, string) : any

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CalendarEventMonthForm;
 use strict;
 use Bivio::Base 'Model.ListQueryForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CEMD) = b_use('Type.CalendarEventMonthDate');
 
 

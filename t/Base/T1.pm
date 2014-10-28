@@ -4,7 +4,6 @@ package Bivio::t::Base::T1;
 use strict;
 use Bivio::Base 'Type.String';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = __PACKAGE__->use('IO.Alert');
 
 sub test_b_die {

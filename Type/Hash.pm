@@ -4,7 +4,6 @@ package Bivio::Type::Hash;
 use strict;
 use Bivio::Base 'Bivio::Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = __PACKAGE__->use('IO.Ref');
 
 sub compare_defined {

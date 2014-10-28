@@ -6,7 +6,6 @@ use Bivio::Base 'Delegate.Cookie';
 
 # B<DEPRECATED>. Use L<Bivio::Delegate::Cookie|"Bivio::Delegate::Cookie">.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new {
     return shift->SUPER::new(@_);

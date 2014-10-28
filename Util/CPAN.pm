@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio.ShellUtil';
 b_use('IO.ClassLoaderAUTOLOAD');
 b_use('IO.Trace');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_SUFFIX_RE) = qr{\.tar\.gz}is;
 # COUPLED to _module_map_version

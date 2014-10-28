@@ -4,7 +4,6 @@ package Bivio::Biz::Model::Motion;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_MS) = b_use('Type.MotionStatus');
 my($_MT) = b_use('Type.MotionType');

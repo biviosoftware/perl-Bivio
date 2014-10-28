@@ -4,7 +4,6 @@ package Bivio::PetShop::Test::Request;
 use strict;
 use Bivio::Base 'Bivio::Test::Request';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub setup_facade {
     my($self) = shift->SUPER::setup_facade(@_);

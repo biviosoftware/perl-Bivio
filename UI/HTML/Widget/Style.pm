@@ -39,7 +39,6 @@ use Bivio::Base 'UI.Widget';
 # If the agent supports css, will render a full style sheet.
 # Otherwise will render a partial style sheet.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_NO_HTML_KEY) = __PACKAGE__ . 'no_html';
 my($_TAGS) = join(',', qw(
     address

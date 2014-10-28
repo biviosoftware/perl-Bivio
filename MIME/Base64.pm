@@ -9,7 +9,6 @@ use MIME::Base64 ();
 # which we call http-base64.  The specials in Base64 are not
 # web friendly, so they are all replaced.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub http_decode {
     # (self, string) : string

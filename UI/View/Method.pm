@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UI.View';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub absolute_path {
     return shift->get('view_method');

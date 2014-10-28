@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::UI::XHTML::ViewShortcuts';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_LABEL_OFFSET) = _offset(b_use('XHTMLWidget.FormFieldLabel')->COL_CLASS);
 my($_EDIT_COL_CLASS) = 'col-sm-6';
 

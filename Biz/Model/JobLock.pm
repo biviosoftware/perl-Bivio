@@ -4,7 +4,6 @@ package Bivio::Biz::Model::JobLock;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub acquire_or_load {
     # (self, string, hash_ref) : boolean

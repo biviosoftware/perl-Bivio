@@ -64,7 +64,6 @@ use Bivio::Base 'Collection.Attributes';
 # When the form's OK button is hit, this task will be executed.
 # Is always defined.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my(%_CHAR_TO_KEY) = (

@@ -53,7 +53,6 @@ use base 'Bivio::UNIVERSAL';
 # You will need to experiment with which trace points are expensive, but
 # the C<if $_TRACE> predicate is one of the fastest statements in perl.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(@_REGISTERED, $_CALL_FILTER, $_PKG_FILTER, $_PKG_SUB, $_PRINTER);
 BEGIN {
     # Packages which are registered

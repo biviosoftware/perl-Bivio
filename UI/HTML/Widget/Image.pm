@@ -82,7 +82,6 @@ use Bivio::Base 'HTMLWidget.ControlBase';
 #
 # VSPACE attribute value.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 my($_OLD_HTML) = [qw(hspace vspace width height border align attributes)];
 my($_A) = b_use('UI.Align');

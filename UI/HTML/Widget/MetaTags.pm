@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Widget::MetaTags;
 use strict;
-$Bivio::UI::HTML::Widget::MetaTags::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::MetaTags::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Widget::MetaTags - generates meta tags in header

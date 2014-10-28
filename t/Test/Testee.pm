@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::t::Test::Testee;
 use strict;
-$Bivio::t::Test::Testee::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::t::Test::Testee::VERSION;
-
 =head1 NAME
 
 Bivio::t::Test::Testee - unit test testing class

@@ -8,7 +8,6 @@ use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::XML;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # INITIALIZATION: must be explicit, because Bivio::Base does too much so
 # can't use b_use.  This package is very early on in import order.
 my($_HTML) = 'Bivio::HTML';

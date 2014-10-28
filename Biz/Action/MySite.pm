@@ -4,7 +4,6 @@ package Bivio::Biz::Action::MySite;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('FacadeComponent.Constant');
 my($_RT) = b_use('Auth.RealmType');
 my($_R) = b_use('Auth.Role');

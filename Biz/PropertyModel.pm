@@ -4,7 +4,6 @@ package Bivio::Biz::PropertyModel;
 use strict;
 use Bivio::Base 'Biz.Model';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
 my($_PI) = b_use('Type.PrimaryId');

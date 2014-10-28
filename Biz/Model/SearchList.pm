@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MTL) = b_use('Model.MailThreadList');
 my($_BFN) = b_use('Type.BlogFileName');
 my($_MFN) = b_use('Type.MailFileName');

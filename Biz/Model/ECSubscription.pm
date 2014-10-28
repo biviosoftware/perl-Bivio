@@ -8,7 +8,6 @@ use Bivio::Base 'Model.RealmBase';
 # service subscription. The subscription can be running or expired, depending
 # on its end date.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = __PACKAGE__->use('Type.Date');
 
 sub INFINITE_END_DATE {

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TextFileForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = __PACKAGE__->use('MIME.Type');
 
 sub execute_empty {

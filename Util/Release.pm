@@ -53,7 +53,6 @@ b_use('IO.ClassLoaderAUTOLOAD');
 #
 #     rpm -Uvh <rpm_http_root>/<rpm_home_dir>/myproject-HEAD.rpm
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 our($_MACROS);
 my($_VC_CHECKOUT) = 'bivio vc checkout';
@@ -776,6 +775,8 @@ sub _mkdir_rpmbuild {
 	my($name) = @_;
 	b_die($name, ': not found in `rpmbuild --showrc`')
 	    unless my $d = $map->{$name};
+	$map->{$name} = $d
+	    if $d =~ s{^\%\{getenv:(\w+)\}}{$ENV{$1}};
 	return $d
 	    if $name eq '_topdir';
 	b_die($d, ": $name does not begin with _topdir")

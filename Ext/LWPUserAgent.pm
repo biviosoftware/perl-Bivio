@@ -12,7 +12,6 @@ use LWP::Debug ();
 # If you trace this module, also turns on tracing in LWP::Debug.  See
 # L<new|"new">.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 Bivio::IO::Trace->register;
 Bivio::IO::Config->register(my $_CFG = {

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Agent.Dispatcher';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_JD);
 my($_SELF);

@@ -59,7 +59,6 @@ b_use('IO.ClassLoaderAUTOLOAD');
 # L<get_field_as_html|"get_field_as_html">, because the field may be in error
 # and the errant literal value may not be valid for the type.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_A) = b_use('Action.Acknowledgement');
 my($_D) = b_use('Bivio.Die');

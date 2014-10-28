@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserPasswordQueryForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = __PACKAGE__->use('Type.Email');
 my($_USER_FIELD) = b_use('Model.UserLoginForm')->USER_FIELD;
 

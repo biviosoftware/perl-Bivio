@@ -4,7 +4,6 @@ package Bivio::UI::FacadeBase;
 use strict;
 use Bivio::Base 'UI.Facade';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_C) = b_use('IO.Config');

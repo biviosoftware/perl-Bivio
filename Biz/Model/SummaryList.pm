@@ -15,7 +15,6 @@ use Bivio::Base 'Collection.Attributes';
 # beginning of the list each time a value is requested - don't call this
 # methods while iterating through the source(s).
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub get {

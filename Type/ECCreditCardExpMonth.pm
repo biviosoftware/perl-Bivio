@@ -4,7 +4,6 @@ package Bivio::Type::ECCreditCardExpMonth;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     JANUARY => [1, '01'],
     FEBRUARY => [2, '02'],

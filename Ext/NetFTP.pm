@@ -6,7 +6,6 @@ use base 'Net::FTP';
 use Bivio::IO::Trace;
 use Bivio::UI::FacadeComponent::Text;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 Bivio::IO::Config->register(my $_CFG = {
     active_ports => [8100 .. 8199],

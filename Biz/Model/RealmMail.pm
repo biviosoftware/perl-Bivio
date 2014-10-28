@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmMail;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Bivio.Die');
 my($_E) = b_use('Type.Email');
 my($_F) = b_use('Biz.File');

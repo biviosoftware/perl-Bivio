@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CalendarEventForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CEMF) = b_use('Model.CalendarEventMonthForm');
 my($_CER) = b_use('Type.CalendarEventRecurrence');
 my($_D) = b_use('Type.Date');

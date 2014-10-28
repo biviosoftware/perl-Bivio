@@ -4,7 +4,6 @@ package Bivio::UI::XHTML::Widget::WikiText::Macro;
 use strict;
 use Bivio::Base 'XHTMLWidget.WikiTextTag';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PKG) = __PACKAGE__;
 my($_P) = b_use('Bivio.Parameters');
 

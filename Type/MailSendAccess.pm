@@ -4,7 +4,6 @@ package Bivio::Type::MailSendAccess;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CATEGORY_PREFIX) = 'mail_send_access_';
 __PACKAGE__->compile([
     UNKNOWN => [0, 'Select who can send mail'],

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::Forum;
 use strict;
 use Bivio::Base 'Model.RealmOwnerBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PI) = b_use('Type.PrimaryId');
 my($_ROOT_ID);
 

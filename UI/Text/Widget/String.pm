@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::Text::Widget::String;
 use strict;
-$Bivio::UI::Text::Widget::String::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::Text::Widget::String::VERSION;
-
 =head1 NAME
 
 Bivio::UI::Text::Widget::String - x

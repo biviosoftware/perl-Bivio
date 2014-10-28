@@ -4,7 +4,6 @@ package Bivio::Type::BulletinMailMode;
 use strict;
 use Bivio::Base 'Type.Boolean';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ROW_TAG_KEY {
     return 'BULLETIN_MAIL_MODE';

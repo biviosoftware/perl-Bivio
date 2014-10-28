@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'FacadeComponent.Constant';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_V) = b_use('UI.View');
 my($_F) = b_use('UI.Facade');
 my($_IDI) = __PACKAGE__->instance_data_index;

@@ -22,7 +22,6 @@ use Bivio::IO::Trace;
 # L<Bivio::Type::Enum|Bivio::Type::Enum>.  A delegate may also completely
 # implement the class.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WARNED) = {};
 our($_TRACE);
 # Bivio::Die can't be loaded at startup, but it can be loaded before

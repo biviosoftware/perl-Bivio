@@ -4,7 +4,6 @@ package Bivio::Type::FileField;
 use strict;
 use Bivio::Base 'Bivio.Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('Type.Text');
 my($_RF) = b_use('Model.RealmFile');
 my($_TE) = b_use('Bivio.TypeError');

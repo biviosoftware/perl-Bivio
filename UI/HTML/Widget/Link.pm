@@ -53,7 +53,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # renderable value (see UIWidget->render_value().
 # If not a widget, will be wrapped in a Widget.String.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 my($_TI) = b_use('Agent.TaskId');
 

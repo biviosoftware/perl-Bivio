@@ -25,7 +25,6 @@ use Bivio::Base 'Type.EnumDelegator';
 # L<Auth.Support|Auth.Support> to
 # L<Delegate.NoDbAuthSupport|Delegate.NoDbAuthSupport>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile;
 
 sub is_continuous {

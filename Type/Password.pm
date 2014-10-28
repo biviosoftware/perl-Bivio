@@ -8,7 +8,6 @@ use Bivio::TypeError;
 # C<Bivio::Type::Password> indicates the input is a password entry.
 # It should be handled with care, e.g. never displayed to user.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(@_SALT_CHARS) = (
     'a'..'z',
     'A'..'Z',

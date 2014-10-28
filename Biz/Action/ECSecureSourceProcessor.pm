@@ -4,7 +4,6 @@ package Bivio::Biz::Action::ECSecureSourceProcessor;
 use strict;
 use Bivio::Base 'Action.ECCreditCardProcessor';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_get_additional_form_data {
     # (self, proto, Model.ECPayment) : string

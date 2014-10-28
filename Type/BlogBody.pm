@@ -4,7 +4,6 @@ package Bivio::Type::BlogBody;
 use strict;
 use base 'Bivio::Type::BlogContent';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_BT) = Bivio::Type->get_instance('BlogTitle');
 
 sub get_width {

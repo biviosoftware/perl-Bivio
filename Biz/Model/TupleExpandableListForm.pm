@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleExpandableListForm;
 use strict;
 use Bivio::Base 'Biz.ExpandableListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ROW_INCREMENT {
     return 10;

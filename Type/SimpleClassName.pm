@@ -4,7 +4,6 @@ package Bivio::Type::SimpleClassName;
 use strict;
 use base 'Bivio::Type::Line';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGEX {
     return qr{\w+};

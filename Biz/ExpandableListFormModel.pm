@@ -6,7 +6,6 @@ use Bivio::Base 'Biz.ListFormModel';
 
 # C<Bivio::Biz::ExpandableListFormModel> list form which can have extra rows
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub EMPTY_AND_CANNOT_BE_SPECIFIED_FIELDS {

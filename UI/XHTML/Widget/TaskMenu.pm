@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_URI) = b_use('Agent.Request')->FORMAT_URI_PARAMETERS;
 my($_PARAMS) = [
     'task_id',

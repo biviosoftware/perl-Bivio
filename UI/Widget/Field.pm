@@ -4,7 +4,6 @@ package Bivio::UI::Widget::Field;
 use strict;
 use Bivio::Base 'Widget.ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;

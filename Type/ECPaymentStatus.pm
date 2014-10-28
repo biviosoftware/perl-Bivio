@@ -7,7 +7,6 @@ use Bivio::Base 'Type.Enum';
 # C<Bivio::Type::ECPaymentStatus> describes the possible states
 # a payment can be associated with.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     TRY_CAPTURE => [1],
     CAPTURED => [2],

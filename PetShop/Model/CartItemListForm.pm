@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::CartItemListForm;
 use strict;
 use Bivio::Base 'Biz.ListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_P) = b_use('Type.Price');
 
 sub execute_empty_row {

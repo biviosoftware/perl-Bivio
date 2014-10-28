@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CRMQueryForm;
 use strict;
 use Bivio::Base 'Model.ListQueryForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('ClassWrapper.TupleTag')->wrap_methods(
     __PACKAGE__, b_use('Model.CRMForm')->TUPLE_TAG_INFO);
 

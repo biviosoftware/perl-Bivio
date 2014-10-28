@@ -4,7 +4,6 @@ package Bivio::PetShop::Widget::CreditCardExpiration;
 use strict;
 use Bivio::Base 'Widget.Simple';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
 
 sub render {

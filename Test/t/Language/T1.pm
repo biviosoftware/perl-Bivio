@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Test::t::Language::T1;
 use strict;
-$Bivio::Test::t::Language::T1::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Test::t::Language::T1::VERSION;
-
 =head1 NAME
 
 Bivio::Test::t::Language::T1 - simple language for testing

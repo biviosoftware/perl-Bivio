@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.String';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub from_literal {
     my($proto, $value) = @_;

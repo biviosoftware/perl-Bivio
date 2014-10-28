@@ -4,7 +4,6 @@ package Bivio::UI::FacadeComponent::HTML;
 use strict;
 use Bivio::Base 'FacadeComponent.Constant';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGISTER_PREREQUISITES {
     return [qw(Color Font Text Constant)];

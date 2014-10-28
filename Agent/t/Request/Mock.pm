@@ -4,7 +4,6 @@ package Bivio::Agent::t::Request::Mock;
 use strict;
 use Bivio::Base 'Bivio::Agent::Request';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub client_redirect {
     Bivio::Die->throw('CLIENT_REDIRECT_TASK');

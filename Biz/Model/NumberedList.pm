@@ -4,7 +4,6 @@ package Bivio::Biz::Model::NumberedList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub PAGE_SIZE {
     return 10;

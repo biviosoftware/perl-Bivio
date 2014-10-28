@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::AmountCell;
 use strict;
 use Bivio::Base 'HTMLWidget.String';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     $_C->if_version(

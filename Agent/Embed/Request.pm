@@ -4,7 +4,6 @@ package Bivio::Agent::Embed::Request;
 use strict;
 use Bivio::Base 'Agent.Request';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 my($_F) = b_use('UI.Facade');
 my($_R) = b_use('AgentEmbed.Reply');

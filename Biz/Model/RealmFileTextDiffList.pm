@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFileTextDiffList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 
 sub get_compare_file {

@@ -4,7 +4,6 @@ package Bivio::Test::Unit::ListModel;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub make_expect_rows {
     my($proto, $fields, @values) = @_;

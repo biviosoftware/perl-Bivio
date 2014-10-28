@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_GENERAL) = b_use('Auth.Realm')->get_general->get('id');
 my($_PI) = b_use('Type.PrimaryId');

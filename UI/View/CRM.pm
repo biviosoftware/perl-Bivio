@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Mail';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('MIME.Type');
 my($_M) = b_use('Biz.Model');
 my($_CTS) = b_use('Type.CRMThreadStatus');

@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::DollarCell;
 use strict;
 use Bivio::Base 'HTMLWidget.AmountCell';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;

@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::HOWTO::CodingStyle;
 use strict;
-$Bivio::HOWTO::CodingStyle::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::HOWTO::CodingStyle::VERSION;
-
 =head1 NAME
 
 Bivio::HOWTO::CodingStyle - documents bOP coding style

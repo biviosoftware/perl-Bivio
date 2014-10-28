@@ -4,7 +4,6 @@ package Bivio::Delegation;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_as_string {
     my($self) = @_;

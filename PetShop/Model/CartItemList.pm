@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::CartItemList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_P) = b_use('Type.Price');
 my($_SS) = b_use('Type.StockStatus');
 

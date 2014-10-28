@@ -4,7 +4,6 @@ package Bivio::Biz::Model::AuthUserGroupList;
 use strict;
 use Bivio::Base 'Model.AuthUserRealmList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     my($self) = @_;

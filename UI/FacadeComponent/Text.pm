@@ -90,7 +90,6 @@ use Bivio::IO::Trace;
 # root without any path_info.  Used by
 # L<Bivio::Biz::Action::ClientRedirect::execute_if_home_page|Bivio::Biz::Action::ClientRedirect/"execute_if_home_page">
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_R) = b_use('Agent.Request');
 

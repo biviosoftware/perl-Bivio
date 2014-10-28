@@ -4,7 +4,6 @@ package Bivio::Util::SSL;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = __PACKAGE__->use('IO.File');
 
 sub USAGE {

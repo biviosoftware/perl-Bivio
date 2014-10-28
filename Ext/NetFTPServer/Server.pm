@@ -11,7 +11,6 @@ use Bivio::SQL::Connection;
 use Bivio::Type::DateTime;
 use Bivio::Type::DocletFileName;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_CFG);
 Bivio::IO::Config->register({

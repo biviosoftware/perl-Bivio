@@ -4,7 +4,6 @@ package Bivio::PetShop::Util::TestUser;
 use strict;
 use Bivio::Base 'ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ADM {
     return 'root';

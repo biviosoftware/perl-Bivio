@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REALM_ROLE_CONFIG);
 my($_AR) = b_use('Auth.Realm');
 my($_C) = b_use('SQL.Connection');
@@ -921,19 +920,21 @@ sub tables {
 }
 
 sub upgrade_db {
-    my($self, $type) = @_;
+    sub UPGRADE_DB {[
+	[qw(type Name)],
+    ]}
+    my($self, $bp) = shift->parameters(\@_);
     my($req) = $self->req;
-    my($method) = $type ? "internal_upgrade_db_$type" : 'internal_upgrade_db';
+    my($method) = "internal_upgrade_db_$bp->{type}";
     my($upgrade) = $self->model('DbUpgrade');
-    my($v) = $type ? ($type eq 'bundle' ? $VERSION : '') . $type
-	: $self->package_version;
+    my($v) = $bp->{type};
     $self->usage_error(
 	$v,
 	': ran on ',
 	$_DT->to_local_string($upgrade->get('run_date_time')),
     ) if $upgrade->unauth_load({version => $v});
     $self->are_you_sure(
-	qq{Upgrade the database@{[$type ? " with $type" : '']}?});
+	qq{Upgrade the database with $bp->{type}?});
     $self->print($self->export_db . "\n")
 	if $_CFG->{export_db_on_upgrade};
     # After an export, you need to rollback or there will be errors.

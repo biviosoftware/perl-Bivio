@@ -4,7 +4,6 @@ package Bivio::Biz::Model::Bulletin;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 
 sub create {

@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::ItemForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub add_item_to_cart {
     # Adds the specified item to the current cart.

@@ -16,7 +16,6 @@ use Bivio::Base 'Bivio::UI::Widget';
 #
 # The widget which is rendered if javascript is not present.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub initialize {

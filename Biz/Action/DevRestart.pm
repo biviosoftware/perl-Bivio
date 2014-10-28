@@ -4,7 +4,6 @@ package Bivio::Biz::Action::DevRestart;
 use strict;
 use Bivio::Base 'Action.JobBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_SENTINEL) = 'restart';
 

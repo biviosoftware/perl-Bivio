@@ -4,7 +4,6 @@ package Bivio::PetShop::Type::StockStatus;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [0],
     NOT_IN_STOCK => [1],

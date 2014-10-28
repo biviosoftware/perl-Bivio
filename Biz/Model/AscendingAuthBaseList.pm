@@ -4,7 +4,6 @@ package Bivio::Biz::Model::AscendingAuthBaseList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_GID);
 
 sub find_row_by_id {

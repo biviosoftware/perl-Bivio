@@ -6,7 +6,6 @@ use strict;
 use Bivio::Base 'UIHTML';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WF) = b_use('UIHTML.WidgetFactory');
 my($_V6) = b_use('IO.Config')->if_version(6);
 my($_LINK_TARGET) = $_V6 ? undef : '_top';

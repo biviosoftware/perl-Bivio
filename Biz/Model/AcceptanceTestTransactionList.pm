@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 use URI::Escape;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATL) = b_use('Model.AcceptanceTestList');
 
 

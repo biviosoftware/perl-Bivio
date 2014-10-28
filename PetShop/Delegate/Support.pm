@@ -4,7 +4,6 @@ package Bivio::PetShop::Delegate::Support;
 use strict;
 use Bivio::Base 'Delegate.SimpleAuthSupport';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub extra_auth_realm_bunit {
     my($proto, $realm, $task, $req) = @_;

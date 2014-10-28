@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::CategoryList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_image_name {
     my($self) = @_;

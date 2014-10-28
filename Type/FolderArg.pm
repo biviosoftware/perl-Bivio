@@ -4,7 +4,6 @@ package Bivio::Type::FolderArg;
 use strict;
 use Bivio::Base 'Type.String';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WIDTH) = b_use('Type.FilePath')->get_width;
 
 sub get_width {

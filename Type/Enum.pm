@@ -15,7 +15,6 @@ use Bivio::IO::Alert;
 #
 # An enum is L<Bivio::Type::Number|Bivio::Type::Number>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # also uses Bivio::TypeError dynamically.  Used by DieCode and
 # therefore Bivio::Die, so don't import Bivio::Die.
 my($_INT_RE) = qr{^[-+]?\d+$}s;

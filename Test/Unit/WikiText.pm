@@ -4,7 +4,6 @@ package Bivio::Test::Unit::WikiText;
 use strict;
 use Bivio::Base 'TestUnit.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new_unit {
     my($proto, $class_name, $args) = @_;

@@ -4,7 +4,6 @@ package Bivio::UI::XHTML::Widget::WikiText::Include;
 use strict;
 use Bivio::Base 'XHTMLWidget.WikiTextTag';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CC) = b_use('IO.CallingContext');
 my($_SUFFIX) = '.bwiki';
 

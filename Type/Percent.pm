@@ -4,7 +4,6 @@ package Bivio::Type::Percent;
 use strict;
 use Bivio::Base 'Type.Amount';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub calculate {
     # (proto, string, string) : string

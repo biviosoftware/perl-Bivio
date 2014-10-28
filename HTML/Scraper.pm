@@ -7,7 +7,6 @@ use HTTP::Cookies ();
 use HTTP::Request ();
 use HTTP::Message ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 # use URI ();
 our($_TRACE);

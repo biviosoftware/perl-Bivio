@@ -117,7 +117,6 @@ b_use('IO.Trace');
 #
 # Let's you specify form names explicitly for special cases, e.g.
 # incoming mail via b-sendmail-agent.
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 my($_M) = b_use('Biz.Model');
 our($_TRACE);

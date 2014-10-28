@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ForumEditDAVList;
 use strict;
 use Bivio::Base 'Model.EditDAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FM) = Bivio::Type->get_instance('FormMode');
 
 sub CSV_COLUMNS {

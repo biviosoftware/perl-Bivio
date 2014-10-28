@@ -4,6 +4,5 @@ package Bivio::Type::Dollar;
 use strict;
 use Bivio::Base 'Type.Currency';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

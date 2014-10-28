@@ -4,7 +4,6 @@ package Bivio::Cache::RealmFileBase;
 use strict;
 use Bivio::Base 'Bivio.Cache';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub handle_property_model_modification {
     my($proto, $model, $op, $query) = @_;

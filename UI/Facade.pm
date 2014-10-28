@@ -80,7 +80,6 @@ use Bivio::Base 'Collection.Attributes';
 # Component instance for this facade.  The attribute name must
 # be the simple package name for the Component.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Trace');
 our($_TRACE);
 my($_D) = b_use('Bivio.Die');

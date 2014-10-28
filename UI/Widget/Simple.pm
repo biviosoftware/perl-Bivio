@@ -4,7 +4,6 @@ package Bivio::UI::Widget::Simple;
 use strict;
 use Bivio::Base 'Widget.ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
     return [qw(value)];

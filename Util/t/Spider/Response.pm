@@ -4,7 +4,6 @@ package Bivio::Util::t::Spider::Response;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub is_success {1}
 sub header {shift->get('type')}

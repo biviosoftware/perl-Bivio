@@ -4,7 +4,6 @@ package Bivio::Type::BooleanTrueDefault;
 use strict;
 use Bivio::Base 'Type.Boolean';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_default {
     return 1;

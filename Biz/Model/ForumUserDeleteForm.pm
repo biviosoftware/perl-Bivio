@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ForumUserDeleteForm;
 use strict;
 use Bivio::Base 'Model.RealmUserDeleteForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok {
     my($self) = @_;

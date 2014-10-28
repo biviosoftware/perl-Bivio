@@ -7,7 +7,6 @@ use Business::PayPal::NVP ();
 use IO::Socket ();
 b_use('IO.Trace');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 Bivio::IO::Config->register(my $_CFG = {
     login => undef,

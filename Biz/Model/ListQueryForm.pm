@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ListQueryForm;
 use strict;
 use Bivio::Base 'Model.QuerySearchBaseForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub filter_keys {
     my($self) = @_;

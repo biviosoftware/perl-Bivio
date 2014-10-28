@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::UserRegisterForm;
 use strict;
 use Bivio::Base 'Model';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_create_models {
     my($self) = shift;

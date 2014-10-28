@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.If';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
     return [qw(method control_on_value ?control_off_value)];

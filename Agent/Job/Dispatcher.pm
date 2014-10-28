@@ -9,7 +9,6 @@ use Bivio::Base 'Agent.Dispatcher';
 # by L<Agent.Task|Agent.Task> on errors.  You may
 # not queue new jobs during L<execute_queue|"execute_queue">.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('AgentJob.Request');
 my($_TI) = b_use('Agent.TaskId');
 # Don't allow queueing while in execute.

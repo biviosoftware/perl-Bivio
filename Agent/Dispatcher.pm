@@ -10,7 +10,6 @@ use Bivio::IO::Trace;
 # appropriate Request subclass, checks the user is authorized to
 # execute a task, and excutes the Task.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_INITIALIZED);
 use vars qw($_TRACE);
 my($_F) = b_use('UI.Facade');

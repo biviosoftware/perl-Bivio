@@ -4,7 +4,6 @@ package Bivio::Biz::Action::PingReply;
 use strict;
 use Bivio::Base 'Action.EmptyReply';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 

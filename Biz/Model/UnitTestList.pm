@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UnitTestList;
 use strict;
 use Bivio::Base 'Model.NumberedList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_initialize {
     my($self) = @_;

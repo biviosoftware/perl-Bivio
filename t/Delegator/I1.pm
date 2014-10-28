@@ -4,7 +4,6 @@ package Bivio::t::Delegator::I1;
 use strict;
 use Bivio::Base 'Bivio.Delegate';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub new {

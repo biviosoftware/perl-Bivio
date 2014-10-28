@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 use Bivio::Ext::ApacheConstants;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     # DEPRECATED: use View.Error

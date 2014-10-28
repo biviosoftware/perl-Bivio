@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Format::Bytes;
 use strict;
 use Bivio::Base 'Bivio::UI::HTML::Format';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_widget_value {
     my($self, $size) = @_;

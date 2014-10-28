@@ -4,7 +4,6 @@ package Bivio::Type::DisplayName;
 use strict;
 use Bivio::Base 'Type.Line';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_N) = b_use('Type.Name');
 my($_WIDTH) = b_use('Type.Text64K')->get_width;
 

@@ -4,7 +4,6 @@ package Bivio::Ext::HTMLParser;
 use strict;
 use base 'HTML::Parser';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PACKAGE) = __PACKAGE__;
 
 sub comment {

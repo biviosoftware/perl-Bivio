@@ -4,7 +4,6 @@ package Bivio::Test::Language::Scraper;
 use strict;
 use Bivio::Base 'Bivio::Test::Language::HTTP';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub handle_setup {
     # Don't call SUPER, because we don't want to time out a server

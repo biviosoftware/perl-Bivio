@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_site_css {
     return shift->SUPER::internal_site_css(@_) . <<'EOF';

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::EmailAliasEditDAVList;
 use strict;
 use Bivio::Base 'Model.EditDAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub CSV_COLUMNS {
     return [qw(EmailAlias.incoming EmailAlias.outgoing primary_key)];

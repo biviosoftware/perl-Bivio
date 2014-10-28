@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UIXHTML';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FF) = b_use('HTMLWidget.FormField');
 my($_W) = b_use('UI.Widget');
 my($_AA) = b_use('Action.Acknowledgement');

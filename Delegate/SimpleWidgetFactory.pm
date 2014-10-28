@@ -6,7 +6,6 @@ use Bivio::Base 'UI.Widget';
 use Bivio::IO::Trace;
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_VS) = b_use('UIHTML.ViewShortcuts');
 my($_QT) = b_use('Biz.QueryType');

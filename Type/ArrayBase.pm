@@ -4,7 +4,6 @@ package Bivio::Type::ArrayBase;
 use strict;
 use Bivio::Base 'Bivio.Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_S) = b_use('Type.String');
 

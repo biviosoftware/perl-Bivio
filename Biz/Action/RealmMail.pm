@@ -4,7 +4,6 @@ package Bivio::Biz::Action::RealmMail;
 use strict;
 use Bivio::Base 'Action.RealmMailBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_O) = b_use('Mail.Outgoing');
 my($_A) = b_use('Mail.Address');
 my($_T) = b_use('Agent.Task');

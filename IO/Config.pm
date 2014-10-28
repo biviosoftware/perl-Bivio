@@ -103,7 +103,6 @@ eval(q{
 # Name of configuration used if the program is running setuid or setgid
 # or the file identified by C<$BCONF> (or its default) is not found.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 #=VARIABLES
 my($_PKG) = __PACKAGE__;
 my($_BCONF) = undef;

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::User;
 use strict;
 use Bivio::Base 'Model.RealmOwnerBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ADMINISTRATOR) = __PACKAGE__->use('Auth.Role')->ADMINISTRATOR;
 
 sub concat_last_first_middle {

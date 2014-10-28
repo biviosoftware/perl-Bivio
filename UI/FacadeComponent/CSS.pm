@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'FacadeComponent.Constant';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGISTER_PREREQUISITES {
     return ['Constant'];

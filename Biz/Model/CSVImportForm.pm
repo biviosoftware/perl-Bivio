@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CSVImportForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('SQL.Constraint');
 my($_T) = b_use('Bivio::Type');
 my($_FF) = b_use('Type.FileField');

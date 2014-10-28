@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UI.Widget';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VALUE_ATTRS) = [qw(base_values widget_values view_values)];
 
 sub NEW_ARGS {

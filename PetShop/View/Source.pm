@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Base';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub show_module {
     return shift->internal_body(SourceCode({uri => 'src'}));

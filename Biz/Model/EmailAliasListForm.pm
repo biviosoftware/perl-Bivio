@@ -4,7 +4,6 @@ package Bivio::Biz::Model::EmailAliasListForm;
 use strict;
 use Bivio::Base 'Biz.ExpandableListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub MUST_BE_SPECIFIED_FIELDS {
     return [qw(

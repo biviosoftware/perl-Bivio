@@ -5,7 +5,6 @@ use strict;
 use base 'Bivio::UI::View::Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub pre_compile {
     # Override setting "base" in Method

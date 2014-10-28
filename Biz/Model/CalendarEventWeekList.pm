@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CalendarEventWeekList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_D) = b_use('Type.Date');
 

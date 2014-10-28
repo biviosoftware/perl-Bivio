@@ -4,7 +4,6 @@ package Bivio::Agent::t::Mock::Resource;
 use strict;
 use base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub handle_commit {
     return;

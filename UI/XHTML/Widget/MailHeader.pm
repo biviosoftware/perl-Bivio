@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Join';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self) = @_;

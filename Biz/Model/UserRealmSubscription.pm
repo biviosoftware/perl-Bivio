@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.RealmBase';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub create {
     my($self, $values) = @_;

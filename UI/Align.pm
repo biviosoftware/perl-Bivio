@@ -4,7 +4,6 @@ package Bivio::UI::Align;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Config')->register(my $_CFG = {
     css_mode => 1,
 });

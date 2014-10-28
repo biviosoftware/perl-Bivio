@@ -4,7 +4,6 @@ package Bivio::Type::OTPPassphrase;
 use strict;
 use Bivio::Base 'Type.String';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_width {
     # OPIE allows this length

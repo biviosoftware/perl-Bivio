@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UICSS';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub vs_groupware_css {
     my($self) = @_;

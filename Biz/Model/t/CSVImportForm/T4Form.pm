@@ -4,7 +4,6 @@ package Bivio::Biz::Model::t::CSVImportForm::T4Form;
 use strict;
 use Bivio::Base 'Bivio::Biz::Model::t::CSVImportForm::TForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub COLUMNS {
     return [

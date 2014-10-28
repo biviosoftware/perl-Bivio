@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFileRestoreForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 my($_VERSIONS_FOLDER) = $_FP->VERSIONS_FOLDER;
 

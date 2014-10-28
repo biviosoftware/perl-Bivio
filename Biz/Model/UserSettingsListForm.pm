@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.ListFormModel';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_NAME_FIELDS) = [map("User.${_}_name", qw(first middle last))];
 my($_EV) = b_use('Model.EmailVerify');
 

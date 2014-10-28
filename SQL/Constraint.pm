@@ -4,7 +4,6 @@ package Bivio::SQL::Constraint;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = b_use('Bivio::TypeError');
 my($_E) = b_use('Type.Enum');
 __PACKAGE__->compile([

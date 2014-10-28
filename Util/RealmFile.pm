@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 use File::Find ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Bivio.Die');
 my($_DT) = b_use('Type.DateTime');
 my($_F) = b_use('IO.File');

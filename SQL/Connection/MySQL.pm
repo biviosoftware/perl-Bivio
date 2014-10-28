@@ -4,7 +4,6 @@ package Bivio::SQL::Connection::MySQL;
 use strict;
 use Bivio::Base 'Bivio::SQL::Connection';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_dbi_prefix {
     # Returns the PostgreSQL DBI connection prefix.

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.Simple';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub control_on_render {
     my($self) = @_;

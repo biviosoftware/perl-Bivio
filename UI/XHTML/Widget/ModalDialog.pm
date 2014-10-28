@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Widget.Simple';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NEW_ARGS {
     return [qw(id ?header ?body ?footer)];

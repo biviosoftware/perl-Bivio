@@ -4,7 +4,6 @@ package Bivio::Biz::Model::AcceptanceTestList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 b_use('IO.Config')->register(my $_CFG = {
     root => b_use('IO.Config')->REQUIRED,

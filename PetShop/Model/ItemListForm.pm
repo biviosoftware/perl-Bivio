@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::ItemListForm;
 use strict;
 use Bivio::Base 'Biz.ListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_ok_row {
     # Adds the current row to the cart if the add_to_cart button was selected.

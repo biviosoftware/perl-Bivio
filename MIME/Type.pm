@@ -4,7 +4,6 @@ package Bivio::MIME::Type;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 my($_EXT_TO_TYPE, $_TYPE_TO_EXT);
 _initialize();

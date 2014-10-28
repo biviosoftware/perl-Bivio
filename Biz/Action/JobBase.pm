@@ -4,7 +4,6 @@ package Bivio::Biz::Action::JobBase;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SENTINEL) = __PACKAGE__ . '.internal_execute';
 
 sub enqueue_task {

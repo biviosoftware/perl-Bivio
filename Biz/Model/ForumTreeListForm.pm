@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ForumTreeListForm;
 use strict;
 use Bivio::Base 'Biz.ListFormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty_row {
     my($self) = @_;

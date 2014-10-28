@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::WorkflowCallerForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_empty {
     # Calls WORKFLOW_STEP_1

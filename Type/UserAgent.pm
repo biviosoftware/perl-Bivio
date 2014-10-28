@@ -4,7 +4,6 @@ package Bivio::Type::UserAgent;
 use strict;
 use Bivio::Base 'Bivio::Type::Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => 0,
     MAIL => 2,

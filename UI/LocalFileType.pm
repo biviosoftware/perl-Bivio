@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::LocalFileType;
 use strict;
-$Bivio::UI::LocalFileType::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::LocalFileType::VERSION;
-
 =head1 NAME
 
 Bivio::UI::LocalFileType - identifies local file trees

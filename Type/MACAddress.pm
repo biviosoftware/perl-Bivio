@@ -4,7 +4,6 @@ package Bivio::Type::MACAddress;
 use strict;
 use Bivio::Base 'Type.SyntacticString';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGEX {
     return qr{(?:[0-9a-f]{2}\:){5}[0-9a-f]{2}}i;

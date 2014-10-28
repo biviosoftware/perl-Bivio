@@ -4,7 +4,6 @@ package Bivio::Agent::t::Mock::ReturnRedirect;
 use strict;
 use base 'Bivio::Biz::Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute {
     return 'REDIRECT_TEST_2';

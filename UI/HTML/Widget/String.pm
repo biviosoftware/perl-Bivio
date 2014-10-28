@@ -73,7 +73,6 @@ use Bivio::Base 'UI.Widget';
 # The values returned by the widget are not "escaped".  The widget
 # must generate proper html.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_FORMAT) = b_use('UIHTML.Format');
 my($_FONT) = b_use('FacadeComponent.Font');

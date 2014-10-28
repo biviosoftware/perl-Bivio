@@ -4,7 +4,6 @@ package Bivio::Biz::Model::t::Tuple::T1Form;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 b_use('ClassWrapper.TupleTag')->wrap_methods(__PACKAGE__, {
     moniker => 'tuple_bunit1',

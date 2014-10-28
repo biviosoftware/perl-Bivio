@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 use HTTP::Request::Common ();
 use LWP::UserAgent ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_E) = b_use('Type.Email');
 my($_F) = b_use('IO.File');
 my($_MAP_REPLY) = {

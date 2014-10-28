@@ -4,7 +4,6 @@ package Bivio::Util::RowTag;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RTK) = b_use('Type.RowTagKey');
 
 sub USAGE {

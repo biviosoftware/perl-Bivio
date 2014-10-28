@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'HTMLWidget.Join';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_JS) = b_use('HTMLWidget.JavaScript');
 
 sub initialize {

@@ -34,7 +34,6 @@ use Bivio::Base 'UI.Widget';
 #
 # The sixth optional element is a widget value which returns the 'path_info'
 #
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_HTML) = b_use('Bivio.HTML');
 my($_PI) = b_use('Type.PrimaryId');

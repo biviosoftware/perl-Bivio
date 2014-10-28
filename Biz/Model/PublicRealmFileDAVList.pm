@@ -4,7 +4,6 @@ package Bivio::Biz::Model::PublicRealmFileDAVList;
 use strict;
 use Bivio::Base 'Model.RealmFileDAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
 my($_FP) = Bivio::Type->get_instance('FilePath');
 

@@ -4,7 +4,6 @@ package Bivio::ClassWrapper;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub call_method {
     my($self, $args) = @_;

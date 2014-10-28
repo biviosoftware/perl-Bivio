@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::GoogleAnalytics;
 use strict;
 use Bivio::Base 'Widget.Simple';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 
 sub initialize {

@@ -7,7 +7,6 @@ use Bivio::Base 'Bivio.Type';
 # Maps statuses to Text.  Eventually will replace
 # Ext.ApacheConstants
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_MAP) = {
 #TODO: Fill this out

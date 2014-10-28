@@ -4,7 +4,6 @@ package Bivio::Biz::Model::WikiList;
 use strict;
 use Bivio::Base 'Model.RealmFileList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = b_use('Type.WikiName');
 
 sub internal_pre_load {

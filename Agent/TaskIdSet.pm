@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Agent::TaskIdSet;
 use strict;
-$Bivio::Agent::TaskIdSet::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Agent::TaskIdSet::VERSION;
-
 =head1 NAME
 
 Bivio::Agent::TaskIdSet - useful for grouping tasks

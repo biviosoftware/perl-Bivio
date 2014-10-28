@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UI.Widget';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WV) = b_use('Action.WikiValidator');
 b_use('XHTMLWidget.MainErrors')->register_handler(__PACKAGE__);
 

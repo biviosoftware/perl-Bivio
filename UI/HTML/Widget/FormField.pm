@@ -23,7 +23,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # Widget value boolean which dynamically determines if the row should render.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_label_and_field {
     my($self) = @_;

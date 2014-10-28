@@ -4,7 +4,6 @@ package Bivio::UI::ViewLanguageAUTOLOAD;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 our($_CALLING_CONTEXT);
 our($_CALLING_CONTEXT_METHOD);

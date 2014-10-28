@@ -4,7 +4,6 @@ package Bivio::UI::DateTimeMode;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     # DO NOT CHANGE THESE NUMBERS
     # unless you modify UI::HTML::Widget::DateTime

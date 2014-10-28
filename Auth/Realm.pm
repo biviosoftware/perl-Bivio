@@ -32,7 +32,6 @@ use Bivio::Base 'Collection.Attributes';
 #
 # Type of this realm.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_IDI) = __PACKAGE__->instance_data_index;

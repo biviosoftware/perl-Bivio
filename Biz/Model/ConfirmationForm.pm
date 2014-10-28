@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ConfirmationForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TIA) = b_use('Type.TaskIdArray');
 
 sub execute_cancel {

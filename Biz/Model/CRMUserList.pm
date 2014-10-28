@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CRMUserList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
 my($_U) = b_use('Model.User');
 my($_DEFAULT_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION;

@@ -4,7 +4,6 @@ package Bivio::PetShop::Type::UserType;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [0],
     HOME_CONSUMER => [1],

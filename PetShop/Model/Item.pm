@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::Item;
 use strict;
 use Bivio::Base 'Bivio::Biz::PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IS) = b_use('Type.ItemStatus');
 
 sub create {

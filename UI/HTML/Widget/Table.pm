@@ -318,7 +318,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # The widget which will be used to render the column. By default the column
 # widget is based on the column's field type.
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = b_use('UIHTML.ViewShortcuts');
 my($_WF) = b_use('UIHTML.WidgetFactory');
 my($_A) = b_use('UI.Align');

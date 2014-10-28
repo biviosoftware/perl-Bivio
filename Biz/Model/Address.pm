@@ -4,7 +4,6 @@ package Bivio::Biz::Model::Address;
 use strict;
 use Bivio::Base 'Model.LocationBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_load_home {
     my($proto, $req) = @_;

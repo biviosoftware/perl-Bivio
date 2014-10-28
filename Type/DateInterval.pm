@@ -4,7 +4,6 @@ package Bivio::Type::DateInterval;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 __PACKAGE__->compile([
     NONE => [

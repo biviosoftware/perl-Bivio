@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserBaseDAVList;
 use strict;
 use Bivio::Base 'Model.UserRealmDAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TASK_REGEXP) = Bivio::Biz::Model->get_instance('UserTaskDAVList')->REGEXP;
 
 sub dav_propfind_children {

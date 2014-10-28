@@ -4,7 +4,6 @@ package Bivio::Biz::Model::BlogCreateForm;
 use strict;
 use Bivio::Base 'Model.WikiBaseForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_BFN) = b_use('Type.BlogFileName');
 my($_BC) = b_use('Type.BlogContent');
 my($_DT) = b_use('Type.DateTime');

@@ -4,7 +4,6 @@ package Bivio::Biz::Action::TestTrace;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PN) = __PACKAGE__->use('Type.PerlName');
 my($_T) = __PACKAGE__->use('IO.Trace');
 my($_A) = __PACKAGE__->use('IO.Alert');

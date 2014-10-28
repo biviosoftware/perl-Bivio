@@ -4,7 +4,6 @@ package Bivio::Test::Unit::Widget;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub new_unit {

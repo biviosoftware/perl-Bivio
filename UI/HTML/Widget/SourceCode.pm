@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UI.Widget';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_HTML) = b_use('Bivio.HTML');
 my($_C) = b_use('IO.Config');
 my($_D) = b_use('Bivio.Die');

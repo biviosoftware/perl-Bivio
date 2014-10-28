@@ -4,7 +4,6 @@ package Bivio::Biz::Action::AdminRealmMail;
 use strict;
 use Bivio::Base 'Action.RealmMail';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub EMAIL_LIST {
     return 'RealmAdminEmailList';

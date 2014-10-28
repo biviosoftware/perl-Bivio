@@ -36,7 +36,6 @@ use Bivio::IO::Trace;
 # an application specific attribute which begins with I<view_>.  There
 # are a few other restrictions which are defined by I<view_put>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 our($_VIEW_IN_EVAL);
 our($_TRACE);

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_E) = b_use('Type.Email');
 my($_M) = b_use('Biz.Model');

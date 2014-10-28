@@ -4,7 +4,6 @@ package Bivio::Type::ForumName;
 use strict;
 use Bivio::Base 'Type.Name';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SEP) = __PACKAGE__->use('Type.RealmName')->SPECIAL_SEPARATOR;
 
 sub FIRST_CHAR_REGEXP {

@@ -96,7 +96,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # INCOMPLETE
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CL) = b_use('IO.ClassLoader');
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
 my($_F) = b_use('UI.Facade');

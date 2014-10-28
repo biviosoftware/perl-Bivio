@@ -92,7 +92,6 @@ use Bivio::IO::Trace;
 # and formatted using the
 # L<DateTime|Bivio::UI::HTML::Format::DateTime> formatter.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 
 sub get_request {

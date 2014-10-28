@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 use MIME::Base64 ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_AC) = b_use('Ext.ApacheConstants');
 b_use('Agent.Task')->register(__PACKAGE__)
     if b_use('IO.Config')->if_version(1);

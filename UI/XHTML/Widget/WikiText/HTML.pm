@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.WikiTextTag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ACCEPTS_CHILDREN {
     return 1;

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::ECCreditCardRefundForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Type.Amount');
 my($_D) = b_use('Type.Date');
 my($_ECPS) = b_use('Type.ECPaymentStatus');

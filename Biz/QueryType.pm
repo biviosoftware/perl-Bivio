@@ -4,7 +4,6 @@ package Bivio::Biz::QueryType;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MAP) = _init();
 
 sub can_take_path_info {

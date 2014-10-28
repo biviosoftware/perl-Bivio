@@ -4,7 +4,6 @@ package Bivio::Type::WikiDataName;
 use strict;
 use Bivio::Base 'Type.DocletFileName';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
 my($_FOLDER) = $_C->if_version(
     6, __PACKAGE__->WIKI_DATA_FOLDER,

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleSlotDefList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_EK) = b_use('Model.TupleSlotChoiceSelectList')->EMPTY_KEY_VALUE;
 my($_TSD) = b_use('Model.TupleSlotDef');
 my($_TSN) = b_use('Type.TupleSlotNum');

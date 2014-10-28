@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 use Bivio::MIME::Base64;
 use IO::File ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DEV) = -r '/dev/urandom' ? '/dev/urandom'
     : -r '/dev/random' ? '/dev/random' : undef;
 

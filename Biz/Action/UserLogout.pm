@@ -4,7 +4,6 @@ package Bivio::Biz::Action::UserLogout;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ULF) = b_use('Model.UserLoginForm');
 
 sub execute {

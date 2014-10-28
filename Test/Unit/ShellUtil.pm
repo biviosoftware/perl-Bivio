@@ -4,7 +4,6 @@ package Bivio::Test::Unit::ShellUtil;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new_unit {
     my($proto) = shift;

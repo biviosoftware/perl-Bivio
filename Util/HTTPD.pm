@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_V2) = b_use('Agent.Request')->if_apache_version(2);
 my($_HTTPD) = _find_file($_V2 ? qw(
     /usr/local/apache/bin/httpd2

@@ -13,7 +13,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # The current percent value.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RENDER_KEY) = __PACKAGE__ . 'rendered';
 
 sub NEW_ARGS {

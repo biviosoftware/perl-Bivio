@@ -7,7 +7,6 @@ use Storable ();
 use IO::File ();
 use Fcntl ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_FP) = b_use('Type.FilePath');
 my($_D) = b_use('Bivio.Die');

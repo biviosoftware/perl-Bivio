@@ -4,6 +4,5 @@ package Bivio::Type::Phone;
 use strict;
 use Bivio::Base 'Type.Name';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

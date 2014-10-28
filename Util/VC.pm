@@ -5,10 +5,10 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Config')->register(my $_CFG = {
     module_map => {
 	'perl/Cal54' => 'https://github.com/biviosoftware/perl-Cal54.git',
+	'perl/Bivio' => 'https://github.com/biviosoftware/perl-Bivio.git',
     },
 });
 

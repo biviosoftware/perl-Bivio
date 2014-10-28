@@ -4,7 +4,6 @@ package Bivio::Type::RealmArg;
 use strict;
 use Bivio::Base 'Type.String';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RN) = b_use('Type.RealmName');
 my($_E) = b_use('Type.Email');
 my($_PI) = b_use('Type.PrimaryId');

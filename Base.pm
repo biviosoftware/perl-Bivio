@@ -8,7 +8,6 @@ use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub import {
     my(undef, $map_or_class) = @_;

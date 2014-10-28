@@ -6,7 +6,6 @@ use Bivio::Base 'Bivio::ShellUtil';
 use Exporter qw(import);
 our @EXPORT = qw(pprint class model unauth_model);
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($self) = __PACKAGE__->new();
 init();

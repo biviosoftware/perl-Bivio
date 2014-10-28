@@ -4,7 +4,6 @@ package Bivio::Biz::Model::AuthUserRealmList;
 use strict;
 use Bivio::Base 'Model.UserRealmList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TI) = b_use('Agent.TaskId');
 my($_T) = b_use('Agent.Task');

@@ -13,7 +13,6 @@ use Bivio::IO::Trace;
 # It can be subclassed to allow arbitrary named attributes
 # without polluting a class's internal field name space.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_READ_ONLY_ERROR) = 'attempt to modify read-only instance';

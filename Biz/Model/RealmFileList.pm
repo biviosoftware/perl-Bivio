@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFileList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF);
 my($_FP);
 my($_ARF);

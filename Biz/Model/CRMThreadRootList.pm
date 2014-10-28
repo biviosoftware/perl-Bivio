@@ -4,7 +4,6 @@ package Bivio::Biz::Model::CRMThreadRootList;
 use strict;
 use Bivio::Base 'Model.MailThreadRootList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CAL) = b_use('Model.CRMActionList');
 my($_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION->as_sql_param;
 my($_CRMQF) = b_use('Model.CRMQueryForm');

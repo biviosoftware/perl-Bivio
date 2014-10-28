@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub append_buffer {

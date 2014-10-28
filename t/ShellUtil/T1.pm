@@ -5,7 +5,6 @@ use strict;
 use base 'Bivio::ShellUtil';
 use Bivio::IO::Log;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_LOG) = 'ShellUtil/mylog.log';
 Bivio::IO::Config->introduce_values({
     'Bivio::IO::Log' => {

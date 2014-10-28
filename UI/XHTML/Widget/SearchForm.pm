@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Form';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SEARCH_LIST) = b_use('Agent.TaskId')->SEARCH_LIST;
 my($_GROUP_SEARCH_LIST) = b_use('Agent.TaskId')->GROUP_SEARCH_LIST;
 

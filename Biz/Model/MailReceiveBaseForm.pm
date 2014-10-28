@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MailReceiveBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

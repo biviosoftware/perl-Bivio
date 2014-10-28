@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'JavaScriptWidget.ControlBase';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_JS) = b_use('HTMLWidget.JavaScript');
 my($_V) = b_use('UI.View');
 my($_QV) = b_use('JavaScriptWidget.QuotedValue');

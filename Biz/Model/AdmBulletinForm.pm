@@ -4,7 +4,6 @@ package Bivio::Biz::Model::AdmBulletinForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('MIME.Type');
 my($_IOF) = b_use('IO.File');
 my($_LFT) = b_use('UI.LocalFileType');

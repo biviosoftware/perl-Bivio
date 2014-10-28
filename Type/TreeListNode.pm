@@ -4,7 +4,6 @@ package Bivio::Type::TreeListNode;
 use strict;
 use base 'Bivio::Type::Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 __PACKAGE__->compile_with_numbers([qw(
     LEAF_NODE

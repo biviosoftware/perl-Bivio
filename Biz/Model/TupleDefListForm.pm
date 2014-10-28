@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.TupleExpandableListForm';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TSN) = b_use('Type.TupleSlotNum');
 our($_TRACE);

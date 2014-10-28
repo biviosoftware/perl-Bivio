@@ -7,7 +7,6 @@ use base 'MIME::Parser';
 # C<Bivio::Ext::MIMEParser> simplifies instantiation of MIME::Parser for
 # in core interfaces.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # This avoids warning messages when MIME::Parser initializes.
 # The related Mail::Field class doesn't initialize nicely, and issues
 # warnings which shouldn't be caught by Bivio::IO::Alert and Bivio::Die.

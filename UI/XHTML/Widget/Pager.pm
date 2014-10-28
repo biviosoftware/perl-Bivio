@@ -6,7 +6,6 @@ use Bivio::Base 'UI.Widget';
 use Bivio::Biz::QueryType;
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_I) = b_use('Type.Integer');
 my($_BLOCK_SIZE) = 15;
 

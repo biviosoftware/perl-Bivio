@@ -100,7 +100,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # If set, controls the class of the entire row.  Can be set
 # on any cell in the row.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_SPACER) = '&nbsp;' x 3;
 my($_END_COL) = "</td>\n";

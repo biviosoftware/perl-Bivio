@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UnapprovedApplicantForm;
 use strict;
 use Bivio::Base 'Model.GroupUserForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = b_use('FacadeComponent.Text');
 my($_V) = b_use('UI.View');
 my($_R) = b_use('Auth.Role');

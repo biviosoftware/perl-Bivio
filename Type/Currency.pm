@@ -4,7 +4,6 @@ package Bivio::Type::Currency;
 use strict;
 use Bivio::Base 'Type.Amount';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_decimals {
     return 2;

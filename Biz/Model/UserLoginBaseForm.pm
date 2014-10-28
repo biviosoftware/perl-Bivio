@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserLoginBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub PASSWORD_FIELD {
     return 'p';

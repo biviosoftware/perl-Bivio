@@ -19,7 +19,6 @@ use Bivio::Base 'Bivio::UI::Widget';
 #
 # Accessed dynamically.  Widget value must be a widget or false.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub execute {

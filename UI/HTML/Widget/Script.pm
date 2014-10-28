@@ -9,7 +9,6 @@ use Bivio::Base 'UI.Widget';
 # called JAVASCRIPT_I<script_name> are allowed.  The script must have an
 # onload function called I<script_name>_onload.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::HTML::ViewShortcuts';
 
 sub JAVASCRIPT_B_SUBMENU_IE6 {

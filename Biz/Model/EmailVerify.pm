@@ -4,7 +4,6 @@ package Bivio::Biz::Model::EmailVerify;
 use strict;
 use Bivio::Base 'Model.LocationBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_EVK) = b_use('Type.EmailVerifyKey');
 my($_ULF) = b_use('Model.UserLoginForm');

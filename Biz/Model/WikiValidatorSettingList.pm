@@ -4,7 +4,6 @@ package Bivio::Biz::Model::WikiValidatorSettingList;
 use strict;
 use Bivio::Base 'Model.RealmSettingList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('FacadeComponent.Constant');
 
 sub regexp_for_auth_realm {

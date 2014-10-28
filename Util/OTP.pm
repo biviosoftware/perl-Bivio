@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 use Bivio::Biz::RFC2289;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub NULL_PASSPHRASE {
     return 'NULL_PASSPHRASE';

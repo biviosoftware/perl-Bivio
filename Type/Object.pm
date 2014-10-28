@@ -4,7 +4,6 @@ package Bivio::Type::Object;
 use strict;
 use base 'Bivio::Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 # Any object
 

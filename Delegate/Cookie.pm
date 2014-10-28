@@ -10,7 +10,6 @@ use Bivio::IO::Trace;
 # cookies do not set the 'expires' field. A cookie can be set to time-out
 # after a period of activity. Cookie fields must begin with a letter.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_MODIFIED_FIELD) = '_modified';
 my($_PRIOR_TAG_FIELD) = '_prior_tag';

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.SyntacticString';
 use Socket ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_TE) = b_use('Bivio.TypeError');
 my($_N) = b_use('Type.Number');

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleSlotTypeListForm;
 use strict;
 use Bivio::Base 'Model.TupleExpandableListForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub MUST_BE_SPECIFIED_FIELDS {

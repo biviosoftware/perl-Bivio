@@ -7,7 +7,6 @@ b_use('XML::Parser');
 b_use('HTML::Entities');
 b_use('IO.Trace');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_BF) = b_use('Type.FilePath')->BLOG_FOLDER;
 my($_VF) = b_use('Type.FilePath')->VERSIONS_FOLDER;

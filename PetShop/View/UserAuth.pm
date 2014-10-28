@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub adm_substitute_user {
     return shift->internal_body(vs_simple_form(AdmSubstituteUserForm => [

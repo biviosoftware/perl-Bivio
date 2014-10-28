@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Biz::t::Action::T1;
 use strict;
-$Bivio::Biz::t::Action::T1::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::t::Action::T1::VERSION;
-
 =head1 NAME
 
 Bivio::Biz::t::Action::T1 - tests Action

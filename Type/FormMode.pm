@@ -4,7 +4,6 @@ package Bivio::Type::FormMode;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile_with_numbers([qw(EDIT CREATE)]);
 
 sub setup_by_list_this {

@@ -4,7 +4,6 @@ package Bivio::Type::SyntacticString;
 use strict;
 use Bivio::Base 'Type.String';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = b_use('Bivio.TypeError');
 
 sub SYNTAX_ERROR {

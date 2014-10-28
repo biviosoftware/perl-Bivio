@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::InputBase;
 use strict;
 use Bivio::Base 'XHTMLWidget.Tag';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = b_use('IO.Config');
 my($_F) = b_use('FacadeComponent.Font');
 my($_VS) = b_use('UIHTML.ViewShortcuts');

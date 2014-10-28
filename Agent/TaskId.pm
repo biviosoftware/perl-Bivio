@@ -4,7 +4,6 @@ package Bivio::Agent::TaskId;
 use strict;
 use Bivio::Base 'Type.EnumDelegator';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_JSON_SUFFIX) = '_JSON';
 my($_JSON_RE) = qr{$_JSON_SUFFIX$}ois;
 my($_INFO_RE) = qr{^info_(.*)};

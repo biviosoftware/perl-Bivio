@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Widget::TableSummaryCell;
 use strict;
-$Bivio::UI::HTML::Widget::TableSummaryCell::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::TableSummaryCell::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Widget::TableSummaryCell - row summary cell for a table

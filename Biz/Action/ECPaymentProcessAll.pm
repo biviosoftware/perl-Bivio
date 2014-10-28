@@ -8,7 +8,6 @@ use Bivio::Base 'Action.JobBase';
 # process all pending credit card payments. The job will process and commit
 # one payment at a time.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_execute {
     # Go through list of all payments which need to be processed.

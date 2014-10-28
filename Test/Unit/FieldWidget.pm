@@ -4,7 +4,6 @@ package Bivio::Test::Unit::FieldWidget;
 use strict;
 use Bivio::Base 'TestUnit.Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_U) = __PACKAGE__->use('TestUnit.Unit');
 my($_FTF) = __PACKAGE__->use('Model.FieldTestForm')->get_instance;
 

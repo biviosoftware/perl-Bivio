@@ -4,7 +4,6 @@ package Bivio::Biz::Model::DBAccessRowList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_DBAMF) = b_use('Model.DBAccessModelForm');
 

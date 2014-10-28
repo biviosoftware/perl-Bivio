@@ -4,7 +4,6 @@ package Bivio::Biz::Model::t::AscendingAuthBaseList::T1List;
 use strict;
 use Bivio::Base 'Model.AscendingAuthBaseList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub AUTH_ID_FIELD {
     return 'RealmOwner.realm_id';

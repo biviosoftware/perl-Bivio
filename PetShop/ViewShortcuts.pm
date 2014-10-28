@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'UIXHTML.ViewShortcuts';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub vs_address_fields {
     my($proto, $form_name, $address_suffix) = @_;

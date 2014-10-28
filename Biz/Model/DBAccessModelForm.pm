@@ -4,7 +4,6 @@ package Bivio::Biz::Model::DBAccessModelForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = b_use('Action.Acknowledgement');
 my($_CL) = b_use('IO.ClassLoader');

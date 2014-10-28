@@ -4,7 +4,6 @@ package Bivio::UI::XML::Widget::DateTime;
 use strict;
 use Bivio::Base 'XMLWidget.Simple';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 
 sub NEW_ARGS {

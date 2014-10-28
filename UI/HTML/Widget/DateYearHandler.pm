@@ -13,7 +13,6 @@ use Bivio::Base 'UI.Widget';
 # The date field to receive the new value. This value only get assigned
 # if the source date is less than the current value.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_JS) = b_use('HTMLWidget.JavaScript');
 my($_FUNCS) = $_JS->strip(<<'EOF');
 function dy_complete_date(s) {

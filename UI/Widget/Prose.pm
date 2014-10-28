@@ -75,7 +75,6 @@ use Bivio::UI::Widget;
 # I<value> is parsed as described above and the result is put
 # on I<self> as I<values> for the Join widget (superclass).
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 
 sub initialize {

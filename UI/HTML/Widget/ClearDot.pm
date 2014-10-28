@@ -30,7 +30,6 @@ use Bivio::Base 'HTMLWidget.Tag';
 #
 # The (constant) width of the dot.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_I) = b_use('FacadeComponent.Icon');
 my($_R) = b_use('Agent.Request');

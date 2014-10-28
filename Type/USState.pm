@@ -4,7 +4,6 @@ package Bivio::Type::USState;
 use strict;
 use Bivio::Base 'Type.SyntacticString';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ZIP) = _init_map();
 my($_STATE) = {map($_ ? ($_ => 1) : (), @$_ZIP)};
 my($_NOT_FOUND) = b_use('Bivio.TypeError')->NOT_FOUND;

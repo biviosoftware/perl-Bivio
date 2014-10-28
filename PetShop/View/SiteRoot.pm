@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View';
 b_use('UI.ViewLanguageAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub hm_bunit1 {
     return shift->internal_body(Simple('bunit1'));

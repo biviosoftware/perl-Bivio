@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserForumDAVList;
 use strict;
 use Bivio::Base 'Model.UserBaseDAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REQUIRED_ROLE_GROUP) = b_use('Model.UserForumList')
     ->REQUIRED_ROLE_GROUP;
 

@@ -4,7 +4,6 @@ package Bivio::Type::EnumSet;
 use strict;
 use Bivio::Base 'Bivio::Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(%_INFO) = ();
 
 sub clear {

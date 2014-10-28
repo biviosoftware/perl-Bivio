@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_LQ) = b_use('SQL.ListQuery');
 my($_DEFAULT_TASK) = b_use('Agent.TaskId')->ADM_SUBSTITUTE_USER;

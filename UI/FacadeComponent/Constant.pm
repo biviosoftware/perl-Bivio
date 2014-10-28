@@ -4,7 +4,6 @@ package Bivio::UI::FacadeComponent::Constant;
 use strict;
 use Bivio::Base 'FacadeComponent.Text';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub REGISTER_PREREQUISITES {
     return ['Text'];

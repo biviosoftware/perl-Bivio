@@ -25,7 +25,6 @@ use Carp ();
 # holds errors and it is the responsibility of the L<catch|"catch"> caller
 # and C<handle_die> implementers to do something about the errors.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 our($_CURRENT_SELF);
 our($_IN_CATCH);

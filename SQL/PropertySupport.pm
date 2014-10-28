@@ -33,7 +33,6 @@ use Bivio::Base 'SQL.Support';
 # The list of select_columns followed FROM table.  Does not include
 # WHERE.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_BLOB) = b_use('Type.BLOB');

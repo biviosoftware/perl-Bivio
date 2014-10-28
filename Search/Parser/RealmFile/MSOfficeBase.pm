@@ -4,7 +4,6 @@ package Bivio::Search::Parser::RealmFile::MSOfficeBase;
 use strict;
 use Bivio::Base 'SearchParserRealmFile.CommandBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_get_title {
     my($proto, $parseable) = @_;

@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ALL_REALMS_KEY) = 'ALL REALMS';
 my($_RN) = b_use('Type.RealmName');
 my($_R) = b_use('Auth.Role');

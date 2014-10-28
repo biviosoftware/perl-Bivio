@@ -173,7 +173,6 @@ use Bivio::Base 'Collection.Attributes';
 # If there is an owner to the I<auth_realm>, this will be the first
 # L<Bivio.Biz::Model|Biz.Model> added to the request.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 # We don't import any UI components here, because they are
 # initialized by Bivio::Agent::Dispatcher
 our($_TRACE);

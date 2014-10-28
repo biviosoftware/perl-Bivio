@@ -4,7 +4,6 @@ package Bivio::t::ShellUtil::T2;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub my_package {
     return shift->simple_package_name . "\n";

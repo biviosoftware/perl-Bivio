@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFileDAVList;
 use strict;
 use Bivio::Base 'Model.DAVList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF) = Bivio::Biz::Model->get_instance('RealmFile');
 
 sub dav_copy {

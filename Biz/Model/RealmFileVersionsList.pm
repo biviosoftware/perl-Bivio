@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFileVersionsList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 my($_RFL) = b_use('Model.RealmFileLock');
 my($_LOCK) = $_RFL->if_enabled;

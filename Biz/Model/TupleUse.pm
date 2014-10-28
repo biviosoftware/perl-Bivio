@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleUse;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub create_from_label {
     my($self, $label, $tdl) = @_;

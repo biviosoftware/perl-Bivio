@@ -3,6 +3,5 @@
 package Bivio::UI::Constant;
 use Bivio::Base 'Bivio::UI::FacadeComponent::Constant';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

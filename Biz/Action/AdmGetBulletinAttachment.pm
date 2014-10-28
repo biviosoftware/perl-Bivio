@@ -4,7 +4,6 @@ package Bivio::Biz::Action::AdmGetBulletinAttachment;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_T) = __PACKAGE__->use('MIME.Type');
 my($_F) = __PACKAGE__->use('IO.File');
 

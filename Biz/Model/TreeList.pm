@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TreeList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_N) = b_use('Type.TreeListNode');
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_PI) = b_use('Type.PrimaryId');

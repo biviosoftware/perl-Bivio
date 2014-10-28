@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Biz::Model::AdmBulletinList;
 use strict;
-$Bivio::Biz::Model::AdmBulletinList::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::AdmBulletinList::VERSION;
-
 =head1 NAME
 
 Bivio::Biz::Model::AdmBulletinList - bulletins

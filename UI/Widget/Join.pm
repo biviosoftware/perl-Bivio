@@ -17,7 +17,6 @@ use Bivio::Base 'Widget.ControlBase';
 # sequence.  The rendered values are unmodified.  If all the values are constant,
 # the result of this widget will be constant.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub initialize {
     my($self, $source) = @_;

@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Biz::Model::ECCheckPayment;
 use strict;
-$Bivio::Biz::Model::ECCheckPayment::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Biz::Model::ECCheckPayment::VERSION;
-
 =head1 NAME
 
 Bivio::Biz::Model::ECCheckPayment - check payment info

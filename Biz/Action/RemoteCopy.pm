@@ -4,7 +4,6 @@ package Bivio::Biz::Action::RemoteCopy;
 use strict;
 use Bivio::Base 'Action.RealmFile';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_RF) = b_use('Model.RealmFile');
 my($_D) = b_use('Bivio.Die');
 my($_VERSION) = __PACKAGE__ . '#1';

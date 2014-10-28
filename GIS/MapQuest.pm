@@ -6,7 +6,6 @@ use Bivio::Base 'Collection.Attributes';
 use XML::Simple ();
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_AUTH_KEYS) = [qw(ClientId Password)];
 my($_C) = __PACKAGE__->use('IO.Config');

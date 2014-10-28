@@ -4,7 +4,6 @@ package Bivio::Test::Bean;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($AUTOLOAD);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_R) = b_use('IO.Ref');

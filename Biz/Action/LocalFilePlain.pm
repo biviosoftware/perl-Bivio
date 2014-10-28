@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.Action';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MAX_AGE) = 3600;
 my($_TAGGED_MAX_AGE) = 60 * 60 * 24 * 365;
 our($_TRACE);

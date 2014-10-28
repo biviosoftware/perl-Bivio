@@ -13,7 +13,6 @@ use HTTP::Request ();
 # Technical details can be found in
 #   http://www.authorize.net/support/AIM_guide.pdf
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ECPS) = b_use('Type.ECPaymentStatus');
 our($_TRACE);
 Bivio::IO::Config->register(my $_CFG = {

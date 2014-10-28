@@ -4,7 +4,6 @@ package Bivio::Type::MailVisibility;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile([
     UNKNOWN => [0, 'Select who can see mail'],
     ALWAYS_IS_PRIVATE => [1, 'Only group members can see mail'],

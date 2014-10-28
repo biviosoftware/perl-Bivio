@@ -2,7 +2,6 @@
 # $Id$
 package Bivio::XML::DocBook;
 use strict;
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

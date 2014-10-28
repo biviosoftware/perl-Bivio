@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 use File::Find ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CL) = b_use('IO.ClassLoader');
 my($_R) = b_use('Agent.Request');
 my($_LAST_TIME) = time;

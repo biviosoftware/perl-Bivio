@@ -30,7 +30,6 @@ use Bivio::Base 'UI.Widget';
 # What to display if I<value> is C<undef>.
 # Not used if I<value> is a constant.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_DTM) = b_use('UI.DateTimeMode');
 my($_F) = b_use('FacadeComponent.Font');

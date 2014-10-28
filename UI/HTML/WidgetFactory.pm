@@ -36,6 +36,5 @@ use Bivio::Base 'Bivio::Delegator';
 #
 # If true, will force a widget to a be a select, if it can.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

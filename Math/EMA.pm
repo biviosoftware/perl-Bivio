@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::Math::EMA;
 use strict;
-$Bivio::Math::EMA::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::Math::EMA::VERSION;
-
 =head1 NAME
 
 Bivio::Math::EMA - exponential moving average

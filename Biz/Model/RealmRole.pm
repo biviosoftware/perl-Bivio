@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_S) = b_use('Auth.Support');
 my($_PS) = b_use('Auth.PermissionSet');

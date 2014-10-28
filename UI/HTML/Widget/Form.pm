@@ -80,7 +80,6 @@ use Bivio::HTML;
 # or
 # L<Bivio::UI::HTML::Widget::Grid|Bivio::UI::HTML::Widget::Grid>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = b_use('UIHTML.ViewShortcuts');
 my($_HTML) = b_use('Bivio.HTML');
 

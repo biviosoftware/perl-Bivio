@@ -4,7 +4,6 @@ package Bivio::Type::Geom;
 use strict;
 use Bivio::Base 'Bivio::Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = __PACKAGE__->use('Bivio::TypeError');
 my($_IDI) = __PACKAGE__->instance_data_index;
 

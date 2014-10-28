@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'XHTMLWidget.Tag';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_REALM_PLACEHOLDER) = b_use('Type.RealmName')->SPECIAL_PLACEHOLDER;
 my($_R) = b_use('Type.Regexp');
 my($_NULL) = b_use('Bivio.TypeError')->NULL;

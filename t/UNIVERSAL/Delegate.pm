@@ -3,7 +3,6 @@
 package Bivio::t::UNIVERSAL::Delegate;
 use strict;
 use Bivio::Base 'Bivio::t::UNIVERSAL::DelegateSuper';
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub echo {
     my(undef, $delegator, $arg) = shift->delegated_args(@_);

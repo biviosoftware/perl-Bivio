@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.AnyTaskDAVList';
 use Bivio::IO::Trace;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_CSV) = b_use('ShellUtil.CSV');
 my($_R) = b_use('IO.Ref');

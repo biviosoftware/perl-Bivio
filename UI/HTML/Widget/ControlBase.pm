@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'HTMLWidget';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub control_on_render {
     my($self, $source, $buffer) = @_;

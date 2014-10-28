@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmSettingList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_S) = b_use('Type.String');
 my($_FP) = b_use('Type.FilePath');

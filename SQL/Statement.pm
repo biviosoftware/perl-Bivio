@@ -4,7 +4,6 @@ package Bivio::SQL::Statement;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = b_use('IO.Alert');
 my($_N) = b_use('Type.Number');

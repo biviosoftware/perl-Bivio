@@ -4,7 +4,6 @@ package Bivio::Agent::t::Mock::Facade::Mock;
 use strict;
 use Bivio::Base 'UI.Facade';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_SELF) = __PACKAGE__->new({
     clone => undef,
     is_production => 1,

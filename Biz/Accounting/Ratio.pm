@@ -2,7 +2,6 @@
 # $Id$
 package Bivio::Biz::Accounting::Ratio;
 use strict;
-$Bivio::Biz::Accounting::Ratio::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

@@ -10,7 +10,6 @@ use File::Spec ();
 # using L<Bivio::Test|Bivio::Test>.  An acceptance test has its own language,
 # which is a subclass of L<Bivio::Test::Language|Bivio::Test::Language>.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 b_use('IO.Trace');
 my($_DT) = b_use('Type.DateTime');

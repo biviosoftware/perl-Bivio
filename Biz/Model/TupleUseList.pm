@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleUseList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub find_row_by_id {
     return shift->find_row_by('TupleUse.tuple_def_id', shift);

@@ -4,7 +4,6 @@ package Bivio::Biz::Model::RealmFileLock;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 b_use('IO.Config')->register(my $_CFG = {
     enable => 1,
 });

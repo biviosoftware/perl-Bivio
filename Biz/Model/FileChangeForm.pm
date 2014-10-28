@@ -4,7 +4,6 @@ package Bivio::Biz::Model::FileChangeForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FCM) = b_use('Type.FileChangeMode');
 my($_FN) = b_use('Type.FileName');
 my($_FP) = b_use('Type.FilePath');

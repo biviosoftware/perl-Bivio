@@ -271,7 +271,6 @@ b_use('Bivio::IO::Trace');
 #
 # Numbers for the cases which I<passed>.  Case numbers start at 1.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_CASE);
 our($_SELF);
 my($_IDI) = __PACKAGE__->instance_data_index;

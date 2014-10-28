@@ -33,7 +33,6 @@ use base 'Bivio::UNIVERSAL';
 # called by L<Bivio::Agent::Dispatcher|Bivio::Agent::Dispatcher> on
 # entry.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_PERL_MSG_AT_LINE, $_LOGGER, $_LOG_FILE,
     $_DEFAULT_MAX_ARG_LENGTH, $_MAX_ARG_LENGTH, $_WANT_PID, $_WANT_TIME,
     $_STACK_TRACE_WARN, $_STACK_TRACE_WARN_DEPRECATED,

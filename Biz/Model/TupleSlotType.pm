@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleSlotType;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TS) = b_use('Type.TupleSlot');
 my($_TSA) = b_use('Type.TupleSlotArray');
 my($_T) = b_use('Bivio.Type');

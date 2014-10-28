@@ -4,7 +4,6 @@ package Bivio::Type::EmailAliasOutgoing;
 use strict;
 use Bivio::Base 'Type.Email';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DN) = b_use('Type.DomainName');
 my($_ERR) = b_use('Bivio.TypeError')->EMAIL_ALIAS_OUTGOING;
 

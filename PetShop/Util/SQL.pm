@@ -9,7 +9,6 @@ b_use('IO.ClassLoaderAUTOLOAD');
 # cd files/ddl
 # perl -w ../../b-petshop init_dbms
 # perl -w ../../b-petshop create_test_db
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_R) = b_use('Auth.Role');
 my($_AR) = b_use('Auth.Realm');

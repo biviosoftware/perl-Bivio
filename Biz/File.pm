@@ -4,7 +4,6 @@ package Bivio::Biz::File;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_F) = b_use('IO.File');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {

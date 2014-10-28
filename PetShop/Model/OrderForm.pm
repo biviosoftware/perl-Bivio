@@ -4,7 +4,6 @@ package Bivio::PetShop::Model::OrderForm;
 use strict;
 use Bivio::Base 'Model.ECCreditCardPaymentForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_L) = b_use('Type.Location');
 
 sub execute_empty {

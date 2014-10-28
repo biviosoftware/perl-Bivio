@@ -22,7 +22,6 @@ use Bivio::Base 'Type.Number';
 # L<to_parts|"to_parts"> and L<from_parts|"from_parts"> allow you to take apart
 # the PrimaryId.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub UNSPECIFIED_VALUE {
     return 0;

@@ -4,7 +4,6 @@ package Bivio::UI::Widget::Unique;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub initialize {

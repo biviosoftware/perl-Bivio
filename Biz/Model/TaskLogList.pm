@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TaskLogList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub ITERATE_NEXT_AND_LOAD_SIZE {

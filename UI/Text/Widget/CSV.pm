@@ -43,7 +43,6 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # The field type to use for rendering. By default, the column field name is
 # used to look up the type from the list model.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CSV) = b_use('ShellUtil.CSV');
 my($_M) = b_use('Biz.Model');
 my($_VS) = b_use('UI.ViewShortcuts');

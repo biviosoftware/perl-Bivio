@@ -4,7 +4,6 @@ package Bivio::UI::Widget::MIMEEntityView;
 use strict;
 use Bivio::Base 'Widget.ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_V) = b_use('UI.View');
 
 sub control_on_render {

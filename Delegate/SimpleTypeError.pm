@@ -19,7 +19,6 @@ use Bivio::Base 'Type.EnumDelegate';
 # Start your TypeErrors at 501.  Don't worry about dups, because
 # L<Bivio::Type::Enum|Bivio::Type::Enum> will die if you overlap.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub get_delegate_info {
     # Returns the task declarations.

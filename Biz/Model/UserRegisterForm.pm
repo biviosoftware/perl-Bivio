@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.UserCreateForm';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_A) = b_use('Action.Acknowledgement');
 my($_BR) = b_use('Biz.Random');
 my($_UNKNOWN) = b_use('Bivio.TypeError')->UNKNOWN;

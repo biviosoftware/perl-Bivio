@@ -4,7 +4,6 @@ package Bivio::Search;
 use strict;
 use Bivio::Base 'Bivio.Delegator';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_CL) = b_use('IO.ClassLoader');
 
 sub delegate_search_xapian {

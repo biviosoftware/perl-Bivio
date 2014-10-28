@@ -4,7 +4,6 @@ package Bivio::Delegate::NoDbAuthSupport;
 use strict;
 use Bivio::Base 'Type.EnumDelegate';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub clear_model_cache {
     return;

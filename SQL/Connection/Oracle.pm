@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::SQL::Connection::Oracle;
 use strict;
-$Bivio::SQL::Connection::Oracle::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::SQL::Connection::Oracle::VERSION;
-
 =head1 NAME
 
 Bivio::SQL::Connection::Oracle - connection to an oracle database

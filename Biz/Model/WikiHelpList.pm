@@ -4,7 +4,6 @@ package Bivio::Biz::Model::WikiHelpList;
 use strict;
 use Bivio::Base 'Model.WikiList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WN) = b_use('Type.WikiName');
 my($_S) = b_use('Bivio.Search');
 

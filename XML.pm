@@ -4,7 +4,6 @@ package Bivio::XML;
 use strict;
 use base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MAP) = {
     '<' => 'lt',
     '>' => 'gt',

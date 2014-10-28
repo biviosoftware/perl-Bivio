@@ -4,7 +4,6 @@ package Bivio::UI::Bootstrap::Widget::Tag;
 use strict;
 use Bivio::Base 'HTMLWidget.Tag';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MAP_ATTRS) = {
   'div.title' => {
       tag => 'h3',

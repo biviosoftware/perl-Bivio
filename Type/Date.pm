@@ -9,7 +9,6 @@ use Bivio::Base 'Type.DateTime';
 # clock componentis 21:59:59 (GMT).  In perl, a date is represented as
 # julian days and seconds on that day ('J SSSSS').
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DT) = b_use('Type.DateTime');
 my($_DEFAULT_TIME) = __PACKAGE__->DEFAULT_TIME;
 my($_MIN) = _to(__PACKAGE__, __PACKAGE__->FIRST_DATE_IN_JULIAN_DAYS);

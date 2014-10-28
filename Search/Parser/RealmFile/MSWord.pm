@@ -4,7 +4,6 @@ package Bivio::Search::Parser::RealmFile::MSWord;
 use strict;
 use Bivio::Base 'SearchParserRealmFile.MSOfficeBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub CONTENT_TYPE_LIST {
     return 'application/msword';

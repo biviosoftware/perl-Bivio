@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::ImageFormButton;
 use strict;
 use Bivio::Base 'HTMLWidget.ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 
 sub control_on_render {

@@ -6,6 +6,5 @@ use Bivio::Base 'Bivio::Delegator';
 
 # C<Bivio::Type::RealmName> is the name of a realm's owner.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

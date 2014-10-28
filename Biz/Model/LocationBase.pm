@@ -4,7 +4,6 @@ package Bivio::Biz::Model::LocationBase;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_L) = b_use('Type.Location');
 my($_DEFAULT_LOCATION) = $_L->get_default;
 

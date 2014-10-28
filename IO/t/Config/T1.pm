@@ -4,7 +4,6 @@ package Bivio::IO::t::Config::T1;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_C) = __PACKAGE__->use('IO.Config');
 Bivio::IO::Config->register(my $_CFG = {
     n2 => {

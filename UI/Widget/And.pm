@@ -4,7 +4,6 @@ package Bivio::UI::Widget::And;
 use strict;
 use base 'Bivio::UI::Widget::LogicalOpBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub internal_render_end {
     my($self, $state, $last_value) = @_;

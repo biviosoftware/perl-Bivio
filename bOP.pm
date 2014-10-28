@@ -4,7 +4,6 @@ package Bivio::bOP;
 use strict;
 use base 'Bivio::UNIVERSAL';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 =head1 NAME
 

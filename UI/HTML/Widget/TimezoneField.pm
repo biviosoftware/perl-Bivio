@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Widget::TimezoneField;
 use strict;
-$Bivio::UI::HTML::Widget::TimezoneField::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::TimezoneField::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Widget::TimezoneField - hidden field which computes Timezone

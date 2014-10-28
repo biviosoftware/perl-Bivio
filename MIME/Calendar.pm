@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 use POSIX ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_D) = b_use('Type.Date');
 my($_DT) = b_use('Type.DateTime');
 my($_HTML) = b_use('Bivio::HTML');

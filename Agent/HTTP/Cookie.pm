@@ -11,7 +11,6 @@ use Bivio::Base 'Bivio.Delegator';
 # Cookie delegates much of its implementation to an application specific
 # class, defined by the ClassLoader.delegates configuration.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 #TODO: Biz.Registrar
 my(@_HANDLERS);
 

@@ -7,7 +7,6 @@ use URI ();
 use HTML::Parser ();
 use LWP::RobotUA ();
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 sub EXCLUDE_PATTERNS {
     return [

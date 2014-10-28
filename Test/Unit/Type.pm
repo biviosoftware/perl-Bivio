@@ -4,7 +4,6 @@ package Bivio::Test::Unit::Type;
 use strict;
 use Bivio::Base 'TestUnit.Unit';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = b_use('Bivio.TypeError');
 
 sub UNDEF {

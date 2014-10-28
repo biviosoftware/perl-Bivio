@@ -4,7 +4,6 @@ package Bivio::Biz::Model::TupleDefList;
 use strict;
 use Bivio::Base 'Model.AscendingAuthBaseList';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub AUTH_ID_FIELD {
     return 'TupleDef.realm_id';

@@ -11,7 +11,6 @@ my($_DT) = b_use('Type.DateTime');
 my($_A) = b_use('Type.Amount');
 my($_EOL) = "\r\n";
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub new {
     my($proto, $def) = @_;

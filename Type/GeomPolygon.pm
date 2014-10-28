@@ -4,7 +4,6 @@ package Bivio::Type::GeomPolygon;
 use strict;
 use Bivio::Base 'Type.Geom';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_TE) = __PACKAGE__->use('Bivio::TypeError');
 my($_GN) = __PACKAGE__->use('Type.GeomNumber');
 my($_DD) = __PACKAGE__->use('Type.DecimalDegree');

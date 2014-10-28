@@ -4,7 +4,6 @@ package Bivio::Auth::RealmType;
 use strict;
 use Bivio::Base 'Type.EnumDelegator';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 __PACKAGE__->compile;
 my($_S) = b_use('Type.String');
 my($_MIN) = b_use('Type.PrimaryId')->get_min;

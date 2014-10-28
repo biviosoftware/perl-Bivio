@@ -4,7 +4,6 @@ package Bivio::UI::Widget::MIMEEntityRealmFile;
 use strict;
 use Bivio::Base 'Widget.ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 my($_T) = b_use('MIME.Type');
 

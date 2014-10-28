@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Model.RealmBase';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ROLES) = join(
     ',',
     map($_->is_admin ? $_->as_sql_param : (), b_use('Auth.Role')->get_list),

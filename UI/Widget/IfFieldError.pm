@@ -4,7 +4,6 @@ package Bivio::UI::Widget::IfFieldError;
 use strict;
 use Bivio::Base 'Widget.If';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_VS) = 'Bivio::UI::ViewShortcuts';
 
 sub internal_as_string {

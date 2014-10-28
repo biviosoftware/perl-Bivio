@@ -10,7 +10,6 @@ use Bivio::IO::Trace;
 # specifying the configuration explicitly, the caller specifies a configuration
 # name which is used to connect to.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_ORACLE_HOME);
 Bivio::IO::Config->register({

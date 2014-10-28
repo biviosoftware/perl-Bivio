@@ -15,7 +15,6 @@ use Bivio::Base 'Collection.Attributes';
 #
 # Each parser class is put on I<self>.  See parser classes for their attributes.
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(@_CLASSES);
 b_use('IO.ClassLoader')->map_require_all('TestHTMLParser');
 my($_HP) = b_use('Ext.HTMLParser');

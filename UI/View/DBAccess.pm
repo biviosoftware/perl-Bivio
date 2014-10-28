@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_DBAMF) = b_use('Model.DBAccessModelForm');
 
 #TODO: Can do this more clearly by returning a widget value for xhtml.

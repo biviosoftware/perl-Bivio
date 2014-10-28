@@ -4,7 +4,6 @@ package Bivio::Biz::Action::ServerRedirect;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub execute_next {
     my(undef, $req) = @_;

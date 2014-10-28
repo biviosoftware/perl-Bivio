@@ -4,7 +4,6 @@ package Bivio::Type::ECCreditCardExpYear;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 #TODO: remove this class - use YearWindow instead
 my($_D) = __PACKAGE__->use('Type.Date');

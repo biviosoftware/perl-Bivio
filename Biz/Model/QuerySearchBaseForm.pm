@@ -4,7 +4,6 @@ package Bivio::Biz::Model::QuerySearchBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub OMIT_DEFAULT_VALUES_FROM_QUERY {
     # Returns true if the query values are to be omitted if they match

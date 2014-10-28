@@ -5,6 +5,5 @@ use strict;
 use Bivio::Base 'Collection.Attributes';
 b_use('IO.ClassLoaderAUTOLOAD');
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 1;

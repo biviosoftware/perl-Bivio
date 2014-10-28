@@ -4,7 +4,6 @@ package Bivio::Biz::Action::JSONReply;
 use strict;
 use Bivio::Base 'Action.EmptyReply';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_JSON) = b_use('MIME.JSON');
 
 sub execute_api {

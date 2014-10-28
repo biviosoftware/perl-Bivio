@@ -4,7 +4,6 @@ package Bivio::Search::Parser::RealmFile::Wiki;
 use strict;
 use Bivio::Base 'SearchParser.RealmFile';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_FP) = b_use('Type.FilePath');
 my($_WT) = b_use('XHTMLWidget.WikiText');
 

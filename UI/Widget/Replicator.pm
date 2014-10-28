@@ -4,7 +4,6 @@ package Bivio::UI::Widget::Replicator;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget::ControlBase';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_ATTRS) = [qw(count value)];
 
 sub control_on_render {

@@ -4,7 +4,6 @@ package Bivio::Delegate::Role;
 use strict;
 use Bivio::Base 'Type.EnumDelegate';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Auth.Role');
 
 sub get_application_specific_list {

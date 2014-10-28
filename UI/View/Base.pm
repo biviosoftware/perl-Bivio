@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.Method';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_WANT_USER_AUTH)
     = b_use('Agent.TaskId')->is_component_included('user_auth');
 

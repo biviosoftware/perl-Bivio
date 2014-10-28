@@ -19,7 +19,6 @@ use Bivio::Base 'HTMLWidget.MultipleChoice';
 #
 # How many rows should be visible
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my(@_ATTRS) = qw(
     auto_submit
     choices

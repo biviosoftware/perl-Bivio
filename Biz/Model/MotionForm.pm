@@ -4,7 +4,6 @@ package Bivio::Biz::Model::MotionForm;
 use strict;
 use Bivio::Base 'Model.FormModeBaseForm';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MS) = b_use('Type.MotionStatus');
 my($_MT) = b_use('Type.MotionType');
 

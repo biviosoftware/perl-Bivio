@@ -2,9 +2,6 @@
 # $Id$
 package Bivio::UI::HTML::Widget::Hidden;
 use strict;
-$Bivio::UI::HTML::Widget::Hidden::VERSION = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
-$_ = $Bivio::UI::HTML::Widget::Hidden::VERSION;
-
 =head1 NAME
 
 Bivio::UI::HTML::Widget::Hidden - hidden form field

@@ -4,7 +4,6 @@ package Bivio::Util::t::Shell::T1;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub handle_call_autoload {
     my($proto) = shift;

@@ -4,7 +4,6 @@ package Bivio::Type::DateTimeWithTimeZone;
 use strict;
 use Bivio::Base 'Bivio.Type';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_D) = b_use('Type.Date');
 my($_T) = b_use('Type.Time');

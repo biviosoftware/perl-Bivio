@@ -4,7 +4,6 @@ package Bivio::Type::EmailVerifyKey;
 use strict;
 use Bivio::Base 'Type.Line';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_R) = b_use('Biz.Random');
 my($_TE) = b_use('Bivio.TypeError');
 

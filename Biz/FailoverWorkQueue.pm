@@ -4,7 +4,6 @@ package Bivio::Biz::FailoverWorkQueue;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
 b_use('IO.Trace');
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 our($_TRACE);
 my($_C) = b_use('IO.Config');
 my($_FWQO) = b_use('Type.FailoverWorkQueueOperation');

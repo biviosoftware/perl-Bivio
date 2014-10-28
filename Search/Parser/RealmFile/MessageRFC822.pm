@@ -4,7 +4,6 @@ package Bivio::Search::Parser::RealmFile::MessageRFC822;
 use strict;
 use Bivio::Base 'SearchParser.RealmFile';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 my($_MPL) = b_use('Model.MailPartList');
 my($_RF) = b_use('SearchParser.RealmFile');
 my($_A) = b_use('Mail.Address');

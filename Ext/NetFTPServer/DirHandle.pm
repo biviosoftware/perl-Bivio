@@ -7,7 +7,6 @@ use Bivio::Biz::Model;
 use Bivio::Ext::NetFTPServer::FileHandle;
 use Bivio::Type::FilePath;
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 # Return a subdirectory handle or a file handle within this directory.
 

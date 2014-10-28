@@ -4,7 +4,6 @@ package Bivio::UI::HTML::Widget::AuxiliaryForm;
 use strict;
 use Bivio::Base 'HTMLWidget.Form';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub control_off_render {
     my($self, $source) = @_;

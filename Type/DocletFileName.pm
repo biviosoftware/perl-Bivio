@@ -4,7 +4,6 @@ package Bivio::Type::DocletFileName;
 use strict;
 use Bivio::Base 'Type.FilePath';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub ABSOLUTE_REGEX {
     my($proto) = @_;

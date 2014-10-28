@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserPasswordForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-our($VERSION) = sprintf('%d.%02d', q$Revision$ =~ /\d+/g);
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
