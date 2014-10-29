@@ -218,6 +218,7 @@ sub _send {
 	. " '$recipients'";
     _trace($command) if $_TRACE;
     return unless my $die = Bivio::Die->catch(sub {
+#TODO: causes too much forking for vagrant
 	Bivio::IO::File->write(
 	    IO::File->new($command) || die("$command: open failed"),
 	    $msg,
