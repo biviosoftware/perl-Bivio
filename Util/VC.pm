@@ -41,6 +41,10 @@ sub u_checkout {
    my($module) = @_;
    my($repo) = $_CFG->{module_map}->{$module} || $module;
    my($git_dir) = $repo =~ m{([^/]+)\.git$};
+   if ($repo =~ m{^/} && -d $repo) {
+       _local_copy($module, $repo);
+       return;
+   }
    # 'git clone -b 2.4 --single-branch https://github.com/Itseez/opencv.git opencv-2.4'
    if (-d $module) {
        if ($version) {
@@ -67,6 +71,22 @@ sub u_checkout {
    }
    $self->piped_exec([qw(cvs -Q checkout -f -r), $version, $repo]);
    return;
+}
+
+sub _local_copy {
+    my($module, $repo) = @_;
+    IO_Config()->assert_dev;
+    b_info("copying files from $repo, not checking out");
+    my($md) = IO_File()->absolute_path($module);
+    if (-d $md) {
+	system('chmod', '-R', 'u+w', $md);
+	IO_File()->rm_rf($md);
+    }
+    my($p) = IO_File()->mkdir_parent_only($md);
+    system('rsync', '-a', '--exclude=.git', '-filter=:- .gitignore', $repo, $p);
+    IO_File()->rename("$p/" . File::Basename::basename($repo), $md);
+    system('chmod', '-R', 'u+w', $md);
+    return;
 }
 
 1;
