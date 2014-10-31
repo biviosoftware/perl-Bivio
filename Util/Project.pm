@@ -63,33 +63,7 @@ sub link_facade_files {
 		$_F->symlink('.', $d);
 	    }
 	    if ($_C->is_dev) {
-		my($src) = $ENV{PERLLIB} =~ /src/ ? "$ENV{PERLLIB}/.."
-		    : "$ENV{HOME}/src";
-		my($common) = "$src/perl/Bivio/files";
-		$_F->mkdir_p($common);
-		foreach my $j (grep(
-		    $_ !~ $vc_re && -d $_,
-		    glob("$src/javascript/*"),
-		)) {
-		    my($dest) = "$common/" . ($j =~ m{([^/]+)$})[0];
-		    $_F->do_in_dir(
-			$j,
-			sub {
-			    b_info("$j: make clean && make");
-			    $self->piped_exec("sh -c 'make clean && make'");
-			    return;
-			},
-		    ) if -f "$j/Makefile";
-		    $j =~ s/javascript/javascript-install/;
-		    $_F->symlink($j, $dest)
-			unless -d $dest;
-		}
-		my($common_b) = $default->get_local_file_name(
-		    'PLAIN',
-		    $default->get_local_file_plain_common_uri,
-		);
-		$_F->symlink($common, $common_b)
-		    unless -d $common_b;
+		_make_javascript($self, $default);
 	    }
 	    my($prefixes) = [
 		grep(
@@ -166,6 +140,26 @@ sub _get_plain {
     $which ||= 'app';
     my($method) = "get_local_file_plain_${which}_uri";
     return $facade->get_local_plain_file_name($facade->$method($path));
+}
+
+sub _make_javascript {
+    my($self, $default) = @_;
+    #TODO: Share Util.VC
+    my($src) = $ENV{PERLLIB} =~ /src/ ? File::Basename::dirname($ENV{PERLLIB})
+	: "$ENV{HOME}/src";
+    my($common) = "$src/perl/Bivio/files";
+    $_F->mkdir_p($_F->rm_rf($common));
+    IO_File()->do_in_dir(
+	"$src/javascript",
+	sub {$self->piped_exec([qw(sh build.sh), $common])},
+    );
+    my($common_b) = $default->get_local_file_name(
+	'PLAIN',
+	$default->get_local_file_plain_common_uri,
+    );
+    $_F->symlink($common, $common_b)
+	unless -d $common_b;
+    return;
 }
 
 sub _write_less {
