@@ -148,6 +148,7 @@ function @{[$self->RESIZE_FUNCTION]}() {
     o.style.height = o.contentDocument.body.scrollHeight + 'px';
   }
   o.style.visibility = '@{[_visibility($self, $source)]}';
+  o.style.zIndex = o.style.visibility == 'hidden' ? -1 : 1;
   if (document.all)
     document.getElementById('help_wiki_open').style.visibility = 'visible';
 }
@@ -155,6 +156,7 @@ function @{[$self->RESIZE_FUNCTION]}() {
 function help_wiki_toggle() {
   var o = document.getElementById('help_wiki_iframe');
   o.style.visibility = o.style.visibility == 'visible' ? 'hidden' : 'visible';
+  o.style.zIndex = o.style.visibility == 'hidden' ? -1 : 1;
 }
 </script>
 EOF
