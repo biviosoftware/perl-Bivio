@@ -1,0 +1,29 @@
+# Copyright (c) 2014 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+ShellUtil();
+IO_File()->chdir(tmp_dir());
+options({
+    check_return => sub {
+	my($case, undef, $expect) = @_;
+	my($p) = $case->get('params');
+	$p = $p->[$#$p];
+	assert_equals(-d $p ? 1 : 0, 1, $p);
+	return 1;
+    },
+});
+[
+    # git
+    [qw(u_checkout perl/Cal54)] => not_die(),
+    [qw(u_checkout perl/Cal54)] => not_die(),
+    [qw(u_checkout HEAD perl/Cal54)] => DIE(),
+    [qw(u_checkout perl/NotFound)] => DIE(),
+    # cvs
+    [qw(u_checkout perl/misc)] => not_die(),
+    [qw(u_checkout perl/misc)] => not_die(),
+    [qw(u_checkout HEAD perl/misc)] => DIE(),
+    # rsync
+    sub {
+	$ENV{BIVIO_UTIL_VC_ROOT} = IO_File()->absolute_path('perl');
+	return [qw(u_checkout Cal54)];
+    } => not_die(),
+];

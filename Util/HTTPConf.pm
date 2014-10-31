@@ -1,5 +1,4 @@
 # Copyright (c) 2005-2012 bivio Software, Inc.  All Rights Reserved.
-# $Id$
 package Bivio::Util::HTTPConf;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
@@ -7,11 +6,7 @@ b_use('IO.ClassLoaderAUTOLOAD');
 
 my($_F) = b_use('IO.File');
 my($_SA) = b_use('Type.StringArray');
-my($_V2) = b_use('Agent.Request')->if_apache_version(2, 1, 0);
-my($_STRIP_VERSION) = $_V2 ? qr{^\s*v1:.*\n|\bv2:}m : qr{^\s*v2:.*\n|\bv1:}m;
-my($_INIT_RC_V1);
-my($_INIT_RC_V2);
-my($_INIT_RC) = $_V2 ? \$_INIT_RC_V2 : \$_INIT_RC_V1;
+my($_INIT_RC);
 my($_DATA);
 my($_VARS) = {
     aliases => [],
@@ -23,8 +18,9 @@ my($_VARS) = {
     facade_redirects => '',
     facade_uri => 1,
     global_params => '',
-    httpd_httpd_conf => '/etc/httpd/conf/httpd.conf',
-    httpd_init_rc => '/etc/rc.d/init.d/httpd',
+    httpd_httpd_conf => '/etc/httpd/conf/bivio-proxy.conf',
+    httpd_init_include => '/etc/rc.d/init.d/bivio-httpd.include',
+    httpd_init_rc => '/etc/rc.d/init.d/bivio-proxy',
     is_production => 0,
     legacy_rewrite_rules => '',
     limit_request_body => 50_000_000,
@@ -50,7 +46,7 @@ my($_VARS) = {
     maintenance_logo => '/i/logo.gif',
     # Users can supply certain params here
     httpd => my $_HTTPD_VARS = {
-	app => 'httpd',
+	app => 'bivio-proxy',
 	listen => '80',
     },
     # Trick to help _replace_vars
@@ -121,7 +117,8 @@ sub generate {
 	_write_maintenance_html($v);
     }
     _httpd_vars($vars);
-    _write($vars->{httpd_init_rc}, $_INIT_RC);
+    _write($vars->{httpd_init_include}, \(my $x = $_INIT_RC));
+    _write(_app_init_rc($vars->{httpd}));
     _write(_httpd_conf($vars->{httpd}));
     _write(_logrotate($vars->{httpd}));
     foreach my $x (qw(app_names mail_hosts uris)) {
@@ -186,7 +183,7 @@ sub _app_init_rc {
 # Startup script for the $app App Server
 #
 # chkconfig: 345 84 16
-# description: $app Application Server
+# description: $app apache server
 # processname: $app
 # pidfile: $pid_file
 # config: $httpd_conf
@@ -194,7 +191,7 @@ sub _app_init_rc {
 b_httpd_app=$app
 
 # Source function library.
-. $httpd_init_rc
+. $httpd_init_include
 EOF
 }
 
@@ -207,8 +204,7 @@ sub _app_vars {
     my($app) = $vars->{app};
     $vars->{content} = <<"EOF";
 PerlWarn on
-v1:PerlFreshRestart off
-v2:PerlModule Apache2::compat
+PerlModule Apache2::compat
 PerlSetEnv BCONF $vars->{bconf}
 # Override the translation handler to avoid local file permission checks
 PerlModule Bivio::Ext::ApacheConstants
@@ -216,8 +212,7 @@ PerlModule Bivio::Agent::HTTP::Dispatcher
 
 <Location />
     SetHandler perl-script
-v1:    PerlHandler Bivio::Agent::HTTP::Dispatcher
-v2:    PerlResponseHandler Bivio::Agent::HTTP::Dispatcher
+    PerlResponseHandler Bivio::Agent::HTTP::Dispatcher
 </Location>
 EOF
     Bivio::Die->die(
@@ -415,12 +410,10 @@ sub _app_vars_ssl_global {
 Listen 443
 SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
-v1:SSLMutex file:logs/ssl_mutex
-v2:SSLMutex sem
-v2:SSLProtocol All -SSLv2
-v2:SSLHonorCipherOrder On
-v2:SSLCipherSuite DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:EDH-RSA-DES-CBC3-SHA:RC4-SHA:HIGH:!ADH
-v1:SSLLog logs/error_log
+SSLMutex sem
+SSLProtocol All -SSLv2
+SSLHonorCipherOrder On
+SSLCipherSuite DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:EDH-RSA-DES-CBC3-SHA:RC4-SHA:HIGH:!ADH
 EOF
 # need to dig -x to get reverse dns
 # forward dns
@@ -503,7 +496,7 @@ sub _file_name_vars {
 	log_directory => "/var/log/$app",
 	logrotate => "/etc/logrotate.d/$app",
 	pid_file => "/var/run/$app.pid",
-	process_name => "$app-httpd",
+	process_name => "$app",
     );
     return $vars;
 }
@@ -522,66 +515,63 @@ sub _fixup_common_vars {
 sub _httpd_conf {
     my($vars) = @_;
     return _replace_vars_for_file($vars, 'httpd_conf', <<'EOF');
-v1:ResourceConfig /dev/null
-v1:AccessConfig /dev/null
-v2:
-v2:# The order of this list matters a bit
-v2:#? LoadModule actions_module modules/mod_actions.so
-v2:LoadModule alias_module modules/mod_alias.so
-v2:LoadModule auth_basic_module modules/mod_auth_basic.so
-v2:#? LoadModule auth_digest_module modules/mod_auth_digest.so
-v2:#? LoadModule authn_alias_module modules/mod_authn_alias.so
-v2:#? LoadModule authn_anon_module modules/mod_authn_anon.so
-v2:#? LoadModule authn_dbm_module modules/mod_authn_dbm.so
-v2:LoadModule authn_default_module modules/mod_authn_default.so
-v2:LoadModule authn_file_module modules/mod_authn_file.so
-v2:#? LoadModule authnz_ldap_module modules/mod_authnz_ldap.so
-v2:#? LoadModule authz_dbm_module modules/mod_authz_dbm.so
-v2:LoadModule authz_default_module modules/mod_authz_default.so
-v2:#? LoadModule authz_groupfile_module modules/mod_authz_groupfile.so
-v2:LoadModule authz_host_module modules/mod_authz_host.so
-v2:#? LoadModule authz_owner_module modules/mod_authz_owner.so
-v2:LoadModule authz_user_module modules/mod_authz_user.so
-v2:LoadModule autoindex_module modules/mod_autoindex.so
-v2:#? LoadModule cache_module modules/mod_cache.so
-v2:LoadModule cgi_module modules/mod_cgi.so
-v2:#? LoadModule dav_module modules/mod_dav.so
-v2:#? LoadModule dav_fs_module modules/mod_dav_fs.so
-v2:LoadModule deflate_module modules/mod_deflate.so
-v2:LoadModule dir_module modules/mod_dir.so
-v2:#? LoadModule disk_cache_module modules/mod_disk_cache.so
-v2:LoadModule env_module modules/mod_env.so
-v2:#? LoadModule expires_module modules/mod_expires.so
-v2:#? LoadModule ext_filter_module modules/mod_ext_filter.so
-v2:#? LoadModule file_cache_module modules/mod_file_cache.so
-v2:#? LoadModule headers_module modules/mod_headers.so
-v2:#? LoadModule include_module modules/mod_include.so
-v2:LoadModule info_module modules/mod_info.so
-v2:#? LoadModule ldap_module modules/mod_ldap.so
-v2:LoadModule log_config_module modules/mod_log_config.so
-v2:#? LoadModule logio_module modules/mod_logio.so
-v2:#? LoadModule mem_cache_module modules/mod_mem_cache.so
-v2:#? LoadModule mime_magic_module modules/mod_mime_magic.so
-v2:LoadModule mime_module modules/mod_mime.so
-v2:#? LoadModule negotiation_module modules/mod_negotiation.so
-v2:LoadModule perl_module modules/mod_perl.so
-v2:LoadModule proxy_module modules/mod_proxy.so
-v2:#? LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
-v2:#? LoadModule proxy_connect_module modules/mod_proxy_connect.so
-v2:#? LoadModule proxy_ftp_module modules/mod_proxy_ftp.so
-v2:LoadModule proxy_http_module modules/mod_proxy_http.so
-v2:LoadModule rewrite_module modules/mod_rewrite.so
-v2:LoadModule setenvif_module modules/mod_setenvif.so
-v2:#? LoadModule speling_module modules/mod_speling.so
-v2:LoadModule ssl_module modules/mod_ssl.so
-v2:LoadModule status_module modules/mod_status.so
-v2:#? LoadModule suexec_module modules/mod_suexec.so
-v2:#? LoadModule userdir_module modules/mod_userdir.so
-v2:#? LoadModule usertrack_module modules/mod_usertrack.so
-v2:#? LoadModule version_module modules/mod_version.so
-v2:LoadModule vhost_alias_module modules/mod_vhost_alias.so
-v2:LoadModule reqtimeout_module modules/mod_reqtimeout.so
 
+# The order of this list matters a bit
+#? LoadModule actions_module modules/mod_actions.so
+LoadModule alias_module modules/mod_alias.so
+LoadModule auth_basic_module modules/mod_auth_basic.so
+#? LoadModule auth_digest_module modules/mod_auth_digest.so
+#? LoadModule authn_alias_module modules/mod_authn_alias.so
+#? LoadModule authn_anon_module modules/mod_authn_anon.so
+#? LoadModule authn_dbm_module modules/mod_authn_dbm.so
+LoadModule authn_default_module modules/mod_authn_default.so
+LoadModule authn_file_module modules/mod_authn_file.so
+#? LoadModule authnz_ldap_module modules/mod_authnz_ldap.so
+#? LoadModule authz_dbm_module modules/mod_authz_dbm.so
+LoadModule authz_default_module modules/mod_authz_default.so
+#? LoadModule authz_groupfile_module modules/mod_authz_groupfile.so
+LoadModule authz_host_module modules/mod_authz_host.so
+#? LoadModule authz_owner_module modules/mod_authz_owner.so
+LoadModule authz_user_module modules/mod_authz_user.so
+LoadModule autoindex_module modules/mod_autoindex.so
+#? LoadModule cache_module modules/mod_cache.so
+LoadModule cgi_module modules/mod_cgi.so
+#? LoadModule dav_module modules/mod_dav.so
+#? LoadModule dav_fs_module modules/mod_dav_fs.so
+LoadModule deflate_module modules/mod_deflate.so
+LoadModule dir_module modules/mod_dir.so
+#? LoadModule disk_cache_module modules/mod_disk_cache.so
+LoadModule env_module modules/mod_env.so
+#? LoadModule expires_module modules/mod_expires.so
+#? LoadModule ext_filter_module modules/mod_ext_filter.so
+#? LoadModule file_cache_module modules/mod_file_cache.so
+#? LoadModule headers_module modules/mod_headers.so
+#? LoadModule include_module modules/mod_include.so
+LoadModule info_module modules/mod_info.so
+#? LoadModule ldap_module modules/mod_ldap.so
+LoadModule log_config_module modules/mod_log_config.so
+#? LoadModule logio_module modules/mod_logio.so
+#? LoadModule mem_cache_module modules/mod_mem_cache.so
+#? LoadModule mime_magic_module modules/mod_mime_magic.so
+LoadModule mime_module modules/mod_mime.so
+#? LoadModule negotiation_module modules/mod_negotiation.so
+LoadModule perl_module modules/mod_perl.so
+LoadModule proxy_module modules/mod_proxy.so
+#? LoadModule proxy_balancer_module modules/mod_proxy_balancer.so
+#? LoadModule proxy_connect_module modules/mod_proxy_connect.so
+#? LoadModule proxy_ftp_module modules/mod_proxy_ftp.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+LoadModule rewrite_module modules/mod_rewrite.so
+LoadModule setenvif_module modules/mod_setenvif.so
+#? LoadModule speling_module modules/mod_speling.so
+LoadModule ssl_module modules/mod_ssl.so
+LoadModule status_module modules/mod_status.so
+#? LoadModule suexec_module modules/mod_suexec.so
+#? LoadModule userdir_module modules/mod_userdir.so
+#? LoadModule usertrack_module modules/mod_usertrack.so
+#? LoadModule version_module modules/mod_version.so
+LoadModule vhost_alias_module modules/mod_vhost_alias.so
+LoadModule reqtimeout_module modules/mod_reqtimeout.so
 
 Listen $listen$ssl_listen
 
@@ -605,8 +595,6 @@ $global_params
 
 ServerRoot /etc/httpd
 PidFile $pid_file
-v1:LockFile $lock_file
-v1:ScoreBoardFile $log_directory/apache_runtime_status
 TypesConfig /etc/mime.types
 DefaultType text/plain
 UseCanonicalName Off
@@ -616,7 +604,7 @@ ErrorLog $log_directory/error_log
 LogLevel warn
 ExtendedStatus On
 TraceEnable off
-v2:AddOutputFilterByType DEFLATE application/json application/xml text/css text/csv text/html text/javascript text/plain
+AddOutputFilterByType DEFLATE application/json application/xml text/css text/csv text/html text/javascript text/plain
 
 DocumentRoot /var/www/html
 
@@ -742,7 +730,6 @@ sub _replace_vars {
 	defined($vars->{$1}) ? $vars->{$1}
 	    : Bivio::Die->die("$1: in template ($name), but not in ", $vars)
     }xseg;
-    $template =~ s/$_STRIP_VERSION//mg;
     return $template;
 }
 
@@ -755,8 +742,7 @@ sub _write {
     my($name, $data) = @_;
     $name =~ s{^/}{};
     $_F->mkdir_parent_only($name);
-    my($generator) = ('$Header$' =~ m{Header:\s*(.+?)\s*\$}i)[0]
-	|| __PACKAGE__;
+    my($generator) = __PACKAGE__;
     $$data =~ s{^(#!.+?\n|^(?!\<html))}{$1 . <<"EOF"}es;
 ################################################################
 # Automatically Generated File; LOCAL CHANGES WILL BE LOST!
@@ -795,123 +781,14 @@ body {font-family: arial, sans-serif; font-size: 15px}
 EOF
 }
 
-$_INIT_RC_V1 = <<'EOF';
+$_INIT_RC = <<'EOF';
 #!/bin/bash
-#
-# Startup script for the Apache Web Server
-#
-# chkconfig: 345 85 15
-# description: Apache is a World Wide Web server.  It is used to serve \
-#	       HTML files and CGI.
-# processname: httpd
-# pidfile: /var/run/httpd.pid
-# config: /etc/httpd/conf/access.conf
-# config: /etc/httpd/conf/httpd.conf
-# config: /etc/httpd/conf/srm.conf
-
-# Source function library.
 . /etc/rc.d/init.d/functions
-
-# This will prevent initlog from swallowing up a pass-phrase prompt.
-INITLOG_ARGS=""
-
-# Source additional OPTIONS if we have them.
-if [ -f /etc/sysconfig/apache ] ; then
-    . /etc/sysconfig/apache
-fi
-
-httpd=${b_httpd_app:-/usr/sbin/httpd}
-prog=$(basename $httpd)
-RETVAL=0
-
-# Change the major functions into functions.
-moduleargs() {
-    moduledir=/usr/lib/apache
-    moduleargs=`
-    /usr/bin/find ${moduledir} -type f -perm -0100 -name "*.so" | env -i tr '[:lower:]' '[:upper:]' | awk '{\
-	gsub(/.*\//,"");\
-	gsub(/^MOD_/,"");\
-	gsub(/^LIB/,"");\
-	gsub(/\.SO$/,"");\
-	print "-DHAVE_" $0}'`
-    echo ${moduleargs}
-}
-start() {
-    echo -n $"Starting $prog: "
-    # The goal of this is to change the process name
-    daemon --check=$prog perl -e "'exec {q{/usr/sbin/httpd}} (qw{$prog $(moduleargs) $OPTIONS -f /etc/httpd/conf/$prog.conf}) or die(qq{exec: \$!})'"
-    RETVAL=$?
-    echo
-    [ $RETVAL = 0 ] && touch /var/lock/subsys/$prog
-    return $RETVAL
-}
-stop() {
-    echo -n $"Stopping $prog: "
-    killproc $prog
-    RETVAL=$?
-    echo
-    [ $RETVAL = 0 ] && rm -f /var/lock/subsys/$prog /var/run/$prog.pid
-}
-
-# See how we were called.
-case "$1" in
-    start)
-	start
-	;;
-    stop)
-	stop
-	;;
-    status)
-	status $prog
-	;;
-    restart)
-	stop
-	sleep 3
-	start
-	;;
-    reload)
-	echo -n $"Reloading $prog: "
-	killproc $process -HUP
-	RETVAL=$?
-	echo
-	;;
-    condrestart)
-	if [ -f /var/run/$prog.pid ] ; then
-	    stop
-	    start
-	fi
-	;;
-    *)
-	echo $"Usage: $prog {start|stop|restart|reload|condrestart|status}"
-	exit 1
-esac
-
-exit $RETVAL
-EOF
-
-$_INIT_RC_V2 = <<'EOF';
-#!/bin/bash
-#
-# httpd        Startup script for the Apache HTTP Server
-#
-# chkconfig: 345 85 15
-# description: Apache is a World Wide Web server.  It is used to serve \
-#	       HTML files and CGI.
-# processname: httpd
-# config: /etc/httpd/conf/httpd.conf
-# config: /etc/sysconfig/httpd
-# pidfile: /var/run/httpd.pid
-
-. /etc/rc.d/init.d/functions
-
-if [ -f /etc/sysconfig/httpd ]; then
-        . /etc/sysconfig/httpd
-fi
 
 HTTPD_LANG=${HTTPD_LANG-"C"}
 INITLOG_ARGS=""
 httpd=${HTTPD-/usr/sbin/httpd}
-prog=$(basename ${b_httpd_app-$httpd})
+prog=$(basename ${b_httpd_app})
 pidfile=${PIDFILE-/var/run/$prog.pid}
 conffile=${CONFFILE-/etc/httpd/conf/$prog.conf}
 lockfile=${LOCKFILE-/var/lock/subsys/$prog}
