@@ -9,6 +9,7 @@ mock_methods({
 	['/etc/httpd/conf/app-names.txt' => ['HTTPConf2/app-names.txt']],
     ],
 });
+mkdir('HTTPConf');
 write_file('HTTPConf/ping.txt', <<'EOF');
 petshop.bivio.biz
 google.com
