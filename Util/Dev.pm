@@ -14,6 +14,7 @@ commands
   setup - calls other setup_* methods
   setup_bconf_d_defaults_bconf - creates ~/bconf.d/defaults.bconf
   setup_btest_mail - creates ~/btest-mail/ and ~/.procmailrc
+  setup_src - creates ~/src
 EOF
 }
 
@@ -35,6 +36,7 @@ sub setup {
     my($proto, $bunit_args) = @_;
     $proto->setup_btest_mail;
     $proto->setup_bconf_d_defaults_bconf;
+    $proto->setup_src;
     return;
 }
 
@@ -100,6 +102,28 @@ EOF
 	IO_File()->write($rc, $rc_content),
     );
     $proto->print("Created: $rc\n");
+    return;
+}
+
+sub setup_src {
+    my($self) = @_;
+    IO_File()->do_in_dir(
+	$ENV{HOME},
+	sub {
+	    my($p) = IO_File()->absolute_path(IO_File()->mkdir_p('src/perl'));
+	    IO_File()->chdir(IO_File()->mkdir_p('src/biviosoftware'));
+	    foreach my $m (qw(perl-Bivio javascript-Bivio)) {
+		next
+		    if -d $m;
+		$self->piped_exec([qw(git clone),  "https://github.com/biviosoftware/$m"]);
+		#TODO: share with Util.VC
+		if ($m =~ /perl-(\w+)/) {
+		    IO_File()->symlink(
+			IO_File()->absolute_path($m), IO_File()->absolute_path($m, $p));
+		}
+	    }
+	},
+    );
     return;
 }
 
