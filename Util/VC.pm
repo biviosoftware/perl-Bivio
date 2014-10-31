@@ -41,6 +41,7 @@ sub u_checkout {
 	return _checkout_rsync($self, $module, $version, "$ENV{BIVIO_UTIL_VC_ROOT}/$module");
     }
     my($git_dir) = $module;
+    #TODO: Share with Dev
     $git_dir =~ s{/}{-}g;
     foreach my $r (@{$_CFG->{git_root_list} || []}) {
 	my($res) = "$r/$git_dir";

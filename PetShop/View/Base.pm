@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'View.ThreePartPage';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
-
 sub IS_PETSHOP_KEY {
     return __PACKAGE__ . 'is_petshop';
 }

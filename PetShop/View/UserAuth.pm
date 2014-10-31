@@ -3,8 +3,7 @@
 package Bivio::PetShop::View::UserAuth;
 use strict;
 use Bivio::Base 'View';
-b_use('UI.ViewLanguageAUTOLOAD');
-
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 sub adm_substitute_user {
     return shift->internal_body(vs_simple_form(AdmSubstituteUserForm => [

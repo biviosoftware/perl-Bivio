@@ -22,7 +22,6 @@ use Bivio::IO::Trace;
 # L<Bivio::Type::Enum|Bivio::Type::Enum>.  A delegate may also completely
 # implement the class.
 
-my($_WARNED) = {};
 our($_TRACE);
 # Bivio::Die can't be loaded at startup, but it can be loaded before
 # the first *_require.  We load it dynamically, because Bivio::Type
@@ -363,9 +362,7 @@ sub _map_glob {
 sub _map_init {
     my($map_name, $paths) = @_;
     return $map_name => [map(
-	_map_glob($map_name, $_) ? $_
-	    : $_WARNED->{$_}++ ? ()
-	    : Bivio::IO::Alert->warn($_, ': empty path in map ', $map_name),
+	_map_glob($map_name, $_) ? $_ : (),
 	@$paths,
     )];
 }

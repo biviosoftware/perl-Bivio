@@ -3,8 +3,7 @@
 package Bivio::PetShop::View::SiteRoot;
 use strict;
 use Bivio::Base 'View';
-b_use('UI.ViewLanguageAUTOLOAD');
-
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 sub hm_bunit1 {
     return shift->internal_body(Simple('bunit1'));

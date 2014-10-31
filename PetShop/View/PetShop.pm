@@ -3,9 +3,7 @@
 package Bivio::PetShop::View::PetShop;
 use strict;
 use Bivio::Base 'View.Base';
-b_use('UI.ViewLanguageAUTOLOAD');
-
-my($_D) = b_use('Type.Date');
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 sub account {
     my($self) = @_;
