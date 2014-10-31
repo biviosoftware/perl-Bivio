@@ -150,7 +150,7 @@ sub _make_javascript {
     my($common) = "$src/perl/Bivio/files";
     $_F->mkdir_p($_F->rm_rf($common));
     IO_File()->do_in_dir(
-	"$src/javascript",
+	"$src/javascript-Bivio",
 	sub {$self->piped_exec([qw(sh build.sh), $common])},
     );
     my($common_b) = $default->get_local_file_name(
