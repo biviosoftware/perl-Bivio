@@ -117,7 +117,6 @@ b_use('IO.Trace');
 #
 # Let's you specify form names explicitly for special cases, e.g.
 # incoming mail via b-sendmail-agent.
-my($_C) = b_use('IO.Config');
 my($_M) = b_use('Biz.Model');
 our($_TRACE);
 my($_CLASSES) = [qw(auth_id visible hidden primary_key other)];
@@ -220,7 +219,7 @@ sub _form_name {
 	) if $col->{form_name} =~ /^f\d+$/;
     }
     else {
-	$col->{form_name} = $_C->is_dev ? $col->{name} : ('f' . $i++);
+	$col->{form_name} = 'f' . $i++;
     }
     b_die(
 	$col->{name},
