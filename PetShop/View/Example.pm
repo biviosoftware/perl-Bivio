@@ -3,7 +3,7 @@
 package Bivio::PetShop::View::Example;
 use strict;
 use Bivio::Base 'View.Base';
-b_use('UI.ViewLanguageAUTOLOAD');
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 Action_PingReply()->register_handler(__PACKAGE__);
 
