@@ -107,7 +107,7 @@ sub _checkout_rsync {
 	IO_File()->rm_rf($md);
     }
     my($p) = IO_File()->mkdir_parent_only($md);
-    system('rsync', '-a', '--exclude=.git', '-filter=:- .gitignore', $repo, $p);
+    system('rsync', '-aq', '--exclude=.git', '-filter=:- .gitignore', $repo, $p);
     IO_File()->rename("$p/" . File::Basename::basename($repo), $md);
     system('chmod', '-R', 'u+w', $md);
     return;
