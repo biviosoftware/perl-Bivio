@@ -2,19 +2,22 @@
 # $Id$
 Unit();
 my($dir) = tmp_dir();
-system("cp -a $ENV{HOME}/.cvspass $dir");
-my($db) = Ext_DBI()->get_config->{database} . 'devbunit';
-system("dropdb -U postgres $db 2>/dev/null");
 $ENV{HOME} = $dir;
 [
     class() => [
+	setup => sub {
+	    assert_file(qr{^btest-mail/}m, "$ENV{HOME}/.procmailrc");
+	    assert_file(qr{stack_trace_warn}, "$ENV{HOME}/bconf.d/defaults.bconf");
+	    assert_file(qr{package Bivio::BConf}, "$ENV{HOME}/src/perl/Bivio/BConf.pm");
+	    assert_file(qr{INSTALL_BASE_DIR}, "$ENV{HOME}/src/biviosoftware/javascript-Bivio/build.sh");
+	    return 1;
+	},
 	setup => [
-	    [{
-		cvs_module => 'perl/Bivio',
-		create_test_db_args => " --Bivio::Ext::DBI.database=$db",
-	    }] => sub {
-		assert_file(qr{^btest-mail/}m, "$ENV{HOME}/.procmailrc");
-		assert_file(qr{stack_trace_warn}, "$ENV{HOME}/bconf.d/defaults.bconf");
+	    sub {
+		assert_equals(1, unlink("$ENV{HOME}/src/perl/Bivio"));
+		return [];
+	    } => sub {
+		assert_file(qr{package Bivio::BConf}, "$ENV{HOME}/src/perl/Bivio/BConf.pm");
 		return 1;
 	    },
 	],
