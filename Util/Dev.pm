@@ -33,7 +33,7 @@ sub bashrc_b_env_aliases {
 }
 
 sub setup {
-    my($proto, $bunit_args) = @_;
+    my($proto) = @_;
     $proto->setup_btest_mail;
     $proto->setup_bconf_d_defaults_bconf;
     $proto->setup_src;
@@ -113,14 +113,19 @@ sub setup_src {
 	    my($p) = IO_File()->absolute_path(IO_File()->mkdir_p('src/perl'));
 	    IO_File()->chdir(IO_File()->mkdir_p('src/biviosoftware'));
 	    foreach my $m (qw(perl-Bivio javascript-Bivio)) {
-		next
-		    if -d $m;
-		$self->piped_exec([qw(git clone),  "https://github.com/biviosoftware/$m"]);
+		$self->new_other('VC')->u_checkout($m)
+		    if ! -d $m;
 		#TODO: share with Util.VC
-		if ($m =~ /perl-(\w+)/) {
-		    IO_File()->symlink(
-			IO_File()->absolute_path($m), IO_File()->absolute_path($m, $p));
+		next
+		    if $m !~ /perl-(\w+)/;
+		my($old) = IO_File()->absolute_path($1, $p);
+		next
+		    if -l $old;
+		if (-d $old) {
+		    $self->are_you_sure("Remove $old?");
+		    IO_File()->rm_rf($old);
 		}
+		IO_File()->symlink(IO_File()->absolute_path($m), $old);
 	    }
 	},
     );
