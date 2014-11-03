@@ -126,6 +126,15 @@ sub full_calendar_list_json {
 
 sub list {
     my($self) = @_;
+    return UI_Facade()->get_default
+	->if_2014style(
+	    sub {_list_2014style($self)},
+	    sub {_list($self)},
+	);
+}
+
+sub _list {
+    my($self) = @_;
     view_put(xhtml_rss_task => 'FORUM_CALENDAR_EVENT_LIST_RSS');
     $self->internal_put_base_attr(
 	tools => TaskMenu([
@@ -150,6 +159,108 @@ sub list {
 	_list_view(),
 	_month_view(),
     ));
+}
+
+sub _list_2014style {
+    my($self) = @_;
+    return $self->internal_body(Join([
+	LocalFileAggregator({
+	    view_values => [
+		'fullcalendar/fullcalendar.min.css',
+		InlineCSS(<<'EOF'),
+#b_calendar {
+    margin: 0 auto;
+}
+EOF
+	    ],
+	}),
+	LocalFileAggregator({
+	    view_values => [
+		'jquery/jquery.min.js',
+		'jquery-ui/jquery-ui.min.js',
+		'fullcalendar/fullcalendar.min.js',
+		InlineJavaScript(
+		    Prose2(<<'EOF'),
+$(document).ready (function () {
+    $('#b_calendar').fullCalendar ({
+	editable: true,
+        timeFormat: <{ JavaScriptString(vs_constant('fullcalendar.timeformat')) }>,
+	eventSources: [
+	    {
+                url: <{ JavaScriptString(
+                    URI({task_id => 'FULL_CALENDAR_LIST_JSON'}),
+                ) }>,
+                startParam: 'full_calendar_start',
+                endParam: 'full_calendar_end'
+	    }
+	],
+        eventDrop: function(event, dayDelta, minuteDelta, allDay, revertFunc) {
+            $.ajax({
+                url: <{ JavaScriptString(
+                    [sub {
+                        Action_API()->format_uri({
+                            req => shift->req,
+                            task_id => 'FULL_CALENDAR_FORM_JSON',
+                        }),
+                    }],
+                ) }>,
+                type: 'POST',
+                timeout: 2000,
+                data: {
+                    v: 1,
+                    event: 'eventDrop',
+                    id: event.id,
+                    dayDelta: dayDelta,
+                    minuteDelta: minuteDelta,
+                },
+                success: function (data) {
+                },
+                error: function (xhr, status, error) {
+//TESTING
+//                    alert(status + ': ' + error);
+                    revertFunc();
+                },
+            });
+        },
+        dayClick: function(date) {
+            var url = <{ JavaScriptString(
+                URI({
+		    task_id => 'FORUM_CALENDAR_EVENT_FORM',
+		    query => {
+			Model_CalendarEventForm()->CREATE_DATE_QUERY_KEY => 'xyzzy',
+                    },
+                    no_context => 1,
+                }),
+            ) }>;
+            url = url.replace(
+                /xyzzy/,
+                (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear());
+            window.location.href = url;
+        },
+        eventClick: function(event) {
+            var url = <{ JavaScriptString(
+                URI({
+		    task_id => 'FORUM_CALENDAR_EVENT_FORM',
+		    query => {
+			'ListQuery.this' => 'xyzzy',
+                    },
+                    no_context => 1,
+                }),
+            ) }>;
+            url = url.replace(/xyzzy/, event.id);
+            window.location.href = url;
+        }
+    });
+});
+EOF
+		),
+	    ],
+	}),
+	EmptyTag({
+	    tag => 'div',
+	    id => 'b_calendar',
+	}),
+    ]));
 }
 
 sub _list_view {
