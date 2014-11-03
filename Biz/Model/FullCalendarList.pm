@@ -23,8 +23,8 @@ sub as_type_values {
 		)),
 		[qw(CalendarEvent.calendar_event_id id)],
 		[qw(RealmOwner.display_name title)],
-		[qw(CalendarEvent.dtstart start)],
-		[qw(CalendarEvent.dtend end)],
+		[qw(dtstart_tz start)],
+		[qw(dtend_tz end)],
 #TODO: url, description
 	    ),
 	};
