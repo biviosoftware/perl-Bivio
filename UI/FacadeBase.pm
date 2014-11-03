@@ -764,6 +764,7 @@ sub _cfg_calendar {
 		task_id => 'USER_SETTINGS_FORM',
 	    }],
 	    ['Calendar.want_b_time_zone' => 1],
+	    ['fullcalendar.timeformat' => 'H:mm'],
 	],
 	Font => [
 	    [b_month_calendar_day_of_month => 'bold'],
