@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'XHTMLWidget.SiteAdminControl';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
+my($_F) = b_use('UI.Facade');
 
 sub NEW_ARGS {
     return [qw(?extra_items)];
@@ -31,6 +32,21 @@ sub TASK_MENU_LIST {
 	    ),
 	),
 	'EMAIL_ALIAS_LIST_FORM',
+	@{$_F->if_2014style(
+	    [
+		If([qw(auth_realm type ->eq_forum)], Join([
+		    LI('', 'divider'),
+		    LI(Join([
+			String([qw(auth_realm owner display_name)]),
+			' Forum',
+		    ]), 'dropdown-header'),
+		]))->put(task_menu_no_wrap => 1),
+		'FORUM_CREATE_FORM',
+		'FORUM_EDIT_FORM',
+		'GROUP_USER_LIST',
+	    ],
+	    [],
+	)},
     );
 }
 
@@ -43,7 +59,7 @@ sub initialize {
 		@{$self->get_or_default(extra_items => [])},
                 $self->TASK_MENU_LIST,
 	    ], {
-		want_sorting => 1,
+		want_sorting => If2014Style(0, 1),
 		class => 'dd_menu',
 	    })
 	),
