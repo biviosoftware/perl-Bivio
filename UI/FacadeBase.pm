@@ -2012,26 +2012,6 @@ sub _cfg_user_auth {
 		    epilogue => q{P(XLink('login_no_context'));},
 		],
 	    ]],
-	    __PACKAGE__->if_2014style([
-		[UserCreateForm => [
-		    'confirm_password.desc' => q{Re-enter your password},
-		    prose => [
-			epilogue => '',
-		    ],
-		]],
-		[UserRegisterForm => [
-		    prose => [
-			epilogue => q{
-			DIV_trailer(
-			    Link(
-				'Already registered?',
-				'LOGIN',
-			    ),
-			);
-		    },
-		    ],
-		]],
-	    ]),
 	    [old_password => 'Current Password'],
 	    [new_password => 'New Password'],
 	    [confirm_new_password => 'Re-enter New Password'],
