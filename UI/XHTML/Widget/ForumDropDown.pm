@@ -4,13 +4,8 @@ package Bivio::UI::XHTML::Widget::ForumDropDown;
 use strict;
 use Bivio::Base 'XHTMLWidget.RealmDropDown';
 
-
 sub DEFAULT_REALM_TYPES {
     return ['FORUM'];
-}
-
-sub DISPLAY_NAME_FIELD {
-    return 'display_name';
 }
 
 1;
