@@ -200,13 +200,11 @@ input.cb_text {
 }
 !TODO: ComboBox carat not aligning correctly with IE (due to width: 100%)
 ! need to add nowrap container for ComboBox
-div.b_forum_name {
+.b_forum_name {
   margin-left: 1em;
   margin-right: 1em;
-}
-div.b_forum_name h4 {
+  font-size: 18px;
   white-space: nowrap;
-  margin-top: 5px;
 }
 div.b_forum_tabs {
   margin-bottom: 1ex;
