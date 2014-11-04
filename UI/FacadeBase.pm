@@ -591,6 +591,7 @@ sub _cfg_base {
 	    __PACKAGE__->if_2014style([
 		[xlink => [
 		    user_logged_out => q{LinkIcon('LOGIN');Login},
+		    user_logged_in => q{LinkIcon('LOGOUT');Logout},
 		]]
 	    ]),
 	    [SHELL_UTIL => ''],
@@ -734,6 +735,9 @@ sub _cfg_blog {
 		['task_menu.title' => [
 		    FORUM_BLOG_LIST => q{LinkIcon('FORUM_BLOG_LIST');Blog},
 		]],
+		['task_menu.title.noglyph' => [
+		    FORUM_BLOG_LIST => 'Blog',
+		]],
 	    ]),
 	],
     };
@@ -875,6 +879,9 @@ sub _cfg_calendar {
 		    FORUM_CALENDAR => q{LinkIcon('FORUM_CALENDAR');Calendar},
 		    'forum.calendar' => q{LinkIcon('FORUM_CALENDAR');Events},
 		]],
+		['task_menu.title.noglyph' => [
+		    'forum.calendar' => 'Events',
+		]],
 	    ]),
 	    [[qw(title xlink)] => [
 		[qw(
@@ -963,6 +970,9 @@ sub _cfg_crm {
 			FORUM_CRM_THREAD_ROOT_LIST => 'Tickets',
 		    ],
 		]),
+	    ]],
+	    ['task_menu.title.noglyph' => [
+		'forum.crm_thread_root_list' => 'Tickets',
 	    ]],
 	    [[qw(title xlink)] => [
 #TODO: Make into shortcut of widget
@@ -1062,8 +1072,6 @@ sub _cfg_file {
 	    [FORUM_EASY_FORM => "?/$_EASY_FORM_DIR/*"],
 	    [FORUM_FILE => ['?/file/*', '?/public-file/*', '?/public/*', '?/Public/*', '?/pub/*']],
 	    [FORUM_FILE_TREE_LIST => '?/files/*'],
-	    [FORUM_FILE_MANAGER => '?/file-manager/*'],
-	    [FORUM_FILE_MANAGER_AJAX => '?/file-manager-ajax/*'],
 	    [FORUM_FILE_VERSIONS_LIST => '?/revision-history/*'],
 	    [FORUM_FILE_CHANGE => '?/change-file/*'],
 	    [FORUM_FILE_DELETE_PERMANENTLY_FORM => '?/delete-file-permanently/*'],
@@ -1125,7 +1133,6 @@ sub _cfg_file {
 		[qw(
                     FORUM_FILE_TREE_LIST
                     ROBOT_FILE_LIST
-                    FORUM_FILE_MANAGER
                 )] => 'Files',
 		FORUM_FILE_VERSIONS_LIST => 'File Details',
 		FORUM_FILE_CHANGE => 'Change',
@@ -1136,6 +1143,9 @@ sub _cfg_file {
 	    __PACKAGE__->if_2014style([
 		['task_menu.title' => [
 		    FORUM_FILE_TREE_LIST => q{LinkIcon('FORUM_FILE_TREE_LIST');Files},
+		]],
+		['task_menu.title.noglyph' => [
+		    FORUM_FILE_TREE_LIST => 'Files',
 		]],
 	    ]),
 	    [prose => [
@@ -1241,7 +1251,7 @@ sub _cfg_group_admin {
 		GROUP_USER_LIST => 'Roster',
 		GROUP_USER_ADD_FORM => 'Add Member',
 		GROUP_USER_FORM => q{Privileges for String(['->req', 'Model.GroupUserList', 'RealmOwner.display_name']);},
-                FORUM_CREATE_FORM => 'New vs_ui_forum();',
+                FORUM_CREATE_FORM => 'Add vs_ui_forum();',
 		[qw(FORUM_EDIT_FORM REALM_FEATURE_FORM)] => 'Features',
 	    ]],
 	    [clear_on_focus_hint => [
@@ -1409,6 +1419,9 @@ sub _cfg_mail {
 		    ],
 		]),
 	    ]],
+	    ['task_menu.title.noglyph' => [
+		'forum.mail_thread_root_list' => 'Mail',
+	    ]],
 	    [title => [
 		FORUM_MAIL_FORM => q{If(['->has_keys', 'Model.RealmMailList'], 'Reply', 'New Topic');},
 		FORUM_MAIL_THREAD_ROOT_LIST => 'Mail',
@@ -1539,6 +1552,9 @@ sub _cfg_motion {
 		    FORUM_MOTION_LIST => q{LinkIcon('FORUM_MOTION_LIST');Polls},
 		    FORUM_MOTION_FORM => 'New',
 		]),
+	    ]],
+	    ['task_menu.title.noglyph' => [
+		FORUM_MOTION_LIST => 'Polls',
 	    ]],
 	    [icon => [
 		FORUM_MOTION_LIST => 'b_icon_thumbs_up',
@@ -1817,6 +1833,9 @@ sub _cfg_tuple {
 		    FORUM_TUPLE_USE_LIST => 'Tables',
 		]),
 	    ]],
+	    ['task_menu.title.noglyph' => [
+		FORUM_TUPLE_USE_LIST => 'Tables',
+	    ]],
 	    [TupleHistoryList => [
 		'RealmFile.modified_date_time' => 'Date',
 		'RealmMail.from_email' => 'Who',
@@ -2092,7 +2111,14 @@ sub _cfg_user_auth {
 	    ]),
 	    [[qw(task_menu.title HelpWiki.title)] => [
 		DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Browser Missing Cookies',
-		USER_SETTINGS_FORM => 'Settings',
+		__PACKAGE__->if_2014style([
+		    USER_SETTINGS_FORM => q{LinkIcon('USER_SETTINGS_FORM');Settings},
+		], [
+		    USER_SETTINGS_FORM => 'Settings',
+		]),
+	    ]],
+	    [icon => [
+		USER_SETTINGS_FORM => 'b_icon_cog',
 	    ]],
 	    [prose => [
 		UserAuth => [
@@ -2295,6 +2321,9 @@ sub _cfg_wiki {
 		    FORUM_WIKI_VERSIONS_LIST => 'Page history',
 		    FORUM_WIKI_CURRENT => 'Back to current',
 		]),
+	    ]],
+	    ['task_menu.title.noglyph' => [
+		FORUM_WIKI_VIEW => q{vs_ui_wiki();},
 	    ]],
 	    [acknowledgement => [
 		FORUM_WIKI_EDIT => 'Update accepted.  Please proofread for formatting errors.',
