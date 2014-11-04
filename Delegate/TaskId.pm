@@ -820,25 +820,6 @@ sub info_file {
             file_tree_task=FORUM_FILE_TREE_LIST
 	    file_task=FORUM_FILE
 	)],
-	[qw(
-	    FORUM_FILE_MANAGER
-	    250
-	    ANY_OWNER
-	    ANYBODY&FEATURE_FILE&TEST_TRANSIENT
-	    Action.AssertNotRobot
-	    Action.RealmFile->access_controlled_execute
-	    View.FileManager->file_manager
-	    want_folder_fall_thru=1
-	    write_task=FORUM_FILE_CHANGE
-            robot_task=ROBOT_FILE_LIST
-	)],
-	[qw(
-	    FORUM_FILE_MANAGER_AJAX
-	    251
-	    ANY_OWNER
-	    ANYBODY&FEATURE_FILE&TEST_TRANSIENT
-	    Action.FileManagerAjax
-	)],
     ];
 }
 
