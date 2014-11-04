@@ -80,7 +80,13 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_seo_head_links => '',
 	xhtml_body_class => '',
 	xhtml_tag_attrs => '',
-	bootstrap_tab_bar => '',
+	bootstrap_tab_heading => ForumDropDown()->put(
+	    drop_down_attrs => {
+		tag => 'div',
+		toggle_class => 'b_forum_name btn btn-info dropdown-toggle',
+	    },
+	    single_row_class => 'b_forum_name btn btn-info disabled',
+	),
 	xhtml_head_tags => If2014Style(Join([
 	    META({
 		'HTTP-EQUIV' => 'X-UA-Compatible',
@@ -127,11 +133,32 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_topic => '',
 	xhtml_byline => '',
 	xhtml_selector => '',
-	xhtml_dock_left => _if_want(
-	    'dock_left_standard',
-	    undef,
-	    vs_text_as_prose('xhtml_dock_left_standard'),
-        ),
+	xhtml_dock_left => If2014Style(
+	    NavContainer(
+		Link(vs_text('site_name'), 'SITE_ROOT'),
+		Join([
+		    TaskMenu([
+			vs_text_as_prose('xhtml_site_admin_drop_down_standard')
+			    ->put(task_menu_no_wrap => 1),
+		    ], {
+		    	class => 'nav navbar-nav',
+		    	selected_class => 'active',
+		    }),
+		    TaskMenu([
+			'USER_SETTINGS_FORM',
+			UserState(),
+		    ], {
+			class => 'nav navbar-nav navbar-right',
+		    }),
+		    $self->internal_2014style_search_form,
+		]),
+	    ),
+	    _if_want(
+		'dock_left_standard',
+		undef,
+		vs_text_as_prose('xhtml_dock_left_standard'),
+	    ),
+	),
 	_center_replaces_middle('xhtml_dock_middle') => '',
 	xhtml_dock_right => JoinMenu([
 	    $_C->if_version(8 => sub {_if_want('ForumDropDown')}),
@@ -210,7 +237,7 @@ sub internal_xhtml_adorned_body {
 		    view_widget_value('xhtml_dock_left'),
 		])->b_widget_label('dock_left'),
 		DIV_main_middle(DIV_container(Join([
-		    view_widget_value('bootstrap_tab_bar'),
+		    _realm_tabs($self),
 		    view_widget_value(
 			_center_replaces_middle('xhtml_main_middle')),
 		])->b_widget_label('main_middle'))),
@@ -299,6 +326,34 @@ sub _if_want {
     return If(
 	vs_constant("ThreePartPage_want_$name"),
 	ref($widget) ? $widget : vs_call($widget),
+    );
+}
+
+sub _realm_tabs {
+    my($self) = @_;
+    my($task_list, $task_select) = ForumTaskMenu()->get_select_widget;
+    my($heading) = view_widget_value('bootstrap_tab_heading');
+    return If(
+	And(
+	    ['auth_user'],
+	    [qw(auth_realm type ->eq_forum)],
+	),
+	Join([
+	    DIV(
+		Grid([[
+		    $heading,
+		    $task_list,
+		]]),
+		'row b_forum_tabs hidden-xs',
+	    ),
+	    DIV(
+		Grid([[
+		    $heading,
+		    $task_select,
+		]]),
+		'row b_forum_tabs visible-xs',
+	    ),
+	]),
     );
 }
 
