@@ -11,6 +11,10 @@ my($_R) = b_use('Auth.Role');
 my($_REQUIRED_ROLE_GROUP) = b_use('Model.UserForumList')
     ->REQUIRED_ROLE_GROUP;
 
+sub DISPLAY_NAME_FIELD {
+    return 'name';
+}
+
 sub NEW_ARGS {
     return shift->can('DEFAULT_REALM_TYPES') ? [] : [qw(realm_types)];
 }
@@ -23,7 +27,9 @@ sub initialize {
 	control => [sub {$self->internal_control_value(@_)}],
 	control_on_value => If(
 	    [sub {_one_choice($self, shift)}],
-	    SPAN(_curr_realm(), {class => 'dd_link'}),
+	    SPAN(_curr_realm($self), {
+		class => $self->unsafe_get('single_row_class') || 'dd_link',
+	    }),
 	    _drop_down($self),
 	),
     );
@@ -33,7 +39,13 @@ sub initialize {
 sub internal_choices {
     my($self, $source) = @_;
     return $source->req->map_user_realms(
-	sub {shift->{'RealmOwner.name'}},
+	sub {
+	    my($row) = @_;
+	    return {
+		name => $row->{'RealmOwner.name'},
+		display_name => $row->{'RealmOwner.' . $self->DISPLAY_NAME_FIELD},
+	    };
+	},
 	{
 	    'RealmOwner.realm_type' => [
 		map($_RT->from_any($_), @{_realm_types($self)}),
@@ -57,7 +69,8 @@ sub _choices {
 }
 
 sub _curr_realm {
-    return String([qw(->req auth_realm owner_name)]);
+    my($self) = @_;
+    return String([qw(->req auth_realm owner), $self->DISPLAY_NAME_FIELD]);
 }
 
 sub _drop_down {
@@ -66,7 +79,7 @@ sub _drop_down {
     my($first_rt) = $rt->[0];
     my($res) = DropDown(
 	If([[qw(->req auth_realm type)], '->equals_by_name', @$rt],
-	   _curr_realm(),
+	   _curr_realm($self),
 	   Prose(vs_text('RealmDropDown', $first_rt)),
         ),
 	TaskMenu([
@@ -96,6 +109,8 @@ sub _drop_down {
 	], {
 	    class => 'dd_menu',
 	}),
+    )->put(
+	%{$self->unsafe_get('drop_down_attrs') || {}},
     );
     return $_F->if_2014style(
 	$res,
