@@ -22,7 +22,7 @@ sub initialize {
 		    ? ()
 		    : (' ', B('', 'caret')),
 	    ]), {
-		class => 'dropdown-toggle',
+		class => $self->unsafe_get('toggle_class') || 'dropdown-toggle',
 		HREF => '#',
 		'DATA-TOGGLE' => 'dropdown',
 	    }),
