@@ -10,7 +10,5 @@ my($ctre) = Type_CacheTag()->REGEX;
 [
     ['unit-test.css'] => qr{<link href="/f/css/unit-test\.$ctre\.css" rel="stylesheet" type="text/css" />},
     ['unit-test.js'] => qr{<script src="/f/js/unit-test\.$ctre\.js" type="text/javascript"></script>},
-    ['fontello/css/b_icon.min.css'] => qr{<link href="/b/fontello/css/b_icon.min\.$ctre\.css" rel="stylesheet" type="text/css" />},
-
     ['does-not-exist.css'] => DIE(),
 ];
