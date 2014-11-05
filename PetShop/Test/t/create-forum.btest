@@ -3,7 +3,7 @@
 test_setup('PetShop', 'groupware');
 home_page();
 login_as('root');
-follow_link(qw(site$ new_forum));
+follow_link(qw(site$ add_forum));
 my($title) = 'BTest ' . random_string();
 (my $name = lc($title)) =~ s/ /_/g;
 test_deviance(qr{top forum.*change}i);
@@ -12,7 +12,7 @@ submit_form({
     '^forum' => $name,
 });
 test_conformance();
-follow_link(qw(site-admin new_forum));
+follow_link(qw(site-admin add_forum));
 submit_form({
     title => $title,
     '^forum' => $name,
