@@ -149,6 +149,7 @@ sub settings_form {
 	},
     ], {
 	empty_list_widget => Simple(''),
+	class => 'list table',
     }, {
 	indent_list => 1,
     }));
