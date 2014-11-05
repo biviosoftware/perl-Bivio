@@ -335,7 +335,7 @@ sub _realm_tabs {
     my($heading) = view_widget_value('bootstrap_tab_heading');
     return If(
 	And(
-	    ['auth_user'],
+	    ['auth_user_id'],
 	    [qw(auth_realm type ->eq_forum)],
 	),
 	Join([
