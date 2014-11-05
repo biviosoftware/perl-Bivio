@@ -84,6 +84,8 @@ sub html_parser_end {
     my($fields) = $self->[$_IDI];
     return _end_label($fields)
 	if $tag eq 'label';
+    return _end_button($self, $fields)
+	if $tag eq 'button';
     return _end_th($fields)
 	if $tag eq 'th';
     return _end_table($fields)
@@ -94,8 +96,8 @@ sub html_parser_end {
 	if $tag eq 'textarea';
     return _end_select($fields)
 	if $tag eq 'select';
-    return _end_maybe_err($fields)
-	if $tag =~ /^(font|span|div)$/;
+    return _end_maybe_err($fields, $tag)
+	if $tag =~ /^(font|span|div|ul)$/;
     return;
 }
 
@@ -109,6 +111,8 @@ sub html_parser_start {
     }
     return _start_label($fields, $attr)
 	if $tag eq 'label';
+    return _start_button($fields, $attr)
+        if $tag eq 'button';
     return _start_tx($fields, $attr, $tag)
 	if $tag =~ /^t(?:d|r|h|able)$/;
     return _start_form($fields, $attr)
@@ -119,7 +123,7 @@ sub html_parser_start {
 	if $tag eq 'input'
 	    || ($attr->{type} && $tag !~ /^(?:link|style|script)$/);
     return _start_maybe_err($fields, $attr)
-	if $tag =~ /^(font|span|div)$/;
+	if $tag =~ /^(font|span|div|ul)$/;
     return;
 }
 
@@ -207,6 +211,16 @@ sub _empty {
     return !grep(defined($_) && length($_), @_);
 }
 
+sub _end_button {
+    my($self, $fields) = @_;
+    if ($fields->{text}) {
+        $fields->{button}->{value} = $fields->{text};
+        _label_submit($self, $fields->{button});
+    }
+    $fields->{button} = undef;
+    return;
+}
+
 sub _end_form {
     my($self) = @_;
     # Ends the form and puts in $fields->{current}.
@@ -251,7 +265,7 @@ sub _end_label {
 }
 
 sub _end_maybe_err {
-    my($fields) = @_;
+    my($fields, $tag) = @_;
     return 0
 	if $fields->{is_not_bivio_html};
     # Ends the current tag which may contain err.
@@ -260,9 +274,11 @@ sub _end_maybe_err {
 	if $f->{class} && $f->{class} eq $_CFG->{error_title_class};
     return
 	unless (
-	    $f->{color} ? $f->{color} eq $_CFG->{error_color}
-	    : $f->{class} ? $f->{class} eq $_CFG->{error_class}
-	    : 0
+            $tag eq 'ul' || (
+                $f->{color} ? $f->{color} eq $_CFG->{error_color}
+                : $f->{class} ? $f->{class} eq $_CFG->{error_class}
+                : $tag eq 'ul'
+            )
 	) && !_empty($fields->{text})
 	&& !_have_prefix_label($fields);
     $fields->{input_error} = substr($fields->{text}, $f->{text_start_length});
@@ -344,7 +360,7 @@ sub _label_field {
     # for labels, however.
     _trace($attr) if $_TRACE;
     return
-	unless $fields->{current}->{$class};
+	unless $fields->{current}->{$class} && $attr->{label};
     push(@{$fields->{current}->{$class}->{$attr->{label}} ||= []}, $attr);
     _trace($fields->{current}, ' ', $attr);
     $fields->{current}->{label} = $attr->{label}
@@ -449,6 +465,13 @@ sub _leftover_input {
     $fields->{text} = '_anon';
     _label_visible($fields);
     @{$fields}{qw{text prev_cell_text}} = @save;
+    return;
+}
+
+sub _start_button {
+    my($fields, $attr) = @_;
+    $fields->{text} = undef;
+    $fields->{button} = $attr;
     return;
 }
 
