@@ -93,6 +93,13 @@ sub default_merge_overrides {
 	'Bivio::IO::Config' => {
 	    version => $args->{version},
 	},
+        $proto->IS_2014STYLE
+            ? (
+                'Bivio::Test::HTMLParser::Forms' => {
+                    error_class => 'alert alert-warning',
+                    error_title_class => 'b_form_field_error',
+                },
+            ) : (),
 	'Bivio::IO::Trace' => {
 	    config => {
 		# This doesn't actually exist, b/c Config is second module
