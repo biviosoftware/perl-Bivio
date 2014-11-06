@@ -96,8 +96,8 @@ sub default_merge_overrides {
         $proto->IS_2014STYLE
             ? (
                 'Bivio::Test::HTMLParser::Forms' => {
-                    error_class => 'alert alert-warning',
-                    error_title_class => 'b_form_field_error',
+                    error_class => 'b_form_field_error',
+                    error_title_class => 'alert alert-warning',
                 },
             ) : (),
 	'Bivio::IO::Trace' => {
