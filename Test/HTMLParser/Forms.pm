@@ -124,7 +124,7 @@ sub html_parser_start {
     return _start_input($self, $attr)
 	if $tag eq 'input'
 	    || ($attr->{type} && $tag !~ /^(?:link|style|script)$/);
-    return _start_maybe_err($fields, $attr)
+    return _start_maybe_err($fields, $tag, $attr)
 	if $tag =~ /^(font|span|div)$/
 	    || ($tag eq 'ul' && $_F->is_2014style);
     return;
@@ -271,6 +271,8 @@ sub _end_maybe_err {
     my($fields, $tag) = @_;
     return 0
 	if $fields->{is_not_bivio_html};
+    return 0
+	if $_F->is_2014style && ! $fields->{in_error_ul};
     # Ends the current tag which may contain err.
     my($f) = pop(@{$fields->{maybe_err}});
     $fields->{current}->{error_title_seen}++
@@ -286,6 +288,9 @@ sub _end_maybe_err {
 	&& !_have_prefix_label($fields);
     $fields->{input_error} = substr($fields->{text}, $f->{text_start_length});
     $fields->{text} = undef;
+    if ($tag eq 'ul') {
+	$fields->{in_error_ul} = 0;
+    }
     return;
 }
 
@@ -556,7 +561,7 @@ sub _start_label {
 }
 
 sub _start_maybe_err {
-    my($fields, $attr) = @_;
+    my($fields, $tag, $attr) = @_;
     return
 	if $fields->{is_not_bivio_html};
     # Saves current tag info.
@@ -568,6 +573,9 @@ sub _start_maybe_err {
 	%$attr,
 	text_start_length => length($fields->{text} || ''),
     });
+    if ($tag eq 'ul' && ($attr->{class} || '') eq $_CFG->{error_class}) {
+	$fields->{in_error_ul} = 1;
+    }
     return;
 }
 
