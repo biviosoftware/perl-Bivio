@@ -11,6 +11,7 @@ b_use('IO.ClassLoaderAUTOLOAD');
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_HTML) = b_use('Bivio.HTML');
+my($_F) = b_use('UI.Facade');
 my($_R) = b_use('IO.Ref');
 b_use('IO.Config')->register(my $_CFG = {
     error_color => '#993300',
@@ -97,7 +98,8 @@ sub html_parser_end {
     return _end_select($fields)
 	if $tag eq 'select';
     return _end_maybe_err($fields, $tag)
-	if $tag =~ /^(font|span|div|ul)$/;
+	if $tag =~ /^(font|span|div)$/
+	    || ($tag eq 'ul' && $_F->is_2014style);
     return;
 }
 
@@ -123,7 +125,8 @@ sub html_parser_start {
 	if $tag eq 'input'
 	    || ($attr->{type} && $tag !~ /^(?:link|style|script)$/);
     return _start_maybe_err($fields, $attr)
-	if $tag =~ /^(font|span|div|ul)$/;
+	if $tag =~ /^(font|span|div)$/
+	    || ($tag eq 'ul' && $_F->is_2014style);
     return;
 }
 
