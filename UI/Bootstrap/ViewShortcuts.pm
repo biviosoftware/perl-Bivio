@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Bivio::UI::XHTML::ViewShortcuts';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
+my($_FTM) = b_use('XHTMLWidget.ForumTaskMenu');
 my($_LABEL_OFFSET) = _offset(b_use('XHTMLWidget.FormFieldLabel')->COL_CLASS);
 my($_EDIT_COL_CLASS) = 'col-sm-6';
 
@@ -132,6 +133,15 @@ sub vs_simple_form_container {
 	push(@$rows, $row);
     }
     return Join($rows);
+}
+
+sub vs_xhtml_title {
+    my($proto) = @_;
+    return If(
+        [$_FTM, '->is_top_level_tab', ['->req']],
+        '',
+        $proto->vs_text_as_prose('xhtml_title'),
+    );
 }
 
 sub _is_blank_cell {
