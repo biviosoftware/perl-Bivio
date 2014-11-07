@@ -562,7 +562,6 @@ sub _cfg_base {
 		wiki => 'Wiki',
 		members => 'Members',
 	    ]],
-	    ['vs_selector_form.ok_button' => 'Refresh'],
 	    [xlink => [
 		back_to_top => 'back to top',
 		SITE_ROOT => 'Home',
