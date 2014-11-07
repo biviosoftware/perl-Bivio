@@ -303,13 +303,12 @@ sub vs_filter_query_form {
         $form ||= 'FilterQueryForm',
         [
             $attrs->{text} || ClearOnFocus(
-                vs_edit('GroupUserQueryForm.b_filter', {
+                vs_edit("$form.b_filter", {
                     size => int(b_use('Type.Line')->get_width / 2),
                     wf_class => 'Text',
                     class => 'form-control',
                 }),
-                [['->req', 'Model.GroupUserQueryForm'],
-                    '->clear_on_focus_hint'],
+                [['->req', "Model.$form"], '->clear_on_focus_hint'],
             ),
             @{$extra_columns || []},
         ],
