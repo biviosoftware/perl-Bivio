@@ -28,6 +28,10 @@ sub vs_inline_form {
     );
 }
 
+sub vs_list {
+    return shift->vs_paged_list(@_);
+}
+
 sub vs_paged_list {
     my($self, $model, $columns) = @_;
     my($table) = shift->SUPER::vs_paged_list(@_);
