@@ -1,4 +1,4 @@
-# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2014 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::UI::XHTML::ViewShortcuts;
 use strict;
@@ -299,19 +299,20 @@ sub vs_file_versions_actions_column {
 
 sub vs_filter_query_form {
     my($proto, $form, $extra_columns, $attrs) = @_;
-    return $proto->vs_selector_form(
-	$form ||= 'FilterQueryForm',
-	[
-	    $attrs->{text} || Join([ClearOnFocus(
-		Text({
-  		    field => 'b_filter',
-  		    size => int(b_use('Type.Line')->get_width / 2),
-  		}),
-		[['->req', "Model.$form"], '->clear_on_focus_hint'],
-	    )]),
-	    @{$extra_columns || []},
-	],
-	1,
+    return $proto->vs_inline_form(
+        $form ||= 'FilterQueryForm',
+        [
+            $attrs->{text} || ClearOnFocus(
+                vs_edit('GroupUserQueryForm.b_filter', {
+                    size => int(b_use('Type.Line')->get_width / 2),
+                    wf_class => 'Text',
+                    class => 'form-control',
+                }),
+                [['->req', 'Model.GroupUserQueryForm'],
+                    '->clear_on_focus_hint'],
+            ),
+            @{$extra_columns || []},
+        ],
     );
 }
 
@@ -347,7 +348,7 @@ sub vs_inline_form {
     my($self, $model, $cols, $attrs) = @_;
     return Form(
 	$model,
-	Join($cols),
+	Join($cols, ' '),
 	{
 	    form_method => 'get',
 	    want_timezone => 0,
@@ -584,32 +585,6 @@ sub vs_rss_task_in_head {
 	    query => undef,
 	}),
     });
-}
-
-sub vs_selector_form {
-    my($proto, $model, $widgets, $is_get) = @_;
-    return Form(
-	$model,
-	Join([
-	    map(DIV_b_item($_->put_unless_exists(auto_submit => 1)), @$widgets),
-	    ScriptOnly({
-		widget => Simple(''),
-		alt_widget => FormButton({
-		    field => 'ok_button',
-		    label => $proto
-			->vs_text_as_prose('vs_selector_form.ok_button'),
-		}),
-	    }),
-	]),
-	{
-	    class => 'b_selector',
-	    !$is_get ? () : (
-		form_method => 'get',
-		want_timezone => 0,
-		want_hidden_fields => 0,
-	    ),
-	},
-    );
 }
 
 sub vs_simple_form {
