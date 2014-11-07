@@ -1173,13 +1173,6 @@ span.b_sort_arrow {
 .underline {
   text-decoration: underline;
 }
-.b_selector div.b_item {
-  display: inline;
-  padding-right: 1em;
-}
-form.b_selector {
-  padding-top: 1ex;
-}
 span.b_abtest a {
   Font('b_abtest_a');
   margin-left: .5em;
