@@ -15,9 +15,11 @@ sub internal_add_filter {
 sub list {
     my($self, $extra_cols) = @_;
     $self->internal_add_filter;
-    view_unsafe_put(
-	xhtml_tools => Link(vs_text('title.GROUP_TASK_LOG_CSV'),
-	    ['->format_uri', [qw(task ->get_attr_as_id csv_task)]]),
+    $self->internal_put_base_attr(
+	tools => TaskMenu([
+            Link(vs_text('title.GROUP_TASK_LOG_CSV'),
+                 ['->format_uri', [qw(task ->get_attr_as_id csv_task)]]),
+        ]),
     );
     return $self->internal_body(vs_paged_list('TaskLogList', [
 	['TaskLog.date_time', {
