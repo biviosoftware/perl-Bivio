@@ -26,7 +26,9 @@ sub def_edit {
 	    list_display_field => 'TupleSlotType.label',
 	    unknown_label => 'Select Type',
 	},
-    ]));
+    ], {
+        class => 'list table',
+    }));
 }
 
 sub def_list {
