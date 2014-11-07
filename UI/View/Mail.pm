@@ -149,7 +149,9 @@ sub internal_reply_links {
 		},
 		control => vs_can_group_bulletin_form(),
 	    },
-	]),
+	], {
+            class => 'task_menu pagination',
+        }),
 	'actions',
     );
 }
