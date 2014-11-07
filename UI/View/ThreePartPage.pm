@@ -11,6 +11,7 @@ my($_C) = b_use('IO.Config');
 b_use('IO.Config')->register(my $_CFG = {
     center_replaces_middle => 0,
 });
+my($_F) = b_use('UI.Facade');
 
 sub handle_config {
     my(undef, $cfg) = @_;
@@ -87,41 +88,43 @@ sub internal_xhtml_adorned_attrs {
 	    },
 	    single_row_class => 'b_forum_name btn btn-info disabled',
 	),
-	xhtml_head_tags => If2014Style(Join([
-	    META({
-		'HTTP-EQUIV' => 'X-UA-Compatible',
-		CONTENT => 'IE=edge',
-	    }),
-	    META({
-		NAME => 'viewport',
-		CONTENT => 'width=device-width,initial-scale=1.0',
-	    }),
-	    LocalFileAggregator({
-		base_values => [
-		    'bootstrap.min.css',
-		    'fontello/css/b_icon.min.css',
-		    InlineCSS([
-			sub {
-			    #TODO: Widget.RenderView
-			    my($source) = @_;
-			    my($res) = UI_View()->render(
-				'CSS->render_2014style_css',
-				$source->req,
-			    );
-			    #TODO: Need to add this to InlineCSS from RealmCSS
-			    $$res =~ s/^\!.*\n//mg;
-			    return $$res;
-			},
-		    ]),
-		],
-	    }),
-	    #TODO: need to be in separate aggregator - other InlineCSS() does not render?
-	    LocalFileAggregator({
-		base_values => [
-		    IfUserAgent('is_msie_8_or_before', 'msie8shim/msie8shim.min.js'),
-		],
-	    }),
-	])),
+        xhtml_head_tags => $_F->is_2014style
+            ? Join([
+                META({
+                    'HTTP-EQUIV' => 'X-UA-Compatible',
+                    CONTENT => 'IE=edge',
+                }),
+                META({
+                    NAME => 'viewport',
+                    CONTENT => 'width=device-width,initial-scale=1.0',
+                }),
+                LocalFileAggregator({
+                    base_values => [
+                        'bootstrap.min.css',
+                        'fontello/css/b_icon.min.css',
+                        InlineCSS([
+                            sub {
+                                #TODO: Widget.RenderView
+                                my($source) = @_;
+                                my($res) = UI_View()->render(
+                                    'CSS->render_2014style_css',
+                                    $source->req,
+                                );
+                                #TODO: Need to add this to InlineCSS from RealmCSS
+                                $$res =~ s/^\!.*\n//mg;
+                                return $$res;
+                            },
+                        ]),
+                    ],
+                }),
+                #TODO: need to be in separate aggregator - other InlineCSS() does not render?
+                LocalFileAggregator({
+                    base_values => [
+                        IfUserAgent('is_msie_8_or_before', 'msie8shim/msie8shim.min.js'),
+                    ],
+                }),
+            ])
+            : '',
 	xhtml_favicon_tag => LINK({
 	    REL => 'shortcut icon',
 	    TYPE => 'image/x-icon',
@@ -133,8 +136,8 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_topic => '',
 	xhtml_byline => '',
 	xhtml_selector => '',
-	xhtml_dock_left => If2014Style(
-	    NavContainer(
+	xhtml_dock_left => $_F->is_2014style
+	    ? NavContainer(
 		Link(vs_text('site_name'), 'SITE_ROOT'),
 		Join([
 		    TaskMenu([
@@ -152,13 +155,12 @@ sub internal_xhtml_adorned_attrs {
 		    }),
 		    $self->internal_2014style_search_form,
 		]),
-	    ),
-	    _if_want(
+	    )
+	    : _if_want(
 		'dock_left_standard',
 		undef,
 		vs_text_as_prose('xhtml_dock_left_standard'),
 	    ),
-	),
 	_center_replaces_middle('xhtml_dock_middle') => '',
 	xhtml_dock_right => JoinMenu([
 	    $_C->if_version(8 => sub {_if_want('ForumDropDown')}),
@@ -172,26 +174,25 @@ sub internal_xhtml_adorned_attrs {
 	xhtml_want_page_print => 0,
 	xhtml_main_left => '',
 	xhtml_main_right => '',
-	xhtml_footer_left => If2014Style('', XLink('back_to_top')),
+	xhtml_footer_left => $_F->is_2014style ? '' : XLink('back_to_top'),
 	_center_replaces_middle('xhtml_footer_middle') => '',
 	xhtml_footer_right => vs_text_as_prose('xhtml_copyright'),
 	xhtml_want_first_focus => 1,
-	xhtml_body_last => If2014Style(
-	    LocalFileAggregator({
+        xhtml_body_last => $_F->is_2014style
+            ? LocalFileAggregator({
 		base_values => [
 		    'jquery/jquery.min.js',
 		    'bootstrap/dist/js/bootstrap.min.js',
 		    SearchSuggestAddon('bivio_search_field'),
 		],
-	    }),
-	),
+	    })
+	    : '',
     );
     view_put(
 	xhtml_body_first => Join([
-	    If2014Style(
-		'',
-		EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
-	    ),
+	    $_F->is_2014style
+		? ''
+		: EmptyTag(a => {html_attrs => ['name'], name => 'top'}),
             vs_first_focus(view_widget_value('xhtml_want_first_focus')),
 	    Script('b_log_errors'),
 	]),
@@ -229,8 +230,8 @@ sub internal_xhtml_adorned_attrs {
 
 sub internal_xhtml_adorned_body {
     my($self) = @_;
-    return If2014Style(
-	Join([
+    return $_F->is_2014style
+	? Join([
 	    DIV_b_nav_and_content(Join([
 		view_widget_value('xhtml_body_first'),
 		Join([
@@ -252,17 +253,16 @@ sub internal_xhtml_adorned_body {
                 ]), 'col-xs-12'))),
 	    ),
 	    view_widget_value('xhtml_body_last'),
-	]),
+	])
 	# not 2014 style
-	Join([
+	: Join([
 	    view_widget_value('xhtml_body_first'),
 	    $_C->if_version(7 => sub {$self->internal_xhtml_grid3('dock')}),
 	    $self->internal_xhtml_grid3('header'),
 	    $self->internal_xhtml_grid3('main'),
 	    $self->internal_xhtml_grid3('footer'),
 	    view_widget_value('xhtml_body_last'),
-	]),
-    );
+	]);
 }
 
 sub internal_xhtml_grid3 {
@@ -287,8 +287,8 @@ sub internal_xhtml_grid3 {
 
 sub internal_xhtml_tools {
     my($self, $is_header) = @_;
-    return If2014Style(
-	$is_header
+    return $_F->is_2014style
+	? ($is_header
 	    ? Join([
 		TaskMenuOverride(
 		    view_widget_value('xhtml_tools'),
@@ -298,16 +298,15 @@ sub internal_xhtml_tools {
 		),
 		view_widget_value('vs_pager'),
 	    ])
-	    : '',
-	DIV_tools(Join([
+	    : '')
+	: DIV_tools(Join([
 	    view_widget_value('xhtml_tools'),
 	    view_widget_value('vs_pager'),
 	], {
 	    join_separator => $is_header
 		? DIV_sep('')
 		    : EmptyTag(DIV => 'sep'),
-	})),
-    );
+	}));
 }
 
 sub _center_replaces_middle {
