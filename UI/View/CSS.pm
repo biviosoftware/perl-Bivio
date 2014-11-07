@@ -89,7 +89,8 @@ div.b_nav_and_footer {
 }
 div.b_footer {
   font-size: 90%;
-  margin-top: 40px;
+  margin-top: 36px;
+  margin-right: 1em;
 }
 ! tighten up forum select widget to match tabbed view
 div.b_forum_tabs div.form-group {
