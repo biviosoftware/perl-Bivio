@@ -311,6 +311,11 @@ sub vs_filter_query_form {
                 [['->req', "Model.$form"], '->clear_on_focus_hint'],
             ),
             @{$extra_columns || []},
+            ScriptOnly({
+                widget => Simple(''),
+                alt_widget => FormButton('ok_button')
+                    ->put(label => vs_text('vs_selector_form.ok_button')),
+            }),
         ],
     );
 }
