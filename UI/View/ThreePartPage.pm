@@ -243,14 +243,13 @@ sub internal_xhtml_adorned_body {
 		])->b_widget_label('main_middle'))),
 	    ])),
 	    DIV_b_nav_and_footer(
-		DIV_container(Join([
-		    $self->internal_xhtml_tools(1),
-		    ' ',
-		    DIV(
-			view_widget_value('xhtml_footer_right'),
-			'b_footer pull-right',
-		    ),
-		])),
+		DIV_container(DIV_row(DIV(Join([
+                    $self->internal_xhtml_tools(1),
+                    DIV(
+                        view_widget_value('xhtml_footer_right'),
+                        'b_footer pull-right',
+                    ),
+                ]), 'col-xs-12'))),
 	    ),
 	    view_widget_value('xhtml_body_last'),
 	]),
