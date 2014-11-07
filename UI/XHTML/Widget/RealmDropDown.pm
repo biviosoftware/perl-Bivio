@@ -38,21 +38,25 @@ sub initialize {
 
 sub internal_choices {
     my($self, $source) = @_;
-    return $source->req->map_user_realms(
-	sub {
-	    my($row) = @_;
-	    return {
-		name => $row->{'RealmOwner.name'},
-		display_name => $row->{'RealmOwner.' . $self->DISPLAY_NAME_FIELD},
-	    };
-	},
-	{
-	    'RealmOwner.realm_type' => [
-		map($_RT->from_any($_), @{_realm_types($self)}),
-	    ],
-	    roles => $_REQUIRED_ROLE_GROUP,
-	},
-    );
+    return [sort(
+        {$a->{display_name} cmp $b->{display_name}}
+        @{$source->req->map_user_realms(
+            sub {
+                my($row) = @_;
+                return {
+                    name => $row->{'RealmOwner.name'},
+                    display_name => $row->{
+                        'RealmOwner.' . $self->DISPLAY_NAME_FIELD},
+                };
+            },
+            {
+                'RealmOwner.realm_type' => [
+                    map($_RT->from_any($_), @{_realm_types($self)}),
+                ],
+                roles => $_REQUIRED_ROLE_GROUP,
+            },
+        )},
+    )];
 }
 
 sub internal_control_value {
