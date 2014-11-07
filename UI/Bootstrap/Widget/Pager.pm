@@ -9,9 +9,9 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 sub initialize {
     my($self) = @_;
     my($list) = $self->get('list_class');
+    $self->put(class => 'pagination pull-right');
     return shift->put_unless_exists(
 	tag => 'ul',
-	class => 'pagination pull-right',
 	value => Join([
 	    _link($list, 'prev'),
 	    _link($list, 'next'),
