@@ -64,8 +64,7 @@ my($_NEED_BUILD_ROOT) = `rpmbuild --version` =~ /version 4\.[0-4]\./ ? 1 : 0;
 my($_R) = b_use('IO.Ref');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    cvs_rpm_spec_dir => 'pkgs',
-    cvs_perl_dir => 'perl',
+    cvs_rpm_spec_dir => ['pkgs'],
     rpm_home_dir => $_C->REQUIRED,
     rpm_http_root => undef,
     rpm_user => $_C->REQUIRED,
@@ -209,13 +208,9 @@ sub get_projects {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    # cvs_rpm_spec_dir : string [pkgs]
+    # cvs_rpm_spec_dir : array [pkgs]
     #
-    # The cvs directory which holds your package specifications
-    #
-    # cvs_perl_dir : string [perl]
-    #
-    # Path from cvs repository root to perl project directories.
+    # The cvs directories which hold your package specifications.
     #
     # http_password : string [undef]
     #
@@ -580,8 +575,17 @@ sub _create_rpm_spec {
     }
     else {
 	my($spec_dir) = $_CFG->{cvs_rpm_spec_dir};
-        $specin = "$spec_dir/$specin.spec";
-        _system("bivio vc checkout '$version' '$spec_dir'", $output);
+	my($first);
+	foreach my $sd (ref($spec_dir) ? @$spec_dir : $spec_dir) {
+	    _system("bivio vc checkout '$version' '$sd'", $output);
+	    if ($first) {
+		_system("cp -a '$sd'/*.* '$first'");
+	    }
+	    else {
+		$first = $sd;
+	    }
+	}
+        $specin = "$first/$specin.spec";
 	$specin = b_use('IO.File')->pwd.'/'.$specin
 	    unless $specin =~ m!^/!;
 	$cvs = 1;
