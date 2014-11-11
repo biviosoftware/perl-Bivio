@@ -43,11 +43,13 @@ sub handler {
 	$_R->get_current_or_new,
 	sub {
 	    my($facade) = @_;
-	    if (my $less_sig = _modified_less($facade)) {
-		b_use('ShellUtil.Project')->generate_bootstrap_css;
-		$_LESS_SIG->{$facade->as_string} = $less_sig;
-	    }
-	    return;
+	    return $facade->if_2014style(sub {
+		if (my $less_sig = _modified_less($facade)) {
+		    b_use('ShellUtil.Project')->generate_bootstrap_css;
+		    $_LESS_SIG->{$facade->as_string} = $less_sig;
+		}
+		return;
+	    });
 	},
     );
     $_LAST_TIME = time;
