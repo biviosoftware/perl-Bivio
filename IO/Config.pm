@@ -139,7 +139,7 @@ sub REQUIRED {
 
 sub assert_dev {
     my($proto) = @_;
-    b_die('may only be run on dev')
+    die('may only be run on dev')
 	unless $proto->is_dev;
     return;
 }
