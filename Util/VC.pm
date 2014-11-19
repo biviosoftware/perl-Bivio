@@ -9,14 +9,16 @@ b_use('IO.Config')->register(my $_CFG = {
     git_root_list => [
 	'https://github.com/biviosoftware',
     ],
+    svn_root_list => [],
+
 });
 
 sub CONTROL_DIR_FIND_PREDICATE {
-    return q{'(' -name CVS -o -name .git ')'};
+    return q{'(' -name CVS -o -name .git -o -name .svn ')'};
 }
 
 sub CONTROL_DIR_RE {
-    return qr{(?:^|/)(?:CVS|.git)(?:/|$)};
+    return qr{(?:^|/)(?:CVS|\.git|\.svn)(?:/|$)};
 }
 
 sub USAGE {
@@ -37,21 +39,11 @@ sub u_checkout {
     my($self) = shift;
     my($version) = @_ > 1 ? shift(@_) : undef;
     my($module) = @_;
-    if (($ENV{BIVIO_UTIL_VC_ROOT} || '') =~ m{^/} && -d $ENV{BIVIO_UTIL_VC_ROOT}) {
-	return _checkout_rsync($self, $module, $version, "$ENV{BIVIO_UTIL_VC_ROOT}/$module");
-    }
-    my($git_dir) = $module;
-    #TODO: Share with Dev
-    $git_dir =~ s{/}{-}g;
-    foreach my $r (@{$_CFG->{git_root_list} || []}) {
-	my($res) = "$r/$git_dir";
-	if (!Bivio_Die()->catch_quietly(
-	    sub {$self->piped_exec("git ls-remote $res 2>&1")},
-	)) {
-	    return _checkout_git($self, $module, $version, $res, $git_dir);
-	}
-    }
-    return _checkout_cvs($self, $module, $version);
+    _checkout_rsync($self, $module, $version)
+	|| _checkout_git($self, $module, $version)
+	|| _checkout_svn($self, $module, $version)
+	|| _checkout_cvs($self, $module, $version);
+    return;
 }
 
 sub _checkout_cvs {
@@ -73,15 +65,30 @@ sub _checkout_cvs {
 }
 
 sub _checkout_git {
-    my($self, $module, $version, $repo, $git_dir) = @_;
-    return _update_or_fresh(
+    my($self, $module, $version) = @_;
+    my($git_dir) = $module;
+    #TODO: Share with Dev
+    $git_dir =~ s{/}{-}g;
+    my($repo);
+    foreach my $r (@{$_CFG->{git_root_list} || []}) {
+	my($res) = "$r/$git_dir";
+	if (!Bivio_Die()->catch_quietly(
+	    sub {$self->piped_exec("git ls-remote $res 2>&1")},
+	)) {
+	    $repo = $res;
+	    last;
+	}
+    }
+    return 0
+	unless $repo;
+    _update_or_fresh(
 	$self,
 	$module,
 	$version,
 	sub {
 	    IO_File()->do_in_dir(
 		$module,
-		sub {$self->piped_exec(['git pull'])},
+		sub {$self->piped_exec([qw(git pull)])},
 	    );
 	    return;
 	},
@@ -95,10 +102,14 @@ sub _checkout_git {
 	    return;
 	},
     );
+    return 1;
 }
 
 sub _checkout_rsync {
-    my($self, $module, $version, $repo) = @_;
+    my($self, $module, $version) = @_;
+    return 0
+	unless ($ENV{BIVIO_UTIL_VC_ROOT} || '') =~ m{^/} && -d $ENV{BIVIO_UTIL_VC_ROOT};
+    my($repo) = "$ENV{BIVIO_UTIL_VC_ROOT}/$module";
     IO_Config()->assert_dev;
     b_info("copying files from $repo, not checking out");
     my($md) = IO_File()->absolute_path($module);
@@ -110,25 +121,41 @@ sub _checkout_rsync {
     system('rsync', '-aq', '--exclude=.git', '-filter=:- .gitignore', $repo, $p);
     IO_File()->rename("$p/" . File::Basename::basename($repo), $md);
     system('chmod', '-R', 'u+w', $md);
-    return;
+    return 1;
 }
 
-sub _repo {
-    my($self, $module) = @_;
-    if (($ENV{BIVIO_UTIL_VC_ROOT} || '') =~ m{^/} && -d $ENV{BIVIO_UTIL_VC_ROOT}) {
-	return "$ENV{BIVIO_UTIL_VC_ROOT}/$module";
-    }
-    my($git_dir) = $module;
-    $git_dir =~ s{/}{-}g;
-    foreach my $r (@{$_CFG->{git_root_list} || []}) {
-	my($res) = "$r/$git_dir";
+sub _checkout_svn {
+    my($self, $module, $version) = @_;
+    my($repo);
+    foreach my $r (@{$_CFG->{svn_root_list} || []}) {
+	my($res) = "$r/$module";
 	if (!Bivio_Die()->catch_quietly(
-	    sub {$self->piped_exec("git ls-remote $res 2>&1")},
+	    sub {$self->piped_exec("svn log '$res' 2>&1")},
 	)) {
-	    return ($res, $git_dir);
+	    $repo = $res;
+	    last;
 	}
     }
-    return $module;
+    return 0
+	unless $repo;
+    _update_or_fresh(
+	$self,
+	$module,
+	$version,
+	sub {
+	    IO_File()->do_in_dir(
+		$module,
+		sub {$self->piped_exec([qw(svn update), $repo])},
+	    );
+	    return;
+	},
+	sub {
+	    my($v) = @_;
+	    $self->piped_exec([qw(svn checkout -r), $v, $repo]);
+	    return;
+	},
+    );
+    return 1;
 }
 
 sub _update_or_fresh {
