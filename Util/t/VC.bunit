@@ -1,6 +1,15 @@
 # Copyright (c) 2014 Bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
+options({
+    check_return => sub {
+	my($case, undef, $expect) = @_;
+	my($p) = $case->get('params');
+	$p = $p->[$#$p];
+	assert_equals(-d $p ? 1 : 0, 1, $p);
+	return 1;
+    },
+});
 my($tmp) = tmp_dir();
 IO_File()->chdir($tmp);
 my($svn_root) = "$tmp/svn_root";
@@ -10,15 +19,6 @@ config({
 	svn_root_list => [
 	    $svn_uri,
 	],
-    },
-});
-options({
-    check_return => sub {
-	my($case, undef, $expect) = @_;
-	my($p) = $case->get('params');
-	$p = $p->[$#$p];
-	assert_equals(-d $p ? 1 : 0, 1, $p);
-	return 1;
     },
 });
 system("svnadmin create $svn_root > /dev/null 2>&1");
@@ -33,23 +33,35 @@ IO_File()->do_in_dir(
 	return;
     },
 );
+my($cvs_root) = "$tmp/cvs_root";
+$ENV{CVSROOT} = "$tmp/cvs_root";
+system("cvs init > /dev/null 2>&1");
+IO_File()->do_in_dir(
+    IO_File()->mkdir_p('cvs_tmp'),
+    sub {
+	IO_File()->mkdir_p('cvs_proj/dir1');
+	IO_File()->write('cvs_proj/dir1/file1.txt', random_string());
+	system('(cd cvs_proj; cvs import -m init cvs_proj x y) > /dev/null 2>&1');
+	return;
+    },
+);
 [
     # git
-    [qw(u_checkout perl/Cal54)] => not_die(),
-    [qw(u_checkout perl/Cal54)] => not_die(),
+    [qw(u_checkout perl/Cal54)] => [],
+    [qw(u_checkout perl/Cal54)] => [],
     [qw(u_checkout HEAD perl/Cal54)] => DIE(),
     # svn
-    [qw(u_checkout svn_proj/dir1)] => not_die(),
-    [qw(u_checkout svn_proj/dir1)] => not_die(),
+    [qw(u_checkout svn_proj/dir1)] => [],
+    [qw(u_checkout svn_proj/dir1)] => [],
     [qw(u_checkout HEAD svn_proj/dir1)] => DIE(),
     # cvs
-    [qw(u_checkout perl/misc)] => not_die(),
-    [qw(u_checkout perl/misc)] => not_die(),
-    [qw(u_checkout HEAD perl/misc)] => DIE(),
+    [qw(u_checkout cvs_proj/dir1)] => [],
+    [qw(u_checkout cvs_proj/dir1)] => [],
+    [qw(u_checkout HEAD cvs_proj/dir1)] => DIE(),
     [qw(u_checkout NotFoundDir)] => DIE(),
     # rsync
     sub {
 	$ENV{BIVIO_UTIL_VC_ROOT} = IO_File()->absolute_path('perl');
 	return [qw(u_checkout Cal54)];
-    } => not_die(),
+    } => [],
 ];
