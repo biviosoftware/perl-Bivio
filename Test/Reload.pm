@@ -95,7 +95,7 @@ sub _modified_ddl {
 	no_chdir => 1,
 	wanted => sub {
 	    my($p) = $File::Find::name;
-	    if ($p =~ $vc_re || $p =~ m{(?:^|/)(?:\.$)}) {
+	    if ($p =~ $vc_re || $p =~ m{(?:^|/)(?:\.)}) {
 		$File::Find::prune = 1;
 		return;
 	    }
@@ -106,7 +106,7 @@ sub _modified_ddl {
 		if $p =~ m{ddl/([\w-]+)(/Public/.*)}is;
 	    return;
 	},
-    }, $_DDL);
+    }, "$_DDL/");
     return $res;
 }
 
@@ -134,7 +134,7 @@ sub _modified_pm {
 		  || $_ =~ $vc_re);
 	    return;
 	},
-    }, @$_WATCH);
+    }, map($_ ? "$_/" : $_, @$_WATCH));
     return @$res ? $res : undef;
 }
 
