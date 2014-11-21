@@ -151,7 +151,10 @@ sub _checkout_svn {
 	},
 	sub {
 	    my($v) = @_;
-	    $self->piped_exec([qw(svn checkout -r), $v, $repo]);
+	    IO_File()->do_in_dir(
+		IO_File()->mkdir_parent_only($module),
+		sub {$self->piped_exec([qw(svn checkout -r), $v, $repo])},
+	    );
 	    return;
 	},
     );
