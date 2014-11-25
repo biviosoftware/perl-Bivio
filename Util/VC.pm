@@ -40,8 +40,8 @@ sub u_checkout {
     my($version) = @_ > 1 ? shift(@_) : undef;
     my($module) = @_;
     _checkout_rsync($self, $module, $version)
-	|| _checkout_git($self, $module, $version)
 	|| _checkout_svn($self, $module, $version)
+	|| _checkout_git($self, $module, $version)
 	|| _checkout_cvs($self, $module, $version);
     return;
 }
