@@ -594,7 +594,9 @@ sub _base {
 	'Bivio::Util::Release' => {
 	    rpm_home_dir => '/usr/src/redhat/RPMS/noarch',
 	    projects => [
-		[ProjEx => project => 'bivio Software, Inc.'],
+		[qw(ProjEx project), 'bivio Software, Inc.'],
+		[qw(Bivio b), 'Bivio Software, Inc.'],
+		[qw('Bivio/PetShop' pet), 'Bivio Software, Inc.'],
 	    ],
 	    rpm_user => 'nobody',
 	},
