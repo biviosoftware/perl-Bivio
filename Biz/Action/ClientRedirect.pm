@@ -83,7 +83,7 @@ sub execute_query_or_path_info {
 sub execute_query_redirect {
     my($proto, $req) = @_;
     my($query) = $req->get('query');
-    b_die('missing QUERY_TAG')
+    b_die('NOT_FOUND', 'missing QUERY_TAG')
 	unless my $uri = delete($query->{$proto->QUERY_TAG});
     return {
 	uri => Type_HTTPURI()->from_literal_or_die($uri),
