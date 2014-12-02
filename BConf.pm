@@ -83,9 +83,9 @@ sub default_merge_overrides {
 	    is_2014style => $proto->IS_2014STYLE,
 	},
 	'Bivio::Util::Release' => {
-	    projects => [
+	    $proto->merge_projects([
 		[$args->{root}, $args->{prefix}, $args->{owner}],
-	    ],
+	    ]),
 	},
 	'Bivio::Delegate::Cookie' => {
 	    tag => uc($args->{prefix}),
@@ -488,6 +488,18 @@ sub merge_overrides {
     return {};
 }
 
+sub merge_projects {
+    my($proto, $overrides) = @_;
+    return (
+	projects => [
+	    [qw(ProjEx project), 'bivio Software, Inc.'],
+	    [qw(Bivio b), 'Bivio Software, Inc.'],
+	    [qw('Bivio/PetShop' pet), 'Bivio Software, Inc.'],
+	    @{$overrides || []},
+	],
+    );
+}
+
 sub merge_realm_role_category_map {
     my($proto, $new) = @_;
     return 'Bivio::Biz::Util::RealmRole' => {
@@ -593,11 +605,7 @@ sub _base {
 	},
 	'Bivio::Util::Release' => {
 	    rpm_home_dir => '/usr/src/redhat/RPMS/noarch',
-	    projects => [
-		[qw(ProjEx project), 'bivio Software, Inc.'],
-		[qw(Bivio b), 'Bivio Software, Inc.'],
-		[qw('Bivio/PetShop' pet), 'Bivio Software, Inc.'],
-	    ],
+	    $proto->merge_projects,
 	    rpm_user => 'nobody',
 	},
 	'Bivio::ShellUtil' => {
