@@ -413,7 +413,6 @@ SSLSessionCacheTimeout 300
 SSLMutex sem
 SSLProtocol All -SSLv2 -SSLV3
 SSLHonorCipherOrder On
-SSLCompression Off
 SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+AESGCM EECDH EDH+AESGCM EDH+aRSA HIGH !MEDIUM !LOW !aNULL !eNULL !LOW !RC4 !MD5 !EXP !PSK !SRP !DSS"
 EOF
 # need to dig -x to get reverse dns
@@ -795,6 +794,7 @@ conffile=${CONFFILE-/etc/httpd/conf/$prog.conf}
 lockfile=${LOCKFILE-/var/lock/subsys/$prog}
 RETVAL=0
 STOP_TIMEOUT=${STOP_TIMEOUT-10}
+export OPENSSL_NO_DEFAULT_ZLIB=1
 
 start() {
         echo -n $"Starting $prog: "
