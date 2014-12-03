@@ -411,9 +411,9 @@ Listen 443
 SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
 SSLMutex sem
-SSLProtocol All -SSLv2
+SSLProtocol All -SSLv2 -SSLV3
 SSLHonorCipherOrder On
-SSLCipherSuite DHE-RSA-AES256-SHA:AES256-SHA:DHE-RSA-AES128-SHA:EDH-RSA-DES-CBC3-SHA:RC4-SHA:HIGH:!ADH
+SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+AESGCM EECDH EDH+AESGCM EDH+aRSA HIGH !MEDIUM !LOW !aNULL !eNULL !LOW !RC4 !MD5 !EXP !PSK !SRP !DSS"
 EOF
 # need to dig -x to get reverse dns
 # forward dns
@@ -794,6 +794,7 @@ conffile=${CONFFILE-/etc/httpd/conf/$prog.conf}
 lockfile=${LOCKFILE-/var/lock/subsys/$prog}
 RETVAL=0
 STOP_TIMEOUT=${STOP_TIMEOUT-10}
+export OPENSSL_NO_DEFAULT_ZLIB=1
 
 start() {
         echo -n $"Starting $prog: "
