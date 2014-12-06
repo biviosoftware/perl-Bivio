@@ -129,11 +129,15 @@ sub find_by_uri_or_domain {
 	$_A->warn_deprecated($uri_or_domain, ': domain must be lower case');
 	$uri_or_domain = lc($uri_or_domain);
     }
+    my($found) = [];
     foreach my $uri (@$_URI_SEARCH_LIST) {
-	return $_URI_MAP->{$uri}
-	    if $uri_or_domain =~ /(?:^|\.)$uri(?:$|\.)/;
+	# Longest URI will match first
+	$found->[length($1)] ||= $uri
+	    if $uri_or_domain =~ /(^|.*?\.)$uri(?:$|\.)/;
     }
-    return undef;
+    return undef
+	unless @$found;
+    return $_URI_MAP->{(grep($_, @$found))[0]};
 }
 
 sub get_all_classes {

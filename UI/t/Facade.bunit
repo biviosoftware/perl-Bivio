@@ -26,12 +26,14 @@ req()->initialize_fully;
 	    'm.petshop' => ['m.petshop.anyhost.com', 'm.petshop.local'],
 	],
 	map_iterate_with_setup_request => [
-	    [req(), sub {shift->get('uri')}] => [[qw(beforeother m.petshop other petshop requiresecure)]],
+	    [req(), sub {shift->get('uri')}] => [[qw(aaaaa beforeother m.petshop other petshop requiresecure)]],
 	],
 	setup_request => [
 	    ['beforeother', req()] => not_die(),
 	],
 	with_setup_request => [
+	    ['aaaaa', req(), sub {shift->get('uri')}] => 'aaaaa',
+	    ['other.aaaaa.org', req(), sub {shift->get('uri')}] => 'other',
 	    ['m.petshop', req(), sub {shift->get('uri')}] => 'm.petshop',
 	    ['petshop', req(), sub {die('got a die')}] => qr{got a die},
 	],
