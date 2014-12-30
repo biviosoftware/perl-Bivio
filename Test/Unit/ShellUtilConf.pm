@@ -38,13 +38,6 @@ sub new_unit {
 	    system("tar xzf $n.tgz")
 		if -f "$n.tgz";
 	    $self->builtin_go_dir($n);
-	    $setup_case->(@_)
-		if $setup_case;
-	    return ['-input', $in, 'generate'];
-	},
-	check_return => sub {
-	    my(undef, undef) = @_;
-	    my($n) = $_F->pwd =~ /(\d+)$/;
 	    my($d) = "$n-out";
 	    $_F->do_in_dir(
 		'..',
@@ -54,6 +47,14 @@ sub new_unit {
 		    return;
 		},
 	    );
+	    $setup_case->(@_)
+		if $setup_case;
+	    return ['-input', $in, 'generate'];
+	},
+	check_return => sub {
+	    my(undef, undef) = @_;
+	    my($n) = $_F->pwd =~ /(\d+)$/;
+	    my($d) = "$n-out";
 	    my($diff) = scalar(
 		Bivio::ShellUtil->do_backticks(
 		    qq{diff '--ignore-matching-lines=^#' -r '../$d' .}));
