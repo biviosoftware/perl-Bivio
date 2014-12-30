@@ -175,13 +175,14 @@ sub _newlines {
 
 sub _serial {
     my($self, $cfg) = @_;
-    foreach my $line ($self->do_backticks([qw(dig soa), $cfg->{servers}->[0]])) {
+    my($server) = $cfg->{servers}->[0];
+    foreach my $line ($self->do_backticks([qw(dig soa), $server, '@' . $server])) {
         next
             if $line =~ /^;/;
         return $1 + 1
             if $line =~ /^\S+\s+\d+\s+IN\s+SOA\s+\S+\.\s+\S+\.\s+(\d{1,10})\s+\d/;
     }
-    b_die($cfg->{servers}->[0], ': could not find SOA');
+    b_die($server, ': could not find SOA');
 }
 
 sub _write {
