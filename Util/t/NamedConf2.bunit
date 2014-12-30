@@ -31,8 +31,18 @@ EOF
 	    },
 	},
 EOF
+    [c3 => <<'EOF', 'servers => [qw(ns1.no-such-domain.tld.)],'],
+	'example.com' => {
+	    ipv4 => {
+		'111.22.33.24/29' => {
+		    25 => ['mail', 'mail2'],
+		},
+	    },
+	},
+EOF
 ) {
-    my($file, $zones) = @$x;
+    my($file, $zones, $extra) = @$x;
+    $extra ||= '';
     write_file(
 	"NamedConf/$file",
 	<<"EOF"
@@ -51,7 +61,8 @@ EOF
     },
     zones => {
         $zones
-    }
+    },
+    $extra
 };
 EOF
     );
@@ -59,4 +70,5 @@ EOF
 [
     [qw(-input NamedConf/c1 generate)] => qr{no PTR records for 111.22.33.25},
     [qw(-input NamedConf/c2 generate)] => qr{too many PTR records for 111.22.33.25},
+    [qw(-input NamedConf/c3 generate)] => qr{command died},
 ];
