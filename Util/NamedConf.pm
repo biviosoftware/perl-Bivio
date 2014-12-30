@@ -31,7 +31,7 @@ sub generate {
     _write({
 	'etc/named.conf' => _conf($self, $cfg),
 	$_ROOT_FILE => $self->root_file,
-	_zones($cfg),
+	_zones($self, $cfg),
     });
     return;
 }
@@ -174,24 +174,14 @@ sub _newlines {
 }
 
 sub _serial {
-    # Serial numbers must increase for every generation.  Instead of using the
-    # manual process yyyymmdd<seq>, we use yyyy<year-seconds>.  However,
-    # <year-seconds> could be 31622400, which is too large, so we divide by 33.
-    # This means you can only do an update every 33 seconds to be sure the
-    # number increases.  The number is truncated (not %d, which rounds)
-    # so it doesn't "jump to the future".
-    my($now) = $_DT->now;
-    my($y) = $_DT->get_parts($now, 'year');
-    return sprintf(
-	'%04d%06d',
-	$y,
-	int(
-	    $_DT->diff_seconds(
-		$now,
-		$_DT->from_parts(0, 0, 0, 1, 1, $y),
-	    ) / 33,
-	),
-    );
+    my($self, $cfg) = @_;
+    foreach my $line ($self->do_backticks([qw(dig soa), $cfg->{servers}->[0]])) {
+        next
+            if $line =~ /^;/;
+        return $1 + 1
+            if $line =~ /^\S+\s+\d+\s+IN\s+SOA\s+\S+\.\s+\S+\.\s+(\d{1,10})\s+\d/;
+    }
+    b_die($cfg->{servers}->[0], ': could not find SOA');
 }
 
 sub _write {
@@ -206,8 +196,8 @@ sub _write {
 }
 
 sub _zones {
-    my($cfg) = @_;
-    $cfg->{serial} = _serial();
+    my($self, $cfg) = @_;
+    $cfg->{serial} = _serial($self, $cfg);
     my($z) = delete($cfg->{zones});
     my($n) = delete($cfg->{nets});
     my($ptr_map) = {};
