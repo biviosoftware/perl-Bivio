@@ -51,6 +51,7 @@ sub parse {
 	[qr{^\s*multipart/form-data}, \&_parse_multipart],
 	[qr{^\s*application/json}, \&_parse_json],
     ) {
+	_trace('content-type=', $ct) if $_TRACE;
 	next
 	    unless $ct =~ $x->[0];
 	my($res) = $x->[1]->($req, $r, $options);
