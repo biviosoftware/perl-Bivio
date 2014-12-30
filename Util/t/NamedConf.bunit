@@ -1,7 +1,22 @@
 # Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-ShellUtilConf();
-DateTime()->set_test_now('2/9/2010 9:41:30', req());
+ShellUtilConf({
+    setup_case => sub {
+        my($n) = IO_File()->pwd =~ /(\d+)$/;
+        my($serial) = Bivio_ShellUtil()->do_backticks([qw(dig soa ns1.bivio.biz)]) =~ m{SOA.*hostmaster.bivio.biz. (20\d{8})}m;
+        $serial++;
+        foreach my $f (glob("../$n-out/var/named/*")) {
+            IO_File()->do_read_write(
+                $f,
+                sub {
+                    my($d) = @_;
+                    return $$d =~ s/BUNIT_SERIAL/$serial/ ? $d : undef;
+                },
+            );
+        }
+        return;
+    },
+});
 generate_cases();
 
 # If you see something like this, it's because the named.root has changed.  To update, do this:
