@@ -29,10 +29,10 @@ sub USAGE {
     return <<'EOF';
 usage: b-backup [options] command [args...]
 commands:
-    archive_logs mirror_dir archive_dir -- copy gz files in /var/log
+    archive_logs mirror_dir archive_dir -- copy [gx]z files in /var/log
     archive_mirror_link root date -- tar "link" to "weekly" or "archive"
     archive_weekly snapshot weekly -- tar "snapshot" to "weekly"
-    compress_log_dirs root [max_days] -- tars and gzips log dirs
+    compress_log_dirs root [max_days] -- tars and xz log dirs
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
     trim_directories dir max -- returns directories to trim
     zfs_snapshot file_system snapshot_date num_keep ... -- take a snapshot
@@ -48,7 +48,7 @@ sub archive_logs {
     #PERLBUG: $_DATE_RE is not visible in the second sub {}.
     #         Precompiling the regexp in a local variable fixes
     #         the problem, and it's a loop invariant anyway.
-    my($date_gz) = qr{$_DATE_RE.*gz$};
+    my($date_z) = qr{$_DATE_RE.*[gx]z$};
     return $self->lock_action(sub {
         my($res) = [];
 	File::Find::find({
@@ -56,7 +56,7 @@ sub archive_logs {
 	    follow => 0,
 	    wanted => sub {
 		return
-		    unless $_ =~ $date_gz && -f $_;
+		    unless $_ =~ $date_z && -f $_;
 		my($year) = $2 =~ /^(\d{4})/;
 		(my $tgt = $_) =~ s{^\Q$mirror_dir\E}{$archive_dir/$year};
 		return
@@ -134,10 +134,10 @@ sub compress_and_trim_log_dirs {
 	    my($sort) = [sort(@{$dirs->{$dir}})];
 	    pop(@$sort);
 	    foreach my $d (map("$dir/$_", @$sort)) {
-		$self->piped_exec("tar czf '$d.tgz' '$d' 2>&1");
-		$self->piped_exec("chmod -w '$d.tgz'");
-		b_die('backup is writable: ', "$d.tgz")
-		    if -w "$d.tgz";
+		$self->piped_exec("tar cJf '$d.txz' '$d' 2>&1");
+		$self->piped_exec("chmod -w '$d.txz'");
+		b_die('backup is writable: ', "$d.txz")
+		    if -w "$d.txz";
 		$compressed .= " $d";
 		Bivio::IO::File->rm_rf($d);
 	    }
@@ -149,7 +149,7 @@ sub compress_and_trim_log_dirs {
 	    wanted => sub {
 		return
 		    unless -f $_
-		    && $_ =~ m{(.+)/(\d{8}(?:\d{6})?\.tgz)$};
+		    && $_ =~ m{(.+)/(\d{8}(?:\d{6})?\.txz)$};
 		push(@{$dirs->{$1} ||= []}, $2);
 		$File::Find::prune = 1;
 		return;
@@ -290,10 +290,10 @@ sub _archive_create {
 	# Directories with same size may come out in any order
 	$dirs = [sort(@$dirs)];
 	while (my $src = shift(@$dirs)) {
-	    my($dst) = _safe_path("$archive/$src.tgz");
+	    my($dst) = _safe_path("$archive/$src.txz");
 	    $_F->mkdir_parent_only($dst, 0700);
 	    $self->piped_exec(
-		['tar', 'czfX', $dst, '-', $src],
+		['tar', 'cJfX', $dst, '-', $src],
 		\(join("\n", @$dirs)),
 	    );
 	}
