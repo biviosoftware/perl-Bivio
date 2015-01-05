@@ -57,7 +57,7 @@ set_user('btest_read');
 		return [$actual->[0]->{uri}];
 	    },
 	} => [
-	    '' => DIE(),
+	    '' => NOT_FOUND(),
 	    'google.com' => DIE(),
 	    'http://google.com' => 'http://google.com',
 	],
