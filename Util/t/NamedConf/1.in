@@ -50,6 +50,9 @@ my($net1) = '111.22.33.24/29';
 		ftp => 'www',
 		alias => 'example.other.com.',
 	    },
+	    txt => {
+                'key1' => 'value1',
+	    },
 	},
     },
 };
