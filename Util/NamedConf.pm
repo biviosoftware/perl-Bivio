@@ -225,6 +225,7 @@ sub _zone {
 	    sort(
 		_zone_a($zone_dot, $cfg, $ptr_map),
 		_zone_cname($zone_dot, $cfg, $ptr_map),
+		_zone_txt($zone_dot, $cfg, $ptr_map),
 		_zone_mx($zone_dot, $cfg, $ptr_map),
 		_zone_spf1($zone_dot, $cfg, $ptr_map),
 		_zone_dkim1($zone_dot, $cfg, $ptr_map),
@@ -256,12 +257,7 @@ sub _zone_a {
 }
 
 sub _zone_cname {
-    my($zone, $cfg) = @_;
-    my($cname) = $cfg->{cname} || {};
-    return map(
-	"$_ IN CNAME $cname->{$_}",
-	keys(%$cname),
-    );
+    return _zone_literal('cname', @_);
 }
 
 sub _zone_dkim1 {
@@ -345,6 +341,16 @@ sub _zone_ipv4_map {
     );
 }
 
+sub _zone_literal {
+    my($which, $zone, $cfg) = @_;
+    my($values) = $cfg->{$which} || {};
+    $which = uc($which);
+    return map(
+	"$_ IN $which $values->{$_}",
+	keys(%$values),
+    );
+}
+
 sub _zone_mx {
     my($zone, $cfg) = @_;
     return _zone_ipv4_map(
@@ -394,6 +400,10 @@ sub _zone_spf1 {
 	    );
 	},
     );
+}
+
+sub _zone_txt {
+    return _zone_literal('txt', @_);
 }
 
 1;
