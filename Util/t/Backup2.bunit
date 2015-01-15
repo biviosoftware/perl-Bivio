@@ -52,8 +52,8 @@ foreach my $day (@$days) {
 		    return 1;
 		}
 		assert_eval("-d '$d'");
-		assert_eval("! -f '$d/x2/d1/d3.txz'");
-		assert_eval("! -f '$d/..txz'");
+		assert_eval("! -f '$d/x2/d1/d3.tgz'");
+		assert_eval("! -f '$d/..tgz'");
 		foreach my $x (
 		    [qw(x1 x1/b1)],
 		    [qw(x1/d1 x1/d1/s1)],
@@ -66,7 +66,7 @@ foreach my $day (@$days) {
 		) {
                     assert_equals(
 			[sort(map(/[dx]\d+$/ ? "$_/\n" : "$_\n", @$x))],
-			[sort(`tar tJf $d/$x->[0].txz 2>&1`)],
+			[sort(`tar tzf $d/$x->[0].tgz 2>&1`)],
 			"@$x",
 		    );
 		}

@@ -32,9 +32,9 @@ foreach my $day (@$days) {
 	compress_and_trim_log_dirs => [
 	    [$mirror => (@$days - 1) - 1] => sub {
 		assert_equals(undef, -e $log_dirs->[0]->[0]);
- 		assert_equals(undef, -e "$log_dirs->[0]->[0].txz");
+ 		assert_equals(undef, -e "$log_dirs->[0]->[0].tgz");
  		assert_equals(undef, -e "$log_dirs->[$#$log_dirs - 1]->[0]");
-  		assert_equals(1, -e "$log_dirs->[$#$log_dirs - 1]->[0].txz");
+  		assert_equals(1, -e "$log_dirs->[$#$log_dirs - 1]->[0].tgz");
  		assert_equals(1, -e "$log_dirs->[$#$log_dirs]->[0]");
 		return [join(
 		    '',
@@ -51,8 +51,8 @@ foreach my $day (@$days) {
 			' ',
 			'Deleted:',
 			sort(grep(
-			    !m{/d3.txz$},
-			    map("$_.txz",
+			    !m{/d3.tgz$},
+			    map("$_.tgz",
 			    map(@$_, @$log_dirs[0])),
 			)),
 		    ),
@@ -63,8 +63,8 @@ foreach my $day (@$days) {
 		' ',
 		'Deleted:',
 		sort(grep(
-		    !m{/d3.txz$},
-		    map("$_.txz", map(@$_, @$log_dirs[1])),
+		    !m{/d3.tgz$},
+		    map("$_.tgz", map(@$_, @$log_dirs[1])),
 		)),
 	    ) . "\n",
 	],
@@ -77,7 +77,7 @@ foreach my $day (@$days) {
 			assert_equals(1, -r $x && ! -w $x, "$x");
 			$x;
 		    }
-		       map(("$_->[0].txz", "$_->[1].txz"),
+		       map(("$_->[0].tgz", "$_->[1].tgz"),
 		           @$log_dirs[2..$#$log_dirs - 1]),
 		       grep(/gz$/, map(@$_, @$logs)),
 		    ),
