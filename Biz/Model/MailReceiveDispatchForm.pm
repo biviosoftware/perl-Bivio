@@ -34,6 +34,7 @@ b_use('IO.Config')->register(my $_CFG = {
 	[qw(X-Autoreply yes)],
 	[qw(Subject out\s+of\s+(the\s+)?office)],
     ],
+    ignore_model_not_found => 0,
 });
 
 sub execute_ok {
@@ -71,7 +72,16 @@ sub execute_ok {
 	    \&_ignore_out_of_office,
 	    \&_ignore_no_message_id,
 	);
-    $self->internal_set_realm($realm);
+    my($die) = Bivio::Die->catch(
+        sub {
+            $self->internal_set_realm($realm);
+        });
+    if ($die) {
+        return _redirect('ignore_task')
+            if $_CFG->{ignore_model_not_found}
+                && $die->get('code')->eq_model_not_found;
+        $die->throw;
+    }
     return _redirect('ignore_task')
 	if _ignore($self, \&_ignore_duplicate, \&_ignore_mailer_daemon);
     $self->internal_put_field(
