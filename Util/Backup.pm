@@ -216,7 +216,10 @@ sub trim_directories {
 	[qw(num_keep Integer)],
     ], \@_);
     return $self->lock_action(sub {
-	my($dirs) = [reverse(sort(glob("$root/20" . ('[0-9]' x 6))))];
+	my($dirs) = [reverse(sort(
+            glob("$root/20" . ('[0-9]' x 6)),
+            glob("$root/20" . ('[0-9]' x 12)),
+        ))];
 	return
 	    if @$dirs <= $num_keep;
 	$dirs = [reverse(splice(@$dirs, $num_keep))];
