@@ -213,18 +213,17 @@ sub _send {
 	substr($$msg, $offset, 0)
 	    = $proto->TEST_RECIPIENT_HDR . ": $recipients\n";
     }
-    my($command) = '| ' . $_CFG->{sendmail}
+    my($command) = $_CFG->{sendmail}
 	. ($from ? " '$from'" : '')
 	. " '$recipients'";
     _trace($command) if $_TRACE;
-    return unless my $die = Bivio::Die->catch(sub {
-#TODO: causes too much forking for vagrant
-	Bivio::IO::File->write(
-	    IO::File->new($command) || die("$command: open failed"),
-	    $msg,
-	    $offset,
-	);
-    }) or $?;
+    return unless
+	my $die = Bivio::Die->catch(sub {
+	    b_use('Bivio.ShellUtil')->piped_exec(
+		$command,
+		\(substr($$msg, $offset)),
+	    );
+	});
     Bivio::IO::Alert->warn($die ? $die->as_string : "$command: status = $?");
     return 'I/O error';
 }
