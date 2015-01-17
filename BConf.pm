@@ -490,12 +490,16 @@ sub merge_overrides {
 
 sub merge_projects {
     my($proto, $overrides) = @_;
+    my($seen) = {};
     return (
 	projects => [
-	    [qw(ProjEx project), 'bivio Software, Inc.'],
-	    [qw(Bivio b), 'Bivio Software, Inc.'],
-	    [qw(Bivio/PetShop pet), 'Bivio Software, Inc.'],
-	    @{$overrides || []},
+	    grep(
+		!$seen->{"$_->[0] $->[1]"}++,
+		[qw(ProjEx project), 'bivio Software, Inc.'],
+		[qw(Bivio b), 'Bivio Software, Inc.'],
+		[qw(Bivio/PetShop pet), 'Bivio Software, Inc.'],
+		@{$overrides || []},
+	    ),
 	],
     );
 }
