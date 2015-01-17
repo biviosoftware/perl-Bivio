@@ -494,7 +494,7 @@ sub merge_projects {
 	projects => [
 	    [qw(ProjEx project), 'bivio Software, Inc.'],
 	    [qw(Bivio b), 'Bivio Software, Inc.'],
-	    [qw('Bivio/PetShop' pet), 'Bivio Software, Inc.'],
+	    [qw(Bivio/PetShop pet), 'Bivio Software, Inc.'],
 	    @{$overrides || []},
 	],
     );
