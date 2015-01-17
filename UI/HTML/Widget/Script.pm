@@ -454,11 +454,11 @@ window.onerror = function (errorMsg, url, lineNumber) {
         var req = new XMLHttpRequest();
         req.open("POST", "/pub/javascript-error", false);
         req.setRequestHeader("Content-type","application/x-www-form-urlencoded");
-        req.send("json=" + JSON.stringify({
+        req.send("json=" + encodeURIComponent(JSON.stringify({
             'errorMsg': errorMsg,
-            'url': encodeURIComponent(url),
+            'url': url,
             'lineNumber': lineNumber
-        }));
+        })));
     }
     catch (e) {
     }
