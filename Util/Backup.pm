@@ -134,7 +134,7 @@ sub compress_and_trim_log_dirs {
 	    my($sort) = [sort(@{$dirs->{$dir}})];
 	    pop(@$sort);
 	    foreach my $d (map("$dir/$_", @$sort)) {
-		$self->piped_exec("env GZIP=-9 tar czf '$d.tgz' '$d' 2>&1");
+		$self->piped_exec("tar czf '$d.tgz' '$d' 2>&1");
 		$self->piped_exec("chmod -w '$d.tgz'");
 		b_die('backup is writable: ', "$d.tgz")
 		    if -w "$d.tgz";
@@ -296,7 +296,7 @@ sub _archive_create {
 	    my($dst) = _safe_path("$archive/$src.tgz");
 	    $_F->mkdir_parent_only($dst, 0700);
 	    $self->piped_exec(
-		['env', 'GZIP=-9', 'tar', 'czfX', $dst, '-', $src],
+		['tar', 'czfX', $dst, '-', $src],
 		\(join("\n", @$dirs)),
 	    );
 	}
