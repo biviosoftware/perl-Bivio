@@ -2,6 +2,21 @@
 # $Id$
 Request('initialize_fully');
 set_user('btest_read');
+my($query_redirect_args) = {
+    method => 'execute_query_redirect',
+    compute_params => sub {
+        my(undef, $params) = @_;
+        req()->put(query => {
+            Action_ClientRedirect()->QUERY_TAG => $params->[0],
+        });
+        return [req()];
+    },
+    compute_return => sub {
+        my(undef, $actual) = @_;
+        return [$actual->[0]->{uri}];
+    },
+};
+
 [
     class() => [
 	{
@@ -43,23 +58,18 @@ set_user('btest_read');
 	    [qw(logged_in root)] => 'next',
 	    [qw(logged_out root)] => 'next',
 	],
-	{
-	    method => 'execute_query_redirect',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->put(query => {
-		    Action_ClientRedirect()->QUERY_TAG => $params->[0],
-		});
-		return [req()];
-	    },
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [$actual->[0]->{uri}];
-	    },
-	} => [
+        $query_redirect_args => [
 	    '' => NOT_FOUND(),
 	    'google.com' => DIE(),
 	    'http://google.com' => 'http://google.com',
+            'http:/google.com' => DIE(),
 	],
+        sub {
+            Type_UserAgent()->BROWSER_ROBOT_OTHER->execute(req());
+            return 1;
+        } => 1,
+        $query_redirect_args => [
+            'http:/google.com' => '/',
+        ],
     ],
 ];
