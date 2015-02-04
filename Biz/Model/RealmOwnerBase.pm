@@ -63,6 +63,7 @@ sub cascade_delete_model_list {
 	[qw(Tuple realm_id)],
 	[qw(CalendarEvent realm_id)],
 	[qw(RealmMail realm_id)],
+        [qw(RealmMailBounce user_id)],
 	[qw(RealmRole realm_id)],
 	[qw(MotionVote realm_id)],
 	[qw(Motion realm_id)],
