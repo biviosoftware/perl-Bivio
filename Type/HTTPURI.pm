@@ -5,7 +5,6 @@ use strict;
 use Bivio::Base 'Type.String';
 use URI ();
 
-
 sub from_literal {
     # (proto, string) : any
     # Returns C<undef> if the line is empty.
@@ -19,7 +18,7 @@ sub from_literal {
 	unless defined($v);
     my($u) = Bivio::Die->eval(sub {URI->new($v)});
     return $u && ($u->scheme || '') =~ /^https?$/i && $u->host ? $v
-	: (undef, Bivio::TypeError->HTTP_URI);
+	: (undef, b_use('Bivio.TypeError')->HTTP_URI);
 }
 
 sub get_width {
