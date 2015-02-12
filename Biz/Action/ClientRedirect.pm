@@ -84,9 +84,17 @@ sub execute_query_redirect {
     my($proto, $req) = @_;
     my($query) = $req->get('query');
     b_die('NOT_FOUND', 'missing QUERY_TAG')
-	unless my $uri = delete($query->{$proto->QUERY_TAG});
+	unless my $value = delete($query->{$proto->QUERY_TAG});
+    my($uri, $err) = Type_HTTPURI()->from_literal($value);
+    if ($err) {
+        # ignore robots with bad uris
+        b_die('invalid query redirect uri: ', $value)
+            unless $req->ureq('Type.UserAgent')
+                && $req->req('Type.UserAgent')->is_robot;
+        $uri = '/';
+    }
     return {
-	uri => Type_HTTPURI()->from_literal_or_die($uri),
+	uri => $uri,
     };
 }
 

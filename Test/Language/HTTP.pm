@@ -36,6 +36,7 @@ $_C->register(my $_CFG = {
 	4 => sub {0},
 	sub {1},
     ),
+    parse_head => 1,
 });
 my($_VERIFY_MAIL_HEADERS) = [b_use('Mail.Common')->TEST_RECIPIENT_HDR, 'To'];
 
@@ -583,6 +584,10 @@ sub new {
 	history => [],
 	history_length => 5,
     };
+    unless ($_CFG->{parse_head}) {
+        # avoid X-Died: Illegal field name 'X-Meta-...'
+        $self->[$_IDI]->{user_agent}->parse_head(0);
+    }
     $self->put(
 	deprecated_text_patterns => $_CFG->{deprecated_text_patterns},
 	local_mail_host => $_CFG->{local_mail_host},
