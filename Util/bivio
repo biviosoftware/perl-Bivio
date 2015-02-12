@@ -1,4 +1,4 @@
-#!perl -w
+#!/usr/bin/perl -w
 # Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
