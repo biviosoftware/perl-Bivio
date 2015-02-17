@@ -41,6 +41,7 @@ my($query_redirect_args) = {
 	    compute_params => sub {
 		my(undef, $params) = @_;
 		req()->set_realm('demo');
+                req()->put(referer => '/pub');
 		req()->set_user_state_and_cookie(@$params)
 		    ->server_redirect('USER_ROLE_IN_REALM');
 		return [req()];
