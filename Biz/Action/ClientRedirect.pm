@@ -87,11 +87,15 @@ sub execute_query_redirect {
 	unless my $value = delete($query->{$proto->QUERY_TAG});
     my($uri, $err) = Type_HTTPURI()->from_literal($value);
     if ($err) {
-        # ignore robots with bad uris
-        b_die('invalid query redirect uri: ', $value)
-            unless $req->ureq('Type.UserAgent')
-                && $req->req('Type.UserAgent')->is_robot;
-        $uri = '/';
+        if (! $req->unsafe_get('referer')
+            || ($req->ureq('Type.UserAgent')
+                && $req->req('Type.UserAgent')->is_robot)) {
+            # ignore robots with bad uris, ignore missing referer
+            $uri = '/';
+        }
+        else {
+            b_die('invalid query redirect uri: ', $value)
+        }
     }
     return {
 	uri => $uri,
