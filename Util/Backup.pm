@@ -85,23 +85,23 @@ sub archive_mirror_link {
 
 sub archive_weekly {
    sub ARCHIVE_WEEKLY {[
-	[qw(snapshot String)],
+	[qw(mirror String)],
 	[qw(weekly String)],
    ]}
    my($self, $bp) = shift->parameters(\@_);
    return $self->lock_action(sub {
-	$self->usage_error($bp->{snapshot}, ': does not exist')
-	    unless -d $bp->{snapshot};
+	$self->usage_error($bp->{mirror}, ': does not exist')
+	    unless -d $bp->{mirror};
 	return ''
 	    unless my $archive
 	    = _archive_if_none_this_week(
 		$self,
 		Type_FilePath()->add_trailing_slash(
 		    $_F->absolute_path($bp->{weekly})),
-		$_D->from_literal_or_die($bp->{snapshot} =~ /(\d+)$/),
+		$_D->local_today,
 	    );
 	$_F->do_in_dir(
-	    $bp->{snapshot},
+	    $bp->{mirror},
 	    sub {_archive_create($self, $archive)},
 	);
 	return $archive;
