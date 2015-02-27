@@ -1652,9 +1652,6 @@ pre {
 table {
   Font('reset_table');
 }
-textarea {
-  Font('reset_textarea');
-}
 ul {
   Font('reset_ul');
 }
