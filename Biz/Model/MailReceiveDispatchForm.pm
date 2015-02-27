@@ -9,11 +9,12 @@ b_use('IO.ClassLoaderAUTOLOAD');
 our($_TRACE);
 my($_A) = b_use('Mail.Address');
 my($_DT) = b_use('Type.DateTime');
-my($_F) = b_use('Biz.File');
 my($_E) = b_use('Type.Email');
+my($_F) = b_use('Biz.File');
+my($_FCT) = b_use('FacadeComponent.Text');
+my($_FP) = b_use('Type.FilePath');
 my($_I) = b_use('Mail.Incoming');
 my($_RI) = b_use('Agent.RequestId');
-my($_FP) = b_use('Type.FilePath');
 my($_TEST_RECIPIENT_HDR) = qr{^@{[b_use('Mail.Common')->TEST_RECIPIENT_HDR]}:}m;
 my($_OUT_OF_OFFICE_FILTER_CLASSES) = [qw(
     out_of_office_negatives
@@ -300,6 +301,12 @@ sub _ignore_out_of_office {
 
 sub _ignore_spam {
     my($self) = @_;
+    if ($self->get('recipient')
+        eq $_FCT->get_value('support_email', $self->req)
+        && $self->internal_get_login($self->get('mail_incoming'))) {
+        # don't filter support mail from a real user
+        return undef;
+    }
     return $_CFG->{filter_spam}
 	&& $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s+Y/im
 	? 'spam' : undef;
