@@ -40,6 +40,9 @@ foreach my $day (@$days) {
 	    method => 'archive_mirror_link',
 	    compute_params => sub {
 		my(undef, $params) = @_;
+                my($d) = Date($params->[0] =~ /(\d+)$/);
+                DateTime()->set_test_now(
+                    DateTime()->set_local_beginning_of_day($d));
 		return [$tmp, $params->[0]];
 	    },
 	    check_return => sub {
