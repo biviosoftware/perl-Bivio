@@ -298,7 +298,6 @@ sub _cfg_base {
 	    [reset_ol => 'style=margin-left: 2.5em; list-style-type: decimal'],
 	    [reset_pre => ['pre', 'style=line-height: 100%']],
 	    [reset_table => 'style=border-collapse: collapse; border-spacing:0'],
-	    [reset_textarea => 'pre'],
 	    [reset_ul => 'style=margin-left: 2.5em; list-style-type: disc'],
 
 	    # Pass #2: Style tag selectors (bOP's standard)
@@ -451,7 +450,7 @@ sub _cfg_base {
 		padding-top: .5ex;
 		padding-bottom: 7ex;
             }],
-	    [b_td_footer_center => q{ 
+	    [b_td_footer_center => q{
 		vertical-align: top;
 		text-align: center;
 		font-size: 100%;
@@ -1326,7 +1325,7 @@ sub _cfg_mail {
 		'RealmMail.from_email' => 'Author',
 		reply_count => 'Replies',
 		'RealmFile_2.modified_date_time' => 'Last Post',
-	    ]],	
+	    ]],
 	    [to => 'To'],
 	    [cc => 'Cc'],
 	    [subject => 'Subject'],
@@ -1971,7 +1970,7 @@ sub _cfg_user_auth {
 	FormError => [
 	    ['UserSettingsListForm.User.first_name.NULL' => 'You must supply at least one of First, Middle, or Last Names.'],
 	    [[qw(ContextlessUserLoginForm UserLoginForm)] => [
-		'RealmOwner.password.PASSWORD_MISMATCH' => 
+		'RealmOwner.password.PASSWORD_MISMATCH' =>
 		 q{The password you entered does not match the value stored in our database. Please remember that passwords are case-sensitive, i.e. "HELLO" is not the same as "hello".},
 	    ]],
 	],
