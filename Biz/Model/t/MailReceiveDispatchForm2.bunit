@@ -7,6 +7,11 @@ config({
 });
 Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
 my($test_setup) = require 'MailReceiveDispatchForm.PL';
+my($support_email) = req()->format_email(b_use('UI.Text')->get_value('support_email', req()));
+model('EmailAlias')->create({
+    incoming => $support_email,
+    outgoing => 'site-contact',
+});
 [
     [req()] => [
         $test_setup => [
@@ -16,6 +21,10 @@ my($test_setup) = require 'MailReceiveDispatchForm.PL';
 	    [qw(not_a_user ignore*demo)] => [undef, 'demo'],
 	    [qw(demo ignore*not_a_user)] => [undef, undef, 'ignore_task'],
 	    [qw(demo x)] => [undef, undef, 'ignore_task'],
+            ['demo', $support_email]
+                => [qw(demo site-contact FORUM_MAIL_RECEIVE)],
+            ['demo', $support_email, "\nX-Spam-Flag: Y"]
+                => [qw(demo site-contact FORUM_MAIL_RECEIVE)],
         ],
     ],
 ];
