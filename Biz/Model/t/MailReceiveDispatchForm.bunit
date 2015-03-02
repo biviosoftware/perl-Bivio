@@ -25,6 +25,7 @@ EOF
 );
 commit();
 my($test_setup) = require 'MailReceiveDispatchForm.PL';
+my($support_email) = req()->format_email(b_use('UI.Text')->get_value('support_email', req()));
 [
     [req()] => [
         $test_setup => [
@@ -93,6 +94,10 @@ my($test_setup) = require 'MailReceiveDispatchForm.PL';
 	     	=> [qw(mail_user1 mail_forum-filtering ignore_task), undef, 0],
 	    [qw(mail_user1 mail_forum-filtering), "\nSubject: unsubscribe "]
 	     	=> [qw(mail_user1 mail_forum-filtering ignore_task), undef, 0],
+            [qw(mail_user1 mail_forum-filtering), "\nX-Spam-Flag: Y"]
+                => [undef, undef, 'ignore_task'],
+            ['mail_user1', $support_email, "\nX-Spam-Flag: Y"]
+                => [qw(mail_user1 support USER_MAIL_RECEIVE)],
 	],
     ],
 ];
