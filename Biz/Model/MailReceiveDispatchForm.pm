@@ -301,15 +301,23 @@ sub _ignore_out_of_office {
 
 sub _ignore_spam {
     my($self) = @_;
-    if ($self->get('recipient')
-        eq $_FCT->get_value('support_email', $self->req)
-        && $self->internal_get_login($self->get('mail_incoming'))) {
+    return undef
+        unless $_CFG->{filter_spam};
+    my($is_spam) =
+        $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s+Y/im;
+    return undef
+        unless $is_spam;
+    my($support_email) = $self->req->format_email(
+        $_FCT->get_value('support_email', $self->req));
+    if ((
+        $self->get('recipient') eq $support_email
+        || ($self->unsafe_get('email_alias_incoming') || '') eq $support_email
+    ) && $self->internal_get_login($self->get('mail_incoming'))) {
         # don't filter support mail from a real user
+        $self->req->warn('support mail from user marked as spam, overriding');
         return undef;
     }
-    return $_CFG->{filter_spam}
-	&& $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s+Y/im
-	? 'spam' : undef;
+    return 'spam';
 }
 
 sub _ignore_unsubscribe {
