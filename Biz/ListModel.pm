@@ -99,6 +99,14 @@ sub append_load_notes {
     return;
 }
 
+sub as_string {
+    my($self) = @_;
+    return $self->has_cursor
+        ? shift->SUPER::as_string(@_)
+        : (ref($self) . '(no cursor)');
+
+}
+
 sub assert_has_cursor {
     my($self) = @_;
     # Dies if cursor not set.
@@ -308,6 +316,14 @@ sub format_uri_for_this_child {
 sub format_uri_for_this_page {
     # B<DEPRECATED>.  Use L<format_uri|"format_uri">.
     return shift->format_uri($_QT->THIS_LIST, @_);
+}
+
+sub get {
+    my($self) = @_;
+    #$self->assert_has_cursor;
+    b_warn('missing cursor')
+        unless $self->has_cursor;
+    return shift->SUPER::get(@_);
 }
 
 sub get_cursor {
@@ -916,6 +932,14 @@ sub unauth_parse_query {
     my($self, $query) = @_;
     return $_LQ->is_blesser_of($query) ? $query
 	: $_LQ->new($query || {}, $self->internal_get_sql_support, $self);
+}
+
+sub unsafe_get {
+    my($self) = @_;
+    # $self->assert_has_cursor;
+    b_warn('missing cursor')
+        unless $self->has_cursor;
+    return shift->SUPER::unsafe_get(@_);
 }
 
 sub unsafe_load_this {
