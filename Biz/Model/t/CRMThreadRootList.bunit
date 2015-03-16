@@ -42,12 +42,12 @@ Model_RealmMail()->create_from_rfc822(template(\(my $x = $msg), {
 }));
 my($email_init_dt) = DateTime()->now;
 DateTime()->set_test_now($now);
-my($subject3) = req('Model.RealmMail')->get('subject');
+my($modified_subject2) = req('Model.RealmMail')->get('subject');
 Model_RealmMail()->create_from_rfc822(template(\($x = $msg), {
     from => email('crm_tech1'),
     to => email('crm_tuple_forum'),
-    subject => $subject3,
-    message_id => '<a.2@a.a>',
+    subject => $modified_subject2,
+    message_id => '<a.3@a.a>',
     extra_headers => '',
 }));
 my($email_mod_dt) = DateTime()->now;
@@ -66,7 +66,7 @@ my($email_mod_dt) = DateTime()->now;
             'CRMThread.modified_date_time' => $mod_dt,
             modified_by_name => qr{crm_tech1},
             owner_name => qr{crm_tech2},
-            'RealmMail.from_email' => qr{demo},
+            'RealmMail.from_email' => qr{crm_tuple_forum},
         }],
     ],
     set_cursor_or_die => [

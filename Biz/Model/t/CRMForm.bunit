@@ -38,7 +38,7 @@ my($demo) = EmailArray(email('demo'));
 	    crm_thread_status => CRMThreadStatus('NEW'),
 	},
 	'Model.RealmMail' => {
-	    from_email => email('crm_tech1'),
+	    from_email => $crm_alias->get_element(0),
 	},
     }],
     inline_case(sub {$who = 'ALL'}),

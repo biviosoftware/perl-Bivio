@@ -168,12 +168,16 @@ sub internal_format_from {
     return _if_crm_thread(
 	$self,
 	sub {
-	    return $_RFC->format_mailbox(
+	    return b_debug $_RFC->format_mailbox(
 		$self->new_other('EmailAlias')->format_realm_as_incoming,
 		$self->req(qw(auth_user display_name)),
 	    );
 	},
-	sub {$self->SUPER::internal_format_from(@args)},
+	sub {b_debug $self->SUPER::internal_format_from(@args)},
+    ) if 0;
+    return $_RFC->format_mailbox(
+        $self->new_other('EmailAlias')->format_realm_as_incoming,
+        $self->req(qw(auth_user display_name)),
     );
 }
 
