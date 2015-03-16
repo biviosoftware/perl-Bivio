@@ -165,16 +165,6 @@ sub internal_format_field_updates {
 
 sub internal_format_from {
     my($self, @args) = @_;
-    return _if_crm_thread(
-	$self,
-	sub {
-	    return b_debug $_RFC->format_mailbox(
-		$self->new_other('EmailAlias')->format_realm_as_incoming,
-		$self->req(qw(auth_user display_name)),
-	    );
-	},
-	sub {b_debug $self->SUPER::internal_format_from(@args)},
-    ) if 0;
     return $_RFC->format_mailbox(
         $self->new_other('EmailAlias')->format_realm_as_incoming,
         $self->req(qw(auth_user display_name)),
