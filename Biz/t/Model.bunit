@@ -219,7 +219,8 @@ my($category_count) = 0;
     } => [
 	get_primary_id => [
 	    [] => [undef],
-	],
+        ],
+        has_cursor => 0,
 	iterate_start => not_die(),
 	iterate_next_and_load => not_die(),
 	get_primary_id => [
@@ -254,4 +255,3 @@ my($category_count) = 0;
 	],
     ],
 ];
-
