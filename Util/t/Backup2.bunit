@@ -24,6 +24,8 @@ foreach my $day (@$days) {
         x1/d1/d2/b1
         x2/d1/b1
         x2/d2/d3/b1
+        var/no-archive/b1
+        var/b2
     }) {
 	if ($d =~ /^\d+$/) {
 	    $kb = $d;
@@ -73,6 +75,11 @@ foreach my $day (@$days) {
 			"@$x",
 		    );
 		}
+                assert_equals(
+                    ["var/\n", "var/b2\n"],
+                    [sort(`tar tzf $d/var.tgz 2>&1`)],
+                );
+                assert_equals(1, ! -d "$d/var");
 		return 1;
 	    },
 	} => [

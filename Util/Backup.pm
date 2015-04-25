@@ -22,8 +22,10 @@ $_C->register(my $_CFG = {
 	mirror_dest_dir => $_C->REQUIRED,
 	rsync_flags => '-azlSR --delete',
     },
-    min_kb => 0x40000,}
-);
+    min_kb => 0x40000,
+    # No leading slash, because can be anywhere in hierarchy
+    no_archive_dir => 'var/no-archive',
+});
 
 sub USAGE {
     return <<'EOF';
@@ -282,9 +284,16 @@ sub _archive_create {
 	my($du) = IO::File->new;
 	b_die($top, ": du failed: $!")
 	    unless $du->open("du -k --apparent-size @{[_quote($top)]} | sort -nr |");
+        my($exclude);
 	while (defined(my $line = readline($du))) {
 	    my($n, $d) = split(/\s+/, $line, 2);
 	    chomp($d);
+            if ($_CFG->{no_archive_dir}
+                    && $d =~ m{(?:^|/)\Q$_CFG->{no_archive_dir}\E(?:/|$)}) {
+                $exclude = "$d";
+                next;
+            }
+                
 	    last
 		if @$dirs && $n < $_CFG->{min_kb};
 	    push(@$dirs, $d);
@@ -296,7 +305,9 @@ sub _archive_create {
 	    my($dst) = _safe_path("$archive/$src.tgz");
 	    $_F->mkdir_parent_only($dst, 0700);
 	    $self->piped_exec(
-		['tar', 'czfX', $dst, '-', $src],
+		['tar', 'czfX', $dst, '-',
+                 $exclude ? "--exclude=$exclude" : (),
+                 $src],
 		\(join("\n", @$dirs)),
 	    );
 	}
