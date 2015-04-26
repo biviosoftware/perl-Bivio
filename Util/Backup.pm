@@ -32,7 +32,6 @@ sub USAGE {
 usage: b-backup [options] command [args...]
 commands:
     archive_logs mirror_dir archive_dir -- copy [gx]z files in /var/log
-    archive_mirror_link root date -- tar "link" to "weekly" or "archive"
     archive_weekly snapshot weekly -- tar "snapshot" to "weekly"
     compress_log_dirs root [max_days] -- tars and gzip log dirs
     mirror [cfg_name ...] -- mirror configured dirs to mirror_host
@@ -74,21 +73,11 @@ sub archive_logs {
     });
 }
 
-sub archive_mirror_link {
-    my($self, $root, $date) = shift->name_args(
-	['String', 'Date'],
-	\@_,
-    );
-    return $self->archive_weekly(
-	"$root/mirror/$_LINK/" . $_D->to_file_name($date),
-	"$root/weekly",
-    );
-}
-
 sub archive_weekly {
    sub ARCHIVE_WEEKLY {[
 	[qw(mirror String)],
 	[qw(weekly String)],
+        [qw(init_archive_pl String), ''],
    ]}
    my($self, $bp) = shift->parameters(\@_);
    return $self->lock_action(sub {
@@ -102,6 +91,10 @@ sub archive_weekly {
 		    $_F->absolute_path($bp->{weekly})),
 		$_D->local_today,
 	    );
+        if ($bp->{init_archive_pl}) {
+            b_info('Init archive: ', $bp->{init_archive_pl});
+            require $bp->{init_archive_pl};
+        }
 	$_F->do_in_dir(
 	    $bp->{mirror},
 	    sub {_archive_create($self, $archive)},
@@ -280,6 +273,7 @@ sub _archive_create {
     my($self, $archive) = @_;
     $_F->mkdir_p($archive, 0700);
     foreach my $top (glob('*')) {
+        b_info('Calculating: ', $top);
 	my($dirs) = [];
 	my($du) = IO::File->new;
 	b_die($top, ": du failed: $!")
@@ -293,12 +287,13 @@ sub _archive_create {
                 $exclude = "$d";
                 next;
             }
-                
+
 	    last
 		if @$dirs && $n < $_CFG->{min_kb};
 	    push(@$dirs, $d);
 	}
 	$du->close;
+        b_info('Archiving: ', $top);
 	# Directories with same size may come out in any order
 	$dirs = [sort(@$dirs)];
 	while (my $src = shift(@$dirs)) {
@@ -312,6 +307,7 @@ sub _archive_create {
 	    );
 	}
     }
+    b_info('Making read-only: ', $archive);
     $self->piped_exec("chmod -R -w $archive");
     return;
 }
