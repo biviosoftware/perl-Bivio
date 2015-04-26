@@ -11,6 +11,16 @@ my($days) = [map(Date()->to_file_name(Date()->add_days($now, $_)), 0 .. 40)];
 my($tmp) = 'Backup2';
 system("chmod -R a+rxw $tmp 2>/dev/null; rm -rf $tmp");
 IO_File()->mkdir_p($tmp);
+
+my($init_archive_pl) = "$tmp/init_archive.pl";
+my($init_archive_flag) = "$tmp/init_archive_flag";
+IO_File()->write($init_archive_pl, <<"EOF");
+use Bivio::IO::File;
+use Bivio::IO::Alert;
+Bivio::IO::Alert->info('helo');
+Bivio::IO::File->write('$init_archive_flag', 'anything');
+EOF
+
 foreach my $day (@$days) {
     my($kb) = 1;
     foreach my $d (qw{
@@ -31,7 +41,7 @@ foreach my $day (@$days) {
 	    $kb = $d;
 	    next;
 	}
-	my($src) = "$tmp/mirror/link/$day/$d";
+	my($src) = "$tmp/mirror/$day/$d";
 	IO_File()->mkdir_parent_only($src);
 	system("dd if=/dev/zero of=$src bs=1024 count=$kb > /dev/null 2>&1");
     }
@@ -39,19 +49,32 @@ foreach my $day (@$days) {
 [
     class() => [
 	{
-	    method => 'archive_mirror_link',
+	    method => 'archive_weekly',
 	    compute_params => sub {
 		my(undef, $params) = @_;
                 my($d) = Date($params->[0] =~ /(\d+)$/);
                 DateTime()->set_test_now(
                     DateTime()->set_local_beginning_of_day($d));
-		return [$tmp, $params->[0]];
+                $d = Date()->to_file_name($d);
+                unlink($init_archive_flag);
+		return [
+                    "$tmp/mirror/$d",
+                    "$tmp/weekly",
+                    $d % 1 ? $init_archive_pl : (),
+                ];
 	    },
 	    check_return => sub {
-		my($date) = shift->get('params')->[1];
+                my($params) = shift->get('params');
+		my($date) = $params->[0] =~ /(\d+)$/;
+                assert_equals(8, length($date));
 		my($d) = grep($date eq $_, map("2008$_", qw(0227 0302 0309 0316 0323 0330 0406)))
 		    ? "$tmp/weekly/$date"
 		    : 0;
+                # If weekly should be created and archive_init_pl passed,
+                # expect the file to exist, else not
+                assert_equals(
+                    $params->[2] && $d ? 1 : 0,
+                    -s $init_archive_flag ? 1 : 0);
 		unless ($d) {
 		    assert_eval("! -d '$tmp/weekly/$date'");
 		    return 1;
