@@ -343,11 +343,13 @@ sub _zone_ipv4_map {
 
 sub _zone_literal {
     my($which, $zone, $cfg) = @_;
-    my($values) = $cfg->{$which} || {};
+    my($values) = $cfg->{$which} || [];
+    $values = [map([$_ => $values->{$_}], sort(keys(%$values)))]
+        if ref($values) eq 'HASH';
     $which = uc($which);
     return map(
-	"$_ IN $which $values->{$_}",
-	keys(%$values),
+	"$_->[0] IN $which $_->[1]",
+	@$values,
     );
 }
 
