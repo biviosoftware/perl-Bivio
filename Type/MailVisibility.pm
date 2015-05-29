@@ -6,7 +6,7 @@ use Bivio::Base 'Type.Enum';
 
 __PACKAGE__->compile([
     UNKNOWN => [0, 'Select who can see mail'],
-    ALWAYS_IS_PRIVATE => [1, 'Only group members can see mail'],
+    ALWAYS_IS_PRIVATE => [1, 'Guests and members can see mail'],
     ALWAYS_IS_PUBLIC => [2, 'Anybody (even non-users) can see mail'],
     ALLOW_IS_PUBLIC => [3, 'Adminstrators can set visibility on each message'],
 ]);
