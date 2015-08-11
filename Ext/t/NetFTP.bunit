@@ -7,12 +7,12 @@ Request('initialize_fully');
 	    [{}] => DIE(),
 	    map((
 		[{
-		    host => 'ftp.mozilla.org',
+		    host => 'ftp.freebsd.org',
 		    req => req(),
-		    cwd => '/pub/mozilla.org/mozilla/source',
-		    file => 'LICENSE',
+		    cwd => '/pub/FreeBSD',
+		    file => 'README.TXT',
 		    Passive => 1,
-		}] => qr{netscape}i,
+		}] => qr{FreeBSD-related material}i,
 	    ), 0 .. 1),
 	],
     ],
