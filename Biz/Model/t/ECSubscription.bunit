@@ -22,6 +22,7 @@ my($today) = $_D->local_today;
 	],
 	is_infinite => 0,
 	is_active => 1,
+        is_expired => 0,
 	update => [
 	    [{
 		start_date => $_D->add_days($today, -10),
@@ -29,9 +30,11 @@ my($today) = $_D->local_today;
 	    }] => not_die(),
 	],
 	is_active => 0,
+        is_expired => 1,
 	make_infinite => not_die(),
 	is_infinite => 1,
 	is_active => 1,
+        is_expired => 0,
 	update => [
 	    [{
 		start_date => $_D->add_days($today, 1),
@@ -39,17 +42,20 @@ my($today) = $_D->local_today;
 	    }] => not_die(),
 	],
 	is_active => 0,
+        is_expired => 0,
 	update => [
 	    [{
 		start_date => $_D->add_days($today, 0),
 	    }] => not_die(),
 	],
 	is_active => 1,
+        is_expired => 0,
 	update => [
 	    [{
 		end_date => $_D->add_days($today, 0),
 	    }] => not_die(),
 	],
 	is_active => 1,
+        is_expired => 0,
     ],
 ];
