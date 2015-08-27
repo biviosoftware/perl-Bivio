@@ -479,6 +479,8 @@ sub _leftover_input {
 sub _start_button {
     my($fields, $attr) = @_;
     _leftover_input($fields) if $fields->{input};
+    $attr->{index} = $1
+        if $attr->{name} && $attr->{name} =~ /_(\d+)$/;
     $fields->{text} = undef;
     $fields->{button} = $attr;
     return;
