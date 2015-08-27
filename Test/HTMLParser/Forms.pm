@@ -478,6 +478,7 @@ sub _leftover_input {
 
 sub _start_button {
     my($fields, $attr) = @_;
+    _leftover_input($fields) if $fields->{input};
     $fields->{text} = undef;
     $fields->{button} = $attr;
     return;
