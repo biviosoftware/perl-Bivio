@@ -67,6 +67,13 @@ sub is_ignore {
 
 sub unsafe_user_id_from_email {
     my($self, $email) = @_;
+
+    # detect a rewritted email domain
+    if ($email && $email =~ /(\w+)\*(\d+)@/) {
+        my($tag, $realm_id) = ($1, $2);
+        return $realm_id
+            if $tag eq  b_use('Action.MailForward')->REWRITE_FROM_DOMAIN_URI;
+    }
     # guard against duplicate email, use user with role, or oldest id
     my($user_ids) = $self->map_iterate(
 	'realm_id', 'unauth_iterate_start', 'realm_id ASC', {
