@@ -654,6 +654,15 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_drop_row_tag_t2 {
+    my($self) = @_;
+    $self->run(<<'EOF');
+DROP INDEX row_tag_t2
+/
+EOF
+    return;
+}
+
 sub internal_upgrade_db_failover_work_queue_fixup {
     my($self) = @_;
     $self->run(<<'EOF');
