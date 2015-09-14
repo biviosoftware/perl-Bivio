@@ -18,14 +18,7 @@ my($_RT) = b_use('Auth.RealmType');
 my($_TI) = b_use('Agent.TaskId');
 my($_D) = b_use('Bivio.Die');
 my($_IC) = b_use('IO.Config');
-#TODO: Need to remove some of these
 my($_BUNDLE) = [
-    $_IC->if_version(10, '!site_admin_forum_users2'),
-    'task_rate_limit',
-    '!calendar_event_uid',
-    '!calendar_event_uid_index',
-    '!failover_work_queue_fixup',
-    'user_realm_subscription',
 ];
 my($_AGGREGATES) = [qw(
     group_concat(text)
@@ -634,186 +627,6 @@ sub internal_upgrade_db_bundle {
     return;
 }
 
-sub internal_upgrade_db_calendar_event_uid {
-    my($self) = @_;
-    $self->run(<<'EOF');
-ALTER TABLE calendar_event_t ADD COLUMN uid VARCHAR(500)
-/
-EOF
-    return;
-}
-
-sub internal_upgrade_db_calendar_event_uid_index {
-    my($self) = @_;
-    $self->run(<<'EOF');
-CREATE INDEX calendar_event_t7 ON calendar_event_t (
-  uid
-)
-/
-EOF
-    return;
-}
-
-sub internal_upgrade_db_drop_row_tag_t2 {
-    my($self) = @_;
-    $self->run(<<'EOF');
-DROP INDEX row_tag_t2
-/
-EOF
-    return;
-}
-
-sub internal_upgrade_db_failover_work_queue_fixup {
-    my($self) = @_;
-    $self->run(<<'EOF');
-ALTER TABLE failover_work_queue_t
-RENAME COLUMN entry_id to failover_work_queue_id
-/
-EOF
-    return;
-}
-
-sub internal_upgrade_db_site_admin_forum_users2 {
-    my($self) = @_;
-    $self->new_other('SiteForum')->add_users_to_site_admin;
-    return;
-}
-
-sub internal_upgrade_db_task_rate_limit {
-    my($self) = @_;
-    $self->run(SQL_DDL()->ddl_for_task_rate_limit);
-    return;
-}
-
-sub internal_upgrade_db_user_realm_subscription {
-    my($self) = @_;
-    $self->run(<<'EOF');
-CREATE TABLE user_realm_subscription_t (
-  user_id NUMERIC(18) NOT NULL,
-  realm_id NUMERIC(18) NOT NULL,
-  is_subscribed NUMERIC(1) NOT NULL,
-  modified_date_time DATE NOT NULL,
-  CONSTRAINT user_realm_subscription_t1 primary key(user_id, realm_id)
-)
-/
-ALTER TABLE user_realm_subscription_t
-  ADD CONSTRAINT user_realm_subscription_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX user_realm_subscription_t3 ON user_realm_subscription_t (
-  realm_id
-)
-/
-ALTER TABLE user_realm_subscription_t
-  ADD CONSTRAINT user_realm_subscription_t4
-  FOREIGN KEY (user_id)
-  REFERENCES user_t(user_id)
-/
-CREATE INDEX user_realm_subscription_t5 ON user_realm_subscription_t (
-  user_id
-)
-/
-
-CREATE TABLE user_default_subscription_t (
-  user_id NUMERIC(18) NOT NULL,
-  realm_id NUMERIC(18) NOT NULL,
-  subscribed_by_default NUMERIC(1) NOT NULL,
-  modified_date_time DATE NOT NULL,
-  CONSTRAINT user_default_subscription_t1 primary key(user_id, realm_id)
-)
-/
-ALTER TABLE user_default_subscription_t
-  ADD CONSTRAINT user_default_subscription_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX user_default_subscription_t3 ON user_default_subscription_t (
-  realm_id
-)
-/
-ALTER TABLE user_default_subscription_t
-  ADD CONSTRAINT user_default_subscription_t4
-  FOREIGN KEY (user_id)
-  REFERENCES user_t(user_id)
-/
-CREATE INDEX user_default_subscription_t5 ON user_default_subscription_t (
-  user_id
-)
-/
-EOF
-    $self->print_line('user_realm_subscription_t and user_default_subscription_t created');
-    my($realms) = $self->model('RealmOwner')->map_iterate(
-	undef,
-	'unauth_iterate_start',
-	'name',
-    );
-    my($ru) = $self->model('RealmUser');
-    my($urs) = $self->model('UserRealmSubscription');
-    foreach my $ro (@$realms) {
-	my($realm_id) = $ro->{'realm_id'};
-	my($current_subscribers) = {@{$ru->map_iterate(
-	    sub {
-		return (shift->get('user_id') => 1);
-	    },
-	    'unauth_iterate_start',
-	    {
-		realm_id => $realm_id,
-		role => Auth_Role('MAIL_RECIPIENT'),
-	    },
-	)}};
-	next
-	    unless scalar(keys(%$current_subscribers));
-	$self->print_line(join(' ',
-	    $ro->{'name'},
-	    scalar(keys(%$current_subscribers)),
-	    'current subscribers',
-	));
-	my(@main_roles) = Auth_Role()->get_main_list;
-	my($subscriber_roles) = Auth_Role()->get_category_role_group(
-	    $self->package_name =~ /^IEEE_ISTO/
-		&& $self->model('ForumAux')->unauth_load({
-		    forum_id => $realm_id,
-		    allow_guests => 1,
-		})
-		? 'all_guests' : 'all_members',
-	);
-	my($possible_subscribers) = {@{$ru->map_iterate(
-	    sub {
-		my($user_id) = shift->get('user_id');
-		return (
-		    $user_id => $current_subscribers->{$user_id} ? 1 : 0,
-		);
-	    },
-	    'unauth_iterate_start',
-	    {
-		realm_id => $realm_id,
-		role => $subscriber_roles,
-	    },
-	)}};
-	foreach my $ps_user_id (keys(%$possible_subscribers)) {
-	    $ru->unauth_create_unless_exists({
-		user_id => $ps_user_id,
-		realm_id => $realm_id,
-		role => Auth_Role('MAIL_RECIPIENT'),
-	    });
-	    $urs->create({
-		user_id => $ps_user_id,
-		realm_id => $realm_id,
-		is_subscribed => $possible_subscribers->{$ps_user_id},
-	    });
-	}
-	$self->print_line(
-	    '  ',
-	    scalar(keys(%$possible_subscribers)),
-	    ' users (',
-	    join(' ', map($_->get_name, @$subscriber_roles)),
-	    ') processed',
-	);
-    }
-    return;
-}
-
 sub is_oracle {
     my($self) = @_;
     # May not have a database at this point to connect to.
@@ -1128,15 +941,6 @@ sub _run_other {
     $self->commit_or_rollback;
     $c->disconnect;
     return $res;
-}
-
-sub _sentinel_site_admin_forum_users2 {
-    my($self, @args) = @_;
-    $self->initialize_fully;
-    return $_IC->if_version(10,
-	sub {_default_sentinel($self, @args)},
-	1,
-    );
 }
 
 sub _user_exists {
