@@ -12,7 +12,7 @@
 	},
 	net2 => {
 	    cidr => '216.87.82.64/27',
-	    gateway => 'gw1.apa.bivio.biz',
+	    gateway => '216.87.82.65',
 	    dns => [qw(cachens1.viawest.net cachens2.viawest.net)],
 	},
     },
