@@ -33,7 +33,7 @@
 	cookie_domain => 'bivio.biz',
         root_prefix => 'A2',
         listen => 1010,
-        legacy_rewrite_rules => 
+        legacy_rewrite_rules =>
              'RewriteRule ^(/[^/]+\.html)$ /hm$1 [R=permanent,L]',
         mail_host => 'a2.com',
         http_host => 'a2.com',
@@ -82,6 +82,19 @@
 		}),
 		qw(other petshop),
 	    ),
+        ],
+    },
+    a9 => {
+        cookie_tag => 'A9T',
+        listen => 2142,
+        root_prefix => 'A9',
+	ssl_crt => 'a9.bivio.biz',
+        ssl_aux => q{
+    SSLCipherSuite ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
+    SSLProtocol -All TLSv1.1 TLSv1.2
+},
+        virtual_hosts => [
+            'www.bivio.biz' => 'a9',
         ],
     },
 };

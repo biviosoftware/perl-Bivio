@@ -34,6 +34,7 @@ my($_VARS) = {
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     servers => 4,
+    ssl_aux => '',
     ssl_chain => '',
     # ssl_crt is not defined so it can't be present at global level
     ssl_listen => '',
@@ -437,13 +438,14 @@ sub _app_vars_ssl_directives {
     my($chain) = $cfg->{ssl_chain} ? <<"EOF" : '';
     SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}
 EOF
+    my($aux) = $cfg->{ssl_aux} || '';
     return <<"EOF";
     SSLEngine on
     SSLCertificateFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_crt}
     SSLCertificateKeyFile /etc/httpd/conf/ssl.key/$cfg->{ssl_key}
 $chain    SetEnv nokeepalive 1
     SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
-    <Location />
+$aux    <Location />
 	SSLRequireSSL
 	SSLOptions +StrictRequire
     </Location>
