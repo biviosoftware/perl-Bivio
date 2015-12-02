@@ -5,6 +5,10 @@
     httpd => {
         host_name => 'proxy.com',
     },
+    ssl_aux => q{
+    SSLCipherSuite ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
+    SSLProtocol -All TLSv1.2
+},
     a1 => {
         can_secure => 0,
 	ssl_chain => 'gd_bundle.crt',
@@ -89,10 +93,6 @@
         listen => 2142,
         root_prefix => 'A9',
 	ssl_crt => 'a9.bivio.biz',
-        ssl_aux => q{
-    SSLCipherSuite ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
-    SSLProtocol -All TLSv1.1 TLSv1.2
-},
         virtual_hosts => [
             'www.bivio.biz' => 'a9',
         ],

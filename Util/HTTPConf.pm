@@ -412,10 +412,14 @@ Listen 443
 SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
 SSLMutex sem
-SSLProtocol All -SSLv2 -SSLV3
+SSLProtocol -All TLSv1.1 TLSv1.2
 SSLHonorCipherOrder On
-SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+AESGCM EECDH EDH+AESGCM EDH+aRSA HIGH !MEDIUM !LOW !aNULL !eNULL !LOW !RC4 !MD5 !EXP !PSK !SRP !DSS"
+SSLCipherSuite "ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS"
 EOF
+    if ($httpd_vars->{ssl_aux}) {
+        $httpd_vars->{ssl_global} .= $httpd_vars->{ssl_aux};
+    }
+
 # need to dig -x to get reverse dns
 # forward dns
     return
@@ -438,14 +442,13 @@ sub _app_vars_ssl_directives {
     my($chain) = $cfg->{ssl_chain} ? <<"EOF" : '';
     SSLCertificateChainFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_chain}
 EOF
-    my($aux) = $cfg->{ssl_aux} || '';
     return <<"EOF";
     SSLEngine on
     SSLCertificateFile /etc/httpd/conf/ssl.crt/$cfg->{ssl_crt}
     SSLCertificateKeyFile /etc/httpd/conf/ssl.key/$cfg->{ssl_key}
 $chain    SetEnv nokeepalive 1
     SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
-$aux    <Location />
+    <Location />
 	SSLRequireSSL
 	SSLOptions +StrictRequire
     </Location>
