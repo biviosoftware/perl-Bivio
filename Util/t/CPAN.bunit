@@ -14,7 +14,7 @@ config({
 	    'Math-Round-Var-v1.0.0.tar.gz' => '1.000000000000',
 	],
 	module_to_uri => [
-	    [qw(version CGI.pm libwww-perl SHA256 MD5 Net-DNS-Resolver-Programmable Module-Metadata Mail-SpamAssassin)] => sub {
+	    [qw(version libwww-perl SHA256 MD5 Net-DNS-Resolver-Programmable Module-Metadata Mail-SpamAssassin)] => sub {
 		my(undef, $actual) = @_;
 		foreach my $uri (@{$actual->[0]}) {
 		    Ext_LWPUserAgent()->bivio_http_get($uri);
