@@ -827,7 +827,7 @@ sub _parse_stream {
 	    my($base, $version, $rpm) = split(/\s+/, $_);
 	    $version ||= 'HEAD';
 	    $rpm ||= "$base-$version.rpm";
-            return $op->($base, $version, $rpm);
+            $op->($base, $version, $rpm);
 	} split(/\n/, ${_http_get(\$uri)})),
     ];
 }
