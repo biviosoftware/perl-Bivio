@@ -293,8 +293,6 @@ sub convert_literal {
 
 sub detach_process {
     my($self) = @_;
-    $self->put(input => $self->read_input)
-        unless -t STDIN;
     my($pid) = fork;
     die("fork: $!")
 	unless defined($pid);
