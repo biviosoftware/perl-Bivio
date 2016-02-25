@@ -43,6 +43,11 @@ sub is_active {
 	&& $_D->compare($date, $self->get('end_date')) <= 0 ? 1 : 0;
 }
 
+sub is_expired {
+    my($self) = @_;
+    return $_D->compare($_D->local_today, $self->get('end_date')) > 0 ? 1 : 0;
+}
+
 sub is_infinite {
     # Returns true if the subscription is infinite.
     my($self) = @_;

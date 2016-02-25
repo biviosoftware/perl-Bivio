@@ -23,5 +23,8 @@ req()->initialize_fully;
 #	    [{'ListQuery.this' => {}}, req()] => DIE(),
 	    [{'ListQuery.this' => Type_Gender()->MALE}, req()] => 't=2',
 	],
+        parse => [
+            ['a=1&b=2'] => [{ a => 1, b => 2 }],
+        ],
     ],
 ];

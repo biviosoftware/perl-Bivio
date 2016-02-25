@@ -35,11 +35,25 @@ sub execute_javascript_log_error {
 	b_use('Bivio.Die')->catch_quietly(sub {
 	    $json = $_JSON->from_text($json_text);
 	});
-	$req->warn('javascript error')
-	    if ref($json) eq 'HASH'
-		&& $json->{errorMsg} && $json->{url} && $json->{lineNumber};
+        $req->warn('javascript error')
+            if $proto->is_valid_javascript_error($json);
     }
     return $proto->execute($req, 'HTTP_OK');
+}
+
+sub is_valid_javascript_error {
+    my($proto, $json) = @_;
+    if (ref($json) eq 'HASH'
+            && $json->{errorMsg}
+            && $json->{url}
+            && $json->{lineNumber}
+            && $json->{lineNumber} =~ /^\d+$/
+            && $json->{lineNumber} > 1
+            && $json->{errorMsg} !~ /Error calling method on NPObject/
+        ) {
+        return 1;
+    }
+    return 0;
 }
 
 1;

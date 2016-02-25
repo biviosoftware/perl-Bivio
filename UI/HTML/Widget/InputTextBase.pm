@@ -27,7 +27,8 @@ sub internal_input_base_render_attrs {
     $size += 2
 	if $size == $width;
     $$buffer .= qq{ type="@{[$t->is_password ? 'password' : 'text']}"}
-	. qq{ size="$size" maxlength="$width"};
+	. qq{ size="$size" maxlength="$width"}
+        . ($t->is_secure_data ? ' autocomplete="off"' : '');
     return;
 }
 1;

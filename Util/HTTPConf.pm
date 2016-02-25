@@ -34,6 +34,7 @@ my($_VARS) = {
     server_status_allow => '127.0.0.1',
     server_status_location => '/s',
     servers => 4,
+    ssl_aux => '',
     ssl_chain => '',
     # ssl_crt is not defined so it can't be present at global level
     ssl_listen => '',
@@ -406,15 +407,20 @@ sub _app_vars_ssl_crt {
 
 sub _app_vars_ssl_global {
     my($cfg, $httpd_vars, $hc) = @_;
+    # https://weakdh.org/sysadmin.html
     $httpd_vars->{ssl_global}->{''} = <<'EOF';
 Listen 443
 SSLSessionCache shm:logs/ssl_scache(512000)
 SSLSessionCacheTimeout 300
 SSLMutex sem
-SSLProtocol All -SSLv2 -SSLV3
+SSLProtocol -All TLSv1.1 TLSv1.2
 SSLHonorCipherOrder On
-SSLCipherSuite "EECDH+ECDSA+AESGCM EECDH+aRSA+AESGCM EECDH+ECDSA+SHA384 EECDH+ECDSA+SHA256 EECDH+aRSA+SHA384 EECDH+aRSA+SHA256 EECDH+AESGCM EECDH EDH+AESGCM EDH+aRSA HIGH !MEDIUM !LOW !aNULL !eNULL !LOW !RC4 !MD5 !EXP !PSK !SRP !DSS"
+SSLCipherSuite "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA"
 EOF
+    if ($httpd_vars->{ssl_aux}) {
+        $httpd_vars->{ssl_global} .= $httpd_vars->{ssl_aux};
+    }
+
 # need to dig -x to get reverse dns
 # forward dns
     return

@@ -54,8 +54,9 @@ sub _render {
 	unless my $email = ($_A->parse($from))[0];
     $msg->set_envelope_from($email);
     my($recips) = [];
-    $msg->set_header('X-Originating-IP', $req->get('client_addr'))
-	if $req->has_keys('client_addr');
+    # This can cause spam problems for users with dynamic IP addresses on blacklists
+    # $msg->set_header('X-Originating-IP', $req->get('client_addr'))
+    #     if $req->has_keys('client_addr');
     foreach my $header (qw(to cc bcc subject)) {
 	my($value) = '';
 	if ($self->unsafe_render_attr($header, $req, \$value) && $value) {

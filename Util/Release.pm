@@ -78,7 +78,6 @@ $_C->register(my $_CFG = {
     projects => [
 	[Bivio => b => 'bivio Software, Inc.'],
     ],
-    yum_update_conflicts => [],
 });
 
 sub OPTIONS {
@@ -356,7 +355,7 @@ sub install {
 }
 
 sub install_host_stream {
-    return shift->put(force => 1)->install_stream(Sys::Hostname::hostname());
+    return shift->put(force => 1)->install_stream(_host_name());
 }
 
 sub install_stream {
@@ -544,15 +543,23 @@ sub run_sh {
 sub yum_update {
     my($self, @command) = @_;
     my($restore) = [];
-    foreach my $rpm (@{$_CFG->{yum_update_conflicts} || []}) {
-	push(@$restore, $rpm)
-	    if system(qw(rpm --erase --justdb --nodeps), $rpm) == 0;
+    my($conflicts) = _parse_stream(
+        _host_name(),
+        sub {
+            my($base, $version, $rpm) = @_;
+            # Can't use $version if HEAD, because that's
+            # a symlink and not the actual version which yum knows
+            return $version eq 'HEAD' ? $base : $rpm;
+        }
+    );
+    foreach my $rpm (@$conflicts) {
+        system(qw(rpm --erase --justdb --nodeps), $rpm)
     }
-    system('yum',
-	   $self->unsafe_get('force') ? '-y' : (),
-	   @command ? @command : 'update');
-    $self->put(force => 1, nodeps => 1);
-    $self->install(@$restore);
+    system(
+        'yum',
+        $self->unsafe_get('force') ? '-y' : (),
+        @command ? @command : 'update',
+    );
     $self->install_host_stream;
     return;
 }
@@ -721,16 +728,19 @@ sub _get_update_list {
 	)),
     };
     my($uri);
-    return [
-	map({
-	    my($base, $version, $rpm) = split(/\s+/, $_);
-	    $version ||= 'HEAD';
-	    $rpm ||= "$base-$version.rpm";
-	    !$local_rpms->{"$base $version"}
+    return _parse_stream(
+        $stream,
+        sub {
+	    my($base, $version, $rpm) = @_;
+	    return !$local_rpms->{"$base $version"}
 	        && ($install || $local_rpms->{$base})
 	        ? $rpm : ();
-	} split(/\n/, ${_http_get(\($uri = "$stream-rpms.txt"))})),
-    ];
+        },
+    )
+}
+
+sub _host_name {
+    return Sys::Hostname::hostname();
 }
 
 sub _http_get {
@@ -808,6 +818,20 @@ sub _output {
 	if $output;
     return;
 }
+
+sub _parse_stream {
+    my($stream, $op) = @_;
+    my($uri) = _stream_file($stream);
+    return [
+	map({
+	    my($base, $version, $rpm) = split(/\s+/, $_);
+	    $version ||= 'HEAD';
+	    $rpm ||= "$base-$version.rpm";
+            $op->($base, $version, $rpm);
+	} split(/\n/, ${_http_get(\$uri)})),
+    ];
+}
+
 sub _perl_macros {
     return join(
 	'',
@@ -939,6 +963,11 @@ sub _search {
     my($tag, $source) = @_;
     my($res) = [map(/^$tag: (.+)/i ? $1 : (), @$source)];
     return @$res ? join(', ', @$res) : undef;
+}
+
+sub _stream_file {
+    my($stream) = @_;
+    return "$stream-rpms.txt"
 }
 
 sub _system {

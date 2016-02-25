@@ -727,14 +727,6 @@ CREATE INDEX realm_user_t8 ON realm_user_t (
 /
 
 --
--- row_tag_t
---
-CREATE INDEX row_tag_t2 ON row_tag_t (
-  value
-)
-/
-
---
 -- task_log_t
 --
 -- Don't link *_id as foreign keys; have to be able to delete objects
@@ -1043,7 +1035,7 @@ sub _file_sequences {
     my($proto) = @_;
     return <<'EOF' . $proto->ddl_for_task_rate_limit('sequences');
 -- Sequences for common bOP Models
--- 
+--
 -- * All sequences are unique for all sites.
 -- * The five lower order digits are reserved for site and type.
 -- * For now, we only have one site, so the lowest order digits are
@@ -1138,8 +1130,8 @@ sub _file_tables {
 -- Data Definition Language for common bOP Models
 --
 -- * Tables are named after their models, but have underscores where
---   the case changes.  
--- * Make sure the type sizes match the Model field types--yes, this file 
+--   the case changes.
+-- * Make sure the type sizes match the Model field types--yes, this file
 --   should be generated from the Models...
 -- * Don't put any constraints or indices here.  Put them in *-constraints.sql
 --   It makes it much easier to manage the constraints and indices this way.
@@ -1309,7 +1301,7 @@ CREATE TABLE job_lock_t (
   die_code NUMERIC(9),
   constraint job_lock_t1 PRIMARY key(realm_id, task_id)
 )
-/  
+/
 
 CREATE TABLE lock_t (
   realm_id NUMERIC(18) primary key

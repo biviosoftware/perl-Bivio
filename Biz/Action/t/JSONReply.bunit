@@ -1,0 +1,29 @@
+# Copyright (c) 2016 Bivio Software, Inc.  All Rights Reserved.
+# $Id$
+
+[
+    class() => [
+        is_valid_javascript_error => [
+            ['x'] => 0,
+            [{
+                errorMsg => 'Error: Error calling method on NPObject!',
+                url => 'x',
+                lineNumber => 1,
+            }] => 0,
+            [{
+                errorMsg => 'x',
+                url => 'x',
+                lineNumber => 2,
+            }] => 1,
+            [{
+                errorMsg => 'TypeError: undefined is not a function',
+                url => 'x',
+                lineNumber => 2526,
+            }] => 1,
+            [{
+                errorMsg => 'TypeError: undefined is not a function',
+                lineNumber => 2526,
+            }] => 0,
+        ],
+    ],
+];
