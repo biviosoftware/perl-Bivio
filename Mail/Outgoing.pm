@@ -152,7 +152,7 @@ sub generate_addr_spec {
 }
 
 sub generate_message_id {
-    return '<' 
+    return '<'
         . shift->generate_addr_spec(@_)
         . '>';
 }
@@ -214,7 +214,8 @@ sub remove_headers {
 
 sub send {
     my($self, $req) = shift->internal_req(@_);
-    _rewrite_from($self, $req);
+    return $self
+        unless _rewrite_from($self, $req);
     return $self->SUPER::send(undef, undef, 0, $self->unsafe_get('envelope_from'), $req);
 }
 
@@ -387,18 +388,17 @@ sub _list_id {
 sub _rewrite_from {
     my($self, $req) = @_;
     my($full_from) = $self->unsafe_get_header('from');
-    $req->throw_die('FORBIDDEN', {
-	message => 'missing from header',
-    })
-	unless $full_from;
+    unless ($full_from) {
+        b_warn('missing from header, ignoring: ', $full_from);
+        return 0;
+    }
     my($old_email, $old_name) = $_A->parse($full_from);
-    $req->throw_die('FORBIDDEN', {
-	message => 'from header missing email',
-	entity => $full_from,
-    })
-	unless $old_email;
+    unless ($old_email) {
+        b_warn('from header missing email, ignoring: ', $full_from);
+        return 0;
+    }
     # We assume that if From does NOT need to be rewritten, then nothing needs a rewrite
-    return
+    return 1
 	unless $old_email =~ $self->internal_get_config->{rewrite_from_domains_re};
     my($new_email, $new_name) = _rewrite_from_generate($self, $old_email, $old_name, $req);
     $self->set_header('Reply-To', $old_email)
@@ -410,7 +410,7 @@ sub _rewrite_from {
     $self->set_envelope_from($new_email)
 	if !$ef || $ef eq $old_email;
     $self->set_header('From', $_RFC->format_mailbox($new_email, $new_name));
-    return;
+    return 1;
 }
 
 sub _rewrite_from_generate {
