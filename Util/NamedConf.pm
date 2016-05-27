@@ -228,7 +228,7 @@ sub _zone {
 		_zone_txt($zone_dot, $cfg, $ptr_map),
 		_zone_mx($zone_dot, $cfg, $ptr_map),
 		_zone_spf1($zone_dot, $cfg, $ptr_map),
-		_zone_srv($zone_dot, $cfg, $ptr_map),a
+		_zone_srv($zone_dot, $cfg, $ptr_map),
 		_zone_dkim1($zone_dot, $cfg, $ptr_map),
 	    ),
 	),
