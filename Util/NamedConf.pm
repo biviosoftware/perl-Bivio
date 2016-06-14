@@ -228,6 +228,7 @@ sub _zone {
 		_zone_txt($zone_dot, $cfg, $ptr_map),
 		_zone_mx($zone_dot, $cfg, $ptr_map),
 		_zone_spf1($zone_dot, $cfg, $ptr_map),
+		_zone_srv($zone_dot, $cfg, $ptr_map),
 		_zone_dkim1($zone_dot, $cfg, $ptr_map),
 	    ),
 	),
@@ -402,6 +403,10 @@ sub _zone_spf1 {
 	    );
 	},
     );
+}
+
+sub _zone_srv {
+    return _zone_literal('srv', @_);
 }
 
 sub _zone_txt {
