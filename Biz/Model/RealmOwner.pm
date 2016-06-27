@@ -361,8 +361,8 @@ sub _unauth_load {
 	delete($query->{name});
 	$query->{realm_id} = $id_or_name;
 	if ($self->unauth_load($query)) {
-	    b_use('IO.Alert')->warn_deprecated(
-		'use the RealmType name to load default Realms');
+	    # b_use('IO.Alert')->warn_deprecated(
+	    #     'use the RealmType name to load default Realms');
 	    return 1;
 	}
     }
