@@ -16,7 +16,7 @@ b_use('IO.Config')->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
-    rewrite_from_domains => [qw(google.com ebay.com paypal.com yahoo.com aol.com verizonwireless.com ymail.com aim.com)],
+    rewrite_from_domains => [qw(google.com ebay.com paypal.com yahoo.com aol.com verizonwireless.com ymail.com aim.com live.com uwyo.edu)],
 });
 #TODO: get rid of global state - put it on the request instead
 my($_IDI) = __PACKAGE__->instance_data_index;
