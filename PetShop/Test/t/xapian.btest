@@ -8,7 +8,9 @@ my($code) = random_string(16, ['a' .. 'z']);
 submit_form(Send => {
     topic => $code,
     text => 'hello goodbye telephone',
+    'Attach:#1' => file_field('xapian/complicated.pdf'),
 });
+user_agent_timeout(30);
 poll_page(verify_text => $code);
 visit_uri("$uri/files");
 follow_link_in_table("Name", "Name", "/", "Actions", "Modify");
@@ -37,3 +39,8 @@ verify_link('new_topic');
 go_back();
 follow_link(qr{^cool $code});
 verify_text(qr{edit this page}i);
+go_back();
+submit_form({
+    _anon => 'timeliness',
+});
+follow_link(qr{$code});
