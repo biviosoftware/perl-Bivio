@@ -552,7 +552,7 @@ LoadModule env_module modules/mod_env.so
 #? LoadModule expires_module modules/mod_expires.so
 #? LoadModule ext_filter_module modules/mod_ext_filter.so
 #? LoadModule file_cache_module modules/mod_file_cache.so
-#? LoadModule headers_module modules/mod_headers.so
+LoadModule headers_module modules/mod_headers.so
 #? LoadModule include_module modules/mod_include.so
 LoadModule info_module modules/mod_info.so
 #? LoadModule ldap_module modules/mod_ldap.so
@@ -597,6 +597,8 @@ StartServers $servers
 MaxClients $servers
 MaxRequestsPerChild 120
 LimitRequestBody $limit_request_body
+# https://www.apache.org/security/asf-httpoxy-response.txt
+RequestHeader unset Proxy early
 $request_read_timeout
 $global_params
 
