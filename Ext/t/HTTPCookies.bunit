@@ -7,7 +7,7 @@ Unit();
 	    sub {
 		return [
 		    Ext_LWPUserAgent()->new
-		    ->request(HTTP::Request->new(GET => 'http://www.bivio.biz')),
+		    ->request(HTTP::Request->new(GET => 'https://www.bivio.biz')),
 		];
 	    } => not_die(),
 	],
