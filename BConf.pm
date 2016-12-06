@@ -450,6 +450,11 @@ sub merge_http_log {
 		    'from_literal failed:.*no-message-id',
 		    'Cookie:.* duplicate cookie value for key',
 		    'Bivio::Mail::Incoming::_check_message_id.* invalid Message-Id',
+                    'handle_pre_auth_task:.*: could not parse user',
+                    'Bivio::Biz::Model::RealmOwner.*: user is not valid',
+                    'File does not exist: /var/www/html',
+                    'Bivio::Mail::Incoming::_check_message_id:.*: invalid In-Reply-To',
+                    'Bivio::Mail::Outgoing::_rewrite_from:.* from header missing email, ignoring',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
