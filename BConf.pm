@@ -454,6 +454,7 @@ sub merge_http_log {
                     'Bivio::Biz::Model::RealmOwner.*: user is not valid',
                     'File does not exist: /var/www/html',
                     'Bivio::Mail::Outgoing::_rewrite_from:.* from header missing email, ignoring',
+                    'Bivio::Agent::HTTP::Form::parse:.* text/xml: unknown Content-Type',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
