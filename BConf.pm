@@ -453,8 +453,10 @@ sub merge_http_log {
                     'handle_pre_auth_task:.*: could not parse user',
                     'Bivio::Biz::Model::RealmOwner.*: user is not valid',
                     'File does not exist: /var/www/html',
+                    'File does not exist: /var/www/facades/',
                     'Bivio::Mail::Outgoing::_rewrite_from:.* from header missing email, ignoring',
                     'Bivio::Agent::HTTP::Form::parse:.* text/xml: unknown Content-Type',
+                    'Attempt to serve directory: /var/www/html/',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
