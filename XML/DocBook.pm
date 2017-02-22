@@ -261,7 +261,7 @@ my(@_CHAPTERS) = (
 my($_XML_TO_LATEX_PROGRAM) = {
     # Many-to-one mappings
     # Do nothing unless a label should be defined (id=foo)
-    map({$_ => sub { 
+    map({$_ => sub {
 	 my($args) = @_;
 	 return '' unless defined($args);
 	 return '' unless $args =~ /id=/;
@@ -873,14 +873,14 @@ sub _start_tex {
 \makeindex
 \renewcommand{\headrulewidth}{0}
 \renewcommand{\footrulewidth}{0}
-\lfoot{Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}
+\lfoot{Copyright~\copyright~2004~~Robert Nagler \newline ~~nagler@extremeperl.org}
 \rfoot{\thepage}
 \begin{document}
 \frontmatter
 \title{Extreme Programming in Perl}
 \author{Robert Nagler}
 % Why doesn't this center?
-\date{\today \newline \newline Copyright~\copyright~2004~~Robert Nagler \newline All rights reserved~~nagler@extremeperl.org}
+\date{\today \newline \newline Copyright~\copyright~2004~~Robert Nagler \newline Licensed under a Creative Commons Attribution 4.0 International License~~nagler@extremeperl.org}
 \maketitle
 \thispagestyle{empty}
 \tableofcontents
