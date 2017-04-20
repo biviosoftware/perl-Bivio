@@ -1,4 +1,5 @@
 log
+*.log
 tmp
 *.tmp
 *.tmp.*
@@ -25,4 +26,3 @@ tmp
 /Util/t/Backup2
 /Util/t/HTTPConf/ping.txt
 /files
-

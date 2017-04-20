@@ -397,10 +397,21 @@ sub _rewrite_from {
         b_warn('from header missing email, ignoring: ', $full_from);
         return 0;
     }
-    # We assume that if From does NOT need to be rewritten, then nothing needs a rewrite
-    return 1
-	unless $old_email =~ $self->internal_get_config->{rewrite_from_domains_re};
-    my($new_email, $new_name) = _rewrite_from_generate($self, $old_email, $old_name, $req);
+    # We assume that if From does NOT need to be rewritten,
+    # then nothing needs a rewrite
+    my($cfg) = $self->internal_get_config;
+    if ($cfg->{allow_resend_from_re}) {
+        if ($old_email =~ $cfg->{allow_resend_from_re}) {
+            return 1;
+        }
+    }
+    elsif ($cfg->{rewrite_from_domains_re}) {
+        unless ($old_email =~ $cfg->{rewrite_from_domains_re}) {
+            return 1;
+        }
+    }
+    my($new_email, $new_name) = _rewrite_from_generate(
+        $self, $old_email, $old_name, $req);
     $self->set_header('Reply-To', $old_email)
 	unless $self->unsafe_get_header('reply-to');
     my($rp) = $self->unsafe_get_header('return-path');

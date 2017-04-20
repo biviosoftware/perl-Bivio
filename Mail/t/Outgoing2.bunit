@@ -1,0 +1,46 @@
+# Copyright (c) 2017 bivio Software, Inc.  All rights reserved.
+# $Id$
+Request('initialize_fully');
+config({
+    'Bivio::Mail::Common' => {
+	sendmail => 'echo -- > /dev/null',
+        allow_resend_from => [qw(allow.resend.from)],
+        rewrite_from_domains => [],
+    },
+});
+my($_USER) = 'bunit@bivio.biz';
+
+my($_ALLOW_FROM) = <<'EOF';
+Message-ID: <123@example.com>
+From: Any User <any_user@allow.resend.from>
+Date: Thu, 1 Jul 1999 09:33:35 -0400
+
+body
+EOF
+
+(my $_NOT_ALLOW_FROM = $_ALLOW_FROM) =~ s/allow.resend.from/not.allow.resend/;
+
+[
+    [Bivio::Mail::Incoming->new(\$_ALLOW_FROM)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
+	send => [
+	    [req()] => undef,
+	],
+	unsafe_get_header => [
+	    from => qr{^Any User <any_user\@allow.resend.from>$},
+	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_NOT_ALLOW_FROM)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
+	send => [
+	    [req()] => undef,
+	],
+	unsafe_get_header => [
+	    from => qr{^"Any User via \S+ <ignore-.*>$},
+	],
+    ],
+];

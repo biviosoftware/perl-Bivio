@@ -17,6 +17,7 @@ b_use('IO.Config')->register(my $_CFG = {
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
     rewrite_from_domains => [qw(google.com ebay.com paypal.com yahoo.com aol.com verizonwireless.com ymail.com aim.com live.com uwyo.edu ttu.edu)],
+    allow_resend_from => [],
 });
 #TODO: get rid of global state - put it on the request instead
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -96,10 +97,24 @@ sub handle_config {
     #
     # How to send mail.  Must accept a list of recipients on the
     # command line.  Arguments must be easily separated, i.e. no quoting.
-    Bivio::Die->die($cfg->{errors_to}, ': invalid errors_to')
-        if $cfg->{errors_to} =~ /['\\]/;
+    if ($cfg->{errors_to} =~ /['\\]/) {
+        b_die($cfg->{errors_to}, ': invalid errors_to');
+    }
+    if (@{$cfg->{rewrite_from_domains} || []} && @{$cfg->{allow_resend_from} || []}) {
+        b_die(
+            'cannot have both allow_resend_from ',
+            $cfg->{allow_resend_from},
+            ' and rewrite_from_domains ',
+            $cfg->{rewrite_from_domains},
+        )
+    }
     $_CFG = $cfg;
-    $_CFG->{rewrite_from_domains_re} = qr{[\@\.](?:@{[join('|', @{$cfg->{rewrite_from_domains} || []})]})$}is;
+    foreach my $x (qw(rewrite_from_domains allow_resend_from)) {
+        my($v) = $cfg->{$x} ||= [];
+        $cfg->{$x . '_re'} = @$v
+            ? qr{[\@\.](?:@{[join('|', @$v)]})$}is
+            : undef;
+    }
     return;
 }
 
@@ -182,8 +197,10 @@ sub test_language_setup {
     b_use('IO.Config')->introduce_values({
 	'Bivio::Mail::Common' => {
 	    rewrite_from_domains => [],
+            allow_resend_from => [],
 	},
-    }) if @{$self->internal_get_config->{rewrite_from_domains}};
+    }) if @{$self->internal_get_config->{rewrite_from_domains}}
+        || @{$self->internal_get_config->{allow_resend_from}};
     return;
 }
 
