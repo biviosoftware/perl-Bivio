@@ -410,6 +410,9 @@ sub _rewrite_from {
             return 1;
         }
     }
+    else {
+        return 1;
+    }
     my($new_email, $new_name) = _rewrite_from_generate(
         $self, $old_email, $old_name, $req);
     $self->set_header('Reply-To', $old_email)
