@@ -4,6 +4,7 @@ package Bivio::Type::Password;
 use strict;
 use Bivio::Base 'Type.Name';
 use Bivio::TypeError;
+use Digest::SHA ();
 
 # C<Bivio::Type::Password> indicates the input is a password entry.
 # It should be handled with care, e.g. never displayed to user.
@@ -14,8 +15,8 @@ my(@_SALT_CHARS) = (
     '0'..'9',
 );
 my($_SALT_INDEX_MAX) = int(@_SALT_CHARS) - 1;
-# All passwords are exactly the same length
-my($_VALID_LENGTH) = length(__PACKAGE__->encrypt('anything'));
+my($_CRYPT_VALID_LENGTH) = 13;
+my($_VALID_SHA_RE) = qr{^[a-z0-9+/]{29}$}ois;
 
 sub INVALID {
     # Returns invalid password (save literally!).
@@ -27,40 +28,30 @@ sub OTP_VALUE {
 }
 
 sub compare {
-    my(undef, $encrypted, $incoming) = @_;
-    # Encrypts I<incoming> using I<salt> from I<encrypted>.
-    # Returns true if encrypted versions match.
-    #
-    # C<undef> values are never equal.  This avoids security problems.
-    # Only equal if both values are defined
+    my($proto, $encrypted, $incoming) = @_;
     return -1
 	unless defined($encrypted);
     return 1
 	unless defined($incoming);
-    return crypt($incoming, substr($encrypted, 0, 2)) cmp $encrypted;
+    my($salt) = substr($encrypted, 0, 2);
+    my($i) = length($encrypted) == $_CRYPT_VALID_LENGTH
+        ? crypt($incoming, $salt)
+        : _encrypt($incoming, $salt);
+    return $encrypted cmp $i;
 }
 
 sub encrypt {
     my(undef, $password) = @_;
-    # Encrypts the password with a random I<salt> string.
     my($salt) = '';
     for (my($i) = 0; $i < 2; $i++) {
 	$salt .= $_SALT_CHARS[int(rand($_SALT_INDEX_MAX) + 0.5)];
     };
-    return crypt($password, $salt);
+    return _encrypt($password, $salt);
+
 }
 
-sub from_literal {
-    my($proto, $value) = @_;
-    # Returns C<undef> if the name is empty.  All characters are allowed.
-    $proto->internal_from_literal_warning
-        unless wantarray;
-    return undef unless defined($value) && length($value);
-    return (undef, Bivio::TypeError::PASSWORD()) if length($value) < 6;
-#TODO: What type of checks should be here?
-#TODO: Should we limit length to say 16 chars?
-#TODO: Should length check be here? (Someone hacked form, but who cares?)
-    return $value;
+sub get_min_width {
+    return 6;
 }
 
 sub is_otp {
@@ -69,20 +60,25 @@ sub is_otp {
 }
 
 sub is_password {
-    # Returns true.
     return 1;
 }
 
 sub is_secure_data {
-    # Don't render in logs.
     return 1;
 }
 
 sub is_valid {
     my($proto, $value) = @_;
     return $value && (
-	length($value) == $_VALID_LENGTH || $value eq $proto->OTP_VALUE
+	length($value) == $_CRYPT_VALID_LENGTH
+            || $value =~ $_VALID_SHA_RE
+            || $value eq $proto->OTP_VALUE
     ) ? 1 : 0;
+}
+
+sub _encrypt {
+    my($clear, $salt) = @_;
+    return $salt . Digest::SHA::hmac_sha1_base64($clear, $salt);
 }
 
 1;
