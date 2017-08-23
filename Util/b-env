@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w
-#!perl -w
-# Copyright (c) 2012-2013 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2012-2017 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 

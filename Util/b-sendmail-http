@@ -1,5 +1,5 @@
-#!perl -w
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
+#!/usr/bin/perl -w
+# Copyright (c) 2006-2017 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 use strict;
 use Bivio::Util::SendmailHTTP;
