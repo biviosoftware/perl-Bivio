@@ -92,12 +92,6 @@ sub _local_cfg {
 
 sub _conf {
     my($self, $cfg) = @_;
-    my($other_logging) = <<'EOF';
-  category cname { null; };
-  category response-checks { null; };
-EOF
-    $other_logging = "\n"
-	if ($self->do_backticks('/usr/sbin/named -v') =~ /(\d+\.\d+)/)[0] > 9.4;
     return <<"EOF" . _conf_zones($cfg);
 options {
   directory "/$_ZONE_DIR";
@@ -107,7 +101,8 @@ options {
   version "n/a";
 };
 logging {
-  category lame-servers { null; };$other_logging};
+  category lame-servers { null; };
+};
 zone "." in {
   type hint;
   file "$_ROOT_FILE";
