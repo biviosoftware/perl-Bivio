@@ -3,7 +3,7 @@
 Request('initialize_fully');
 config({
     'Bivio::Mail::Common' => {
-	sendmail => 'echo -- > /dev/null',
+	sendmail => 'true',
     },
 });
 # use User::pwent ();
