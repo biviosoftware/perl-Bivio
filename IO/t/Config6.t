@@ -19,8 +19,10 @@ print "ok 1\n";
 ######################### End of black magic.
 
 my($T) = 2;
-print Bivio::IO::Config->bconf_file eq '/etc/bivio.bconf'
-    ? "ok $T\n" : "not ok $T\n";
+print Bivio::IO::Config->bconf_file eq (
+    -r '/etc/bivio.bconf' ? '/etc/bivio.bconf'
+        : 'Bivio::DefaultBConf->merge'
+    ) ? "ok $T\n" : "not ok $T\n";
 $T++;
 use Bivio::Ext::DBI;
 print Bivio::Ext::DBI->get_config->{database} eq 'none'
