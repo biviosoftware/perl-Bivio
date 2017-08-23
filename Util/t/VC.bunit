@@ -12,53 +12,11 @@ options({
 });
 my($tmp) = tmp_dir();
 IO_File()->chdir($tmp);
-my($svn_root) = "$tmp/svn_root";
-my($svn_uri) = "file://$tmp/svn_root";
-config({
-    'Bivio::Util::VC' => {
-	svn_root_list => [
-	    $svn_uri,
-	],
-    },
-});
-system("svnadmin create $svn_root > /dev/null 2>&1");
-IO_File()->do_in_dir(
-    IO_File()->mkdir_p('svn_tmp'),
-    sub {
-	system("svn checkout $svn_uri > /dev/null 2>&1");
-	IO_File()->chdir(File::Basename::basename($svn_uri));
-	IO_File()->mkdir_p('svn_proj/dir1');
-	IO_File()->write('svn_proj/dir1/file1.txt', random_string());
-	system('(svn add svn_proj; svn commit -m init) > /dev/null 2>&1');
-	return;
-    },
-);
-my($cvs_root) = "$tmp/cvs_root";
-$ENV{CVSROOT} = "$tmp/cvs_root";
-system("cvs init > /dev/null 2>&1");
-IO_File()->do_in_dir(
-    IO_File()->mkdir_p('cvs_tmp'),
-    sub {
-	IO_File()->mkdir_p('cvs_proj/dir1');
-	IO_File()->write('cvs_proj/dir1/file1.txt', random_string());
-	system('(cd cvs_proj; cvs import -m init cvs_proj x y) > /dev/null 2>&1');
-	return;
-    },
-);
 [
     # git
     [qw(u_checkout perl/Cal54)] => [],
     [qw(u_checkout perl/Cal54)] => [],
     [qw(u_checkout HEAD perl/Cal54)] => DIE(),
-    # svn
-    [qw(u_checkout svn_proj/dir1)] => [],
-    [qw(u_checkout svn_proj/dir1)] => [],
-    [qw(u_checkout HEAD svn_proj/dir1)] => DIE(),
-    # cvs
-    [qw(u_checkout cvs_proj/dir1)] => [],
-    [qw(u_checkout cvs_proj/dir1)] => [],
-    [qw(u_checkout HEAD cvs_proj/dir1)] => DIE(),
-    [qw(u_checkout NotFoundDir)] => DIE(),
     # rsync
     sub {
 	$ENV{BIVIO_UTIL_VC_ROOT} = IO_File()->absolute_path('perl');
