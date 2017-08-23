@@ -3,7 +3,8 @@
 Request('initialize_fully');
 config({
     'Bivio::Mail::Common' => {
-	sendmail => 'true',
+        # read input until EOF, and ignore command line args
+	sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
     },
 });
 # use User::pwent ();
