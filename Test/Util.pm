@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 use File::Find ();
 use File::Spec ();
+use File::Basename ();
 
 # C<Bivio::Test::Util> runs acceptance and unit tests.  A unit test is defined
 # using L<Bivio::Test|Bivio::Test>.  An acceptance test has its own language,
@@ -324,8 +325,9 @@ sub unit {
 	my($d) = $_CFG->{unit_log_dir};
 	if ($d) {
 	    $_F->mkdir_p($d);
-	    $test =~ /(.*)\.(?:t|bunit)$/;
-	    $_F->write("$d/$1.out", $$out);
+	    my($x) = File::Basename::basename($test);
+            $x =~ s{\.[^\.]+$}{};
+	    $_F->write("$d/$x.out", $$out);
 	}
 	return $ok == $max;
     });
