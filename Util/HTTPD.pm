@@ -27,7 +27,7 @@ sub USAGE {
 usage: bivio httpd [options] command [args..]
 commands
    assert_in_exec_dir -- dies if not in execution directory
-   run -- starts httpd in foreground 
+   run -- starts httpd in foreground
    run_background -- starts httpd in background
    run_db [breakpoint] -- starts httpd with the Devel::BivioDB debugger
 EOF
@@ -84,7 +84,7 @@ sub run {
 	    /usr/local/apache/libexec
 	)), "$pwd/modules");
     }
-    my($log) = $background ? 'stderr.log' : '|cat';
+    my($log) = $background ? 'stderr.log' : '|/bin/cat';
     my($mime_types) = _find_file('/etc/mime.types', '/etc/httpd/mime.types',
 			     '/usr/local/apache/conf/mime.types');
     my($keepalive) = $background ? 'on' : 'off';
@@ -199,14 +199,11 @@ sub _dynamic_modules {
 	    actions
 	    auth_basic
 	    auth_digest
-	    authn_alias
 	    authn_anon
 	    authn_dbm
-	    authn_default
 	    authn_file
-	    authnz_ldap
+	    authz_core
 	    authz_dbm
-	    authz_default
 	    authz_groupfile
 	    authz_host
 	    authz_owner
@@ -217,16 +214,16 @@ sub _dynamic_modules {
 	    dav
 	    dav_fs
 	    deflate
-	    disk_cache
 	    expires
 	    ext_filter
+            filter
 	    headers
 	    include
 	    info
-	    ldap
 	    log_config
 	    logio
 	    mime_magic
+            mpm_prefork
 	    negotiation
 	    perl
 	    proxy
@@ -235,9 +232,10 @@ sub _dynamic_modules {
 	    proxy_ftp
 	    proxy_http
             reqtimeout
+            slotmem_shm
 	    speling
-	    ssl
 	    suexec
+            unixd
 	    userdir
 	    usertrack
 	    version
@@ -247,6 +245,10 @@ sub _dynamic_modules {
 	    config_log:mod_log_config:mod_log_config.c
 	    perl:libperl
 	),
+# unixd - don't need chroot with docker
+# mpm_prefork - don't need prefork as we have fixed servers
+# socache_shmcb - preformance
+#  - do we need this?
     ) {
 	my($base, $so, $mod) = split(/:/, $module);
 	$mod ||= $_V2 ? "$base.c" : "mod_$base.c";
@@ -320,14 +322,14 @@ LogLevel debug
 LogFormat "%{host}i %h %P %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 CustomLog $log combined
 TypesConfig $mime_types
-DefaultType text/plain
-LockFile httpd.lock
+DefaultRuntimeDir .
+
 ExtendedStatus On
 AddOutputFilterByType DEFLATE application/json
 
 <Directory />
     AllowOverride None
-    Options FollowSymLinks
+    Options +FollowSymLinks
 </Directory>
 
 $additional_directives

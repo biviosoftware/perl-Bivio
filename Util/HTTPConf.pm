@@ -528,14 +528,11 @@ sub _httpd_conf {
 LoadModule alias_module modules/mod_alias.so
 LoadModule auth_basic_module modules/mod_auth_basic.so
 #? LoadModule auth_digest_module modules/mod_auth_digest.so
-#? LoadModule authn_alias_module modules/mod_authn_alias.so
 #? LoadModule authn_anon_module modules/mod_authn_anon.so
 #? LoadModule authn_dbm_module modules/mod_authn_dbm.so
-LoadModule authn_default_module modules/mod_authn_default.so
 LoadModule authn_file_module modules/mod_authn_file.so
-#? LoadModule authnz_ldap_module modules/mod_authnz_ldap.so
 #? LoadModule authz_dbm_module modules/mod_authz_dbm.so
-LoadModule authz_default_module modules/mod_authz_default.so
+LoadModule authz_core_module modules/mod_authz_core.so
 #? LoadModule authz_groupfile_module modules/mod_authz_groupfile.so
 LoadModule authz_host_module modules/mod_authz_host.so
 #? LoadModule authz_owner_module modules/mod_authz_owner.so
@@ -555,7 +552,6 @@ LoadModule env_module modules/mod_env.so
 LoadModule headers_module modules/mod_headers.so
 #? LoadModule include_module modules/mod_include.so
 LoadModule info_module modules/mod_info.so
-#? LoadModule ldap_module modules/mod_ldap.so
 LoadModule log_config_module modules/mod_log_config.so
 #? LoadModule logio_module modules/mod_logio.so
 #? LoadModule mem_cache_module modules/mod_mem_cache.so
@@ -572,6 +568,9 @@ LoadModule rewrite_module modules/mod_rewrite.so
 LoadModule setenvif_module modules/mod_setenvif.so
 #? LoadModule speling_module modules/mod_speling.so
 LoadModule ssl_module modules/mod_ssl.so
+LoadModule slotmem_shm_module modules/mod_slotmem_shm.so
+LoadModule ssl_module modules/mod_ssl.so
+LoadModule socache_shmcb_module modules/mod_socache_shmcb.so
 LoadModule status_module modules/mod_status.so
 #? LoadModule suexec_module modules/mod_suexec.so
 #? LoadModule userdir_module modules/mod_userdir.so
@@ -619,14 +618,14 @@ DocumentRoot /var/www/html
 
 <Directory />
     AllowOverride None
-    Options FollowSymLinks
+    Options +FollowSymLinks
 </Directory>
 
 $content
 <Location $server_status_location>
     SetHandler server-status
-    deny from all
-    allow from $server_status_allow
+    Require all ranted
+    Require host $server_status_allow
 </Location>
 
 $aux_http_conf
