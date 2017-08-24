@@ -119,7 +119,7 @@ sub to_sql_param {
     # May be the empty string, which is same as C<undef>
     return $param_value ? join($;, map {
 	b_die($param_value, ': contains $; in an element')
-	    if index($_, $;) >= $[;
+	    if index($_, $;) >= 0;
 	$_;
     } @$param_value) : undef;
 }

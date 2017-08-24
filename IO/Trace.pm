@@ -303,7 +303,7 @@ sub _define_pkg_symbols {
 			? '$Bivio::IO::Trace::_CALL_SUB->'
 			: 'Bivio::IO::Trace->print')
 	        # caller(1) can return an empty array, hence '|| undef'
-		. '((caller), (caller(1))[$[+3] || undef, \@_)}';
+		. '((caller), (caller(1))[3] || undef, \@_)}';
     }
     no strict 'refs';
     *{$pkg.'::_TRACE'} = \$trace;
