@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2017 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Test::Request;
 use strict;
@@ -235,6 +235,8 @@ sub setup_http {
     };
     my($r) = $_B->new({
 	'connection()' => [$_B->new({
+	    'useragent_ip()' => [$ip],
+            # Apache 2.2 interface
 	    'remote_ip()' => [$ip],
 	    'local_addr()' => [$addr],
 	    'server()' => [$_B->new({})],
@@ -279,7 +281,7 @@ sub setup_http {
 		realm_owner => $user,
 	    });
 	}
-	$self->put_durable(user_state => $self->get('user_state')->LOGGED_IN); 
+	$self->put_durable(user_state => $self->get('user_state')->LOGGED_IN);
     }
     b_use('Action.JobBase')->set_sentinel($self);
     return $self;

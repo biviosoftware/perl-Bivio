@@ -212,6 +212,7 @@ PerlModule Bivio::Ext::ApacheConstants
 PerlModule Bivio::Agent::HTTP::Dispatcher
 
 <Location />
+    Require all granted
     SetHandler perl-script
     PerlResponseHandler Bivio::Agent::HTTP::Dispatcher
 </Location>
@@ -453,6 +454,7 @@ $chain    SetEnv nokeepalive 1
     <Location />
 	SSLRequireSSL
 	SSLOptions +StrictRequire
+        Require all granted
     </Location>
 EOF
 }
@@ -624,7 +626,7 @@ DocumentRoot /var/www/html
 $content
 <Location $server_status_location>
     SetHandler server-status
-    Require all ranted
+    # http://www.the-art-of-web.com/system/apache-authorization/
     Require host $server_status_allow
 </Location>
 
@@ -691,6 +693,7 @@ EOF
 	    <<'EOF',
 <VirtualHost *>
     ServerName localhost.localdomain
+    Require all granted
     DocumentRoot /var/www/html
     RewriteEngine On
     RewriteOptions inherit

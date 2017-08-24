@@ -1,9 +1,11 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2017 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Dispatcher;
 use strict;
 use Bivio::Base 'Agent.Dispatcher';
 use Bivio::IO::Trace;
+use Apache2::RequestRec ();
+use Apache2::RequestIO ();
 
 our($_TRACE);
 my($_JD);
@@ -48,7 +50,9 @@ sub handler {
     if ($die && !$die->get('code')->equals_by_name('CLIENT_REDIRECT_TASK')) {
 	my($c) = $r->connection();
 	my($u) = $c && $c->user() || 'ANONYMOUS';
-	my($ip) = $c && $c->remote_ip || '0.0.0.0';
+        # Subtle, but in an error situation (possibly) so check $c since
+        # client_addr depends on it.
+	my($ip) = $c && $_REQUEST->client_addr($r) || '0.0.0.0';
 	$r->log_reason($ip.' '.$u.' '.$die->as_string);
 	_trace($die) if $_TRACE;
     }

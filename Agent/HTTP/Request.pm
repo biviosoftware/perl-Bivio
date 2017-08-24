@@ -1,4 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2017 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Agent::HTTP::Request;
 use strict;
@@ -127,14 +127,12 @@ sub new {
     # separated.
     my($proto, $r) = @_;
     # Set remote IP address if passed through by mod_proxy (RH6.2 and RH7.2)
-    $r->connection->remote_ip($1)
-	if ($r->header_in('x-forwarded-for') || $r->header_in('via') || '')
-	    =~ /((?:\d+\.){3}\d+)/;
+    my($client_addr) = $proto->client_addr($r, 1);
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
     my($self) = $proto->internal_new({
 	reply => $_R->new($r),
 	r => $r,
-	client_addr => $r->connection->remote_ip,
+	client_addr => $client_addr,
 	is_secure => $ENV{HTTPS} || _is_https_port($proto, $r) ? 1 : 0,
     });
     Bivio::Type::UserAgent->from_header($r->header_in('user-agent') || '')
@@ -165,6 +163,22 @@ sub reset_reply {
     my($self) = @_;
     $self->put(reply => $_R->new($self->get('r')));
     return;
+}
+
+sub client_addr {
+    my(undef, $r, $update_with_proxy) = @_;
+    if ($r->can('useragent_ip')) {
+        return $r->useragent_ip();
+    }
+    # backwards compatible interface for apache <= 2.2
+    if (($r->header_in('x-forwarded-for') || $r->header_in('via') || '')
+            =~ /((?:\d+\.){3}\d+)/) {
+        unless ($update_with_proxy) {
+            return $1;
+        }
+        $r->connection->remote_ip($1);
+    }
+    return $r->connection->remote_ip();
 }
 
 sub _is_https_port {

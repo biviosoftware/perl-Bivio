@@ -294,11 +294,14 @@ Group $group
 ServerAdmin $user
 
 PerlWarn on
+#Only valid with MP_TRACE compile option
+#PerlTrace all
 # Can't be on and use PERLLIB.
 $reload
 $perl_module
 $pass_env
 $version_config
+
 
 Timeout 60
 KeepAlive $keepalive
@@ -339,14 +342,17 @@ ErrorDocument 413 /m/upload-too-large.html
 
 <VirtualHost *:$port>
     <Location />
+        Require all granted
         SetHandler perl-script
         $perl_handler $handler
     </Location>
     <Location /s>
+        Require local
         SetHandler perl-script
         $apache_status
     </Location>
     <Location /z>
+        Require local
         SetHandler server-status
         $apache_status
     </Location>
