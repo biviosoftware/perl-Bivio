@@ -3,7 +3,7 @@
 test_setup('PetShop');
 home_page();
 basic_authorization('otp');
-test_deviance('401 Authorization Required');
+test_deviance(' 401 ');
 send_request(PROPFIND => '/dav');
 test_conformance();
 Bivio::IO::Alert->info(get_response()->header('WWW-Authenticate'));
@@ -14,4 +14,3 @@ basic_authorization(
 );
 send_request(PROPFIND => '/dav');
 send_request(PROPFIND => '/otp/dav');
-
