@@ -1,0 +1,8 @@
+# Copyright (c) 2017 bivio Software, Inc.  All Rights Reserved.
+test_setup('PetShop');
+home_page();
+visit_uri('/pub/test-job-queue');
+sleep(2);
+visit_uri('/pub/ping');
+sleep(2);
+visit_uri('/pub/ping');

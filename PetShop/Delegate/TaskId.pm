@@ -422,6 +422,13 @@ sub get_delegate_info {
 	    Action.EmptyReply
 	    require_secure=1
 	)],
+	[qw(
+	    TEST_JOB_QUEUE
+	    553
+	    GENERAL
+	    ANYBODY
+	    Action.TestJobQueue
+	)],
     ]);
 }
 

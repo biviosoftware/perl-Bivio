@@ -102,6 +102,7 @@ __PACKAGE__->new({
  	[CLIENT_REDIRECT_PERMANENT_MAP => 'permanent-redirect/*'],
 	[TEST_WANT_INSECURE => '/pub/test-want-insecure'],
 	[TEST_REQUIRE_SECURE => '/pub/test-require-secure'],
+	[TEST_JOB_QUEUE => '/pub/test-job-queue'],
     ],
     Constant => __PACKAGE__->make_groups([
 	@{__PACKAGE__->bunit_shared_values},
@@ -343,4 +344,3 @@ sub bunit_shared_values {
 }
 
 1;
-

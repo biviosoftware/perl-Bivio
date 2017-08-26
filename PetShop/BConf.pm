@@ -37,6 +37,7 @@ sub merge_overrides {
 		'Bivio::TypeError',
 	    ],
 	    maps => {
+		Action => ['Bivio::PetShop::Action'],
 		Delegate => ['Bivio::PetShop::Delegate'],
 		Facade => ['Bivio::PetShop::Facade'],
 		PetShopWidget => ['Bivio::PetShop::Widget', 'Bivio::UI::XHTML::Widget', 'Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
