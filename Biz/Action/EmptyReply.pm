@@ -26,7 +26,7 @@ sub execute {
 	$status = 'HTTP_NO_CONTENT'
 	    if $status eq 'HTTP_OK' && !(defined($output) && length($output));
     }
-    $reply->set_http_status($_AC->$status);	
+    $reply->set_http_status($_AC->$status);
     return 1;
 }
 
@@ -48,7 +48,7 @@ sub execute_server_error {
 
 sub execute_task_item {
     my($self, $error, $req) = @_;
-    return $error =~ /^execute/ ? $self->$error($req)
+    return ($error || '') =~ /^execute/ ? $self->$error($req)
 	: $self->execute($req, uc($error));
 }
 
