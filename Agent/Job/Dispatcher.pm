@@ -45,7 +45,7 @@ sub enqueue {
     #
     # May not be called during L<execute_queue|"execute_queue">.
     my($self, $req, $task_id, $params) = @_;
-    Die->die('not allowed to call enqueue in execute_queue')
+    b_die('not allowed to call enqueue in execute_queue')
 	if $_IN_EXECUTE;
 
     # No models please
@@ -85,7 +85,7 @@ sub execute_queue {
     while (@_QUEUE) {
 	my($params) = shift(@_QUEUE);
 	b_info($$, ' JOB_START: ', $params);
-	my($die) = $_SELF->process_request({%{$params}});
+	my($die) = $_SELF->process_request({%$params});
 	b_info(
 	    $$,
 	    $die ? (' JOB_ERROR: ', $params, ' ', $die) : (' JOB_END: ', $params),
