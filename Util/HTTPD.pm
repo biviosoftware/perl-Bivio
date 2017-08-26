@@ -151,6 +151,18 @@ PerlFreshRestart off
 		exec($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
 		die("$_HTTPD: $!");
 	    }
+            my($flag);
+            for my $x (`ipcs`) {
+                if ($x =~ / memory /i) {
+                    $flag = '-m';
+                }
+                elsif ($x =~ / semaphore /i) {
+                    $flag = '-s';
+                }
+                elsif ($x =~ /^0x\S+\s+(\S+)\s+$ENV{USER}\s/) {
+                    system('ipcrm', $flag, $1);
+                }
+            }
 	    system($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
 	    last
 		unless b_use('Action.DevRestart')->restart_requested;
@@ -321,6 +333,7 @@ PidFile httpd.pid
 ErrorLog $log
 # Possible values include: debug, info, notice, warn, error, crit,
 # alert, emerg.
+# LogLevel debug turns on apache debugging too
 LogLevel debug
 LogFormat "%{host}i %h %P %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 CustomLog $log combined
