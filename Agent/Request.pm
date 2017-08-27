@@ -200,7 +200,6 @@ my($_V1) = $_C->if_version(1);
 my($_V7) = $_C->if_version(7);
 $_C->register(my $_CFG = {
     can_secure => 1,
-    apache_version => 2,
 });
 my($_CURRENT);
 my($_JSON_ATTR) = 'req_is_json';
@@ -642,11 +641,6 @@ sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     return;
-}
-
-sub if_apache_version {
-    my($proto, $expect) = (shift, shift);
-    return $proto->if_then_else($_CFG->{apache_version} >= $expect, @_);
 }
 
 sub if_req_is_json {
@@ -1151,7 +1145,7 @@ sub set_task {
     my($self, $task_id) = @_;
     $task_id = $_TI->from_name($task_id)
 	unless ref($task_id);
-#TODO: b_use('FacadeComponent.Task')->is_defined_for_facade($tid->get_name, $self);    
+#TODO: b_use('FacadeComponent.Task')->is_defined_for_facade($tid->get_name, $self);
     _trace($task_id) if $_TRACE;
     my($task) = $_T->get_by_id($task_id);
     $task_id->if_task_is_json(sub {$self->put_req_is_json});

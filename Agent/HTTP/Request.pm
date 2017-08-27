@@ -183,10 +183,7 @@ sub client_addr {
 
 sub _is_https_port {
     my($proto, $r) = @_;
-    return $proto->want_scalar($proto->if_apache_version(
-	2 => sub {$r->connection->local_addr->port},
-	sub {unpack_sockaddr_in($r->connection->local_addr)},
-    )) % 2;
+    return $r->connection->local_addr->port % 2;
 }
 
 1;

@@ -5,15 +5,12 @@ use strict;
 use Bivio::Base 'Bivio::ShellUtil';
 use POSIX qw(:signal_h);
 b_use('IO.ClassLoaderAUTOLOAD');
+b_use('IO.Trace');
 
-my($_V2) = b_use('Agent.Request')->if_apache_version(2);
-my($_HTTPD) = _find_file($_V2 ? qw(
+my($_HTTPD) = _find_file(qw(
     /usr/local/apache/bin/httpd2
     /usr/sbin/httpd2
     /usr/sbin/apache2
-    /usr/sbin/httpd
-) : qw(
-    /usr/local/apache/bin/httpd
     /usr/sbin/httpd
 ));
 Bivio::IO::Config->register(my $_CFG = {
@@ -22,6 +19,7 @@ Bivio::IO::Config->register(my $_CFG = {
     additional_locations => '',
     additional_directives => '',
 });
+our($_TRACE);
 
 sub USAGE {
     return <<'EOF';
@@ -58,12 +56,7 @@ sub run {
 	b_use('UI.Facade')->get_local_file_root,
 	'httpd',
     );
-#TODO: Let ShellUtil handle options; Create a default handler for commands
-    local($_);
-    if ($ENV{PERLLIB}) {
-	my($httpd) = $ENV{PERLLIB} . '../external/apache/src/httpd';
-	-x $httpd && ($_HTTPD = $httpd);
-    }
+    my($modules_d) = "$pwd/modules";
     if ($self->is_execute) {
         -f "$pwd/httpd.pid" && (kill('QUIT', `cat $pwd/httpd.pid`), sleep(5));
 	Bivio::IO::File->rm_rf($pwd);
@@ -71,23 +64,25 @@ sub run {
 	CORE::system("cd $pwd; rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem modules");
 	Bivio::IO::File->mkdir_p("$pwd/files");
 	_symlink($pwd, "$pwd/logs");
-	_symlink(_find_file($_V2 ? qw(
-            /usr/lib64/httpd/modules
-            /usr/lib/apache2/modules
-            /usr/lib64/apache2/modules
-            /usr/local/apache2/libexec
-            /usr/lib/apache2
-            /usr/lib64/apache2
-	    /usr/lib/httpd/modules
-	) : qw(
-	    /usr/lib/apache
-	    /usr/libexec/httpd
-	    /usr/local/apache/libexec
-	)), "$pwd/modules");
+	_symlink(
+            _find_file(qw(
+                /usr/lib64/httpd/modules
+                /usr/lib/apache2/modules
+                /usr/lib64/apache2/modules
+                /usr/local/apache2/libexec
+                /usr/lib/apache2
+                /usr/lib64/apache2
+                /usr/lib/httpd/modules
+            )),
+            $modules_d,
+        );
     }
     my($log) = $background ? 'stderr.log' : '|/bin/cat';
-    my($mime_types) = _find_file('/etc/mime.types', '/etc/httpd/mime.types',
-			     '/usr/local/apache/conf/mime.types');
+    my($mime_types) = _find_file(
+        '/etc/mime.types',
+        '/etc/httpd/mime.types',
+        '/usr/local/apache/conf/mime.types',
+    );
     my($keepalive) = $background ? 'on' : 'off';
     my($port) = $_CFG->{port} || b_die('port parameter not supplied');
     my($additional_directives) = $_CFG->{additional_directives};
@@ -97,9 +92,9 @@ sub run {
     my($hostname) = b_use('Bivio.BConf')->bconf_host_name;
     my($handler) = $_CFG->{handler};
     my($perl_module) = $handler =~ /^\+/ ? "" : "PerlModule $_CFG->{handler}";
-    my(@start_mode) = $background ? () : ('-X');
+    my($start_mode) = $background ? [] : ['-X'];
     my($reload) = 'PerlInitHandler Bivio::Test::Reload';
-    my($modules) = _dynamic_modules($_HTTPD);
+    my($modules) = _dynamic_modules($_HTTPD, $modules_d);
     my($max_requests_per_child) = $background ? 120 : 100000;
     my($pass_env) = join(
 	"\n",
@@ -121,18 +116,13 @@ sub run {
 	    ),
 	),
     );
+    # Since 2.4, Debug is very noisy
+    my($log_level) = $_TRACE ? 'debug' : 'info';
     my($conf) = $self->is_execute ? "httpd$$.conf" : "&STDOUT";
     open(OUT, ">$pwd/$conf") || die("open $conf: $!");
-    my($apache_status) = $_V2 ? 'PerlResponseHandler Apache2::Status'
-	: 'PerlHandler Apache::Status';
-    my($perl_handler) = $_V2 ? 'PerlResponseHandler' : 'PerlHandler';
-    my($version_config) = $_V2 ? <<'2' : <<'1';
-PerlModule Apache2::compat
-2
-ResourceConfig /dev/null
-AccessConfig /dev/null
-PerlFreshRestart off
-1
+    my($apache_status) = 'PerlResponseHandler Apache2::Status';
+    my($perl_handler) = 'PerlResponseHandler';
+    my($version_config) = "PerlModule Apache2::compat\n";
     foreach my $line (<DATA>) {
 	$line =~ s/(\$[a-z0-9_]+\b)/$1/eeg;
     }
@@ -142,7 +132,7 @@ PerlFreshRestart off
     close(OUT) || die("close $conf: $!");
     close(DATA);
     if ($self->is_execute) {
-	$self->print("Starting: $_HTTPD @start_mode -d $pwd -f $pwd/$conf on port $port\n");
+	$self->print("Starting: $_HTTPD @$start_mode -d $pwd -f $pwd/$conf on port $port\n");
 	$self->print("tail -f files/httpd/stderr.log\n")
 	    if $background;
 	Bivio::IO::File->chdir($pwd);
@@ -157,11 +147,11 @@ PerlFreshRestart off
 	while (1) {
 	    $self->internal_pre_exec;
 	    if ($background) {
-		exec($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
+		exec($_HTTPD, @$start_mode, '-d', $pwd, '-f', $conf);
 		die("$_HTTPD: $!");
 	    }
             my($flag);
-            for my $x (`ipcs`) {
+            foreach my $x ($self->do_backticks(['ipcs'])) {
                 if ($x =~ / memory /i) {
                     $flag = '-m';
                 }
@@ -172,7 +162,7 @@ PerlFreshRestart off
                     system('ipcrm', $flag, $1);
                 }
             }
-	    system($_HTTPD, @start_mode, '-d', $pwd, '-f', $conf);
+	    system($_HTTPD, @$start_mode, '-d', $pwd, '-f', $conf);
 	    last
 		unless b_use('Action.DevRestart')->restart_requested;
 	}
@@ -194,20 +184,12 @@ sub run_db {
 }
 
 sub _dynamic_modules {
-    # (string) : string
-    # Returns AddModule and LoadModule statements.
-    my($httpd) = @_;
-    return '' if $] < 5.006;
+    my($httpd, $modules_d) = @_;
     my($loaded) = {map {
 	/\s*(mod_\w+\.c)/ ? ($1, 1) : ();
     } split("\n", `$httpd -l`)};
-    my($load);
-    my($add);
-#TODO: wordpress requires mod_dir, but including it causes a
-#      slash to be appended to image paths
-#TODO: wordpress requires mod_php5:libphp5:libphp5.c, but it
-#      causes the server to crash
-    foreach my $module (
+    my($load) = '';
+    foreach my $base (
 	qw(
 	    env
 	    mime
@@ -215,15 +197,13 @@ sub _dynamic_modules {
 	    rewrite
 	    setenvif
             alias
-        ),
-        $_V2 ? qw(
+
 	    actions
 	    auth_basic
 	    auth_digest
 	    authn_anon
 	    authn_dbm
 	    authn_file
-	    authz_core
 	    authz_dbm
 	    authz_groupfile
 	    authz_host
@@ -237,14 +217,12 @@ sub _dynamic_modules {
 	    deflate
 	    expires
 	    ext_filter
-            filter
 	    headers
 	    include
 	    info
 	    log_config
 	    logio
 	    mime_magic
-            mpm_prefork
 	    negotiation
 	    perl
 	    proxy
@@ -253,35 +231,47 @@ sub _dynamic_modules {
 	    proxy_ftp
 	    proxy_http
             reqtimeout
-            slotmem_shm
 	    speling
 	    suexec
-            unixd
 	    userdir
 	    usertrack
 	    version
 	    vhost_alias
-	) : qw(
-	    info
-	    config_log:mod_log_config:mod_log_config.c
-	    perl:libperl
 	),
-# unixd - don't need chroot with docker
-# mpm_prefork - don't need prefork as we have fixed servers
-# socache_shmcb - preformance
-#  - do we need this?
+        # 2.4
+        qw(
+	    authz_core
+            mpm_prefork
+            slotmem_shm
+            unixd
+            filter
+        ),
+        # 2.2
+        qw(
+            authn_alias
+	    authn_default
+	    authnz_ldap
+	    authz_default
+	    disk_cache
+	    ldap
+	    authn_alias
+	    authn_default
+	    authnz_ldap
+	    authz_default
+	    disk_cache
+	    ldap
+	    ssl
+        ),
     ) {
-	my($base, $so, $mod) = split(/:/, $module);
-	$mod ||= $_V2 ? "$base.c" : "mod_$base.c";
-	$add .= "AddModule $mod\n";
-	next if $loaded->{$mod};
-	$so ||= "mod_$base";
-	$load .= "LoadModule ${base}_module\t\tmodules/$so.so\n";
+	my($mod) = "$base.c";
+	next
+            if $loaded->{$mod};
+	my($so) = "mod_$base.so";
+        next
+            unless -r "$modules_d/$so";
+	$load .= "LoadModule ${base}_module\t\tmodules/$so\n";
     }
-    return ''
-        unless $load;
-    return $load
-        . ($_V2 ? '' : "ClearModuleList\nAddModule mod_so.c\n" . $add);
+    return $load;
 }
 
 sub _find_file {
@@ -315,8 +305,6 @@ Group $group
 ServerAdmin $user
 
 PerlWarn on
-#Only valid with MP_TRACE compile option
-#PerlTrace all
 # Can't be on and use PERLLIB.
 $reload
 $perl_module
@@ -342,8 +330,7 @@ PidFile httpd.pid
 ErrorLog $log
 # Possible values include: debug, info, notice, warn, error, crit,
 # alert, emerg.
-# LogLevel debug turns on apache debugging too
-LogLevel debug
+LogLevel $log_level
 LogFormat "%{host}i %h %P %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
 CustomLog $log combined
 TypesConfig $mime_types

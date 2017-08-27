@@ -68,11 +68,8 @@ sub initialize {
     $_SELF->SUPER::initialize;
     # Avoids import problems
     use attributes ();
-    $_REQUEST->if_apache_version(2, sub {
-	b_use('APR::SockAddr');
-	Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
-	return;
-    });
+    b_use('APR::SockAddr');
+    Bivio::Die->eval(q{use attributes __PACKAGE__, \&handler, 'handler'});
     $_JD = b_use('AgentJob.Dispatcher');
     return;
 }
