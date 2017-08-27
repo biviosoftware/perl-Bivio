@@ -3,6 +3,7 @@
 package Bivio::Util::HTTPD;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
+use POSIX qw(:signal_h);
 b_use('IO.ClassLoaderAUTOLOAD');
 
 my($_V2) = b_use('Agent.Request')->if_apache_version(2);
@@ -145,6 +146,14 @@ PerlFreshRestart off
 	$self->print("tail -f files/httpd/stderr.log\n")
 	    if $background;
 	Bivio::IO::File->chdir($pwd);
+        # Can't import bits/signum.ph gets
+        # Operator or semicolon missing before &__inline
+        # POSIX doesn't define SIGWINCH (28)
+        # Need to protect apache from SIGWINCH in single server mode
+        my($new_ss) = POSIX::SigSet->new(28);
+        my($old_ss) = POSIX::SigSet->new;
+        # If we can't block, it's ok
+        POSIX::sigprocmask(SIG_BLOCK(), $new_ss, $old_ss);
 	while (1) {
 	    $self->internal_pre_exec;
 	    if ($background) {
