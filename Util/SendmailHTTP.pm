@@ -1,13 +1,9 @@
-# Copyright (c) 2014 Bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2014-2017 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::SendmailHTTP;
 use strict;
-use Bivio::Base 'Bivio::UNIVERSAL';
 use HTTP::Request::Common ();
 use LWP::UserAgent ();
 
-my($_E) = b_use('Type.Email');
-my($_F) = b_use('IO.File');
 my($_MAP_REPLY) = {
     200 => ['EX_OK'],
     204 => ['EX_OK'],
@@ -30,9 +26,9 @@ my($_SYSEXIT) = {
     EX_NOPERM => 77,
     EX_CONFIG => 78,
 };
-b_use('IO.Config')->register(my $_CFG = {
+my $_CFG = {
     lwp_timeout_seconds => 1800,
-});
+};
 
 sub create_http_request {
     my($proto, $client_addr, $recipient, $url, $msg) = @_;
@@ -66,14 +62,14 @@ sub main {
     my($res, $client_addr, $recipient, $url) = $proto->validate_main_args(@_);
     return $res
 	unless _is_ok($res);
-    return $recipient =~ /^@{[$_E->IGNORE_PREFIX]}/ios
+    return $recipient =~ /^ignore-/is
 	? $res
 	: _map_http_reply(
 	    $proto,
 	    _send_http_request(
 		$proto,
 		$proto->create_http_request(
-		    $client_addr, $recipient, $url, $_F->read('-'),
+		    $client_addr, $recipient, $url, _read_stdin(),
 		),
 	    ),
 	);
@@ -156,6 +152,19 @@ sub _parse_url {
 	$_SYSEXIT->{EX_OK},
 	$host . sprintf($url, $recipient),
     );
+}
+
+sub _read_stdin {
+    my($file) = IO::File->new('<-') or die("open stdin: $!");
+    binmode($file);
+    my($offset, $read, $buf) = (0, 0, '');
+    $offset += $read
+	while $read = CORE::read($file, $buf, 0x1000, $offset);
+    defined($read)
+	or die("read stdin: $!");
+    close($file)
+	or die("close(stdin): $!");
+    return \$buf;
 }
 
 sub _send_http_request {
