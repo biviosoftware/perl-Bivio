@@ -2,7 +2,7 @@
 # $Id$
 test_setup('PetShop', 'groupware');
 home_page();
-my($mobile) = qr{\bm\.petshop\b};
+my($mobile) = qr{\bm-petshop\b};
 test_ok(get_uri() !~ $mobile, get_uri(), ': wrong uri');
 follow_link('Mobile');
 verify_uri($mobile);
