@@ -276,6 +276,8 @@ sub _ignore_mailer_daemon {
 sub _ignore_no_message_id {
     my($self) = @_;
     my($mi) = $self->get('mail_incoming');
+    # Invalid message id.
+    #TODO(robnagler) rename to invalid_message_id
     return $mi->get_message_id eq $mi->NO_MESSAGE_ID
 	? 'no-message-id'
 	: undef;
