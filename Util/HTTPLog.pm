@@ -54,6 +54,10 @@ commands:
 EOF
 }
 
+sub error_file {
+    return $_CFG->{error_file};
+}
+
 sub handle_config {
     # (proto, hash) : undef
     # Make sure regexps (error_list, etc.) are unique, e.g. have a '::' in them.
@@ -254,7 +258,7 @@ sub _parse_errors_init {
 	    $_DT->now,
 	    $_DT->set_local_beginning_of_day($_DT->now),
 	)) < 300) {
-	    # log file may be rotating 
+	    # log file may be rotating
 	    return 0;
 	}
 	$err = "$_CFG->{error_file}: error file missing or empty";
