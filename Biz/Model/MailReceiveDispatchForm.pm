@@ -14,6 +14,7 @@ my($_F) = b_use('Biz.File');
 my($_FCT) = b_use('FacadeComponent.Text');
 my($_FP) = b_use('Type.FilePath');
 my($_I) = b_use('Mail.Incoming');
+my($_O) = b_use('Mail.Outgoing');
 my($_RI) = b_use('Agent.RequestId');
 my($_TEST_RECIPIENT_HDR) = qr{^@{[b_use('Mail.Common')->TEST_RECIPIENT_HDR]}:}m;
 my($_OUT_OF_OFFICE_FILTER_CLASSES) = [qw(
@@ -59,7 +60,7 @@ sub execute_ok {
     my($redirect, undef, $realm, $plus, $op) = _email_alias($self);
     return _redirect($redirect)
 	if $redirect;
-    my($mi) = $_I->new($self->get('message')->{content});
+    my($mi) = _new_incoming($self);
     $self->internal_put_field(
 	mail_incoming => $mi,
 	plus_tag => $plus,
@@ -275,6 +276,8 @@ sub _ignore_mailer_daemon {
 sub _ignore_no_message_id {
     my($self) = @_;
     my($mi) = $self->get('mail_incoming');
+    # Invalid message id.
+    #TODO(robnagler) rename to invalid_message_id
     return $mi->get_message_id eq $mi->NO_MESSAGE_ID
 	? 'no-message-id'
 	: undef;
@@ -340,6 +343,19 @@ sub _ignore_unsubscribe {
 	return 'unsubscribe';
     }
     return 'not-subscribed';
+}
+
+sub _new_incoming {
+    my($self) = @_;
+    my($c) = $self->get('message')->{content};
+    my($mi) = $_I->new($c);
+    if (! $mi->get_headers->{'message-id'}) {
+        # No Message-ID so add one. Can't use Mail::Incoming, because it doesn't
+        # distinguish between invalid and missing for its "NO_MESSAGE_ID".
+        substr($$c, 0, 0, 'Message-ID: ' . $_O->generate_message_id($self->req) . "\n");
+        $mi = $_I->new($c);
+    }
+    return $mi;
 }
 
 sub _parse_recipient {

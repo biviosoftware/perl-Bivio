@@ -18,7 +18,7 @@
             client_addr => '1.2.3.4',
             message => {
                 name => '',
-                content => \(qq{From: $from$header\nMessage-ID: <$from>\n\n}),
+                content => \(qq{From: $from$header\n\n}),
             },
         }];
     },
