@@ -65,6 +65,12 @@ sub link_facade_files {
 	    if ($_C->is_dev) {
 		_make_javascript($self, $default);
 	    }
+            else {
+                IO_File()->do_in_dir(
+                    "$default_prefix/ddl",
+                    sub {$self->new_other('SQL')->write_bop_ddl_files},
+                );
+            }
 	    my($prefixes) = [
 		grep(
 		    $_ ne $default_prefix,
