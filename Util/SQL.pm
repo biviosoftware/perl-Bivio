@@ -57,6 +57,7 @@ commands:
     upgrade_db -- upgrade the database
     vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
     vacuum_db_continuously -- run vacuum_db as a daemon
+    write_bop_ddl_files -- call SQL.DDL->write_files in current directory
 EOF
 }
 
@@ -812,6 +813,12 @@ sub vacuum_db_continuously {
     return;
 }
 
+sub write_bop_ddl_files() {
+    my($self) = @_;
+    $self->use('SQL.DDL')->write_files;
+    return;
+}
+
 sub _assert_postgres {
     my($self) = @_;
     # Returns DBI config.  Asserts postgres is connection type.
@@ -828,11 +835,13 @@ sub _ddl_files {
     $self->get_request;
     $self->assert_ddl;
     my($f) = $self->ddl_files;
-    # Some files should exist; Need more than just bOP
-    $self->usage('no DDL files found in ', $_F->pwd)
-	unless grep(-f $_, @$f);
-    # Just write the files every time
-    $self->use('SQL.DDL')->write_files;
+    # Only write the files in dev mode
+    $self->use('SQL.DDL')->write_files
+        if $_IC->is_dev;
+    my($missing) = [grep(! -f $_, @$f)];
+    if (@$missing) {
+        $self->usage($missing, ": missing DDL files in ", $_F->pwd);
+    }
     return $f;
 }
 
