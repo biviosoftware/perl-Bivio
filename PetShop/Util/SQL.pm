@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2018 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::PetShop::Util::SQL;
 use strict;
@@ -328,32 +328,33 @@ sub _init_demo_categories {
 sub _init_demo_files {
     my($self) = @_;
     my($req) = $self->get_request;
-    Bivio::IO::File->chdir(
-	Bivio::IO::File->mkdir_p(Bivio::IO::File->rm_rf(
-	    my $d = File::Spec->rel2abs('demo_files.tmp'))));
-    foreach my $x (
-	['Public/file.txt' => 'text/plain'],
-	['private/file.html' => '<html><body>text/html</body></html>'],
-	['private/image.gif' => 'image/gif'],
-    ) {
-	my($f, $c) = @$x;
-	Bivio::IO::File->mkdir_parent_only($f);
-	Bivio::IO::File->write($f, $c);
-    }
-    foreach my $u (qw(DEMO XAPIAN_DEMO GUEST XAPIAN_GUEST BTEST_READ)) {
-	$self->set_realm_and_user($self->$u(), $self->$u());
-	$self->new_other('Bivio::Util::RealmFile')->import_tree('');
-	Bivio::Biz::Model->new('RealmFile')->do_iterate(
-	    sub {
-		my($f) = @_;
-		$f->update({is_public => 1})
-		    if $f->get('path') =~ /public/i;
-		return 1;
-	    },
-	    'path',
-	);
-    }
-    Bivio::IO::File->chdir('..');
+    $_F->do_in_dir(
+        $_F->mkdir_p($_F->tmp_path($req, 'demo_files')),
+        sub {
+            foreach my $x (
+                ['Public/file.txt' => 'text/plain'],
+                ['private/file.html' => '<html><body>text/html</body></html>'],
+                ['private/image.gif' => 'image/gif'],
+            ) {
+                my($f, $c) = @$x;
+                $_F->mkdir_parent_only($f);
+                $_F->write($f, $c);
+            }
+            foreach my $u (qw(DEMO XAPIAN_DEMO GUEST XAPIAN_GUEST BTEST_READ)) {
+                $self->set_realm_and_user($self->$u(), $self->$u());
+                $self->new_other('Bivio::Util::RealmFile')->import_tree('');
+                $self->model('RealmFile')->do_iterate(
+                    sub {
+                        my($f) = @_;
+                        $f->update({is_public => 1})
+                            if $f->get('path') =~ /public/i;
+                        return 1;
+                    },
+                    'path',
+                );
+            }
+        },
+    );
     return;
 }
 
