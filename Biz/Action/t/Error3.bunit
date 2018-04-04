@@ -3,7 +3,7 @@
 config({
     'Bivio::IO::ClassLoader' => {
 	maps => {
-	    Action => ['Bivio::Biz::Action::t::Error3', 'Bivio::Biz::Action'],
+	    Action => ['Bivio::Biz::Action::t::Error3', 'Bivio::PetShop::Action', 'Bivio::Biz::Action'],
 	},
     },
 });
