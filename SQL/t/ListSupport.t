@@ -32,6 +32,27 @@ use Bivio::Biz::PropertyModel;
 use Bivio::SQL::ListQuery;
 use Bivio::SQL::Support;
 
+# Establish known state for the models below
+for my $table (qw(t_list1_t t_list2_t)) {
+    if (Bivio::Die->catch(sub {
+        Bivio::SQL::Connection->execute("drop table $table");
+        Bivio::SQL::Connection->commit;
+    })) {
+        Bivio::SQL::Connection->rollback;
+    }
+    Bivio::SQL::Connection->execute(<<"EOF");
+	create table $table (
+	    date_time DATE,
+            toggle NUMERIC(1) not null,
+	    auth_id NUMERIC(18) not null,
+	    name VARCHAR(30) not null,
+            value VARCHAR(30),
+	    gender NUMERIC(1) NOT NULL,
+            primary key(date_time, toggle)
+	)
+EOF
+    Bivio::SQL::Connection->commit;
+}
 
 package Bivio::Biz::Model::TListT1;
 use Bivio::Base 'Bivio::Biz::PropertyModel';
@@ -94,10 +115,12 @@ my($names) = ['name00'..'name09'];
 foreach $m ('TListT1', 'TListT2') {
     my($pkg) = "Bivio::Biz::Model::$m";
     my($table) = $pkg->get_instance->get_info('table_name');
-    Bivio::Die->catch(sub {
+    if (Bivio::Die->catch(sub {
 	Bivio::SQL::Connection->execute("drop table $table");
-    });
-    Bivio::SQL::Connection->commit;
+        Bivio::SQL::Connection->commit;
+    })) {
+        Bivio::SQL::Connection->rollback;
+    }
     Bivio::SQL::Connection->execute(<<"EOF");
 	create table $table (
 	    date_time DATE,
