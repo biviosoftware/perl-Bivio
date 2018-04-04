@@ -619,13 +619,6 @@ sub _base {
 	    $proto->merge_projects,
 	    rpm_user => 'nobody',
 	},
-	'Bivio::ShellUtil' => {
-	    vacuum_db_continuously => {
-		daemon_max_children => 1,
-		daemon_sleep_after_start => 15 * 60,
-		daemon_log_file => 'vacuumdb.log',
-	    },
-	},
 	$proto->merge_http_log({
 	    # These are defaults, which may be overriden for testing,
 	    # which is why they are here
