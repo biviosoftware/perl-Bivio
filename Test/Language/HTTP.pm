@@ -1090,7 +1090,7 @@ sub verify_uri {
 }
 
 sub verify_zip {
-    my($self, $expected) = @_;    
+    my($self, $expected) = @_;
     # Recursively unzips the current response and compares against the
     # expected zip file contents passed as an array ref in I<expected>.
     # The array contains pairs of expected member names and expected
@@ -1123,7 +1123,7 @@ sub verify_zip {
     #     'a.zip' => [
     # 	      'a.txt' => undef,
     # 	      'b.zip' => [
-    # 	          'b1.txt' => undef,            
+    # 	          'b1.txt' => undef,
     # 	      ],
     # 	      'c.txt' => undef,
     #      ],
@@ -1538,7 +1538,7 @@ sub _send_request {
 }
 
 sub _test_script_location {
-    my($self) = @_; 
+    my($self) = @_;
     return $self->get('test_script')
         . ':'
 	. _get_script_line($self);
