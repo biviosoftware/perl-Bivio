@@ -95,6 +95,10 @@ sub validate_main_args {
 	    'recipient name (len=', length($recipient), ") too long",
 	);
     }
+    print("$local_agent[0]\n");
+    if ($local_agent[0] !~ m{\bfalse\b} && _is_local_user($proto, $recipient)) {
+	exec(@local_agent);
+    }
     return ($res, $client_addr || '127.0.0.1', $recipient, $url);
 }
 
@@ -102,6 +106,13 @@ sub _fail_with_error {
     my($err, @msg) = @_;
     print(STDERR @msg, "\n");
     return $_SYSEXIT->{$err};
+}
+
+sub _is_local_user {
+    my($proto, $recipient) = @_;
+    $recipient =~ s/^(.*?)\@.*$/$1/;
+    $recipient =~ s/^(.*?)\+.*$/$1/;
+    return getpwnam($recipient) ? 1 : 0;
 }
 
 sub _is_ok {
