@@ -55,8 +55,6 @@ commands:
     tables - list tables of current database
     table_exists table - returns 1 if table exists
     upgrade_db -- upgrade the database
-    vacuum_db [args] -- runs vacuumdb command (must be run as postgres)
-    vacuum_db_continuously -- run vacuum_db as a daemon
     write_bop_ddl_files -- call SQL.DDL->write_files in current directory
 EOF
 }
@@ -241,7 +239,10 @@ sub destroy_dbms {
 	if $self->get_request->is_production;
     my($db) = $_C->get_dbi_config->{database};
     $self->are_you_sure("DROP THE ENTIRE $db DATABASE?");
-    $self->piped_exec("dropdb --user=postgres $db", '', 1);
+    my($auth) = $_C->get_dbi_config('dbms');
+    local($ENV{PGUSER}) = $auth->{user};
+    local($ENV{PGPASSWORD}) = $auth->{password};
+    $self->piped_exec("dropdb $db", '', 1);
     return;
 }
 
@@ -311,9 +312,10 @@ sub export_db {
 	. '-'
 	. $db->{database}
 	. '.pg_dump';
+    local($ENV{PGPASSWORD}) = $db->{password};
+    local($ENV{PGUSER}) = $db->{user};
     $self->piped_exec(
-	"pg_dump --user='$db->{user}' --clean --format=c --blobs "
-	. " --file='$f' '$db->{database}'");
+	"pg_dump --clean --format=c --blobs --file='$f' '$db->{database}'");
     return "Exported $db->{database} to $f";
 }
 
@@ -355,10 +357,9 @@ sub import_tables_only {
     }
     # need to commit so pg_restore can access the tables
     $_C->commit;
-
-    $self->piped_exec("pg_restore --user='$db->{user}'"
-	. " --dbname='$db->{database}' --data-only '$backup_file'");
-
+    local($ENV{PGPASSWORD}) = $db->{password};
+    local($ENV{PGUSER}) = $db->{user};
+    $self->piped_exec("pg_restore --dbname='$db->{database}' --data-only '$backup_file'");
     $_C->ping_connection;
     return;
 }
@@ -368,23 +369,21 @@ sub init_dbms {
     $self->req;
     my($c) = _assert_postgres($self);
     my($db, $user, $pass) = @$c{qw(database user password)};
-    my($v) = ${$self->piped_exec("psql --version")} =~ /(\d+)/s;
+    my($auth) = $_C->get_dbi_config('dbms');
+    local($ENV{PGUSER}) = $auth->{user};
+    local($ENV{PGPASSWORD}) = $auth->{password};
     my($res) = '';
-    _init_template1($self)
-	if $v >= 8;
+    _init_template1($self);
     unless (_user_exists($self)) {
 	$self->piped_exec(
-	    'createuser --user=postgres'
-	    . ($v < 8 ? ' --no-adduser'
-		 : ' --no-superuser --no-createdb --no-createrole')
-	    . " $user");
+	    "createuser --no-superuser --no-createdb --no-createrole $user");
 	_run_other($self, template1 => "ALTER USER $user WITH PASSWORD '$pass'");
 	$res .= " user '$user' and";
     }
     $self->piped_exec(
-	'createdb --user=postgres'
+	'createdb'
 	. (defined($clone_db) ? " --template=$clone_db " : '')
-	. ($v < 8 ? '' : ' --encoding=SQL_ASCII')
+	. ' --encoding=SQL_ASCII'
 	. " --owner=$user $db",
     );
     $res .= " database '$db'";
@@ -772,47 +771,6 @@ sub upgrade_db {
     return;
 }
 
-sub vacuum_db {
-    my($self, @arg) = @_;
-    # Runs I<vacuumdb> with I<args> with a lock.  Prints output using
-    # L<Bivio::IO::Alert::print_literally|Bivio::IO::Alert/"print_literally">
-    # so will appear in log when called by
-    # L<vacuum_db_continuously|"vacuum_db_continuously">.
-    _assert_postgres($self);
-    $self->lock_action(sub {
-        $self->use('IO.Alert')->print_literally(${
-	    $self->piped_exec(
-		join(' ', 'vacuumdb ', map("'$_'", @arg), '2>&1'),
-		'',
-		1,
-	    ),
-	});
-    });
-    return;
-}
-
-sub vacuum_db_continuously {
-    my($self, $period_minutes) = @_;
-    # Runs L<vacuum_db|"vacuum_db"> as a daemon.  You need to set the configuration
-    # I<vacuum_db_continuously> in L<Bivio::ShellUtil|Bivio::ShellUtil>.
-    my($c) = _assert_postgres($self);
-    $self->run_daemon(sub {
-#TODO: See how often --analyze should be run
-#TODO: Configure separately for each database?
-        return [
-	    __PACKAGE__,
-	    'vacuum_db',
-	    '--verbose',
-	    $ENV{USER} eq 'postgres'
-	        ? '--all'
-	        : ("--user=$c->{user}", "--dbname=$c->{database}"),
-	],
-    },
-       'vacuum_db_continuously',
-    );
-    return;
-}
-
 sub write_bop_ddl_files() {
     my($self) = @_;
     $self->use('SQL.DDL')->write_files;
@@ -902,14 +860,14 @@ sub _init_template1 {
 	template1 => 'select lanname from pg_language where lanname = ?',
 	['plpgsql'],
     )};
-    $self->piped_exec('createlang --user=postgres plpgsql template1');
+    $self->piped_exec('createlang plpgsql template1');
     foreach my $dir (qw(/usr/share/pgsql/contrib /usr/local/share)) {
 	next unless -d $dir;
 	$_F->do_in_dir($dir, sub {
 	    foreach my $file (qw(lwpostgis.sql spatial_ref_sys.sql)) {
 		last unless -f $file;
 		$self->piped_exec(
-		    "psql --user=postgres --dbname=template1 --file=$file");
+		    "psql --dbname=template1 --file=$file");
 	    }
 	    return;
 	});
