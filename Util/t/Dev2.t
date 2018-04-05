@@ -8,6 +8,8 @@ BEGIN {
 my($loaded) = 0;
 END {print "not ok 1\n" unless $loaded;}
 BEGIN {
+    # See IO.Config which checks this var for BCONF mode like this
+    $ENV{BIVIO_HTTPD_PORT} = 8000;
     $ENV{BCONF} = 'Bivio::PetShop::BConf';
 }
 use Bivio::Util::Dev;
