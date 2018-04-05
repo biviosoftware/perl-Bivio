@@ -95,7 +95,6 @@ sub validate_main_args {
 	    'recipient name (len=', length($recipient), ") too long",
 	);
     }
-    print("$local_agent[0]\n");
     if ($local_agent[0] !~ m{\bfalse\b} && _is_local_user($proto, $recipient)) {
 	exec(@local_agent);
     }
