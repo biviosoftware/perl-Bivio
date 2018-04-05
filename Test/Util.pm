@@ -120,7 +120,7 @@ sub mock_sendmail {
 		sub {_uri_for_task($self, 'MAIL_RECEIVE_DISPATCH', $r)},
 		\$die,
 	    );
-	$http =~ s{^http://}{};
+	$http =~ s{^https?://}{};
 	$http .= '/%s';
 	my($res) = $self->piped_exec(
 	    "b-sendmail-http 127.0.0.1 '$r' '$http'"
@@ -520,7 +520,7 @@ sub _uri_for_task {
     my($http) = $self->use('TestLanguage.HTTP')->home_page_uri(
 	$facade->get('uri'));
     b_die($http, ': TestLanguage.HTTP->home_page_uri missing http:')
-        unless $http =~ m{http://[^/]+};
+        unless $http =~ m{https?://[^/]+};
     return $http . $self->req->format_uri({
 	realm => undef,
 	task_id => $task,

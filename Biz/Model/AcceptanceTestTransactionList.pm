@@ -34,7 +34,7 @@ sub get_http_response {
     my($req_fn) = $_ATL->get_result_directory(sprintf('%s/http-%05d.req', $path, $req_nr));
     my($res_fn) = $_ATL->get_result_directory(sprintf('%s/http-%05d.res', $path, $res_nr));
     my($command) = _read_file($req_fn);
-    my($base, undef, $extension) = $command =~ qr{(http://[^/]+/).*?((\.\S+)(\s|$|\?))?};
+    my($base, undef, $extension) = $command =~ qr{(https?://[^/]+/).*?((\.\S+)(\s|$|\?))?};
     $extension ||= '.html';
     my($sts, @res_lines) = _read_file($res_fn);
     my($nr_empty);

@@ -4,9 +4,9 @@ test_setup('PetShop');
 my($assert_http) = sub {verify_uri(qr{^http:})};
 home_page();
 $assert_http->();
-(my $uri = get_uri()) =~ s/^http/https/;
+(my $uri = get_uri()) =~ s/^https?/https/;
 # If there's no port on the URI, then can do SSL
-my($ssl) = $uri =~ m{^http://[^/]+/};
+my($ssl) = $uri =~ m{^https?://[^/]+/};
 my($assert_https) = sub {$ssl && verify_uri(qr{^https:})};
 $assert_http->();
 visit_uri('/fourem/wiki/PrivatePage');
