@@ -665,7 +665,7 @@ sub info_dev {
 sub info_test {
     my($self) = @_;
     return
-	if !$_C->is_test || !-w __FILE__;
+	if !$_C->is_test;
     return [
 	map(
 	    {
