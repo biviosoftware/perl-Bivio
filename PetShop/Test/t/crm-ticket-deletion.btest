@@ -4,24 +4,27 @@ test_setup('PetShop', 'groupware');
 home_page();
 login_as('crm_tech1');
 
+# Assumes want_status_email is true
 my($tests) = [
     {
 	link_suffix => ['', '_1', '_1', '_1'],
-	deleted => ['A', 'B', 'C'],
+	deleted => ['A1', 'B1', 'C1'],
     },
     {
 	link_suffix => ['_4', '_3', '_2', ''],
-	deleted => ['D', 'C', 'B'],
+	deleted => ['D2', 'C2', 'B2'],
     },
     {
 	link_suffix => ['_4', '', '_2', '_1'],
-	deleted => ['D', 'A', 'C'],
+	deleted => ['D3', 'A3', 'C3'],
     },
 ];
 
 follow_menu_link(qw(^crm_forum$ ^tickets$));
 my($tickets_uri) = get_uri();
+my($i) = 0;
 foreach my $test (@$tests) {
+    $i++;
     my($subject) = 'Subject ' . random_string();
     my($text) = 'text '.  random_string();
     visit_uri($tickets_uri);
@@ -29,14 +32,14 @@ foreach my $test (@$tests) {
     submit_form('Send', {
 	'To:' => generate_local_email(random_string()),
 	'Subject:' => $subject,
-	'Text:' => $text . ' A',
+	'Text:' => $text . ' A' . $i,
     });
     foreach my $suffix (qw(B C D)) {
 	follow_link_in_table('Ticket', 'Subject', $subject);
 	follow_link('Answer');
 	submit_form('Send', {
 	    'Action:' => 'Open',
-	    'Text:' => $text . ' ' . $suffix,
+	    'Text:' => $text . ' ' . $suffix . $i,
 	});
     }
     visit_uri($tickets_uri);
@@ -59,4 +62,3 @@ foreach my $test (@$tests) {
 	}
     }
 }
-
