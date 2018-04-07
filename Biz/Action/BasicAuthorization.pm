@@ -27,7 +27,7 @@ sub handle_pre_auth_task {
 	unless $auth;
     $f->disable_assert_cookie;
     my($u, $p)
-	= (MIME::Base64::decode(($auth =~ /Basic\s*(\S+)/)[0] || '') || '')
+	= (MIME::Base64::decode(($auth =~ /Basic\s*(.+)/)[0] || '') || '')
 	    =~ /^([^:]+):(.*)$/;
     unless ($u) {
 	b_warn($u, ': could not parse user');
