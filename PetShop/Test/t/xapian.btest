@@ -8,10 +8,12 @@ my($code) = random_string(16, ['a' .. 'z']);
 submit_form(Send => {
     topic => $code,
     text => 'hello goodbye telephone',
-    # On CentOS 7 VMs this takes 90 seconds
-    'Attach:#1' => file_field('xapian/complicated.pdf'),
+    # complicated.pdf on CentOS 7 VMs this takes 90 seconds so
+    # using simple.pdf for now.
+    'Attach:#1' => file_field('xapian/simple.pdf'),
 });
-user_agent_timeout(100);
+# Only needed for complicated.pdf
+#user_agent_timeout(100);
 poll_page(verify_text => $code);
 visit_uri("$uri/files");
 follow_link_in_table("Name", "Name", "/", "Actions", "Modify");
@@ -42,6 +44,7 @@ follow_link(qr{^cool $code});
 verify_text(qr{edit this page}i);
 go_back();
 submit_form({
-    _anon => 'timeliness',
+    # simple.pdf contains the word python
+    _anon => 'python',
 });
 follow_link(qr{$code});
