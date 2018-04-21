@@ -10,11 +10,19 @@ ShellUtilConf({
                 $f,
                 sub {
                     my($d) = @_;
-                    return $$d =~ s/BUNIT_SERIAL/$serial/ ? $d : undef;
+                    return $$d =~ s/ 20149\d{5} / $serial / ? $d : undef;
                 },
             );
         }
         return;
+    },
+    compute_return => sub {
+        my($case, $actual, $expect) = @_;
+        if (! -s 'var/named/named.root') {
+            b_die('var/named/named.root: not found');
+        }
+        unlink('var/named/named.root');
+        return $actual;
     },
 });
 generate_cases();
