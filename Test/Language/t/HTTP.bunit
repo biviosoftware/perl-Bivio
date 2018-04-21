@@ -135,7 +135,7 @@ follow_link('Sign-in');
 follow_link('New User');
 go_back();
 follow_link(qr/New Use/);
-my($id) = 'test_http_' + random_string(6);
+my($id) = 'test_http_' . random_string(6);
 submit_form('Create MyAccount' => {
     'Password:' => 'password',
     'Email:' => "ignore-$id\@bivio.biz",
