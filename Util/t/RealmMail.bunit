@@ -29,9 +29,7 @@ foreach my $item (@$data) {
     });
     next unless @files;
     foreach my $file (@files) {
-        my($fullname) = $_UIF->get_local_file_name($_LFT->REALM_DATA,
-            $_FP->join('bulletin',
-                       $bulletin->get('bulletin_id'), $file->{name}));
+        my($fullname) = $bulletin->attachment_directory . '/' . $file->{name};
         $_IOF->mkdir_parent_only($fullname, 02770);
         $_IOF->write($fullname, \($file->{content}));
     }

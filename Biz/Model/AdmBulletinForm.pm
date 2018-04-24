@@ -6,9 +6,7 @@ use Bivio::Base 'Biz.FormModel';
 
 my($_T) = b_use('MIME.Type');
 my($_IOF) = b_use('IO.File');
-my($_LFT) = b_use('UI.LocalFileType');
 my($_DT) = b_use('Type.DateTime');
-my($_UIF) = b_use('UI.Facade');
 
 sub execute_empty {
     # (self) : undef
@@ -75,7 +73,7 @@ sub internal_create_bulletin {
         body_content_type => $self->get('body_content_type'),
         %{$self->get_model_properties('Bulletin')},
     });
-    _copy_attachments($self, $bulletin->get('bulletin_id'))
+    _copy_attachments($self, $bulletin)
         if $self->get('attachment_files');
     return $bulletin;
 }
@@ -146,9 +144,9 @@ sub read_body {
     # (proto, string) : string_ref
     # Returns the current message body.
     my($self, $body_file) = @_;
-    return $_IOF->read($_UIF->get_local_file_name(
-	$_LFT->CACHE, 'bulletin/' . ($body_file || $self->get('body_file')),
-	$self->req));
+    return $_IOF->read(
+        _cache_file_name($body_file || $self->get('body_file')),
+    );
 }
 
 sub validate {
@@ -171,17 +169,19 @@ sub _append_field {
     return;
 }
 
-sub _copy_attachments {
-    # (self, string) : undef
-    # Copy attachments to the REALM_DATA file space.
-    my($self, $bulletin_id) = @_;
+sub _cache_file_name {
+    my($base_name) = @_;
+    return b_use('Biz.File')->absolute_path('AdmBulletinForm') . '/' . $base_name;
+}
 
+sub _copy_attachments {
+    my($self, $bulletin) = @_;
     foreach my $file (split("\t", $self->get('attachment_files'))) {
-        _write_file($self, $_UIF->get_local_file_name(
-            $_LFT->REALM_DATA, 'bulletin/'
-            . $bulletin_id . '/' . $file, $self->req),
-            $_IOF->read($_UIF->get_local_file_name(
-                $_LFT->CACHE, 'bulletin/' . $file, $self->req)));
+        _write_file(
+            $self,
+            $bulletin->attachment_directory . '/' . $file,
+            $_IOF->read(_cache_file_name($file)),
+        );
     }
     return;
 }
@@ -226,8 +226,7 @@ sub _write_cache_file {
     $self->get($field)->{filename} =~ s/^.*?([^\\\/]+)$/$1/;
     my($name) = $_DT->local_now_as_file_name
         . "-$$-" . $self->get($field)->{filename};
-    my($file) = $_UIF->get_local_file_name(
-        $_LFT->CACHE, 'bulletin/' . $name, $self->req);
+    my($file) = _cache_file_name($name);
     _write_file($self, $file, $self->get($field)->{content});
     return $name;
 }

@@ -6,6 +6,12 @@ use Bivio::Base 'Biz.PropertyModel';
 
 my($_DT) = b_use('Type.DateTime');
 
+sub attachment_directory {
+    my($self) = @_;
+    return b_use('Biz.File')->absolute_path('ModelBulletin')
+        . '/' . $self->get('bulletin_id');
+}
+
 sub create {
     my($self, $values) = @_;
     $values->{date_time} ||= $_DT->now;
@@ -23,13 +29,8 @@ sub delete_all {
 }
 
 sub get_attachment_file_names {
-    # Returns an array of attachment file names.
     my($self) = @_;
-    my($dir) = b_use('UI.Facade')->get_local_file_name(
-        b_use('UI.LocalFileType')->REALM_DATA,
-	'bulletin/' . $self->get('bulletin_id'),
-	$self->req,
-    );
+    my($dir) = $self->attachment_directory('bulletin_id');
     return [<$dir/*>];
 }
 

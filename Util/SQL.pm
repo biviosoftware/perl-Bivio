@@ -152,7 +152,6 @@ sub create_test_db {
 	sub {
 	    $self->destroy_db;
 	    $self->create_db;
-	    $self->delete_realm_files;
 	    $self->initialize_test_data;
 	    return;
 	},
@@ -189,18 +188,6 @@ sub ddl_files {
 	    $base.'-'.$_.'.sql';
 	} qw(tables constraints sequences);
     } @$base_names];
-}
-
-sub delete_realm_files {
-    my($self) = @_;
-    $_F->rm_children(
-	b_use('UI.Facade')->get_local_file_name(
-	    b_use('UI.LocalFileType')->REALM_DATA,
-	    '',
-	    $self->req,
-	),
-    );
-    return;
 }
 
 sub destroy_db {
