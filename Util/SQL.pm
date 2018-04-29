@@ -684,8 +684,10 @@ sub restore_dbms_dump {
     $self->commit_or_rollback;
     $self->init_dbms;
     $self->commit_or_rollback;
-    my($db, $u) = @{$_C->get_dbi_config}{qw(database user)};
-    return ${$self->piped_exec("pg_restore --dbname='$db' -U '$u' '$dump'")};
+    my($db, $u, $p) = @{$_C->get_dbi_config}{qw(database user password)};
+    local($ENV{PGUSER}) = $u;
+    local($ENV{PGPASSWORD}) = $p;
+    return ${$self->piped_exec("pg_restore --dbname='$db' '$dump'")};
 }
 
 sub restore_model {
