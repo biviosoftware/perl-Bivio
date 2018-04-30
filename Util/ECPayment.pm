@@ -19,3 +19,5 @@ sub process_all {
     b_use('Action.ECPaymentProcessAll')->execute(shift->req);
     return;
 }
+
+1;
