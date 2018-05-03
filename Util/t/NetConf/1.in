@@ -1,6 +1,6 @@
 # -*-cperl-*-
 {
-    host => {devices => {eth0 => 'www.bivio.biz', 'eth0:1' => 'bivio.biz'}},
+    host => {devices => {eth0 => 'petshop.bivio.biz', 'eth0:1' => 'n99.us'}},
     net => {
         global => {
 	    search_domain => 'bivio.biz',
@@ -11,9 +11,9 @@
 	    dns => [qw(resolver1.dallas.linode.com resolver2.dallas.linode.com)],
 	},
 	net2 => {
-	    cidr => '216.87.82.64/27',
-	    gateway => '216.87.82.65',
-	    dns => [qw(cachens1.viawest.net cachens2.viawest.net)],
+	    cidr => '216.17.132.32/27',
+	    gateway => '216.17.132.62',
+	    dns => [qw(google-public-dns-a.google.com)],
 	},
     },
 };

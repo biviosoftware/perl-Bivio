@@ -9,3 +9,4 @@ do_test_backdoor(UserLoginForm => {
 });
 home_page();
 verify_text('MyAccount');
+https://petshop.alpha.bivio.biz/t*backdoor?RealmOwner.password=password&form_model=UserLoginForm&login=demo
