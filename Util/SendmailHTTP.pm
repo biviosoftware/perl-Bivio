@@ -95,7 +95,7 @@ sub validate_main_args {
 	    'recipient name (len=', length($recipient), ") too long",
 	);
     }
-    if ($local_agent[0] !~ m{\bfalse\b} && _is_local_user($proto, $recipient)) {
+    if ($local_agent[0] && $local_agent[0] !~ m{\bfalse\b} && _is_local_user($proto, $recipient)) {
 	exec(@local_agent);
     }
     return ($res, $client_addr || '127.0.0.1', $recipient, $url);
