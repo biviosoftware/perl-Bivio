@@ -4,7 +4,7 @@ Type();
 [
     from_domain => [
 	localhost => '127.0.0.1',
-	'bivio.biz' => '216.87.82.75',
+	'petshop.bivio.biz' => '216.17.132.37',
     ],
     from_inet => [
 	pack('N', 0) => '0.0.0.0',
@@ -14,7 +14,7 @@ Type();
 	'255.254.253.252' => pack('N', 0xfffefdfc),
     ],
     unsafe_to_domain => [
-	'216.87.82.87' => 'apa7.bivio.biz',
+	'216.17.132.33' => 'fnl1i.bivio.biz',
 	'0.0.0.0' => [undef],
     ],
 ];
