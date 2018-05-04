@@ -6,7 +6,7 @@ use Bivio::Base 'Widget.ControlBase';
 
 my($_O) = b_use('Mail.Outgoing');
 my($_A) = b_use('Mail.Address');
-my($_L) = b_use('IO.Log');
+my($_F) = b_use('IO.File');
 
 sub execute {
     my($self, $req) = @_;
@@ -14,7 +14,7 @@ sub execute {
 	unless my $msg = _render($self, $req);
     $msg->enqueue_send($req);
     my($lf);
-    $_L->write($lf, $msg->as_string)
+    $_F->write($lf, $msg->as_string)
         if $self->unsafe_render_attr('log_file', $req, \$lf) && $lf;
     return;
 }
