@@ -457,6 +457,14 @@ sub merge_http_log {
                     'Bivio::Mail::Outgoing::_rewrite_from:.* from header missing email, ignoring',
                     'Bivio::Agent::HTTP::Form::parse:.* text/xml: unknown Content-Type',
                     'Attempt to serve directory: /var/www/html/',
+                    # these no longer indiciate a problem (all errors could indicate a problem)
+		    'form_errors=\{',
+		    'Bivio::DieCode::CORRUPT_QUERY',
+                    'support mail from user marked as spam, overriding',
+                    'credit card processed:',
+                    'UserPasswordQuery.*NOT_FOUND',
+                    # Dreamweaver does this
+                    'HTTP_CONFLICT mkcol',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
@@ -472,9 +480,7 @@ sub merge_http_log {
 		# See ignore_unless_count_list
 		ignore_unless_count_list => [
 		    'Bivio::DieCode::CLIENT_ERROR',
-		    'Bivio::DieCode::CORRUPT_QUERY',
 		    'Bivio::DieCode::UPDATE_COLLISION',
-		    'form_errors=\{',
 		    'Bivio::Biz::FormContext::_parse_error',
 		    'HTTP::Query::_correct.*correcting query',
 		    'request aborted, rolling back',
