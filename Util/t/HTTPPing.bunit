@@ -10,9 +10,9 @@ config({
 [
     class() => [
 	page => [
-	    ['http://www.bivio.biz/hm/contact'] => [''],
-	    ['http://www.bivio.biz'] => [''],
-	    ['http://www.bivio.biz/not-found'] => qr/\b404\b/,
+	    ['https://www.bivio.biz/bp/Clients'] => [''],
+	    ['https://www.bivio.biz'] => [''],
+	    ['https://www.bivio.biz/not-found'] => qr/\b404\b/,
 	],
 	{
 	    method => 'process_status',
