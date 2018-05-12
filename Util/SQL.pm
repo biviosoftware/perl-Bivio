@@ -679,7 +679,7 @@ sub reinitialize_sequences {
 }
 
 sub restore_dbms_dump {
-    my($self, $dump) = @_;
+    my($self, $dump, $extra_args) = @_;
     $self->destroy_dbms;
     $self->commit_or_rollback;
     $self->init_dbms;
@@ -687,7 +687,8 @@ sub restore_dbms_dump {
     my($db, $u, $p) = @{$_C->get_dbi_config}{qw(database user password)};
     local($ENV{PGUSER}) = $u;
     local($ENV{PGPASSWORD}) = $p;
-    return ${$self->piped_exec("pg_restore --dbname='$db' '$dump'")};
+    $extra_args ||= '';
+    return ${$self->piped_exec("pg_restore --dbname='$db' $extra_args '$dump'")};
 }
 
 sub restore_model {
