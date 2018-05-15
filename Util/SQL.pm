@@ -346,7 +346,7 @@ sub import_tables_only {
     $_C->commit;
     local($ENV{PGPASSWORD}) = $db->{password};
     local($ENV{PGUSER}) = $db->{user};
-    $self->piped_exec("pg_restore --dbname='$db->{database}' --data-only '$backup_file'");
+    $self->piped_exec("pg_restore --dbname='$db->{database}' --jobs=4 --data-only '$backup_file'");
     $_C->ping_connection;
     return;
 }
@@ -688,7 +688,7 @@ sub restore_dbms_dump {
     local($ENV{PGUSER}) = $u;
     local($ENV{PGPASSWORD}) = $p;
     $extra_args ||= '';
-    return ${$self->piped_exec("pg_restore --dbname='$db' $extra_args '$dump'")};
+    return ${$self->piped_exec("pg_restore --dbname='$db' --jobs=4 $extra_args '$dump'")};
 }
 
 sub restore_model {
