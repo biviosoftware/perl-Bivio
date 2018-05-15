@@ -465,6 +465,7 @@ sub merge_http_log {
                     'UserPasswordQuery.*NOT_FOUND',
                     # Dreamweaver does this
                     'HTTP_CONFLICT mkcol',
+                    'missing from header, ignoring',
 		],
 		error_list => [
 		    # Don't add errors that we don't want counts on, e.g.
