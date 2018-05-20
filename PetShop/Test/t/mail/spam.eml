@@ -1,18 +1,18 @@
-Return-Path: <betty@example.co.uk>
+Return-Path: <devnull@bivio.com>
 Delivered-To: qinzdd@www.example.com
 Received: from rv-out-0708.google.com (rv-out-0708.google.com [209.85.198.247])
 Received: by rv-out-0708.google.com with SMTP id l33sf433571rvb.52
 Received: by 10.141.179.13 with SMTP id g13mr1462563rvp.30.1244655730892;
 Received: by 10.141.179.13 with SMTP id g13mr1462552rvp.30.1244655730462;
 Received: from ?4.3.2.215? ([4.3.2.215])
-Received-SPF: softfail (google.com best guess record for domain of transitioning betty@example.co.uk does not designate 4.3.2.215 as permitted sender) client-ip=4.3.2.215;
-Authentication-Results: mx.google.com; spf=softfail (google.com best guess record for domain of transitioning betty@example.co.uk does not designate 4.3.2.215 as permitted sender) smtp.mail=betty@example.co.uk
+Received-SPF: softfail (google.com best guess record for domain of transitioning devnull@bivio.com does not designate 4.3.2.215 as permitted sender) client-ip=4.3.2.215;
+Authentication-Results: mx.google.com; spf=softfail (google.com best guess record for domain of transitioning devnull@bivio.com does not designate 4.3.2.215 as permitted sender) smtp.mail=devnull@bivio.com
 Date: Wed, 10 Jun 2009 10:42:10 -0700 (PDT)
 Message-Id: <4a2ff072.1f538c0a.6239.ffffd914SMTPIN_ADDED@mx.google.com>
-From: "heung TRepagnier" <betty@example.co.uk>
-To: qinzdd@example.com
+From: "heung TRepagnier" <devnull@bivio.com>
+To: blackhole@bivio.biz
 X-Spam-Flag: YES
-To: babybear@example.com
+To: devnull@bivio.biz
 Subject: Don’t Miss Tomorrow’s SolidWorks Incentive Webcast
 From: Yahoo <barney@yahoo.com>
 Reply-To: Yahoo <barney@yahoo.com>
@@ -117,7 +117,7 @@ Please share this invitation with your colleagues involved in purchasing & deplo
 
 
 <table cellpadding="5" width="100%" border="0"><td align="left" width="450" bgColor=ffffff>
-<a  href="http://www.yahoo.com"> 
+<a  href="http://www.yahoo.com">
 <img border="0" src="http://1.2.3.236/web6/newsletters/images/goelogo.gif">
 </a>
 </td><td width=100% cellpadding=5  bgColor=ffffff align="center" class="small">
@@ -134,4 +134,3 @@ notices such as this from Yahoo.</a>
 
 </td></tr></table>
 </td></table></body></html>
-
