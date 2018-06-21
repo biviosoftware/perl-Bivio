@@ -18,6 +18,7 @@ my($crm_alias) = EmailArray(remote_email('crm'));
 my($cal) = model('CRMActionList')->load_all;
 my($board) = remote_email('board*crm_forum');
 my($demo) = EmailArray(email('demo'));
+my($rand_cc) = EmailArray(email(random_string()));
 [
     empty_case({
 	action_id => $cal->id_to_name(-CRMThreadStatus('OPEN')->as_int),
@@ -66,12 +67,12 @@ my($demo) = EmailArray(email('demo'));
     }],
     inline_case(sub {
 	my($count) = 0;
-	my($mtl) = model('MailThreadList')->do_iterate(sub {
+	model('MailThreadList')->do_iterate(sub {
 	    my($it) = @_;
 	    $count++;
 	    b_die('too many messages')
 		if $count > 3;
-	    return 0
+	    return 1
 		if $count < 2;
 	    assert_equals(
 		$it->get('RealmMail.from_email'),
@@ -96,6 +97,7 @@ my($demo) = EmailArray(email('demo'));
 	}, 'unauth_iterate_start', {
 	    parent_id => $ctid,
 	});
+        assert_equals($count, 3);
     }),
     empty_case({
 	to => $crm_alias,
@@ -103,7 +105,7 @@ my($demo) = EmailArray(email('demo'));
     }),
     [{
 	action_id => $cal->id_to_name(-CRMThreadStatus('OPEN')->as_int),
-	cc => [''],
+        cc => EmailArray([]),
 	subject => 'new subj1',
 	update_only => 1,
     }] => [{
@@ -122,8 +124,8 @@ my($demo) = EmailArray(email('demo'));
     inline_case(sub {$ctid = $who = undef}),
     [{
 	to => $crm_alias,
-	subject => 's2',
-	body => 'b2',
+	subject => 's3',
+	body => 'b3',
 	action_id => $cal->id_to_name(req('auth_user_id')),
     }] => [{
 	'Model.CRMThread' => {
@@ -135,5 +137,22 @@ my($demo) = EmailArray(email('demo'));
     }],
     empty_case({
         action_id => $cal->id_to_name(req('auth_user_id')),
+	subject => 's3',
+        to => $crm_alias,
+        cc => EmailArray([]),
+    }),
+    [{
+	to => $crm_alias,
+        cc => $rand_cc,
+	subject => 's3',
+	body => 'b3-r',
+	action_id => $cal->id_to_name(req('auth_user_id')),
+    }] => [{}],
+    inline_case(sub {$who = 'ALL'}),
+    empty_case({
+        action_id => $cal->id_to_name(-CRMThreadStatus('CLOSED')->as_int),
+	subject => 's3',
+        to => $crm_alias,
+        cc => $rand_cc,
     }),
 ];

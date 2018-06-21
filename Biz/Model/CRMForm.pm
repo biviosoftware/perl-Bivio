@@ -5,6 +5,8 @@ use strict;
 use Bivio::Base 'Model.MailForm';
 
 my($_RFC) = b_use('Mail.RFC822');
+my($_MA) = b_use('Mail.Address');
+my($_EA) = b_use('Type.EmailArray');
 my($_CTS) = b_use('Type.CRMThreadStatus');
 my($_CT) = b_use('Model.CRMThread');
 my($_BRM) = b_use('Action.BoardRealmMail');
@@ -43,8 +45,11 @@ sub execute_empty {
 	    sub {
 		my($ct, $cal) = @_;
 		$status = $ct->get('crm_thread_status');
+                my($who) = $self->internal_query_who;
 		_acquire_lock($ct)
-		    unless my $discuss = $self->internal_query_who->eq_realm;
+		    unless my $discuss = $who->eq_realm;
+                _append_other_emails_to_cc($self)
+                    if $who->eq_all;
 		return (
 		    action_id =>
 			$cal->id_to_name(
@@ -265,6 +270,46 @@ sub _action_id_for_owner_and_status {
         || $cal->status_to_id_in_list($ct->get('crm_thread_status'))
             : $cal->status_to_id_in_list(
                 $self->internal_empty_status_when_exists);
+}
+
+sub _append_other_emails_to_cc {
+    my($self) = @_;
+    my($dups) = {
+        %{$self->get('to')->as_hash},
+        %{$self->get('cc')->as_hash},
+        # board email only gets removed on execute_ok, and it
+        # would get added here if there were any emails just to
+        # the board.
+        ($_BRM->format_email_for_realm($self->req) => 1),
+    };
+    my($res) = $self->get('cc')->as_array;
+    $self->new_other('RealmMail')->do_iterate(
+        sub {
+            my($it) = @_;
+            for my $x ($_I->new($it)->get_reply_email_arrays(
+                $self->internal_query_who,
+                $self->get(qw(realm_email realm_emails)),
+                $self->req,
+            )) {
+                $x->do_iterate(
+                    sub {
+                        my($e) = @_;
+                        if (!$dups->{$e}++) {
+                            push(@$res, $e);
+                        }
+                        return 1;
+                    },
+                );
+            }
+            return 1;
+        },
+	'realm_file_id ASC',
+        {
+            'thread_root_id' => $self->get('RealmMail.thread_root_id'),
+        },
+    );
+    $self->internal_put_field(cc => $_EA->new($res));
+    return;
 }
 
 sub _fields_changed {
