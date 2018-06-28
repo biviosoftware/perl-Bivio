@@ -16,7 +16,20 @@ b_use('IO.Config')->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
-    rewrite_from_domains => [qw(google.com ebay.com paypal.com yahoo.com aol.com verizonwireless.com ymail.com aim.com live.com uwyo.edu ttu.edu)],
+    rewrite_from_domains => [qw(
+        aim.com
+        aol.com
+        ebay.com
+        google.com
+        live.com
+        notification.capitalone.com
+        paypal.com
+        ttu.edu
+        uwyo.edu
+        verizonwireless.com
+        yahoo.com
+        ymail.com
+    )],
     allow_resend_from => [],
 });
 #TODO: get rid of global state - put it on the request instead
