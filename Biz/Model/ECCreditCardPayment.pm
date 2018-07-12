@@ -40,6 +40,11 @@ sub internal_initialize {
     };
 }
 
+sub is_accepted_currency {
+    # POSIT: payment processor is static, get_payment_processor is
+    return shift->get_payment_processor->is_accepted_currency(@_);
+}
+
 sub process_payment {
     my($self, $form) = @_;
     $self->req->with_realm($self->req('auth_user'), sub {

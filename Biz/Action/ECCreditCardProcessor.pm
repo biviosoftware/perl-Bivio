@@ -14,28 +14,41 @@ use HTTP::Request ();
 #   http://www.authorize.net/support/AIM_guide.pdf
 
 my($_ECPS) = b_use('Type.ECPaymentStatus');
+my($_CN) = b_use('Type.CurrencyName');
 our($_TRACE);
-Bivio::IO::Config->register(my $_CFG = {
-    login => undef,
-    password => undef,
+my($_CURRENCIES);
+my($_C) = b_use('IO.Config');
+$_C->register(my $_CFG = {
+    Bivio::IO::Config->NAMED => {
+	login => Bivio::IO::Config->REQUIRED,
+	password => Bivio::IO::Config->REQUIRED,
+    },
     test_mode => 1,
 });
 
 sub execute_process {
-    # (self, Agent.Request) : boolean
     # Process credit card payment online by contacting the payment gateway
     # for the current ECPayment.
     my($proto, $req) = @_;
     my($payment) = $req->get('Model.ECPayment');
-    b_die('invalid currency, expect USD: ', $payment)
-	unless $payment->get('currency_name') eq 'USD';
-    _process_payment($proto, $payment);
+    my($cn) = $payment->get('currency_name');
+    b_die($cn, ': invalid currency for payment ', $payment, '; valid=', $_CURRENCIES)
+	unless my $cfg = $_CFG->{$cn};
+    _process_payment($proto, $cfg, $payment);
     return;
 }
 
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
+    $_CURRENCIES = [sort(grep($_CN->is_valid($_), keys(%$_CFG)))];
+    unless (@$_CURRENCIES) {
+        if (! $_C->is_dev) {
+            # Don't output config, because contains passwords
+            b_die('no currencies defined in ECCreditCardProcessor config');
+        }
+        $_CURRENCIES = [$_CN->get_default];
+    }
     return;
 }
 
@@ -48,16 +61,25 @@ sub internal_get_additional_form_data {
     return [];
 }
 
+sub is_accepted_currency {
+    my(undef, $value) = @_;
+    return 0
+        unless $value;
+    return grep(
+        $value eq $_,
+        @{$_CURRENCIES || b_die('CURRENCIES not initialized')},
+    ) ? 1 : 0;
+}
+
 sub _process_payment {
-    # (proto, Model.ECPayment) : undef
     # Send transaction data to the payment gateway and process results.
     # See http://secure.authorize.net/docs/developersguide.pml for
     # details of required field names and values.
-    my($proto, $payment) = @_;
+    my($proto, $cfg, $payment) = @_;
     return
 	unless $payment->get('method')->eq_credit_card;
 
-    unless ($_CFG->{login} && $_CFG->{password}) {
+    unless ($cfg->{login} && $cfg->{password}) {
 	b_warn('Missing payment gateway login configuration')
 	    if $payment->req->is_production;
 	return;
@@ -65,7 +87,7 @@ sub _process_payment {
     my($hreq) = HTTP::Request->new(
 	POST => 'https://secure.authorize.net/gateway/transact.dll');
     $hreq->content_type('application/x-www-form-urlencoded');
-    $hreq->content(_transact_form_data($proto, $payment));
+    $hreq->content(_transact_form_data($proto, $cfg, $payment));
     _trace($hreq) if $_TRACE;
     my($response) = b_use('Ext.LWPUserAgent')->new->request($hreq);
     my($response_string) = $response->as_string;
@@ -82,10 +104,9 @@ sub _process_payment {
 }
 
 sub _transact_form_data {
-    # (proto, Model.ECPayment) : string
     # Prepare payment transaction form data for capturing the amount.
     # Will add x_Test_Request=TRUE if in test mode.
-    my($proto, $payment) = @_;
+    my($proto, $cfg, $payment) = @_;
     my($cc_payment) = $payment->get_model('ECCreditCardPayment');
     my(undef, undef, undef, undef, $m, $y) = b_use('Type.Date')
 	->to_parts($cc_payment->get('card_expiration_date'));
@@ -109,8 +130,8 @@ sub _transact_form_data {
         [x_ADC_Delim_Data => 'TRUE'],
         [x_ADC_URL => 'FALSE'],
 	[x_Version => '3.0'],
-	[x_Login => $_CFG->{login}],
-        [x_Password => $_CFG->{password}],
+	[x_Login => $cfg->{login}],
+        [x_Password => $cfg->{password}],
 	[x_Type => $payment->get('status')->get_authorize_net_type],
 	defined($cc_payment->get('processor_transaction_number'))
 	    ? [x_Trans_ID => $cc_payment->get('processor_transaction_number')]
