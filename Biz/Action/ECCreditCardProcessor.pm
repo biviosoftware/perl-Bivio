@@ -44,8 +44,24 @@ sub handle_config {
     $_CFG = $cfg;
     $_CURRENCIES = [sort(grep($_CN->is_valid($_), keys(%$_CFG)))];
     unless (@$_CURRENCIES) {
-        # Don't output config, because contains passwords
-        b_die('no currencies defined in ECCreditCardProcessor config');
+        if ($_CFG->{login} && $_CFG->{password}) {
+            #DEPRECATED
+            $_CFG->{$_CN->get_default} = {
+                login => $_CFG->{login},
+                password => $_CFG->{password},
+            };
+        }
+        elsif ($_C->is_production) {
+            # Don't output config, because contains passwords
+            b_die('no currencies defined in ECCreditCardProcessor config');
+        }
+        else {
+            # test or dev
+            $_CFG->{$_CN->get_default} = {
+                login => $_FAKE_LOGIN,
+                password => 'x',
+            };
+        }
     }
     return;
 }
