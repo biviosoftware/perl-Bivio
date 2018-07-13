@@ -171,6 +171,10 @@ sub dev {
 	    'Bivio::Agent::Request' => {
 		can_secure => 0,
 	    },
+            'Bivio::Biz::Action::ECCreditCardProcessor' => {
+                # defaults to fake login
+                USD => {},
+            },
 	    'Bivio::Biz::File' => {
 		root => "$files_root/db",
 		backup_root => "$files_root/bkp",

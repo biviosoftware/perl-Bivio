@@ -18,10 +18,11 @@ my($_CN) = b_use('Type.CurrencyName');
 our($_TRACE);
 my($_CURRENCIES);
 my($_C) = b_use('IO.Config');
+my($_FAKE_LOGIN) = '<fake>';
 $_C->register(my $_CFG = {
     Bivio::IO::Config->NAMED => {
-	login => Bivio::IO::Config->REQUIRED,
-	password => Bivio::IO::Config->REQUIRED,
+	login => $_FAKE_LOGIN,
+	password => 'x',
     },
     test_mode => 1,
 });
@@ -33,7 +34,7 @@ sub execute_process {
     my($payment) = $req->get('Model.ECPayment');
     my($cn) = $payment->get('currency_name');
     b_die($cn, ': invalid currency for payment ', $payment, '; valid=', $_CURRENCIES)
-	unless my $cfg = $_CFG->{$cn};
+	unless my $cfg = $_C->unsafe_get($cn);
     _process_payment($proto, $cfg, $payment);
     return;
 }
@@ -43,11 +44,8 @@ sub handle_config {
     $_CFG = $cfg;
     $_CURRENCIES = [sort(grep($_CN->is_valid($_), keys(%$_CFG)))];
     unless (@$_CURRENCIES) {
-        if (! $_C->is_dev) {
-            # Don't output config, because contains passwords
-            b_die('no currencies defined in ECCreditCardProcessor config');
-        }
-        $_CURRENCIES = [$_CN->get_default];
+        # Don't output config, because contains passwords
+        b_die('no currencies defined in ECCreditCardProcessor config');
     }
     return;
 }
@@ -84,21 +82,33 @@ sub _process_payment {
 	    if $payment->req->is_production;
 	return;
     }
-    my($hreq) = HTTP::Request->new(
-	POST => 'https://secure.authorize.net/gateway/transact.dll');
-    $hreq->content_type('application/x-www-form-urlencoded');
-    $hreq->content(_transact_form_data($proto, $cfg, $payment));
-    _trace($hreq) if $_TRACE;
-    my($response) = b_use('Ext.LWPUserAgent')->new->request($hreq);
-    my($response_string) = $response->as_string;
-    _trace($response_string) if $_TRACE;
-    b_die('request failed: ', $response_string)
-	unless $response->is_success;
+    my($result_code, @details);
+    if ($_CFG->{test_mode} && $cfg->{login} eq $_FAKE_LOGIN) {
+        $result_code = (_transact_form_data($proto, $cfg, $payment) =~ /x_Amount=(\d+)/)[0];
+        b_info('FAKE: not making a request');
+    }
+    else {
+        my($site) = 'secure';
+        if ($_CFG->{test_mode}) {
+            b_info('TEST: using test.authorize.net');
+            $site = 'test';
+        }
+        my($hreq) = HTTP::Request->new(
+            POST => "https://$site.authorize.net/gateway/transact.dll");
+        $hreq->content_type('application/x-www-form-urlencoded');
+        $hreq->content(_transact_form_data($proto, $cfg, $payment));
+        _trace($hreq) if $_TRACE;
+        my($response) = b_use('Ext.LWPUserAgent')->new->request($hreq);
+        my($response_string) = $response->as_string;
+        _trace($response_string) if $_TRACE;
+        b_die('request failed: ', $response_string)
+            unless $response->is_success;
 #TODO: RJN: Need more error checking on responses from external sites.
 #      @details is just assumed to be correct later on.
-    my($result_code, @details) = split(',', $response->content);
-    b_die('cannot parse result string: ', $response->content)
-	unless defined($result_code);
+        ($result_code, @details) = split(',', $response->content);
+        b_die('cannot parse result string: ', $response->content)
+            unless defined($result_code);
+    }
     _update_status($proto, $payment, $result_code, \@details);
     return;
 }
@@ -123,7 +133,7 @@ sub _transact_form_data {
 	$amount = 1 if $amount < 1 || $amount > 3;
     } else {
         $card_number = $cc_payment->get('card_number');
-	# Amounts are always positiv.
+	# Amounts are always positive
         $amount = b_use('Type.Amount')->abs($payment->get('amount'));
     }
     return join('&', map(join('=', @$_),
