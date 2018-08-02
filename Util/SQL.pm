@@ -18,8 +18,9 @@ my($_RT) = b_use('Auth.RealmType');
 my($_TI) = b_use('Agent.TaskId');
 my($_D) = b_use('Bivio.Die');
 my($_IC) = b_use('IO.Config');
-my($_BUNDLE) = [
-];
+my($_BUNDLE) = [qw(
+    ec_credit_card_gb_eu
+)];
 my($_AGGREGATES) = [qw(
     group_concat(text)
 )];
@@ -614,6 +615,22 @@ sub internal_upgrade_db_bundle {
     return;
 }
 
+sub internal_upgrade_db_ec_credit_card_gb_eu {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE ec_credit_card_payment_t
+    ADD COLUMN card_first_name VARCHAR(30),
+    ADD COLUMN card_last_name VARCHAR(30),
+    ADD COLUMN card_address VARCHAR(100),
+    ADD COLUMN card_city VARCHAR(30),
+    ADD COLUMN card_state VARCHAR(30),
+    ADD COLUMN card_country VARCHAR(2),
+    ADD COLUMN card_email VARCHAR(100)
+/
+EOF
+    return;
+}
+
 sub is_oracle {
     my($self) = @_;
     # May not have a database at this point to connect to.
@@ -819,7 +836,6 @@ sub _exists {
 
 sub _expand_text_size {
     my($self, $names) = @_;
-
     foreach my $name (@$names) {
 	my($table, $col) = split(/\./, $name);
 	$self->run(<<"EOF");
@@ -898,6 +914,11 @@ sub _run_other {
     $self->commit_or_rollback;
     $c->disconnect;
     return $res;
+}
+
+sub _sentinel_ec_credit_card_gb_eu {
+    my($self) = @_;
+    return $self->column_exists('ec_credit_card_payment_t', 'card_first_name');
 }
 
 sub _user_exists {
