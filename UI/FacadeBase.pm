@@ -682,6 +682,12 @@ EOF
 		card_number => 'Credit Card Number',
 		card_expiration_date => 'Card Expiration Date',
 		processor_response => 'Processor Response',
+                card_first_name => 'First Name',
+                card_last_name => 'Last Name',
+                card_city => 'City',
+                card_email => 'Email',
+                card_street1 => 'Street Line 1',
+                card_street2 => 'Street Line 2',
 	    ]],
 	    [icon => [
 		pager_next => 'b_icon_chevron_right',

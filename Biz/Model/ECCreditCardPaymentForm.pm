@@ -16,6 +16,9 @@ sub execute_empty {
     return unless $self->req('auth_user_id');
     $self->internal_put_field('ECCreditCardPayment.card_name' =>
         $self->req(qw(auth_user display_name)));
+    my($user) = $self->req('auth_user')->get_model('User');
+    $self->internal_put_field('ECCreditCardPayment.card_first_name' => $user->get('first_name'));
+    $self->internal_put_field('ECCreditCardPayment.card_last_name' => $user->get('last_name'));
     my($address) = $self->new_other('Address');
 
     if ($address->unauth_load({
@@ -23,6 +26,16 @@ sub execute_empty {
     })) {
         $self->internal_put_field('ECCreditCardPayment.card_zip' =>
             $address->get('zip'));
+        $self->internal_put_field('ECCreditCardPayment.card_city' => $address->get('city'));
+        $self->internal_put_field(card_street1 => $address->get('street1'));
+        $self->internal_put_field(card_street2 => $address->get('street2'));
+    }
+
+    my($email) = $self->new_other('Email');
+    if ($email->unauth_load({
+        realm_id => $self->req('auth_user_id'),
+    })) {
+        $self->internal_put_field('ECCreditCardPayment.card_email' => $email->get('email'));
     }
     return;
 }
@@ -32,8 +45,17 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
-	    map('ECCreditCardPayment.' . $_,
-		qw(card_number card_name card_zip)),
+	    map('ECCreditCardPayment.' . $_, qw(
+                card_number
+                card_name
+                card_zip
+                card_first_name
+                card_last_name
+                card_city
+                card_state
+                card_country
+                card_email
+            )),
 	    {
 		name => 'card_exp_month',
 		type => 'Month',
@@ -44,8 +66,19 @@ sub internal_initialize {
 		type => 'YearWindow',
 		constraint => 'NOT_NULL',
 	    },
+            {
+                name => 'card_street1',
+                type => 'Address.street1',
+                constraint => 'NONE',
+            },
+            {
+                name => 'card_street2',
+                type => 'Address.street2',
+                constraint => 'NONE',
+            },
         ],
         other => [
+            'ECCreditCardPayment.card_address',
             {
                 name => 'processor_error',
                 type => 'String',
@@ -57,6 +90,22 @@ sub internal_initialize {
 	    },
         ],
     });
+}
+
+sub internal_pre_execute {
+    my($self) = @_;
+    my(@res) = shift->SUPER::internal_pre_execute(@_);
+    $self->internal_put_field(
+        'ECCreditCardPayment.card_address',
+        join(' ', $self->get('card_street1') || '', $self->get('card_street2') || ()),
+    );
+    if ($self->get('ECCreditCardPayment.card_first_name')) {
+        $self->internal_put_field(
+            'ECCreditCardPayment.card_name',
+            join(' ', $self->get('ECCreditCardPayment.card_first_name'), $self->get('ECCreditCardPayment.card_last_name')),
+        );
+    }
+    return @res;
 }
 
 sub process_payment {
