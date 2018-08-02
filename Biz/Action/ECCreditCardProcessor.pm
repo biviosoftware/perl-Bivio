@@ -202,7 +202,11 @@ sub _optional_fields() {
         }
         if ($f ne 'email') {
             $v =~ s/\s+/ /g;
-            $v =~ s/[^a-z0-9 ]//g;
+            $v =~ s/[^a-z0-9 ]//ig;
+            if (!length($v)) {
+                # Let the credit card processor return the error
+                next;
+            }
         }
         push(
             @$res,
@@ -228,10 +232,7 @@ sub _update_status {
 	b_warn($status, ': ', $details, ' ', $payment);
     }
     elsif ($result_code eq '3') {
-        # Error. Keep existing status except for the following fatal cases
-        $status = $error_code =~ /^([5-9]|1[07]|2[4789]|35|54)$/
-	    ? $_ECPS->FAILED
-	    : $payment->get('status');
+        $status = $_ECPS->FAILED;
 	b_warn($status, ': ', $details, ' ', $payment);
     }
     else {
