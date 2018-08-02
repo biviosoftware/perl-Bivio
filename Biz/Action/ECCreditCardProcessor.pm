@@ -15,6 +15,7 @@ use HTTP::Request ();
 
 my($_ECPS) = b_use('Type.ECPaymentStatus');
 my($_CN) = b_use('Type.CurrencyName');
+my($_HTML) = b_use('Bivio.HTML');
 our($_TRACE);
 my($_CURRENCIES);
 my($_C) = b_use('IO.Config');
@@ -152,31 +153,63 @@ sub _transact_form_data {
 	# Amounts are always positive
         $amount = b_use('Type.Amount')->abs($payment->get('amount'));
     }
-    return join('&', map(join('=', @$_),
-        [x_ADC_Delim_Data => 'TRUE'],
-        [x_ADC_URL => 'FALSE'],
-	[x_Version => '3.0'],
-	[x_Login => $cfg->{login}],
-        [x_Password => $cfg->{password}],
-	[x_Type => $payment->get('status')->get_authorize_net_type],
-	defined($cc_payment->get('processor_transaction_number'))
-	    ? [x_Trans_ID => $cc_payment->get('processor_transaction_number')]
-	    : (),
-	[x_Amount => $amount],
-	[x_Card_Num => $card_number],
-	[x_Description => $payment->get('description')],
-	[x_Exp_Date => $exp_date],
-	[x_Cust_ID => $payment->get('realm_id')],
-	[x_Invoice_Num => $payment->get('ec_payment_id')],
-	$cc_payment->get('card_zip') =~ /\S/
-	    ? [x_Zip => b_use('Bivio::HTML')
-	        ->escape_uri($cc_payment->get('card_zip'))]
-	    : (),
-        $_CFG->{test_mode}
-	    ? [x_Test_Request => 'TRUE']
-	    : (),
-	@{$proto->internal_get_additional_form_data($payment)},
-    ));
+    return join(
+        '&',
+        map(
+            join('=', @$_),
+            [x_ADC_Delim_Data => 'TRUE'],
+            [x_ADC_URL => 'FALSE'],
+            [x_Version => '3.0'],
+            [x_Login => $cfg->{login}],
+            [x_Password => $cfg->{password}],
+            [x_Type => $payment->get('status')->get_authorize_net_type],
+            defined($cc_payment->get('processor_transaction_number'))
+                ? [x_Trans_ID => $cc_payment->get('processor_transaction_number')]
+                : (),
+            [x_Amount => $amount],
+            [x_Card_Num => $card_number],
+            [x_Description => $payment->get('description')],
+            [x_Exp_Date => $exp_date],
+            [x_Cust_ID => $payment->get('realm_id')],
+            [x_Invoice_Num => $payment->get('ec_payment_id')],
+            @{_optional_fields($cc_payment)},
+            $_CFG->{test_mode}
+                ? [x_Test_Request => 'TRUE']
+                : (),
+            @{$proto->internal_get_additional_form_data($payment)},
+        ),
+    );
+}
+
+sub _optional_fields() {
+    my($cc) = @_;
+    my($res) = [];
+    for my $x (
+        # these are the size restrictions
+        [email => 255],
+        [first_name => 50],
+        [last_name => 50],
+        [address => 60],
+        [city => 40],
+        [state => 40],
+        [zip => 20],
+        [country => 2],
+    ) {
+        my($f, $l) = @$x;
+        my($v) = $cc->get("card_$f");
+        if (!defined($v) || $v !~ /\S/) {
+            next;
+        }
+        if ($f ne 'email') {
+            $v =~ s/\s+/ /g;
+            $v =~ s/[^a-z0-9 ]//g;
+        }
+        push(
+            @$res,
+            ["x_$f" => $_HTML->escape_uri(substr($v, 0, $l))],
+        )
+    }
+    return $res;
 }
 
 sub _update_status {
