@@ -18,15 +18,20 @@ b_use('IO.Config')->register(my $_CFG = {
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
     rewrite_from_domains => [qw(
         aim.com
+        alertsp.chase.com
         aol.com
         ebay.com
+        fedex.com
         google.com
         live.com
+        message.capitalone.com
         notification.capitalone.com
+        notifications.tdameritrade.com
         paypal.com
         ttu.edu
         uwyo.edu
         verizonwireless.com
+        welcome.aexp.com
         yahoo.com
         ymail.com
     )],
