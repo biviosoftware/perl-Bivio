@@ -13,30 +13,8 @@ sub execute_empty {
     $self->internal_put_field('ECCreditCardPayment.card_number' =>
 	b_use('Type.ECCreditCardNumber')->TEST_NUMBER)
         unless $self->req->is_production;
-    return unless $self->req('auth_user_id');
-    $self->internal_put_field('ECCreditCardPayment.card_name' =>
-        $self->req(qw(auth_user display_name)));
-    my($user) = $self->req('auth_user')->get_model('User');
-    $self->internal_put_field('ECCreditCardPayment.card_first_name' => $user->get('first_name'));
-    $self->internal_put_field('ECCreditCardPayment.card_last_name' => $user->get('last_name'));
-    my($address) = $self->new_other('Address');
-
-    if ($address->unauth_load({
-        realm_id => $self->req('auth_user_id'),
-    })) {
-        $self->internal_put_field('ECCreditCardPayment.card_zip' =>
-            $address->get('zip'));
-        $self->internal_put_field('ECCreditCardPayment.card_city' => $address->get('city'));
-        $self->internal_put_field(card_street1 => $address->get('street1'));
-        $self->internal_put_field(card_street2 => $address->get('street2'));
-    }
-
-    my($email) = $self->new_other('Email');
-    if ($email->unauth_load({
-        realm_id => $self->req('auth_user_id'),
-    })) {
-        $self->internal_put_field('ECCreditCardPayment.card_email' => $email->get('email'));
-    }
+    $self->set_defaults_from_user($self->req('auth_user_id'))
+        if $self->ureq('auth_user_id');
     return;
 }
 
@@ -122,6 +100,36 @@ sub process_payment {
             status => b_use('Type.ECPaymentStatus')->TRY_CAPTURE,
         })->get('ec_payment_id'),
     })->process_payment($form);
+}
+
+sub set_defaults_from_user {
+    my($self, $user_id) = @_;
+    my($user_realm) = $self->new_other('RealmOwner')->unauth_load_or_die({
+        realm_id => $user_id,
+    });
+    $self->internal_put_field('ECCreditCardPayment.card_name' => $user_realm->get('display_name'));
+    my($user) = $user_realm->get_model('User');
+    $self->internal_put_field('ECCreditCardPayment.card_first_name' => $user->get('first_name'));
+    $self->internal_put_field('ECCreditCardPayment.card_last_name' => $user->get('last_name'));
+    my($address) = $self->new_other('Address');
+    if ($address->unauth_load({
+        realm_id => $user_id,
+    })) {
+        $self->internal_put_field('ECCreditCardPayment.card_zip' =>
+            $address->get('zip'));
+        foreach my $field (qw(city state country)) {
+            $self->internal_put_field("ECCreditCardPayment.card_$field" => $address->get($field));
+        }
+        $self->internal_put_field(card_street1 => $address->get('street1'));
+        $self->internal_put_field(card_street2 => $address->get('street2'));
+    }
+    my($email) = $self->new_other('Email');
+    if ($email->unauth_load({
+        realm_id => $user_id,
+    })) {
+        $self->internal_put_field('ECCreditCardPayment.card_email' => $email->get('email'));
+    }
+    return;
 }
 
 sub validate {
