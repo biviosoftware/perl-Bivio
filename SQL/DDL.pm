@@ -1225,13 +1225,13 @@ CREATE TABLE ec_credit_card_payment_t (
   card_expiration_date DATE NOT NULL,
   card_name VARCHAR(100) NOT NULL,
   card_zip VARCHAR(30) NOT NULL,
-  card_first_name VARCHAR(30) NOT NULL,
-  card_last_name VARCHAR(30) NOT NULL,
-  card_address VARCHAR(100) NOT NULL,
-  card_city VARCHAR(30) NOT NULL,
-  card_state VARCHAR(30) NOT NULL,
-  card_country VARCHAR(2) NOT NULL,
-  card_email VARCHAR(100) NOT NULL,
+  card_first_name VARCHAR(30),
+  card_last_name VARCHAR(30),
+  card_address VARCHAR(100),
+  card_city VARCHAR(30),
+  card_state VARCHAR(30),
+  card_country VARCHAR(2),
+  card_email VARCHAR(100),
   CONSTRAINT ec_credit_card_payment_t1 PRIMARY KEY(ec_payment_id)
 )
 /
