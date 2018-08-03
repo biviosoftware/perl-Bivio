@@ -200,7 +200,15 @@ sub _optional_fields() {
         if (!defined($v) || $v !~ /\S/) {
             next;
         }
-        if ($f ne 'email') {
+        if ($f eq 'email') {
+            # When we supply an email, the merchant interface automatically sends
+            # a message to the user. This turns it off.
+            push(
+                @$res,
+                ['x_email_customer', 'FALSE'],
+            );
+        } else {
+            # All other fields can't have symbols
             $v =~ s/\s+/ /g;
             $v =~ s/[^a-z0-9 ]//ig;
             if (!length($v)) {
@@ -211,7 +219,7 @@ sub _optional_fields() {
         push(
             @$res,
             ["x_$f" => $_HTML->escape_uri(substr($v, 0, $l))],
-        )
+        );
     }
     return $res;
 }
