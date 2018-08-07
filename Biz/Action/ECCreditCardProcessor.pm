@@ -254,6 +254,9 @@ sub _update_status {
     $payment->update({
 	status => $status,
     });
+    # remove html entities from message
+    $msg =~ s/\&\w+;/ /g
+        if $msg;
     $payment->get_model('ECCreditCardPayment')->update({
 	processed_date_time => b_use('Type.DateTime')->now,
 	processor_response => $msg,
