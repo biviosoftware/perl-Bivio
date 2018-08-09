@@ -23,11 +23,13 @@ my($write_log) = sub {
 	    $y = sprintf('%04d', $y);
 	    my($mmm) = Date()->english_month3($m);
 	    system(
-		'gzip',
+		'xz',
 		IO_File()->write(
-		    Date()->to_local_file_name(Date()->add_days($date, 1))
-			. '123456-access_log',
-		    qq{$host 1.2.3.4 1234 - li-200001 [$d/$mmm/$y:18:55:30 -0600] "GET /Page$bytes HTTP/1.1" 200 $bytes "http://$host/bp/StartPage" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:15.0) Gecko/20100101 Firefox/15.0.1"\n},
+                    sprintf(
+                        'access_log-%s',
+                        Date()->to_local_file_name(Date()->add_days($date, 1)),
+                    ),
+                    qq{$host 1.2.3.4 1234 - li-200001 [$d/$mmm/$y:18:55:30 -0600] "GET /Page$bytes HTTP/1.1" 200 $bytes "http://$host/bp/StartPage" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:15.0) Gecko/20100101 Firefox/15.0.1"\n},
 		),
 	    );
 	}
