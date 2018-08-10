@@ -45,7 +45,7 @@ ValidHTTPCodes="200 201 207 302 304"
 EOF
 
 b_use('IO.Config')->register(my $_CFG = {
-    log_base => '/var/log',
+    log_base => '/var/log/%s',
 });
 
 sub USAGE {
@@ -226,10 +226,7 @@ sub _log_dir {
     my($self) = @_;
     $self->initialize_fully;
     return $_FP->add_trailing_slash(
-	$_FP->join(
-	    $_CFG->{log_base},
-	    $_UIF->get_default->get('local_file_prefix'),
-	),
+        sprintf($_CFG->{log_base}, $_UIF->get_default->get('local_file_prefix')),
     );
 }
 
