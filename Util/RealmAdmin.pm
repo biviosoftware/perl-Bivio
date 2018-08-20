@@ -259,7 +259,7 @@ sub scan_realm_id {
 	['%_t']);
 
     foreach my $table (@$tables) {
-	next if $table eq 'task_log_t';
+        next if $table eq 'task_log_t' || $table =~ /^pg_/;
 	my($count) = 0;
 	$_C->do_execute(sub {
 	    my($row) = @_;
