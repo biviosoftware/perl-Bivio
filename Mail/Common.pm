@@ -28,6 +28,7 @@ b_use('IO.Config')->register(my $_CFG = {
         notification.capitalone.com
         notifications.tdameritrade.com
         paypal.com
+        stripe.com
         ttu.edu
         uwyo.edu
         verizonwireless.com
