@@ -1,0 +1,60 @@
+# Copyright (c) 2017 bivio Software, Inc.  All rights reserved.
+# $Id$
+Request('initialize_fully');
+config({
+    'Bivio::Mail::Common' => {
+        # read input until EOF, and ignore command line args
+	sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
+        allow_resend_from => [],
+        rewrite_from_domains => [],
+    },
+});
+my($_USER) = 'bunit@bivio.biz';
+
+my($_REWRITE_FROM) = <<'EOF';
+Message-ID: <123@example.com>
+From: Any User <any_user@stripe.com>
+Date: Thu, 1 Jul 2018 09:33:35 -0400
+
+body
+EOF
+
+# has p=none
+(my $_NOT_REWRITE_FROM1 = $_REWRITE_FROM) =~ s/stripe.com/gmail.com/;
+# has no dmarc
+(my $_NOT_REWRITE_FROM2 = $_REWRITE_FROM) =~ s/stripe.com/bivio.com/;
+[
+    [Bivio::Mail::Incoming->new(\$_REWRITE_FROM)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
+	send => [
+	    [req()] => undef,
+	],
+	unsafe_get_header => [
+	    from => qr{^"Any User via \S+" <ignore-.*>$},
+	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_NOT_REWRITE_FROM1)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
+	send => [
+	    [req()] => undef,
+	],
+	unsafe_get_header => [
+	    from => qr{^Any User <any_user.gmail.com>$},
+	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_NOT_REWRITE_FROM2)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
+	send => [
+	    [req()] => undef,
+	],
+	unsafe_get_header => [
+	    from => qr{^Any User <any_user.bivio.com>$},
+	],
+    ],
+];
