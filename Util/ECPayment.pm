@@ -15,6 +15,8 @@ EOF
 }
 
 sub process_all {
+    my($self) = @_;
+    $self->initialize_fully;
     # No global lock is needed
     b_use('Action.ECPaymentProcessAll')->execute(shift->req);
     return;
