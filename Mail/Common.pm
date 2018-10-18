@@ -28,6 +28,7 @@ b_use('IO.Config')->register(my $_CFG = {
         notification.capitalone.com
         notifications.tdameritrade.com
         paypal.com
+        stripe.com
         ttu.edu
         uwyo.edu
         verizonwireless.com
@@ -214,7 +215,7 @@ sub test_language_setup {
     my($self) = @_;
     b_use('IO.Config')->introduce_values({
 	'Bivio::Mail::Common' => {
-	    rewrite_from_domains => [],
+	    rewrite_from_domains => ['avoid-all-rewrites-in-mock-sendmail'],
             allow_resend_from => [],
 	},
     }) if @{$self->internal_get_config->{rewrite_from_domains}}

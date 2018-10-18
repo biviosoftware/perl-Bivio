@@ -638,6 +638,14 @@ sub is_oracle {
 	? 1 : 0;
 }
 
+sub psql {
+    my($self) = @_;
+    my($db, $u, $p) = @{$_C->get_dbi_config}{qw(database user password)};
+    local($ENV{PGUSER}) = $u;
+    local($ENV{PGPASSWORD}) = $p;
+    CORE::exec('psql', $db);
+}
+
 sub realm_role_config {
     my($proto) = @_;
     return $_REALM_ROLE_CONFIG ||= [

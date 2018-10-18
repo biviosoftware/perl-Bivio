@@ -13,7 +13,7 @@ my($_F) = b_use('IO.File');
 my($_FP) = b_use('Type.FilePath');
 my($_FN) = b_use('Type.ForumName');
 my($_UIF) = b_use('UI.Facade');
-my($_ACCESS_LOG_GLOB) = '*-access_log.gz';
+my($_ACCESS_LOG_FMT) = 'access_log-%s.xz';
 my($_AWSTATS) = '/usr/local/awstats';
 my($_AWSTATS_PL) = "$_AWSTATS/wwwroot/cgi-bin/awstats.pl";
 my($_BUILD_PAGES) = "$_AWSTATS/tools/awstats_buildstaticpages.pl";
@@ -45,7 +45,7 @@ ValidHTTPCodes="200 201 207 302 304"
 EOF
 
 b_use('IO.Config')->register(my $_CFG = {
-    log_base => '/var/log',
+    log_base => '/var/log/%s',
 });
 
 sub USAGE {
@@ -66,7 +66,7 @@ sub daily_report {
     _create_report(
 	$self,
 	_yesterday($bp->{today}),
-	"gunzip -c @{[_log_dir($self)]}" . _previous_days_log($self, $bp->{today}),
+	"xz -d -c @{[_log_dir($self)]}" . _previous_days_log($self, $bp->{today}),
     );
     return;
 }
@@ -103,12 +103,13 @@ sub import_history {
 	$self,
 	$_D->date_from_parts(1, $mon, $bp->{Year}),
 	sprintf(
-	    '%s %s%04d%02d%s',
+	    '%s %s%s',
 	    $_LOG_MERGER,
 	    _log_dir($self),
-	    $bp->{Year},
-	    $mon,
-	    $_ACCESS_LOG_GLOB,
+            sprintf(
+                $_ACCESS_LOG_FMT,
+                sprintf('%04d%02d??', $bp->{Year}, $mon),
+            ),
 	),
     );
     return;
@@ -225,10 +226,7 @@ sub _log_dir {
     my($self) = @_;
     $self->initialize_fully;
     return $_FP->add_trailing_slash(
-	$_FP->join(
-	    $_CFG->{log_base},
-	    $_UIF->get_default->get('local_file_prefix'),
-	),
+        sprintf($_CFG->{log_base}, $_UIF->get_default->get('local_file_prefix')),
     );
 }
 
@@ -260,7 +258,7 @@ sub _organize_files {
 
 sub _previous_days_log {
     my($self, $today) = @_;
-    return $_D->to_file_name($today) . $_ACCESS_LOG_GLOB;
+    return sprintf($_ACCESS_LOG_FMT, $_D->to_file_name($today));
 }
 
 sub _sort_default_facade_first {

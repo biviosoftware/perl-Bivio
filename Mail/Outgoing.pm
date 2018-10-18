@@ -5,6 +5,8 @@ use strict;
 use Bivio::Base 'Mail.Common';
 use MIME::Base64 ();
 use MIME::QuotedPrint ();
+# prints messages which can be ignored at startup.
+Bivio::Die->eval(q{use Net::DNS ();});
 
 # C<Bivio::Mail::Outgoing> is used to create and send mail messages.
 # One can resend an existing mail message or simply create one from
@@ -411,7 +413,10 @@ sub _rewrite_from {
         }
     }
     else {
-        return 1;
+        my($d) = lc($_E->get_domain_part($old_email));
+        if (!_rewrite_from_lookup($d)) {
+            return 1;
+        }
     }
     my($new_email, $new_name) = _rewrite_from_generate(
         $self, $old_email, $old_name, $req);
@@ -445,6 +450,30 @@ sub _rewrite_from_generate {
     }
     $name .= ' via ' . b_use('UI.Facade')->get_value('mail_host', $req);
     return ($email, $name);
+}
+
+sub _rewrite_from_lookup {
+    my($domain) = @_;
+    my($res) = undef;
+    my($die) = b_catch(sub {
+        my($r) = Net::DNS::Resolver->new;
+        my($q) = $r->query("_dmarc.$domain", 'txt');
+        if ($q) {
+            for my $r ($q->answer) {
+                my($t) = $r->txtdata;
+                # Only look at the first answer
+                $res = !$t || $t =~ /p=none/ ? 0 : 1;
+                return;
+            }
+        }
+        # No answer
+        $res = 0;
+        return;
+    });
+    if ($die) {
+        b_info($domain, ': error, leaving undef: ', $die);
+    }
+    return $res;
 }
 
 1;
