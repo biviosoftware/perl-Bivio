@@ -26,7 +26,7 @@ my($_TRANSLITERATE) = {
     '3/4' => [qr{\x{00BE}}, qr{\xBE}],
     ' ' => [qr{[\x{00A0}\x{2028}\x{2009}]}, qr{\xA0}],
     '' => [qr{[\x{00AD}\x{200B}]}, qr{\xAD}],
-#TODO: remove these when we support unicode    
+#TODO: remove these when we support unicode
     'A' => [qr{[\x{00C0}-\x{00C5}]}, qr{[\xC0-\xC5]}],
     'AE' => [qr{\x00C6}, qr{[\xC6]}],
     'C' => [qw{\x00C7}, qr{[\xC7]}],
