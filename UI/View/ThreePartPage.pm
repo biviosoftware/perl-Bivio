@@ -55,6 +55,7 @@ sub internal_xhtml_adorned {
 	    view_widget_value('xhtml_favicon_tag'),
 	    view_widget_value('xhtml_head_tags'),
 	    view_widget_value('xhtml_seo_head_links'),
+            OpenGraphHead(),
 	    vs_rss_task_in_head(),
 	]),
 	html_tag_attrs => view_widget_value('xhtml_tag_attrs'),
@@ -213,7 +214,7 @@ sub internal_xhtml_adorned_attrs {
 	    MainErrors(),
 	    DIV_main_top(Join([
 		$self->internal_xhtml_tools(1),
-		DIV_title(view_widget_value('xhtml_title')),
+		DIV_title(OpenGraphProperty(view_widget_value('xhtml_title'), 'title')),
 		DIV_selector(
 		    view_widget_value('xhtml_selector')),
 		DIV_topic(view_widget_value('xhtml_topic')),

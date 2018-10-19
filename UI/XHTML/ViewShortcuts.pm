@@ -194,6 +194,24 @@ sub vs_alphabetical_chooser {
     ]), 'alphabetical_chooser');
 }
 
+sub vs_canonical_uri_for_this_page {
+    return URI({
+        require_absolute => 1,
+        query => [
+            sub {
+                my($source) = @_;
+                my($query) = $source->ureq('query');
+                if (ref($query) eq 'HASH') {
+                    foreach my $key (@$_DYNAMIC_QUERY_KEYS) {
+                        delete($query->{$key});
+                    }
+                }
+                return $query;
+            },
+        ],
+    });
+}
+
 sub vs_descriptive_field {
     my($proto, $field) = @_;
     my($name, $attrs) = ref($field) eq 'HASH'
@@ -202,7 +220,7 @@ sub vs_descriptive_field {
     $attrs ||= {};
     $name =~ /^(\w+)\.(.+)/;
     my($label, $input) = !$attrs->{wf_class}
-	&& ($attrs->{wf_type} || 
+	&& ($attrs->{wf_type} ||
 	    Bivio::Biz::Model->get_instance($1)->get_field_type($2))
 	    ->isa('Bivio::Type::Boolean') ? (
 	    undef,
@@ -567,7 +585,10 @@ sub vs_put_seo_list_links {
 		),
 		qw(prev next),
 	    ),
-	    _canonical_link(),
+            LINK({
+                REL => 'canonical',
+                HREF => vs_canonical_uri_for_this_page(),
+            }),
 	]),
     );
     return;
@@ -860,27 +881,6 @@ sub vs_xhtml_title {
 	],
 	{join_separator => ' '},
     );
-}
-
-sub _canonical_link {
-    return LINK({
-	REL => 'canonical',
-	HREF => URI({
-	    require_absolute => 1,
-	    query => [
-		sub {
-		    my($source) = @_;
-		    my($query) = $source->ureq('query');
-		    if (ref($query) eq 'HASH') {
-			foreach my $key (@$_DYNAMIC_QUERY_KEYS) {
-			    delete($query->{$key});
-			}
-		    }
-		    return $query;
-		},
-	    ],
-	}),
-    });
 }
 
 sub _format_integer_ago {

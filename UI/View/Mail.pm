@@ -278,8 +278,7 @@ sub internal_thread_root_list_columns {
 		       ITEMPROP => 'name',
 		   },
 		),
-#TODO: class is misspelled		
-		DIV_b_exerpt(String(['excerpt']), {
+		DIV_b_excerpt(String(['excerpt']), {
 		    ITEMPROP => 'description',
 		}),
 		DIV_byline(Join([
@@ -426,8 +425,13 @@ sub _thread_list_director {
 		)),
 		qw(png jpeg gif),
 	     ),
-	     'text/html' => MailBodyHTML(['->get_body'], $self->PART_TASK),
-	     'text/plain' => MailBodyPlain(['->get_body']),
+	     'text/html' => MailBodyHTML(
+                 OpenGraphProperty(['->get_body'], 'description'),
+                 $self->PART_TASK,
+             ),
+	     'text/plain' => MailBodyPlain(
+                 OpenGraphProperty(['->get_body'], 'description'),
+             ),
 	     'x-message/rfc822-headers' => If(
 		 ['index'],
 		 vs_text_as_prose('MailPartList.forward'),

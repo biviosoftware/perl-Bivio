@@ -295,13 +295,6 @@ img.b_profile_label_avatar {
 td.b_msg_summary {
   CSS('msg_summary');
 }
-!TODO: class is mispelled in bOP, don't want fixed width anyway
-!.b_msg_summary div.b_excerpt {
-!  Font('msg_excerpt');
-!}
-.b_exerpt {
-!  word-break: break-all;
-}
 .b_msg_summary .byline,
 .b_msg_summary .date {
   display: inline;
