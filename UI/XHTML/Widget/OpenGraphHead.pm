@@ -50,7 +50,8 @@ sub initialize {
 sub _excerpt {
     my($v) = @_;
     # partial html needs to be encapsulated
-    $v = "<html><body>$v</body></html>";
+    $v = "<html><body>$v</body></html>"
+        unless $v =~ /<\s*html/i;
     return $_S->canonicalize_and_excerpt($_HS->to_text(\$v));
 }
 

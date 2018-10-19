@@ -32,7 +32,6 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($res) = $self->render_simple_attr('value', $source);
-    b_debug($res, $self->get('property'));
     if (length($res)) {
         my($h) = $source->req->get_if_exists_else_put($self->REQ_KEY, {});
         $h->{$self->get('property')} ||= $res;
