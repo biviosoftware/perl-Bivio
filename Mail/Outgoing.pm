@@ -462,7 +462,7 @@ sub _rewrite_from_lookup {
             for my $r ($q->answer) {
                 my($t) = $r->txtdata;
                 # Only look at the first answer
-                $res = !$t || $t =~ /p=none/ ? 0 : 1;
+                $res = !$t || $t =~ /\bp=none/ ? 0 : 1;
                 return;
             }
         }
