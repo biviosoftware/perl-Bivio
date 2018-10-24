@@ -42,7 +42,10 @@ sub initialize {
     my($self) = @_;
     $self->put(
         # only matters for anonymous users (robots)
-        control => ['!', '->ureq', 'auth_user'],
+        control => And(
+            ['!', '->ureq', 'auth_user'],
+            vs_task_has_uri(['->req', 'task_id']),
+        ),
     );
     return shift->SUPER::initialize(@_);
 }
