@@ -7,12 +7,12 @@ Request('initialize_fully');
 	    [{}] => DIE(),
 	    map((
 		[{
-		    host => 'ftp.freebsd.org',
+		    host => 'ftp.ripe.net',
 		    req => req(),
-		    cwd => '/pub/FreeBSD',
-		    file => 'README.TXT',
+		    cwd => '/fyi',
+		    file => 'fyi1.txt',
 		    Passive => 1,
-		}] => qr{FreeBSD-related material}i,
+		}] => qr{March 1990}i,
 	    ), 0 .. 1),
 	],
     ],
