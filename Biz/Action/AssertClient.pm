@@ -14,9 +14,9 @@ my($_CACHE);
 sub execute {
     my($proto, $req) = @_;
     $req->throw_die(
-	'FORBIDDEN',
+	'CONFIG_ERROR',
 	{
-	    message => 'not in addresses',
+	    message => 'client not in allowed addresses or hosts',
 	    entity => $req->get('client_addr'),
 	},
     ) unless $proto->is_valid_address($req->get('client_addr'));
