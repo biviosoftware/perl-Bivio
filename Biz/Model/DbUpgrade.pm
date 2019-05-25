@@ -1,55 +1,8 @@
-# Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2019 Bivio Software, Inc.  All rights reserved.
 package Bivio::Biz::Model::DbUpgrade;
 use strict;
-=head1 NAME
 
-Bivio::Biz::Model::DbUpgrade - maintains current database DDL version
-
-=head1 RELEASE SCOPE
-
-bOP
-
-=head1 SYNOPSIS
-
-    use Bivio::Biz::Model::DbUpgrade;
-
-=cut
-
-=head1 EXTENDS
-
-L<Bivio::Biz::PropertyModel>
-
-=cut
-
-use Bivio::Biz::PropertyModel;
-@Bivio::Biz::Model::DbUpgrade::ISA = ('Bivio::Biz::PropertyModel');
-
-=head1 DESCRIPTION
-
-C<Bivio::Biz::Model::DbUpgrade> database upgrade indicator.  Applications
-should create a program, e.g. db-upgrade, which contains the current upgrade.
-When the upgrade is complete (before the commit), this table should be updated
-with the VC revision of the upgrade.  Since there is a unique key on
-db_upgrade_t.version, an upgrade can't run twice.
-
-=cut
-
-#=IMPORTS
-
-#=VARIABLES
-
-=head1 METHODS
-
-=cut
-
-=for html <a name="internal_initialize"></a>
-
-=head2 internal_initialize() : hash_ref
-
-B<FOR INTERNAL USE ONLY>
-
-=cut
+use Bivio::Base 'Biz.PropertyModel';
 
 sub internal_initialize {
     return {
@@ -63,17 +16,5 @@ sub internal_initialize {
         },
     };
 }
-
-#=PRIVATE METHODS
-
-=head1 COPYRIGHT
-
-Copyright (c) 1999-2001 bivio Software, Inc.  All rights reserved.
-
-=head1 VERSION
-
-$Id$
-
-=cut
 
 1;
