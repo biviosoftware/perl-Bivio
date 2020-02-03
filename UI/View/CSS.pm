@@ -174,7 +174,6 @@ div.cb_arrow {
   border: none;
   position: relative;
   left: -20px;
-  margin-right: -15px;
   white-space: nowrap;
 }
 div.cb_menu {
@@ -1028,6 +1027,9 @@ div.dd_menu a:hover {
 input.cb_text {
   padding-right: 20px;
 }
+input.cb_text::-ms-clear {
+    display: none;
+}
 div.cb_arrow {
   cursor: pointer;
   display: inline;
@@ -1040,7 +1042,6 @@ div.cb_arrow {
   border: none;
   position: relative;
   left: -20px;
-  margin-right: -15px;
   white-space: nowrap;
 }
 div.cb_menu {
