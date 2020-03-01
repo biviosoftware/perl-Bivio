@@ -101,8 +101,9 @@ sub _process_payment {
     }
     my($result_code, @details);
     if ($_CFG->{test_mode} && $cfg->{login} eq $_FAKE_LOGIN) {
-        $result_code = (_transact_form_data($proto, $cfg, $payment) =~ /x_Amount=(\d+)/)[0];
-        b_info('FAKE: not making a request');
+        my($t) = _transact_form_data($proto, $cfg, $payment);
+        $result_code = ($t =~ /x_Amount=(\d+)/)[0];
+        b_info('FAKE: not making a request: ', $t);
     }
     else {
         my($site) = 'secure';
