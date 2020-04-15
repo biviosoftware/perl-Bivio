@@ -7,7 +7,7 @@ use Bivio::IO::Trace;
 
 # C<Bivio::Delegate::Cookie> manages cookies arriving via HTTP and
 # returns cookies to the user. By default cookies are persistent. Temporary
-# cookies do not set the 'expires' field. A cookie can be set to time-out
+# cookies do not set the 'max-age' field. A cookie can be set to time-out
 # after a period of activity. Cookie fields must begin with a letter.
 
 our($_TRACE);
@@ -19,8 +19,8 @@ my($_ESC_ESC) = "${_ESC}E";
 my($_ESC_SEP) = "${_ESC}S";
 my($_DT) = b_use('Type.DateTime');
 my($_S) = b_use('Type.Secret');
-#TODO: Need to format dynamically
-my($_EXPIRES) = "; expires=Thu, 15 Apr 2020 20:00:00 GMT";
+# 10 years
+my($_MAX_AGE) = "; max-age=31536000";
 b_use('IO.Config')->register(my $_CFG = {
     domain => undef,
     tag => 'A',
@@ -85,7 +85,7 @@ sub header_out {
     my($p) = '; path=/';
     $p .= (my $domain_prefix = "; domain=$domain")
 	if $domain;
-    $p .= $_EXPIRES
+    $p .= $_MAX_AGE
         unless $_CFG->{is_temporary};
     _trace('data=', $fields) if $_TRACE;
     my($clear_text) = '';
@@ -162,7 +162,7 @@ sub _clear_prior_tags {
 	    $req->get('reply')->send_append_header(
 		$r,
 		'Set-Cookie',
-		"$tag=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+		"$tag=; path=/; max-age=0"
 		    . ($d ? "; domain=$d" : ''),
 	    );
 	}

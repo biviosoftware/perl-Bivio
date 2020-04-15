@@ -24,7 +24,7 @@ options({
 	    my($case, $return) = @_;
 	    my($res) = {@$return};
 	    return 0
-		unless $res->{'Set-Cookie'} =~ m{^(TT=\S+); path=/; expires=}s;
+		unless $res->{'Set-Cookie'} =~ m{^(TT=\S+); path=/; max-age=}s;
 	    # Save for next test; only call is for "Cookie"
 	    req('r')->header_in(Cookie => $1);
 	    return 1;
@@ -39,4 +39,3 @@ options({
         ],
     ],
 ];
-

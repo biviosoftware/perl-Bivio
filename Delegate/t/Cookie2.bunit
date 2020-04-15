@@ -38,7 +38,7 @@ req('r')->test_bean_register_callback(
 	    } => sub {
 		assert_equals(1, scalar(@$cookies));
 		b_die($cookies, ': no match')
-		    unless $cookies->[0] =~ m{^TAG4=(.+?); path=/; domain=.bivio.biz; expires};
+		    unless $cookies->[0] =~ m{^TAG4=(.+?); path=/; domain=.bivio.biz; max-age};
 		$encrypted = $1;
 		$cookies = [];
 		return [1];
@@ -68,4 +68,3 @@ req('r')->test_bean_register_callback(
     	],
     ],
 ];
-
