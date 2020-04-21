@@ -8,7 +8,7 @@ config({
 	},
     },
     'Bivio::Test::Language::HTTP' => {
-	home_page_uri => 'http://petshop.bivio.biz',
+	home_page_uri => 'https://petshop.bivio.biz',
 	email_user => 'hello',
 	mail_dir => $mail_dir,
 	mail_tries => 1,
@@ -149,6 +149,8 @@ submit_form('Create MyAccount' => {
     'Phone:' => '555-1212',
 });
 home_page();
+verify_text('Sign-out');
+go_back();
 follow_link('MyAccount');
 submit_form(search => {
 });

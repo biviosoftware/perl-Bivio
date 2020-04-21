@@ -32,4 +32,11 @@ sub clone {
     return $clone;
 }
 
+sub new {
+    my($self) = shift->SUPER::new(@_);
+    $self->{hide_cookie2} = 1;
+    $self->{ignore_discard} = 1;
+    return $self;
+}
+
 1;
