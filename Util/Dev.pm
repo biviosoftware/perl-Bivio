@@ -11,7 +11,7 @@ sub USAGE {
 usage: b-dev [options] command [args..]
 commands
   bashrc_b_env_aliases - defines b_env and b_<prefix> aliases from Util.Release->map_projects
-  setup - calls other setup_* methods
+  setup_all - calls other setup_* methods
   setup_bconf_d_defaults_bconf - creates ~/bconf.d/defaults.bconf
   setup_btest_mail - creates ~/btest-mail/ and ~/.procmailrc
   setup_src - creates ~/src
@@ -32,7 +32,7 @@ sub bashrc_b_env_aliases {
     );
 }
 
-sub setup {
+sub setup_all {
     my($proto) = @_;
     $proto->setup_btest_mail;
     $proto->setup_bconf_d_defaults_bconf;
