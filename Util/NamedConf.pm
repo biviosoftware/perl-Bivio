@@ -174,8 +174,21 @@ sub _serial {
     foreach my $line ($self->do_backticks([qw(dig soa), $server, '@' . $server])) {
         next
             if $line =~ /^;/;
-        return $1 + 1
-            if $line =~ /^\S+\s+\d+\s+IN\s+SOA\s+\S+\.\s+\S+\.\s+(\d{1,10})\s+\d/;
+        if ($line =~ /^\S+\s+\d+\s+IN\s+SOA\s+\S+\.\s+\S+\.\s+(\d{1,10})\s+\d/) {
+            my($s) = int($1);
+            # YYYYMMDDRR convention
+            # https://bind9.readthedocs.io/en/latest/troubleshooting.html#incrementing-and-changing-the-serial-number
+            my($t) = Type_Date()->now_as_file_name;
+            my($n) = int($t + '00');
+            my($m) = $n + 99;
+            $n = $s >= $n ? $s + 1 : $n;
+            # if we are doing more than 99 updates in a day, we
+            # need a better system.
+            if ($n >= $m) {
+                b_die('too many updates curr=', $s, ' new=', $n, ' max=', $m);
+            }
+            return $n;
+        }
     }
     b_die($server, ': could not find SOA');
 }
