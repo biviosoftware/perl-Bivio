@@ -3,6 +3,7 @@
 package Bivio::Util::NamedConf;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
+use Bivio::UI::ViewLanguageAUTOLOAD;
 
 my($_D) = b_use('Bivio.Die');
 my($_F) = b_use('IO.File');
@@ -179,7 +180,7 @@ sub _serial {
             # YYYYMMDDRR convention
             # https://bind9.readthedocs.io/en/latest/troubleshooting.html#incrementing-and-changing-the-serial-number
             my($t) = Type_Date()->now_as_file_name;
-            my($n) = int($t + '00');
+            my($n) = int($t . '00');
             my($m) = $n + 99;
             $n = $s >= $n ? $s + 1 : $n;
             # if we are doing more than 99 updates in a day, we

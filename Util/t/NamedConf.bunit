@@ -3,8 +3,7 @@
 ShellUtilConf({
     setup_case => sub {
         my($n) = IO_File()->pwd =~ /(\d+)$/;
-        my($serial) = Bivio_ShellUtil()->do_backticks([qw(dig soa ns1.bivio.biz)]) =~ m{SOA.*hostmaster.bivio.biz. (20\d{8})}m;
-        $serial++;
+        my($serial) = Type_Date()->now_as_file_name . '00';
         foreach my $f (glob("../$n-out/var/named/*")) {
             IO_File()->do_read_write(
                 $f,
