@@ -5,14 +5,14 @@ my($dir) = tmp_dir();
 $ENV{HOME} = $dir;
 [
     class() => [
-	setup => sub {
+	setup_all => sub {
 	    assert_file(qr{^btest-mail/}m, "$ENV{HOME}/.procmailrc");
 	    assert_file(qr{stack_trace_warn}, "$ENV{HOME}/bconf.d/defaults.bconf");
 	    assert_file(qr{package Bivio::BConf}, "$ENV{HOME}/src/perl/Bivio/BConf.pm");
 	    assert_file(qr{INSTALL_BASE_DIR}, "$ENV{HOME}/src/biviosoftware/javascript-Bivio/build.sh");
 	    return 1;
 	},
-	setup => [
+	setup_all => [
 	    sub {
 		assert_equals(1, unlink("$ENV{HOME}/src/perl/Bivio"));
 		return [];
@@ -23,4 +23,3 @@ $ENV{HOME} = $dir;
 	],
     ],
 ];
-
