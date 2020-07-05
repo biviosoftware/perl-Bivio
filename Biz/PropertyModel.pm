@@ -90,7 +90,7 @@ sub create_or_update {
     # If the load is successful, the model will be updated with
     # the new values. Otherwise, a new model is created.
     #
-    # Adds auth_id to I<new_values>. 
+    # Adds auth_id to I<new_values>.
     #
     # See also L<unauth_create_or_update|"unauth_create_or_update">.
     return $self->unauth_create_or_update(_add_auth_id($self, $new_values));
@@ -102,16 +102,18 @@ sub delete {
     #
     # If I<load_args> is supplied, deletes the model specified by
     # I<load_args> and not the current model.  May be called statically.
-    return $self->internal_get_sql_support->delete($self->internal_get, $self)
-	if @_ <= 1;
-    my($query);
-    ($self, $query) = _load_args(@_);
-    $self = $self->new()
-	unless ref($self);
-    my($res) = $self->internal_get_sql_support->delete(
-	$self->internal_prepare_query(_add_auth_id($self, $query)),
-	$self,
-    );
+    my($query, $l);
+    if (@_ <= 1) {
+        $l = $query = $self->internal_get;
+    }
+    else {
+        ($self, $query) = _load_args(@_);
+        $self = $self->new()
+            unless ref($self);
+        $l = $self->internal_prepare_query($query = _add_auth_id($self, $query));
+
+    }
+    my($res) = $self->internal_get_sql_support->delete($l, $self);
     $self->internal_data_modification(delete => $query);
     return $res;
 }
