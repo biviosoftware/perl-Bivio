@@ -1,12 +1,8 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2020 bivio Software, Inc.  All Rights Reserved.
 # $Id$
-config({
-    'Bivio::Test::Language::HTTP' => {
-	home_page_uri => 'http://petshop.bivio.biz',
-    },
-});
 ShellUtil();
 [
+    # if you get connection refused, start your server
     remote_trace => [],
     [qw(remote_trace sql)] => [],
 ];
