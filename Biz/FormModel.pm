@@ -1576,7 +1576,7 @@ sub _task_result {
     my($self, $which, $res) = @_;
     return $self->req->if_req_is_json(
 	sub {
-	    return Action_API()->task_error($self->req) 
+	    return Action_API()->task_error($self->req)
 		if $which eq $_FORM_ERROR_IDENT;
 	    # Always fall through, even on GET
 	    return 0;
@@ -1624,7 +1624,7 @@ sub _with_enum_set_field {
 	return $op->($type, $field);
     }
     else {
-	my($info) = b_debug(SQL_Support()->is_qualified_model_name($field))
+	my($info) = SQL_Support()->is_qualified_model_name($field)
 	    ? SQL_Support()->parse_column_name($field)
 	    : $self->get_field_info($field);
 	return $op->($info->{type}, $info->{name});
