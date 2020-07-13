@@ -23,6 +23,7 @@ sub assert_properties {
 sub cascade_delete {
     my($self, $query) = @_;
     my($support) = $self->internal_get_sql_support;
+    # DEPRECATED: cascade_delete_children is not used anywhere
     my($method) = $support->get('cascade_delete_children') ? 'cascade_delete'
 	: 'delete_all';
     my($properties) = $query || $self->get_shallow_copy;
@@ -113,9 +114,8 @@ sub delete {
         $l = $self->internal_prepare_query($query = _add_auth_id($self, $query));
 
     }
-    my($res) = $self->internal_get_sql_support->delete($l, $self);
     $self->internal_data_modification(delete => $query);
-    return $res;
+    return $self->internal_get_sql_support->delete($l, $self);
 }
 
 sub delete_all {
@@ -127,12 +127,13 @@ sub delete_all {
     $self = $self->new
 	unless ref($self);
 # Should not be a lot except in test case
-    my($rows) =  $self->internal_get_sql_support->delete_all(
-	$self->internal_prepare_query($query = _add_auth_id($self, $query)),
+    $query = _add_auth_id($self, $query);
+    $self->internal_data_modification(delete_all => $query);
+    my($rows) = $self->internal_get_sql_support->delete_all(
+	$self->internal_prepare_query($query),
 	$self,
     );
     _trace($rows, ' ', ref($self)) if $_TRACE;
-    $self->internal_data_modification(delete => $query);
     return $rows;
 }
 
@@ -474,11 +475,11 @@ sub rows_exist {
 sub test_unauth_delete_all {
     my($self, $query) = @_;
     $self->req->assert_test;
+    $self->internal_data_modification(delete_all => $query);
     my($res) = $self->internal_get_sql_support->delete_all(
 	$self->internal_prepare_query(_dup($query)),
 	$self,
     );
-    $self->internal_data_modification(delete => $query);
     return $res;
 }
 
@@ -554,9 +555,9 @@ sub unauth_delete {
 	unless ref($self);
     $self->die('load_args or model must not be empty')
 	unless %$load_args;
+    $self->internal_data_modification(delete => $load_args);
     my($res) = $self->internal_get_sql_support->delete(
 	$self->internal_prepare_query({%$load_args}));
-    $self->internal_data_modification(delete => $load_args);
     return $res;
 }
 

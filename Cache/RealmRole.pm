@@ -25,7 +25,7 @@ sub handle_property_model_modification {
     my($req) = $model->req;
     return
 	unless my $map = $proto->internal_retrieve($model->req);
-    if ($op eq 'delete') {
+    if ($op =~ /delete/) {
 	b_die($query, 'must supply a realm_id to delete')
 	    unless $query->{realm_id};
 	if ($query->{role}) {
