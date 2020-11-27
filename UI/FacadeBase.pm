@@ -662,7 +662,7 @@ EOF
 		    xhtml_logo => q{vs_header_su_link(XLink('xhtml_logo_normal', 'logo'));},
 		    xhtml_head_title => q{Title([vs_site_name(), vs_text_as_prose('xhtml_title')]);},
 		    xhtml_title => q{Prose(vs_text([sub {"xhtml.title.$_[1]"}, ['task_id', '->get_name']]));},
-		    xhtml_copyright_qualifier => q{Link('Software by bivio', 'http://www.bivio.biz');},
+		    xhtml_copyright_qualifier => q{Link('Software by bivio', 'https://www.bivio.biz');},
 		    __PACKAGE__->if_2014style([
 			xhtml_copyright => <<"EOF",
 &copy; vs_text_as_prose('site_copyright');

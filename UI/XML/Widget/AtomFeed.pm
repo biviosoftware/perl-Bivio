@@ -19,7 +19,7 @@ sub initialize {
 	->simple_package_name;
     $self->put_unless_exists(
         value => Tag({
-	    XMLNS => 'http://www.w3.org/2005/Atom',
+	    XMLNS => 'https://www.w3.org/2005/Atom',
 	    tag => 'feed',
 	    value => => Join([
 		_id('html_task'),

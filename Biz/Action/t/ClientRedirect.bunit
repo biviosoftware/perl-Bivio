@@ -62,8 +62,8 @@ my($query_redirect_args) = {
         $query_redirect_args => [
 	    '' => NOT_FOUND(),
 	    'google.com' => DIE(),
-	    'http://google.com' => 'http://google.com',
-            'http:/google.com' => DIE(),
+	    'https://www.extremeperl.org' => 'https://www.extremeperl.org',
+            'http://google.com' => NOT_FOUND(),
 	],
         sub {
             Type_UserAgent()->BROWSER_ROBOT_OTHER->execute(req());

@@ -245,7 +245,7 @@ sub internal_thread_list {
 	_msg($self, 0),
     ]), {
 	ITEMSCOPE => 'itemscope',
-	ITEMTYPE => 'http://schema.org/Article',
+	ITEMTYPE => 'https://schema.org/Article',
     });
 }
 
@@ -338,7 +338,7 @@ sub internal_thread_root_list_columns {
 		}),
 	    ]), {
 		ITEMSCOPE => 'itemscope',
-		ITEMTYPE => 'http://schema.org/Article',
+		ITEMTYPE => 'https://schema.org/Article',
 	    }),
 	}],
     ];
@@ -397,7 +397,7 @@ sub _msg {
 		]),
 		{
 		    ITEMSCOPE => 'itemscope',
-		    ITEMTYPE => 'http://schema.org/Comment',
+		    ITEMTYPE => 'https://schema.org/Comment',
 		    ITEMPROP => 'comment',
 		},
 	    ),

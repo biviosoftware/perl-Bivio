@@ -6,8 +6,16 @@ use Bivio::Base 'Biz.Action';
 b_use('IO.ClassLoaderAUTOLOAD');
 
 my($_HTTP_MOVED_PERMANENTLY) = b_use('Ext.ApacheConstants')->HTTP_MOVED_PERMANENTLY;
+my($_DOMAINS);
+my($_CONST_DOMAINS) = [qw(
+    bivio.biz
+    bivio.com
+    extremeperl.org
+)];
+
 b_use('IO.Config')->register(my $_CFG = {
     permanent_map => {},
+    valid_domains => [],
 });
 
 
@@ -28,7 +36,7 @@ sub execute_home_page_if_site_root {
 	    b_use('FacadeComponent.Text')->get_value('home_page_uri', $req),
 	),
 	query => undef,
-    } if $req->get('uri') =~ m!^/?$!;
+    } if $req->get('uri') =~ m{^/?$};
     return;
 }
 
@@ -97,6 +105,9 @@ sub execute_query_redirect {
             b_die('invalid query redirect uri: ', $value)
         }
     }
+    else {
+        _assert_external_uri($uri, $req);
+    }
     return {
 	uri => $uri,
     };
@@ -138,6 +149,43 @@ sub handle_config {
     return;
 }
 
+sub _assert_external_uri {
+    my($uri, $req) = @_;
+    if ($uri =~ m{^/}) {
+        return;
+    }
+    b_warn($uri);
+    my($d) = $uri =~ m{^https?://([^/]+)}i;
+    if (! $d) {
+        b_die('NOT_FOUND');
+    }
+    $d = _second_level_domain($d);
+    b_warn($d);
+    $_DOMAINS ||= _domains($req);
+    if (! grep($_ eq $d, @$_DOMAINS)) {
+        b_die('NOT_FOUND');
+    }
+    b_warn($_DOMAINS);
+    return;
+}
+
+sub _domains {
+    my($req) = @_;
+    my($s) = {};
+    return [map(
+        {
+            my($x) = _second_level_domain($_);
+            $s->{$x}++ ? () : $x;
+        }
+        @{UI_Facade()->map_iterate_with_setup_request(
+            $req,
+            sub {return shift->get('http_host')},
+        )},
+        @$_CONST_DOMAINS,
+        @{$_CFG->{valid_domains}},
+    )];
+}
+
 sub _role_in_realm {
     my($req) = @_;
     my($t) = $req->get('task');
@@ -162,8 +210,19 @@ sub _role_in_realm_user_state {
 	);
 }
 
+sub _second_level_domain {
+    my($domain) = @_;
+    # only happens on dev
+    $domain =~ s{:.*}{};
+    return lc($1)
+        if $domain =~ m{([^\.]+\.[^\.]+)$};
+    # not a valid domain
+    b_die('NOT_FOUND');
+}
+
 sub _uri {
     my($req, $uri) = @_;
+    _assert_external_uri($uri, $req);
     return $req->format_uri({uri => $uri, query => undef, path_info => undef});
 }
 

@@ -24,7 +24,7 @@ sub format_plain_text {
             }{
 		$1 ? _a($1, $1)
 		    : $2 ? _a("mailto:$2", $2)
-		    : $3 ? _a("http://$3", $3)
+		    : $3 ? _a("https://$3", $3)
 		    : Bivio::HTML->escape($4)
             }exsg;
 	    $_ =~ s/^(\s+)/'&nbsp;' x length($1)/es;

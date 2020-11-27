@@ -13,13 +13,13 @@ my($_VERSION_RE) = qr{-v?[\d\.]+(?:b|ii)?}is;
 b_use('IO.Config')->register(my $_CFG = {
     cvs_dir => 'external/perl-modules-5.16',
     uri_lookaside_map => {
-	'MD5' => 'http://search.cpan.org/CPAN/authors/id/G/GA/GAAS/MD5-2.03.tar.gz',
-	'MRO-Compat' => 'http://search.cpan.org/CPAN/authors/id/B/BO/BOBTFISH/MRO-Compat-0.12.tar.gz',
-        'Perl4-CoreLibs' => 'http://search.cpan.org/CPAN/authors/id/Z/ZE/ZEFRAM/Perl4-CoreLibs-0.003.tar.gz',
-	'Razor2-Client-Agent' => 'http://search.cpan.org/CPAN/authors/id/T/TO/TODDR/Razor2-Client-Agent-2.83.tar.gz',
-	'Return-Value' => 'http://search.cpan.org/CPAN/authors/id/R/RJ/RJBS/Return-Value-1.666002.tar.gz',
-	'Try-Tiny' => 'http://search.cpan.org/CPAN/authors/id/D/DO/DOY/Try-Tiny-0.11.tar.gz',
-	'Version-Requirements' => 'http://search.cpan.org/CPAN/authors/id/R/RJ/RJBS/Version-Requirements-0.101022.tar.gz',
+	'MD5' => 'https://search.cpan.org/CPAN/authors/id/G/GA/GAAS/MD5-2.03.tar.gz',
+	'MRO-Compat' => 'https://search.cpan.org/CPAN/authors/id/B/BO/BOBTFISH/MRO-Compat-0.12.tar.gz',
+        'Perl4-CoreLibs' => 'https://search.cpan.org/CPAN/authors/id/Z/ZE/ZEFRAM/Perl4-CoreLibs-0.003.tar.gz',
+	'Razor2-Client-Agent' => 'https://search.cpan.org/CPAN/authors/id/T/TO/TODDR/Razor2-Client-Agent-2.83.tar.gz',
+	'Return-Value' => 'https://search.cpan.org/CPAN/authors/id/R/RJ/RJBS/Return-Value-1.666002.tar.gz',
+	'Try-Tiny' => 'https://search.cpan.org/CPAN/authors/id/D/DO/DOY/Try-Tiny-0.11.tar.gz',
+	'Version-Requirements' => 'https://search.cpan.org/CPAN/authors/id/R/RJ/RJBS/Version-Requirements-0.101022.tar.gz',
     },
 });
 
@@ -121,7 +121,7 @@ sub _module_map {
     return $self->get_if_exists_else_put(
 	__PACKAGE__ . '._module_map',
 	sub {
-	    my($uri) = 'http://www.cpan.org/modules/01modules.index.html';
+        my($uri) = 'https://www.cpan.org/modules/01modules.index.html';
 	    my($html) = Ext_LWPUserAgent()
 		->bivio_http_get($uri);
 	    $uri =~ s{[^/]+/[^/]+$}{};

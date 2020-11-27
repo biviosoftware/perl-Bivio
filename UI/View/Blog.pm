@@ -48,7 +48,7 @@ sub detail {
 	    ]), {
 		ITEMPROP => 'blogPost',
 		ITEMSCOPE => 'itemscope',
-		ITEMTYPE => 'http://schema.org/BlogPosting',
+		ITEMTYPE => 'https://schema.org/BlogPosting',
 	    }),
 	),
     );
@@ -82,16 +82,16 @@ sub list {
 		]), {
 		    ITEMPROP => 'blogPost',
 		    ITEMSCOPE => 'itemscope',
-		    ITEMTYPE => 'http://schema.org/BlogPosting',
+		    ITEMTYPE => 'https://schema.org/BlogPosting',
 		}),
 	    ])),
 	    {
 		ITEMPROP => 'blogPosts',
 		ITEMSCOPE => 'itemscope',
-		ITEMTYPE => 'http://schema.org/BlogPosting',
+		ITEMTYPE => 'https://schema.org/BlogPosting',
 	    }), {
 		ITEMSCOPE => 'itemscope',
-		ITEMTYPE => 'http://schema.org/Blog',
+		ITEMTYPE => 'https://schema.org/Blog',
 	    }),
     );
 }

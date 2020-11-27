@@ -40,7 +40,7 @@ sub generate {
 sub root_file {
     my($self) = @_;
     return ${b_use('Ext.LWPUserAgent')
-	->bivio_http_get('http://www.internic.net/zones/named.root')};
+	->bivio_http_get('https://www.internic.net/zones/named.root')};
 }
 
 sub _dot {
