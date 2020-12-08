@@ -14,7 +14,7 @@ sub get_default {
 }
 
 sub get_max {
-    return 500;
+    return 2000;
 }
 
 sub get_min {

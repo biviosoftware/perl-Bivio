@@ -340,8 +340,10 @@ sub internal_create_edit {
 	});
     }
     if (UNIVERSAL::isa($type, 'Bivio::Type::PageSize')) {
+        # max is 2000 but we only want to get 500 on pages
+        # like this.
 	b_die($type, ': range changed')
-            if $type->get_min != 5 || $type->get_max != 500;
+            if $type->get_min != 5 || $type->get_max != 2000;
 	return $_VS->vs_new('Select', {
 	    field => $field,
 	    choices => $_TV->new(
