@@ -6,6 +6,10 @@ use Bivio::Base 'Biz.ListModel';
 
 my($_FP) = __PACKAGE__->use('Type.FilePath');
 
+sub LOAD_ALL_SIZE {
+    return 3000;
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
