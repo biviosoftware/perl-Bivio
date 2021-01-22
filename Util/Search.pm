@@ -30,7 +30,7 @@ commands
   audit_realm [sleep]-- verify/fix a realm's documents, optionally sleep given seconds between commits
   rebuild_db [after_date [sleep]] -- reload entire search database, optionally files modified after date, optionally sleep given seconds between commits
   rebuild_realm [after_date [sleep]] -- reindex all files in the current realm, optionally files modified after date, optionally sleep given seconds between commits
-  replicate_db [failover_host] -- create/update local online snapshot and optionally rsync it to 'failover-host' 
+  replicate_db [failover_host] -- create/update local online snapshot and optionally rsync it to 'failover-host'
 EOF
 }
 
@@ -38,7 +38,6 @@ sub audit_db {
     sub AUDIT_DB {[[qw(?sleep Amount)]]}
     my($self, $bp) = shift->parameters(\@_);
     my($req) = $self->req;
-    $_X->acquire_lock($req);
     return _iterate_realms($self, 'audit_realm', [$bp->{sleep}], _resume($self));
 }
 
@@ -92,7 +91,6 @@ sub rebuild_db {
     my($last_realm) = _resume($self);
     unless ($last_realm) {
 	$self->are_you_sure('Are you sure you want to destroy the Xapian database?');
-	$_X->acquire_lock($req);
 	$_X->destroy_db($req);
     }
     return _iterate_realms(
@@ -166,7 +164,6 @@ sub _do_realm {
 	$_A->reset_warn_counter;
 	return;
     };
-    $_X->acquire_lock($req);
     my($rn) = $req->req(qw(auth_realm owner name));
     b_info("$rn: starting");
     _map_classes(
@@ -175,7 +172,6 @@ sub _do_realm {
 	    $class->do_iterate_realm_models(
 		sub {
 		    my($it) = @_;
-		    $_X->acquire_lock($req);
 		    $i++;
 		    b_info($i)
 			if $i % 100 == 0;
@@ -186,7 +182,6 @@ sub _do_realm {
 			&& $cond->($it);
 		    $_X->update_model($req, $it);
 		    $commit->();
-		    $_X->acquire_lock($req);
 		    $j++;
 		    return 1;
 		},
