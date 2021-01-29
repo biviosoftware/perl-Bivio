@@ -44,13 +44,6 @@ sub EXEC_REALM {
     return 'xapian_exec';
 }
 
-sub acquire_lock {
-    my($proto, $req) = @_;
-    $_M->new($req, 'Lock')->acquire_unless_exists(_lock_id($proto, $req));
-    unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
-    return;
-}
-
 sub delete_model {
     my($proto, $req, $model_or_id) = @_;
     $req->perf_time_op(__PACKAGE__, sub {
@@ -68,7 +61,7 @@ sub delete_model {
 
 sub destroy_db {
     my($proto, $req) = @_;
-    $proto->acquire_lock($req);
+    _acquire_lock($proto, $req);
     $_A->info($_CFG->{db_path}, ': deleting');
     $_F->rm_rf($_CFG->{db_path});
     return;
@@ -173,7 +166,6 @@ sub query {
 	    _trace($attr, ': no realms and not public') if $_TRACE;
 	    return [];
 	}
-        $proto->acquire_lock($attr->{req});
 	my($qp) = Search::Xapian::QueryParser->new;
 	$qp->set_stemmer($_STEMMER);
 	$qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
@@ -269,6 +261,14 @@ sub unsafe_get_values_for_primary_id {
     return undef;
 }
 
+sub _acquire_lock {
+    my($proto, $req) = @_;
+    $_M->new($req, 'Lock')->acquire_unless_exists(_lock_id($proto, $req));
+    #TODO(pjm): lock file may be needed by Xapian to guard against multiple write calls
+    #unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
+    return;
+}
+
 sub _delete {
     my($self, $primary_term, $req) = @_;
     return
@@ -279,7 +279,6 @@ sub _delete {
 
 sub _find {
     my($proto, $req, $primary_id) = @_;
-    $proto->acquire_lock($req);
     return (
 	_read(enquire => Search::Xapian::Query->new(_primary_term($primary_id)))
 	    ->matches(0, 1),
@@ -377,7 +376,6 @@ sub _replace {
     my($self, $req, $model, $parser) = @_;
     return
 	unless $parser;
-    $self->acquire_lock($req);
     my($doc) = Search::Xapian::Document->new;
     $doc->set_data('');
     while (my($field, $index) = each(%$_VALUE_MAP)) {
@@ -411,7 +409,7 @@ sub _replace {
 
 sub _write {
     my($proto, $req, $op) = (shift, shift, shift);
-    $proto->acquire_lock($req);
+    _acquire_lock($proto, $req);
     my($db) = Search::Xapian::WritableDatabase->new(
 	$_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN,
     );
