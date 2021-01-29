@@ -44,11 +44,6 @@ sub EXEC_REALM {
     return 'xapian_exec';
 }
 
-sub acquire_lock {
-    my($proto, $req) = @_;
-    return $_M->new($req, 'Lock')->acquire_unless_exists(_lock_id($proto, $req));
-}
-
 sub delete_model {
     my($proto, $req, $model_or_id) = @_;
     $req->perf_time_op(__PACKAGE__, sub {
@@ -58,7 +53,6 @@ sub delete_model {
 	    $req,
 	    [delete_model => $id],
 	) unless ref($proto);
-	$proto->acquire_lock($req);
 	_delete($proto, _primary_term($id));
 	return;
     });
@@ -67,7 +61,7 @@ sub delete_model {
 
 sub destroy_db {
     my($proto, $req) = @_;
-    $proto->acquire_lock($req);
+    _acquire_lock($proto, $req);
     $_A->info($_CFG->{db_path}, ': deleting');
     $_F->rm_rf($_CFG->{db_path});
     return;
@@ -76,8 +70,6 @@ sub destroy_db {
 sub execute {
     my($proto, $req) = @_;
     my($self) = $req->get(ref($proto) || $proto);
-    $proto->acquire_lock($req);
-    unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
     local($ENV{XAPIAN_MAX_CHANGESETS}) = $_CFG->{max_changesets};
     $req->perf_time_op(__PACKAGE__, sub {
 	foreach my $op (@{$self->get('ops')}) {
@@ -147,7 +139,6 @@ sub update_model {
 	return;
     }
     my($postings) = $_P->xapian_terms_and_postings($model);
-    $proto->acquire_lock($req);
     $req->perf_time_op(__PACKAGE__, sub {
 	_replace(
 	    $proto,
@@ -162,7 +153,6 @@ sub update_model {
 
 sub query {
     my($proto, $attr) = @_;
-    $proto->acquire_lock($attr->{req});
     my($q);
     my($res) = $attr->{req}->perf_time_op(__PACKAGE__, sub {
 	$attr->{offset} ||= 0;
@@ -252,14 +242,13 @@ sub query {
 sub unsafe_get_values_for_primary_id {
     my($proto, $primary_id, $model, $attr) = @_;
     my($req) = $model->req;
-    $proto->acquire_lock($req);
     my($res);
     my($die) = Bivio::Die->catch_quietly(sub {
         $res = $req->perf_time_op(
 	    __PACKAGE__,
 	    sub {
 		return undef
-		    unless my $query_result = _find($primary_id);
+		    unless my $query_result = _find($proto, $req, $primary_id);
 		return _query_result($proto, $query_result, $req, $attr || {})
 		    || undef;
 	    },
@@ -272,16 +261,24 @@ sub unsafe_get_values_for_primary_id {
     return undef;
 }
 
+sub _acquire_lock {
+    my($proto, $req) = @_;
+    $_M->new($req, 'Lock')->acquire_unless_exists(_lock_id($proto, $req));
+    #TODO(pjm): lock file may be needed by Xapian to guard against multiple write calls
+    #unlink(File::Spec->catfile($_CFG->{db_path}, 'db_lock'));
+    return;
+}
+
 sub _delete {
     my($self, $primary_term, $req) = @_;
     return
 	unless $primary_term;
-    _write(delete_document_by_term => $primary_term);
+    _write($self, $req, delete_document_by_term => $primary_term);
     return;
 }
 
 sub _find {
-    my($primary_id) = @_;
+    my($proto, $req, $primary_id) = @_;
     return (
 	_read(enquire => Search::Xapian::Query->new(_primary_term($primary_id)))
 	    ->matches(0, 1),
@@ -371,6 +368,7 @@ sub _query_result {
 
 sub _read {
     my($op) = shift;
+    # assumes lock is already acquired
     return Search::Xapian::Database->new($_CFG->{db_path})->$op(@_);
 }
 
@@ -405,12 +403,13 @@ sub _replace {
 	}
 	$i++;
     }
-    _write(replace_document_by_term => $primary_term, $doc);
+    _write($self, $req, replace_document_by_term => $primary_term, $doc);
     return;
 }
 
 sub _write {
-    my($op) = shift;
+    my($proto, $req, $op) = (shift, shift, shift);
+    _acquire_lock($proto, $req);
     my($db) = Search::Xapian::WritableDatabase->new(
 	$_CFG->{db_path}, Search::Xapian->DB_CREATE_OR_OPEN,
     );
@@ -420,4 +419,3 @@ sub _write {
 }
 
 1;
-
