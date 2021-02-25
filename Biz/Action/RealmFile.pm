@@ -4,10 +4,12 @@ package Bivio::Biz::Action::RealmFile;
 use strict;
 use Bivio::Base 'Biz.Action';
 
+use Fcntl ();
 my($_FP) = b_use('Type.FilePath');
 my($_DATA_READ) = ${b_use('Auth.PermissionSet')->from_array(['DATA_READ'])};
 my($_RF) = b_use('Model.RealmFile');
 my($_DC) = b_use('Bivio.DieCode');
+my($_AC) = b_use('Ext.ApacheConstants');
 my($_R) = b_use('Auth.Realm');
 
 sub access_controlled_execute {
@@ -108,12 +110,43 @@ sub set_output_for_get {
     my(undef, $realm_file) = @_;
     return
 	unless $realm_file;
-    my($reply) = $realm_file->req->get('reply')
-	->set_output($realm_file->get_handle)
-	->set_output_type($realm_file->get_content_type);
-#TODO: Is this right?
+    my($reply) = $realm_file->req->get('reply');
+    my($range) = $realm_file->req->get('r')->header_in('Range');
+    my($start, $end) = ($range || '') =~ /^\s*bytes\s*=\s*(\d+)\s*-\s*(\d+)\s*$/is;
+    if (defined($range) && (!defined($end) || $start > $end)) {
+        b_warn('request contains invalid Range: ', $range);
+        $reply->set_output(\(''));
+        $reply->set_http_status($_AC->BAD_REQUEST);
+        return 1;
+    }
+    $reply->set_output_type($realm_file->get_content_type);
     $reply->set_cache_private
 	unless $realm_file->get('is_public');
+    if (! $range) {
+        $reply->set_output($realm_file->get_handle);
+        return 1;
+    }
+    my($to_read) = $end - $start + 1;
+    my($buf) = '';
+    my($h) = $realm_file->get_handle;
+    $h->seek($start, Fcntl::SEEK_SET) || die;
+    while ($to_read > 0) {
+        my($r) = $h->read($buf, $to_read, length($buf));
+        if (!defined($r)) {
+            $realm_file->die("failed to read: error=$!");
+        }
+        if ($r == 0) {
+            # No more data so file shrunk (highly unlikely, but need to handle)
+            $end -= $to_read;
+            last;
+        }
+        $to_read -= $r;
+    }
+    $reply->set_output(\$buf)
+        ->set_header(
+            'Content-Range',
+            sprintf('bytes %d-%d/%d', $start, $end, $realm_file->get_content_length)
+        )->set_http_status($_AC->HTTP_PARTIAL_CONTENT);
     return 1;
 }
 

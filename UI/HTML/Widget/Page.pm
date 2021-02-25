@@ -84,7 +84,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # Attributes to be applied to the html_tag used to generate the tag.  Works on
 # <HTML> and <BODY> tags.
-# 
+#
 # Must have a leading space.
 #
 #
@@ -223,12 +223,7 @@ sub register_handler {
 
 sub _doc_type {
     my($self, $source, $xhtml) = @_;
-    return $_F->get_from_source($source)->if_2014style(
-	'<!DOCTYPE html>',
-	$xhtml
-	    ? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-	    : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">',
-    );
+    return '<!DOCTYPE html>';
 }
 
 1;
