@@ -13,13 +13,13 @@ sub execute {
     $reply->set_http_status(Bivio::Ext::ApacheConstants->FORBIDDEN)
 	if $reply->can('set_http_status');
     $reply->set_output(\(<<'EOF'));
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<HTML><HEAD>
-<TITLE>403 Forbidden</TITLE>
-</HEAD><BODY>
-<H1>Forbidden</H1>
-<P>You do not have permission to access this request on this server.</P>
-</BODY></HTML>
+<!DOCTYPE html>
+<html><head>
+<title>403 Forbidden</title>
+</head><body>
+<h1>Forbidden</h1>
+<p>You do not have permission to access this request on this server.</p>
+</body></html>
 EOF
     $reply->set_output_type('text/html');
     return 1;
