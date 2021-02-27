@@ -2,24 +2,6 @@
 # $Id$
 WikiText();
 [
-    '@b-swfobject file=/bp/A.flv preview=/bp/B.png width=500 height=400'
-        => qr{
-         embedSWF\(
-         .*/f/player.swf
-         .*b_video
-         .*'500'
-         .*'400'
-         .*false
-         .*file:'/bp/A.flv'
-         .*image:'/bp/B.png'
-         .*requires\s+javascript.*flash\s+player
-    }ixs,
-    '@b-swfobject id=A data=B.swf width=900 height=300' => qr{
-        embedSWF\(
-        .*'B.swf',\s*'A',
-    }ixs,
-    '@b-swfobject noflash=/any/path.png data=a width=1 height=2' => qr{
-        embedSWF\(
-        .*<img.*src="/any/path.png"
-    }ixs,
+    '@b-swfobject file=/bp/A.mp4 preview=/bp/B.png width=500 height=400'
+        => qr{<source src="/bp/A.mp4.*src="/bp/A.webm}is,
 ];

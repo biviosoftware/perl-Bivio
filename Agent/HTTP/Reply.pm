@@ -16,6 +16,7 @@ my(%_DIE_TO_HTTP_CODE);
 $_C->register(my $_CFG = {
     additional_http_headers => undef,
 });
+my($_DOCTYPE_HEAD) = "<!DOCTYPE html>\n<html><head>";
 
 sub client_redirect {
     my($self, $req, $named) = @_;
@@ -30,8 +31,7 @@ sub client_redirect {
     # make it look like apache's redirect.  Ignore HEAD, because this
     # is like an error.
     $r->print(<<"EOF");
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html><head>
+$_DOCTYPE_HEAD
 <title>$status Found</title>
 </head><body>
 <h1>found</h1>
@@ -230,12 +230,10 @@ sub _error {
     _send_http_header($proto, undef, $r, $status);
     # make it look like apache's redirect
     my($uri) = $r->uri;
-
     # Ignore HEAD.  There was an error, give the whole body
     if ($status == $_AC->NOT_FOUND) {
 	$r->print(<<"EOF");
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html><head>
+$_DOCTYPE_HEAD
 <title>404 Not Found</title>
 </head><body>
 <h1>Not Found</h1>
@@ -245,8 +243,7 @@ EOF
     }
     elsif ($status == $_AC->FORBIDDEN) {
 	$r->print(<<"EOF");
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html><head>
+$_DOCTYPE_HEAD
 <title>403 Forbidden</title>
 </head><body>
 <h1>Forbidden</h1>
@@ -257,8 +254,7 @@ EOF
     }
     else {
 	$r->print(<<"EOF");
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html><head>
+$_DOCTYPE_HEAD
 <title>500 Internal Server Error</title>
 </head><body>
 <h1>Internal Server Error</h1>
