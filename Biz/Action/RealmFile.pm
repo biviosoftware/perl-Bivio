@@ -77,6 +77,7 @@ sub access_is_public_only {
 }
 
 sub execute_private {
+    # allow any file, not just public files (unauthenticated)
     my($proto, $req) = @_;
     return $proto->unauth_execute($req, undef, $req->get('auth_id'));
 }
@@ -111,7 +112,8 @@ sub set_output_for_get {
     return
 	unless $realm_file;
     my($reply) = $realm_file->req->get('reply');
-    my($range) = $realm_file->req->get('r')->header_in('Range');
+    my($range) = $realm_file->req->unsafe_get('r');
+    $range &&= $range->header_in('Range');
     my($start, $end) = ($range || '') =~ /^\s*bytes\s*=\s*(\d+)\s*-\s*(\d+)\s*$/is;
     if (defined($range) && (!defined($end) || $start > $end)) {
         b_warn('request contains invalid Range: ', $range);
