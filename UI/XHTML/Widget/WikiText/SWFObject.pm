@@ -9,6 +9,7 @@ sub handle_register {
     return ['b-swfobject'];
 }
 
+# ffmpeg -i x.mp4 -c:v libvpx-vp9 -crf 30 -b:v 0 -b:a 128k -c:a libopus x.webm
 sub render_html {
     sub RENDER_HTML {[
 	'width',
