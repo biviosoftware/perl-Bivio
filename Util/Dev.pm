@@ -22,7 +22,7 @@ sub bashrc_b_env_aliases {
     my($self) = @_;
     return join(
 	" ;\n",
-	'b_env() { eval $(b-env "$@") && b_ps1 $1; }',
+	'b_env() { eval $(b-env "$@") && bivio_ps1 $1; }',
 	@{ShellUtil_Release()->map_projects(
 	    sub {
 		my($root, $prefix) = @_;
