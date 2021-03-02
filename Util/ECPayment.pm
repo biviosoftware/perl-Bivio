@@ -10,6 +10,7 @@ sub USAGE {
     return <<'EOF';
 usage: bivio Project [options] command [args..]
 commands
+  info - list payments for realm
   process_all - run Action.ECPaymentProcessAll
 EOF
 }
