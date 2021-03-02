@@ -10,7 +10,7 @@ sub USAGE {
     return <<'EOF';
 usage: bivio Project [options] command [args..]
 commands
-  info - list payments for realm
+  info - list payments for user
   process_all - run Action.ECPaymentProcessAll
 EOF
 }
@@ -23,8 +23,10 @@ sub info {
     #     ...
     # ...
     my($self) = @_;
-    my($payments) = $self->model('ECPaymentList')->load_all;
-    my($info) = join(', ', $self->req(qw(auth_realm owner))
+    my($payments) = $self->model('ECPaymentList')->unauth_load_all({
+        'ECPayment.user_id' => $self->req('auth_user_id'),
+    });
+    my($info) = join(', ', $self->req('auth_user')
         ->get(qw(name display_name))) . "\n";
 
     while ($payments->next_row) {
