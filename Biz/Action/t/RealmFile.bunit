@@ -63,10 +63,14 @@ options({
 	    ['/ARF/0'] => '/ARF/0',
 	    ['/Some/path', '/ARF/0'] => '/ARF/0',
 	    ['/ARF/0', '/not_found'] => MODEL_NOT_FOUND(),
-            # MUST BE LAST
+            # These tests must be last
             [{
                 path_info =>'/ARF/0',
-                r => class('Bivio::Biz::Action::t::Mock::Reply')->new({Range => 'bytes=2-5'}),
+                r => class('Bivio::Biz::Action::t::Mock::Reply')->new({Range => 'bytes=2-4'}),
+            }] => 'RF/',
+            [{
+                path_info =>'/ARF/0',
+                r => class('Bivio::Biz::Action::t::Mock::Reply')->new({Range => 'bytes=2-'}),
             }] => 'RF/0',
 	],
     ],

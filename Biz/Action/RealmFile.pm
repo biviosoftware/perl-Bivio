@@ -114,12 +114,18 @@ sub set_output_for_get {
     my($reply) = $realm_file->req->get('reply');
     my($range) = $realm_file->req->unsafe_get('r');
     $range &&= $range->header_in('Range');
-    my($start, $end) = ($range || '') =~ /^\s*bytes\s*=\s*(\d+)\s*-\s*(\d+)\s*$/is;
-    if (defined($range) && (!defined($end) || $start > $end)) {
-        b_warn('request contains invalid Range: ', $range);
-        $reply->set_output(\(''));
-        $reply->set_http_status($_AC->BAD_REQUEST);
-        return 1;
+    # Firefox and Chrome ask for bytes=<start>-; Safari requests specific ranges
+    my($start, $end) = ($range || '') =~ /^\s*bytes\s*=\s*(\d+)\s*-(?:\s*(\d+)\s*)?$/is;
+    if (defined($range)) {
+        if (!defined($start) || defined($end) && $start > $end) {
+            b_warn('request contains invalid Range: ', $range);
+            $reply->set_output(\(''));
+            $reply->set_http_status($_AC->BAD_REQUEST);
+            return 1;
+        }
+        if (!defined($end)) {
+            $end = $realm_file->get_content_length - 1;
+        }
     }
     $reply->set_output_type($realm_file->get_content_type);
     $reply->set_cache_private
