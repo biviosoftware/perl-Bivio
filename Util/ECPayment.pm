@@ -23,16 +23,22 @@ sub info {
     #     ...
     # ...
     my($self) = @_;
-    my($payments) = $self->model('ECPaymentList')->unauth_load_all({
-        'ECPayment.user_id' => $self->req('auth_user_id'),
+    my($payments) = $self->model('ECUserPaymentList')->unauth_load_all({
+        'auth_user_id' => $self->req('auth_user_id'),
     });
-    my($info) = join(', ', $self->req('auth_user')
-        ->get(qw(name display_name))) . "\n";
-
+    my($info) = 'User: '
+        . join(', ', $self->req('auth_user')
+        ->get(qw(name display_name realm_id))) . "\n"
+        . 'Realm: '
+        . join(', ', $self->req(qw(auth_realm owner))
+        ->get(qw(name display_name realm_id))) . "\n";
     while ($payments->next_row) {
-	$info .= $payments->get('ECPayment.ec_payment_id')
-	    . ' ' . $payments->get('ECPayment.service')->get_short_desc.', ';
-
+	$info .= join(
+            ' ',
+            $payments->get('ECPayment.realm_id'),
+            $payments->get('ECPayment.ec_payment_id'),
+	    $payments->get('ECPayment.service')->get_short_desc . ', ',
+        );
 	if ($payments->get('ECSubscription.start_date')) {
 	    $info .= Type_Date()->to_literal(
 		$payments->get('ECSubscription.start_date')) . ' - '
