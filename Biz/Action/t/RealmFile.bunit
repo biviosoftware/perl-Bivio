@@ -6,6 +6,8 @@ model('RealmFile')
     ->create_or_update_with_content({path => '/ARF/0'}, \('not to be found'));
 req()->set_realm_and_user('fourem');
 # Because of the eml files, will see "Unable to parse address:"
+# NOTE: duplicate /Public/A.eml deletes the previous one so /Archived/A;1.eml
+# test works
 foreach my $path (qw(
     /ARF/0
     /Public/ARF.txt
