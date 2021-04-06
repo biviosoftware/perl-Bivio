@@ -154,18 +154,17 @@ sub _assert_external_uri {
     if ($uri =~ m{^/}) {
         return;
     }
-    b_warn($uri);
     my($d) = $uri =~ m{^https?://([^/]+)}i;
     if (! $d) {
+        b_warn('not http uri=', $uri);
         b_die('NOT_FOUND');
     }
     $d = _second_level_domain($d);
-    b_warn($d);
     $_DOMAINS ||= _domains($req);
     if (! grep($_ eq $d, @$_DOMAINS)) {
+        b_warn('invalid domain=', $d);
         b_die('NOT_FOUND');
     }
-    b_warn($_DOMAINS);
     return;
 }
 
