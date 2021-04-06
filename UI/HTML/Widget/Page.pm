@@ -72,19 +72,13 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # xhtml : boolean [0]
 #
-# If set, the page will be generated with the following XHTML doctype
-#
-#     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-#     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-#
-#
-#
+# If set, the page will be generated with XHTML widgets.
 #
 # html_tag_attrs : any []
 #
 # Attributes to be applied to the html_tag used to generate the tag.  Works on
 # <HTML> and <BODY> tags.
-# 
+#
 # Must have a leading space.
 #
 #
@@ -176,8 +170,7 @@ sub render {
     my($req) = $source->get_request;
     my($xhtml) = $self->internal_setup_xhtml($req);
     my($body) = $self->render_attr('body', $source);
-    $$buffer .= _doc_type($self, $source, $xhtml)
-	. "\n<html"
+    $$buffer .= "<!DOCTYPE html>\n<html"
 	. $self->render_simple_attr(html_tag_attrs => $source)
 	. "><head>\n"
 	. $self->internal_render_head_attrs($source)
@@ -219,16 +212,6 @@ sub register_handler {
     shift;
     $_HANDLERS->push_object(@_);
     return;
-}
-
-sub _doc_type {
-    my($self, $source, $xhtml) = @_;
-    return $_F->get_from_source($source)->if_2014style(
-	'<!DOCTYPE html>',
-	$xhtml
-	    ? '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-	    : '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">',
-    );
 }
 
 1;

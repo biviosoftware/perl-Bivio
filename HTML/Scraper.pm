@@ -4,11 +4,11 @@ package Bivio::HTML::Scraper;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 use HTTP::Cookies ();
-use HTTP::Request ();
 use HTTP::Message ();
+use HTTP::Request ();
+use JSON ();
 
 b_use('IO.Trace');
-# use URI ();
 our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = b_use('IO.Alert');
@@ -104,16 +104,24 @@ sub html_parser_text {
     return;
 }
 
+sub http_delete {
+    my($self, $uri, $file_name, $headers) = @_;
+    my($request) = HTTP::Request->new(DELETE => $self->abs_uri($uri));
+    _set_headers($self, $request, $headers);
+    return $self->http_request($request, $file_name);
+}
+
 sub http_get {
-    my($self, $uri, $file_name) = @_;
+    my($self, $uri, $file_name, $headers) = @_;
     my($request) = HTTP::Request->new(GET => $self->abs_uri($uri));
+    _set_headers($self, $request, $headers);
     $request->header('Accept-Encoding' => HTTP::Message::decodable)
 	if $self->unsafe_get('accept_encoding');
     return $self->http_request($request, $file_name);
 }
 
 sub http_post {
-    my($self, $uri, $form, $file_name) = @_;
+    my($self, $uri, $form, $file_name, $headers) = @_;
     # Executes a POST and returns the result.  Encodes I<form>.  I<uri> is
     # already encoded.  The values will be escaped.
     #
@@ -130,8 +138,23 @@ sub http_post {
     #
     # Calls L<http_request|"http_request">.
     my($hreq) = HTTP::Request->new(POST => $self->abs_uri($uri));
-    $hreq->content_type('application/x-www-form-urlencoded');
-    $hreq->content(_format_form($form));
+    _set_headers($self, $hreq, $headers);
+    # json for hash, form for array
+    my($content_type, $content);
+    if (ref($form) eq 'HASH') {
+        ($content_type, $content) = (
+            'application/json',
+            JSON::encode_json($form),
+        );
+    }
+    else {
+        ($content_type, $content) = (
+            'application/x-www-form-urlencoded',
+            _format_form($form),
+        );
+    }
+    $hreq->content_type($content_type);
+    $hreq->content($content);
     return $self->http_request($hreq, $file_name);
 }
 
@@ -143,7 +166,23 @@ sub http_request {
 	if $u;
     my($hres) = _http_request($self, $hreq);
     # Always write the file (even on failure)
-    $self->write_file($file_name, \($hres->as_string));
+    my($str) = '';
+    if ($self->unsafe_get('accept_encoding')) {
+        # decode (gzipped) content
+        $str = join('', (
+            $hres->protocol || '',
+            $hres->status_line,
+            "\n",
+            $hres->headers->as_string,
+            "\n",
+            ${$self->extract_content($hres)},
+            "\n",
+        ));
+    }
+    else {
+        $str = $hres->as_string;
+    }
+    $self->write_file($file_name, \$str);
     $self->client_error('request failed', {entity => $hres})
 	unless $hres->is_success;
     $self->put(login_ok => 1)
@@ -342,6 +381,15 @@ sub _http_request {
     }
     $self->client_error('too many redirects', {entity => \@uris,});
     # DOES NOT RETURN
+}
+
+sub _set_headers {
+    my($self, $request, $headers) = @_;
+    return unless $headers;
+    foreach my $h (keys(%$headers)) {
+        $request->header($h => $headers->{$h});
+    }
+    return;
 }
 
 1;

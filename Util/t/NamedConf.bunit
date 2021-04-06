@@ -3,13 +3,19 @@
 ShellUtilConf({
     setup_case => sub {
         my($n) = IO_File()->pwd =~ /(\d+)$/;
-        my($serial) = Type_Date()->now_as_file_name . '00';
+        my($curr) = (split(/\s+/, `dig soa bivio.biz +short`))[2]
+            || b_die('dig failed');
+        my($new) = Type_Date()->now_as_file_name . '00';
+        if ($new eq $curr) {
+            # someone updated the SOA today for Named
+            substr($new, -1) = '1';
+        }
         foreach my $f (glob("../$n-out/var/named/*")) {
             IO_File()->do_read_write(
                 $f,
                 sub {
                     my($d) = @_;
-                    return $$d =~ s/ 20149\d{5} / $serial / ? $d : undef;
+                    return $$d =~ s/ 20149\d{5} / $new / ? $d : undef;
                 },
             );
         }

@@ -137,6 +137,7 @@ commands:
     list_installed match -- lists packages which match pattern
     list_projects -- get project list as an array_ref
     list_projects_el -- get project list for Lisp setq
+    list_projects_sh_except_bivio -- for home-env/install.sh
     list_updates stream_name -- list packages that need to updated
     update stream_name -- retrieve and apply updates
     yum_update -- bracket with magic to make yum update work
@@ -403,6 +404,17 @@ sub list_projects_el {
 	    map(sprintf('("%s" "%s" "%s")', @$_),
 		@{$_CFG->{projects}}))
 	. "))\n";
+}
+
+sub list_projects_sh_except_bivio {
+    # excluding Bivio and Bivio/PetShop
+    return join(
+        ' ',
+        grep(
+            !m{^Bivio(?:$|/)},
+            map($_->[0], @{$_CFG->{projects}}),
+        ),
+    );
 }
 
 sub list_updates {

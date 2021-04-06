@@ -319,7 +319,7 @@ MaxSpareServers 4
 StartServers 1
 MaxClients 4
 MaxRequestsPerChild $max_requests_per_child
-LimitRequestBody 4194304
+LimitRequestBody 50000000
 RequestReadTimeout header=2
 
 ServerRoot $pwd

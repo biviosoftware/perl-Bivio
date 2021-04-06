@@ -21,7 +21,7 @@ print "ok 1\n";
 my($T) = 2;
 my($res) = Bivio::Util::Dev->bashrc_b_env_aliases;
 # Make this exact, because order and eliminating duplicates matters
-print $res eq q[b_env() { eval $(b-env "$@") && b_ps1 $1; } ;
+print $res eq q[b_env() { eval $(b-env "$@") && bivio_ps1 $1; } ;
 b_project() { b_env project ProjEx; } ;
 b_b() { b_env b Bivio; } ;
 b_pet() { b_env pet Bivio/PetShop; }]
