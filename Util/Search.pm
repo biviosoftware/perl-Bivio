@@ -94,7 +94,7 @@ sub rebuild_db {
 	$_X->destroy_db($req);
     }
     return _iterate_realms(
-	$self, 'rebuild_realm', [$bp->{after_date}], $last_realm);
+	$self, 'rebuild_realm', [$bp->{after_date}, $bp->{sleep}], $last_realm);
 }
 
 sub rebuild_realm {
