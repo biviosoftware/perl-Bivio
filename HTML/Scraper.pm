@@ -106,15 +106,15 @@ sub html_parser_text {
 
 sub http_delete {
     my($self, $uri, $file_name, $headers) = @_;
-    my($request) = HTTP::Request->new(DELETE => $self->abs_uri($uri));
-    _set_headers($self, $request, $headers);
-    return $self->http_request($request, $file_name);
+    return $self->http_request(
+        _create_http_request($self, 'DELETE', $uri, $headers),
+        $file_name,
+    );
 }
 
 sub http_get {
     my($self, $uri, $file_name, $headers) = @_;
-    my($request) = HTTP::Request->new(GET => $self->abs_uri($uri));
-    _set_headers($self, $request, $headers);
+    my($request) = _create_http_request($self, 'GET', $uri, $headers);
     $request->header('Accept-Encoding' => HTTP::Message::decodable)
 	if $self->unsafe_get('accept_encoding');
     return $self->http_request($request, $file_name);
@@ -125,7 +125,8 @@ sub http_post {
     # Executes a POST and returns the result.  Encodes I<form>.  I<uri> is
     # already encoded.  The values will be escaped.
     #
-    # I<form> is an array_ref because there are apps which depend on
+    # If I<form> is a hash_ref, data is sent as application/json.
+    # Otherwise I<form> is an array_ref because there are apps which depend on
     # the order(!).  The format is:
     #
     #     [
@@ -137,25 +138,12 @@ sub http_post {
     # If a value is C<undef>, the output will not contain an equals sign.
     #
     # Calls L<http_request|"http_request">.
-    my($hreq) = HTTP::Request->new(POST => $self->abs_uri($uri));
-    _set_headers($self, $hreq, $headers);
-    # json for hash, form for array
-    my($content_type, $content);
-    if (ref($form) eq 'HASH') {
-        ($content_type, $content) = (
-            'application/json',
-            JSON::encode_json($form),
-        );
-    }
-    else {
-        ($content_type, $content) = (
-            'application/x-www-form-urlencoded',
-            _format_form($form),
-        );
-    }
-    $hreq->content_type($content_type);
-    $hreq->content($content);
-    return $self->http_request($hreq, $file_name);
+    return _send_form($self, 'POST', $uri, $form, $file_name, $headers);
+}
+
+sub http_put {
+    my($self, $uri, $data, $file_name, $headers) = @_;
+    return _send_form($self, 'PUT', $uri, $data, $file_name, $headers);
 }
 
 sub http_request {
@@ -316,6 +304,17 @@ sub _clean_quoted_cookie_values {
     return;
 }
 
+sub _create_http_request {
+    my($self, $method, $uri, $headers) = @_;
+    my($request) = HTTP::Request->new($method => $self->abs_uri($uri));
+    if ($headers) {
+        foreach my $h (keys(%$headers)) {
+            $request->header($h => $headers->{$h});
+        }
+    }
+    return $request;
+}
+
 sub _format_form {
     my($form) = @_;
     # Returns URL encoded form.
@@ -383,13 +382,26 @@ sub _http_request {
     # DOES NOT RETURN
 }
 
-sub _set_headers {
-    my($self, $request, $headers) = @_;
-    return unless $headers;
-    foreach my $h (keys(%$headers)) {
-        $request->header($h => $headers->{$h});
+sub _send_form {
+    my($self, $method, $uri, $form, $file_name, $headers) = @_;
+    my($hreq) = _create_http_request($self, $method, $uri, $headers);
+    # json for hash, form for array
+    my($content_type, $content);
+    if (ref($form) eq 'HASH') {
+        ($content_type, $content) = (
+            'application/json',
+            JSON::encode_json($form),
+        );
     }
-    return;
+    else {
+        ($content_type, $content) = (
+            'application/x-www-form-urlencoded',
+            _format_form($form),
+        );
+    }
+    $hreq->content_type($content_type);
+    $hreq->content($content);
+    return $self->http_request($hreq, $file_name);
 }
 
 1;
