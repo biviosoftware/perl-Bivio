@@ -951,6 +951,7 @@ sub _cfg_crm {
 		open => 'Open',
 		pending_customer => 'Pending Customer',
 		new => 'New',
+		unassign => 'Unassign',
 	    ]],
 	    [CRMForm => [
 		action_id => 'Action',

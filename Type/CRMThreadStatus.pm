@@ -13,6 +13,7 @@ __PACKAGE__->compile([
     NEW => 3,
     OPEN => 4,
     PENDING_CUSTOMER => 5,
+    UNASSIGN => 6,
 ]);
 
 sub get_default {

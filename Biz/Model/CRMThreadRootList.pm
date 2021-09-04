@@ -52,7 +52,7 @@ sub internal_initialize {
                             WHERE e.realm_id = crm_thread_t.${field}_user_id
                             AND e.location = $_LOCATION
                         ) AS ${field}_email",
-		    },		    
+		    },
 		);
 	    }),
 	],

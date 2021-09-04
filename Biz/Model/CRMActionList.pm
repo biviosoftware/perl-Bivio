@@ -22,18 +22,29 @@ sub id_to_name {
 	unless defined($id);
     my($res) = $self->find_row_by(id => $id);
     return $res	? $res->get('name')
-	        : -$id eq $_CTS->NEW->as_int
-		    ? _get_label($self, $_CTS->NEW->get_name) : undef;
+        : -$id eq $_CTS->NEW->as_int
+        ? _get_label($self, $_CTS->NEW->get_name) : undef;
 }
 
 sub id_to_owner {
-    my($self, $id) = @_;
-    return $id > 0 ? $id : undef;
+    my($self, $id, $curr_owner) = @_;
+    return $id
+        if $id > 0;
+    my($s) = $_CTS->from_int(-$id);
+    return $s->eq_unassign ? undef : $curr_owner;
 }
 
 sub id_to_status {
-    my($self, $id) = @_;
-    return $id < 0 ? $_CTS->from_int(-$id) : $_CTS->OPEN;
+    my($self, $id, $curr_status) = @_;
+    $curr_status or b_die('unset curr_status');
+    return $_CTS->OPEN
+        if $id > 0;
+    my($s) = $_CTS->from_int(-$id);
+    return $s->eq_unassign
+        ? $curr_status->eq_locked
+        ? $curr_status->OPEN
+        : $curr_status
+        : $s;
 }
 
 sub internal_initialize {
@@ -95,8 +106,8 @@ sub name_to_id {
 	unless defined($name);
     my($res) = $self->find_row_by(name => $name);
     return $res	? $res->get('id')
-                : $name eq _get_label($self, $_CTS->NEW->get_name)
-		    ? -$_CTS->NEW->as_int : undef;
+        : $name eq _get_label($self, $_CTS->NEW->get_name)
+        ? -$_CTS->NEW->as_int : undef;
 }
 
 sub names_only {

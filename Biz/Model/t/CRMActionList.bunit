@@ -10,6 +10,7 @@ req()->set_realm_and_user(qw(crm_forum crm_tech1));
 	    +{name => qr{open.*(?!locked)}i},
 	    +{name => qr{locked}i},
 	    +{name => qr{pending}i},
+	    +{name => qr{unassign}i},
 	    +{name => qr{assign.*tech1}i},
 	    +{name => qr{assign.*tech2}i},
 	],
@@ -22,14 +23,16 @@ req()->set_realm_and_user(qw(crm_forum crm_tech1));
     ],
     id_to_owner => [
         realm_id('crm_tech1') => realm_id('crm_tech1'),
-	map((-CRMThreadStatus($_->[0])->as_int => [$_->[1]]),
+	map(([-CRMThreadStatus($_->[0])->as_int, 333] => [333]),
 	    [CLOSED => undef],
 	    [OPEN => undef],
 	    [LOCKED => undef],
 	),
     ],
     id_to_status => [
-        realm_id('crm_tech1') => [CRMThreadStatus('OPEN')],
+        [realm_id('crm_tech1'), CRMThreadStatus('LOCKED')] => [CRMThreadStatus('OPEN')],
+        [-CRMThreadStatus('UNASSIGN')->as_int, CRMThreadStatus('NEW')] => [CRMThreadStatus('NEW')],
+        [-CRMThreadStatus('UNASSIGN')->as_int, CRMThreadStatus('LOCKED')] => [CRMThreadStatus('OPEN')],
     ],
     owner_email_to_name => [
 	'' => [undef],

@@ -36,7 +36,7 @@ submit_form(Send => {
 test_deviance();
 verify_local_mail($cust1, qr{Status}, 1);
 test_conformance();
-verify_local_mail($tech1, qr{Status: Open\s+Owner: none\s+Deadline: none\s+Priority: High\s+Product: none\s+Status changed from New to Open\s+Priority changed from Low to High}s, 1);
+verify_local_mail($tech1, qr{Status: Open\s+Owner: crm_tech1\s+Deadline: none\s+Priority: High\s+Product: none\s+Status changed from New to Open\s+Priority changed from Low to High}s, 1);
 follow_link('tickets');
 submit_form({
     priority => 'Low',
@@ -56,7 +56,7 @@ submit_form('Update Fields Only' => {
 test_deviance();
 verify_local_mail($cust1, qr{Status}, 1);
 test_conformance();
-verify_local_mail($tech1, qr{Status: Open\s+Owner: none\s+Deadline: none\s+Priority: Medium\s+Product: $product\s+Priority changed from High to Medium\s+Product changed from none to $product}s, 1);
+verify_local_mail($tech1, qr{Status: Open\s+Owner: crm_tech1\s+Deadline: none\s+Priority: Medium\s+Product: $product\s+Priority changed from High to Medium\s+Product changed from none to $product}s, 1);
 follow_link('tickets');
 submit_form(Refresh => {
     'Any Status' => 'Any Status',

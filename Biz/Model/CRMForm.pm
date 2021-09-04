@@ -38,7 +38,7 @@ sub execute_cancel {
 sub execute_empty {
     my($self) = @_;
     shift->SUPER::execute_empty(@_);
-    my($status);
+    my($status, $owner);
     $self->internal_put_field(
 	_if_crm_thread(
 	    $self,
@@ -50,11 +50,20 @@ sub execute_empty {
 		    unless my $discuss = $who->eq_realm;
                 _append_other_emails_to_cc($self)
                     if $who->eq_all;
+                if ($owner = $ct->get('owner_user_id')) {
+                    $owner = $self->new_other('RealmOwner')
+                        ->unauth_load_or_die({realm_id => $owner})
+                        ->get('name');
+                }
 		return (
-		    action_id =>
-			$cal->id_to_name(
-			_action_id_for_owner_and_status(
-			    $self, $ct, $cal, $discuss)),
+		    action_id => $cal->id_to_name(
+                        _action_id_for_owner_and_status(
+			    $self,
+                            $ct,
+                            $cal,
+                            $discuss,
+                        ),
+                    ),
 		    subject => $ct->clean_subject($self->get('subject')),
 		);
 	    },
@@ -72,6 +81,7 @@ sub execute_empty {
     );
     $self->internal_put_field(
 	old_status => $status,
+        old_owner_name => $owner,
     );
     return;
 }
@@ -90,8 +100,8 @@ sub execute_ok {
     my($cal, $cid) = $self->unsafe_get(
 	qw(crm_action_list CRMThread.customer_realm_id));
     my($id) = $self->get('action_id');
-    my($status) = $cal->id_to_status($id);
-    my($owner) = $cal->id_to_owner($id);
+    my($status) = $cal->id_to_status($id, $ct->get('crm_thread_status'));
+    my($owner) = $cal->id_to_owner($id, $ct->get('owner_user_id'));
     $ct->update({
 	crm_thread_status => $status,
 	owner_user_id => $owner,
@@ -208,6 +218,7 @@ sub internal_initialize {
 	    ],
 	    hidden => [
 		[qw(old_status CRMThreadStatus)],
+		[qw(old_owner_name RealmOwner.name)],
 	    ],
 	    other => [
 		$_TAG_ID,
@@ -259,6 +270,7 @@ sub validate {
 sub _acquire_lock {
     my($ct) = @_;
     return $ct->update({
+        owner_user_id => $ct->req('auth_user_id'),
 	lock_user_id => $ct->req('auth_user_id'),
 	crm_thread_status => $_CTS->LOCKED,
     });
@@ -266,10 +278,9 @@ sub _acquire_lock {
 
 sub _action_id_for_owner_and_status {
     my($self, $ct, $cal, $discuss) = @_;
-    return $discuss ? $self->ureq(qw(Model.CRMThread owner_user_id))
-        || $cal->status_to_id_in_list($ct->get('crm_thread_status'))
-            : $cal->status_to_id_in_list(
-                $self->internal_empty_status_when_exists);
+    return $cal->status_to_id_in_list(
+        $discuss ? $ct->get('crm_thread_status') : $self->internal_empty_status_when_exists,
+    );
 }
 
 sub _append_other_emails_to_cc {
