@@ -942,8 +942,8 @@ sub _cfg_crm {
 		'CRMThread.modified_date_time' => 'Last Update',
 		'modified_by_name' => 'Updated by',
 		'CRMThread.crm_thread_status' => 'Status',
-		'owner_name' => 'Assigned to',
 	    ]],
+            [['CRMThreadRootList.owner_name', 'CRMForm.old_owner_name'] => 'Assigned to'],
 	    ['CRMActionList.label' => [
 		assign_to => 'Assign to ',
 		closed => 'Close',

@@ -107,6 +107,10 @@ sub internal_crm_send_form_extra_fields {
     my($self, $model) = @_;
     my($m) = $model->simple_package_name;
     return [
+	["$m.old_owner_name", {
+	    wf_class => 'String',
+            value => ["Model.$m", 'old_owner_name'],
+	}],
 	["$m.action_id", {
 	    wf_class => 'ComboBox',
 	    list_class => 'CRMActionList',
