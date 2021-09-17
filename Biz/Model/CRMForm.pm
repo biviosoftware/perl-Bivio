@@ -46,12 +46,17 @@ sub execute_empty {
 		my($ct) = @_;
 		$status = $ct->get('crm_thread_status');
                 my($who) = $self->internal_query_who;
+                # changes status to locked, but $status is as before
 		_acquire_lock($ct)
 		    unless my $discuss = $who->eq_realm;
                 _append_other_emails_to_cc($self)
                     if $who->eq_all;
 		return (
-                    crm_thread_status => $status,
+                    crm_thread_status => ($discuss
+                        ? $status->equals_by_name('LOCKED', 'NEW')
+                        ? $status->OPEN
+                        : $status
+                        : $status->CLOSED),
                     owner_user_id => $ct->get('owner_user_id')
                         || $self->req('auth_user_id'),
 		    subject => $ct->clean_subject($self->get('subject')),
@@ -63,7 +68,7 @@ sub execute_empty {
 		    to => undef,
 		    cc => $self->get('to'),
                     owner_user_id => $self->req('auth_user_id'),
-                    crm_thread_status => $_CTS->NEW,
+                    crm_thread_status => $_CTS->OPEN,
 		);
 	    },
 	),
@@ -84,7 +89,8 @@ sub execute_ok {
     my($cid) = $self->unsafe_get(
 	qw(CRMThread.customer_realm_id));
     my($status) = $self->get('crm_thread_status');
-    my($owner) = $self->get('owner_user_id');
+    # The empty case is 0,
+    my($owner) = $self->get('owner_user_id') || undef;
     $ct->update({
 	crm_thread_status => $status,
 	owner_user_id => $owner,

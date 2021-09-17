@@ -111,9 +111,18 @@ sub internal_crm_send_form_extra_fields {
             choices => ['Model.CRMUserList'],
 	    list_display_field => 'RealmOwner.name',
 	    list_id_field => 'RealmUser.user_id',
-            show_unknown => 1,
+            unknown_label => vs_text($m, 'unknown_owner_user_id'),
 	}],
-	"$m.crm_thread_status",
+	["$m.crm_thread_status", {
+            choices => Bivio_TypeValue(
+                $_CTS,
+                [
+                    $_CTS->CLOSED,
+                    $_CTS->OPEN,
+                    $_CTS->PENDING_CUSTOMER,
+                ],
+            ),
+        }],
 	$self->internal_tuple_tag_form_fields($model),
     ];
 }

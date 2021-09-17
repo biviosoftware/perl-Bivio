@@ -959,6 +959,7 @@ sub _cfg_crm {
 		update_only => 'Update Fields Only',
 		crm_thread_status => 'Status',
 		owner_user_id => 'Assignee',
+		unknown_owner_user_id => 'Unassign',
 		empty_label => 'none',
 	    ]],
 	    ['task_menu.title' => [
