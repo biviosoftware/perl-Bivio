@@ -1,5 +1,4 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2021 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::CRMThreadRootList;
 use strict;
 use Bivio::Base 'Model.MailThreadRootList';

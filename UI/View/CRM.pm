@@ -114,14 +114,7 @@ sub internal_crm_send_form_extra_fields {
             unknown_label => vs_text($m, 'unknown_owner_user_id'),
 	}],
 	["$m.crm_thread_status", {
-            choices => Bivio_TypeValue(
-                $_CTS,
-                [
-                    $_CTS->CLOSED,
-                    $_CTS->OPEN,
-                    $_CTS->PENDING_CUSTOMER,
-                ],
-            ),
+            choices => $_CTS->crm_form_choices,
         }],
 	$self->internal_tuple_tag_form_fields($model),
     ];
@@ -200,20 +193,13 @@ sub thread_root_list {
 	    vs_inline_form(
 		$f->simple_package_name,
 		[
-		    map(
-			Select({
-			    %{$f->get_select_attrs($_)},
-			    unknown_label => vs_text('CRMQueryForm', $_),
-			    auto_submit => 1,
-			    $_ eq 'b_status' ? (
-				enum_display => 'get_desc_for_query_form',
-			    ) : (),
-			}),
-			grep($f->get_field_type($_)->isa(
-			    'Bivio::Type::TupleChoiceList'),
-			     $f->tuple_tag_field_check),
-			'b_status',
-		    ),
+                    Select({
+                        %{$f->get_select_attrs('b_status')},
+                        unknown_label => vs_text('CRMQueryForm', 'b_status'),
+                        auto_submit => 1,
+                        choices => $_CTS->crm_query_choices,
+                        enum_display => 'get_desc_for_query_form',
+                    }),
 		    Select({
 			%{$f->get_select_attrs('b_owner')},
                         choices => ['Model.CRMUserList'],
@@ -222,6 +208,16 @@ sub thread_root_list {
                         unknown_label => vs_text($f->simple_package_name, 'b_owner'),
 			auto_submit => 1,
 		    }),
+		    map(
+			Select({
+			    %{$f->get_select_attrs($_)},
+			    unknown_label => vs_text('CRMQueryForm', $_),
+			    auto_submit => 1,
+			}),
+			grep($f->get_field_type($_)->isa(
+			    'Bivio::Type::TupleChoiceList'),
+			     $f->tuple_tag_field_check),
+		    ),
 		    ScriptOnly({
 			widget => Simple(''),
 			alt_widget => FormButton('ok_button')

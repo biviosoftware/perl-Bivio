@@ -1,5 +1,4 @@
-# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2021 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::CRMForm;
 use strict;
 use Bivio::Base 'Model.MailForm';
@@ -14,7 +13,6 @@ my($_I) = b_use('Mail.Incoming');
 my($_TAG_ID) = 'CRMThread.thread_root_id';
 b_use('ClassWrapper.TupleTag')->wrap_methods(
     __PACKAGE__, __PACKAGE__->TUPLE_TAG_INFO);
-#TODO: Locked needs to limit users from acting (are you sure?)
 #TODO: Verify that auth_realm is in the list of emails????
 #TODO: Bounce handling
 my($_TS) = b_use('Type.TupleSlot');
@@ -29,12 +27,6 @@ sub TUPLE_TAG_INFO {
     };
 }
 
-sub execute_cancel {
-    my($self) = @_;
-    _if_crm_thread($self, sub {_release_lock(@_)});
-    return shift->SUPER::execute_cancel(@_);
-}
-
 sub execute_empty {
     my($self) = @_;
     shift->SUPER::execute_empty(@_);
@@ -46,24 +38,16 @@ sub execute_empty {
 		my($ct) = @_;
 		$status = $ct->get('crm_thread_status');
                 my($who) = $self->internal_query_who;
-                # changes status to locked, but $status is as before
-		_acquire_lock($ct)
-		    unless my $discuss = $who->eq_realm;
                 _append_other_emails_to_cc($self)
                     if $who->eq_all;
 		return (
-                    crm_thread_status => ($discuss
-                        ? $status->equals_by_name('LOCKED', 'NEW')
-                        ? $status->OPEN
-                        : $status
-                        : $status->CLOSED),
+                    crm_thread_status => _empty_status($status, $who->eq_realm),
                     owner_user_id => $ct->get('owner_user_id')
                         || $self->req('auth_user_id'),
 		    subject => $ct->clean_subject($self->get('subject')),
 		);
 	    },
 	    sub {
-		$status = $_CTS->UNKNOWN;
 		return (
 		    to => undef,
 		    cc => $self->get('to'),
@@ -89,14 +73,12 @@ sub execute_ok {
     my($cid) = $self->unsafe_get(
 	qw(CRMThread.customer_realm_id));
     my($status) = $self->get('crm_thread_status');
-    # The empty case is 0,
-    my($owner) = $self->get('owner_user_id') || undef;
+    my($owner) = $self->get('owner_user_id');
     $ct->update({
 	crm_thread_status => $status,
 	owner_user_id => $owner,
 	modified_by_user_id => $self->req('auth_user_id'),
-	lock_user_id => $status->eq_locked ? $self->req('auth_user_id')
-	    : undef,
+	lock_user_id => undef,
 	subject => $self->get('subject'),
 	$cid ? (customer_realm_id => $cid) : (),
     });
@@ -151,14 +133,6 @@ sub handle_tuple_tag_update_properties {
 		$self->internal_format_field_updates);
     }
     return;
-}
-
-sub internal_empty_status_when_exists {
-    return $_CTS->CLOSED;
-}
-
-sub internal_empty_status_when_new {
-    return $_CTS->OPEN;
 }
 
 sub internal_format_field_updates {
@@ -245,14 +219,6 @@ sub validate {
     return;
 }
 
-sub _acquire_lock {
-    my($ct) = @_;
-    return $ct->update({
-	lock_user_id => $ct->req('auth_user_id'),
-	crm_thread_status => $_CTS->LOCKED,
-    });
-}
-
 sub _append_other_emails_to_cc {
     my($self) = @_;
     my($dups) = {
@@ -311,11 +277,16 @@ sub _if_crm_thread {
     return $true->($ct);
 }
 
-sub _release_lock {
-    return shift->update({
-	lock_user_id => undef,
-	crm_thread_status => $_CTS->OPEN,
-    });
+sub _empty_status {
+    my($status, $discuss) = @_;
+    # Force status to a limited set (POSIT: CRMThreadStatus.crm_form_choices)
+    if ($discuss) {
+        if ($status->equals_by_name('CLOSED', 'PENDING_CUSTOMER')) {
+            return $status;
+        }
+        return $status->OPEN;
+    }
+    return $status->CLOSED,
 }
 
 1;
