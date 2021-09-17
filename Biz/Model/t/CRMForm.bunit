@@ -30,7 +30,7 @@ my($rand_cc) = EmailArray(email(random_string()));
 	owner_user_id => realm_id('crm_tech1'),
 	to => $demo,
 	cc => $crm_alias,
-	subject => 's1',
+	subject => 'initiate case by demo user',
 	body => 'b1',
     }] => [{
 	'Model.CRMThread' => {
@@ -62,7 +62,7 @@ my($rand_cc) = EmailArray(email(random_string()));
         crm_thread_status => CRMThreadStatus('CLOSED'),
 	owner_user_id => realm_id('crm_tech1'),
 	to => EmailArray([$board]),
-	subject => 's2',
+	subject => 'reply just to the board',
 	body => sub {$body = $_R->string},
     }] => [{
 	'Model.CRMThread' => {
@@ -76,14 +76,11 @@ my($rand_cc) = EmailArray(email(random_string()));
 	model('MailThreadList')->do_iterate(sub {
 	    my($it) = @_;
 	    $count++;
-	    b_die('too many messages')
-		if $count > 3;
 	    my($content) = model(RealmFile => {
 		realm_file_id => $it->get('RealmMail.realm_file_id'),
 	    })->get_content;
-            b_debug("count=$count " . $$content);
 	    return 1
-		if $count < 2;
+		if $count < 3;
 	    assert_equals(
 		$it->get('RealmMail.from_email'),
 		$crm_alias->get_element(0),
@@ -92,29 +89,30 @@ my($rand_cc) = EmailArray(email(random_string()));
 		$it->get('RealmMail.from_display_name'),
 		'crm_tech1',
 	    );
-	    if ($count == 33) {
+	    if ($count == 3) {
 		assert_equals(qr{\QTo: $board\E}, $content);
 		assert_equals(qr{$body}, $content);
 	    }
-	    elsif ($count == 3) {
+	    elsif ($count == 4) {
 		assert_equals(qr{\QTo: $board\E}, $content);
-		assert_equals(qr{Status: Closed\s+Owner: crm_tech1\s+Status changed from Locked to Closed\s*$}s, $content);
+		assert_equals(qr{Status: Closed\s+Assignee: crm_tech1\s+Status changed from Open to Closed\s*$}s, $content);
 	    }
 	    return 1;
 	}, 'unauth_iterate_start', {
 	    parent_id => $ctid,
 	});
-        assert_equals($count, 3);
+        assert_equals($count, 4);
     }),
     empty_case({
 	to => $crm_alias,
         crm_thread_status => CRMThreadStatus('CLOSED'),
-	owner_user_id => realm_id('crm_tech2'),
+	owner_user_id => realm_id('crm_tech1'),
     }),
     [{
         crm_thread_status => CRMThreadStatus('OPEN'),
         cc => EmailArray([]),
 	subject => 'new subj1',
+	owner_user_id => realm_id('crm_tech2'),
 	update_only => 1,
     }] => [{
 	'Model.CRMThread' => {
@@ -134,7 +132,7 @@ my($rand_cc) = EmailArray(email(random_string()));
         crm_thread_status => CRMThreadStatus('OPEN'),
 	owner_user_id => req('auth_user_id'),
 	to => $crm_alias,
-	subject => 's3',
+	subject => 'initiate second from crm_tech1',
 	body => 'b3',
     }] => [{
 	'Model.CRMThread' => {
@@ -146,21 +144,27 @@ my($rand_cc) = EmailArray(email(random_string()));
     }],
     empty_case({
         crm_thread_status => CRMThreadStatus('OPEN'),
-	subject => 's3',
+	subject => 'initiate second from crm_tech1',
         to => $crm_alias,
         cc => EmailArray([]),
     }),
     [{
 	to => $crm_alias,
         cc => $rand_cc,
-	subject => 's3',
+	subject => 'initiate second from crm_tech1',
 	body => 'b3-r',
 	owner_user_id => realm_id('crm_tech2'),
-    }] => [{}],
+        crm_thread_status => CRMThreadStatus('OPEN'),
+    }] => [{
+	'Model.CRMThread' => {
+            crm_thread_status => CRMThreadStatus('OPEN'),
+	    owner_user_id => realm_id('crm_tech2'),
+        },
+    }],
     inline_case(sub {$who = 'ALL'}),
     empty_case({
         crm_thread_status => CRMThreadStatus('CLOSED'),
-	subject => 's3',
+	subject => 'initiate second from crm_tech1',
         to => $crm_alias,
         cc => $rand_cc,
     }),
