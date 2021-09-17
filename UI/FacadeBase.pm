@@ -944,15 +944,6 @@ sub _cfg_crm {
 		'modified_by_name' => 'Updated by',
 		'CRMThread.crm_thread_status' => 'Status',
 	    ]],
-	    ['CRMActionList.label' => [
-		assign_to => 'Assign to ',
-		closed => 'Close',
-		locked => 'Open (Locked)',
-		open => 'Open',
-		pending_customer => 'Pending Customer',
-		new => 'New',
-		unassign => 'Unassign',
-	    ]],
 	    [CRMForm => [
 		action_id => 'Action',
 		ok_button => 'Send',
