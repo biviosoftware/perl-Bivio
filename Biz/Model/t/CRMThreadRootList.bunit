@@ -15,7 +15,7 @@ my($init_dt) = DateTime()->now;
 DateTime()->set_test_now($now);
 req()->set_user('crm_tech1');
 ShellUtil_TestCRM()->update_thread({
-    action_id => realm_id('crm_tech2'),
+    owner_user_id => realm_id('crm_tech2'),
     subject => $subject,
 });
 my($mod_dt) = DateTime()->now;
