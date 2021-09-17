@@ -25,10 +25,4 @@ sub internal_initialize {
     });
 }
 
-sub internal_load_rows {
-    return [
-        @{shift->SUPER::internal_load_rows(@_)},
-    ];
-}
-
 1;

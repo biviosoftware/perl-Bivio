@@ -197,7 +197,7 @@ sub internal_initialize {
 	$self->field_decl(
 	    visible => [
                 [qw(crm_thread_status CRMThreadStatus NOT_NULL)],
-                [qw(owner_name RealmOwner.name NONE)],
+                [qw(owner_user_id PrimaryId NONE)],
 		[qw(update_only OKButton)],
 	    ],
 	    other => [

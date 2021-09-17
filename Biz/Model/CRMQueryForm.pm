@@ -10,14 +10,14 @@ b_use('ClassWrapper.TupleTag')->wrap_methods(
 sub get_list_for_field {
     my($proto, $field) = @_;
     return _owner_name_list($proto)
-	if $field eq 'b_owner_id';
+	if $field eq 'b_owner';
     return shift->SUPER::get_list_for_field(@_);
 }
 
 sub internal_query_fields {
     return [
 	[qw(b_status CRMThreadStatus)],
-	[qw(b_owner_id PrimaryId)],
+	[qw(b_owner PrimaryId)],
     ];
 }
 

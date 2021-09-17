@@ -206,11 +206,11 @@ sub thread_root_list {
 			'b_status',
 		    ),
 		    Select({
-			%{$f->get_select_attrs('b_owner_id')},
+			%{$f->get_select_attrs('b_owner')},
                         choices => ['Model.CRMUserList'],
                         list_display_field => 'RealmOwner.name',
                         list_id_field => 'RealmUser.user_id',
-                        unknown_label => vs_text($f->simple_package_name, 'b_owner_id'),
+                        unknown_label => vs_text($f->simple_package_name, 'b_owner'),
 			auto_submit => 1,
 		    }),
 		    ScriptOnly({
@@ -239,7 +239,7 @@ sub thread_root_list_csv {
 	    map($_, b_use('Model.CRMThreadRootList')->tuple_tag_field_check),
 	    'RealmMail.from_email',
 	    'CRMThread.crm_thread_status',
-#	    'owner_name',
+	    'owner_name',
 	    'CRMThread.subject',
 	    'CRMThread.modified_date_time',
 	    'modified_by_name',
