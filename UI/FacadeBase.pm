@@ -932,7 +932,7 @@ sub _cfg_crm {
 	Text => [
 	    [CRMQueryForm => [
 		b_status => 'Any Status',
-		b_owner_name => 'Any Owner',
+		b_owner_id => 'Any Assignee',
 	    ]],
 	    [CRMThreadRootList => [
 		'CRMThread.subject' => 'Subject',
@@ -943,7 +943,7 @@ sub _cfg_crm {
 		'modified_by_name' => 'Updated by',
 		'CRMThread.crm_thread_status' => 'Status',
 	    ]],
-            [['CRMThreadRootList.owner_name', 'CRMForm.old_owner_name'] => 'Assigned to'],
+#            [['CRMThreadRootList.owner_name', 'CRMForm.old_owner_name'] => 'Assigned to'],
 	    ['CRMActionList.label' => [
 		assign_to => 'Assign to ',
 		closed => 'Close',

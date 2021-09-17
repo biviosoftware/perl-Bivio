@@ -107,15 +107,13 @@ sub internal_crm_send_form_extra_fields {
     my($self, $model) = @_;
     my($m) = $model->simple_package_name;
     return [
-	["$m.old_owner_name", {
-	    wf_class => 'String',
-            value => ["Model.$m", 'old_owner_name'],
+	["$m.owner_user_id", {
+            choices => ['Model.CRMUserList'],
+	    list_display_field => 'RealmOwner.name',
+	    list_id_field => 'RealmUser.user_id',
+            show_unknown => 1,
 	}],
-	["$m.action_id", {
-	    wf_class => 'ComboBox',
-	    list_class => 'CRMActionList',
-	    list_display_field => 'name',
-	}],
+	"$m.crm_thread_status",
 	$self->internal_tuple_tag_form_fields($model),
     ];
 }
@@ -207,13 +205,13 @@ sub thread_root_list {
 			     $f->tuple_tag_field_check),
 			'b_status',
 		    ),
-		    ComboBox({
-			%{$f->get_select_attrs('b_owner_name')},
-			field => 'b_owner_name',
-			list_class => 'CRMActionList',
-			list_display_field => ['name'],
+		    Select({
+			%{$f->get_select_attrs('b_owner_id')},
+                        choices => ['Model.CRMUserList'],
+                        list_display_field => 'RealmOwner.name',
+                        list_id_field => 'RealmUser.user_id',
+                        unknown_label => vs_text($f->simple_package_name, 'b_owner_id'),
 			auto_submit => 1,
-			hint_text => 'Owner',
 		    }),
 		    ScriptOnly({
 			widget => Simple(''),
@@ -241,7 +239,7 @@ sub thread_root_list_csv {
 	    map($_, b_use('Model.CRMThreadRootList')->tuple_tag_field_check),
 	    'RealmMail.from_email',
 	    'CRMThread.crm_thread_status',
-	    'owner_name',
+#	    'owner_name',
 	    'CRMThread.subject',
 	    'CRMThread.modified_date_time',
 	    'modified_by_name',

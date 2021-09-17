@@ -240,13 +240,17 @@ sub _load_items_from_list {
     }
     my($id_name) = $self->get('list_id_field');
     my($id_type) = $list->get_field_info($id_name, 'type');
-    return $list->map_rows(sub {
-	return (
-	    $id_type->to_html($list->get($id_name)),
-	    # See get_as above
-	    ${$self->render_attr('list_display_field', $list)},
-	);
-    });
+    return $list->map_rows(
+        sub {
+            my($i) = $list->get($id_name);
+            my($d) = ${$self->render_attr('list_display_field', $list)};
+            return (
+                $id_type->to_html($i),
+                # See get_as above
+                $d,
+            );
+        },
+    );
 }
 
 sub _load_items_from_string_array {
