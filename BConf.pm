@@ -130,6 +130,10 @@ sub default_merge_overrides {
 		call_filter => '$sub =~ /_eval$/',
 		package_filter => '/^Bivio::Test$/',
 	    },
+            btest_mail => {
+                call_filter => '$sub =~ /_grep_msgs/',
+		package_filter => '/^Bivio::Test::Language::HTTP$/',
+            },
 	    all => {
 		package_filter => '/./',
 	    },
