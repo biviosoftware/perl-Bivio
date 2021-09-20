@@ -16,22 +16,22 @@ visit_uri('/crm_forum/tickets');
 follow_link_in_table('Ticket', 'Subject', $bug_subject);
 follow_link('discuss_internally');
 submit_form(update => {
-    action => "Assign to crm_tech1 <$tech1>",
+    assignee => "crm_tech1",
 });
-verify_local_mail($tech1, qr{Status: Open\s+Owner: crm_tech1\s+Status changed from New to Open\s+Owner changed from none to crm_tech1\s*$}s, 1);
+verify_local_mail($tech1, qr{Status: Open\s+Assignee: crm_tech1\s+Status changed from New to Open\s+Assignee changed from none to crm_tech1\s*$}s, 1);
 test_deviance();
 verify_local_mail($cust1, qr{.}, 1);
 test_conformance();
 follow_link_in_table('Ticket', 'Subject', $bug_subject);
-verify_text(qr{Status: Open.*Owner: crm_tech1.*Status changed from New to Open.*Owner changed from none to crm_tech1}s);
+verify_text(qr{Status: Open.*Assignee: crm_tech1.*Status changed from New to Open.*Assignee changed from none to crm_tech1}s);
 follow_link('answer_1');
-verify_text("Locked Ticket #$ticket");
+verify_text("Open Ticket #$ticket");
 verify_form({
     '^to' => $cust1,
     cc => qr{^crm\@},
 });
 submit_form(Send => {
-    action => 'Close',
+    status => 'Closed',
     text => 'Solution here',
 });
 follow_link('tickets');
@@ -41,7 +41,7 @@ die('no subject')
 test_deviance();
 verify_local_mail($cust1, qr{.}, 1);
 test_conformance();
-verify_local_mail($tech1, qr{Status: Closed\s+Owner: crm_tech1\s+Status changed from Open to Closed\s*$}s, 1);
+verify_local_mail($tech1, qr{Status: Closed\s+Assignee: crm_tech1\s+Status changed from Open to Closed\s*$}s, 1);
 $msg = verify_local_mail($tech1, qr{.}, 1);
 $msg =~ /^Sender: crm\@/im || die('incorrect Sender: ', $msg);
 submit_form(Refresh => {
@@ -49,7 +49,7 @@ submit_form(Refresh => {
 });
 follow_link_in_table('Ticket', 'Subject', ($subject =~ /.*#\d+\]\s*(.+)/)[0]);
 verify_text("Closed Ticket #$ticket");
-verify_text(qr{Status: Closed.*Owner: crm_tech1.*Status changed from Open to Closed}s);
+verify_text(qr{Status: Closed.*Assignee: crm_tech1.*Status changed from Open to Closed}s);
 my($body) = 'but wait ' . random_string();
 $msg = send_mail($cust1, $forum, {Subject => $subject}, $body);
 test_deviance();
@@ -76,19 +76,17 @@ test_conformance();
 $msg = verify_local_mail($cust1);
 test_ok($msg !~ /(To|Cc):.* \Q$forum/im, "found $forum");
 follow_link($board_subject);
-verify_text(qr{Status: Open.*Owner: none}s);
+verify_text(qr{Status: Open.*Assignee: crm_tech1}s);
 follow_link('new_ticket');
 submit_form({
-    action => "Assign to crm_tech1 <$tech1>",
+    assignee => 'crm_tech1',
     subject => my $subject3 = random_string(),
     text => 'y',
 });
-verify_local_mail($tech1, qr{Status: Open\s+Owner: crm_tech1\s*$}s, 1);
-
+verify_local_mail($tech1, qr{Status: Open\s+Assignee: crm_tech1}s, 1);
 visit_uri('/crm_forum/tickets');
 follow_link_in_table('Ticket', 'Subject', $bug_subject);
 follow_link('discuss_internally_2');
-
 do_test_backdoor(RowTag => "-r crm_tech1 replace_value NO_CONFIRM_TASKS");
 visit_uri('/crm_forum/tickets');
 follow_link_in_table('Ticket', 'Subject', $bug_subject, 'Actions', 'close');
