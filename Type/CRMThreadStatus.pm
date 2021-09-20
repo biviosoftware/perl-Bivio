@@ -31,6 +31,7 @@ sub crm_query_choices {
         $proto->package_name,
         [
             $proto->UNKNOWN,
+            $proto->NEW,
             @{_in_use($proto)},
         ],
     );
