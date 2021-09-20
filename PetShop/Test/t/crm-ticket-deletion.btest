@@ -38,7 +38,7 @@ foreach my $test (@$tests) {
 	follow_link_in_table('Ticket', 'Subject', $subject);
 	follow_link('Answer');
 	submit_form('Send', {
-	    'Action:' => 'Open',
+	    'Status:' => 'Open',
 	    'Text:' => $text . ' ' . $suffix . $i,
 	});
     }

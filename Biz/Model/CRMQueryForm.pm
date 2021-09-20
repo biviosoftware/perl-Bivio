@@ -1,5 +1,4 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2021 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::CRMQueryForm;
 use strict;
 use Bivio::Base 'Model.ListQueryForm';
@@ -9,21 +8,16 @@ b_use('ClassWrapper.TupleTag')->wrap_methods(
 
 sub get_list_for_field {
     my($proto, $field) = @_;
-    return _owner_name_list($proto)
-	if $field eq 'b_owner_name';
+    return $proto->new_other('CRMUserList')->load_all
+	if $field eq 'b_owner';
     return shift->SUPER::get_list_for_field(@_);
 }
 
 sub internal_query_fields {
     return [
 	[qw(b_status CRMThreadStatus)],
-	[qw(b_owner_name Line)],
+	[qw(b_owner PrimaryId)],
     ];
-}
-
-sub _owner_name_list {
-    my($proto) = @_;
-    return $proto->new_other('CRMActionList')->load_owner_names;
 }
 
 1;

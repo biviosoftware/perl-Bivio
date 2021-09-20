@@ -8,6 +8,7 @@ use HTTP::Request ();
 use HTTP::Request::Common ();
 use URI ();
 use Email::MIME::Encodings ();
+b_use('IO.Trace');
 
 our($_TRACE);
 my($_HTTPC) = b_use('Ext.HTTPCookies');
@@ -155,10 +156,7 @@ sub clear_extra_query_params {
 }
 
 sub clear_local_mail {
-    _map_mail_dir(sub {
-        unlink(shift);
-	return;
-    });
+    unlink(_grep_mail_dir());
     return;
 }
 
@@ -1356,33 +1354,51 @@ sub _get_script_line {
     return '?';
 }
 
+sub _grep_mail_dir {
+    my($op) = @_;
+    # Returns results of grep on mail_dir files.  Only includes valid
+    # mail files.
+    return grep(
+	$_FN->get_tail($_) =~ /^\d+$/,
+	glob("$_CFG->{mail_dir}/*"),
+    );
+}
+
 sub _grep_msgs {
     my($self, $emails, $msg_re, $matched_emails) = @_;
     # Returns results of grep on mail_dir files.  Only includes valid
     # mail files.
-    return [_map_mail_dir(sub {
-        my($file) = @_;
-	return unless -M $file <= 0;
-	my($msg) = $_F->read($file);
-	$$msg = MIME::QuotedPrint::decode($$msg)
-	    if $$msg =~ qr{Content-Transfer-Encoding:\s+quoted-printable};
-	my($hdr) = split(/^$/m, $$msg, 2);
-	my($res);
-	foreach my $k (@$_VERIFY_MAIL_HEADERS) {
-	    next unless $hdr =~ /^$k:\s*(.*)/mi;
-	    my($e) = b_use('Mail.Address')->parse_list($1);
-	    die("$hdr: malformed-header")
-		unless $e && ($e = lc($e->[0]));
-	    my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
-	    if ($m) {
-		$matched_emails->{$m}++;
-		return [$file, $self->internal_assert_no_prose($msg)]
-		    if $$msg =~ $msg_re;
-	    }
-	    last;
-	}
-	return;
-    })];
+    my($res) = [];
+ _MSG:
+    foreach my $file (_grep_mail_dir()) {
+        next _MSG
+            unless -M $file <= 0;
+        my($msg) = $_F->read($file);
+        $$msg = MIME::QuotedPrint::decode($$msg)
+            if $$msg =~ qr{Content-Transfer-Encoding:\s+quoted-printable};
+        my($hdr) = split(/^$/m, $$msg, 2);
+        foreach my $k (@$_VERIFY_MAIL_HEADERS) {
+            next
+                unless $hdr =~ /^$k:\s*(.*)/mi;
+            my($e) = b_use('Mail.Address')->parse_list($1);
+            die("$hdr: malformed-header")
+                unless $e && ($e = lc($e->[0]));
+            my($m) = grep(ref($_) ? $hdr =~ $_ : lc($_) eq $e, @$emails);
+            if ($m) {
+                $matched_emails->{$m}++;
+                if ($$msg =~ $msg_re) {
+                    push(@$res, [$file, $self->internal_assert_no_prose($msg)]);
+                    next _MSG;
+                }
+                _trace('body_re=', $msg_re, ' no-match msg=', $msg) if $_TRACE;
+            }
+            else {
+                _trace('emails=', $emails, ' no-match msg=', $msg) if $_TRACE;
+            }
+            last;
+        }
+    }
+    return $res;
 }
 
 sub _html_get {
@@ -1451,16 +1467,6 @@ sub _lookup_option_value {
         return $v;
     }
     b_die('option value not found: ', $value);
-}
-
-sub _map_mail_dir {
-    my($op) = @_;
-    # Returns results of grep on mail_dir files.  Only includes valid
-    # mail files.
-    return map(
-	$_FN->get_tail($_) =~ /^\d+$/ ? $op->($_) : (),
-	glob("$_CFG->{mail_dir}/*"),
-    );
 }
 
 sub _option_value_list {

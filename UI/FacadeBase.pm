@@ -932,7 +932,7 @@ sub _cfg_crm {
 	Text => [
 	    [CRMQueryForm => [
 		b_status => 'Any Status',
-		b_owner_name => 'Any Owner',
+		b_owner => 'Any Assignee',
 	    ]],
 	    [CRMThreadRootList => [
 		'CRMThread.subject' => 'Subject',
@@ -940,25 +940,17 @@ sub _cfg_crm {
 		'RealmMail.from_email' => 'Initiated by',
 		'CRMThread.crm_thread_num' => 'Ticket',
 		'CRMThread.modified_date_time' => 'Last Update',
+                'owner_name' => 'Assignee',
 		'modified_by_name' => 'Updated by',
 		'CRMThread.crm_thread_status' => 'Status',
-	    ]],
-            [['CRMThreadRootList.owner_name', 'CRMForm.old_owner_name'] => 'Assigned to'],
-	    ['CRMActionList.label' => [
-		assign_to => 'Assign to ',
-		closed => 'Close',
-		locked => 'Open (Locked)',
-		open => 'Open',
-		pending_customer => 'Pending Customer',
-		new => 'New',
-		unassign => 'Unassign',
 	    ]],
 	    [CRMForm => [
 		action_id => 'Action',
 		ok_button => 'Send',
 		update_only => 'Update Fields Only',
 		crm_thread_status => 'Status',
-		owner_user_id => 'Owner',
+		owner_user_id => 'Assignee',
+		unknown_owner_user_id => 'Unassign',
 		empty_label => 'none',
 	    ]],
 	    ['task_menu.title' => [

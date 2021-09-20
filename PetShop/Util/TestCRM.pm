@@ -25,7 +25,8 @@ sub create_thread {
         attachment1 => undef,
         attachment2 => undef,
         attachment3 => undef,
-        action_id => -$self->type(CRMThreadStatus => 'NEW')->as_int,
+        crm_thread_status => $self->type(CRMThreadStatus => 'NEW'),
+        owner_user_id => undef,
         %$args,
     });
     return;
