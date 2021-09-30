@@ -52,6 +52,10 @@ sub internal_feature_form {
 			    )
 			    : (),
 			row_control => ["Model.$model", "allow_$field"],
+                        row_class => If(
+                            ["Model.$model", "super_user_$field"],
+                            'b_super_user_feature',
+                        ),
 		    }],
 		}),
 	    )},

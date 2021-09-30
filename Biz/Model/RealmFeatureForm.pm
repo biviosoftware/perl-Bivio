@@ -98,7 +98,13 @@ sub internal_initialize {
 	    other => [
 		[qw(force_default_values Boolean)],
 		@{shift->map_feature_type(
-		    sub {['allow_' . shift(@_), 'Boolean']},
+		    sub {
+                        my($f) = shift(@_);
+                        return (
+                            ['allow_' . $f, 'Boolean'],
+                            ['super_user_' . $f, 'Boolean'],
+                        );
+                    },
 		)},
 	    ],
 	),
@@ -114,13 +120,17 @@ sub internal_pre_execute {
 	    sub {
 		my($field) = @_;
 		return (
-		    "allow_$field",
-		    $self->internal_allow_field_value(@_),
+		    "allow_$field" => $self->internal_allow_field_value(@_),
+		    "super_user_$field" => $self->internal_super_user_field(@_),
 		);
 	    },
 	)},
     );
     return @res;
+}
+
+sub internal_super_user_field {
+    return 0;
 }
 
 sub internal_use_general_realm_for_site_admin {
