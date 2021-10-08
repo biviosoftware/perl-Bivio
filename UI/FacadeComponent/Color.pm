@@ -4,7 +4,6 @@ package Bivio::UI::FacadeComponent::Color;
 use strict;
 use Bivio::Base 'UI.FacadeComponent';
 
-
 sub UNDEF_CONFIG {
     return -1;
 }
@@ -17,14 +16,20 @@ sub format_css {
     #
     #     format_css('acknowledgement-border') -> border-color: #0;
     #
+    # if the name acknowledgement_border doesn't exist, then try acknowledgement.
+    #
     # The value of acknowledgement_border is #0.
     my($proto, $name, $req_or_facade) = @_;
     my($attr) = 'color:';
+    my($n) = $name;
     if ($name =~ /-(.*)/) {
 	$attr = "$1-$attr";
-	$name =~ s/-/_/g;
+	$n =~ s/-/_/g;
+        if (! $proto->internal_unsafe_lc_get_value($n, $req_or_facade)) {
+            ($n = $name) =~ s/-.*//;
+        }
     }
-    return $proto->format_html($name, $attr, $req_or_facade);
+    return $proto->format_html($n, $attr, $req_or_facade);
 }
 
 sub format_html {
