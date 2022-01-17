@@ -457,12 +457,18 @@ sub _rewrite_from_lookup {
     my($res) = undef;
     my($die) = b_catch(sub {
         my($r) = Net::DNS::Resolver->new;
-        my($q) = $r->query("_dmarc.$domain", 'txt');
-        if ($q) {
-            for my $r ($q->answer) {
-                my($t) = $r->txtdata;
-                # Only look at the first answer
-                $res = !$t || $t =~ /\bp=none/ ? 0 : 1;
+        while ($domain =~ m{\.}) {
+            my($q) = $r->query("_dmarc.$domain", 'txt');
+            if ($q) {
+                for my $r ($q->answer) {
+                    my($t) = $r->txtdata;
+                    # Only look at the first answer
+                    $res = !$t || $t =~ /\bp=none/ ? 0 : 1;
+                    return;
+                }
+            }
+            if (! ($domain =~ s{^[^\.]+\.}{})) {
+                b_warn("invalid domain=$domain");
                 return;
             }
         }

@@ -11,7 +11,7 @@ config({
 });
 my($_USER) = 'bunit@bivio.biz';
 
-my($_REWRITE_FROM) = <<'EOF';
+my($_REWRITE_FROM1) = <<'EOF';
 Message-ID: <123@example.com>
 From: Any User <any_user@science.doe.gov>
 Date: Thu, 1 Jul 2018 09:33:35 -0400
@@ -19,12 +19,25 @@ Date: Thu, 1 Jul 2018 09:33:35 -0400
 body
 EOF
 
+# has dmarc above
+(my $_REWRITE_FROM2 = $_REWRITE_FROM1) =~ s/science.doe.gov/txt.voice.google.com/;
 # has p=none
-(my $_NOT_REWRITE_FROM1 = $_REWRITE_FROM) =~ s/science.doe.gov/gmail.com/;
+(my $_NOT_REWRITE_FROM1 = $_REWRITE_FROM1) =~ s/science.doe.gov/gmail.com/;
 # has no dmarc
-(my $_NOT_REWRITE_FROM2 = $_REWRITE_FROM) =~ s/science.doe.gov/bivio.com/;
+(my $_NOT_REWRITE_FROM2 = $_REWRITE_FROM1) =~ s/science.doe.gov/bivio.com/;
 [
-    [Bivio::Mail::Incoming->new(\$_REWRITE_FROM)] => [
+    [Bivio::Mail::Incoming->new(\$_REWRITE_FROM1)] => [
+	set_recipients => [
+	    [$_USER, req()] => undef,
+	],
+	send => [
+	    [req()] => undef,
+	],
+	unsafe_get_header => [
+	    from => qr{^"Any User via \S+" <ignore-.*>$},
+	],
+    ],
+    [Bivio::Mail::Incoming->new(\$_REWRITE_FROM2)] => [
 	set_recipients => [
 	    [$_USER, req()] => undef,
 	],
