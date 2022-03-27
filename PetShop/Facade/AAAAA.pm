@@ -7,8 +7,7 @@ use Bivio::Base 'Facade.PetShop';
 
 __PACKAGE__->new({
     uri => 'aaaaa',
-    http_host => 'aaaaa.bivio.biz',
-    mail_host => 'aaaaa.bivio.biz',
+    use_clone_hosts => 1,
     is_production => 0,
     clone => 'PetShop',
 });

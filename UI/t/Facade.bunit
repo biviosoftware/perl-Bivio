@@ -36,6 +36,7 @@ req()->initialize_fully;
 	    ['other.aaaaa.org', req(), sub {shift->get('uri')}] => 'other',
 	    ['m-petshop', req(), sub {shift->get('uri')}] => 'm-petshop',
 	    ['petshop', req(), sub {die('got a die')}] => qr{got a die},
+	    ['aaaaa', req(), sub {shift->get('http_host')}] => 'anyhost.com',
 	],
 	get_from_source => [
 	    [req()] => qr{beforeother}i,

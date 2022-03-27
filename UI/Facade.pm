@@ -465,6 +465,7 @@ sub new {
 	is_default => $_CFG->{default} eq $self->simple_package_name ? 1 : 0,
         cookie_domain => delete($config->{cookie_domain}),
 	parent => $clone,
+        use_clone_hosts => delete($config->{use_clone_hosts}) || 0,
     });
     _init_hosts($self, $config);
     foreach my $x (qw(
@@ -591,6 +592,9 @@ sub _get_class_pattern {
 
 sub _init_hosts {
     my($self, $config) = @_;
+    if ($self->get('use_clone_hosts')) {
+        return;
+    }
     $self->put(
 	map(($_ => (
 	    $_R->is_production
@@ -633,6 +637,9 @@ sub _initialize {
 	$self->put($c => $_COMPONENTS{$c}->new(
 	    $self, $cc, $cfg->{initialize}));
 	delete($config->{$c});
+    }
+    if ($self->get('use_clone_hosts')) {
+        map($self->put($_ => $clone->get($_)), qw(http_host mail_host));
     }
 
     # Make sure everything in $config is valid.
