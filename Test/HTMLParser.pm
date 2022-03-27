@@ -4,6 +4,8 @@ package Bivio::Test::HTMLParser;
 use strict;
 use Bivio::Base 'Collection.Attributes';
 
+use Encode ();
+
 # C<Bivio::Test::HTMLParser> directs parsing of html by calling classes in the
 # TestHTMLParser class map.
 #
@@ -74,7 +76,7 @@ sub new {
     my($html, $attrs) = @_;
     my($self) = $proto->SUPER::new({
 	%{$attrs || {}},
-	html => $$html,
+	html => Encode::decode_utf8($$html),
     });
     foreach my $c (@_CLASSES) {
 	$self->put($c->simple_package_name => $c->internal_new($self));
