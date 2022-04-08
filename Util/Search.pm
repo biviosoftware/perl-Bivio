@@ -165,7 +165,6 @@ sub _do_realm {
 	return;
     };
     my($rn) = $req->req(qw(auth_realm owner name));
-    b_info("$rn: starting");
     _map_classes(
 	sub {
 	    my($class) = @_;
