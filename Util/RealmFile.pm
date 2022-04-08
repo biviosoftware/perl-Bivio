@@ -5,6 +5,7 @@ use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 use File::Find ();
 
+my($_A) = b_use('IO.Alert');
 my($_D) = b_use('Bivio.Die');
 my($_DT) = b_use('Type.DateTime');
 my($_F) = b_use('IO.File');
@@ -74,7 +75,7 @@ sub backup_realms {
 		$_F->mkdir_p($_FP->join($root, $r)),
 		sub {
 		    $self->req->with_realm(
-			$r, 
+			$r,
 			sub {$self->export_tree('/', 1)},
 		    );
 		    $self->piped_exec("sh -c 'cd .. && tar czf $r.tgz $r && rm -rf $r' 2>&1");
@@ -295,17 +296,22 @@ sub purge_archive {
         . $file_size . 'M in ' . $self->req(qw(auth_realm owner name)) . '?');
     my($m) = 1024 * 1024;
     $file_size *= $m;
-    my($deleted_count) = 0;
-    my($deleted_size) = 0;
+    my($c) = 0;
+    my($commit) = sub {
+	$self->commit_or_rollback;
+	$_A->reset_warn_counter;
+	return;
+    };
     $self->model('RealmFile')->do_iterate(sub {
         my($rf) = @_;
 	return 1 unless $rf->is_version;
 	return 1 if $rf->get('is_folder');
-	return 1 if $rf->get_content_length <= $file_size;
-	$self->print($rf->get('realm_file_id'),
-	      ' ', int($rf->get_content_length / $m),
-	      'M ', $rf->get('path'), "\n");
-	$deleted_size += $rf->get_content_length / $m;
+	return 1 if $rf->get_content_length < $file_size;
+#TODO(robnagler) this does not seem useful
+#	$self->print($rf->get('realm_file_id'),
+#	      ' ', int($rf->get_content_length / $m),
+#	      'M ', $rf->get('path'), "\n");
+#	$deleted_size += $rf->get_content_length / $m;
 	$rf->new_other('RealmFileLock')->delete_all({
 	    realm_file_id => $rf->get('realm_file_id'),
 	});
@@ -313,11 +319,13 @@ sub purge_archive {
 	    override_versioning => 1,
 	    override_is_read_only => 1,
 	});
-	$deleted_count++;
+        if ($c++ % 2 == 100) {
+            b_info($c);
+            $commit->();
+        }
 	return 1;
     });
-    return $deleted_count . ' archive files deleted: '
-	. sprintf("%.2fM", $deleted_size);
+    return $c . ' archive files deleted';
 }
 
 sub read {
