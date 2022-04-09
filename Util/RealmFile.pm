@@ -319,7 +319,7 @@ sub purge_archive {
 	    override_versioning => 1,
 	    override_is_read_only => 1,
 	});
-        if ($c++ % 2 == 100) {
+        if ($c++ % 100 == 0) {
             b_info($c);
             $commit->();
         }
