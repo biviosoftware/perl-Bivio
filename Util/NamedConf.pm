@@ -1,9 +1,8 @@
-# Copyright (c) 2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2010-2022 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::NamedConf;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
-use Bivio::UI::ViewLanguageAUTOLOAD;
+b_use('IO.ClassLoaderAUTOLOAD');
 
 my($_D) = b_use('Bivio.Die');
 my($_F) = b_use('IO.File');
@@ -307,47 +306,72 @@ sub _zone_header {
 sub _zone_ipv4_map {
     my($zone, $cfg, $ptr_map, $op) = @_;
     my($ipv4) = $cfg->{ipv4};
+    if (ref($ipv4) eq 'ARRAY') {
+        $ipv4 = _zone_ipv4_map_array($ipv4);
+    }
+    elsif (ref($ipv4) ne 'HASH') {
+        b_die('invalid host config: ', $ipv4);
+    }
     return map(
-	{
-	    my($cidr, $net_cfg) = ($_, $ipv4->{$_});
-	    my($cidr_obj) = $_CIDRN->from_literal_or_die($cidr);
-	    @{$cidr_obj->map_host_addresses(
-		sub {
-		    my($ip) = @_;
-		    my($num) = $cidr_obj->address_to_host_num($ip);
-		    return
-			unless $net_cfg->{$num};
-		    my($hosts) = $net_cfg->{$num};
-		    $hosts = [$hosts]
-			unless ref($hosts);
-		    my($not_first_host) = 0;
-		    return map(
-			{
-			    $op->(@$_, $ip, $cidr);
-			}
-			sort(
-			    {$a->[0] cmp $b->[0]}
-			    map(
-				{
-				    $_ = (ref($_) ? $_ : [$_]);
-				    $_->[1] = {
-					%$cfg,
-					%{$_->[1] || {}},
-				    };
-				    $_->[1]->{ptr} = 1
-					if $_->[0] =~ s/^\@(?=[\w\@])//;
-				    $_->[0] = $zone
-					if $_->[0] eq '@';
-				    $_;
-				}
-				@$hosts,
-			    ),
-			),
-		    );
-		},
-	    )};
-	}
-	sort(keys(%$ipv4)),
+        {
+            my($cidr, $c) = ($_, $ipv4->{$_});
+            my($cidr_obj) = $_CIDRN->from_literal_or_die($cidr);
+            @{$cidr_obj->map_host_addresses(
+                sub {
+                    my($ip) = @_;
+                    my($n) = $cidr_obj->address_to_host_num($ip);
+                    return
+                        unless $c->{$n};
+                    return _zone_ipv4_map_op($cfg, $zone, $c->{$n}, $op, $cidr, $ip);
+                },
+            )};
+        }
+        sort(keys(%$ipv4)),
+    );
+}
+
+sub _zone_ipv4_map_array {
+    my($ipv4) = @_;
+    my($res) = {};
+    Bivio::UNIVERSAL->map_by_two(
+        sub {
+            my($k, $v) = @_;
+            my($c, $n) = @$k;
+            my($x) = $res->{$c} ||= {};
+            if ($x->{$n}) {
+                b_die('duplicate host=', $k, ' old=', $x->{$n}, ' new=', $v);
+            }
+            $x->{$n} = $v;
+        },
+        $ipv4,
+    );
+    return $res;
+}
+
+sub _zone_ipv4_map_op {
+    my($cfg, $zone, $hosts, $op, $cidr, $ip) = @_;
+    $hosts = [$hosts]
+        unless ref($hosts);
+    return map(
+        {$op->(@$_, $ip, $cidr)}
+        sort(
+            {$a->[0] cmp $b->[0]}
+            map(
+                {
+                    $_ = (ref($_) ? $_ : [$_]);
+                    $_->[1] = {
+                        %$cfg,
+                        %{$_->[1] || {}},
+                    };
+                    $_->[1]->{ptr} = 1
+                        if $_->[0] =~ s/^\@(?=[\w\@])//;
+                    $_->[0] = $zone
+                        if $_->[0] eq '@';
+                    $_;
+                }
+                @$hosts,
+            ),
+        ),
     );
 }
 

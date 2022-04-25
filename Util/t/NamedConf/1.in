@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 my($net1) = '111.22.33.24/29';
+my($net2) = '2.3.4.24/29';
 {
     expiry => '5M',
     hostmaster => 'hostmaster.example.com.',
@@ -59,6 +60,11 @@ my($net1) = '111.22.33.24/29';
             txt => [
                 ['@' => 'key1=abc'],
                 ['@' => 'key2=123'],
+            ],
+            ipv4 => [
+                [$net1, 27] => 'net1.27',
+                [$net2, 27] => 'net2-27',
+                [$net2, 28] => 'net2-28',
             ],
         },
     },

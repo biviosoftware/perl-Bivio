@@ -1,21 +1,20 @@
-# Copyright (c) 2005-2011 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2005-2022 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtilConf({
     setup_case => sub {
-        my($n) = IO_File()->pwd =~ /(\d+)$/;
-        my($curr) = (split(/\s+/, `dig soa bivio.biz +short`))[2]
+        my($f) = IO_File()->pwd =~ /(\d+)$/;
+        my($c) = (split(/\s+/, `dig soa bivio.biz +short`))[2]
             || b_die('dig failed');
-        my($new) = Type_Date()->now_as_file_name . '00';
-        if ($new eq $curr) {
-            # someone updated the SOA today for Named
-            substr($new, -1) = '1';
-        }
-        foreach my $f (glob("../$n-out/var/named/*")) {
+        my($n) = Type_Date()->now_as_file_name;
+        # SOA is today if true so need to emulate what NamedConf does
+        $n .= $c =~ /^$n/ ? int(substr($c, -2)) + 1 : '00';
+        foreach my $f (glob("../$f-out/var/named/*")) {
             IO_File()->do_read_write(
                 $f,
                 sub {
                     my($d) = @_;
-                    return $$d =~ s/ 20149\d{5} / $new / ? $d : undef;
+                    #Y2100
+                    return $$d =~ s/ 20\d{8} / $n / ? $d : undef;
                 },
             );
         }
