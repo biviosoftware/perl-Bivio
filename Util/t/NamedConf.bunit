@@ -7,7 +7,9 @@ ShellUtilConf({
             || b_die('dig failed');
         my($n) = Type_Date()->now_as_file_name;
         # SOA is today if true so need to emulate what NamedConf does
-        $n .= $c =~ /^$n/ ? int(substr($c, -2)) + 1 : '00';
+        $n .= $c =~ /^$n/
+            ? sprintf('%02d', int(substr($c, -2)) + 1)
+            : '00';
         foreach my $f (glob("../$f-out/var/named/*")) {
             IO_File()->do_read_write(
                 $f,
