@@ -4,7 +4,7 @@ Type();
 [
     from_domain => [
 	localhost => '127.0.0.1',
-	'petshop.bivio.biz' => '216.17.132.37',
+	'petshop.bivio.biz' => '216.46.165.72',
     ],
     from_inet => [
 	pack('N', 0) => '0.0.0.0',
