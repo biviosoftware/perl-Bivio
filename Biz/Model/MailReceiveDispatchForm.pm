@@ -23,6 +23,8 @@ my($_OUT_OF_OFFICE_FILTER_CLASSES) = [qw(
 )];
 b_use('IO.Config')->register(my $_CFG = {
     filter_spam => 0,
+    support_spam_score => 5,
+    other_spam_score => 5,
     filter_out_of_office => 1,
     out_of_office_negatives => [
 	[qw(X-Bugzilla)],
@@ -104,11 +106,7 @@ sub execute_ok {
 	    $self,
 	    \&_ignore_unsubscribe,
 	);
-    return {
-	method => 'server_redirect',
-	task_id => $self->get('task_id'),
-	query => undef,
-    };
+    return _redirect($self->get('task_id'));
 }
 
 sub format_recipient {
@@ -158,6 +156,7 @@ sub internal_initialize {
 		['from_email', 'Email'],
 		['task_id', 'Agent.TaskId'],
 		['plus_tag', 'String'],
+		['ignore_reason', 'String'],
 		['email_alias_incoming', 'Email'],
 	    ],
 	),
@@ -228,6 +227,8 @@ sub _ignore {
 	    ),
 	    $self->get('message')->{content},
 	);
+        # For testing
+        $self->internal_put_field(ignore_reason => $which);
 	return 1;
     }
     return 0;
@@ -306,21 +307,27 @@ sub _ignore_spam {
     my($self) = @_;
     return undef
         unless $_CFG->{filter_spam};
-    my($is_spam) =
-        $self->get('mail_incoming')->get('header') =~ /^X-Spam-Flag:\s+Y/im;
-    return undef
-        unless $is_spam;
-    my($support_email) = $self->req->format_email(
-        $_FCT->get_value('support_email', $self->req));
-    if ((
-        $self->get('recipient') eq $support_email
-        || ($self->unsafe_get('email_alias_incoming') || '') eq $support_email
-    ) && $self->internal_get_login($self->get('mail_incoming'))) {
-        # don't filter support mail from a real user
+    # X-Spam-Status: Yes, score=8.3
+    my($s) = $self->get('mail_incoming')->get('header') =~ /^X-Spam-Status:.*score=([\d+\.]+)/im;
+    if (! defined($s)) {
+        b_use('IO.Alert')->warn_exactly_once('no X-Spam-Status header');
+        return undef;
+    }
+    my($e) = $self->req->format_email($_FCT->get_value('support_email', $self->req));
+    if ($self->get('recipient') ne $e && ($self->unsafe_get('email_alias_incoming') || '') ne $e) {
+        if ($s < $_CFG->{other_spam_score}) {
+            return undef;
+        }
+        return 'spam';
+    }
+    if ($self->internal_get_login($self->get('mail_incoming'))) {
         $self->req->warn('support mail from user marked as spam, overriding');
         return undef;
     }
-    return 'spam';
+    if ($s < $_CFG->{support_spam_score}) {
+        return undef;
+    }
+    return 'support-spam';
 }
 
 sub _ignore_unsubscribe {

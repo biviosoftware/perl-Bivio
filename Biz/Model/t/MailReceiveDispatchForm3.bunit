@@ -1,0 +1,48 @@
+# Copyright (c) 2022 Bivio Software, Inc.  All rights reserved.
+config({
+    class() => {
+	filter_spam => 1,
+        ignore_model_not_found => 1,
+        support_spam_score => 3,
+    },
+});
+Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
+# Needs to be hardwired
+my($support_email) = 'support@bivio.com';
+model('EmailAlias')->create({
+    incoming => $support_email,
+    outgoing => 'site-contact',
+});
+[
+    [req()] => [
+        {
+            method => 'process',
+            compute_params => sub {
+                my($case, $params) = @_;
+                req()->set_realm(undef);
+                req()->set_user(undef);
+                my($m) =
+                return [req(),  {
+                    recipient => $support_email,
+                    client_addr => '1.2.3.4',
+                    message => {
+                        name => '',
+                        content => IO_File()->read("MailReceiveDispatchForm3/$params->[0].in"),
+                    },
+                }];
+            },
+            compute_return => sub {
+                my($case, $actual, $expect) = @_;
+                my($t) = $actual->[0]->{task_id};
+                return [
+                    ref($t) ? $t->get_name : $t,
+                    $case->get('object')->unsafe_get('ignore_reason'),
+                ];
+            },
+        } => [
+            1 => ['ignore_task', 'spam'],
+            2 => ['FORUM_MAIL_RECEIVE', undef]
+            3 => ['FORUM_MAIL_RECEIVE', undef]
+        ],
+    ],
+];

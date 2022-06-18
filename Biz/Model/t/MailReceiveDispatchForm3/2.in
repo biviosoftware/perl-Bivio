@@ -1,0 +1,23 @@
+Return-Path: <smith12345@bivio.com>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on v3.radia.run
+X-Spam-Flag: NO
+X-Spam-Level: **
+X-Spam-Status: Yes, score=2.4 required=5.0 tests=DNS_FROM_AHBL_RHSBL autolearn=no autolearn_force=no
+	version=3.4.0
+X-Spam-Report:
+	*  2.4 DNS_FROM_AHBL_RHSBL RBL: Envelope sender listed in dnsbl.ahbl.org
+Received: from bivio.com (unknown [141.98.10.148])
+        by atl3i.bivio.biz (Postfix) with ESMTP id 075BE90FB
+        for <smith12345@bivio.com>; Thu, 16 Jun 2022 12:19:22 +0000 (UTC)
+Reply-To: a_good_email@yahoo.com
+From: Wong Hua <smith12345@bivio.com>
+To: smith12345@bivio.com
+Subject: Not Spam
+Date: 16 Jun 2022 14:19:12 +0200
+Message-ID: <20220616141800.1@bivio.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Just a message

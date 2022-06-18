@@ -1,5 +1,4 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2022 Bivio Software, Inc.  All Rights Reserved.
 ListModel();
 req()->initialize_fully;
 [
