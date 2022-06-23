@@ -1,6 +1,0 @@
-#!perl -w
-# Copyright (c) 2001 bivio Software, Inc.  All rights reserved.
-# $Id$
-use strict;
-use Bivio::ShellUtil;
-Bivio::ShellUtil->required_main('HTTPLog', @ARGV);

@@ -7,6 +7,7 @@ use POSIX qw(:signal_h);
 b_use('IO.ClassLoaderAUTOLOAD');
 b_use('IO.Trace');
 
+my($_IOF) = b_use('IO.File');
 my($_HTTPD) = _find_file(qw(
     /usr/local/apache/bin/httpd2
     /usr/sbin/httpd2
@@ -96,6 +97,7 @@ sub run {
     my($reload) = 'PerlInitHandler Bivio::Test::Reload';
     my($modules) = _dynamic_modules($_HTTPD, $modules_d);
     my($max_requests_per_child) = $background ? 120 : 100000;
+    my($tls_port, $tls_crt, $tls_key) = _tls_setup($self, $pwd, $hostname, $port);
     my($pass_env) = join(
 	"\n",
 	map(("PassEnv $_", "PerlPassEnv $_"),
@@ -290,6 +292,32 @@ sub _symlink {
 	|| die("symlink($file, $link): $!");
 }
 
+sub _tls_setup {
+    my($self, $pwd, $hostname, $port) = @_;
+    my($c, $k) = map("$hostname.$_", 'crt', 'key');
+    my($b) = $_IOF->do_in_dir(
+        "$ENV{HOME}/bconf.d",
+        sub {
+            if (! (-r $c && -r $k) ) {
+                $self->new_other('SSL')->self_signed_crt($hostname);
+            }
+            return $_IOF->pwd;
+        },
+    );
+    return (
+        $port + 1,
+        map(
+            {
+                my($x) = "$pwd/$_";
+                $_IOF->symlink("$b/$_", $x);
+                $x;
+            }
+            $c,
+            $k,
+        ),
+    );
+}
+
 1;
 
 __DATA__
@@ -300,6 +328,7 @@ __DATA__
 $modules
 
 Listen $port
+Listen $tls_port
 User $user
 Group $group
 ServerAdmin $user
@@ -350,6 +379,29 @@ ErrorDocument 502 /m/maintenance.html
 ErrorDocument 413 /m/upload-too-large.html
 
 <VirtualHost *:$port>
+    <Location />
+        Require all granted
+        SetHandler perl-script
+        $perl_handler $handler
+    </Location>
+    <Location /s>
+        Require local
+        SetHandler perl-script
+        $apache_status
+    </Location>
+    <Location /z>
+        Require local
+        SetHandler server-status
+        $apache_status
+    </Location>
+    $additional_locations
+</VirtualHost>
+
+<VirtualHost *:$tls_port>
+    ServerName $hostname
+    SSLEngine on
+    SSLCertificateFile "$tls_crt"
+    SSLCertificateKeyFile "$tls_key"
     <Location />
         Require all granted
         SetHandler perl-script
