@@ -22,6 +22,11 @@ options({
 	    get_nested => $_->[1],
         ];
     } [
+        'subscription' => [
+            ['Links', 'Renew Service', 'href']
+	        => ['/btest8331/admin/subscribe?ecservice=2'],
+        ],
+    ], [
  	'bugzilla-bug' => [
  	    ['Forms', 'component', 'visible', 'bug_severity', 'type'] => 'select',
 	],

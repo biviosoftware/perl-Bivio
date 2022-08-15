@@ -15,7 +15,8 @@ sub html_parser_end {
     my($self, $tag) = @_;
     my($fields) = $self->[$_IDI];
     pop(@{$fields->{xpath}});
-    return _end_a($self) if $tag eq 'a';
+    return _end_a($self)
+        if $tag =~ /^(?:a|button)$/;
     return;
 }
 
@@ -25,8 +26,10 @@ sub html_parser_start {
     my($self, $tag, $attr) = @_;
     my($fields) = $self->[$_IDI];
     push(@{$fields->{xpath}}, $tag . ($attr->{class} ? ".$attr->{class}" : ''));
-    return _start_a($fields, $attr) if $tag eq 'a';
-    return _start_img($self, $attr) if $tag eq 'img';
+    return _start_a($fields, $tag, $attr)
+        if $tag =~ /^(?:a|button)$/;
+    return _start_img($self, $attr)
+        if $tag eq 'img';
     return;
 }
 
@@ -86,11 +89,18 @@ sub _link {
 }
 
 sub _start_a {
-    # (hash_ref, hash_ref) : undef
-    # Stores the href.
-    my($fields, $attr) = @_;
-    Bivio::Die->die(
-	'already have an href (missing </a>). current=', $fields->{href},
+    # Stores the href
+    my($fields, $tag, $attr) = @_;
+    if ($tag eq 'button') {
+        # subscription.html
+        # <button onclick="location.href=&#39;/btest8331/admin/subscribe?ecservice=2&#39;;">Renew Service</button>
+        return
+            unless ($attr->{onclick} || '') =~ /^location.href='([^']+)/;
+        $attr->{href} = $1;
+    }
+    b_die(
+	"already have an href (missing </$tag>). current=",
+        $fields->{href},
 	' new=', $attr->{href},
     ) if $fields->{href};
     return
@@ -116,7 +126,7 @@ sub _start_img {
     my($self, $attr) = @_;
     my($fields) = $self->[$_IDI];
     return unless $fields->{href};
-    Bivio::Die->die('missing src: ', $attr)
+    b_die('missing src: ', $attr)
         unless $attr->{src};
     # Delete the gif/jpg suffix and any directory prefix
     $attr->{src} =~ s/(?:.*\/)?([^\/]+)\.\w+$/$1/;
