@@ -5,66 +5,66 @@ my($res) = '';
 my($name) = 'BerkeleyDB.tmp';
 [
     class() => [
-	db_destroy => [
-	    $name => not_die(),
-	],
-	db_exists => [
-	    $name => 0,
-	],
-	db_create_or_open => [
-	    $name => not_die(),
-	    'sub-dir/not-there' => DIE(),
-	],
-	db_exists => [
-	    $name => 1,
-	],
+        db_destroy => [
+            $name => not_die(),
+        ],
+        db_exists => [
+            $name => 0,
+        ],
+        db_create_or_open => [
+            $name => not_die(),
+            'sub-dir/not-there' => DIE(),
+        ],
+        db_exists => [
+            $name => 1,
+        ],
     ],
     sub {class()->db_create_or_open($name)} => [
-	get_values => [
-	    x => qr{not found},
-	],
-	unsafe_get_values => [
-	    x => [undef],
-	],
-	put_key_values => [
-	    [map(($_ => ord($_)), qw(x y z))] => not_die(),
-	],
-	get_values => [
-	    [qw(x y)] => [ord('x'), ord('y')],
-	],
-	db_do_glob => [
-	    [
-		'*',
-		sub {
-		    assert_equals(ord('x'), shift->get_values('x'));
-		    assert_equals($name, $name);
-		    return 1;
-		},
-	    ] => not_die(),
-	],
-	do_key_values => [
-	    [sub {
-		 my($k, $v) = @_;
-		 assert_equals(ord($k), $v);
-		 $res .= $k;
-		 return 1;
-	     }] => sub {
-		 assert_equals('xyz', $res);
-		 return 1;
-	     },
-	],
-	delete_keys => [
-	    [qw(x z)] => not_die(),
-	],
-	unsafe_get_values => [
-	    x => [undef],
-	    y => ord('y'),
-	    z => [undef],
-	],
-	db_close => not_die(),
-	db_close => not_die(),
-	unsafe_get_values => [
-	    y => DIE(),
-	],
+        get_values => [
+            x => qr{not found},
+        ],
+        unsafe_get_values => [
+            x => [undef],
+        ],
+        put_key_values => [
+            [map(($_ => ord($_)), qw(x y z))] => not_die(),
+        ],
+        get_values => [
+            [qw(x y)] => [ord('x'), ord('y')],
+        ],
+        db_do_glob => [
+            [
+                '*',
+                sub {
+                    assert_equals(ord('x'), shift->get_values('x'));
+                    assert_equals($name, $name);
+                    return 1;
+                },
+            ] => not_die(),
+        ],
+        do_key_values => [
+            [sub {
+                 my($k, $v) = @_;
+                 assert_equals(ord($k), $v);
+                 $res .= $k;
+                 return 1;
+             }] => sub {
+                 assert_equals('xyz', $res);
+                 return 1;
+             },
+        ],
+        delete_keys => [
+            [qw(x z)] => not_die(),
+        ],
+        unsafe_get_values => [
+            x => [undef],
+            y => ord('y'),
+            z => [undef],
+        ],
+        db_close => not_die(),
+        db_close => not_die(),
+        unsafe_get_values => [
+            y => DIE(),
+        ],
     ],
 ];

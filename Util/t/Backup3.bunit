@@ -15,75 +15,75 @@ foreach my $day (@$days) {
     push(@$logs, my $l = []);
     push(@$log_dirs, my $ld = []);
     foreach my $log (
-	map("$mirror/foo.bar/var/log/$_",
-	    "d1/${day}131313/f1",
-	    "d2/$day/f1",
-	    "d3/$day.gz",
-	    "d3/${day}010101.gz",
-	),
+        map("$mirror/foo.bar/var/log/$_",
+            "d1/${day}131313/f1",
+            "d2/$day/f1",
+            "d3/$day.gz",
+            "d3/${day}010101.gz",
+        ),
     ) {
-	push(@$ld, IO_File()->mkdir_parent_only($log));
-	push(@$l, $log);
-	system("dd if=/dev/zero of=$log bs=1024 count=1 > /dev/null 2>&1");
+        push(@$ld, IO_File()->mkdir_parent_only($log));
+        push(@$l, $log);
+        system("dd if=/dev/zero of=$log bs=1024 count=1 > /dev/null 2>&1");
     }
 }
 [
     class() => [
-	compress_and_trim_log_dirs => [
-	    [$mirror => (@$days - 1) - 1] => sub {
-		assert_equals(undef, -e $log_dirs->[0]->[0]);
- 		assert_equals(undef, -e "$log_dirs->[0]->[0].tgz");
- 		assert_equals(undef, -e "$log_dirs->[$#$log_dirs - 1]->[0]");
-  		assert_equals(1, -e "$log_dirs->[$#$log_dirs - 1]->[0].tgz");
- 		assert_equals(1, -e "$log_dirs->[$#$log_dirs]->[0]");
-		return [join(
-		    '',
-		    join(
-			' ',
-			'Compressed:',
-			sort(grep(
-			    !m{/d3$},
-			    map(@$_, @$log_dirs[0..$#$log_dirs - 1]),
-			)),
-		    ),
-		    "\n",
-		    join(
-			' ',
-			'Deleted:',
-			sort(grep(
-			    !m{/d3.tgz$},
-			    map("$_.tgz",
-			    map(@$_, @$log_dirs[0])),
-			)),
-		    ),
-		    "\n",
-		)];
-	    },
-	    [$mirror => (@$days - 1) - 2] => join(
-		' ',
-		'Deleted:',
-		sort(grep(
-		    !m{/d3.tgz$},
-		    map("$_.tgz", map(@$_, @$log_dirs[1])),
-		)),
-	    ) . "\n",
-	],
-	archive_logs => [
-	    [$mirror, $archive] => sub {
-		return [[sort(
-		    map({
-			my($year) = $_ =~ /(200[89])/;
-			(my $x = $_) =~ s{^\Q$mirror\E}{$archive/$year};
-			assert_equals(1, -r $x && ! -w $x, "$x");
-			$x;
-		    }
-		       map(("$_->[0].tgz", "$_->[1].tgz"),
-		           @$log_dirs[2..$#$log_dirs - 1]),
-		       grep(/gz$/, map(@$_, @$logs)),
-		    ),
-		)]];
-	    },
-	    [$mirror, $archive] => [],
-	],
+        compress_and_trim_log_dirs => [
+            [$mirror => (@$days - 1) - 1] => sub {
+                assert_equals(undef, -e $log_dirs->[0]->[0]);
+                 assert_equals(undef, -e "$log_dirs->[0]->[0].tgz");
+                 assert_equals(undef, -e "$log_dirs->[$#$log_dirs - 1]->[0]");
+                  assert_equals(1, -e "$log_dirs->[$#$log_dirs - 1]->[0].tgz");
+                 assert_equals(1, -e "$log_dirs->[$#$log_dirs]->[0]");
+                return [join(
+                    '',
+                    join(
+                        ' ',
+                        'Compressed:',
+                        sort(grep(
+                            !m{/d3$},
+                            map(@$_, @$log_dirs[0..$#$log_dirs - 1]),
+                        )),
+                    ),
+                    "\n",
+                    join(
+                        ' ',
+                        'Deleted:',
+                        sort(grep(
+                            !m{/d3.tgz$},
+                            map("$_.tgz",
+                            map(@$_, @$log_dirs[0])),
+                        )),
+                    ),
+                    "\n",
+                )];
+            },
+            [$mirror => (@$days - 1) - 2] => join(
+                ' ',
+                'Deleted:',
+                sort(grep(
+                    !m{/d3.tgz$},
+                    map("$_.tgz", map(@$_, @$log_dirs[1])),
+                )),
+            ) . "\n",
+        ],
+        archive_logs => [
+            [$mirror, $archive] => sub {
+                return [[sort(
+                    map({
+                        my($year) = $_ =~ /(200[89])/;
+                        (my $x = $_) =~ s{^\Q$mirror\E}{$archive/$year};
+                        assert_equals(1, -r $x && ! -w $x, "$x");
+                        $x;
+                    }
+                       map(("$_->[0].tgz", "$_->[1].tgz"),
+                           @$log_dirs[2..$#$log_dirs - 1]),
+                       grep(/gz$/, map(@$_, @$logs)),
+                    ),
+                )]];
+            },
+            [$mirror, $archive] => [],
+        ],
     ],
 ];

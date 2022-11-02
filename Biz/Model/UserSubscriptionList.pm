@@ -12,25 +12,25 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         order_by => [qw(
-	    RealmOwner.display_name
+            RealmOwner.display_name
         )],
-	other => [
-	    'UserRealmSubscription.is_subscribed',
-	    [qw(RealmUser.realm_id UserRealmSubscription.realm_id(+))],
-	    [qw(RealmUser.user_id UserRealmSubscription.user_id(+))],
-	],
-	group_by => [qw(
-	    RealmOwner.display_name
-	    RealmOwner.name
-	    RealmOwner.password
-	    RealmOwner.realm_type
-	    RealmOwner.creation_date_time
-	    RealmUser.realm_id
-	    RealmUser.user_id
-	    RealmUser.role
-	    RealmUser.creation_date_time
-	    UserRealmSubscription.is_subscribed
-	)],
+        other => [
+            'UserRealmSubscription.is_subscribed',
+            [qw(RealmUser.realm_id UserRealmSubscription.realm_id(+))],
+            [qw(RealmUser.user_id UserRealmSubscription.user_id(+))],
+        ],
+        group_by => [qw(
+            RealmOwner.display_name
+            RealmOwner.name
+            RealmOwner.password
+            RealmOwner.realm_type
+            RealmOwner.creation_date_time
+            RealmUser.realm_id
+            RealmUser.user_id
+            RealmUser.role
+            RealmUser.creation_date_time
+            UserRealmSubscription.is_subscribed
+        )],
     });
 }
 

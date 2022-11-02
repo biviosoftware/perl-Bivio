@@ -32,7 +32,7 @@ sub get_by_number {
     return $proto->AMEX
             if $len == 15 && $number =~ /^3[47]/;
     return $proto->DISCOVER
-	    if $len == 16 && $number =~ /^6011/;
+            if $len == 16 && $number =~ /^6011/;
     return $proto->UNKNOWN;
 }
 
@@ -46,8 +46,8 @@ sub handle_config {
 
     # map of enum name values, ensures they are valid before adding
     $_SUPPORTED_CARDS = {
-	map {$proto->from_name($_)->get_name => 1}
-	    split(' ', $cfg->{supported_card_list}),
+        map {$proto->from_name($_)->get_name => 1}
+            split(' ', $cfg->{supported_card_list}),
     };
     return;
 }
@@ -57,7 +57,7 @@ sub is_supported_by_number {
     # Returns true if CC is supported.
     my($self, $number) = @_;
     return $_SUPPORTED_CARDS->{$self->get_by_number($number)->get_name}
-	? 1 : 0;
+        ? 1 : 0;
 }
 
 1;

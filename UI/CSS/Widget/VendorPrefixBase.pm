@@ -9,19 +9,19 @@ b_use('UI.ViewLanguageAUTOLOAD');
 sub initialize {
     my($self) = @_;
     $self->put(
-	values => [
-	    map(
-		(($_ ? "-$_-$name" : $name), ':', $value, ';'),
-	       '',
-	       qw(
-	           webkit
-		   moz
-		   ms
-		   o
-	       ),
-	    ),
-	    "\n",
-	],
+        values => [
+            map(
+                (($_ ? "-$_-$name" : $name), ':', $value, ';'),
+               '',
+               qw(
+                   webkit
+                   moz
+                   ms
+                   o
+               ),
+            ),
+            "\n",
+        ],
     );
     return shift->SUPER::initialize(@_);
 }

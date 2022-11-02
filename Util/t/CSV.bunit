@@ -2,22 +2,22 @@
 # $Id$
 [
     [] => [
-	{
-	    method => 'colrm',
-	    compute_params => sub {
-		my($case, $params) = @_;
-		my($expect) = $case->get('expect');
-		$case->expect([\$expect->[0]]);
-		# First parameter is -input value
-		$case->get('object')->put(input => \$params->[0]);
-		shift(@$params);
-		return $params;
-	    },
-	} => [
-	    ["a,b,c\n", 0, 1] => ["b,c\n"],
-	    ["a,b,c\n", 1, 2] => ["a\n"],
-	    ["a,b,c,d\nw,x,y,z\n", 2] => ["a,b\nw,x\n"],
-	],
+        {
+            method => 'colrm',
+            compute_params => sub {
+                my($case, $params) = @_;
+                my($expect) = $case->get('expect');
+                $case->expect([\$expect->[0]]);
+                # First parameter is -input value
+                $case->get('object')->put(input => \$params->[0]);
+                shift(@$params);
+                return $params;
+            },
+        } => [
+            ["a,b,c\n", 0, 1] => ["b,c\n"],
+            ["a,b,c\n", 1, 2] => ["a\n"],
+            ["a,b,c,d\nw,x,y,z\n", 2] => ["a,b\nw,x\n"],
+        ],
         to_csv_text => [
             [[]] => => [\("\n")],
             [['']] => => [\("\n")],
@@ -34,9 +34,9 @@
             ]] => [
                 \(qq{1,,2\n,,"\n\n\n",3,4\n\n"the,end"\n}),
             ],
-	    [["some\ntext"]] => [\(qq{"some\ntext"\n})],
-	    [["some\r\ntext"]] => [\(qq{"some\r\ntext"\n})],
-	    [["some\rtext"]] => [\(qq{"some\rtext"\n})],
+            [["some\ntext"]] => [\(qq{"some\ntext"\n})],
+            [["some\r\ntext"]] => [\(qq{"some\r\ntext"\n})],
+            [["some\rtext"]] => [\(qq{"some\rtext"\n})],
         ],
         parse_records => [
             [\(my $x = <<'EOF')]
@@ -79,25 +79,25 @@ EOF
             ]],
         ],
         {
-	    method => 'parse',
-	    check_return => sub {
-		my(undef, undef, $expect) = @_;
-		return [$expect];
-	    },
-	} => [
-	    '' => [],
-	    ['', 1] => [],
-	    ' ' => [],
-	    "\n \r \n" => [],
-	    ',' => [['','']],
-	    [",,\n", 1] => [[1, '','','']],
-	    " \n \r\n  \n a \n   \n \r\n\n \n" => [[' a ']],
-	    [" \n \r\n  \n a \n   \n \r\n\n \n", 1] => [[4, ' a ']],
-	    'a' => [['a']],
-	    [\(my $x2 = 'a')] => [['a']],
-	    'a,b,c' => [[qw(a b c)]],
-	    "a,b,c\n" => [[qw(a b c)]],
-	    'a,b,c,' => [[qw(a b c), '']],
+            method => 'parse',
+            check_return => sub {
+                my(undef, undef, $expect) = @_;
+                return [$expect];
+            },
+        } => [
+            '' => [],
+            ['', 1] => [],
+            ' ' => [],
+            "\n \r \n" => [],
+            ',' => [['','']],
+            [",,\n", 1] => [[1, '','','']],
+            " \n \r\n  \n a \n   \n \r\n\n \n" => [[' a ']],
+            [" \n \r\n  \n a \n   \n \r\n\n \n", 1] => [[4, ' a ']],
+            'a' => [['a']],
+            [\(my $x2 = 'a')] => [['a']],
+            'a,b,c' => [[qw(a b c)]],
+            "a,b,c\n" => [[qw(a b c)]],
+            'a,b,c,' => [[qw(a b c), '']],
             [qq{1,,2\n,,"\r\n\n\r",3,4\n\n"the,end"\n}]
                 => [
                     [1, '', 2],

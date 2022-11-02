@@ -124,19 +124,19 @@ sub delete_from_request {
 sub find_by_uri_or_domain {
     my($proto, $uri_or_domain) = @_;
     return $_CLASS_MAP->{$_CFG->{default}}
-	unless defined($uri_or_domain);
+        unless defined($uri_or_domain);
     if ($uri_or_domain =~ /[A-Z]/) {
-	$_A->warn_deprecated($uri_or_domain, ': domain must be lower case');
-	$uri_or_domain = lc($uri_or_domain);
+        $_A->warn_deprecated($uri_or_domain, ': domain must be lower case');
+        $uri_or_domain = lc($uri_or_domain);
     }
     my($found) = [];
     foreach my $uri (@$_URI_SEARCH_LIST) {
-	# Longest URI will match first
-	$found->[length($1)] ||= $uri
-	    if $uri_or_domain =~ /(^|.*?\.)$uri(?:$|\.)/;
+        # Longest URI will match first
+        $found->[length($1)] ||= $uri
+            if $uri_or_domain =~ /(^|.*?\.)$uri(?:$|\.)/;
     }
     return undef
-	unless @$found;
+        unless @$found;
     return $_URI_MAP->{(grep($_, @$found))[0]};
 }
 
@@ -144,7 +144,7 @@ sub get_all_classes {
     # List of all Facades by simple class name.  Must be fully initialized to call
     # this function.
     die('not all classes available, because not fully initialized')
-	unless shift->is_fully_initialized;
+        unless shift->is_fully_initialized;
     return [sort(keys(%$_CLASS_MAP))];
 }
 
@@ -155,15 +155,15 @@ sub get_default {
 sub get_from_request_or_self {
     my($proto, $req_or_facade) = @_;
     unless ($req_or_facade || ref($proto)) {
-	$_A->warn_deprecated('must pass req or facade');
-	$req_or_facade = $_R->get_current;
+        $_A->warn_deprecated('must pass req or facade');
+        $req_or_facade = $_R->get_current;
     }
     return $proto
-	if __PACKAGE__->is_blesser_of($proto);
+        if __PACKAGE__->is_blesser_of($proto);
     return $req_or_facade
-	if __PACKAGE__->is_blesser_of($req_or_facade);
+        if __PACKAGE__->is_blesser_of($req_or_facade);
     $req_or_facade = $_R->get_current
-	unless $_R->is_blesser_of($req_or_facade);
+        unless $_R->is_blesser_of($req_or_facade);
     return $proto->get_from_source($req_or_facade);
 }
 
@@ -175,12 +175,12 @@ sub get_from_source {
 sub get_instance {
     my($proto, $uri_or_domain_or_class) = @_;
     return $proto->get_default
-	unless $uri_or_domain_or_class;
+        unless $uri_or_domain_or_class;
     return $_CLASS_MAP->{$uri_or_domain_or_class}
-	|| b_die($uri_or_domain_or_class, ': no such facade class')
-	if $uri_or_domain_or_class =~ /^[A-Z]/;
+        || b_die($uri_or_domain_or_class, ': no such facade class')
+        if $uri_or_domain_or_class =~ /^[A-Z]/;
     return $proto->find_by_uri_or_domain($uri_or_domain_or_class)
-	|| b_die($uri_or_domain_or_class, ': no such facade uri');
+        || b_die($uri_or_domain_or_class, ': no such facade uri');
 }
 
 sub get_local_file_name {
@@ -202,12 +202,12 @@ sub get_local_file_name {
     #
     # May not be called statically if I<req> is C<undef>.
     $self = $self->get_from_request_or_self($req)
-	if defined($req) || !ref($self);
+        if defined($req) || !ref($self);
     return $_FP->join(
-	$self->get_local_file_root,
-	$self->get('local_file_prefix'),
-	$_LFT->from_any($type)->get_path,
-	$name,
+        $self->get_local_file_root,
+        $self->get('local_file_prefix'),
+        $_LFT->from_any($type)->get_path,
+        $name,
     );
 }
 
@@ -237,18 +237,18 @@ sub get_value {
 sub handle_call_autoload {
     my($proto) = shift;
     my($self) = $proto->equals_class_name(__PACKAGE__)
-	? $proto
-	: $proto->get_instance($proto->simple_package_name);
+        ? $proto
+        : $proto->get_instance($proto->simple_package_name);
     return $self
-	unless @_;
+        unless @_;
     my($uri_or_domain_or_class, $req) = @_;
     if ($_R->is_blesser_of($uri_or_domain_or_class)) {
-	$req = $uri_or_domain_or_class;
-	b_die('UI.Facade(req): is illegal calling form')
-	    unless ref($self);
+        $req = $uri_or_domain_or_class;
+        b_die('UI.Facade(req): is illegal calling form')
+            unless ref($self);
     }
     else {
-	$self = $self->get_instance($uri_or_domain_or_class);
+        $self = $self->get_instance($uri_or_domain_or_class);
     }
     return $self->setup_request($req);
 }
@@ -287,7 +287,7 @@ sub handle_config {
     Bivio::IO::Alert->warn_deprecated($cfg->{http_suffix}, ': use http_host')
         if $cfg->{http_suffix};
     b_warn(
-	$cfg->{local_file_root}, ': local_file_root is not a directory'
+        $cfg->{local_file_root}, ': local_file_root is not a directory'
     ) unless $cfg->{local_file_root} && -d $cfg->{local_file_root};
     $_CFG = {%{$cfg}};
     $_CFG->{local_file_root} = $_FN->add_trailing_slash($_CFG->{local_file_root});
@@ -327,14 +327,14 @@ sub initialize {
     $_CL->map_require_all('Facade')
         unless $partially;
     b_die(
-	$_CFG->{default}, ': unable to find or load default Facade',
+        $_CFG->{default}, ': unable to find or load default Facade',
     ) unless ref($_CLASS_MAP->{$_CFG->{default}});
     foreach my $f (sort(values(%$_CLASS_MAP))) {
-	foreach my $c (@_COMPONENTS) {
-	    b_die($f, ': ', $c, ': failed to load component')
-	        unless $f->unsafe_get($c);
-	}
-	$f->set_read_only;
+        foreach my $c (@_COMPONENTS) {
+            b_die($f, ': ', $c, ': failed to load component')
+                unless $f->unsafe_get($c);
+        }
+        $f->set_read_only;
     }
     $_IS_FULLY_INITIALIZED = $partially ? 0 : 1;
     return;
@@ -343,7 +343,7 @@ sub initialize {
 sub is_2014style {
     my($proto) = @_;
     return ref($proto) ? $proto->get('Constant')->get_value('is_2014style')
-	: $_CFG->{is_2014style};
+        : $_CFG->{is_2014style};
 }
 
 sub is_fully_initialized {
@@ -365,8 +365,8 @@ sub make_groups {
 sub map_iterate_with_setup_request {
     my($proto, $req, $op) = @_;
     return [map(
-	$proto->with_setup_request($_, $req, $op),
-	@{$proto->get_all_classes},
+        $proto->with_setup_request($_, $req, $op),
+        @{$proto->get_all_classes},
     )];
 }
 
@@ -393,7 +393,7 @@ sub new {
     #             initialize => sub {
     #                 my($fc) = @_;
     #                 $fc->group(page_link => 0x330099),
-    # 	        $fc->group(['page_vlink', 'page_alink'] => 0x330099),
+    #                 $fc->group(['page_vlink', 'page_alink'] => 0x330099),
     #                 return;
     #             }
     #         },
@@ -402,18 +402,18 @@ sub new {
     # There are some shortcuts, e.g.
     #
     #     'Color' => sub {
-    # 	 shift->map_invoke(group => [
-    # 	    [page_link => 0x330099],
-    # 	    [['page_vlink', 'page_alink'] => 0x330099],
-    # 	 ]);
-    # 	 return;
+    #          shift->map_invoke(group => [
+    #             [page_link => 0x330099],
+    #             [['page_vlink', 'page_alink'] => 0x330099],
+    #          ]);
+    #          return;
     #      },
     #
     # Or even shorter:
     #
     #     'Color' => [
-    # 	 [page_link => 0x330099],
-    # 	 [['page_vlink', 'page_alink'] => 0x330099],
+    #          [page_link => 0x330099],
+    #          [['page_vlink', 'page_alink'] => 0x330099],
     #      ],
     my($self) = $proto->SUPER::new();
     my($class) = ref($self);
@@ -427,15 +427,15 @@ sub new {
     $self->use('Agent.Request');
     # Only load production configuration.
     if (Bivio::Agent::Request->is_production && !$config->{is_production}) {
-	# Anybody referencing this facade will get an error; see _load().
-	_trace($class, ': non-production Facade, not initializing');
-	delete($_CLASS_MAP->{$simple_class});
-	return undef;
+        # Anybody referencing this facade will get an error; see _load().
+        _trace($class, ': non-production Facade, not initializing');
+        delete($_CLASS_MAP->{$simple_class});
+        return undef;
     }
 
     # Make sure clone is specified and loaded
     b_die($class, ': missing clone attribute')
-		unless exists($config->{clone});
+                unless exists($config->{clone});
     my($clone) = $config->{clone} ? _load($config->{clone}) : undef;
     delete($config->{clone});
 
@@ -445,50 +445,50 @@ sub new {
     $lfp = $uri unless defined($lfp);
     my($wlfc) = $config->{want_local_file_cache};
     $wlfc = $_CFG->{want_local_file_cache}
-	unless defined($wlfc);
+        unless defined($wlfc);
 
     b_die(
-	$uri,
-	': duplicate uri for ',
-	$class,
-	' and ',
-	ref($_URI_MAP->{$uri}),
+        $uri,
+        ': duplicate uri for ',
+        $class,
+        ' and ',
+        ref($_URI_MAP->{$uri}),
     ) if $_URI_MAP->{$uri};
     _trace($class, ': uri=', $uri) if $_TRACE;
 
     # Initialize this instance's attributes
     $self->internal_put({
-	uri => $uri,
-	local_file_prefix => $_FN->add_trailing_slash($lfp),
-	want_local_file_cache => $wlfc,
-	is_production => $config->{is_production} ? 1 : 0,
-	is_default => $_CFG->{default} eq $self->simple_package_name ? 1 : 0,
+        uri => $uri,
+        local_file_prefix => $_FN->add_trailing_slash($lfp),
+        want_local_file_cache => $wlfc,
+        is_production => $config->{is_production} ? 1 : 0,
+        is_default => $_CFG->{default} eq $self->simple_package_name ? 1 : 0,
         cookie_domain => delete($config->{cookie_domain}),
-	parent => $clone,
+        parent => $clone,
         use_clone_hosts => delete($config->{use_clone_hosts}) || 0,
     });
     _init_hosts($self, $config);
     foreach my $x (qw(
         uri local_file_prefix want_local_file_cache is_production
         mail_host http_host)) {
-	delete($config->{$x});
+        delete($config->{$x});
     }
 
     # Load all components before initializing.  Modifies @ & %_COMPONENTS.
     my($components) = [map(b_use('FacadeComponent', $_), sort(keys(%$config)))];
     foreach my $c (@$components) {
-	$_CL->unsafe_map_require('FacadeComponent', $c->simple_package_name);
-	$c->handle_register;
+        $_CL->unsafe_map_require('FacadeComponent', $c->simple_package_name);
+        $c->handle_register;
     }
     _initialize($self, $config, $clone);
 
     # Store globally
     $_CLASS_MAP->{$simple_class} = $_URI_MAP->{$uri} = $self;
     $_URI_SEARCH_LIST = [
-	sort(
-	    {length($b) <=> length($a) || $a cmp $b}
-	    keys(%$_URI_MAP),
-	),
+        sort(
+            {length($b) <=> length($a) || $a cmp $b}
+            keys(%$_URI_MAP),
+        ),
     ];
     return $self;
 }
@@ -502,20 +502,20 @@ sub register {
 
     # Avoid recursion
     return
-	if exists($_COMPONENTS{$simple_class});
+        if exists($_COMPONENTS{$simple_class});
     $_COMPONENTS{$simple_class} = undef;
 
     # Load prerequisites first, so they register.  This forces the
     # toposort.
     foreach my $c (@$required_components) {
-	b_use('FacadeComponent', $c)->handle_register;
+        b_use('FacadeComponent', $c)->handle_register;
     }
 
     # Assert that this component is kosher.
     b_die($class, ': is not a FacadeComponent')
-	unless b_use('UI.FacadeComponent')->is_super_of($class);
+        unless b_use('UI.FacadeComponent')->is_super_of($class);
     b_die($class, ': already registered')
-	if $_COMPONENTS{$simple_class};
+        if $_COMPONENTS{$simple_class};
 
     # Register this component
     push(@_COMPONENTS, $simple_class);
@@ -527,18 +527,18 @@ sub setup_request {
     my($proto) = shift;
     my($arg1) = shift;
     if (ref($arg1)) {
-	b_die($arg1, ': first arg is not a Request')
-	    unless $_R->is_blesser_of($arg1);
-	b_die('must not be called statically')
-	    unless ref($proto);
-	return _setup_request($proto, $arg1);
+        b_die($arg1, ': first arg is not a Request')
+            unless $_R->is_blesser_of($arg1);
+        b_die('must not be called statically')
+            unless ref($proto);
+        return _setup_request($proto, $arg1);
     }
     my($req) = shift;
     _trace('uri: ', $arg1) if $_TRACE;
     return _setup_request(
-	$proto->find_by_uri_or_domain($arg1)
-	    || $_CLASS_MAP->{$_CFG->{default}},
-	$req,
+        $proto->find_by_uri_or_domain($arg1)
+            || $_CLASS_MAP->{$_CFG->{default}},
+        $req,
     );
 }
 
@@ -551,17 +551,17 @@ sub with_setup_request {
     my($proto, $uri_or_domain_or_class, $req, $op) = @_;
     my($prev) = $proto->unsafe_get_from_source($req);
     my($facade)
-	= $proto->get_instance($uri_or_domain_or_class)->setup_request($req);
+        = $proto->get_instance($uri_or_domain_or_class)->setup_request($req);
     return $_D->catch_and_rethrow(
-	sub {
-	    return $op->($facade);
-	},
-	sub {
-	    $prev
-		? $prev->setup_request($req)
-		: $facade->delete_from_request($req);
-	    return;
-	},
+        sub {
+            return $op->($facade);
+        },
+        sub {
+            $prev
+                ? $prev->setup_request($req)
+                : $facade->delete_from_request($req);
+            return;
+        },
     );
     return;
 }
@@ -569,11 +569,11 @@ sub with_setup_request {
 sub _fixup_test_uri {
     my($self, $uri) = @_;
     return $uri
-	if $self->get('is_default');
+        if $self->get('is_default');
     my($d) = $self->get_default->get('uri');
     my($f) = $self->get('uri');
     $uri = "$f.$uri"
-	unless $uri =~ s{^(.*?)\b\Q$d\E\b}{$1$f}i;
+        unless $uri =~ s{^(.*?)\b\Q$d\E\b}{$1$f}i;
    return $uri;
 }
 
@@ -596,12 +596,12 @@ sub _init_hosts {
         return;
     }
     $self->put(
-	map(($_ => (
-	    $_R->is_production
-	        ? $config->{$_} || b_die(
-		    $_, ': facade parameter missing in production')
-		: _fixup_test_uri($self, $_CFG->{$_} || $_CFG->{http_suffix}),
-	)), qw(http_host mail_host)),
+        map(($_ => (
+            $_R->is_production
+                ? $config->{$_} || b_die(
+                    $_, ': facade parameter missing in production')
+                : _fixup_test_uri($self, $_CFG->{$_} || $_CFG->{http_suffix}),
+        )), qw(http_host mail_host)),
     );
     return;
 }
@@ -609,34 +609,34 @@ sub _init_hosts {
 sub _initialize {
     my($self, $config, $clone) = @_;
     foreach my $c (@_COMPONENTS) {
-	# Get the config for this component (or force to exist)
-	my($cfg) = $config->{$c} || {initialize => sub {}};
-	if (ref($cfg) eq 'ARRAY') {
-	    # closure must be bound to new a variable
-	    my($groups) = $cfg;
-	    $cfg = sub {
-		shift->map_invoke(group => $groups);
-		return;
-	    };
-	}
-	$cfg = {initialize => $cfg}
-	    if ref($cfg) eq 'CODE';
+        # Get the config for this component (or force to exist)
+        my($cfg) = $config->{$c} || {initialize => sub {}};
+        if (ref($cfg) eq 'ARRAY') {
+            # closure must be bound to new a variable
+            my($groups) = $cfg;
+            $cfg = sub {
+                shift->map_invoke(group => $groups);
+                return;
+            };
+        }
+        $cfg = {initialize => $cfg}
+            if ref($cfg) eq 'CODE';
 
-	# Get the clone, if any
-	my($cc) = $cfg && exists($cfg->{clone})
-	    ? $cfg->{clone} ? _load($cfg->{clone}) : undef : $clone;
-	$cc = $cc->get($c) if $cc;
+        # Get the clone, if any
+        my($cc) = $cfg && exists($cfg->{clone})
+            ? $cfg->{clone} ? _load($cfg->{clone}) : undef : $clone;
+        $cc = $cc->get($c) if $cc;
 
-	# Must have a clone or initialize (all components MUST be exist)
-	b_die(
-	    $self, ': ', $c,
-	    ': missing component clone or initialize attributes',
-	) unless $cc || $cfg->{initialize};
+        # Must have a clone or initialize (all components MUST be exist)
+        b_die(
+            $self, ': ', $c,
+            ': missing component clone or initialize attributes',
+        ) unless $cc || $cfg->{initialize};
 
-	# Create the instance, initialize, seal, and store.
-	$self->put($c => $_COMPONENTS{$c}->new(
-	    $self, $cc, $cfg->{initialize}));
-	delete($config->{$c});
+        # Create the instance, initialize, seal, and store.
+        $self->put($c => $_COMPONENTS{$c}->new(
+            $self, $cc, $cfg->{initialize}));
+        delete($config->{$c});
     }
     if ($self->get('use_clone_hosts')) {
         map($self->put($_ => $clone->get($_)), qw(http_host mail_host));
@@ -644,7 +644,7 @@ sub _initialize {
 
     # Make sure everything in $config is valid.
     b_die($self, ': unknown config (modules not ',
-	    ' FacadeComponents(?): ', $config) if %$config;
+            ' FacadeComponents(?): ', $config) if %$config;
 
     return;
 }
@@ -653,9 +653,9 @@ sub _load {
     my($clone) = @_;
     my($c) = b_use('Facade', $clone);
     b_die($c, ': not a ')
-	unless __PACKAGE__->is_super_of($c);
+        unless __PACKAGE__->is_super_of($c);
     b_die($c, ": did not call this module's new (non-production Facade?")
-	unless ref($_CLASS_MAP->{$clone});
+        unless ref($_CLASS_MAP->{$clone});
     return $_CLASS_MAP->{$clone};
 }
 
@@ -667,8 +667,8 @@ sub _local_file_uri {
 sub _req_keys {
     my($self) = @_;
     return (
-	__PACKAGE__, $self || (),
-	__PACKAGE__->as_classloader_map_name => $self || (),
+        __PACKAGE__, $self || (),
+        __PACKAGE__->as_classloader_map_name => $self || (),
     );
 }
 

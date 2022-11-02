@@ -3,31 +3,31 @@
 Type();
 [
     class() => [
-	from_literal => [
-	    abc => 'abc',
-	    ab => TOO_SHORT(),
-	    ' abc ' => 'abc',
-	    [undef] => UNDEF(),
-	    [' '] => UNDEF(),
-	    0 => TOO_SHORT(),
-	    'api' => 'api',
-	],
+        from_literal => [
+            abc => 'abc',
+            ab => TOO_SHORT(),
+            ' abc ' => 'abc',
+            [undef] => UNDEF(),
+            [' '] => UNDEF(),
+            0 => TOO_SHORT(),
+            'api' => 'api',
+        ],
         unsafe_from_uri => [
-	    ab => [undef],
-	    my => 'my',
-	    abc => 'abc',
-	    'abc-' => 'abc-',
-	    'ab-' => [undef],
-	    '-abc' => [undef],
-	    'Abc' => 'abc',
-	],
-	make_offline => [
-	    abc => '=abc',
-	    '=abc' => '=abc',
-	    a12345678901234567890123456789 => '=a1234567890123456789012345678',
-	],
-	clean_and_trim => [
-	    'hi-ho-hi-ho' => 'hihohiho',
-	],
+            ab => [undef],
+            my => 'my',
+            abc => 'abc',
+            'abc-' => 'abc-',
+            'ab-' => [undef],
+            '-abc' => [undef],
+            'Abc' => 'abc',
+        ],
+        make_offline => [
+            abc => '=abc',
+            '=abc' => '=abc',
+            a12345678901234567890123456789 => '=a1234567890123456789012345678',
+        ],
+        clean_and_trim => [
+            'hi-ho-hi-ho' => 'hihohiho',
+        ],
     ],
 ]

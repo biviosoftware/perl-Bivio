@@ -21,32 +21,32 @@ sub new_unit {
     $req->set_realm_and_user(@$args{qw(realm user)});
     $req->initialize_fully($args->{task_id});
     $args->{compute_params} ||= sub {
-	my($case, $params) = @_;
-	return $params
-	    unless _is_render($case);
-	$args->{setup_render}->($req, @_)
-	    if $args->{setup_render};
-	my($x) = '';
-	return [$args->{source} ? $req->get($args->{source}) : $req, \$x];
+        my($case, $params) = @_;
+        return $params
+            unless _is_render($case);
+        $args->{setup_render}->($req, @_)
+            if $args->{setup_render};
+        my($x) = '';
+        return [$args->{source} ? $req->get($args->{source}) : $req, \$x];
     };
     $args->{create_object} ||= sub {
-	my($case, $params) = @_;
-	my($object) = $case->get('class_name')->new(
-	    @{$args->{new_params} ? $args->{new_params}->(@_) : $params},
-	);
-	$args->{widget_post_new}->($case, $params, $object)
-	    if $args->{widget_post_new};
-	return !Bivio::UI::Widget->is_blesser_of($object) ? $object
-	    : $object->initialize_with_parent(undef);
+        my($case, $params) = @_;
+        my($object) = $case->get('class_name')->new(
+            @{$args->{new_params} ? $args->{new_params}->(@_) : $params},
+        );
+        $args->{widget_post_new}->($case, $params, $object)
+            if $args->{widget_post_new};
+        return !Bivio::UI::Widget->is_blesser_of($object) ? $object
+            : $object->initialize_with_parent(undef);
     };
     $args->{compute_return} ||= sub {
-	my($case, $actual) = splice(@_, 0, 2);
-	return $actual
-	    unless _is_render($case);
-	$actual = [${$case->get('params')->[1]}];
-	$proto->builtin_assert_not_equals(qr{\w+\(0x\w+\)}, $actual->[0]);
-	return !$args->{parse_return} ? $actual
-	    : $args->{parse_return}->($case, $actual, @_);
+        my($case, $actual) = splice(@_, 0, 2);
+        return $actual
+            unless _is_render($case);
+        $actual = [${$case->get('params')->[1]}];
+        $proto->builtin_assert_not_equals(qr{\w+\(0x\w+\)}, $actual->[0]);
+        return !$args->{parse_return} ? $actual
+            : $args->{parse_return}->($case, $actual, @_);
     };
     my($self) = $proto->new($class_name);
     $self->[$_IDI] = $args;
@@ -59,7 +59,7 @@ sub prose {
 
 sub run_unit {
     return shift->SUPER::run_unit(@_)
-	if @_ == 3;
+        if @_ == 3;
     my($self, $cases) = @_;
     my($fields) = $self->[$_IDI];
     my($req) = b_use('Test.Request')->get_instance;
@@ -67,22 +67,22 @@ sub run_unit {
     my($res);
     my($pkg) = __PACKAGE__;
     $req->put(
-	"$pkg.view_pre_compile" => $fields->{view_pre_compile},
-	$pkg => sub {
-	    $res = b_use('Bivio.Test')->new({
-		map($fields->{$_} ? ($_ => $fields->{$_}) : (), qw(
-		    class_name
-		    create_object
-		    compute_params
-		    compute_return
-		    check_return
-		)),
-	    })->unit([map(
-		$i++ % 2 && ref($_) ne 'ARRAY'
-		    ? [$fields->{method_to_test} => [[] => $_]] : $_,
-		@$cases,
-	    )]);
-	},
+        "$pkg.view_pre_compile" => $fields->{view_pre_compile},
+        $pkg => sub {
+            $res = b_use('Bivio.Test')->new({
+                map($fields->{$_} ? ($_ => $fields->{$_}) : (), qw(
+                    class_name
+                    create_object
+                    compute_params
+                    compute_return
+                    check_return
+                )),
+            })->unit([map(
+                $i++ % 2 && ref($_) ne 'ARRAY'
+                    ? [$fields->{method_to_test} => [[] => $_]] : $_,
+                @$cases,
+            )]);
+        },
     );
     Bivio::UI::View->execute(\(<<"EOF"), $req);
 view_class_map(q{$fields->{view_class_map}});
@@ -97,8 +97,8 @@ view_shortcuts(q{$fields->{view_shortcuts}});
 })->();
 view_main(SimplePage([
     sub {
-	shift->get_request->get('$pkg')->();
-	return '';
+        shift->get_request->get('$pkg')->();
+        return '';
     },
 ]));
 EOF
@@ -109,7 +109,7 @@ sub vs_new {
     my($self, $class, @args) = @_;
     my($fields) = $self->[$_IDI];
     $class = Bivio::IO::ClassLoader->map_require(
-	$fields->{view_class_map}, $class
+        $fields->{view_class_map}, $class
     ) unless $class =~ /::/;
     return $class->new(@args);
 }

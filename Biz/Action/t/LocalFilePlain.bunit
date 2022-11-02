@@ -17,7 +17,7 @@ EOF
 User-agent: *
 Disallow:
 EOF
-	    sub {[req()->setup_facade('other')]} => <<'EOF',
+            sub {[req()->setup_facade('other')]} => <<'EOF',
 User-agent: *
 Disallow: /
 EOF

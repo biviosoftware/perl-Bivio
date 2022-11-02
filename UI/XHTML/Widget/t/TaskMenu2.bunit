@@ -43,7 +43,7 @@ req()->set_realm_and_user(qw(fourem root))
      )]] => 'task_menu Home Blog Files Wiki Calendar Mail Polls Roster Tables',
     [[{
         task_id => 'SITE_WIKI_VIEW',
-	sort_label => 'sort_first',
+        sort_label => 'sort_first',
     }, qw(
         FORUM_BLOG_LIST
         FORUM_CRM_THREAD_ROOT_LIST

@@ -14,8 +14,8 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         order_by => [
-	    'RealmOwner.name',
-	],
+            'RealmOwner.name',
+        ],
     });
 }
 

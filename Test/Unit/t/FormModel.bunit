@@ -5,26 +5,26 @@ FormModel({
 });
 [
     empty_case({
-	login => undef,
+        login => undef,
     }),
     error_case({
-	login => 'demo'
+        login => 'demo'
     }, {
-	'RealmOwner.password' => 'NULL',
+        'RealmOwner.password' => 'NULL',
     }),
     inline_case(sub {
-	var(pw => 'password');
+        var(pw => 'password');
         return;
     }),
     simple_case({
-	login => 'demo',
-	'RealmOwner.password' => var('pw'),
+        login => 'demo',
+        'RealmOwner.password' => var('pw'),
     }, {
-	login => 'demo',
-	'RealmOwner.password' => var('pw'),
+        login => 'demo',
+        'RealmOwner.password' => var('pw'),
     }),
     inline_case(sub {
-	assert_equals(realm_id('demo'), req('auth_user_id'));
-	return;
+        assert_equals(realm_id('demo'), req('auth_user_id'));
+        return;
     }),
 ];

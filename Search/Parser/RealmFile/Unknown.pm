@@ -12,7 +12,7 @@ sub CONTENT_TYPE_LIST {
 sub handle_realm_file_new_text {
     my($proto, $parseable) = @_;
     return
-	if -B $parseable->get_os_path;
+        if -B $parseable->get_os_path;
     return $proto->new_text($parseable->put(content_type => 'text/plain'));
 }
 

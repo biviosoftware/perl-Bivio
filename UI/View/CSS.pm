@@ -17,8 +17,8 @@ my($_UIF) = b_use('UI.Facade');
 sub add_to_css {
     my($proto, $widget, $selector, $class, $source) = @_;
     my($info) = $source->req->get_if_defined_else_put($_REQ_KEY => {
-	render_order => [],
-	visited => {},
+        render_order => [],
+        visited => {},
     });
     my($name) = $widget->simple_package_name;
     my($key) = $selector . '[' . $name . ']';
@@ -31,8 +31,8 @@ sub add_to_css {
 sub internal_site_css {
     my($self, $source) = @_;
     return $_UIF->get_from_source($source)->if_2014style(
-	'',
-	$_SITE . $_F->if_html5(\&_html5_css, ''),
+        '',
+        $_SITE . $_F->if_html5(\&_html5_css, ''),
     );
 }
 
@@ -360,33 +360,33 @@ EOF
 sub site_css {
     my($self) = @_;
     return $self->internal_body(Join([
-	Prose([sub {
-	    my($source) = @_;
-	    my($res) = '';
-	    my($info) = $source->ureq($_REQ_KEY);
-	    return ''
-		unless $info;
-	    my($facade) = $_F->get_from_source($source)->get('CSS');
-	    foreach my $path (@{$info->{render_order}}) {
-		my($selector, $widget, $class) = @$path;
-		my($css) = $facade->unsafe_get_value($widget, $class);
-		next unless $css;
-		if (ref($css)) {
-		    foreach my $pseudo_class (keys(%$css)) {
-			$res .= join(':', $selector, $pseudo_class || ())
-			    . ' {' . $css->{$pseudo_class} . "}\n";
-		    }
-		}
-		else {
-		    $res .= $selector . ' {' . $css . "}\n";
-		}
-	    }
-	    return $res;
-	}]),
-	[sub {
-	    my($css) = $self->internal_site_css(shift);
-	    return ref($css) ? $css : Prose($css);
-	}],
+        Prose([sub {
+            my($source) = @_;
+            my($res) = '';
+            my($info) = $source->ureq($_REQ_KEY);
+            return ''
+                unless $info;
+            my($facade) = $_F->get_from_source($source)->get('CSS');
+            foreach my $path (@{$info->{render_order}}) {
+                my($selector, $widget, $class) = @$path;
+                my($css) = $facade->unsafe_get_value($widget, $class);
+                next unless $css;
+                if (ref($css)) {
+                    foreach my $pseudo_class (keys(%$css)) {
+                        $res .= join(':', $selector, $pseudo_class || ())
+                            . ' {' . $css->{$pseudo_class} . "}\n";
+                    }
+                }
+                else {
+                    $res .= $selector . ' {' . $css . "}\n";
+                }
+            }
+            return $res;
+        }]),
+        [sub {
+            my($css) = $self->internal_site_css(shift);
+            return ref($css) ? $css : Prose($css);
+        }],
     ]));
 }
 

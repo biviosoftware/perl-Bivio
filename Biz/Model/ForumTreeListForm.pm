@@ -15,9 +15,9 @@ sub execute_ok_row {
     my($self) = @_;
     return if _is_subscribed($self) eq $self->get('is_subscribed');
     $self->new_other('UserRealmSubscription')->unauth_create_or_update({
-	realm_id => $self->get_list_model->get('Forum.forum_id'),
-	user_id => $self->get_list_model->get_query->get('auth_id'),
-	is_subscribed => $self->get('is_subscribed'),
+        realm_id => $self->get_list_model->get('Forum.forum_id'),
+        user_id => $self->get_list_model->get_query->get('auth_id'),
+        is_subscribed => $self->get('is_subscribed'),
     });
     return;
 }
@@ -27,14 +27,14 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         list_class => 'ForumTreeList',
-	visible => [
-	    {
-		name => 'is_subscribed',
-		type => 'Boolean',
-		constraint => 'NONE',
-		in_list => 1,
-	    },
-	],
+        visible => [
+            {
+                name => 'is_subscribed',
+                type => 'Boolean',
+                constraint => 'NONE',
+                in_list => 1,
+            },
+        ],
     });
 }
 

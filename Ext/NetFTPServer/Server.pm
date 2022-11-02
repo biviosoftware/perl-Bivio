@@ -35,11 +35,11 @@ sub get_handle_status {
     return () unless $realm_file;
     my(@status);
     @status[0, 1, 5] = $realm_file->get('is_folder')
-	? ('d', 0555, 1024)
-	: ('f', 0444, $realm_file->get_content_length);
+        ? ('d', 0555, 1024)
+        : ('f', 0444, $realm_file->get_content_length);
     my($username) = substr($self->{user}, 0, 8);
     @status[2, 3, 4, 6] = (1, $username, $username,
-	Bivio::Type::DateTime->to_unix($realm_file->get('modified_date_time'))
+        Bivio::Type::DateTime->to_unix($realm_file->get('modified_date_time'))
     );
     return @status;
 }
@@ -52,12 +52,12 @@ sub get_realm_file {
     return undef unless $forum_name;
     my($realm) = Bivio::Biz::Model->new($self->get_request, 'RealmOwner');
     return undef unless $realm->unauth_load({
-	name => $forum_name,
+        name => $forum_name,
     });
     $self->get_request->set_realm($realm);
     my($realm_file) = $realm->new_other('RealmFile');
     return $realm_file->unsafe_load({
-	path => Bivio::Type::DocletFileName->PUBLIC_FOLDER_ROOT
+        path => Bivio::Type::DocletFileName->PUBLIC_FOLDER_ROOT
             . (defined($file_path) ? $file_path : ''),
     }) ? $realm_file : undef;
 }

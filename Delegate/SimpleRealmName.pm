@@ -133,10 +133,10 @@ sub clean_and_trim {
 sub from_literal {
     my($proto, $value) = @_;
     $value =~ s/^\s+|\s+$//g
-	if defined($value);
+        if defined($value);
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     return (undef, Bivio::TypeError->REALM_NAME)
         unless $proto->internal_is_realm_name($v);
     return $proto->process_name($v);
@@ -164,7 +164,7 @@ sub make_offline {
     # Returns an offline realm name.
     return $value if $proto->is_offline($value);
     $value = substr($value, 0, $proto->get_width - 1)
-	if length($value) >= $proto->get_width;
+        if length($value) >= $proto->get_width;
     return $proto->OFFLINE_PREFIX . $value;
 }
 
@@ -177,14 +177,14 @@ sub process_name {
 sub unsafe_from_uri {
     my($proto, $value) = @_;
     return $value
-	if ($value || '') eq $proto->SPECIAL_PLACEHOLDER;
+        if ($value || '') eq $proto->SPECIAL_PLACEHOLDER;
     return undef
-	unless $value = ($proto->SUPER::from_literal($value))[0];
+        unless $value = ($proto->SUPER::from_literal($value))[0];
     # We allow dashes in URI names (my-site and other constructed names)
     my($s) = $proto->SPECIAL_SEPARATOR;
     (my $v = $value) =~ s/$s//g;
     return $proto->internal_is_realm_name($v) && $value !~ /^$s/
-	? $proto->process_name($value) : undef;
+        ? $proto->process_name($value) : undef;
 }
 
 1;

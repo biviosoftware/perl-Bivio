@@ -28,36 +28,36 @@ sub AUTOLOAD {
     return $_CL->call_autoload($AUTOLOAD, \@_, sub {
         my($func, $args) = @_;
         my($self) = $_L->assert_in_eval($func);
-	b_die($self, " function $func: ", _check_autoload($self, $func))
-	    if _check_autoload($self, $func);
-	_trace($func, ' called with ', $args) if $_TRACE;
-	my($td) = $self->unsafe_get('test_deviance');
-	return $self->$func(@$args)
-	    if !$td || $func =~ /^test_(?:conformance|deviance)$/;
-	my($die) = Bivio::Die->catch_quietly(sub {
-	    return $self->$func(@$args);
-	});
-	b_die($self, ' deviance call "', $td, '" failed to die: ', $func, $args)
-	    unless $die;
-	b_die($self, ' deviance call to ', $func, $args, ' failed with "',
-	    $die, '" but did not match pattern: ', $td)
-	    unless $die->as_string =~ $td;
-	return;
+        b_die($self, " function $func: ", _check_autoload($self, $func))
+            if _check_autoload($self, $func);
+        _trace($func, ' called with ', $args) if $_TRACE;
+        my($td) = $self->unsafe_get('test_deviance');
+        return $self->$func(@$args)
+            if !$td || $func =~ /^test_(?:conformance|deviance)$/;
+        my($die) = Bivio::Die->catch_quietly(sub {
+            return $self->$func(@$args);
+        });
+        b_die($self, ' deviance call "', $td, '" failed to die: ', $func, $args)
+            unless $die;
+        b_die($self, ' deviance call to ', $func, $args, ' failed with "',
+            $die, '" but did not match pattern: ', $td)
+            unless $die->as_string =~ $td;
+        return;
     });
 }
 
 sub _check_autoload {
     my($self, $func) = @_;
     return 'test_setup() must be first function called in test script'
-	unless $_L->is_blesser_of($self) || $func eq 'test_setup';
+        unless $_L->is_blesser_of($self) || $func eq 'test_setup';
     return 'language function cannot begin with handle_ or internal_'
-	if $func =~ /^(?:handle|internal)_/;
+        if $func =~ /^(?:handle|internal)_/;
     return 'test function must be all lower case and begin with letter'
-	unless $func =~ /^[a-z][a-z0-9_]+$/;
+        unless $func =~ /^[a-z][a-z0-9_]+$/;
     return 'test function must contain an underscore (_)'
-	unless $func =~ /_/ || Bivio::UNIVERSAL->can($func);
+        unless $func =~ /_/ || Bivio::UNIVERSAL->can($func);
     return ref($self) . ' does not implement this function'
-	unless $self->can($func);
+        unless $self->can($func);
     return;
 }
 

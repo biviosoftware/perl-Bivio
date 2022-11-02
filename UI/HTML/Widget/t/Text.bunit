@@ -3,7 +3,7 @@
 FieldWidget({
     field => 'line',
     parse_return_regex =>
-	qr{^<input(?: class="(\w+)")? name="HTML_NAME" type="text" size="(\d+)" maxlength="100" value="(.*?)" />$}s,
+        qr{^<input(?: class="(\w+)")? name="HTML_NAME" type="text" size="(\d+)" maxlength="100" value="(.*?)" />$}s,
 });
 [
     [{test_value => undef, size => 40}] => ';40;',

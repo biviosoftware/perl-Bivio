@@ -7,15 +7,15 @@ use Bivio::Base 'Biz.PropertyModel';
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'cart_item_t',
-	columns => {
-	    cart_id => ['Cart.cart_id', 'PRIMARY_KEY'],
-	    cart_item_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    item_id => ['Item.item_id', 'NOT_NULL'],
-	    quantity => ['Integer', 'NOT_NULL'],
-	    unit_price => ['Price', 'NOT_NULL'],
-	},
+        version => 1,
+        table_name => 'cart_item_t',
+        columns => {
+            cart_id => ['Cart.cart_id', 'PRIMARY_KEY'],
+            cart_item_id => ['PrimaryId', 'PRIMARY_KEY'],
+            item_id => ['Item.item_id', 'NOT_NULL'],
+            quantity => ['Integer', 'NOT_NULL'],
+            unit_price => ['Price', 'NOT_NULL'],
+        },
     };
 }
 

@@ -10,12 +10,12 @@ sub internal_initialize {
     my($self) = @_;
     b_use('IO.Config')->assert_test;
     return $self->merge_initialize_info(
-	$self->SUPER::internal_initialize,
+        $self->SUPER::internal_initialize,
         {
-	    version => '1',
-	    primary_key => [
-		$self->field_decl([[qw(name String)]]),
-	    ],
+            version => '1',
+            primary_key => [
+                $self->field_decl([[qw(name String)]]),
+            ],
         });
 }
 

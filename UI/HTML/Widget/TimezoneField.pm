@@ -70,9 +70,9 @@ EOF
 sub render {
     my($self, $source, $buffer) = @_;
     Bivio::UI::HTML::Widget::JavaScript->render($source, $buffer,
-	    'tzf',
-	    $_FUNCS,
-	    "tzf();");
+            'tzf',
+            $_FUNCS,
+            "tzf();");
     return;
 }
 

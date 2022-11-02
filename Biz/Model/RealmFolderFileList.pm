@@ -12,17 +12,17 @@ sub PAGE_SIZE {
 sub get_folder_path {
     my($self) = @_;
     return $self->new_other('RealmFile')->load({
-	realm_file_id => $self->internal_root_parent_node_id,
+        realm_file_id => $self->internal_root_parent_node_id,
     })->get('path');
 }
 
 sub internal_initialize {
     my($self) = @_;
     my($ii) = $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	parent_id => 'RealmFile.folder_id',
-	other => [
-	    ['RealmFile.is_folder', [0]],
-	],
+        parent_id => 'RealmFile.folder_id',
+        other => [
+            ['RealmFile.is_folder', [0]],
+        ],
     });
     delete($ii->{other_query_keys});
     return $ii;

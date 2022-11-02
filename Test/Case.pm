@@ -19,8 +19,8 @@ sub actual_return {
     # I<check_return>.  Asserts that it is valid first.
     my($self, $return) = @_;
     Bivio::Die->die('Error in case ', $self,
-	': actual_return must be an array_ref, not ', $return)
-	unless ref($return) eq 'ARRAY';
+        ': actual_return must be an array_ref, not ', $return)
+        unless ref($return) eq 'ARRAY';
     $self->put(return => $return);
     return;
 }
@@ -30,28 +30,28 @@ sub as_string {
     # Returns the signature of the test.
     my($self) = @_;
     return $self->SUPER::as_string
-	unless ref($self);
+        unless ref($self);
     my($attr) = $self->internal_get;
     return "Test.Case[$attr->{tag}]"
-	if defined($attr->{tag});
+        if defined($attr->{tag});
     my($sig) = '';
     if ($attr->{object}) {
-	my($s) = UNIVERSAL::can($attr->{object}, 'as_string')
-	    && Bivio::Die->eval(sub {$attr->{object}->as_string})
-	    || ref($attr->{object})
-	    || $attr->{object} || '<Object>';
-	$s =~ s/=\w+\(0x[a-z0-9]\)$//;
-	$sig .= substr($s, 0, 100) . '#' . $attr->{object_num};
+        my($s) = UNIVERSAL::can($attr->{object}, 'as_string')
+            && Bivio::Die->eval(sub {$attr->{object}->as_string})
+            || ref($attr->{object})
+            || $attr->{object} || '<Object>';
+        $s =~ s/=\w+\(0x[a-z0-9]\)$//;
+        $sig .= substr($s, 0, 100) . '#' . $attr->{object_num};
     }
     $sig .= '->'.($attr->{method} || '<method>').'#'.$attr->{method_num}
-	if $attr->{method_num};
+        if $attr->{method_num};
     $sig .= '(case#'.$attr->{case_num}
-	.($attr->{params} ? '['.
-	    $_R->to_short_string($attr->{params}).']' : '')
-	.')'
-	if $attr->{case_num};
+        .($attr->{params} ? '['.
+            $_R->to_short_string($attr->{params}).']' : '')
+        .')'
+        if $attr->{case_num};
     if (my $en = $self->error_note) {
-	$sig .= '; error_note=' . $_R->to_short_string($en);
+        $sig .= '; error_note=' . $_R->to_short_string($en);
     }
     return $sig;
 }
@@ -59,7 +59,7 @@ sub as_string {
 sub error_note {
     my($self, $note) = @_;
     return $self->unsafe_get('error_note')
-	if @_ <= 1;
+        if @_ <= 1;
     $self->put(error_note => $note);
     return;
 }
@@ -76,11 +76,11 @@ sub expect {
     my($self, $expect) = @_;
     $expect = [$expect] if defined($expect) && !ref($expect);
     Bivio::Die->die('Error in case ', $self,
-	': expect must be undef, scalar, array_ref, CODE, Regexp or Bivio::DieCode, not ',
+        ': expect must be undef, scalar, array_ref, CODE, Regexp or Bivio::DieCode, not ',
         $expect)
-	unless !defined($expect) ||
-	    (ref($expect) =~ /^(ARRAY|CODE|Regexp)$/
-		|| UNIVERSAL::isa($expect, 'Bivio::DieCode'));
+        unless !defined($expect) ||
+            (ref($expect) =~ /^(ARRAY|CODE|Regexp)$/
+                || UNIVERSAL::isa($expect, 'Bivio::DieCode'));
     $self->put(expect => $expect);
     return;
 }

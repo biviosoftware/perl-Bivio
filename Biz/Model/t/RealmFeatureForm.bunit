@@ -5,52 +5,52 @@ req()->set_realm_and_user('fourem', 'root');
 my($params) = sub {
     my(@params) = @_;
     return {
-	map(($_ => 0), qw(
-	    feature_blog
-	    feature_calendar
-	    feature_mail
-	    feature_motion
-	    feature_tuple
-	    mail_want_reply_to
-	)),
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
-	map(($_ =~ /^[A-Z]/ ? (mail_send_access => MailSendAccess()->$_())
-	    : ($_ => 1)),
-	    @params),
+        map(($_ => 0), qw(
+            feature_blog
+            feature_calendar
+            feature_mail
+            feature_motion
+            feature_tuple
+            mail_want_reply_to
+        )),
+        mail_send_access => MailSendAccess()->ALL_MEMBERS,
+        map(($_ =~ /^[A-Z]/ ? (mail_send_access => MailSendAccess()->$_())
+            : ($_ => 1)),
+            @params),
     };
 };
 my($case) = sub {
     my($params) = $params->(@_);
     return (
-	[$params] => not_die(),
-	empty_case($params),
+        [$params] => not_die(),
+        empty_case($params),
     );
 };
 [
     empty_case($params->(qw(
-	ALL_MEMBERS
-	feature_blog
-	feature_calendar
-	feature_mail
-	feature_motion
-	feature_tuple
+        ALL_MEMBERS
+        feature_blog
+        feature_calendar
+        feature_mail
+        feature_motion
+        feature_tuple
         mail_want_reply_to
     ))),
     $case->(qw(
-	ALL_ADMINS
-	feature_calendar
-	feature_mail
-	feature_tuple
-	mail_want_reply_to
+        ALL_ADMINS
+        feature_calendar
+        feature_mail
+        feature_tuple
+        mail_want_reply_to
     )),
     inline_case(sub {req()->set_realm('demo')}),
     $case->(qw(
-	NOBODY
+        NOBODY
         feature_calendar
     )),
     $case->(qw(
-	EVERYBODY
-	mail_want_reply_to
+        EVERYBODY
+        mail_want_reply_to
         feature_calendar
         feature_motion
     )),
@@ -61,7 +61,7 @@ my($case) = sub {
         feature_mail
         feature_motion
         feature_tuple
-	ALL_MEMBERS
-	mail_want_reply_to
+        ALL_MEMBERS
+        mail_want_reply_to
      ))),
 ];

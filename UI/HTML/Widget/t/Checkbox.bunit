@@ -8,7 +8,7 @@ FieldWidget({
     [{test_value => 1}] => ' checked="checked" /><label for="b_cb1"><span class="checkbox_label">Boolean</span></label>',
     [{test_value => 0}] => ' /><label for="b_cb2"><span class="checkbox_label">Boolean</span></label>',
     [{
- 	test_value => 1,
- 	label => '',
+         test_value => 1,
+         label => '',
      }] => ' checked="checked" />',
 ];

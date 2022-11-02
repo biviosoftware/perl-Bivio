@@ -35,7 +35,7 @@ EOF
 
 sub assert_in_exec_dir {
     b_die(`pwd`, ': wrong directory to write restart sentinel')
-	unless -r 'httpd.pid';
+        unless -r 'httpd.pid';
     return;
 }
 
@@ -54,18 +54,18 @@ sub run {
     my($self, $background) = shift->name_args([[qw(background Boolean)]], \@_);
     $self->get_request;
     my($pwd) = b_use('Type.FilePath')->join(
-	b_use('UI.Facade')->get_local_file_root,
-	'httpd',
+        b_use('UI.Facade')->get_local_file_root,
+        'httpd',
     );
     my($modules_d) = "$pwd/modules";
     if ($self->is_execute) {
         -f "$pwd/httpd.pid" && (kill('QUIT', `cat $pwd/httpd.pid`), sleep(5));
-	Bivio::IO::File->rm_rf($pwd);
-	Bivio::IO::File->mkdir_p($pwd);
-	CORE::system("cd $pwd; rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem modules");
-	Bivio::IO::File->mkdir_p("$pwd/files");
-	_symlink($pwd, "$pwd/logs");
-	_symlink(
+        Bivio::IO::File->rm_rf($pwd);
+        Bivio::IO::File->mkdir_p($pwd);
+        CORE::system("cd $pwd; rm -f httpd.lock.* httpd.pid httpd[0-9]*.conf httpd[0-9]*.bconf httpd*.sem modules");
+        Bivio::IO::File->mkdir_p("$pwd/files");
+        _symlink($pwd, "$pwd/logs");
+        _symlink(
             _find_file(qw(
                 /usr/lib64/httpd/modules
                 /usr/lib/apache2/modules
@@ -99,24 +99,24 @@ sub run {
     my($max_requests_per_child) = $background ? 120 : 100000;
     my($tls_port, $tls_crt, $tls_key) = _tls_setup($self, $pwd, $hostname, $port);
     my($pass_env) = join(
-	"\n",
-	map(("PassEnv $_", "PerlPassEnv $_"),
-	    grep(
-		exists($ENV{$_}),
-		qw(
-		    BCONF
-		    BIVIODB_BREAKPOINT
-		    BIVIO_HTTPD_PORT
-		    BIVIO_IS_2014STYLE
-		    BIVIO_HOST_NAME
-		    DBI_PASS
-		    DBI_USER
-		    HOME
-		    ORACLE_HOME
-		    PERL5OPT
-	        ),
-	    ),
-	),
+        "\n",
+        map(("PassEnv $_", "PerlPassEnv $_"),
+            grep(
+                exists($ENV{$_}),
+                qw(
+                    BCONF
+                    BIVIODB_BREAKPOINT
+                    BIVIO_HTTPD_PORT
+                    BIVIO_IS_2014STYLE
+                    BIVIO_HOST_NAME
+                    DBI_PASS
+                    DBI_USER
+                    HOME
+                    ORACLE_HOME
+                    PERL5OPT
+                ),
+            ),
+        ),
     );
     # Since 2.4, Debug is very noisy
     my($log_level) = $_TRACE ? 'debug' : 'info';
@@ -126,18 +126,18 @@ sub run {
     my($perl_handler) = 'PerlResponseHandler';
     my($version_config) = "PerlModule Apache2::compat\n";
     foreach my $line (<DATA>) {
-	$line =~ s/(\$[a-z0-9_]+\b)/$1/eeg;
+        $line =~ s/(\$[a-z0-9_]+\b)/$1/eeg;
     }
     continue {
-	(print OUT $line) || die("write $conf: $!");
+        (print OUT $line) || die("write $conf: $!");
     }
     close(OUT) || die("close $conf: $!");
     close(DATA);
     if ($self->is_execute) {
-	$self->print("Starting: $_HTTPD @$start_mode -d $pwd -f $pwd/$conf on port $port\n");
-	$self->print("tail -f files/httpd/stderr.log\n")
-	    if $background;
-	Bivio::IO::File->chdir($pwd);
+        $self->print("Starting: $_HTTPD @$start_mode -d $pwd -f $pwd/$conf on port $port\n");
+        $self->print("tail -f files/httpd/stderr.log\n")
+            if $background;
+        Bivio::IO::File->chdir($pwd);
         # Can't import bits/signum.ph gets
         # Operator or semicolon missing before &__inline
         # POSIX doesn't define SIGWINCH (28)
@@ -146,12 +146,12 @@ sub run {
         my($old_ss) = POSIX::SigSet->new;
         # If we can't block, it's ok
         POSIX::sigprocmask(SIG_BLOCK(), $new_ss, $old_ss);
-	while (1) {
-	    $self->internal_pre_exec;
-	    if ($background) {
-		exec($_HTTPD, @$start_mode, '-d', $pwd, '-f', $conf);
-		die("$_HTTPD: $!");
-	    }
+        while (1) {
+            $self->internal_pre_exec;
+            if ($background) {
+                exec($_HTTPD, @$start_mode, '-d', $pwd, '-f', $conf);
+                die("$_HTTPD: $!");
+            }
             my($flag);
             foreach my $x ($self->do_backticks(['ipcs'])) {
                 if ($x =~ / memory /i) {
@@ -164,13 +164,13 @@ sub run {
                     system('ipcrm', $flag, $1);
                 }
             }
-	    system($_HTTPD, @$start_mode, '-d', $pwd, '-f', $conf);
-	    last
-		unless b_use('Action.DevRestart')->restart_requested;
-	}
+            system($_HTTPD, @$start_mode, '-d', $pwd, '-f', $conf);
+            last
+                unless b_use('Action.DevRestart')->restart_requested;
+        }
     }
     else {
-	$self->print("Would start: $_HTTPD -X -d $pwd -f $pwd/$conf\n");
+        $self->print("Would start: $_HTTPD -X -d $pwd -f $pwd/$conf\n");
     }
 }
 
@@ -188,61 +188,61 @@ sub run_db {
 sub _dynamic_modules {
     my($httpd, $modules_d) = @_;
     my($loaded) = {map {
-	/\s*(mod_\w+\.c)/ ? ($1, 1) : ();
+        /\s*(mod_\w+\.c)/ ? ($1, 1) : ();
     } split("\n", `$httpd -l`)};
     my($load) = '';
     foreach my $base (
-	qw(
-	    env
-	    mime
-	    status
-	    rewrite
-	    setenvif
+        qw(
+            env
+            mime
+            status
+            rewrite
+            setenvif
             alias
 
-	    actions
-	    auth_basic
-	    auth_digest
-	    authn_anon
-	    authn_dbm
-	    authn_file
-	    authz_dbm
-	    authz_groupfile
-	    authz_host
-	    authz_owner
-	    authz_user
-	    autoindex
-	    cache
-	    cgi
-	    dav
-	    dav_fs
-	    deflate
-	    expires
-	    ext_filter
-	    headers
-	    include
-	    info
-	    log_config
-	    logio
-	    mime_magic
-	    negotiation
-	    perl
-	    proxy
-	    proxy_balancer
-	    proxy_connect
-	    proxy_ftp
-	    proxy_http
+            actions
+            auth_basic
+            auth_digest
+            authn_anon
+            authn_dbm
+            authn_file
+            authz_dbm
+            authz_groupfile
+            authz_host
+            authz_owner
+            authz_user
+            autoindex
+            cache
+            cgi
+            dav
+            dav_fs
+            deflate
+            expires
+            ext_filter
+            headers
+            include
+            info
+            log_config
+            logio
+            mime_magic
+            negotiation
+            perl
+            proxy
+            proxy_balancer
+            proxy_connect
+            proxy_ftp
+            proxy_http
             reqtimeout
-	    speling
-	    suexec
-	    userdir
-	    usertrack
-	    version
-	    vhost_alias
-	),
+            speling
+            suexec
+            userdir
+            usertrack
+            version
+            vhost_alias
+        ),
         # 2.4
         qw(
-	    authz_core
+            authz_core
             mpm_prefork
             slotmem_shm
             unixd
@@ -251,27 +251,27 @@ sub _dynamic_modules {
         # 2.2
         qw(
             authn_alias
-	    authn_default
-	    authnz_ldap
-	    authz_default
-	    disk_cache
-	    ldap
-	    authn_alias
-	    authn_default
-	    authnz_ldap
-	    authz_default
-	    disk_cache
-	    ldap
-	    ssl
+            authn_default
+            authnz_ldap
+            authz_default
+            disk_cache
+            ldap
+            authn_alias
+            authn_default
+            authnz_ldap
+            authz_default
+            disk_cache
+            ldap
+            ssl
         ),
     ) {
-	my($mod) = "$base.c";
-	next
+        my($mod) = "$base.c";
+        next
             if $loaded->{$mod};
-	my($so) = "mod_$base.so";
+        my($so) = "mod_$base.so";
         next
             unless -r "$modules_d/$so";
-	$load .= "LoadModule ${base}_module\t\tmodules/$so\n";
+        $load .= "LoadModule ${base}_module\t\tmodules/$so\n";
     }
     return $load;
 }
@@ -279,8 +279,8 @@ sub _dynamic_modules {
 sub _find_file {
     my(@path) = @_;
     foreach my $f (@path) {
-	return $f
-	    if -e $f;
+        return $f
+            if -e $f;
     }
     b_die('could not find any of: ', \@path);
     # DOES NOT RETURN
@@ -289,7 +289,7 @@ sub _find_file {
 sub _symlink {
     my($file, $link) = @_;
     -l $link || CORE::symlink($file, $link)
-	|| die("symlink($file, $link): $!");
+        || die("symlink($file, $link): $!");
 }
 
 sub _tls_setup {

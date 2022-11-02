@@ -2,19 +2,19 @@
 # $Id$
 config({
     'Bivio::IO::ClassLoader' => {
-	maps => {
-	    BaseBunit => [
-	        'Bivio::t::Base',
-	        'Bivio::t::Base::After',
-	    ],
-	},
+        maps => {
+            BaseBunit => [
+                'Bivio::t::Base',
+                'Bivio::t::Base::After',
+            ],
+        },
      },
 });
 options({class_name => 'Bivio::t::Base::T2'});
 [
     class() => [
-	inheritance_ancestors => [
-	    [] => [[qw(Bivio::t::Base::After::T2 Bivio::UNIVERSAL)]],
-	],
+        inheritance_ancestors => [
+            [] => [[qw(Bivio::t::Base::After::T2 Bivio::UNIVERSAL)]],
+        ],
     ],
 ];

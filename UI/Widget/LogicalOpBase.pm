@@ -9,7 +9,7 @@ sub initialize {
     my($self) = @_;
     my($name) = 0;
     foreach my $v (@{$self->get('values')}) {
-	$self->initialize_value($name++, $v);
+        $self->initialize_value($name++, $v);
     }
     return;
 }
@@ -36,16 +36,16 @@ sub internal_render_true {
 sub render {
     my($self, $source, $buffer) = @_;
     my($state) = {
-	source => $source,
-	buffer => $buffer,
+        source => $source,
+        buffer => $buffer,
     };
     $self->internal_render_start($state);
     my($last_value);
     foreach my $v (@{$self->get('values')}) {
-	return unless $self->internal_render_operand(
-	    $last_value = $self->render_simple_value($v, $source),
-	    $state,
-	);
+        return unless $self->internal_render_operand(
+            $last_value = $self->render_simple_value($v, $source),
+            $state,
+        );
     }
     $self->internal_render_end($state, $last_value);
     return;

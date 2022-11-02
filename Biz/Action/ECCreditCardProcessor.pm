@@ -22,8 +22,8 @@ my($_C) = b_use('IO.Config');
 my($_FAKE_LOGIN) = '<fake>';
 $_C->register(my $_CFG = {
     Bivio::IO::Config->NAMED => {
-	login => $_FAKE_LOGIN,
-	password => 'x',
+        login => $_FAKE_LOGIN,
+        password => 'x',
     },
     test_mode => 1,
 });
@@ -35,7 +35,7 @@ sub execute_process {
     my($payment) = $req->get('Model.ECPayment');
     my($cn) = $payment->get('currency_name');
     b_die($cn, ': invalid currency for payment ', $payment, '; valid=', $_CURRENCIES)
-	unless my $cfg = $_C->unsafe_get($cn);
+        unless my $cfg = $_C->unsafe_get($cn);
     _process_payment($proto, $cfg, $payment);
     return;
 }
@@ -92,12 +92,12 @@ sub _process_payment {
     # details of required field names and values.
     my($proto, $cfg, $payment) = @_;
     return
-	unless $payment->get('method')->eq_credit_card;
+        unless $payment->get('method')->eq_credit_card;
 
     unless ($cfg->{login} && $cfg->{password}) {
-	b_warn('Missing payment gateway login configuration')
-	    if $payment->req->is_production;
-	return;
+        b_warn('Missing payment gateway login configuration')
+            if $payment->req->is_production;
+        return;
     }
     my($result_code, @details);
     if ($_CFG->{test_mode} && $cfg->{login} eq $_FAKE_LOGIN) {
@@ -137,7 +137,7 @@ sub _transact_form_data {
     my($proto, $cfg, $payment) = @_;
     my($cc_payment) = $payment->get_model('ECCreditCardPayment');
     my(undef, undef, undef, undef, $m, $y) = b_use('Type.Date')
-	->to_parts($cc_payment->get('card_expiration_date'));
+        ->to_parts($cc_payment->get('card_expiration_date'));
     my($exp_date) = sprintf('%02d/%04d', $m, $y);
     my($card_number);
     my($amount);
@@ -147,11 +147,11 @@ sub _transact_form_data {
         # Amount field used to trigger response:
         # 1=Approved, 2=Declined, 3=Error
         $amount = int($payment->get('amount'));
-	# All other amounts are approved
-	$amount = 1 if $amount < 1 || $amount > 3;
+        # All other amounts are approved
+        $amount = 1 if $amount < 1 || $amount > 3;
     } else {
         $card_number = $cc_payment->get('card_number');
-	# Amounts are always positive
+        # Amounts are always positive
         $amount = b_use('Type.Amount')->abs($payment->get('amount'));
     }
     return join(
@@ -231,40 +231,40 @@ sub _update_status {
     # Look at Authorize.Net developer's guide, app. C, for a list of error codes.
     my($proto, $payment, $result_code, $details) = @_;
     my($error_code, $msg, $txn) =
-	$details ? (@$details)[1,2,5] : (undef, undef, undef);
+        $details ? (@$details)[1,2,5] : (undef, undef, undef);
     my($status);
     if ($result_code eq '1') {
-	$status = $payment->get('status')->get_success_state;
+        $status = $payment->get('status')->get_success_state;
     }
     elsif ($result_code eq '2') {
-	$status = $_ECPS->DECLINED;
-	b_warn($status, ': ', $details, ' ', $payment);
+        $status = $_ECPS->DECLINED;
+        b_warn($status, ': ', $details, ' ', $payment);
     }
     elsif ($result_code eq '3') {
         $status = $_ECPS->FAILED;
-	b_warn($status, ': ', $details, ' ', $payment);
+        b_warn($status, ': ', $details, ' ', $payment);
     }
     else {
         b_die({
-	    message => "unknown processor result code: $result_code",
-	    entity => $payment->unsafe_get('ec_payment_id'),
-	    details => $details,
-	});
-	# DOES NOT RETURN
+            message => "unknown processor result code: $result_code",
+            entity => $payment->unsafe_get('ec_payment_id'),
+            details => $details,
+        });
+        # DOES NOT RETURN
     }
     $payment->update({
-	status => $status,
+        status => $status,
     });
     # remove html entities from message
     $msg =~ s/\&\w+;/ /g
         if $msg;
     $payment->get_model('ECCreditCardPayment')->update({
-	processed_date_time => b_use('Type.DateTime')->now,
-	processor_response => $msg,
-	processor_transaction_number => $txn,
+        processed_date_time => b_use('Type.DateTime')->now,
+        processor_response => $msg,
+        processor_transaction_number => $txn,
     });
     b_warn($payment->get('status')->get_name,
-	' payment for ', $payment->req(qw(auth_realm owner_name)),
+        ' payment for ', $payment->req(qw(auth_realm owner_name)),
     ) if $status->is_bad;
     return;
 }

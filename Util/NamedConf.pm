@@ -29,9 +29,9 @@ sub generate {
     $_F->mkdir_p('etc');
     $_F->mkdir_p($_ZONE_DIR);
     _write({
-	'etc/named.conf' => _conf($self, $cfg),
-	$_ROOT_FILE => $self->root_file,
-	_zones($self, $cfg),
+        'etc/named.conf' => _conf($self, $cfg),
+        $_ROOT_FILE => $self->root_file,
+        _zones($self, $cfg),
     });
     return;
 }
@@ -39,53 +39,53 @@ sub generate {
 sub root_file {
     my($self) = @_;
     return ${b_use('Ext.LWPUserAgent')
-	->bivio_http_get('https://www.internic.net/zones/named.root')};
+        ->bivio_http_get('https://www.internic.net/zones/named.root')};
 }
 
 sub _dot {
     my($name, $origin) = @_;
     return $name
-	if $name =~ /[\.\@]$/;
+        if $name =~ /[\.\@]$/;
     $name = "$name.$origin"
-	if $origin;
+        if $origin;
     $name .= '.'
-	unless $name =~ /\.$/;
+        unless $name =~ /\.$/;
     return $name;
 }
 
 sub _local_cfg {
     my($cfg) = @_;
     my($common) = {
-	expiry => '1D',
-	hostmaster => 'hostmaster.local.',
-	servers => ['local.'],
-	minimum => '1D',
-	mx => undef,
-	refresh => '1D',
-	retry => '1D',
-	spf1 => undef,
-	dkim1 => undef,
-	ttl => '1D',
+        expiry => '1D',
+        hostmaster => 'hostmaster.local.',
+        servers => ['local.'],
+        minimum => '1D',
+        mx => undef,
+        refresh => '1D',
+        retry => '1D',
+        spf1 => undef,
+        dkim1 => undef,
+        ttl => '1D',
     };
     my($net) = '127.0.0.0/31';
     $cfg->{nets}->{'0.0.127'} = {
-	%$common,
-	cidr => $net,
+        %$common,
+        cidr => $net,
     };
     $cfg->{zones}->{local} = {
-	%$common,
-	ipv4 => {
-	    $net => {
-		1 => [
-		    ['@', {
-			mx => undef,
-			spf1 => undef,
-			dkim1 => undef,
-			ptr => 1,
-		    }],
-		],
-	    },
-	},
+        %$common,
+        ipv4 => {
+            $net => {
+                1 => [
+                    ['@', {
+                        mx => undef,
+                        spf1 => undef,
+                        dkim1 => undef,
+                        ptr => 1,
+                    }],
+                ],
+            },
+        },
     };
     return;
 }
@@ -114,16 +114,16 @@ EOF
 sub _conf_zones {
     my($cfg) = @_;
     return join(
-	'',
-	map(<<"EOF",
+        '',
+        map(<<"EOF",
 zone "$_" in {
   type master;
   file "$_";
 };
 EOF
-	    map("$_.in-addr.arpa", sort(keys(%{$cfg->{nets}}))),
-	    sort(keys(%{$cfg->{zones}})),
-	),
+            map("$_.in-addr.arpa", sort(keys(%{$cfg->{nets}}))),
+            sort(keys(%{$cfg->{zones}})),
+        ),
     );
 }
 
@@ -132,11 +132,11 @@ sub _net {
     my($zone_dot) = _dot($zone = "$zone.in-addr.arpa");
     $cfg = {%$common, ref($cfg) ? %$cfg : (cidr => $cfg)};
     return (
-	$zone,
-	_newlines(
-	    _zone_header($zone_dot, $cfg),
-	    _net_ptr($zone_dot, $cfg, $ptr_map),
-	),
+        $zone,
+        _newlines(
+            _zone_header($zone_dot, $cfg),
+            _net_ptr($zone_dot, $cfg, $ptr_map),
+        ),
     );
 }
 
@@ -146,21 +146,21 @@ sub _net_ptr {
     my($cidr_obj) = $_CIDRN->from_literal_or_die($cfg->{cidr});
     my($ptr) = $ptr_map->{$cfg->{cidr}};
     return @{
-	$cidr_obj->map_host_addresses(sub {
-		my($full) = @_;
-		my($num) = $cidr_obj->address_to_host_num($full);
-		my($yes) = $ptr->{$full}->{yes} || [];
-		my($no) = $ptr->{$full}->{no} || [];
-		return ()
-		    unless @$yes || @$no;
-		$yes = $no
-		    if !@$yes && @$no == 1;
-		b_die($no, ': no PTR records for ', $full)
-		    if !@$yes && @$no;
-		b_die($yes, ': too many PTR records for ', $full)
-		    unless @$yes <= 1;
-		return "$num IN PTR $yes->[0]";
-	})
+        $cidr_obj->map_host_addresses(sub {
+                my($full) = @_;
+                my($num) = $cidr_obj->address_to_host_num($full);
+                my($yes) = $ptr->{$full}->{yes} || [];
+                my($no) = $ptr->{$full}->{no} || [];
+                return ()
+                    unless @$yes || @$no;
+                $yes = $no
+                    if !@$yes && @$no == 1;
+                b_die($no, ': no PTR records for ', $full)
+                    if !@$yes && @$no;
+                b_die($yes, ': too many PTR records for ', $full)
+                    unless @$yes <= 1;
+                return "$num IN PTR $yes->[0]";
+        })
     };
 }
 
@@ -196,10 +196,10 @@ sub _serial {
 sub _write {
     my($files) = @_;
     while (my($name, $content) = each(%$files)) {
-	$_F->write(
-	    $name =~ m{/} ? $name : "$_ZONE_DIR/$name",
-	    $content,
-	);
+        $_F->write(
+            $name =~ m{/} ? $name : "$_ZONE_DIR/$name",
+            $content,
+        );
     }
     return;
 }
@@ -211,14 +211,14 @@ sub _zones {
     my($n) = delete($cfg->{nets});
     my($ptr_map) = {};
     return (
-	map(
-	    _zone($_, $z->{$_}, $cfg, $ptr_map),
-	    sort(keys(%$z)),
-	),
-	map(
-	    _net($_, $n->{$_}, $cfg, $ptr_map),
-	    sort(keys(%$n)),
-	),
+        map(
+            _zone($_, $z->{$_}, $cfg, $ptr_map),
+            sort(keys(%$z)),
+        ),
+        map(
+            _net($_, $n->{$_}, $cfg, $ptr_map),
+            sort(keys(%$n)),
+        ),
     );
 }
 
@@ -227,41 +227,41 @@ sub _zone {
     $cfg = {%$common, %$cfg};
     my($zone_dot) = _dot($zone);
     return (
-	$zone,
-	_newlines(
-	    _zone_header($zone_dot, $cfg),
-	    sort(
-		_zone_a($zone_dot, $cfg, $ptr_map),
-		_zone_cname($zone_dot, $cfg, $ptr_map),
-		_zone_txt($zone_dot, $cfg, $ptr_map),
-		_zone_mx($zone_dot, $cfg, $ptr_map),
-		_zone_spf1($zone_dot, $cfg, $ptr_map),
-		_zone_srv($zone_dot, $cfg, $ptr_map),
-		_zone_dkim1($zone_dot, $cfg, $ptr_map),
-	    ),
-	),
+        $zone,
+        _newlines(
+            _zone_header($zone_dot, $cfg),
+            sort(
+                _zone_a($zone_dot, $cfg, $ptr_map),
+                _zone_cname($zone_dot, $cfg, $ptr_map),
+                _zone_txt($zone_dot, $cfg, $ptr_map),
+                _zone_mx($zone_dot, $cfg, $ptr_map),
+                _zone_spf1($zone_dot, $cfg, $ptr_map),
+                _zone_srv($zone_dot, $cfg, $ptr_map),
+                _zone_dkim1($zone_dot, $cfg, $ptr_map),
+            ),
+        ),
     );
 }
 
 sub _zone_a {
     my($zone, $cfg, $ptr_map) = @_;
     return _zone_ipv4_map(
-	@_,
-	sub {
-	    my($host, $host_cfg, $ip, $cidr) = @_;
-	    push(
-		@{($ptr_map->{$cidr}->{$ip} ||= {})
-		    ->{$host_cfg->{ptr} ? 'yes' : 'no'}
-		    ||= []},
-		_dot($host, $zone),
-	    );
-	    return join(
-		' ',
-		$host,
-		'IN A',
-		$ip,
-	    ),
-	},
+        @_,
+        sub {
+            my($host, $host_cfg, $ip, $cidr) = @_;
+            push(
+                @{($ptr_map->{$cidr}->{$ip} ||= {})
+                    ->{$host_cfg->{ptr} ? 'yes' : 'no'}
+                    ||= []},
+                _dot($host, $zone),
+            );
+            return join(
+                ' ',
+                $host,
+                'IN A',
+                $ip,
+            ),
+        },
     );
 }
 
@@ -271,35 +271,35 @@ sub _zone_cname {
 
 sub _zone_dkim1 {
     return _zone_ipv4_map(
-	@_,
-	sub {
-	    my($host, $host_cfg, $ip) = @_;
-	    return
-		unless my $dkim = $host_cfg->{dkim1};
-	    return join(
-		' ',
-		$dkim->{host},
-		'IN TXT',
-		'"v=DKIM1\\; k=rsa\\; p=' . $dkim->{p} . '\\;"',
-	    );
-	},
+        @_,
+        sub {
+            my($host, $host_cfg, $ip) = @_;
+            return
+                unless my $dkim = $host_cfg->{dkim1};
+            return join(
+                ' ',
+                $dkim->{host},
+                'IN TXT',
+                '"v=DKIM1\\; k=rsa\\; p=' . $dkim->{p} . '\\;"',
+            );
+        },
     );
 }
 
 sub _zone_header {
     my($zone, $cfg) = @_;
     return (
-	'$TTL ' . $cfg->{ttl},
-	'$ORIGIN ' . $zone,
-	'@ IN SOA ' . join(
-	    ' ',
-	    _dot($cfg->{servers}->[0], $zone),
-	    _dot($cfg->{hostmaster}, $zone),
-	    '(',
-	    @{$cfg}{qw(serial refresh retry expiry minimum)},
-	    ')',
-	),
-	map('@ IN NS ' . _dot($_, $zone), @{$cfg->{servers}}),
+        '$TTL ' . $cfg->{ttl},
+        '$ORIGIN ' . $zone,
+        '@ IN SOA ' . join(
+            ' ',
+            _dot($cfg->{servers}->[0], $zone),
+            _dot($cfg->{hostmaster}, $zone),
+            '(',
+            @{$cfg}{qw(serial refresh retry expiry minimum)},
+            ')',
+        ),
+        map('@ IN NS ' . _dot($_, $zone), @{$cfg->{servers}}),
     );
 }
 
@@ -382,37 +382,37 @@ sub _zone_literal {
         if ref($values) eq 'HASH';
     $which = uc($which);
     return map(
-	"$_->[0] IN $which $_->[1]",
-	@$values,
+        "$_->[0] IN $which $_->[1]",
+        @$values,
     );
 }
 
 sub _zone_mx {
     my($zone, $cfg) = @_;
     return _zone_ipv4_map(
-	@_,
-	sub {
-	    my($host, $host_cfg, $ip) = @_;
-	    $host_cfg->{mx} = $host
-		unless exists($host_cfg->{mx});
-	    return
-		unless $host_cfg->{mx};
-	    return map(
-		{
-		    my($mx_host, $mx_pref) = ref($_) ? @$_ : $_;
-		    $mx_pref = $host_cfg->{mx_pref}
-			unless defined($mx_pref);
-		    join(
-			' ',
-			$host,
-			'IN MX',
-			$mx_pref || 10,
-			$mx_host,
-		    );
-		}
-		ref($host_cfg->{mx}) ? @{$host_cfg->{mx}} : $host_cfg->{mx},
-	    ),
-	},
+        @_,
+        sub {
+            my($host, $host_cfg, $ip) = @_;
+            $host_cfg->{mx} = $host
+                unless exists($host_cfg->{mx});
+            return
+                unless $host_cfg->{mx};
+            return map(
+                {
+                    my($mx_host, $mx_pref) = ref($_) ? @$_ : $_;
+                    $mx_pref = $host_cfg->{mx_pref}
+                        unless defined($mx_pref);
+                    join(
+                        ' ',
+                        $host,
+                        'IN MX',
+                        $mx_pref || 10,
+                        $mx_host,
+                    );
+                }
+                ref($host_cfg->{mx}) ? @{$host_cfg->{mx}} : $host_cfg->{mx},
+            ),
+        },
     );
     return;
 }
@@ -420,21 +420,21 @@ sub _zone_mx {
 sub _zone_spf1 {
     my($zone, $cfg) = @_;
     return _zone_ipv4_map(
-	@_,
-	sub {
-	    my($host, $host_cfg, $ip) = @_;
-	    return
-		unless my $spf1 = $host_cfg->{spf1};
-	    $spf1 =~ s/\+/$cfg->{spf1}/;
-	    return join(
-		' ',
-		$host,
-		'IN TXT',
-		'"v=spf1 a mx',
-		$spf1,
-		'-all"',
-	    );
-	},
+        @_,
+        sub {
+            my($host, $host_cfg, $ip) = @_;
+            return
+                unless my $spf1 = $host_cfg->{spf1};
+            $spf1 =~ s/\+/$cfg->{spf1}/;
+            return join(
+                ' ',
+                $host,
+                'IN TXT',
+                '"v=spf1 a mx',
+                $spf1,
+                '-all"',
+            );
+        },
     );
 }
 

@@ -9,10 +9,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 sub form {
     return shift->internal_body(vs_simple_form(UserOTPForm => [qw(
         'challenge
-	UserOTPForm.old_password
-	'new_challenge
-	UserOTPForm.new_password
-	UserOTPForm.confirm_new_password
+        UserOTPForm.old_password
+        'new_challenge
+        UserOTPForm.new_password
+        UserOTPForm.confirm_new_password
     )]));
 }
 

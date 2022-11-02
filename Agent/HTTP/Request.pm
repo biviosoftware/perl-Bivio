@@ -33,8 +33,8 @@ my($_READ_SIZE) = 4096;
 sub client_redirect {
     my($self) = shift;
     if (my $named = $self->internal_client_redirect(@_)) {
-	$self->SUPER::server_redirect($named);
-	# DOES NOT RETURN
+        $self->SUPER::server_redirect($named);
+        # DOES NOT RETURN
     }
     $_D->throw_quietly($_DC->CLIENT_REDIRECT_TASK);
     # DOES NOT RETURN
@@ -47,44 +47,44 @@ sub get_content {
     my($self, $fh) = @_;
     return $self->get_if_exists_else_put(content => sub {
         my($r) = $self->get('r');
-	my($res) = '';
-	my($expect) = $r->header_in('content-length');
-	_trace('Content-Length=', $expect) if $_TRACE;
-	return \$res
-	    unless $expect && $expect > 0;
-	my($read) = 0;
-	while ($read < $expect) {
-	    my($buf);
-	    my($to_read) = $expect - $read;
-	    $r->read($buf, $to_read < $_READ_SIZE ? $to_read : $_READ_SIZE);
-	    $self->throw_die(CLIENT_ERROR =>
-		'timeout occurred while reading request content'
-	    ) unless defined($buf);
-	    unless (length($buf)) {
-		$self->warn('read returned zero length buffer, exitting loop');
-		last;
-	    }
-	    $read += length($buf);
-	    if ($fh) {
-		$self->throw_die(IO_ERROR => {
-		    message => 'write failed to file',
-		    entity => "$!",
-		}) unless $fh->print($buf);
-	    }
-	    else {
-		$res .= $buf;
-	    }
-	}
-	$self->throw_die(CLIENT_ERROR =>
-	    'client interrupt or timeout while reading form-data',
-	) if $r->connection->aborted;
-	return $fh
-	    if $fh;
-	$self->throw_die(CLIENT_ERROR =>
-	    "Content-Length ($expect) >= actual length: " . length($res)
-	) unless $expect == length($res);
-	_trace('length', length($res)) if $_TRACE;
-	return \$res;
+        my($res) = '';
+        my($expect) = $r->header_in('content-length');
+        _trace('Content-Length=', $expect) if $_TRACE;
+        return \$res
+            unless $expect && $expect > 0;
+        my($read) = 0;
+        while ($read < $expect) {
+            my($buf);
+            my($to_read) = $expect - $read;
+            $r->read($buf, $to_read < $_READ_SIZE ? $to_read : $_READ_SIZE);
+            $self->throw_die(CLIENT_ERROR =>
+                'timeout occurred while reading request content'
+            ) unless defined($buf);
+            unless (length($buf)) {
+                $self->warn('read returned zero length buffer, exitting loop');
+                last;
+            }
+            $read += length($buf);
+            if ($fh) {
+                $self->throw_die(IO_ERROR => {
+                    message => 'write failed to file',
+                    entity => "$!",
+                }) unless $fh->print($buf);
+            }
+            else {
+                $res .= $buf;
+            }
+        }
+        $self->throw_die(CLIENT_ERROR =>
+            'client interrupt or timeout while reading form-data',
+        ) if $r->connection->aborted;
+        return $fh
+            if $fh;
+        $self->throw_die(CLIENT_ERROR =>
+            "Content-Length ($expect) >= actual length: " . length($res)
+        ) unless $expect == length($res);
+        _trace('length', length($res)) if $_TRACE;
+        return \$res;
     });
 }
 
@@ -94,7 +94,7 @@ sub get_form {
     # I<form_model> must be set.
     my($self) = @_;
     return $self->get_if_exists_else_put(
-	form => sub {$_F->parse($self)},
+        form => sub {$_F->parse($self)},
     );
 }
 
@@ -102,19 +102,19 @@ sub internal_client_redirect {
     # NOTE: Use cient_redirect unless you know what you are doing
     my($self, $named) = shift->internal_client_redirect_args(@_);
     unless (defined($named->{uri})) {
-	# use previous query if not specified, maintains state across pages
-	$self->internal_copy_implicit($named);
-	return $named
-	    unless $_FCT->has_uri($named->{task_id}, $self);
+        # use previous query if not specified, maintains state across pages
+        $self->internal_copy_implicit($named);
+        return $named
+            unless $_FCT->has_uri($named->{task_id}, $self);
         _trace(
-	    'current: ', $self->get('task_id'), ', new: ', $named->{task_id}
-	) if $_TRACE && !$named->{realm};
+            'current: ', $self->get('task_id'), ', new: ', $named->{task_id}
+        ) if $_TRACE && !$named->{realm};
 #TODO: Probably needs to be elsewhere
-	foreach my $k (keys(%$named)) {
-	    delete($named->{$k})
-		unless grep($k eq $_, @{$self->FORMAT_URI_PARAMETERS});
-	}
-	$named->{uri} = $self->format_uri($named);
+        foreach my $k (keys(%$named)) {
+            delete($named->{$k})
+                unless grep($k eq $_, @{$self->FORMAT_URI_PARAMETERS});
+        }
+        $named->{uri} = $self->format_uri($named);
     }
     $self->internal_call_handlers(handle_client_redirect => [$named, $self]);
     $self->get('reply')->client_redirect($self, $named);
@@ -130,10 +130,10 @@ sub new {
     my($client_addr) = $proto->client_addr($r, 1);
     # Sets Bivio::Agent::Request->get_current, so do the minimal thing
     my($self) = $proto->internal_new({
-	reply => $_R->new($r),
-	r => $r,
-	client_addr => $client_addr,
-	is_secure => $ENV{HTTPS} || _is_https_port($proto, $r) ? 1 : 0,
+        reply => $_R->new($r),
+        r => $r,
+        client_addr => $client_addr,
+        is_secure => $ENV{HTTPS} || _is_https_port($proto, $r) ? 1 : 0,
     });
     Bivio::Type::UserAgent->from_header($r->header_in('user-agent') || '')
         ->put_on_request($self, 1);
@@ -143,18 +143,18 @@ sub new {
     $self->put_durable(cookie => $_C->new($self, $r));
     $self->put(referer => my $referer = $r->header_in('Referer'));
     $self->internal_initialize_with_uri(
-	scalar($r->uri),
-	scalar($r->args),
+        scalar($r->uri),
+        scalar($r->args),
     );
     $self->delete_from_query($_FM->FORM_CONTEXT_QUERY_KEY)
-	unless $referer;
+        unless $referer;
     return $self;
 }
 
 sub put_client_redirect_state {
     my($self) = shift;
     if (my $named = $self->internal_client_redirect(@_)) {
-	b_die($named, ': invalid redirect state');
+        b_die($named, ': invalid redirect state');
     }
     return;
 }

@@ -8,8 +8,8 @@ use Bivio::Base 'Biz.PropertyModel';
 sub create {
     my($self, $values) = @_;
     return $self->SUPER::create({
-	realm_dag_type => b_use('Type.RealmDAG')->UNKNOWN,
-	%$values,
+        realm_dag_type => b_use('Type.RealmDAG')->UNKNOWN,
+        %$values,
     });
 }
 
@@ -21,7 +21,7 @@ sub internal_initialize {
         columns => {
             parent_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             child_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
-	    realm_dag_type => ['RealmDAG', 'PRIMARY_KEY'],
+            realm_dag_type => ['RealmDAG', 'PRIMARY_KEY'],
         },
         other => [
             [qw(parent_id RealmOwner.realm_id)],

@@ -12,12 +12,12 @@ sub initialize {
     $self->put_unless_exists(cutoff => 200);
     b_die('missing id') unless $self->unsafe_get('ID');
     $self->put(values => [
-	Script('common'),
-	Script('trim_text'),
-	Tag('DIV', {
-	    ID => $self->get('ID'),
-	    value => $self->get('value'),
-	}),
+        Script('common'),
+        Script('trim_text'),
+        Tag('DIV', {
+            ID => $self->get('ID'),
+            value => $self->get('value'),
+        }),
     ]);
     return shift->SUPER::initialize(@_);
 }
@@ -31,10 +31,10 @@ sub render {
     my($buf) = '';
     shift->SUPER::render($source, \$buf);
     return
-	unless defined($buf) && length($buf);
+        unless defined($buf) && length($buf);
     $$buffer .= $buf;
     return
-	unless length($buf) > $self->get('cutoff');
+        unless length($buf) > $self->get('cutoff');
     my($id) = ${$self->render_attr('ID', $source)};
     $_JS->render($source, $buffer, undef, undef,
         "b_trim_text('$id', @{[$self->get('cutoff')]});");

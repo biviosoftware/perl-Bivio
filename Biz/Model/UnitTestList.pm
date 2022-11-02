@@ -9,13 +9,13 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	other => [
-	    {
-		name => 'letters',
-		type => 'Name',
-		constraint => 'NOT_NULL',
-	    },
-	],
+        other => [
+            {
+                name => 'letters',
+                type => 'Name',
+                constraint => 'NOT_NULL',
+            },
+        ],
     });
 }
 

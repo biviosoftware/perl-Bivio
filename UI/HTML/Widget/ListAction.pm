@@ -12,12 +12,12 @@ sub initialize {
     $self->put_unless_exists(class => 'list_action');
 
     if (! ref($self->get('href'))
-	&& $_TI->is_valid_name($self->get('href'))) {
-	$self->put_unless_exists(control => $self->get('href'));
-	$self->put(href => URI({
-	    query_type => $self->get('query_type'),
-	    task_id => $self->get('href'),
-	})) if $self->unsafe_get('query_type');
+        && $_TI->is_valid_name($self->get('href'))) {
+        $self->put_unless_exists(control => $self->get('href'));
+        $self->put(href => URI({
+            query_type => $self->get('query_type'),
+            task_id => $self->get('href'),
+        })) if $self->unsafe_get('query_type');
     }
     return shift->SUPER::initialize(@_);
 }
@@ -31,10 +31,10 @@ sub render {
     my($realm) = $self->render_simple_attr('realm', $source);
     
     if ($realm) {
-	my(undef, @args) = @_;
-	return $source->req->with_realm($realm, sub {
+        my(undef, @args) = @_;
+        return $source->req->with_realm($realm, sub {
             return $self->SUPER::render(@args);
-	});
+        });
     }
     return shift->SUPER::render(@_);
 }

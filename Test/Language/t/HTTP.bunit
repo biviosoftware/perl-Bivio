@@ -3,41 +3,41 @@
 my($mail_dir) = tmp_dir();
 config({
     'Bivio::IO::ClassLoader' => {
-	maps => {
-	    TestLanguage => ['Bivio::Test::Language'],
-	},
+        maps => {
+            TestLanguage => ['Bivio::Test::Language'],
+        },
     },
     'Bivio::Test::Language::HTTP' => {
-	home_page_uri => 'https://petshop.bivio.biz',
-	email_user => 'hello',
-	mail_dir => $mail_dir,
-	mail_tries => 1,
-	remote_mail_host => 'petshop.example.com',
+        home_page_uri => 'https://petshop.bivio.biz',
+        email_user => 'hello',
+        mail_dir => $mail_dir,
+        mail_tries => 1,
+        remote_mail_host => 'petshop.example.com',
     },
 });
 my($mail_file) = Bivio::IO::File->write("$mail_dir/1", 'should be deleted');
 [
     [] => [
-	extra_query_params => [
-	    [K => 'V'] => not_die(),
-	],
-	internal_append_query => [
-	    ['/foo/bar?k=v'] => '/foo/bar?K=V&k=v',
-	],
-	clear_extra_query_params => not_die(),
-	internal_append_query => [
-	    ['/foo/bar?k=v'] => '/foo/bar?k=v',
-	],
+        extra_query_params => [
+            [K => 'V'] => not_die(),
+        ],
+        internal_append_query => [
+            ['/foo/bar?k=v'] => '/foo/bar?K=V&k=v',
+        ],
+        clear_extra_query_params => not_die(),
+        internal_append_query => [
+            ['/foo/bar?k=v'] => '/foo/bar?k=v',
+        ],
     ],
     sub {'Bivio::Test::Language'} => [
-	{
-	    method => 'test_run',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		return [\$params->[0]],
-	    },
-	} => [
-	    [<<"EOF"] => [undef],
+        {
+            method => 'test_run',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                return [\$params->[0]],
+            },
+        } => [
+            [<<"EOF"] => [undef],
 test_setup('HTTP');
 home_page();
 follow_link('Sign-in');
@@ -49,7 +49,7 @@ submit_form('Sign In' => {
 test_deviance('invalid uri');
 visit_uri();
 EOF
- 	    [<<"EOF"] => [undef],
+             [<<"EOF"] => [undef],
 test_setup('HTTP');
 use Bivio::IO::File;
 Bivio::Die->die(q{$mail_file: should not exist})
@@ -102,7 +102,7 @@ foreach my \$m (verify_local_mail(\$e1, 'You have mail', 2)) {
         or Bivio::Die->die(\$m, ': bad return value from verify_local_mail()');
 }
 EOF
-	    [<<'EOF'] => [undef],
+            [<<'EOF'] => [undef],
 test_setup('HTTP');
 home_page();
 save_cookies_in_history(1);
@@ -185,18 +185,18 @@ $r eq $p . '@petshop.example.com' or die($r);
 $r = generate_remote_email($p, 'any_facade');
 $r eq $p . '@any_facade.example.com' or die($r);
 EOF
-	],
+        ],
     ],
     [] => [
-	{
-	    method => 'verify_local_mail',
-	    compute_params => sub {
-		my($case, $params) = @_;
-		tmp_dir();
-		my($i) = 1;
-		$params->[3] ||= 1;
-		foreach my $mp (@{shift(@$params)}) {
-		    my($msg) = <<"EOF";
+        {
+            method => 'verify_local_mail',
+            compute_params => sub {
+                my($case, $params) = @_;
+                tmp_dir();
+                my($i) = 1;
+                $params->[3] ||= 1;
+                foreach my $mp (@{shift(@$params)}) {
+                    my($msg) = <<"EOF";
 Message-ID: <20060728173345.182193871\@localhost.localdomain>
 Date: Fri, 28 Jul 2006 17:33:45 GMT
 Subject: any
@@ -205,24 +205,24 @@ Subject: any
 
 x
 EOF
- 		    $case->expect([map($msg, 1..$params->[2])])
-			unless defined($case->get('expect'));
-		    write_file("$mail_dir/" . $i++, $msg);
-		}
-		$params->[0] .= '@localhost.localdomain';
-		return $params;
-	    },
-	} => [
-	    [[['To: a2', '']], qw(a2 x)] => not_die(),
-	    [[['X-Bivio-Test-Recipient: a1', 'To: a2']], qw(a1 x)] => not_die(),
-	    [[
-		['X-Bivio-Test-Recipient: a1', 'To: a2'],
-		['X-Bivio-Test-Recipient: a1', 'To: a2'],
-	    ], qw(a1 x 2)] => not_die(),
-	    [[
-		['X-Bivio-Test-Recipient: a2', 'To: a2'],
-		['X-Bivio-Test-Recipient: a1', 'To: a2'],
-	    ], qw(a2 x 1)] => not_die(),
-	],
+                     $case->expect([map($msg, 1..$params->[2])])
+                        unless defined($case->get('expect'));
+                    write_file("$mail_dir/" . $i++, $msg);
+                }
+                $params->[0] .= '@localhost.localdomain';
+                return $params;
+            },
+        } => [
+            [[['To: a2', '']], qw(a2 x)] => not_die(),
+            [[['X-Bivio-Test-Recipient: a1', 'To: a2']], qw(a1 x)] => not_die(),
+            [[
+                ['X-Bivio-Test-Recipient: a1', 'To: a2'],
+                ['X-Bivio-Test-Recipient: a1', 'To: a2'],
+            ], qw(a1 x 2)] => not_die(),
+            [[
+                ['X-Bivio-Test-Recipient: a2', 'To: a2'],
+                ['X-Bivio-Test-Recipient: a1', 'To: a2'],
+            ], qw(a2 x 1)] => not_die(),
+        ],
     ],
 ];

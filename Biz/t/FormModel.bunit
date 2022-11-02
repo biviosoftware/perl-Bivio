@@ -3,30 +3,30 @@
 FormModel({
     class_name => 'Model.UserLoginForm',
     setup_request => sub {
-	my($params) = shift->get('params');
-	req()->initialize_fully(shift(@$params));
-	return;
+        my($params) = shift->get('params');
+        req()->initialize_fully(shift(@$params));
+        return;
     },
 });
 [
     [LOGIN => {
-	login => 'no such user',
-	'RealmOwner.password' => 'no match',
+        login => 'no such user',
+        'RealmOwner.password' => 'no match',
     }] => sub {
-	return [0];
+        return [0];
     },
     [FORM_MODEL_BUNIT_LOGIN => {
-	login => 'nosuchuser',
-	'RealmOwner.password' => 'no match',
+        login => 'nosuchuser',
+        'RealmOwner.password' => 'no match',
     }] => sub {
-	return [{
-	    method => 'server_redirect',
-	    task_id => 'SITE_ROOT',
-	    path_info => undef,
-	    query => undef,
-	}];
+        return [{
+            method => 'server_redirect',
+            task_id => 'SITE_ROOT',
+            path_info => undef,
+            query => undef,
+        }];
     },
     get_visible_non_button_names => [
-	[] => [[qw(RealmOwner.password login)]],
+        [] => [[qw(RealmOwner.password login)]],
     ],
 ];

@@ -140,14 +140,14 @@ sub REQUIRED {
 sub assert_dev {
     my($proto) = @_;
     die('may only be run on dev')
-	unless $proto->is_dev;
+        unless $proto->is_dev;
     return;
 }
 
 sub assert_test {
     my($proto) = @_;
     die('may not be run on production')
-	if $proto->is_production;
+        if $proto->is_production;
     return;
 }
 
@@ -162,23 +162,23 @@ sub assert_version {
 sub bconf_dir_hashes {
     my($proto) = @_;
     return
-	unless $_BCONF_DIR && -r $_BCONF_DIR && -d $_BCONF_DIR;
+        unless $_BCONF_DIR && -r $_BCONF_DIR && -d $_BCONF_DIR;
     my($dir) = $_BCONF_DIR;
     my($bconf) = $proto->bconf_file;
     $bconf = $1
-	if $bconf =~ /^(\w+)::.+->/;
+        if $bconf =~ /^(\w+)::.+->/;
     my($only) = "$dir/"
-	. File::Basename::basename($bconf, '.bconf')
-	. '-only.bconf';
+        . File::Basename::basename($bconf, '.bconf')
+        . '-only.bconf';
     return map(
-	{
-	    my($file) = $_;
-	    my($data) = do($file) || die("$file: $@");
-	    die($file, ': did not return a hash_ref')
-		unless ref($data) eq 'HASH';
-	    $data;
-	}
-	$only && -r $only ? $only : (),
+        {
+            my($file) = $_;
+            my($data) = do($file) || die("$file: $@");
+            die($file, ': did not return a hash_ref')
+                unless ref($data) eq 'HASH';
+            $data;
+        }
+        $only && -r $only ? $only : (),
         sort(grep(!/-only.bconf$/, glob("$dir/*.bconf"))),
     );
 }
@@ -202,8 +202,8 @@ sub get {
     my($proto, $name) = @_;
     my($res) = shift->unsafe_get(@_);
     unless (defined($res)) {
-	_die($name, ': named config not found');
-	return {};
+        _die($name, ': named config not found');
+        return {};
     }
     return $res;
 }
@@ -217,13 +217,13 @@ sub handle_config {
 sub if_version {
     my($proto, @cond) = @_;
     push(@cond, 1)
-	if @cond == 1 && !ref($cond[0]);
+        if @cond == 1 && !ref($cond[0]);
     my($else) = @cond % 2 ? pop(@cond) : sub {};
     my($version) = $_ACTUAL->{$_PKG}->{version} || 0;
     while (@cond) {
         my($cond_version, $op) = splice(@cond, 0, 2);
-	return ref($op) eq 'CODE' ? $op->() : $op
-	    if $version >= $cond_version;
+        return ref($op) eq 'CODE' ? $op->() : $op
+            if $version >= $cond_version;
     }
     return ref($else) eq 'CODE' ? $else->() : $else;
 }
@@ -247,7 +247,7 @@ sub introduce_values {
     # likely it is to cause problems.
 #TODO: Named config defaults don't get filled in
     die('new_values must be a hash_ref')
-	unless ref($new_values) eq 'HASH';
+        unless ref($new_values) eq 'HASH';
     $_ACTUAL = $proto->merge($new_values, $_ACTUAL);
     _actual_changed();
     return;
@@ -281,13 +281,13 @@ sub merge {
     #     use strict;
     #     use OurSite::BConf;
     #     OurSite::BConf->merge({
-    # 	'Bivio::UI::Facade' => {
-    # 	    http_host => 'myhost.oursite.com:8888',
-    # 	    mail_host => 'myhost.oursite.com',
-    # 	},
-    # 	'Bivio::UI::FacadeComponent' => {
-    # 	    die_on_error => 1,
-    # 	},
+    #         'Bivio::UI::Facade' => {
+    #             http_host => 'myhost.oursite.com:8888',
+    #             mail_host => 'myhost.oursite.com',
+    #         },
+    #         'Bivio::UI::FacadeComponent' => {
+    #             die_on_error => 1,
+    #         },
     #     });
     #
     # The class I<OurSite::BConf> might contain the standard production
@@ -295,52 +295,52 @@ sub merge {
     #
     #     sub merge {
     #         my($proto, $custom) = @_;
-    # 	return Bivio::IO::Config->merge($custom, {
-    # 	    'Bivio::UI::FacadeComponent' => {
-    # 		# Production systems don't die if can't find component values,
-    # 		# just return "undef" configuration.
-    # 		die_on_error => 0,
-    # 	    },
-    # 	    'Bivio::UI::Facade' => {
-    # 		http_host => 'www.oursite.com',
-    # 		mail_host => 'oursite.com',
-    # 	    },
-    # 	    'Bivio::Die' => {
-    # 		stack_trace_error => 1,
-    # 	    },
-    # 	    'Bivio::IO::ClassLoader' => {
-    # 		delegates => {
-    # 		    'Bivio::Agent::TaskId' => 'OurSite::Agent::TaskId',
-    # 		    'Bivio::Agent::HTTP::Cookie' => 'OurSite::Agent::Cookie',
-    # 		    'Bivio::TypeError' => 'OurSite::TypeError',
-    # 		},
-    # 		maps => {
-    # 		    Model => ['OurSite::Model', 'Bivio::Biz::Model'],
-    # 		    Type => ['OurSite::Type', 'Bivio::Type'],
-    # 		    HTMLWidget => ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
-    # 		    HTMLFormat => ['Bivio::UI::HTML::Format'],
-    # 		    MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
-    # 		    FacadeComponent => ['OurSite::UI', 'Bivio::UI'],
-    # 		    Facade => ['OurSite::UI::Facade'],
-    # 		    Action => ['OurSite::Action', 'Bivio::Biz::Action'],
-    # 		},
-    # 	    },
-    # 	});
+    #         return Bivio::IO::Config->merge($custom, {
+    #             'Bivio::UI::FacadeComponent' => {
+    #                 # Production systems don't die if can't find component values,
+    #                 # just return "undef" configuration.
+    #                 die_on_error => 0,
+    #             },
+    #             'Bivio::UI::Facade' => {
+    #                 http_host => 'www.oursite.com',
+    #                 mail_host => 'oursite.com',
+    #             },
+    #             'Bivio::Die' => {
+    #                 stack_trace_error => 1,
+    #             },
+    #             'Bivio::IO::ClassLoader' => {
+    #                 delegates => {
+    #                     'Bivio::Agent::TaskId' => 'OurSite::Agent::TaskId',
+    #                     'Bivio::Agent::HTTP::Cookie' => 'OurSite::Agent::Cookie',
+    #                     'Bivio::TypeError' => 'OurSite::TypeError',
+    #                 },
+    #                 maps => {
+    #                     Model => ['OurSite::Model', 'Bivio::Biz::Model'],
+    #                     Type => ['OurSite::Type', 'Bivio::Type'],
+    #                     HTMLWidget => ['Bivio::UI::HTML::Widget', 'Bivio::UI::Widget'],
+    #                     HTMLFormat => ['Bivio::UI::HTML::Format'],
+    #                     MailWidget => ['Bivio::UI::Mail::Widget', 'Bivio::UI::Widget'],
+    #                     FacadeComponent => ['OurSite::UI', 'Bivio::UI'],
+    #                     Facade => ['OurSite::UI::Facade'],
+    #                     Action => ['OurSite::Action', 'Bivio::Biz::Action'],
+    #                 },
+    #             },
+    #         });
     #     }
     #
     # If I<merge_arrays> is true, then arrays in I<defaults> will be with
     # arrays in I<custom>.  Most commonly used for maps, e.g.,
     #
     #     merge({
-    # 	maps => {
-    # 	    Model => ['OurSite:Model'],
-    # 	    },
-    # 	},
+    #         maps => {
+    #             Model => ['OurSite:Model'],
+    #             },
+    #         },
     #     }, {
-    # 	maps => {
-    # 	    Model => ['Bivio::Biz::Model'],
-    # 	    },
-    # 	},
+    #         maps => {
+    #             Model => ['Bivio::Biz::Model'],
+    #             },
+    #         },
     #     },
     #         1,
     #     );
@@ -348,20 +348,20 @@ sub merge {
     # yields:
     #
     #     {
-    # 	maps => {
-    # 	    Model => ['OurSite:Model', 'Bivio::Biz::Model'],
+    #         maps => {
+    #             Model => ['OurSite:Model', 'Bivio::Biz::Model'],
     #         },
     #     };
     # Make a copy, so we don't modify original values in defaults
     my($result) = {%$defaults};
     while (my($key, $value) = each(%$custom)) {
-	$result->{$key} = ref($result->{$key}) eq ref($value)
-	    ? ref($value) eq 'HASH'
-		? $proto->merge($value, $result->{$key}, $merge_arrays)
-		: ref($value) eq 'ARRAY' && $merge_arrays
-		    ? [@$value, @{$result->{$key}}]
-		    : $value
-	    : $value;
+        $result->{$key} = ref($result->{$key}) eq ref($value)
+            ? ref($value) eq 'HASH'
+                ? $proto->merge($value, $result->{$key}, $merge_arrays)
+                : ref($value) eq 'ARRAY' && $merge_arrays
+                    ? [@$value, @{$result->{$key}}]
+                    : $value
+            : $value;
     }
     return $result;
 }
@@ -372,7 +372,7 @@ sub merge_list {
     # Calls L<merge|"merge"> from right to left.
     my($res) = {};
     foreach my $c (reverse(@cfg)) {
-	$res = $proto->merge($c, $res);
+        $res = $proto->merge($c, $res);
     }
     return $res;
 }
@@ -392,7 +392,7 @@ sub register {
     # A configuration I<spec> looks like:
     #
     #     {
-    # 	'my_optional_param' => 35,
+    #         'my_optional_param' => 35,
     #         'my_required_param' => Bivio::IO::Config->REQUIRED,
     #         Bivio::IO::Config->NAMED => {
     #             'my_named_optional_param' => 'hello',
@@ -422,7 +422,7 @@ sub register {
     # All configuration names must be fully specified.
     my($pkg) = caller;
     die("&$pkg\::handle_config not defined")
-	unless defined(&{$pkg . '::handle_config'});
+        unless defined(&{$pkg . '::handle_config'});
     push(@_REGISTERED, $pkg);
     $_SPEC{$pkg} = $spec;
     &{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
@@ -466,51 +466,51 @@ sub unsafe_get {
     # config for that element of that package is returned.
     my($pkg);
     if (($name || '') =~ /^([\w:]+)\.(\w+)$/) {
-	$pkg = $1;
-	$name = $2;
+        $pkg = $1;
+        $name = $2;
     }
     elsif (($name || '') =~ /::/) {
-	$pkg = $name;
-	$name = undef;
-	pop(@_);
+        $pkg = $name;
+        $name = undef;
+        pop(@_);
     }
     else {
-	my($i) = 0;
-	0 while ($pkg = caller($i++)) eq __PACKAGE__;
-	$name = undef
-	    unless defined($name) && length($name);
+        my($i) = 0;
+        0 while ($pkg = caller($i++)) eq __PACKAGE__;
+        $name = undef
+            unless defined($name) && length($name);
     }
     my($pkg_cfg) = _get_pkg($pkg);
     return $pkg_cfg
-	if @_ < 2;
+        if @_ < 2;
     my($spec) = $_SPEC{$pkg};
     die("$pkg: NAMED config not specified by this package.  You can't retrieve values from a config hash with get().  Only for named configuration or whole package")
-	unless defined($spec) && defined($spec->{$proto->NAMED});
+        unless defined($spec) && defined($spec->{$proto->NAMED});
     return defined($pkg_cfg->{$name}) ? $pkg_cfg->{$name} : undef
-	if defined($name);
+        if defined($name);
     # Retrieve the "undef" config, see _get_pkg
     my($cfg) = $pkg_cfg->{$proto->NAMED};
     my(@bad) = grep(
-	defined($cfg->{$_}) && $cfg->{$_} eq $proto->REQUIRED,
-	keys(%$cfg),
+        defined($cfg->{$_}) && $cfg->{$_} eq $proto->REQUIRED,
+        keys(%$cfg),
     );
     _die("$pkg.(" . join(' ', sort(@bad)), '): named config required')
-	if @bad;
+        if @bad;
     return $cfg;
 }
 
 sub _actual_changed {
     # Call handlers and dump config, if debug option set.
     eval(q{
-	use Data::Dumper;
-	my($dd) = Data::Dumper->new([$_ACTUAL]);
-	$dd->Indent(1);
-	$dd->Terse(1);
-	$dd->Deepcopy(1);
-	print(STDERR "Configuration is: ", $dd->Dumpxs(), "\n");
+        use Data::Dumper;
+        my($dd) = Data::Dumper->new([$_ACTUAL]);
+        $dd->Indent(1);
+        $dd->Terse(1);
+        $dd->Deepcopy(1);
+        print(STDERR "Configuration is: ", $dd->Dumpxs(), "\n");
     }) if $_ACTUAL->{$_PKG}->{trace};
     foreach my $pkg (@_REGISTERED) {
-	&{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
+        &{\&{$pkg . '::handle_config'}}($pkg, _get_pkg($pkg));
     }
     return;
 }
@@ -518,11 +518,11 @@ sub _actual_changed {
 sub _class_to_file {
     my($class) = @_;
     return $INC{
-	join(
-	    '/',
-	    split(/::/, $class),
-	)
-	. '.pm'
+        join(
+            '/',
+            split(/::/, $class),
+        )
+        . '.pm'
     } || die("$class: package not in \$INC\n");
 }
 
@@ -539,71 +539,71 @@ sub _get_pkg {
     $_CONFIGURED{$pkg} && return $_ACTUAL->{$pkg};
     my($actual) = ref($_ACTUAL->{$pkg}) ? $_ACTUAL->{$pkg} : {};
     if ($_SPEC{$pkg}) {
-	# Set the defaults for the common configuration
-	my($spec) = $_SPEC{$pkg};
-	while (my($k, $v) = each(%$spec)) {
-	    # If it is required, then it is an error
-	    if (defined($v) && $v eq __PACKAGE__->REQUIRED) {
-		_die("$pkg.$k: config parameter not defined.")
-		    unless defined($actual->{$k});
-		next;
-	    }
-	    # Have an actual value for specified config?
-	    exists($actual->{$k}) && next;
-	    # Is the named spec?
-	    $k eq &NAMED && next;
-	    # Assign the default value
-	    $actual->{$k} = $v;
-	}
-	# Set the defaults for all named configuration
-	if (defined($spec->{__PACKAGE__->NAMED})) {
-	    my($named_spec) = $spec->{__PACKAGE__->NAMED};
-	    # Fill in the actual for the "undef" case of &get
-	    my($undef_cfg) = {%$named_spec};
-	    while (my($k, $v) = each(%$actual)) {
-		# Does a spec exist for this param?
-		exists($spec->{$k}) && next;
-		# Does a named spec exist for this param?
-		if (exists($named_spec->{$k})) {
-		    # Override named default with actual config
-		    $undef_cfg->{$k} = $v;
-		    next;
-		}
-		# Must be a named configuration section
-		my($named_actual) = $v;
-		unless (ref($named_actual)) {
-		    _die("$pkg.$k: invalid config parameter");
-		    $named_actual = {};
-		}
-		while (my($nk, $nv) = each(%$named_spec)) {
-		    # If it is required, then must be defined (not just exists)
-		    if (defined($nv) && $nv eq &REQUIRED) {
-			# Defined in named section?
-			defined($named_actual->{$nk}) && next;
-			# Defined in common section?
-			if (defined($actual->{$nk})) {
-			    $named_actual->{$nk} = $actual->{$nk};
-			    next;
-			}
-			_die("$pkg.$nk: named config parameter not defined");
-		    }
-		    else {
-			# Have an actual value for specified named config?
-			exists($named_actual->{$nk}) && next;
-		    }
-		    # Have an actual value in the common area?
-		    if (exists($actual->{$nk})) {
-			$named_actual->{$nk} = $actual->{$nk};
-			next;
-		    }
-		    # Assign the default value (not found in either section)
-		    $named_actual->{$nk} = $nv;
-		}
-	    }
-	    # Overload the use of "NAMED" to mean undef named cfg
-	    # in actual configuration.
-	    $actual->{&NAMED} = $undef_cfg;
-	}
+        # Set the defaults for the common configuration
+        my($spec) = $_SPEC{$pkg};
+        while (my($k, $v) = each(%$spec)) {
+            # If it is required, then it is an error
+            if (defined($v) && $v eq __PACKAGE__->REQUIRED) {
+                _die("$pkg.$k: config parameter not defined.")
+                    unless defined($actual->{$k});
+                next;
+            }
+            # Have an actual value for specified config?
+            exists($actual->{$k}) && next;
+            # Is the named spec?
+            $k eq &NAMED && next;
+            # Assign the default value
+            $actual->{$k} = $v;
+        }
+        # Set the defaults for all named configuration
+        if (defined($spec->{__PACKAGE__->NAMED})) {
+            my($named_spec) = $spec->{__PACKAGE__->NAMED};
+            # Fill in the actual for the "undef" case of &get
+            my($undef_cfg) = {%$named_spec};
+            while (my($k, $v) = each(%$actual)) {
+                # Does a spec exist for this param?
+                exists($spec->{$k}) && next;
+                # Does a named spec exist for this param?
+                if (exists($named_spec->{$k})) {
+                    # Override named default with actual config
+                    $undef_cfg->{$k} = $v;
+                    next;
+                }
+                # Must be a named configuration section
+                my($named_actual) = $v;
+                unless (ref($named_actual)) {
+                    _die("$pkg.$k: invalid config parameter");
+                    $named_actual = {};
+                }
+                while (my($nk, $nv) = each(%$named_spec)) {
+                    # If it is required, then must be defined (not just exists)
+                    if (defined($nv) && $nv eq &REQUIRED) {
+                        # Defined in named section?
+                        defined($named_actual->{$nk}) && next;
+                        # Defined in common section?
+                        if (defined($actual->{$nk})) {
+                            $named_actual->{$nk} = $actual->{$nk};
+                            next;
+                        }
+                        _die("$pkg.$nk: named config parameter not defined");
+                    }
+                    else {
+                        # Have an actual value for specified named config?
+                        exists($named_actual->{$nk}) && next;
+                    }
+                    # Have an actual value in the common area?
+                    if (exists($actual->{$nk})) {
+                        $named_actual->{$nk} = $actual->{$nk};
+                        next;
+                    }
+                    # Assign the default value (not found in either section)
+                    $named_actual->{$nk} = $nv;
+                }
+            }
+            # Overload the use of "NAMED" to mean undef named cfg
+            # in actual configuration.
+            $actual->{&NAMED} = $undef_cfg;
+        }
     }
     $_CONFIGURED{$pkg} = 1;
     return $_ACTUAL->{$pkg} = $actual;
@@ -621,49 +621,49 @@ sub _initialize {
     # /etc/bivio.bconf is last resort if the file doesn't exist.
     $_BCONF = $ENV{BCONF};
     if ($is_setuid && defined($_BCONF)) {
-	warn("$ENV{BCONF}: ignoring \$BCONF while running setuid\n");
-	$ENV{BCONF} = $_BCONF = undef;
+        warn("$ENV{BCONF}: ignoring \$BCONF while running setuid\n");
+        $ENV{BCONF} = $_BCONF = undef;
     }
     my($bconf_exists) = sub {
-	my($bconf) = @_;
-	return defined($bconf) && -f $bconf && -r $bconf ? $bconf : undef;
+        my($bconf) = @_;
+        return defined($bconf) && -f $bconf && -r $bconf ? $bconf : undef;
     };
     $_BCONF ||= $bconf_exists->('/etc/bivio.bconf');
     if (!$_BCONF
         || $ENV{BIVIO_HTTPD_PORT} && $_BCONF =~ /(?:\:\:|^[A-Z]\w+$)/
     ) {
-	$_BCONF ||= 'Bivio::DefaultBConf->merge';
-	$_BCONF .= '::BConf'
-	    unless $_BCONF =~ /BConf(?:$|\-\>)/;
-	my($class) = $_BCONF =~ /(.+::\w+)/;
-	$_BCONF .= '->dev'
-	    unless $_BCONF =~ /\-\>/;
-	# $_BCONF_DIR must be set to something
-	$_BCONF_DIR = $is_setuid ? ()
-	    : (grep(
-		-d $_,
-		"$ENV{HOME}/bconf.d",
-		"$ENV{HOME}/bconf/bconf.d",
-	    ))[0];
-	eval("
-	    use $class;
-	    \$_ACTUAL = $_BCONF;
-	");
+        $_BCONF ||= 'Bivio::DefaultBConf->merge';
+        $_BCONF .= '::BConf'
+            unless $_BCONF =~ /BConf(?:$|\-\>)/;
+        my($class) = $_BCONF =~ /(.+::\w+)/;
+        $_BCONF .= '->dev'
+            unless $_BCONF =~ /\-\>/;
+        # $_BCONF_DIR must be set to something
+        $_BCONF_DIR = $is_setuid ? ()
+            : (grep(
+                -d $_,
+                "$ENV{HOME}/bconf.d",
+                "$ENV{HOME}/bconf/bconf.d",
+            ))[0];
+        eval("
+            use $class;
+            \$_ACTUAL = $_BCONF;
+        ");
     }
     elsif ($bconf_exists->($_BCONF)) {
-	$_BCONF = File::Spec->rel2abs($_BCONF);
-	$_BCONF_DIR = File::Spec->catfile(
-	    File::Basename::dirname($_BCONF),
-	    'bconf.d',
-	);
-	$_ACTUAL = do($_BCONF);
+        $_BCONF = File::Spec->rel2abs($_BCONF);
+        $_BCONF_DIR = File::Spec->catfile(
+            File::Basename::dirname($_BCONF),
+            'bconf.d',
+        );
+        $_ACTUAL = do($_BCONF);
     }
     die($_BCONF || '<undef>', ': bconf error: ', $@ || 'Must return hash ref')
-	unless ref($_ACTUAL) eq 'HASH';
+        unless ref($_ACTUAL) eq 'HASH';
     ($_ACTUAL->{$_PKG} ||= {})->{bconf_file} = $_BCONF;
     # Only process arguments in not_setuid case
     _process_argv($_ACTUAL, $argv)
-	unless $is_setuid;
+        unless $is_setuid;
     _actual_changed();
     return;
 }
@@ -672,39 +672,39 @@ sub _process_argv {
     my($actual, $argv) = @_;
     # Inserts applicable command line arguments in $argv to $actual.
     for (my($i) = 0; $i < int(@$argv); $i++) {
-	my($a) = $argv->[$i];
-	# Lone '--' means we're done
-	$a =~ /^--$/s && last;
-	# HACK: Probably want to generalize(?)
-	$a =~ s/^--(?:TRACE|trace)=/--Bivio::IO::Trace.command_line_arg=/s;
-	# Matches our form?
-	(my($m, $p, $v) = $a =~ /^--([\w:]+)([\.\w]+)*=(.*)$/s) || next;
-	# Need to default to package main?
-	# (Convention: packages begin with upper-case letter)
-	if ($m =~ /^[a-z0-9_]+$/ && $m ne 'main') {
-	    $p = defined($p) ? ($m . $p) : $m;
-	    $m = 'main';
-	}
-	else {
-	    # Kill leading '.'
-	    substr($p, 0, 1) = '';
-	}
-	$v eq 'undef' && ($v = undef);
-	# Ensure the hashes exist down the chain, starting at the module ($m)
-	# perl in Lispish
-	my($ref, $car, $cdr) = ($actual, $m, $p);
-	while (defined($cdr) && length($cdr)) {
-	    exists($ref->{$car}) || ($ref->{$car} = {});
+        my($a) = $argv->[$i];
+        # Lone '--' means we're done
+        $a =~ /^--$/s && last;
+        # HACK: Probably want to generalize(?)
+        $a =~ s/^--(?:TRACE|trace)=/--Bivio::IO::Trace.command_line_arg=/s;
+        # Matches our form?
+        (my($m, $p, $v) = $a =~ /^--([\w:]+)([\.\w]+)*=(.*)$/s) || next;
+        # Need to default to package main?
+        # (Convention: packages begin with upper-case letter)
+        if ($m =~ /^[a-z0-9_]+$/ && $m ne 'main') {
+            $p = defined($p) ? ($m . $p) : $m;
+            $m = 'main';
+        }
+        else {
+            # Kill leading '.'
+            substr($p, 0, 1) = '';
+        }
+        $v eq 'undef' && ($v = undef);
+        # Ensure the hashes exist down the chain, starting at the module ($m)
+        # perl in Lispish
+        my($ref, $car, $cdr) = ($actual, $m, $p);
+        while (defined($cdr) && length($cdr)) {
+            exists($ref->{$car}) || ($ref->{$car} = {});
             $ref = $ref->{$car};
-	    ($car, $cdr) = split(/\./, $cdr, 2);
-	}
-	$ref->{$car} = $v;
-	# Get rid of processed parameter
-	push(@$_COMMAND_LINE_ARGS, splice(@$argv, $i--, 1));
+            ($car, $cdr) = split(/\./, $cdr, 2);
+        }
+        $ref->{$car} = $v;
+        # Get rid of processed parameter
+        push(@$_COMMAND_LINE_ARGS, splice(@$argv, $i--, 1));
     }
     ($actual->{'Bivio::IO::Config'} ||= {})->{trace} = 1
-	if (($actual->{'Bivio::IO::Trace'} || {})->{command_line_arg} || '')
-	eq 'config';
+        if (($actual->{'Bivio::IO::Trace'} || {})->{command_line_arg} || '')
+        eq 'config';
     return;
 }
 

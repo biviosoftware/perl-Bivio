@@ -5,9 +5,9 @@ options({
 });
 [
     class() => [
-	unsafe_config =>  [
-	    n2 => [{a => 2}],
-	    n3 => [undef],
-	],
+        unsafe_config =>  [
+            n2 => [{a => 2}],
+            n3 => [undef],
+        ],
     ],
 ];

@@ -8,7 +8,7 @@ use Bivio::Base 'Type.Boolean';
 sub from_literal {
     my($self, $value) = @_;
     return undef
-	unless defined($value);
+        unless defined($value);
     return shift->SUPER::from_literal(@_);
 }
 

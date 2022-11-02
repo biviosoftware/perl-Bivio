@@ -3,53 +3,53 @@
 Type();
 [
     class() => [
-	from_literal => [
-	    '' => [undef, undef],
-	    MixedCase => 'MixedCase',
-	    MiC => 'MiC',
-	    Mi9C => 'Mi9C',
-	    M9iC => 'M9iC',
-	    MiC9 => 'MiC9',
-	    MIC9 => 'MIC9',
-	    MIC_9 => 'MIC_9',
-	    'MIC 9' => 'MIC_9',
-	    'MIC9;1' => 'MIC9;1',
-	    'MIC9;0.1' => 'MIC9;0.1',
-	    '20090502030303' => '20090502030303',
+        from_literal => [
+            '' => [undef, undef],
+            MixedCase => 'MixedCase',
+            MiC => 'MiC',
+            Mi9C => 'Mi9C',
+            M9iC => 'M9iC',
+            MiC9 => 'MiC9',
+            MIC9 => 'MIC9',
+            MIC_9 => 'MIC_9',
+            'MIC 9' => 'MIC_9',
+            'MIC9;1' => 'MIC9;1',
+            'MIC9;0.1' => 'MIC9;0.1',
+            '20090502030303' => '20090502030303',
             'Sub/Folder' => 'Sub/Folder',
-	    # This is the behavior documented in BlogFileName.bunit,
-	    # but I'm not sure it's right
+            # This is the behavior documented in BlogFileName.bunit,
+            # but I'm not sure it's right
             '/Sub/Folder' => 'Sub/Folder',
-	    # This one is behavior that FilePath supports.
+            # This one is behavior that FilePath supports.
             'Sub/' => 'Sub',
-	    '.' => WIKI_NAME(),
-	    ' ' => WIKI_NAME(),
-	    '_' => WIKI_NAME(),
-	    '^a' => WIKI_NAME(),
-	],
-	to_absolute => [
-	    [undef] => '/Wiki',
-	    'a' => '/Wiki/a',
-	    'Sub1/b' => '/Wiki/Sub1/b',
-	    '' => '/Wiki',
-	    [qw(a 1)] => '/Public/Wiki/a',
-	    [qw(a;1 1)] => '/Archived/Public/Wiki/a;1',
-	    [qw(Dir2/b;1 1)] => '/Archived/Public/Wiki/Dir2/b;1',
-	],
-	is_absolute => [
-	    [undef] => 0,
-	    '/Wiki/StartPage' => 1,
-	    '/wiki/StartPage' => 1,
-	    '/Wiki/' => 0,
-	    '/Wiki/AAA' => 1,
-	    '/Wiki/^' => 0,
-	],
-	from_absolute => [
-	    '/Wiki/StartPage' => 'StartPage',
+            '.' => WIKI_NAME(),
+            ' ' => WIKI_NAME(),
+            '_' => WIKI_NAME(),
+            '^a' => WIKI_NAME(),
+        ],
+        to_absolute => [
+            [undef] => '/Wiki',
+            'a' => '/Wiki/a',
+            'Sub1/b' => '/Wiki/Sub1/b',
+            '' => '/Wiki',
+            [qw(a 1)] => '/Public/Wiki/a',
+            [qw(a;1 1)] => '/Archived/Public/Wiki/a;1',
+            [qw(Dir2/b;1 1)] => '/Archived/Public/Wiki/Dir2/b;1',
+        ],
+        is_absolute => [
+            [undef] => 0,
+            '/Wiki/StartPage' => 1,
+            '/wiki/StartPage' => 1,
+            '/Wiki/' => 0,
+            '/Wiki/AAA' => 1,
+            '/Wiki/^' => 0,
+        ],
+        from_absolute => [
+            '/Wiki/StartPage' => 'StartPage',
             '/Wiki/Dir/b' => 'Dir/b',
-	],
-	title_to_help => [
-	    'Foo Bar' => 'Foo_Bar_Help',
-	],
+        ],
+        title_to_help => [
+            'Foo Bar' => 'Foo_Bar_Help',
+        ],
     ],
 ];

@@ -16,16 +16,16 @@ sub import {
     my($pkg) = (caller(0))[0];
     Bivio::Die->eval_or_die(
         "package $pkg; use base '"
-	. Bivio::IO::ClassLoader->map_require(
-	    $map_or_class =~ /\W/ ? $map_or_class
-	        :  Bivio::IO::ClassLoader->after_in_map($map_or_class, $pkg)
-	) . "';1",
+        . Bivio::IO::ClassLoader->map_require(
+            $map_or_class =~ /\W/ ? $map_or_class
+                :  Bivio::IO::ClassLoader->after_in_map($map_or_class, $pkg)
+        ) . "';1",
     );
     {
-	foreach my $n (qw(b_catch b_debug b_die b_info b_print b_trace b_use b_warn)) {
-	    # Special case call because $pkg has yet to initialize
-	    Bivio::UNIVERSAL::replace_subroutine($pkg, $n, \&{$n});
-	}
+        foreach my $n (qw(b_catch b_debug b_die b_info b_print b_trace b_use b_warn)) {
+            # Special case call because $pkg has yet to initialize
+            Bivio::UNIVERSAL::replace_subroutine($pkg, $n, \&{$n});
+        }
     };
     return;
 }
@@ -58,8 +58,8 @@ sub b_use {
     my($cache);
     # COUPLING: Bivio::IO::ClassLoader->unsafe_map_require
     {
-	no strict 'refs';
-	$cache = ${(caller(0))[0] . '::'}{HASH}->{'Bivio::Base::b_use'} ||= {};
+        no strict 'refs';
+        $cache = ${(caller(0))[0] . '::'}{HASH}->{'Bivio::Base::b_use'} ||= {};
     };
     return $cache->{join($;, @_)} ||= Bivio::IO::ClassLoader->map_require(@_);
 }

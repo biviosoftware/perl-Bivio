@@ -3,22 +3,22 @@
 Widget({
     view_class_map => 'XHTMLWidget',
     setup_render => sub {
-	my($req, undef, undef, undef, $object) = @_;
-	$req->set_user($object->get_or_default(qw(test_user root)));
-	my($t) = Bivio::Agent::TaskId->from_any(
-	    $object->get_or_default(qw(test_task SHELL_UTIL)));
-	if ($object->get('control')) {
-	    $req->set_realm('site-help');
-	    $req->initialize_fully('HELP');
-	    $req->put(
-		path_info => class('Type.WikiName')->title_to_help(
-		    b_use('FacadeComponent.Text')->get_value('title', $t->get_name, $req))),
-	}
-	else {
-	    $req->set_realm('fourem');
-	    $req->initialize_fully($t);
-	}
-	return;
+        my($req, undef, undef, undef, $object) = @_;
+        $req->set_user($object->get_or_default(qw(test_user root)));
+        my($t) = Bivio::Agent::TaskId->from_any(
+            $object->get_or_default(qw(test_task SHELL_UTIL)));
+        if ($object->get('control')) {
+            $req->set_realm('site-help');
+            $req->initialize_fully('HELP');
+            $req->put(
+                path_info => class('Type.WikiName')->title_to_help(
+                    b_use('FacadeComponent.Text')->get_value('title', $t->get_name, $req))),
+        }
+        else {
+            $req->set_realm('fourem');
+            $req->initialize_fully($t);
+        }
+        return;
     },
 });
 [

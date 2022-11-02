@@ -3,16 +3,16 @@
 Request('setup_facade');
 config({
     'Bivio::Type::CacheTagFilePath' => {
-	use_cached_path => 1,
+        use_cached_path => 1,
     },
 });
 my($ctre) = Type_CacheTag()->REGEX;
 [
     sub {class()->get_from_source(req())} => [
-	format_css => [
-	    [logo => req()] => qr{url\(/i/logo\.$ctre\.gif\)},
-	    logo => qr{url\(/i/logo\.$ctre\.gif\)},
-	    'not found' => 'url(/missing-image)',
-	],
+        format_css => [
+            [logo => req()] => qr{url\(/i/logo\.$ctre\.gif\)},
+            logo => qr{url\(/i/logo\.$ctre\.gif\)},
+            'not found' => 'url(/missing-image)',
+        ],
     ],
 ];

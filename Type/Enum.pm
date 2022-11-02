@@ -83,7 +83,7 @@ sub compare_defined {
     # Performs the numeric comparison of the enum values.  C<undef> is treated as
     # "least" (see L<Bivio::Type::compare|Bivio::Type/"compare">).
     Bivio::IO::Alert->bootstrap_die(
-	ref($left), ' != ', ref($right), ': type mismatch'
+        ref($left), ' != ', ref($right), ': type mismatch'
     ) unless ref($left) eq ref($right);
     return $left->as_int <=> $right->as_int;
 }
@@ -134,101 +134,101 @@ sub compile {
     my($can_be_zero) = 0;
     my($map) = {};
     while (my($name, $d) = each(%$decl)) {
-	Bivio::IO::Alert->bootstrap_die(
-	    $pkg, '::', $name, ': does not point to an array',
-	) unless ref($d) eq 'ARRAY';
-	my($attr) = {
-	    int => shift(@$d),
-	    short_desc => shift(@$d),
-	    long_desc => shift(@$d),
-	    name => $name,
-	};
-	my($aliases) = $d;
-	$attr->{short_desc} = $pkg->format_short_desc($name)
-	    unless defined($attr->{short_desc});
-	$attr->{long_desc} = $attr->{short_desc}
-	    unless defined($attr->{long_desc});
-	$short_width = length($attr->{short_desc})
-	    if length($attr->{short_desc}) > $short_width;
-	$long_width = length($attr->{long_desc})
-	    if length($attr->{long_desc}) > $long_width;
-	Bivio::IO::Alert->bootstrap_die(
-	    $pkg, '::', $name, ': invalid number "', $attr->{int}, '"',
-	) unless defined($attr->{int}) && $attr->{int} =~ $_INT_RE;
-	Bivio::IO::Alert->bootstrap_die(
-	    $pkg, '::', $name, ': invalid enum name',
-	) unless $pkg->is_valid_name($name);
-	$name_width = length($name)
-	    if length($name) > $name_width;
-	my($as_string) = $pkg . '::' . $name;
-	$attr->{as_string} = $as_string;
-	if (defined($min)) {
-	    $min = $attr
-		if $attr->{int} < $min->{int};
-	    $max = $attr
-		if $attr->{int} > $max->{int};
-	}
-	else {
-	    $min = $max = $attr;
-	}
-	$can_be_zero = 1
-	    if $attr->{int} == 0;
-	foreach my $x (
-	    ['int', $attr->{int}],
-	    ['desc', map(uc($_), $attr->{long_desc}, $attr->{short_desc}, @$aliases)],
-	    ['not_desc', $attr->{int}, uc($attr->{as_string}), $attr->{name}],
-	    ['name', $attr->{name}],
-	    ['as_string', $attr->{as_string}],
-	) {
-	    my($kind) = shift(@$x);
-	    foreach my $key (@$x) {
-		my($dup) = $map->{$kind}->{$key};
-		Bivio::IO::Alert->bootstrap_die(
-		    $pkg,
-		    '::',
-		    $key,
-		    ": duplicate $kind value (",
-		    $attr->{name},
-		    ' and ',
-		    $dup->{name},
-		    ')',
-		) if $dup && $dup != $attr;
-		$map->{$kind}->{$key} = $attr;
-	    }
-	}
-	my($ln) = lc($name);
-	$eval .= <<"EOF";
-	    sub $name {return \\&$name;}
+        Bivio::IO::Alert->bootstrap_die(
+            $pkg, '::', $name, ': does not point to an array',
+        ) unless ref($d) eq 'ARRAY';
+        my($attr) = {
+            int => shift(@$d),
+            short_desc => shift(@$d),
+            long_desc => shift(@$d),
+            name => $name,
+        };
+        my($aliases) = $d;
+        $attr->{short_desc} = $pkg->format_short_desc($name)
+            unless defined($attr->{short_desc});
+        $attr->{long_desc} = $attr->{short_desc}
+            unless defined($attr->{long_desc});
+        $short_width = length($attr->{short_desc})
+            if length($attr->{short_desc}) > $short_width;
+        $long_width = length($attr->{long_desc})
+            if length($attr->{long_desc}) > $long_width;
+        Bivio::IO::Alert->bootstrap_die(
+            $pkg, '::', $name, ': invalid number "', $attr->{int}, '"',
+        ) unless defined($attr->{int}) && $attr->{int} =~ $_INT_RE;
+        Bivio::IO::Alert->bootstrap_die(
+            $pkg, '::', $name, ': invalid enum name',
+        ) unless $pkg->is_valid_name($name);
+        $name_width = length($name)
+            if length($name) > $name_width;
+        my($as_string) = $pkg . '::' . $name;
+        $attr->{as_string} = $as_string;
+        if (defined($min)) {
+            $min = $attr
+                if $attr->{int} < $min->{int};
+            $max = $attr
+                if $attr->{int} > $max->{int};
+        }
+        else {
+            $min = $max = $attr;
+        }
+        $can_be_zero = 1
+            if $attr->{int} == 0;
+        foreach my $x (
+            ['int', $attr->{int}],
+            ['desc', map(uc($_), $attr->{long_desc}, $attr->{short_desc}, @$aliases)],
+            ['not_desc', $attr->{int}, uc($attr->{as_string}), $attr->{name}],
+            ['name', $attr->{name}],
+            ['as_string', $attr->{as_string}],
+        ) {
+            my($kind) = shift(@$x);
+            foreach my $key (@$x) {
+                my($dup) = $map->{$kind}->{$key};
+                Bivio::IO::Alert->bootstrap_die(
+                    $pkg,
+                    '::',
+                    $key,
+                    ": duplicate $kind value (",
+                    $attr->{name},
+                    ' and ',
+                    $dup->{name},
+                    ')',
+                ) if $dup && $dup != $attr;
+                $map->{$kind}->{$key} = $attr;
+            }
+        }
+        my($ln) = lc($name);
+        $eval .= <<"EOF";
+            sub $name {return \\&$name;}
             bless(&$name);
             sub execute_$ln {shift; return ${pkg}::${name}()->execute(\@_)}
-	    sub eq_$ln {return ${pkg}::${name}->equals(\@_)}
+            sub eq_$ln {return ${pkg}::${name}->equals(\@_)}
 EOF
     }
     defined($min) || Bivio::IO::Alert->bootstrap_die($pkg, ': no values');
     if ($pkg->is_continuous) {
-	my($n);
-	foreach $n ($min->{int} .. $max->{int}) {
+        my($n);
+        foreach $n ($min->{int} .. $max->{int}) {
             Bivio::IO::Alert->bootstrap_die(
-		$pkg,
+                $pkg,
                 ': missing number (',
-		$n,
-		') in enum',
-	    ) unless $map->{int}->{$n};
-	}
+                $n,
+                ') in enum',
+            ) unless $map->{int}->{$n};
+        }
     }
     die("$pkg: compilation failed: $@")
-	unless eval($eval . '; 1');
+        unless eval($eval . '; 1');
     $_MAP{$pkg} = $map;
     my($list) = [map(
-	{
-	    my($attr) = $map->{name}->{$_};
-	    my($self) = $pkg->$_();
-	    $attr->{self} = $self;
-	    $map->{self}->{$self} = $attr;
-	    $map->{not_desc}->{$self} = $attr;
-	    $self;
-	}
-	keys(%{$map->{name}}),
+        {
+            my($attr) = $map->{name}->{$_};
+            my($self) = $pkg->$_();
+            $attr->{self} = $self;
+            $map->{self}->{$self} = $attr;
+            $map->{not_desc}->{$self} = $attr;
+            $self;
+        }
+        keys(%{$map->{name}}),
     )];
     # Must happen last after enum references are defined.
     my($can_be_negative) = $min->{int} < 0;
@@ -240,18 +240,18 @@ EOF
     $min = $min->{name};
     $max = $max->{name};
     my($get_list) = join(
-	',',
-	map($pkg . '::' . $_->get_name . '()',
-	    sort({$a->as_int <=> $b->as_int} @$list)),
+        ',',
+        map($pkg . '::' . $_->get_name . '()',
+            sort({$a->as_int <=> $b->as_int} @$list)),
     );
     my($count) = scalar(@$list);
     die("$pkg: compilation failed: $@")
-	unless eval(<<"EOF");
+        unless eval(<<"EOF");
         package $pkg;
         sub can_be_negative {return $can_be_negative;}
         sub can_be_positive {return $can_be_positive;}
         sub can_be_zero {return $can_be_zero;}
-	sub get_list {return ($get_list);}
+        sub get_list {return ($get_list);}
         sub get_max {return ${pkg}::$max();}
         sub get_min {return ${pkg}::$min();}
         sub get_precision {return $precision;}
@@ -272,15 +272,15 @@ sub compile_with_numbers {
     # starts with 1.
     my($i) = $names->[0] =~ /^UNKNOWN$/i ? 0 : 1;
     return $proto->compile([map {
-	($_, [$i++]);
+        ($_, [$i++]);
     } @$names]);
 }
 
 sub equals_by_name {
     my($self) = shift;
     foreach my $name (@_) {
-	return 1
-	    if $self == $self->from_any($name);
+        return 1
+            if $self == $self->from_any($name);
     }
     return 0;
 }
@@ -294,7 +294,7 @@ sub execute {
 sub execute_from_query {
     my($proto, $req) = @_;
     return $proto->from_int(
-	($req->get('query') || {})->{$proto->QUERY_KEY} || 0)->execute($req);
+        ($req->get('query') || {})->{$proto->QUERY_KEY} || 0)->execute($req);
 }
 
 sub format_short_desc {
@@ -322,21 +322,21 @@ sub from_literal {
     $proto->internal_from_literal_warning
         unless wantarray;
     return $value
-	if $proto->is_blesser_of($value);
+        if $proto->is_blesser_of($value);
     return ()
-	unless defined($value) && $value ne '';
+        unless defined($value) && $value ne '';
     my($self);
     if ($value =~ $_INT_RE) {
-	$self = _unsafe_from($proto, $value);
+        $self = _unsafe_from($proto, $value);
     }
     elsif ($proto->is_blesser_of($value)) {
-	return $value;
+        return $value;
     }
     else {
-	$self = _unsafe_from($proto, $value);
-	return $self
-	    if $self && _eq_name($self, $value);
-	$self = undef;
+        $self = _unsafe_from($proto, $value);
+        return $self
+            if $self && _eq_name($self, $value);
+        $self = undef;
     }
     return $self ?  $self
         : (undef, $proto->use('Bivio::TypeError')->NOT_FOUND);
@@ -349,9 +349,9 @@ sub from_name {
         if ref($name);
     my($self) = $proto->from_any($name);
     Bivio::IO::Alert->bootstrap_die(
-	$name,
-	': is not the name of an ',
-	ref($proto) || $proto,
+        $name,
+        ': is not the name of an ',
+        ref($proto) || $proto,
     ) unless $self && _eq_name($self, $name);
     return $self;
 }
@@ -359,7 +359,7 @@ sub from_name {
 sub from_sql_column {
     my($proto, $value) = @_;
     return undef
-	unless defined($value);
+        unless defined($value);
     return $proto->from_int($value);
 }
 
@@ -463,29 +463,29 @@ sub to_literal {
     my($proto, $value) = @_;
     # Return the integer representation of I<value>
     return shift->SUPER::to_literal(@_)
-	unless defined($value);
+        unless defined($value);
     return $proto->to_sql_param(
-	ref($value) ? $value : $proto->from_literal_or_die($value));
+        ref($value) ? $value : $proto->from_literal_or_die($value));
 }
 
 sub to_sql_param {
     my($proto, $value) = @_;
     return undef
-	unless defined($value);
+        unless defined($value);
     return _get($value, 'int');
 }
 
 sub to_string {
     my($proto, $value) = @_;
     return ''
-	unless defined($value);
+        unless defined($value);
     return $value->get_short_desc;
 }
 
 sub to_xml {
     my($proto, $value) = @_;
     return ''
-	unless defined($value);
+        unless defined($value);
     return $value->get_name;
 }
 
@@ -513,17 +513,17 @@ sub _compile_decl {
     Bivio::IO::Alert->bootstrap_die($pkg, ': already compiled')
         if defined($_MAP{$pkg});
     Bivio::IO::Alert->bootstrap_die(
-	$pkg, ': first argument must be an array_ref'
+        $pkg, ': first argument must be an array_ref'
     ) if ref($args) ne 'ARRAY';
     my($found) = {};
     return {@{$pkg->map_by_two(
-	sub {
-	    my($k, $v) = @_;
-	    Bivio::IO::Alert->bootstrap_die($k, ': duplicate entry')
-	        if $found->{$k}++;
-	    return ($k, ref($v) ? $v : [$v]);
-	},
-	$args,
+        sub {
+            my($k, $v) = @_;
+            Bivio::IO::Alert->bootstrap_die($k, ': duplicate entry')
+                if $found->{$k}++;
+            return ($k, ref($v) ? $v : [$v]);
+        },
+        $args,
     )}};
 }
 
@@ -537,30 +537,30 @@ sub _facade_lookup {
     my($req) = Bivio::UNIVERSAL->unsafe_get_request;
     my($fc);
     return undef
-	unless $req and $fc = $req->ureq(qw(UI.Facade Enum));
+        unless $req and $fc = $req->ureq(qw(UI.Facade Enum));
     return $fc->$method($self, $thing)
 }
 
 sub _get {
     my($self, $which) = @_;
     return $which =~ /desc$/
-	&& _facade_lookup($self, 'unsafe_desc_from_enum', $which)
-	|| _map($self)->{self}->{$self}->{$which};
+        && _facade_lookup($self, 'unsafe_desc_from_enum', $which)
+        || _map($self)->{self}->{$self}->{$which};
 }
 
 sub _lookup {
     my($self, $thing, $dont_die) = @_;
     my($res);
     if (defined($thing)) {
-	my($map) = _map($self);
-	$res = $map->{not_desc}->{$thing}->{self}
-	    || _facade_lookup($self, 'unsafe_enum_from_desc', $thing)
-	    || $map->{desc}->{$thing}->{self};
+        my($map) = _map($self);
+        $res = $map->{not_desc}->{$thing}->{self}
+            || _facade_lookup($self, 'unsafe_enum_from_desc', $thing)
+            || $map->{desc}->{$thing}->{self};
     }
     Bivio::IO::Alert->bootstrap_die(
-	$thing,
-	': no such ',
-	ref($self) || $self,
+        $thing,
+        ': no such ',
+        ref($self) || $self,
     ) unless $res || $dont_die;
     return $res;
 }
@@ -568,7 +568,7 @@ sub _lookup {
 sub _map {
     my($self) = @_;
     return $_MAP{ref($self) || $self}
-	|| die ($self, ': not an enumerated type');
+        || die ($self, ': not an enumerated type');
 }
 
 sub _map_enums {
@@ -579,9 +579,9 @@ sub _map_enums {
 sub _unsafe_from {
     my($proto, $thing, $dont_die) = @_;
     my($res) = _lookup(
-	$proto,
-	!$thing || ref($thing) ? $thing : uc($thing),
-	defined($dont_die) ? $dont_die : 1,
+        $proto,
+        !$thing || ref($thing) ? $thing : uc($thing),
+        defined($dont_die) ? $dont_die : 1,
     );
     return $res;
 }

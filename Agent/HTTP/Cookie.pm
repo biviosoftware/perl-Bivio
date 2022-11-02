@@ -17,7 +17,7 @@ my(@_HANDLERS);
 sub internal_notify_handlers {
     my($self, $req) = @_;
     foreach my $h (@_HANDLERS) {
-	$h->handle_cookie_in($self, $req);
+        $h->handle_cookie_in($self, $req);
     }
     return;
 }
@@ -32,7 +32,7 @@ sub new {
 sub register {
     my($self, $handler) = @_;
     return
-	if grep($_ eq $handler, @_HANDLERS);
+        if grep($_ eq $handler, @_HANDLERS);
     push(@_HANDLERS, $handler);
     return;
 }

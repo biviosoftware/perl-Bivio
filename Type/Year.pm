@@ -18,12 +18,12 @@ sub from_literal {
     # Compute with no range check
     ($res, $err) = Bivio::Type::Integer->from_literal(@_);
     return ($res, $err)
-	if $err;
+        if $err;
     return (undef, Bivio::TypeError->NUMBER_RANGE)
-	unless $res >= 0 && $res < 100;
+        unless $res >= 0 && $res < 100;
     return $proto->SUPER::from_literal(
-	$res + int($proto->now / 100) * 100
-	- ($res <= $proto->now % 100 + $proto->WINDOW_SIZE ? 0 : 100),
+        $res + int($proto->now / 100) * 100
+        - ($res <= $proto->now % 100 + $proto->WINDOW_SIZE ? 0 : 100),
     );
 }
 

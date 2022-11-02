@@ -13,56 +13,56 @@ sub NEW_ARGS {
 
 sub TASK_MENU_LIST {
     return (
-	map(
-	    {
-		xlink => XLink({
-		    facade_label => $_,
-		    control => vs_constant("want_$_"),
-		}),
-		sort_label => "xlink.$_",
-		label => 'none',
-	    },
-	    qw(
-		substitute_user
-		all_users
-		remote_copy
-		applicants
-		task_log
-		site_reports
-	    ),
-	),
-	'EMAIL_ALIAS_LIST_FORM',
-	@{$_F->if_2014style(
-	    [
-		If([qw(auth_realm type ->eq_forum)], Join([
-		    LI('', 'divider'),
-		    LI(Join([
-			String([qw(auth_realm owner display_name)]),
-			' Forum',
-		    ]), 'dropdown-header'),
-		]))->put(task_menu_no_wrap => 1),
-		'FORUM_CREATE_FORM',
-		'FORUM_EDIT_FORM',
-		'GROUP_USER_LIST',
-	    ],
-	    [],
-	)},
+        map(
+            {
+                xlink => XLink({
+                    facade_label => $_,
+                    control => vs_constant("want_$_"),
+                }),
+                sort_label => "xlink.$_",
+                label => 'none',
+            },
+            qw(
+                substitute_user
+                all_users
+                remote_copy
+                applicants
+                task_log
+                site_reports
+            ),
+        ),
+        'EMAIL_ALIAS_LIST_FORM',
+        @{$_F->if_2014style(
+            [
+                If([qw(auth_realm type ->eq_forum)], Join([
+                    LI('', 'divider'),
+                    LI(Join([
+                        String([qw(auth_realm owner display_name)]),
+                        ' Forum',
+                    ]), 'dropdown-header'),
+                ]))->put(task_menu_no_wrap => 1),
+                'FORUM_CREATE_FORM',
+                'FORUM_EDIT_FORM',
+                'GROUP_USER_LIST',
+            ],
+            [],
+        )},
     );
 }
 
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	control_on_value => DropDown(
-	    vs_text_as_prose('SiteAdminDropDown_label'),
-	    TaskMenu([
-		@{$self->get_or_default(extra_items => [])},
+        control_on_value => DropDown(
+            vs_text_as_prose('SiteAdminDropDown_label'),
+            TaskMenu([
+                @{$self->get_or_default(extra_items => [])},
                 $self->TASK_MENU_LIST,
-	    ], {
-		want_sorting => If2014Style(0, 1),
-		class => 'dd_menu',
-	    })
-	),
+            ], {
+                want_sorting => If2014Style(0, 1),
+                class => 'dd_menu',
+            })
+        ),
     );
     return shift->SUPER::initialize(@_);
 }

@@ -3,22 +3,22 @@
 Unit();
 [
     sub {class()->get_current_or_new} => [
-	initialize_fully => [
-	    [] => not_die(),
-	],
-	get => [
-	    uri => '/',
-	    initial_uri => '/',
-	],
-	initialize_fully => [
-	    sub {
-		req()->set_realm('site');
-		return ['FORUM_WIKI_VIEW'];
-	    } => not_die(),
-	],
-	get => [
-	    uri => '/site/bp',
-	    initial_uri => '/site/bp',
-	],
+        initialize_fully => [
+            [] => not_die(),
+        ],
+        get => [
+            uri => '/',
+            initial_uri => '/',
+        ],
+        initialize_fully => [
+            sub {
+                req()->set_realm('site');
+                return ['FORUM_WIKI_VIEW'];
+            } => not_die(),
+        ],
+        get => [
+            uri => '/site/bp',
+            initial_uri => '/site/bp',
+        ],
     ],
 ];

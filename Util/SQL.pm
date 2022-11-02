@@ -63,18 +63,18 @@ EOF
 sub add_permissions_to_realm_type {
     my($self, $realm_type, $permissions) = @_;
     $self->model('RealmOwner')->do_iterate(
-	sub {
-	    my($it) = @_;
-	    $it->new_other('RealmRole')->add_permissions(
-		$it,
-		[$_R->get_non_zero_list],
-		$permissions,
-	    );
-	    return 1;
-	},
-	'unauth_iterate_start',
-	'realm_id',
-	{realm_type => $realm_type},
+        sub {
+            my($it) = @_;
+            $it->new_other('RealmRole')->add_permissions(
+                $it,
+                [$_R->get_non_zero_list],
+                $permissions,
+            );
+            return 1;
+        },
+        'unauth_iterate_start',
+        'realm_id',
+        {realm_type => $realm_type},
     );
     return;
 }
@@ -82,22 +82,22 @@ sub add_permissions_to_realm_type {
 sub assert_ddl {
     my($self) = @_;
     $self->usage_error('must be run in ddl directory')
-	unless $self->is_oracle || $_F->pwd =~ m{/ddl$};
+        unless $self->is_oracle || $_F->pwd =~ m{/ddl$};
     return;
 }
 
 sub backup_model {
     my($self, $model, $order_by) = @_;
     $self->print(
-	"$model written to ",
-	$_F->write(
-	    "$model-" . $_DT->local_now_as_file_name . '.pl',
-	    $self->use('IO.Ref')->to_string(
-		my $rows = $self->model($model)
-		    ->map_iterate(undef, 'unauth_iterate_start', $order_by),
-	    ),
-	),
-	"\n",
+        "$model written to ",
+        $_F->write(
+            "$model-" . $_DT->local_now_as_file_name . '.pl',
+            $self->use('IO.Ref')->to_string(
+                my $rows = $self->model($model)
+                    ->map_iterate(undef, 'unauth_iterate_start', $order_by),
+            ),
+        ),
+        "\n",
     );
     return $rows;
 }
@@ -105,18 +105,18 @@ sub backup_model {
 sub column_exists {
     my($self, $table, $column) = @_;
     return _exists(
-	$self->is_oracle ? (
-	    'FROM user_tab_columns
+        $self->is_oracle ? (
+            'FROM user_tab_columns
             WHERE column_name = ?
             AND table_name = ?',
-	    [uc($column), uc($table)],
-	) : (
-	    'FROM pg_class c, pg_attribute a
+            [uc($column), uc($table)],
+        ) : (
+            'FROM pg_class c, pg_attribute a
             WHERE a.attrelid = c.oid
             AND a.attnum > 0
             AND a.attname = ?
             AND c.relname = ?',
-	    [lc($column), lc($table)],
+            [lc($column), lc($table)],
         ),
     );
 }
@@ -146,15 +146,15 @@ sub create_test_db {
     # to create the test data.
     my($req) = $self->initialize_fully;
     b_die('cannot be run on production system')
-	if $req->is_production;
+        if $req->is_production;
     $_F->do_in_dir(
-	$self->ddl_dir,
-	sub {
-	    $self->destroy_db;
-	    $self->create_db;
-	    $self->initialize_test_data;
-	    return;
-	},
+        $self->ddl_dir,
+        sub {
+            $self->destroy_db;
+            $self->create_db;
+            $self->initialize_test_data;
+            return;
+        },
     );
     return;
 }
@@ -168,9 +168,9 @@ sub ddl_dir {
     $self->initialize_fully;
     $shell_util ||= $self;
     return b_use('UI.Facade')->get_local_file_name(
-	b_use('UI.LocalFileType')->DDL,
-	'',
-	$shell_util->req,
+        b_use('UI.LocalFileType')->DDL,
+        '',
+        $shell_util->req,
     );
 }
 
@@ -183,10 +183,10 @@ sub ddl_files {
     # I<base_names>, e.g. ['bOP'], and it will return a list of
     # constraints.
     return [map {
-	my($base) = $_;
-	map {
-	    $base.'-'.$_.'.sql';
-	} qw(tables constraints sequences);
+        my($base) = $_;
+        map {
+            $base.'-'.$_.'.sql';
+        } qw(tables constraints sequences);
     } @$base_names];
 }
 
@@ -194,27 +194,27 @@ sub destroy_db {
     my($self) = @_;
     # Undoes the operations of L<create_db|"create_db">.
     $self->usage_error('You cannot destroy a production database.')
-	if $self->get_request->is_production;
+        if $self->get_request->is_production;
     $self->are_you_sure(
-	'DROP ENTIRE '
-	. $_C->get_dbi_config->{database}
-	. ' DB and FILES '
-	. b_use('Biz.File')->absolute_path('')
-	. ' and LOGS '
-	. b_use('IO.Log')->file_name('.')
+        'DROP ENTIRE '
+        . $_C->get_dbi_config->{database}
+        . ' DB and FILES '
+        . b_use('Biz.File')->absolute_path('')
+        . ' and LOGS '
+        . b_use('IO.Log')->file_name('.')
         . '?',
     );
     # We drop in opposite order.  Some constraint drops will
     # fail, but that's ok.  We need to drop the FOREIGN KEY
     # constraints so we can drop the tables.
     foreach my $file (reverse(@{_ddl_files($self)})) {
-	$self->print('Dropping ', $file, "\n");
-	$self->put(input => $file);
-	$self->drop;
+        $self->print('Dropping ', $file, "\n");
+        $self->put(input => $file);
+        $self->drop;
     }
     foreach my $agg (@$_AGGREGATES) {
-	$_D->catch_quietly(sub {$self->run("DROP AGGREGATE $agg\n/\n");});
-	$_C->commit;
+        $_D->catch_quietly(sub {$self->run("DROP AGGREGATE $agg\n/\n");});
+        $_C->commit;
     }
     $_C->commit;
     b_use('Biz.File')->destroy_db;
@@ -224,7 +224,7 @@ sub destroy_db {
 sub destroy_dbms {
     my($self) = @_;
     $self->usage_error('You cannot destroy a production database.')
-	if $self->get_request->is_production;
+        if $self->get_request->is_production;
     my($db) = $_C->get_dbi_config->{database};
     $self->are_you_sure("DROP THE ENTIRE $db DATABASE?");
     my($auth) = $_C->get_dbi_config('dbms');
@@ -252,16 +252,16 @@ sub drop {
     #
     # Ignores "does not exist" errors.
     foreach my $s (_parse($self, $sql)) {
-	next unless $s =~ /^(\s*)create(?:\s+unique)?\s+(\w+\s+\w+)\s+/is
+        next unless $s =~ /^(\s*)create(?:\s+unique)?\s+(\w+\s+\w+)\s+/is
             || $s =~ /^\s*(alter\s+table\s*\w+\s*)add\s+(constraint\s+\w+)\s+/is
             || $s =~ /^(\s*)create(\s+function\s[\S]+)/is;
-	my($p, $s) = ($1, $2);
-	$_D->catch_quietly(sub {
-	    $_C->execute(
-		$p . 'drop ' . $s . ($s =~ /^table/i ? ' CASCADE' : ''));
-	    return;
-	});
-	$_C->commit;
+        my($p, $s) = ($1, $2);
+        $_D->catch_quietly(sub {
+            $_C->execute(
+                $p . 'drop ' . $s . ($s =~ /^table/i ? ' CASCADE' : ''));
+            return;
+        });
+        $_C->commit;
     }
     return;
 }
@@ -277,8 +277,8 @@ sub drop_constraints {
 
     foreach my $file (@{_ddl_files($self)}) {
         next unless $file =~ /constraints/;
-	$self->put(input => $file);
-	$self->drop;
+        $self->put(input => $file);
+        $self->drop;
     }
     return;
 }
@@ -286,7 +286,7 @@ sub drop_constraints {
 sub drop_object {
     my($self, $type, @object) = @_;
     foreach my $o (@object) {
-	$_D->catch_quietly(sub {$self->run("DROP $type $o\n/\n");});
+        $_D->catch_quietly(sub {$self->run("DROP $type $o\n/\n");});
     }
     return;
 }
@@ -295,15 +295,15 @@ sub export_db {
     my($self, $dir) = @_;
     my($db) = _assert_postgres($self);
     my($f) = ($dir || '.')
-	. '/'
-	. $_DT->local_now_as_file_name
-	. '-'
-	. $db->{database}
-	. '.pg_dump';
+        . '/'
+        . $_DT->local_now_as_file_name
+        . '-'
+        . $db->{database}
+        . '.pg_dump';
     local($ENV{PGPASSWORD}) = $db->{password};
     local($ENV{PGUSER}) = $db->{user};
     $self->piped_exec(
-	"pg_dump --clean --format=c --blobs --file='$f' '$db->{database}'");
+        "pg_dump --clean --format=c --blobs --file='$f' '$db->{database}'");
     return "Exported $db->{database} to $f";
 }
 
@@ -327,7 +327,7 @@ sub import_db {
     # Restores the database from file.
     $self->import_tables_only($backup_file);
     return $self->reinitialize_constraints
-	. "You need to copy external files and run: b-search rebuild_db\n";
+        . "You need to copy external files and run: b-search rebuild_db\n";
 }
 
 sub import_tables_only {
@@ -335,13 +335,13 @@ sub import_tables_only {
     # Destroys database, then imports data only from a backup file. Constraints
     # are not restored.
     $self->usage_error('missing file')
-	unless $backup_file;
+        unless $backup_file;
     my($db) = _assert_postgres($self);
     $self->destroy_db;
 
     foreach my $file (@{_ddl_files($self)}) {
         next if $file =~ /constraints/;
-	$self->put(input => $file)->run;
+        $self->put(input => $file)->run;
     }
     # need to commit so pg_restore can access the tables
     $_C->commit;
@@ -363,24 +363,24 @@ sub init_dbms {
     my($res) = '';
     _init_template1($self);
     unless (_user_exists($self)) {
-	$self->piped_exec(
-	    "createuser --no-superuser --no-createdb --no-createrole $user");
-	_run_other($self, template1 => "ALTER USER $user WITH PASSWORD '$pass'");
-	$res .= " user '$user' and";
+        $self->piped_exec(
+            "createuser --no-superuser --no-createdb --no-createrole $user");
+        _run_other($self, template1 => "ALTER USER $user WITH PASSWORD '$pass'");
+        $res .= " user '$user' and";
     }
     $self->piped_exec(
-	'createdb'
-	. (defined($clone_db) ? " --template=$clone_db " : '')
-	. ' --encoding=SQL_ASCII'
-	. " --owner=$user $db",
+        'createdb'
+        . (defined($clone_db) ? " --template=$clone_db " : '')
+        . ' --encoding=SQL_ASCII'
+        . " --owner=$user $db",
     );
     $res .= " database '$db'";
     if ($self->table_exists('spatial_ref_sys')) {
-	_init_postgis($self, $c);
-	$res .= ' with PostGIS';
+        _init_postgis($self, $c);
+        $res .= ' with PostGIS';
     }
     return "created$res"
-	. (defined($clone_db) ? " copied from '$clone_db'" : '');
+        . (defined($clone_db) ? " copied from '$clone_db'" : '');
 }
 
 sub init_realm_role {
@@ -389,12 +389,12 @@ sub init_realm_role {
     $self->initialize_user_feature_calendar;
     $self->req->with_realm(club => sub {
         $self->model('RealmFeatureForm')->process({force_default_values => 1});
-	return;
+        return;
     });
     $self->init_realm_role_forum
-	if $_RT->unsafe_from_name('FORUM');
+        if $_RT->unsafe_from_name('FORUM');
     $self->init_realm_role_calendar_event
-	if $_RT->unsafe_from_name('CALENDAR_EVENT');
+        if $_RT->unsafe_from_name('CALENDAR_EVENT');
     $self->init_realm_role_copy_anonymous_permissions;
     return;
 }
@@ -408,23 +408,23 @@ sub init_realm_role_calendar_event {
 sub init_realm_role_copy_anonymous_permissions {
     my($self) = @_;
     $_AR->do_default(sub {
-	my($r) = @_;
-	my($rr) = $self->model('RealmRole');
-	return unless
-	    defined(my $anon = $rr->get_permission_map($r)->{$_R->ANONYMOUS});
-	$_PS->clear(\$anon, ['ANYBODY']);
+        my($r) = @_;
+        my($rr) = $self->model('RealmRole');
+        return unless
+            defined(my $anon = $rr->get_permission_map($r)->{$_R->ANONYMOUS});
+        $_PS->clear(\$anon, ['ANYBODY']);
         foreach my $role (grep(
-	    !$self->internal_role_is_initialized($_),
-	    $_R->get_non_zero_list,
-	)) {
-	    unless ($rr->unsafe_load({role => $role})) {
-		$rr->create({
-		    realm_id => $self->req('auth_id'),
-		    role => $role,
-		    permission_set => $anon,
-		});
-	    }
-	}
+            !$self->internal_role_is_initialized($_),
+            $_R->get_non_zero_list,
+        )) {
+            unless ($rr->unsafe_load({role => $role})) {
+                $rr->create({
+                    realm_id => $self->req('auth_id'),
+                    role => $role,
+                    permission_set => $anon,
+                });
+            }
+        }
         return 1;
     }, $self->req);
     return;
@@ -443,12 +443,12 @@ sub init_realm_role_with_config {
     my($rr) = $self->new_other('RealmRole');
     my($cmd);
     foreach my $line (ref($config) ? @$config : split(/\n/, $config)) {
-	next if $line =~ /^\s*(#|$)/;
-	$cmd .= $line;
-	next if $cmd =~ s/\\$/ /;
-	my($args) = [split(' ', $cmd)];
-	shift(@$args);
-	$rr->main(@$args);
+        next if $line =~ /^\s*(#|$)/;
+        $cmd .= $line;
+        next if $cmd =~ s/\\$/ /;
+        my($args) = [split(' ', $cmd)];
+        shift(@$args);
+        $rr->main(@$args);
         $cmd = '';
     }
     return;
@@ -457,16 +457,16 @@ sub init_realm_role_with_config {
 sub init_task_log_for_forums {
     my($self) = @_;
     $self->model('Forum')->do_iterate(
-	sub {
-	    return $self->req->with_realm(
-		shift->get('forum_id'),
-		sub {
-		    $self->new_other('RealmRole')
-			->edit_categories('feature_task_log');
-		    return 1;
-		},
-	    );
-	},
+        sub {
+            return $self->req->with_realm(
+                shift->get('forum_id'),
+                sub {
+                    $self->new_other('RealmRole')
+                        ->edit_categories('feature_task_log');
+                    return 1;
+                },
+            );
+        },
     );
     return;
 }
@@ -479,7 +479,7 @@ sub initialize_db {
     $self->initialize_xapian_exec_realm;
     $self->init_realm_role;
     foreach my $x (@$_INITIALIZE_SENTINEL) {
-	_default_sentinel($self, $x);
+        _default_sentinel($self, $x);
     }
     $self->req->set_realm(undef);
     return;
@@ -506,7 +506,7 @@ END;
 EOF
     }
     else {
-	$self->run(<<'EOF');
+        $self->run(<<'EOF');
 CREATE OR REPLACE FUNCTION _group_concat(text, text)
 RETURNS text AS '
 SELECT CASE
@@ -539,36 +539,36 @@ sub initialize_tuple_slot_types {
     my($prev) = $req->get('auth_realm');
     $req->set_realm(undef);
     $self->model('TupleSlotType')->create_from_hash({
-	Integer => {
-	    type_class => 'Integer',
-	    default_value => undef,
-	    choices => undef,
-	    is_required => 0,
-	},
-	Date => {
-	    type_class => 'Date',
-	    default_value => undef,
-	    choices => undef,
-	    is_required => 0,
-	},
-	String => {
-	    type_class => 'String',
-	    default_value => undef,
-	    choices => undef,
-	    is_required => 0,
-	},
-	Email => {
-	    type_class => 'Email',
-	    default_value => undef,
-	    choices => undef,
-	    is_required => 0,
-	},
-	Boolean => {
-	    type_class => 'Boolean',
-	    default_value => undef,
-	    choices => undef,
-	    is_required => 0,
-	},
+        Integer => {
+            type_class => 'Integer',
+            default_value => undef,
+            choices => undef,
+            is_required => 0,
+        },
+        Date => {
+            type_class => 'Date',
+            default_value => undef,
+            choices => undef,
+            is_required => 0,
+        },
+        String => {
+            type_class => 'String',
+            default_value => undef,
+            choices => undef,
+            is_required => 0,
+        },
+        Email => {
+            type_class => 'Email',
+            default_value => undef,
+            choices => undef,
+            is_required => 0,
+        },
+        Boolean => {
+            type_class => 'Boolean',
+            default_value => undef,
+            choices => undef,
+            is_required => 0,
+        },
     });
     $req->set_realm($prev);
     return;
@@ -577,7 +577,7 @@ sub initialize_tuple_slot_types {
 sub initialize_user_feature_calendar {
     my($self) = @_;
     $self->req->with_realm(user => sub {
-	$self->new_other('RealmRole')->edit_categories('+feature_calendar');
+        $self->new_other('RealmRole')->edit_categories('+feature_calendar');
         return;
     });
     return;
@@ -587,8 +587,8 @@ sub initialize_xapian_exec_realm {
     my($self) = @_;
     my($n) = b_use('Search.Xapian')->EXEC_REALM;
     $self->model('User')->create_realm(
-	{last_name => $n},
-	{name => $n, display_name => $n},
+        {last_name => $n},
+        {name => $n, display_name => $n},
     );
     return;
 }
@@ -604,13 +604,13 @@ sub internal_upgrade_db_bundle {
     $self->initialize_fully;
     my($tables) = {map(($_ => 1), @{$self->tables})};
     foreach my $type (@$_BUNDLE) {
-	my($sentinel) = \&{"_sentinel_$type"};
- 	next
-	    if defined(&$sentinel) ? $sentinel->($self, $type)
-	    : ($tables->{"${type}_t"} || _default_sentinel($self, $type));
-	$self->print("Running: $type\n");
-	my($m) = "internal_upgrade_db_$type";
-	$self->$m;
+        my($sentinel) = \&{"_sentinel_$type"};
+         next
+            if defined(&$sentinel) ? $sentinel->($self, $type)
+            : ($tables->{"${type}_t"} || _default_sentinel($self, $type));
+        $self->print("Running: $type\n");
+        my($m) = "internal_upgrade_db_$type";
+        $self->$m;
     }
     return;
 }
@@ -635,7 +635,7 @@ sub is_oracle {
     my($self) = @_;
     # May not have a database at this point to connect to.
     return b_use('SQL.Connection')->get_dbi_config->{connection} =~ /oracle/i
-	? 1 : 0;
+        ? 1 : 0;
 }
 
 sub psql {
@@ -649,11 +649,11 @@ sub psql {
 sub realm_role_config {
     my($proto) = @_;
     return $_REALM_ROLE_CONFIG ||= [
-	map(split(/\n/, $_),
-	    __PACKAGE__->internal_data_section,
-	    $proto->can('internal_realm_role_config_data')
-		? $proto->internal_realm_role_config_data : (),
-	),
+        map(split(/\n/, $_),
+            __PACKAGE__->internal_data_section,
+            $proto->can('internal_realm_role_config_data')
+                ? $proto->internal_realm_role_config_data : (),
+        ),
     ];
 }
 
@@ -663,7 +663,7 @@ sub reinitialize_constraints {
 
     foreach my $file (@{_ddl_files($self)}) {
         next unless $file =~ /constraints/;
-  	$self->put(input => $file)->run;
+          $self->put(input => $file)->run;
     }
     return $self->reinitialize_sequences;
 }
@@ -675,30 +675,30 @@ sub reinitialize_sequences {
     $self->setup;
     my($res) = $self->unsafe_get('noexecute') ? "Would have executed:\n" : '';
     foreach my $cmd (
-	map({
-	    grep(/^\s*create\s+sequence/im,
-		split(/^(?=\s*create\s+sequence)/im,
+        map({
+            grep(/^\s*create\s+sequence/im,
+                split(/^(?=\s*create\s+sequence)/im,
                     ${$_F->read($_)}));
-	} @{$self->ddl_files})
+        } @{$self->ddl_files})
     ) {
-	$cmd =~ s,/.*,,s;
-	my($base) = $cmd =~ /sequence\s+(\w+)_s/si
-	    or die('bad sequence name: ', $cmd);
-	my($max) = $_C->execute_one_row(
-	    "select max(${base}_id) from ${base}_t");
-	next unless $max && $max->[0];
-	my($inc) = $cmd =~ /increment\s+by\s+(\d+)/si
-	    or die('bad sequence increment by: ', $cmd);
-	# Increment by two to be sure
-	$inc = $_PI->add($max->[0], $_PI->mul($inc, 2, 0), 0);
-	# Number puts in '+'
-	$inc =~ s/\D//g;
-	$cmd =~ s/minvalue\s+(\d+)/minvalue $inc/i
-	    or die('bad minvalue: ', $cmd);
-	$res .= "${base}_s => $inc\n";
-	next if $self->unsafe_get('noexecute');
-	$_C->execute("drop sequence ${base}_s");
-	$_C->execute($cmd);
+        $cmd =~ s,/.*,,s;
+        my($base) = $cmd =~ /sequence\s+(\w+)_s/si
+            or die('bad sequence name: ', $cmd);
+        my($max) = $_C->execute_one_row(
+            "select max(${base}_id) from ${base}_t");
+        next unless $max && $max->[0];
+        my($inc) = $cmd =~ /increment\s+by\s+(\d+)/si
+            or die('bad sequence increment by: ', $cmd);
+        # Increment by two to be sure
+        $inc = $_PI->add($max->[0], $_PI->mul($inc, 2, 0), 0);
+        # Number puts in '+'
+        $inc =~ s/\D//g;
+        $cmd =~ s/minvalue\s+(\d+)/minvalue $inc/i
+            or die('bad minvalue: ', $cmd);
+        $res .= "${base}_s => $inc\n";
+        next if $self->unsafe_get('noexecute');
+        $_C->execute("drop sequence ${base}_s");
+        $_C->execute($cmd);
     }
     return $res;
 }
@@ -722,7 +722,7 @@ sub restore_model {
     my($self, $model, $file_or_rows) = @_;
     my($m) = $self->model($model);
     foreach my $r (ref($file_or_rows) ? @$file_or_rows : @{do($file_or_rows)}) {
-	$m->create($r);
+        $m->create($r);
     }
     $self->print("Restored $model\n");
     return;
@@ -733,7 +733,7 @@ sub run {
     # Parses I<sql> (default: reads I<input>), terminating on errors.  Any query
     # results are thrown away.
     foreach my $s (_parse($self, $sql)) {
-	$_C->execute($s);
+        $_C->execute($s);
     }
     return;
 }
@@ -744,23 +744,23 @@ sub table_exists {
     _exists(
         'FROM pg_tables
         WHERE tablename = ?',
-	[lc($table)],
+        [lc($table)],
     );
 }
 
 sub tables {
     return $_C->map_execute(
-	'SELECT tablename
+        'SELECT tablename
         FROM pg_tables
         WHERE tableowner = ?
         ORDER by tablename',
-	[shift->use('Ext.DBI')->get_config->{user}],
+        [shift->use('Ext.DBI')->get_config->{user}],
     );
 }
 
 sub upgrade_db {
     sub UPGRADE_DB {[
-	[qw(type Name)],
+        [qw(type Name)],
     ]}
     my($self, $bp) = shift->parameters(\@_);
     my($req) = $self->req;
@@ -768,22 +768,22 @@ sub upgrade_db {
     my($upgrade) = $self->model('DbUpgrade');
     my($v) = $bp->{type};
     $self->usage_error(
-	$v,
-	': ran on ',
-	$_DT->to_local_string($upgrade->get('run_date_time')),
+        $v,
+        ': ran on ',
+        $_DT->to_local_string($upgrade->get('run_date_time')),
     ) if $upgrade->unauth_load({version => $v});
     $self->are_you_sure(
-	qq{Upgrade the database with $bp->{type}?});
+        qq{Upgrade the database with $bp->{type}?});
     $self->print($self->export_db . "\n")
-	if $_CFG->{export_db_on_upgrade};
+        if $_CFG->{export_db_on_upgrade};
     # After an export, you need to rollback or there will be errors.
     $_D->eval(sub {$_C->rollback});
     # re-establish connection
     $_C->ping_connection;
     $self->$method();
     $upgrade->create({
-	version => $v,
-	run_date_time => $upgrade->get_field_type('run_date_time')->now,
+        version => $v,
+        run_date_time => $upgrade->get_field_type('run_date_time')->now,
     });
     return;
 }
@@ -800,7 +800,7 @@ sub _assert_postgres {
     $self->setup;
     my($c) = $_C->get_dbi_config;
     $self->usage_error($c->{connection}, ': connection type not supported')
-	unless $c->{connection} =~ /postgres/i;
+        unless $c->{connection} =~ /postgres/i;
     return $c;
 }
 
@@ -824,10 +824,10 @@ sub _default_sentinel {
     my($self, $feature) = @_;
     my($u) = $self->model('DbUpgrade');
     return 1
-	if $u->unauth_load({version => $feature});
+        if $u->unauth_load({version => $feature});
     $u->create({
-	version => $feature,
-	run_date_time => $u->get_field_type('run_date_time')->now,
+        version => $feature,
+        run_date_time => $u->get_field_type('run_date_time')->now,
     });
     return 0;
 }
@@ -839,16 +839,16 @@ sub _add_permissions_to_all_forums {
 
 sub _exists {
     return $_C->execute_one_row(
-	'SELECT COUNT(*) ' . shift(@_),
-	@_,
+        'SELECT COUNT(*) ' . shift(@_),
+        @_,
     )->[0] ? 1 : 0;
 }
 
 sub _expand_text_size {
     my($self, $names) = @_;
     foreach my $name (@$names) {
-	my($table, $col) = split(/\./, $name);
-	$self->run(<<"EOF");
+        my($table, $col) = split(/\./, $name);
+        $self->run(<<"EOF");
 ALTER TABLE $table ALTER COLUMN $col TYPE TEXT64K
 /
 EOF
@@ -859,12 +859,12 @@ EOF
 sub _init_postgis {
     my($self, $c) = @_;
     foreach my $sql (
-	map((
-	    "ALTER TABLE $_ OWNER TO $c->{user}",
-	    "GRANT ALL ON $_ to $c->{user}",
-	), qw(geometry_columns spatial_ref_sys)),
+        map((
+            "ALTER TABLE $_ OWNER TO $c->{user}",
+            "GRANT ALL ON $_ to $c->{user}",
+        ), qw(geometry_columns spatial_ref_sys)),
     ) {
-	_run_other($self, dbms => $sql);
+        _run_other($self, dbms => $sql);
     }
     return;
 }
@@ -872,22 +872,22 @@ sub _init_postgis {
 sub _init_template1 {
     my($self) = @_;
     return if @{_run_other(
-	$self,
-	template1 => 'select lanname from pg_language where lanname = ?',
-	['plpgsql'],
+        $self,
+        template1 => 'select lanname from pg_language where lanname = ?',
+        ['plpgsql'],
     )};
     $self->piped_exec('createlang plpgsql template1');
     foreach my $dir (qw(/usr/share/pgsql/contrib /usr/local/share)) {
-	next unless -d $dir;
-	$_F->do_in_dir($dir, sub {
-	    foreach my $file (qw(lwpostgis.sql spatial_ref_sys.sql)) {
-		last unless -f $file;
-		$self->piped_exec(
-		    "psql --dbname=template1 --file=$file");
-	    }
-	    return;
-	});
-	last;
+        next unless -d $dir;
+        $_F->do_in_dir($dir, sub {
+            foreach my $file (qw(lwpostgis.sql spatial_ref_sys.sql)) {
+                last unless -f $file;
+                $self->piped_exec(
+                    "psql --dbname=template1 --file=$file");
+            }
+            return;
+        });
+        last;
     }
     return;
 }
@@ -900,18 +900,18 @@ sub _parse {
     my(@res);
     my($s) = '';
     foreach my $line (split(/\n/, $sql || ${$self->read_input})) {
-	# Skip comments and blank lines
-	next if $line =~ /^\s*--|^\s*$/s;
+        # Skip comments and blank lines
+        next if $line =~ /^\s*--|^\s*$/s;
 
-	# Execute statement if '/' or ';' found
-	if ($line =~ /^\s*[\/;]\s*$/s) {
-	    push(@res, $s);
-	    $s = '';
-	    next;
-	}
+        # Execute statement if '/' or ';' found
+        if ($line =~ /^\s*[\/;]\s*$/s) {
+            push(@res, $s);
+            $s = '';
+            next;
+        }
 
-	# Build up statement
-	$s .= $line."\n";
+        # Build up statement
+        $s .= $line."\n";
     }
     $self->usage($s, ': left over statement') if $s;
     return @res;
@@ -934,12 +934,12 @@ sub _sentinel_ec_credit_card_gb_eu {
 sub _user_exists {
     my($self) = @_;
     return scalar(@{_run_other(
-	$self,
-	template1 =>
-	'SELECT usename
+        $self,
+        template1 =>
+        'SELECT usename
         FROM pg_user
         WHERE usename = ?',
-	[_assert_postgres($self)->{user}],
+        [_assert_postgres($self)->{user}],
     )});
 }
 

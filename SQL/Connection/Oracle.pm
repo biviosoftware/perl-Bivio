@@ -45,13 +45,13 @@ Bivio::IO::Trace->register;
 my($_ERR_TO_DIE) = {
     # ORA-00060: deadlock detected
     60 => {
-	code => Bivio::DieCode->UPDATE_COLLISION,
+        code => Bivio::DieCode->UPDATE_COLLISION,
     },
     # ORA-12154: TNS:could not resolve service name
     12154 => {
-	code => Bivio::DieCode->CONFIG_ERROR,
-	message => 'Invalid database configuration. Oracle not configured?',
-	program_error => 1,
+        code => Bivio::DieCode->CONFIG_ERROR,
+        message => 'Invalid database configuration. Oracle not configured?',
+        program_error => 1,
     },
 };
 
@@ -168,27 +168,27 @@ undef if the message is not translatable.
 sub internal_get_error_code {
     my($self, $die_attrs) = @_;
     if ($die_attrs->{dbi_errstr} =~ /constraint \((\w+)\.(\w+)\) violated/i) {
-	return _interpret_constraint_violation($self,
-		$die_attrs, uc($1), uc($2));
+        return _interpret_constraint_violation($self,
+                $die_attrs, uc($1), uc($2));
     }
     my($err) = $die_attrs->{dbi_err};
     # If we don't have a die_code, map it simply
     unless ($err) {
 #TODO: This maybe should get moved up top.  I didn't want to change too much
 #      now, since we don't know what types of errors Oracle reports.
-	# Some errors have to be parsed out.
-	($err) = $die_attrs->{message} =~ /ORA-0*(\d+):/;
-	$err ||= 0;
+        # Some errors have to be parsed out.
+        ($err) = $die_attrs->{message} =~ /ORA-0*(\d+):/;
+        $err ||= 0;
     }
     if (defined($_ERR_TO_DIE->{$err})) {
-	# These may be program manageable errors;  See my($_ERR_TO_DIE).
-	my($map) = $_ERR_TO_DIE->{$err};
-	foreach my $attr (keys(%$map)) {
-	    $die_attrs->{$attr} = $map->{$attr};
-	}
-	my($result) = $die_attrs->{code};
-	delete($die_attrs->{code});
-	return $result;
+        # These may be program manageable errors;  See my($_ERR_TO_DIE).
+        my($map) = $_ERR_TO_DIE->{$err};
+        foreach my $attr (keys(%$map)) {
+            $die_attrs->{$attr} = $map->{$attr};
+        }
+        my($result) = $die_attrs->{code};
+        delete($die_attrs->{code});
+        return $result;
     }
     return shift->SUPER::internal_get_error_code(@_);
 }
@@ -236,68 +236,68 @@ sub _interpret_constraint_violation {
     # Ignore errors, die_code will be undef in this case and result in a
     # server error
     Bivio::Die->eval(sub {
-	my($statement) = $self->internal_get_dbi_connection()->prepare(<<"EOF");
-	    SELECT all_cons_columns.table_name,
-		    all_cons_columns.column_name
-	    FROM all_cons_columns
-	    WHERE all_cons_columns.owner = ?
+        my($statement) = $self->internal_get_dbi_connection()->prepare(<<"EOF");
+            SELECT all_cons_columns.table_name,
+                    all_cons_columns.column_name
+            FROM all_cons_columns
+            WHERE all_cons_columns.owner = ?
             AND all_cons_columns.constraint_name = ?
             UNION
-	    SELECT all_ind_columns.table_name,
-		    all_ind_columns.column_name
-	    FROM all_ind_columns
-	    WHERE all_ind_columns.index_owner = ?
+            SELECT all_ind_columns.table_name,
+                    all_ind_columns.column_name
+            FROM all_ind_columns
+            WHERE all_ind_columns.index_owner = ?
             AND all_ind_columns.index_name = ?
 EOF
-	$statement->execute($owner, $constraint, $owner, $constraint);
+        $statement->execute($owner, $constraint, $owner, $constraint);
 
-	my($cols) = [];
-	my($table);
-	while (my $row = $statement->fetchrow_arrayref) {
+        my($cols) = [];
+        my($table);
+        while (my $row = $statement->fetchrow_arrayref) {
 # TODO: table must always be the same(?)
-	    $table = lc($row->[0]);
-	    push(@$cols, lc($row->[1]));
-	}
+            $table = lc($row->[0]);
+            push(@$cols, lc($row->[1]));
+        }
 
-	# This is an operation error, not db error.  Don't need to ping.
-	$self->internal_clear_ping;
+        # This is an operation error, not db error.  Don't need to ping.
+        $self->internal_clear_ping;
 
-	# Found the constraint?
-	if ($table) {
-	    # Save the state for the die message
-	    $attrs->{columns} = $cols;
+        # Found the constraint?
+        if ($table) {
+            # Save the state for the die message
+            $attrs->{columns} = $cols;
             $attrs->{table} = $table;
-	    _trace($owner, '.', $constraint, ': found ', $table, '.', $cols)
-		    if $_TRACE;
-	    if (1 == $attrs->{dbi_err}) {
-		# unique constraint violated (ORA-00001)
-		$attrs->{type_error} = Bivio::TypeError->EXISTS;
-		$die_code = Bivio::DieCode->DB_CONSTRAINT;
-	    }
-	    elsif (2290 == $attrs->{dbi_err}) {
-		# check constraint violated (ORA-02290)
-		# We understand only one type of check constraint:
-		# max_* exceeded.  This will back all the way to
-		# the Task level and it will map to a different
-		# task.
-		if (int(@$cols) == 2 && grep(/max_/, @$cols)) {
-		    $die_code = Bivio::DieCode->NO_RESOURCES;
-		}
-	    }
-	    elsif (2292 == $attrs->{dbi_err}) {
-		# integrity constraint violated (ORA-02292)
-		# child record not found
-		if (int(@$cols) == 2 && grep(/max_/, @$cols)) {
-		    $die_code = Bivio::DieCode->NO_RESOURCES;
-		}
-	    }
-	}
-	else {
-	    # returns undef for die_code
-	    _trace($owner, '.', $constraint,
-		    ': constraint query returned nothing') if $_TRACE;
-	}
-	1;
+            _trace($owner, '.', $constraint, ': found ', $table, '.', $cols)
+                    if $_TRACE;
+            if (1 == $attrs->{dbi_err}) {
+                # unique constraint violated (ORA-00001)
+                $attrs->{type_error} = Bivio::TypeError->EXISTS;
+                $die_code = Bivio::DieCode->DB_CONSTRAINT;
+            }
+            elsif (2290 == $attrs->{dbi_err}) {
+                # check constraint violated (ORA-02290)
+                # We understand only one type of check constraint:
+                # max_* exceeded.  This will back all the way to
+                # the Task level and it will map to a different
+                # task.
+                if (int(@$cols) == 2 && grep(/max_/, @$cols)) {
+                    $die_code = Bivio::DieCode->NO_RESOURCES;
+                }
+            }
+            elsif (2292 == $attrs->{dbi_err}) {
+                # integrity constraint violated (ORA-02292)
+                # child record not found
+                if (int(@$cols) == 2 && grep(/max_/, @$cols)) {
+                    $die_code = Bivio::DieCode->NO_RESOURCES;
+                }
+            }
+        }
+        else {
+            # returns undef for die_code
+            _trace($owner, '.', $constraint,
+                    ': constraint query returned nothing') if $_TRACE;
+        }
+        1;
     });
 
     _trace($owner, '.', $constraint, ':', $@) if $_TRACE && $@;

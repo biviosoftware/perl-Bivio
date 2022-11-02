@@ -3,18 +3,18 @@
 Type();
 [
     from_domain => [
-	localhost => '127.0.0.1',
-	'petshop.bivio.biz' => '216.46.165.72',
+        localhost => '127.0.0.1',
+        'petshop.bivio.biz' => '216.46.165.72',
     ],
     from_inet => [
-	pack('N', 0) => '0.0.0.0',
-	pack('N', 0xffffffff) => '255.255.255.255',
+        pack('N', 0) => '0.0.0.0',
+        pack('N', 0xffffffff) => '255.255.255.255',
     ],
     to_inet => [
-	'255.254.253.252' => pack('N', 0xfffefdfc),
+        '255.254.253.252' => pack('N', 0xfffefdfc),
     ],
     unsafe_to_domain => [
-	'216.17.132.33' => 'fnl1i.bivio.biz',
-	'0.0.0.0' => [undef],
+        '216.17.132.33' => 'fnl1i.bivio.biz',
+        '0.0.0.0' => [undef],
     ],
 ];

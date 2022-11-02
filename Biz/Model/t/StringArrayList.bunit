@@ -3,9 +3,9 @@
 ListModel();
 [
     load_from_string_array => [
-	[FilePathArray('/;/a')] => [
-	    {value => '/'},
-	    {value => '/a'},
-	],
+        [FilePathArray('/;/a')] => [
+            {value => '/'},
+            {value => '/a'},
+        ],
     ],
 ];

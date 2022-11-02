@@ -21,14 +21,14 @@ sub TOO_SHORT_ERROR {
 sub from_literal {
     my($proto, $value) = @_;
     $value = $proto->internal_pre_from_literal($value)
-	if defined($value);
+        if defined($value);
     return (undef, undef)
-	if !defined($value) || !length($value);
+        if !defined($value) || !length($value);
     return (undef, $proto->SYNTAX_ERROR)
-	unless $value =~ /^@{[$proto->REGEX]}$/;
+        unless $value =~ /^@{[$proto->REGEX]}$/;
     my($v, $e) = $proto->internal_post_from_literal($value);
     return (undef, $e)
-	if $e;
+        if $e;
     return _length($proto, $v);
 }
 
@@ -54,11 +54,11 @@ sub internal_pre_from_literal {
 sub _length {
     my($proto, $value) = @_;
     return $value
-	if ref($value);
+        if ref($value);
     return (undef, $proto->TOO_SHORT_ERROR)
-	if length($value) < $proto->get_min_width;
+        if length($value) < $proto->get_min_width;
     return (undef, $proto->TOO_LONG_ERROR)
-	if length($value) > $proto->get_width;
+        if length($value) > $proto->get_width;
     return $value;
 }
 

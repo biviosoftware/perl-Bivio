@@ -10,30 +10,30 @@ req()->put('SomeList.z' => undef);
     [['SomeList.h1' => ['SomeList.h1']]] => '',
     [['SomeList.z' => ['SomeList.z']]] => '',
     [['SomeList.p' => class('HTMLWidget.Join')
-	 ->new(['Q: ', ['SomeList.p']])]] => 'Q: ITEM',
+         ->new(['Q: ', ['SomeList.p']])]] => 'Q: ITEM',
     [['SomeList.p' => class('HTMLWidget.Join')
-	 ->new(['Q: ', ['SomeList.p']])]] => '',
+         ->new(['Q: ', ['SomeList.p']])]] => '',
     inline_case(sub {req()->put('SomeList.h1' => 'HEADING2')}),
     [[
-	'SomeList.h1' => ['SomeList.h1'],
-	'SomeList.h2' => ['SomeList.h2'],
+        'SomeList.h1' => ['SomeList.h1'],
+        'SomeList.h2' => ['SomeList.h2'],
     ]] => 'HEADING2SUB',
     [[
-	'SomeList.h1' => ['SomeList.h1'],
-	'SomeList.h2' => ['SomeList.h2'],
+        'SomeList.h1' => ['SomeList.h1'],
+        'SomeList.h2' => ['SomeList.h2'],
     ]] => '',
     inline_case(sub {req()->put('SomeList.h2' => 'SUB2')}),
     [[
-	'SomeList.h1' => ['SomeList.h1'],
-	'SomeList.h2' => ['SomeList.h2'],
+        'SomeList.h1' => ['SomeList.h1'],
+        'SomeList.h2' => ['SomeList.h2'],
     ]] => 'SUB2',
     [[
-	'SomeList.h1' => ['SomeList.h1'],
-	'SomeList.h2' => ['SomeList.h2'],
+        'SomeList.h1' => ['SomeList.h1'],
+        'SomeList.h2' => ['SomeList.h2'],
     ]] => '',
     inline_case(sub {req()->put('SomeList.h1' => 'HEADING3')}),
     [[
-	'SomeList.h1' => ['SomeList.h1'],
-	'SomeList.h2' => ['SomeList.h2'],
+        'SomeList.h1' => ['SomeList.h1'],
+        'SomeList.h2' => ['SomeList.h2'],
     ]] => 'HEADING3SUB2',
 ];

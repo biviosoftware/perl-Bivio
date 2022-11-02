@@ -5,8 +5,8 @@ options({
 });
 b_use('IO.Config')->introduce_values({
     'Bivio::IO::Config' => {
-	# use production field names for get_field_name_for_html()
-	is_dev => 0,
+        # use production field names for get_field_name_for_html()
+        is_dev => 0,
     },
 });
 req()->initialize_fully();
@@ -14,42 +14,42 @@ model('NumberedList')->load_page({count=> 3});
 [
     [req()] => [
         get_fields_for_primary_keys => [
-	    [] => [{
-		index_0 => 0,
-		index_1 => 1,
-		index_2 => 2,
-	    }],
-	],
-	get_field_name_in_list => [
-	    index => DIE(),
-	    'RealmOwner.name' => 'RealmOwner.name',
-	],
-	set_cursor => [
-	    0 => not_die(),
-	],
-	get_field_name_in_list => [
-	    index => 'index_0',
-	],
-	process => not_die(),
-	map_rows => sub {
-	    my($case, $actual) = @_;
-	    expect_contains(
-		[map(+{"form_index_$_" => $_}, 0..2)],
-		$actual->[0],
-	    );
-	    return 1;
-	},
-	get_field_name_for_html => [
-	    'RealmOwner.name' => 'f0',
-	    cancel_button => 'f1',
-	    form_index_1 => 'f2_1',
-	    ok_button => 'f3',
-	],
-	set_cursor => [
-	    2 => not_die(),
-	],
-	get_field_name_for_html => [
-	    form_index => 'f2_2',
-	],
+            [] => [{
+                index_0 => 0,
+                index_1 => 1,
+                index_2 => 2,
+            }],
+        ],
+        get_field_name_in_list => [
+            index => DIE(),
+            'RealmOwner.name' => 'RealmOwner.name',
+        ],
+        set_cursor => [
+            0 => not_die(),
+        ],
+        get_field_name_in_list => [
+            index => 'index_0',
+        ],
+        process => not_die(),
+        map_rows => sub {
+            my($case, $actual) = @_;
+            expect_contains(
+                [map(+{"form_index_$_" => $_}, 0..2)],
+                $actual->[0],
+            );
+            return 1;
+        },
+        get_field_name_for_html => [
+            'RealmOwner.name' => 'f0',
+            cancel_button => 'f1',
+            form_index_1 => 'f2_1',
+            ok_button => 'f3',
+        ],
+        set_cursor => [
+            2 => not_die(),
+        ],
+        get_field_name_for_html => [
+            form_index => 'f2_2',
+        ],
     ],
 ];

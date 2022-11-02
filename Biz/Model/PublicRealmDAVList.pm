@@ -8,11 +8,11 @@ use Bivio::Base 'Model.RealmDAVList';
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	other => [
-	    ['RealmOwner.realm_id', 'RealmFile.realm_id'],
-	    ['RealmFile.path_lc',
-	        [lc($self->use('Type.FilePath')->PUBLIC_FOLDER_ROOT)]],
-	],
+        other => [
+            ['RealmOwner.realm_id', 'RealmFile.realm_id'],
+            ['RealmFile.path_lc',
+                [lc($self->use('Type.FilePath')->PUBLIC_FOLDER_ROOT)]],
+        ],
     });
 }
 

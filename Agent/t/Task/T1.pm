@@ -10,7 +10,7 @@ my($_CALLS) = 0;
 sub handle_post_execute_task {
     my($self, $task, $req) = @_;
     b_die($_CALLS, ': must be odd')
-	unless $_CALLS % 2;
+        unless $_CALLS % 2;
     $_CALLS++;
     return;
 }
@@ -18,7 +18,7 @@ sub handle_post_execute_task {
 sub handle_pre_execute_task {
     my($self, $task, $req) = @_;
     b_die($_CALLS, ': must be even')
-	if $_CALLS % 2;
+        if $_CALLS % 2;
     $_CALLS++;
     return;
 }

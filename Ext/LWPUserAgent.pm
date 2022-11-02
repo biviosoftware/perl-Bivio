@@ -22,19 +22,19 @@ Bivio::IO::Config->register(my $_CFG = {
 sub bivio_http_get {
     my($proto, $uri) = @_;
     my($response) = $proto->new
-	->bivio_redirect_automatically
-	->request(
-	    HTTP::Request->new('GET', $uri),
-	);
+        ->bivio_redirect_automatically
+        ->request(
+            HTTP::Request->new('GET', $uri),
+        );
     Bivio::Die->die($response)
-	unless $response->is_success;
+        unless $response->is_success;
     return \($response->content);
 }
 
 sub bivio_ssl_no_check_certificate {
     my($self) = @_;
     return $self
-	unless $self->can('ssl_opts');
+        unless $self->can('ssl_opts');
     $self->ssl_opts(verify_hostname => 0);
     return $self;
 }
@@ -66,17 +66,17 @@ sub new {
         $self->proxy(['http', 'https'], $ENV{http_proxy});
     }
     if ($want_redirects) {
-	Bivio::IO::Alert->warn_deprecated('use bivio_redirect_automatically, instead of passing param to new');
-	$self->bivio_redirect_automatically;
+        Bivio::IO::Alert->warn_deprecated('use bivio_redirect_automatically, instead of passing param to new');
+        $self->bivio_redirect_automatically;
     }
     else {
-	# Get: Client-Warning: Redirect loop detected (max_redirect = 0)
-	# when set to zero, which isn't right, because manually handling redirects
-	$self->max_redirect(1);
-	$self->requests_redirectable([]);
+        # Get: Client-Warning: Redirect loop detected (max_redirect = 0)
+        # when set to zero, which isn't right, because manually handling redirects
+        $self->max_redirect(1);
+        $self->requests_redirectable([]);
     }
     $self->bivio_ssl_no_check_certificate
-	if Bivio::IO::Config->is_test;
+        if Bivio::IO::Config->is_test;
     LWP::Debug::level("+debug") if $_TRACE;
     return $self;
 }

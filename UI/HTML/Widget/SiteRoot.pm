@@ -9,13 +9,13 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 sub initialize {
     my($self) = shift;
     $self->put_unless_exists(
-	value => vs_text('SiteRoot', $self->get('view_name_to_call')),
-	href => [
-	    $self->use('View.SiteRoot'),
-	    '->format_uri',
-	    $self->get('view_name_to_call'),
-	    ['->get_request'],
-	],
+        value => vs_text('SiteRoot', $self->get('view_name_to_call')),
+        href => [
+            $self->use('View.SiteRoot'),
+            '->format_uri',
+            $self->get('view_name_to_call'),
+            ['->get_request'],
+        ],
     );
     return $self->SUPER::initialize(@_);
 }

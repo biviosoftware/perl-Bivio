@@ -6,18 +6,18 @@ req()->set_realm_and_user('btest_read', 'btest_read')
     ->initialize_fully('USER_HOME');
 [
     load_all => [
-	[] => [
-	    map(+{'RealmOwner.name' => $_},
-		qw(fourem fourem-sub1 fourem-sub1-1 fourem-sub2)),
-	],
-	sub {
-	    return [{
-		root_forum_id => shift->get('object')->set_cursor_or_die(1)
-		    ->get('Forum.forum_id'),
-	    }],
-	} => [
-	    map(+{'RealmOwner.name' => $_},
-		qw(fourem-sub1 fourem-sub1-1)),
-	],
+        [] => [
+            map(+{'RealmOwner.name' => $_},
+                qw(fourem fourem-sub1 fourem-sub1-1 fourem-sub2)),
+        ],
+        sub {
+            return [{
+                root_forum_id => shift->get('object')->set_cursor_or_die(1)
+                    ->get('Forum.forum_id'),
+            }],
+        } => [
+            map(+{'RealmOwner.name' => $_},
+                qw(fourem-sub1 fourem-sub1-1)),
+        ],
     ],
 ];

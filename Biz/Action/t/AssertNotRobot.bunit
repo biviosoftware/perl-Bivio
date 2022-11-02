@@ -5,22 +5,22 @@ req()->set_realm('fourem');
 initialize_fully('SHELL_UTIL');
 [
     class() => [
-	{
-	    method => 'execute',
-	    compute_params => sub {[req()]},
+        {
+            method => 'execute',
+            compute_params => sub {[req()]},
         } => [
-	    [] => [],
-	    inline_case(sub {Type_UserAgent('BROWSER_ROBOT_SEARCH')->execute(req())}),
-	    [] => NOT_FOUND(),
-	    inline_case(sub {initialize_fully('FORUM_FILE_TREE_LIST')}),
-	    [] => [{
-		task_id => Agent_TaskId('ROBOT_FILE_LIST'),
-	        carry_query => 1,
-		carry_path_info => 1,
-	        method => 'server_redirect',
-	    }],
-	    inline_case(sub {req()->set_user('guest')}),
-	    [] => [],
-	],
+            [] => [],
+            inline_case(sub {Type_UserAgent('BROWSER_ROBOT_SEARCH')->execute(req())}),
+            [] => NOT_FOUND(),
+            inline_case(sub {initialize_fully('FORUM_FILE_TREE_LIST')}),
+            [] => [{
+                task_id => Agent_TaskId('ROBOT_FILE_LIST'),
+                carry_query => 1,
+                carry_path_info => 1,
+                method => 'server_redirect',
+            }],
+            inline_case(sub {req()->set_user('guest')}),
+            [] => [],
+        ],
     ],
 ];

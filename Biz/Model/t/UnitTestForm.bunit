@@ -3,8 +3,8 @@
 FormModel();
 [
     error_case({
-	'User.first_name' => 'ignored',
+        'User.first_name' => 'ignored',
     } => {
-	'User.first_name' => 'EXISTS',
+        'User.first_name' => 'EXISTS',
     }),
 ];

@@ -18,10 +18,10 @@ sub find_prefix_by_uri {
     my($map) = $proto->internal_retrieve($req);
     $uri = _clean($uri);
     while ($uri) {
-	if (my $prefix = $map->{$uri}) {
-	    return $prefix;
-	}
-	$uri =~ s{/[^/]*$}{};
+        if (my $prefix = $map->{$uri}) {
+            return $prefix;
+        }
+        $uri =~ s{/[^/]*$}{};
     }
     return undef;
 }
@@ -29,25 +29,25 @@ sub find_prefix_by_uri {
 sub internal_compute {
     my($proto, $req) = @_;
     my($res) = $_RSL->new($req)
-	->set_ephemeral
-	->unauth_get_all_settings(
-	    $proto->internal_realm_id($req),
-	    $_BASE => [
-		[qw(uri Text)],
-		[qw(prefix Text)],
-	    ],
-	);
+        ->set_ephemeral
+        ->unauth_get_all_settings(
+            $proto->internal_realm_id($req),
+            $_BASE => [
+                [qw(uri Text)],
+                [qw(prefix Text)],
+            ],
+        );
     return {map(
-	(_clean($_->{uri}) => $_->{prefix}),
-	values(%$res),
+        (_clean($_->{uri}) => $_->{prefix}),
+        values(%$res),
     )};
 }
 
 sub internal_realm_id {
     my($proto, $req) = @_;
     return ref($proto) ? $proto->get('realm_id')
-	: $_C->get_value('site_realm_id', $req)
-	|| shift->SUPER::internal_realm_id(@_);
+        : $_C->get_value('site_realm_id', $req)
+        || shift->SUPER::internal_realm_id(@_);
 }
 
 sub _clean {

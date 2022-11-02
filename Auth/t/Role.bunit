@@ -4,12 +4,12 @@ Type();
 [
     get_overlap_count => not_die(),
     {
-	method => 'get_category_role_group',
-	method_is_autoloaded => 1,
+        method => 'get_category_role_group',
+        method_is_autoloaded => 1,
     } => [
-	all => not_die(),
-	all_admins => [[qw(ACCOUNTANT ADMINISTRATOR)]],
-	all_members => [[qw(MEMBER ACCOUNTANT ADMINISTRATOR)]],
-	'not found' => DIE(),
+        all => not_die(),
+        all_admins => [[qw(ACCOUNTANT ADMINISTRATOR)]],
+        all_members => [[qw(MEMBER ACCOUNTANT ADMINISTRATOR)]],
+        'not found' => DIE(),
     ],
 ];

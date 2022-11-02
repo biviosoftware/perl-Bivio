@@ -120,10 +120,10 @@ sub internal_req {
     my($self, $req) = @_;
     # Returns request.  Warns deprecated if I<req> not supplied
     return (
-	$self,
-	$req ? $req : (
-	    Bivio::Agent::Request->get_current_or_new,
-	    Bivio::IO::Alert->warn_deprecated('request is a required parameter')
+        $self,
+        $req ? $req : (
+            Bivio::Agent::Request->get_current_or_new,
+            Bivio::IO::Alert->warn_deprecated('request is a required parameter')
     ));
 }
 
@@ -136,9 +136,9 @@ sub send {
     # Bounces are sent back to $from. $from is the envelope FROM, ie.
     # the -f argument given to sendmail.
     $recipients ||= $self->unsafe_get_recipients
-	|| Bivio::Die->die('no recipients');
+        || Bivio::Die->die('no recipients');
     $recipients = join(',', @$recipients)
-	if ref($recipients);
+        if ref($recipients);
     $msg ||= $self->as_string;
     my($msg_ref) = ref($msg) ? $msg : \$msg;
     $offset ||= 0;
@@ -151,16 +151,16 @@ sub send {
     my($err) = _send($self, $recipients, $msg_ref, $offset, $from, $req);
     if ($err) {
         $err = _send(
-	    $self,
-	    $_CFG->{errors_to},
+            $self,
+            $_CFG->{errors_to},
             $self->format_as_bounce(
-		$err, $recipients, $msg_ref, undef,
-		$req,
-	    ),
-	    0,
-	    '',
-	    $req,
-	);
+                $err, $recipients, $msg_ref, undef,
+                $req,
+            ),
+            0,
+            '',
+            $req,
+        );
         Bivio::Die->die('errors_to mail failed: ', $err, "\n", $msg_ref)
             if $err;
     }
@@ -174,9 +174,9 @@ sub set_recipients {
     # containing multiple addresses (separated by commas)
     # or an array whose elements may contain scalar lists.
     return $self->put(recipients => join(
-	',',
-	map(@{Bivio::Mail::Address->parse_list($_)},
-	    ref($email_list) ? @$email_list : $email_list,
+        ',',
+        map(@{Bivio::Mail::Address->parse_list($_)},
+            ref($email_list) ? @$email_list : $email_list,
         ),
     ));
 }
@@ -184,9 +184,9 @@ sub set_recipients {
 sub test_language_setup {
     my($self) = @_;
     b_use('IO.Config')->introduce_values({
-	'Bivio::Mail::Common' => {
+        'Bivio::Mail::Common' => {
             allow_resend_from => [],
-	},
+        },
     }) if @{$self->internal_get_config->{allow_resend_from}};
     return;
 }
@@ -208,26 +208,26 @@ sub _send {
     # Attempts to send the message. Returns an error string on failure.
     _trace('sending to ', $recipients) if $_TRACE;
     if ($req->is_test) {
-	return grep(
-	    _send($proto, $_, $msg, $offset, $from, $req),
-	    split(/,/, $recipients),
-	) if $recipients =~ /,/;
-	my($m) = $$msg;
-	$msg = \$m;
-	substr($$msg, $offset, 0)
-	    = $proto->TEST_RECIPIENT_HDR . ": $recipients\n";
+        return grep(
+            _send($proto, $_, $msg, $offset, $from, $req),
+            split(/,/, $recipients),
+        ) if $recipients =~ /,/;
+        my($m) = $$msg;
+        $msg = \$m;
+        substr($$msg, $offset, 0)
+            = $proto->TEST_RECIPIENT_HDR . ": $recipients\n";
     }
     my($command) = '| ' . $_CFG->{sendmail}
-	. ($from ? " '$from'" : '')
-	. " '$recipients'";
+        . ($from ? " '$from'" : '')
+        . " '$recipients'";
     _trace($command) if $_TRACE;
     return unless my $die = Bivio::Die->catch(sub {
 #TODO: causes too much forking for vagrant
-	Bivio::IO::File->write(
-	    IO::File->new($command) || die("$command: open failed"),
-	    $msg,
-	    $offset,
-	);
+        Bivio::IO::File->write(
+            IO::File->new($command) || die("$command: open failed"),
+            $msg,
+            $offset,
+        );
     }) or $?;
     Bivio::IO::Alert->warn($die ? $die->as_string : "$command: status = $?");
     return 'I/O error';

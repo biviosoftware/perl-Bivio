@@ -3,8 +3,8 @@
 Unit();
 [
     [[1 .. 10000]] => [
-	exclude => [
-	    [StringArray([10 .. 11000])] => [StringArray([1 .. 9])],
-	],
+        exclude => [
+            [StringArray([10 .. 11000])] => [StringArray([1 .. 9])],
+        ],
     ],
 ];

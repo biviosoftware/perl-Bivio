@@ -13,7 +13,7 @@ sub control_on_render {
     $self->render_attr('attributes', $source, $buffer);
     my($b) = '';
     $$buffer .= $self->unsafe_render_attr('value', $source, \$b) && length($b)
-	? ">$b</$tag>\n" : "/>\n";
+        ? ">$b</$tag>\n" : "/>\n";
     return;
 }
 
@@ -23,15 +23,15 @@ sub initialize {
     $self->initialize_attr('value', '');
     $self->initialize_attr(attributes => sub {
         my($attr) = $self->get_shallow_copy(qr{^[A-Z0-9]+$});
-	return Join([map({
-	    my($k, $v) = ($_, $attr->{$_});
-	    $k = lc($k);
-	    (
-		qq{ $k="},
-		[\&_to_xml, $v],
-		'"',
-	    );
-	} sort(keys(%$attr)))]);
+        return Join([map({
+            my($k, $v) = ($_, $attr->{$_});
+            $k = lc($k);
+            (
+                qq{ $k="},
+                [\&_to_xml, $v],
+                '"',
+            );
+        } sort(keys(%$attr)))]);
     });
     return shift->SUPER::initialize(@_);
 }
@@ -44,9 +44,9 @@ sub internal_as_string {
 sub internal_new_args {
     my(undef, $tag, $value, $attrs) = @_;
     return {
-	tag => $tag,
-	value => $value,
-	($attrs ? %$attrs : ()),
+        tag => $tag,
+        value => $value,
+        ($attrs ? %$attrs : ()),
     };
 }
 

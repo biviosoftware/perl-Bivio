@@ -769,7 +769,7 @@ http://www.bivio.biz for more info.
     access list:
     symbolic names:
     keyword substitution: kv
-    total revisions: 1139;	selected revisions: 0
+    total revisions: 1139;        selected revisions: 0
     description:
   * Bivio::Delegate::TaskId
     add SEARCH_SUGGEST_LIST_JSON, GROUP_SEARCH_SUGGEST_LIST_JSON
@@ -1482,7 +1482,7 @@ http://www.bivio.biz for more info.
     access list:
     symbolic names:
     keyword substitution: kv
-    total revisions: 199;	selected revisions: 0
+    total revisions: 199;        selected revisions: 0
     description:
   * Bivio::Biz::Model::CalendarEvent
     fixed inherited autoload
@@ -4906,7 +4906,7 @@ http://www.bivio.biz for more info.
     access list:
     symbolic names:
     keyword substitution: kv
-    total revisions: 326;	selected revisions: 0
+    total revisions: 326;        selected revisions: 0
     description:
   * Bivio::Util::SiteForum
     improved init_admin_user
@@ -5860,7 +5860,7 @@ http://www.bivio.biz for more info.
     access list:
     symbolic names:
     keyword substitution: kv
-    total revisions: 123;	selected revisions: 0
+    total revisions: 123;        selected revisions: 0
     description:
   * Bivio::Delegate::TaskId
     don't call create/edit_wysiwyg directly, let Blog/Wiki make decision
@@ -18852,16 +18852,16 @@ http://www.bivio.biz for more info.
     resides in BConf as a lambda/code_ref, e.g.
           'Bivio::Biz::Util::RealmRole' => {
               category_map => sub {
-  		return [[
-  		    public_forum => [
-  			[qw(ANONYMOUS USER WITHDRAWN)] => 'DATA_WRITE',
-  		    ],
-  		], [
-  		    semi_public_forum => [
-  			USER => 'DATA_WRITE',
-  		    ],
-  		]];
-  	    },
+                  return [[
+                      public_forum => [
+                          [qw(ANONYMOUS USER WITHDRAWN)] => 'DATA_WRITE',
+                      ],
+                  ], [
+                      semi_public_forum => [
+                          USER => 'DATA_WRITE',
+                      ],
+                  ]];
+              },
           },
     Calling b-realm-role edit_categories +public_forum turns on
     DATA_WRITE for ANONYMOUS, USER and WITHDRAWN.
@@ -19005,13 +19005,13 @@ http://www.bivio.biz for more info.
     Table.
   * Bivio::UI::HTML::Grid/Table.class allows you to turn off defaulting
     of parameters, e.g. Grid([['x']], {class => 'y'}) yields
-  	<table class="y"><tr>
-  	<td>x</td>
-  	</tr></table>
+          <table class="y"><tr>
+          <td>x</td>
+          </tr></table>
     whereas Grid([['x]]) yields:
-  	<table border="0" cellpadding="0" cellspacing="0"><tr>
-  	<td>x</td>
-  	</tr></table>
+          <table border="0" cellpadding="0" cellspacing="0"><tr>
+          <td>x</td>
+          </tr></table>
     Thusly, Table and Grid are fully CSS compatible.
   * Bivio::UI::HTML::Grid/Table.*_class, e.g. odd_row_class, row_class,
     summary_line_class, allow full class tagging at row and cell levels
@@ -20030,7 +20030,7 @@ http://www.bivio.biz for more info.
     project.
   * Bivio::Util::Release.projects is new config of the form:
       projects => [
-  	[Bivio => b => 'bivio Software, Inc.'],
+          [Bivio => b => 'bivio Software, Inc.'],
       ],
   * Bivio::Util::Release->list_projects_el prints a list of projects
     from the new config parameter.

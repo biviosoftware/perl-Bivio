@@ -15,12 +15,12 @@ sub from_literal {
     my($proto) = shift;
     my($res, $err) = $proto->SUPER::from_literal(@_);
     return $err
-	? (undef, $err)
-	: $res
-	    ? $res =~ /^[a-h0-9]{@{[$proto->get_width]}}$/
-		? lc($res)
-		: (undef, $_TE->EMAIL_VERIFY_KEY)
-	    : (undef, $_TE->NULL);
+        ? (undef, $err)
+        : $res
+            ? $res =~ /^[a-h0-9]{@{[$proto->get_width]}}$/
+                ? lc($res)
+                : (undef, $_TE->EMAIL_VERIFY_KEY)
+            : (undef, $_TE->NULL);
 }
 
 sub get_width {

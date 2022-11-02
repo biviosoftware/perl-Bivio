@@ -4,49 +4,49 @@ Request('initialize_fully');
 options({comparator => 'nested_contains'});
 [
     class() => [
-	{
-	    method => 'execute',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->set_user($params->[0]);
-		req()->put(path_info => $params->[1]);
-		req()->put(query => $params->[2]);
-		return [req()];
-	    },
-	} => [
-	    [undef] => [{
-		task_id => 'SITE_ROOT',
-		query => undef,
-	    }],
-	    demo => [{
-		task_id => 'SITE_ROOT',
-		query => undef,
-	    }],
-	    root => [{
-		task_id => 'ADM_SUBSTITUTE_USER',
-	    }],
-	    guest => [{
-		realm => 'guest',
-		task_id => 'USER_PASSWORD',
-	    }],
-	    [qw(guest settings)] => [{
-		realm => 'guest',
-		task_id => Agent_TaskId()->USER_SETTINGS_FORM,
-		query => undef,
-		path_info => undef,
-	    }],
-	    [qw(guest not-found-task)] => [{
-		realm => 'guest',
-		task_id => 'USER_PASSWORD',
-	    }],
-	    [qw(guest settings t=1)] => [{
-		realm => 'guest',
-		task_id => Agent_TaskId()->USER_SETTINGS_FORM,
-		query => {
-		    t => 1,
-		},
-		path_info => undef,
-	    }],
-	],
+        {
+            method => 'execute',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->set_user($params->[0]);
+                req()->put(path_info => $params->[1]);
+                req()->put(query => $params->[2]);
+                return [req()];
+            },
+        } => [
+            [undef] => [{
+                task_id => 'SITE_ROOT',
+                query => undef,
+            }],
+            demo => [{
+                task_id => 'SITE_ROOT',
+                query => undef,
+            }],
+            root => [{
+                task_id => 'ADM_SUBSTITUTE_USER',
+            }],
+            guest => [{
+                realm => 'guest',
+                task_id => 'USER_PASSWORD',
+            }],
+            [qw(guest settings)] => [{
+                realm => 'guest',
+                task_id => Agent_TaskId()->USER_SETTINGS_FORM,
+                query => undef,
+                path_info => undef,
+            }],
+            [qw(guest not-found-task)] => [{
+                realm => 'guest',
+                task_id => 'USER_PASSWORD',
+            }],
+            [qw(guest settings t=1)] => [{
+                realm => 'guest',
+                task_id => Agent_TaskId()->USER_SETTINGS_FORM,
+                query => {
+                    t => 1,
+                },
+                path_info => undef,
+            }],
+        ],
     ],
 ];

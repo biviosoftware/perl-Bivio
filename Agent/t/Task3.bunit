@@ -4,19 +4,19 @@ Request('initialize_fully');
 req()->set_realm_and_user(qw(fourem btest_read));
 [
     sub {class()->get_by_id('GROUP_USER_LIST')} => [
-	execute => [
-	    [req()] => FORBIDDEN(),
-	    inline_case(sub {
-	        class()->unauth_server_redirect(
-		    {
-			task_id => 'GROUP_USER_LIST',
-		    },
-		    req(),
-		);
-		return;
-	    }),
-	    [req()] => not_die(),
-	    [req()] => FORBIDDEN(),
-	],
+        execute => [
+            [req()] => FORBIDDEN(),
+            inline_case(sub {
+                class()->unauth_server_redirect(
+                    {
+                        task_id => 'GROUP_USER_LIST',
+                    },
+                    req(),
+                );
+                return;
+            }),
+            [req()] => not_die(),
+            [req()] => FORBIDDEN(),
+        ],
     ],
 ];

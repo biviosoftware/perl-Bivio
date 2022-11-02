@@ -3,49 +3,49 @@
 ShellUtil();
 foreach my $x (
     [c1 => <<'EOF'],
-	'example.com' => {
-	    ipv4 => {
-		'111.22.33.24/29' => {
-		    25 => ['mail', 'mail2'],
-		},
-	    },
-	},
+        'example.com' => {
+            ipv4 => {
+                '111.22.33.24/29' => {
+                    25 => ['mail', 'mail2'],
+                },
+            },
+        },
 EOF
     [c2 => <<'EOF'],
-	'example.com' => {
-	    ipv4 => {
-		'111.22.33.24/29' => {
-		    25 => [
+        'example.com' => {
+            ipv4 => {
+                '111.22.33.24/29' => {
+                    25 => [
                         ['mail', {ptr => 1}],
                     ],
-		},
-	    },
-	},
-	'example2.com' => {
-	    ipv4 => {
-		'111.22.33.24/29' => {
-		    25 => [
+                },
+            },
+        },
+        'example2.com' => {
+            ipv4 => {
+                '111.22.33.24/29' => {
+                    25 => [
                         ['mail', {ptr => 1}],
                     ],
-		},
-	    },
-	},
+                },
+            },
+        },
 EOF
     [c3 => <<'EOF', 'servers => [qw(ns1.no-such-domain.tld.)],'],
-	'example.com' => {
-	    ipv4 => {
-		'111.22.33.24/29' => {
-		    25 => ['mail', 'mail2'],
-		},
-	    },
-	},
+        'example.com' => {
+            ipv4 => {
+                '111.22.33.24/29' => {
+                    25 => ['mail', 'mail2'],
+                },
+            },
+        },
 EOF
 ) {
     my($file, $zones, $extra) = @$x;
     $extra ||= '';
     write_file(
-	"NamedConf/$file",
-	<<"EOF"
+        "NamedConf/$file",
+        <<"EOF"
 {
     expiry => '5M',
     hostmaster => 'hostmaster.example.com.',
@@ -57,7 +57,7 @@ EOF
     spf1 => 'include:aspmx.googlemail.com',
     ttl => '9M',
     nets => {
-	'24-31.33.22.111' => '111.22.33.24/29',
+        '24-31.33.22.111' => '111.22.33.24/29',
     },
     zones => {
         $zones

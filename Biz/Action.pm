@@ -18,7 +18,7 @@ sub delete_from_request {
 sub execute {
     my($proto, $req, $class) = @_;
     die("abstract method")
-	unless $class;
+        unless $class;
     return $proto->get_instance($class)->execute($req);
 }
 
@@ -33,20 +33,20 @@ sub get_instance {
 sub get_request {
     my($self) = @_;
     return ref($self) && $self->unsafe_get('req')
-	|| shift->SUPER::get_request(@_);
+        || shift->SUPER::get_request(@_);
 }
 
 sub new {
     my(undef, $req) = @_;
     return shift->SUPER::new->put_on_request(@_)
-	if b_use('Agent.Request')->is_blesser_of($req);
+        if b_use('Agent.Request')->is_blesser_of($req);
     return shift->SUPER::new(@_);
 }
 
 sub put_on_request {
     my($self, $req, $durable) = @_;
     b_die($self, ': may not put singleton on request')
-	if $self->get_instance eq $self;
+        if $self->get_instance eq $self;
     $self->put(req => $req);
     return $self->put_on_req($req, $durable);
 }

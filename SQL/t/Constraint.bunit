@@ -3,27 +3,27 @@
 Unit();
 options({
     create_object => sub {
-	my(undef, $object) = @_;
-	return class()->from_name(@$object);
+        my(undef, $object) = @_;
+        return class()->from_name(@$object);
     },
 });
 class('Bivio::TypeError');
 [
     map((shift(@$_) => [
-	check_value => [
-	    [shift(@$_), shift(@$_)] => ref($_->[0]) ? $_->[0]
-		: $_->[0] ? [Bivio::TypeError->from_name(@$_)] : [],
-	],
+        check_value => [
+            [shift(@$_), shift(@$_)] => ref($_->[0]) ? $_->[0]
+                : $_->[0] ? [Bivio::TypeError->from_name(@$_)] : [],
+        ],
     ]),
-	[NONE => Type_Integer(), undef],
-	[NOT_NULL => Type_Integer(), 1],
-	[PRIMARY_KEY => Type_Integer(), 1],
-	[NOT_ZERO_ENUM => Type_Gender(), from_type(qw(Gender MALE))],
-	[PRIMARY_KEY => Type_Integer(), 'NULL'],
-	[NOT_NULL => Type_Integer(), 'NULL'],
-	[NOT_ZERO_ENUM => Type_Gender(), from_type(qw(Gender UNKNOWN)), 'UNSPECIFIED'],
-	[IS_SPECIFIED => Type_StringArray(), undef, 'NULL'],
-	[IS_SPECIFIED => Type_StringArray(), Type_StringArray(''), 'UNSPECIFIED'],
-	[IS_SPECIFIED => Type_StringArray(), Type_StringArray('a')],
+        [NONE => Type_Integer(), undef],
+        [NOT_NULL => Type_Integer(), 1],
+        [PRIMARY_KEY => Type_Integer(), 1],
+        [NOT_ZERO_ENUM => Type_Gender(), from_type(qw(Gender MALE))],
+        [PRIMARY_KEY => Type_Integer(), 'NULL'],
+        [NOT_NULL => Type_Integer(), 'NULL'],
+        [NOT_ZERO_ENUM => Type_Gender(), from_type(qw(Gender UNKNOWN)), 'UNSPECIFIED'],
+        [IS_SPECIFIED => Type_StringArray(), undef, 'NULL'],
+        [IS_SPECIFIED => Type_StringArray(), Type_StringArray(''), 'UNSPECIFIED'],
+        [IS_SPECIFIED => Type_StringArray(), Type_StringArray('a')],
     ),
 ];

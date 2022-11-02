@@ -4,11 +4,11 @@ use strict;
 BEGIN {
     use Bivio::IO::Config;
     Bivio::IO::Config->introduce_values({
-	Bivio::BConf->merge_class_loader({
-	    delegates => {
-		'Bivio::t::Delegator::D1' => 'Bivio::t::Delegator::I1',
-	    },
-	}),
+        Bivio::BConf->merge_class_loader({
+            delegates => {
+                'Bivio::t::Delegator::D1' => 'Bivio::t::Delegator::I1',
+            },
+        }),
     });
 }
 use Bivio::Test;
@@ -17,18 +17,18 @@ Bivio::Test->new({
     method_is_autoloaded => 1,
 })->unit([
     some_value => [
-	value => 'some_value',
-	does_not_exist => Bivio::DieCode->DIE,
+        value => 'some_value',
+        does_not_exist => Bivio::DieCode->DIE,
     ],
     'Bivio::t::Delegator::D1' => [
-	static_echo => [
-	    hello => 'hello',
+        static_echo => [
+            hello => 'hello',
         ],
-	static_does_not_exist => Bivio::DieCode->DIE,
-	b_can => [
-	    static_echo => 1,
-	    method_d1 => 1,
-	    not_a_method => 0,
-	],
+        static_does_not_exist => Bivio::DieCode->DIE,
+        b_can => [
+            static_echo => 1,
+            method_d1 => 1,
+            not_a_method => 0,
+        ],
     ],
 ]);

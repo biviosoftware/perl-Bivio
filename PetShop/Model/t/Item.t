@@ -10,7 +10,7 @@ use Bivio::Test::Request;
 my($it);
 Bivio::Test->unit([
     Bivio::PetShop::Model::Item->new(
-	Bivio::Test::Request->get_instance) => [
+        Bivio::Test::Request->get_instance) => [
             load => [
                 [{item_id => 'EST-1'}] => undef,
             ],

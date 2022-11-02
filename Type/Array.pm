@@ -18,18 +18,18 @@ sub bsearch_numeric {
     my($middle);
     my($i);
     while ($lower <= $upper) {
-	my($cmp) = $array->[$middle = int(($lower+$upper)/2)]
-		<=> $key;
-	if ($cmp > 0) {
-	    $upper = $middle - 1;
-	}
-	elsif ($cmp < 0) {
-	    $lower = $middle + 1;
-	}
-	else {
-	    # Return success and exact match
-	    return (1, $middle);
-	}
+        my($cmp) = $array->[$middle = int(($lower+$upper)/2)]
+                <=> $key;
+        if ($cmp > 0) {
+            $upper = $middle - 1;
+        }
+        elsif ($cmp < 0) {
+            $lower = $middle + 1;
+        }
+        else {
+            # Return success and exact match
+            return (1, $middle);
+        }
     }
     # Return failure and "neighbor" match
     return (0, $middle);
@@ -40,8 +40,8 @@ sub from_literal {
     # Splits on commas surround by any amount of whitespace.
     my($proto, $value) = @_;
     return $value
-	? [split(/\s*,\s*/, $value)]
-	: undef;
+        ? [split(/\s*,\s*/, $value)]
+        : undef;
 }
 
 sub from_sql_column {
@@ -60,37 +60,37 @@ sub get_width {
 sub map_sort_map {
     my(undef, $name_op, $sort_op, $values) = @_;
     return [map(
-	$_->[1],
-	sort(
-	    {$sort_op->($a->[0], $b->[0])}
-	    map(
-		[$name_op->($_), $_],
-		@$values,
-	    ),
-	),
+        $_->[1],
+        sort(
+            {$sort_op->($a->[0], $b->[0])}
+            map(
+                [$name_op->($_), $_],
+                @$values,
+            ),
+        ),
     )];
 }
 
 sub sort_unique {
     my(undef, $values) = @_;
     return []
-	unless @$values;
+        unless @$values;
     my($type) = ref($values->[0]) ? $values->[0] : $_S;
     my($seen) = {};
     return [sort(
-	{$type->compare($a, $b)}
-	grep(!$seen->{$type->to_literal($_)}++, @$values),
+        {$type->compare($a, $b)}
+        grep(!$seen->{$type->to_literal($_)}++, @$values),
     )];
 }
 
 sub to_hash {
     my($self, $array, $value_or_op) = @_;
     $value_or_op = 1
-	if @_ <= 2;
+        if @_ <= 2;
     return {
-	ref($value_or_op) eq 'CODE'
-	    ? map(($_ => $value_or_op->($_)), @$array)
-	    : map(($_ => $value_or_op), @$array)
+        ref($value_or_op) eq 'CODE'
+            ? map(($_ => $value_or_op->($_)), @$array)
+            : map(($_ => $value_or_op), @$array)
     };
 }
 
@@ -118,9 +118,9 @@ sub to_sql_param {
     my(undef, $param_value) = @_;
     # May be the empty string, which is same as C<undef>
     return $param_value ? join($;, map {
-	b_die($param_value, ': contains $; in an element')
-	    if index($_, $;) >= 0;
-	$_;
+        b_die($param_value, ': contains $; in an element')
+            if index($_, $;) >= 0;
+        $_;
     } @$param_value) : undef;
 }
 

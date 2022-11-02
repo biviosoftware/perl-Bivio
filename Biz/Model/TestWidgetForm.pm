@@ -10,12 +10,12 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
-	    'User.gender',
-	    $self->field_decl([
-		[qw(user_agent UserAgent NONE)],
-		[qw(bunit_enum BunitEnum NONE)],
-	    ]),
-	],
+            'User.gender',
+            $self->field_decl([
+                [qw(user_agent UserAgent NONE)],
+                [qw(bunit_enum BunitEnum NONE)],
+            ]),
+        ],
     });
 }
 

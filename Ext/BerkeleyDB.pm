@@ -20,11 +20,11 @@ sub db_create_or_open {
     my($self) = shift->new;
     my($name) = @_;
     $self->[$_IDI] = {
-	db => BerkeleyDB::Btree->new(
-	    -Filename => _file($name),
-	    -Flags => BerkeleyDB::DB_CREATE(),
-	) || b_die(_file($name), ': unable to open: ', $BerkeleyDB::Error || $!),
-	name => $name,
+        db => BerkeleyDB::Btree->new(
+            -Filename => _file($name),
+            -Flags => BerkeleyDB::DB_CREATE(),
+        ) || b_die(_file($name), ': unable to open: ', $BerkeleyDB::Error || $!),
+        name => $name,
     };
     return $self;
 }
@@ -39,14 +39,14 @@ sub db_destroy {
 sub db_do_glob {
     my($proto, $name_glob, $op) = @_;
     foreach my $name (glob($name_glob . $_SUFFIX)) {
-	$name =~ s/$_SUFFIX$//;
-	my($self) = $proto->db_create_or_open($name);
-	last
-	    unless $self->call_and_do_after(
-		$op,
-		[$self, $name],
-		sub {$self->db_close},
-	    );
+        $name =~ s/$_SUFFIX$//;
+        my($self) = $proto->db_create_or_open($name);
+        last
+            unless $self->call_and_do_after(
+                $op,
+                [$self, $name],
+                sub {$self->db_close},
+            );
     }
     return;
 }
@@ -59,7 +59,7 @@ sub db_exists {
 sub delete_keys {
     my($self) = shift;
     foreach my $k (@_) {
-	_op($self, db_del => $k);
+        _op($self, db_del => $k);
     }
     return;
 }
@@ -69,15 +69,15 @@ sub do_key_values {
     my($cursor) = $self->[$_IDI]->{db}->db_cursor;
     my($k, $v);
     while (
-	(sub {
-	     # With this shows an uninitialized subroutine entry.  We isolate this
-	     # warning with this DB_FIRST section.  Otherwise, the loop would be simpler.
-	     local($SIG{__WARN__}) = sub {};
-	     return $cursor->c_get($k, $v, BerkeleyDB::DB_NEXT()) == 0;
-	 })->()
+        (sub {
+             # With this shows an uninitialized subroutine entry.  We isolate this
+             # warning with this DB_FIRST section.  Otherwise, the loop would be simpler.
+             local($SIG{__WARN__}) = sub {};
+             return $cursor->c_get($k, $v, BerkeleyDB::DB_NEXT()) == 0;
+         })->()
     ) {
-	return
-	    unless $op->($k, $v);
+        return
+            unless $op->($k, $v);
     };
     return;
 }
@@ -89,11 +89,11 @@ sub get_values {
 sub put_key_values {
     my($self) = shift;
     $self->map_by_two(
-	sub {
-	    _op($self, db_put => shift, shift);
-	    return;
-	},
-	\@_,
+        sub {
+            _op($self, db_put => shift, shift);
+            return;
+        },
+        \@_,
     );
     return;
 
@@ -116,17 +116,17 @@ sub _file {
 sub _get {
     my($die_on_not_found, $self) = (shift, shift);
     return $self->return_scalar_or_array(
-	map(
-	    {
-		my($k, $v) = $_;
-		_op($self, db_get => $k, $v)
-		    ? $v
-		    : $die_on_not_found
-		    ? _err($self, $k, ': key not found')
-		    : undef;
-	    }
-	    @_,
-	),
+        map(
+            {
+                my($k, $v) = $_;
+                _op($self, db_get => $k, $v)
+                    ? $v
+                    : $die_on_not_found
+                    ? _err($self, $k, ': key not found')
+                    : undef;
+            }
+            @_,
+        ),
     );
     return;
 }
@@ -136,19 +136,19 @@ sub _op {
     my($fields) = $self->[$_IDI];
     my($status);
     {
-	local($SIG{__WARN__}) = sub {};
-	return $method =~ /db_del|db_put/ ? _op($self, 'db_sync') : 1
-	    if 0 == ($status = $fields->{db}->$method(@_));
+        local($SIG{__WARN__}) = sub {};
+        return $method =~ /db_del|db_put/ ? _op($self, 'db_sync') : 1
+            if 0 == ($status = $fields->{db}->$method(@_));
     }
     return 0
-	if $status = BerkeleyDB::DB_NOTFOUND();
+        if $status = BerkeleyDB::DB_NOTFOUND();
     _err(
-	$self,
-	shift(@_),
-	': ',
-	$BerkeleyDB::Error,
-	'; status=',
-	$status,
+        $self,
+        shift(@_),
+        ': ',
+        $BerkeleyDB::Error,
+        '; status=',
+        $status,
     );
     # DOES NOT RETURN
 }

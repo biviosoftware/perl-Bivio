@@ -8,50 +8,50 @@ class()->set_printer(sub {
 });
 options({
     compute_return => sub {
-	chomp(my $res = $last_msg);
-	$last_msg = undef;
-	return [$res];
+        chomp(my $res = $last_msg);
+        $last_msg = undef;
+        return [$res];
     },
 });
 [
     {
-	method => 'calling_context',
-	comparator => 'nested_contains',
-	compute_return => sub {
-	    my(undef, $actual) = @_;
-	    # TESTING ONLY: Calling context should be completely opaque
-	    return [@{$actual->[0]->[0]}];
-	},
+        method => 'calling_context',
+        comparator => 'nested_contains',
+        compute_return => sub {
+            my(undef, $actual) = @_;
+            # TESTING ONLY: Calling context should be completely opaque
+            return [@{$actual->[0]->[0]}];
+        },
     } => [
-	[] => [
-	    {
-		package => 'Bivio::Test',
-		sub => qr{_eval_method},
-	    },
-	    {
-		package => 'Bivio::Test',
-		sub => qr{__ANON__},
-	    },
-	],
-	'Bivio::Test' => [
-	    {
-		sub => 'Bivio::Die::_eval',
-	    },
-	    {
-		sub => 'Bivio::Die::catch',
-	    },
-	],
-	[['Bivio::Test', 'Bivio::Die']] => [
-	    {
-		sub => TestUnit_Unit()->package_name . '::unit_from_method_group',
-	    },
-	    {
-		sub => TestUnit_Type()->package_name . '::unit',
-	    },
-	],
+        [] => [
+            {
+                package => 'Bivio::Test',
+                sub => qr{_eval_method},
+            },
+            {
+                package => 'Bivio::Test',
+                sub => qr{__ANON__},
+            },
+        ],
+        'Bivio::Test' => [
+            {
+                sub => 'Bivio::Die::_eval',
+            },
+            {
+                sub => 'Bivio::Die::catch',
+            },
+        ],
+        [['Bivio::Test', 'Bivio::Die']] => [
+            {
+                sub => TestUnit_Unit()->package_name . '::unit_from_method_group',
+            },
+            {
+                sub => TestUnit_Type()->package_name . '::unit',
+            },
+        ],
     ],
     warn_exactly_once => [
-	hello => qr{\d+ hello$},
-	hello => [undef],
+        hello => qr{\d+ hello$},
+        hello => [undef],
     ],
 ];

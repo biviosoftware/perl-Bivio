@@ -7,10 +7,10 @@ use Bivio::Base 'Type.EnumDelegate';
 
 sub get_delegate_info {
     return [
-	UNKNOWN => [0],
-	YES => [1],
-	NO => [2],
-	ABSTAIN => [3],
+        UNKNOWN => [0],
+        YES => [1],
+        NO => [2],
+        ABSTAIN => [3],
     ];
 }
 

@@ -9,18 +9,18 @@ my($_ADMINISTRATOR) = __PACKAGE__->use('Auth.Role')->ADMINISTRATOR;
 sub concat_last_first_middle {
     my(undef, $last, $first, $middle) = @_;
     if (defined($last)) {
-	my($res) = undef;
-	return $last
-	    unless defined($first) || defined($middle);
-	$res = $last . ',';
-	$res .= ' ' . $first
-	    if defined($first);
-	$res .= ' ' . $middle
-	    if defined($middle);
-	return $res;
+        my($res) = undef;
+        return $last
+            unless defined($first) || defined($middle);
+        $res = $last . ',';
+        $res .= ' ' . $first
+            if defined($first);
+        $res .= ' ' . $middle
+            if defined($middle);
+        return $res;
     }
     return $first . ' ' . $middle
-	if defined($first) && defined($middle);
+        if defined($first) && defined($middle);
     return defined($first) ? $first : $middle;
 }
 
@@ -38,12 +38,12 @@ sub create {
 sub create_realm {
     my($self, $user, $realm_owner) = (shift, shift, shift);
     return $self->create($user)->SUPER::create_realm({
-	%$realm_owner,
-	defined($realm_owner->{password})
-	    ? (password => $self->use('Type.Password')->encrypt(
-		$realm_owner->{password}))
-	    : (),
-	display_name => $self->format_full_name,
+        %$realm_owner,
+        defined($realm_owner->{password})
+            ? (password => $self->use('Type.Password')->encrypt(
+                $realm_owner->{password}))
+            : (),
+        display_name => $self->format_full_name,
     }, @_);
 }
 
@@ -57,7 +57,7 @@ sub format_full_name {
 
     foreach my $name ($model->unsafe_get($model_prefix.'first_name',
         $model_prefix . 'middle_name', $model_prefix . 'last_name')) {
-	$res .= $name . ' ' if defined($name) && length($name);
+        $res .= $name . ' ' if defined($name) && length($name);
     }
     # Get rid of last ' '
     chop($res);
@@ -88,7 +88,7 @@ sub get_outgoing_emails {
     });
     # Validate address
     return undef
-	unless $email->get_field_type('email')->is_valid($email->get('email'));
+        unless $email->get_field_type('email')->is_valid($email->get('email'));
     return [$email->get('email')];
 }
 
@@ -98,9 +98,9 @@ sub internal_create_realm_administrator_id {
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'user_t',
-	columns => {
+        version => 1,
+        table_name => 'user_t',
+        columns => {
             user_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             first_name => ['Name', 'NONE'],
             first_name_sort => ['Name', 'NONE'],
@@ -111,10 +111,10 @@ sub internal_initialize {
             gender => ['Gender', 'NOT_NULL'],
             birth_date => ['Date', 'NONE'],
         },
-	other => [
+        other => [
             [qw(user_id RealmOwner.realm_id)],
-	],
-	auth_id => 'user_id',
+        ],
+        auth_id => 'user_id',
     };
 }
 
@@ -138,9 +138,9 @@ sub unauth_delete_realm {
     my($self, $realm_owner) = @_;
     my($rid) = $realm_owner->get('realm_id');
     $self->new_other('RealmUser')->unauth_delete({
-	realm_id => $rid,
-	user_id => $rid,
-	role => $_ADMINISTRATOR,
+        realm_id => $rid,
+        user_id => $rid,
+        role => $_ADMINISTRATOR,
     });
     return shift->SUPER::unauth_delete_realm(@_);
 }
@@ -153,7 +153,7 @@ sub update {
     my($res) = $self->SUPER::update($new_values);
     _validate_names($self);
     $self->get_model('RealmOwner')->update({
-	display_name => $self->format_full_name,
+        display_name => $self->format_full_name,
     });
     return $res;
 }
@@ -161,18 +161,18 @@ sub update {
 sub _compute_sorting_names {
     my($values) = @_;
     foreach my $field (qw(first_name middle_name last_name)) {
-	my($sort) = $field . '_sort';
-	unless (exists($values->{$field})) {
-	    delete($values->{$sort});
-	    next;
-	}
-	if (defined($values->{$field}) && length($values->{$field})) {
-	    $values->{$sort} = lc($values->{$field});
-	}
-	else {
-	    $values->{$field} = undef;
-	    $values->{$sort} = undef;
-	}
+        my($sort) = $field . '_sort';
+        unless (exists($values->{$field})) {
+            delete($values->{$sort});
+            next;
+        }
+        if (defined($values->{$field}) && length($values->{$field})) {
+            $values->{$sort} = lc($values->{$field});
+        }
+        else {
+            $values->{$field} = undef;
+            $values->{$sort} = undef;
+        }
     }
     return;
 }

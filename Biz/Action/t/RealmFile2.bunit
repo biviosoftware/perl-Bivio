@@ -4,13 +4,13 @@ Request();
 set_realm_and_user('demo', 'demo');
 [
     class() => [
-	access_is_public_only => [
-	    [req()] => 0,
-	    [req(), unauth_model('RealmFile')->unauth_load_or_die({
-		path => '/',
-		realm_id => realm_id('site'),
-	    })] => 1,
-	    [req(), undef] => 0,
-	],
+        access_is_public_only => [
+            [req()] => 0,
+            [req(), unauth_model('RealmFile')->unauth_load_or_die({
+                path => '/',
+                realm_id => realm_id('site'),
+            })] => 1,
+            [req(), undef] => 0,
+        ],
     ],
 ];

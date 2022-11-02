@@ -180,10 +180,10 @@ sub add_days {
     # Dies on range error.
     my($j, $s) = $proto->internal_split($date_time);
     if (abs($days) < $proto->RANGE_IN_DAYS) {
-	$j += $days;
-	return $proto->internal_join($j, $s)
-	    if $proto->FIRST_DATE_IN_JULIAN_DAYS <= $j
-	    && $j < $proto->LAST_DATE_IN_JULIAN_DAYS;
+        $j += $days;
+        return $proto->internal_join($j, $s)
+            if $proto->FIRST_DATE_IN_JULIAN_DAYS <= $j
+            && $j < $proto->LAST_DATE_IN_JULIAN_DAYS;
     }
     Bivio::Die->die('range_error: ', $date_time, ' + ', $days);
     # DOES NOT RETURN
@@ -195,16 +195,16 @@ sub add_months {
     $year += $months / 12;
     $mon += $months % 12;
     if ($mon < 1) {
-	$mon += 12;
-	$year--;
+        $mon += 12;
+        $year--;
     }
     elsif ($mon > 12) {
-	$mon -= 12;
-	$year++;
+        $mon -= 12;
+        $year++;
     }
     my($last_day) = $proto->get_last_day_in_month($mon, $year);
     if ($mday > $last_day) {
-	$mday = $last_day;
+        $mday = $last_day;
     }
     return $proto->from_parts_or_die($sec, $min, $hour, $mday, $mon, $year);
 }
@@ -219,12 +219,12 @@ sub add_seconds {
     my($j, $s) = $proto->internal_split($date_time);
     $s += $secs;
     if ($s < 0) {
-	$days--;
-	$s += $proto->SECONDS_IN_DAY;
+        $days--;
+        $s += $proto->SECONDS_IN_DAY;
     }
     elsif ($s >= $proto->SECONDS_IN_DAY) {
-	$days++;
-	$s -= SECONDS_IN_DAY();
+        $days++;
+        $s -= SECONDS_IN_DAY();
     }
     return $proto->add_days($proto->internal_join($j, $s), $days);
 }
@@ -257,13 +257,13 @@ sub compare_defined {
     my($ld, $lt) = $proto->internal_split($left);
     my($rd, $rt) = $proto->internal_split($right);
     return 1
-	if $ld > $rd;
+        if $ld > $rd;
     return -1
-	if $ld < $rd;
+        if $ld < $rd;
     return 1
-	if $lt > $rt;
+        if $lt > $rt;
     return -1
-	if $lt < $rt;
+        if $lt < $rt;
     return 0;
 }
 
@@ -272,18 +272,18 @@ sub date_from_parts {
     # Returns the date/time value comprising the parts.  If there is an
     # error converting, returns undef and L<Bivio::TypeError|Bivio::TypeError>.
     return (undef, Bivio::TypeError->YEAR_DIGITS)
-	unless($year) && $year > 99;
+        unless($year) && $year > 99;
     return (undef, Bivio::TypeError->YEAR_RANGE)
-	unless FIRST_YEAR() <= $year && $year <= $proto->LAST_YEAR;
+        unless FIRST_YEAR() <= $year && $year <= $proto->LAST_YEAR;
     return (undef, Bivio::TypeError->MONTH)
-	unless 1 <= $mon && $mon <= 12;
+        unless 1 <= $mon && $mon <= 12;
     $mon--;
     $year -= $proto->FIRST_YEAR;
     my($ly) = $_IS_LEAP_YEAR[$year];
     return (undef, Bivio::TypeError->DAY_OF_MONTH)
-	unless 1 <= $mday && $mday <= $_MONTH_DAYS[$ly]->[$mon];
+        unless 1 <= $mday && $mday <= $_MONTH_DAYS[$ly]->[$mon];
     return ($_YEAR_BASE[$year] + $_MONTH_BASE[$ly]->[$mon] + --$mday)
-	. $_TIME_SUFFIX;
+        . $_TIME_SUFFIX;
 }
 
 sub date_from_parts_or_die {
@@ -295,27 +295,27 @@ sub delta_days {
     my($proto, $start_date, $end_date) = @_;
     # Returns the floating point difference between two dates.
     return 0
-	if $start_date eq $end_date;
+        if $start_date eq $end_date;
 
     my($sign) = 1;
     my(@dates) = ([$proto->internal_split($start_date)], [$proto->internal_split($end_date)]);
     if ($dates[1]->[0] < $dates[0]->[0] ||
-	    ($dates[1]->[0] == $dates[0]->[0] &&
-		$dates[1]->[1] < $dates[0]->[1])) {
-	$sign = -1;
-	@dates = reverse(@dates);
+            ($dates[1]->[0] == $dates[0]->[0] &&
+                $dates[1]->[1] < $dates[0]->[1])) {
+        $sign = -1;
+        @dates = reverse(@dates);
     }
 
     my($start_days, $start_secs) = @{$dates[0]};
     my($end_days, $end_secs) = @{$dates[1]};
 
     if ($end_secs < $start_secs) {
-	$end_secs += $proto->SECONDS_IN_DAY();
-	$end_days--;
+        $end_secs += $proto->SECONDS_IN_DAY();
+        $end_days--;
     }
 
     return $sign * (($end_days - $start_days) +
-	($end_secs - $start_secs)/$proto->SECONDS_IN_DAY());
+        ($end_secs - $start_secs)/$proto->SECONDS_IN_DAY());
 }
 
 sub diff_seconds {
@@ -329,9 +329,9 @@ sub diff_seconds {
 sub do_iterate {
     my($proto, $op, $begin, $end) = @_;
     while ($proto->is_less_than_or_equals($begin, $end)) {
-	return
-	    unless $proto->internal_verify_do_iterate_result($op->($begin));
-	$begin = $proto->add_days($begin, 1);
+        return
+            unless $proto->internal_verify_do_iterate_result($op->($begin));
+        $begin = $proto->add_days($begin, 1);
     }
     return;
 }
@@ -365,7 +365,7 @@ sub english_month_to_int {
     my($self, $month) = @_;
     $month = lc($month);
     foreach my $map ($_MONTH3_TO_NUM, $_MONTH_TO_NUM) {
-	return $map->{$month} || next;
+        return $map->{$month} || next;
     }
     b_die($month, ': month not found');
     # DOES NOT RETURN
@@ -375,9 +375,9 @@ sub from_date_and_time {
     my($proto, $date, $time) = @_;
     # Merges GMT date and time values and returns new value.
     die($date, "Not a valid date-only value")
-	unless $proto->is_date($date);
+        unless $proto->is_date($date);
     die($time, "Not a valid time-only value")
-	unless $proto->is_time($time);
+        unless $proto->is_time($time);
     my($d1_d, $d1_t) = $proto->internal_split($date);
     my($d2_d, $d2_t) = $proto->internal_split($time);
     my($v, $e) = $proto->from_literal($proto->internal_join($d1_d, $d2_t));
@@ -396,19 +396,19 @@ sub from_literal {
     $value =~ s/\s+/ /g;
     my(@res);
     foreach my $method (
-	\&_from_literal,
-	\&_from_alert,
-	\&_from_ctime,
-	\&_from_string,
-	\&_from_file_name,
-	\&_from_rfc822,
-	\&_from_xml,
-	\&_from_yyyy_mm_dd_hh_mm_ss,
-	\&_from_common_log_format,
-	\&_from_dd_mmm_yyyy_hh_mm_ss,
+        \&_from_literal,
+        \&_from_alert,
+        \&_from_ctime,
+        \&_from_string,
+        \&_from_file_name,
+        \&_from_rfc822,
+        \&_from_xml,
+        \&_from_yyyy_mm_dd_hh_mm_ss,
+        \&_from_common_log_format,
+        \&_from_dd_mmm_yyyy_hh_mm_ss,
     ) {
-	return @res
-	    if @res = $method->($proto, $value);
+        return @res
+            if @res = $method->($proto, $value);
     }
     # unknown format
     return (undef, Bivio::TypeError->DATE_TIME);
@@ -426,10 +426,10 @@ sub from_parts {
     my($proto, $sec, $min, $hour, $mday, $mon, $year) = @_;
     my($date, $err) = $proto->date_from_parts($mday, $mon, $year);
     return (undef, $err)
-	if $err;
+        if $err;
     my($time, $err2) = $proto->time_from_parts($sec, $min, $hour);
     return (undef, $err2)
-	if $err2;
+        if $err2;
     return $proto->internal_join(($proto->internal_split($date))[0], ($proto->internal_split($time))[1]);
 }
 
@@ -447,10 +447,10 @@ sub from_sql_value {
 sub from_unix {
     my($proto, $unix_time) = @_;
     b_die($unix_time, ': must be an unsigned integer')
-	unless defined($unix_time) && $unix_time =~ /^(\d+)$/;
+        unless defined($unix_time) && $unix_time =~ /^(\d+)$/;
     my($s) = int($unix_time % $proto->SECONDS_IN_DAY() + 0.5);
     my($j) = int(($unix_time - $s)/$proto->SECONDS_IN_DAY() + 0.5)
-	    + $proto->UNIX_EPOCH_IN_JULIAN_DAYS();
+            + $proto->UNIX_EPOCH_IN_JULIAN_DAYS();
     return $proto->internal_join($j, $s);
 }
 
@@ -512,14 +512,14 @@ sub get_parts {
     Bivio::Die->die(\@parts, ': only one part when called in scalar context')
         unless wantarray || @parts == 1;
     return ($proto->to_parts($date))[
-	map(
-	    (
-		$_PART_NUMBER->{$_}
-	        || $_PART_NUMBER->{lc($_)}
-		|| Bivio::Die->die($_, ': invalid part name'),
-	    ) - 1,
-	    @parts,
-	),
+        map(
+            (
+                $_PART_NUMBER->{$_}
+                || $_PART_NUMBER->{lc($_)}
+                || Bivio::Die->die($_, ': invalid part name'),
+            ) - 1,
+            @parts,
+        ),
     ];
 }
 
@@ -566,7 +566,7 @@ sub gettimeofday_diff_seconds {
 sub handle_pre_execute_task {
     my($proto, undef, $req) = @_;
     $proto->set_test_now(
-	delete(($req->unsafe_get('query') || {})->{$proto->TEST_NOW_QUERY_KEY}),
+        delete(($req->unsafe_get('query') || {})->{$proto->TEST_NOW_QUERY_KEY}),
         $req,
     ) if $_IS_TEST;
     return;
@@ -606,7 +606,7 @@ sub is_weekday {
 sub is_weekend {
     my($proto, $date_time) = @_;
     return $proto->english_day_of_week($date_time)
-	=~ /(@{[$_DAY_OF_WEEK->[0]]}|@{[$_DAY_OF_WEEK->[6]]})/;
+        =~ /(@{[$_DAY_OF_WEEK->[0]]}|@{[$_DAY_OF_WEEK->[6]]})/;
 }
 
 sub local_end_of_today {
@@ -634,9 +634,9 @@ sub local_to_parts {
 sub now {
     my($proto) = @_;
     if ($_IS_TEST) {
-	$proto->register_with_agent_task;
-	return $_TEST_NOW
-	    if $_TEST_NOW;
+        $proto->register_with_agent_task;
+        return $_TEST_NOW
+            if $_TEST_NOW;
     }
     return __PACKAGE__->from_unix(time);
 }
@@ -662,7 +662,7 @@ sub now_as_year {
 sub register_with_agent_task {
     my($self) = @_;
     return
-	unless $_IS_TEST && ! $_IS_REGISTERED_WITH_TASK;
+        unless $_IS_TEST && ! $_IS_REGISTERED_WITH_TASK;
     $_IS_REGISTERED_WITH_TASK = 1;
     b_use('Agent.Task')->register(__PACKAGE__);
     return;
@@ -678,10 +678,10 @@ sub rfc822 {
 
     # We go to unix_time, because we need the weekday
     my($sec, $min, $hour, $mday, $mon, $year, $wday)
-	    = gmtime($unix_time);
+            = gmtime($unix_time);
     return sprintf('%s, %2d %s %04d %02d:%02d:%02d GMT',
-	    $_DAY_OF_WEEK3->[$wday], $mday, $_NUM_TO_MONTH3->[$mon], $year + 1900,
-	    $hour, $min, $sec);
+            $_DAY_OF_WEEK3->[$wday], $mday, $_NUM_TO_MONTH3->[$mon], $year + 1900,
+            $hour, $min, $sec);
 }
 
 sub set_beginning_of_day {
@@ -709,8 +709,8 @@ sub set_end_of_month {
     my($proto, $date_time) = @_;
     my($sec, $min, $hour, $day, $mon, $year) = $proto->to_parts($date_time);
     return $proto->from_parts_or_die(
-	$sec, $min, $hour,
-	$proto->get_last_day_in_month($mon, $year), $mon, $year,
+        $sec, $min, $hour,
+        $proto->get_last_day_in_month($mon, $year), $mon, $year,
     );
 }
 
@@ -734,8 +734,8 @@ sub set_local_time_part {
     # Sets the time component of the date/time to I<seconds> in the user's
     # time zone.  I<timezone> may be undef iwc it defaults to I<timezone>.
     my($date) = $proto->internal_split(
-	$proto->is_date($date_time) ? $date_time
-	    : _adjust_to_local($proto, $date_time, $tz),
+        $proto->is_date($date_time) ? $date_time
+            : _adjust_to_local($proto, $date_time, $tz),
     );
     return _adjust_from_local($proto, "$date $seconds", $tz);
 }
@@ -743,7 +743,7 @@ sub set_local_time_part {
 sub set_test_now {
     my($proto, $now) = @_;
     return $_TEST_NOW = $proto->from_literal_or_die($now, 1)
-	if $_IS_TEST;
+        if $_IS_TEST;
     return;
 }
 
@@ -762,7 +762,7 @@ sub timezone {
     # the value of L<get_local_timezone|"get_local_timezone">, if no request or not
     # set.
     return $_LOCAL_TIMEZONE
-	unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
+        unless UNIVERSAL::can('Bivio::Agent::Request', 'get_current');
     # We can't return something other than undef.
     my($req) = Bivio::Agent::Request->get_current;
     my($tz) = $req && $req->unsafe_get('timezone');
@@ -772,7 +772,7 @@ sub timezone {
 sub to_alert {
     my($proto, $value) = @_;
     return sprintf(
-	'%04d/%02d/%02d %02d:%02d:%02d', reverse($proto->to_parts($value)));
+        '%04d/%02d/%02d %02d:%02d:%02d', reverse($proto->to_parts($value)));
 }
 
 sub to_date_parts {
@@ -784,7 +784,7 @@ sub to_dd_mmm_yyyy {
     my($proto, $value, $sep) = @_;
     # Returns date in DD MMM YYYY format
     $sep = ' '
-	unless defined($sep);
+        unless defined($sep);
     my($mday, $mon, $year) = ($proto->to_parts($value))[3..5];
     my($format) = "%2d${sep}%s${sep}%04d";
     return sprintf($format, $mday, $_NUM_TO_MONTH3->[$mon-1], $year);
@@ -795,7 +795,7 @@ sub to_file_name {
     # Returns I<value> as a string that can be used as a part of file name.
     my($sec, $min, $hour, $day, $mon, $year) = $proto->to_parts($value);
     return sprintf('%04d%02d%02d%02d%02d%02d', $year, $mon, $day,
-	    $hour, $min, $sec);
+            $hour, $min, $sec);
 }
 
 sub to_four_digit_year {
@@ -804,13 +804,13 @@ sub to_four_digit_year {
     #
     # Date windowing adjusts twenty years ahead of this year.
     return $year >= 100 ? $year
-	    : $year + ($year > $_WINDOW_YEAR ? 1900 : 2000);
+            : $year + ($year > $_WINDOW_YEAR ? 1900 : 2000);
 }
 
 sub to_ical {
     my($proto, $value) = @_;
     return
-	unless $value;
+        unless $value;
     $value = $proto->to_file_name($value);
     substr($value, 8, 0) = 'T';
     return $value . 'Z';
@@ -858,8 +858,8 @@ sub to_parts {
 
     # Unix time doesn't have a "$time" component
     unless (defined($time)) {
-	Bivio::IO::Alert->warn_deprecated('localtime() going away');
-	return _localtime($value);
+        Bivio::IO::Alert->warn_deprecated('localtime() going away');
+        return _localtime($value);
     }
 
     # Parse time component
@@ -875,12 +875,12 @@ sub to_parts {
 
     # Make sure within range
     if ($i == 0) {
-	die("$value: time less than first year")
-		    if FIRST_DATE_IN_JULIAN_DAYS > $date;
+        die("$value: time less than first year")
+                    if FIRST_DATE_IN_JULIAN_DAYS > $date;
     }
     elsif ($i >= $#_YEAR_BASE) {
-	die("$value: time greater than last year")
-		    if LAST_DATE_IN_JULIAN_DAYS() < $date;
+        die("$value: time greater than last year")
+                    if LAST_DATE_IN_JULIAN_DAYS() < $date;
     }
 
     # Adjust year if base is after $date
@@ -906,7 +906,7 @@ sub to_sql_value {
 sub to_string {
     my($proto, $date_time, $timezone) = @_;
     return _to_string(
-	$proto, $date_time, defined($timezone) ? $timezone : 'GMT');
+        $proto, $date_time, defined($timezone) ? $timezone : 'GMT');
 }
 
 sub to_time_parts {
@@ -919,7 +919,7 @@ sub to_unix {
     # Returns unix time or blows up if before epoch.
     my($date, $time) = $proto->internal_split($date_time);
     die($date, ': date before unix epoch')
-	if $date < $proto->UNIX_EPOCH_IN_JULIAN_DAYS();
+        if $date < $proto->UNIX_EPOCH_IN_JULIAN_DAYS();
     return ($date - $proto->UNIX_EPOCH_IN_JULIAN_DAYS()) * $proto->SECONDS_IN_DAY() + $time;
 }
 
@@ -948,7 +948,7 @@ sub _adjust_from_local {
 sub _adjust_local {
     my($sign, $proto, $value, $tz) = @_;
     return $proto->add_seconds(
-	$value, $sign * 60 * (defined($tz) ? $tz : $proto->timezone));
+        $value, $sign * 60 * (defined($tz) ? $tz : $proto->timezone));
 }
 
 sub _adjust_to_local {
@@ -960,13 +960,13 @@ sub _compute_local_timezone {
     # Computes the local timezone by using _localtime().
     my($local, $err) = __PACKAGE__->from_parts(_localtime($now));
     Bivio::Die->die('DIE', {
-	message => 'unable to convert localtime',
-	type_error => $err,
-	entity => $now,
+        message => 'unable to convert localtime',
+        type_error => $err,
+        entity => $now,
     }) unless $local;
     $_LOCAL_TIMEZONE =
-	int(__PACKAGE__->diff_seconds(__PACKAGE__->from_unix($now), $local)
-	    / 60 + 0.5);
+        int(__PACKAGE__->diff_seconds(__PACKAGE__->from_unix($now), $local)
+            / 60 + 0.5);
     return;
 }
 
@@ -993,14 +993,14 @@ sub _from_alert {
 sub _from_common_log_format {
     my($proto, $value, $res, $err) = @_;
     my($d, $mon, $y, $h, $m, $s, $sign, $dh, $dm)
-	= $value =~ /^@{[$proto->REGEX_COMMON_LOG_FORMAT()]}$/;
+        = $value =~ /^@{[$proto->REGEX_COMMON_LOG_FORMAT()]}$/;
     return ()
-	unless defined($y);
+        unless defined($y);
     return (undef, Bivio::TypeError->MONTH)
-	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
+        unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
     return $proto->add_seconds(
-	$proto->from_parts($s, $m, $h, $d, $mon, $y),
-	($sign eq '-' ? +1 : -1) * (60 * (60 * $dh + $dm)),
+        $proto->from_parts($s, $m, $h, $d, $mon, $y),
+        ($sign eq '-' ? +1 : -1) * (60 * (60 * $dh + $dm)),
     );
 }
 
@@ -1008,9 +1008,9 @@ sub _from_ctime {
     my($proto, $value, $res, $err) = @_;
     my($mon, $d, $h, $m, $s, $y) = $value =~ /^@{[$proto->REGEX_CTIME()]}$/;
     return ()
-	unless defined($y);
+        unless defined($y);
     return (undef, Bivio::TypeError->MONTH)
-	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
+        unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
     return $proto->from_parts($s, $m, $h, $d, $mon, $y);
 }
 
@@ -1019,9 +1019,9 @@ sub _from_dd_mmm_yyyy_hh_mm_ss {
     # ex. 07-Jun-2013 13:56:17
     my($d, $mon, $y, $h, $m, $s) = $value =~ /(\d\d?)\-(\w+)\-(\d{4}) (\d{1,2}):(\d{1,2})(?::(\d{1,2}))?/;
     return ()
-	unless defined($y);
+        unless defined($y);
     return (undef, Bivio::TypeError->MONTH)
-	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
+        unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
     return $proto->from_parts($s || 0, $m, $h, $d, $mon, $y);
 }
 
@@ -1038,12 +1038,12 @@ sub _from_literal {
     my($date, $time) = $value =~ /^@{[$proto->REGEX_LITERAL()]}$/;
     return () unless defined($time);
     return (undef, Bivio::TypeError->DATE_RANGE)
-	if length($date) > length($proto->LAST_DATE_IN_JULIAN_DAYS())
-	    || $date < $proto->FIRST_DATE_IN_JULIAN_DAYS()
-	    || $date > $proto->LAST_DATE_IN_JULIAN_DAYS();
+        if length($date) > length($proto->LAST_DATE_IN_JULIAN_DAYS())
+            || $date < $proto->FIRST_DATE_IN_JULIAN_DAYS()
+            || $date > $proto->LAST_DATE_IN_JULIAN_DAYS();
     return (undef, Bivio::TypeError->TIME_RANGE)
-	if length($time) > length($proto->SECONDS_IN_DAY())
-	    || $time >= $proto->SECONDS_IN_DAY();
+        if length($time) > length($proto->SECONDS_IN_DAY())
+            || $time >= $proto->SECONDS_IN_DAY();
     return $proto->internal_join($date, $time);
 }
 
@@ -1051,13 +1051,13 @@ sub _from_or_die {
     my($method, $proto) = (shift, shift);
     my($res, $e) = $proto->$method(@_);
     return $res
-	if defined($res);
+        if defined($res);
     Bivio::Die->throw_die('DIE', {
-	message => "$method failed: " . $e->get_long_desc,
-	program_error => 1,
-	error_enum => $e,
-	entity => [@_],
-	class => (ref($proto) || $proto),
+        message => "$method failed: " . $e->get_long_desc,
+        program_error => 1,
+        error_enum => $e,
+        entity => [@_],
+        class => (ref($proto) || $proto),
     });
     # DOES NOT RETURN
 }
@@ -1066,22 +1066,22 @@ sub _from_rfc822 {
     my($proto, $value) = @_;
     my($DATE_TIME) = Bivio::Mail::RFC822->DATE_TIME;
     my($mday, $mon, $year, $hour, $min, $sec, $tz)
-	= $value =~ /^@{[$proto->REGEX_RFC822]}/s;
+        = $value =~ /^@{[$proto->REGEX_RFC822]}/s;
     return
-	unless defined($mday);
+        unless defined($mday);
     return (undef, Bivio::TypeError->MONTH)
-	unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
+        unless defined($mon = $_MONTH3_TO_NUM->{lc($mon)});
     my($v, $e) = $proto->from_parts($sec, $min, $hour, $mday, $mon, $year);
     return (undef, $e)
-	if $e;
+        if $e;
     $tz = Bivio::Mail::RFC822::TIME_ZONES->{uc($tz)}
-	if defined(Bivio::Mail::RFC822->TIME_ZONES->{uc($tz)});
+        if defined(Bivio::Mail::RFC822->TIME_ZONES->{uc($tz)});
     return $v
-	if $tz =~ /^0+$/;
+        if $tz =~ /^0+$/;
     return (undef, Bivio::TypeError->TIME_ZONE)
-	unless $tz =~ /^(-|\+?)(\d\d?)(\d\d)/s;
+        unless $tz =~ /^(-|\+?)(\d\d?)(\d\d)/s;
     return $proto->add_seconds(
-	$v, - ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3));
+        $v, - ($1 eq '-' ? -1 : +1) * 60 * ($2 * 60 + $3));
 
 }
 
@@ -1097,7 +1097,7 @@ sub _from_xml {
     # Parses to_xml format
     my($y, $mon, $d, $h, $m, $s, $z) = $value =~ /^@{[$proto->REGEX_XML()]}$/;
     return ()
-	unless defined($s);
+        unless defined($s);
     my($res) = $proto->from_parts($s, $m, $h, $d, $mon, $y);
     return $z ? $res : _adjust_from_local($proto, $res);
 }
@@ -1111,8 +1111,8 @@ sub _from_yyyy_mm_dd_hh_mm_ss {
 sub _init_english {
     my($words) = @_;
     return (
-	$words,
-	[map(substr($_, 0, 3), @$words)],
+        $words,
+        [map(substr($_, 0, 3), @$words)],
     );
 }
 
@@ -1126,22 +1126,22 @@ sub _initialize {
 
     # Create month bases from month days
     foreach my $ly (0..1) {
-	$_MONTH_BASE[$ly] = [0];
-	foreach my $m (1..11) {
-	    $_MONTH_BASE[$ly]->[$m] = $_MONTH_BASE[$ly]->[$m-1]
-		    + $_MONTH_DAYS[$ly]->[$m-1];
-	}
+        $_MONTH_BASE[$ly] = [0];
+        foreach my $m (1..11) {
+            $_MONTH_BASE[$ly]->[$m] = $_MONTH_BASE[$ly]->[$m-1]
+                    + $_MONTH_DAYS[$ly]->[$m-1];
+        }
     }
     # 1800 is a leap year and is julian 2378497
     $_IS_LEAP_YEAR[0] = 0;
     $_YEAR_BASE[0] = Bivio::Type::DateTime->FIRST_DATE_IN_JULIAN_DAYS;
     foreach my $y (Bivio::Type::DateTime::FIRST_YEAR()+1
-	    ..Bivio::Type::DateTime::LAST_YEAR()) {
-	my($yy) = $y - Bivio::Type::DateTime::FIRST_YEAR();
-	$_IS_LEAP_YEAR[$yy] = ($y % 4 == 0 && ($y % 100 != 0 || $y == 2000))
-		? 1 : 0;
-	$_YEAR_BASE[$yy] = $_YEAR_BASE[$yy-1]
-		+ ($_IS_LEAP_YEAR[$yy-1] ? 366 : 365);
+            ..Bivio::Type::DateTime::LAST_YEAR()) {
+        my($yy) = $y - Bivio::Type::DateTime::FIRST_YEAR();
+        $_IS_LEAP_YEAR[$yy] = ($y % 4 == 0 && ($y % 100 != 0 || $y == 2000))
+                ? 1 : 0;
+        $_YEAR_BASE[$yy] = $_YEAR_BASE[$yy-1]
+                + ($_IS_LEAP_YEAR[$yy-1] ? 366 : 365);
     }
     _compute_local_timezone();
 
@@ -1168,13 +1168,13 @@ sub _to_string {
     my($proto, $date_time, $timezone) = @_;
     # Does the work of to_string and to_local_string.
     return
-	'' unless defined($date_time);
+        '' unless defined($date_time);
     my($sec, $min, $hour, $mday, $mon, $year) = $proto->to_parts($date_time);
     return sprintf(
-	'%02d/%02d/%04d %02d:%02d:%02d%s',
-	$mon, $mday, $year,
-	$hour, $min, $sec,
-	$timezone ? " $timezone" : '',
+        '%02d/%02d/%04d %02d:%02d:%02d%s',
+        $mon, $mday, $year,
+        $hour, $min, $sec,
+        $timezone ? " $timezone" : '',
     );
 }
 

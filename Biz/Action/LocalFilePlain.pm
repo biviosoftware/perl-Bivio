@@ -20,21 +20,21 @@ my($_DT) = b_use('Type.DateTime');
 sub execute {
     my($proto, $req, $file_name, $content_type) = @_;
     $file_name = $req->get('uri')
-	unless defined($file_name);
+        unless defined($file_name);
     my($tagged) = 0;
     if (Type_CacheTagFilePath()->is_tagged_path($file_name)) {
-	$file_name = Type_CacheTagFilePath()->to_untagged_path($file_name);
-	$tagged = 1;
+        $file_name = Type_CacheTagFilePath()->to_untagged_path($file_name);
+        $tagged = 1;
     }
     else {
-	_trace($file_name, ': missing cache tag') if $_TRACE;
+        _trace($file_name, ': missing cache tag') if $_TRACE;
     }
     my($mime_type);
     $proto->set_cacheable_output(
-	_open($req, $file_name, \$mime_type),
-	defined($content_type) ? $content_type : $mime_type,
-	$req,
-	$tagged,
+        _open($req, $file_name, \$mime_type),
+        defined($content_type) ? $content_type : $mime_type,
+        $req,
+        $tagged,
     );
     return 1;
 }
@@ -43,19 +43,19 @@ sub execute_apple_touch_icon {
     my($proto, $req) = @_;
     my($file_name) = $_FCT->get_value('apple_touch_icon_prefix', $req);
     b_die('invalid apple touch uri: ', $req->get('uri'))
-	unless $req->get('uri') =~ m,/apple-touch-icon(.*?\.png)$,;
+        unless $req->get('uri') =~ m,/apple-touch-icon(.*?\.png)$,;
     my($suffix) = $1;
     my($res);
     my($die) = Bivio::Die->catch_quietly(
-	sub {
-	    $res = $proto->execute($req, $file_name . $suffix);
-	},
+        sub {
+            $res = $proto->execute($req, $file_name . $suffix);
+        },
     );
     if ($die) {
-	# avoid warning in logs
-	return 'DEFAULT_ERROR_REDIRECT_NOT_FOUND'
-	    if $die->unsafe_get('code') && $die->get('code')->eq_not_found;
-	$die->throw;
+        # avoid warning in logs
+        return 'DEFAULT_ERROR_REDIRECT_NOT_FOUND'
+            if $die->unsafe_get('code') && $die->get('code')->eq_not_found;
+        $die->throw;
     }
     return $res;
 }
@@ -68,8 +68,8 @@ sub execute_favicon {
 sub execute_robots_txt {
     my($proto, $req) = @_;
     my($disallow) = $req->get('is_production')
-	&& $_FCC->get_value('robots_txt_allow_all', $req)
-	? '' : ' /';
+        && $_FCC->get_value('robots_txt_allow_all', $req)
+        ? '' : ' /';
     $proto->set_cacheable_output(\(<<"EOF"), 'text/plain', $req);
 User-agent: *
 Disallow:$disallow
@@ -80,22 +80,22 @@ EOF
 sub execute_uri_as_view {
     my($proto, $req) = @_;
     return b_use('UI.View')->execute(
-	$_FCC->get_value('view_execute_uri_prefix', $req)
+        $_FCC->get_value('view_execute_uri_prefix', $req)
         . '/'
-	. $req->get('uri'),
-	$req);
+        . $req->get('uri'),
+        $req);
 }
 
 sub set_cacheable_output {
     my(undef, $output, $mime_type, $req, $never_expire) = @_;
     return $req->get('reply')
-	->set_output($output)
-	->set_output_type($mime_type)
-	->set_cache_max_age(
-	    $never_expire ? $_TAGGED_MAX_AGE : $_MAX_AGE,
-	    $req,
-	    $never_expire,
-	);
+        ->set_output($output)
+        ->set_output_type($mime_type)
+        ->set_cache_max_age(
+            $never_expire ? $_TAGGED_MAX_AGE : $_MAX_AGE,
+            $req,
+            $never_expire,
+        );
 }
 
 sub _open {
@@ -105,18 +105,18 @@ sub _open {
     my($doc) = $_F->get_local_file_name($_PLAIN, $file_name, $req);
     # No files which begin with '.' or contain VC are allowed
     if ($file_name =~ /\/\./ || $file_name =~ b_use('Util.VC')->CONTROL_DIR_RE) {
-	_trace($doc, ': invalid name') if $_TRACE;
+        _trace($doc, ': invalid name') if $_TRACE;
     }
     else {
-	$$mime_type = $_T->from_extension($doc);
-	if (my $fh = IO::File->new('< ' . $doc)) {
-	    _trace($doc, ': opened') if $_TRACE;
-	    $$mime_type = 'text/plain'
-		if $$mime_type eq 'application/octet-stream'
-		&& -T $doc;
-	    return $fh;
-	}
-	_trace('open(', $doc, "): $!") if $_TRACE;
+        $$mime_type = $_T->from_extension($doc);
+        if (my $fh = IO::File->new('< ' . $doc)) {
+            _trace($doc, ': opened') if $_TRACE;
+            $$mime_type = 'text/plain'
+                if $$mime_type eq 'application/octet-stream'
+                && -T $doc;
+            return $fh;
+        }
+        _trace('open(', $doc, "): $!") if $_TRACE;
     }
     $req->throw_die('NOT_FOUND', {entity => $doc});
     # DOES NOT RETURN

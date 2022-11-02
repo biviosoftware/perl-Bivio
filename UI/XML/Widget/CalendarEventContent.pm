@@ -13,20 +13,20 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	values => [
-	    String(['CalendarEvent.description']),
-	    map(
-		Join([
-		    vs_text_as_prose('CalendarEventContent', $_),
-		    vs_text_as_prose('CalendarEventContent', 'field_label_separator'),
-		    String([$_]),
-		]),
-		'time_zone',
-		'CalendarEvent.location',
-		'CalendarEvent.url',
-	    ),
-	],
-	join_separator => BR(),,
+        values => [
+            String(['CalendarEvent.description']),
+            map(
+                Join([
+                    vs_text_as_prose('CalendarEventContent', $_),
+                    vs_text_as_prose('CalendarEventContent', 'field_label_separator'),
+                    String([$_]),
+                ]),
+                'time_zone',
+                'CalendarEvent.location',
+                'CalendarEvent.url',
+            ),
+        ],
+        join_separator => BR(),,
     );
     return shift->SUPER::initialize(@_);
 }

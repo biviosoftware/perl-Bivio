@@ -14,21 +14,21 @@ sub AUTOLOAD {
     my($proto) = shift;
     my($method) = $AUTOLOAD =~ /([^:]+)$/;
     return
-	if $method eq 'DESTROY';
+        if $method eq 'DESTROY';
     die($AUTOLOAD, ': infinite delegation loop')
-	if $AUTOLOAD eq $_PREV_AUTOLOAD;
+        if $AUTOLOAD eq $_PREV_AUTOLOAD;
     local($_PREV_AUTOLOAD) = $AUTOLOAD;
     return (
-	ref($proto) ? $proto->[$_IDI]->{delegate}
-	    : $proto->internal_delegate_package
+        ref($proto) ? $proto->[$_IDI]->{delegate}
+            : $proto->internal_delegate_package
     )->$method(@_);
 }
 
 sub b_can {
     my($proto, $method) = @_;
     return $proto->internal_delegate_package->can($method)
-	|| $proto->SUPER::b_can($method)
-	? 1 : 0;
+        || $proto->SUPER::b_can($method)
+        ? 1 : 0;
 }
 
 sub internal_delegate_package {
@@ -40,7 +40,7 @@ sub new {
     my($proto, @args) = @_;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	delegate => ref($self)->internal_delegate_package->new(@args),
+        delegate => ref($self)->internal_delegate_package->new(@args),
     };
     return $self;
 }

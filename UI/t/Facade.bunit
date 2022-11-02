@@ -3,53 +3,53 @@
 Request();
 config({
     'Bivio::UI::Facade' => {
-	mail_host => 'petshop.local',
-	http_host => 'anyhost.com',
+        mail_host => 'petshop.local',
+        http_host => 'anyhost.com',
     },
 });
 req()->initialize_fully;
 [
     class() => [
-	{
-	    method => 'setup_request',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		return [$params->[0], req()];
-	    },
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [$actual->[0]->get(qw(http_host mail_host))];
-	    },
-	} => [
-	    petshop => ['anyhost.com', 'petshop.local'],
-	    other => ['other.anyhost.com', 'other.local'],
-	    'm-petshop' => ['m-petshop.anyhost.com', 'm-petshop.local'],
-	],
-	map_iterate_with_setup_request => [
-	    [req(), sub {shift->get('uri')}] => [[qw(aaaaa beforeother m-petshop other petshop requiresecure)]],
-	],
-	setup_request => [
-	    ['beforeother', req()] => not_die(),
-	],
-	with_setup_request => [
-	    ['aaaaa', req(), sub {shift->get('uri')}] => 'aaaaa',
-	    ['other.aaaaa.org', req(), sub {shift->get('uri')}] => 'other',
-	    ['m-petshop', req(), sub {shift->get('uri')}] => 'm-petshop',
-	    ['petshop', req(), sub {die('got a die')}] => qr{got a die},
-	    ['aaaaa', req(), sub {shift->get('http_host')}] => 'anyhost.com',
-	],
-	get_from_source => [
-	    [req()] => qr{beforeother}i,
-	],
+        {
+            method => 'setup_request',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                return [$params->[0], req()];
+            },
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return [$actual->[0]->get(qw(http_host mail_host))];
+            },
+        } => [
+            petshop => ['anyhost.com', 'petshop.local'],
+            other => ['other.anyhost.com', 'other.local'],
+            'm-petshop' => ['m-petshop.anyhost.com', 'm-petshop.local'],
+        ],
+        map_iterate_with_setup_request => [
+            [req(), sub {shift->get('uri')}] => [[qw(aaaaa beforeother m-petshop other petshop requiresecure)]],
+        ],
+        setup_request => [
+            ['beforeother', req()] => not_die(),
+        ],
+        with_setup_request => [
+            ['aaaaa', req(), sub {shift->get('uri')}] => 'aaaaa',
+            ['other.aaaaa.org', req(), sub {shift->get('uri')}] => 'other',
+            ['m-petshop', req(), sub {shift->get('uri')}] => 'm-petshop',
+            ['petshop', req(), sub {die('got a die')}] => qr{got a die},
+            ['aaaaa', req(), sub {shift->get('http_host')}] => 'anyhost.com',
+        ],
+        get_from_source => [
+            [req()] => qr{beforeother}i,
+        ],
     ],
     sub {class()->find_by_uri_or_domain('petshop', req())} => [
-	get => [
-	    uri => 'petshop',
-	],
+        get => [
+            uri => 'petshop',
+        ],
     ],
     sub {class()->find_by_uri_or_domain('petshop.other', req())} => [
-	get => [
-	    uri => 'petshop',
-	],
+        get => [
+            uri => 'petshop',
+        ],
     ],
 ];

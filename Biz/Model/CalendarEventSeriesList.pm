@@ -8,20 +8,20 @@ use Bivio::Base 'Model.CalendarEventList';
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	other => [
+        other => [
             {
-		name => 'series_count',
-		type => 'Integer',
-		constraint => 'NONE',
-		in_select => 1,
-		select_value => "(
+                name => 'series_count',
+                type => 'Integer',
+                constraint => 'NONE',
+                in_select => 1,
+                select_value => "(
                     SELECT COUNT(*)
                     FROM calendar_event_t ce
                     WHERE ce.uid = calendar_event_t.uid
                           AND ce.dtstart > calendar_event_t.dtstart
                 ) AS series_count",
-	    },
-	],
+            },
+        ],
     });
 }
 

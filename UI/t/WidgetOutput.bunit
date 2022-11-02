@@ -4,20 +4,20 @@ Unit();
 my($buffer) = 'a';
 [
     sub {
-	class()->new_from_buffer(\$buffer);
+        class()->new_from_buffer(\$buffer);
     } => [
-	{
-	    method => 'append_buffer',
-	    compute_return => sub {
-		return [$buffer];
-	    },
-	} => [
-	    [undef] => 'a',
-	    'b' => 'ab',
-	    ['c', \('d')] => 'abcd',
-	    [\(undef)] => 'abcd',
-	    [\('e')] => 'abcde',
-	    [Type_Gender('MALE')] => DIE(),
-	],
+        {
+            method => 'append_buffer',
+            compute_return => sub {
+                return [$buffer];
+            },
+        } => [
+            [undef] => 'a',
+            'b' => 'ab',
+            ['c', \('d')] => 'abcd',
+            [\(undef)] => 'abcd',
+            [\('e')] => 'abcde',
+            [Type_Gender('MALE')] => DIE(),
+        ],
     ],
 ];

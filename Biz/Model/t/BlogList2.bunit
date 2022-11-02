@@ -5,9 +5,9 @@ my($entry) = require 'BlogList.PL';
 req()->delete_class_from_self('Type.AccessMode');
 [
     load_all => [
-	[] => [map(
-	    +{path_info => $_->{path_info}},
-	    reverse(@$entry),
-	)],
+        [] => [map(
+            +{path_info => $_->{path_info}},
+            reverse(@$entry),
+        )],
     ],
 ];

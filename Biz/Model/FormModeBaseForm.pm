@@ -29,16 +29,16 @@ sub execute_ok_edit {
 sub internal_initialize {
     my(undef, $delegator, $info) = shift->delegated_args(@_);
     return $delegator->merge_initialize_info(
-	$info || $delegator->SUPER::internal_initialize,
-	{
-	    version => 1,
-	    other => [
-		$delegator->field_decl([
-		    [qw(form_mode FormMode)],
-		    ['list_model', 'Model.' . $delegator->LIST_MODEL],
-		]),
-	    ],
-	},
+        $info || $delegator->SUPER::internal_initialize,
+        {
+            version => 1,
+            other => [
+                $delegator->field_decl([
+                    [qw(form_mode FormMode)],
+                    ['list_model', 'Model.' . $delegator->LIST_MODEL],
+                ]),
+            ],
+        },
     );
 }
 
@@ -48,14 +48,14 @@ sub internal_pre_execute {
     my($lm) = $delegator->new_other($delegator->LIST_MODEL);
     my($fm) = $_FM->setup_by_list_this($lm, $delegator->PROPERTY_MODEL);
     $delegator->internal_put_field(
-	map(
-	    ($_ => $lm->get($_)),
-	    @{$lm->get_info('primary_key_names')},
-	),
+        map(
+            ($_ => $lm->get($_)),
+            @{$lm->get_info('primary_key_names')},
+        ),
     ) if $fm->eq_edit;
     $delegator->internal_put_field(
-	form_mode => $fm,
-	list_model => $lm,
+        form_mode => $fm,
+        list_model => $lm,
     );
     return @res;
 }

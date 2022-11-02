@@ -3,22 +3,22 @@
 Type();
 [
     class() => [
-	{
-	    method => 'from_literal',
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return $actual->[0] ? [$actual->[0]->as_string] : $actual;
-	    },
-	} => [
-	    '' => UNDEF(),
-	    '01.01.0.255/32' => '1.1.0.255/32',
-	    '1.2.3.4/30' => '1.2.3.4/30',
-	    '1.2.2.0/23' => '1.2.2.0/23',
-	    '1.2.3.256/32' => NUMBER_RANGE(),
-	    '1.2.3.4/33' => NUMBER_RANGE(),
-	    '1.2.3.4' => SYNTAX_ERROR(),
-	    '1.2.3.4/29' => NOT_FOUND(),
-	    '192.168.128.0/17' => '192.168.128.0/17',
-	],
+        {
+            method => 'from_literal',
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return $actual->[0] ? [$actual->[0]->as_string] : $actual;
+            },
+        } => [
+            '' => UNDEF(),
+            '01.01.0.255/32' => '1.1.0.255/32',
+            '1.2.3.4/30' => '1.2.3.4/30',
+            '1.2.2.0/23' => '1.2.2.0/23',
+            '1.2.3.256/32' => NUMBER_RANGE(),
+            '1.2.3.4/33' => NUMBER_RANGE(),
+            '1.2.3.4' => SYNTAX_ERROR(),
+            '1.2.3.4/29' => NOT_FOUND(),
+            '192.168.128.0/17' => '192.168.128.0/17',
+        ],
     ],
 ];

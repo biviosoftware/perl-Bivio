@@ -143,28 +143,28 @@ sub create_or_update_model_properties {
 sub enum_set_fields_decl {
     my($self, $field, $type) = @_;
     return _with_enum_set_field(
-	sub {
-	    my($column_type, $column_name) = @_;
-	    return (
-		{
-		    name => $field,
-		    type => $column_type,
-		    constraint => 'NONE',
-		},
-		$self->field_decl([
-		    map(
-			[
-			    $self->format_enum_set_field($column_name, $_),
-			    'Boolean',
-			],
-			$type->get_enum_type->get_non_zero_list,
-		    ),
-		]),
-	    );
-	},
-	$self,
-	$field,
-	$type,
+        sub {
+            my($column_type, $column_name) = @_;
+            return (
+                {
+                    name => $field,
+                    type => $column_type,
+                    constraint => 'NONE',
+                },
+                $self->field_decl([
+                    map(
+                        [
+                            $self->format_enum_set_field($column_name, $_),
+                            'Boolean',
+                        ],
+                        $type->get_enum_type->get_non_zero_list,
+                    ),
+                ]),
+            );
+        },
+        $self,
+        $field,
+        $type,
     );
 }
 
@@ -240,7 +240,7 @@ sub execute_unwind {
 sub field_error_equals {
     my($self, $field, @errors) = @_;
     return 0
-	unless my $e = $self->get_field_error($field);
+        unless my $e = $self->get_field_error($field);
     return $e->equals_by_name(@errors);
 }
 
@@ -250,17 +250,17 @@ sub format_context_as_query {
     #
     # Takes context (which may be null), and formats as query string.
     return $fc ? '?'
-	 . $proto->FORM_CONTEXT_QUERY_KEY
-	 . '='
-	 . $_HTML->escape_query($fc->as_literal($req)) : '';
+         . $proto->FORM_CONTEXT_QUERY_KEY
+         . '='
+         . $_HTML->escape_query($fc->as_literal($req)) : '';
 }
 
 sub format_enum_set_field {
     my(undef, $column_name, $enum_or_int) = @_;
     return join(
-	$_ENUM_SET_SEP,
-	$column_name,
-	ref($enum_or_int) ? $enum_or_int->as_int : $enum_or_int,
+        $_ENUM_SET_SEP,
+        $column_name,
+        ref($enum_or_int) ? $enum_or_int->as_int : $enum_or_int,
     );
 }
 
@@ -275,33 +275,33 @@ sub get_context_from_request {
     # If there is a model, make sure not redirecting
     my($form, $context);
     if ($self) {
-	my($fields) = $self->[$_IDI];
-	if ($fields->{redirecting}) {
-	    # Just in case, clear the sentinel
-	    $fields->{redirecting} = 0;
-	    if ($req->unsafe_get_nested(qw(task want_workflow))) {
-		_trace('kept context for workflow: ', $fields->{context})
-		    if $_TRACE;
-		return $fields->{context};
-	    }
-	    # If redirecting, return the stacked context if there is one
-	    my($c) = $fields->{context};
-	    $c &&= $c->get('form_context');
-	    _trace('unwound context: ', $c) if $_TRACE;
-	    return $c;
-	}
-	$form = $self->internal_get_field_values;
-	$context = $self->[$_IDI]->{context};
-	_trace('model from request: ', $form) if $_TRACE;
+        my($fields) = $self->[$_IDI];
+        if ($fields->{redirecting}) {
+            # Just in case, clear the sentinel
+            $fields->{redirecting} = 0;
+            if ($req->unsafe_get_nested(qw(task want_workflow))) {
+                _trace('kept context for workflow: ', $fields->{context})
+                    if $_TRACE;
+                return $fields->{context};
+            }
+            # If redirecting, return the stacked context if there is one
+            my($c) = $fields->{context};
+            $c &&= $c->get('form_context');
+            _trace('unwound context: ', $c) if $_TRACE;
+            return $c;
+        }
+        $form = $self->internal_get_field_values;
+        $context = $self->[$_IDI]->{context};
+        _trace('model from request: ', $form) if $_TRACE;
     }
     elsif ($self = $req->get('task')->get('form_model')) {
-	$self = $self->get_instance;
-	$form = $self->internal_get_form($req);
-	_trace('model from task: ', $form) if $_TRACE;
+        $self = $self->get_instance;
+        $form = $self->internal_get_form($req);
+        _trace('model from task: ', $form) if $_TRACE;
     }
 
     $context = $form = undef
-	if $named->{no_form};
+        if $named->{no_form};
     $context = undef
         if $named->{no_context};
 
@@ -309,18 +309,18 @@ sub get_context_from_request {
     my($ff);
     if ($form && $self && $self->is_instance
         && ($ff = $self->internal_get_file_field_names)) {
-	# Need to copy, because we don't want to trash existing form.
-	my($f) = {%$form};
-	foreach my $n (@$ff) {
-	    my($fn) = $self->get_field_name_for_html($n);
-	    # Converts to just the file name.  We'd never get this back,
-	    # but we can stuff it into the form.  Widget::File
-	    # knows how to handle this.
-	    $f->{$fn} = $self->get_field_info($n, 'type')
-		->to_literal($f->{$fn});
-	    _trace($n, ': set value=', $f->{$fn}) if $_TRACE;
-	}
-	$form = $f;
+        # Need to copy, because we don't want to trash existing form.
+        my($f) = {%$form};
+        foreach my $n (@$ff) {
+            my($fn) = $self->get_field_name_for_html($n);
+            # Converts to just the file name.  We'd never get this back,
+            # but we can stuff it into the form.  Widget::File
+            # knows how to handle this.
+            $f->{$fn} = $self->get_field_info($n, 'type')
+                ->to_literal($f->{$fn});
+            _trace($n, ': set value=', $f->{$fn}) if $_TRACE;
+        }
+        $form = $f;
     }
     return $_FC->new_from_form($self, $form, $context, $req);
 }
@@ -344,7 +344,7 @@ sub get_field_as_html {
     my($fields) = $self->[$_IDI];
     my($value) = $self->unsafe_get($name);
     return $self->get_field_info($name, 'type')->to_html($value)
-	    if defined($value);
+            if defined($value);
     my($fn) = $self->get_field_name_for_html($name);
     return $_HTML->escape(_get_literal($fields, $fn));
 }
@@ -354,7 +354,7 @@ sub get_field_as_literal {
     my($fields) = $self->[$_IDI];
     my($value) = $self->unsafe_get($name);
     return $self->get_field_info($name, 'type')->to_literal($value)
-	    if defined($value);
+            if defined($value);
     return _get_literal($fields, $self->get_field_name_for_html($name));
 }
 
@@ -384,13 +384,13 @@ sub get_hidden_field_values {
     return [
         $self->VERSION_FIELD => $sql_support->get('version'),
         $fields->{context} ? (
-	    $self->CONTEXT_FIELD =>
-		$fields->{context}->as_literal($self->get_request),
-	) : (),
-	map((
-	    $self->get_field_name_for_html($_),
-	    $self->get_field_as_literal($_),
-	), @{$self->internal_get_hidden_field_names}),
+            $self->CONTEXT_FIELD =>
+                $fields->{context}->as_literal($self->get_request),
+        ) : (),
+        map((
+            $self->get_field_name_for_html($_),
+            $self->get_field_as_literal($_),
+        ), @{$self->internal_get_hidden_field_names}),
     ];
 }
 
@@ -403,9 +403,9 @@ sub get_model_properties {
     my($self, $model) = @_;
     my($res) = {};
     _do_columns_referenced($self, $model, sub {
-	my($cn, $pn) = @_;
-	$res->{$cn} = $self->get($pn)
-	    if $self->has_keys($pn);
+        my($cn, $pn) = @_;
+        $res->{$cn} = $self->get($pn)
+            if $self->has_keys($pn);
     });
     return $res;
 }
@@ -423,8 +423,8 @@ sub get_visible_field_names {
 sub get_visible_non_button_names {
     my($self) = @_;
     return [sort(
-	grep(!$self->get_field_type($_)->isa('Bivio::Type::FormButton'),
-	     @{$self->internal_get_visible_field_names}),
+        grep(!$self->get_field_type($_)->isa('Bivio::Type::FormButton'),
+             @{$self->internal_get_visible_field_names}),
     )];
 }
 
@@ -450,7 +450,7 @@ sub has_context_field {
 sub has_stale_data {
     my($self) = @_;
     return $self->req
-	->unsafe_get($self->simple_package_name . '.has_stale_data') || 0;
+        ->unsafe_get($self->simple_package_name . '.has_stale_data') || 0;
 }
 
 sub in_error {
@@ -469,15 +469,15 @@ sub internal_catch_field_constraint_error {
     # Returns false if I<op> executes without dying.
     my($die) = $_D->catch($op);
     return 0
-	unless $die;
+        unless $die;
     $die->throw
-	unless $die->get('code')->equals_by_name('DB_CONSTRAINT')
-	&& UNIVERSAL::isa($die->get('attrs')->{type_error}, 'Bivio::TypeError');
+        unless $die->get('code')->equals_by_name('DB_CONSTRAINT')
+        && UNIVERSAL::isa($die->get('attrs')->{type_error}, 'Bivio::TypeError');
     my($attrs) = $die->get('attrs');
     $self->internal_put_error($field, $attrs->{type_error});
     $self->internal_put_field($info_field =>
         join("\n", $self->get($info_field), $attrs->{error_info}))
-	  if $info_field && exists($attrs->{error_info});
+          if $info_field && exists($attrs->{error_info});
 
     return 1;
 }
@@ -492,7 +492,7 @@ sub internal_clear_error {
     my($e) = $self->get_errors;
     delete($e->{$property});
     $self->clear_errors
-	unless %$e;
+        unless %$e;
     return;
 }
 
@@ -519,13 +519,13 @@ sub internal_get_field_values {
     my($fields) = $self->[$_IDI];
     my($properties) = $self->internal_get;
     my($res) = {
-	$self->VERSION_FIELD => $self->get_info('version'),
-	$self->TIMEZONE_FIELD => $fields->{literals}->{$self->TIMEZONE_FIELD},
+        $self->VERSION_FIELD => $self->get_info('version'),
+        $self->TIMEZONE_FIELD => $fields->{literals}->{$self->TIMEZONE_FIELD},
     };
     foreach my $n (@{$self->internal_get_hidden_field_names},
-	   @{$self->internal_get_visible_field_names}) {
-	$res->{$self->get_field_name_for_html($n)}
-		= $self->get_field_as_literal($n);
+           @{$self->internal_get_visible_field_names}) {
+        $res->{$self->get_field_name_for_html($n)}
+                = $self->get_field_as_literal($n);
     }
     return $res;
 }
@@ -543,27 +543,27 @@ sub internal_get_form {
     # COUPLING: ExpandableListFormModel modifies the form in place so we have to cache here,
     # if not a singleton (iwc ExpandableListFormModel->internal_initialize_list is not called).
     return $fields->{internal_get_form}
-	if $fields->{internal_get_form};
+        if $fields->{internal_get_form};
     my($form) = $req->get_form;
     return $form
-	unless $form;
+        unless $form;
     # Make shallow copy, because we are going to be editting keys and because ExpandableListFormModel
     # adds to $form.
     $form = {%$form};
     if ($fields->{form_is_json}
         = ($form->{$self->CONTENT_TYPE_FIELD} || '') =~ /json/ || $req->if_req_is_json
-	? 1 : 0
+        ? 1 : 0
     ) {
-	# This may be redundant with AgentHTTP.Form, but that's ok
-	$req->put_req_is_json;
-	my($map) = $self->get_info('json_form_name_map');
-	$form = {map(
-	    (($map->{lc($_)} ? $map->{lc($_)}->{form_name} : lc($_)) => $form->{$_}),
-	    keys(%$form),
-	)};
+        # This may be redundant with AgentHTTP.Form, but that's ok
+        $req->put_req_is_json;
+        my($map) = $self->get_info('json_form_name_map');
+        $form = {map(
+            (($map->{lc($_)} ? $map->{lc($_)}->{form_name} : lc($_)) => $form->{$_}),
+            keys(%$form),
+        )};
     }
     $fields->{internal_get_form} = $form
-	if $self->is_instance;
+        if $self->is_instance;
     return $form;
 }
 
@@ -591,10 +591,10 @@ sub internal_get_visible_field_names {
 sub internal_initialize {
     my($self) = @_;
     return {
-	$self->field_decl(visible => [
-	    [$self->OK_BUTTON_NAME, 'OKButton'],
-	    [$self->CANCEL_BUTTON_NAME, 'CancelButton'],
-	]),
+        $self->field_decl(visible => [
+            [$self->OK_BUTTON_NAME, 'OKButton'],
+            [$self->CANCEL_BUTTON_NAME, 'CancelButton'],
+        ]),
     };
 }
 
@@ -617,14 +617,14 @@ sub internal_parse {
     my($values) = $self->internal_get;
     my($res) = _parse($self, $fields || $self->internal_get_field_values());
     if (ref($res) eq 'HASH') {
-	my($method) = delete($res->{method}) || 'client_redirect';
-	return $self->req->$method($res);
+        my($method) = delete($res->{method}) || 'client_redirect';
+        return $self->req->$method($res);
     }
     # need to restore previous values because _parse() will remove invalid ones
     # for example, if the secondary email is invalid
     $self->internal_post_parse_columns($values);
     $self->validate
-	unless $self->in_error;
+        unless $self->in_error;
     return;
 }
 
@@ -672,8 +672,8 @@ sub internal_pre_parse_columns {
 sub internal_process_args {
     my($self, $req, $values) = @_;
     if (ref($req) eq 'HASH') {
-	$values = $req;
-	$req = undef;
+        $values = $req;
+        $req = undef;
     }
     $req ||= $self->get_request;
     return ($self, $req, $values);
@@ -682,24 +682,24 @@ sub internal_process_args {
 sub internal_put_enum_set_from_fields {
     my($self, $field) = @_;
     _with_enum_set_field(
-	sub {
-	    my($type, $column_name) = @_;
-	    $self->internal_put_field(
-		$field,
-		${$type->from_array(
-		    $type->get_enum_type->map_non_zero_list(
-			sub {
-			    my($enum) = @_;
-			    return $self->unsafe_get(
-				$self->format_enum_set_field($column_name, $enum),
-			    ) ? $enum : ();
-			},
-		    ),
-		)},
-	    );
-	},
-	$self,
-	$field,
+        sub {
+            my($type, $column_name) = @_;
+            $self->internal_put_field(
+                $field,
+                ${$type->from_array(
+                    $type->get_enum_type->map_non_zero_list(
+                        sub {
+                            my($enum) = @_;
+                            return $self->unsafe_get(
+                                $self->format_enum_set_field($column_name, $enum),
+                            ) ? $enum : ();
+                        },
+                    ),
+                )},
+            );
+        },
+        $self,
+        $field,
     );
     return;
 }
@@ -711,7 +711,7 @@ sub internal_put_error {
 sub internal_put_error_and_detail {
     my($self, $property, $error, $detail) = @_;
     return $self->internal_clear_error($property)
-	unless defined($error);
+        unless defined($error);
     my($fields) = $self->[$_IDI];
     $error = $_TE->from_any($error);
     $property ||= $self->GLOBAL_ERROR_FIELD;
@@ -719,16 +719,16 @@ sub internal_put_error_and_detail {
     ($fields->{error_details} ||= {})->{$property} = $detail;
     # Details don't have types.  They are application specific.
     _trace($property, ': ', $error, defined($detail) ? ('; ', $detail) : ())
-	if $_TRACE;
+        if $_TRACE;
     return;
 }
 
 sub internal_put_field {
     my($self) = shift;
     $self->map_by_two(sub {
-	my($k, $v) = @_;
+        my($k, $v) = @_;
         $self->internal_get->{$k} = $v;
-	return;
+        return;
     }, \@_);
     return;
 }
@@ -736,17 +736,17 @@ sub internal_put_field {
 sub internal_put_fields_from_enum_set {
     my($self, $field, $set) = @_;
     _with_enum_set_field(
-	sub {
-	    my($type, $column_name) = @_;
-	    $self->internal_put_field(
-		map(
-		    ($self->format_enum_set_field($column_name, $_) => 1),
-		    @{$type->to_array($set)},
-		),
-	    );
-	},
-	$self,
-	$field,
+        sub {
+            my($type, $column_name) = @_;
+            $self->internal_put_field(
+                map(
+                    ($self->format_enum_set_field($column_name, $_) => 1),
+                    @{$type->to_array($set)},
+                ),
+            );
+        },
+        $self,
+        $field,
     );
     return;
 }
@@ -773,9 +773,9 @@ sub is_auxiliary_on_task {
     my($self) = @_;
     my($c) = $self->req(qw(task form_model));
     return 0
-	if defined($c) && $c eq ref($self);
+        if defined($c) && $c eq ref($self);
     _trace(ref($self), ': auxiliary form; primary_class=', $c)
-	if $_TRACE;
+        if $_TRACE;
     return 1;
 }
 
@@ -789,9 +789,9 @@ sub load_from_model_properties {
     my($self, $model) = @_;
     my($m) = ref($model) ? $model : $self->get_model($model);
     _do_columns_referenced($self, $model, sub {
-	my($cn, $pn) = @_;
+        my($cn, $pn) = @_;
         $self->internal_put_field($pn => $m->get($cn));
-	return;
+        return;
     });
     return;
 }
@@ -802,34 +802,34 @@ sub merge_initialize_info {
     # hash_ref.
     my($names) = {};
     foreach my $i ($child, $parent) {
-	foreach my $class (qw(visible other hidden)) {
-	    foreach my $name (@{$i->{$class} || []}) {
-		my($v) = ref($name) eq 'HASH' ? $name
-		    : ref($name) eq 'ARRAY' ? {
-			name => $name->[0],
-			_aliases => [@$name[1..$#$name]],
-		    } : {name => $name};
-		$v->{_class} = $class;
-		foreach my $attr (keys(%$v)) {
-		    my($x) = ($names->{$v->{name}} ||= {});
-		    $x->{$attr} = $v->{$attr}
-			unless exists($x->{$attr});
-		}
-	    }
-	    delete($i->{$class});
-	}
+        foreach my $class (qw(visible other hidden)) {
+            foreach my $name (@{$i->{$class} || []}) {
+                my($v) = ref($name) eq 'HASH' ? $name
+                    : ref($name) eq 'ARRAY' ? {
+                        name => $name->[0],
+                        _aliases => [@$name[1..$#$name]],
+                    } : {name => $name};
+                $v->{_class} = $class;
+                foreach my $attr (keys(%$v)) {
+                    my($x) = ($names->{$v->{name}} ||= {});
+                    $x->{$attr} = $v->{$attr}
+                        unless exists($x->{$attr});
+                }
+            }
+            delete($i->{$class});
+        }
     }
     # Sort so works with testing
     foreach my $v (sort {$a->{name} cmp $b->{name}} values(%$names)) {
-	my($n);
-	push(
-	    @{$child->{delete($v->{_class})} ||= []},
-	    $v->{_aliases} ? [
-		$n = delete($v->{name}),
-		@{delete($v->{_aliases})},
-		%$v ? b_die($n, ': cannot equivalence a hash: ', $v) : (),
-	    ] : keys(%$v) == 1 ? $v->{name} : $v,
-	);
+        my($n);
+        push(
+            @{$child->{delete($v->{_class})} ||= []},
+            $v->{_aliases} ? [
+                $n = delete($v->{name}),
+                @{delete($v->{_aliases})},
+                %$v ? b_die($n, ': cannot equivalence a hash: ', $v) : (),
+            ] : keys(%$v) == 1 ? $v->{name} : $v,
+        );
     }
     return $proto->SUPER::merge_initialize_info($parent, $child);
 }
@@ -837,7 +837,7 @@ sub merge_initialize_info {
 sub new {
     my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {
-	empty_properties => $self->internal_get,
+        empty_properties => $self->internal_get,
     };
     return $self->reset_instance_state;
 }
@@ -847,15 +847,15 @@ sub process {
     $self->assert_not_singleton;
     $self->put_on_request;
     return _process_with_values($self, $values)
-	if $values;
+        if $values;
     return _process_as_auxiliary($self)
-	if $self->is_auxiliary_on_task;
+        if $self->is_auxiliary_on_task;
     $req ||= $self->get_request;
     my($fields) = $self->[$_IDI];
     $fields->{want_context} = $self->get_info('require_context')
-	&& $self->req(qw(task require_context));
+        && $self->req(qw(task require_context));
     _trace(
-	ref($self), ': primary form, want_context=', $fields->{want_context}
+        ref($self), ': primary form, want_context=', $fields->{want_context}
     ) if $_TRACE;
 
     # Only save "generically" if not executed explicitly.
@@ -870,17 +870,17 @@ sub process {
     if ($query
         and my $fc = $req->delete_from_query($self->FORM_CONTEXT_QUERY_KEY)
     ) {
-	# If there is an incoming context, must be syntactically valid.
-	$fields->{context} = $_FC->new_from_literal($self, $fc);
-	_trace('context: ', $fields->{context}) if $_TRACE;
+        # If there is an incoming context, must be syntactically valid.
+        $fields->{context} = $_FC->new_from_literal($self, $fc);
+        _trace('context: ', $fields->{context}) if $_TRACE;
     }
 
     # User didn't input anything, render blank form
     unless ($input) {
-	$fields->{literals} = {};
-	$fields->{context} = _initial_context($self)
-	    unless $fields->{context};
-	return _call_execute($self, 'execute_empty');
+        $fields->{literals} = {};
+        $fields->{context} = _initial_context($self)
+            unless $fields->{context};
+        return _call_execute($self, 'execute_empty');
     }
 
     # User submitted a form, parse, validate, and execute
@@ -890,26 +890,26 @@ sub process {
 
     my($res) = _parse($self, $input);
     return $res
-	if ref($res) eq 'HASH';
+        if ref($res) eq 'HASH';
     unless ($res) {
-	# Allow the subclass to modify the state of the form after an unwind
-	$self->clear_errors;
-	return _call_execute($self, 'execute_unwind');
+        # Allow the subclass to modify the state of the form after an unwind
+        $self->clear_errors;
+        return _call_execute($self, 'execute_unwind');
     }
 
     # determine the selected button, default is ok
     my($button, $button_type) = ($self->OK_BUTTON_NAME, $_OKB);
     foreach my $field (@{$self->get_keys}) {
-	if (defined($self->get($field))) {
-	    my($type) = $self->get_field_type($field);
-	    ($button, $button_type) = ($field, $type)
-		if $_FB->is_super_of($type);
-	}
+        if (defined($self->get($field))) {
+            my($type) = $self->get_field_type($field);
+            ($button, $button_type) = ($field, $type)
+                if $_FB->is_super_of($type);
+        }
     }
     return $self->validate_and_execute_ok($button)
-	if $_OKB->is_super_of($button_type);
+        if $_OKB->is_super_of($button_type);
     return _call_execute($self, 'execute_cancel', $button)
-	if $_CB->is_super_of($button_type);
+        if $_CB->is_super_of($button_type);
     return _call_execute($self, 'execute_other', $button);
 }
 
@@ -921,25 +921,25 @@ sub put_context_fields {
     # the field name explicitly, e.g. RealmOwner.name.1>.
     # Allow zero fields (see _redirect)
     $self->die('must be an even number of parameters')
-	unless @_ % 2 == 0;
+        unless @_ % 2 == 0;
     my($fields) = $self->[$_IDI];
     $self->die('form does not have context')
-	unless $fields->{context};
+        unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->get('form_model');
     $self->die('context does not contain form_model')
-	unless $model;
+        unless $model;
 
     my($mi) = $model->get_instance;
     # If there is no form, initialize
     my($f) = $c->get_if_exists_else_put(form => sub {
-	return {$self->VERSION_FIELD => $mi->get_info('version')};
+        return {$self->VERSION_FIELD => $mi->get_info('version')};
     });
     while (@_) {
-	my($k, $v) = (shift(@_), shift(@_));
-	my($fn) = $mi->get_field_name_for_html($k);
-	# Convert with to_literal--context->{form} is in raw form
-	$f->{$fn} = $mi->get_field_info($k, 'type')->to_literal($v);
+        my($k, $v) = (shift(@_), shift(@_));
+        my($fn) = $mi->get_field_name_for_html($k);
+        # Convert with to_literal--context->{form} is in raw form
+        $f->{$fn} = $mi->get_field_info($k, 'type')->to_literal($v);
     }
     _trace('new form: ', $c->get('form')) if $_TRACE;
     return;
@@ -950,8 +950,8 @@ sub reset_instance_state {
     my($empty) = $self->[$_IDI]->{empty_properties};
     $self->internal_put({%$empty});
     $self->[$_IDI] = {
-	stay_on_page => 0,
-	empty_properties => $empty,
+        stay_on_page => 0,
+        empty_properties => $empty,
     };
     return $self;
 }
@@ -974,13 +974,13 @@ sub unsafe_get_context_field {
     # each time.
     my($fields) = $self->[$_IDI];
     die('form does not have context')
-	unless $fields->{context};
+        unless $fields->{context};
     my($c) = $fields->{context};
     my($model) = $c->get('form_model');
     return undef
-	unless $model;
+        unless $model;
     return undef
-	unless $c->get('form');
+        unless $c->get('form');
     # From the form_model's sql_support, get the type and return
     # the result of from_literal.
     my($mi) = $model->get_instance;
@@ -1016,38 +1016,38 @@ sub validate_and_execute_ok {
     my($fields) = $self->[$_IDI];
     my($res) = _call_execute_ok($self, $form_button, 1);
     unless ($self->in_error || $fields->{stay_on_page}) {
-	return $self->internal_redirect_next({
-	    acknowledgement => $_A->SAVE_LABEL_DEFAULT,
-	}) if _task_result_is_false($res);
-	$self->die($res, ': both query or carry_query set in result')
-	    if $res->{carry_query} && $res->{query};
-	$res->{query} = $req->unsafe_get('query')
-	    if delete($res->{carry_query});
-	($res->{query} ||= {})->{acknowledgement} ||= $_A->SAVE_LABEL_DEFAULT;
-	return $res;
+        return $self->internal_redirect_next({
+            acknowledgement => $_A->SAVE_LABEL_DEFAULT,
+        }) if _task_result_is_false($res);
+        $self->die($res, ': both query or carry_query set in result')
+            if $res->{carry_query} && $res->{query};
+        $res->{query} = $req->unsafe_get('query')
+            if delete($res->{carry_query});
+        ($res->{query} ||= {})->{acknowledgement} ||= $_A->SAVE_LABEL_DEFAULT;
+        return $res;
     }
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)
-	if $self->in_error;
+        if $self->in_error;
     $self->die($res, ': non-zero result and stay_on_page or error')
-	unless _task_result_is_false($res);
+        unless _task_result_is_false($res);
     return _task_result($self, 'stay_on_page', 0)
-	if $fields->{stay_on_page};
+        if $fields->{stay_on_page};
     _execute_ok_in_error($self);
     $_T->rollback($req);
     return _task_result($self, $_FORM_ERROR_IDENT, 0)
-	unless my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task');
+        unless my $t = $req->get('task')->unsafe_get_attr_as_id('form_error_task');
     $self->put_on_request(1);
     return _task_result(
-	$self,
-	$_FORM_ERROR_IDENT,
-	{
-	    method => 'server_redirect',
-	    task_id => $t,
-	    map(($_ => $req->unsafe_get($_)), qw(
-		query
-		path_info
-	    )),
-	},
+        $self,
+        $_FORM_ERROR_IDENT,
+        {
+            method => 'server_redirect',
+            task_id => $t,
+            map(($_ => $req->unsafe_get($_)), qw(
+                query
+                path_info
+            )),
+        },
     );
 }
 
@@ -1061,14 +1061,14 @@ sub validate_greater_than_zero {
 sub validate_is_specified {
     my($self, $field) = @_;
     return _validate(
-	0,
-	sub {
-	    my($value) = @_;
-	    return 'UNSPECIFIED'
-		unless $self->get_field_type($field)->is_specified($value);
-	    return;
-	},
-	@_,
+        0,
+        sub {
+            my($value) = @_;
+            return 'UNSPECIFIED'
+                unless $self->get_field_type($field)->is_specified($value);
+            return;
+        },
+        @_,
     );
 }
 
@@ -1098,28 +1098,28 @@ sub _apply_type_error {
     _trace($attrs) if $_TRACE;
     my($err) = $attrs->{type_error};
     b_die($err, ': die type_error not a ', $_TE->package_name)
-	unless $_TE->is_blesser_of($err);
+        unless $_TE->is_blesser_of($err);
     my($table, $columns) = @{$attrs}{'table','columns'};
     $die->throw_die() unless defined($table);
     my($sql_support) = $self->internal_get_sql_support();
     my($models) = $sql_support->get('models');
     my($got_one) = 0;
     foreach my $n (sort(keys(%$models))) {
-	my($m) = $models->{$n}->{instance};
-	next
-	    unless $table eq $m->get_info('table_name');
-	foreach my $c (@$columns) {
-	    my($my_col) = "$n.$c";
-	    foreach my $d (values(%{$sql_support->get('columns')})) {
-		next unless
-		    $d->{name} eq $my_col
-		    || (defined($d->{constraining_field})
-			&& $d->{constraining_field} eq $my_col);
-		$got_one = 1;
-		$self->internal_put_error($d->{name}, $err);
-		$self->internal_field_constraint_error($d->{name}, $err);
-	    }
-	}
+        my($m) = $models->{$n}->{instance};
+        next
+            unless $table eq $m->get_info('table_name');
+        foreach my $c (@$columns) {
+            my($my_col) = "$n.$c";
+            foreach my $d (values(%{$sql_support->get('columns')})) {
+                next unless
+                    $d->{name} eq $my_col
+                    || (defined($d->{constraining_field})
+                        && $d->{constraining_field} eq $my_col);
+                $got_one = 1;
+                $self->internal_put_error($d->{name}, $err);
+                $self->internal_field_constraint_error($d->{name}, $err);
+            }
+        }
     }
     $die->throw_die() unless $got_one;
     return;
@@ -1130,11 +1130,11 @@ sub _call_execute {
     _trace($method) if $_TRACE;
     my($res) = _pre_execute($self, $method);
     return $res
-	unless _task_result_is_false($res);
+        unless _task_result_is_false($res);
     return _post_execute(
-	$self,
-	$method,
-	_task_result($self, $method, $self->$method(@_)),
+        $self,
+        $method,
+        _task_result($self, $method, $self->$method(@_)),
     );
 }
 
@@ -1143,40 +1143,40 @@ sub _call_execute_ok {
     my($method) = $validate ? 'validate_and_execute_ok' : 'execute_ok';
     my($res) = _pre_execute($self, $method);
     return $res
-	unless _task_result_is_false($res);
+        unless _task_result_is_false($res);
     $res = undef;
     $self->validate($form_button)
-	if $validate;
+        if $validate;
     unless ($self->in_error) {
-	my($die) = $_D->catch(sub {
-	    $res = _task_result(
-		$self,
-		'ok',
-		$self->want_scalar($self->execute_ok($form_button)),
-	    );
-	    return;
-	});
-	if ($die) {
-	    if ($die->get('code')->eq_db_constraint) {
-		# Type errors are "normal"
-		_apply_type_error($self, $die);
-	    }
-	    else {
-		$die->throw_die;
-		# DOES NOT RETURN
-	    }
-	}
+        my($die) = $_D->catch(sub {
+            $res = _task_result(
+                $self,
+                'ok',
+                $self->want_scalar($self->execute_ok($form_button)),
+            );
+            return;
+        });
+        if ($die) {
+            if ($die->get('code')->eq_db_constraint) {
+                # Type errors are "normal"
+                _apply_type_error($self, $die);
+            }
+            else {
+                $die->throw_die;
+                # DOES NOT RETURN
+            }
+        }
     }
     return _post_execute($self, $method, $res);
 }
 
 sub _carry_path_info_and_query {
     return $_V9 ? {
-	carry_path_info => 0,
-	carry_query => 0,
+        carry_path_info => 0,
+        carry_query => 0,
     } : {
-	carry_path_info => 1,
-	carry_query => 1,
+        carry_path_info => 1,
+        carry_query => 1,
     };
 }
 
@@ -1186,7 +1186,7 @@ sub _do_columns_referenced {
     my($mi) = $self->get_model_info($model);
     my($ca) = $self->get_info('column_aliases');
     foreach my $cn (@{$mi->{column_names_referenced}}) {
-	$op->($cn, $ca->{$mi->{name} . ".$cn"}->{name});
+        $op->($cn, $ca->{$mi->{name} . ".$cn"}->{name});
     }
     return;
 }
@@ -1195,19 +1195,19 @@ sub _do_model_properties {
     my($method, $self, $model, $override_values) = @_;
     my($get_model) = $method eq 'update' ? 'get_model' : 'new_other';
     return (ref($model) ? $model : $self->$get_model($model))->$method({
-	%{$self->get_model_properties(
-	    ref($model) ? $model->simple_package_name : $model
-	)},
-	$override_values ? %$override_values : (),
+        %{$self->get_model_properties(
+            ref($model) ? $model->simple_package_name : $model
+        )},
+        $override_values ? %$override_values : (),
     });
 }
 
 sub _execute_ok_in_error {
     my($self) = @_;
     foreach my $n (@{$self->internal_get_file_field_names || []}) {
-	next
-	    unless defined($self->unsafe_get($n)) && !$self->get_field_error($n);
-	$self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
+        next
+            unless defined($self->unsafe_get($n)) && !$self->get_field_error($n);
+        $self->internal_put_error($n, $_TE->FILE_FIELD_RESET_FOR_SECURITY)
     }
     return;
 }
@@ -1234,9 +1234,9 @@ sub _initial_context {
     my($fields) = $self->[$_IDI];
     my($req) = $self->get_request;
     return $req->unsafe_get('form_context')
-	|| ($fields->{want_context}
-	   || $req->unsafe_get_nested(qw(task want_workflow))
-	       ? $_FC->new_empty($self) : undef);
+        || ($fields->{want_context}
+           || $req->unsafe_get_nested(qw(task want_workflow))
+               ? $_FC->new_empty($self) : undef);
 }
 
 sub _parse {
@@ -1251,8 +1251,8 @@ sub _parse {
     my($sql_support) = $self->internal_get_sql_support;
     _trace("form = ", $form) if $_TRACE;
     _parse_version($self,
-	    $form->{$self->VERSION_FIELD},
-	    $sql_support);
+            $form->{$self->VERSION_FIELD},
+            $sql_support);
     # Parse context first
     _parse_context($self, $form);
     # Ditto for timezone
@@ -1263,17 +1263,17 @@ sub _parse {
 
     my($values) = {};
     my($res) = _parse_cols($self, $form, $sql_support, $values, 1)
-	|| _parse_cols($self, $form, $sql_support, $values, 0);
+        || _parse_cols($self, $form, $sql_support, $values, 0);
     return $res
-	if $res;
+        if $res;
     $self->internal_post_parse_columns($values);
 
     # .next is set in _redirect()
     my($next) = $form->{$self->NEXT_FIELD} || '';
     return _redirect($self, 'cancel')
-	if $next eq 'cancel';
+        if $next eq 'cancel';
     return 0
-	if $next eq 'unwind';
+        if $next eq 'unwind';
     return 1;
 }
 
@@ -1281,82 +1281,82 @@ sub _parse_cols {
     my($self, $form, $sql_support, $values, $is_hidden) = @_;
     my($fields) = $self->[$_IDI];
     my($method) = $is_hidden ? 'internal_get_hidden_field_names'
-	    : 'internal_get_visible_field_names';
+            : 'internal_get_visible_field_names';
     my($null_set) = {};
     foreach my $n (@{$self->$method()}) {
-	my($fn) = $self->get_field_name_for_html($n);
-	# Handle complex form fields.  Avoid copies of huge data, so
-	# don't assign to temporary until kind (complex/simple) is known.
-	if (ref($form->{$fn}) eq 'HASH') {
-	    my($fv) = $form->{$fn};
-	    # Was there an error in Bivio::Agent::HTTP::Form
-	    if ($fv->{error}) {
-		$self->internal_put_error($n, $fv->{error});
-		next;
-	    }
+        my($fn) = $self->get_field_name_for_html($n);
+        # Handle complex form fields.  Avoid copies of huge data, so
+        # don't assign to temporary until kind (complex/simple) is known.
+        if (ref($form->{$fn}) eq 'HASH') {
+            my($fv) = $form->{$fn};
+            # Was there an error in Bivio::Agent::HTTP::Form
+            if ($fv->{error}) {
+                $self->internal_put_error($n, $fv->{error});
+                next;
+            }
 
-	    # Not expecting a complex form field?
-	    unless ($self->get_field_info($n, 'is_file_field')) {
-		# Be friendly and let the guy set the content this way.
-		# We don't really know how browser handle things like this.
-		if (length(${$fv->{content}}) > $self->MAX_FIELD_SIZE) {
-		    $self->internal_put_error($n, 'TOO_LONG');
-		    next;
-		}
-		# Only FileFields know how to handle complex field values.
-		# Revert to simple field value.
-		$form->{$fn} = ${$fv->{content}};
-	    }
-	}
-	# Make sure the simple field isn't too large
-	elsif (defined($form->{$fn})
-		&& length($form->{$fn}) > $self->MAX_FIELD_SIZE) {
-	    $self->internal_put_error($n, 'TOO_LONG');
-	    next;
-	}
+            # Not expecting a complex form field?
+            unless ($self->get_field_info($n, 'is_file_field')) {
+                # Be friendly and let the guy set the content this way.
+                # We don't really know how browser handle things like this.
+                if (length(${$fv->{content}}) > $self->MAX_FIELD_SIZE) {
+                    $self->internal_put_error($n, 'TOO_LONG');
+                    next;
+                }
+                # Only FileFields know how to handle complex field values.
+                # Revert to simple field value.
+                $form->{$fn} = ${$fv->{content}};
+            }
+        }
+        # Make sure the simple field isn't too large
+        elsif (defined($form->{$fn})
+                && length($form->{$fn}) > $self->MAX_FIELD_SIZE) {
+            $self->internal_put_error($n, 'TOO_LONG');
+            next;
+        }
 
-	# Finally, parse the value
-	my($type) = $self->get_field_info($n, 'type');
-	my($v, $err) = $type->from_literal($form->{$fn});
-	$values->{$n} = $v;
+        # Finally, parse the value
+        my($type) = $self->get_field_info($n, 'type');
+        my($v, $err) = $type->from_literal($form->{$fn});
+        $values->{$n} = $v;
 
-	# try one more time in case of image buttons, append '.x' to name
-	unless (defined($v) || defined($err)) {
-	    ($v, $err) = $type->from_literal($form->{$fn.'.x'});
-	    $values->{$n} = $v;
-	}
+        # try one more time in case of image buttons, append '.x' to name
+        unless (defined($v) || defined($err)) {
+            ($v, $err) = $type->from_literal($form->{$fn.'.x'});
+            $values->{$n} = $v;
+        }
 
-	# Success?
-	if (defined($v)) {
-	    # Zero field ok?
-	    next
-		unless $self->get_field_info($n, 'constraint')->equals_by_name(
-		    qw(NOT_ZERO_ENUM IS_SPECIFIED));
-	    next
-		if $type->is_specified($v);
-	    $err = $_TE->UNSPECIFIED;
-	}
+        # Success?
+        if (defined($v)) {
+            # Zero field ok?
+            next
+                unless $self->get_field_info($n, 'constraint')->equals_by_name(
+                    qw(NOT_ZERO_ENUM IS_SPECIFIED));
+            next
+                if $type->is_specified($v);
+            $err = $_TE->UNSPECIFIED;
+        }
 
-	# Null field ok?
-	unless ($err) {
-	    next
-		if $self->get_field_info($n, 'constraint')->eq_none;
-	    $err = $_TE->NULL;
-	}
+        # Null field ok?
+        unless ($err) {
+            next
+                if $self->get_field_info($n, 'constraint')->eq_none;
+            $err = $_TE->NULL;
+        }
 
-	# Error in field.  Save the original value.
-	if ($is_hidden) {
-	    b_warn(
-		'Error in hidden value(s), refreshing: ',
-		{field => $n, actual => $form->{$fn}, error => $err},
-	    );
-	    $self->req->put_durable(
-		$self->simple_package_name . '.has_stale_data' => 1);
-	    return _redirect_same($self);
-	}
-	else {
-	    $self->internal_put_error($n, $err);
-	}
+        # Error in field.  Save the original value.
+        if ($is_hidden) {
+            b_warn(
+                'Error in hidden value(s), refreshing: ',
+                {field => $n, actual => $form->{$fn}, error => $err},
+            );
+            $self->req->put_durable(
+                $self->simple_package_name . '.has_stale_data' => 1);
+            return _redirect_same($self);
+        }
+        else {
+            $self->internal_put_error($n, $err);
+        }
     }
     return;
 }
@@ -1367,14 +1367,14 @@ sub _parse_context {
     # if !want_workflow.
     my($fields) = $self->[$_IDI];
     $fields->{context} = $form->{$self->CONTEXT_FIELD}
-	# If there is an incoming context, must be syntactically valid.
-	# Overwrites the query context, if any.
-	# Note that we don't convert "from_html", because we write the
-	# context in Base64 which is HTML compatible.
-	? $_FC->new_from_literal(
-	    $self, $form->{$self->CONTEXT_FIELD})
-	# OK, to not have incoming context unless have it from query
-	: $fields->{context} || _initial_context($self);
+        # If there is an incoming context, must be syntactically valid.
+        # Overwrites the query context, if any.
+        # Note that we don't convert "from_html", because we write the
+        # context in Base64 which is HTML compatible.
+        ? $_FC->new_from_literal(
+            $self, $form->{$self->CONTEXT_FIELD})
+        # OK, to not have incoming context unless have it from query
+        : $fields->{context} || _initial_context($self);
     _trace('context: ', $fields->{context}) if $_TRACE;
     return;
 }
@@ -1390,8 +1390,8 @@ sub _parse_timezone {
     return unless defined($v);
 
     unless ($v =~ /^[+-]?\d+$/) {
-	b_warn($v, ': timezone field in form invalid');
-	return;
+        b_warn($v, ': timezone field in form invalid');
+        return;
     }
 
     my($req) = $self->get_request;
@@ -1411,8 +1411,8 @@ sub _parse_version {
     my($self, $value, $sql_support) = @_;
     # Parse the version number.  Throws VERSION_MISMATCH on error.
     if (defined($value)) {
-	my($v) = $_I->from_literal($value);
-	return if (defined($v) && $v eq $sql_support->get('version'));
+        my($v) = $_I->from_literal($value);
+        return if (defined($v) && $v eq $sql_support->get('version'));
     }
     $self->throw_die('VERSION_MISMATCH', {
         field => $self->VERSION_FIELD,
@@ -1429,9 +1429,9 @@ sub _parse_version {
 sub _post_execute {
     my($self, $method, $res) = @_;
     my($res2) = _task_result(
-	$self,
-	'post_execute',
-	$self->internal_post_execute($method, $res),
+        $self,
+        'post_execute',
+        $self->internal_post_execute($method, $res),
     );
     return _task_result_is_false($res2) ? $res : $res2;
 }
@@ -1439,9 +1439,9 @@ sub _post_execute {
 sub _pre_execute {
     my($self, $method) = @_;
     return _task_result(
-	$self,
-	'pre_execute',
-	$self->internal_pre_execute($method),
+        $self,
+        'pre_execute',
+        $self->internal_pre_execute($method),
     );
 }
 
@@ -1454,7 +1454,7 @@ sub _process_as_auxiliary {
     # back to this page, if they require_context.
     $fields->{literals} = {};
     $fields->{context} = $self->get_context_from_request({}, $self->req)
-	if $fields->{want_context};
+        if $fields->{want_context};
     return _call_execute($self, 'execute_empty');
 }
 
@@ -1462,8 +1462,8 @@ sub _process_with_values {
     my($self, $values) = @_;
     my($fields) = $self->[$_IDI];
     $values = {
-	$self->OK_BUTTON_NAME => 1,
-	%$values,
+        $self->OK_BUTTON_NAME => 1,
+        %$values,
     };
     $self->internal_pre_parse_columns;
     $self->internal_post_parse_columns($values);
@@ -1471,25 +1471,25 @@ sub _process_with_values {
     # Forms called internally don't have a context.  Form models
     # should blow up.
     my($res) = _call_execute_ok(
-	$self, $self->OK_BUTTON_NAME, $self->get_info('require_validate'));
+        $self, $self->OK_BUTTON_NAME, $self->get_info('require_validate'));
     return $res
-	unless $self->in_error;
+        unless $self->in_error;
     if ($_TRACE) {
-	my($msg) = '';
-	my($e) = $self->get_errors;
-	foreach my $field (keys(%$e)) {
-	    $msg .= $field.' '.$e->{$field}->get_name."\n";
-	}
-	_trace($msg);
+        my($msg) = '';
+        my($e) = $self->get_errors;
+        foreach my $field (keys(%$e)) {
+            $msg .= $field.' '.$e->{$field}->get_name."\n";
+        }
+        _trace($msg);
     }
     b_die(
-	$self,
-	': called with invalid values, ',
-	$self->get_errors,
-	' ',
-	$self->get_error_details || '',
-	' ',
-	$self->internal_get,
+        $self,
+        ': called with invalid values, ',
+        $self->get_errors,
+        ' ',
+        $self->get_error_details || '',
+        ' ',
+        $self->internal_get,
     );
     # DOES NOT RETURN
 }
@@ -1501,8 +1501,8 @@ sub _put_literal {
     # If a complex form field has a filename, set it and clear content.
     # We never return the "content" back to the user with FileFields.
     $fields->{literals}->{$form_name}
-	    = ref($fields->{literals}->{$form_name})
-		    ? {filename => $value} : $value;
+            = ref($fields->{literals}->{$form_name})
+                    ? {filename => $value} : $value;
     return;
 }
 
@@ -1515,39 +1515,39 @@ sub _redirect {
     $req->put(form_model => $self);
     my($carry) = _carry_path_info_and_query();
     my($query) = {
-	delete($carry->{carry_query}) ? %{$self->req('query') || {}} : (),
-	%{$extra_query || {}},
+        delete($carry->{carry_query}) ? %{$self->req('query') || {}} : (),
+        %{$extra_query || {}},
     };
     $fields->{redirecting} = 1;
     return _task_result(
-	$self,
-	$which,
-	{
-	    %$carry,
-	    %$query ? (query => $query) : (),
-	    task_id => $req->get('task')->get_attr_as_id($which),
-	},
+        $self,
+        $which,
+        {
+            %$carry,
+            %$query ? (query => $query) : (),
+            task_id => $req->get('task')->get_attr_as_id($which),
+        },
     ) unless $fields->{context};
     return _task_result(
-	$self,
-	$which,
-	$fields->{context}->return_redirect(
-	    $self,
-	    $which,
-	    $extra_query,
-	),
+        $self,
+        $which,
+        $fields->{context}->return_redirect(
+            $self,
+            $which,
+            $extra_query,
+        ),
     ) unless $req->unsafe_get_nested(qw(task want_workflow));
     _trace('continue workflow') if $_TRACE;
     return _task_result(
-	$self,
-	$which,
-	{
-	    %$carry,
-	    %$query ? (query => $query) : (),
-	    method => 'server_redirect',
-	    task_id => $req->get('task')->get_attr_as_id($which),
-	    require_context => 1,
-	},
+        $self,
+        $which,
+        {
+            %$carry,
+            %$query ? (query => $query) : (),
+            method => 'server_redirect',
+            task_id => $req->get('task')->get_attr_as_id($which),
+            require_context => 1,
+        },
     );
 }
 
@@ -1559,45 +1559,45 @@ sub _redirect_same {
     # The form was corrupt.  Throw away the context and
     # the form and redirect back to this task.
     return _task_result(
-	$self,
-	'update_collision',
-	{
-	    method => 'server_redirect',
-	    task_id => $req->get('task_id'),
-	    realm => undef,
-	    query => $req->get('query'),
-	    form => undef,
-	    path_info => $req->get('path_info'),
-	},
+        $self,
+        'update_collision',
+        {
+            method => 'server_redirect',
+            task_id => $req->get('task_id'),
+            realm => undef,
+            query => $req->get('query'),
+            form => undef,
+            path_info => $req->get('path_info'),
+        },
     );
 }
 
 sub _task_result {
     my($self, $which, $res) = @_;
     return $self->req->if_req_is_json(
-	sub {
-	    return Action_API()->task_error($self->req)
-		if $which eq $_FORM_ERROR_IDENT;
-	    # Always fall through, even on GET
-	    return 0;
-	},
-	sub {
+        sub {
+            return Action_API()->task_error($self->req)
+                if $which eq $_FORM_ERROR_IDENT;
+            # Always fall through, even on GET
+            return 0;
+        },
+        sub {
 #TODO: $which not used?
-	    return 0
-		unless $res;
-	    return $res
-		if ref($res);
-	    return $_ATE->TASK_EXECUTE_STOP
-		if $res eq '1';
-	    my($carry) = _carry_path_info_and_query();
-	    return {
-		task_id => $res,
-		query => {
-		    delete($carry->{carry_query})
-			? %{$self->req('query') || {}} : (),
-		},
-	    };
-	},
+            return 0
+                unless $res;
+            return $res
+                if ref($res);
+            return $_ATE->TASK_EXECUTE_STOP
+                if $res eq '1';
+            my($carry) = _carry_path_info_and_query();
+            return {
+                task_id => $res,
+                query => {
+                    delete($carry->{carry_query})
+                        ? %{$self->req('query') || {}} : (),
+                },
+            };
+        },
     );
 }
 
@@ -1609,11 +1609,11 @@ sub _task_result_is_false {
 sub _validate {
     my($undef_ok, $op, $self, $field) = @_;
     return 0
-	if $self->get_field_error($field);
+        if $self->get_field_error($field);
     return 1
         if $undef_ok && ! defined($self->unsafe_get($field));
     return 1
-	unless my $e = $op->($self->unsafe_get($field));
+        unless my $e = $op->($self->unsafe_get($field));
     $self->internal_put_error($field, $e);
     return 0;
 }
@@ -1621,13 +1621,13 @@ sub _validate {
 sub _with_enum_set_field {
     my($op, $self, $field, $type) = @_;
     if ($type) {
-	return $op->($type, $field);
+        return $op->($type, $field);
     }
     else {
-	my($info) = SQL_Support()->is_qualified_model_name($field)
-	    ? SQL_Support()->parse_column_name($field)
-	    : $self->get_field_info($field);
-	return $op->($info->{type}, $info->{name});
+        my($info) = SQL_Support()->is_qualified_model_name($field)
+            ? SQL_Support()->parse_column_name($field)
+            : $self->get_field_info($field);
+        return $op->($info->{type}, $info->{name});
     }
 }
 

@@ -4,30 +4,30 @@ Request();
 req()->initialize_fully;
 [
     {
-	object => [req()],
-	check_return => sub {
-	    my($case, undef, $expect) = @_;
-	    my($uid, $rid) = @{$case->get('params')};
-	    my($exist, $check_rid) = @$expect;
-	    $check_rid ||= $rid || realm_id('bulletin');
-	    assert_equals(
-		$exist,
-		model('RealmUser')->unauth_rows_exist({
-		    realm_id => $check_rid,
-		    user_id => $uid,
-		}),
-	    );
-	    return 1;
-	},
+        object => [req()],
+        check_return => sub {
+            my($case, undef, $expect) = @_;
+            my($uid, $rid) = @{$case->get('params')};
+            my($exist, $check_rid) = @$expect;
+            $check_rid ||= $rid || realm_id('bulletin');
+            assert_equals(
+                $exist,
+                model('RealmUser')->unauth_rows_exist({
+                    realm_id => $check_rid,
+                    user_id => $uid,
+                }),
+            );
+            return 1;
+        },
     } => [
-	subscribe_to_bulletin_realm => [
-	    [realm_id('bulletin_user')] => 1,
-	    [realm_id('guest')] => 1,
-	],
-	unsubscribe_from_bulletin_realm => [
-	    [realm_id('guest'), realm_id('mail_forum')] => [1, realm_id('bulletin')],
-	    [realm_id('guest')] => 0,
-	    [realm_id('mail_user1'), realm_id('mail_forum')] => 1,
-	],
+        subscribe_to_bulletin_realm => [
+            [realm_id('bulletin_user')] => 1,
+            [realm_id('guest')] => 1,
+        ],
+        unsubscribe_from_bulletin_realm => [
+            [realm_id('guest'), realm_id('mail_forum')] => [1, realm_id('bulletin')],
+            [realm_id('guest')] => 0,
+            [realm_id('mail_user1'), realm_id('mail_forum')] => 1,
+        ],
     ],
 ];

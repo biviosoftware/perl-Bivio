@@ -4,35 +4,35 @@ ListModel();
 req()->set_realm(ShellUtil_SQL()->BTEST_READ);
 [
     load_all => [
-	[] => [
-	    {
-		'RealmOwner.name' => 'btest_read',
-		roles => [Auth_Role('ADMINISTRATOR')],
-	    },
-	    {
-		'RealmOwner.name' => 'fourem',
-		roles => [
-		    Auth_Role('MEMBER'),
-		    Auth_Role('MAIL_RECIPIENT'),
-		],
-	    },
-	    {
-		'RealmOwner.name' => 'fourem-sub1',
-	    },
-	    {
-		'RealmOwner.name' => 'fourem-sub1-1',
-	    },
-	    {
-		'RealmOwner.name' => 'fourem-sub2',
-	    },
-	    {
-		'RealmOwner.name' => 'site-admin',
-		roles => [Auth_Role('USER')],
-	    },
-	],
+        [] => [
+            {
+                'RealmOwner.name' => 'btest_read',
+                roles => [Auth_Role('ADMINISTRATOR')],
+            },
+            {
+                'RealmOwner.name' => 'fourem',
+                roles => [
+                    Auth_Role('MEMBER'),
+                    Auth_Role('MAIL_RECIPIENT'),
+                ],
+            },
+            {
+                'RealmOwner.name' => 'fourem-sub1',
+            },
+            {
+                'RealmOwner.name' => 'fourem-sub1-1',
+            },
+            {
+                'RealmOwner.name' => 'fourem-sub2',
+            },
+            {
+                'RealmOwner.name' => 'site-admin',
+                roles => [Auth_Role('USER')],
+            },
+        ],
     ],
     find_row_by_type => [
-	[Auth_RealmType('USER')] => sub {[shift->get('object')]},
-	[Auth_RealmType('CLUB')] => [undef],
+        [Auth_RealmType('USER')] => sub {[shift->get('object')]},
+        [Auth_RealmType('CLUB')] => [undef],
     ],
 ];

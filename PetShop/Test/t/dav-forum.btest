@@ -47,10 +47,10 @@ my($found) = 0;
 foreach my $line (split(/\n/, get_content())) {
     my($u, $s, $wf, $a) = split(/,/, $line);
     foreach my $i (0..2) {
-	next unless $users->[$i] eq $u;
-	$found++;
-	die($line)
-	    unless "$s,$wf,$a" eq ($i < 2 ? "$i,$i,$i" : '1,1,0');
+        next unless $users->[$i] eq $u;
+        $found++;
+        die($line)
+            unless "$s,$wf,$a" eq ($i < 2 ? "$i,$i,$i" : '1,1,0');
     }
 }
 die("only found: $found: $csv")

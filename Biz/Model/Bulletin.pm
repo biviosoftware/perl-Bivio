@@ -22,8 +22,8 @@ sub delete_all {
     my($self) = @_;
     $self->do_iterate(sub {
         my($bulletin) = @_;
-	$bulletin->delete;
-	return 1;
+        $bulletin->delete;
+        return 1;
     });
     return;
 }
@@ -57,15 +57,15 @@ sub has_attachments {
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'bulletin_t',
-	columns => {
+        version => 1,
+        table_name => 'bulletin_t',
+        columns => {
             bulletin_id => ['PrimaryId', 'PRIMARY_KEY'],
             date_time => ['DateTime', 'NOT_NULL'],
             subject => ['Line', 'NOT_NULL'],
             body => ['Text64K', 'NOT_NULL'],
             body_content_type => ['Line', 'NOT_NULL'],
-	},
+        },
     };
 }
 

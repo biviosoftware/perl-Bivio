@@ -4,16 +4,16 @@ ListModel();
 req()->initialize_fully;
 [
     load_all => [
-	[] => [map(
-	    +{simple_name => $_},
-	    qw(
+        [] => [map(
+            +{simple_name => $_},
+            qw(
                 AAAAA
-	        BeforeOther
-		Mobile
-		Other
-		PetShop
-		RequireSecure
-	    )
-	)],
+                BeforeOther
+                Mobile
+                Other
+                PetShop
+                RequireSecure
+            )
+        )],
     ],
 ];

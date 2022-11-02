@@ -14,10 +14,10 @@ sub initialize {
     my($self) = @_;
     my($l) = $self->initialize_attr('facade_label');
     $self->put_unless_exists(
-	tag => 'a',
-	value => XLinkLabel($l),
-	href => XLinkURI($l),
-	html_attrs => vs_html_attrs_merge([qw(href name link_target)]),
+        tag => 'a',
+        value => XLinkLabel($l),
+        href => XLinkURI($l),
+        html_attrs => vs_html_attrs_merge([qw(href name link_target)]),
     );
     return shift->SUPER::initialize(@_);
 }

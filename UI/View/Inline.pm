@@ -22,23 +22,23 @@ sub render_code_as_string {
     $shortcuts ||= b_use('UI.ViewShortcuts');
     # View calls us back, because we're passing in a code_ref
     return ${$proto->call_main(
-	sub {
-	    view_class_map($class_map);
-	    view_shortcuts($shortcuts);
-	    return view_main(Simple([sub {$code_ref->(@_)}]));
-	},
-	$req,
+        sub {
+            view_class_map($class_map);
+            view_shortcuts($shortcuts);
+            return view_main(Simple([sub {$code_ref->(@_)}]));
+        },
+        $req,
     )};
 }
 
 sub unsafe_new {
     my($proto, $name, $facade) = @_;
     return ref($name) eq 'SCALAR' ? $proto->new({
-	view_code => $name,
-	view_name => substr($$name, 0, 100),
+        view_code => $name,
+        view_name => substr($$name, 0, 100),
     }) : ref($name) eq 'CODE' ? $proto->new({
-	view_code => $name,
-	view_name => $name . '',
+        view_code => $name,
+        view_name => $name . '',
     }) : undef;
 }
 

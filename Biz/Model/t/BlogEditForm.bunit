@@ -3,16 +3,16 @@
 my($this);
 FormModel({
     setup_request => sub {
-	req()->put(query => {this => $this});
-	return;
+        req()->put(query => {this => $this});
+        return;
     },
 });
 require 'Blog.PL';
 my($entry) = [map(
     +{
-	title => "Edit $_ Title",
-	content => "Edit\nbody $_\n",
-	'RealmFile.is_public' => $_,
+        title => "Edit $_ Title",
+        content => "Edit\nbody $_\n",
+        'RealmFile.is_public' => $_,
     }, 0, 1,
 )];
 model('BlogCreateForm')->process($entry->[0]);
@@ -20,20 +20,20 @@ $this = Type_BlogFileName()->from_absolute(req(qw(Model.RealmFile path)));
 [
     empty_case($entry->[0]),
     map({
-	my($x) = $_;
-	([$entry->[$x]] => [{
-	    'Model.RealmFile' => {
-		path => sub {
-		    assert_equals(
-			Type_BlogContent()->join(
-			    @{$entry->[$x]}{qw(title content)},
-			),
-			req('Model.RealmFile')->get_content,
-		    );
-		    return Type_BlogFileName()->to_absolute($this, $x);
-		},
-		is_public => $x,
-	     },
-	}]);
+        my($x) = $_;
+        ([$entry->[$x]] => [{
+            'Model.RealmFile' => {
+                path => sub {
+                    assert_equals(
+                        Type_BlogContent()->join(
+                            @{$entry->[$x]}{qw(title content)},
+                        ),
+                        req('Model.RealmFile')->get_content,
+                    );
+                    return Type_BlogFileName()->to_absolute($this, $x);
+                },
+                is_public => $x,
+             },
+        }]);
     } 1, 0),
 ];

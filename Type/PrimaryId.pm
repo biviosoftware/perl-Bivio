@@ -45,13 +45,13 @@ sub from_literal {
     $proto->internal_from_literal_warning
         unless wantarray;
     return undef
-	unless defined($value) && $value =~ /\S/;
+        unless defined($value) && $value =~ /\S/;
     $value =~ s/\s+//g;
     return $value
-	if $value =~ /^0$/;
+        if $value =~ /^0$/;
     $value =~ s/^0+//g;
     return $value
-	if $value =~ /^\d+$/;
+        if $value =~ /^\d+$/;
     return (undef, Bivio::TypeError->PRIMARY_ID);
 }
 
@@ -59,7 +59,7 @@ sub from_parts {
     my(undef, $parts) = @_;
     # Returns parts (see L<to_parts|"to_parts">) as string.
     return sprintf('%s%1d%02d%02d',
-	@{$parts}{qw(number version site type)});
+        @{$parts}{qw(number version site type)});
 }
 
 sub get_decimals {
@@ -85,18 +85,18 @@ sub get_width {
 sub is_equal {
     my(undef, $left, $right) = @_;
     return 0
-	if defined($left) xor defined($right);
+        if defined($left) xor defined($right);
     return 1
-	unless defined($left);
+        unless defined($left);
     return $left eq $right ? 1 : 0;
 }
 
 sub is_specified {
     my($proto, $value) = @_;
     return defined($value) && $value =~ /\d/
-	&& $value ne Bivio::Biz::ListModel->EMPTY_KEY_VALUE
-	&& $value ne $proto->UNSPECIFIED_VALUE
-	? 1 : 0;
+        && $value ne Bivio::Biz::ListModel->EMPTY_KEY_VALUE
+        && $value ne $proto->UNSPECIFIED_VALUE
+        ? 1 : 0;
 }
 
 sub is_valid {
@@ -131,10 +131,10 @@ sub to_uri {
 sub unsafe_to_parts {
     my(undef, $value) = @_;
     return ($value || '') =~ /^(\d+)(\d)(\d{2})(\d{2})$/ ? {
-	number => $1,
-	version => $3 + 0,
-	site => $2 + 0,
-	type => $4 + 0,
+        number => $1,
+        version => $3 + 0,
+        site => $2 + 0,
+        type => $4 + 0,
     } : undef;
 }
 

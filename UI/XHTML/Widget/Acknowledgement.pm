@@ -10,20 +10,20 @@ my($_T) = b_use('FacadeComponent.Text');
 
 sub new {
     return shift->SUPER::new(@_)->put_unless_exists(
-	tag => 'div',
-	class => 'acknowledgement',
-	tag_if_empty => 0,
+        tag => 'div',
+        class => 'acknowledgement',
+        tag_if_empty => 0,
         value => DIV_text(Prose(
-	    [sub {
-	         my($req) = shift->req;
-	         return ''
-		     unless my $label = $_A->extract_and_delete_label($req);
-		 unless ($_A->exists_in_facade($req, $label)) {
-		     b_warn('invalid acknowledgement label: ', $label);
-		     return '';
-		 }
+            [sub {
+                 my($req) = shift->req;
+                 return ''
+                     unless my $label = $_A->extract_and_delete_label($req);
+                 unless ($_A->exists_in_facade($req, $label)) {
+                     b_warn('invalid acknowledgement label: ', $label);
+                     return '';
+                 }
                  return vs_text($req, 'acknowledgement', $label);
-	    }],
+            }],
         )),
     );
 }

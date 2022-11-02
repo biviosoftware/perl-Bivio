@@ -17,14 +17,14 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         require_validate => 1,
-	$self->field_decl(other => [qw(f1 f2 validate)], 'String'),
+        $self->field_decl(other => [qw(f1 f2 validate)], 'String'),
     });
 }
 
 sub internal_pre_execute {
     my($self, $method) = @_;
     b_die($method, ': not validate_and_execute_ok')
-	unless $method =~ /^(validate_and_execute_ok|execute_empty)$/;
+        unless $method =~ /^(validate_and_execute_ok|execute_empty)$/;
     $self->internal_put_field(internal_pre_execute => 1);
     return;
 }

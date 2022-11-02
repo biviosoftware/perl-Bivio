@@ -23,10 +23,10 @@ sub RESIZE_FUNCTION {
 sub initialize {
     my($self) = @_;
     if ($self->get_or_default(want_popup => 1)) {
-	_init_popup($self);
+        _init_popup($self);
     }
     else {
-	_init_page($self);
+        _init_page($self);
     }
     return shift->SUPER::initialize(@_);
 }
@@ -34,30 +34,30 @@ sub initialize {
 sub page_name {
     my($proto, $req, $task_id) = @_;
     return $_WN->title_to_help(
-	vs_render_widget(
-	    Prose(
-		$_T->get_value(
-		    'HelpWiki',
-		    'title',
-		    ($task_id || $req->get('task_id'))->get_name,
-		    $req,
-		),
-	    ),
-	    $req,
-	),
+        vs_render_widget(
+            Prose(
+                $_T->get_value(
+                    'HelpWiki',
+                    'title',
+                    ($task_id || $req->get('task_id'))->get_name,
+                    $req,
+                ),
+            ),
+            $req,
+        ),
     );
 }
 
 sub _iframe {
     my($self) = @_;
     return EmptyTag({
-	tag => 'iframe',
-	id => 'help_wiki_iframe',
-	class => 'help_wiki_iframe',
-	MARGINWIDTH => 0,
-	SCROLLING => 'no',
-	FRAMEBORDER => 0,
-	SRC => _uri('HELP'),
+        tag => 'iframe',
+        id => 'help_wiki_iframe',
+        class => 'help_wiki_iframe',
+        MARGINWIDTH => 0,
+        SCROLLING => 'no',
+        FRAMEBORDER => 0,
+        SRC => _uri('HELP'),
     });
 }
 
@@ -65,10 +65,10 @@ sub _iframe_body {
     my($source, $body_attr) = @_;
     my($req) = $source->get_request;
     return
-	unless my $html = _render_html(
+        unless my $html = _render_html(
             $req->get('path_info'),
-	    $req,
-	);
+            $req,
+        );
     $req->put($body_attr => $html);
     return 1;
 }
@@ -76,15 +76,15 @@ sub _iframe_body {
 sub _init_page {
     my($self) = @_;
     $self->put(
-	control => 1,
+        control => 1,
         control_on_value => [sub {
             my($source) = @_;
-	    return _page_exists($source)
-		? _link_page()
-		: _user_can_edit($source)
-		? _link_add()
-		: XLink('help_start_page', 'help_wiki_link');
-	}],
+            return _page_exists($source)
+                ? _link_page()
+                : _user_can_edit($source)
+                ? _link_add()
+                : XLink('help_start_page', 'help_wiki_link');
+        }],
     );
     return;
 }
@@ -96,28 +96,28 @@ sub _init_popup {
     $self->initialize_attr(visibility => 'hidden');
     $self->put(
         control_off_value => [sub {
-	    my($source) = @_;
-	    return _page_exists($source)
-		? Join([_js($self, $source), _iframe($self), _link_open()])
-		: _user_can_edit($source)
-		? _link_add()
-		: ();
-	}],
-	control_on_value => [sub {
-	     my($source) = @_;
-	     my($body_attr) = "$self.body";
-	     return ''
-		 unless _iframe_body($source, $body_attr);
-	     return DIV_help_wiki(Join([
-		 DIV_tools(Join([
-		     _user_can_edit($source) ?  _link_edit() : (),
-		     _link_close(),
-		 ])),
-		 DIV_header(vs_text_as_prose('help_wiki_header')),
-		 DIV_help_wiki_body([$body_attr]),
-		 DIV_footer(vs_text_as_prose('help_wiki_footer')),
-	     ]))->put(link_target => '_top');
-	 }],
+            my($source) = @_;
+            return _page_exists($source)
+                ? Join([_js($self, $source), _iframe($self), _link_open()])
+                : _user_can_edit($source)
+                ? _link_add()
+                : ();
+        }],
+        control_on_value => [sub {
+             my($source) = @_;
+             my($body_attr) = "$self.body";
+             return ''
+                 unless _iframe_body($source, $body_attr);
+             return DIV_help_wiki(Join([
+                 DIV_tools(Join([
+                     _user_can_edit($source) ?  _link_edit() : (),
+                     _link_close(),
+                 ])),
+                 DIV_header(vs_text_as_prose('help_wiki_header')),
+                 DIV_help_wiki_body([$body_attr]),
+                 DIV_footer(vs_text_as_prose('help_wiki_footer')),
+             ]))->put(link_target => '_top');
+         }],
     );
     return;
 }
@@ -166,45 +166,45 @@ EOF
 
 sub _link_add {
     return Link(
-	vs_text_as_prose('help_wiki_add'),
-	_uri('FORUM_WIKI_EDIT'),
-	'help_wiki_add',
+        vs_text_as_prose('help_wiki_add'),
+        _uri('FORUM_WIKI_EDIT'),
+        'help_wiki_add',
     );
 }
 
 sub _link_close {
     return Link(
-	vs_text_as_prose('help_wiki_close'),
-	'javascript:parent.help_wiki_toggle()',
+        vs_text_as_prose('help_wiki_close'),
+        'javascript:parent.help_wiki_toggle()',
         'close',
     );
 }
 
 sub _link_edit {
     return Link(
-	vs_text_as_prose('help_wiki_edit'),
-	_uri('FORUM_WIKI_EDIT', ['->req', 'path_info']),
-	'edit',
+        vs_text_as_prose('help_wiki_edit'),
+        _uri('FORUM_WIKI_EDIT', ['->req', 'path_info']),
+        'edit',
     );
 }
 
 sub _link_open {
     return Join([
-	ScriptOnly({
-	    alt_widget => Link(vs_text_as_prose('help_wiki_open'),
-		_uri('FORUM_WIKI_VIEW')),
-	    widget => Link(
-		vs_text_as_prose('help_wiki_open'),
-		'javascript:help_wiki_toggle()',
-		{
-		    id => 'help_wiki_open',
-		    class => 'help_wiki_open',
-		},
-	    ),
-	}),
-	# If you click on the help link in IE while it is loading
-	# it doesn't render correctly
-	JavaScript()->strip(<<"EOF"),
+        ScriptOnly({
+            alt_widget => Link(vs_text_as_prose('help_wiki_open'),
+                _uri('FORUM_WIKI_VIEW')),
+            widget => Link(
+                vs_text_as_prose('help_wiki_open'),
+                'javascript:help_wiki_toggle()',
+                {
+                    id => 'help_wiki_open',
+                    class => 'help_wiki_open',
+                },
+            ),
+        }),
+        # If you click on the help link in IE while it is loading
+        # it doesn't render correctly
+        JavaScript()->strip(<<"EOF"),
 <script type="text/javascript">
 if (document.all)
   document.getElementById('help_wiki_open').style.visibility = 'hidden';
@@ -215,9 +215,9 @@ EOF
 
 sub _link_page {
     return Link(
-	vs_text_as_prose('help_wiki_page'),
-	_uri('FORUM_WIKI_VIEW'),
-	'help_wiki_page',
+        vs_text_as_prose('help_wiki_page'),
+        _uri('FORUM_WIKI_VIEW'),
+        'help_wiki_page',
     );
 }
 
@@ -226,10 +226,10 @@ sub _page_exists {
     my($req) = $source->req;
     my($die_code);
     return $_RF->access_controlled_load(
-	vs_constant($req, 'help_wiki_realm_id'),
-	$_WN->to_absolute(_page_name($source)),
-	$source->req,
-	\$die_code,
+        vs_constant($req, 'help_wiki_realm_id'),
+        $_WN->to_absolute(_page_name($source)),
+        $source->req,
+        \$die_code,
     );
 }
 
@@ -244,10 +244,10 @@ sub _realm_name {
 sub _render_html {
     my($name, $req) = @_;
     my($wa) = $_WT->prepare_html(
-	vs_constant($req, 'help_wiki_realm_id'),
-	$name,
-	$_TASK_ID,
-	$req,
+        vs_constant($req, 'help_wiki_realm_id'),
+        $name,
+        $_TASK_ID,
+        $req,
     );
     $wa->{realm_name} = _realm_name($req);
     $wa->{link_target} = '_top';
@@ -257,18 +257,18 @@ sub _render_html {
 sub _uri {
     my($task, $path_info) = @_;
     return URI({
-	task_id => $task,
-	query => undef,
-	realm => [\&_realm_name],
-	path_info => $path_info || [\&_page_name],
+        task_id => $task,
+        query => undef,
+        realm => [\&_realm_name],
+        path_info => $path_info || [\&_page_name],
     });
 }
 
 sub _user_can_edit {
     my($req) = shift->req;
     return $req->with_realm(
-	_realm_name($req),
-	sub {$req->can_user_execute_task('FORUM_WIKI_EDIT')},
+        _realm_name($req),
+        sub {$req->can_user_execute_task('FORUM_WIKI_EDIT')},
     );
 }
 
@@ -276,7 +276,7 @@ sub _visibility {
     my($self, $source) = @_;
     my($res) = lc($self->render_simple_attr('visibility', $source));
     return $res
-	if $res =~ /^(?:hidden|visible)$/;
+        if $res =~ /^(?:hidden|visible)$/;
     Bivio::IO::Alert->warn($res, ': not a valid visibility value: ', $self);
     return 'visible';
 }

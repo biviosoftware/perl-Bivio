@@ -27,7 +27,7 @@ sub is_status_ok {
     my($self) = @_;
     # No status does mean ok
     return 1
-	unless defined(my $s = $self->unsafe_get('status'));
+        unless defined(my $s = $self->unsafe_get('status'));
 #TODO: need to share with something
     return $s == $_AC->OK ? 1 : 0;
 }
@@ -62,7 +62,7 @@ sub set_http_status {
     # a reasonable range.
     b_die($status, ': unknown HTTP status')
         unless defined($status) && $status =~ /^\d+$/
-	&& 100 <= $status && $status < 600;
+        && 100 <= $status && $status < 600;
     return $self->put(status => $status);
 }
 

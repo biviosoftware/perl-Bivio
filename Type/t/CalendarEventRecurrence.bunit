@@ -3,18 +3,18 @@
 Unit();
 [
     sub {class()->UNKNOWN} => [
-	validate_end_date => [
-	    [Date('1/1/2009'), undef] => [undef],
-	    [Date('1/1/2009'), Date('12/31/2009')] => 'EXISTS',
-	],
+        validate_end_date => [
+            [Date('1/1/2009'), undef] => [undef],
+            [Date('1/1/2009'), Date('12/31/2009')] => 'EXISTS',
+        ],
     ],
     sub {class()->EVERY_WEEK} => [
-	validate_end_date => [
-	    [Date('1/1/2009'), Date('12/31/2009')] => [undef],
-	    [Date('1/1/2009'), Date('1/8/2009')] => [undef],
-	    [Date('1/1/2009'), undef] => 'NULL',
-	    [Date('1/1/2009'), Date('1/7/2009')] => 'TOO_SHORT',
-	    [Date('1/1/2009'), Date('1/1/2014')] => 'TOO_LONG',
-	],
+        validate_end_date => [
+            [Date('1/1/2009'), Date('12/31/2009')] => [undef],
+            [Date('1/1/2009'), Date('1/8/2009')] => [undef],
+            [Date('1/1/2009'), undef] => 'NULL',
+            [Date('1/1/2009'), Date('1/7/2009')] => 'TOO_SHORT',
+            [Date('1/1/2009'), Date('1/1/2014')] => 'TOO_LONG',
+        ],
     ],
 ];

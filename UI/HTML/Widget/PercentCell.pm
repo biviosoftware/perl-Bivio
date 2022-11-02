@@ -90,16 +90,16 @@ sub initialize {
     my($field) = $self->get('field');
     my($d) = $self->get_or_default('decimals', 1);
     $self->put(
-	    value => [$field, 'Bivio::UI::HTML::Format::Printf',
-		'%.'.$d.'f%%'],
-	    column_align => 'E',
-	    pad_left => 1,
-	    column_nowrap => 1,
-	    map(($_ => 'amount_cell'),
-		qw(column_data_class cell_class column_footer_class)),
-	   );
+            value => [$field, 'Bivio::UI::HTML::Format::Printf',
+                '%.'.$d.'f%%'],
+            column_align => 'E',
+            pad_left => 1,
+            column_nowrap => 1,
+            map(($_ => 'amount_cell'),
+                qw(column_data_class cell_class column_footer_class)),
+           );
     $self->put(string_font => 'number_cell')
-	    unless defined($self->unsafe_get('string_font'));
+            unless defined($self->unsafe_get('string_font'));
     $fields->{initialized} = 1;
     return $self->SUPER::initialize(@_);
 }
@@ -118,7 +118,7 @@ sub internal_new_args {
     my(undef, $field, $attributes) = @_;
     return {
         field => $field,
-	($attributes ? %$attributes : ()),
+        ($attributes ? %$attributes : ()),
     };
 }
 

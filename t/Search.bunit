@@ -10,22 +10,22 @@ my($wiki) = model(RealmFile => {path_lc => '/wiki/index'});
 my($logo) = model(RealmFile => {path_lc => '/public/logo.png'});
 [
     class() => [
-	get_values_for_primary_id => [
-	    [$wiki->get('realm_file_id'), model('RealmFile'), {}] => [{
-		author => 'Btest_read User',
-		title => 'Sweet Home',
-	    }],
-	],
-	unsafe_get_values_for_primary_id => [
-	    [$wiki->get('realm_file_id'), model('RealmFile'), {}] => [{
-		title => 'Sweet Home',
-	    }],
-	],
-	get_values_for_primary_id => [
-	    [realm_id('demo'), model('RealmFile'), {}] => MODEL_NOT_FOUND(),
-	],
-	unsafe_get_values_for_primary_id => [
-	    [realm_id('demo'), model('RealmFile'), {}] => [undef]
-	],
+        get_values_for_primary_id => [
+            [$wiki->get('realm_file_id'), model('RealmFile'), {}] => [{
+                author => 'Btest_read User',
+                title => 'Sweet Home',
+            }],
+        ],
+        unsafe_get_values_for_primary_id => [
+            [$wiki->get('realm_file_id'), model('RealmFile'), {}] => [{
+                title => 'Sweet Home',
+            }],
+        ],
+        get_values_for_primary_id => [
+            [realm_id('demo'), model('RealmFile'), {}] => MODEL_NOT_FOUND(),
+        ],
+        unsafe_get_values_for_primary_id => [
+            [realm_id('demo'), model('RealmFile'), {}] => [undef]
+        ],
     ],
 ];

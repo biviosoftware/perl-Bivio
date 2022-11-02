@@ -2,34 +2,34 @@
 # $Id$
 FormModel({
     setup_request => sub {
-	model('EmailAliasList')->load_all;
+        model('EmailAliasList')->load_all;
     },
     compute_return => sub {
-	return req('Model.EmailAliasList')->load_all->map_rows(sub {
-	    return shift->get_model('EmailAlias')->get_shallow_copy;
-	});
+        return req('Model.EmailAliasList')->load_all->map_rows(sub {
+            return shift->get_model('EmailAlias')->get_shallow_copy;
+        });
     },
     check_return => sub {
-	my($case, $actual, $expect) = @_;
-	assert_equals(
-	    [sort({$a->{incoming} cmp $b->{incoming}} @$actual)],
-	    [sort({$a->{incoming} cmp $b->{incoming}} @$expect)],
-	);
-	return 1;
+        my($case, $actual, $expect) = @_;
+        assert_equals(
+            [sort({$a->{incoming} cmp $b->{incoming}} @$actual)],
+            [sort({$a->{incoming} cmp $b->{incoming}} @$expect)],
+        );
+        return 1;
     },
 });
 [
     [{
-	'EmailAlias.incoming_0' => 'jeff1@bar.com',
-	'EmailAlias.outgoing_0' => 'jeff2@bar.com',
-	'EmailAlias.incoming_1' => 'bill1@foo.com',
-	'EmailAlias.outgoing_1' => 'bill2@foo.com',
-	empty_row_count => undef,
+        'EmailAlias.incoming_0' => 'jeff1@bar.com',
+        'EmailAlias.outgoing_0' => 'jeff2@bar.com',
+        'EmailAlias.incoming_1' => 'bill1@foo.com',
+        'EmailAlias.outgoing_1' => 'bill2@foo.com',
+        empty_row_count => undef,
     }] => [{
-	incoming => 'jeff1@bar.com',
-	outgoing => 'jeff2@bar.com',
+        incoming => 'jeff1@bar.com',
+        outgoing => 'jeff2@bar.com',
     }, {
-	incoming => 'bill1@foo.com',
-	outgoing => 'bill2@foo.com',
+        incoming => 'bill1@foo.com',
+        outgoing => 'bill2@foo.com',
     }],
 ];

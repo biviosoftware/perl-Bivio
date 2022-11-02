@@ -2,14 +2,14 @@
 # $Id$
 [
     class() => [
-	split_body => [
-	    "\n\n\nc1" => [undef, 'c1'],
-	    'x' => [undef, 'x'],
-	    'X1:y' => ['X1:y', ''],
-	    "X1:y\ny2" => ["X1:y\ny2", ''],
-	],
-	split_rfc822 => [
-	    [\(<<'EOF')] => ['S1: x', 'c1'],
+        split_body => [
+            "\n\n\nc1" => [undef, 'c1'],
+            'x' => [undef, 'x'],
+            'X1:y' => ['X1:y', ''],
+            "X1:y\ny2" => ["X1:y\ny2", ''],
+        ],
+        split_rfc822 => [
+            [\(<<'EOF')] => ['S1: x', 'c1'],
 H1: a1
 H2: b1
 
@@ -17,14 +17,14 @@ S1: x
 
 c1
 EOF
-	    [\(<<'EOF')] => ['S1: x', ''],
+            [\(<<'EOF')] => ['S1: x', ''],
 H1: a2
 H2: b2
 
 S1: x
 
 EOF
-	    [\(<<'EOF')] => [undef, 'c1'],
+            [\(<<'EOF')] => [undef, 'c1'],
 H1: a3
 H2: b3
 
@@ -32,28 +32,28 @@ H2: b3
 
 c1
 EOF
-	    [\(<<'EOF')] => ['S1: x', ''],
+            [\(<<'EOF')] => ['S1: x', ''],
 H1: a4
 H2: b4
 
 S1: x
 EOF
-	    [\(<<'EOF')] => [undef, 'c1'],
+            [\(<<'EOF')] => [undef, 'c1'],
 H1: a5
 H2: b5
 S1: x5
 
 c1
 EOF
-	    [\(<<'EOF')] => [undef, ''],
+            [\(<<'EOF')] => [undef, ''],
 H1: a6
 H2: b6
 S1: x6
 c1
 EOF
-	    [\(<<'EOF')] => [undef, ''],
+            [\(<<'EOF')] => [undef, ''],
 S1: x7
 EOF
-	],
+        ],
     ],
 ];

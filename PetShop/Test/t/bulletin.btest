@@ -40,8 +40,8 @@ foreach my $msg (verify_local_mail(qr{.}, $s, 3)) {
     test_equals(qr{bulletin_user|root|bulletin_btest}, $hdr->{to});
     test_equals(qr{\Q$e}, $hdr->{'reply-to'});
     if ($hdr->{to} =~ /bulletin_btest/) {
-	die($incoming->get_body)
-	    unless $uri = ($incoming->get_body =~ /(https?:\S+)/)[0];
+        die($incoming->get_body)
+            unless $uri = ($incoming->get_body =~ /(https?:\S+)/)[0];
     }
 }
 visit_uri($uri);

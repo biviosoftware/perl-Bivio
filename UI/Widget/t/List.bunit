@@ -8,20 +8,20 @@ model('UnitTestListForm')->process;
     [NumberedList => ['index']] => '012',
     [NumberedList => [prose(['index'])]] => '012',
     [NumberedList =>
-	 [prose(q{If(['index'], ['index']);})],
+         [prose(q{If(['index'], ['index']);})],
          {row_separator => '|'},
     ] => '1|2',
     [NumberedList =>
-	 [prose(q{If([sub {$_[1] % 2}, ['index']], ['index']);})],
+         [prose(q{If([sub {$_[1] % 2}, ['index']], ['index']);})],
          {row_separator => '|'},
     ] => '1',
     [NumberedList =>
-	 [prose(q{If([sub {!($_[1] % 2)}, ['index']], ['index']);})],
+         [prose(q{If([sub {!($_[1] % 2)}, ['index']], ['index']);})],
          {row_separator => '|'},
     ] => '0|2',
     [{
-	list_class => 'UnitTestListForm',
-	form_model => ['Model.UnitTestListForm'],
-	columns => ['concat', 'letters'],
+        list_class => 'UnitTestListForm',
+        form_model => ['Model.UnitTestListForm'],
+        columns => ['concat', 'letters'],
     }] => qr{value="AA!0".*\bAA\b.*value="BB!1".*\bBB\b.*value="CC!2".*\bCC\b}s,
 ];

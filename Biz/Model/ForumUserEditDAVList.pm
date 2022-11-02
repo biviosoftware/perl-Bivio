@@ -19,11 +19,11 @@ sub row_create {
     my($f) = $self->new_other('ForumUserAddForm');
     my($req) = $self->get_request;
     $f->process({
-	'Email.email' => $new->{'Email.email'},
-	'RealmUser.realm_id' => $req->get('auth_id'),
-	map(($_ => $new->{$_}), qw(administrator file_writer)),
-	is_subscribed => $new->{is_subscribed},
-	override_default_subscription => 1,
+        'Email.email' => $new->{'Email.email'},
+        'RealmUser.realm_id' => $req->get('auth_id'),
+        map(($_ => $new->{$_}), qw(administrator file_writer)),
+        is_subscribed => $new->{is_subscribed},
+        override_default_subscription => 1,
     });
     return;
 }
@@ -32,8 +32,8 @@ sub row_delete {
     my($self, $old) = @_;
     my($req) = $self->get_request;
     $self->new_other('ForumUserDeleteForm')->process({
-	'RealmUser.realm_id' => $req->get('auth_id'),
-	'User.user_id' => $old->{'RealmUser.user_id'},
+        'RealmUser.realm_id' => $req->get('auth_id'),
+        'User.user_id' => $old->{'RealmUser.user_id'},
     });
     return;
 }
@@ -41,13 +41,13 @@ sub row_delete {
 sub row_update {
     my($self, $new, $old) = @_;
     return 'Email may not be updated via this interface'
-	unless $new->{'Email.email'} eq $old->{'Email.email'};
+        unless $new->{'Email.email'} eq $old->{'Email.email'};
     $self->new_other('GroupUserForm')->process({
-	map(($_ => $new->{$_}), (qw(is_subscribed file_writer))),
-	'RealmUser.role' => _role($new),
-	'RealmUser.user_id' => $old->{'RealmUser.user_id'},
-	current_main_role => _role($old),
-	override_default_subscription => 1,
+        map(($_ => $new->{$_}), (qw(is_subscribed file_writer))),
+        'RealmUser.role' => _role($new),
+        'RealmUser.user_id' => $old->{'RealmUser.user_id'},
+        current_main_role => _role($old),
+        override_default_subscription => 1,
     });
     return;
 }

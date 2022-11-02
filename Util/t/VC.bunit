@@ -3,11 +3,11 @@
 ShellUtil();
 options({
     check_return => sub {
-	my($case, undef, $expect) = @_;
-	my($p) = $case->get('params');
-	$p = $p->[$#$p];
-	assert_equals(-d $p ? 1 : 0, 1, $p);
-	return 1;
+        my($case, undef, $expect) = @_;
+        my($p) = $case->get('params');
+        $p = $p->[$#$p];
+        assert_equals(-d $p ? 1 : 0, 1, $p);
+        return 1;
     },
 });
 my($tmp) = tmp_dir();
@@ -19,7 +19,7 @@ IO_File()->chdir($tmp);
     [qw(u_checkout HEAD perl/Cal54)] => DIE(),
     # rsync
     sub {
-	$ENV{BIVIO_UTIL_VC_ROOT} = IO_File()->absolute_path('perl');
-	return [qw(u_checkout Cal54)];
+        $ENV{BIVIO_UTIL_VC_ROOT} = IO_File()->absolute_path('perl');
+        return [qw(u_checkout Cal54)];
     } => [],
 ];

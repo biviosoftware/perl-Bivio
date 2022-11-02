@@ -11,36 +11,36 @@ my($subfolder);
 [
     [-input => \$content, create => $file] => not_die(),
     [delete_deep => $folder] => sub {
-    	assert_equals(0, model('RealmFile')->unsafe_load({path => $file}));
-    	return 1;
+            assert_equals(0, model('RealmFile')->unsafe_load({path => $file}));
+            return 1;
     },
     [-force => delete_deep => $archive_folder] => sub {
-    	assert_equals(
-    	    [],
-    	    model('RealmFileList')->map_iterate(
-    		undef,
-    		{path_info => $archive_folder}),
-    	);
-    	return 1;
+            assert_equals(
+                [],
+                model('RealmFileList')->map_iterate(
+                    undef,
+                    {path_info => $archive_folder}),
+            );
+            return 1;
     },
     [qw(-realm site folder_sizes /Public/WikiData)] => sub {
-    	my(undef, $actual) = @_;
-    	b_die($actual->[0])
-    	    unless $subfolder = (${$actual->[0]} =~ /(\d+) TOTAL/)[0];
-    	return 1;
+            my(undef, $actual) = @_;
+            b_die($actual->[0])
+                unless $subfolder = (${$actual->[0]} =~ /(\d+) TOTAL/)[0];
+            return 1;
     },
     [qw(-realm site folder_sizes)] => sub {
-    	my(undef, $actual) = @_;
-    	b_die($subfolder, ': not less than ', $actual->[0])
-    	    unless $subfolder < (${$actual->[0]} =~ /(\d+) TOTAL/)[0];
-    	return 1;
+            my(undef, $actual) = @_;
+            b_die($subfolder, ': not less than ', $actual->[0])
+                unless $subfolder < (${$actual->[0]} =~ /(\d+) TOTAL/)[0];
+            return 1;
     },
     inline_case(sub {IO_File()->rm_rf(IO_File()->absolute_path('RealmFile.tmp'))}),
     [qw(backup_realms RealmFile.tmp site)] => sub {
-	my($files) = [glob('RealmFile.tmp/*/*')];
-	assert_equals(1, scalar(@$files), "@$files");
-	$files = [`tar tzf $files->[0]`];
-	assert_not_equals(0, scalar(@$files), "@$files");
-	return 1;
+        my($files) = [glob('RealmFile.tmp/*/*')];
+        assert_equals(1, scalar(@$files), "@$files");
+        $files = [`tar tzf $files->[0]`];
+        assert_not_equals(0, scalar(@$files), "@$files");
+        return 1;
     },
 ];

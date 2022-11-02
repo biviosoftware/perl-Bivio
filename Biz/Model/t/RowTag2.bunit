@@ -4,34 +4,34 @@ Request();
 req()->set_realm('demo');
 [
     [req()] => [
-	row_tag_get => [
-	    TIME_ZONE => 'UTC',
-	],
-	row_tag_replace => [
-	    ['TIME_ZONE', Type_TimeZone()->AMERICA_DENVER] => not_die(),
-	],
-	row_tag_get => [
-	    TIME_ZONE => 'AMERICA_DENVER',
-	],
-	row_tag_get_for_auth_user => [
-	    TIME_ZONE => 'UTC',
-	    sub {
-		req()->set_user('demo');
-		req()->set_realm(undef);
-		return ['TIME_ZONE'];
-	    } => 'AMERICA_DENVER',
-	],
-	row_tag_replace_for_auth_user => [
-	    ['TIME_ZONE', undef] => not_die(),
-	],
-	inline_case(
-	    sub {
-		req()->set_realm('demo');
-		return;
-	    },
-	),
-	row_tag_get => [
-	    TIME_ZONE => 'UTC',
-	],
+        row_tag_get => [
+            TIME_ZONE => 'UTC',
+        ],
+        row_tag_replace => [
+            ['TIME_ZONE', Type_TimeZone()->AMERICA_DENVER] => not_die(),
+        ],
+        row_tag_get => [
+            TIME_ZONE => 'AMERICA_DENVER',
+        ],
+        row_tag_get_for_auth_user => [
+            TIME_ZONE => 'UTC',
+            sub {
+                req()->set_user('demo');
+                req()->set_realm(undef);
+                return ['TIME_ZONE'];
+            } => 'AMERICA_DENVER',
+        ],
+        row_tag_replace_for_auth_user => [
+            ['TIME_ZONE', undef] => not_die(),
+        ],
+        inline_case(
+            sub {
+                req()->set_realm('demo');
+                return;
+            },
+        ),
+        row_tag_get => [
+            TIME_ZONE => 'UTC',
+        ],
     ],
 ];

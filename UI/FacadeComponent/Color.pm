@@ -23,8 +23,8 @@ sub format_css {
     my($attr) = 'color:';
     my($n) = $name;
     if ($name =~ /-(.*)/) {
-	$attr = "$1-$attr";
-	$n =~ s/-/_/g;
+        $attr = "$1-$attr";
+        $n =~ s/-/_/g;
         if (! $proto->internal_unsafe_lc_get_value($n, $req_or_facade)) {
             ($n = $name) =~ s/-.*//;
         }
@@ -53,17 +53,17 @@ sub format_html {
     # for description of last argument.
     my($proto, $name, $attr, $req) = @_;
     return ''
-	unless $name and my $v = $proto->internal_get_value($name, $req);
+        unless $name and my $v = $proto->internal_get_value($name, $req);
     return defined($attr) && defined($v->{$attr}) ? $v->{$attr}
-	    : _format_html($v->{config}, $attr);
+            : _format_html($v->{config}, $attr);
 }
 
 sub internal_initialize_value {
     my($self, $value) = @_;
     my($v) = $value->{config};
     unless ($v =~ /^-?\d+$/) {
-	$self->initialization_error($value, 'not an integer');
-	$v = $self->UNDEF_CONFIG;
+        $self->initialization_error($value, 'not an integer');
+        $v = $self->UNDEF_CONFIG;
     }
     $value->{bgcolor} = _format_html($v, 'bgcolor');
     $value->{color} = _format_html($v, 'color');
@@ -74,8 +74,8 @@ sub _format_html {
     my($num, $attr) = @_;
     return $num < 0 ? ''
         : length($attr)
-	? sprintf($attr =~ /:/ ? '%s #%06X;' : ' %s="#%06X"', $attr, $num)
-	: sprintf('#%06X', $num);
+        ? sprintf($attr =~ /:/ ? '%s #%06X;' : ' %s="#%06X"', $attr, $num)
+        : sprintf('#%06X', $num);
 }
 
 1;

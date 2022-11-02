@@ -16,13 +16,13 @@ sub execute_empty {
     return $self->internal_use_general_realm_for_site_admin(sub {
         my($req) = $self->get_request;
         return $self->SUPER::execute_empty(@args)
-	    unless _is_forum($req);
+            unless _is_forum($req);
         $self->internal_put_field('Forum.forum_id' => $req->get('auth_id'));
         foreach my $m (@{$self->REALM_MODELS}) {
             $self->load_from_model_properties($m);
         }
         return $self->SUPER::execute_empty(@args)
-	    unless $self->is_create;
+            unless $self->is_create;
         $self->internal_put_field('RealmOwner.name' =>
             $self->get('RealmOwner.name') . '-');
         $self->internal_put_field('RealmOwner.display_name' =>
@@ -40,16 +40,16 @@ sub execute_ok {
             (undef, $realm) = $self->new_other('Forum')->create_realm(
                 map($self->get_model_properties($_),
                     @{$self->REALM_MODELS}),
-		$self->internal_admin_user_id,
+                $self->internal_admin_user_id,
             );
         }
         else {
             foreach my $m (@{$self->REALM_MODELS}) {
                 $self->update_model_properties($m);
             }
-	    $realm = $_R->new($self->get_model('RealmOwner'));
+            $realm = $_R->new($self->get_model('RealmOwner'));
         }
-	return;
+        return;
     });
     $self->req->set_realm($realm);
     $self->internal_post_realm_create;
@@ -64,16 +64,16 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	require_validate => 1,
+        require_validate => 1,
         visible => [
-	    'RealmOwner.display_name',
-	    $self->field_decl([[qw(RealmOwner.name ForumName)]]),
-	    'Forum.require_otp',
-	],
-	other => [
-	    $self->field_decl([[qw(admin_user_id User.user_id)]]),
-	],
-	auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
+            'RealmOwner.display_name',
+            $self->field_decl([[qw(RealmOwner.name ForumName)]]),
+            'Forum.require_otp',
+        ],
+        other => [
+            $self->field_decl([[qw(admin_user_id User.user_id)]]),
+        ],
+        auth_id => ['Forum.forum_id', 'RealmOwner.realm_id'],
     });
 }
 
@@ -91,7 +91,7 @@ sub validate {
     my($self) = @_;
     return $self->internal_use_general_realm_for_site_admin(sub {
         return
-	    if $self->get_field_error('RealmOwner.name');
+            if $self->get_field_error('RealmOwner.name');
         # A sub forum must begin with its corresponding root forum prefix, but
         # does not need to prepend its other parent forum names, i.e.:
         # base ---> base-sub1 (valid)
@@ -122,19 +122,19 @@ sub _top {
     my($self) = @_;
     my($req) = $self->get_request;
     return ('', 1)
-	unless _is_forum($req);
+        unless _is_forum($req);
     my($is_top) = $self->is_create ? 0 : 1;
     my($f) = $self->new_other('Forum')->load;
     foreach my $x (1..10) {
-	my($fid) = $f->get('forum_id');
-	return (
-	    $_FN->extract_top(
-		$f->new_other('RealmOwner')
-		    ->unauth_load_or_die({realm_id => $fid})->get('name'),
-	    ),
-	    $is_top,
-	) unless $f->unauth_load({forum_id => $f->get('parent_realm_id')});
-	$is_top = 0;
+        my($fid) = $f->get('forum_id');
+        return (
+            $_FN->extract_top(
+                $f->new_other('RealmOwner')
+                    ->unauth_load_or_die({realm_id => $fid})->get('name'),
+            ),
+            $is_top,
+        ) unless $f->unauth_load({forum_id => $f->get('parent_realm_id')});
+        $is_top = 0;
     }
     die('too deep');
     # DOES NOT RETURN

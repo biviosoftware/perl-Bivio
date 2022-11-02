@@ -5,153 +5,153 @@ my($do_default);
 my($realms) = [];
 [
     {
-    	compute_return => sub {
-    	    my($case, $actual) = @_;
-    	    my($o) = $actual->[0];
-    	    return [
-    		$o->get('type')->get_name,
-    		$o->is_default,
-    		Bivio::Die->eval(sub {$o->format_file}) || undef,
-    	    ];
-    	},
+            compute_return => sub {
+                my($case, $actual) = @_;
+                my($o) = $actual->[0];
+                return [
+                    $o->get('type')->get_name,
+                    $o->is_default,
+                    Bivio::Die->eval(sub {$o->format_file}) || undef,
+                ];
+            },
         object => 'Bivio::Auth::Realm',
     } => [
-    	new => [
-    	    [] => Bivio::DieCode->DIE,
-    	    ['demo', req()] => ['USER', 0, 'demo'],
-    	    ['user', req()] => ['USER', 1, 'user'],
-    	    ['club', req()] => ['CLUB', 1, 'club'],
-    	    ['general', req()] => ['GENERAL', 1, undef],
-    	    sub {[class()->get_general, req()]} => ['GENERAL', 1, undef],
-    	    sub {[class()->new('demo', req()), req()]} => ['USER', 0, 'demo'],
-    	    [Bivio::Auth::RealmType->USER, req()] => ['USER', 1, 'user'],
-    	],
-    	get_general => [
-    	    [] => ['GENERAL', 1, undef],
-    	],
+            new => [
+                [] => Bivio::DieCode->DIE,
+                ['demo', req()] => ['USER', 0, 'demo'],
+                ['user', req()] => ['USER', 1, 'user'],
+                ['club', req()] => ['CLUB', 1, 'club'],
+                ['general', req()] => ['GENERAL', 1, undef],
+                sub {[class()->get_general, req()]} => ['GENERAL', 1, undef],
+                sub {[class()->new('demo', req()), req()]} => ['USER', 0, 'demo'],
+                [Bivio::Auth::RealmType->USER, req()] => ['USER', 1, 'user'],
+            ],
+            get_general => [
+                [] => ['GENERAL', 1, undef],
+            ],
     ],
     ['demo', req()] => [
-    	format_email => qr/\bdemo\@/,
-    	format_file => 'demo',
-    	format_uri => '/demo',
-    	as_string => qr/Bivio::Auth::Realm\[USER,demo,\d+\]/,
-    	get_default_name => 'user',
-    	get_type => [
-    	    [] => [Bivio::Auth::RealmType->USER],
-    	],
-    	is_default => 0,
-    	is_default_id => [
-    	    sub {
-    		return [shift->get_nested(qw(object id))];
-    	    } => 0,
-    	],
-    	get_default_id => [
-    	    [] => [Bivio::Auth::RealmType->USER->as_int],
-    	],
-    	equals_by_name_or_id => [
-    	    [realm_id('demo')] => 1,
-    	    [realm_id('user')] => 0,
-    	    [undef] => 0,
-    	    demo => 1,
-    	    user => 0,
-    	],
+            format_email => qr/\bdemo\@/,
+            format_file => 'demo',
+            format_uri => '/demo',
+            as_string => qr/Bivio::Auth::Realm\[USER,demo,\d+\]/,
+            get_default_name => 'user',
+            get_type => [
+                [] => [Bivio::Auth::RealmType->USER],
+            ],
+            is_default => 0,
+            is_default_id => [
+                sub {
+                    return [shift->get_nested(qw(object id))];
+                } => 0,
+            ],
+            get_default_id => [
+                [] => [Bivio::Auth::RealmType->USER->as_int],
+            ],
+            equals_by_name_or_id => [
+                [realm_id('demo')] => 1,
+                [realm_id('user')] => 0,
+                [undef] => 0,
+                demo => 1,
+                user => 0,
+            ],
     ],
     sub {class()->get_general} => [
-    	equals_by_name_or_id => [
-    	    [undef] => 1,
-    	    [realm_id('demo')] => 0,
-    	    general => 1,
-    	    demo => 0,
-    	],
+            equals_by_name_or_id => [
+                [undef] => 1,
+                [realm_id('demo')] => 0,
+                general => 1,
+                demo => 0,
+            ],
     ],
     ['club', req()] => [
-    	get_default_id => [
-    	    [] => [Bivio::Auth::RealmType->CLUB->as_int],
-    	],
+            get_default_id => [
+                [] => [Bivio::Auth::RealmType->CLUB->as_int],
+            ],
     ],
     sub {
-    	return Bivio::Auth::Realm->get_general;
+            return Bivio::Auth::Realm->get_general;
     } => [
-    	format_email => Bivio::DieCode->DIE,
-    	id_from_any => 1,
+            format_email => Bivio::DieCode->DIE,
+            id_from_any => 1,
     ],
     'Bivio::Auth::Realm' => [
-    	is_default_id => [
-    	    1 => 1,
-    	    2 => 1,
-    	    [] => 0,
-    	],
-    	{
-    	    method => 'id_from_any',
-    	    compute_params => sub {
-    		my(undef, $params) = @_;
-    		req()->set_realm(undef);
-    		return [req()->get(@$params)];
-    	    },
-    	} => [
-    	    auth_realm => 1,
-    	    auth_id => 1,
-    	    sub {[req()->set_realm('demo')->get('owner')]}
-    		=> sub {[req()->get('auth_id')]},
-    	    auth_role => DIE(),
-    	    task => DIE(),
-    	    sub {[]} => DIE(),
-    	],
+            is_default_id => [
+                1 => 1,
+                2 => 1,
+                [] => 0,
+            ],
+            {
+                method => 'id_from_any',
+                compute_params => sub {
+                    my(undef, $params) = @_;
+                    req()->set_realm(undef);
+                    return [req()->get(@$params)];
+                },
+            } => [
+                auth_realm => 1,
+                auth_id => 1,
+                sub {[req()->set_realm('demo')->get('owner')]}
+                    => sub {[req()->get('auth_id')]},
+                auth_role => DIE(),
+                task => DIE(),
+                sub {[]} => DIE(),
+            ],
     ],
     {
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->set_user($params->[0]);
-	    req()->put('Realm.bunit' => $params->[2]);
-	    return [Bivio::Agent::Task->get_by_id($params->[1]), req()];
-	},
-	object => ['demo', req()],
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->set_user($params->[0]);
+            req()->put('Realm.bunit' => $params->[2]);
+            return [Bivio::Agent::Task->get_by_id($params->[1]), req()];
+        },
+        object => ['demo', req()],
     } => [
-	can_user_execute_task => [
-	    [undef, 'LOGIN'] => 0,
-	    [undef, 'PUBLIC_USER_FILE_READ'] => 1,
-	    [undef, 'USER_ACCOUNT_EDIT'] => 0,
-	    [undef, 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 0,
-	    ['demo', 'LOGIN'] => 0,
-	    ['demo', 'PUBLIC_USER_FILE_READ'] => 1,
-	    ['demo', 'USER_ACCOUNT_EDIT'] => 1,
-	    ['demo', 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 0,
-	    ['root', 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 1,
-	    ['demo', 'USER_ACCOUNT_EDIT'] => 1,
-	    ['demo', 'USER_ACCOUNT_EDIT', 1] => 1,
-	    ['demo', 'USER_ACCOUNT_EDIT', 0] => 0,
-	],
+        can_user_execute_task => [
+            [undef, 'LOGIN'] => 0,
+            [undef, 'PUBLIC_USER_FILE_READ'] => 1,
+            [undef, 'USER_ACCOUNT_EDIT'] => 0,
+            [undef, 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 0,
+            ['demo', 'LOGIN'] => 0,
+            ['demo', 'PUBLIC_USER_FILE_READ'] => 1,
+            ['demo', 'USER_ACCOUNT_EDIT'] => 1,
+            ['demo', 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 0,
+            ['root', 'USER_ACCOUNT_EDIT_BY_SUPER_USER'] => 1,
+            ['demo', 'USER_ACCOUNT_EDIT'] => 1,
+            ['demo', 'USER_ACCOUNT_EDIT', 1] => 1,
+            ['demo', 'USER_ACCOUNT_EDIT', 0] => 0,
+        ],
     ],
     {
-    	compute_params => sub {
-    	    my(undef, $params) = @_;
-    	    req()->set_user($params->[0]);
-    	    return [[$params->[1]], req()];
-    	},
-    	object => ['demo', req()],
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->set_user($params->[0]);
+                return [[$params->[1]], req()];
+            },
+            object => ['demo', req()],
     } => [
-    	does_user_have_permissions => [
-    	    [undef, 'ANYBODY'] => 1,
-    	    [undef, 'DATA_READ'] => 0,
-    	    ['demo', 'DATA_READ'] => 1,
-    	],
+            does_user_have_permissions => [
+                [undef, 'ANYBODY'] => 1,
+                [undef, 'DATA_READ'] => 0,
+                ['demo', 'DATA_READ'] => 1,
+            ],
     ],
     class() => [
-    	do_default => [
-    	    [sub {
-    		push(@{$do_default ||= []}, req(qw(auth_realm type)));
-    		return 1;
-    	    }, req()] => sub {
-    		shift->actual_return([sort(@$do_default)]);
-    		return [sort(
-    		    Bivio::Auth::RealmType->get_non_zero_list)];
-    	    },
-    	],
-    	do_any_group_default => [
-    	    [sub {push(@$realms, req(qw(auth_realm type))); 1;}, req()] => sub {
-    		assert_equals([Auth_RealmType()->get_any_group_list], $realms);
-    		return 1;
-    	    }
-    	],
+            do_default => [
+                [sub {
+                    push(@{$do_default ||= []}, req(qw(auth_realm type)));
+                    return 1;
+                }, req()] => sub {
+                    shift->actual_return([sort(@$do_default)]);
+                    return [sort(
+                        Bivio::Auth::RealmType->get_non_zero_list)];
+                },
+            ],
+            do_any_group_default => [
+                [sub {push(@$realms, req(qw(auth_realm type))); 1;}, req()] => sub {
+                    assert_equals([Auth_RealmType()->get_any_group_list], $realms);
+                    return 1;
+                }
+            ],
     ],
 ];

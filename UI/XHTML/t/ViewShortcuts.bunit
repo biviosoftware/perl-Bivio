@@ -3,24 +3,24 @@
 Request('initialize_fully');
 [
     {
-	object => sub {'Bivio::UI::View'},
-	compute_return => sub {
-	    return [${req()->get('reply')->get_output}];
-	},
+        object => sub {'Bivio::UI::View'},
+        compute_return => sub {
+            return [${req()->get('reply')->get_output}];
+        },
     } => [
         call_main => [
-	    [\(<<'EOF'), req()] => '<big>x</big>',
+            [\(<<'EOF'), req()] => '<big>x</big>',
 view_class_map('XHTMLWidget');
 view_shortcuts('Bivio::UI::XHTML::ViewShortcuts');
 view_main(SimplePage(BIG('x')));
 EOF
-	    [\(<<'EOF'), req()] => '<p class="zz">x</p>',
+            [\(<<'EOF'), req()] => '<p class="zz">x</p>',
 view_class_map('XHTMLWidget');
 view_shortcuts('Bivio::UI::XHTML::ViewShortcuts');
 b_die(P_zz('x')->b_widget_label, ': bad b_widget_label')
     unless P_zz('x')->b_widget_label eq 'P_zz';
 view_main(SimplePage(P_zz('x')));
 EOF
-	],
+        ],
     ],
 ];

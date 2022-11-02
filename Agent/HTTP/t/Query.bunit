@@ -4,25 +4,25 @@ Request();
 req()->initialize_fully;
 [
     class() => [
-	format => [
-	    [] => [undef],
-	    [{acknowledgement => 'PRODUCTS'}, req()] => 'ack=500',
-	    [{acknowledgement => 'PRODUCTS', x => 3}, req()] => 'ack=500&x=3',
-	    [
-		{acknowledgement => Action_Acknowledgement()->SAVE_LABEL_DEFAULT},
-		req(),
-	    ] => 'ack=1',
-	    inline_case(sub {req()->initialize_fully('PRODUCTS')}),
-	    [
-		{acknowledgement => Action_Acknowledgement()->SAVE_LABEL_DEFAULT},
-		req(),
-	    ] => [undef],
-	    [{'ListQuery.this' => 111}, req()] => 't=111',
-	    [{'ListQuery.this' => undef}, req()] => 't=',
+        format => [
+            [] => [undef],
+            [{acknowledgement => 'PRODUCTS'}, req()] => 'ack=500',
+            [{acknowledgement => 'PRODUCTS', x => 3}, req()] => 'ack=500&x=3',
+            [
+                {acknowledgement => Action_Acknowledgement()->SAVE_LABEL_DEFAULT},
+                req(),
+            ] => 'ack=1',
+            inline_case(sub {req()->initialize_fully('PRODUCTS')}),
+            [
+                {acknowledgement => Action_Acknowledgement()->SAVE_LABEL_DEFAULT},
+                req(),
+            ] => [undef],
+            [{'ListQuery.this' => 111}, req()] => 't=111',
+            [{'ListQuery.this' => undef}, req()] => 't=',
 #TODO: Can't test b/c on command line, which is a Test.Request
-#	    [{'ListQuery.this' => {}}, req()] => DIE(),
-	    [{'ListQuery.this' => Type_Gender()->MALE}, req()] => 't=2',
-	],
+#            [{'ListQuery.this' => {}}, req()] => DIE(),
+            [{'ListQuery.this' => Type_Gender()->MALE}, req()] => 't=2',
+        ],
         parse => [
             ['a=1&b=2'] => [{ a => 1, b => 2 }],
         ],

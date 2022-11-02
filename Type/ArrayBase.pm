@@ -80,9 +80,9 @@ sub compare_defined {
     $right = _clean_copy($proto, $right);
     my($underlying) = $proto->UNDERLYING_TYPE;
     foreach my $i (0 .. ($#$left < $#$right ? $#$left : $#$right)) {
-	my($x) = $underlying->compare($left->[$i], $right->[$i]);
-	return $x
-	    if $x;
+        my($x) = $underlying->compare($left->[$i], $right->[$i]);
+        return $x
+            if $x;
     }
     return @$left <=> @$right;
 }
@@ -96,9 +96,9 @@ sub intersect {
 sub contains {
     my($self, $value) = @_;
     b_die($value, ': must be a string')
-	if ref($value);
+        if ref($value);
     b_die('value must be defined')
-	unless defined($value);
+        unless defined($value);
     return grep($value eq $_, @{$self->as_array}) ? 1 : 0;
 }
 
@@ -106,8 +106,8 @@ sub do_iterate {
     my($self, $op) = @_;
     my($a) = $self->as_array;
     foreach my $v (@$a) {
-	return
-	    unless $self->internal_verify_do_iterate_result($op->($v));
+        return
+            unless $self->internal_verify_do_iterate_result($op->($v));
     }
     return;
 }
@@ -121,13 +121,13 @@ sub exclude {
     my($self, $subtrahend) = @_;
     my($base) = $self->as_hash;
     $subtrahend = $self->from_literal_or_die($subtrahend, 1)
-	unless $self->is_blesser_of($subtrahend);
+        unless $self->is_blesser_of($subtrahend);
     $subtrahend = $subtrahend->as_hash;
     return $self->new(
-	$self->map_iterate(sub {
-	    my($v) = @_;
-	    return $subtrahend->{$v} ? () : $v;
-	}),
+        $self->map_iterate(sub {
+            my($v) = @_;
+            return $subtrahend->{$v} ? () : $v;
+        }),
     );
 
 }
@@ -135,14 +135,14 @@ sub exclude {
 sub from_literal {
     my($proto, $value) = @_;
     return ($proto->new($value), undef)
-	if ref($value);
+        if ref($value);
     return ($proto->new([]), undef)
-	unless defined($value) && length($value);
+        unless defined($value) && length($value);
     $value = $proto->from_literal_stripper($value);
     return ($proto->new([]), undef)
-	unless length($value);
+        unless length($value);
     my($values, $error)
-	= _parse($proto, [split($proto->ANY_SEPARATOR_REGEX, $value)]);
+        = _parse($proto, [split($proto->ANY_SEPARATOR_REGEX, $value)]);
     return $error ? (undef, $error) : (_new($proto, $values), undef);
 }
 
@@ -158,7 +158,7 @@ sub from_literal_validator {
 sub from_sql_column {
     my($proto, $param) = @_;
     return $proto->new([split(
-	$proto->ANY_SEPARATOR_REGEX, defined($param) ? $param : '',
+        $proto->ANY_SEPARATOR_REGEX, defined($param) ? $param : '',
     )]);
 }
 
@@ -166,7 +166,7 @@ sub get_element {
     my($self, $index) = @_;
     my($elements) = shift->[$_IDI];
     b_die($index, ': range error max=', $#$elements)
-	if $index < 0 || $index > $#$elements;
+        if $index < 0 || $index > $#$elements;
     return $elements->[$index];
 }
 
@@ -187,7 +187,7 @@ sub map_iterate {
 sub new {
     my($proto, $value) = @_;
     return $proto->from_literal_or_die($value)
-	unless ref($value);
+        unless ref($value);
     return _new($proto, _clean_copy($proto, $value));
 }
 
@@ -195,18 +195,18 @@ sub sort_unique {
     my($value) = _value(@_);
     my($ut) = shift->UNDERLYING_TYPE;
     return ref($value) eq 'ARRAY' ? [sort(
-	{$ut->compare($a, $b)}
-	map($ut->from_literal_or_die($_),
-	    keys(%{+{map(($_ => undef),
-		map($ut->to_literal($_), @$value))}})),
+        {$ut->compare($a, $b)}
+        map($ut->from_literal_or_die($_),
+            keys(%{+{map(($_ => undef),
+                map($ut->to_literal($_), @$value))}})),
     )] : $value->new($value->sort_unique($value->as_array));
 }
 
 sub to_literal {
     my($proto, $value) = @_;
     return join(
-	$proto->LITERAL_SEPARATOR,
-	@{_clean_copy($proto, $value)});
+        $proto->LITERAL_SEPARATOR,
+        @{_clean_copy($proto, $value)});
 }
 
 sub to_sql_param {
@@ -218,15 +218,15 @@ sub to_sql_param {
 sub _clean_copy {
     my($proto, $value) = @_;
     return []
-	unless defined($value);
+        unless defined($value);
     if (__PACKAGE__->is_blesser_of($value)) {
-	return $value->as_array
-	    if ref($value) eq ref($proto);
-	$value = $value->as_array;
+        return $value->as_array
+            if ref($value) eq ref($proto);
+        $value = $value->as_array;
     }
     my($copy, $error) = _parse($proto, $value);
     b_die($value, ": invalid literal: ", $error)
-	if $error;
+        if $error;
     return $copy;
 }
 
@@ -241,17 +241,17 @@ sub _parse {
     my($error);
     my($sep) = $proto->ANY_SEPARATOR_REGEX;
     $value = [map({
-	my($v, $e) = $proto->from_literal_validator($_);
-	$error ||= $e;
-	b_die($v, ": separator ($sep) in element")
-	    if ($v || '') =~ $sep;
-	defined($v) && length($v) ? $v : '';
+        my($v, $e) = $proto->from_literal_validator($_);
+        $error ||= $e;
+        b_die($v, ": separator ($sep) in element")
+            if ($v || '') =~ $sep;
+        defined($v) && length($v) ? $v : '';
     } @$value)];
     pop(@$value)
-	while @$value && !length($value->[$#$value]);
+        while @$value && !length($value->[$#$value]);
     return (
-	$proto->WANT_SORTED ? [sort($proto->compare($a, $b), @$value)] : $value,
-	$error,
+        $proto->WANT_SORTED ? [sort($proto->compare($a, $b), @$value)] : $value,
+        $error,
     );
 }
 

@@ -12,21 +12,21 @@ use Bivio::Test::Language::HTTP;
 use File::Spec ();
 Bivio::IO::Config->introduce_values({
     'Bivio::Test::Language::HTTP' => {
-	# This port won't exist so mock_sendmail will fail quickly
-	home_page_uri => 'http://localhost:1',
-	mail_tries => 10,
+        # This port won't exist so mock_sendmail will fail quickly
+        home_page_uri => 'http://localhost:1',
+        mail_tries => 10,
      },
 });
 Bivio::IO::File->chdir('Util');
 my($user) = "$ENV{USER}\@localhost.localdomain";
 Bivio::Test->unit([
     'Bivio::Test::Language::HTTP' => [
-	handle_setup => undef,
+        handle_setup => undef,
     ],
     'Bivio::Test::Util' => [
-	main => [
-	    [
-		'-input' => \(<<"EOF"),
+        main => [
+            [
+                '-input' => \(<<"EOF"),
 From: Joe <$user>
 To: Joe <$ENV{USER}+btest_bla\@localhost.localdomain>
 Subject: my subject
@@ -34,12 +34,12 @@ X-Bivio-Test-Recipient: $ENV{USER}+btest_bla\@localhost.localdomain
 
 First message.
 EOF
-		'mock_sendmail',
-		"-f$user",
-		"$ENV{USER}+btest_bla\@localhost.localdomain",
-	    ] => undef,
-	    [
-		'-input' => \(<<"EOF"),
+                'mock_sendmail',
+                "-f$user",
+                "$ENV{USER}+btest_bla\@localhost.localdomain",
+            ] => undef,
+            [
+                '-input' => \(<<"EOF"),
 From: Joe <$ENV{USER}+btest_bounce\@localhost.localdomain>
 To: Joe <no-such-user\@localhost.localdomain>
 Subject: my subject
@@ -47,35 +47,35 @@ X-Bivio-Test-Recipient: $ENV{USER}+btest_bounce\@localhost.localdomain
 
 Second message.
 EOF
-		'mock_sendmail',
-		"no-such-user\@localhost.localdomain",
-	    ] => undef,
-	],
+                'mock_sendmail',
+                "no-such-user\@localhost.localdomain",
+            ] => undef,
+        ],
     ],
     'Bivio::Test::Language::HTTP' => [
-	handle_setup => undef,
-	verify_local_mail => [
-	    ["$ENV{USER}+btest_bla\@localhost.localdomain", qr{First message.}i] => undef,
-	    # Want to make sure hits procmail
-	    ["$ENV{USER}+btest_bounce\@localhost.localdomain", qr{internal server error}i] => undef,
-	],
+        handle_setup => undef,
+        verify_local_mail => [
+            ["$ENV{USER}+btest_bla\@localhost.localdomain", qr{First message.}i] => undef,
+            # Want to make sure hits procmail
+            ["$ENV{USER}+btest_bounce\@localhost.localdomain", qr{internal server error}i] => undef,
+        ],
     ],
     Bivio::Test::Util->new => [
-	# Needs to be first for initialization of Facade
-	task => [
-	    MAIN => qr/REPTILES/,
-	    ['PRODUCTS', 'p=REPTILES'] => qr/iguana.*rattlesnake/is,
-	],
-	unit => [
-	    ['should-pass.t'] => [],
-	    ['subdir-pass.t'] => [],
-	    ['should-fail.t-data'] => Bivio::DieCode->DIE,
-	    ['.'] => [],
-	],
-	acceptance => [
-	    ['should-pass.btest'] => [],
-	    ['should-fail.btest-data'] => Bivio::DieCode->DIE,
-	    ['.'] => [],
-	],
+        # Needs to be first for initialization of Facade
+        task => [
+            MAIN => qr/REPTILES/,
+            ['PRODUCTS', 'p=REPTILES'] => qr/iguana.*rattlesnake/is,
+        ],
+        unit => [
+            ['should-pass.t'] => [],
+            ['subdir-pass.t'] => [],
+            ['should-fail.t-data'] => Bivio::DieCode->DIE,
+            ['.'] => [],
+        ],
+        acceptance => [
+            ['should-pass.btest'] => [],
+            ['should-fail.btest-data'] => Bivio::DieCode->DIE,
+            ['.'] => [],
+        ],
     ],
 ]);

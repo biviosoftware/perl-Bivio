@@ -4,11 +4,11 @@ ShellUtil();
 my($tmp) = tmp_dir();
 config({
     'Bivio::Util::Release' => {
-	rpm_home_dir => my $home = IO_File()->mkdir_p("$tmp/b-release/rpms"),
-	rpm_user => $ENV{USER},
-	rpm_group => $ENV{USER},
-	tmp_dir => IO_File()->mkdir_p("$tmp/b-release/tmp"),
-	cvs_rpm_spec_dir => 'not-needed',
+        rpm_home_dir => my $home = IO_File()->mkdir_p("$tmp/b-release/rpms"),
+        rpm_user => $ENV{USER},
+        rpm_group => $ENV{USER},
+        tmp_dir => IO_File()->mkdir_p("$tmp/b-release/tmp"),
+        cvs_rpm_spec_dir => 'not-needed',
     },
 });
 IO_File()->chdir($tmp);
@@ -86,13 +86,13 @@ END
 );
 [
     [build => $spec] => sub {
-	my($rpm) = "$home/release-bunit-HEAD.rpm";
-	assert_equals(1, -l $rpm);
-	assert_equals("/file1.txt\n/file2.txt\n/file3.txt\n", scalar(`rpm -qlp $rpm`));
-	assert_equals(
-	    qr{^provides-aa\s*\nprovides-bb\s*\nrelease-bunit = HEAD-\d+_\d+}s,
-	    scalar(`rpm -qp --provides $rpm`),
-	);
-	return 1;
+        my($rpm) = "$home/release-bunit-HEAD.rpm";
+        assert_equals(1, -l $rpm);
+        assert_equals("/file1.txt\n/file2.txt\n/file3.txt\n", scalar(`rpm -qlp $rpm`));
+        assert_equals(
+            qr{^provides-aa\s*\nprovides-bb\s*\nrelease-bunit = HEAD-\d+_\d+}s,
+            scalar(`rpm -qp --provides $rpm`),
+        );
+        return 1;
     },
 ];

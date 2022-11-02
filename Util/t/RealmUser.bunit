@@ -7,11 +7,11 @@ foreach my $x (
 ) {
     my($u) = shift(@$x);
     foreach my $n (1..4) {
-	ShellUtil_RealmAdmin()->main(
-	    -realm => "realm_user_util$n", -user => $u, 'leave_user');
+        ShellUtil_RealmAdmin()->main(
+            -realm => "realm_user_util$n", -user => $u, 'leave_user');
     }
     ShellUtil_RealmAdmin()->main(
-	qw(-realm realm_user_util1 -user), $u, join_user => @$x);
+        qw(-realm realm_user_util1 -user), $u, join_user => @$x);
 }
 ShellUtil_RealmAdmin()->main(
     qw(-realm realm_user_util3 -user demo join_user MAIL_RECIPIENT),

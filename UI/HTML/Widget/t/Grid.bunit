@@ -3,7 +3,7 @@
 Widget();
 config({
     'Bivio::Type::CacheTagFilePath' => {
-	use_cached_path => 1,
+        use_cached_path => 1,
     },
 });
 my($ctre) = Type_CacheTag()->REGEX;
@@ -29,8 +29,8 @@ my($ctre) = Type_CacheTag()->REGEX;
     [[['x']], {end_tag => 0}] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr>},
     [[['x']], {class => 'c1'}] => qq{<table class="c1"><tr>\n<td>x</td>\n</tr></table>},
     [
-	[[prose('x')->put(row_class => 'rc1', cell_class => 'cc1')]],
-	{class => 'c1'},
+        [[prose('x')->put(row_class => 'rc1', cell_class => 'cc1')]],
+        {class => 'c1'},
     ] => qq{<table class="c1"><tr class="rc1">\n<td class="cc1">x</td>\n</tr></table>},
     [[['x', '']]] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n<td></td>\n</tr></table>},
     [[['x', '']], {hide_empty_cells => 1}] => qq{<table border="0" cellpadding="0" cellspacing="0"><tr>\n<td>x</td>\n</tr></table>},

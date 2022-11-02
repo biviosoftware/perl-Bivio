@@ -13,11 +13,11 @@ sub get_total {
     my($self) = @_;
     my($amount) = 0;
     $self->new_other('CartItemList')->load_all->do_rows(
-	sub {
-	    my($list) = @_;
-	    $amount = $_P->add($amount,	$list->get('total_cost'));
-	    return 1;
-	},
+        sub {
+            my($list) = @_;
+            $amount = $_P->add($amount,        $list->get('total_cost'));
+            return 1;
+        },
     );
     return $amount;
 }
@@ -32,12 +32,12 @@ sub handle_cookie_in {
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'cart_t',
-	columns => {
-	    cart_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    creation_date => ['Date', 'NOT_NULL'],
-	},
+        version => 1,
+        table_name => 'cart_t',
+        columns => {
+            cart_id => ['PrimaryId', 'PRIMARY_KEY'],
+            creation_date => ['Date', 'NOT_NULL'],
+        },
     };
 }
 
@@ -59,23 +59,23 @@ sub load_from_cookie {
     # check if the cart exists
     if (defined($cart_id) && $self->unsafe_load({cart_id => $cart_id})) {
 
-	# don't use the cart_id if an order is associated with it
-	if ($self->new_other('Order')->unauth_load({
+        # don't use the cart_id if an order is associated with it
+        if ($self->new_other('Order')->unauth_load({
             cart_id => $cookie->get('cart_id'),
         })) {
-	    $cart_id = undef;
-	}
+            $cart_id = undef;
+        }
     }
     else {
-	# cart doesn't exist
-	$cart_id = undef;
+        # cart doesn't exist
+        $cart_id = undef;
     }
 
     # create a new one if necessary
     unless (defined($cart_id)) {
-	$cart_id = $self->create({
-	    creation_date => $_D->now,
-	})->get('cart_id');
+        $cart_id = $self->create({
+            creation_date => $_D->now,
+        })->get('cart_id');
     }
 
     $cookie->put(cart_id => $cart_id);

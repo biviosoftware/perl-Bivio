@@ -108,7 +108,7 @@ sub internal_new_args {
     return '"field" attribute must be defined' unless defined($field);
     return {
         field => $field,
-	($attributes ? %$attributes : ()),
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -125,10 +125,10 @@ sub render {
     my($fields) = $self->[$_IDI];
     my($form) = $source->get_request->get_widget_value(@{$fields->{model}});
     $$buffer .= $fields->{prefix}
-	. $form->get_field_name_for_html($fields->{field})
-	. '" value="'
-	. $form->get_field_as_html($fields->{field})
-	. '" />';
+        . $form->get_field_name_for_html($fields->{field})
+        . '" value="'
+        . $form->get_field_as_html($fields->{field})
+        . '" />';
     return;
 }
 

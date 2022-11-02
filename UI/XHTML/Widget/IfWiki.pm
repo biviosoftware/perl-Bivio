@@ -13,18 +13,18 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	realm_id => vs_constant('site_realm_id'),
-	control => [sub {
-	    my($source) = @_;
-	    my($t, $a, $p) = map(
-		$_ || '',
-		$source->req->unsafe_get(qw(task_id auth_id path_info)));
-	    my($pr) = $self->render_simple_attr(page_regexp => $source);
-	    return $t->get_name =~ /WIKI_VIEW/
-		&& $a eq $self->render_simple_attr(realm_id => $source)
-	        && $p =~ qr{^$pr$}is
-	        ? 1 : 0;
-	}],
+        realm_id => vs_constant('site_realm_id'),
+        control => [sub {
+            my($source) = @_;
+            my($t, $a, $p) = map(
+                $_ || '',
+                $source->req->unsafe_get(qw(task_id auth_id path_info)));
+            my($pr) = $self->render_simple_attr(page_regexp => $source);
+            return $t->get_name =~ /WIKI_VIEW/
+                && $a eq $self->render_simple_attr(realm_id => $source)
+                && $p =~ qr{^$pr$}is
+                ? 1 : 0;
+        }],
     );
     $self->initialize_attr(qw(page_regexp realm_id));
     return shift->SUPER::initialize(@_);

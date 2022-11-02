@@ -5,46 +5,46 @@ my($last_name);
 my($find_row_by_ok) = sub {[req('Bivio::Biz::t::ListModel::T2List')]};
 [
     map(($_ => [
-	load_empty => not_die(),
-	load_all => not_die(),
-	map(($_ => [
-	    [] => [[{
-		'RealmOwner.name' => 'club',
-		'RealmOwner.realm_id' => '3',
-	    }]],
-	]), 'map_rows', $_ =~ /T4/ ? () : 'map_iterate'),
+        load_empty => not_die(),
+        load_all => not_die(),
+        map(($_ => [
+            [] => [[{
+                'RealmOwner.name' => 'club',
+                'RealmOwner.realm_id' => '3',
+            }]],
+        ]), 'map_rows', $_ =~ /T4/ ? () : 'map_iterate'),
     ]), qw(Bivio::Biz::t::ListModel::T1List Bivio::Biz::t::ListModel::T2List
         Bivio::Biz::t::ListModel::T4List)),
     'Bivio::Biz::t::ListModel::T3List' => [
-	load_empty => undef,
-	set_cursor => [
-	    0 => 0,
-	    -1 => 0,
-	    -999999 => 0,
-	    1 => DIE(),
-	    -2 => DIE(),
-	],
+        load_empty => undef,
+        set_cursor => [
+            0 => 0,
+            -1 => 0,
+            -999999 => 0,
+            1 => DIE(),
+            -2 => DIE(),
+        ],
     ],
     sub {Bivio::Biz::t::ListModel::T2List->new(req())} => [
-	load_all => sub {
-	    my($list) = shift->get('object');
-	    $last_name = $list
-		->set_cursor_or_die($list->get_result_set_size - 1)
-		->get('RealmOwner.name');
-	    return 1;
-	},
-	find_row_by => [
-	    sub {['RealmOwner.name', $last_name]} => $find_row_by_ok,
-	    [qw(RealmOwner.name club)] => $find_row_by_ok,
-	    [qw(RealmOwner.name not-found)] => [undef],
-	    [{
-		'RealmOwner.name' => 'club',
-		'RealmOwner.realm_id' => 3,
-	    }] => $find_row_by_ok,
-	    [{
-		'RealmOwner.name' => 'club',
-		'RealmOwner.realm_id' => 1,
-	    }] => [undef],
-	],
+        load_all => sub {
+            my($list) = shift->get('object');
+            $last_name = $list
+                ->set_cursor_or_die($list->get_result_set_size - 1)
+                ->get('RealmOwner.name');
+            return 1;
+        },
+        find_row_by => [
+            sub {['RealmOwner.name', $last_name]} => $find_row_by_ok,
+            [qw(RealmOwner.name club)] => $find_row_by_ok,
+            [qw(RealmOwner.name not-found)] => [undef],
+            [{
+                'RealmOwner.name' => 'club',
+                'RealmOwner.realm_id' => 3,
+            }] => $find_row_by_ok,
+            [{
+                'RealmOwner.name' => 'club',
+                'RealmOwner.realm_id' => 1,
+            }] => [undef],
+        ],
     ],
 ];

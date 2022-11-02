@@ -4,7 +4,7 @@ Request('initialize_fully');
 config({
     'Bivio::Mail::Common' => {
         # read input until EOF, and ignore command line args
-	sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
+        sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
         allow_resend_from => [],
     },
 });
@@ -26,47 +26,47 @@ EOF
 (my $_NOT_REWRITE_FROM2 = $_REWRITE_FROM1) =~ s/science.doe.gov/bivio.com/;
 [
     [Bivio::Mail::Incoming->new(\$_REWRITE_FROM1)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	unsafe_get_header => [
-	    from => qr{^"Any User via \S+" <ignore-.*>$},
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^"Any User via \S+" <ignore-.*>$},
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_REWRITE_FROM2)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	unsafe_get_header => [
-	    from => qr{^"Any User via \S+" <ignore-.*>$},
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^"Any User via \S+" <ignore-.*>$},
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_NOT_REWRITE_FROM1)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	unsafe_get_header => [
-	    from => qr{^Any User <any_user.gmail.com>$},
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^Any User <any_user.gmail.com>$},
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_NOT_REWRITE_FROM2)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	unsafe_get_header => [
-	    from => qr{^Any User <any_user.bivio.com>$},
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^Any User <any_user.bivio.com>$},
+        ],
     ],
 ];

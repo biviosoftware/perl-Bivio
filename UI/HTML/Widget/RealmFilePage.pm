@@ -27,7 +27,7 @@ sub initialize {
 sub internal_new_args {
     shift;
     return b_use('HTMLWidget.ControlBase')
-	->internal_compute_new_args($_ATTRS, \@_);
+        ->internal_compute_new_args($_ATTRS, \@_);
 }
 
 sub render {
@@ -38,30 +38,30 @@ sub render {
     my($p) = $self->render_simple_attr('path', $source);
     my($rf) = Bivio::Biz::Model->new($req, 'RealmFile');
     $p && $rf->unauth_load({
-	realm_id => $rid,
-	path => $p,
+        realm_id => $rid,
+        path => $p,
     }) or $rf->unauth_load_or_die({
-	realm_id => $rid,
-	path => $self->render_simple_attr('default_path', $source),
+        realm_id => $rid,
+        path => $self->render_simple_attr('default_path', $source),
     });
     $req->put("$self" => $rf->get_content_type);
     my($b) = $rf->get_content;
     $p = $rf->get('path');
 #TODO: Encapsulate
     $p = $_FP->from_public($p)
-	if $rf->get('is_public');
+        if $rf->get('is_public');
     $p = URI->new($rf->get_request->format_http({uri => $p}));
     $$b =~ s{(\b(?:href|src)=")([^"]+)}{$1 . $_HTML->escape_attr_value(_render_uri($2, $p))}sige;
     my($vap) = $self->render_simple_attr('view_attr_prefix', $source);
     $$b =~ s{
         \<\!--\s*bivio-([\w-]+)\s*--\>
-	| \<\!--\s*start-bivio-([\w-]+)\s*--\>
-	.*?\<\!--\s*end-bivio-([\w-]+)\s*--\>
+        | \<\!--\s*start-bivio-([\w-]+)\s*--\>
+        .*?\<\!--\s*end-bivio-([\w-]+)\s*--\>
     }{_render_view_attr($self, $source, $vap, [$1, $2, $3])}sigex;
     # It's ok to be missing a <head> so we can use for XML
     if (my $h = $self->internal_render_head_attrs($source)) {
-	$$b =~ s{(?<=\<head\>)}{\n$h}is
-	    or $self->die($b, $source, 'missing <head>');
+        $$b =~ s{(?<=\<head\>)}{\n$h}is
+            or $self->die($b, $source, 'missing <head>');
     }
     $$buffer .= $$b;
     return;
@@ -71,10 +71,10 @@ sub _render_uri {
     my($rel, $file_uri) = @_;
     # URI doesn't support cid:
     return $rel
-	if $rel =~ /^(cid|javascript):/;
+        if $rel =~ /^(cid|javascript):/;
     my($abs) = URI->new($rel);
     return $rel
-	if $abs->scheme || $abs->path =~ m{^(/|$)};
+        if $abs->scheme || $abs->path =~ m{^(/|$)};
     $abs = $abs->abs($file_uri);
     my($q) = $abs->query;
     my($f) = $abs->fragment;
@@ -85,10 +85,10 @@ sub _render_view_attr {
     my($self, $source, $vap, $matches) = @_;
     my($a) = $matches->[0];
     unless ($a) {
-	$a = $matches->[1];
-	Bivio::IO::Alert->warn(
-	    $a, ' != ', $matches->[2], ': start/end-bivio do not agree',
-	) unless $a eq $matches->[2];
+        $a = $matches->[1];
+        Bivio::IO::Alert->warn(
+            $a, ' != ', $matches->[2], ': start/end-bivio do not agree',
+        ) unless $a eq $matches->[2];
     }
     $a =~ s/\W/_/g;
     $a = "$vap$a";

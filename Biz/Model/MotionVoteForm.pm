@@ -9,7 +9,7 @@ sub execute_empty {
     my($self) = @_;
     my($m) = $self->unsafe_get_model('MotionVote');
     $self->load_from_model_properties($m)
-	if $m->is_loaded;
+        if $m->is_loaded;
     return;
 }
 
@@ -25,14 +25,14 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	require_context => 1,
-	visible => [qw(
-	    MotionVote.vote
-	    MotionVote.comment
-	)],
-	other => [
-	    'MotionVote.motion_id',
-	],
+        require_context => 1,
+        visible => [qw(
+            MotionVote.vote
+            MotionVote.comment
+        )],
+        other => [
+            'MotionVote.motion_id',
+        ],
     });
 }
 

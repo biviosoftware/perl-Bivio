@@ -1,149 +1,149 @@
 # Copyright (c) 2005 bivio Software, Inc.  All rights reserved.
 # $Id$
 my($copy) = {
-	a => '3',
-	b => ['A', 'B'],
-	c => {A => 1, B => 2, C => undef},
-	d => class()->new({a => 99}),
-	e => 'e',
-	parent => class()->new({pa => 13}),
+        a => '3',
+        b => ['A', 'B'],
+        c => {A => 1, B => 2, C => undef},
+        d => class()->new({a => 99}),
+        e => 'e',
+        parent => class()->new({pa => 13}),
 };
 [
     [{%$copy}] => [
-	get_shallow_copy => [
-	    [] => [$copy],
-	    [qr{a}] => [{map(($_ => $copy->{$_}), qw(a parent))}],
-	    [qr{not found}] => [{}],
-	],
-	put => [
-	    [e => 5, f => 6] => not_die(),
-	],
-	get => [
-	    [] => [],
-	    a => 3,
-	    [qw(a e)] => [qw(3 5)],
-	],
-	delete => [
-	    f => not_die(),
-	],
-	get => [
-	    f => DIE(),
-	],
-	ancestral_get => [
-	    pa => 13,
-	    x => DIE(),
-	    [x => 15] => 15,
-	],
-	get_nested => [
-	    a => 3,
-	    ['a', 'a'] => DIE(),
-	    ['b', 1] => ['B'],
-	    ['c', 'B'] => 2,
-	    ['d', 'a'] => 99,
-	    ['d', 'a', 'a'] => DIE(),
-	],
-	unsafe_get_nested => [
-	    a => 3,
-	    ['a', 'a'] => DIE(),
-	    ['b', 1] => ['B'],
-	    ['b', ''] => DIE(),
-	    ['b', 1, 1] => DIE(),
-	    ['b', 2] => [undef],
-	    ['c', 'Q'] => [undef],
-	    ['c', 'C', 'x'] => [undef],
-	    ['c', 'C', 'x', 'z'] => [undef],
-	],
-	{
-	    method => 'get',
-	    want_scalar => 1,
-	} => [
-	    ['a', 'b'] => DIE(),
-	    a => 3,
-	],
-	get_if_exists_else_put => [
-	    [aa => 33] => 33,
-	    [aa => 99] => 33,
-	    [bb => sub {22}] => 22,
-	    [bb => sub {44}] => 22,
-	    [cc => 'c', dd => 'd'] => [qw(c d)],
-	    [cc => 'c', 'odd'] => DIE(),
-	],
-	get_if_defined_else_put => [
-	    [aa => undef] => 33,
+        get_shallow_copy => [
+            [] => [$copy],
+            [qr{a}] => [{map(($_ => $copy->{$_}), qw(a parent))}],
+            [qr{not found}] => [{}],
         ],
-	put => [
-	    [aa => undef] => not_die(),
-	],
-	get_if_exists_else_put => [
-	    [aa => 33] => [undef],
+        put => [
+            [e => 5, f => 6] => not_die(),
         ],
-	get_if_defined_else_put => [
-	    [aa => 99] => 99,
-	],
-	map_each => [
-	    [sub {
-		 shift;
-		 return (shift(@_) => 1);
-	    }] => sub {
-		my($case) = @_;
-		return [[map(
-		    ($_ => 1),
-		    sort(@{$case->get('object')->get_keys}),
-	        )]];
-	    },
-	],
-	get_by_regexp => [
-	    [qr/a/] => DIE(),
-	    [qr/aa/] => [99, 'aa'],
-	],
-	{
-	    method => 'get_by_regexp',
-	    want_scalar => 1,
-	} => [
-	    [qr/aa/] => 99,
-	],
-	delete_all => not_die(),
-	unsafe_get_by_regexp => [
-	    [qr/./] => undef,
-	],
-	get_by_regexp => [
-	    [qr/./] => DIE(),
-	],
-	put => [
-	    [u1 => undef, d1 => 1, d2 => 1] => not_die(),
-	],
-	are_defined => [
-	    [] => 1,
-	    [qw(d1 d2)] => 1,
-	    [qw(d1 d2 u1)] => 0,
-	],
-	unsafe_get_and_delete => [
-	    [qw(d1 d2)] => [1, 1],
-	],
-	put => [
-	    [qw(d1 2)] => not_die(),
-	],
-	with_attributes => [
-	    sub {
-		my($self) = shift->get('object');
-		my($attrs) = {u1 => 33, d1 => 44, just_here => 5};
-		return [
-		    $attrs,
-		    sub {
-			foreach my $k (sort(keys(%$attrs))) {
-			    assert_equals($attrs->{$k}, $self->get($k), $k);
-			}
-			return (res => 3);
-		    },
-		];
-	    } => sub {
-		my($case, $actual) = @_;
-		my($self) = $case->get('object');
-		assert_equals(undef, $self->get('u1'), 'u1');
-		assert_equals(2, $self->get('d1'), 'd1');
-		assert_equals(0, $self->has_keys('just_here'));
-		return [res => 3];
-	    },
-	],
+        get => [
+            [] => [],
+            a => 3,
+            [qw(a e)] => [qw(3 5)],
+        ],
+        delete => [
+            f => not_die(),
+        ],
+        get => [
+            f => DIE(),
+        ],
+        ancestral_get => [
+            pa => 13,
+            x => DIE(),
+            [x => 15] => 15,
+        ],
+        get_nested => [
+            a => 3,
+            ['a', 'a'] => DIE(),
+            ['b', 1] => ['B'],
+            ['c', 'B'] => 2,
+            ['d', 'a'] => 99,
+            ['d', 'a', 'a'] => DIE(),
+        ],
+        unsafe_get_nested => [
+            a => 3,
+            ['a', 'a'] => DIE(),
+            ['b', 1] => ['B'],
+            ['b', ''] => DIE(),
+            ['b', 1, 1] => DIE(),
+            ['b', 2] => [undef],
+            ['c', 'Q'] => [undef],
+            ['c', 'C', 'x'] => [undef],
+            ['c', 'C', 'x', 'z'] => [undef],
+        ],
+        {
+            method => 'get',
+            want_scalar => 1,
+        } => [
+            ['a', 'b'] => DIE(),
+            a => 3,
+        ],
+        get_if_exists_else_put => [
+            [aa => 33] => 33,
+            [aa => 99] => 33,
+            [bb => sub {22}] => 22,
+            [bb => sub {44}] => 22,
+            [cc => 'c', dd => 'd'] => [qw(c d)],
+            [cc => 'c', 'odd'] => DIE(),
+        ],
+        get_if_defined_else_put => [
+            [aa => undef] => 33,
+        ],
+        put => [
+            [aa => undef] => not_die(),
+        ],
+        get_if_exists_else_put => [
+            [aa => 33] => [undef],
+        ],
+        get_if_defined_else_put => [
+            [aa => 99] => 99,
+        ],
+        map_each => [
+            [sub {
+                 shift;
+                 return (shift(@_) => 1);
+            }] => sub {
+                my($case) = @_;
+                return [[map(
+                    ($_ => 1),
+                    sort(@{$case->get('object')->get_keys}),
+                )]];
+            },
+        ],
+        get_by_regexp => [
+            [qr/a/] => DIE(),
+            [qr/aa/] => [99, 'aa'],
+        ],
+        {
+            method => 'get_by_regexp',
+            want_scalar => 1,
+        } => [
+            [qr/aa/] => 99,
+        ],
+        delete_all => not_die(),
+        unsafe_get_by_regexp => [
+            [qr/./] => undef,
+        ],
+        get_by_regexp => [
+            [qr/./] => DIE(),
+        ],
+        put => [
+            [u1 => undef, d1 => 1, d2 => 1] => not_die(),
+        ],
+        are_defined => [
+            [] => 1,
+            [qw(d1 d2)] => 1,
+            [qw(d1 d2 u1)] => 0,
+        ],
+        unsafe_get_and_delete => [
+            [qw(d1 d2)] => [1, 1],
+        ],
+        put => [
+            [qw(d1 2)] => not_die(),
+        ],
+        with_attributes => [
+            sub {
+                my($self) = shift->get('object');
+                my($attrs) = {u1 => 33, d1 => 44, just_here => 5};
+                return [
+                    $attrs,
+                    sub {
+                        foreach my $k (sort(keys(%$attrs))) {
+                            assert_equals($attrs->{$k}, $self->get($k), $k);
+                        }
+                        return (res => 3);
+                    },
+                ];
+            } => sub {
+                my($case, $actual) = @_;
+                my($self) = $case->get('object');
+                assert_equals(undef, $self->get('u1'), 'u1');
+                assert_equals(2, $self->get('d1'), 'd1');
+                assert_equals(0, $self->has_keys('just_here'));
+                return [res => 3];
+            },
+        ],
     ],
 ];

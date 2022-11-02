@@ -10,10 +10,10 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	can_iterate => 1,
-	# Minimal on purpose: Simply qualifies MEMBER as an abstraction
-	primary_key => ['RealmUser.user_id'],
-	auth_id => 'RealmUser.realm_id',
+        can_iterate => 1,
+        # Minimal on purpose: Simply qualifies MEMBER as an abstraction
+        primary_key => ['RealmUser.user_id'],
+        auth_id => 'RealmUser.realm_id',
     });
 }
 

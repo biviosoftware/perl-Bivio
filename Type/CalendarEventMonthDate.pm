@@ -10,9 +10,9 @@ sub from_literal {
     my($proto) = shift;
     my($v, $e) = $proto->SUPER::from_literal(@_);
     unless ($v) {
-	($v, $e) = $_D->from_literal(@_);
-	return ($v, $e)
-	    unless $v;
+        ($v, $e) = $_D->from_literal(@_);
+        return ($v, $e)
+            unless $v;
     }
     return (_set($proto, $v), undef);
 }
@@ -35,7 +35,7 @@ sub now {
 sub to_literal {
     my(undef, $value) = @_;
     return ''
-	unless $value;
+        unless $value;
     return $_D->to_string($_D->from_datetime($value));
 }
 

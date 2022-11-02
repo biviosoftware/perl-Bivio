@@ -54,36 +54,36 @@ sub execute_unwind {
 sub get_motion_document {
     my($self) = @_;
     return $self->get('Motion.motion_file_id')
-	? $self->new_other('RealmFile')->load({
-	    realm_file_id => $self->get('Motion.motion_file_id'),
-	})
-	: undef;
+        ? $self->new_other('RealmFile')->load({
+            realm_file_id => $self->get('Motion.motion_file_id'),
+        })
+        : undef;
 }
 
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	require_context => 1,
-	visible => [qw(
-	    Motion.name
-	    Motion.question
-	    Motion.status
-	    Motion.type
-	),
-	    {
-		name => 'file',
-		type => 'FileField',
-		constraint => 'NONE',
-	    },
-	],
-	hidden => [qw(
-	    Motion.motion_file_id
-	)],
-	other => [qw(
-	    Motion.motion_id
-	    Motion.name_lc
-	)],
+        require_context => 1,
+        visible => [qw(
+            Motion.name
+            Motion.question
+            Motion.status
+            Motion.type
+        ),
+            {
+                name => 'file',
+                type => 'FileField',
+                constraint => 'NONE',
+            },
+        ],
+        hidden => [qw(
+            Motion.motion_file_id
+        )],
+        other => [qw(
+            Motion.motion_id
+            Motion.name_lc
+        )],
     });
 }
 
@@ -91,14 +91,14 @@ sub _add_file {
     my($self) = @_;
     return unless $self->get('file');
     my($name) = b_use('Model.FileChangeForm')
-	->validate_file_name($self, 'file');
+        ->validate_file_name($self, 'file');
     return if $self->in_error;
     $self->req('Model.Motion')->update({
-	motion_file_id => $self->new_other('RealmFile')->create_or_update_with_content({
-	    override_is_read_only => 1,
-	    path => $self->MOTIONS_FOLDER . $name,
-	    is_read_only => 1,
-	}, $self->get('file')->{content})->get('realm_file_id'),
+        motion_file_id => $self->new_other('RealmFile')->create_or_update_with_content({
+            override_is_read_only => 1,
+            path => $self->MOTIONS_FOLDER . $name,
+            is_read_only => 1,
+        }, $self->get('file')->{content})->get('realm_file_id'),
     });
     return;
 }

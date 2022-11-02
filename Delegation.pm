@@ -14,9 +14,9 @@ sub new {
     my($proto, $delegate, $delegator) = @_;
     return $proto->SUPER::new({
         calling_package => (caller(1))[0],
-	method => $proto->my_caller(1),
-	delegate => $delegate,
-	delegator => $delegator,
+        method => $proto->my_caller(1),
+        delegate => $delegate,
+        delegator => $delegator,
     });
 }
 

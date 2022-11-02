@@ -15,7 +15,7 @@ my($create_rfc) = sub {
     $date ||= 'Wed, 26 Oct 2005 04:19:47 EDT';
     $body ||= 'any body';
     my($email) = unauth_model(Email => {
-	realm_id => req('auth_user_id'),
+        realm_id => req('auth_user_id'),
     })->get('email');
     return <<"EOF",
 From: $email
@@ -37,51 +37,51 @@ my($msgs) = [
 
 [
     [$msgs->[0]] => [
-	is_duplicate => 0,
+        is_duplicate => 0,
     ],
     [$msgs->[1]] => [
-	is_duplicate => 0,
+        is_duplicate => 0,
     ],
     [$msgs->[2]] => [
-	is_duplicate => 0,
+        is_duplicate => 0,
     ],
     [$msgs->[3]] => [
-	is_duplicate => 0,
+        is_duplicate => 0,
     ],
     inline_case(
-	sub {
-	    $create_mail->($msgs->[0]);
-	    return 1;
-	},
+        sub {
+            $create_mail->($msgs->[0]);
+            return 1;
+        },
     ),
     [$msgs->[0]] => [
-	is_duplicate => 1,
+        is_duplicate => 1,
     ],
     [$msgs->[1]] => [
-	is_duplicate => 1,
+        is_duplicate => 1,
     ],
     [$msgs->[2]] => [
-	is_duplicate => 0,
+        is_duplicate => 0,
     ],
     [$msgs->[3]] => [
-	is_duplicate => 0,
+        is_duplicate => 0,
     ],
     inline_case(
-	sub {
-	    $create_mail->($msgs->[3]);
-	    return 1;
-	},
+        sub {
+            $create_mail->($msgs->[3]);
+            return 1;
+        },
     ),
     [$msgs->[0]] => [
-	is_duplicate => 1,
+        is_duplicate => 1,
     ],
     [$msgs->[1]] => [
-	is_duplicate => 1,
+        is_duplicate => 1,
     ],
     [$msgs->[2]] => [
-	is_duplicate => 0,
+        is_duplicate => 0,
     ],
     [$msgs->[3]] => [
-	is_duplicate => 1,
+        is_duplicate => 1,
     ],
 ];

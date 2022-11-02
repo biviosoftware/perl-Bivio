@@ -15,7 +15,7 @@ sub internal_initialize {
     # (self) : hash_ref
     return {
         version => 2,
-	can_iterate => 1,
+        can_iterate => 1,
         primary_key => ['ECPayment.ec_payment_id'],
         auth_id => ['ECPayment.realm_id'],
         order_by => [qw(
@@ -29,9 +29,9 @@ sub internal_initialize {
         other => [
             'RealmOwner.display_name',
             [qw(ECPayment.user_id RealmOwner.realm_id)],
-	    [qw{ECPayment.ec_payment_id ECSubscription.ec_payment_id(+)}],
-	    [qw{ECPayment.ec_payment_id ECCheckPayment.ec_payment_id(+)}],
-	    [qw{ECPayment.ec_payment_id ECCreditCardPayment.ec_payment_id(+)}],
+            [qw{ECPayment.ec_payment_id ECSubscription.ec_payment_id(+)}],
+            [qw{ECPayment.ec_payment_id ECCheckPayment.ec_payment_id(+)}],
+            [qw{ECPayment.ec_payment_id ECCreditCardPayment.ec_payment_id(+)}],
             qw(
             ECPayment.user_id
             ECPayment.description

@@ -3,11 +3,11 @@
 my($ctid);
 FormModel({
     setup_request => sub {
-	my(undef, $params) = @_;
-	req()->put(query => {
-	    $ctid ? (this => $ctid) : (),
-	});
-	return;
+        my(undef, $params) = @_;
+        req()->put(query => {
+            $ctid ? (this => $ctid) : (),
+        });
+        return;
     },
 });
 req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1))
@@ -15,67 +15,67 @@ req()->set_realm_and_user(qw(crm_tuple_forum crm_tech1))
 ShellUtil_TestData()->clear_crm_threads;
 [
     empty_case({
-	'b_ticket.TupleTag.slot1' => undef,
-	'b_ticket.TupleTag.slot2' => 'Low',
+        'b_ticket.TupleTag.slot1' => undef,
+        'b_ticket.TupleTag.slot2' => 'Low',
     }),
     [{
         crm_thread_status => CRMThreadStatus('OPEN'),
-	owner_user_id => realm_id('crm_tech1'),
-	to => [remote_email('crm_tuple_forum')],
-	cc => [''],
-	subject => 'x',
-	body => 'x',
-	'b_ticket.TupleTag.slot1' => 'Male Puppy',
-	'b_ticket.TupleTag.slot2' => 'Medium',
+        owner_user_id => realm_id('crm_tech1'),
+        to => [remote_email('crm_tuple_forum')],
+        cc => [''],
+        subject => 'x',
+        body => 'x',
+        'b_ticket.TupleTag.slot1' => 'Male Puppy',
+        'b_ticket.TupleTag.slot2' => 'Medium',
     }] => [{
-	'Model.CRMThread' => {
-	    crm_thread_status => CRMThreadStatus('OPEN'),
-	    thread_root_id => sub {
-		return $ctid = req(qw(Model.CRMThread thread_root_id));
-	    },
-	},
-	'Model.TupleTag' => {
-	    slot1 => 'Male Puppy',
-	    slot2 => 'Medium',
-	},
+        'Model.CRMThread' => {
+            crm_thread_status => CRMThreadStatus('OPEN'),
+            thread_root_id => sub {
+                return $ctid = req(qw(Model.CRMThread thread_root_id));
+            },
+        },
+        'Model.TupleTag' => {
+            slot1 => 'Male Puppy',
+            slot2 => 'Medium',
+        },
     }],
     empty_case({
-	'b_ticket.TupleTag.slot1' => 'Male Puppy',
-	'b_ticket.TupleTag.slot2' => 'Medium',
+        'b_ticket.TupleTag.slot1' => 'Male Puppy',
+        'b_ticket.TupleTag.slot2' => 'Medium',
     }),
     inline_case(sub {
-	assert_equals(
-	    1,
-	    model('TupleTag')->rows_exist({primary_id => $ctid}),
-	    'not found',
-	);
-        model('CRMThread')->cascade_delete(
-	    {thread_root_id => $ctid},
+        assert_equals(
+            1,
+            model('TupleTag')->rows_exist({primary_id => $ctid}),
+            'not found',
         );
-	assert_equals(
-	    0,
-	    model('TupleTag')->rows_exist({primary_id => $ctid}),
-	    'found',
-	);
+        model('CRMThread')->cascade_delete(
+            {thread_root_id => $ctid},
+        );
+        assert_equals(
+            0,
+            model('TupleTag')->rows_exist({primary_id => $ctid}),
+            'found',
+        );
         return;
     }),
     inline_case(sub {
         $ctid = undef;
-	return;
+        return;
     }),
     [{
-	to => [remote_email('crm_tuple_forum')],
-	cc => [''],
-	subject => 'x',
-	body => 'x',
-	'b_ticket.TupleTag.Priority' => undef,
-	'b_ticket.TupleTag.Product' => undef,
+        to => [remote_email('crm_tuple_forum')],
+        cc => [''],
+        subject => 'x',
+        body => 'x',
+        'b_ticket.TupleTag.Priority' => undef,
+        'b_ticket.TupleTag.Product' => undef,
         crm_thread_status => CRMThreadStatus('OPEN'),
-	owner_user_id => realm_id('crm_tech1'),
+        owner_user_id => realm_id('crm_tech1'),
     }] => [{
-	'Model.TupleTag' => {
-	    slot1 => undef,
-	    slot2 => undef,
-	},
+        'Model.TupleTag' => {
+            slot1 => undef,
+            slot2 => undef,
+        },
     }],
 ];

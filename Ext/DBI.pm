@@ -15,11 +15,11 @@ my($_ORACLE_HOME);
 Bivio::IO::Config->register({
     'oracle_home' => $ENV{ORACLE_HOME},
     Bivio::IO::Config->NAMED => {
-	database => $ENV{DBI_DATABASE} || Bivio::IO::Config->REQUIRED,
-	user => $ENV{DBI_USER} || Bivio::IO::Config->REQUIRED,
-	password => $ENV{DBI_PASS} || Bivio::IO::Config->REQUIRED,
-	is_read_only => 0,
-	connection => Bivio::IO::Config->REQUIRED,
+        database => $ENV{DBI_DATABASE} || Bivio::IO::Config->REQUIRED,
+        user => $ENV{DBI_USER} || Bivio::IO::Config->REQUIRED,
+        password => $ENV{DBI_PASS} || Bivio::IO::Config->REQUIRED,
+        is_read_only => 0,
+        connection => Bivio::IO::Config->REQUIRED,
     },
 });
 my($_DEFAULT_OPTIONS) = {
@@ -45,8 +45,8 @@ sub connect {
     # Mod_perl wipes out %ENV on each request, it seems...
     $ENV{ORACLE_HOME} ||= $_ORACLE_HOME if $_ORACLE_HOME;
     _trace($cfg->{connection}->get_dbi_prefix($cfg), $cfg->{database}, ':',
-	    $cfg->{user}, '/', $cfg->{password},
-	    ':', $_DEFAULT_OPTIONS) if $_TRACE;
+            $cfg->{user}, '/', $cfg->{password},
+            ':', $_DEFAULT_OPTIONS) if $_TRACE;
     Bivio::IO::Alert->warn('DATABASE IS READ ONLY') if $cfg->{is_read_only};
     my($self) = DBI->connect($cfg->{connection}->get_dbi_prefix($cfg)
         .$cfg->{database}, $cfg->{user}, $cfg->{password},

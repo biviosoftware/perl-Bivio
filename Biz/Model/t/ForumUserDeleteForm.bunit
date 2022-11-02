@@ -3,16 +3,16 @@
 ForumUserUnit();
 [
     sub {class()->get_instance('ForumUserAddForm')->new(req())} => [
-	process => [
-	    'fuaf1-sub1-sub1' => [qw(fuaf1 fuaf1-sub1 fuaf1-sub1-sub1)],
-	    'fuaf1-sub1' => [qw(fuaf1 fuaf1-sub1)],
-	    'fuaf1' => [qw(fuaf1)],
-	],
+        process => [
+            'fuaf1-sub1-sub1' => [qw(fuaf1 fuaf1-sub1 fuaf1-sub1-sub1)],
+            'fuaf1-sub1' => [qw(fuaf1 fuaf1-sub1)],
+            'fuaf1' => [qw(fuaf1)],
+        ],
     ],
     [req()] => [
-	process => [
-	    [qw(fuaf1-sub1-sub1)] => [qw(fuaf1 fuaf1-sub1)],
-	    [qw(fuaf1 0 fuaf1-sub1)] => [],
-	],
+        process => [
+            [qw(fuaf1-sub1-sub1)] => [qw(fuaf1 fuaf1-sub1)],
+            [qw(fuaf1 0 fuaf1-sub1)] => [],
+        ],
     ],
 ];

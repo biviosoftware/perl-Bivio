@@ -15,9 +15,9 @@ sub new_unit {
 sub unit {
     my($self, $cases) = @_;
     return $self->SUPER::unit([
-	$self->builtin_class => [
-	    main => $cases,
-	],
+        $self->builtin_class => [
+            main => $cases,
+        ],
     ]);
 }
 

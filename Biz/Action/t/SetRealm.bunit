@@ -4,19 +4,19 @@ Request();
 req()->put_durable(uri => '/fourem/0000/00/slug');
 [
     class() => [
-	execute_from_uri => [
-	    [req()] => sub {
-		assert_equals(
-		    [req()->get(qw(auth_id path_info))],
-		    [
-			model('RealmOwner', {
-			    name => 'fourem',
-			})->get('realm_id'),
-			'/0000/00/slug',
-		    ],
-		);
-		return 1;
-	    },
-	],
+        execute_from_uri => [
+            [req()] => sub {
+                assert_equals(
+                    [req()->get(qw(auth_id path_info))],
+                    [
+                        model('RealmOwner', {
+                            name => 'fourem',
+                        })->get('realm_id'),
+                        '/0000/00/slug',
+                    ],
+                );
+                return 1;
+            },
+        ],
     ],
 ];

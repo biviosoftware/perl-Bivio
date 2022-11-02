@@ -68,7 +68,7 @@ sub internal_new_args {
     return {
         name => $name,
         value => $value,
-	($attributes ? %$attributes : ()),
+        ($attributes ? %$attributes : ()),
     };
 }
 

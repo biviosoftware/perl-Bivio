@@ -4,49 +4,49 @@ Unit();
 my($x) = 0;
 [
     [[qw(3 1 2)]] => [
-	map_iterate => [
-	    [sub {"!$_[0]!"}] => [[qw(!3! !1! !2!)]],
-	],
-	do_iterate => [
-	    [sub {$x++; return shift == 3 ? 1 : 0}] => sub {
-		assert_equals(2, $x);
-		return 1;
-	    },
-	],
-	as_string => 'StringArray[3, 1, 2]',
-	equals => [
-	    [class()->new([qw(3 1 2)])] => 1,
-	    [undef] => 0,
-	],
-	is_specified => 1,
-	append => [
-	    2 => [StringArray('3,1,2,2')],
-	    '' => [StringArray('3,1,2')],
-	],
-	sort_unique => [
-	    [] => [StringArray([qw(1 2 3)])],
-	],
-	contains => [
-	    0 => 0,
-	    3 => 1,
-	],
-	exclude => [
-	    [undef] => [StringArray('3,1,2')],
-	    2 => [StringArray('3,1')],
-	    4 => [StringArray('3,1,2')],
-	],
-	intersect => [
-	    [[1, 2, 4]] => [StringArray([1, 2])],
-	    [[4]] => [StringArray([])],
-	],
-	get_element => [
-	    0 => 3,
-	    2 => 2,
-	    3 => DIE(),
-	    -1 => DIE(),
-	],
+        map_iterate => [
+            [sub {"!$_[0]!"}] => [[qw(!3! !1! !2!)]],
+        ],
+        do_iterate => [
+            [sub {$x++; return shift == 3 ? 1 : 0}] => sub {
+                assert_equals(2, $x);
+                return 1;
+            },
+        ],
+        as_string => 'StringArray[3, 1, 2]',
+        equals => [
+            [class()->new([qw(3 1 2)])] => 1,
+            [undef] => 0,
+        ],
+        is_specified => 1,
+        append => [
+            2 => [StringArray('3,1,2,2')],
+            '' => [StringArray('3,1,2')],
+        ],
+        sort_unique => [
+            [] => [StringArray([qw(1 2 3)])],
+        ],
+        contains => [
+            0 => 0,
+            3 => 1,
+        ],
+        exclude => [
+            [undef] => [StringArray('3,1,2')],
+            2 => [StringArray('3,1')],
+            4 => [StringArray('3,1,2')],
+        ],
+        intersect => [
+            [[1, 2, 4]] => [StringArray([1, 2])],
+            [[4]] => [StringArray([])],
+        ],
+        get_element => [
+            0 => 3,
+            2 => 2,
+            3 => DIE(),
+            -1 => DIE(),
+        ],
     ],
     [[]] => [
-	is_specified => 0,
+        is_specified => 0,
     ],
 ];

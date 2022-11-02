@@ -14,14 +14,14 @@ sub NEW_ARGS {
 sub initialize {
     return shift->put_unless_exists(
         control => [
-	    ['->req'],
-	    '->can_user_execute_task',
-	    $_C->if_version(10,
-		sub {'GROUP_USER_LIST'},
-		sub {'SITE_ADMIN_USER_LIST'},
-	    ),
-	    vs_constant('site_admin_realm_name'),
-	],
+            ['->req'],
+            '->can_user_execute_task',
+            $_C->if_version(10,
+                sub {'GROUP_USER_LIST'},
+                sub {'SITE_ADMIN_USER_LIST'},
+            ),
+            vs_constant('site_admin_realm_name'),
+        ],
     )->SUPER::initialize(@_);
 }
 1;

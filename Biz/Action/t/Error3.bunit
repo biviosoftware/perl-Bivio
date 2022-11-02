@@ -2,27 +2,27 @@
 # $Id$
 config({
     'Bivio::IO::ClassLoader' => {
-	maps => {
-	    Action => ['Bivio::Biz::Action::t::Error3', 'Bivio::PetShop::Action', 'Bivio::Biz::Action'],
-	},
+        maps => {
+            Action => ['Bivio::Biz::Action::t::Error3', 'Bivio::PetShop::Action', 'Bivio::Biz::Action'],
+        },
     },
 });
 Request('initialize_fully');
 [
     sub {Action_Error()} => [
-	{
-	    method => 'execute',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		return [req()->put(Error3 => $params->[0])];
-	    },
-	    compute_return => sub {
-		return [req('reply', 'status')];
-	    },
-	} => [
-	    [undef] => 500,
-	    NO_SUCH_STATUS => 500,
-	    FORBIDDEN => 403,
-	],
+        {
+            method => 'execute',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                return [req()->put(Error3 => $params->[0])];
+            },
+            compute_return => sub {
+                return [req('reply', 'status')];
+            },
+        } => [
+            [undef] => 500,
+            NO_SUCH_STATUS => 500,
+            FORBIDDEN => 403,
+        ],
     ],
 ];

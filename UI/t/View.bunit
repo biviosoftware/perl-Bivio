@@ -2,12 +2,12 @@
 # $Id$
 config({
     'Bivio::IO::ClassLoader' => {
-	maps => {
-	    View => [qw(
-	        Bivio::UI::t::View
-		Bivio::PetShop::View
-		Bivio::UI::View
-	    )],
+        maps => {
+            View => [qw(
+                Bivio::UI::t::View
+                Bivio::PetShop::View
+                Bivio::UI::View
+            )],
         },
     },
 });
@@ -19,15 +19,15 @@ symlink('.', 'src')
     unless -e 'src';
 options({
     compute_return => sub {
-	my($case, $actual) = @_;
-	return $case->get('method') eq 'execute'
-	    ? [req('reply')->get_output] : $actual;
+        my($case, $actual) = @_;
+        return $case->get('method') eq 'execute'
+            ? [req('reply')->get_output] : $actual;
     },
 });
 [
     class() => [
-	execute => [
-	    [\(<<'EOF'), req()]
+        execute => [
+            [\(<<'EOF'), req()]
 view_shortcuts('UIHTML.ViewShortcuts');
 view_class_map('HTMLWidget');
 view_main(Page({
@@ -35,28 +35,28 @@ view_main(Page({
     body => Join(['goodbye']),
 }));
 EOF
-	    =>  qr{hello.*goodbye}s,
-	    [sub {
-	    	 # Can't AUTOLOAD, because TestUnit.Unit already has it.
-	    	 # This works well enough, but normally, you would just
-	    	 # "use Bivio::UI::ViewLanguageAUTOLOAD;" to get this behavior.
-	    	 package Bivio::UI::ViewLanguage;
-	    	 view_class_map('HTMLWidget');
-	    	 view_shortcuts('UIHTML.ViewShortcuts');
-	    	 view_main(SimplePage('Simple'));
-	    }, req()] => qr{^Simple$}s,
-	],
+            =>  qr{hello.*goodbye}s,
+            [sub {
+                     # Can't AUTOLOAD, because TestUnit.Unit already has it.
+                     # This works well enough, but normally, you would just
+                     # "use Bivio::UI::ViewLanguageAUTOLOAD;" to get this behavior.
+                     package Bivio::UI::ViewLanguage;
+                     view_class_map('HTMLWidget');
+                     view_shortcuts('UIHTML.ViewShortcuts');
+                     view_main(SimplePage('Simple'));
+            }, req()] => qr{^Simple$}s,
+        ],
     ],
     sub {class('View.T1')} => [
-    	execute => [
-    	    [t1_html => req()] => qr{^t1$}s,
-    	],
-    	render => [
-    	    [t1_html => req()] => DIE(),
-    	],
-    	inline_case(sub {req()->get('reply')->delete_output}),
-    	render => [
-    	    [t1_html => req()] => qr{^t1$}s,
-    	],
+            execute => [
+                [t1_html => req()] => qr{^t1$}s,
+            ],
+            render => [
+                [t1_html => req()] => DIE(),
+            ],
+            inline_case(sub {req()->get('reply')->delete_output}),
+            render => [
+                [t1_html => req()] => qr{^t1$}s,
+            ],
     ],
 ];

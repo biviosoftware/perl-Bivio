@@ -66,12 +66,12 @@ use Bivio::Base 'Collection.Attributes';
 #
 #     value => ['mailhost'],
 #     cells => [
-# 	['RealmOwner.name'],
-# 	['RealmUser.role', '->get_short_desc'],
+#         ['RealmOwner.name'],
+#         ['RealmUser.role', '->get_short_desc'],
 #     ],
 #     source => ['Bivio::Biz::Model::ClubUserList'],
 #     alt => ['auth_user', 'name', 'Bivio::UI::HTML::Format::Printf',
-#     		'The auth_user is %s'],
+#                     'The auth_user is %s'],
 #
 # When a Widget's render method is called, it executes the following call:
 #
@@ -149,7 +149,7 @@ sub accepts_attribute {
 sub as_string_for_stack_trace {
     my($self) = @_;
     return $self->as_string
-	unless ref($self);
+        unless ref($self);
     my($cc) = $self->unsafe_get('b_widget_calling_context');
     return ($cc ? $cc->as_string . ' ' : '') . $self->as_string;
 }
@@ -157,13 +157,13 @@ sub as_string_for_stack_trace {
 sub b_widget_label {
     my($self, $name, $calling_context) = @_;
     return $self->get('b_widget_label')
-	unless @_ > 1;
+        unless @_ > 1;
     if ($name) {
-	$name =~ s/^@{[$self->simple_package_name]}_?//s;
-	$self->put(b_widget_label => $name);
+        $name =~ s/^@{[$self->simple_package_name]}_?//s;
+        $self->put(b_widget_label => $name);
     }
     $self->put_unless_exists(b_widget_calling_context => $calling_context)
-	if $calling_context;
+        if $calling_context;
     return $self;
 }
 
@@ -174,13 +174,13 @@ sub die {
     my($x) = Bivio::IO::Alert->format_args(@msg);
     chomp($x);
     Bivio::Die->throw('DIE', {
-	message => $x,
-	entity => $entity,
-	widget => $proto,
-	view => $_CL->was_required('Bivio::View')
-	    && b_use('Bivio.View')->unsafe_get_current,
-	source => $source,
-	program_error => 1,
+        message => $x,
+        entity => $entity,
+        widget => $proto,
+        view => $_CL->was_required('Bivio::View')
+            && b_use('Bivio.View')->unsafe_get_current,
+        source => $source,
+        program_error => 1,
     });
     # DOES NOT RETURN
 }
@@ -226,56 +226,56 @@ sub initialize_and_render {
 sub initialize_attr {
     my($self, $attr_name, $default_value, $source) = @_;
     $self->put_unless_exists($attr_name => $default_value)
-	if defined($default_value);
+        if defined($default_value);
     my($res) = $self->unsafe_initialize_attr($attr_name, $source);
     $self->die($attr_name, undef, 'attribute must be defined')
-	unless defined($res);
+        unless defined($res);
     return $res;
 }
 
 sub initialize_value {
     my($self, $attr_name, $value, $source) = @_;
     return $value
-	unless __PACKAGE__->is_blesser_of($value);
+        unless __PACKAGE__->is_blesser_of($value);
     return $value->initialize_with_parent($self, $source);
 }
 
 sub initialize_with_parent {
     my($self, $parent, $source) = @_;
     $self->put(parent => $parent)->initialize($source)
-	unless $self->has_keys('parent');
+        unless $self->has_keys('parent');
     return $self;
 }
 
 sub internal_as_string {
     my($self) = @_;
     return grep(
-	defined($_) && (ref($_) && ref($_) ne 'CODE' || length($_)),
-	$self->unsafe_get('b_widget_label'),
-	$self->unsafe_get('field') || $self->unsafe_get('value'),
+        defined($_) && (ref($_) && ref($_) ne 'CODE' || length($_)),
+        $self->unsafe_get('b_widget_label'),
+        $self->unsafe_get('field') || $self->unsafe_get('value'),
     );
 }
 
 sub internal_compute_new_args {
     my($proto, $required, $args) = @_;
     return {
-	map({
-	    my($l, $arg) = $_;
-	    my($opt) = $l =~ s/^\?//;
-	    if ($opt && (!@$args || @$args == 1 && ref($args->[0]) eq 'HASH')) {
-		$l = '';
-	    }
-	    else {
-		$arg = shift(@$args);
-		return qq{"$_" must be defined}
-		    unless defined($arg) || $opt;
-	    }
-	    $l ? ($l => $arg) : ();
-	} @$required),
-	!@$args ? ()
-	    : @$args > 1 || ref($args->[0]) ne 'HASH'
-	    ? return "too many parameters"
-	    : %{shift(@$args)},
+        map({
+            my($l, $arg) = $_;
+            my($opt) = $l =~ s/^\?//;
+            if ($opt && (!@$args || @$args == 1 && ref($args->[0]) eq 'HASH')) {
+                $l = '';
+            }
+            else {
+                $arg = shift(@$args);
+                return qq{"$_" must be defined}
+                    unless defined($arg) || $opt;
+            }
+            $l ? ($l => $arg) : ();
+        } @$required),
+        !@$args ? ()
+            : @$args > 1 || ref($args->[0]) ne 'HASH'
+            ? return "too many parameters"
+            : %{shift(@$args)},
     };
 }
 
@@ -297,20 +297,20 @@ sub new {
     # L<Bivio::Collection::Attributes|Bivio::Collection::Attributes>.
     my($label) = _label($_[0]);
     return shift->SUPER::new({})->b_widget_label(@$label)
-	if scalar(@_) == 1;
+        if scalar(@_) == 1;
     return shift->SUPER::new(@_)->b_widget_label(@$label)
-	if ref($_[1]) eq 'HASH';
+        if ref($_[1]) eq 'HASH';
     # Handles weird case where undef is passed to mean "no value"
     return shift->SUPER::new(@_)->b_widget_label(@$label)
-	if scalar(@_) == 2 && !defined($_[1]);
+        if scalar(@_) == 2 && !defined($_[1]);
     my($proto) = shift;
     my($res) = $proto->can('internal_new_args')
-	? $proto->internal_new_args(@_)
-	: $proto->can('NEW_ARGS')
-	? $proto->internal_compute_new_args($proto->NEW_ARGS, \@_)
-	: b_die($proto, '->new: only accepts a hash_ref argument');
+        ? $proto->internal_new_args(@_)
+        : $proto->can('NEW_ARGS')
+        ? $proto->internal_compute_new_args($proto->NEW_ARGS, \@_)
+        : b_die($proto, '->new: only accepts a hash_ref argument');
     b_die($proto, '->new: ', $res)
-	unless ref($res) eq 'HASH';
+        unless ref($res) eq 'HASH';
     return $proto->SUPER::new($res)->b_widget_label(@$label);
 }
 
@@ -318,7 +318,7 @@ sub obsolete_attr {
     my($self, $attr) = @_;
     # False is ok
     $self->die($attr, ': attribute is obsolete')
-	if $self->unsafe_get($attr);
+        if $self->unsafe_get($attr);
     return;
 }
 
@@ -332,7 +332,7 @@ sub render_attr {
     my($b) = '';
     $buffer = \$b unless $buffer;
     $self->die($attr_name, $source, 'attribute renders as undef')
-	unless $self->unsafe_render_attr($attr_name, $source, $buffer);
+        unless $self->unsafe_render_attr($attr_name, $source, $buffer);
     return $buffer;
 }
 
@@ -364,8 +364,8 @@ sub render_value {
     my($b) = '';
     $buffer = \$b unless $buffer;
     $self->die($attr_name, $source, 'value renders as undef')
-	unless $self->unsafe_render_value(
-	    $attr_name, $value, $source, $buffer);
+        unless $self->unsafe_render_value(
+            $attr_name, $value, $source, $buffer);
     return $buffer;
 }
 
@@ -390,7 +390,7 @@ sub resolve_form_model {
 sub unsafe_initialize_attr {
     my($self, $attr_name, $source) = @_;
     return $self->initialize_value(
-	$attr_name, $self->unsafe_get($attr_name), $source);
+        $attr_name, $self->unsafe_get($attr_name), $source);
 }
 
 sub unsafe_render_attr {
@@ -398,27 +398,27 @@ sub unsafe_render_attr {
     # Retrieves I<attr_name> from I<self> and calls
     # L<unsafe_render_value|"unsafe_render_value"> on the result.
     return $self->unsafe_render_value(
-	$attr_name, $self->unsafe_get($attr_name), $source, $buffer);
+        $attr_name, $self->unsafe_get($attr_name), $source, $buffer);
 }
 
 sub unsafe_render_value {
     my($proto, $attr_name, $value, $source, $buffer) = @_;
     return 0
-	unless defined($value);
+        unless defined($value);
     $value = $proto->unsafe_resolve_widget_value($value, $source);
     return 0
-	unless defined($value);
+        unless defined($value);
     if (__PACKAGE__->is_blesser_of($value)) {
-	$value->initialize_and_render($source, $buffer);
+        $value->initialize_and_render($source, $buffer);
     }
 # removed until all director widgets are fixed up
 #    elsif (ref($value) && UNIVERSAL::can($value, 'as_string')) {
-#	$$buffer .= $value->as_string;
+#        $$buffer .= $value->as_string;
 #    }
     else {
         Bivio::IO::Alert->warn('rendering ref as string: ', $value)
             if ref($value);
-	$$buffer .= $value;
+        $$buffer .= $value;
     }
     return 1;
 }
@@ -430,16 +430,16 @@ sub unsafe_resolve_attr {
 sub unsafe_resolve_widget_value {
     my($proto, $value, $source) = @_;
     b_die('source: missing or invalid parameter')
-	unless $source;
+        unless $source;
     # Recursively eliminate array_ref widget values.
     my($i) = 10;
     while (ref($value) eq 'ARRAY') {
-	$value = $source->get_widget_value(@$value);
-	return undef unless defined($value);
-	$proto->die(
-	    $source, 'infinite loop trying to ',
-	    ' unwind widget value: ', $value,
-	) if --$i < 0;
+        $value = $source->get_widget_value(@$value);
+        return undef unless defined($value);
+        $proto->die(
+            $source, 'infinite loop trying to ',
+            ' unwind widget value: ', $value,
+        ) if --$i < 0;
     }
     return $value;
 }
@@ -453,21 +453,21 @@ sub _label {
     my($p) = $proto->simple_package_name;
 #TODO: removed this, too noisy (for PDF widgets)
 #    $_A->warn_deprecated($p, ': widget name may not contain underscore (_)')
-#	if $p =~ /_/;
+#        if $p =~ /_/;
     return [
-	b_use('UI.ViewLanguage')->get_b_widget_label_and_clear || $p,
-	b_use('UI.ViewLanguageAUTOLOAD')->unsafe_calling_context
-	    || b_use('UI.ViewLanguageAUTOLOAD')->widget_new_calling_context,
+        b_use('UI.ViewLanguage')->get_b_widget_label_and_clear || $p,
+        b_use('UI.ViewLanguageAUTOLOAD')->unsafe_calling_context
+            || b_use('UI.ViewLanguageAUTOLOAD')->widget_new_calling_context,
     ];
 }
 
 sub _resolve_attr {
     my($method, $self, $attr_name, $source) = @_;
     my($res) = $self->unsafe_resolve_widget_value(
-	$self->$method($attr_name), $source,
+        $self->$method($attr_name), $source,
     );
     $self->die($attr_name, $source, 'attribute resolves as undef')
-	unless defined($res) || $method =~ /^unsafe_/;
+        unless defined($res) || $method =~ /^unsafe_/;
     return $res;
 }
 

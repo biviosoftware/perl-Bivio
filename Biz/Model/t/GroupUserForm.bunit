@@ -3,26 +3,26 @@
 FormModel();
 [
     req_state({
-	task => 'GROUP_USER_FORM',
-	user => 'root',
-	realm => 'fourem',
-	query => {this => realm_id('root')},
+        task => 'GROUP_USER_FORM',
+        user => 'root',
+        realm => 'fourem',
+        query => {this => realm_id('root')},
     }),
     empty_case({
-	'RealmUser.role' => sub {
-	    assert_contains([
-		map(+{'RealmUser.role' => Auth_Role($_)},
-		    qw(UNKNOWN GUEST MEMBER ADMINISTRATOR)),
-	    ], req('Model.RoleSelectList')->map_rows);
-	    return Auth_Role('ADMINISTRATOR');
-	},
-	file_writer => 1,
-	is_subscribed => 1,
+        'RealmUser.role' => sub {
+            assert_contains([
+                map(+{'RealmUser.role' => Auth_Role($_)},
+                    qw(UNKNOWN GUEST MEMBER ADMINISTRATOR)),
+            ], req('Model.RoleSelectList')->map_rows);
+            return Auth_Role('ADMINISTRATOR');
+        },
+        file_writer => 1,
+        is_subscribed => 1,
     }),
     req_state_merge({query => {this => realm_id('btest_read')}}),
     empty_case({
-	'RealmUser.role' => Auth_Role('MEMBER'),
-	file_writer => 0,
-	is_subscribed => 1,
+        'RealmUser.role' => Auth_Role('MEMBER'),
+        file_writer => 0,
+        is_subscribed => 1,
     }),
 ];

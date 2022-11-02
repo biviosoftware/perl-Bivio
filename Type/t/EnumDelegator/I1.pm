@@ -8,7 +8,7 @@ use Bivio::Base 'Type.EnumDelegate';
 sub get_delegate_info {
     my($proto) = @_;
     return [
-	N1 => [1],
+        N1 => [1],
     ];
 }
 

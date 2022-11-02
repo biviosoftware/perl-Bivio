@@ -200,12 +200,12 @@ sub WORD {
 sub escape_header_phrase {
     my(undef, $value) = @_;
     return ''
-	unless defined($value);
+        unless defined($value);
     $value =~ s/^\s+|\s+$//g;
     return ''
-	unless length($value);
+        unless length($value);
     return $value
-	if $value =~ /^$_ATOM_ONLY_PHRASE$/o;
+        if $value =~ /^$_ATOM_ONLY_PHRASE$/o;
     $value =~ s/(["\\])/\\$1/g;
     return qq{"$value"};
 }
@@ -218,7 +218,7 @@ sub format_angle_brackets {
 sub format_mailbox {
     my($proto, $email, $phrase) = @_;
     return length($phrase = $proto->escape_header_phrase($phrase))
-	? "$phrase " . $proto->format_angle_brackets($email) : $email;
+        ? "$phrase " . $proto->format_angle_brackets($email) : $email;
 }
 
 1;

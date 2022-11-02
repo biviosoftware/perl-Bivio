@@ -8,24 +8,24 @@ req()->server_redirect({
 });
 [
     [{
-	form_class => 'UserLoginForm',
-	value => vs_new(Join => ['abc']),
+        form_class => 'UserLoginForm',
+        value => vs_new(Join => ['abc']),
     }] => qr{^<form method="post" id="\w+" action="/pub/login">.*<input type="hidden" name="v" value="\d+" />\n<input type="hidden" name="c" value="[^"]+" />\nabc</form>$}is,
     [{
-	form_class => 'UserLoginForm',
-	action => Bivio::Agent::TaskId->LOGOUT,
-	value => vs_new(Join => ['abc']),
+        form_class => 'UserLoginForm',
+        action => Bivio::Agent::TaskId->LOGOUT,
+        value => vs_new(Join => ['abc']),
     }] => qr{^<form method="post" id="\w+" action="/pub/logout">.*<input type="hidden" name="v" value="\d+" />\n<input type="hidden" name="c" value="[^"]+" />\nabc</form>$}is,
     [{
-	form_class => 'UserLoginForm',
-	action => vs_new(URI => {uri => '#'}),
-	value => vs_new(Join => ['abc']),
+        form_class => 'UserLoginForm',
+        action => vs_new(URI => {uri => '#'}),
+        value => vs_new(Join => ['abc']),
     }] => qr{^<form .*action="#">}s,
     [{
-	form_class => 'UserLoginForm',
-	action => vs_new(URI => {uri => '#'}),
-	value => vs_new(Join => ['abc']),
-	want_timezone => 0,
-	class => 'hello',
+        form_class => 'UserLoginForm',
+        action => vs_new(URI => {uri => '#'}),
+        value => vs_new(Join => ['abc']),
+        want_timezone => 0,
+        class => 'hello',
     }] => qr{^<form .*action="#" class="hello">\n<input type}s,
 ];

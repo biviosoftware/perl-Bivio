@@ -9,9 +9,9 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     return (undef, Bivio::TypeError->FILE_NAME_LEADING_DOT)
-	if $v =~ /^\./;
+        if $v =~ /^\./;
     return $v;
 }
 

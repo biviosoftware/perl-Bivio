@@ -9,10 +9,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 sub initialize {
     my($self) = @_;
     $self->map_invoke(put_unless_exists => [
-	[value => sub {vs_text_as_prose('task_menu.title.USER_SETTINGS_FORM')}],
-	[href => 'USER_SETTINGS_FORM'],
-	[class => 'user_settings'],
-	[control => ['user_state', '->eq_logged_in']],
+        [value => sub {vs_text_as_prose('task_menu.title.USER_SETTINGS_FORM')}],
+        [href => 'USER_SETTINGS_FORM'],
+        [class => 'user_settings'],
+        [control => ['user_state', '->eq_logged_in']],
     ]);
     return shift->SUPER::initialize(@_);
 }

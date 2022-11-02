@@ -14,13 +14,13 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = $_PI->from_literal($value);
     return $_PI->is_valid($v) ? ($v, undef) : (undef, $_SYNTAX_ERROR)
-	if defined($v);
+        if defined($v);
     ($v, $e) = $_E->from_literal($value);
     if (defined($v) and my $req = b_use('Agent.Request')->get_current) {
-	my($email) = b_use('Model.Email')->new($req);
-	return $email->unauth_load({email => $v})
-	    ? ($email->get('realm_id'), undef)
-	    : (undef, $_NOT_FOUND);
+        my($email) = b_use('Model.Email')->new($req);
+        return $email->unauth_load({email => $v})
+            ? ($email->get('realm_id'), undef)
+            : (undef, $_NOT_FOUND);
     }
     return $_RN->from_literal($value);
 }

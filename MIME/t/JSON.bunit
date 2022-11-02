@@ -4,26 +4,26 @@ my($_F) = b_use('IO.File');
 options({comparator => 'nested_contains'});
 [
     class() => [
-	from_text => [
-	    map(
-		([$_F->read("JSON/$_.in")] => [do("JSON/$_.out")]),
-		1 .. 5,
-	    ),
-	],
-	{
-	    method => 'to_text',
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [${$actual->[0]}];
-	    },
-	}=> [
-	    [] => DIE(),
-	    [undef] => 'null',
-	    [''] => '""',
-	    ['"/'] => '"\"\/"',
-	    [[1]] => '["1"]',
-	    [{a => 'b'}] => '{"a":"b"}',
-	    [[{a => [1, 2]}]] => '[{"a":["1","2"]}]',
-	],
+        from_text => [
+            map(
+                ([$_F->read("JSON/$_.in")] => [do("JSON/$_.out")]),
+                1 .. 5,
+            ),
+        ],
+        {
+            method => 'to_text',
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return [${$actual->[0]}];
+            },
+        }=> [
+            [] => DIE(),
+            [undef] => 'null',
+            [''] => '""',
+            ['"/'] => '"\"\/"',
+            [[1]] => '["1"]',
+            [{a => 'b'}] => '{"a":"b"}',
+            [[{a => [1, 2]}]] => '[{"a":["1","2"]}]',
+        ],
     ],
 ];

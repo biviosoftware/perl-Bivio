@@ -13,17 +13,17 @@ __PACKAGE__->new({
     clone => 'PetShop',
     HTML => __PACKAGE__->make_groups(__PACKAGE__->bunit_shared_values),
     Color => [
-	[body_background => 0xff88ff],
+        [body_background => 0xff88ff],
     ],
     Constant => __PACKAGE__->make_groups([
-	@{__PACKAGE__->bunit_shared_values},
-	shared_value2 => 'Other',
-	robots_txt_allow_all => 0,
-	site_reports_realm_name => undef,
+        @{__PACKAGE__->bunit_shared_values},
+        shared_value2 => 'Other',
+        robots_txt_allow_all => 0,
+        site_reports_realm_name => undef,
     ]),
     Text => __PACKAGE__->make_groups([
-	@{__PACKAGE__->bunit_shared_values},
-	shared_value2 => 'Other',
+        @{__PACKAGE__->bunit_shared_values},
+        shared_value2 => 'Other',
     ]),
 });
 

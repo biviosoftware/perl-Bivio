@@ -8,10 +8,10 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 sub update_mail {
     view_put(
-	mail_from => Mailbox(vs_text_as_prose('EasyForm.update_mail.from')),
-	mail_to => Mailbox(vs_text_as_prose('EasyForm.update_mail.to')),
-	mail_subject => vs_text_as_prose('EasyForm.update_mail.subject'),
-	mail_body => vs_text_as_prose('EasyForm.update_mail.body'),
+        mail_from => Mailbox(vs_text_as_prose('EasyForm.update_mail.from')),
+        mail_to => Mailbox(vs_text_as_prose('EasyForm.update_mail.to')),
+        mail_subject => vs_text_as_prose('EasyForm.update_mail.subject'),
+        mail_body => vs_text_as_prose('EasyForm.update_mail.body'),
     );
     return;
 }

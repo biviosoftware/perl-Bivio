@@ -4,11 +4,11 @@ Type();
 [
     class() => [
         from_name => [
-	    NE => [class()->NE()],
-	],
-	as_html => [
-	    N => ' class="b_align_n"',
-	    north => ' class="b_align_n"',
-	],
+            NE => [class()->NE()],
+        ],
+        as_html => [
+            N => ' class="b_align_n"',
+            north => ' class="b_align_n"',
+        ],
     ],
 ];

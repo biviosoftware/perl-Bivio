@@ -101,18 +101,18 @@ my($_HTML) = b_use('Bivio.HTML');
 sub initialize {
     my($self) = @_;
     b_die('unsupported attribute')
-	if $self->unsafe_get('list_item_control');
+        if $self->unsafe_get('list_item_control');
     $self->put(enum_sort => _enum_sort($self));
     my($choices) = $self->get('choices');
     if (ref($choices) eq 'ARRAY' || $self->internal_is_provider($choices)) {
-	# load it dynamically during render
+        # load it dynamically during render
     }
     else {
-	$self->delete('choices');
-	$self->put(items => $self->internal_load_items($choices));
+        $self->delete('choices');
+        $self->put(items => $self->internal_load_items($choices));
     }
     $self->get('event_handler')->initialize_with_parent($self)
-	if $self->unsafe_get('event_handler');
+        if $self->unsafe_get('event_handler');
     my($list_display) = $self->unsafe_get('list_display_field');
     if ($list_display) {
         unless (ref($list_display)) {
@@ -128,29 +128,29 @@ sub initialize {
 sub internal_is_provider {
     my($self, $choices) = @_;
     return $choices
-	&& UNIVERSAL::isa($choices, 'Bivio::UNIVERSAL')
-	&& $choices->can('provide_select_choices');
+        && UNIVERSAL::isa($choices, 'Bivio::UNIVERSAL')
+        && $choices->can('provide_select_choices');
 }
 
 sub internal_load_items {
     my($self, $choices) = @_;
     $choices = $self->use($choices)
-	unless ref($choices);
+        unless ref($choices);
     return _load_items_from_list($self, $choices)
-	if UNIVERSAL::isa($choices, 'Bivio::Biz::ListModel');
+        if UNIVERSAL::isa($choices, 'Bivio::Biz::ListModel');
     return _load_items_from_enum($self, $choices)
-	if UNIVERSAL::isa($choices, 'Bivio::Type::Enum');
+        if UNIVERSAL::isa($choices, 'Bivio::Type::Enum');
     if (UNIVERSAL::isa($choices, 'Bivio::TypeValue')) {
- 	my($t) = $choices->get('type');
-	return _load_items_from_enum_set($self, $choices)
-	    if $t->isa('Bivio::Type::EnumSet');
-	if (ref($choices->get('value')) eq 'ARRAY') {
-	    return _load_items_from_enum_list($self, $choices->get('value'))
-		if $t->isa('Bivio::Type::Enum');
-	    return _load_items_from_integer_array($self, $choices)
-		if $t->isa('Bivio::Type::Integer');
-	    return _load_items_from_string_array($self, $choices)
-		if $t->isa('Bivio::Type::String');
+         my($t) = $choices->get('type');
+        return _load_items_from_enum_set($self, $choices)
+            if $t->isa('Bivio::Type::EnumSet');
+        if (ref($choices->get('value')) eq 'ARRAY') {
+            return _load_items_from_enum_list($self, $choices->get('value'))
+                if $t->isa('Bivio::Type::Enum');
+            return _load_items_from_integer_array($self, $choices)
+                if $t->isa('Bivio::Type::Integer');
+            return _load_items_from_string_array($self, $choices)
+                if $t->isa('Bivio::Type::String');
         }
     }
     b_die('unknown choices type: ', $choices)
@@ -160,7 +160,7 @@ sub internal_load_items {
 sub render {
     my($self, $source, $buffer) = @_;
     $self->get('event_handler')->render($source, $buffer)
-	if $self->unsafe_get('event_handler');
+        if $self->unsafe_get('event_handler');
     return;
 }
 
@@ -168,24 +168,24 @@ sub _enum_sort {
     my($self) = @_;
     my($enum_sort) = $self->get_or_default('enum_sort', 'get_name');
     return $enum_sort
-	if ref($enum_sort) eq 'CODE';
+        if ref($enum_sort) eq 'CODE';
 #TODO: This is type dependent
     b_die($enum_sort, ': enum_sort method not implemented by Enum')
-	unless $_E->can($enum_sort);
+        unless $_E->can($enum_sort);
     return Bivio::Die->eval_or_die(<<"EOF");
-	sub {
+        sub {
             my(\$left, \$right) = \@_;
             my(\$li, \$ri) = map(\$_->as_int, \@_);
             return 0
                 if \$li == \$ri;
-	    return -1
+            return -1
                 if \$li == 0;
-	    return 1
+            return 1
                 if \$ri == 0;
-	    return \$left->$enum_sort <=> \$right->$enum_sort
+            return \$left->$enum_sort <=> \$right->$enum_sort
                 if '$enum_sort' =~ /_int\$/;
             return \$left->$enum_sort cmp \$right->$enum_sort;
-	}
+        }
 EOF
 }
 
@@ -199,14 +199,14 @@ sub _load_items_from_enum_list {
     my($sort) = $self->get('enum_sort');
     my($values) = [sort({$sort->($a, $b)} @$list)];
     shift(@$values)
-	if !$self->get_or_default(
-	    'show_unknown', $self->unsafe_get('unknown_label') ? 0 : 1
-	)
-	&& @$values
-	&& $values->[0]->as_int == 0;
+        if !$self->get_or_default(
+            'show_unknown', $self->unsafe_get('unknown_label') ? 0 : 1
+        )
+        && @$values
+        && $values->[0]->as_int == 0;
     my($method) = $self->get_or_default('enum_display', 'get_short_desc');
     return [
-	map(($_->as_int, $_HTML->escape($_->$method)), @$values),
+        map(($_->as_int, $_HTML->escape($_->$method)), @$values),
     ];
 }
 
@@ -214,11 +214,11 @@ sub _load_items_from_enum_set {
     my($self, $choices) = @_;
     my($type, $value) = $choices->get('type', 'value');
     return _load_items_from_enum_list(
-	$self,
-	[grep(
-	    $type->is_set($value, $_),
+        $self,
+        [grep(
+            $type->is_set($value, $_),
             $type->get_enum_type->get_list,
-	)],
+        )],
     );
 }
 
@@ -232,10 +232,10 @@ sub _load_items_from_list {
     unless ($self->unsafe_get('list_id_field')) {
         my($keys) = $list->get_info('primary_key_names');
         b_die(
-	    $list,
-	    ': ',
-	    @$keys ? 'too many primary key fields' : ': no primary keys?',
-	) unless @$keys == 1;
+            $list,
+            ': ',
+            @$keys ? 'too many primary key fields' : ': no primary keys?',
+        ) unless @$keys == 1;
         $self->put(list_id_field => $keys->[0]);
     }
     my($id_name) = $self->get('list_id_field');

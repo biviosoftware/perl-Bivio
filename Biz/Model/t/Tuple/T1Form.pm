@@ -25,20 +25,20 @@ sub execute_ok {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
-	visible => [
-	    'RealmOwner.name',
-	],
-	other => [
-	    'RealmOwner.realm_id',
-	],
+        version => 1,
+        visible => [
+            'RealmOwner.name',
+        ],
+        other => [
+            'RealmOwner.realm_id',
+        ],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
     $self->internal_put_field(
-	'RealmOwner.realm_id' => $self->req('auth_user_id'));
+        'RealmOwner.realm_id' => $self->req('auth_user_id'));
     return shift->SUPER::internal_pre_execute(@_);
 }
 

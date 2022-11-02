@@ -14,14 +14,14 @@ sub control_on_render {
     my($c) = $rf->get_content;
     my($id) = $self->render_simple_attr(mime_id => $source);
     $self->get_request->put(
-	"$self" => MIME::Entity->build(
-	    Type => $t,
-	    Filename => $_FP->get_tail($rf->get('path')),
-	    Data => $c,
-	    Encoding => $_T->suggest_encoding($t, $c),
-	    Disposition => $self->render_simple_attr(mime_disposition => $source),
-	    $id ? (Id => "<$id>") : (),
-	),
+        "$self" => MIME::Entity->build(
+            Type => $t,
+            Filename => $_FP->get_tail($rf->get('path')),
+            Data => $c,
+            Encoding => $_T->suggest_encoding($t, $c),
+            Disposition => $self->render_simple_attr(mime_disposition => $source),
+            $id ? (Id => "<$id>") : (),
+        ),
     );
     return;
 }
@@ -37,10 +37,10 @@ sub initialize {
 sub internal_new_args {
     my(undef, $realm_file, $attributes) = @_;
     return '"realm_file" attribute must be defined'
-	unless defined($realm_file);
+        unless defined($realm_file);
     return {
-	realm_file => $realm_file,
-	($attributes ? %$attributes : ()),
+        realm_file => $realm_file,
+        ($attributes ? %$attributes : ()),
     };
 }
 

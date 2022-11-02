@@ -64,9 +64,9 @@ sub daily_report {
     sub DAILY_REPORT {[[qw(today Date), sub {$_D->local_today}]]}
     my($self, $bp) = shift->parameters(\@_);
     _create_report(
-	$self,
-	_yesterday($bp->{today}),
-	"xz -d -c @{[_log_dir($self)]}" . _previous_days_log($self, $bp->{today}),
+        $self,
+        _yesterday($bp->{today}),
+        "xz -d -c @{[_log_dir($self)]}" . _previous_days_log($self, $bp->{today}),
     );
     return;
 }
@@ -74,13 +74,13 @@ sub daily_report {
 sub format_access_log_stream {
     my($self) = @_;
     while (defined(my $line = <STDIN>)) {
-	# remove li-, lo- user_id prefix
-	$line =~ s/( \- )l.\-(\d+)/$1$2/;
-	# remove su- prefix and target user
-	$line =~ s/ su-(\d+)-..-\d+/ $1/;
-	# add 0 process id if not present (older log files)
-	$line =~ s/(\d+\.\d+\.\d+\.\d+) \-/$1 0 -/;
-	print($line);
+        # remove li-, lo- user_id prefix
+        $line =~ s/( \- )l.\-(\d+)/$1$2/;
+        # remove su- prefix and target user
+        $line =~ s/ su-(\d+)-..-\d+/ $1/;
+        # add 0 process id if not present (older log files)
+        $line =~ s/(\d+\.\d+\.\d+\.\d+) \-/$1 0 -/;
+        print($line);
     }
     return;
 }
@@ -93,24 +93,24 @@ sub handle_config {
 
 sub import_history {
     sub IMPORT_HISTORY {[
-	[qw(Month)],
-	[qw(Year)],
+        [qw(Month)],
+        [qw(Year)],
     ]}
     my($self, $bp) = shift->parameters(\@_);
     # only works if the cached awstats after date have been deleted
     my($mon) = $bp->{Month}->as_int;
     _create_report(
-	$self,
-	$_D->date_from_parts(1, $mon, $bp->{Year}),
-	sprintf(
-	    '%s %s%s',
-	    $_LOG_MERGER,
-	    _log_dir($self),
+        $self,
+        $_D->date_from_parts(1, $mon, $bp->{Year}),
+        sprintf(
+            '%s %s%s',
+            $_LOG_MERGER,
+            _log_dir($self),
             sprintf(
                 $_ACCESS_LOG_FMT,
                 sprintf('%04d%02d??', $bp->{Year}, $mon),
             ),
-	),
+        ),
     );
     return;
 }
@@ -119,23 +119,23 @@ sub init_forum {
     my($self, $name) = shift->name_args([qw(ForumName)], \@_);
     $self->assert_have_user;
     $self->usage_error($name, ': may not be top-level forum')
-	if $_FN->is_top($name);
+        if $_FN->is_top($name);
     $self->initialize_fully->with_realm(
-	$_FN->extract_top($name),
-	sub {
-	    $self->model(
-		'ForumForm',
-		{
-		   'RealmOwner.display_name' => 'Web Site Reports',
-		   'RealmOwner.name' => $name,
-		},
-	    ) unless _forum_exists($self, $name);
-	    $_F->do_in_dir(
-		$_ICON_DIR,
-		sub {$self->new_other('RealmFile')->import_tree('icon')},
-	    );
-	    return;
-	},
+        $_FN->extract_top($name),
+        sub {
+            $self->model(
+                'ForumForm',
+                {
+                   'RealmOwner.display_name' => 'Web Site Reports',
+                   'RealmOwner.name' => $name,
+                },
+            ) unless _forum_exists($self, $name);
+            $_F->do_in_dir(
+                $_ICON_DIR,
+                sub {$self->new_other('RealmFile')->import_tree('icon')},
+            );
+            return;
+        },
     );
     return;
 }
@@ -145,39 +145,39 @@ sub _create_report {
     my($end_of_month) = _end_of_month($date);
     my($static_config) = $_STATIC_CONFIG;
     my($data_dir) = $_F->mkdir_p(
-	b_use('Biz.File')->absolute_path('HTTPStats'),
+        b_use('Biz.File')->absolute_path('HTTPStats'),
     );
     $_F->do_in_dir(
-	$data_dir,
-	sub {
-	    $_F->write('userinfo.txt', _user_email($self));
-	    return;
-	},
+        $data_dir,
+        sub {
+            $_F->write('userinfo.txt', _user_email($self));
+            return;
+        },
     );
     foreach my $x (@{_domain_forum_map($self)}) {
-	my($facade, $forum_name) = @$x;
-	my($domain) = $facade->get('http_host');
-	$self->print("creating report for $domain in $forum_name\n");
-	$self->req->set_realm_and_user($forum_name);
-	my($tmp_dir) = $_F->mkdir_p($_F->temp_file);
-	$_F->do_in_dir($tmp_dir, sub {
-	    my($conf_file) = join('.', 'awstats', $domain, 'conf');
-	    my($month, $year) = $_D->get_parts($end_of_month, qw(month year));
-	    my($str) = $static_config . <<"EOF";
+        my($facade, $forum_name) = @$x;
+        my($domain) = $facade->get('http_host');
+        $self->print("creating report for $domain in $forum_name\n");
+        $self->req->set_realm_and_user($forum_name);
+        my($tmp_dir) = $_F->mkdir_p($_F->temp_file);
+        $_F->do_in_dir($tmp_dir, sub {
+            my($conf_file) = join('.', 'awstats', $domain, 'conf');
+            my($month, $year) = $_D->get_parts($end_of_month, qw(month year));
+            my($str) = $static_config . <<"EOF";
 HostAliases="$domain"
 SiteDomain="$domain"
 LogFile="$file_command | bivio HTTPStats format_access_log_stream |"
 DirData="$data_dir"
 EOF
-	    _trace($str) if $_TRACE;
-	    $_F->write($conf_file, $str);
-	    $self->piped_exec(qq{$_AWSTATS_PL -config=$domain --configdir=. 2>&1});
-	    $self->piped_exec(qq{$_BUILD_PAGES -config=$domain --configdir=. -lang=en -dir . -diricons="icon" -month=$month -year=$year 2>&1});
-	    unlink($conf_file);
-	    _organize_files($self, $domain, $end_of_month);
-	    $self->new_other('RealmFile')->import_tree('/', 1);
-	});
-	$_F->rm_rf($tmp_dir);
+            _trace($str) if $_TRACE;
+            $_F->write($conf_file, $str);
+            $self->piped_exec(qq{$_AWSTATS_PL -config=$domain --configdir=. 2>&1});
+            $self->piped_exec(qq{$_BUILD_PAGES -config=$domain --configdir=. -lang=en -dir . -diricons="icon" -month=$month -year=$year 2>&1});
+            unlink($conf_file);
+            _organize_files($self, $domain, $end_of_month);
+            $self->new_other('RealmFile')->import_tree('/', 1);
+        });
+        $_F->rm_rf($tmp_dir);
     }
     return;
 }
@@ -186,26 +186,26 @@ sub _domain_forum_map {
     my($self) = @_;
     my($seen) = {};
     return [
-	grep(
-	    !$seen->{$_->[1]}++,
-	    sort(
-		_sort_default_facade_first
-		@{$_UIF->map_iterate_with_setup_request(
-		    $self->req,
-		    sub {_domain_forum_map_one($self, shift)},
-		)},
-	    ),
-	),
+        grep(
+            !$seen->{$_->[1]}++,
+            sort(
+                _sort_default_facade_first
+                @{$_UIF->map_iterate_with_setup_request(
+                    $self->req,
+                    sub {_domain_forum_map_one($self, shift)},
+                )},
+            ),
+        ),
     ];
 }
 
 sub _domain_forum_map_one {
     my($self, $facade) = @_;
     return
-	unless my $realm = $facade->get('Constant')
-	->unsafe_get_value('site_reports_realm_name');
+        unless my $realm = $facade->get('Constant')
+        ->unsafe_get_value('site_reports_realm_name');
     return
-	unless _forum_exists($self, $realm);
+        unless _forum_exists($self, $realm);
     return [$facade, $realm];
 }
 
@@ -217,8 +217,8 @@ sub _end_of_month {
 sub _forum_exists {
     my($self, $name) = @_;
     return $self->model('RealmOwner')->unauth_rows_exist({
-	name => $name,
-	realm_type => b_use('Auth.RealmType')->FORUM,
+        name => $name,
+        realm_type => b_use('Auth.RealmType')->FORUM,
     });
 }
 
@@ -238,20 +238,20 @@ sub _organize_files {
     $_F->mkdir_p('detail/' . $d);
 
     foreach my $file (<*.html>) {
-	$file =~ /^awstats\.\Q$domain\E(\.)?(.*)\.html$/
-	    || b_die('unexpected file name: ', $file);
-	my($name) = $2;
-	my($buf) = $_F->read($file);
+        $file =~ /^awstats\.\Q$domain\E(\.)?(.*)\.html$/
+            || b_die('unexpected file name: ', $file);
+        my($name) = $2;
+        my($buf) = $_F->read($file);
 
-	if ($name) {
-	    $$buf =~ s,(icon/),../../$1,g;
-	    $_F->write('detail/' . $d . '/' . $name . '.html', $buf);
-	}
-	else {
-	    $$buf =~ s,awstats\.\Q$domain\E\.(\w+)\.html,detail/$d/$1.html,g;
-	    $_F->write($d . '.html', $buf);
-	}
-	unlink($file);
+        if ($name) {
+            $$buf =~ s,(icon/),../../$1,g;
+            $_F->write('detail/' . $d . '/' . $name . '.html', $buf);
+        }
+        else {
+            $$buf =~ s,awstats\.\Q$domain\E\.(\w+)\.html,detail/$d/$1.html,g;
+            $_F->write($d . '.html', $buf);
+        }
+        unlink($file);
     }
     return;
 }
@@ -265,7 +265,7 @@ sub _sort_default_facade_first {
     my($af) = $a->[0];
     my($bf) = $b->[0];
     return $af->get('is_default') ? -1
-	: $bf->get('is_default') ? 1
+        : $bf->get('is_default') ? 1
         : $af->simple_package_name cmp $bf->simple_package_name;
 }
 
@@ -274,12 +274,12 @@ sub _user_email {
     my($res) = '';
     $_C->do_execute(sub {
         my($row) = @_;
-	$res .= join("\t", @$row) . "\n";
+        $res .= join("\t", @$row) . "\n";
     }, <<'EOF', [$self->use('Type.Location')->get_default->as_sql_param]);
         SELECT realm_id, email
-	FROM email_t
-	WHERE location = ?
-	ORDER BY realm_id
+        FROM email_t
+        WHERE location = ?
+        ORDER BY realm_id
 EOF
     return \$res;
 }

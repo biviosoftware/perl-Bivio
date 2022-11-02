@@ -25,40 +25,40 @@ sub new {
     my(undef, $req, $full_uri, $params) = @_;
     my($self) = shift->internal_new($params || {});
     $self->put_durable(
-	@{$req->map_each(sub {
-	    my(undef, $k, $v) = @_;
+        @{$req->map_each(sub {
+            my(undef, $k, $v) = @_;
             return $k =~ m{
                 ^(?:client_addr|r|is_secure|timezone|auth_user|super_user_id)$
-		|\bUserAgent$
-	    }ix ? ($k => $v) : ();
+                |\bUserAgent$
+            }ix ? ($k => $v) : ();
         })},
-	parent_request => $req,
-	reply => $_R->new->put(parent_request => $req),
-	embed_level => ($req->unsafe_get('embed_level') || 0) + 1,
+        parent_request => $req,
+        reply => $_R->new->put(parent_request => $req),
+        embed_level => ($req->unsafe_get('embed_level') || 0) + 1,
     );
     $self->throw_die(DIE => {
-	message => 'embedding too deep; possible nested loop',
-	embed_level => $self->get('embed_level'),
-	parent_request => $self->get('parent_request'),
+        message => 'embedding too deep; possible nested loop',
+        embed_level => $self->get('embed_level'),
+        parent_request => $self->get('parent_request'),
     }) if $self->get('embed_level') > 2;
     if (my $f = $_F->unsafe_get_from_source($req)) {
-	$f->setup_request($self);
+        $f->setup_request($self);
     }
     $full_uri =~ s/\?(.*)//;
     my($query) = $1;
     return $self->internal_initialize_with_uri(
-	$_HTML->unescape($full_uri),
-	$query,
+        $_HTML->unescape($full_uri),
+        $query,
     )->put(form => undef);
 }
 
 sub unsafe_get_current_root {
     return undef
-	unless my $self = shift->get_current;
+        unless my $self = shift->get_current;
     foreach my $x (1..10) {
-	return $self
-	    unless my $p = $self->unsafe_get('parent_request');
-	$self = $p;
+        return $self
+            unless my $p = $self->unsafe_get('parent_request');
+        $self = $p;
     }
     b_die($self, ': no parent');
     # DOES NOT RETURN

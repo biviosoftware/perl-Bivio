@@ -4,9 +4,9 @@ test_setup('PetShop');
 home_page();
 my($resp) = user_agent_instance()->request(
     HTTP::Request->new(
-	GET => absolute_uri('/permanent-redirect?p=BIRDS'),
-	HTTP::Headers->new(),
-	undef,
+        GET => absolute_uri('/permanent-redirect?p=BIRDS'),
+        HTTP::Headers->new(),
+        undef,
     ),
 );
 test_equals(301, $resp->code);

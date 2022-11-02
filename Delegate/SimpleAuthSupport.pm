@@ -32,14 +32,14 @@ sub get_auth_user {
     my($auth_user_id) = $req->unsafe_get('auth_user_id');
     _trace('auth_user_id=', $auth_user_id) if $_TRACE;
     return
-	undef unless $auth_user_id;
+        undef unless $auth_user_id;
     # Make sure user loads and has a valid password (could login)
     my($auth_user) = $_RO->new($req);
     return $auth_user
-	if $auth_user->unauth_load({
-	    realm_id => $auth_user_id,
-	    realm_type => $_USER,
-	}) && $auth_user->has_valid_password;
+        if $auth_user->unauth_load({
+            realm_id => $auth_user_id,
+            realm_type => $_USER,
+        }) && $auth_user->has_valid_password;
     return undef;
 }
 
@@ -50,13 +50,13 @@ sub load_permissions {
     my($proto, $realm, $role, $req) = @_;
     my($owner) = $realm->unsafe_get('owner');
     if ($owner and my $res = _get($owner->get('realm_id'), $role, $req)) {
-	return $res;
+        return $res;
     }
     my($rid) = $realm->get_default_id;
     return ($_DEFAULT_PERMISSIONS->{$rid} ||= {})->{$role}
-	||= _get($rid, $role, $req)
-	|| $_EMPTY_PERMISSION_MAP->{$role}
-	|| b_die($role, ': EMPTY_PERMISSION_MAP missing role');
+        ||= _get($rid, $role, $req)
+        || $_EMPTY_PERMISSION_MAP->{$role}
+        || b_die($role, ': EMPTY_PERMISSION_MAP missing role');
 }
 
 sub task_permission_ok {
@@ -65,17 +65,17 @@ sub task_permission_ok {
     # Computes SUPER_USER_TRANSIENT and SUBSTITUTE_USER_TRANSIENT.
     my($proto, $user, $task, $req) = @_;
     foreach my $op ('', qw(super_user substitute_user test dev)) {
-	if ($op) {
-	    my($method) = 'is_' . $op;
-	    next
-		unless ($op =~ /^su/ ? $req : $_C)->$method();
-	    $_PS->set(
-		\$user,
-		$_P->from_name($op . '_transient'));
-	    _trace($op, ' user: ', $_PS->to_array($user)) if $_TRACE;
-	}
-	# Does this role have all the required permission?
-	return 1 if ($user & $task) eq $task;
+        if ($op) {
+            my($method) = 'is_' . $op;
+            next
+                unless ($op =~ /^su/ ? $req : $_C)->$method();
+            $_PS->set(
+                \$user,
+                $_P->from_name($op . '_transient'));
+            _trace($op, ' user: ', $_PS->to_array($user)) if $_TRACE;
+        }
+        # Does this role have all the required permission?
+        return 1 if ($user & $task) eq $task;
     }
     _trace('insufficient privileges') if $_TRACE;
     return 0;

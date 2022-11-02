@@ -2,38 +2,38 @@
 # $Id$
 config({
     'Bivio::Util::Disk' => {
-	check_use_capacity => [
-	    [qr{/a} => 80],
-	    [qr{.} => 90],
-	],
-	check_use_iuse => [
-	    [qr{/b} => 95],
-	    [qr{.} => 90],
-	],
+        check_use_capacity => [
+            [qr{/a} => 80],
+            [qr{.} => 90],
+        ],
+        check_use_iuse => [
+            [qr{/b} => 95],
+            [qr{.} => 90],
+        ],
     },
 });
 [
     class() => [
         check_use => [
-	    [{
-		'/bin/df --portability -k' => <<'EOF',
+            [{
+                '/bin/df --portability -k' => <<'EOF',
 /dev/1 x x x 81% /a
 /dev/2 x x x 79% /aa
 /dev/3 x x x 91% /c
 EOF
-		'/bin/df --portability -i' => <<'EOF',
+                '/bin/df --portability -i' => <<'EOF',
 /dev/4 x x x 96% /bb
 /dev/5 x x x 79% /cc
 EOF
-	    }] => <<'EOF',
+            }] => <<'EOF',
 PARTITION FULL: /a (/dev/1) capacity at 81% (max 80%)
 PARTITION FULL: /c (/dev/3) capacity at 91% (max 90%)
 PARTITION FULL: /bb (/dev/4) iuse at 96% (max 95%)
 EOF
-	],
+        ],
         check_raid => [
-	    [{
-		'/proc/mdstat' => <<'EOF',
+            [{
+                '/proc/mdstat' => <<'EOF',
 Personalities : [raid1] 
 read_ahead 1024 sectors
 md1 : active raid1 sdb1[1] sda1[0]
@@ -47,7 +47,7 @@ md2 : active raid1 sdb3[1] sda3[0]
       
 unused devices: <none>
 EOF
-		'/usr/sbin/afacli' => <<'EOF',
+                '/usr/sbin/afacli' => <<'EOF',
 [?1048h[?1047h[1;27r[m[4l[?7h[H[2J[?1h=[27;73H<INS>[H--------------------------------------------------------------------------------[2;1H
 DELL PowerEdge Expandable RAID Controller 2 Command Line Interface
 Copyright 1998-2001 Adaptec, Inc. All rights reserved
@@ -56,13 +56,13 @@ Copyright 1998-2001 Adaptec, Inc. All rights reserved
 FASTCMD> open afa0
 Executing: open "afa0"
 
-AFA0>  	    disk list
+AFA0>              disk list
 Executing: disk list
 
 B:ID:L  Device Type     Blocks    Bytes/Block Usage[64GShared Rate
 ------  --------------  --------- ----------- ---------------- ------ ----
-0:00:0	 Disk[24G	 71132959  512[47G Initialized    	NO     160 
-0:01:0	 Disk[24G	 71132959  512[47G Unconfigured    	NO     160 
+0:00:0         Disk[24G         71132959  512[47G Initialized            NO     160 
+0:01:0         Disk[24G         71132959  512[47G Unconfigured            NO     160 
 
 AFA0> task list
 Executing: task list
@@ -71,22 +71,22 @@ Controller Tasks
 
 TaskId Function  Done%  Container State Specific1 Specific2
 ------ -------- ------- --------- ----- --------- ---------
-  100	Rebuild	 20.9% [29G0	   RUN	 00000000  00000000 7[1;26r8
+  100        Rebuild         20.9% [29G0           RUN         00000000  00000000 7[1;26r8
 [1;27r[26;1H7[1;26r8
 [1;27r[26;1HAFA0> exit7[1;26r8
 [1;27r[26;1H7[1;26r8
 [1;27r[25;1HExecuting: exit
-[27;1H[?1047l[?1048l[?1l>AFA0>  	    exit
+[27;1H[?1047l[?1048l[?1l>AFA0>              exit
 [27;1H[?1047l[?1048l[?1l>
 EOF
-		'/sbin/tw_cli /c0 show unitstatus' => <<'EOF',
+                '/sbin/tw_cli /c0 show unitstatus' => <<'EOF',
 Unit  UnitType  Status         %Cmpl  Stripe  Size(GB)  Cache  AVerify  IgnECC
 ------------------------------------------------------------------------------
 u0    RAID-5    OK             -      256K    1396.95   ON     OFF      OFF
 u1    RAID-5    OK             -      256K    1396.95   ON     OFF      OFF
 u2    RAID-5    DEGRADED       -      256K    1862.62   ON     OFF      OFF
 EOF
-		'/sbin/zpool status -x' => <<'EOF',
+                '/sbin/zpool status -x' => <<'EOF',
   pool: zp1
  state: ONLINE
    see: http://zfsonlinux.org/msg/ZFS-8000-EY
@@ -110,11 +110,11 @@ NAME                                              STATE     READ WRITE CKSUM
 zp2                                               ONLINE       0     0     0
   raidz1-0                                        ONLINE       0     0     0
 EOF
-	    }] => <<'EOF',
+            }] => <<'EOF',
 DRIVE FAILURE: md0 : active raid1 sdb2[1] sda2[0]
       2096384 blocks [1/2] [U_]
-DRIVE FAILURE: 0:01:0	 Disk	 71132959  512 Unconfigured    	NO     160 
-DRIVE FAILURE:   100	Rebuild	 20.9% 0	   RUN	 00000000  00000000 
+DRIVE FAILURE: 0:01:0         Disk         71132959  512 Unconfigured            NO     160 
+DRIVE FAILURE:   100        Rebuild         20.9% 0           RUN         00000000  00000000 
 DRIVE FAILURE: u2    RAID-5    DEGRADED       -      256K    1862.62   ON     OFF      OFF
 DRIVE FAILURE: pool: zp2
  state: DEGRADED
@@ -127,6 +127,6 @@ zp2                                               ONLINE       0     0     0
   raidz1-0                                        ONLINE       0     0     0
 
 EOF
-	],
+        ],
     ],
 ];

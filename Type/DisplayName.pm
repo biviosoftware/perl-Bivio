@@ -10,9 +10,9 @@ my($_WIDTH) = b_use('Type.Text64K')->get_width;
 sub from_names {
     my($proto, @names) = @_;
     b_die('must provide at least one name')
-	if @names < 1;
+        if @names < 1;
     b_die('must provide at most three names')
-	if @names > 3;
+        if @names > 3;
     my($dn) = join(' ', @names);
     $dn =~ s/\s+/ /g;
     $dn =~ s/^\s+|\s+$//g;
@@ -38,15 +38,15 @@ sub parse_to_names {
     # Only works if comma after first word (eg: 'la salle, jane' fails)
     my(@parts) = split(' ', $dn);
     return Bivio::TypeError->UNSPECIFIED
-	unless scalar(@parts);
+        unless scalar(@parts);
     if($parts[0] =~ /,$/) {
-	$parts[0] =~ s/,//;
-	push(@parts, shift(@parts));
+        $parts[0] =~ s/,//;
+        push(@parts, shift(@parts));
     }
 
     # Parse by priority.  There is always a last name (unless format is a & b)
     my($name) = {
-	map(($_ . '_name' => ''), qw(last first middle)),
+        map(($_ . '_name' => ''), qw(last first middle)),
     };
     _parse_last($name, \@parts);
     _parse_first($name, \@parts);
@@ -54,13 +54,13 @@ sub parse_to_names {
 
     my($total) = 0;
     foreach my $part (keys(%$name)) {
-	return Bivio::TypeError->from_name(uc($part).'_LENGTH')
-	    if defined($name->{$part})
-		&& length($name->{$part}) > Bivio::Type::Name->get_width;
-	$total += length($name->{$part});
+        return Bivio::TypeError->from_name(uc($part).'_LENGTH')
+            if defined($name->{$part})
+                && length($name->{$part}) > Bivio::Type::Name->get_width;
+        $total += length($name->{$part});
     }
     return Bivio::TypeError->NULL
-	unless $total;
+        unless $total;
     return $name;
 }
 
@@ -81,16 +81,16 @@ sub _parse_first {
     return unless int (@$parts)>0;
     my($first) = shift(@$parts);
     if ($first =~ /^(mr\.?|mrs\.?|sir|dr\.?|miss|rev\.?|ms\.?)$/i
-	    && @$parts) {
-	$name->{first_name} = $first.' '.shift(@$parts);
+            && @$parts) {
+        $name->{first_name} = $first.' '.shift(@$parts);
     }
     else {
-	$name->{first_name} = $first;
+        $name->{first_name} = $first;
     }
     return unless @$parts;
     if(_is_conjunction($parts->[0])) {
-	$name->{first_name} .= ' '.shift(@$parts).' ';
-	$name->{first_name} .= shift(@$parts) if @$parts;
+        $name->{first_name} .= ' '.shift(@$parts).' ';
+        $name->{first_name} .= shift(@$parts) if @$parts;
     }
     # Remove trailing space if exists
     $name->{first_name} =~ s/\s$//;
@@ -111,8 +111,8 @@ sub _parse_last {
 
     if (scalar(@$parts)) {
         while (@$parts
-	    && ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|pe|I|IV|V|\d..)$|\.|^I{2,}/i
-	        || ((@$parts)[-1] && (@$parts)[-1] =~ /\,$/))) {
+            && ($last =~ /^(sr|jr|phd|dvm|jd|md|dds|pe|I|IV|V|\d..)$|\.|^I{2,}/i
+                || ((@$parts)[-1] && (@$parts)[-1] =~ /\,$/))) {
             $last = pop(@$parts);
             $name->{last_name} = $last . ($last =~ /\,$/ ? ' ' : ', ')
                 . $name->{last_name};
@@ -121,13 +121,13 @@ sub _parse_last {
     return unless scalar(@$parts);
     # Check for patronymics in last place: van, von, de la
     if ($parts->[-1] =~ /^(van|von|la|de|du)$/i) {
-	my($patr) = pop(@$parts);
-	$name->{last_name} = $patr.' '.$name->{last_name};
-	return unless defined($parts->[0]);
-	if ($parts->[-1] =~ /^de$/i) {
-	    my($de) = pop(@$parts);
-	    $name->{last_name} = $de.' '.$name->{last_name};
-	}
+        my($patr) = pop(@$parts);
+        $name->{last_name} = $patr.' '.$name->{last_name};
+        return unless defined($parts->[0]);
+        if ($parts->[-1] =~ /^de$/i) {
+            my($de) = pop(@$parts);
+            $name->{last_name} = $de.' '.$name->{last_name};
+        }
     }
     return;
 }

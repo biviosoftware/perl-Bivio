@@ -28,12 +28,12 @@ sub get_label_and_field {
     my($self) = @_;
     # Creates a label for the field, and returns the (label, field) pair.
     return (FormFieldLabel({
-	field => _get_field_name($self),
-	label => $self->internal_get_label_widget,
-	map({
-	    my($v) = $self->unsafe_get($_);
-	    $v ? ($_ => $v) : ();
-	} qw(row_control row_class)),
+        field => _get_field_name($self),
+        label => $self->internal_get_label_widget,
+        map({
+            my($v) = $self->unsafe_get($_);
+            $v ? ($_ => $v) : ();
+        } qw(row_control row_class)),
     }), $self);
 }
 
@@ -41,13 +41,13 @@ sub internal_get_label_value {
     my($self) = @_;
     # Returns the widget value which access the label.
     return Prose(vs_text(
-	$self->get_or_default('form_field_label', $self->get('field'))));
+        $self->get_or_default('form_field_label', $self->get('field'))));
 }
 
 sub internal_get_label_widget {
     my($self) = @_;
     return LABEL($self->internal_get_label_value)
-	if b_use('UI.Facade')->is_html5;
+        if b_use('UI.Facade')->is_html5;
     return After(Simple($self->internal_get_label_value), ':');
 }
 
@@ -55,9 +55,9 @@ sub internal_new_args {
     my($proto, $field, $edit_attributes, $row_control) = @_;
     # Implements positional argument parsing for L<new|"new">.
     return {
-	field => $field,
-	($edit_attributes ? (edit_attributes => $edit_attributes) : ()),
-	($row_control ? (row_control => $row_control) : ()),
+        field => $field,
+        ($edit_attributes ? (edit_attributes => $edit_attributes) : ()),
+        ($row_control ? (row_control => $row_control) : ()),
     };
 }
 
@@ -68,16 +68,16 @@ sub new {
     # field automatically.
     # adds the error widget and the edit widget
     $self->put(values => [
-	b_use('UI.Facade')->is_html5
-	    ? ()
-	    : FormFieldError({
-		field => _get_field_name($self),
-		label => $self->internal_get_label_value,
-	    }),
-	vs_edit(
-	    $self->get('field'),
-	    $self->get_or_default('edit_attributes', {}),
-	),
+        b_use('UI.Facade')->is_html5
+            ? ()
+            : FormFieldError({
+                field => _get_field_name($self),
+                label => $self->internal_get_label_value,
+            }),
+        vs_edit(
+            $self->get('field'),
+            $self->get_or_default('edit_attributes', {}),
+        ),
     ]);
     return $self;
 }

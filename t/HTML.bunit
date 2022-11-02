@@ -7,46 +7,46 @@ my($copy) = $value;
 
 [
     # $] > 5.008005 ? () : (
-    # 	escape => [
-    # 	    "'" => '&#39;',
-    # 	    '"' => '&#x22;',
-    # 	    #http://www.dwheeler.com/essays/quotes-in-html.html
-    # 	    #http://www.alistapart.com/articles/emen/
-    # 	    '“' => '&#x201C;',
-    # 	    '”' => '&#x201D;',
-    # 	    '‘' => '&#x2018;',
-    # 	    '’' => '&#x2019;',
-    # 	    '—' => '&#x2014;', #em dash
-    # 	    '–' => '&#x2013;', #en dash
-    # 	    '™' => '&#x2122;',
-    # 	    '®' => '&#xAE;',
-    # 	    '©' => '&#xA9;',
-    # 	    '§' => '&#xA7;',
-    # 	    'ö' => '&#xF6;',
-    # 	    "\x{201C}" => '&#x201C;',
-    # 	],
+    #         escape => [
+    #             "'" => '&#39;',
+    #             '"' => '&#x22;',
+    #             #http://www.dwheeler.com/essays/quotes-in-html.html
+    #             #http://www.alistapart.com/articles/emen/
+    #             '“' => '&#x201C;',
+    #             '”' => '&#x201D;',
+    #             '‘' => '&#x2018;',
+    #             '’' => '&#x2019;',
+    #             '—' => '&#x2014;', #em dash
+    #             '–' => '&#x2013;', #en dash
+    #             '™' => '&#x2122;',
+    #             '®' => '&#xAE;',
+    #             '©' => '&#xA9;',
+    #             '§' => '&#xA7;',
+    #             'ö' => '&#xF6;',
+    #             "\x{201C}" => '&#x201C;',
+    #         ],
     # ),
     escape_query => [
-	hello => 'hello',
-	'hello+bye' => 'hello%2Bbye',
-	'hello bye' => 'hello%20bye',
-	'hello&bye' => 'hello%26bye',
-	'hello?bye' => 'hello%3Fbye',
+        hello => 'hello',
+        'hello+bye' => 'hello%2Bbye',
+        'hello bye' => 'hello%20bye',
+        'hello&bye' => 'hello%26bye',
+        'hello?bye' => 'hello%3Fbye',
     ],
     unescape_query => [
-	hello => 'hello',
-	'hello%2Bbye' => 'hello+bye',
-	'hello%20bye' => 'hello bye',
-	'hello%26bye' => 'hello&bye',
-	'hello%3Fbye' => 'hello?bye',
+        hello => 'hello',
+        'hello%2Bbye' => 'hello+bye',
+        'hello%20bye' => 'hello bye',
+        'hello%26bye' => 'hello&bye',
+        'hello%3Fbye' => 'hello?bye',
     ],
     unescape => [
-	[undef] => '',
-	hello => 'hello',
-	'&#39;' => q{'},
-	'&amp;&gt;&lt;&quot;' => q{&><"},
-	'&copy;' => "\x{00A9}",
-	'&trade;' => "\x{2122}",
+        [undef] => '',
+        hello => 'hello',
+        '&#39;' => q{'},
+        '&amp;&gt;&lt;&quot;' => q{&><"},
+        '&copy;' => "\x{00A9}",
+        '&trade;' => "\x{2122}",
         '&#x201C;' => "\x{201C}",
         map(($_->[0], Encode::decode_utf8($_->[1])),
             ['&#x201C;' => '“'],
@@ -62,26 +62,26 @@ my($copy) = $value;
         ),
     ],
     parse_www_form_urlencoded => [
-	[undef] => [{}],
-	'' => [{}],
-	'a=1' => [{a => 1}],
-	'a&b' => [{a => undef, b => undef}],
-	'a;b' => [{a => undef, b => undef}],
-	'a&b=1' => [{a => undef, b => 1}],
-	'a;b=1&c=2' => [{a => undef, b => 1, c => 2}],
-	'a=1;' => [{a => 1}],
-	'a=1&' => [{a => 1}],
-	'&' => [{}],
-	';' => [{}],
-	';a=1' => [{a => 1}],
-	'a&=1' => CORRUPT_FORM(),
-	'=' => CORRUPT_FORM(),
+        [undef] => [{}],
+        '' => [{}],
+        'a=1' => [{a => 1}],
+        'a&b' => [{a => undef, b => undef}],
+        'a;b' => [{a => undef, b => undef}],
+        'a&b=1' => [{a => undef, b => 1}],
+        'a;b=1&c=2' => [{a => undef, b => 1, c => 2}],
+        'a=1;' => [{a => 1}],
+        'a=1&' => [{a => 1}],
+        '&' => [{}],
+        ';' => [{}],
+        ';a=1' => [{a => 1}],
+        'a&=1' => CORRUPT_FORM(),
+        '=' => CORRUPT_FORM(),
     ],
     sub {
-	class()->escape($value);
-	class()->unescape($value);
-	class()->escape_uri($value);
-	class()->unescape_uri($value);
-	return $value eq $copy ? 1 : 0;
+        class()->escape($value);
+        class()->unescape($value);
+        class()->escape_uri($value);
+        class()->unescape_uri($value);
+        return $value eq $copy ? 1 : 0;
     } => 1,
 ];

@@ -3,30 +3,30 @@
 Request();
 [
     sub {req()} => [
-	is_http_method => [
-	    abc => 0,
-	    put => 0,
-	    get => 1,
-	],
-	is_http_content_type => [
-	    'text/plain' => 0,
-	    '' => 1,
-	],
-	inline_case(sub {
-	    req()->initialize_fully;
-	    req('r')->content_type('foo/bar');
-	    req('r')->method('put');
-	    return;
-	}),
-	is_http_method => [
-	    abc => 0,
-	    put => 1,
-	    get => 0,
-	],
-	is_http_content_type => [
-	    'text/plain' => 0,
-	    '' => 0,
-	    'foo/bar' => 1,
-	],
+        is_http_method => [
+            abc => 0,
+            put => 0,
+            get => 1,
+        ],
+        is_http_content_type => [
+            'text/plain' => 0,
+            '' => 1,
+        ],
+        inline_case(sub {
+            req()->initialize_fully;
+            req('r')->content_type('foo/bar');
+            req('r')->method('put');
+            return;
+        }),
+        is_http_method => [
+            abc => 0,
+            put => 1,
+            get => 0,
+        ],
+        is_http_content_type => [
+            'text/plain' => 0,
+            '' => 0,
+            'foo/bar' => 1,
+        ],
     ],
 ];

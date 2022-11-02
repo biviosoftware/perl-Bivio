@@ -5,34 +5,34 @@ req()->initialize_fully;
 my($dir) = tmp_dir();
 config({
     class() => {
-	log_base => "$dir" . '/%s',
+        log_base => "$dir" . '/%s',
     },
 });
 my($write_log) = sub {
     my($date, $bytes) = @_;
     go_dir(
-	FilePath()->join(
-	    $dir,
-	    UI_Facade()->get_default->get('local_file_prefix'),
-	),
-	sub {
-	    my($host) = UI_Facade()->get_default->get('http_host');
-	    $date = Date($date);
-	    my($d, $m, $y) = Date()->get_parts($date, qw(day month year));
-	    $d = sprintf('%02d', $d);
-	    $y = sprintf('%04d', $y);
-	    my($mmm) = Date()->english_month3($m);
-	    system(
-		'xz',
-		IO_File()->write(
+        FilePath()->join(
+            $dir,
+            UI_Facade()->get_default->get('local_file_prefix'),
+        ),
+        sub {
+            my($host) = UI_Facade()->get_default->get('http_host');
+            $date = Date($date);
+            my($d, $m, $y) = Date()->get_parts($date, qw(day month year));
+            $d = sprintf('%02d', $d);
+            $y = sprintf('%04d', $y);
+            my($mmm) = Date()->english_month3($m);
+            system(
+                'xz',
+                IO_File()->write(
                     sprintf(
                         'access_log-%s',
                         Date()->to_local_file_name(Date()->add_days($date, 1)),
                     ),
                     qq{$host 1.2.3.4 1234 - li-200001 [$d/$mmm/$y:18:55:30 -0600] "GET /Page$bytes HTTP/1.1" 200 $bytes "http://$host/bp/StartPage" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:15.0) Gecko/20100101 Firefox/15.0.1"\n},
-		),
-	    );
-	}
+                ),
+            );
+        }
     );
 };
 req()->set_realm('site-reports');
@@ -50,18 +50,18 @@ rm_rf(b_use('Biz.File')->absolute_path('HTTPStats'));
     [qw(-user root init_forum site-reports)] => not_die(),
     inline_case(sub {$write_log->('8/21/2012', 10240)}),
     [qw(import_history 8 2012)] => sub {
-	assert_equals(
-	    qr{Aug 2012.*\b10.00 KB}m,
-	    Util_RealmFile()->read('/20120831.html'),
-	);
-	return 1;
+        assert_equals(
+            qr{Aug 2012.*\b10.00 KB}m,
+            Util_RealmFile()->read('/20120831.html'),
+        );
+        return 1;
     },
     inline_case(sub {$write_log->('9/13/2012', 5120)}),
     [qw(daily_report 9/14/2012)] => sub {
-    	assert_equals(
-    	    qr{Sep 2012.*\b5.00 KB}m,
-    	    Util_RealmFile()->read('/20120930.html'),
-    	);
-    	return 1;
+            assert_equals(
+                qr{Sep 2012.*\b5.00 KB}m,
+                Util_RealmFile()->read('/20120930.html'),
+            );
+            return 1;
     },
 ];

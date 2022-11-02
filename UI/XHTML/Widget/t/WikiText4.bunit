@@ -12,8 +12,8 @@ Home,/
 EOF
 [
     class() => [
-	render_html_without_view => [
-	    [\(<<'EOF'), req()] => qr{<td><div class="bmenu"><span><a.*?>Home</a></span></div></td><td><p class="b_prose">other</p></td>},
+        render_html_without_view => [
+            [\(<<'EOF'), req()] => qr{<td><div class="bmenu"><span><a.*?>Home</a></span></div></td><td><p class="b_prose">other</p></td>},
 @table
 @tr
 @td
@@ -21,12 +21,12 @@ EOF
 @td other
 @/table
 EOF
-	],
-	render_plain_text => [
-	    [\("\@h1 t1\np1\np2\n"), req()] => [
-		"p1\np2\n",
-		{title => 't1'},
-	    ],
-	],
+        ],
+        render_plain_text => [
+            [\("\@h1 t1\np1\np2\n"), req()] => [
+                "p1\np2\n",
+                {title => 't1'},
+            ],
+        ],
     ],
 ];

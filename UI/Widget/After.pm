@@ -17,20 +17,20 @@ sub control_on_render {
     my($before) = length($$buffer);
     $self->render_attr('value', $source, $buffer);
     $self->render_attr('value_after', $source, $buffer)
-	if $before < length($$buffer);
+        if $before < length($$buffer);
     return;
 }
 
 sub internal_new_args {
     my(undef, $value, $value_after, $attributes) = @_;
     return '"value" attribute must be defined'
-	unless defined($value);
+        unless defined($value);
     return '"value_after" attribute must be defined'
-	unless defined($value_after);
+        unless defined($value_after);
     return {
-	value => $value,
-	value_after => $value_after,
-	($attributes ? %$attributes : ()),
+        value => $value,
+        value_after => $value_after,
+        ($attributes ? %$attributes : ()),
     };
 }
 

@@ -12,19 +12,19 @@ sub execute {
     my($proto, $req, $status, $output) = @_;
     $status = $status ? uc($status) : 'HTTP_OK';
     $status = 'NOT_FOUND'
-	if $status =~ /NOT_FOUND/;
+        if $status =~ /NOT_FOUND/;
     $status = 'SERVER_ERROR'
-	if $status eq 'UPDATE_COLLISION';
+        if $status eq 'UPDATE_COLLISION';
     unless ($_AC->can($status)) {
-	b_warn($status, ': unknown ApacheConstants method');
-	$status = 'SERVER_ERROR';
+        b_warn($status, ': unknown ApacheConstants method');
+        $status = 'SERVER_ERROR';
     }
     my($reply) = $req->get('reply');
     unless ($reply->unsafe_get_output) {
-	$output ||= '';
-	$reply->set_output(\$output);
-	$status = 'HTTP_NO_CONTENT'
-	    if $status eq 'HTTP_OK' && !(defined($output) && length($output));
+        $output ||= '';
+        $reply->set_output(\$output);
+        $status = 'HTTP_NO_CONTENT'
+            if $status eq 'HTTP_OK' && !(defined($output) && length($output));
     }
     $reply->set_http_status($_AC->$status);
     return 1;
@@ -49,7 +49,7 @@ sub execute_server_error {
 sub execute_task_item {
     my($self, $error, $req) = @_;
     return ($error || '') =~ /^execute/ ? $self->$error($req)
-	: $self->execute($req, uc($error));
+        : $self->execute($req, uc($error));
 }
 
 1;

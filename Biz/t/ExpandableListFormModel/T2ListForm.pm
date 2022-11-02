@@ -16,28 +16,28 @@ sub MUST_BE_SPECIFIED_FIELDS {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	list_class => 'NumberedList',
-	version => 1,
-	visible => [
-	    {
-		name => 'main',
-	        type => 'Name',
-		constraint => 'NOT_NULL',
-		in_list => 1,
-	    },
-	    {
-		name => 'aux1',
-	        type => 'Name',
-		constraint => 'NOT_NULL',
-		in_list => 1,
-	    },
-	    {
-		name => 'aux2',
-	        type => 'Name',
-		constraint => 'NONE',
-		in_list => 1,
-	    },
-	],
+        list_class => 'NumberedList',
+        version => 1,
+        visible => [
+            {
+                name => 'main',
+                type => 'Name',
+                constraint => 'NOT_NULL',
+                in_list => 1,
+            },
+            {
+                name => 'aux1',
+                type => 'Name',
+                constraint => 'NOT_NULL',
+                in_list => 1,
+            },
+            {
+                name => 'aux2',
+                type => 'Name',
+                constraint => 'NONE',
+                in_list => 1,
+            },
+        ],
     });
 }
 

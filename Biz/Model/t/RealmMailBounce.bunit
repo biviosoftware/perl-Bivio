@@ -22,15 +22,15 @@ EOF
     $rfid = $m->get('realm_file_id');
     $email = $m->new_other('Email')->load->get('email');
     $rmb->new_other('MailReceiveDispatchForm')->execute(req(),  {
-	recipient => $rmb->return_path(
-	    req()->get('auth_id'),
-	    $email,
-	    $rfid,
-	),
-	client_addr => '1.2.3.4',
-	message => {
-	    name => '',
-	    content => \(<<'EOF'),
+        recipient => $rmb->return_path(
+            req()->get('auth_id'),
+            $email,
+            $rfid,
+        ),
+        client_addr => '1.2.3.4',
+        message => {
+            name => '',
+            content => \(<<'EOF'),
 From MAILER-DAEMON@bivio.biz  Sun Feb 26 06:02:39 2006
 Return-Path: <MAILER-DAEMON@bivio.biz>
 Date: Sun, 26 Feb 2006 06:02:38 -0700
@@ -85,44 +85,44 @@ bla
 
 --k1QD2cv23383.1140958958/bivio.biz--
 EOF
-	},
+        },
     });
     return [req()];
 };
 [{
     object => sub {
-	class();
+        class();
     },
 } => [
     execute => [
-	$compute => sub {
-	    assert_equals(
-		[$rfid, $email, 'addressee unknown'],
-		[req(class())->get(qw(realm_file_id email reason))],
-	    );
-	    assert_equals(
-		1,
-		model('RealmUser')->rows_exist({user_id => $uid}),
-	    );
-	    return 1;
-	},
-	sub {
-	    req()->set_realm('bulletin');
-	    req()->set_user(
-		$uid = ShellUtil_TestUser()
-		    ->create(
-			$email = email(random_string()),
-		    ),
-	    );
-	    ShellUtil_RealmAdmin()->join_user(qw(MAIL_RECIPIENT MEMBER));
-	    return $compute->();
-	} => sub {
-	    req()->set_realm('bulletin');
-	    assert_equals(
-		0,
-		model('RealmUser')->rows_exist({user_id => $uid}),
-	    );
-	    return 1;
-	},
+        $compute => sub {
+            assert_equals(
+                [$rfid, $email, 'addressee unknown'],
+                [req(class())->get(qw(realm_file_id email reason))],
+            );
+            assert_equals(
+                1,
+                model('RealmUser')->rows_exist({user_id => $uid}),
+            );
+            return 1;
+        },
+        sub {
+            req()->set_realm('bulletin');
+            req()->set_user(
+                $uid = ShellUtil_TestUser()
+                    ->create(
+                        $email = email(random_string()),
+                    ),
+            );
+            ShellUtil_RealmAdmin()->join_user(qw(MAIL_RECIPIENT MEMBER));
+            return $compute->();
+        } => sub {
+            req()->set_realm('bulletin');
+            assert_equals(
+                0,
+                model('RealmUser')->rows_exist({user_id => $uid}),
+            );
+            return 1;
+        },
     ],
 ]];

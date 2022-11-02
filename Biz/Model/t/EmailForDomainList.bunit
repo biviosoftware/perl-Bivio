@@ -5,8 +5,8 @@ my($domain, $users) = do('./EmailForDomainList.PL');
 [
     load_all => [
         [{b_domain_name => $domain->()}] => [map(
-	    +{'Email.email' => $domain->($_)},
-	    @$users,
-	)],
+            +{'Email.email' => $domain->($_)},
+            @$users,
+        )],
     ],
 ];

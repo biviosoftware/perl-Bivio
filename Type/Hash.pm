@@ -13,8 +13,8 @@ sub compare_defined {
 sub extract_by_keys {
     my(undef, $value, $to_include) = @_;
     return {map({
-	my($k) = $_;
-	grep($k eq $_, @$to_include) ? ($k => $value->{$k}) : ();
+        my($k) = $_;
+        grep($k eq $_, @$to_include) ? ($k => $value->{$k}) : ();
     } keys(%$value))};
 }
 
@@ -26,8 +26,8 @@ sub is_equal {
 sub from_literal {
     my(undef, $value) = @_;
     return !defined($value) ? (undef, undef)
-	: ref($value) eq 'HASH' ? $value
-	: (undef, Bivio::TypeError->SYNTAX_ERROR);
+        : ref($value) eq 'HASH' ? $value
+        : (undef, Bivio::TypeError->SYNTAX_ERROR);
 }
 
 sub from_sql_column {
@@ -51,12 +51,12 @@ sub to_sql_param {
 sub to_string {
     my(undef, $value) = @_;
     return !$value ? ''
-	: join('; ',
-	       map({
-		   my($v) = $value->{$_};
-		   "$_: " . (!defined($v) ? '' : !ref($v) ? $v
-		     : ${Bivio::IO::Ref->to_string($v, 0, 0)});
-	       } sort(keys(%$value))));
+        : join('; ',
+               map({
+                   my($v) = $value->{$_};
+                   "$_: " . (!defined($v) ? '' : !ref($v) ? $v
+                     : ${Bivio::IO::Ref->to_string($v, 0, 0)});
+               } sort(keys(%$value))));
 }
 
 1;

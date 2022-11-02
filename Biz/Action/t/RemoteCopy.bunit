@@ -5,56 +5,56 @@ req()->set_realm('remote_copy_bunit');
 my($rfcl) = model('RemoteCopyList', {})->set_cursor_or_die(0);
 [
     class() => [
-	{
-	    method => 'execute',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->set_realm('guest');
-		req()->put(path_info => $params->[0]);
-		return [req()];
-	    },
-	    compute_return => sub {
-		my($reply) = req('reply');
-		return [$reply->get_output_type, $reply->get_output];
-	    },
-	} => [
-	    'private' => ['text/plain', qr{^@{[class()]}#1\n\S+ /private/file.html\n\S+ /private/image.gif$}s],
-	    'private/file.html' => ['text/html', qr{^<html>.*</html>}iss],
-	],
-	remote_list => [
-	    sub {
-		req()->set_realm('remote_copy_bunit');
-		return [$rfcl];
-	    } => [
-		{map((lc($_) => [qr{^\S+$}, $_]),
-	            map("/RemoteCopyBunit/file$_", 1..4))},
-		undef,
-	    ],
-	],
-	local_list => [
-	    sub {
-		model('RealmFile', {path => '/RemoteCopyBunit/file1'})->delete;
-		model('RealmFile', {path => '/RemoteCopyBunit/file2'})
-		    ->update_with_content({}, \('changed file2'));
-		model('RealmFile')->create_with_content({
-		    path => '/RemoteCopyBunit/file5',
-		    user_id => realm_id('remote_copy_user'),
-		}, \('file5'));
-		return [$rfcl];
-	    } => [
-		{map((lc($_) => [qr{^\S+$}, $_]),
-	            map("/RemoteCopyBunit/file$_", 2..5))},
-	    ],
-	],
-	diff_lists => [
-	    [$rfcl] => [{
-		to_delete => FilePathArray('/RemoteCopyBunit/file5'),
-		to_create => FilePathArray('/RemoteCopyBunit/file1'),
-		to_update => FilePathArray('/RemoteCopyBunit/file2'),
-	    }],
-	],
-	remote_get => [
-	    ['/RemoteCopyBunit/file1', $rfcl] => [\('file1'), undef],
-	],
+        {
+            method => 'execute',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->set_realm('guest');
+                req()->put(path_info => $params->[0]);
+                return [req()];
+            },
+            compute_return => sub {
+                my($reply) = req('reply');
+                return [$reply->get_output_type, $reply->get_output];
+            },
+        } => [
+            'private' => ['text/plain', qr{^@{[class()]}#1\n\S+ /private/file.html\n\S+ /private/image.gif$}s],
+            'private/file.html' => ['text/html', qr{^<html>.*</html>}iss],
+        ],
+        remote_list => [
+            sub {
+                req()->set_realm('remote_copy_bunit');
+                return [$rfcl];
+            } => [
+                {map((lc($_) => [qr{^\S+$}, $_]),
+                    map("/RemoteCopyBunit/file$_", 1..4))},
+                undef,
+            ],
+        ],
+        local_list => [
+            sub {
+                model('RealmFile', {path => '/RemoteCopyBunit/file1'})->delete;
+                model('RealmFile', {path => '/RemoteCopyBunit/file2'})
+                    ->update_with_content({}, \('changed file2'));
+                model('RealmFile')->create_with_content({
+                    path => '/RemoteCopyBunit/file5',
+                    user_id => realm_id('remote_copy_user'),
+                }, \('file5'));
+                return [$rfcl];
+            } => [
+                {map((lc($_) => [qr{^\S+$}, $_]),
+                    map("/RemoteCopyBunit/file$_", 2..5))},
+            ],
+        ],
+        diff_lists => [
+            [$rfcl] => [{
+                to_delete => FilePathArray('/RemoteCopyBunit/file5'),
+                to_create => FilePathArray('/RemoteCopyBunit/file1'),
+                to_update => FilePathArray('/RemoteCopyBunit/file2'),
+            }],
+        ],
+        remote_get => [
+            ['/RemoteCopyBunit/file1', $rfcl] => [\('file1'), undef],
+        ],
     ],
 ];

@@ -10,9 +10,9 @@ my($msg) = send_mail(
     $from,
     $to,
     {
-	'MIME-Version' => '1.0',
-	'Content-Type' => 'multipart/mixed; boundary="----------=_1201646665-416-4"',
-	'Content-Transfer-Encoding' => 'binary',
+        'MIME-Version' => '1.0',
+        'Content-Type' => 'multipart/mixed; boundary="----------=_1201646665-416-4"',
+        'Content-Transfer-Encoding' => 'binary',
     },
     random_string() . <<'EOF',
 

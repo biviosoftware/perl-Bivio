@@ -15,8 +15,8 @@ sub nested_contains {
     # value in I<set>, e.g.
     #
     #     {                                {
-    #         key1 => 1,		         key1 => 1,
-    #         key2 => sub {		         key2 => val2
+    #         key1 => 1,                         key1 => 1,
+    #         key2 => sub {                         key2 => val2
     #             my($val2) = @_;   },
     #             assert on $val2;
     #             return $val2;
@@ -45,7 +45,7 @@ sub nested_contains {
 sub nested_copy {
     my($proto, $value) = @_;
     return _copy($proto, $value)
-	if $_SEEN;
+        if $_SEEN;
     local($_SEEN) = {};
     return _copy($proto, $value);
 }
@@ -53,11 +53,11 @@ sub nested_copy {
 sub nested_copy_notify_clone {
     my(undef, $orig, $clone) = @_;
     return
-	unless $_SEEN;
+        unless $_SEEN;
     b_die("$orig: nested_copy not called with this clone")
-	unless $_SEEN->{$orig};
+        unless $_SEEN->{$orig};
     b_die("$orig: nested_copy already made copy: $_SEEN->{$orig}")
-	if ref($_SEEN->{$orig});
+        if ref($_SEEN->{$orig});
     $_SEEN->{$orig} = $clone;
     return;
 }
@@ -84,30 +84,30 @@ sub nested_equals {
     return $left eq $right ? 1 : 0 unless ref($left);
 
     if (ref($left) eq 'ARRAY') {
-	return 0 unless int(@$left) == int(@$right);
-	for (my($i) = 0; $i <= $#$left; $i++) {
-	    return 0
-		unless $proto->nested_equals($left->[$i], $right->[$i]);
-	}
-	return 1;
+        return 0 unless int(@$left) == int(@$right);
+        for (my($i) = 0; $i <= $#$left; $i++) {
+            return 0
+                unless $proto->nested_equals($left->[$i], $right->[$i]);
+        }
+        return 1;
     }
     if (ref($left) eq 'HASH') {
-	my(@l_keys) = sort(keys(%$left));
-	my(@r_keys) = sort(keys(%$right));
-	return 0
-	    unless $proto->nested_equals(\@l_keys, \@r_keys);
-	foreach my $k (@l_keys) {
-	    return 0
-		unless $proto->nested_equals($left->{$k}, $right->{$k});
-	}
-	return 1;
+        my(@l_keys) = sort(keys(%$left));
+        my(@r_keys) = sort(keys(%$right));
+        return 0
+            unless $proto->nested_equals(\@l_keys, \@r_keys);
+        foreach my $k (@l_keys) {
+            return 0
+                unless $proto->nested_equals($left->{$k}, $right->{$k});
+        }
+        return 1;
     }
     return $proto->nested_equals($$left, $$right)
-	if ref($left) eq 'SCALAR';
+        if ref($left) eq 'SCALAR';
 
     # blessed ref: Check if can equals and compare that way
     return $left->equals($right) ? 1 : 0
-	if UNIVERSAL::can($left, 'equals');
+        if UNIVERSAL::can($left, 'equals');
 
     # CODE, GLOB, Regex, and blessed references should always be equal exactly
     return $left eq $right ? 1 : 0;
@@ -147,7 +147,7 @@ sub to_string {
     $dd->Indent(defined($indent) ? $indent : 1);
     $dd->Maxdepth($max_depth || 0);
     $dd->Sortkeys(1)
-	if $dd->can('Sortkeys');
+        if $dd->can('Sortkeys');
     $dd->Terse(1);
     my($res) = $dd->Dumpxs();
     return \$res;
@@ -156,43 +156,43 @@ sub to_string {
 sub _copy {
     my($proto, $value) = @_;
     my($clone) = sub {
-	return $_SEEN->{$value}
-	    if $_SEEN->{$value};
-	my($copy, $op) = @_;
-	$_SEEN->{$value} = $copy;
-	return $_SEEN->{$value} = $op->($copy) || $copy;
+        return $_SEEN->{$value}
+            if $_SEEN->{$value};
+        my($copy, $op) = @_;
+        $_SEEN->{$value} = $copy;
+        return $_SEEN->{$value} = $op->($copy) || $copy;
     };
     return ref($value) eq 'ARRAY'
-	? $clone->(
-	    [],
-	    sub {
-		@{shift(@_)} = map($proto->nested_copy($_), @$value);
-		return;
-	    },
+        ? $clone->(
+            [],
+            sub {
+                @{shift(@_)} = map($proto->nested_copy($_), @$value);
+                return;
+            },
         )
-	: ref($value) eq 'HASH'
-	? $clone->(
-	    {},
-	    sub {
-		%{shift(@_)} = map(
-		    ($_ => $proto->nested_copy($value->{$_})),
-		    keys(%$value),
-		);
-		return;
-	    }
-	) : ref($value) eq 'SCALAR'
-	? \(my $x = $$value)
+        : ref($value) eq 'HASH'
+        ? $clone->(
+            {},
+            sub {
+                %{shift(@_)} = map(
+                    ($_ => $proto->nested_copy($value->{$_})),
+                    keys(%$value),
+                );
+                return;
+            }
+        ) : ref($value) eq 'SCALAR'
+        ? \(my $x = $$value)
 #TODO: Do we need to deal with GLOB?  Other refs re
         # Only blessed refs need to be copied
-	: !ref($value) || $value !~ /=/
+        : !ref($value) || $value !~ /=/
         ? $value
-	: $value->can('clone')
+        : $value->can('clone')
         ? $clone->(
-	    # See nested_copy_notify_clone
-	    1,
-	    sub {$value->clone},
+            # See nested_copy_notify_clone
+            1,
+            sub {$value->clone},
         )
-	: $value;
+        : $value;
 }
 
 sub _diff {
@@ -205,11 +205,11 @@ sub _diff {
 sub _diff_array {
     my($proto, $left, $right, $name, $method) = @_;
     my($res) = @$left == @$right ? undef : ${_diff_res(
-	$proto, scalar(@$left), scalar(@$right), $name . '->scalar()')};
+        $proto, scalar(@$left), scalar(@$right), $name . '->scalar()')};
     for (my($i) = 0; $i <= ($#$left > $#$right ? $#$left : $#$right); $i++) {
-	my($r) = $proto->$method($left->[$i], $right->[$i], $name . "->[$i]");
-	$res .= ($res ? "\n" : '') . $$r
-	    if $r;
+        my($r) = $proto->$method($left->[$i], $right->[$i], $name . "->[$i]");
+        $res .= ($res ? "\n" : '') . $$r
+            if $r;
     }
     return $res ? \$res : undef;
 }
@@ -217,34 +217,34 @@ sub _diff_array {
 sub _diff_eval {
     my($proto, $left, $right, $name, $method) = @_;
     return ref($left) eq 'HASH' && Bivio::UNIVERSAL->is_blesser_of($right)
-	&& $right->can('get_shallow_copy')
-	    ? _diff_similar($proto, $left, $right->get_shallow_copy, $name, $method)
-	: ref($left) eq 'CODE' && (return
-	    $proto->$method($left = $left->($right), $right, $name.'->()'))
-	|| ref($left) eq 'Regexp' && _diff_to_string($proto, $right) =~ $left
-	|| defined($left) && !ref($left)
-	    && $left eq _diff_to_string($proto, $right)
-	? undef
-	: _diff_res($proto, $left, $right, $name);
+        && $right->can('get_shallow_copy')
+            ? _diff_similar($proto, $left, $right->get_shallow_copy, $name, $method)
+        : ref($left) eq 'CODE' && (return
+            $proto->$method($left = $left->($right), $right, $name.'->()'))
+        || ref($left) eq 'Regexp' && _diff_to_string($proto, $right) =~ $left
+        || defined($left) && !ref($left)
+            && $left eq _diff_to_string($proto, $right)
+        ? undef
+        : _diff_res($proto, $left, $right, $name);
 }
 
 sub _diff_hash {
     my($proto, $left, $right, $name, $method) = @_;
     my($res);
     if ($method eq 'nested_differences') {
-	my(@l_keys) = sort(keys(%$left));
-	my(@r_keys) = sort(keys(%$right));
-	$res = $proto->$method(\@l_keys, \@r_keys, $name . '->keys()');
-	$res = $$res
-	    if $res;
+        my(@l_keys) = sort(keys(%$left));
+        my(@r_keys) = sort(keys(%$right));
+        $res = $proto->$method(\@l_keys, \@r_keys, $name . '->keys()');
+        $res = $$res
+            if $res;
     }
     foreach my $k (sort(keys(%$left))) {
-	my($n) = $name . "->{'$k'}";
-	my($r) = exists($right->{$k})
-	    ? $proto->nested_contains($left->{$k}, $right->{$k}, $n)
-	    : _diff_res($proto, $left->{$k}, "<key '$k' not found>", $n);
-	$res .= ($res ? "\n" : '') . $$r
-	    if $r;
+        my($n) = $name . "->{'$k'}";
+        my($r) = exists($right->{$k})
+            ? $proto->nested_contains($left->{$k}, $right->{$k}, $n)
+            : _diff_res($proto, $left->{$k}, "<key '$k' not found>", $n);
+        $res .= ($res ? "\n" : '') . $$r
+            if $r;
     }
     return $res ? \$res : undef;
 }
@@ -253,44 +253,44 @@ sub _diff_res {
     my($proto, $left, $right, $name) = @_;
     my($res) = $name && $name =~ /\S/ ? " at $name" : '';
     if ($left && $right && !ref($left) && !ref($right)
-	&& $left =~ /\n/ && $right =~ /\n/
-	&& $proto->use('Algorithm::Diff'),
+        && $left =~ /\n/ && $right =~ /\n/
+        && $proto->use('Algorithm::Diff'),
     ) {
-	my($diff) = Algorithm::Diff->new(
-	    map([split(/(?<=\n)/, $_)], $left , $right),
-	);
-	$res = "--- EXPECTED$res\n+++ ACTUAL\n";
-	$diff->Base(1);
-	while ($diff->Next) {
-	    next if $diff->Same;
-	    my($sep) = '';
-	    $res .= sprintf(
-		"*** %s ***\n",
-		$diff->Items(2)
-		? sprintf('%d,%dd%d', $diff->Get(qw(Min1 Max1 Max2)))
-	        : $diff->Items(1) ? (
-		    sprintf('%d,%dc%d,%d', $diff->Get(qw(Min1 Max1 Min2 Max2))),
-		    $sep = "--\n",
-		)[0] : sprintf('%da%d,%d', $diff->Get(qw(Max1 Min2 Max2))),
-	    );
-	    my($top, $bot) = map({
-		my($s) = $_ ? '+' : '-';
-		join('', map("$s $_", $diff->Items($_ + 1)));
-	    } 0, 1);
-	    $top .= "\n"
-		unless $top =~ /\n$/s;
-	    $res .= $top . ($top && $bot ? $sep : '') . $bot;
-	}
+        my($diff) = Algorithm::Diff->new(
+            map([split(/(?<=\n)/, $_)], $left , $right),
+        );
+        $res = "--- EXPECTED$res\n+++ ACTUAL\n";
+        $diff->Base(1);
+        while ($diff->Next) {
+            next if $diff->Same;
+            my($sep) = '';
+            $res .= sprintf(
+                "*** %s ***\n",
+                $diff->Items(2)
+                ? sprintf('%d,%dd%d', $diff->Get(qw(Min1 Max1 Max2)))
+                : $diff->Items(1) ? (
+                    sprintf('%d,%dc%d,%d', $diff->Get(qw(Min1 Max1 Min2 Max2))),
+                    $sep = "--\n",
+                )[0] : sprintf('%da%d,%d', $diff->Get(qw(Max1 Min2 Max2))),
+            );
+            my($top, $bot) = map({
+                my($s) = $_ ? '+' : '-';
+                join('', map("$s $_", $diff->Items($_ + 1)));
+            } 0, 1);
+            $top .= "\n"
+                unless $top =~ /\n$/s;
+            $res .= $top . ($top && $bot ? $sep : '') . $bot;
+        }
     }
     else {
         substr($res, 0, 0) = join(
-	    ' != ',
-	    map({
-		my($v) = $proto->to_short_string($_);
-		chomp($v);
-		$v;
-	    } $left, $right),
-	);
+            ' != ',
+            map({
+                my($v) = $proto->to_short_string($_);
+                chomp($v);
+                $v;
+            } $left, $right),
+        );
     }
     return \$res;
 }
@@ -298,28 +298,28 @@ sub _diff_res {
 sub _diff_similar {
     my($proto, $left, $right, $name, $method) = @_;
     return defined($left) ne defined($right)
-	? _diff_res($proto, $left, $right, $name)
-	: !defined($left)
-	? undef
-	: ref($left) eq 'ARRAY'
-	? _diff_array($proto, $left, $right, $name, $method)
-	: ref($left) eq 'HASH'
-	? _diff_hash($proto, $left, $right, $name, $method)
+        ? _diff_res($proto, $left, $right, $name)
+        : !defined($left)
+        ? undef
+        : ref($left) eq 'ARRAY'
+        ? _diff_array($proto, $left, $right, $name, $method)
+        : ref($left) eq 'HASH'
+        ? _diff_hash($proto, $left, $right, $name, $method)
         : ref($left) eq 'SCALAR'
-	? $proto->$method($$left, $$right, $name . '->', $method)
-	: UNIVERSAL::can($left, 'equals') && $left->equals($right)
-	    || $left eq $right
-	? undef
-	: _diff_res($proto, $left, $right, $name);
+        ? $proto->$method($$left, $$right, $name . '->', $method)
+        : UNIVERSAL::can($left, 'equals') && $left->equals($right)
+            || $left eq $right
+        ? undef
+        : _diff_res($proto, $left, $right, $name);
 }
 
 sub _diff_to_string {
     my($proto, $s) = @_; 
     return !ref($s) ? defined($s) ? $s : '<undef>'
-	: ref($s) eq 'SCALAR' ? $$s
-	: UNIVERSAL::can($s, 'as_xml') ? $s->as_xml
-	: UNIVERSAL::can($s, 'as_string') ? $s->as_string
-	: ${$proto->to_string($s, 0, 0)};
+        : ref($s) eq 'SCALAR' ? $$s
+        : UNIVERSAL::can($s, 'as_xml') ? $s->as_xml
+        : UNIVERSAL::can($s, 'as_string') ? $s->as_string
+        : ${$proto->to_string($s, 0, 0)};
 }
 
 1;

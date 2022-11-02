@@ -16,8 +16,8 @@ sub get_min {
 sub map_list {
     my($proto, $op) = @_;
     return [map(
-	$op->($proto->field_name($_), $_),
-	$proto->get_min .. $proto->get_max,
+        $op->($proto->field_name($_), $_),
+        $proto->get_min .. $proto->get_max,
     )];
 }
 
@@ -30,7 +30,7 @@ sub field_name_to_num {
     my(undef, $field) = @_;
     my($i) = $field =~ /\.slot(\d+)$/;
     die($field, ': not a slot')
-	unless defined($i);
+        unless defined($i);
     return $i;
 }
 

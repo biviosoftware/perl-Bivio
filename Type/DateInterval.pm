@@ -10,28 +10,28 @@ __PACKAGE__->compile([
         0,
     ],
     DAY => [
-	1,
+        1,
     ],
     WEEK => [
-	7,
+        7,
     ],
     MONTH => [
-	-1,
+        -1,
     ],
     YEAR => [
-	-2,
+        -2,
     ],
     FISCAL_YEAR => [
-	-3,
+        -3,
     ],
     SIX_MONTHS => [
-	-4,
+        -4,
     ],
     THREE_MONTHS => [
-	-5,
+        -5,
     ],
     IRS_TAX_SEASON => [
-	-6,
+        -6,
     ],
 ]);
 
@@ -40,7 +40,7 @@ sub dec {
     # Returns I<date_time> decremented by this DateInterval.
     my($self, $date_time) = @_;
     return $self->as_int >= 0 ? $_DT->add_days($date_time, -$self->as_int)
-	: &{\&{'_dec_'.lc($self->get_name)}}($date_time);
+        : &{\&{'_dec_'.lc($self->get_name)}}($date_time);
 }
 
 sub inc {
@@ -48,7 +48,7 @@ sub inc {
     # Returns I<date_time> incremented by this DateInterval.
     my($self, $date_time) = @_;
     return $self->as_int >= 0 ? $_DT->add_days($date_time, $self->as_int)
-	: &{\&{'_inc_'.lc($self->get_name)}}($date_time);
+        : &{\&{'_inc_'.lc($self->get_name)}}($date_time);
 }
 
 sub inc_to_end {
@@ -63,7 +63,7 @@ sub inc_to_end {
     my($self, $start_date) = @_;
     my($sub) = \&{'_inc_to_end_'.lc($self->get_name)};
     return defined(&$sub) ? $sub->($self, $start_date)
-	: $_DT->add_days($self->inc($start_date), -1);
+        : $_DT->add_days($self->inc($start_date), -1);
 }
 
 sub is_continuous {
@@ -78,7 +78,7 @@ sub _dec_fiscal_year {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
     $year--
-	if $mday == 1 && $mon == 1;
+        if $mday == 1 && $mon == 1;
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
 }
 
@@ -89,7 +89,7 @@ sub _dec_irs_tax_season {
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
     $year--
-	if $mon < 4 || $mon == 4 && $mday <= 15;
+        if $mon < 4 || $mon == 4 && $mday <= 15;
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, $year);
 }
 
@@ -99,10 +99,10 @@ sub _dec_month {
     # of month boundary.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	= $_DT->to_parts($date_time);
+        = $_DT->to_parts($date_time);
     $mon = $mon == 1 ? ($year--, 12) : $mon - 1;
     return _from_parts_with_mday_correction($sec, $min, $hour,
-	$mday, $mon, $year);
+        $mday, $mon, $year);
 }
 
 sub _dec_six_months {
@@ -123,9 +123,9 @@ sub _dec_year {
     # of month boundary.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	= $_DT->to_parts($date_time);
+        = $_DT->to_parts($date_time);
     return _from_parts_with_mday_correction($sec, $min, $hour,
-	$mday, $mon, $year - 1);
+        $mday, $mon, $year - 1);
 }
 
 sub _from_parts_with_mday_correction {
@@ -135,7 +135,7 @@ sub _from_parts_with_mday_correction {
     my($sec, $min, $hour, $mday, $mon, $year) = @_;
     my($last) = $_DT->get_last_day_in_month($mon, $year);
     return $_DT->from_parts_or_die($sec, $min, $hour,
-	    $mday > $last ? $last : $mday, $mon, $year);
+            $mday > $last ? $last : $mday, $mon, $year);
 }
 
 sub _inc_fiscal_year {
@@ -143,7 +143,7 @@ sub _inc_fiscal_year {
     # Goes to beginning of next year.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	= $_DT->to_parts($date_time);
+        = $_DT->to_parts($date_time);
     return $_DT->from_parts_or_die($sec, $min, $hour, 1, 1, 1 + $year);
 }
 
@@ -159,10 +159,10 @@ sub _inc_month {
     # of month boundary.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	= $_DT->to_parts($date_time);
+        = $_DT->to_parts($date_time);
     $mon = $mon == 12 ? ($year++, 1) : $mon + 1;
     return _from_parts_with_mday_correction($sec, $min, $hour,
-	$mday, $mon, $year);
+        $mday, $mon, $year);
 }
 
 sub _inc_six_months {
@@ -205,9 +205,9 @@ sub _inc_year {
     # of month boundary.
     my($date_time) = @_;
     my($sec, $min, $hour, $mday, $mon, $year)
-	= $_DT->to_parts($date_time);
+        = $_DT->to_parts($date_time);
     return _from_parts_with_mday_correction($sec, $min, $hour,
-	$mday, $mon, $year + 1);
+        $mday, $mon, $year + 1);
 }
 
 1;

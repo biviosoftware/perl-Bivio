@@ -2,34 +2,34 @@
 # $Id$
 [
     sub {class()->USER} => [
-	as_property_model_class_name => 'User',
-	is_default_id => [
-	    0 => 0,
-	    1 => 1,
-	    2 => 1,
-	    bla => DIE(),
-	    270000000000000000000001 => 0,
-	    [] => 0,
-	],
-	as_default_owner_id => 2,
-	as_default_owner_name => 'user',
-	equals_or_any_owner_check => [
-	    [class()->USER] => 1,
-	    [class()->FORUM] => 0,
-	    [] => 1,
-	],
+        as_property_model_class_name => 'User',
+        is_default_id => [
+            0 => 0,
+            1 => 1,
+            2 => 1,
+            bla => DIE(),
+            270000000000000000000001 => 0,
+            [] => 0,
+        ],
+        as_default_owner_id => 2,
+        as_default_owner_name => 'user',
+        equals_or_any_owner_check => [
+            [class()->USER] => 1,
+            [class()->FORUM] => 0,
+            [] => 1,
+        ],
     ],
     sub {class()->CALENDAR_EVENT} => [
-	as_property_model_class_name => 'CalendarEvent',
-	equals_or_any_owner_check => [
-	    [class()->CALENDAR_EVENT] => 1,
-	    [class()->FORUM] => 0,
-	    [] => 1,
-	],
+        as_property_model_class_name => 'CalendarEvent',
+        equals_or_any_owner_check => [
+            [class()->CALENDAR_EVENT] => 1,
+            [class()->FORUM] => 0,
+            [] => 1,
+        ],
     ],
     sub {class()->GENERAL} => [
-	equals_or_any_owner_check => [
-	    [] => 0,
-	],
+        equals_or_any_owner_check => [
+            [] => 0,
+        ],
     ],
 ];

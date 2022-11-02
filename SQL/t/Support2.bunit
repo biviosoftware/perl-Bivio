@@ -7,27 +7,27 @@ options({
 });
 [
     [req()] => [
-	get_info => [
-	    column_aliases => [{
-		'Address_1.realm_id' => {
-		    name => 'RealmOwner.realm_id',
-		},
-		'RealmUser.realm_id' => {
-		    name => 'RealmOwner.realm_id',
-		},
-	    }],
-	],
-	internal_put_field => [
-	    ['User.last_name' => 'smith'] => not_die(),
-	],
-	{
-	    method => 'get_model_properties',
-	    comparator => 'nested_differences',
-	} => [
-	    'User' => [{
-		last_name => 'smith',
-		user_id => undef,
-	    }],
-	],
+        get_info => [
+            column_aliases => [{
+                'Address_1.realm_id' => {
+                    name => 'RealmOwner.realm_id',
+                },
+                'RealmUser.realm_id' => {
+                    name => 'RealmOwner.realm_id',
+                },
+            }],
+        ],
+        internal_put_field => [
+            ['User.last_name' => 'smith'] => not_die(),
+        ],
+        {
+            method => 'get_model_properties',
+            comparator => 'nested_differences',
+        } => [
+            'User' => [{
+                last_name => 'smith',
+                user_id => undef,
+            }],
+        ],
     ],
 ];

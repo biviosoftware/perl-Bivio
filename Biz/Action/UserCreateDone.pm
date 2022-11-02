@@ -11,20 +11,20 @@ sub internal_views {
     my(undef, $req) = @_;
     return [
         $_UCF->if_unapproved_applicant_mode(
-	    sub {'UserAuth->unapproved_applicant_mail'}),
-	qw(UserAuth->create_mail UserAuth->create_done),
+            sub {'UserAuth->unapproved_applicant_mail'}),
+        qw(UserAuth->create_mail UserAuth->create_done),
     ];
 }
 
 sub execute {
     my($proto, $req) = @_;
     return {
-	method => 'client_redirect',
-	task_id => 'SITE_ROOT',
+        method => 'client_redirect',
+        task_id => 'SITE_ROOT',
     } unless $req->unsafe_get('Model.UserRegisterForm');
     foreach my $v (@{$proto->internal_views($req)}) {
-	next unless my $res = $_V->execute($v, $req);
-	return $res;
+        next unless my $res = $_V->execute($v, $req);
+        return $res;
     }
     return 0;
 }

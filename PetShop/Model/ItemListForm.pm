@@ -10,9 +10,9 @@ sub execute_ok_row {
     my($self) = @_;
 
     if ($self->get('add_to_cart')) {
-	b_use('Model.ItemForm')->add_item_to_cart(
-	    $self->get_list_model->get_model('Item'),
-	);
+        b_use('Model.ItemForm')->add_item_to_cart(
+            $self->get_list_model->get_model('Item'),
+        );
     }
     return;
 }
@@ -20,16 +20,16 @@ sub execute_ok_row {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
-	list_class => 'ItemList',
-	visible => [
-	    {
-		name => 'add_to_cart',
-		constraint => 'NONE',
-		type => 'OKButton',
-		in_list => 1,
-	    },
-	],
+        version => 1,
+        list_class => 'ItemList',
+        visible => [
+            {
+                name => 'add_to_cart',
+                constraint => 'NONE',
+                type => 'OKButton',
+                in_list => 1,
+            },
+        ],
     });
 }
 

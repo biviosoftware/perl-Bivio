@@ -3,12 +3,12 @@
 FacadeComponent();
 [
     get_value => [
-	bunit_level1 => 'anon_1',
-	'bunit_level1.bunit_level2.bunit_level3' => 'anon_3',
+        bunit_level1 => 'anon_1',
+        'bunit_level1.bunit_level2.bunit_level3' => 'anon_3',
     ],
     inline_case(sub {req()->set_realm('demo')}),
     get_value => [
-	bunit_level1 => 'demo_1',
-	'bunit_level1.bunit_level2.bunit_level3' => 'demo_3',
+        bunit_level1 => 'demo_1',
+        'bunit_level1.bunit_level2.bunit_level3' => 'demo_3',
     ],
 ];

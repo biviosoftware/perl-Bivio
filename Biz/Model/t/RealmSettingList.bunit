@@ -4,40 +4,40 @@ ListModel();
 req()->set_realm('fourem');
 [
     get_multiple_settings => [
-	[RealmSettingList1 => alpha => [[qw(num Integer)], [qw(name Name)]]]
-	    => [{num => 1, name => 'alpha'}],
+        [RealmSettingList1 => alpha => [[qw(num Integer)], [qw(name Name)]]]
+            => [{num => 1, name => 'alpha'}],
     ],
     get_all_settings => [
-	[RealmSettingList1 => [
-	    [qw(let Name)],
-	    [qw(less Line)],
-	]] => [{
-	    alpha => {let => 'a', less => 'arithmetic'},
-	    beta => {let => 'b', less => 'default-lesson'},
-	}],
+        [RealmSettingList1 => [
+            [qw(let Name)],
+            [qw(less Line)],
+        ]] => [{
+            alpha => {let => 'a', less => 'arithmetic'},
+            beta => {let => 'b', less => 'default-lesson'},
+        }],
     ],
     get_setting => [
-	[qw(RealmSettingList1 alpha num Integer)] => 1,
-	[qw(RealmSettingList1 beta letter Name)] => 'b',
-	[qw(RealmSettingList1 beta lesson String)] => 'default-lesson',
-	[qw(RealmSettingList1 beta lesson StringArray)]
-	    => [StringArray('default-lesson')],
-	[qw(RealmSettingList1 alpha other StringArray)] => [StringArray('')],
-	[qw(RealmSettingList1 beta other StringArray)] => [StringArray('default-other')],
-	[qw(RealmSettingList1 alpha le String xyz)] => 'xyz',
-	[qw(RealmSettingList1 not-found num Integer)] => 4242,
-	[qw(NotFound alpha num Integer)] => [undef],
-	[qw(NotFound alpha num Integer 3)] => 3,
-	[qw(NotFound alpha letter Integer), sub {return @_ ? die(@_) : 13}]
-	    => 13,
-	[qw(RealmSettingList1 alpha letter Integer), sub {'not-' . shift}]
-	    => 'not-default-letter',
-	[qw(RealmSettingList2 alpha num Integer 99)] => 99,
-	[qw(RealmSettingList3 a num Integer)] => [undef],
-	[qw(RealmSettingList1 alpha num Integer)] => 1,
-	sub {
-	    req()->set_realm('btest_read');
-	    return [qw(RealmSettingList1 alpha num Integer 99)];
-	} => 99,
+        [qw(RealmSettingList1 alpha num Integer)] => 1,
+        [qw(RealmSettingList1 beta letter Name)] => 'b',
+        [qw(RealmSettingList1 beta lesson String)] => 'default-lesson',
+        [qw(RealmSettingList1 beta lesson StringArray)]
+            => [StringArray('default-lesson')],
+        [qw(RealmSettingList1 alpha other StringArray)] => [StringArray('')],
+        [qw(RealmSettingList1 beta other StringArray)] => [StringArray('default-other')],
+        [qw(RealmSettingList1 alpha le String xyz)] => 'xyz',
+        [qw(RealmSettingList1 not-found num Integer)] => 4242,
+        [qw(NotFound alpha num Integer)] => [undef],
+        [qw(NotFound alpha num Integer 3)] => 3,
+        [qw(NotFound alpha letter Integer), sub {return @_ ? die(@_) : 13}]
+            => 13,
+        [qw(RealmSettingList1 alpha letter Integer), sub {'not-' . shift}]
+            => 'not-default-letter',
+        [qw(RealmSettingList2 alpha num Integer 99)] => 99,
+        [qw(RealmSettingList3 a num Integer)] => [undef],
+        [qw(RealmSettingList1 alpha num Integer)] => 1,
+        sub {
+            req()->set_realm('btest_read');
+            return [qw(RealmSettingList1 alpha num Integer 99)];
+        } => 99,
     ],
 ];

@@ -5,9 +5,9 @@ Widget({
     realm => 'bunit_wiki',
     user => 'root',
     view_pre_compile => sub {
-	req()->put(path_info => 'SomePage');
-	class('Action.WikiView')->execute_prepare_html(req());
-	return;
+        req()->put(path_info => 'SomePage');
+        class('Action.WikiView')->execute_prepare_html(req());
+        return;
     },
 });
 req()->set_realm_and_user('bunit_wiki');

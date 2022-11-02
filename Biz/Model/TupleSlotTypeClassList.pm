@@ -17,12 +17,12 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	primary_key => ['TupleSlotType.tuple_slot_type_id'],
-	order_by => ['TupleSlotType.type_class'],
-	other => [
-	    ['TupleSlotType.realm_id',
-	         [Bivio::Auth::Realm->get_general->get('id')]],
-	],
+        primary_key => ['TupleSlotType.tuple_slot_type_id'],
+        order_by => ['TupleSlotType.type_class'],
+        other => [
+            ['TupleSlotType.realm_id',
+                 [Bivio::Auth::Realm->get_general->get('id')]],
+        ],
     });
 }
 

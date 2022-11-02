@@ -5,41 +5,41 @@ req()->set_realm('demo');
 my($txt) = model(RealmFile => {path => '/Public/file.txt'});
 [
     [$txt] => [
-	get_os_path => $txt->get_os_path,
-	get_content => sub {[$txt->get_content]},
-	get => [
-	    path => $txt->get('path'),
-	    content_type => 'text/plain',
-	],
-	as_string => 'Parseable[/Public/file.txt,text/plain]',
+        get_os_path => $txt->get_os_path,
+        get_content => sub {[$txt->get_content]},
+        get => [
+            path => $txt->get('path'),
+            content_type => 'text/plain',
+        ],
+        as_string => 'Parseable[/Public/file.txt,text/plain]',
     ],
     [{
-	class => 'RealmFile',
-	content => \('a,b'),
-	content_type => 'text/csv',
-	req => req(),
+        class => 'RealmFile',
+        content => \('a,b'),
+        content_type => 'text/csv',
+        req => req(),
     }] => [
-	get_os_path => qr{/tmp/},
-	get_content => 'a,b',
-	get => [
-	    content_type => 'text/csv',
-	],
-	as_string => 'Parseable[,text/csv]',
+        get_os_path => qr{/tmp/},
+        get_content => 'a,b',
+        get => [
+            content_type => 'text/csv',
+        ],
+        as_string => 'Parseable[,text/csv]',
     ],
     class() => [
-	new => [
-	    [{}] => DIE(),
-	    [{
-		class => 'RealmFile',
-		content_type => 'text/plain',
-		content => 'not ok',
-		req => req(),
-	    }] => qr{is invalid type for content$},
-	],
-	sub {
-	    # cleanup tmp files
-	    req()->call_process_cleanup;
-	    return 1;
-	} => 1,
+        new => [
+            [{}] => DIE(),
+            [{
+                class => 'RealmFile',
+                content_type => 'text/plain',
+                content => 'not ok',
+                req => req(),
+            }] => qr{is invalid type for content$},
+        ],
+        sub {
+            # cleanup tmp files
+            req()->call_process_cleanup;
+            return 1;
+        } => 1,
     ],
 ];

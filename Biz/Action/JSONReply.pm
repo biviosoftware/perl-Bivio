@@ -14,16 +14,16 @@ sub execute_api {
 sub execute_check_req_is_json {
     my($proto, $req, $else) = @_;
     return $req->if_req_is_json(
-	sub {
-	    my($t) = $req->get('task_id')->get_name;
-	    return $proto->execute_api(
-		$req,
-		$t =~ /FORBIDDEN/ ? 'FORBIDDEN'
-		    : $t =~ /NOT_FOUND/ ? 'NOT_FOUND'
-		    : 'BAD_REQUEST',
-	    );
-	},
-	$else || 0,
+        sub {
+            my($t) = $req->get('task_id')->get_name;
+            return $proto->execute_api(
+                $req,
+                $t =~ /FORBIDDEN/ ? 'FORBIDDEN'
+                    : $t =~ /NOT_FOUND/ ? 'NOT_FOUND'
+                    : 'BAD_REQUEST',
+            );
+        },
+        $else || 0,
     );
 }
 
@@ -31,10 +31,10 @@ sub execute_javascript_log_error {
     my($proto, $req) = @_;
     my($json_text) = ($req->get_form || {})->{json};
     if ($json_text) {
-	my($json);
-	b_use('Bivio.Die')->catch_quietly(sub {
-	    $json = $_JSON->from_text($json_text);
-	});
+        my($json);
+        b_use('Bivio.Die')->catch_quietly(sub {
+            $json = $_JSON->from_text($json_text);
+        });
         $req->warn('javascript error')
             if $proto->is_valid_javascript_error($json);
     }

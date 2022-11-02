@@ -55,11 +55,11 @@ sub as_string {
     # Pretty prints the realm.
     my($owner) = $self->unsafe_get('owner');
     return ref($self)
-	. '['
+        . '['
         . join(
-	    ',',
-	    $self->get('type')->get_name,
-	    $owner ? $self->unsafe_get('owner_name', 'id') : (),
+            ',',
+            $self->get('type')->get_name,
+            $owner ? $self->unsafe_get('owner_name', 'id') : (),
         ) . ']';
 }
 
@@ -67,21 +67,21 @@ sub assert_type {
     my($self, $expect) = @_;
     $expect = $_RT->from_any($expect);
     b_die($self, ': not expected ', $expect)
-	unless $self->get('type')->equals($expect);
+        unless $self->get('type')->equals($expect);
     return;
 }
 
 sub can_user_execute_task {
     my($self, $task, $req) = @_;
     unless ($task->has_realm_type($self->get('type'))) {
-	_trace($task->get('id'), ': no such task in ', $self->get('type'))
-	    if $_TRACE;
-	return 0;
+        _trace($task->get('id'), ': no such task in ', $self->get('type'))
+            if $_TRACE;
+        return 0;
     }
     return 0
-	unless $self->does_user_have_permissions($task->get('permission_set'), $req);
+        unless $self->does_user_have_permissions($task->get('permission_set'), $req);
     return 1
-	unless my $as = $task->unsafe_get('extra_auth');
+        unless my $as = $task->unsafe_get('extra_auth');
     # enforce type, since no guarantees caller does, and can_user_execute_task
     # is a very public interface.
     return $_S->$as($self, $task, $req) ? 1 : 0;
@@ -99,19 +99,19 @@ sub does_user_have_permissions {
     my($self, $perms, $req) =  @_;
     # Does req.auth_user have I<perms> in this realm.
     $perms = ${$_PS->from_array($perms)}
-	if ref($perms) eq 'ARRAY';
+        if ref($perms) eq 'ARRAY';
     my($fields) = $self->[$_IDI];
     return $_S->task_permission_ok(
-	_perm_set_from_all([map({
-	    my($auth_role) = $_;
-	    unless (defined($fields->{$auth_role})) {
-		$fields->{$auth_role} = $_S->load_permissions(
-		    $self, $auth_role, $req);
-	    }
-	    $fields->{$auth_role};
-	} @{$req->get_auth_roles($self)})]),
-	$perms,
-	$req,
+        _perm_set_from_all([map({
+            my($auth_role) = $_;
+            unless (defined($fields->{$auth_role})) {
+                $fields->{$auth_role} = $_S->load_permissions(
+                    $self, $auth_role, $req);
+            }
+            $fields->{$auth_role};
+        } @{$req->get_auth_roles($self)})]),
+        $perms,
+        $req,
     );
 }
 
@@ -119,16 +119,16 @@ sub equals {
     my($self, $that) = @_;
     # Returns true if I<self> is identical I<that>.
     return ref($self) eq ref($that) && $self->get('id') eq $that->get('id')
-	? 1 : 0;
+        ? 1 : 0;
 }
 
 sub equals_by_name_or_id {
     my($self, $name_or_id) = @_;
     $name_or_id = ''
-	if !defined($name_or_id)
+        if !defined($name_or_id)
         || $name_or_id eq $self->GENERAL_NAME;
     return grep(($self->unsafe_get($_) || '') eq $name_or_id, qw(owner_name id))
-	? 1 : 0;
+        ? 1 : 0;
 }
 
 sub format_email {
@@ -140,7 +140,7 @@ sub format_email {
 
     # Compute and cache (since we are checking anyway)
     $email = $self->get('owner')->get_request->format_email(
-	    $self->get('owner_name'));
+            $self->get('owner_name'));
     $self->put(_email => $email);
     return $email;
 }
@@ -211,20 +211,20 @@ sub id_from_any {
     # model with realm_id, instance, or self.
     my($realm_or_id) = @_ ? @_ : $proto;
     return ref($realm_or_id)
-	? __PACKAGE__->is_blesser_of($realm_or_id)
+        ? __PACKAGE__->is_blesser_of($realm_or_id)
         ? $realm_or_id->get('id')
-	: $_M->is_blesser_of($realm_or_id)
-	? $realm_or_id->get('realm_id')
+        : $_M->is_blesser_of($realm_or_id)
+        ? $realm_or_id->get('realm_id')
         : b_die($realm_or_id, ': unhandled reference type')
-	: $_PI->is_specified($realm_or_id) || $proto->is_default_id($realm_or_id)
-	? $realm_or_id
-	: b_die($realm_or_id, ': not a PrimaryId');
+        : $_PI->is_specified($realm_or_id) || $proto->is_default_id($realm_or_id)
+        ? $realm_or_id
+        : b_die($realm_or_id, ': not a PrimaryId');
 }
 
 sub is_default {
     my($self) = @_;
     return 1
-	if $self->get('type') == $_RT->GENERAL;
+        if $self->get('type') == $_RT->GENERAL;
     return $self->get('owner')->is_default;
 }
 
@@ -247,21 +247,21 @@ sub new {
     b_die("must have owner or call type explicitly")
         unless $owner;
     if (ref($owner)) {
-	return $proto->new(lc($owner->get_name), $req)
-	    if $_RT->is_blesser_of($owner);
+        return $proto->new(lc($owner->get_name), $req)
+            if $_RT->is_blesser_of($owner);
     }
     else {
 #TODO: Deprecate default names to be special, e.g. =user
         b_die('cannot create model without request')
-	    unless ref($req);
-	my($g) = $proto->get_general;
-	return $g
-	    if $g->get('id') eq $owner || $owner eq $proto->GENERAL_NAME;
-	$owner = b_use('Cache.RealmOwner')
-	    ->get_cache_value($owner, $req);
+            unless ref($req);
+        my($g) = $proto->get_general;
+        return $g
+            if $g->get('id') eq $owner || $owner eq $proto->GENERAL_NAME;
+        $owner = b_use('Cache.RealmOwner')
+            ->get_cache_value($owner, $req);
     }
     return $owner->clone
-	if __PACKAGE__->is_blesser_of($owner);
+        if __PACKAGE__->is_blesser_of($owner);
     return _new($proto, $owner, $req);
 }
 
@@ -273,14 +273,14 @@ sub owner_name_equals {
 sub _do_default {
     my($list_method, $proto, $op, $req) = @_;
     $req->with_user(user => sub {
-	foreach my $r ($_RT->$list_method()) {
-	    last
-		unless $req->with_realm(
-		    $r->get_name,
-		    sub {$op->($req->get('auth_realm'))},
-		);
-	}
-	return;
+        foreach my $r ($_RT->$list_method()) {
+            last
+                unless $req->with_realm(
+                    $r->get_name,
+                    sub {$op->($req->get('auth_realm'))},
+                );
+        }
+        return;
     });
     return;
 }
@@ -294,11 +294,11 @@ sub _new {
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {};
     unless ($owner) {
-	# If there is no owner, then permissions already retrieved from
-	# database.  Set "id" to realm_type.
-	my($type) = $_RT->GENERAL;
-	$self->put(id => $type->as_int, type => $type);
-	return $self;
+        # If there is no owner, then permissions already retrieved from
+        # database.  Set "id" to realm_type.
+        my($type) = $_RT->GENERAL;
+        $self->put(id => $type->as_int, type => $type);
+        return $self;
     }
     b_die($owner, ': owner not a Model::RealmOwner')
         unless $_RO->is_blesser_of($owner);
@@ -306,12 +306,12 @@ sub _new {
 #TODO: Change this so everyone knows realm_id?
     my($id) = $owner->get('realm_id');
     b_die($id, ': owner must have valid id (must be loaded)')
-	unless $id;
+        unless $id;
     $self->put(
-	owner => $owner,
-	id => $id,
-	owner_name => $owner->get('name'),
-	type => $owner->get('realm_type'),
+        owner => $owner,
+        id => $id,
+        owner_name => $owner->get('name'),
+        type => $owner->get('realm_type'),
     );
     return $self;
 }
@@ -321,7 +321,7 @@ sub _perm_set_from_all {
     # Calculate the sum of all given permissions.
     my($perm_set) = $_PS->get_min;
     foreach my $perms (@$permissions) {
- 	$perm_set |= $perms;
+         $perm_set |= $perms;
     }
     return $perm_set;
 }

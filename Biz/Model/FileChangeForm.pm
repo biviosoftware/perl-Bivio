@@ -27,106 +27,106 @@ sub execute_empty {
     my($self) = @_;
     $self->internal_put_field(mode => _default_mode($self));
     $self->internal_put_field(folder_id =>
-	$self->get('realm_file')->get('folder_id'));
+        $self->get('realm_file')->get('folder_id'));
     $self->internal_put_field(rename_name => $_FP->get_tail(
-	$self->get('realm_file')->get('path')));
+        $self->get('realm_file')->get('path')));
     return
-	if $self->is_folder;
+        if $self->is_folder;
     $self->internal_put_field(content => ${$self->get('realm_file')->get_content})
-	if $self->is_text_content_type;
+        if $self->is_text_content_type;
     return
-	unless $_LOCK;
+        unless $_LOCK;
     return
-	if $self->get('realm_file_lock');
+        if $self->get('realm_file_lock');
     $self->internal_put_field(realm_file_lock =>
-	$self->new_other('RealmFileLock')->create({
-	    realm_file_id => $self->get('realm_file')->get('realm_file_id'),
-	}));
+        $self->new_other('RealmFileLock')->create({
+            realm_file_id => $self->get('realm_file')->get('realm_file_id'),
+        }));
     $self->internal_put_field('RealmFileLock.realm_file_lock_id' =>
-	$self->get('realm_file_lock')->get('realm_file_lock_id'));
+        $self->get('realm_file_lock')->get('realm_file_lock_id'));
     return;
 }
 
 sub execute_ok {
     my($self) = @_;
     if ($self->get('mode')->eq_rename) {
-	_release_lock($self);
-	my(@parts) = split('/', $self->get('realm_file')->get('path'));
-	my($old_name) = pop(@parts);
-	my($name) = _rename_file_name($self, $old_name);
-	$self->get('realm_file')->update({
-	    path => $_FP->join(@parts, $name),
-	}) unless $old_name eq $name;
+        _release_lock($self);
+        my(@parts) = split('/', $self->get('realm_file')->get('path'));
+        my($old_name) = pop(@parts);
+        my($name) = _rename_file_name($self, $old_name);
+        $self->get('realm_file')->update({
+            path => $_FP->join(@parts, $name),
+        }) unless $old_name eq $name;
     }
     elsif ($self->get('mode')->eq_move) {
-	_release_lock($self);
-	return if $self->get('folder_id')
-	    eq $self->get('realm_file')->get('folder_id');
-	my($new_path) = $self->new_other('RealmFile')->load({
-	    realm_file_id => $self->get('folder_id'),
-	})->get('path');
-	_validate_move_folder($self, $new_path)
-	    if $self->is_folder;
-	return if $self->in_error;
-	$self->get('realm_file')->update({
-	    path => $_FP->join($new_path,
-		$_FP->get_tail($self->get('realm_file')->get('path'))),
-	});
+        _release_lock($self);
+        return if $self->get('folder_id')
+            eq $self->get('realm_file')->get('folder_id');
+        my($new_path) = $self->new_other('RealmFile')->load({
+            realm_file_id => $self->get('folder_id'),
+        })->get('path');
+        _validate_move_folder($self, $new_path)
+            if $self->is_folder;
+        return if $self->in_error;
+        $self->get('realm_file')->update({
+            path => $_FP->join($new_path,
+                $_FP->get_tail($self->get('realm_file')->get('path'))),
+        });
     }
     elsif ($self->is_folder) {
-	if ($self->get('mode')->equals_by_name(qw(UPLOAD TEXT_FILE))) {
-	    my($name, $content) = $self->get('mode')->eq_upload
-		? ($self->validate_file_name($self, 'file'),
-		   $self->get('file')->{content})
-		: ($self->get(qw(name content)));
-	    return if $self->in_error;
-	    my($realm_file_id) = $self->new_other('RealmFile')
-		->create_with_content({
-		    path => $_FP->join($self->get('realm_file')->get('path'),
-			$name),
-		}, $content)->get('realm_file_id');
-	    $self->new_other('RealmFileLock')->create({
-		realm_file_id => $realm_file_id,
-		comment => $self->get('comment'),
-	    }) if $_LOCK && defined($self->get('comment'));
-	}
-	elsif ($self->get('mode')->eq_add_subfolder) {
-	    $self->new_other('RealmFile')->create_folder({
-		path => $_FP->join($self->get('realm_file')->get('path'),
-		    $self->get('name')),
-	    });
-	}
-	elsif ($self->get('mode')->eq_delete) {
-	    $self->get('realm_file')->unauth_delete_deep;
-	}
-	else {
-	    die();
-	}
+        if ($self->get('mode')->equals_by_name(qw(UPLOAD TEXT_FILE))) {
+            my($name, $content) = $self->get('mode')->eq_upload
+                ? ($self->validate_file_name($self, 'file'),
+                   $self->get('file')->{content})
+                : ($self->get(qw(name content)));
+            return if $self->in_error;
+            my($realm_file_id) = $self->new_other('RealmFile')
+                ->create_with_content({
+                    path => $_FP->join($self->get('realm_file')->get('path'),
+                        $name),
+                }, $content)->get('realm_file_id');
+            $self->new_other('RealmFileLock')->create({
+                realm_file_id => $realm_file_id,
+                comment => $self->get('comment'),
+            }) if $_LOCK && defined($self->get('comment'));
+        }
+        elsif ($self->get('mode')->eq_add_subfolder) {
+            $self->new_other('RealmFile')->create_folder({
+                path => $_FP->join($self->get('realm_file')->get('path'),
+                    $self->get('name')),
+            });
+        }
+        elsif ($self->get('mode')->eq_delete) {
+            $self->get('realm_file')->unauth_delete_deep;
+        }
+        else {
+            die();
+        }
     }
     # file
     elsif ($self->get('mode')->equals_by_name(qw(UPLOAD TEXT_FILE))) {
-	_release_lock($self);
-	my($realm_file_id) = $self->get('realm_file')
-	    ->update_with_content({}, _content($self))
-	    ->get('realm_file_id');
-	$self->new_other('RealmFileLock')->create({
-	    realm_file_id => $realm_file_id,
-	    comment => $self->get('comment'),
-	}) if $_LOCK && defined($self->get('comment'));
+        _release_lock($self);
+        my($realm_file_id) = $self->get('realm_file')
+            ->update_with_content({}, _content($self))
+            ->get('realm_file_id');
+        $self->new_other('RealmFileLock')->create({
+            realm_file_id => $realm_file_id,
+            comment => $self->get('comment'),
+        }) if $_LOCK && defined($self->get('comment'));
     }
     elsif ($self->get('mode')->eq_delete) {
-	_release_lock($self);
-	$self->get('realm_file')->delete;
+        _release_lock($self);
+        $self->get('realm_file')->delete;
     }
     else {
-	die();
+        die();
     }
     if ($self->req('task')->get_attr_as_id('next')->eq_forum_file_upload_from_wysiwyg) {
-	return {
-	    task_id => $self->req('task')->get_attr_as_id('next'),
-	    path_info => $self->req('path_info'),
-	    query => $self->req('query'),
-	}
+        return {
+            task_id => $self->req('task')->get_attr_as_id('next'),
+            path_info => $self->req('path_info'),
+            query => $self->req('query'),
+        }
     }
     return;
 }
@@ -134,75 +134,75 @@ sub execute_ok {
 sub get_fields_for_mode {
     my($self, $mode) = @_;
     my(@fields) = $mode->eq_upload
-	? qw(file comment)
-	: $mode->eq_text_file
-	    ? ($self->is_folder ? 'name' : (), qw(content comment))
-	    : $mode->eq_add_subfolder
-		? 'name'
-		: $mode->eq_rename
-		    ? 'rename_name'
-		    : $mode->eq_move
-			? 'folder_id'
-			# delete mode
-			: 'comment';
+        ? qw(file comment)
+        : $mode->eq_text_file
+            ? ($self->is_folder ? 'name' : (), qw(content comment))
+            : $mode->eq_add_subfolder
+                ? 'name'
+                : $mode->eq_rename
+                    ? 'rename_name'
+                    : $mode->eq_move
+                        ? 'folder_id'
+                        # delete mode
+                        : 'comment';
     return $_CFG->{show_comment}
-	? @fields
-	: grep($_ ne 'comment', @fields);
+        ? @fields
+        : grep($_ ne 'comment', @fields);
 }
 
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
     $_CFG->{show_comment} = 0
-	unless $_LOCK;
+        unless $_LOCK;
     return;
 }
 
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
-	require_context => 1,
-	visible => [
-	    map(+{
-		name => $_->[0],
-		type => $_->[1],
-		constraint => 'NONE',
-	    }, (
-		[qw(name NonHiddenFileName)],
-		[qw(rename_name NonHiddenFileName)],
-		[qw(folder_id RealmFile.realm_file_id)],
-		[qw(file FileField)],
-		[qw(comment RealmFileLock.comment)],
-		[qw(content Text64K)],
-		[qw(override_mode FileChangeMode)],
-	    )),
-	],
-	hidden => [
-	    {
-		name => 'mode',
-		type => 'FileChangeMode',
-		constraint => 'NOT_NULL',
-	    },
-	    !$_LOCK ? () : {
-		name => 'RealmFileLock.realm_file_lock_id',
-	        constraint => 'NONE',
-	    },
-	],
-	other => [
-	    # this field gets the EXISTS error, also used for forbidden error
-	    'RealmFile.path_lc',
-	    {
-		name => 'realm_file',
-		type => 'Model.RealmFile',
-		constraint => 'NOT_NULL',
-	    },
-	    !$_LOCK ? () : {
-		name => 'realm_file_lock',
-		type => 'Model.RealmFileLock',
-		constraint => 'NONE',
-	    },
-	],
+        version => 1,
+        require_context => 1,
+        visible => [
+            map(+{
+                name => $_->[0],
+                type => $_->[1],
+                constraint => 'NONE',
+            }, (
+                [qw(name NonHiddenFileName)],
+                [qw(rename_name NonHiddenFileName)],
+                [qw(folder_id RealmFile.realm_file_id)],
+                [qw(file FileField)],
+                [qw(comment RealmFileLock.comment)],
+                [qw(content Text64K)],
+                [qw(override_mode FileChangeMode)],
+            )),
+        ],
+        hidden => [
+            {
+                name => 'mode',
+                type => 'FileChangeMode',
+                constraint => 'NOT_NULL',
+            },
+            !$_LOCK ? () : {
+                name => 'RealmFileLock.realm_file_lock_id',
+                constraint => 'NONE',
+            },
+        ],
+        other => [
+            # this field gets the EXISTS error, also used for forbidden error
+            'RealmFile.path_lc',
+            {
+                name => 'realm_file',
+                type => 'Model.RealmFile',
+                constraint => 'NOT_NULL',
+            },
+            !$_LOCK ? () : {
+                name => 'realm_file_lock',
+                type => 'Model.RealmFileLock',
+                constraint => 'NONE',
+            },
+        ],
     });
 }
 
@@ -210,36 +210,36 @@ sub internal_pre_execute {
     my($self) = @_;
     my(@res) = shift->SUPER::internal_pre_execute(@_);
     $self->internal_put_field(
-	realm_file => $self->new_other('RealmFile')->load({
-	    path => $self->req('path_info') || '/',
-	}),
-	# allow form post to specify the mode
-	$self->unsafe_get('override_mode')
-	    ? (mode => $self->get('override_mode'))
-	    : (),
+        realm_file => $self->new_other('RealmFile')->load({
+            path => $self->req('path_info') || '/',
+        }),
+        # allow form post to specify the mode
+        $self->unsafe_get('override_mode')
+            ? (mode => $self->get('override_mode'))
+            : (),
     );
     return
-	unless $_LOCK;
+        unless $_LOCK;
     my($lock) = $self->new_other('RealmFileLock');
     $self->internal_put_field(
-	realm_file_lock => $lock->unsafe_load({
-	    realm_file_id => $self->get('realm_file')->get('realm_file_id'),
-	    comment => undef,
-	}) ? $lock : undef,
+        realm_file_lock => $lock->unsafe_load({
+            realm_file_id => $self->get('realm_file')->get('realm_file_id'),
+            comment => undef,
+        }) ? $lock : undef,
     );
     if ($self->get('RealmFileLock.realm_file_lock_id')) {
-	$self->internal_put_error('RealmFile.path_lc' => 'STALE_FILE_LOCK')
-	    unless $self->get('RealmFileLock.realm_file_lock_id')
-		eq ($self->get('realm_file_lock')
-		    ? $self->get('realm_file_lock')->get('realm_file_lock_id')
-		    : '');
+        $self->internal_put_error('RealmFile.path_lc' => 'STALE_FILE_LOCK')
+            unless $self->get('RealmFileLock.realm_file_lock_id')
+                eq ($self->get('realm_file_lock')
+                    ? $self->get('realm_file_lock')->get('realm_file_lock_id')
+                    : '');
     }
     $self->internal_put_field('RealmFileLock.realm_file_lock_id' =>
-	$self->get('realm_file_lock')->get('realm_file_lock_id'))
-	if $self->get('realm_file_lock');
+        $self->get('realm_file_lock')->get('realm_file_lock_id'))
+        if $self->get('realm_file_lock');
     return {
-	method => 'server_redirect',
-	task_id => 'FORUM_FILE_OVERRIDE_LOCK',
+        method => 'server_redirect',
+        task_id => 'FORUM_FILE_OVERRIDE_LOCK',
     } if $self->get('realm_file_lock') && ! $self->is_lock_owner;
     return @res;
 }
@@ -252,9 +252,9 @@ sub is_folder {
 sub is_lock_owner {
     my($self) = @_;
     return 0
-	unless $_LOCK && $self->get('realm_file_lock');
+        unless $_LOCK && $self->get('realm_file_lock');
     return $self->get('realm_file_lock')->get('user_id')
-	eq $self->req('auth_user_id') ? 1 : 0;
+        eq $self->req('auth_user_id') ? 1 : 0;
 }
 
 sub is_root {
@@ -266,17 +266,17 @@ sub is_text_content_type {
     my($self) = @_;
     my($rf) = $self->get('realm_file');
     return !$rf->get('is_folder')
-	&& $rf->is_text_content_type
+        && $rf->is_text_content_type
         && $rf->is_text_file
-	&& $rf->get_content_length < $_TA->get_width; 
+        && $rf->get_content_length < $_TA->get_width; 
 }
 
 sub validate {
     my($self) = @_;
 
     foreach my $name ($self->get_fields_for_mode($self->get('mode'))) {
-	$self->validate_not_null($name)
-	    unless $name eq 'comment';
+        $self->validate_not_null($name)
+            unless $name eq 'comment';
     }
     return;
 }
@@ -284,39 +284,39 @@ sub validate {
 sub validate_file_name {
     my($proto, $form, $file_field) = @_;
     my($name, $err) = $_FN->from_literal(
-	$_FP->get_tail($form->get($file_field)->{filename}));
+        $_FP->get_tail($form->get($file_field)->{filename}));
 
     if ($err) {
-	$form->internal_put_error(file => $err);
-	return;
+        $form->internal_put_error(file => $err);
+        return;
     }
     $form->internal_put_error(file => 'FILE_NAME')
-	unless defined($name);
+        unless defined($name);
     return $name;
 }
 
 sub _content {
     my($self) = @_;
     return $self->get('mode')->eq_upload ? $self->get('file')->{content}
-	: $self->get('content');
+        : $self->get('content');
 }
 
 sub _default_mode {
     my($self) = @_;
     my($mode) = $_FCM->unsafe_from_any(
-	($self->req('query') || {})->{$self->QUERY_KEY});
+        ($self->req('query') || {})->{$self->QUERY_KEY});
     return $mode if $mode;
     return $self->is_text_content_type
-	? $_FCM->TEXT_FILE
-	: $_FCM->UPLOAD;
+        ? $_FCM->TEXT_FILE
+        : $_FCM->UPLOAD;
 }
 
 sub _release_lock {
     return
-	unless $_LOCK;
+        unless $_LOCK;
     my($self) = @_;
     $self->get('realm_file_lock')->delete
-	if $self->get('realm_file_lock');
+        if $self->get('realm_file_lock');
     return;
 }
 
@@ -324,17 +324,17 @@ sub _rename_file_name {
     my($self, $old_name) = @_;
     my($suffix) = $_FP->get_suffix($old_name);
     return $self->get('rename_name')
-	if $self->is_folder || ! $suffix;
+        if $self->is_folder || ! $suffix;
     return lc($suffix) eq lc($_FP->get_suffix($self->get('rename_name')))
-	? $self->get('rename_name')
-	: join('.', $self->get('rename_name'), $_FP->get_suffix($old_name));
+        ? $self->get('rename_name')
+        : join('.', $self->get('rename_name'), $_FP->get_suffix($old_name));
 }
 
 sub _validate_move_folder {
     my($self, $new_path) = @_;
     my($path) = $self->get('realm_file')->get('path');
     $self->internal_put_error(folder_id => 'INVALID_FOLDER')
-	if $new_path =~ /^\Q$path/;
+        if $new_path =~ /^\Q$path/;
     return;
 }
 

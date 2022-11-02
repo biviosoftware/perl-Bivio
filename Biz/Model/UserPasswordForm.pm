@@ -15,8 +15,8 @@ sub execute_ok {
     my($res) = shift->SUPER::execute_ok(@_);
     my($req) = $self->get_request;
     $self->get_instance('UserLoginForm')->execute($req, {
-	realm_owner => $req->get_nested(qw(auth_realm owner))
-	    ->update_password($self->get('new_password')),
+        realm_owner => $req->get_nested(qw(auth_realm owner))
+            ->update_password($self->get('new_password')),
     });
     return $res;
 }
@@ -26,18 +26,18 @@ sub internal_initialize {
     # Return config.
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	require_context => 1,
-	$self->field_decl(
-	    visible => [
-		[old_password => undef, 'NONE'],
-		qw(new_password confirm_new_password),
-	    ],
-	    hidden => [
-		[qw(display_old_password  Boolean)],
-		[query_password => undef, 'NONE'],
-	    ],
-	    'Password', 'NOT_NULL',
-	),
+        require_context => 1,
+        $self->field_decl(
+            visible => [
+                [old_password => undef, 'NONE'],
+                qw(new_password confirm_new_password),
+            ],
+            hidden => [
+                [qw(display_old_password  Boolean)],
+                [query_password => undef, 'NONE'],
+            ],
+            'Password', 'NOT_NULL',
+        ),
     });
 }
 
@@ -48,11 +48,11 @@ sub internal_pre_execute {
     my($req) = $self->get_request;
     my($qp) = $req->unsafe_get_nested(qw(Action.UserPasswordQuery password));
     $self->internal_put_field(query_password => $qp)
-	if $qp;
+        if $qp;
     $self->internal_put_field(old_password => $qp)
-	if $qp ||= $self->unsafe_get('query_password');
+        if $qp ||= $self->unsafe_get('query_password');
     $self->internal_put_field(
-	display_old_password => $qp || $req->is_substitute_user ? 0 : 1);
+        display_old_password => $qp || $req->is_substitute_user ? 0 : 1);
     return;
 }
 
@@ -63,9 +63,9 @@ sub internal_validate_new {
 sub internal_validate_old {
     my($self) = @_;
     return $self->internal_put_error(qw(old_password PASSWORD_MISMATCH))
-	unless $self->use('Type.Password')->is_equal(
-	    $self->req(qw(auth_realm owner password)),
-	    $self->get('old_password'),
+        unless $self->use('Type.Password')->is_equal(
+            $self->req(qw(auth_realm owner password)),
+            $self->get('old_password'),
     );
     return 1;
 }
@@ -74,9 +74,9 @@ sub validate {
     my($self) = @_;
     return if $self->in_error;
     unless ($self->req->is_substitute_user) {
-	return
-	    unless $self->validate_not_null('old_password')
-	    && $self->internal_validate_old;
+        return
+            unless $self->validate_not_null('old_password')
+            && $self->internal_validate_old;
     }
     return $self->internal_put_error(qw(confirm_new_password CONFIRM_PASSWORD))
         unless $self->get('new_password') eq $self->get('confirm_new_password');

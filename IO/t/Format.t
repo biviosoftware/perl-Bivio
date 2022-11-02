@@ -21,22 +21,22 @@ my($T) = 2;
 sub t {
     my($format, $args, $top, $expected) = @_;
     if (ref($format)) {
-	$expected = $args;
+        $expected = $args;
     }
     else {
-	$format = Bivio::IO::Format->new()->add_line($format, $args)
-		->put_top($top)->process;
+        $format = Bivio::IO::Format->new()->add_line($format, $args)
+                ->put_top($top)->process;
     }
     my($actual) = $format->get_result;
     print(defined($actual) && $$actual eq $expected
-	    ? ("ok ", $T++, "\n")
-	    : ("not ok ", $T++,
-		"; actual = ", $$actual,
-		"; expected = ", $expected,
-		"; test line = ", (caller)[2],
-		"; format = ", $format,
-		"; args = ", ${Bivio::ShellUtil->ref_to_string($args)},
-		"\n"));
+            ? ("ok ", $T++, "\n")
+            : ("not ok ", $T++,
+                "; actual = ", $$actual,
+                "; expected = ", $expected,
+                "; test line = ", (caller)[2],
+                "; format = ", $format,
+                "; args = ", ${Bivio::ShellUtil->ref_to_string($args)},
+                "\n"));
 }
 
 # We don't want to bother with formfeeds in the strings
@@ -66,7 +66,7 @@ bla
 RESULT
 
 my($f) = Bivio::IO::Format->new()->add_line(" @<<<<", [\$v])->add_line("\n")
-	->put_top('HERE');
+        ->put_top('HERE');
 # foreach statements change the reference "value" of the variable,
 # so we can't just say "foreach $v (qw(a b c))", because the \$v above
 # is going away for the duration of the foreach loop.

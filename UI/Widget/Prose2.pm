@@ -14,17 +14,17 @@ sub control_on_render {
 sub initialize {
     my($self, $source) = @_;
     $self->put(_prose2_join => _parse($self, $self->get('value'), $source))
-	unless ref($self->get('value'));
+        unless ref($self->get('value'));
     return shift->SUPER::initialize(@_);
 }
 
 sub render {
     my($self, $source, $buffer) = @_;
     $self->get_or_default(
-	'_prose2_join',
-	sub {
-	    return _parse($self, ${$self->render_attr('value', $source)}, $source);
-	},
+        '_prose2_join',
+        sub {
+            return _parse($self, ${$self->render_attr('value', $source)}, $source);
+        },
     )->render($source, $buffer);
     return;
 }
@@ -32,17 +32,17 @@ sub render {
 sub _parse {
     my($self, $value, $source) = @_;
     return Join([
-	map(
-	    $_ =~ s/^\<\{// ? _parse_code($self, $_, $source) : $_,
-	    split(/(?=\<\{)|(?<=\}\>)/, $value),
-	),
+        map(
+            $_ =~ s/^\<\{// ? _parse_code($self, $_, $source) : $_,
+            split(/(?=\<\{)|(?<=\}\>)/, $value),
+        ),
     ])->initialize_with_parent($self, $source);
 }
 
 sub _parse_code {
     my($self, $code, $source) = @_;
     $self->die($code, $source, 'missing Prose program terminator "}>"')
-	unless $code =~ s/\}\>$//s;
+        unless $code =~ s/\}\>$//s;
     return UI_ViewLanguage()->eval(\$code);
 }
 

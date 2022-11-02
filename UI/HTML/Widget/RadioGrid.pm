@@ -25,9 +25,9 @@ sub GRID_CLASS {
 sub internal_choice_widget {
     my($self, $value, $label, $attrs) = @_;
     return SPAN_b_radio(Radio({
-	%$attrs,
-	field => $self->get('field'),
-	on_value => $value,
+        %$attrs,
+        field => $self->get('field'),
+        on_value => $value,
     }));
 }
 

@@ -14,16 +14,16 @@ sub initialize {
     $self->initialize_attr('field');
     $self->put_unless_exists(
 #TODO: enable a lookup on the value
-	value => [
-	    sub {
-		my($source) = @_;
-		my($v) = $self->unsafe_resolve_widget_value(
-		    [$self->get('field')],
-		    $source,
-		);
-		return $v && $v->get_short_desc;
-	    },
-	],
+        value => [
+            sub {
+                my($source) = @_;
+                my($v) = $self->unsafe_resolve_widget_value(
+                    [$self->get('field')],
+                    $source,
+                );
+                return $v && $v->get_short_desc;
+            },
+        ],
     );
     return shift->SUPER::initialize(@_);
 }

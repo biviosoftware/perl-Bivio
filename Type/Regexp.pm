@@ -16,7 +16,7 @@ sub add_regexp_modifiers {
 sub from_literal {
     my($self, $value) = @_;
     return !defined($value) || !length($value) ? (undef, undef)
-	: ref($value) eq 'Regexp' ? $value : _compile($value);
+        : ref($value) eq 'Regexp' ? $value : _compile($value);
     return;
 }
 
@@ -36,7 +36,7 @@ sub get_width {
 sub is_stringified_regexp {
     my(undef, $value) = @_;
     return !$value ? 0
-	: $value =~ /^\(\?.*\)$/s ? 1 : 0;
+        : $value =~ /^\(\?.*\)$/s ? 1 : 0;
 }
 
 sub quote_string {
@@ -58,9 +58,9 @@ sub _add_regexp_modifiers {
     $curr_minus ||= '';
     $add .= $curr_plus || '';
     return join(
-	'',
-	map($curr_minus =~ s{([$add])}{} && $1, 1 .. length($add)),
-	$curr_minus ? "-$curr_minus" : (),
+        '',
+        map($curr_minus =~ s{([$add])}{} && $1, 1 .. length($add)),
+        $curr_minus ? "-$curr_minus" : (),
     );
 }
 
@@ -73,12 +73,12 @@ sub _compile {
     # depends on the fact that the unique leading value is (?-xism: or (?^
     $value =~ s/^\(\?(?:\-xism|\^)\:(.*)\)$/$1/si;
     return (undef, Bivio::TypeError->PERMISSION_DENIED)
-	if $value =~ /\(\?(?!\<\!|\<\=|\!|=|\w|\:|\#|\-|\^)/;
+        if $value =~ /\(\?(?!\<\!|\<\=|\!|=|\w|\:|\#|\-|\^)/;
     return (undef, undef)
-	unless length($value);
+        unless length($value);
     my($res) = Bivio::Die->eval(sub {qr{$value}});
     return (undef, Bivio::TypeError->SYNTAX_ERROR)
-	unless $res;
+        unless $res;
     return $res;
 }
 

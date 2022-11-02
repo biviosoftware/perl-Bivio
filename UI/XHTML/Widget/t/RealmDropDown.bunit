@@ -3,11 +3,11 @@
 Widget({
     view_class_map => 'XHTMLWidget',
     setup_render => sub {
-	my(undef, $case) = @_;
-	my($o) = $case->get('object');
-	req()->set_user($o->get('user'));
-	req()->set_realm($o->get('realm'));
-	return;
+        my(undef, $case) = @_;
+        my($o) = $case->get('object');
+        req()->set_user($o->get('user'));
+        req()->set_realm($o->get('realm'));
+        return;
     },
 });
 my($uid) = b_use('ShellUtil.TestUser')->create('bunit_'.random_string());
@@ -15,7 +15,7 @@ req()->set_realm_and_user('crm_forum', $uid);
 b_use('ShellUtil.RealmAdmin')->join_user('MEMBER');
 [
     [forum => {user => 'crm_tech1', realm => undef}] =>
-	qr{<a.*crm_forum.*crm_tuple_forum.*>Forum<span}s,
+        qr{<a.*crm_forum.*crm_tuple_forum.*>Forum<span}s,
     [club => {user => 'crm_tech1', realm => undef}] => '',
     [forum => {user => $uid, realm => 'crm_forum'}] =>
         qr{<span class="dd_link">crm_forum</span>},

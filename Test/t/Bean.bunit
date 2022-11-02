@@ -5,37 +5,37 @@ options({
 });
 [
     [{
-	'x()' => ['a'],
-	'x(b)' => ['b'],
-	'x(b,c)' => ['c'],
-	'y()' => sub {
-	    return shift;
-	}
+        'x()' => ['a'],
+        'x(b)' => ['b'],
+        'x(b,c)' => ['c'],
+        'y()' => sub {
+            return shift;
+        }
     }] => [
-	x => [
-	    [] => 'a',
-	    b => 'b',
-	    [qw(b c)] => 'c',
-	],
-	y => [
-	    a => [['a']],
-	],
-	not_found => [
-	    ['anything'] => [],
-	],
-	{
-	    method => 'not_found',
-	    want_scalar => 1,
-	} => [
-	    [] => [undef],
-	],
-	test_bean_register_callback => [
-	    ['z', ['q'], sub {return $_[0]->[1]}] => not_die(),
-	],
-	z => [
-	    [] => [],
-	    'q' => [undef],
-	    ['q', 'r'] => 'r',
-	],
+        x => [
+            [] => 'a',
+            b => 'b',
+            [qw(b c)] => 'c',
+        ],
+        y => [
+            a => [['a']],
+        ],
+        not_found => [
+            ['anything'] => [],
+        ],
+        {
+            method => 'not_found',
+            want_scalar => 1,
+        } => [
+            [] => [undef],
+        ],
+        test_bean_register_callback => [
+            ['z', ['q'], sub {return $_[0]->[1]}] => not_die(),
+        ],
+        z => [
+            [] => [],
+            'q' => [undef],
+            ['q', 'r'] => 'r',
+        ],
     ],
 ];

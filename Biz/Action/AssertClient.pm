@@ -14,11 +14,11 @@ my($_CACHE);
 sub execute {
     my($proto, $req) = @_;
     $req->throw_die(
-	'CONFIG_ERROR',
-	{
-	    message => 'client not in allowed addresses or hosts',
-	    entity => $req->get('client_addr'),
-	},
+        'CONFIG_ERROR',
+        {
+            message => 'client not in allowed addresses or hosts',
+            entity => $req->get('client_addr'),
+        },
     ) unless $proto->is_valid_address($req->get('client_addr'));
     return 0;
 }
@@ -37,16 +37,16 @@ sub handle_config {
     my(undef, $cfg) = @_;
 #TODO: Use Type.IPAddress and Type.CIDRNotation
     $_CACHE = {
-	map(($_ => 1),
-	    map(/^\d+\.\d+\.\d+\.\d+$/ ? $_
-	        : Bivio::Die->die($_, ': invalid address'),
-		@{$cfg->{addresses} || []}),
-	    map({
-		my($a) = (gethostbyname($_))[4];
-		$a ? join('.', unpack('C4', $a))
-	            : Bivio::IO::Alert->warn($_, ": unable to map host: $!");
-	    } @{$cfg->{hosts} || []}),
-	),
+        map(($_ => 1),
+            map(/^\d+\.\d+\.\d+\.\d+$/ ? $_
+                : Bivio::Die->die($_, ': invalid address'),
+                @{$cfg->{addresses} || []}),
+            map({
+                my($a) = (gethostbyname($_))[4];
+                $a ? join('.', unpack('C4', $a))
+                    : Bivio::IO::Alert->warn($_, ": unable to map host: $!");
+            } @{$cfg->{hosts} || []}),
+        ),
     };
     $_CFG = $cfg;
     return;

@@ -3,45 +3,45 @@
 Unit();
 options({
     create_object => sub {
-	my(undef, $params) = @_;
-	return class()->from_literal_or_die($params->[0]);
+        my(undef, $params) = @_;
+        return class()->from_literal_or_die($params->[0]);
     },
 });
 [
     '235.236.237.4/30' => [
-	map_host_addresses => [
-	    [sub {@_
-	      }] => [[map("235.236.237.$_", 4..7)]],
-	],
-	address_to_host_num => [
-	    '235.236.237.5' => 5,
-	],
-	get_net_mask => '255.255.255.252',
+        map_host_addresses => [
+            [sub {@_
+              }] => [[map("235.236.237.$_", 4..7)]],
+        ],
+        address_to_host_num => [
+            '235.236.237.5' => 5,
+        ],
+        get_net_mask => '255.255.255.252',
     ],
     '1.2.4.0/23' => [
-	map_host_addresses => [
-	    [sub {@_}] => [[map(
-		{
-		    my($x) = $_;
-		    map("1.2.$x.$_", 0 .. 255);
-		}
-		4 .. 5,
-	    )]],
-	],
-	address_to_host_num => [
-	    '1.2.4.5' => '4.5',
-	    '1.2.5.5' => '5.5',
-	],
-	get_net_mask => '255.255.254.0',
+        map_host_addresses => [
+            [sub {@_}] => [[map(
+                {
+                    my($x) = $_;
+                    map("1.2.$x.$_", 0 .. 255);
+                }
+                4 .. 5,
+            )]],
+        ],
+        address_to_host_num => [
+            '1.2.4.5' => '4.5',
+            '1.2.5.5' => '5.5',
+        ],
+        get_net_mask => '255.255.254.0',
     ],
     '235.236.237.4/32' => [
-	address_to_host_num => [
-	    '235.236.237.4' => 4,
-	],
-	get_net_mask => '255.255.255.255',
-	assert_host_address => [
-	    '235.236.237.4' => '235.236.237.4',
-	    '235.236.237.5' => DIE(),
-	],
+        address_to_host_num => [
+            '235.236.237.4' => 4,
+        ],
+        get_net_mask => '255.255.255.255',
+        assert_host_address => [
+            '235.236.237.4' => '235.236.237.4',
+            '235.236.237.5' => DIE(),
+        ],
     ],
 ];

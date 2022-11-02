@@ -5,11 +5,11 @@ req()->initialize_fully
     ->set_realm_and_user(undef, 'btest_read');
 [
     load_all_qualified_realms => [
-	[] => [map(+{'RealmOwner.name' => $_}, qw(
+        [] => [map(+{'RealmOwner.name' => $_}, qw(
             fourem
             fourem-sub1
             fourem-sub1-1
             fourem-sub2
-	))],
+        ))],
     ],
 ];

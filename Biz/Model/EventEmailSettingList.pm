@@ -8,11 +8,11 @@ use Bivio::Base 'Model.RealmSettingList';
 sub event_email_for_auth_realm {
     my($self, $module, $event) = @_;
     return $self->get_setting(
-	'EventEmail',
-	$event ? "$module/$event" : $module,
-	'email',
-	'Email',
-	sub {$self->new_other('EmailAlias')->format_realm_as_incoming},
+        'EventEmail',
+        $event ? "$module/$event" : $module,
+        'email',
+        'Email',
+        sub {$self->new_other('EmailAlias')->format_realm_as_incoming},
     );
 }
 

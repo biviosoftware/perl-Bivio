@@ -3,8 +3,8 @@
 WikiText({
     die_on_validate_error => 0,
     view_pre_compile => sub {
-	shift->put(wiki_widget_test => 't1');
-	return;
+        shift->put(wiki_widget_test => 't1');
+        return;
     },
 });
 [

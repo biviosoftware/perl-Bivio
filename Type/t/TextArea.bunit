@@ -4,20 +4,20 @@ Type();
 req();
 [
     from_literal => [
-	'' => UNDEF(),
-	"\n" => UNDEF(),
-	"  \n" => UNDEF(),
-	'x' => "x\n",
-	"x\n" x (32 * 1024 - 1) => "x\n" x (32 * 1024 - 1),
-	"x\n" x (32 * 1024) => [undef, 'TOO_LONG'],
-	"abc d e f \223ghi\224\r\n123456789 1212\r" => qq{abc d e f "ghi"\n123456789 1212\n},
-	inline_case(
-	    sub {
-		req()->set_user('demo');
-		model('RowTag')->row_tag_replace_for_auth_user(TEXTAREA_WRAP_LINES => 1);
-		return;
-	    },
-	),
-	["abc d e f \223ghi\224\r\n123456789 1212\r", 5] => qq{abc d\ne f\n"ghi"\n123456789\n1212\n},
+        '' => UNDEF(),
+        "\n" => UNDEF(),
+        "  \n" => UNDEF(),
+        'x' => "x\n",
+        "x\n" x (32 * 1024 - 1) => "x\n" x (32 * 1024 - 1),
+        "x\n" x (32 * 1024) => [undef, 'TOO_LONG'],
+        "abc d e f \223ghi\224\r\n123456789 1212\r" => qq{abc d e f "ghi"\n123456789 1212\n},
+        inline_case(
+            sub {
+                req()->set_user('demo');
+                model('RowTag')->row_tag_replace_for_auth_user(TEXTAREA_WRAP_LINES => 1);
+                return;
+            },
+        ),
+        ["abc d e f \223ghi\224\r\n123456789 1212\r", 5] => qq{abc d\ne f\n"ghi"\n123456789\n1212\n},
     ],
 ];

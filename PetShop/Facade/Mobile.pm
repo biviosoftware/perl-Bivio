@@ -12,7 +12,7 @@ __PACKAGE__->new({
     mail_host => 'm-petshop.bivio.biz',
     uri => 'm-petshop',
     Text => [
-    	[home_page_uri => '/bp'],
+            [home_page_uri => '/bp'],
     ],
 });
 

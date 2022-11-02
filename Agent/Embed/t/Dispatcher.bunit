@@ -4,13 +4,13 @@ Request();
 [
     class() => [
         {
-	    method => 'call_task',
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [$actual->[0]->get_output];
-	    },
-	} => [
-	    [req(), '/pub/login'] => qr{Please sign into the bOP Pet Shop Demo},
-	],
+            method => 'call_task',
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return [$actual->[0]->get_output];
+            },
+        } => [
+            [req(), '/pub/login'] => qr{Please sign into the bOP Pet Shop Demo},
+        ],
     ],
 ];

@@ -46,9 +46,9 @@ sub get_delegate_info {
     return [
     @{$proto->SUPER::get_delegate_info},
     TOTAL_EXCEEDS_PRECISION => [
-	501,
-	undef,
-	'The cart total exceeds the allowed precision.',
+        501,
+        undef,
+        'The cart total exceeds the allowed precision.',
     ],
 ];
 }

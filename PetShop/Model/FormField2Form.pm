@@ -10,11 +10,11 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
-	    'Email.want_bulletin',
-	    'Email.realm_id',
-	    'Email_99.want_bulletin',
-	    'Email_99.realm_id',
-	],
+            'Email.want_bulletin',
+            'Email.realm_id',
+            'Email_99.want_bulletin',
+            'Email_99.realm_id',
+        ],
     });
 }
 

@@ -2,21 +2,21 @@
 # $Id$
 Widget({
     setup_render => sub {
-	shift->put(xhtml => shift->get('object')->unsafe_get('xhtml'));
-	return;
+        shift->put(xhtml => shift->get('object')->unsafe_get('xhtml'));
+        return;
     },
     parse_return => sub {
-	my($case, $actual, $expect) = @_;
-	my($ctre) = Type_CacheTag()->REGEX;
-	if (ref($expect) eq 'ARRAY' && $expect->[0] !~ />/) {
-	    $expect->[0] = qr{@{[$expect->[0]]} src="/i/dot\.$ctre\.gif" width="1" height="1" />};
-	}
-	return $actual;
+        my($case, $actual, $expect) = @_;
+        my($ctre) = Type_CacheTag()->REGEX;
+        if (ref($expect) eq 'ARRAY' && $expect->[0] !~ />/) {
+            $expect->[0] = qr{@{[$expect->[0]]} src="/i/dot\.$ctre\.gif" width="1" height="1" />};
+        }
+        return $actual;
     },
 });
 config({
     'Bivio::Type::CacheTagFilePath' => {
-	use_cached_path => 1,
+        use_cached_path => 1,
     },
 });
 my($ctre) = Type_CacheTag()->REGEX;
@@ -24,35 +24,35 @@ my($ctre) = Type_CacheTag()->REGEX;
     dot => '<img alt="dot" border="0"',
     ['dot', 'not found'] => '<img alt="none" border="0"',
     [bivio_power => {class => 'bp'}] =>
-	qr{<img class="bp" alt="Powered by bivio Software, Inc\." src="/i/bivio_power\.$ctre\.gif" width="118" height="22" />},
+        qr{<img class="bp" alt="Powered by bivio Software, Inc\." src="/i/bivio_power\.$ctre\.gif" width="118" height="22" />},
     ['dot', ''] => '<img alt="none" border="0"',
     ['dot', {
-    	align => 'n',
-    	alt_text => vs_new('Join', ['image_bunit']),
-    	attributes => ' x=y',
+            align => 'n',
+            alt_text => vs_new('Join', ['image_bunit']),
+            attributes => ' x=y',
     }] => '<img alt="Image.bunit" class="b_align_n" x=y border="0"',
     ['dot', {
-    	xhtml => 1,
+            xhtml => 1,
     }] => '<img class="dot" alt="dot"',
     ['dot', {
-    	width => 0,
-    	height => 1,
+            width => 0,
+            height => 1,
     }] => qr{<img alt="dot" border="0" height="1" src="/i/dot\.$ctre\.gif" />},
     ['dot', {
-    	width => 1,
-    	height => 0,
+            width => 1,
+            height => 0,
     }] => qr{<img alt="dot" border="0" width="1" src="/i/dot\.$ctre\.gif" />},
     ['dot', {
-    	width => 2,
-    	height => 3,
+            width => 2,
+            height => 3,
     }] => qr{<img alt="dot" border="0" height="3" width="2" src="/i/dot\.$ctre\.gif" />},
     # these don't get cache tags since they don't exist
     ['/i/foo.gif', {
-    	width => 2,
-    	height => 3,
+            width => 2,
+            height => 3,
     }] => '<img alt="none" border="0" height="3" width="2" src="/i/foo.gif" />',
     ['/dot.png', {
-    	xhtml => 1,
+            xhtml => 1,
     }] => '<img class="dot" alt="dot" src="/dot.png" />',
 ];
 

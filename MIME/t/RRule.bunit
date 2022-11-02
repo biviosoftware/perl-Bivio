@@ -13,128 +13,128 @@ my($dt) = sub {
 
 [
     class() => [
-	month_parts => [
-	    [$d->('03/02/2011')] => [[
-		undef,
-		[qw(tu 1tu -5tu)],
-		[qw(we 1we -5we)],
-		[qw(th 1th -5th)],
-		[qw(fr 1fr -4fr)],
-		[qw(sa 1sa -4sa)],
-		[qw(su 1su -4su)],
-		[qw(mo 1mo -4mo)],
+        month_parts => [
+            [$d->('03/02/2011')] => [[
+                undef,
+                [qw(tu 1tu -5tu)],
+                [qw(we 1we -5we)],
+                [qw(th 1th -5th)],
+                [qw(fr 1fr -4fr)],
+                [qw(sa 1sa -4sa)],
+                [qw(su 1su -4su)],
+                [qw(mo 1mo -4mo)],
 
-		[qw(tu 2tu -4tu)],
-		[qw(we 2we -4we)],
-		[qw(th 2th -4th)],
-		[qw(fr 2fr -3fr)],
-		[qw(sa 2sa -3sa)],
-		[qw(su 2su -3su)],
-		[qw(mo 2mo -3mo)],
+                [qw(tu 2tu -4tu)],
+                [qw(we 2we -4we)],
+                [qw(th 2th -4th)],
+                [qw(fr 2fr -3fr)],
+                [qw(sa 2sa -3sa)],
+                [qw(su 2su -3su)],
+                [qw(mo 2mo -3mo)],
 
-		[qw(tu 3tu -3tu)],
-		[qw(we 3we -3we)],
-		[qw(th 3th -3th)],
-		[qw(fr 3fr -2fr)],
-		[qw(sa 3sa -2sa)],
-		[qw(su 3su -2su)],
-		[qw(mo 3mo -2mo)],
+                [qw(tu 3tu -3tu)],
+                [qw(we 3we -3we)],
+                [qw(th 3th -3th)],
+                [qw(fr 3fr -2fr)],
+                [qw(sa 3sa -2sa)],
+                [qw(su 3su -2su)],
+                [qw(mo 3mo -2mo)],
 
-		[qw(tu 4tu -2tu)],
-		[qw(we 4we -2we)],
-		[qw(th 4th -2th)],
-		[qw(fr 4fr -1fr)],
-		[qw(sa 4sa -1sa)],
-		[qw(su 4su -1su)],
-		[qw(mo 4mo -1mo)],
+                [qw(tu 4tu -2tu)],
+                [qw(we 4we -2we)],
+                [qw(th 4th -2th)],
+                [qw(fr 4fr -1fr)],
+                [qw(sa 4sa -1sa)],
+                [qw(su 4su -1su)],
+                [qw(mo 4mo -1mo)],
 
-		[qw(tu 5tu -1tu)],
-		[qw(we 5we -1we)],
-		[qw(th 5th -1th)],
-	    ]],
-	],
-	process_rrule => [
-	    [{
-		rrule => 'FREQ=WEEKLY;BYDAY=MO;UNTIL=20101228T020000Z',
-		dtstart => $dt->('11/09/2010 02:00:00 GMT'),
-		dtend => $dt->('11/09/2010 06:00:00 GMT'),
-		time_zone => $_TZ->from_any('America/Denver'),
-		exdate => [
-		    $dt->('11/16/2010 02:00:00 GMT'),
-		    $dt->('12/07/2010 02:00:00 GMT'),
-		],
-	    }, $d->('1/17/2011')] => [[
-		{
-		    dtstart => $dt->('11/09/2010 02:00:00 GMT'),
-		    dtend => $dt->('11/09/2010 06:00:00 GMT'),
-		},
-		{
-		    dtstart => $dt->('11/23/2010 02:00:00 GMT'),
-		    dtend => $dt->('11/23/2010 06:00:00 GMT'),
-		},
-		{
-		    dtstart => $dt->('11/30/2010 02:00:00 GMT'),
-		    dtend => $dt->('11/30/2010 06:00:00 GMT'),
-		},
-		{
-		    dtstart => $dt->('12/14/2010 02:00:00 GMT'),
-		    dtend => $dt->('12/14/2010 06:00:00 GMT'),
-		},
-		{
-		    dtstart => $dt->('12/21/2010 02:00:00 GMT'),
-		    dtend => $dt->('12/21/2010 06:00:00 GMT'),
-		},
-		{
-		    dtstart => $dt->('12/28/2010 02:00:00 GMT'),
-		    dtend => $dt->('12/28/2010 06:00:00 GMT'),
-		},
-	    ]],
-	    [{
-	    	rrule => 'FREQ=MONTHLY;BYDAY=2FR,-1FR',
-	    	dtstart=> $dt->('02/12/2011 03:00:00 GMT'),
-	    	dtend=> $dt->('02/12/2011 06:00:00 GMT'),
-	    	time_zone => $_TZ->from_any('America/Denver'),
-	    }, $d->('2/28/2011')] => [[
-	    	{
-	    	    dtstart => $dt->('02/12/2011 03:00:00 GMT'),
-	    	    dtend => $dt->('02/12/2011 06:00:00 GMT'),
-	    	},
-	    	{
-	    	    dtstart => $dt->('02/26/2011 03:00:00 GMT'),
-	    	    dtend => $dt->('02/26/2011 06:00:00 GMT'),
-	    	},
-	    ]],
-	    [{
-		rrule => 'FREQ=WEEKLY;BYDAY=MO;COUNT=2',
-		dtstart => $dt->('11/09/2010 02:00:00 GMT'),
-		dtend => $dt->('11/09/2010 06:00:00 GMT'),
-		time_zone => $_TZ->from_any('America/Denver'),
-	    }, $d->('1/17/2011')] => [[
-		{
-		    dtstart => $dt->('11/09/2010 02:00:00 GMT'),
-		    dtend => $dt->('11/09/2010 06:00:00 GMT'),
-		},
-		{
-		    dtstart => $dt->('11/16/2010 02:00:00 GMT'),
-		    dtend => $dt->('11/16/2010 06:00:00 GMT'),
-		},
-	    ]],
-	    [{
-		rrule => 'FREQ=MONTHLY;BYDAY=1TH;WKST=SU;COUNT=2',
-		dtstart => $dt->('11/05/2010 02:00:00 GMT'),
-		dtend => $dt->('11/05/2010 05:00:00 GMT'),
-		time_zone => $_TZ->from_any('America/Denver'),
-	    }, $d->('1/17/2011')] => [[
-		{
-		    dtstart => $dt->('11/05/2010 02:00:00 GMT'),
-		    dtend => $dt->('11/05/2010 05:00:00 GMT'),
-		},
-		{
-		    dtstart => $dt->('12/03/2010 03:00:00 GMT'),
-		    dtend => $dt->('12/03/2010 06:00:00 GMT'),
-		},
-		
-	    ]],
-	],
+                [qw(tu 5tu -1tu)],
+                [qw(we 5we -1we)],
+                [qw(th 5th -1th)],
+            ]],
+        ],
+        process_rrule => [
+            [{
+                rrule => 'FREQ=WEEKLY;BYDAY=MO;UNTIL=20101228T020000Z',
+                dtstart => $dt->('11/09/2010 02:00:00 GMT'),
+                dtend => $dt->('11/09/2010 06:00:00 GMT'),
+                time_zone => $_TZ->from_any('America/Denver'),
+                exdate => [
+                    $dt->('11/16/2010 02:00:00 GMT'),
+                    $dt->('12/07/2010 02:00:00 GMT'),
+                ],
+            }, $d->('1/17/2011')] => [[
+                {
+                    dtstart => $dt->('11/09/2010 02:00:00 GMT'),
+                    dtend => $dt->('11/09/2010 06:00:00 GMT'),
+                },
+                {
+                    dtstart => $dt->('11/23/2010 02:00:00 GMT'),
+                    dtend => $dt->('11/23/2010 06:00:00 GMT'),
+                },
+                {
+                    dtstart => $dt->('11/30/2010 02:00:00 GMT'),
+                    dtend => $dt->('11/30/2010 06:00:00 GMT'),
+                },
+                {
+                    dtstart => $dt->('12/14/2010 02:00:00 GMT'),
+                    dtend => $dt->('12/14/2010 06:00:00 GMT'),
+                },
+                {
+                    dtstart => $dt->('12/21/2010 02:00:00 GMT'),
+                    dtend => $dt->('12/21/2010 06:00:00 GMT'),
+                },
+                {
+                    dtstart => $dt->('12/28/2010 02:00:00 GMT'),
+                    dtend => $dt->('12/28/2010 06:00:00 GMT'),
+                },
+            ]],
+            [{
+                    rrule => 'FREQ=MONTHLY;BYDAY=2FR,-1FR',
+                    dtstart=> $dt->('02/12/2011 03:00:00 GMT'),
+                    dtend=> $dt->('02/12/2011 06:00:00 GMT'),
+                    time_zone => $_TZ->from_any('America/Denver'),
+            }, $d->('2/28/2011')] => [[
+                    {
+                        dtstart => $dt->('02/12/2011 03:00:00 GMT'),
+                        dtend => $dt->('02/12/2011 06:00:00 GMT'),
+                    },
+                    {
+                        dtstart => $dt->('02/26/2011 03:00:00 GMT'),
+                        dtend => $dt->('02/26/2011 06:00:00 GMT'),
+                    },
+            ]],
+            [{
+                rrule => 'FREQ=WEEKLY;BYDAY=MO;COUNT=2',
+                dtstart => $dt->('11/09/2010 02:00:00 GMT'),
+                dtend => $dt->('11/09/2010 06:00:00 GMT'),
+                time_zone => $_TZ->from_any('America/Denver'),
+            }, $d->('1/17/2011')] => [[
+                {
+                    dtstart => $dt->('11/09/2010 02:00:00 GMT'),
+                    dtend => $dt->('11/09/2010 06:00:00 GMT'),
+                },
+                {
+                    dtstart => $dt->('11/16/2010 02:00:00 GMT'),
+                    dtend => $dt->('11/16/2010 06:00:00 GMT'),
+                },
+            ]],
+            [{
+                rrule => 'FREQ=MONTHLY;BYDAY=1TH;WKST=SU;COUNT=2',
+                dtstart => $dt->('11/05/2010 02:00:00 GMT'),
+                dtend => $dt->('11/05/2010 05:00:00 GMT'),
+                time_zone => $_TZ->from_any('America/Denver'),
+            }, $d->('1/17/2011')] => [[
+                {
+                    dtstart => $dt->('11/05/2010 02:00:00 GMT'),
+                    dtend => $dt->('11/05/2010 05:00:00 GMT'),
+                },
+                {
+                    dtstart => $dt->('12/03/2010 03:00:00 GMT'),
+                    dtend => $dt->('12/03/2010 06:00:00 GMT'),
+                },
+                
+            ]],
+        ],
     ],
 ];

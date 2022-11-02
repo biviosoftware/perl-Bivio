@@ -50,7 +50,7 @@ Request();
             ['DDCDAC956F234937'] => '0',
             ['B203E28FA525BE47'] => '8',
         ],
-	from_six_word_format => [
+        from_six_word_format => [
             ['INCH SEA ANNE LONG AHEM TOUR'] => '9E876134D90499DD',
             ['EASE OIL FUM CURE AWRY AVIS']  => '7965E05436F5029F',
             ['BAIL TUFT BITS GANG CHEF THY'] => '50FE1962C4965880',
@@ -60,7 +60,7 @@ Request();
             ['ULAN NEW ARMY FUSE SUIT EYED'] => 'F205753943DE4CF9',
             ['SKIM CULT LOB SLAM POE HOWL']  => 'DDCDAC956F234937',
             ['LONG IVY JULY AJAR BOND LEE']  => 'B203E28FA525BE47',
-	],
+        ],
         to_six_word_format => [
             ['9E876134D90499DD'] => 'INCH SEA ANNE LONG AHEM TOUR',
             ['7965E05436F5029F'] => 'EASE OIL FUM CURE AWRY AVIS',
@@ -74,10 +74,10 @@ Request();
             ['0F31CF4D32A97E42'] => 'DOG GONE ROWS CHAT HIGH JOY',
             ['414C61F2C59ECB58'] => 'TOG CANE FACE GIFT TIRE LEEK',
         ],
-	verify => [
-	    ['414C61F2C59ECB58', '0F31CF4D32A97E42'] => 1,
-	    # pack 'A' doesn't work, use pack 'a'
-	    ['B30CE8F53C73500C', '6AF16DA17D8813A5'] => 1,
-	],
+        verify => [
+            ['414C61F2C59ECB58', '0F31CF4D32A97E42'] => 1,
+            # pack 'A' doesn't work, use pack 'a'
+            ['B30CE8F53C73500C', '6AF16DA17D8813A5'] => 1,
+        ],
     ],
 ];

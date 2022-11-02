@@ -3,24 +3,24 @@
 Unit();
 [
     [any_param => 33] => [
-	extract_cookies => [
-	    sub {
-		return [
-		    Ext_LWPUserAgent()->new
-		    ->request(HTTP::Request->new(GET => 'https://www.bivio.biz')),
-		];
-	    } => not_die(),
-	],
-	as_string => qr{Set-Cookie},
-	clone => sub {
-	    my($case, $actual) = @_;
-	    my($clone) = $actual->[0];
-	    my($object) = $case->get('object');
-	    assert_equals($object->as_string, $clone);
-	    assert_equals(ref($object), ref($clone));
-	    assert_not_equals("$object", "$clone");
-	    assert_equals(33, $clone->{any_param});
-	    return 1;
-	},
+        extract_cookies => [
+            sub {
+                return [
+                    Ext_LWPUserAgent()->new
+                    ->request(HTTP::Request->new(GET => 'https://www.bivio.biz')),
+                ];
+            } => not_die(),
+        ],
+        as_string => qr{Set-Cookie},
+        clone => sub {
+            my($case, $actual) = @_;
+            my($clone) = $actual->[0];
+            my($object) = $case->get('object');
+            assert_equals($object->as_string, $clone);
+            assert_equals(ref($object), ref($clone));
+            assert_not_equals("$object", "$clone");
+            assert_equals(33, $clone->{any_param});
+            return 1;
+        },
     ],
 ];

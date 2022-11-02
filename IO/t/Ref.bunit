@@ -5,13 +5,13 @@ Type();
 my($object, $orig);
 [
     to_string => [
-	[['a']] => [\<<'EOF'],
+        [['a']] => [\<<'EOF'],
 [
   'a'
 ]
 EOF
-	    # Assumes the Data::Dumper algorithm
-	[{a0 => '0', b => ['b', 'c']}] => [\<<'EOF'],
+            # Assumes the Data::Dumper algorithm
+        [{a0 => '0', b => ['b', 'c']}] => [\<<'EOF'],
 {
   'a0' => '0',
   'b' => [
@@ -22,31 +22,31 @@ EOF
 EOF
     ],
     nested_differences => [
-	[undef, undef] => [undef],
-	[undef, 'b'] => [\("<undef> != b")],
-	['a', undef] => [\("a != <undef>")],
-	[['a'], {a => '0'}] => [\("[a] != {a=>0}")],
-	['a', 'b'] => [\("a != b")],
-	[['a', 'b'], ['a']] =>
-	    [\("2 != 1 at ->scalar()\nb != <undef> at ->[1]")],
-	[['a', ['b']], ['a', 'c']] => [\("[b] != c at ->[1]")],
-	[['a', 'b'], ['c', 'd']] => [\(
-	    "a != c at ->[0]\nb != d at ->[1]"
-	)],
-	[\('a'), \('b')] => [\("a != b at ->")],
-	[{'a' => 1}, {'b' => 1}] => [\("a != b at ->keys()->[0]\n1 != <key 'a' not found> at ->{'a'}")],
-	[{'a' => 1}, {'a' => 2}] => [\("1 != 2 at ->{'a'}")],
-	[{'a' => 1, 'b' => 2}, {'a' => 2, 'b' => 3}] => [\(
-	    "1 != 2 at ->{'a'}\n2 != 3 at ->{'b'}"
-	)],
-	[qr/\d/, 1] => [undef],
-	[qr/abc/, qr/abc/] => [undef],
-	[qr/abc/, {abc => 1}] => [undef],
-	[{abc => qr/^def$/}, {abc => 'def'}] => [undef],
-	[qr/^\[1\]$/, [1]] => [undef],
-	[qr/abc/, qr/abd/] => qr{\(\?[^:]+:abc\) != \(\?[^:]+:abd\)},
-	Bivio::IO::ClassLoader->unsafe_simple_require('Algorithm::Diff')
-	        ? ([<<'LEFT', <<'RIGHT'] => [\<<'EOF']) : (),
+        [undef, undef] => [undef],
+        [undef, 'b'] => [\("<undef> != b")],
+        ['a', undef] => [\("a != <undef>")],
+        [['a'], {a => '0'}] => [\("[a] != {a=>0}")],
+        ['a', 'b'] => [\("a != b")],
+        [['a', 'b'], ['a']] =>
+            [\("2 != 1 at ->scalar()\nb != <undef> at ->[1]")],
+        [['a', ['b']], ['a', 'c']] => [\("[b] != c at ->[1]")],
+        [['a', 'b'], ['c', 'd']] => [\(
+            "a != c at ->[0]\nb != d at ->[1]"
+        )],
+        [\('a'), \('b')] => [\("a != b at ->")],
+        [{'a' => 1}, {'b' => 1}] => [\("a != b at ->keys()->[0]\n1 != <key 'a' not found> at ->{'a'}")],
+        [{'a' => 1}, {'a' => 2}] => [\("1 != 2 at ->{'a'}")],
+        [{'a' => 1, 'b' => 2}, {'a' => 2, 'b' => 3}] => [\(
+            "1 != 2 at ->{'a'}\n2 != 3 at ->{'b'}"
+        )],
+        [qr/\d/, 1] => [undef],
+        [qr/abc/, qr/abc/] => [undef],
+        [qr/abc/, {abc => 1}] => [undef],
+        [{abc => qr/^def$/}, {abc => 'def'}] => [undef],
+        [qr/^\[1\]$/, [1]] => [undef],
+        [qr/abc/, qr/abd/] => qr{\(\?[^:]+:abc\) != \(\?[^:]+:abd\)},
+        Bivio::IO::ClassLoader->unsafe_simple_require('Algorithm::Diff')
+                ? ([<<'LEFT', <<'RIGHT'] => [\<<'EOF']) : (),
 Line 1 agrees
 Second Line is off
 Line 3 same
@@ -73,77 +73,77 @@ RIGHT
 EOF
     ],
     nested_contains => [
-	[{a => sub {2}}, {a => 2, b => 1}] => [undef],
-	[{a => sub {shift}}, {a => 3, b => 1}] => [undef],
-	[{a => qr{\d}}, {a => 1, b => 2}] => [undef],
-	[{a => qr{a}}, {a => 1, b => 2}] => qr{\(\?[^:]+:a\) != 1 at ->{'a'}},
-	['a', \('a')] => [undef],
-	[{a => sub {'1'}}, {a => 2, b => 2}] => q{1 != 2 at ->{'a'}->()},
+        [{a => sub {2}}, {a => 2, b => 1}] => [undef],
+        [{a => sub {shift}}, {a => 3, b => 1}] => [undef],
+        [{a => qr{\d}}, {a => 1, b => 2}] => [undef],
+        [{a => qr{a}}, {a => 1, b => 2}] => qr{\(\?[^:]+:a\) != 1 at ->{'a'}},
+        ['a', \('a')] => [undef],
+        [{a => sub {'1'}}, {a => 2, b => 2}] => q{1 != 2 at ->{'a'}->()},
     ],
     {
-	method => 'nested_copy',
-	check_return => sub {
-	    my(undef, $actual, $expect) = @_;
-	    die('ref test failed')
-		if ref($actual->[0]) &&
-		($actual->[0] == $expect->[0] xor ref($actual->[0]) =~ /Gender|GLOB/);
-	    return $expect;
-	},
+        method => 'nested_copy',
+        check_return => sub {
+            my(undef, $actual, $expect) = @_;
+            die('ref test failed')
+                if ref($actual->[0]) &&
+                ($actual->[0] == $expect->[0] xor ref($actual->[0]) =~ /Gender|GLOB/);
+            return $expect;
+        },
     } => [
-	a => 'a',
-	[\('a')] => [\('a')],
-	[\*DATA] => [\*DATA],
-	[['a']] => [['a']],
-	[{'a' => ['b']}] => [{'a' => ['b']}],
-	[class('Type.Gender')->MALE] => [class('Type.Gender')->MALE],
+        a => 'a',
+        [\('a')] => [\('a')],
+        [\*DATA] => [\*DATA],
+        [['a']] => [['a']],
+        [{'a' => ['b']}] => [{'a' => ['b']}],
+        [class('Type.Gender')->MALE] => [class('Type.Gender')->MALE],
         sub {
-	    return [$object = class('Type.StringArray')->new([qw(a b c)])];
-	} => sub {
-	    my(undef, $actual) = @_;
-	    my($clone) = $actual->[0];
-	    assert_equals($object, $clone);
-	    assert_not_equals("$object", "$clone");
-	    return 1;
-	},
-	sub {[var(code => sub {})]} => sub {[var('code')]},
-	[qr{a}] => [qr{a}],
-	sub {
-	    my($parent) = Collection_Attributes()->new({
-		array => my $array = [],
-		hash => my $hash = {},
-	    });
-	    push(@$array, $array, $hash, $parent);
-	    $hash->{parent} = $parent;
-	    $hash->{hash} = $hash;
-	    $hash->{array} = $array;
-	    $parent->put(child => Collection_Attributes()->new({
-		parent => $parent,
-	    }));
-	    return [$orig = [$parent, $parent]];
-	} => sub {
-	    my(undef, $actual) = @_;
-	    my($copy) = $actual->[0];
-	    assert_not_equals("$orig", "$copy");
-	    my($o_parent) = $orig->[0];
-	    my($c_parent) = $copy->[0];
-	    my($o_attrs) = $o_parent->get_shallow_copy;
-	    my($c_attrs) = $c_parent->get_shallow_copy;
-	    my($c_array) = $c_attrs->{array};
-	    my($c_hash) = $c_attrs->{hash};
-	    my($c_child) = $c_attrs->{child};
-	    assert_not_equals("$o_parent", "$c_parent");
-	    assert_equals("$c_parent", "$copy->[1]");
-	    assert_not_equals("$o_attrs->{array}", "$c_array");
-	    assert_equals("$c_array", "$c_array->[0]");
-	    assert_equals("$c_hash", "$c_array->[1]");
-	    assert_equals("$c_parent", "$c_array->[2]");
-	    assert_not_equals("$o_attrs->{hash}", "$c_hash");
-	    assert_equals("$c_array", "$c_hash->{array}");
-	    assert_equals("$c_hash", "$c_hash->{hash}");
-	    assert_equals("$c_parent", "$c_hash->{parent}");
-	    assert_not_equals("$o_attrs->{child}", "$c_child");
-	    assert_equals("$c_parent", $c_child->get('parent') . '');
-	    return 1;
-	},
+            return [$object = class('Type.StringArray')->new([qw(a b c)])];
+        } => sub {
+            my(undef, $actual) = @_;
+            my($clone) = $actual->[0];
+            assert_equals($object, $clone);
+            assert_not_equals("$object", "$clone");
+            return 1;
+        },
+        sub {[var(code => sub {})]} => sub {[var('code')]},
+        [qr{a}] => [qr{a}],
+        sub {
+            my($parent) = Collection_Attributes()->new({
+                array => my $array = [],
+                hash => my $hash = {},
+            });
+            push(@$array, $array, $hash, $parent);
+            $hash->{parent} = $parent;
+            $hash->{hash} = $hash;
+            $hash->{array} = $array;
+            $parent->put(child => Collection_Attributes()->new({
+                parent => $parent,
+            }));
+            return [$orig = [$parent, $parent]];
+        } => sub {
+            my(undef, $actual) = @_;
+            my($copy) = $actual->[0];
+            assert_not_equals("$orig", "$copy");
+            my($o_parent) = $orig->[0];
+            my($c_parent) = $copy->[0];
+            my($o_attrs) = $o_parent->get_shallow_copy;
+            my($c_attrs) = $c_parent->get_shallow_copy;
+            my($c_array) = $c_attrs->{array};
+            my($c_hash) = $c_attrs->{hash};
+            my($c_child) = $c_attrs->{child};
+            assert_not_equals("$o_parent", "$c_parent");
+            assert_equals("$c_parent", "$copy->[1]");
+            assert_not_equals("$o_attrs->{array}", "$c_array");
+            assert_equals("$c_array", "$c_array->[0]");
+            assert_equals("$c_hash", "$c_array->[1]");
+            assert_equals("$c_parent", "$c_array->[2]");
+            assert_not_equals("$o_attrs->{hash}", "$c_hash");
+            assert_equals("$c_array", "$c_hash->{array}");
+            assert_equals("$c_hash", "$c_hash->{hash}");
+            assert_equals("$c_parent", "$c_hash->{parent}");
+            assert_not_equals("$o_attrs->{child}", "$c_child");
+            assert_equals("$c_parent", $c_child->get('parent') . '');
+            return 1;
+        },
     ],
 ];

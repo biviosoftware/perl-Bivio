@@ -155,22 +155,22 @@ use Bivio::Base 'SQL.Support';
 # L<Bivio::Biz::Model::ClubUserList|Bivio::Biz::Model::ClubUserList>:
 #
 #     Bivio::SQL::ListSupport->new({
-# 	version => 1,
-# 	order_by => [qw(
+#         version => 1,
+#         order_by => [qw(
 #             RealmOwner.name
 #             ClubUser.mail_mode
 #             RealmUser.role
-# 	)],
-# 	other => [qw(
-# 	    User.last_name
-# 	    User.middle_name
-# 	    User.first_name
-# 	)],
-# 	primary_key => [
-# 	    [qw(User.user_id ClubUser.user_id RealmOwner.realm_id
+#         )],
+#         other => [qw(
+#             User.last_name
+#             User.middle_name
+#             User.first_name
+#         )],
+#         primary_key => [
+#             [qw(User.user_id ClubUser.user_id RealmOwner.realm_id
 #                 RealmUser.user_id)],
-# 	],
-# 	auth_id => [qw(ClubUser.club_id RealmUser.realm_id)],
+#         ],
+#         auth_id => [qw(ClubUser.club_id RealmUser.realm_id)],
 #     });
 #
 # This declaration will produce the following properties:
@@ -212,7 +212,7 @@ sub get_statement {
 sub iterate_next {
     my($self) = shift;
     return 0
-	unless $self->SUPER::iterate_next(@_);
+        unless $self->SUPER::iterate_next(@_);
     my($model, $iterator, $row, $converter) = @_;
     _add_constant_values($self, $model->get_query, $row, $converter);
     return 1;
@@ -242,8 +242,8 @@ sub load {
 
     # Detail or list?
     return $query->get('this') || $query->unsafe_get('want_first_only')
-	    ? _load_this($self, $query, _execute_select(@_), $die)
-	    : _load_list(@_);
+            ? _load_this($self, $query, _execute_select(@_), $die)
+            : _load_list(@_);
 }
 
 sub new {
@@ -261,46 +261,46 @@ sub new {
     # The types of the columns will be extracted from the property
     # models corresponding to the table names.
     my($attrs) = {
-	statement => $stmt,
-	# All columns by qualified name
-	columns => {},
-	# All models by qualified name
-	models => {},
-	# All fields and field identities by qualified name
-	column_aliases => {},
-	# The columns returned by select in order (not including auth_id)
-	select_columns => [],
-	# Columns which have no corresponding property model field
-	local_columns => [],
-	# See discussion of =item orabug_fetch_all_select
-	orabug_fetch_all_select => $decl->{orabug_fetch_all_select},
-	# Default is false
-	map({
-	    $_ => $decl->{$_} ? 1 : 0;
-	} qw(can_iterate want_date)),
-	# Default is true
-	want_select => !defined($decl->{want_select}) || $decl->{want_select}
-	         ? 1 : 0,
-	other_query_keys => !defined($decl->{other_query_keys})
-	    || ref($decl->{other_query_keys}) eq 'ARRAY'
-	    ? $decl->{other_query_keys}
-	    : b_die(
-		$decl->{other_query_keys}, ': invalid other_query_keys'),
-	want_page_count => $decl->{want_page_count},
+        statement => $stmt,
+        # All columns by qualified name
+        columns => {},
+        # All models by qualified name
+        models => {},
+        # All fields and field identities by qualified name
+        column_aliases => {},
+        # The columns returned by select in order (not including auth_id)
+        select_columns => [],
+        # Columns which have no corresponding property model field
+        local_columns => [],
+        # See discussion of =item orabug_fetch_all_select
+        orabug_fetch_all_select => $decl->{orabug_fetch_all_select},
+        # Default is false
+        map({
+            $_ => $decl->{$_} ? 1 : 0;
+        } qw(can_iterate want_date)),
+        # Default is true
+        want_select => !defined($decl->{want_select}) || $decl->{want_select}
+                 ? 1 : 0,
+        other_query_keys => !defined($decl->{other_query_keys})
+            || ref($decl->{other_query_keys}) eq 'ARRAY'
+            ? $decl->{other_query_keys}
+            : b_die(
+                $decl->{other_query_keys}, ': invalid other_query_keys'),
+        want_page_count => $decl->{want_page_count},
     };
     $proto->init_common_attrs($attrs, $decl);
 
     # We add this to the declaration in the case that 
     if ($decl->{want_level_in_select}) {
-	$decl->{other} = [] unless ref($decl->{other});
-	push(@{$decl->{other}},
-	    {
-		name => 'level',
-		type => 'Integer',
-		constraint => 'NOT_NULL',
-		in_select => 1,
-	    },
-	);
+        $decl->{other} = [] unless ref($decl->{other});
+        push(@{$decl->{other}},
+            {
+                name => 'level',
+                type => 'Integer',
+                constraint => 'NOT_NULL',
+                in_select => 1,
+            },
+        );
     }
 
     _init_column_lists($attrs, $decl, _init_column_classes($attrs, $decl));
@@ -315,11 +315,11 @@ sub _add_constant_values {
     my($attrs) = $self->internal_get;
     _map_constant_cols(sub {
         my($f) = @_;
-	return
-	    unless my $i = $self->unsafe_get($f);
-	my($v) = $query->unsafe_get($f);
-	$row->{$i->{name}} ||= $converter ? $i->{type}->$converter($v) : $v;
-	return;
+        return
+            unless my $i = $self->unsafe_get($f);
+        my($v) = $query->unsafe_get($f);
+        $row->{$i->{name}} ||= $converter ? $i->{type}->$converter($v) : $v;
+        return;
     });
     return $row;
 }
@@ -328,14 +328,14 @@ sub _count_pages {
     my($self, $query, $from_where, $params) = @_;
     # Sets page_count and adjusts page_number.  Returns page_count.
     my($statement) = $_C->execute(
-	$self->get('select_count') . ' ' . $from_where, $params);
+        $self->get('select_count') . ' ' . $from_where, $params);
     my($row_count) = $_C->perf_time_op(sub {$statement->fetchrow_array});
     my($page_count) = _page_number($query, $row_count);
     my($page_number) = $query->get('page_number');
     _trace('page_count=', $page_count) if $_TRACE;
     if ($page_number > $page_count) {
-	_trace('page_number (',  $page_number, ') > count') if $_TRACE;
-	$query->put(page_number => $page_number = $page_count);
+        _trace('page_number (',  $page_number, ') > count') if $_TRACE;
+        $query->put(page_number => $page_number = $page_count);
     }
     $query->put(page_count => $page_count, row_count => $row_count);
     return $page_count;
@@ -354,56 +354,56 @@ sub _find_list_start {
     my($page_number, $count) = $query->get(qw(page_number count));
     my($can_limit_and_offset) = $db->CAN_LIMIT_AND_OFFSET;
     foreach my $is_second_try (0 .. 1) {
-	# Set prev first, because there is a return in the for loop
-	if ($page_number > $query->FIRST_PAGE) {
-	    $query->put(has_prev => 1, prev_page => $page_number - 1);
-	}
-	else {
-	    $query->put(has_prev => 0, prev_page => undef,
-		# Avoids problems if page_number is negative
-		page_number => ($page_number = $query->FIRST_PAGE));
-	}
-	if ($can_limit_and_offset) {
-	    # We always get one more, so has_next works
-	    $statement = $db->execute(
-		$sql . sprintf(' OFFSET %d LIMIT %d',
-		    ($page_number - 1) * $count, $count + 1),
-		 $params);
-	    return ($row, $statement)
-		if $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
-	    $_C->perf_time_finish($statement);
-	    return (undef, undef)
-		if $is_second_try || $page_number == $query->FIRST_PAGE;
-	    $can_limit_and_offset = 0;
-	}
-	# No LIMIT/OFFSET, so go through rows serially
-	my($start) = ($page_number - $query->FIRST_PAGE()) * $count;
+        # Set prev first, because there is a return in the for loop
+        if ($page_number > $query->FIRST_PAGE) {
+            $query->put(has_prev => 1, prev_page => $page_number - 1);
+        }
+        else {
+            $query->put(has_prev => 0, prev_page => undef,
+                # Avoids problems if page_number is negative
+                page_number => ($page_number = $query->FIRST_PAGE));
+        }
+        if ($can_limit_and_offset) {
+            # We always get one more, so has_next works
+            $statement = $db->execute(
+                $sql . sprintf(' OFFSET %d LIMIT %d',
+                    ($page_number - 1) * $count, $count + 1),
+                 $params);
+            return ($row, $statement)
+                if $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
+            $_C->perf_time_finish($statement);
+            return (undef, undef)
+                if $is_second_try || $page_number == $query->FIRST_PAGE;
+            $can_limit_and_offset = 0;
+        }
+        # No LIMIT/OFFSET, so go through rows serially
+        my($start) = ($page_number - $query->FIRST_PAGE()) * $count;
 #TODO: Is this needed?  $count has to be > 0, no?
-	$start = 0 if $start < 0;
-	$statement = $db->execute($sql, $params);
-	my($num_rows) = 0;
+        $start = 0 if $start < 0;
+        $statement = $db->execute($sql, $params);
+        my($num_rows) = 0;
 
-	0
-	    while $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref})
-	    and ++$num_rows <= $start;
-	return ($row, $statement)
-	    if $row;
-	$_C->perf_time_finish($statement);
-	unless ($num_rows) {
-	    _trace('no rows found') if $_TRACE;
-	    return (undef, undef);
-	}
-	$query->put(page_number =>
-	    $page_number = _page_number($query, $num_rows));
+        0
+            while $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref})
+            and ++$num_rows <= $start;
+        return ($row, $statement)
+            if $row;
+        $_C->perf_time_finish($statement);
+        unless ($num_rows) {
+            _trace('no rows found') if $_TRACE;
+            return (undef, undef);
+        }
+        $query->put(page_number =>
+            $page_number = _page_number($query, $num_rows));
     }
     continue {
-	_trace('last page=', $page_number, ', retrying') if $_TRACE;
+        _trace('last page=', $page_number, ', retrying') if $_TRACE;
     }
     ($die || 'Bivio::Die')->throw_die('DB_ERROR', {
-	message => 'unable to find page in list',
-	page_number => $page_number,
-	where => $sql,
-	params => $params,
+        message => 'unable to find page in list',
+        page_number => $page_number,
+        where => $sql,
+        params => $params,
     });
     # DOES NOT RETURN
 }
@@ -413,45 +413,45 @@ sub _init_column_classes {
     # Initialize the column classes.
     # Returns the beginnings of the where clause
     my($where) = __PACKAGE__->init_column_classes($attrs, $decl,
-	[@$_CONSTANT_COLS,
-	qw(date primary_key order_by group_by other count_distinct)]);
+        [@$_CONSTANT_COLS,
+        qw(date primary_key order_by group_by other count_distinct)]);
 
     if ($decl->{where}) {
-	my(@decl_where) = ();
-	foreach my $e (@{$decl->{where}}) {
-	    if (defined($attrs->{column_aliases}->{$e})) {
-		push(@decl_where, $attrs->{column_aliases}->{$e}->{sql_name});
-	    }
-	    elsif (defined($attrs->{models}->{$e})) {
+        my(@decl_where) = ();
+        foreach my $e (@{$decl->{where}}) {
+            if (defined($attrs->{column_aliases}->{$e})) {
+                push(@decl_where, $attrs->{column_aliases}->{$e}->{sql_name});
+            }
+            elsif (defined($attrs->{models}->{$e})) {
 #TODO: This doesn't work for qualified columns, but it works for
 #      what I need right now.
-		push(@decl_where, $attrs->{models}->{$e}->{sql_name});
-	    }
-	    else {
-		push(@decl_where, $e);
-	    }
-	}
-	$where = join(' AND ', grep($_, $where, join(' ', @decl_where)));
+                push(@decl_where, $attrs->{models}->{$e}->{sql_name});
+            }
+            else {
+                push(@decl_where, $e);
+            }
+        }
+        $where = join(' AND ', grep($_, $where, join(' ', @decl_where)));
     }
     foreach my $c (@$_CONSTANT_COLS, qw(date count_distinct)) {
-	Bivio::Die->die("too many $c fields")
-	    if @{$attrs->{$c}} > 1;
-	$attrs->{$c} = $attrs->{$c}->[0];
+        Bivio::Die->die("too many $c fields")
+            if @{$attrs->{$c}} > 1;
+        $attrs->{$c} = $attrs->{$c}->[0];
     }
     # order_by may be empty and stays in specified order.
     my($i) = 0;
     foreach my $c (@{$attrs->{order_by}}) {
-	$c->{order_by_index} = $i++;
+        $c->{order_by_index} = $i++;
     }
     return undef
-	unless %{$attrs->{models}} && $attrs->{want_select};
+        unless %{$attrs->{models}} && $attrs->{want_select};
 
     # primary_key must be at least one column if there are models.
     Bivio::Die->die('no primary_key fields')
         unless @{$attrs->{primary_key}} || !%{$attrs->{models}};
     # Sort all names in a select alphabetically.
     $attrs->{primary_key} = [sort {$a->{name} cmp $a->{name}}
-	@{$attrs->{primary_key}}];
+        @{$attrs->{primary_key}}];
 
     # other can be empty.  No reformatting necessary
 
@@ -477,11 +477,11 @@ sub _init_column_lists {
     $attrs->{column_names} = [sort(keys(%{$attrs->{columns}}))];
 
     if ($attrs->{parent_id}) {
-	$attrs->{parent_id_type} = $attrs->{parent_id}->{type};
+        $attrs->{parent_id_type} = $attrs->{parent_id}->{type};
     }
     foreach my $c (values(%{$attrs->{columns}})) {
-	Bivio::Die->die($c->{name}, ': cannot have a blob in a ListModel')
-	    if $c->{type} eq 'Bivio::Type::BLOB';
+        Bivio::Die->die($c->{name}, ': cannot have a blob in a ListModel')
+            if $c->{type} eq 'Bivio::Type::BLOB';
     }
 
     # Nothing to select
@@ -490,37 +490,37 @@ sub _init_column_lists {
     # Order select columns alphabetically, ignoring primary_key, primary_id
     # and auth_id and any other columns with in_select turned off.
     my(@sel_cols) =
-	sort {$a->{name} cmp $b->{name}}
-	(grep($_->{in_select}, values(%{$attrs->{columns}})));
+        sort {$a->{name} cmp $b->{name}}
+        (grep($_->{in_select}, values(%{$attrs->{columns}})));
 
     # Go through the list and delete cols we don't return or in the
     # case of the primary key, what we return first.  Yes, this probably
     # could be done in one giant grep, but better to get right than
     # tricky. <g>
     foreach my $col (@{$attrs->{primary_key}}) {
-	@sel_cols = grep($_ ne $col, @sel_cols);
+        @sel_cols = grep($_ ne $col, @sel_cols);
     }
 
     # Put primary key back on front, if it is part of select
     $attrs->{can_load_this} = 1;
     unshift(@sel_cols,
-	grep($_->{in_select} || ($attrs->{can_load_this} = 0),
-	    @{$attrs->{primary_key}}));
+        grep($_->{in_select} || ($attrs->{can_load_this} = 0),
+            @{$attrs->{primary_key}}));
     $attrs->{select_columns} = \@sel_cols;
 
     # Get names and set select_index
     my($i) = 0;
     my(@select_sql_names) = map {
-	$_->{select_index} = $i++;
+        $_->{select_index} = $i++;
         $_->{select_value} || $_->{type}->from_sql_value($_->{sql_name});
     } @{$attrs->{select_columns}};
 
     # Create select from all columns
     $attrs->{decl_from} = $decl->{from};
     $attrs->{sql_from} = ' ' . (
-	$decl->{from}
-	|| 'FROM '. join(',',
-	    sort(map($_->{model_from_sql}, values(%{$attrs->{models}}))))
+        $decl->{from}
+        || 'FROM '. join(',',
+            sort(map($_->{model_from_sql}, values(%{$attrs->{models}}))))
     );
     $where =~ s/^\s*AND\s+//i;
     $attrs->{sql_where} = $where;
@@ -528,10 +528,10 @@ sub _init_column_lists {
     my($select) = ($decl->{want_select_distinct} ? 'DISTINCT ' : '')
         . join(',', @select_sql_names);
     my($select_count) = $decl->{want_select_distinct}
-	? $attrs->{count_distinct}
-	    ? 'DISTINCT ' . $attrs->{count_distinct}->{sql_name}
-	    : $select
-	: '*';
+        ? $attrs->{count_distinct}
+            ? 'DISTINCT ' . $attrs->{count_distinct}->{sql_name}
+            : $select
+        : '*';
     $attrs->{select} = "SELECT $select";
     $attrs->{select_count} = "SELECT COUNT($select_count)";
     return;
@@ -541,39 +541,39 @@ sub _load_list {
     my($self, $query, undef, undef, undef, $die) = @_;
     my($sql, $params, $from_where) = _prepare_statement(@_);
     _count_pages($self, $query, $from_where, $params)
-	if $from_where && $query->unsafe_get('want_page_count');
+        if $from_where && $query->unsafe_get('want_page_count');
     my($attrs) = $self->internal_get;
     my($count) = $query->get('count');
     my($row, $statement)
-	= _find_list_start($self, $query, $sql, $params, $die);
+        = _find_list_start($self, $query, $sql, $params, $die);
     return []
-	unless $row;
+        unless $row;
     my($select_columns) = $attrs->{select_columns};
     my(@rows);
     for (;;) {
-	my($i) = 0;
-	push(@rows, _add_constant_values($self, $query, {
-	    (map {
-		($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
-	    } @$select_columns),
-	}));
-	last
-	    if --$count <= 0;
-	unless ($row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref})) {
-	    $_C->perf_time_finish($statement);
-	    return \@rows;
-	}
+        my($i) = 0;
+        push(@rows, _add_constant_values($self, $query, {
+            (map {
+                ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
+            } @$select_columns),
+        }));
+        last
+            if --$count <= 0;
+        unless ($row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref})) {
+            $_C->perf_time_finish($statement);
+            return \@rows;
+        }
     }
 
     # Is there a next?
     if ($_C->perf_time_op(sub {$statement->fetchrow_arrayref})) {
-	$query->put(has_next => 1,
-	    next_page => $query->get('page_number') + 1);
-	# See discussion of =item orabug_fetch_all_select
-	if ($attrs->{orabug_fetch_all_select}) {
-	    0
-		while $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
-	}
+        $query->put(has_next => 1,
+            next_page => $query->get('page_number') + 1);
+        # See discussion of =item orabug_fetch_all_select
+        if ($attrs->{orabug_fetch_all_select}) {
+            0
+                while $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
+        }
     }
     $_C->perf_time_finish($statement);
 
@@ -588,49 +588,49 @@ sub _load_this {
     # to know "prev".  Eventually, this will have to be PL/SQL.
     my($attrs) = $self->internal_get;
     $die->throw_die('DIE', 'cannot load this, primary key must be in_select')
-	unless $attrs->{can_load_this};
+        unless $attrs->{can_load_this};
     my($count, $this) = $query->get(qw(count this));
     my($want_first) = $query->unsafe_get('want_first_only');
     _trace($want_first ? 'looking for first'
-	: ('looking for this ', $attrs->{primary_key_names}, ' = ', $this))
-	if $_TRACE;
+        : ('looking for this ', $attrs->{primary_key_names}, ' = ', $this))
+        if $_TRACE;
     my($types) = $attrs->{primary_key_types};
     my($prev, $row);
     my($row_count) = 0;
     for (;;) {
-	$_C->perf_time_finish($statement), return []
-	    unless $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
-	$row_count++;
+        $_C->perf_time_finish($statement), return []
+            unless $row = $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
+        $row_count++;
 
-	# Convert the entire primary key and save in $prev if no match
-	my($j) = 0;
-	my($match) = 1;
-	my(@prev) = map {
-	    my($v) = $_->from_sql_column($row->[$j]);
+        # Convert the entire primary key and save in $prev if no match
+        my($j) = 0;
+        my($match) = 1;
+        my(@prev) = map {
+            my($v) = $_->from_sql_column($row->[$j]);
 #TODO: Should this be "is_equal"?  This is probably "good enough".
 #      It will slow it down a lot to make a method call for each
 #      row/attribute.  "eq" works in all cases and probably in future.
-	    $match &&= $want_first || $this->[$j] eq $v;
-	    $j++;
-	    $v;
-	} @$types;
-	if ($want_first) {
-	    $query->put(this => $this = \@prev);
-	    _trace('found first ', $attrs->{primary_key_names}, ' = ', \@prev)
-		    if $_TRACE;
-	    last;
-	}
-	last if $match;
-	$prev = \@prev;
+            $match &&= $want_first || $this->[$j] eq $v;
+            $j++;
+            $v;
+        } @$types;
+        if ($want_first) {
+            $query->put(this => $this = \@prev);
+            _trace('found first ', $attrs->{primary_key_names}, ' = ', \@prev)
+                    if $_TRACE;
+            last;
+        }
+        last if $match;
+        $prev = \@prev;
     }
 
     # Found it, copy all columns of this
     _trace('found this at row #', $row_count) if $_TRACE;
     my($i) = 0;
     my($rows) = [_add_constant_values($self, $query, {
-	(map {
-	    ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
-	} @{$attrs->{select_columns}}),
+        (map {
+            ($_->{name}, $_->{type}->from_sql_column($row->[$i++]));
+        } @{$attrs->{select_columns}}),
     })];
 
     # Set prev if defined
@@ -639,16 +639,16 @@ sub _load_this {
     # Set next if more rows
     my($next) = $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
     if ($next) {
-	my($j) = 0;
-	$query->put(has_next => 1,
-		next => [map {
-		    $_->from_sql_column($row->[$j++]);
-		} @$types]);
-	# See discussion of =item orabug_fetch_all_select
-	if ($attrs->{orabug_fetch_all_select}) {
-	    0
-		while $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
-	}
+        my($j) = 0;
+        $query->put(has_next => 1,
+                next => [map {
+                    $_->from_sql_column($row->[$j++]);
+                } @$types]);
+        # See discussion of =item orabug_fetch_all_select
+        if ($attrs->{orabug_fetch_all_select}) {
+            0
+                while $_C->perf_time_op(sub {$statement->fetchrow_arrayref});
+        }
     }
     $_C->perf_time_finish($statement);
     $query->put(page_number => _page_number($query, $row_count));
@@ -665,7 +665,7 @@ sub _merge_where {
     # Merge any internal, literal where predicates with where clause
     #   returned by internal_pre_load
     return $_where
-	unless $self->unsafe_get('sql_where');
+        unless $self->unsafe_get('sql_where');
     _trace('sql_where: ', $self->get('sql_where'));
     return join(' AND ', grep($_, $self->get('sql_where'), $_where));
 }
@@ -682,23 +682,23 @@ sub _prepare_ordinal_clauses {
     my($attrs) = $self->internal_get;
     my($res) = '';
     $res .= ' GROUP BY '
-	. join(
-	    ',',
-	    map($_->{type}->to_group_by_value($_->{sql_name}),
-		@{$attrs->{group_by}}),
-	)
+        . join(
+            ',',
+            map($_->{type}->to_group_by_value($_->{sql_name}),
+                @{$attrs->{group_by}}),
+        )
         if @{$attrs->{group_by}};
     my($qob);
     if (@{$attrs->{order_by}} and $qob = $query->get('order_by') and @$qob) {
-	my $max_i = $query->unsafe_get('want_only_one_order_by') ? 2 : @$qob;
+        my $max_i = $query->unsafe_get('want_only_one_order_by') ? 2 : @$qob;
         $res .= ' ORDER BY';
         for (my($i) = 0; $i < $max_i; $i += 2) {
-	    my($c) = $attrs->{columns}->{$qob->[$i]};
-	    $res .= ' '
-		. $c->{type}->to_order_by_value($c->{sql_name})
-	        . ($qob->[$i+1] ? ',' : ' desc,');
-	}
-	chop($res);
+            my($c) = $attrs->{columns}->{$qob->[$i]};
+            $res .= ' '
+                . $c->{type}->to_order_by_value($c->{sql_name})
+                . ($qob->[$i+1] ? ',' : ' desc,');
+        }
+        chop($res);
     }
     _trace('group_by/order_by: ', $res);
     return $res;
@@ -708,27 +708,27 @@ sub _prepare_query_values {
     my($self, $stmt, $query) = @_;
     _map_constant_cols(sub {
         my($col) = @_;
-	if ($self->get($col) && defined(my $v = $query->unsafe_get($col))) {
-	    $stmt->where([$self->get($col)->{name}, [$v]]);
-	}
-	return;
+        if ($self->get($col) && defined(my $v = $query->unsafe_get($col))) {
+            $stmt->where([$self->get($col)->{name}, [$v]]);
+        }
+        return;
     });
     if ($self->unsafe_get('date')) {
-	my($begin_date, $interval, $end_date)
-	    = $query->get(qw(begin_date interval date));
-	unless ($end_date || $begin_date) {
-	    b_warn($interval, ': interval but no date, ignoring; ', $query)
-		if $interval;
-	}
-	else {
-	    # Won't have both a begin_date and interval (see ListQuery)
-	    $begin_date = $interval->dec($end_date)
-		if $interval;
-	    $stmt->where($stmt->GTE($self->get('date')->{name}, [$begin_date]))
-		    if $begin_date;
-	    $stmt->where($stmt->LTE($self->get('date')->{name}, [$end_date]))
-		    if $end_date;
-	}
+        my($begin_date, $interval, $end_date)
+            = $query->get(qw(begin_date interval date));
+        unless ($end_date || $begin_date) {
+            b_warn($interval, ': interval but no date, ignoring; ', $query)
+                if $interval;
+        }
+        else {
+            # Won't have both a begin_date and interval (see ListQuery)
+            $begin_date = $interval->dec($end_date)
+                if $interval;
+            $stmt->where($stmt->GTE($self->get('date')->{name}, [$begin_date]))
+                    if $begin_date;
+            $stmt->where($stmt->LTE($self->get('date')->{name}, [$end_date]))
+                    if $end_date;
+        }
     }
     return;
 }
@@ -740,27 +740,27 @@ sub _prepare_statement {
     _prepare_query_values($self, $stmt, $query);
     my($where, $params) = $stmt->build_for_list_support_prepare_statement(
         $self, $self->get('statement'), _merge_where($self, $_where_in),
-	$params_in);
+        $params_in);
 
     _trace('where: ', $where);
     return ($where . _prepare_ordinal_clauses($self, $query), $params, undef)
-	if $where =~ s/^WHERE SELECT\b/SELECT/;
+        if $where =~ s/^WHERE SELECT\b/SELECT/;
 
     ($die || 'Bivio::Die')->throw_die('DIE', 'must support select')
-	unless my $select = _select($self);
+        unless my $select = _select($self);
 
     my(@from_where) = ();
     # if $where has a FROM clause, ignore $sql_from
     #   otherwise, append $where to $sql_from
     unless ($where && $where =~ /^\s*FROM/is) {
-	push(@from_where, $self->get('sql_from'));
+        push(@from_where, $self->get('sql_from'));
     }
     push(@from_where, $where);
 
     return (
         join(' ', $select, @from_where,
-	    _prepare_ordinal_clauses($self, $query)),
-	$params,
+            _prepare_ordinal_clauses($self, $query)),
+        $params,
         join(' ', @from_where)
     );
 }
@@ -769,7 +769,7 @@ sub _select {
     my($self) = @_;
     # Ask statement to build select string. 
     return $self->get_statement()
-	->build_select_for_sql_support($self);
+        ->build_select_for_sql_support($self);
 }
 
 1;

@@ -4,22 +4,22 @@ my($new) = sub {class()->new_from_file_line(@_)};
 my($here) = sub {class()->new_from_caller(@_)};
 [
     sub {$new->('f', 3)} => [
-	as_string => 'f:3',
-	equals => [
-	    [$new->('f', 3)] => 1,
-	    [undef] => 0,
-	    [$new->('f', 2)] => 0,
-	    [$new->('x', 3)] => 0,
-	],
-	inc_line => [
-	    -1 => [$new->('f', 2)],
-	    1 => [$new->('f', 4)],
-	],
+        as_string => 'f:3',
+        equals => [
+            [$new->('f', 3)] => 1,
+            [undef] => 0,
+            [$new->('f', 2)] => 0,
+            [$new->('x', 3)] => 0,
+        ],
+        inc_line => [
+            -1 => [$new->('f', 2)],
+            1 => [$new->('f', 4)],
+        ],
     ],
     sub {$here->()} => [
-	as_string => qr{^Bivio::Test::Unit::Unit::__ANON__:\(eval \d+\):\d+$},
+        as_string => qr{^Bivio::Test::Unit::Unit::__ANON__:\(eval \d+\):\d+$},
     ],
     sub {$here->([qr{Hello|Bivio::Test|Goodbye$}])} => [
-	as_string => qr{Die.pm:\d+},
+        as_string => qr{Die.pm:\d+},
     ],
 ];

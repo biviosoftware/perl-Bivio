@@ -47,8 +47,8 @@ my($_VARS) = {
     maintenance_logo => '/i/logo.gif',
     # Users can supply certain params here
     httpd => my $_HTTPD_VARS = {
-	app => 'bivio-proxy',
-	listen => '80',
+        app => 'bivio-proxy',
+        listen => '80',
     },
     # Trick to help _replace_vars
     '$' => '$',
@@ -67,7 +67,7 @@ EOF
 
 sub foreach_command {
    sub FOREACH_COMMAND {[
-	[qw(command Text)],
+        [qw(command Text)],
    ]}
    my($self, $bp) = shift->parameters(\@_);
    $self->get_request;
@@ -76,14 +76,14 @@ sub foreach_command {
    $_F->do_lines(
        $_VARS->{app_names_txt},
        sub {
-	   my($l) = @_;
-	   unless ($l =~ /^\s*#/) {
-	       local($ENV{BCONF}) = $bconf;
-	       $ENV{BCONF} =~ s{[^/]+(?=\.bconf)$}{$l};
-	       (my $c = $bp->{command}) =~ s/\$\{app\}/$l/g;
-	       $res .= $self->do_backticks($c);
-	   }
-	   return 1;
+           my($l) = @_;
+           unless ($l =~ /^\s*#/) {
+               local($ENV{BCONF}) = $bconf;
+               $ENV{BCONF} =~ s{[^/]+(?=\.bconf)$}{$l};
+               (my $c = $bp->{command}) =~ s/\$\{app\}/$l/g;
+               $res .= $self->do_backticks($c);
+           }
+           return 1;
        },
    );
    return $res
@@ -96,12 +96,12 @@ sub foreach_ping {
     $self->get_request;
     my($uris);
     return $self->new_other('HTTPPing')->page(
-	map("http://$_/pub/ping",
-	    @{$_F->map_lines(
-		$list || $_VARS->{uris_txt},
-		sub {shift =~ /^([^\s#]+)/},
-	    )},
-	),
+        map("http://$_/pub/ping",
+            @{$_F->map_lines(
+                $list || $_VARS->{uris_txt},
+                sub {shift =~ /^([^\s#]+)/},
+            )},
+        ),
     );
 }
 
@@ -109,13 +109,13 @@ sub generate {
     my($vars) = shift->validate_vars(@_);
     umask(027);
     foreach my $v (
-	map(_app_vars($vars->{$_}, $vars->{httpd}), @{$vars->{apps}})
+        map(_app_vars($vars->{$_}, $vars->{httpd}), @{$vars->{apps}})
     ) {
-	_write(_httpd_conf($v));
-	_write(_app_bconf($v));
-	_write(_app_init_rc($v));
-	_write(_logrotate($v));
-	_write_maintenance_html($v);
+        _write(_httpd_conf($v));
+        _write(_app_bconf($v));
+        _write(_app_init_rc($v));
+        _write(_logrotate($v));
+        _write_maintenance_html($v);
     }
     _httpd_vars($vars);
     _write($vars->{httpd_init_include}, \(my $x = $_INIT_RC));
@@ -123,7 +123,7 @@ sub generate {
     _write(_httpd_conf($vars->{httpd}));
     _write(_logrotate($vars->{httpd}));
     foreach my $x (qw(app_names mail_hosts uris)) {
-	_write(_conf_txt($x, $vars->{httpd}));
+        _write(_conf_txt($x, $vars->{httpd}));
     }
     return;
 }
@@ -132,18 +132,18 @@ sub validate_vars {
     my($self, $vars) = @_;
     $vars ||= ${$self->read_input};
     $vars = {
-	%$_VARS,
-	%{Bivio::Die->eval_or_die($vars)},
+        %$_VARS,
+        %{Bivio::Die->eval_or_die($vars)},
     };
     foreach my $app (
-	@{$vars->{apps} = [sort(grep(!exists($_VARS->{$_}), sort(keys(%$vars))))]},
+        @{$vars->{apps} = [sort(grep(!exists($_VARS->{$_}), sort(keys(%$vars))))]},
     ) {
-	foreach my $k (keys(%$_VARS)) {
-	    my($v) = $vars->{$app};
-	    $self->usage_error($k, ': variable missing value for ', $app, "\n")
-		unless defined($v->{$k}) || defined($v->{$k} = $vars->{$k});
-	}
-	$vars->{$app}->{app} = $app;
+        foreach my $k (keys(%$_VARS)) {
+            my($v) = $vars->{$app};
+            $self->usage_error($k, ': variable missing value for ', $app, "\n")
+                unless defined($v->{$k}) || defined($v->{$k} = $vars->{$k});
+        }
+        $vars->{$app}->{app} = $app;
     }
     return $vars;
 }
@@ -218,66 +218,66 @@ PerlModule Bivio::Agent::HTTP::Dispatcher
 </Location>
 EOF
     Bivio::Die->die(
-	$app, ': virtual_hosts and mail_host/http_host incompatible'
+        $app, ': virtual_hosts and mail_host/http_host incompatible'
     ) if $vars->{virtual_hosts} && ($vars->{mail_host} || $vars->{http_host});
 #TODO: Deprecate non-virtual_hosts config
     $vars->{virtual_hosts} ||= [
-	$vars->{http_host} =~ /^(?:www\.)?\Q$vars->{mail_host}\E$/
-	    ? ('@' . $vars->{http_host} => $app)
-	    : (
-		$vars->{http_host} => $app,
-		'@' . $vars->{mail_host} => $app,
-	    ),
+        $vars->{http_host} =~ /^(?:www\.)?\Q$vars->{mail_host}\E$/
+            ? ('@' . $vars->{http_host} => $app)
+            : (
+                $vars->{http_host} => $app,
+                '@' . $vars->{mail_host} => $app,
+            ),
     ];
     $vars->{cookie_domain_cfg} = !$vars->{cookie_domain} ? ''
-	: "\n        domain => '$vars->{cookie_domain}',";
+        : "\n        domain => '$vars->{cookie_domain}',";
     b_die($app, ': virtual_hosts must be an array_ref of pairs')
-	unless ref($vars->{virtual_hosts}) eq 'ARRAY'
+        unless ref($vars->{virtual_hosts}) eq 'ARRAY'
         && @{$vars->{virtual_hosts}} % 2 == 0;
     $vars->{httpd_redirects} = '';
     $vars->{can_secure} = 0;
     $httpd_vars->{ssl_global} ||= {};
     __PACKAGE__->map_by_two(
-	sub {
-	    my($left, $right) = @_;
-	    my($is_mail) = $left =~ s/^\@//;
-	    my($mh) = $left =~ /^www\.(.+)$/;
-	    my($cfg) = ref($right) eq 'HASH' ? $right : {facade_uri => $right};
-	    $cfg->{http_host} ||= $left;
-	    $cfg->{mail_host} ||= $mh || $cfg->{http_host};
-	    $cfg->{www_stripped_host} = $mh;
-	    __PACKAGE__->map_by_two(
-		sub {
-		    my($k, $v) = @_;
-		    $cfg->{$k} = $v
-			unless defined($cfg->{$k});
-	        },
-		($cfg->{facade_uri} || '') eq 'dav' ? [
-		    local_file_prefix => $app,
-		    rewrite_icons => 0,
-		] : [
-		    local_file_prefix => $cfg->{facade_uri},
-		    rewrite_icons => 1,
-		],
-	    );
-	    $cfg = {%$vars, %$cfg};
-	    map($vars->{$_} ||= $cfg->{$_}, qw(http_host mail_host));
-	    _push($httpd_vars, uris => $cfg->{http_host});
-	    $cfg->{back_http} = "http://$cfg->{http_host}:$vars->{listen}\$1";
-	    if ($is_mail) {
-		foreach my $h (
-		    $cfg->{mail_host}, @{$cfg->{mail_aliases} || []}
-		) {
-		    _push($vars, mail_hosts => $h);
-		    _push($vars, mail_receive => "$h $cfg->{back_http}");
-		}
-	    }
-	    _app_vars_vhost($vars, $cfg);
-	    $vars->{httpd_content} .= _app_vars_ssl($vars, $cfg, $httpd_vars);
-	    _app_vars_redirects($vars, $cfg);
-	    return;
-	},
-	$vars->{virtual_hosts},
+        sub {
+            my($left, $right) = @_;
+            my($is_mail) = $left =~ s/^\@//;
+            my($mh) = $left =~ /^www\.(.+)$/;
+            my($cfg) = ref($right) eq 'HASH' ? $right : {facade_uri => $right};
+            $cfg->{http_host} ||= $left;
+            $cfg->{mail_host} ||= $mh || $cfg->{http_host};
+            $cfg->{www_stripped_host} = $mh;
+            __PACKAGE__->map_by_two(
+                sub {
+                    my($k, $v) = @_;
+                    $cfg->{$k} = $v
+                        unless defined($cfg->{$k});
+                },
+                ($cfg->{facade_uri} || '') eq 'dav' ? [
+                    local_file_prefix => $app,
+                    rewrite_icons => 0,
+                ] : [
+                    local_file_prefix => $cfg->{facade_uri},
+                    rewrite_icons => 1,
+                ],
+            );
+            $cfg = {%$vars, %$cfg};
+            map($vars->{$_} ||= $cfg->{$_}, qw(http_host mail_host));
+            _push($httpd_vars, uris => $cfg->{http_host});
+            $cfg->{back_http} = "http://$cfg->{http_host}:$vars->{listen}\$1";
+            if ($is_mail) {
+                foreach my $h (
+                    $cfg->{mail_host}, @{$cfg->{mail_aliases} || []}
+                ) {
+                    _push($vars, mail_hosts => $h);
+                    _push($vars, mail_receive => "$h $cfg->{back_http}");
+                }
+            }
+            _app_vars_vhost($vars, $cfg);
+            $vars->{httpd_content} .= _app_vars_ssl($vars, $cfg, $httpd_vars);
+            _app_vars_redirects($vars, $cfg);
+            return;
+        },
+        $vars->{virtual_hosts},
     );
     $vars->{httpd_content} .= $vars->{httpd_redirects};
     return $vars;
@@ -286,14 +286,14 @@ EOF
 sub _app_vars_document_root {
     my($vars, $cfg) = @_;
     return ''
-	unless $cfg->{local_file_prefix};
+        unless $cfg->{local_file_prefix};
     return "/var/www/facades/$cfg->{local_file_prefix}/plain";
 }
 
 sub _app_vars_legacy {
     my($vars, $cfg) = @_;
     return ''
-	unless my $res = $cfg->{legacy_rewrite_rules};
+        unless my $res = $cfg->{legacy_rewrite_rules};
     _app_vars_rewrite_engine($vars, $cfg);
     $res =~ s{(?<=[^\n])$}{\n}s;
     return $res;
@@ -302,7 +302,7 @@ sub _app_vars_legacy {
 sub _app_vars_proxy {
     my($vars, $cfg) = @_;
     return ''
-	if $cfg->{no_proxy};
+        if $cfg->{no_proxy};
     _app_vars_rewrite_engine($vars, $cfg);
     return <<"EOF"
     ProxyVia on
@@ -316,16 +316,16 @@ sub _app_vars_redirects {
     my($seen) = $cfg->{ssl_only} ? {} : {$cfg->{http_host} => 1};
     my($front_http) = ($cfg->{ssl_only} ? 'https' : 'http') . "://$cfg->{http_host}";
     foreach my $h (
-	$cfg->{www_stripped_host},
-	$cfg->{ssl_only} && $cfg->{http_host},
-	map(
-	    ($_, $_ =~ /^www\.(.+)$/),
-	    sort(@{$cfg->{aliases} || []}),
-	),
+        $cfg->{www_stripped_host},
+        $cfg->{ssl_only} && $cfg->{http_host},
+        map(
+            ($_, $_ =~ /^www\.(.+)$/),
+            sort(@{$cfg->{aliases} || []}),
+        ),
     ) {
-	next
-	    if !$h || $seen->{$h}++;
-	$vars->{httpd_redirects} .= <<"EOF";
+        next
+            if !$h || $seen->{$h}++;
+        $vars->{httpd_redirects} .= <<"EOF";
 <VirtualHost *>
     ServerName $h
     RedirectPermanent / $front_http/
@@ -338,7 +338,7 @@ EOF
 sub _app_vars_rewrite {
     my($vars, $cfg) = @_;
     return ''
-	if $cfg->{no_proxy} || !$cfg->{rewrite_icons};
+        if $cfg->{no_proxy} || !$cfg->{rewrite_icons};
     _app_vars_rewrite_engine($vars, $cfg);
     return <<'EOF';
     RewriteRule ^/_.* - [forbidden]
@@ -361,8 +361,8 @@ sub _app_vars_ssl {
     my($vars, $cfg, $httpd_vars) = @_;
     my($hc) = $cfg->{vhost};
     return $hc
-	if $cfg->{no_proxy}
-	|| !_app_vars_ssl_crt($vars, $cfg, $httpd_vars);
+        if $cfg->{no_proxy}
+        || !_app_vars_ssl_crt($vars, $cfg, $httpd_vars);
     _app_vars_ssl_addr_port($cfg);
 #output for app.conf
     $vars->{ssl_listen} ||= "\nListen " . ($cfg->{listen} + 1);
@@ -379,10 +379,10 @@ sub _app_vars_ssl_addr_port {
     my($addr) = Type_IPAddress()->from_domain($cfg->{http_host});
     $cfg->{ssl_addr_port} = "$addr:443";
     b_die($addr, ': no reverse dns entry')
-	unless $cfg->{ssl_default_host} = Type_IPAddress()->unsafe_to_domain($addr);
+        unless $cfg->{ssl_default_host} = Type_IPAddress()->unsafe_to_domain($addr);
     b_die($cfg->{http_host}, ': http_host may not be reverse dns (PTR) entry')
-	if $cfg->{ssl_multi_crt}
-	&& Type_DomainName()->is_equal($cfg->{ssl_default_host}, $cfg->{http_host});
+        if $cfg->{ssl_multi_crt}
+        && Type_DomainName()->is_equal($cfg->{ssl_default_host}, $cfg->{http_host});
     return;
 }
 
@@ -392,15 +392,15 @@ sub _app_vars_ssl_crt {
     # so you want to allow people to clear it for a virtual host if the
     # ssl_multi_crt is set globally
     $cfg->{ssl_crt} = $cfg->{ssl_multi_crt}
-	unless defined($cfg->{ssl_crt});
+        unless defined($cfg->{ssl_crt});
     return $cfg->{ssl_only} = 0
-	unless $cfg->{ssl_crt};
+        unless $cfg->{ssl_crt};
     $cfg->{ssl_multi_crt} = undef
-	unless Type_String()->is_equal($cfg->{ssl_crt}, $cfg->{ssl_multi_crt});
+        unless Type_String()->is_equal($cfg->{ssl_crt}, $cfg->{ssl_multi_crt});
     $vars->{can_secure} = 1;
     foreach my $x (qw(ssl_crt ssl_chain)) {
-	$cfg->{$x} .= '.crt'
-	    if $cfg->{$x} && $cfg->{$x} !~ /\.crt$/;
+        $cfg->{$x} .= '.crt'
+            if $cfg->{$x} && $cfg->{$x} !~ /\.crt$/;
     }
     ($cfg->{ssl_key} = $cfg->{ssl_crt}) =~ s/crt$/key/;
     return 1;
@@ -426,7 +426,7 @@ EOF
 # need to dig -x to get reverse dns
 # forward dns
     return
-	unless $cfg->{ssl_multi_crt};
+        unless $cfg->{ssl_multi_crt};
     my($vh) = <<"EOF";
 NameVirtualHost $cfg->{ssl_addr_port}
 <VirtualHost $cfg->{ssl_addr_port}>
@@ -436,7 +436,7 @@ NameVirtualHost $cfg->{ssl_addr_port}
 EOF
     my($vh2) = $httpd_vars->{ssl_global}->{$cfg->{ssl_addr_port}} ||= $vh;
     b_die($cfg->{ssl_addr_port}, ': ssl config must be identical for vhosts')
-	unless $vh2 eq $vh;
+        unless $vh2 eq $vh;
     return;
 }
 
@@ -452,8 +452,8 @@ EOF
 $chain    SetEnv nokeepalive 1
     SetEnvIf User-Agent ".*MSIE.*" nokeepalive ssl-unclean-shutdown
     <Location />
-	SSLRequireSSL
-	SSLOptions +StrictRequire
+        SSLRequireSSL
+        SSLOptions +StrictRequire
         Require all granted
     </Location>
 EOF
@@ -469,8 +469,8 @@ sub _app_vars_vhost {
 EOF
     $cfg->{rewrite_engine} = '';
     $cfg->{vhost_rules} = _app_vars_legacy($vars, $cfg)
-	. _app_vars_rewrite($vars, $cfg)
-	. _app_vars_proxy($vars, $cfg);
+        . _app_vars_rewrite($vars, $cfg)
+        . _app_vars_proxy($vars, $cfg);
     $cfg->{vhost} = <<"EOF";
 <VirtualHost *>
     ServerName $cfg->{http_host}
@@ -487,8 +487,8 @@ sub _bconf_file {
 sub _conf_txt {
     my($which, $vars) = @_;
     return (
-	$vars->{$which . '_txt'},
-	\(join("\n", sort(@{$vars->{$which}}), '')),
+        $vars->{$which . '_txt'},
+        \(join("\n", sort(@{$vars->{$which}}), '')),
     );
 }
 
@@ -496,16 +496,16 @@ sub _file_name_vars {
     my($vars) = @_;
     my($app) = $vars->{app};
     %$vars = (
-	%$vars,
-	bconf => _bconf_file($app),
-	document_root => "/var/www/facades/$app/plain",
-	httpd_conf => "/etc/httpd/conf/$app.conf",
-	init_rc => "/etc/rc.d/init.d/$app",
-	lock_file => "/var/lock/subsys/$app",
-	log_directory => "/var/log/$app",
-	logrotate => "/etc/logrotate.d/$app",
-	pid_file => "/var/run/$app.pid",
-	process_name => "$app",
+        %$vars,
+        bconf => _bconf_file($app),
+        document_root => "/var/www/facades/$app/plain",
+        httpd_conf => "/etc/httpd/conf/$app.conf",
+        init_rc => "/etc/rc.d/init.d/$app",
+        lock_file => "/var/lock/subsys/$app",
+        log_directory => "/var/log/$app",
+        logrotate => "/etc/logrotate.d/$app",
+        pid_file => "/var/run/$app.pid",
+        process_name => "$app",
     );
     return $vars;
 }
@@ -514,10 +514,10 @@ sub _fixup_common_vars {
     my($vars, $v) = @_;
     $v ||= $vars;
     foreach my $p (qw(global_params request_read_timeout)) {
-	$v->{$p} = exists($v->{$p}) ? $v->{$p} || '' : $vars->{$p};
+        $v->{$p} = exists($v->{$p}) ? $v->{$p} || '' : $vars->{$p};
     }
     substr($v->{request_read_timeout}, 0, 0) = 'RequestReadTimeout '
-	if $v->{request_read_timeout};
+        if $v->{request_read_timeout};
     return $v;
 }
 
@@ -664,33 +664,33 @@ sub _httpd_vars {
     my($vars) = @_;
     my($v) = $vars->{httpd};
     %$v = (
-	%$_VARS,
-	%$_HTTPD_VARS,
-	map(($_ => $vars->{$_}), qw(
+        %$_VARS,
+        %$_HTTPD_VARS,
+        map(($_ => $vars->{$_}), qw(
             server_status_allow
-	    server_status_location
-	    server_admin
+            server_status_location
+            server_admin
         )),
-	%$v,
+        %$v,
     );
     $v = _fixup_common_vars($vars, $v);
     $v = _file_name_vars($v);
     $v->{content} = join(
-	"\n",
-	_replace_vars($v, "httpd_content", <<'EOF'),
+        "\n",
+        _replace_vars($v, "httpd_content", <<'EOF'),
 NameVirtualHost *
 <VirtualHost *>
     ServerName $host_name
     DocumentRoot /var/www/html
 </VirtualHost>
 EOF
-	map(
-	    $v->{ssl_global}->{$_},
-	    sort(keys(%{$v->{ssl_global}})),
-	),
-	map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
-	join('',
-	    <<'EOF',
+        map(
+            $v->{ssl_global}->{$_},
+            sort(keys(%{$v->{ssl_global}})),
+        ),
+        map($vars->{$_}->{httpd_content}, @{$vars->{apps}}),
+        join('',
+            <<'EOF',
 <VirtualHost *>
     ServerName localhost.localdomain
     Require all granted
@@ -700,28 +700,28 @@ EOF
     ProxyVia on
     ProxyIOBufferSize 4194304
 EOF
-	     map({
-		 my($mh, $vh) = split(' ', $_);
-		 "    RewriteRule ^(.*_mail_receive/.*\@$mh.*) $vh \[proxy,nocase\]\n";
-	     } sort(map(
-		 @{$vars->{$_}->{mail_receive} || []}, @{$vars->{apps}},
-	     ))),
-	     <<'EOF',
+             map({
+                 my($mh, $vh) = split(' ', $_);
+                 "    RewriteRule ^(.*_mail_receive/.*\@$mh.*) $vh \[proxy,nocase\]\n";
+             } sort(map(
+                 @{$vars->{$_}->{mail_receive} || []}, @{$vars->{apps}},
+             ))),
+             <<'EOF',
     RewriteRule .* - [forbidden]
 </VirtualHost>
 EOF
         ),
     );
     $v->{mail_hosts} = [sort(
-	map(@{$vars->{$_}->{mail_hosts} || []}, @{$vars->{apps}}))];
+        map(@{$vars->{$_}->{mail_hosts} || []}, @{$vars->{apps}}))];
     $v->{app_names} = [@{$vars->{apps}}];
     my($n) = 0;
     foreach my $s (@{$vars->{apps}}) {
-	$n += $vars->{$s}->{servers};
-	foreach my $var (qw(limit_request_body timeout)) {
-	    $v->{$var} = $vars->{$s}->{$var}
-		if $vars->{$s}->{$var} > ($v->{$var} || 0);
-	}
+        $n += $vars->{$s}->{servers};
+        foreach my $var (qw(limit_request_body timeout)) {
+            $v->{$var} = $vars->{$s}->{$var}
+                if $vars->{$s}->{$var} > ($v->{$var} || 0);
+        }
     }
     $v->{server_admin} ||= 'webmaster@' . $v->{host_name};
     $v->{servers} = $n * 2;
@@ -738,8 +738,8 @@ sub _replace_vars {
     my($vars, $name, $template) = @_;
     # One of the $_VARS is '$'
     $template =~ s{\$(\w+|\$)}{
-	defined($vars->{$1}) ? $vars->{$1}
-	    : Bivio::Die->die("$1: in template ($name), but not in ", $vars)
+        defined($vars->{$1}) ? $vars->{$1}
+            : Bivio::Die->die("$1: in template ($name), but not in ", $vars)
     }xseg;
     return $template;
 }
@@ -768,9 +768,9 @@ sub _write_maintenance_html {
     return
         unless $vars->{document_root};
     return _write(
-	Type_FilePath()->join(
-	    $vars->{document_root}, $vars->{maintenance_html}),
-	\(_replace_vars($vars, 'maintenance_html', <<'EOF')));
+        Type_FilePath()->join(
+            $vars->{document_root}, $vars->{maintenance_html}),
+        \(_replace_vars($vars, 'maintenance_html', <<'EOF')));
 <html>
 <head>
 <title>Site Maintenance</title>
@@ -816,11 +816,11 @@ start() {
         return $RETVAL
 }
 stop() {
-	echo -n $"Stopping $prog: "
-	killproc -p ${pidfile} -d ${STOP_TIMEOUT} $prog
-	RETVAL=$?
-	echo
-	[ $RETVAL = 0 ] && rm -f ${lockfile} ${pidfile}
+        echo -n $"Stopping $prog: "
+        killproc -p ${pidfile} -d ${STOP_TIMEOUT} $prog
+        RETVAL=$?
+        echo
+        [ $RETVAL = 0 ] && rm -f ${lockfile} ${pidfile}
 }
 reload() {
     echo -n $"Reloading $prog: "
@@ -838,32 +838,32 @@ reload() {
 # See how we were called.
 case "$1" in
   start)
-	start
-	;;
+        start
+        ;;
   stop)
-	stop
-	;;
+        stop
+        ;;
   status)
         status -p ${pidfile} $httpd
-	RETVAL=$?
-	;;
+        RETVAL=$?
+        ;;
   restart)
-	stop
+        stop
         sleep 3
-	start
-	;;
+        start
+        ;;
   condrestart)
-	if [ -f ${pidfile} ] ; then
-		stop
-		start
-	fi
-	;;
+        if [ -f ${pidfile} ] ; then
+                stop
+                start
+        fi
+        ;;
   reload)
         reload
-	;;
+        ;;
   *)
-	echo $"Usage: $prog {start|stop|restart|condrestart|reload|status}"
-	exit 1
+        echo $"Usage: $prog {start|stop|restart|condrestart|reload|status}"
+        exit 1
 esac
 
 exit $RETVAL

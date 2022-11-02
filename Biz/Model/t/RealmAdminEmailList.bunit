@@ -4,8 +4,8 @@ ListModel();
 req()->set_realm('mail_forum');
 [
     load_all => [
-	[] => [{
-	    'Email.email' => qr{mail_user1},
-	}],
+        [] => [{
+            'Email.email' => qr{mail_user1},
+        }],
     ],
 ];

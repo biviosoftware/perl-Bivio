@@ -8,10 +8,10 @@ use Bivio::Base 'Collection.Attributes';
 sub as_string {
     my($self) = @_;
     return $self->has_keys('text')
-	? $self->get('text')
-	: ref($self)
-	? undef
-	: $self;
+        ? $self->get('text')
+        : ref($self)
+        ? undef
+        : $self;
 }
 
 1;

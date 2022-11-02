@@ -11,14 +11,14 @@ my($exists) = ShellUtil_SQL()->DEMO_EMAIL();
     [{
         'email_email' => $new,
     }] => [{
-	'Model.Email' => {
-	    email => $new,
-	},
+        'Model.Email' => {
+            email => $new,
+        },
     }],
     [{
         'email_email' => $exists,
     }] => sub {
-	assert_equals(undef, ureq('Model.Email'));
-	return 1;
+        assert_equals(undef, ureq('Model.Email'));
+        return 1;
     },
 ];

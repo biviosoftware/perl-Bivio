@@ -18,7 +18,7 @@ sub new {
     my(undef, $client) = @_;
     my($self) = shift->SUPER::new;
     $self->{$_PACKAGE} = {
-	client => $client,
+        client => $client,
     };
     return $self;
 }

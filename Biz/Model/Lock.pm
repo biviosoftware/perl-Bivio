@@ -15,26 +15,26 @@ sub acquire {
     my($self, $realm_id) = @_;
     $realm_id ||= $self->req('auth_id');
     $self->throw_die(
-	'ALREADY_EXISTS',
-	{
-	    message => 'duplicate lock: use acquire_unless_exists',
-	    entity => $realm_id,
-	},
+        'ALREADY_EXISTS',
+        {
+            message => 'duplicate lock: use acquire_unless_exists',
+            entity => $realm_id,
+        },
     ) if $self->is_acquired($realm_id);
     $self->throw_die('ALREADY_EXISTS', 'cannot reuse lock instance')
-	if _map_txn_resources($self, sub {shift == $self ? 1 : ()});
+        if _map_txn_resources($self, sub {shift == $self ? 1 : ()});
     my($values) = {realm_id => $realm_id};
     _read_request_input($self);
     my($die) = $_D->catch(sub {$self->create($values)});
     if ($die) {
-	if ($die->get('code')->equals_by_name('DB_CONSTRAINT')) {
-	    my($attrs) = $die->unsafe_get('attrs');
-	    $self->throw_die('DB_ERROR', $values)
-		if ref($attrs) && ref($attrs->{type_error})
-		    && $attrs->{type_error}->equals_by_name('EXISTS');
-	}
-	$die->throw_die;
-	# DOES NOT RETURN
+        if ($die->get('code')->equals_by_name('DB_CONSTRAINT')) {
+            my($attrs) = $die->unsafe_get('attrs');
+            $self->throw_die('DB_ERROR', $values)
+                if ref($attrs) && ref($attrs->{type_error})
+                    && $attrs->{type_error}->equals_by_name('EXISTS');
+        }
+        $die->throw_die;
+        # DOES NOT RETURN
     }
     _trace($self) if $_TRACE;
     $self->req->push_txn_resource($self);
@@ -52,7 +52,7 @@ sub acquire_general_unless_exists {
 sub acquire_unless_exists {
     my($self, $realm_id) = @_;
     $self->acquire($realm_id)
-	unless $self->is_acquired($realm_id);
+        unless $self->is_acquired($realm_id);
     return;
 }
 
@@ -94,12 +94,12 @@ sub handle_rollback {
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'lock_t',
-	columns => {
+        version => 1,
+        table_name => 'lock_t',
+        columns => {
             realm_id => ['PrimaryId', 'PRIMARY_KEY'],
-	},
-	auth_id => 'realm_id',
+        },
+        auth_id => 'realm_id',
     };
 }
 
@@ -107,8 +107,8 @@ sub is_acquired {
     my($self, $realm_id) = @_;
     $realm_id || $self->req('auth_id');
     return _map_txn_resources(
-	$self,
-	sub {_is_equal(shift, $realm_id) ? 1 : ()},
+        $self,
+        sub {_is_equal(shift, $realm_id) ? 1 : ()},
     ) ? 1 : 0;
 }
 
@@ -121,21 +121,21 @@ sub release {
     my($self) = @_;
     _trace($self) if $_TRACE;
     $self->throw_die('DIE', 'lock is not loaded')
-	unless $self->is_loaded;
+        unless $self->is_loaded;
     $self->req->delete_txn_resource($self);
     $self->throw_die('UPDATE_COLLISION')
-	unless $self->delete || $_SQL_READ_ONLY;
+        unless $self->delete || $_SQL_READ_ONLY;
     return;
 }
 
 sub release_all {
     my($self) = @_;
     _map_txn_resources(
-	$self,
-	sub {
-	    shift->release;
-	    return;
-	},
+        $self,
+        sub {
+            shift->release;
+            return;
+        },
     );
     return;
 }
@@ -143,16 +143,16 @@ sub release_all {
 sub _is_equal {
     my($other, $realm_id) = @_;
     return $_PI->is_equal(
-	$other->get('realm_id'),
-	$realm_id || $other->req('auth_id'),
+        $other->get('realm_id'),
+        $realm_id || $other->req('auth_id'),
     );
 }
 
 sub _map_txn_resources {
     my($self, $op) = @_;
     return map(
-	$self->is_blesser_of($_) ? $op->($_) : (),
-	@{$self->req('txn_resources')},
+        $self->is_blesser_of($_) ? $op->($_) : (),
+        @{$self->req('txn_resources')},
     );
 }
 

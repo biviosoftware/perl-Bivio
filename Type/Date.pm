@@ -37,15 +37,15 @@ sub delta_days {
 sub delta_months {
     my($proto, $start_date, $end_date) = @_;
     return -$proto->delta_months($end_date, $start_date)
-	if $proto->compare($start_date, $end_date) > 0;
+        if $proto->compare($start_date, $end_date) > 0;
     my(undef, undef, undef, $start_day, $start_month, $start_year)
-	= $proto->to_parts($start_date);
+        = $proto->to_parts($start_date);
     my(undef, undef, undef, $end_day, $end_month, $end_year)
-	= $proto->to_parts($end_date);
+        = $proto->to_parts($end_date);
     my($months) = 12 * ($end_year - $start_year)
-	+ ($end_month - $start_month);
+        + ($end_month - $start_month);
     $months--
-	if $start_day > $end_day;
+        if $start_day > $end_day;
     return $months;
 }
 
@@ -54,7 +54,7 @@ sub from_datetime {
     my($date, $time) = $proto->internal_split($date_time);
     my($v, $e) = $proto->SUPER::from_literal(_to($proto, $date));
     return ($v, $e)
-	if $e;
+        if $e;
     return $v;
 }
 
@@ -63,23 +63,23 @@ sub from_literal {
     $proto->internal_from_literal_warning
         unless wantarray;
     return undef
-	unless defined($value) && $value =~ /\S/;
+        unless defined($value) && $value =~ /\S/;
     return _from_date_time($proto, $value, $1)
-	if $value =~ /^\d+ (\d+)$/;
+        if $value =~ /^\d+ (\d+)$/;
     $value =~ s/\s+//g;
     return $proto->date_from_parts($3, $2, $1)
-	if $value =~ m{^(\d{4})[/-](\d+)[/-](\d+)$}s;
+        if $value =~ m{^(\d{4})[/-](\d+)[/-](\d+)$}s;
     return $proto->date_from_parts($2, $1, $3)
-	if $value =~ m{^(\d+)[/-](\d+)[/-](\d{4})$}s;
+        if $value =~ m{^(\d+)[/-](\d+)[/-](\d{4})$}s;
     return $proto->date_from_parts($3, $2, $1)
-	if $value =~ m{^(\d{4})(\d{2})(\d{2})$}s;
+        if $value =~ m{^(\d{4})(\d{2})(\d{2})$}s;
     return $proto->date_from_parts(
         $1,
-	$proto->english_month3_to_int($2),
-	$3,
+        $proto->english_month3_to_int($2),
+        $3,
     ) if $value =~ m{^(\d+)-([a-z]{3})-(\d{4})$}is;
     return $proto->date_from_parts($1, $2, $3)
-	if $value =~ m{^(\d+)\.(\d+)\.(\d{4})$}s;
+        if $value =~ m{^(\d+)\.(\d+)\.(\d{4})$}s;
     return (undef, Bivio::TypeError->DATE);
 }
 
@@ -116,10 +116,10 @@ sub get_width {
 sub local_today {
     my($proto) = @_;
     return _to(
-	$proto,
-	($proto->internal_split(
-	    $proto->add_seconds($proto->SUPER::now, -$proto->timezone * 60),
-	))[0],
+        $proto,
+        ($proto->internal_split(
+            $proto->add_seconds($proto->SUPER::now, -$proto->timezone * 60),
+        ))[0],
     );
 }
 
@@ -142,7 +142,7 @@ sub to_file_name {
 sub to_literal {
     my($proto, $value) = @_;
     return shift->SUPER::to_literal(@_)
-	unless defined($value);
+        unless defined($value);
     my(undef, undef, undef, $d, $m, $y) = $proto->to_parts($value);
     return sprintf('%02d/%02d/%04d', $m, $d, $y);
 }
@@ -150,9 +150,9 @@ sub to_literal {
 sub to_sql_param {
     my(undef, $param_value) = @_;
     return undef
-	unless defined($param_value);
+        unless defined($param_value);
     b_die($param_value, ': invalid date (clock component)')
-	unless $param_value =~ /$_DEFAULT_TIME$/o;
+        unless $param_value =~ /$_DEFAULT_TIME$/o;
     return $param_value;
 }
 
@@ -166,7 +166,7 @@ sub to_xml {
     # http://www.w3.org/TR/xmlschema-2/#date).
     # See also ISO 8601 (see http://www.iso.ch/markete/8601.pdf).
     return ''
-	unless defined($value);
+        unless defined($value);
     my(undef, undef, undef, $mday, $mon, $year) = $proto->to_parts($value);
     return sprintf('%04d-%02d-%02d', $year, $mon, $mday);
 }
@@ -175,9 +175,9 @@ sub _from_date_time {
     my($proto, $value, $time) = @_;
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	if $e;
+        if $e;
     return (undef, Bivio::TypeError->TIME_COMPONENT_OF_DATE)
-	unless $time eq $_DEFAULT_TIME;
+        unless $time eq $_DEFAULT_TIME;
     return $v;
 }
 

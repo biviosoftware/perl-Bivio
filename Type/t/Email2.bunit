@@ -5,54 +5,54 @@ req();
 my($round_up) = sub {
     my($expect) = @_;
     return $expect
-	unless ref($expect) eq 'ARRAY';
+        unless ref($expect) eq 'ARRAY';
     push(@$expect, undef)
-	while @$expect < 5;
+        while @$expect < 5;
     return $expect;
 };
 [
     get_local_part => [
-	[undef] => [undef],
-	'' => [undef],
-	'a@a.a' => 'a',
+        [undef] => [undef],
+        '' => [undef],
+        'a@a.a' => 'a',
     ],
     split_parts => [
-	map(
-	    ($_->[0], $round_up->($_->[1])),
-	    [[undef] => []],
-	    ['' => []],
-	    ['a@b.c' => ['a', 'b.c', 'a']],
-	    ['a@a.A' => ['a', 'a.a', 'a']],
-	    ['foo+btest_a=b.com@bivio.biz' => ['a', 'b.com', 'a']],
-	    ['admin*fourem@bivio.biz'
-		 => ['admin*fourem', 'bivio.biz', 'fourem', undef, 'admin']],
-	    ['admin*fourem+hello@bivio.biz'
-		 => ['admin*fourem+hello', 'bivio.biz', 'fourem', 'hello', 'admin']],
-	    [foo => []],
-	    ['foo@' => []],
-	    ['@x.x' => []],
-	),
+        map(
+            ($_->[0], $round_up->($_->[1])),
+            [[undef] => []],
+            ['' => []],
+            ['a@b.c' => ['a', 'b.c', 'a']],
+            ['a@a.A' => ['a', 'a.a', 'a']],
+            ['foo+btest_a=b.com@bivio.biz' => ['a', 'b.com', 'a']],
+            ['admin*fourem@bivio.biz'
+                 => ['admin*fourem', 'bivio.biz', 'fourem', undef, 'admin']],
+            ['admin*fourem+hello@bivio.biz'
+                 => ['admin*fourem+hello', 'bivio.biz', 'fourem', 'hello', 'admin']],
+            [foo => []],
+            ['foo@' => []],
+            ['@x.x' => []],
+        ),
     ],
     get_domain_part => [
-	[undef] => [undef],
-	'' => [undef],
-	'a@a.a' => 'a.a',
+        [undef] => [undef],
+        '' => [undef],
+        'a@a.a' => 'a.a',
     ],
     replace_domain => [
-	[qw(a@A.a b.b)] => 'a@b.b',
-	[qw(a.a b.b)] => DIE(),
+        [qw(a@A.a b.b)] => 'a@b.b',
+        [qw(a.a b.b)] => DIE(),
     ],
     equals_domain => [
-	[qw(a@b.c b.c)] => 1,
-	[qw(a@b.c b.)] => 0,
+        [qw(a@b.c b.c)] => 1,
+        [qw(a@b.c b.)] => 0,
     ],
     format_email => [
-	'a@b.c' => 'a@b.c',
+        'a@b.c' => 'a@b.c',
     ],
     format_ignore_random => [
-	[undef, req()] => qr{\w+-\w+\@},
+        [undef, req()] => qr{\w+-\w+\@},
     ],
     format_ignore => [
-	['a@B.C', req()] => qr{^ignore-a-b-c\@[^\@]+$}s,
+        ['a@B.C', req()] => qr{^ignore-a-b-c\@[^\@]+$}s,
     ],
 ];

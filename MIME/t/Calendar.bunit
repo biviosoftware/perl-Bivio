@@ -8,8 +8,8 @@ options({comparator => 'nested_contains'});
     class() => [
         vevents_from_ics => [
             map(
-        	([$_F->read("Calendar/$_.in")] => [do("Calendar/$_.out")]),
-        	1 .. 18,
+                ([$_F->read("Calendar/$_.in")] => [do("Calendar/$_.out")]),
+                1 .. 18,
             ),
         ],
     ],

@@ -14,7 +14,7 @@ sub USAGE {
     return <<'EOF';
 usage: b-list-model [options] command [args...]
 commands:
-	csv model [query [columns]]
+        csv model [query [columns]]
 EOF
 }
 
@@ -28,38 +28,38 @@ sub csv {
     my($iterating) = {};
     my($method) = 'next_row';
     unless (ref($model)) {
-	foreach my $model_name (split(/[,\s]+/, $models)) {
-	    $model = Bivio::Biz::Model->new($self->get_request, $model_name);
-	    die(ref($model), ': is not a ListModel')
-		unless $model->isa('Bivio::Biz::ListModel');
-	    my($m) = 'load_all';
-	    if ($models =~ /(,|^)$model_name$/ && $model->can_iterate) {
-		$method = 'iterate_next_and_load';
-		$m = 'iterate_start';
-	    }
-	    $model->$m($_Q->parse($query || ''));
-	}
+        foreach my $model_name (split(/[,\s]+/, $models)) {
+            $model = Bivio::Biz::Model->new($self->get_request, $model_name);
+            die(ref($model), ': is not a ListModel')
+                unless $model->isa('Bivio::Biz::ListModel');
+            my($m) = 'load_all';
+            if ($models =~ /(,|^)$model_name$/ && $model->can_iterate) {
+                $method = 'iterate_next_and_load';
+                $m = 'iterate_start';
+            }
+            $model->$m($_Q->parse($query || ''));
+        }
     }
     my($cols) = $columns ? [
-	map(+{
-	    name => $_,
-	    type => $model->get_field_info($_, 'type'),
-	}, split(/[,\s]+/, $columns)),
+        map(+{
+            name => $_,
+            type => $model->get_field_info($_, 'type'),
+        }, split(/[,\s]+/, $columns)),
     ] : [
-	sort({
-	    $a->{name} cmp $b->{name};
-	} values(%{$model->get_info('columns')})),
+        sort({
+            $a->{name} cmp $b->{name};
+        } values(%{$model->get_info('columns')})),
     ];
     my($res) = join(',', map($_->{name}, @$cols)) . "\n";
     $model->reset_cursor
-	if $method eq 'next_row';
+        if $method eq 'next_row';
     while ($model->$method()) {
         $res .= ${Bivio::Util::CSV->to_csv_text([
             map($_->{type}->to_string($model->get($_->{name})), @$cols),
         ])};
     }
     $model->iterate_end
-	if $method eq 'iterate_next_and_load';
+        if $method eq 'iterate_next_and_load';
 
     $res .= <<"EOF";
 
@@ -68,11 +68,11 @@ Date: @{[Bivio::Type::DateTime->now_as_string]}
 Command: @{[$self->command_line]}
 EOF
     if ($model->can('get_load_notes')) {
-	my($notes) = $model->get_load_notes() || '';
-	$res .= $notes;
+        my($notes) = $model->get_load_notes() || '';
+        $res .= $notes;
     }
     $self->put(result_name => $model->simple_package_name.'.csv',
-	    result_type => 'application/x-unknown-content-type-Excel.CSV');
+            result_type => 'application/x-unknown-content-type-Excel.CSV');
     return \$res;
 }
 

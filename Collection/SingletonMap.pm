@@ -26,14 +26,14 @@ sub get {
     unless @classes;
     my(@res);
     foreach my $x (@classes) {
-	$proto->put($x)
-	    unless exists($map->{$x});
-	push(@res, $map->{$x});
+        $proto->put($x)
+            unless exists($map->{$x});
+        push(@res, $map->{$x});
     }
     return @res
-	if wantarray;
+        if wantarray;
     b_die('get not called in array context and more than one return result')
-	unless int(@res) == 1;
+        unless int(@res) == 1;
     return $res[0];
 }
 
@@ -41,15 +41,15 @@ sub put {
     my($proto, @classes) = @_;
     my($class) = ref($proto) || $proto;
     $_MAP{$class} = {}
-	unless $_MAP{$class};
+        unless $_MAP{$class};
     my($map) = $_MAP{$class};
     my($c);
     foreach $c (@classes) {
-	next if $map->{$c};
-	my($res) = b_use($c);
+        next if $map->{$c};
+        my($res) = b_use($c);
 #TODO: Remove caching?
-	$map->{$c} = ref($res) ? $res
-	    : $res->can('get_instance') ? $res->get_instance : $res->new;
+        $map->{$c} = ref($res) ? $res
+            : $res->can('get_instance') ? $res->get_instance : $res->new;
     }
     return;
 }

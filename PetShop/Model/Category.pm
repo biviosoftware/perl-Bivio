@@ -7,13 +7,13 @@ use Bivio::Base 'Biz.PropertyModel';
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'category_t',
-	columns => {
-	    category_id => ['Name', 'PRIMARY_KEY'],
-	    name => ['Line', 'NONE'],
-	    description => ['Text', 'NONE'],
-	},
+        version => 1,
+        table_name => 'category_t',
+        columns => {
+            category_id => ['Name', 'PRIMARY_KEY'],
+            name => ['Line', 'NONE'],
+            description => ['Text', 'NONE'],
+        },
     };
 }
 

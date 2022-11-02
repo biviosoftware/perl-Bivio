@@ -54,7 +54,7 @@ sub update_thread {
     $m->process;
     my($x) = $m->get_visible_field_names;
     $self->model(CRMForm => {
-	map(($_ => $m->unsafe_get($_)), @$x),
+        map(($_ => $m->unsafe_get($_)), @$x),
         to => $self->type(EmailArray => $req->get('auth_realm')->format_email),
         cc => $self->type(EmailArray => ''),
         body => b_use('Biz.Random')->string,
@@ -70,71 +70,71 @@ sub update_thread {
 sub _init_btest {
     my($self) = @_;
     foreach my $forum (qw(CRM_TUPLE_FORUM CRM_FORUM)) {
-	$self->top_level_forum(
-	    $self->$forum(),
-	    [$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
-	);
-	$self->req->with_realm($self->CRM_TECH(1), sub {
-	    $self->model('Email')->create({
-		location => $self->use('Type.Location')->BILL_TO,
-		email => $self->format_test_email($self->CRM_TECH(1) . 'a'),
-	    });
-	    return;
-	}) if $forum eq 'CRM_TUPLE_FORUM';
-	$self->new_other('CRM')->setup_realm(undef, undef);
-	if ($forum eq 'CRM_FORUM') {
-	    my($last_alias);
-	    foreach my $name (qw(acrm crm)) {
-		$self->model('EmailAlias')->create({
-		    incoming => $last_alias = $self->req->format_email($name),
-		    outgoing => $self->req(qw(auth_realm owner name)),
-		});
-	    }
-	    $self->model('RowTag')->create_value(
-		$self->req('auth_id'), 'CANONICAL_EMAIL_ALIAS',
-		$last_alias);
-	    $self->req(qw(auth_realm owner))->update({
-		display_name => 'PetShop Support',
-	    });
-	}
-	elsif ($forum eq 'CRM_TUPLE_FORUM') {
-	    $self->model('TupleSlotType')->create_from_hash({
-		Priority => {
-		    type_class => 'TupleSlot',
-		    choices => [qw(Low Medium High)],
-		    default_value => 'Low',
-		},
-	    });
-	    $self->model('RowTag')->create_value(
-		$self->req('auth_id'), 'CRM_SUBJECT_PREFIX', 'tuple');
-	    $self->model('TupleDef')->create_from_hash({
-		'b_ticket#Ticket' => [
-		    {
-			label => 'Product',
-			type => 'String',
-		    },
-		    {
-			label => 'Priority',
-			type => 'Priority',
-			is_required => 1,
-		    },
+        $self->top_level_forum(
+            $self->$forum(),
+            [$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
+        );
+        $self->req->with_realm($self->CRM_TECH(1), sub {
+            $self->model('Email')->create({
+                location => $self->use('Type.Location')->BILL_TO,
+                email => $self->format_test_email($self->CRM_TECH(1) . 'a'),
+            });
+            return;
+        }) if $forum eq 'CRM_TUPLE_FORUM';
+        $self->new_other('CRM')->setup_realm(undef, undef);
+        if ($forum eq 'CRM_FORUM') {
+            my($last_alias);
+            foreach my $name (qw(acrm crm)) {
+                $self->model('EmailAlias')->create({
+                    incoming => $last_alias = $self->req->format_email($name),
+                    outgoing => $self->req(qw(auth_realm owner name)),
+                });
+            }
+            $self->model('RowTag')->create_value(
+                $self->req('auth_id'), 'CANONICAL_EMAIL_ALIAS',
+                $last_alias);
+            $self->req(qw(auth_realm owner))->update({
+                display_name => 'PetShop Support',
+            });
+        }
+        elsif ($forum eq 'CRM_TUPLE_FORUM') {
+            $self->model('TupleSlotType')->create_from_hash({
+                Priority => {
+                    type_class => 'TupleSlot',
+                    choices => [qw(Low Medium High)],
+                    default_value => 'Low',
+                },
+            });
+            $self->model('RowTag')->create_value(
+                $self->req('auth_id'), 'CRM_SUBJECT_PREFIX', 'tuple');
+            $self->model('TupleDef')->create_from_hash({
+                'b_ticket#Ticket' => [
+                    {
+                        label => 'Product',
+                        type => 'String',
+                    },
+                    {
+                        label => 'Priority',
+                        type => 'Priority',
+                        is_required => 1,
+                    },
                     {
                         label => 'Deadline',
                         type => 'Date',
                     },
-		],
-	    });
-	    $self->model('TupleUse')->create_from_label('Ticket');
-	    # Left out on purpose.  Good test for UI checking for Select()
-	    # See View.CRM->thread_root_list
-	    # CRMQueryForm,Priority
-	    $self->realm_file_create('/Settings/TupleTag.csv', <<'EOF');
+                ],
+            });
+            $self->model('TupleUse')->create_from_label('Ticket');
+            # Left out on purpose.  Good test for UI checking for Select()
+            # See View.CRM->thread_root_list
+            # CRMQueryForm,Priority
+            $self->realm_file_create('/Settings/TupleTag.csv', <<'EOF');
 Model,b_ticket
 CRMThreadRootList,Priority
 CRMForm,
 ,Product;Priority;Deadline;
 EOF
-	}
+        }
     }
     return;
 }
@@ -142,8 +142,8 @@ EOF
 sub _init_bunit {
     my($self) = @_;
     $self->top_level_forum(
-	'crm_tuple_bunit',
-	[$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
+        'crm_tuple_bunit',
+        [$self->CRM_TECH(1)], [$self->CRM_TECH(2)],
     );
     $self->new_other('CRM')->setup_realm(undef, undef);
     $self->model('TupleDef')->create_from_hash({

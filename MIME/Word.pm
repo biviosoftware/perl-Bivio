@@ -14,9 +14,9 @@ sub decode {
     $value =~ s{(\?\=)\s*(\=\?)}{$1$2}gs;
     $value =~ s{\=\?([^?]*)\?([bq])\?([^?]+)\?\=}{
         _strip(
-	    $1,
-	    lc($2) eq 'q' ? _decode_q($3) : MIME::Base64::decode_base64($3),
-	);
+            $1,
+            lc($2) eq 'q' ? _decode_q($3) : MIME::Base64::decode_base64($3),
+        );
     }egisx;
     return $value;
 }
@@ -31,15 +31,15 @@ sub _decode_q {
 sub _strip {
     my($encoding, $value) = @_;
     unless ($encoding =~ /^(ISO-8859-1|US-ASCII)$/i) {
-	if ($encoding =~ /^UTF-8$/i) {
-	    utf8::decode($value);
-	}
-	elsif ($encoding =~ /^WINDOWS-1252/i) {
-	    $value = Encode::decode('WINDOWS-1252', $value);
-	}
-	else {
-	    $value =~ s{[\x80-\xFF]}{\?}g
-	}
+        if ($encoding =~ /^UTF-8$/i) {
+            utf8::decode($value);
+        }
+        elsif ($encoding =~ /^WINDOWS-1252/i) {
+            $value = Encode::decode('WINDOWS-1252', $value);
+        }
+        else {
+            $value =~ s{[\x80-\xFF]}{\?}g
+        }
     }
     $value =~ s{\x00}{\?}g;
     return $value;

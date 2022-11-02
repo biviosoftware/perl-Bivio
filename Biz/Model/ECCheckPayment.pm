@@ -14,16 +14,16 @@ sub internal_initialize {
     # need to always preserve ECPayments, so deleting them
     # via cascade_delete() should always fail
     return {
-	version => 1,
-	table_name => 'ec_check_payment_t',
-	columns => {
-	    ec_payment_id => ['ECPayment.ec_payment_id', 'PRIMARY_KEY'],
+        version => 1,
+        table_name => 'ec_check_payment_t',
+        columns => {
+            ec_payment_id => ['ECPayment.ec_payment_id', 'PRIMARY_KEY'],
             realm_id => ['PrimaryId', 'NOT_NULL'],
-	    check_number => ['Line', 'NOT_NULL'],
-	    institution => ['Line', 'NONE'],
+            check_number => ['Line', 'NOT_NULL'],
+            institution => ['Line', 'NONE'],
         },
-	auth_id => 'realm_id',
-	other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
+        auth_id => 'realm_id',
+        other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
     };
 }
 

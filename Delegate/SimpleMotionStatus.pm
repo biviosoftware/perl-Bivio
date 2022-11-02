@@ -7,9 +7,9 @@ use Bivio::Base 'Type.EnumDelegate';
 
 sub get_delegate_info {
     return [
-	UNKNOWN => [0],
-	OPEN => [1],
-	CLOSED => [2],
+        UNKNOWN => [0],
+        OPEN => [1],
+        CLOSED => [2],
     ];
 }
 

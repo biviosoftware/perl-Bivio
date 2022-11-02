@@ -4,13 +4,13 @@ ListModel();
 req()->set_realm('crm_forum');
 [
     load_all => [
-	[] => make_expect_rows(
-	    ['Email.email'],
-	    [
-		qr{crm_tech1a\@},
-		qr{crm_tech1\@},
-		qr{crm_tech2\@},
-	    ],
-	),
+        [] => make_expect_rows(
+            ['Email.email'],
+            [
+                qr{crm_tech1a\@},
+                qr{crm_tech1\@},
+                qr{crm_tech2\@},
+            ],
+        ),
     ],
 ];

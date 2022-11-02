@@ -18,10 +18,10 @@ sub execute_empty_end {
     my($self) = @_;
     my($req) = $self->get_request;
     if (my $m = $req->unsafe_get('Model.TupleSlotType')) {
-	$self->load_from_model_properties($m);
+        $self->load_from_model_properties($m);
     }
     else {
-	$self->internal_put_field('TupleSlotType.type_class' =>
+        $self->internal_put_field('TupleSlotType.type_class' =>
             $self->get_instance('TupleSlotTypeClassList')->DEFAULT);
     }
     return;
@@ -31,16 +31,16 @@ sub execute_ok_end {
     my($self) = @_;
     my($req) = $self->get_request;
     my($v) = {
-	%{$self->get_model_properties('TupleSlotType')},
-	choices => $self->get_field_type('TupleSlotType.choices')
-	    ->new($self->[$_IDI]),
+        %{$self->get_model_properties('TupleSlotType')},
+        choices => $self->get_field_type('TupleSlotType.choices')
+            ->new($self->[$_IDI]),
     };
     my($tstcl) = $req->get('Model.TupleSlotTypeClassList');
     return _err($self, 'TupleSlotType.type_class', 'NOT_FOUND')
-	unless $tstcl->find_row_by_class($v->{type_class});
+        unless $tstcl->find_row_by_class($v->{type_class});
     my($m) = $req->unsafe_get('Model.TupleSlotType');
     _err($self, 'type_class' => 'MUTUALLY_EXCLUSIVE')
-	if $m && $tstcl->is_upgrade($m->get('type_class'), $v->{type_class});
+        if $m && $tstcl->is_upgrade($m->get('type_class'), $v->{type_class});
     my($method) = $m ? 'update' : 'create';
     ($m || $self->new_other('TupleSlotType'))->$method($v);
     return;
@@ -51,7 +51,7 @@ sub execute_ok_row {
     return if $self->is_empty_row;
     my($v) = $self->get('choice');
     return _err($self, choice => 'EXISTS')
-	if grep($v eq $_, @{$self->[$_IDI]});
+        if grep($v eq $_, @{$self->[$_IDI]});
     push(@{$self->[$_IDI]}, $v);
     return;
 }
@@ -67,20 +67,20 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         list_class => 'TupleSlotChoiceList',
-	visible => [
-	    'TupleSlotType.label',
-	    'TupleSlotType.type_class',
-	    'TupleSlotType.default_value',
-	    {
-		name => 'choice',
-		type => 'TupleSlot',
-		constraint => 'NONE',
-		in_list => 1,
-	    },
-	],
-	other => [
-	    'TupleSlotType.choices',
-	],
+        visible => [
+            'TupleSlotType.label',
+            'TupleSlotType.type_class',
+            'TupleSlotType.default_value',
+            {
+                name => 'choice',
+                type => 'TupleSlot',
+                constraint => 'NONE',
+                in_list => 1,
+            },
+        ],
+        other => [
+            'TupleSlotType.choices',
+        ],
     });
 }
 
@@ -100,7 +100,7 @@ sub internal_initialize_this_list {
 sub _err {
     my($self, $field, $err) = @_;
     $self->internal_put_error(
-	$field eq 'choice' ? $field : "TupleSlotType.$field" => $err);
+        $field eq 'choice' ? $field : "TupleSlotType.$field" => $err);
     return;
 }
 

@@ -2,65 +2,65 @@
 # $Id$
 FormModel({
     check_return => sub {
-	my($case, undef, $expect) = @_;
-	return 1
-	    unless shift->is_method('process');
-	if (ref($expect->[0])) {
-	    assert_equals(
-		$expect->[0]->{class()},
-		$case->get('object')->get_errors,
-	    );
-	    return 1;
-	}
-	my($is_subscribed) = shift(@$expect);
-	assert_equals(
-	    $is_subscribed,
-	    model('UserRealmSubscription')->unsafe_load({
-		user_id => req('auth_user_id'),
-		is_subscribed => 1,
-	    }),
-	);
-	model('GroupUserList')->execute_load_this;
-	assert_equals(
-	    $expect,
-	    [map($_->get_name, @{req(qw(Model.GroupUserList roles))})],
-	);
-	return 1;
+        my($case, undef, $expect) = @_;
+        return 1
+            unless shift->is_method('process');
+        if (ref($expect->[0])) {
+            assert_equals(
+                $expect->[0]->{class()},
+                $case->get('object')->get_errors,
+            );
+            return 1;
+        }
+        my($is_subscribed) = shift(@$expect);
+        assert_equals(
+            $is_subscribed,
+            model('UserRealmSubscription')->unsafe_load({
+                user_id => req('auth_user_id'),
+                is_subscribed => 1,
+            }),
+        );
+        model('GroupUserList')->execute_load_this;
+        assert_equals(
+            $expect,
+            [map($_->get_name, @{req(qw(Model.GroupUserList roles))})],
+        );
+        return 1;
     },
 });
 [
     req_state({
-	task => 'GROUP_USER_FORM',
-	user => 'root',
-	realm => 'fourem',
-	query => {this => realm_id('root')},
+        task => 'GROUP_USER_FORM',
+        user => 'root',
+        realm => 'fourem',
+        query => {this => realm_id('root')},
     }),
     [{
-	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
-	file_writer => 1,
-	is_subscribed => 0,
+        'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+        file_writer => 1,
+        is_subscribed => 0,
     }] => [qw(0 ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT)],
     [{
-	'RealmUser.role' => Auth_Role('MEMBER'),
-	file_writer => 1,
-	is_subscribed => 0,
+        'RealmUser.role' => Auth_Role('MEMBER'),
+        file_writer => 1,
+        is_subscribed => 0,
     }] => [qw(0 MEMBER FILE_WRITER MAIL_RECIPIENT)],
     error_case({
-	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
-	file_writer => 1,
-	is_subscribed => 0,
+        'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+        file_writer => 1,
+        is_subscribed => 0,
     } => {
-	'RealmUser.role' => 'NOT_FOUND',
+        'RealmUser.role' => 'NOT_FOUND',
     }),
     inline_rollback(),
     [{
-	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
-	file_writer => 1,
-	is_subscribed => 0,
+        'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+        file_writer => 1,
+        is_subscribed => 0,
     }] => [qw(0 ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT)],
     [{
-	'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
-	file_writer => 0,
-	is_subscribed => 1,
+        'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+        file_writer => 0,
+        is_subscribed => 1,
     }] => [qw(1 ADMINISTRATOR FILE_WRITER MAIL_RECIPIENT)],
 ];

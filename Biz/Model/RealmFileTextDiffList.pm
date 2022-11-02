@@ -36,12 +36,12 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         other => [
-	    map(+{
-		name => $_,
-		type => 'String',
-		constraint => 'NONE',
-	    }, qw(line_info same top bottom)),
-	],
+            map(+{
+                name => $_,
+                type => 'String',
+                constraint => 'NONE',
+            }, qw(line_info same top bottom)),
+        ],
     });
 }
 
@@ -51,22 +51,22 @@ sub internal_load_rows {
     my($right) = ${$self->get_selected_file->get_content};
     my($rows) = [];
     if ($self->use('Algorithm::Diff')) {
-	my($diff) = Algorithm::Diff->new(
-	    map([split(/(?<=\n)/, $_)], $left , $right),
-	);
-	$diff->Base(1);
-	while ($diff->Next) {
-	    my($top, $bot) = map({
-		my($s) = ($_ ? '+' : '-');
-		join('', map($diff->Same ? $_ : "$s $_", $diff->Items($_ + 1)));
-	    } 0, 1);
-	    push(@$rows, {
-		line_info => $diff->Same ? '' : _line_info($diff),
-		same => $diff->Same ? $top : '',
-		top => $diff->Same ? '' : $top,
-		bottom => $diff->Same ? '' : $bot,
-	    });
-	}
+        my($diff) = Algorithm::Diff->new(
+            map([split(/(?<=\n)/, $_)], $left , $right),
+        );
+        $diff->Base(1);
+        while ($diff->Next) {
+            my($top, $bot) = map({
+                my($s) = ($_ ? '+' : '-');
+                join('', map($diff->Same ? $_ : "$s $_", $diff->Items($_ + 1)));
+            } 0, 1);
+            push(@$rows, {
+                line_info => $diff->Same ? '' : _line_info($diff),
+                same => $diff->Same ? $top : '',
+                top => $diff->Same ? '' : $top,
+                bottom => $diff->Same ? '' : $bot,
+            });
+        }
     }
     return [@$rows];
 }
@@ -74,22 +74,22 @@ sub internal_load_rows {
 sub _get_file {
     my($self, $name) = @_;
     return $self->new_other('RealmFile')->load({
-	realm_file_id => $self->req('query')->{$name},
+        realm_file_id => $self->req('query')->{$name},
     });
 }
 
 sub _line_info {
     my($diff) = shift;
     return sprintf(
-	"%s",
-	$diff->Items(2)
-	    ? sprintf('%d,%dd%d', $diff->Get(qw(Min1 Max1 Max2)))
-		: $diff->Items(1) ? (
-		    sprintf('%d,%dc%d,%d',
-			    $diff->Get(qw(Min1 Max1 Min2 Max2))),
-		    my($sep) = "--",
-		)[0] : sprintf('%da%d,%d',
-			       $diff->Get(qw(Max1 Min2 Max2))),
+        "%s",
+        $diff->Items(2)
+            ? sprintf('%d,%dd%d', $diff->Get(qw(Min1 Max1 Max2)))
+                : $diff->Items(1) ? (
+                    sprintf('%d,%dc%d,%d',
+                            $diff->Get(qw(Min1 Max1 Min2 Max2))),
+                    my($sep) = "--",
+                )[0] : sprintf('%da%d,%d',
+                               $diff->Get(qw(Max1 Min2 Max2))),
     );
 }
 

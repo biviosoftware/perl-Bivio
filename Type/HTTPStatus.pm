@@ -31,7 +31,7 @@ sub as_string {
 sub new {
     my($self) = shift->SUPER::new;
     b_die($self->[$_IDI], ': must be defined')
-	unless defined($self->[$_IDI] = shift);
+        unless defined($self->[$_IDI] = shift);
     return $self;
 }
 

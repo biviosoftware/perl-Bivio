@@ -3,15 +3,15 @@
 Type();
 [
     {
-	method => 'is_set_for_realm',
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->set_realm($params->[0]);
-	    return [req()];
-	},
+        method => 'is_set_for_realm',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->set_realm($params->[0]);
+            return [req()];
+        },
     } => [
-	demo => 1,
-	fourem => 1,
-	'site-contact' => 1,
+        demo => 1,
+        fourem => 1,
+        'site-contact' => 1,
     ],
 ];

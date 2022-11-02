@@ -19,12 +19,12 @@ sub bunit_validate_all {
     my($proto) = @_;
     my($seen) = {};
     foreach my $c (@{$proto->standard_components}) {
-	foreach my $t (@{_component_info($proto, $c) || []}) {
-	    my($n) = ref($t) eq 'ARRAY' ? $t->[0] : $t->{name};
-	    Bivio::Die->die($c, ' and ', $seen->{$n}, ': both define ', $n)
-	        if $seen->{$n};
-	    $seen->{$n} = $c;
-	}
+        foreach my $t (@{_component_info($proto, $c) || []}) {
+            my($n) = ref($t) eq 'ARRAY' ? $t->[0] : $t->{name};
+            Bivio::Die->die($c, ' and ', $seen->{$n}, ': both define ', $n)
+                if $seen->{$n};
+            $seen->{$n} = $c;
+        }
     }
     return;
 }
@@ -32,24 +32,24 @@ sub bunit_validate_all {
 sub canonicalize_task_decl {
     my($proto, $cfg) = @_;
     if (ref($cfg) eq 'HASH') {
-	if ($cfg->{permissions}) {
-	    $_A->warn_deprecated(
-		$cfg->{name},
-		': permissions deprecated, use permission_set',
-	    );
-	    $cfg->{permission_set} = delete($cfg->{permissions});
-	}
-	return $cfg;
+        if ($cfg->{permissions}) {
+            $_A->warn_deprecated(
+                $cfg->{name},
+                ': permissions deprecated, use permission_set',
+            );
+            $cfg->{permission_set} = delete($cfg->{permissions});
+        }
+        return $cfg;
     }
     if (ref($cfg) eq 'ARRAY') {
-	return {
-	    name => shift(@$cfg),
-	    int => shift(@$cfg),
-	    realm_type => shift(@$cfg),
-	    permission_set => shift(@$cfg),
-	    items => [grep(!/=/, @$cfg)],
-	    map(split(/=/, $_, 2), grep(/=/, @$cfg)),
-	};
+        return {
+            name => shift(@$cfg),
+            int => shift(@$cfg),
+            realm_type => shift(@$cfg),
+            permission_set => shift(@$cfg),
+            items => [grep(!/=/, @$cfg)],
+            map(split(/=/, $_, 2), grep(/=/, @$cfg)),
+        };
     }
     b_die($cfg, ': invalid config format');
     # DOES NOT RETURN
@@ -59,12 +59,12 @@ sub canonicalize_task_info {
     my($proto, $info) = @_;
     my($seen) = {};
     my($validate) = sub {
-	my($cfg) = @_;
-	b_die($cfg, 'name: missing from: ', $cfg)
-	    unless $cfg->{name};
-	b_die($cfg->{name}, ': duplicate name')
-	    if $seen->{$cfg->{name}}++;
-	return $cfg;
+        my($cfg) = @_;
+        b_die($cfg, 'name: missing from: ', $cfg)
+            unless $cfg->{name};
+        b_die($cfg->{name}, ': duplicate name')
+            if $seen->{$cfg->{name}}++;
+        return $cfg;
     };
     return [map($validate->($proto->canonicalize_task_decl($_)), @$info)];
 }
@@ -86,7 +86,7 @@ sub internal_json_decl {
     my($proto, $decl) = @_;
     $decl = $proto->canonicalize_task_decl($decl);
     b_die($decl->{name}, ": does not match $_JSON_RE")
-	unless $decl->{name} =~ $_JSON_RE;
+        unless $decl->{name} =~ $_JSON_RE;
     # JSON tasks just return "OK" unless 
     push(@{$decl->{items}}, 'Action.JSONReply->http_ok');
     return $decl;
@@ -104,35 +104,35 @@ sub is_continuous {
 sub merge_task_info {
     my($proto, @info) = @_;
     my($merge) = sub {
-	my($info) = @_;
-	my($map) = {};
-	foreach my $cfg (@$info) {
-	    $map->{$cfg->{name}} = {
-		%{$map->{$cfg->{name}} || {}},
-		%$cfg,
-	    };
-	}
-	return [sort(
-	    {$a->{int} <=> $b->{int}}
-	    values(%$map),
-	)];
+        my($info) = @_;
+        my($map) = {};
+        foreach my $cfg (@$info) {
+            $map->{$cfg->{name}} = {
+                %{$map->{$cfg->{name}} || {}},
+                %$cfg,
+            };
+        }
+        return [sort(
+            {$a->{int} <=> $b->{int}}
+            values(%$map),
+        )];
     };
     my($info) = sub {
-	my($component) = @_;
-	return $component
-	    if ref($component);
-	return []
-	    unless my $tasks = _component_info($proto, $component);
-	return [
-	    {
-		name => "_TASK_COMPONENT_$component",
-		int => 0,
-	    },
-	    @$tasks,
-	];
+        my($component) = @_;
+        return $component
+            if ref($component);
+        return []
+            unless my $tasks = _component_info($proto, $component);
+        return [
+            {
+                name => "_TASK_COMPONENT_$component",
+                int => 0,
+            },
+            @$tasks,
+        ];
     };
     return $merge->([
-	map(@{$proto->canonicalize_task_info($info->($_))}, @info),
+        map(@{$proto->canonicalize_task_info($info->($_))}, @info),
     ]);
 }
 
@@ -140,35 +140,35 @@ sub standard_components {
     my($proto) = @_;
     return [sort(
         _sort
-	grep(
-	    $_ ne 'otp'
-		&& $_C->if_version(10, 1, sub {$_ ne 'task_log'}),
-	    @{$proto->internal_delegate_package->grep_methods($_INFO_RE)},
-	),
+        grep(
+            $_ ne 'otp'
+                && $_C->if_version(10, 1, sub {$_ ne 'task_log'}),
+            @{$proto->internal_delegate_package->grep_methods($_INFO_RE)},
+        ),
     )];
 }
 
 sub _compile {
     my($proto) = @_;
     return
-	if $_CFG;
+        if $_CFG;
     $_CFG = [];
     foreach my $cfg (@{$proto->internal_delegate_package->get_delegate_info}) {
-	if ($cfg->{name} =~ /_TASK_COMPONENT_(\w+)/) {
-	    $_INCLUDED_COMPONENT->{lc($1)}++;
-	}
-	else {
-	    push(@$_CFG, $cfg);
-	}
+        if ($cfg->{name} =~ /_TASK_COMPONENT_(\w+)/) {
+            $_INCLUDED_COMPONENT->{lc($1)}++;
+        }
+        else {
+            push(@$_CFG, $cfg);
+        }
     }
     $proto->compile([
-	map(
-	    (
-		$_->{name},
-		[$_->{int} || b_die($_, ': missing int')],
-	    ),
-	    @{$proto->get_cfg_list},
-	)
+        map(
+            (
+                $_->{name},
+                [$_->{int} || b_die($_, ': missing int')],
+            ),
+            @{$proto->get_cfg_list},
+        )
     ]);
     return;
 }
@@ -184,9 +184,9 @@ sub _component_info {
 
 sub _sort {
     return $a eq $b ? 0
-	: $a eq 'base' ? -1
-	: $b eq 'base' ? +1
-	: $a cmp $b;
+        : $a eq 'base' ? -1
+        : $b eq 'base' ? +1
+        : $a cmp $b;
 }
 
 1;

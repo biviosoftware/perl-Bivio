@@ -3,25 +3,25 @@
 Request();
 [
     class() => [
-	tree_paths => [
-	    fourem => [[qw(
-		/fourem
+        tree_paths => [
+            fourem => [[qw(
+                /fourem
                 /fourem/fourem-sub1
-		/fourem/fourem-sub1/fourem-sub1-1
-		/fourem/fourem-sub2
-		/fourem/fourem-sub3
-		/fourem/fourem-sub4
-	    )]],
-	],
-	reparent => [
-	    [qw(fourem-sub1 fourem-sub2)] => sub {
-		assert_equals(
-		    realm_id('fourem-sub2'),
-		    req(qw(Model.Forum parent_realm_id)),
-		);
-		return 1;
-	    },
-	    [qw(fourem crm_forum)] => DIE(),
-	],
+                /fourem/fourem-sub1/fourem-sub1-1
+                /fourem/fourem-sub2
+                /fourem/fourem-sub3
+                /fourem/fourem-sub4
+            )]],
+        ],
+        reparent => [
+            [qw(fourem-sub1 fourem-sub2)] => sub {
+                assert_equals(
+                    realm_id('fourem-sub2'),
+                    req(qw(Model.Forum parent_realm_id)),
+                );
+                return 1;
+            },
+            [qw(fourem crm_forum)] => DIE(),
+        ],
     ],
 ];

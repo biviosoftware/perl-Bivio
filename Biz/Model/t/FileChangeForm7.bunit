@@ -6,39 +6,39 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 [
     [{
-	name => 'folder1',
-	mode => $_FCM->ADD_SUBFOLDER,
+        name => 'folder1',
+        mode => $_FCM->ADD_SUBFOLDER,
     }] => [{
-	'Model.RealmFile' => {
-	    path => '/folder1',
-	    is_folder => 1,
-	},
+        'Model.RealmFile' => {
+            path => '/folder1',
+            is_folder => 1,
+        },
     }],
     [{
-	path_info => '/folder1',
-	name => 'folder2',
-	mode => $_FCM->ADD_SUBFOLDER,
+        path_info => '/folder1',
+        name => 'folder2',
+        mode => $_FCM->ADD_SUBFOLDER,
     }] => [{
-	'Model.RealmFile' => {
-	    path => '/folder1/folder2',
-	    is_folder => 1,
-	},
+        'Model.RealmFile' => {
+            path => '/folder1/folder2',
+            is_folder => 1,
+        },
     }],
     error_case({
-	name => 'blah/foo',
-	mode => $_FCM->ADD_SUBFOLDER,
+        name => 'blah/foo',
+        mode => $_FCM->ADD_SUBFOLDER,
     }, {
-	name => 'FILE_NAME',
+        name => 'FILE_NAME',
     }),
     error_case({
-	mode => $_FCM->ADD_SUBFOLDER,
+        mode => $_FCM->ADD_SUBFOLDER,
     }, {
-	name => 'NULL',
-	mode => $_FCM->ADD_SUBFOLDER,
+        name => 'NULL',
+        mode => $_FCM->ADD_SUBFOLDER,
     }),
     [{
-	path_info => '/folderx',
-	name => 'folder3',
-	mode => $_FCM->ADD_SUBFOLDER,
+        path_info => '/folderx',
+        name => 'folder3',
+        mode => $_FCM->ADD_SUBFOLDER,
     }] => MODEL_NOT_FOUND(),
 ];

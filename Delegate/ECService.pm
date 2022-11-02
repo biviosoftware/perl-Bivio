@@ -7,7 +7,7 @@ use Bivio::Base 'Type.EnumDelegate';
 
 sub get_delegate_info {
     return [
-	UNKNOWN => [0],
+        UNKNOWN => [0],
     ];
 }
 

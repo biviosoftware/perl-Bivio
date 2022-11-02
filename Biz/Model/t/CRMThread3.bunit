@@ -23,37 +23,37 @@ body
 EOF
 [
     [req()] => [
-	{
-	    method => 'create_from_rfc822',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->delete_all_by_regexp(qr{CRMThread|RealmMail});
-		$id++;
-		return [template(\(my $x = $msg), {
-		    subject => $params->[0],
+        {
+            method => 'create_from_rfc822',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->delete_all_by_regexp(qr{CRMThread|RealmMail});
+                $id++;
+                return [template(\(my $x = $msg), {
+                    subject => $params->[0],
                     message_id => "<a.$id\@a.a>",
                     extra_headers => $params->[1] ? $params->[1]->() : '',
-		})];
-	    },
-	    compute_return => sub {[
+                })];
+            },
+            compute_return => sub {[
                 req(),
                 ${model(RealmFile => {
                     realm_file_id => req(qw(Model.RealmMail realm_file_id)),
                 })->get_content},
             ]},
-	} => [
-	    problem => [{
-		'Model.CRMThread' => {
-		    crm_thread_num => $first_num,
-		},
-		'Model.RealmMail' => {
-		    realm_file_id => sub {$first_tid = shift},
-		    message_id => sub {$msg_id = shift},
-		},
-	    }, qr{Subject: .*#$first_num\] problem.*}s],
-	    ['problem2', sub {
-		 "In-Reply-To: <$msg_id>\n";
-	    }] => [{
+        } => [
+            problem => [{
+                'Model.CRMThread' => {
+                    crm_thread_num => $first_num,
+                },
+                'Model.RealmMail' => {
+                    realm_file_id => sub {$first_tid = shift},
+                    message_id => sub {$msg_id = shift},
+                },
+            }, qr{Subject: .*#$first_num\] problem.*}s],
+            ['problem2', sub {
+                 "In-Reply-To: <$msg_id>\n";
+            }] => [{
                 'Model.RealmMail' => {
                     subject => qr{#$second_num\] problem2},
                     thread_parent_id => undef,
@@ -65,37 +65,37 @@ EOF
                     crm_thread_num => $second_num,
                 },
             }, qr{Subject: .*#$second_num\] problem2}s],
-	    ['problem', sub {
-		 "In-Reply-To: <$msg_id>\n";
-	    }] => [{
-		'Model.RealmMail' => {
-		    subject => qr{#$first_num\] problem},
-		    thread_parent_id => sub {$first_tid},
-		    thread_root_id => sub {$first_tid},
-		},
-		'Model.CRMThread' => {
-		    crm_thread_num => $first_num,
-		},
-	    }, qr{Subject: .*#$first_num\] problem}],
-	    ['Re: problem', sub {
-		 "In-Reply-To: <$msg_id>\n";
-	    }] => [{
-		'Model.RealmMail' => {
-		    subject => qr{#$first_num\] Re: problem},
-		    thread_parent_id => sub {$first_tid},
-		    thread_root_id => sub {$first_tid},
-		},
-		'Model.CRMThread' => {
-		    crm_thread_num => $first_num,
-		},
-	    }, qr{Subject: .*#$first_num\]}s],
+            ['problem', sub {
+                 "In-Reply-To: <$msg_id>\n";
+            }] => [{
+                'Model.RealmMail' => {
+                    subject => qr{#$first_num\] problem},
+                    thread_parent_id => sub {$first_tid},
+                    thread_root_id => sub {$first_tid},
+                },
+                'Model.CRMThread' => {
+                    crm_thread_num => $first_num,
+                },
+            }, qr{Subject: .*#$first_num\] problem}],
+            ['Re: problem', sub {
+                 "In-Reply-To: <$msg_id>\n";
+            }] => [{
+                'Model.RealmMail' => {
+                    subject => qr{#$first_num\] Re: problem},
+                    thread_parent_id => sub {$first_tid},
+                    thread_root_id => sub {$first_tid},
+                },
+                'Model.CRMThread' => {
+                    crm_thread_num => $first_num,
+                },
+            }, qr{Subject: .*#$first_num\]}s],
             map(([$_, sub {
                 "In-Reply-To: <$msg_id>\n";
             }] => [{
-		'Model.CRMThread' => {
-		    crm_thread_num => $first_num,
-		    subject => $_ =~ /(\w+)$/,
-		},
+                'Model.CRMThread' => {
+                    crm_thread_num => $first_num,
+                    subject => $_ =~ /(\w+)$/,
+                },
             }, qr{Subject: \[[^]]+ #$first_num\]}]),
                 'Re: problem',
                 'Re problem',
@@ -108,6 +108,6 @@ EOF
                 '[fwd] problem',
                 'Fwd: RE: re: fw problem',
             ),
-	],
+        ],
     ],
 ];

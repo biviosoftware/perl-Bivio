@@ -4,26 +4,26 @@ ListModel();
 req()->setup_facade;
 [
     load_all => [
-	[] => not_die(),
+        [] => not_die(),
     ],
     {
-	method => 'find_row_by',
-	compute_return => sub {
-	    my(undef, $actual) = @_;
-	    return [$actual->[0]->get('display_name')];
-	},
+        method => 'find_row_by',
+        compute_return => sub {
+            my(undef, $actual) = @_;
+            return [$actual->[0]->get('display_name')];
+        },
     } => [
-	[enum => TimeZone('UTC')] => 'UTC',
-	[enum => TimeZone('PACIFIC_HONOLULU')] => 'Pacific/Honolulu',
+        [enum => TimeZone('UTC')] => 'UTC',
+        [enum => TimeZone('PACIFIC_HONOLULU')] => 'Pacific/Honolulu',
     ],
     enum_for_display_name => [
-	'Pacific/Honolulu' => [TimeZone('PACIFIC_HONOLULU')],
+        'Pacific/Honolulu' => [TimeZone('PACIFIC_HONOLULU')],
     ],
     display_name_for_enum => [
-	[TimeZone('AMERICA_DENVER')] => 'America/Denver',
+        [TimeZone('AMERICA_DENVER')] => 'America/Denver',
     ],
     unsafe_enum_for_display_name => [
-	'Pacific/Honolulu' => [TimeZone('PACIFIC_HONOLULU')],
-	'this_time_zone_doesnt_exist' => undef,
+        'Pacific/Honolulu' => [TimeZone('PACIFIC_HONOLULU')],
+        'this_time_zone_doesnt_exist' => undef,
     ],
 ];

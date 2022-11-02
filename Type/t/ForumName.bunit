@@ -4,41 +4,41 @@ Type();
 [
     class() => [
         from_literal => [
-	    'a-b' => FORUM_NAME(),
-	    'abc-DEF' => 'abc-def',
-	    'abc-1' => 'abc-1',
-	    'abc-1-2' => 'abc-1-2',
-	    'abc-1-?' => FORUM_NAME(),
-	    'abc-' => FORUM_NAME(),
-	    'abc-' => FORUM_NAME(),
-	    'ab' => TOO_SHORT(),
-	],
-	extract_top => [
-	    'abc-def' => 'abc',
-	    'abc-def-ghi' => 'abc',
-	    '0def' => undef,
-	],
-	extract_rest => [
-	    'abc' => undef,
-	    'abc-def' => 'def',
-	    'abc-def-ghi' => 'def-ghi',
-	],
-	join_top_unless_exists => [
-	    [qw(abc abc-def)] => 'abc-def',
-	    [qw(abc def)] => 'abc-def',
-	],
-	is_top => [
-	    'abc-def' => 0,
-	    'abc' => 1,
-	],
-	join => [
-	    abc => 'abc',
-	    [qw(abc def)] => 'abc-def',
-	    [qw(abc def ghi)] => 'abc-def-ghi',
-	],
-	split => [
-	    'abc' => [qw(abc)],
-	    'abc-def-ghi' => [qw(abc def ghi)],
-	],
+            'a-b' => FORUM_NAME(),
+            'abc-DEF' => 'abc-def',
+            'abc-1' => 'abc-1',
+            'abc-1-2' => 'abc-1-2',
+            'abc-1-?' => FORUM_NAME(),
+            'abc-' => FORUM_NAME(),
+            'abc-' => FORUM_NAME(),
+            'ab' => TOO_SHORT(),
+        ],
+        extract_top => [
+            'abc-def' => 'abc',
+            'abc-def-ghi' => 'abc',
+            '0def' => undef,
+        ],
+        extract_rest => [
+            'abc' => undef,
+            'abc-def' => 'def',
+            'abc-def-ghi' => 'def-ghi',
+        ],
+        join_top_unless_exists => [
+            [qw(abc abc-def)] => 'abc-def',
+            [qw(abc def)] => 'abc-def',
+        ],
+        is_top => [
+            'abc-def' => 0,
+            'abc' => 1,
+        ],
+        join => [
+            abc => 'abc',
+            [qw(abc def)] => 'abc-def',
+            [qw(abc def ghi)] => 'abc-def-ghi',
+        ],
+        split => [
+            'abc' => [qw(abc)],
+            'abc-def-ghi' => [qw(abc def ghi)],
+        ],
     ],
 ];

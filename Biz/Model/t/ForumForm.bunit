@@ -7,19 +7,19 @@ req()->set_realm_and_user(undef, 'root');
 my($mode) = sub {
     my($m) = @_;
     return (
-	sub {
-	    Bivio_Type()->get_instance('FormMode')->$m()->execute(req(), 1);
-	    return 1;
-	 } => 1,
+        sub {
+            Bivio_Type()->get_instance('FormMode')->$m()->execute(req(), 1);
+            return 1;
+         } => 1,
     );
 };
 my($realm) = sub {
     my($r) = @_;
     return (
-	sub {
-	    req()->set_realm($r);
-	    return 1;
-	 } => 1,
+        sub {
+            req()->set_realm($r);
+            return 1;
+         } => 1,
     );
 };
 my($check_perms) = sub {
@@ -30,8 +30,8 @@ my($check_perms) = sub {
     # Clear cache
     req()->set_realm($id);
     $case->actual_return([
-	req()->get('auth_realm')->does_user_have_permissions(
-	    ['MAIL_SEND'], req())]);
+        req()->get('auth_realm')->does_user_have_permissions(
+            ['MAIL_SEND'], req())]);
     req()->set_user('demo');
     return [$expect];
 };
@@ -39,45 +39,45 @@ my($check_perms) = sub {
     # Starting deviance tests
     $mode->('CREATE'),
     error_case({
-	'RealmOwner.display_name' => 'Deviance',
-	'RealmOwner.name' => 't1',
-	feature_blog => 1,
-	feature_calendar => 1,
-	feature_mail => 1,
-	feature_motion => 1,
-	feature_tuple => 1,
+        'RealmOwner.display_name' => 'Deviance',
+        'RealmOwner.name' => 't1',
+        feature_blog => 1,
+        feature_calendar => 1,
+        feature_mail => 1,
+        feature_motion => 1,
+        feature_tuple => 1,
     }, {
-	'RealmOwner.name' => 'TOO_SHORT',
+        'RealmOwner.name' => 'TOO_SHORT',
     }),
     error_case({
-	'RealmOwner.display_name' => 'Deviance',
-	'RealmOwner.name' => 'nosuchtop-subforum',
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
+        'RealmOwner.display_name' => 'Deviance',
+        'RealmOwner.name' => 'nosuchtop-subforum',
+        mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }, {
-	'RealmOwner.name' => 'TOP_FORUM_NAME',
+        'RealmOwner.name' => 'TOP_FORUM_NAME',
     }),
     # Conformance must be in one "non-rolled back" section
     [{
-	'RealmOwner.display_name' => 'Top One',
-	'RealmOwner.name' => 'ff1',
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
-	mail_want_reply_to => 1,
-	feature_blog => 1,
-	feature_calendar => 1,
-	feature_mail => 1,
-	feature_motion => 1,
-	feature_tuple => 1,
+        'RealmOwner.display_name' => 'Top One',
+        'RealmOwner.name' => 'ff1',
+        mail_send_access => MailSendAccess()->ALL_MEMBERS,
+        mail_want_reply_to => 1,
+        feature_blog => 1,
+        feature_calendar => 1,
+        feature_mail => 1,
+        feature_motion => 1,
+        feature_tuple => 1,
     }] => [{
-	'Model.Forum' => {
-	    parent_realm_id => Auth_Realm()->get_general->get('id'),
-	    forum_id => var('parent'),
-	},
-	auth_realm => {
-	    owner_name => 'ff1',
-	},
+        'Model.Forum' => {
+            parent_realm_id => Auth_Realm()->get_general->get('id'),
+            forum_id => var('parent'),
+        },
+        auth_realm => {
+            owner_name => 'ff1',
+        },
         'Model.RealmUser' => {
             user_id => req()->get('auth_user_id'),
-	    # Last role found for forum admin user
+            # Last role found for forum admin user
             role => Auth_Role('MAIL_RECIPIENT'),
             realm_id => sub {
                 return req()->get_nested('Model.Forum', 'forum_id');
@@ -87,57 +87,57 @@ my($check_perms) = sub {
     $realm->('ff1'),
     $mode->('EDIT'),
     empty_case({
-	'RealmOwner.display_name' => 'Top One',
-	'RealmOwner.name' => 'ff1',
-	mail_want_reply_to => 1,
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
-	feature_blog => 1,
-	feature_calendar => 1,
-	feature_mail => 1,
-	feature_motion => 1,
-	feature_tuple => 1,
+        'RealmOwner.display_name' => 'Top One',
+        'RealmOwner.name' => 'ff1',
+        mail_want_reply_to => 1,
+        mail_send_access => MailSendAccess()->ALL_MEMBERS,
+        feature_blog => 1,
+        feature_calendar => 1,
+        feature_mail => 1,
+        feature_motion => 1,
+        feature_tuple => 1,
     }),
     [{
-	'RealmOwner.display_name' => 'Top One',
-	'RealmOwner.name' => 'ff1',
-	mail_send_access => MailSendAccess()->EVERYBODY,
+        'RealmOwner.display_name' => 'Top One',
+        'RealmOwner.name' => 'ff1',
+        mail_send_access => MailSendAccess()->EVERYBODY,
     }] => sub {
-	return $check_perms->(shift(@_), 1);
+        return $check_perms->(shift(@_), 1);
     },
     [{
-	'RealmOwner.display_name' => 'Top One',
-	'RealmOwner.name' => 'ff1',
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
+        'RealmOwner.display_name' => 'Top One',
+        'RealmOwner.name' => 'ff1',
+        mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }] => sub {
-	return $check_perms->(shift(@_), 0);
+        return $check_perms->(shift(@_), 0);
     },
     $mode->('CREATE'),
     empty_case({
-	'RealmOwner.display_name' => 'Top One ',
-	'RealmOwner.name' => 'ff1-',
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
+        'RealmOwner.display_name' => 'Top One ',
+        'RealmOwner.name' => 'ff1-',
+        mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }),
     $realm->('ff1'),
     [{
-	'RealmOwner.display_name' => 'Sub One',
-	'RealmOwner.name' => 'ff1-s1',
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
+        'RealmOwner.display_name' => 'Sub One',
+        'RealmOwner.name' => 'ff1-s1',
+        mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }] => [{
-	'Model.Forum' => {
-	    parent_realm_id => var('parent'),
-	},
-	auth_realm => {
-	    owner_name => 'ff1-s1',
-	},
+        'Model.Forum' => {
+            parent_realm_id => var('parent'),
+        },
+        auth_realm => {
+            owner_name => 'ff1-s1',
+        },
     }],
     $realm->('ff1'),
     $mode->('CREATE'),
     # Trailing deviance tests
     error_case({
-	'RealmOwner.display_name' => 'Deviance',
-	'RealmOwner.name' => 'ff1_s1',
-	mail_send_access => MailSendAccess()->ALL_MEMBERS,
+        'RealmOwner.display_name' => 'Deviance',
+        'RealmOwner.name' => 'ff1_s1',
+        mail_send_access => MailSendAccess()->ALL_MEMBERS,
     }, {
-	'RealmOwner.name' => 'TOP_FORUM_NAME_CHANGE',
+        'RealmOwner.name' => 'TOP_FORUM_NAME_CHANGE',
     }),
 ];

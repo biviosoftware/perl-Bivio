@@ -24,7 +24,7 @@ sub get {
     my($fields) = $self->[$_IDI];
 
     foreach my $name (@keys) {
-	$self->put($name, $self->internal_sum($fields->{source}, $name))
+        $self->put($name, $self->internal_sum($fields->{source}, $name))
             unless $self->has_keys($name);
     }
     return $self->SUPER::get(@keys);
@@ -78,14 +78,14 @@ sub internal_sum {
     my($result) = 0;
 
     foreach my $list (@$source) {
-	$list->reset_cursor;
+        $list->reset_cursor;
 
-	while ($list->next_row) {
+        while ($list->next_row) {
             next unless $list->get($name);
-	    $result = $list->get_field_type($name)->add(
+            $result = $list->get_field_type($name)->add(
                 $result, $list->get($name));
-	}
-	$list->reset_cursor;
+        }
+        $list->reset_cursor;
     }
     return $result;
 }
@@ -98,8 +98,8 @@ sub new {
     my($proto, $source, $static_properties) = @_;
     my($self) = $proto->SUPER::new($static_properties);
     $self->[$_IDI] = {
-	source => $source,
-	loaded => 1,
+        source => $source,
+        loaded => 1,
     };
     return $self;
 }
@@ -110,8 +110,8 @@ sub next_row {
     b_die('no cursor')unless defined($fields->{loaded});
 
     if ($fields->{loaded}) {
-	$fields->{loaded} = 0;
-	return 1;
+        $fields->{loaded} = 0;
+        return 1;
     }
     $fields->{loaded} = undef;
     return 0;

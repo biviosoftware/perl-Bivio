@@ -2,33 +2,33 @@
 # $Id$
 Widget({
     setup_render => sub {
-	req()->put(query => {wow => 1});
-	return;
+        req()->put(query => {wow => 1});
+        return;
     },
 });
 [
     [{task_id => 'SITE_ROOT'}] => '/',
     [{task_id => 'SITE_ROOT'}, {format_method => 'format_http'}] =>
-	qr{^http://[^/]+/$}s,
+        qr{^http://[^/]+/$}s,
     [{task_id => 'SITE_ROOT', format_method => 'format_http'}] =>
-	qr{^http://[^/]+/$}s,
+        qr{^http://[^/]+/$}s,
     [{format_uri_hash => {task_id => 'SITE_ROOT'}}] => '/',
     [{task_id => 'SITE_ROOT'}, {anything => ''}] => '/',
     [{task_id => [sub {'SITE_ROOT'}]}] => '/',
     [{task_id => 'SITE_ROOT', query => {'ListQuery.this' => 1}}] => '/?t=1',
     ['SITE_ROOT'] => '/',
     [{
-	task_id => 'SITE_ROOT',
-	query => [sub {{x => 'y'}}],
+        task_id => 'SITE_ROOT',
+        query => [sub {{x => 'y'}}],
     }] => '/?x=y',
     [{uri => '/abc'}] => '/abc',
     [{
-	uri => '/abc',
-	query => [sub {{x => 'y'}}],
+        uri => '/abc',
+        query => [sub {{x => 'y'}}],
     }] => '/abc?x=y',
     [{
-	control => 0,
-	uri => '/abc',
-	query => [sub {{x => 'y'}}],
+        control => 0,
+        uri => '/abc',
+        query => [sub {{x => 'y'}}],
     }] => '',
 ];

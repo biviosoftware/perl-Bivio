@@ -31,12 +31,12 @@ sub initialize {
     return if $self->unsafe_get('value');
     my($count) = $self->get_or_default('count', 1);
     my($line) = "<td class=\"line_cell\">"
-	. vs_clear_dot_as_html(1, $self->get_or_default('height', 1))
-	. "</td>";
+        . vs_clear_dot_as_html(1, $self->get_or_default('height', 1))
+        . "</td>";
     $self->put(value => qq{<table width="100%" cellspacing="0"}
-	. qq{ cellpadding="0" border="0">\n}
-	. ((qq{<tr!COLOR!>$line</tr>\n<tr!PAGE_BG!>$line</tr>\n}) x --$count)
-	. qq{<tr!COLOR!>$line</tr></table>});
+        . qq{ cellpadding="0" border="0">\n}
+        . ((qq{<tr!COLOR!>$line</tr>\n<tr!PAGE_BG!>$line</tr>\n}) x --$count)
+        . qq{<tr!COLOR!>$line</tr></table>});
     return;
 }
 
@@ -45,11 +45,11 @@ sub render {
     my($value) = $self->get('value');
     my($c) = $self->get_or_default('color', 'table_separator');
     $c = $c
-	? b_use('FacadeComponent.Color')->format_html($c, 'bgcolor', $source->req)
-	: '';
+        ? b_use('FacadeComponent.Color')->format_html($c, 'bgcolor', $source->req)
+        : '';
     $value =~ s/!COLOR!/$c/g;
     $c = b_use('FacadeComponent.Color')->format_html('page_bg', 'bgcolor', $source->req)
-	|| '';
+        || '';
     $value =~ s/!PAGE_BG!/$c/g;
     $$buffer .= $value;
     return;

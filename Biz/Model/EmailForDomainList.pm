@@ -9,17 +9,17 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	can_iterate => 1,
-	primary_key => [qw(Email.realm_id Email.location)],
+        can_iterate => 1,
+        primary_key => [qw(Email.realm_id Email.location)],
         order_by => ['Email.email'],
-	other_query_keys => ['b_domain_name'],
+        other_query_keys => ['b_domain_name'],
     });
 }
 
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
     $stmt->where(
-	$stmt->LIKE('Email.email', '%@' . $query->get('b_domain_name')));
+        $stmt->LIKE('Email.email', '%@' . $query->get('b_domain_name')));
     return shift->SUPER::internal_prepare_statement(@_);
 }
 

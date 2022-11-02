@@ -21,14 +21,14 @@ sub create {
     # Sets I<creation_date_time>, I<password> (to invalid),
     # I<display_name>, I<name> if not set, downcases I<name>, then calls SUPER.
     $values->{name} =
-	substr($values->{realm_type}->get_name, 0, 1) . $values->{realm_id}
-	unless defined($values->{name});
+        substr($values->{realm_type}->get_name, 0, 1) . $values->{realm_id}
+        unless defined($values->{name});
     $values->{name} = $_RN->process_name($values->{name});
     $values->{display_name} = $values->{name}
-	unless defined($values->{display_name});
+        unless defined($values->{display_name});
     $values->{creation_date_time} ||= $_DT->now;
     $values->{password} = $_P->INVALID
-	unless defined($values->{password});
+        unless defined($values->{password});
     return shift->SUPER::create(@_);
 }
 
@@ -70,8 +70,8 @@ sub format_name {
     # Other Models can declare a method of the form:
     #
     #     sub format_name {
-    # 	my($self) = shift;
-    # 	Bivio::Biz::Model::RealmOwner->format($self, 'RealmOwner.', @_);
+    #         my($self) = shift;
+    #         Bivio::Biz::Model::RealmOwner->format($self, 'RealmOwner.', @_);
     #     }
     return $_RN->to_string(
         $model->get($model_prefix . 'name'));
@@ -87,10 +87,10 @@ sub format_uri {
         $model->get($model_prefix . 'realm_type'),
         ': invalid realm type') unless $task;
     return $model->get_request->format_uri({
-	task_id => $task,
-	realm => $name,
-	query => undef,
-	path_info => undef,
+        task_id => $task,
+        realm => $name,
+        query => undef,
+        path_info => undef,
     });
 }
 
@@ -106,7 +106,7 @@ sub init_db {
     # have special realm_ids.
 
     foreach my $rt ($_RT->get_non_zero_list) {
-	$self->init_realm_type($rt);
+        $self->init_realm_type($rt);
     }
     return;
 }
@@ -115,30 +115,30 @@ sub init_realm_type {
     my($self, $rt) = @_;
     # Adds I<rt> to the database.
     return $self->create({
-	name => $rt->as_default_owner_name,
-	realm_id => $rt->as_default_owner_id,
-	realm_type => $rt,
+        name => $rt->as_default_owner_name,
+        realm_id => $rt->as_default_owner_id,
+        realm_type => $rt,
     });
 }
 
 sub internal_initialize {
     # B<FOR INTERNAL USE ONLY>
     return {
-	version => 1,
-	table_name => 'realm_owner_t',
-	columns => {
+        version => 1,
+        table_name => 'realm_owner_t',
+        columns => {
             realm_id => ['PrimaryId', 'PRIMARY_KEY'],
             name => ['RealmName', 'NOT_NULL_UNIQUE'],
             password => ['Password', 'NOT_NULL'],
             realm_type => [b_use('Auth.RealmType'), 'NOT_NULL'],
-	    display_name => ['DisplayName', 'NOT_NULL'],
-	    creation_date_time => ['DateTime', 'NOT_NULL'],
+            display_name => ['DisplayName', 'NOT_NULL'],
+            creation_date_time => ['DateTime', 'NOT_NULL'],
         },
-	auth_id => 'realm_id',
+        auth_id => 'realm_id',
 # prevent circular dependency, handled by overridden unsafe_get_model()
-#	other => [
-#	    [qw(realm_id Club.club_id User.user_id)],
-#	],
+#        other => [
+#            [qw(realm_id Club.club_id User.user_id)],
+#        ],
     };
 }
 
@@ -171,7 +171,7 @@ sub is_default {
     # user, club).
     # Default realms have ids same as their types as_int.
     return $model->get($model_prefix . 'realm_type')->as_int
-	eq $model->get($model_prefix . 'realm_id') ? 1 : 0;
+        eq $model->get($model_prefix . 'realm_id') ? 1 : 0;
 }
 
 sub is_name_eq_email {
@@ -203,9 +203,9 @@ sub require_otp {
 sub unauth_delete_realm {
     my($self, $query) = @_;
     $self->unauth_load_or_die($query)
-	if $query;
+        if $query;
     $self->new_other(
-	$self->get('realm_type')->as_property_model_class_name,
+        $self->get('realm_type')->as_property_model_class_name,
     )->unauth_delete_realm($self);
     return;
 }
@@ -237,10 +237,10 @@ sub unauth_load_by_email {
     #
     # Returns false.
     my($query) = @query == 1
-	? ref($query[0]) eq 'HASH'
-	? $query[0]
-	: b_die(@query, ': query not a hash')
-	: {@query};
+        ? ref($query[0]) eq 'HASH'
+        ? $query[0]
+        : b_die(@query, ': query not a hash')
+        : {@query};
     # Emails are always lower case
     $email = lc($email);
     # Load the email.  Return the result of the next unauth_load, just in case
@@ -248,11 +248,11 @@ sub unauth_load_by_email {
     return $self->unauth_load({%$query, realm_id => $em->get('realm_id')})
         if $em->unauth_load({email => $email});
     return
-	unless b_use('UI.Facade')->is_fully_initialized;
+        unless b_use('UI.Facade')->is_fully_initialized;
     # Strip off @mail_host and validate resulting name
     my($mail_host) = '@' . b_use('UI.Facade')->get_value('mail_host', $self->req);
     return 0
-	unless $email =~ s/\Q$mail_host\E$//i;
+        unless $email =~ s/\Q$mail_host\E$//i;
     # Is it a valid user/club?
     return $self->unauth_load({
         %$query,
@@ -265,14 +265,14 @@ sub unauth_load_by_email_id_or_name {
     # If email_id_or_name has an '@', will try to unauth_load_by_email.
     # Otherwise, tries to load by id or name.
     return $email_id_or_name =~ /@/
-	? $self->unauth_load_by_email($email_id_or_name)
-	: _unauth_load($self, $email_id_or_name, {});
+        ? $self->unauth_load_by_email($email_id_or_name)
+        : _unauth_load($self, $email_id_or_name, {});
 }
 
 sub unauth_load_by_email_id_or_name_or_die {
     my($self, $email_id_or_name) = @_;
     return shift->unauth_load_by_email_id_or_name(@_) ? $self
-	: $self->throw_die(MODEL_NOT_FOUND => {entity => $email_id_or_name});
+        : $self->throw_die(MODEL_NOT_FOUND => {entity => $email_id_or_name});
 }
 
 sub unauth_load_by_id_or_name_or_die {
@@ -280,8 +280,8 @@ sub unauth_load_by_id_or_name_or_die {
     # Loads I<id_or_name> or dies with NOT_FOUND.  If I<realm_type> is specified, further qualifies the query.
     _unauth_load($self, $id_or_name, $realm_type
         ? {realm_type => $_RT->from_any($realm_type)}
-	: {},
-	1,
+        : {},
+        1,
     );
     return $self;
 }
@@ -289,12 +289,12 @@ sub unauth_load_by_id_or_name_or_die {
 sub unauth_load_by_name_and_type_or_die {
     my($self, $name, $type) = @_;
     $type = $_RT->from_any($type)
-	unless ref($type);
+        unless ref($type);
     $self->throw_die(MODEL_NOT_FOUND => {entity => $name, realm_type => $type})
-	unless $self->unauth_load({
-	    name => $name,
-	    realm_type => $type,
-	});
+        unless $self->unauth_load({
+            name => $name,
+            realm_type => $type,
+        });
     return $self;
 }
 
@@ -304,8 +304,8 @@ sub unsafe_get_model {
     # For backward compatibility.
 
     if ($name eq 'User' || $name eq 'Club') {
-	my($model) =  $self->new_other($name);
-	$model->unauth_load({
+        my($model) =  $self->new_other($name);
+        $model->unauth_load({
             lc($name).'_id' => $self->get('realm_id'),
         });
         return $model;
@@ -319,9 +319,9 @@ sub update {
         && defined($values->{password})
         && $values->{password} ne $self->get('password'),
     ) {
-	my($otp) = $self->new_other('OTP');
-	$otp->delete
-	    unless $otp->unauth_load({user_id => $self->get('realm_id')});
+        my($otp) = $self->new_other('OTP');
+        $otp->delete
+            unless $otp->unauth_load({user_id => $self->get('realm_id')});
     }
     return shift->SUPER::update(@_);
 }
@@ -329,7 +329,7 @@ sub update {
 sub update_password {
     my($self, $clear_text) = @_;
     return $self->update({
-	password => $_P->encrypt($clear_text)
+        password => $_P->encrypt($clear_text)
     });
 }
 
@@ -337,37 +337,37 @@ sub validate_login {
     my($self, $login) = @_;
     my($err) = !$self->unauth_load_by_email_id_or_name($login) ? ''
         : $self->is_offline_user ? 'is_offline_user'
-	: $self->is_default ? 'is_default'
-	: $self->get('realm_type') != $_RT->USER
-	? ('realm_type is ' . $self->get('realm_type')->get_name)
-	: !$self->has_valid_password ? 'not has_valid_password'
-	: return;
+        : $self->is_default ? 'is_default'
+        : $self->get('realm_type') != $_RT->USER
+        ? ('realm_type is ' . $self->get('realm_type')->get_name)
+        : !$self->has_valid_password ? 'not has_valid_password'
+        : return;
     b_warn($login, ': ', $err)
-	if $err;
+        if $err;
     return 'NOT_FOUND';
 }
 
 sub _unauth_load {
     my($self, $id_or_name, $query, $want_die) = @_;
     if ($_PI->is_valid($id_or_name)) {
-	$query->{realm_id} = $id_or_name;
-	return 1
-	    if $self->unauth_load($query);
+        $query->{realm_id} = $id_or_name;
+        return 1
+            if $self->unauth_load($query);
     }
     $query->{name} = $_RN->process_name($id_or_name);
     return 1
-	if $self->unauth_load($query);
+        if $self->unauth_load($query);
     if ($id_or_name =~ /^\d+$/) {
-	delete($query->{name});
-	$query->{realm_id} = $id_or_name;
-	if ($self->unauth_load($query)) {
-	    # b_use('IO.Alert')->warn_deprecated(
-	    #     'use the RealmType name to load default Realms');
-	    return 1;
-	}
+        delete($query->{name});
+        $query->{realm_id} = $id_or_name;
+        if ($self->unauth_load($query)) {
+            # b_use('IO.Alert')->warn_deprecated(
+            #     'use the RealmType name to load default Realms');
+            return 1;
+        }
     }
     $self->throw_die(MODEL_NOT_FOUND => $query)
-	if $want_die;
+        if $want_die;
     return 0;
 }
 

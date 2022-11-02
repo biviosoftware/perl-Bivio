@@ -7,31 +7,31 @@ my($ids) = sub {
 };
 model('RealmMail')->do_iterate(
     sub {
-	my($it) = @_;
-	$it->update({
-	    thread_root_id => $it->get('realm_file_id'),
-	    thread_parent_id => undef,
-	});
-	return 1;
+        my($it) = @_;
+        $it->update({
+            thread_root_id => $it->get('realm_file_id'),
+            thread_parent_id => undef,
+        });
+        return 1;
     },
 );
 [
     [req()] => [
-	audit_threads => sub {
-	    my($threads) = model('MailThreadRootList')->map_iterate;
-	    assert_contains(
-		$ids->(2, 1),
-		$threads,
-	    );
-	    assert_contains(
-		$ids->(qw(2 2.1 2.2 2.1.1)),
-		model('MailThreadList')
-		    ->map_iterate(
-			sub {shift->get_shallow_copy},
-			{parent_id => $threads->[0]->{'RealmMail.realm_file_id'}},
-		    ),
-	    );
-	    return 1;
-	},
+        audit_threads => sub {
+            my($threads) = model('MailThreadRootList')->map_iterate;
+            assert_contains(
+                $ids->(2, 1),
+                $threads,
+            );
+            assert_contains(
+                $ids->(qw(2 2.1 2.2 2.1.1)),
+                model('MailThreadList')
+                    ->map_iterate(
+                        sub {shift->get_shallow_copy},
+                        {parent_id => $threads->[0]->{'RealmMail.realm_file_id'}},
+                    ),
+            );
+            return 1;
+        },
     ],
 ];

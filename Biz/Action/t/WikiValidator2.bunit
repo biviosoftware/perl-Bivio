@@ -4,14 +4,14 @@ Request('initialize_fully');
 req()->set_realm('fourem-sub1');
 [
     class() => [
-	{
-	    method => 'validate_realm',
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return $actual->[0]->get('errors') || [];
-	    },
-	} => [
-	    [req()] => [],
-	],
+        {
+            method => 'validate_realm',
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return $actual->[0]->get('errors') || [];
+            },
+        } => [
+            [req()] => [],
+        ],
     ],
 ];

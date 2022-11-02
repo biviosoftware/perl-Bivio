@@ -4,16 +4,16 @@ ListModel();
 req()->setup_facade->set_realm('fourem');
 [
     load_all => [
-	[] => [
-	    {'RealmFile.path' => '/Public/logo.gif'},
-	    {'RealmFile.path' => '/Public/logo.bad'},
-	    {'RealmFile.path' => '/Public/logo.png'},
-	],
+        [] => [
+            {'RealmFile.path' => '/Public/logo.gif'},
+            {'RealmFile.path' => '/Public/logo.bad'},
+            {'RealmFile.path' => '/Public/logo.png'},
+        ],
     ],
     is_ok_to_render => 1,
     get => [
-	uri => '/fourem/file/logo.png',
-	height => 50,
-	width => 160,
+        uri => '/fourem/file/logo.png',
+        height => 50,
+        width => 160,
     ],
 ];

@@ -4,36 +4,36 @@ ListModel();
 req()->initialize_fully;
 [
     {
-	method => 'load_from_content',
-	check_return => sub {
-	    my($case, $actual, $expect) = @_;
-	    my($o) = $case->get('object');
-	    $case->actual_return([
-		map({
-		    $o->set_cursor_or_not_found($_->{index});
-		    foreach my $k (grep(s/^\-\>//, keys(%$_))) {
-			my($m, @a) = split(' ', $k);
-			$_->{"->$k"} = $o->$m(@a);;
-		    }
-		    $_->{mime_entity}
-			= $_->{mime_entity}->bodyhandle
-		          && $_->{mime_entity}->bodyhandle->as_string
-		        if exists($_->{mime_entity});
-		    $_;
-		} @$actual),
-	    ]);
-	    return $expect;
-	},
+        method => 'load_from_content',
+        check_return => sub {
+            my($case, $actual, $expect) = @_;
+            my($o) = $case->get('object');
+            $case->actual_return([
+                map({
+                    $o->set_cursor_or_not_found($_->{index});
+                    foreach my $k (grep(s/^\-\>//, keys(%$_))) {
+                        my($m, @a) = split(' ', $k);
+                        $_->{"->$k"} = $o->$m(@a);;
+                    }
+                    $_->{mime_entity}
+                        = $_->{mime_entity}->bodyhandle
+                          && $_->{mime_entity}->bodyhandle->as_string
+                        if exists($_->{mime_entity});
+                    $_;
+                } @$actual),
+            ]);
+            return $expect;
+        },
     } => [
-	map((
-	    [read_file($_)] => do(($_ =~ /(.*)in$/)[0] . 'out') || die($@),
-	), glob('MailPartList/*.in')),
+        map((
+            [read_file($_)] => do(($_ =~ /(.*)in$/)[0] . 'out') || die($@),
+        ), glob('MailPartList/*.in')),
     ],
     load_from_content => [
-	[read_file('MailPartList/mime_cid')] => not_die(),
+        [read_file('MailPartList/mime_cid')] => not_die(),
     ],
     unsafe_get_cursor_for_mime_cid => [
-	'pqwflo4g7tvg3mo9.9w2xcpn7sss75wi4@bivio.biz' => 2,
-	'notfound' => [undef],
+        'pqwflo4g7tvg3mo9.9w2xcpn7sss75wi4@bivio.biz' => 2,
+        'notfound' => [undef],
     ],
 ];

@@ -18,15 +18,15 @@ sub internal_load {
     my($self, $rows, $query) = @_;
     my(@res) = shift->SUPER::internal_load(@_);
     unshift(@$rows, {
-	map(
+        map(
 #TODO: Eval as prose
-	    ($_ => $_T->get_value(
-		$self->simple_package_name . ".$_.select",
-		$self->req,
-	    )),
-	    qw(RealmOwner.display_name RealmOwner.name),
-	),
-	'RealmUser.realm_id' => undef,
+            ($_ => $_T->get_value(
+                $self->simple_package_name . ".$_.select",
+                $self->req,
+            )),
+            qw(RealmOwner.display_name RealmOwner.name),
+        ),
+        'RealmUser.realm_id' => undef,
     }) if @$rows;
     return @res;
 }

@@ -13,11 +13,11 @@ sub internal_initialize {
         columns => {
             motion_id => ['Motion.motion_id', 'PRIMARY_KEY'],
             user_id => ['User.user_id', 'PRIMARY_KEY'],
-	    affiliated_realm_id => ['RealmOwner.realm_id', 'NONE'],
-	    vote => ['MotionVote', 'NOT_NULL'],
-	    creation_date_time => ['DateTime', 'NOT_NULL'],
-	    comment => ['Text64K', 'NONE'],
-	},
+            affiliated_realm_id => ['RealmOwner.realm_id', 'NONE'],
+            vote => ['MotionVote', 'NOT_NULL'],
+            creation_date_time => ['DateTime', 'NOT_NULL'],
+            comment => ['Text64K', 'NONE'],
+        },
     });
 }
 

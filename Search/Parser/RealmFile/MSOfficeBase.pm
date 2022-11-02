@@ -8,7 +8,7 @@ use Bivio::Base 'SearchParserRealmFile.CommandBase';
 sub internal_get_title {
     my($proto, $parseable) = @_;
     return $proto->internal_run_parser('ldat <path>', $parseable, qr{Error!})
-	=~ /^\s*Title:\s*(.*)/im
+        =~ /^\s*Title:\s*(.*)/im
         ? $1 : undef;
 }
 

@@ -19,9 +19,9 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     return {
-	method => 'server_redirect',
-	task_id => 'ADM_CREATE_BULLETIN_CONFIRM',
-	query => undef,
+        method => 'server_redirect',
+        task_id => 'ADM_CREATE_BULLETIN_CONFIRM',
+        query => undef,
     } unless $self->get('confirmed_bulletin') || $self->get('test_mode');
     my($bulletin) = $self->internal_create_bulletin;
     b_use('AgentJob.Dispatcher')->enqueue($self->get_request,
@@ -32,9 +32,9 @@ sub execute_ok {
                 $self->get('test_mode'),
         });
     return {
-	method => 'server_redirect',
-	task_id => 'ADM_CREATE_BULLETIN_CONFIRM',
-	query => undef,
+        method => 'server_redirect',
+        task_id => 'ADM_CREATE_BULLETIN_CONFIRM',
+        query => undef,
     } if $self->get('test_mode');
     return;
 }
@@ -56,10 +56,10 @@ sub execute_unwind {
     my($self) = @_;
 
     if ($self->get('confirmed_bulletin') || $self->get('test_mode')) {
-	my($res) = $self->execute_ok;
-	return $res
-	    if $res;
-	return $self->internal_redirect_next;
+        my($res) = $self->execute_ok;
+        return $res
+            if $res;
+        return $self->internal_redirect_next;
     }
     return;
 }
@@ -83,31 +83,31 @@ sub internal_initialize {
     # B<FOR INTERNAL USE ONLY>
     my($self) = @_;
     my($info) = {
-	version => 2,
-	visible => [
+        version => 2,
+        visible => [
             'Bulletin.subject',
-	    {
-		name => 'body',
-		type => 'FileField',
-		constraint => 'NONE',
-	    },
+            {
+                name => 'body',
+                type => 'FileField',
+                constraint => 'NONE',
+            },
             {
                 name => 'body_button',
                 type => 'FormButton',
                 constraint => 'NONE',
             },
-	    {
-		name => 'attachment',
-		type => 'FileField',
-		constraint => 'NONE',
-	    },
+            {
+                name => 'attachment',
+                type => 'FileField',
+                constraint => 'NONE',
+            },
             {
                 name => 'attachment_button',
                 type => 'FormButton',
                 constraint => 'NONE',
             },
-	],
-	hidden => [
+        ],
+        hidden => [
             {
                 name => 'body_content_type',
                 type => 'String',
@@ -123,20 +123,20 @@ sub internal_initialize {
                 type => 'String',
                 constraint => 'NONE',
             },
-	    {
-		name => 'confirmed_bulletin',
-		type => 'Boolean',
-	        constraint => 'NOT_NULL',
-	    },
+            {
+                name => 'confirmed_bulletin',
+                type => 'Boolean',
+                constraint => 'NOT_NULL',
+            },
             {
                 name => 'test_mode',
                 type => 'Boolean',
                 constraint => 'NONE',
             },
-	],
+        ],
     };
     return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+            $self->SUPER::internal_initialize, $info);
 }
 
 sub read_body {

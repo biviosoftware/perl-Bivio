@@ -50,8 +50,8 @@ Let's say you have:
   Club: @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   $club_info
 
-  ID 		              Sent                        Privileges
-  Email		              Full Name                   Login
+  ID                               Sent                        Privileges
+  Email                              Full Name                   Login
   URL
   ----------------------------------------------------------------------
   .
@@ -72,8 +72,8 @@ You would translate this to:
            ->put_top(<<"EOF")
   Club: $club_info
 
-  ID 		              Sent                        Privileges
-  Email		              Full Name                   Login
+  ID                               Sent                        Privileges
+  Email                              Full Name                   Login
   URL
   ----------------------------------------------------------------------
   EOF
@@ -117,9 +117,9 @@ Returns a new Bivio::IO::Format.
 sub new {
     my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {
-	lines => [],
-	result => '',
-	line_num => undef,
+        lines => [],
+        result => '',
+        line_num => undef,
     };
     return $self->put_top('');
 }
@@ -147,12 +147,12 @@ sub add_line {
     $args ||= [];
     my($fields) = $self->[$_IDI];
     Bivio::Die->die('all arguments must be references')
-	if grep(!ref($_), @$args);
+        if grep(!ref($_), @$args);
     _append_newline(\$format);
     push(@{$fields->{lines}}, {
-	format => $format,
-	args => $args,
-	is_blank => $format =~ /^\s*$/s ? 1 : 0,
+        format => $format,
+        args => $args,
+        is_blank => $format =~ /^\s*$/s ? 1 : 0,
     });
     return $self;
 }
@@ -205,23 +205,23 @@ sub process {
     my($delete_blank_lines) = $self->get_or_default('delete_blank_lines', 0);
     my($res);
     foreach my $l (@{$fields->{lines}}) {
-	$^A = '';
-	# Dynamically generate the formline, because we are passed the values
-	# by reference and formline takes scalars, not references.  To get the
-	# proper behavior of caret (^>>>) fields, we have to pass the
-	# dereferenced value in place due to formline's "by name" semantics.
-	eval('formline($l->{format},'
-		.join(',', map {'${$l->{args}->['.$_.']}'} 0..$#{$l->{args}})
-		.')')
-		|| die($@);
-	$res .= $^A unless $delete_blank_lines && $^A =~ /^\s*$/s
-		&& !$l->{is_blank};
+        $^A = '';
+        # Dynamically generate the formline, because we are passed the values
+        # by reference and formline takes scalars, not references.  To get the
+        # proper behavior of caret (^>>>) fields, we have to pass the
+        # dereferenced value in place due to formline's "by name" semantics.
+        eval('formline($l->{format},'
+                .join(',', map {'${$l->{args}->['.$_.']}'} 0..$#{$l->{args}})
+                .')')
+                || die($@);
+        $res .= $^A unless $delete_blank_lines && $^A =~ /^\s*$/s
+                && !$l->{is_blank};
     }
     my($lines) = _count_lines($res);
     return $self unless $lines;
 
     my($new_page) = _new_page($fields)
-	    unless defined($fields->{line_num});
+            unless defined($fields->{line_num});
     _new_page($fields) if !$new_page && $lines + $fields->{line_num} > $=;
     $fields->{line_num} += $lines;
     $fields->{result} .= $res;

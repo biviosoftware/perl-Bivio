@@ -15,7 +15,7 @@ sub unsafe_new {
     $name =~ s/[\W_]+/_/g;
     $name =~ s/^_//;
     return undef
-	unless $name =~ $proto->VALID_METHOD_REGEXP;
+        unless $name =~ $proto->VALID_METHOD_REGEXP;
     my($self) = $proto->SUPER::unsafe_new($name, @_);
     return $self && $self->put(view_name => $name);
 }
@@ -23,7 +23,7 @@ sub unsafe_new {
 sub execute_task_item {
     my($proto, $view_name, $req) = @_;
     return shift->SUPER::execute_task_item(
-	$view_name eq 'execute_uri' ? $req->get('uri') : $view_name, $req)
+        $view_name eq 'execute_uri' ? $req->get('uri') : $view_name, $req)
 }
 
 sub format_uri {
@@ -33,10 +33,10 @@ sub format_uri {
         && $proto->can($view_name);
     $view_name =~ s{_}{/}g;
     return $req->format_uri({
-	task_id => Bivio::Agent::TaskId->SITE_ROOT,
-	path_info => $view_name,
-	no_context => 1,
-	query => undef,
+        task_id => Bivio::Agent::TaskId->SITE_ROOT,
+        path_info => $view_name,
+        no_context => 1,
+        query => undef,
     });
 }
 

@@ -19,7 +19,7 @@ sub get_width {
 sub internal_post_from_literal {
     my($v) = uc($_[1]);
     return (undef, $_NOT_FOUND)
-	unless $_STATE->{$v};
+        unless $_STATE->{$v};
     return $v;
 }
 
@@ -31,10 +31,10 @@ sub unsafe_from_zip_code {
 sub _init_map {
     my($map) = [];
     foreach my $line (split(/\n/, __PACKAGE__->internal_data_section)) {
-	my($state, @zips) = split(' ', $line);
-	foreach my $zip (@zips) {
-	    $map->[$zip] = $state;
-	}
+        my($state, @zips) = split(' ', $line);
+        foreach my $zip (@zips) {
+            $map->[$zip] = $state;
+        }
     }
     return $map;
 }

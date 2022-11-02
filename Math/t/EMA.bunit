@@ -2,22 +2,22 @@
 # $Id$
 [
     4 => [
-    	compute => [
-	    5 => 5,
-	    5 => 5,
-	    10 => 7,
-	],
-	value => 7,
+            compute => [
+            5 => 5,
+            5 => 5,
+            10 => 7,
+        ],
+        value => 7,
     ],
     class() => [
-	new => [
-	    -2 => DIE(),
-	    0 => DIE(),
-	    1 => undef,
-	    2.5 => DIE(),
-	],
+        new => [
+            -2 => DIE(),
+            0 => DIE(),
+            1 => undef,
+            2.5 => DIE(),
+        ],
     ],
     50 => [
-	value => DIE(),
+        value => DIE(),
     ],
 ];

@@ -5,42 +5,42 @@ req()->set_realm('fourem');
 initialize_fully('ROBOT_FILE_LIST');
 [
     class() => [
-	{
-	    method => 'execute_load_page',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->delete(qw(path_info query));
-		req()->put(%{$params->[0]})
-		    if $params->[0];
-		return [req()];
-	    },
-	    check_return => sub {
-		my(undef, $actual) = @_;
-		my($q, $p) = req()->unsafe_get(qw(query path_info));
-		return [{
-		    method => 'client_redirect',
-		    task_id => 'file_tree_task',
-		    query => undef,
-		    path_info => undef,
-		    http_status_code => Ext_ApacheConstants()->HTTP_MOVED_PERMANENTLY,
-		}] if $q && $q->{other} || $p;
-		my($got_one) = 0;
-		req()->get(class())
-		    ->do_rows(sub {
-			my($pl) = shift->get('RealmFile.path_lc');
-			assert_not_equals(qr{archive|mail}i, $pl);
-			assert_equals(qr{^/public/}i, $pl);
-			$got_one++;
-			return 1;
-		    });
-		assert_not_equals(0, $got_one);
-		return 1;
-	    },
-	} => [
-	    [] => [],
-	    [{query => {other => 1}}] => [],
-	    [{path_info => '/'}] => [],
-	    [{query => {SQL_ListQuery()->to_char('page_number') => 99}}] => [],
-	],
+        {
+            method => 'execute_load_page',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->delete(qw(path_info query));
+                req()->put(%{$params->[0]})
+                    if $params->[0];
+                return [req()];
+            },
+            check_return => sub {
+                my(undef, $actual) = @_;
+                my($q, $p) = req()->unsafe_get(qw(query path_info));
+                return [{
+                    method => 'client_redirect',
+                    task_id => 'file_tree_task',
+                    query => undef,
+                    path_info => undef,
+                    http_status_code => Ext_ApacheConstants()->HTTP_MOVED_PERMANENTLY,
+                }] if $q && $q->{other} || $p;
+                my($got_one) = 0;
+                req()->get(class())
+                    ->do_rows(sub {
+                        my($pl) = shift->get('RealmFile.path_lc');
+                        assert_not_equals(qr{archive|mail}i, $pl);
+                        assert_equals(qr{^/public/}i, $pl);
+                        $got_one++;
+                        return 1;
+                    });
+                assert_not_equals(0, $got_one);
+                return 1;
+            },
+        } => [
+            [] => [],
+            [{query => {other => 1}}] => [],
+            [{path_info => '/'}] => [],
+            [{query => {SQL_ListQuery()->to_char('page_number') => 99}}] => [],
+        ],
     ],
 ];

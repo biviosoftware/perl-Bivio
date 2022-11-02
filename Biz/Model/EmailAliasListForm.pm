@@ -7,8 +7,8 @@ use Bivio::Base 'Biz.ExpandableListFormModel';
 
 sub MUST_BE_SPECIFIED_FIELDS {
     return [qw(
-	EmailAlias.incoming
-	EmailAlias.outgoing
+        EmailAlias.incoming
+        EmailAlias.outgoing
     )];
 }
 
@@ -31,10 +31,10 @@ sub execute_ok_row_update {
     my($self) = @_;
     my($lm) = $self->get_list_model;
     $self->new_other('EmailAlias')->load({
-	incoming => $lm->get('EmailAlias.incoming'),
-	outgoing => $lm->get('EmailAlias.outgoing'),
+        incoming => $lm->get('EmailAlias.incoming'),
+        outgoing => $lm->get('EmailAlias.outgoing'),
     })->update({
-	%{$self->get_model_properties('EmailAlias')},
+        %{$self->get_model_properties('EmailAlias')},
     });
     return;
 }
@@ -44,13 +44,13 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         list_class => 'EmailAliasList',
-	primary_key => ['primary_key'],
-	visible => [
-	    $self->field_decl([qw(
-		EmailAlias.incoming
-		EmailAlias.outgoing
-	    )], {in_list => 1}),
-	],
+        primary_key => ['primary_key'],
+        visible => [
+            $self->field_decl([qw(
+                EmailAlias.incoming
+                EmailAlias.outgoing
+            )], {in_list => 1}),
+        ],
     });
 }
 

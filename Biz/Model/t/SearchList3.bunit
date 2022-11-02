@@ -6,23 +6,23 @@ my($files) = require('../../../Search/t/xapian.PL');
 req()->set_realm_and_user(qw(xapian_demo xapian_demo));
 [
     load_all => [
-	[{search => 'stuz', b_realm_only => 0}] => [
-	    {'RealmFile.realm_file_id' => $files->[7]},
-	    {'RealmFile.realm_file_id' => $files->[2]},
-	],
-	[{search => 'stuz', b_realm_only => 1}] => [
-	    {'RealmFile.realm_file_id' => $files->[2]},
-	],
-	inline_case(sub {
-	    req()->set_user(undef);
-	    return;
-	}),
-	[{search => 'public', b_realm_only => 1}] => [
-	    {'RealmFile.realm_file_id' => $files->[5]},
-	],
-	[{search => 'public', b_realm_only => 0}] => [
-	    {'RealmFile.realm_file_id' => $files->[7]},
-	    {'RealmFile.realm_file_id' => $files->[5]},
-	],
+        [{search => 'stuz', b_realm_only => 0}] => [
+            {'RealmFile.realm_file_id' => $files->[7]},
+            {'RealmFile.realm_file_id' => $files->[2]},
+        ],
+        [{search => 'stuz', b_realm_only => 1}] => [
+            {'RealmFile.realm_file_id' => $files->[2]},
+        ],
+        inline_case(sub {
+            req()->set_user(undef);
+            return;
+        }),
+        [{search => 'public', b_realm_only => 1}] => [
+            {'RealmFile.realm_file_id' => $files->[5]},
+        ],
+        [{search => 'public', b_realm_only => 0}] => [
+            {'RealmFile.realm_file_id' => $files->[7]},
+            {'RealmFile.realm_file_id' => $files->[5]},
+        ],
     ],
 ];

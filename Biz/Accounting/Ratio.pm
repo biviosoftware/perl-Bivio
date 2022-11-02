@@ -54,8 +54,8 @@ sub new {
     # Bivio::Type::Amount truncates past precision
 
     $self->[$_IDI] = {
-	numerator => $_M->mul($numerator, 10),
-	denominator => $denominator,
+        numerator => $_M->mul($numerator, 10),
+        denominator => $denominator,
     };
     return $self;
 }
@@ -92,8 +92,8 @@ sub multiply {
 
     # multiply and unshift
     my($result) = $_M->div(
-	    $_M->mul($value, $fields->{numerator}),
-	    $fields->{denominator});
+            $_M->mul($value, $fields->{numerator}),
+            $fields->{denominator});
     return $_M->div($_M->round($result, $_M->get_decimals - 1), 10);
 }
 

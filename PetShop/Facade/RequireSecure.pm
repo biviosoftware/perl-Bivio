@@ -12,7 +12,7 @@ __PACKAGE__->new({
     is_production => 1,
     clone => 'PetShop',
     Constant => [
-	[require_secure => 1],
+        [require_secure => 1],
     ],
 });
 

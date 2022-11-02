@@ -6,7 +6,7 @@ my($domain) = '@model.realmmail.bunit';
 my($subject) = 'Model.RealmMail.bunit subject:';
 [
     create_from_rfc822 => [
-	[\(<<"EOF")] => not_die(),
+        [\(<<"EOF")] => not_die(),
 From: a$domain
 Message-ID: <a$domain>
 Date: Sun, 1 May 2005 10:11:41 -0600
@@ -14,7 +14,7 @@ Subject: $subject
 
 Body
 EOF
-	[\(<<"EOF")] => not_die(),
+        [\(<<"EOF")] => not_die(),
 From: b$domain
 In-Reply-To: <a$domain>
 Message-ID: <b$domain>
@@ -23,7 +23,7 @@ Subject: $subject
 
 Body
 EOF
-	sub {$new_root = shift->get('object')->get('realm_file_id'); [\(<<"EOF")]}
+        sub {$new_root = shift->get('object')->get('realm_file_id'); [\(<<"EOF")]}
 From: c$domain
 In-Reply-To: <a$domain>
 Message-ID: <c$domain>
@@ -32,34 +32,34 @@ Subject: $subject
 
 Body
 EOF
-	=> not_die(),
+        => not_die(),
     ],
     load => [
-	[{message_id => "a$domain"}] => not_die(),
+        [{message_id => "a$domain"}] => not_die(),
     ],
     sub {
-	req()->set_user('root');
-	model('RealmMailBounce')->create({
-	    realm_file_id => req(qw(Model.RealmMail realm_file_id)),
-	    email => "z$domain",
-	    realm_id => req('auth_id'),
-	    user_id => req('auth_user_id'),
-	    modified_date_time => b_use('Type.DateTime')->now,
-	    reason => 'x',
-	});
-	req()->set_user(undef);
-	return 1;
+        req()->set_user('root');
+        model('RealmMailBounce')->create({
+            realm_file_id => req(qw(Model.RealmMail realm_file_id)),
+            email => "z$domain",
+            realm_id => req('auth_id'),
+            user_id => req('auth_user_id'),
+            modified_date_time => b_use('Type.DateTime')->now,
+            reason => 'x',
+        });
+        req()->set_user(undef);
+        return 1;
     } => 1,
     delete_message => not_die(),
     load => [
-	[{message_id => "b$domain"}] => [{
-	    thread_root_id => sub {$new_root},
-	    thread_parent_id => undef,
-	}],
-	[{message_id => "c$domain"}] => [{
-	    thread_root_id => sub {$new_root},
-	    thread_parent_id => sub {$new_root},
-	}],
-	[{message_id => "a$domain"}] => MODEL_NOT_FOUND(),
+        [{message_id => "b$domain"}] => [{
+            thread_root_id => sub {$new_root},
+            thread_parent_id => undef,
+        }],
+        [{message_id => "c$domain"}] => [{
+            thread_root_id => sub {$new_root},
+            thread_parent_id => sub {$new_root},
+        }],
+        [{message_id => "a$domain"}] => MODEL_NOT_FOUND(),
     ],
 ];

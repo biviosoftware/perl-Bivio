@@ -48,7 +48,7 @@ sub new {
     my(undef, $default_return) = @_;
     my($self) = shift->SUPER::new(@_);
     $self->[$_IDI] = {
-	default_return => $default_return,
+        default_return => $default_return,
     };
     return $self;
 }
@@ -73,7 +73,7 @@ Always dies with specified I<code>.
 sub die {
     my($self, $code) = @_;
     Bivio::Die->throw($code || Bivio::DieCode->DIE, {
-	message => $code,
+        message => $code,
     });
     # DOES NOT RETURN
 }

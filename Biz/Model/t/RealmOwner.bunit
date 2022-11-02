@@ -7,41 +7,41 @@ my($id) = unauth_model(RealmOwner => {name => $name})->get('realm_id');
 my($_RT) = __PACKAGE__->use('Auth.RealmType');
 [
     {
-	object => [req()],
-	compute_return => sub {
-	    return [shift->get('object')->unsafe_get('name')];
-	},
+        object => [req()],
+        compute_return => sub {
+            return [shift->get('object')->unsafe_get('name')];
+        },
     } => [
-	unauth_load_by_email => [
-	    $email => $name,
-	    [$email, realm_type => $_RT->USER] => $name,
-	    [$email, realm_type => $_RT->CLUB] => [undef],
-	    [$email, {realm_type => $_RT->USER}] => $name,
-	    [$email, {realm_type => $_RT->CLUB}] => [undef],
-	],
-	unauth_load_by_id_or_name_or_die => [
-	    not_a_user => MODEL_NOT_FOUND(),
-	    $name => $name,
-	    $id => $name,
-	],
-	unauth_load_by_email_id_or_name => [
-	    not_a_user => [undef],
-	    $name => $name,
-	    $id => $name,
-	    $email => $name,
-	],
-	unauth_load_by_name_and_type_or_die => [
-	    [$name, 'user'] => $name,
-	    [$name, 'forum'] => MODEL_NOT_FOUND(),
-	    [$name, Auth_RealmType()->USER] => $name,
-	],
-	create => [
-	    [{
-		realm_id => '12345',
-		name => '',
-		display_name => '',
-		realm_type => $_RT->CLUB,
-	    }] => DB_ERROR(),
-	],
+        unauth_load_by_email => [
+            $email => $name,
+            [$email, realm_type => $_RT->USER] => $name,
+            [$email, realm_type => $_RT->CLUB] => [undef],
+            [$email, {realm_type => $_RT->USER}] => $name,
+            [$email, {realm_type => $_RT->CLUB}] => [undef],
+        ],
+        unauth_load_by_id_or_name_or_die => [
+            not_a_user => MODEL_NOT_FOUND(),
+            $name => $name,
+            $id => $name,
+        ],
+        unauth_load_by_email_id_or_name => [
+            not_a_user => [undef],
+            $name => $name,
+            $id => $name,
+            $email => $name,
+        ],
+        unauth_load_by_name_and_type_or_die => [
+            [$name, 'user'] => $name,
+            [$name, 'forum'] => MODEL_NOT_FOUND(),
+            [$name, Auth_RealmType()->USER] => $name,
+        ],
+        create => [
+            [{
+                realm_id => '12345',
+                name => '',
+                display_name => '',
+                realm_type => $_RT->CLUB,
+            }] => DB_ERROR(),
+        ],
     ],
 ];

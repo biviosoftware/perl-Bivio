@@ -9,12 +9,12 @@ my($strid, $intid) = map(unauth_model(TupleSlotType => {
 })->get('tuple_slot_type_id'), qw(String Integer));
 my($data) = {
     map({
-	my($x) = $_;
-	(shift(@$x) => {map(("tuple_bunit1.TupleTag.slot$_" => shift(@$x)), 1..4)});
+        my($x) = $_;
+        (shift(@$x) => {map(("tuple_bunit1.TupleTag.slot$_" => shift(@$x)), 1..4)});
     }
-	[qw(crm_tech1 oneopt onereq 1 one)],
-	[qw(mail_user1 twoopt tworeq 2 two)],
-	[qw(tuple_user threeopt threereq 3 three)],
+        [qw(crm_tech1 oneopt onereq 1 one)],
+        [qw(mail_user1 twoopt tworeq 2 two)],
+        [qw(tuple_user threeopt threereq 3 three)],
     ),
 };
 while (my($user, $v) = each(%$data)) {
@@ -45,17 +45,17 @@ while (my($user, $v) = each(%$data)) {
         'TupleSlotDef.tuple_slot_type_id_0' => undef,
         empty_row_count => 0,
     }] => sub {
-	while (my($user, $v) = each(%$data)) {
+        while (my($user, $v) = each(%$data)) {
             assert_contains(
-		{map({
-		    my($new_key) = (/slot(d+)$/) - 1;
-		    $new_key > 0 ? ("slot$new_key" => $v->{$_}) : ();
-		} sort(keys(%$v)))},
-		model(TupleTag => {
-		    tuple_def_id => $def_id,
-		    primary_id => realm_id($user),
-		})->get_shallow_copy,
-	    );
+                {map({
+                    my($new_key) = (/slot(d+)$/) - 1;
+                    $new_key > 0 ? ("slot$new_key" => $v->{$_}) : ();
+                } sort(keys(%$v)))},
+                model(TupleTag => {
+                    tuple_def_id => $def_id,
+                    primary_id => realm_id($user),
+                })->get_shallow_copy,
+            );
         }
         return 1;
     },

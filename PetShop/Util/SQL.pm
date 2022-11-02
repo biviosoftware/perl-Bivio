@@ -138,33 +138,33 @@ sub XAPIAN_WITHDRAWN {
 sub create_user_with_account {
     my($self, $user) = @_;
     $self->model('UserAccountForm', {
-	'User.first_name' => ucfirst($user),
-	'User.last_name' => $self->DEMO_LAST_NAME,
-	'Email.email' => $self->format_email($user),
-	'Address.street1' => '1313 Mockingbird Lane',
-	'Address.street2' => undef,
-	'Address.city' => 'Boulder',
-	'Address.state' => 'CO',
-	'Address.zip' => '80304',
-	'Address.country' => 'US',
-	'Phone.phone' => '555-1212',
-	'RealmOwner.password' => $self->PASSWORD,
-	force_create => 1,
+        'User.first_name' => ucfirst($user),
+        'User.last_name' => $self->DEMO_LAST_NAME,
+        'Email.email' => $self->format_email($user),
+        'Address.street1' => '1313 Mockingbird Lane',
+        'Address.street2' => undef,
+        'Address.city' => 'Boulder',
+        'Address.state' => 'CO',
+        'Address.zip' => '80304',
+        'Address.country' => 'US',
+        'Phone.phone' => '555-1212',
+        'RealmOwner.password' => $self->PASSWORD,
+        force_create => 1,
     });
     # test accounts have real names, for ease of logging in
     $self->req->get('auth_user')->update({
-	name => $user,
-	display_name => join(' ', ucfirst($user), $self->DEMO_LAST_NAME),
+        name => $user,
+        display_name => join(' ', ucfirst($user), $self->DEMO_LAST_NAME),
     });
     return $self->req('auth_user_id');
 }
 
 sub ddl_files {
     return [map {
-	my($base) = $_;
-	map {
-	    $base.'-'.$_.'.sql';
-	} qw(tables constraints sequences);
+        my($base) = $_;
+        map {
+            $base.'-'.$_.'.sql';
+        } qw(tables constraints sequences);
     } qw(bOP petshop)];
 }
 
@@ -179,9 +179,9 @@ sub demo_users {
     my($self) = @_;
     return [
         map($self->$_(),
-	    qw(ROOT DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST XAPIAN_WITHDRAWN MULTI_ROLE_USER
-	       BTEST_ADMIN BTEST_READ OTP),
-	),
+            qw(ROOT DEMO GUEST XAPIAN_DEMO XAPIAN_GUEST XAPIAN_WITHDRAWN MULTI_ROLE_USER
+               BTEST_ADMIN BTEST_READ OTP),
+        ),
     ];
 }
 
@@ -240,8 +240,8 @@ EOF
 sub realm_file_create {
     my($self, $path, $content) = @_;
     return $self->model('RealmFile')->create_or_update_with_content(
-	{path => $path},
-	ref($content) ? $content : \$content);
+        {path => $path},
+        ref($content) ? $content : \$content);
 }
 
 sub top_level_forum {
@@ -249,20 +249,20 @@ sub top_level_forum {
     $self->req->set_realm(undef);
     $self->model(ForumForm => {
         'RealmOwner.display_name' => $_S->to_camel_case($name),
-	'RealmOwner.name' => $name,
-	mail_want_reply_to => 1,
+        'RealmOwner.name' => $name,
+        mail_want_reply_to => 1,
     });
     my($rid) = $self->req('auth_id');
     $self->model('ForumUserDeleteForm', {
-	'RealmUser.realm_id' => $rid,
-	'User.user_id' => _realm_id($self, $self->ROOT),
+        'RealmUser.realm_id' => $rid,
+        'User.user_id' => _realm_id($self, $self->ROOT),
     });
     foreach my $user (@$admins, @$users) {
-	$self->model('ForumUserAddForm', {
-	    'RealmUser.realm_id' => $rid,
-	    'User.user_id' => _realm_id($self, $user),
-	    administrator => grep($user eq $_, @$admins) ? 1 : 0,
-	});
+        $self->model('ForumUserAddForm', {
+            'RealmUser.realm_id' => $rid,
+            'User.user_id' => _realm_id($self, $user),
+            administrator => grep($user eq $_, @$admins) ? 1 : 0,
+        });
     }
     return;
 }
@@ -271,8 +271,8 @@ sub _init_bulletin {
     my($self) = @_;
     $self->new_other('SiteForum')->init_bulletin('bulletin');
     $self->model('ForumUserAddForm', {
-	'RealmUser.realm_id' => _realm_id($self, 'bulletin'),
-	'User.user_id' => _realm_id($self, 'bulletin_user'),
+        'RealmUser.realm_id' => _realm_id($self, 'bulletin'),
+        'User.user_id' => _realm_id($self, 'bulletin_user'),
     });
     return;
 }
@@ -282,27 +282,27 @@ sub _init_default_tuple {
     my($req) = $self->req;
     $self->top_level_forum($self->TUPLE_FORUM, [$self->TUPLE_USER], []);
     $self->model('TupleSlotType')->create_from_hash({
-	Status => {
-	    type_class => 'TupleSlot',
-	    choices => [qw(Open Closed New)],
-	    default_value => 'New',
-	},
+        Status => {
+            type_class => 'TupleSlot',
+            choices => [qw(Open Closed New)],
+            default_value => 'New',
+        },
     });
     $self->model('TupleDef')->create_from_hash({
-	'req#Requests' => [
-	    {
-		label => 'Title',
-		type => 'String',
-	    },
-	    {
-		label => 'Status',
-		type => 'Status',
-	    },
-	],
+        'req#Requests' => [
+            {
+                label => 'Title',
+                type => 'String',
+            },
+            {
+                label => 'Status',
+                type => 'Status',
+            },
+        ],
     });
     $self->model('TupleUse')->create_from_label('Requests');
     $self->model('RowTag')->create_value(
-	$req->get('auth_id'), 'DEFAULT_TUPLE_MONIKER', 'req');
+        $req->get('auth_id'), 'DEFAULT_TUPLE_MONIKER', 'req');
     return;
 }
 
@@ -310,17 +310,17 @@ sub _init_demo_categories {
     my($self) = @_;
 
     foreach my $category (
-	['Birds', 'Exotic Varieties'],
-	['Cats', 'Various Breeds, Exotic Varieties'],
-	['Dogs', 'Various Breeds'],
-	['Fish', 'Saltwater, Freshwater'],
-	['Reptiles', 'Lizards, Turtles, Snakes'],
+        ['Birds', 'Exotic Varieties'],
+        ['Cats', 'Various Breeds, Exotic Varieties'],
+        ['Dogs', 'Various Breeds'],
+        ['Fish', 'Saltwater, Freshwater'],
+        ['Reptiles', 'Lizards, Turtles, Snakes'],
     ) {
-	$self->model('Category')->create({
-	    category_id => uc($category->[0]),
-	    name => $category->[0],
-	    description => $category->[1],
-	});
+        $self->model('Category')->create({
+            category_id => uc($category->[0]),
+            name => $category->[0],
+            description => $category->[1],
+        });
     }
     return;
 }
@@ -391,9 +391,9 @@ EST-24,K9-RT-02,255.5,92,Adult Male
 EST-25,K9-RT-02,325.29,90,Adult Female
 EOF
         $self->model('Inventory')->create({
-	    item_id => $self->model('Item')->create($record)->get('item_id'),
-	    quantity => 10_000,
-	});
+            item_id => $self->model('Item')->create($record)->get('item_id'),
+            quantity => 10_000,
+        });
     }
     return;
 }
@@ -430,32 +430,32 @@ sub _init_demo_users {
     my($req) = $self->get_request;
     my($demo_id);
     foreach my $u (@{$self->demo_users()}) {
- 	next
- 	    if $u eq $self->ROOT;
-	$self->create_user_with_account($u);
-	$req->with_realm($self->DEMO, sub {
+         next
+             if $u eq $self->ROOT;
+        $self->create_user_with_account($u);
+        $req->with_realm($self->DEMO, sub {
             $self->new_other('RealmRole')->edit_categories('+feature_file');
-	    return;
-	});
-	my($uid) = $req->get('auth_user_id');
-	if ($u eq $self->DEMO || $u eq $self->XAPIAN_DEMO) {
-	    $demo_id = $uid;
-	}
-	elsif ($u eq $self->GUEST || $u eq $self->XAPIAN_GUEST) {
+            return;
+        });
+        my($uid) = $req->get('auth_user_id');
+        if ($u eq $self->DEMO || $u eq $self->XAPIAN_DEMO) {
+            $demo_id = $uid;
+        }
+        elsif ($u eq $self->GUEST || $u eq $self->XAPIAN_GUEST) {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
                 realm_id => $demo_id || die('DEMO must come before GUEST'),
                 user_id => $uid,
                 role => $_R->GUEST,
             });
-	}
-	elsif ($u eq $self->XAPIAN_WITHDRAWN) {
+        }
+        elsif ($u eq $self->XAPIAN_WITHDRAWN) {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
                 realm_id => $demo_id || die('DEMO must come before GUEST'),
                 user_id => $uid,
                 role => $_R->WITHDRAWN,
             });
-	}
-	elsif ($u eq $self->MULTI_ROLE_USER) {
+        }
+        elsif ($u eq $self->MULTI_ROLE_USER) {
             Bivio::Biz::Model->new($req, 'RealmUser')->create({
                 realm_id => $_AR->get_general->get('id'),
                 user_id => $uid,
@@ -466,13 +466,13 @@ sub _init_demo_users {
                 user_id => $uid,
                 role => $_R->TEST_ROLE2,
             });
-	}
-	elsif ($u eq $self->OTP) {
-	    $self->new_other('OTP')->reset_user;
-	}
+        }
+        elsif ($u eq $self->OTP) {
+            $self->new_other('OTP')->reset_user;
+        }
     }
     $self->create_test_user(
-	b_use('TestLanguage.HTTP')->generate_remote_email('support'));
+        b_use('TestLanguage.HTTP')->generate_remote_email('support'));
     $self->create_test_user('invalidated_user');
     $req->get('auth_user')->invalidate_password;
     return;
@@ -482,18 +482,18 @@ sub _init_email_alias {
     my($self) = @_;
     my($req) = $self->get_request;
     foreach my $x (
-	[qw(demo-alias demo)],
-	[qw(fourem-alias fourem)],
-	[qw(random-alias random@example.com)],
+        [qw(demo-alias demo)],
+        [qw(fourem-alias fourem)],
+        [qw(random-alias random@example.com)],
     ) {
-	$self->model('EmailAlias')->create({
-	    incoming => $self->format_test_email($x->[0]),
-	    outgoing => $x->[1],
-	});
+        $self->model('EmailAlias')->create({
+            incoming => $self->format_test_email($x->[0]),
+            outgoing => $x->[1],
+        });
     }
     $self->model('EmailAlias')->create({
-	incoming => '@in.bunit',
-	outgoing => '@out.bunit',
+        incoming => '@in.bunit',
+        outgoing => '@out.bunit',
     });
     return;
 }
@@ -505,12 +505,12 @@ sub _init_forum {
     $req->set_user($self->ROOT);
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'RealmFile2',
-	'RealmOwner.name' => 'realmfile2',
+        'RealmOwner.name' => 'realmfile2',
     });
     $req->set_realm(undef);
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum',
-	'RealmOwner.name' => $self->FOUREM,
+        'RealmOwner.name' => $self->FOUREM,
     });
     # Must agree with easy-form.btest (or test will fail)
     $self->realm_file_create('Public/EasyForm-btest.html', <<'EOF');
@@ -554,21 +554,21 @@ EOF
 @/form
 EOF
     $self->realm_file_create(
-	$_WN->to_absolute('EasyForm_btest_done', 1), <<'EOF');
+        $_WN->to_absolute('EasyForm_btest_done', 1), <<'EOF');
 wiki completed
 EOF
     $self->realm_file_create('Forms/btest.csv', <<'EOF');
 &client_addr,&date,&email,input,ok
 EOF
-	$self->realm_file_create($_WN->to_absolute('PublicPage', 1), <<'EOF');
+        $self->realm_file_create($_WN->to_absolute('PublicPage', 1), <<'EOF');
 @h1 My Public Header
 My Public Page
 EOF
-	$self->realm_file_create($_WN->to_absolute('PrivatePage'), <<'EOF');
+        $self->realm_file_create($_WN->to_absolute('PrivatePage'), <<'EOF');
 My Example Page.
 EOF
-	$self->realm_file_create(b_use('Type.BlogFileName')->to_absolute('20071225000000', 1),
-	<<'EOF');
+        $self->realm_file_create(b_use('Type.BlogFileName')->to_absolute('20071225000000', 1),
+        <<'EOF');
 @h1 Merry Xmas
 Ho, ho, ho!
 EOF
@@ -589,93 +589,93 @@ a,
 EOF
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1',
-	'RealmOwner.name' => $self->FOUREM . '-sub1',
+        'RealmOwner.name' => $self->FOUREM . '-sub1',
     });
     $self->model('ForumForm', {
         'RealmOwner.display_name' => 'Unit Test Forum Sub1-1',
-	'RealmOwner.name' => $self->FOUREM . '-sub1-1',
+        'RealmOwner.name' => $self->FOUREM . '-sub1-1',
     });
     $req->set_user($self->BTEST_READ);
     $self->model('ForumUserAddForm', {
-	'RealmUser.realm_id' => $req->get('auth_id'),
-	'User.user_id' => $req->get('auth_user_id'),
+        'RealmUser.realm_id' => $req->get('auth_id'),
+        'User.user_id' => $req->get('auth_user_id'),
     });
     map({
-	$req->set_realm($self->FOUREM);
-	$self->model('ForumForm', {
-	    'RealmOwner.display_name' => "Unit Test Forum Sub$_",
-	    'RealmOwner.name' => $self->FOUREM . "-sub$_",
-	    mail_want_reply_to => 0,
-	}),
-	} 2 .. 4);
+        $req->set_realm($self->FOUREM);
+        $self->model('ForumForm', {
+            'RealmOwner.display_name' => "Unit Test Forum Sub$_",
+            'RealmOwner.name' => $self->FOUREM . "-sub$_",
+            mail_want_reply_to => 0,
+        }),
+        } 2 .. 4);
     $req->set_realm($self->FOUREM . '-sub2');
     $req->set_user($self->BTEST_ADMIN);
     $self->model('ForumUserAddForm', {
-	'RealmUser.realm_id' => $req->get('auth_id'),
-	'User.user_id' => $req->get('auth_user_id'),
-	administrator => 1,
+        'RealmUser.realm_id' => $req->get('auth_id'),
+        'User.user_id' => $req->get('auth_user_id'),
+        administrator => 1,
     });
     $req->set_user($self->BTEST_READ);
     $self->model('ForumUserAddForm', {
-	'RealmUser.realm_id' => $req->get('auth_id'),
-	'User.user_id' => $req->get('auth_user_id'),
+        'RealmUser.realm_id' => $req->get('auth_id'),
+        'User.user_id' => $req->get('auth_user_id'),
     });
     foreach my $realm (
-	$self->new_other('SiteForum')->SITE_REALM,
-	$self->FOUREM,
+        $self->new_other('SiteForum')->SITE_REALM,
+        $self->FOUREM,
     ) {
-	$req->set_realm($realm);
-	$_F->do_in_dir($realm => sub {
-	    $self->new_other('RealmFile')->import_tree('/');
-	    return;
-	}) if -d $realm;
-	foreach my $mode (qw(public private)) {
-	    my($p) = $mode eq 'public' ? 1 : 0;
-	    foreach my $fv (
-		[qw(WikiName base.css), $p, ".${realm}_wiki_${mode} {}"],
-		[qw(FilePath my.css), $p, ".${realm}_my_${mode} {}"],
-		[qw(WikiName index), $p, "\@h1 Sweet Home\nGo buffaloes\n"],
-	    ) {
-		$self->realm_file_create(
-		    b_use('Type.' . shift(@$fv))
-			->to_absolute(splice(@$fv, 0, 2)),
-		    shift(@$fv),
-		);
-	    }
-	}
+        $req->set_realm($realm);
+        $_F->do_in_dir($realm => sub {
+            $self->new_other('RealmFile')->import_tree('/');
+            return;
+        }) if -d $realm;
+        foreach my $mode (qw(public private)) {
+            my($p) = $mode eq 'public' ? 1 : 0;
+            foreach my $fv (
+                [qw(WikiName base.css), $p, ".${realm}_wiki_${mode} {}"],
+                [qw(FilePath my.css), $p, ".${realm}_my_${mode} {}"],
+                [qw(WikiName index), $p, "\@h1 Sweet Home\nGo buffaloes\n"],
+            ) {
+                $self->realm_file_create(
+                    b_use('Type.' . shift(@$fv))
+                        ->to_absolute(splice(@$fv, 0, 2)),
+                    shift(@$fv),
+                );
+            }
+        }
     }
     $req->set_realm($self->new_other('SiteForum')->HELP_REALM);
     foreach my $fv (
-	['base.css', <<'EOF'],
+        ['base.css', <<'EOF'],
 ^Not.*Found.*Wiki {font-size: 100%}
 ^.*Help {background-color: #dddddd;}
 EOF
-	['WikiView1', <<'EOF'],
+        ['WikiView1', <<'EOF'],
 @h1 Wiki View One
 First page
 EOF
-	['WikiView2', <<'EOF'],
+        ['WikiView2', <<'EOF'],
 @h1
 Wiki View
 @strong Two
 @/h1
 Second page
 EOF
-	['WikiView3', <<'EOF'],
+        ['WikiView3', <<'EOF'],
 @h1 class=hello abc
 Third page
 EOF
     ) {
-	$self->realm_file_create($_WN->to_absolute($fv->[0], 1), $fv->[1]);
+        $self->realm_file_create($_WN->to_absolute($fv->[0], 1), $fv->[1]);
     }
     $self->realm_file_create(
-	$_WN->to_absolute('Shell_Util_Help', 1), <<'EOF');
+        $_WN->to_absolute('Shell_Util_Help', 1), <<'EOF');
 Shell utility help.
 EOF
     $req->with_realm('site', sub {
         $self->realm_file_create(
-	    $_WDN->to_absolute('spaces in name.gif', 1),
-	    <<'EOF');
+            $_WDN->to_absolute('spaces in name.gif', 1),
+            <<'EOF');
 dummy image file
 EOF
     });
@@ -691,13 +691,13 @@ sub _init_logo {
     $req->set_user($self->ROOT);
     my($logo) = Bivio::IO::File->read('fourem.png');
     foreach my $x (
-	[png => $logo],
-	[bad => $logo],
-	[gif => \('not an image')],
+        [png => $logo],
+        [bad => $logo],
+        [gif => \('not an image')],
     ) {
-	# Need different modified_date_time
-	sleep(1);
-	$self->realm_file_create("/Public/logo.$x->[0]", $x->[1]);
+        # Need different modified_date_time
+        sleep(1);
+        $self->realm_file_create("/Public/logo.$x->[0]", $x->[1]);
     }
     return;
 }
@@ -705,27 +705,27 @@ sub _init_logo {
 sub _init_mail {
     my($self) = @_;
     $self->top_level_forum(
-	$self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+        $self->MAIL_FORUM, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
     $self->req->with_realm(
-	$self->MAIL_FORUM,
-	sub {
-	    $self->model('ForumForm', {
-		'RealmOwner.display_name' => 'Unit Test Forum Mail Filtering',
-		'RealmOwner.name' => $self->MAIL_FORUM . '-filtering',
-	    });
-	    $self->model('RowTag')->create({
-		primary_id => $self->req->get('auth_id'),
-		key => Type_RowTagKey()->FILTER_MAILER_DAEMON,
-		value => 1,
-	    });
-	},
+        $self->MAIL_FORUM,
+        sub {
+            $self->model('ForumForm', {
+                'RealmOwner.display_name' => 'Unit Test Forum Mail Filtering',
+                'RealmOwner.name' => $self->MAIL_FORUM . '-filtering',
+            });
+            $self->model('RowTag')->create({
+                primary_id => $self->req->get('auth_id'),
+                key => Type_RowTagKey()->FILTER_MAILER_DAEMON,
+                value => 1,
+            });
+        },
     );
     my($mv) = b_use('Type.MailVisibility');
     $self->top_level_forum(
-	$self->MAIL_FORUM_PUBLIC, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+        $self->MAIL_FORUM_PUBLIC, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
     $mv->row_tag_replace($mv->ALWAYS_IS_PUBLIC, $self->req);
     $self->top_level_forum(
-	$self->MAIL_FORUM_ALLOW_PUBLIC, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
+        $self->MAIL_FORUM_ALLOW_PUBLIC, [$self->MAIL_USER(1)], [$self->MAIL_USER(2)]);
     $mv->row_tag_replace($mv->ALLOW_IS_PUBLIC, $self->req);
     return;
 }
@@ -734,7 +734,7 @@ sub _init_motion {
     my($self) = @_;
     $self->top_level_forum('motion_forum', [$self->SITE_ADM], ['motion_user']);
     $self->new_other('RealmRole')
-	->edit_categories(qw(+feature_motion));
+        ->edit_categories(qw(+feature_motion));
     return;
 }
 
@@ -742,59 +742,59 @@ sub _init_remote_copy {
     my($self) = @_;
     my($req) = $self->req;
     $self->top_level_forum(
-	'remote_copy_bunit', ['remote_copy_user']);
+        'remote_copy_bunit', ['remote_copy_user']);
     $self->top_level_forum(
-	'remote_copy_btest', ['remote_copy_user']);
+        'remote_copy_btest', ['remote_copy_user']);
     $req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
         $self->model(ForumUserAddForm => {
-	    'RealmUser.realm_id' => $req->get('auth_id'),
-	    'User.user_id' => _realm_id($self, 'remote_copy_user'),
-	    administrator => 1,
-	});
-	return;
+            'RealmUser.realm_id' => $req->get('auth_id'),
+            'User.user_id' => _realm_id($self, 'remote_copy_user'),
+            administrator => 1,
+        });
+        return;
     });
     # Use this to bootstrap testing or if the petshop isn't online
     # my($uri) = b_use('TestLanguage.HTTP')->home_page_uri;
     # $uri =~ s{(//[^/]+/).*}{$1};
     my($uri) = 'https://petshop.bivio.biz';
     foreach my $realm (qw(remote_copy_btest remote_copy_bunit)) {
-	$req->with_realm($realm => sub {
-	    my($folder) = $realm =~ /btest/ ? 'RemoteCopyBtest'
-		: 'RemoteCopyBunit';
-	    foreach my $x (
-		map(["/$folder/file$_", "file$_"], 1..4),
-	    ) {
-		$self->realm_file_create(@$x);
-	    }
-	    return;
-	})
+        $req->with_realm($realm => sub {
+            my($folder) = $realm =~ /btest/ ? 'RemoteCopyBtest'
+                : 'RemoteCopyBunit';
+            foreach my $x (
+                map(["/$folder/file$_", "file$_"], 1..4),
+            ) {
+                $self->realm_file_create(@$x);
+            }
+            return;
+        })
     }
     foreach my $realm (
-	b_use('ShellUtil.SiteForum')->ADMIN_REALM,
-	'remote_copy_bunit',
+        b_use('ShellUtil.SiteForum')->ADMIN_REALM,
+        'remote_copy_bunit',
     ) {
-	$req->with_realm($realm => sub {
-	    $self->realm_file_create($_SN->to_absolute('RemoteCopy.csv'), <<"EOF");
+        $req->with_realm($realm => sub {
+            $self->realm_file_create($_SN->to_absolute('RemoteCopy.csv'), <<"EOF");
 Realm,Folders,User,Password,URI
 remote_copy_bunit,/RemoteCopyBunit
 ,,remote_copy_user,@{[$self->PASSWORD]},$uri
 EOF
-	    return;
-	});
+            return;
+        });
     }
     $req->with_realm(b_use('ShellUtil.SiteForum')->REPORTS_REALM => sub {
         $self->realm_file_create($_SN->to_absolute('WikiValidator.csv'), <<"EOF");
 Realm,Ignore Regexp
 site,ignore-this-error
 EOF
-	$self->model('ForumUserAddForm', {
-	    'RealmUser.realm_id' => $req->get('auth_id'),
-	    'User.user_id' => _realm_id(
-		$self,
-		b_use('TestLanguage.HTTP')->generate_remote_email('support'),
-	    ),
-	});
-	return;
+        $self->model('ForumUserAddForm', {
+            'RealmUser.realm_id' => $req->get('auth_id'),
+            'User.user_id' => _realm_id(
+                $self,
+                b_use('TestLanguage.HTTP')->generate_remote_email('support'),
+            ),
+        });
+        return;
     });
     return;
 }
@@ -802,12 +802,12 @@ EOF
 sub _init_rewrite_from_domain {
     my($self) = @_;
     $self->top_level_forum(
-	'rewrite_from_domain_forum', [$self->SITE_ADM], ['rewrite_from_domain']);
+        'rewrite_from_domain_forum', [$self->SITE_ADM], ['rewrite_from_domain']);
     my($e) = $self->model('Email');
     $e->create({
-	realm_id => $self->unauth_realm_id('rewrite_from_domain'),
-	location => $e->get_field_type('location')->first_alternative_location,
-	email => 'rewrite_from_domain@yahoo.com',
+        realm_id => $self->unauth_realm_id('rewrite_from_domain'),
+        location => $e->get_field_type('location')->first_alternative_location,
+        email => 'rewrite_from_domain@yahoo.com',
     });
     return;
 }
@@ -815,30 +815,30 @@ sub _init_rewrite_from_domain {
 sub _init_site_admin {
     my($self) = @_;
     foreach my $x (1..5) {
-	$self->model('Club')->create_realm(
-	    {},
-	    {
-		name => "realm_user_util$x",
-		display_name => "Realm User Util $x",
-	    },
-	);
+        $self->model('Club')->create_realm(
+            {},
+            {
+                name => "realm_user_util$x",
+                display_name => "Realm User Util $x",
+            },
+        );
     }
     foreach my $user (qw(ROOT SITE_ADM SITE_ACCOUNTANT)) {
-	my($uid) = $user eq 'ROOT' ? $self->unauth_realm_id($self->$user())
-	    : $self->create_user_with_account($self->$user());
-	$self->req->with_realm(
-	    b_use('ShellUtil.SiteForum')->ADMIN_REALM,
-	    sub {
-		$self->model('GroupUserForm')->change_main_role(
-		    $uid,
-		    $_R->from_name(
-			$user eq 'SITE_ACCOUNTANT' ? 'USER'
-			: 'ADMINISTRATOR',
-		    ),
-		);
-		return;
-	    },
-	);
+        my($uid) = $user eq 'ROOT' ? $self->unauth_realm_id($self->$user())
+            : $self->create_user_with_account($self->$user());
+        $self->req->with_realm(
+            b_use('ShellUtil.SiteForum')->ADMIN_REALM,
+            sub {
+                $self->model('GroupUserForm')->change_main_role(
+                    $uid,
+                    $_R->from_name(
+                        $user eq 'SITE_ACCOUNTANT' ? 'USER'
+                        : 'ADMINISTRATOR',
+                    ),
+                );
+                return;
+            },
+        );
     }
     return;
 }
@@ -851,11 +851,11 @@ sub _init_task_log {
     my($req) = $self->req;
     $req->with_realm(b_use('ShellUtil.SiteForum')->SITE_REALM, sub {
         $self->model(ForumUserAddForm => {
-	    'RealmUser.realm_id' => $req->get('auth_id'),
-	    'User.user_id' => _realm_id($self, 'task_log_user'),
-	    administrator => 1,
-	});
-	return;
+            'RealmUser.realm_id' => $req->get('auth_id'),
+            'User.user_id' => _realm_id($self, 'task_log_user'),
+            administrator => 1,
+        });
+        return;
     });
     return;
 }
@@ -866,24 +866,24 @@ sub _init_tuple {
     $req->set_realm($self->FOUREM);
     $req->set_user($self->ROOT);
     $self->model('TupleSlotType')->create_from_hash({
-	Status => {
-	    type_class => 'TupleSlot',
-	    choices => [qw(s0 s1 s2 s3)],
-	    default_value => 's1',
-	},
+        Status => {
+            type_class => 'TupleSlot',
+            choices => [qw(s0 s1 s2 s3)],
+            default_value => 's1',
+        },
     });
     $self->model('TupleDef')->create_from_hash({
-	'psr#PetShopReport' => [
-	    {
-		label => 'Author',
-		type => 'Email',
-		is_required => 1,
-	    },
-	    {
-		label => 'Status',
-		type => 'Status',
-	    },
-	],
+        'psr#PetShopReport' => [
+            {
+                label => 'Author',
+                type => 'Email',
+                is_required => 1,
+            },
+            {
+                label => 'Status',
+                type => 'Status',
+            },
+        ],
     });
     $self->model('TupleUse')->create_from_label('PetShopReport');
     $self->model('TupleDef')->create_from_hash({
@@ -908,8 +908,8 @@ sub _realm_id {
     my($self, $name) = @_;
     my($ro) = $self->model('RealmOwner');
     return $ro->unauth_load_by_email_id_or_name($name)
-	? $ro->get('realm_id')
-	:  $self->create_test_user($name);
+        ? $ro->get('realm_id')
+        :  $self->create_test_user($name);
 }
 
 1;

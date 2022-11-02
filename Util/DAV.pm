@@ -20,13 +20,13 @@ sub propfind {
     my($ua) = Bivio::Ext::LWPUserAgent->new;
     $ua->agent('b-dav');
     my($resp) = $ua->request(
-	HTTP::Request->new(
-	PROPFIND => $uri => [
-	    Depth => 0,
-	    Translate => 'f',
-	    $user ? (Authorization => "Basic " . MIME::Base64::encode("$user:$password"))
-		: (),
-	],
+        HTTP::Request->new(
+        PROPFIND => $uri => [
+            Depth => 0,
+            Translate => 'f',
+            $user ? (Authorization => "Basic " . MIME::Base64::encode("$user:$password"))
+                : (),
+        ],
     ));
     return $resp->as_string;
 }

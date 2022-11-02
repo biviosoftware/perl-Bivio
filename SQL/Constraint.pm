@@ -18,12 +18,12 @@ __PACKAGE__->compile([
 sub check_value {
     my($self, $type, $value) = @_;
     return
-	if $self->eq_none;
+        if $self->eq_none;
     return $_TE->NULL
-	unless defined($value);
+        unless defined($value);
     if ($self->equals_by_name(qw(NOT_ZERO_ENUM IS_SPECIFIED))) {
-	return $_TE->UNSPECIFIED
-	    unless $type->is_specified($value);
+        return $_TE->UNSPECIFIED
+            unless $type->is_specified($value);
     }
     return;
 }

@@ -10,21 +10,21 @@ sub initialize {
     my($self) = @_;
     return if $self->unsafe_get('value');
     $self->put(value => FORM(Join([
-	BR(),
-	INPUT({
-	    TYPE => 'text',
-	    SIZE => 20,
-	    NAME => b_use('SQL.ListQuery')->to_char('search'),
-	}),
-	vs_blank_cell(),
-	INPUT({
-	    TYPE => 'submit',
-	    CLASS => 'submit',
-	    VALUE => 'Search',
-	}),
+        BR(),
+        INPUT({
+            TYPE => 'text',
+            SIZE => 20,
+            NAME => b_use('SQL.ListQuery')->to_char('search'),
+        }),
+        vs_blank_cell(),
+        INPUT({
+            TYPE => 'submit',
+            CLASS => 'submit',
+            VALUE => 'Search',
+        }),
     ]), {
-	METHOD => 'get',
-	ACTION => ['->format_uri', 'ITEM_SEARCH'],
+        METHOD => 'get',
+        ACTION => ['->format_uri', 'ITEM_SEARCH'],
     }));
     return shift->SUPER::initialize(@_);
 }

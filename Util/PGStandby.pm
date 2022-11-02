@@ -40,23 +40,23 @@ sub failover_copy_recovery_to_standby {
     $self->piped_exec($_CFG->{pg_stop});
     $_F->rm_children($standby_directory);
     my($copied) = $self->piped_exec(
-	[
-	    'cp',
-	    '--archive',
-	    $_TRACE ? '--verbose' : (),
-	    glob("$recovery_directory/*"),
-	    $standby_directory,
-	],
+        [
+            'cp',
+            '--archive',
+            $_TRACE ? '--verbose' : (),
+            glob("$recovery_directory/*"),
+            $standby_directory,
+        ],
     );
     _trace($$copied) if $_TRACE;
     my($trigger_file_name) = $_F->temp_file;
     _write_recovery_conf(
-	$self,
-	{
-	    data_directory => $standby_directory,
-	    archive_directory =>  "$standby_directory/archive",
-	    trigger_file_name => $trigger_file_name,
-	},
+        $self,
+        {
+            data_directory => $standby_directory,
+            archive_directory =>  "$standby_directory/archive",
+            trigger_file_name => $trigger_file_name,
+        },
     );
     _chown_to_postgres($_F->write($trigger_file_name, "smart\n"));
     $self->piped_exec($_CFG->{pg_start});
@@ -75,12 +75,12 @@ sub live_copy_primary_to_recovery {
     my($settings) = _assert_primary_settings($self);
     _assert_recovery_stopped($self, $settings->{failover_host});
     _write_recovery_conf(
-	$self,
-	{
-	    name => 'recovery.conf.tmp',
-	    data_directory => $settings->{data_directory},
-	    archive_directory => $settings->{archive_directory},
-	},
+        $self,
+        {
+            name => 'recovery.conf.tmp',
+            data_directory => $settings->{data_directory},
+            archive_directory => $settings->{archive_directory},
+        },
     );
     _chown_to_postgres($_F->mkdir_p("$settings->{data_directory}/archive"));
     _execute_statement($self, q{select pg_stop_backup()}, undef, 1);
@@ -88,25 +88,25 @@ sub live_copy_primary_to_recovery {
     my($dst) =  "$settings->{failover_host}:$settings->{recovery_directory}";
     b_info('Copying ',  $settings->{data_directory}, ' to ' , $dst);
     my($copied) = $self->piped_exec([
-	'rsync',
-	 $_TRACE ? '--verbose' : (),
-	'--archive',
-	'--compress',
-	'--links',
-	'--sparse',
-	'--delete',
-	'--exclude=pg_xlog/',
-	"$settings->{data_directory}/",
-	$dst,
+        'rsync',
+         $_TRACE ? '--verbose' : (),
+        '--archive',
+        '--compress',
+        '--links',
+        '--sparse',
+        '--delete',
+        '--exclude=pg_xlog/',
+        "$settings->{data_directory}/",
+        $dst,
     ]);
     _trace($$copied) if $_TRACE;
     $copied = $self->piped_exec([
-	'rsync',
-	 $_TRACE ? '--verbose' : (),
-	'--archive',
-	'--compress',
-	"$settings->{data_directory}/recovery.conf.tmp",
-	$dst . '/recovery.conf',
+        'rsync',
+         $_TRACE ? '--verbose' : (),
+        '--archive',
+        '--compress',
+        "$settings->{data_directory}/recovery.conf.tmp",
+        $dst . '/recovery.conf',
     ]);
     _trace($$copied) if $_TRACE;
     _execute_statement($self, q{select pg_stop_backup()});
@@ -116,45 +116,45 @@ sub live_copy_primary_to_recovery {
 sub _assert_primary_settings {
     my($settings) = _get_postgresql_conf(@_);
     b_die("archive mode is not enabled; run $0 live_conf")
-	unless $settings->{archive_mode} eq 'on';
+        unless $settings->{archive_mode} eq 'on';
     b_die('archive timeout is zero')
-	unless $settings->{archive_timeout} > 0;
+        unless $settings->{archive_timeout} > 0;
     ($settings->{failover_host}, $settings->{archive_directory}) =
-	$settings->{archive_command} =~qr{rsync\s+[^%]*%p\s+(?:[^@]*@)?([^:]+):(/.*)/%f};
+        $settings->{archive_command} =~qr{rsync\s+[^%]*%p\s+(?:[^@]*@)?([^:]+):(/.*)/%f};
     b_die('archive command set to ', $settings->{archive_command},
-	'expected "rsync %p name@host:/dir/%f"')
+        'expected "rsync %p name@host:/dir/%f"')
        unless  $settings->{archive_directory};
     $settings->{recovery_directory} = $settings->{data_directory};
 #TODO: Generalize
     $settings->{recovery_directory} =~ s{pgsql}{pg_recovery};
     b_die('expected archive directory to be called "archive" under ',
-	  $settings->{recovery_directory}, ' not ', $settings->{archive_directory})
-	unless $settings->{archive_directory} =~ qr{^$settings->{recovery_directory}/+archive$};
+          $settings->{recovery_directory}, ' not ', $settings->{archive_directory})
+        unless $settings->{archive_directory} =~ qr{^$settings->{recovery_directory}/+archive$};
     return $settings;
 }
 
 sub _assert_recovery_stopped {
     my($self, $host) = @_;
     return ${$self->piped_exec_remote(
-	$host,
-	$_CFG->{pg_recovery_status},
-	undef,
-	1,
+        $host,
+        $_CFG->{pg_recovery_status},
+        undef,
+        1,
     )} =~ /stopped/ ? 1 : 0;
 }
 
 sub _assert_running_clusters {
     my($self) = @_;
     my($clusters) = $_SA->sort_unique([
-	$self->do_backticks([qw(ps -C postmaster --format cmd -ww)])
-	    =~ m{\s-D\s+(/\S+)}g,
+        $self->do_backticks([qw(ps -C postmaster --format cmd -ww)])
+            =~ m{\s-D\s+(/\S+)}g,
     ]);
     b_die('postgres not running')
-	unless @$clusters;
+        unless @$clusters;
     b_die('no "recovery" cluster found in ', $clusters)
-	unless grep(m{/recovery$}, @$clusters);
+        unless grep(m{/recovery$}, @$clusters);
     b_die('expected only standby and recovery clusters to be running, not ', $clusters)
-	if @$clusters > 2;
+        if @$clusters > 2;
     _trace($clusters) if $_TRACE;
     return $clusters->[0] =~ qr{/recovery$} ? @$clusters : reverse(@$clusters);
 }
@@ -170,12 +170,12 @@ sub _execute_statement {
     my($connection) = _get_connection($self);
     my($res);
     my($err) = $_D->catch_quietly(
-	sub {
-	    $res  = $connection->execute($statement, $params);
-	    return;
-	});
+        sub {
+            $res  = $connection->execute($statement, $params);
+            return;
+        });
     b_die($err)
-	if $err && !$ignore_errors;
+        if $err && !$ignore_errors;
     return $res;
 }
 
@@ -191,14 +191,14 @@ sub _get_postgresql_conf {
 sub _write_recovery_conf {
     my($self, $params) = @_;
     my($rc_name) = $params->{data_directory}
-	. '/'
-	. ($params->{name} || 'recovery.conf');
+        . '/'
+        . ($params->{name} || 'recovery.conf');
     my($contents) = "restore_command='$_CFG->{pg_standby}";
     $contents .= " -t $params->{trigger_file_name}"
-	if $params->{trigger_file_name};
+        if $params->{trigger_file_name};
     $contents .= " $params->{archive_directory} %f %p %r'\n";
     $contents .= "recovery_end_command = 'rm -f $params->{trigger_file_name}'"
-	if $params->{trigger_file_name};
+        if $params->{trigger_file_name};
     _chown_to_postgres($_F->write($rc_name, $contents));
     return;
 }

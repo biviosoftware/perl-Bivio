@@ -17,10 +17,10 @@ sub handle_realm_file_new_text {
     my($path) = $parseable->get_os_path;
     my($title) = $proto->internal_get_title($parseable);
     return $proto->new({
-	type => $proto->CONTENT_TYPE_LIST,
-	defined($title) && length($title) ? (title => $title) : (),
-	text => $_S->canonicalize_charset(
-	    \$proto->internal_get_text($parseable)),
+        type => $proto->CONTENT_TYPE_LIST,
+        defined($title) && length($title) ? (title => $title) : (),
+        text => $_S->canonicalize_charset(
+            \$proto->internal_get_text($parseable)),
     });
 }
 
@@ -39,11 +39,11 @@ sub internal_run_parser {
     my($out);
     my($path) = $parseable->get_os_path;
     b_die($cmd, ': missing <path>')
-	unless $cmd =~ s/<path>/$path/g;
+        unless $cmd =~ s/<path>/$path/g;
     my($die) = $_D->catch_quietly(sub {$out = $_SU->piped_exec($cmd)});
     if ($die || !defined($out) || ($error_pattern && $$out =~ $error_pattern)) {
-	b_warn($cmd, ': ', $die ? $die->get('attrs') : ($out || 'no output'));
-	return '';
+        b_warn($cmd, ': ', $die ? $die->get('attrs') : ($out || 'no output'));
+        return '';
     }
     return $$out;
 }

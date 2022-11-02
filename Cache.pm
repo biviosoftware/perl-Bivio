@@ -44,7 +44,7 @@ sub internal_retrieve {
     my($proto, $req, @extra) = @_;
     my($fp) = _file($proto, $req);
     return $req->has_keys($fp) ? $req->get($fp)
-	: _read_and_thaw($fp, $req) || _try_compute($proto, $fp, $req, \@extra);
+        : _read_and_thaw($fp, $req) || _try_compute($proto, $fp, $req, \@extra);
 }
 
 sub _compute {
@@ -61,18 +61,18 @@ sub _compute {
 sub _file {
     my($proto, $req) = @_;
     return  ($_BF ||= b_use('Biz.File'))->absolute_path(
-	$_FP->join(
-	    'Cache',
-	    $proto->simple_package_name,
-	    $proto->internal_realm_id($req),
-	),
+        $_FP->join(
+            'Cache',
+            $proto->simple_package_name,
+            $proto->internal_realm_id($req),
+        ),
     );
 }
 
 sub _read_and_thaw {
     my($fp, $req) = @_;
     return
-	unless my $file = IO::File->new($fp, 'r');
+        unless my $file = IO::File->new($fp, 'r');
     my($res) = Storable::thaw(${$_F->read($file)});
     $req->put($fp => $res);
     return $res;
@@ -83,12 +83,12 @@ sub _try_compute {
     my($proto, $fp, $req, $extra) = @_;
     my($res);
     ($_SU ||= b_use('Bivio.ShellUtil'))->lock_action(
-	sub {
-	    $res = _read_and_thaw($fp, $req) || _compute($proto, $fp, $req, $extra);
-	    return
-	},
-	$fp,
-	1,
+        sub {
+            $res = _read_and_thaw($fp, $req) || _compute($proto, $fp, $req, $extra);
+            return
+        },
+        $fp,
+        1,
     );
     return $res || $proto->internal_compute_no_cache($req, @$extra);
 }

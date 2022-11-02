@@ -4,12 +4,12 @@ ForumUserUnit();
 my($email) = random_string() . '@a.com';
 [
     [req()] => [
-	process => [
-	    [qw(fuaf1-sub1-sub1 0 $email 1)]
-		=> [qw(fuaf1 fuaf1-sub1 fuaf1-sub1-sub1)],
-	    [qw(fuaf1-sub1 1 $email 1)]
-		=> [qw(fuaf1 fuaf1-sub1 fuaf1-sub1-sub1)],
-	],
+        process => [
+            [qw(fuaf1-sub1-sub1 0 $email 1)]
+                => [qw(fuaf1 fuaf1-sub1 fuaf1-sub1-sub1)],
+            [qw(fuaf1-sub1 1 $email 1)]
+                => [qw(fuaf1 fuaf1-sub1 fuaf1-sub1-sub1)],
+        ],
     ],
 ];
 

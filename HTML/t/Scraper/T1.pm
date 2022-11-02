@@ -14,12 +14,12 @@ sub attempt_login {
     my($uri) = $_HTTP->home_page_uri . '/pub/login';
     my($hres) = $self->http_get($uri, 'login.html');
     $self->client_error("couldn't find fields on login page")
-	unless $hres->content =~ /name="v.*value="?1"?/mig;
+        unless $hres->content =~ /name="v.*value="?1"?/mig;
     $self->http_post(
-	$_HTTP->home_page_uri . '/pub/login', [
-	v => 1,
-	f2 => 'demo',
-	f3 => 'password',
+        $_HTTP->home_page_uri . '/pub/login', [
+        v => 1,
+        f2 => 'demo',
+        f3 => 'password',
         f0 => 'ok',
     ], 'post-login.html');
     return 1;

@@ -8,7 +8,7 @@ use Bivio::Base 'XHTMLWidget.XLink';
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	facade_label => [sub {'user_' . shift->req('user_state')->get_name}],
+        facade_label => [sub {'user_' . shift->req('user_state')->get_name}],
     );
     return shift->SUPER::initialize(@_);
 }

@@ -5,29 +5,29 @@ req()->set_realm('site-help');
 my($title) = sub {
     my($title) = @_;
     return 'Remote Copy (Publish Content)'
-	if $title =~ /Remote_Copy/;
+        if $title =~ /Remote_Copy/;
     $title =~ /(\w+)_Help$/;
     ($title = $1) =~ s/_/ /g;
     return $title;
 };
 [
     load_all => [
-	[] => [map(+{
-	    'RealmFile.path' => $_,
-	    result_title => $title->($_),
-	}, qw(
-	    /Public/Wiki/Add_Event_Help
-	    /Public/Wiki/Blog_Detail_Help
-	    /Public/Wiki/Blog_Help
-	    /Public/Wiki/Calendar_Help
-	    /Public/Wiki/Change_Help
-	    /Public/Wiki/Edit_this_entry_Help
-	    /Public/Wiki/Edit_Wiki_Page_Help
-	    /Public/Wiki/Files_Help
-	    /Public/Wiki/New_blog_entry_Help
-	    /Public/Wiki/Remote_Copy_Help
-	    /Public/Wiki/Settings_Help
-	    /Public/Wiki/Shell_Util_Help
-	))],
+        [] => [map(+{
+            'RealmFile.path' => $_,
+            result_title => $title->($_),
+        }, qw(
+            /Public/Wiki/Add_Event_Help
+            /Public/Wiki/Blog_Detail_Help
+            /Public/Wiki/Blog_Help
+            /Public/Wiki/Calendar_Help
+            /Public/Wiki/Change_Help
+            /Public/Wiki/Edit_this_entry_Help
+            /Public/Wiki/Edit_Wiki_Page_Help
+            /Public/Wiki/Files_Help
+            /Public/Wiki/New_blog_entry_Help
+            /Public/Wiki/Remote_Copy_Help
+            /Public/Wiki/Settings_Help
+            /Public/Wiki/Shell_Util_Help
+        ))],
     ],
 ];

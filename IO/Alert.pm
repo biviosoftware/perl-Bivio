@@ -94,7 +94,7 @@ sub bootstrap_die {
     my($proto) = shift;
     Bivio::Die->throw_or_die($proto->calling_context, @_)
         if UNIVERSAL::isa('Bivio::Die', 'Bivio::UNIVERSAL')
-	&& UNIVERSAL::can('Bivio::Die', 'throw_or_die');
+        && UNIVERSAL::can('Bivio::Die', 'throw_or_die');
     CORE::die(_call_format($proto, \@_, 0));
     # DOES NOT RETURN
 }
@@ -102,12 +102,12 @@ sub bootstrap_die {
 sub calling_context {
     my($proto, $skip_packages) = @_;
     return $_CC->new_from_caller([
-	__PACKAGE__,
-	ref($skip_packages) eq 'ARRAY'
-	    ? @$skip_packages
-	    : $skip_packages
-	    ? $skip_packages
-	    : (),
+        __PACKAGE__,
+        ref($skip_packages) eq 'ARRAY'
+            ? @$skip_packages
+            : $skip_packages
+            ? $skip_packages
+            : (),
     ]);
 }
 
@@ -118,19 +118,19 @@ sub debug {
     # B<Not meant for production code.>
     shift->info(@_);
     shift(@_)
-	if _has_calling_context(\@_);
+        if _has_calling_context(\@_);
     return wantarray ? @_ : $_[0];
 }
 
 sub fixup_perl_error {
     my(undef, $msg, $strip_calling_context) = @_;
     return $msg
-	unless $msg =~ s/$_PERL_MSG_AT_LINE//os;
+        unless $msg =~ s/$_PERL_MSG_AT_LINE//os;
     $msg = "$1:$2 $msg"
-	unless $strip_calling_context;
+        unless $strip_calling_context;
     $msg .= ' (package name spelling error?)'
-	if $msg =~ /Subroutine \w+ redefined/
-	|| $msg =~ /Can't locate object method "\w+" via package/;
+        if $msg =~ /Subroutine \w+ redefined/
+        || $msg =~ /Can't locate object method "\w+" via package/;
     return $msg;
 }
 
@@ -153,8 +153,8 @@ sub format_args {
     shift;
     my($res) = '';
     foreach my $o (@_) {
-	# Only go three levels deep on structures
-	$res .= _format_string($o, $_MAX_ARG_DEPTH);
+        # Only go three levels deep on structures
+        $res .= _format_string($o, $_MAX_ARG_DEPTH);
     }
     $res .= "\n" unless substr($res, -1) eq "\n";
     return $res;
@@ -237,7 +237,7 @@ sub handle_config {
     # Includes the time in the log messages.
     my(undef, $cfg) = @_;
     $Carp::MaxArgLen = $Carp::MaxEvalLen = $_MAX_ARG_LENGTH
-	    = $cfg->{max_arg_length} + 0;
+            = $cfg->{max_arg_length} + 0;
     $_MAX_ARG_DEPTH = $cfg->{max_arg_depth} + 0;
     $_MAX_ELEMENT_COUNT = $cfg->{max_element_count} + 0;
 
@@ -248,22 +248,22 @@ sub handle_config {
     $_STACK_TRACE_WARN = $cfg->{stack_trace_warn};
     $_STACK_TRACE_WARN_DEPRECATED = $cfg->{stack_trace_warn_deprecated};
     $SIG{__WARN__} = \&_warn_handler
-	    if $cfg->{intercept_warn} || $cfg->{stack_trace_warn};
+            if $cfg->{intercept_warn} || $cfg->{stack_trace_warn};
     $_WANT_PID = $cfg->{want_pid};
     $_WANT_TIME = $cfg->{want_time};
 
     if ($_FIRST_CONFIG) {
-	if ($cfg->{want_stderr}) {
-	    $_LOGGER = \&_log_stderr;
-	}
-	elsif (exists($ENV{MOD_PERL})) {
-	    $_LOGGER = \&_log_apache;
-	}
-	else {
-	    # Default logger is stderr
-	    $_LOGGER = \&_log_stderr;
-	}
-	$_FIRST_CONFIG = 0;
+        if ($cfg->{want_stderr}) {
+            $_LOGGER = \&_log_stderr;
+        }
+        elsif (exists($ENV{MOD_PERL})) {
+            $_LOGGER = \&_log_apache;
+        }
+        else {
+            # Default logger is stderr
+            $_LOGGER = \&_log_stderr;
+        }
+        $_FIRST_CONFIG = 0;
     }
     return;
 }
@@ -271,7 +271,7 @@ sub handle_config {
 sub info {
     my($proto, @args) = @_;
     $_LOGGER->(_call_format($proto, \@args))
-	unless @args == 1 && ($args[0] || '') eq "\n";
+        unless @args == 1 && ($args[0] || '') eq "\n";
     return;
 }
 
@@ -324,19 +324,19 @@ sub set_printer {
     # general.  It's good for test handling.
     my($proto, $logger, $log_file) = @_;
     if ($logger eq 'STDERR' && $logger eq 'STDERR') {
-	$_LOGGER = \&_log_stderr;
+        $_LOGGER = \&_log_stderr;
     }
     elsif ($logger eq 'FILE') {
-	$proto->bootstrap_die('Must specify log file with FILE as printer')
-	    unless defined($log_file);
-	$_LOG_FILE = $log_file;
-	$_LOGGER = \&_log_file;
+        $proto->bootstrap_die('Must specify log file with FILE as printer')
+            unless defined($log_file);
+        $_LOG_FILE = $log_file;
+        $_LOGGER = \&_log_file;
     }
     elsif (ref($logger) eq 'CODE') {
-	$_LOGGER = $logger;
+        $_LOGGER = $logger;
     }
     else {
-	$proto->bootstrap_die('Unknown logger type ', $logger);
+        $proto->bootstrap_die('Unknown logger type ', $logger);
     }
     return;
 }
@@ -358,16 +358,16 @@ sub warn_deprecated {
     my($pkg) = caller(0);
     my($i) = 0;
     $i++
-	while caller($i) eq $pkg;
+        while caller($i) eq $pkg;
     $proto->warn(
-	'DEPRECATED: ',
-	(caller($i-1))[3],
-	': ',
-	$proto->format_args(@message),
-	'; called from ',
-	(caller($i))[0],
-	':',
-	(caller($i))[2],
+        'DEPRECATED: ',
+        (caller($i-1))[3],
+        ': ',
+        $proto->format_args(@message),
+        '; called from ',
+        (caller($i))[0],
+        ':',
+        (caller($i))[2],
     );
     $proto->print_stack() if $_STACK_TRACE_WARN;
     return;
@@ -377,7 +377,7 @@ sub warn_exactly_once {
     my($proto) = shift;
     my($e) = $proto->format_args(@_);
     $proto->warn($e)
-	unless $_WARN_EXACTLY_ONCE->{$e}++;
+        unless $_WARN_EXACTLY_ONCE->{$e}++;
     return;
 }
 
@@ -396,13 +396,13 @@ sub warn_simply {
 sub _call_format {
     my($proto, $msg, $simply) = @_;
     return $simply ? $proto->format_args(@$msg)
-	: _format(
-	    $proto,
-	    (_has_calling_context($msg) ? shift(@$msg)
-		  : $proto->calling_context(__PACKAGE__)
-	    )->get_top_package_file_line_sub,
-	    $msg,
-	);
+        : _format(
+            $proto,
+            (_has_calling_context($msg) ? shift(@$msg)
+                  : $proto->calling_context(__PACKAGE__)
+            )->get_top_package_file_line_sub,
+            $msg,
+        );
 }
 
 sub _do_warn {
@@ -418,7 +418,7 @@ sub _do_warn {
     # warnings in the handle_die calls during Bivio::Die.
     $_WARN_COUNTER += 5;
     $_LOGGER->($_LAST_WARNING
-	= "Bivio::IO::Alert TOO MANY WARNINGS (max=$_MAX_WARNINGS.)\n");
+        = "Bivio::IO::Alert TOO MANY WARNINGS (max=$_MAX_WARNINGS.)\n");
     CORE::die("\n");
     # DOES NOT RETURN
 }
@@ -433,22 +433,22 @@ sub _format {
     $text .= $_WANT_TIME ? _timestamp() : '';
     my($is_eval) = $file && $file =~ s/^\(eval (\d+)\)$/eval$1/s;
     if (defined($pkg) && $pkg eq 'main') {
-	# main doesn't give us much info, so use the file instead
-	$pkg = defined($file) ? $file : 'main';
+        # main doesn't give us much info, so use the file instead
+        $pkg = defined($file) ? $file : 'main';
     }
     if ($is_eval) {
-	# prefix the pkg if available
-	defined($pkg) && ($text .= $pkg . '::');
-	$text .= $file;
+        # prefix the pkg if available
+        defined($pkg) && ($text .= $pkg . '::');
+        $text .= $file;
     }
     # (eval) is set as the sub if the eval is in the initialization code
     # and is a block ({}) eval and not an expr ('') eval.
     elsif (defined($sub) && $sub ne '(eval)') {
-	$text .= $sub;
+        $text .= $sub;
     }
     # Usually called in an initialization body
     else {
-	$text .= defined($pkg) ? $pkg : defined($file) ? $file : '';
+        $text .= defined($pkg) ? $pkg : defined($file) ? $file : '';
     }
     defined($line) && ($text .= ":$line");
     $text .= ' '.$proto->format_args(@$msg);
@@ -462,36 +462,36 @@ sub _format_string {
     my($o, $depth) = @_;
     # Avoid deep nesting
     if (--$depth > 0) {
-	# Don't let as_string calls crash;  Only call as_string on refs.
-	if (ref($o) eq 'ARRAY') {
-	    my($s, $v) = '[';
-	    my($i) = $_MAX_ELEMENT_COUNT;
-	    foreach $v (@$o) {
-		$s .= _format_string($v, $depth) .',';
-		if (--$i <= 0) {
-		    $s .= '<...>,';
-		    last;
-		}
-	    }
-	    return chop($s) eq '[' ? '[]' : $s.']';
-	}
+        # Don't let as_string calls crash;  Only call as_string on refs.
+        if (ref($o) eq 'ARRAY') {
+            my($s, $v) = '[';
+            my($i) = $_MAX_ELEMENT_COUNT;
+            foreach $v (@$o) {
+                $s .= _format_string($v, $depth) .',';
+                if (--$i <= 0) {
+                    $s .= '<...>,';
+                    last;
+                }
+            }
+            return chop($s) eq '[' ? '[]' : $s.']';
+        }
 
-	if (ref($o) eq 'HASH') {
-	    my($s, $v) = '{';
-	    my($i) = $_MAX_ELEMENT_COUNT;
-	    foreach $v (sort(keys(%$o))) {
-		$s .= _format_string($v, $depth)
-			.'=>'._format_string($o->{$v}, $depth).',';
-		if (--$i <= 0) {
-		    $s .= '<...>,';
-		    last;
-		}
-	    }
-	    return chop($s) eq '{' ? '{}' : $s.'}';
-	}
-	if (ref($o) eq 'SCALAR') {
-	    return '\\${'._format_string($$o, $depth).'}';
-	}
+        if (ref($o) eq 'HASH') {
+            my($s, $v) = '{';
+            my($i) = $_MAX_ELEMENT_COUNT;
+            foreach $v (sort(keys(%$o))) {
+                $s .= _format_string($v, $depth)
+                        .'=>'._format_string($o->{$v}, $depth).',';
+                if (--$i <= 0) {
+                    $s .= '<...>,';
+                    last;
+                }
+            }
+            return chop($s) eq '{' ? '{}' : $s.'}';
+        }
+        if (ref($o) eq 'SCALAR') {
+            return '\\${'._format_string($$o, $depth).'}';
+        }
     }
     return _format_string_simple($o);
 }
@@ -501,27 +501,27 @@ sub _format_string_simple {
     # Formats a single object, which may be undef.
     my($o) = @_;
     return '<undef>'
-	unless defined($o);
+        unless defined($o);
     # Don't output any errors if there is an error evaluating $o
     local($SIG{__WARN__});
     eval {$o = $o->as_string}
-	if ref($o) && UNIVERSAL::can($o, 'as_string');
+        if ref($o) && UNIVERSAL::can($o, 'as_string');
     # Sometimes string is an object (e.g. APR::Error) which doesn't
     # implement overloading properly so just force to be a string now.
     $o = "$o";
     $o =~ s/[\200-\377]//g
-	if $_STRIP_BIT8;
+        if $_STRIP_BIT8;
     return length($o) > $_MAX_ARG_LENGTH
-	? (substr($o, 0, $_MAX_ARG_LENGTH) . '<...>')
-	: _format_string_with_type($o);
+        ? (substr($o, 0, $_MAX_ARG_LENGTH) . '<...>')
+        : _format_string_with_type($o);
 }
 
 sub _format_string_with_type {
     my($value) = @_;
 #TODO: DateTime should be an object
     return Bivio::UNIVERSAL->b_can('is_valid_specified', 'Bivio::Type::DateTime')
-	&& Bivio::Type::DateTime->is_valid_specified($value)
-	? Bivio::Type::DateTime->to_string($value) . " [$value]"
+        && Bivio::Type::DateTime->is_valid_specified($value)
+        ? Bivio::Type::DateTime->to_string($value) . " [$value]"
         : $value;
 }
 
@@ -536,13 +536,13 @@ sub _log_apache {
     my($msg) = @_;
 #TODO: How to log a "notice" from mod_perl?
     if (Apache->request) {
-	Apache->request->log_error($msg);
+        Apache->request->log_error($msg);
     }
     else {
-	# something has gone wrong at httpd startup, pick
-	# another output medium. (DO NOT CALL die, because
-	# will recurse if someone is intercepting __DIE__).
-	_log_stderr(@_);
+        # something has gone wrong at httpd startup, pick
+        # another output medium. (DO NOT CALL die, because
+        # will recurse if someone is intercepting __DIE__).
+        _log_stderr(@_);
     }
     return;
 }
@@ -580,7 +580,7 @@ sub _warn_handler {
     # Trim perl's message format (not enough info)
     __PACKAGE__->warn(__PACKAGE__->fixup_perl_error($msg));
     __PACKAGE__->print_stack()
-	if $_STACK_TRACE_WARN;
+        if $_STACK_TRACE_WARN;
     return;
 }
 

@@ -19,21 +19,21 @@ sub REGEX {
 sub to_unique_absolute {
     my($proto, $date, $is_public) = @_;
     return $proto->to_absolute(
-	$proto->join(
-	    sprintf('%04d-%02d', $_DT->get_parts($date, qw(year month))),
-		$_DT->to_file_name($date)
-		. '-'
-		. _unique()
-		. '.eml',
-	),
-	$is_public,
+        $proto->join(
+            sprintf('%04d-%02d', $_DT->get_parts($date, qw(year month))),
+                $_DT->to_file_name($date)
+                . '-'
+                . _unique()
+                . '.eml',
+        ),
+        $is_public,
     );
 }
 
 sub _unique {
     return sprintf(
-	'%05d',
-	$_UNIQUE = (defined($_UNIQUE) ? ++$_UNIQUE : $_R->integer) % 100_000,
+        '%05d',
+        $_UNIQUE = (defined($_UNIQUE) ? ++$_UNIQUE : $_R->integer) % 100_000,
     );
 }
 

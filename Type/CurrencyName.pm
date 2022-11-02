@@ -6,7 +6,7 @@ use Bivio::Base 'Type.SyntacticString';
 
 my($_PAYPAL_CURRENCIES) = {
     map(($_ => 1),
-	qw(AUD CAD CZK DKK EUR HKD HUF JPY NOK NZD PLN GBP SGD SEK CHF USD)),
+        qw(AUD CAD CZK DKK EUR HKD HUF JPY NOK NZD PLN GBP SGD SEK CHF USD)),
 };
 
 sub REGEX {

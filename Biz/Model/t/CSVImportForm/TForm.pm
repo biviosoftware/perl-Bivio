@@ -10,12 +10,12 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         other => [
-	    {
-		name => 'result',
-		type => 'Array',
-		constraint => 'NONE',
-	    },
-	],
+            {
+                name => 'result',
+                type => 'Array',
+                constraint => 'NONE',
+            },
+        ],
     });
 }
 
@@ -23,7 +23,7 @@ sub process_record {
     my($self, $row, $count) = @_;
     my($res);
     $self->internal_put_field(result => $res = [])
-	unless $res = $self->unsafe_get('result');
+        unless $res = $self->unsafe_get('result');
     $row->{count} = $count;
     push(@$res, $row);
     return;

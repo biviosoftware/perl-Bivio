@@ -16,12 +16,12 @@ sub initialize {
     my($from) = $self->get('from_color');
     my($to) = $self->get('to_color');
     $self->put_unless_exists(
-	value => Join([
-	    'background:', $to, ';', "\n",
-	    'filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="', $from, '", endColorstr="', $to, '");', "\n",
-	    'background:-webkit-gradient(linear, left top, left bottom, from(', $from, '), to(', $to, '));', "\n",
-	    'background:-moz-linear-gradient(top, ', $from, ',', $to, ');', "\n",
-	]),
+        value => Join([
+            'background:', $to, ';', "\n",
+            'filter:progid:DXImageTransform.Microsoft.gradient(startColorstr="', $from, '", endColorstr="', $to, '");', "\n",
+            'background:-webkit-gradient(linear, left top, left bottom, from(', $from, '), to(', $to, '));', "\n",
+            'background:-moz-linear-gradient(top, ', $from, ',', $to, ');', "\n",
+        ]),
     );
     return;
 }

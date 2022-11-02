@@ -3,15 +3,15 @@
 Request();
 [
     class() => [
-	_update_caret_ampersand => [
-	    '^&quot;' => '@&quot;',
-	    '^&nbsp;' => '@&nbsp;',
-	    '10^2' => '10^2',
-	    '10^ 2' => '10^ 2',
-	    '10 ^2' => '10 ^2',
-	    '10 ^ 2' => '10 ^ 2',
-	    '^SomeWikiPage' => '^SomeWikiPage',
-	    <<'END_IN' => <<'END_EXPECT',
+        _update_caret_ampersand => [
+            '^&quot;' => '@&quot;',
+            '^&nbsp;' => '@&nbsp;',
+            '10^2' => '10^2',
+            '10^ 2' => '10^ 2',
+            '10 ^2' => '10 ^2',
+            '10 ^ 2' => '10 ^ 2',
+            '^SomeWikiPage' => '^SomeWikiPage',
+            <<'END_IN' => <<'END_EXPECT',
 ^ & *
 ^&#174;
 ^&quot;^&quot;
@@ -20,22 +20,22 @@ END_IN
 @&#174;
 @&quot;@&quot;
 END_EXPECT
-	],
-	_update_b_tags => [
-	    '@ins-page /site/recent-blog' => '@b-embed value=/site/recent-blog',
-	    '@ins-page /my/updates?count=10' => '@b-embed value=/my/updates?count=10',
-	    '@b-embed Value=/my/updates?count=10' => '@b-embed value=/my/updates?count=10',
-	    '@b-embed /site/recent-blog' => '@b-embed value=/site/recent-blog',
-	    '@b-embed value=/site/recent-blog'
-		=> '@b-embed value=/site/recent-blog',
-	    '@b-menu ProductsLeft' => '@b-menu value=ProductsLeft',
-	    '@b-widget ride_count_all' => '@b-widget value=ride_count_all',
-	    '@b-widget value=contact@' => '@b-widget value=contact@',
-	    '@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265'
-		=> '@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265',
-	    '@b-menu-source statutes' => '@b-menu-source value=statutes',
-	    '@b-menu-source value=statutes' => '@b-menu-source value=statutes',
-	    <<'END_IN' => <<'END_EXPECT',
+        ],
+        _update_b_tags => [
+            '@ins-page /site/recent-blog' => '@b-embed value=/site/recent-blog',
+            '@ins-page /my/updates?count=10' => '@b-embed value=/my/updates?count=10',
+            '@b-embed Value=/my/updates?count=10' => '@b-embed value=/my/updates?count=10',
+            '@b-embed /site/recent-blog' => '@b-embed value=/site/recent-blog',
+            '@b-embed value=/site/recent-blog'
+                => '@b-embed value=/site/recent-blog',
+            '@b-menu ProductsLeft' => '@b-menu value=ProductsLeft',
+            '@b-widget ride_count_all' => '@b-widget value=ride_count_all',
+            '@b-widget value=contact@' => '@b-widget value=contact@',
+            '@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265'
+                => '@b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265',
+            '@b-menu-source statutes' => '@b-menu-source value=statutes',
+            '@b-menu-source value=statutes' => '@b-menu-source value=statutes',
+            <<'END_IN' => <<'END_EXPECT',
 Lorem ipsum
 @ins-page /site/recent-blog
 Praesent gravida
@@ -58,17 +58,17 @@ Praesent mollis
 Phasellus nec
 @b-swfobject data=/bp/player.swf file=/bp/surplus-lines.flv preview=/bp/surplus-lines.png width=320 height=265
 END_EXPECT
-	],
-	internal_check_path => [
-	    'WikiName' => undef,
-	    'BlogPost' => undef,
-	    '/Wiki/WikiName' => 1,
-	    '/Blog/BlogPost' => 1,
-	    [qw(/Wiki/BlogOnly 1)] => undef,
-	    [qw(/Wiki/BlogAlso 0)] => 1,
-	],
-	internal_upgrade_content => [
-	    <<'END_IN' => <<'END_EXPECT',
+        ],
+        internal_check_path => [
+            'WikiName' => undef,
+            'BlogPost' => undef,
+            '/Wiki/WikiName' => 1,
+            '/Blog/BlogPost' => 1,
+            [qw(/Wiki/BlogOnly 1)] => undef,
+            [qw(/Wiki/BlogAlso 0)] => 1,
+        ],
+        internal_upgrade_content => [
+            <<'END_IN' => <<'END_EXPECT',
 Lorem ipsum dolor sit amet, ConSectetur adipiscing elit.
 ^SomeOldLink
 ProductNameOne
@@ -85,6 +85,6 @@ ProductNameOne
 @&#174;@&quot;
 Some other email2@test.com
 END_EXPECT
-	],
+        ],
     ],
 ];

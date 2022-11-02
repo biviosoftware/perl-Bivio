@@ -5,13 +5,13 @@ req()->setup_facade;
 b_use('Type.DateTime')->set_test_now('2/1/1999 0:0:0', req());
 [
     {
-	method => 'load_all',
-	compute_return => sub {
-	    my(undef, $actual) = @_;
-	    return [$actual->[0]->set_cursor_or_die(1)->get('display_name')];
-	},
+        method => 'load_all',
+        compute_return => sub {
+            my(undef, $actual) = @_;
+            return [$actual->[0]->set_cursor_or_die(1)->get('display_name')];
+        },
     } => [
-	[] => 'Jan 1998',
-	[{b_month => Date('3/1/2005')}] => 'Jan 2004',
+        [] => 'Jan 1998',
+        [{b_month => Date('3/1/2005')}] => 'Jan 2004',
     ],
 ];

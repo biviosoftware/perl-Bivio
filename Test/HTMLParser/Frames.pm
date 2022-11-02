@@ -19,7 +19,7 @@ sub _anon {
     my($e) = $self->get('elements');
     my($l);
     $i++
-	while $e->{$l = '_anon#' . $i};
+        while $e->{$l = '_anon#' . $i};
     return $l;
 }
 

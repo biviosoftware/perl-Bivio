@@ -6,6 +6,6 @@ my($domain) = sub {
 };
 foreach my $u (@$users) {
     unauth_model(Email => {realm_id => realm_id($u)})
-	->update({email => $domain->($u)});
+        ->update({email => $domain->($u)});
 }
 ($domain, $users);

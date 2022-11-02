@@ -22,17 +22,17 @@ sub _do {
     my($vars) = shift(@_);
     my($in) = grep(defined($_), @_);
     return '$'
-	if $in eq '$$';
+        if $in eq '$$';
     foreach my $v ($in, '') {
-	next unless exists($vars->{$v});
-	my($out) = $vars->{$v};
-	$out = $out->($in)
-	    if ref($out) eq 'CODE';
-	Bivio::Die->die($in, ': var value is undefined')
-	    unless defined($out);
-	Bivio::Die->die($in, ': var value is a reference: ', $out)
-	    if ref($out);
-	return $out;
+        next unless exists($vars->{$v});
+        my($out) = $vars->{$v};
+        $out = $out->($in)
+            if ref($out) eq 'CODE';
+        Bivio::Die->die($in, ': var value is undefined')
+            unless defined($out);
+        Bivio::Die->die($in, ': var value is a reference: ', $out)
+            if ref($out);
+        return $out;
     }
     Bivio::Die->die($in, ': not found in vars map');
     # DOES NOT RETURN

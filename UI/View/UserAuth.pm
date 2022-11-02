@@ -8,13 +8,13 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 sub adm_substitute_user {
     return shift->internal_body(vs_simple_form(AdmSubstituteUserForm => [qw{
-	AdmSubstituteUserForm.login
+        AdmSubstituteUserForm.login
     }]));
 }
 
 sub create {
     return shift->internal_body(vs_simple_form(UserRegisterForm => [
-	'UserRegisterForm.Email.email',
+        'UserRegisterForm.Email.email',
     ]));
 }
 
@@ -28,7 +28,7 @@ sub create_mail {
 
 sub email_verify {
     return shift->internal_body(vs_simple_form(EmailVerifyForm => [
-	'EmailVerifyForm.Email.email',
+        'EmailVerifyForm.Email.email',
     ]));
 }
 
@@ -39,8 +39,8 @@ sub email_verify_force {
 sub email_verify_mail {
     my($self) = @_;
     view_put(
-	mail_to => Mailbox(['Model.EmailVerifyForm', 'Email.email']),
-	mail_subject => 'Verification Request',
+        mail_to => Mailbox(['Model.EmailVerifyForm', 'Email.email']),
+        mail_subject => 'Verification Request',
     );
     return _support_message($self, <<'EOF');
 Please follow the link to complete the email verification process:
@@ -59,20 +59,20 @@ EOF
 
 sub general_contact_mail {
     return shift->internal_put_base_attr(
-	from => ['Model.ContactForm', 'from'],
-	to => Mailbox(
-	    vs_text('support_email'),
-	    vs_text_as_prose('support_name'),
-	),
-	subject => ['Model.ContactForm', 'subject'],
-	body => ['Model.ContactForm', 'text'],
+        from => ['Model.ContactForm', 'from'],
+        to => Mailbox(
+            vs_text('support_email'),
+            vs_text_as_prose('support_name'),
+        ),
+        subject => ['Model.ContactForm', 'subject'],
+        body => ['Model.ContactForm', 'text'],
     );
 }
 
 sub general_contact {
     return shift->internal_body(vs_simple_form(ContactForm => [qw(
         ContactForm.from
-	ContactForm.text
+        ContactForm.text
     )]));
 }
 
@@ -90,7 +90,7 @@ sub internal_settings_form_extra_fields {
 sub login {
     return shift->internal_body(vs_simple_form(UserLoginForm => [qw(
         UserLoginForm.login
-	UserLoginForm.RealmOwner.password
+        UserLoginForm.RealmOwner.password
     )]));
 }
 
@@ -106,7 +106,7 @@ sub password {
 
 sub password_query {
     return shift->internal_body(vs_simple_form(UserPasswordQueryForm => [
-	'UserPasswordQueryForm.Email.email',
+        'UserPasswordQueryForm.Email.email',
     ]));
 }
 
@@ -122,55 +122,55 @@ sub settings_form {
     my($self) = @_;
     my($extra_fields) = $self->internal_settings_form_extra_fields;
     return shift->internal_body(vs_list_form(UserSettingsListForm => [
-	"'user_password",
-	'UserSettingsListForm.User.first_name',
-	'UserSettingsListForm.User.middle_name',
-	'UserSettingsListForm.User.last_name',
+        "'user_password",
+        'UserSettingsListForm.User.first_name',
+        'UserSettingsListForm.User.middle_name',
+        'UserSettingsListForm.User.last_name',
         'UserSettingsListForm.page_size',
         ['UserSettingsListForm.time_zone_selector', {
-	    size => 40,
-	}],
+            size => 40,
+        }],
         @$extra_fields,
-	['UserSettingsListForm.RealmOwner.name', {
-	    row_control => [qw(Model.UserSettingsListForm show_name)],
-	}],
-	'UserSettingsListForm.Email.email',
-	'UserSettingsListForm.UserDefaultSubscription.subscribed_by_default',
-	{
-	    column_heading_class => 'left',
-	    column_heading => 'RealmOwner.display_name',
-	    column_widget => vs_display('UserSubscriptionList.RealmOwner.display_name'),
-	    column_use_list => 1,
-	},
-	{
-	    field => 'is_subscribed',
-	    column_data_class => 'checkbox',
-	    column_heading => 'is_subscribed',
-	},
+        ['UserSettingsListForm.RealmOwner.name', {
+            row_control => [qw(Model.UserSettingsListForm show_name)],
+        }],
+        'UserSettingsListForm.Email.email',
+        'UserSettingsListForm.UserDefaultSubscription.subscribed_by_default',
+        {
+            column_heading_class => 'left',
+            column_heading => 'RealmOwner.display_name',
+            column_widget => vs_display('UserSubscriptionList.RealmOwner.display_name'),
+            column_use_list => 1,
+        },
+        {
+            field => 'is_subscribed',
+            column_data_class => 'checkbox',
+            column_heading => 'is_subscribed',
+        },
     ], {
-	empty_list_widget => Simple(''),
-	class => 'list table',
+        empty_list_widget => Simple(''),
+        class => 'list table',
     }, {
-	indent_list => 1,
+        indent_list => 1,
     }));
 }
 
 sub unapproved_applicant_mail {
     return shift->internal_put_base_attr(
 #TODO: use _prose() for this
-	from => Mailbox(
-	    ['Model.UserRegisterForm', 'Email.email'],
-	    ['Model.UserRegisterForm', 'RealmOwner.display_name'],
-	),
-	to => Mailbox(vs_constant('site_admin_realm_name')),
-	subject => Join([
-	    'Applicant: ',
-	    Mailbox(
-		['Model.UserRegisterForm', 'Email.email'],
-		['Model.UserRegisterForm', 'RealmOwner.display_name'],
-	    ),
-	]),
-	body => Prose(<<'EOF'),
+        from => Mailbox(
+            ['Model.UserRegisterForm', 'Email.email'],
+            ['Model.UserRegisterForm', 'RealmOwner.display_name'],
+        ),
+        to => Mailbox(vs_constant('site_admin_realm_name')),
+        subject => Join([
+            'Applicant: ',
+            Mailbox(
+                ['Model.UserRegisterForm', 'Email.email'],
+                ['Model.UserRegisterForm', 'RealmOwner.display_name'],
+            ),
+        ]),
+        body => Prose(<<'EOF'),
 Registration request from:
 
 String(['Model.UserRegisterForm', 'RealmOwner.display_name']); String(['Model.UserRegisterForm', 'Email.email']);
@@ -188,11 +188,11 @@ EOF
 sub _password_fields {
     my($m) = @_;
     return (
-	["$m.old_password", {
-	    row_control => ["Model.$m", 'display_old_password'],
-	}],
-	"$m.new_password",
-	"$m.confirm_new_password",
+        ["$m.old_password", {
+            row_control => ["Model.$m", 'display_old_password'],
+        }],
+        "$m.new_password",
+        "$m.confirm_new_password",
     );
 }
 
@@ -202,15 +202,15 @@ sub _prose {
 
 sub _support_mailbox {
     return Mailbox(
-	vs_text('support_email'),
-	Join([vs_site_name(), ' Support']),
+        vs_text('support_email'),
+        Join([vs_site_name(), ' Support']),
     );
 }
 
 sub _support_message {
     my($self, $text) = @_;
     view_put(
-	mail_from => _support_mailbox(),
+        mail_from => _support_mailbox(),
     );
     return $self->internal_body_prose($text . <<'EOF');
 

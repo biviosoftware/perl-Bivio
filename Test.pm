@@ -15,8 +15,8 @@ b_use('Bivio::IO::Trace');
 #     Bivio::Test->new('Bivio::Type::Integer')->unit([
 #         Bivio::Type::Integer => [
 #             from_literal => [
-# 	        ['1'] => [1],
-# 	        ['x'] => [undef, Bivio::TypeError->INTEGER],
+#                 ['1'] => [1],
+#                 ['x'] => [undef, Bivio::TypeError->INTEGER],
 #             ],
 #             from_literal_or_die => [
 #                 ['99'] => '99',
@@ -88,20 +88,20 @@ b_use('Bivio::IO::Trace');
 #
 #     Bivio::Test->new->({
 #         class_name => 'Bivio::Math::EMA',
-# 	check_return => sub {
-# 	    my($case, $actual, $expect) = @_;
+#         check_return => sub {
+#             my($case, $actual, $expect) = @_;
 #             # Round to 6 decimal places
-# 	    $case->actual_return(
+#             $case->actual_return(
 #                 [POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000]);
 #             return $expect;
-# 	},
+#         },
 #     })->unit([
-# 	30 => [
-# 	    compute => [
-# 	        1 => 1,
-# 	        2 => 1.666666,
-# 	        2 => 1.888888,
-# 	    ],
+#         30 => [
+#             compute => [
+#                 1 => 1,
+#                 2 => 1.666666,
+#                 2 => 1.888888,
+#             ],
 #         ],
 #     ]);
 #
@@ -111,19 +111,19 @@ b_use('Bivio::IO::Trace');
 #     Bivio::Test->unit([
 #         {
 #             class_name => 'Bivio::Math::EMA',
-# 	    object => 30,
+#             object => 30,
 #             check_return => sub {
 #                 my($case, $actual, $expect) = @_;
 #                 $case->actual_return(
 #                     [POSIX::floor($actual->[0] * 1000000 + 0.5) / 1000000];
 #                 return $expect;
-# 	    },
+#             },
 #         } => [
-# 	    compute => [
-# 	        [1] => [1],
-# 	        [2] => [1.666666],
-# 	        [2] => [1.888888],
-# 	    ],
+#             compute => [
+#                 [1] => [1],
+#                 [2] => [1.666666],
+#                 [2] => [1.888888],
+#             ],
 #         ],
 #     ]);
 #
@@ -231,16 +231,16 @@ b_use('Bivio::IO::Trace');
 #         30 => sub {
 #             my($case, $object) = @_;
 #             foreach my $sub_case (
-# 	        [1 => 1],
-# 	        [2 => 1.666666],
-# 	        [2 => 1.888888],
+#                 [1 => 1],
+#                 [2 => 1.666666],
+#                 [2 => 1.888888],
 #             ) {
 #                 my($value, $expect) = @$sub_case;
 #                 return 0
 #                     unless $expect
 #                     == POSIX::floor(
 #                         $object->compute($value) * 1000000 + 0.5) / 1000000;
-# 	    },
+#             },
 #             return 1;
 #         },
 #     ]);
@@ -253,9 +253,9 @@ b_use('Bivio::IO::Trace');
 # result, the case case be written, e.g.:
 #
 #     Bivio::Test->unit([
-# 	'Bivio::Type::Integer' => [
-# 	    get_min => -999999999,
-# 	    get_max => 999999999,
+#         'Bivio::Type::Integer' => [
+#             get_min => -999999999,
+#             get_max => 999999999,
 #         ],
 #     ]);
 #
@@ -320,11 +320,11 @@ sub format_results {
     my(undef, $num_ok, $max) = @_;
     # Formats test results into a human readable string.
     return $max == $num_ok
-	? "All ($max) tests PASSED\n"
+        ? "All ($max) tests PASSED\n"
         : sprintf("FAILED %d (%.1f%%) and passed %d (%.1f%%)\n",
-	    map {
-		$_, 100 * $_ / $max;
-	    } ($max - $num_ok), $num_ok);
+            map {
+                $_, 100 * $_ / $max;
+            } ($max - $num_ok), $num_ok);
 }
 
 sub new {
@@ -347,7 +347,7 @@ sub register_handler {
 sub unit {
     my($self, $tests) = @_;
     return ref($self) ? _eval($self, _compile($self, $tests))
-	: $self->new->unit($tests);
+        : $self->new->unit($tests);
 }
 
 sub unsafe_current_self {
@@ -368,30 +368,30 @@ sub _assert_options {
     my($options) = @_;
     # Validates result_ok, compute_params, and printer options.
     return {}
-	unless $options;
+        unless $options;
     return {class_name => $options}
-	if !ref($options) && $options;
+        if !ref($options) && $options;
     die('options not a hash_ref or class_name')
-	unless ref($options) eq 'HASH';
+        unless ref($options) eq 'HASH';
     my($o) = {%$options};
     foreach my $c (@_ALL_OPTIONS) {
-	next unless exists($o->{$c});
-	die($c, ': option not a subroutine (code_ref)')
-	    unless ref($o->{$c}) eq 'CODE'
-		|| grep($c eq $_, @_PLAIN_OPTIONS);
-	delete($o->{$c});
+        next unless exists($o->{$c});
+        die($c, ': option not a subroutine (code_ref)')
+            unless ref($o->{$c}) eq 'CODE'
+                || grep($c eq $_, @_PLAIN_OPTIONS);
+        delete($o->{$c});
     }
     _die('unknown option(s) passed to new: ', join(' ', sort(keys(%$o))))
-	if %$o;
+        if %$o;
     return $options;
 }
 
 sub _catch {
     return
-	unless my $die = $_D->catch_quietly(@_);
+        unless my $die = $_D->catch_quietly(@_);
     b_use('Agent.Task')->rollback(b_use('Agent.Request')->get_current)
         if $_CL->was_required('Agent.Request')
-	&& $_CL->was_required('Agent.Task');
+        && $_CL->was_required('Agent.Task');
     return $die;
 }
 
@@ -399,14 +399,14 @@ sub _compile {
     my($self, $objects) = @_;
     # Compiles @$objects into a linear list of tuples.
     my($state) = {
-	object_num => 0,
-	map(($_ => $self->unsafe_get($_)), @_CASE_OPTIONS),
+        object_num => 0,
+        map(($_ => $self->unsafe_get($_)), @_CASE_OPTIONS),
     };
     _compile_assert_even($objects, $state);
     my(@objects) = @$objects;
     my($tests) = [];
     while (@objects) {
-	_compile_object($self, $state, $tests, splice(@objects, 0, 2));
+        _compile_object($self, $state, $tests, splice(@objects, 0, 2));
     }
     return $tests;
 }
@@ -415,7 +415,7 @@ sub _compile_assert_array {
     my($value, $state) = @_;
     # Asserts value is an array_ref.
     _compile_die($state, 'value must be an array_ref')
-	unless ref($value) eq 'ARRAY';
+        unless ref($value) eq 'ARRAY';
     return;
 }
 
@@ -424,9 +424,9 @@ sub _compile_assert_even {
     # Asserts value is an even length array_ref.
     _compile_assert_array($value, $state);
     _compile_die($state, 'value has uneven elements in array')
-	unless int(@$value) % 2 == 0;
+        unless int(@$value) % 2 == 0;
     _compile_die($state, 'value has no elements in array')
-	unless int(@$value);
+        unless int(@$value);
     return;
 }
 
@@ -435,12 +435,12 @@ sub _compile_case {
     # Parses a single case and pushes it on @$tests.
     $state->{case_num}++;
     $params = [$params]
-	if defined($params) && !ref($params);
+        if defined($params) && !ref($params);
     _compile_die($state, 'params must be array_ref, DieCode, or CODE')
-	unless ref($params) =~ /^(ARRAY|CODE)$/;
+        unless ref($params) =~ /^(ARRAY|CODE)$/;
     push(@$tests, my $case = $_C->new({
-	%$state,
-	params => $params,
+        %$state,
+        params => $params,
     }));
     $case->expect($expect);
     _trace($case) if $_TRACE;
@@ -451,7 +451,7 @@ sub _compile_die {
     my($state, @msg) = @_;
     # Calls _die() with msg and state of compilation.
     _die('Error compiling ', ref($state) eq 'HASH'
-	? $_C->new({%$state}) : $state, ': ', @msg);
+        ? $_C->new({%$state}) : $state, ': ', @msg);
     # DOES NOT RETURN
 }
 
@@ -462,24 +462,24 @@ sub _compile_method {
     $state->{comparator} ||= 'nested_differences';
     $method = $state->{method};
     if (ref($cases) eq 'ARRAY') {
-	_compile_assert_even($cases, $state);
+        _compile_assert_even($cases, $state);
     }
     elsif (!ref($cases) || ref($cases) =~ /^(?:CODE|Regexp)$/
-	|| $_DC->is_blesser_of($cases)) {
-	# Shortcut: scalar, construct the cases.  Handle undef as ignore case
-	$cases = [
-	    [] => defined($cases) ? ref($cases) ? $cases : [$cases] : undef,
-	];
+        || $_DC->is_blesser_of($cases)) {
+        # Shortcut: scalar, construct the cases.  Handle undef as ignore case
+        $cases = [
+            [] => defined($cases) ? ref($cases) ? $cases : [$cases] : undef,
+        ];
     }
     else {
-	_compile_die($state,
-	    'cases is not an ARRAY, CODE, Regexp, DieCode, scalar or undef: ',
-	    $cases);
+        _compile_die($state,
+            'cases is not an ARRAY, CODE, Regexp, DieCode, scalar or undef: ',
+            $cases);
     }
     my(@cases) = @$cases;
     $state->{case_num} = 0;
     while (@cases) {
-	_compile_case($state, $tests, splice(@cases, 0, 2));
+        _compile_case($state, $tests, splice(@cases, 0, 2));
     }
     return;
 }
@@ -490,39 +490,39 @@ sub _compile_object {
     $state = _compile_options($state, 'object', $object);
     $state->{test} = $self;
     if ($state->{class_name}) {
-	$state->{create_object} = \&default_create_object
-	    unless $state->{create_object};
+        $state->{create_object} = \&default_create_object
+            unless $state->{create_object};
     }
     if ($state->{create_object} || ref($state->{object}) eq 'CODE') {
-	my($fields) = $self->[$_IDI];
-	$state->{_eval_object} = @{$fields->{_eval_object} ||= []};
-	push(@{$fields->{_eval_object}}, [
-	    ref($state->{object}) eq 'CODE'
-	       ? ($state->{object}, [])
-	       : ($state->{create_object},
-		   ref($state->{object}) eq 'ARRAY' ? $state->{object}
-		   : !ref($state->{object}) ? [$state->{object}]
-		   : _compile_die('object must be a scalar, ARRAY, or CODE',
-		       $state->{object})),
-	]);
-	$state->{object} = undef;
-	$state->{create_object} = undef;
+        my($fields) = $self->[$_IDI];
+        $state->{_eval_object} = @{$fields->{_eval_object} ||= []};
+        push(@{$fields->{_eval_object}}, [
+            ref($state->{object}) eq 'CODE'
+               ? ($state->{object}, [])
+               : ($state->{create_object},
+                   ref($state->{object}) eq 'ARRAY' ? $state->{object}
+                   : !ref($state->{object}) ? [$state->{object}]
+                   : _compile_die('object must be a scalar, ARRAY, or CODE',
+                       $state->{object})),
+        ]);
+        $state->{object} = undef;
+        $state->{create_object} = undef;
     }
     elsif (!UNIVERSAL::isa($state->{object}, 'UNIVERSAL')) {
-	_load_class($state)
-	    if $state->{object} && $state->{object} =~ /(?:\:\:|\.)/;
-	_compile_die($state, 'object is not a subclass of UNIVERSAL'
-	    . ' (forgot to "use"?) or CODE: ', $state->{object})
-	    unless UNIVERSAL::isa($state->{object}, 'UNIVERSAL');
+        _load_class($state)
+            if $state->{object} && $state->{object} =~ /(?:\:\:|\.)/;
+        _compile_die($state, 'object is not a subclass of UNIVERSAL'
+            . ' (forgot to "use"?) or CODE: ', $state->{object})
+            unless UNIVERSAL::isa($state->{object}, 'UNIVERSAL');
     }
     $methods = [
-	$methods => 1,
+        $methods => 1,
     ] if ref($methods) eq 'CODE';
     _compile_assert_even($methods, $state);
     $state->{method_num} = 0;
     my(@methods) = @$methods;
     while (@methods) {
-	_compile_method($state, $tests, splice(@methods, 0, 2));
+        _compile_method($state, $tests, splice(@methods, 0, 2));
     }
     return;
 }
@@ -539,26 +539,26 @@ sub _compile_options {
     $state = {%$state};
 
     unless (ref($entity_or_hash) eq 'HASH') {
-	# No customizations, just set $which
-	$state->{$which} = $entity_or_hash;
+        # No customizations, just set $which
+        $state->{$which} = $entity_or_hash;
     }
     else {
-	# Customizations and $which
-	my($h) = {%$entity_or_hash};
-	_compile_die($state, '"', $which, '" must be specified in HASH')
-	    unless $h->{$which};
-	foreach my $o (@_PLAIN_OPTIONS) {
-	    _add_option($state, $h, $o);
-	}
-	foreach my $c (@_CALLBACKS, $which) {
-	    next unless _add_option($state, $h, $c);
-	    next if $c eq $which;
-	    _compile_die($state, $c, ' is not a subroutine (code_ref)')
-		unless ref($state->{$c}) eq 'CODE';
-	}
-	_compile_die($state, 'unknown options: ',
-	    join(' ', sort(keys(%$h))))
-	    if %$h;
+        # Customizations and $which
+        my($h) = {%$entity_or_hash};
+        _compile_die($state, '"', $which, '" must be specified in HASH')
+            unless $h->{$which};
+        foreach my $o (@_PLAIN_OPTIONS) {
+            _add_option($state, $h, $o);
+        }
+        foreach my $c (@_CALLBACKS, $which) {
+            next unless _add_option($state, $h, $c);
+            next if $c eq $which;
+            _compile_die($state, $c, ' is not a subroutine (code_ref)')
+                unless ref($state->{$c}) eq 'CODE';
+        }
+        _compile_die($state, 'unknown options: ',
+            join(' ', sort(keys(%$h))))
+            if %$h;
     }
     _trace('state: ', $state) if $_TRACE;
     return $state;
@@ -587,61 +587,61 @@ sub _eval {
     # Runs the tests as returned from _compile().
     my($c) = 0;
     my($print) = $self->get_if_exists_else_put(
-	print => sub {\&_default_print});
+        print => sub {\&_default_print});
     $print->('1..' . int(@$tests) . "\n");
     my($err);
     my($results) = {
-	failed => [],
-	passed => [],
+        failed => [],
+        passed => [],
     };
     local($_SELF) = $self;
     local($_CASE);
     foreach my $case (@$tests) {
-	$_CASE = $case;
-	$c++;
-	my($result);
-	next
-	    unless _prepare_case($self, $case, \$err);
-	_trace($case) if $_TRACE;
-	my($die) = _catch(sub {
-	    if ($case->unsafe_get('want_void')) {
-		_eval_method($case);
-		$result = [];
-	    }
-	    else {
-		$result = [
-		    $case->unsafe_get('want_scalar') ? scalar(_eval_method($case))
-			: _eval_method($case),
-		];
-	    }
-	    return;
-	});
-	_trace('returned ', $die || $result) if $_TRACE;
-	if ($die) {
-	    $case->put(
-		die_code => $die->get('code'),
-		die => $die,
-	    );
-	    $err = _eval_result($case, $die);
-	}
-	elsif (defined($case->unsafe_get('expect'))) {
-	    $case->put(return => $result);
-	    $err = _eval_result($case, $result);
-	}
-	else {
-	    _trace('ignoring result') if $_TRACE;
-	}
+        $_CASE = $case;
+        $c++;
+        my($result);
+        next
+            unless _prepare_case($self, $case, \$err);
+        _trace($case) if $_TRACE;
+        my($die) = _catch(sub {
+            if ($case->unsafe_get('want_void')) {
+                _eval_method($case);
+                $result = [];
+            }
+            else {
+                $result = [
+                    $case->unsafe_get('want_scalar') ? scalar(_eval_method($case))
+                        : _eval_method($case),
+                ];
+            }
+            return;
+        });
+        _trace('returned ', $die || $result) if $_TRACE;
+        if ($die) {
+            $case->put(
+                die_code => $die->get('code'),
+                die => $die,
+            );
+            $err = _eval_result($case, $die);
+        }
+        elsif (defined($case->unsafe_get('expect'))) {
+            $case->put(return => $result);
+            $err = _eval_result($case, $result);
+        }
+        else {
+            _trace('ignoring result') if $_TRACE;
+        }
     }
     continue {
-	push(@{$results->{$err ? 'failed' : 'passed'}}, $c);
-	$print->($err
-	    ? "not ok $c " . $case->as_string . ": $err\n"
-	    : "ok $c\n");
-	$err = undef;
+        push(@{$results->{$err ? 'failed' : 'passed'}}, $c);
+        $print->($err
+            ? "not ok $c " . $case->as_string . ": $err\n"
+            : "ok $c\n");
+        $err = undef;
     }
     $self->put(%$results);
     $print->(
-	$self->format_results(scalar(@{$results->{passed}}), int(@$tests)),
+        $self->format_results(scalar(@{$results->{passed}}), int(@$tests)),
     );
     return $self;
 }
@@ -651,17 +651,17 @@ sub _eval_compute_return {
     # Calls compute_return if there is a compute_return on the case, and
     # $return is an array_ref.
     return undef
-	unless ref($$return) eq 'ARRAY' && $case->unsafe_get('compute_return');
+        unless ref($$return) eq 'ARRAY' && $case->unsafe_get('compute_return');
     my($err);
     my($new_return) = _eval_custom(
-	$case,
-	'compute_return',
-	[$$return, $case->get('expect')],
-	\$err,
+        $case,
+        'compute_return',
+        [$$return, $case->get('expect')],
+        \$err,
     );
     _trace($err || $new_return) if $_TRACE;
     return $err
-	unless $new_return;
+        unless $new_return;
     $case->put(return => $$return = $new_return);
     return undef;
 }
@@ -675,42 +675,42 @@ sub _eval_custom {
     # $params only needs extra params for check_return only.
     my($res);
     my($die) = _catch(sub {
-	$res = $case->get($which)->($case, @$params);
-	return undef;
+        $res = $case->get($which)->($case, @$params);
+        return undef;
     });
     if ($die) {
-	$$err = "Error in custom $which: " . $die->as_string . _die_stack($die);
-	return undef;
+        $$err = "Error in custom $which: " . $die->as_string . _die_stack($die);
+        return undef;
     }
     if ($which =~ /params/ && !(
-	ref($res) eq 'ARRAY' || ($res || '') eq __PACKAGE__->IGNORE_RETURN
+        ref($res) eq 'ARRAY' || ($res || '') eq __PACKAGE__->IGNORE_RETURN
     )) {
-	$$err = 'an array_ref'
+        $$err = 'an array_ref'
     }
     elsif ($which =~ /object/
         && !(UNIVERSAL::isa($res, 'UNIVERSAL')
             || ($res || '') eq __PACKAGE__->IGNORE_RETURN)
     ) {
-	$$err = 'a subclass of UNIVERSAL (forgot to "use"?)';
+        $$err = 'a subclass of UNIVERSAL (forgot to "use"?)';
     }
     elsif ($which eq 'compute_return' && ref($res) ne 'ARRAY') {
-	$$err = 'an array_ref';
+        $$err = 'an array_ref';
     }
     elsif ($which =~ /expect|check_return/
-	&& (ref($res) ? ref($res) !~ /^(?:ARRAY|Regexp)$/
-	    : defined($res) ? $res !~ /^[01]$/ : 1)) {
-	$$err = 'an array_ref, Regexp, or boolean (0 or 1)';
+        && (ref($res) ? ref($res) !~ /^(?:ARRAY|Regexp)$/
+            : defined($res) ? $res !~ /^[01]$/ : 1)) {
+        $$err = 'an array_ref, Regexp, or boolean (0 or 1)';
     }
     elsif ($which =~ /die/
-	&& (ref($res) ? !$_DC->is_blesser_of($res)
-	    : defined($res) ? $res !~ /^[01]$/ : 1)) {
-	$$err = 'a DieCode or boolean (0 or 1)';
+        && (ref($res) ? !$_DC->is_blesser_of($res)
+            : defined($res) ? $res !~ /^[01]$/ : 1)) {
+        $$err = 'a DieCode or boolean (0 or 1)';
     }
     else {
-	return $res;
+        return $res;
     }
     $$err = "$which did not return ${$err}: "
-	. b_use('IO.Ref')->to_short_string($res);
+        . b_use('IO.Ref')->to_short_string($res);
     return undef;
 }
 
@@ -719,34 +719,34 @@ sub _eval_method {
     # Calls the method based on whether it is a sub or not.
     my($object, $method, $params) = $case->get(qw(object method params));
     return []
-	if $params eq __PACKAGE__->IGNORE_RETURN;
+        if $params eq __PACKAGE__->IGNORE_RETURN;
     return ref($method) eq 'CODE'
-	? $method->($case, $object, @$params) : $object->$method(@$params);
+        ? $method->($case, $object, @$params) : $object->$method(@$params);
 }
 
 sub _eval_object {
     my($self, $case, $err) = @_;
     # Returns true if eval worked.  Objects are cached.
     return $case->get('object')
-	unless defined(my $e = $case->unsafe_get('_eval_object'));
+        unless defined(my $e = $case->unsafe_get('_eval_object'));
     my($fields) = $self->[$_IDI];
     my($object) = $fields->{_eval_object}->[$e];
     unless (defined($object)) {
-	$$err = 'prior create_object call failed';
-	return 0;
+        $$err = 'prior create_object call failed';
+        return 0;
     }
     if (ref($object) eq 'ARRAY') {
-	my($code, $param) = @$object;
-	# Try to load: If it fails, then
-	unless (_load_class($case)) {
-	    $$err = 'unable to load package ' . $case->get('class_name');
-	}
-	else {
-	    $case->put(create_object => $code);
-	    $fields->{_eval_object}->[$e] = $object
-		= _eval_custom($case, 'create_object', [$param], $err);
-	}
-	return 0 if $$err;
+        my($code, $param) = @$object;
+        # Try to load: If it fails, then
+        unless (_load_class($case)) {
+            $$err = 'unable to load package ' . $case->get('class_name');
+        }
+        else {
+            $case->put(create_object => $code);
+            $fields->{_eval_object}->[$e] = $object
+                = _eval_custom($case, 'create_object', [$param], $err);
+        }
+        return 0 if $$err;
     }
     $case->put(object => $object);
     return 1;
@@ -756,14 +756,14 @@ sub _eval_params {
     my($case, $err) = @_;
     # Returns true if eval worked.
     foreach my $custom (qw(params compute_params)) {
-	next
-	    unless ref($case->unsafe_get($custom)) eq 'CODE';
-	my($res) = _eval_custom(
-	    $case, $custom, [$case->get(qw(params method object))], $err);
-	return 0
-	    if $$err;
-	$case->put(params => $res);
-	last;
+        next
+            unless ref($case->unsafe_get($custom)) eq 'CODE';
+        my($res) = _eval_custom(
+            $case, $custom, [$case->get(qw(params method object))], $err);
+        return 0
+            if $$err;
+        $case->put(params => $res);
+        last;
     }
     return 1;
 }
@@ -775,69 +775,69 @@ sub _eval_result {
     my($custom);
     my($show);
     my($result, $actual_which) = $_D->is_blesser_of($actual)
-	? ($actual->get('code'), 'die_code') : ($actual, 'return');
+        ? ($actual->get('code'), 'die_code') : ($actual, 'return');
     my($expect_which) = $_DC->is_blesser_of($case->get('expect'))
-	? 'die_code' : 'return';
+        ? 'die_code' : 'return';
     if ($expect_which eq 'return') {
-	my($err) = _eval_compute_return($case, \$actual);
-	return $err
-	    if $err;
-	$result = $actual;
+        my($err) = _eval_compute_return($case, \$actual);
+        return $err
+            if $err;
+        $result = $actual;
     }
     if (ref($case->get('expect')) eq 'CODE') {
-	# Only on success do we eval a case-specific check_return
-	$custom = 'expect'
-	    if ref($actual) eq 'ARRAY';
+        # Only on success do we eval a case-specific check_return
+        $custom = 'expect'
+            if ref($actual) eq 'ARRAY';
     }
     elsif ($actual_which eq $expect_which) {
-	$custom = "check_$expect_which";
-	$custom = undef
-	    unless $case->unsafe_get($custom);
+        $custom = "check_$expect_which";
+        $custom = undef
+            unless $case->unsafe_get($custom);
     }
     if ($custom) {
 #TODO: Move off to separate method
-	my($err) = undef;
-	my($res) = _eval_custom(
-	    $case,
-	    $custom, [$actual, $case->get('expect')],
-	    \$err,
-	);
-	_trace($case, ' ', $custom, ' returned: ', $res) if $_TRACE;
-	return $err
-	    if $err;
-	$custom = 'check_return'
-	    if $custom eq 'expect';
-	$custom =~ s/^check_//;
-	if (ref($res)) {
-	    # New value for return or die, save and compare
-	    $case->expect($res);
-	    $result = $case->get($custom);
-	}
-	else {
-	    return $res ? undef
-		: "check_$expect_which returned false for result: "
-		    . b_use('IO.Ref')->to_short_string(
-			$case->get($actual_which));
+        my($err) = undef;
+        my($res) = _eval_custom(
+            $case,
+            $custom, [$actual, $case->get('expect')],
+            \$err,
+        );
+        _trace($case, ' ', $custom, ' returned: ', $res) if $_TRACE;
+        return $err
+            if $err;
+        $custom = 'check_return'
+            if $custom eq 'expect';
+        $custom =~ s/^check_//;
+        if (ref($res)) {
+            # New value for return or die, save and compare
+            $case->expect($res);
+            $result = $case->get($custom);
+        }
+        else {
+            return $res ? undef
+                : "check_$expect_which returned false for result: "
+                    . b_use('IO.Ref')->to_short_string(
+                        $case->get($actual_which));
 
-	}
+        }
     }
     my($e) = $case->get('expect');
     if (ref($e) eq 'CODE') {
-	return "unexpected die: " . b_use('IO.Ref')->to_short_string($result)
-	    . _die_stack($actual);
+        return "unexpected die: " . b_use('IO.Ref')->to_short_string($result)
+            . _die_stack($actual);
     }
     my($x);
     my($comparator) = $case->get('comparator');
     my($diff_die) = _catch(sub {
         $x = b_use('IO.Ref')->$comparator(
-	    $e,
-	    ref($result) eq 'ARRAY' && @$result == 1 && ref($e) eq 'Regexp'
-		? $result->[0] : $result,
-	);
+            $e,
+            ref($result) eq 'ARRAY' && @$result == 1 && ref($e) eq 'Regexp'
+                ? $result->[0] : $result,
+        );
     });
     return $diff_die ? "$comparator died: " . $diff_die->as_string
-	: $x ? $$x . _die_stack($actual)
-	: undef;
+        : $x ? $$x . _die_stack($actual)
+        : undef;
 }
 
 sub _load_class {
@@ -845,9 +845,9 @@ sub _load_class {
     my($is_hash) = !$_U->is_blesser_of($thing);
     my($c) = $is_hash ? $thing->{object} : $thing->unsafe_get('class_name');
     return 1
-	unless $c;
+        unless $c;
     return 0
-	unless $c = $_CL->unsafe_map_require($c);
+        unless $c = $_CL->unsafe_map_require($c);
     $is_hash ? $thing->{object} = $c : $thing->put(class_name => $c);
     return 1;
 }
@@ -857,20 +857,20 @@ sub _prepare_case {
     # Returns false if err.  Calls _eval_object_or_params and
     # then checks method.
     if (my $ct = $self->unsafe_get_and_delete('case_tag')) {
-	$case->put(tag => $ct);
+        $case->put(tag => $ct);
     }
     return 0
-	unless _eval_object($self, $case, $err) && _eval_params($case, $err);
+        unless _eval_object($self, $case, $err) && _eval_params($case, $err);
     if ($case->unsafe_get('method_is_autoloaded')
-	|| UNIVERSAL::can($case->get('object'), $case->get('method'))
-	|| ref($case->get('method')) eq 'CODE'
+        || UNIVERSAL::can($case->get('object'), $case->get('method'))
+        || ref($case->get('method')) eq 'CODE'
     ) {
         $_HANDLERS->call_fifo(handle_prepare_case => [$case]);
-	return 1;
+        return 1;
     }
     my($o) = $case->get('object');
     $$err = $case->get('method') . ': not implemented by ' . (ref($o) || $o)
-	unless $o eq __PACKAGE__->IGNORE_RETURN;
+        unless $o eq __PACKAGE__->IGNORE_RETURN;
     return 0;
 }
 

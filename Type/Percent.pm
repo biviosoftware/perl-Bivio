@@ -11,8 +11,8 @@ sub calculate {
     # Returns 0 if total is 0.
     my($proto, $amount, $total) = @_;
     return $total == 0
-	? 0
-	: $proto->div($proto->mul($amount, 100), $total);
+        ? 0
+        : $proto->div($proto->mul($amount, 100), $total);
 }
 
 1;

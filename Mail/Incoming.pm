@@ -26,7 +26,7 @@ sub get_body {
     my($self, $body) = @_;
     # Returns the body of the message or puts a copy in I<body>.
     return substr(${$self->get('rfc822')}, $self->get('body_offset'))
-	unless defined($body);
+        unless defined($body);
     $$body = substr(${$self->get('rfc822')}, $self->get('body_offset'));
     return;
 }
@@ -36,7 +36,7 @@ sub get_date_time {
     # Returns the date specified by the message
     return $self->get_if_exists_else_put(date_time => sub {
         return ($_DT->from_literal(_get_field($self, 'date:') || $_DT->now))[0]
-	    || $_DT->now;
+            || $_DT->now;
     });
 }
 
@@ -46,16 +46,16 @@ sub get_from {
     # 822: The  "Sender"  field  mailbox  should  NEVER  be  used
     #      automatically, in a recipient's reply message.
     return _two_parter(
-	$self,
-	qw(from_email from_name),
-	['from:', 'apparently-from:'],
+        $self,
+        qw(from_email from_name),
+        ['from:', 'apparently-from:'],
     );
 }
 
 sub get_from_user_id {
     my($self, $req) = @_;
     return b_use('Model.Email')->new($req)
-	->unsafe_user_id_from_email(($self->get_from)[0]);
+        ->unsafe_user_id_from_email(($self->get_from)[0]);
 }
 
 sub get_headers {
@@ -73,13 +73,13 @@ sub get_headers {
     my($fn) = $_RFC->FIELD_NAME;
     # Important to include the newline in $f
     foreach my $f (split(/^(?=$fn)/om, $self->get('header'))) {
-	my($n) = $f =~ /^($fn)/o;
-	unless (defined($n)) {
-	    Bivio::IO::Alert->warn($f, ': invalid RFC822 field');
-	    next;
-	}
-	$n =~ s/:$//;
-	$headers->{lc($n)} .= $f;
+        my($n) = $f =~ /^($fn)/o;
+        unless (defined($n)) {
+            Bivio::IO::Alert->warn($f, ': invalid RFC822 field');
+            next;
+        }
+        $n =~ s/:$//;
+        $headers->{lc($n)} .= $f;
     }
     return $headers;
 }
@@ -88,9 +88,9 @@ sub get_message_id {
     my($self) = @_;
     # Returns the Message-Id for this message.
     return $self->get_if_exists_else_put(message_id => sub {
-	my($id) = _get_field($self, 'message-id:') =~ /<([^<>]+)>/;
-	return _check_message_id($self, $id, 'Message-Id')
-	    || $self->NO_MESSAGE_ID;
+        my($id) = _get_field($self, 'message-id:') =~ /<([^<>]+)>/;
+        return _check_message_id($self, $id, 'Message-Id')
+            || $self->NO_MESSAGE_ID;
     });
 }
 
@@ -102,47 +102,47 @@ sub get_references {
     # or (if In-Reply-To does not exist) the last (most recent) id in the
     # "References" list.
     return $self->get_if_exists_else_put(references => sub {
-	my($seen) = {};
+        my($seen) = {};
         return [map({
-	    my($which) = $_;
-	    map(
-		$seen->{$_}++ ? () : _check_message_id($self, $_, $which),
-		reverse(_get_field($self, "$which:") =~ /<([^<>]+)>/g),
-	    );
-	} qw(In-Reply-To References))];
+            my($which) = $_;
+            map(
+                $seen->{$_}++ ? () : _check_message_id($self, $_, $which),
+                reverse(_get_field($self, "$which:") =~ /<([^<>]+)>/g),
+            );
+        } qw(In-Reply-To References))];
     });
 }
 
 sub get_reply_email_arrays {
     my($self, $who, $canonical_email, $realm_emails, $req) = @_;
     return ($_EA->new($canonical_email), $_EA->new([]))
-	unless ref($self) and !$who->eq_realm;
+        unless ref($self) and !$who->eq_realm;
     my($reply_to) = lc($self->get_reply_to || '');
     $reply_to = undef
-	if grep($_E->is_equal($reply_to, $_), @$realm_emails);
+        if grep($_E->is_equal($reply_to, $_), @$realm_emails);
     my($from) = lc($reply_to || $self->get_from);
     return ($_EA->new([$from]), $_EA->new([]))
-	if $who->eq_author;
+        if $who->eq_author;
     my($dups) = {
-	@{$_M->new($req, 'RealmEmailList')->get_recipients(
-	    sub {shift->get('Email.email') => 1},
-	)},
-	map($_ ? ($_ => 1) : (), @$realm_emails),
+        @{$_M->new($req, 'RealmEmailList')->get_recipients(
+            sub {shift->get('Email.email') => 1},
+        )},
+        map($_ ? ($_ => 1) : (), @$realm_emails),
     };
     my($to, $cc) = map(
-	$_EA->new([
-	    grep(!$dups->{$_},
-		 map(lc($_), @{$_A->parse_list(_get_field($self, "$_:"))})),
-	]),
-	qw(to cc),
+        $_EA->new([
+            grep(!$dups->{$_},
+                 map(lc($_), @{$_A->parse_list(_get_field($self, "$_:"))})),
+        ]),
+        qw(to cc),
     );
     $to = $to->append($from)
-	unless $dups->{$from};
+        unless $dups->{$from};
     if ($to->as_length) {
-	$cc = $cc->append($canonical_email);
+        $cc = $cc->append($canonical_email);
     }
     else {
-	$to = $to->append($canonical_email);
+        $to = $to->append($canonical_email);
     }
     return ($to, $cc);
 }
@@ -150,7 +150,7 @@ sub get_reply_email_arrays {
 sub get_reply_subject {
     my($self) = @_;
     my($s) = ($_MS->clean_and_trim(_get_field($self, 'subject:')))[0]
-	|| $_MS->EMPTY_VALUE;
+        || $_MS->EMPTY_VALUE;
     return 'Re: ' . $s;
 }
 
@@ -159,9 +159,9 @@ sub get_reply_to {
     # Return I<Reply-To:> email address and name or just email
     # if not array context.
     return _two_parter(
-	$self,
-	qw(reply_to_email reply_to_name),
-	['reply-to:'],
+        $self,
+        qw(reply_to_email reply_to_name),
+        ['reply-to:'],
     );
 }
 
@@ -192,12 +192,12 @@ sub get_subject {
     my($self) = @_;
     # Returns I<Subject> of message or C<undef>.
     return $self->get_if_exists_else_put(
-	subject => sub {
-	    my($subject) = _get_field($self, 'subject:');
-	    return undef
-		unless length($subject);
-	    $subject =~ s/^\s+|\s+$//sg;
-	    return $subject;
+        subject => sub {
+            my($subject) = _get_field($self, 'subject:');
+            return undef
+                unless length($subject);
+            $subject =~ s/^\s+|\s+$//sg;
+            return $subject;
     });
 }
 
@@ -206,8 +206,8 @@ sub get_unix_mailbox {
     # Returns the message in unix mailbox format.  Always ends in a newline.
     # ctime already has newline
     return 'From unknown ' . ctime($self->get('time'))
-	    . substr(${$self->get('rfc822')}, $self->get('header_offset'))
-	    . (substr(${$self->get('rfc822')}, -1) eq "\n" ? '' : "\n");
+            . substr(${$self->get('rfc822')}, $self->get('header_offset'))
+            . (substr(${$self->get('rfc822')}, -1) eq "\n" ? '' : "\n");
 }
 
 sub grep_headers {
@@ -219,7 +219,7 @@ sub grep_headers {
 sub initialize {
     my($self, $rfc822, $offset) = @_;
     $rfc822 = $rfc822->get_rfc822
-	if Bivio::UNIVERSAL->is_blesser_of($rfc822);
+        if Bivio::UNIVERSAL->is_blesser_of($rfc822);
     my($r) = ref($rfc822) ? $rfc822 : \$rfc822;
     # Initializes the object with the reference supplied.
     #
@@ -230,18 +230,18 @@ sub initialize {
     my($i) = index($$r, "\n\n", $offset);
     my($h);
     if (substr($$r, $offset, 5) eq 'From ') {
-	# Skip Unix From line
-	$offset = index($$r, "\n", $offset) + 1;
+        # Skip Unix From line
+        $offset = index($$r, "\n", $offset) + 1;
     }
     if ($i >= 0) {
-	$i -= $offset;
-	$h = substr($$r, $offset, $i + 1);
-	# Account for \n\n
-	$i += 2 + $offset;
+        $i -= $offset;
+        $h = substr($$r, $offset, $i + 1);
+        # Account for \n\n
+        $i += 2 + $offset;
     }
     else {
-	$i = length($$r) - $offset;
-	$h = substr($$r, $offset, $i + 1);
+        $i = length($$r) - $offset;
+        $h = substr($$r, $offset, $i + 1);
     }
 #TODO: Handle "From " start lines.
 #TODO: Don't unfold headers in advance.  Unfold headers as they
@@ -256,13 +256,13 @@ sub initialize {
     #      quoted space.
     $h =~ s/\r?\n[ \t]/ /gs;
     return $self->put(
-	rfc822 => $r,
-	header => $h,
-	header_offset => $offset,
-	rfc822_length => length($$r) - $offset,
-	# If there is no body, get_body will return empty string.
-	body_offset => $i,
-	time => time,
+        rfc822 => $r,
+        header => $h,
+        header_offset => $offset,
+        rfc822_length => length($$r) - $offset,
+        # If there is no body, get_body will return empty string.
+        body_offset => $i,
+        time => time,
     );
 }
 
@@ -272,23 +272,23 @@ sub is_duplicate {
     my($count) = 0;
     my($body, $date_time) = ($self->get_body, $self->get_date_time);
     b_use('Model.RealmMail')->new($req)->set_ephemeral->do_iterate(
-	sub {
-	    my($rm) = @_;
-	    return 0 if ++$count > 10;
-	    my($rf) = $rm->get_model('RealmFile');
-	    return 1
-		if abs($_DT->diff_seconds(
-		    $date_time,
-		    $rf->get('modified_date_time')
-		)) > 3600;
-	    
-	    if ($self->new($rf->get_content)->get_body eq $body) {
-		$res = 1;
-		return 0;
-	    }
-	    return 1;
-	},
-	'realm_file_id DESC',
+        sub {
+            my($rm) = @_;
+            return 0 if ++$count > 10;
+            my($rf) = $rm->get_model('RealmFile');
+            return 1
+                if abs($_DT->diff_seconds(
+                    $date_time,
+                    $rf->get('modified_date_time')
+                )) > 3600;
+            
+            if ($self->new($rf->get_content)->get_body eq $body) {
+                $res = 1;
+                return 0;
+            }
+            return 1;
+        },
+        'realm_file_id DESC',
     );
     return $res;
 }
@@ -316,10 +316,10 @@ sub send {
     # for "alias-like" forwarding only.
     Bivio::IO::Alert->warn_deprecated('convert to Outgoing to send');
     return $self->SUPER::send(
-	undef,
-	$self->get(qw(rfc822 header_offset)),
-	($self->get_from)[0],
-	$req,
+        undef,
+        $self->get(qw(rfc822 header_offset)),
+        ($self->get_from)[0],
+        $req,
     );
 }
 
@@ -333,7 +333,7 @@ sub _check_message_id {
     my($self, $id, $which) = @_;
     my($v, $e) = $_MI->from_literal($id);
     return $v
-	if $v;
+        if $v;
     b_warn($id, ": invalid $which; from=", ($self->get_from)[0],
        ' date=', $_DT->to_string($self->get_date_time));
     return;
@@ -342,24 +342,24 @@ sub _check_message_id {
 sub _get_field {
     my($self, $name) = @_;
     return $self->get_if_exists_else_put(
-	lc($name),
-	sub {
-	    my($v) = $self->get('header') =~ m{^$name(?: |\t)*(.*)}im;
-	    return defined($v) ? $v : '';
-	},
+        lc($name),
+        sub {
+            my($v) = $self->get('header') =~ m{^$name(?: |\t)*(.*)}im;
+            return defined($v) ? $v : '';
+        },
     );
 }
 
 sub _two_parter {
     my($self, $field1, $field2, $headers) = @_;
     my($f1) = $self->get_if_exists_else_put($field1 => sub {
-	my($v);
+        my($v);
         foreach my $f (@$headers) {
-	    last if $v = _get_field($self, $f);
+            last if $v = _get_field($self, $f);
         }
-	my($f1, $f2) = $v ? $_A->parse($v) : ();
-	$self->put($field2 => $f2);
-	return $f1;
+        my($f1, $f2) = $v ? $_A->parse($v) : ();
+        $self->put($field2 => $f2);
+        return $f1;
     });
     return wantarray ? ($f1, $self->get($field2)) : $f1;
 }

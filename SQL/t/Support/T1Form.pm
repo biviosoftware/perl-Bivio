@@ -10,23 +10,23 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
-	    'Address_1.city',
-	    {
-		name => 'Address_1.state',
-		constraining_field => 'User.first_name',
-	    },
-	    'User.last_name',
-	],
-	hidden => [
-	    [
-		{
-		    name => 'RealmOwner.realm_id',
-		    constraint => 'NONE',
-		},
-		'Address_1.realm_id',
-		'RealmUser.realm_id',
-	    ],
-	],
+            'Address_1.city',
+            {
+                name => 'Address_1.state',
+                constraining_field => 'User.first_name',
+            },
+            'User.last_name',
+        ],
+        hidden => [
+            [
+                {
+                    name => 'RealmOwner.realm_id',
+                    constraint => 'NONE',
+                },
+                'Address_1.realm_id',
+                'RealmUser.realm_id',
+            ],
+        ],
     });
 }
 

@@ -19,52 +19,52 @@ my($query_redirect_args) = {
 
 [
     class() => [
-	{
-	    method => 'get_realm_for_task',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		return [Bivio::Agent::TaskId->from_name($params->[0]), req()];
-	    },
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [$actual->[0]->unsafe_get('owner_name') || 'general'];
-	    },
-	} => [
-	    SHELL_UTIL => 'general',
-	    USER_HOME => 'btest_read',
-	    # map_user_realms sorts alphabetically, and fourem is always first
-	    FORUM_HOME => 'fourem',
-	    ORDER_COMMIT => NOT_FOUND(),
-	],
-	{
-	    method => 'execute_unauth_role_in_realm',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->set_realm('demo');
+        {
+            method => 'get_realm_for_task',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                return [Bivio::Agent::TaskId->from_name($params->[0]), req()];
+            },
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return [$actual->[0]->unsafe_get('owner_name') || 'general'];
+            },
+        } => [
+            SHELL_UTIL => 'general',
+            USER_HOME => 'btest_read',
+            # map_user_realms sorts alphabetically, and fourem is always first
+            FORUM_HOME => 'fourem',
+            ORDER_COMMIT => NOT_FOUND(),
+        ],
+        {
+            method => 'execute_unauth_role_in_realm',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->set_realm('demo');
                 req()->put(referer => '/pub');
-		req()->set_user_state_and_cookie(@$params)
-		    ->server_redirect('USER_ROLE_IN_REALM');
-		return [req()];
-	    },
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [$actual->[0]->{task_id}];
-	    },
-	} => [
-	    just_visitor => 'just_visitor_task',
-	    [qw(logged_in demo)] => 'administrator_task',
-	    [qw(logged_out demo)] => 'administrator_task',
-	    [qw(logged_in guest)] => 'guest_task',
-	    [qw(logged_out guest)] => 'guest_task',
-	    [qw(logged_in root)] => 'next',
-	    [qw(logged_out root)] => 'next',
-	],
+                req()->set_user_state_and_cookie(@$params)
+                    ->server_redirect('USER_ROLE_IN_REALM');
+                return [req()];
+            },
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return [$actual->[0]->{task_id}];
+            },
+        } => [
+            just_visitor => 'just_visitor_task',
+            [qw(logged_in demo)] => 'administrator_task',
+            [qw(logged_out demo)] => 'administrator_task',
+            [qw(logged_in guest)] => 'guest_task',
+            [qw(logged_out guest)] => 'guest_task',
+            [qw(logged_in root)] => 'next',
+            [qw(logged_out root)] => 'next',
+        ],
         $query_redirect_args => [
-	    '' => NOT_FOUND(),
-	    'google.com' => DIE(),
-	    'https://www.extremeperl.org' => 'https://www.extremeperl.org',
+            '' => NOT_FOUND(),
+            'google.com' => DIE(),
+            'https://www.extremeperl.org' => 'https://www.extremeperl.org',
             'http://google.com' => NOT_FOUND(),
-	],
+        ],
         sub {
             Type_UserAgent()->BROWSER_ROBOT_OTHER->execute(req());
             return 1;

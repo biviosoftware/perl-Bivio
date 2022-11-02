@@ -37,8 +37,8 @@ EOF
 [
     inline_case(sub {wiki_uri_to_req('/Ab'); 1}),
     [{
-	value => '@b-menu value=a',
-	is_public => 0,
+        value => '@b-menu value=a',
+        is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/bunit_wiki/\w+/Aa" Aa
@@ -47,8 +47,8 @@ EOF
     ))]}},
     inline_case(sub {wiki_uri_to_req('Ca'); 1}),
     [{
-	value => '@b-menu value=b',
-	is_public => 0,
+        value => '@b-menu value=b',
+        is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        selected "/bunit_wiki/\w+/Ca" Ba
@@ -57,8 +57,8 @@ EOF
     ))]}},
     inline_case(sub {wiki_uri_to_req('Ab'); 1}),
     [{
-	value => '@b-menu value=top',
-	is_public => 0,
+        value => '@b-menu value=top',
+        is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/bunit_wiki/\w+/Index" Index
@@ -69,8 +69,8 @@ EOF
     ))]}},
     inline_case(sub {wiki_uri_to_req('Foo'); 1}),
     [{
-	value => '@b-menu value=top',
-	is_public => 0,
+        value => '@b-menu value=top',
+        is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/bunit_wiki/\w+/Index" Index
@@ -79,8 +79,8 @@ EOF
     ))]}},
     inline_case(sub {wiki_uri_to_req('Cb'); 1}),
     [{
-	value => '@b-menu value=top',
-	is_public => 0,
+        value => '@b-menu value=top',
+        is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/bunit_wiki/\w+/Index" Index
@@ -88,8 +88,8 @@ EOF
        selected "/bunit_wiki/\w+/Ca" B
     ))]}},
     [{
-	value => '@b-menu value=deviance',
-	is_public => 0,
+        value => '@b-menu value=deviance',
+        is_public => 0,
     }] => '',
 ];
 #TODO test uris with questionmark?

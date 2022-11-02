@@ -9,7 +9,7 @@ sub ABSOLUTE_REGEX {
     my($proto) = @_;
     return qr{^@{[$proto->join(
         '(?:' . join('|', map($proto->to_absolute(undef, $_), 0, 1)) . ')',
-	$proto->PATH_REGEX,
+        $proto->PATH_REGEX,
     )]}$}is;
 }
 
@@ -27,13 +27,13 @@ sub from_absolute {
 sub from_literal {
     my($proto, $value) = @_;
     return (undef, undef)
-	unless defined($value) && length($value);
+        unless defined($value) && length($value);
     $value = $proto->from_literal_stripper($value);
     return (undef, $proto->ERROR)
-	unless length($value);
+        unless length($value);
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     $v =~ s{^/}{};
     return $v =~ m{^@{[$proto->REGEX]}$}s ? $v : (undef, $proto->ERROR);
 }
@@ -55,7 +55,7 @@ sub is_valid {
 sub public_path_info {
     my($proto, $value) = @_;
     return $value
-	unless $value;
+        unless $value;
     $value =~ s{^\Q@{[$proto->PUBLIC_FOLDER_ROOT]}\E}{}i;
     return $value;
 }
@@ -68,14 +68,14 @@ sub to_sql_like_path {
 sub uri_hash_for_realm_and_path {
     my($self, $realm_name, $realm_file_path) = @_;
     return {
-	task_id => b_use('UI.Facade')
-	    ->get_from_source($self->req)
-	    ->is_site_realm_name($realm_name)
-		? 'SITE_WIKI_VIEW'
-		: 'FORUM_WIKI_VIEW',
-	realm => $realm_name,
-	query => undef,
-	path_info => $self->from_absolute($realm_file_path),
+        task_id => b_use('UI.Facade')
+            ->get_from_source($self->req)
+            ->is_site_realm_name($realm_name)
+                ? 'SITE_WIKI_VIEW'
+                : 'FORUM_WIKI_VIEW',
+        realm => $realm_name,
+        query => undef,
+        path_info => $self->from_absolute($realm_file_path),
     };
 }
 

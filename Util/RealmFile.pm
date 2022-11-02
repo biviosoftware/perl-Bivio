@@ -14,9 +14,9 @@ my($_MFN) = b_use('Type.MailFileName');
 
 sub OPTIONS {
     return {
-	 %{shift->SUPER::OPTIONS(@_)},
-	 is_public => [Boolean => 0],
-	 is_read_only => [Boolean => 0],
+         %{shift->SUPER::OPTIONS(@_)},
+         is_public => [Boolean => 0],
+         is_read_only => [Boolean => 0],
     };
 }
 
@@ -53,15 +53,15 @@ sub audit_folders {
     my($self) = @_;
     $self->model('RealmFile')->do_iterate(sub {
         my($rf) = @_;
-	my($max, $user_id) = _max_modified_time($self, $rf);
-	$rf->update({
-	    override_is_read_only => 1,
-	    modified_date_time => $max,
-	    user_id => $user_id,
-	}) if $max;
-	return 1;
+        my($max, $user_id) = _max_modified_time($self, $rf);
+        $rf->update({
+            override_is_read_only => 1,
+            modified_date_time => $max,
+            user_id => $user_id,
+        }) if $max;
+        return 1;
     }, {
-	is_folder => 1,
+        is_folder => 1,
     });
     return;
 }
@@ -70,18 +70,18 @@ sub backup_realms {
     my($self, $base_dir, @realms) = @_;
     my($root) = $_FP->join($base_dir, $_DT->local_now_as_file_name);
     foreach my $r (@realms) {
-	my($die) = b_catch(sub {
-	    $_F->do_in_dir(
-		$_F->mkdir_p($_FP->join($root, $r)),
-		sub {
-		    $self->req->with_realm(
-			$r,
-			sub {$self->export_tree('/', 1)},
-		    );
-		    $self->piped_exec("sh -c 'cd .. && tar czf $r.tgz $r && rm -rf $r' 2>&1");
-		    return;
-		},
-	    );
+        my($die) = b_catch(sub {
+            $_F->do_in_dir(
+                $_F->mkdir_p($_FP->join($root, $r)),
+                sub {
+                    $self->req->with_realm(
+                        $r,
+                        sub {$self->export_tree('/', 1)},
+                    );
+                    $self->piped_exec("sh -c 'cd .. && tar czf $r.tgz $r && rm -rf $r' 2>&1");
+                    return;
+                },
+            );
         });
         b_warn($r, ': ', $die)
             if $die;
@@ -119,7 +119,7 @@ sub create_folder {
 sub delete_deep {
     my($self) = shift;
     foreach my $p (@_) {
-	_do($self, 'unauth_delete_deep', $p);
+        _do($self, 'unauth_delete_deep', $p);
     }
     return;
 }
@@ -131,27 +131,27 @@ sub export_tree {
     ], \@_);
     $self->initialize_ui;
     $folder .= '/'
-	unless length($folder) == 1;
+        unless length($folder) == 1;
     my($re) = qr{^\Q$folder\E}is;
     $self->model('RealmFile')->do_iterate(sub {
         my($it) = @_;
-	return 1
-	    unless (my $p = $it->get('path')) =~ $re;
+        return 1
+            unless (my $p = $it->get('path')) =~ $re;
         return 1
             if $noarchive && $it->is_version;
-	$p =~ s{^/}{};
-	return 1 unless $p;
+        $p =~ s{^/}{};
+        return 1 unless $p;
 
-	if ($it->get('is_folder')) {
-	    $_F->mkdir_p($p);
-	}
-	else {
-	    $_F->mkdir_parent_only($p);
-	    $_F->write($p, $it->get_content);
-	    $_F->chmod(0444, $p)
-		if $it->get('is_read_only');
-	}
-	$_F->set_modified_date_time($p, $it->get('modified_date_time'));
+        if ($it->get('is_folder')) {
+            $_F->mkdir_p($p);
+        }
+        else {
+            $_F->mkdir_parent_only($p);
+            $_F->write($p, $it->get_content);
+            $_F->chmod(0444, $p)
+                if $it->get('is_read_only');
+        }
+        $_F->set_modified_date_time($p, $it->get('modified_date_time'));
         return 1;
     });
     return;
@@ -164,26 +164,26 @@ sub folder_sizes {
     my($res) = {TOTAL => 0};
     my($pat) = qr{^\Q@{[$_FP->add_trailing_slash($bp->{folder})]}\E}i;
     $self->model('RealmFile')->do_iterate(
-	sub {
-	    my($it) = @_;
-	    my($p) = $it->get('path');
-	    return 1
-		unless $p =~ $pat;
-	    my($l) = $it->get_content_length;
-	    $res->{($p =~ m{(.*)/})[0] || '/'} += $l;
-	    $res->{TOTAL} += $l;
-	    return 1;
-	},
-	undef,
-	{is_folder => 0},
+        sub {
+            my($it) = @_;
+            my($p) = $it->get('path');
+            return 1
+                unless $p =~ $pat;
+            my($l) = $it->get_content_length;
+            $res->{($p =~ m{(.*)/})[0] || '/'} += $l;
+            $res->{TOTAL} += $l;
+            return 1;
+        },
+        undef,
+        {is_folder => 0},
     );
     return join(
-	'',
-	sprintf("%6s %s\n", 'KB', 'Folder'),
-	map(
-	    sprintf("%6d %s\n", $res->{$_}/1024, $_),
-	    sort(keys(%$res)),
-	),
+        '',
+        sprintf("%6s %s\n", 'KB', 'Folder'),
+        map(
+            sprintf("%6d %s\n", $res->{$_}/1024, $_),
+            sort(keys(%$res)),
+        ),
     );
 }
 
@@ -198,82 +198,82 @@ sub import_tree {
     my($files) = [];
     my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     File::Find::find(
-	{
-	    wanted => sub {
-		my($name) = $_;
-		if ($name =~ $vc_re) {
-		    $File::Find::prune = 1;
-		    return;
-		}
-		return
-		    if $name =~ m{(^|/)(\..*|.*~|#.*)$};
+        {
+            wanted => sub {
+                my($name) = $_;
+                if ($name =~ $vc_re) {
+                    $File::Find::prune = 1;
+                    return;
+                }
+                return
+                    if $name =~ m{(^|/)(\..*|.*~|#.*)$};
 
-		push(
-		    @{-d $name ? $folders : $files},
-		    [$File::Find::name, (stat($name))[9]],
-		);
-		return;
-	    },
-	},
-	'.',
+                push(
+                    @{-d $name ? $folders : $files},
+                    [$File::Find::name, (stat($name))[9]],
+                );
+                return;
+            },
+        },
+        '.',
     );
     foreach my $x (
-	@$folders,
-	sort({$a->[1] <=> $b->[1]} @$files),
+        @$folders,
+        sort({$a->[1] <=> $b->[1]} @$files),
     ) {
-	my($name, $mtime) = @$x;
-	my($f) = $name =~ m{^\./(.+)};
-	my($path) = $self->convert_literal('FilePath', "$folder/$f");
-	my($method) = -d $name ? 'create_folder' : 'create_with_content';
-	my($rf) = $self->model('RealmFile');
-	if ($rf->unsafe_load({path => $path})) {
-	    next
-		if $rf->get('is_folder');
-	    $method = 'update_with_content';
-	}
-	my($modified_date_time) = $_DT->from_unix($mtime);
-	if ($_MFN->is_absolute($path)) {
-	    $self->model('RealmMail')
-		->load({realm_file_id => $rf->get('realm_file_id')})
-		->delete_message
-		if $rf->is_loaded;
-	    my($in);
-	    my($die) = $_D->catch_quietly(
-		sub {
-		    $in = $self->model('RealmMail')
-			->create_from_rfc822($_F->read($name));
-		    return;
-		},
-	    );
-	    if ($die) {
-		b_info(
-		    'mail from rfc822 failed: ',
-		    'name: ',
-		    $name,
-		    ' err: ',
-		    ($die->unsafe_get('attrs') || {})->{message},
-		);
-		next;
-	    }
-	    my($rf) = $self->req('Model.RealmFile');
-	    $rf->update({
-		override_is_read_only => 1,
-		path => $path,
-		modified_date_time => $in->get_date_time || $modified_date_time,
-	    });
-	    b_die('public mismatch')
-		unless $_MFN->is_public($path)
-		    eq $self->req(qw(Model.RealmFile is_public));
-	    next;
-	}
-	$rf->$method(
-	    _fix_values($self, $path, {
-		modified_date_time => $modified_date_time,
-		$noarchive ? (override_versioning => 1) : (),
-	    }),
-	    $method =~ /content/ ? $_F->read($name) : (),
-	);
-	next;
+        my($name, $mtime) = @$x;
+        my($f) = $name =~ m{^\./(.+)};
+        my($path) = $self->convert_literal('FilePath', "$folder/$f");
+        my($method) = -d $name ? 'create_folder' : 'create_with_content';
+        my($rf) = $self->model('RealmFile');
+        if ($rf->unsafe_load({path => $path})) {
+            next
+                if $rf->get('is_folder');
+            $method = 'update_with_content';
+        }
+        my($modified_date_time) = $_DT->from_unix($mtime);
+        if ($_MFN->is_absolute($path)) {
+            $self->model('RealmMail')
+                ->load({realm_file_id => $rf->get('realm_file_id')})
+                ->delete_message
+                if $rf->is_loaded;
+            my($in);
+            my($die) = $_D->catch_quietly(
+                sub {
+                    $in = $self->model('RealmMail')
+                        ->create_from_rfc822($_F->read($name));
+                    return;
+                },
+            );
+            if ($die) {
+                b_info(
+                    'mail from rfc822 failed: ',
+                    'name: ',
+                    $name,
+                    ' err: ',
+                    ($die->unsafe_get('attrs') || {})->{message},
+                );
+                next;
+            }
+            my($rf) = $self->req('Model.RealmFile');
+            $rf->update({
+                override_is_read_only => 1,
+                path => $path,
+                modified_date_time => $in->get_date_time || $modified_date_time,
+            });
+            b_die('public mismatch')
+                unless $_MFN->is_public($path)
+                    eq $self->req(qw(Model.RealmFile is_public));
+            next;
+        }
+        $rf->$method(
+            _fix_values($self, $path, {
+                modified_date_time => $modified_date_time,
+                $noarchive ? (override_versioning => 1) : (),
+            }),
+            $method =~ /content/ ? $_F->read($name) : (),
+        );
+        next;
     }
     $self->audit_folders;
     $self->model('RealmMail')->audit_threads;
@@ -284,9 +284,9 @@ sub list_folder {
     my($self, $path) = @_;
     $self->initialize_fully;
     return $self->model('RealmFileList')->map_iterate(
-	    sub {shift->get('RealmFile.path')},
-	    {path_info => $self->convert_literal('FilePath', $path)},
-	);
+            sub {shift->get('RealmFile.path')},
+            {path_info => $self->convert_literal('FilePath', $path)},
+        );
 }
 
 sub purge_archive {
@@ -298,32 +298,32 @@ sub purge_archive {
     $file_size *= $m;
     my($c) = 0;
     my($commit) = sub {
-	$self->commit_or_rollback;
-	$_A->reset_warn_counter;
-	return;
+        $self->commit_or_rollback;
+        $_A->reset_warn_counter;
+        return;
     };
     $self->model('RealmFile')->do_iterate(sub {
         my($rf) = @_;
-	return 1 unless $rf->is_version;
-	return 1 if $rf->get('is_folder');
-	return 1 if $rf->get_content_length < $file_size;
+        return 1 unless $rf->is_version;
+        return 1 if $rf->get('is_folder');
+        return 1 if $rf->get_content_length < $file_size;
 #TODO(robnagler) this does not seem useful
-#	$self->print($rf->get('realm_file_id'),
-#	      ' ', int($rf->get_content_length / $m),
-#	      'M ', $rf->get('path'), "\n");
-#	$deleted_size += $rf->get_content_length / $m;
-	$rf->new_other('RealmFileLock')->delete_all({
-	    realm_file_id => $rf->get('realm_file_id'),
-	});
-	$rf->delete({
-	    override_versioning => 1,
-	    override_is_read_only => 1,
-	});
+#        $self->print($rf->get('realm_file_id'),
+#              ' ', int($rf->get_content_length / $m),
+#              'M ', $rf->get('path'), "\n");
+#        $deleted_size += $rf->get_content_length / $m;
+        $rf->new_other('RealmFileLock')->delete_all({
+            realm_file_id => $rf->get('realm_file_id'),
+        });
+        $rf->delete({
+            override_versioning => 1,
+            override_is_read_only => 1,
+        });
         if (++$c % 100 == 0) {
             b_info($c);
             $commit->();
         }
-	return 1;
+        return 1;
     });
     return $c . ' archive files deleted';
 }
@@ -355,16 +355,16 @@ sub _do {
     my($self, $method, $path, @args) = @_;
     $self->initialize_fully;
     return $self->model('RealmFile')
-	->$method(_fix_values($self, $path, {}, $method =~ /(delete|load)/), @args);
+        ->$method(_fix_values($self, $path, {}, $method =~ /(delete|load)/), @args);
 }
 
 sub _fix_values {
     my($self, $path, $values, $ignore_is) = @_;
     return {
-	$values ? %$values : (),
-	path => $self->convert_literal('FilePath', $path),
-	$ignore_is ? () : map(($_ => $self->get($_)), qw(is_public is_read_only)),
-	$self->get('force') ? (override_is_read_only => 1) : (),
+        $values ? %$values : (),
+        path => $self->convert_literal('FilePath', $path),
+        $ignore_is ? () : map(($_ => $self->get($_)), qw(is_public is_read_only)),
+        $self->get('force') ? (override_is_read_only => 1) : (),
     };
 }
 
@@ -375,17 +375,17 @@ sub _max_modified_time {
 
     $self->model('RealmFile')->do_iterate(sub {
         my($rf) = @_;
-	my($v, $u) = $rf->get('is_folder')
-	    ? _max_modified_time($self, $rf)
-	    : $rf->get(qw(modified_date_time user_id));
+        my($v, $u) = $rf->get('is_folder')
+            ? _max_modified_time($self, $rf)
+            : $rf->get(qw(modified_date_time user_id));
 
-	if ($_DT->compare($v, $max) > 0) {
-	    $max = $v;
-	    $user_id = $u;
-	}
-	return 1;
+        if ($_DT->compare($v, $max) > 0) {
+            $max = $v;
+            $user_id = $u;
+        }
+        return 1;
     }, {
-	folder_id => $folder->get('realm_file_id'),
+        folder_id => $folder->get('realm_file_id'),
     });
     return $max eq $_DT->get_min ? undef : ($max, $user_id);
 }

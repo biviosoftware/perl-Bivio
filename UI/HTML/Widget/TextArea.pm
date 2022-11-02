@@ -33,23 +33,23 @@ my($_A) = b_use('IO.Alert');
 sub initialize {
     my($self) = @_;
     $_A->warn_deprecated(
-	'edit_attributes not supported, use ATTR => value form instead')
-	if $self->unsafe_get('edit_attributes');
+        'edit_attributes not supported, use ATTR => value form instead')
+        if $self->unsafe_get('edit_attributes');
     return shift->put_unless_exists(
-	tag => 'textarea',
-	$self->unsafe_get('readonly')
-	    ? (READONLY => 'readonly')
-	    : (),
-	map(
-	    $self->unsafe_get($_)
-		? (uc($_) => $self->get($_))
-		: (),
-	    qw(rows cols)),
-	value => [
-	    $self->ancestral_get('form_model'),
-	    '->get_field_as_html',
-	    $self->get('field'),
-	],
+        tag => 'textarea',
+        $self->unsafe_get('readonly')
+            ? (READONLY => 'readonly')
+            : (),
+        map(
+            $self->unsafe_get($_)
+                ? (uc($_) => $self->get($_))
+                : (),
+            qw(rows cols)),
+        value => [
+            $self->ancestral_get('form_model'),
+            '->get_field_as_html',
+            $self->get('field'),
+        ],
     )->SUPER::initialize(@_);
 }
 

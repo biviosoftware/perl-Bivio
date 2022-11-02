@@ -49,10 +49,10 @@ Returns config.
 
 sub internal_initialize {
     return {
-	version => 1,
-	shift->local_field(other => [
-	    qw(f1 f2),
-	], 'Integer', 'NONE'),
+        version => 1,
+        shift->local_field(other => [
+            qw(f1 f2),
+        ], 'Integer', 'NONE'),
     };
 }
 
@@ -67,8 +67,8 @@ Returns number of rows as specified by count
 sub internal_load_rows {
     my($self) = @_;
     return [
-	map(({f1 => $_, f2 => $_}),
-	    1 .. $self->get_query->get('count')),
+        map(({f1 => $_, f2 => $_}),
+            1 .. $self->get_query->get('count')),
     ];
 }
 

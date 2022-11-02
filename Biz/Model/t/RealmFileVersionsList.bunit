@@ -7,15 +7,15 @@ model('RealmFile')->delete_all;
 my($paths) = [];
 map(
     {
-	my($path) = @$_;
-	map({
-	    my($p) = model('RealmFile')->create_or_update_with_content(
-		{path => b_use("Type.FilePath")->to_absolute($path, $_)},
-		\("Lorem ipsum\n"),
-	    )->get('path');
-	    push(@$paths, $p);
-	    {path => $p};
-	} 1 .. 3),
+        my($path) = @$_;
+        map({
+            my($p) = model('RealmFile')->create_or_update_with_content(
+                {path => b_use("Type.FilePath")->to_absolute($path, $_)},
+                \("Lorem ipsum\n"),
+            )->get('path');
+            push(@$paths, $p);
+            {path => $p};
+        } 1 .. 3),
     }
     ['test.txt'],
     ['test.doc'],
@@ -23,47 +23,47 @@ map(
 $paths = [sort({lc($a) cmp lc($b)} @$paths)];
 options({
     compute_params => sub {
-	my(undef, $params, $method) = @_;
-	return $params
-	    unless $method =~ /load/;
-	req()->put(path_info => $params->[0]);
-	return [];
+        my(undef, $params, $method) = @_;
+        return $params
+            unless $method =~ /load/;
+        req()->put(path_info => $params->[0]);
+        return [];
     },
 });
 [
     load_all => [
-	'/Public' => not_die(),
-	'/Public/test.txt' => [
-	    {
-		'RealmFile.path_lc' => qr{test\.txt$},
-		revision_number => 'current',
-	    },
-	    {
-		'RealmFile.path_lc' => qr{;2\.txt$},
-		revision_number => 2,
-	    },
-	    {
-		'RealmFile.path_lc' => qr{;1\.txt$},
-		revision_number => 1,
-	    },
-	],
-	'/Public/test.doc' => [
-	    {'RealmFile.path_lc' => qr{test\.doc$}},
-	    {'RealmFile.path_lc' => qr{;2\.doc$}},
-	    {'RealmFile.path_lc' => qr{;1\.doc$}},
-	],
+        '/Public' => not_die(),
+        '/Public/test.txt' => [
+            {
+                'RealmFile.path_lc' => qr{test\.txt$},
+                revision_number => 'current',
+            },
+            {
+                'RealmFile.path_lc' => qr{;2\.txt$},
+                revision_number => 2,
+            },
+            {
+                'RealmFile.path_lc' => qr{;1\.txt$},
+                revision_number => 1,
+            },
+        ],
+        '/Public/test.doc' => [
+            {'RealmFile.path_lc' => qr{test\.doc$}},
+            {'RealmFile.path_lc' => qr{;2\.doc$}},
+            {'RealmFile.path_lc' => qr{;1\.doc$}},
+        ],
     ],
     set_cursor_or_die => [
-	sub {
-	    shift->get('object')->load_page({count => 1});
-	    return [0];
-	} => not_die(),
+        sub {
+            shift->get('object')->load_page({count => 1});
+            return [0];
+        } => not_die(),
     ],
     format_uri => [
-	['NEXT_LIST', 'FORUM_FILE_VERSIONS_LIST'] => "/realmfileversionslist_bunit/revision-history/Public/test.doc?n=2",
+        ['NEXT_LIST', 'FORUM_FILE_VERSIONS_LIST'] => "/realmfileversionslist_bunit/revision-history/Public/test.doc?n=2",
     ],
     load_all => [
-	# Has to be last b/c causes rollback;
-	'' => CORRUPT_QUERY(),
+        # Has to be last b/c causes rollback;
+        '' => CORRUPT_QUERY(),
     ],
 ];

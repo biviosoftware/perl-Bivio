@@ -47,7 +47,7 @@ sub new {
         from => $self->get_if_defined_else_put(
             from_email => 'software@bivio.biz'),
         cookie_jar => {
-#TODO: need to cleanup tmp files	    
+#TODO: need to cleanup tmp files            
 #            file => $self->get_if_defined_else_put(
 #                cookies => b_use('IO.File')->temp_file),
 #            autosave => 1,
@@ -65,7 +65,7 @@ sub assert_absolute_and_bivio {
     my($uri) =  URI->new(shift);
     Bivio::Die->die($uri,
                     ': not an absolute http URI or not in bivio.biz domain')
-	unless $uri->scheme
+        unless $uri->scheme
             && $uri->authority =~ /bivio.biz$/;
     return $uri;
 }

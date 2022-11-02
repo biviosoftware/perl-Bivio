@@ -42,43 +42,43 @@ sub from_header {
     my($proto, $ua) = @_;
     $ua ||= '';
     foreach my $t (
-	['BROWSER_ROBOT_SEARCH', _is_search($proto, $ua)],
-	['BROWSER_ROBOT_OTHER', _is_other($proto, $ua)],
-	['BROWSER_IPHONE', $ua =~ /\biPhone\b/],
-	['BROWSER_IPOD', $ua =~ /\biPod\b/],
-	['BROWSER_CHROME_PHONE', $ua =~  /Android.*Chrome\/[.0-9]* Mobile/],
-	['BROWSER_CHROME_TABLET', $ua =~  /Android.*Chrome\/[.0-9]* (?!Mobile)/],
-	['BROWSER_OPERA_MOBILE', $ua =~ /\bOpera Mobi\b/],
-	['BROWSER_UC_BROWSER', $ua =~ /\bUCBrowser\b/],
-	['BROWSER_NOKIA', $ua =~ /\bNokia/],
-	['BROWSER_BLACKBERRY_6_7', $ua =~ /\bBlackBerry\b/],
-	['BROWSER_BB10', $ua =~ /\bBB10\b.*\bMobile\b/],
-	['BROWSER_NETFRONT', $ua =~ /\bNetFront\b/],
-	['BROWSER_IEMOBILE', $ua =~ /\bIEMobile\b/],
-	['BROWSER_ANDROID_STOCK', $ua =~ /\bAndroid\b/],
+        ['BROWSER_ROBOT_SEARCH', _is_search($proto, $ua)],
+        ['BROWSER_ROBOT_OTHER', _is_other($proto, $ua)],
+        ['BROWSER_IPHONE', $ua =~ /\biPhone\b/],
+        ['BROWSER_IPOD', $ua =~ /\biPod\b/],
+        ['BROWSER_CHROME_PHONE', $ua =~  /Android.*Chrome\/[.0-9]* Mobile/],
+        ['BROWSER_CHROME_TABLET', $ua =~  /Android.*Chrome\/[.0-9]* (?!Mobile)/],
+        ['BROWSER_OPERA_MOBILE', $ua =~ /\bOpera Mobi\b/],
+        ['BROWSER_UC_BROWSER', $ua =~ /\bUCBrowser\b/],
+        ['BROWSER_NOKIA', $ua =~ /\bNokia/],
+        ['BROWSER_BLACKBERRY_6_7', $ua =~ /\bBlackBerry\b/],
+        ['BROWSER_BB10', $ua =~ /\bBB10\b.*\bMobile\b/],
+        ['BROWSER_NETFRONT', $ua =~ /\bNetFront\b/],
+        ['BROWSER_IEMOBILE', $ua =~ /\bIEMobile\b/],
+        ['BROWSER_ANDROID_STOCK', $ua =~ /\bAndroid\b/],
     ) {
-	return $proto->from_name($t->[0])
-	    if $t->[1];
+        return $proto->from_name($t->[0])
+            if $t->[1];
     }
     if ($ua =~ /\bMSIE (\d+)/) {
-	my($v) = $1;
+        my($v) = $1;
         return $proto->BROWSER_HTML3
             if $v < 5;
-	$v = 10
-	    if $v > 10;
+        $v = 10
+            if $v > 10;
         return $proto->from_name("BROWSER_MSIE_$v");
     }
     if ($ua =~ /Mozilla\/(\d+)/) {
         return $proto->BROWSER_HTML3
             if $1 < 5;
-	return $proto->BROWSER_FIREFOX_1
-	    if $ua =~ /Firefox\/1\./;
-	return $proto->BROWSER_MOZILLA_1
-	    if $ua =~ /Gecko\/(\d\d\d\d)/ && $1 <= 2006;
+        return $proto->BROWSER_FIREFOX_1
+            if $ua =~ /Firefox\/1\./;
+        return $proto->BROWSER_MOZILLA_1
+            if $ua =~ /Gecko\/(\d\d\d\d)/ && $1 <= 2006;
         return $proto->BROWSER_HTML4
     }
     return $proto->MAIL
-	if $ua =~ /b-sendmail/i;
+        if $ua =~ /b-sendmail/i;
     return $proto->BROWSER_HTML3;
 }
 
@@ -121,17 +121,17 @@ sub is_msie_8_or_before {
 
 sub is_css_compatible {
     return shift->equals_by_name(qw(
-	BROWSER_FIREFOX_1
-	BROWSER_HTML4
-	BROWSER_IPHONE
-	BROWSER_MOZILLA_1
-	BROWSER_MSIE_5
-	BROWSER_MSIE_6
-	BROWSER_MSIE_7
-	BROWSER_MSIE_8
-	BROWSER_MSIE_9
-	BROWSER_MSIE_10
-	BROWSER_ROBOT_OTHER
+        BROWSER_FIREFOX_1
+        BROWSER_HTML4
+        BROWSER_IPHONE
+        BROWSER_MOZILLA_1
+        BROWSER_MSIE_5
+        BROWSER_MSIE_6
+        BROWSER_MSIE_7
+        BROWSER_MSIE_8
+        BROWSER_MSIE_9
+        BROWSER_MSIE_10
+        BROWSER_ROBOT_OTHER
         BROWSER_ROBOT_SEARCH
     ));
 }
@@ -142,17 +142,17 @@ sub is_mail_agent {
 
 sub is_mobile_device {
     return shift->equals_by_name(qw(
-	BROWSER_IPHONE
-	BROWSER_ANDROID_STOCK
-	BROWSER_CHROME_PHONE
-	BROWSER_OPERA_MOBILE
-	BROWSER_UC_BROWSER
-	BROWSER_NOKIA
-	BROWSER_BLACKBERRY_6_7
-	BROWSER_BB10
-	BROWSER_NETFRONT
-	BROWSER_IPOD
-	BROWSER_IEMOBILE
+        BROWSER_IPHONE
+        BROWSER_ANDROID_STOCK
+        BROWSER_CHROME_PHONE
+        BROWSER_OPERA_MOBILE
+        BROWSER_UC_BROWSER
+        BROWSER_NOKIA
+        BROWSER_BLACKBERRY_6_7
+        BROWSER_BB10
+        BROWSER_NETFRONT
+        BROWSER_IPOD
+        BROWSER_IEMOBILE
     ));
 }
 
@@ -169,18 +169,18 @@ sub is_robot_search_verified {
     # this for returning content they don't want out in the wild
     my(undef, $req) = @_;
     return 0
-	unless shift->is_robot_search(@_);
+        unless shift->is_robot_search(@_);
     return 1
-	if $req->is_test;
+        if $req->is_test;
     return (
-	b_use('Type.IPAddress')->unsafe_to_domain(
-	    $req->ureq('client_addr') || return 0,
+        b_use('Type.IPAddress')->unsafe_to_domain(
+            $req->ureq('client_addr') || return 0,
         ) || return 0,
     ) =~ m{
-	\.(?:
+        \.(?:
         (?:gigablast|microsoft|googlebot|yahoo)\.com
-	|msn\.net
-	|baidu\.(?:com|jp)
+        |msn\.net
+        |baidu\.(?:com|jp)
         |yandex\.ru)
     $}ix ? 1 : 0;
 }
@@ -189,15 +189,15 @@ sub _is_search {
     my(undef, $ua) = @_;
     return $ua =~ qr{
         adsbot-google
-	|baidu.*spider
-	|bingbot
-	|ezooms.bot
-	|gigabot
-	|googlebot
-	|msnbot
-	|yahoo.*slurp
-	|yahooseeker
-	|yandex
+        |baidu.*spider
+        |bingbot
+        |ezooms.bot
+        |gigabot
+        |googlebot
+        |msnbot
+        |yahoo.*slurp
+        |yahooseeker
+        |yandex
         |mediapartners
         |teoma
     }ix ? 1 : 0;
@@ -209,8 +209,8 @@ sub _is_other {
         (?:(?:ro)?bot|spider|crawler)(?:\.|/)
         |(?:/|:)(?:(?:ro)?bot|spider|crawler)
         |^davclnt$
-	|http://
-	|\w+\@\w+.com
+        |http://
+        |\w+\@\w+.com
         |^-$
         |docomo/
         |facebookexternalhit
@@ -224,7 +224,7 @@ sub _is_other {
         |slurp
         |tlsprober
         |wget
-	|ultraseek
+        |ultraseek
     }ix ? 1 : 0;
 }
 

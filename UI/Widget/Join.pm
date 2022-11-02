@@ -23,7 +23,7 @@ sub initialize {
     # Initializes widget state and children.
     my($name) = 0;
     foreach my $v (@{$self->get('values')}) {
-	$self->initialize_value($name++, $v, $source);
+        $self->initialize_value($name++, $v, $source);
     }
     $self->unsafe_initialize_attr('join_separator', $source);
     return shift->SUPER::initialize(@_);
@@ -42,15 +42,15 @@ sub internal_new_args {
     my(undef, $values, $join_separator, $attributes) = @_;
     # Implements positional argument parsing for L<new|"new">.
     return '"values" attribute must be an array_ref'
-	unless ref($values) eq 'ARRAY';
+        unless ref($values) eq 'ARRAY';
     if (ref($join_separator) eq 'HASH') {
-	$attributes = $join_separator;
-	$join_separator = undef;
+        $attributes = $join_separator;
+        $join_separator = undef;
     }
     return {
-	values => $values,
-	($join_separator ? (join_separator => $join_separator) : ()),
-	($attributes ? %$attributes : ()),
+        values => $values,
+        ($join_separator ? (join_separator => $join_separator) : ()),
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -58,23 +58,23 @@ sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($name) = 0;
     if ($self->has_keys('join_separator')) {
-	my($need_sep) = 0;
-	foreach my $v (@{$self->get('values')}) {
-	    my($b) = '';
-	    my($next_sep)
-		= $self->unsafe_render_value($name++, $v, $source, \$b)
-		&& length($b);
-	    if ($need_sep && $next_sep) {
-		$self->unsafe_render_attr('join_separator', $source, $buffer);
-	    }
-	    $need_sep ||= $next_sep;
-	    $$buffer .= $b;
-	}
+        my($need_sep) = 0;
+        foreach my $v (@{$self->get('values')}) {
+            my($b) = '';
+            my($next_sep)
+                = $self->unsafe_render_value($name++, $v, $source, \$b)
+                && length($b);
+            if ($need_sep && $next_sep) {
+                $self->unsafe_render_attr('join_separator', $source, $buffer);
+            }
+            $need_sep ||= $next_sep;
+            $$buffer .= $b;
+        }
     }
     else {
-	foreach my $v (@{$self->get('values')}) {
-	    $self->unsafe_render_value($name++, $v, $source, $buffer);
-	}
+        foreach my $v (@{$self->get('values')}) {
+            $self->unsafe_render_value($name++, $v, $source, $buffer);
+        }
     }
     return;
 }

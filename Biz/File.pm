@@ -21,7 +21,7 @@ sub handle_config {
 sub absolute_path {
     my(undef, $base) = @_;
     return $base
-	if $base =~ /^\Q$_CFG->{root}/;
+        if $base =~ /^\Q$_CFG->{root}/;
     return File::Spec->catfile($_CFG->{root}, $base);
 }
 

@@ -17,9 +17,9 @@ sub do_filo {
     my($self, $method, $args, $call_wrapper) = @_;
     $args ||= [];
     foreach my $h (reverse(@{[@{$self->[$_IDI]}]})) {
-	my($res) = _call($h, $method, $args, $call_wrapper);
-	return $res
-	    if defined($res);
+        my($res) = _call($h, $method, $args, $call_wrapper);
+        return $res
+            if defined($res);
     }
     return;
 }
@@ -33,10 +33,10 @@ sub new {
 sub push_object {
     my($self, $object) = @_;
     $object = b_use($object)
-	unless ref($object);
+        unless ref($object);
     my($q) = $self->[$_IDI];
     push(@$q, $object)
-	unless grep($_ eq $object, @$q);
+        unless grep($_ eq $object, @$q);
     return;
 }
 
@@ -44,13 +44,13 @@ sub _call {
     my($object, $method, $args, $call_wrapper) = @_;
     $call_wrapper ||= sub {shift->()};
     return $call_wrapper->(
-	sub {
-	    return $object->($method, @{_call_args($args)})
-		if ref($object) eq 'CODE';
-	    return $object->$method(@{_call_args($args)})
-		if $object->can($method);
-	    return;
-	},
+        sub {
+            return $object->($method, @{_call_args($args)})
+                if ref($object) eq 'CODE';
+            return $object->$method(@{_call_args($args)})
+                if $object->can($method);
+            return;
+        },
     );
 }
 

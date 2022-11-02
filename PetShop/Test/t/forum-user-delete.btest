@@ -7,8 +7,8 @@ login_as('root');
 foreach my $f (qw(fourem$ fourem-sub1$ fourem-sub2)) {
     follow_link($f, qw(roster add_member));
     submit_form(Add => {
-	email => $e,
-	full_name => $n
+        email => $e,
+        full_name => $n
     });
     verify_text($e);
 }

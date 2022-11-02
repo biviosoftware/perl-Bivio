@@ -95,17 +95,17 @@ sub render {
     # Font
     my($font) = b_use('FacadeComponent.Font')->get_attrs('default', $req);
     if ($font) {
-	$$buffer .= $_TAGS . " {\n";
-	# If the value isn't set or is zero, then don't render.
-	$$buffer .= ' font-family : '.$font->{family}.';' if $font->{family};
-	$$buffer .= ' font-size : '.$font->{size}.';'
-		if $font->{size};
-	$$buffer .= " }\n";
+        $$buffer .= $_TAGS . " {\n";
+        # If the value isn't set or is zero, then don't render.
+        $$buffer .= ' font-family : '.$font->{family}.';' if $font->{family};
+        $$buffer .= ' font-size : '.$font->{size}.';'
+                if $font->{size};
+        $$buffer .= " }\n";
     }
 
     # Hover (overrides font)
     my($hover) = b_use('FacadeComponent.Color')->format_html('page_link_hover', 'color:',
-	    $req);
+            $req);
     $$buffer .= 'a:hover { '.$hover." }\n" if $hover;
     $self->unsafe_render_attr('other_styles', $source, $buffer);
 

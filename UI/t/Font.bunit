@@ -3,19 +3,19 @@
 Request('setup_facade');
 [
     sub {class()->get_from_source(req())} => [
-	format_html => [
-	    ['bunit_complex', req()] => ['<font face="arial" color="#FF0000" style="text-align: center">', '</font>'],
-	],
-	format_css => [
-	    page_text => 'color: #000000;',
-	    bunit_bold => 'font-weight: bold;',
-	    bunit_code => 'font-family: monospace;',
-	    bunit_italic => 'font-style: italic;',
-	    bunit_larger => 'font-size: 120%;',
-	    bunit_smaller => 'font-size: 80%;',
-	    bunit_strike => 'text-decoration: line-through;',
-	    bunit_underline => 'text-decoration: underline;',
-	    bunit_complex => 'font-family: arial; color: #FF0000; text-transform: lowercase; text-align: center;',
-	],
+        format_html => [
+            ['bunit_complex', req()] => ['<font face="arial" color="#FF0000" style="text-align: center">', '</font>'],
+        ],
+        format_css => [
+            page_text => 'color: #000000;',
+            bunit_bold => 'font-weight: bold;',
+            bunit_code => 'font-family: monospace;',
+            bunit_italic => 'font-style: italic;',
+            bunit_larger => 'font-size: 120%;',
+            bunit_smaller => 'font-size: 80%;',
+            bunit_strike => 'text-decoration: line-through;',
+            bunit_underline => 'text-decoration: underline;',
+            bunit_complex => 'font-family: arial; color: #FF0000; text-transform: lowercase; text-align: center;',
+        ],
     ],
 ];

@@ -5,36 +5,36 @@ require 'FileChangeForm.PL';
 my($upload) = sub {
     my($path, $content) = @_;
     return {
-	filename => $path,
-	content => defined($content) ? \$content : \('some text'),
-	content_type => 'plain/text',
+        filename => $path,
+        content => defined($content) ? \$content : \('some text'),
+        content_type => 'plain/text',
     };
 };
 my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 [
     sub {
-	model('RealmFile')->create_with_content({
-	    path => '/foo.txt',
-	}, \('some text'));
-	return 1;
+        model('RealmFile')->create_with_content({
+            path => '/foo.txt',
+        }, \('some text'));
+        return 1;
     } => 1,
     [{
         path_info => '/foo.txt',
-	file => $upload->('/mypath/to/the/foo.txt', 'new text'),
-	comment => 'updated',
-	mode => $_FCM->UPLOAD,
+        file => $upload->('/mypath/to/the/foo.txt', 'new text'),
+        comment => 'updated',
+        mode => $_FCM->UPLOAD,
     }] => [{
-	'Model.RealmFile' => {
-	    path => '/foo.txt',
-	    is_folder => 0,
-	},
-	'Model.RealmFileLock' => {
-	    realm_file_id => sub {req(qw(Model.RealmFile realm_file_id))},
-	    comment => 'updated',
-	},
+        'Model.RealmFile' => {
+            path => '/foo.txt',
+            is_folder => 0,
+        },
+        'Model.RealmFileLock' => {
+            realm_file_id => sub {req(qw(Model.RealmFile realm_file_id))},
+            comment => 'updated',
+        },
     }],
     sub {
-	${req('Model.RealmFile')->get_content} eq 'new text' ? 1 : 0;
+        ${req('Model.RealmFile')->get_content} eq 'new text' ? 1 : 0;
     } => 1,
 ];

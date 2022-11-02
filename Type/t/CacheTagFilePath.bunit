@@ -3,7 +3,7 @@
 Type();
 config({
     'Bivio::Type::CacheTagFilePath' => {
-	use_cached_path => 1,
+        use_cached_path => 1,
     },
 });
 my($untagged_path, $prefix, $md5) = do('CacheTag.PL');
@@ -12,18 +12,18 @@ $tagged_path =~ s/\.([^\.]+)$/.$prefix$md5.$1/;
 [
     from_literal => [
         '' => UNDEF(),
-	$prefix . $md5 => FILE_PATH(),
-	"foo.$prefix$md5.txt" => "/foo.$prefix$md5.txt",
+        $prefix . $md5 => FILE_PATH(),
+        "foo.$prefix$md5.txt" => "/foo.$prefix$md5.txt",
     ],
     from_local_path => [
-	$untagged_path => $tagged_path,
-	$untagged_path . 'xyz' => undef,
+        $untagged_path => $tagged_path,
+        $untagged_path . 'xyz' => undef,
     ],
     is_tagged_path => [
-	$tagged_path => 1,
-	$untagged_path => 0,
+        $tagged_path => 1,
+        $untagged_path => 0,
     ],
     to_untagged_path => [
-	$tagged_path => $untagged_path,
+        $tagged_path => $untagged_path,
     ],
 ];

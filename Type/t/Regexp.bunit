@@ -5,45 +5,45 @@ my($perl_5_14) = Bivio_Die()->eval('qr{(?^)}') ? 1 : 0;
 my($fix) = sub {
     my($v) = @_;
     $v =~ s/\(\?\^/(?-xism/g
-	if $perl_5_14;
+        if $perl_5_14;
     return $v;
 };
 [
     {
-	 method => 'from_literal',
-	 compute_return => sub {
-	     my(undef, $actual) = @_;
-	     return ref($actual->[0]) eq 'Regexp' ? [$fix->("$actual->[0]")] : $actual;
-	 },
+         method => 'from_literal',
+         compute_return => sub {
+             my(undef, $actual) = @_;
+             return ref($actual->[0]) eq 'Regexp' ? [$fix->("$actual->[0]")] : $actual;
+         },
     } => [
-	'' => UNDEF(),
-	'(?-xism:)' => UNDEF(),
-	 'a' => '(?-xism:a)',
-	 '(?-xism:a)' => '(?-xism:a)',
-	 '(?s-xim:a)' => '(?-xism:(?s-xim:a))',
-	 '(?{die})' => PERMISSION_DENIED(),
-	 '(??{die})' => PERMISSION_DENIED(),
-	 '(?>a)' => PERMISSION_DENIED(),
-	 '(?&a)' => PERMISSION_DENIED(),
-	 '(' => SYNTAX_ERROR(),
+        '' => UNDEF(),
+        '(?-xism:)' => UNDEF(),
+         'a' => '(?-xism:a)',
+         '(?-xism:a)' => '(?-xism:a)',
+         '(?s-xim:a)' => '(?-xism:(?s-xim:a))',
+         '(?{die})' => PERMISSION_DENIED(),
+         '(??{die})' => PERMISSION_DENIED(),
+         '(?>a)' => PERMISSION_DENIED(),
+         '(?&a)' => PERMISSION_DENIED(),
+         '(' => SYNTAX_ERROR(),
     ],
     quote_string => [
-	'[' => '\[',
+        '[' => '\[',
     ],
     {
-	method => 'add_regexp_modifiers',
-	compute_return => sub {
-	    my(undef, $actual) = @_;
-	    return [$fix->($actual->[0] . '')];
-	},
+        method => 'add_regexp_modifiers',
+        compute_return => sub {
+            my(undef, $actual) = @_;
+            return [$fix->($actual->[0] . '')];
+        },
     } => [
-	[qr{zz}, 'ism'] => '(?-xism:(?ism-x:zz))',
-	[qr{yy}, ''] => '(?-xism:yy)',
+        [qr{zz}, 'ism'] => '(?-xism:(?ism-x:zz))',
+        [qr{yy}, ''] => '(?-xism:yy)',
     ],
     is_stringified_regexp => [
-	[undef] => 0,
-	qr{} . '' => 1,
-	qr{a} . '' => 1,
-	'(?a' => 0,
+        [undef] => 0,
+        qr{} . '' => 1,
+        qr{a} . '' => 1,
+        '(?a' => 0,
     ],
 ];

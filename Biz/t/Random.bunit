@@ -3,69 +3,69 @@
 my($prev) = {};
 [
     {
-	object => class(),
-	compute_return => sub {
-	    my($case, $actual) = @_;
-	    die("duplicate")
-		if $prev->{$actual->[0]}++;
-	    return [length($actual->[0])];
-	},
+        object => class(),
+        compute_return => sub {
+            my($case, $actual) = @_;
+            die("duplicate")
+                if $prev->{$actual->[0]}++;
+            return [length($actual->[0])];
+        },
     } => [
-	bytes => [
-	    4 => 4,
-	    4 => 4,
-	    4 => 4,
-	    4 => 4,
-	    4 => 4,
-	    1 => 1,
-	    [] => Bivio::DieCode->DIE,
-	    '' => Bivio::DieCode->DIE,
-	],
-	hex_digits => [
-	    1 => 1,
-	    2 => 2,
-	    3 => 3,
-	    [] => Bivio::DieCode->DIE,
-	],
-	password => [
-	    [] => 16,
-	    [] => 16,
-	    [] => 16,
-	    [] => 16,
-	    [] => 16,
-	],
+        bytes => [
+            4 => 4,
+            4 => 4,
+            4 => 4,
+            4 => 4,
+            4 => 4,
+            1 => 1,
+            [] => Bivio::DieCode->DIE,
+            '' => Bivio::DieCode->DIE,
+        ],
+        hex_digits => [
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            [] => Bivio::DieCode->DIE,
+        ],
+        password => [
+            [] => 16,
+            [] => 16,
+            [] => 16,
+            [] => 16,
+            [] => 16,
+        ],
     ],
     class() => [
-	string => [
-	    [1, ['a']] => 'a',
-	    [1, [qw(a b)]] => qr/^[ab]$/s,
-	    [2, ['a']] => 'aa',
-	    [14, [0..9]] => qr/^[0123456789]{14}$/s,
-	],
-	{
-	    method => 'integer',
-	    check_return => sub {
-		my($case, $actual) = @_;
-		my($ceiling) = $case->get('params')->[0];
-		my($floor) = $case->get('params')->[1];
-		$ceiling = class('Type.Integer')->get_max
-		    unless defined($ceiling);
-		$floor = 0
-		    unless defined($floor);
-		return $actual->[0] >= $floor && $actual->[0] < $ceiling
-		    ? 1 : 0;
-	    },
-	} => [
-	    [1, 0] => [],
-	    [2, 1] => [],
-	    1 => [],
-	    2 => [],
-	    3 => [],
-	    0 => DIE(),
-	    -1 => DIE(),
-	    [2, 2] => DIE(),
-	    [2, -1] => DIE(),
-	    [undef] => [],
-	],
+        string => [
+            [1, ['a']] => 'a',
+            [1, [qw(a b)]] => qr/^[ab]$/s,
+            [2, ['a']] => 'aa',
+            [14, [0..9]] => qr/^[0123456789]{14}$/s,
+        ],
+        {
+            method => 'integer',
+            check_return => sub {
+                my($case, $actual) = @_;
+                my($ceiling) = $case->get('params')->[0];
+                my($floor) = $case->get('params')->[1];
+                $ceiling = class('Type.Integer')->get_max
+                    unless defined($ceiling);
+                $floor = 0
+                    unless defined($floor);
+                return $actual->[0] >= $floor && $actual->[0] < $ceiling
+                    ? 1 : 0;
+            },
+        } => [
+            [1, 0] => [],
+            [2, 1] => [],
+            1 => [],
+            2 => [],
+            3 => [],
+            0 => DIE(),
+            -1 => DIE(),
+            [2, 2] => DIE(),
+            [2, -1] => DIE(),
+            [undef] => [],
+        ],
     ],
 ];

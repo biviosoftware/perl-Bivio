@@ -15,9 +15,9 @@ my($_NOT_LIKE) = [
     '/.%',
     '%/.%',
     map(
-	($_, $_ . '/%'),
+        ($_, $_ . '/%'),
         lc($_FP->MAIL_FOLDER),
-	lc($_FP->to_public($_FP->MAIL_FOLDER)),
+        lc($_FP->to_public($_FP->MAIL_FOLDER)),
     ),
 ];
 my($_VERSIONS_FOLDER) = $_FP->VERSIONS_FOLDER;
@@ -48,62 +48,62 @@ sub internal_default_expand {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
+        version => 1,
         primary_key => ['RealmFile.realm_file_id'],
         auth_id => ['RealmFile.realm_id', 'RealmOwner.realm_id'],
-	order_by => [
-	    'RealmFile.path_lc',
-	    'RealmFile.modified_date_time',
-	    'Email_2.email',
-	    'RealmOwner_2.display_name',
-	    _lock(qw(
-		Email_3.email
-		RealmOwner_3.display_name
-	    )),
-	],
-	other => [
-	    _lock('RealmFileLock.modified_date_time'),
-	    'RealmOwner.name',
-	    'RealmFile.path',
-	    'RealmFile.folder_id',
-	    'RealmFile.is_read_only',
+        order_by => [
+            'RealmFile.path_lc',
+            'RealmFile.modified_date_time',
+            'Email_2.email',
+            'RealmOwner_2.display_name',
+            _lock(qw(
+                Email_3.email
+                RealmOwner_3.display_name
+            )),
+        ],
+        other => [
+            _lock('RealmFileLock.modified_date_time'),
+            'RealmOwner.name',
+            'RealmFile.path',
+            'RealmFile.folder_id',
+            'RealmFile.is_read_only',
             [qw(RealmFile.user_id Email_2.realm_id RealmOwner_2.realm_id)],
-	    'RealmFile.is_folder',
-	    # Needed for is_locked
-	    _lock('RealmFileLock.comment'),
-	    {
-		name => 'is_empty',
-		type => 'Boolean',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'base_name',
-		type => 'FilePath',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'content_length',
-		type => 'String',
-		constraint => 'NONE',
-	    },
-	    {
-		name => 'is_max_files_per_folder',
-		type => 'Boolean',
-		constraint => 'NONE',
-	    },
-	    ['Email_2.location', [$_DEFAULT_LOCATION]],
-	],
-	other_query_keys => [qw(path_info)],
+            'RealmFile.is_folder',
+            # Needed for is_locked
+            _lock('RealmFileLock.comment'),
+            {
+                name => 'is_empty',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
+            {
+                name => 'base_name',
+                type => 'FilePath',
+                constraint => 'NONE',
+            },
+            {
+                name => 'content_length',
+                type => 'String',
+                constraint => 'NONE',
+            },
+            {
+                name => 'is_max_files_per_folder',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
+            ['Email_2.location', [$_DEFAULT_LOCATION]],
+        ],
+        other_query_keys => [qw(path_info)],
     });
 }
 
 sub internal_is_empty {
     my($self, $row) = @_;
     unless ($row->{'is_empty'}) {
-	my($rf) = $self->new_other('RealmFile')->load({
-	    path => $row->{'RealmFile.path'},
-	});
-	$row->{'is_empty'} = $rf->is_empty;
+        my($rf) = $self->new_other('RealmFile')->load({
+            path => $row->{'RealmFile.path'},
+        });
+        $row->{'is_empty'} = $rf->is_empty;
     }
     return $row->{'is_empty'};
 }
@@ -116,17 +116,17 @@ sub internal_is_parent {
 sub internal_leaf_node_uri {
     my($self, $row) = @_;
     return $self->req->format_uri({
-	task_id => $self->req('task')->get_attr_as_id('next'),
-	path_info => $row->{'RealmFile.path'},
-	query => undef,
+        task_id => $self->req('task')->get_attr_as_id('next'),
+        path_info => $row->{'RealmFile.path'},
+        query => undef,
     });
 }
 
 sub internal_parent_id {
     my($self, $id) = @_;
     return $self->new_other('RealmFile')
-	->load({realm_file_id => $id})
-	->get('folder_id');
+        ->load({realm_file_id => $id})
+        ->get('folder_id');
 }
 
 sub internal_parent_node_uri_query_params {
@@ -143,49 +143,49 @@ sub internal_post_load_row {
     $row->{is_max_files_per_folder} = 0;
 
     if ($row->{'RealmFile.folder_id'} && ! $row->{'RealmFile.is_folder'}) {
-	my($count) =
-	    ($count_by_folder->{$row->{'RealmFile.folder_id'}} ||= 0)++;
+        my($count) =
+            ($count_by_folder->{$row->{'RealmFile.folder_id'}} ||= 0)++;
 
-	if ($count == $self->MAX_FILES_PER_FOLDER) {
-	    $row->{is_max_files_per_folder} = 1;
-	    $row->{base_name} = undef;
-	    $row->{'RealmFile.modified_date_time'} = undef;
-	    $row->{'RealmOwner_2.display_name'} = undef;
-	    $row->{node_uri} = $self->req->format_uri({
-		task_id => 'FORUM_FOLDER_FILE_LIST',
-		query => {
-		    'ListQuery.parent_id' => $row->{'RealmFile.folder_id'},
-		},
-	    });
-	}
-	else {
-	    return 0 if $count >= $self->MAX_FILES_PER_FOLDER;
-	}
+        if ($count == $self->MAX_FILES_PER_FOLDER) {
+            $row->{is_max_files_per_folder} = 1;
+            $row->{base_name} = undef;
+            $row->{'RealmFile.modified_date_time'} = undef;
+            $row->{'RealmOwner_2.display_name'} = undef;
+            $row->{node_uri} = $self->req->format_uri({
+                task_id => 'FORUM_FOLDER_FILE_LIST',
+                query => {
+                    'ListQuery.parent_id' => $row->{'RealmFile.folder_id'},
+                },
+            });
+        }
+        else {
+            return 0 if $count >= $self->MAX_FILES_PER_FOLDER;
+        }
     }
     $row->{node_state} = $_TLN->LOCKED_LEAF_NODE
-	if $row->{'RealmFileLock.modified_date_time'};
+        if $row->{'RealmFileLock.modified_date_time'};
     if ($self->internal_is_parent($row) && $self->internal_is_empty($row)) {
-	$row->{node_state} = $_TLN->NODE_EMPTY;
-	$row->{node_uri} = undef;
+        $row->{node_state} = $_TLN->NODE_EMPTY;
+        $row->{node_uri} = undef;
     }
     $row->{base_name} = $row->{'RealmFile.path'} eq '/' ? '/'
-	: $_FN->get_tail($row->{'RealmFile.path'});
+        : $_FN->get_tail($row->{'RealmFile.path'});
     $row->{content_length} = $row->{'RealmFile.is_folder'} || $row->{is_max_files_per_folder}
-	? undef
-	: $_RF->get_content_length(undef, 'RealmFile.', $row);
+        ? undef
+        : $_RF->get_content_length(undef, 'RealmFile.', $row);
     return 1;
 }
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $self->[$_IDI] = {
-	can_write => $self->req->can_user_execute_task(
-	    $self->req('task')->get_attr_as_task('write_task')),
+        can_write => $self->req->can_user_execute_task(
+            $self->req('task')->get_attr_as_task('write_task')),
     };
     $_RFVL->prepare_statement_for_realm_file_lock($stmt);
     $stmt->where(@{$stmt->map_invoke(
-	NOT_LIKE => $_NOT_LIKE,
-	['RealmFile.path_lc'],
+        NOT_LIKE => $_NOT_LIKE,
+        ['RealmFile.path_lc'],
     )});
     return shift->SUPER::internal_prepare_statement(@_);
 }
@@ -193,7 +193,7 @@ sub internal_prepare_statement {
 sub internal_root_parent_node_id {
     my($self) = @_;
     return undef
-	unless my $p = $self->get_query->unsafe_get('path_info');
+        unless my $p = $self->get_query->unsafe_get('path_info');
     return $self->new_other('RealmFile')->path_info_to_id($p);
 }
 
@@ -214,7 +214,7 @@ sub parse_query_from_request {
     my($self) = @_;
     my($query) = shift->SUPER::parse_query_from_request(@_);
     if (my $p = $self->req->unsafe_get('path_info')) {
-	$query->put(path_info => $_RF->parse_path($p));
+        $query->put(path_info => $_RF->parse_path($p));
     }
     return $query;
 }

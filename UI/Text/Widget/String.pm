@@ -62,8 +62,8 @@ Implements positional argument parsing for L<new|"new">.
 sub internal_new_args {
     my(undef, $value, $attributes) = @_;
     return {
-	value => $value,
-	($attributes ? %$attributes : ()),
+        value => $value,
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -79,7 +79,7 @@ sub unsafe_resolve_widget_value {
     my($self, $value, $source) = @_;
     $value = $self->SUPER::unsafe_resolve_widget_value($value, $source);
     $value = $$value
-	if ref($value) eq 'SCALAR';
+        if ref($value) eq 'SCALAR';
     return $value;
 }
 

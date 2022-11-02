@@ -29,15 +29,15 @@ sub encrypt_hex {
 
 sub generate_bconf {
     my($self, $algorithm) = shift->name_args([
-	['algorithm', 'PerlName'],
+        ['algorithm', 'PerlName'],
     ], \@_);
     my($keysize) = {
-	Blowfish => 56,
-	CAST5 => 16,
-	DES => 16,
-	DES_EDE3 => 24,
-	IDEA => 16,
-	Rijndael => 256,
+        Blowfish => 56,
+        CAST5 => 16,
+        DES => 16,
+        DES_EDE3 => 24,
+        IDEA => 16,
+        Rijndael => 256,
     }->{$algorithm} || $self->usage_error($algorithm, ": unknown algorithm\n");
     my($key) = $_R->hex_digits($keysize * 2);
     my($magic) = $_R->string(3, [0-9, 'a' .. 'z', 'A' .. 'Z']);

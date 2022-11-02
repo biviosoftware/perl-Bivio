@@ -8,12 +8,12 @@ use Bivio::Base 'TestUnit.Unit';
 sub make_expect_rows {
     my($proto, $fields, @values) = @_;
     return $proto->map_together(
-	sub {
-	    return {
-		map(($_ => shift(@_)), @$fields),
-	    };
-	},
-	@values,
+        sub {
+            return {
+                map(($_ => shift(@_)), @$fields),
+            };
+        },
+        @values,
     );
 }
 
@@ -24,48 +24,48 @@ sub new {
     my($model) = $attrs->{class_name};
     my($class) = $proto->builtin_model($model)->package_name;
     return $proto->SUPER::new({
-	class_name => $class,
-	$class =~ /DAVList$/ ? (comparator => 'nested_contains') : (),
-	create_object => sub {
-	    my(undef, $object) = @_;
-	    return $object->[0]->new($proto->builtin_req);
-	},
-	compute_return => sub {
-	    my($case, $actual, $expect) = @_;
-	    return $actual
-		unless $case->get('method') =~ /^(?:(?:unauth_)?load(?:_this)?|find_row_by)/
-		&& ref($expect) eq 'ARRAY';
-	    if (ref($expect->[0]) eq 'ARRAY' && @$expect == 1
-		&& (!@{$expect->[0]} || ref($expect->[0]->[0]) eq 'HASH')) {
-		b_warn(
-		    $case,
-		    ': has too many square brackets for the expect, unwrapping one level',
-		);
-		@$expect = @{$expect->[0]};
-	    }
-	    return $actual
-		unless @$expect != 1 || ref($expect->[0]) eq 'HASH';
-	    my($expect_copy) = [@$expect];
-	    my($extract) = sub {
-		my($row) = shift->get_shallow_copy;
-		return {
-		    map(
-			($_ => $row->{$_}),
-			keys(%{@$expect_copy == 1 ? $expect_copy->[0]
-			    : shift(@$expect_copy) || {}}),
-		    ),
-		};
-	    };
-	    my($o) = $case->get('object');
-	    return $o->save_excursion(
-		sub {
-		    return $case->get('method') =~ /^find_row_by/
-			? [$extract->($o)]
-			: $o->map_rows($extract);
-		},
-	    );
-	},
-	%$attrs,
+        class_name => $class,
+        $class =~ /DAVList$/ ? (comparator => 'nested_contains') : (),
+        create_object => sub {
+            my(undef, $object) = @_;
+            return $object->[0]->new($proto->builtin_req);
+        },
+        compute_return => sub {
+            my($case, $actual, $expect) = @_;
+            return $actual
+                unless $case->get('method') =~ /^(?:(?:unauth_)?load(?:_this)?|find_row_by)/
+                && ref($expect) eq 'ARRAY';
+            if (ref($expect->[0]) eq 'ARRAY' && @$expect == 1
+                && (!@{$expect->[0]} || ref($expect->[0]->[0]) eq 'HASH')) {
+                b_warn(
+                    $case,
+                    ': has too many square brackets for the expect, unwrapping one level',
+                );
+                @$expect = @{$expect->[0]};
+            }
+            return $actual
+                unless @$expect != 1 || ref($expect->[0]) eq 'HASH';
+            my($expect_copy) = [@$expect];
+            my($extract) = sub {
+                my($row) = shift->get_shallow_copy;
+                return {
+                    map(
+                        ($_ => $row->{$_}),
+                        keys(%{@$expect_copy == 1 ? $expect_copy->[0]
+                            : shift(@$expect_copy) || {}}),
+                    ),
+                };
+            };
+            my($o) = $case->get('object');
+            return $o->save_excursion(
+                sub {
+                    return $case->get('method') =~ /^find_row_by/
+                        ? [$extract->($o)]
+                        : $o->map_rows($extract);
+                },
+            );
+        },
+        %$attrs,
     });
 }
 
@@ -89,10 +89,10 @@ sub run_unit {
     # filtered to only include the keys contained the first row of the expected
     # return.
     return shift->SUPER::run_unit(@_)
-	if @_ == 3;
+        if @_ == 3;
     my($self, $method_groups) = @_;
     return $self->SUPER::run_unit([
-	$self->builtin_class => $method_groups,
+        $self->builtin_class => $method_groups,
     ]);
 }
 

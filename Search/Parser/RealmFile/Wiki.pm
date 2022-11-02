@@ -15,9 +15,9 @@ sub handle_realm_file_new_text {
     my($proto, $parseable) = @_;
     my($body, $wa) = $_WT->render_plain_text($parseable);
     return $proto->new({
-	type => 'text/plain',
-	title => Bivio::HTML->unescape($wa->{title}),
-	text => \($body),
+        type => 'text/plain',
+        title => Bivio::HTML->unescape($wa->{title}),
+        text => \($body),
     });
 }
 

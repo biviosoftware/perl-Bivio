@@ -4,7 +4,7 @@ Request('initialize_fully');
 config({
     'Bivio::Mail::Common' => {
         # read input until EOF, and ignore command line args
-	sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
+        sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
     },
 });
 # use User::pwent ();
@@ -131,180 +131,180 @@ EOF
 my($_BODY) = 'what a body';
 [
     [Bivio::Mail::Incoming->new(\$_IN)] => [
-	set_headers_for_list_send => [
-	    [{
-		req => req(),
-		list_email => 'some-list@example.com',
-		sender => 'some-list-owner@a.a',
-		subject_prefix => '[abc] ',
-		reply_to_list => 1,
-	    }] => undef,
-	],
-	unsafe_get_recipients => [
-	    [] => [undef],
-	],
-	set_recipients => [
-	    [[$_USER, 'joe@example.com'], req()] => undef,
-	],
-	unsafe_get_recipients => $_USER . ',joe@example.com',
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	unsafe_get_recipients => $_USER,
-	unsafe_get_header => [
-	    'Date' => "Thu, 1 Jul 1999 09:33:35 -0400",
-	    'Not_Found' => [undef],
-	],
-	set_header => [
-	    ['x-PrioritY', 33] => not_die(),
-	],
-	unsafe_get_header => [
-	    'X-PRIority' => 33,
-	],
-	remove_headers => [
-	    'x-priOrity' => not_die(),
-	],
-	unsafe_get_header => [
-	    'X-PRIority' => [undef],
-	],
-	format_as_bounce => [
-	    ['bad, bad, bad', undef, undef, undef, req()]
-		=> qr{ERROR.*$_USER.*bad, bad, bad.*Original}s,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	enqueue_send => [
-	    [req()] => undef,
-	],
-	inline_commit(),
-	as_string => $_OUT,
-	set_body => [
-	    [\$_BODY] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	as_string => sub {
-	    $_OUT =~ /(^.*?\n\n)/s;
-	    return [$1 . $_BODY];
-	},
-	add_missing_headers => [
-	    [req()] => undef,
-	],
-	as_string => qr{Return-Path: <foo_bar\@example.net>\nMessage-ID}is,
+        set_headers_for_list_send => [
+            [{
+                req => req(),
+                list_email => 'some-list@example.com',
+                sender => 'some-list-owner@a.a',
+                subject_prefix => '[abc] ',
+                reply_to_list => 1,
+            }] => undef,
+        ],
+        unsafe_get_recipients => [
+            [] => [undef],
+        ],
+        set_recipients => [
+            [[$_USER, 'joe@example.com'], req()] => undef,
+        ],
+        unsafe_get_recipients => $_USER . ',joe@example.com',
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        unsafe_get_recipients => $_USER,
+        unsafe_get_header => [
+            'Date' => "Thu, 1 Jul 1999 09:33:35 -0400",
+            'Not_Found' => [undef],
+        ],
+        set_header => [
+            ['x-PrioritY', 33] => not_die(),
+        ],
+        unsafe_get_header => [
+            'X-PRIority' => 33,
+        ],
+        remove_headers => [
+            'x-priOrity' => not_die(),
+        ],
+        unsafe_get_header => [
+            'X-PRIority' => [undef],
+        ],
+        format_as_bounce => [
+            ['bad, bad, bad', undef, undef, undef, req()]
+                => qr{ERROR.*$_USER.*bad, bad, bad.*Original}s,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        enqueue_send => [
+            [req()] => undef,
+        ],
+        inline_commit(),
+        as_string => $_OUT,
+        set_body => [
+            [\$_BODY] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        as_string => sub {
+            $_OUT =~ /(^.*?\n\n)/s;
+            return [$1 . $_BODY];
+        },
+        add_missing_headers => [
+            [req()] => undef,
+        ],
+        as_string => qr{Return-Path: <foo_bar\@example.net>\nMessage-ID}is,
     ],
     [Bivio::Mail::Incoming->new(\$_IN)] => [
-	set_headers_for_list_send => [
-	    [{
-		req => req(),
-		list_email => 'some-list@example.com',
-		reply_to_list => 0,
-		sender => 'a@a.a',
-		reply_to => 'b@b.b',
-		return_path => 'c@c.c',
-	    }] => undef,
-	],
-	unsafe_get_header => [
-	    to => '"Some-List" <some-list@example.com>, to@example.com',
-	    cc => 'cc@example.com',
-	    bcc => 'bcc@example.com',
-	    'return-path' => '<c@c.c>',
-	    from => '"Fan Tango" <foo_bar@example.net>',
-	    sender => 'a@a.a',
-	    'reply-to' => undef,
-	],
-	edit_body => [
-	    [{somevar => 'ReplacedVar'}] => not_die(),
-	],
-	get_body => qr{ReplacedVar},
+        set_headers_for_list_send => [
+            [{
+                req => req(),
+                list_email => 'some-list@example.com',
+                reply_to_list => 0,
+                sender => 'a@a.a',
+                reply_to => 'b@b.b',
+                return_path => 'c@c.c',
+            }] => undef,
+        ],
+        unsafe_get_header => [
+            to => '"Some-List" <some-list@example.com>, to@example.com',
+            cc => 'cc@example.com',
+            bcc => 'bcc@example.com',
+            'return-path' => '<c@c.c>',
+            from => '"Fan Tango" <foo_bar@example.net>',
+            sender => 'a@a.a',
+            'reply-to' => undef,
+        ],
+        edit_body => [
+            [{somevar => 'ReplacedVar'}] => not_die(),
+        ],
+        get_body => qr{ReplacedVar},
     ],
     [Bivio::Mail::Incoming->new(\$_WITH_CC)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	set_headers_for_list_send => [
-	    [{
-		req => req(),
-		list_email => 'some-list@example.com',
-	    }] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	unsafe_get_header => [
-	    to => 'cc@cc.cc',
-	    cc => undef,
-	    from => qr/ignore-from-google-com@/,
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        set_headers_for_list_send => [
+            [{
+                req => req(),
+                list_email => 'some-list@example.com',
+            }] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            to => 'cc@cc.cc',
+            cc => undef,
+            from => qr/ignore-from-google-com@/,
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_REWRITE_FROM)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	set_headers_for_list_send => [
-	    [{
-		req => req(),
-		list_email => 'some-list@example.com',
-		reply_to_list => 1,
-	    }] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	unsafe_get_header => [
-	    from => qr{^"rewrite_from_domain via \S+ <user\*\d+@.*>$},
-	    'reply-to' => 'some-list@example.com',
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        set_headers_for_list_send => [
+            [{
+                req => req(),
+                list_email => 'some-list@example.com',
+                reply_to_list => 1,
+            }] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^"rewrite_from_domain via \S+ <user\*\d+@.*>$},
+            'reply-to' => 'some-list@example.com',
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_REWRITE_FROM)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	get_from_email => qr{user\*\d+@.*$},
-	unsafe_get_header => [
-	    'reply-to' => 'rewrite_from_domain@yahoo.com',
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        get_from_email => qr{user\*\d+@.*$},
+        unsafe_get_header => [
+            'reply-to' => 'rewrite_from_domain@yahoo.com',
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_WITHOUT_CC)] => [
-	get_from_email => [
-	    [req()] => 'from@from.from',
-	],
-	set_headers_for_list_send => [
-	    [{
-		req => req(),
-		list_email => 'some-list@example.com',
-	    }] => undef,
-	],
-	unsafe_get_header => [
-	    to => 'some-list@example.com',
-	    cc => undef,
-	    from => 'from@from.from',
-	],
+        get_from_email => [
+            [req()] => 'from@from.from',
+        ],
+        set_headers_for_list_send => [
+            [{
+                req => req(),
+                list_email => 'some-list@example.com',
+            }] => undef,
+        ],
+        unsafe_get_header => [
+            to => 'some-list@example.com',
+            cc => undef,
+            from => 'from@from.from',
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_BAD_FROM)] => [
-	get_from_email => [
-	    [req()] => [undef],
-	],
-	set_headers_for_forward => [
-	    [undef, req()] => undef,
-	],
-	unsafe_get_header => [
-	    to => undef,
-	    cc => undef,
-	    from => '<<from@from.from>>',
-	],
+        get_from_email => [
+            [req()] => [undef],
+        ],
+        set_headers_for_forward => [
+            [undef, req()] => undef,
+        ],
+        unsafe_get_header => [
+            to => undef,
+            cc => undef,
+            from => '<<from@from.from>>',
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_QUOTED_PRINTABLE)] => [
-	edit_body => [
-	    [{
-		jumps => 'hurdles',
-		lazy => 'slumbering',
-	    }] => not_die(),
-	],
-	get_body => qr{slumbering},
+        edit_body => [
+            [{
+                jumps => 'hurdles',
+                lazy => 'slumbering',
+            }] => not_die(),
+        ],
+        get_body => qr{slumbering},
     ],
 ];

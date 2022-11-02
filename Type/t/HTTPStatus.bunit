@@ -2,10 +2,10 @@
 # $Id$
 [
     401 => [
-	as_facade_text_default => 'Authorization required',
-	as_facade_text_tag => 401,
+        as_facade_text_default => 'Authorization required',
+        as_facade_text_tag => 401,
     ],
     501 => [
-	as_facade_text_default => 'Server error (501)',
+        as_facade_text_default => 'Server error (501)',
     ],
 ];

@@ -11,23 +11,23 @@ sub initialize {
     my($self) = @_;
     $self->initialize_attr('slot_label');
     my($value) = [sub {
-	my($source) = @_;
-	return $source->tuple_tag_find_slot_value(
-	    $self->render_simple_attr(slot_label => $source));
+        my($source) = @_;
+        return $source->tuple_tag_find_slot_value(
+            $self->render_simple_attr(slot_label => $source));
     }];
     $self->put_unless_exists(
-	control => [sub {
-	     my($source) = @_;
-	     return $source->tuple_tag_find_slot_type(
-		 $self->render_simple_attr(slot_label => $source),
-	     )->simple_package_name;
-	}],
-	values => {
-	    Date => DateTime($value),
-	    Integer => Integer($value),
-	    Email => MailTo($value),
-	},
-	default_value => String($value),
+        control => [sub {
+             my($source) = @_;
+             return $source->tuple_tag_find_slot_type(
+                 $self->render_simple_attr(slot_label => $source),
+             )->simple_package_name;
+        }],
+        values => {
+            Date => DateTime($value),
+            Integer => Integer($value),
+            Email => MailTo($value),
+        },
+        default_value => String($value),
     );
     return shift->SUPER::initialize(@_);
 }

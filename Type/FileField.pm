@@ -13,29 +13,29 @@ my($_F) = b_use('IO.File');
 sub from_any {
     my($proto, @args) = @_;
     return $proto->from_literal(@args)
-	if ref($args[0]) eq 'HASH';
+        if ref($args[0]) eq 'HASH';
     return $proto->from_string_ref(@args)
-	if ref($args[0]) eq 'SCALAR';
+        if ref($args[0]) eq 'SCALAR';
     return $proto->from_disk(@args)
-	if @args == 1 && !ref($args[0]) && $args[0] !~ /\n/;
+        if @args == 1 && !ref($args[0]) && $args[0] !~ /\n/;
     return $proto->from_string_ref(\(shift(@args)), @args)
-	if @args >= 1 && !ref($args[0]) && defined($args[0]);
+        if @args >= 1 && !ref($args[0]) && defined($args[0]);
     b_die(\@args, ': unable to convert arguments');
     # DOES NOT RETURN
 }
 
 sub from_string_ref {
     return shift->from_literal({
-	content => shift,
-	filename => shift || '',
-	content_type => shift || 'application/octet-stream',
+        content => shift,
+        filename => shift || '',
+        content_type => shift || 'application/octet-stream',
     });
 }
 
 sub from_disk {
     my($v, $e) = shift->unsafe_from_disk(@_);
     return $v
-	if $v;
+        if $v;
     my(undef, $file_name) = @_;
     b_die($file_name, ': invalid disk file: ' , $e || $_TE->NULL);
     # DOES NOT RETURN
@@ -46,18 +46,18 @@ sub from_literal {
     $proto->internal_from_literal_warning
         unless wantarray;
     return (undef, undef)
-	unless defined($value);
+        unless defined($value);
     unless (ref($value) eq 'HASH') {
-	return (undef, $_TE->FILE_FIELD)
-	    if length($value);
-	return (undef, undef);
+        return (undef, $_TE->FILE_FIELD)
+            if length($value);
+        return (undef, undef);
     }
     return $value
-	if length(${$value->{content}});
+        if length(${$value->{content}});
     return (undef, undef)
-	unless $value->{filename};
+        unless $value->{filename};
     return (undef, $_TE->NOT_FOUND)
-	unless $value->{content_type};
+        unless $value->{content_type};
     return (undef, $_TE->EMPTY);
 }
 
@@ -80,7 +80,7 @@ sub get_width {
 sub to_literal {
     my(undef, $value) = @_;
     return ref($value) eq 'HASH' && defined($value->{filename})
-	? $value->{filename} : '';
+        ? $value->{filename} : '';
 }
 
 sub to_query {
@@ -94,16 +94,16 @@ sub to_uri {
 sub unsafe_from_disk {
     my($proto, $value) = @_;
     return (undef, undef)
-	unless defined($value) && length($value);
+        unless defined($value) && length($value);
     return $proto->use('IO.Ref')->nested_copy($value)
-	if ref($value) eq 'HASH'
-	&& grep(exists($value->{$_}), qw(filename content content_type)) == 3
-	&& ref($value->{content}) eq 'SCALAR';
+        if ref($value) eq 'HASH'
+        && grep(exists($value->{$_}), qw(filename content content_type)) == 3
+        && ref($value->{content}) eq 'SCALAR';
     return (undef, $_TE->NOT_FOUND)
-	unless -r $value && !(-d _);
+        unless -r $value && !(-d _);
     return {
-	filename => $_FP->get_tail($value),
-	content_type => $_RF->get_content_type_for_path($value),
+        filename => $_FP->get_tail($value),
+        content_type => $_RF->get_content_type_for_path($value),
         content => $_F->read($value),
     };
 }

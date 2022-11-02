@@ -8,7 +8,7 @@ use base 'Bivio::UI::Widget::LogicalOpBase';
 sub internal_render_end {
     my($self, $state, $last_value) = @_;
     $self->internal_render_true($state, $last_value)
-	if $last_value;
+        if $last_value;
     return; 
 }
 

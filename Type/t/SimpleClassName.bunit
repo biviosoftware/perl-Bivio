@@ -4,8 +4,8 @@ Type();
 [
     from_literal => [
         '' => UNDEF(),
-	'a' => 'a',
-	'A' => 'A',
-	'A::B' => SIMPLE_CLASS_NAME(),
+        'a' => 'a',
+        'A' => 'A',
+        'A::B' => SIMPLE_CLASS_NAME(),
     ],
 ];

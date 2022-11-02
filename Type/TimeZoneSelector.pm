@@ -10,15 +10,15 @@ sub row_tag_get {
     my(undef, $req) = @_;
 #TODO: Only supports implicit realm_id format
     return $req->get('Model.TimeZoneList')
-	->display_name_for_enum($_TZ->row_tag_get($req));
+        ->display_name_for_enum($_TZ->row_tag_get($req));
 }
 
 sub row_tag_replace {
     my(undef, $value, $req) = @_;
 #TODO: Only supports implicit realm_id format
     return $_TZ->row_tag_replace(
-	$req->get('Model.TimeZoneList')->enum_for_display_name($value),
-	$req,
+        $req->get('Model.TimeZoneList')->enum_for_display_name($value),
+        $req,
     );
 }
 

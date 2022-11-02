@@ -17,8 +17,8 @@ sub execute_empty_row {
     my($v) = _slot_value($self);
     $v = $v ? $$v : $lm->get('TupleSlotType.default_value');
     $self->internal_put_field(
-	slot => defined($v) || !$lm->get('TupleSlotType.choices')->is_specified
-	    ? $v : $_EK,
+        slot => defined($v) || !$lm->get('TupleSlotType.choices')->is_specified
+            ? $v : $_EK,
     );
     return;
 }
@@ -30,11 +30,11 @@ sub execute_ok_end {
     $self->internal_put_field('RealmMail.subject' => $self->[$_IDI]->{subject});
     $self->internal_put_field('RealmMail.from_email' =>
         $self->new_other('Email')->unauth_load_or_die({
-	    realm_id => $self->req('auth_user_id'),
-	})->get('email'),
+            realm_id => $self->req('auth_user_id'),
+        })->get('email'),
     );
     $_ARM->execute_receive($self->req,
-	$_V->render('Tuple->edit_imail', $self->req));
+        $_V->render('Tuple->edit_imail', $self->req));
     return;
 }
 
@@ -44,15 +44,15 @@ sub execute_ok_row {
     my($lm) = $self->get_list_model;
     my($v, $e) = $lm->validate_slot($self->get('slot'));
     if ($e) {
-	$self->internal_put_error(slot => $e);
-	return;
+        $self->internal_put_error(slot => $e);
+        return;
     }
     my($tsv) = _slot_value($self);
     $fields->{headers} .= $_T->mail_slot(
-	$lm->get('TupleSlotDef.label'),
+        $lm->get('TupleSlotDef.label'),
         $lm->type_class_instance->to_literal(
-	    defined($v) || $fields->{is_update} ? $v
-		: $lm->get('TupleSlotType.default_value')),
+            defined($v) || $fields->{is_update} ? $v
+                : $lm->get('TupleSlotType.default_value')),
     ) unless $tsv && $lm->type_class_instance->is_equal($v, $$tsv);
     _set_subject_if_string_slot($self, $lm, $v);
     return;
@@ -61,8 +61,8 @@ sub execute_ok_row {
 sub execute_ok_start {
     my($self) = @_;
     $self->[$_IDI] = {
-	is_update => $self->req->has_keys('Model.Tuple') ? 1 : 0,
-	headers => '',
+        is_update => $self->req->has_keys('Model.Tuple') ? 1 : 0,
+        headers => '',
     };
     return;
 }
@@ -70,11 +70,11 @@ sub execute_ok_start {
 sub get_field_info {
     my($self, $field, $which) = @_;
     return shift->SUPER::get_field_info(@_)
-	unless $which && $which eq 'type' && $field =~ /^slot(?:_(\d+))?$/;
+        unless $which && $which eq 'type' && $field =~ /^slot(?:_(\d+))?$/;
     my($n) = $1;
     my($lm) = $self->get_list_model;
     return $lm->type_class_instance
-	unless defined($n) && (my $c = $lm->get_cursor || -1) ne $n;
+        unless defined($n) && (my $c = $lm->get_cursor || -1) ne $n;
     $lm->set_cursor($n);
     my($res) = $lm->type_class_instance;
     $lm->internal_set_cursor($c);
@@ -86,33 +86,33 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         list_class => 'TupleSlotDefList',
-	require_context => 1,
-	visible => [
-	    {
-		name => 'comment',
-		type => 'Text64K',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'slot',
-		type => 'TupleSlot',
-		constraint => 'NONE',
-		in_list => 1,
-	    },
-	],
-	other => [
-	    'RealmMail.from_email',
-	    'RealmMail.subject',
-	    $self->field_decl([
-		[qw(slot_headers Text64K)],
-		[
-		    'choice_list',
-		    $self->get_instance('TupleSlotChoiceSelectList')
-			->package_name,
-		    {in_list => 1},
-		],
-	    ]),
-	],
+        require_context => 1,
+        visible => [
+            {
+                name => 'comment',
+                type => 'Text64K',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'slot',
+                type => 'TupleSlot',
+                constraint => 'NONE',
+                in_list => 1,
+            },
+        ],
+        other => [
+            'RealmMail.from_email',
+            'RealmMail.subject',
+            $self->field_decl([
+                [qw(slot_headers Text64K)],
+                [
+                    'choice_list',
+                    $self->get_instance('TupleSlotChoiceSelectList')
+                        ->package_name,
+                    {in_list => 1},
+                ],
+            ]),
+        ],
     });
 }
 
@@ -123,15 +123,15 @@ sub internal_initialize_list {
     # AUTH: Make sure this realm can use this schema
     $self->new_other('TupleUseList')->load_this({this => $tdid});
     $self->new_other('TupleSlotDefList')
-	->load_all({parent_id => $tdid});
+        ->load_all({parent_id => $tdid});
     if ($tn) {
-	my($trid) = $self->new_other('Tuple')->load({
-	    tuple_def_id => $tdid,
-	    tuple_num => $tn,
-	})->get('thread_root_id');
-	$self->new_other('RealmMail')->load({
-	    realm_file_id => $trid,
-	}) if $trid;
+        my($trid) = $self->new_other('Tuple')->load({
+            tuple_def_id => $tdid,
+            tuple_num => $tn,
+        })->get('thread_root_id');
+        $self->new_other('RealmMail')->load({
+            realm_file_id => $trid,
+        }) if $trid;
     }
     return shift->SUPER::internal_initialize_list(@_);
 }
@@ -140,7 +140,7 @@ sub internal_post_execute {
     my($self, $method) = @_;
     _put_choice_lists($self)
 #TODO: Generalize this
-	if $self->in_error || $method eq 'execute_empty';
+        if $self->in_error || $method eq 'execute_empty';
     return shift->SUPER::internal_post_execute(@_);
 }
 
@@ -149,12 +149,12 @@ sub _put_choice_lists {
     $self->reset_cursor;
     my($lm) = $self->get_list_model;
     while ($self->next_row) {
-	$self->internal_put_field(
-	    choice_list => $lm->get('TupleSlotType.choices')->is_specified
-		? $self->new_other('TupleSlotChoiceSelectList')
-		    ->load_all_from_slot_type($lm)
-		: undef,
-	);
+        $self->internal_put_field(
+            choice_list => $lm->get('TupleSlotType.choices')->is_specified
+                ? $self->new_other('TupleSlotChoiceSelectList')
+                    ->load_all_from_slot_type($lm)
+                : undef,
+        );
     }
     return;
 }
@@ -162,7 +162,7 @@ sub _put_choice_lists {
 sub _get_subject_prefix {
     my($self) = @_;
     return ($self->req->unsafe_get('Model.Tuple') || $_T)->mail_subject(
-	$self->req('Model.TupleUseList')->get_model('TupleUse'));
+        $self->req('Model.TupleUseList')->get_model('TupleUse'));
 }
 
 sub _set_subject_if_string_slot {
@@ -170,11 +170,11 @@ sub _set_subject_if_string_slot {
     my($self, $lm, $v) = @_;
     my($fields) = $self->[$_IDI];
     if ($lm->type_class_instance eq Bivio::Type->get_instance('TupleSlot')) {
-	$fields->{subject} = _get_subject_prefix($self)
-	    . ' - ' . $lm->type_class_instance->to_literal(
-		defined($v) || $fields->{is_update} ? $v
-		    : $lm->get('TupleSlotType.default_value'))
-		unless $fields->{subject};
+        $fields->{subject} = _get_subject_prefix($self)
+            . ' - ' . $lm->type_class_instance->to_literal(
+                defined($v) || $fields->{is_update} ? $v
+                    : $lm->get('TupleSlotType.default_value'))
+                unless $fields->{subject};
     }
     return;
 }
@@ -183,9 +183,9 @@ sub _slot_value {
     my($self) = @_;
     my($t) = $self->req->unsafe_get('Model.Tuple');
     return undef
-	unless $t && $t->is_loaded;
+        unless $t && $t->is_loaded;
     my($v) = $t->get(
-	$_TSN->field_name($self->get('TupleSlotDef.tuple_slot_num')));
+        $_TSN->field_name($self->get('TupleSlotDef.tuple_slot_num')));
     return \$v;
 }
 
@@ -193,7 +193,7 @@ sub _validate_subject {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{subject} = _get_subject_prefix($self)
-	unless $fields->{subject};
+        unless $fields->{subject};
 #TODO: Do we need to ensure that long lines don't present a problem to
 # subject in mail header
 #

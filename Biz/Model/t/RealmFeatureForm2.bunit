@@ -4,39 +4,39 @@ Request();
 req()->set_realm_and_user('fourem', 'root');
 my($check) = sub {
     assert_equals(
-	shift,
-	[grep(/^feature_(?:blog|group_admin)$/,
-	    @{ShellUtil_RealmRole()->list_enabled_categories})],
+        shift,
+        [grep(/^feature_(?:blog|group_admin)$/,
+            @{ShellUtil_RealmRole()->list_enabled_categories})],
     );
     return;
 };
 [
     [req()] => [
-	process => [
-	    [{feature_blog => 0}] => not_die(),
-	    inline_case(sub {
-		ShellUtil_RealmRole()->edit_categories('-feature_group_admin');
-		$check->([]);
-		return 1;
-	    }),
-	    [{force_default_values => 1}] => not_die(),
-	    inline_case(sub {
-		$check->([qw(feature_blog feature_group_admin)]);
-		return 1;
-	    }),
-	],
-	ALL_FEATURES_WHICH_ARE_CATEGORIES => [
-	    [] => [[qw(
-		feature_blog
-		feature_calendar
-		feature_dav
-		feature_file
-		feature_group_admin
-		feature_mail
-		feature_motion
-		feature_tuple
-		feature_wiki
-	    )]],
-	],
+        process => [
+            [{feature_blog => 0}] => not_die(),
+            inline_case(sub {
+                ShellUtil_RealmRole()->edit_categories('-feature_group_admin');
+                $check->([]);
+                return 1;
+            }),
+            [{force_default_values => 1}] => not_die(),
+            inline_case(sub {
+                $check->([qw(feature_blog feature_group_admin)]);
+                return 1;
+            }),
+        ],
+        ALL_FEATURES_WHICH_ARE_CATEGORIES => [
+            [] => [[qw(
+                feature_blog
+                feature_calendar
+                feature_dav
+                feature_file
+                feature_group_admin
+                feature_mail
+                feature_motion
+                feature_tuple
+                feature_wiki
+            )]],
+        ],
     ],
 ];

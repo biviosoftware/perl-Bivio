@@ -24,7 +24,7 @@ sub initialize {
     my($self) = @_;
     $self->get('widget')->put(parent => $self)->initialize;
     $self->get('alt_widget')->put(parent => $self)->initialize
-	    if $self->unsafe_get('alt_widget');
+            if $self->unsafe_get('alt_widget');
     return;
 }
 
@@ -59,9 +59,9 @@ EOF
 </script>";
 
     if ($self->unsafe_get('alt_widget')) {
-	$$buffer .= "\n<noscript>\n";
-	$self->get('alt_widget')->render($source, $buffer);
-	$$buffer .= "\n</noscript>\n";
+        $$buffer .= "\n<noscript>\n";
+        $self->get('alt_widget')->render($source, $buffer);
+        $$buffer .= "\n</noscript>\n";
     }
     return;
 }

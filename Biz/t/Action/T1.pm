@@ -52,7 +52,7 @@ Always returns false.
 sub execute {
     my($proto, $req) = @_;
     $proto->new({
-	loaded => 1,
+        loaded => 1,
     })->put_on_request($req);
     return 0;
 }

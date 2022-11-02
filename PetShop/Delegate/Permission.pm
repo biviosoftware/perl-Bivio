@@ -44,9 +44,9 @@ Returns the application permissions.
 sub get_delegate_info {
     my($proto) = @_;
     return [
-	@{$proto->SUPER::get_delegate_info},
-	TEST_PERMISSION1 => [51],
-	TEST_PERMISSION2 => [52],
+        @{$proto->SUPER::get_delegate_info},
+        TEST_PERMISSION1 => [51],
+        TEST_PERMISSION2 => [52],
     ];
 }
 

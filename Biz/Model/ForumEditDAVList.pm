@@ -18,7 +18,7 @@ sub row_create {
     my($self, $new) = @_;
     $_FM->execute_create($self->get_request);
     $self->new_other('ForumForm')->process({
-	%$new,
+        %$new,
     });
     return;
 }
@@ -29,7 +29,7 @@ sub row_update {
     $_FM->execute_edit($req);
     $req->set_realm($new->{'Forum.forum_id'});
     $self->new_other('ForumForm')->process({
-	%$new,
+        %$new,
     });
     return;
 }

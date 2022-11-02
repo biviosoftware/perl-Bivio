@@ -4,26 +4,26 @@ ListModel();
 req()->initialize_fully;
 [
     load_all => [
-	[] => [map(
-	    +{'RealmUser.user_id' => $_},
-	    reverse(@{PrimaryIdArray()->sort_unique([
-		map(
-		    req()->with_realm(
-			$_,
-			sub {
-			    return map(
-				$_->{'RealmUser.user_id'},
-				@{model('RealmUserList')
-				->map_iterate(
-				    undef,
-				    {roles => [Role()->ADMINISTRATOR]},
-				)},
-			    );
-			},
-		    ),
-		    qw(site-admin general),
-	        ),
-	    ])}),
-	)],
+        [] => [map(
+            +{'RealmUser.user_id' => $_},
+            reverse(@{PrimaryIdArray()->sort_unique([
+                map(
+                    req()->with_realm(
+                        $_,
+                        sub {
+                            return map(
+                                $_->{'RealmUser.user_id'},
+                                @{model('RealmUserList')
+                                ->map_iterate(
+                                    undef,
+                                    {roles => [Role()->ADMINISTRATOR]},
+                                )},
+                            );
+                        },
+                    ),
+                    qw(site-admin general),
+                ),
+            ])}),
+        )],
     ],
 ];

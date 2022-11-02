@@ -7,12 +7,12 @@ use Bivio::Base 'Biz.PropertyModel';
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'inventory_t',
-	columns => {
-	    item_id => ['Item.item_id', 'PRIMARY_KEY'],
-	    quantity => ['Integer', 'NOT_NULL'],
-	},
+        version => 1,
+        table_name => 'inventory_t',
+        columns => {
+            item_id => ['Item.item_id', 'PRIMARY_KEY'],
+            quantity => ['Integer', 'NOT_NULL'],
+        },
     };
 }
 

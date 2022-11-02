@@ -12,8 +12,8 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         auth_id => ['Forum.parent_realm_id'],
         other => [
-	    [qw(RealmOwner.realm_id Forum.forum_id)],
-	],
+            [qw(RealmOwner.realm_id Forum.forum_id)],
+        ],
     });
 }
 

@@ -17,29 +17,29 @@ sub from_shape {
     my($seen) = {};
     my($done);
     return $proto->new(
-	'('
-	    . join(',', map(
-		join(' ', map($_DD->from_literal_or_die($_), $_->X, $_->Y)),
-		$shape->points,
-	    ))
-	    . ')',
-	undef,
-	$proto->SRID_WGS84,
+        '('
+            . join(',', map(
+                join(' ', map($_DD->from_literal_or_die($_), $_->X, $_->Y)),
+                $shape->points,
+            ))
+            . ')',
+        undef,
+        $proto->SRID_WGS84,
     );
 }
 
 sub validate_wkt {
     my($proto, $value) = @_;
     return $_TE->SYNTAX_ERROR
-	unless $value =~ /^\((.+)\)$/s;
+        unless $value =~ /^\((.+)\)$/s;
     my($i) = 0;
     foreach my $pair (split(/\s*,\s*/, $1)) {
-	foreach my $d (split(' ', $pair, 2)) {
-	    my(undef, $e) = $_GN->from_literal($d);
-	    return $e
-		if $e;
-	}
-	$i++;
+        foreach my $d (split(' ', $pair, 2)) {
+            my(undef, $e) = $_GN->from_literal($d);
+            return $e
+                if $e;
+        }
+        $i++;
     }
 #TODO: Assumes syntax of WKT is a closed polygon.  Only can
 #      really come from the database;

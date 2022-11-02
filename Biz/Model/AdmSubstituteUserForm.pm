@@ -26,7 +26,7 @@ sub execute_empty {
     my($self) = @_;
     my($req) = $self->get_request;
     my($this) = ($req->unsafe_get('query') || {})
-	->{$_LQ->to_char('this')};
+        ->{$_LQ->to_char('this')};
     return unless $this;
     $self->internal_put_field(login => $this);
     $req->put(query => {});
@@ -39,9 +39,9 @@ sub execute_ok {
     my($self) = @_;
     # user is validated in internal_pre_execute
     return $self->new_other('UserLoginForm')->substitute_user(
-	$self->get('realm_owner'),
-	$self->req,
-	$self,
+        $self->get('realm_owner'),
+        $self->req,
+        $self,
     );
 }
 
@@ -50,24 +50,24 @@ sub internal_initialize {
     # B<FOR INTERNAL USE ONLY>
     my($self) = @_;
     return $self->merge_initialize_info(
-	$self->SUPER::internal_initialize, {
-	    version => 1,
-	    require_validate => 1,
-	    visible => [
-		{
-		    name => 'login',
-		    type => 'LoginName',
-		    constraint => 'NOT_NULL',
-		},
-	    ],
-	    other => [
-		{
-		    name => 'realm_owner',
-		    type => 'Model.RealmOwner',
-		    constraint => 'NONE',
-		},
-	    ],
-	},
+        $self->SUPER::internal_initialize, {
+            version => 1,
+            require_validate => 1,
+            visible => [
+                {
+                    name => 'login',
+                    type => 'LoginName',
+                    constraint => 'NOT_NULL',
+                },
+            ],
+            other => [
+                {
+                    name => 'realm_owner',
+                    type => 'Model.RealmOwner',
+                    constraint => 'NONE',
+                },
+            ],
+        },
     );
 }
 
@@ -80,22 +80,22 @@ sub su_logout {
     my($su) = $req->get('super_user_id');
     $req->delete('super_user_id');
     $req->get('cookie')->delete($self->SUPER_USER_FIELD)
-	if $req->unsafe_get('cookie');
+        if $req->unsafe_get('cookie');
     my($realm) = $self->new_other('RealmOwner');
     $self->new_other('UserLoginForm')->process({
-	realm_owner => $realm->unauth_load({realm_id => $su})
-	    ? $realm : undef,
+        realm_owner => $realm->unauth_load({realm_id => $su})
+            ? $realm : undef,
     });
     _trace($realm) if $_TRACE;
     return $realm->is_loaded && $req->unsafe_get('task')
-	? $req->get('task')->unsafe_get_attr_as_id('su_task') || $_DEFAULT_TASK
-	: 0;
+        ? $req->get('task')->unsafe_get_attr_as_id('su_task') || $_DEFAULT_TASK
+        : 0;
 }
 
 sub validate {
     my($self) = @_;
     $self->internal_put_field(realm_owner =>
-	$self->get_instance('UserLoginForm')->validate_login($self)
+        $self->get_instance('UserLoginForm')->validate_login($self)
     ) unless $self->in_error;
     return;
 }

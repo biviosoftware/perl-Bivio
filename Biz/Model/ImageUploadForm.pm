@@ -9,25 +9,25 @@ b_use('IO.ClassLoaderAUTOLOAD');
 sub execute_ok {
     my($self) = @_;
     $self->validate
-	unless $self->unsafe_get('image_magick');
+        unless $self->unsafe_get('image_magick');
     return if $self->in_error || !$self->unsafe_get('image_file');
     my($im) = $self->get('image_magick');
     return _e($self, FILE_NAME => 'internal_image_path failed')
-	unless my $path = $self->internal_image_path;
+        unless my $path = $self->internal_image_path;
 #TODO: CentOS    $im->Set(magick => ($path =~ /\.(w+)$/)[0]);
     $self->internal_image_scale($im);
     my($blob) = $im->ImageToBlob;
     my($rf) = $self->new_other('RealmFile');
     my($p) = $self->internal_image_properties($path);
     my($m) = $self->get_request->get('Type.FormMode')->eq_edit
-	&& $rf->unsafe_load({path => $p->{path}})
-	? 'update_with_content'
-	: 'create_with_content';
+        && $rf->unsafe_load({path => $p->{path}})
+        ? 'update_with_content'
+        : 'create_with_content';
     $self->internal_catch_field_constraint_error(
-	image_file => sub {
-	    $rf->$m($p, \$blob);
-	    return;
-	},
+        image_file => sub {
+            $rf->$m($p, \$blob);
+            return;
+        },
     );
     return;
 }
@@ -46,9 +46,9 @@ sub internal_image_max_width {
 
 sub internal_image_path {
     return Type_ImageFileName()->to_absolute(
-	Type_ImageFileName()->get_clean_tail(
-	    shift->get('image_file')->{filename},
-	),
+        Type_ImageFileName()->get_clean_tail(
+            shift->get('image_file')->{filename},
+        ),
     );
 }
 
@@ -62,16 +62,16 @@ sub internal_image_scale {
     my($w) = $im->Get('width');
     my($h) = $im->Get('height');
     return unless $w > $self->internal_image_max_width
-	|| $h > $self->internal_image_max_height;
+        || $h > $self->internal_image_max_height;
     my($ratio) = $w/$self->internal_image_max_width;
     $ratio = $h/$self->internal_image_max_height
-	if $ratio < $h/$self->internal_image_max_height;
+        if $ratio < $h/$self->internal_image_max_height;
     $im->Resize(
-	width => int($w / $ratio),
-	height => int($h / $ratio),
-	filter => 'Cubic',
+        width => int($w / $ratio),
+        height => int($h / $ratio),
+        filter => 'Cubic',
 #TODO: do we change the depth?
-#TODOD: CentOS:	depth => 8,
+#TODOD: CentOS:        depth => 8,
     );
     return;
 }
@@ -80,19 +80,19 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	visible => [
-	    {
-		name => 'image_file',
-		type => 'FileField',
-		constraint => 'NONE',
-	    },
-	],
-	other => [
-	    {
-		name => 'image_magick',
-		type => 'BLOB',
-	    },
-	],
+        visible => [
+            {
+                name => 'image_file',
+                type => 'FileField',
+                constraint => 'NONE',
+            },
+        ],
+        other => [
+            {
+                name => 'image_magick',
+                type => 'BLOB',
+            },
+        ],
     });
 }
 
@@ -102,18 +102,18 @@ sub validate {
     return if $self->get_field_error('image_file');
     my($f) = $self->unsafe_get('image_file');
     unless ($f) {
-	return $self->internal_put_error(image => 'NULL')
-	    if $self->internal_image_is_required;
-	return;
+        return $self->internal_put_error(image => 'NULL')
+            if $self->internal_image_is_required;
+        return;
     }
     my($im) = b_use('Image::Magick')->new;
     my($e);
     return _e($self, 'SYNTAX_ERROR', $e || 'unknown format')
-	if $e = $im->BlobToImage(${$f->{content}}) or !$im->Get('magick');
+        if $e = $im->BlobToImage(${$f->{content}}) or !$im->Get('magick');
     my($w) = $im->Get('width');
     my($h) = $im->Get('height');
     return _e($self, TOO_MANY => scalar(@$im), ' images in file')
-	if @$im > 1;
+        if @$im > 1;
     $self->internal_put_field(image_magick => $im);
     return;
 }

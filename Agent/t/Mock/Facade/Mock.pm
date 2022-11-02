@@ -12,29 +12,29 @@ my($_SELF) = __PACKAGE__->new({
     local_file_prefix => 'petshop',
     Color => [],
     Constant => [
-	[site_realm_id => 1],
-	[require_secure => 0],
+        [site_realm_id => 1],
+        [require_secure => 0],
     ],
     Font => {
-	initialize => sub {
-	    my($fc) = @_;
-	    $fc->group(default => [
-		'family=verdana,arial,helvetica,sans-serif',
-		'size=small',
-	    ]);
-	    return;
-	}
+        initialize => sub {
+            my($fc) = @_;
+            $fc->group(default => [
+                'family=verdana,arial,helvetica,sans-serif',
+                'size=small',
+            ]);
+            return;
+        }
     },
     Text => {
-	initialize => sub {
+        initialize => sub {
             my($t) = @_;
             return;
         },
     },
     Task => {
-	initialize => sub {
-	    my($t) = @_;
-	    $t->group(SITE_ROOT => ['/*']);
+        initialize => sub {
+            my($t) = @_;
+            $t->group(SITE_ROOT => ['/*']);
             foreach my $n (qw(
                 CLUB_HOME
                 MY_CLUB_SITE
@@ -48,15 +48,15 @@ my($_SELF) = __PACKAGE__->new({
                 USER_HOME
                 LOGIN
             )) {
-		$t->group($n => undef);
-	    }
-	    return;
-	},
+                $t->group($n => undef);
+            }
+            return;
+        },
     },
     HTML => {
-	initialize => sub {
-	    return;
-	},
+        initialize => sub {
+            return;
+        },
     },
 });
 

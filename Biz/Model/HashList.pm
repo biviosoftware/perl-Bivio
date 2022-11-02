@@ -10,11 +10,11 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	$self->field_decl(
-	    primary_key => ['key'],
-	    other => ['value'],
-	    'String',
-	),
+        $self->field_decl(
+            primary_key => ['key'],
+            other => ['value'],
+            'String',
+        ),
     });
 }
 
@@ -22,7 +22,7 @@ sub internal_load_rows {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return [
-	map(+{key => $_, value => $fields->{hash}->{$_}}, @{$fields->{keys}}),
+        map(+{key => $_, value => $fields->{hash}->{$_}}, @{$fields->{keys}}),
     ];
 }
 

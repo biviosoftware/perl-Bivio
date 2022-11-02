@@ -79,19 +79,19 @@ sub to_utc {
 sub vevents_from_ics {
     my($proto, $ics) = @_;
     return [
-	sort({
-	    my($r) = $_D->compare($a->{dtstart}, $b->{dtstart});
-	    if ($r) {
-		return $r;
-	    }
-	    if ($a->{rrule} && $b->{rrule}) {
-		return $a->{rrule} cmp $b->{rrule}
-	    }
-	    if ($a->{rrule} || $b->{rrule}) {
-		return $a->{rrule} ? 1 : -1;
-	    }
-	    return 0;
-	} @{$proto->from_ics($ics)->get('vevents')}),
+        sort({
+            my($r) = $_D->compare($a->{dtstart}, $b->{dtstart});
+            if ($r) {
+                return $r;
+            }
+            if ($a->{rrule} && $b->{rrule}) {
+                return $a->{rrule} cmp $b->{rrule}
+            }
+            if ($a->{rrule} || $b->{rrule}) {
+                return $a->{rrule} ? 1 : -1;
+            }
+            return 0;
+        } @{$proto->from_ics($ics)->get('vevents')}),
     ];
 }
 
@@ -100,7 +100,7 @@ sub _assert {
     my($self, $expect) = @_;
     my($r) = _next_row($self);
     _die($self, ': element does not match: ', $expect)
-	unless "@{[map(lc($_), @$r)]}" eq "@$expect";
+        unless "@{[map(lc($_), @$r)]}" eq "@$expect";
     return;
 }
 
@@ -108,7 +108,7 @@ sub _do_until {
     my($self, $key, $op) = @_;
     my($rows) = $self->get('rows');
     until ($rows->[0]->[0] eq $key) {
-	last unless $op->(@{_next_row($self)});
+        last unless $op->(@{_next_row($self)});
     }
     return;
 }
@@ -124,91 +124,91 @@ sub _event {
     _do_until($self, 'end', sub {
         my($k, $v) = @_;
         return 1
-	    if $k =~ m{^(?:
-		|attendee
-		|categories
-		|confirmed
-		|created
-		|dtstamp
-		|last-modified
-		|organizer
-		|priority
-		|transp
+            if $k =~ m{^(?:
+                |attendee
+                |categories
+                |confirmed
+                |created
+                |dtstamp
+                |last-modified
+                |organizer
+                |priority
+                |transp
                 |x-alt-[^;]*
                 |x-entourage[^;]*
-	        |x-lic-error
+                |x-lic-error
                 |x-microsoft-[^;]*
                 |x-ms-[^;]*
-		|contact
-		|exrule
-		|x-cost
-		|x-google-[^;]*
-	    )(?:$|;)}x;
-	if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date(?:-time)?)?(;tzid=(.*))?$/) {
-	    my($w) = $1;
-	    my($is_date) = ($2 && $2 =~ /date$/) || $v =~ /\b\d{8}\b/ ? 1 : 0;
-	    my($tz) = $3 ? $4 : $self->unsafe_get('time_zone_id');
-	    my($is_gmt) = $v =~ /Z$/;
-	    my($t, $e) = ($is_date ? $_D : $_DT)->from_literal(
-		$v . ($is_date || $is_gmt ? '' : 'Z'));
-	    _die($self, $v, ": failed to parse $k: ", $e)
-		unless $t;
-	    $ve->{time_zone} = $_TZ->unsafe_from_any($tz)
+                |contact
+                |exrule
+                |x-cost
+                |x-google-[^;]*
+            )(?:$|;)}x;
+        if ($k =~ /^(dtstart|dtend|recurrence-id|exdate)(;value=date(?:-time)?)?(;tzid=(.*))?$/) {
+            my($w) = $1;
+            my($is_date) = ($2 && $2 =~ /date$/) || $v =~ /\b\d{8}\b/ ? 1 : 0;
+            my($tz) = $3 ? $4 : $self->unsafe_get('time_zone_id');
+            my($is_gmt) = $v =~ /Z$/;
+            my($t, $e) = ($is_date ? $_D : $_DT)->from_literal(
+                $v . ($is_date || $is_gmt ? '' : 'Z'));
+            _die($self, $v, ": failed to parse $k: ", $e)
+                unless $t;
+            $ve->{time_zone} = $_TZ->unsafe_from_any($tz)
                 || $self->guess_time_zone($t);
-	    $k = $w;
-	    $v = $is_date || $is_gmt
-		? $t
-		: $self->to_utc($t);
-	}
-	elsif ($k eq 'tzid') {
-	    $ve->{time_zone} = $_TZ->from_any($v);
+            $k = $w;
+            $v = $is_date || $is_gmt
+                ? $t
+                : $self->to_utc($t);
+        }
+        elsif ($k eq 'tzid') {
+            $ve->{time_zone} = $_TZ->from_any($v);
 
-	    foreach my $key (qw(dtstart dtend)) {
-		_die($self, 'tzid found, but missing field: ', $key)
-		    unless $ve->{$key};
-		next if $_DT->is_date($ve->{$key});
-		$ve->{$key} = $ve->{time_zone}->date_time_to_utc($ve->{$key});
-	    }
-	}
-	elsif ($k eq 'begin') {
-	    _die($self, 'unknown event subentry')
-		unless _ignore_subentry($self, $v) eq 'valarm';
-	    return 1;
-	}
-	elsif ($k =~ /^(url)(;value=uri)?$/) {
-	    $k = $1;
-	}
-	elsif ($k =~ /^(summary)(;language=(.*))?$/) {
-	    $k = $1;
-	}
-	elsif ($k =~ /^(description)(;language=(.*))?$/) {
-	    $k = $1;
-	}
-	elsif ($k !~ m{^(?:
-	    location
+            foreach my $key (qw(dtstart dtend)) {
+                _die($self, 'tzid found, but missing field: ', $key)
+                    unless $ve->{$key};
+                next if $_DT->is_date($ve->{$key});
+                $ve->{$key} = $ve->{time_zone}->date_time_to_utc($ve->{$key});
+            }
+        }
+        elsif ($k eq 'begin') {
+            _die($self, 'unknown event subentry')
+                unless _ignore_subentry($self, $v) eq 'valarm';
+            return 1;
+        }
+        elsif ($k =~ /^(url)(;value=uri)?$/) {
+            $k = $1;
+        }
+        elsif ($k =~ /^(summary)(;language=(.*))?$/) {
+            $k = $1;
+        }
+        elsif ($k =~ /^(description)(;language=(.*))?$/) {
+            $k = $1;
+        }
+        elsif ($k !~ m{^(?:
+            location
             |method
-	    |class
-	    |url
-	    |uid
-	    |rrule
-	    |recurrence-id
-	    |sequence
-	    |status
-	    )$}x) {
-	    _die($self, $k, ': unsupported attribute');
-	    # DOES NOT RETURN
-	}
+            |class
+            |url
+            |uid
+            |rrule
+            |recurrence-id
+            |sequence
+            |status
+            )$}x) {
+            _die($self, $k, ': unsupported attribute');
+            # DOES NOT RETURN
+        }
 
-	if ($k eq 'exdate') {
-	    push(@{$ve->{$k} ||= []}, $v);
-	}
-	elsif (exists($ve->{$k})) {
-	    _die($self, $k, ': attribute may not be repeated');
-	}
-	else {
-	    $ve->{$k} = $v;
-	}
-	return 1;
+        if ($k eq 'exdate') {
+            push(@{$ve->{$k} ||= []}, $v);
+        }
+        elsif (exists($ve->{$k})) {
+            _die($self, $k, ': attribute may not be repeated');
+        }
+        else {
+            $ve->{$k} = $v;
+        }
+        return 1;
     });
     push(@{$self->get('vevents')}, $ve);
     return;
@@ -219,39 +219,39 @@ sub _header {
     _assert($self, [begin => 'vcalendar']);
     my($end_vcalendar) = 0;
     _do_until($self, 'begin', sub {
-	my($k, $v) = @_;
+        my($k, $v) = @_;
 
-	if ($k eq 'end' && lc($v) eq 'vcalendar') {
-	    $end_vcalendar = 1;
-	    return 0;
-	}
+        if ($k eq 'end' && lc($v) eq 'vcalendar') {
+            $end_vcalendar = 1;
+            return 0;
+        }
         if ($k eq 'method') {
             $self->put($k => $v);
             return 1;
         }
-	_die($self, 'unknown element')
-	    unless $k =~ /^(version|prodid|calscale|(x-wr-.*)|(x-ms-.*)|(x-from-.*)|(x-published-.*))$/;
-	return 1;
+        _die($self, 'unknown element')
+            unless $k =~ /^(version|prodid|calscale|(x-wr-.*)|(x-ms-.*)|(x-from-.*)|(x-published-.*))$/;
+        return 1;
     });
     return $self
-	if $end_vcalendar;
+        if $end_vcalendar;
     _do_until($self, 'end', sub {
-	my($k, $v) = @_;
-	_die($self, 'expecting begin but found: ', $k)
-	    unless $k eq 'begin';
-	my($type) = lc($v);
+        my($k, $v) = @_;
+        _die($self, 'expecting begin but found: ', $k)
+            unless $k eq 'begin';
+        my($type) = lc($v);
 
-	if ($type eq 'vtimezone') {
-	    $self->put(time_zone_periods => _timezone($self));
-	}
-	elsif ($type eq 'vevent') {
-	    _event($self);
-	}
-	else {
-	    _die($self, 'unknown begin: ', $v);
-	}
-	_assert($self, [end => $type]);
-	return 1;
+        if ($type eq 'vtimezone') {
+            $self->put(time_zone_periods => _timezone($self));
+        }
+        elsif ($type eq 'vevent') {
+            _event($self);
+        }
+        else {
+            _die($self, 'unknown begin: ', $v);
+        }
+        _assert($self, [end => $type]);
+        return 1;
     });
     _assert($self, [end => 'vcalendar']);
     return $self;
@@ -297,18 +297,18 @@ sub _split {
     (my $ics = ${$self->get('ics')}) =~ s/\r?\n( |\t)//g;
     $ics =~ s/(\r?\n)+/\n/g;
     return _header($self->put(rows => [
-	map({
-	    chomp($_);
-	    $_ =~ s/\s+$//;
-	    my($k, $v) = split(/\s*:\s*/, $_, 2);
-	    $v = defined($v) ? $v : '';
-	    $v =~ s/\\n/\n/ig;
-	    $v =~ s/\\([,;\\:"])/$1/g;
-	    # quotes are sometimes double escaped?
-	    $v =~ s/\\(["])/$1/g;
-	    [lc($k), ${$_S->canonicalize_charset(
-		$_HTML->unescape(${$_S->canonicalize_charset(\$v)}))}];
-	} split(/\r?\n/, $ics)),
+        map({
+            chomp($_);
+            $_ =~ s/\s+$//;
+            my($k, $v) = split(/\s*:\s*/, $_, 2);
+            $v = defined($v) ? $v : '';
+            $v =~ s/\\n/\n/ig;
+            $v =~ s/\\([,;\\:"])/$1/g;
+            # quotes are sometimes double escaped?
+            $v =~ s/\\(["])/$1/g;
+            [lc($k), ${$_S->canonicalize_charset(
+                $_HTML->unescape(${$_S->canonicalize_charset(\$v)}))}];
+        } split(/\r?\n/, $ics)),
     ]));
 }
 
@@ -319,12 +319,12 @@ sub _timezone {
         my($k, $v) = @_;
         _die($self, ['repeated timezone'])
             if $self->unsafe_get('time_zone_periods');
-	$self->put(time_zone_id => $v)
-	    if $k eq 'tzid';
-	return 1
-	    unless $k eq 'begin';
+        $self->put(time_zone_id => $v)
+            if $k eq 'tzid';
+        return 1
+            unless $k eq 'begin';
         $res->{$v} = _timezone_period($self, $v);
-	return 1;
+        return 1;
     });
     return $res;
 }

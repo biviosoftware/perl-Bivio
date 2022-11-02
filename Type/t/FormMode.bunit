@@ -4,13 +4,13 @@ Type();
 req()->set_realm_and_user(qw(demo demo));
 [
     setup_by_list_this => [
-	map({
-	    my($mode) = $_;
-	    sub {
-		req()->put(query => {this => req('auth_id')})
-		    if $mode eq 'EDIT';
-		return [model('UserRealmList'), 'RealmOwner'];
-	    } => $mode,
-	} qw(CREATE EDIT)),
+        map({
+            my($mode) = $_;
+            sub {
+                req()->put(query => {this => req('auth_id')})
+                    if $mode eq 'EDIT';
+                return [model('UserRealmList'), 'RealmOwner'];
+            } => $mode,
+        } qw(CREATE EDIT)),
     ],
 ];

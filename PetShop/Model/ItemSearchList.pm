@@ -17,9 +17,9 @@ sub internal_initialize {
     my($parent_info) = $self->SUPER::internal_initialize;
     delete($parent_info->{parent_id});
     return $self->merge_initialize_info($parent_info, {
-	other => [
-	    'Product.category_id',
-	],
+        other => [
+            'Product.category_id',
+        ],
     });
 }
 
@@ -30,15 +30,15 @@ sub internal_pre_load {
 
     # search for any word across name/description/category
     foreach my $word (split(' ', $query->get('search') || '')) {
-	$where .= ' AND '
-	    if $where;
-	$where .= '(' . join(" || ' ' || ", map({"LOWER($_)"} qw(
+        $where .= ' AND '
+            if $where;
+        $where .= '(' . join(" || ' ' || ", map({"LOWER($_)"} qw(
             item_t.attr1
             product_t.name
             product_t.description
             product_t.category_id
         ))) . ') LIKE ?';
-	push(@$params, lc("%$word%"));
+        push(@$params, lc("%$word%"));
     }
     return $where && "($where)";
 }

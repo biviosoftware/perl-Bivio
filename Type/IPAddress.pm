@@ -13,7 +13,7 @@ sub REGEX {
 sub from_domain {
     my($proto, $host) = @_;
     return $proto->from_inet(
-	(gethostbyname($host))[4] || b_die($host, ': gethostbyname: ', "$!"));
+        (gethostbyname($host))[4] || b_die($host, ': gethostbyname: ', "$!"));
 }
 
 sub from_inet {

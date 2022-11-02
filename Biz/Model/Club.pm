@@ -12,16 +12,16 @@ sub create_realm {
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'club_t',
-	columns => {
+        version => 1,
+        table_name => 'club_t',
+        columns => {
             club_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
-	    start_date => ['Date', 'NONE'],
+            start_date => ['Date', 'NONE'],
         },
-	other => [
+        other => [
             [qw(club_id RealmOwner.realm_id)],
-	],
-	auth_id => 'club_id',
+        ],
+        auth_id => 'club_id',
     };
 }
 

@@ -13,30 +13,30 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     return shift->put_unless_exists(
-	class => 'dropdown',
-	tag => 'li',
-	value => Join([
-	    A(Join([
-		$self->get('label'),
-		$self->unsafe_get('no_arrow')
-		    ? ()
-		    : (' ', B('', 'caret')),
-	    ]), {
-		class => $self->unsafe_get('toggle_class') || 'dropdown-toggle',
-		HREF => '#',
-		'DATA-TOGGLE' => 'dropdown',
-	    }),
-	    $self->get_nested('widget')->put(
-		tag => 'ul',
-		class => 'dropdown-menu',
-	    ),
-	]),
+        class => 'dropdown',
+        tag => 'li',
+        value => Join([
+            A(Join([
+                $self->get('label'),
+                $self->unsafe_get('no_arrow')
+                    ? ()
+                    : (' ', B('', 'caret')),
+            ]), {
+                class => $self->unsafe_get('toggle_class') || 'dropdown-toggle',
+                HREF => '#',
+                'DATA-TOGGLE' => 'dropdown',
+            }),
+            $self->get_nested('widget')->put(
+                tag => 'ul',
+                class => 'dropdown-menu',
+            ),
+        ]),
     )->SUPER::initialize(@_);
 }
 
 sub new {
     return shift->SUPER::new(@_)->put_unless_exists(
-	task_menu_no_wrap => 1,
+        task_menu_no_wrap => 1,
     );
 }
 

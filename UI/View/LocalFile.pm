@@ -22,10 +22,10 @@ sub unsafe_new {
     my($proto, $name, $facade) = @_;
     my($file) = $facade->get_local_file_name(VIEW => $name) . $proto->SUFFIX;
     return -r $file && -f _
-	? $proto->new({
-	    view_file_name => $file,
-	    view_name => _clean_name($proto, $name),
-	}) : undef;
+        ? $proto->new({
+            view_file_name => $file,
+            view_name => _clean_name($proto, $name),
+        }) : undef;
 }
 
 sub _clean_name {

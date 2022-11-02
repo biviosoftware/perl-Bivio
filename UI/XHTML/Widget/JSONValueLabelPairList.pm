@@ -14,17 +14,17 @@ sub control_on_render {
     my($data) = [];
     $list->reset_cursor;
     while($list->next_row) {
-	my($v) = '';
-	$self->get('value_widget')->render($list, \$v);
-	my($l) = '';
-	$self->get('label_widget')->render($list, \$l);
-	push(
-	    @$data,
-	    {
-		value => $v,
-		label => $l,
-	    },
-	);
+        my($v) = '';
+        $self->get('value_widget')->render($list, \$v);
+        my($l) = '';
+        $self->get('label_widget')->render($list, \$l);
+        push(
+            @$data,
+            {
+                value => $v,
+                label => $l,
+            },
+        );
     }
     $$buffer = ${$_JSON->to_text($data)};
     return;
@@ -33,9 +33,9 @@ sub control_on_render {
 sub initialize {
     my($self, $source) = @_;
     $self->put(
-	source_name => $_M->get_instance($self->get('list_class'))->package_name);
+        source_name => $_M->get_instance($self->get('list_class'))->package_name);
     foreach my $w (qw(value_widget label_widget)) {
-	$self->get($w)->initialize_with_parent($self, $source);
+        $self->get($w)->initialize_with_parent($self, $source);
     }
     return shift->SUPER::initialize(@_);
 }

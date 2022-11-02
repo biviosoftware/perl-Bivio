@@ -3,15 +3,15 @@
 Request();
 options({
     create_object => sub {
-	my(undef, $args) = @_;
-	return unauth_model('RealmOwner', {name => $args->[0]});
+        my(undef, $args) = @_;
+        return unauth_model('RealmOwner', {name => $args->[0]});
     },
 });
 [
     otp => [
-	require_otp => 1,
+        require_otp => 1,
     ],
     demo => [
-	require_otp => 0,
+        require_otp => 0,
     ],
 ];

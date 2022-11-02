@@ -8,9 +8,9 @@ use Bivio::Base 'Biz.Action';
 sub execute_next {
     my(undef, $req) = @_;
     return {
-	method => 'server_redirect',
-	task_id => 'next',
-	query => $req->get('query'),
+        method => 'server_redirect',
+        task_id => 'next',
+        query => $req->get('query'),
     };
 }
 

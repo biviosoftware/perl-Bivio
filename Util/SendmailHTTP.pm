@@ -33,19 +33,19 @@ my $_CFG = {
 sub create_http_request {
     my($proto, $client_addr, $recipient, $url, $msg) = @_;
     return HTTP::Request::Common::POST(
-	'http://' . $url,
-	Content_Type => 'form-data',
-	Content => [
-	    v => 2,
-	    client_addr => $client_addr,
-	    recipient => $recipient,
-	    message => [
-		undef, undef,
-		Content => $$msg,
-		'Content-Type' => 'message/rfc822',
-	    ],
-	],
-	Via => $client_addr,
+        'http://' . $url,
+        Content_Type => 'form-data',
+        Content => [
+            v => 2,
+            client_addr => $client_addr,
+            recipient => $recipient,
+            message => [
+                undef, undef,
+                Content => $$msg,
+                'Content-Type' => 'message/rfc822',
+            ],
+        ],
+        Via => $client_addr,
     );
 }
 
@@ -61,42 +61,42 @@ sub main {
     my($proto) = shift;
     my($res, $client_addr, $recipient, $url) = $proto->validate_main_args(@_);
     return $res
-	unless _is_ok($res);
+        unless _is_ok($res);
     return $recipient =~ /^ignore-/is
-	? $res
-	: _map_http_reply(
-	    $proto,
-	    _send_http_request(
-		$proto,
-		$proto->create_http_request(
-		    $client_addr, $recipient, $url, _read_stdin(),
-		),
-	    ),
-	);
+        ? $res
+        : _map_http_reply(
+            $proto,
+            _send_http_request(
+                $proto,
+                $proto->create_http_request(
+                    $client_addr, $recipient, $url, _read_stdin(),
+                ),
+            ),
+        );
 }
 
 sub validate_main_args {
     my($proto, $client_addr, $recipient, $http_server, @local_agent) = @_;
 
     unless ($http_server) {
-	return _fail_with_error(
-	    'EX_TEMPFAIL',
-	    "Error: too few arguments\n",
-	    "Usage: b-sendmail-http client-addr recipient host:port/url local_agent local_agent_args...",
-	);
+        return _fail_with_error(
+            'EX_TEMPFAIL',
+            "Error: too few arguments\n",
+            "Usage: b-sendmail-http client-addr recipient host:port/url local_agent local_agent_args...",
+        );
     }
     my($res, $url) = _parse_url($proto, $http_server, $recipient);
     return $res
-	unless _is_ok($res);
+        unless _is_ok($res);
 
     if (length($recipient) > 255) {
-	return _fail_with_error(
-	    'EX_DATAERR',
-	    'recipient name (len=', length($recipient), ") too long",
-	);
+        return _fail_with_error(
+            'EX_DATAERR',
+            'recipient name (len=', length($recipient), ") too long",
+        );
     }
     if ($local_agent[0] && $local_agent[0] !~ m{\bfalse\b} && _is_local_user($proto, $recipient)) {
-	exec(@local_agent);
+        exec(@local_agent);
     }
     return ($res, $client_addr || '127.0.0.1', $recipient, $url);
 }
@@ -124,33 +124,33 @@ sub _map_http_reply {
 #TODO: save off 500 error messages, return fatal error
     my($reply) = $_MAP_REPLY->{$code};
     return _fail_with_error(
-	'EX_TEMPFAIL',
-	'Unknown server reply code: ', $code,
+        'EX_TEMPFAIL',
+        'Unknown server reply code: ', $code,
     ) unless $reply;
     my($res, $err) = @$reply;
     return $err
-	? _fail_with_error($res, $err)
-	: $_SYSEXIT->{$res};
+        ? _fail_with_error($res, $err)
+        : $_SYSEXIT->{$res};
 }
 
 sub _parse_url {
     my($proto, $http_server, $recipient) = @_;
     my($host, $url) = $http_server =~ m,^(.*?)(/.*)$,;
     unless ($host && $url) {
-	return _fail_with_error(
-	    'EX_CONFIG',
-	    $http_server . " not in host:port/url format",
-	);
+        return _fail_with_error(
+            'EX_CONFIG',
+            $http_server . " not in host:port/url format",
+        );
     }
     unless ($url =~ /\%s/) {
-	return _fail_with_error(
-	    'EX_CONFIG',
-	    'url missing %s: ', $url,
-	);
+        return _fail_with_error(
+            'EX_CONFIG',
+            'url missing %s: ', $url,
+        );
     }
     return (
-	$_SYSEXIT->{EX_OK},
-	$host . sprintf($url, $recipient),
+        $_SYSEXIT->{EX_OK},
+        $host . sprintf($url, $recipient),
     );
 }
 
@@ -159,11 +159,11 @@ sub _read_stdin {
     binmode($file);
     my($offset, $read, $buf) = (0, 0, '');
     $offset += $read
-	while $read = CORE::read($file, $buf, 0x1000, $offset);
+        while $read = CORE::read($file, $buf, 0x1000, $offset);
     defined($read)
-	or die("read stdin: $!");
+        or die("read stdin: $!");
     close($file)
-	or die("close(stdin): $!");
+        or die("close(stdin): $!");
     return \$buf;
 }
 
@@ -176,8 +176,8 @@ sub _send_http_request {
     my($response) = $agent->request($http_req);
     # if response has no headers, it has a status "200 Assumed OK"
     return $response->status_line =~ /assumed ok/i
-	? 500
-	: $response->code;
+        ? 500
+        : $response->code;
 }
 
 1;

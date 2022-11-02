@@ -77,21 +77,21 @@ sub get_widget_value {
 
     my($num, $dec);
     if (($num, $dec) = $amount =~ /^[+-]?(.*)\.(.*)$/) {
-	;
+        ;
     }
     else {
-	$num = $amount;
+        $num = $amount;
         $num =~ s/^[+-]//;
     }
 
     # put ',' in the number
     if (length($num) > 3) {
-	my(@chars) = reverse(split(//, $num));
-	$num = '';
-	for (my($i) = 0; $i < int(@chars); $i++) {
-	    $num = ','.$num unless ($i == 0 || $i % 3);
-	    $num = $chars[$i].$num;
-	}
+        my(@chars) = reverse(split(//, $num));
+        $num = '';
+        for (my($i) = 0; $i < int(@chars); $i++) {
+            $num = ','.$num unless ($i == 0 || $i % 3);
+            $num = $chars[$i].$num;
+        }
     }
 
     my($result) = ($round > 0 && defined($dec)) ? ($num.'.'.$dec) : $num;

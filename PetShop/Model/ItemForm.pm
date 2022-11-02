@@ -14,21 +14,21 @@ sub add_item_to_cart {
     my($cart_item) = $item->new_other('CartItem');
 
     if ($cart_item->unsafe_load({
-	item_id => $item->get('item_id'),
-	cart_id => $cart_id,
+        item_id => $item->get('item_id'),
+        cart_id => $cart_id,
     })) {
-	$cart_item->update({
-	    quantity => 1,
-	});
+        $cart_item->update({
+            quantity => 1,
+        });
     }
     else {
-	# create the new cart item
-	$cart_item->create({
-	    cart_id => $cart_id,
-	    item_id => $item->get('item_id'),
-	    quantity => 1,
-	    unit_price => $item->get('list_price'),
-	});
+        # create the new cart item
+        $cart_item->create({
+            cart_id => $cart_id,
+            item_id => $item->get('item_id'),
+            quantity => 1,
+            unit_price => $item->get('list_price'),
+        });
     }
     return;
 }
@@ -43,7 +43,7 @@ sub execute_ok {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
+        version => 1,
     });
 }
 

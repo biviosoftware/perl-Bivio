@@ -15,7 +15,7 @@ sub parse_tag_start {
     sub PARSE_TAG_START {[[qw(file FileName)]]};
     my($proto, $args, $attrs) = shift->parameters(@_);
     return
-	unless $proto;
+        unless $proto;
     _load($args->{state}, $attrs->{file}, 0);
     return;
 }
@@ -23,7 +23,7 @@ sub parse_tag_start {
 sub pre_parse {
     my($proto, $state) = @_;
     return
-	if $state->{is_inline_text};
+        if $state->{is_inline_text};
     _load($state, 'my', 1);
     return;
 }
@@ -31,15 +31,15 @@ sub pre_parse {
 sub _load {
     my($state, $base, $ignore_not_found) = @_;
     return
-	unless my $rf = $state->{proto}->unsafe_load_wiki_data(
-	    $base . $_SUFFIX,
-	    $state,
-	    $ignore_not_found,
-	);
+        unless my $rf = $state->{proto}->unsafe_load_wiki_data(
+            $base . $_SUFFIX,
+            $state,
+            $ignore_not_found,
+        );
     $state->{proto}->include_content(
-	$rf->get_content,
-	$_CC->new_from_file_line($rf->get('path'), 0),
-	$state,
+        $rf->get_content,
+        $_CC->new_from_file_line($rf->get('path'), 0),
+        $state,
     );
     return;
 }

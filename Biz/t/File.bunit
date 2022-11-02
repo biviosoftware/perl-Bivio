@@ -3,15 +3,15 @@
 Type();
 config({
     'Bivio::Biz::File' => {
-	root => '/root',
+        root => '/root',
     },
 });
 [
     absolute_path => [
-	'a' => '/root/a',
-	'/root/a' => '/root/a',
+        'a' => '/root/a',
+        '/root/a' => '/root/a',
     ],
     unsafe_read => [
-	'not-found' => [undef],
+        'not-found' => [undef],
     ],
 ];

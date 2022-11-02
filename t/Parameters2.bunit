@@ -3,38 +3,38 @@
 Request();
 [
     sub {b_use('Bivio::t::Parameters::T1')} => [
-	s1 => [
-	    1 => [1, undef],
-	    [1, 2] => [1, 2],
-	    [undef] => qr{p1:.*empty},
-	    [] => qr{p1:.*empty},
-	],
-	s2 => [
-	    [undef, 'january'] => [0, [Type_Month()->JANUARY]],
-	    true => qr{p2:.*empty},
-	    ['true', undef] => qr{p2:.*empty},
-	    [qw(true january)] => [1, [Type_Month()->JANUARY]],
-	    [qw(false january february)]
-		=> [0, [Type_Month()->JANUARY, Type_Month()->FEBRUARY]],
-	    [{p2 => ['january']}] => qr{p1:.*empty},
-	    [{p1 => undef, p2 => ['january']}] => [0, [Type_Month()->JANUARY]],
-	    [{p1 => 1, p2 => []}] => qr{p2:.*empty},
-	],
-	s3 => [
-	    [] => [[Type_Month()->MARCH]],
-	    january => [[Type_Month()->JANUARY]],
-	],
-	s4 => [
-	    [] => [[]],
-	    [qw(may june)] => [[Month('MAY'), Month('JUNE')]],
-	],
-	s5 => [
-	    [] => [[Month('MARCH'), Month('JULY')]],
-	    [qw(may june)] => [[Month('MAY'), Month('JUNE')]],
-	],
-	s6 => [
-	    [] => DIE(),
-	    [req()] => 'ok',
-	],
+        s1 => [
+            1 => [1, undef],
+            [1, 2] => [1, 2],
+            [undef] => qr{p1:.*empty},
+            [] => qr{p1:.*empty},
+        ],
+        s2 => [
+            [undef, 'january'] => [0, [Type_Month()->JANUARY]],
+            true => qr{p2:.*empty},
+            ['true', undef] => qr{p2:.*empty},
+            [qw(true january)] => [1, [Type_Month()->JANUARY]],
+            [qw(false january february)]
+                => [0, [Type_Month()->JANUARY, Type_Month()->FEBRUARY]],
+            [{p2 => ['january']}] => qr{p1:.*empty},
+            [{p1 => undef, p2 => ['january']}] => [0, [Type_Month()->JANUARY]],
+            [{p1 => 1, p2 => []}] => qr{p2:.*empty},
+        ],
+        s3 => [
+            [] => [[Type_Month()->MARCH]],
+            january => [[Type_Month()->JANUARY]],
+        ],
+        s4 => [
+            [] => [[]],
+            [qw(may june)] => [[Month('MAY'), Month('JUNE')]],
+        ],
+        s5 => [
+            [] => [[Month('MARCH'), Month('JULY')]],
+            [qw(may june)] => [[Month('MAY'), Month('JUNE')]],
+        ],
+        s6 => [
+            [] => DIE(),
+            [req()] => 'ok',
+        ],
     ],
 ];

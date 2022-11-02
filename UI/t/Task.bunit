@@ -7,72 +7,72 @@ sub _parse_err {
 }
 [
     class() => [
-	{
-	    method => 'format_uri',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		my($args) = shift(@$params);
-		unless (ref($args)) {
-		    my($t) = $args;
-		    $args = shift(@$params);
-		    $args->{task_id} = Bivio::Agent::TaskId->from_name($t);
-		}
-		return [$args, req()];
-	    },
+        {
+            method => 'format_uri',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                my($args) = shift(@$params);
+                unless (ref($args)) {
+                    my($t) = $args;
+                    $args = shift(@$params);
+                    $args->{task_id} = Bivio::Agent::TaskId->from_name($t);
+                }
+                return [$args, req()];
+            },
         } => [
-	    [SITE_ROOT => {}], => '/',
-	    [SITE_ROOT => {path_info => 'abc'}] => '/abc',
-	    [LOGIN => {no_context => 0}] => qr{^/pub/login\?fc=.+},
-	    [LOGIN => {no_context => 1}] => '/pub/login',
-	    [SITE_ROOT => {require_context => 1}] => qr{^/\?fc=.+},
-	    [FORUM_EASY_FORM => {realm => 'abc', query => '', path_info => ''}]
-		=> '/abc/Forms',
-	    [FORUM_EASY_FORM => {realm => 'abc', query => '', path_info => '0'}]
-		=> '/abc/Forms/0',
-	    [{uri => '0'}] => '0',
-	    [{uri => ''}] => '',
-	    [{uri => '#'}] => '#',
-	    [{uri => 'http://a/'}] => 'http://a/',
-	    [{uri => '/foo', seo_uri_prefix => 'hi ho'}] => '/hi-ho-/foo',
-	    [{uri => '/foo', seo_uri_prefix => 'hi ho'}] => '/hi-ho-/foo',
-	    [{uri => '/seo_btest'}] => '/forum-home-/seo_btest',
-	    [{task_id => 'FORUM_WIKI_VIEW', realm => 'seo_btest'}] => '/wiki-home-/seo_btest/bp',
-	],
-	{
-	    method => 'parse_uri',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		Bivio::UI::Facade->setup_request(shift(@$params), req())
-		    if @$params == 2;
-		return [@{$_[1]}, req()];
-	    },
-	    compute_return => sub {
-		my($case, $actual, $expect) = @_;
-		return [
-		    $actual->[0]->get_name,
-		    $actual->[1]->get('type')->get_name,
-		    $actual->[2],
-		    $actual->[3],
-		];
-	    },
-	} => [
-	    '' => [qw(SITE_ROOT GENERAL), '', '/'],
-	    '/' => [qw(SITE_ROOT GENERAL), '', '/'],
-	    '/seo-' => [qw(SITE_ROOT GENERAL), '', '/'],
-	    '/seo-/' => [qw(SITE_ROOT GENERAL), '', '/'],
-	    'index.html' => [qw(SITE_ROOT GENERAL /index.html index.html)],
-	    'foo/?/baz' => _parse_err('foo/?/baz'),
-	    'pub/products' => [qw(PRODUCTS GENERAL), '', 'pub/products'],
-	    'pub///products' => [qw(PRODUCTS GENERAL), '', 'pub///products'],
-	    'pub/products/with_path_info' => _parse_err('pub/products/with_path_info'),
-	    'my-site/account' => [qw(MY_SITE GENERAL /account my-site/account)],
-	    '/demo/account' => [qw(USER_ACCOUNT_EDIT USER),
-				'', '/demo/account'],
-	    '/seo-prefix-/demo/account' => [qw(USER_ACCOUNT_EDIT USER),
-				'', '/seo-prefix-/demo/account'],
-	    '/non_existant/account' => _parse_err('/non_existant/account'),
-	    '/demo/dav/pub/foo.csv' => [qw(USER_DAV USER
-					   /pub/foo.csv /demo/dav/pub/foo.csv)],
-	],
+            [SITE_ROOT => {}], => '/',
+            [SITE_ROOT => {path_info => 'abc'}] => '/abc',
+            [LOGIN => {no_context => 0}] => qr{^/pub/login\?fc=.+},
+            [LOGIN => {no_context => 1}] => '/pub/login',
+            [SITE_ROOT => {require_context => 1}] => qr{^/\?fc=.+},
+            [FORUM_EASY_FORM => {realm => 'abc', query => '', path_info => ''}]
+                => '/abc/Forms',
+            [FORUM_EASY_FORM => {realm => 'abc', query => '', path_info => '0'}]
+                => '/abc/Forms/0',
+            [{uri => '0'}] => '0',
+            [{uri => ''}] => '',
+            [{uri => '#'}] => '#',
+            [{uri => 'http://a/'}] => 'http://a/',
+            [{uri => '/foo', seo_uri_prefix => 'hi ho'}] => '/hi-ho-/foo',
+            [{uri => '/foo', seo_uri_prefix => 'hi ho'}] => '/hi-ho-/foo',
+            [{uri => '/seo_btest'}] => '/forum-home-/seo_btest',
+            [{task_id => 'FORUM_WIKI_VIEW', realm => 'seo_btest'}] => '/wiki-home-/seo_btest/bp',
+        ],
+        {
+            method => 'parse_uri',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                Bivio::UI::Facade->setup_request(shift(@$params), req())
+                    if @$params == 2;
+                return [@{$_[1]}, req()];
+            },
+            compute_return => sub {
+                my($case, $actual, $expect) = @_;
+                return [
+                    $actual->[0]->get_name,
+                    $actual->[1]->get('type')->get_name,
+                    $actual->[2],
+                    $actual->[3],
+                ];
+            },
+        } => [
+            '' => [qw(SITE_ROOT GENERAL), '', '/'],
+            '/' => [qw(SITE_ROOT GENERAL), '', '/'],
+            '/seo-' => [qw(SITE_ROOT GENERAL), '', '/'],
+            '/seo-/' => [qw(SITE_ROOT GENERAL), '', '/'],
+            'index.html' => [qw(SITE_ROOT GENERAL /index.html index.html)],
+            'foo/?/baz' => _parse_err('foo/?/baz'),
+            'pub/products' => [qw(PRODUCTS GENERAL), '', 'pub/products'],
+            'pub///products' => [qw(PRODUCTS GENERAL), '', 'pub///products'],
+            'pub/products/with_path_info' => _parse_err('pub/products/with_path_info'),
+            'my-site/account' => [qw(MY_SITE GENERAL /account my-site/account)],
+            '/demo/account' => [qw(USER_ACCOUNT_EDIT USER),
+                                '', '/demo/account'],
+            '/seo-prefix-/demo/account' => [qw(USER_ACCOUNT_EDIT USER),
+                                '', '/seo-prefix-/demo/account'],
+            '/non_existant/account' => _parse_err('/non_existant/account'),
+            '/demo/dav/pub/foo.csv' => [qw(USER_DAV USER
+                                           /pub/foo.csv /demo/dav/pub/foo.csv)],
+        ],
     ],
 ];

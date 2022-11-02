@@ -19,12 +19,12 @@ my($update_regexp) = sub {
     [qw(-realm xapian_demo audit_realm)] => $update_regexp->('0'),
     [qw(-realm xapian_demo audit_realm 0.5)] => $update_regexp->('0'),
     inline_case(sub {
-	Search_Xapian()->delete_model(
-	    req(),
-	    model('RealmFile', {path_lc => '/xapian/0.txt'})->get_primary_id,
-	);
-	commit();
-	return;
+        Search_Xapian()->delete_model(
+            req(),
+            model('RealmFile', {path_lc => '/xapian/0.txt'})->get_primary_id,
+        );
+        commit();
+        return;
     }),
     [qw(-realm xapian_demo audit_realm)] => $update_regexp->('1'),
     [qw(-realm xapian_demo audit_realm 0.5)] => $update_regexp->('0'),

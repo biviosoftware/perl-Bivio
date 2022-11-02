@@ -5,9 +5,9 @@ require 'RealmFile.PL';
 my($a) = sub {
     my($p, $ro, $oro) = @_;
     return {
-	defined($p) ? (path => "/RealmFile/$p") : (),
-	defined($ro) ? (is_read_only => $ro) : (),
-	defined($oro) ? (override_is_read_only => $oro) : (),
+        defined($p) ? (path => "/RealmFile/$p") : (),
+        defined($ro) ? (is_read_only => $ro) : (),
+        defined($oro) ? (override_is_read_only => $oro) : (),
     };
 };
 my($dt) = 'Bivio::Type::DateTime';
@@ -16,16 +16,16 @@ my($old_mtime) = {modified_date_time => $dt->add_days($dt->now, -1)};
 my($new_mtime) = sub {
     my(undef, $actual) = @_;
     die($actual->[0], ': modified_date_time is wrong')
-	if $dt->diff_seconds($dt->now, $actual->[0]) > 5;
+        if $dt->diff_seconds($dt->now, $actual->[0]) > 5;
     return 1;
 };
 my($user) = sub {
     my($u) = @_;
     return (
-	sub {
-	    req()->set_user($u);
-	    return 1;
-	 } => 1,
+        sub {
+            req()->set_user($u);
+            return 1;
+         } => 1,
     );
 };
 my($auth_uid) = sub {
@@ -36,561 +36,561 @@ my($auth_uid) = sub {
 #Tests: copy from one realm to another, simple file, to dest without parent, to dest with parent, to is_public parent, to is_read_only parent w/o override, with override,  to parent writable but child not writable, w/override
 #Tests: update read only w/o override, w/override
     [req()] => [
-	parse_path => [
-	    '' => '/',
-	    '0' => '/0',
-	    '?' => CORRUPT_QUERY(),
-	],
-	unsafe_load => [
-	    [$a->('/')] => 0,
-	],
+        parse_path => [
+            '' => '/',
+            '0' => '/0',
+            '?' => CORRUPT_QUERY(),
+        ],
+        unsafe_load => [
+            [$a->('/')] => 0,
+        ],
         create_with_content => [
-	    [$a->('f1'), \('f1')] => $commit,
-	],
-	is_empty => 1,
-	unsafe_load => [
-	    [$a->('f1')] => 1,
-	],
-	get_content_length => 2,
-	get_content => [
-	    [] => [\('f1')],
-	],
-	update_with_content => [
-	    [{}, \('f1-update')] => $commit,
-	],
-	get_content => [
-	    [] => [\('f1-update')],
-	],
-	load => [
-	    [$a->('f1')] => not_die(),
-	],
-	get_content => [
-	    [] => [\('f1-update')],
-	],
-	delete => $commit,
-	unsafe_load => [
-	    [$a->('f1')] => 0,
-	],
+            [$a->('f1'), \('f1')] => $commit,
+        ],
+        is_empty => 1,
+        unsafe_load => [
+            [$a->('f1')] => 1,
+        ],
+        get_content_length => 2,
+        get_content => [
+            [] => [\('f1')],
+        ],
+        update_with_content => [
+            [{}, \('f1-update')] => $commit,
+        ],
+        get_content => [
+            [] => [\('f1-update')],
+        ],
+        load => [
+            [$a->('f1')] => not_die(),
+        ],
+        get_content => [
+            [] => [\('f1-update')],
+        ],
+        delete => $commit,
+        unsafe_load => [
+            [$a->('f1')] => 0,
+        ],
         create_with_content => [
-	    [$a->('f1'), \('f1')] => $commit,
-	    [$a->('f2'), \('f2')] => $commit,
-	    [$a->('f2'), \('f2')] => DB_CONSTRAINT(),
-	],
-	unsafe_load => [
-	    [$a->('f1')] => 1,
-	    [$a->('f2')] => 1,
-	    [{path => '/'}] => 1,
-	],
-	create_folder => [
-	    [$a->('d2/d3')] => not_die(),
-	],
-	load => [
-	    [{path => '/'}] => not_die(),
-	],
-	update => [
-	    [$old_mtime] => $commit,
-	],
-	unauth_delete_deep => [
-	    [$a->('/')] => sub {commit(); return [5]},
-	],
-	load => [
-	    [{path => '/'}] => not_die(),
-	],
-	get => [
-	    modified_date_time => $new_mtime,
-	],
-	unsafe_load => [
-	    [$a->('f1')] => 0,
-	    [$a->('f2')] => 0,
-	],
+            [$a->('f1'), \('f1')] => $commit,
+            [$a->('f2'), \('f2')] => $commit,
+            [$a->('f2'), \('f2')] => DB_CONSTRAINT(),
+        ],
+        unsafe_load => [
+            [$a->('f1')] => 1,
+            [$a->('f2')] => 1,
+            [{path => '/'}] => 1,
+        ],
+        create_folder => [
+            [$a->('d2/d3')] => not_die(),
+        ],
+        load => [
+            [{path => '/'}] => not_die(),
+        ],
+        update => [
+            [$old_mtime] => $commit,
+        ],
+        unauth_delete_deep => [
+            [$a->('/')] => sub {commit(); return [5]},
+        ],
+        load => [
+            [{path => '/'}] => not_die(),
+        ],
+        get => [
+            modified_date_time => $new_mtime,
+        ],
+        unsafe_load => [
+            [$a->('f1')] => 0,
+            [$a->('f2')] => 0,
+        ],
         create_with_content => [
-	    [$a->('f1'), \('f1')] => $commit,
-	],
-	get_content_type => 'application/octet-stream',
-	get_handle => sub {
-	    my($case, $actual) = @_;
-	    return $actual->[0]->getline eq 'f1' ? 1 : 0;
-	},
-	create_folder => [
-	    [$a->('d1')] => $commit,
-	],
-	update => [
-	    [$old_mtime] => $commit,
-	],
-	load => [
-	    [$a->('f1')] => not_die(),
-	],
-	update => [
-	    [$a->('new1/f1')] => $commit,
-	],
-	map((
-	    load => [
-		[$a->($_)] => not_die(),
-	    ],
-	    update => [
-		[$old_mtime] => $commit,
-	    ]),
-	    qw(new1 d1),
-	),
-	load => [
-	    [$a->('new1/F1')] => not_die(),
-	],
-	update => [
-	    [{is_public => 1}] => FORBIDDEN(),
-	],
-	map((
-	    load => [
-		[$a->($_)] => not_die(),
-	    ],
-	    get => [
-		modified_date_time => $old_mtime->{modified_date_time},
-	    ]),
-	    qw(new1 d1),
-	),
-	create_with_content => [
-	    [$a->('d1/F1'), \('not-seen')] => $commit,
-	],
-	load => [
-	    [$a->('new1/F1')] => not_die(),
-	],
-	update => [
-	    [$a->('d1/F1')] => DB_CONSTRAINT(),
-	],
-	load => [
-	    [$a->('d1/F1')] => not_die(),
-	],
-	delete => not_die(),
-	create_folder => [
-	    [$a->('top2')] => $commit,
-	],
-	load => [
-	    [$a->('new1')] => not_die(),
-	],
-	update => [
-	    [$a->('top2')] => DB_CONSTRAINT(),
-	],
-	load => [
-	    [$a->('new1/F1')] => not_die(),
-	],
-	update => [
-	    [$a->('d1/F1')] => $commit,
-	],
-	map((
-	    load => [
-		[$a->($_)] => not_die(),
-	    ],
-	    get => [
-		modified_date_time => $new_mtime,
-	    ]),
-	    qw(new1 d1),
-	),
-	load => [
-	    [$a->('d1/f1')] => not_die(),
-	],
-	get => [
-	    path => $a->('d1/F1')->{path},
-	],
-	get_content => [
-	    [] => [\('f1')],
-	],
+            [$a->('f1'), \('f1')] => $commit,
+        ],
+        get_content_type => 'application/octet-stream',
+        get_handle => sub {
+            my($case, $actual) = @_;
+            return $actual->[0]->getline eq 'f1' ? 1 : 0;
+        },
+        create_folder => [
+            [$a->('d1')] => $commit,
+        ],
+        update => [
+            [$old_mtime] => $commit,
+        ],
+        load => [
+            [$a->('f1')] => not_die(),
+        ],
+        update => [
+            [$a->('new1/f1')] => $commit,
+        ],
+        map((
+            load => [
+                [$a->($_)] => not_die(),
+            ],
+            update => [
+                [$old_mtime] => $commit,
+            ]),
+            qw(new1 d1),
+        ),
+        load => [
+            [$a->('new1/F1')] => not_die(),
+        ],
+        update => [
+            [{is_public => 1}] => FORBIDDEN(),
+        ],
+        map((
+            load => [
+                [$a->($_)] => not_die(),
+            ],
+            get => [
+                modified_date_time => $old_mtime->{modified_date_time},
+            ]),
+            qw(new1 d1),
+        ),
         create_with_content => [
-	    [$a->('d1/d2/f3'), \('f3')] => $commit,
-	],
-	load => [
-	    [$a->('d1/d2/f3')] => not_die(),
-	],
-	get_content => [
-	   [] => [\('f3')],
-	],
-	create_folder => [
-	    [$a->('d1/d2/d3')] => $commit,
-	],
-	is_empty => 1,
-	load => [
-	    [$a->('D1')] => not_die(),
-	],
-	is_empty => 0,
-	update => [
-	    [$a->('/d1-update')] => $commit,
-	],
-	load => [
-	    map(([$a->("/d1-update/$_")] => not_die()), qw(f1 d2 d2/d3 d2/f3), ''),
-	],
-	unauth_copy_deep => [
-	    [$a->('/d1-copy')] => $commit,
-	],
-	load => [
-	    [$a->('/d1-copy')] => not_die(),
-	],
-	load => [
-	    map(([$a->("/d1-copy/$_")] => not_die()), '', qw(f1 d2 d2/d3 d2/f3)),
-	],
-	get_content => [
-	    [] => [\('f3')],
-	],
-	unauth_copy_deep => [
-	    [$a->('f3-copy')] => $commit,
-	],
-	load => [
-	    [$a->('f3-copy')] => not_die(),
-	],
-	get_content => [
-	    [] => [\('f3')],
-	],
-	unauth_copy_deep => [
-	    [$a->('f3-copy')] => $commit,
-	],
+            [$a->('d1/F1'), \('not-seen')] => $commit,
+        ],
+        load => [
+            [$a->('new1/F1')] => not_die(),
+        ],
+        update => [
+            [$a->('d1/F1')] => DB_CONSTRAINT(),
+        ],
+        load => [
+            [$a->('d1/F1')] => not_die(),
+        ],
+        delete => not_die(),
+        create_folder => [
+            [$a->('top2')] => $commit,
+        ],
+        load => [
+            [$a->('new1')] => not_die(),
+        ],
+        update => [
+            [$a->('top2')] => DB_CONSTRAINT(),
+        ],
+        load => [
+            [$a->('new1/F1')] => not_die(),
+        ],
+        update => [
+            [$a->('d1/F1')] => $commit,
+        ],
+        map((
+            load => [
+                [$a->($_)] => not_die(),
+            ],
+            get => [
+                modified_date_time => $new_mtime,
+            ]),
+            qw(new1 d1),
+        ),
+        load => [
+            [$a->('d1/f1')] => not_die(),
+        ],
+        get => [
+            path => $a->('d1/F1')->{path},
+        ],
+        get_content => [
+            [] => [\('f1')],
+        ],
+        create_with_content => [
+            [$a->('d1/d2/f3'), \('f3')] => $commit,
+        ],
+        load => [
+            [$a->('d1/d2/f3')] => not_die(),
+        ],
+        get_content => [
+           [] => [\('f3')],
+        ],
+        create_folder => [
+            [$a->('d1/d2/d3')] => $commit,
+        ],
+        is_empty => 1,
+        load => [
+            [$a->('D1')] => not_die(),
+        ],
+        is_empty => 0,
+        update => [
+            [$a->('/d1-update')] => $commit,
+        ],
+        load => [
+            map(([$a->("/d1-update/$_")] => not_die()), qw(f1 d2 d2/d3 d2/f3), ''),
+        ],
+        unauth_copy_deep => [
+            [$a->('/d1-copy')] => $commit,
+        ],
+        load => [
+            [$a->('/d1-copy')] => not_die(),
+        ],
+        load => [
+            map(([$a->("/d1-copy/$_")] => not_die()), '', qw(f1 d2 d2/d3 d2/f3)),
+        ],
+        get_content => [
+            [] => [\('f3')],
+        ],
+        unauth_copy_deep => [
+            [$a->('f3-copy')] => $commit,
+        ],
+        load => [
+            [$a->('f3-copy')] => not_die(),
+        ],
+        get_content => [
+            [] => [\('f3')],
+        ],
+        unauth_copy_deep => [
+            [$a->('f3-copy')] => $commit,
+        ],
 #TODO: Without explicit load of new copy, unauth_delete_deep actually deletes the
 # versioned copy
-	load => [
-	    [$a->('f3-copy')] => not_die(),
-	],
-	unauth_delete_deep => $commit,
-	load => [
-	    [$a->('f3-copy')] => MODEL_NOT_FOUND(),
-	],
-	load => [
-	    [$a->('d1-copy')] => not_die(),
-	],
-	unauth_delete_deep => $commit,
-	load => [
-	    map(([$a->("/d1-copy/$_")] => MODEL_NOT_FOUND()),
-		'', qw(f1 d2 d2/d3 d2/f3)),
-	],
-	# Read-only tests
-	load => [
-	    [{path => '/'}] => not_die(),
-	],
-	update => [
-	    [$old_mtime] => $commit,
-	],
-	create_folder => [
-	    [$a->('ro1', 1)] => $commit,
-	],
-	get => [
-	    is_public => 0,
-	    is_read_only => 1,
-	],
-	is_public => [
-	    [] => 0,
-	    ['/Public/foo'] => 1,
-	    ['/foo'] => 0,
-	],
-	load => [
-	    [{path => '/'}] => not_die(),
-	],
-	get => [
-	    modified_date_time => $old_mtime->{modified_date_time},
-	],
-	create_with_content => [
-	    [$a->('ro1/f1', undef, 1), \('ro1/f1')] => $commit,
-	],
-	get => [
-	    is_public => 0,
-	    is_read_only => 1,
-	],
-	delete => [
-	    [] => FORBIDDEN(),
-	],
-	create_with_content => [
-	    [$a->('ro1/d2/f3', undef, 1), \('ro1/d2/f3')] => $commit,
-	],
-	get => [
-	    is_public => 0,
-	    is_read_only => 1,
-	],
-	delete => [
-	    [] => FORBIDDEN(),
-	],
-	unauth_delete_deep => [
-	    [$a->('ro1/d2', undef, 1)] => $commit,
-	],
-	load => [
-	    [$a->('ro1/d2/f3')] => MODEL_NOT_FOUND(),
-	    [$a->('ro1')] => not_die(),
-	],
-	unauth_copy_deep => [
-	    [$a->('d1')] => $commit,
-	    [$a->('ro2', 1)] => $commit,
-	],
-	map((
-	    load => [
-		[$a->($_)] => not_die(),
-	    ],
-	    get => [
-		is_read_only => $_ =~ /ro2/ ? 1 : 0,
-		is_public => 0,
-	    ],
-	    $_ =~ /f1/ ? (
-		get_content => [
-		    [] => [\('ro1/f1')],
-		]
-	    ) : ()),
-	    qw(d1 d1/f1 ro2 ro2/f1),
-	),
-	unauth_delete_deep => [
-	    [$a->('d1')] => $commit,
-	    [$a->('ro2/f1')] => FORBIDDEN(),
-	    [$a->('ro2', undef, 1)] => $commit,
-	],
-	load => [
-	    [$a->('ro1')] => not_die(),
-	],
-	update => [
-	    [$a->('ro1-update')] => FORBIDDEN(),
-	    # Recursive update of is_read_only and is_public?
-	    [$a->('ro1-update', 0, 1)] => $commit,
-	],
- 	load => [
- 	    [$a->('ro1-update/f1')] => not_die(),
- 	],
-	delete => FORBIDDEN(),
-	load => [
-	    [$a->('ro1-update')] => not_die(),
-	],
-	unauth_delete_deep => FORBIDDEN(),
-	load => [
-	    [$a->('ro1-update')] => not_die(),
-	],
-	load => [
-	    [$a->('ro1-update/f1')] => not_die(),
-	],
-	get => [
-	    is_read_only => 1,
-	],
-	update => [
- 	    [$a->(undef, 0, 1)] => not_die(),
-	],
-	get => [
-	    is_read_only => 0,
-	],
-	load => [
-	    [$a->('ro1-update')] => not_die(),
-	],
-	unauth_delete_deep => not_die(),
-	# Verifying user_id set correctly with different users
-	$user->('demo'),
+        load => [
+            [$a->('f3-copy')] => not_die(),
+        ],
+        unauth_delete_deep => $commit,
+        load => [
+            [$a->('f3-copy')] => MODEL_NOT_FOUND(),
+        ],
+        load => [
+            [$a->('d1-copy')] => not_die(),
+        ],
+        unauth_delete_deep => $commit,
+        load => [
+            map(([$a->("/d1-copy/$_")] => MODEL_NOT_FOUND()),
+                '', qw(f1 d2 d2/d3 d2/f3)),
+        ],
+        # Read-only tests
+        load => [
+            [{path => '/'}] => not_die(),
+        ],
+        update => [
+            [$old_mtime] => $commit,
+        ],
+        create_folder => [
+            [$a->('ro1', 1)] => $commit,
+        ],
+        get => [
+            is_public => 0,
+            is_read_only => 1,
+        ],
+        is_public => [
+            [] => 0,
+            ['/Public/foo'] => 1,
+            ['/foo'] => 0,
+        ],
+        load => [
+            [{path => '/'}] => not_die(),
+        ],
+        get => [
+            modified_date_time => $old_mtime->{modified_date_time},
+        ],
         create_with_content => [
-	    [$a->('demo1'), \('demo1')] => $commit,
-	],
-	get => [
-	    user_id => $auth_uid,
-	],
-	$user->('root'),
-        update_with_content => [
-	    [$a->('demo1'), \('root1')] => $commit,
-	],
-	get => [
-	    user_id => $auth_uid,
-	],
-	$user->('demo'),
-        update_with_content => [
-	    [$a->('demo1'), \('demo2')] => $commit,
-	],
-	get => [
-	    user_id => $auth_uid,
-	],
-	# Verify that append_content doesn't change file owner
-	$user->('root'),
+            [$a->('ro1/f1', undef, 1), \('ro1/f1')] => $commit,
+        ],
+        get => [
+            is_public => 0,
+            is_read_only => 1,
+        ],
+        delete => [
+            [] => FORBIDDEN(),
+        ],
         create_with_content => [
-	    [$a->('append'), \('a1')] => $commit,
-	],
-	get => [
-	    user_id => $auth_uid,
-	],
-	$user->('demo'),
+            [$a->('ro1/d2/f3', undef, 1), \('ro1/d2/f3')] => $commit,
+        ],
+        get => [
+            is_public => 0,
+            is_read_only => 1,
+        ],
+        delete => [
+            [] => FORBIDDEN(),
+        ],
+        unauth_delete_deep => [
+            [$a->('ro1/d2', undef, 1)] => $commit,
+        ],
+        load => [
+            [$a->('ro1/d2/f3')] => MODEL_NOT_FOUND(),
+            [$a->('ro1')] => not_die(),
+        ],
+        unauth_copy_deep => [
+            [$a->('d1')] => $commit,
+            [$a->('ro2', 1)] => $commit,
+        ],
+        map((
+            load => [
+                [$a->($_)] => not_die(),
+            ],
+            get => [
+                is_read_only => $_ =~ /ro2/ ? 1 : 0,
+                is_public => 0,
+            ],
+            $_ =~ /f1/ ? (
+                get_content => [
+                    [] => [\('ro1/f1')],
+                ]
+            ) : ()),
+            qw(d1 d1/f1 ro2 ro2/f1),
+        ),
+        unauth_delete_deep => [
+            [$a->('d1')] => $commit,
+            [$a->('ro2/f1')] => FORBIDDEN(),
+            [$a->('ro2', undef, 1)] => $commit,
+        ],
+        load => [
+            [$a->('ro1')] => not_die(),
+        ],
+        update => [
+            [$a->('ro1-update')] => FORBIDDEN(),
+            # Recursive update of is_read_only and is_public?
+            [$a->('ro1-update', 0, 1)] => $commit,
+        ],
+         load => [
+             [$a->('ro1-update/f1')] => not_die(),
+         ],
+        delete => FORBIDDEN(),
+        load => [
+            [$a->('ro1-update')] => not_die(),
+        ],
+        unauth_delete_deep => FORBIDDEN(),
+        load => [
+            [$a->('ro1-update')] => not_die(),
+        ],
+        load => [
+            [$a->('ro1-update/f1')] => not_die(),
+        ],
+        get => [
+            is_read_only => 1,
+        ],
+        update => [
+             [$a->(undef, 0, 1)] => not_die(),
+        ],
+        get => [
+            is_read_only => 0,
+        ],
+        load => [
+            [$a->('ro1-update')] => not_die(),
+        ],
+        unauth_delete_deep => not_die(),
+        # Verifying user_id set correctly with different users
+        $user->('demo'),
+        create_with_content => [
+            [$a->('demo1'), \('demo1')] => $commit,
+        ],
+        get => [
+            user_id => $auth_uid,
+        ],
+        $user->('root'),
+        update_with_content => [
+            [$a->('demo1'), \('root1')] => $commit,
+        ],
+        get => [
+            user_id => $auth_uid,
+        ],
+        $user->('demo'),
+        update_with_content => [
+            [$a->('demo1'), \('demo2')] => $commit,
+        ],
+        get => [
+            user_id => $auth_uid,
+        ],
+        # Verify that append_content doesn't change file owner
+        $user->('root'),
+        create_with_content => [
+            [$a->('append'), \('a1')] => $commit,
+        ],
+        get => [
+            user_id => $auth_uid,
+        ],
+        $user->('demo'),
         append_content => [
-	    [\('a2')] => $commit,
-	],
-	$user->('root'),
-	get => [
-	    user_id => $auth_uid,
-	],
-	# Verify correct is_public state for public files and folder
-	# mimic how a WebDAV client would generate a random new folder name
-	create_folder => [
-	    [{path => '/Private'}] => not_die(),
-	],
-	get => [
-	    is_public => 0,
-	],
-	update => [
-	    [{path => '/Public'}] => $commit,
-	],
-	load => [
-	    [{path => '/Public'}] => not_die(),
-	],
-	get => [
-	    is_public => 1,
-	],
-	is_public => 1,
-	unauth_delete_deep => not_die(),
-	load => [
-	    [{path => '/Public'}] => MODEL_NOT_FOUND(),
-	],
-	create_with_content => [
-	    [{path => '/public/foo'}, \('foo')] => $commit,
-	],
-	get => [
-	    is_public => 1,
-	],
-	load => [
-	    [{path => '/Public'}] => not_die(),
-	],
-	get => [
-	    is_public => 1,
-	],
-	load => [
-	    [{path => '/'}] => not_die(),
-	],
-	get => [
-	    is_public => 0,
-	],
-	load => [
-	    [{path => '/Public'}] => not_die(),
-	],
-	update => [
-	    [{path => '/Private'}] => $commit,
-	],
-	get => [
-	    is_public => 0,
-	],
-	load => [
-	    [{path => '/Public'}] => MODEL_NOT_FOUND(),
-	    [{path => '/Public/foo'}] => MODEL_NOT_FOUND(),
-	    [{path => '/Private'}] => not_die(),
-	    [{path => '/Private/foo'}] => not_die(),
-	],
-	get => [
-	    is_public => 0,
-	],
-	update => [
-	    [{path => '/foo'}] => $commit,
-	],
-	get => [
-	    is_public => 0,
-	],
-	create_folder => [
-	    [{path => '/Public'}] => not_die(),
-	],
-	get => [
-	    is_public => 1,
-	],
-	load => [
-	    [{path => '/foo'}] => not_die(),
-	],
-	get => [
-	    is_public => 0,
-	],
-	update => [
-	    [{path => '/Public/foo'}] => $commit,
-	],
-	get => [
-	    is_public => 1,
-	],
-	create_folder => [
-	    [{path => '/PublicCrack'}] => not_die(),
-	],
-	get => [
-	    is_public => 0,
-	],
-	create_with_content => [
-	    [{path => '/public2/foo'}, \('foo')] => $commit,
-	],
-	get => [
-	    is_public => 0,
-	],
-	load => [
-	    [{path => '/public2'}] => not_die(),
-	],
-	get => [
-	    is_public => 0,
-	],
-	# Verify correct is_public state for mail files and folder
-	create_folder => [
-	    [{path => '/untitled folder'}] => not_die(),
-	],
-	get => [
-	    is_read_only => 0,
-	],
-	update => [
-	    [{path => '/Mail'}] => $commit,
-	],
-	get => [
-	    is_read_only => 1,
-	],
-	create_with_content => [
-	    [{
-		path => '/mail/foo',
-		override_is_read_only => 1,
-	    }, \('foo')] => $commit,
-	],
-	get => [
-	    is_read_only => 1,
-	],
-	load => [
-	    [{path => '/Mail'}] => not_die(),
-	],
-	get => [
-	    is_read_only => 1,
-	],
-	load => [
-	    [{path => '/'}] => not_die(),
-	],
-	get => [
-	    is_read_only => 0,
-	],
+            [\('a2')] => $commit,
+        ],
+        $user->('root'),
+        get => [
+            user_id => $auth_uid,
+        ],
+        # Verify correct is_public state for public files and folder
+        # mimic how a WebDAV client would generate a random new folder name
+        create_folder => [
+            [{path => '/Private'}] => not_die(),
+        ],
+        get => [
+            is_public => 0,
+        ],
+        update => [
+            [{path => '/Public'}] => $commit,
+        ],
+        load => [
+            [{path => '/Public'}] => not_die(),
+        ],
+        get => [
+            is_public => 1,
+        ],
+        is_public => 1,
+        unauth_delete_deep => not_die(),
+        load => [
+            [{path => '/Public'}] => MODEL_NOT_FOUND(),
+        ],
+        create_with_content => [
+            [{path => '/public/foo'}, \('foo')] => $commit,
+        ],
+        get => [
+            is_public => 1,
+        ],
+        load => [
+            [{path => '/Public'}] => not_die(),
+        ],
+        get => [
+            is_public => 1,
+        ],
+        load => [
+            [{path => '/'}] => not_die(),
+        ],
+        get => [
+            is_public => 0,
+        ],
+        load => [
+            [{path => '/Public'}] => not_die(),
+        ],
+        update => [
+            [{path => '/Private'}] => $commit,
+        ],
+        get => [
+            is_public => 0,
+        ],
+        load => [
+            [{path => '/Public'}] => MODEL_NOT_FOUND(),
+            [{path => '/Public/foo'}] => MODEL_NOT_FOUND(),
+            [{path => '/Private'}] => not_die(),
+            [{path => '/Private/foo'}] => not_die(),
+        ],
+        get => [
+            is_public => 0,
+        ],
+        update => [
+            [{path => '/foo'}] => $commit,
+        ],
+        get => [
+            is_public => 0,
+        ],
+        create_folder => [
+            [{path => '/Public'}] => not_die(),
+        ],
+        get => [
+            is_public => 1,
+        ],
+        load => [
+            [{path => '/foo'}] => not_die(),
+        ],
+        get => [
+            is_public => 0,
+        ],
+        update => [
+            [{path => '/Public/foo'}] => $commit,
+        ],
+        get => [
+            is_public => 1,
+        ],
+        create_folder => [
+            [{path => '/PublicCrack'}] => not_die(),
+        ],
+        get => [
+            is_public => 0,
+        ],
+        create_with_content => [
+            [{path => '/public2/foo'}, \('foo')] => $commit,
+        ],
+        get => [
+            is_public => 0,
+        ],
+        load => [
+            [{path => '/public2'}] => not_die(),
+        ],
+        get => [
+            is_public => 0,
+        ],
+        # Verify correct is_public state for mail files and folder
+        create_folder => [
+            [{path => '/untitled folder'}] => not_die(),
+        ],
+        get => [
+            is_read_only => 0,
+        ],
+        update => [
+            [{path => '/Mail'}] => $commit,
+        ],
+        get => [
+            is_read_only => 1,
+        ],
+        create_with_content => [
+            [{
+                path => '/mail/foo',
+                override_is_read_only => 1,
+            }, \('foo')] => $commit,
+        ],
+        get => [
+            is_read_only => 1,
+        ],
+        load => [
+            [{path => '/Mail'}] => not_die(),
+        ],
+        get => [
+            is_read_only => 1,
+        ],
+        load => [
+            [{path => '/'}] => not_die(),
+        ],
+        get => [
+            is_read_only => 0,
+        ],
     ],
     class() => [
-	delete_all => [
-	    [{path => '/'}] => DIE(),
-	    [{realm_id => req()->get('auth_id')}] => not_die(),
-	],
-	# Don't commit, since we don't know what other files need to
-	# be there.
-	sub {
-	    Bivio::Agent::Task->rollback(req());
-	    return 1;
-	} => 1,
-	internal_unique_load_values => [
-	    [{path => '/', realm_id => 1}] => sub {shift->get('params')},
-	    [{path_lc => '/', realm_id => 1}] => sub {shift->get('params')},
-	    [{path => '/'}] => [],
-	    [{realm_id => 1}] => [],
-	    [{path_lc => '/'}] => [],
-	],
+        delete_all => [
+            [{path => '/'}] => DIE(),
+            [{realm_id => req()->get('auth_id')}] => not_die(),
+        ],
+        # Don't commit, since we don't know what other files need to
+        # be there.
+        sub {
+            Bivio::Agent::Task->rollback(req());
+            return 1;
+        } => 1,
+        internal_unique_load_values => [
+            [{path => '/', realm_id => 1}] => sub {shift->get('params')},
+            [{path_lc => '/', realm_id => 1}] => sub {shift->get('params')},
+            [{path => '/'}] => [],
+            [{realm_id => 1}] => [],
+            [{path_lc => '/'}] => [],
+        ],
     ],
     [req()] => [
-	create_or_update_with_content => [
-	    [$a->('iulv'), \('iulv')] => not_die(),
-	    [$a->('iulv'), \('iulv2')] => not_die(),
-	],
-	get_content => 'iulv2',
+        create_or_update_with_content => [
+            [$a->('iulv'), \('iulv')] => not_die(),
+            [$a->('iulv'), \('iulv2')] => not_die(),
+        ],
+        get_content => 'iulv2',
     ],
     [req()] => [
-	create_folder => [
-	    [$a->('empty')] => $commit,
-	    [$a->('empty/empty')] => $commit,
-	    [$a->('non_empty')] => $commit,
-	    [$a->('non_empty/non_empty')] => $commit,
-	],
-	create_with_content => [
-	    [$a->('non_empty/non_empty/file1'), \('file1')] => $commit,
-	],
-	load => [
-	    [$a->('empty')] => not_die(),
-	    [$a->('empty/empty')] => not_die(),
-	    [$a->('non_empty')] => not_die(),
-	    [$a->('non_empty/non_empty')] => not_die(),
-	    [$a->('non_empty/non_empty/file1')] => not_die(),
-	],
-	delete_empty_folders => $commit,
-	load => [
-	    [$a->('empty')] => MODEL_NOT_FOUND(),
-	    [$a->('empty/empty')] => MODEL_NOT_FOUND(),
-	    [$a->('non_empty')] => not_die(),
-	    [$a->('non_empty/non_empty')] => not_die(),
-	    [$a->('non_empty/non_empty/file1')] => not_die(),
-	],
+        create_folder => [
+            [$a->('empty')] => $commit,
+            [$a->('empty/empty')] => $commit,
+            [$a->('non_empty')] => $commit,
+            [$a->('non_empty/non_empty')] => $commit,
+        ],
+        create_with_content => [
+            [$a->('non_empty/non_empty/file1'), \('file1')] => $commit,
+        ],
+        load => [
+            [$a->('empty')] => not_die(),
+            [$a->('empty/empty')] => not_die(),
+            [$a->('non_empty')] => not_die(),
+            [$a->('non_empty/non_empty')] => not_die(),
+            [$a->('non_empty/non_empty/file1')] => not_die(),
+        ],
+        delete_empty_folders => $commit,
+        load => [
+            [$a->('empty')] => MODEL_NOT_FOUND(),
+            [$a->('empty/empty')] => MODEL_NOT_FOUND(),
+            [$a->('non_empty')] => not_die(),
+            [$a->('non_empty/non_empty')] => not_die(),
+            [$a->('non_empty/non_empty/file1')] => not_die(),
+        ],
     ],
 ];

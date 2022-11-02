@@ -3,10 +3,10 @@
 ShellUtil();
 mock_methods({
     'IO.File->map_lines' => [
-	['/etc/httpd/conf/uris.txt' => ['HTTPConf2/uris.txt']],
+        ['/etc/httpd/conf/uris.txt' => ['HTTPConf2/uris.txt']],
     ],
     'IO.File->do_lines' => [
-	['/etc/httpd/conf/app-names.txt' => ['HTTPConf2/app-names.txt']],
+        ['/etc/httpd/conf/app-names.txt' => ['HTTPConf2/app-names.txt']],
     ],
 });
 mkdir('HTTPConf');

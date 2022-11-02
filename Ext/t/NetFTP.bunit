@@ -3,17 +3,17 @@
 Request('initialize_fully');
 [
     class() => [
-	bivio_get => [
-	    [{}] => DIE(),
-	    map((
-		[{
-		    host => 'ftp.ripe.net',
-		    req => req(),
-		    cwd => '/fyi',
-		    file => 'fyi1.txt',
-		    Passive => 1,
-		}] => qr{March 1990}i,
-	    ), 0 .. 1),
-	],
+        bivio_get => [
+            [{}] => DIE(),
+            map((
+                [{
+                    host => 'ftp.ripe.net',
+                    req => req(),
+                    cwd => '/fyi',
+                    file => 'fyi1.txt',
+                    Passive => 1,
+                }] => qr{March 1990}i,
+            ), 0 .. 1),
+        ],
     ],
 ];

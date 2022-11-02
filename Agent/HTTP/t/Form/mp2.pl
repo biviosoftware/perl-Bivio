@@ -28,7 +28,7 @@ Content-Disposition: form-data; name="droppedfiles"
 --xYzZY--
 EOF
     expect => {
-	_b_form_model_content_type => 'multipart/form-data',
+        _b_form_model_content_type => 'multipart/form-data',
         mode => 'add',
         currentpath => 'Public/',
         newfile => [

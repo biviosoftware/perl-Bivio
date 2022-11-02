@@ -210,15 +210,15 @@ sub as_string {
     my($self) = @_;
     # Shows file name for I<self>.
     return 'View.'
-	. $self->simple_package_name
-	. (ref($self) ? '[' . ($self->unsafe_get('view_name') || '?') . ']'
-	       : '');
+        . $self->simple_package_name
+        . (ref($self) ? '[' . ($self->unsafe_get('view_name') || '?') . ']'
+               : '');
 }
 
 sub call_main {
     my($proto, $view_name, $req) = _view_name_args(@_);
     b_die('req: missing argument')
-	unless $req;
+        unless $req;
     # Return the result of calling execute on the widget rendered by view_main
     my($result);
     my($self) = _get_instance($proto, $view_name, $req);
@@ -226,27 +226,27 @@ sub call_main {
         unless $self->get('view_is_executable');
     _trace($self) if $_TRACE;
     my($die) = do {
-	# Used by the view values
-	local($_CURRENT) = $self;
-	$req->put(__PACKAGE__, $self);
-	Bivio::Die->catch(sub {
-	    $self->pre_call_main($req);
-	    _pre_execute($self, $req);
-	    $result = $self->ancestral_get('view_main')->execute($req);
-	    $self->post_call_main($result, $req);
-	    return;
-	});
+        # Used by the view values
+        local($_CURRENT) = $self;
+        $req->put(__PACKAGE__, $self);
+        Bivio::Die->catch(sub {
+            $self->pre_call_main($req);
+            _pre_execute($self, $req);
+            $result = $self->ancestral_get('view_main')->execute($req);
+            $self->post_call_main($result, $req);
+            return;
+        });
     };
     if ($_CURRENT) {
-	$req->put(__PACKAGE__, $_CURRENT);
+        $req->put(__PACKAGE__, $_CURRENT);
     }
     else {
-	$req->delete(__PACKAGE__);
+        $req->delete(__PACKAGE__);
     }
     if ($die) {
-	push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
-	$die->throw;
-	# DOES NOT RETURN
+        push(@{$die->get('attrs')->{view_stack} ||= []}, $self);
+        $die->throw;
+        # DOES NOT RETURN
     }
     return $result;
 }
@@ -255,9 +255,9 @@ sub compile_die {
     my($view_name, @msg) = @_;
     # Dies with appropriate params.
     Bivio::Die->throw('DIE', {
-	message => Bivio::IO::Alert->format_args(@msg),
-	entity => $view_name,
-	program_error => 1,
+        message => Bivio::IO::Alert->format_args(@msg),
+        entity => $view_name,
+        program_error => 1,
     });
     # DOES NOT RETURN
 }
@@ -313,7 +313,7 @@ sub render {
         if $o;
     $proto->call_main($view_name, $req);
     return $reply->delete_output
-	|| Bivio::Die->die($view_name, ': no output was rendered');
+        || Bivio::Die->die($view_name, ': no output was rendered');
 }
 
 sub unsafe_get_current {
@@ -327,13 +327,13 @@ sub _clear_children {
     return if $seen->{$object}++;
     $object->internal_clear_read_only->delete(qw(parent view_parent));
     foreach my $v (values(%{$object->get_shallow_copy})) {
-	next unless ref($v);
-	foreach my $o (
-	    ref($v) eq 'ARRAY' ? @$v : ref($v) eq 'HASH' ? values(%$v) : $v,
-	) {
-	    _clear_children($o, $seen)
-		if $object->is_blesser_of($o, 'Bivio::Collection::Attributes');
-	}
+        next unless ref($v);
+        foreach my $o (
+            ref($v) eq 'ARRAY' ? @$v : ref($v) eq 'HASH' ? values(%$v) : $v,
+        ) {
+            _clear_children($o, $seen)
+                if $object->is_blesser_of($o, 'Bivio::Collection::Attributes');
+        }
     }
     return;
 }
@@ -341,13 +341,13 @@ sub _clear_children {
 sub _destroy {
     my($self, $die) = @_;
     push(@{$die->get('attrs')->{view_stack} ||= []}, $self)
-	if $die;
+        if $die;
     if (my $req = $_R->get_current) {
-	$req->delete(__PACKAGE__);
+        $req->delete(__PACKAGE__);
     }
     _clear_children($self, {});
     $die->throw
-	if $die;
+        if $die;
     return;
 }
 
@@ -357,53 +357,53 @@ sub _get_instance {
     # be undef in which case $_CURRENT_FACADE is used.
     my($name_arg) = $name;
     if ($name =~ /^(\w+)->(.+)/) {
-	$name = $name_arg = $2;
-	$proto = $proto->use("View.$1");
+        $name = $name_arg = $2;
+        $proto = $proto->use("View.$1");
     }
     elsif ((ref($proto) || $proto) eq __PACKAGE__) {
-	$proto = $proto->use(View => ref($name) ? 'Inline' : 'LocalFile');
+        $proto = $proto->use(View => ref($name) ? 'Inline' : 'LocalFile');
     }
     $proto->compile_die($name_arg, ": view_name may not contain '.' or '..'")
-	if $name =~ m!(^|/)\.\.?(/|$)!;
+        if $name =~ m!(^|/)\.\.?(/|$)!;
     my($facade) = $req_or_facade
-	? Bivio::UI::Facade->get_from_request_or_self($req_or_facade)
-	: $_CURRENT_FACADE;
+        ? Bivio::UI::Facade->get_from_request_or_self($req_or_facade)
+        : $_CURRENT_FACADE;
     Bivio::Die->throw('NOT_FOUND', {
-	message => 'view not found',
-	entity => $name_arg,
-	class => $proto,
-	facade => $facade,
+        message => 'view not found',
+        entity => $name_arg,
+        class => $proto,
+        facade => $facade,
     }) unless my $self = ($proto->unsafe_new($name_arg, $facade))
-	|| !$proto->isa('Bivio::UI::View::LocalFile')
-	&& $proto->use('View.LocalFile')->unsafe_new($name_arg, $facade);
+        || !$proto->isa('Bivio::UI::View::LocalFile')
+        && $proto->use('View.LocalFile')->unsafe_new($name_arg, $facade);
     my($unique) = join('->', ref($self), $self->absolute_path);
     if (my $cache = $_VS->view_cache_unsafe_get($unique, $facade)) {
-	$proto->compile_die($name_arg, ': called recursively')
-	    unless ref($cache);
-	_trace($unique, ': cache hit=', $cache) if $_TRACE;
-	return $cache;
+        $proto->compile_die($name_arg, ': called recursively')
+            unless ref($cache);
+        _trace($unique, ': cache hit=', $cache) if $_TRACE;
+        return $cache;
     }
     $self->put_unless_exists(
-	view_name => $name_arg,
-	view_cache_name => $unique,
+        view_name => $name_arg,
+        view_cache_name => $unique,
     );
     my($die) = do {
-	local($_CURRENT) = -1;
-	$_VS->view_cache_put($unique, $_CURRENT, $facade);
-	local($_CURRENT_FACADE) = $facade;
-	b_use('UI.ViewLanguage')->eval($self);
+        local($_CURRENT) = -1;
+        $_VS->view_cache_put($unique, $_CURRENT, $facade);
+        local($_CURRENT_FACADE) = $facade;
+        b_use('UI.ViewLanguage')->eval($self);
     };
     $_VS->view_cache_delete($unique, $facade);
     _destroy($self, $die)
-	if $die;
+        if $die;
     # Don't store if $unique contains a stringified reference
     return $self
-	if $unique =~ /\(0x\w+\)/i
-	|| !$facade->get('want_local_file_cache');
+        if $unique =~ /\(0x\w+\)/i
+        || !$facade->get('want_local_file_cache');
     _trace($unique, ': cached as ', $self) if $_TRACE;
     $_VS->view_cache_put($unique, $self, $facade);
     return $self->internal_clear_read_only
-	->put(view_is_cached => 1)->set_read_only;
+        ->put(view_is_cached => 1)->set_read_only;
     return;
 }
 
@@ -420,8 +420,8 @@ sub _pre_execute {
 sub _view_name_args {
     my($proto, $class, $view_name, $req) = @_;
     return (
-	$proto,
-	@_ <= 3 ? ($class, $view_name) : ("${class}->$view_name", $req),
+        $proto,
+        @_ <= 3 ? ($class, $view_name) : ("${class}->$view_name", $req),
     );
 }
 

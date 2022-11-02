@@ -3,9 +3,9 @@
 Request();
 config({
     class() => {
-	buckets => [
-	    [qr{^User-.+}, 1, 2],
-	],
+        buckets => [
+            [qr{^User-.+}, 1, 2],
+        ],
     },
 });
 # multiple users same task
@@ -17,56 +17,56 @@ config({
 # apache read request timeout for multiple slow connections
 options({
     compute_params => sub {
-	my($case, $params) = @_;
+        my($case, $params) = @_;
 #set cookie - user and no user
-	req('reply')->delete_output;
-	req()->initialize_fully(
-	    $params->[0],
-	    {
-		class() . '.queue' => undef,
-		client_addr => $params->[2],
-	    },
-	);
-	UserLoginForm({
-	    validate_called => 1,
-	    realm_owner => $params->[1]
-		&& unauth_model('RealmOwner', {name => $params->[1]}),
-	});
-	req('r')->header_in('user-agent' => $params->[3]);
-	return [req('task'), req()];
+        req('reply')->delete_output;
+        req()->initialize_fully(
+            $params->[0],
+            {
+                class() . '.queue' => undef,
+                client_addr => $params->[2],
+            },
+        );
+        UserLoginForm({
+            validate_called => 1,
+            realm_owner => $params->[1]
+                && unauth_model('RealmOwner', {name => $params->[1]}),
+        });
+        req('r')->header_in('user-agent' => $params->[3]);
+        return [req('task'), req()];
     },
     compute_return => sub {
-	my(undef, $actual) = @_;
-	req()->call_process_cleanup;
-	return $actual;
+        my(undef, $actual) = @_;
+        req()->call_process_cleanup;
+        return $actual;
     },
 });
 my($inc_time) = sub {
     return inline_case(
-	sub {
-	    DateTime()->set_test_now(
-		DateTime()->add_seconds(
-		    DateTime()->now,
-		    1,
-		),
-	    );
-	    return;
-	},
+        sub {
+            DateTime()->set_test_now(
+                DateTime()->add_seconds(
+                    DateTime()->now,
+                    1,
+                ),
+            );
+            return;
+        },
     );
 };
 [
     class() => [
-	handle_pre_execute_task => [
-	    $inc_time->(),
-	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => [],
-	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
-	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
-	    $inc_time->(),
-	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
-	    $inc_time->(),
-	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => [],
-	    $inc_time->(),
-	    ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
-	],
+        handle_pre_execute_task => [
+            $inc_time->(),
+            ['LOGIN', undef, '1.2.3.4', 'ua1'] => [],
+            ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
+            ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
+            $inc_time->(),
+            ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
+            $inc_time->(),
+            ['LOGIN', undef, '1.2.3.4', 'ua1'] => [],
+            $inc_time->(),
+            ['LOGIN', undef, '1.2.3.4', 'ua1'] => 1,
+        ],
     ],
 ];

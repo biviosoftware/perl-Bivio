@@ -33,19 +33,19 @@ sub internal_initialize {
         version => 1,
         table_name => 'realm_file_lock_t',
         columns => {
-	    realm_file_lock_id => ['PrimaryId', 'PRIMARY_KEY'],
+            realm_file_lock_id => ['PrimaryId', 'PRIMARY_KEY'],
             realm_file_id => ['RealmFile.realm_file_id', 'NOT_NULL'],
             realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
-	    # Don't cascade when User.user_id is deleted
-	    user_id =>  ['PrimaryId', 'NOT_NULL'],
+            # Don't cascade when User.user_id is deleted
+            user_id =>  ['PrimaryId', 'NOT_NULL'],
             modified_date_time => ['DateTime', 'NOT_NULL'],
-	    comment => ['Text', 'NONE'],
+            comment => ['Text', 'NONE'],
         },
-	other => [
-	    [qw(realm_file_id RealmFile.realm_file_id)],
-	    [qw(realm_id RealmOwner.realm_id)],
+        other => [
+            [qw(realm_file_id RealmFile.realm_file_id)],
+            [qw(realm_id RealmOwner.realm_id)],
             [qw(user_id User.user_id)],
-	],
+        ],
         auth_id => 'realm_id',
     });
 }
@@ -53,11 +53,11 @@ sub internal_initialize {
 sub is_locked {
     my($self) = @_;
     return 0
-	unless $self->if_enabled;
+        unless $self->if_enabled;
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
     return $proto->boolean(
-	$model->get($model_prefix . 'modified_date_time')
-	&& !defined($model->get($model_prefix . 'comment')),
+        $model->get($model_prefix . 'modified_date_time')
+        && !defined($model->get($model_prefix . 'comment')),
     );
 }
 

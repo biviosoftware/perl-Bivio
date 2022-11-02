@@ -3,15 +3,15 @@
 Type();
 [
     {
-	method => 'replace_in_file',
-	check_return => sub {
-	    return [read_file(
-		(shift->get('params')->[0] =~ /(.+)\.in/)[0] . '.out')];
-	},
+        method => 'replace_in_file',
+        check_return => sub {
+            return [read_file(
+                (shift->get('params')->[0] =~ /(.+)\.in/)[0] . '.out')];
+        },
     } => [
-	['Template/1.in', {a1 => 'A', '' => sub {'<' . shift(@_) . '>'}}] => 1,
-	['Template/2.in', {}] => qr{not found},
-	['Template/2.in', {a => undef}] => qr{undefined},
-	['Template/2.in', {a => {}}] => qr{reference},
+        ['Template/1.in', {a1 => 'A', '' => sub {'<' . shift(@_) . '>'}}] => 1,
+        ['Template/2.in', {}] => qr{not found},
+        ['Template/2.in', {a => undef}] => qr{undefined},
+        ['Template/2.in', {a => {}}] => qr{reference},
     ],
 ];

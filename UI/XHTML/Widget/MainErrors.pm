@@ -19,17 +19,17 @@ sub NEW_ARGS {
 sub handle_page_render_end {
     my($proto, $source, $buffer) = @_;
     return
-	unless my $self = $proto->unsafe_self_from_req($source->req);
+        unless my $self = $proto->unsafe_self_from_req($source->req);
     $$buffer =~ s/\Q$self/_render($self, $source)/es;
     return;
 }
 
 sub initialize {
     return shift->put_unless_exists(
-	tag => 'div',
-	value => '',
-	class => 'b_main_errors',
-	tag_if_empty => 0,
+        tag => 'div',
+        value => '',
+        class => 'b_main_errors',
+        tag_if_empty => 0,
     )->SUPER::initialize(@_);
 }
 

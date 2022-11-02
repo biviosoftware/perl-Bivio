@@ -207,16 +207,16 @@ my($_JSON_ATTR) = 'req_is_json';
 sub CLIENT_REDIRECT_PARAMETERS {
     # Order and names of params passed to client_redirect().
     return [
-	qw(task_id realm query),
-	shift->EXTRA_URI_PARAM_LIST,
-	'path_info',
+        qw(task_id realm query),
+        shift->EXTRA_URI_PARAM_LIST,
+        'path_info',
     ];
 }
 
 sub CLIENT_REDIRECT_PARAMETERS_WITHOUT_TASK_ID {
     return [
-	qw(uri query no_context task_id realm path_info),
-	shift->EXTRA_URI_PARAM_LIST,
+        qw(uri query no_context task_id realm path_info),
+        shift->EXTRA_URI_PARAM_LIST,
     ];
 }
 
@@ -224,18 +224,18 @@ sub EXTRA_URI_PARAM_LIST {
     # Only useful to this class and subclasses.  Use FORMAT_URI_PARAMETERS
     return qw(
         no_context anchor require_context
-	uri form_in_query require_absolute no_form
+        uri form_in_query require_absolute no_form
         carry_query carry_path_info _server_redirect
         seo_uri_prefix facade_uri acknowledgement
-	http_status_code require_secure
+        http_status_code require_secure
     );
 }
 
 sub FORMAT_URI_PARAMETERS {
     # Order and names of params passed to format_uri().
     return [
-	qw(task_id query realm path_info),
-	shift->EXTRA_URI_PARAM_LIST,
+        qw(task_id query realm path_info),
+        shift->EXTRA_URI_PARAM_LIST,
     ];
 }
 
@@ -250,9 +250,9 @@ sub REQUIRE_ABSOLUTE_GLOBAL {
 sub SERVER_REDIRECT_PARAMETERS {
     # Order and names of params passed to server_redirect().
     return [
-	qw(task_id realm query form),
-	shift->EXTRA_URI_PARAM_LIST,
-	'path_info',
+        qw(task_id realm query form),
+        shift->EXTRA_URI_PARAM_LIST,
+        'path_info',
     ];
 }
 
@@ -267,34 +267,34 @@ sub as_string {
     my($r) = $self->unsafe_get('r');
     my($t) = $self->unsafe_get('task_id');
     return $_A->format_args(
-	'Request[',
-	'task=',
-	$t ? $t->get_name : undef,
-	' user=',
-	$self->unsafe_get_nested(qw(auth_user name))
-	    || $r && $r->connection->user,
-	' realm=',
-	($self->unsafe_get_nested(qw(auth_realm owner_name))
-	     || ($self->unsafe_get('auth_realm')
-	     ? $self->get_nested(qw(auth_realm type))->get_name
-	     : undef),
+        'Request[',
+        'task=',
+        $t ? $t->get_name : undef,
+        ' user=',
+        $self->unsafe_get_nested(qw(auth_user name))
+            || $r && $r->connection->user,
+        ' realm=',
+        ($self->unsafe_get_nested(qw(auth_realm owner_name))
+             || ($self->unsafe_get('auth_realm')
+             ? $self->get_nested(qw(auth_realm type))->get_name
+             : undef),
         ),
-	' referer=',
-	$self->unsafe_get('referer'),
-	' uri=',
-	$self->unsafe_get('uri'),
-	' query=',
-	$self->unsafe_get('query'),
-	' form=',
-	_form_for_warning($self),
-	']',
+        ' referer=',
+        $self->unsafe_get('referer'),
+        ' uri=',
+        $self->unsafe_get('uri'),
+        ' query=',
+        $self->unsafe_get('query'),
+        ' form=',
+        _form_for_warning($self),
+        ']',
     );
 }
 
 sub assert_http_method {
     my($self, $method) = @_;
     $self->throw_die(INVALID_OP => {
-	message => "must be $method",
+        message => "must be $method",
     }) unless $self->is_http_method($method);
     return $self;
 }
@@ -315,36 +315,36 @@ sub cache_for_auth_realm {
 sub call_process_cleanup {
     my($self, $die) = @_;
     $self->get_and_delete('process_cleanup')
-	->call_fifo(
-	    'handle_process_cleanup',
-	    [$self, $die],
-	    sub {
-		my($op) = @_;
-		my($die2) = $_D->catch(sub {$op->()});
-		b_warn($die2, ': process_cleanup handler error')
-		    if $die2;
-		my($method) = $die2 ? 'rollback' : 'commit';
-		$_T->$method($self);
-		return;
-	    },
-	);
+        ->call_fifo(
+            'handle_process_cleanup',
+            [$self, $die],
+            sub {
+                my($op) = @_;
+                my($die2) = $_D->catch(sub {$op->()});
+                b_warn($die2, ': process_cleanup handler error')
+                    if $die2;
+                my($method) = $die2 ? 'rollback' : 'commit';
+                $_T->$method($self);
+                return;
+            },
+        );
     _init_process_cleanup($self);
     _perf_time_info($self)
-	if $_TRACE;
+        if $_TRACE;
     return;
 }
 
 sub can_user_execute_task {
     my($self, $task, $realm) = @_;
     $task = $_T->get_by_id($_TI->from_any($task))
-	unless $_T->is_blesser_of($task);
+        unless $_T->is_blesser_of($task);
     my($tid) = $task->get('id');
     return 0
-	if $_V7
-	&& !b_use('FacadeComponent.Task')->is_defined_for_facade($tid->get_name, $self);
+        if $_V7
+        && !b_use('FacadeComponent.Task')->is_defined_for_facade($tid->get_name, $self);
     if ($realm) {
         $realm = b_use('Auth.Realm')->new($realm, $self);
-	$task->assert_realm_type($realm->get('type'));
+        $task->assert_realm_type($realm->get('type'));
     }
     else {
         $realm = $self->internal_get_realm_for_task($tid, 1);
@@ -384,8 +384,8 @@ sub clear_nondurable_state {
     my($ndk) = [grep(!$dk->{$_}, @{$self->get_keys})];
     $self->delete(@$ndk);
     if ($_TRACE) {
-	_trace('retained: ', [sort(keys(%$dk))]);
-	_trace('deleted: ', [sort(@$ndk)]);
+        _trace('retained: ', [sort(keys(%$dk))]);
+        _trace('deleted: ', [sort(@$ndk)]);
     }
     return;
 }
@@ -393,16 +393,16 @@ sub clear_nondurable_state {
 sub client_redirect {
     my($self, $named) = shift->internal_client_redirect_args(@_);
     if ($named->{uri}) {
-	b_die($named->{uri}, ': cannot redirect to an http URI')
-	    if $named->{uri} =~ /^\w+:/;
-	$named->{uri} =~ s/\?(.*)//;
-	$named->{query} = b_use('AgentHTTP.Query')->parse($1);
-	my($task_id, $auth_realm, $path_info)
-	    = b_use('FacadeComponent.Task')->parse_uri($named->{uri}, $self);
-	$named->{task_id} = $task_id;
-	$named->{realm} = $auth_realm->unsafe_get('owner_name');
-	$named->{path_info} = $path_info;
-	delete($named->{uri});
+        b_die($named->{uri}, ': cannot redirect to an http URI')
+            if $named->{uri} =~ /^\w+:/;
+        $named->{uri} =~ s/\?(.*)//;
+        $named->{query} = b_use('AgentHTTP.Query')->parse($1);
+        my($task_id, $auth_realm, $path_info)
+            = b_use('FacadeComponent.Task')->parse_uri($named->{uri}, $self);
+        $named->{task_id} = $task_id;
+        $named->{realm} = $auth_realm->unsafe_get('owner_name');
+        $named->{path_info} = $path_info;
+        delete($named->{uri});
     }
     return $self->server_redirect($named);
 }
@@ -414,10 +414,10 @@ sub clone_return_is_self {
 sub delete_from_query {
     my($self, $key) = @_;
     return undef
-	unless my $q = $self->unsafe_get('query');
+        unless my $q = $self->unsafe_get('query');
     my($res) = delete($q->{$key});
     $self->put(query => undef)
-	unless %$q;
+        unless %$q;
     return $res;
 }
 
@@ -435,7 +435,7 @@ sub format_email {
 #TODO: Properly quote the email name???
     # Will bomb if no auth_realm.
     return $self->get('auth_realm')->format_email
-	unless defined($email);
+        unless defined($email);
     return $_E->format_email($email, undef, undef, undef, $self);
 }
 
@@ -451,16 +451,16 @@ sub format_mailto {
     # I<auth_realm> owner's name.   If I<email> is missing a host, uses
     # I<Text.mail_host>.
     my($res) = 'mailto:'
-	. $_HTML->escape_uri($self->format_email($email));
+        . $_HTML->escape_uri($self->format_email($email));
     if (defined($subject)) {
-	# This is a bug.  Currently Outlook doesn't understand
-	# escaped URIs in mailtos.  We should be escap_uri'ing the subject.
-	# Make sure there are no quotes, percents, or backslashes, though.
-	# Percent must be first
-	$subject =~ s/\%/%22/g;
-	$subject =~ s/\"/%25/g;
-	$subject =~ s/\\/%5C/g;
-	$res .= '?subject=' . $subject;
+        # This is a bug.  Currently Outlook doesn't understand
+        # escaped URIs in mailtos.  We should be escap_uri'ing the subject.
+        # Make sure there are no quotes, percents, or backslashes, though.
+        # Percent must be first
+        $subject =~ s/\%/%22/g;
+        $subject =~ s/\"/%25/g;
+        $subject =~ s/\\/%5C/g;
+        $res .= '?subject=' . $subject;
     }
     return $res;
 }
@@ -468,12 +468,12 @@ sub format_mailto {
 sub format_stateless_uri {
     my($self, $task_id) = @_;
     return $self->format_uri({
-	query => undef,
-	realm => undef,
-	path_info => undef,
-	carry_query => 0,
-	carry_path_info => 0,
-	ref($task_id) eq 'HASH' ? %$task_id : (task_id => $task_id),
+        query => undef,
+        realm => undef,
+        path_info => undef,
+        carry_query => 0,
+        carry_path_info => 0,
+        ref($task_id) eq 'HASH' ? %$task_id : (task_id => $task_id),
     });
 }
 
@@ -503,37 +503,37 @@ sub format_uri {
     my($require_secure) = $named->{require_secure};
     my($want_insecure);
     if (defined($uri = $named->{uri})) {
-	$named->{no_context} = 1
-	    unless defined($named->{no_context})
-	    || defined($named->{require_context});
-	$named->{uri} = $uri;
-	$self->internal_copy_implicit($named);
+        $named->{no_context} = 1
+            unless defined($named->{no_context})
+            || defined($named->{require_context});
+        $named->{uri} = $uri;
+        $self->internal_copy_implicit($named);
     }
     else {
-	$named->{task_id} = $self->unsafe_get('task_id')
-	    unless exists($named->{task_id});
-	$self->internal_copy_implicit($named);
-	$named->{realm} = $self->internal_get_realm_for_task($named->{task_id})
-	    unless defined($named->{realm});
-	$require_secure	||= _need_to_secure_task($self, $named->{task_id});
-	$want_insecure ||= _need_to_make_task_insecure($self, $named->{task_id});
-	$named->{no_form} = 0
-	    if $require_secure || $want_insecure;
+        $named->{task_id} = $self->unsafe_get('task_id')
+            unless exists($named->{task_id});
+        $self->internal_copy_implicit($named);
+        $named->{realm} = $self->internal_get_realm_for_task($named->{task_id})
+            unless defined($named->{realm});
+        $require_secure        ||= _need_to_secure_task($self, $named->{task_id});
+        $want_insecure ||= _need_to_make_task_insecure($self, $named->{task_id});
+        $named->{no_form} = 0
+            if $require_secure || $want_insecure;
     }
     $self->internal_call_handlers(handle_format_uri_named => [$named, $self]);
     $uri = b_use('FacadeComponent.Task')->format_uri($named, $self);
     if (defined($named->{query})) {
-	$named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1
-	    if $named->{form_in_query};
+        $named->{query}->{$self->FORM_IN_QUERY_FLAG} = 1
+            if $named->{form_in_query};
         $named->{query} = b_use('AgentHTTP.Query')->format($named->{query}, $self)
             if ref($named->{query});
         $uri =~ s/\?/?$named->{query}&/ || ($uri .= '?'.$named->{query})
-	    if defined($named->{query}) && length($named->{query});
+            if defined($named->{query}) && length($named->{query});
     }
     $uri .= '#' . $_HTML->escape_query($named->{anchor})
         if defined($named->{anchor}) && length($named->{anchor});
     return _absolute_uri($self, $uri, $require_secure, $want_insecure, $named->{facade_uri})
-	if $require_secure || $want_insecure || $named->{facade_uri} || $named->{require_absolute};
+        if $require_secure || $want_insecure || $named->{facade_uri} || $named->{require_absolute};
     return $uri;
 }
 
@@ -575,7 +575,7 @@ sub get_current_or_new {
     my($current) = $proto->get_current;
     return $current if $current;
     return $proto->internal_new->internal_set_current
-	if $proto eq __PACKAGE__;
+        if $proto eq __PACKAGE__;
     return $proto->new;
 }
 
@@ -596,7 +596,7 @@ sub get_fields {
     $attr = $self->unsafe_get($attr);
     return {} unless ref($attr);
     return {map {
-	($_, $attr->{$_});
+        ($_, $attr->{$_});
     } @$names};
 }
 
@@ -615,14 +615,14 @@ sub get_form_context_from_named {
     # If we don't have an unwind task, we don't return a context
     return $named->{form_context} =
         ($named->{require_context}
-	    || !$named->{no_context}
+            || !$named->{no_context}
             && $_T->get_by_id($named->{task_id})
-		->get('require_context')
-	) && ($fc = exists($named->{form_context}) ? $named->{form_context}
-		  : b_use('Biz.FormModel')->get_context_from_request(
-		      $named, $self)
+                ->get('require_context')
+        ) && ($fc = exists($named->{form_context}) ? $named->{form_context}
+                  : b_use('Biz.FormModel')->get_context_from_request(
+                      $named, $self)
 #THIS MAY BE DUBIOUS
-	) && ($fc->unsafe_get('unwind_task') || '') ne $named->{task_id}
+        ) && ($fc->unsafe_get('unwind_task') || '') ne $named->{task_id}
         ? $fc : undef;
 }
 
@@ -669,25 +669,25 @@ sub internal_client_redirect_args {
     my($self) = shift;
     my($first) = @_;
     my(undef, $named) = $self->internal_get_named_args(
- 	ref($first) && (ref($first) ne 'HASH' || $first->{task_id})
-	    || $_TI->is_valid_name($first)
-	    ? $self->CLIENT_REDIRECT_PARAMETERS
-	    : $self->CLIENT_REDIRECT_PARAMETERS_WITHOUT_TASK_ID,
-	\@_,
+         ref($first) && (ref($first) ne 'HASH' || $first->{task_id})
+            || $_TI->is_valid_name($first)
+            ? $self->CLIENT_REDIRECT_PARAMETERS
+            : $self->CLIENT_REDIRECT_PARAMETERS_WITHOUT_TASK_ID,
+        \@_,
     );
     if (defined($named->{uri})) {
-	# NOTE: This form never had implicit query/path_info copying
-	foreach my $a (qw(query path_info)) {
-	    $named->{$a} = undef
-		unless exists($named->{$a}) || exists($named->{"carry_$a"});
-	}
-	$self->internal_copy_implicit($named);
-	$named->{query} = b_use('AgentHTTP.Query')->format($named->{query}, $self)
-	    if ref($named->{query});
-	$named->{uri} =~ s/\?/\?$named->{query}&/
-	    || ($named->{uri} .= '?'.$named->{query})
-	    if defined($named->{query}) && length($named->{query});
-	delete($named->{query});
+        # NOTE: This form never had implicit query/path_info copying
+        foreach my $a (qw(query path_info)) {
+            $named->{$a} = undef
+                unless exists($named->{$a}) || exists($named->{"carry_$a"});
+        }
+        $self->internal_copy_implicit($named);
+        $named->{query} = b_use('AgentHTTP.Query')->format($named->{query}, $self)
+            if ref($named->{query});
+        $named->{uri} =~ s/\?/\?$named->{query}&/
+            || ($named->{uri} .= '?'.$named->{query})
+            if defined($named->{query}) && length($named->{query});
+        delete($named->{query});
     }
     return ($self, $named);
 }
@@ -696,20 +696,20 @@ sub internal_copy_implicit {
     my($self, $named) = @_;
 #TODO: I think carry_query should override anything if it is set
     foreach my $attr (qw(query path_info)) {
-	my($carry) = exists($named->{"carry_$attr"}) && $named->{"carry_$attr"};
-	if (!$carry
-	    && $attr eq 'query'
-	    && $named->{task_id}
-	    && !$named->{uri}
-	    && !$_T->get_by_id($named->{task_id})->get('want_query')
-	) {
-	    $named->{query} = undef;
-	    next;
-	}
-	next
-	    if exists($named->{$attr})
- 	    || exists($named->{"carry_$attr"}) && !$named->{"carry_$attr"};
-	$named->{$attr} = $self->get($attr)
+        my($carry) = exists($named->{"carry_$attr"}) && $named->{"carry_$attr"};
+        if (!$carry
+            && $attr eq 'query'
+            && $named->{task_id}
+            && !$named->{uri}
+            && !$_T->get_by_id($named->{task_id})->get('want_query')
+        ) {
+            $named->{query} = undef;
+            next;
+        }
+        next
+            if exists($named->{$attr})
+             || exists($named->{"carry_$attr"}) && !$named->{"carry_$attr"};
+        $named->{$attr} = $self->get($attr)
     }
     return;
 }
@@ -717,20 +717,20 @@ sub internal_copy_implicit {
 sub internal_get_named_args {
     my(undef, $names, $argv) = @_;
     b_die($argv, ': too many positional parameters')
-	if @$argv > 5;
+        if @$argv > 5;
     # Calls name_parameters in L<UNIVERSAL|Bivio.UNIVERSAL> then
     # converts I<task_id> to a L<$_TI|$_TI>.
     my($self, $named) = shift->name_parameters(@_);
 #TODO: Make a Type
     $named->{task_id} = !$named->{task_id} ? $self->get('task_id')
-	: $_TI->is_blesser_of($named->{task_id})
-	? $named->{task_id}
-	: $_TI->from_name($named->{task_id})
-	if grep($_ eq 'task_id', @$names);
+        : $_TI->is_blesser_of($named->{task_id})
+        ? $named->{task_id}
+        : $_TI->from_name($named->{task_id})
+        if grep($_ eq 'task_id', @$names);
     $named->{require_absolute} = 1
-	if $named->{require_secure}
-	|| !defined($named->{require_absolute})
-	&& $self->unsafe_get($self->REQUIRE_ABSOLUTE_GLOBAL);
+        if $named->{require_secure}
+        || !defined($named->{require_absolute})
+        && $self->unsafe_get($self->REQUIRE_ABSOLUTE_GLOBAL);
     _trace((caller(1))[3], $named) if $_TRACE;
     return ($self, $named);
 }
@@ -745,18 +745,18 @@ sub internal_get_realm_for_task {
     # If is current task, just return current realm.
     my($realm) = $self->get('auth_realm');
     _trace('current auth_realm is: ', $realm->get('id'))
-	if $_TRACE;
+        if $_TRACE;
     my($task) = $_T->get_by_id($task_id);
     return $realm
-	if $task->has_realm_type($realm->get('type'));
+        if $task->has_realm_type($realm->get('type'));
     return b_use('Auth.Realm')->get_general
-	if $task->has_realm_type($_GENERAL);
+        if $task->has_realm_type($_GENERAL);
     unless ($task->has_realm_type($_USER)) {
-	b_die($task, ': unable to determine realm type for task')
-	    unless $no_die;
+        b_die($task, ': unable to determine realm type for task')
+            unless $no_die;
     }
     if (my $au = $self->get('auth_user')) {
-	return b_use('Auth.Realm')->new($au);
+        return b_use('Auth.Realm')->new($au);
     }
     return undef;
 }
@@ -772,18 +772,18 @@ sub internal_initialize {
 sub internal_initialize_with_uri {
     my($self, $full_uri, $query) = @_;
     my($task_id, $auth_realm, $path_info, $uri, $initial_uri)
-	= b_use('FacadeComponent.Task')->parse_uri($full_uri, $self);
+        = b_use('FacadeComponent.Task')->parse_uri($full_uri, $self);
     $self->internal_set_current;
     $query = b_use('AgentHTTP.Query')->parse($query);
     # SECURITY: Make sure the auth_id is NEVER set by the user.
     delete($query->{auth_id})
-	if $query;
+        if $query;
     return $self->put_durable(
-	uri => $uri && $_HTML->escape_uri($uri),
-	initial_uri => $initial_uri,
-	query => $query,
-	path_info => $path_info,
-	task_id => $task_id,
+        uri => $uri && $_HTML->escape_uri($uri),
+        initial_uri => $initial_uri,
+        query => $query,
+        path_info => $path_info,
+        task_id => $task_id,
     )->internal_initialize($auth_realm, $self->unsafe_get('auth_user'));
 }
 
@@ -791,7 +791,7 @@ sub internal_need_to_toggle_secure_agent_execution {
     my($self, $task) = @_;
     my($is_secure) = $self->agent_execution_is_secure;
     return !$is_secure && _need_to_secure_task($self, $task)
-	|| $is_secure && _need_to_make_task_insecure($self, $task);
+        || $is_secure && _need_to_make_task_insecure($self, $task);
 }
 
 sub internal_new {
@@ -807,12 +807,12 @@ sub internal_new {
     # I<attributes> is put_durable.
     my($self) = $proto->SUPER::new;
     $self->put_durable(
-	%$attributes,
-	request => $self,
-	is_production => $proto->is_production,
-	txn_resources => [],
-	start_time => $_DT->gettimeofday,
-	perf_time => {},
+        %$attributes,
+        request => $self,
+        is_production => $proto->is_production,
+        txn_resources => [],
+        start_time => $_DT->gettimeofday,
+        perf_time => {},
     );
     _init_process_cleanup($self);
     # Make sure a value gets set
@@ -827,15 +827,15 @@ sub internal_redirect_realm {
     my($fields) = $self->[$_IDI];
     my($task) = $_T->get_by_id($new_task);
     if ($new_realm) {
-	$new_realm = _load_realm($self, $new_realm);
-	$task->assert_realm_type($new_realm->get('type'));
+        $new_realm = _load_realm($self, $new_realm);
+        $task->assert_realm_type($new_realm->get('type'));
     }
     else {
-	$self->internal_redirect_user_realm($task)
-	    unless $new_realm = $self->internal_get_realm_for_task($new_task);
+        $self->internal_redirect_user_realm($task)
+            unless $new_realm = $self->internal_get_realm_for_task($new_task);
     }
     $self->set_realm($new_realm)
-	if $new_realm;
+        if $new_realm;
     $self->put(
         task_id => $new_task,
         task => $_T->get_by_id($new_task),
@@ -846,7 +846,7 @@ sub internal_redirect_realm {
 sub internal_redirect_user_realm {
     my($self, $task) = @_;
     $self->client_redirect($_TI->USER_HOME)
-	unless $task->has_realm_type($_USER);
+        unless $task->has_realm_type($_USER);
     $self->server_redirect($_TI->LOGIN);
     # DOES NOT RETURN
 }
@@ -854,24 +854,24 @@ sub internal_redirect_user_realm {
 sub internal_server_redirect {
     my($self, $named) = _uri_args('SERVER_REDIRECT_PARAMETERS', @_);
     b_use('FacadeComponent.Task')
-	->assert_defined_for_facade($named->{task_id}, $self);
+        ->assert_defined_for_facade($named->{task_id}, $self);
     $self->internal_copy_implicit($named);
     $named->{query} = b_use('AgentHTTP.Query')->format($named->{query}, $self)
-	if ref($named->{query});
+        if ref($named->{query});
     $named->{query} = defined($named->{query})
-	? b_use('AgentHTTP.Query')->parse($named->{query}) : undef;
+        ? b_use('AgentHTTP.Query')->parse($named->{query}) : undef;
     my($fc) = b_use('Biz.FormModel')->get_context_from_request($named, $self);
     $self->internal_redirect_realm($named->{task_id}, $named->{realm});
     $named->{path_info} = undef
-	unless exists($named->{path_info}) || exists($named->{carry_path_info});
+        unless exists($named->{path_info}) || exists($named->{carry_path_info});
     $named->{uri} = b_use('FacadeComponent.Task')->has_uri($named->{task_id}, $self)
-	? $self->format_uri({
-	    map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
-		@{$self->FORMAT_URI_PARAMETERS}),
+        ? $self->format_uri({
+            map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
+                @{$self->FORMAT_URI_PARAMETERS}),
         }) : $self->get('uri');
     $named->{form_context} = $fc;
     $named->{form} = undef
-	unless exists($named->{form});
+        unless exists($named->{form});
     $named->{method} = 'server_redirect';
     $self->internal_call_handlers(handle_server_redirect => [$named, $self]);
     $self->put_durable_server_redirect_state($named);
@@ -882,7 +882,7 @@ sub internal_set_current {
     my($self) = @_;
     # Called by subclasses when Request initialized.  Returns self.
     b_die($self, ': must be reference')
-	unless ref($self);
+        unless ref($self);
     b_warn('replacing request:', $self->get_current)
         if $self->get_current;
     return $_CURRENT = $self;
@@ -902,16 +902,16 @@ sub is_production {
     my($self) = @_;
 #TODO: probably should not is_production on request, but use config({}) in tests
     return ref($self)
-	? $self->get_if_exists_else_put(is_production => $_C->is_production)
-	: $_C->is_production;
+        ? $self->get_if_exists_else_put(is_production => $_C->is_production)
+        : $_C->is_production;
 }
 
 sub is_site_admin {
     my($self) = @_;
     return $self->match_user_realms({
-	'RealmUser.realm_id' => b_use('FacadeComponent.Constant')
-	    ->get_value('site_realm_id', $self),
-	roles => $_ADMINISTRATOR,
+        'RealmUser.realm_id' => b_use('FacadeComponent.Constant')
+            ->get_value('site_realm_id', $self),
+        roles => $_ADMINISTRATOR,
     });
 }
 
@@ -925,15 +925,15 @@ sub is_super_user {
     # Returns true if I<user_id> is a super user.  If I<user_id> is undef,
     # uses Request.auth_user_id.
     return !$user_id
-	|| (defined($user_id) eq defined($self->get('auth_user_id'))
-	    && $user_id eq $self->get('auth_user_id'))
-	? _get_role($self, $_GENERAL->as_int)
-	    ->equals_by_name('ADMINISTRATOR')
-	: $_M->new($self, 'RealmUser')->unauth_load({
-	    realm_id => $_GENERAL->as_int,
-	    user_id => $user_id,
-	    role => $_ADMINISTRATOR,
-	});
+        || (defined($user_id) eq defined($self->get('auth_user_id'))
+            && $user_id eq $self->get('auth_user_id'))
+        ? _get_role($self, $_GENERAL->as_int)
+            ->equals_by_name('ADMINISTRATOR')
+        : $_M->new($self, 'RealmUser')->unauth_load({
+            realm_id => $_GENERAL->as_int,
+            user_id => $user_id,
+            role => $_ADMINISTRATOR,
+        });
 }
 
 sub is_test {
@@ -949,23 +949,23 @@ sub map_user_realms {
     # B<Use of $self-E<gt>get_user_realms is deprecated>.
     $op ||= sub {shift(@_)};
     my($atomic_copy) = [
-	map(+{%$_},
-	    sort(
-		{$a->{'RealmOwner.name'} cmp $b->{'RealmOwner.name'}}
-	        grep({
-		    my($x) = $_;
-		    !$filter ||
-			keys(%$filter)
-		        == grep({
-			    my($fv) = $filter->{$_};
-			    grep({
-				my($xv) = $_;
-				ref($fv) eq 'ARRAY' ? grep($xv eq $_, @$fv)
-				    : $xv eq $fv;
-			    } ref($x->{$_}) eq 'ARRAY' ? @{$x->{$_}} : $x->{$_})
-				? 1 : 0;
-			} keys(%$filter));
-		} values(%{$self->get('user_realms')}))))];
+        map(+{%$_},
+            sort(
+                {$a->{'RealmOwner.name'} cmp $b->{'RealmOwner.name'}}
+                grep({
+                    my($x) = $_;
+                    !$filter ||
+                        keys(%$filter)
+                        == grep({
+                            my($fv) = $filter->{$_};
+                            grep({
+                                my($xv) = $_;
+                                ref($fv) eq 'ARRAY' ? grep($xv eq $_, @$fv)
+                                    : $xv eq $fv;
+                            } ref($x->{$_}) eq 'ARRAY' ? @{$x->{$_}} : $x->{$_})
+                                ? 1 : 0;
+                        } keys(%$filter));
+                } values(%{$self->get('user_realms')}))))];
     return [map($op->($_), @$atomic_copy)];
 }
 
@@ -986,7 +986,7 @@ sub new {
 sub perf_time_inc {
     my($self, $pkg, $start) = @_;
     return
-	unless $self = $self->unsafe_get_current_root;
+        unless $self = $self->unsafe_get_current_root;
     my($delta) = $_DT->gettimeofday_diff_seconds($start);
     $self->get('perf_time')->{$pkg} += $delta;
     return $delta;
@@ -995,13 +995,13 @@ sub perf_time_inc {
 sub perf_time_op {
     my($proto, $pkg, $op, $delta_ref) = @_;
     return $op->()
-	unless $delta_ref || $_TRACE
-	and my $self = ref($proto) ? $proto : $proto->get_current;
+        unless $delta_ref || $_TRACE
+        and my $self = ref($proto) ? $proto : $proto->get_current;
     my($start) = $_DT->gettimeofday;
     my($res) = $op->();
     my($delta) = $self->perf_time_inc($pkg, $start);
     $$delta_ref = $delta
-	if $delta_ref;
+        if $delta_ref;
     return $self->return_scalar_or_array($res);
 }
 
@@ -1018,7 +1018,7 @@ sub push_txn_resource {
 #TODO: use Biz.Registrar
     my($tr) = $self->get('txn_resources');
     return
-	if grep($_ eq $resource, @$tr);
+        if grep($_ eq $resource, @$tr);
     push(@$tr, $resource);
     _trace($resource) if $_TRACE;
     return;
@@ -1027,18 +1027,18 @@ sub push_txn_resource {
 sub put {
     my($self) = shift;
     return $self->SUPER::put(@{$self->map_by_two(
-	sub {
-	    my($key, $value) = @_;
-	    if ($key =~ /^auth_(realm|user)\./s) {
-		$_A->warn_deprecated($key, ': use realm_cache');
-	    }
-	    elsif ($key eq 'query') {
-		$value = b_use('AgentHTTP.Query')->parse($value)
-		    if defined($value) && ref($value) ne 'HASH';
-	    }
-	    return ($key, $value);
-	},
-	\@_,
+        sub {
+            my($key, $value) = @_;
+            if ($key =~ /^auth_(realm|user)\./s) {
+                $_A->warn_deprecated($key, ': use realm_cache');
+            }
+            elsif ($key eq 'query') {
+                $value = b_use('AgentHTTP.Query')->parse($value)
+                    if defined($value) && ref($value) ne 'HASH';
+            }
+            return ($key, $value);
+        },
+        \@_,
     )});
 }
 
@@ -1047,11 +1047,11 @@ sub put_durable {
     # Puts durable attributes on the request.  A durable attribute survives
     # redirects.
     my($durable_keys) = $self->get_if_exists_else_put(
-	'durable_keys',
-	{durable_keys => 1},
+        'durable_keys',
+        {durable_keys => 1},
     );
     for (my ($i) = 0; $i < int(@_); $i += 2) {
-	$durable_keys->{$_[$i]} = 1;
+        $durable_keys->{$_[$i]} = 1;
     }
     return $self->put(@_);
 }
@@ -1062,13 +1062,13 @@ sub put_durable_server_redirect_state {
     #
     # Used to set state for server redirect.  Handles form_context specially.
     $self->put_durable(
-	# Allow caller to clear these values
-	map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
-	    qw(query form form_model path_info)),
-	# You need a uri so "undefined" means "carry"
-	map((defined($named->{$_}) ? ($_ => $named->{$_}) : ()),
-	    qw(uri)),
-	form_context => $self->get_form_context_from_named($named),
+        # Allow caller to clear these values
+        map((exists($named->{$_}) ? ($_ => $named->{$_}) : ()),
+            qw(query form form_model path_info)),
+        # You need a uri so "undefined" means "carry"
+        map((defined($named->{$_}) ? ($_ => $named->{$_}) : ()),
+            qw(uri)),
+        form_context => $self->get_form_context_from_named($named),
     );
     return;
 }
@@ -1086,8 +1086,8 @@ sub redirect {
     my($self, $args) = @_;
     my($method) = delete($args->{method}) || '';
     $self->throw_die(DIE => {
-	message => 'missing or invalid method',
-	entity => {%$args, method => $method},
+        message => 'missing or invalid method',
+        entity => {%$args, method => $method},
     }) unless $method =~ /^(?:server_redirect|client_redirect)$/;
     return $self->$method($args);
 }
@@ -1102,12 +1102,12 @@ sub server_redirect {
     my($self, $named) = _uri_args('SERVER_REDIRECT_PARAMETERS', @_);
     # Do not recurse
     b_die($named, ': recursive redirects')
-	if $named->{_server_redirect}++;
+        if $named->{_server_redirect}++;
     return $self->client_redirect($named)
-	if $self->need_to_toggle_secure_agent_execution($named->{task_id});
+        if $self->need_to_toggle_secure_agent_execution($named->{task_id});
     $_D->throw_quietly(
-	$_DC->SERVER_REDIRECT_TASK,
-	{task_id => $self->internal_server_redirect($named)},
+        $_DC->SERVER_REDIRECT_TASK,
+        {task_id => $self->internal_server_redirect($named)},
     );
     # DOES NOT RETURN
 }
@@ -1125,10 +1125,10 @@ sub set_realm {
 #TODO: remove after realm_cache proven
     $self->delete_all_by_regexp(qr{^auth_realm\.});
     $self->put_durable(
-	auth_realm => $new_realm,
-	auth_id => $realm_id,
-	auth_role => $new_role,
-	auth_roles => $new_roles,
+        auth_realm => $new_realm,
+        auth_id => $realm_id,
+        auth_role => $new_role,
+        auth_roles => $new_roles,
     );
     _trace($new_realm, '; ', $new_roles) if $_TRACE;
     return $new_realm;
@@ -1137,21 +1137,21 @@ sub set_realm {
 sub set_realm_unless_same {
     my($self, $name_or_id) = @_;
     return
-	if $self->req('auth_realm')->equals_by_name_or_id($name_or_id);
+        if $self->req('auth_realm')->equals_by_name_or_id($name_or_id);
     return shift->set_realm(@_);
 }
 
 sub set_task {
     my($self, $task_id) = @_;
     $task_id = $_TI->from_name($task_id)
-	unless ref($task_id);
+        unless ref($task_id);
 #TODO: b_use('FacadeComponent.Task')->is_defined_for_facade($tid->get_name, $self);
     _trace($task_id) if $_TRACE;
     my($task) = $_T->get_by_id($task_id);
     $task_id->if_task_is_json(sub {$self->put_req_is_json});
     $self->put_durable(
-	task_id => $task_id,
-	task => $task,
+        task_id => $task_id,
+        task => $task,
     );
 #TODO: This coupling needs to be explicit.  Probably with a handler.
     $self->delete(qw(list_model form_model));
@@ -1161,24 +1161,24 @@ sub set_task {
 sub set_task_and_uri {
     my($self, $uri_attrs) = @_;
     $self->set_task(
-	$uri_attrs->{task_id} || b_die($uri_attrs, ': task_id is required'),
+        $uri_attrs->{task_id} || b_die($uri_attrs, ': task_id is required'),
     );
     return
-	unless b_use('FacadeComponent.Task')
-	->has_uri($self->get('task_id'), $self);
+        unless b_use('FacadeComponent.Task')
+        ->has_uri($self->get('task_id'), $self);
     my($uri) = $self->format_uri($uri_attrs = {
-	query => undef,
-	path_info => undef,
-	%$uri_attrs,
-	task_id => $self->get('task_id'),
+        query => undef,
+        path_info => undef,
+        %$uri_attrs,
+        task_id => $self->get('task_id'),
     });
 #TODO: This probably wants to be with_task, just need to
 #      define the context to return to.
     $self->put_durable(
-	map(exists($uri_attrs->{$_}) ? ($_, $uri_attrs->{$_}) : (),
-	    qw(query path_info)),
-	uri => $uri,
-	initial_uri => $uri,
+        map(exists($uri_attrs->{$_}) ? ($_, $uri_attrs->{$_}) : (),
+            qw(query path_info)),
+        uri => $uri,
+        initial_uri => $uri,
     );
     return;
 }
@@ -1204,35 +1204,35 @@ sub set_user {
     # We don't set the role if there's not auth_realm
     my($dont_set_role) = $self->unsafe_get('auth_realm') ? 0 : 1;
     $user = $_M->new($self, 'RealmOwner')
-	->unauth_load_by_id_or_name_or_die($user, 'USER')
+        ->unauth_load_by_id_or_name_or_die($user, 'USER')
         unless ref($user) || !defined($user);
     # DON'T CHECK CURRENT USER.  Always reread DB.
     my($user_realms);
     _trace($user) if $_TRACE;
     if ($user) {
-	# Load the UserRealmList for this user.
-	my($list) = $_M->new($self, 'UserRealmList');
-	$list->unauth_load_all({auth_id => $user->get('realm_id')});
-	$user_realms = $list->map_primary_key_to_rows;
+        # Load the UserRealmList for this user.
+        my($list) = $_M->new($self, 'UserRealmList');
+        $list->unauth_load_all({auth_id => $user->get('realm_id')});
+        $user_realms = $list->map_primary_key_to_rows;
     }
     else {
-	$user_realms = {};
+        $user_realms = {};
     }
     b_die($user, ': not a RealmOwner')
         if defined($user) && !$_M->is_blesser_of($user);
 #TODO: remove after realm_cache proven
     $self->delete_all_by_regexp(qr{^auth_user\.});
     $self->put_durable(
-	auth_user => $user,
-	auth_user_id => $user ? $user->get('realm_id') : undef,
-	user_realms => $user_realms,
+        auth_user => $user,
+        auth_user_id => $user ? $user->get('realm_id') : undef,
+        user_realms => $user_realms,
     );
     # Set the (cached) auth_role if requested (by default).
     $self->put_durable(
         auth_role => _get_role($self, $self->get('auth_id')),
         auth_roles => _get_roles($self, $self->get('auth_id')),
     )
-	unless $dont_set_role;
+        unless $dont_set_role;
     return $user;
 }
 
@@ -1247,7 +1247,7 @@ sub throw_die {
 
     # Give some context to the error message
     my($realm, $task, $user) = $self->unsafe_get(
-	    qw(auth_realm task_id auth_user));
+            qw(auth_realm task_id auth_user));
     # Be a little more "safe" than usual, because we are in an
     # error situation.
     $attrs->{realm} = ref($realm) ? $realm->as_string : undef;
@@ -1261,7 +1261,7 @@ sub throw_die {
 sub unsafe_from_query {
     my($self) = shift;
     return
-	unless my $q = $self->unsafe_get('query');
+        unless my $q = $self->unsafe_get('query');
     return $self->return_scalar_or_array(map($q->{$_}, @_));
 }
 
@@ -1275,11 +1275,11 @@ sub unsafe_get_txn_resource {
     # request.  If multiple resources found, blows up.   Must only be used
     # by singleton resources.  If none found, returns undef.
     my($res)
-	= [grep(UNIVERSAL::isa($_, $class), @{$self->get('txn_resources')})];
+        = [grep(UNIVERSAL::isa($_, $class), @{$self->get('txn_resources')})];
     $self->throw_die(DIE => {
-	message => 'too many transaction resources found',
-	entity => $res,
-	class => $class,
+        message => 'too many transaction resources found',
+        entity => $res,
+        class => $class,
     }) if @$res > 1;
     return $res->[0];
 }
@@ -1311,10 +1311,10 @@ sub with_user {
 sub _clear_realm_cache {
     my($self, $realm_id) = @_;
     $self->delete_all_by_regexp(
-	qr{@{[
-	    join(
-		'#',
-		'realm_cache',
+        qr{@{[
+            join(
+                '#',
+                'realm_cache',
                 $realm_id,
                 '.*',
             )
@@ -1334,7 +1334,7 @@ sub _form_for_warning {
     foreach my $field (@{$form_model->get_keys}) {
         next unless $form_model->has_fields($field);
         next unless my $t = $form_model->get_field_type($field);
-	next unless $t->b_can('is_secure_data') && $t->is_secure_data;
+        next unless $t->b_can('is_secure_data') && $t->is_secure_data;
         # hide the secure data from the logs if defined
         my($html_name) = $form_model->get_field_name_for_html($field);
         $result->{$html_name} = '<secure data>'
@@ -1368,24 +1368,24 @@ sub _get_roles {
 sub _absolute_uri {
     my($self, $uri, $require_secure, $want_insecure, $facade_uri) = @_;
     my($facade) = $facade_uri ? b_use('UI.Facade')->get_instance($facade_uri)
-	: b_use('UI.Facade')->get_from_source($self);
+        : b_use('UI.Facade')->get_from_source($self);
     my($host, $rel_uri) = _absolute_uri_validate($self, $uri, $facade_uri, $facade);
     return $uri
-	unless $rel_uri;
+        unless $rel_uri;
     return _absolute_uri_http($self, $require_secure, $want_insecure, $facade)
-	. '://'
-	. $host
-	. $rel_uri;
+        . '://'
+        . $host
+        . $rel_uri;
 }
 
 sub _absolute_uri_http {
     my($self, $require_secure, $want_insecure, $facade) = @_;
     return $_CFG->{can_secure}
-	&& !$want_insecure
-	&& (
-	    $require_secure
-	    || $self->unsafe_get('is_secure')
-	    || $facade->get('Constant')->get_value('require_secure')
+        && !$want_insecure
+        && (
+            $require_secure
+            || $self->unsafe_get('is_secure')
+            || $facade->get('Constant')->get_value('require_secure')
         ) ? 'https' : 'http';
 }
 
@@ -1393,30 +1393,30 @@ sub _absolute_uri_validate {
     my($self, $uri, $facade_uri, $facade) = @_;
     my($host);
     if ($uri =~ s/^https?://) {
-	b_die($uri, ': invalid http uri passed to format_uri')
-	    unless $uri =~ s{^//([^/]+)}{};
-	$host = $1;
+        b_die($uri, ': invalid http uri passed to format_uri')
+            unless $uri =~ s{^//([^/]+)}{};
+        $host = $1;
     }
     elsif ($uri =~ /^\w+:/) {
 #TODO: Verify this doesn't happen in the logs
-	b_warn($uri, ': format_uri passed a non-http uri');
-	return;
+        b_warn($uri, ': format_uri passed a non-http uri');
+        return;
     }
     return (
-	_absolute_uri_validate_host($self, $host, $facade_uri, $facade),
-	$uri || '/',
+        _absolute_uri_validate_host($self, $host, $facade_uri, $facade),
+        $uri || '/',
     );
 }
 
 sub _absolute_uri_validate_host {
     my($self, $host, $facade_uri, $facade) = @_;
     return $facade->get('http_host')
-	unless $host;
+        unless $host;
     unless (b_use('UI.Facade')->find_by_uri_or_domain($host =~ /^([^:]+)/)) {
-	b_warn($host, ': host does not match any facade');
+        b_warn($host, ': host does not match any facade');
     }
     if ($facade_uri && $host && $host ne $facade->get('http_host')) {
-	b_warn($facade_uri, ': facade_uri does not equal host=', $host);
+        b_warn($facade_uri, ': facade_uri does not equal host=', $host);
     }
     return $host;
 }
@@ -1426,45 +1426,45 @@ sub _init_process_cleanup {
     my($process_cleanup) = $self->unsafe_get_and_delete('process_cleanup');
     $self->put_durable(process_cleanup => $_R->new);
     $self->push_process_cleanup($process_cleanup)
-	if $process_cleanup;
+        if $process_cleanup;
     return;
 }
 
 sub _is_r_value {
     my($self, $which, $expect, $default) = @_;
     return $default =~ $expect ? 1 : 0
-	unless my $r = $self->unsafe_get('r');
+        unless my $r = $self->unsafe_get('r');
     return $r->$which =~ $expect ? 1 : 0;
 }
 
 sub _load_realm {
     my($self, $new_realm) = @_;
     return b_use('Auth.Realm')->is_blesser_of($new_realm) ? $new_realm
-	: defined($new_realm)
-	? b_use('Auth.Realm')->new($new_realm, $self)
-	: b_use('Auth.Realm')->get_general
+        : defined($new_realm)
+        ? b_use('Auth.Realm')->new($new_realm, $self)
+        : b_use('Auth.Realm')->get_general
 }
 
 sub _need_to_make_task_insecure {
     my($self, $task) = @_;
     $task = $_T->get_by_id($task)
-	unless $_T->is_blesser_of($task);
+        unless $_T->is_blesser_of($task);
     return $_CFG->{can_secure}
-	&& $task->unsafe_get('want_insecure')
-	&& $self->unsafe_get('is_secure');
+        && $task->unsafe_get('want_insecure')
+        && $self->unsafe_get('is_secure');
 }
 
 sub _need_to_secure_task {
     my($self, $task) = @_;
     $task = $_T->get_by_id($task)
-	unless $_T->is_blesser_of($task);
+        unless $_T->is_blesser_of($task);
     return $_CFG->{can_secure}
-	&& !$task->unsafe_get('want_insecure')
-	&& !$self->unsafe_get('is_secure')
-	&& ($task->get('require_secure')
-	    || b_use('FacadeComponent.Constant')
-		->get_value('require_secure', $self)
-	);
+        && !$task->unsafe_get('want_insecure')
+        && !$self->unsafe_get('is_secure')
+        && ($task->get('require_secure')
+            || b_use('FacadeComponent.Constant')
+                ->get_value('require_secure', $self)
+        );
 }
 
 sub _perf_time_info {
@@ -1473,12 +1473,12 @@ sub _perf_time_info {
     $self->perf_time_inc(__PACKAGE__, $start);
     my($pt) = $self->get('perf_time');
     b_info([map(
-	sprintf(
-	    '%s=%.3f',
-	    $_->simple_package_name,
-	    $pt->{$_},
-	),
-	sort(keys(%$pt)),
+        sprintf(
+            '%s=%.3f',
+            $_->simple_package_name,
+            $pt->{$_},
+        ),
+        sort(keys(%$pt)),
     )]);
     $self->put(start_time => $_DT->gettimeofday);
     %$pt = ();
@@ -1489,14 +1489,14 @@ sub _realm_cache {
     my($which, $self, $key, $compute) = @_;
     # Key includes caller's package and line for uniqueness
     return $self->get_if_exists_else_put(
-	join(
-	    '#',
-	    'realm_cache',
-	    $self->get($which) || 0,
-	    (caller(1))[0,2],
-	    ref($key) ? @$key : $key,
-	),
-	$compute,
+        join(
+            '#',
+            'realm_cache',
+            $self->get($which) || 0,
+            (caller(1))[0,2],
+            ref($key) ? @$key : $key,
+        ),
+        $compute,
     );
     return;
 }
@@ -1513,12 +1513,12 @@ sub _with {
     my($res);
     my($die) = $_D->catch(sub {
         $self->$set($with_value);
-	$res = [$op->()];
-	return;
+        $res = [$op->()];
+        return;
     });
     $self->$set($prev);
     $die->throw
-	if $die;
+        if $die;
     return $self->return_scalar_or_array(@$res);
 }
 

@@ -9,8 +9,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 sub initialize {
     my($self) = @_;
     return shift->put_unless_exists(
-	tag => 'ul',
-	class => 'b_form_field_error',
+        tag => 'ul',
+        class => 'b_form_field_error',
     )->SUPER::initialize(@_);
 }
 

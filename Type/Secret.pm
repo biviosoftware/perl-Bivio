@@ -155,14 +155,14 @@ sub _cbc_new {
     my($key) = shift;
     my($algorithm) = shift->{algorithm};
     return Crypt::CBC->new(
-	Crypt::CBC->can('header_mode') ? (
-	    -key => $key,
-	    -cipher => $algorithm,
-	    -header => 'randomiv',
+        Crypt::CBC->can('header_mode') ? (
+            -key => $key,
+            -cipher => $algorithm,
+            -header => 'randomiv',
         ) : (
-	    $key,
-	    $algorithm,
-	)
+            $key,
+            $algorithm,
+        )
     );
 }
 
@@ -176,7 +176,7 @@ sub _decrypt {
     foreach my $cipher (@{$_CFG->{cipher}}) {
         next unless ref($cipher->{key});
         my($s) = ($is_hex
-	    ? _call($cipher, decrypt_hex => $encoded)
+            ? _call($cipher, decrypt_hex => $encoded)
             : _call($cipher, decrypt =>
                 Bivio::MIME::Base64->http_decode($encoded) || '')) || '';
         my($magic) = $cipher->{magic};

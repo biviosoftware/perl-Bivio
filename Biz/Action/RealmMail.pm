@@ -30,35 +30,35 @@ sub TASK_URI {
 sub execute_receive {
     my($proto, $req, $rfc822, $reflector_task) = @_;
     $rfc822 ||= $req->get('Model.MailReceiveDispatchForm')
-	->get('message')->{content};
+        ->get('message')->{content};
     $reflector_task
-	||= $req->get('task')->get_attr_as_id('mail_reflector_task');
+        ||= $req->get('task')->get_attr_as_id('mail_reflector_task');
     my($rm) = Bivio::Biz::Model->new($req, 'RealmMail');
     my($in) = $proto->want_realm_mail_created($req)
-	? $rm->create_from_rfc822($rfc822)
-	: $_I->new($rfc822);
+        ? $rm->create_from_rfc822($rfc822)
+        : $_I->new($rfc822);
     my($ea) = $rm->new_other('EmailAlias');
     my($email) = $ea->format_realm_as_incoming;
     my($out) = $_O->new($in)->set_headers_for_list_send({
-	req => $req,
-	list_email => $email,
-	sender => $ea->format_realm_as_sender($email),
-	reply_to_list => $proto->want_reply_to($req)
-	    && $_MWRT->is_set_for_realm($req),
-	subject_prefix => $proto->internal_subject_prefix($rm),
+        req => $req,
+        list_email => $email,
+        sender => $ea->format_realm_as_sender($email),
+        reply_to_list => $proto->want_reply_to($req)
+            && $_MWRT->is_set_for_realm($req),
+        subject_prefix => $proto->internal_subject_prefix($rm),
     });
     my($attrs) = {
-	$proto->package_name => $proto->new({
-	    outgoing => $out,
-	    realm_file_id => $rm->unsafe_get('realm_file_id'),
-	}),
+        $proto->package_name => $proto->new({
+            outgoing => $out,
+            realm_file_id => $rm->unsafe_get('realm_file_id'),
+        }),
     };
     if ($_UA->is_mail_agent($req)) {
-	$req->put_durable(%$attrs);
-	return {
-	    method => 'server_redirect',
-	    task_id => $reflector_task,
-	};
+        $req->put_durable(%$attrs);
+        return {
+            method => 'server_redirect',
+            task_id => $reflector_task,
+        };
     }
     b_use('AgentJob.Dispatcher')->enqueue($req, $reflector_task, $attrs);
     return;
@@ -73,32 +73,32 @@ sub execute_reflector {
     my($muf) = $rmb->new_other('MailUnsubscribeForm');
     my($f);
     $f = ($_A->parse($out->unsafe_get_header('From')))[1]
-	if $bulletin;
+        if $bulletin;
     $rmb->new_other($self->EMAIL_LIST)->get_recipients(sub {
-	my($it) = @_;
-	return Bivio::Die->catch(sub {
-	    my($rp) = $rfid && $rmb->return_path(
-	        $it->get(qw(RealmUser.user_id Email.email)),
-	        $rfid,
-	    );
-	    my($msg) = $out->new($out)
-		->set_recipients($it->get('Email.email'), $req);
-	    $msg->set_header(
-		'Return-Path' => $_RFC->format_angle_brackets($rp),
-	    ) if $rp;
-	    if ($bulletin) {
-		$msg->set_header(To => $it->get('Email.email'));
-		$msg->set_header(From => $_RFC->format_mailbox($rp, $f));
-		$msg->edit_body({
-		    email => $it->get('Email.email'),
-		    unsubscribe => $req->format_http({
-			uri => $muf->format_uri_for_user(
-			    $it->get('RealmOwner.name'),
-			    $rfid,
-			),
-		    }),
-		}) if $_BBT->row_tag_get($req);
-	    }
+        my($it) = @_;
+        return Bivio::Die->catch(sub {
+            my($rp) = $rfid && $rmb->return_path(
+                $it->get(qw(RealmUser.user_id Email.email)),
+                $rfid,
+            );
+            my($msg) = $out->new($out)
+                ->set_recipients($it->get('Email.email'), $req);
+            $msg->set_header(
+                'Return-Path' => $_RFC->format_angle_brackets($rp),
+            ) if $rp;
+            if ($bulletin) {
+                $msg->set_header(To => $it->get('Email.email'));
+                $msg->set_header(From => $_RFC->format_mailbox($rp, $f));
+                $msg->edit_body({
+                    email => $it->get('Email.email'),
+                    unsubscribe => $req->format_http({
+                        uri => $muf->format_uri_for_user(
+                            $it->get('RealmOwner.name'),
+                            $rfid,
+                        ),
+                    }),
+                }) if $_BBT->row_tag_get($req);
+            }
             $msg->send($req);
         });
     });
@@ -108,13 +108,13 @@ sub execute_reflector {
 sub internal_subject_prefix {
     my($proto, $rm) = @_;
     return '[' . $rm->req(qw(auth_realm owner name)) . ']'
-	unless defined(my $res = $rm->new_other('RowTag')->get_value(
-	    $rm->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
-	));
+        unless defined(my $res = $rm->new_other('RowTag')->get_value(
+            $rm->req('auth_id'), 'MAIL_SUBJECT_PREFIX',
+        ));
     return ''
-	if $res eq $proto->EMPTY_SUBJECT_PREFIX;
+        if $res eq $proto->EMPTY_SUBJECT_PREFIX;
     $res .= ' '
-	unless $res =~ /\s$/s;
+        unless $res =~ /\s$/s;
     return $res;
 }
 

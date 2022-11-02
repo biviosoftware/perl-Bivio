@@ -9,9 +9,9 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = shift->SUPER::from_literal(@_);
     return ($v, $e)
-	unless $v;
+        unless $v;
     $v =~ s{^/}{}
-	unless $proto->is_absolute($value);
+        unless $proto->is_absolute($value);
     return $v;
 }
 

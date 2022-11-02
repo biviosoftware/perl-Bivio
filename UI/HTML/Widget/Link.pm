@@ -63,23 +63,23 @@ sub control_on_render {
     $self->unsafe_render_attr('attributes', $source, $buffer);
 
     foreach my $attr ([qw(name name)], [qw(tooltip title)]) {
-	my($n) = '';
-	$$buffer .= ' ' . $attr->[1] . '="'
-	    . $_HTML->escape_attr_value($n) . '"'
-		if $self->unsafe_render_attr($attr->[0], $source, \$n);
+        my($n) = '';
+        $$buffer .= ' ' . $attr->[1] . '="'
+            . $_HTML->escape_attr_value($n) . '"'
+                if $self->unsafe_render_attr($attr->[0], $source, \$n);
     }
     my($href) = _render_href($self, $source);
     $$buffer .= qq{ href="@{[_escape($href)]}"}
         if defined($href);
     my($handler) = $self->unsafe_resolve_widget_value(
-	$self->unsafe_get('event_handler'), $source);
+        $self->unsafe_get('event_handler'), $source);
     $$buffer .= $handler->get_html_field_attributes(undef, $source)
-	if $handler;
+        if $handler;
     $$buffer .= '>';
     $self->render_attr('value', $source, $buffer);
     $$buffer .= '</a>';
     $handler->render($source, $buffer)
-	if $handler;
+        if $handler;
     return;
 }
 
@@ -88,12 +88,12 @@ sub initialize {
     # Partially initializes by copying attributes to fields.
     # It is fully initialized after first render.
     $self->map_invoke(
-	'unsafe_initialize_attr',
-	[qw(attributes event_handler name link_target)],
+        'unsafe_initialize_attr',
+        [qw(attributes event_handler name link_target)],
     );
     my($v) = $self->get('value');
     $self->put(value => String($v))
-	unless UNIVERSAL::isa($v, 'Bivio::UI::Widget');
+        unless UNIVERSAL::isa($v, 'Bivio::UI::Widget');
     $self->map_invoke('initialize_attr', [qw(value href)]);
     return shift->SUPER::initialize(@_);
 }
@@ -111,7 +111,7 @@ sub internal_new_args {
 sub _escape {
     my($href) = @_;
     return $href
-	if $href =~ /^javascript:/i;
+        if $href =~ /^javascript:/i;
     return $_HTML->escape_attr_value($href);
 }
 
@@ -119,23 +119,23 @@ sub _render_href {
     my($self, $source) = @_;
     # Returns a string.  May format it using format_uri or format_stateless_uri
     my($href) = $self->unsafe_resolve_widget_value(
-	$self->get('href'), $source);
+        $self->get('href'), $source);
     if (Bivio::UI::Widget->is_blesser_of($href)) {
-	my($v) = $href;
-	$href = undef;
-	$self->unsafe_render_value('href', $v, $source, \$href);
+        my($v) = $href;
+        $href = undef;
+        $self->unsafe_render_value('href', $v, $source, \$href);
     }
     return undef
-	unless defined($href) && length($href);
+        unless defined($href) && length($href);
     return $href
-	unless ref($href) || $_TI->is_valid_name($href);
+        unless ref($href) || $_TI->is_valid_name($href);
     return $source->req->format_stateless_uri($href)
-	if !ref($href) || UNIVERSAL::isa($href, $_TI);
+        if !ref($href) || UNIVERSAL::isa($href, $_TI);
     return $source->req->format_uri($href)
-	if ref($href) eq 'HASH';
+        if ref($href) eq 'HASH';
     $self->die(
-	'href', $source,
-	$href, ': unknown type for href (must be scalar, hash, or TaskId)'
+        'href', $source,
+        $href, ': unknown type for href (must be scalar, hash, or TaskId)'
     );
     # DOES NOT RETURN
 }

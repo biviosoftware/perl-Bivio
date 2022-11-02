@@ -4,15 +4,15 @@ ListModel();
 req()->initialize_fully;
 [
     load_from_array => [
-	[[qw(administrator file_writer)]] => [{
-	    'RealmUser.role' => Auth_Role('UNKNOWN'),
-	    display => 'No Access',
+        [[qw(administrator file_writer)]] => [{
+            'RealmUser.role' => Auth_Role('UNKNOWN'),
+            display => 'No Access',
         }, {
-	    'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
-	    display => 'Admin',
-	}, {
-	    'RealmUser.role' => Auth_Role('FILE_WRITER'),
-	    display => 'Editor',
-	}],
+            'RealmUser.role' => Auth_Role('ADMINISTRATOR'),
+            display => 'Admin',
+        }, {
+            'RealmUser.role' => Auth_Role('FILE_WRITER'),
+            display => 'Editor',
+        }],
     ],
 ];

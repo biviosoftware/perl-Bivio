@@ -21,9 +21,9 @@ sub http_decode {
     $encoded =~ tr/_*-/=+\//;
     my($err) = 0;
     local($SIG{__WARN__}) = sub {
-	$err++;
-	Bivio::IO::Alert->warn(@_);
-	return;
+        $err++;
+        Bivio::IO::Alert->warn(@_);
+        return;
     };
     my($res) = MIME::Base64::decode($encoded);
     return $err ? undef : $res;

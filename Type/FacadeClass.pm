@@ -13,9 +13,9 @@ sub from_literal {
     # (proto, string) : array
     my($v, $e) = shift->SUPER::from_literal(@_);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     return (undef, Bivio::TypeError->FACADE_CLASS)
-	unless grep($_ eq $v, @{b_use('UI.Facade')->get_all_classes});
+        unless grep($_ eq $v, @{b_use('UI.Facade')->get_all_classes});
     return $v;
 }
 

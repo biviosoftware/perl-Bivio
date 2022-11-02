@@ -14,13 +14,13 @@ sub from_literal {
     my($proto, $value) = @_;
     my($res, $err) = shift->SUPER::from_literal(@_);
     if ($err) {
-	if ($value =~ /^m$/i) {
-	    $res = $proto->MALE;
-	    $err = undef;
-	} elsif ($value =~ /^f$/i) {
-	    $res = $proto->FEMALE;
-	    $err = undef;
-	}
+        if ($value =~ /^m$/i) {
+            $res = $proto->MALE;
+            $err = undef;
+        } elsif ($value =~ /^f$/i) {
+            $res = $proto->FEMALE;
+            $err = undef;
+        }
     }
     return $err ? ($res, $err) : $res;
 }

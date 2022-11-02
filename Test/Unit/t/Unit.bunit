@@ -3,157 +3,157 @@
 Request();
 options({
     compute_params => sub {
-	my(undef, $params, $method) = @_;
-	return $method eq 'builtin_email' ? ['hello'] : $params;
+        my(undef, $params, $method) = @_;
+        return $method eq 'builtin_email' ? ['hello'] : $params;
     },
 });
 req()->set_realm('btest_read');
 [
     inline_case(sub {
-	return;
+        return;
     }),
     class() => [
-	simple_package_name => 'Unit',
-	simple_package_name => not_die(),
-	inline_case(sub {
+        simple_package_name => 'Unit',
+        simple_package_name => not_die(),
+        inline_case(sub {
             my($case, $self) = @_;
-	    die('Not a Bivio::Test::Case')
-		unless $case->isa('Bivio::Test::Case');
-	    die('Not a Bivio::Test')
-		unless $self->isa('Bivio::Test');
-	    return;
-	}),
+            die('Not a Bivio::Test::Case')
+                unless $case->isa('Bivio::Test::Case');
+            die('Not a Bivio::Test')
+                unless $self->isa('Bivio::Test');
+            return;
+        }),
         builtin_assert_contains => [
-	    # Would expect this to be true, but it isn't
-	    [[1, 2, 3], [2]] => DIE(),
-	],
-	builtin_create_user => [
-	    'unit_bunit' => sub {
-		foreach my $c (
-		    [qw(unit_bunit auth_realm owner name)],
-		    [qw(unit_bunit auth_user name)],
-		) {
-		    assert_equals(shift(@$c), req()->get_nested(@$c));
-		    assert_not_equals(1, 2);
-		    assert_equals(qr{unexpected match}, Bivio::Die->catch(sub {
-			assert_not_equals(qr{long}, 'some long thing'),
-		        return;
-		    }));
-		}
-		return 1;
-	    },
-	],
-	builtin_email => qr{hello\@},
-	builtin_model => [
-	    [RealmOwner => {name => 'fourem'}] => MODEL_NOT_FOUND(),
-	],
-	builtin_unauth_model => [
-	    RealmOwner => sub {$_[1]->[0]->is_loaded ? 0 : 1},
-	    [RealmOwner => {name => 'fourem'}, [{display_name => qr{forum}i}]]
-		=> not_die(),
-	    [RealmOwner => {name => 'not found'}] => MODEL_NOT_FOUND(),
-	    [RealmUserList => {
-		auth_id => model(
-		    RealmOwner => {name => 'btest_read'},
-		)->get('realm_id'),
-	    }] => sub {
-		my($case, $actual) = @_;
-		$case->actual_return([$actual->[0]->get('RealmUser.role')]);
-		return [Bivio::Auth::Role->ADMINISTRATOR];
-	    },
-	    [RealmUserList => {
-		auth_id => model(
-		    RealmOwner => {name => 'btest_read'},
-		)->get('realm_id'),
-	    }, []] => DIE(),
-	    [RealmUserList => {
-		auth_id => model(
-		    RealmOwner => {name => 'btest_read'},
-		)->get('realm_id'),
-	    }, [{}]] => not_die(),
-	],
-	builtin_string_ref => [
-	    '' => [\''],
-	],
-	builtin_shell_util => [
-	    [Class => [qw(u_name Model.RealmOwner)]] => qr{RealmOwner},
-	],
-	builtin_random_string => [
-	    [] => qr{^.{8}$}s,
-	    [2] => qr{^.{2}$}s,
-	    [5, ['a' .. 'a']] => qr{^a{5}$}s,
-	    [undef, ['a' .. 'a']] => qr{^a{8}$}s,
-	],
+            # Would expect this to be true, but it isn't
+            [[1, 2, 3], [2]] => DIE(),
+        ],
+        builtin_create_user => [
+            'unit_bunit' => sub {
+                foreach my $c (
+                    [qw(unit_bunit auth_realm owner name)],
+                    [qw(unit_bunit auth_user name)],
+                ) {
+                    assert_equals(shift(@$c), req()->get_nested(@$c));
+                    assert_not_equals(1, 2);
+                    assert_equals(qr{unexpected match}, Bivio::Die->catch(sub {
+                        assert_not_equals(qr{long}, 'some long thing'),
+                        return;
+                    }));
+                }
+                return 1;
+            },
+        ],
+        builtin_email => qr{hello\@},
+        builtin_model => [
+            [RealmOwner => {name => 'fourem'}] => MODEL_NOT_FOUND(),
+        ],
+        builtin_unauth_model => [
+            RealmOwner => sub {$_[1]->[0]->is_loaded ? 0 : 1},
+            [RealmOwner => {name => 'fourem'}, [{display_name => qr{forum}i}]]
+                => not_die(),
+            [RealmOwner => {name => 'not found'}] => MODEL_NOT_FOUND(),
+            [RealmUserList => {
+                auth_id => model(
+                    RealmOwner => {name => 'btest_read'},
+                )->get('realm_id'),
+            }] => sub {
+                my($case, $actual) = @_;
+                $case->actual_return([$actual->[0]->get('RealmUser.role')]);
+                return [Bivio::Auth::Role->ADMINISTRATOR];
+            },
+            [RealmUserList => {
+                auth_id => model(
+                    RealmOwner => {name => 'btest_read'},
+                )->get('realm_id'),
+            }, []] => DIE(),
+            [RealmUserList => {
+                auth_id => model(
+                    RealmOwner => {name => 'btest_read'},
+                )->get('realm_id'),
+            }, [{}]] => not_die(),
+        ],
+        builtin_string_ref => [
+            '' => [\''],
+        ],
+        builtin_shell_util => [
+            [Class => [qw(u_name Model.RealmOwner)]] => qr{RealmOwner},
+        ],
+        builtin_random_string => [
+            [] => qr{^.{8}$}s,
+            [2] => qr{^.{2}$}s,
+            [5, ['a' .. 'a']] => qr{^a{5}$}s,
+            [undef, ['a' .. 'a']] => qr{^a{8}$}s,
+        ],
     ],
     sub {'Bivio::UNIVERSAL'} => [
-	simple_package_name => 'UNIVERSAL',
+        simple_package_name => 'UNIVERSAL',
     ],
     sub {'Bivio::Die'} => [
-	die => DIE(),
+        die => DIE(),
     ],
     class() => [
-	sub {$_[2]} => [
-	    abc => expect_contains(var('g1')),
-	    abc => var('g1'),
-	    var('g1') => 'abc',
-	    sub {[var('g1')]} => 'abc',
-	    abc => sub {[var('g1')]},
-	    var({g1 => 1}) => [{abc => 1}],
-	    var({1 => 'g1'}) => [{1 => 'abc'}],
-	    var([qw(g1 ignored)]) => 'abc',
-	    def => var('g2'),
-	],
-	{
-	    method => sub {['not seen']},
-	    compute_return => var('g2'),
-	} => [
-	    anything => 'def',
-	],
-	sub {'Bivio::UNIVERSAL'} => var('g3'),
-	{
-	    method => sub {@{shift->get('params')}},
-	    compute_params => sub {
+        sub {$_[2]} => [
+            abc => expect_contains(var('g1')),
+            abc => var('g1'),
+            var('g1') => 'abc',
+            sub {[var('g1')]} => 'abc',
+            abc => sub {[var('g1')]},
+            var({g1 => 1}) => [{abc => 1}],
+            var({1 => 'g1'}) => [{1 => 'abc'}],
+            var([qw(g1 ignored)]) => 'abc',
+            def => var('g2'),
+        ],
+        {
+            method => sub {['not seen']},
+            compute_return => var('g2'),
+        } => [
+            anything => 'def',
+        ],
+        sub {'Bivio::UNIVERSAL'} => var('g3'),
+        {
+            method => sub {@{shift->get('params')}},
+            compute_params => sub {
                 my(undef, $params) = @_;
                 return [map("!$_!", @$params)];
             },
-	} => [
-	    def => '!def!',
+        } => [
+            def => '!def!',
             var('g2') => var('g4'),
             var(['g4', 'g1']) => ['!!def!!', '!abc!'],
             sub {
                 var(g5 => '!3!');
                 return shift->get('compute_params')->(undef, [3]);
             } => var('g5'),
-	],
-	inline_trace('sql'),
-	inline_trace(''),
-	inline_case(sub {
-	    assert_equals('555', Phone(' 555 '));
-	    req()->set_realm('demo');
-	    assert_equals(
-		req('auth_realm')->get('owner_name'),
-		RealmOwner({})->get('name'),
-	    );
-	    return;
-	}),
-	inline_case(sub {
-	    assert_equals(3, assert_eval('3'));
-	    return;
-	}),
-	sub {
-	    assert_eval('0');
-	} => qr{returned false},
-	sub {
-	    assert_eval('die');
-	} => qr{died with: },
-	want_scalar => [
-	    case_tag('Unit1'),
-	    sub {[shift->as_string]} => 'Test.Case[Unit1]',
-	    sub {[shift->unsafe_get('tag')]} => [undef],
-	],
+        ],
+        inline_trace('sql'),
+        inline_trace(''),
+        inline_case(sub {
+            assert_equals('555', Phone(' 555 '));
+            req()->set_realm('demo');
+            assert_equals(
+                req('auth_realm')->get('owner_name'),
+                RealmOwner({})->get('name'),
+            );
+            return;
+        }),
+        inline_case(sub {
+            assert_equals(3, assert_eval('3'));
+            return;
+        }),
+        sub {
+            assert_eval('0');
+        } => qr{returned false},
+        sub {
+            assert_eval('die');
+        } => qr{died with: },
+        want_scalar => [
+            case_tag('Unit1'),
+            sub {[shift->as_string]} => 'Test.Case[Unit1]',
+            sub {[shift->unsafe_get('tag')]} => [undef],
+        ],
     ],
 #TODO: create_object needs to be deferred
 #     var('g2') => [
-# 	package_name => var('g2'),
+#         package_name => var('g2'),
 #     ],
 ];

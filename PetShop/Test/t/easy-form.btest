@@ -7,10 +7,10 @@ my($r) = random_string();
 foreach my $u ('', 'root') {
     home_page();
     login_as($u)
-	if $u;
+        if $u;
     visit_uri('/fourem/file/EasyForm-btest.html');
     submit_form(OK => {
-	'Input:' => "$u$r",
+        'Input:' => "$u$r",
     });
     verify_text('completed');
     verify_local_mail(qr{root}, $form_uri) =~ /$r/;

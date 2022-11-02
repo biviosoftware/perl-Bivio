@@ -96,37 +96,37 @@ sub from_literal {
 
     # check for possible "i n/d" format
     if ($value =~ /\//) {
-	# parse it and convert to decimal
-	my($sign, $integer, $numerator, $denominator) =
-		$value =~ /^([-+])?(\d+\s)?(\d+)\/(\d+)$/;
-	if (defined($denominator) && $denominator != 0) {
+        # parse it and convert to decimal
+        my($sign, $integer, $numerator, $denominator) =
+                $value =~ /^([-+])?(\d+\s)?(\d+)\/(\d+)$/;
+        if (defined($denominator) && $denominator != 0) {
 
-	    $value = $proto->add($integer || 0,
-		    $proto->div($numerator, $denominator));
+            $value = $proto->add($integer || 0,
+                    $proto->div($numerator, $denominator));
 
-	    if (defined($sign) && $sign eq '-') {
-		$value = $proto->neg($value);
-	    }
-	    $parsed_value = $value;
-	}
+            if (defined($sign) && $sign eq '-') {
+                $value = $proto->neg($value);
+            }
+            $parsed_value = $value;
+        }
     }
     else {
-	# Get rid of all blanks to be nice to user
-	$value =~ s/\s+//g;
-	$parsed_value = $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
+        # Get rid of all blanks to be nice to user
+        $value =~ s/\s+//g;
+        $parsed_value = $value if $value =~ /^[-+]?(\d+\.?\d*|\.\d+)$/;
     }
 
     # not a number
     return (undef, Bivio::TypeError->NUMBER)
-	    unless defined($parsed_value);
+            unless defined($parsed_value);
 
     # round to the acceptable number of decimals
     $parsed_value = $proto->round($parsed_value, $proto->get_decimals);
 
     # range check
     return $parsed_value
-	    if $proto->compare($parsed_value, $proto->get_min) >= 0
-		    && $proto->compare($parsed_value, $proto->get_max) <= 0;
+            if $proto->compare($parsed_value, $proto->get_min) >= 0
+                    && $proto->compare($parsed_value, $proto->get_max) <= 0;
 
     return (undef, Bivio::TypeError->NUMBER_RANGE);
 }
@@ -185,7 +185,7 @@ sub to_literal {
     my($proto, $value) = @_;
     # Converts from internal form to a literal string value.
     return $proto->SUPER::to_literal($value)
-	unless defined($value);
+        unless defined($value);
 
     # remove leading '+', replace '.1', '-.1' with '0.1', '-0.1' respectively
     $value =~ s/^\+//;

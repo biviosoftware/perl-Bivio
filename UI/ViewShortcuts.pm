@@ -22,8 +22,8 @@ sub vs_debug {
     shift;
     return [sub {
         shift;
-	b_info(@_);
-	return shift(@_);
+        b_info(@_);
+        return shift(@_);
     }, @_];
 }
 
@@ -36,8 +36,8 @@ sub vs_form_method_call {
     my(undef, $widget, $method) = @_;
     return [sub {
         my($source) = @_;
-	return $widget->resolve_form_model($source)
-	    ->$method($widget->render_simple_attr('field', $source));
+        return $widget->resolve_form_model($source)
+            ->$method($widget->render_simple_attr('field', $source));
     }];
 }
 
@@ -62,23 +62,23 @@ sub vs_html {
 sub vs_is_current_facade {
     my($self, $simple_class) = @_;
     return [
-	sub {
-	    my(undef, $sc) = @_;
-	    return b_use('UI.Facade')
-		->get_from_source(shift)
-		->simple_package_name
-	        eq $sc
-		? 1 : 0;
-	},
-	$simple_class,
+        sub {
+            my(undef, $sc) = @_;
+            return b_use('UI.Facade')
+                ->get_from_source(shift)
+                ->simple_package_name
+                eq $sc
+                ? 1 : 0;
+        },
+        $simple_class,
     ];
 }
 
 sub vs_local_file_plain_common_uri {
     my($self, $file) = @_;
     return [
-	sub {shift->req('UI.Facade')->get_local_file_plain_common_uri(shift)},
-	$file,
+        sub {shift->req('UI.Facade')->get_local_file_plain_common_uri(shift)},
+        $file,
     ];
 }
 
@@ -94,9 +94,9 @@ sub vs_model {
     # will be stripped off and looked up as the model.
     return shift->vs_req(sub {
         my($req, $model, $field) = @_;
-	($model, $field) = $model =~ /^(\w+)\.(.+)/
-	    unless defined($field);
-	return $req->get_nested("Model.$model", $field);
+        ($model, $field) = $model =~ /^(\w+)\.(.+)/
+            unless defined($field);
+        return $req->get_nested("Model.$model", $field);
     }, @_);
 }
 
@@ -130,9 +130,9 @@ sub vs_req {
 sub vs_resolve_fully {
     my(undef, $value) = @_;
     return [sub {
-	return ref($value) eq 'ARRAY'
-	    ? $_W->unsafe_resolve_widget_value($value, shift(@_))
-	    : $value;
+        return ref($value) eq 'ARRAY'
+            ? $_W->unsafe_resolve_widget_value($value, shift(@_))
+            : $value;
     }];
 }
 
@@ -150,8 +150,8 @@ sub vs_text {
     my($proto, @tag) = @_;
     # Splits I<tag> and I<prefix>es into its base parts, checking for syntax.
     return $proto->is_blesser_of($tag[0], 'Bivio::Agent::Request')
-	? _fc(\@_, 'Text', '->get_widget_value')
-	: _fc([$proto], 'Text', [sub {shift; @_}, @tag]);
+        ? _fc(\@_, 'Text', '->get_widget_value')
+        : _fc([$proto], 'Text', [sub {shift; @_}, @tag]);
 }
 
 sub vs_text_as_prose {

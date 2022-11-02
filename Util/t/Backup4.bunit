@@ -4,45 +4,45 @@ Request();
 my($split) = sub {mock_return([split(/(?<=\n)/, shift)])};
 mock_methods({
     'Bivio.ShellUtil->do_backticks' => [
-	[qr{zfs snapshot|zfs destroy} => [mock_return()]],
-	['mount -t zfs' => [mock_return(<<'EOF')]],
+        [qr{zfs snapshot|zfs destroy} => [mock_return()]],
+        ['mount -t zfs' => [mock_return(<<'EOF')]],
 zp1/mirror on /bkp/mirror type zfs (rw)
 zp1/other on /bkp/other type zfs (rw)
 EOF
-	['zfs list zp1/other' => [mock_return(<<'EOF')]],
+        ['zfs list zp1/other' => [mock_return(<<'EOF')]],
 NAME      USED  AVAIL  REFER  MOUNTPOINT
 zp1/other 988M   525G   988M  legacy
 EOF
-	['zfs list zp1/mirror' => [mock_return(<<'EOF')]],
+        ['zfs list zp1/mirror' => [mock_return(<<'EOF')]],
 NAME      USED  AVAIL  REFER  MOUNTPOINT
 zp1/mirror 988M   525G   988M  legacy
 EOF
-	['zfs list -t snapshot' => [
-	    $split->(<<'EOF'),
+        ['zfs list -t snapshot' => [
+            $split->(<<'EOF'),
 NAME                  USED  AVAIL  REFER  MOUNTPOINT
 zp1/mirror@20120711  29.9K      -  34.9K  -
 zp1/mirror@20120712  29.9K      -  34.9K  -
 zp1/mirror@20120713  29.9K      -  34.9K  -
 EOF
-	    $split->(<<'EOF'),
+            $split->(<<'EOF'),
 NAME                  USED  AVAIL  REFER  MOUNTPOINT
 bkp/other@20120711  29.9K      -  34.9K  -
 EOF
-	]],
+        ]],
     ],
 });
 [
     class() => [
-	zfs_snapshot => [
-#TODO: tests don't work - permission denied	    
-# 	    [qw(zp1/mirror 20120713 1)] => <<'EOF',
+        zfs_snapshot => [
+#TODO: tests don't work - permission denied            
+#             [qw(zp1/mirror 20120713 1)] => <<'EOF',
 # Created: zp1/mirror@20120713
 # Removed: zp1/mirror@20120711 zp1/mirror@20120712
 # EOF
-# 	    [qw(/bkp/other 20120711 1)] => <<'EOF',
+#             [qw(/bkp/other 20120711 1)] => <<'EOF',
 # Created: zp1/other@20120711
 # EOF
-	    [] => DIE(),
-	],
+            [] => DIE(),
+        ],
     ],
 ];

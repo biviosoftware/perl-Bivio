@@ -4,13 +4,13 @@ Request();
 my($user) = unauth_model(RealmOwner => {name => 'demo'});
 [
     [req()] => [
-	process => [
-	    [{realm_owner => $user}] => [0],
-	],
+        process => [
+            [{realm_owner => $user}] => [0],
+        ],
     ],
     sub {class()->get_instance} => [
-	process => [
-	    [{realm_owner => $user}] => DIE(),
-	],
+        process => [
+            [{realm_owner => $user}] => DIE(),
+        ],
     ],
 ];

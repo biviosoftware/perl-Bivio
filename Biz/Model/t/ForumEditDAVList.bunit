@@ -14,21 +14,21 @@ my($forum_count) = sub {
 };
 [
     [req()] => [
-	$forum_count->(undef, 0),
-	dav_put => [
-	    [\(my $x = <<'EOF')] => not_die(),
+        $forum_count->(undef, 0),
+        dav_put => [
+            [\(my $x = <<'EOF')] => not_die(),
 ignore
 fedl1,ForumEditDAVList1
 EOF
         ],
-  	$forum_count->(undef, 1),
-	dav_put => [
-	    sub {[\(my $x = <<"EOF")]} => not_die(),
+          $forum_count->(undef, 1),
+        dav_put => [
+            sub {[\(my $x = <<"EOF")]} => not_die(),
 ignore
 fedl1,ForumEditDAVList1 now,@{[realm_id('fedl1')]}
 fedl2,My OTher forum
 EOF
         ],
-  	$forum_count->(undef, 2),
+          $forum_count->(undef, 2),
     ],
 ];

@@ -29,8 +29,8 @@ sub new {
     my($proto, $date_time, $time_zone) = @_;
     my($self) = shift->SUPER::new;
     $self->[$_IDI] = {
-	tz => $time_zone,
-	dt => $date_time,
+        tz => $time_zone,
+        dt => $date_time,
     };
     return $self;
 }
@@ -38,7 +38,7 @@ sub new {
 sub to_literal {
     my(undef, $value) = @_;
     return ''
-	unless $value;
+        unless $value;
     return $value->as_literal;
 }
 

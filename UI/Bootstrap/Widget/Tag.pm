@@ -24,7 +24,7 @@ sub initialize {
     my($key) = join('.', $self->get('tag'), $self->unsafe_get('class') || '');
     my($values) = $_MAP_ATTRS->{$key};
     $self->put(%$values)
-	if $values;
+        if $values;
     return;
 }
 
@@ -32,8 +32,8 @@ sub internal_class_with_additional {
     my($self, $class) = @_;
     my($additional_classes) = $self->unsafe_get('additional_classes');
     return $additional_classes
-	? "$class $additional_classes"
-	: $class;
+        ? "$class $additional_classes"
+        : $class;
 }
 
 1;

@@ -21,9 +21,9 @@ sub initialize {
     $self->unsafe_initialize_attr('undef_value');
     my($values) = $self->get('values');
     $self->put(_value_array => [map({
-	my($k) = $_;
-	my($r) = $_R->is_stringified_regexp($k) ? $_R->from_literal_or_die($k) : ();
-	($r || $k => $self->initialize_value($k, $values->{$_}));
+        my($k) = $_;
+        my($r) = $_R->is_stringified_regexp($k) ? $_R->from_literal_or_die($k) : ();
+        ($r || $k => $self->initialize_value($k, $values->{$_}));
     } sort(keys(%$values)))]);
     return;
 }
@@ -36,13 +36,13 @@ sub internal_as_string {
 sub internal_new_args {
     my(undef, $control, $values, $default_value, $undef_value, $attrs) = @_;
     return '"control" attribute must be defined'
-	unless defined($control);
+        unless defined($control);
     return {
-	control => $control,
-	values => $values ? $values : {},
-	default_value => $default_value,
-	undef_value => $undef_value,
-	($attrs ? %$attrs : ()),
+        control => $control,
+        values => $values ? $values : {},
+        default_value => $default_value,
+        undef_value => $undef_value,
+        ($attrs ? %$attrs : ()),
     };
 }
 
@@ -50,7 +50,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($v, $n) = _select($self, $source);
     $self->unsafe_render_value($n, $v, $source, $buffer)
-	if defined($v);
+        if defined($v);
     return;
 }
 
@@ -59,30 +59,30 @@ sub _select {
     my($ctl) = '';
     my($n) = 'undef_value';
     if ($self->unsafe_render_attr('control', $source, \$ctl)) {
-	my($x) = $self->map_by_two(
-	    sub {
-		my($k, $v) = @_;
-		return
-		    unless (ref($k) ? $ctl =~ $k : $k eq $ctl) && defined($v);
-		return ($v || undef, $k);
-	    },
-	    $self->get('_value_array'),
-	);
-	if (@$x) {
-	    b_die($x, ': control matches too many keys')
-	        if @$x > 2;
-	    return @$x;
-	}
-	$n = 'default_value';
+        my($x) = $self->map_by_two(
+            sub {
+                my($k, $v) = @_;
+                return
+                    unless (ref($k) ? $ctl =~ $k : $k eq $ctl) && defined($v);
+                return ($v || undef, $k);
+            },
+            $self->get('_value_array'),
+        );
+        if (@$x) {
+            b_die($x, ': control matches too many keys')
+                if @$x > 2;
+            return @$x;
+        }
+        $n = 'default_value';
     }
     my($v) = $self->unsafe_get($n);
     return ($v || undef, $n)
-	if defined($v);
+        if defined($v);
     b_die(
-	$self->get('control'),
-	'=',
-	$ctl,
-	": control matches $n value, but not specified",
+        $self->get('control'),
+        '=',
+        $ctl,
+        ": control matches $n value, but not specified",
     );
     # DOES NOT RETURN
 }

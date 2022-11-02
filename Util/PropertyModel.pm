@@ -18,14 +18,14 @@ sub garbage_collector {
     my($self) = @_;
     my($req) = $self->initialize_fully;
     Biz_PropertyModel()->do_iterate_model_subclasses(
-	sub {
-	    my($m) = shift->new($req);
-	    if ($m->can('handle_garbage_collector')) {
-		_trace($m) if $_TRACE;
-		$m->handle_garbage_collector;
-	    }
-	    return 1;
-	},
+        sub {
+            my($m) = shift->new($req);
+            if ($m->can('handle_garbage_collector')) {
+                _trace($m) if $_TRACE;
+                $m->handle_garbage_collector;
+            }
+            return 1;
+        },
     );
     return;
 }

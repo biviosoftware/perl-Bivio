@@ -4,7 +4,7 @@ ShellUtil();
 [
     [qw(u_super ShellUtil.Class)] => qr{
         .*Bivio::ShellUtil
-	.*Bivio::Collection::Attributes
+        .*Bivio::Collection::Attributes
         .*Bivio::UI::WidgetValueSource
         .*Bivio::UNIVERSAL
     }xs,

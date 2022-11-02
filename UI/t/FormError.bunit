@@ -3,36 +3,36 @@
 Widget();
 [
     sub {class()->get_from_source(req())} => [
-	{
-	    method => 'to_widget_value',
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		my($b) = '';
-		$actual->[0]->initialize_and_render(req(), \$b);
-		return [$b];
-	    },
-	} => [
-	    [
-		req(),
-		model('UserLoginForm'),
-		'RealmOwner.password',
-		'Password',
-		Bivio::TypeError->NULL,
-	    ] => qr{Please enter a password}i,
-	    [
-		req(),
-		model('UserLoginForm'),
-		'no_such_field',
-		'No Such Field',
-		Bivio::TypeError->NULL,
-	    ] => qr{You must supply a value for No Such Field.}i,
-	    [
-		req(),
-		model('UserCreateForm'),
-		'no_such_field',
-		'No Such Field',
-		Bivio::TypeError->NULL,
-	    ] => qr{@{[Bivio::TypeError->NULL->get_long_desc]}}i,
-	],
+        {
+            method => 'to_widget_value',
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                my($b) = '';
+                $actual->[0]->initialize_and_render(req(), \$b);
+                return [$b];
+            },
+        } => [
+            [
+                req(),
+                model('UserLoginForm'),
+                'RealmOwner.password',
+                'Password',
+                Bivio::TypeError->NULL,
+            ] => qr{Please enter a password}i,
+            [
+                req(),
+                model('UserLoginForm'),
+                'no_such_field',
+                'No Such Field',
+                Bivio::TypeError->NULL,
+            ] => qr{You must supply a value for No Such Field.}i,
+            [
+                req(),
+                model('UserCreateForm'),
+                'no_such_field',
+                'No Such Field',
+                Bivio::TypeError->NULL,
+            ] => qr{@{[Bivio::TypeError->NULL->get_long_desc]}}i,
+        ],
     ],
 ];

@@ -31,12 +31,12 @@ sub ancestral_get {
     # I<default> not supplied or returns default.
     my($s) = $self;
     while ($s) {
-	return $s->get($name)
-	    if $s->has_keys($name);
-	$s = $s->unsafe_get('parent');
+        return $s->get($name)
+            if $s->has_keys($name);
+        $s = $s->unsafe_get('parent');
     }
     return $default
-	if int(@_) > 2;
+        if int(@_) > 2;
     _die($self, $name, ': ancestral attribute not found');
     # DOES NOT RETURN
 }
@@ -48,12 +48,12 @@ sub ancestral_has_keys {
      _die($self, 'missing arguments') unless @names;
      my($fields) = $self->[$_IDI];
      while (@names) {
- 	# Top of array checked first, since we're splicing as we go
- 	for (my($i) = $#names; $i >= 0; $i--) {
- 	    splice(@names, $i, 1) if exists($fields->{$names[$i]});
-  	}
-  	return @names ? 0 : 1 unless defined($fields->{parent});
-  	$fields = $fields->{parent}->[$_IDI];
+         # Top of array checked first, since we're splicing as we go
+         for (my($i) = $#names; $i >= 0; $i--) {
+             splice(@names, $i, 1) if exists($fields->{$names[$i]});
+          }
+          return @names ? 0 : 1 unless defined($fields->{parent});
+          $fields = $fields->{parent}->[$_IDI];
       }
       return 1;
 }
@@ -61,8 +61,8 @@ sub ancestral_has_keys {
 sub are_defined {
     # Returns true if all attributes are defined.
     foreach my $v (shift->unsafe_get(@_)) {
-	return 0
-	    unless defined($v);
+        return 0
+            unless defined($v);
     }
     return 1;
 }
@@ -88,12 +88,12 @@ sub delete_all_by_regexp {
     # Deletes all keys matching I<pattern>.
     _writable($self);
     return $self->delete(
-	@{$self->map_each(
-	    sub {
-		my(undef, $k) = @_;
-		return $k =~ /$pattern/ ? $k : ();
-	    }
-	)},
+        @{$self->map_each(
+            sub {
+                my(undef, $k) = @_;
+                return $k =~ /$pattern/ ? $k : ();
+            }
+        )},
     );
 }
 
@@ -101,12 +101,12 @@ sub dump {
     my($self) = @_;
     # For debugging, dumps the current state to trace output. One level only.
     if ($_TRACE) {
-	my($dump) = "\n";
-	foreach my $k (sort(@{$self->get_keys})) {
-	    my($value) = $self->get($k);
-	    $dump .= "\t$k => ".(defined($value) ? $value : 'undef')."\n";
-	}
-	_trace($dump);
+        my($dump) = "\n";
+        foreach my $k (sort(@{$self->get_keys})) {
+            my($value) = $self->get($k);
+            $dump .= "\t$k => ".(defined($value) ? $value : 'undef')."\n";
+        }
+        _trace($dump);
     }
     return;
 }
@@ -125,13 +125,13 @@ sub get {
     # L<has_keys|"has_keys"> to test for existence.
     my($fields) = $self->[$_IDI];
     return @_ == 1 && exists($fields->{$_[0]}) ? $fields->{$_[0]}
-	: $self->return_scalar_or_array(
-	    map(
-		exists($fields->{$_}) ? $fields->{$_}
-		    : _die($self, $_, ": attribute doesn't exist"),
-		@_,
-	    ),
-	);
+        : $self->return_scalar_or_array(
+            map(
+                exists($fields->{$_}) ? $fields->{$_}
+                    : _die($self, $_, ": attribute doesn't exist"),
+                @_,
+            ),
+        );
 }
 
 sub get_and_delete {
@@ -144,7 +144,7 @@ sub get_by_regexp {
 
 sub get_if_defined_else_put {
     return shift->put_unless_defined(@_)
-	->get(map($_[2 * $_], 0 .. (@_/2 - 1)));
+        ->get(map($_[2 * $_], 0 .. (@_/2 - 1)));
 }
 
 sub get_if_exists_else_put {
@@ -155,7 +155,7 @@ sub get_if_exists_else_put {
     #
     # Returns the gotten or computed value.
     return shift->put_unless_exists(@_)
-	->get(map($_[2 * $_], 0 .. (@_/2 - 1)));
+        ->get(map($_[2 * $_], 0 .. (@_/2 - 1)));
 }
 
 sub get_keys {
@@ -180,9 +180,9 @@ sub get_or_default {
     my($fields) = $self->[$_IDI];
     return exists($fields->{$name})
         ? $fields->{$name}
-	: ref($default) eq 'CODE'
+        : ref($default) eq 'CODE'
         ? $default->($name)
-	: $default;
+        : $default;
 }
 
 sub get_request {
@@ -194,7 +194,7 @@ sub get_shallow_copy {
     my($self, $key_re) = @_;
     # Return a shallow copy of the attributes.
     my($k) = $key_re ? [grep($_ =~ $key_re, @{$self->get_keys})]
-	: $self->get_keys;
+        : $self->get_keys;
     return {map((shift(@$k) => $_), $self->get(@$k))};
 }
 
@@ -209,7 +209,7 @@ sub internal_clear_read_only {
     my($self) = @_;
     # Reset is_read_only.  Use with caution.
     _die($self, "protected method")
-	unless caller(0)->isa(__PACKAGE__);
+        unless caller(0)->isa(__PACKAGE__);
     delete($self->[$_IDI]->{$_READ_ONLY_ATTR});
     return $self;
 }
@@ -223,7 +223,7 @@ sub internal_get {
     #
     # Not allowed if read-only.
     _die($self, "protected method")
-	unless caller(0)->isa(__PACKAGE__);
+        unless caller(0)->isa(__PACKAGE__);
     return _writable($self);
 }
 
@@ -234,7 +234,7 @@ sub internal_put {
     #
     # Modifying the hash will modify the attributes.
     _die($self, "protected method")
-	unless caller(0)->isa(__PACKAGE__);
+        unless caller(0)->isa(__PACKAGE__);
     _writable($self);
     $self->[$_IDI] = $fields;
     return $self;
@@ -282,8 +282,8 @@ sub put {
     # Returns I<self>.
     my($fields) = _writable($self);
     while (@$args) {
-	my($k, $v) = (shift(@$args), shift(@$args));
-	$fields->{$k} = $v;
+        my($k, $v) = (shift(@$args), shift(@$args));
+        $fields->{$k} = $v;
     }
     return $self;
 }
@@ -299,9 +299,9 @@ sub put_unless_exists {
     # I<value> if it is a code_ref and or just puts I<value> if it isn't a code_ref.
     _writable($self);
     while (@$args) {
-	my($k, $v) = (splice(@$args, 0, 2));
-	$self->put($k => ref($v) eq 'CODE' ? $v->($k) : $v)
-	    unless $self->has_keys($k);
+        my($k, $v) = (splice(@$args, 0, 2));
+        $self->put($k => ref($v) eq 'CODE' ? $v->($k) : $v)
+            unless $self->has_keys($k);
     }
     return $self;
 }
@@ -310,9 +310,9 @@ sub put_unless_defined {
     my($self, $args) = _even(\@_);
     _writable($self);
     while (@$args) {
-	my($k, $v) = (splice(@$args, 0, 2));
-	$self->put($k => ref($v) eq 'CODE' ? $v->($k) : $v)
-	    unless defined($self->unsafe_get($k));
+        my($k, $v) = (splice(@$args, 0, 2));
+        $self->put($k => ref($v) eq 'CODE' ? $v->($k) : $v)
+            unless defined($self->unsafe_get($k));
     }
     return $self;
 }
@@ -330,7 +330,7 @@ sub unsafe_get {
     # in its place.
     my($fields) = $self->[$_IDI];
     return @_ == 1 ? $fields->{$_[0]}
-	: $self->return_scalar_or_array(map($fields->{$_}, @_))
+        : $self->return_scalar_or_array(map($fields->{$_}, @_))
 }
 
 sub unsafe_get_and_delete {
@@ -364,19 +364,19 @@ sub unsafe_get_widget_value_by_name {
 sub with_attributes {
     my($self, $attrs, $op) = @_;
     my($prev) = {
-	map(
-	    $self->has_keys($_) ? ($_ => $self->get($_)) : (),
-	    keys(%$attrs),
-	),
+        map(
+            $self->has_keys($_) ? ($_ => $self->get($_)) : (),
+            keys(%$attrs),
+        ),
     };
     $self->put(%$attrs);
     return Bivio::Die->catch_and_rethrow(
-	$op,
-	sub {
-	    $self->delete(grep(!exists($prev->{$_}), keys(%$attrs)));
-	    $self->put(%$prev);
-	    return;
-	},
+        $op,
+        sub {
+            $self->delete(grep(!exists($prev->{$_}), keys(%$attrs)));
+            $self->put(%$prev);
+            return;
+        },
     );
 }
 
@@ -393,7 +393,7 @@ sub _even {
     my($args) = @_;
     my($self) = shift(@$args);
     _die($self, "must be an even number of parameters")
-	unless @$args % 2 == 0;
+        unless @$args % 2 == 0;
     return ($self, $args);
 }
 
@@ -410,40 +410,40 @@ sub _get_nested {
     my($method) = $self->my_caller;
     my($v) = $self;
     while (@names) {
-	my($name) = shift(@names);
-	if (defined($v) && $v eq $self) {
-	    if ($v->has_keys($name)) {
-		$v = $v->unsafe_get($name);
-		next;
-	    }
-	}
-	elsif (ref($v) eq 'HASH') {
-	    if (exists($v->{$name})) {
-		$v = $v->{$name};
-		next;
-	    }
-	}
-	elsif (ref($v) eq 'ARRAY') {
-	    _die($self, $name, ": not an array index ", \@names)
-		unless $name =~ /^\d+$/;
-	    if ($name <= $#$v) {
-		$v = $v->[$name];
-		next;
-	    }
-	}
-	elsif (ref($v) && UNIVERSAL::isa($v, __PACKAGE__)) {
-	    return $v->$method($name, @names);
-	}
-	else {
-	    return undef
-		if  $method =~ /unsafe/ && !defined($v);
-	    _die($self, "can't index \"", $v, '" at name "',
-		    $name, '" ', \@names);
-	}
-	return $method =~ /unsafe/
-	    ? undef
-	    : _die($self, $name, ": attribute doesn't exist ",
-		   @names ? \@names: ());
+        my($name) = shift(@names);
+        if (defined($v) && $v eq $self) {
+            if ($v->has_keys($name)) {
+                $v = $v->unsafe_get($name);
+                next;
+            }
+        }
+        elsif (ref($v) eq 'HASH') {
+            if (exists($v->{$name})) {
+                $v = $v->{$name};
+                next;
+            }
+        }
+        elsif (ref($v) eq 'ARRAY') {
+            _die($self, $name, ": not an array index ", \@names)
+                unless $name =~ /^\d+$/;
+            if ($name <= $#$v) {
+                $v = $v->[$name];
+                next;
+            }
+        }
+        elsif (ref($v) && UNIVERSAL::isa($v, __PACKAGE__)) {
+            return $v->$method($name, @names);
+        }
+        else {
+            return undef
+                if  $method =~ /unsafe/ && !defined($v);
+            _die($self, "can't index \"", $v, '" at name "',
+                    $name, '" ', \@names);
+        }
+        return $method =~ /unsafe/
+            ? undef
+            : _die($self, $name, ": attribute doesn't exist ",
+                   @names ? \@names: ());
     }
     return $v;
 }
@@ -453,18 +453,18 @@ sub _unsafe_get_by_regexp {
     # Returns the field for unsafe_get_by_regexp and get_by_regexp.
     my($match);
     foreach my $k (@{$self->get_keys}) {
-	next unless $k =~ /$pattern/;
-	_die($self, $pattern, ': pattern matches more than one key',
-	     ' (', $k, ' and ', $match, ')')
-	    if defined($match)
+        next unless $k =~ /$pattern/;
+        _die($self, $pattern, ': pattern matches more than one key',
+             ' (', $k, ' and ', $match, ')')
+            if defined($match)
 #TODO: temporary to prevent problems with Model aliases on request
-		&& $self->get($match) ne $self->get($k);
-	$match = $k;
+                && $self->get($match) ne $self->get($k);
+        $match = $k;
     }
     return !defined($match) ? $unsafe ? undef
-	: _die($self, $pattern, ': pattern not found')
-	: wantarray ? ($self->get($match), $match)
-	: $self->get($match);
+        : _die($self, $pattern, ': pattern not found')
+        : wantarray ? ($self->get($match), $match)
+        : $self->get($match);
   }
 
 # _writable($self) : $fields
@@ -472,7 +472,7 @@ sub _writable {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     _die($self, $_READ_ONLY_ERROR)
-	if $fields->{$_READ_ONLY_ATTR};
+        if $fields->{$_READ_ONLY_ATTR};
     return $fields;
 }
 

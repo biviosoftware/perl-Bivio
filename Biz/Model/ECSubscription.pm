@@ -25,14 +25,14 @@ sub internal_initialize {
         version => 1,
         table_name => 'ec_subscription_t',
         columns => {
-	    ec_payment_id => ['ECPayment.ec_payment_id', 'PRIMARY_KEY'],
+            ec_payment_id => ['ECPayment.ec_payment_id', 'PRIMARY_KEY'],
             realm_id => ['RealmOwner.realm_id', 'NOT_NULL'],
             start_date => ['Date', 'NOT_NULL'],
             end_date => ['Date', 'NOT_NULL'],
-	    renewal_state => ['ECRenewalState', 'NOT_ZERO_ENUM'],
+            renewal_state => ['ECRenewalState', 'NOT_ZERO_ENUM'],
         },
         auth_id => 'realm_id',
-	other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
+        other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
     };
 }
 
@@ -40,7 +40,7 @@ sub is_active {
     my($self, $date) = @_;
     $date ||= $_D->local_today;
     return $_D->compare($date, $self->get('start_date')) >= 0
-	&& $_D->compare($date, $self->get('end_date')) <= 0 ? 1 : 0;
+        && $_D->compare($date, $self->get('end_date')) <= 0 ? 1 : 0;
 }
 
 sub is_expired {

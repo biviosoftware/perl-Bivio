@@ -34,8 +34,8 @@ $_C->register(my $_CFG = {
     mail_tries => 60,
     email_tag => '+btest_',
     deprecated_text_patterns => $_C->if_version(
-	4 => sub {0},
-	sub {1},
+        4 => sub {0},
+        sub {1},
     ),
     parse_head => 1,
 });
@@ -49,11 +49,11 @@ sub LOCAL_EMAIL_RE {
 sub absolute_uri {
     my($self, $uri) = @_;
     die('invalid uri')
-	unless defined($uri) && length($uri);
+        unless defined($uri) && length($uri);
     my($u) = URI->new($uri = $self->internal_append_query($uri));
     return defined($u->scheme) ? $uri : $u->abs(
-	$self->[$_IDI]->{uri}
-	|| b_die($uri, ': unable to make absolute; no prior URI')
+        $self->[$_IDI]->{uri}
+        || b_die($uri, ': unable to make absolute; no prior URI')
     )->canonical->as_string;
 }
 
@@ -127,18 +127,18 @@ sub audit_links {
 sub basic_authorization {
     my($self, $user, $password) = @_;
     return $self->delete('Authorization')
-	unless $user;
+        unless $user;
     $self->clear_cookies;
     $self->put(Authorization =>
         'Basic ' . MIME::Base64::encode(
-	    $user . ':' . ($password || $self->default_password)));
+            $user . ':' . ($password || $self->default_password)));
     return;
 }
 
 sub case_tag {
     my($self, $tag) = @_;
     b_die($tag, ': invalid case tag')
-	unless ($tag || '') =~ /^[-\w ]+$/;
+        unless ($tag || '') =~ /^[-\w ]+$/;
     $self->put(case_tag => $tag);
     return;
 }
@@ -165,7 +165,7 @@ sub date_time_now {
     $now = $_DT->set_test_now($now, _req($self));
     $self->clear_extra_query_params;
     $self->extra_query_params(
-	$_DT->TEST_NOW_QUERY_KEY => $now,
+        $_DT->TEST_NOW_QUERY_KEY => $now,
     ) if $now;
     return $now;
 }
@@ -174,7 +174,7 @@ sub debug_print {
     my($self, $what) = @_;
     # Prints 'Forms' or 'Links' to STDOUT.
     print(STDOUT ${$_R->to_string(
-	_assert_html($self)->get($what)->get_shallow_copy)});
+        _assert_html($self)->get($what)->get_shallow_copy)});
     return;
 }
 
@@ -185,7 +185,7 @@ sub default_password {
 sub deprecated_text_patterns {
     my($self, $value) = @_;
     $self->put(deprecated_text_patterns => $value)
-	if defined($value);
+        if defined($value);
     return $self->get('deprecated_text_patterns');
 }
 
@@ -193,29 +193,29 @@ sub do_logout {
     my($self) = @_;
     $self->basic_authorization;
     $self->visit_uri('/pub/logout')
-	unless $self->unsafe_op(follow_link => qr{logout}i);
+        unless $self->unsafe_op(follow_link => qr{logout}i);
     return;
 }
 
 sub do_table_rows {
     my($self, $table_name, $do_rows_callback) = @_;
     return _assert_html($self)->get('Tables')
-	->do_rows(_fixup_pattern_protected($self, $table_name), $do_rows_callback);
+        ->do_rows(_fixup_pattern_protected($self, $table_name), $do_rows_callback);
 }
 
 sub do_test_backdoor {
     my($self, $op, $args) = @_;
     # Executes ShellUtil or FormModel based on $args.
     $self->visit_uri(
-	'/t*backdoor?'
-	. b_use('AgentHTTP.Query')->format(
-	    ref($args) eq 'HASH'
-		? {%$args, form_model => $op}
-	        : ref($args) eq ''
-		? {shell_util => $op, command => $args}
-		: b_die($args, ': unable to parse args'),
-	    _req($self),
-	)
+        '/t*backdoor?'
+        . b_use('AgentHTTP.Query')->format(
+            ref($args) eq 'HASH'
+                ? {%$args, form_model => $op}
+                : ref($args) eq ''
+                ? {shell_util => $op, command => $args}
+                : b_die($args, ': unable to parse args'),
+            _req($self),
+        )
     );
     return;
 }
@@ -241,9 +241,9 @@ sub extra_query_params {
     my($self, $key, $value) = @_;
     # Append extra query params.
     push(
-	@{$self->get_if_exists_else_put(extra_query_params => [])},
-	$key,
-	$value,
+        @{$self->get_if_exists_else_put(extra_query_params => [])},
+        $key,
+        $value,
     );
     return;
 }
@@ -258,14 +258,14 @@ sub file_field {
     # name.  Uses a temporary file which is cleaned up at program exit if I<content>
     # is supplied.
     return [$name, $name]
-	unless defined($content);
+        unless defined($content);
     return [$_F->write($self->temp_file($name), $content), $name];
 }
 
 sub find_page_with_text {
     my($self, $pattern) = @_;
     $self->follow_link(qr{^next$}i)
-	until $self->text_exists($pattern);
+        until $self->text_exists($pattern);
     return;
 }
 
@@ -276,9 +276,9 @@ sub find_table_row {
 sub follow_frame {
     my($self, $name) = @_;
     return $self->visit_uri(
-	_assert_html($self)->get('Frames')
-	->get($name)
-	->{src},
+        _assert_html($self)->get('Frames')
+        ->get($name)
+        ->{src},
     );
 }
 
@@ -286,7 +286,7 @@ sub follow_link {
     my($self, @links) = @_;
     my($res);
     foreach my $link (@links) {
-	$res = $self->visit_uri($self->get_uri_for_link($link));
+        $res = $self->visit_uri($self->get_uri_for_link($link));
     }
     return $res;
 }
@@ -309,29 +309,29 @@ sub follow_menu_link {
 sub generate_local_email {
     my($self, $suffix, $domain) = @_;
     if ($_E->is_valid($suffix)) {
-	return $suffix
-	    unless $domain;
-	$suffix = $_E->get_local_part($suffix);
-	$suffix =~ s{.*\Q\$_CFG->{email_tag}}{};
+        return $suffix
+            unless $domain;
+        $suffix = $_E->get_local_part($suffix);
+        $suffix =~ s{.*\Q\$_CFG->{email_tag}}{};
     }
     # Returns an email address based on I<email_user> and I<suffix>.
     b_die('missing suffix')
-	unless defined($suffix);
+        unless defined($suffix);
     return lc($_CFG->{email_user}
-	. $_CFG->{email_tag}
-	. $suffix
-	# Must be synchronized with LOCAL_EMAIL_DOMAIN_RE
+        . $_CFG->{email_tag}
+        . $suffix
+        # Must be synchronized with LOCAL_EMAIL_DOMAIN_RE
         . ($domain ? "=$domain" : '')
-	. '@'
-	. $_CFG->{local_mail_host});
+        . '@'
+        . $_CFG->{local_mail_host});
 }
 
 sub generate_remote_email {
     my($self, $base, $facade_uri) = @_;
     if ($_E->is_valid($base)) {
-	return $base
-	    unless $facade_uri;
-	$base = $_E->get_local_part($base);
+        return $base
+            unless $facade_uri;
+        $base = $_E->get_local_part($base);
     }
     # Generates an email for the remote server.  Appends  @I<remote_mail_host> with
     # I<facade_uri>. prefix if it is supplied.
@@ -360,25 +360,25 @@ sub get_link_in_table {
     my($table_name) = @_ > 2 ? shift : $_[0];
     my($find_heading, $find_value, $link_heading, $link_name) = @_;
     $table_name = $find_heading
-	unless defined($table_name);
+        unless defined($table_name);
     my($row) = _find_row($self, $table_name, $find_heading, $find_value);
     $link_heading = _key_from_hash(
-	$row,
-	_fixup_pattern_protected(
-	    $self,
-	    defined($link_heading) ? $link_heading : $find_heading),
+        $row,
+        _fixup_pattern_protected(
+            $self,
+            defined($link_heading) ? $link_heading : $find_heading),
     );
     b_die($link_heading, ': column empty')
         unless defined($row->{$link_heading});
     my($links) = $row->{$link_heading}->get('Links');
     my($k) = $links->get_keys;
     return (
-	!defined($link_name) && @$k == 1 ? $links->get($k->[0])
-	    : _get_attr(
-		$links,
-		_fixup_pattern_protected(
-		    $self,
-		    defined($link_name) ? $link_name : $find_value)),
+        !defined($link_name) && @$k == 1 ? $links->get($k->[0])
+            : _get_attr(
+                $links,
+                _fixup_pattern_protected(
+                    $self,
+                    defined($link_name) ? $link_name : $find_value)),
     )->{href};
 }
 
@@ -392,17 +392,17 @@ sub get_table_row {
     $row_index ||= 0;
     my($found_row);
     $self->get_html_parser()->get('Tables')->do_rows(
-	_fixup_pattern_protected($self, $table_name),
-	sub {
-	    my($row, $index) = @_;
-	    return 1
-		unless $index == $row_index;
-	    $found_row = $row;
-	    return 0;
-	},
+        _fixup_pattern_protected($self, $table_name),
+        sub {
+            my($row, $index) = @_;
+            return 1
+                unless $index == $row_index;
+            $found_row = $row;
+            return 0;
+        },
     );
     return $found_row
-	|| Bivio::Die->($row_index, ': no such row number in ', $table_name);
+        || Bivio::Die->($row_index, ': no such row number in ', $table_name);
 }
 
 sub get_uri {
@@ -418,11 +418,11 @@ sub go_back {
     my($self, $count) = @_;
     my($fields) = $self->[$_IDI];
     my($x) = reverse(map(
-	pop(@{$fields->{history}}) || b_die('no page to go back to'),
-	1 .. $count || 1,
+        pop(@{$fields->{history}}) || b_die('no page to go back to'),
+        1 .. $count || 1,
     ));
     while (my($k, $v) = each(%$x)) {
-	$fields->{$k} = $v;
+        $fields->{$k} = $v;
     }
     return;
 }
@@ -431,7 +431,7 @@ sub handle_cleanup {
     my($self) = @_;
     my($req) = b_use('Test.Request')->get_current;
     $req->call_process_cleanup
-	if $req;
+        if $req;
     return shift->SUPER::handle_cleanup(@_);
 }
 
@@ -479,12 +479,12 @@ sub handle_config {
     b_die($cfg->{email_user}, ': email_user must be an alphanum')
         if ($cfg->{email_user} || '') =~ /\W/;
     b_die($cfg->{mail_tries},
-	': mail_tries must be a postive integer')
+        ': mail_tries must be a postive integer')
         if $cfg->{mail_tries} =~ /\D/ || $cfg->{mail_tries} <= 0;
     b_die($cfg->{server_startup_timeout},
-	': server_startup_timeout must be a postive integer')
+        ': server_startup_timeout must be a postive integer')
         if $cfg->{server_startup_timeout} =~ /\D/
-	    || $cfg->{server_startup_timeout} < 0;
+            || $cfg->{server_startup_timeout} < 0;
     $cfg->{remote_mail_host} ||= URI->new($cfg->{home_page_uri})->host;
     $_CFG = $cfg;
     return;
@@ -496,7 +496,7 @@ sub handle_setup {
     $self->SUPER::handle_setup(@_);
     $self->clear_local_mail;
     _wait_for_server($self, $_CFG->{server_startup_timeout})
-	if $_CFG->{server_startup_timeout} && ref($self);
+        if $_CFG->{server_startup_timeout} && ref($self);
     return;
 }
 
@@ -508,19 +508,19 @@ sub home_page {
 sub home_page_uri {
     my($self, $facade) = @_;
     return _facade(
-	$self,
-	$_CFG->{home_page_uri},
-	$self,
-	$self->http_facade(@_ > 1 ? $facade : ()),
+        $self,
+        $_CFG->{home_page_uri},
+        $self,
+        $self->http_facade(@_ > 1 ? $facade : ()),
     );
 }
 
 sub http_facade {
     my($self, $facade) = @_;
     return undef
-	unless ref($self);
+        unless ref($self);
     $self->put(http_facade => $facade)
-	if @_ > 1;
+        if @_ > 1;
     return $self->unsafe_get('http_facade');
 }
 
@@ -529,7 +529,7 @@ sub internal_append_query {
     # query should be [k1 => v1, k2 => v2, ...]
     my($q) = $self->unsafe_get('extra_query_params');
     return $u
-	unless defined($q);
+        unless defined($q);
     my($uri) = URI->new($u);
     $q = {$uri->query_form, @$q};
     $uri->query_form(map(($_ => $q->{$_}), sort(keys(%$q))));
@@ -542,9 +542,9 @@ sub internal_assert_no_prose {
     $d =~ s{<script.*?>.*?</script>}{}isg;
     $d =~ s{(?:javascript:|\son[a-z]+=\")[^"]+"}{}isg;
     if ($d !~ /\w+::\w+/ && $d =~ /\b((\w+)\([^\)]*\)\;)/s) {
-	my($cmd, $func) = ($1, $2);
-	b_die($cmd, ': Prose found in response')
-	    if $func =~ /(?:^[A-Z]|_)/
+        my($cmd, $func) = ($1, $2);
+        b_die($cmd, ': Prose found in response')
+            if $func =~ /(?:^[A-Z]|_)/
     }
     return $content;
 }
@@ -563,11 +563,11 @@ sub login_as {
     my($self, $email, $password, $facade) = @_;
     $self->home_page($facade ? $facade : ());
     $self->visit_uri('/pub/login')
-	unless $self->unsafe_op(follow_link => qr{login}i);
+        unless $self->unsafe_op(follow_link => qr{login}i);
     $self->submit_form(Login => {
-	qr{email|user}i => $email,
-	qr{password}i =>
-	    defined($password) ? $password : $self->default_password,
+        qr{email|user}i => $email,
+        qr{password}i =>
+            defined($password) ? $password : $self->default_password,
     });
     return;
 }
@@ -576,19 +576,19 @@ sub new {
     my($proto, $lang, $uri) = @_;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	cookies => $_HTTPC->new,
-	user_agent => b_use('Ext.LWPUserAgent')->new
-	    ->bivio_ssl_no_check_certificate,
-	history => [],
-	history_length => 5,
+        cookies => $_HTTPC->new,
+        user_agent => b_use('Ext.LWPUserAgent')->new
+            ->bivio_ssl_no_check_certificate,
+        history => [],
+        history_length => 5,
     };
     unless ($_CFG->{parse_head}) {
         # avoid X-Died: Illegal field name 'X-Meta-...'
         $self->[$_IDI]->{user_agent}->parse_head(0);
     }
     $self->put(
-	deprecated_text_patterns => $_CFG->{deprecated_text_patterns},
-	local_mail_host => $_CFG->{local_mail_host},
+        deprecated_text_patterns => $_CFG->{deprecated_text_patterns},
+        local_mail_host => $_CFG->{local_mail_host},
     );
     return $self;
 }
@@ -596,10 +596,10 @@ sub new {
 sub poll_page {
     my($self, $method, @args) = @_;
     foreach my $x (1..$_CFG->{mail_tries}) {
-	sleep(1);
-	$self->reload_page;
-	return
-	    if $self->unsafe_op($method, @args);
+        sleep(1);
+        $self->reload_page;
+        return
+            if $self->unsafe_op($method, @args);
     }
     $self->$method(@args);
     return;
@@ -629,7 +629,7 @@ sub reload_page {
     # test to clear errors so that conformance tests can be resumed.
     # If defined, uses given uri, otherwise uses get_uri()
     defined($uri) ? $self->visit_uri($uri) :
-	$self->visit_uri($self->get_uri());
+        $self->visit_uri($self->get_uri());
     return;
 }
 
@@ -643,7 +643,7 @@ sub reset_password {
     $self->visit_uri($self->extract_uri_from_local_mail($email));
     $self->submit_form({
         qr{^new}i => $password,
-	qr{^re-enter}i => $password,
+        qr{^re-enter}i => $password,
     });
     return;
 }
@@ -680,11 +680,11 @@ sub send_mail {
     $o->set_recipients($to_email, _req($self));
     $o->set_header(To => ref($to_email) ? join(',', @$to_email) : $to_email);
     $headers = {
-	Subject => "subj-$r",
-	$headers ? %$headers : (),
+        Subject => "subj-$r",
+        $headers ? %$headers : (),
     };
     foreach my $k (sort(keys(%$headers))) {
-	$o->set_header($k, $headers->{$k});
+        $o->set_header($k, $headers->{$k});
     }
     $o->set_body($body || "Any unique $r body\n");
     $o->add_missing_headers(_req($self), $from_email);
@@ -697,17 +697,17 @@ sub send_request {
     my($fields) = $self->[$_IDI];
     $uri = $self->absolute_uri($uri);
     $header = [%$header]
-	if ref($header) eq 'HASH';
+        if ref($header) eq 'HASH';
     $header ||= [];
     _send_request(
-	$self,
-	uc($method) eq 'POST' && ref($content) eq 'ARRAY'
-	    ? _create_form_post($uri, $content, $header)
-	    : HTTP::Request->new(
-		$method => $uri,
-		HTTP::Headers->new(@$header),
-		$content,
-	    ),
+        $self,
+        uc($method) eq 'POST' && ref($content) eq 'ARRAY'
+            ? _create_form_post($uri, $content, $header)
+            : HTTP::Request->new(
+                $method => $uri,
+                HTTP::Headers->new(@$header),
+                $content,
+            ),
     );
     return;
 }
@@ -739,27 +739,27 @@ sub submit_form {
     my($forms) = _assert_html($self)->get('Forms');
     my($form);
     if (!defined($submit_button)) {
-	$form_fields = _fixup_form_fields($self, $form_fields);
+        $form_fields = _fixup_form_fields($self, $form_fields);
         $form = $forms->get_by_field_names(keys(%$form_fields));
     }
     elsif (ref($submit_button) eq 'HASH') {
-	$expected_content_type = $form_fields;
-	$form_fields = _fixup_form_fields($self, $submit_button);
+        $expected_content_type = $form_fields;
+        $form_fields = _fixup_form_fields($self, $submit_button);
         $form = $forms->get_by_field_names(keys(%$form_fields));
-	$submit_button = $forms->get_ok_button($form);
+        $submit_button = $forms->get_ok_button($form);
     }
     else {
-	$form_fields = _fixup_form_fields($self, $form_fields || {});
-	$submit_button = _fixup_pattern_protected($self, $submit_button);
-	$form = $forms->get_by_field_names(
-	    keys(%$form_fields),
-	    $submit_button,
-	);
+        $form_fields = _fixup_form_fields($self, $form_fields || {});
+        $submit_button = _fixup_pattern_protected($self, $submit_button);
+        $form = $forms->get_by_field_names(
+            keys(%$form_fields),
+            $submit_button,
+        );
     }
     _send_request($self,
-	_create_form_request(
-	    $self, uc($form->{method}),
-	    $self->absolute_uri($form->{action} || $self->unsafe_get_uri),
+        _create_form_request(
+            $self, uc($form->{method}),
+            $self->absolute_uri($form->{action} || $self->unsafe_get_uri),
             _format_form($self, $form, $submit_button, $form_fields)));
     _assert_form_response($self, $expected_content_type);
     return;
@@ -775,9 +775,9 @@ sub submit_from_table {
     my($table_name) = @_ > 2 ? shift : $_[0];
     my($find_heading, $find_value, $submit_name, $form_values) = @_;
     $table_name = $find_heading
-	unless defined($table_name);
+        unless defined($table_name);
     $form_values = {}
-	unless defined($form_values);
+        unless defined($form_values);
     my($row) = _find_row($self, $table_name, $find_heading, $find_value);
 
     _trace("row = ", $row) if $_TRACE;
@@ -789,12 +789,12 @@ sub submit_realm_file_plain_text {
     my($self, $realm, $folder, $file, $text) = @_;
     $self->visit_realm_folder($realm, $folder);
     $self->follow_link_in_table(
-	'Name', 'Name', $folder ? File::Basename::basename($folder) : '/', 'Actions', 'Modify');
+        'Name', 'Name', $folder ? File::Basename::basename($folder) : '/', 'Actions', 'Modify');
     $self->visit_realm_file_change_mode('TEXT_FILE');
     $self->submit_form(ok => {
-	'Name:' => $file,
-	_anon => $text,
-	'Comments:' => 'n/a',
+        'Name:' => $file,
+        _anon => $text,
+        'Comments:' => 'n/a',
     });
     return;
 }
@@ -809,7 +809,7 @@ sub text_exists {
     # Returns true if I<pattern> exists in response (must be text/html),
     # else false.
     $pattern = qr/\Q$pattern/
-	unless ref($pattern) && ref($pattern) eq 'Regexp';
+        unless ref($pattern) && ref($pattern) eq 'Regexp';
     return $self->get_content =~ $pattern ? 1 : 0;
 }
 
@@ -831,25 +831,25 @@ sub unsafe_op {
 sub uri_and_local_mail {
     my($m) = shift->verify_local_mail(@_);
     $m =~ qr{<html>}
-	? $m =~ qr{<a[^>]+href="(https?.+?)"}
-	: $m =~ qr{(https?:\S+)};
+        ? $m =~ qr{<a[^>]+href="(https?.+?)"}
+        : $m =~ qr{(https?:\S+)};
     b_die('missing uri in mail: ', $m)
-	unless $1;
+        unless $1;
     return ($1, $m);
 }
 
 sub user_agent {
     my($self, $string) = @_;
     return $self->get_or_default(
-	'user_agent_string',
-	sub {
-	    return 'Mozilla/5.0 (compatible; '
-		. _test_script_location($self)
-		. ')';
-	},
+        'user_agent_string',
+        sub {
+            return 'Mozilla/5.0 (compatible; '
+                . _test_script_location($self)
+                . ')';
+        },
     ) if @_ <= 1;
     return $self->delete('user_agent_string')
-	unless $string;
+        unless $string;
     return $self->put(user_agent_string => $string);
 }
 
@@ -869,7 +869,7 @@ sub verify_content_type {
     # Verifies the Content-Type of the reply.
     my($ct) = $self->get_response->content_type;
     b_die($ct, ': response not ', $mime_type)
-	unless $ct eq $mime_type;
+        unless $ct eq $mime_type;
     return;
 }
 
@@ -880,21 +880,21 @@ sub verify_form {
     my($fields) = $self->[$_IDI];
     $form_fields = _fixup_form_fields($self, $form_fields || {});
     my($form) = _assert_html($self)->get('Forms')
-	->get_by_field_names(keys(%$form_fields));
+        ->get_by_field_names(keys(%$form_fields));
     _trace($form->{visible}) if $_TRACE;
     foreach my $field (sort(keys(%$form_fields))) {
-	my($control) = _assert_form_field($form, $field);
-	my($case) = {
-	    expected => $form_fields->{$field},
-	    result => '',
-	};
-	_verify_form_field($self, $control, $case);
-	b_die($control->{type}, ' ', $field, ' expected: ',
-	    $case->{expected}, ' but got: ', $case->{result})
-		unless
-		    (ref($case->{expected}) eq 'Regexp'
-			 && $case->{result} =~ $case->{expected})
-		    || ($case->{expected} || '') eq ($case->{result} || '');
+        my($control) = _assert_form_field($form, $field);
+        my($case) = {
+            expected => $form_fields->{$field},
+            result => '',
+        };
+        _verify_form_field($self, $control, $case);
+        b_die($control->{type}, ' ', $field, ' expected: ',
+            $case->{expected}, ' but got: ', $case->{result})
+                unless
+                    (ref($case->{expected}) eq 'Regexp'
+                         && $case->{result} =~ $case->{expected})
+                    || ($case->{expected} || '') eq ($case->{result} || '');
     }
     return;
 }
@@ -903,7 +903,7 @@ sub verify_link {
     my($self, $link_text, $pattern) = @_;
     my($href) = _html_get($self, Links => $link_text)->{href};
     b_die($href, ': does not match pattern: ', $pattern)
-	if $pattern && $href !~ $pattern;
+        if $pattern && $href !~ $pattern;
     return;
 }
 
@@ -921,62 +921,62 @@ sub verify_local_mail {
     # is not equal to I<count>.  Returns and array with I<count> strings of the
     # messages found.
     my($body_re) = !defined($body_regex) ? qr{}
-	: ref($body_regex) ? $body_regex : qr{$body_regex};
+        : ref($body_regex) ? $body_regex : qr{$body_regex};
     my($count) = defined($expect_count) ? $expect_count
-	: (ref($email) eq 'ARRAY' ? int(@$email) : 1);
+        : (ref($email) eq 'ARRAY' ? int(@$email) : 1);
     b_die($_CFG->{mail_dir},
-	': mail_dir mail directory does not exist')
+        ': mail_dir mail directory does not exist')
         unless -d $_CFG->{mail_dir};
     my($match) = {};
     $email = [$email]
-	unless ref($email) eq 'ARRAY';
+        unless ref($email) eq 'ARRAY';
     $email = [map(ref($_) || $_ =~ /\@/ ? $_
         : $self->generate_local_email($_), @$email)];
     my($found) = [];
     my($die) = sub {b_die(@_, "\n", $found)};
     for (my $i = $_CFG->{mail_tries}; $i-- > 0;) {
-	# It takes a certain amount of time to hit, and on the same machine
-	# we're going to be competing for the CPU so let b-sendmail-http win
-	sleep(1);
-	$found = _grep_msgs($self, $email, $body_re, $match);
-	next
-	    if @$found < $count;
-	last
-	    unless defined($expect_count);
-	$i -= int($i/2);
+        # It takes a certain amount of time to hit, and on the same machine
+        # we're going to be competing for the CPU so let b-sendmail-http win
+        sleep(1);
+        $found = _grep_msgs($self, $email, $body_re, $match);
+        next
+            if @$found < $count;
+        last
+            unless defined($expect_count);
+        $i -= int($i/2);
     }
     my($matched_emails) = [sort(keys(%$match))];
     return undef
-	if defined($expect_count) && $count == 0 && !@$matched_emails;
+        if defined($expect_count) && $count == 0 && !@$matched_emails;
     $die->(%$match
         ? ('Found mail for "', $email, '", but does not match ',
-	   $body_re, ' matches=', $matched_emails)
-	: ('No mail for "', $email, '" found in ', $_CFG->{mail_dir}),
+           $body_re, ' matches=', $matched_emails)
+        : ('No mail for "', $email, '" found in ', $_CFG->{mail_dir}),
     ) unless @$found;
     $die->(
-	'incorrect number of messages.  expected != actual: ',
-	$count,
-	' != ',
-	int(@$found),
+        'incorrect number of messages.  expected != actual: ',
+        $count,
+        ' != ',
+        int(@$found),
     ) unless !defined($expect_count) || @$found == $count;
     $die->(
-	'correct number of messages, but emails expected != actual: ',
-	[sort(@$email)],
-	' != ',
-	$matched_emails,
+        'correct number of messages, but emails expected != actual: ',
+        [sort(@$email)],
+        ' != ',
+        $matched_emails,
     ) unless @$email == @$matched_emails;
     foreach my $f (@$found) {
-	unlink($f->[0]);
-	_log($self, 'eml', $f->[1])
-	    if ref($self);
+        unlink($f->[0]);
+        _log($self, 'eml', $f->[1])
+            if ref($self);
     }
     return @$found
-	? wantarray
-	? map(${$_->[1]}, @$found)
-	: ${$found->[0]->[1]}
-	: wantarray
-	? ()
-	: undef;
+        ? wantarray
+        ? map(${$_->[1]}, @$found)
+        : ${$found->[0]->[1]}
+        : wantarray
+        ? ()
+        : undef;
 }
 
 sub verify_no_link {
@@ -984,10 +984,10 @@ sub verify_no_link {
     my($link) = _unsafe_html_get($self, Links => $link_text);
     return unless defined($link);
     b_die('found link "', $link_text, '".')
-	if !defined($pattern);
+        if !defined($pattern);
     my($href) = $link->{href};
     b_die($href, ': matches pattern: ', $pattern)
-	if defined($href) && $href =~ $pattern;
+        if defined($href) && $href =~ $pattern;
     return;
 }
 
@@ -995,7 +995,7 @@ sub verify_no_text {
     my($self, $text) = @_;
     # Verifies that I<text> DOES NOT appear on the page.
     b_die($text, ': text found in response')
-	if $self->text_exists($text);
+        if $self->text_exists($text);
     return;
 }
 
@@ -1004,16 +1004,16 @@ sub verify_options {
     # Verifies that the given I<select_field> includes the given I<options>.
     my($fields) = $self->[$_IDI];
     my($form) = _assert_html($self)->get('Forms')
-	->get_by_field_names($select_field);
+        ->get_by_field_names($select_field);
     my($f) = _assert_form_field($form, $select_field);
     b_die(
-	'Select field "', $select_field, '" does not contain any options.',
+        'Select field "', $select_field, '" does not contain any options.',
     ) unless $f->{options};
     foreach my $option (@$options) {
-	b_die(
-	    'Select field "', $select_field, '" does not contain option "',
-	    $option, '".',
-	) unless $f->{options}->{$option};
+        b_die(
+            'Select field "', $select_field, '" does not contain option "',
+            $option, '".',
+        ) unless $f->{options}->{$option};
     }
     return;
 }
@@ -1026,11 +1026,11 @@ sub verify_pdf {
     $self->verify_content_type('application/pdf');
     my($f) = _log($self, 'pdf', $self->get_content);
     system("pdftotext '$f'") == 0
-	or b_die($f, ': unable to convert pdf to text');
+        or b_die($f, ': unable to convert pdf to text');
     $f =~ s/pdf$/txt/;
     my($pdf_text) = ${$_F->read($f)};
     b_die($text, ': text not found in response ', $f)
-	unless $pdf_text =~ /$text/s;
+        unless $pdf_text =~ /$text/s;
     return $pdf_text;
 }
 
@@ -1048,16 +1048,16 @@ sub verify_table {
         unless int(@$expect);
     my($first_col) = shift(@$cols);
     foreach my $e (@$expect) {
-	my($a) = _find_row($self, $table_name, $first_col, shift(@$e));
-	my($diff) = $_R->nested_differences(
-	    $e,
-	    [map($a->{_key_from_hash($a, _fixup_pattern_protected($self, $_))}
-	        ->get('text'),
-		@$cols,
-	    )],
-	);
-	b_die($diff)
-	    if $diff;
+        my($a) = _find_row($self, $table_name, $first_col, shift(@$e));
+        my($diff) = $_R->nested_differences(
+            $e,
+            [map($a->{_key_from_hash($a, _fixup_pattern_protected($self, $_))}
+                ->get('text'),
+                @$cols,
+            )],
+        );
+        b_die($diff)
+            if $diff;
     }
     return;
 }
@@ -1066,7 +1066,7 @@ sub verify_text {
     my($self, $text) = @_;
     # Verifies I<text> appears on the page.
     b_die($text, ': text not found in response')
-	unless $self->text_exists($text);
+        unless $self->text_exists($text);
     return;
 }
 
@@ -1074,7 +1074,7 @@ sub verify_title {
     my($self, $title) = @_;
     # Verifies that the specified title appears on the page.
     b_die($title, ': title not found in response')
-	    unless $self->get_content =~ /\<title\>.*$title.*\<\/title\>/i;
+            unless $self->get_content =~ /\<title\>.*$title.*\<\/title\>/i;
     return;
 }
 
@@ -1083,7 +1083,7 @@ sub verify_uri {
     # Verifies that the current uri (not including http://.../) matches I<uri>.
     my($current_uri) = $self->get_uri;
     b_die('Current uri ', $current_uri, ' does not match ', $uri)
-	unless $current_uri =~ $uri;
+        unless $current_uri =~ $uri;
     return;
 }
 
@@ -1119,11 +1119,11 @@ sub verify_zip {
     #      },
     #      qr/file-\d\d\d.pdf/ => qr/^%PDF/,
     #     'a.zip' => [
-    # 	      'a.txt' => undef,
-    # 	      'b.zip' => [
-    # 	          'b1.txt' => undef,
-    # 	      ],
-    # 	      'c.txt' => undef,
+    #               'a.txt' => undef,
+    #               'b.zip' => [
+    #                   'b1.txt' => undef,
+    #               ],
+    #               'c.txt' => undef,
     #      ],
     # ];
     _verify_zip($self, $self->get_content, $expected);
@@ -1139,13 +1139,13 @@ sub visit_realm_file {
 sub visit_realm_file_change_mode {
     my($self, $mode) = @_;
     return $self->visit_uri(
-	join('',
-	     $self->get_uri(),
-	     '&',
-	     b_use('Model.FileChangeForm')->QUERY_KEY,
-	     '=',
-	     $mode,
-	),
+        join('',
+             $self->get_uri(),
+             '&',
+             b_use('Model.FileChangeForm')->QUERY_KEY,
+             '=',
+             $mode,
+        ),
     );
 }
 
@@ -1153,9 +1153,9 @@ sub visit_realm_folder {
     my($self, $realm, $path) = @_;
     $self->visit_uri("/$realm/files");
     foreach my $folder (split(qr{/+}, defined($path) ? $path : '')) {
-	next
-	    unless length($folder);
-	$self->follow_link(qr{^\Q$folder\E$}i);
+        next
+            unless length($folder);
+        $self->follow_link(qr{^\Q$folder\E$}i);
     }
     return;
 }
@@ -1180,24 +1180,24 @@ sub _assert_form_response {
     $expected_content_type ||= 'text/html';
     my($fields) = $self->[$_IDI];
     return
-	if $fields->{redirect_count} > 0;
+        if $fields->{redirect_count} > 0;
 
     if ($expected_content_type eq 'text/html') {
-	my($forms) = _assert_html($self)->get('Forms')->get_shallow_copy;
-	while (my($k, $v) = each(%$forms)) {
-	    b_die('form submission errors: ', $v->{errors})
-	        if $v->{errors};
-	    b_die(
-		'form error title without field errors. Visible fields: ',
-		[sort(map(keys(%{$v->{$_}}), qw(visible submit)))],
-	    ) if $v->{error_title_seen};
-	}
+        my($forms) = _assert_html($self)->get('Forms')->get_shallow_copy;
+        while (my($k, $v) = each(%$forms)) {
+            b_die('form submission errors: ', $v->{errors})
+                if $v->{errors};
+            b_die(
+                'form error title without field errors. Visible fields: ',
+                [sort(map(keys(%{$v->{$_}}), qw(visible submit)))],
+            ) if $v->{error_title_seen};
+        }
     }
     else {
-	my($content_type) = $self->get_response->content_type;
-	b_die($content_type, ': response not ',
-	    $expected_content_type)
-		if $content_type ne $expected_content_type;
+        my($content_type) = $self->get_response->content_type;
+        b_die($content_type, ': response not ',
+            $expected_content_type)
+                if $content_type ne $expected_content_type;
     }
     return;
 }
@@ -1206,30 +1206,30 @@ sub _assert_html {
     my($self) = @_;
     # Asserts HTML and returns parser
     return $self->[$_IDI]->{html_parser} || b_die(
-	$self->get_response->content_type, ': response not html');
+        $self->get_response->content_type, ': response not html');
 }
 
 sub _create_form_post {
     my($uri, $form, $header) = @_;
     return grep(ref($_), @$form)
         ? HTTP::Request::Common::POST(
-	    $uri,
+            $uri,
             Content_Type => 'form-data',
             Content => $form,
-	    @$header,
-	) : HTTP::Request::Common::POST($uri, $form, @$header);
+            @$header,
+        ) : HTTP::Request::Common::POST($uri, $form, @$header);
 }
 
 sub _create_form_request {
     my($self, $method, $uri, $form) = @_;
     # Creates appropriate form request based on method (uc).
     if ($method eq 'GET') {
-	# trim any query which might be there
-	$uri =~ s/\?.*//;
+        # trim any query which might be there
+        $uri =~ s/\?.*//;
         my($url) = URI->new('http:');
         $url->query_form(@$form);
-	return HTTP::Request->new(
-	    GET => $self->internal_append_query($uri . '?' . $url->query));
+        return HTTP::Request->new(
+            GET => $self->internal_append_query($uri . '?' . $url->query));
     }
     return _create_form_post($self->internal_append_query($uri), $form, []);
 
@@ -1238,16 +1238,16 @@ sub _create_form_request {
 sub _facade {
     my($self, $to_fix, undef, $facade_uri) = @_;
     return $to_fix
-	unless $facade_uri;
+        unless $facade_uri;
     my($req) = b_use('TestUnit.Request')->get_instance;
     my($default) = (
-	$req->unsafe_get('Bivio::UI::Facade')
-	    || $req->initialize_fully->get('Bivio::UI::Facade')
+        $req->unsafe_get('Bivio::UI::Facade')
+            || $req->initialize_fully->get('Bivio::UI::Facade')
     )->get_default->get('uri');
     $to_fix =~ s{^(.*?)\b$default\b}{$1$facade_uri}ix
-	|| $to_fix =~ s{(?<=\://)|(?<=\@)}{$facade_uri.}ix
-	|| b_die($to_fix, ': unable to fixup uri with ', $facade_uri)
-	unless $default eq $facade_uri;
+        || $to_fix =~ s{(?<=\://)|(?<=\@)}{$facade_uri.}ix
+        || b_die($to_fix, ': unable to fixup uri with ', $facade_uri)
+        unless $default eq $facade_uri;
     return $to_fix
 }
 
@@ -1256,29 +1256,29 @@ sub _find_row {
     # Returns the hashref for row identified by I<table_name>, <I>find_heading
     # and <I>find_value, using L<Bivio::Test::HTMLParser::Tables::find_row|Bivio::Test::HTMLParser::Tables/"find_row">.
     return _assert_html($self)->get('Tables')->find_row(
-	_fixup_pattern_protected($self, $table_name),
-	_fixup_pattern_protected($self, $find_heading),
-	_fixup_pattern_protected($self, $find_value),
+        _fixup_pattern_protected($self, $table_name),
+        _fixup_pattern_protected($self, $find_heading),
+        _fixup_pattern_protected($self, $find_value),
     );
 }
 
 sub _fixup_form_fields {
     my($self, $form_fields) = @_;
     return {map(
-	(_fixup_pattern($_) => $form_fields->{$_}),
-	keys(%$form_fields),
+        (_fixup_pattern($_) => $form_fields->{$_}),
+        keys(%$form_fields),
     )};
 }
 
 sub _fixup_pattern {
     my($v, $want_absolute) = @_;
     return $v
-	if !$want_absolute
-	&& (ref($v) || $v =~ /^\(\?/s || $v !~ /^[a-z0-9_]+$|\.[\*\+]|^\^|\$$/);
+        if !$want_absolute
+        && (ref($v) || $v =~ /^\(\?/s || $v !~ /^[a-z0-9_]+$|\.[\*\+]|^\^|\$$/);
     $v =~ s/(.)_/$1./g;
     if ($want_absolute) {
-	$v =~ s/(?<!\$)$/\$/;
-	$v =~ s/^(?!=\^)/^/;
+        $v =~ s/(?<!\$)$/\$/;
+        $v =~ s/^(?!=\^)/^/;
     }
     return qr{$v}i;
 }
@@ -1286,7 +1286,7 @@ sub _fixup_pattern {
 sub _fixup_pattern_protected {
     my($self, $v) = @_;
     return $self->deprecated_text_patterns || !defined($v) ? $v
-	: _fixup_pattern($v);
+        : _fixup_pattern($v);
 }
 
 sub _format_form {
@@ -1298,12 +1298,12 @@ sub _format_form {
     my($match) = {};
 #TODO: Add hidden form field testing
     while (my($k, $v) = each(%$form_fields)) {
-	my($f) = _assert_form_field($form, $k);
-	$match->{$f}++;
+        my($f) = _assert_form_field($form, $k);
+        $match->{$f}++;
         # Radio or Select: Allow the use of the option label instead of value
-	my($value) = $f->{options}
+        my($value) = $f->{options}
             ? _lookup_option_value(
-		$f->{options}, _fixup_pattern_protected($self, $v))
+                $f->{options}, _fixup_pattern_protected($self, $v))
             : $v;
         _validate_text_field($f, $v)
             if $f->{type} eq 'text';
@@ -1311,23 +1311,23 @@ sub _format_form {
     }
     # Fill in hidden and defaults
     foreach my $class (qw(hidden visible)) {
-	foreach my $v (values(%{$form->{$class}})) {
-	    next if $match->{$v};
+        foreach my $v (values(%{$form->{$class}})) {
+            next if $match->{$v};
             _validate_text_field($v, $v->{value})
                 if $v->{type} eq 'text';
             push(@$result, $v->{name},
-		$v->{type} eq 'checkbox'
-		    ? $v->{checked}
-		        ? defined($v->{value})
-		           ? $v->{value}
-		           : 1
-		        : next
-		    : $v->{value});
-	}
+                $v->{type} eq 'checkbox'
+                    ? $v->{checked}
+                        ? defined($v->{value})
+                           ? $v->{value}
+                           : 1
+                        : next
+                    : $v->{value});
+        }
     }
     # Needs to be some "true" value for our forms
     return $result
-	unless defined($submit);
+        unless defined($submit);
     my($button) = _assert_form_field($form, $submit);
     push(@$result, $button->{name}, $button->{value} || '1');
     return $result;
@@ -1359,8 +1359,8 @@ sub _grep_mail_dir {
     # Returns results of grep on mail_dir files.  Only includes valid
     # mail files.
     return grep(
-	$_FN->get_tail($_) =~ /^\d+$/,
-	glob("$_CFG->{mail_dir}/*"),
+        $_FN->get_tail($_) =~ /^\d+$/,
+        glob("$_CFG->{mail_dir}/*"),
     );
 }
 
@@ -1412,23 +1412,23 @@ sub _html_parser {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return $_HTMLP->new(
-	$self->internal_assert_no_prose($fields->{response}->content_ref),
-	{is_not_bivio_html => $self->unsafe_get('is_not_bivio_html') ? 1 : 0},
+        $self->internal_assert_no_prose($fields->{response}->content_ref),
+        {is_not_bivio_html => $self->unsafe_get('is_not_bivio_html') ? 1 : 0},
     );
 }
 
 sub _key_from_hash {
     my($hash, $key) = @_;
     if (ref($key)) {
-	my(@match) = sort(grep($_ =~ $key, keys(%$hash)));
-	return $match[0]
-	    if @match == 1;
-	b_die($key, ': name matches too many ', \@match)
-	    if @match > 1;
+        my(@match) = sort(grep($_ =~ $key, keys(%$hash)));
+        return $match[0]
+            if @match == 1;
+        b_die($key, ': name matches too many ', \@match)
+            if @match > 1;
     }
     else {
-	return $key
-	    if exists($hash->{$key});
+        return $key
+            if exists($hash->{$key});
     }
     b_die($key, ': name not found in ', [sort(keys(%$hash))]);
     # DOES NOT RETURN
@@ -1440,9 +1440,9 @@ sub _log {
     # ordering, returns the file.
     my($fields) = $self->[$_IDI];
     return $self->test_log_output(
-	sprintf('http-%05d.%s', $fields->{log_index}++, $type)
-	    . ($case_tag ? "-$case_tag" : ''),
-	UNIVERSAL::can($msg, 'as_string') ? $msg->as_string : $msg);
+        sprintf('http-%05d.%s', $fields->{log_index}++, $type)
+            . ($case_tag ? "-$case_tag" : ''),
+        UNIVERSAL::can($msg, 'as_string') ? $msg->as_string : $msg);
 }
 
 sub _lookup_option_value {
@@ -1484,17 +1484,17 @@ sub _save_history {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     push(
-	@{$fields->{history}},
-	$_R->nested_copy({
-	    map(
-		($_ => $fields->{$_}),
-		qw(uri response html_parser),
-		$self->unsafe_get('save_cookies_in_history') ? 'cookies' : (),
-	    ),
-	}),
+        @{$fields->{history}},
+        $_R->nested_copy({
+            map(
+                ($_ => $fields->{$_}),
+                qw(uri response html_parser),
+                $self->unsafe_get('save_cookies_in_history') ? 'cookies' : (),
+            ),
+        }),
     ) if $fields->{response};
     shift(@{$fields->{history}})
-	while @{$fields->{history}} > $fields->{history_length};
+        while @{$fields->{history}} > $fields->{history_length};
     return;
 }
 
@@ -1510,35 +1510,35 @@ sub _send_request {
     my($case_tag) = $self->unsafe_get_and_delete('case_tag');
     _save_history($self);
     while () {
-	$request->header(Authorization => $self->get('Authorization'))
-	    if $self->has_keys('Authorization');
-	$request->header(Referer => $self->absolute_uri($prev_uri))
-	    if $prev_uri;
-	$fields->{uri} = $request->uri->canonical->as_string;
-	$fields->{cookies}->add_cookie_header($request);
-	_log($self, 'req', '# ' . _test_script_location($self) . "\n"
-		 . $request->as_string, $case_tag);
-	$fields->{response} = $fields->{user_agent}->request($request);
-	_log($self, 'res', $fields->{response}, $case_tag);
-	last
-	    unless $fields->{response}->is_redirect;
-	b_die('too many redirects ', $request)
-	    if $redirect_count++ > 5;
-	$fields->{cookies}->extract_cookies($fields->{response});
-	my($uri) = $fields->{response}->as_string
-	    =~ /(?:^|\n)Location: (\S*)/si;
-	$request = HTTP::Request->new(GET => $prev_uri = $self->absolute_uri($uri));
+        $request->header(Authorization => $self->get('Authorization'))
+            if $self->has_keys('Authorization');
+        $request->header(Referer => $self->absolute_uri($prev_uri))
+            if $prev_uri;
+        $fields->{uri} = $request->uri->canonical->as_string;
+        $fields->{cookies}->add_cookie_header($request);
+        _log($self, 'req', '# ' . _test_script_location($self) . "\n"
+                 . $request->as_string, $case_tag);
+        $fields->{response} = $fields->{user_agent}->request($request);
+        _log($self, 'res', $fields->{response}, $case_tag);
+        last
+            unless $fields->{response}->is_redirect;
+        b_die('too many redirects ', $request)
+            if $redirect_count++ > 5;
+        $fields->{cookies}->extract_cookies($fields->{response});
+        my($uri) = $fields->{response}->as_string
+            =~ /(?:^|\n)Location: (\S*)/si;
+        $request = HTTP::Request->new(GET => $prev_uri = $self->absolute_uri($uri));
     }
     $fields->{cookies}->extract_cookies($fields->{response});
     $fields->{html_parser} = _html_parser($self)
         if $fields->{response}->content_type eq 'text/html';
     $fields->{redirect_count} = $redirect_count;
     b_die(
-	$request->uri,
-	': uri request failed: ',
-	$fields->{response}->code,
-	' ',
-	$fields->{response}->message,
+        $request->uri,
+        ': uri request failed: ',
+        $fields->{response}->code,
+        ' ',
+        $fields->{response}->message,
     ) unless $fields->{response}->is_success;
     return;
 }
@@ -1547,7 +1547,7 @@ sub _test_script_location {
     my($self) = @_;
     return $self->get('test_script')
         . ':'
-	. _get_script_line($self);
+        . _get_script_line($self);
 }
 
 sub _unsafe_html_get {
@@ -1571,17 +1571,17 @@ sub _verify_form_field {
     my($self, $control, $case) = @_;
     # Find value of the form field.
     if ($control->{type} eq 'checkbox') {
-	$case->{expected} = 0
-	    unless defined($case->{expected});
-	$case->{result} = $control->{checked}
-	    ? defined($control->{value}) ? $control->{value} : 1
-	    : 0;
+        $case->{expected} = 0
+            unless defined($case->{expected});
+        $case->{result} = $control->{checked}
+            ? defined($control->{value}) ? $control->{value} : 1
+            : 0;
     }
     elsif ($control->{options}) {
-	$case->{result} = _verify_form_option($control);
+        $case->{result} = _verify_form_option($control);
     }
     else {
-	$case->{result} = $control->{value};
+        $case->{result} = $control->{value};
     }
     return;
 }
@@ -1590,8 +1590,8 @@ sub _verify_form_option {
     my($control, $value) = @_;
     # Return the state of option.
     foreach my $o (_option_value_list($control->{options})) {
-	return $o
-	    if $control->{options}->{$o}->{selected};
+        return $o
+            if $control->{options}->{$o}->{selected};
     }
     return undef;
 }
@@ -1604,48 +1604,48 @@ sub _verify_zip {
     my($values) = b_use('Collection.Attributes')->new({});
     $zip->iterate_members(sub {
         my($name, $value) = @_;
-	$values->put($name => $value);
-	return 1;
+        $values->put($name => $value);
+        return 1;
     });
     my($present) = {};
     $self->do_by_two(sub {
         my($name, $value) = @_;
-	my($v);
-	if (ref($name) eq 'Regexp') {
-	    $v = $values->get_by_regexp($name);
-	}
-	else {
-	    $v = $values->get($name);
-	}
-	return 1 unless defined($value);
-	if (ref($value) eq 'ARRAY') {
-	    _verify_zip($self, $v, $value);
-	}
-	elsif (ref($value) eq 'Regexp') {
-	    b_die($value, ': did not match contents of member: ',
-		$name, ' ', $v)
-		unless $$v =~ $value;
-	}
-	elsif (ref($value) eq 'HASH') {
-	    b_die($value->{absent}, ': matches absent value: ', $name, ' ', $v)
-		if $value->{absent} && $$v =~ $value->{absent};
-	    my($p) = $value->{present};
-	    if ($p) {
-		$present->{$p} ||= 1;
-		$present->{$p} = 2
-		    if $$v =~ $p;
-	    }
-	}
-	else {
-	    b_die($value, ': is not equal to contents of member: ',
-		$name, ' ', $v)
-	        unless $$v eq $value;
-	}
-	return 1;
+        my($v);
+        if (ref($name) eq 'Regexp') {
+            $v = $values->get_by_regexp($name);
+        }
+        else {
+            $v = $values->get($name);
+        }
+        return 1 unless defined($value);
+        if (ref($value) eq 'ARRAY') {
+            _verify_zip($self, $v, $value);
+        }
+        elsif (ref($value) eq 'Regexp') {
+            b_die($value, ': did not match contents of member: ',
+                $name, ' ', $v)
+                unless $$v =~ $value;
+        }
+        elsif (ref($value) eq 'HASH') {
+            b_die($value->{absent}, ': matches absent value: ', $name, ' ', $v)
+                if $value->{absent} && $$v =~ $value->{absent};
+            my($p) = $value->{present};
+            if ($p) {
+                $present->{$p} ||= 1;
+                $present->{$p} = 2
+                    if $$v =~ $p;
+            }
+        }
+        else {
+            b_die($value, ': is not equal to contents of member: ',
+                $name, ' ', $v)
+                unless $$v eq $value;
+        }
+        return 1;
     }, $expected);
     my($remaining) = [map($present->{$_} eq 1 ? $_ : (), keys(%$present))];
     b_die('unmatched present: ', $remaining)
-	if @$remaining;
+        if @$remaining;
     return;
 }
 
@@ -1660,11 +1660,11 @@ sub _wait_for_server {
 
     my($request) = HTTP::Request->new(GET => $self->home_page_uri());
     foreach my $i (1..$timeout) {
-	my($response) = $fields->{user_agent}->request($request);
-	last
-	    unless $response->code() == 500
-		&& $response->message() =~ /^Can't connect to/;
-	sleep(1);
+        my($response) = $fields->{user_agent}->request($request);
+        last
+            unless $response->code() == 500
+                && $response->message() =~ /^Can't connect to/;
+        sleep(1);
     }
 
     return;

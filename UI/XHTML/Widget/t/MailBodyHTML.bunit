@@ -8,10 +8,10 @@ my($trim_newline) = sub {
 };
 [
     map(
-	(
-	    [${read_file($_)}, 'FORUM_MAIL_PART']
-		=> $trim_newline->(read_file(($_ =~ /(.+)in$/)[0] . 'out')),
-	),
-	glob('MailBodyHTML/*.in'),
+        (
+            [${read_file($_)}, 'FORUM_MAIL_PART']
+                => $trim_newline->(read_file(($_ =~ /(.+)in$/)[0] . 'out')),
+        ),
+        glob('MailBodyHTML/*.in'),
     ),
 ];

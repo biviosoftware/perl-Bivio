@@ -11,12 +11,12 @@ my($_A) = __PACKAGE__->use('IO.Alert');
 sub execute {
     my($proto, $req) = @_;
     if (my $n = $_PN->unsafe_from_path_info($req)) {
-	$_T->set_named_filters($n);
-	$_A->info($n);
+        $_T->set_named_filters($n);
+        $_A->info($n);
     }
     else {
-	$_T->set_filters;
-	$_A->info('<off>');
+        $_T->set_filters;
+        $_A->info('<off>');
     }
     return 0;
 }

@@ -62,9 +62,9 @@ my($range) = [1 .. 5];
 foreach my $i (@$range) {
     go_back() if $i > 1;
     submit_form({
-	'Field1:' => 1,
-	'Field2:' => "12/$i/2001",
-	comment => "update #$i",
+        'Field1:' => 1,
+        'Field2:' => "12/$i/2001",
+        comment => "update #$i",
     });
 }
 verify_text(qr{@{[join('.*', map("12/0$_/2001", @$range))]}}s);

@@ -5,18 +5,18 @@ ShellUtil();
     [qw(-realm fourem edit *all_admins +ADMIN_WRITE)] => not_die(),
     [qw(-realm fourem list *all_members)] => qr{MEMBER -\s.*ACCOUNTANT -\s.*ADMINISTRATOR -\s}is,
     [qw(-realm fourem list *all_members-all_admins)] => sub {
-	my(undef, $actual) = @_;
-	assert_not_equals(qr{ACCOUNTANT|ADMINISTRATOR}is, $actual->[0]);
-	assert_equals(qr{MEMBER -\s}is, $actual->[0]);
-	return 1;
+        my(undef, $actual) = @_;
+        assert_not_equals(qr{ACCOUNTANT|ADMINISTRATOR}is, $actual->[0]);
+        assert_equals(qr{MEMBER -\s}is, $actual->[0]);
+        return 1;
     },
     map((
-    	['-realm', $_, 'list_enabled_categories'] => sub {
-    	    my(undef, $actual) = @_;
-    	    assert_equals(1, int(@{[${$actual->[0]} =~ m{(mail_send_access_)}g]}));
-    	    return 1;
-    	}),
-    	qw(fourem motion_forum site-contact site-admin),
+            ['-realm', $_, 'list_enabled_categories'] => sub {
+                my(undef, $actual) = @_;
+                assert_equals(1, int(@{[${$actual->[0]} =~ m{(mail_send_access_)}g]}));
+                return 1;
+            }),
+            qw(fourem motion_forum site-contact site-admin),
     ),
     [qw(-realm fourem edit MAIL_RECIPIENT - +ANYBODY)] => not_die(),
     [qw(-realm fourem edit MAIL_RECIPIENT -)] => not_die(),
@@ -24,16 +24,16 @@ ShellUtil();
     [qw(-realm fourem list USER)] => qr{^RealmRole\(\);\nRealmRole\(qw\(-r fourem edit USER -\n    \+ANYBODY\n    \+ANY_USER}s,
     [qw(-realm motion_forum edit_categories -open_results_motion)] => not_die(),
     [qw(-realm motion_forum list_enabled_categories)] => sub {
-    	my(undef, $actual) = @_;
-    	assert_not_equals(qr{results_motion}, $actual->[0]);
+            my(undef, $actual) = @_;
+            assert_not_equals(qr{results_motion}, $actual->[0]);
         return 1;
     },
     [qw(-realm motion_forum edit_categories +open_results_motion)] => not_die(),
     [qw(-realm motion_forum list_enabled_categories)] => qr{open_results_motion},
     [qw(-realm motion_forum edit_categories +closed_results_motion)] => not_die(),
     [qw(-realm motion_forum list_enabled_categories)] => sub {
-    	my(undef, $actual) = @_;
-    	assert_not_equals(qr{open_results_motion}, $actual->[0]);
+            my(undef, $actual) = @_;
+            assert_not_equals(qr{open_results_motion}, $actual->[0]);
         return qr{closed_results_motion};
     },
     [qw(-realm motion_forum edit_categories +open_results_motion)] => not_die(),

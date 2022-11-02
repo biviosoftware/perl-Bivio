@@ -4,38 +4,38 @@ ListModel();
 req()->set_realm('fourem');
 [
     load_all => [
-	[{
-	    parent_id => model('TupleDefList', {})->label_to_id('PetShopReport'),
-	}] => [{
-	    'TupleSlotDef.tuple_slot_num' => 1,
-	    'TupleSlotDef.label' => 'Author',
-	    'TupleSlotDef.is_required' => 1,
-	    'TupleSlotType.default_value' => undef,
-	}, {
-	    'TupleSlotDef.tuple_slot_num' => 2,
-	    'TupleSlotDef.label' => 'Status',
-	    'TupleSlotDef.is_required' => 0,
-	    'TupleSlotType.default_value' => 's1',
-	}],
+        [{
+            parent_id => model('TupleDefList', {})->label_to_id('PetShopReport'),
+        }] => [{
+            'TupleSlotDef.tuple_slot_num' => 1,
+            'TupleSlotDef.label' => 'Author',
+            'TupleSlotDef.is_required' => 1,
+            'TupleSlotType.default_value' => undef,
+        }, {
+            'TupleSlotDef.tuple_slot_num' => 2,
+            'TupleSlotDef.label' => 'Status',
+            'TupleSlotDef.is_required' => 0,
+            'TupleSlotType.default_value' => 's1',
+        }],
     ],
     find_row_by_label => [
-	Author => [{
-	    'TupleSlotDef.tuple_slot_num' => 1,
-	}],
+        Author => [{
+            'TupleSlotDef.tuple_slot_num' => 1,
+        }],
     ],
     validate_slot => [
-	'a@a.a' => ['a@a.a', undef],
-	'' => [undef, Bivio::TypeError->NULL],
-	a => [undef, Bivio::TypeError->EMAIL],
+        'a@a.a' => ['a@a.a', undef],
+        '' => [undef, Bivio::TypeError->NULL],
+        a => [undef, Bivio::TypeError->EMAIL],
     ],
     find_row_by_label => [
-	Status => [{
-	    'TupleSlotDef.tuple_slot_num' => 2,
-	}],
+        Status => [{
+            'TupleSlotDef.tuple_slot_num' => 2,
+        }],
     ],
     validate_slot => [
-	s1 => [s1 => undef],
-	'' => [undef, undef],
-	a => [undef, Bivio::TypeError->NOT_FOUND],
+        s1 => [s1 => undef],
+        '' => [undef, undef],
+        a => [undef, Bivio::TypeError->NOT_FOUND],
     ],
 ];

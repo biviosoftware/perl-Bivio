@@ -11,16 +11,16 @@ sub initialize {
     my($list) = $self->get('list_class');
     $self->put(class => 'pagination pull-right');
     return shift->put_unless_exists(
-	tag => 'ul',
-	value => Join([
-	    _link($list, 'prev'),
-	    _link($list, 'next'),
-	]),
-	control => If(
-	    Or(_has_query($list, 'prev'), _has_query($list, 'next')),
-	    1,
-	    0,
-	),
+        tag => 'ul',
+        value => Join([
+            _link($list, 'prev'),
+            _link($list, 'next'),
+        ]),
+        control => If(
+            Or(_has_query($list, 'prev'), _has_query($list, 'next')),
+            1,
+            0,
+        ),
     )->SUPER::initialize(@_);
 }
 
@@ -32,14 +32,14 @@ sub _has_query {
 sub _link {
     my($list, $dir) = @_;
     return LI(
-	Link(
-	    LinkIcon("pager_$dir"),
-	    ["Model.$list", '->format_uri', uc("${dir}_LIST")],
-	    '/',
-	),
-	If(_has_query($list, $dir),
-	   '',
-	   'disabled',
+        Link(
+            LinkIcon("pager_$dir"),
+            ["Model.$list", '->format_uri', uc("${dir}_LIST")],
+            '/',
+        ),
+        If(_has_query($list, $dir),
+           '',
+           'disabled',
         ),
     );
 }

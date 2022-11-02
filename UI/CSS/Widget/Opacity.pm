@@ -13,10 +13,10 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	value => Join([
-	    'opacity:', $self->get('opacity'), ';', "\n",
-	    'filter:alpha(opacity=', int($self->get('opacity') * 100), ');', "\n",
-	]),
+        value => Join([
+            'opacity:', $self->get('opacity'), ';', "\n",
+            'filter:alpha(opacity=', int($self->get('opacity') * 100), ');', "\n",
+        ]),
     );
     return;
 }

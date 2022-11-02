@@ -14,15 +14,15 @@ sub initialize {
 sub internal_new_args {
     my(undef, $value, $attributes) = @_;
     return {
-	value => $value,
-	($attributes ? %$attributes : ()),
+        value => $value,
+        ($attributes ? %$attributes : ()),
     };
 }
 
 sub render {
     my($self, $source, $buffer) = @_;
     $$buffer .= '1'
-	unless $self->render_simple_attr('value', $source);
+        unless $self->render_simple_attr('value', $source);
     return;
 }
 

@@ -4,21 +4,21 @@ ListModel();
 req()->set_realm('mail_forum');
 [
     load_all => [
-	[] => [{
-	    'RealmOwner.display_name' => 'mail_user1',
-	    'RealmUser.role' => 'ADMINISTRATOR',
-	}, {
-	    'RealmUser.role' => 'MAIL_RECIPIENT',
-	}, {
-	    'RealmUser.role' => 'FILE_WRITER',
-	}, {
-	    'RealmOwner.display_name' => 'mail_user2',
-	    'RealmUser.role' => 'MEMBER',
-	}, {
-	    'RealmUser.role' => 'MAIL_RECIPIENT',
-	}],
-	[{roles => ['MEMBER']}] => [{
-	    'RealmOwner.display_name' => qr{user2}i,
-	}],
+        [] => [{
+            'RealmOwner.display_name' => 'mail_user1',
+            'RealmUser.role' => 'ADMINISTRATOR',
+        }, {
+            'RealmUser.role' => 'MAIL_RECIPIENT',
+        }, {
+            'RealmUser.role' => 'FILE_WRITER',
+        }, {
+            'RealmOwner.display_name' => 'mail_user2',
+            'RealmUser.role' => 'MEMBER',
+        }, {
+            'RealmUser.role' => 'MAIL_RECIPIENT',
+        }],
+        [{roles => ['MEMBER']}] => [{
+            'RealmOwner.display_name' => qr{user2}i,
+        }],
     ],
 ];

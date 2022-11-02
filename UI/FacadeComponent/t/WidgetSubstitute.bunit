@@ -4,11 +4,11 @@ FacadeComponent();
 req()->initialize_fully('SITE_WIKI_VIEW');
 [
     make_facade_decl => [
-	[[[qw(abc 3)]]] => [WidgetSubstitute => [[label_abc => 3]]],
-#	[[[qw(T1 View.V1->v2 W1 abc 3)]]] => [WidgetSubstitute => [[qw(task_T1.view_V1__v2.widget_W1.label_abc 3)]]],
-	[[[qw(T1 W1 abc 3)]]] => [WidgetSubstitute => [[qw(task_T1.widget_W1.label_abc 3)]]],
+        [[[qw(abc 3)]]] => [WidgetSubstitute => [[label_abc => 3]]],
+#        [[[qw(T1 View.V1->v2 W1 abc 3)]]] => [WidgetSubstitute => [[qw(task_T1.view_V1__v2.widget_W1.label_abc 3)]]],
+        [[[qw(T1 W1 abc 3)]]] => [WidgetSubstitute => [[qw(task_T1.widget_W1.label_abc 3)]]],
     ],
     get_widget_substitute_value => [
-	[Widget_Simple()->new->b_widget_label('bunit_label1'), req()] => 'bunit_v1',
+        [Widget_Simple()->new->b_widget_label('bunit_label1'), req()] => 'bunit_v1',
     ],
 ];

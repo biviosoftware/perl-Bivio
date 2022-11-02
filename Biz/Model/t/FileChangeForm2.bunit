@@ -5,45 +5,45 @@ my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
 
 [
     sub {
-	model('RealmFile')->create_with_content({
-	    path => '/foo.txt',
-	}, \('some text'));
-	return 1;
+        model('RealmFile')->create_with_content({
+            path => '/foo.txt',
+        }, \('some text'));
+        return 1;
     } => 1,
     [{
         path_info => '/foo.txt',
-	mode => $_FCM->DELETE,
-	comment => 'x',
+        mode => $_FCM->DELETE,
+        comment => 'x',
     }] => [{}],
     sub {
-	model('RealmFile')->create_folder({
-	    path => '/folder1',
-	});
-	model('RealmFile')->create_with_content({
-	    path => '/folder1/foo.txt',
-	}, \('some text'));
+        model('RealmFile')->create_folder({
+            path => '/folder1',
+        });
+        model('RealmFile')->create_with_content({
+            path => '/folder1/foo.txt',
+        }, \('some text'));
         return 1;
     } => 1,
     [{
         path_info => '/folder1',
-	mode => $_FCM->DELETE,
-	comment => 'x',
+        mode => $_FCM->DELETE,
+        comment => 'x',
     }] => [{}],
     [{
-	path_info => '/folder1/foo.txt',
-	mode => $_FCM->DELETE,
-	comment => 'x',
+        path_info => '/folder1/foo.txt',
+        mode => $_FCM->DELETE,
+        comment => 'x',
     }] => MODEL_NOT_FOUND(),
     sub {
-	model('RealmFile')->create_with_content({
-	    path => '/foo.txt',
-	    is_read_only => 1,
-	}, \('some text'));
+        model('RealmFile')->create_with_content({
+            path => '/foo.txt',
+            is_read_only => 1,
+        }, \('some text'));
         return 1;
     } => 1,
     [{
         path_info => '/foo.txt',
-	mode => $_FCM->DELETE,
-	comment => 'x',
+        mode => $_FCM->DELETE,
+        comment => 'x',
     }] => FORBIDDEN(),
 ];

@@ -4,7 +4,7 @@ Type();
 [
     from_literal => [
         '' => UNDEF(),
-	a => 'a',
-	'/a' => '/a',
+        a => 'a',
+        '/a' => '/a',
     ],
 ];

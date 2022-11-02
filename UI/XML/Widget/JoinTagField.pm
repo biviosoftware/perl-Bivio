@@ -13,9 +13,9 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(value => sub {
-	WithModel($self->get('model') => Join([
-	    map(TagField($_), @{$self->get('fields')}),
-	])),
+        WithModel($self->get('model') => Join([
+            map(TagField($_), @{$self->get('fields')}),
+        ])),
     });
     return shift->SUPER::initialize(@_);
 }

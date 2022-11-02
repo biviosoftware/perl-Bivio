@@ -48,11 +48,11 @@ sub UNDEF_CONFIG {
 sub as_string {
     my($self) = @_;
     return $self
-	unless ref($self);
+        unless ref($self);
     return 'Facade['
-	. $self->get_facade->unsafe_get('uri')
+        . $self->get_facade->unsafe_get('uri')
         . '].'
-	. $self->simple_package_name;
+        . $self->simple_package_name;
 }
 
 sub assert_name {
@@ -62,7 +62,7 @@ sub assert_name {
     # May be overridden by subclasses.  There is no real restriction on names,
     # but it is convenient to limit names to perl's /\w+/.
     $self->die($name, 'invalid name syntax')
-	unless $name =~ /^\w+$/;
+        unless $name =~ /^\w+$/;
     return;
 }
 
@@ -107,7 +107,7 @@ sub get_from_facade {
 sub get_from_source {
     my($proto, $source) = @_;
     return b_use('UI.Facade')->get_from_request_or_self($source)
-	->get($proto->simple_package_name);
+        ->get($proto->simple_package_name);
 }
 
 sub group {
@@ -115,14 +115,14 @@ sub group {
     my($fields) = $self->[$_IDI];
     _assert_writable($self);
     foreach my $name (ref($names) ? @$names : $names) {
-	_assign(
-	    $self,
-	    $name,
-	    _initialize_value($self, {
-		orig_config => $value,
-		names => [lc($name)],
-	    }),
-	);
+        _assign(
+            $self,
+            $name,
+            _initialize_value($self, {
+                orig_config => $value,
+                names => [lc($name)],
+            }),
+        );
     }
     return;
 }
@@ -130,7 +130,7 @@ sub group {
 sub handle_call_autoload {
     my($self) = shift->get_from_source(b_use('Agent.Request')->get_current_or_die);
     return $self
-	unless @_;
+        unless @_;
 #TODO: This doesn't always work.  Really need a callback that does something by default
     return $self->get_value(@_);
 }
@@ -144,8 +144,8 @@ sub handle_config {
 sub handle_init_from_prior_group {
     my($self, $name) = @_;
     return $_R->nested_copy((
-	$self->[$_IDI]->{map}->{lc($name)}
-	|| $self->get_error($name, 'group value not previously defined')
+        $self->[$_IDI]->{map}->{lc($name)}
+        || $self->get_error($name, 'group value not previously defined')
     )->{config});
 }
 
@@ -188,7 +188,7 @@ sub internal_get_all {
     # easily.
     my(%values);
     foreach my $v (values(%$map)) {
-	$values{$v} = $v;
+        $values{$v} = $v;
     }
     return [values(%values)];
 }
@@ -198,7 +198,7 @@ sub internal_get_all_groups {
     # L<initialization_complete|"initialization_complete">.
     # Values have unique addresses (HASH(0xblabla)) so this trick works nicely
     my(%res) = map {
-	($_, $_);
+        ($_, $_);
     } values(%{shift->[$_IDI]->{map}});
     return [values(%res)];
 }
@@ -206,7 +206,7 @@ sub internal_get_all_groups {
 sub internal_get_self {
     my($proto, $req_or_facade) = @_;
     return $proto
- 	if ref($proto) && !$req_or_facade;
+         if ref($proto) && !$req_or_facade;
     return $proto->get_from_source($req_or_facade);
 }
 
@@ -214,18 +214,18 @@ sub internal_get_value {
     my($proto, $name, $req_or_facade) = @_;
     my($self) = $proto->internal_get_self($req_or_facade);
     return $self->get_error($self, ': passed undef as value to get')
-	unless defined($name);
+        unless defined($name);
     return $self->internal_unsafe_lc_get_value($name)
-	|| _assign($self, $name, $self->get_error($name));
+        || _assign($self, $name, $self->get_error($name));
 }
 
 sub internal_unsafe_lc_get_value {
     my($self, $name) = @_;
     my($res) = $self->[$_IDI]->{map}->{lc($name)};
     return $_HANDLERS->do_filo(
-	handle_internal_unsafe_lc_get_value => sub {
-	    return [$self, $name, $res];
-	},
+        handle_internal_unsafe_lc_get_value => sub {
+            return [$self, $name, $res];
+        },
     ) || $res;
 }
 
@@ -235,28 +235,28 @@ sub new {
     # base initialization, if supplied,
     # and then I<initialize> is called, if supplied.
     $proto->die($facade, 'missing or invalid facade')
-	unless b_use('UI.Facade')->is_super_of($facade);
+        unless b_use('UI.Facade')->is_super_of($facade);
     my($self) = shift->SUPER::new;
     my($fields) = $self->[$_IDI] = {
-	facade => $facade,
-	map => {},
-	dynamic_init => [],
-	clone => $clone,
-	initialize => $initialize,
-	undef_value =>  _initialize_value(
-	    $self,
-	    {
-		orig_config => $self->UNDEF_CONFIG,
-		names => [],
-	    },
-	),
+        facade => $facade,
+        map => {},
+        dynamic_init => [],
+        clone => $clone,
+        initialize => $initialize,
+        undef_value =>  _initialize_value(
+            $self,
+            {
+                orig_config => $self->UNDEF_CONFIG,
+                names => [],
+            },
+        ),
     };
     _init_from_clone($self, $clone);
     $initialize->($self)
-	if $initialize;
+        if $initialize;
     foreach my $value (@{$fields->{dynamic_init}}) {
-	$value->{config} = $value->{orig_config}->($self);
-	$self->internal_initialize_value($value);
+        $value->{config} = $value->{orig_config}->($self);
+        $self->internal_initialize_value($value);
     }
     $self->initialization_complete;
     return $self;
@@ -295,9 +295,9 @@ sub _assign {
     # Assigns $value to $name in $map.  Does syntax checking.
     $name = lc($name);
     if ($map->{$name}) {
-	# Delete name from previous map entry
-	my($n) = $map->{$name}->{names};
-	@$n = grep($name ne $_, @$n);
+        # Delete name from previous map entry
+        my($n) = $map->{$name}->{names};
+        @$n = grep($name ne $_, @$n);
     }
     $self->assert_name($name);
     return $map->{$name} = $value;
@@ -316,11 +316,11 @@ sub _init_from_clone {
     my($self, $clone) = @_;
     # Calls the initialization depth first.
     return
-	unless $clone;
+        unless $clone;
     my($clone_fields) = $clone->[$_IDI];
     _init_from_clone($self, $clone_fields->{clone});
     $clone_fields->{initialize}->($self)
-	if $clone_fields->{initialize};
+        if $clone_fields->{initialize};
     return;
 }
 
@@ -334,7 +334,7 @@ sub _initialize_value {
 sub _initialize_value_config {
     my($self, $value) = @_;
     return $_R->nested_copy($value->{orig_config})
-	unless ref($value->{orig_config}) eq 'CODE';
+        unless ref($value->{orig_config}) eq 'CODE';
     push(@{$self->[$_IDI]->{dynamic_init}}, $value);
     return $value->{orig_config}->($self);
 }

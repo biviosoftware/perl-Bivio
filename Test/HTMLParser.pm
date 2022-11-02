@@ -46,10 +46,10 @@ sub internal_new {
     # I<self> when parsing is complete.
     my($proto, $parser) = @_;
     return undef
-	unless my $self = $proto->new($parser);
+        unless my $self = $proto->new($parser);
     $self->internal_put({
-	cleaner => $parser->get('Cleaner'),
-	elements => {},
+        cleaner => $parser->get('Cleaner'),
+        elements => {},
     });
     my($p) = $_HP->new($self);
     $p->ignore_elements(qw(script style));
@@ -75,11 +75,11 @@ sub new {
 
     my($html, $attrs) = @_;
     my($self) = $proto->SUPER::new({
-	%{$attrs || {}},
-	html => Encode::decode_utf8($$html),
+        %{$attrs || {}},
+        html => Encode::decode_utf8($$html),
     });
     foreach my $c (@_CLASSES) {
-	$self->put($c->simple_package_name => $c->internal_new($self));
+        $self->put($c->simple_package_name => $c->internal_new($self));
     }
     return $self->set_read_only;
 }
@@ -89,7 +89,7 @@ sub register {
     # Adds I<proto> to list of classes, but first loads I<prerequisite_classes>.
     my($proto, $prerequisite_classes) = @_;
     foreach my $p (@{$prerequisite_classes || []}) {
-	b_use('TestHTMLParser', $p);
+        b_use('TestHTMLParser', $p);
     }
     push(@_CLASSES, ref($proto) || $proto);
     return;

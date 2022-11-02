@@ -69,18 +69,18 @@ sub execute_empty {
     # Copy in primary keys
     my($properties) = $self->internal_get;
     %$properties = (
-	%$properties,
-	%{$self->get_fields_for_primary_keys($lm)},
+        %$properties,
+        %{$self->get_fields_for_primary_keys($lm)},
     );
     # Do start/row/end
     $self->reset_cursor;
     my($res) = $self->execute_empty_start;
     $_A->warn_deprecated($res, ': unexpected return from ', $self)
-	if $res;
+        if $res;
     while ($self->next_row) {
-	$res = $self->execute_empty_row;
-	$_A->warn_deprecated($res, ': unexpected return from ', $self)
-	    if $res;
+        $res = $self->execute_empty_row;
+        $_A->warn_deprecated($res, ': unexpected return from ', $self)
+            if $res;
     }
     $self->execute_empty_end;
     $self->reset_cursor;
@@ -122,11 +122,11 @@ sub execute_ok {
 #TODO: Need to see if this is happening.  If not, execute_ok should return
 #      when any execute* returns
     $_A->warn_deprecated($res, ': unexpected return from ', $self)
-	if $res;
+        if $res;
     while ($self->next_row) {
-	$res = $self->execute_ok_row($button);
-	$_A->warn_deprecated($res, ': unexpected return from ', $self)
-	    if $res;
+        $res = $self->execute_ok_row($button);
+        $_A->warn_deprecated($res, ': unexpected return from ', $self)
+            if $res;
     }
     my($result) = $self->execute_ok_end($button);
     $self->reset_cursor;
@@ -146,7 +146,7 @@ sub execute_ok_row {
     # operation during L<execute_ok|"execute_ok">
     # B<for each row>.
     return $self->execute_ok_row_dispatch(@_)
-	if $self->WANT_EXECUTE_OK_ROW_DISPATCH;
+        if $self->WANT_EXECUTE_OK_ROW_DISPATCH;
     return;
 }
 
@@ -162,12 +162,12 @@ sub execute_ok_row_dispatch {
     my($self, @args) = @_;
     my($lm) = $self->get_list_model;
     if ($lm->is_empty_row) {
-	return $self->execute_ok_row_empty(@args)
-	    if $self->is_empty_row;
-	return $self->execute_ok_row_create(@args);
+        return $self->execute_ok_row_empty(@args)
+            if $self->is_empty_row;
+        return $self->execute_ok_row_create(@args);
     }
     return $self->execute_ok_row_delete(@args)
-	if $self->is_empty_row;
+        if $self->is_empty_row;
     return $self->execute_ok_row_update(@args);
 }
 
@@ -212,13 +212,13 @@ sub get_field_name_for_html {
     my($form_name) = $self->SUPER::get_field_name_for_html($name);
 
     unless ($self->get_field_info($name)->{in_list}) {
-	b_die($name, ': not in_list and row specified')
-	    if defined($row);
-	return $form_name;
+        b_die($name, ': not in_list and row specified')
+            if defined($row);
+        return $form_name;
     }
     return $self->internal_in_list_name(
-	$form_name,
-	defined($row) ? $row : $fields->{cursor},
+        $form_name,
+        defined($row) ? $row : $fields->{cursor},
     );
 }
 
@@ -238,13 +238,13 @@ sub get_fields_for_primary_keys {
     my($row) = 0;
     $list->do_rows(sub {
         push(@list_keys,
-	    map(
-		($self->internal_in_list_name($_, $row) => $list->get($_)),
-		@$primary_key_names,
-	    ),
-	);
-	$row++;
-	return 1;
+            map(
+                ($self->internal_in_list_name($_, $row) => $list->get($_)),
+                @$primary_key_names,
+            ),
+        );
+        $row++;
+        return 1;
     });
     $list->reset_cursor;
     return {@list_keys};
@@ -259,7 +259,7 @@ sub get_list_class {
 sub get_list_model {
     my($self) = @_;
     return $self->[$_IDI]->{list_model}
-	|| $self->get_list_class->get_instance;
+        || $self->get_list_class->get_instance;
 }
 
 sub get_non_empty_result_set_size {
@@ -283,9 +283,9 @@ sub has_fields {
     # Does the model have these fields?  This means does it have the
     # possibility of having these fields, not whether they are in the list.
     my(@args) = map {
-	my($x) = $_;
-	($x) = _parse_name($x);
-	$x;
+        my($x) = $_;
+        ($x) = _parse_name($x);
+        $x;
     } @_;
     return $self->SUPER::has_fields(@args);
 }
@@ -294,8 +294,8 @@ sub internal_clear_error {
     my($self, $property) = @_;
     # Clears the error on I<property> if any.
     foreach my $n (_names($self, $property)) {
-	$self->SUPER::internal_clear_error($n)
-	    if $n;
+        $self->SUPER::internal_clear_error($n)
+            if $n;
     }
     return;
 }
@@ -324,7 +324,7 @@ sub internal_get_visible_field_names {
 sub internal_in_list_name {
     my($self, $name, $cursor) = @_;
     b_die('no cursor')
-	unless defined($cursor) && $cursor >= 0;
+        unless defined($cursor) && $cursor >= 0;
     return $name . $_SEP . $cursor;
 }
 
@@ -348,8 +348,8 @@ sub internal_pre_parse_columns {
 sub internal_put_error_and_detail {
     my($self, $property) = (shift, shift);
     foreach my $n (_names($self, $property)) {
-	$self->SUPER::internal_put_error_and_detail($n, @_)
-	    if $n;
+        $self->SUPER::internal_put_error_and_detail($n, @_)
+            if $n;
     }
     return;
 }
@@ -357,10 +357,10 @@ sub internal_put_error_and_detail {
 sub internal_put_field {
     my($self) = shift;
     return $self->SUPER::internal_put_field(
-	@{$self->map_by_two(sub {
-	    my($field, $value) = @_;
-	    return map($_ ? ($_ => $value) : (), _names($self, $field));
-	}, \@_)},
+        @{$self->map_by_two(sub {
+            my($field, $value) = @_;
+            return map($_ ? ($_ => $value) : (), _names($self, $field));
+        }, \@_)},
     );
 }
 
@@ -386,8 +386,8 @@ sub load_from_list_model_properties {
     # Load form values from model.
     $model ||= $self->get_list_model();
     foreach my $field (@{$self->get_info('visible_field_names')}) {
-	$self->internal_put_field($field, $model->get($field))
-	    if $model->has_keys($field);
+        $self->internal_put_field($field, $model->get($field))
+            if $model->has_keys($field);
     }
     return;
 }
@@ -406,14 +406,14 @@ sub next_row {
     # available in row-qualified form, i.e. I<name>.I<row>.
     my($fields) = $self->[$_IDI];
     $self->die('no cursor')
-	unless defined($fields->{cursor});
+        unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     my($lm) = $self->get_list_model;
     # Advance only if list_model can advance
     unless ($lm->next_row) {
-	$fields->{cursor} = undef;
-	_clear_row($self);
-	return 0;
+        $fields->{cursor} = undef;
+        _clear_row($self);
+        return 0;
     }
     return _set_row($self, ++$fields->{cursor})
 }
@@ -421,10 +421,10 @@ sub next_row {
 sub process {
     my($self, $req, $values) = shift->internal_process_args(@_);
     if ($values) {
-	$values = {
-	    %{$self->get_fields_for_primary_keys},
-	    %$values,
-	};
+        $values = {
+            %{$self->get_fields_for_primary_keys},
+            %$values,
+        };
     }
     return $self->SUPER::process($req, $values);
 }
@@ -463,7 +463,7 @@ sub set_cursor_or_die {
     #
     # Returns self.
     $self->throw_die('DIE', {message => 'no such row', entity => $_[0]})
-	unless $self->set_cursor(@_);
+        unless $self->set_cursor(@_);
     return $self;
 }
 
@@ -481,25 +481,25 @@ sub validate {
     my($properties) = $self->internal_get;
     my($row);
     foreach ($row = 0; $lm->next_row; $row++) {
-	foreach my $pk (@$primary_key) {
-	    my($n) = $pk->{name};
-	    my($nr) = $self->internal_in_list_name($n, $row);
-	    _collision($self, 'missing', $row)
-		    unless defined($properties->{$nr});
+        foreach my $pk (@$primary_key) {
+            my($n) = $pk->{name};
+            my($nr) = $self->internal_in_list_name($n, $row);
+            _collision($self, 'missing', $row)
+                    unless defined($properties->{$nr});
 #TODO: Should this be "is_equal"?  This is probably "good enough".
 #      It will slow it down a lot to make a method call for each
 #      row/attribute.  "eq" works in all cases and probably in future.
-	    _collision($self, 'mismatch', $row)
-		    unless $properties->{$nr} eq $lm->get($n);
-	}
+            _collision($self, 'mismatch', $row)
+                    unless $properties->{$nr} eq $lm->get($n);
+        }
     }
 
     # No more rows should exist
     foreach my $pk (@$primary_key) {
-	_collision($self, 'extra', $row)
-	    if exists($properties->{
-		$self->internal_in_list_name($pk->{name}, $row),
-	    });
+        _collision($self, 'extra', $row)
+            if exists($properties->{
+                $self->internal_in_list_name($pk->{name}, $row),
+            });
     }
 
 #TODO: Optimize.  Don't make calls if method doesn't exist
@@ -507,7 +507,7 @@ sub validate {
     $self->reset_cursor;
     $self->validate_start;
     while ($self->next_row) {
-	$self->validate_row;
+        $self->validate_row;
     }
     $self->validate_end;
     $self->reset_cursor;
@@ -539,11 +539,11 @@ sub _clear_row {
     my($literals) = $self->internal_get_literals;
     my($values) = $self->internal_get;
     foreach my $f (@{$self->get_info('in_list')}) {
-	my($n, $fn) = @{$f}{'name', 'form_name'};
-	delete($values->{$n});
-	delete($literals->{$fn})
-	    if defined($fn);
-	$self->SUPER::internal_clear_error($n);
+        my($n, $fn) = @{$f}{'name', 'form_name'};
+        delete($values->{$n});
+        delete($literals->{$fn})
+            if defined($fn);
+        $self->SUPER::internal_clear_error($n);
     }
     return;
 }
@@ -552,9 +552,9 @@ sub _collision {
     my($self, $msg, $row) = @_;
     # Blows up with UPDATE_COLLISION.
     $self->throw_die('UPDATE_COLLISION', {
-	message => $msg.' row #'.$row.' in ListFormModel',
-	list_model => ref($self->get_list_model),
-	list_attrs => $self->get_list_model->internal_get,
+        message => $msg.' row #'.$row.' in ListFormModel',
+        list_model => ref($self->get_list_model),
+        list_attrs => $self->get_list_model->internal_get,
     });
     return;
 }
@@ -562,7 +562,7 @@ sub _collision {
 sub _execute_init {
     my($self) = @_;
     return $self->get_list_model
-	if $self->[$_IDI] && $self->[$_IDI]->{list_model};
+        if $self->[$_IDI] && $self->[$_IDI]->{list_model};
     # Initializes rows and cursor.
     my($lm) = $self->internal_initialize_list;
     # Get the field names based on list instance
@@ -578,35 +578,35 @@ sub _execute_init {
     # Initialize not in_list visible/hidden names
     my(@in_list);
     foreach my $c (@$visible_cols, @$hidden_cols) {
-	if ($c->{in_list}) {
-	    push(@in_list, $c);
-	    next;
-	}
-	push(@{$c->{is_visible} ? $visible : $hidden}, $c->{name});
-	push(@file_fields, $c->{name}) if $c->{is_file_field};
+        if ($c->{in_list}) {
+            push(@in_list, $c);
+            next;
+        }
+        push(@{$c->{is_visible} ? $visible : $hidden}, $c->{name});
+        push(@file_fields, $c->{name}) if $c->{is_file_field};
     }
 
     # Initialize in_list visible and hidden names
     for (my($row) = $lm->get_result_set_size - 1; $row >= 0; $row--) {
-	foreach my $c (@in_list) {
-	    my($nr) = $self->internal_in_list_name($c->{name}, $row);
-	    push(@{$c->{is_visible} ? $visible : $hidden}, $nr);
-	    push(@file_fields, $nr) if $c->{is_file_field};
-	}
+        foreach my $c (@in_list) {
+            my($nr) = $self->internal_in_list_name($c->{name}, $row);
+            push(@{$c->{is_visible} ? $visible : $hidden}, $nr);
+            push(@file_fields, $nr) if $c->{is_file_field};
+        }
     }
 
     # Re-initialize fields
     $self->[$_IDI] = {
-	cursor => -1,
-	list_model => $lm,
-	visible_field_names => $visible,
-	hidden_field_names => $hidden,
-	file_field_names => @file_fields ? \@file_fields : undef,
+        cursor => -1,
+        list_model => $lm,
+        visible_field_names => $visible,
+        hidden_field_names => $hidden,
+        file_field_names => @file_fields ? \@file_fields : undef,
     };
     if ($_TRACE) {
-	_trace('hidden: ', $hidden);
-	_trace('visible: ', $visible);
-	_trace('file_fields: ', \@file_fields);
+        _trace('hidden: ', $hidden);
+        _trace('visible: ', $visible);
+        _trace('file_fields: ', \@file_fields);
     }
     return $lm;
 }
@@ -618,7 +618,7 @@ sub _names {
 
     # If there is no property name, global error
     return ($self->GLOBAL_ERROR_FIELD, undef)
-	unless $name;
+        unless $name;
 
     my($sql_support) = $self->internal_get_sql_support;
     my($row);
@@ -627,23 +627,23 @@ sub _names {
     # Get the column info and return if not in_list
     my($col) = $sql_support->get_column_info($name);
     unless ($col->{in_list}) {
-	b_die($name, ': not in_list and row specified')
-	    if defined($row);
-	# No qualified name
-	return ($name, undef);
+        b_die($name, ': not in_list and row specified')
+            if defined($row);
+        # No qualified name
+        return ($name, undef);
     }
 
     # Row specified?
     my($fields) = $self->[$_IDI];
     if (defined($row)) {
-	if (defined($fields->{cursor}) && $fields->{cursor} >= 0) {
-	    # If there is a cursor and it matches the row, then
-	    # return unqualified and qualified names.
-	    return ($name, $self->internal_in_list_name($name, $row))
-		if $fields->{cursor} == $row;
-	}
-	# No unqualified name
-	return (undef, $self->internal_in_list_name($name, $row));
+        if (defined($fields->{cursor}) && $fields->{cursor} >= 0) {
+            # If there is a cursor and it matches the row, then
+            # return unqualified and qualified names.
+            return ($name, $self->internal_in_list_name($name, $row))
+                if $fields->{cursor} == $row;
+        }
+        # No unqualified name
+        return (undef, $self->internal_in_list_name($name, $row));
     }
     # No row specified, must be a cursor and must return both forms
     return ($name, $self->internal_in_list_name($name, $fields->{cursor}));
@@ -652,8 +652,8 @@ sub _names {
 sub _parse_name {
     my($name) = @_;
     return $name =~ s/$_SEP(\d+)$//o
-	? ($name, $1)
-	: ($name, undef);
+        ? ($name, $1)
+        : ($name, undef);
 }
 
 sub _set_row {
@@ -663,16 +663,16 @@ sub _set_row {
     my($values) = $self->internal_get;
     my($errors) = $self->get_errors;
     foreach my $f (@{$self->get_info('in_list')}) {
-	my($n, $fn) = @{$f}{'name', 'form_name'};
-	my($nr) = $self->internal_in_list_name($n, $cursor);
-	$values->{$n} = $values->{$nr};
-	# No literals for "other" entries
-	$literals->{$fn} = $literals->{
-	    $self->internal_in_list_name($fn, $cursor),
-	}
-	    if defined($fn);
-	$errors->{$n} = $errors->{$nr}
-	    if $errors;
+        my($n, $fn) = @{$f}{'name', 'form_name'};
+        my($nr) = $self->internal_in_list_name($n, $cursor);
+        $values->{$n} = $values->{$nr};
+        # No literals for "other" entries
+        $literals->{$fn} = $literals->{
+            $self->internal_in_list_name($fn, $cursor),
+        }
+            if defined($fn);
+        $errors->{$n} = $errors->{$nr}
+            if $errors;
     }
     return 1;
 }

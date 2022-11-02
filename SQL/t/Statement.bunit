@@ -4,100 +4,100 @@ Request();
 options({comparator => 'nested_contains'});
 [
     {
-	object => [],
-	compute_params => sub {
-	    my($case, $params, $method) = @_;
-	    $case->put(object => class()->new())
-		if $method eq 'union_hack';
-	    return $params;
-	},
-	compute_return => sub {
-	    my($case) = @_;
-	    return [$case->get('object')
-	        ->build_for_list_support_prepare_statement(
-		    Bivio::Biz::Model->new(req(), 'RealmFileList')
-		        ->internal_get_sql_support,
-	    )];
-	},
+        object => [],
+        compute_params => sub {
+            my($case, $params, $method) = @_;
+            $case->put(object => class()->new())
+                if $method eq 'union_hack';
+            return $params;
+        },
+        compute_return => sub {
+            my($case) = @_;
+            return [$case->get('object')
+                ->build_for_list_support_prepare_statement(
+                    Bivio::Biz::Model->new(req(), 'RealmFileList')
+                        ->internal_get_sql_support,
+            )];
+        },
     } => [
-	select => [
+        select => [
 #TODO: Currently select doesn't produce anthing without a from.
-	    'RealmOwner.creation_date_time' => ['', []],
-	],
-	from => [
-	    'RealmOwner' => [q{SELECT TO_CHAR(realm_owner_t.creation_date_time,'J SSSSS') FROM realm_owner_t}, []],
-	],
+            'RealmOwner.creation_date_time' => ['', []],
+        ],
+        from => [
+            'RealmOwner' => [q{SELECT TO_CHAR(realm_owner_t.creation_date_time,'J SSSSS') FROM realm_owner_t}, []],
+        ],
         union_hack => [
-	    [class()->new->where(class()->IN('RealmFile.realm_file_id', [1]))]
-		=> ['WHERE realm_file_t.realm_file_id IN (?)', [1]],
-	    [
-		class()->new->where(class()->IN('RealmFile.realm_file_id', [1])),
-		class()->new->select('User.user_id')
-		    ->from('User')
-		    ->where(class()->EQ('User.first_name', ['x']))
-	    ] => ['WHERE realm_file_t.realm_file_id IN (?) UNION SELECT user_t.user_id FROM user_t WHERE user_t.first_name=?', [1, 'x']],
-	],
+            [class()->new->where(class()->IN('RealmFile.realm_file_id', [1]))]
+                => ['WHERE realm_file_t.realm_file_id IN (?)', [1]],
+            [
+                class()->new->where(class()->IN('RealmFile.realm_file_id', [1])),
+                class()->new->select('User.user_id')
+                    ->from('User')
+                    ->where(class()->EQ('User.first_name', ['x']))
+            ] => ['WHERE realm_file_t.realm_file_id IN (?) UNION SELECT user_t.user_id FROM user_t WHERE user_t.first_name=?', [1, 'x']],
+        ],
     ],
     map(
-	({
-	    object => [],
-	    compute_return => sub {
-		my($case) = @_;
-		return [$case->get('object')
-		    ->build_for_list_support_prepare_statement(
-			Bivio::Biz::Model->new(req(), 'RealmFileList')
-			    ->internal_get_sql_support,
-		)];
-	    },
-	} => $_), [
-	    where => [
-		[class()->EQ('RealmFile.folder_id', [undef])]
-		=> ['FROM realm_file_t WHERE realm_file_t.folder_id IS NULL', []],
-	    ],
-	], [
-	    where => [
-		[['RealmFile.folder_id', [1, 2]]]
-		    => ['FROM realm_file_t WHERE realm_file_t.folder_id IN (?,?)', [1, 2]],
-	    ],
-	], [
-	    where => [
-		[class()
-		    ->EQ('RealmUser.user_id', 'User.user_id', 'Email.realm_id')]
-		=> ['FROM email_t,realm_file_t,realm_user_t,user_t WHERE realm_user_t.user_id=user_t.user_id AND realm_user_t.user_id=email_t.realm_id', []],
-	    ],
-	], [
-	    from => [
-		[class()->LEFT_JOIN_ON(qw(User RealmUser), [
-		    [qw(User.user_id RealmUser.user_id)],
-		])] => ['FROM realm_file_t,user_t LEFT JOIN realm_user_t ON (user_t.user_id=realm_user_t.user_id)', []],
-	    ],
-	], [
-	    from => [
-		[class()->LEFT_JOIN_ON(qw(User RealmUser), [
-		    [qw(User.user_id RealmUser.user_id)],
-		]), class()->LEFT_JOIN_ON(qw(RealmUser RealmOwner), [
-		    [qw(RealmUser.realm_id RealmOwner.realm_id)],
-		])] => ['FROM realm_file_t,user_t LEFT JOIN realm_user_t ON (user_t.user_id=realm_user_t.user_id) LEFT JOIN realm_owner_t ON (realm_user_t.realm_id=realm_owner_t.realm_id)', []],
-	    ],
-	],
+        ({
+            object => [],
+            compute_return => sub {
+                my($case) = @_;
+                return [$case->get('object')
+                    ->build_for_list_support_prepare_statement(
+                        Bivio::Biz::Model->new(req(), 'RealmFileList')
+                            ->internal_get_sql_support,
+                )];
+            },
+        } => $_), [
+            where => [
+                [class()->EQ('RealmFile.folder_id', [undef])]
+                => ['FROM realm_file_t WHERE realm_file_t.folder_id IS NULL', []],
+            ],
+        ], [
+            where => [
+                [['RealmFile.folder_id', [1, 2]]]
+                    => ['FROM realm_file_t WHERE realm_file_t.folder_id IN (?,?)', [1, 2]],
+            ],
+        ], [
+            where => [
+                [class()
+                    ->EQ('RealmUser.user_id', 'User.user_id', 'Email.realm_id')]
+                => ['FROM email_t,realm_file_t,realm_user_t,user_t WHERE realm_user_t.user_id=user_t.user_id AND realm_user_t.user_id=email_t.realm_id', []],
+            ],
+        ], [
+            from => [
+                [class()->LEFT_JOIN_ON(qw(User RealmUser), [
+                    [qw(User.user_id RealmUser.user_id)],
+                ])] => ['FROM realm_file_t,user_t LEFT JOIN realm_user_t ON (user_t.user_id=realm_user_t.user_id)', []],
+            ],
+        ], [
+            from => [
+                [class()->LEFT_JOIN_ON(qw(User RealmUser), [
+                    [qw(User.user_id RealmUser.user_id)],
+                ]), class()->LEFT_JOIN_ON(qw(RealmUser RealmOwner), [
+                    [qw(RealmUser.realm_id RealmOwner.realm_id)],
+                ])] => ['FROM realm_file_t,user_t LEFT JOIN realm_user_t ON (user_t.user_id=realm_user_t.user_id) LEFT JOIN realm_owner_t ON (realm_user_t.realm_id=realm_owner_t.realm_id)', []],
+            ],
+        ],
     ),
     sub {
-	return class('Bivio::SQL::t::Statement::T1List')->new(req())
-	    ->load_all;
+        return class('Bivio::SQL::t::Statement::T1List')->new(req())
+            ->load_all;
     } => [
-	map_rows => [
-	    [] => [[
-		map({
-		    my($x, $y) = split(/:/, $_);
-		    {'RealmOwner.name' => $x, guest_name => $y};
-		} qw(
-		    btest_read
-		    demo:guest
-		    guest
-		    xapian_demo:xapian_guest
-		    xapian_guest
-		)),
-	    ]],
-	],
+        map_rows => [
+            [] => [[
+                map({
+                    my($x, $y) = split(/:/, $_);
+                    {'RealmOwner.name' => $x, guest_name => $y};
+                } qw(
+                    btest_read
+                    demo:guest
+                    guest
+                    xapian_demo:xapian_guest
+                    xapian_guest
+                )),
+            ]],
+        ],
     ],
 ];

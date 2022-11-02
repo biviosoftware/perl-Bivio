@@ -2,21 +2,21 @@
 # $Id$
 [
     sub {class('Type.Enum')} => [
-	package_name => 'Bivio::Type::Enum',
-	CLASSLOADER_MAP_NAME => 'Type',
-	as_classloader_map_name => 'Type.Enum',
-	as_classloader_mapped_package => 'Bivio::Type::Enum',
-	equals_class_name => [
-	    'Bivio::Type::Enum' => 1,
-	    'Type.Enum' => 1,
-	    'Enum' => 1,
-	    'Type' => 0,
-	],
-	b_can => [
-	    'equals_class_name' => 1,
-	    [undef] => 0,
-	    1 => 0,
-	    [{}] => 0,
-	],
+        package_name => 'Bivio::Type::Enum',
+        CLASSLOADER_MAP_NAME => 'Type',
+        as_classloader_map_name => 'Type.Enum',
+        as_classloader_mapped_package => 'Bivio::Type::Enum',
+        equals_class_name => [
+            'Bivio::Type::Enum' => 1,
+            'Type.Enum' => 1,
+            'Enum' => 1,
+            'Type' => 0,
+        ],
+        b_can => [
+            'equals_class_name' => 1,
+            [undef] => 0,
+            1 => 0,
+            [{}] => 0,
+        ],
     ],
 ];

@@ -2,7 +2,7 @@
 # $Id$
 config({
     'Bivio::IO::Config' => {
-	ignore_errors => 1,
+        ignore_errors => 1,
     },
 });
 options({
@@ -10,6 +10,6 @@ options({
 });
 [
     class() => [
-	package_name => not_die(),
+        package_name => not_die(),
     ],
 ];

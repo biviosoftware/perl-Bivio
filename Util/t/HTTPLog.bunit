@@ -5,103 +5,103 @@ my($_LOG) = 'HTTPLog.tmp';
 our($_PREFIX) = '2003/03/22 06:2';
 config({
     'Bivio::Util::HTTPLog' => my $cfg = {
-	email => '',
-	pager_email => '',
-	interval_minutes => 5,
-	error_list => [
-	    'this is an error',
-	],
-	error_count_for_page => 2,
-	critical_list => [
-	    'Bivio::DieCode::DIE.*',
-	],
-	ignore_list => [
-	    'this is normal',
-	],
-	ignore_unless_count_list => [
-	    'sometimes important',
-	],
-	ignore_unless_count => 3,
-	error_file => $_LOG,
-	test_now => Bivio::Type::DateTime->from_literal("${_PREFIX}9:00"),
+        email => '',
+        pager_email => '',
+        interval_minutes => 5,
+        error_list => [
+            'this is an error',
+        ],
+        error_count_for_page => 2,
+        critical_list => [
+            'Bivio::DieCode::DIE.*',
+        ],
+        ignore_list => [
+            'this is normal',
+        ],
+        ignore_unless_count_list => [
+            'sometimes important',
+        ],
+        ignore_unless_count => 3,
+        error_file => $_LOG,
+        test_now => Bivio::Type::DateTime->from_literal("${_PREFIX}9:00"),
     },
     'Bivio::IO::Alert' => {
-	want_time => 1,
+        want_time => 1,
     },
 });
 
 Request();
 [
     [] => [
-	{
-	    compute_params => sub {
-		my($case, $params) = @_;
-		Bivio::IO::File->write($_LOG,
-		    join('', map("$_PREFIX$_\n", @$params)));
-		return [5];
-	    },
-	    check_return => sub {
-		my($case, $actual, $expect) = @_;
-		return ref($expect) eq 'ARRAY'
-		    ? @$expect ? [map({\("$_PREFIX$_\n")} @$expect)] : [\('')]
-	            : $expect;
-	    },
-	    method => 'parse_errors'
-	} => [
-	    # Inside interval
-	    '4:02 this is an error' => '4:02 this is an error',
-	    '4:50 this is normal' => [],
-	    # Repeated
-	    [map("4:2$_ this is an error", 1..2)] => qr/CRITICAL/,
-	    # Repeated
-	    [map("4:2$_ sometimes important", 1..2)] => [],
-	    [map("4:2$_ sometimes important", 1..3)] =>
-		qr/\[repeated 3 times\] sometimes important/,
-	    # Outside interval
-	    '1:22 this is an error' => [],
-	    # Unknown
-	    '4:55 Unknown' => '4:55 Unknown',
-	    '4:55 normal' => '4:55 normal',
-	    # Leaves file in a state for next
-	    '4:51 Bivio::DieCode::DIE: class=>FooBar message=>this is critical' => qr/CRITICAL.*this is critical/,
-	],
+        {
+            compute_params => sub {
+                my($case, $params) = @_;
+                Bivio::IO::File->write($_LOG,
+                    join('', map("$_PREFIX$_\n", @$params)));
+                return [5];
+            },
+            check_return => sub {
+                my($case, $actual, $expect) = @_;
+                return ref($expect) eq 'ARRAY'
+                    ? @$expect ? [map({\("$_PREFIX$_\n")} @$expect)] : [\('')]
+                    : $expect;
+            },
+            method => 'parse_errors'
+        } => [
+            # Inside interval
+            '4:02 this is an error' => '4:02 this is an error',
+            '4:50 this is normal' => [],
+            # Repeated
+            [map("4:2$_ this is an error", 1..2)] => qr/CRITICAL/,
+            # Repeated
+            [map("4:2$_ sometimes important", 1..2)] => [],
+            [map("4:2$_ sometimes important", 1..3)] =>
+                qr/\[repeated 3 times\] sometimes important/,
+            # Outside interval
+            '1:22 this is an error' => [],
+            # Unknown
+            '4:55 Unknown' => '4:55 Unknown',
+            '4:55 normal' => '4:55 normal',
+            # Leaves file in a state for next
+            '4:51 Bivio::DieCode::DIE: class=>FooBar message=>this is critical' => qr/CRITICAL.*this is critical/,
+        ],
     ],
     'Bivio::Util::HTTPLog' => [
-	main => [
-	    sub {
-		clear_local_mail();
-		return [-email => email('httplog'), parse_errors => 5];
-	    } => sub {
-		verify_local_mail(
-		    email('httplog'),
-		    qr{Subject: \w+ \Q$_LOG},
-		    1,
-		);
-		return 1;
-	    },
-	    sub {
-		clear_local_mail();
-		config({
-		    'Bivio::Util::HTTPLog' => {
-			%$cfg,
-			pager_email => email('pager'),
-		    },
-		});
-		return [parse_errors => 5];
-	    } => sub {
-		verify_local_mail(
-		    email('pager'),
-		    qr{Subject: \w+\n.*\nDIE: this is critical}s,
-		    1,
-		);
-		return 1;
-	    },
-	    sub {
-		req()->put(is_production => 1);
-		Bivio::IO::File->write($_LOG, '');
-		return [parse_errors => 5];
-	    } => qr/error file missing or empty/,
-	],
+        main => [
+            sub {
+                clear_local_mail();
+                return [-email => email('httplog'), parse_errors => 5];
+            } => sub {
+                verify_local_mail(
+                    email('httplog'),
+                    qr{Subject: \w+ \Q$_LOG},
+                    1,
+                );
+                return 1;
+            },
+            sub {
+                clear_local_mail();
+                config({
+                    'Bivio::Util::HTTPLog' => {
+                        %$cfg,
+                        pager_email => email('pager'),
+                    },
+                });
+                return [parse_errors => 5];
+            } => sub {
+                verify_local_mail(
+                    email('pager'),
+                    qr{Subject: \w+\n.*\nDIE: this is critical}s,
+                    1,
+                );
+                return 1;
+            },
+            sub {
+                req()->put(is_production => 1);
+                Bivio::IO::File->write($_LOG, '');
+                return [parse_errors => 5];
+            } => qr/error file missing or empty/,
+        ],
     ],
 ];
 

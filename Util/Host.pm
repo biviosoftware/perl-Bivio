@@ -78,14 +78,14 @@ Tries to bind to the address to a UDP socket.  You must have privs to open
 sub exec_if {
     my($self, $host, @cmd) = @_;
     socket(SOCKET, Socket::PF_INET(), Socket::SOCK_DGRAM(),
-	getprotobyname('udp'))
-	or Bivio::Die->die("Cannot create socket: $!");
+        getprotobyname('udp'))
+        or Bivio::Die->die("Cannot create socket: $!");
     if (bind(SOCKET, Socket::pack_sockaddr_in(0,
-	(gethostbyname($host))[4]
-	|| Bivio::Die->die("$host: gethostbyname error: $!")))) {
-	return "Would have executed: @cmd\n" if $self->unsafe_get('noexecute');
-	exec(@cmd) || Bivio::Die->die("Exec failed: @cmd: $!");
-	# DOES NOT RETURN
+        (gethostbyname($host))[4]
+        || Bivio::Die->die("$host: gethostbyname error: $!")))) {
+        return "Would have executed: @cmd\n" if $self->unsafe_get('noexecute');
+        exec(@cmd) || Bivio::Die->die("Exec failed: @cmd: $!");
+        # DOES NOT RETURN
     }
     return $self->unsafe_get('noexecute') ? "Not this host\n" : undef;
 }

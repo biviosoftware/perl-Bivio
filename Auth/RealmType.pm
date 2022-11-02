@@ -24,8 +24,8 @@ sub equals_or_any_owner_check {
     my($self, $match) = @_;
     $match ||= $self->ANY_OWNER;
     return $self == $match
-	|| $match->eq_any_owner && grep($self == $_, $self->get_any_owner_list)
-	? 1 : 0;
+        || $match->eq_any_owner && grep($self == $_, $self->get_any_owner_list)
+        ? 1 : 0;
 }
 
 sub get_any_group_list {
@@ -39,9 +39,9 @@ sub get_any_owner_list {
 sub is_default_id {
     my($proto, $id) = @_;
     return $id
-	&& $id < $_MIN
-	&& ($proto->unsafe_from_int($id) || return 0)->as_int
-	? 1 : 0;
+        && $id < $_MIN
+        && ($proto->unsafe_from_int($id) || return 0)->as_int
+        ? 1 : 0;
 }
 
 sub is_group {

@@ -3,32 +3,32 @@
 Request('initialize_fully');
 config({
     class() => my $cfg = {map(
-	($_ . '_file' => tmp_dir() . "/$_"),
-	qw(status loadavg),
+        ($_ . '_file' => tmp_dir() . "/$_"),
+        qw(status loadavg),
     )},
 });
 [
     class() => [
-	page => [
-	    ['https://www.bivio.biz/bp/Clients'] => [''],
-	    ['https://www.bivio.biz'] => [''],
-	    ['https://www.bivio.biz/not-found'] => qr/\b404\b/,
-	],
-	{
-	    method => 'process_status',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		write_file($cfg->{loadavg_file}, "2 3 $params->[0].3");
-		return [];
-	    },
-	} => [
-	    1 => '',
-	    2 => '',
-	    3 => '',
-	    4 => qr{4},
-	    5 => qr{5},
-	    1 => qr{1},
-	    2 => '',
-	],
+        page => [
+            ['https://www.bivio.biz/bp/Clients'] => [''],
+            ['https://www.bivio.biz'] => [''],
+            ['https://www.bivio.biz/not-found'] => qr/\b404\b/,
+        ],
+        {
+            method => 'process_status',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                write_file($cfg->{loadavg_file}, "2 3 $params->[0].3");
+                return [];
+            },
+        } => [
+            1 => '',
+            2 => '',
+            3 => '',
+            4 => qr{4},
+            5 => qr{5},
+            1 => qr{1},
+            2 => '',
+        ],
     ],
 ];

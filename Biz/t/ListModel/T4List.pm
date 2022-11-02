@@ -7,10 +7,10 @@ use Bivio::Base 'Biz.ListModel';
 
 sub internal_initialize {
     return {
-	version => 1,
-	primary_key => ['RealmOwner.realm_id'],
-	order_by => [
-	    'RealmOwner.name',
+        version => 1,
+        primary_key => ['RealmOwner.realm_id'],
+        order_by => [
+            'RealmOwner.name',
         ],
     };
 }

@@ -167,16 +167,16 @@ sub execute {
     my($self, $req) = @_;
     local($_COMMITTED) = 0;
     my($next) = $self->execute_items(
-	$req,
-	[map(_op($self, $_),
-	     'handle_pre_auth_task',
-	     'handle_pre_execute_task',
-	     @{$self->get('items')},
-	)],
+        $req,
+        [map(_op($self, $_),
+             'handle_pre_auth_task',
+             'handle_pre_execute_task',
+             @{$self->get('items')},
+        )],
     );
     _commit($self, $req);
     $next->call_method($req)
-	if $next;
+        if $next;
     $req->get('reply')->send($req);
     return;
 }
@@ -184,21 +184,21 @@ sub execute {
 sub execute_items {
     my($self, $req, $items) = @_;
     foreach my $i (@{$items || $self->get('items')}) {
-	my($instance, $method, $args) = @$i;
-	_trace($instance, '->', $method, '(', $args, ')')
-	    if $_TRACE;
-	next
-	    unless my $params
-	    = $self->want_scalar($instance->$method(@$args, $req));
-	_trace($params)
-	    if $_TRACE;
-	next
-	    unless my $te = $_TE->parse_item_result($params, $self, $req, $i);
-	_trace($te)
-	    if $_TRACE;
-	last
-	    unless ref($te);
-	return $te;
+        my($instance, $method, $args) = @$i;
+        _trace($instance, '->', $method, '(', $args, ')')
+            if $_TRACE;
+        next
+            unless my $params
+            = $self->want_scalar($instance->$method(@$args, $req));
+        _trace($params)
+            if $_TRACE;
+        next
+            unless my $te = $_TE->parse_item_result($params, $self, $req, $i);
+        _trace($te)
+            if $_TRACE;
+        last
+            unless ref($te);
+        return $te;
     }
     return;
 }
@@ -216,12 +216,12 @@ sub execute_task_item {
 
 sub get {
     return shift->SUPER::get(@_)
-	unless grep($_ =~ $_TASK_ATTR_RE, @_);
+        unless grep($_ =~ $_TASK_ATTR_RE, @_);
     my($self, @keys) = @_;
     $_A->warn_deprecated('use get_attr_as_id or dep_get_attr');
     return $self->return_scalar_or_array(map(
-	shift(@_) =~ $_TASK_ATTR_RE && $_ ? $_->{task_id} : $_,
-	shift->SUPER::get(@_),
+        shift(@_) =~ $_TASK_ATTR_RE && $_ ? $_->{task_id} : $_,
+        shift->SUPER::get(@_),
     ));
 }
 
@@ -231,7 +231,7 @@ sub get_by_id {
     $id = $_T->from_name($id)
         unless ref($id);
     b_die($id, ": no task associated with id")
-	unless $_ID_TO_TASK{$id};
+        unless $_ID_TO_TASK{$id};
     return $_ID_TO_TASK{$id};
 }
 
@@ -242,13 +242,13 @@ sub dep_get_attr {
 sub get_attr_as_id {
     my($self) = shift;
     return $self->return_scalar_or_array(
-	map($_->{task_id}, $self->SUPER::get(@_)));
+        map($_->{task_id}, $self->SUPER::get(@_)));
 }
 
 sub get_attr_as_task {
     my($proto) = shift;
     return $proto->return_scalar_or_array(
-	map($proto->get_by_id($_), $proto->get_attr_as_id(@_)));
+        map($proto->get_by_id($_), $proto->get_attr_as_id(@_)));
 }
 
 sub handle_die {
@@ -268,12 +268,12 @@ sub handle_die {
     my($die_code) = $die->get('code');
     my($req_class) = b_use('Agent.Request');
     if ($_REDIRECT_DIE_CODES->{$die_code->get_name}) {
-	my($req) = $req_class->get_current_or_die;
-	if (my $self = $req->unsafe_get('task')) {
-	    _trace('commit: ', $die_code) if $_TRACE;
-	    _commit($self, $req);
-	}
-	return;
+        my($req) = $req_class->get_current_or_die;
+        if (my $self = $req->unsafe_get('task')) {
+            _trace('commit: ', $die_code) if $_TRACE;
+            _commit($self, $req);
+        }
+        return;
     }
 
     my($req) = $req_class->get_current;
@@ -281,20 +281,20 @@ sub handle_die {
 
     # Don't clutter logs with forbidden -> login redirects
     $req->warn('task_error=', $die)
-	if $req
-	&& (!$die->get('code')->equals_by_name('FORBIDDEN')
-		|| $req->get('auth_user'));
+        if $req
+        && (!$die->get('code')->equals_by_name('FORBIDDEN')
+                || $req->get('auth_user'));
 
     # Is this an HTTP request? (We don't redirect on non-http requests)
     unless (UNIVERSAL::isa($req, 'Bivio::Agent::HTTP::Request')) {
-	_trace('not an http request: ', $req) if $_TRACE;
-	return;
+        _trace('not an http request: ', $req) if $_TRACE;
+        return;
     }
 
     # Some type of unhandled error.  Rollback and check die_actions
     unless (ref($proto)) {
-	_trace('called statically (probably should not happen)') if $_TRACE;
-	return;
+        _trace('called statically (probably should not happen)') if $_TRACE;
+        return;
     }
 
     return $_TE->parse_die($die, $proto, $req);
@@ -303,27 +303,27 @@ sub handle_die {
 sub handle_pre_auth_task {
     my(undef, $task, $req) = @_;
     return
-	unless $req->need_to_toggle_secure_agent_execution($task);
+        unless $req->need_to_toggle_secure_agent_execution($task);
     return {
-	method => 'client_redirect',
-	task_id => $task->get('id'),
-	carry_path_info => 1,
-	carry_query => 1,
-	require_context => 0,
+        method => 'client_redirect',
+        task_id => $task->get('id'),
+        carry_path_info => 1,
+        carry_query => 1,
+        require_context => 0,
     };
 }
 
 sub handle_pre_execute_task {
     my(undef, $task, $req) = @_;
     return
-	if $req->unsafe_get_and_delete($_UNAUTH_EXECUTE);
+        if $req->unsafe_get_and_delete($_UNAUTH_EXECUTE);
     unless ($req->get('auth_realm')->can_user_execute_task($task, $req)) {
-	# make sure the form makes it into the form context
-	Bivio::Die->throw_quietly(FORBIDDEN => {
-	    map(($_ => $req->get($_)),
-		qw(auth_realm auth_user auth_roles auth_role)),
-	    operation => $task->get('id'),
-	});
+        # make sure the form makes it into the form context
+        Bivio::Die->throw_quietly(FORBIDDEN => {
+            map(($_ => $req->get($_)),
+                qw(auth_realm auth_user auth_roles auth_role)),
+            operation => $task->get('id'),
+        });
     }
     return;
 }
@@ -346,26 +346,26 @@ sub initialize {
     # task state.  This is only used by L<Bivio::ShellUtil|Bivio::ShellUtil>
     # to speed up command line initialization.  B<Never use in a server.>
     return
-	if $_INITIALIZED;
+        if $_INITIALIZED;
     $_INITIALIZED = 1;
     foreach my $cfg (map(+{%$_}, @{$_T->get_cfg_list})) {
-	my($validate) = sub {
-	    my($key) = @_;
-	    b_die($key, ': missing from ', $cfg)
-		unless defined($cfg->{$key});
-	    return delete($cfg->{$key});
-	};
-	my($ps) = $validate->('permission_set');
-	delete($cfg->{int});
-	$proto->new(
-	    $_T->from_any($validate->('name')),
-	    $_RT->from_any($validate->('realm_type')),
-	    ${$_PS->from_array(
-		ref($ps) eq 'ARRAY' ? $ps : [split(/\&/, $ps)],
-	    )},
-	    $partially ? ()
-		: (@{$validate->('items')}, $cfg),
-	);
+        my($validate) = sub {
+            my($key) = @_;
+            b_die($key, ': missing from ', $cfg)
+                unless defined($cfg->{$key});
+            return delete($cfg->{$key});
+        };
+        my($ps) = $validate->('permission_set');
+        delete($cfg->{int});
+        $proto->new(
+            $_T->from_any($validate->('name')),
+            $_RT->from_any($validate->('realm_type')),
+            ${$_PS->from_array(
+                ref($ps) eq 'ARRAY' ? $ps : [split(/\&/, $ps)],
+            )},
+            $partially ? ()
+                : (@{$validate->('items')}, $cfg),
+        );
     };
     return;
 }
@@ -398,11 +398,11 @@ sub new {
     # and I<action> are attributes as defined above.
     $_TE ||= b_use('Agent.TaskEvent');
     b_die("id invalid")
-	unless $id->isa($_T);
+        unless $id->isa($_T);
     b_die("realm_type invalid")
-	unless $realm_type->isa('Bivio::Auth::RealmType');
+        unless $realm_type->isa('Bivio::Auth::RealmType');
     b_die($id, ': id already defined')
-	if $_ID_TO_TASK{$id};
+        if $_ID_TO_TASK{$id};
     return _new($proto->SUPER::new, @_);
 }
 
@@ -411,18 +411,18 @@ sub put_attr_for_test {
     b_use('Agent.Request')->assert_test;
     $self->internal_clear_read_only;
     $self->do_by_two(
-	sub {
-	    my($k, $v) = @_;
-	    $self->delete($k);
-	    if ($k eq 'form_model') {
-		$self->put($k => $v->package_name);
-	    }
-	    else {
-		_parse_map_item($self->internal_get, $k, $v);
-	    }
-	    return 1;
-	},
-	\@attrs,
+        sub {
+            my($k, $v) = @_;
+            $self->delete($k);
+            if ($k eq 'form_model') {
+                $self->put($k => $v->package_name);
+            }
+            else {
+                _parse_map_item($self->internal_get, $k, $v);
+            }
+            return 1;
+        },
+        \@attrs,
     );
     return $self->set_read_only;
 }
@@ -431,7 +431,7 @@ sub register {
     my($proto, $handler) = @_;
 #TODO: Use Biz.Registrar (see _op() - registrar needs to allow iterate handlers)
     push(@$_HANDLERS, $handler)
-	unless grep($_ eq $handler, @$_HANDLERS);
+        unless grep($_ eq $handler, @$_HANDLERS);
     return;
 }
 
@@ -455,19 +455,19 @@ sub unauth_server_redirect {
 
 sub unsafe_get {
     return shift->SUPER::unsafe_get(@_)
-	unless grep($_ =~ $_TASK_ATTR_RE, @_);
+        unless grep($_ =~ $_TASK_ATTR_RE, @_);
     my($self, @keys) = @_;
     $_A->warn_deprecated('use unsafe_get_attr_as_id or dep_unsafe_get_attr');
     return $self->return_scalar_or_array(map(
-	shift(@_) =~ $_TASK_ATTR_RE && $_ ? $_->{task_id} : $_,
-	shift->SUPER::unsafe_get(@_),
+        shift(@_) =~ $_TASK_ATTR_RE && $_ ? $_->{task_id} : $_,
+        shift->SUPER::unsafe_get(@_),
     ));
 }
 
 sub unsafe_get_attr_as_id {
     my($self) = shift;
     return $self->return_scalar_or_array(
-	map($_ && $_->{task_id}, $self->SUPER::unsafe_get(@_)));
+        map($_ && $_->{task_id}, $self->SUPER::unsafe_get(@_)));
 }
 
 sub unsafe_get_redirect {
@@ -475,11 +475,11 @@ sub unsafe_get_redirect {
     # Returns the task associated with I<attr> on I<self>, if it exists and is
     # defined in the facade.
     b_die($attr, ': invalid task attribute; must match ', $_TASK_ATTR_RE)
-	unless $attr =~ $_TASK_ATTR_RE;
+        unless $attr =~ $_TASK_ATTR_RE;
     return undef
-	unless my $v = $self->dep_unsafe_get_attr($attr);
+        unless my $v = $self->dep_unsafe_get_attr($attr);
     return b_use('FacadeComponent.Task')->is_defined_for_facade($v->{task_id}, $req)
-	? $v : undef;
+        ? $v : undef;
 }
 
 sub unsafe_params_for_die_code {
@@ -489,41 +489,41 @@ sub unsafe_params_for_die_code {
 sub _call_txn_resources {
     my($req, $method) = @_;
     return
-	unless $req;
+        unless $req;
     my($resources) = [@{$req->unsafe_get('txn_resources') || []}];
     my($orig_die);
     _call_txn_resources_method(
-	$resources, 'handle_prepare_commit', $req, \$orig_die,
+        $resources, 'handle_prepare_commit', $req, \$orig_die,
     ) if $method eq 'handle_commit';
     $method = 'handle_rollback'
-	if $orig_die;
+        if $orig_die;
     local($_IN_COMMIT) = $method eq 'handle_commit' ? 1 : 0;
     $resources = $req->unsafe_get('txn_resources') || [];
     $req->put(txn_resources => []);
     _call_txn_resources_method($resources, $method, $req, \$orig_die);
     $orig_die->throw
-	if $orig_die;
+        if $orig_die;
     return;
 }
 
 sub _call_txn_resources_method {
     my($resources, $method, $req, $orig_die) = @_;
     foreach my $r (reverse(@$resources)) {
-	_trace($r, '->', $method) if $_TRACE;
-	next
-	    unless my $die = Bivio::Die->catch(
-		sub {
-		    $r->$method($req)
-			if $r->can($method);
-		    return;
-		},
-	    );
-	$$orig_die ||= $die
-	    if $method ne 'handle_rollback';
-	last
-	    if $method eq 'handle_prepare_commit';
-	b_warn($r, '->', $method, ': ', $die, '; switching to rollback');
-	$method = 'handle_rollback';
+        _trace($r, '->', $method) if $_TRACE;
+        next
+            unless my $die = Bivio::Die->catch(
+                sub {
+                    $r->$method($req)
+                        if $r->can($method);
+                    return;
+                },
+            );
+        $$orig_die ||= $die
+            if $method ne 'handle_rollback';
+        last
+            if $method eq 'handle_prepare_commit';
+        b_warn($r, '->', $method, ': ', $die, '; switching to rollback');
+        $method = 'handle_rollback';
     }
     return;
 }
@@ -531,9 +531,9 @@ sub _call_txn_resources_method {
 sub _commit {
     my($self, $req) = @_;
     return b_warn('$_COMMITTED is not defined')
-	unless defined($_COMMITTED);
+        unless defined($_COMMITTED);
     return
-	if $_COMMITTED++;
+        if $_COMMITTED++;
     # handle_post_execute_task cannot override $next (unlike other handlers)
     $self->execute_items($req, [_op($self, 'handle_post_execute_task')]);
     $self->commit($req);
@@ -544,7 +544,7 @@ sub _extra_auth {
     my($attrs, $method) = @_;
     $method = "extra_auth_$method";
     b_die(b_use('Auth.Support'), '->', $method, ': not implemented; ', $attrs)
-	unless b_use('Auth.Support')->b_can($method);
+        unless b_use('Auth.Support')->b_can($method);
     return $method;
 }
 
@@ -553,37 +553,37 @@ sub _init_executables {
     # Returns the parsed and initialized executables.
     my(@new_items);
     foreach my $i (@$executables) {
-	if (ref($i) eq 'CODE') {
-	    push(@new_items, [$proto, execute_task_item => [$i]]);
-	    next;
-	}
-	if ($i =~ /^View\.([a-z].*)/) {
-	    my($view) = $1;
-	    push(@new_items,
-	        [$proto->use('View.LocalFile'), 'execute_task_item', [$view]]);
-	    next;
-	}
-	my($class, $method) = split(/->/, $i, 2);
-	my($c) = $proto->use($class);
-	$_C->if_version(8 => 0, sub {
-	    $c = $c->get_instance
-		if $c->b_can('get_instance');
-	    return;
-	});
-	if ($c->b_can('execute_task_item') && $method) {
-	    push(@new_items, [$c, execute_task_item => [$method]]);
-	}
-	else {
-	    $method ||= 'execute';
-	    b_die($i, ": can't be executed (missing $method method)")
-	        unless $c->b_can($method) || $c->b_can('AUTOLOAD');
-	    push(@new_items, [$c, $method, []]);
-	}
-	if ($c->isa('Bivio::Biz::FormModel')) {
-	    b_die($attrs->{id}, ': too many form models')
-	        if $attrs->{form_model};
-	    $attrs->{form_model} = ref($c) || $c;
-	}
+        if (ref($i) eq 'CODE') {
+            push(@new_items, [$proto, execute_task_item => [$i]]);
+            next;
+        }
+        if ($i =~ /^View\.([a-z].*)/) {
+            my($view) = $1;
+            push(@new_items,
+                [$proto->use('View.LocalFile'), 'execute_task_item', [$view]]);
+            next;
+        }
+        my($class, $method) = split(/->/, $i, 2);
+        my($c) = $proto->use($class);
+        $_C->if_version(8 => 0, sub {
+            $c = $c->get_instance
+                if $c->b_can('get_instance');
+            return;
+        });
+        if ($c->b_can('execute_task_item') && $method) {
+            push(@new_items, [$c, execute_task_item => [$method]]);
+        }
+        else {
+            $method ||= 'execute';
+            b_die($i, ": can't be executed (missing $method method)")
+                unless $c->b_can($method) || $c->b_can('AUTOLOAD');
+            push(@new_items, [$c, $method, []]);
+        }
+        if ($c->isa('Bivio::Biz::FormModel')) {
+            b_die($attrs->{id}, ': too many form models')
+                if $attrs->{form_model};
+            $attrs->{form_model} = ref($c) || $c;
+        }
     }
     return \@new_items;
 }
@@ -592,26 +592,26 @@ sub _init_form_attrs {
     my($attrs) = @_;
     # Initializes the form_model attributes.
     unless ($attrs->{form_model}) {
-	$attrs->{require_context} = 0;
-	return;
+        $attrs->{require_context} = 0;
+        return;
     }
 
     b_die($attrs->{id}, ": FormModels require \"next=\" item")
-	unless $attrs->{next};
+        unless $attrs->{next};
     # default cancel to next unless present
     $attrs->{cancel} = $attrs->{next} unless $attrs->{cancel};
 
     my($form_require) = $attrs->{form_model}->get_instance
-	->get_info('require_context');
+        ->get_info('require_context');
     if (defined($attrs->{require_context})) {
-	b_die(
-	    $attrs->{id},
-	    ": can't require_context, because",
-	    " FormModel doesn't require it",
-	) if !$form_require && $attrs->{require_context};
+        b_die(
+            $attrs->{id},
+            ": can't require_context, because",
+            " FormModel doesn't require it",
+        ) if !$form_require && $attrs->{require_context};
     }
     else {
-	$attrs->{require_context} = $form_require;
+        $attrs->{require_context} = $form_require;
     }
     return;
 }
@@ -619,43 +619,43 @@ sub _init_form_attrs {
 sub _new {
     my($self, $id, $realm_type, $perm, @items) = @_;
     my($attrs) = {
-	id => $id,
-	realm_type => $realm_type,
-	permission_set => $perm,
-	die_actions => {},
-	form_model => undef,
+        id => $id,
+        realm_type => $realm_type,
+        permission_set => $perm,
+        die_actions => {},
+        form_model => undef,
     };
     # Make the task visible to the items being initialized
     $_ID_TO_TASK{$id} = $self;
     my(@executables);
     foreach my $i (@items) {
-	if (ref($i) eq 'HASH') {
-	    map(_parse_map_item($attrs, $_, $i->{$_}), sort(keys(%$i)));
-	    next;
-	}
-	elsif (ref($i) eq 'ARRAY' || $i =~ /=/ && ($i = [split(/=/, $i, 2)])) {
-	    _parse_map_item($attrs, @$i);
-	    next;
-	}
-	push(@executables, $i);
+        if (ref($i) eq 'HASH') {
+            map(_parse_map_item($attrs, $_, $i->{$_}), sort(keys(%$i)));
+            next;
+        }
+        elsif (ref($i) eq 'ARRAY' || $i =~ /=/ && ($i = [split(/=/, $i, 2)])) {
+            _parse_map_item($attrs, @$i);
+            next;
+        }
+        push(@executables, $i);
     }
     my($new_items) = _init_executables($self, $attrs, \@executables);
     # Set form
     _init_form_attrs($attrs);
 
     foreach my $x (
-	[want_query => 1],
-	[require_secure => 0],
-	[want_workflow => 0],
+        [want_query => 1],
+        [require_secure => 0],
+        [want_workflow => 0],
     ) {
-	$attrs->{$x->[0]} = $x->[1]
-	    unless defined($attrs->{$x->[0]});
+        $attrs->{$x->[0]} = $x->[1]
+            unless defined($attrs->{$x->[0]});
     }
     $attrs->{items} = $new_items;
     $attrs->{_has_realm_type} = {
-	map(($_ => $_->equals_or_any_owner_check($realm_type)),
-	    $_RT->get_list,
-	),
+        map(($_ => $_->equals_or_any_owner_check($realm_type)),
+            $_RT->get_list,
+        ),
     };
     $self->internal_put($attrs);
     return $self->set_read_only;
@@ -664,32 +664,32 @@ sub _new {
 sub _op {
     my($self, $item) = @_;
     return ref($item) ? $item
-	: map($_->b_can($item) ? [$_, $item, [$self]] : (),
-	      $item eq 'handle_post_execute_task'
-		  ? reverse(@$_HANDLERS) : @$_HANDLERS),
+        : map($_->b_can($item) ? [$_, $item, [$self]] : (),
+              $item eq 'handle_post_execute_task'
+                  ? reverse(@$_HANDLERS) : @$_HANDLERS),
 }
 
 sub _parse_map_item {
     my($attrs, $cause, $params) = @_;
     foreach my $x (
-	[qr{^(?:require_|want_)[a-z0-9_]+$}, sub {$_B->from_literal_or_die($params)}],
-	[qr{^attr_[a-z0-9_]+$}, sub {$params}],
-	[qr{^extra_auth$}, sub {_extra_auth($attrs, $params)}],
-	[$_TASK_ATTR_RE, sub {$_TE->parse_item($cause, $params)}],
+        [qr{^(?:require_|want_)[a-z0-9_]+$}, sub {$_B->from_literal_or_die($params)}],
+        [qr{^attr_[a-z0-9_]+$}, sub {$params}],
+        [qr{^extra_auth$}, sub {_extra_auth($attrs, $params)}],
+        [$_TASK_ATTR_RE, sub {$_TE->parse_item($cause, $params)}],
     ) {
-	return _put_attr($attrs, $cause, $x->[1]->())
-	    if $cause =~ $x->[0];
+        return _put_attr($attrs, $cause, $x->[1]->())
+            if $cause =~ $x->[0];
     }
     my($p) = $_TE->parse_item($cause, $params);
     b_die($cause, ': value must be a task_id: ', $params)
-	unless $p->{task_id};
+        unless $p->{task_id};
     return _put_attr($attrs->{die_actions}, $_DC->from_name($cause)->get_name, $p);
 }
 
 sub _put_attr {
     my($attrs, $key, $value) = @_;
     b_die($key, ': attribute already exists for ', $attrs->{id})
-	if defined($attrs->{$key});
+        if defined($attrs->{$key});
     $attrs->{$key} = $value;
     return;
 }

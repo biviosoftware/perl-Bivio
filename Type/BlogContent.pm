@@ -23,15 +23,15 @@ sub join {
 sub split {
     my($proto, $value) = @_;
     my($title_line, $body)
-	= split(/\n+/, (ref($value) ? $$value : $value) || '', 2);
+        = split(/\n+/, (ref($value) ? $$value : $value) || '', 2);
     if ($title_line) {
-	my($prefix, $title) = split(/\s+/, $title_line, 2);
-	return (
-	    defined($prefix) && $prefix eq $proto->TITLE_PREFIX
-		? $title : $_TE->BLOG_TITLE_PREFIX,
-	    defined($body) && $body =~ /\S/
-		? $body : $_TE->BLOG_BODY_NULL,
-	) if $title =~ /\S/;
+        my($prefix, $title) = split(/\s+/, $title_line, 2);
+        return (
+            defined($prefix) && $prefix eq $proto->TITLE_PREFIX
+                ? $title : $_TE->BLOG_TITLE_PREFIX,
+            defined($body) && $body =~ /\S/
+                ? $body : $_TE->BLOG_BODY_NULL,
+        ) if $title =~ /\S/;
     }
     return ($_TE->BLOG_TITLE_NULL, $_TE->BLOG_BODY_NULL);
 }

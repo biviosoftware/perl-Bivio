@@ -36,7 +36,7 @@ sub maneuvers_to_distance {
     my($self, $maneuvers) = @_;
     my($distance) = 0;
     foreach my $m (@$maneuvers) {
-	$distance += $m->{Distance} || b_die($m, ': invalid maneuver');
+        $distance += $m->{Distance} || b_die($m, ': invalid maneuver');
     }
     return sprintf('%.2f', $distance);
 }
@@ -44,12 +44,12 @@ sub maneuvers_to_distance {
 sub address_to_model_properties {
     my($proto, $address) = @_;
     return {
-	street1 => $address->{Street},
-	street2 => '',
-	city => $address->{AdminArea5},
-	state => $address->{AdminArea3},
-	zip => $address->{PostalCode},
-	country => $address->{AdminArea1},
+        street1 => $address->{Street},
+        street2 => '',
+        city => $address->{AdminArea5},
+        state => $address->{AdminArea3},
+        zip => $address->{PostalCode},
+        country => $address->{AdminArea1},
     };
 }
 
@@ -62,17 +62,17 @@ sub geocode_to_xml {
     my($self, $address_or_zip) = @_;
     my($z) = $_Z9->from_literal($address_or_zip);
     $address_or_zip = {PostalCode => $z}
-	if $z;
+        if $z;
     my($res) = $self->http_get(
-	'Geocode Version="1"'
-	    => ref($address_or_zip) ? {Address => $address_or_zip}
-	    : {SingleLineAddress => {Address => $address_or_zip}},
+        'Geocode Version="1"'
+            => ref($address_or_zip) ? {Address => $address_or_zip}
+            : {SingleLineAddress => {Address => $address_or_zip}},
     );
     _trace($address_or_zip, ' => ', $res) if $_TRACE;
     return (undef, $_TE->NOT_FOUND)
-	if $res =~ m{\Q<Lat>39.527596</Lat><Lng>-99.141968</Lng>\E};
+        if $res =~ m{\Q<Lat>39.527596</Lat><Lng>-99.141968</Lng>\E};
     return (undef, $_TE->TOO_MANY)
-	unless $res =~ m{\QCount="1"\E};
+        unless $res =~ m{\QCount="1"\E};
     return $res;
 }
 
@@ -88,64 +88,64 @@ sub http_get {
     my($server) = $_SERVER->{$type} || b_die($type, ': unhandled type');
     my($s) = $_S->new({Referer => $_CFG->{Referer}});
     return ${$s->extract_content(
-	$s->http_get(
-	    qq{http://$server.$_CFG->{access}.mapquest.com/mq/mqserver.dll?e=5&}
-	    . $_HTML->escape_query(
-		'<?xml version="1.0" encoding="ISO-8859-1"?>'
-		. $self->to_xml({$type => [$attrs, $_AUTH]}),
-	    ),
-	),
+        $s->http_get(
+            qq{http://$server.$_CFG->{access}.mapquest.com/mq/mqserver.dll?e=5&}
+            . $_HTML->escape_query(
+                '<?xml version="1.0" encoding="ISO-8859-1"?>'
+                . $self->to_xml({$type => [$attrs, $_AUTH]}),
+            ),
+        ),
     )};
 }
 
 sub route_options {
     my($self, $options) = @_;
     return {
-	RouteOptions => {map(
-	    @{$_ROUTE_OPTIONS->{$_} || b_die($_, ': invalid')},
-	    ref($options) ? @$options : $options ? $options : (),
-	)},
+        RouteOptions => {map(
+            @{$_ROUTE_OPTIONS->{$_} || b_die($_, ': invalid')},
+            ref($options) ? @$options : $options ? $options : (),
+        )},
     };
 }
 
 sub route_to_maneuvers {
     my($tr) = _from_xml(shift->route_to_xml(@_))->{RouteResults}->{TrekRoutes};
     b_die($tr, ': incorrect number of TrekRoutes')
-	unless $tr->{Count} == 1;
+        unless $tr->{Count} == 1;
     my($m) = $tr->{TrekRoute}->{Maneuvers}->{Maneuver};
     b_die($m, ': too few Maneuvers')
-	unless @$m >= 1;
+        unless @$m >= 1;
     return $m;
 }
 
 sub route_to_xml {
     my($self, $locations, $options) = @_;
     my($res) = $self->http_get(
-	'DoRoute Version="2"' => [
-	    {qq{LocationCollection Count="@{[scalar(@$locations)]}"} => [
-		map(
-		    {GeoAddress => $self->geocode_to_address($_)},
-		    @$locations,
-		),
-	    ]},
- 	    $self->route_options($options),
-	],
+        'DoRoute Version="2"' => [
+            {qq{LocationCollection Count="@{[scalar(@$locations)]}"} => [
+                map(
+                    {GeoAddress => $self->geocode_to_address($_)},
+                    @$locations,
+                ),
+            ]},
+             $self->route_options($options),
+        ],
     );
     b_die(CLIENT_ERROR => {entity => [$locations, $options], result => $res})
-	unless $res =~ /\QResultCode>0<\E/;
+        unless $res =~ /\QResultCode>0<\E/;
     return $res;
 }
 
 sub to_xml {
     my($self, $value) = @_;
     return !ref($value) ? $value
-	: join('',
-	    ref($value) eq 'ARRAY' ? map($self->to_xml($_), @$value)
-		: map({
-		    my($k, $a) = split(/ /, $_, 2);
-		    $a = $a ? " $a" : '';
-		    qq{<$k$a>} . $self->to_xml($value->{$_}) . "</$k>";
-		} sort(keys(%$value))),
+        : join('',
+            ref($value) eq 'ARRAY' ? map($self->to_xml($_), @$value)
+                : map({
+                    my($k, $a) = split(/ /, $_, 2);
+                    $a = $a ? " $a" : '';
+                    qq{<$k$a>} . $self->to_xml($value->{$_}) . "</$k>";
+                } sort(keys(%$value))),
         );
 }
 

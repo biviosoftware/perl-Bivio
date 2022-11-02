@@ -52,27 +52,27 @@ sub initialize {
 
     my($i) = 0;
     foreach my $value (@{$self->get('values')}) {
-	my($v) = ref($value) ? $value : [$value];
-	$v->[0] = $v->[1]
-	    unless defined($v->[0]);
-	unshift(@$v, $_VS->vs_text('ListActions', $v->[0]))
-	    if !ref($v->[0]) && $_T->is_valid_name($v->[0])
-		&& $_T->unsafe_from_name($v->[0]);
-	$i++;
-	push(@{$fields->{values}}, {
-	    prefix => '<a'.$target.' href="',
-	    task_id => $_T->from_name($v->[1]),
-	    label => _init_label($self, $v->[0], $font),
-	    ref($v->[2]) eq 'ARRAY'
-		|| UNIVERSAL::isa($v->[2], 'Bivio::UI::Widget') ? (
-		format_uri => $self->initialize_value(
-		    "$i.format_uri", $v->[2]),
-	    ) : (method => Bivio::Biz::QueryType->from_any(
-		    $v->[2] || 'THIS_DETAIL')),
-	    control => $v->[3],
+        my($v) = ref($value) ? $value : [$value];
+        $v->[0] = $v->[1]
+            unless defined($v->[0]);
+        unshift(@$v, $_VS->vs_text('ListActions', $v->[0]))
+            if !ref($v->[0]) && $_T->is_valid_name($v->[0])
+                && $_T->unsafe_from_name($v->[0]);
+        $i++;
+        push(@{$fields->{values}}, {
+            prefix => '<a'.$target.' href="',
+            task_id => $_T->from_name($v->[1]),
+            label => _init_label($self, $v->[0], $font),
+            ref($v->[2]) eq 'ARRAY'
+                || UNIVERSAL::isa($v->[2], 'Bivio::UI::Widget') ? (
+                format_uri => $self->initialize_value(
+                    "$i.format_uri", $v->[2]),
+            ) : (method => Bivio::Biz::QueryType->from_any(
+                    $v->[2] || 'THIS_DETAIL')),
+            control => $v->[3],
             realm => $v->[4],
-	    path_info => $v->[5],
-	});
+            path_info => $v->[5],
+        });
     }
     return;
 }
@@ -82,8 +82,8 @@ sub internal_new_args {
     # Implements positional argument parsing for L<new|"new">.
     return '"values" must be defined' unless defined($values);
     return {
-	values => $values,
-	($attributes ? %$attributes : ()),
+        values => $values,
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -112,7 +112,7 @@ sub _init_label {
     my($self, $label, $font) = @_;
     # Returns the label value.  Initializing appropriately.
     $label = $_VS->vs_new('String', $label, $font, {hard_spaces => 1})
-	unless UNIVERSAL::isa($label, 'Bivio::UI::Widget');
+        unless UNIVERSAL::isa($label, 'Bivio::UI::Widget');
     return $label->initialize_with_parent($self);
 }
 
@@ -123,7 +123,7 @@ sub _realm_name {
         unless $realm;
 
     if ($_PI->is_valid($realm)) {
-	return $_RO->get_cache_value($realm, $source->req)->get('name');
+        return $_RO->get_cache_value($realm, $source->req)->get('name');
     }
     return $realm;
 }
@@ -131,7 +131,7 @@ sub _realm_name {
 sub _render_link {
     my($self, $source, $i, $v, $sep, $buffer) = @_;
     return 0
-	if $v->{control}
+        if $v->{control}
         && !$self->render_simple_value($v->{control}, $source);
     my($realm) = ref($v->{realm})
         ? $self->render_simple_value($v->{realm}, $source) || undef
@@ -140,16 +140,16 @@ sub _render_link {
         ? $self->render_simple_value($v->{path_info}, $source) || undef
         : $v->{path_info};
     return 0
-	unless $source->req->can_user_execute_task($v->{task_id}, $realm);
+        unless $source->req->can_user_execute_task($v->{task_id}, $realm);
     $$buffer .= $sep
         . $v->{prefix}
-	. $_HTML->escape_attr_value(
-	    $v->{format_uri}
+        . $_HTML->escape_attr_value(
+            $v->{format_uri}
             ? ${$self->render_value(
                 "$i.format_uri",
-		$v->{format_uri},
-		$source,
-	    )}
+                $v->{format_uri},
+                $source,
+            )}
             : $source->format_uri($v->{method},
                 $source->req->format_uri({
                     task_id => $v->{task_id},
@@ -157,8 +157,8 @@ sub _render_link {
                     realm => _realm_name($self, $source, $realm),
                     path_info => $path_info,
                 }),
-	    ),
-	)
+            ),
+        )
         . '">'
         . (ref($v->{label})
             ? $self->render_simple_value($v->{label}, $source)

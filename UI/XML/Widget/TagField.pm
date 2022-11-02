@@ -16,11 +16,11 @@ sub initialize {
 sub internal_new_args {
     my(undef, $tag, @rest) = @_;
     return {
-	tag => $tag,
-	!@rest ? () : (
-	    ref($rest[0]) eq 'HASH' ? () : (field_name => shift(@rest)),
-	    ref($rest[0]) ? %{shift(@rest)} : (),
-	),
+        tag => $tag,
+        !@rest ? () : (
+            ref($rest[0]) eq 'HASH' ? () : (field_name => shift(@rest)),
+            ref($rest[0]) ? %{shift(@rest)} : (),
+        ),
     };
 }
 

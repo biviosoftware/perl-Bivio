@@ -38,22 +38,22 @@ sub FILE_SUFFIX_REGEXP {
 
 sub UNDEF_VALUE {
     return {
-	file_name => $_MISSING,
-	uri => $_MISSING,
-	width => 1,
-	height => 1,
-	mtime => 0,
+        file_name => $_MISSING,
+        uri => $_MISSING,
+        width => 1,
+        height => 1,
+        mtime => 0,
     };
 }
 
 sub format_css {
     my($proto, $name, $attr, $req) = @_;
     ($req, $attr) = ($attr, undef)
-	if !$req && ref($attr);
+        if !$req && ref($attr);
     my($v) = _find($proto, $name, $req)->{value};
     $attr ||= 'uri';
     return $attr eq 'uri' ? 'url(' . $v->{uri} . ')'
-	: defined($v->{$attr}) ? $v->{$attr}
+        : defined($v->{$attr}) ? $v->{$attr}
         : $proto->die($v, $attr, ': no such attribute');
 }
 
@@ -76,7 +76,7 @@ sub format_html_attribute {
     # Value contains a I<leading space>.
     my($proto, $name, $attribute, $req_or_facade) = @_;
     return qq{ $attribute=}
-	. _html_attr(uri => $proto, $name, $req_or_facade);
+        . _html_attr(uri => $proto, $name, $req_or_facade);
 }
 
 sub get_clear_dot {
@@ -93,7 +93,7 @@ sub get_favicon_uri {
     my($proto, $req) = @_;
     my($uri) = FacadeComponent_Text()->get_value('favicon_uri', $req);
     return Type_CacheTagFilePath()->from_local_path(
-	$req->req('UI.Facade')->get_local_plain_file_name($uri), $uri);
+        $req->req('UI.Facade')->get_local_plain_file_name($uri), $uri);
 }
 
 sub get_height {
@@ -181,10 +181,10 @@ sub handle_config {
     $_MISSING = $cfg->{missing_uri};
     $_CLEAR_DOT->{uri} = $cfg->{clear_dot_uri};
     $_FILE_SUFFIX_SEARCH_LIST = [map(
-	$_ =~ /^\w+$/ ? ".$_"
-	    : $_ =~ /^\.\w+$/
-	    ? $_
-	    : b_die($_, ': bad file_suffix_search_list value (not a word)'),
+        $_ =~ /^\w+$/ ? ".$_"
+            : $_ =~ /^\.\w+$/
+            ? $_
+            : b_die($_, ': bad file_suffix_search_list value (not a word)'),
         @{$cfg->{file_suffix_search_list}},
     )];
     return;
@@ -197,9 +197,9 @@ sub internal_cache_key {
 sub internal_file_name {
     my($name) =  _facade_name(@_);
     foreach my $suffix (@$_FILE_SUFFIX_SEARCH_LIST) {
-	my($f) = $name . $suffix;
-	return $f
-	    if -r $f;
+        my($f) = $name . $suffix;
+        return $f
+            if -r $f;
     }
     return undef;
 }
@@ -208,8 +208,8 @@ sub internal_initialize_value {
     my($self, $value) = @_;
     my($v) = $value->{config};
     $value->{value} = defined($v)
-	? b_die($value, ': configuration not allowed')
-	: $self->UNDEF_VALUE;
+        ? b_die($value, ': configuration not allowed')
+        : $self->UNDEF_VALUE;
     return;
 }
 
@@ -233,36 +233,36 @@ sub _find {
     my($key) = $self->internal_cache_key($name);
     my($cache) = $facade->get('want_local_file_cache');
     if ($cache &&= $_CACHE->{$key}) {
-	return $cache
-	    if (-M $cache->{file_name} || 0) == $cache->{mtime};
-	delete($_CACHE->{$key});
-	$cache = 1;
+        return $cache
+            if (-M $cache->{file_name} || 0) == $cache->{mtime};
+        delete($_CACHE->{$key});
+        $cache = 1;
     }
     my($file) = $self->internal_file_name($name);
     my($w, $h, $err) = $file ? Image::Size::imgsize($file) : ();
     my($u);
     unless (defined($w)) {
-	Bivio::IO::Alert->warn(
-	    $facade, '.Icon.', $name,
-	    ($err ? (': Image::Size error: ', $err) : ': not found'),
-	);
-	$w = $h = 1;
-	$file = $_MISSING;
-	$u = $_MISSING;
+        Bivio::IO::Alert->warn(
+            $facade, '.Icon.', $name,
+            ($err ? (': Image::Size error: ', $err) : ': not found'),
+        );
+        $w = $h = 1;
+        $file = $_MISSING;
+        $u = $_MISSING;
     }
     my($v) = {
-	file_name => $file,
-	uri => $u || $self->internal_uri($name),
-	width => $w,
-	height => $h,
-	mtime => -M $file || 0,
+        file_name => $file,
+        uri => $u || $self->internal_uri($name),
+        width => $w,
+        height => $h,
+        mtime => -M $file || 0,
     };
     my($value) = {
-	value => $v,
-	html => qq{ src="@{[$_HTML->escape_attr_value($v->{uri})]}" width="$w" height="$h"},
+        value => $v,
+        html => qq{ src="@{[$_HTML->escape_attr_value($v->{uri})]}" width="$w" height="$h"},
     };
     $_CACHE->{$key} = $value
-	if $cache;
+        if $cache;
     return $value;
 }
 

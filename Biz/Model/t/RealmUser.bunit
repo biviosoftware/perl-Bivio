@@ -4,62 +4,62 @@ PropertyModel();
 my($uid) = create_user('realm_user_bunit')->get('realm_id');
 [
     {
-	method => 'is_sole_admin',
-	compute_params => sub {
-	    my($case, $params) = @_;
-	    my($realm, $user, $role) = @$params;
-	    $role ||= 'ADMINISTRATOR';
-	    req()->set_realm_and_user($realm, $user);
-	    $case->get('object')->load({
-		user_id => req('auth_user_id'),
-		role => class('Auth.Role')->$role,
-	    });
-	    return [];
-	},
+        method => 'is_sole_admin',
+        compute_params => sub {
+            my($case, $params) = @_;
+            my($realm, $user, $role) = @$params;
+            $role ||= 'ADMINISTRATOR';
+            req()->set_realm_and_user($realm, $user);
+            $case->get('object')->load({
+                user_id => req('auth_user_id'),
+                role => class('Auth.Role')->$role,
+            });
+            return [];
+        },
     } => [
-	[qw(demo guest GUEST)] => 0,
-	[qw(demo demo)] => 1,
-	[qw(fourem-sub2 btest_admin)] => 0,
+        [qw(demo guest GUEST)] => 0,
+        [qw(demo demo)] => 1,
+        [qw(fourem-sub2 btest_admin)] => 0,
     ],
     is_user_attached_to_other_realms => [
-	realm_id('root') => 1,
-	$uid => 0,
+        realm_id('root') => 1,
+        $uid => 0,
     ],
     unauth_delete_user => [
-    	sub {
-    	    my($case) = @_;
-    	    foreach my $r (map(class('Auth.Role')->$_(), qw(MEMBER GUEST))) {
-    		model('RealmUser')->create({
-    		    realm_id => realm_id('demo'),
-    		    user_id => $uid,
-    		    role => $r,
-    		});
-    	    }
-    	    $case->put(object => req('Model.RealmUser'));
-    	    return [];
-    	} => not_die(),
+            sub {
+                my($case) = @_;
+                foreach my $r (map(class('Auth.Role')->$_(), qw(MEMBER GUEST))) {
+                    model('RealmUser')->create({
+                        realm_id => realm_id('demo'),
+                        user_id => $uid,
+                        role => $r,
+                    });
+                }
+                $case->put(object => req('Model.RealmUser'));
+                return [];
+            } => not_die(),
     ],
     inline_case(sub {
         assert_equals(0, realm_id_exists('realm_user_bunit'));
         assert_equals(1, realm_id_exists('demo'));
-	return;
+        return;
     }),
     {
-	method => 'get_any_online_admin',
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->set_realm($params->[0]);
-	    return [];
-	},
-	compute_return => sub {
-	    my(undef, $actual) = @_;
-	    return [$actual->[0]->get('name')];
-	},
+        method => 'get_any_online_admin',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->set_realm($params->[0]);
+            return [];
+        },
+        compute_return => sub {
+            my(undef, $actual) = @_;
+            return [$actual->[0]->get('name')];
+        },
     } => [
-	general => 'root',
-	fourem => 'root',
-	demo => 'demo',
-	user => DIE(),
-	club => DIE(),
+        general => 'root',
+        fourem => 'root',
+        demo => 'demo',
+        user => DIE(),
+        club => DIE(),
     ],
 ];
