@@ -407,11 +407,6 @@ sub _rewrite_from {
             return 1;
         }
     }
-    elsif ($cfg->{rewrite_from_domains_re}) {
-        unless ($old_email =~ $cfg->{rewrite_from_domains_re}) {
-            return 1;
-        }
-    }
     else {
         my($d) = lc($_E->get_domain_part($old_email));
         if (!_rewrite_from_lookup($d)) {
