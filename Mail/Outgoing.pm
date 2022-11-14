@@ -399,8 +399,6 @@ sub _rewrite_from {
         b_warn('from header missing email, ignoring: ', $full_from);
         return 0;
     }
-    # We assume that if From does NOT need to be rewritten,
-    # then nothing needs a rewrite
     my($cfg) = $self->internal_get_config;
     if ($cfg->{allow_resend_from_re} && $old_email =~ $cfg->{allow_resend_from_re}) {
         return 1;
