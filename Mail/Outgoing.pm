@@ -402,16 +402,12 @@ sub _rewrite_from {
     # We assume that if From does NOT need to be rewritten,
     # then nothing needs a rewrite
     my($cfg) = $self->internal_get_config;
-    if ($cfg->{allow_resend_from_re}) {
-        if ($old_email =~ $cfg->{allow_resend_from_re}) {
-            return 1;
-        }
+    if ($cfg->{allow_resend_from_re} && $old_email =~ $cfg->{allow_resend_from_re}) {
+        return 1;
     }
-    else {
-        my($d) = lc($_E->get_domain_part($old_email));
-        if (!_rewrite_from_lookup($d)) {
-            return 1;
-        }
+    my($d) = lc($_E->get_domain_part($old_email));
+    if (!_rewrite_from_lookup($d)) {
+        return 1;
     }
     my($new_email, $new_name) = _rewrite_from_generate(
         $self, $old_email, $old_name, $req);
