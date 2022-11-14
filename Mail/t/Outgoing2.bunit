@@ -6,7 +6,6 @@ config({
         # read input until EOF, and ignore command line args
 	sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
         allow_resend_from => [qw(allow.resend.from)],
-        rewrite_from_domains => [],
     },
 });
 my($_USER) = 'bunit@bivio.biz';

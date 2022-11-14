@@ -41,18 +41,6 @@ Recipients: a@a.a
 X-Bivio-Test-Recipient: a@a.a
 z
 OUT
-	],
-	'internal_get_config' => [
-	    [] => sub {
-		my(undef, $actual) = @_;
-		$actual = shift(@$actual);
-		foreach my $domain (@{$actual->{rewrite_from_domains}}) {
-		    b_die($domain, ': rewrite_from_domains_re failed')
-			unless (Type_Email()->join_parts(random_string(), $domain))
-			    =~ $actual->{rewrite_from_domains_re};
-		}
-		return 1;
-	    },
-	],
+        ],
     ],
 ];

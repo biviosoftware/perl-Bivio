@@ -16,26 +16,6 @@ b_use('IO.Config')->register(my $_CFG = {
     errors_to => 'postmaster',
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
-    rewrite_from_domains => [qw(
-        aim.com
-        alertsp.chase.com
-        aol.com
-        ebay.com
-        fedex.com
-        google.com
-        live.com
-        message.capitalone.com
-        notification.capitalone.com
-        notifications.tdameritrade.com
-        paypal.com
-        stripe.com
-        ttu.edu
-        uwyo.edu
-        verizonwireless.com
-        welcome.aexp.com
-        yahoo.com
-        ymail.com
-    )],
     allow_resend_from => [],
 });
 #TODO: get rid of global state - put it on the request instead
@@ -119,21 +99,11 @@ sub handle_config {
     if ($cfg->{errors_to} =~ /['\\]/) {
         b_die($cfg->{errors_to}, ': invalid errors_to');
     }
-    if (@{$cfg->{rewrite_from_domains} || []} && @{$cfg->{allow_resend_from} || []}) {
-        b_die(
-            'cannot have both allow_resend_from ',
-            $cfg->{allow_resend_from},
-            ' and rewrite_from_domains ',
-            $cfg->{rewrite_from_domains},
-        )
-    }
     $_CFG = $cfg;
-    foreach my $x (qw(rewrite_from_domains allow_resend_from)) {
-        my($v) = $cfg->{$x} ||= [];
-        $cfg->{$x . '_re'} = @$v
-            ? qr{[\@\.](?:@{[join('|', @$v)]})$}is
-            : undef;
-    }
+    my($v) = $cfg->{allow_resend_from} ||= [];
+    $cfg->{allow_resend_from_re} = @$v
+        ? qr{[\@\.](?:@{[join('|', @$v)]})$}is
+        : undef;
     return;
 }
 
@@ -215,11 +185,9 @@ sub test_language_setup {
     my($self) = @_;
     b_use('IO.Config')->introduce_values({
 	'Bivio::Mail::Common' => {
-	    rewrite_from_domains => ['avoid-all-rewrites-in-mock-sendmail'],
             allow_resend_from => [],
 	},
-    }) if @{$self->internal_get_config->{rewrite_from_domains}}
-        || @{$self->internal_get_config->{allow_resend_from}};
+    }) if @{$self->internal_get_config->{allow_resend_from}};
     return;
 }
 

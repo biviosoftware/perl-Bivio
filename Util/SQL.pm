@@ -705,6 +705,8 @@ sub reinitialize_sequences {
 
 sub restore_dbms_dump {
     my($self, $dump, $extra_args) = @_;
+    $self->usage_error($dump, ': missing or non existent dump file argument')
+	unless -r $dump;
     $self->destroy_dbms;
     $self->commit_or_rollback;
     $self->init_dbms;
