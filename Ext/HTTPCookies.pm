@@ -12,23 +12,23 @@ sub clone {
     my($tmp) = $_F->temp_file;
     my($clone);
     my($die) = $_D->catch(
-	sub {
-	    $self->save($tmp);
-	    delete($self->{file});
-	    $clone = ref($self)->new(
-		map(
-		    ($_ => $self->{$_}),
-		    grep($_ ne 'COOKIES', keys(%$self)),
-		),
-	    );
-	    $clone->load($tmp);
-	    delete($clone->{file});
-	    return;
-	},
+        sub {
+            $self->save($tmp);
+            delete($self->{file});
+            $clone = ref($self)->new(
+                map(
+                    ($_ => $self->{$_}),
+                    grep($_ ne 'COOKIES', keys(%$self)),
+                ),
+            );
+            $clone->load($tmp);
+            delete($clone->{file});
+            return;
+        },
     );
     unlink($tmp);
     $die->throw
-	if $die;
+        if $die;
     return $clone;
 }
 

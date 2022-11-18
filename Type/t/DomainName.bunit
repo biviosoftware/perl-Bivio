@@ -3,21 +3,21 @@
 Type();
 [
     from_literal => [
-	a => DOMAIN_NAME(),
-	[undef] => UNDEF(),
-	'' => UNDEF(),
-	"1.1.1." . ('a' x 255) => DOMAIN_NAME(),
-	'SomeMixed.Case' => 'somemixed.case',
-	'1.1.1.1' => '1.1.1.1',
-	'  111.11.1.0 ' => '111.11.1.0',
+        a => DOMAIN_NAME(),
+        [undef] => UNDEF(),
+        '' => UNDEF(),
+        "1.1.1." . ('a' x 255) => DOMAIN_NAME(),
+        'SomeMixed.Case' => 'somemixed.case',
+        '1.1.1.1' => '1.1.1.1',
+        '  111.11.1.0 ' => '111.11.1.0',
     ],
     to_http_uri => [
-	'bivio.biz' => 'http://bivio.biz',
-	a => qr{invalid internet domain}i,
+        'bivio.biz' => 'http://bivio.biz',
+        a => qr{invalid internet domain}i,
     ],
     unsafe_to_dotted_decimal => [
-	'bivio.biz' => qr{^\d+(?:\.\d+){3}$},
-	'not-going-to-match.bivio.biz' => [undef],
-	a => qr{invalid internet domain}i,
+        'bivio.biz' => qr{^\d+(?:\.\d+){3}$},
+        'not-going-to-match.bivio.biz' => [undef],
+        a => qr{invalid internet domain}i,
     ],
 ];

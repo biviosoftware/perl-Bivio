@@ -6,74 +6,74 @@ my($id) = req('auth_id');
 my($properties) = model('RealmOwner', {})->get_shallow_copy;
 [
     sub {model('RealmOwner')} => [
-	unauth_rows_exist => [
-	    [{name => 'demo'}] => 1,
-	    [{name => ['demo', 'root']}] => 1,
-	    [{name => ['demo', 'no_such_realm_name']}] => 1,
-	    [{name => 'no_such_realm_name'}] => 0,
-	],
+        unauth_rows_exist => [
+            [{name => 'demo'}] => 1,
+            [{name => ['demo', 'root']}] => 1,
+            [{name => ['demo', 'no_such_realm_name']}] => 1,
+            [{name => 'no_such_realm_name'}] => 0,
+        ],
         map_iterate => [
-	    [] => expect_contains([{name => 'demo'}]),
-	    ['name'] => [['demo']],
-	    [sub {shift->get('realm_id')}] => [[$id]],
-	    [sub {shift->get('realm_id')}, 'realm_type'] => [[$id]],
-	],
-	unsafe_load_first => [
-	    [{name => 'not-found-name'}] => [undef],
-	    [{name => 'guest'}] => [undef],
-	    [{name => 'demo'}] => sub {
-		my(undef, $actual) = @_;
-		assert_equals(realm_id('demo'), $actual->[0]->get('realm_id'));
-		return 1;
-	    },
-	],
-	is_ephemeral => 0,
-	put_on_request => [
-	    [1] => undef,
-	],
-	sub {
-	    req()->clear_nondurable_state;
-	    return req(qw(Model.RealmOwner name));
-	} => 'demo',
-	get_qualified_field_name_list => [
-	    [] => [map("RealmOwner.$_", sort(keys(%$properties)))],
-	],
-	{
-	    method => 'load_from_properties',
-	    comparator => 'nested_contains',
-	} => [
-	    [{%$properties}] => [{name => 'demo'}],
-	    [{map(("RealmOwner.$_" => $properties->{$_}), keys(%$properties))}]
-		 => [{name => 'demo'}],
-	    [{map($_ eq 'realm_id' ? () : ($_ => $properties->{$_}),
-		  keys(%$properties))}]
-		 => DIE(),
-	],
+            [] => expect_contains([{name => 'demo'}]),
+            ['name'] => [['demo']],
+            [sub {shift->get('realm_id')}] => [[$id]],
+            [sub {shift->get('realm_id')}, 'realm_type'] => [[$id]],
+        ],
+        unsafe_load_first => [
+            [{name => 'not-found-name'}] => [undef],
+            [{name => 'guest'}] => [undef],
+            [{name => 'demo'}] => sub {
+                my(undef, $actual) = @_;
+                assert_equals(realm_id('demo'), $actual->[0]->get('realm_id'));
+                return 1;
+            },
+        ],
+        is_ephemeral => 0,
+        put_on_request => [
+            [1] => undef,
+        ],
+        sub {
+            req()->clear_nondurable_state;
+            return req(qw(Model.RealmOwner name));
+        } => 'demo',
+        get_qualified_field_name_list => [
+            [] => [map("RealmOwner.$_", sort(keys(%$properties)))],
+        ],
+        {
+            method => 'load_from_properties',
+            comparator => 'nested_contains',
+        } => [
+            [{%$properties}] => [{name => 'demo'}],
+            [{map(("RealmOwner.$_" => $properties->{$_}), keys(%$properties))}]
+                 => [{name => 'demo'}],
+            [{map($_ eq 'realm_id' ? () : ($_ => $properties->{$_}),
+                  keys(%$properties))}]
+                 => DIE(),
+        ],
     ],
     sub {model('RealmOwner')->set_ephemeral} => [
-	map_iterate => [
-	    [undef, 'unauth_iterate_start', 'name', {
-		name => 'guest',
-	    }] => expect_contains([{name => 'guest'}]),
-	],
-	sub {
-	    return req(qw(Model.RealmOwner name));
-	} => 'demo',
+        map_iterate => [
+            [undef, 'unauth_iterate_start', 'name', {
+                name => 'guest',
+            }] => expect_contains([{name => 'guest'}]),
+        ],
+        sub {
+            return req(qw(Model.RealmOwner name));
+        } => 'demo',
     ],
     sub {model('RealmOwner')->set_ephemeral} => [
-	unauth_load_or_die => [
-	    [{
-		name => 'guest',
-	    }] => undef,
-	],
-	is_ephemeral => 1,
-	sub {
-	    return req(qw(Model.RealmOwner name));
-	} => 'demo',
-	put_on_request => undef,
-	sub {
-	    return req(qw(Model.RealmOwner name));
-	} => 'guest',
-	is_ephemeral => 0,
+        unauth_load_or_die => [
+            [{
+                name => 'guest',
+            }] => undef,
+        ],
+        is_ephemeral => 1,
+        sub {
+            return req(qw(Model.RealmOwner name));
+        } => 'demo',
+        put_on_request => undef,
+        sub {
+            return req(qw(Model.RealmOwner name));
+        } => 'guest',
+        is_ephemeral => 0,
     ],
 ];

@@ -23,13 +23,13 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         table_name => 'motion_comment_t',
-	columns => {
-	    motion_comment_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    motion_id => ['Motion.motion_id', 'NOT_NULL'],
-	    user_id => ['User.user_id', 'NOT_NULL'],
-	    creation_date_time => ['DateTime', 'NOT_NULL'],
-	    comment => ['Text64K', 'NOT_NULL'],
-	},
+        columns => {
+            motion_comment_id => ['PrimaryId', 'PRIMARY_KEY'],
+            motion_id => ['Motion.motion_id', 'NOT_NULL'],
+            user_id => ['User.user_id', 'NOT_NULL'],
+            creation_date_time => ['DateTime', 'NOT_NULL'],
+            comment => ['Text64K', 'NOT_NULL'],
+        },
     });
 }
 

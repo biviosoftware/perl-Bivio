@@ -4,22 +4,22 @@ Request();
 my($msg);
 [
     class() => [
-	set_printer => [
-	    [sub {$msg = shift}] => not_die(),
-	],
-	{
-	    method => 'set_named_filters',
-	    compute_return => sub {
-		realm_id('demo');
-		my($x) = $msg;
-		$msg = undef;
-		return [$x];
-	    },
-	} => [
-	    sql => qr{trace_sql.*select},
-	    [] => [undef],
-	    postgres => qr{internal_fixup_sql},
-	    'ion::postgres' => qr{internal_fixup_sql},
-	],
+        set_printer => [
+            [sub {$msg = shift}] => not_die(),
+        ],
+        {
+            method => 'set_named_filters',
+            compute_return => sub {
+                realm_id('demo');
+                my($x) = $msg;
+                $msg = undef;
+                return [$x];
+            },
+        } => [
+            sql => qr{trace_sql.*select},
+            [] => [undef],
+            postgres => qr{internal_fixup_sql},
+            'ion::postgres' => qr{internal_fixup_sql},
+        ],
     ],
 ];

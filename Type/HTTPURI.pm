@@ -12,13 +12,13 @@ sub from_literal {
     # Length is checked.
     my($proto, $value) = @_;
     $value =~ s/^\s+|\s+$//g
-	if defined($value);
+        if defined($value);
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     my($u) = Bivio::Die->eval(sub {URI->new($v)});
     return $u && ($u->scheme || '') =~ /^https?$/i && $u->host ? $v
-	: (undef, b_use('Bivio.TypeError')->HTTP_URI);
+        : (undef, b_use('Bivio.TypeError')->HTTP_URI);
 }
 
 sub get_width {

@@ -13,15 +13,15 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     return $self->put_unless_exists(value => If(
-	[[qw(UI.Facade Text)], '->unsafe_get_value',
-	    'icon.' . $self->get('icon')],
-	Join([
-	    SPAN(
-		'',
-		vs_text('icon.' . $self->get('icon')),
-	    ),
-	    ' ',
-	]),
+        [[qw(UI.Facade Text)], '->unsafe_get_value',
+            'icon.' . $self->get('icon')],
+        Join([
+            SPAN(
+                '',
+                vs_text('icon.' . $self->get('icon')),
+            ),
+            ' ',
+        ]),
     ))->SUPER::initialize(@_);
 }
 

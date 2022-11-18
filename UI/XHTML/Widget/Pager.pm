@@ -17,9 +17,9 @@ sub initialize {
     my($self) = @_;
     return if $self->unsafe_get('_link');
     $self->initialize_attr(_link =>
-	Link([$self . 'link_text'], [$self . 'link_href'], _num_class($self)));
+        Link([$self . 'link_text'], [$self . 'link_href'], _num_class($self)));
     $self->initialize_attr(_selected =>
-	SPAN(String([$self . 'selected']), _num_class($self, 1)));
+        SPAN(String([$self . 'selected']), _num_class($self, 1)));
     _create_navigation_link($self, 'prev');
     _create_navigation_link($self, 'next');
     return;
@@ -32,7 +32,7 @@ sub internal_new_args {
     return {
         list_class => $list_class,
         (defined($pages) ? (pages => $pages) : ()),
-	($attributes ? %$attributes : ()),
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -42,7 +42,7 @@ sub render {
     my($key) = 'Model.' . $self->get('list_class');
     my($query) = $req->get($key)->get_query;
     return
-	unless $query->get('has_next') || $query->get('has_prev');
+        unless $query->get('has_next') || $query->get('has_prev');
     $self->get('_prev')->render($req, $buffer);
     my($no_sep) = 0;
     foreach my $page (@{_get_page_numbers($self, $query)}) {
@@ -70,7 +70,7 @@ sub _create_navigation_link {
     my($key) = 'Model.' . $self->get('list_class');
     my($text) = vs_text("$key.paged_list.$direction");
     $self->initialize_attr('_' . $direction =>
-	If([[$key, '->get_query'], 'has_' . $direction],
+        If([[$key, '->get_query'], 'has_' . $direction],
             Link(_nav($self, $direction, $text, 1), [$key, '->format_uri',
                 Bivio::Biz::QueryType->from_name(uc($direction) . '_LIST')]),
             _nav($self, $direction, $text, 0),
@@ -81,7 +81,7 @@ sub _create_navigation_link {
 sub _get_page_numbers {
     my($self, $query) = @_;
     return []
-	unless my $pc = $query->unsafe_get('page_count');
+        unless my $pc = $query->unsafe_get('page_count');
     my($mod) = $self->get_or_default('pages', $_BLOCK_SIZE);
     my($block) = int($query->get('page_number') / $mod) * $_BLOCK_SIZE;
     return [$block + 1 .. $_I->min($block + $mod, $pc)];
@@ -91,7 +91,7 @@ sub _nav {
     my($self, $direction, $text, $on) = @_;
     return Join([
         _order_widgets($self, $direction,
-	    SPAN(String($text), $direction . ' ' . ($on ? 'on' : 'off'))),
+            SPAN(String($text), $direction . ' ' . ($on ? 'on' : 'off'))),
     ]);
 }
 
@@ -99,10 +99,10 @@ sub _nav {
 sub _num_class {
     my($self, $selected) = @_;
     return {
-	class => [sub {
-	   my(undef, $no_sep, $class) = @_;
-	   return $class . ($no_sep ? '' : ' want_sep');
-	}, [$self . 'no_sep'], $selected ? 'selected num' : 'num'],
+        class => [sub {
+           my(undef, $no_sep, $class) = @_;
+           return $class . ($no_sep ? '' : ' want_sep');
+        }, [$self . 'no_sep'], $selected ? 'selected num' : 'num'],
     };
 }
 

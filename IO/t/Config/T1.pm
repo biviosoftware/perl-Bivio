@@ -7,7 +7,7 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 my($_C) = __PACKAGE__->use('IO.Config');
 Bivio::IO::Config->register(my $_CFG = {
     n2 => {
-	a => 2,
+        a => 2,
     },
     Bivio::IO::Config->NAMED => {
        a => 0,

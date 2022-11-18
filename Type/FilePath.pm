@@ -84,12 +84,12 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     $v =~ s{^\s+|\s+$}{}g;
     return (undef, undef)
-	unless length($v);
+        unless length($v);
     return (undef, $proto->ERROR)
-	if $v =~ $proto->ILLEGAL_CHAR_REGEXP;
+        if $v =~ $proto->ILLEGAL_CHAR_REGEXP;
     $v =~ s{(?=^[^/])|/+}{/}g;
     $v =~ s{(?<=[^/])/$}{};
     return $v;
@@ -98,7 +98,7 @@ sub from_literal {
 sub from_public {
     my($proto, $path) = @_;
     return '/'
-	unless defined($path);
+        unless defined($path);
     my($v) = $proto->VERSIONS_FOLDER;
     my($p) = $proto->PUBLIC_FOLDER_ROOT;
     $path =~ s{^((?:\Q$v\E)?)\Q$p\E(/|$)}{$1$2}i;
@@ -109,7 +109,7 @@ sub get_base {
     my($proto, $value) = @_;
     $value = $proto->get_tail($value);
     return $value
-	if $value =~ /^\.+[^\.]*$/;
+        if $value =~ /^\.+[^\.]*$/;
     $value =~ s/\.[^\.]+$//;
     return $value;
 }
@@ -136,7 +136,7 @@ sub get_suffix {
 sub get_tail {
     my(undef, $value) = @_;
     return ''
-	unless defined($value);
+        unless defined($value);
     $value =~ s{[:\/\\]+$}{};
     $value =~ s{.*[:\/\\]}{};
     return $value;
@@ -156,7 +156,7 @@ sub get_width {
 sub join {
     my($proto, @parts) = @_;
     (my $res = join('/', map(defined($_) && length($_) ? $_ : (), @parts)))
-	 =~ s{//+}{/}sg;
+         =~ s{//+}{/}sg;
     return $res;
 }
 
@@ -173,10 +173,10 @@ sub is_public {
 sub to_absolute {
     my($proto, $value, $is_public) = @_;
     return $proto->join(
-	$value && $value =~ $proto->VERSION_REGEX
-	    ? $proto->VERSIONS_FOLDER : '',
-	$is_public ? $proto->PUBLIC_FOLDER : $proto->PRIVATE_FOLDER,
-	$value,
+        $value && $value =~ $proto->VERSION_REGEX
+            ? $proto->VERSIONS_FOLDER : '',
+        $is_public ? $proto->PUBLIC_FOLDER : $proto->PRIVATE_FOLDER,
+        $value,
     );
 }
 
@@ -185,13 +185,13 @@ sub to_public {
     my($p) = $proto->PUBLIC_FOLDER_ROOT;
     my($v) = $proto->VERSIONS_FOLDER;
     return $p
-	unless defined($path);
+        unless defined($path);
     if ($path =~ /^\Q$v\E/) {
-	$path =~ s{^\Q$v\E}{$v$p}i;
+        $path =~ s{^\Q$v\E}{$v$p}i;
     }
     else {
-	$path = $proto->join($p, $path);
-	$path =~ s{^\Q$p$p\E(/|$)}{$p$1}i;
+        $path = $proto->join($p, $path);
+        $path =~ s{^\Q$p$p\E(/|$)}{$p$1}i;
     }
     return $path;
 }
@@ -202,7 +202,7 @@ sub _clean {
     $value =~ s/[^\w\.]+/-/g;
     my($n) = $proto->get_component_width - 6;
     return length($value) > $n ? substr($value, 0, $n)
-	: length($value) ? $value : undef;
+        : length($value) ? $value : undef;
 }
 
 1;

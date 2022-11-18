@@ -81,30 +81,30 @@ The actual message received in RFC822 format.
 sub internal_initialize {
     my($self) = @_;
     my($info) = {
-	version => 2,
-	visible => [
-	    {
-		name => 'client_addr',
-		form_name => 'client_addr',
-		type => 'Line',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'recipient',
-		form_name => 'recipient',
-		type => 'Line',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'message',
-		form_name => 'message',
-		type => 'FileField',
-		constraint => 'NOT_NULL',
-	    },
-	],
+        version => 2,
+        visible => [
+            {
+                name => 'client_addr',
+                form_name => 'client_addr',
+                type => 'Line',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'recipient',
+                form_name => 'recipient',
+                type => 'Line',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'message',
+                form_name => 'message',
+                type => 'FileField',
+                constraint => 'NOT_NULL',
+            },
+        ],
     };
     return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+            $self->SUPER::internal_initialize, $info);
 }
 
 #=PRIVATE METHODS

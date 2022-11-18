@@ -76,7 +76,7 @@ sub disconnect {
     my($self) = shift;
     # Disconnects from database.
     return _get_instance($self)->disconnect(@_)
-	unless ref($self);
+        unless ref($self);
     my($fields) = $self->[$_IDI];
     _get_connection($self)->disconnect();
     $fields->{connection_pid} = 0;
@@ -114,72 +114,72 @@ sub execute {
     my($err, $errstr, $statement);
     my($retries) = 0;
     TRY: {
-	# Execute the statement
+        # Execute the statement
 #TODO: should be a Die->catch() but this prints a stack trace, and
 #      causes the request to lose attributes?
         my($delta) = 0;
         my($ok) = $self->perf_time_op(sub {
-	    return $_D->eval(sub {
-	        $self->internal_execute($sql, $params, $has_blob, \$statement);
-		return 1;
-	    }),
-	},
-	    \$delta,
-	);
+            return $_D->eval(sub {
+                $self->internal_execute($sql, $params, $has_blob, \$statement);
+                return 1;
+            }),
+        },
+            \$delta,
+        );
         my($die_error) = $@;
-	b_warn($delta, 's: query took a long time: ', $sql, $params)
-	    if $delta > $_CFG->{long_query_seconds};
-	return $statement
-	    if $ok;
-	$err = $statement && $statement->err ? $statement->err + 0 : 0;
-	$errstr = $statement && $statement->errstr
+        b_warn($delta, 's: query took a long time: ', $sql, $params)
+            if $delta > $_CFG->{long_query_seconds};
+        return $statement
+            if $ok;
+        $err = $statement && $statement->err ? $statement->err + 0 : 0;
+        $errstr = $statement && $statement->errstr
             ? $statement->errstr : $die_error;
-	# If we get an error, it may be a timed-out connection.  We'll
-	# check the connection the next time through.
-	$fields->{need_ping} = 1;
-	my($sleep) = $self->internal_get_retry_sleep($err, $errstr);
-	last TRY
-	    unless defined($sleep);
-	if ($fields->{need_commit}) {
-	    b_warn($errstr, '; not retrying, partial transaction');
-	    last TRY;
-	}
-	if (++$retries > $_MAX_RETRIES) {
-	    b_warn($errstr, '; max retries hit');
-	    last TRY;
-	}
-	# Don't do anything with statement, it will be garbage collected.
-	# Shouldn't really get here, so put in the logs.
-	b_warn(
-	    'retrying:  ',
-	    $errstr,
-	    '; die=',
-	    $die,
-	    '; sql=',
-	    $sql,
-	    '; params=',
-	    $params,
-	    '; retries=',
-	    $retries,
-	) if $retries == 1;
-	_trace('retry after sleep=', $sleep) if $_TRACE;
-	sleep($sleep)
-	    if $sleep > 0;
-	redo TRY;
+        # If we get an error, it may be a timed-out connection.  We'll
+        # check the connection the next time through.
+        $fields->{need_ping} = 1;
+        my($sleep) = $self->internal_get_retry_sleep($err, $errstr);
+        last TRY
+            unless defined($sleep);
+        if ($fields->{need_commit}) {
+            b_warn($errstr, '; not retrying, partial transaction');
+            last TRY;
+        }
+        if (++$retries > $_MAX_RETRIES) {
+            b_warn($errstr, '; max retries hit');
+            last TRY;
+        }
+        # Don't do anything with statement, it will be garbage collected.
+        # Shouldn't really get here, so put in the logs.
+        b_warn(
+            'retrying:  ',
+            $errstr,
+            '; die=',
+            $die,
+            '; sql=',
+            $sql,
+            '; params=',
+            $params,
+            '; retries=',
+            $retries,
+        ) if $retries == 1;
+        _trace('retry after sleep=', $sleep) if $_TRACE;
+        sleep($sleep)
+            if $sleep > 0;
+        redo TRY;
     }
 
     # Unrecoverable error
     my($attrs) = {
-	message => $@,
-	dbi_err => $err,
-	dbi_errstr => $errstr,
-	sql => $sql,
-	sql_params => $params,
+        message => $@,
+        dbi_err => $err,
+        dbi_errstr => $errstr,
+        sql => $sql,
+        sql_params => $params,
     };
     my($die_code) = $self->internal_get_error_code($attrs);
     $_D->eval(sub {
-	$self->perf_time_op(sub {$statement->finish})
-	    if $statement;
+        $self->perf_time_op(sub {$statement->finish})
+            if $statement;
     });
     ($die || $_D)->throw_die($die_code, $attrs, caller);
     # DOES NOT RETURN
@@ -196,23 +196,23 @@ sub execute_one_row_hashref {
 sub get_dbi_config {
     my($self) = shift;
     return $_DBI->get_config(
-	@_ ? @_
-	    : ref($self) ? $self->[$_IDI]->{dbi_name}
-	    : $_C->DEFAULT_NAME,
+        @_ ? @_
+            : ref($self) ? $self->[$_IDI]->{dbi_name}
+            : $_C->DEFAULT_NAME,
     );
 }
 
 sub get_instance {
     my($proto, $dbi_name) = @_;
     $dbi_name = $_C->DEFAULT_NAME
-	unless defined($dbi_name);
+        unless defined($dbi_name);
     unless ($_CONNECTIONS->{$dbi_name}) {
-	my($module) = b_use($proto->get_dbi_config($dbi_name)->{connection});
-	_trace($module) if $_TRACE;
-	$_CONNECTIONS->{$dbi_name} = $module->internal_new($dbi_name);
+        my($module) = b_use($proto->get_dbi_config($dbi_name)->{connection});
+        _trace($module) if $_TRACE;
+        $_CONNECTIONS->{$dbi_name} = $module->internal_new($dbi_name);
     }
     if (my $req = ($_R ||= b_use('Agent.Request'))->get_current) {
-	$req->push_txn_resource($_CONNECTIONS->{$dbi_name});
+        $req->push_txn_resource($_CONNECTIONS->{$dbi_name});
     }
     return $_CONNECTIONS->{$dbi_name};
 }
@@ -234,10 +234,10 @@ sub handle_ping_reply {
 
 sub handle_piped_exec_child {
     foreach my $self (values(%$_CONNECTIONS)) {
-	next
-	    unless my $fields = $self->[$_IDI];
-	$fields->{connection}->{InactiveDestroy} = 1;
-	$fields->{connection} = undef;
+        next
+            unless my $fields = $self->[$_IDI];
+        $fields->{connection}->{InactiveDestroy} = 1;
+        $fields->{connection} = undef;
     }
     return;
 }
@@ -273,22 +273,22 @@ sub internal_execute {
     # Only need a commit if there has been data modification language
     # Tightly coupled with PropertySupport
     my($is_select) = $sql =~ /^\s*select/i
-	    && $sql !~ /\bfor\s+update\b/i;
+            && $sql !~ /\bfor\s+update\b/i;
     return if !$is_select && $fields->{db_is_read_only};
     if ($has_blob) {
-	$params = $self->internal_prepare_blob($is_select, $params,
-		$statement);
+        $params = $self->internal_prepare_blob($is_select, $params,
+                $statement);
     }
     $fields->{need_commit} = 1 unless $is_select;
     ref($params) ? $$statement->execute(@$params)
-	    : $$statement->execute();
+            : $$statement->execute();
     return;
 }
 
 sub internal_fixup_sql {
     my($self, $sql) = @_;
     $sql =~ s/\border\s+by\s.*$//is
-	if $sql =~ /^\s*SELECT\s+COUNT\(\*\)\s+FROM\s/is;
+        if $sql =~ /^\s*SELECT\s+COUNT\(\*\)\s+FROM\s/is;
     return $sql;
 }
 
@@ -320,17 +320,17 @@ sub internal_new {
     # Do not call this method directly, use L<connect|"connect">.
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	dbi_name => $dbi_name,
-	db_is_read_only => 0,
-	connection => undef,
-	# Set to the pid that creates the connection.  Ensures all
-	# children use a different connection.
-	connection_pid => 0,
-	need_commit => 0,
-	# If there is an error, this will be true.  _get_connection
-	# checks the connection with a ping to make sure it is still
-	# alive.
-	need_ping => 0,
+        dbi_name => $dbi_name,
+        db_is_read_only => 0,
+        connection => undef,
+        # Set to the pid that creates the connection.  Ensures all
+        # children use a different connection.
+        connection_pid => 0,
+        need_commit => 0,
+        # If there is an error, this will be true.  _get_connection
+        # checks the connection with a ping to make sure it is still
+        # alive.
+        need_ping => 0,
     };
     return $self;
 }
@@ -341,20 +341,20 @@ sub internal_prepare_blob {
     # Returns the altered statement params.
 
     if ($is_select) {
-	# Returns a value.  For older DBD::Oracle implementations, we
-	# need to set the value on every $statement.  Newer imps,
-	# set it once per connection.
-	$$statement->{LongReadLen} = int($self->MAX_BLOB * 1.1);
-	$$statement->{LongTruncOk} = 0;
-	return $params;
+        # Returns a value.  For older DBD::Oracle implementations, we
+        # need to set the value on every $statement.  Newer imps,
+        # set it once per connection.
+        $$statement->{LongReadLen} = int($self->MAX_BLOB * 1.1);
+        $$statement->{LongTruncOk} = 0;
+        return $params;
     }
 
     # Passing a value, possibly
     my($i) = 1;
     foreach my $p (@$params) {
-	$$statement->bind_param($i++, $p), next unless ref($p);
-	# I wonder if it stores a reference or a copy?
-	$$statement->bind_param($i++,  $$p, $self->internal_get_blob_type);
+        $$statement->bind_param($i++, $p), next unless ref($p);
+        # I wonder if it stores a reference or a copy?
+        $$statement->bind_param($i++,  $$p, $self->internal_get_blob_type);
     }
     # Parameters are bound, so don't pass them on
     return undef;
@@ -365,7 +365,7 @@ sub is_read_only {
     # Returns true if the current database connection is to a read-only
     # database.
     return _get_instance($self)->is_read_only(@_)
-	unless ref($self);
+        unless ref($self);
     my($fields) = $self->[$_IDI];
     return $fields->{db_is_read_only};
 }
@@ -383,7 +383,7 @@ sub next_primary_id {
     # Subclasses should return the next sequence number for the specified
     # table.
     return _get_instance($self)->next_primary_id(@_)
-	unless ref($self);
+        unless ref($self);
     $_D->die('abstract method');
     # DOES NOT RETURN
 }
@@ -423,7 +423,7 @@ sub set_dbi_name {
     # The name selected will become the default database for all static calls.
     # Don't do anything if the names are equal
     return $name if defined($name) == defined($_DEFAULT_DBI_NAME)
-	&& (!defined($name) || $name eq $_DEFAULT_DBI_NAME);
+        && (!defined($name) || $name eq $_DEFAULT_DBI_NAME);
     my($old) = $_DEFAULT_DBI_NAME;
     $_DEFAULT_DBI_NAME = $name;
     _trace('default db set to ', $name) if $_TRACE;
@@ -434,12 +434,12 @@ sub _commit_or_rollback {
     my($method, $self) = splice(@_, 0, 2);
     # Wrapper for commit() and rollback()
     return _get_instance($self)->$method(@_)
-	unless ref($self);
+        unless ref($self);
     my($fields) = $self->[$_IDI];
     return unless $self->REQUIRE_COMMIT_OR_ROLLBACK || $fields->{need_commit};
     _trace($method) if $_TRACE;
     _get_connection($self)->$method()
-	unless $fields->{db_is_read_only};
+        unless $fields->{db_is_read_only};
     $fields->{need_commit} = 0;
     return;
 }
@@ -450,10 +450,10 @@ sub _do_execute {
     my($method, $op) = (shift, shift);
     my($st) = $self->execute(@_);
     return
-	unless $st->{Active};
+        unless $st->{Active};
     while (my $row = $self->perf_time_op(sub {$st->$method})) {
-	last
-	    unless $op->($row);
+        last
+            unless $op->($row);
     }
     $self->perf_time_finish($st);
 #TODO: Clears cached handle
@@ -464,12 +464,12 @@ sub _do_execute {
 sub _execute_one_row {
     my($method, $self) = (shift, shift);
     return _execute_one_row($method, _get_instance($self), @_)
-	unless ref($self);
+        unless ref($self);
     my($sth) = $self->execute(@_);
     return $self->perf_time_op(sub {
-	my($row) = $sth->$method;
+        my($row) = $sth->$method;
         $sth->finish;
-	return $row;
+        return $row;
     });
 }
 
@@ -482,39 +482,39 @@ sub _get_connection {
     my($fields) = $self->[$_IDI];
 
     if ($fields->{connection_pid} != $$) {
-	if ($fields->{connection}) {
-	    # This disconnects the parent process'.  Make sure we rollback
-	    # any pending transactions.  By default, disconnect commits
-	    $_D->eval(sub {
-		$fields->{connection}->ping
-			&& $fields->{connection}->rollback});
-	    $_D->eval(sub {$fields->{connection}->disconnect});
-	    b_warn("reconnecting to database: pid=$$");
-	    # Make sure we don't enter this code again.
-	    $fields->{connection} = undef;
-	}
-	_trace("creating connection: pid=$$") if $_TRACE;
-	$fields->{connection} =
-	    $self->internal_dbi_connect($fields->{dbi_name});
-	$fields->{db_is_read_only}
-	    = $_DBI->get_config($fields->{dbi_name})->{is_read_only};
-	# Got a connection which will be reused on next call.  We don't
-	# need to ping it (just in case parent process had an error on
-	# the connection).
-	$fields->{connection_pid} = $$;
-	$fields->{need_ping} = 0;
+        if ($fields->{connection}) {
+            # This disconnects the parent process'.  Make sure we rollback
+            # any pending transactions.  By default, disconnect commits
+            $_D->eval(sub {
+                $fields->{connection}->ping
+                        && $fields->{connection}->rollback});
+            $_D->eval(sub {$fields->{connection}->disconnect});
+            b_warn("reconnecting to database: pid=$$");
+            # Make sure we don't enter this code again.
+            $fields->{connection} = undef;
+        }
+        _trace("creating connection: pid=$$") if $_TRACE;
+        $fields->{connection} =
+            $self->internal_dbi_connect($fields->{dbi_name});
+        $fields->{db_is_read_only}
+            = $_DBI->get_config($fields->{dbi_name})->{is_read_only};
+        # Got a connection which will be reused on next call.  We don't
+        # need to ping it (just in case parent process had an error on
+        # the connection).
+        $fields->{connection_pid} = $$;
+        $fields->{need_ping} = 0;
     }
     elsif ($fields->{need_ping}) {
-	# Got an error on a previous use of this connection.  Make
-	# sure is still valid.
-	$fields->{need_ping} = 0;
-	unless ($_D->eval(sub {$fields->{connection}->ping})) {
-	    # Just in case, rollback any pending actions
-	    # be executed.  Caller will reset $_CONNECTION
-	    $fields->{connection_pid} = 0;
-	    return _get_connection($self);
-	}
-	# Current connection is valid
+        # Got an error on a previous use of this connection.  Make
+        # sure is still valid.
+        $fields->{need_ping} = 0;
+        unless ($_D->eval(sub {$fields->{connection}->ping})) {
+            # Just in case, rollback any pending actions
+            # be executed.  Caller will reset $_CONNECTION
+            $fields->{connection_pid} = 0;
+            return _get_connection($self);
+        }
+        # Current connection is valid
     }
     return $fields->{connection};
 }
@@ -522,7 +522,7 @@ sub _get_connection {
 sub _get_instance {
     my($proto) = @_;
     return ref($proto) ? $proto
-	: $proto->get_instance($_DEFAULT_DBI_NAME);
+        : $proto->get_instance($_DEFAULT_DBI_NAME);
 }
 
 sub _map_execute {
@@ -531,17 +531,17 @@ sub _map_execute {
     my($self) = _verify_instance(shift);
     my($method) = shift;
     my($op) = ref($_[0]) eq 'CODE' ? shift : sub {
-	my($row) = @_;
-	return @$row == 1 ? $row->[0] : [@$row];
+        my($row) = @_;
+        return @$row == 1 ? $row->[0] : [@$row];
     };
     my($st) = $self->execute(@_);
     my($res) = [];
     return $res
-	unless $st->{Active};
+        unless $st->{Active};
     while (1) {
-	last
-	    unless my $row = $self->perf_time_op(sub {$st->$method});
-	push(@$res, $op->($row));
+        last
+            unless my $row = $self->perf_time_op(sub {$st->$method});
+        push(@$res, $op->($row));
     }
     $self->perf_time_finish($st);
 #TODO: Clears cached handle
@@ -552,13 +552,13 @@ sub _map_execute {
 sub _trace_sql {
     my($sql, $params) = @_;
     map($sql
-	=~ s{\?}{
-	    !defined($_) ? 'NULL'
-		: ref($_) ? '<blob>'
-		: $_ =~ /\D/ ? _trace_sql_quote($_)
-		: $_;
-	}e,
-	@$params,
+        =~ s{\?}{
+            !defined($_) ? 'NULL'
+                : ref($_) ? '<blob>'
+                : $_ =~ /\D/ ? _trace_sql_quote($_)
+                : $_;
+        }e,
+        @$params,
     );
     _trace($sql);
     return;
@@ -574,7 +574,7 @@ sub _trace_sql_quote {
 
 sub _verify_instance {
     return shift
-	if ref($_[0]);
+        if ref($_[0]);
     return _get_instance(shift);
 }
 

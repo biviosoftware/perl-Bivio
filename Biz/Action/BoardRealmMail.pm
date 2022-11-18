@@ -13,9 +13,9 @@ sub TASK_URI {
 sub execute_receive {
     my($self, $req, $rfc822) = @_;
     $_RM->new($req)->create_from_rfc822(
-	$rfc822
-	    || $req->get('Model.MailReceiveDispatchForm')
-	    ->get('message')->{content},
+        $rfc822
+            || $req->get('Model.MailReceiveDispatchForm')
+            ->get('message')->{content},
     );
     return;
 }

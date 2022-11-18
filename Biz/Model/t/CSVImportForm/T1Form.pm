@@ -7,12 +7,12 @@ use Bivio::Base 'Bivio::Biz::Model::t::CSVImportForm::TForm';
 
 sub COLUMNS {
     return [
-	[qw(name RealmOwner.name)],
-	[qw(ID RealmOwner.realm_id NONE User.user_id)],
-	[qw(other Line)],
-	[qw(gender Gender)],
-	[qw(login UserLoginForm.login NONE)],
-	[qw(pass UserLoginForm.RealmOwner.password NONE)],
+        [qw(name RealmOwner.name)],
+        [qw(ID RealmOwner.realm_id NONE User.user_id)],
+        [qw(other Line)],
+        [qw(gender Gender)],
+        [qw(login UserLoginForm.login NONE)],
+        [qw(pass UserLoginForm.RealmOwner.password NONE)],
     ];
 }
 

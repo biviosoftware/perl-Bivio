@@ -3,33 +3,33 @@
 ShellUtil();
 [
     [qw(-realm site validate_realm)] => qr{
-	base.css:.Not.a.valid
-	.*
-	/Wiki/index:.Same.name
-	.*
-	'9.errors'
+        base.css:.Not.a.valid
+        .*
+        /Wiki/index:.Same.name
+        .*
+        '9.errors'
     }xis,
     [qw(-realm site-reports validate_all_realms)] =>
-	sub {
-	    my(undef, $res) = @_;
-	    my($str) = ${b_use('IO.Ref')->to_string($res)};
-	    $str =~ s{Errors in wiki_bunit:\s+Internal server error}{}i;
-	    b_die("server error reported in email:\n", $str)
-		if $str =~ /server.error/i;
-	    my($unknown) = [grep(
-	     !/base.css: Not a valid|: Not found|: Same name|Errors in site:/i,
-	        split(/\s*\n+\s*/i, ($str =~ /\],\n+(.*)/)[0]),
-	    )];
-	    b_die("unknown error: ", $unknown)
-		if @$unknown;
-	    b_die('error count')
-		unless $str =~ qr{
-		    fourem:.\d+.errors
-		    .*
-		    site-help:.2.errors
-		    .*
-		site:.9.errors
-	    }xis;
-	    return 1;
-	},
+        sub {
+            my(undef, $res) = @_;
+            my($str) = ${b_use('IO.Ref')->to_string($res)};
+            $str =~ s{Errors in wiki_bunit:\s+Internal server error}{}i;
+            b_die("server error reported in email:\n", $str)
+                if $str =~ /server.error/i;
+            my($unknown) = [grep(
+             !/base.css: Not a valid|: Not found|: Same name|Errors in site:/i,
+                split(/\s*\n+\s*/i, ($str =~ /\],\n+(.*)/)[0]),
+            )];
+            b_die("unknown error: ", $unknown)
+                if @$unknown;
+            b_die('error count')
+                unless $str =~ qr{
+                    fourem:.\d+.errors
+                    .*
+                    site-help:.2.errors
+                    .*
+                site:.9.errors
+            }xis;
+            return 1;
+        },
 ];

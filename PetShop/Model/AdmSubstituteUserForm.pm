@@ -10,10 +10,10 @@ sub internal_post_parse_columns {
     my($self, $values) = @_;
 #TODO: Coupled with View.UserAuth;  Need list_id_field on ComboBox
     if (
-	($values->{login} || '') =~ /\@/
-	and my $e = ($_A->parse($values->{login}))[0]
+        ($values->{login} || '') =~ /\@/
+        and my $e = ($_A->parse($values->{login}))[0]
     ) {
-	$values->{login} = $e;
+        $values->{login} = $e;
     }
     return shift->SUPER::internal_post_parse_columns(@_);
 }

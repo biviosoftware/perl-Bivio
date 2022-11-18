@@ -32,9 +32,9 @@ sub internal_get_text {
 sub internal_get_title {
     my($proto, $parseable) = @_;
     return $proto->internal_run_parser(
-	"$_CFG->{pdfinfo} <path>",
-	$parseable,
-	qr{^Error:.*Error:}s,
+        "$_CFG->{pdfinfo} <path>",
+        $parseable,
+        qr{^Error:.*Error:}s,
     ) =~ /^Title:\s*(.*)/im ? $1 : undef;
 }
 

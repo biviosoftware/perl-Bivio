@@ -9,7 +9,7 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 sub form {
     my($self) = @_;
     return shift->internal_body(vs_simple_form(BulletinForm => [
-	'BulletinForm.to',
+        'BulletinForm.to',
     ]));
 }
 

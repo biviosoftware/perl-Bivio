@@ -31,10 +31,10 @@ sub get_dbi_prefix {
     my($self, $cfg) = @_;
     my($res) = 'dbi:Pg:';
     if ($cfg->{host}) {
-	$res .= "host=$cfg->{host};";
-	if ($cfg->{host}) {
-	    $res .= "port=$cfg->{port};";
-	}
+        $res .= "host=$cfg->{host};";
+        if ($cfg->{host}) {
+            $res .= "port=$cfg->{port};";
+        }
     }
     $res .= 'dbname=';
     return $res;
@@ -46,12 +46,12 @@ sub get_settings {
     my($self) = @_;
     my($res);
     $self->do_execute_rows(
-	sub {
-	    my($row) = @_;
-	    $res->{$row->{name}} = $row->{setting};
-	    return 1;
-	},
-	'select name, setting from pg_settings'
+        sub {
+            my($row) = @_;
+            $res->{$row->{name}} = $row->{setting};
+            return 1;
+        },
+        'select name, setting from pg_settings'
     );
     return $res;
 }
@@ -61,10 +61,10 @@ sub internal_execute {
     # Ignores annoying warnings.
     my($prev) = $SIG{__WARN__};
     local($SIG{__WARN__}) = sub {
-	my($msg) = @_;
-	return
-	    if $msg =~ /NOTICE:\s+CREATE TABLE . PRIMARY KEY will create implicit index/;
-	return $prev && $prev->(@_);
+        my($msg) = @_;
+        return
+            if $msg =~ /NOTICE:\s+CREATE TABLE . PRIMARY KEY will create implicit index/;
+        return $prev && $prev->(@_);
     };
     return shift->SUPER::internal_execute(@_);
 }
@@ -91,7 +91,7 @@ sub internal_fixup_sql {
     $sql =~ s/\bTEXT64K\b/TEXT/igs;
 
     $sql = _fixup_outer_join($sql)
-	if $sql =~ /\(\+\)/;
+        if $sql =~ /\(\+\)/;
     _trace($sql) if $_TRACE;
     return $sql;
 }
@@ -100,7 +100,7 @@ sub internal_get_blob_type {
     # (self) : hash_ref
     # Returns the bind_param() value for a BLOB.
     return {
-	pg_type => DBD::Pg::PG_BYTEA(),
+        pg_type => DBD::Pg::PG_BYTEA(),
     };
 }
 
@@ -110,14 +110,14 @@ sub internal_get_error_code {
     # undef if the message is not translatable.
     my($self, $die_attrs) = @_;
     if ($die_attrs->{dbi_errstr} =~
-	    /Cannot insert a duplicate key into unique index (\w+)/i
+            /Cannot insert a duplicate key into unique index (\w+)/i
         # Relaxed since they seem to change it often
         || $die_attrs->{dbi_errstr} =~
             /duplicate key.*? unique .*?"(\w+)"/i) {
-	return _interpret_constraint_violation($self, $die_attrs, $1);
+        return _interpret_constraint_violation($self, $die_attrs, $1);
     }
     $die_attrs->{dbi_errstr} =~
-	s/(Unterminated quoted string)/$1; There is a null character in one of the parameters/;
+        s/(Unterminated quoted string)/$1; There is a null character in one of the parameters/;
     return shift->SUPER::internal_get_error_code(@_);
 }
 
@@ -179,7 +179,7 @@ sub _fixup_outer_join {
     #         ) AS state_tax_due
     #     FROM tax_deposit_t,broker_t
     #         LEFT JOIN broker_tax_payment_t
-    #	      ON (broker_t.user_id = broker_tax_payment_t.broker_user_id),
+    #              ON (broker_t.user_id = broker_tax_payment_t.broker_user_id),
     #          user_t
     #     WHERE broker_t.user_id=broker_tax_payment_t.broker_user_id
     #
@@ -187,35 +187,35 @@ sub _fixup_outer_join {
     my($prefix, $from_where) = _split_at_from($sql);
     _trace('prefix=', $prefix, '; from_where=', $from_where) if $_TRACE;
     while ($from_where =~ /\(\+\)/) {
-	$from_where =~ s/\b(FROM)(?:POSTGRES-FIXME)?\b(.+?)([\w\.]+)\s*\=\s*([\w\.]+)\(\+\)(?:\s+AND\b)?/FROMPOSTGRES-FIXME$2/is
-	    || Bivio::Die->die('failed to find outer join: ', $from_where);
-	push(@$relations, [$3, $4]);
+        $from_where =~ s/\b(FROM)(?:POSTGRES-FIXME)?\b(.+?)([\w\.]+)\s*\=\s*([\w\.]+)\(\+\)(?:\s+AND\b)?/FROMPOSTGRES-FIXME$2/is
+            || Bivio::Die->die('failed to find outer join: ', $from_where);
+        push(@$relations, [$3, $4]);
     }
     return unless @$relations;
     b_die('too weird outer join: ', $from_where)
-	if $from_where =~ /POSTGRES-FIXME.*POSTGRES-FIXME/s;
+        if $from_where =~ /POSTGRES-FIXME.*POSTGRES-FIXME/s;
     _trace('from_where=', $from_where, '; relations=', $relations) if $_TRACE;
     my($joins) = {};
     foreach my $r (@$relations) {
-	my($left, $right) = @$r;
-	my($source_table) = lc(_parse_table_name($left));
-	my($target_table) = lc(_parse_table_name($right));
-	if ($joins->{$source_table}) {
-	    # We already added the LEFT JOIN $target_table in $joins
-	    next if $joins->{$source_table}
-		=~ s/(?<=LEFT JOIN $target_table ON \()/$left = $right AND /is;
-	}
-	# Remove target_table from FROM, and save LEFT JOIN in $joins
-	$from_where =~ s/(\sFROMPOSTGRES-FIXME\s.*?)\b((?:\w+\s+)?$target_table)\b,?/$1/s
-	    || Bivio::Die->die('failed to remove ', $target_table, ': ', $from_where);
-	$joins->{$source_table} .= " LEFT JOIN $2 ON ($left = $right)";
+        my($left, $right) = @$r;
+        my($source_table) = lc(_parse_table_name($left));
+        my($target_table) = lc(_parse_table_name($right));
+        if ($joins->{$source_table}) {
+            # We already added the LEFT JOIN $target_table in $joins
+            next if $joins->{$source_table}
+                =~ s/(?<=LEFT JOIN $target_table ON \()/$left = $right AND /is;
+        }
+        # Remove target_table from FROM, and save LEFT JOIN in $joins
+        $from_where =~ s/(\sFROMPOSTGRES-FIXME\s.*?)\b((?:\w+\s+)?$target_table)\b,?/$1/s
+            || Bivio::Die->die('failed to remove ', $target_table, ': ', $from_where);
+        $joins->{$source_table} .= " LEFT JOIN $2 ON ($left = $right)";
     }
     # Remove target table(s) from FROM and add $joins to FROM
     foreach my $source_table (sort(keys(%$joins))) {
-	$from_where =~ s/(FROMPOSTGRES-FIXME)(.*?\b$source_table\b)(?=\s*,|\s+WHERE\b|\s+ON\b|\s+LEFT JOIN\b)/$1$2$joins->{$source_table}/is
-	    || Bivio::Die->die('failed to insert outer join: ',
-	        $source_table, ' "',
-		$joins->{$source_table}, '" into ', $from_where);
+        $from_where =~ s/(FROMPOSTGRES-FIXME)(.*?\b$source_table\b)(?=\s*,|\s+WHERE\b|\s+ON\b|\s+LEFT JOIN\b)/$1$2$joins->{$source_table}/is
+            || Bivio::Die->die('failed to insert outer join: ',
+                $source_table, ' "',
+                $joins->{$source_table}, '" into ', $from_where);
     }
     # remove extra commas, trailing where, trailing and
     $from_where =~ s/\bFROMPOSTGRES-FIXME\b/FROM/sg;
@@ -237,10 +237,10 @@ sub _interpret_constraint_violation {
     # server error
     Bivio::Die->eval(sub {
         # rollback because Postgres won't let other queries on this txn
-	$self->rollback;
+        $self->rollback;
 
-	# Try to find the constraint columns (assumes it is an index)
-	my($statement) = $self->internal_get_dbi_connection()->prepare(<<"EOF");
+        # Try to find the constraint columns (assumes it is an index)
+        my($statement) = $self->internal_get_dbi_connection()->prepare(<<"EOF");
             SELECT class2.relname, attname
             FROM pg_class class1, pg_class class2, pg_index, pg_attribute
             WHERE class1.oid=pg_attribute.attrelid
@@ -248,37 +248,37 @@ sub _interpret_constraint_violation {
             AND pg_index.indrelid=class2.oid
             AND class1.relname=?
 EOF
-	$statement->execute($constraint);
+        $statement->execute($constraint);
 
-	my($cols) = [];
-	my($table);
-	while (my $row = $statement->fetchrow_arrayref) {
-	    $table = lc($row->[0]);
-	    push(@$cols, lc($row->[1]));
-	}
+        my($cols) = [];
+        my($table);
+        while (my $row = $statement->fetchrow_arrayref) {
+            $table = lc($row->[0]);
+            push(@$cols, lc($row->[1]));
+        }
 
-	# This is an operation error, not db error.  Don't need to ping.
-	$self->internal_clear_ping;
+        # This is an operation error, not db error.  Don't need to ping.
+        $self->internal_clear_ping;
 
-	# Found the constraint?
-	if ($table) {
-	    # Save the state for the die message
-	    $attrs->{columns} = $cols;
+        # Found the constraint?
+        if ($table) {
+            # Save the state for the die message
+            $attrs->{columns} = $cols;
             $attrs->{table} = $table;
-	    _trace($constraint, ': found ', $table, '.', $cols)
-		    if $_TRACE;
-	    if (7 == $attrs->{dbi_err}) {
-		# duplicate key
-		$attrs->{type_error} = Bivio::TypeError->EXISTS;
-		$die_code = Bivio::DieCode->DB_CONSTRAINT;
-	    }
-	}
-	else {
-	    # returns undef for die_code
-	    _trace($constraint,
-		    ': constraint query returned nothing') if $_TRACE;
-	}
-	return 1;
+            _trace($constraint, ': found ', $table, '.', $cols)
+                    if $_TRACE;
+            if (7 == $attrs->{dbi_err}) {
+                # duplicate key
+                $attrs->{type_error} = Bivio::TypeError->EXISTS;
+                $die_code = Bivio::DieCode->DB_CONSTRAINT;
+            }
+        }
+        else {
+            # returns undef for die_code
+            _trace($constraint,
+                    ': constraint query returned nothing') if $_TRACE;
+        }
+        return 1;
     });
 
     _trace($constraint, ':', $@) if $_TRACE && $@;
@@ -291,7 +291,7 @@ sub _parse_table_name {
     my($str) = @_;
 
     $str =~ /^(\w+)\./
-	|| Bivio::Die->die("didn't find table: ", $str);
+        || Bivio::Die->die("didn't find table: ", $str);
     return $1;
 }
 
@@ -301,10 +301,10 @@ sub _split_at_from {
     my($parts) = [split($from_re, $sql)];
     my($prefix) = '';
     while (defined(my $p = shift(@$parts))) {
-	return ($prefix, join('', $p, @$parts))
-	    if $p =~ $from_re
-	    && @{[$prefix =~ /\(/sg]} == @{[$prefix =~ /\)/sg]};
-	$prefix .= $p;
+        return ($prefix, join('', $p, @$parts))
+            if $p =~ $from_re
+            && @{[$prefix =~ /\(/sg]} == @{[$prefix =~ /\)/sg]};
+        $prefix .= $p;
     }
     b_die('could not find FROM in: ', $sql);
     # DOES NOT RETURN

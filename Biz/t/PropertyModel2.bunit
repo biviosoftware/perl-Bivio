@@ -17,16 +17,16 @@ assert_equals(
 );
 [
     sub {model('CalendarEvent')} => [
-	unauth_delete_by_realm_id => [
-	    [realm_id => realm_id('fourem')] => sub {
-		assert_equals(
-		    0,
-		    model('CalendarEvent')
+        unauth_delete_by_realm_id => [
+            [realm_id => realm_id('fourem')] => sub {
+                assert_equals(
+                    0,
+                    model('CalendarEvent')
                         ->unauth_rows_exist({realm_id => realm_id('fourem')}),
-		);
-		rollback();
-		return 1;
-	    },
-	],
+                );
+                rollback();
+                return 1;
+            },
+        ],
     ],
 ];

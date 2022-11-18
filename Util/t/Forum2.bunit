@@ -17,17 +17,17 @@ create_user('forum2_user3');
         ShellUtil_RealmAdmin()->main(qw(-realm forum2-s1 -user forum2_user2 join_user member));
         ShellUtil_RealmAdmin()->main(qw(-realm forum2_user3 -user forum2_user2 leave_user));
         ShellUtil_RealmAdmin()->main(qw(-realm forum2_user3 -user forum2_user2 join_user member));
-	return;
+        return;
     }),
     [qw(-realm forum2 cascade_delete_forum_and_users)] => not_die(),
     inline_case(sub {
         foreach my $x (map("forum2$_", '', qw(-s1 _user _user2 _adm))) {
             assert_equals(
-		$x eq 'forum2_user2' ? 1 : 0,
-		model('RealmOwner')->unauth_rows_exist({name => $x}),
-		$x,
-	    );
-	}
-	return;
+                $x eq 'forum2_user2' ? 1 : 0,
+                model('RealmOwner')->unauth_rows_exist({name => $x}),
+                $x,
+            );
+        }
+        return;
     }),
 ];

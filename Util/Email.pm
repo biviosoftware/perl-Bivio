@@ -19,14 +19,14 @@ sub replace_email_domain {
     my($self, $bp) = shift->parameters(\@_);
     $self->are_you_sure("Update all emails ending in $bp->{from_domain} to $bp->{to_domain}?");
     $self->model('EmailForDomainList')->do_iterate(
-	sub {
-	    my($e) = shift->get_model('Email');
-	    $e->update({
-		email => $_E->replace_domain($e->get('email'), $bp->{to_domain}),
-	    });
-	    return 1;
-	},
-	{b_domain_name => $bp->{from_domain}},
+        sub {
+            my($e) = shift->get_model('Email');
+            $e->update({
+                email => $_E->replace_domain($e->get('email'), $bp->{to_domain}),
+            });
+            return 1;
+        },
+        {b_domain_name => $bp->{from_domain}},
     );
     return;
 }

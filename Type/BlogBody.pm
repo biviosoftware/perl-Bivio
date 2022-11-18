@@ -9,9 +9,9 @@ my($_BT) = Bivio::Type->get_instance('BlogTitle');
 sub get_width {
     my($proto) = shift;
     return $proto->SUPER::get_width(@_)
-	- $_BT->get_width
-	- length($proto->TITLE_PREFIX)
-	- 2;
+        - $_BT->get_width
+        - length($proto->TITLE_PREFIX)
+        - 2;
 }
 
 1;

@@ -3,42 +3,42 @@
 Request();
 config({
     'Bivio::IO::File' => {
-	tmp_dir => my $tmp = tmp_dir(),
+        tmp_dir => my $tmp = tmp_dir(),
     },
 });
 [
     sub {class()->new(class(), [qw(-noexecute)], req())} => [
-	version_to_float => [
-	    'Mail-SpamAssassin-3.3.2.tar.gz' => '3.000003000002',
-	    'Math-MVPoly-0.8b.tar.gz' => '0.000008000001',
-	    'Math-Round-Var-v1.0.0.tar.gz' => '1.000000000000',
-	],
-	module_to_uri => [
-	    [qw(version libwww-perl SHA256 MD5 Net-DNS-Resolver-Programmable Module-Metadata Mail-SpamAssassin)] => sub {
-		my(undef, $actual) = @_;
-		foreach my $uri (@{$actual->[0]}) {
-		    Ext_LWPUserAgent()->bivio_http_get($uri);
-		    foreach my $x (
-			[qw(Module-Metadata 1.000011)],
-			[qw(Mail-SpamAssassin 3.000003000002)],
-		    ) {
-			next
-			    unless $uri =~ /$x->[0]/;
-			b_die($uri, ': expecting newer release >= ', $x->[1])
-			    if class()->version_to_float($uri) < $x->[1];
-		    }
-		}
-		return 1;
-	    },
-	    'Not-CPAN-Module' => DIE(),
-	],
-	module_to_cvs_import => [
-	    [qw(Digest-MD5 MD5 PlRPC)] => sub {
-		foreach my $module (qw(Digest-MD5 MD5 PlRPC)) {
-		    assert_equals(1, -f (glob("$tmp/*/$module-*/README"))[0], $module);
-		}
-		return 1;
-	    },
-	],
+        version_to_float => [
+            'Mail-SpamAssassin-3.3.2.tar.gz' => '3.000003000002',
+            'Math-MVPoly-0.8b.tar.gz' => '0.000008000001',
+            'Math-Round-Var-v1.0.0.tar.gz' => '1.000000000000',
+        ],
+        module_to_uri => [
+            [qw(version libwww-perl SHA256 MD5 Net-DNS-Resolver-Programmable Module-Metadata Mail-SpamAssassin)] => sub {
+                my(undef, $actual) = @_;
+                foreach my $uri (@{$actual->[0]}) {
+                    Ext_LWPUserAgent()->bivio_http_get($uri);
+                    foreach my $x (
+                        [qw(Module-Metadata 1.000011)],
+                        [qw(Mail-SpamAssassin 3.000003000002)],
+                    ) {
+                        next
+                            unless $uri =~ /$x->[0]/;
+                        b_die($uri, ': expecting newer release >= ', $x->[1])
+                            if class()->version_to_float($uri) < $x->[1];
+                    }
+                }
+                return 1;
+            },
+            'Not-CPAN-Module' => DIE(),
+        ],
+        module_to_cvs_import => [
+            [qw(Digest-MD5 MD5 PlRPC)] => sub {
+                foreach my $module (qw(Digest-MD5 MD5 PlRPC)) {
+                    assert_equals(1, -f (glob("$tmp/*/$module-*/README"))[0], $module);
+                }
+                return 1;
+            },
+        ],
     ],
 ];

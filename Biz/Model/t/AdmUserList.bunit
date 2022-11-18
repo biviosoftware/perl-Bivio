@@ -3,10 +3,10 @@
 ListModel();
 [
     load_all => [
-	[{search => ShellUtil_SQL()->DEMO_LAST_NAME}] => sub {
-	    shift->actual_return(req(class())->map_rows);
-	    return qr{btest_admin.*demo.*xapian_guest}xis;
-	},
+        [{search => ShellUtil_SQL()->DEMO_LAST_NAME}] => sub {
+            shift->actual_return(req(class())->map_rows);
+            return qr{btest_admin.*demo.*xapian_guest}xis;
+        },
     ],
 ];
 

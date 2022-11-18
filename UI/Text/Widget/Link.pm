@@ -21,9 +21,9 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($v) = $self->render_attr('value', $source);
     $$buffer .= $self->req->format_http({
-	uri => $$v,
-	carry_query => 0,
-	carry_path_info => 0,
+        uri => $$v,
+        carry_query => 0,
+        carry_path_info => 0,
     });
     return;
 }
@@ -32,7 +32,7 @@ sub _initialize_value {
     my($self) = @_;
     my($v) = $self->initialize_attr('value');
     return [['->req'], '->format_stateless_uri', $_TI->from_any($v)]
-	if $_TI->is_blesser_of($v) || $_TI->is_valid_name($v);
+        if $_TI->is_blesser_of($v) || $_TI->is_valid_name($v);
     return $v;
 }
 

@@ -15,11 +15,11 @@ sub initialize {
     my($method) = $self->get('method');
     my($not) = $method =~ s/^\!//;
     $self->put(
-	control => [
-	    $not ? '!' : (),
-	    ['->req', 'Type.UserAgent'],
-	    "->$method",
-	],
+        control => [
+            $not ? '!' : (),
+            ['->req', 'Type.UserAgent'],
+            "->$method",
+        ],
     );
     return shift->SUPER::initialize(@_);
 }

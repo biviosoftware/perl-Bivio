@@ -3,6 +3,6 @@
 Unit();
 [
     [DateTime('11/11/2011 21:33:00'), TimeZone('AMERICA_CHICAGO')] => [
-	as_literal => '11/11/2011 15:33',
+        as_literal => '11/11/2011 15:33',
     ],
 ];

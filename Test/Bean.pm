@@ -19,7 +19,7 @@ sub AUTOLOAD {
 sub new {
     my(undef, $values) = @_;
     b_die('must supply $values')
-	unless $values;
+        unless $values;
     return shift->SUPER::new(_verify($_R->nested_copy($values)));
 }
 
@@ -33,27 +33,27 @@ sub _callback {
     my($self, $method, $args) = @_;
     my($orig_args) = [@$args];
     while(1) {
-	my($sig) = _sig($method, $args);
-	return ref($self->unsafe_get($sig)) eq 'CODE'
-	    ? $self->unsafe_get($sig)->($orig_args)
-	    : wantarray
-	    ? @{$self->unsafe_get($sig)}
-	    : $self->unsafe_get($sig)->[0]
-	    if $self->has_keys($sig);
-	if (@$args) {
-	    pop(@$args);
-	}
-	else {
-	    $self->put_unless_exists(
-		"_warn_$sig",
-		sub {
-		    # Don't use b_warn, because in AUTOLOAD
-		    Bivio::IO::Alert->warn($sig, ': not found returning nothing');
-		    return 1;
-		},
-	    );
-	    return wantarray ? () : undef;
-	}
+        my($sig) = _sig($method, $args);
+        return ref($self->unsafe_get($sig)) eq 'CODE'
+            ? $self->unsafe_get($sig)->($orig_args)
+            : wantarray
+            ? @{$self->unsafe_get($sig)}
+            : $self->unsafe_get($sig)->[0]
+            if $self->has_keys($sig);
+        if (@$args) {
+            pop(@$args);
+        }
+        else {
+            $self->put_unless_exists(
+                "_warn_$sig",
+                sub {
+                    # Don't use b_warn, because in AUTOLOAD
+                    Bivio::IO::Alert->warn($sig, ': not found returning nothing');
+                    return 1;
+                },
+            );
+            return wantarray ? () : undef;
+        }
     }
     # DOES NOT RETURN
 }
@@ -65,9 +65,9 @@ sub _sig {
 sub _verify {
     my($values) = @_;
     while (my($k, $v) = each(%$values)) {
-	Bivio::Die->die($k, ': invalid key format')
+        Bivio::Die->die($k, ': invalid key format')
             unless $k =~ /^\w+\(.*\)$/s;
-	Bivio::Die->die($v, ': value for ', $k, ' must be array_ref or code_ref')
+        Bivio::Die->die($v, ': value for ', $k, ' must be array_ref or code_ref')
             unless ref($v) =~ /^(?:ARRAY|CODE)$/s;
     }
     return $values;

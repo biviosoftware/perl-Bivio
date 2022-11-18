@@ -99,10 +99,10 @@ sub initialize {
 
     my($i) = 0;
     $fields->{values} = [map {
-	$self->initialize_value($i++, $_);
+        $self->initialize_value($i++, $_);
     } @{$self->get('values')}];
     $fields->{separator} = $self->ancestral_get('title_separator',
-	    $_DEFAULT_SEPARATOR);
+            $_DEFAULT_SEPARATOR);
     return;
 }
 
@@ -118,9 +118,9 @@ sub internal_new_args {
     my(undef, $values, $seperator, $attributes) = @_;
     return '"values" must be defined' unless ref($values);
     return {
-	values => $values,
-	(defined($seperator) ? (seperator => $seperator) : ()),
-	($attributes ? %$attributes : ()),
+        values => $values,
+        (defined($seperator) ? (seperator => $seperator) : ()),
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -139,15 +139,15 @@ sub render {
     my(@v, @t) = ();
     my($i) = 0;
     foreach my $v (@{$fields->{values}}) {
-	my($x) = $v;
-	if (ref($x)) {
-	    my($b) = '';
-	    $self->unsafe_render_value($i++, $x, $source, \$b);
-	    next unless length($b);
-	    $x = $b;
-	}
-	push(@v, Bivio::HTML->escape($x));
-	push(@t, $x);
+        my($x) = $v;
+        if (ref($x)) {
+            my($b) = '';
+            $self->unsafe_render_value($i++, $x, $source, \$b);
+            next unless length($b);
+            $x = $b;
+        }
+        push(@v, Bivio::HTML->escape($x));
+        push(@t, $x);
     }
     $$buffer .= '<title>'.join($fields->{separator}, @v)."</title>\n";
     $source->get('reply')->set_header('Title', join($fields->{separator}, @t));

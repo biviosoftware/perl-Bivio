@@ -23,11 +23,11 @@ sub internal_input_base_render_attrs {
     my($req) = $source->get_request;
     my($size) = $self->render_simple_attr('size', $source);
     my($width) = $self->render_simple_attr('max_width', $source)
-	|| $t->get_width;
+        || $t->get_width;
     $size += 2
-	if $size == $width;
+        if $size == $width;
     $$buffer .= qq{ type="@{[$t->is_password ? 'password' : 'text']}"}
-	. qq{ size="$size" maxlength="$width"}
+        . qq{ size="$size" maxlength="$width"}
         . ($t->is_secure_data ? ' autocomplete="off"' : '');
     return;
 }

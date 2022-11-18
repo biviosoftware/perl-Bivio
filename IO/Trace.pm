@@ -73,8 +73,8 @@ use Bivio::IO::Config;
 
 Bivio::IO::Config->register({
     Bivio::IO::Config->NAMED => {
-	call_filter => undef,
-	package_filter => undef,
+        call_filter => undef,
+        package_filter => undef,
     },
     printer => \&default_printer,
     command_line_arg => undef,
@@ -125,11 +125,11 @@ sub handle_config {
     my($proto, $cfg) = @_;
     my($named);
     my($c) = !$cfg->{command_line_arg} ? $cfg
-	: $cfg->{command_line_arg} =~ $_IS_NAMED
-	? ($named = $cfg->{command_line_arg})
-	: {package_filter => $cfg->{command_line_arg}};
+        : $cfg->{command_line_arg} =~ $_IS_NAMED
+        ? ($named = $cfg->{command_line_arg})
+        : {package_filter => $cfg->{command_line_arg}};
     $named ? $proto->set_named_filters($named)
-	: $proto->set_filters($c->{call_filter}, $c->{package_filter});
+        : $proto->set_filters($c->{call_filter}, $c->{package_filter});
     $proto->set_printer($cfg->{printer});
     return;
 }
@@ -137,7 +137,7 @@ sub handle_config {
 sub handle_class_loader_require {
     my($proto, $pkg) = @_;
     return
-	if grep($pkg eq $_, @_REGISTERED);
+        if grep($pkg eq $_, @_REGISTERED);
     push(@_REGISTERED, $pkg);
     _define_pkg_symbols($pkg, $Bivio::IO::Trace::_CALL_SUB, $_PKG_SUB);
     return;
@@ -221,52 +221,52 @@ sub set_filters {
     # If package filter w/o point filter, force to be true.
     my($call_sub, $pkg_sub);
     if (defined($call_filter)) {
-	if ($call_filter =~ /^\s*1\s*$/s) {
-	    $call_sub = undef;
-	}
-	else {
-	    local($SIG{__DIE__});
-	    $call_sub = eval <<"EOF";
+        if ($call_filter =~ /^\s*1\s*$/s) {
+            $call_sub = undef;
+        }
+        else {
+            local($SIG{__DIE__});
+            $call_sub = eval <<"EOF";
                 use strict;
-		sub {
-		    my(\$pkg, \$file, \$line, \$sub, \$msg) = \@_;
-		    ($call_filter) || return 0;
+                sub {
+                    my(\$pkg, \$file, \$line, \$sub, \$msg) = \@_;
+                    ($call_filter) || return 0;
                     return Bivio::IO::Trace->print(\$pkg, \$file,
                             \$line, \$sub, \$msg);
-		}
+                }
 EOF
             defined($call_sub) || die("call filter invalid: $@");
-	}
+        }
     }
     if (defined($pkg_filter)) {
-	$pkg_sub = eval <<"EOF";
-	sub {
+        $pkg_sub = eval <<"EOF";
+        sub {
             local(\$_) = \@_;
             return $pkg_filter;
         }
 EOF
-	defined($pkg_sub) || die("package filter invalid: $@");
+        defined($pkg_sub) || die("package filter invalid: $@");
     }
     else {
-	$pkg_sub = defined($call_filter) ? \&_true : \&_false;
+        $pkg_sub = defined($call_filter) ? \&_true : \&_false;
     }
     my($pkg);
     foreach $pkg (@_REGISTERED) {
-	_define_pkg_symbols($pkg, $call_sub, $pkg_sub);
+        _define_pkg_symbols($pkg, $call_sub, $pkg_sub);
     }
     ($_CALL_FILTER, $Bivio::IO::Trace::_CALL_SUB, $_PKG_FILTER, $_PKG_SUB)
-	    = ($call_filter, $call_sub, $pkg_filter, $pkg_sub);
+            = ($call_filter, $call_sub, $pkg_filter, $pkg_sub);
     return ($prev_point, $prev_pkg);
 }
 
 sub set_named_filters {
     my($proto, $name) = @_;
     my($c) = $name ?
-	$name =~ /^\w+$/ && Bivio::IO::Config->unsafe_get($name) || {
-	    call_filter => undef,
-	    package_filter => $name =~ $_IS_NAMED ? "m{$name}i"
-		: die($name, ': invalid named filter'),
-	}
+        $name =~ /^\w+$/ && Bivio::IO::Config->unsafe_get($name) || {
+            call_filter => undef,
+            package_filter => $name =~ $_IS_NAMED ? "m{$name}i"
+                : die($name, ': invalid named filter'),
+        }
         : {};
     $proto->set_filters($c->{call_filter}, $c->{package_filter});
     return;
@@ -291,19 +291,19 @@ sub _define_pkg_symbols {
     my($pkg, $call_sub, $pkg_sub) = @_;
     my($trace, $sub);
     unless ($pkg_sub->($pkg)) {
-	# Tracing is off
-	$trace = undef;
-	$sub = sub {return};
+        # Tracing is off
+        $trace = undef;
+        $sub = sub {return};
     }
     else {
-	# Tracing is on
-	$trace = 1;
-	$sub = eval 'sub {return '
-		. (defined($call_sub)
-			? '$Bivio::IO::Trace::_CALL_SUB->'
-			: 'Bivio::IO::Trace->print')
-	        # caller(1) can return an empty array, hence '|| undef'
-		. '((caller), (caller(1))[3] || undef, \@_)}';
+        # Tracing is on
+        $trace = 1;
+        $sub = eval 'sub {return '
+                . (defined($call_sub)
+                        ? '$Bivio::IO::Trace::_CALL_SUB->'
+                        : 'Bivio::IO::Trace->print')
+                # caller(1) can return an empty array, hence '|| undef'
+                . '((caller), (caller(1))[3] || undef, \@_)}';
     }
     no strict 'refs';
     *{$pkg.'::_TRACE'} = \$trace;

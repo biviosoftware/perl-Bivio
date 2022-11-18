@@ -25,11 +25,11 @@ my($_DTM) = b_use('UI.DateTimeMode');
 sub get_widget_value {
     my(undef, $dt, $mode, $no_timezone) = @_;
     return ''
-	unless defined($dt);
+        unless defined($dt);
     $mode = defined($mode) ? $_DTM->from_any($mode) : $_DTM->get_default;
     my($op) = '_to_' . lc($mode->get_name);
     return (\&{$op})->($_DT->to_parts($dt), $dt)
-	. ($no_timezone || $op eq '_to_rfc822' ? '' : ' GMT');
+        . ($no_timezone || $op eq '_to_rfc822' ? '' : ' GMT');
 }
 
 sub _am_pm {
@@ -55,22 +55,22 @@ sub _to_day_month3_year {
 sub _to_day_month3_year_time {
     my($sec, $min, $hour, $mday, $mon, $year, $dt) = @_;
     return sprintf(
-	'%02d-%.3s-%04d %02d:%02d:%02d',
-	$mday, $_MONTHS->[$mon], $year, $hour, $min, $sec,
+        '%02d-%.3s-%04d %02d:%02d:%02d',
+        $mday, $_MONTHS->[$mon], $year, $hour, $min, $sec,
     );
 }
 
 sub _to_day_month3_year_time_period {
     my($sec, $min, $hour, $mday, $mon, $year, $dt) = @_;
     return sprintf(
-	'%02d-%.3s-%04d %02d:%02d:%02d %.2s',
-	$mday,
-	$_MONTHS->[$mon],
-	$year,
-	_twelve_hour($hour),
-	$min,
-	$sec,
-	_am_pm($hour),
+        '%02d-%.3s-%04d %02d:%02d:%02d %.2s',
+        $mday,
+        $_MONTHS->[$mon],
+        $year,
+        _twelve_hour($hour),
+        $min,
+        $sec,
+        _am_pm($hour),
     );
 }
 

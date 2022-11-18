@@ -3,53 +3,53 @@
 Type();
 [
     from_disk => [
-	'FileField/t1.txt' => [{
-	    filename => 't1.txt',
-	    content => \("line1\n"),
-	    content_type => 'text/plain',
-	}],
+        'FileField/t1.txt' => [{
+            filename => 't1.txt',
+            content => \("line1\n"),
+            content_type => 'text/plain',
+        }],
     ],
     unsafe_from_disk => [
-	'' => UNDEF(),
-	'not-found' => [undef, Bivio::TypeError->NOT_FOUND],
-	[{
-	    filename => 'a',
-	    content => \("b"),
-	    content_type => 'c',
-	}] => sub {shift->get('params')},
+        '' => UNDEF(),
+        'not-found' => [undef, Bivio::TypeError->NOT_FOUND],
+        [{
+            filename => 'a',
+            content => \("b"),
+            content_type => 'c',
+        }] => sub {shift->get('params')},
     ],
     from_string_ref => [
-	[\('x')] => [{
-	    content => \('x'),
-	    filename => '',
-	    content_type => 'application/octet-stream',
-	}],
+        [\('x')] => [{
+            content => \('x'),
+            filename => '',
+            content_type => 'application/octet-stream',
+        }],
     ],
     from_any => [
-	[{
-	    content => \('y'),
-	    filename => 'y',
-	    content_type => 'text/plain',
-	}] => [{
-	    content => \('y'),
-	    filename => 'y',
-	    content_type => 'text/plain',
-	}],
-	[\('x')] => [{
-	    content => \('x'),
-	    filename => '',
-	    content_type => 'application/octet-stream',
-	}],
-	'FileField/t1.txt' => [{
-	    filename => 't1.txt',
-	    content => \("line1\n"),
-	    content_type => 'text/plain',
-	}],
-	"a\nb" => [{
-	    filename => '',
-	    content => \("a\nb"),
-	    content_type => 'application/octet-stream',
-	}],
-	'not-found' => DIE(),
+        [{
+            content => \('y'),
+            filename => 'y',
+            content_type => 'text/plain',
+        }] => [{
+            content => \('y'),
+            filename => 'y',
+            content_type => 'text/plain',
+        }],
+        [\('x')] => [{
+            content => \('x'),
+            filename => '',
+            content_type => 'application/octet-stream',
+        }],
+        'FileField/t1.txt' => [{
+            filename => 't1.txt',
+            content => \("line1\n"),
+            content_type => 'text/plain',
+        }],
+        "a\nb" => [{
+            filename => '',
+            content => \("a\nb"),
+            content_type => 'application/octet-stream',
+        }],
+        'not-found' => DIE(),
     ],
 ];

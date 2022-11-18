@@ -4,18 +4,18 @@ Request();
 my($sendmail_out) = 'sendmail.tmp';
 config({
     'Bivio::Mail::Common' => {
-	sendmail => "perl -w mock-sendmail.PL $sendmail_out ",
+        sendmail => "perl -w mock-sendmail.PL $sendmail_out ",
     },
 });
 [
     class() => [
-	{
-	    method => 'send',
-	    compute_return => sub {
-		return [${Bivio::IO::File->read($sendmail_out)}];
-	    },
-	} => [
-	    ['a@a.a', <<'IN', 0, 'b@b.b', req()] => <<'OUT',
+        {
+            method => 'send',
+            compute_return => sub {
+                return [${Bivio::IO::File->read($sendmail_out)}];
+            },
+        } => [
+            ['a@a.a', <<'IN', 0, 'b@b.b', req()] => <<'OUT',
 s: 1
 
 b
@@ -27,14 +27,14 @@ s: 1
 
 b
 OUT
-	    ['a@a.a', <<'IN', 0, undef, req()] => <<'OUT',
+            ['a@a.a', <<'IN', 0, undef, req()] => <<'OUT',
 x
 IN
 Recipients: a@a.a
 X-Bivio-Test-Recipient: a@a.a
 x
 OUT
-	    ['a@a.a', <<'IN', 1, undef, req()] => <<'OUT',
+            ['a@a.a', <<'IN', 1, undef, req()] => <<'OUT',
 zz
 IN
 Recipients: a@a.a

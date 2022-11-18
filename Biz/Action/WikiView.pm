@@ -25,10 +25,10 @@ b_use('IO.Config')->register(my $_CFG = {
 sub execute {
     my($proto) = shift;
     return $proto->execute_prepare_html(@_) || do {
-	my($req) = @_;
-	my($self) = $req->get($proto->package_name);
-	$self->put(html => $self->render_html($req));
-	0;
+        my($req) = @_;
+        my($self) = $req->get($proto->package_name);
+        $self->put(html => $self->render_html($req));
+        0;
     };
 }
 
@@ -45,8 +45,8 @@ sub execute_load_history {
     $req->put(path_info => $path);
     my($name) = $_FP->get_tail($path);
     $proto->new()->put_on_request($req)->put(
-	title => $name,
-	is_start_page => _is_start_page($req, $name),
+        title => $name,
+        is_start_page => _is_start_page($req, $name),
     );
     return;
 }
@@ -54,12 +54,12 @@ sub execute_load_history {
 sub execute_not_found {
     my($proto, $req) = @_;
     return 'FORUM_WIKI_VIEW'
-	if $_CFG->{use_default_start_page}
-	&& _create_default_start_page($proto, $req);
+        if $_CFG->{use_default_start_page}
+        && _create_default_start_page($proto, $req);
     my($t) = $req->get('task')->unsafe_get_attr_as_id('edit_task');
     return
-	unless $t && $req->can_user_execute_task($t)
-	&& $req->unsafe_get('path_info');
+        unless $t && $req->can_user_execute_task($t)
+        && $req->unsafe_get('path_info');
     $proto->get_instance('Acknowledgement')
         ->save_label('FORUM_WIKI_NOT_FOUND', $req);
     return 'edit_task';
@@ -71,60 +71,60 @@ sub execute_prepare_html {
     $task_id ||= $req->get('task_id');
     $name ||= $req->unsafe_get('path_info');
     unless ($name) {
-	# To avoid name space issues, there always needs to be a path_info
-	$req->put(path_info => $_FP->to_absolute(
-	    b_use('FacadeComponent.Text')->get_value('WikiView.start_page', $req)));
-	return {
+        # To avoid name space issues, there always needs to be a path_info
+        $req->put(path_info => $_FP->to_absolute(
+            b_use('FacadeComponent.Text')->get_value('WikiView.start_page', $req)));
+        return {
 # should be able to handle realm_id and convert automatically
-	    realm => $req->with_realm($realm_id, sub {$req->get_nested(qw(auth_realm owner_name))}),
-	    task_id => $task_id,
-	    query => undef,
-	    carry_path_info => 1,
-	};
+            realm => $req->with_realm($realm_id, sub {$req->get_nested(qw(auth_realm owner_name))}),
+            task_id => $task_id,
+            query => undef,
+            carry_path_info => 1,
+        };
     }
     unless (_is_valid(\$name)) {
-	$req->put(path_info => $_WDN->to_absolute($name));
-	return $_ARF->access_controlled_execute($req);
+        $req->put(path_info => $_WDN->to_absolute($name));
+        return $_ARF->access_controlled_execute($req);
 #TODO: Test this thoroughly with all apps
-# 	my($die_code);
-# 	my($rf) = $proto->unsafe_load_wiki_data(
-# 	    $req->get('auth_id'),
-# 	    $_MRF->parse_path($req->get('path_info')),
-# 	    $req,
-# 	    \$die_code,
-# 	);
-# 	$req->throw_die($die_code || 'DIE' => {
-# 	    entity => $req->get('path_info'),
-# 	    realm_id => $req->get('auth_id'),
-# 	}) unless $rf;
-# 	return $_ARF->set_output_for_get($rf);
+#         my($die_code);
+#         my($rf) = $proto->unsafe_load_wiki_data(
+#             $req->get('auth_id'),
+#             $_MRF->parse_path($req->get('path_info')),
+#             $req,
+#             \$die_code,
+#         );
+#         $req->throw_die($die_code || 'DIE' => {
+#             entity => $req->get('path_info'),
+#             realm_id => $req->get('auth_id'),
+#         }) unless $rf;
+#         return $_ARF->set_output_for_get($rf);
     }
     my($self) = $proto->new->put_on_request($req)->put(
-	name => $name,
+        name => $name,
 #TODO: Use is_versioned
-	can_edit => ($name !~ /;/),
-	exists => 0,
+        can_edit => ($name !~ /;/),
+        exists => 0,
     );
     my($wa) = $_WT->prepare_html($realm_id, $name, $task_id, $req);
     my($author) = '';
     my($author_name) = '';
     if ($req->unsafe_get_nested(qw(task want_author))) {
-	my($e) = $_E->new($req)
-	    ->unauth_load_or_die({realm_id => $wa->{user_id}});
-	$author = $e->get('email');
-	$author_name = $_RO->new($req)
-	    ->unauth_load_or_die({realm_id => $e->get('realm_id')})
-	    ->get('display_name');
+        my($e) = $_E->new($req)
+            ->unauth_load_or_die({realm_id => $wa->{user_id}});
+        $author = $e->get('email');
+        $author_name = $_RO->new($req)
+            ->unauth_load_or_die({realm_id => $e->get('realm_id')})
+            ->get('display_name');
     }
     $self->put(
-	wiki_args => $wa,
-	title => $wa->{title},
-	modified_date_time => $wa->{modified_date_time},
-	author => $author,
-	author_email => $author,
-	author_name => $author_name,
-	exists => 1,
-	is_start_page => _is_start_page($req, $name),
+        wiki_args => $wa,
+        title => $wa->{title},
+        modified_date_time => $wa->{modified_date_time},
+        author => $author,
+        author_email => $author,
+        author_name => $author_name,
+        exists => 1,
+        is_start_page => _is_start_page($req, $name),
     );
     return 0;
 }
@@ -150,23 +150,23 @@ sub unsafe_load_wiki_data {
     my($self, $path, $wiki_args, $die_code) = @_;
     $path = $_WDN->to_absolute($path, $wiki_args->{is_public});
     if (my $res = $_ARF->access_controlled_load(
-	$wiki_args->{realm_id},
-	$path,
-	$wiki_args->{req},
-	$die_code,
+        $wiki_args->{realm_id},
+        $path,
+        $wiki_args->{req},
+        $die_code,
     )) {
-	return $res;
+        return $res;
     }
     my($sid) = $_C->get_value('site_realm_id', $wiki_args->{req});
     return
-	if $sid eq $wiki_args->{realm_id};
+        if $sid eq $wiki_args->{realm_id};
     my($rf) = $_MRF->new($wiki_args->{req});
     return $rf
-	if $rf->unauth_load({
-	    realm_id => $sid,
-	    path => $_FP->to_public($path),
-	    is_public => 1,
-	});
+        if $rf->unauth_load({
+            realm_id => $sid,
+            path => $_FP->to_public($path),
+            is_public => 1,
+        });
     $$die_code ||= $_NOT_FOUND;
     return undef;
 }
@@ -175,29 +175,29 @@ sub _create_default_start_page {
     my($proto, $req) = @_;
     my($path) = $req->unsafe_get('path_info');
     return 0
-	unless $path && _is_valid(\$path) && _is_start_page($req, $path);
+        unless $path && _is_valid(\$path) && _is_start_page($req, $path);
     my($rid) = b_use('Model.RealmOwner')->new($req)
-	->unauth_load_or_die({
-	    name => $_CFG->{default_start_page_realm}
-	    || b_use('FacadeComponent.Constant') ->get_value('site_realm_name', $req),
-	})->get('realm_id');
+        ->unauth_load_or_die({
+            name => $_CFG->{default_start_page_realm}
+            || b_use('FacadeComponent.Constant') ->get_value('site_realm_name', $req),
+        })->get('realm_id');
     $path = $_WN->DEFAULT_START_PAGE_PATH;
     my($rf) = b_use('Model.RealmFile')->new($req);
     unless (
-	$rf->unauth_load({
-	    path => $path,
-	    realm_id => $rid,
-	})
+        $rf->unauth_load({
+            path => $path,
+            realm_id => $rid,
+        })
     ) {
-	$_A->warn_exactly_once($path, ': missing from realm: ', $rid);
-	return 0;
+        $_A->warn_exactly_once($path, ': missing from realm: ', $rid);
+        return 0;
     }
     $rf->create_with_content(
-	{
-	    path => $_WN->to_absolute($_WN->START_PAGE),
-	    user_id => $rf->get('user_id'),
-	},
-	$rf->get_content,
+        {
+            path => $_WN->to_absolute($_WN->START_PAGE),
+            user_id => $rf->get('user_id'),
+        },
+        $rf->get_content,
     );
     return 1;
 }

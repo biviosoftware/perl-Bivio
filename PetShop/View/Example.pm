@@ -9,8 +9,8 @@ Action_PingReply()->register_handler(__PACKAGE__);
 
 sub eg1 {
     return shift->internal_body(Join([
-	Simple('hello, world!'),
-	ProgressBar(25, 100),
+        Simple('hello, world!'),
+        ProgressBar(25, 100),
     ]));
 }
 

@@ -8,9 +8,9 @@ use Bivio::Base 'Biz.ListModel';
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	%{$self->get_instance('CalendarEventList')
-	      ->decl_for_internal_initialize},
-	other_query_keys => ['b_rows'],
+        %{$self->get_instance('CalendarEventList')
+              ->decl_for_internal_initialize},
+        other_query_keys => ['b_rows'],
     });
 }
 

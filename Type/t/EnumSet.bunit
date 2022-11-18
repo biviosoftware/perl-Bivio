@@ -3,18 +3,18 @@
 Type({
     class_name => b_use('Type.ECPaymentStatusSet'),
     compute_return => sub {
-	my($case, $actual) = @_;
-	return []
-	    unless my $a = $actual->[0];
-	return [map($_->get_name, @{$case->get('object')->to_array($a)})];
+        my($case, $actual) = @_;
+        return []
+            unless my $a = $actual->[0];
+        return [map($_->get_name, @{$case->get('object')->to_array($a)})];
     },
 });
 [
     from_literal => [
         [undef] => [],
-	'20000000' => 'TRY_CAPTURE',
+        '20000000' => 'TRY_CAPTURE',
     ],
     from_array => [
-	[['TRY_CAPTURE']] => 'TRY_CAPTURE',
+        [['TRY_CAPTURE']] => 'TRY_CAPTURE',
     ],
 ];

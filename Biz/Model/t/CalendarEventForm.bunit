@@ -4,138 +4,138 @@ FormModel({comparator => 'nested_contains'});
 my(undef) = do('./CalendarEvent.PL');
 my($id_by_location) = sub {
     return unauth_model('CalendarEvent', {
-	location => 'L1',
+        location => 'L1',
     })->get('calendar_event_id');
 };
 my($create_params) = sub {
     return {
-	'CalendarEvent.realm_id' => realm_id('fourem'),
-	'RealmOwner.display_name' => 'E1',
-	time_zone_selector => 'UTC',
-	'CalendarEvent.location' => 'L1',
-	start_date => Date('1/1/2010'),
-	start_time => Time('9:00'),
-	end_date => Date('1/2/2010'),
-	end_time => Time('10:00'),
-	recurrence => CalendarEventRecurrence('UNKNOWN'),
+        'CalendarEvent.realm_id' => realm_id('fourem'),
+        'RealmOwner.display_name' => 'E1',
+        time_zone_selector => 'UTC',
+        'CalendarEvent.location' => 'L1',
+        start_date => Date('1/1/2010'),
+        start_time => Time('9:00'),
+        end_date => Date('1/2/2010'),
+        end_time => Time('10:00'),
+        recurrence => CalendarEventRecurrence('UNKNOWN'),
     };
 };
 my($check_display_name) = sub {
     my($expect) = @_;
     return inline_case(sub {
-	unauth_model(
-	    'RealmOwner',
-	    {realm_id => req(qw(Model.CalendarEvent calendar_event_id))},
-	    [{display_name => $expect}],
-	);
+        unauth_model(
+            'RealmOwner',
+            {realm_id => req(qw(Model.CalendarEvent calendar_event_id))},
+            [{display_name => $expect}],
+        );
         return;
     });
 };
 [
     req_state({
-	user => 'root',
-	realm => 'fourem',
-	task => 'FORUM_CALENDAR_EVENT_FORM',
+        user => 'root',
+        realm => 'fourem',
+        task => 'FORUM_CALENDAR_EVENT_FORM',
     }),
     empty_case({
-	time_zone_selector => TimeZone()->get_default->as_display_name,
-	'CalendarEvent.realm_id' => realm_id('fourem'),
+        time_zone_selector => TimeZone()->get_default->as_display_name,
+        'CalendarEvent.realm_id' => realm_id('fourem'),
     }),
     req_state({
-	realm => 'root',
+        realm => 'root',
     }),
     empty_case({
-	'CalendarEvent.realm_id' => undef,
+        'CalendarEvent.realm_id' => undef,
     }),
     [$create_params->()] => [{
-	'Model.CalendarEvent' => {
-	    realm_id => realm_id('fourem'),
-	    location => 'L1',
-	    dtstart => DateTime('1/1/2010 9:00:00'),
-	    dtend => DateTime('1/2/2010 10:00:00'),
-	},
+        'Model.CalendarEvent' => {
+            realm_id => realm_id('fourem'),
+            location => 'L1',
+            dtstart => DateTime('1/1/2010 9:00:00'),
+            dtend => DateTime('1/2/2010 10:00:00'),
+        },
     }],
     $check_display_name->('E1'),
     req_state({
-	user => 'root',
-	realm => 'fourem',
+        user => 'root',
+        realm => 'fourem',
     }),
     [{
-	'CalendarEvent.realm_id' => realm_id('fourem'),
-	'RealmOwner.display_name' => 'E2',
-	time_zone_selector => 'Europe/Paris',
-	'CalendarEvent.location' => 'L2',
-	start_date => Date('1/1/2010'),
-	start_time => Time('13:00'),
-	end_date => Date('1/2/2010'),
-	end_time => Time('16:00'),
-	recurrence => CalendarEventRecurrence('EVERY_WEEK'),
-	recurrence_end_date => Date('1/15/2010'),
+        'CalendarEvent.realm_id' => realm_id('fourem'),
+        'RealmOwner.display_name' => 'E2',
+        time_zone_selector => 'Europe/Paris',
+        'CalendarEvent.location' => 'L2',
+        start_date => Date('1/1/2010'),
+        start_time => Time('13:00'),
+        end_date => Date('1/2/2010'),
+        end_time => Time('16:00'),
+        recurrence => CalendarEventRecurrence('EVERY_WEEK'),
+        recurrence_end_date => Date('1/15/2010'),
     }] => [{
-	'Model.CalendarEvent' => {
-	    location => 'L2',
-	    dtstart => DateTime('1/8/2010 12:00:00'),
-	    dtend => DateTime('1/9/2010 15:00:00'),
-	},
+        'Model.CalendarEvent' => {
+            location => 'L2',
+            dtstart => DateTime('1/8/2010 12:00:00'),
+            dtend => DateTime('1/9/2010 15:00:00'),
+        },
     }],
     $check_display_name->('E2'),
     req_state({
-	user => 'btest_read',
-	query => sub {+{
-	    is_copy => 1,
-	    this => [$id_by_location->('L1')],
-	}},
+        user => 'btest_read',
+        query => sub {+{
+            is_copy => 1,
+            this => [$id_by_location->('L1')],
+        }},
     }),
     [{
-	'CalendarEvent.realm_id' => undef,
-	'RealmOwner.display_name' => 'E1',
-	time_zone_selector => 'UTC',
-	'CalendarEvent.location' => 'L1',
-	start_date => Date('1/1/2010'),
-	start_time => Time('9:00'),
-	end_date => Date('1/2/2010'),
-	end_time => Time('10:00'),
-	recurrence => CalendarEventRecurrence('UNKNOWN'),
-	recurrence_end_date => undef,
+        'CalendarEvent.realm_id' => undef,
+        'RealmOwner.display_name' => 'E1',
+        time_zone_selector => 'UTC',
+        'CalendarEvent.location' => 'L1',
+        start_date => Date('1/1/2010'),
+        start_time => Time('9:00'),
+        end_date => Date('1/2/2010'),
+        end_time => Time('10:00'),
+        recurrence => CalendarEventRecurrence('UNKNOWN'),
+        recurrence_end_date => undef,
     }] => FORBIDDEN(),
     req_state({
-	user => 'root',
-	realm => 'fourem',
+        user => 'root',
+        realm => 'fourem',
     }),
     error_case({
-	%{$create_params->()},
-	time_zone_selector => 'Not/Found',
+        %{$create_params->()},
+        time_zone_selector => 'Not/Found',
     } => {
-	time_zone_selector => 'NOT_FOUND',
+        time_zone_selector => 'NOT_FOUND',
     }),
     req_state({
-	user => 'btest_admin',
-	query => sub {
-	    req()->with_user(root => sub {
-		model(class(), {
-		    %{$create_params->()},
-		    'CalendarEvent.realm_id' => realm_id('fourem-sub1'),
-		});
-		return;
-	    });
-	    return {
-		is_copy => 1,
-		this => [$id_by_location->('L1')],
-	    },
-	},
+        user => 'btest_admin',
+        query => sub {
+            req()->with_user(root => sub {
+                model(class(), {
+                    %{$create_params->()},
+                    'CalendarEvent.realm_id' => realm_id('fourem-sub1'),
+                });
+                return;
+            });
+            return {
+                is_copy => 1,
+                this => [$id_by_location->('L1')],
+            },
+        },
     }),
     [] => qr{unauthorized realm},
     req_state({
-	query => undef,
-	user => sub {
-	    req()->with_user(root => sub {
-		model(class(), $create_params->());
-		return;
-	    });
-	    return 'btest_admin';
-	}
+        query => undef,
+        user => sub {
+            req()->with_user(root => sub {
+                model(class(), $create_params->());
+                return;
+            });
+            return 'btest_admin';
+        }
     }),
     [{
-	%{$create_params->()},
+        %{$create_params->()},
     }] => qr{unauthorized realm},
 ];

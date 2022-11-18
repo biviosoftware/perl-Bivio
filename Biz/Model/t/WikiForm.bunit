@@ -3,19 +3,19 @@
 my($path_info);
 FormModel({
     setup_request => sub {
-	req()->put(path_info => $path_info);
-	return;
+        req()->put(path_info => $path_info);
+        return;
     },
 });
 my($path) = sub {
     my($p) = @_;
     return (
-	sub {
-	    req()->commit;
-	    req()->set_realm_and_user('guest', 'guest');
-	    $path_info = $p;
-	    return 1;
-	 } => 1,
+        sub {
+            req()->commit;
+            req()->set_realm_and_user('guest', 'guest');
+            $path_info = $p;
+            return 1;
+         } => 1,
     );
 };
 req()->set_realm_and_user('guest', 'guest');
@@ -25,65 +25,65 @@ Bivio::Biz::Model->new('RealmFile')->unauth_delete_deep({
 [
     $path->(),
     empty_case({
-	'RealmFile.path_lc' => undef,
-	content => undef,
-	file_exists => 0,
+        'RealmFile.path_lc' => undef,
+        content => undef,
+        file_exists => 0,
     }),
     [{
-	'RealmFile.path_lc' => 'BunitOne',
-	content => 'b1',
+        'RealmFile.path_lc' => 'BunitOne',
+        content => 'b1',
     }] => [{
-	'Model.RealmFile' => {
-	    path => '/Wiki/BunitOne',
-	},
+        'Model.RealmFile' => {
+            path => '/Wiki/BunitOne',
+        },
     }],
     $path->('/BunitX.txt'),
     [{
-  	'RealmFile.path_lc' => 'BunitX.txt',
+          'RealmFile.path_lc' => 'BunitX.txt',
     }] => Bivio::DieCode->NOT_FOUND,
     $path->('/BunitOne'),
     empty_case({
-	'RealmFile.path_lc' => 'BunitOne',
-	content => "b1\n",
-	file_exists => 1,
+        'RealmFile.path_lc' => 'BunitOne',
+        content => "b1\n",
+        file_exists => 1,
     }),
     $path->(),
     error_case({
-	'RealmFile.path_lc' => 'BunitOne',
-	content => "b1\n",
+        'RealmFile.path_lc' => 'BunitOne',
+        content => "b1\n",
     }, {
-	'RealmFile.path_lc' => 'EXISTS',
+        'RealmFile.path_lc' => 'EXISTS',
     }),
     $path->('/BunitTwo'),
     empty_case({
-	'RealmFile.path_lc' => 'BunitTwo',
-	content => undef,
-	file_exists => 0,
+        'RealmFile.path_lc' => 'BunitTwo',
+        content => undef,
+        file_exists => 0,
     }),
     [{
-	'RealmFile.path_lc' => 'BunitTwo',
-	content => "b2\n",
+        'RealmFile.path_lc' => 'BunitTwo',
+        content => "b2\n",
     }] => [{
-	'Model.RealmFile' => {
-	    path => '/Wiki/BunitTwo',
-	},
+        'Model.RealmFile' => {
+            path => '/Wiki/BunitTwo',
+        },
     }],
     [{
-	'RealmFile.path_lc' => 'BunitTwo',
-	'RealmFile.is_public' => 1,
-	content => 'b2',
+        'RealmFile.path_lc' => 'BunitTwo',
+        'RealmFile.is_public' => 1,
+        content => 'b2',
     }] => [{
-	'Model.RealmFile' => {
-	    path => '/Public/Wiki/BunitTwo',
-	},
+        'Model.RealmFile' => {
+            path => '/Public/Wiki/BunitTwo',
+        },
     }],
     [{
-	'RealmFile.path_lc' => 'Bunit/Three',
-	'RealmFile.is_public' => 1,
-	content => 'b3',
+        'RealmFile.path_lc' => 'Bunit/Three',
+        'RealmFile.is_public' => 1,
+        content => 'b3',
     }] => [{
-	'Model.RealmFile' => {
-	    path => '/Public/Wiki/Bunit/Three',
-	},
+        'Model.RealmFile' => {
+            path => '/Public/Wiki/Bunit/Three',
+        },
     }],
 ];

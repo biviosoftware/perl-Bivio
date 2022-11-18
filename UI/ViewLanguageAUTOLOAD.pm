@@ -38,8 +38,8 @@ sub unsafe_calling_context {
 
 sub unsafe_calling_context_for_wiki_text {
     return undef
-	unless $_CALLING_CONTEXT_METHOD
-	&& (caller)[0]->simple_package_name
+        unless $_CALLING_CONTEXT_METHOD
+        && (caller)[0]->simple_package_name
         eq ($_CALLING_CONTEXT_METHOD =~ /(\w+)$/)[0];
     return $_CALLING_CONTEXT || b_die('no calling context');
 }

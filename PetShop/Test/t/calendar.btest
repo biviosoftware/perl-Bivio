@@ -123,24 +123,24 @@ foreach my $interval (sort(keys(%{$repeats}))) {
     follow_menu_link('add_event');
     my($title) = random_string();
     submit_form({
-	title => $title,
-	start_date => $start_date,
-	start_time => '12pm',
-	end_date => $start_date,
-	end_time => '1 pm',
-	repeats => $interval,
-	repeat_ends => Type_Date()->to_string($repeat_end),
+        title => $title,
+        start_date => $start_date,
+        start_time => '12pm',
+        end_date => $start_date,
+        end_time => '1 pm',
+        repeats => $interval,
+        repeat_ends => Type_Date()->to_string($repeat_end),
     });
     my($count) = $repeats->{$interval};
     my($pat) = qr(@{[join('.*', map($title, 1 .. $count))]})s;
     verify_text($pat);
     verify_no_text(qr{$pat.*$title});
     foreach my $i (reverse(0 .. $count - 1)) {
-	follow_link(
-	    $title . ($i ? '_' . $i : ''),
-	    'delete',
-	);
-	submit_form('delete');
+        follow_link(
+            $title . ($i ? '_' . $i : ''),
+            'delete',
+        );
+        submit_form('delete');
     }
     verify_no_text($title);
 };
@@ -156,17 +156,17 @@ my($daysevents) = {
 my($titles) = [];
 foreach my $devk (sort(keys(%{$daysevents}))) {
     foreach my $d (@{$daysevents->{$devk}}) {
-	my($title) = random_string();
+        my($title) = random_string();
         push(@$titles, $title);
-	my($st, $et) = @$d;
+        my($st, $et) = @$d;
         follow_menu_link('add_event');
-	submit_form({
-	   title => $title,
-	   start_date => $devk,
-	   start_time => $st,
-	   end_date => $devk,
-	   end_time => $et,
-	});
+        submit_form({
+           title => $title,
+           start_date => $devk,
+           start_time => $st,
+           end_date => $devk,
+           end_time => $et,
+        });
     };
 };
 # note that back is actually going to newer event -- DEPENDS ON SORTING
@@ -176,8 +176,8 @@ foreach my $dir (qw(next back)) {
     my($not_first) = 0;
     follow_menu_link('calendar');
     foreach my $title ($dir eq 'next' ? reverse(@$titles) : @$titles) {
-	follow_link($not_first++ ? qr{^$dir$}i : $title);
-	verify_text($title);
+        follow_link($not_first++ ? qr{^$dir$}i : $title);
+        verify_text($title);
     }
     return;
 }
@@ -185,7 +185,7 @@ foreach my $title (@$titles) {
     follow_link('calendar$');
 #TODO: Need to test navigating through months
     submit_form(refresh => {
-	_anon => 'Feb 2010',
+        _anon => 'Feb 2010',
     }) unless text_exists($title);
     follow_link($title);
     follow_menu_link('delete');

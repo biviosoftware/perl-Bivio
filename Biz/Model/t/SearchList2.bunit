@@ -12,7 +12,7 @@ foreach my $x (
     ['/not-found.gif', $tag],
 ) {
     model('RealmFile')->create_or_update_with_content({
-	path => $x->[0],
+        path => $x->[0],
     }, \($x->[1]));
 }
 my($mail_body) = 'some text that is not short, but not long.';
@@ -27,36 +27,36 @@ EOF
 commit();
 [
     load_all => [
-	[{search => $tag}] => sub {
-	    my($o) = shift->get('object');
-	    assert_equals(5, $o->get_result_set_size);
-	    $o->do_rows(sub {
-		my($p, $e, $t, $w) = $o->get(qw(
-	            RealmFile.path
-	            result_excerpt
-		    result_title
-		    result_author
-		));
-		assert_not_equals(qr{not-found}i, $p);
-		if ($p eq '/file.txt') {
-		    assert_equals(46, scalar(@{[split(' ', $e)]}));
-		    assert_equals('file.txt', $t);
-		}
-		elsif ($p =~ /mail/i) {
-		    assert_equals($mail_body, $e);
-		    assert_equals('Jane Doe', $w);
-		}
-		else {
-		    assert_equals(qr{xapian_demo}i, $w);
-		    foreach my $x (qw(html wiki blog)) {
-			next unless $p =~ /$x/i;
-			assert_equals("${x}_t", $t);
-			assert_equals($tag, $e);
-		    }
-		}
-		return 1;
-	    });
-	    return 1;
-	},
+        [{search => $tag}] => sub {
+            my($o) = shift->get('object');
+            assert_equals(5, $o->get_result_set_size);
+            $o->do_rows(sub {
+                my($p, $e, $t, $w) = $o->get(qw(
+                    RealmFile.path
+                    result_excerpt
+                    result_title
+                    result_author
+                ));
+                assert_not_equals(qr{not-found}i, $p);
+                if ($p eq '/file.txt') {
+                    assert_equals(46, scalar(@{[split(' ', $e)]}));
+                    assert_equals('file.txt', $t);
+                }
+                elsif ($p =~ /mail/i) {
+                    assert_equals($mail_body, $e);
+                    assert_equals('Jane Doe', $w);
+                }
+                else {
+                    assert_equals(qr{xapian_demo}i, $w);
+                    foreach my $x (qw(html wiki blog)) {
+                        next unless $p =~ /$x/i;
+                        assert_equals("${x}_t", $t);
+                        assert_equals($tag, $e);
+                    }
+                }
+                return 1;
+            });
+            return 1;
+        },
     ],
 ];

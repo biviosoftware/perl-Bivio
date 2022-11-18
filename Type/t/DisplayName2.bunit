@@ -3,13 +3,13 @@
 Type();
 [
     from_names => [
-	[] => DIE(),
+        [] => DIE(),
         ['last'] => 'last',
         ['', 'last'] => 'last',
         ['first', ''] => 'first',
         ['first', 'last'] => 'first last',
         ['first', '', 'last'] => 'first last',
         ['first', 'middle', 'last'] => 'first middle last',
-	['first', 'middle', 'last', 'other'] => DIE(),
+        ['first', 'middle', 'last', 'other'] => DIE(),
     ],
 ];

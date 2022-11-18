@@ -8,10 +8,10 @@ use Bivio::Base 'XHTMLWidget.Tag';
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	tag => 'DIV',
-	class => 'wiki',
-	value => '',
-	tag_if_empty => 0,
+        tag => 'DIV',
+        class => 'wiki',
+        value => '',
+        tag_if_empty => 0,
     );
     return shift->SUPER::initialize(@_);
 }

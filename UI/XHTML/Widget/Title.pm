@@ -10,8 +10,8 @@ sub initialize {
     my($self) = @_;
     $self->initialize_attr(tag => 'title');
     $self->initialize_attr(value => Join({
-	values => $self->get('values'),
-	join_separator => $self->get_or_default(separator => ' - '),
+        values => $self->get('values'),
+        join_separator => $self->get_or_default(separator => ' - '),
     }));
     return shift->SUPER::initialize(@_);
 }

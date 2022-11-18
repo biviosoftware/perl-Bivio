@@ -28,13 +28,13 @@ sub can_be_zero {
 sub from_literal {
     my($res, $err) = shift->SUPER::from_literal(@_);
     if ($err) {
-	my($v) = @_;
-	if ($v =~ /^\s*(?:y|yes|t|true|on)\s*$/i) {
-	    $res = 1;
-	}
-	elsif ($v =~ /^\s*(?:n|no|f|false|off)\s*$/i) {
-	    $res = 0;
-	}
+        my($v) = @_;
+        if ($v =~ /^\s*(?:y|yes|t|true|on)\s*$/i) {
+            $res = 1;
+        }
+        elsif ($v =~ /^\s*(?:n|no|f|false|off)\s*$/i) {
+            $res = 0;
+        }
     }
     # Booleans are never non-null.  Always returns 0 or 1 or error.
     return defined($res) ? $res : $err ? ($res, $err) : 0;

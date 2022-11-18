@@ -3,10 +3,10 @@
 Type();
 [
     class() => [
-	from_literal => [
-	    a => 'a',
-	    '.' => FILE_NAME(),
-	    '.a' => FILE_NAME_LEADING_DOT(),
-	],
+        from_literal => [
+            a => 'a',
+            '.' => FILE_NAME(),
+            '.a' => FILE_NAME_LEADING_DOT(),
+        ],
     ],
 ];

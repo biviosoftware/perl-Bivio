@@ -11,13 +11,13 @@ my($_BASE);
 sub current {
     my($proto, $req) = @_;
     return $req->get_if_exists_else_put($proto->package_name => sub {
-	return (
-	    $_BASE ||= Digest::MD5::md5_hex(
-		b_use('Bivio.BConf')->bconf_host_name
-	            . b_use('Type.DateTime')->now_as_file_name
-		    . $$,
-	    ),
-	) . sprintf('%08x', ++$_COUNT);
+        return (
+            $_BASE ||= Digest::MD5::md5_hex(
+                b_use('Bivio.BConf')->bconf_host_name
+                    . b_use('Type.DateTime')->now_as_file_name
+                    . $$,
+            ),
+        ) . sprintf('%08x', ++$_COUNT);
     });
 }
 

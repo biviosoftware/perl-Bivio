@@ -11,7 +11,7 @@ sub execute {
     my($proto, $req) = @_;
     my($reply) = $req->get('reply');
     $reply->set_http_status(Bivio::Ext::ApacheConstants->FORBIDDEN)
-	if $reply->can('set_http_status');
+        if $reply->can('set_http_status');
     $reply->set_output(\(<<'EOF'));
 <!DOCTYPE html>
 <html><head>

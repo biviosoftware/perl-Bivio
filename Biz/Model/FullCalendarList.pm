@@ -10,24 +10,24 @@ b_use('IO.ClassLoaderAUTOLOAD');
 sub as_type_values {
     my($self) = @_;
     return $self->map_rows(sub {
-	my($it) = @_;
+        my($it) = @_;
         return {
-	    className => Bivio_TypeValue()->new(Type_Line(), 'b_full_calendar_event'),
-	    allDay => Bivio_TypeValue()->new(Type_Boolean(), Type_Boolean()->FALSE),
+            className => Bivio_TypeValue()->new(Type_Line(), 'b_full_calendar_event'),
+            allDay => Bivio_TypeValue()->new(Type_Boolean(), Type_Boolean()->FALSE),
 #TODO: calculate
-	    editable => Bivio_TypeValue()->new(Type_Boolean(), Type_Boolean()->TRUE),
-	    map(
-		($_->[1] => Bivio_TypeValue()->new(
-		    $it->get_field_type($_->[0]),
-		    $it->get($_->[0]),
-		)),
-		[qw(CalendarEvent.calendar_event_id id)],
-		[qw(RealmOwner.display_name title)],
-		[qw(dtstart_tz start)],
-		[qw(dtend_tz end)],
+            editable => Bivio_TypeValue()->new(Type_Boolean(), Type_Boolean()->TRUE),
+            map(
+                ($_->[1] => Bivio_TypeValue()->new(
+                    $it->get_field_type($_->[0]),
+                    $it->get($_->[0]),
+                )),
+                [qw(CalendarEvent.calendar_event_id id)],
+                [qw(RealmOwner.display_name title)],
+                [qw(dtstart_tz start)],
+                [qw(dtend_tz end)],
 #TODO: url, description
-	    ),
-	};
+            ),
+        };
     });
 }
 
@@ -42,19 +42,19 @@ sub internal_initialize {
 sub internal_prepare_statement {
     my($self, $stmt, $query) = @_;
     my($q) = {map(
-	($_ => Type_DateTime()->from_unix($query->get("full_calendar_$_"))),
-	qw(start end),
+        ($_ => Type_DateTime()->from_unix($query->get("full_calendar_$_"))),
+        qw(start end),
     )};
     $stmt->where(
-	$stmt->OR(
-	    map(
-		$stmt->AND(
-		    $stmt->GTE("CalendarEvent.$_", [$q->{start}]),
-		    $stmt->LTE("CalendarEvent.$_", [$q->{end}]),
-		),
-		qw(dtstart dtend),
-	    ),
-	),
+        $stmt->OR(
+            map(
+                $stmt->AND(
+                    $stmt->GTE("CalendarEvent.$_", [$q->{start}]),
+                    $stmt->LTE("CalendarEvent.$_", [$q->{end}]),
+                ),
+                qw(dtstart dtend),
+            ),
+        ),
     );
     return shift->SUPER::internal_prepare_statement(@_);
 }

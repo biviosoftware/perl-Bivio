@@ -12,7 +12,7 @@ sub REGEX {
 sub unsafe_from_path_info {
     my($proto, $req) = @_;
     return undef
-	unless my $p = $req->unsafe_get('path_info');
+        unless my $p = $req->unsafe_get('path_info');
     $p =~ s{^/+}{};
     return ($proto->from_literal($p))[0];
 }

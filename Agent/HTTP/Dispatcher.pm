@@ -31,30 +31,30 @@ sub handler {
     my($r) = @_;
     _trace('begin: ', $r->uri) if $_TRACE;
     $r->set_handlers('PerlCleanupHandler', [sub {
-	my($req) = $_REQUEST->get_current;
-	if ($req) {
-	    b_warn(
-		'[', $req->unsafe_get('client_addr'),
-		'] request aborted, rolling back ',
-		$req->unsafe_get('task_id'),
-	    );
-	    $_T->rollback($req);
-	    $_REQUEST->clear_current;
-	}
-	else {
-	    $_JD->execute_queue;
-	}
-	return $_OK;
+        my($req) = $_REQUEST->get_current;
+        if ($req) {
+            b_warn(
+                '[', $req->unsafe_get('client_addr'),
+                '] request aborted, rolling back ',
+                $req->unsafe_get('task_id'),
+            );
+            $_T->rollback($req);
+            $_REQUEST->clear_current;
+        }
+        else {
+            $_JD->execute_queue;
+        }
+        return $_OK;
     }]);
     my($die) = $_SELF->process_request($r);
     if ($die && !$die->get('code')->equals_by_name('CLIENT_REDIRECT_TASK')) {
-	my($c) = $r->connection();
-	my($u) = $c && $c->user() || 'ANONYMOUS';
+        my($c) = $r->connection();
+        my($u) = $c && $c->user() || 'ANONYMOUS';
         # Subtle, but in an error situation (possibly) so check $c since
         # client_addr depends on it.
-	my($ip) = $c && $_REQUEST->client_addr($r) || '0.0.0.0';
-	$r->log_reason($ip.' '.$u.' '.$die->as_string);
-	_trace($die) if $_TRACE;
+        my($ip) = $c && $_REQUEST->client_addr($r) || '0.0.0.0';
+        $r->log_reason($ip.' '.$u.' '.$die->as_string);
+        _trace($die) if $_TRACE;
     }
     _trace('reply: ', $_REPLY->die_to_http_code($die, $r)) if $_TRACE;
     return $_REPLY->die_to_http_code($die, $r);
@@ -63,7 +63,7 @@ sub handler {
 sub initialize {
     my($proto) = @_;
     return
-	if $_SELF;
+        if $_SELF;
     $_SELF = $proto->new;
     $_SELF->SUPER::initialize;
     # Avoids import problems

@@ -15,16 +15,16 @@ EOF
 
 sub delete_by_regexp {
     my($self, $regexp, $realm_type) = shift->name_args([
-	'Regexp',
-	['Auth.RealmType', undef, undef],
+        'Regexp',
+        ['Auth.RealmType', undef, undef],
     ], \@_);
     $self->model('RealmOwner')->do_iterate(sub {
         my($it) = @_;
-	$it->unauth_delete
-	    if !$it->is_default
-	    && (!$realm_type || $it->get('realm_type') == $realm_type)
-	    && $it->get('name') =~ $regexp;
-	return 1;
+        $it->unauth_delete
+            if !$it->is_default
+            && (!$realm_type || $it->get('realm_type') == $realm_type)
+            && $it->get('name') =~ $regexp;
+        return 1;
     }, 'name');
     return;
 }

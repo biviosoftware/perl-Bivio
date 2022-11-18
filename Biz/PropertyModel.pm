@@ -14,8 +14,8 @@ b_use('Bivio.Cache')->init;
 sub assert_properties {
     my($self, $values) = @_;
     foreach my $k (@{$self->get_info('column_names')}) {
-	$self->die($k, ': missing column')
-	    unless exists($values->{$k});
+        $self->die($k, ': missing column')
+            unless exists($values->{$k});
     }
     return $values;
 }
@@ -25,19 +25,19 @@ sub cascade_delete {
     my($support) = $self->internal_get_sql_support;
     # DEPRECATED: cascade_delete_children is not used anywhere
     my($method) = $support->get('cascade_delete_children') ? 'cascade_delete'
-	: 'delete_all';
+        : 'delete_all';
     my($properties) = $query || $self->get_shallow_copy;
     foreach my $c (@{$support->get_children}) {
-	my($child) = $self->new_other($c->[0]);
-	my($key_map) = $c->[1];
-	my($child_query) = {
-	    map({
-		my($ck) = $key_map->{$_};
-		exists($properties->{$ck}) ? ($_ => $properties->{$ck}) : ();
-	    } keys(%$key_map)),
-	};
-	$child->$method($child_query)
-	    if %$child_query;
+        my($child) = $self->new_other($c->[0]);
+        my($key_map) = $c->[1];
+        my($child_query) = {
+            map({
+                my($ck) = $key_map->{$_};
+                exists($properties->{$ck}) ? ($_ => $properties->{$ck}) : ();
+            } keys(%$key_map)),
+        };
+        $child->$method($child_query)
+            if %$child_query;
     }
     $query ? $self->delete_all($query) : $self->delete;
     return;
@@ -54,7 +54,7 @@ sub create {
     # Make sure all columns are defined
     my($n);
     foreach $n (@{$sql_support->get('column_names')}) {
-	$new_values->{$n} = undef unless exists($new_values->{$n});
+        $new_values->{$n} = undef unless exists($new_values->{$n});
     }
     $sql_support->create($new_values, $self);
     $self->internal_load_properties($new_values);
@@ -74,7 +74,7 @@ sub create_from_literals {
     # are defaulted by L<create|"create"> are not validated.
     $values = _dup($values);
     while (my($k, $v) = each(%$values)) {
-	$values->{$k} = $self->get_field_type($k)->from_literal_or_die($v);
+        $values->{$k} = $self->get_field_type($k)->from_literal_or_die($v);
     }
     return $self->create($values);
 }
@@ -121,17 +121,17 @@ sub delete {
 sub delete_all {
     my($self, $query) = @_;
     Bivio::IO::Alert->warn_deprecated('missing query args')
-	unless $query && %$query;
+        unless $query && %$query;
     # Deletes all the models of this type with the specified (possibly
     # partial key) query. Returns the number of models deleted.
     $self = $self->new
-	unless ref($self);
+        unless ref($self);
 # Should not be a lot except in test case
     $query = _add_auth_id($self, $query);
     $self->internal_data_modification(delete_all => $query);
     my($rows) = $self->internal_get_sql_support->delete_all(
-	$self->internal_prepare_query($query),
-	$self,
+        $self->internal_prepare_query($query),
+        $self,
     );
     _trace($rows, ' ', ref($self)) if $_TRACE;
     return $rows;
@@ -188,7 +188,7 @@ sub execute_unauth_load_this {
     # See L<unauth_load_this_from_request|"unauth_load_this_from_request">
     my($self) = $proto->new($req);
     $self->throw_die('MODEL_NOT_FOUND')
-	unless $self->unauth_load_this_from_request;
+        unless $self->unauth_load_this_from_request;
     return 0;
 }
 
@@ -197,7 +197,7 @@ sub format_query_for_parent {
     # Query string used to identify this instance using "parent" key,
     # so can be used with I<load_parent_from_request>.
     return Bivio::SQL::ListQuery->format_uri_for_this_as_parent(
-	    $self->internal_get_sql_support, $self->internal_get);
+            $self->internal_get_sql_support, $self->internal_get);
 }
 
 sub format_query_for_this {
@@ -205,7 +205,7 @@ sub format_query_for_this {
     # Query string used to identify this instance.  If supplied I<load_query>,
     # must contain primary keys for the model.
     return Bivio::SQL::ListQuery->format_uri_for_this(
-	    $self->internal_get_sql_support, $query || $self->internal_get);
+            $self->internal_get_sql_support, $query || $self->internal_get);
 }
 
 sub get_keys {
@@ -237,15 +237,15 @@ sub generate_unique_for_field {
     my($value);
     my($i) = 0;
     until ($value) {
-	b_die($type, ': infinite loop generating value')
-	    if ++$i > 10;
-	my($v) = $type->$generate_method;
-	$value = ref($check_method) eq 'CODE'
-	    ? $check_method->($v)
-	    : $self->$check_method({
-		$field => $v,
-	    }) ? undef
-	    : $v;
+        b_die($type, ': infinite loop generating value')
+            if ++$i > 10;
+        my($v) = $type->$generate_method;
+        $value = ref($check_method) eq 'CODE'
+            ? $check_method->($v)
+            : $self->$check_method({
+                $field => $v,
+            }) ? undef
+            : $v;
     }
     return $value;
 }
@@ -253,7 +253,7 @@ sub generate_unique_for_field {
 sub internal_data_modification {
     my($self, $op, $query) = @_;
     $_HANDLERS->call_fifo(
-	handle_property_model_modification => [$self, $op, {%{$query || {}}}]);
+        handle_property_model_modification => [$self, $op, {%{$query || {}}}]);
     return;
 }
 
@@ -265,10 +265,10 @@ sub internal_get_target {
     # If values is undef, internal_get is called on the model.
     $model ||= $self;
     return (
-	ref($self) || $self,
-	$model,
-	$model_prefix || '',
-	$values || $model->internal_get,
+        ref($self) || $self,
+        $model,
+        $model_prefix || '',
+        $values || $model->internal_get,
     );
 }
 
@@ -294,10 +294,10 @@ sub internal_load_properties {
     # Loads model with values as properties.  DOES NOT MAKE A COPY of values.
     $self->internal_clear_model_cache;
     $self->assert_properties($values)
-	unless __PACKAGE__ eq (caller)[0];
+        unless __PACKAGE__ eq (caller)[0];
     $self->internal_put($values);
     $self->put_on_request
-	unless $ephemeral || $self->is_ephemeral;
+        unless $ephemeral || $self->is_ephemeral;
     return $self;
 }
 
@@ -322,7 +322,7 @@ sub internal_unload {
     my($self) = @_;
     # Clears the model state, if loaded.  Deletes from request.
     return $self
-	unless $self->is_loaded;
+        unless $self->is_loaded;
     _unload($self, 1);
     return $self;
 }
@@ -361,9 +361,9 @@ sub iterate_start {
     #
     # B<Deprecated form returns the iterator.>
     $self->throw_die('DIE', 'no auth_id')
-	unless $self->get_request->get('auth_id');
+        unless $self->get_request->get('auth_id');
     return $self->unauth_iterate_start(
-	$order_by, _add_auth_id($self, $query || {}));
+        $order_by, _add_auth_id($self, $query || {}));
 }
 
 sub load {
@@ -378,7 +378,7 @@ sub load {
     #
     # B<DEPRECATED>
     return $self
-	if $self->unsafe_load(@_);
+        if $self->unsafe_load(@_);
     _die_not_found($self, \@_, caller);
     # DOES NOT RETURN
 }
@@ -387,9 +387,9 @@ sub load_for_auth_user {
     my($self) = @_;
     # Loads the model for auth_user.
     return $self->unauth_load_or_die({
-	realm_id => (
-	    $self->get_request->get('auth_user') || $self->die('no auth_user')
-	)->get('realm_id'),
+        realm_id => (
+            $self->get_request->get('auth_user') || $self->die('no auth_user')
+        )->get('realm_id'),
     });
 }
 
@@ -397,12 +397,12 @@ sub load_from_properties {
     my($self, $values) = @_;
     my($support) = $self->internal_get_sql_support;
     return $self->internal_load_properties(
-	$self->assert_properties({
-	    map({
-		my($cn) = $support->extract_column_name($_);
-		$support->has_columns($cn) ? ($cn => $values->{$_}) : ();
-	    } keys(%$values)),
-	}),
+        $self->assert_properties({
+            map({
+                my($cn) = $support->extract_column_name($_);
+                $support->has_columns($cn) ? ($cn => $values->{$_}) : ();
+            } keys(%$values)),
+        }),
     );
 }
 
@@ -414,8 +414,8 @@ sub load_parent_from_request {
     # See also L<unsafe_load_parent_from_request|"unsafe_load_parent_from_request">.
     my($q) = _parse_query($self, 1);
     $self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
-	    {message => 'see previous warning, too'}, caller)
-	    unless $q;
+            {message => 'see previous warning, too'}, caller)
+            unless $q;
     return $self->load($q);
 }
 
@@ -427,8 +427,8 @@ sub load_this_from_request {
     # See also L<unsafe_load_this_from_request|"unsafe_load_this_from_request">.
     my($q) = _parse_query($self, 0);
     $self->throw_die(Bivio::DieCode::CORRUPT_QUERY(),
-	    {message => 'see previous warning, too'}, caller)
-	    unless $q;
+            {message => 'see previous warning, too'}, caller)
+            unless $q;
     return $self->load($q);
 }
 
@@ -436,13 +436,13 @@ sub merge_initialize_info {
     my($proto, $parent, $child) = @_;
     Bivio::Die->die('columns, if defined, must be a hash_ref')
         unless ref($parent->{columns} || {}) eq 'HASH'
-	    && ref($child->{columns} || {}) eq 'HASH';
+            && ref($child->{columns} || {}) eq 'HASH';
     return shift->SUPER::merge_initialize_info($parent, {
-	%$child,
-	columns => {
-	    %{delete($parent->{columns}) || {}},
-	    %{$child->{columns} || {}},
-	},
+        %$child,
+        columns => {
+            %{delete($parent->{columns}) || {}},
+            %{$child->{columns} || {}},
+        },
     });
 }
 
@@ -456,9 +456,9 @@ sub new {
 sub register_child_model {
     my($self, $class) = @_;
     return
-	if $self->simple_package_name eq $class;
+        if $self->simple_package_name eq $class;
     return shift->internal_get_sql_support_no_assert
-	->register_child_model(@_);
+        ->register_child_model(@_);
 }
 
 sub register_handler {
@@ -477,8 +477,8 @@ sub test_unauth_delete_all {
     $self->req->assert_test;
     $self->internal_data_modification(delete_all => $query);
     my($res) = $self->internal_get_sql_support->delete_all(
-	$self->internal_prepare_query(_dup($query)),
-	$self,
+        $self->internal_prepare_query(_dup($query)),
+        $self,
     );
     return $res;
 }
@@ -493,9 +493,9 @@ sub unauth_create_or_update {
     #
     # See also L<create_or_update|"create_or_update">.
     my($pk_values) = _get_primary_keys($self, $new_values)
-	|| $self->internal_unique_load_values($new_values);
+        || $self->internal_unique_load_values($new_values);
     return $pk_values && $self->unauth_load($pk_values)
-	    ? $self->update($new_values) : $self->create($new_values);
+            ? $self->update($new_values) : $self->create($new_values);
 }
 
 sub unauth_create_or_update_keys {
@@ -507,23 +507,23 @@ sub unauth_create_or_update_keys {
     # I<load_pkeys> and not the current model.
 
     return $self->unauth_create_or_update($values)
-	unless grep({exists($values->{$_})}
-	    @{$self->get_info('primary_key_names')});
+        unless grep({exists($values->{$_})}
+            @{$self->get_info('primary_key_names')});
 
     $self->unauth_load({
-	map({$_ => exists($load_pkeys->{$_})
-	    ? $load_pkeys->{$_}
-	    : $values->{$_}
-	} @{$self->get_info('primary_key_names')}),
+        map({$_ => exists($load_pkeys->{$_})
+            ? $load_pkeys->{$_}
+            : $values->{$_}
+        } @{$self->get_info('primary_key_names')}),
     })
-	unless $load_pkeys;
+        unless $load_pkeys;
 
     if ($self->is_loaded()) {
-	foreach my $field (@{$self->get_info('column_names')}) {
-	    $values->{$field} = $self->get($field)
-		unless exists($values->{field});
-	}
-	$self->delete();
+        foreach my $field (@{$self->get_info('column_names')}) {
+            $values->{$field} = $self->get($field)
+                unless exists($values->{field});
+        }
+        $self->delete();
     }
 
     return $self->create($values);
@@ -532,11 +532,11 @@ sub unauth_create_or_update_keys {
 sub unauth_create_unless_exists {
     my($self, $values) = @_;
     my($pk_values) = _get_primary_keys($self, $values)
-	|| $self->internal_unique_load_values($values);
+        || $self->internal_unique_load_values($values);
     b_die($values, ': no primary key values')
-	unless $pk_values;
+        unless $pk_values;
     return $self
-	if $self->unauth_load($pk_values);
+        if $self->unauth_load($pk_values);
     return $self->create($values);
 }
 
@@ -552,12 +552,12 @@ sub unauth_delete {
     # Note: I<query> may be modified by this method.
     $load_args ||= $self->internal_get;
     $self = $self->new()
-	unless ref($self);
+        unless ref($self);
     $self->die('load_args or model must not be empty')
-	unless %$load_args;
+        unless %$load_args;
     $self->internal_data_modification(delete => $load_args);
     my($res) = $self->internal_get_sql_support->delete(
-	$self->internal_prepare_query({%$load_args}));
+        $self->internal_prepare_query({%$load_args}));
     return $res;
 }
 
@@ -565,12 +565,12 @@ sub unauth_delete_by_realm_id {
     my($self, $field, $auth_id) = @_;
     _assert_realm_id_field($self, $field);
     $self->new->do_iterate(
-	sub {
-	    shift->unauth_delete;
-	    return 1;
-	},
-	'unauth_iterate_start',
-	{$field => $auth_id},
+        sub {
+            shift->unauth_delete;
+            return 1;
+        },
+        'unauth_iterate_start',
+        {$field => $auth_id},
     );
     return;
 }
@@ -594,11 +594,11 @@ sub unauth_iterate_start {
     #
     # B<Deprecated form returns the iterator.>
     return $self->internal_put_iterator(
-	$self->internal_get_sql_support->iterate_start(
-	    $self,
-	    $order_by,
-	    $self->internal_prepare_query($query),
-	),
+        $self->internal_get_sql_support->iterate_start(
+            $self,
+            $order_by,
+            $self->internal_prepare_query($query),
+        ),
     );
 }
 
@@ -623,8 +623,8 @@ sub unauth_load {
     # B<DEPRECATED>
     # Don't bother checking query.  Will kick back if empty.
     my($values) = $self->internal_get_sql_support->unsafe_load(
-	$self->internal_prepare_query(_dup($query)),
-	$self,
+        $self->internal_prepare_query(_dup($query)),
+        $self,
     );
     return $values ? _load($self, $values) : _unload($self, 1);
 }
@@ -675,10 +675,10 @@ sub unauth_rows_exist {
     my($self, $query) = @_;
     my($res) = 0;
     $self->do_iterate(
-	sub {$res++},
-	'unauth_iterate_start',
-	$self->get_info('primary_key_names')->[0],
-	$query,
+        sub {$res++},
+        'unauth_iterate_start',
+        $self->get_info('primary_key_names')->[0],
+        $query,
     );
     return $res;
 }
@@ -735,12 +735,12 @@ sub update {
     # Returns I<self>.
     $new_values = _dup($new_values);
     b_die('model is not loaded')
-	unless $self->is_loaded;
+        unless $self->is_loaded;
     $self->internal_clear_model_cache;
     my($properties) = $self->internal_get;
     $self->internal_get_sql_support->update($properties, $new_values, $self);
     foreach my $n (keys(%$new_values)) {
-	$properties->{$n} =  $new_values->{$n};
+        $properties->{$n} =  $new_values->{$n};
     }
     $self->internal_data_modification(update => $new_values);
     return $self;
@@ -758,12 +758,12 @@ sub _add_auth_id {
     my($auth_field) = $sql_support->get('auth_id');
     # Warn if we are overriding an existing value for auth_id
     if ($auth_field) {
-	my($id) = $self->get_request->get('auth_id');
-	my($n) = $auth_field->{name};
-	Bivio::IO::Alert->warn_deprecated(
-	    $self, ": overriding $n=$query->{$n} in query with auth_id=$id",
-	    " from request.  You might need to call an unauth_* method instead"
-	) if exists($query->{$n}) && $query->{$n} ne $id;
+        my($id) = $self->get_request->get('auth_id');
+        my($n) = $auth_field->{name};
+        Bivio::IO::Alert->warn_deprecated(
+            $self, ": overriding $n=$query->{$n} in query with auth_id=$id",
+            " from request.  You might need to call an unauth_* method instead"
+        ) if exists($query->{$n}) && $query->{$n} ne $id;
 #        Bivio::Die->die() if exists($query->{$n}) && $query->{$n} ne $id;
         $query->{$n} = $id;
     }
@@ -773,18 +773,18 @@ sub _add_auth_id {
 sub _assert_realm_id_field {
     my($self, $field) = @_;
     if (my $aid = $self->internal_get_sql_support->get('auth_id')) {
-	return
-	    if $aid->{name} eq $field;
+        return
+            if $aid->{name} eq $field;
     }
     my($which) = $self;
     foreach my $sanity (0 .. 20) {
-	# dies if there's no parent
-	my($pf) = $which->get_field_info($field, 'parent_field');
-	my($pm) = $which->get_field_info($field, 'parent_model');
-	return
-	    if $pm eq 'RealmOwner'
-	    || $pf eq 'realm_id';
-	$which = $which->get_instance($pm);
+        # dies if there's no parent
+        my($pf) = $which->get_field_info($field, 'parent_field');
+        my($pm) = $which->get_field_info($field, 'parent_model');
+        return
+            if $pm eq 'RealmOwner'
+            || $pf eq 'realm_id';
+        $which = $which->get_instance($pm);
     }
     $self->die($field, ': not a RealmOwner.realm_id');
     # DOES NOT RETURN
@@ -792,9 +792,9 @@ sub _assert_realm_id_field {
 
 sub _default_order_by {
     return join(
-	',',
-	map($_->{sql_name} . ' ' . ($_->{sort_order} ? 'ASC' : 'DESC'),
-	    @{shift->get_info('primary_key')}));
+        ',',
+        map($_->{sql_name} . ' ' . ($_->{sort_order} ? 'ASC' : 'DESC'),
+            @{shift->get_info('primary_key')}));
 }
 
 sub _die_not_found {
@@ -820,7 +820,7 @@ sub _get_primary_keys {
     foreach my $pk (@{$self->get_info('primary_key_names')}) {
         unless (exists($new_values->{$pk})) {
             $have_keys = 0;
-	    _trace($pk, ': missing primary key') if $_TRACE;
+            _trace($pk, ': missing primary key') if $_TRACE;
             last;
         }
         $pk_values{$pk} = $new_values->{$pk};
@@ -831,7 +831,7 @@ sub _get_primary_keys {
 sub _iterate_params {
     my($self, $order_by, $query) = @_;
     ($order_by, $query) = (undef, $order_by)
-	if ref($order_by) eq 'HASH';
+        if ref($order_by) eq 'HASH';
     return ($self, $order_by || _default_order_by($self), _dup($query));
 }
 
@@ -855,11 +855,11 @@ sub _parse_query {
     my($list_model, $q) = $req->unsafe_get('list_model', 'query');
     # Pass a copy of the query, because it is trashed by ListQuery.
     my($query) = $list_model ? $list_model->get_query()
-	    : $q ? Bivio::SQL::ListQuery->new({
-		%$q,
-		auth_id => $req->get('auth_id'),
-		count => 1}, $support, $self)
-		    : undef;
+            : $q ? Bivio::SQL::ListQuery->new({
+                %$q,
+                auth_id => $req->get('auth_id'),
+                count => 1}, $support, $self)
+                    : undef;
     # No query is not a _query_err
     return undef unless $query;
 
@@ -867,48 +867,48 @@ sub _parse_query {
     my($key);
     my($pk_cols) = $support->get('primary_key');
     if ($want_parent) {
-	my($parent_id) = $query->get('parent_id');
-	# parent_id has some restrictions, check them
+        my($parent_id) = $query->get('parent_id');
+        # parent_id has some restrictions, check them
 #TODO: why can't we have a _query_err here.  Too many messages otherwise.
-	return undef unless $parent_id;
+        return undef unless $parent_id;
 #TODO: Need to make this work more cleanly
-	my($i) = int(@$pk_cols);
-	die('expecting one or two primary key columns for parent_id')
-		if $i > 2;
-	if ($i == 1) {
-	    $key = [$parent_id];
-	}
-	else {
+        my($i) = int(@$pk_cols);
+        die('expecting one or two primary key columns for parent_id')
+                if $i > 2;
+        if ($i == 1) {
+            $key = [$parent_id];
+        }
+        else {
 #TODO: Make this cleaner
-	    # This is a hack.  We need to add in the auth_id to the
-	    # query so that the code creating @query works.  However,
-	    # load overrides auth_id always.
-	    my($auth_col) = $support->get('auth_id');
-	    my($auth_id) = $req->get('auth_id');
-	    if ($auth_col->{name} eq $pk_cols->[0]->{name}) {
-		$key = [$auth_id, $parent_id];
-	    }
-	    elsif ($auth_col->{name} eq $pk_cols->[1]->{name}) {
-		$key = [$parent_id, $auth_id];
-	    }
-	    else {
-		# Should never happen, of course
-		die('(auth_id, parent_id) not primary key');
-	    }
-	}
+            # This is a hack.  We need to add in the auth_id to the
+            # query so that the code creating @query works.  However,
+            # load overrides auth_id always.
+            my($auth_col) = $support->get('auth_id');
+            my($auth_id) = $req->get('auth_id');
+            if ($auth_col->{name} eq $pk_cols->[0]->{name}) {
+                $key = [$auth_id, $parent_id];
+            }
+            elsif ($auth_col->{name} eq $pk_cols->[1]->{name}) {
+                $key = [$parent_id, $auth_id];
+            }
+            else {
+                # Should never happen, of course
+                die('(auth_id, parent_id) not primary key');
+            }
+        }
     }
     else {
-	$key = $query->get('this');
-	return _query_err($self, 'missing this') unless $key;
+        $key = $query->get('this');
+        return _query_err($self, 'missing this') unless $key;
     }
 
     # Create the query acceptable to load (which always adds auth_id)
     my(%query) = ();
     my($i) = 0;
     foreach my $col (@$pk_cols) {
-	return _query_err($self, "column $col->{name} is NULL")
-		unless defined($key->[$i]);
-	$query{$col->{name}} = $key->[$i++];
+        return _query_err($self, "column $col->{name} is NULL")
+                unless defined($key->[$i]);
+        $query{$col->{name}} = $key->[$i++];
     }
     return \%query;
 }
@@ -924,8 +924,8 @@ sub _register_with_parents {
     my($proto, $support) = @_;
     my($class, $parents) = $support->get(qw(class parents));
     while (my($parent, $key_map) = each(%$parents)) {
-	$proto->get_instance($parent)
-	    ->register_child_model($class, $key_map);
+        $proto->get_instance($parent)
+            ->register_child_model($class, $key_map);
     }
     return;
 }
@@ -936,7 +936,7 @@ sub _unload {
     $self->internal_clear_model_cache;
     $self->internal_put({});
     $self->delete_from_request
-	if $delete_from_request && !$self->is_ephemeral;
+        if $delete_from_request && !$self->is_ephemeral;
     return 0;
 }
 

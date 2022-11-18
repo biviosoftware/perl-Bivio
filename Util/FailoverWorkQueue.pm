@@ -35,34 +35,34 @@ sub handle_config {
 sub live_process_failover_work_items {
     my($self, $failover_host) = @_;
     b_die('must specify failover-host')
-	unless defined($failover_host);
+        unless defined($failover_host);
     my($connection) = b_use('SQL.Connection')->get_instance;
     while (1) {
-	my($statement) = $connection->execute(
-	    'SELECT failover_work_queue_id, operation, file_name from failover_work_queue_t LIMIT ?',
-	    [$_CFG->{work_items_per_run}]
-	);
-	my($file_names) = [];
-	while (my $rows = $statement->fetchrow_hashref) {
-	    my($sth) = $connection->execute(
-		'delete from failover_work_queue_t '
-		    . ' WHERE entry_id = ?',
-		[$rows->{entry_id}]);
-	    push(@$file_names, $rows->{file_name}); 
-	}
-	if (@$file_names == 0) {
-	     _trace('nothing to do, retrying in  ', $_CFG->{idle_sleep_seconds}, ' seconds');
-	    sleep($_CFG->{idle_sleep_seconds});
-	    next;
-	}
-	_trace($file_names);
-	if (_synced_files($self, $file_names, $failover_host)) {
-	    $connection->commit;
-	}
-	else {
-	    _trace('rsync failed, retrying in ', $_CFG->{retry_sleep_seconds}, ' seconds');
-	    sleep($_CFG->{retry_sleep_seconds});
-	}
+        my($statement) = $connection->execute(
+            'SELECT failover_work_queue_id, operation, file_name from failover_work_queue_t LIMIT ?',
+            [$_CFG->{work_items_per_run}]
+        );
+        my($file_names) = [];
+        while (my $rows = $statement->fetchrow_hashref) {
+            my($sth) = $connection->execute(
+                'delete from failover_work_queue_t '
+                    . ' WHERE entry_id = ?',
+                [$rows->{entry_id}]);
+            push(@$file_names, $rows->{file_name}); 
+        }
+        if (@$file_names == 0) {
+             _trace('nothing to do, retrying in  ', $_CFG->{idle_sleep_seconds}, ' seconds');
+            sleep($_CFG->{idle_sleep_seconds});
+            next;
+        }
+        _trace($file_names);
+        if (_synced_files($self, $file_names, $failover_host)) {
+            $connection->commit;
+        }
+        else {
+            _trace('rsync failed, retrying in ', $_CFG->{retry_sleep_seconds}, ' seconds');
+            sleep($_CFG->{retry_sleep_seconds});
+        }
     }
     return;    
 }
@@ -70,9 +70,9 @@ sub live_process_failover_work_items {
 sub _get_longest_common_prefix {
     my($prefix, @strings) = @_;
     foreach my $string (@strings) {
-	chop($prefix)
-	    until ($string =~ /^$prefix/);
-    }	
+        chop($prefix)
+            until ($string =~ /^$prefix/);
+    }        
     return $prefix;
 }
 
@@ -83,28 +83,28 @@ sub _synced_files {
     $prefix =~ s/[^\/]*$//;
     my(@include_options);
     foreach my $file_name (@$file_names) {
-	$file_name =~ s/^$prefix//;
-	push(@include_options, '--include', $file_name);	
-    }	
+        $file_name =~ s/^$prefix//;
+        push(@include_options, '--include', $file_name);        
+    }        
     my($copied);
     $_D->catch_quietly(
-	sub {
-	    $copied = $self->piped_exec([
-		'rsync',
-		'-avzlSr',
-		'--delete',
-		@include_options,
-		'--include',
-		'*/',
-		'--exclude',
-		'*',
-		$prefix,
-		$failover_host
-		. ':'
-		. $prefix
-	    ]);	
-	    return;
-	});
+        sub {
+            $copied = $self->piped_exec([
+                'rsync',
+                '-avzlSr',
+                '--delete',
+                @include_options,
+                '--include',
+                '*/',
+                '--exclude',
+                '*',
+                $prefix,
+                $failover_host
+                . ':'
+                . $prefix
+            ]);        
+            return;
+        });
     b_debug($$copied);
     _trace($$copied);
     return defined($copied);

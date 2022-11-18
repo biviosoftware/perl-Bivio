@@ -28,10 +28,10 @@ sub zip_codes_by_proximity {
     return $res unless $search_lat_lon;
 
     foreach my $z (map(_zip5($_), @$search_zip_codes)) {
-	my($lat_lon) = $map->{$z};
-	push(@$res, [$z, @$lat_lon,
-	    _great_circle_distance(@$search_lat_lon, @$lat_lon)])
-	    if $lat_lon;
+        my($lat_lon) = $map->{$z};
+        push(@$res, [$z, @$lat_lon,
+            _great_circle_distance(@$search_lat_lon, @$lat_lon)])
+            if $lat_lon;
     }
     @$res = sort({$a->[3] <=> $b->[3]} @$res);
     return $res;
@@ -40,7 +40,7 @@ sub zip_codes_by_proximity {
 sub _great_circle_distance {
     my($lon1, $lat1, $lon2, $lat2) = map($_ * $_PI_180, @_);
     my($dist) = sin(($lat2 - $lat1) / 2.0) ** 2
-	+ cos($lat1) * cos($lat2) * sin(($lon2 - $lon1) / 2.0) ** 2;
+        + cos($lat1) * cos($lat2) * sin(($lon2 - $lon1) / 2.0) ** 2;
     return 7912 * atan2(sqrt($dist), sqrt(1 - $dist));
 }
 

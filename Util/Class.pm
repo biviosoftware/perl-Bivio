@@ -23,8 +23,8 @@ sub u_find_all {
     my($self, $class) = @_;
     $class =~ s{-|::}{/}g;
     return [grep(
-	-f $_,
-	map("$_/$class.pm", @INC),
+        -f $_,
+        map("$_/$class.pm", @INC),
     )];
 }
 
@@ -33,41 +33,41 @@ sub u_find_all_duplicates {
     my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     my($modules) = {};
     foreach my $dir (@INC) {
-	next
-	    if $dir eq '.';
-	File::Find::find(
-	    {
-		no_chdir => 1,
-		follow => 0,
-		wanted => sub {
-		    my($file) = $File::Find::name;
-		    my($name) = $_;
-		    return
-			if $file =~ $vc_re
-			|| $name =~ m{(^|/)(\..*|.*~|#.*)$}
-			|| -d $file;
-		    if ($name =~ $vc_re) {
-			$File::Find::prune = 1;
-			return;
-		    }
-		    $file =~ s{^\Q$dir\E}{};
-		    push(@{$modules->{$file} ||= []}, $File::Find::name);
-		    return;
-		},
-	    },
-	    $dir,
-	);
+        next
+            if $dir eq '.';
+        File::Find::find(
+            {
+                no_chdir => 1,
+                follow => 0,
+                wanted => sub {
+                    my($file) = $File::Find::name;
+                    my($name) = $_;
+                    return
+                        if $file =~ $vc_re
+                        || $name =~ m{(^|/)(\..*|.*~|#.*)$}
+                        || -d $file;
+                    if ($name =~ $vc_re) {
+                        $File::Find::prune = 1;
+                        return;
+                    }
+                    $file =~ s{^\Q$dir\E}{};
+                    push(@{$modules->{$file} ||= []}, $File::Find::name);
+                    return;
+                },
+            },
+            $dir,
+        );
     }
     return [map(
-	@{$modules->{$_}} > 1 ? $modules->{$_} : (),
-	sort(keys(%$modules)),
+        @{$modules->{$_}} > 1 ? $modules->{$_} : (),
+        sort(keys(%$modules)),
     )];
 }
 
 sub u_info {
     my($self, $class) = @_;
     return
-	unless $_CL->unsafe_map_require($class);
+        unless $_CL->unsafe_map_require($class);
     my($pkg) = _load($class);
     my($file) = "$pkg.pm";
     $file =~ s{::}{/}g;
@@ -88,7 +88,7 @@ sub u_super {
 sub _load {
     my($class) = @_;
     return $_CL->map_require($class)
-	if $_CL->is_valid_map_class_name($class);
+        if $_CL->is_valid_map_class_name($class);
     return $_CL->simple_require($class);
 }
 

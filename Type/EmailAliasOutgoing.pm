@@ -16,13 +16,13 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = shift->SUPER::from_literal(@_);
     return ($v, $e)
-	unless $e && $e->eq_email;
+        unless $e && $e->eq_email;
     if ($value =~ s/^\@//) {
-	($v, $e) = $_DN->from_literal($value);
-	return $v ? ($proto->format_domain($v), undef) : ($v, $e);
+        ($v, $e) = $_DN->from_literal($value);
+        return $v ? ($proto->format_domain($v), undef) : ($v, $e);
     }
     return (undef, $_ERR)
-	unless $v = $proto->get_instance('RealmName')->unsafe_from_uri($value);
+        unless $v = $proto->get_instance('RealmName')->unsafe_from_uri($value);
     return ($v, undef);
 }
 

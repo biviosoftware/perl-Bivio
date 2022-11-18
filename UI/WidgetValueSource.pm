@@ -240,38 +240,38 @@ sub get_widget_value {
     my($value, $exists);
 
     unless (ref($param1)) {
-	# "Not" operation?
-	return $self->get_widget_value(@_) ? 0 : 1
-	    if $param1 eq '!';
+        # "Not" operation?
+        return $self->get_widget_value(@_) ? 0 : 1
+            if $param1 eq '!';
 
-	# If first arg begins with '->', then is a method to call.
-	# Evaluate the rest of the arguments in this context.
-	return $self->$param1(_eval_args($self, @_))
-		if $param1 =~ s/^\-\>//;
+        # If first arg begins with '->', then is a method to call.
+        # Evaluate the rest of the arguments in this context.
+        return $self->$param1(_eval_args($self, @_))
+                if $param1 =~ s/^\-\>//;
 
-	# Try to get by name after special names have been exhausted
-	($value, $exists) = $self->unsafe_get_widget_value_by_name($param1);
+        # Try to get by name after special names have been exhausted
+        ($value, $exists) = $self->unsafe_get_widget_value_by_name($param1);
     }
 
     unless ($exists) {
-	if (_can_recurse($param1)) {
-	    # Have to have params to call get_widget_value
-	    return $param1->get_widget_value(_eval_args($self, @_)) if @_;
+        if (_can_recurse($param1)) {
+            # Have to have params to call get_widget_value
+            return $param1->get_widget_value(_eval_args($self, @_)) if @_;
 
-	    # Otherwise, couldn't find it.
-	    _die($self, $param1, ': not found in WidgetValueSource ', $self);
-	}
+            # Otherwise, couldn't find it.
+            _die($self, $param1, ': not found in WidgetValueSource ', $self);
+        }
 
-	if (ref($param1) eq 'ARRAY') {
-	    $value = $self->get_widget_value(@$param1);
-	    # We fall through
-	}
-	elsif (ref($param1) eq 'CODE') {
-	    return &$param1($self, _eval_args($self, @_));
-	}
-	else {
-	    _die($self, $param1, ": not found and can't get_widget_value");
-	}
+        if (ref($param1) eq 'ARRAY') {
+            $value = $self->get_widget_value(@$param1);
+            # We fall through
+        }
+        elsif (ref($param1) eq 'CODE') {
+            return &$param1($self, _eval_args($self, @_));
+        }
+        else {
+            _die($self, $param1, ": not found and can't get_widget_value");
+        }
     }
 
     # Anything more to evaluate?
@@ -279,40 +279,40 @@ sub get_widget_value {
 
     # Have value figure out what to do with it
     unless (ref($value)) {
-	# fall through, not a reference.  Next param is formatter (see below)
+        # fall through, not a reference.  Next param is formatter (see below)
     }
     elsif ($value =~ /=/) {
-	# It's a blessed reference, must support get_widget_value
-	return $value->get_widget_value(_eval_args($self, @_));
+        # It's a blessed reference, must support get_widget_value
+        return $value->get_widget_value(_eval_args($self, @_));
     }
     else {
-	# value is not a blessed reference (array_ref, hash_ref, etc.)
-	my($param2) = shift;
-	_die($self, $param1, ': is a ref, but not passed second param')
-		    unless defined($param2);
-	# Evaluate index if an array_ref
-	$param2 = $self->get_widget_value(@$param2)
-		if ref($param2) eq 'ARRAY';
-	if (ref($value) eq 'HASH') {
-	    # key must exist
-	    _die($self, $param1, '->{', $param2, '}: does not exist')
-			unless exists($value->{$param2});
-	    $value = ($value->{$param2});
-	}
-	elsif (ref($value) eq 'ARRAY') {
+        # value is not a blessed reference (array_ref, hash_ref, etc.)
+        my($param2) = shift;
+        _die($self, $param1, ': is a ref, but not passed second param')
+                    unless defined($param2);
+        # Evaluate index if an array_ref
+        $param2 = $self->get_widget_value(@$param2)
+                if ref($param2) eq 'ARRAY';
+        if (ref($value) eq 'HASH') {
+            # key must exist
+            _die($self, $param1, '->{', $param2, '}: does not exist')
+                        unless exists($value->{$param2});
+            $value = ($value->{$param2});
+        }
+        elsif (ref($value) eq 'ARRAY') {
 #TODO: put this warning back, but fix societas notices first
-#	    Bivio::IO::Alert->warn_deprecated(
-#		$value, ': argument will eventually be resolved fully',
-#	    );
-	    # index must exist (and be a number)
-	    _die($self, $param1, '->[', $param2, ']: does not exist')
-			unless $param2 <= $#$value;
-	    $value = $value->[$param2];
-	}
-	else {
-	    _die($self, $param1, ': unsupported reference type: ',
-		    ref($value));
-	}
+#            Bivio::IO::Alert->warn_deprecated(
+#                $value, ': argument will eventually be resolved fully',
+#            );
+            # index must exist (and be a number)
+            _die($self, $param1, '->[', $param2, ']: does not exist')
+                        unless $param2 <= $#$value;
+            $value = $value->[$param2];
+        }
+        else {
+            _die($self, $param1, ': unsupported reference type: ',
+                    ref($value));
+        }
     }
 
     # Anything more to evaluate?
@@ -323,15 +323,15 @@ sub get_widget_value {
     # a widget value.
     my($param2) = shift(@_);
     return $param2->($value, _eval_args($self, @_))
-	if ref($param2) eq 'CODE';
+        if ref($param2) eq 'CODE';
 
     $param2 = $self->get_widget_value(@$param2)
-	if ref($param2) eq 'ARRAY';
+        if ref($param2) eq 'ARRAY';
     unless (_can_recurse($param2)) {
-	my($tmp) = Bivio::IO::ClassLoader->map_require($param2);
-	_die($self, $tmp, ": can't get_widget_value (not a formatter)")
-	    unless _can_recurse($tmp);
-	$param2 = $tmp;
+        my($tmp) = Bivio::IO::ClassLoader->map_require($param2);
+        _die($self, $tmp, ": can't get_widget_value (not a formatter)")
+            unless _can_recurse($tmp);
+        $param2 = $tmp;
     }
     return $param2->get_widget_value($value, _eval_args($self, @_))
 }
@@ -364,12 +364,12 @@ sub _eval_args {
     # Returns the arguments evaluated as widget values if they are
     # array_ref.
     return map {
-	ref($_) eq 'ARRAY' ? map({
-	    Bivio::IO::Alert->warn_deprecated(
-		$_, ': argument will eventually be resolved fully',
-	    ) if ref($_) eq 'ARRAY';
-	    $_;
-	} $self->get_widget_value(@$_)) : $_;
+        ref($_) eq 'ARRAY' ? map({
+            Bivio::IO::Alert->warn_deprecated(
+                $_, ': argument will eventually be resolved fully',
+            ) if ref($_) eq 'ARRAY';
+            $_;
+        } $self->get_widget_value(@$_)) : $_;
     } @_;
 }
 

@@ -27,17 +27,17 @@ sub period_in_days {
 sub validate_end_date {
     my($self, $end_date, $recurrence_end_date) = @_;
     if ($self->eq_unknown) {
-	return $_EXISTS
-	    if $recurrence_end_date;
-	return undef;
+        return $_EXISTS
+            if $recurrence_end_date;
+        return undef;
     }
     return $_NULL
-	unless $recurrence_end_date;
+        unless $recurrence_end_date;
     my($dd) = $_DT->delta_days($end_date, $recurrence_end_date);
     return $dd < 7 ? $_TOO_SHORT
 #TODO: Need to have better algorithm for inputting recurrences
-	: $dd >= 800 ? $_TOO_LONG
-	: undef,
+        : $dd >= 800 ? $_TOO_LONG
+        : undef,
 }
 
 1;

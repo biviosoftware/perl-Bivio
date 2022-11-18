@@ -3,6 +3,6 @@
 FacadeComponent();
 [
     facade_text_for_object => [
-	[Type_BunitEnum('NAME1'), req()] => 'First Description',
+        [Type_BunitEnum('NAME1'), req()] => 'First Description',
     ],
 ];

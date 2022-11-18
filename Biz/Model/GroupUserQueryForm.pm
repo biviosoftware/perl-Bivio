@@ -19,14 +19,14 @@ sub get_subscribed {
 
 sub internal_query_fields {
     return [
-	@{shift->SUPER::internal_query_fields(@_)},
-	[qw(b_privilege Text)],
+        @{shift->SUPER::internal_query_fields(@_)},
+        [qw(b_privilege Text)],
     ];
 }
 
 sub internal_roles {
     return [grep(
-	!$_->eq_mail_recipient, @{b_use('Model.RoleBaseList')->ROLES_ORDER})];
+        !$_->eq_mail_recipient, @{b_use('Model.RoleBaseList')->ROLES_ORDER})];
 }
 
 sub provide_select_choices {
@@ -42,14 +42,14 @@ sub to_html {
 sub _role_map {
     my($self) = @_;
     return {
-	map({
-	    my($v) = Model_GroupUserList()
-		->privilege_name($_->get_name, $self->req);
-	    $v ? ($v => $_) : ();
-	} @{$self->internal_roles}),
-	Model_GroupUserList()
-	    ->privilege_name('UserRealmSubscription.is_subscribed', $self->req)
-	    => $_SUBSCRIBED,
+        map({
+            my($v) = Model_GroupUserList()
+                ->privilege_name($_->get_name, $self->req);
+            $v ? ($v => $_) : ();
+        } @{$self->internal_roles}),
+        Model_GroupUserList()
+            ->privilege_name('UserRealmSubscription.is_subscribed', $self->req)
+            => $_SUBSCRIBED,
     };
 }
 

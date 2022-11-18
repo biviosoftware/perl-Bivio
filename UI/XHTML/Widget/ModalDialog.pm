@@ -13,29 +13,29 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     return shift->put_unless_exists(value => DIV(
-	DIV(
-	    DIV(
-		Join([
-		    map(
-			$self->unsafe_get($_)
-			    ? DIV(
-				$self->get($_),
-				{
-				    class => "modal-$_",
-				    ID => join('_', $self->get('id'), $_),
-				},
-			    ) : (),
-			qw(header body footer),
-		    ),
-		]),
-		'modal-content',
-	    ),
-	    'modal-dialog',
-	),
-	'modal fade',
-	{
-	    ID => $self->get('id'),
-	},
+        DIV(
+            DIV(
+                Join([
+                    map(
+                        $self->unsafe_get($_)
+                            ? DIV(
+                                $self->get($_),
+                                {
+                                    class => "modal-$_",
+                                    ID => join('_', $self->get('id'), $_),
+                                },
+                            ) : (),
+                        qw(header body footer),
+                    ),
+                ]),
+                'modal-content',
+            ),
+            'modal-dialog',
+        ),
+        'modal fade',
+        {
+            ID => $self->get('id'),
+        },
     ))->SUPER::initialize(@_);
 }
 

@@ -19,20 +19,20 @@ sub do_rows {
 
     my($t) = _assert_table($self, $table_name);
     foreach my $row (@{$t->{rows}}) {
-	my($i) = -1;
-	$index++;
+        my($i) = -1;
+        $index++;
         last unless $do_rows_callback->(
-	    {
-		_row_index => $index,
-		map({
+            {
+                _row_index => $index,
+                map({
                     my($value) = $row->[++$i];
                     defined($value)
                         ? ($_->get('text') => $value)
                         : ();
                 } @{$t->{headings}}),
-	    },
-	    $index,
-	);
+            },
+            $index,
+        );
     }
     return;
 }
@@ -45,29 +45,29 @@ sub find_row {
     # If I<table_name> not supplied, calls L<get_by_headings|"get_by_headings"> with
     # I<column_name> for table.
     my($table_name) = shift
-	if @_ > 2;
+        if @_ > 2;
     my($column_name, $column_value) = @_;
     $table_name = $self->get_by_headings(
-	defined($table_name) ? $table_name : $column_name,
+        defined($table_name) ? $table_name : $column_name,
     )->{headings}->[0]->get('text')
-	if !defined($table_name) || ref($table_name);
+        if !defined($table_name) || ref($table_name);
     my($found_row);
     $column_name = _assert_column($self, $table_name, $column_name);
     my($misses) = [];
     $self->do_rows($table_name,
-	sub {
-	    my($row) = @_;
+        sub {
+            my($row) = @_;
             # not all rows have all columns defined
             return 1 unless exists($row->{$column_name});
-	    my($t) = $row->{$column_name}->get('text');
-	    push(@$misses, $t);
-	    $found_row = $row
-		if _eq($column_value, $t);
-	    return $found_row ? 0 : 1;
-	});
+            my($t) = $row->{$column_name}->get('text');
+            push(@$misses, $t);
+            $found_row = $row
+                if _eq($column_value, $t);
+            return $found_row ? 0 : 1;
+        });
     Bivio::Die->die(
-	$column_value, ': not found in column "', $column_name,
-	'" values: ', $misses,
+        $column_value, ': not found in column "', $column_name,
+        '" values: ', $misses,
     ) unless $found_row;
     return wantarray ? ($found_row, $column_name) : $found_row;
 }
@@ -78,13 +78,13 @@ sub get_by_headings {
     my($found);
     my($tables) = $self->get_shallow_copy;
  TABLE: while (my($table, $values) = each(%$tables)) {
-	foreach my $n (@name) {
-	    next TABLE
-		unless grep(_eq($n, $_->get('text')), @{$values->{headings}});
-	}
-	Bivio::Die->die(\@name, ': too many tables matched headings')
-	    if $found;
-	$found = $values;
+        foreach my $n (@name) {
+            next TABLE
+                unless grep(_eq($n, $_->get('text')), @{$values->{headings}});
+        }
+        Bivio::Die->die(\@name, ': too many tables matched headings')
+            if $found;
+        $found = $values;
     }
     return $found || Bivio::Die->die(\@name, ': no table matches named headings');
 }
@@ -94,7 +94,7 @@ sub html_parser_end {
     # Dispatch to the _end_XXX routines.
     my($fields) = $self->[$_IDI];
     $fields->{links}->html_parser_end(@_)
-	if $fields->{links};
+        if $fields->{links};
     _call_op('end', $tag, $self);
     return;
 }
@@ -104,10 +104,10 @@ sub html_parser_start {
     # Calls _fixup_attr then dispatches to the _start_XXX routines.
     my($fields) = $self->[$_IDI];
     $fields->{links}->html_parser_start(@_)
-	if $fields->{links};
+        if $fields->{links};
     return if _call_op('start', $tag, $self, $attr);
     return _start_input($self, $attr)
-	if $attr->{type};
+        if $attr->{type};
     return;
 }
 
@@ -117,7 +117,7 @@ sub html_parser_text {
     # Parses the tables.  Called internally.
     my($fields) = $self->[$_IDI];
     $fields->{links}->html_parser_text(@_)
-	if $fields->{links};
+        if $fields->{links};
     return unless $fields->{in_data_table};
     $fields->{text} .= $text;
     return;
@@ -126,7 +126,7 @@ sub html_parser_text {
 sub new {
     my($proto, $parser) = @_;
     return undef
-	if $parser->is_not_bivio_html;
+        if $parser->is_not_bivio_html;
     # Parses cleaned html for forms.
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {};
@@ -157,7 +157,7 @@ sub _call_op {
     # Calls _$prefix_$tag if it is defined.
     my($op) = \&{"_$prefix" . "_$tag"};
     return 0
-	unless defined(&$op);
+        unless defined(&$op);
     $op->(@arg);
     return 1;
 }
@@ -167,9 +167,9 @@ sub _delete_empty_rows {
     # Deletes totally empty rows from the table.  They are probably separator
     # rows.
     for (my($i) = 0; $i < @$rows; $i++) {
-	next if grep(defined($_) && length($_->get('text')), @{$rows->[$i]});
-	_trace($rows->[$i]) if $_TRACE;
-	splice(@$rows, $i--, 1)
+        next if grep(defined($_) && length($_->get('text')), @{$rows->[$i]});
+        _trace($rows->[$i]) if $_TRACE;
+        splice(@$rows, $i--, 1)
     }
     return;
 }
@@ -205,9 +205,9 @@ sub _end_td {
     # Adds the text from column to current row
     my($fields) = $self->[$_IDI];
     return unless $fields->{table}
-	&& @{$fields->{table}->{rows}};
+        && @{$fields->{table}->{rows}};
     _save_cell($self, $fields,
-	$fields->{table}->{rows}->[$#{$fields->{table}->{rows}}]);
+        $fields->{table}->{rows}->[$#{$fields->{table}->{rows}}]);
     return;
 }
 
@@ -231,15 +231,15 @@ sub _found_table {
     # Either at <table id=xxx> or at every <th>.  Returns true if
     # initializes table.
     unless ($fields->{in_data_table}) {
-	$fields->{in_data_table}++;
-	$fields->{table} = {
-	    headings => [],
-	    rows => [],
-	    label => $id,
-	};
+        $fields->{in_data_table}++;
+        $fields->{table} = {
+            headings => [],
+            rows => [],
+            label => $id,
+        };
     }
 #    elsif ($fields->{in_data_table} > 1) {
-#	die('nested data tables not supported');
+#        die('nested data tables not supported');
 #    }
     return;
 }
@@ -254,8 +254,8 @@ sub _links {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return $fields->{links} ||= Bivio::Test::HTMLParser::Links->new->internal_put({
-	cleaner => $self->get('cleaner'),
-	elements => {},
+        cleaner => $self->get('cleaner'),
+        elements => {},
     });
 }
 
@@ -264,17 +264,17 @@ sub _save_cell {
     # Checks colspan to see if needs filling.  Returns the found text,
     # if any.
     return
-	unless $fields->{in_data_table} == 1;
+        unless $fields->{in_data_table} == 1;
     my($t) = $self->get('cleaner')->text(_text($fields));
     push(@$row, Bivio::Test::HTMLParser::Tables::Cell->new({
-	text => $t,
-	Links => _links($self)->internal_put(
-	    _links($self)->get('elements'))->set_read_only,
+        text => $t,
+        Links => _links($self)->internal_put(
+            _links($self)->get('elements'))->set_read_only,
     }));
     $fields->{links} = undef;
     _trace($t) if $_TRACE;
     push(@$row, undef)
-	while --$fields->{colspan} > 0;
+        while --$fields->{colspan} > 0;
     return $t;
 }
 
@@ -291,9 +291,9 @@ sub _start_table {
     # Increments in_data_table
     my($fields) = $self->[$_IDI];
     $fields->{in_data_table}++
-	if $fields->{in_data_table};
+        if $fields->{in_data_table};
     _found_table($fields, $attr->{id})
-	if $attr->{id};
+        if $attr->{id};
     return;
 }
 
@@ -324,7 +324,7 @@ sub _start_tr {
     my($fields) = $self->[$_IDI];
     return unless _in_data($fields);
     push(@{$fields->{table}->{rows}}, [])
-	if $fields->{table}->{rows};
+        if $fields->{table}->{rows};
     return;
 }
 

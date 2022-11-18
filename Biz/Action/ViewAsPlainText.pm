@@ -57,8 +57,8 @@ Always returns false.
 sub execute {
     my($proto, $req) = @_;
     return $proto->get_instance('LocalFilePlain')->execute(
-	    $req,
-	    $req->get('uri').Bivio::UI::View->SUFFIX, 'text/plain');
+            $req,
+            $req->get('uri').Bivio::UI::View->SUFFIX, 'text/plain');
 }
 
 #=PRIVATE METHODS

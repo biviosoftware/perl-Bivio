@@ -105,18 +105,18 @@ sub as_literal {
     _format_task(\$res, $attrs, 'unwind_task');
     # Don't format cancel, if it doesn't contain anything
     _format_task(\$res, $attrs, 'cancel_task')
-	if defined($attrs->{cancel_task})
-	    && $attrs->{cancel_task} != $attrs->{unwind_task};
+        if defined($attrs->{cancel_task})
+            && $attrs->{cancel_task} != $attrs->{unwind_task};
     _format_realm(\$res, $attrs);
     _format_hash(\$res, $attrs, 'query');
     _format_hash(\$res, $attrs, 'form');
     _format_string(\$res, 'path_info', $attrs->{path_info});
     # Recurse nested context only if we aren't reentering same task
     _format_string(\$res, 'form_context',
-	$attrs->{form_context}->as_literal($req))
-	if $attrs->{form_context}
-	    && $attrs->{form_context}->get('unwind_task')
-		!= $attrs->{unwind_task};
+        $attrs->{form_context}->as_literal($req))
+        if $attrs->{form_context}
+            && $attrs->{form_context}->get('unwind_task')
+                != $attrs->{unwind_task};
     # Remove trailing separator
     chop($res);
     _trace($res) if $_TRACE;
@@ -129,8 +129,8 @@ sub as_string {
     # purposes.
     my($self) = @_;
     return ref($self)
-	? $_R->to_short_string($self->get_shallow_copy)
-	: $self;
+        ? $_R->to_short_string($self->get_shallow_copy)
+        : $self;
 }
 
 sub new {
@@ -149,16 +149,16 @@ sub new_empty {
     my($realm) = $req->get('auth_realm');
     my($task) = $req->get('task');
     return $proto->new({
-	unwind_task => $task->get_attr_as_id('next'),
-	cancel_task => $task->get_attr_as_id('cancel'),
-	form_model => $task->get('form_model'),
-	realm => undef,
-	# The following is unknown.  We don't know where we came from,
-	# we only know where we are.
-	query => undef,
-	path_info => undef,
-	form => undef,
-	form_context => undef,
+        unwind_task => $task->get_attr_as_id('next'),
+        cancel_task => $task->get_attr_as_id('cancel'),
+        form_model => $task->get('form_model'),
+        realm => undef,
+        # The following is unknown.  We don't know where we came from,
+        # we only know where we are.
+        query => undef,
+        path_info => undef,
+        form => undef,
+        form_context => undef,
     });
 }
 
@@ -167,14 +167,14 @@ sub new_from_form {
     # Returns a new object for the current I<form> and I<calling_context>.
     my($proto, $model, $form_fields, $calling_context, $req) = @_;
     return $proto->new({
-	form_model => ref($model) || undef,
-	form => $form_fields,
-	form_context => $calling_context,
-	query => $req->unsafe_get('query'),
-	path_info => $req->unsafe_get('path_info'),
-	unwind_task => $req->unsafe_get('task_id'),
-	cancel_task => $req->get('task')->unsafe_get_attr_as_id('cancel'),
-	realm => $req->get('auth_realm'),
+        form_model => ref($model) || undef,
+        form => $form_fields,
+        form_context => $calling_context,
+        query => $req->unsafe_get('query'),
+        path_info => $req->unsafe_get('path_info'),
+        unwind_task => $req->unsafe_get('task_id'),
+        cancel_task => $req->get('task')->unsafe_get_attr_as_id('cancel'),
+        realm => $req->get('auth_realm'),
     });
 }
 
@@ -189,27 +189,27 @@ sub new_from_literal {
     # First iterate over the fields and decode the base64.
     my($c) = {};
     foreach my $item (split(/$_SEPARATOR/o, $value)) {
-	my($which, $enc) = $item =~ /^([$_CHARS])(.*)$/o;
+        my($which, $enc) = $item =~ /^([$_CHARS])(.*)$/o;
 
-	unless ($which) {
-	    # If the context is completely screwed up, then return initial.
-	    $$err = 1 if $err;
-	    return _parse_error($proto, $model, $item, $which,
-		    'missing or invalid element');
-	}
+        unless ($which) {
+            # If the context is completely screwed up, then return initial.
+            $$err = 1 if $err;
+            return _parse_error($proto, $model, $item, $which,
+                    'missing or invalid element');
+        }
 
-	$which = $_CHAR_TO_KEY{$which};
-	$c->{$which} = $_B->http_decode($enc);
-	return _parse_error($proto, $model, $item, $which, 'http_decode error')
-		unless defined($c->{$which});
+        $which = $_CHAR_TO_KEY{$which};
+        $c->{$which} = $_B->http_decode($enc);
+        return _parse_error($proto, $model, $item, $which, 'http_decode error')
+                unless defined($c->{$which});
     }
 
     # Parse the decoded fields and validate. unwind_task must be checked first,
     # because it may clear all the rest of the state
     unless (_parse_task($model, $c, 'unwind_task')) {
-	$$err = 1 if $err;
-	return _parse_error($proto, $model, undef, 'unwind_task',
-		'missing or bad unwind_task');
+        $$err = 1 if $err;
+        return _parse_error($proto, $model, undef, 'unwind_task',
+                'missing or bad unwind_task');
     }
 
     _parse_task($model, $c, 'cancel_task');
@@ -219,18 +219,18 @@ sub new_from_literal {
     _parse_realm($model, $c);
 
     if (defined($c->{form_context})) {
-	my($sub_err);
-	$c->{form_context} = $proto->new_from_literal(
-	    $model, $c->{form_context}, \$sub_err);
-	$c->{form_context} = undef
-	    if $sub_err;
+        my($sub_err);
+        $c->{form_context} = $proto->new_from_literal(
+            $model, $c->{form_context}, \$sub_err);
+        $c->{form_context} = undef
+            if $sub_err;
     }
     else {
-	$c->{form_context} = undef;
+        $c->{form_context} = undef;
     }
 
     $c->{form_model} = $_T->get_by_id($c->{unwind_task})
-	->get('form_model');
+        ->get('form_model');
     return $proto->new($c);
 }
 
@@ -239,20 +239,20 @@ sub return_redirect {
     my($req) = $model->get_request;
     my($c) = $self->internal_get;
     my($query) = {
-	%{$c->{query} || {}},
-	%{$extra_query || {}},
+        %{$c->{query} || {}},
+        %{$extra_query || {}},
     };
     unless ($c->{form}) {
-	my($res) = {
-	    method => 'client_redirect',
-	    task_id => $which eq 'cancel' && $c->{cancel_task}
-		? $c->{cancel_task} : $c->{unwind_task},
-	    realm => $c->{realm},
-	    path_info => $c->{path_info},
-	    query => $query,
-	};
-	_trace('no form: ', $res)
-	    if $_TRACE;
+        my($res) = {
+            method => 'client_redirect',
+            task_id => $which eq 'cancel' && $c->{cancel_task}
+                ? $c->{cancel_task} : $c->{unwind_task},
+            realm => $c->{realm},
+            path_info => $c->{path_info},
+            query => $query,
+        };
+        _trace('no form: ', $res)
+            if $_TRACE;
         return $res;
     }
 
@@ -268,14 +268,14 @@ sub return_redirect {
 
     # Redirect calls model back in get_context_from_request
     _trace('have form, server_redirect: ', $c->{unwind_task},
-	'?', $query, ' form=', $f) if $_TRACE;
+        '?', $query, ' form=', $f) if $_TRACE;
     return {
-	method => 'server_redirect',
-	task_id => $c->{unwind_task},
-	realm => $c->{realm},
-	query => $query,
-	form => $f,
-	path_info => $c->{path_info},
+        method => 'server_redirect',
+        task_id => $c->{unwind_task},
+        realm => $c->{realm},
+        query => $query,
+        form => $f,
+        path_info => $c->{path_info},
     };
 }
 
@@ -285,8 +285,8 @@ sub _format_hash {
     my($res, $c, $which) = @_;
     my($h) = $c->{$which};
     _format_string($res, $which, join($_HASH_CHAR, map {
-	defined($h->{$_}) ? ($_, $h->{$_}) : ()} keys(%$h)))
-	if $h;
+        defined($h->{$_}) ? ($_, $h->{$_}) : ()} keys(%$h)))
+        if $h;
     return;
 }
 
@@ -297,7 +297,7 @@ sub _format_realm {
     return unless $c->{realm};
     my($name) = $c->{realm}->unsafe_get('owner_name');
     _format_string($res, 'realm', $name)
-	if defined($name);
+        if defined($name);
     return;
 }
 
@@ -306,9 +306,9 @@ sub _format_string {
     # Formats the string Base64 and appends to $res if defined.
     my($res, $which, $value) = @_;
     $$res .= $_KEY_TO_CHAR{$which}
-	. $_B->http_encode($value)
-	. $_SEPARATOR
-	if defined($value) && length($value);
+        . $_B->http_encode($value)
+        . $_SEPARATOR
+        if defined($value) && length($value);
     return;
 }
 
@@ -317,7 +317,7 @@ sub _format_task {
     # Converts to an int if defined and calls format_string.
     my($res, $c, $which) = @_;
     _format_string($res, $which, $c->{$which}->as_int)
-	if $c->{$which};
+        if $c->{$which};
     return;
 }
 
@@ -327,7 +327,7 @@ sub _parse_error {
     # only needed if you want an new_empty() call.
     my($proto, $model, $value, $which, $msg) = @_;
     b_warn(ref($model), ': attr=', $which,
-	', value=', $value, ', msg=', $msg);
+        ', value=', $value, ', msg=', $msg);
     # Don't do any work if in a void context
     return $proto && $proto->new_empty($model);
 }
@@ -338,13 +338,13 @@ sub _parse_hash {
     my($model, $c, $which) = @_;
     # Not an error if undefined
     unless (defined($c->{$which})) {
-	$c->{$which} = undef;
-	return;
+        $c->{$which} = undef;
+        return;
     }
     my(@v) = split(/$_HASH_CHAR/o, $c->{$which});
     # Handle uneven case.
     push(@v, undef)
-	if int(@v) % 2;
+        if int(@v) % 2;
     $c->{$which} = {@v};
     return;
 }
@@ -355,14 +355,14 @@ sub _parse_path_info {
     my($proto, $model, $c) = @_;
     # Not an error if undefined
     unless (defined($c->{path_info})) {
-	$c->{path_info} = undef;
-	return;
+        $c->{path_info} = undef;
+        return;
     }
     unless ($c->{path_info} =~ m!^/!) {
-	# Defaults to undef, i.e. no query or form
-	_parse_error(undef, $model, $c->{path_info}, 'path_info',
-		"path_info doesn't begin with slash");
-	$c->{path_info} = undef;
+        # Defaults to undef, i.e. no query or form
+        _parse_error(undef, $model, $c->{path_info}, 'path_info',
+                "path_info doesn't begin with slash");
+        $c->{path_info} = undef;
     }
     return;
 }
@@ -375,27 +375,27 @@ sub _parse_realm {
     my($v) = $c->{realm};
     # Not an error if undefined
     unless (defined($v)) {
-	$c->{realm} = undef;
-	return;
+        $c->{realm} = undef;
+        return;
     }
     my($req) = $model->get_request;
     my($realm) = $req->get('auth_realm');
     my($name) = $realm->unsafe_get('owner_name');
     if (defined($name) && $name eq $v) {
-	_trace($realm, ': matches auth_realm') if $_TRACE;
-	$c->{realm} = $realm;
-	return;
+        _trace($realm, ': matches auth_realm') if $_TRACE;
+        $c->{realm} = $realm;
+        return;
     }
     my($o) = $_M->new($req, 'RealmOwner');
     if ($o->unauth_load(name => $v)) {
-	# This will blow if $o is "general".  Someone had to have hacked it.
-	$c->{realm} = $_AR->new($o);
+        # This will blow if $o is "general".  Someone had to have hacked it.
+        $c->{realm} = $_AR->new($o);
     }
     else {
-	# Defaults to undef, use default realm.
-	_parse_error(undef, $model, $v, 'realm',
-		'realm not found');
-	$c->{realm} = undef;
+        # Defaults to undef, use default realm.
+        _parse_error(undef, $model, $v, 'realm',
+                'realm not found');
+        $c->{realm} = undef;
     }
     return;
 }
@@ -408,18 +408,18 @@ sub _parse_task {
     # Don't output an error, but return false.  The error is output
     # by new_from_literal in any event.
     unless (defined($num)) {
-	$c->{$which} = undef;
-	return 0;
+        $c->{$which} = undef;
+        return 0;
     }
     unless ($num =~ /^\d+$/) {
-	_parse_error(undef, $model, $num, $which, 'task is not a number');
-	$c->{$which} = undef;
-	return 0;
+        _parse_error(undef, $model, $num, $which, 'task is not a number');
+        $c->{$which} = undef;
+        return 0;
     }
     $c->{$which} = $_TI->unsafe_from_any($num);
     unless ($c->{$which}) {
-	_parse_error(undef, $model, $num, $which, 'task not found');
-	return 0;
+        _parse_error(undef, $model, $num, $which, 'task not found');
+        return 0;
     }
     return 1;
 }

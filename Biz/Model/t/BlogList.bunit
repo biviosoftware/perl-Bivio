@@ -4,19 +4,19 @@ ListModel();
 my($entry) = require 'BlogList.PL';
 [
     load_all => [
-	[] => [map(
-	    +{path_info => $_->{path_info}},
-	    reverse(@$entry),
-	)],
+        [] => [map(
+            +{path_info => $_->{path_info}},
+            reverse(@$entry),
+        )],
     ],
     load_this => [
-	map(([{this => $entry->[$_]->{path_info}}] => [$entry->[$_]]),
-	    0 .. $#$entry),
+        map(([{this => $entry->[$_]->{path_info}}] => [$entry->[$_]]),
+            0 .. $#$entry),
     ],
     execute_load_this => [
-	sub {[req()->put(
-	    query => undef,
-	    path_info => $entry->[0]->{path_info}
-	)]} => not_die(),
+        sub {[req()->put(
+            query => undef,
+            path_info => $entry->[0]->{path_info}
+        )]} => not_die(),
     ],
 ];

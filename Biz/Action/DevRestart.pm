@@ -18,11 +18,11 @@ sub internal_execute {
 
 sub restart_requested {
     return 0
-	unless -r $_SENTINEL;
+        unless -r $_SENTINEL;
     my($rs) = ${$_F->read($_SENTINEL)};
     unlink($_SENTINEL);
     b_die('not restarting, sentinel too old')
-	if $rs + 20 < time;
+        if $rs + 20 < time;
     return 1;
 }
 

@@ -3,13 +3,13 @@
 ListModel();
 [
     load_all => [
-	[] => [map(+{'TupleSlotType.type_class' => $_},
-		   sort(qw(String Boolean Date Integer Email)))],
+        [] => [map(+{'TupleSlotType.type_class' => $_},
+                   sort(qw(String Boolean Date Integer Email)))],
     ],
     is_upgrade => [
-	[qw(String String)] => 0,
-	[qw(String Email)] => 1,
-	[qw(Email Email)] => 0,
-	[qw(Email String)] => 0,
+        [qw(String String)] => 0,
+        [qw(String Email)] => 1,
+        [qw(Email Email)] => 0,
+        [qw(Email String)] => 0,
     ],
 ];

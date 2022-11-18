@@ -43,7 +43,7 @@ EOF
 sub site_css {
     my($self) = @_;
     view_unsafe_put(
-	is_petshop => ['->ureq', b_use('View.Base')->IS_PETSHOP_KEY],
+        is_petshop => ['->ureq', b_use('View.Base')->IS_PETSHOP_KEY],
     );
     return shift->SUPER::site_css(@_);
 }

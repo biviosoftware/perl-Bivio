@@ -45,7 +45,7 @@ use Bivio::IO::Trace;
 # is also an intermediate name, e.g.
 #
 #      group(phone => [
-# 	[phone, ''] => 'Phone',
+#         [phone, ''] => 'Phone',
 #      ]);
 #
 # The tags C<phone> and C<phone.phone> will point to C<Phone>.
@@ -111,7 +111,7 @@ sub assert_name {
     my($self, $name) = @_;
     # We allow 'x.y' names.
     $self->die($name, 'invalid name syntax')
-	unless $name =~ /^\w+(\Q@{[$self->SEPARATOR]}\E\w+)*$/;
+        unless $name =~ /^\w+(\Q@{[$self->SEPARATOR]}\E\w+)*$/;
     return;
 }
 
@@ -121,11 +121,11 @@ sub facade_text_for_object {
 #TODO: Encapsulate reverse map in ClassLoader
     my($n) = [split(/:+/, $object->package_name)];
     b_die($object->package_name, ': must begin with project part, e.g. Bivio::')
-	if @$n <= 1;
+        if @$n <= 1;
     $n->[0] = 'Bivio';
     my($v) = $self->unsafe_get_value(
-	splice(@$n, -2),
-	$object->as_facade_text_tag,
+        splice(@$n, -2),
+        $object->as_facade_text_tag,
     );
     return defined($v) ? $v : $object->as_facade_text_default($req);
 }
@@ -133,7 +133,7 @@ sub facade_text_for_object {
 sub format_css {
     my($v) = shift->get_value(@_);
     return ''
-	unless length($v);
+        unless length($v);
     $v =~ s/(?=["\\])/\\/sg;
     $v =~ s/\n/\\A/sg;
     return qq{"$v"};
@@ -179,11 +179,11 @@ sub get_value {
     # error (which may cause a die, see FacadeComponent) and returns
     # L<UNDEF_CONFIG|"UNDEF_CONFIG">
     my($self) = $proto->internal_get_self(
-	ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef);
+        ref($tag_part[$#tag_part]) ? pop(@tag_part) : undef);
     my($v, $tag) = $self->unsafe_get_value(@tag_part);
     # $v is always defined for tags which are found except in subclasses.
     return defined($tag) ? $v
-	: $self->get_error($self->join_tag(@tag_part))->{value};
+        : $self->get_error($self->join_tag(@tag_part))->{value};
 }
 
 sub get_widget_value {
@@ -194,7 +194,7 @@ sub get_widget_value {
     # will call the method appropriately.
     # SUPER has code to handle ->, which we don't allow in names
     return $tag[0] =~ /^->/ ? $self->SUPER::get_widget_value(@tag)
-	: $self->get_value(@tag);
+        : $self->get_value(@tag);
 }
 
 sub group {
@@ -206,7 +206,7 @@ sub group {
     # This method overrides normal FacadeComponent behavior.  See DESCRIPTION
     # for more details.
     foreach my $group (@{_group($self, $name, $value)}) {
-	$self->SUPER::group(@$group);
+        $self->SUPER::group(@$group);
     }
     return;
 }
@@ -214,7 +214,7 @@ sub group {
 sub internal_assert_value {
     my($self, $value, $name) = @_;
     $self->die($value, $name, ': value must be a defined string')
-	unless defined($value) && !ref($value);
+        unless defined($value) && !ref($value);
     return $value
 }
 
@@ -224,10 +224,10 @@ sub internal_initialize_value {
     # (see L<group|"group">.
     my($v) = $value->{config};
     if (ref($v)) {
-	# This shouldn't happen, but good to check
-	$self->initialization_error(
-	    $value, 'expecting a string, not a reference');
-	$v = undef;
+        # This shouldn't happen, but good to check
+        $self->initialization_error(
+            $value, 'expecting a string, not a reference');
+        $v = undef;
     }
     # Undefined is error
     $value->{value} = defined($v) ? $v : $self->UNDEF_VALUE();
@@ -238,11 +238,11 @@ sub join_tag {
     my($proto, @tag) = @_;
     my($r) = $_R->get_current;
     if ($r and $r = $r->unsafe_get('auth_realm') and $r->has_owner) {
-	(my $n = $r->get('owner_name')) =~ s/\W/_/g;
-	unshift(@tag, 'realm_owner_' . $n);
+        (my $n = $r->get('owner_name')) =~ s/\W/_/g;
+        unshift(@tag, 'realm_owner_' . $n);
     }
     return int(@tag) == 1 && $tag[0] =~ /^[a-z0-9_\.]+$/ ? $tag[0]
-	: join($proto->SEPARATOR, map((length($_) ? $_ : ()), @tag));
+        : join($proto->SEPARATOR, map((length($_) ? $_ : ()), @tag));
 }
 
 sub split_tag {
@@ -261,13 +261,13 @@ sub unsafe_get_value {
     my($v);
     my($sep) = $self->SEPARATOR;
     while ($tag) {
-	$v = $self->internal_unsafe_lc_get_value($tag);
-	return wantarray ? ($v->{value}, $tag) : $v->{value}
-	    if $v;
-	# Chop off top level.  If unable to do replacement, the tag
-	# is bad so can't be found.
-	last
-	    unless $tag =~ s/^.+?\Q$sep//;
+        $v = $self->internal_unsafe_lc_get_value($tag);
+        return wantarray ? ($v->{value}, $tag) : $v->{value}
+            if $v;
+        # Chop off top level.  If unable to do replacement, the tag
+        # is bad so can't be found.
+        last
+            unless $tag =~ s/^.+?\Q$sep//;
     }
     return wantarray ? (undef, undef) : undef;
 }
@@ -285,24 +285,24 @@ sub _group {
     # used to pass info to recursive calls.  It contains the list of
     # prefixes to prepended to $name.
     $name = [$name]
-	unless ref($name);
+        unless ref($name);
     $name = _group_assert_name($self, $name);
     $groups ||= [];
     $name = [
-	map({
-	    my($p) = $_;
-	    map(length($_) ? $p . $self->SEPARATOR . $_ : $p, @$name);
-	} @$parent_names),
+        map({
+            my($p) = $_;
+            map(length($_) ? $p . $self->SEPARATOR . $_ : $p, @$name);
+        } @$parent_names),
     ] if $parent_names;
     if (ref($value) eq 'ARRAY' && @$value > 1) {
-	$self->map_by_two(sub {
-	    my($n, $v) = @_;
-	    _group($self, $n, $v, $name, $groups);
-	    return;
-	}, $value);
+        $self->map_by_two(sub {
+            my($n, $v) = @_;
+            _group($self, $n, $v, $name, $groups);
+            return;
+        }, $value);
     }
     else {
-	push(@$groups, [$name, $value]);
+        push(@$groups, [$name, $value]);
     }
     return $groups;
 }
@@ -310,12 +310,12 @@ sub _group {
 sub _group_assert_name {
     my($self, $v) = @_;
     $self->die($v, ' name array_ref must not be empty')
-	unless ref($v) ne 'ARRAY' || int(@$v) > 0;
+        unless ref($v) ne 'ARRAY' || int(@$v) > 0;
     $self->die($v, 'name must be an array_ref or string')
-	unless defined($v) && (ref($v) eq 'ARRAY' || !ref($v));
+        unless defined($v) && (ref($v) eq 'ARRAY' || !ref($v));
     foreach my $n (@$v) {
-	$self->die($v, 'name array_ref must consist of strings')
-	    unless defined($n) && !ref($n);
+        $self->die($v, 'name array_ref must consist of strings')
+            unless defined($n) && !ref($n);
     }
     return $v;
 }

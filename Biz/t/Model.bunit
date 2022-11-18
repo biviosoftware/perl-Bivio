@@ -6,252 +6,252 @@ my($categories) = [];
 my($category_count) = 0;
 [
     class() => [
-	field_decl => [
-	    map({
-		($_ => [
-		    {
-			name => 'a',
-			type => 'String',
-			constraint => 'NONE',
-		    },
-		]);
-	    }
-		[['a'], {type => 'String'}],
-		[[[qw(a String NONE)]]],
-		[[{name => 'a', type => 'String'}]],
-		[[['a', undef, 'NONE']], 'String'],
-		[['a'], 'String'],
-		[[['a', 'String', undef]], undef, 'NONE'],
-		[['a'], qw(String NONE)],
-	    ),
-	    [[qw(a b)], qw(String NONE)] => [
-		map({
-		    {
-			name => $_,
-			type => 'String',
-			constraint => 'NONE',
-		    };
-	        } qw(a b)),
-	    ],
-	    [c1 => ['d1'], c2 => ['d2'], 'String', 'NOT_NULL'] => [
-		map({
-		    ("c$_" => [
-			{
-			    name => "d$_",
-			    type => 'String',
-			    constraint => 'NOT_NULL',
-			},
-		    ]);
-		} 1 ..2),
+        field_decl => [
+            map({
+                ($_ => [
+                    {
+                        name => 'a',
+                        type => 'String',
+                        constraint => 'NONE',
+                    },
+                ]);
+            }
+                [['a'], {type => 'String'}],
+                [[[qw(a String NONE)]]],
+                [[{name => 'a', type => 'String'}]],
+                [[['a', undef, 'NONE']], 'String'],
+                [['a'], 'String'],
+                [[['a', 'String', undef]], undef, 'NONE'],
+                [['a'], qw(String NONE)],
+            ),
+            [[qw(a b)], qw(String NONE)] => [
+                map({
+                    {
+                        name => $_,
+                        type => 'String',
+                        constraint => 'NONE',
+                    };
+                } qw(a b)),
             ],
-	    [
-		c1 => [
-		    [qw(d1 Line NONE)],
-		    [d2 => {type => 'Text', in_list => 1}],
-		],
-		c2 => [[qw(d3 String NOT_NULL)]],
-	    ] => [
-		    c1 => [{
-			name => 'd1',
-			type => 'Line',
-			constraint => 'NONE',
-		    }, {
-			name => 'd2',
-			type => 'Text',
-			constraint => 'NONE',
-			in_list => 1,
-		    }],
-		    c2 => [{
-			name => 'd3',
-			type => 'String',
-			constraint => 'NOT_NULL',
-		    }],
-		],
-	],
-	field_decl_exclude => [
-	    ['a', {a => 'b'}] => [{a => 'b'}],
-	    ['b', {a => 'b'}] => [{}],
-	    ['b', {a => ['b', 'c']}] => [{a => ['c']}],
-	    ['b', {a => [['b', 'c', 'd'], 'e']}] => [{a => [['c', 'd'], 'e']}],
-	],
-	new => [
-	    RealmOwner => qr/RealmOwner/,
-	    [req(), 'RealmOwner'] => qr/RealmOwner/,
-	    ['junk', 'RealmOwner'] => DIE(),
-	    [] => DIE(),
-	],
-	new_other => [
-	    RealmOwner => qr/RealmOwner/,
-	    'my.RealmOwner' => qr/RealmOwner/,
-	    'RealmOwner_1' => qr/RealmOwner/,
-	    ['BadQual.RealmOwner'] => DIE(),
-	    [] => DIE(),
-	],
+            [c1 => ['d1'], c2 => ['d2'], 'String', 'NOT_NULL'] => [
+                map({
+                    ("c$_" => [
+                        {
+                            name => "d$_",
+                            type => 'String',
+                            constraint => 'NOT_NULL',
+                        },
+                    ]);
+                } 1 ..2),
+            ],
+            [
+                c1 => [
+                    [qw(d1 Line NONE)],
+                    [d2 => {type => 'Text', in_list => 1}],
+                ],
+                c2 => [[qw(d3 String NOT_NULL)]],
+            ] => [
+                    c1 => [{
+                        name => 'd1',
+                        type => 'Line',
+                        constraint => 'NONE',
+                    }, {
+                        name => 'd2',
+                        type => 'Text',
+                        constraint => 'NONE',
+                        in_list => 1,
+                    }],
+                    c2 => [{
+                        name => 'd3',
+                        type => 'String',
+                        constraint => 'NOT_NULL',
+                    }],
+                ],
+        ],
+        field_decl_exclude => [
+            ['a', {a => 'b'}] => [{a => 'b'}],
+            ['b', {a => 'b'}] => [{}],
+            ['b', {a => ['b', 'c']}] => [{a => ['c']}],
+            ['b', {a => [['b', 'c', 'd'], 'e']}] => [{a => [['c', 'd'], 'e']}],
+        ],
+        new => [
+            RealmOwner => qr/RealmOwner/,
+            [req(), 'RealmOwner'] => qr/RealmOwner/,
+            ['junk', 'RealmOwner'] => DIE(),
+            [] => DIE(),
+        ],
+        new_other => [
+            RealmOwner => qr/RealmOwner/,
+            'my.RealmOwner' => qr/RealmOwner/,
+            'RealmOwner_1' => qr/RealmOwner/,
+            ['BadQual.RealmOwner'] => DIE(),
+            [] => DIE(),
+        ],
     ],
     'Bivio::Biz::Model::UserLoginForm' => [
-	merge_initialize_info => [
-	    [{
-		auth_id => ['p'],
-		order_by => ['p1'],
-		visible => ['p1', {name => 'p2', in_list => 1}],
-	    }, {
-		auth_id => ['c'],
-		order_by => ['c1'],
-		visible => ['c2'],
-		hidden => ['p2'],
-	    }] => [{
-		auth_id => ['c'],
-		order_by => ['p1', 'c1'],
-		visible => ['c2', 'p1'],
-		hidden => [{name => 'p2', in_list => 1}],
-	    }],
-	    [{}, {
-		other => [
-		    [qw(a b c d)],
-		],
-	    }] => [{
-		other => [
-		    [qw(a b c d)],
-		],
-	    }],
-	],
+        merge_initialize_info => [
+            [{
+                auth_id => ['p'],
+                order_by => ['p1'],
+                visible => ['p1', {name => 'p2', in_list => 1}],
+            }, {
+                auth_id => ['c'],
+                order_by => ['c1'],
+                visible => ['c2'],
+                hidden => ['p2'],
+            }] => [{
+                auth_id => ['c'],
+                order_by => ['p1', 'c1'],
+                visible => ['c2', 'p1'],
+                hidden => [{name => 'p2', in_list => 1}],
+            }],
+            [{}, {
+                other => [
+                    [qw(a b c d)],
+                ],
+            }] => [{
+                other => [
+                    [qw(a b c d)],
+                ],
+            }],
+        ],
     ],
     'Bivio::Biz::Model::RealmOwner' => [
-	new => [
-	    [] => qr{Model::RealmOwner},
-	    [req()] => qr/RealmOwner/,
-	    [req(), 'RealmUser'] => qr/RealmUser/,
-	    ['junk', 'RealmUser'] => DIE(),
-	],
+        new => [
+            [] => qr{Model::RealmOwner},
+            [req()] => qr/RealmOwner/,
+            [req(), 'RealmUser'] => qr/RealmUser/,
+            ['junk', 'RealmUser'] => DIE(),
+        ],
     ],
     ['RealmOwner'] => [
-	get_field_info => [
-	    ['name', 'type'] => 'Bivio::Type::RealmName',
+        get_field_info => [
+            ['name', 'type'] => 'Bivio::Type::RealmName',
         ],
-	new => [
-	    [] => qr{Model::RealmOwner},
-	    [req()] => qr/RealmOwner/,
-	    [req(), 'RealmUser'] => qr/RealmUser/,
-	    ['junk', 'RealmUser'] => DIE(),
-	],
-	unauth_load => [
-	    [{name => 'demo'}] => 1,
-	],
-	as_string => qr{^Bivio::\w+::Model::RealmOwner\(demo,\d+\)$}s,
+        new => [
+            [] => qr{Model::RealmOwner},
+            [req()] => qr/RealmOwner/,
+            [req(), 'RealmUser'] => qr/RealmUser/,
+            ['junk', 'RealmUser'] => DIE(),
+        ],
+        unauth_load => [
+            [{name => 'demo'}] => 1,
+        ],
+        as_string => qr{^Bivio::\w+::Model::RealmOwner\(demo,\d+\)$}s,
     ],
     RealmUserList => [
-	inline_case(sub {req()->set_realm('demo')}),
-	load_this => [
-	    [{this => realm_id('demo')}] => not_die(),
-	],
-	get_field_alias_value => [
-	    'RealmOwner.realm_id' => realm_id('demo'),
-	],
+        inline_case(sub {req()->set_realm('demo')}),
+        load_this => [
+            [{this => realm_id('demo')}] => not_die(),
+        ],
+        get_field_alias_value => [
+            'RealmOwner.realm_id' => realm_id('demo'),
+        ],
     ],
     [req(), 'Category'] => [
-	iterate_start => [
-	    ['name desc'] => undef,
-	],
-	{
-	    method => 'iterate_next_and_load',
-	    check_return => sub {
-		my($case, $actual, $expect) = @_;
-		if ($actual->[0]) {
-		    die('name out of order : prev=',
-			$categories->[$#$categories]->{name},
-			' this=',
-			$case->get('object')->get('name'))
-			if $actual->[0] && @$categories
-			    && $case->get('object')->get('name')
-				gt $categories->[$#$categories]->{name};
-		    push(@$categories,
-			$case->get('object')->get_shallow_copy);
-		}
-		return $expect;
-	    },
-	} => [
-	    [] => 1,
-	    [] => 1,
-	    [] => 1,
-	    [] => 1,
-	    [] => 1,
-	    [] => 0,
-	],
-	iterate_end => undef,
-	map_iterate => [
-	    [undef, 'name desc'] => [$categories],
-	    [undef, 'unauth_iterate_start', 'name desc'] => [$categories],
-	    # Must be closures, because depends on deferred eval of
-	    # previous operations.
-	    sub {
-		my($case) = @_;
-		return [sub {
-		    return $case->get('object')->get('name');
-	        }, 'name'];
-	    } => sub {
-		return [[map($_->{name}, reverse(@$categories))]];
-	    },
-	],
-	do_iterate => [
-	    [
-		sub {
-		    $category_count++;
-		    return shift->get('name') ne $categories->[2]->{name}
-			? 1 : 0;
-		},
-		'name asc',
-	    ] => sub {
-		shift->actual_return([$category_count]);
-		return [3];
-	    },
-	],
+        iterate_start => [
+            ['name desc'] => undef,
+        ],
+        {
+            method => 'iterate_next_and_load',
+            check_return => sub {
+                my($case, $actual, $expect) = @_;
+                if ($actual->[0]) {
+                    die('name out of order : prev=',
+                        $categories->[$#$categories]->{name},
+                        ' this=',
+                        $case->get('object')->get('name'))
+                        if $actual->[0] && @$categories
+                            && $case->get('object')->get('name')
+                                gt $categories->[$#$categories]->{name};
+                    push(@$categories,
+                        $case->get('object')->get_shallow_copy);
+                }
+                return $expect;
+            },
+        } => [
+            [] => 1,
+            [] => 1,
+            [] => 1,
+            [] => 1,
+            [] => 1,
+            [] => 0,
+        ],
+        iterate_end => undef,
+        map_iterate => [
+            [undef, 'name desc'] => [$categories],
+            [undef, 'unauth_iterate_start', 'name desc'] => [$categories],
+            # Must be closures, because depends on deferred eval of
+            # previous operations.
+            sub {
+                my($case) = @_;
+                return [sub {
+                    return $case->get('object')->get('name');
+                }, 'name'];
+            } => sub {
+                return [[map($_->{name}, reverse(@$categories))]];
+            },
+        ],
+        do_iterate => [
+            [
+                sub {
+                    $category_count++;
+                    return shift->get('name') ne $categories->[2]->{name}
+                        ? 1 : 0;
+                },
+                'name asc',
+            ] => sub {
+                shift->actual_return([$category_count]);
+                return [3];
+            },
+        ],
     ],
     sub {
-	Bivio::Biz::ListModel->new_anonymous({
-	    version => 1,
-	    can_iterate => 1,
-	    primary_key => ['Category_2.name'],
-	    other => [
-		map("Category_2.$_",
-		    @{class()->get_instance('Category')->get_keys}),
-	    ],
-	}, req());
+        Bivio::Biz::ListModel->new_anonymous({
+            version => 1,
+            can_iterate => 1,
+            primary_key => ['Category_2.name'],
+            other => [
+                map("Category_2.$_",
+                    @{class()->get_instance('Category')->get_keys}),
+            ],
+        }, req());
     } => [
-	get_primary_id => [
-	    [] => [undef],
-	],
+        get_primary_id => [
+            [] => [undef],
+        ],
         has_cursor => 0,
-	iterate_start => not_die(),
-	iterate_next_and_load => not_die(),
-	get_primary_id => [
-	    [] => 'Birds',
-	],
-	get_model => [
-	    Category_2 => sub {
-		my($case, $actual) = @_;
-		my($c) = $actual->[0];
-		$case->actual_return([$c->get_shallow_copy]);
-		return [
-		    $c->new->load({name => $c->get('name')})->get_shallow_copy,
-		];
-	    },
-	    Category => DIE(),
-	],
+        iterate_start => not_die(),
+        iterate_next_and_load => not_die(),
+        get_primary_id => [
+            [] => 'Birds',
+        ],
+        get_model => [
+            Category_2 => sub {
+                my($case, $actual) = @_;
+                my($c) = $actual->[0];
+                $case->actual_return([$c->get_shallow_copy]);
+                return [
+                    $c->new->load({name => $c->get('name')})->get_shallow_copy,
+                ];
+            },
+            Category => DIE(),
+        ],
     ],
     sub {unauth_model('RealmOwner', {name => 'root'})} => [
-	get_auth_id => [
-	    [] => [realm_id('root')],
-	],
-	get_auth_user_id => [
-	    [] => DIE(),
-	],
+        get_auth_id => [
+            [] => [realm_id('root')],
+        ],
+        get_auth_user_id => [
+            [] => DIE(),
+        ],
     ],
     sub {unauth_model('User', {user_id => realm_id('root')})} => [
-	get_auth_id => [
-	    [] => [realm_id('root')],
-	],
-	get_auth_user_id => [
-	    [] => [realm_id('root')],
-	],
+        get_auth_id => [
+            [] => [realm_id('root')],
+        ],
+        get_auth_user_id => [
+            [] => [realm_id('root')],
+        ],
     ],
 ];

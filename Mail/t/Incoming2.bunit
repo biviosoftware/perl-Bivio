@@ -3,13 +3,13 @@
 Request('initialize_fully');
 options({
     create_object => sub {
-	my(undef, $args) = @_;
-	my($h) = $args->[0];
-	return class()->new(join(
-	    "\n",
-	    map("$_: $h->{$_}", sort(keys(%$h))),
-	    "\nbody\n",
-	));
+        my(undef, $args) = @_;
+        my($h) = $args->[0];
+        return class()->new(join(
+            "\n",
+            map("$_: $h->{$_}", sort(keys(%$h))),
+            "\nbody\n",
+        ));
     },
 });
 my($forum) = remote_email('mail_forum');
@@ -18,76 +18,76 @@ my($user2) = email('mail_user2');
 my($alias) = remote_email('forum_alias');
 [
     map((
-	[shift(@$_)] => [
-	    {
-		method => 'get_reply_email_arrays',
-		compute_return => sub {
-		    my(undef, $actual) = @_;
-		    return [map(
-			$_ && $_->as_length ? $_->as_array : (),
-			@$actual,
-		    )];
-		},
-		compute_params => sub {
-		    my(undef, $params) = @_;
-		    req()->set_realm('mail_forum');
-		    my($realm_emails) = [
-			$params->[1] ? $params->[1] : (),
-			req(qw(auth_realm owner))->format_email,
-		    ];
-		    return [
-			MailReplyWho($params->[0]),
-			$realm_emails->[0],
-			$realm_emails,
-			req(),
-		    ];
-		},
-	    } => [@$_],
-	],
+        [shift(@$_)] => [
+            {
+                method => 'get_reply_email_arrays',
+                compute_return => sub {
+                    my(undef, $actual) = @_;
+                    return [map(
+                        $_ && $_->as_length ? $_->as_array : (),
+                        @$actual,
+                    )];
+                },
+                compute_params => sub {
+                    my(undef, $params) = @_;
+                    req()->set_realm('mail_forum');
+                    my($realm_emails) = [
+                        $params->[1] ? $params->[1] : (),
+                        req(qw(auth_realm owner))->format_email,
+                    ];
+                    return [
+                        MailReplyWho($params->[0]),
+                        $realm_emails->[0],
+                        $realm_emails,
+                        req(),
+                    ];
+                },
+            } => [@$_],
+        ],
     ), [
-	{From => 'a@a.a', To => $forum, Cc => $user2},
-	author => [['a@a.a']],
-	[realm => $alias] => [[$alias]],
-	all => [['a@a.a'], [$forum]],
+        {From => 'a@a.a', To => $forum, Cc => $user2},
+        author => [['a@a.a']],
+        [realm => $alias] => [[$alias]],
+        all => [['a@a.a'], [$forum]],
     ], [
-	{From => 'a@a.a', To => $user2, Cc => ''},
-	author => [['a@a.a']],
-	[realm => $alias] => [[$alias]],
-	all => [['a@a.a'], [$forum]],
+        {From => 'a@a.a', To => $user2, Cc => ''},
+        author => [['a@a.a']],
+        [realm => $alias] => [[$alias]],
+        all => [['a@a.a'], [$forum]],
     ], [
-	{From => 'a@a.a', To => $user2, Cc => $forum},
-	author => [['a@a.a']],
-	[realm => $alias] => [[$alias]],
-	all => [['a@a.a'], [$forum]],
+        {From => 'a@a.a', To => $user2, Cc => $forum},
+        author => [['a@a.a']],
+        [realm => $alias] => [[$alias]],
+        all => [['a@a.a'], [$forum]],
     ], [
-	{From => 'a@a.a', 'Reply-To' => 'b@b.b'},
-	author => [['b@b.b']],
-	realm => [[$forum]],
-	all => [['b@b.b'], [$forum]],
+        {From => 'a@a.a', 'Reply-To' => 'b@b.b'},
+        author => [['b@b.b']],
+        realm => [[$forum]],
+        all => [['b@b.b'], [$forum]],
     ], [
-	{From => 'a@a.a', 'Reply-To' => $user1},
-	author => [[$user1]],
-	realm => [[$forum]],
-	all => [[$forum]],
+        {From => 'a@a.a', 'Reply-To' => $user1},
+        author => [[$user1]],
+        realm => [[$forum]],
+        all => [[$forum]],
     ], [
-	{From => 'a@a.a', 'Reply-To' => $forum, To => $forum},
-	author => [['a@a.a']],
-	realm => [[$forum]],
-	all => [['a@a.a'], [$forum]],
+        {From => 'a@a.a', 'Reply-To' => $forum, To => $forum},
+        author => [['a@a.a']],
+        realm => [[$forum]],
+        all => [['a@a.a'], [$forum]],
     ], [
-	{From => 'a@a.a', 'Reply-To' => $forum, To => $forum},
-	author => [['a@a.a']],
-	realm => [[$forum]],
-	[all => $alias] => [['a@a.a'], [$alias]],
+        {From => 'a@a.a', 'Reply-To' => $forum, To => $forum},
+        author => [['a@a.a']],
+        realm => [[$forum]],
+        [all => $alias] => [['a@a.a'], [$alias]],
     ], [
-	{From => $user1, 'Reply-To' => $forum, To => $forum},
-	author => [[$user1]],
-	realm => [[$forum]],
-	all => [[$forum]],
+        {From => $user1, 'Reply-To' => $forum, To => $forum},
+        author => [[$user1]],
+        realm => [[$forum]],
+        all => [[$forum]],
     ], [
-	{From => $forum, To => $forum},
-	author => [[$forum]],
-	realm => [[$forum]],
-	all => [[$forum]],
+        {From => $forum, To => $forum},
+        author => [[$forum]],
+        realm => [[$forum]],
+        all => [[$forum]],
     ]),
 ];

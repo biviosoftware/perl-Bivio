@@ -17,10 +17,10 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     if ($_CFG->{use_cached_path}) {
-	return (undef, $proto->ERROR)
-	    unless $v =~ $proto->REGEX;
+        return (undef, $proto->ERROR)
+            unless $v =~ $proto->REGEX;
     }
     return $v;
 }
@@ -28,13 +28,13 @@ sub from_literal {
 sub from_local_path {
     my($proto, $path, $uri) = @_;
     unless ($_CFG->{use_cached_path}) {
-	return -f $path
-	    ? ($uri || $path)
-	    : undef;
+        return -f $path
+            ? ($uri || $path)
+            : undef;
     }
     my($tag) = Type_CacheTag()->from_local_path($path);
     return undef
-	unless $tag;
+        unless $tag;
     return _format_with_tag($proto, $uri || $path, $tag);
 }
 
@@ -58,10 +58,10 @@ sub to_untagged_path {
 sub _format_with_tag {
     my($proto, $uri_or_path, $tag) = @_;
     return join(
-	'.',
-	$proto->delete_suffix($uri_or_path),
-	$tag,
-	$proto->get_suffix($uri_or_path),
+        '.',
+        $proto->delete_suffix($uri_or_path),
+        $tag,
+        $proto->get_suffix($uri_or_path),
     );
 }
 

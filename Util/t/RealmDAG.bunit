@@ -9,10 +9,10 @@ model('RealmDAG')->unauth_create_or_update({
 req()->set_realm('guest');
 [
     class() => [
-	list_parents => [
-	    [] => [['GRAPH demo ' . realm_id('demo')]],
-	    GRAPH => [['GRAPH demo ' . realm_id('demo')]],
-	    RECIPROCAL_RIGHTS => [[]],
-	],
+        list_parents => [
+            [] => [['GRAPH demo ' . realm_id('demo')]],
+            GRAPH => [['GRAPH demo ' . realm_id('demo')]],
+            RECIPROCAL_RIGHTS => [[]],
+        ],
     ],
 ];

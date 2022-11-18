@@ -11,7 +11,7 @@ my($_R) = b_use('IO.Ref');
 sub empty_case {
     my($proto, $return) = @_;
     return ([] => [{
-	$proto->builtin_class() => $return,
+        $proto->builtin_class() => $return,
     }]);
 }
 
@@ -22,7 +22,7 @@ sub error_case {
 sub simple_case {
     my($proto, $input, $return) = @_;
     return ([$input] => [{
-	$proto->builtin_class() => $return,
+        $proto->builtin_class() => $return,
     }]);
 }
 
@@ -33,84 +33,84 @@ sub new_unit {
     # $attrs gets passed to SUPER below and SUPER doesn't know setup_request
     my($setup_request) = delete($attrs->{setup_request});
     $attrs = {}
-	unless ref($attrs);
+        unless ref($attrs);
     my($form_is_json) = delete($attrs->{form_is_json}) || 0;
     my($req) = b_use('Test.Request')->get_instance;
     return $proto->SUPER::new({
-	class_name => $_M->get_instance($class)->package_name,
-	compute_params => sub {
-	    my($case, $params, $method, $object) = @_;
-	    $object->reset_instance_state;
-	    return $params
-		unless $method eq 'process';
-	    $_M->new($req, 'Lock')->release_all;
-	    _setup_request($proto, $setup_request, @_);
-	    unless (@$params) {
-		$req->delete('form');
-		return [$req];
-	    }
-	    my($hash) = $params->[0];
-	    return $params
-		unless ref($hash) eq 'HASH';
-	    $hash = {
-		%{$object->get_fields_for_primary_keys()},
-		%$hash,
-	    } if $object->isa('Bivio::Biz::ListFormModel');
-	    Bivio::Die->die('You must set empty_row_count on case: ', $case)
-	        if $object->isa('Bivio::Biz::ExpandableListFormModel')
-	        && !exists($hash->{empty_row_count});
-	    Bivio::Die->die(
-		ref($object),
-		': auxiliary form; set task with initialize_fully; primary=',
-		$req->get('task')->get('form_model'),
-	    ) if $object->is_auxiliary_on_task;
-	    return [$req->put(
-		form => {
-		    $object->VERSION_FIELD => $object->get_info('version'),
-		    $form_is_json ? (
-			%$hash,
-			b_use('Biz.FormModel')->CONTENT_TYPE_FIELD => 'application/json',
-		    ) : map(
-			{
-			    my($t) = $object->get_field_type($_);
-			    my($v) = $hash->{$_};
-			    $v = $v->($case)
-				if ref($v) eq 'CODE';
-			    ($object->get_field_name_for_html($_) =>
-				 ($t->isa('Bivio::Type::FileField')
-				      ? $v
-				      : $t->to_literal($v)));
-			}
-			keys(%$hash),
-		    ),
-		},
-	    )];
-	},
-	check_return => sub {
-	    my($case, $actual, $expect) = @_;
-	    my($o) = $case->get('object');
-	    $case->error_note($o->get_errors);
-	    return $expect
-		unless $case->get('method') eq 'process';
-	    my($e) = $expect->[0];
-	    if ($case->get('comparator') eq 'nested_contains') {
-		$case->actual_return([_walk_tree_actual($case, $e, $req)]);
-		return [$e];
-	    }
-	    return $expect
-		unless (ref($e) eq 'HASH' && @$expect == 1)
-		    || ($o->isa('Bivio::Biz::ListFormModel')
-			    && ref($expect->[0]) eq 'HASH');
-	    $e = _walk_tree_expect($case, $e);
-	    $case->actual_return([_walk_tree_actual($case, $e, $req)]);
-	    return [$e];
-	},
-	compute_return => sub {
-	    my($case, $actual) = @_;
-	    $case->error_note($case->get('object')->get_errors);
-	    return $actual;
-	},
-	%$attrs,
+        class_name => $_M->get_instance($class)->package_name,
+        compute_params => sub {
+            my($case, $params, $method, $object) = @_;
+            $object->reset_instance_state;
+            return $params
+                unless $method eq 'process';
+            $_M->new($req, 'Lock')->release_all;
+            _setup_request($proto, $setup_request, @_);
+            unless (@$params) {
+                $req->delete('form');
+                return [$req];
+            }
+            my($hash) = $params->[0];
+            return $params
+                unless ref($hash) eq 'HASH';
+            $hash = {
+                %{$object->get_fields_for_primary_keys()},
+                %$hash,
+            } if $object->isa('Bivio::Biz::ListFormModel');
+            Bivio::Die->die('You must set empty_row_count on case: ', $case)
+                if $object->isa('Bivio::Biz::ExpandableListFormModel')
+                && !exists($hash->{empty_row_count});
+            Bivio::Die->die(
+                ref($object),
+                ': auxiliary form; set task with initialize_fully; primary=',
+                $req->get('task')->get('form_model'),
+            ) if $object->is_auxiliary_on_task;
+            return [$req->put(
+                form => {
+                    $object->VERSION_FIELD => $object->get_info('version'),
+                    $form_is_json ? (
+                        %$hash,
+                        b_use('Biz.FormModel')->CONTENT_TYPE_FIELD => 'application/json',
+                    ) : map(
+                        {
+                            my($t) = $object->get_field_type($_);
+                            my($v) = $hash->{$_};
+                            $v = $v->($case)
+                                if ref($v) eq 'CODE';
+                            ($object->get_field_name_for_html($_) =>
+                                 ($t->isa('Bivio::Type::FileField')
+                                      ? $v
+                                      : $t->to_literal($v)));
+                        }
+                        keys(%$hash),
+                    ),
+                },
+            )];
+        },
+        check_return => sub {
+            my($case, $actual, $expect) = @_;
+            my($o) = $case->get('object');
+            $case->error_note($o->get_errors);
+            return $expect
+                unless $case->get('method') eq 'process';
+            my($e) = $expect->[0];
+            if ($case->get('comparator') eq 'nested_contains') {
+                $case->actual_return([_walk_tree_actual($case, $e, $req)]);
+                return [$e];
+            }
+            return $expect
+                unless (ref($e) eq 'HASH' && @$expect == 1)
+                    || ($o->isa('Bivio::Biz::ListFormModel')
+                            && ref($expect->[0]) eq 'HASH');
+            $e = _walk_tree_expect($case, $e);
+            $case->actual_return([_walk_tree_actual($case, $e, $req)]);
+            return [$e];
+        },
+        compute_return => sub {
+            my($case, $actual) = @_;
+            $case->error_note($case->get('object')->get_errors);
+            return $actual;
+        },
+        %$attrs,
     });
 }
 
@@ -118,8 +118,8 @@ sub req_state {
     my($proto, $params) = @_;
     $params = $_R->nested_copy($params);
     return sub {
-	$proto->builtin_self->put(req_state => $params);
-	return 1;
+        $proto->builtin_self->put(req_state => $params);
+        return 1;
     } => 1;
 }
 
@@ -127,28 +127,28 @@ sub req_state_merge {
     my($proto, $params) = @_;
     $params = $_R->nested_copy($params);
     return sub {
-	my($self) = $proto->builtin_self;
-	$self->put(req_state => {
-	    %{$self->get_or_default('req_state', {})},
-	    %$params,
-	});
-	return 1;
+        my($self) = $proto->builtin_self;
+        $self->put(req_state => {
+            %{$self->get_or_default('req_state', {})},
+            %$params,
+        });
+        return 1;
     } => 1;
 }
 
 sub run_unit {
     return shift->SUPER::run_unit(@_)
-	if @_ == 3;
+        if @_ == 3;
     my($self, $case_group) = @_;
     my($req) = b_use('Test.Request')->initialize_fully;
     return $self->SUPER::run_unit(
-	$self->map_by_two(sub {
+        $self->map_by_two(sub {
             my($params, $return) = @_;
-	    return ([$req] => [
-		ref($params) eq 'ARRAY' ? (process => [$params => $return])
-		    : ($params, $return),
-	    ]);
-	}, $case_group),
+            return ([$req] => [
+                ref($params) eq 'ARRAY' ? (process => [$params => $return])
+                    : ($params, $return),
+            ]);
+        }, $case_group),
     );
 }
 
@@ -160,7 +160,7 @@ sub _field_err {
     my($o, $field) = @_;
     my($ed) = $o->get_field_error_detail($field);
     return $o->get_field_error($field)->get_name
-	. ($ed ? ": $ed" : '');
+        . ($ed ? ": $ed" : '');
 }
 
 sub _setup_request {
@@ -169,59 +169,59 @@ sub _setup_request {
     my($req) = $proto->builtin_req;
     $req->clear_nondurable_state;
     $req->put(
-	path_info => undef,
-	query => undef,
-	form => undef,
+        path_info => undef,
+        query => undef,
+        form => undef,
     );
     $req->get('task')->put_attr_for_test(
-	form_model => ref($object),
-	next => $req->get('task_id'),
-	require_context => 0,
+        form_model => ref($object),
+        next => $req->get('task_id'),
+        require_context => 0,
     ) unless $req->get('task')->unsafe_get_attr_as_id('next')
-	&& !$req->get('task_id')->eq_shell_util;
+        && !$req->get('task_id')->eq_shell_util;
     if (my $rs = $self->unsafe_get('req_state')) {
-	$rs = {%$rs};
+        $rs = {%$rs};
         foreach my $p (qw(user realm)) {
-	    next
-		unless exists($rs->{$p});
-	    my($m) = "set_$p";
-	    $req->$m(_eval(delete($rs->{$p})));
-	};
-	if (my $t = delete($rs->{task})) {
-	    $req->initialize_fully(_eval($t));
-	}
-	$req->put(_eval(%$rs))
-	    if %$rs;
+            next
+                unless exists($rs->{$p});
+            my($m) = "set_$p";
+            $req->$m(_eval(delete($rs->{$p})));
+        };
+        if (my $t = delete($rs->{task})) {
+            $req->initialize_fully(_eval($t));
+        }
+        $req->put(_eval(%$rs))
+            if %$rs;
     }
     $setup_request->($case, $params)
-	if $setup_request;
+        if $setup_request;
     return;
 }
 
 sub _walk_tree_actual {
     my($case, $e, $o) = @_;
     return ref($e) eq 'HASH'
-	? {map(($_ => _walk_tree_actual(
-	    $case, $e->{$_},
-	    !defined($o) ? undef
-		: UNIVERSAL::can($o, 'unsafe_get')
-		? $o->can('get_field_error') && $o->get_field_error($_)
-		? _field_err($o, $_)
-		: $o->unsafe_get($_)
-		: ref($o) eq 'HASH' ? $o->{$_}
-		: ref($o) eq 'ARRAY' && $_ =~ /^\d+$/ ? $o->[$_]
-		: $_A->format_args($_, ': not index of ', $o))),
-	    keys(%$e),
-	)} : $o;
+        ? {map(($_ => _walk_tree_actual(
+            $case, $e->{$_},
+            !defined($o) ? undef
+                : UNIVERSAL::can($o, 'unsafe_get')
+                ? $o->can('get_field_error') && $o->get_field_error($_)
+                ? _field_err($o, $_)
+                : $o->unsafe_get($_)
+                : ref($o) eq 'HASH' ? $o->{$_}
+                : ref($o) eq 'ARRAY' && $_ =~ /^\d+$/ ? $o->[$_]
+                : $_A->format_args($_, ': not index of ', $o))),
+            keys(%$e),
+        )} : $o;
 }
 
 sub _walk_tree_expect {
     my($case, $e) = @_;
     return ref($e) eq 'HASH'
-	? {map(($_ => _walk_tree_expect($case, $e->{$_})), keys(%$e))}
-	: ref($e) eq 'CODE'
-	    ? $e->($case)
-	    : $e;
+        ? {map(($_ => _walk_tree_expect($case, $e->{$_})), keys(%$e))}
+        : ref($e) eq 'CODE'
+            ? $e->($case)
+            : $e;
 }
 
 1;

@@ -4,6 +4,6 @@ Widget();
 [
     ['/f/css/unit-test.css'] => qr{^<style type="text/css">\n<!--\n.*\n-->\n</style>$}s,
     [SITE_CSS => {
-	control => 1,
+        control => 1,
     }] => qq{<link href="/pub/site.css" rel="stylesheet" type="text/css" />\n},
 ];

@@ -3,56 +3,56 @@
 Type();
 [
     internal_merge_tasks => [
-	[
-	    [
-		'A',
-		{
-		    task_id => 'B',
-		    sort_label => 'sort_label_01',
-		},
-		{
-		    task_id => 'C',
-		},
-		{
-		    task_id => 'D',
-		    sort_label => 'sort_label_02',
-		},
-		{
-		    task_id => 'E',
-		    sort_label => 'sort_label_03',
-		},
-	    ], [
-		{
-		    task_id => 'A',
-		    sort_label => 'sort_label_01',
-		},
-		'B',
-		{
-		    task_id => 'F',
-		    sort_label => 'sort_label_02',
-		},
-	    ],
-	] => [[
-		{
-		    task_id => 'A',
-		    sort_label => 'sort_label_01',
-		},
-		'B',
-		{
-		    task_id => 'F',
-		    sort_label => 'sort_label_02',
-		},
-		{
-		    task_id => 'C',
-		},
-		{
-		    task_id => 'D',
-		    sort_label => 'sort_label_04',
-		},
-		{
-		    task_id => 'E',
-		    sort_label => 'sort_label_05',
-		},
-	    ]],
+        [
+            [
+                'A',
+                {
+                    task_id => 'B',
+                    sort_label => 'sort_label_01',
+                },
+                {
+                    task_id => 'C',
+                },
+                {
+                    task_id => 'D',
+                    sort_label => 'sort_label_02',
+                },
+                {
+                    task_id => 'E',
+                    sort_label => 'sort_label_03',
+                },
+            ], [
+                {
+                    task_id => 'A',
+                    sort_label => 'sort_label_01',
+                },
+                'B',
+                {
+                    task_id => 'F',
+                    sort_label => 'sort_label_02',
+                },
+            ],
+        ] => [[
+                {
+                    task_id => 'A',
+                    sort_label => 'sort_label_01',
+                },
+                'B',
+                {
+                    task_id => 'F',
+                    sort_label => 'sort_label_02',
+                },
+                {
+                    task_id => 'C',
+                },
+                {
+                    task_id => 'D',
+                    sort_label => 'sort_label_04',
+                },
+                {
+                    task_id => 'E',
+                    sort_label => 'sort_label_05',
+                },
+            ]],
     ],
 ];

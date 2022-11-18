@@ -14,20 +14,20 @@ model('RealmUser')->test_unauth_delete_all({
 });
 [
     req_state({
-	realm => 'site-admin',
-	user => 'root',
+        realm => 'site-admin',
+        user => 'root',
     }),
     map({
-	my($name) = $_;
-	[{
-	    login => $name,
-	}] => sub {$ok->($name)},
+        my($name) = $_;
+        [{
+            login => $name,
+        }] => sub {$ok->($name)},
     } qw(demo site_accountant)),
     map({
-	[{login => $_}] => FORBIDDEN();
+        [{login => $_}] => FORBIDDEN();
     } qw(site_adm root)),
     req_state({
-	user => 'site_adm',
+        user => 'site_adm',
     }),
     [{login => 'demo'}] => sub {$ok->('demo')},
 ];

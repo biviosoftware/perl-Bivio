@@ -2,56 +2,56 @@
 # $Id$
 PropertyModel({
     compute_params => sub {
-	my($case, $params) = @_;
-	my($m) = $case->get('method');
-	return $m eq 'replace_value' ? $params
-	    : $m eq 'get_value' ? [
-		req('auth_id'),
-		from_type(qw(RowTagKey ERROR_DETAIL)),
-	    ] : [{
-		primary_id => req('auth_id'), 
-		key => from_type(qw(RowTagKey ERROR_DETAIL)),
-		@$params ? (value => $params->[0]) : (),
-	    }];
+        my($case, $params) = @_;
+        my($m) = $case->get('method');
+        return $m eq 'replace_value' ? $params
+            : $m eq 'get_value' ? [
+                req('auth_id'),
+                from_type(qw(RowTagKey ERROR_DETAIL)),
+            ] : [{
+                primary_id => req('auth_id'), 
+                key => from_type(qw(RowTagKey ERROR_DETAIL)),
+                @$params ? (value => $params->[0]) : (),
+            }];
     },
 });
 req()->set_realm('demo');
 [
     delete => not_die(),
     create => [
-	[undef] => not_die(),
+        [undef] => not_die(),
     ],
     unsafe_load => 0,
     create => [
-	x1 => not_die(),
+        x1 => not_die(),
     ],
     update => [
-	x2 => not_die(),
+        x2 => not_die(),
     ],
     get_value => 'x2',
     update => [
-	[undef] => not_die(),
+        [undef] => not_die(),
     ],
     get_value => [
-	[] => [undef],
+        [] => [undef],
     ],
     replace_value => [
-	[req('auth_id'), ERROR_DETAIL => 'x3'] => not_die(),
+        [req('auth_id'), ERROR_DETAIL => 'x3'] => not_die(),
     ],
     get_value => 'x3',
     replace_value => [
-	[req('auth_id'), ERROR_DETAIL => undef] => not_die(),
+        [req('auth_id'), ERROR_DETAIL => undef] => not_die(),
     ],
     get_value => [
-	[] => [undef],
+        [] => [undef],
     ],
     replace_value => [
-	[req(qw(auth_realm owner)), ERROR_DETAIL => 'x5'] => not_die(),
-	[ERROR_DETAIL => 'x4'] => not_die(),
+        [req(qw(auth_realm owner)), ERROR_DETAIL => 'x5'] => not_die(),
+        [ERROR_DETAIL => 'x4'] => not_die(),
     ],
     get_value => [
-	[] => 'x4',
-	ERROR_DETAIL => 'x4',
-	[RowTagKey('ERROR_DETAIL')] => 'x4',
+        [] => 'x4',
+        ERROR_DETAIL => 'x4',
+        [RowTagKey('ERROR_DETAIL')] => 'x4',
     ],
 ];

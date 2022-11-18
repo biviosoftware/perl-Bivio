@@ -3,27 +3,27 @@
 Request();
 config({
     class() => {
-	hosts => [qw(www.bivio.biz localhost.localdomain)],
-	addresses => [qw(96.126.116.242)],
+        hosts => [qw(www.bivio.biz localhost.localdomain)],
+        addresses => [qw(96.126.116.242)],
     },
 });
 [
     class() => [
-	is_valid_address => [
-	    '96.126.116.242' => 1,
-	    '127.0.0.1' => 1,
-	    '198.41.0.4' => 0,
-	],
-	{
-	    method => 'execute',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->put(client_addr => $params->[0]);
-		return [req()];
-	    },
-	} => [
-	    '127.0.0.1' => not_die(),
-	    '198.41.0.4' => CONFIG_ERROR(),
-	],
+        is_valid_address => [
+            '96.126.116.242' => 1,
+            '127.0.0.1' => 1,
+            '198.41.0.4' => 0,
+        ],
+        {
+            method => 'execute',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->put(client_addr => $params->[0]);
+                return [req()];
+            },
+        } => [
+            '127.0.0.1' => not_die(),
+            '198.41.0.4' => CONFIG_ERROR(),
+        ],
     ],
 ];

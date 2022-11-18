@@ -13,21 +13,21 @@ foreach my $path (qw(
 commit();
 options({
     compute_params => sub {
-	my($case, $params) = @_;
-	req()->put(path_info => shift(@$params));
-	req()->set_user(shift(@$params));
-	return [req()];
+        my($case, $params) = @_;
+        req()->put(path_info => shift(@$params));
+        req()->set_user(shift(@$params));
+        return [req()];
     },
     compute_return => sub {
-	return [req('path_info')];
+        return [req('path_info')];
     },
 });
 [
     class() => [
-	access_controlled_execute => [
-	    '/my-folder/x.txt' => '/my-folder/x.txt',
-	    '/my-folder' => '/Public/my-folder',
-	    ['/my-folder', 'root'] => '/Public/my-folder',
-	],
+        access_controlled_execute => [
+            '/my-folder/x.txt' => '/my-folder/x.txt',
+            '/my-folder' => '/Public/my-folder',
+            ['/my-folder', 'root'] => '/Public/my-folder',
+        ],
     ],
 ];

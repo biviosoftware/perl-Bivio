@@ -7,14 +7,14 @@ foreach my $addr ($e1, $e2) {
     $addr = generate_local_email($addr);
     follow_link('Settings');
     submit_form({
-	email => $addr,
+        email => $addr,
     });
     verify_text(qr{verify email address}i);
     verify_form({
-	qr{^email}i => $addr
+        qr{^email}i => $addr
     });
     submit_form({
-	qr{^email}i => $addr,
+        qr{^email}i => $addr,
     });
     verify_text(qr{click on the link}i);
     verify_text($addr);

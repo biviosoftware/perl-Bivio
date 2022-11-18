@@ -3,29 +3,29 @@
 Widget({
     class_name => b_use('Widget.Simple'),
     widget_post_new => sub {
-	my($case, $params, $object) = @_;
-	$object->b_widget_label($params->[0])
-	    if $params->[0] =~ /label/;
-	return;
+        my($case, $params, $object) = @_;
+        $object->b_widget_label($params->[0])
+            if $params->[0] =~ /label/;
+        return;
     },
 });
 [
     'abc' => sub {
-	my($o) = shift->get('object');
-	assert_equals('', $o->get('b_widget_label'));
-	assert_equals(
-	    'Bivio::Test',
-	    $o->get('b_widget_calling_context')->get('package'),
-	);
-	return ['abc'];
+        my($o) = shift->get('object');
+        assert_equals('', $o->get('b_widget_label'));
+        assert_equals(
+            'Bivio::Test',
+            $o->get('b_widget_calling_context')->get('package'),
+        );
+        return ['abc'];
     },
     'label_def' => sub {
-	my($o) = shift->get('object');
-	assert_equals('label_def', $o->get('b_widget_label'));
-	assert_equals(
-	    'Bivio::Test',
-	    $o->get('b_widget_calling_context')->get('package'),
-	);
-	return 1;
+        my($o) = shift->get('object');
+        assert_equals('label_def', $o->get('b_widget_label'));
+        assert_equals(
+            'Bivio::Test',
+            $o->get('b_widget_calling_context')->get('package'),
+        );
+        return 1;
     },
 ];

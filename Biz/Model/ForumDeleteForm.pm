@@ -8,16 +8,16 @@ use Bivio::Base 'Biz.FormModel';
 sub execute_ok {
     my($self) = @_;
     my($forum) = $self->new_other('Forum')->unauth_load_or_die({
-	forum_id => $self->new_other('RealmOwner')
-	    ->unauth_load_or_die({
-		name => $self->get('RealmOwner.name'),
-	    })->get('realm_id'),
+        forum_id => $self->new_other('RealmOwner')
+            ->unauth_load_or_die({
+                name => $self->get('RealmOwner.name'),
+            })->get('realm_id'),
     });
     $self->req->with_realm($forum->get('forum_id'),
-	sub {
-	    $forum->cascade_delete;
-	    $self->req(qw(auth_realm owner))->cascade_delete;
-	});
+        sub {
+            $forum->cascade_delete;
+            $self->req(qw(auth_realm owner))->cascade_delete;
+        });
     return;
 }
 
@@ -26,11 +26,11 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
-	    {
-		name => 'RealmOwner.name',
-		type => 'Line',
-	    },
-	],
+            {
+                name => 'RealmOwner.name',
+                type => 'Line',
+            },
+        ],
     });
 }
 

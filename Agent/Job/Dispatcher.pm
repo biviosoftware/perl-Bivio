@@ -20,7 +20,7 @@ __PACKAGE__->initialize;
 sub can_enqueue_job {
     my($proto, $req) = @_;
     return exists($ENV{MOD_PERL}) && b_use('AgentHTTP.Request')->is_blesser_of($req)
-	? 1 : 0;
+        ? 1 : 0;
 }
 
 sub create_request {
@@ -46,12 +46,12 @@ sub enqueue {
     # May not be called during L<execute_queue|"execute_queue">.
     my($self, $req, $task_id, $params) = @_;
     b_die('not allowed to call enqueue in execute_queue')
-	if $_IN_EXECUTE;
+        if $_IN_EXECUTE;
 
     # No models please
     while (my($k, $v) = each(%$params)) {
-	b_die('models may not be queued: ', $k, '=', $v)
-	    if b_use('Biz.Model')->is_super_of($v);
+        b_die('models may not be queued: ', $k, '=', $v)
+            if b_use('Biz.Model')->is_super_of($v);
     }
 
     # Validate task
@@ -63,8 +63,8 @@ sub enqueue {
     $params->{auth_user_id} ||= $u ? $u->get('realm_id') : undef;
 #TODO: Need to define this list more clearly
     foreach my $p (qw(auth_id Bivio::UI::Facade UI.Facade is_secure client_addr)) {
-	$params->{$p} = $req->unsafe_get($p)
-	    unless exists($params->{$p});
+        $params->{$p} = $req->unsafe_get($p)
+            unless exists($params->{$p});
     }
 
     # Enqueue and add as a txn resource (may end up calling handle_rollback
@@ -83,13 +83,13 @@ sub execute_queue {
 
     # Iterate through each item in the queue
     while (@_QUEUE) {
-	my($params) = shift(@_QUEUE);
-	b_info($$, ' JOB_START: ', $params);
-	my($die) = $_SELF->process_request({%$params});
-	b_info(
-	    $$,
-	    $die ? (' JOB_ERROR: ', $params, ' ', $die) : (' JOB_END: ', $params),
-	);
+        my($params) = shift(@_QUEUE);
+        b_info($$, ' JOB_START: ', $params);
+        my($die) = $_SELF->process_request({%$params});
+        b_info(
+            $$,
+            $die ? (' JOB_ERROR: ', $params, ' ', $die) : (' JOB_END: ', $params),
+        );
     }
     $_IN_EXECUTE = 0;
     return;

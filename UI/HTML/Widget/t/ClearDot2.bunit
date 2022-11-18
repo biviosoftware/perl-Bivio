@@ -3,5 +3,5 @@
 Widget({class_name => 'Widget.Simple'});
 [
     [[sub {class('HTMLWidget.ClearDot')->as_html(33, 99)}]]
-	=> '<img class="b_clear_dot" alt="dot" height="99" src="/i/dot.gif" width="33" />',
+        => '<img class="b_clear_dot" alt="dot" height="99" src="/i/dot.gif" width="33" />',
 ];

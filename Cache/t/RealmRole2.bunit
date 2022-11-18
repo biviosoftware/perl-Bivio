@@ -3,37 +3,37 @@
 Request();
 config({
     'Bivio::Cache::RealmRole' => {
-	enable => 0,
+        enable => 0,
     },
 });
 req()->initialize_fully;
 [
     sub {req()} => [
-	{
-	    method => 'can_user_execute_task',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->set_realm_and_user(shift(@$params), shift(@$params));
-		return $params;
-	    },
-	} => [
-	    [qw(demo demo USER_PASSWORD)] => 1,
-	    inline_case(sub {
-	        ShellUtil_RealmRole()->edit(qw(ADMINISTRATOR -));
-	        return;
-	    }),
-	    [qw(demo demo USER_PASSWORD)] => 0,
-	    inline_case(sub {
-	        model('RealmRole')->delete_all({realm_id => req('auth_id')});
-	    	return;
-	    }),
-	    [qw(demo demo USER_PASSWORD)] => 1,
-	    inline_case(sub {
-	        ShellUtil_RealmRole()->edit(qw(ADMINISTRATOR -));
-	        return;
-	    }),
-	    inline_rollback(),
-	    [qw(demo demo USER_PASSWORD)] => 1,
-	],
+        {
+            method => 'can_user_execute_task',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->set_realm_and_user(shift(@$params), shift(@$params));
+                return $params;
+            },
+        } => [
+            [qw(demo demo USER_PASSWORD)] => 1,
+            inline_case(sub {
+                ShellUtil_RealmRole()->edit(qw(ADMINISTRATOR -));
+                return;
+            }),
+            [qw(demo demo USER_PASSWORD)] => 0,
+            inline_case(sub {
+                model('RealmRole')->delete_all({realm_id => req('auth_id')});
+                    return;
+            }),
+            [qw(demo demo USER_PASSWORD)] => 1,
+            inline_case(sub {
+                ShellUtil_RealmRole()->edit(qw(ADMINISTRATOR -));
+                return;
+            }),
+            inline_rollback(),
+            [qw(demo demo USER_PASSWORD)] => 1,
+        ],
     ],
 ];

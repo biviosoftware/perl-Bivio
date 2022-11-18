@@ -10,8 +10,8 @@ sub control_on_render {
     my($field) = $self->render_simple_attr('field_name', $source);
     my($v) = $source->get($field);
     unless (defined($v)) {
-	$self->control_off_render($source, $buffer);
-	return;
+        $self->control_off_render($source, $buffer);
+        return;
     }
     my($to) = $self->render_simple_attr('to_method', $source);
     $$buffer .= $source->get_field_type($field)->$to($v);
@@ -33,8 +33,8 @@ sub internal_as_string {
 sub internal_new_args {
     my(undef, $field_name, $attrs) = @_;
     return {
-	field_name => $field_name,
-	($attrs ? %$attrs : ()),
+        field_name => $field_name,
+        ($attrs ? %$attrs : ()),
     };
 }
 

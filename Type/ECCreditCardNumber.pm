@@ -15,9 +15,9 @@ sub from_literal {
     my($err);
     ($value, $err) = $proto->SUPER::from_literal($value);
     return ($value, $err)
-	if $err;
+        if $err;
     return undef
-	unless defined($value);
+        unless defined($value);
     $value =~ s/[-\s]+//g;
     return $proto->luhn_mod10($value) ? $value :
             (undef, $_TE->CREDITCARD_INVALID_NUMBER);
@@ -30,10 +30,10 @@ sub get_width {
 sub luhn_mod10 {
     my(undef, $number) = @_;
     return 0
-	unless defined($number);
+        unless defined($number);
     my($len) = length($number);
     return 0
-	if $len < 12 || $len > 19 || $number =~ /\D/;
+        if $len < 12 || $len > 19 || $number =~ /\D/;
     my($sum) = 0;
     my($mul) = 1;
     my(@digits) = split('', $number);

@@ -13,8 +13,8 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put(
-	tag => 'style',
-	TYPE => 'text/css',
+        tag => 'style',
+        TYPE => 'text/css',
     );
 #TODO: Consider compression
     return shift->SUPER::initialize(@_);

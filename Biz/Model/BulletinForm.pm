@@ -16,15 +16,15 @@ sub execute_empty {
 sub execute_ok {
     my($self, @args) = @_;
     $self->internal_put_field(
-	subject => $self->req(qw(Model.RealmMail subject)));
+        subject => $self->req(qw(Model.RealmMail subject)));
     return _do($self, sub {$self->SUPER::execute_ok(@args)});
 }
 
 sub internal_format_from {
     my($self, $realm_email) = @_;
     return $_RFC->format_mailbox(
-	$realm_email,
-	$self->req(qw(auth_realm owner display_name)),
+        $realm_email,
+        $self->req(qw(auth_realm owner display_name)),
     );
 }
 
@@ -47,7 +47,7 @@ sub internal_initialize {
 
 sub internal_return_value {
     return {
-	method => 'server_redirect',
+        method => 'server_redirect',
     };
 }
 
@@ -60,7 +60,7 @@ sub internal_pre_execute {
 sub validate {
     my($self) = @_;
     foreach my $f (qw(subject body)) {
-	$self->internal_clear_error($f);
+        $self->internal_clear_error($f);
     }
     return;
 }
@@ -69,12 +69,12 @@ sub _do {
     my($self, $op) = @_;
     my($req) = $self->req;
     return $req->with_realm(
-	$self->new_other('Forum')->get_parent_id,
-	sub {
-	    $req->throw_die('FORBIDDEN')
-		unless $req->can_user_execute_task($req->get('task_id'));
-	    return $op->();
-	},
+        $self->new_other('Forum')->get_parent_id,
+        sub {
+            $req->throw_die('FORBIDDEN')
+                unless $req->can_user_execute_task($req->get('task_id'));
+            return $op->();
+        },
     );
 }
 

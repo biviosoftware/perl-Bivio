@@ -16,8 +16,8 @@ sub get {
     my($realm_file) = $self->{ftps}->get_realm_file($path);
     return undef unless $realm_file;
     return $realm_file->get('is_folder')
-	? __PACKAGE__->new($self->{ftps}, $path)
-	: Bivio::Ext::NetFTPServer::FileHandle->new($self->{ftps}, $path);
+        ? __PACKAGE__->new($self->{ftps}, $path)
+        : Bivio::Ext::NetFTPServer::FileHandle->new($self->{ftps}, $path);
   }
 
 # Get parent of current directory.
@@ -26,8 +26,8 @@ sub parent {
     my($self) = @_;
     my($path) = $self->dirname;
     return $path eq '/'
-	? Bivio::Ext::NetFTPServer::RootHandle->new($self->{ftps}, $path)
-	: __PACKAGE__->new($self->{ftps}, $path);
+        ? Bivio::Ext::NetFTPServer::RootHandle->new($self->{ftps}, $path)
+        : __PACKAGE__->new($self->{ftps}, $path);
 }
 
 sub list {
@@ -44,22 +44,22 @@ sub list_status {
     return undef unless $folder;
 
     if ($wildcard) {
-	$wildcard = $self->{ftps}->wildcard_to_regex($wildcard);
+        $wildcard = $self->{ftps}->wildcard_to_regex($wildcard);
     }
     return Bivio::Biz::Model->new(
-	$self->{ftps}->get_request, 'RealmFile')->map_iterate(sub {
-	my($realm_file) = @_;
-	my($name) = Bivio::Type::FilePath->get_tail(
-	    $realm_file->get('path'));
-    	return () if $wildcard && $name !~ /$wildcard/;
-	my($path) = Bivio::Type::FilePath->join($self->pathname, $name);
-	my($handle) = $realm_file->get('is_folder')
-	    ? __PACKAGE__->new($self->{ftps}, $path)
-	    : Bivio::Ext::NetFTPServer::FileHandle->new($self->{ftps},
-		$path);
-  	return [$name, $handle, [$handle->status]];
+        $self->{ftps}->get_request, 'RealmFile')->map_iterate(sub {
+        my($realm_file) = @_;
+        my($name) = Bivio::Type::FilePath->get_tail(
+            $realm_file->get('path'));
+            return () if $wildcard && $name !~ /$wildcard/;
+        my($path) = Bivio::Type::FilePath->join($self->pathname, $name);
+        my($handle) = $realm_file->get('is_folder')
+            ? __PACKAGE__->new($self->{ftps}, $path)
+            : Bivio::Ext::NetFTPServer::FileHandle->new($self->{ftps},
+                $path);
+          return [$name, $handle, [$handle->status]];
     }, 'is_folder DESC, path_lc', {
-	folder_id => $folder->get('realm_file_id'),
+        folder_id => $folder->get('realm_file_id'),
     });
 }
 

@@ -9,9 +9,9 @@ sub from_literal {
     my($proto) = shift;
     my($value, $err) = $proto->SUPER::from_literal(@_);
     return ($value, $err)
-	unless defined($value);
+        unless defined($value);
     return (undef, Bivio::TypeError->COUNTRY)
-	unless $value =~ /^[a-z]+$/i && $proto->get_width == length($value);
+        unless $value =~ /^[a-z]+$/i && $proto->get_width == length($value);
     return uc($value);
 }
 

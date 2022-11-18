@@ -3,62 +3,62 @@
 Request();
 [
     sub {req()} => [
-	{
-	    method => 'set_realm',
-	    compute_return => sub {
-		return [$_[1]->[0]->get('type')->get_name];
-	    },
-	} => [
-	    [undef] => 'GENERAL',
-	    demo => 'USER',
-	    fourem => 'FORUM',
-	    1 => 'GENERAL',
-	    user => 'USER',
-	],
-	with_realm => [
-	    [undef, sub {req('auth_realm')->is_general}] => 1,
-	    [fourem => sub {req(qw(auth_realm owner_name))}] => 'fourem',
-	    [fourem => sub {die('here we go')}] => qr{DIE:.*here we go},
-	    [undef, sub {(1, 2)}] => [1, 2],
-	],
-	{
-	    method => 'with_realm',
-	    want_scalar => 1,
-	} => [
-	    [undef, sub {()}] => [undef],
-	    [undef, sub {1}] => 1,
-	    [undef, sub {(1, 2)}] => DIE(),
-	],
-	with_user => [
-	    [undef, sub {req('auth_user')}] => [undef],
-	    [root => sub {req(qw(auth_user name))}] => 'root',
-	    [demo => sub {die('here we go')}] => qr{DIE:.*here we go},
-	],
-	map_user_realms => [
-	    [sub {$_->{'RealmOwner.name'}}] => [[]],
-	],
-	{
-	    method => 'map_user_realms',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->set_user(shift(@$params));
-		return [sub {$_->{'RealmOwner.name'}}, @$params];
-	    },
-	} => [
-	    btest_read => [[qw(btest_read fourem fourem-sub1 fourem-sub1-1 fourem-sub2 site-admin)]],
-	    [btest_read => {
-		 'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER,
-	    }] => [[qw(btest_read)]],
-	    [root => {
-		 'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER,
-		 'RealmUser.role' => Bivio::Auth::Role->ADMINISTRATOR,
-	    }] => [[qw(root)]],
-	],
-	put => [
-	    [query => 'a=3'] => sub {
-		assert_equals({a => 3}, req('query'));
-		return 1;
-	    },
-	],
+        {
+            method => 'set_realm',
+            compute_return => sub {
+                return [$_[1]->[0]->get('type')->get_name];
+            },
+        } => [
+            [undef] => 'GENERAL',
+            demo => 'USER',
+            fourem => 'FORUM',
+            1 => 'GENERAL',
+            user => 'USER',
+        ],
+        with_realm => [
+            [undef, sub {req('auth_realm')->is_general}] => 1,
+            [fourem => sub {req(qw(auth_realm owner_name))}] => 'fourem',
+            [fourem => sub {die('here we go')}] => qr{DIE:.*here we go},
+            [undef, sub {(1, 2)}] => [1, 2],
+        ],
+        {
+            method => 'with_realm',
+            want_scalar => 1,
+        } => [
+            [undef, sub {()}] => [undef],
+            [undef, sub {1}] => 1,
+            [undef, sub {(1, 2)}] => DIE(),
+        ],
+        with_user => [
+            [undef, sub {req('auth_user')}] => [undef],
+            [root => sub {req(qw(auth_user name))}] => 'root',
+            [demo => sub {die('here we go')}] => qr{DIE:.*here we go},
+        ],
+        map_user_realms => [
+            [sub {$_->{'RealmOwner.name'}}] => [[]],
+        ],
+        {
+            method => 'map_user_realms',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->set_user(shift(@$params));
+                return [sub {$_->{'RealmOwner.name'}}, @$params];
+            },
+        } => [
+            btest_read => [[qw(btest_read fourem fourem-sub1 fourem-sub1-1 fourem-sub2 site-admin)]],
+            [btest_read => {
+                 'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER,
+            }] => [[qw(btest_read)]],
+            [root => {
+                 'RealmOwner.realm_type' => Bivio::Auth::RealmType->USER,
+                 'RealmUser.role' => Bivio::Auth::Role->ADMINISTRATOR,
+            }] => [[qw(root)]],
+        ],
+        put => [
+            [query => 'a=3'] => sub {
+                assert_equals({a => 3}, req('query'));
+                return 1;
+            },
+        ],
     ],
 ];

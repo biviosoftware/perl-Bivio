@@ -4,19 +4,19 @@ PropertyModel();
 req()->set_realm_and_user(qw(demo demo));
 [
     create_from_hash => [
-	[{'td1#TupleDef1' => [{
-	    label => 'S1',
-	    type => 'Date',
-	}]}] => [{
-	    'Model.TupleDef' => {
-		moniker => 'td1',
-		label => 'TupleDef1',
-	    },
-	    'Model.TupleSlotDef' => {
-		label => 'S1',
-		tuple_slot_type_id =>
-		    model(TupleSlotTypeList => {})->label_to_id('Date'),
-	    },
-	}],
+        [{'td1#TupleDef1' => [{
+            label => 'S1',
+            type => 'Date',
+        }]}] => [{
+            'Model.TupleDef' => {
+                moniker => 'td1',
+                label => 'TupleDef1',
+            },
+            'Model.TupleSlotDef' => {
+                label => 'S1',
+                tuple_slot_type_id =>
+                    model(TupleSlotTypeList => {})->label_to_id('Date'),
+            },
+        }],
     ],
 ];

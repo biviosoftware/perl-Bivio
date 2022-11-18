@@ -14,13 +14,13 @@ sub qualify_label {
 sub initialize {
     my($self) = @_;
     $self->initialize_attr(_prose => Prose([sub {
-	my($source) = @_;
+        my($source) = @_;
         return vs_text(
-	    $source->req,
-	    $self->qualify_label(
-		$self->render_simple_attr('value', $source),
-	    ),
-	);
+            $source->req,
+            $self->qualify_label(
+                $self->render_simple_attr('value', $source),
+            ),
+        );
     }]));
     return shift->SUPER::initialize(@_);
 }

@@ -66,26 +66,26 @@ my($support) = Bivio::SQL::PropertySupport->new({
     version => 1,
     table_name => $_TABLE,
     columns => {
-	$_ID => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint::PRIMARY_KEY()],
-	name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint::NONE()],
-	line => ['Bivio::Type::Line',
-		Bivio::SQL::Constraint::NONE()],
-	text => ['Bivio::Type::Text',
-		Bivio::SQL::Constraint::NONE()],
-	amount => ['Bivio::Type::Amount',
-		Bivio::SQL::Constraint::NONE()],
-	boolean => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint::NOT_NULL()],
-	date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint::NONE()],
-	dt => ['Bivio::Type::Date',
-		Bivio::SQL::Constraint::NONE()],
-	tm => ['Bivio::Type::Time',
-		Bivio::SQL::Constraint::NONE()],
-	gender => ['Bivio::Type::Gender',
-		Bivio::SQL::Constraint::NOT_NULL()],
+        $_ID => ['Bivio::Type::PrimaryId',
+                Bivio::SQL::Constraint::PRIMARY_KEY()],
+        name => ['Bivio::Type::Name',
+                Bivio::SQL::Constraint::NONE()],
+        line => ['Bivio::Type::Line',
+                Bivio::SQL::Constraint::NONE()],
+        text => ['Bivio::Type::Text',
+                Bivio::SQL::Constraint::NONE()],
+        amount => ['Bivio::Type::Amount',
+                Bivio::SQL::Constraint::NONE()],
+        boolean => ['Bivio::Type::Boolean',
+                Bivio::SQL::Constraint::NOT_NULL()],
+        date_time => ['Bivio::Type::DateTime',
+                Bivio::SQL::Constraint::NONE()],
+        dt => ['Bivio::Type::Date',
+                Bivio::SQL::Constraint::NONE()],
+        tm => ['Bivio::Type::Time',
+                Bivio::SQL::Constraint::NONE()],
+        gender => ['Bivio::Type::Gender',
+                Bivio::SQL::Constraint::NOT_NULL()],
     },
 });
 my($load) = $support->unsafe_load({$_ID => $_MIN_ID});
@@ -98,7 +98,7 @@ $support->create($values);
 $load = $support->unsafe_load({$_ID => $_MIN_ID});
 t(defined($load));
 t(!defined($load->{name}) && !defined($load->{line})
-	&& !defined($load->{text}) && !defined($load->{amount}));
+        && !defined($load->{text}) && !defined($load->{amount}));
 t($load->{boolean} == 0);
 t(!defined($load->{date_time}));
 t(!defined($load->{tm}));
@@ -122,7 +122,7 @@ Bivio::SQL::Connection->commit;
 $load = $support->unsafe_load({$_ID => $_MIN_ID});
 t(defined($load));
 t($load->{name} eq 'name' && $load->{line} eq 'line'
-	&& $load->{text} eq 'text' && $load->{amount} == 20.7);
+        && $load->{text} eq 'text' && $load->{amount} == 20.7);
 t($load->{boolean} == 1);
 t($load->{date_time} eq Bivio::Type::DateTime->from_unix($time));
 t($load->{tm} eq Bivio::Type::Time->from_unix($time));

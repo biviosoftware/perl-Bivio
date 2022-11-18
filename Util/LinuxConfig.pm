@@ -44,7 +44,7 @@ sub add_bashrc_d {
     my($self) = @_;
     # Updates /etc/bashrc to search /etc/bashrc.d.
     return _mkdir($self, '/etc/bashrc.d', 0755)
-	. _edit($self, '/etc/bashrc', ['$', <<'EOF', qr{/etc/bashrc.d/}]);
+        . _edit($self, '/etc/bashrc', ['$', <<'EOF', qr{/etc/bashrc.d/}]);
 
 # Load local bashrcs
 for i in /etc/bashrc.d/*.sh ; do
@@ -61,12 +61,12 @@ sub add_crontab_line {
     my($self, $user, @entry) = @_;
     # Add I<entry>s to this I<user>'s crontab.
     return $self->append_lines(
-	-d '/var/spool/cron/tabs' ? "/var/spool/cron/tabs/$user"
-	    : "/var/spool/cron/$user",
-	'root',
-	$user,
-	0600,
-	@entry,
+        -d '/var/spool/cron/tabs' ? "/var/spool/cron/tabs/$user"
+            : "/var/spool/cron/$user",
+        'root',
+        $user,
+        0600,
+        @entry,
     );
 }
 
@@ -81,13 +81,13 @@ sub add_group {
     my($gname, $gid) = split(/:/, $group);
     my($real) = (getgrnam($gname))[2];
     if (defined($real)) {
-	Bivio::IO::Alert->warn("$gname: expected gid ($gid) but got ($real)")
-	    if defined($gid) && $real != $gid;
-	return '';
+        Bivio::IO::Alert->warn("$gname: expected gid ($gid) but got ($real)")
+            if defined($gid) && $real != $gid;
+        return '';
     }
     return _exec($self, 'groupadd '
-	    . (defined($gid) ? "-g '$gid' " : '')
-	    . "'$gname'")
+            . (defined($gid) ? "-g '$gid' " : '')
+            . "'$gname'")
 }
 
 sub add_sendmail_class_line {
@@ -95,7 +95,7 @@ sub add_sendmail_class_line {
     # Adds I<value>s to class file (e.g. trusted-users),
     # creating if it doesn't exist.
     return $self->append_lines("/etc/mail/$file", 'root', 'mail', 0640,
-	@value);
+        @value);
 }
 
 sub add_user {
@@ -114,30 +114,30 @@ sub add_user {
     my($uname, $uid) = split(/:/, $user);
     my($real) = (getpwnam($uname))[2];
     if (defined($real)) {
-	Bivio::IO::Alert->warn("$uname: expected uid ($uid) but got ($real)")
-	    if defined($uid) && $uid != $real;
-	return '';
+        Bivio::IO::Alert->warn("$uname: expected uid ($uid) but got ($real)")
+            if defined($uid) && $uid != $real;
+        return '';
     }
     return $res . _exec($self, 'useradd -m '
-	    . (defined($uid) ? "-u '$uid' " : '')
-	    . ($group ? "-g '$group' " : '')
-	    . ($shell ? "-s '$shell' " : '')
-	    . "'$uname'");
+            . (defined($uid) ? "-u '$uid' " : '')
+            . ($group ? "-g '$group' " : '')
+            . ($shell ? "-s '$shell' " : '')
+            . "'$uname'");
 }
 
 sub add_users_to_group {
     my($self, $group, @user) = @_;
     # Adds users to /etc/group.
     my($res) = _edit($self, '/etc/group', map {
-	my($user) = $_;
-	[
-	    qr{^($group:.*:)(.*)}m,
-	    sub {$1 . (length($2) ? "$2,$user" : "$user")},
-	    qr{^$group:.*[:,]$user(,|$)}m,
-	];
+        my($user) = $_;
+        [
+            qr{^($group:.*:)(.*)}m,
+            sub {$1 . (length($2) ? "$2,$user" : "$user")},
+            qr{^$group:.*[:,]$user(,|$)}m,
+        ];
     } @user);
     $res .= _exec($self, 'grpconv')
-	if -f '/etc/gshadow' && $res && $> == 0;
+        if -f '/etc/gshadow' && $res && $> == 0;
     return $res;
 }
 
@@ -146,7 +146,7 @@ sub append_lines {
     # Adds lines to file, creating if necessary.
     $perms = oct($perms) if $perms =~ /^0/;
     return _add_file($self, $file, $owner, $group, $perms)
-	. _edit($self, $file, _gen_append_cmds(@lines));
+        . _edit($self, $file, _gen_append_cmds(@lines));
 }
 
 sub delete_aliases {
@@ -160,10 +160,10 @@ sub delete_file {
     # dies.
     $file = _prefix_file($file);
     return ''
-	unless -e $file;
+        unless -e $file;
     return ($self->unsafe_get('noexecute')
-	? 'Would have '
-	: (unlink($file) || b_die("unlink($file): $!"))
+        ? 'Would have '
+        : (unlink($file) || b_die("unlink($file): $!"))
     ) . "Deleted: $file\n";
 }
 
@@ -172,15 +172,15 @@ sub disable_service {
     # Disables services.
     my($res);
     foreach my $s (@service) {
-	# Ignore uninstalled services
-	my($chk) = $self->piped_exec("chkconfig --list $s 2>/dev/null", '', 1);
-	# Look for a line like: $s 0 or $s on...
-	next unless $$chk =~ /^\Q$s\E\s+\w/ && $$chk =~ /^\Q$s\E\s.*\bon\b/;
-	# xinetd services don't respond to --del
-	$res .= -x "/etc/rc.d/init.d/$s"
-	    ? _exec($self, "chkconfig --del $s")
-		. _exec($self, "/etc/rc.d/init.d/$s stop", 1)
-	    : _exec($self, "chkconfig $s off");
+        # Ignore uninstalled services
+        my($chk) = $self->piped_exec("chkconfig --list $s 2>/dev/null", '', 1);
+        # Look for a line like: $s 0 or $s on...
+        next unless $$chk =~ /^\Q$s\E\s+\w/ && $$chk =~ /^\Q$s\E\s.*\bon\b/;
+        # xinetd services don't respond to --del
+        $res .= -x "/etc/rc.d/init.d/$s"
+            ? _exec($self, "chkconfig --del $s")
+                . _exec($self, "/etc/rc.d/init.d/$s stop", 1)
+            : _exec($self, "chkconfig $s off");
     }
     return $res;
 }
@@ -190,12 +190,12 @@ sub enable_service {
     # Enables I<service>s and starts them running at 2345 run levels.
     my($res);
     foreach my $s (@service) {
-	# Should blow up if service doesn't exist
-	next if ${$self->piped_exec("chkconfig --list $s 2>/dev/null", '', 1)}
-	    =~ /^$s\s.*\bon\b/;
-	$res .= _exec($self, "chkconfig --level 2345 $s on");
-	$res .= _exec($self, "/etc/rc.d/init.d/$s start")
-	    if -x "/etc/rc.d/init.d/$s";
+        # Should blow up if service doesn't exist
+        next if ${$self->piped_exec("chkconfig --list $s 2>/dev/null", '', 1)}
+            =~ /^$s\s.*\bon\b/;
+        $res .= _exec($self, "chkconfig --level 2345 $s on");
+        $res .= _exec($self, "/etc/rc.d/init.d/$s start")
+            if -x "/etc/rc.d/init.d/$s";
     }
     return $res;
 }
@@ -203,8 +203,8 @@ sub enable_service {
 sub generate {
     my($self) = @_;
     foreach my $op (@{$_D->eval_or_die(${$self->read_input})}) {
-	my($method) = shift(@$op);
-	$self->$method(@$op);
+        my($method) = shift(@$op);
+        $self->$method(@$op);
     }
     return;
 }
@@ -218,24 +218,24 @@ sub handle_config {
 sub postgres_base {
     my($self) = @_;
     return _replace_param(
-	$self, '/var/lib/pgsql/data/postgresql.conf',
-	['#*\s*(timezone\s*=\s*)', 'UTC'],
+        $self, '/var/lib/pgsql/data/postgresql.conf',
+        ['#*\s*(timezone\s*=\s*)', 'UTC'],
     ) . _replace_param($self, '/var/lib/pgsql/data/pg_hba.conf',
-	['(local.*)ident(?:\s+sameuser)?', 'trust'],
-	['(host.*127.0.*)ident(?:\s+sameuser)?', 'password'],
-	['(host.*1/128.*)ident(?:\s+sameuser)?', 'password'],
+        ['(local.*)ident(?:\s+sameuser)?', 'trust'],
+        ['(host.*127.0.*)ident(?:\s+sameuser)?', 'password'],
+        ['(host.*1/128.*)ident(?:\s+sameuser)?', 'password'],
     ) . _optional(
-	$self, '/etc/rc.d/init.d/postgresql',
-	\&_replace_param,
-	['(#\s*chkconfig:\s*)', '345 84 16'],
+        $self, '/etc/rc.d/init.d/postgresql',
+        \&_replace_param,
+        ['(#\s*chkconfig:\s*)', '345 84 16'],
     );
 }
 
 # sub postgresql_param {
 #     my($self) = @_;
 #     return _replace_param(
-# 	$self, '/var/lib/pgsql/data/postgresql.conf',
-# 	['#*\s*(timezone\s*=\s*)', 'UTC'],
+#         $self, '/var/lib/pgsql/data/postgresql.conf',
+#         ['#*\s*(timezone\s*=\s*)', 'UTC'],
 #     return;
 # }
 
@@ -255,25 +255,25 @@ sub rename_rpmnew {
     #
     #     b-linux-config rename_rpmnew /etc
     @rpmnew_file = ('/etc', '/var', '/usr')
-	if "@rpmnew_file" eq 'all';
+        if "@rpmnew_file" eq 'all';
     chomp(@rpmnew_file = `find @rpmnew_file -name '*.rpmnew'`)
-	unless grep(/\.rpmnew$/, @rpmnew_file);
+        unless grep(/\.rpmnew$/, @rpmnew_file);
     my($res) = '';
     foreach my $n (map {_prefix_file($_)} @rpmnew_file) {
-	my($f) = $n;
-	$f =~ s/.rpmnew$//;
-	next unless -f $n;
-	unless ($self->unsafe_get('noexecute')) {
-	    my($s) = "$f.rpmsave";
-	    unlink($s);
-	    $self->piped_exec("cp -pRf $f $s");
-	    $self->piped_exec("cp -pRf $n $f");
-	    unlink($n);
-	}
-	else {
-	    $res .= 'Would have ';
-	}
-	$res .= "Updated: $f\n";
+        my($f) = $n;
+        $f =~ s/.rpmnew$//;
+        next unless -f $n;
+        unless ($self->unsafe_get('noexecute')) {
+            my($s) = "$f.rpmsave";
+            unlink($s);
+            $self->piped_exec("cp -pRf $f $s");
+            $self->piped_exec("cp -pRf $n $f");
+            unlink($n);
+        }
+        else {
+            $res .= 'Would have ';
+        }
+        $res .= "Updated: $f\n";
     }
     return $res;
 }
@@ -288,40 +288,40 @@ sub serial_console {
     my($self, $speed) = @_;
     $speed ||= '57600';
     return _edit($self, '/etc/securetty', ['$', "ttyS0\n", "ttyS0\n"])
-	. _edit($self, '/boot/grub/menu.lst',
-	    ['(?<!\#)splashimage', '#splashimage'],
-	    ['(?<!\#)hiddenmenu', '#hiddenmenu'],
-	    ["(?=\n\tinitrd)", " console=ttyS0,$speed",
-		'console=ttyS0,'
-	    ],
-	    ['console=ttyS0,\d+', "console=ttyS0,$speed",
-		 "console=ttyS0,$speed"],
-	    ["\ntimeout=\\d+\n", "\ntimeout=5\n"],
-	    ["(?<=\ntimeout=5\n)", "serial --unit=0 --speed=$speed\n",
-		"serial --unit=0 --speed=",
-	    ],
-	    ['serial --unit=0 --speed=\d+', "serial --unit=0 --speed=$speed"],
-	    ["(?<=serial --unit=0 --speed=$speed\n)",
-		"terminal --timeout=1 serial\n",
-	    ],
-	    ['? rhgb ', ' '],
-	    ['? quiet ', ' '],
-	);
+        . _edit($self, '/boot/grub/menu.lst',
+            ['(?<!\#)splashimage', '#splashimage'],
+            ['(?<!\#)hiddenmenu', '#hiddenmenu'],
+            ["(?=\n\tinitrd)", " console=ttyS0,$speed",
+                'console=ttyS0,'
+            ],
+            ['console=ttyS0,\d+', "console=ttyS0,$speed",
+                 "console=ttyS0,$speed"],
+            ["\ntimeout=\\d+\n", "\ntimeout=5\n"],
+            ["(?<=\ntimeout=5\n)", "serial --unit=0 --speed=$speed\n",
+                "serial --unit=0 --speed=",
+            ],
+            ['serial --unit=0 --speed=\d+', "serial --unit=0 --speed=$speed"],
+            ["(?<=serial --unit=0 --speed=$speed\n)",
+                "terminal --timeout=1 serial\n",
+            ],
+            ['? rhgb ', ' '],
+            ['? quiet ', ' '],
+        );
 }
 
 sub sh_param {
     my($self, $file, @args) = @_;
     return _edit($self, $file, map {
-	my($param, $value) = @$_;
-	["(?<=\n)\\s*#?\\s*$param\[^\n]+", "$param='$value'"],
+        my($param, $value) = @$_;
+        ["(?<=\n)\\s*#?\\s*$param\[^\n]+", "$param='$value'"],
     } @{$self->group_args(2, \@args)});
 }
 
 sub split_file {
     my(undef, $file) = @_;
     return [grep(
-	length($_) && $_ !~ /^\s*#/,
-	split(/\n+/, ${Bivio::IO::File->read($file)}),
+        length($_) && $_ !~ /^\s*#/,
+        split(/\n+/, ${Bivio::IO::File->read($file)}),
     )];
 }
 
@@ -330,19 +330,19 @@ sub sshd_param {
     # Set I<param> to I<value> in sshd_config.  Knows how to replace only
     # those parameters which already exist in the file.
     return _edit($self, '/etc/ssh/sshd_config', map {
-	my($param, $value) = @$_;
-	["(?<=\n)\\s*#?\\s*$param\[^\n]+", "$param $value"],
+        my($param, $value) = @$_;
+        ["(?<=\n)\\s*#?\\s*$param\[^\n]+", "$param $value"],
     } @{$self->group_args(2, \@args)});
 }
 
 sub _add_aliases {
     my($file, $sep, $self) = splice(@_, 0, 3);
     return $self->append_lines(
-	$file,  qw(root root 0640),
-	map({
+        $file,  qw(root root 0640),
+        map({
             (my $x = $_) =~ s/;/,/g;
-	    join("$sep\t", split(/:\s*/, $x, 2));
-	} @_),
+            join("$sep\t", split(/:\s*/, $x, 2));
+        } @_),
     );
 }
 
@@ -354,7 +354,7 @@ sub _add_file {
     return "Would have created: $file\n" if $self->unsafe_get('noexecute');
     Bivio::IO::File->write($file, defined($content) ? $content : '');
     Bivio::IO::File->chown_by_name($owner, $group, $file)
-	if $> == 0;
+        if $> == 0;
     Bivio::IO::File->chmod($perms, $file);
     return "Created: $file\n";
 }
@@ -364,19 +364,19 @@ sub _assert_dns_configured_for {
     my($ip) = _dig($domain);
     my($cfg) = _network_config_for($ip);
     Bivio::DieCode->CONFIG_ERROR->throw_die(
-	"config missing DNS for subnet containing '$ip ($domain)'")
-	    unless exists($cfg->{dns}) && ref($cfg->{dns}) eq 'ARRAY';
+        "config missing DNS for subnet containing '$ip ($domain)'")
+            unless exists($cfg->{dns}) && ref($cfg->{dns}) eq 'ARRAY';
     return $cfg->{dns};
 }
 
 sub _assert_interface_and_domain {
     my($self, $interface_and_domain) = @_;
     b_die('must specify interface and domain -- remember to use quotes')
-	    unless defined($interface_and_domain)
-		&& $interface_and_domain =~ / /;
+            unless defined($interface_and_domain)
+                && $interface_and_domain =~ / /;
     my($device, $domain) = split(" ", $interface_and_domain, 2);
     b_die('failed to parse interface and domain.  Did you use quotes?  (e.g. "eth0 some.example.com")')
-	    unless defined($device) && defined($domain) && $domain !~ / /;
+            unless defined($device) && defined($domain) && $domain !~ / /;
     return $device, $domain;
 }
 
@@ -385,11 +385,11 @@ sub _assert_netmask_and_gateway_for {
     my($ip) = _dig($domain);
     my($cfg) = _network_config_for($ip);
     Bivio::DieCode->CONFIG_ERROR->throw_die(
-	"subnet containing '$ip ($domain)' missing netmask")
-	    unless $cfg->{mask};
+        "subnet containing '$ip ($domain)' missing netmask")
+            unless $cfg->{mask};
     _trace($ip, ' ', $cfg) if $_TRACE;
     return (_bits2netmask($self, $cfg->{mask}),
-	    $cfg->{gateway} && _dig($cfg->{gateway}));
+            $cfg->{gateway} && _dig($cfg->{gateway}));
 }
 
 sub _assert_network_configured_for {
@@ -397,8 +397,8 @@ sub _assert_network_configured_for {
     my($ip) = _dig($domain);
     my($cfg) = _network_config_for($ip);
     Bivio::DieCode->CONFIG_ERROR->throw_die(
-	"no subnet configured containing address '$ip ($domain)'")
-	    unless defined($cfg);
+        "no subnet configured containing address '$ip ($domain)'")
+            unless defined($cfg);
     return $cfg;
 }
 
@@ -411,13 +411,13 @@ sub _base_domain {
 sub _bits2netmask {
     my($self, $bits) = @_;
     b_die("$bits is not between 8 and 30")
-	unless defined($bits) && $bits >= 8 && $bits <= 30;
+        unless defined($bits) && $bits >= 8 && $bits <= 30;
     return join(
-	'.',
-	unpack(
-	    'C4',
-	    pack('N', $bits == 32 ? 0 : 0xffffffff << (32 - $bits)),
-	),
+        '.',
+        unpack(
+            'C4',
+            pack('N', $bits == 32 ? 0 : 0xffffffff << (32 - $bits)),
+        ),
     );
 }
 
@@ -426,15 +426,15 @@ sub _delete_lines {
     # Removes lines to file.
     #TODO: Should it delete the file???
     return _edit($self, $file,
-	[sub {
-	     my($data) = @_;
-	     my($got);
-	     foreach my $l (@$lines) {
-		 my($x) = ref($l) ? $l : qr{^\Q$l\E(\n|$)}m;
-		 $$data =~ s/$x//mg and $got++;
-	     }
-	     return $got;
-	}]);
+        [sub {
+             my($data) = @_;
+             my($got);
+             foreach my $l (@$lines) {
+                 my($x) = ref($l) ? $l : qr{^\Q$l\E(\n|$)}m;
+                 $$data =~ s/$x//mg and $got++;
+             }
+             return $got;
+        }]);
 }
 
 sub _device {
@@ -445,21 +445,21 @@ sub _device {
 sub _dig {
     my($hostname) = @_;
     b_die('missing hostname')
-	 unless defined($hostname);
+         unless defined($hostname);
     # TODO: this is a HACK. caching in the config is bad form, but this is run
     # from the command line and won't be hanging around in memory for very
     # long.  As an added bonus, it also serves to spoof dns from the unit test.
     my($cache) = $_CFG->{_dig_cache} ||= {};
     unless (exists($cache->{$hostname})) {
-	my($ip) = $hostname =~ /^\d+\.\d+\.\d+\.\d+$/ ? $hostname
-	    : `dig +short $hostname`;
-	_trace('dig ', $hostname, ': ', $ip)
-	    if $_TRACE;
-	Bivio::DieCode->NOT_FOUND->throw_die(
-	    "failed to resolve ip address for '$hostname': $!")
-		unless defined($ip);
-	chomp($ip);
-	$cache->{$hostname} = $ip;
+        my($ip) = $hostname =~ /^\d+\.\d+\.\d+\.\d+$/ ? $hostname
+            : `dig +short $hostname`;
+        _trace('dig ', $hostname, ': ', $ip)
+            if $_TRACE;
+        Bivio::DieCode->NOT_FOUND->throw_die(
+            "failed to resolve ip address for '$hostname': $!")
+                unless defined($ip);
+        chomp($ip);
+        $cache->{$hostname} = $ip;
     }
     return $cache->{$hostname};
 }
@@ -472,38 +472,38 @@ sub _edit {
     my($orig_data) = $$data;
     my($got);
     foreach my $op (@op) {
-	my($where, $value, $search) = @$op;
-	if (ref($where) eq 'CODE') {
-	    $got++ if $where->($data);
-	    next;
-	}
-	$search = $value =~ /\n/ ? qr{\Q$value}s : qr{^\s*\Q$value}m
-	    unless defined($search);
+        my($where, $value, $search) = @$op;
+        if (ref($where) eq 'CODE') {
+            $got++ if $where->($data);
+            next;
+        }
+        $search = $value =~ /\n/ ? qr{\Q$value}s : qr{^\s*\Q$value}m
+            unless defined($search);
 #TODO: Replace when perl bug is fixed.
-	my($x) = "$search";
-	next if $$data =~ /$x/;
-	if ($where eq '$') {
-	    # Special case for append_lines
-	    b_die("$value: bad value")
-		if ref($value);
-	    $$data .= $value;
-	}
-	else {
-	    my($optional);
-	    unless (ref($where)) {
-		$optional = $where =~ s/^\?//s;
-		$where = qr{$where}s;
-	    }
-	    b_die($file, ": didn't find /$where/\n")
-		unless $$data =~ s/$where/ref($value) ? $value->() : $value/eg
-		|| $optional;
-	}
-	$got++;
+        my($x) = "$search";
+        next if $$data =~ /$x/;
+        if ($where eq '$') {
+            # Special case for append_lines
+            b_die("$value: bad value")
+                if ref($value);
+            $$data .= $value;
+        }
+        else {
+            my($optional);
+            unless (ref($where)) {
+                $optional = $where =~ s/^\?//s;
+                $where = qr{$where}s;
+            }
+            b_die($file, ": didn't find /$where/\n")
+                unless $$data =~ s/$where/ref($value) ? $value->() : $value/eg
+                || $optional;
+        }
+        $got++;
     }
     return ''
-	unless $got && $$data ne $orig_data;
+        unless $got && $$data ne $orig_data;
     return "Would have updated: $file\n"
-	if $self->unsafe_get('noexecute');
+        if $self->unsafe_get('noexecute');
     # Delete the backup file.  This has side effects for add_crontab_line
     # which needs to modify /var/spool/cron for cron to "wakeup" and reread
     # all crontabs.
@@ -519,22 +519,22 @@ sub _exec {
     $in ||= '';
     $cmd .= ' 2>&1';
     return "Would have executed: $cmd\n"
-	if $self->unsafe_get('noexecute');
+        if $self->unsafe_get('noexecute');
     return "Executed: $cmd\n" . ${$self->piped_exec($cmd, \$in, $ignore_exit_code)};
 }
 
 sub _file_hosts {
     my($self, $hostname, @others) = @_;
     _trace(join(' ', $hostname, @others))
-	if $_TRACE;
+        if $_TRACE;
     my($result) = _prepend_auto_generated_header(<<"EOF")
 # Do not remove the following line, or various programs
 # that require network functionality will fail.
-127.0.0.1		localhost.localdomain localhost
+127.0.0.1                localhost.localdomain localhost
 EOF
-	. join('', map(sprintf("%s\t%s\n", _dig($_), $_),
-		       $hostname, @others
-		   ));
+        . join('', map(sprintf("%s\t%s\n", _dig($_), $_),
+                       $hostname, @others
+                   ));
     return 'etc/hosts', \$result;
 }
 
@@ -544,14 +544,14 @@ sub _file_ifcfg {
     my($netmask) = _bits2netmask($self, _mask_for($ip));
     my($gateway) = _network_config_for($ip)->{gateway} || '';
     $gateway = _dig($gateway)
-	if $gateway;
+        if $gateway;
     my($gw_line) = '';
     if ($gateway && $gateway ne $ip && !exists($gateways_seen->{$gateway})) {
-	$gateways_seen->{$gateway} = 1;
-	$gw_line = 'GATEWAY=' . $gateway;
+        $gateways_seen->{$gateway} = 1;
+        $gw_line = 'GATEWAY=' . $gateway;
     }
     return 'etc/sysconfig/network-scripts/ifcfg-' . $device,
-	\(_prepend_auto_generated_header(<<"EOF"));
+        \(_prepend_auto_generated_header(<<"EOF"));
 DEVICE=$device
 ONBOOT=yes
 BOOTPROTO=none
@@ -574,7 +574,7 @@ sub _file_resolv_conf {
     my($self, $domain) = @_;
     my($base_domain) = _base_domain($domain);
     my($ns1, $ns2) =
-	map(_dig($_), @{_assert_dns_configured_for($self, $domain)});
+        map(_dig($_), @{_assert_dns_configured_for($self, $domain)});
     return 'etc/resolv.conf', \(_prepend_auto_generated_header(<<"EOF"));
 search $base_domain
 domain $base_domain
@@ -588,27 +588,27 @@ sub _file_static_routes {
     my($buf) = '';
     my($seen_network) = {};
     foreach my $x (@_) {
-	my($device, $domain) = _assert_interface_and_domain($self, $x);
-	_trace($device, ' ', $domain)
-	    if $_TRACE;
-	my($ip) = _dig($domain);
-	my($routes) = _static_routes_for($ip);
-	next unless defined($routes);
-	_trace($routes)
-	    if $_TRACE;
-	foreach my $network (keys %$routes) {
-	    my($mask) = _mask_for($network);
-	    unless (exists($seen_network->{$network.'/'.$mask})) {
-		$buf .= sprintf("%s net %s netmask %s gw %s\n",
-				$device, $network,
-				_bits2netmask($self, $mask),
-				_dig($routes->{$network}));
-	    }
-	    $seen_network->{$network.'/'.$mask}++;
-	}
+        my($device, $domain) = _assert_interface_and_domain($self, $x);
+        _trace($device, ' ', $domain)
+            if $_TRACE;
+        my($ip) = _dig($domain);
+        my($routes) = _static_routes_for($ip);
+        next unless defined($routes);
+        _trace($routes)
+            if $_TRACE;
+        foreach my $network (keys %$routes) {
+            my($mask) = _mask_for($network);
+            unless (exists($seen_network->{$network.'/'.$mask})) {
+                $buf .= sprintf("%s net %s netmask %s gw %s\n",
+                                $device, $network,
+                                _bits2netmask($self, $mask),
+                                _dig($routes->{$network}));
+            }
+            $seen_network->{$network.'/'.$mask}++;
+        }
     }
     return $buf eq '' ? () : ('etc/sysconfig/static-routes',
-			      \(_prepend_auto_generated_header($buf)));
+                              \(_prepend_auto_generated_header($buf)));
 }
 
 sub _gateway_for {
@@ -674,14 +674,14 @@ EOF
 sub _replace_param {
     my($self, $file, @op) = @_;
     return _edit(
-	$self,
-	$file,
-	[Bivio::Die->eval_or_die(q(sub {
+        $self,
+        $file,
+        [Bivio::Die->eval_or_die(q(sub {
             my($data) = @_;
             my($got) = 0;
         ) . join("\n", map(
-	    "\$got += \$\$data =~ s{^$_->[0].*}{\${1}$_->[1]}m;",
-	    @op,
+            "\$got += \$\$data =~ s{^$_->[0].*}{\${1}$_->[1]}m;",
+            @op,
         )) . q(
             return $got;
         }))],
@@ -697,7 +697,7 @@ sub _write {
     #TODO: figure out the permissions and use _add_file() instead
     $filename = _prefix_file($filename);
     _trace($filename)
-	if $_TRACE;
+        if $_TRACE;
     Bivio::IO::File->mkdir_parent_only($filename);
     Bivio::IO::File->write($filename, $data);
     return;

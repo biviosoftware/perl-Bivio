@@ -21,10 +21,10 @@ sub execute_load_this {
     my($self) = $proto->new($req);
     my($query) = $self->parse_query_from_request;
     unless ($query->unsafe_get('this')) {
-	my($t) = $_BFN->from_literal($req->unsafe_get('path_info'));
-	return 'DEFAULT_ERROR_REDIRECT_NOT_FOUND'
-	    unless $t;
-	$query->put(this => [$t]);
+        my($t) = $_BFN->from_literal($req->unsafe_get('path_info'));
+        return 'DEFAULT_ERROR_REDIRECT_NOT_FOUND'
+            unless $t;
+        $query->put(this => [$t]);
     }
     $self->load_this($query);
     return 0;
@@ -48,8 +48,8 @@ sub get_rss_author {
 sub get_rss_summary {
     my($self) = @_;
     return $_S->get_excerpt_for_primary_id(
-	$self->get('RealmFile.realm_file_id'),
-	$self->new_other('RealmFile'),
+        $self->get('RealmFile.realm_file_id'),
+        $self->new_other('RealmFile'),
     );
 }
 
@@ -61,52 +61,52 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	can_iterate => 1,
+        can_iterate => 1,
         auth_id => 'RealmFile.realm_id',
-	as_string_fields => [qw(RealmFile.realm_id RealmFile.path)],
+        as_string_fields => [qw(RealmFile.realm_id RealmFile.path)],
         primary_key => [{
-	    name => 'path_info',
-	    type => 'BlogFileName',
-	    in_select => 1,
-	    # Handles PUBLIC/PRIVATE sorting by blog creation date
-	    select_value =>
-		qq{SUBSTRING(path_lc FROM '\%#"@{[$_BFN->SQL_LIKE_BASE]}#"' FOR '#') as path_info},
-	    sort_order => 0,
-	}],
-	order_by => [qw(
-	    path_info
-	    RealmFile.modified_date_time
+            name => 'path_info',
+            type => 'BlogFileName',
+            in_select => 1,
+            # Handles PUBLIC/PRIVATE sorting by blog creation date
+            select_value =>
+                qq{SUBSTRING(path_lc FROM '\%#"@{[$_BFN->SQL_LIKE_BASE]}#"' FOR '#') as path_info},
+            sort_order => 0,
+        }],
+        order_by => [qw(
+            path_info
+            RealmFile.modified_date_time
             RealmFile.path
-	)],
-	other => [qw(
-	    RealmFile.is_public
-	    RealmFile.realm_file_id
+        )],
+        other => [qw(
+            RealmFile.is_public
+            RealmFile.realm_file_id
         ),
-	    [qw(RealmFile.user_id RealmOwner.realm_id Email.realm_id)],
-	    'Email.email',
-	    'RealmOwner.display_name',
-	    'RealmOwner.name',
-	    {
-		name => 'title',
-		type => 'BlogTitle',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'content',
-		type => 'BlogBody',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'text',
-		type => 'Text64K',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'query',
-		type => 'Line',
-		constraint => 'NONE',
-	    },
-	],
+            [qw(RealmFile.user_id RealmOwner.realm_id Email.realm_id)],
+            'Email.email',
+            'RealmOwner.display_name',
+            'RealmOwner.name',
+            {
+                name => 'title',
+                type => 'BlogTitle',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'content',
+                type => 'BlogBody',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'text',
+                type => 'Text64K',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'query',
+                type => 'Line',
+                constraint => 'NONE',
+            },
+        ],
     });
 }
 
@@ -116,15 +116,15 @@ sub internal_post_load_row {
     $row->{text} = ${$_RF->get_content($self, 'RealmFile.', $row)};
     my($res) = [$_BC->split(\$row->{text})];
     if (grep(ref($_), @$res)) {
-	b_warn(
-	    $row->{'RealmFile.realm_id'},
-	    ',',
-	    $row->{'RealmFile.path'},
-	    ': BlogContent->split error: ',
-	    $res,
-	);
-	$self->req->if_test(sub {b_die('file format error')});
-	return 0;
+        b_warn(
+            $row->{'RealmFile.realm_id'},
+            ',',
+            $row->{'RealmFile.path'},
+            ': BlogContent->split error: ',
+            $res,
+        );
+        $self->req->if_test(sub {b_die('file format error')});
+        return 0;
     }
     ($row->{title}, $row->{content}) = @$res;
     $row->{query} = undef;
@@ -134,7 +134,7 @@ sub internal_post_load_row {
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $self->new_other('RealmFileList')
-	->prepare_statement_for_access_mode($stmt, $_BFN);
+        ->prepare_statement_for_access_mode($stmt, $_BFN);
     $stmt->where(['Email.location', [b_use('Model.Email')->DEFAULT_LOCATION]]);
     return shift->SUPER::internal_prepare_statement(@_);
 }
@@ -147,12 +147,12 @@ sub unsafe_get_author_image_uri {
     my($uri) = $self->req->format_uri('FORUM_WIKI_VIEW', undef, undef, $file);
     my($die_code);
     if ($_ARF->access_controlled_load(
-	$self->req('auth_id'),
-	$path,
-	$self->req,
-	\$die_code,
+        $self->req('auth_id'),
+        $path,
+        $self->req,
+        \$die_code,
     )) {
-	return $uri;
+        return $uri;
     }
     return undef;
 }

@@ -2,43 +2,43 @@
 # $Id$
 Widget({
     setup_render => sub {
-	req()->put(task_id => Bivio::Agent::TaskId->PRODUCTS);
-	model('ProductList', {parent_id => 'REPTILES'})
-	    unless req()->unsafe_get('Model.ProductList');
-	return;
+        req()->put(task_id => Bivio::Agent::TaskId->PRODUCTS);
+        model('ProductList', {parent_id => 'REPTILES'})
+            unless req()->unsafe_get('Model.ProductList');
+        return;
     },
     new_params => sub {
-	my($case, $params) = @_;
-	if (@$params == 1) {
-	    $case->put(_expect_args => $params->[0]);
-	    return [ProductList => ['Product.product_id', 'Product.name'],
-		    @$params];
-	}
-	else {
-	    return [ProductList => @$params];
-	}
+        my($case, $params) = @_;
+        if (@$params == 1) {
+            $case->put(_expect_args => $params->[0]);
+            return [ProductList => ['Product.product_id', 'Product.name'],
+                    @$params];
+        }
+        else {
+            return [ProductList => @$params];
+        }
     },
 });
 config({
     'Bivio::Type::CacheTagFilePath' => {
-	use_cached_path => 1,
+        use_cached_path => 1,
     },
 });
 [
     map(([$_] => undef),
-	{},
-	{cellpadding => 2},
-	{cellspacing => 3},
-	{width => '100%'},
-	{border => 1},
+        {},
+        {cellpadding => 2},
+        {cellspacing => 3},
+        {width => '100%'},
+        {border => 1},
     ),
     map({
-    	my($left, $right) = @$_;
-    	([$left] => _t($right));
+            my($left, $right) = @$_;
+            ([$left] => _t($right));
     }
-    	[{align => 'n'}, {class => 'b_align_n'}],
-    	[{expand => 1}, {width => '95%', class => 'b_align_left'}],
-    	[{title => 'Reptiles'}, {title => qq{\n<tr class="b_title_row"><td colspan="2"><div>Reptiles</div></td>\n</tr>}, class => 'b_align_left'}],
+            [{align => 'n'}, {class => 'b_align_n'}],
+            [{expand => 1}, {width => '95%', class => 'b_align_left'}],
+            [{title => 'Reptiles'}, {title => qq{\n<tr class="b_title_row"><td colspan="2"><div>Reptiles</div></td>\n</tr>}, class => 'b_align_left'}],
     ),
     [{class => 'reptiles'}] => _chomp(<<'EOF'),
 
@@ -58,7 +58,7 @@ config({
 </table>
 EOF
     [{class => 'reptiles', before_row =>
-	  class('HTMLWidget.String')->new('FOO', 0)}] => _chomp(<<'EOF'),
+          class('HTMLWidget.String')->new('FOO', 0)}] => _chomp(<<'EOF'),
 
 <table class="reptiles">
 <tr class="b_heading_row">
@@ -78,11 +78,11 @@ EOF
 </table>
 EOF
     [[
-	{
-	    column_widget => class('HTMLWidget.Join')->new(['&nbsp;']),
-	    column_data_class => 'ping',
-	},
-	{field => 'Product.name', column_data_class => 'zing'}
+        {
+            column_widget => class('HTMLWidget.Join')->new(['&nbsp;']),
+            column_data_class => 'ping',
+        },
+        {field => 'Product.name', column_data_class => 'zing'}
     ], {class => 'reptiles', show_headings => 0}] => _chomp(<<'EOF'),
 
 <table class="reptiles">
@@ -129,7 +129,7 @@ sub _t {
 EOF
     $exp ||= {};
     while (my($k, $v) = each(%$exp)) {
-	$x =~ s/(?<=\b$k=)("?)[^"\s>]+("?)/$1$v$2/;
+        $x =~ s/(?<=\b$k=)("?)[^"\s>]+("?)/$1$v$2/;
     }
     $x =~ s/ \w+="?NOP"?//g;
     $x =~ s/ title=//g;

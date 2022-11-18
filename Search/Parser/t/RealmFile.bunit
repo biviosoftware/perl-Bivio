@@ -7,76 +7,76 @@ my($_EMAIL_FILE) = 'excerpt.eml';
 my($rf) = model('RealmFile');
 $rf->delete
     if $rf->unsafe_load({
-	path_lc => "$dir$_EMAIL_FILE",
+        path_lc => "$dir$_EMAIL_FILE",
     });
 b_use('Agent.Task')->commit(req());
 
 [
     {
-	object => class(),
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    rollback();
-	    return [class('Search.Parseable')->new(
-		model('RealmFile')->create_with_content({
-		    path => ($params->[1] || $dir) . $params->[0],
-		}, read_file('RealmFile/' . $params->[0])),
-	    )];
-	},
+        object => class(),
+        compute_params => sub {
+            my(undef, $params) = @_;
+            rollback();
+            return [class('Search.Parseable')->new(
+                model('RealmFile')->create_with_content({
+                    path => ($params->[1] || $dir) . $params->[0],
+                }, read_file('RealmFile/' . $params->[0])),
+            )];
+        },
     } => [
-	{
-	    method => 'new_text',
-	    check_return => sub {
-		my(undef, undef, $expect) = @_;
-		$expect = [@$expect, 'TITLE']
-		    if @$expect == 1;
-		return @$expect == 2 ? [@$expect, qr{^some text\s*$}s] : $expect;
-	    },
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [$actual->[0] ? map(
-		    ref($_) ? $$_ : $_,
-		    $actual->[0]->get(qw(type title text)),
-		) : ()];
-	    },
-	} => [
-	    `pdftotext -v 2>&1 < /dev/null` =~ /version/i
-		? ('t.pdf' => 'application/pdf') : (),
- 	    't.txt' => ['text/plain', ''],
- 	    't.csv' => ['text/csv', '', "some,text\n"],
- 	    't.html' => 'text/html',
- 	    't.bwiki' => 'text/plain',
-	    't.eml' => ['message/rfc822', 'TITLE', (sub {chomp(my $x = shift); $x})->(<<'EOF')],
+        {
+            method => 'new_text',
+            check_return => sub {
+                my(undef, undef, $expect) = @_;
+                $expect = [@$expect, 'TITLE']
+                    if @$expect == 1;
+                return @$expect == 2 ? [@$expect, qr{^some text\s*$}s] : $expect;
+            },
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return [$actual->[0] ? map(
+                    ref($_) ? $$_ : $_,
+                    $actual->[0]->get(qw(type title text)),
+                ) : ()];
+            },
+        } => [
+            `pdftotext -v 2>&1 < /dev/null` =~ /version/i
+                ? ('t.pdf' => 'application/pdf') : (),
+             't.txt' => ['text/plain', ''],
+             't.csv' => ['text/csv', '', "some,text\n"],
+             't.html' => 'text/html',
+             't.bwiki' => 'text/plain',
+            't.eml' => ['message/rfc822', 'TITLE', (sub {chomp(my $x = shift); $x})->(<<'EOF')],
 Subject: TITLE
 To: hello
 From: John Doe <john@example.com>
 
  some text 
 EOF
-	    'pdf.eml' => ['message/rfc822', 'mysubject', "Subject: mysubject\nTo: SomeList <q\@r.s>\nFrom: SomeUser <x\@y.z>\n\nsome text\n\n\nA sample PDF document."],
- 	    't.gif' => ['unparsed', '', ''],
- 	    [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
- 	    TextFile => ['text/plain', '', "some text\n"],
- 	    BinaryFile => ['unparsed', '', ''],
- 	    ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
- 	    't2.bwiki' => ['text/plain', 'TITLE',
- 	    	qr/first text\s+second text\s+third text\s+the end/],
- 	    't3.bwiki' => ['text/plain', 'TITLE',
- 	    	qr/email\s+me\s+at\s+foo\@bar.com\s+or\s+A\s+Page\s+home\s+Name\:\s+the\s+end\s+/],
-	    't.doc' => 'application/msword',
-	    't.xls' => ['application/vnd.ms-excel', 'TITLE', "some,text"],
-	    't.docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', ''],
-	    't1.eml' => ['message/rfc822', 'Options and Investment Clubs', qr{fan of combining}],
-	],
-	{
-	    method => 'new_excerpt',
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		return [$actual->[0]->get(qw(excerpt author_user_id author))];
-	    },
-	} => [
-	    'excerpt.bwiki' => [qr{^w1( w\d+){42} w44 w45 \.\.\.$}s, realm_id('demo'), ''],
-	    $_EMAIL_FILE => ['html body', realm_id('demo'), 'Freddy'],
-	],
+            'pdf.eml' => ['message/rfc822', 'mysubject', "Subject: mysubject\nTo: SomeList <q\@r.s>\nFrom: SomeUser <x\@y.z>\n\nsome text\n\n\nA sample PDF document."],
+             't.gif' => ['unparsed', '', ''],
+             [TextFile => '/Wiki/'] => ['text/plain', 'TextFile'],
+             TextFile => ['text/plain', '', "some text\n"],
+             BinaryFile => ['unparsed', '', ''],
+             ['t.csv' => '/Wiki'] => ['text/csv', '', "some,text\n"],
+             't2.bwiki' => ['text/plain', 'TITLE',
+                     qr/first text\s+second text\s+third text\s+the end/],
+             't3.bwiki' => ['text/plain', 'TITLE',
+                     qr/email\s+me\s+at\s+foo\@bar.com\s+or\s+A\s+Page\s+home\s+Name\:\s+the\s+end\s+/],
+            't.doc' => 'application/msword',
+            't.xls' => ['application/vnd.ms-excel', 'TITLE', "some,text"],
+            't.docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', ''],
+            't1.eml' => ['message/rfc822', 'Options and Investment Clubs', qr{fan of combining}],
+        ],
+        {
+            method => 'new_excerpt',
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return [$actual->[0]->get(qw(excerpt author_user_id author))];
+            },
+        } => [
+            'excerpt.bwiki' => [qr{^w1( w\d+){42} w44 w45 \.\.\.$}s, realm_id('demo'), ''],
+            $_EMAIL_FILE => ['html body', realm_id('demo'), 'Freddy'],
+        ],
     ],
 ];

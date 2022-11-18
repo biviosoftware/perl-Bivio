@@ -12,17 +12,17 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         primary_key => [[qw(RealmMail.realm_file_id RealmFile.realm_file_id)]],
-	order_by => [
-	    {
-		name => 'RealmFile.modified_date_time',
-		sort_order => 0,
-	    },
-	],
-	other => [
-	    'RealmMail.thread_root_id',
-	    'RealmMail.subject_lc',
-	],
-	auth_id => [qw(RealmMail.realm_id RealmFile.realm_id)],
+        order_by => [
+            {
+                name => 'RealmFile.modified_date_time',
+                sort_order => 0,
+            },
+        ],
+        other => [
+            'RealmMail.thread_root_id',
+            'RealmMail.subject_lc',
+        ],
+        auth_id => [qw(RealmMail.realm_id RealmFile.realm_id)],
     });
 }
 
@@ -36,7 +36,7 @@ sub load_first_from_incoming {
     my($self, $mail_incoming) = @_;
     my(@r) = map($_MI->clean_and_trim($_), @{$mail_incoming->get_references});
     return
-	unless @r;
+        unless @r;
     $self->[$_IDI] = \@r;
     $self->load_all;
     return $self->get_result_set_size ? $self->set_cursor_or_die(0) : undef;

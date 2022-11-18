@@ -8,14 +8,14 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 
 sub acceptance_test_detail {
     view_put(
-	xhtml => FRAMESET(
-	    Join([
-		FRAME({
-		    NAME => 'header',
-		    SRC => ['->format_uri', 'DEV_ACCEPTANCE_TEST_HEADER'],
-		}),
-		FRAMESET(
-		    Join([
+        xhtml => FRAMESET(
+            Join([
+                FRAME({
+                    NAME => 'header',
+                    SRC => ['->format_uri', 'DEV_ACCEPTANCE_TEST_HEADER'],
+                }),
+                FRAMESET(
+                    Join([
                         FRAMESET(
                             Join([
                                 FRAME({
@@ -31,96 +31,96 @@ sub acceptance_test_detail {
                                 ROWS => '100%,80px',
                             },
                         ),
-			FRAME({
-			    NAME => 'res',
-			 }),
-		     ]),
-		    {
-			COLS => '30%, 70%'
-		    },
-		),
-	    ]),
+                        FRAME({
+                            NAME => 'res',
+                         }),
+                     ]),
+                    {
+                        COLS => '30%, 70%'
+                    },
+                ),
+            ]),
             {
                 ROWS => '80px,100%',
             }
-	),
+        ),
     );
     return;
 }
 
 sub acceptance_test_header {
      view_put(xhtml =>
-		  Join([
-		      HEAD(
-			  STYLE(_css(), {
-			      TYPE => 'text/css',
-			  }),
-		      ),
-		      BODY(Join([
-			  H1(Join([
-			      String('Acceptance Test Results for "'),
-			      [b_use('Model.AcceptanceTestTransactionList'), '->get_test_name', ['->req']],
-			      String('"'),
-			  ])),
-			  BR(),
-			  Link({
-			      value => 'Back to test list',
-			      link_target => '_top',
-			      href => URI({
-				  task_id => 'DEV_ACCEPTANCE_TEST_LIST',
-			      })}),
-		      ])),
-		  ]),
-	  );
+                  Join([
+                      HEAD(
+                          STYLE(_css(), {
+                              TYPE => 'text/css',
+                          }),
+                      ),
+                      BODY(Join([
+                          H1(Join([
+                              String('Acceptance Test Results for "'),
+                              [b_use('Model.AcceptanceTestTransactionList'), '->get_test_name', ['->req']],
+                              String('"'),
+                          ])),
+                          BR(),
+                          Link({
+                              value => 'Back to test list',
+                              link_target => '_top',
+                              href => URI({
+                                  task_id => 'DEV_ACCEPTANCE_TEST_LIST',
+                              })}),
+                      ])),
+                  ]),
+          );
      return;
  }
 
 
 sub acceptance_test_list {
     view_put(xhtml =>
-		 Join([
-		     HEAD(
-			 STYLE(_css(), {
-			     TYPE => 'text/css',
-			 }),
-		     ),
-		     BODY(Join([
-			 H1('Acceptance Test Results'),
-			 vs_paged_list('AcceptanceTestList', [
-			     ['test_name', {
-				 column_widget => Link({
-				     value  => String(['test_name']),
-				     href => URI({
-					 task_id => 'DEV_ACCEPTANCE_TEST_DETAIL',
-					 path_info => ['test_name'],
-				     }),
-				 }),
-				 column_data_class => 'test_name',
-			     }],
-			     ['age', {
-				 column_data_class => 'age',
-			     }],
-			     ['timestamp', {
-				 column_data_class => 'timestamp',
-			     }],
-			     ['outcome', {
-				 column_data_class => 'outcome',
-			     }],
-			 ]),
-		     ])),
-		 ]));
+                 Join([
+                     HEAD(
+                         STYLE(_css(), {
+                             TYPE => 'text/css',
+                         }),
+                     ),
+                     BODY(Join([
+                         H1('Acceptance Test Results'),
+                         vs_paged_list('AcceptanceTestList', [
+                             ['test_name', {
+                                 column_widget => Link({
+                                     value  => String(['test_name']),
+                                     href => URI({
+                                         task_id => 'DEV_ACCEPTANCE_TEST_DETAIL',
+                                         path_info => ['test_name'],
+                                     }),
+                                 }),
+                                 column_data_class => 'test_name',
+                             }],
+                             ['age', {
+                                 column_data_class => 'age',
+                             }],
+                             ['timestamp', {
+                                 column_data_class => 'timestamp',
+                             }],
+                             ['outcome', {
+                                 column_data_class => 'outcome',
+                             }],
+                         ]),
+                     ])),
+                 ]));
     return;
 }
 
 sub acceptance_test_request {
     view_put(xhtml  =>
-		 Join([
-		     HEAD(
-			 STYLE(_css(), {
-			     TYPE => 'text/css',
-			 }),
-		     ),
-		     BODY(
+                 Join([
+                     HEAD(
+                         STYLE(_css(), {
+                             TYPE => 'text/css',
+                         }),
+                     ),
+                     BODY(
                          If(Not(['->req', 'query', 'd']),
                             PRE([b_use('Model.AcceptanceTestTransactionList'), '->get_http_request',
                                  ['->req', 'path_info'],
@@ -129,9 +129,9 @@ sub acceptance_test_request {
                                  CLASS => 'headers',
                              }),
                         ),
-		     ),
-		 ]),
-	 );
+                     ),
+                 ]),
+         );
     return;
  }
 
@@ -152,28 +152,28 @@ sub acceptance_test_response {
 
 sub acceptance_test_transaction_list {
     view_put(xhtml =>
-		 Join([
-		     HEAD(
-			 Join([
-			     STYLE(_css(), {
-				 TYPE => 'text/css',
-			     }),
-			     SCRIPT(_javascript(), {
-				 TYPE => 'text/javascript',
-			     }),
-			 ]),
-		     ),
-		     BODY(Join([
-			 vs_list('AcceptanceTestTransactionList', [
-			     ['request_response_number', {
-				 column_widget => Link({
-				     value => If(['is_dom_dump'],
+                 Join([
+                     HEAD(
+                         Join([
+                             STYLE(_css(), {
+                                 TYPE => 'text/css',
+                             }),
+                             SCRIPT(_javascript(), {
+                                 TYPE => 'text/javascript',
+                             }),
+                         ]),
+                     ),
+                     BODY(Join([
+                         vs_list('AcceptanceTestTransactionList', [
+                             ['request_response_number', {
+                                 column_widget => Link({
+                                     value => If(['is_dom_dump'],
                                                  ['request_number'],
                                                  Join([['request_number'], String('/'), ['response_number']]),
                                              ),
-				     href => '#nonesuch',
-				     ONCLICK =>  Join([
-					 'display(this.parentNode.parentNode',
+                                     href => '#nonesuch',
+                                     ONCLICK =>  Join([
+                                         'display(this.parentNode.parentNode',
                                          map((
                                              q{, '},
                                              URI({
@@ -189,30 +189,30 @@ sub acceptance_test_transaction_list {
                                          ), qw(DEV_ACCEPTANCE_TEST_REQUEST DEV_ACCEPTANCE_TEST_RESPONSE)),
                                          q{, },
                                          ['is_dom_dump'],
-					 ');',
-				     ]),
-				 }),
-				 column_data_class => 'request_response_number',
-			     }],
-			     ['test_line_number', {
-				 column_data_class => 'test_line_number',
-			 }],
-			     ['http_status', {
-				 column_data_class => 'http_status',
-			     }],
-			     ['command', {
-				 column_data_class => 'command',
-			     }],
-			 ]),
-		     ])),
-		 ]));
+                                         ');',
+                                     ]),
+                                 }),
+                                 column_data_class => 'request_response_number',
+                             }],
+                             ['test_line_number', {
+                                 column_data_class => 'test_line_number',
+                         }],
+                             ['http_status', {
+                                 column_data_class => 'http_status',
+                             }],
+                             ['command', {
+                                 column_data_class => 'command',
+                             }],
+                         ]),
+                     ])),
+                 ]));
     return;
 }
 
 sub pre_compile {
     my($self) = @_;
     view_parent('AcceptanceTestResultViewer->xhtml')
-	unless $self->get('view_name') eq 'xhtml';
+        unless $self->get('view_name') eq 'xhtml';
     return;
 }
 
@@ -221,7 +221,7 @@ sub xhtml {
     view_class_map('XHTMLWidget');
     view_shortcuts('UIXHTML.ViewShortcuts');
     view_put(
-	xhtml => '',
+        xhtml => '',
     );
     view_main(SimplePage(view_widget_value('xhtml')));
     return;

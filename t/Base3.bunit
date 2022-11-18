@@ -5,8 +5,8 @@ options({
 });
 [
     class() => [
-	simple_require => [
-	    'Bivio::t::Base::T3' => qr{must specify class or map},
-	],
+        simple_require => [
+            'Bivio::t::Base::T3' => qr{must specify class or map},
+        ],
     ],
 ];

@@ -11,17 +11,17 @@ my($_R) = Agent_Request();
 sub format {
     my($self, $local_part_or_email, $req) = @_;
     unless ($_R->is_blesser_of($req)) {
-	IO_Alert()->warn_deprecated('must pass req');
-	$req = $_R->get_current;
+        IO_Alert()->warn_deprecated('must pass req');
+        $req = $_R->get_current;
     }
     $self = $self->internal_get_self($req)
-	unless ref($self);
+        unless ref($self);
     return $_E->format_email(
-	$local_part_or_email,
-	$self->get_facade->get_value('mail_host'),
-	undef,
-	undef,
-	b_use('Agent.Request')->get_current,
+        $local_part_or_email,
+        $self->get_facade->get_value('mail_host'),
+        undef,
+        undef,
+        b_use('Agent.Request')->get_current,
     );
 }
 

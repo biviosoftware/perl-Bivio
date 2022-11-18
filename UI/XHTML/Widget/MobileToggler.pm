@@ -14,38 +14,38 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put(
-	value => [
-	    sub {
-		my($source, $class) = @_;
-		my($req) = $source->req;
-		return TaskMenu({
-		    task_map => [
-			map(
-			    {
-				my($uri_args) = $_MD->uri_args_for($_, $req);
-				my($x) = [
-				    If($uri_args->{control}, Link(
-					vs_text_as_prose('MobileToggler', $_),
-					URI($uri_args),
-				    )),
-				    SPAN_selected(
-					vs_text_as_prose('MobileToggler', $_)),
-				];
-				{
-				     xlink => IfMobile(
-					 $_ eq 'mobile' ? reverse(@$x) : @$x),
-				     label => vs_text_as_prose(
-					 'MobileToggler', $_),
-				};
-			    }
-			    qw(desktop mobile),
-			),
-		    ],
-		    class => $class || 'b_mobile_toggler',
-		});
-	    },
-	    $self->unsafe_get('class'),
-	],
+        value => [
+            sub {
+                my($source, $class) = @_;
+                my($req) = $source->req;
+                return TaskMenu({
+                    task_map => [
+                        map(
+                            {
+                                my($uri_args) = $_MD->uri_args_for($_, $req);
+                                my($x) = [
+                                    If($uri_args->{control}, Link(
+                                        vs_text_as_prose('MobileToggler', $_),
+                                        URI($uri_args),
+                                    )),
+                                    SPAN_selected(
+                                        vs_text_as_prose('MobileToggler', $_)),
+                                ];
+                                {
+                                     xlink => IfMobile(
+                                         $_ eq 'mobile' ? reverse(@$x) : @$x),
+                                     label => vs_text_as_prose(
+                                         'MobileToggler', $_),
+                                };
+                            }
+                            qw(desktop mobile),
+                        ),
+                    ],
+                    class => $class || 'b_mobile_toggler',
+                });
+            },
+            $self->unsafe_get('class'),
+        ],
     );
     return shift->SUPER::initialize(@_);
 }

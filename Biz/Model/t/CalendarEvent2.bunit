@@ -11,38 +11,38 @@ my($ics) = model('CalendarEventDAVList')
     ->vcalendar_list(model('CalendarEventList', {}));
 [
     [req()] => [
-	{
-	    method => 'update_from_ics',
-	    compute_return => sub {
-		return [model('CalendarEventDAVList')
-		    ->vcalendar_list(model('CalendarEventList', {}))];
-	    },
-	} => [
-	    [$ics] => [$ics],
-	    sub {
-		$$ics =~ s{(?<=DTSTART:)(\w+)}{
-		    DateTime()->to_ical(
-			DateTime()->add_days(
-			    DateTime()->from_literal_or_die($1),
-			    -1,
-			),
-		    ),
+        {
+            method => 'update_from_ics',
+            compute_return => sub {
+                return [model('CalendarEventDAVList')
+                    ->vcalendar_list(model('CalendarEventList', {}))];
+            },
+        } => [
+            [$ics] => [$ics],
+            sub {
+                $$ics =~ s{(?<=DTSTART:)(\w+)}{
+                    DateTime()->to_ical(
+                        DateTime()->add_days(
+                            DateTime()->from_literal_or_die($1),
+                            -1,
+                        ),
+                    ),
                 }ex;
-		return [$ics];
-	    } => sub {[$ics]},
-	],
+                return [$ics];
+            } => sub {[$ics]},
+        ],
     ],
 ];
 #     {
-# 	compute_return => sub {
-# 	    return [shift->get('object')->map_iterate(
-# 		sub {
-# 		    return [shift->get(
-# 			qw(RealmOwner.display_name CalendarEvent.location))];
-# 		})];
-# 	    },
-# 	method => 'update_from_ics',
+#         compute_return => sub {
+#             return [shift->get('object')->map_iterate(
+#                 sub {
+#                     return [shift->get(
+#                         qw(RealmOwner.display_name CalendarEvent.location))];
+#                 })];
+#             },
+#         method => 'update_from_ics',
 #     } => [
-# 	[read_file('CalendarEventList/1.in')]
-# 	    => [do('CalendarEventList/1.out')],
+#         [read_file('CalendarEventList/1.in')]
+#             => [do('CalendarEventList/1.out')],
 #     ],

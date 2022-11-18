@@ -5,12 +5,12 @@ req();
 [
     from_literal => [
         '' => UNDEF(),
-	abc => 'abc',
-	realm_id('demo') => [realm_id('demo'), undef],
-	email('demo') => [realm_id('demo'), undef],
-	email('not-such-email') => NOT_FOUND(),
-	3 => SYNTAX_ERROR(),
-	x => TOO_SHORT(),
-	'x.y' => REALM_NAME(),
+        abc => 'abc',
+        realm_id('demo') => [realm_id('demo'), undef],
+        email('demo') => [realm_id('demo'), undef],
+        email('not-such-email') => NOT_FOUND(),
+        3 => SYNTAX_ERROR(),
+        x => TOO_SHORT(),
+        'x.y' => REALM_NAME(),
     ],
 ];

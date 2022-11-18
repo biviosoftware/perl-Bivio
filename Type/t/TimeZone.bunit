@@ -6,66 +6,66 @@ req()->set_realm(qw(demo));
 
 [
     class() => [
-	from_literal => [
-	    UTC => [class()->UTC],
-	    EUROPE_LONDON => [class()->EUROPE_LONDON],
-	    ASIA_TOKYO => [class()->ASIA_TOKYO],
-	],
-	get_default => [
-	    [] => [class()->UTC],
-	],
-	execute_from_query => [
-	    [req()] => sub {
-		return req('Type.TimeZone')->eq_utc;
-	    },
-	],
-	unsafe_from_int => [
-	    [1] => [class()->UTC],
-	],
-	row_tag_replace => [
-	    [undef, req()] => not_die(),
-	],
-	row_tag_get => [
-	    [req()] => [class()->UTC],
-	],
-	row_tag_replace => [
-	    [class()->EUROPE_LONDON, req()] => not_die(),
-	],
-	row_tag_get => [
-	    [req()] => [class()->EUROPE_LONDON],
-	],
-	sub {
-	    # ensure all names are valid with
-	    # current DateTime::TimeZone version
-	    my($dt) = $_DT->now;
+        from_literal => [
+            UTC => [class()->UTC],
+            EUROPE_LONDON => [class()->EUROPE_LONDON],
+            ASIA_TOKYO => [class()->ASIA_TOKYO],
+        ],
+        get_default => [
+            [] => [class()->UTC],
+        ],
+        execute_from_query => [
+            [req()] => sub {
+                return req('Type.TimeZone')->eq_utc;
+            },
+        ],
+        unsafe_from_int => [
+            [1] => [class()->UTC],
+        ],
+        row_tag_replace => [
+            [undef, req()] => not_die(),
+        ],
+        row_tag_get => [
+            [req()] => [class()->UTC],
+        ],
+        row_tag_replace => [
+            [class()->EUROPE_LONDON, req()] => not_die(),
+        ],
+        row_tag_get => [
+            [req()] => [class()->EUROPE_LONDON],
+        ],
+        sub {
+            # ensure all names are valid with
+            # current DateTime::TimeZone version
+            my($dt) = $_DT->now;
 
-	    foreach my $tz (class()->get_list) {
-		next if $tz->as_int <= 1;
-		$tz->date_time_from_utc($dt);
-	    }
-	    return 1;
-	} => 1,
+            foreach my $tz (class()->get_list) {
+                next if $tz->as_int <= 1;
+                $tz->date_time_from_utc($dt);
+            }
+            return 1;
+        } => 1,
     ],
     sub {class()->UTC} => [
-	date_time_to_utc => [
-	    '2452260 24455' => '2452260 24455',
-	],
-	date_time_from_utc => [
-	    '2452260 24455' => '2452260 24455',
-	],
-	QUERY_KEY => 'timezone',
-	add_to_query => [
-	    [{abc => 'def'}] => [{abc => 'def', timezone => 1}],
-	],
-	get_long_desc => 'UTC',
+        date_time_to_utc => [
+            '2452260 24455' => '2452260 24455',
+        ],
+        date_time_from_utc => [
+            '2452260 24455' => '2452260 24455',
+        ],
+        QUERY_KEY => 'timezone',
+        add_to_query => [
+            [{abc => 'def'}] => [{abc => 'def', timezone => 1}],
+        ],
+        get_long_desc => 'UTC',
     ],
     sub {class()->AMERICA_DENVER} => [
-	date_time_to_utc => [
-	    '2452260 24455' => '2452260 49655',
-	],
-	date_time_from_utc => [
-	    '2452260 49655' => '2452260 24455',
-	],
-	get_long_desc => 'America/Denver',
+        date_time_to_utc => [
+            '2452260 24455' => '2452260 49655',
+        ],
+        date_time_from_utc => [
+            '2452260 49655' => '2452260 24455',
+        ],
+        get_long_desc => 'America/Denver',
     ],
 ];

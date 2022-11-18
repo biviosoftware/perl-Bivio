@@ -2,37 +2,37 @@
 # $Id$
 options({
     create_object => sub {
-	my(undef, $params) = @_;
-	return class($params->[0]);
+        my(undef, $params) = @_;
+        return class($params->[0]);
     },
 });
 my($after);
 [
     {
-	object => 'Bivio::t::UNIVERSAL::Super2',
-	compute_return => sub {
-	    my(undef, $actual) = @_;
-	    my($after2) = $after;
-	    $after = undef;
-	    return [$actual, $after2];
-	},
+        object => 'Bivio::t::UNIVERSAL::Super2',
+        compute_return => sub {
+            my(undef, $actual) = @_;
+            my($after2) = $after;
+            $after = undef;
+            return [$actual, $after2];
+        },
     } => [
-	call_and_do_after => [
-	    [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {$after = 'x'}] => [[qw(a 5 9)], 'x'],
-	    [boolean => ['a'], sub {$after = 'x' . join('', @_)}] => [[1], qr{xARRAY.*\)1}],
-	    [boolean => [], sub {$after = 'x'}] => [[0], 'x'],
-	],
-	{
-	    method => 'call_and_do_after',
-	    want_scalar => 1,
-	} => [
-	    [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {$after = 'x' . "@_"}] => [[3], qr{^xSCALAR.*\) 0$}],
-	],
-	{
-	    method => 'call_and_do_after',
-	    want_void => 1,
-	} => [
-	    [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {assert_equals(\@_, [undef, undef]); $after = 'x'}] => [[], 'x'],
-	],
+        call_and_do_after => [
+            [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {$after = 'x'}] => [[qw(a 5 9)], 'x'],
+            [boolean => ['a'], sub {$after = 'x' . join('', @_)}] => [[1], qr{xARRAY.*\)1}],
+            [boolean => [], sub {$after = 'x'}] => [[0], 'x'],
+        ],
+        {
+            method => 'call_and_do_after',
+            want_scalar => 1,
+        } => [
+            [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {$after = 'x' . "@_"}] => [[3], qr{^xSCALAR.*\) 0$}],
+        ],
+        {
+            method => 'call_and_do_after',
+            want_void => 1,
+        } => [
+            [sub {return @{[(shift, 5, 9)]}}, ['a'], sub {assert_equals(\@_, [undef, undef]); $after = 'x'}] => [[], 'x'],
+        ],
     ],
 ];

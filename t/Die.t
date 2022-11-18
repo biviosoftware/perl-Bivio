@@ -23,10 +23,10 @@ my($warn_count) = 0;
 sub handle_die {
     my($self, $die) = @_;
     if ($die->as_string =~ /TOO MANY WARNINGS/) {
-	foreach my $x (1..$warn_count) {
-	    Bivio::IO::Alert->warn("test warn $x");
-	}
-	return;
+        foreach my $x (1..$warn_count) {
+            Bivio::IO::Alert->warn("test warn $x");
+        }
+        return;
     }
     $self eq 'Bivio::Die::T1' || die("huh?");
     $main::T1++;
@@ -102,7 +102,7 @@ print $die && $die->get('code')->equals_by_name('DIE') ? "ok 5\n" : "not ok 5\n"
 
 Bivio::IO::Config->introduce_values({
     'Bivio::IO::Alert' => {
-	max_warnings => 1,
+        max_warnings => 1,
     }
 });
 my($t) = 6;
@@ -110,17 +110,17 @@ foreach my $warn_count (2, 10) {
     Bivio::IO::Alert->reset_warn_counter;
     $die = Bivio::Die->catch(sub {
         Bivio::Die::T1->warn_test(
-	    $warn_count,
-	    sub {
-		Bivio::IO::Alert->warn('warn ok');
-		Bivio::IO::Alert->warn('warn dies');
-		# DOES NOT RETURN
-	    },
-	);
+            $warn_count,
+            sub {
+                Bivio::IO::Alert->warn('warn ok');
+                Bivio::IO::Alert->warn('warn dies');
+                # DOES NOT RETURN
+            },
+        );
     });
     print(($t == 6 ? $die && !$die->unsafe_get('next')
         : $die && $die->unsafe_get('next')
-	&& $die->get_nested(qw(next code))->eq_die_within_handle_die)
+        && $die->get_nested(qw(next code))->eq_die_within_handle_die)
         ? "ok $t\n" : "not ok $t\n");
     $t++;
 }

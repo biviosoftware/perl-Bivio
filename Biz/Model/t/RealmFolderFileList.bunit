@@ -5,44 +5,44 @@ req()->set_realm_and_user('btest_read', 'btest_read')
     ->initialize_fully('FORUM_FOLDER_FILE_LIST');
 options({
     compute_return => sub {
-	my(undef, $actual) = @_;
-	return $actual unless ref($actual->[0]);
-	return $actual->[0]->map_rows(sub{shift->get('RealmFile.path_lc');});
+        my(undef, $actual) = @_;
+        return $actual unless ref($actual->[0]);
+        return $actual->[0]->map_rows(sub{shift->get('RealmFile.path_lc');});
     },
 });
 
 my($folder_id) = sub {
     my($path) = @_;
     return model(RealmFile => {
-	path_lc => $path,
+        path_lc => $path,
     })->get('realm_file_id');
 };
 
 [
     load_all => [
-	[{
-	    parent_id => $folder_id->('/'),
-	}] => [],
-	[{
-	    parent_id => $folder_id->('/public'),
-	}] => ['/public/file.txt'],
-	[{
-	    parent_id => $folder_id->('/private'),
-	}] => [qw(/private/file.html /private/image.gif)],
+        [{
+            parent_id => $folder_id->('/'),
+        }] => [],
+        [{
+            parent_id => $folder_id->('/public'),
+        }] => ['/public/file.txt'],
+        [{
+            parent_id => $folder_id->('/private'),
+        }] => [qw(/private/file.html /private/image.gif)],
     ],
     sub {
-	req()->set_user(undef);
-	return 1;
+        req()->set_user(undef);
+        return 1;
     } => 1,
     load_all => [
-	[{
-	    parent_id => $folder_id->('/'),
-	}] => [],
-	[{
-	    parent_id => $folder_id->('/public'),
-	}] => ['/public/file.txt'],
-	[{
-	    parent_id => $folder_id->('/private'),
-	}] => [],
+        [{
+            parent_id => $folder_id->('/'),
+        }] => [],
+        [{
+            parent_id => $folder_id->('/public'),
+        }] => ['/public/file.txt'],
+        [{
+            parent_id => $folder_id->('/private'),
+        }] => [],
     ],
 ];

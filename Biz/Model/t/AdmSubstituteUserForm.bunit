@@ -4,35 +4,35 @@ Request('initialize_fully');
 req()->set_realm_and_user('general', 'root');
 b_use('IO.Config')->introduce_values({
     'Bivio::IO::Config' => {
-	# use production field names for get_field_name_for_html()
-	is_dev => 0,
+        # use production field names for get_field_name_for_html()
+        is_dev => 0,
     },
 });
 [
     [req()] => [
-	execute => [
-	    [req(), {
-		login => 'demo',
-	    }] => sub {
-		my($case, $return) = @_;
-		return 0 unless req()->is_substitute_user;
-		push(@$return, req(qw(auth_user name)));
-		return [0, 'demo'];
-	    },
-	],
-	sub {
-	    assert_equals(
-		req()->use('Action.UserLogout')->execute(req()),
-		req()->use('Agent.TaskId')->ADM_SUBSTITUTE_USER);
-	    assert_equals(
-		req()->use('Action.UserLogout')->execute(req()),
-		0);
-	    return 1;
-	} => 1,
-	get_field_name_for_html => [
-	    cancel_button => 'f0',
-	    login => 'f1',
-	    ok_button => 'f2',
-	],
+        execute => [
+            [req(), {
+                login => 'demo',
+            }] => sub {
+                my($case, $return) = @_;
+                return 0 unless req()->is_substitute_user;
+                push(@$return, req(qw(auth_user name)));
+                return [0, 'demo'];
+            },
+        ],
+        sub {
+            assert_equals(
+                req()->use('Action.UserLogout')->execute(req()),
+                req()->use('Agent.TaskId')->ADM_SUBSTITUTE_USER);
+            assert_equals(
+                req()->use('Action.UserLogout')->execute(req()),
+                0);
+            return 1;
+        } => 1,
+        get_field_name_for_html => [
+            cancel_button => 'f0',
+            login => 'f1',
+            ok_button => 'f2',
+        ],
     ],
 ];

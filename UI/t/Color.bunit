@@ -3,19 +3,19 @@
 Request('initialize_fully');
 [
     sub {class()->get_from_source(req())} => [
-	format_css => [
-	    'bunit-border' => 'border-color: #00FF00;',
-	    bunit_border => 'color: #00FF00;',
-	    b_day_of_month_create_hidden => 'color: #FFFFFF;',
-	    b_day_of_month_create_visible => 'color: #888888;',
-	],
+        format_css => [
+            'bunit-border' => 'border-color: #00FF00;',
+            bunit_border => 'color: #00FF00;',
+            b_day_of_month_create_hidden => 'color: #FFFFFF;',
+            b_day_of_month_create_visible => 'color: #888888;',
+        ],
     ],
     sub {
-	req()->setup_facade('other');
-	return class()->get_from_source(req());
+        req()->setup_facade('other');
+        return class()->get_from_source(req());
     } => [
-	format_css => [
-	    b_day_of_month_create_hidden => 'color: #FF88FF;',
-	],
+        format_css => [
+            b_day_of_month_create_hidden => 'color: #FF88FF;',
+        ],
     ],
 ];

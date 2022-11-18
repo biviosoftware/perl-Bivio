@@ -13,8 +13,8 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put(
-	tag => 'script',
-	TYPE => 'text/javascript',
+        tag => 'script',
+        TYPE => 'text/javascript',
     );
 #TODO: Consider compression
     return shift->SUPER::initialize(@_);

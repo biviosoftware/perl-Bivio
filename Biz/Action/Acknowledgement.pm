@@ -29,7 +29,7 @@ sub execute {
 sub exists_in_facade {
     my($proto, $req, $label) = @_;
     return $_T->get_from_source($req)->unsafe_get_widget_value_by_name(
-	"acknowledgement." . $label);
+        "acknowledgement." . $label);
 }
 
 sub extract_and_delete_label {
@@ -42,23 +42,23 @@ sub extract_and_delete_label {
 sub extract_label {
     my($proto, $req) = @_;
     return _extract($proto, $req)
-	|| $req->unsafe_get_nested($proto->package_name, 'label');
+        || $req->unsafe_get_nested($proto->package_name, 'label');
 }
 
 sub handle_client_redirect {
     my($proto, $named, $req) = @_;
     return
-	if $named->{uri} =~ /\b@{[$proto->QUERY_KEY]}=/;
+        if $named->{uri} =~ /\b@{[$proto->QUERY_KEY]}=/;
     return
-	unless my $label = $proto->extract_and_delete_label($req);
+        unless my $label = $proto->extract_and_delete_label($req);
 
     if (my $t = $_TI->unsafe_from_name($label)) {
-	$label = $t->as_int;
+        $label = $t->as_int;
     }
     $named->{uri} .= ($named->{uri} =~ /\?/ ? '&' : '?')
-	. $proto->QUERY_KEY
-	. '='
-	. $_HTML->escape_query($label);
+        . $proto->QUERY_KEY
+        . '='
+        . $_HTML->escape_query($label);
     return;
 }
 
@@ -71,9 +71,9 @@ sub handle_pre_execute_task {
 sub handle_server_redirect {
     my($proto, $named, $req) = @_;
     return
-	if ($named->{query} ||= {})->{$proto->QUERY_KEY};
+        if ($named->{query} ||= {})->{$proto->QUERY_KEY};
     return
-	unless my $label = $proto->extract_and_delete_label($req);
+        unless my $label = $proto->extract_and_delete_label($req);
     ($named->{query} ||= {})->{$proto->QUERY_KEY} = $label;
     return;
 }
@@ -81,31 +81,31 @@ sub handle_server_redirect {
 sub save_label {
     my($proto, $label, $req, $query) = @_ >= 3 ? @_ : (shift(@_), undef, @_);
     unless ($label) {
-	return
-	    unless $proto
-		->exists_in_facade($req, $req->get('task_id')->get_name);
-	$label = $req->get('task_id');
+        return
+            unless $proto
+                ->exists_in_facade($req, $req->get('task_id')->get_name);
+        $label = $req->get('task_id');
     }
     unless (ref($label)) {
-	if (my $t = $_TI->unsafe_from_name($label)) {
-	    $label = $t;
-	}
+        if (my $t = $_TI->unsafe_from_name($label)) {
+            $label = $t;
+        }
     }
     $label = $label->as_int
-	if ref($label);
+        if ref($label);
     _trace($proto->QUERY_KEY, '=', $label) if $_TRACE;
     if (ref($query) eq 'HASH') {
-	# Don't override if already set on passed in query
-	$query->{$proto->QUERY_KEY} ||= $label;
-	return $query;
+        # Don't override if already set on passed in query
+        $query->{$proto->QUERY_KEY} ||= $label;
+        return $query;
     }
     my($x) = $req->unsafe_get('form_model');
     $x &&= $x->unsafe_get_context;
     foreach my $y ($x, $req) {
-	# Always override in context and request
-	($y->unsafe_get('query') || $y->put(query => {})->get('query'))
-	    ->{$proto->QUERY_KEY} = $label
-	    if $y;
+        # Always override in context and request
+        ($y->unsafe_get('query') || $y->put(query => {})->get('query'))
+            ->{$proto->QUERY_KEY} = $label
+            if $y;
     }
     return;
 }
@@ -120,20 +120,20 @@ sub save_label_and_execute {
 sub _extract {
     my($proto, $req) = @_;
     my($id) = delete(
-	($req->unsafe_get('query') || {})->{$proto->QUERY_KEY});
+        ($req->unsafe_get('query') || {})->{$proto->QUERY_KEY});
     return undef
-	unless $id;
+        unless $id;
     my($label);
     if ($id =~ /^\d+$/) {
-	b_use('Bivio.Die')->catch_quietly(sub {
+        b_use('Bivio.Die')->catch_quietly(sub {
             $label = $_TI->from_int($id)->get_name
-	});
+        });
     }
     else {
-    	$label = $id;
+            $label = $id;
     }
     $proto->new($req)->put_on_request($req)->put(label => $label)
-	if $label;
+        if $label;
     _trace($proto->QUERY_KEY, '=', $label) if $_TRACE;
     return $label;
 }

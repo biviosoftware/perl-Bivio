@@ -15,7 +15,7 @@ sub initialize {
     my($self) = @_;
     my(@res) = shift->SUPER::initialize(@_);
     $self->put_unless_exists(control => sub {
-	return ['->ureq', $self->get('form_class')];
+        return ['->ureq', $self->get('form_class')];
     });
     return @res;
 }

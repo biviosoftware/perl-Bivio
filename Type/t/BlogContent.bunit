@@ -3,23 +3,23 @@
 Type();
 [
     class() => [
-	{
-	    method => 'split',
-	    check_return => sub {
-		my(undef, undef, $expect) = @_;
-		return [map(ref($_) ? $_->[1] : $_, @$expect)];
-	    },
-	} => [
-	    "\@h1 0\n0" => ['0', '0'],
-	    "\@h1 x\ny\n" => ['x', "y\n"],
-	    '' => [BLOG_TITLE_NULL(), BLOG_BODY_NULL()],
-	    [undef] => [BLOG_TITLE_NULL(), BLOG_BODY_NULL()],
-	    '@h1 x' => ['x', BLOG_BODY_NULL()],
-	    "\@h1 x\n\n" => ['x', BLOG_BODY_NULL()],
-	    "\@h4 x\n\n" => [BLOG_TITLE_PREFIX(), BLOG_BODY_NULL()],
-	],
-	join => [
-	    [qw(t b)] => [\("\@h1 t\nb")],
-	],
+        {
+            method => 'split',
+            check_return => sub {
+                my(undef, undef, $expect) = @_;
+                return [map(ref($_) ? $_->[1] : $_, @$expect)];
+            },
+        } => [
+            "\@h1 0\n0" => ['0', '0'],
+            "\@h1 x\ny\n" => ['x', "y\n"],
+            '' => [BLOG_TITLE_NULL(), BLOG_BODY_NULL()],
+            [undef] => [BLOG_TITLE_NULL(), BLOG_BODY_NULL()],
+            '@h1 x' => ['x', BLOG_BODY_NULL()],
+            "\@h1 x\n\n" => ['x', BLOG_BODY_NULL()],
+            "\@h4 x\n\n" => [BLOG_TITLE_PREFIX(), BLOG_BODY_NULL()],
+        ],
+        join => [
+            [qw(t b)] => [\("\@h1 t\nb")],
+        ],
     ],
 ];

@@ -3,10 +3,10 @@
 ShellUtil();
 [
     tables => sub {
-	my(undef, $actual) = @_;
-	my($t) = Bivio::Die->eval_or_die($actual->[0]);
-	assert_equals([], [grep($_ =~ /^pg_/, @$t)]);
-	assert_equals('address_t', $t->[0]);
-	return 1;
+        my(undef, $actual) = @_;
+        my($t) = Bivio::Die->eval_or_die($actual->[0]);
+        assert_equals([], [grep($_ =~ /^pg_/, @$t)]);
+        assert_equals('address_t', $t->[0]);
+        return 1;
     },
 ];

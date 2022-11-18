@@ -6,15 +6,15 @@ model('Tuple')->delete_all({realm_id => req('auth_id')});
 model('TupleUse')->delete_all({realm_id => req('auth_id')});
 [
     create_from_label => [
-	PetShopReport => [{
-	    'Model.TupleUse' => {
-		tuple_def_id => model('TupleDefList', {})
-		    ->find_row_by_label('PetShopReport')
-		    ->get('TupleDef.tuple_def_id'),
-		moniker => 'psr',
-		label => 'PetShopReport',
-		realm_id => req()->get('auth_id'),
-	    },
-	}],
+        PetShopReport => [{
+            'Model.TupleUse' => {
+                tuple_def_id => model('TupleDefList', {})
+                    ->find_row_by_label('PetShopReport')
+                    ->get('TupleDef.tuple_def_id'),
+                moniker => 'psr',
+                label => 'PetShopReport',
+                realm_id => req()->get('auth_id'),
+            },
+        }],
     ],
 ];

@@ -2,64 +2,64 @@
 # $Id$
 FormModel({
     setup_request => sub {
-	my(undef, $params) = @_;
-	class('Type.FormMode')->from_name(
-	    $params->[1] ? pop(@$params) : 'create'
-	)->execute(req());
-	return;
+        my(undef, $params) = @_;
+        class('Type.FormMode')->from_name(
+            $params->[1] ? pop(@$params) : 'create'
+        )->execute(req());
+        return;
     },
 });
 require 'RealmFile.PL';
 [
     [{
-	image_file => file_field('ImageUploadForm/t1.gif'),
+        image_file => file_field('ImageUploadForm/t1.gif'),
     }] => [{
-	'Model.RealmFile' => {
-	    path => sub {
-		my($a) = req()->get('Model.RealmFile')->get_content_length;
-		my($e) = length(
-		    ${file_field('ImageUploadForm/t1.gif')->{content}});
-		Bivio::Die->die("$a: actual not equal expected ($e)")
-		    unless abs($a - $e) < 10;
-		return '/Image/t1.gif';
-	    },
+        'Model.RealmFile' => {
+            path => sub {
+                my($a) = req()->get('Model.RealmFile')->get_content_length;
+                my($e) = length(
+                    ${file_field('ImageUploadForm/t1.gif')->{content}});
+                Bivio::Die->die("$a: actual not equal expected ($e)")
+                    unless abs($a - $e) < 10;
+                return '/Image/t1.gif';
+            },
         },
     }],
     [{
-	image_file => file_field('ImageUploadForm/t2.png'),
+        image_file => file_field('ImageUploadForm/t2.png'),
     }] => [{
-	'Model.RealmFile' => {
-	    path => sub {
-		my($f) = req()->get('Model.RealmFile')->get_os_path;
-		chomp(my $a = `imgsize $f`);
-		assert_equals(qr/width.*640.* height.*240/i, $a);
-		return '/Image/t2.png';
-	    },
+        'Model.RealmFile' => {
+            path => sub {
+                my($f) = req()->get('Model.RealmFile')->get_os_path;
+                chomp(my $a = `imgsize $f`);
+                assert_equals(qr/width.*640.* height.*240/i, $a);
+                return '/Image/t2.png';
+            },
         },
     }],
     [{
-	image_file => file_field('ImageUploadForm/t2.png'),
+        image_file => file_field('ImageUploadForm/t2.png'),
     }, 'edit'] => [{
-	'Model.RealmFile' => {
-	    # Update touches /Image last
-	    path => '/Image/t2.png',
+        'Model.RealmFile' => {
+            # Update touches /Image last
+            path => '/Image/t2.png',
         },
     }],
     [{
-	image_file => file_field('ImageUploadForm/t3.tif'),
+        image_file => file_field('ImageUploadForm/t3.tif'),
     }] => [{
-	'Model.RealmFile' => {
-	    # Update touches /Image last
-	    path => '/Image/t3.tif',
+        'Model.RealmFile' => {
+            # Update touches /Image last
+            path => '/Image/t3.tif',
         },
     }],
     map(
-	error_case({
-	    image_file => file_field("ImageUploadForm/$_->[0]"),
-	} => {
-	    image_file => $_->[1],
-	}),
-	[qw(t2.png EXISTS)],
-	[qw(t4m.gif TOO_MANY)],
+        error_case({
+            image_file => file_field("ImageUploadForm/$_->[0]"),
+        } => {
+            image_file => $_->[1],
+        }),
+        [qw(t2.png EXISTS)],
+        [qw(t4m.gif TOO_MANY)],
     ),
 ];

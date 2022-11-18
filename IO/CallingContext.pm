@@ -11,13 +11,13 @@ my($_A) = 'Bivio::IO::Alert';
 sub as_string {
     my($self) = @_;
     return shift->SUPER::as_string(@_)
-	unless ref($self);
+        unless ref($self);
     my($file, $line, $sub) = $self->get(qw(file line sub));
     return join(
-	':',
-	$file =~ /\(eval/ && $sub ne '(eval)' ? $sub : (),
-	$file,
-	$line,
+        ':',
+        $file =~ /\(eval/ && $sub ne '(eval)' ? $sub : (),
+        $file,
+        $line,
     );
 }
 
@@ -29,10 +29,10 @@ sub calling_context_get {
 sub equals {
     my($self, $that) = @_;
     return 0
-	unless $self->is_blesser_of($that);
+        unless $self->is_blesser_of($that);
     foreach my $f (qw(file line)) {
-	return 0
-	    unless $self->get($f) eq $that->get($f);
+        return 0
+            unless $self->get($f) eq $that->get($f);
     }
     return 1;
 }
@@ -41,9 +41,9 @@ sub get {
     my($self) = shift;
     my($fields) = $self->[$_IDI]->[0];
     return $self->return_scalar_or_array(
-	map(exists($fields->{$_}) ? $fields->{$_}
-	    : $_A->bootstrap_die($_, ': not a calling_context field'),
-	    @_),
+        map(exists($fields->{$_}) ? $fields->{$_}
+            : $_A->bootstrap_die($_, ': not a calling_context field'),
+            @_),
     );
 }
 
@@ -54,8 +54,8 @@ sub get_top_package_file_line_sub {
 sub inc_line {
     my($self, $inc) = @_;
     return $self->new_from_file_line(
-	$self->get('file'),
-	$self->get('line') + $inc,
+        $self->get('file'),
+        $self->get('line') + $inc,
     );
 }
 
@@ -63,24 +63,24 @@ sub new_from_caller {
     my($proto, $skip_packages) = @_;
     my($frame) = 0;
     if ($skip_packages) {
-	while (1) {
-	    my($p, $f) = caller($frame);
-	    last
-		unless grep(ref($_) ? $p =~ $_ || $f =~ $_ : $p eq $_, @$skip_packages);
-	    $frame++;
-	}
+        while (1) {
+            my($p, $f) = caller($frame);
+            last
+                unless grep(ref($_) ? $p =~ $_ || $f =~ $_ : $p eq $_, @$skip_packages);
+            $frame++;
+        }
     }
     else {
-	$frame++;
+        $frame++;
     }
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = [
-	map(+{
-	    package => (caller($_))[0] || undef,
-	    file => (caller($_))[1] || undef,
-	    line => (caller($_))[2] || undef,
-	    sub => (caller($_ + 1))[3] || undef,
-	}, $frame, $frame + 1),
+        map(+{
+            package => (caller($_))[0] || undef,
+            file => (caller($_))[1] || undef,
+            line => (caller($_))[2] || undef,
+            sub => (caller($_ + 1))[3] || undef,
+        }, $frame, $frame + 1),
     ];
     return $self;
 
@@ -90,10 +90,10 @@ sub new_from_file_line {
     my($proto, $file, $line) = @_;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = [{
-	file => $file,
-	line => $line,
-	sub => '',
-	package => '',
+        file => $file,
+        line => $line,
+        sub => '',
+        package => '',
     }];
     return $self;
 }

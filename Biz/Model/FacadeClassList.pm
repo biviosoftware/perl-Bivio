@@ -49,15 +49,15 @@ Returns model config.
 
 sub internal_initialize {
     return {
-	version => 1,
-	can_iterate => 0,
-	other => [
-	    {
-		name => 'simple_name',
-		type => 'FacadeClass',
-		constraint => 'NOT_NULL',
-	    },
-	],
+        version => 1,
+        can_iterate => 0,
+        other => [
+            {
+                name => 'simple_name',
+                type => 'FacadeClass',
+                constraint => 'NOT_NULL',
+            },
+        ],
     };
 }
 

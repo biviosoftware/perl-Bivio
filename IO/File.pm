@@ -45,7 +45,7 @@ sub chdir {
     b_die('no directory supplied')
         unless defined($directory) && length($directory);
     b_die('chdir(', $directory, "): $!")
-	unless Cwd::chdir($directory);
+        unless Cwd::chdir($directory);
     _trace($directory) if $_TRACE;
     return $directory;
 }
@@ -54,8 +54,8 @@ sub chmod {
     my(undef, $perms,  @file) = @_;
     # Changes permissions of I<file>s to I<perms>.  Dies on first error.
     foreach my $file (@file) {
-	CORE::chmod($perms, $file)
-	    or b_die($file, ": unable to set permissions: $!");
+        CORE::chmod($perms, $file)
+            or b_die($file, ": unable to set permissions: $!");
     }
     return;
 }
@@ -66,13 +66,13 @@ sub chown_by_name {
     # getpwnam first.  Dies on first error.
     my($o) = (CORE::getpwnam($owner))[2];
     b_die($owner, ': no such user')
-	unless defined($o);
+        unless defined($o);
     my($g) = (CORE::getgrnam($group))[2];
     b_die($group, ': no such group')
-	unless defined($g);
+        unless defined($g);
     foreach my $file (@file) {
-	CORE::chown($o, $g, $file)
-	    or b_die($file, ": unable to set owner: $!");
+        CORE::chown($o, $g, $file)
+            or b_die($file, ": unable to set owner: $!");
     }
     return;
 }
@@ -81,32 +81,32 @@ sub do_find {
     my($proto, $op, $dirs, $options) = @_;
     my($terminate);
     File::Find::find(
-	{
-	    no_chdir => 1,
-	    follow => 0,
-	    wanted => sub {
-		if ($terminate) {
-		    $File::Find::prune = 1;
-		    return;
-		}
-		my($res) = $op->($_);
-		if (!$res) {
-		    $terminate = 1;
-		    $File::Find::prune = 1;
-		    return;
-		}
-		return
-		    if $res eq '1';
-		if ($res eq $proto->DO_FIND_PRUNE) {
-		    $File::Find::prune = 1;
-		    return;
-		}
-		b_die($res, ': unknown result from op');
-		# DOES NOT RETURN
-	    },
-	    $options ? %$options : (),
-	},
-	@$dirs,
+        {
+            no_chdir => 1,
+            follow => 0,
+            wanted => sub {
+                if ($terminate) {
+                    $File::Find::prune = 1;
+                    return;
+                }
+                my($res) = $op->($_);
+                if (!$res) {
+                    $terminate = 1;
+                    $File::Find::prune = 1;
+                    return;
+                }
+                return
+                    if $res eq '1';
+                if ($res eq $proto->DO_FIND_PRUNE) {
+                    $File::Find::prune = 1;
+                    return;
+                }
+                b_die($res, ': unknown result from op');
+                # DOES NOT RETURN
+            },
+            $options ? %$options : (),
+        },
+        @$dirs,
     );
     return;
 }
@@ -119,8 +119,8 @@ sub do_in_dir {
     my($pwd) = $proto->pwd;
     $proto->chdir($dir);
     return $_D->catch_and_rethrow(
-	$op,
-	sub {$proto->chdir($pwd)},
+        $op,
+        sub {$proto->chdir($pwd)},
     );
 }
 
@@ -128,20 +128,20 @@ sub do_lines {
     my(undef, $file_name, $op) = @_;
     my($file) = _open($file_name, 'r');
     while (1) {
-	undef($!);
-	last
-	    if eof($file);
-	my $line = readline($file);
-	unless (defined($line)) {
-	    _err('readline', $file, $file_name)
-		if $!;
-	    last;
-	}
-	$line =~ s/[\r\n]+$//s;
-	last unless $op->($line);
+        undef($!);
+        last
+            if eof($file);
+        my $line = readline($file);
+        unless (defined($line)) {
+            _err('readline', $file, $file_name)
+                if $!;
+            last;
+        }
+        $line =~ s/[\r\n]+$//s;
+        last unless $op->($line);
     }
     close($file)
-	or _err('close', $file, $file_name);
+        or _err('close', $file, $file_name);
     return;
 }
 
@@ -151,36 +151,36 @@ sub do_read_write {
     # not write.  op->() must return a scalar ref or scalar.
     my($res) = $op->($proto->read($file_name));
     $proto->write($file_name, $res)
-	if defined($res);
+        if defined($res);
     return;
 }
 
 sub map_lines {
     my(undef, $file_name, $op) = @_;
     unless ($op) {
-	$op = sub {shift};
+        $op = sub {shift};
     }
     elsif (ref($op) eq 'Regexp') {
-	my($qr) = $op;
-	$op = sub {[split($qr, shift)]};
+        my($qr) = $op;
+        $op = sub {[split($qr, shift)]};
     }
     my($file) = _open($file_name, 'r');
     my($res) = [];
     while (1) {
-	undef($!);
-	last
-	    if eof($file);
-	my $line = readline($file);
-	unless (defined($line)) {
-	    _err('readline', $file, $file_name)
-		if $!;
-	    last;
-	}
-	chomp($line);
-	push(@$res, $op->($line));
+        undef($!);
+        last
+            if eof($file);
+        my $line = readline($file);
+        unless (defined($line)) {
+            _err('readline', $file, $file_name)
+                if $!;
+            last;
+        }
+        chomp($line);
+        push(@$res, $op->($line));
     }
     close($file)
-	or _err('close', $file, $file_name);
+        or _err('close', $file, $file_name);
     return $res;
     return;
 }
@@ -189,7 +189,7 @@ sub mkdir_p {
     my(undef, $path, $permissions) = @_;
     # Creates I<path> including parent directories.  Returns I<path>.
     b_die('no path supplied')
-	unless defined($path) && length($path);
+        unless defined($path) && length($path);
     File::Path::mkpath($path, 0, defined($permissions) ? ($permissions) : ());
     _trace($path) if $_TRACE;
     return $path;
@@ -202,7 +202,7 @@ sub mkdir_parent_only {
     #
     # Returns parent directory.
     b_die('no path supplied')
-	unless defined($child) && length($child);
+        unless defined($child) && length($child);
     return $proto->mkdir_p(File::Basename::dirname($child), $permissions);
 }
 
@@ -229,15 +229,15 @@ sub read {
     # If I<file> is supplied, must be a IO::File to an open file and
     # file_name must be supplied.
     b_die($unused, ': pass IO::File as first parameter')
-	if ref($unused);
+        if ref($unused);
     my($file) = _open($file_name, 'r');
     my($offset, $read, $buf) = (0, 0, '');
     $offset += $read
-	while $read = CORE::read($file, $buf, 0x1000, $offset);
+        while $read = CORE::read($file, $buf, 0x1000, $offset);
     defined($read)
-	or _err('read', $file, $file_name);
+        or _err('read', $file, $file_name);
     close($file)
-	or _err('close', $file, $file_name);
+        or _err('close', $file, $file_name);
     _trace('Read ', length($buf), ' bytes from ', $file_name) if $_TRACE;
     return \$buf;
 }
@@ -246,26 +246,26 @@ sub rename {
     my(undef, $old, $new) = @_;
     # Renames I<old> to I<new> and returns I<new>.  Dies on errors.
     b_die('missing args')
-	unless defined($new) && length($new)
-	&& defined($old) && length($old);
+        unless defined($new) && length($new)
+        && defined($old) && length($old);
     b_die('rename(', $old, ',', $new, "): $!")
-	unless rename($old, $new);
+        unless rename($old, $new);
     return $new;
 }
 
 sub rm_children {
     my($proto, $path) = @_;
     return
-	unless my $dh = IO::Dir->new(_assert_not_root($path));
+        unless my $dh = IO::Dir->new(_assert_not_root($path));
     while (defined(my $d = $dh->read)) {
-	my($p) = File::Spec->catfile($path, $d);
-	next if $d =~ /^\.\.?$/;
-	if (-l $p) {
-	    unlink($p) || die($p, ": unlink failed: $!");
-	}
-	else {
-	    $proto->rm_rf($p);
-	}
+        my($p) = File::Spec->catfile($path, $d);
+        next if $d =~ /^\.\.?$/;
+        if (-l $p) {
+            unlink($p) || die($p, ": unlink failed: $!");
+        }
+        else {
+            $proto->rm_rf($p);
+        }
     }
     return $path;
 }
@@ -281,14 +281,14 @@ sub set_modified_date_time {
     my($proto, $file, $date_time) = @_;
     my($mtime) = $_DT->to_unix($date_time);
     utime($mtime, $mtime, $file)
-	|| b_die('error setting timestamp: ', $file, ' ', $!);
+        || b_die('error setting timestamp: ', $file, ' ', $!);
     return;
 }
 
 sub symlink {
     my(undef, $old, $new) = @_;
     symlink($old, $new)
-	|| b_die("symlink($old, $new): $!");
+        || b_die("symlink($old, $new): $!");
     return;
 }
 
@@ -299,20 +299,20 @@ sub temp_file {
 sub tmp_path {
     my($proto, $req, $suffix) = @_;
     my($path) = $_FP->join(
-	$_CFG->{tmp_dir},
-	$_DT->local_now_as_file_name
+        $_CFG->{tmp_dir},
+        $_DT->local_now_as_file_name
             . '-'
-	    . $$
-	    . '-'
-	    . $_R->string
-	    . (defined($suffix) ? $suffix : ''),
+            . $$
+            . '-'
+            . $_R->string
+            . (defined($suffix) ? $suffix : ''),
     );
     $req->push_process_cleanup(
-    	sub {
-    	    _trace('removing ', $path) if $_TRACE;
-    	    $proto->rm_rf($path);
-    	    return;
-    	},
+            sub {
+                _trace('removing ', $path) if $_TRACE;
+                $proto->rm_rf($path);
+                return;
+            },
     ) if $req;
     return $path;
 }
@@ -334,22 +334,22 @@ sub write {
     my($c) = ref($data) ? $data : \$data;
     my($file) = _open($file_name, 'w');
     if (defined($data_offset)) {
-	my($length) = length($$c) - $data_offset;
-	while ($length > 0) {
-	    my $l = syswrite($file, $$c, $length, $data_offset)
-		or _err('syswrite', $file, $file_name);
-	    $data_offset += $l;
-	    $length -= $l;
-	}
+        my($length) = length($$c) - $data_offset;
+        while ($length > 0) {
+            my $l = syswrite($file, $$c, $length, $data_offset)
+                or _err('syswrite', $file, $file_name);
+            $data_offset += $l;
+            $length -= $l;
+        }
     }
     else {
-	print($file $$c)
-	     or _err('print', $file, $file_name);
+        print($file $$c)
+             or _err('print', $file, $file_name);
     }
     close($file)
-	or _err('close', $file, $file_name);
+        or _err('close', $file, $file_name);
     _trace('Wrote ', length($$c), ' bytes to ', $file_name)
-	if $_TRACE;
+        if $_TRACE;
     return $file_name;
 }
 
@@ -357,8 +357,8 @@ sub _assert_not_root {
     my($path) = @_;
     $path = File::Spec->canonpath($path);
     b_die($path, ': file name unacceptable, must be absolute')
-	unless File::Spec->file_name_is_absolute($path)
-	&& $path ne File::Spec->rootdir;
+        unless File::Spec->file_name_is_absolute($path)
+        && $path ne File::Spec->rootdir;
     return $path;
 }
 
@@ -366,12 +366,12 @@ sub _err {
     my($op, $file, $file_name) = @_;
     my($err) = "$!";
     close($file)
-	if $file;
+        if $file;
     b_die(IO_ERROR => {
-	message => $err,
-	method => __PACKAGE__->my_caller,
-	operation => $op,
-	entity => ref($file_name) ? $file_name . '' : $file_name,
+        message => $err,
+        method => __PACKAGE__->my_caller,
+        operation => $op,
+        entity => ref($file_name) ? $file_name . '' : $file_name,
     });
     return;
 }
@@ -379,12 +379,12 @@ sub _err {
 sub _open {
     my($file_name, $mode, $is_text) = @_;
     return $file_name
-	if ref($file_name);
+        if ref($file_name);
     my $file = IO::File->new(
-	$file_name eq '-' ? $mode eq 'r' ? '<-' : '>-' : ($file_name, $mode),
+        $file_name eq '-' ? $mode eq 'r' ? '<-' : '>-' : ($file_name, $mode),
     ) or _err('open', undef, $file_name);
     binmode($file)
-	if $is_text;
+        if $is_text;
     return $file;
 }
 

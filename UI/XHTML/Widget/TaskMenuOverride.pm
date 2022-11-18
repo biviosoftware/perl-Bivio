@@ -23,7 +23,7 @@ sub unsafe_get_override_attributes {
     my($self, $source) = @_;
     my($res) = $source->ureq($_ATTR_KEY);
     $source->req->delete($_ATTR_KEY)
-	if $res;
+        if $res;
     return $res;
 }
 

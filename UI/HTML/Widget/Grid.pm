@@ -114,78 +114,78 @@ sub initialize {
     my($num_cols) = 0;
     my($rows, $r) = $self->get('values');
     foreach $r (@$rows) {
-	$num_cols = int(@$r) if $num_cols < int(@$r);
+        $num_cols = int(@$r) if $num_cols < int(@$r);
     }
     foreach $r (@$rows) {
-	# search for "expand"
-	my($expand_cols) = $num_cols - int(@$r) + 1;
-	my(@cols) = @$r;
-	$#$r = -1;
-	my($c);
-	foreach $c (@cols) {
-	    my(@p) = ('<td');
-	    my($end) = 1;
-	    my($form_end) = 0;
-	    if (ref($c) eq 'ARRAY') {
-		# Widget value, nothing to prepare.
-		_append(\@p, '>');
-	    }
-	    elsif (ref($c)) {
-		# May set attributes on itself
-		$c->initialize_with_parent($self, $source);
-		my($expand2, $align, $colspan, $rowspan, $width, $height,
-		       $width_as_html, $height_as_html)
-			= $c->unsafe_get(qw(cell_expand
-				cell_align cell_colspan cell_rowspan cell_width
-				cell_height cell_width_as_html
+        # search for "expand"
+        my($expand_cols) = $num_cols - int(@$r) + 1;
+        my(@cols) = @$r;
+        $#$r = -1;
+        my($c);
+        foreach $c (@cols) {
+            my(@p) = ('<td');
+            my($end) = 1;
+            my($form_end) = 0;
+            if (ref($c) eq 'ARRAY') {
+                # Widget value, nothing to prepare.
+                _append(\@p, '>');
+            }
+            elsif (ref($c)) {
+                # May set attributes on itself
+                $c->initialize_with_parent($self, $source);
+                my($expand2, $align, $colspan, $rowspan, $width, $height,
+                       $width_as_html, $height_as_html)
+                        = $c->unsafe_get(qw(cell_expand
+                                cell_align cell_colspan cell_rowspan cell_width
+                                cell_height cell_width_as_html
                                 cell_height_as_html));
-		$c->map_invoke(
-		    unsafe_initialize_attr =>
-			[qw(row_class cell_class cell_bgcolor)],
+                $c->map_invoke(
+                    unsafe_initialize_attr =>
+                        [qw(row_class cell_class cell_bgcolor)],
                         undef,
                         [$source],
                 );
-		if ($expand2) {
-		    # First expanded cell gets all the rest of the columns.
-		    # If the grid is expanded itself, then set this cell's
-		    # width to 100%.
-		    _append(\@p, qq{ colspan="$expand_cols"})
-			if $expand_cols > 1;
-		    _append(\@p, ' width="100%"') if $expand2 && !$width;
-		    $expand_cols = 1;
-		}
+                if ($expand2) {
+                    # First expanded cell gets all the rest of the columns.
+                    # If the grid is expanded itself, then set this cell's
+                    # width to 100%.
+                    _append(\@p, qq{ colspan="$expand_cols"})
+                        if $expand_cols > 1;
+                    _append(\@p, ' width="100%"') if $expand2 && !$width;
+                    $expand_cols = 1;
+                }
 #TODO: Need better crosschecking
-		_append(\@p, ' width="1%"')
-			if $c->get_or_default('cell_compact', 0);
-		_append(\@p, b_use('UI.Align')->as_html($align)) if $align;
-		_append(\@p, qq{ rowspan="$rowspan"}) if $rowspan;
-		_append(\@p, qq{ colspan="$colspan"}) if $colspan;
-		_append(\@p, ' nowrap="nowrap"')
-		    if $c->get_or_default('cell_nowrap', 0);
+                _append(\@p, ' width="1%"')
+                        if $c->get_or_default('cell_compact', 0);
+                _append(\@p, b_use('UI.Align')->as_html($align)) if $align;
+                _append(\@p, qq{ rowspan="$rowspan"}) if $rowspan;
+                _append(\@p, qq{ colspan="$colspan"}) if $colspan;
+                _append(\@p, ' nowrap="nowrap"')
+                    if $c->get_or_default('cell_nowrap', 0);
 #TODO: Should be a number or percent?
-		_append(\@p, qq! width="$width"!) if $width;
-		_append(\@p, qq! height="$height"!) if $height;
-		_append(\@p, $width_as_html) if $width_as_html;
-		_append(\@p, $height_as_html) if $height_as_html;
-		$end = $c->get_or_default('cell_end', 1);
-		$form_end = $c->get_or_default('cell_end_form', 0);
-	    }
-	    elsif (!defined($c)) {
-		# Replace undef cells with something real.
-		_append(\@p, '>');
-		$c = '';
-	    }
-	    elsif ($c =~ /^\s+$/) {
-		$c =~ s/\s/&nbsp;/g;
-		_append(\@p, ' width="1%">');
-	    }
-	    else {
-		_append(\@p, '>');
-	    }
-	    # Render scalars literally.
-	    push(@$r, @p, $c, $end ? $_END_COL : '',
-		   $form_end ? '</form>' : '');
-	}
+                _append(\@p, qq! width="$width"!) if $width;
+                _append(\@p, qq! height="$height"!) if $height;
+                _append(\@p, $width_as_html) if $width_as_html;
+                _append(\@p, $height_as_html) if $height_as_html;
+                $end = $c->get_or_default('cell_end', 1);
+                $form_end = $c->get_or_default('cell_end_form', 0);
+            }
+            elsif (!defined($c)) {
+                # Replace undef cells with something real.
+                _append(\@p, '>');
+                $c = '';
+            }
+            elsif ($c =~ /^\s+$/) {
+                $c =~ s/\s/&nbsp;/g;
+                _append(\@p, ' width="1%">');
+            }
+            else {
+                _append(\@p, '>');
+            }
+            # Render scalars literally.
+            push(@$r, @p, $c, $end ? $_END_COL : '',
+                   $form_end ? '</form>' : '');
+        }
     }
     $fields->{rows} = $rows;
     return;
@@ -196,12 +196,12 @@ sub internal_new_args {
     # Implements positional argument parsing for L<new|"new">.
     my($proto, $values, $attributes) = @_;
     return "'values' must be an array_ref (rows) of array_refs (cells)"
-	unless ref($values) eq 'ARRAY';
+        unless ref($values) eq 'ARRAY';
     return "'attributes' must be a hash_ref (missing extra square brackets?)"
-	if $attributes && ref($attributes) ne 'HASH';
+        if $attributes && ref($attributes) ne 'HASH';
     return {
         values => $values,
-	($attributes ? %$attributes : ()),
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -258,13 +258,13 @@ sub layout_buttons_row_major {
     $column_count--;
     my(@rows);
     while (@buttons) {
-	my($row) = [map {
-	    (shift(@buttons) || $_SPACER, $_SPACER);
-	} 0..$column_count];
+        my($row) = [map {
+            (shift(@buttons) || $_SPACER, $_SPACER);
+        } 0..$column_count];
 
-	# Get rid of last separator and push on another row
-	pop(@$row);
-	push(@rows, $row);
+        # Get rid of last separator and push on another row
+        pop(@$row);
+        push(@rows, $row);
     }
     $self->put(values => \@rows);
     return;
@@ -291,41 +291,41 @@ sub control_on_render {
     my($r, $c);
     my($hide_cells) = $self->render_simple_attr('hide_empty_cells', $source);
  ROW: foreach $r (@{$fields->{rows}}) {
-	my($row) = "<tr>\n";
-	foreach $c (@$r) {
-	    # Look up widget value
-	    my($is_widget_value) = ref($c) eq 'ARRAY';
-	    my($w) = $is_widget_value ? $source->get_widget_value(@$c) : $c;
-	    my($cell) = '';
-	    if (ref($w)) {
-		next ROW
-		    if $w->has_keys('row_control')
-			&& !$w->render_simple_attr('row_control', $source);
-		unless ($is_widget_value) {
-		    my($b);
-		    # Only first row_class counts
-		    $row =~ s/^<tr>/<tr$b>/
-			if $b = vs_html_attrs_render_one($w, $source, 'row_class');
-		    $cell .= b_use('FacadeComponent.Color')->format_html($b, 'bgcolor', $req)
-			if $b = $c->render_simple_attr('cell_bgcolor', $source);
-		    $cell .= vs_html_attrs_render_one($c, $source, 'cell_class')
-		        . '>';
-		}
-		$w->render($source, \$cell);
-	    }
-	    elsif (defined($w)) {
-		$cell = $w;
-	    }
-	    $row .= $cell;
-	    $row =~ s{<td[^>]*></td>\s*$}{}
-		if $hide_cells && $cell eq $_END_COL;
-	}
-	$row .= '</tr>';
-	$b .= $row
-	    unless $row =~ m{^<tr[^>]*>\n*(?:<td[^>]*></td>\n*)*</tr>$}s;
+        my($row) = "<tr>\n";
+        foreach $c (@$r) {
+            # Look up widget value
+            my($is_widget_value) = ref($c) eq 'ARRAY';
+            my($w) = $is_widget_value ? $source->get_widget_value(@$c) : $c;
+            my($cell) = '';
+            if (ref($w)) {
+                next ROW
+                    if $w->has_keys('row_control')
+                        && !$w->render_simple_attr('row_control', $source);
+                unless ($is_widget_value) {
+                    my($b);
+                    # Only first row_class counts
+                    $row =~ s/^<tr>/<tr$b>/
+                        if $b = vs_html_attrs_render_one($w, $source, 'row_class');
+                    $cell .= b_use('FacadeComponent.Color')->format_html($b, 'bgcolor', $req)
+                        if $b = $c->render_simple_attr('cell_bgcolor', $source);
+                    $cell .= vs_html_attrs_render_one($c, $source, 'cell_class')
+                        . '>';
+                }
+                $w->render($source, \$cell);
+            }
+            elsif (defined($w)) {
+                $cell = $w;
+            }
+            $row .= $cell;
+            $row =~ s{<td[^>]*></td>\s*$}{}
+                if $hide_cells && $cell eq $_END_COL;
+        }
+        $row .= '</tr>';
+        $b .= $row
+            unless $row =~ m{^<tr[^>]*>\n*(?:<td[^>]*></td>\n*)*</tr>$}s;
     }
     $$buffer .= $b . $self->render_end_tag($source, '')
-	unless $b =~ m{^<table[^>]*>$}s;
+        unless $b =~ m{^<table[^>]*>$}s;
     return;
 }
 
@@ -336,12 +336,12 @@ sub _append {
     # else pushes on a new element.
     my($list, $element) = @_;
     if (ref($list->[$#$list]).ref($element) eq '') {
-	# both are strings
-	$list->[$#$list] .= $element;
+        # both are strings
+        $list->[$#$list] .= $element;
     }
     else {
-	# Last or this element is a ref
-	push(@$list, $element);
+        # Last or this element is a ref
+        push(@$list, $element);
     }
     return;
 }

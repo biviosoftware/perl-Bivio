@@ -4,12 +4,12 @@ ListModel();
 req()->set_realm('remote_copy_bunit');
 [
     load_all => [
-	[] => [
-	    {
-		realm => 'remote_copy_bunit',
-		user => 'remote_copy_user',
-		folder => FilePathArray([qw(/RemoteCopyBunit)]),
-	    },
-	],
+        [] => [
+            {
+                realm => 'remote_copy_bunit',
+                user => 'remote_copy_user',
+                folder => FilePathArray([qw(/RemoteCopyBunit)]),
+            },
+        ],
     ],
 ];

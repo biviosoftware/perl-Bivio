@@ -16,19 +16,19 @@ b_use('Type.TimeZone')->row_tag_replace(
 
 [
     load_all => [
-	[] => not_die(),
+        [] => not_die(),
     ],
     week_list => [
-	[] => not_die(),
+        [] => not_die(),
     ],
     sub {
-	req('Model.CalendarEventWeekList')->do_rows(
-	    sub {
-		my($list) = @_;
-		# ensure daylight savings double day doesn't die
-		$list->get('in_this_month_monday');
-		return 1;
-	    });
-	return 1;
+        req('Model.CalendarEventWeekList')->do_rows(
+            sub {
+                my($list) = @_;
+                # ensure daylight savings double day doesn't die
+                $list->get('in_this_month_monday');
+                return 1;
+            });
+        return 1;
     } => 1,
 ];

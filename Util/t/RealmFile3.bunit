@@ -5,58 +5,58 @@ req()->set_realm_and_user('fourem', 'root');
 my($rf) = model('RealmFile');
 foreach my $msg (glob('RealmFile3/Mail/*/*.eml')) {
     IO_File()->set_modified_date_time(
-	$msg,
-	Mail_Incoming()->new(IO_File()->read($msg))
-	    ->get_date_time,
+        $msg,
+        Mail_Incoming()->new(IO_File()->read($msg))
+            ->get_date_time,
     );
 }
 IO_File()->chdir('RealmFile3');
 [
     sub {
-	return class()->new->put(force => 1);
+        return class()->new->put(force => 1);
     } => [
-	import_tree => [
-	    '/' => sub {
-		my($bb);
-		model(RealmMail())
-		    ->do_iterate(
-			sub {
-			    my($it) = @_;
-			    my($id) = $it->get('message_id');
-			    if ($id eq 'bb@b.b') {
-				$bb = $it->get('realm_file_id');
-				assert_equals(
-				    $bb,
-				    $it->get('thread_root_id'),
-				);
-				assert_equals(
-				    undef,
-				    $it->get('thread_parent_id'),
-				);
-			    }
-			    else {
-				assert_equals(
-				    'aa@a.a',
-				    $id,
-				);
-				assert_equals(
-				    $bb,
-				    $it->get('thread_root_id'),
-				);
-				assert_equals(
-				    $bb,
-				    $it->get('thread_parent_id'),
-				);
-			    }
-			    return 1;
-			},
-			'realm_file_id asc',
-			{subject => 'RealmMail3.bunit'},
-		    );
-		b_die('no bb')
-		    unless $bb;
-		return 1;
-	    },
-	],
+        import_tree => [
+            '/' => sub {
+                my($bb);
+                model(RealmMail())
+                    ->do_iterate(
+                        sub {
+                            my($it) = @_;
+                            my($id) = $it->get('message_id');
+                            if ($id eq 'bb@b.b') {
+                                $bb = $it->get('realm_file_id');
+                                assert_equals(
+                                    $bb,
+                                    $it->get('thread_root_id'),
+                                );
+                                assert_equals(
+                                    undef,
+                                    $it->get('thread_parent_id'),
+                                );
+                            }
+                            else {
+                                assert_equals(
+                                    'aa@a.a',
+                                    $id,
+                                );
+                                assert_equals(
+                                    $bb,
+                                    $it->get('thread_root_id'),
+                                );
+                                assert_equals(
+                                    $bb,
+                                    $it->get('thread_parent_id'),
+                                );
+                            }
+                            return 1;
+                        },
+                        'realm_file_id asc',
+                        {subject => 'RealmMail3.bunit'},
+                    );
+                b_die('no bb')
+                    unless $bb;
+                return 1;
+            },
+        ],
     ],
 ];

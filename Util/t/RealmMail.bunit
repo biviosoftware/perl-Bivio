@@ -66,23 +66,23 @@ foreach my $item (@$data) {
         model('Bulletin')->delete_all;
     }),
     {
-	object => class(),
-	compute_return => sub {
-	    return [scalar(@{
+        object => class(),
+        compute_return => sub {
+            return [scalar(@{
                 model('RealmMail')->map_iterate(
-		    sub {
-			shift->get('message_id') =~ /$domain/ ? 1 : ();
-		    },
-		    'message_id',
-		),
-	    })];
-	},
+                    sub {
+                        shift->get('message_id') =~ /$domain/ ? 1 : ();
+                    },
+                    'message_id',
+                ),
+            })];
+        },
     } => [
-	delete_message_id => [
-	    [map($_ . '@' . $domain, 'a' .. 'g')] => 0,
-	],
-	import_rfc822  => [
-	    RealmMail => 7,
-	],
+        delete_message_id => [
+            [map($_ . '@' . $domain, 'a' .. 'g')] => 0,
+        ],
+        import_rfc822  => [
+            RealmMail => 7,
+        ],
     ],
 ];

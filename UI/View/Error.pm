@@ -14,7 +14,7 @@ sub default {
 sub default_body {
     my(undef, @extra) = @_;
     return DIV_page_error(
-	Join([
+        Join([
             [sub {
                  my($source, $status, $ff) = @_;
                  my($req) = $source->req;
@@ -35,7 +35,7 @@ sub default_body {
                     [1 => 'page_error_visitor'],
                 )
             ),
-	]),
+        ]),
     );
 }
 

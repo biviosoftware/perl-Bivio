@@ -50,14 +50,14 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     return {
         version => 1,
-	can_iterate => 1,
-	order_by => [
+        can_iterate => 1,
+        order_by => [
             'Bulletin.date_time',
             'Bulletin.subject',
-	],
+        ],
         primary_key => [
-	    ['Bulletin.bulletin_id'],
-	],
+            ['Bulletin.bulletin_id'],
+        ],
     };
 }
 

@@ -18,33 +18,33 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         $self->field_decl(
-	    primary_key => [shift(@$c)],
-	    other => $c,
-	),
+            primary_key => [shift(@$c)],
+            other => $c,
+        ),
     });
 }
 
 sub internal_load_rows {
     my($self) = @_;
     return [sort(
-	{$a->{realm} cmp $b->{realm}}
-	map({
-	    $_->{uri} =~ s{/+$}{};
-	    $_->{uri} ||= '/';
-	    $_->{folder} = $_->{folder}->sort_unique;
-	    $_;
+        {$a->{realm} cmp $b->{realm}}
+        map({
+            $_->{uri} =~ s{/+$}{};
+            $_->{uri} ||= '/';
+            $_->{folder} = $_->{folder}->sort_unique;
+            $_;
         } values(%{
-	    $self->new_other('RealmSettingList')
-		->get_all_settings(RemoteCopy => [@$_COLS])
-	    }),
-	),
+            $self->new_other('RealmSettingList')
+                ->get_all_settings(RemoteCopy => [@$_COLS])
+            }),
+        ),
     )];
 }
 
 sub unauth_if_setting_available {
     my($self, $realm_id) = @_;
     return $self->new_other('RealmSettingList')
-	->unauth_if_file_exists(RemoteCopy => $realm_id);
+        ->unauth_if_file_exists(RemoteCopy => $realm_id);
 }
 
 1;

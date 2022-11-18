@@ -7,10 +7,10 @@ use Bivio::Base 'Type.EnumDelegate';
 
 sub get_delegate_info {
     return [
-	HOME => [1],
-	WORK => [2],
-	MOBILE => [3],
-	# START at 21
+        HOME => [1],
+        WORK => [2],
+        MOBILE => [3],
+        # START at 21
     ];
 }
 

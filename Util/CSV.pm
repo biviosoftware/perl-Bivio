@@ -30,15 +30,15 @@ sub colrm {
     # Reads I<input> and deletes columns starting at I<start> and ending at I<end>
     # (or end of file).  Currently sucks entire file into memory, which can be slow.
     $self->usage_error($start, ": bad start")
-	unless $start =~ /^\d+$/;
+        unless $start =~ /^\d+$/;
     $self->usage_error($end, ": bad end")
-	unless !defined($end) || $end =~ /^\d+$/;
+        unless !defined($end) || $end =~ /^\d+$/;
     my($res);
     foreach my $line (split(/\n/, ${$self->read_input})) {
-	$self->usage_error("quoted text not supported") if $line =~ /"/;
-	my(@l) = split(/,/, $line);
+        $self->usage_error("quoted text not supported") if $line =~ /"/;
+        my(@l) = split(/,/, $line);
         defined($end) ? splice(@l, $start, $end) : splice(@l, $start);
-	$res .= join(',', @l)."\n";
+        $res .= join(',', @l)."\n";
     }
     return \$res;
 }
@@ -47,7 +47,7 @@ sub from_one_col {
     my(undef, $col) = @_;
     return '' unless defined($col);
     return $col
-	unless $col =~ /(?:^\s|\s$|$_QUOTE|$_END_OF_VALUE|\r)/;
+        unless $col =~ /(?:^\s|\s$|$_QUOTE|$_END_OF_VALUE|\r)/;
     $col =~ s/"/""/g;
     return qq{"$col"};
 }
@@ -73,10 +73,10 @@ sub parse {
     # will contain the line number from the input text.
     my($state) = {
         buffer => $_TA->canonicalize_newlines(
-	    !defined($csv_text) ? $self->read_input
-		: ref($csv_text) ? $csv_text
-	        : _assert_csv_text($self, $csv_text),
-	),
+            !defined($csv_text) ? $self->read_input
+                : ref($csv_text) ? $csv_text
+                : _assert_csv_text($self, $csv_text),
+        ),
         want_line_numbers => $want_line_numbers,
         char_count => 0,
         line_number => 1,
@@ -153,9 +153,9 @@ sub parse_records {
     return $rows unless @$rows;
     my($heading) = shift(@$rows);
     @$heading_ref = @$heading
-	if $heading_ref;
+        if $heading_ref;
     $heading->[0] = '_line'
-	if $want_line_numbers;
+        if $want_line_numbers;
     return [
         map({
             my($row) = $_;
@@ -173,10 +173,10 @@ sub sort_csv {
     my($h0) = $headings->[0];
     return join('',
         ${$self->to_csv_text($headings)},
-	map({
-	    my($row) = $_;
-	    ${$self->to_csv_text([map($row->{$_}, @$headings)])};
-	} sort({POSIX::strcoll($a->{$h0}, $b->{$h0})} @$rows)),
+        map({
+            my($row) = $_;
+            ${$self->to_csv_text([map($row->{$_}, @$headings)])};
+        } sort({POSIX::strcoll($a->{$h0}, $b->{$h0})} @$rows)),
     );
 }
 
@@ -196,7 +196,7 @@ sub _append_char {
 sub _assert_csv_text {
     my($self, $csv_text) = @_;
     $self->usage_error($csv_text, ': must be CSV, not file name')
-	unless $csv_text =~ m{\n} || $csv_text !~ m{/};
+        unless $csv_text =~ m{\n} || $csv_text !~ m{/};
     return \$csv_text;
 }
 

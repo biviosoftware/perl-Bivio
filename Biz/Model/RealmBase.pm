@@ -27,10 +27,10 @@ sub create {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	columns => {
-	    $self->REALM_ID_FIELD => [$self->REALM_ID_FIELD_TYPE, 'NOT_NULL'],
+        columns => {
+            $self->REALM_ID_FIELD => [$self->REALM_ID_FIELD_TYPE, 'NOT_NULL'],
         },
-	auth_id => $self->REALM_ID_FIELD,
+        auth_id => $self->REALM_ID_FIELD,
     });
 }
 
@@ -39,11 +39,11 @@ sub internal_set_default_values {
     my($req) = $self->get_request;
     $values->{$self->REALM_ID_FIELD} ||= $req->get('auth_id');
     $values->{$self->USER_ID_FIELD} ||= $req->get('auth_user_id')
-	if $self->USER_ID_FIELD && $self->has_fields($self->USER_ID_FIELD);
+        if $self->USER_ID_FIELD && $self->has_fields($self->USER_ID_FIELD);
     my($t);
     foreach my $f (qw(modified_date_time creation_date_time)) {
-	$values->{$f} ||= ($t ||= $_DT->now)
-	    if $self->has_fields($f);
+        $values->{$f} ||= ($t ||= $_DT->now)
+            if $self->has_fields($f);
     }
     return;
 }
@@ -51,7 +51,7 @@ sub internal_set_default_values {
 sub update {
     my($self, $values) = @_;
     $values->{modified_date_time} ||= $_DT->now
-	if $self->has_fields('modified_date_time');
+        if $self->has_fields('modified_date_time');
     return shift->SUPER::update(@_);
 }
 

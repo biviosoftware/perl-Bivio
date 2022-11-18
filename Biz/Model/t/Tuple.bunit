@@ -7,7 +7,7 @@ model('Tuple')->delete_all({realm_id => req('auth_id')});
 # See tuple2.bunit for other Tuple unit tests
 [
     create_from_rfc822 => [
-	[\(<<'EOF')]
+        [\(<<'EOF')]
 From: a@a.a
 Message-ID: <1@a.a>
 Subject: psr#
@@ -16,17 +16,17 @@ Author: b@b.b
 
 Some text
 EOF
-	=> [{
-	    'Model.Tuple' => {
-		tuple_num => 1,
-		slot1 => 'b@b.b',
-		slot2 => 's1',
-	    },
-	    'Model.RealmMail' => {
-		subject => 'psr#1',
-	    },
-	}],
-	[\(<<'EOF')]
+        => [{
+            'Model.Tuple' => {
+                tuple_num => 1,
+                slot1 => 'b@b.b',
+                slot2 => 's1',
+            },
+            'Model.RealmMail' => {
+                subject => 'psr#1',
+            },
+        }],
+        [\(<<'EOF')]
 From: a@a.a
 Message-ID: <2@a.a>
 Subject: psr#1
@@ -35,14 +35,14 @@ Status: s2
 
 Some text
 EOF
-	=> [{
-	    'Model.Tuple' => {
-		tuple_num => 1,
-		slot1 => 'b@b.b',
-		slot2 => 's2',
-	    },
-	}],
-	[\(<<'EOF')]
+        => [{
+            'Model.Tuple' => {
+                tuple_num => 1,
+                slot1 => 'b@b.b',
+                slot2 => 's2',
+            },
+        }],
+        [\(<<'EOF')]
 From: a@a.a
 Message-ID: <2@a.a>
 Subject: psr#1
@@ -51,14 +51,14 @@ Status:
 
 Some text
 EOF
-	=> [{
-	    'Model.Tuple' => {
-		tuple_num => 1,
-		slot1 => 'b@b.b',
-		slot2 => undef,
-	    },
-	}],
-	[\(<<'EOF')]
+        => [{
+            'Model.Tuple' => {
+                tuple_num => 1,
+                slot1 => 'b@b.b',
+                slot2 => undef,
+            },
+        }],
+        [\(<<'EOF')]
 From: a@a.a
 Message-ID: <2@a.a>
 Subject: psr#1
@@ -68,6 +68,6 @@ Status: s3
 
 Some text
 EOF
-	=> qr{Author: contains an invalid value},
+        => qr{Author: contains an invalid value},
     ],
 ];

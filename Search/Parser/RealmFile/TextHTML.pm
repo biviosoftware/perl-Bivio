@@ -15,16 +15,16 @@ sub handle_realm_file_new_text {
     $$t =~ s{<title\s*>([^<]+)</title\s*>}{}is;
     my($title) = $1;
     $$t =~
-	s/<p[^>]*>|<br[^>]*>\s*(&nbsp;?)*<br[^>]*>/ PARAGRAPH_SPLIT_HERE /isg;
+        s/<p[^>]*>|<br[^>]*>\s*(&nbsp;?)*<br[^>]*>/ PARAGRAPH_SPLIT_HERE /isg;
     $title =~ s/^\s+|\s+$//gs
-	if defined($title);
+        if defined($title);
     $t = $proto->use('HTML.Scraper')->to_text($t);
     $$t =~ s/\s+/ /sg;
     $$t =~ s/ *\bPARAGRAPH_SPLIT_HERE\b */\n\n/sg;
     return $proto->new({
-	type => 'text/html',
-	defined($title) && length($title) ? (title => $title) : (),
-	text => $t,
+        type => 'text/html',
+        defined($title) && length($title) ? (title => $title) : (),
+        text => $t,
     });
 }
 

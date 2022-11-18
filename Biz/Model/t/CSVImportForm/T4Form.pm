@@ -7,7 +7,7 @@ use Bivio::Base 'Bivio::Biz::Model::t::CSVImportForm::TForm';
 
 sub COLUMNS {
     return [
-	[qw(name NoSuchType)],
+        [qw(name NoSuchType)],
     ];
 }
 

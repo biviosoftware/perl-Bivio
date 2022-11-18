@@ -4,15 +4,15 @@ Type();
 
 Bivio::IO::Config->introduce_values({
     'Bivio::Type::Time' => {
-	time_format_24 => 0,
+        time_format_24 => 0,
     },
 });
 
 DateTime()->set_test_now('3/1/2009 1:0:0', req());
 [
     to_literal => [
-	'2378497 57600' => '4pm',
-	'2378497 57660' => '4:01pm',
-	'2378497 57601' => '4:00:01pm',
+        '2378497 57600' => '4pm',
+        '2378497 57660' => '4:01pm',
+        '2378497 57601' => '4:00:01pm',
     ],
 ];

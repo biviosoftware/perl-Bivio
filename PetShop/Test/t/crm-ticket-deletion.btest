@@ -7,16 +7,16 @@ login_as('crm_tech1');
 # Assumes want_status_email is true
 my($tests) = [
     {
-	link_suffix => ['', '_1', '_1', '_1'],
-	deleted => ['A1', 'B1', 'C1'],
+        link_suffix => ['', '_1', '_1', '_1'],
+        deleted => ['A1', 'B1', 'C1'],
     },
     {
-	link_suffix => ['_4', '_3', '_2', ''],
-	deleted => ['D2', 'C2', 'B2'],
+        link_suffix => ['_4', '_3', '_2', ''],
+        deleted => ['D2', 'C2', 'B2'],
     },
     {
-	link_suffix => ['_4', '', '_2', '_1'],
-	deleted => ['D3', 'A3', 'C3'],
+        link_suffix => ['_4', '', '_2', '_1'],
+        deleted => ['D3', 'A3', 'C3'],
     },
 ];
 
@@ -30,35 +30,35 @@ foreach my $test (@$tests) {
     visit_uri($tickets_uri);
     follow_link('new_ticket');
     submit_form('Send', {
-	'To:' => generate_local_email(random_string()),
-	'Subject:' => $subject,
-	'Text:' => $text . ' A' . $i,
+        'To:' => generate_local_email(random_string()),
+        'Subject:' => $subject,
+        'Text:' => $text . ' A' . $i,
     });
     foreach my $suffix (qw(B C D)) {
-	follow_link_in_table('Ticket', 'Subject', $subject);
-	follow_link('Answer');
-	submit_form('Send', {
-	    'Status:' => 'Open',
-	    'Text:' => $text . ' ' . $suffix . $i,
-	});
+        follow_link_in_table('Ticket', 'Subject', $subject);
+        follow_link('Answer');
+        submit_form('Send', {
+            'Status:' => 'Open',
+            'Text:' => $text . ' ' . $suffix . $i,
+        });
     }
     visit_uri($tickets_uri);
     follow_link($subject);
     my(@deleted) = @{$test->{deleted}};
     foreach my $suffix (@{$test->{link_suffix}}) {
-	follow_link('delete_message' . $suffix . '$');
-	submit_form('Delete');
-	visit_uri($tickets_uri);
-	if (my $d = shift(@deleted)) {
-	    follow_link($subject);
-	    verify_no_text($text . ' ' . $d);
-	}
-	else {
-	    follow_link($subject);
-	    follow_link('delete_message$');
-	    submit_form('Delete');
-	    visit_uri($tickets_uri);
-	    verify_no_text($subject);
-	}
+        follow_link('delete_message' . $suffix . '$');
+        submit_form('Delete');
+        visit_uri($tickets_uri);
+        if (my $d = shift(@deleted)) {
+            follow_link($subject);
+            verify_no_text($text . ' ' . $d);
+        }
+        else {
+            follow_link($subject);
+            follow_link('delete_message$');
+            submit_form('Delete');
+            visit_uri($tickets_uri);
+            verify_no_text($subject);
+        }
     }
 }

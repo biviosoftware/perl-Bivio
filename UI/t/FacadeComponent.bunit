@@ -3,66 +3,66 @@
 Request('initialize_fully');
 options({
     create_object => sub {
-	my(undef, $params) = @_;
-	req()->setup_facade($params->[0]);
-	return req('Bivio::UI::Facade', $params->[1]);
+        my(undef, $params) = @_;
+        req()->setup_facade($params->[0]);
+        return req('Bivio::UI::Facade', $params->[1]);
     },
 });
 [
     [qw(PetShop Text)] => [
-	get_value => [
-	    shared_value1 => 'PetShop',
-	    shared_value2 => 'PetShop',
-	],
+        get_value => [
+            shared_value1 => 'PetShop',
+            shared_value2 => 'PetShop',
+        ],
     ],
     [qw(Other Text)] => [
-	get_value => [
-	    shared_value1 => 'PetShop',
-	    shared_value2 => 'Other',
-	],
+        get_value => [
+            shared_value1 => 'PetShop',
+            shared_value2 => 'Other',
+        ],
     ],
     [qw(BeforeOther Text)] => [
-	get_value => [
-	    shared_value1 => 'BeforeOther',
-	    shared_value2 => 'PetShop',
-	],
+        get_value => [
+            shared_value1 => 'BeforeOther',
+            shared_value2 => 'PetShop',
+        ],
     ],
     [qw(PetShop Constant)] => [
-	get_value => [
-	    shared_value1 => 'PetShop',
-	    shared_value2 => 'PetShop',
-	    robots_txt_allow_all => 1,
-	],
+        get_value => [
+            shared_value1 => 'PetShop',
+            shared_value2 => 'PetShop',
+            robots_txt_allow_all => 1,
+        ],
     ],
     [qw(Other Constant)] => [
-	get_value => [
-	    shared_value1 => 'PetShop',
-	    shared_value2 => 'Other',
-	    robots_txt_allow_all => 0,
-	],
+        get_value => [
+            shared_value1 => 'PetShop',
+            shared_value2 => 'Other',
+            robots_txt_allow_all => 0,
+        ],
     ],
     [qw(BeforeOther Constant)] => [
-	get_value => [
-	    shared_value1 => 'PetShop',
-	    shared_value2 => 'BeforeOther',
-	],
+        get_value => [
+            shared_value1 => 'PetShop',
+            shared_value2 => 'BeforeOther',
+        ],
     ],
     [qw(PetShop HTML)] => [
-	get_value => [
-	    shared_value1 => 'PetShop',
-	    shared_value2 => 'PetShop',
-	],
+        get_value => [
+            shared_value1 => 'PetShop',
+            shared_value2 => 'PetShop',
+        ],
     ],
     [qw(Other HTML)] => [
-	get_value => [
-	    shared_value1 => 'PetShop',
-	    shared_value2 => 'PetShop',
-	],
+        get_value => [
+            shared_value1 => 'PetShop',
+            shared_value2 => 'PetShop',
+        ],
     ],
     [qw(BeforeOther HTML)] => [
-	get_value => [
-	    shared_value1 => 'PetShop',
-	    shared_value2 => 'PetShop',
-	],
+        get_value => [
+            shared_value1 => 'PetShop',
+            shared_value2 => 'PetShop',
+        ],
     ],
 ];

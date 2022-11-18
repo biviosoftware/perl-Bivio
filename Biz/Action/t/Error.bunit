@@ -6,11 +6,11 @@ options({
         return [req('reply')->get('status', 'output')];
     },
     compute_params => sub {
-	my(undef, $params) = @_;
-	my($task) = $params->[0];
+        my(undef, $params) = @_;
+        my($task) = $params->[0];
         req()->put(
-	    task_id => Agent_TaskId()->unsafe_from_name($task)
-		|| Agent_TaskId("DEFAULT_ERROR_REDIRECT_$task"),
+            task_id => Agent_TaskId()->unsafe_from_name($task)
+                || Agent_TaskId("DEFAULT_ERROR_REDIRECT_$task"),
         );
         return [req()];
     },
@@ -21,7 +21,7 @@ options({
             FORBIDDEN => [403, qr{you do not have permission}i],
             NOT_FOUND => [404, qr{was not found}i],
             MODEL_NOT_FOUND => [404, qr{was not found}i],
-	    DEFAULT_ERROR_REDIRECT => [500, qr{server error}i],
+            DEFAULT_ERROR_REDIRECT => [500, qr{server error}i],
         ],
     ],
 ];

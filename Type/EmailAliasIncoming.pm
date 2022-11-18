@@ -10,7 +10,7 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = shift->SUPER::from_literal(@_);
     return ($v, $e)
-	unless $v;
+        unless $v;
     return $v =~ /\@/ ? ($v, undef) : (undef, $_ERR);
 }
 

@@ -3,8 +3,8 @@
 
 [
     class() => [
-	execute_json => [
-	    [req()] => [1],
-	],
+        execute_json => [
+            [req()] => [1],
+        ],
     ],
 ];

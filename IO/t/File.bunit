@@ -7,152 +7,152 @@ my($do_find);
 my($pwd);
 [
     class() => [
-	pwd => sub {
-	    my(undef, $actual) = @_;
-	    $pwd = $actual->[0] || die('no pwd?');
-	    return 1;
-	},
-	chdir => [
-	    sub {[$pwd]} => sub {[$pwd]},
-	],
-	rm_rf => [
-	    File => DIE(),
-	    sub {[$abs_dir = class()->pwd . "/File"]} => sub {[$abs_dir]},
-	],
-	{
-	    method => 'mkdir_p',
-	    check_return => sub {
-		my($case, $actual, $expect) = @_;
-		die($expect->[0], ": $!")
-		    unless -d $expect->[0];
-		return $expect;
-	    },
-	} => [
-	    File => 'File',
-	    'File/1' => 'File/1',
-	],
-	do_in_dir => [
-	    [File => sub {class()->pwd}] => sub {["$pwd/File"]},
-	    [No_Such_Dir => sub {class()->pwd}] => DIE(),
-	],
-	rm_rf => [
-	    sub {[$abs_dir]} => sub {
-		my($case) = @_;
-		die("File: directory exists")
-		    if -e 'File';
-		return [$abs_dir];
-	    },
-	],
-	mkdir_parent_only => [
-	    'File/1.txt' => 'File',
-	],
-	{
-	    method => 'write',
-	    check_return => sub {
-		my($case, undef, $expect) = @_;
-		my($p) = $case->get('params');
-		$case->actual_return([class()->read($expect->[0] || $p->[0])]);
-		return [\(my $x = substr(
-		    ref($p->[1]) ? ${$p->[1]} : $p->[1],
-		    $p->[2] || 0,
-		))];
-	    },
-	} => [
-	    ['File/1.txt', \('hello')] => [],
-	    sub {
-		return [IO::File->new('> File/2.txt'), "1\n2\n"];
-	    } => 'File/2.txt',
-	    ['File/not-found/3.txt', 'x'] => IO_ERROR(),
-	    sub {
-		open(SAVE_STDOUT, '>&STDOUT') or die;
-		my($avoid_a_warning) = \*SAVE_STDOUT;
-		open(STDOUT, '> File/stdout.txt') or die;
-		return ['-', 'stdout'];
-	    } => sub {
-		open(STDOUT, '>&SAVE_STDOUT') or die;
-		shift->actual_return([class()->read('File/stdout.txt')]);
-		return ['stdout'];
-	    },
-	    ['File/4.txt', ' with an offset', 1] => [],
-	],
-	append => [
-	    ['File/1.txt', "\ngoodbye\nto you"] => undef,
+        pwd => sub {
+            my(undef, $actual) = @_;
+            $pwd = $actual->[0] || die('no pwd?');
+            return 1;
+        },
+        chdir => [
+            sub {[$pwd]} => sub {[$pwd]},
         ],
-	do_lines => [
-	    ['File/1.txt', sub {
-		 my($line) = @_;
-		 $! = 1;
-		 push(@{$do_lines ||= []}, $line);
-		 return $line =~ /goodbye/ ? 0 : 1;
-	    }] => sub {
-		shift->actual_return($do_lines);
-		return ['hello', 'goodbye'];
-	    },
-	],
-	read => [
-	    ['File/1.txt'] => [\("hello\ngoodbye\nto you")],
-	    sub {
-		return [IO::File->new('< File/2.txt')];
-	    } => [\("1\n2\n")],
-	    # deprecated form
-	    sub {
-		return ['File/2.txt', IO::File->new('< File/2.txt')];
-	    } => DIE(),
-	    ['File/not-found/3.txt'] => IO_ERROR(),
-	    sub {
-		open(STDIN, '< File/stdout.txt') or die;
-		return ['-'];
-	    } => [\('stdout')],
-	],
-	absolute_path => [
-	    r1 =>  class()->pwd . '/' . 'r1',
-	    [r1 => 'x'] =>  class()->pwd . '/' . 'x/r1',
-	],
-	{
-	    method => 'do_read_write',
-	    compute_return => sub {
-		return [${class()->read('File/1.txt')}];
-	    },
-	} => [
-	    ['File/1.txt', sub {undef}] => "hello\ngoodbye\nto you",
-	    ['File/1.txt', sub {'abc'}] => 'abc',
-	],
-	write => [
-	    ['File/5.txt', "a1 a2\nb1 b2\n"] => not_die(),
-	    ['File/6.txt', "no newline\nat EOF"] => not_die(),
-	],
+        rm_rf => [
+            File => DIE(),
+            sub {[$abs_dir = class()->pwd . "/File"]} => sub {[$abs_dir]},
+        ],
+        {
+            method => 'mkdir_p',
+            check_return => sub {
+                my($case, $actual, $expect) = @_;
+                die($expect->[0], ": $!")
+                    unless -d $expect->[0];
+                return $expect;
+            },
+        } => [
+            File => 'File',
+            'File/1' => 'File/1',
+        ],
+        do_in_dir => [
+            [File => sub {class()->pwd}] => sub {["$pwd/File"]},
+            [No_Such_Dir => sub {class()->pwd}] => DIE(),
+        ],
+        rm_rf => [
+            sub {[$abs_dir]} => sub {
+                my($case) = @_;
+                die("File: directory exists")
+                    if -e 'File';
+                return [$abs_dir];
+            },
+        ],
+        mkdir_parent_only => [
+            'File/1.txt' => 'File',
+        ],
+        {
+            method => 'write',
+            check_return => sub {
+                my($case, undef, $expect) = @_;
+                my($p) = $case->get('params');
+                $case->actual_return([class()->read($expect->[0] || $p->[0])]);
+                return [\(my $x = substr(
+                    ref($p->[1]) ? ${$p->[1]} : $p->[1],
+                    $p->[2] || 0,
+                ))];
+            },
+        } => [
+            ['File/1.txt', \('hello')] => [],
+            sub {
+                return [IO::File->new('> File/2.txt'), "1\n2\n"];
+            } => 'File/2.txt',
+            ['File/not-found/3.txt', 'x'] => IO_ERROR(),
+            sub {
+                open(SAVE_STDOUT, '>&STDOUT') or die;
+                my($avoid_a_warning) = \*SAVE_STDOUT;
+                open(STDOUT, '> File/stdout.txt') or die;
+                return ['-', 'stdout'];
+            } => sub {
+                open(STDOUT, '>&SAVE_STDOUT') or die;
+                shift->actual_return([class()->read('File/stdout.txt')]);
+                return ['stdout'];
+            },
+            ['File/4.txt', ' with an offset', 1] => [],
+        ],
+        append => [
+            ['File/1.txt', "\ngoodbye\nto you"] => undef,
+        ],
+        do_lines => [
+            ['File/1.txt', sub {
+                 my($line) = @_;
+                 $! = 1;
+                 push(@{$do_lines ||= []}, $line);
+                 return $line =~ /goodbye/ ? 0 : 1;
+            }] => sub {
+                shift->actual_return($do_lines);
+                return ['hello', 'goodbye'];
+            },
+        ],
+        read => [
+            ['File/1.txt'] => [\("hello\ngoodbye\nto you")],
+            sub {
+                return [IO::File->new('< File/2.txt')];
+            } => [\("1\n2\n")],
+            # deprecated form
+            sub {
+                return ['File/2.txt', IO::File->new('< File/2.txt')];
+            } => DIE(),
+            ['File/not-found/3.txt'] => IO_ERROR(),
+            sub {
+                open(STDIN, '< File/stdout.txt') or die;
+                return ['-'];
+            } => [\('stdout')],
+        ],
+        absolute_path => [
+            r1 =>  class()->pwd . '/' . 'r1',
+            [r1 => 'x'] =>  class()->pwd . '/' . 'x/r1',
+        ],
+        {
+            method => 'do_read_write',
+            compute_return => sub {
+                return [${class()->read('File/1.txt')}];
+            },
+        } => [
+            ['File/1.txt', sub {undef}] => "hello\ngoodbye\nto you",
+            ['File/1.txt', sub {'abc'}] => 'abc',
+        ],
+        write => [
+            ['File/5.txt', "a1 a2\nb1 b2\n"] => not_die(),
+            ['File/6.txt', "no newline\nat EOF"] => not_die(),
+        ],
         map_lines => [
-	    ['File/5.txt'] => [['a1 a2', 'b1 b2']],
-	    ['File/5.txt', qr{\s+}] => [[[qw(a1 a2)], [qw(b1 b2)]]],
-	    ['File/6.txt'] => [['no newline', 'at EOF']],
-	],
-	rm_children => [
-	    File => DIE(),
-	    sub {
-		class()->mkdir_p('File/rm_children/1/2');
-		symlink('../1', 'File/rm_children/1/3') || die;
-		return [class()->absolute_path('File/rm_children/1')];
-	    } => sub {
-		assert_eval("! -l 'File/rm_children/1/3'");
-		assert_eval("-d 'File/rm_children/1'");
-		return 1;
-	    },
-	],
-	do_find => [
-	    [
-	        sub {
-		    my($file) = @_;
-		    return IO_File()->DO_FIND_PRUNE
-			if $file =~ /rm_children/;
-		    push(@$do_find, $file);
-		    return 1;
-		},
-		['File'],
-	    ] => sub {
-		 assert_equals([], [grep(/rm_children/, @$do_find)]);
-		 assert_equals(['File/6.txt'], [grep(/6/, @$do_find)]);
-		 return 1;
-	    },
-	],
+            ['File/5.txt'] => [['a1 a2', 'b1 b2']],
+            ['File/5.txt', qr{\s+}] => [[[qw(a1 a2)], [qw(b1 b2)]]],
+            ['File/6.txt'] => [['no newline', 'at EOF']],
+        ],
+        rm_children => [
+            File => DIE(),
+            sub {
+                class()->mkdir_p('File/rm_children/1/2');
+                symlink('../1', 'File/rm_children/1/3') || die;
+                return [class()->absolute_path('File/rm_children/1')];
+            } => sub {
+                assert_eval("! -l 'File/rm_children/1/3'");
+                assert_eval("-d 'File/rm_children/1'");
+                return 1;
+            },
+        ],
+        do_find => [
+            [
+                sub {
+                    my($file) = @_;
+                    return IO_File()->DO_FIND_PRUNE
+                        if $file =~ /rm_children/;
+                    push(@$do_find, $file);
+                    return 1;
+                },
+                ['File'],
+            ] => sub {
+                 assert_equals([], [grep(/rm_children/, @$do_find)]);
+                 assert_equals(['File/6.txt'], [grep(/6/, @$do_find)]);
+                 return 1;
+            },
+        ],
     ],
 ];

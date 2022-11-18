@@ -63,24 +63,24 @@ sub create {
     # that isn't a valid sequence.
     my($pid) = $attrs->{primary_id_name};
     if ($pid) {
-	if ($new_values->{$pid}) {
+        if ($new_values->{$pid}) {
 #TODO: Need an assertion check about not using sequences....
-#	    $die->throw_die('DIE', {message =>
-#		'special primary_id greater than min primary id',
-#		field => $pid, value => $new_values->{$pid}})
-#		    unless $new_values->{$pid} < $_MIN_PRIMARY_ID;
-	}
-	else {
-	    $new_values->{$pid} = $_SC->next_primary_id(
-		    $attrs->{table_name}, $die);
-	}
+#            $die->throw_die('DIE', {message =>
+#                'special primary_id greater than min primary id',
+#                field => $pid, value => $new_values->{$pid}})
+#                    unless $new_values->{$pid} < $_MIN_PRIMARY_ID;
+        }
+        else {
+            $new_values->{$pid} = $_SC->next_primary_id(
+                    $attrs->{table_name}, $die);
+        }
     }
     my($columns) = $attrs->{columns};
     my(@params) = map {
-	$columns->{$_}->{type}->to_sql_param($new_values->{$_});
+        $columns->{$_}->{type}->to_sql_param($new_values->{$_});
     } @{$attrs->{column_names}};
     $_SC->perf_time_finish(
-	$_SC->execute($sql, \@params, $die, $attrs->{has_blob}),
+        $_SC->execute($sql, \@params, $die, $attrs->{has_blob}),
     );
     return;
 }
@@ -103,17 +103,17 @@ sub delete {
                 entity => $self,
                 column => $_});
         }
-	$columns->{$_}->{type}->to_sql_param($values->{$_});
+        $columns->{$_}->{type}->to_sql_param($values->{$_});
     } @{$attrs->{primary_key_names}};
     my($sth) = $_SC->execute(
-	$attrs->{delete},
-	\@params, $die,
-	$attrs->{has_blob},
+        $attrs->{delete},
+        \@params, $die,
+        $attrs->{has_blob},
     );
     return $_SC->perf_time_op(sub {
-	my($rows) = $sth->rows;
-	$sth->finish;
-	return $rows ? 1 : 0;
+        my($rows) = $sth->rows;
+        $sth->finish;
+        return $rows ? 1 : 0;
     });
 }
 
@@ -123,19 +123,19 @@ sub delete_all {
     # If an error occurs during the delete, calls die.
     # Returns the number of rows deleted.
     ($_R ||= b_use('Agent.Request'))->assert_test
-	unless %$query;
+        unless %$query;
     my($params) = [];
     my($sth) = $_SC->execute(
-	'delete from '
-	    . $self->get('table_name')
-	    . _prepare_where($self, $query, $params),
-	$params,
-	$die,
+        'delete from '
+            . $self->get('table_name')
+            . _prepare_where($self, $query, $params),
+        $params,
+        $die,
     );
     return $_SC->perf_time_op(sub {
         my($rows) = $sth->rows;
         $sth->finish;
-	return $rows ? $rows : 0;
+        return $rows ? $rows : 0;
     });
 }
 
@@ -168,10 +168,10 @@ sub iterate_start {
     my($params) = [];
     $_SC->execute(
         _prepare_select($self, $query, $params)
-	    . ($order_by ? " ORDER BY $order_by" : ''),
-	$params,
-	$die,
-	$self->get('has_blob'),
+            . ($order_by ? " ORDER BY $order_by" : ''),
+        $params,
+        $die,
+        $self->get('has_blob'),
     );
 }
 
@@ -194,21 +194,21 @@ sub new {
     #
     # This module takes ownership of I<decl>.
     my($attrs) = {
-	class => $decl->{class},
-	parents => {},
-	children => [],
-	table_name => $decl->{table_name},
-	columns => {},
-	primary_key => [],
-	column_aliases => {},
-	has_blob => 0,
-	cascade_delete_children => $decl->{cascade_delete_children} || 0,
+        class => $decl->{class},
+        parents => {},
+        children => [],
+        table_name => $decl->{table_name},
+        columns => {},
+        primary_key => [],
+        column_aliases => {},
+        has_blob => 0,
+        cascade_delete_children => $decl->{cascade_delete_children} || 0,
     };
     $proto->init_common_attrs($attrs, $decl);
     b_die('you must declare table_name: ', $decl)
-	unless defined($attrs->{table_name});
+        unless defined($attrs->{table_name});
     b_die("$attrs->{table_name}: invalid table name, must end in _t")
-	    unless $attrs->{table_name} =~ m!^\w{1,28}_t$!;
+            unless $attrs->{table_name} =~ m!^\w{1,28}_t$!;
 
     _init_columns($proto, $attrs, $decl->{columns});
 
@@ -223,7 +223,7 @@ sub new {
 
     # auth_id must be at most one column.  Turn into that column or undef.
     b_die('too many auth_id fields')
-	if int(@{$attrs->{auth_id}}) > 1;
+        if int(@{$attrs->{auth_id}}) > 1;
     $attrs->{auth_id} = $attrs->{auth_id}->[0];
     $attrs->{primary_key_types} = [map {$_->{type}} @{$attrs->{primary_key}}];
 
@@ -258,26 +258,26 @@ sub unsafe_load {
     my($statement) = $_SC->execute($sql, \@params, $die, $attrs->{has_blob});
     my($row, $too_many);
     $_SC->perf_time_op(
-	sub {
-	    $row = $statement->fetchrow_arrayref;
-	    $too_many = $statement->fetchrow_arrayref ? 1 : 0
-		if $row;
-	    $statement->finish;
-	    return;
-	},
+        sub {
+            $row = $statement->fetchrow_arrayref;
+            $too_many = $statement->fetchrow_arrayref ? 1 : 0
+                if $row;
+            $statement->finish;
+            return;
+        },
     );
     return undef
-	unless $row;
+        unless $row;
     $die->throw_die(TOO_MANY => {
-	message => 'too many rows returned',
-	sql => $sql,
-	params => \@params,
+        message => 'too many rows returned',
+        sql => $sql,
+        params => \@params,
     }) if $too_many;
     my($columns) = $attrs->{columns};
     my($i) = 0;
     return {map(
-	($_->{name}, $_->{type}->from_sql_column($row->[$i++])),
-	@{$attrs->{select_columns}},
+        ($_->{name}, $_->{type}->from_sql_column($row->[$i++])),
+        @{$attrs->{select_columns}},
     )};
 }
 
@@ -291,38 +291,38 @@ sub update {
     my(@params);
     my($n);
     foreach $n (@{$attrs->{column_names}}) {
-	next if ! exists($new_values->{$n});
-	my($column) = $columns->{$n};
-	my($old) = $old_values->{$n};
-	my($new) = $new_values->{$n};
-	# This works for BLOBs, too.  If the scalar_ref is the same,
-	# then we don't update.
-	next if _equals($old, $new);
-	$set .= $n.'='.$column->{sql_pos_param}.',';
-	$new = $column->{type}->to_sql_param($new);
-	push(@params, $new);
+        next if ! exists($new_values->{$n});
+        my($column) = $columns->{$n};
+        my($old) = $old_values->{$n};
+        my($new) = $new_values->{$n};
+        # This works for BLOBs, too.  If the scalar_ref is the same,
+        # then we don't update.
+        next if _equals($old, $new);
+        $set .= $n.'='.$column->{sql_pos_param}.',';
+        $new = $column->{type}->to_sql_param($new);
+        push(@params, $new);
     }
     unless ($set) {
-	&_trace(defined($die) ? ($die, ': ') : (), 'no update required')
-		if $_TRACE;
-	return;
+        &_trace(defined($die) ? ($die, ': ') : (), 'no update required')
+                if $_TRACE;
+        return;
     }
     chop($set);
     my(@pk);
     foreach $n (@{$attrs->{primary_key_names}}) {
-	push(@pk, $columns->{$n}->{type}->to_sql_param($old_values->{$n}));
+        push(@pk, $columns->{$n}->{type}->to_sql_param($old_values->{$n}));
     }
     push(@params, @pk);
     # Need to lock the row before updating if blob
     $_SC->perf_time_finish($_SC->execute($attrs->{update_lock}, \@pk, $die))
-	if $attrs->{has_blob};
+        if $attrs->{has_blob};
     $_SC->perf_time_finish(
-	$_SC->execute(
-	    $attrs->{update} . $set.$attrs->{primary_where},
-	    \@params,
-	    $die,
-	    $attrs->{has_blob},
-	),
+        $_SC->execute(
+            $attrs->{update} . $set.$attrs->{primary_where},
+            \@params,
+            $die,
+            $attrs->{has_blob},
+        ),
     );
     return;
 }
@@ -330,7 +330,7 @@ sub update {
 sub _add_parent_model {
     my($attrs, $col, $parent_model, $parent_field) = @_;
     ($attrs->{parents}->{$parent_model} ||= {})->{$col->{name}}
-	= $parent_field;
+        = $parent_field;
     $col->{parent_model} = $parent_model;
     $col->{parent_field} = $parent_field;
     return;
@@ -351,33 +351,33 @@ sub _init_columns {
     # primary keys are sorted as well.
     $attrs->{column_names} = [sort(keys(%$column_cfg))];
     b_die('missing columns: ', $attrs)
-	unless %$column_cfg;
+        unless %$column_cfg;
     foreach my $n (@{$attrs->{column_names}}) {
-	my($cfg) = $column_cfg->{$n};
-	my($col) = ref($cfg) eq 'HASH' ? $cfg : {
-	    type => $cfg->[0],
-	    constraint => $cfg->[1],
-	};
-	my($type_decl) = $col->{type};
-	$col->{sql_name} = $col->{name} = $n;
-	$attrs->{columns}->{$n} = $attrs->{column_aliases}->{$n} = $col;
-	$col->{constraint} = $_C->from_any($col->{constraint});
-	$proto->init_type($col, $type_decl);
-	_add_parent_model($attrs, $col, $1, $2)
-	    if $type_decl =~ /^(.*)\.(.*)$/;
-	$col->{is_searchable} = $col->{is_searchable} ? 1 : 0;
-	$col->{sql_pos_param} = $col->{type}->to_sql_value('?');
-	$col->{sql_pos_param_for_insert} ||= $col->{type}->to_sql_value('?');
-	$attrs->{has_blob} = 1
-	    if $_BLOB->is_super_of($col->{type});
-	$col->{is_primary_key} = $col->{constraint}->eq_primary_key;
-	push(@{$attrs->{primary_key}}, $col)
-	    if $col->{is_primary_key};
+        my($cfg) = $column_cfg->{$n};
+        my($col) = ref($cfg) eq 'HASH' ? $cfg : {
+            type => $cfg->[0],
+            constraint => $cfg->[1],
+        };
+        my($type_decl) = $col->{type};
+        $col->{sql_name} = $col->{name} = $n;
+        $attrs->{columns}->{$n} = $attrs->{column_aliases}->{$n} = $col;
+        $col->{constraint} = $_C->from_any($col->{constraint});
+        $proto->init_type($col, $type_decl);
+        _add_parent_model($attrs, $col, $1, $2)
+            if $type_decl =~ /^(.*)\.(.*)$/;
+        $col->{is_searchable} = $col->{is_searchable} ? 1 : 0;
+        $col->{sql_pos_param} = $col->{type}->to_sql_value('?');
+        $col->{sql_pos_param_for_insert} ||= $col->{type}->to_sql_value('?');
+        $attrs->{has_blob} = 1
+            if $_BLOB->is_super_of($col->{type});
+        $col->{is_primary_key} = $col->{constraint}->eq_primary_key;
+        push(@{$attrs->{primary_key}}, $col)
+            if $col->{is_primary_key};
     }
     b_die($attrs->{table_name}, ': too many BLOBs')
-	if $attrs->{has_blob} > 1;
+        if $attrs->{has_blob} > 1;
     b_die($attrs->{table_name}, ': no primary keys')
-	unless int(@{$attrs->{primary_key}});
+        unless int(@{$attrs->{primary_key}});
 
     $attrs->{primary_key_names} = [map {$_->{name}} @{$attrs->{primary_key}}];
     return;
@@ -386,32 +386,32 @@ sub _init_columns {
 sub _init_statements {
     my($attrs) = @_;
     $attrs->{select_columns} = [map {
-	$attrs->{columns}->{$_};
+        $attrs->{columns}->{$_};
     } @{$attrs->{column_names}}];
 
     $attrs->{select} = 'select '.join (',', map {
-	$attrs->{columns}->{$_}->{type}->from_sql_value($_);
+        $attrs->{columns}->{$_}->{type}->from_sql_value($_);
     } @{$attrs->{column_names}})." from $attrs->{table_name} ";
     $attrs->{insert} = "insert into $attrs->{table_name} ("
-	    .join(',', @{$attrs->{column_names}}).') values ('
-	    .join(',', map {
-		$attrs->{columns}->{$_}->{sql_pos_param_for_insert}
-	    } @{$attrs->{column_names}})
-	    .')';
+            .join(',', @{$attrs->{column_names}}).') values ('
+            .join(',', map {
+                $attrs->{columns}->{$_}->{sql_pos_param_for_insert}
+            } @{$attrs->{column_names}})
+            .')';
     $attrs->{primary_where} = ' where ' . join(' and ',
-	    map {
-		$_.'='.$attrs->{columns}->{$_}->{sql_pos_param}
-	    } @{$attrs->{primary_key_names}});
+            map {
+                $_.'='.$attrs->{columns}->{$_}->{sql_pos_param}
+            } @{$attrs->{primary_key_names}});
     $attrs->{delete} = "delete from $attrs->{table_name} "
-	    .$attrs->{primary_where};
+            .$attrs->{primary_where};
     $attrs->{update} = "update $attrs->{table_name} set ";
     $attrs->{update_lock} = "select ".$attrs->{primary_key_names}->[0]
-	    ." from $attrs->{table_name} "
-		    .$attrs->{primary_where}." for update";
+            ." from $attrs->{table_name} "
+                    .$attrs->{primary_where}." for update";
     my($primary_id_name) = $attrs->{table_name};
     $primary_id_name =~ s/_t$/_id/;
     $attrs->{primary_id_name} = $primary_id_name
-	if $attrs->{columns}->{$primary_id_name};
+        if $attrs->{columns}->{$primary_id_name};
     return;
 }
 
@@ -425,36 +425,36 @@ sub _prepare_select_param {
     # Returns the string for the query.  If undef, adds "IS NULL" test. Pushes the
     # value on params, otherwise.  Handles ARRAY parameters as IN (?, ...).
     return $column->{sql_name} . ' IS NULL'
-	unless defined($value);
+        unless defined($value);
     unless (ref($value) eq 'ARRAY') {
-	push(@$params, $column->{type}->to_sql_param($value));
-	return $column->{sql_name} . '=' . $column->{sql_pos_param};
+        push(@$params, $column->{type}->to_sql_param($value));
+        return $column->{sql_name} . '=' . $column->{sql_pos_param};
     }
     $value = [map($column->{type}->from_literal_for_model_value($_), @$value)];
     push(@$params, @{$column->{type}->to_sql_param_list($value)});
     return $column->{sql_name}
-	. ' IN '
-	. $column->{type}->to_sql_value_list($value);
+        . ' IN '
+        . $column->{type}->to_sql_value_list($value);
 }
 
 sub _prepare_where {
     my($self, $query, $params) = @_;
     return ''
-	unless $query && %$query;
+        unless $query && %$query;
     my($columns) = $self->get('columns');
     return ' WHERE '
-	. join(
-	    ' AND ',
-	    map(
-		_prepare_select_param(
-		    $columns->{$_} || b_die('invalid field name: ', $_),
-		    $query->{$_},
-		    $params,
-	        ),
-		# Use a sort to force order which (may) help Oracle's cache.
-		sort(keys(%$query)),
-	    ),
-	);
+        . join(
+            ' AND ',
+            map(
+                _prepare_select_param(
+                    $columns->{$_} || b_die('invalid field name: ', $_),
+                    $query->{$_},
+                    $params,
+                ),
+                # Use a sort to force order which (may) help Oracle's cache.
+                sort(keys(%$query)),
+            ),
+        );
 }
 
 1;

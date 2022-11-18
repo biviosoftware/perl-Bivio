@@ -4,28 +4,28 @@ ListModel();
 req()->initialize_fully->set_realm_and_user('guest', 'guest');
 [
     load_all => [
-	[{
-	    path_info => '/private',
-	}] => [
-	    {
-		'RealmFile.path' => '/private/file.html',
-		md5 => 'TekYsCTk6d/LnZMvu99ngw',
-	    },
-	    {
-		'RealmFile.path' => '/private/image.gif',
-		md5 => '+tQBF22mDhwNKPHPSrxY9A',
-	    },
-	],
-	[{
-	    path_info => '/',
-	}] => sub {
-	    my($o) = shift->get('object');
-	    $o->do_rows(sub {
-	        assert_not_equals(
-		    qr{\Q@{[FilePath()->VERSIONS_FOLDER]}}i,
-		    shift->get('RealmFile.path'));
-	    });
-	    return 1;
-	},
+        [{
+            path_info => '/private',
+        }] => [
+            {
+                'RealmFile.path' => '/private/file.html',
+                md5 => 'TekYsCTk6d/LnZMvu99ngw',
+            },
+            {
+                'RealmFile.path' => '/private/image.gif',
+                md5 => '+tQBF22mDhwNKPHPSrxY9A',
+            },
+        ],
+        [{
+            path_info => '/',
+        }] => sub {
+            my($o) = shift->get('object');
+            $o->do_rows(sub {
+                assert_not_equals(
+                    qr{\Q@{[FilePath()->VERSIONS_FOLDER]}}i,
+                    shift->get('RealmFile.path'));
+            });
+            return 1;
+        },
     ],
 ];

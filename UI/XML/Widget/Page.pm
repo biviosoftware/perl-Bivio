@@ -15,9 +15,9 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     $$buffer .= q{<?xml version="1.0" encoding="}
-	. ($self->render_simple_attr('content_encoding', $source, $buffer)
-	   || 'ISO-8859-1')
-	. qq{"?>\n};
+        . ($self->render_simple_attr('content_encoding', $source, $buffer)
+           || 'ISO-8859-1')
+        . qq{"?>\n};
     return shift->SUPER::render(@_);
 }
 

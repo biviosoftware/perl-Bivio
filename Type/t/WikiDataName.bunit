@@ -3,21 +3,21 @@
 Type();
 [
     {
-	method => 'format_uri',
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->set_realm(shift(@$params));
-	    req()->initialize_fully(shift(@$params));
-	    return [shift(@$params), {
-		req => req(),
-		task_id => req('task_id'),
-		realm_name => req('auth_realm')->is_general ? undef
-		    : req(qw(auth_realm owner_name)),
-		is_public => 0,
-	    }];
-	},
+        method => 'format_uri',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->set_realm(shift(@$params));
+            req()->initialize_fully(shift(@$params));
+            return [shift(@$params), {
+                req => req(),
+                task_id => req('task_id'),
+                realm_name => req('auth_realm')->is_general ? undef
+                    : req(qw(auth_realm owner_name)),
+                is_public => 0,
+            }];
+        },
     } => [
-	[undef, qw(SITE_WIKI_VIEW zz)] => qr{^/\w+/zz$},
-	[qw(fourem FORUM_WIKI_VIEW zz)] => qr{^/fourem/\w+/zz$},
+        [undef, qw(SITE_WIKI_VIEW zz)] => qr{^/\w+/zz$},
+        [qw(fourem FORUM_WIKI_VIEW zz)] => qr{^/fourem/\w+/zz$},
     ],
 ];

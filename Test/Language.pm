@@ -70,7 +70,7 @@ sub handle_setup {
     #
     #     sub handle_setup {
     #         my($self, @setup_args) = @_;
-    # 	$self->SUPER::handle_setup;
+    #         $self->SUPER::handle_setup;
     #         my setup up...;
     #         return;
     #     }
@@ -109,12 +109,12 @@ sub test_deviance {
     # string, will be compiled with qr/$regex/is.  See also
     # L<test_conformance|"test_conformance">
     if (ref($_[1]) eq 'CODE') {
-	_do_deviance(@_);
+        _do_deviance(@_);
     }
     else {
         my(undef, $regex) = _args(@_);
         _assert_in_eval('test_setup')->put(test_deviance =>
-	    ref($regex) ? $regex : defined($regex) ? qr/$regex/is : qr//);
+            ref($regex) ? $regex : defined($regex) ? qr/$regex/is : qr//);
     }
     return;
 }
@@ -138,15 +138,15 @@ sub test_log_output {
     # ignore wide-print warnings
     local($SIG{__WARN__}) = sub {};
     return $_F->write(
-	$self->get('test_log_prefix') . "/$file_name",
-	ref($content) ? $content : \$content,
+        $self->get('test_log_prefix') . "/$file_name",
+        ref($content) ? $content : \$content,
     );
 }
 
 sub test_name {
     # Returns the basename of the test_script.
     return File::Basename::basename(
-	_assert_in_eval('test_name')->get('test_script'), '.btest');
+        _assert_in_eval('test_name')->get('test_script'), '.btest');
 }
 
 sub test_now {
@@ -166,22 +166,22 @@ sub test_run {
     local($_SELF_IN_EVAL);
     my($script_name) = ref($script) ? $_INLINE++ : $script;
     my($die) = Bivio::Die->catch(sub {
-	_die($_SELF_IN_EVAL, 'called ', $script_name,
-	    ' from within test script')
-	    if $_SELF_IN_EVAL;
-	$_SELF_IN_EVAL = $proto->new({test_script => $script_name});
+        _die($_SELF_IN_EVAL, 'called ', $script_name,
+            ' from within test script')
+            if $_SELF_IN_EVAL;
+        $_SELF_IN_EVAL = $proto->new({test_script => $script_name});
         $script = $_F->read($script_name)
-	    unless ref($script);
-	substr($$script, 0, 0)
-	    = 'use strict;package ' . b_use('Test.LanguageWrapper') . ';';
-	my($die) = Bivio::Die->catch($script);
-	_trace($die) if $_TRACE;
-	return unless $die;
-	$_SELF_IN_EVAL->test_log_output('test_run.err',
-	    $die->as_string . "\n" . $die->get('stack'))
-	    if $_SELF_IN_EVAL;
-	$die->throw;
-	# DOES NOT RETURN
+            unless ref($script);
+        substr($$script, 0, 0)
+            = 'use strict;package ' . b_use('Test.LanguageWrapper') . ';';
+        my($die) = Bivio::Die->catch($script);
+        _trace($die) if $_TRACE;
+        return unless $die;
+        $_SELF_IN_EVAL->test_log_output('test_run.err',
+            $die->as_string . "\n" . $die->get('stack'))
+            if $_SELF_IN_EVAL;
+        $die->throw;
+        # DOES NOT RETURN
     });
     _trace($die) if $_TRACE;
     Bivio::Die->eval(sub {$_SELF_IN_EVAL->test_cleanup($die)});
@@ -208,14 +208,14 @@ sub test_setup {
     _die($proto, 'called test_setup() twice') if $self->[$_IDI]->{setup_called}++;
     my($subclass) = $proto->use('TestLanguage', $map_class);
     _die($proto, "$subclass is not a ", __PACKAGE__, ' class')
-	unless $subclass->isa(__PACKAGE__);
+        unless $subclass->isa(__PACKAGE__);
     _trace($subclass, ' setup with ', \@setup_args) if $_TRACE;
     my($new_self) = $subclass->new;
     _die($proto, "$subclass\->new didn't create an instance of ", __PACKAGE__)
-	unless $new_self->isa(__PACKAGE__);
+        unless $new_self->isa(__PACKAGE__);
     $new_self->put(
-	test_script => $self->get('test_script'),
-	test_log_prefix => _log_prefix($self->get('test_script')),
+        test_script => $self->get('test_script'),
+        test_log_prefix => _log_prefix($self->get('test_script')),
     );
     $_SELF_IN_EVAL = $new_self;
     _trace($_SELF_IN_EVAL);
@@ -227,8 +227,8 @@ sub test_template {
     my(undef, $template) = _args(@_);
     my($self) = _assert_in_eval('test_template');
     return ${$self->use('IO.Template')->replace_in_file(
-	$self->test_name . "/$template",
-	$self->test_template_vars,
+        $self->test_name . "/$template",
+        $self->test_template_vars,
     )};
 }
 
@@ -236,7 +236,7 @@ sub test_template_vars {
     my(undef, $vars) = _args(@_);
     my($self) = _assert_in_eval('test_template_vars');
     $self->put(test_template_vars => $vars)
-	if $vars;
+        if $vars;
     return $self->get('test_template_vars');
 }
 
@@ -249,14 +249,14 @@ sub _args {
     # Detects if first argument is $proto or not.  When view_*() methods
     # are called from view files or templates, they are not given a $proto.
     return defined($_[0]) && UNIVERSAL::isa(ref($_[0]) || $_[0], __PACKAGE__)
-	? @_ : (__PACKAGE__, @_);
+        ? @_ : (__PACKAGE__, @_);
 }
 
 sub _assert_in_eval {
     my($op) = @_;
     # Returns the current test or terminates.
     Bivio::Die->die($op, ': attempted operation outside test script')
-	unless $_SELF_IN_EVAL;
+        unless $_SELF_IN_EVAL;
     return $_SELF_IN_EVAL;
 }
 
@@ -273,10 +273,10 @@ sub _do_deviance {
         unless ref($regex);
     my($die) = Bivio::Die->catch($dev_block);
     _die($self, ' deviance call "', $regex, '" failed to die.')
-	unless $die;
+        unless $die;
     _die($self, ' deviance call failed with "',
-	$die, '" but did not match pattern: ', $regex)
-	unless $die->as_string =~ $regex;
+        $die, '" but did not match pattern: ', $regex)
+        unless $die->as_string =~ $regex;
 
     return;
 }
@@ -287,7 +287,7 @@ sub _find_line_number {
     return unless my($stack) = $die->get('stack');
     my($line) = $stack =~ /.* at \(eval \d+\) line (\d+)\s+Bivio::Test::Language::__ANON__/s;
     substr($die->get('attrs')->{message}, 0, 0) = "$script_name, line $line: "
-	if $line;
+        if $line;
     return;
 }
 
@@ -297,12 +297,12 @@ sub _log_prefix {
     my($v, $d, $f) = File::Spec->splitpath(File::Spec->rel2abs($script_name));
     $f =~ s/(?<=.)\.[^\.]+$//g;
     return $_F->mkdir_p(
-	$_F->rm_rf(
-	    File::Spec->catpath(
-		'',
-		File::Spec->catpath(
-		    $v, $d, $_CFG->{log_dir}),
-		$f)));
+        $_F->rm_rf(
+            File::Spec->catpath(
+                '',
+                File::Spec->catpath(
+                    $v, $d, $_CFG->{log_dir}),
+                $f)));
 }
 
 1;

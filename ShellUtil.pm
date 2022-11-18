@@ -119,12 +119,12 @@ my($_MAP_NAME) = 'ShellUtil';
 $_C->register(my $_CFG = {
     lock_directory => '/tmp',
     $_C->NAMED => {
-	daemon_max_children => 1,
-	daemon_sleep_after_start => 60,
-	daemon_sleep_after_reap => 0,
-	daemon_max_child_run_seconds => 0,
-	daemon_max_child_term_seconds => 0,
-	daemon_log_file => $_C->REQUIRED,
+        daemon_max_children => 1,
+        daemon_sleep_after_start => 60,
+        daemon_sleep_after_reap => 0,
+        daemon_max_child_run_seconds => 0,
+        daemon_max_child_term_seconds => 0,
+        daemon_log_file => $_C->REQUIRED,
     },
 });
 my($_HANDLERS) = b_use('Biz.Registrar')->new;
@@ -146,18 +146,18 @@ sub OPTIONS {
     # letter version is also supported.
     return {
 #TODO: Add option -query which sets the query on the request
-	db => ['Name', undef],
-	detach => ['Boolean', 0],
-	detach_log => ['Text', undef],
-	email => ['Text', undef],
-	force => ['Boolean', 0],
-	input => ['Text', '-'],
-	live => ['Boolean', 0],
-	noexecute => ['Boolean', 0],
-	realm => ['Line', undef],
-	user => ['Line', undef],
+        db => ['Name', undef],
+        detach => ['Boolean', 0],
+        detach_log => ['Text', undef],
+        email => ['Text', undef],
+        force => ['Boolean', 0],
+        input => ['Text', '-'],
+        live => ['Boolean', 0],
+        noexecute => ['Boolean', 0],
+        realm => ['Line', undef],
+        user => ['Line', undef],
         output => ['Line', undef],
-	verbose => ['Boolean', 0],
+        verbose => ['Boolean', 0],
     };
 }
 
@@ -185,11 +185,11 @@ sub USAGE {
     #
     #     usage: b-db-util [options] command [args...]
     #     commands:
-    # 	   remote_sqlplus host db_login actions
-    # 	   copy_logs_to_standby
-    # 	   recover_standby
-    # 	   sql2csv file.sql
-    # 	   switch_logs_and_count_rows
+    #            remote_sqlplus host db_login actions
+    #            copy_logs_to_standby
+    #            recover_standby
+    #            sql2csv file.sql
+    #            switch_logs_and_count_rows
     die('abstract method')
         if $proto->package_name eq __PACKAGE__;
     return join("\n",
@@ -223,7 +223,7 @@ sub are_you_sure {
 
     $prompt ||= 'Are you sure?';
     $self->usage_error("Operation aborted")
-	unless $self->readline_stdin($prompt." (yes or no) ") eq 'yes';
+        unless $self->readline_stdin($prompt." (yes or no) ") eq 'yes';
 
     # Yes answer
     return;
@@ -242,14 +242,14 @@ sub assert_dev {
 sub assert_have_user {
     my($self) = @_;
     $self->usage_error('must select a user with -user')
-	unless $self->req('auth_user');
+        unless $self->req('auth_user');
     return;
 }
 
 sub assert_not_general {
     my($self) = @_;
     $self->usage_error('must select a realm with -realm')
-	if $self->req('auth_realm')->is_general;
+        if $self->req('auth_realm')->is_general;
     return;
 }
 
@@ -269,17 +269,17 @@ sub command_line {
     my($self) = @_;
     # Returns the command line that was used to execute this command.
     return ref($self)
-	    ? join(' ', $self->unsafe_get('program') || '',
-		    map {
-			defined($_) ? $_ : '<undef>'
-		    } @{$self->unsafe_get('argv') || []})
-		    : 'N/A';
+            ? join(' ', $self->unsafe_get('program') || '',
+                    map {
+                        defined($_) ? $_ : '<undef>'
+                    } @{$self->unsafe_get('argv') || []})
+                    : 'N/A';
 }
 
 sub commit_or_rollback {
     my($self, $abort) = @_;
     my($method) = $self->unsafe_get('noexecute') || $abort
-	? 'rollback' : 'commit';
+        ? 'rollback' : 'commit';
     b_use('Agent.Task')->$method($self->req);
     return;
 }
@@ -295,9 +295,9 @@ sub detach_process {
     my($self) = @_;
     my($pid) = fork;
     die("fork: $!")
-	unless defined($pid);
+        unless defined($pid);
     return $pid
-	if $pid;
+        if $pid;
     # Child
     my($log) = $_F->absolute_path(_detach_log($self));
     open(STDIN, '< /dev/null');
@@ -309,8 +309,8 @@ sub detach_process {
     $| = 1;
     $_A->set_printer('FILE', $log);
     eval {
-	require POSIX;
-	POSIX::setsid();
+        require POSIX;
+        POSIX::setsid();
     };
     return;
 }
@@ -318,9 +318,9 @@ sub detach_process {
 sub do_backticks {
     my($self, $command, $ignore_exit_code) = @_;
     my($res) = $self->piped_exec(
-	$command,
-	undef,
-	$ignore_exit_code,
+        $command,
+        undef,
+        $ignore_exit_code,
     );
     return wantarray ? split(/(?<=\n)/, $$res) : $$res;
 }
@@ -332,7 +332,7 @@ sub finish {
     $self->commit_or_rollback($abort);
     $self->get_request->call_process_cleanup;
     b_use('SQL.Connection')->set_dbi_name($fields->{prior_db})
-	if $fields->{prior_db};
+        if $fields->{prior_db};
     return;
 }
 
@@ -343,7 +343,7 @@ sub shell_util_request_instance {
 sub get_request {
     my($self) = @_;
     return $self->unsafe_get('req') || $self->setup->get('req')
-	if ref($self);
+        if ref($self);
     my($req) = b_use('Agent.Request')->get_current;
     $_DIE->die('no request') unless $req;
     return $req;
@@ -356,20 +356,20 @@ sub group_args {
     #
     # I<args> is modified.
     $proto->usage_error("arguments must come in $group_size-tuples")
-	unless @$args % $group_size == 0;
+        unless @$args % $group_size == 0;
     my($res) = [];
     push(@$res, [splice(@$args, 0, $group_size)])
-	while @$args;
+        while @$args;
     return $res;
 }
 
 sub handle_call_autoload {
     my($proto) = shift;
     b_die($proto, ': arguments not allowed')
-	if @_;
+        if @_;
     return $proto
-	unless !$proto->equals_class_name('ShellUtil')
-	and my $req = b_use('Agent.Request')->get_current;
+        unless !$proto->equals_class_name('ShellUtil')
+        and my $req = b_use('Agent.Request')->get_current;
     return $proto->new(\@_, $req);
 }
 
@@ -413,10 +413,10 @@ sub handle_config {
     # Where L<lock_action|"lock_action"> directories are created.  Must be absolute,
     # writable directory.
     $_DIE->die($cfg->{lock_directory}, ': not a writable directory')
-	unless length($cfg->{lock_directory})
-	    && -w $cfg->{lock_directory} && -d _;
+        unless length($cfg->{lock_directory})
+            && -w $cfg->{lock_directory} && -d _;
     $_DIE->die($cfg->{lock_directory}, ': not absolute')
-	unless File::Spec->file_name_is_absolute($cfg->{lock_directory});
+        unless File::Spec->file_name_is_absolute($cfg->{lock_directory});
     $_CFG = $cfg;
     return;
 }
@@ -424,7 +424,7 @@ sub handle_config {
 sub if_option_execute {
     my($self, $op) = @_;
     return $op->()
-	unless $self->unsafe_get('noexecute');
+        unless $self->unsafe_get('noexecute');
     return;
 }
 
@@ -446,10 +446,10 @@ sub initialize_ui {
             if $fully;
     }
     b_use('UI.Facade')->setup_request(undef, $req)
-	unless $req->unsafe_get('UI.Facade');
+        unless $req->unsafe_get('UI.Facade');
     $req->put_durable(
-	task => b_use('Agent.Task')->get_by_id($req->get('task_id')))
-	if $req->unsafe_get('task_id');
+        task => b_use('Agent.Task')->get_by_id($req->get('task_id')))
+        if $req->unsafe_get('task_id');
     return $req;
 }
 
@@ -473,10 +473,10 @@ sub lock_action {
     # uses C<caller> subroutine name.  The usage is:
     #
     #     sub my_action {
-    # 	my($self, ...) = @_;
-    # 	return Bivio::ShellUtil->lock_action(sub {
-    # 	     do something;
-    # 	});
+    #         my($self, ...) = @_;
+    #         return Bivio::ShellUtil->lock_action(sub {
+    #              do something;
+    #         });
     #     }
     #
     # Prints a warning of the lock couldn't be obtained.  If I<op> dies,
@@ -496,9 +496,9 @@ sub lock_action {
     # uses C<caller> sub.  The usage is:
     #
     #     sub my_action {
-    # 	my($self, ...) = @_;
-    # 	return
-    # 	    unless $self->lock_action;
+    #         my($self, ...) = @_;
+    #         return
+    #             unless $self->lock_action;
     #     }
     #
     # This method forks a new process and returns true in the child process.
@@ -508,40 +508,40 @@ sub lock_action {
     # Catches TERM signal and resignals (to previous handler) bug first removes the
     # lock.
     return _deprecated_lock_action($op || (caller(1))[3])
-	unless ref($op) eq 'CODE';
+        unless ref($op) eq 'CODE';
     my($lock_dir, $lock_pid) = _lock_files($name || (caller(1))[3]);
     my($clean) = sub {
-	$_F->rm_rf($lock_dir);
-	return;
+        $_F->rm_rf($lock_dir);
+        return;
     };
     my($this_host) = b_use('Bivio.BConf')->bconf_host_name;
     foreach my $retry (1, 0) {
-	last
-	    if mkdir($lock_dir, 0700);
-	unless ($retry) {
-	    b_warn($lock_dir, ': unable to delete lock for dead process');
-	    _lock_warning($lock_dir)
-		unless $no_warn;
-	    return;
-	}
-	my($pid, $host) = -r $lock_pid ? split(/\s+/, ${$_F->read($lock_pid)}) : ();
-	if (($host && $host ne $this_host) || _process_exists($pid)) {
-	    _lock_warning($lock_dir)
-		unless $no_warn;
-	    return;
-	}
-	b_warn($pid, ": process doesn't exist, removing ", $lock_dir);
-	# Don't test results, because there may be contention
-	$clean->();
+        last
+            if mkdir($lock_dir, 0700);
+        unless ($retry) {
+            b_warn($lock_dir, ': unable to delete lock for dead process');
+            _lock_warning($lock_dir)
+                unless $no_warn;
+            return;
+        }
+        my($pid, $host) = -r $lock_pid ? split(/\s+/, ${$_F->read($lock_pid)}) : ();
+        if (($host && $host ne $this_host) || _process_exists($pid)) {
+            _lock_warning($lock_dir)
+                unless $no_warn;
+            return;
+        }
+        b_warn($pid, ": process doesn't exist, removing ", $lock_dir);
+        # Don't test results, because there may be contention
+        $clean->();
     }
     # Write host after pid to be backwards compatible with just pid format.
     $_F->write($lock_pid, $$ . ' ' . $this_host);
     my($prev) = $SIG{TERM};
     local($SIG{TERM}) = sub {
-	$clean->();
-	$SIG{TERM} = $prev;
-	kill('TERM', $$);
-	return;
+        $clean->();
+        $SIG{TERM} = $prev;
+        kill('TERM', $$);
+        return;
     };
     return $_DIE->catch_and_rethrow($op, $clean);
 }
@@ -552,8 +552,8 @@ sub lock_realm {
     # Handles re-locking existing realm.
     my($req) = $self->get_request;
     $_DIE->die("can't lock general realm")
-	    if $req->get('auth_realm')->get('type')
-		    == Bivio::Auth::RealmType->GENERAL();
+            if $req->get('auth_realm')->get('type')
+                    == Bivio::Auth::RealmType->GENERAL();
     b_use('Model.Lock')->execute_unless_acquired($req);
     return;
 }
@@ -573,14 +573,14 @@ sub main {
 
     my(@new_args);
     unless (ref($proto)) {
-	push(@new_args, shift(@argv))
-	    if $argv[0] && $argv[0] =~ /^[A-Z]/;
-	push(@new_args, \@argv);
+        push(@new_args, shift(@argv))
+            if $argv[0] && $argv[0] =~ /^[A-Z]/;
+        push(@new_args, \@argv);
     }
 
     # Forces a setup, if called as $self
     my($self) = ref($proto) ? $proto->setup(_initialize($proto, \@argv))
-	: $proto->new(@new_args);
+        : $proto->new(@new_args);
     my($fields) = $self->[$_IDI];
     $fields->{in_main} = 1;
 
@@ -595,47 +595,47 @@ sub main {
 
     my($cmd, $res);
     my($die) = $_DIE->catch(sub {
-	if (@argv and $cmd = _method_ok($self, $argv[0])) {
-	    shift(@argv);
-	}
-	else {
-	    $self->usage(@argv ? ($argv[0], ': unknown command')
-	        : 'missing command');
-	}
-	return;
+        if (@argv and $cmd = _method_ok($self, $argv[0])) {
+            shift(@argv);
+        }
+        else {
+            $self->usage(@argv ? ($argv[0], ': unknown command')
+                : 'missing command');
+        }
+        return;
     });
     unless ($die) {
-	my($pid);
-	if ($self->unsafe_get('detach')) {
-	    $_A->info('log=', _detach_log($self));
-	    if ($pid = $self->detach_process) {
-		$res = "$pid\n";
-		$self->SUPER::delete(qw(output email req));
-	    }
-	}
-	$die = $_DIE->catch(sub {
-	    $res = $self->$cmd(@argv);
-	}) unless $pid;
+        my($pid);
+        if ($self->unsafe_get('detach')) {
+            $_A->info('log=', _detach_log($self));
+            if ($pid = $self->detach_process) {
+                $res = "$pid\n";
+                $self->SUPER::delete(qw(output email req));
+            }
+        }
+        $die = $_DIE->catch(sub {
+            $res = $self->$cmd(@argv);
+        }) unless $pid;
     }
     $fields->{in_main} = 0;
 
     # Don't finish if setup never called.
     $self->finish($die ? 1 : 0)
-	if $self->unsafe_get('req');
+        if $self->unsafe_get('req');
     if ($die) {
-	# Email error and re-throw
-	$self->put(result_type => undef,
-		result_subject => 'ERROR from: '.$self->command_line);
-	_result_email($self, $cmd, $die->as_string);
-	if ($self->unsafe_get('live')) {
-	    $_A->warn($die);
-	    return;
-	}
-	$die->throw();
-	# DOES NOT RETURN
+        # Email error and re-throw
+        $self->put(result_type => undef,
+                result_subject => 'ERROR from: '.$self->command_line);
+        _result_email($self, $cmd, $die->as_string);
+        if ($self->unsafe_get('live')) {
+            $_A->warn($die);
+            return;
+        }
+        $die->throw();
+        # DOES NOT RETURN
     }
     return $res
-	if $res = $self->result($cmd, $res) and wantarray;
+        if $res = $self->result($cmd, $res) and wantarray;
     return;
 }
 
@@ -649,35 +649,35 @@ sub name_args {
     my($last_decl) = $decls->[$#$decls];
     my($res) = {};
     return (
-	$proto,
-	@{$proto->map_together(sub {
-	    my($arg, $decl) = @_;
-	    $decl ||= $last_decl;
-	    $decl = [$decl]
-		unless ref($decl);
-	    my($name, $type, $default) = @$decl;
-	    ($default, $type) = ($type, undef)
-		if ref($type) eq 'CODE';
-	    my($has_default) = $name =~ s/^\?// || defined($default)
-		|| @$decl > 2;
-	    $type ||= $name;
-	    $type = "Type.$type"
-		unless $type =~ /\W/;
-	    $type = $proto->use($type);
-	    my($v, $e) = $type->from_literal($arg);
-	    return $res->{$name} = $v
-		if defined($v);
-	    unless ($e) {
-		return $res->{$name} = ref($default) eq 'CODE'
-		    ? $default->($proto, $res) : $default
-		    if $has_default;
-		$e = $_TE->NULL;
-	    }
-	    $proto->usage_error(
-		$arg, ': invalid ', $name, ': ',
-		$e->get_long_desc, '; see Type.', $type, "\n");
-	    # DOES NOT RETURN
-	}, $args, $decls)},
+        $proto,
+        @{$proto->map_together(sub {
+            my($arg, $decl) = @_;
+            $decl ||= $last_decl;
+            $decl = [$decl]
+                unless ref($decl);
+            my($name, $type, $default) = @$decl;
+            ($default, $type) = ($type, undef)
+                if ref($type) eq 'CODE';
+            my($has_default) = $name =~ s/^\?// || defined($default)
+                || @$decl > 2;
+            $type ||= $name;
+            $type = "Type.$type"
+                unless $type =~ /\W/;
+            $type = $proto->use($type);
+            my($v, $e) = $type->from_literal($arg);
+            return $res->{$name} = $v
+                if defined($v);
+            unless ($e) {
+                return $res->{$name} = ref($default) eq 'CODE'
+                    ? $default->($proto, $res) : $default
+                    if $has_default;
+                $e = $_TE->NULL;
+            }
+            $proto->usage_error(
+                $arg, ': invalid ', $name, ': ',
+                $e->get_long_desc, '; see Type.', $type, "\n");
+            # DOES NOT RETURN
+        }, $args, $decls)},
     );
     return;
 }
@@ -687,12 +687,12 @@ sub new {
     # Initializes a new instance with these command line arguments.
 
     if ($class && !ref($class)) {
-	$proto = _other($proto, $class);
+        $proto = _other($proto, $class);
     }
     else {
-	$argv = $class;
-	$_DIE->die($proto, ': must not be called as ShellUtil->new')
-	    if $proto eq __PACKAGE__;
+        $argv = $class;
+        $_DIE->die($proto, ': must not be called as ShellUtil->new')
+            if $proto eq __PACKAGE__;
     }
     return _initialize($proto->SUPER::new, $argv, $req);
 }
@@ -715,25 +715,25 @@ sub new_other {
     my($c) = _other($self, $class);
     my($options) = [];
     if (ref($self)) {
-	my($standard) = __PACKAGE__->OPTIONS();
-	while (my($k, $v) = each(%$standard)) {
-	    if ($v->[0] eq 'Boolean') {
-		push(@$options, '-'.$k) if $self->unsafe_get($k);
-	    }
-	    else {
-		# We don't pass undef options.
-		my($actual) = $self->unsafe_get($k);
-		push(@$options, '-'.$k, $actual)
-			if defined($actual) != defined($v)
-				|| defined($v) && $v ne $actual;
-	    }
-	}
+        my($standard) = __PACKAGE__->OPTIONS();
+        while (my($k, $v) = each(%$standard)) {
+            if ($v->[0] eq 'Boolean') {
+                push(@$options, '-'.$k) if $self->unsafe_get($k);
+            }
+            else {
+                # We don't pass undef options.
+                my($actual) = $self->unsafe_get($k);
+                push(@$options, '-'.$k, $actual)
+                        if defined($actual) != defined($v)
+                                || defined($v) && $v ne $actual;
+            }
+        }
     }
     my($other) = $c->new($options);
     $other->put_request($self->get_request)
-	if $self->unsafe_get('req');
+        if $self->unsafe_get('req');
     $other->put(program => $self->unsafe_get('program'))
-	if ref($self) && $self->has_keys('program');
+        if ref($self) && $self->has_keys('program');
     return $other;
 }
 
@@ -751,39 +751,39 @@ sub piped_exec {
     defined($pid) || die("fork: $!");
 #TODO: Use IO::File and $_F
     unless ($pid) {
-	$_HANDLERS->call_fifo('handle_piped_exec_child');
-	(ref($command) eq 'ARRAY'
-	    ? open(OUT, '|-', @$command)
-	    : open(OUT, "| exec $command")
-	) || $_DIE->die($command, ": open failed: $!");
-	print(OUT $$in);
-	close(OUT);
-	# If there is a signal, return 99.  Otherwise, return exit code.
-	CORE::exit($? ? ($? >> 8) ? ($? >> 8) : 99 :  0);
+        $_HANDLERS->call_fifo('handle_piped_exec_child');
+        (ref($command) eq 'ARRAY'
+            ? open(OUT, '|-', @$command)
+            : open(OUT, "| exec $command")
+        ) || $_DIE->die($command, ": open failed: $!");
+        print(OUT $$in);
+        close(OUT);
+        # If there is a signal, return 99.  Otherwise, return exit code.
+        CORE::exit($? ? ($? >> 8) ? ($? >> 8) : 99 :  0);
     }
     my($res);
     if ($_TRACE) {
-	_trace('START: ', $command);
-	while (defined(my $line = <IN>)) {
-	    $res .= $line;
-	    _trace($line);
-	}
-	_trace('END: ', $command);
+        _trace('START: ', $command);
+        while (defined(my $line = <IN>)) {
+            $res .= $line;
+            _trace($line);
+        }
+        _trace('END: ', $command);
     }
     else {
-	local($/) = undef;
-	$res = <IN>;
+        local($/) = undef;
+        $res = <IN>;
     }
     # May be undef
     $res .= '';
     unless (close(IN)) {
-	$_DIE->throw_die('DIE', {
-	    message => 'command died with non-zero status',
-	    entity => $command,
-	    input => $in,
-	    output => \$res,
-	    exit_code => $?,
-	}) unless $ignore_exit_code;
+        $_DIE->throw_die('DIE', {
+            message => 'command died with non-zero status',
+            entity => $command,
+            input => $in,
+            output => \$res,
+            exit_code => $?,
+        }) unless $ignore_exit_code;
     }
     return \$res;
 }
@@ -793,15 +793,15 @@ sub piped_exec_remote {
     # Run I<command> remotely using C<ssh>.  Returns result.  Assumes remote shell
     # understands single quote escaping.
     if (defined($host)) {
-	$command =~ s/'/'\''/g;
-	$command = "ssh $host '($command) && echo OK$$'";
+        $command =~ s/'/'\''/g;
+        $command = "ssh $host '($command) && echo OK$$'";
     }
     my($res) = $self->piped_exec($command, $input, $ignore_exit_code);
     $_DIE->throw_die('DIE', {
-	message => 'remote command failed',
-	host => $host,
-	entity => $command,
-	output => $res,
+        message => 'remote command failed',
+        host => $host,
+        entity => $command,
+        output => $res,
     }) unless $$res =~ s/OK$$\n// || $ignore_exit_code;
     return $res;
 }
@@ -865,20 +865,20 @@ sub required_main {
     my($proto, $class, @args) = @_;
     my($pkgs) = $_CL->list_simple_packages_in_map($_MAP_NAME);
     $proto->usage_error(
-	join("\n",
-	     'first argument must be a class name.  Available classes:',
-	     @$pkgs,
-	)
-	. "\n"
+        join("\n",
+             'first argument must be a class name.  Available classes:',
+             @$pkgs,
+        )
+        . "\n"
     ) unless $class;
     if ($proto->is_simple_package_name($class)) {
-	my($c) = grep(/^\Q$class\E$/i, @$pkgs);
-	$proto->usage_error($class, ": class not found in $_MAP_NAME map")
-	    unless $c;
-	$class = $c;
+        my($c) = grep(/^\Q$class\E$/i, @$pkgs);
+        $proto->usage_error($class, ": class not found in $_MAP_NAME map")
+            unless $c;
+        $class = $c;
     }
     return ref($proto->new($_CL->map_require($_MAP_NAME => $class)))
-	->main(@args);
+        ->main(@args);
 }
 
 sub result {
@@ -887,10 +887,10 @@ sub result {
     # or printing to STDOUT.  Returns a reference to result or undef.
     $res = _result_ref($self, $res);
     return undef
-	unless $res;
+        unless $res;
     print(STDOUT $$res, $$res =~ /\n$/s ? () : "\n")
-	unless _result_email($self, $cmd, $res)
-	+ _result_output($self, $cmd, $res);
+        unless _result_email($self, $cmd, $res)
+        + _result_output($self, $cmd, $res);
     return $res;
 }
 
@@ -907,39 +907,39 @@ sub run_daemon {
     my($children) = {};
     my($ref) = b_use('IO.Ref');
     while (1) {
-	my($max_duplicates) = $cfg->{daemon_max_children};
-	while (keys(%$children) < $cfg->{daemon_max_children}) {
-	    my($args) = $next_command->();
-	    last unless $args;
-	    _reap_daemon_children($children, 0, 0, $cfg);
-	    if (grep(
-		$ref->nested_equals($args, $_->{args}),
-		values(%$children),
-	    )) {
-		_trace('already running: ', $args) if $_TRACE;
-		# protects against infinite loop when daemon_max_children
-		# is greater than the number of jobs.
-		last if --$max_duplicates <= 0;
-	    }
-	    else {
-		$children->{_start_daemon_child($self, $args, $cfg)} = {
-		    args => $args,
-		    $cfg->{daemon_max_child_run_seconds} > 0
-		        ? (max_time =>
-		            time + $cfg->{daemon_max_child_run_seconds})
-		        : (),
-		};
-		sleep($cfg->{daemon_sleep_after_start});
-	    }
-	}
-	return unless %$children;
-	_reap_daemon_children(
-	    $children,
-	    $cfg->{daemon_sleep_after_reap} > 0
-	        ? (0, $cfg->{daemon_sleep_after_reap})
-	        : (wait, 0),
-	    $cfg,
-	);
+        my($max_duplicates) = $cfg->{daemon_max_children};
+        while (keys(%$children) < $cfg->{daemon_max_children}) {
+            my($args) = $next_command->();
+            last unless $args;
+            _reap_daemon_children($children, 0, 0, $cfg);
+            if (grep(
+                $ref->nested_equals($args, $_->{args}),
+                values(%$children),
+            )) {
+                _trace('already running: ', $args) if $_TRACE;
+                # protects against infinite loop when daemon_max_children
+                # is greater than the number of jobs.
+                last if --$max_duplicates <= 0;
+            }
+            else {
+                $children->{_start_daemon_child($self, $args, $cfg)} = {
+                    args => $args,
+                    $cfg->{daemon_max_child_run_seconds} > 0
+                        ? (max_time =>
+                            time + $cfg->{daemon_max_child_run_seconds})
+                        : (),
+                };
+                sleep($cfg->{daemon_sleep_after_start});
+            }
+        }
+        return unless %$children;
+        _reap_daemon_children(
+            $children,
+            $cfg->{daemon_sleep_after_reap} > 0
+                ? (0, $cfg->{daemon_sleep_after_reap})
+                : (wait, 0),
+            $cfg,
+        );
     }
     return;
 }
@@ -953,23 +953,23 @@ sub send_mail {
     $msg->set_header('To', $email);
     $msg->set_from_with_user($req);
     if (ref($body) eq 'CODE') {
-	$body->($msg);
+        $body->($msg);
     }
     elsif ($_CL->was_required('Model.RealmFile')
         && b_use('Model.RealmFile')->is_blesser_of($body),
     ) {
-	$msg->set_content_type('multipart/mixed');
-	$msg->attach({
-	    content => $body->get_content,
-	    content_type => $body->get_content_type,
-	    filename => $_FP->get_tail($body->get('path')),
-	});
+        $msg->set_content_type('multipart/mixed');
+        $msg->attach({
+            content => $body->get_content,
+            content_type => $body->get_content_type,
+            filename => $_FP->get_tail($body->get('path')),
+        });
     }
     elsif (ref($body) eq 'SCALAR') {
-	$msg->set_body($body);
+        $msg->set_body($body);
     }
     else {
-	b_die($body, ': invalid message body type');
+        b_die($body, ': invalid message body type');
     }
     $msg->send($req)
         unless $self->unsafe_get('noexecute');
@@ -979,16 +979,16 @@ sub send_mail {
 sub set_realm_and_user {
     my($self, $realm, $user) = @_;
     $realm = b_use('Auth.Realm')->get_general()
-	unless defined($realm);
+        unless defined($realm);
     my($req) = $self->get_request;
     $req->set_realm($realm);
 
     if (defined($user)) {
-	$req->set_user($user);
-	return $self;
+        $req->set_user($user);
+        return $self;
     }
     $self->set_user_to_any
-	unless $req->get('auth_realm')->is_general;
+        unless $req->get('auth_realm')->is_general;
     return $self;
 }
 
@@ -1040,7 +1040,7 @@ sub unsafe_get {
     my($self) = shift;
     return $self->SUPER::unsafe_get(@_) if ref($self);
     $_DEFAULT_OPTIONS{$self} = $_CA->new(_parse_options($self, []))
-	unless $_DEFAULT_OPTIONS{$self};
+        unless $_DEFAULT_OPTIONS{$self};
     return $_DEFAULT_OPTIONS{$self}->unsafe_get(@_);
 }
 
@@ -1068,12 +1068,12 @@ sub write_file {
 sub _any_user {
     my($method, $self) = @_;
     $self->req->set_user(
-	$self->model('RealmUser')->$method()
+        $self->model('RealmUser')->$method()
             || $self->model('User')
-		->do_iterate(sub {0}, unauth_iterate_start => 'user_id asc')
-		->unsafe_get('user_id')
-	    || $self->unauth_model(RealmOwner => {name => 'user'})
-		->unsafe_get('realm_id'),
+                ->do_iterate(sub {0}, unauth_iterate_start => 'user_id asc')
+                ->unsafe_get('user_id')
+            || $self->unauth_model(RealmOwner => {name => 'user'})
+                ->unsafe_get('realm_id'),
     );
     $self->put(user => my $u = $self->ureq(qw(auth_user name)));
     return $u;
@@ -1083,19 +1083,19 @@ sub _check_cfg {
     my($cfg, $cfg_name) = @_;
     # Asserts config is valid
     while (my($k, $v) = each(%$cfg)) {
-	next unless $k =~ /_(?:sleep|max|child)_/;
-	next if $v =~ /^\d+$/ && $v >= 0;
-	my($dv) = $_CFG->{$_C->NAMED}->{$k};
-	$_A->warn($v, ': bad value for ',
-	    ($cfg_name ? "$cfg_name." : ''), $k,
-	    '; using ', $dv);
-	$cfg->{$k} = $dv;
+        next unless $k =~ /_(?:sleep|max|child)_/;
+        next if $v =~ /^\d+$/ && $v >= 0;
+        my($dv) = $_CFG->{$_C->NAMED}->{$k};
+        $_A->warn($v, ': bad value for ',
+            ($cfg_name ? "$cfg_name." : ''), $k,
+            '; using ', $dv);
+        $cfg->{$k} = $dv;
     }
     if ($cfg->{daemon_max_child_run_seconds} > 0
-	&& $cfg->{daemon_sleep_after_reap} <= 0) {
-	$_A->warn('daemon_sleep_after_reap must be non-zero',
-	    ' when daemon_max_child_run_seconds is non-zero; using 1 second');
-	$cfg->{daemon_sleep_after_reap} = 1;
+        && $cfg->{daemon_sleep_after_reap} <= 0) {
+        $_A->warn('daemon_sleep_after_reap must be non-zero',
+            ' when daemon_max_child_run_seconds is non-zero; using 1 second');
+        $cfg->{daemon_sleep_after_reap} = 1;
     }
     return;
 }
@@ -1116,19 +1116,19 @@ sub _compile_options {
     my($map) = {};
     my($opts) = [];
     foreach my $k (keys(%$options)) {
-	die("$k: options must be valid perl idents with at least on character")
-	    unless $k =~ /^[a-z]\w+$/i;
-	my($first) = substr($k, 0, 1);
-	my($type, $default) = @{$options->{$k}};
-	my($opt) = [$k, b_use(Type => $type)];
-	$opt->[2] = _parse_option_value($self, $opt, $default);
-	$map->{$first} = exists($map->{$first}) ? 0 : $opt;
-	$map->{$k} = $opt;
-	push(@$opts, $opt);
+        die("$k: options must be valid perl idents with at least on character")
+            unless $k =~ /^[a-z]\w+$/i;
+        my($first) = substr($k, 0, 1);
+        my($type, $default) = @{$options->{$k}};
+        my($opt) = [$k, b_use(Type => $type)];
+        $opt->[2] = _parse_option_value($self, $opt, $default);
+        $map->{$first} = exists($map->{$first}) ? 0 : $opt;
+        $map->{$k} = $opt;
+        push(@$opts, $opt);
     }
     while (my($k, $v) = each(%$map)) {
-	delete($map->{$k})
-	    unless $v;
+        delete($map->{$k})
+            unless $v;
     }
     return ($map, $opts);
 }
@@ -1138,8 +1138,8 @@ sub _deprecated_lock_action {
     # Implements deprecated form of lock_action.
     my($dir) = _lock_files($action);
     unless (mkdir($dir, 0700)) {
-	_lock_warning($dir);
-	return 0;
+        _lock_warning($dir);
+        return 0;
     }
     my($pid) = fork;
     defined($pid) || die("fork: $!");
@@ -1149,7 +1149,7 @@ sub _deprecated_lock_action {
     # Don't need an error check; rather have $res always returned
     rmdir($dir);
     die("waitpid failed: $!\nsomething seriously wrong")
-	unless defined($res);
+        unless defined($res);
     die("$action failed\n") if $res;
 
     # Tell caller to return, not exit()
@@ -1160,11 +1160,11 @@ sub _detach_log {
     my($self) = @_;
     return $self->get_if_exists_else_put(detach_log => sub {
         return $_F->absolute_path(
-	    b_use('Type.DateTime')->local_now_as_file_name
-		. '-'
-		. $self->get('program')
-		. '.log',
-	);
+            b_use('Type.DateTime')->local_now_as_file_name
+                . '-'
+                . $self->get('program')
+                . '.log',
+        );
     });
 }
 
@@ -1175,8 +1175,8 @@ sub _initialize {
     my($orig_argv) = [@$argv];
     $self->[$_IDI] ||= {};
     return $self->put(
-	%{_parse_options($self, $argv)},
-	argv => $orig_argv,
+        %{_parse_options($self, $argv)},
+        argv => $orig_argv,
     )->put_request($req);
 }
 
@@ -1193,9 +1193,9 @@ sub _lock_warning {
     my($lock_dir) = @_;
     my($seconds) = (stat($lock_dir))[9];
     b_warn(
-	$lock_dir,
-	': not acquired; lock age=',
-	defined($seconds) ? ((time - $seconds) . 's') : 'unknown',
+        $lock_dir,
+        ': not acquired; lock age=',
+        defined($seconds) ? ((time - $seconds) . 's') : 'unknown',
     );
     return;
 }
@@ -1203,17 +1203,17 @@ sub _lock_warning {
 sub _method_ok {
     my($self, $method) = @_;
     return undef
-	unless $method =~ /^([a-z]\w*)$/i;
+        unless $method =~ /^([a-z]\w*)$/i;
     return undef
-	if $method =~ /^handle_/;
+        if $method =~ /^handle_/;
     return $method
-	if $method eq 'usage';
+        if $method eq 'usage';
     foreach my $c (ref($self), @{$self->inheritance_ancestors}) {
-	last
-	    if $c =~ /::ShellUtil$/;
-	my($m) = $c->grep_subroutines(qr{^(?:u_)?\Q$method\E$});
-	return $m->[0]
-	    if @$m;
+        last
+            if $c =~ /::ShellUtil$/;
+        my($m) = $c->grep_subroutines(qr{^(?:u_)?\Q$method\E$});
+        return $m->[0]
+            if @$m;
     }
     return undef;
 }
@@ -1225,12 +1225,12 @@ sub _monitor_daemon_children {
     return unless $cfg->{daemon_max_child_run_seconds} > 0;
     my($t) = time;
     while (my($pid, $child) = each(%$children)) {
-	next if $t < $child->{max_time};
-	my($sig) = $child->{kill_term}++ ? 'KILL' : 'TERM';
-	kill($sig, $pid);
-	$_A->info("Sent SIG$sig: pid=", $pid, ' args=',
-	    join(' ', splice(@{$child->{args}}, 2)));
-	$child->{max_time} = $t + $cfg->{daemon_max_child_term_seconds}
+        next if $t < $child->{max_time};
+        my($sig) = $child->{kill_term}++ ? 'KILL' : 'TERM';
+        kill($sig, $pid);
+        $_A->info("Sent SIG$sig: pid=", $pid, ' args=',
+            join(' ', splice(@{$child->{args}}, 2)));
+        $child->{max_time} = $t + $cfg->{daemon_max_child_term_seconds}
     }
     return;
 }
@@ -1239,10 +1239,10 @@ sub _other {
     my($self, $class) = @_;
     my($die);
     $class = "$_MAP_NAME.$class"
-	if $self->is_simple_package_name($class);
+        if $self->is_simple_package_name($class);
     return $_DIE->catch_quietly(
-	sub {b_use($class)},
-	\$die,
+        sub {b_use($class)},
+        \$die,
     ) || $_DIE->die($class, ": not found or syntax error: ", $die);
 }
 
@@ -1250,10 +1250,10 @@ sub _parse_option_value {
     my($self, $opt, $value) = @_;
     # Returns the options that were set.
     return $value
-	if ref($value) || !defined($value);
+        if ref($value) || !defined($value);
     my($v, $e) = $opt->[1]->from_literal($value);
     $self->usage("-$opt->[0] '$value': ", $e->get_long_desc)
-	if $e;
+        if $e;
     return $v;
 }
 
@@ -1266,27 +1266,27 @@ sub _parse_options {
 
     # Parse the options
     while (@$argv && $argv->[0] =~ /^-/) {
-	my($k) = shift(@$argv);
-	$k =~ s/^-//;
-	my($opt) = $map->{$k};
-	$self->usage("-$k: unknown option") unless $opt;
-	if ($opt->[1] eq 'Bivio::Type::Boolean') {
-	    $res->{$opt->[0]} = 1;
-	    next;
-	}
-	$self->usage("-$k: missing an argument")
-	    unless @$argv;
-	$res->{$opt->[0]} = _parse_option_value($self, $opt, shift(@$argv));
+        my($k) = shift(@$argv);
+        $k =~ s/^-//;
+        my($opt) = $map->{$k};
+        $self->usage("-$k: unknown option") unless $opt;
+        if ($opt->[1] eq 'Bivio::Type::Boolean') {
+            $res->{$opt->[0]} = 1;
+            next;
+        }
+        $self->usage("-$k: missing an argument")
+            unless @$argv;
+        $res->{$opt->[0]} = _parse_option_value($self, $opt, shift(@$argv));
     }
 
     # Set the (defined) defaults
     foreach my $opt (@$opts) {
-	next if exists($res->{$opt->[0]});
-	next unless defined($opt->[2]);
-	$res->{$opt->[0]} = $opt->[2];
+        next if exists($res->{$opt->[0]});
+        next unless defined($opt->[2]);
+        $res->{$opt->[0]} = $opt->[2];
     }
     $res->{output} = $_F->absolute_path($res->{output})
-	if defined($res->{output}) && $res->{output} ne '-';
+        if defined($res->{output}) && $res->{output} ne '-';
     _trace($res) if $_TRACE;
     return $res;
 }
@@ -1295,17 +1295,17 @@ sub _parse_realm {
     my($self, $attr) = @_;
     # Returns the id or undef for realm.
     return undef
-	unless my $realm = $self->unsafe_get($attr);
+        unless my $realm = $self->unsafe_get($attr);
     my($ro) = $self->model('RealmOwner');
     $self->usage_error($realm, ': no such ', $attr)
-	unless $ro->unauth_load_by_email_id_or_name($realm);
+        unless $ro->unauth_load_by_email_id_or_name($realm);
     return $ro;
 }
 
 sub _process_exists {
     my($pid) = @_;
     return 0
-	unless $pid;
+        unless $pid;
     # Returns true if $pid exists
     $! = undef;
     return kill(0, $pid) || $! != POSIX::ESRCH() ? 1 : 0;
@@ -1315,21 +1315,21 @@ sub _reap_daemon_children {
     my($children, $stopped, $sleep, $cfg) = @_;
     # Reap children without blocking
     while (1) {
-	if ($stopped > 0) {
-	    if (my $child = delete($children->{$stopped})) {
-		$_A->info('Stopped: pid=', $stopped, ' args=',
-		    join(' ', splice(@{$child->{args}}, 2)));
-	    }
-	    else {
-		$_A->warn($stopped, ': unknown pid');
-	    }
-	}
-	$stopped = waitpid(-1, POSIX::WNOHANG());
-	last unless $stopped > 0;
+        if ($stopped > 0) {
+            if (my $child = delete($children->{$stopped})) {
+                $_A->info('Stopped: pid=', $stopped, ' args=',
+                    join(' ', splice(@{$child->{args}}, 2)));
+            }
+            else {
+                $_A->warn($stopped, ': unknown pid');
+            }
+        }
+        $stopped = waitpid(-1, POSIX::WNOHANG());
+        last unless $stopped > 0;
     }
     _monitor_daemon_children($children, $cfg);
     sleep($sleep)
-	if $sleep;
+        if $sleep;
     return;
 }
 
@@ -1340,23 +1340,23 @@ sub _result_email {
     return 0 unless $email;
 
     my($name, $type, $subject) = $self->unsafe_get(
-	    qw(result_name result_type result_subject));
+            qw(result_name result_type result_subject));
     $self->send_mail(
-	$email,
-	$subject || $name || 'Output from: '.$self->command_line(),
-	sub {
-	    my($msg) = @_;
-	    if ($type) {
-		$msg->set_content_type('multipart/mixed');
-		# Can't use -B and couldn't get IO::Scalar to work.
-		# Just assume is binary
-		$msg->attach($res, $type, $name || $cmd, 1);
-	    }
-	    else {
-		$msg->set_body($res);
-	    }
-	    return;
-	}
+        $email,
+        $subject || $name || 'Output from: '.$self->command_line(),
+        sub {
+            my($msg) = @_;
+            if ($type) {
+                $msg->set_content_type('multipart/mixed');
+                # Can't use -B and couldn't get IO::Scalar to work.
+                # Just assume is binary
+                $msg->attach($res, $type, $name || $cmd, 1);
+            }
+            else {
+                $msg->set_body($res);
+            }
+            return;
+        }
     );
     return 1;
 }
@@ -1376,12 +1376,12 @@ sub _result_ref {
     # Returns a scalar reference to the result or undef if no result to print.
     # Will print any structure.
     return undef
-	unless defined($res);
+        unless defined($res);
     my($ref) = \$res;
     if (ref($res)) {
-	return $self->ref_to_string($res)
-	    unless ref($res) eq 'SCALAR';
-	$ref = $res;
+        return $self->ref_to_string($res)
+            unless ref($res) eq 'SCALAR';
+        $ref = $res;
     }
     return defined($$ref) && length($$ref) ? $ref : undef;
 }
@@ -1393,16 +1393,16 @@ sub _setup_for_call {
     # explicitly.
     my($req) = b_use('Agent.Request')->get_current;
     $_DIE->die(ref($self), ": called without first creating a request")
-	unless $req;
+        unless $req;
     $self->put_request($req);
     foreach my $x (qw(realm user)) {
-	next unless my $v =_parse_realm($self, $x);
-	my($m) = "set_$x";
-	$req->$m($v);
+        next unless my $v =_parse_realm($self, $x);
+        my($m) = "set_$x";
+        $req->$m($v);
     }
     foreach my $attr (qw(db)) {
-	$_DIE->die($attr, ': cannot pass to ', ref($self), ' call')
-	    if $self->unsafe_get($attr);
+        $_DIE->die($attr, ': cannot pass to ', ref($self), ' call')
+            if $self->unsafe_get($attr);
     }
     return;
 }
@@ -1416,7 +1416,7 @@ sub _setup_for_main {
     my($p) = b_use('SQL.Connection')->set_dbi_name($db);
     $fields->{prior_db} = $p unless $fields->{prior_db};
     $self->put_request(
-	b_use('Test.Request')->get_instance->put_durable(is_secure => 1),
+        b_use('Test.Request')->get_instance->put_durable(is_secure => 1),
     ) unless $self->unsafe_get('req');
     $self->set_realm_and_user(map(_parse_realm($self, $_), qw(realm user)));
     return;
@@ -1435,25 +1435,25 @@ sub _start_daemon_child {
     b_use('SQL.Connection')->disconnect;
     $_A->reset_warn_counter;
  RETRY: {
-	my($child) = fork;
-	unless (defined($child)) {
-	    b_warn($args,
-		" fork: $!; sleeping before retry");
-	    sleep($cfg->{daemon_sleep_after_start});
-	    redo RETRY;
-	}
-	if ($child) {
-	    _trace('started: ', $child, ' ', $args) if $_TRACE;
-	    return $child;
-	}
-	$self->get_request->clear_current;
-	$0 = join(' ', @$args);
-	$_A->info('Starting: pid=', $$, ' args=',
-	    join(' ', @$args[2 .. $#$args]));
-	# Reset so we can send signals in _monitor_daemon_children()
-	local($SIG{TERM}) = 'DEFAULT';
+        my($child) = fork;
+        unless (defined($child)) {
+            b_warn($args,
+                " fork: $!; sleeping before retry");
+            sleep($cfg->{daemon_sleep_after_start});
+            redo RETRY;
+        }
+        if ($child) {
+            _trace('started: ', $child, ' ', $args) if $_TRACE;
+            return $child;
+        }
+        $self->get_request->clear_current;
+        $0 = join(' ', @$args);
+        $_A->info('Starting: pid=', $$, ' args=',
+            join(' ', @$args[2 .. $#$args]));
+        # Reset so we can send signals in _monitor_daemon_children()
+        local($SIG{TERM}) = 'DEFAULT';
         $args->[0]->main(@$args[1 .. $#$args]);
-	CORE::exit(0);
+        CORE::exit(0);
     }
 }
 

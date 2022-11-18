@@ -30,9 +30,9 @@ sub OTP_VALUE {
 sub compare {
     my($proto, $encrypted, $incoming) = @_;
     return -1
-	unless defined($encrypted);
+        unless defined($encrypted);
     return 1
-	unless defined($incoming);
+        unless defined($incoming);
     my($salt) = substr($encrypted, 0, 2);
     my($i) = length($encrypted) == $_CRYPT_VALID_LENGTH
         ? crypt($incoming, $salt)
@@ -44,7 +44,7 @@ sub encrypt {
     my(undef, $password) = @_;
     my($salt) = '';
     for (my($i) = 0; $i < 2; $i++) {
-	$salt .= $_SALT_CHARS[int(rand($_SALT_INDEX_MAX) + 0.5)];
+        $salt .= $_SALT_CHARS[int(rand($_SALT_INDEX_MAX) + 0.5)];
     };
     return _encrypt($password, $salt);
 
@@ -70,7 +70,7 @@ sub is_secure_data {
 sub is_valid {
     my($proto, $value) = @_;
     return $value && (
-	length($value) == $_CRYPT_VALID_LENGTH
+        length($value) == $_CRYPT_VALID_LENGTH
             || $value =~ $_VALID_SHA_RE
             || $value eq $proto->OTP_VALUE
     ) ? 1 : 0;

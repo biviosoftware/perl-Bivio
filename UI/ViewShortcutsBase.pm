@@ -18,7 +18,7 @@ use Bivio::Base 'Bivio::UNIVERSAL';
 
 sub new {
     b_die(
-	"you can't instantiate a ViewShortcut; perhaps you meant vs_new()?");
+        "you can't instantiate a ViewShortcut; perhaps you meant vs_new()?");
     # DOES NOT RETURN
 }
 

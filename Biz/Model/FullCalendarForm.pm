@@ -23,25 +23,25 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     return $self->api_error(event => 'NULL')
-	unless my $event = $self->unsafe_get('event');
+        unless my $event = $self->unsafe_get('event');
     my($method) = 'handle_api_' . lc($event);
     return $self->api_error(event => 'NOT_FOUND')
-	unless $self->b_can($method);
+        unless $self->b_can($method);
     return $self->$method;
 }
 
 sub handle_api_eventdrop {
     my($self) = @_;
     return $self->api_error(id => 'NULL')
-	unless defined(my $id = $self->unsafe_get('id'));
+        unless defined(my $id = $self->unsafe_get('id'));
     return $self->api_error(dayDelta => 'NULL')
-	unless defined(my $dd = $self->unsafe_get('dayDelta'));
+        unless defined(my $dd = $self->unsafe_get('dayDelta'));
     my($ce) = $self->new_other('CalendarEvent')
-	->load({calendar_event_id => $self->get('id')});
+        ->load({calendar_event_id => $self->get('id')});
     $ce->update({
-	map(($_ => Type_Date()->add_days($ce->get($_), $self->get('dayDelta'))),
-	    qw(dtstart dtend),
-	),
+        map(($_ => Type_Date()->add_days($ce->get($_), $self->get('dayDelta'))),
+            qw(dtstart dtend),
+        ),
     });
     return;
 }
@@ -51,14 +51,14 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         $self->field_decl(
-	    visible => [
-		[qw(event Name)],
-		[qw(id CalendarEvent.calendar_event_id)],
-		[qw(dayDelta Integer)],
-		[qw(minuteDelta Integer)],
-		[qw(allDay Boolean)],
-	    ],
-	),
+            visible => [
+                [qw(event Name)],
+                [qw(id CalendarEvent.calendar_event_id)],
+                [qw(dayDelta Integer)],
+                [qw(minuteDelta Integer)],
+                [qw(allDay Boolean)],
+            ],
+        ),
     });
 }
 

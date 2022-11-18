@@ -17,13 +17,13 @@ sub delete_main_roles {
     my($self, $realm_id, $user_id) = @_;
     my($res) = 0;
     map{
-	$res = $self->delete
-	    if $self->unauth_load({
-		user_id => $user_id,
-		realm_id => $realm_id,
-		role => $_,
-	    })
-	} $_R->get_main_list;
+        $res = $self->delete
+            if $self->unauth_load({
+                user_id => $user_id,
+                realm_id => $realm_id,
+                role => $_,
+            })
+        } $_R->get_main_list;
     return $res;
 }
 
@@ -40,30 +40,30 @@ sub execute_auth_user {
 sub get_any_online_admin {
     my($self) = shift;
     return $self->unsafe_get_any_online_admin(@_)
-	|| $self->throw_die('DIE', {
-	    message => 'no admins found',
-	    entity => $self->ureq('auth_realm'),
-	});
+        || $self->throw_die('DIE', {
+            message => 'no admins found',
+            entity => $self->ureq('auth_realm'),
+        });
 }
 
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
-	table_name => 'realm_user_t',
-	columns => {
+        version => 1,
+        table_name => 'realm_user_t',
+        columns => {
             realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             user_id => ['User.user_id', 'PRIMARY_KEY'],
             role => ['RealmRole.role', 'PRIMARY_KEY'],
-	    creation_date_time => ['DateTime', 'NOT_NULL'],
+            creation_date_time => ['DateTime', 'NOT_NULL'],
         },
 #TODO: SECURITY: If user_id known, does that mean can get to all user's info?
-	other => [
-	    # User_1 is the realm, if the realm_type is a user.
-	    [qw(realm_id Club.club_id User_1.user_id RealmOwner_1.realm_id)],
-	    # User_2 is the the "realm_user"
-	    [qw(user_id User_2.user_id RealmOwner_2.realm_id)],
-	],
+        other => [
+            # User_1 is the realm, if the realm_type is a user.
+            [qw(realm_id Club.club_id User_1.user_id RealmOwner_1.realm_id)],
+            # User_2 is the the "realm_user"
+            [qw(user_id User_2.user_id RealmOwner_2.realm_id)],
+        ],
     });
 }
 
@@ -98,20 +98,20 @@ sub is_sole_admin {
 sub is_user_attached_to_other_realms {
     my($self, $user_id) = @_;
     my($ignore) = {
-	$user_id => 1,
-	FacadeComponent_Constant()->unsafe_get_value('site_admin_realm_id') => 1,
+        $user_id => 1,
+        FacadeComponent_Constant()->unsafe_get_value('site_admin_realm_id') => 1,
     };
     my($res) = 0;
     $self->do_iterate(
-	sub {
-	    my($it) = @_;
-	    return 1
-		if $ignore->{$it->get('realm_id')};
-	    $res = 1;
-	    return 0;
-	},
-	'unauth_iterate_start',
-	{user_id => $user_id},
+        sub {
+            my($it) = @_;
+            return 1
+                if $ignore->{$it->get('realm_id')};
+            $res = 1;
+            return 0;
+        },
+        'unauth_iterate_start',
+        {user_id => $user_id},
     );
     return $res;
 }
@@ -131,19 +131,19 @@ sub unsafe_get_any_online_admin {
     my($self) = @_;
     my($owner);
     $self->do_iterate(
-	sub {
-	    my($it) = @_;
-	    return 1
-		unless $it->get('role')->is_admin;
-	    $owner = $it->new_other('RealmOwner');
-	    return 0
-		unless $owner->unauth_load_or_die({
-		    realm_id => $self->get('user_id'),
-		})->is_offline_user;
-	    $owner = undef;
-	    return 1;
-	},
-	'user_id',
+        sub {
+            my($it) = @_;
+            return 1
+                unless $it->get('role')->is_admin;
+            $owner = $it->new_other('RealmOwner');
+            return 0
+                unless $owner->unauth_load_or_die({
+                    realm_id => $self->get('user_id'),
+                })->is_offline_user;
+            $owner = undef;
+            return 1;
+        },
+        'user_id',
     );
     return $owner;
 }

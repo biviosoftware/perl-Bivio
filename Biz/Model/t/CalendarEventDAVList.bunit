@@ -7,9 +7,9 @@ req()->set_realm_and_user(qw(btest_admin btest_admin))
     ->initialize_fully('DAV_FORUM_CALENDAR_EVENT_LIST_EDIT');
 [
     dav_reply_get => sub {
-	my($ics) = req()->get('reply')->get_output;
-	assert_not_equals(qr{(DTSTART.*){5}}s, $ics);
-	assert_equals(qr{(DTSTART.*){4}}s, $ics);
-	return 1;
+        my($ics) = req()->get('reply')->get_output;
+        assert_not_equals(qr{(DTSTART.*){5}}s, $ics);
+        assert_equals(qr{(DTSTART.*){4}}s, $ics);
+        return 1;
     },
 ];

@@ -4,17 +4,17 @@ ListModel();
 req()->initialize_fully;
 [
     {
-	method => 'load_all_for_task',
-	compute_params => sub {
-	    my(undef, $actual) = @_;
-	    req()->set_user($actual->[0]);
-	    return ['GROUP_USER_LIST'];
-	},
+        method => 'load_all_for_task',
+        compute_params => sub {
+            my(undef, $actual) = @_;
+            req()->set_user($actual->[0]);
+            return ['GROUP_USER_LIST'];
+        },
     } => [
-	btest_read => [],
-	btest_admin => [
-	    {'RealmOwner.name' => 'Select Forum'},
-	    {'RealmOwner.name' => 'fourem-sub2'},
-	],
+        btest_read => [],
+        btest_admin => [
+            {'RealmOwner.name' => 'Select Forum'},
+            {'RealmOwner.name' => 'fourem-sub2'},
+        ],
     ],
 ];

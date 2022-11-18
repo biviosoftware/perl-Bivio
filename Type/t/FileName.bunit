@@ -3,11 +3,11 @@
 Type();
 [
     class() => [
-	from_literal => [
-	    '' => UNDEF(),
-	    a => 'a',
-	    '/a' => FILE_NAME(),
-	    '%x' => FILE_NAME(),
-	],
+        from_literal => [
+            '' => UNDEF(),
+            a => 'a',
+            '/a' => FILE_NAME(),
+            '%x' => FILE_NAME(),
+        ],
     ],
 ];

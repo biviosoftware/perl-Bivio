@@ -4,18 +4,18 @@ Type();
 [
     class() => [
         from_literal => [
-	    '' => [undef, undef],
-	    [undef] => [undef, undef],
-	    'any-realm' => ['any-realm', undef],
-	    'a@a.a' => ['a@a.a', undef],
-	    '@a.a' => ['@a.a', undef],
-	    'not a realm' => EMAIL_ALIAS_OUTGOING(),
-	],
-	get_domain_part => [
-	    '@a.a' => 'a.a',
-	    'a@b.b' => 'b.b',
-	    [undef] => [undef],
-	    'a' => [undef],
-	],
+            '' => [undef, undef],
+            [undef] => [undef, undef],
+            'any-realm' => ['any-realm', undef],
+            'a@a.a' => ['a@a.a', undef],
+            '@a.a' => ['@a.a', undef],
+            'not a realm' => EMAIL_ALIAS_OUTGOING(),
+        ],
+        get_domain_part => [
+            '@a.a' => 'a.a',
+            'a@b.b' => 'b.b',
+            [undef] => [undef],
+            'a' => [undef],
+        ],
     ],
 ];

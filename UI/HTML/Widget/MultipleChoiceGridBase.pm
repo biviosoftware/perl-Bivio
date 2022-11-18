@@ -25,24 +25,24 @@ sub GRID_CLASS {
 sub initialize {
     my($self) = @_;
     return
-	if $self->unsafe_get('value');
+        if $self->unsafe_get('value');
     shift->SUPER::initialize(@_);
     b_die('static items only for RadioGrid')
-	unless $self->unsafe_get('items');
+        unless $self->unsafe_get('items');
     my($max_width) = 0;
     my($items) = $self->map_by_two(sub {
-	my($k, $v) = @_;
-	return $self->internal_choice_widget(
-	    $k, $v, _choice_widget_attrs($self, $k, $v, \$max_width),
-	);
+        my($k, $v) = @_;
+        return $self->internal_choice_widget(
+            $k, $v, _choice_widget_attrs($self, $k, $v, \$max_width),
+        );
     }, $self->get('items'));
 
     my($grid) = Grid();
     if ($self->unsafe_get('column_count')) {
-	$grid->layout_buttons_row_major($items, $self->get('column_count'));
+        $grid->layout_buttons_row_major($items, $self->get('column_count'));
     }
     else {
-	$grid->layout_buttons($items, $max_width);
+        $grid->layout_buttons($items, $max_width);
     }
     $grid->put(class => $self->GRID_CLASS);
     $self->initialize_attr(value => $grid);
@@ -62,13 +62,13 @@ sub render {
 sub _choice_widget_attrs {
     my($self, $value, $label, $max_width) = @_;
     return {
-	label => b_use('UI.Widget')->is_blesser_of($label)
-	    ? _max_width($max_width, $label)
-	    : SPAN_b_item(_max_width($max_width, $label)),
-	auto_submit => $self->get_or_default('auto_submit', 0),
-	$self->unsafe_get('event_handler')
-	    ? (event_handler => $self->get('event_handler'))
-	    : (),
+        label => b_use('UI.Widget')->is_blesser_of($label)
+            ? _max_width($max_width, $label)
+            : SPAN_b_item(_max_width($max_width, $label)),
+        auto_submit => $self->get_or_default('auto_submit', 0),
+        $self->unsafe_get('event_handler')
+            ? (event_handler => $self->get('event_handler'))
+            : (),
     };
 }
 
@@ -76,7 +76,7 @@ sub _max_width {
     # Updates $$max and returns label.
     my($max, $label) = @_;
     $$max = length($label)
-	if $$max < length($label);
+        if $$max < length($label);
     return $label;
 }
 

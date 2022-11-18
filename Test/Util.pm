@@ -47,20 +47,20 @@ sub acceptance {
     # When only one test is run, shows the output of the test.
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
-	my($ok) = 0;
-	_piped_exec($self, '-', <<"EOF", $out,
+        my($ok) = 0;
+        _piped_exec($self, '-', <<"EOF", $out,
 use strict;
 use Bivio::IO::ClassLoader;
 print "1..1\n";
 my(\$die) = Bivio::IO::ClassLoader->map_require('Test.Language')->test_run(qw{$test});
 print(\$die ? "1 not ok: " . \$die->as_string . "\n" : "1 ok\n");
 EOF
-	    sub {
-		my($line) = @_;
-		$ok++ if $line eq "1 ok";
-	    },
-	);
-	return $ok;
+            sub {
+                my($line) = @_;
+                $ok++ if $line eq "1 ok";
+            },
+        );
+        return $ok;
     });
 }
 
@@ -94,67 +94,67 @@ sub mock_sendmail {
     #     btest-mail/.
     my($in) = $self->read_input;
     unless ($recursing) {
-	my($pid) = fork;
-	die("fork: $!")
-	    unless defined($pid);
-	return if $pid;
+        my($pid) = fork;
+        die("fork: $!")
+            unless defined($pid);
+        return if $pid;
     }
     my($req) = $self->initialize_fully;
     unless ($from =~ s/^-f//) {
-	$recipients = $from;
-	$from = undef;
+        $recipients = $from;
+        $from = undef;
     }
     _trace($in) if $_TRACE;
     my($msg) = b_use('Mail.Outgoing')
-	->new(b_use('Mail.Incoming')->new($in))
-	->add_missing_headers($req, $from);
+        ->new(b_use('Mail.Incoming')->new($in))
+        ->add_missing_headers($req, $from);
     $msg->set_header('Return-Path', $from)
-	if $from;
+        if $from;
     foreach my $r (split(/,/, lc($recipients))) {
-	(my $email = $r) =~ s/\+([^\@]+)//;
-	my($extension) = $1 || '';
-	$msg->set_recipients($r, $req);
-	my($die);
-	return b_warn($r, ': ', $die)
-	    unless my $http = $_D->catch_quietly(
-		sub {_uri_for_task($self, 'MAIL_RECEIVE_DISPATCH', $r)},
-		\$die,
-	    );
-	$http =~ s{^https?://}{};
-	$http .= '/%s';
-	my($res) = $self->piped_exec(
-	    "b-sendmail-http 127.0.0.1 '$r' '$http'"
-		. " /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
-	    $msg->as_string,
-	    1,
-	);
-	chomp($$res);
-	next
-	    unless $$res;
-	b_warn(
-	    $msg->unsafe_get_header('from'),
-	    ' -> ',
-	    $r,
-	    ': DELIVERY FAILED: ',
-	    $res,
-	);
-	_trace($msg) if $_TRACE;
-	next
-	    if $recursing;
-	$r = (b_use('Mail.Address')->parse(
-	    $msg->unsafe_get_header('errors-to')
-	    || $msg->unsafe_get_header('return-path')
-	    || $from
-	    || $msg->unsafe_get('From')
-	    || next
-	))[0];
-	$self->put(
-	    input => $msg->format_as_bounce($$res, undef, undef, $r, $req),
-	);
-	$self->mock_sendmail('-f' . $req->format_email('mailer-daemon'), $r, 1);
+        (my $email = $r) =~ s/\+([^\@]+)//;
+        my($extension) = $1 || '';
+        $msg->set_recipients($r, $req);
+        my($die);
+        return b_warn($r, ': ', $die)
+            unless my $http = $_D->catch_quietly(
+                sub {_uri_for_task($self, 'MAIL_RECEIVE_DISPATCH', $r)},
+                \$die,
+            );
+        $http =~ s{^https?://}{};
+        $http .= '/%s';
+        my($res) = $self->piped_exec(
+            "b-sendmail-http 127.0.0.1 '$r' '$http'"
+                . " /usr/bin/procmail -t -Y -a '$extension' -d '$email' 2>&1",
+            $msg->as_string,
+            1,
+        );
+        chomp($$res);
+        next
+            unless $$res;
+        b_warn(
+            $msg->unsafe_get_header('from'),
+            ' -> ',
+            $r,
+            ': DELIVERY FAILED: ',
+            $res,
+        );
+        _trace($msg) if $_TRACE;
+        next
+            if $recursing;
+        $r = (b_use('Mail.Address')->parse(
+            $msg->unsafe_get_header('errors-to')
+            || $msg->unsafe_get_header('return-path')
+            || $from
+            || $msg->unsafe_get('From')
+            || next
+        ))[0];
+        $self->put(
+            input => $msg->format_as_bounce($$res, undef, undef, $r, $req),
+        );
+        $self->mock_sendmail('-f' . $req->format_email('mailer-daemon'), $r, 1);
     }
     CORE::exit(0)
-	unless $recursing;
+        unless $recursing;
     return;
 }
 
@@ -168,46 +168,46 @@ sub nightly {
     _expunge($self);
     _make_nightly_dir($self);
     $ENV{PERLLIB} = $f->pwd . $_PERL_DIR
-	. ($ENV{PERLLIB} ? ":$ENV{PERLLIB}" : '');
+        . ($ENV{PERLLIB} ? ":$ENV{PERLLIB}" : '');
     my($die) = $_D->catch(sub {
         # VC checkout
         (my $bop = $_CFG->{nightly_cvs_dir}) =~ s{\w+$}{Bivio};
-	# Bivio/PetShop special case
+        # Bivio/PetShop special case
 #TODO: Move Bivio/PetShop to PetShop
-	my($is_petshop) = $bop =~ s{Bivio/Bivio}{Bivio};
+        my($is_petshop) = $bop =~ s{Bivio/Bivio}{Bivio};
         system('bivio', 'vc', 'checkout', $_CFG->{nightly_cvs_dir});
         system('bivio', 'vc', 'checkout', $bop);
         $self->print("Completed VC checkout of test files\n");
         $f->chdir($_CFG->{nightly_cvs_dir});
-	$self->print("cd " . $f->pwd . "\n");
-	$self->print("export PERLLIB=$ENV{PERLLIB}\n");
-	$self->print("export BCONF=$ENV{BCONF}\n");
-	$self->print("bivio test acceptance .\n");
+        $self->print("cd " . $f->pwd . "\n");
+        $self->print("export PERLLIB=$ENV{PERLLIB}\n");
+        $self->print("export BCONF=$ENV{BCONF}\n");
+        $self->print("bivio test acceptance .\n");
         my($acc_die) = $_D->catch(sub {
-	    $self->print($self->acceptance('.'));
-	    return;
-	});
-	if ($is_petshop) {
-	    $f->chdir('..');
-	}
-	my($bconf) = $ENV{BCONF};
-	$ENV{BCONF} =~ s|\.bconf$|-bunit\.bconf|;
-	$self->print("bivio test unit .\n");
-	my($unit_die) = $_D->catch(sub {
-	    $self->print($self->unit('.'));
-	    return;
-	});
-	$ENV{BCONF} = $bconf;
-	$acc_die->throw
-	    if $acc_die;
-	$unit_die->throw
-	    if $unit_die;
+            $self->print($self->acceptance('.'));
+            return;
+        });
+        if ($is_petshop) {
+            $f->chdir('..');
+        }
+        my($bconf) = $ENV{BCONF};
+        $ENV{BCONF} =~ s|\.bconf$|-bunit\.bconf|;
+        $self->print("bivio test unit .\n");
+        my($unit_die) = $_D->catch(sub {
+            $self->print($self->unit('.'));
+            return;
+        });
+        $ENV{BCONF} = $bconf;
+        $acc_die->throw
+            if $acc_die;
+        $unit_die->throw
+            if $unit_die;
         return;
     });
     # restore state before die is rethrown
     $f->chdir($old_pwd);
     $die->throw
-	if $die;
+        if $die;
     return;
 }
 
@@ -220,48 +220,48 @@ sub nightly_output_to_wiki {
     my($curr) = "\@h1 NightlyTestOutput\n";
     my($method) = 'create_with_content';
     if ($rf->unsafe_load($q)) {
-	$curr = ${$rf->get_content};
-	$method = 'update_with_content';
+        $curr = ${$rf->get_content};
+        $method = 'update_with_content';
     }
     my($which, $date);
     my($result) = {};
     my($file) = {};
     foreach my $line (split(/\n/, ref($msg) ? $$msg : $msg)) {
-	if ($line =~ m{^Created .*/([^/]+)/(\d+)$}is) {
-	    ($which, $date) = ($1, $self->convert_literal(DateTime => $2));
-	}
-	elsif (!$which) {
-	    next;
-	}
+        if ($line =~ m{^Created .*/([^/]+)/(\d+)$}is) {
+            ($which, $date) = ($1, $self->convert_literal(DateTime => $2));
+        }
+        elsif (!$which) {
+            next;
+        }
         elsif ($line =~ m{^\s*(\S+): (PASSED|FAILED)$}is) {
-	    my($t, $r) = ($1, $2);
-	    $file->{$t} = 'MISSING'
-		if ($result->{$t} = $r) =~ /FAILED/i;
-	}
-	elsif ($line =~ m{^\s*(.*/t/([^/]+\..+))$}is) {
-	    $file->{$2} = $1;
-	}
+            my($t, $r) = ($1, $2);
+            $file->{$t} = 'MISSING'
+                if ($result->{$t} = $r) =~ /FAILED/i;
+        }
+        elsif ($line =~ m{^\s*(.*/t/([^/]+\..+))$}is) {
+            $file->{$2} = $1;
+        }
     }
     $date = $_DT->to_string($date);
     $curr = join(
-	'@h3.',
-	grep(
-	    $_ !~ /^\w+ \w+ \Q$which\E /s,
-	    split(/\@h3\./, $curr),
-	),
+        '@h3.',
+        grep(
+            $_ !~ /^\w+ \w+ \Q$which\E /s,
+            split(/\@h3\./, $curr),
+        ),
     );
     my($class) = %$file ? 'FAILED' : 'passed';
     $curr =~ s{(?<=\n)}{
-	join("\n",
-	    "\@h3.$class $class $which $date",
-	     !%$file ? () : (
-		 '@dl.failed',
-		 map(("\@dt $_", "\@dd $file->{$_}"),
-		     sort(keys(%$file))),
-		 '@/dl',
-	     ),
-	     '',
-	 );
+        join("\n",
+            "\@h3.$class $class $which $date",
+             !%$file ? () : (
+                 '@dl.failed',
+                 map(("\@dt $_", "\@dd $file->{$_}"),
+                     sort(keys(%$file))),
+                 '@/dl',
+             ),
+             '',
+         );
     }esx;
     $rf->$method($q, \$curr);
     return;
@@ -271,15 +271,15 @@ sub remote_trace {
     my($self, $named) = shift->name_args(['?PerlName'], \@_);
     $self->initialize_fully;
     my($ua) = b_use('Ext.LWPUserAgent')->new
-	->bivio_ssl_no_check_certificate
-	->bivio_redirect_automatically;
+        ->bivio_ssl_no_check_certificate
+        ->bivio_redirect_automatically;
     $ua->agent('bivio test remote_trace');
     $ua->timeout(5);
     my($resp) = $ua->request(
-	HTTP::Request->new(
-	    'GET',
-	    _uri_for_task($self, 'TEST_TRACE', undef, {path_info => $named}),
-	),
+        HTTP::Request->new(
+            'GET',
+            _uri_for_task($self, 'TEST_TRACE', undef, {path_info => $named}),
+        ),
     );
     b_die($resp)
         unless $resp->is_success;
@@ -294,12 +294,12 @@ sub task {
     my($req) = b_use('Test.Request')->get_instance;
     # Forces type check, and probably good thing anyway.
     $query = ref($query) ? {%$query}
-	: $query
-	? b_use('AgentHTTP.Query')->parse($query)
-	: undef;
+        : $query
+        ? b_use('AgentHTTP.Query')->parse($query)
+        : undef;
     return $self->get_request->execute_task($task, {
-	query => $query,
-	path_info => $path_info,
+        query => $query,
+        path_info => $path_info,
     }, $facade || ());
 }
 
@@ -312,24 +312,24 @@ sub unit {
     # When only one test is run, shows the output of the test.
     return _run($self, $tests, sub {
         my($self, $test, $out) = @_;
-	my($max, $ok) = (-1, 0);
-	_piped_exec($self, _unit($test), $out, sub {
-	    my($line) = @_;
-	    if ($max >= 0) {
-		$ok++ if $line =~ /^ok\s*(\d+)/;
-	    }
-	    elsif ($line =~ /^1\.\.(\d+)/) {
-		$max = $1;
-	    }
-	});
-	my($d) = $_CFG->{unit_log_dir};
-	if ($d) {
-	    $_F->mkdir_p($d);
-	    my($x) = File::Basename::basename($test);
+        my($max, $ok) = (-1, 0);
+        _piped_exec($self, _unit($test), $out, sub {
+            my($line) = @_;
+            if ($max >= 0) {
+                $ok++ if $line =~ /^ok\s*(\d+)/;
+            }
+            elsif ($line =~ /^1\.\.(\d+)/) {
+                $max = $1;
+            }
+        });
+        my($d) = $_CFG->{unit_log_dir};
+        if ($d) {
+            $_F->mkdir_p($d);
+            my($x) = File::Basename::basename($test);
             $x =~ s{\.[^\.]+$}{};
-	    $_F->write("$d/$x.out", $$out);
-	}
-	return $ok == $max;
+            $_F->write("$d/$x.out", $$out);
+        }
+        return $ok == $max;
     });
 }
 
@@ -338,24 +338,24 @@ sub weekly_build_output_to_wiki {
     $self->initialize_fully;
     $msg ||= $self->read_input;
     $msg = $$msg
-	if ref($msg);
+        if ref($msg);
     my($q) = {path => $_WN->to_absolute('WeeklyBuildOutput')};
     my($rf) = $self->model('RealmFile');
     my($curr) = "\@h1 WeeklyBuildOutput\n";
     my($method) = 'create_with_content';
     if ($rf->unsafe_load($q)) {
-	my($content) = ${$rf->get_content};
-	my($previous_date);
-	foreach my $line (split(/\n/, $content)) {
-	    if ($line =~ m{(\d{4}/\d{2}/\d{2}\s\d{2}:\d{2}:\d{2}).*starting}is) {
-		$previous_date = $self->convert_literal(DateTime => $1);
-		last;
-	    }
-	}
-	$curr = $content
-	    if defined($previous_date)
-		&& $_DT->delta_days($previous_date, $_DT->now) < 1;
-	$method = 'update_with_content';
+        my($content) = ${$rf->get_content};
+        my($previous_date);
+        foreach my $line (split(/\n/, $content)) {
+            if ($line =~ m{(\d{4}/\d{2}/\d{2}\s\d{2}:\d{2}:\d{2}).*starting}is) {
+                $previous_date = $self->convert_literal(DateTime => $1);
+                last;
+            }
+        }
+        $curr = $content
+            if defined($previous_date)
+                && $_DT->delta_days($previous_date, $_DT->now) < 1;
+        $method = 'update_with_content';
     }
     $curr .= "\@pre\n${msg}\n\@\\pre\n";
     $rf->$method($q, \$curr);
@@ -369,10 +369,10 @@ sub _expunge {
     # only works for this millenium
     my(@dirs) = glob("$_CFG->{nightly_output_dir}/2?????????????");
     while (@dirs > 7) {
-	my($dir) = shift(@dirs);
-	$self->piped_exec("chmod -R a+rwx $dir");
+        my($dir) = shift(@dirs);
+        $self->piped_exec("chmod -R a+rwx $dir");
         $self->print("Deleting old test directory: $dir\n");
-	b_use('IO.File')->rm_rf($dir);
+        b_use('IO.File')->rm_rf($dir);
     }
     return;
 }
@@ -382,33 +382,33 @@ sub _find_files {
     # Returns self, and hash of tests to run (dir, tests).
     my($self) = shift(@$args);
     $self->usage_error('must supply test files or directories')
-	unless @$args;
+        unless @$args;
     my($tests) = {};
     my($pwd) = b_use('IO.File')->pwd;
     my($vc_re) = b_use('Util.VC')->CONTROL_DIR_RE;
     foreach my $arg (@$args) {
-	$arg = "t/$arg"
-	    if !-e $arg && $arg =~ $pattern && -e "t/$arg";
-	my($is_file) = -f $arg;
-	File::Find::find({
-	    no_chdir => 1,
-	    wanted => sub {
-		my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
-		if (-d $File::Find::name) {
-		    $File::Find::prune = 1
-			if $f =~ $vc_re
-			|| $f =~ /(?:^old|-|\.old|^realm-data|.*\.tmp)$/;
-		    return;
-		}
-		return
-		    unless $is_file
-			|| $File::Find::name =~ $pattern
-			&& -r _;
-		$d = File::Spec->rel2abs($d, $pwd);
-		push(@{$tests->{$d} ||= []}, $f);
-		return;
-	    }},
-	    $arg,
+        $arg = "t/$arg"
+            if !-e $arg && $arg =~ $pattern && -e "t/$arg";
+        my($is_file) = -f $arg;
+        File::Find::find({
+            no_chdir => 1,
+            wanted => sub {
+                my(undef, $d, $f) = File::Spec->splitpath($File::Find::name);
+                if (-d $File::Find::name) {
+                    $File::Find::prune = 1
+                        if $f =~ $vc_re
+                        || $f =~ /(?:^old|-|\.old|^realm-data|.*\.tmp)$/;
+                    return;
+                }
+                return
+                    unless $is_file
+                        || $File::Find::name =~ $pattern
+                        && -r _;
+                $d = File::Spec->rel2abs($d, $pwd);
+                push(@{$tests->{$d} ||= []}, $f);
+                return;
+            }},
+            $arg,
         );
     }
     return ($self, $tests);
@@ -426,9 +426,9 @@ sub _make_nightly_dir {
     $self->print("Created $dir\n");
     my($latest_link) = $_CFG->{nightly_output_dir} . '/latest';
     unlink($latest_link)
-	if -l $latest_link;
+        if -l $latest_link;
     b_die($!, ': could not create symbolic link')
-	unless symlink($dir, $latest_link);
+        unless symlink($dir, $latest_link);
     return $dir;
 }
 
@@ -436,22 +436,22 @@ sub _piped_exec {
     my($self, $command, $input, $out, $do) = @_;
     # Call $do for each line.
     foreach my $line (split(/\n/,
-	$$out = ${$self->piped_exec(
-	    join(' ',
-		$^X,
-		'-w',
-		$command,
-		map({
-		    # this regex is hairy to accommodate shell string escaping rules
-		    s/'/'\\''/g;
-		    "'$_'";
-		} @{b_use('IO.Config')->command_line_args}),
-		'2>&1',
-	    ),
-	    $input, 1)})
+        $$out = ${$self->piped_exec(
+            join(' ',
+                $^X,
+                '-w',
+                $command,
+                map({
+                    # this regex is hairy to accommodate shell string escaping rules
+                    s/'/'\\''/g;
+                    "'$_'";
+                } @{b_use('IO.Config')->command_line_args}),
+                '2>&1',
+            ),
+            $input, 1)})
     ) {
-	chomp($line);
-	$do->($line);
+        chomp($line);
+        $do->($line);
     }
     return;
 }
@@ -463,38 +463,38 @@ sub _run {
     my($failed) = [];
     my($one_dir) = keys(%$tests) == 1;
     foreach my $t (values(%$tests)) {
-	$max += @$t;
+        $max += @$t;
     }
     $self->usage_error('no tests found') unless $max;
     foreach my $d (sort(keys(%$tests))) {
-	$self->print("*** Entering: $d\n") unless $one_dir;
-	b_use('IO.File')->do_in_dir($d => sub {
-	    foreach my $t (sort(@{$tests->{$d}})) {
-		my($res) = 'FAILED';
-		my($out);
-		if ($action->($self, $t, \$out)) {
-		    $res = 'PASSED';
-		    $ok++;
-		}
-		else {
-		    push(@$failed, File::Spec->catfile($d, $t));
-		}
-		$self->print(sprintf('%20s: ', $t), $res, "\n");
-		$out ||= '';
-		$out =~ s/^/  /mg;
-		if ($max == 1 || $self->get('verbose') && $res eq 'FAILED') {
-		    $self->print("Output:\n", $out);
-		}
-	    }
-	});
-	$self->print("*** Leaving: $d\n\n") unless $one_dir;
+        $self->print("*** Entering: $d\n") unless $one_dir;
+        b_use('IO.File')->do_in_dir($d => sub {
+            foreach my $t (sort(@{$tests->{$d}})) {
+                my($res) = 'FAILED';
+                my($out);
+                if ($action->($self, $t, \$out)) {
+                    $res = 'PASSED';
+                    $ok++;
+                }
+                else {
+                    push(@$failed, File::Spec->catfile($d, $t));
+                }
+                $self->print(sprintf('%20s: ', $t), $res, "\n");
+                $out ||= '';
+                $out =~ s/^/  /mg;
+                if ($max == 1 || $self->get('verbose') && $res eq 'FAILED') {
+                    $self->print("Output:\n", $out);
+                }
+            }
+        });
+        $self->print("*** Leaving: $d\n\n") unless $one_dir;
     }
     $self->print(
-	(@$failed ? join("\n    ", 'Failed tests: ', @$failed) . "\n"
-	    : ''),
-	b_use('Bivio.Test')->format_results($ok, $max));
+        (@$failed ? join("\n    ", 'Failed tests: ', @$failed) . "\n"
+            : ''),
+        b_use('Bivio.Test')->format_results($ok, $max));
     $_D->throw_quietly('DIE')
-	unless $max == $ok;
+        unless $max == $ok;
     return;
 }
 
@@ -513,20 +513,20 @@ sub _uri_for_task {
     my($self, $task, $email_or_facade, $uri_args) = @_;
     my($f) = b_use('UI.Facade');
     my($facade) = $f->setup_request(
-	$email_or_facade ? ($email_or_facade =~ /@(.+)/)[0] || $email_or_facade
-	    : $f->get_default->get('uri'),
-	$self->req,
+        $email_or_facade ? ($email_or_facade =~ /@(.+)/)[0] || $email_or_facade
+            : $f->get_default->get('uri'),
+        $self->req,
     );
     my($http) = $self->use('TestLanguage.HTTP')->home_page_uri(
-	$facade->get('uri'));
+        $facade->get('uri'));
     b_die($http, ': TestLanguage.HTTP->home_page_uri missing http:')
         unless $http =~ m{https?://[^/]+};
     return $http . $self->req->format_uri({
-	realm => undef,
-	task_id => $task,
-	query => undef,
-	path_info => undef,
-	%{$uri_args || {}},
+        realm => undef,
+        task_id => $task,
+        query => undef,
+        path_info => undef,
+        %{$uri_args || {}},
     });
 }
 

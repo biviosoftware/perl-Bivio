@@ -4,10 +4,10 @@ ListModel();
 [
     load_all => [
        [{
-	   realm_type => 'FORUM',
-	   path_info => '/',
+           realm_type => 'FORUM',
+           path_info => '/',
        }] => [{
-	   'RealmOwner.name' => '/',
+           'RealmOwner.name' => '/',
        }],
     ],
 ];

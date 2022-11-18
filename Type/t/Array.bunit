@@ -3,19 +3,19 @@
 Type();
 [
     sort_unique => [
-	[[]] => [[]],
-	[[qw(c b a c)]] => [[qw(a b c)]],
-	[[map(Type_Gender()->$_(), qw(MALE MALE FEMALE))]]
-	    => [[qw(FEMALE MALE)]],
+        [[]] => [[]],
+        [[qw(c b a c)]] => [[qw(a b c)]],
+        [[map(Type_Gender()->$_(), qw(MALE MALE FEMALE))]]
+            => [[qw(FEMALE MALE)]],
     ],
     map_sort_map => [
-	[[]] => [[]],
-	[sub {shift}, sub {shift cmp shift}, [qw(c a b)]] => [[qw(a b c)]],
+        [[]] => [[]],
+        [sub {shift}, sub {shift cmp shift}, [qw(c a b)]] => [[qw(a b c)]],
     ],
     to_hash => [
-	[[]] => [{}],
-	[[qw(a b)]] => [{a => 1, b => 1}],
-	[[qw(a b)], undef] => [{a => undef, b => undef}],
-	[[qw(a b)], sub {shift}] => [{a => 'a', b => 'b'}],
+        [[]] => [{}],
+        [[qw(a b)]] => [{a => 1, b => 1}],
+        [[qw(a b)], undef] => [{a => undef, b => undef}],
+        [[qw(a b)], sub {shift}] => [{a => 'a', b => 'b'}],
     ],
 ];

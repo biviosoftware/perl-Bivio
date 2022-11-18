@@ -19,28 +19,28 @@ sub as_string {
     my($self) = @_;
     my($ci) = $self->[$_IDI]->{class_info};
     return ref($self)
-	. '('
-	. join(
-	    ',',
-	    map(
-		$self->get_field_type($_)->to_string($self->unsafe_get($_)),
-		@{$ci->{as_string_fields}},
-	    ),
-	)
+        . '('
+        . join(
+            ',',
+            map(
+                $self->get_field_type($_)->to_string($self->unsafe_get($_)),
+                @{$ci->{as_string_fields}},
+            ),
+        )
         . ')';
 }
 
 sub assert_is_instance {
     my($self) = @_;
     b_die('operation not supported on classes, use get_instance')
-	unless ref($self);
+        unless ref($self);
     return $self;
 }
 
 sub assert_not_singleton {
     my($self) = shift->assert_is_instance;
     b_die("can't create, update, read, or delete singleton instance")
-	if $self->[$_IDI]->{is_singleton};
+        if $self->[$_IDI]->{is_singleton};
     return $self;
 }
 
@@ -61,11 +61,11 @@ sub delete_from_request {
 sub die {
     my($self, @args) = @_;
     $self->throw_die(
-	'DIE', {
-	    message => Bivio::IO::Alert->format_args(@args),
-	    program_error => 1,
-	},
-	caller,
+        'DIE', {
+            message => Bivio::IO::Alert->format_args(@args),
+            program_error => 1,
+        },
+        caller,
     );
     # DOES NOT RETURN
 }
@@ -73,13 +73,13 @@ sub die {
 sub do_iterate {
     my($self, $handler) = _iterate_args_and_start(@_);
     while ($self->iterate_next_and_load) {
-	next
-	    if $self->internal_verify_do_iterate_result(
-		$handler->($self),
-	    );
-	$self->put_on_request($self)
-	    unless $self->is_ephemeral;
-	last;
+        next
+            if $self->internal_verify_do_iterate_result(
+                $handler->($self),
+            );
+        $self->put_on_request($self)
+            unless $self->is_ephemeral;
+        last;
     }
     $self->iterate_end;
     return $self;
@@ -88,11 +88,11 @@ sub do_iterate {
 sub do_iterate_model_subclasses {
     my($proto, $op) = @_;
     foreach my $m (@{$_CL->map_require_all('Model')}) {
-	next
-	    if !$proto->is_super_of($m)
-	    || _is_base_class($m);
-	last
-	    unless $op->($m, $m->simple_package_name);
+        next
+            if !$proto->is_super_of($m)
+            || _is_base_class($m);
+        last
+            unless $op->($m, $m->simple_package_name);
     }
     return;
 }
@@ -100,37 +100,37 @@ sub do_iterate_model_subclasses {
 sub field_decl {
     my($proto) = shift;
     if (ref($_[0]) eq 'ARRAY') {
-	my($decls, $defaults) = (shift, shift);
-	$defaults = {
-	    type => $defaults,
-	    constraint => shift,
-	} unless ref($defaults) eq 'HASH';
-	$defaults->{constraint} ||= 'NONE';
-	return map({
-	    my($decl) = ref($_) ? $_ : [$_];
-	    my($i) = 0;
-	    ref($_) eq 'HASH' ? {%$defaults, %$decl} : +{
-		%$defaults,
-		map(
-		    {
-			my($d) = $decl->[$i++];
-			ref($d) eq 'HASH' ? %$d : defined($d) ? ($_ => $d) : ();
-		    }
-		    qw(name type constraint),
-		),
-	    };
-	} @$decls);
+        my($decls, $defaults) = (shift, shift);
+        $defaults = {
+            type => $defaults,
+            constraint => shift,
+        } unless ref($defaults) eq 'HASH';
+        $defaults->{constraint} ||= 'NONE';
+        return map({
+            my($decl) = ref($_) ? $_ : [$_];
+            my($i) = 0;
+            ref($_) eq 'HASH' ? {%$defaults, %$decl} : +{
+                %$defaults,
+                map(
+                    {
+                        my($d) = $decl->[$i++];
+                        ref($d) eq 'HASH' ? %$d : defined($d) ? ($_ => $d) : ();
+                    }
+                    qw(name type constraint),
+                ),
+            };
+        } @$decls);
     }
     my($defaults) = [];
     unshift(@$defaults, pop(@_))
-	while ref($_[$#_]) ne 'ARRAY';
+        while ref($_[$#_]) ne 'ARRAY';
     Bivio::Die->die('expecting class and declarations')
-	unless @_ > 1;
+        unless @_ > 1;
     Bivio::Die->die('uneven (class, declarations) tuples')
         if @_ % 2;
     return map(
-	(shift(@_) => [$proto->field_decl(shift(@_), @$defaults)]),
-	1 .. @_ / 2,
+        (shift(@_) => [$proto->field_decl(shift(@_), @$defaults)]),
+        1 .. @_ / 2,
     );
 }
 
@@ -138,25 +138,25 @@ sub field_decl_exclude {
     my($self, $field, $info) = @_;
     $info = b_use('IO.Ref')->nested_copy($info);
     my($ne) = sub {
-	my($x) = @_;
-	return (ref($x) eq 'HASH' ? $x->{name} : $x) ne $field;
+        my($x) = @_;
+        return (ref($x) eq 'HASH' ? $x->{name} : $x) ne $field;
     };
     while (my($k, $v) = each(%$info)) {
-	if (ref($v) eq 'ARRAY') {
-	    @$v = map(
-		ref($_) eq 'ARRAY'
-		    ? [grep($ne->($_), @$_)]
-		    : grep($ne->($_), $_),
-		@$v,
-	    );
-	}
-	elsif (!ref($v)) {
-	    delete($info->{$k})
-		if ($v || '') eq $field;
-	}
-	else {
-	    b_die($k, ': unexpected value type: must be array_ref or scalar');
-	}
+        if (ref($v) eq 'ARRAY') {
+            @$v = map(
+                ref($_) eq 'ARRAY'
+                    ? [grep($ne->($_), @$_)]
+                    : grep($ne->($_), $_),
+                @$v,
+            );
+        }
+        elsif (!ref($v)) {
+            delete($info->{$k})
+                if ($v || '') eq $field;
+        }
+        else {
+            b_die($k, ': unexpected value type: must be array_ref or scalar');
+        }
     }
     return $info;
 }
@@ -165,8 +165,8 @@ sub field_decl_from_property_model {
     my($self, $class) = @_;
     my($m) = $self->get_instance($class);
     return map(
-	$m->simple_package_name . ".$_",
-	@{$m->get_info('column_names')},
+        $m->simple_package_name . ".$_",
+        @{$m->get_info('column_names')},
     );
 }
 
@@ -183,10 +183,10 @@ sub format_uri_for_this_property_model {
     $task = Bivio::Agent::TaskId->from_name($task) unless ref($task);
     my($query, $mi) = _get_model_query($self, $name);
     $self->throw_die('MODEL_NOT_FOUND', {
-	message => 'missing primary keys in self for model', entity => $name})
-	unless $query;
+        message => 'missing primary keys in self for model', entity => $name})
+        unless $query;
     return $self->get_request->format_uri(
-	$task, $mi->format_query_for_this($query), undef, undef);
+        $task, $mi->format_query_for_this($query), undef, undef);
 }
 
 sub from_req {
@@ -206,9 +206,9 @@ sub get_auth_id {
 sub get_auth_id_name {
     my($self) = @_;
     return _well_known_name(
-	$self,
-	[qw(auth_id realm_id)],
-	$self->get_info('auth_id'),
+        $self,
+        [qw(auth_id realm_id)],
+        $self->get_info('auth_id'),
     );
 }
 
@@ -219,18 +219,18 @@ sub get_auth_user_id {
 sub get_auth_user_id_name {
     my($self) = @_;
     return _well_known_name(
-	$self,
-	[qw(auth_user_id user_id)],
-	[grep(/\buser_id$/, @{$self->get_info('column_names')})],
+        $self,
+        [qw(auth_user_id user_id)],
+        [grep(/\buser_id$/, @{$self->get_info('column_names')})],
     );
 }
 
 sub get_field_alias_value {
     my($self, $alias) = @_;
     return $self->get(
-	($self->get_info('column_aliases')->{$alias}
-	     || $self->die($alias, ': not a field alias')
-	)->{name});
+        ($self->get_info('column_aliases')->{$alias}
+             || $self->die($alias, ': not a field alias')
+        )->{name});
 }
 
 sub get_field_constraint {
@@ -274,15 +274,15 @@ sub get_model {
     # the model could not be loaded.
     my($model) = shift->unsafe_get_model(@_);
     $self->throw_die('MODEL_NOT_FOUND', {
-	message => 'unable to load model', entity => $model})
-	    unless $model->is_loaded;
+        message => 'unable to load model', entity => $model})
+            unless $model->is_loaded;
     return $model;
 }
 
 sub get_model_info {
     my($self, $model) = @_;
     return $self->unsafe_get_model_info($model)
-	|| b_die($model, ': no such model');
+        || b_die($model, ': no such model');
 }
 
 sub get_primary_id {
@@ -292,9 +292,9 @@ sub get_primary_id {
 sub get_primary_id_name {
     my($self) = @_;
     return _well_known_name(
-	$self,
-	['primary_id'],
-	$self->get_info('primary_key_names'),
+        $self,
+        ['primary_id'],
+        $self->get_info('primary_key_names'),
     );
 }
 
@@ -303,21 +303,21 @@ sub get_qualified {
     # Returns the qualified field value if it exists or strips the model from
     # I<field> and tries to get unqualified.
     return $self->has_keys($field) ? $self->get($field)
-	: $self->get(($field =~ /(?<=\.)(\w+)$/)[0]
-	    || $self->die($field, ': not a qualified name'));
+        : $self->get(($field =~ /(?<=\.)(\w+)$/)[0]
+            || $self->die($field, ': not a qualified name'));
 }
 
 sub get_request {
     my($self) = @_;
     return $self->unsafe_get_request
-	|| b_die($self, ': request not set');
+        || b_die($self, ': request not set');
 }
 
 sub handle_call_autoload {
     my($proto) = @_;
     return $proto
-	if _is_base_class($proto)
-	|| $proto->can('internal_initialize') == \&Bivio::Biz::Model::internal_initialize;
+        if _is_base_class($proto)
+        || $proto->can('internal_initialize') == \&Bivio::Biz::Model::internal_initialize;
     return _new_with_query(@_);
 }
 
@@ -366,8 +366,8 @@ sub internal_initialize {
     # to L<Bivio::SQL::PropertySupport::new|Bivio::SQL::PropertySupport/"new">
     # or L<Bivio::SQL::ListSupport::new|Bivio::SQL::ListSupport/"new">.
     return (caller(1))[3] =~ /::internal_initialize$/ ? {}
-	: Bivio::Die->die(
-	    shift, ': abstract method; internal_initialize must be defined');
+        : Bivio::Die->die(
+            shift, ': abstract method; internal_initialize must be defined');
 }
 
 sub internal_initialize_local_fields {
@@ -387,15 +387,15 @@ sub internal_iterate_next {
     my($self, $it, $row, $converter) = @_;
     # Returns (I<self>, I<row>) on success or () if no more.
     if (ref($it) eq 'HASH') {
-	$converter = $row;
-	$row = $it;
-	$it = $self->internal_get_iterator;
+        $converter = $row;
+        $row = $it;
+        $it = $self->internal_get_iterator;
     }
     else {
-	# deprecated form
+        # deprecated form
     }
     return $self->internal_get_sql_support->iterate_next(
-	$self, $it, $row, $converter) ? ($self, $row) : ();
+        $self, $it, $row, $converter) ? ($self, $row) : ();
 }
 
 sub internal_put_iterator {
@@ -427,7 +427,7 @@ sub iterate_end {
     # Deprecated form passes in an iterator, which can only clear
     # if the caller hasn't "changed" iterators.
     $fields->{iterator} = undef
-	if !$it || $fields->{iterator} && $it == $fields->{iterator};
+        if !$it || $fields->{iterator} && $it == $fields->{iterator};
     return;
 }
 
@@ -452,7 +452,7 @@ sub map_iterate {
     my($res) = [];
     my($op) = _map_iterate_handler($handler);
     while ($self->iterate_next_and_load) {
-	push(@$res, $op->($self));
+        push(@$res, $op->($self));
     }
     $self->iterate_end;
     return $res;
@@ -464,17 +464,17 @@ sub merge_initialize_info {
     # hash_ref.
     my($res) = {%$child};
     foreach my $k (keys(%$parent)) {
-	if (
-	    ref($parent->{$k}) ne 'ARRAY'
-	    || $k =~ /^(auth_id|date|primary_id|primary_key)$/,
+        if (
+            ref($parent->{$k}) ne 'ARRAY'
+            || $k =~ /^(auth_id|date|primary_id|primary_key)$/,
         ) {
-	    $res->{$k} = $parent->{$k}
-		unless exists($res->{$k});
-	}
-	else {
-	    # Parent takes precedence on arrays
-	    unshift(@{$res->{$k} ||= []}, @{$parent->{$k}});
-	}
+            $res->{$k} = $parent->{$k}
+                unless exists($res->{$k});
+        }
+        else {
+            # Parent takes precedence on arrays
+            unshift(@{$res->{$k} ||= []}, @{$parent->{$k}});
+        }
     }
     return $res;
 }
@@ -485,11 +485,11 @@ sub new {
     # C<$proto>.  If I<class> is supplied, L<get_instance|"get_instance"> is called
     # with I<class> as its argument and the resultant class is instantiated.
     return $proto->get_instance($class)->new($req)
-	if defined($class);
+        if defined($class);
     my($ci) = _get_class_info(ref($proto) || $proto);
     my($self) = $proto->SUPER::new({@{$ci->{properties}}});
     $self->[$_IDI] = {
-	class_info => $ci,
+        class_info => $ci,
         request => $req || (ref($proto) ? $proto->unsafe_get_request : undef),
     };
     return $self;
@@ -505,15 +505,15 @@ sub new_anonymous {
     # To create an instance from an existing instance, I<proto> must
     # be an instance, not a class name.  I<config> is ignored.
     my($ci) = ref($proto) ? $proto->[$_IDI]->{class_info}
-	    : _initialize_class_info($proto, $config);
+            : _initialize_class_info($proto, $config);
     # Make a copy of the properties for this instance.  properties
     # is an array_ref for efficiency.
     my($self) = $proto->SUPER::new({@{$ci->{properties}}});
     $self->[$_IDI] = {
-	class_info => $ci,
-	# Never save the request for first time anonymous classes
+        class_info => $ci,
+        # Never save the request for first time anonymous classes
         request => ref($proto) ? $req : undef,
-	anonymous => 1,
+        anonymous => 1,
     };
     return $self;
 }
@@ -521,8 +521,8 @@ sub new_anonymous {
 sub new_other {
     my($self, $model_name) = (shift, shift);
     return ($_S->is_qualified_model_name($model_name)
-	? $_S->parse_model_name($model_name)->{model}
-	: $self->get_instance($model_name)
+        ? $_S->parse_model_name($model_name)->{model}
+        : $self->get_instance($model_name)
     )->new($self->get_request, @_);
 }
 
@@ -540,8 +540,8 @@ sub put_on_request {
     my($self, $durable) = @_;
     $self->set_ephemeral(0);
     return $self->unsafe_get_request
-	? $self->put_on_req($self->req, $durable)
-	: $self;
+        ? $self->put_on_req($self->req, $durable)
+        : $self;
 }
 
 sub set_ephemeral {
@@ -577,13 +577,13 @@ sub unsafe_get_model {
     my($self, $name) = @_;
     my($fields) = $self->[$_IDI];
     return ($fields->{models} ||= {})->{$name}
-	||= _load_other_model($self, $name);
+        ||= _load_other_model($self, $name);
 }
 
 sub unsafe_get_model_info {
     my($self, $model) = @_;
     return $self->get_info('models')
-	->{ref($model) ? $model->simple_package_name : $model};
+        ->{ref($model) ? $model->simple_package_name : $model};
 }
 
 sub unsafe_get_request {
@@ -601,34 +601,34 @@ sub _as_string_fields {
     my($sql_support) = @_;
     # Returns as_string_fields.
     return $sql_support->get('as_string_fields')
-	if $sql_support->has_keys('as_string_fields');
+        if $sql_support->has_keys('as_string_fields');
     my($res) = [@{$sql_support->get('primary_key_names')}];
     unshift(@$res, 'name')
-	if $sql_support->has_columns('name') && !grep($_ eq 'name', @$res);
+        if $sql_support->has_columns('name') && !grep($_ eq 'name', @$res);
     return $res;
 }
 
 sub _assert_class_name {
     my($class) = @_;
     b_die(
-	$class,
-	': is a base class; it cannot be initialized as a model',
+        $class,
+        ': is a base class; it cannot be initialized as a model',
     ) if _is_base_class($class);
     my($super) = b_use(
-	'Biz',
-	(_class_suffix($class) || 'Property') . 'Model',
+        'Biz',
+        (_class_suffix($class) || 'Property') . 'Model',
     );
     b_die($class, ': must be a ', $super)
-	unless $super->is_super_of($class);
+        unless $super->is_super_of($class);
     return;
 }
 
 sub _class {
     my($proto, $class) = @_;
     return ref($proto) || $proto
-	unless defined($class);
+        unless defined($class);
     return b_use('Model', $class)
-	unless ref($class);
+        unless ref($class);
     return ref($class) || $class;
 }
 
@@ -653,7 +653,7 @@ sub _get_model_query {
     my($sql_support) = $self->internal_get_sql_support;
     my($models) = $sql_support->get('models');
     $self->die("$name: no such model")
-	unless defined($models->{$name});
+        unless defined($models->{$name});
     my($m) = $models->{$name};
     my($properties) = $self->internal_get;
     my($req) = $self->unsafe_get_request;
@@ -662,21 +662,21 @@ sub _get_model_query {
     my($query) = {};
     my($map) = $m->{primary_key_map};
     foreach my $pk (keys(%$map)) {
-	my($v);
-	unless (defined($v = $properties->{$map->{$pk}->{name}})) {
-	    # If there is an auth_id, use it if this is the missing
-	    # primary key.
-	    my($auth_id) = $mi->get_info('auth_id');
-	    unless ($auth_id && $pk eq $auth_id->{name}) {
-		$self->req->warn(
-		    $self,
-		    ': loading ', $m->{instance}, ' missing key ',
-		    $map->{$pk}->{name});
-		return (undef, $mi);
-	    }
-	    $v = $req->get('auth_id');
-	}
-	$query->{$pk} = $v;
+        my($v);
+        unless (defined($v = $properties->{$map->{$pk}->{name}})) {
+            # If there is an auth_id, use it if this is the missing
+            # primary key.
+            my($auth_id) = $mi->get_info('auth_id');
+            unless ($auth_id && $pk eq $auth_id->{name}) {
+                $self->req->warn(
+                    $self,
+                    ': loading ', $m->{instance}, ' missing key ',
+                    $map->{$pk}->{name});
+                return (undef, $mi);
+            }
+            $v = $req->get('auth_id');
+        }
+        $query->{$pk} = $v;
     }
     return ($query, $mi);
 }
@@ -685,7 +685,7 @@ sub _initialize_class {
     my($class, $var) = @_;
     _load_all_property_models();
     return
-	if $$var;
+        if $$var;
     # Initializes from class or from config.  config is supplied for
     # anonymous models (currently, only ListModels).
     # This may load the models and we'll try to get the class_info
@@ -704,11 +704,11 @@ sub _initialize_class_info {
     my($stmt) = $_SS->new;
     my($sql_support) = $class->internal_initialize_sql_support($stmt, $config);
     return {
-	sql_support => $sql_support,
+        sql_support => $sql_support,
         statement => $stmt,
-	as_string_fields => _as_string_fields($sql_support),
-	# Is an array, because faster than a hash_ref for our purposes
-	properties => [map(($_, undef), @{$sql_support->get('column_names')})],
+        as_string_fields => _as_string_fields($sql_support),
+        # Is an array, because faster than a hash_ref for our purposes
+        properties => [map(($_, undef), @{$sql_support->get('column_names')})],
     };
 }
 
@@ -720,20 +720,20 @@ sub _is_base_class {
 sub _iterate_args_and_start {
     my($self, $handler, @args) = @_;
     my($start) = $self->b_can($args[0]) && $args[0] =~ /iterate_start/
-	? shift(@args) : 'iterate_start';
+        ? shift(@args) : 'iterate_start';
     $self->$start(@args);
     return ($self, $handler);
 }
 
 sub _load_all_property_models {
     return
-	if $_LOADED_ALL_PROPERTY_MODELS;
+        if $_LOADED_ALL_PROPERTY_MODELS;
     $_LOADED_ALL_PROPERTY_MODELS = 1;
     b_use('Biz.PropertyModel')->do_iterate_model_subclasses(
-	sub {
-	    shift->get_instance;
-	    return 1;
-	},
+        sub {
+            shift->get_instance;
+            return 1;
+        },
     );
     return;
 }
@@ -743,27 +743,27 @@ sub _load_other_model {
     # Does a bunch of asssertion checking
     my($query, $mi) = _get_model_query($self, $name);
     return $mi
-	unless $query;
+        unless $query;
     my($aliases) = $self->get_info('column_aliases');
     my($values) = $self->internal_get;
     return $mi->internal_load_properties({
-	map({
-	    my($k) = $aliases->{"$name.$_"};
-	    unless ($k && exists($values->{$k})) {
-		$mi->unauth_load($query);
-		return $mi;
-	    }
-	    ($k => $values->{$k});
-	 } @{$mi->get_info('column_names')}),
+        map({
+            my($k) = $aliases->{"$name.$_"};
+            unless ($k && exists($values->{$k})) {
+                $mi->unauth_load($query);
+                return $mi;
+            }
+            ($k => $values->{$k});
+         } @{$mi->get_info('column_names')}),
     });
 }
 
 sub _map_iterate_handler {
     my($handler) = @_;
     return $handler
-	if ref($handler);
+        if ref($handler);
     return sub {shift->get($handler)}
-	if defined($handler);
+        if defined($handler);
     return sub {shift->get_shallow_copy};
 }
 
@@ -772,11 +772,11 @@ sub _new_args {
     # Returns (proto, req, class).  Figures out calling form and returns
     # the correct parameter values.
     if (defined($req) && !ref($req)) {
-	Bivio::Die->die($req,
-	    ': bad parameter, expecting a Bivio::Agent::Request',
-	) if defined($class);
-	$class = $req;
-	$req = undef;
+        Bivio::Die->die($req,
+            ': bad parameter, expecting a Bivio::Agent::Request',
+        ) if defined($class);
+        $class = $req;
+        $req = undef;
     }
     return ($proto, $req || $proto->unsafe_get_request, $class);
 }
@@ -786,22 +786,22 @@ sub _new_with_query {
     # Instantiates I<model> and loads/processes I<query> if supplied.
     my($self) = $proto->new;
     return $self
-	unless $query;
+        unless $query;
     my($is_unauth) = $proto->my_caller(1) =~ /unauth/;
     if ($self->isa('Bivio::Biz::FormModel')) {
-	$self->process($query);
+        $self->process($query);
     }
     elsif ($self->isa('Bivio::Biz::ListModel')) {
-	my($method) = $is_unauth ? 'unauth_load_all' : 'load_all';
-	$self->$method($query);
-	$self->set_cursor(0);
+        my($method) = $is_unauth ? 'unauth_load_all' : 'load_all';
+        $self->$method($query);
+        $self->set_cursor(0);
     }
     elsif ($self->isa('Bivio::Biz::PropertyModel')) {
-	my($method) = $is_unauth ? 'unauth_load_or_die' : 'load';
-	$self->$method($query);
+        my($method) = $is_unauth ? 'unauth_load_or_die' : 'load';
+        $self->$method($query);
     }
     else {
-	b_die($self, ': does not support query argument: ', $query);
+        b_die($self, ': does not support query argument: ', $query);
     }
     return $self;
 }
@@ -809,18 +809,18 @@ sub _new_with_query {
 sub _well_known_name {
     my($self, $names, $choices) = @_;
     foreach my $n (@$names) {
-	my($constant) = uc($n) . '_FIELD';
-	return $self->$constant()
-	    if $self->can($constant);
+        my($constant) = uc($n) . '_FIELD';
+        return $self->$constant()
+            if $self->can($constant);
     }
     $self->die($names, ': no choices')
-	unless defined($choices);
+        unless defined($choices);
     return $choices->{name}
-	if ref($choices) eq 'HASH';
+        if ref($choices) eq 'HASH';
     $self->die($choices, ": too many $names->[0] values")
-	if @$choices > 1;
+        if @$choices > 1;
     $self->die($choices, ": too few $names->[0] values")
-	if @$choices < 1;
+        if @$choices < 1;
     return $choices->[0];
 }
 

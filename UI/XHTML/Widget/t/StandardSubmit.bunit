@@ -2,19 +2,19 @@
 # $Id$
 Widget({
     new_params => sub {
-	my($case, $params) = @_;
-	my($f) = shift(@$params);
-	$case->put('the_form', $f);
-	return [@$params ? shift(@$params) : (), {
-	    form_class => b_use("Model.$f"),
-	    form_model => [['->get_request'], 'Model.'.$f],
-	    %{shift(@$params) || {}},
-	}];
+        my($case, $params) = @_;
+        my($f) = shift(@$params);
+        $case->put('the_form', $f);
+        return [@$params ? shift(@$params) : (), {
+            form_class => b_use("Model.$f"),
+            form_model => [['->get_request'], 'Model.'.$f],
+            %{shift(@$params) || {}},
+        }];
     },
     setup_render => sub {
-	my($req, $case, $params) = @_;
-	Bivio::Biz::Model->new(req(), $case->get('the_form'))->put_on_request;
-	return;
+        my($req, $case, $params) = @_;
+        Bivio::Biz::Model->new(req(), $case->get('the_form'))->put_on_request;
+        return;
     },
 });
 [
@@ -25,5 +25,5 @@ Widget({
     ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input class="submit b_ok_button" type="submit" name="\S+" value="[\w\s]+"\s+/>.*</div>},
     ['UserLoginForm', 'ok_button'] => qr{<div class="standard_submit">.*<input class="submit b_ok_button" type="submit" name="\S+" value="[\w\s]+"\s+/>.*</div>},
     ['UserLoginForm', 'ok_button', {labels => {ok_button => 'StandardSubmit.bunit'}}]
-      	=> qr{<div class="standard_submit">.*<input class="submit b_ok_button" type="submit" name="\S+" value="bunit" />.*</div>},
+              => qr{<div class="standard_submit">.*<input class="submit b_ok_button" type="submit" name="\S+" value="bunit" />.*</div>},
 ];

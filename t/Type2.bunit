@@ -6,11 +6,11 @@ options({
 });
 [
     from_literal_for_model_value => [
-	'' => [undef],
-	xyz => [undef],
-	33 => 33,
+        '' => [undef],
+        xyz => [undef],
+        33 => 33,
     ],
     max => [
-	[qw(100 100 18)] => 100,
+        [qw(100 100 18)] => 100,
     ],
 ];

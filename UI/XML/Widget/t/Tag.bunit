@@ -6,20 +6,20 @@ req()->set_user('demo');
 [
     [rss =>
         vs_new(Tag => channel => vs_new(Join => [
-	     vs_new(Tag => title => [sub {undef}]),
-	     vs_new(Tag => description => 'hd'),
-	     vs_new(Tag => language => 'en-us'),
-	     vs_new(WithModel => NumberedList => vs_new(qw(Tag item),
-		     vs_new(Join => [
-			 vs_new(Tag => description => 'd'),
-			 vs_new(TagField => 'pubdate', 'index'),
-			 vs_new(Tag => title => 't'),
-		     ])),
-	     ),
-	])),
-	{
-	    VERSION => '2.0',
-	},
+             vs_new(Tag => title => [sub {undef}]),
+             vs_new(Tag => description => 'hd'),
+             vs_new(Tag => language => 'en-us'),
+             vs_new(WithModel => NumberedList => vs_new(qw(Tag item),
+                     vs_new(Join => [
+                         vs_new(Tag => description => 'd'),
+                         vs_new(TagField => 'pubdate', 'index'),
+                         vs_new(Tag => title => 't'),
+                     ])),
+             ),
+        ])),
+        {
+            VERSION => '2.0',
+        },
     ] => <<'EOF',
 <rss version="2.0"><channel><title/>
 <description>hd</description>
@@ -36,10 +36,10 @@ req()->set_user('demo');
 </rss>
 EOF
     [person => vs_new(With =>
-	['auth_user'], vs_new(Join => [
-	    vs_new(TagField => 'name'),
-	    vs_new(TagField => 'display_name'),
-	]),
+        ['auth_user'], vs_new(Join => [
+            vs_new(TagField => 'name'),
+            vs_new(TagField => 'display_name'),
+        ]),
     )] => <<'EOF',
 <person><name>demo</name>
 <display_name>Demo User</display_name>

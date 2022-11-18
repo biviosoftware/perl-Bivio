@@ -14,7 +14,7 @@ sub internal_load_rows {
     my($self, $query) = @_;
     my($q) = $self->ureq('query');
     $query->put(search => $q->{term})
-	if $q && defined($q->{term});
+        if $q && defined($q->{term});
     return shift->SUPER::internal_load_rows(@_);
 }
 

@@ -3,19 +3,19 @@
 Type();
 [
     validate_main_args => [
-    	[] => [75],
-    	['192.168.0.2', 'fourem@x.x', 'localhost:80/mail/%s'] => [
-    	    0,
-    	    '192.168.0.2',
-    	    'fourem@x.x',
-    	    'localhost:80/mail/fourem@x.x',
-    	],
-    	['192.168.0.2', 'fourem@x.x', 'localhost'] => [78],
-	['192.168.0.2', 'fourem@x.x', 'localhost/mail'] => [78],
-	['192.168.0.2', 'x' x 256, 'localhost/mail/%s'] => [65],
+            [] => [75],
+            ['192.168.0.2', 'fourem@x.x', 'localhost:80/mail/%s'] => [
+                0,
+                '192.168.0.2',
+                'fourem@x.x',
+                'localhost:80/mail/fourem@x.x',
+            ],
+            ['192.168.0.2', 'fourem@x.x', 'localhost'] => [78],
+        ['192.168.0.2', 'fourem@x.x', 'localhost/mail'] => [78],
+        ['192.168.0.2', 'x' x 256, 'localhost/mail/%s'] => [65],
     ],
     create_http_request => [
-	['192.168.0.2', 'fourem@x.x', 'localhost:80/mail/fourem@x.x', \('message')] => qr{^POST http://localhost:80/mail/fourem\@x.x
+        ['192.168.0.2', 'fourem@x.x', 'localhost:80/mail/fourem@x.x', \('message')] => qr{^POST http://localhost:80/mail/fourem\@x.x
 Via: 192.168.0.2
 Content-Length: 314
 Content-Type: multipart/form-data; boundary=xYzZY
@@ -41,12 +41,12 @@ message\s
 $}s,
     ],
     main => [
-	#['192.168.0.2', 'fourem@x.x', 'petshop.bivio.biz:80/mail/%s'] => [67],
-	['192.168.0.2', 'fourem@x.x', 'localhost:9123/mail/%s'] => [70],
-	['192.168.0.2', 'fourem@x.x', 'localhost:448/mail/%s'] => [70],
-	['192.168.0.2', 'fourem@x.x', 'localhost:22/mail/%s'] => [70],
-	['192.168.0.2', 'fourem@x.x', 'badhostname12345:80/mail/%s'] => [70],
-	#['192.168.0.2', 'fourem@petshop.bivio.biz', 'petshop.bivio.biz:80/_mail_receive/%s'] => [77],
-	['192.168.0.2', 'ignore-fourem@x.x', 'localhost:80/mail/%s'] => [0],
+        #['192.168.0.2', 'fourem@x.x', 'petshop.bivio.biz:80/mail/%s'] => [67],
+        ['192.168.0.2', 'fourem@x.x', 'localhost:9123/mail/%s'] => [70],
+        ['192.168.0.2', 'fourem@x.x', 'localhost:448/mail/%s'] => [70],
+        ['192.168.0.2', 'fourem@x.x', 'localhost:22/mail/%s'] => [70],
+        ['192.168.0.2', 'fourem@x.x', 'badhostname12345:80/mail/%s'] => [70],
+        #['192.168.0.2', 'fourem@petshop.bivio.biz', 'petshop.bivio.biz:80/_mail_receive/%s'] => [77],
+        ['192.168.0.2', 'ignore-fourem@x.x', 'localhost:80/mail/%s'] => [0],
     ],
 ];

@@ -11,19 +11,19 @@ my($exists) = ShellUtil_SQL()->DEMO_EMAIL();
     [{
         'Email.email' => $new,
     }] => [{
-	'Model.Email' => {
-	    email => $new,
-	},
+        'Model.Email' => {
+            email => $new,
+        },
     }],
     [{
         'Email.email' => $exists,
     }] => sub {
-	return [{
-	    task_id => 'user_exists_task',
-	    query => {
-		ack => 'user_exists',
-		email => $exists,
-	    },
-	}];
+        return [{
+            task_id => 'user_exists_task',
+            query => {
+                ack => 'user_exists',
+                email => $exists,
+            },
+        }];
     },
 ];

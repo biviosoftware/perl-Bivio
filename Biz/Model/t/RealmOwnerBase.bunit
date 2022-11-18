@@ -3,26 +3,26 @@
 Request();
 [
     sub {unauth_model('User', {user_id => realm_id('demo')})} => [
-    	delete => [
-    	    [] => qr{cascade_delete},
-    	],
+            delete => [
+                [] => qr{cascade_delete},
+            ],
     ],
     sub {
-	my($uid) = ShellUtil_TestUser()->create(random_realm_name());
-	model('RealmDAG')->create({
-	    parent_id => $uid,
-	    child_id => $uid,
-	    realm_dag_type => Type_RealmDAG()->GRAPH,
-	});
+        my($uid) = ShellUtil_TestUser()->create(random_realm_name());
+        model('RealmDAG')->create({
+            parent_id => $uid,
+            child_id => $uid,
+            realm_dag_type => Type_RealmDAG()->GRAPH,
+        });
         return req('Model.User');
     } => [
-	cascade_delete => [
-	    [] => sub {
-		my($uid) = shift->get_nested(qw(object user_id));
-		assert_equals(0, model('RowTag')->unauth_rows_exist({primary_id => $uid}));
-		assert_equals(0, model('RealmDAG')->unauth_rows_exist({parent_id => $uid}));
-		return 1;
-	    },
-	],
+        cascade_delete => [
+            [] => sub {
+                my($uid) = shift->get_nested(qw(object user_id));
+                assert_equals(0, model('RowTag')->unauth_rows_exist({primary_id => $uid}));
+                assert_equals(0, model('RealmDAG')->unauth_rows_exist({parent_id => $uid}));
+                return 1;
+            },
+        ],
     ],
 ];

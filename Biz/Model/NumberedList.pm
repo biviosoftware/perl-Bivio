@@ -11,14 +11,14 @@ sub PAGE_SIZE {
 
 sub internal_initialize {
     return {
-	version => 1,
-	primary_key => [
-	    {
-		name => 'index',
-		type => 'Integer',
-		constraint => 'NOT_NULL',
-	    },
-	],
+        version => 1,
+        primary_key => [
+            {
+                name => 'index',
+                type => 'Integer',
+                constraint => 'NOT_NULL',
+            },
+        ],
     };
 }
 

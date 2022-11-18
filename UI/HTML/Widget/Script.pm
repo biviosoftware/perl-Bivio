@@ -16,13 +16,13 @@ sub JAVASCRIPT_B_SUBMENU_IE6 {
 function b_submenu_ie6_onload() {
     var div;
     while (div = b_element_by_class('div', 'b_submenu')) {
-	var b_menu = div.parentNode;
-	b_menu.onmouseout = function () {
-	    b_remove_class(this, 'hover');
-	};
-	b_menu.onmouseover = function () {
-	    b_add_class(this, 'hover');
-	};
+        var b_menu = div.parentNode;
+        b_menu.onmouseout = function () {
+            b_remove_class(this, 'hover');
+        };
+        b_menu.onmouseover = function () {
+            b_add_class(this, 'hover');
+        };
     }
 }
 EOF
@@ -87,13 +87,13 @@ window.bivio.combobox.key_up = function(key, field) {
         return true;
     }
     else if (key == key_codes.UP_ARROW || key == key_codes.DOWN_ARROW)
-	return true;
+        return true;
     field.clear_list();
 
     if (key == key_codes.ESCAPE) {
         if (field.typed_value)
             field.value = field.typed_value;
-	return true;
+        return true;
     }
     populate_search(field, false);
     show_drop_down(field, false);
@@ -149,7 +149,7 @@ function init_drop_down(field, init_values) {
         }
         set_selected(null);
         while (drop_down.firstChild)
-	    drop_down.removeChild(drop_down.firstChild);
+            drop_down.removeChild(drop_down.firstChild);
         if (drop_down.style.visibility == 'visible')
             drop_down.style.visibility = 'hidden';
     }
@@ -167,30 +167,30 @@ function populate_search(field, show_all) {
     search = show_all ? '' : field.value;
     field.typed_value = field.value;
     if (! search.length && ! show_all)
-	return true;
+        return true;
 
     for (var i = 0; i < field.drop_down_values.length; i++) {
-	var v = field.drop_down_values[i];
+        var v = field.drop_down_values[i];
         if (! v) continue;
         if (search.length == 1) {
             if (v.toLowerCase().indexOf(search.toLowerCase()) != 0)
                 continue;
         }
-	else if (v.toLowerCase().indexOf(search.toLowerCase()) < 0)
-	    continue;
-	var d = document.createElement("div");
-	d.style.cursor = 'default';
-	d.onmouseover = function(e) {
-	    set_selected(this);
-	};
-	d.onclick = function() {
-	    save_selected(field);
-	}
-	d.innerHTML = b_escape_html(v);
-	d.real_value = v;
+        else if (v.toLowerCase().indexOf(search.toLowerCase()) < 0)
+            continue;
+        var d = document.createElement("div");
+        d.style.cursor = 'default';
+        d.onmouseover = function(e) {
+            set_selected(this);
+        };
+        d.onclick = function() {
+            save_selected(field);
+        }
+        d.innerHTML = b_escape_html(v);
+        d.real_value = v;
         if (v == field.value)
             set_selected(d);
-	field.drop_down.appendChild(d);
+        field.drop_down.appendChild(d);
     }
 }
 
@@ -224,14 +224,14 @@ function select_next_item(prev, field) {
     if (! drop_down)
         return;
     if (selected)
-	n = prev ? selected.previousSibling : selected.nextSibling;
+        n = prev ? selected.previousSibling : selected.nextSibling;
     else if (prev)
         return;
     else
-	n = drop_down.firstChild;
+        n = drop_down.firstChild;
     if (n) {
-	set_selected(n);
-	field.value = n.real_value;
+        set_selected(n);
+        field.value = n.real_value;
     }
     return;
 }
@@ -513,8 +513,8 @@ sub JAVASCRIPT_COMMON {
     return <<'EOF';
 function b_escape_html (value) {
     return value.replace(new RegExp('&', 'g'), '&amp;')
-	.replace(new RegExp('<', 'g'), '&lt;')
-	.replace(new RegExp('>', 'g'), '&gt;');
+        .replace(new RegExp('<', 'g'), '&lt;')
+        .replace(new RegExp('>', 'g'), '&gt;');
 }
 function b_remove_class (element, clazz) {
     var res = [], classes = element.className.split(/\s+/);
@@ -592,7 +592,7 @@ EOF
 sub JAVASCRIPT_FIRST_FOCUS {
     # Forces focus to first text input field, if there is one.
     my($search_field_name) = b_use('Model.SearchForm')
-	->get_instance->get_field_name_for_html('search');
+        ->get_instance->get_field_name_for_html('search');
     return <<"EOF";
 function first_focus_onload() {
     for (var i = 0; i < document.forms.length; i++) {
@@ -683,8 +683,8 @@ sub initialize {
 sub internal_new_args {
     my($proto, $value, $attrs) = @_;
     return {
-	($value ? (value => $value) : ()),
-	($attrs ? %$attrs : ()),
+        ($value ? (value => $value) : ()),
+        ($attrs ? %$attrs : ()),
     };
 }
 
@@ -692,30 +692,30 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($req) = $source->get_request;
     if ($self->has_keys('value')) {
-	if (my $x = $self->render_simple_attr('value', $source)) {
-	    $x = 'JAVASCRIPT_' . uc($x);
-	    $self->die('value', $source, $x, ': no such script')
-		unless $self->can($x);
-	    my($names) = $req->get_if_exists_else_put(__PACKAGE__, []);
-	    push(@$names, $x)
-		unless grep($x eq $_, @$names);
-	}
-	return;
+        if (my $x = $self->render_simple_attr('value', $source)) {
+            $x = 'JAVASCRIPT_' . uc($x);
+            $self->die('value', $source, $x, ': no such script')
+                unless $self->can($x);
+            my($names) = $req->get_if_exists_else_put(__PACKAGE__, []);
+            push(@$names, $x)
+                unless grep($x eq $_, @$names);
+        }
+        return;
     }
     my($names) = $req->unsafe_get(__PACKAGE__);
     return
-	unless $names;
+        unless $names;
     $req->delete(__PACKAGE__);
 
     my($js) = $_VS->vs_call('JavaScript');
     my($functions) = [map($js->strip($self->$_()), @$names)];
     $$buffer .= join(
-	"\n",
-	qq{<script type="text/javascript">\n<!--},
-	@$functions,
-	_onload($functions),
-	"// --></script>",
-	'',
+        "\n",
+        qq{<script type="text/javascript">\n<!--},
+        @$functions,
+        _onload($functions),
+        "// --></script>",
+        '',
     );
     return;
 }
@@ -724,9 +724,9 @@ sub _onload {
     my($functions) = @_;
     my($onload) = [map(/^function\s+(\w+_onload)\s*\(/mg, @$functions)];
     return !@$onload ? () : (
-	'window.onload=function(){',
-	map($_ . '();', @$onload),
-	'}',
+        'window.onload=function(){',
+        map($_ . '();', @$onload),
+        '}',
     );
 }
 

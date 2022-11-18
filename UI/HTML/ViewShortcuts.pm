@@ -122,28 +122,28 @@ sub vs_alphabetical_chooser {
     # "letter" on to the ListQuery.search.
     my($proto, $list_model) = @_;
     my($all) = Bivio::Biz::Model->get_instance($list_model)
-	->LOAD_ALL_SEARCH_STRING;
+        ->LOAD_ALL_SEARCH_STRING;
     return $proto->vs_call('String',
-	$proto->vs_call('Join', [
-	    map({(
-		$_ =~ /^A/ ? $_ eq $all ? ' | ' : '' : ' ',
-		$proto->vs_call('Link',
-		    $proto->vs_call('Join', [$_]),
-		    ['->format_uri', undef,
-			[sub {
-			     return {
-				 'ListQuery.search' => $_[1],
-				 'ListQuery.date' => $_[0]->get($_[2])
-				     ->get_query->get('date'),
-			     };
-			 },
-			 $_,
-			 "Model.$list_model",
-			],
-		    ],
-		),
-	    )} 'A'..'Z', $all),
-	]),
+        $proto->vs_call('Join', [
+            map({(
+                $_ =~ /^A/ ? $_ eq $all ? ' | ' : '' : ' ',
+                $proto->vs_call('Link',
+                    $proto->vs_call('Join', [$_]),
+                    ['->format_uri', undef,
+                        [sub {
+                             return {
+                                 'ListQuery.search' => $_[1],
+                                 'ListQuery.date' => $_[0]->get($_[2])
+                                     ->get_query->get('date'),
+                             };
+                         },
+                         $_,
+                         "Model.$list_model",
+                        ],
+                    ],
+                ),
+            )} 'A'..'Z', $all),
+        ]),
     );
 }
 
@@ -161,8 +161,8 @@ sub vs_clear_dot {
     # B<DEPRECATED.  Use L<vs_new|"vs_new">>.
     my($proto, $width, $height) = @_;
     return $proto->vs_new('ClearDot', {
-	defined($width) ? (width => $width) : (),
-	defined($height) ? (height => $height) : (),
+        defined($width) ? (width => $width) : (),
+        defined($height) ? (height => $height) : (),
     });
 }
 
@@ -196,25 +196,25 @@ sub vs_descriptive_field {
     my($name, $attrs) = ref($field) ? @$field : $field;
     my($label, $input) = $proto->vs_form_field($name, $attrs);
     return [
-	$label->put(cell_class => 'form_field_label'),
-	$proto->vs_call('Join', [
-	    $input,
-	    [sub {
-		 my($req) = shift->get_request;
-		 my($proto, $name) = @_;
+        $label->put(cell_class => 'form_field_label'),
+        $proto->vs_call('Join', [
+            $input,
+            [sub {
+                 my($req) = shift->get_request;
+                 my($proto, $name) = @_;
 #TODO: Need to create a separate space for field_descriptions so we don't
 #      default to something that we don't expect.
-		 my($v) = $req->get_nested('Bivio::UI::Facade', 'Text')
-		     ->unsafe_get_value($name, 'field_description');
-		 return $v ?
-		     $proto->vs_call(
-			 'String',
-			 $proto->vs_call('Prose', '<br><p class="form_field_description">' . $v . '</p>'),
-			 'form_field_description',
-		     ) :  '';
-	    }, $proto, $name],
-	], {
-	    cell_class => 'form_field_input',
+                 my($v) = $req->get_nested('Bivio::UI::Facade', 'Text')
+                     ->unsafe_get_value($name, 'field_description');
+                 return $v ?
+                     $proto->vs_call(
+                         'String',
+                         $proto->vs_call('Prose', '<br><p class="form_field_description">' . $v . '</p>'),
+                         'form_field_description',
+                     ) :  '';
+            }, $proto, $name],
+        ], {
+            cell_class => 'form_field_input',
         }),
     ];
 }
@@ -269,8 +269,8 @@ sub vs_form_field {
 sub vs_html_attrs_initialize {
     my($proto, $widget, $attrs, $source) = @_;
     $widget->map_invoke(
-	'unsafe_initialize_attr',
-	$attrs || $proto->vs_html_attrs_merge,
+        'unsafe_initialize_attr',
+        $attrs || $proto->vs_html_attrs_merge,
         undef,
         [$source],
     );
@@ -285,27 +285,27 @@ sub vs_html_attrs_merge {
 sub vs_html_attrs_render {
     my($proto, $widget, $source, $attrs) = @_;
     return join(
-	'',
-	map($proto->vs_html_attrs_render_one($widget, $source, $_),
-	    @{$attrs || $proto->vs_html_attrs_merge}),
+        '',
+        map($proto->vs_html_attrs_render_one($widget, $source, $_),
+            @{$attrs || $proto->vs_html_attrs_merge}),
     );
 }
 
 sub vs_html_attrs_render_one {
     my($proto, $widget, $source, $attr) = @_;
     return ''
-	unless length(my $v = $widget->render_simple_attr($attr, $source));
+        unless length(my $v = $widget->render_simple_attr($attr, $source));
     my($k) = $attr =~ /^[A-Z]/ ? lc($attr) : ($attr =~ /([^_]+)$/)[0];
     if ($k =~ /^(?:class|id)$/) {
-	_trace($k, '=', $v) if $_TRACE && !$_ATTRS->{$k}->{$v}++;
-	$v =~ s/^b_//
-	    unless $_V6;
+        _trace($k, '=', $v) if $_TRACE && !$_ATTRS->{$k}->{$v}++;
+        $v =~ s/^b_//
+            unless $_V6;
     }
     return ' '
-	. $k
-	. '="'
-	. Bivio::HTML->escape_attr_value($v)
-	. '"';
+        . $k
+        . '="'
+        . Bivio::HTML->escape_attr_value($v)
+        . '"';
 }
 
 sub vs_image {
@@ -315,9 +315,9 @@ sub vs_image {
     my($proto, $icon, $alt, $attrs) = @_;
     _use('Image');
     return Bivio::UI::HTML::Widget::Image->new({
-	src => $icon,
-	(defined($alt) || ref($icon) ? (alt => $alt) : (alt_text => $icon)),
-	$attrs ? %$attrs : (),
+        src => $icon,
+        (defined($alt) || ref($icon) ? (alt => $alt) : (alt_text => $icon)),
+        $attrs ? %$attrs : (),
     });
 }
 
@@ -326,7 +326,7 @@ sub vs_join {
     # B<DEPRECATED.  Use L<vs_new|"vs_new">>.
     my($proto, @values) = @_;
     my($values) = int(@values) == 1 && ref($values[0]) eq 'ARRAY'
-	    ? $values[0] : [@values];
+            ? $values[0] : [@values];
     return $proto->vs_new('Join', $values);
 }
 
@@ -353,55 +353,55 @@ sub vs_link {
     _use('Link');
     my($control);
     if (int(@_) <= 2) {
-	$control = $label;
-	$widget_value = $label;
-	$label = $proto->vs_text($widget_value);
+        $control = $label;
+        $widget_value = $label;
+        $label = $proto->vs_text($widget_value);
     }
     unless (UNIVERSAL::isa($label, 'Bivio::UI::Widget')) {
-	$label = $proto->vs_string($label);
+        $label = $proto->vs_string($label);
     }
     else {
 #TODO: Does this make sense. I put it it in for backward compatibility [RJN]
-	# Don't assign the font unless creating a string.
-	$font = undef;
+        # Don't assign the font unless creating a string.
+        $font = undef;
     }
     $widget_value = [['->get_request'], '->format_stateless_uri',
-	Bivio::Agent::TaskId->$widget_value()]
-	    # Use widget value or abs_uri (literal)
-	    unless ref($widget_value) || $widget_value =~ m![/:#]!;
+        Bivio::Agent::TaskId->$widget_value()]
+            # Use widget value or abs_uri (literal)
+            unless ref($widget_value) || $widget_value =~ m![/:#]!;
     return Bivio::UI::HTML::Widget::Link->new({
-	href => $widget_value,
-	value => $label,
-	$control ? (control => $control) : (),
-	defined($font) ? (string_font => $font) : (),
+        href => $widget_value,
+        value => $label,
+        $control ? (control => $control) : (),
+        defined($font) ? (string_font => $font) : (),
     });
 }
 
 sub vs_link_target_as_html {
     my($proto, $widget, $source) = @_;
     return ''
-	unless defined(my $t = $widget->ancestral_get(
-	    'link_target', $_LINK_TARGET));
+        unless defined(my $t = $widget->ancestral_get(
+            'link_target', $_LINK_TARGET));
     if ($source) {
-	my($b);
-	$widget->unsafe_render_value('link_target', $t, $source, \$b);
-	$t = $b;
+        my($b);
+        $widget->unsafe_render_value('link_target', $t, $source, \$b);
+        $t = $b;
     }
     return defined($t) && length($t)
-	? ' target="' . Bivio::HTML->escape($t) . '"' : '';
+        ? ' target="' . Bivio::HTML->escape($t) . '"' : '';
 }
 
 sub vs_mailto_for_user_id {
     my($proto, $user_id) = @_;
     return $proto->vs_call('MailTo',
-	map([sub {
-	    my($source, $user_id, $model, $field) = @_;
-	    return $source->use('Model.' . $model)->new($source->req)
-		->unauth_load_or_die({
-		    realm_id => $user_id,
-		})->get($field);
-	}, $user_id, split('\.', $_)],
-	    qw(Email.email RealmOwner.display_name)));
+        map([sub {
+            my($source, $user_id, $model, $field) = @_;
+            return $source->use('Model.' . $model)->new($source->req)
+                ->unauth_load_or_die({
+                    realm_id => $user_id,
+                })->get($field);
+        }, $user_id, split('\.', $_)],
+            qw(Email.email RealmOwner.display_name)));
 }
 
 sub vs_new {
@@ -410,8 +410,8 @@ sub vs_new {
     # not already loaded.
     my($proto, $class) = (shift, shift);
     return UNIVERSAL::can('Bivio::UI::ViewLanguage', 'view_ok')
-	&& Bivio::UI::ViewLanguage->view_ok
-	? $proto->vs_call($class, @_) : (_use($class))[0]->new(@_);
+        && Bivio::UI::ViewLanguage->view_ok
+        ? $proto->vs_call($class, @_) : (_use($class))[0]->new(@_);
 }
 
 sub vs_simple_form {
@@ -425,50 +425,50 @@ sub vs_simple_form {
     $attr->{pad} = 2;
     my($have_submit) = 0;
     return $proto->vs_call('Form', $form,
-	$proto->vs_call('Grid', [
-	    map({
-		my($x);
-		if (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
-		    $_->get_if_exists_else_put(cell_align => 'left'),
-		    $x = [$_->put(cell_colspan => 2)];
-		}
-		elsif ($_ =~ s/^-//) {
-		    $x = [$proto->vs_call(
-			'String',
-			$proto->vs_text('separator', $_),
-			0,
-			{
-			    cell_colspan => 2,
-			    cell_class => 'separator',
-			},
-		    )];
-		}
-		elsif ($_ =~ s/^\*//) {
-		    $have_submit = 1;
-		    $x = [$proto->vs_call(
-			'StandardSubmit',
-			{
-			    cell_colspan => 2,
-			    cell_align => 'center',
-			    cell_class => 'form_submit',
-			    $_ ? (buttons => [split(/\s+/, $_)]) : (),
-			},
-		    )];
-		}
-		elsif (ref($_) eq 'ARRAY' && ref($_->[0])) {
-		    $x = $_;
-		}
-		else {
-		    $x = $proto->vs_descriptive_field($_);
-		}
-		$x;
-	    } @$rows),
-	    $have_submit ? () : [$proto->vs_call('StandardSubmit', {
-		cell_colspan => 2,
-		cell_align => 'center',
-		cell_class => 'form_submit',
-	    })],
-	], $attr));
+        $proto->vs_call('Grid', [
+            map({
+                my($x);
+                if (UNIVERSAL::isa($_, 'Bivio::UI::Widget')) {
+                    $_->get_if_exists_else_put(cell_align => 'left'),
+                    $x = [$_->put(cell_colspan => 2)];
+                }
+                elsif ($_ =~ s/^-//) {
+                    $x = [$proto->vs_call(
+                        'String',
+                        $proto->vs_text('separator', $_),
+                        0,
+                        {
+                            cell_colspan => 2,
+                            cell_class => 'separator',
+                        },
+                    )];
+                }
+                elsif ($_ =~ s/^\*//) {
+                    $have_submit = 1;
+                    $x = [$proto->vs_call(
+                        'StandardSubmit',
+                        {
+                            cell_colspan => 2,
+                            cell_align => 'center',
+                            cell_class => 'form_submit',
+                            $_ ? (buttons => [split(/\s+/, $_)]) : (),
+                        },
+                    )];
+                }
+                elsif (ref($_) eq 'ARRAY' && ref($_->[0])) {
+                    $x = $_;
+                }
+                else {
+                    $x = $proto->vs_descriptive_field($_);
+                }
+                $x;
+            } @$rows),
+            $have_submit ? () : [$proto->vs_call('StandardSubmit', {
+                cell_colspan => 2,
+                cell_align => 'center',
+                cell_class => 'form_submit',
+            })],
+        ], $attr));
 }
 
 sub vs_string {
@@ -499,9 +499,9 @@ sub vs_ts {
 sub vs_unknown_label {
     my($proto, $model, $field) = @_;
     return $proto->vs_text(
-	ref($model) || $model =~ /::/ ? $model->simple_package_name : $model,
-	$field,
-	'unknown_label',
+        ref($model) || $model =~ /::/ ? $model->simple_package_name : $model,
+        $field,
+        'unknown_label',
     );
 }
 

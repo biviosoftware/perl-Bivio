@@ -76,7 +76,7 @@ $_C->register(my $_CFG = {
     tmp_dir => "/var/tmp/build-$$",
     https_ca_file => undef,
     projects => [
-	[Bivio => b => 'bivio Software, Inc.'],
+        [Bivio => b => 'bivio Software, Inc.'],
     ],
 });
 
@@ -95,9 +95,9 @@ sub OPTIONS {
     # you would use this parameter.  Otherwise, you probably would use
     # the default (C<HEAD>).
     return {
-	%{__PACKAGE__->SUPER::OPTIONS()},
-	build_stage => ['String', 'b'],
-	nodeps => ['Boolean', 0],
+        %{__PACKAGE__->SUPER::OPTIONS()},
+        build_stage => ['String', 'b'],
+        nodeps => ['Boolean', 0],
         version => ['String', 'HEAD'],
     };
 }
@@ -110,7 +110,7 @@ sub OPTIONS_USAGE {
     #     -nodeps - install without checking dependencies
     #     -version - the version to be built (default: HEAD)
     return __PACKAGE__->SUPER::OPTIONS_USAGE()
-	    .<<'EOF';
+            .<<'EOF';
     -build_stage - rpm build stage, valid values [p,c,i,b],
                    identical to the rpm(1) -b option
     -nodeps - install without checking dependencies
@@ -163,23 +163,23 @@ sub build {
     $self->usage_error("Missing spec file\n") unless @packages;
     my($rpm_stage) = $self->get('build_stage');
     $self->usage_error("Invalid build_stage ", $rpm_stage, "\n")
-	unless $rpm_stage =~ /^[pcib]$/;
+        unless $rpm_stage =~ /^[pcib]$/;
     return _do_in_tmp($self, 1, sub {
-	my($tmp, $output, $pwd) = @_;
-	for my $specin (@packages) {
-	    my($specout, $base) = _create_rpm_spec(
-		$self, $specin, $output, $pwd);
-	    my($rpm_command) = "rpmbuild -b$rpm_stage $specout";
-	    if ($self->get('noexecute')) {
-		_would_run("cd $tmp; $rpm_command", $output);
-		next;
-	    }
-	    _system($rpm_command, $output);
-	    my($rpm_file) = $$output =~ /.*Wrote:\s+(\S+\.rpm)\n/is;
-	    _save_rpm_file($rpm_file, $output);
-	    _link_base_version(Type_FilePath()->get_tail($rpm_file), "$base.rpm", $output);
-	}
-	return;
+        my($tmp, $output, $pwd) = @_;
+        for my $specin (@packages) {
+            my($specout, $base) = _create_rpm_spec(
+                $self, $specin, $output, $pwd);
+            my($rpm_command) = "rpmbuild -b$rpm_stage $specout";
+            if ($self->get('noexecute')) {
+                _would_run("cd $tmp; $rpm_command", $output);
+                next;
+            }
+            _system($rpm_command, $output);
+            my($rpm_file) = $$output =~ /.*Wrote:\s+(\S+\.rpm)\n/is;
+            _save_rpm_file($rpm_file, $output);
+            _link_base_version(Type_FilePath()->get_tail($rpm_file), "$base.rpm", $output);
+        }
+        return;
     });
 }
 
@@ -190,7 +190,7 @@ sub create_stream {
 
 sub download_file {
     sub DOWNLOAD_FILE {[
-	[qw(file_name Text)],
+        [qw(file_name Text)],
     ]}
     my($self, $bp) = shift->parameters(\@_);
     my($uri) = $bp->{file_name};
@@ -201,7 +201,7 @@ sub download_file {
 sub get_projects {
     # Returns a map of root packages names and long names.
     #     {
-    # 	pet => 'bivio Software, Inc.',
+    #         pet => 'bivio Software, Inc.',
     #     }
     return {map({lc @$_[0], @$_[2]} @{$_CFG->{projects}})};
 }
@@ -269,7 +269,7 @@ sub handle_config {
         unless ref($cfg->{projects}) eq 'ARRAY';
     $_CFG = {%$cfg};
     $_CFG->{rpm_http_root} = $_CFG->{rpm_home_dir}
-	unless defined($_CFG->{rpm_http_root});
+        unless defined($_CFG->{rpm_http_root});
     $_CFG->{rpm_group} ||= $_CFG->{rpm_user};
     return;
 }
@@ -289,7 +289,7 @@ sub install {
     #
     # Returns a list of commands executed.
     $self->usage_error("No packages to install?")
-	unless @packages;
+        unless @packages;
 
     my($command) = ['rpm', '-Uvh'];
     push(@$command, '--force') if $self->unsafe_get('force');
@@ -298,57 +298,57 @@ sub install {
 #BUG: rpm 4.0.4 has a bug with proxy: after downloading correctly, it
 #     installs the first package N times.  NOTE: check below $ENV{http_proxy}.
 #    push(@$command, _get_proxy($self))
-#	unless $_CFG->{http_realm};
+#        unless $_CFG->{http_realm};
 
     # install all the packages
     my($prev) = [];
     foreach my $package (@packages) {
-	push(@$prev,
-	     `rpm -q --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE}.\%{ARCH}.rpm' $package 2>/dev/null`,
-	);
-	$package .= '.rpm'
-	    if $package =~ /\.\d+$/;
-	$package .= '-'.$self->get('version').'.rpm'
-	    unless $package =~ /\.rpm$/;
-	push(@$command, _create_uri($package));
+        push(@$prev,
+             `rpm -q --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE}.\%{ARCH}.rpm' $package 2>/dev/null`,
+        );
+        $package .= '.rpm'
+            if $package =~ /\.\d+$/;
+        $package .= '-'.$self->get('version').'.rpm'
+            unless $package =~ /\.rpm$/;
+        push(@$command, _create_uri($package));
     }
 
 #TODO: download srcrpm and build/install
     _umask();
     my($run) = sub {
-	my($op) = @_;
-	my($err) = $?
-	    if $op->() != 0;
-	$self->print(
-	    "To rollback:\n",
-	    "rpm -Uvh --force --nodeps @$prev\n",
-	);
-	if ($err) {
-	    $self->print("ERROR: exit status = $err\n");
-	    CORE::exit(1);
-	}
-	return;
+        my($op) = @_;
+        my($err) = $?
+            if $op->() != 0;
+        $self->print(
+            "To rollback:\n",
+            "rpm -Uvh --force --nodeps @$prev\n",
+        );
+        if ($err) {
+            $self->print("ERROR: exit status = $err\n");
+            CORE::exit(1);
+        }
+        return;
     };
     return _do_in_tmp($self, 0, sub {
-	my($tmp, $output) = @_;
-	my($i) = 0;
-	foreach my $arg (@$command) {
-	    next
-		unless $arg =~ /^http/;
-	    my($file) = $arg =~ m{([^/]+)$};
-	    b_use('IO.File')->write($file, _http_get(\$arg, $output));
-	    substr($prev->[$i++], 0, 0) = ($arg =~ m{(.*/)})[0];
-	    substr($arg, 0) = $file;
-	}
-	_output($output, "@$command\n");
+        my($tmp, $output) = @_;
+        my($i) = 0;
+        foreach my $arg (@$command) {
+            next
+                unless $arg =~ /^http/;
+            my($file) = $arg =~ m{([^/]+)$};
+            b_use('IO.File')->write($file, _http_get(\$arg, $output));
+            substr($prev->[$i++], 0, 0) = ($arg =~ m{(.*/)})[0];
+            substr($arg, 0) = $file;
+        }
+        _output($output, "@$command\n");
 
-	# For some reason, system and `` doesn't work right with rpm and
-	# a redirect (see _system, but `@$command 2>&1` doesn't work either).
-	# There seems to be a "wait" problem.
-	$self->print($$output);
-	$$output = '';
-	$run->(sub {system(@$command)});
-	return;
+        # For some reason, system and `` doesn't work right with rpm and
+        # a redirect (see _system, but `@$command 2>&1` doesn't work either).
+        # There seems to be a "wait" problem.
+        $self->print($$output);
+        $$output = '';
+        $run->(sub {system(@$command)});
+        return;
     }) if $_CFG->{http_realm} || $ENV{http_proxy};
     $self->print(join(' ', @$command, "\n"));
     $run->(sub {system(@$command)});
@@ -377,7 +377,7 @@ sub list {
     #
     # or directory.
     return join('',
-	map("$_\n", ${_http_get(\($uri ||= ''))} =~ /.+\">\s*(\S+\.rpm)<\/A>/g));
+        map("$_\n", ${_http_get(\($uri ||= ''))} =~ /.+\">\s*(\S+\.rpm)<\/A>/g));
 }
 
 sub list_installed {
@@ -387,7 +387,7 @@ sub list_installed {
     # Case is ignored on the match.
     $match = '.' unless defined($match);
     return join('', grep(/$match/i, split(/(?<=\n)/,
-	`rpm -qa --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE} \%{GROUP} %{BUILDHOST}\\n'`
+        `rpm -qa --queryformat '\%{NAME}-\%{VERSION}-\%{RELEASE} \%{GROUP} %{BUILDHOST}\\n'`
        )));
 }
 
@@ -400,10 +400,10 @@ sub list_projects_el {
     #
     #     RootPackage short-name Copyright Owner, Inc.
     return "(setq b-perl-projects\n     '("
-	. join("\n       ",
-	    map(sprintf('("%s" "%s" "%s")', @$_),
-		@{$_CFG->{projects}}))
-	. "))\n";
+        . join("\n       ",
+            map(sprintf('("%s" "%s" "%s")', @$_),
+                @{$_CFG->{projects}}))
+        . "))\n";
 }
 
 sub list_projects_sh_except_bivio {
@@ -425,8 +425,8 @@ sub list_updates {
 sub map_projects {
     my($proto, $op) = @_;
     return [map(
-	$op->(@$_),
-	@{$proto->list_projects},
+        $op->(@$_),
+        @{$proto->list_projects},
     )];
 }
 
@@ -442,7 +442,7 @@ sub _b_release_define {
     my($name, $string) = @_;
     $_MACROS->{$name} = $string;
     $string = ${b_use('IO.Ref')->to_string($string, undef, 0)}
-	if ref($string);
+        if ref($string);
     $string =~ s/\n/ /g;
     return '%define ' . $name . ' ' . $string;
 }
@@ -454,23 +454,23 @@ sub _b_release_files {
 %files
 EOF
     $instructions .= "\%files\n"
-	unless $instructions =~ /\%files\b/;
+        unless $instructions =~ /\%files\b/;
     my($prefix) = '';
     my($res) = "cd \%{buildroot}\n";
     $instructions = [split(/\n/, $instructions)];
     while (defined(my $line = shift(@$instructions))) {
-	$line =~ s/^\s+|\s+$//g;
-	next
-	    unless length($line);
-	if ($line =~ s/^\$\{(\w+)\}(.*)/"\$_MACROS->{$1}$2 || ''"/ee) {
-	    unshift(@$instructions, split(/\n/, $line));
-	    next;
-	}
-	if ($line =~ /^\%defattr/) {
-	    $res .= "echo '$line'";
-	}
-	elsif ($line eq '%files') {
-	    $res .= <<"EOF";
+        $line =~ s/^\s+|\s+$//g;
+        next
+            unless length($line);
+        if ($line =~ s/^\$\{(\w+)\}(.*)/"\$_MACROS->{$1}$2 || ''"/ee) {
+            unshift(@$instructions, split(/\n/, $line));
+            next;
+        }
+        if ($line =~ /^\%defattr/) {
+            $res .= "echo '$line'";
+        }
+        elsif ($line eq '%files') {
+            $res .= <<"EOF";
 test -s '$_FILES_LIST' || {
     echo 'ERROR: Empty files list'
     exit 1
@@ -480,17 +480,17 @@ test -s '$_FILES_LIST' || {
 EOF
             next;
         }
-	elsif ($line eq '%') {
-	    # clear prefix
-	    $prefix = '',
-	    next;
-	}
-	elsif ($line =~ /^%/) {
-	    $prefix = $line . ' ';
-	    next;
-	}
-	elsif ($line eq '+') {
-	    $res .= <<"EOF";
+        elsif ($line eq '%') {
+            # clear prefix
+            $prefix = '',
+            next;
+        }
+        elsif ($line =~ /^%/) {
+            $prefix = $line . ' ';
+            next;
+        }
+        elsif ($line eq '+') {
+            $res .= <<"EOF";
 {
     test -f $_FILES_LIST && perl -p -e 's#^[^/]+##' $_FILES_LIST
     echo 'so file is not empty'
@@ -501,25 +501,25 @@ EOF
 EOF
             $res .= ') ';
             if ($prefix) {
-		my($p) = $prefix;
-		$p =~ s/(\W)/\\$1/g;
-		$res .= "| perl -p -e 's{^}{\Q$prefix\E}'";
-	    }
-	    $res .= q{| perl -p -e 'm{/man\d[a-z]?/.*\.\d+} && s{$}{*}m'};
-	}
-	elsif ($line =~ m#^/#) {
-	    if ($line =~ /[\?\*\[\]]/) {
-		$line =~ s{^/}{};
-		$res .= qq{for file in $line; do test "\$file" = '$line' || echo '$prefix' "/\$file"; done};
-	    }
-	    else {
-		$res .= "echo '$prefix$line'";
-	    }
-	}
-	else {
-	    die($line, ": unknown _b_release_files instruction");
-	}
-	$res .= ">> $_FILES_LIST\n";
+                my($p) = $prefix;
+                $p =~ s/(\W)/\\$1/g;
+                $res .= "| perl -p -e 's{^}{\Q$prefix\E}'";
+            }
+            $res .= q{| perl -p -e 'm{/man\d[a-z]?/.*\.\d+} && s{$}{*}m'};
+        }
+        elsif ($line =~ m#^/#) {
+            if ($line =~ /[\?\*\[\]]/) {
+                $line =~ s{^/}{};
+                $res .= qq{for file in $line; do test "\$file" = '$line' || echo '$prefix' "/\$file"; done};
+            }
+            else {
+                $res .= "echo '$prefix$line'";
+            }
+        }
+        else {
+            die($line, ": unknown _b_release_files instruction");
+        }
+        $res .= ">> $_FILES_LIST\n";
     }
     # Don't need last \n
     chop($res);
@@ -530,8 +530,8 @@ sub _b_release_include {
     my($to_include, $spec_dir, $version, $output) = @_;
     # Returns contents of $to_include
 #    _system("cd $_CFG->{tmp_dir} && bivio vc checkout $version"
-#	. " $_CFG->{cvs_rpm_spec_dir}/$to_include", $output)
-#	if $version;
+#        . " $_CFG->{cvs_rpm_spec_dir}/$to_include", $output)
+#        if $version;
     return ${b_use('IO.File')->read("$spec_dir$to_include")};
 }
 
@@ -539,8 +539,8 @@ sub _build_macros {
     my($build_root) = @_;
     my($vc_find) = b_use('Util.VC')->CONTROL_DIR_FIND_PREDICATE;
     return ($_NEED_BUILD_ROOT ? "BuildRoot: $build_root\n" : '')
-	. '%define build_root %{buildroot}'
-	. "\n"
+        . '%define build_root %{buildroot}'
+        . "\n"
         . <<"EOF";
 \%define allfiles cd \%{buildroot}; find . $vc_find -prune -o -type l -print -o -type f -print | sed -e 's/^\\.//'
 \%define allcfgs cd \%{buildroot}; find . -name $vc_find -prune -o -type l -print -o -type f -print | sed -e 's/^\\./%config /'
@@ -589,32 +589,32 @@ sub _create_rpm_spec {
     my($version) = $self->get('version');
     my($cvs) = 0;
     if ($specin =~ /\.spec$/) {
-	$specin = $pwd.'/'.$specin
-	    unless $specin =~ m!^/!;
+        $specin = $pwd.'/'.$specin
+            unless $specin =~ m!^/!;
     }
     else {
-	my($spec_dir) = $_CFG->{cvs_rpm_spec_dir};
-	my($first);
-	foreach my $sd (ref($spec_dir) ? @$spec_dir : $spec_dir) {
-	    _system("bivio vc checkout '$version' '$sd'", $output);
-	    if ($first) {
-		_system("cp -a '$sd'/*.* '$first'");
-	    }
-	    else {
-		$first = $sd;
-	    }
-	}
+        my($spec_dir) = $_CFG->{cvs_rpm_spec_dir};
+        my($first);
+        foreach my $sd (ref($spec_dir) ? @$spec_dir : $spec_dir) {
+            _system("bivio vc checkout '$version' '$sd'", $output);
+            if ($first) {
+                _system("cp -a '$sd'/*.* '$first'");
+            }
+            else {
+                $first = $sd;
+            }
+        }
         $specin = "$first/$specin.spec";
-	$specin = b_use('IO.File')->pwd.'/'.$specin
-	    unless $specin =~ m!^/!;
-	$cvs = 1;
+        $specin = b_use('IO.File')->pwd.'/'.$specin
+            unless $specin =~ m!^/!;
+        $cvs = 1;
     }
     my($spec_dir) = $specin;
     $spec_dir =~ s#[^/]+$##;
     my($base_spec) =  _read_all($specin);
     my($release) = _search('release', $base_spec) || _get_date_format();
     my($name) = _search('name', $base_spec)
-	|| (b_use('Type.FileName')->get_tail($specin) =~ /(.*)\.spec$/);
+        || (b_use('Type.FileName')->get_tail($specin) =~ /(.*)\.spec$/);
     my($provides) = _search('provides', $base_spec) || $name;
     my($vc_find) = $self->new_other('VC')->CONTROL_DIR_FIND_PREDICATE;
     my($buf) = <<"EOF" . _perl_macros();
@@ -627,21 +627,21 @@ Provides: $provides
 EOF
     # This is a different version
     $buf .= "Version: $version\n"
-	unless _search('version', $base_spec);
+        unless _search('version', $base_spec);
     $buf .= "License: N/A\n"
-	unless _search('license', $base_spec);
+        unless _search('license', $base_spec);
     $buf .= _build_macros($build_root);
     for my $line (@$base_spec) {
         0 while $line =~ s{^\s*_b_release_include\((.+?)\);}
-	    {"_b_release_include($1, \$spec_dir, \$cvs ? \$version : 0, \$output)"}xeemg;
-	$buf .= $line
-	    unless $line =~ /^(release|name|provides): /i;
+            {"_b_release_include($1, \$spec_dir, \$cvs ? \$version : 0, \$output)"}xeemg;
+        $buf .= $line
+            unless $line =~ /^(release|name|provides): /i;
     }
     local($_MACROS) = {};
     $buf =~ s/\b(_b_release_(?:files|define)\(.*?\));/$1/eegs;
     my($safe_rm) = "b-release-safe_rm-$$-" . Biz_Random()->string;
     b_die('%prep', ': missing from spec file')
-	unless $buf =~ s{(\n\%prep\s*?)\n}{$1
+        unless $buf =~ s{(\n\%prep\s*?)\n}{$1
 cd /tmp
 @{[_safe_rm($safe_rm)]}
 ./$safe_rm \%{_builddir} \%{buildroot}
@@ -651,7 +651,7 @@ cd \%{_builddir}
 \%define safe_rm \%{_builddir}/$safe_rm
 }s;
     $version = $1
-	if $buf =~ /\nVersion:\s*(\S+)/i;
+        if $buf =~ /\nVersion:\s*(\S+)/i;
     my($specout) = "$specin-build";
     b_use('IO.File')->write($specout, \$buf);
     return ($specout, "$name-$version", "$name-$version-$release");
@@ -673,12 +673,12 @@ sub _do_in_tmp {
     b_use('IO.File')->mkdir_p($_CFG->{tmp_dir});
     return _do_output(sub {
         my($output) = @_;
-	my($prev_dir) = b_use('IO.File')->pwd;
-	$op->(_chdir($_CFG->{tmp_dir}, $output), $output, $prev_dir);
-	_chdir($prev_dir);
-	b_use('IO.File')->rm_rf($_CFG->{tmp_dir})
-	    unless $self->get('noexecute');
-	return;
+        my($prev_dir) = b_use('IO.File')->pwd;
+        $op->(_chdir($_CFG->{tmp_dir}, $output), $output, $prev_dir);
+        _chdir($prev_dir);
+        b_use('IO.File')->rm_rf($_CFG->{tmp_dir})
+            unless $self->get('noexecute');
+        return;
     });
 }
 
@@ -690,7 +690,7 @@ sub _do_output {
         return $op->(\$output);
     });
     return $output
-	unless $die;
+        unless $die;
     Bivio::IO::Alert->print_literally($output);
     $die->throw;
     # DOES NOT RETURN
@@ -700,8 +700,8 @@ sub _err_parser {
     my($orig, $final) = @_;
     # Gets rid of 'warning: x saved as y' if the files are the same
     return ("warning: $orig saved as $final\n")
-	    unless ${b_use('IO.File')->read($orig)}
-		    eq ${b_use('IO.File')->read($final)};
+            unless ${b_use('IO.File')->read($orig)}
+                    eq ${b_use('IO.File')->read($final)};
     return '';
 }
 
@@ -709,7 +709,7 @@ sub _get_date_format {
     my(@n) = localtime;
     # Returns a date format for the current local time.
     return sprintf("%4d%02d%02d_%02d%02d%02d", 1900+$n[5], 1+$n[4],
-	    $n[3], $n[2], $n[1], $n[0]);
+            $n[3], $n[2], $n[1], $n[0]);
 }
 
 sub _get_proxy {
@@ -730,23 +730,23 @@ sub _get_update_list {
     my($install, $self, $stream) = @_;
     # Returns a list of packages that exist on this machine and need updating.
     $self->usage_error("no stream specified.")
-	unless $stream;
+        unless $stream;
     my($local_rpms) = {
-	map({
-	    ($_ => 1, ($_ =~ /^(\S+)/)[0] => 1);
-	} split(
-	    /\n/,
-	    `rpm -qa --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' | sort`,
-	)),
+        map({
+            ($_ => 1, ($_ =~ /^(\S+)/)[0] => 1);
+        } split(
+            /\n/,
+            `rpm -qa --queryformat '%{NAME} %{VERSION}-%{RELEASE}\n' | sort`,
+        )),
     };
     my($uri);
     return _parse_stream(
         $stream,
         sub {
-	    my($base, $version, $rpm) = @_;
-	    return !$local_rpms->{"$base $version"}
-	        && ($install || $local_rpms->{$base})
-	        ? $rpm : ();
+            my($base, $version, $rpm) = @_;
+            return !$local_rpms->{"$base $version"}
+                && ($install || $local_rpms->{$base})
+                ? $rpm : ();
         },
     )
 }
@@ -760,22 +760,22 @@ sub _http_get {
     # Returns content pointed to by $uri.  Handles local files as well
     # as remote files.
     ($$uri = _create_uri($$uri)) =~ /^\w+:/
-	or $$uri = URI::Heuristic::uf_uri($$uri)->as_string;
+        or $$uri = URI::Heuristic::uf_uri($$uri)->as_string;
     _output($output, "GET $$uri\n");
     local($ENV{HTTPS_CA_FILE}) = $_CFG->{https_ca_file}
-	if $_CFG->{https_ca_file};
+        if $_CFG->{https_ca_file};
     my($ua) = b_use('Ext.LWPUserAgent')
-	->new
-	->bivio_ssl_no_check_certificate
-	->bivio_redirect_automatically;
+        ->new
+        ->bivio_ssl_no_check_certificate
+        ->bivio_redirect_automatically;
     $ua->credentials(
-	URI->new($$uri)->host_port,
-	@$_CFG{qw(http_realm http_user http_password)},
+        URI->new($$uri)->host_port,
+        @$_CFG{qw(http_realm http_user http_password)},
     ) if $_CFG->{http_realm};
     my($reply) = $ua->request(
-	HTTP::Request->new('GET', $$uri));
+        HTTP::Request->new('GET', $$uri));
     b_die($$uri, ": GET failed: ", $reply->status_line)
-	unless $reply->is_success;
+        unless $reply->is_success;
     return \($reply->content);
 }
 
@@ -787,7 +787,7 @@ sub _link_base_version {
     _output($output, "LINKING $version AS $base\n");
     _system("ln -s '$version' '$base'", $output);
     return
-	if $base =~ /-HEAD\./;
+        if $base =~ /-HEAD\./;
     unlink($base);
     _output($output, "LINKING $version AS $base\n");
     _system("ln -s '$version' '$base'", $output);
@@ -798,26 +798,26 @@ sub _mkdir_rpmbuild {
     my($self) = @_;
     my($map) = {${$self->piped_exec('rpmbuild --showrc')} =~ /:\s+(_[a-z]+)\s+(\S+)/g};
     my($lookup) = sub {
-	my($name) = @_;
-	b_die($name, ': not found in `rpmbuild --showrc`')
-	    unless my $d = $map->{$name};
-	$map->{$name} = $d
-	    if $d =~ s{^\%\{getenv:(\w+)\}}{$ENV{$1}};
-	return $d
-	    if $name eq '_topdir';
-	b_die($d, ": $name does not begin with _topdir")
-	    unless $d =~ /^\%{_topdir}(.+)/;
-	return $map->{_topdir} . $1;
+        my($name) = @_;
+        b_die($name, ': not found in `rpmbuild --showrc`')
+            unless my $d = $map->{$name};
+        $map->{$name} = $d
+            if $d =~ s{^\%\{getenv:(\w+)\}}{$ENV{$1}};
+        return $d
+            if $name eq '_topdir';
+        b_die($d, ": $name does not begin with _topdir")
+            unless $d =~ /^\%{_topdir}(.+)/;
+        return $map->{_topdir} . $1;
     };
     my($top) = $lookup->('_topdir');
     foreach my $dir (qw(
-	_builddir
-	_rpmdir
-	_sourcedir
-	_specdir
-	_srcrpmdir
+        _builddir
+        _rpmdir
+        _sourcedir
+        _specdir
+        _srcrpmdir
     )) {
-	IO_File()->mkdir_p($top . $lookup->($dir));
+        IO_File()->mkdir_p($top . $lookup->($dir));
     }
     return $lookup->('_builddir') . '/install';
 }
@@ -827,7 +827,7 @@ sub _output {
     # Appends output with arg(s).
     _trace(@_) if $_TRACE;
     $$output .= join('', @_)
-	if $output;
+        if $output;
     return;
 }
 
@@ -835,71 +835,71 @@ sub _parse_stream {
     my($stream, $op) = @_;
     my($uri) = _stream_file($stream);
     return [
-	map({
-	    my($base, $version, $rpm) = split(/\s+/, $_);
-	    $version ||= 'HEAD';
-	    $rpm ||= "$base-$version.rpm";
+        map({
+            my($base, $version, $rpm) = split(/\s+/, $_);
+            $version ||= 'HEAD';
+            $rpm ||= "$base-$version.rpm";
             $op->($base, $version, $rpm);
-	} split(/\n/, ${_http_get(\$uri)})),
+        } split(/\n/, ${_http_get(\$uri)})),
     ];
 }
 
 sub _perl_macros {
     return join(
-	'',
-	map(
-	    '%define ' . $_ . " \%{nil}\n",
-	    '__perl_provides',
-	    '__perl_requires',
-	),
-	map(
-	    _perl_macros_one(@$_),
-	    [
-		'perl_build',
-		'Build.PL --destdir %{buildroot} --installdirs vendor',
-		'./Build code',
-		'./Build',
-	    ],
-	    [
-		'perl_make',
-		'Makefile.PL DESTDIR=%{buildroot} INSTALLDIRS=vendor',
-		'make POD2MAN=true',
-		'make POD2MAN=true',
-	    ],
-	),
+        '',
+        map(
+            '%define ' . $_ . " \%{nil}\n",
+            '__perl_provides',
+            '__perl_requires',
+        ),
+        map(
+            _perl_macros_one(@$_),
+            [
+                'perl_build',
+                'Build.PL --destdir %{buildroot} --installdirs vendor',
+                './Build code',
+                './Build',
+            ],
+            [
+                'perl_make',
+                'Makefile.PL DESTDIR=%{buildroot} INSTALLDIRS=vendor',
+                'make POD2MAN=true',
+                'make POD2MAN=true',
+            ],
+        ),
     );
 }
 
 sub _perl_macros_one {
     my($name, $make_make, $make, $install) = @_;
     my($def) = sub {
-	return (
-	    '%define ',
-	    $name,
-	    shift(@_),
-	    ' ',
-	    _umask_string(),
-	    ' && ',
-	    @_,
-	    "\n",
-	);
+        return (
+            '%define ',
+            $name,
+            shift(@_),
+            ' ',
+            _umask_string(),
+            ' && ',
+            @_,
+            "\n",
+        );
     };
     return (
-	$def->(
-	    '',
-	    'perl ',
-	    $make_make,
-	    ' < /dev/null',
-	    ' && ',
-	    $make
-	),
-	$def->(
-	    '_install',
-	    $install,
-	    ' pure_install',
-	    ' && %{safe_rm} %{buildroot}/usr/share/man %{buildroot}/usr/man',
-	    q{ && find %{buildroot} -name '*.bs' -o -name .packlist -o -name perllocal.pod | xargs rm -f},
-	),
+        $def->(
+            '',
+            'perl ',
+            $make_make,
+            ' < /dev/null',
+            ' && ',
+            $make
+        ),
+        $def->(
+            '_install',
+            $install,
+            ' pure_install',
+            ' && %{safe_rm} %{buildroot}/usr/share/man %{buildroot}/usr/man',
+            q{ && find %{buildroot} -name '*.bs' -o -name .packlist -o -name perllocal.pod | xargs rm -f},
+        ),
     );
 }
 
@@ -907,17 +907,17 @@ sub _project_args {
     my($want_die, $self, @projects) = @_;
     # Returns project config: ($self, $project)
     $self->usage_error('project not supplied')
-	unless @projects;
+        unless @projects;
     return (
-	$self,
-	map({
-	    my($p) = $_;
-	    (grep(lc($_->[0]) eq lc($p) || lc($_->[1]) eq lc($p),
-		@{$_CFG->{projects}}
-	    ))[0] or
-	       $want_die ? $self->usage_error($_, ': project not found')
-	       : $p;
-	} @projects),
+        $self,
+        map({
+            my($p) = $_;
+            (grep(lc($_->[0]) eq lc($p) || lc($_->[1]) eq lc($p),
+                @{$_CFG->{projects}}
+            ))[0] or
+               $want_die ? $self->usage_error($_, ': project not found')
+               : $p;
+        } @projects),
     );
 }
 
@@ -934,7 +934,7 @@ sub _rpm_uri_to_filename {
     my($uri) = @_;
     # Creates file name from $uri.  Ensures directory exists.
     return b_use('IO.File')->mkdir_p('/var/spool/up2date')
-	. '/'. b_use('Type.FileName')->get_tail($uri);
+        . '/'. b_use('Type.FileName')->get_tail($uri);
 }
 
 sub _safe_rm {
@@ -964,7 +964,7 @@ END2
 sub _save_rpm_file {
     my($rpm_file, $output) = @_;
     b_die($rpm_file, ': missing rpm file')
-	unless -f $rpm_file;
+        unless -f $rpm_file;
     $$output .= "SAVING RPM $rpm_file in $_CFG->{rpm_home_dir}\n";
     _system("chown $_CFG->{rpm_user}.$_CFG->{rpm_group} $rpm_file", $output);
     _system("mv -f $rpm_file $_CFG->{rpm_home_dir}", $output);
@@ -987,13 +987,13 @@ sub _system {
     # Executes the specified command, appending any results to the output.
     # Dies if the system call fails.
     my($die) = Bivio::Die->catch(sub {
-	$command =~ s/'/"/g;
-	_output($output, "$command\n");
-	_output($output, ${__PACKAGE__->piped_exec("sh -ec '$command' 2>&1")});
-	return;
+        $command =~ s/'/"/g;
+        _output($output, "$command\n");
+        _output($output, ${__PACKAGE__->piped_exec("sh -ec '$command' 2>&1")});
+        return;
     });
     return
-	unless $die;
+        unless $die;
     _output($output, ${$die->get('attrs')->{output}});
     $die->throw;
     # DOES NOT RETURN

@@ -69,15 +69,15 @@ sub initialize {
     my($field_name) = $self->get('field');
     $self->put(field_name => $field_name);
     my($list) = Bivio::Biz::Model->get_instance(
-	    $self->ancestral_get('list_class'));
+            $self->ancestral_get('list_class'));
 
     unless ($list->has_fields($field_name)) {
-	$list = Bivio::Biz::Model->get_instance($list->get_list_class);
+        $list = Bivio::Biz::Model->get_instance($list->get_list_class);
     }
     my($type) = $list->get_field_type($field_name);
 
     $self->put(decimals => $type->get_decimals)
-	    unless $self->has_keys('decimals');
+            unless $self->has_keys('decimals');
 
     $self->put(field => [['->get_request'], ref($self).$field_name]);
 
@@ -102,7 +102,7 @@ sub render {
     $list->reset_cursor;
 
     while ($list->next_row) {
-	$total = $type->add($total, $list->get($self->get('field_name')));
+        $total = $type->add($total, $list->get($self->get('field_name')));
     }
 
     $source->get_request->put(ref($self).$self->get('field_name') => $total);

@@ -3,11 +3,11 @@
 my($rmid);
 FormModel({
     setup_request => sub {
-	my(undef, $params) = @_;
-	req()->capture_mail;
-	req()->put(query => {this => $rmid})
-	    unless ref($params->[0]) eq 'HASH';
-	return;
+        my(undef, $params) = @_;
+        req()->capture_mail;
+        req()->put(query => {this => $rmid})
+            unless ref($params->[0]) eq 'HASH';
+        return;
     },
 });
 req()->set_realm_and_user(qw(mail_forum mail_user1))
@@ -28,32 +28,32 @@ EOF
 $rmid = $rm->get('realm_file_id');
 [
     empty_case({
-	to => $to,
-	subject => 'Re: MailForm1',
+        to => $to,
+        subject => 'Re: MailForm1',
     }),
     [{
-	to => $to,
+        to => $to,
         subject => 's1',
-	body => 'body1',
-	attachment1 => {
-	    content => \('att1'),
-	    content_type => 'text/plain',
-	    filename => 'a1.txt',
-	},
+        body => 'body1',
+        attachment1 => {
+            content => \('att1'),
+            content_type => 'text/plain',
+            filename => 'a1.txt',
+        },
     }] => sub {
-	my($msg) = req('Model.RealmMail')->get_rfc822;
-	foreach my $p (
-	    qr{^From:.*mail_user1.*mail_user1\@}im,
-	    qr{^To:.*mail_forum\@}im,
-	    qr{^Subject: s1}im,
-	    qr{^Sender:.*mail_forum\@}im,
-	    qr{^Message-Id: <\d+\.\w+@.*>}im,
-	    qr{^Reply-To:.*mail_forum\@}im,
-	    qr{\n\nbody1},
-	    qr{filename="a1\.txt"},
-	) {
-	    assert_equals($p, $msg);
-	}
-	return 1;
+        my($msg) = req('Model.RealmMail')->get_rfc822;
+        foreach my $p (
+            qr{^From:.*mail_user1.*mail_user1\@}im,
+            qr{^To:.*mail_forum\@}im,
+            qr{^Subject: s1}im,
+            qr{^Sender:.*mail_forum\@}im,
+            qr{^Message-Id: <\d+\.\w+@.*>}im,
+            qr{^Reply-To:.*mail_forum\@}im,
+            qr{\n\nbody1},
+            qr{filename="a1\.txt"},
+        ) {
+            assert_equals($p, $msg);
+        }
+        return 1;
     },
 ];

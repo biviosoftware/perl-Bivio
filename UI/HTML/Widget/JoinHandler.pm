@@ -10,16 +10,16 @@ sub get_html_field_attributes {
     my($attrs_by_name) = {};
 
     foreach my $handler (@{$self->get('values')}) {
-	my($str) = $handler->get_html_field_attributes(@_);
+        my($str) = $handler->get_html_field_attributes(@_);
 
-	while ($str) {
-	    $str =~ s/^\s+(\w+)="([^"]+)"// || b_die('invalid pattern');
-	    push(@{$attrs_by_name->{lc($1)} ||= []}, $2);
-	}
+        while ($str) {
+            $str =~ s/^\s+(\w+)="([^"]+)"// || b_die('invalid pattern');
+            push(@{$attrs_by_name->{lc($1)} ||= []}, $2);
+        }
     }
     return join('',
         map(" $_=\"" . join(';', @{$attrs_by_name->{$_}}) . '"',
-	    sort(keys(%$attrs_by_name))));
+            sort(keys(%$attrs_by_name))));
 }
 
 1;

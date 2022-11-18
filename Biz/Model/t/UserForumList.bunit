@@ -5,9 +5,9 @@ req()->set_realm_and_user('btest_read', 'btest_read')
     ->initialize_fully('USER_HOME');
 [
     load_all => [
-	[] => [
-	    map(+{'RealmOwner.name' => $_},
-		qw(fourem fourem-sub1 fourem-sub1-1 fourem-sub2)),
-	],
+        [] => [
+            map(+{'RealmOwner.name' => $_},
+                qw(fourem fourem-sub1 fourem-sub1-1 fourem-sub2)),
+        ],
     ],
 ];

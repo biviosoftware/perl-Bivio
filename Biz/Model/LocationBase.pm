@@ -21,7 +21,7 @@ sub create {
 sub execute_load_home {
     my($proto, $req) = @_;
     $proto->new($req)->load({
-	location => $_L->HOME,
+        location => $_L->HOME,
     });
     return 0;
 }
@@ -29,10 +29,10 @@ sub execute_load_home {
 sub internal_unique_load_values {
     my($self, $values) = @_;
     return {
-	map(($_ => $values->{$_} || return),
-	    'realm_id',
-	),
-	location => $values->{location} || $_DEFAULT_LOCATION,
+        map(($_ => $values->{$_} || return),
+            'realm_id',
+        ),
+        location => $values->{location} || $_DEFAULT_LOCATION,
     };
 }
 
@@ -42,7 +42,7 @@ sub unauth_load {
     # and calls SUPER.
     my($query) = int(@_) == 1 ? @_ : {@_};
     $query->{location} = $_DEFAULT_LOCATION
-	if !$query->{location} && $query->{realm_id};
+        if !$query->{location} && $query->{realm_id};
     return $self->SUPER::unauth_load($query);
 }
 

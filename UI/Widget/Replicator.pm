@@ -10,11 +10,11 @@ sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($c) = $self->render_simple_attr('count', $source);
     $self->die($source, $c, ': count did not render as an integer')
-	unless $c =~ /^-?\d*$/s;
+        unless $c =~ /^-?\d*$/s;
     $self->die($source, "$c: count too large")
-	unless $c + 0 < 1_000_000;
+        unless $c + 0 < 1_000_000;
     $$buffer .= $self->render_simple_attr('value', $source) x $c
-	if $c > 0;
+        if $c > 0;
     return;
 }
 
@@ -31,13 +31,13 @@ sub internal_as_string {
 sub internal_new_args {
     shift;
     return {
-	map({
-	    my($x) = shift(@_);
-	    return qq{"$_" must be defined}
-		unless defined($x);
-	    ($_ => $x);
-	} @{$_ATTRS}),
-	%{shift(@_) || {}},
+        map({
+            my($x) = shift(@_);
+            return qq{"$_" must be defined}
+                unless defined($x);
+            ($_ => $x);
+        } @{$_ATTRS}),
+        %{shift(@_) || {}},
     };
 }
 

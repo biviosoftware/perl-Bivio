@@ -26,11 +26,11 @@ sub MAX_SERVER_REDIRECTS {
 sub initialize {
     my($proto, $partially) = @_;
     return
-	if $_INITIALIZED;
+        if $_INITIALIZED;
     $_INITIALIZED = 1;
     # Ensure we don't do something stupid.
     b_die('partial init not allowed in mod_perl')
-	if $partially && exists($ENV{MOD_PERL});
+        if $partially && exists($ENV{MOD_PERL});
     $_R->get_current_or_new;
     $_T->initialize($partially);
     $_F->initialize($partially);
@@ -44,12 +44,12 @@ sub internal_server_redirect_task {
     #      It already has set all the state
     my($attrs) = $die->get('attrs');
     _trace('redirect from ', $curr_task, ' to ', $attrs->{task_id})
-	if $_TRACE;
+        if $_TRACE;
 #TODO: add this when thoroughly debugged
-#	    $req->clear_nondurable_state;
+#            $req->clear_nondurable_state;
     if ($curr_task == $attrs->{task_id} && $curr_task->get_name =~ /ERROR/) {
-	b_warn($curr_task, ': not redirecting to identical ERROR task');
-	return;
+        b_warn($curr_task, ': not redirecting to identical ERROR task');
+        return;
     }
     return $attrs->{task_id};
 }
@@ -60,28 +60,28 @@ sub process_request {
     my($die, $req, $task_id);
     my($redirect_count) = -1;
  TRY: {
-	$die = $_D->catch(sub {
-	    die("too many dispatcher retries")
-		if ++$redirect_count > $self->MAX_SERVER_REDIRECTS;
-	    unless ($req) {
-		$req = $self->create_request(@protocol_args);
-		_trace('create_request: ', $req) if $_TRACE;
-	    }
-	    $req->put_durable(redirect_count => $redirect_count)
-		->set_task($task_id ||= $req->get('task_id'))
-		->execute($req);
-	});
-	if ($die
-	    && $die->get('code') == $_DC->SERVER_REDIRECT_TASK
-	    && $redirect_count <= $self->MAX_SERVER_REDIRECTS
-	) {
-	    last TRY
-		unless $task_id
-		= $self->internal_server_redirect_task($task_id, $die, $req);
+        $die = $_D->catch(sub {
+            die("too many dispatcher retries")
+                if ++$redirect_count > $self->MAX_SERVER_REDIRECTS;
+            unless ($req) {
+                $req = $self->create_request(@protocol_args);
+                _trace('create_request: ', $req) if $_TRACE;
+            }
+            $req->put_durable(redirect_count => $redirect_count)
+                ->set_task($task_id ||= $req->get('task_id'))
+                ->execute($req);
+        });
+        if ($die
+            && $die->get('code') == $_DC->SERVER_REDIRECT_TASK
+            && $redirect_count <= $self->MAX_SERVER_REDIRECTS
+        ) {
+            last TRY
+                unless $task_id
+                = $self->internal_server_redirect_task($task_id, $die, $req);
 #TODO: Can we remove the line below?
-	    $req->internal_redirect_realm($task_id);
-	    redo TRY;
-	}
+            $req->internal_redirect_realm($task_id);
+            redo TRY;
+        }
     }
     $req->call_process_cleanup($die)
         if $req;

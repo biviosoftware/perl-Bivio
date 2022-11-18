@@ -12,18 +12,18 @@ sub handle_register {
 # ffmpeg -i x.mp4 -c:v libvpx-vp9 -crf 30 -b:v 0 -b:a 128k -c:a libopus x.webm
 sub render_html {
     sub RENDER_HTML {[
-	'width',
-	'file',
+        'width',
+        'file',
         [qw(id String b_video)],
         # UNUSED since going to <video>; Aspect ratio will be preserved without height
-	'?height',
-	'?data',
-	'?noflash',
-	'?preview',
+        '?height',
+        '?data',
+        '?noflash',
+        '?preview',
     ]};
     my($proto, $args, $attrs) = shift->parameters(@_);
     return
-	unless $proto;
+        unless $proto;
     # always include webm format. Necessary for any legit app
     (my $w = $attrs->{file}) =~ s{\.mp4$}{.webm};
     b_die($attrs->{file}, ': only mp4 supported')

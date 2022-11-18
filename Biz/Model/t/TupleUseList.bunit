@@ -4,25 +4,25 @@ ListModel();
 req()->set_realm_and_user(qw(fourem root));
 [
     {
-	method => 'load_all',
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->set_realm($params->[0]);
-	    return [];
-	},
+        method => 'load_all',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->set_realm($params->[0]);
+            return [];
+        },
     } => [
-	'fourem-sub1' => [],
-	fourem => [{
-	    'TupleUse.moniker' => 'psr',
-	    'TupleUse.label' => 'PetShopReport',
-	    tuple_count => 0,
-	}, {
-	    'TupleUse.moniker' => 'tuple_bunit1',
-	    'TupleUse.label' => 'TupleBunit1',
-	    tuple_count => 0,
-	}],
+        'fourem-sub1' => [],
+        fourem => [{
+            'TupleUse.moniker' => 'psr',
+            'TupleUse.label' => 'PetShopReport',
+            tuple_count => 0,
+        }, {
+            'TupleUse.moniker' => 'tuple_bunit1',
+            'TupleUse.label' => 'TupleBunit1',
+            tuple_count => 0,
+        }],
     ],
     monikers => [
-	[] => [[qw(psr tuple_bunit1)]],
+        [] => [[qw(psr tuple_bunit1)]],
     ],
 ];

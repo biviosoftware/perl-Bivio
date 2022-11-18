@@ -213,10 +213,10 @@ sub NEW_ARGS {
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	tag => 'div',
-	tag_if_empty => 1,
-	class => 'text_html',
-	ITEMPROP => 'text',
+        tag => 'div',
+        tag_if_empty => 1,
+        class => 'text_html',
+        ITEMPROP => 'text',
     );
     $self->initialize_attr('mime_cid_task');
     return shift->SUPER::initialize(@_);
@@ -235,42 +235,42 @@ sub _hash {
 sub _clean {
     my($self, $value, $source, $buffer) = @_;
     my($state) = {
-	buffer => '',
-	ignore => 0,
-	source => $source,
-	self => $self,
-	stack => [],
+        buffer => '',
+        ignore => 0,
+        source => $source,
+        self => $self,
+        stack => [],
     };
     # ignore utf warnings
     local($SIG{__WARN__}) = sub {};
     HTML::Parser->new(
-	api_version => 3,
-	strict_end => 0,
-	strict_names => 0,
-	strict_comment => 0,
-	# HTML::Parser has a bug which makes unbroken_text not work right
-	unbroken_text => 0,
-	attr_encoded => 0,
-	case_sensitive => 0,
-	marked_sections => 1,
-	handlers => {
-	    start => [
-		sub {_clean_start($state, @_)},
-		'tagname,attr,attrseq',
-	    ],
-	    end => [
-		sub {_clean_end($state, @_)},
-		'tagname',
-	    ],
-	    text => [
-		sub {_clean_text($state, @_)},
-		'text,is_cdata',
-	    ],
-	    map(($_ => [sub {}, '']), qw(process comment declaration)),
-	},
+        api_version => 3,
+        strict_end => 0,
+        strict_names => 0,
+        strict_comment => 0,
+        # HTML::Parser has a bug which makes unbroken_text not work right
+        unbroken_text => 0,
+        attr_encoded => 0,
+        case_sensitive => 0,
+        marked_sections => 1,
+        handlers => {
+            start => [
+                sub {_clean_start($state, @_)},
+                'tagname,attr,attrseq',
+            ],
+            end => [
+                sub {_clean_end($state, @_)},
+                'tagname',
+            ],
+            text => [
+                sub {_clean_text($state, @_)},
+                'text,is_cdata',
+            ],
+            map(($_ => [sub {}, '']), qw(process comment declaration)),
+        },
     )->parse($$value);
     _clean_end($state)
-	while _top($state);
+        while _top($state);
     $state->{buffer} =~ s/[\n\r][\t ]+|[\t ]+[\n\r]/\n/sg;
 #TODO: this causes formatting problems with "pre" tags, is it needed?    
 #    $state->{buffer} =~ s/\n\n+/\n/sg;
@@ -284,10 +284,10 @@ sub _clean_attr {
     return if !$_SAFE_ATTRIBUTE->{$name} || $v =~ /"/;
     $v =~ s/\s+/ /sg;
     if ($name eq 'href' || $name eq 'src') {
-	$v = _clean_attr_href($state, $v);
+        $v = _clean_attr_href($state, $v);
     }
     elsif ($name eq 'style') {
-	$v = _clean_attr_style($state, $v);
+        $v = _clean_attr_style($state, $v);
     }
     return defined($v) && length($v) ? qq{ $name="$v"} : ();
 }
@@ -295,57 +295,57 @@ sub _clean_attr {
 sub _clean_attr_href {
     my($state, $v) = @_;
     return $v
-	if $v =~ /^#/;
+        if $v =~ /^#/;
     return $v =~ /^(?:https?|ftp|mailto):/s ? $v
-	: $v =~ /^cid:(.+)/ ? _clean_attr_href_cid($state, $1)
-	: undef;
+        : $v =~ /^cid:(.+)/ ? _clean_attr_href_cid($state, $1)
+        : undef;
 }
 
 sub _clean_attr_href_cid {
     my($state, $cid) = @_;
 
     if ($state->{source}->ureq('Model.MailPartList')) {
-	$state->{source}->ureq('Model.MailPartList')
-	    ->set_attachment_visited($cid);
+        $state->{source}->ureq('Model.MailPartList')
+            ->set_attachment_visited($cid);
     }
     return $state->{source}->unsafe_get_cursor_for_mime_cid($cid)
-	? $_HTML->escape_attr_value(
-	    $state->{source}->format_uri_for_mime_cid(
-		$cid,
-		${$state->{self}->render_attr(
-		    'mime_cid_task',
-		    $state->{source},
-		)},
-	    ),
-	) : undef;
+        ? $_HTML->escape_attr_value(
+            $state->{source}->format_uri_for_mime_cid(
+                $cid,
+                ${$state->{self}->render_attr(
+                    'mime_cid_task',
+                    $state->{source},
+                )},
+            ),
+        ) : undef;
 }
 
 sub _clean_attr_style {
     my(undef, $v) = @_;
     return $v =~ m{[!{}]|/\*|\*|/} ? undef
-	: join(
-	    ';',
-	    map({
-		my($x, $y) = split(/\s*:\s*/, $_, 2);
-		!$_SAFE_PROPERTY->{$x} || $y =~ /url\s*\(/ ? ()
-		    : "$x:$y";
-	    } split(/\s*;\s*/, $v)),
-	);
+        : join(
+            ';',
+            map({
+                my($x, $y) = split(/\s*:\s*/, $_, 2);
+                !$_SAFE_PROPERTY->{$x} || $y =~ /url\s*\(/ ? ()
+                    : "$x:$y";
+            } split(/\s*;\s*/, $v)),
+        );
 }
 
 sub _clean_end {
     my($state, $tag) = @_;
     $tag = _top($state)
-	unless defined($tag);
+        unless defined($tag);
     return unless grep($tag eq $_, @{$state->{stack}});
     while (my $top = shift(@{$state->{stack}})) {
-	if ($state->{ignore}) {
-	    $state->{ignore}--;
-	}
-	elsif (!$_EMPTY_TAG->{$top} && !$_OUTER_TAG->{$top}) {
-	    $state->{buffer} .= "</$top>";
-	}
-	last if $top eq $tag;
+        if ($state->{ignore}) {
+            $state->{ignore}--;
+        }
+        elsif (!$_EMPTY_TAG->{$top} && !$_OUTER_TAG->{$top}) {
+            $state->{buffer} .= "</$top>";
+        }
+        last if $top eq $tag;
     }
     return;
 }
@@ -356,16 +356,16 @@ sub _clean_start {
     _clean_start_not_nesting($state, $tag);
     unshift(@{$state->{stack}}, $tag);
     if ($state->{ignore} || !$_SAFE_TAG->{$tag}) {
-	$state->{ignore}++
-	    unless $_EMPTY_TAG->{$tag};
-	return;
+        $state->{ignore}++
+            unless $_EMPTY_TAG->{$tag};
+        return;
     }
     return if $_OUTER_TAG->{$tag};
     $state->{buffer} .= join(
-	'',
+        '',
         "<$tag",
-	map(_clean_attr($state, $_, $attr->{$_}), @$seq),
-	$_EMPTY_TAG->{$tag} ? ' />' : '>',
+        map(_clean_attr($state, $_, $attr->{$_}), @$seq),
+        $_EMPTY_TAG->{$tag} ? ' />' : '>',
     );
     return;
 }
@@ -373,27 +373,27 @@ sub _clean_start {
 sub _clean_start_nesting {
     my($state, $tag) = @_;
     _clean_end($state)
-	if $tag eq _top($state) && !$_NESTING_TAG->{$tag};
+        if $tag eq _top($state) && !$_NESTING_TAG->{$tag};
     return;
 }
 
 sub _clean_start_not_nesting {
     my($state, $tag) = @_;
     if ($tag =~ /^(?:tr)/) {
-	if (_top($state) =~ /^(?:td|th)$/) {
-	    _clean_end($state);
-	    _clean_start_nesting($state, $tag);
-	}
-	_clean_start($state, 'table')
-	    unless _top($state) =~ /^(?:table|thead|tbody|tfoot)$/;
+        if (_top($state) =~ /^(?:td|th)$/) {
+            _clean_end($state);
+            _clean_start_nesting($state, $tag);
+        }
+        _clean_start($state, 'table')
+            unless _top($state) =~ /^(?:table|thead|tbody|tfoot)$/;
     }
     elsif ($tag =~ /^(?:td|th)$/) {
-	_clean_start($state, 'tr')
-	    unless _top($state) eq 'tr';
+        _clean_start($state, 'tr')
+            unless _top($state) eq 'tr';
     }
     elsif ($tag =~ /^(?:body|html)$/) {
-	_clean_end($state)
-	    while _top($state);
+        _clean_end($state)
+            while _top($state);
     }
     return;
 }

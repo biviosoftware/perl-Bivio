@@ -11,10 +11,10 @@ sub internal_initialize {
     delete($info->{columns}->{want_bulletin});
     return $self->merge_initialize_info($info, {
         version => 1,
-	table_name => 'nonunique_email_t',
-	columns => {
-	    email => ['Email', 'NONE'],
-	},
+        table_name => 'nonunique_email_t',
+        columns => {
+            email => ['Email', 'NONE'],
+        },
     });
 }
 

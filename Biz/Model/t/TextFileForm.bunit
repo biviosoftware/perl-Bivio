@@ -3,11 +3,11 @@
 my($path);
 FormModel({
     setup_request => sub {
-	my(undef, $params) = @_;
-	$path = shift(@$params)
-	    if !ref($params->[0]) && defined($params->[0]);
-	req()->put(path_info => $path);
-	return;
+        my(undef, $params) = @_;
+        $path = shift(@$params)
+            if !ref($params->[0]) && defined($params->[0]);
+        req()->put(path_info => $path);
+        return;
     },
 });
 req()->set_realm_and_user(qw(fourem root));
@@ -18,8 +18,8 @@ req()->set_realm_and_user(qw(fourem root));
     simple_case({content => "bb\n"}, {}),
     empty_case({content => "bb\n"}),
     inline_case(sub {
-	model('RealmFile')->delete({path => $path});
-	return;
+        model('RealmFile')->delete({path => $path});
+        return;
     }),
     empty_case({content => undef}),
     ['/TextFileForm.bmenu'] => [{content => undef}],

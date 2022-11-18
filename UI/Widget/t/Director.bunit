@@ -1,55 +1,55 @@
 # Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
 Widget({
     setup_render => sub {
-	my($req, $case, $params) = @_;
-	$req->put(control => $params->[0]);
-	return;
+        my($req, $case, $params) = @_;
+        $req->put(control => $params->[0]);
+        return;
     },
 });
 [
     [
-	['control'],
-	{
-	    map({
-		my($v, $w) = @$_;
-		$v => prose($w);
-	    }
-		['' => 'empty'],
-		[0 => 'zero'],
-		[1 => 'one'],
-		['a string' => 'a str'],
-		[qr{foo}s => 'regexp1'],
-		[qr{bar}s => 'regexp2'],
-	    ),
-	},
+        ['control'],
+        {
+            map({
+                my($v, $w) = @$_;
+                $v => prose($w);
+            }
+                ['' => 'empty'],
+                [0 => 'zero'],
+                [1 => 'one'],
+                ['a string' => 'a str'],
+                [qr{foo}s => 'regexp1'],
+                [qr{bar}s => 'regexp2'],
+            ),
+        },
     ] => [
-	initialize => undef,
-	render => [
-	    '' => 'empty',
-	    0 => 'zero',
-	    1 => 'one',
-	    'a string' => 'a str',
-	    'foo' => 'regexp1',
-	    'bar' => 'regexp2',
-	    'foo bar' => qr{too many},
-	    force_default => qr{matches default_value},
-	    [undef] => qr{matches undef_value},
-	],
+        initialize => undef,
+        render => [
+            '' => 'empty',
+            0 => 'zero',
+            1 => 'one',
+            'a string' => 'a str',
+            'foo' => 'regexp1',
+            'bar' => 'regexp2',
+            'foo bar' => qr{too many},
+            force_default => qr{matches default_value},
+            [undef] => qr{matches undef_value},
+        ],
     ],
     [
-	['control'],
-	{
-	    1 => prose('one'),
-	},
-	'default_value',
-	prose('undef_value'),
+        ['control'],
+        {
+            1 => prose('one'),
+        },
+        'default_value',
+        prose('undef_value'),
     ] => [
-	initialize => undef,
-	render => [
-	    1 => 'one',
-	    force_default => 'default_value',
-	    [undef] => 'undef_value',
-	],
+        initialize => undef,
+        render => [
+            1 => 'one',
+            force_default => 'default_value',
+            [undef] => 'undef_value',
+        ],
     ],
 ];
 

@@ -55,10 +55,10 @@ sub from_literal {
     # remove trailing 0 decimals
     $value =~ s/(\d)\.0+$/$1/;
     return (undef, Bivio::TypeError->INTEGER)
-	unless $value =~ /^[-+]?\d+$/;
+        unless $value =~ /^[-+]?\d+$/;
     # Return as a string, so we avoid perl turning 0 into ''.
     return $proto->get_min <= $value && $proto->get_max >= $value
-	    ? int($value).'' : (undef, Bivio::TypeError->NUMBER_RANGE);
+            ? int($value).'' : (undef, Bivio::TypeError->NUMBER_RANGE);
 }
 
 sub get_decimals {
@@ -118,17 +118,17 @@ sub new {
     # Creates a new subrange between I<min> and I<max>, inclusive.
     # If either limit is undef, uses the value for this class.
     ($min) = defined($min) ? __PACKAGE__->from_literal($min)
-	    : __PACKAGE__->get_min;
+            : __PACKAGE__->get_min;
     Bivio::Die->die('invalid min value') unless defined($min);
     ($max) = defined($max) ? __PACKAGE__->from_literal($max)
-	    : __PACKAGE__->get_max;
+            : __PACKAGE__->get_max;
     Bivio::Die->die('invalid max value') unless defined($max);
     Bivio::Die->die('min greater than max') unless $min <= $max;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	# get_min and get_max return strings
-	min => "$min",
-	max => "$max",
+        # get_min and get_max return strings
+        min => "$min",
+        max => "$max",
     };
     return $self;
 }

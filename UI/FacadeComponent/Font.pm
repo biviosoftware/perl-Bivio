@@ -144,7 +144,7 @@ sub format_css {
     # (self, string) : array
     my($proto, $name, $req) = @_;
     return ''
-	unless $name and my $v = $proto->internal_get_value($name, $req);
+        unless $name and my $v = $proto->internal_get_value($name, $req);
     return $v->{css};
 }
 
@@ -161,10 +161,10 @@ sub format_html {
         $req = $req->req;
     }
     return ''
-	unless $name and my $v = $proto->internal_get_value($name, $req);
+        unless $name and my $v = $proto->internal_get_value($name, $req);
     $req ||= Bivio::Agent::Request->get_current;
     return $req->unsafe_get('font_with_style') ? @{$v->{html_with_style}}
-	    : @{$v->{html_no_style}};
+            : @{$v->{html_no_style}};
 }
 
 sub get_attrs {
@@ -186,14 +186,14 @@ sub initialization_complete {
     my($self) = @_;
     my($default) = $self->internal_get_value('default');
     $self->initialization_error(
-	{names => ['default']}, ': default font not defined'
+        {names => ['default']}, ': default font not defined'
     ) unless $default;
     _initialize($self, $default, $default);
     $self->initialization_error(
-	$default, 'do not set color on default, use page_text'
+        $default, 'do not set color on default, use page_text'
     ) if defined($default->{attrs}->{color});
     foreach my $v (@{$self->internal_get_all}) {
-	_initialize($self, $v, $default);
+        _initialize($self, $v, $default);
     }
     $self->SUPER::initialization_complete();
     return;
@@ -205,15 +205,15 @@ sub internal_initialize_value {
     my($self, $value) = @_;
     my($v) = $value->{config};
     unless (ref($v)) {
-	$v = $value->{config} = [$v];
+        $v = $value->{config} = [$v];
     }
     elsif (ref($v) ne 'ARRAY') {
-	$self->initialization_error($value, 'not an array_ref');
-	$value->{config} = [];
+        $self->initialization_error($value, 'not an array_ref');
+        $value->{config} = [];
     }
     # Special case the UNDEF_CONFIG.  The names list is empty in this case.
     return
-	if @{$value->{names}};
+        if @{$value->{names}};
     $value->{attrs} = {};
     $value->{html_no_style} = ['', ''];
     $value->{html_with_style} = ['', ''];
@@ -223,41 +223,41 @@ sub internal_initialize_value {
 sub _initialize {
     my($self, $value, $default) = @_;
     return
-	if $value->{html};
+        if $value->{html};
     my($config) =[@{$value->{config}}];
 #TODO: This should be lower down so that the each name is separate, i.e
 #      [[qw(foo bar)] => []]
 #      shares color for foo and bar unless foo and bar each have a color
     if (int(@{$value->{names}}) == 1 && !grep(/^color=/, @$config)) {
-	my($name) = $value->{names}->[0];
-	if ($self->get_facade->get('Color')->exists($name)) {
-	    # Only set color if doesn't already exist.
-	    push(@$config, 'color='.$name);
-	}
+        my($name) = $value->{names}->[0];
+        if ($self->get_facade->get('Color')->exists($name)) {
+            # Only set color if doesn't already exist.
+            push(@$config, 'color='.$name);
+        }
     }
     my($attrs) = {};
     $attrs->{$_CONFIG_ATTR} = $config;
     foreach my $attr (@$config) {
-	if ($_TAG_MAP->{$attr}) {
-	    $attrs->{'tag_' . $_TAG_MAP->{$attr}} = 1;
-	}
-	elsif ($attr =~ /^(family|weight|size|class|id|style)=(.*)/) {
-	    $attrs->{$1} = $2;
-	}
-	elsif ($attr =~ /^\d+(?:\%|px)$/ || $_SIZE_MAP->{$attr}) {
-	    $attrs->{size} = $attr;
-	}
-	elsif ($attr =~ /^color=(.+)/) {
-	    $attrs->{color} = $_C->format_html($1, '', $self->get_facade);
-	}
-	elsif ($_CSS_MAP->{$attr}) {
-	    push(@{$attrs->{other_styles} ||= []}, $_CSS_MAP->{$attr});
-	}
-	else {
-	    $self->initialization_error($value, 'unknown attribute: ', $attr);
-	    %$attrs = ();
-	    last;
-	}
+        if ($_TAG_MAP->{$attr}) {
+            $attrs->{'tag_' . $_TAG_MAP->{$attr}} = 1;
+        }
+        elsif ($attr =~ /^(family|weight|size|class|id|style)=(.*)/) {
+            $attrs->{$1} = $2;
+        }
+        elsif ($attr =~ /^\d+(?:\%|px)$/ || $_SIZE_MAP->{$attr}) {
+            $attrs->{size} = $attr;
+        }
+        elsif ($attr =~ /^color=(.+)/) {
+            $attrs->{color} = $_C->format_html($1, '', $self->get_facade);
+        }
+        elsif ($_CSS_MAP->{$attr}) {
+            push(@{$attrs->{other_styles} ||= []}, $_CSS_MAP->{$attr});
+        }
+        else {
+            $self->initialization_error($value, 'unknown attribute: ', $attr);
+            %$attrs = ();
+            last;
+        }
     }
     $value->{attrs} = $attrs;
     _initialize_html_no_style($value, $default);
@@ -272,20 +272,20 @@ sub _initialize_css {
     my($self, $value) = @_;
     my($attr) = $value->{attrs};
     $value->{css} = join(' ', map(
-	$_ =~ /;$/ ? $_ : "$_;",
+        $_ =~ /;$/ ? $_ : "$_;",
         map($attr->{$_} ? ($_ eq 'color' ? '' : 'font-') . "$_: $attr->{$_}" : (),
-	    qw(family weight color size)),
-	map($attr->{"tag_$_->[0]"} ? $_->[1] : (),
-	    [b => 'font-weight: bold'],
-	    [big => 'font-size: 120%'],
-	    [i => 'font-style: italic'],
-	    [small => 'font-size: 80%'],
-	    [strike => 'text-decoration: line-through'],
-	    [tt => 'font-family: monospace'],
-	    [u => 'text-decoration: underline'],
-	),
-	@{$attr->{other_styles} || []},
-	$attr->{style} ? $attr->{style} : (),
+            qw(family weight color size)),
+        map($attr->{"tag_$_->[0]"} ? $_->[1] : (),
+            [b => 'font-weight: bold'],
+            [big => 'font-size: 120%'],
+            [i => 'font-style: italic'],
+            [small => 'font-size: 80%'],
+            [strike => 'text-decoration: line-through'],
+            [tt => 'font-family: monospace'],
+            [u => 'text-decoration: underline'],
+        ),
+        @{$attr->{other_styles} || []},
+        $attr->{style} ? $attr->{style} : (),
     ));
     return;
 }
@@ -296,23 +296,23 @@ sub _initialize_html {
     my(%attrs) = @_;
     my($p, $s) = ('', '');
     foreach my $k (qw(family size color class id style)) {
-	next unless $attrs{$k};
-	unless ($p) {
-	    $p = '<font';
-	    $s = '</font>';
-	}
-	my($n) = $k eq 'family' ? 'face' : $k;
-	my($v) = $attrs{$k};
-	# Map to numeric sizes, but only in <FONT> attributes
-	$v = $_SIZE_MAP->{$v}
-	    if $k eq 'size' && $_SIZE_MAP->{$v};
-	$p .= ' '.$n.'="'.$v.'"';
+        next unless $attrs{$k};
+        unless ($p) {
+            $p = '<font';
+            $s = '</font>';
+        }
+        my($n) = $k eq 'family' ? 'face' : $k;
+        my($v) = $attrs{$k};
+        # Map to numeric sizes, but only in <FONT> attributes
+        $v = $_SIZE_MAP->{$v}
+            if $k eq 'size' && $_SIZE_MAP->{$v};
+        $p .= ' '.$n.'="'.$v.'"';
     }
     $p .= '>' if $p;
     foreach my $k (keys(%attrs)) {
-	next unless $k =~ /^tag_(\w+)$/;
-	$p .= "<$1>";
-	$s = "</$1>".$s;
+        next unless $k =~ /^tag_(\w+)$/;
+        $p .= "<$1>";
+        $s = "</$1>".$s;
     }
     return [$p, $s];
 }
@@ -322,7 +322,7 @@ sub _initialize_html_no_style {
     # Sets the html_no_style attributes based on attrs of value and default.
     my($value, $default) = @_;
     $value->{html_no_style}
-	= _initialize_html(%{$default->{attrs}}, %{$value->{attrs}});
+        = _initialize_html(%{$default->{attrs}}, %{$value->{attrs}});
     return;
 }
 

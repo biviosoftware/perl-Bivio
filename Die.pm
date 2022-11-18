@@ -46,20 +46,20 @@ sub as_string {
     my($self) = @_;
     my($res) = '';
     for (my($curr) = $self; $curr; $curr = $curr->unsafe_get('next')) {
-	if ($curr->is_destroyed) {
-	    $res .= "$curr->is_destroyed returned true unexpectedly";
-	    next;
-	}
-	$res .= "$curr->as_string: $@\n"
-	    unless eval {
-		$res .= $_A->format(
-		    $curr->unsafe_get(qw(package file line)),
-		    undef,
-		    [$curr->unsafe_get('code'), ': ', _as_string_args($curr)],
-		);
-		chomp($res);
-		1;
-	    };
+        if ($curr->is_destroyed) {
+            $res .= "$curr->is_destroyed returned true unexpectedly";
+            next;
+        }
+        $res .= "$curr->as_string: $@\n"
+            unless eval {
+                $res .= $_A->format(
+                    $curr->unsafe_get(qw(package file line)),
+                    undef,
+                    [$curr->unsafe_get('code'), ': ', _as_string_args($curr)],
+                );
+                chomp($res);
+                1;
+            };
     }
     return $res;
 }
@@ -96,34 +96,34 @@ sub catch {
     local($_CURRENT_SELF);
     local($_IN_CATCH) = 1;
     local($SIG{__DIE__}) = sub {
-	my($msg) = $_A->format_args($_[0]);
-	_handle_die(
-	    _new_from_core_die(
-		$proto,
-		Bivio::DieCode->DIE,
-		_add_program_error({
-		    message => $msg eq "\n" ? $_A->get_last_warning
-			: $_A->fixup_perl_error($msg, 1),
-		}),
-		(caller)[0,1,2],
-		Carp::longmess("die"),
-	       ),
-	);
-	return;
+        my($msg) = $_A->format_args($_[0]);
+        _handle_die(
+            _new_from_core_die(
+                $proto,
+                Bivio::DieCode->DIE,
+                _add_program_error({
+                    message => $msg eq "\n" ? $_A->get_last_warning
+                        : $_A->fixup_perl_error($msg, 1),
+                }),
+                (caller)[0,1,2],
+                Carp::longmess("die"),
+               ),
+        );
+        return;
     };
 
     # Call in appropriate context and return appropriate result
     unless (ref($die) =~ /^SCALAR$|^REF$/) {
-	# Normal case: no $die arg
-	_eval($code);
-	return _catch_done($proto);
+        # Normal case: no $die arg
+        _eval($code);
+        return _catch_done($proto);
     }
 
     if (wantarray) {
-	# Return array with $die
-	my(@res) = _eval($code);
-	$$die = _catch_done($proto);
-	return $$die ? () : @res;
+        # Return array with $die
+        my(@res) = _eval($code);
+        $$die = _catch_done($proto);
+        return $$die ? () : @res;
     }
 
     # Return scalar with $die
@@ -138,7 +138,7 @@ sub catch_and_rethrow {
     my(@res) = $proto->catch($op, \$self);
     $before_rethrow->($self);
     $self->throw
-	if $self;
+        if $self;
     return $proto->return_scalar_or_array(@res);
 }
 
@@ -170,19 +170,19 @@ sub destroy {
 
     # Head of chain
     if ($_CURRENT_SELF eq $self) {
-	my($next) = $_CURRENT_SELF->unsafe_get('next');
-	$_CURRENT_SELF->put('next', undef);
-	$_CURRENT_SELF = $next;
-	return;
+        my($next) = $_CURRENT_SELF->unsafe_get('next');
+        $_CURRENT_SELF->put('next', undef);
+        $_CURRENT_SELF = $next;
+        return;
     }
 
     # Somewhere in the chain?
     my($curr, $next) = $_CURRENT_SELF;
     while ($next = $curr->unsafe_get('next')) {
-	next unless $next eq $self;
-	$curr->put('next', $next->unsafe_get('next'));
-	$self->put('next' => undef);
-	last;
+        next unless $next eq $self;
+        $curr->put('next', $next->unsafe_get('next'));
+        $self->put('next' => undef);
+        last;
     }
 
     # Not part of "current" chain.  Don't update next link.
@@ -192,12 +192,12 @@ sub destroy {
 sub die {
     my($proto) = shift;
     my($cc) = $_A->is_calling_context($_[0])
-	? shift : $_A->calling_context;
+        ? shift : $_A->calling_context;
     $proto->throw(
         $cc,
-	Bivio::DieCode->DIE,
-	_add_program_error({message => $_A->format_args(@_)}),
-	Carp::longmess('Bivio::Die::die'),
+        Bivio::DieCode->DIE,
+        _add_program_error({message => $_A->format_args(@_)}),
+        Carp::longmess('Bivio::Die::die'),
     );
     # DOES NOT RETURN
 }
@@ -233,12 +233,12 @@ sub eval_or_die {
     my($proto, $code) = @_;
     my($die);
     if (wantarray) {
-	my(@res) = $proto->catch($code, \$die);
-	return @res unless $die;
+        my(@res) = $proto->catch($code, \$die);
+        return @res unless $die;
     }
     else {
-	my $res = $proto->catch($code, \$die);
-	return $res unless $die;
+        my $res = $proto->catch($code, \$die);
+        return $res unless $die;
     }
     $die->throw;
     # DOES NOT RETURN
@@ -285,9 +285,9 @@ sub throw {
     # module.  If you'd like to implement a module specific die, you might:
     #
     #     sub throw_die {
-    # 	my($self, $code, $msg) = @_;
-    # 	Bivio::Die->throw(Bivio::DieCode->unsafe_from_any($code),
-    # 		{msg => $msg, object => $self}, caller);
+    #         my($self, $code, $msg) = @_;
+    #         Bivio::Die->throw(Bivio::DieCode->unsafe_from_any($code),
+    #                 {msg => $msg, object => $self}, caller);
     #     }
     #
     # C<caller> will be called in an array context and return the appropriate
@@ -306,33 +306,33 @@ sub throw {
     # In the second form, I<self> is "rethrown".
     my($proto) = shift;
     local($_CURRENT_SELF)
-	unless $_IN_CATCH;
+        unless $_IN_CATCH;
     if (ref($proto)) {
-	# Rethrow of an existing die.  If inside a catch, set as current
-	# and pass by name.
-	$_CURRENT_SELF = $proto;
-	CORE::die("$proto\n")
-	    if $_IN_CATCH;
-	# Not in a catch, so must call handle_die explicitly
-	_handle_die($proto);
-	# _handle_die returns, but user called die.  So need to
-	# throw a bogus exception.
-	CORE::die(
-	    $proto->unsafe_get('throw_quietly')
-	    ? "\n" : $proto->as_string."\n",
-	);
+        # Rethrow of an existing die.  If inside a catch, set as current
+        # and pass by name.
+        $_CURRENT_SELF = $proto;
+        CORE::die("$proto\n")
+            if $_IN_CATCH;
+        # Not in a catch, so must call handle_die explicitly
+        _handle_die($proto);
+        # _handle_die returns, but user called die.  So need to
+        # throw a bogus exception.
+        CORE::die(
+            $proto->unsafe_get('throw_quietly')
+            ? "\n" : $proto->as_string."\n",
+        );
     }
     my($cc) = shift
-	if $_A->is_calling_context($_[0]);
+        if $_A->is_calling_context($_[0]);
     my($code, $attrs) = (shift, shift);
     my($package, $file, $line) = $cc ? $cc->get_top_package_file_line_sub
-	: (shift, shift, shift);
+        : (shift, shift, shift);
     my($self) = _new_from_throw(
-	$proto,
-	$code,
-	$attrs,
-	$package, $file, $line,
-	shift || Carp::longmess('Bivio::Die::throw'),
+        $proto,
+        $code,
+        $attrs,
+        $package, $file, $line,
+        shift || Carp::longmess('Bivio::Die::throw'),
     );
     CORE::die($_IN_CATCH ? "$self\n" : $self->as_string."\n");
     # DOES NOT RETURN
@@ -358,9 +358,9 @@ sub throw_or_die {
     my($cc) = $_A->is_calling_context($_[0]) ? shift : $_A->calling_context;
     my($code) = @_;
     my($m) = UNIVERSAL::isa($code, 'Bivio::DieCode')
-	|| Bivio::DieCode->is_valid_name($code)
-	&& Bivio::DieCode->unsafe_from_name($code)
-	? 'throw' : 'die';
+        || Bivio::DieCode->is_valid_name($code)
+        && Bivio::DieCode->unsafe_from_name($code)
+        ? 'throw' : 'die';
     $proto->$m($cc, @_);
     # DOES NOT RETURN
 }
@@ -371,10 +371,10 @@ sub throw_quietly {
     # Same as L<throw|"throw">, but no stack trace or error message is output.
     my($proto, $code, $attrs, $package, $file, $line) = @_;
     if (ref($proto)) {
-	$proto->put(throw_quietly => 1);
-	$proto->throw($proto, $code, $attrs, $package, $file, $line,
-		Carp::longmess('Bivio::Die::throw_quietly'));
-	# DOES NOT RETURN
+        $proto->put(throw_quietly => 1);
+        $proto->throw($proto, $code, $attrs, $package, $file, $line,
+                Carp::longmess('Bivio::Die::throw_quietly'));
+        # DOES NOT RETURN
     }
     my($self) = _new_from_throw($proto, $code, $attrs, $package, $file, $line,
         Carp::longmess('Bivio::Die::throw_quietly'));
@@ -387,7 +387,7 @@ sub _add_program_error {
     my($attrs) = @_;
     $attrs ||= {};
     $attrs->{program_error} = 1
-	unless exists($attrs->{program_error});
+        unless exists($attrs->{program_error});
     return $attrs;
 }
 
@@ -397,8 +397,8 @@ sub _as_string_args {
     delete($attrs->{program_error});
     my($m) = delete($attrs->{message});
     my($msg) = [
-	$m ? ($m, ' ') : (),
-	map(($_, '=>', $attrs->{$_}, ' '), sort(keys(%$attrs))),
+        $m ? ($m, ' ') : (),
+        map(($_, '=>', $attrs->{$_}, ' '), sort(keys(%$attrs))),
     ];
     pop(@$msg);
     return @$msg;
@@ -426,14 +426,14 @@ sub _check_code {
     # Validates code and sets attributes to error state if invalid.
     my($code, $attrs) = @_;
     unless (defined($code)) {
-	$attrs = _add_program_error($attrs);
-	return Bivio::DieCode->UNKNOWN;
+        $attrs = _add_program_error($attrs);
+        return Bivio::DieCode->UNKNOWN;
     }
     return $code
-	if UNIVERSAL::isa($code, 'Bivio::DieCode');
+        if UNIVERSAL::isa($code, 'Bivio::DieCode');
     my($c) = Bivio::DieCode->unsafe_from_any($code);
     return $c
-	if $c;
+        if $c;
     %$attrs = (code => $code, attrs => {%$attrs});
     $attrs = _add_program_error($attrs);
     return Bivio::DieCode->INVALID_DIE_CODE;
@@ -447,9 +447,9 @@ sub _eval {
     # Don't put in newline, because would change line numbering
     my($caller) = _caller()->[0];
     unless (ref($code) eq 'CODE') {
-	my($c) = ref($code) ? $$code : $code;
-	return
-	    unless $code = eval(qq{package $caller; sub {$c}});
+        my($c) = ref($code) ? $$code : $code;
+        return
+            unless $code = eval(qq{package $caller; sub {$c}});
     }
     return eval(qq{package $caller; \$code->();});
 }
@@ -461,78 +461,78 @@ sub _handle_die {
     # occur, chains them on to $_CURRENT_SELF by calling _new_from_core_die.
     local($_IN_HANDLE_DIE) = 1;
     eval {
-	local($SIG{__DIE__});
-	my($self) = @_;
-	_print_stack($self)
-	    if _want_stack_trace($self);
-	my($i) = 0;
-	my(@a);
-	my($prev_proto) = '';
-	my($stop) = -1;
-	my(%already_seen);
-	# Iterate until just one routine after catch
-	while ($stop <= 0 && do { { package DB; @a = caller($i++) } } ) {
-	    # Only start incrementing stop when "catch" is seen
-	    $stop++ if $stop >= 0;
-	    my($sub, $has_args) = @a[3,4];
-	    # Only call if argument is to a public method in a module
-	    next unless defined($sub) && $sub =~ /::[a-z]\w+$/ && $has_args;
-	    if ($sub eq __PACKAGE__.'::catch') {
-		# This gives us one more loop iteration
-		$stop++;
-		next;
-	    }
+        local($SIG{__DIE__});
+        my($self) = @_;
+        _print_stack($self)
+            if _want_stack_trace($self);
+        my($i) = 0;
+        my(@a);
+        my($prev_proto) = '';
+        my($stop) = -1;
+        my(%already_seen);
+        # Iterate until just one routine after catch
+        while ($stop <= 0 && do { { package DB; @a = caller($i++) } } ) {
+            # Only start incrementing stop when "catch" is seen
+            $stop++ if $stop >= 0;
+            my($sub, $has_args) = @a[3,4];
+            # Only call if argument is to a public method in a module
+            next unless defined($sub) && $sub =~ /::[a-z]\w+$/ && $has_args;
+            if ($sub eq __PACKAGE__.'::catch') {
+                # This gives us one more loop iteration
+                $stop++;
+                next;
+            }
 
-	    # Does this sub's argument (self or proto) implement handle_die?
-	    my($proto) = $DB::args[0];
-	    next unless $proto && UNIVERSAL::can($proto, 'handle_die');
+            # Does this sub's argument (self or proto) implement handle_die?
+            my($proto) = $DB::args[0];
+            next unless $proto && UNIVERSAL::can($proto, 'handle_die');
 
-	    # Don't call twice if in same "entry" into self or proto.
-	    # OK to call multiple times on instances of same class.
-	    next if $already_seen{$proto}++;
+            # Don't call twice if in same "entry" into self or proto.
+            # OK to call multiple times on instances of same class.
+            next if $already_seen{$proto}++;
 
-	    # Continue if successful eval
-	    next if eval {
-		_trace("calling ", ref($proto) || $proto, "->handle_die")
-		    if $_TRACE;
-		$proto->handle_die($self);
-		1;
-	    };
+            # Continue if successful eval
+            next if eval {
+                _trace("calling ", ref($proto) || $proto, "->handle_die")
+                    if $_TRACE;
+                $proto->handle_die($self);
+                1;
+            };
 
-	    # Unsuccessful eval, chain the error.
-	    my($msg) = $_A->fixup_perl_error($@);
-	    # If not rethrow of an existing error?
-	    if ($msg eq "$self\n") {
-		# In this case, we don't want as_string
-		_trace("$self: self rethrown") if $_TRACE;
-	    }
-	    elsif ($msg eq "$_CURRENT_SELF\n") {
-		# In this case, we don't want as_string
-		_trace("$_CURRENT_SELF: older die rethrown") if $_TRACE;
-		$self = $_CURRENT_SELF;
-	    }
-	    else {
-		eval {
-		    _trace($proto, "->handle_die: ", $msg) if $_TRACE;
-		};
-		$msg =~ / at (\S+|\(eval \d+\)) line (\d+)\.\n$/;
-		_new_from_core_die(
-		    $self,
-		    Bivio::DieCode->DIE_WITHIN_HANDLE_DIE,
-		    _add_program_error({
-			message => $msg,
-			proto => $proto,
-			file => $1,
-			line => $2,
-		    }),
-		    ref($proto) || $proto, $1, $2,
-		    Carp::longmess('Bivio::Die::_handle_die'),
-		);
-	    }
-	}
-	_print_stack_other($self, 'stack_other')
-	    if _want_stack_trace($self);
-	1;
+            # Unsuccessful eval, chain the error.
+            my($msg) = $_A->fixup_perl_error($@);
+            # If not rethrow of an existing error?
+            if ($msg eq "$self\n") {
+                # In this case, we don't want as_string
+                _trace("$self: self rethrown") if $_TRACE;
+            }
+            elsif ($msg eq "$_CURRENT_SELF\n") {
+                # In this case, we don't want as_string
+                _trace("$_CURRENT_SELF: older die rethrown") if $_TRACE;
+                $self = $_CURRENT_SELF;
+            }
+            else {
+                eval {
+                    _trace($proto, "->handle_die: ", $msg) if $_TRACE;
+                };
+                $msg =~ / at (\S+|\(eval \d+\)) line (\d+)\.\n$/;
+                _new_from_core_die(
+                    $self,
+                    Bivio::DieCode->DIE_WITHIN_HANDLE_DIE,
+                    _add_program_error({
+                        message => $msg,
+                        proto => $proto,
+                        file => $1,
+                        line => $2,
+                    }),
+                    ref($proto) || $proto, $1, $2,
+                    Carp::longmess('Bivio::Die::_handle_die'),
+                );
+            }
+        }
+        _print_stack_other($self, 'stack_other')
+            if _want_stack_trace($self);
+        1;
     } || warn($@);
     return;
 }
@@ -543,22 +543,22 @@ sub _new {
     # be "valid".  Sets $_CURRENT_SELF if $_CURRENT_SELF is undef.
     my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
     my($self) = $proto->new({
-	next => undef,
-	code => $code,
-	attrs => $attrs,
-	package => $package,
-	file => $file,
-	line => $line,
+        next => undef,
+        code => $code,
+        attrs => $attrs,
+        package => $package,
+        file => $file,
+        line => $line,
     });
     # FRAGILE
     $self->put(throw_quietly => 1) if (caller(2))[3] =~ /throw_quietly/;
     if ($_CURRENT_SELF) {
-	my($curr, $next) = $_CURRENT_SELF;
-	$curr = $next while $next = $curr->unsafe_get('next');
-	$curr->put('next' => $self);
+        my($curr, $next) = $_CURRENT_SELF;
+        $curr = $next while $next = $curr->unsafe_get('next');
+        $curr->put('next' => $self);
     }
     else {
-	$_CURRENT_SELF = $self;
+        $_CURRENT_SELF = $self;
     }
     _trace($self) if $_TRACE;
     # After trace, since we print stack separately
@@ -574,11 +574,11 @@ sub _new_from_core_die {
     # Otherwise, create new Bivio::Die from the listed values.
     my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
     if ($_CURRENT_SELF) {
-	my($msg) = $attrs->{message};
-	for (my($curr) = $_CURRENT_SELF; $curr; $curr = $curr->unsafe_get('next')) {
-	    next unless $msg eq "$curr\n";
-	    return $curr;
-	}
+        my($msg) = $attrs->{message};
+        for (my($curr) = $_CURRENT_SELF; $curr; $curr = $curr->unsafe_get('next')) {
+            next unless $msg eq "$curr\n";
+            return $curr;
+        }
     }
 
     return _new($proto, $code, $attrs, $package, $file, $line, $stack);
@@ -593,16 +593,16 @@ sub _new_from_eval_syntax_error {
     my($proto) = @_;
     my($msg) = $_A->fixup_perl_error($@);
     my($self) = _new_from_throw(
-	$proto,
-	Bivio::DieCode->DIE,
-	_add_program_error({message => $msg}),
-	undef,
-	undef,
-	undef,
-	Carp::longmess($msg),
+        $proto,
+        Bivio::DieCode->DIE,
+        _add_program_error({message => $msg}),
+        undef,
+        undef,
+        undef,
+        Carp::longmess($msg),
     );
     _print_stack($self)
-	if _want_stack_trace($self);
+        if _want_stack_trace($self);
     return $self;
 }
 
@@ -611,18 +611,18 @@ sub _new_from_throw {
     # Sets attrs, file, line, etc.
     my($proto, $code, $attrs, $package, $file, $line, $stack) = @_;
     $attrs = defined($attrs) ? !ref($attrs) ? {message => $attrs}
-	:  {attrs => $attrs} : {}
+        :  {attrs => $attrs} : {}
         unless ref($attrs) eq 'HASH';
     $attrs->{message} ||= '';
     my($caller) = _caller();
     return _new(
-	$proto,
-	_check_code($code, $attrs),
-	$attrs,
-	$package || $caller->[0],
-	$file || $caller->[1],
-	$line || $caller->[2],
-	$stack,
+        $proto,
+        _check_code($code, $attrs),
+        $attrs,
+        $package || $caller->[0],
+        $file || $caller->[1],
+        $line || $caller->[2],
+        $stack,
     );
 }
 
@@ -632,23 +632,23 @@ sub _print_stack {
     my($key) = $which . '_printed';
     my($sp, $tq) = $self->unsafe_get($key, 'throw_quietly');
     return
-	if $sp;
+        if $sp;
     return
-	unless $_TRACE
-	|| $_STACK_TRACE
-	|| !$tq
-	&& !$_CATCH_QUIETLY
-	&& $_STACK_TRACE_ERROR
-	&& _add_program_error($self->unsafe_get('attrs'))->{program_error};
+        unless $_TRACE
+        || $_STACK_TRACE
+        || !$tq
+        && !$_CATCH_QUIETLY
+        && $_STACK_TRACE_ERROR
+        && _add_program_error($self->unsafe_get('attrs'))->{program_error};
     if ($which eq 'stack') {
-	$_A->print_literally(
-	    $self->as_string, "\n",
-	    $self->unsafe_get('stack'),
-	    $_STACK_TRACE_SEPARATOR,
-	);
+        $_A->print_literally(
+            $self->as_string, "\n",
+            $self->unsafe_get('stack'),
+            $_STACK_TRACE_SEPARATOR,
+        );
     }
     else {
-	_print_stack_other($self);
+        _print_stack_other($self);
     }
     $self->put($key => 1);
     return;
@@ -657,23 +657,23 @@ sub _print_stack {
 sub _print_stack_other {
     my($self) = @_;
     return
-	unless Bivio::UNIVERSAL->is_super_of('Bivio::IO::Ref')
-	and my $attrs = $self->unsafe_get('attrs');
+        unless Bivio::UNIVERSAL->is_super_of('Bivio::IO::Ref')
+        and my $attrs = $self->unsafe_get('attrs');
     return $_A->print_literally(
-	map(
-	    {
-		my($stack) = $attrs->{$_};
-		(
-		    $_, ":\n",
-		    map(
-			"\t" . ($self->b_can('as_string_for_stack_trace', $_) ? $_->as_string_for_stack_trace : $_->as_string) . "\n",
-			@$stack,
-		    ),
-		     $_STACK_TRACE_SEPARATOR,
-		);
-	    }
-	    grep($_ =~ /_stack$/ && ref($attrs->{$_}) eq 'ARRAY', sort(keys(%$attrs))),
-	),
+        map(
+            {
+                my($stack) = $attrs->{$_};
+                (
+                    $_, ":\n",
+                    map(
+                        "\t" . ($self->b_can('as_string_for_stack_trace', $_) ? $_->as_string_for_stack_trace : $_->as_string) . "\n",
+                        @$stack,
+                    ),
+                     $_STACK_TRACE_SEPARATOR,
+                );
+            }
+            grep($_ =~ /_stack$/ && ref($attrs->{$_}) eq 'ARRAY', sort(keys(%$attrs))),
+        ),
     );
 }
 
@@ -681,10 +681,10 @@ sub _print_stack_other {
 sub _want_stack_trace {
     my($self) = @_;
     return $_TRACE
-	|| $_STACK_TRACE
-	|| $_STACK_TRACE_ERROR
-	&& ($self->unsafe_get('attrs') || {program_error => 1})
-	    ->{program_error};
+        || $_STACK_TRACE
+        || $_STACK_TRACE_ERROR
+        && ($self->unsafe_get('attrs') || {program_error => 1})
+            ->{program_error};
 }
 
 1;

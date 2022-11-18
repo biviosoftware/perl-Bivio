@@ -14,7 +14,7 @@ sub OMIT_DEFAULT_VALUES_FROM_QUERY {
 sub execute_empty {
     my($self) = @_;
     foreach my $field (@{_get_visible_fields($self)}) {
-	_load_query_value($self, $field);
+        _load_query_value($self, $field);
     }
     return;
 }
@@ -22,8 +22,8 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     foreach my $field (@{_get_visible_fields($self)}) {
-	$self->internal_put_field($field => $self->get_default_value($field))
-	    unless defined($self->unsafe_get($field));
+        $self->internal_put_field($field => $self->get_default_value($field))
+            unless defined($self->unsafe_get($field));
     }
     return _redirect($self, $self->get_current_query_for_list);
 }
@@ -42,9 +42,9 @@ sub get_current_query_for_list {
             my($v) = $self->unsafe_get($_);
             my($t) = $self->get_field_info($_, 'type');
             my($dv) = $self->get_default_value($_);
-	    my($name) = $self->get_field_info($_, 'form_name');
+            my($name) = $self->get_field_info($_, 'form_name');
             !$self->OMIT_DEFAULT_VALUES_FROM_QUERY || !$t->is_equal($dv, $v)
-	        ? ($name => $t->to_literal($v)) : ();
+                ? ($name => $t->to_literal($v)) : ();
         } @{_get_visible_fields($self)}),
     };
 }
@@ -52,13 +52,13 @@ sub get_current_query_for_list {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	visible => [
-	    {
-		name => 'reset_button',
-		type => 'FormButton',
-		constraint => 'NONE',
-	    },
-	],
+        visible => [
+            {
+                name => 'reset_button',
+                type => 'FormButton',
+                constraint => 'NONE',
+            },
+        ],
     });
 }
 
@@ -78,14 +78,14 @@ sub _load_query_value {
     my($v, $e);
     my($value) = $query->{$self->get_field_info($field, 'form_name')};
     if (defined($value)) {
-	($v, $e) = $self->get_field_type($field)->from_literal($value);
-	if ($e) {
-	    $self->internal_put_error($field => $e);
-	    return;
-	}
+        ($v, $e) = $self->get_field_type($field)->from_literal($value);
+        if ($e) {
+            $self->internal_put_error($field => $e);
+            return;
+        }
     }
     else {
-	$v = $self->get_default_value($field);
+        $v = $self->get_default_value($field);
     }
     $self->internal_put_field($field => $v);
     return;
@@ -96,12 +96,12 @@ sub _redirect {
     my($self, $query) = @_;
     my($req) = $self->req;
     return {
-	method => 'client_redirect',
-	task_id => 'CLIENT_REDIRECT',
-	query => {
-	    b_use('Action.ClientRedirect')->QUERY_TAG => $req->format_uri(
-		$req->get('task_id'), $query || {}),
-	},
+        method => 'client_redirect',
+        task_id => 'CLIENT_REDIRECT',
+        query => {
+            b_use('Action.ClientRedirect')->QUERY_TAG => $req->format_uri(
+                $req->get('task_id'), $query || {}),
+        },
     };
 }
 

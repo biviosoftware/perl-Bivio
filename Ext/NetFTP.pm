@@ -19,22 +19,22 @@ sub bivio_get {
     Bivio::Die->die($args, ': must supply args: ', $required)
         unless grep(defined($args->{$_}), @$required) == @$required;
     my($self) = $proto->new(
-	$args->{host},
-	map(($_ => $args->{$_}), sort(grep($_ =~ /^[A-Z]/, keys(%$args)))),
+        $args->{host},
+        map(($_ => $args->{$_}), sort(grep($_ =~ /^[A-Z]/, keys(%$args)))),
     );
     my($user) = defined($args->{user}) ? $args->{user} : 'anonymous';
     $self->login(
-	$user,
-	defined($args->{password}) ? $args->{password}
-	    : $args->{req}->format_email(
-		$_T->get_value('support_email', $args->{req})),
+        $user,
+        defined($args->{password}) ? $args->{password}
+            : $args->{req}->format_email(
+                $_T->get_value('support_email', $args->{req})),
     ) || _bivio_die($self, "login: $user");
     $self->cwd($args->{cwd}) || _bivio_die($self, "cwd: $args->{cwd}");
     my($type) = $args->{type} || 'binary';
     $self->$type() || _bivio_die($self, $type);
     my($buf) = '';
     $self->get($args->{file}, Bivio::UNIVERSAL->use('IO::String')->new(\$buf))
-	|| _bivio_die($self, "get: $args->{file}");
+        || _bivio_die($self, "get: $args->{file}");
     $self->quit;
     return \$buf;
 }
@@ -50,7 +50,7 @@ sub new {
     $self->debug(1) if $_TRACE;
     $self->timeout($_CFG->{timeout});
     ${*$self}{'net_ftp_listen'} = _bivio_socket($self)
-	unless ${*$self}{'net_ftp_passive'};
+        unless ${*$self}{'net_ftp_passive'};
     return $self;
 }
 
@@ -58,7 +58,7 @@ sub _bivio_die {
     my($self, $op) = @_;
     my($e) = "$!";
     $self->quit
-	if $self;
+        if $self;
     Bivio::Die->die($op, ': failed: ', $e);
     # DOES NOT RETURN
 }
@@ -68,15 +68,15 @@ sub _bivio_socket {
     my($ports) = [@{$_CFG->{active_ports}}];
     my($shift) = [splice(@$ports, 0, $$ % @$ports)];
     foreach my $p (@$ports, @$shift) {
-	my($s) = IO::Socket::INET->new(
-	    Listen => 5,
-	    Proto => 'tcp',
-	    Timeout => $self->timeout,
-	    LocalAddr => $self->sockhost,
-	    LocalPort => $p,
-	);
-	return $s
-	    if $s;
+        my($s) = IO::Socket::INET->new(
+            Listen => 5,
+            Proto => 'tcp',
+            Timeout => $self->timeout,
+            LocalAddr => $self->sockhost,
+            LocalPort => $p,
+        );
+        return $s
+            if $s;
     }
     _bivio_die($self, 'port');
     # DOES NOT RETURN

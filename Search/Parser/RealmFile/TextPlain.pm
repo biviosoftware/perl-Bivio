@@ -13,8 +13,8 @@ sub handle_realm_file_new_text {
     my($proto, $parseable) = @_;
     my($ct) = $parseable->get('content_type');
     return $proto->new({
-	type => $ct eq 'application/octet-stream' ? 'text/plain' : $ct,
-	text => $parseable->get_content,
+        type => $ct eq 'application/octet-stream' ? 'text/plain' : $ct,
+        text => $parseable->get_content,
     });
 }
 

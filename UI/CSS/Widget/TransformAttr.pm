@@ -10,16 +10,16 @@ my($_B) = b_use('CSSWidget.BorderAttr');
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	value => Join([
-	    $_B->get_static_attrs(
-		$self->unsafe_get('transform'),
-		[qw(
-		    transform
-		    -ms-transform
-		    -webkit-transform
-	        )],
-	    ),
-	]),
+        value => Join([
+            $_B->get_static_attrs(
+                $self->unsafe_get('transform'),
+                [qw(
+                    transform
+                    -ms-transform
+                    -webkit-transform
+                )],
+            ),
+        ]),
     );
     return;
 }

@@ -8,11 +8,11 @@ use Bivio::Base 'Bivio::Biz::t::ListModel::T1List';
 sub internal_initialize {
     # Simple list of users.
     return {
-	version => 1,
-	primary_key => ['RealmOwner.realm_id'],
-	can_iterate => 1,
-	order_by => [
-	    'RealmOwner.name',
+        version => 1,
+        primary_key => ['RealmOwner.realm_id'],
+        can_iterate => 1,
+        order_by => [
+            'RealmOwner.name',
         ],
     };
 }

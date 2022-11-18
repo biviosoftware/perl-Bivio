@@ -94,36 +94,36 @@ sub initialize_html_attrs {
     my($self, $source) = @_;
     # Grid used to use pad and space; Can't warn, because too many uses.
     foreach my $x ([pad => 'cellpadding'], [space => 'cellspacing']) {
-	next unless $self->has_keys($x->[0]);
-	$self->put($x->[1] => $self->get($x->[0]));
-	$self->delete($x->[0]);
+        next unless $self->has_keys($x->[0]);
+        $self->put($x->[1] => $self->get($x->[0]));
+        $self->delete($x->[0]);
     }
     $self->put(
-	width => $self->subclass_is_table
-	    ? If(
-		[['->get_request'], 'Bivio::UI::Facade', 'HTML',
-		 '->get_value', 'page_left_margin'],
-		'95%',
-		'100%',
-	    ) : '100%',
+        width => $self->subclass_is_table
+            ? If(
+                [['->get_request'], 'Bivio::UI::Facade', 'HTML',
+                 '->get_value', 'page_left_margin'],
+                '95%',
+                '100%',
+            ) : '100%',
     ) if $self->unsafe_get('expand');
     unless ($self->has_keys('class')) {
-	$self->get_if_exists_else_put(
-	    align => [['->get_request'],
-		      'Bivio::UI::Facade', 'HTML', '->get_value',
-		      'table_default_align'],
-	) if $self->subclass_is_table;
-	foreach my $k (qw(border cellpadding cellspacing)) {
-	    $self->put($k => $k eq 'cellpadding' && $self->subclass_is_table
-			   ? 5 : 0)
-		unless $self->has_keys($k);
-	}
+        $self->get_if_exists_else_put(
+            align => [['->get_request'],
+                      'Bivio::UI::Facade', 'HTML', '->get_value',
+                      'table_default_align'],
+        ) if $self->subclass_is_table;
+        foreach my $k (qw(border cellpadding cellspacing)) {
+            $self->put($k => $k eq 'cellpadding' && $self->subclass_is_table
+                           ? 5 : 0)
+                unless $self->has_keys($k);
+        }
     }
     # Make sure these two exist
     $self->get_if_exists_else_put(end_tag => 1);
     $self->get_if_exists_else_put(start_tag => 1);
     vs_html_attrs_initialize(
-	$self, [@$_HTML_ATTRS, qw(align start_tag end_tag background bgcolor)],
+        $self, [@$_HTML_ATTRS, qw(align start_tag end_tag background bgcolor)],
         $source,
     );
     return;
@@ -134,8 +134,8 @@ sub render_end_tag {
     # Renders end table tag.
     my($self, $source) = @_;
     return ${$self->render_attr('end_tag', $source)}
-	? ($self->subclass_is_table ? "\n" : '') . "</table>"
-	: '';
+        ? ($self->subclass_is_table ? "\n" : '') . "</table>"
+        : '';
 }
 
 sub render_start_tag {
@@ -144,23 +144,23 @@ sub render_start_tag {
     my($self, $source) = @_;
     my($req) = $source->get_request;
     return ${$self->render_attr('start_tag', $source)}
-	? join('',
-	       ($self->subclass_is_table ? "\n" : ()),
-	       '<table',
-	       vs_html_attrs_render($self, $source, $_HTML_ATTRS),
-	       map({
-		   my($class, $method, $attr) = @$_;
-		   my($b);
-		   # as_html works, b/c it ignores subsequent args
-		   $self->unsafe_render_attr($attr, $source, \$b) && $b
-		       ? b_use($class)->$method($b, $attr, $req) : '',
-	       }
-		   [qw(FacadeComponent.Color format_html bgcolor)],
-		   [qw(FacadeComponent.Icon format_html_attribute background)],
-		   [qw(UI.Align as_html align)],
-	       ),
-	       '>',
-	) : '';
+        ? join('',
+               ($self->subclass_is_table ? "\n" : ()),
+               '<table',
+               vs_html_attrs_render($self, $source, $_HTML_ATTRS),
+               map({
+                   my($class, $method, $attr) = @$_;
+                   my($b);
+                   # as_html works, b/c it ignores subsequent args
+                   $self->unsafe_render_attr($attr, $source, \$b) && $b
+                       ? b_use($class)->$method($b, $attr, $req) : '',
+               }
+                   [qw(FacadeComponent.Color format_html bgcolor)],
+                   [qw(FacadeComponent.Icon format_html_attribute background)],
+                   [qw(UI.Align as_html align)],
+               ),
+               '>',
+        ) : '';
 }
 
 sub subclass_is_table {

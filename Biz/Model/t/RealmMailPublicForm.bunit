@@ -6,7 +6,7 @@ my($create) = sub {
     req()->set_realm(shift);
     my($rm) = model('RealmMail');
     $rm->create_from_rfc822(
-	\(<<'EOF'),
+        \(<<'EOF'),
 From: a@model.realmmail2.bunit
 Message-ID: <a@model.realmmail2.bunit>
 Date: Sun, 1 May 2005 10:11:41 -0600
@@ -20,42 +20,42 @@ EOF
 };
 [
     req_state({
-	realm => 'mail_forum',
-	query => sub {+{
-	    this => $this,
-	}},
+        realm => 'mail_forum',
+        query => sub {+{
+            this => $this,
+        }},
     }),
     inline_case(sub {
-    	$create->('mail_forum');
-    	return;
+            $create->('mail_forum');
+            return;
     }),
     [] => FORBIDDEN(),
     inline_case(sub {
-    	$create->('mail_forum');
+            $create->('mail_forum');
         req('Model.RealmFile')->toggle_is_public;
-	return;
+        return;
     }),
     [] => [{
-	'Model.RealmFile' => {
-	    is_public => 0,
-	},
+        'Model.RealmFile' => {
+            is_public => 0,
+        },
     }],
     [] => FORBIDDEN(),
     req_state_merge({
-	realm => 'mail_forum_allow_public',
+        realm => 'mail_forum_allow_public',
     }),
     inline_case(sub {
-    	$create->('mail_forum_allow_public');
-    	return;
+            $create->('mail_forum_allow_public');
+            return;
     }),
     [] => [{
-	'Model.RealmFile' => {
-	    is_public => 1,
-	},
+        'Model.RealmFile' => {
+            is_public => 1,
+        },
     }],
     [] => [{
-	'Model.RealmFile' => {
-	    is_public => 0,
-	},
+        'Model.RealmFile' => {
+            is_public => 0,
+        },
     }],
 ];

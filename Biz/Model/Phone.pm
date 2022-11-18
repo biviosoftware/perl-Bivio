@@ -7,14 +7,14 @@ use Bivio::Base 'Model.LocationBase';
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'phone_t',
-	columns => {
+        version => 1,
+        table_name => 'phone_t',
+        columns => {
             realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             location => ['Location', 'PRIMARY_KEY'],
             phone => ['Phone', 'NONE'],
         },
-	auth_id => 'realm_id',
+        auth_id => 'realm_id',
     };
 }
 

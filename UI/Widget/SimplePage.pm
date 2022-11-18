@@ -8,7 +8,7 @@ use Bivio::Base 'Widget.Simple';
 sub execute {
     my($self, $req) = @_;
     return $self->execute_with_content_type(
-	$req, ${$self->render_attr('content_type', $req)});
+        $req, ${$self->render_attr('content_type', $req)});
 }
 
 sub initialize {

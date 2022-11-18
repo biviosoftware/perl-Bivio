@@ -17,11 +17,11 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	primary_key => ['TupleSlotType.tuple_slot_type_id'],
+        primary_key => ['TupleSlotType.tuple_slot_type_id'],
         order_by => [qw(
-	    TupleSlotType.label
-	)],
-	other => $self->get_instance('TupleSlotType')->LIST_FIELDS,
+            TupleSlotType.label
+        )],
+        other => $self->get_instance('TupleSlotType')->LIST_FIELDS,
     });
 }
 

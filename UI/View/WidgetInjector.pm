@@ -11,7 +11,7 @@ my($_ULF) = b_use('Model.UserLoginForm');
 sub public_xhtml_widget_js {
     my($self) = @_;
     return $self->internal_body(
-	WidgetInjector($self->simple_package_name, 'public', 'xhtml_widget'));
+        WidgetInjector($self->simple_package_name, 'public', 'xhtml_widget'));
 }
 
 sub internal_query_value {
@@ -21,35 +21,35 @@ sub internal_query_value {
 sub public_login_form_xhtml_widget {
     view_pre_execute(sub {
         $_ULF->new(shift->req)->process;
-	return;
+        return;
     });
     return shift->internal_body(Form(
-	'UserLoginForm',
-	Join([
-	    map(
-		{
-		    my($field) = $_;
-		    my($class) = $field =~ /(\w+)$/;
-		    DIV(
-			Join([
-			    SPAN_b_label(Join([
-				vs_text_as_prose("WidgetInjector.UserLoginForm.$field"),
-				': ',
-			    ])),
-			    Text({
-				field => $field,
-				size => 15,
-				class => 'b_field',
-			    }),
-			]),
-			"b_$class",
-		    );
-		} qw(login RealmOwner.password),
-	    ),
-	]),
-	{
-	    want_hidden_fields => 0,
-	},
+        'UserLoginForm',
+        Join([
+            map(
+                {
+                    my($field) = $_;
+                    my($class) = $field =~ /(\w+)$/;
+                    DIV(
+                        Join([
+                            SPAN_b_label(Join([
+                                vs_text_as_prose("WidgetInjector.UserLoginForm.$field"),
+                                ': ',
+                            ])),
+                            Text({
+                                field => $field,
+                                size => 15,
+                                class => 'b_field',
+                            }),
+                        ]),
+                        "b_$class",
+                    );
+                } qw(login RealmOwner.password),
+            ),
+        ]),
+        {
+            want_hidden_fields => 0,
+        },
     ));
 }
 

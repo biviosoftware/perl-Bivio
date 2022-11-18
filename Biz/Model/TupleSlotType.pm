@@ -14,7 +14,7 @@ my($_CL) = b_use('IO.ClassLoader');
 
 sub LIST_FIELDS {
     return [map(
-	"TupleSlotType.$_", qw(label type_class choices default_value))];
+        "TupleSlotType.$_", qw(label type_class choices default_value))];
 }
 
 sub DEFAULT_CLASS {
@@ -29,12 +29,12 @@ sub create {
 sub create_from_hash {
     my($self, $types) = @_;
     while (my($label, $values) = each(%$types)) {
-	$values->{label} = $label;
-	$self->create({map(
-	    ($_ => $self->get_field_type($_)->from_literal_or_die(
-		$values->{$_}, 1)),
-	    qw(label type_class choices default_value),
-	)});
+        $values->{label} = $label;
+        $self->create({map(
+            ($_ => $self->get_field_type($_)->from_literal_or_die(
+                $values->{$_}, 1)),
+            qw(label type_class choices default_value),
+        )});
     }
     return;
 }
@@ -44,12 +44,12 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         table_name => 'tuple_slot_type_t',
-	columns => {
-	    tuple_slot_type_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    label => ['TupleSlotLabel', 'NOT_NULL'],
-	    type_class => ['SimpleClassName', 'NOT_NULL'],
-	    choices => ['TupleSlotArray', 'NONE'],
-	    default_value => ['TupleSlot', 'NONE'],
+        columns => {
+            tuple_slot_type_id => ['PrimaryId', 'PRIMARY_KEY'],
+            label => ['TupleSlotLabel', 'NOT_NULL'],
+            type_class => ['SimpleClassName', 'NOT_NULL'],
+            choices => ['TupleSlotArray', 'NONE'],
+            default_value => ['TupleSlot', 'NONE'],
         },
     });
 }
@@ -73,51 +73,51 @@ sub validate_slot {
     my($t) = $proto->type_class_instance($model, $prefix);
     my($v, $e) = $t->from_literal($value);
     return (undef, $e)
-	if $e;
+        if $e;
     return ($v, undef)
-	unless defined($v)
-	and (my $c = $model->get($prefix . 'choices'))->is_specified;
+        unless defined($v)
+        and (my $c = $model->get($prefix . 'choices'))->is_specified;
     my($match) = @{$c->map_iterate(
-	sub {
-	    $t->is_equal($v, $_[0]) ? $_[0] : ();
-	})};
+        sub {
+            $t->is_equal($v, $_[0]) ? $_[0] : ();
+        })};
     return defined($match)
-	? ($match, undef)
-	: (undef, $_TE->NOT_FOUND);
+        ? ($match, undef)
+        : (undef, $_TE->NOT_FOUND);
 }
 
 sub _assert_values {
     my($self, $values) = @_;
     my($mock) = $_CA->new({%$values});
     defined($values->{label})
-	or _err($self, label => 'NULL');
+        or _err($self, label => 'NULL');
     defined($values->{type_class})
-	or _err($self, type_class => 'NULL');
+        or _err($self, type_class => 'NULL');
     my($class) = 'Type.' . _class($self, $values->{type_class});
     _err($self, type_class => 'SIMPLE_CLASS_NAME')
-	unless $_CL->was_required($class) || $_CL->unsafe_map_require($class);
+        unless $_CL->was_required($class) || $_CL->unsafe_map_require($class);
     if ($values->{choices}->is_specified) {
-	$mock->put(choices => $values->{choices}->new([]));
-	my($seen) = {};
-	$mock->put(choices => $values->{choices} = $_TSA->new(
-	    $values->{choices}->map_iterate(
-		sub {
-		    my($c) = @_;
-		    my($v, $e) = $self->validate_slot($c, $mock);
-		    _err($self, choices => $e)
-			if $e;
-		    return unless defined($v);
-		    $seen->{$v}++ and _err($self, choices => 'EXISTS');
-		    return $v;
-		},
-	    ),
-	));
+        $mock->put(choices => $values->{choices}->new([]));
+        my($seen) = {};
+        $mock->put(choices => $values->{choices} = $_TSA->new(
+            $values->{choices}->map_iterate(
+                sub {
+                    my($c) = @_;
+                    my($v, $e) = $self->validate_slot($c, $mock);
+                    _err($self, choices => $e)
+                        if $e;
+                    return unless defined($v);
+                    $seen->{$v}++ and _err($self, choices => 'EXISTS');
+                    return $v;
+                },
+            ),
+        ));
     }
     if (defined($values->{default_value})) {
-	my($v, $e) = $self->validate_slot($values->{default_value}, $mock);
-	_err($self, default_value => $e)
-	    if $e;
-	$values->{default_value} = $v;
+        my($v, $e) = $self->validate_slot($values->{default_value}, $mock);
+        _err($self, default_value => $e)
+            if $e;
+        $values->{default_value} = $v;
     }
     return;
 }
@@ -130,9 +130,9 @@ sub _class {
 sub _err {
     my($self, $field, $err) = @_;
     $_D->throw(DB_CONSTRAINT => {
-	type_error => $_TE->from_any($err),
-	table => $self->get_info('table_name'),
-	columns => [$field],
+        type_error => $_TE->from_any($err),
+        table => $self->get_info('table_name'),
+        columns => [$field],
     });
     # DOES NOT RETURN
 }

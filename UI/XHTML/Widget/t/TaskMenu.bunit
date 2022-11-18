@@ -3,12 +3,12 @@
 Widget({
     view_class_map => 'XHTMLWidget',
     setup_render => sub {
-	my($req, undef, undef, undef, $object) = @_;
-	my($t) = $object->get('task_map')->[0]->get('_task_menu_cfg')
-	    ->{task_id};
-	$req->server_redirect($t)
-	    if $t;
-	return;
+        my($req, undef, undef, undef, $object) = @_;
+        my($t) = $object->get('task_map')->[0]->get('_task_menu_cfg')
+            ->{task_id};
+        $req->server_redirect($t)
+            if $t;
+        return;
     },
 });
 req()->set_realm_and_user(qw(demo guest));
@@ -17,65 +17,65 @@ req()->set_realm_and_user(qw(demo guest));
     [[qw(SITE_ROOT)]] => qr{<div class="task_menu"><a class="selected" href="/">home</a></div>}i,
     [[[qw(SITE_ROOT site_name)]]] => qr{<div class="task_menu"><a class="selected" href="/">PetShop</a></div>},
     [[{
-	task_id => 'SITE_ROOT',
-	label => 'site_name',
+        task_id => 'SITE_ROOT',
+        label => 'site_name',
     }]] => qr{<div class="task_menu"><a class="selected" href="/">PetShop</a></div>},
     [[
-	{
-	    task_id => 'SITE_ROOT',
-	    path_info => '/x',
-	},
-	{
-	    task_id => 'SITE_ROOT',
-	    path_info => undef,
-	},
+        {
+            task_id => 'SITE_ROOT',
+            path_info => '/x',
+        },
+        {
+            task_id => 'SITE_ROOT',
+            path_info => undef,
+        },
     ], {
-	selected_item => sub {
-	    my($widget, $source) = @_;
-	    return $widget->render_simple_attr(href => $source) eq '/';
-	},
+        selected_item => sub {
+            my($widget, $source) = @_;
+            return $widget->render_simple_attr(href => $source) eq '/';
+        },
     }] => qr{task_menu.*href="/x".*class="want_sep selected" href="/">}s,
     [[{
-	task_id => 'SITE_ROOT',
-	path_info => '/x',
+        task_id => 'SITE_ROOT',
+        path_info => '/x',
     }]] => qr{<div class="task_menu"><a class="selected" href="/x">home</a></div>}i,
     [[{
-	task_id => 'SITE_ROOT',
-	control => [sub {0}],
+        task_id => 'SITE_ROOT',
+        control => [sub {0}],
     }]] => '',
     [[{
-	task_id => 'SITE_ROOT',
-	control => [sub {1}],
+        task_id => 'SITE_ROOT',
+        control => [sub {1}],
     }]] => qr{<div class="task_menu"><a class="selected" href="/">home</a></div>}i,
     [[qw(ADM_SUBSTITUTE_USER SITE_ROOT)]] => qr{<div class="task_menu"><a href="/">home</a></div>}i,
     [[qw(ADM_SUBSTITUTE_USER SITE_ROOT), {
-	task_id => Bivio::Agent::TaskId->USER_HOME,
-	realm => 'demo',
+        task_id => Bivio::Agent::TaskId->USER_HOME,
+        realm => 'demo',
     }]] => qr{<div class="task_menu"><a href="/">home</a><a class="want_sep" href="/demo">user home</a></div>}i,
     [[{
-	task_id => 'USER_HOME',
-	label => [sub {'x'}],
+        task_id => 'USER_HOME',
+        label => [sub {'x'}],
      }, {
-	task_id => 'SITE_ROOT',
-	label => [sub {'y'}],
+        task_id => 'SITE_ROOT',
+        label => [sub {'y'}],
      }], {
-	 want_sorting => 1,
-	 selected_item => [sub {'y'}],
+         want_sorting => 1,
+         selected_item => [sub {'y'}],
      }] => qr{<div class="task_menu"><a href="/guest">x</a><a class="want_sep selected" href="/">y</a></div>},
     [[{
-	task_id => 'SITE_ROOT',
-	xlink => 'back_to_top',
+        task_id => 'SITE_ROOT',
+        xlink => 'back_to_top',
     }]] => '<div class="task_menu"><a class="selected" href="#top">back to top</a></div>',
     [[{
-	xlink => 'back_to_top',
-	control => 0,
+        xlink => 'back_to_top',
+        control => 0,
     }]] => '',
     [[{xlink => 'bunit2'}]] => qr{<a href="#a1">anchor</a>},
     [[{
-	xlink => vs_new(qw(XLink back_to_top)),
+        xlink => vs_new(qw(XLink back_to_top)),
     }]] => '<div class="task_menu"><a href="#top">back to top</a></div>',
     [[{
-	xlink => vs_new(qw(SiteRoot hm_bunit1)),
+        xlink => vs_new(qw(SiteRoot hm_bunit1)),
     }]] => '<div class="task_menu"><a href="/hm/bunit1">bunit1</a></div>',
     [['SITE_ROOT'], {selected_label_prefix => '!!'}]
         => qr{task_menu.*class="selected" href="/">!!home}is,

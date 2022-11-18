@@ -3,39 +3,39 @@
 Request('initialize_fully');
 config({
     class() => {
-	use_default_start_page => 1,
+        use_default_start_page => 1,
     },
 });
 req()->set_realm('fourem-sub1');
 [
     class() => [
-	{
-	    method => 'execute_not_found',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->put(path_info => $params->[0]);
-		config({
-		    class() => {
-			default_start_page_realm => $params->[1],
-		    },
-		});
-		return [req()];
-	    },
-	    compute_return => sub {
-		my(undef, $actual) = @_;
-		my($rf) = model('RealmFile');
-		return [
-		    $rf->unsafe_load({path => '/Wiki/StartPage'}),
-		    @$actual,
-		    ($rf->is_loaded ? ${$rf->get_content} : '') =~ /(site-help)/,
-		];
-	    },
-	} => [
-	    startpagex => 0,
-	    startpage => [qw(1 FORUM_WIKI_VIEW)],
-	    inline_rollback(),
-	    [qw(startpagex site-help)] => 0,
-	    [qw(startpage site-help)] => [qw(1 FORUM_WIKI_VIEW site-help)],
-	],
+        {
+            method => 'execute_not_found',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->put(path_info => $params->[0]);
+                config({
+                    class() => {
+                        default_start_page_realm => $params->[1],
+                    },
+                });
+                return [req()];
+            },
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                my($rf) = model('RealmFile');
+                return [
+                    $rf->unsafe_load({path => '/Wiki/StartPage'}),
+                    @$actual,
+                    ($rf->is_loaded ? ${$rf->get_content} : '') =~ /(site-help)/,
+                ];
+            },
+        } => [
+            startpagex => 0,
+            startpage => [qw(1 FORUM_WIKI_VIEW)],
+            inline_rollback(),
+            [qw(startpagex site-help)] => 0,
+            [qw(startpage site-help)] => [qw(1 FORUM_WIKI_VIEW site-help)],
+        ],
     ],
 ];

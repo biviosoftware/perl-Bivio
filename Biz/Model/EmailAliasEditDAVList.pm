@@ -31,7 +31,7 @@ sub row_update {
 sub _op {
     my($op, $self, $val) = @_;
     $self->new_other('EmailAlias')
-	->$op({map(($_ => $val->{"EmailAlias.$_"}), qw(incoming outgoing))});
+        ->$op({map(($_ => $val->{"EmailAlias.$_"}), qw(incoming outgoing))});
     return;
 }
 

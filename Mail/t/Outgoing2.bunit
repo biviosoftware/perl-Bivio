@@ -4,7 +4,7 @@ Request('initialize_fully');
 config({
     'Bivio::Mail::Common' => {
         # read input until EOF, and ignore command line args
-	sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
+        sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
         allow_resend_from => [qw(allow.resend.from)],
     },
 });
@@ -22,25 +22,25 @@ EOF
 
 [
     [Bivio::Mail::Incoming->new(\$_ALLOW_FROM)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	unsafe_get_header => [
-	    from => qr{^Any User <any_user\@allow.resend.from>$},
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^Any User <any_user\@allow.resend.from>$},
+        ],
     ],
     [Bivio::Mail::Incoming->new(\$_NOT_ALLOW_FROM)] => [
-	set_recipients => [
-	    [$_USER, req()] => undef,
-	],
-	send => [
-	    [req()] => undef,
-	],
-	unsafe_get_header => [
-	    from => qr{^"Any User via \S+ <ignore-.*>$},
-	],
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^"Any User via \S+ <ignore-.*>$},
+        ],
     ],
 ];

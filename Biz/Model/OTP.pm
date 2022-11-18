@@ -18,8 +18,8 @@ sub create {
 sub get_challenge {
     my($self, $sequence, $seed) = @_;
     if ($self->is_loaded) {
-	$sequence ||= $self->get('sequence');
-	$seed ||= $self->get('seed');
+        $sequence ||= $self->get('sequence');
+        $seed ||= $self->get('seed');
     }
     $sequence ||= $self->get_field_type('sequence')->get_max;
     return join(' ', 'otp_md5', $sequence, lc($seed));
@@ -33,7 +33,7 @@ sub handle_config {
 
 sub should_reinit {
     return shift->get('sequence') <= $_CFG->{reinitialize_sequence}
-	? 1 : 0;
+        ? 1 : 0;
 }
 
 sub validate_password {
@@ -41,24 +41,24 @@ sub validate_password {
     $self->unauth_load_or_die({user_id => $auth_user->get('realm_id')});
     my($t) = $self->get_field_type('last_login');
     return $self->get('otp_md5') eq $passwd
-	&& $t->diff_seconds($t->now, $self->get('last_login'))
-	    <= $_CFG->{login_timeout_seconds}
-	? 1 : 0;
+        && $t->diff_seconds($t->now, $self->get('last_login'))
+            <= $_CFG->{login_timeout_seconds}
+        ? 1 : 0;
 }
 
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	table_name => 'otp_t',
-	columns => {
+        table_name => 'otp_t',
+        columns => {
             user_id => ['User.user_id', 'PRIMARY_KEY'],
             otp_md5 => ['OTPMD5', 'NONE'],
             seed => ['OTPSeed', 'NONE'],
             sequence => ['OTPSequence', 'NONE'],
-	    last_login => ['DateTime', 'NOT_NULL'],
-	},
-	auth_id => 'user_id',
+            last_login => ['DateTime', 'NOT_NULL'],
+        },
+        auth_id => 'user_id',
     });
 }
 
@@ -79,9 +79,9 @@ sub verify {
     my($self, $input) = @_;
     my($otp_md5) = Bivio::Biz::RFC2289->canonical_hex($input);
     return 0
-	unless $otp_md5;
+        unless $otp_md5;
     return 0
-	unless Bivio::Biz::RFC2289->verify($otp_md5, $self->get('otp_md5'));
+        unless Bivio::Biz::RFC2289->verify($otp_md5, $self->get('otp_md5'));
     $self->update({
         otp_md5 => $otp_md5,
         sequence => $self->get('sequence') - 1,
@@ -93,7 +93,7 @@ sub _values {
     my($self, $values) = @_;
 #TODO: Is this a good idea to hardcode here?  Shouldn't it be pulled from OTPForm? 
     $values->{sequence} = $self->get_field_type('sequence')->get_max - 1
-	unless exists($values->{sequence});
+        unless exists($values->{sequence});
     $values->{last_login} ||= $self->get_field_type('last_login')->now();
     return $values;
 }

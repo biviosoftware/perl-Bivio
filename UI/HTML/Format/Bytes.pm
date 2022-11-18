@@ -13,7 +13,7 @@ sub get_widget_value {
     return '1 KB' unless $size;
     # less than 3 digits
     return $size . ' KB'
-	if $size < 1000;
+        if $size < 1000;
     return _format($size, "%.1f") . ' MB';
 }
 

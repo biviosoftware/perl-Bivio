@@ -68,46 +68,46 @@ my($_XML_TO_HTML_PROGRAM) = {
     # Many-to-one mappings
     map({$_ => []} qw(
         answer/para
-	figure
-	qandaentry
-	qandaset
-	question/para
-	sect1
-	sect2
-	simplesect
-	term
-	varlistentry
+        figure
+        qandaentry
+        qandaset
+        question/para
+        sect1
+        sect2
+        simplesect
+        term
+        varlistentry
     )),
     map({$_ => ['i']} qw(
-	citetitle
-	firstterm
-	replaceable
+        citetitle
+        firstterm
+        replaceable
     )),
     map({$_ => ['tt']} qw(
-	classname
-	command
-	constant
-	envar
-	filename
-	function
-	literal
-	property
-	type
-	userinput
-	varname
+        classname
+        command
+        constant
+        envar
+        filename
+        function
+        literal
+        property
+        type
+        userinput
+        varname
     )),
     map({$_ => '<i>${label}</i>${_}<br>'} qw(
         answer
         question
     )),
     map({(
-	$_ => sub {
-	    my($attr, $html, $clipboard) = @_;
-	    $$html .= "<h3>Footnotes</h3><ol>\n$clipboard->{footnotes}</ol>\n"
-		if $clipboard->{footnotes};
-	    return "<html><body>$$html</body></html>";
-	},
-	"$_/title" => ['h1'],
+        $_ => sub {
+            my($attr, $html, $clipboard) = @_;
+            $$html .= "<h3>Footnotes</h3><ol>\n$clipboard->{footnotes}</ol>\n"
+                if $clipboard->{footnotes};
+            return "<html><body>$$html</body></html>";
+        },
+        "$_/title" => ['h1'],
     )} qw(
         chapter
         preface
@@ -117,48 +117,48 @@ my($_XML_TO_HTML_PROGRAM) = {
     abstract => '<p><table width="70%" align="center" border="0"><tr>'
         . '<td align="center">${_}</td></tr></table></p>',
     attribution => sub {
-	my($attr, $html, $clipboard) = @_;
-	# epigraph requires attribution be first in O'Reilly's dblite
-	# DTD.  This means we have to store it in the clipboard and
-	# retrieve it in epigraph.  Element order shouldn't matter...
-	$clipboard->{attribution} = qq{<div align="right">-- $$html</div>};
-	return '';
+        my($attr, $html, $clipboard) = @_;
+        # epigraph requires attribution be first in O'Reilly's dblite
+        # DTD.  This means we have to store it in the clipboard and
+        # retrieve it in epigraph.  Element order shouldn't matter...
+        $clipboard->{attribution} = qq{<div align="right">-- $$html</div>};
+        return '';
     },
     blockquote => ['blockquote'],
     comment => '<i>[COMMENT: ${_}]</i>',
     emphasis => sub {
-	my($attr, $html) = @_;
-	my($r) = !defined($attr->{role}) ? 'i'
-	    : $attr->{role} eq 'bold' ? 'b'
-	    : die($attr->{role}, ': bad role on emphasis');
-	return "<$r>$$html</$r>";
+        my($attr, $html) = @_;
+        my($r) = !defined($attr->{role}) ? 'i'
+            : $attr->{role} eq 'bold' ? 'b'
+            : die($attr->{role}, ': bad role on emphasis');
+        return "<$r>$$html</$r>";
     },
     epigraph => sub {
-	my($attr, $html, $clipboard) = @_;
-	return "<blockquote>$$html$clipboard->{attribution}</blockquote>";
+        my($attr, $html, $clipboard) = @_;
+        return "<blockquote>$$html$clipboard->{attribution}</blockquote>";
     },
     'figure/title' => ['center', 'b'],
     footnote => sub {
-	my($attr, $html, $clipboard) = @_;
-	$clipboard->{footnote_idx}++;
-	$clipboard->{footnotes}
-	    .= qq(<li><a name="$clipboard->{footnote_idx}"></a>$$html</li>\n);
-	return qq(<a href="#$clipboard->{footnote_idx}">)
-	    . "[$clipboard->{footnote_idx}]</a>";
+        my($attr, $html, $clipboard) = @_;
+        $clipboard->{footnote_idx}++;
+        $clipboard->{footnotes}
+            .= qq(<li><a name="$clipboard->{footnote_idx}"></a>$$html</li>\n);
+        return qq(<a href="#$clipboard->{footnote_idx}">)
+            . "[$clipboard->{footnote_idx}]</a>";
 
     },
     foreignphrase => ['i'],
     graphic => {
-	template => '<div align="${align}"><img border="0" src="${fileref}"></div>',
-	default_align => 'center',
+        template => '<div align="${align}"><img border="0" src="${fileref}"></div>',
+        default_align => 'center',
     },
     itemizedlist => ['ul'],
     listitem => ['li'],
     literallayout => sub {
-	my($attr, $html) = @_;
-	$$html =~ s/\n/<br>\n/g;
-	$$html =~ s/ /&nbsp;/g;
-	return $$html;
+        my($attr, $html) = @_;
+        $$html =~ s/\n/<br>\n/g;
+        $$html =~ s/ /&nbsp;/g;
+        return $$html;
     },
     note => '<blockquote><strong>Note:</strong><i>${_}</i></blockquote>',
     orderedlist => ['ol'],
@@ -181,21 +181,21 @@ my($_XML_TO_HTML_PROGRAM) = {
     warning =>
         '<blockquote><strong>Warning!</strong><p><i>${_}</i></blockquote>',
     xref => sub {
-	my($attr, $html, $clipboard) = @_;
-	my($glob) = $clipboard->{xml_file};
-	$glob =~ s,[^/]+(?=\.xml$),\*,;
-	my($target) = Bivio::ShellUtil
-	    ->do_backticks(qq{fgrep -i -l 'id="$attr->{linkend}">' $glob});
-	die($attr->{linkend}, ': not found in ', $glob)
-	    unless $target;
-	chomp($target);
-	my($title) = ${Bivio::IO::File->read($target)}
-	    =~ m{id="$attr->{linkend}".*?<title>(.*?)</title}s;
-	die($attr->{linkend}, ': title not found in ', $target)
-	    unless $title;
-	$target =~ s/xml$/html/;
-	$target =~ s,.*/,,;
-	return qq{<a href="$target#$attr->{linkend}">$title</a>};
+        my($attr, $html, $clipboard) = @_;
+        my($glob) = $clipboard->{xml_file};
+        $glob =~ s,[^/]+(?=\.xml$),\*,;
+        my($target) = Bivio::ShellUtil
+            ->do_backticks(qq{fgrep -i -l 'id="$attr->{linkend}">' $glob});
+        die($attr->{linkend}, ': not found in ', $glob)
+            unless $target;
+        chomp($target);
+        my($title) = ${Bivio::IO::File->read($target)}
+            =~ m{id="$attr->{linkend}".*?<title>(.*?)</title}s;
+        die($attr->{linkend}, ': title not found in ', $target)
+            unless $title;
+        $target =~ s/xml$/html/;
+        $target =~ s,.*/,,;
+        return qq{<a href="$target#$attr->{linkend}">$title</a>};
     },
 };
 
@@ -262,79 +262,79 @@ my($_XML_TO_LATEX_PROGRAM) = {
     # Many-to-one mappings
     # Do nothing unless a label should be defined (id=foo)
     map({$_ => sub {
-	 my($args) = @_;
-	 return '' unless defined($args);
-	 return '' unless $args =~ /id=/;
-	 $args =~ s/id=//;
-	 $args =~ s/"//g;
-	 $args =~ s/\///;
-	 $label = $args;
-	 return '';
+         my($args) = @_;
+         return '' unless defined($args);
+         return '' unless $args =~ /id=/;
+         $args =~ s/id=//;
+         $args =~ s/"//g;
+         $args =~ s/\///;
+         $label = $args;
+         return '';
      }
     } qw(
         answer/para
-	question/para
+        question/para
         figure
-	sect1
-	sect2
-	simplesect
-	term
-	varlistentry
+        sect1
+        sect2
+        simplesect
+        term
+        varlistentry
         answer//para
-	question//para
-	/figure
-	/sect1
-	/sect2
-	/simplesect
-	/term
-	/varlistentry
+        question//para
+        /figure
+        /sect1
+        /sect2
+        /simplesect
+        /term
+        /varlistentry
     )),
     map({$_ => '\textit{'} qw(
-	citetitle
-	firstterm
-	replaceable
+        citetitle
+        firstterm
+        replaceable
     )),
     map({$_ => '}'} qw(
-	/citetitle
-	/firstterm
-	/replaceable
+        /citetitle
+        /firstterm
+        /replaceable
     )),
     map({$_ => '\texttt{'} qw(
-	classname
-	command
-	constant
-	envar
-	filename
-	function
-	literal
-	property
-	type
-	userinput
-	varname
+        classname
+        command
+        constant
+        envar
+        filename
+        function
+        literal
+        property
+        type
+        userinput
+        varname
     )),
     map({$_ => '}'} qw(
-	/classname
-	/command
-	/constant
-	/envar
-	/filename
-	/function
-	/literal
-	/property
-	/type
-	/userinput
-	/varname
+        /classname
+        /command
+        /constant
+        /envar
+        /filename
+        /function
+        /literal
+        /property
+        /type
+        /userinput
+        /varname
     )),
     # Do nothing unless label should be defined (id=foo)
     map({$_ => sub {
-	 my($args) = @_;
-	 return '' unless defined($args);
-	 return '' unless $args =~ /id=/;
-	 $args =~ s/id=//;
-	 $args =~ s/"//g;
-	 $args =~ s/\///;
-	 $label = $args;
-	 return '';
+         my($args) = @_;
+         return '' unless defined($args);
+         return '' unless $args =~ /id=/;
+         $args =~ s/id=//;
+         $args =~ s/"//g;
+         $args =~ s/\///;
+         $label = $args;
+         return '';
      }
     } qw(
         chapter
@@ -346,32 +346,32 @@ my($_XML_TO_LATEX_PROGRAM) = {
     # One-to-one mappings
     # Have to save the attribution to be output after the epigraph
     attribution => sub {
-	$in_attrib = 1;
-	$attrib = '';
-	return '';
+        $in_attrib = 1;
+        $attrib = '';
+        return '';
     },
     '/attribution' => sub {
-	$in_attrib = 0;
-	return '';
+        $in_attrib = 0;
+        return '';
     },
     blockquote => '\begin{quote}',
     '/blockquote' => '\end{quote}',
     'chapter/title' => '\chapter{',
     # Output label for each chapter
     'chapter//title' => sub {
-	return '}' . "\n" if $label eq '';
-	my($result) = '}\label{' . $label . '}' . "\n";
-	$label = '';
-	return $result;
+        return '}' . "\n" if $label eq '';
+        my($result) = '}\label{' . $label . '}' . "\n";
+        $label = '';
+        return $result;
     },
     # Ignore comments
     comment => sub {
-	$ignore = 1;
-	return '';
+        $ignore = 1;
+        return '';
     },
     '/comment' => sub {
-	$ignore = 0;
-	return '';
+        $ignore = 0;
+        return '';
     },
     emphasis => '\emph{',
     '/emphasis' => '}',
@@ -380,111 +380,111 @@ my($_XML_TO_LATEX_PROGRAM) = {
     epigraph => '\begin{quote}',
     # Output saved attribution after epigraph is closed
     '/epigraph' => sub {
-	return '\end{quote}}\begin{flushright}-- ' .
-	    $attrib . '\end{flushright}' . "\n";
+        return '\end{quote}}\begin{flushright}-- ' .
+            $attrib . '\end{flushright}' . "\n";
     },
     'figure/title' => '\begin{center}\textbf{',
     'figure//title' => '}\end{center}' . "\n",
     'firstterm' => sub {
-	$in_keyword = 1;
-	$keyword = '';
-	return '\index{';
+        $in_keyword = 1;
+        $keyword = '';
+        return '\index{';
     },
     '/firstterm' => sub {
-	$in_keyword = 0;
-	return '}' . $keyword;
+        $in_keyword = 0;
+        return '}' . $keyword;
     },
     footnote => '\footnote{',
     '/footnote' => '}',
     foreignphrase => '\textit{',
     '/foreignphrase' => '}',
     graphic => sub {
-	my($args) = @_;
-	my($file);
-	$file = $` if $args =~ / /;
-	$file = $args if !($args =~ / /);
-	$file =~ s/fileref=//;
-	$file =~ s/\"//g;
-	return '\begin{center}\includegraphics[width=' . $GRAPHIC_WIDTH . ']{' .
-	    $dir . '/' . $file . '}\end{center}' . "\n";
+        my($args) = @_;
+        my($file);
+        $file = $` if $args =~ / /;
+        $file = $args if !($args =~ / /);
+        $file =~ s/fileref=//;
+        $file =~ s/\"//g;
+        return '\begin{center}\includegraphics[width=' . $GRAPHIC_WIDTH . ']{' .
+            $dir . '/' . $file . '}\end{center}' . "\n";
     },
     itemizedlist => '\begin{itemize}' . "\n",
     '/itemizedlist' => '\end{itemize}' . "\n",
     listitem => '\item ',
     '/listitem' => "\n",
     literallayout => sub {
-	$clean_normal = 0;
-	return '';
+        $clean_normal = 0;
+        return '';
     },
     '/literallayout' => sub {
-	$clean_normal = 1;
-	return '' . "\n";
+        $clean_normal = 1;
+        return '' . "\n";
     },
     para => "\n",
     '/para' => "\n",
     'preface/title' => '\chapter*{',
     'preface//title' => sub {
-	return '}' . "\n" if $label eq '';
-	my($result) = '}\label{' . $label . '}' . "\n" .
-	    '\addcontentsline{toc}{chapter}{Preface}' . "\n";
-	$label = '';
-	return $result;
+        return '}' . "\n" if $label eq '';
+        my($result) = '}\label{' . $label . '}' . "\n" .
+            '\addcontentsline{toc}{chapter}{Preface}' . "\n";
+        $label = '';
+        return $result;
     },
     'preface' => sub {
-	my($args) = @_;
-	return '' unless defined($args);
-	return '' unless $args =~ /id=/;
-	$args =~ s/id=//;
-	$args =~ s/"//g;
-	$args =~ s/\///;
-	$label = $args;
-	$in_preface = 1;
-	return '';
+        my($args) = @_;
+        return '' unless defined($args);
+        return '' unless $args =~ /id=/;
+        $args =~ s/id=//;
+        $args =~ s/"//g;
+        $args =~ s/\///;
+        $label = $args;
+        $in_preface = 1;
+        return '';
     },
     '/preface' => sub {
-	$in_preface = 0;
-	return '\mainmatter' . "\n";
+        $in_preface = 0;
+        return '\mainmatter' . "\n";
     },
     programlisting => sub {
         $programlisting = 1;
-	return '\newline\verb#';
+        return '\newline\verb#';
     },
     '/programlisting' => sub {
         $programlisting = 0;
         _end_verb();
-	return '\newline';
+        return '\newline';
     },
     quote => '``',
     '/quote' => '\'\'',
     'sect1/title' => sub {
-	$in_preface ? return '\section*{' : return '\section{';
+        $in_preface ? return '\section*{' : return '\section{';
     },
     'sect1//title' => sub {
-	return '}' . "\n" if $label eq '';
-	my($result) = '}\label{' . $label . '}' . "\n";
-	$label = '';
-	return $result;
+        return '}' . "\n" if $label eq '';
+        my($result) = '}\label{' . $label . '}' . "\n";
+        $label = '';
+        return $result;
     },
     'sect2/title' => sub {
-	$in_preface ? return '\section*{' : return '\section{';
+        $in_preface ? return '\section*{' : return '\section{';
     },
     'sect2//title' => sub {
-	return '}' . "\n" if $label eq '';
-	my($result) = '}\label{' . $label . '}' . "\n";
-	$label = '';
-	return $result;
+        return '}' . "\n" if $label eq '';
+        my($result) = '}\label{' . $label . '}' . "\n";
+        $label = '';
+        return $result;
     },
     sidebar => sub {
-	my($args) = @_;
-	return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
-	    unless defined($args);
-	return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
-	    unless $args =~ /id=/;
-	$args =~ s/id=//;
-	$args =~ s/"//g;
-	$args =~ s/\///;
-	$label = $args;
-	return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
+        my($args) = @_;
+        return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
+            unless defined($args);
+        return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
+            unless $args =~ /id=/;
+        $args =~ s/id=//;
+        $args =~ s/"//g;
+        $args =~ s/\///;
+        $label = $args;
+        return "\n" . '\fbox{\fbox{\begin{minipage}{4.3in}' . "\n"
     },
     '/sidebar' => '\end{minipage}}}' . "\n",
     superscript => '^{',
@@ -492,17 +492,17 @@ my($_XML_TO_LATEX_PROGRAM) = {
     systemitem => '\linebreak[3]',
     '/systemitem' => '',
     'term' => sub {
-	$in_keyword = 1;
-	$keyword = '';
-	return '\index{';
+        $in_keyword = 1;
+        $keyword = '';
+        return '\index{';
     },
     '/term' => sub {
-	$in_keyword = 0;
-	$tex .= $keyword;
-	return '}';
+        $in_keyword = 0;
+        $tex .= $keyword;
+        return '}';
     },
     'title' => sub {
-	$in_preface ? return '\section*{' : return '\section{';
+        $in_preface ? return '\section*{' : return '\section{';
     },
     '/title' => '}',
     variablelist => '\begin{description}' . "\n",
@@ -514,11 +514,11 @@ my($_XML_TO_LATEX_PROGRAM) = {
     warning => '\quote{\textbf{Warning!}\textit{${_}',
     '/warning' => '}',
     xref => sub {
-	my($args) = @_;
-	$args =~ s/linkend=//;
-	$args =~ s/"//g;
-	$args =~ s/\///;
-	return '\nameref{' . $args . '}';
+        my($args) = @_;
+        $args =~ s/linkend=//;
+        $args =~ s/"//g;
+        $args =~ s/\///;
+        return '\nameref{' . $args . '}';
     },
     '/xref' => '', #Nothing to be done here
 };
@@ -538,8 +538,8 @@ Returns the words in XML content.
 sub count_words {
     my($self, $xml_file) = @_;
     return _count_words(
-	XML::Parser->new(Style => 'Tree')->parsefile($xml_file))
-	. "\n";
+        XML::Parser->new(Style => 'Tree')->parsefile($xml_file))
+        . "\n";
 }
 
 =for html <a name="to_html"></a>
@@ -555,11 +555,11 @@ $_XML_TO_HTML_PROGRAM for the list of handled tags.
 sub to_html {
     my($self, $xml_file) = @_;
     return _to_html(
-	'',
-	XML::Parser->new(Style => 'Tree')->parsefile($xml_file),
+        '',
+        XML::Parser->new(Style => 'Tree')->parsefile($xml_file),
         {
-	    xml_file => $xml_file,
-	});
+            xml_file => $xml_file,
+        });
 }
 
 =for html <a name="to_pdf"></a>
@@ -577,12 +577,12 @@ tex file.
 sub to_pdf {
     my($self, $input_dir, $paper_size, $output_pdf, $mode) = @_;
     print "usage: perl -w xpip2pdf.PL <input_dir> <a4|letter> <name>.pdf\n"
-	unless defined($input_dir) && defined($paper_size) && ($output_pdf);
+        unless defined($input_dir) && defined($paper_size) && ($output_pdf);
     return unless defined($input_dir) && defined($paper_size) && ($output_pdf);
     if ($output_pdf !~ /\.pdf/ ||
-	($paper_size ne "letter" && $paper_size ne "a4")) {
-	print "usage: perl -w xpip2pdf.PL <input_dir> <a4|letter> <name>.pdf\n";
-	return;
+        ($paper_size ne "letter" && $paper_size ne "a4")) {
+        print "usage: perl -w xpip2pdf.PL <input_dir> <a4|letter> <name>.pdf\n";
+        return;
     }
     my($output_root) = $output_pdf;
     $output_root =~ s/\.pdf//;
@@ -594,9 +594,9 @@ sub to_pdf {
 
     my($full_path);
     foreach my $xml_file (@_CHAPTERS) {
-	$full_path = $input_dir . '/' . $xml_file;
-	print "Processing $full_path\n";
-	_process_xml_file($full_path);
+        $full_path = $input_dir . '/' . $xml_file;
+        print "Processing $full_path\n";
+        _process_xml_file($full_path);
     }
 
     _end_tex();
@@ -612,10 +612,10 @@ sub to_pdf {
     system("pdflatex -interaction nonstopmode $output_tex > $output_root.log");
     my($result) = system("pdflatex -interaction nonstopmode $output_tex > $output_root.log");
     foreach my $ext (qw(aux idx ilg ind log out toc)) {
-	system("rm $output_root.$ext") unless $result < 0;
+        system("rm $output_root.$ext") unless $result < 0;
     }
     print "PDF Generation failed, check $output_root.log for details\n"
-	if $result < 0;
+        if $result < 0;
     print "$output_pdf Created\n";
 
     return;
@@ -646,13 +646,13 @@ sub _clean_tex {
 sub _count_words {
     my($children) = @_;
     shift(@$children)
-	if ref($children->[0]) eq 'HASH';
+        if ref($children->[0]) eq 'HASH';
     my($res) = 0;
     my(@dontcare);
     while (@$children) {
-	my($tag, $child) = splice(@$children, 0, 2);
-	$res += $tag ? _count_words($child)
-	    : scalar(@dontcare = split(' ', $child));
+        my($tag, $child) = splice(@$children, 0, 2);
+        $res += $tag ? _count_words($child)
+            : scalar(@dontcare = split(' ', $child));
     }
     return $res;
 }
@@ -676,7 +676,7 @@ EOF
 #
 sub _end_verb {
     $tex .= '#'
-	unless $tex =~ s/\\verb\#$//s;
+        unless $tex =~ s/\\verb\#$//s;
     return;
 }
 
@@ -691,12 +691,12 @@ sub _end_verb {
 sub _eval_child {
     my($tag, $children, $parent_tag, $clipboard) = @_;
     return HTML::Entities::encode($children)
-	unless $tag;
+        unless $tag;
     return _eval_op(
-	_lookup_op($tag, $parent_tag),
+        _lookup_op($tag, $parent_tag),
         shift(@$children),
-	_to_html($tag, $children, $clipboard),
-	$clipboard);
+        _to_html($tag, $children, $clipboard),
+        $clipboard);
 }
 
 # _eval_op(any op, hash_ref attr, string_ref html, hash_ref clipboard) : string
@@ -711,13 +711,13 @@ sub _eval_child {
 sub _eval_op {
     my($op, $attr, $html, $clipboard) = @_;
     substr($$html, 0, 0) = qq{<a name="$attr->{id}"></a>}
-	if $attr->{id};
+        if $attr->{id};
     return 'ARRAY' eq ref($op)
-	    ? _to_tags($op, '') . $$html  . _to_tags([reverse(@$op)], '/')
-	: 'CODE' eq ref($op)
-	    ? $op->($attr, $html, $clipboard)
-	: 'HASH' eq ref($op) || !ref($op)
-	    ? _eval_template($op, $attr, $html)
+            ? _to_tags($op, '') . $$html  . _to_tags([reverse(@$op)], '/')
+        : 'CODE' eq ref($op)
+            ? $op->($attr, $html, $clipboard)
+        : 'HASH' eq ref($op) || !ref($op)
+            ? _eval_template($op, $attr, $html)
         : Bivio::Die->die('bad operation ', $op);
 }
 
@@ -732,11 +732,11 @@ sub _eval_template {
     my($op, $attr, $html) = @_;
     my($res) = ref($op) ? $op->{template} : $op;
     $res =~ s{\$\{(\w+)\}}{
-	$1 eq '_' ? $$html
-	    : defined($attr->{$1}) ? HTML::Entities::encode($attr->{$1})
-	    : ref($op) && defined($op->{'default_'.$1})
-		? HTML::Entities::encode($op->{'default_'.$1})
-	    : die("$1: missing attribute on tag and no default")
+        $1 eq '_' ? $$html
+            : defined($attr->{$1}) ? HTML::Entities::encode($attr->{$1})
+            : ref($op) && defined($op->{'default_'.$1})
+                ? HTML::Entities::encode($op->{'default_'.$1})
+            : die("$1: missing attribute on tag and no default")
     }egx;
     return $res;
 }
@@ -749,8 +749,8 @@ sub _eval_template {
 sub _lookup_op {
     my($tag, $parent_tag) = @_;
     return $_XML_TO_HTML_PROGRAM->{"$parent_tag/$tag"}
-	|| $_XML_TO_HTML_PROGRAM->{$tag}
-	|| die("$parent_tag/$tag: unhandled tag");
+        || $_XML_TO_HTML_PROGRAM->{$tag}
+        || die("$parent_tag/$tag: unhandled tag");
 }
 
 # _process_tag()
@@ -762,19 +762,19 @@ sub _process_tag {
 
     my($result);
     if (defined($_XML_TO_LATEX_PROGRAM->{"$parent_tag/$tag"})) {
-	$result = $_XML_TO_LATEX_PROGRAM->{"$parent_tag/$tag"}
+        $result = $_XML_TO_LATEX_PROGRAM->{"$parent_tag/$tag"}
     } elsif (defined($_XML_TO_LATEX_PROGRAM->{$tag})) {
-	$result = $_XML_TO_LATEX_PROGRAM->{$tag};
+        $result = $_XML_TO_LATEX_PROGRAM->{$tag};
     } else {
-	die("$parent_tag/$tag: unhandled tag");
+        die("$parent_tag/$tag: unhandled tag");
     }
 
     if ('CODE' eq ref($result)) {
-	$attrib .= $result->($args) if $in_attrib;
-	$tex .= $result->($args) if !$in_attrib;
+        $attrib .= $result->($args) if $in_attrib;
+        $tex .= $result->($args) if !$in_attrib;
     } else {
-	$attrib .= $result if $in_attrib;
-	$tex .= $result if !$in_attrib;
+        $attrib .= $result if $in_attrib;
+        $tex .= $result if !$in_attrib;
     }
 }
 
@@ -795,57 +795,57 @@ sub _process_xml_file {
     my(@open_tags) = ('root');
     my(@xml_chars) = split(//, $xml);
     foreach my $c (@xml_chars) {
-	my($char) = $c;
-	$char = $_CLEAN_CHAR->{$char} if $clean_normal &&
-	    defined($_CLEAN_CHAR->{$char});
-	$char = $_CLEAN_VERB_CHAR->{$char} if !$clean_normal &&
-	    defined($_CLEAN_VERB_CHAR->{$char});
+        my($char) = $c;
+        $char = $_CLEAN_CHAR->{$char} if $clean_normal &&
+            defined($_CLEAN_CHAR->{$char});
+        $char = $_CLEAN_VERB_CHAR->{$char} if !$clean_normal &&
+            defined($_CLEAN_VERB_CHAR->{$char});
 
-	if ($char eq '<' && !$in_tag) {
-	    $in_tag = 1;
-	    $args = '';
-	    next;
-	} elsif ($char eq '>' && $in_tag) {
-	    $in_tag = 0;
-	    if ($parent_tag =~ / /) {
-		$parent_tag =~ /(.+)( )(.+)/;
-		$parent_tag = $1;
-	    }
+        if ($char eq '<' && !$in_tag) {
+            $in_tag = 1;
+            $args = '';
+            next;
+        } elsif ($char eq '>' && $in_tag) {
+            $in_tag = 0;
+            if ($parent_tag =~ / /) {
+                $parent_tag =~ /(.+)( )(.+)/;
+                $parent_tag = $1;
+            }
 
-	    if ($tag =~ / /) {
-		$tag =~ /(.+?)( )(.+)/;
-		$tag = $1;
-		$args = $3;
-	    }
+            if ($tag =~ / /) {
+                $tag =~ /(.+?)( )(.+)/;
+                $tag = $1;
+                $args = $3;
+            }
 
-	    if ($tag !~ /\//) {
-		$parent_tag = $open_tags[$#open_tags];
-		push(@open_tags, $tag);
-	    } else {
-		pop(@open_tags);
-		$parent_tag = $open_tags[$#open_tags];
-	    }
+            if ($tag !~ /\//) {
+                $parent_tag = $open_tags[$#open_tags];
+                push(@open_tags, $tag);
+            } else {
+                pop(@open_tags);
+                $parent_tag = $open_tags[$#open_tags];
+            }
 
-	    _end_verb()
-		if $programlisting && $tag !~ /programlisting/;
-	    _process_tag($parent_tag, $tag, $args);
-	    $tex .= '\verb#'
-		if $programlisting && $tag !~ /programlisting/;
-	    $tag = '';
-	    next;
-	}
-	elsif ($open_tags[$#open_tags] eq 'programlisting') {
-	    $char = $c eq '#' ? '#\verb!#!\verb#'
-		: $c eq "\n" ? "#\\newline\n\\verb#"
-		: $c;
-	    _end_verb()
-		if $char =~ s/^#//;
-	}
+            _end_verb()
+                if $programlisting && $tag !~ /programlisting/;
+            _process_tag($parent_tag, $tag, $args);
+            $tex .= '\verb#'
+                if $programlisting && $tag !~ /programlisting/;
+            $tag = '';
+            next;
+        }
+        elsif ($open_tags[$#open_tags] eq 'programlisting') {
+            $char = $c eq '#' ? '#\verb!#!\verb#'
+                : $c eq "\n" ? "#\\newline\n\\verb#"
+                : $c;
+            _end_verb()
+                if $char =~ s/^#//;
+        }
 
-	$tag .= $char if $in_tag;
-	$tex .= $char if !$in_tag && !$ignore && !$in_attrib;
-	$attrib .= $char if !$in_tag && $in_attrib;
-	$keyword .= $char if $in_keyword && !$in_tag;
+        $tag .= $char if $in_tag;
+        $tex .= $char if !$in_tag && !$ignore && !$in_attrib;
+        $attrib .= $char if !$in_tag && $in_attrib;
+        $keyword .= $char if $in_keyword && !$in_tag;
     }
 }
 
@@ -856,7 +856,7 @@ sub _process_xml_file {
 sub _start_tex {
     my($paper_size) = @_;
     $tex .= '\documentclass[11pt,' . $paper_size . "paper,makeidx]{book}\n"
-	. <<'EOF';
+        . <<'EOF';
 \usepackage{color}
 \usepackage{graphicx}
 \usepackage{alltt}
@@ -895,10 +895,10 @@ EOF
 sub _to_html {
     my($tag, $children, $clipboard) = @_;
     return \(join('',
-	map({
-	    _eval_child(
-		$children->[$_ *= 2], $children->[++$_], $tag, $clipboard);
-	} 0 .. @$children/2 - 1),
+        map({
+            _eval_child(
+                $children->[$_ *= 2], $children->[++$_], $tag, $clipboard);
+        } 0 .. @$children/2 - 1),
     ));
 }
 

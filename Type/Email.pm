@@ -35,12 +35,12 @@ sub equals_domain {
 sub format_email {
     my($proto, $local_or_realm_or_email, $domain, $plus, $op, $req) = @_;
     return lc($local_or_realm_or_email)
-	if $local_or_realm_or_email =~ /\@/;
+        if $local_or_realm_or_email =~ /\@/;
     my($local) = ($op ? $op . $_OP_SEP : '')
-	. $local_or_realm_or_email
-	. ($plus ? $_PLUS_SEP . $plus : '');
+        . $local_or_realm_or_email
+        . ($plus ? $_PLUS_SEP . $plus : '');
     return $proto->join_parts($local, $domain)
-	if $domain;
+        if $domain;
     return FacadeComponent_Email()->format($local, $req)
         if $req->unsafe_get('UI.Facade');
     return $proto->join_parts($local, b_use('Bivio.BConf')->bconf_host_name);
@@ -50,11 +50,11 @@ sub format_ignore {
     my($proto, $local, $req) = @_;
     $local =~ s/\W/-/g;
     return $proto->format_email(
-	$proto->IGNORE_PREFIX . substr($local, 0, $_MAX_LOCAL_IN_IGNORE),
-	undef,
-	undef,
-	undef,
-	$req,
+        $proto->IGNORE_PREFIX . substr($local, 0, $_MAX_LOCAL_IN_IGNORE),
+        undef,
+        undef,
+        undef,
+        $req,
     );
 }
 
@@ -69,16 +69,16 @@ sub from_literal {
     $proto->internal_from_literal_warning
         unless wantarray;
     return undef
-	unless defined($value);
+        unless defined($value);
     $value =~ s/^\s+|\s+$//g;
     return undef
-	unless length($value);
+        unless length($value);
     return (undef, $_TE->TOO_LONG)
-	if length($value) > $proto->get_width;
+        if length($value) > $proto->get_width;
     $value = lc($value);
     return $value
-	if $value =~ $_ATOM_ONLY_RE
-	&& $value =~ /.+\..*/;
+        if $value =~ $_ATOM_ONLY_RE
+        && $value =~ /.+\..*/;
     return (undef, $_TE->EMAIL);
 }
 
@@ -95,9 +95,9 @@ sub invalidate {
     my($proto, $email) = @_;
 #TODO: elimnate reference
     $$email = substr(
-	$proto->INVALID_PREFIX . $$email,
-	0,
-	$proto->get_width,
+        $proto->INVALID_PREFIX . $$email,
+        0,
+        $proto->get_width,
     );
     return $$email;
 }
@@ -105,7 +105,7 @@ sub invalidate {
 sub is_ignore {
     my($proto, $email) = @_;
     return !$proto->is_valid($email) ? 1
-	: $email =~ /^@{[$proto->IGNORE_PREFIX]}/ios ? 1 : 0;
+        : $email =~ /^@{[$proto->IGNORE_PREFIX]}/ios ? 1 : 0;
 }
 
 sub is_valid {
@@ -121,28 +121,28 @@ sub join_parts {
 sub replace_domain {
     my($proto, $email, $new_domain) = @_;
     return $proto->join_parts(
-	$proto->get_local_part($email) || b_die($email, ': malformed email'),
-	$new_domain,
+        $proto->get_local_part($email) || b_die($email, ': malformed email'),
+        $new_domain,
     );
 }
 
 sub split_parts {
     my(undef, $value) = @_;
     return (undef, undef, undef, undef, undef)
-	unless $value;
+        unless $value;
     return ($1, $2, $1, undef, undef)
         if $_C->is_test
         && $value =~ b_use('TestLanguage.HTTP')->LOCAL_EMAIL_RE;
     my($local, $domain) = lc($value) =~ /^(.+?)\@(.+)$/;
     return (undef, undef, undef, undef, undef)
-	unless $domain;
+        unless $domain;
     my($base) = $local;
     my($plus) = $1
-	if $base =~ s/\Q$_PLUS_SEP\E(.+)$//o;
+        if $base =~ s/\Q$_PLUS_SEP\E(.+)$//o;
     my($op) = $1
-	if $base =~ s/^(\w+?)\Q$_OP_SEP\E//o;
+        if $base =~ s/^(\w+?)\Q$_OP_SEP\E//o;
     return length($base) ? ($local, $domain, $base, $plus, $op)
-	: ($local, $domain, undef, undef, undef);
+        : ($local, $domain, undef, undef, undef);
 }
 
 sub to_json {
@@ -158,7 +158,7 @@ sub to_xml {
 sub _to_xml {
     my($proto, $value) = @_;
     return ''
-	if !defined($value) || $proto->is_ignore($value);
+        if !defined($value) || $proto->is_ignore($value);
     return $value;
 }
 

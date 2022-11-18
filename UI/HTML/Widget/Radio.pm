@@ -11,8 +11,8 @@ sub initialize {
     my($self) = @_;
 
     if ($self->unsafe_get('value') && ! $self->unsafe_get('on_value')) {
-	$_A->warn_deprecated('"value" deprecated, use "on_value" attribute');
-	$self->put(on_value => $self->get('value'));
+        $_A->warn_deprecated('"value" deprecated, use "on_value" attribute');
+        $self->put(on_value => $self->get('value'));
     }
     $self->initialize_attr('on_value');
     $self->initialize_attr(TYPE => 'radio');
@@ -24,8 +24,8 @@ sub internal_input_base_render_attrs {
     shift->SUPER::internal_input_base_render_attrs(@_);
     my($value) = _on_value($self, $source);
     $value = ref($value)
-	? $value->to_html($value)
- 	: $_HTML->escape($value);
+        ? $value->to_html($value)
+         : $_HTML->escape($value);
     $$buffer .= qq{ value="$value"};
     return;
 }
@@ -33,8 +33,8 @@ sub internal_input_base_render_attrs {
 sub internal_is_checked {
     my($self, $form, $field, $source) = @_;
     return _on_value($self, $source)
-	eq $form->get_field_type($field)->to_html($form->get($field))
-	    ? 1 : 0;
+        eq $form->get_field_type($field)->to_html($form->get($field))
+            ? 1 : 0;
 }
 
 sub internal_new_args {
@@ -48,8 +48,8 @@ sub internal_want_multi_check_handler {
 sub _on_value {
     my($self, $source) = @_;
     return UNIVERSAL::isa($self->get('on_value'), 'Bivio::Type::Enum')
-	? $self->get('on_value')->to_html($self->get('on_value'))
-	: ${$self->render_attr('on_value', $source)};
+        ? $self->get('on_value')->to_html($self->get('on_value'))
+        : ${$self->render_attr('on_value', $source)};
 }
 
 1;

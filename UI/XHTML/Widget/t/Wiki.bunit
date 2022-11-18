@@ -4,9 +4,9 @@ Widget({
     realm => 'fourem',
     user => 'root',
     view_pre_compile => sub {
-	req()->put(path_info => 'PrivatePage');
-	class('Action.WikiView')->execute_prepare_html(req());
-	return;
+        req()->put(path_info => 'PrivatePage');
+        class('Action.WikiView')->execute_prepare_html(req());
+        return;
     },
 });
 [

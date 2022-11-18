@@ -12,16 +12,16 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	can_iterate => 0,
-	$self->field_decl(
-	    primary_key => [
-		[qw(RealmOwner.name)],
-	    ],
+        can_iterate => 0,
+        $self->field_decl(
+            primary_key => [
+                [qw(RealmOwner.name)],
+            ],
             other => [
                 [qw(link Text)],
             ],
-	    undef, 'NOT_NULL',
-	),
+            undef, 'NOT_NULL',
+        ),
         other_query_keys => ['realm_types', 'task_id'],
     });
 }
@@ -40,12 +40,12 @@ sub internal_load_rows {
             task_id => $task_id,
         }),
     }, @{$self->req->map_user_realms(
-	sub {shift->{'RealmOwner.name'}},
-	{
-	    !@$realm_types ? ()
-	        : ('RealmOwner.realm_type' => $realm_types),
-	    roles => $_REQUIRED_ROLE_GROUP,
-	},
+        sub {shift->{'RealmOwner.name'}},
+        {
+            !@$realm_types ? ()
+                : ('RealmOwner.realm_type' => $realm_types),
+            roles => $_REQUIRED_ROLE_GROUP,
+        },
     )})];
 }
 

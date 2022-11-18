@@ -23,7 +23,7 @@ sub SUPER_USER_FIELD {
     # B<DEPRECATED>:
     # L<Bivio::Biz::Model::AdmSubstituteUserForm::SUPER_USER_FIELD|Bivio::Biz::Model::AdmSubstituteUserForm/SUPER_USER_FIELD>
     Bivio::IO::Alert->warn_deprecated(
-	q{use Bivio::Biz::Model->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD});
+        q{use Bivio::Biz::Model->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD});
     return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
 }
 
@@ -37,26 +37,26 @@ sub execute_ok {
     my($res) = shift->SUPER::execute_ok(@_);
     my($req) = $self->get_request;
     my($realm) = $self->unsafe_get('validate_called')
-	? $self->get('realm_owner')
+        ? $self->get('realm_owner')
         : $self->has_keys('realm_owner') ? _assert_realm($self)
-	: $self->has_keys('login') ? _assert_login($self)
-	: b_die('missing form fields');
+        : $self->has_keys('login') ? _assert_login($self)
+        : b_die('missing form fields');
     b_warn('RealmOwner.password was NOT CHECKED')
-	if defined($self->unsafe_get('RealmOwner.password'))
-	&& !$self->unsafe_get('validate_called');
+        if defined($self->unsafe_get('RealmOwner.password'))
+        && !$self->unsafe_get('validate_called');
     return _su_logout($self)
-	if !$realm && $req->is_substitute_user;
+        if !$realm && $req->is_substitute_user;
     _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
     _set_cookie_user($self, $req, $realm);
     return $res
-	unless $realm && $realm->require_otp;
+        unless $realm && $realm->require_otp;
     return $res
-	unless $self->new_other('OTP')->unauth_load_or_die({
-	    user_id => $realm->get('realm_id'),
-	})->should_reinit;
+        unless $self->new_other('OTP')->unauth_load_or_die({
+            user_id => $realm->get('realm_id'),
+        })->should_reinit;
     return {
         task_id => 'USER_OTP',
-	query => undef,
+        query => undef,
     };
 }
 
@@ -75,10 +75,10 @@ sub handle_cookie_in {
     my($proto, $cookie, $req) = @_;
     $proto = Bivio::Biz::Model->get_instance('UserLoginForm');
     _set_user($proto, _load_cookie_user($proto, $cookie, $req),
-	$cookie, $req);
+        $cookie, $req);
     # If user is invalid, logout as super user
     _su_logout($proto->new($req))
-	if $req->is_substitute_user && ! $req->get('auth_user');
+        if $req->is_substitute_user && ! $req->get('auth_user');
     return;
 }
 
@@ -89,26 +89,26 @@ sub substitute_user {
     # to or undef (default).
     # A small sanity check, since this is an important function
     Bivio::Die->throw(FORBIDDEN => {
-	message => 'not a super user',
-	entity => $req->get('auth_user'),
-	request => $req,
+        message => 'not a super user',
+        entity => $req->get('auth_user'),
+        request => $req,
     }) unless ($form || $self->new_other('AdmSubstituteUserForm'))
-	->can_substitute_user($new_user->get('realm_id'));
+        ->can_substitute_user($new_user->get('realm_id'));
     unless ($req->unsafe_get('super_user_id')) {
-	# Only set super_user_id field if not already set.  This keeps
-	# original user and doesn't allow someone to su to an admin and
-	# then su as that admin.
-	my($super_user_id) = $req->get('auth_user')->get('realm_id');
-	my($cookie) = $req->unsafe_get('cookie');
-	$cookie->put(_super_user_field($self) => $super_user_id)
-	    if $cookie;
-	$req->put_durable(super_user_id => $super_user_id);
+        # Only set super_user_id field if not already set.  This keeps
+        # original user and doesn't allow someone to su to an admin and
+        # then su as that admin.
+        my($super_user_id) = $req->get('auth_user')->get('realm_id');
+        my($cookie) = $req->unsafe_get('cookie');
+        $cookie->put(_super_user_field($self) => $super_user_id)
+            if $cookie;
+        $req->put_durable(super_user_id => $super_user_id);
     }
     _trace($req->unsafe_get('super_user_id'), ' => ', $new_user)
-	if $_TRACE;
+        if $_TRACE;
     return $self->process({
-	realm_owner => $new_user,
-	disable_assert_cookie => _disable_assert_cookie($self),
+        realm_owner => $new_user,
+        disable_assert_cookie => _disable_assert_cookie($self),
     });
 }
 
@@ -122,7 +122,7 @@ sub _assert_login {
     my($self) = @_;
     my($realm) = $self->validate_login;
     $self->throw_die('NOT_FOUND', {
-	entity => $self->get('login'),
+        entity => $self->get('login'),
     }) if $self->in_error;
     return $realm;
 }
@@ -131,15 +131,15 @@ sub _assert_realm {
     my($self) = @_;
     # Validates realm_owner is valid
     return undef
-	unless my $realm = $self->get('realm_owner');
+        unless my $realm = $self->get('realm_owner');
     my($err) = $realm->is_offline_user ? "can't login as offline user"
-	: $realm->get('realm_type') != Bivio::Auth::RealmType->USER
-	? "can't login as non-user"
-	: $realm->is_default ? "can't login as *the* USER realm"
-	: !$realm->has_valid_password ? "user's password is invalidated"
-	: '';
+        : $realm->get('realm_type') != Bivio::Auth::RealmType->USER
+        ? "can't login as non-user"
+        : $realm->is_default ? "can't login as *the* USER realm"
+        : !$realm->has_valid_password ? "user's password is invalidated"
+        : '';
     $self->throw_die('NOT_FOUND', {entity => $realm, message => $err})
-	if $err;
+        if $err;
     $self->internal_put_field(validate_called => 1);
     return $realm;
 }
@@ -147,16 +147,16 @@ sub _assert_realm {
 sub _cookie_password {
     my($realm) = @_;
     return $realm->require_otp
-	? $realm->new_other('OTP')
-	    ->unauth_load_or_die({user_id => $realm->get('realm_id')})
-	    ->get('otp_md5')
-	: $realm->get('password')
+        ? $realm->new_other('OTP')
+            ->unauth_load_or_die({user_id => $realm->get('realm_id')})
+            ->get('otp_md5')
+        : $realm->get('password')
 }
 
 sub _disable_assert_cookie {
     my($self) = @_;
     return $self->unsafe_get('disable_assert_cookie')
-	|| $self->ureq('disable_assert_cookie')
+        || $self->ureq('disable_assert_cookie')
         || 0;
 }
 
@@ -173,23 +173,23 @@ sub _load_cookie_user {
     return undef unless $cookie->unsafe_get($proto->USER_FIELD);
     my($auth_user) = Bivio::Biz::Model->new($req, 'RealmOwner');
     if ($auth_user->unauth_load({
-	realm_id => $cookie->get($proto->USER_FIELD),
-	realm_type => Bivio::Auth::RealmType->USER,
+        realm_id => $cookie->get($proto->USER_FIELD),
+        realm_type => Bivio::Auth::RealmType->USER,
     })) {
-	return $auth_user
-	    if $req->is_substitute_user;
+        return $auth_user
+            if $req->is_substitute_user;
 
-	# Must have password to be logged in
-	my($cp) = _get($cookie, $proto->PASSWORD_FIELD);
-	return undef
-	    unless $cp;
-	return $auth_user
-	    if _validate_cookie_password($cp, $auth_user);
-	$req->warn($auth_user, ': user is not valid');
+        # Must have password to be logged in
+        my($cp) = _get($cookie, $proto->PASSWORD_FIELD);
+        return undef
+            unless $cp;
+        return $auth_user
+            if _validate_cookie_password($cp, $auth_user);
+        $req->warn($auth_user, ': user is not valid');
     }
     else {
-	$req->warn($cookie->get($proto->USER_FIELD),
-	    ': user_id not found, logging out');
+        $req->warn($cookie->get($proto->USER_FIELD),
+            ': user_id not found, logging out');
     }
     $cookie->delete($proto->USER_FIELD, $proto->PASSWORD_FIELD);
     return undef;
@@ -205,15 +205,15 @@ sub _set_cookie_user {
 
     # If logging in, need to have a cookie.
     $_C->assert_is_ok($req)
-	if $realm && !_disable_assert_cookie($self);
+        if $realm && !_disable_assert_cookie($self);
     if ($realm) {
-	$cookie->put(
-	    $self->USER_FIELD => $realm->get('realm_id'),
-	    $self->PASSWORD_FIELD => _cookie_password($realm),
-	);
+        $cookie->put(
+            $self->USER_FIELD => $realm->get('realm_id'),
+            $self->PASSWORD_FIELD => _cookie_password($realm),
+        );
     }
     else {
-	$cookie->delete($self->PASSWORD_FIELD);
+        $cookie->delete($self->PASSWORD_FIELD);
     }
     return;
 }
@@ -224,13 +224,13 @@ sub _set_log_user {
     my($r) = $req->unsafe_get('r');
     return unless $r;
     my($uid) = $req->get('auth_user_id')
-	|| _get($cookie, $proto->USER_FIELD);
+        || _get($cookie, $proto->USER_FIELD);
     my($suid) = $req->get('super_user_id')
-	|| _get($cookie, _super_user_field($proto));
+        || _get($cookie, _super_user_field($proto));
     $r->connection->user(
-	($suid ? 'su-' . $suid . '-' : '')
-	. ($uid ? ($req->get('user_state')->eq_logged_in ? 'li-' : 'lo-') . $uid
-	: ''));
+        ($suid ? 'su-' . $suid . '-' : '')
+        . ($uid ? ($req->get('user_state')->eq_logged_in ? 'li-' : 'lo-') . $uid
+        : ''));
     return;
 }
 
@@ -239,13 +239,13 @@ sub _set_user {
     # Sets user on request based on cookie state.
     $req->set_user($user);
     $req->put_durable(
-	# Cookie overrides but may not have a cookie so super_user_id
-	super_user_id => _get($cookie, _super_user_field($proto))
-	    || $req->unsafe_get('super_user_id'),
-	user_state => $proto->use('Type.UserState')->from_name(
-	    $user ? 'LOGGED_IN'
-	    : _get($cookie, $proto->USER_FIELD)
-	    ? 'LOGGED_OUT' : 'JUST_VISITOR'),
+        # Cookie overrides but may not have a cookie so super_user_id
+        super_user_id => _get($cookie, _super_user_field($proto))
+            || $req->unsafe_get('super_user_id'),
+        user_state => $proto->use('Type.UserState')->from_name(
+            $user ? 'LOGGED_IN'
+            : _get($cookie, $proto->USER_FIELD)
+            ? 'LOGGED_OUT' : 'JUST_VISITOR'),
     );
     _set_log_user($proto, $cookie, $req);
     return $user;
@@ -263,8 +263,8 @@ sub _super_user_field {
 sub _validate_cookie_password {
     my($passwd, $auth_user) = @_;
     return $auth_user->require_otp
-	? $auth_user->new_other('OTP')->validate_password($passwd, $auth_user)
-	: $passwd eq $auth_user->get('password') ? 1 : 0;
+        ? $auth_user->new_other('OTP')->validate_password($passwd, $auth_user)
+        : $passwd eq $auth_user->get('password') ? 1 : 0;
 }
 
 1;

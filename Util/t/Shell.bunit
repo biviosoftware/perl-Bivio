@@ -2,9 +2,9 @@
 # $Id$
 config({
     'Bivio::IO::ClassLoader' => {
-	maps => {
-	    ShellUtil => ['Bivio::Util::t::Shell', 'Bivio::Util', 'Bivio::Biz::Util'],
-	},
+        maps => {
+            ShellUtil => ['Bivio::Util::t::Shell', 'Bivio::Util', 'Bivio::Biz::Util'],
+        },
     },
 });
 ShellUtil();

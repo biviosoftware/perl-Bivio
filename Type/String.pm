@@ -54,7 +54,7 @@ sub canonicalize_and_excerpt {
     my($proto, $value, $max_words, $no_ellipsis) = @_;
     my($v, $return) = _ref($value);
     return $v
-	if $return;
+        if $return;
     # So we are re-entrant.  If there was an ellipsis in the actual text, so be it.
     $$v =~ s/\s+\.{3}$//;
     # remove repeating symbols, ex ---
@@ -62,19 +62,19 @@ sub canonicalize_and_excerpt {
     $max_words ||= 45;
 #TODO: Split on paragraphs first.  Google groups seems to do this
     my($words) = [grep(
-	length($_),
-	split(
-	    ' ',
-	    ${$proto->canonicalize_charset(
-		$proto->canonicalize_newlines($v),
-	    )},
-	    $max_words + 1,
-	),
+        length($_),
+        split(
+            ' ',
+            ${$proto->canonicalize_charset(
+                $proto->canonicalize_newlines($v),
+            )},
+            $max_words + 1,
+        ),
     )];
     if (@$words > $max_words) {
-	pop(@$words);
-	push(@$words, '...')
-	    unless $no_ellipsis;
+        pop(@$words);
+        push(@$words, '...')
+            unless $no_ellipsis;
     }
     return \(join(' ', @$words));
 }
@@ -83,7 +83,7 @@ sub canonicalize_charset {
     my(undef, $value) = @_;
     my($v, $return) = _ref($value);
     return $v
-	if $return;
+        if $return;
     return _clean_whitespace(_clean_utf8($v) || _clean_1252($v) || $v);
 }
 
@@ -91,12 +91,12 @@ sub canonicalize_newlines {
     my(undef, $value) = @_;
     my($v, $return) = _ref($value);
     return $v
-	if $return;
+        if $return;
     $$v =~ s/\r\n|\r/\n/sg;
     $$v =~ s/^[ \t]+$//mg;
     $$v =~ s/\n+$//sg;
     $$v .= "\n"
-	if length($$v);
+        if length($$v);
     return $v;
 }
 
@@ -104,19 +104,19 @@ sub clean_and_trim {
     my($proto, $value) = @_;
     my($v, $return) = _ref($value);
     return $v
-	if $return;
+        if $return;
     $value .= $value
-	while length($value) < $proto->get_min_width;
+        while length($value) < $proto->get_min_width;
     return utf8::is_utf8($value)
-	? _trim_utf8($proto, $value)
-	: substr($value, 0, $proto->get_width);
+        ? _trim_utf8($proto, $value)
+        : substr($value, 0, $proto->get_width);
 }
 
 sub compare {
     my($proto, $left, $right) = @_;
     return $proto->compare_defined(
-	defined($left) ? $left : '',
-	defined($right) ? $right : '',
+        defined($left) ? $left : '',
+        defined($right) ? $right : '',
     );
 }
 
@@ -125,13 +125,13 @@ sub from_literal {
     $proto->internal_from_literal_warning
         unless wantarray;
     return (undef, undef)
-	unless defined($value) && length($value);
+        unless defined($value) && length($value);
     if (my $mw = $proto->get_min_width) {
-	return (undef, Bivio::TypeError->TOO_SHORT)
-	    if length($value) < $mw;
+        return (undef, Bivio::TypeError->TOO_SHORT)
+            if length($value) < $mw;
     }
     return (undef, Bivio::TypeError->TOO_LONG)
-	if length($value) > $proto->get_width;
+        if length($value) > $proto->get_width;
     return $value;
 }
 
@@ -154,7 +154,7 @@ sub to_camel_case_identifier {
 sub _camel_case {
     my($value, $sep) = @_;
     return !$value ? $value
-	: join($sep, map(ucfirst(lc($_)), split(/[\W_]+/, $value)));
+        : join($sep, map(ucfirst(lc($_)), split(/[\W_]+/, $value)));
 }
 
 sub _clean_1252 {
@@ -172,11 +172,11 @@ sub _clean_1252 {
 sub _clean_utf8 {
     my($value) = @_;
     return undef
-	unless utf8::valid($$value);
+        unless utf8::valid($$value);
     utf8::decode($$value);
     my($res) = _map_characters($value, 0);
     return undef
-	unless $res;
+        unless $res;
     utf8::encode($$value);
     return $value;
 }
@@ -195,10 +195,10 @@ sub _map_characters {
     my($value, $map) = @_;
     my($match) = 0;
     while (my($to, $from) = each(%$_TRANSLITERATE)) {
-	my($regexp) = $from->[$map];
-	next unless $regexp;
+        my($regexp) = $from->[$map];
+        next unless $regexp;
         $match = 1
-	    if $$value =~ s/$regexp/$to/g;
+            if $$value =~ s/$regexp/$to/g;
     }
     return $match ? $value : undef;
 }
@@ -207,7 +207,7 @@ sub _ref {
     my($value) = @_;
     my($v) = ref($value) ? $value : \$value;
     return ($v, 0)
-	if defined($$v) && length($$v);
+        if defined($$v) && length($$v);
     $$v = '';
     return ($v, 1);
 }
@@ -224,7 +224,7 @@ sub _trim_utf8 {
     my($current) = $width;
 
     while (_size_in_bytes($proto, $value) > $width) {
-	$value = substr($value, 0, --$current);
+        $value = substr($value, 0, --$current);
     }
     return $value;
 }

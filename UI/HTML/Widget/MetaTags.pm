@@ -30,16 +30,16 @@ use Bivio::UI::Widget;
 C<Bivio::UI::HTML::Widget::MetaTags> is used like:
 
     Page({
-	head => Join([
-	    MetaTags(
+        head => Join([
+            MetaTags(
                 "This is a cool site",
                 "Cool stuff, Stuff that is cool, coolest stuff",
-	    ),
-	    Title([
-		view_widget_value('title'),
-		view_widget_value('sub_title'),
-	    ]),
-	]),
+            ),
+            Title([
+                view_widget_value('title'),
+                view_widget_value('sub_title'),
+            ]),
+        ]),
 
 =cut
 
@@ -62,9 +62,9 @@ Implements positional argument parsing for L<new|"new">.
 sub internal_new_args {
     my(undef, $description, $keywords, $attributes) = @_;
     return {
-	meta_description => $description,
-	meta_keywords => $keywords,
-	($attributes ? %$attributes : ()),
+        meta_description => $description,
+        meta_keywords => $keywords,
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -80,10 +80,10 @@ reply as well.
 sub render {
     my($self, $source, $buffer) = @_;
     foreach my $k (sort(grep(s/^meta_//, @{$self->get_keys}))) {
-	my($b);
-	next unless $self->unsafe_render_attr("meta_$k", $source, \$b);
-	$$buffer .= qq{<meta name="$k" content="}
-	    . Bivio::HTML->escape($b) . qq{">\n};
+        my($b);
+        next unless $self->unsafe_render_attr("meta_$k", $source, \$b);
+        $$buffer .= qq{<meta name="$k" content="}
+            . Bivio::HTML->escape($b) . qq{">\n};
     }
 #TODO: Modify the reply header?
     return;

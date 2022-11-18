@@ -3,7 +3,7 @@
 ListModel();
 [
     load_page => [
-	[] => [map(+{index => $_}, 0..9)],
-	[{count => 3}] => [map(+{index => $_}, 0..2)],
+        [] => [map(+{index => $_}, 0..9)],
+        [{count => 3}] => [map(+{index => $_}, 0..2)],
     ],
 ];

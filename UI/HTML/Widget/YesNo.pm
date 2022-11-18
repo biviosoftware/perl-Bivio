@@ -18,9 +18,9 @@ sub initialize {
                 qw(event_handler)),
     };    
     $self->put(values => [
-	Radio($self->get('field'), 1, 'Yes', $attrs),
-	vs_blank_cell(3),
-	Radio($self->get('field'), 0, 'No', $attrs),
+        Radio($self->get('field'), 1, 'Yes', $attrs),
+        vs_blank_cell(3),
+        Radio($self->get('field'), 0, 'No', $attrs),
     ]);
     return shift->SUPER::initialize(@_);
 }

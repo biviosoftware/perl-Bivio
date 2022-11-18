@@ -10,15 +10,15 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	$self->field_decl(
-	    primary_key => [[qw(path FilePath NOT_NULL)]],
-	    other => [
-	        'entity',
-		'message',
-		[qw(line_num Integer)],
-	    ],
-	    'Text',
-	),
+        $self->field_decl(
+            primary_key => [[qw(path FilePath NOT_NULL)]],
+            other => [
+                'entity',
+                'message',
+                [qw(line_num Integer)],
+            ],
+            'Text',
+        ),
     });
 }
 
@@ -27,10 +27,10 @@ sub internal_load_rows {
     my($rows) = $self->[$_IDI];
     $self->[$_IDI] = undef;
     return [
-	map({
-	    my($row) = $_;
-	    +{map(($_ => $row->{$_}), @{$self->get_info('column_names')})};
-	} @$rows),
+        map({
+            my($row) = $_;
+            +{map(($_ => $row->{$_}), @{$self->get_info('column_names')})};
+        } @$rows),
     ];
 }
 

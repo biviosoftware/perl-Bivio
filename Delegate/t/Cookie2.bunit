@@ -3,13 +3,13 @@
 require './Cookie.PL';
 config({
     'Bivio::Delegate::Cookie' => {
-	tag => 'TAG4',
-	domain => '.bivio.biz',
-	prior_tags => [
-	    ['TAG1', 'old.bivio.org'],
-	    ['TAG2', 'bivio.biz'],
-	    'TAG3',
-	],
+        tag => 'TAG4',
+        domain => '.bivio.biz',
+        prior_tags => [
+            ['TAG1', 'old.bivio.org'],
+            ['TAG2', 'bivio.biz'],
+            'TAG3',
+        ],
     },
 });
 my($encrypted);
@@ -18,9 +18,9 @@ req('r')->headers_out()->test_bean_register_callback(
     'add',
     ['Set-Cookie'],
     sub {
-	my($args) = @_;
-	push(@$cookies, $args->[1]);
-	return;
+        my($args) = @_;
+        push(@$cookies, $args->[1]);
+        return;
     },
 );
 req('r')->test_bean_register_callback(
@@ -30,41 +30,41 @@ req('r')->test_bean_register_callback(
 );
 [
     [req(), req('r')] => [
-	header_out => [
-	    sub {
-		my($case) = @_;
-		$case->get('object')->put('val1' => 'hello');
-		return [req(), req('r')];
-	    } => sub {
-		assert_equals(1, scalar(@$cookies));
-		b_die($cookies, ': no match')
-		    unless $cookies->[0] =~ m{^TAG4=(.+?); path=/; domain=.bivio.biz; max-age};
-		$encrypted = $1;
-		$cookies = [];
-		return [1];
-	    },
-	],
+        header_out => [
+            sub {
+                my($case) = @_;
+                $case->get('object')->put('val1' => 'hello');
+                return [req(), req('r')];
+            } => sub {
+                assert_equals(1, scalar(@$cookies));
+                b_die($cookies, ': no match')
+                    unless $cookies->[0] =~ m{^TAG4=(.+?); path=/; domain=.bivio.biz; max-age};
+                $encrypted = $1;
+                $cookies = [];
+                return [1];
+            },
+        ],
     ],
     sub {
-    	req('r')->header_in('Cookie', "TAG1=$encrypted");
-    	return class()->new(req(), req('r'));
+            req('r')->header_in('Cookie', "TAG1=$encrypted");
+            return class()->new(req(), req('r'));
     } => [
-    	header_out => [
-    	    [req(), req('r')] => sub {
-    		assert_equals(
-    		    'hello',
-    		    shift->get_nested(qw(object val1)),
-    		);
-		foreach my $x (
-		    [1, 3],
-		    [2, 2],
-		    [2, 2],
-		) {
-		    assert_equals($x->[1], scalar(grep(/TAG$x->[0]=;/, @$cookies)));
-    		}
-		$cookies = [];
-    		return [1];
-    	    }
-    	],
+            header_out => [
+                [req(), req('r')] => sub {
+                    assert_equals(
+                        'hello',
+                        shift->get_nested(qw(object val1)),
+                    );
+                foreach my $x (
+                    [1, 3],
+                    [2, 2],
+                    [2, 2],
+                ) {
+                    assert_equals($x->[1], scalar(grep(/TAG$x->[0]=;/, @$cookies)));
+                    }
+                $cookies = [];
+                    return [1];
+                }
+            ],
     ],
 ];

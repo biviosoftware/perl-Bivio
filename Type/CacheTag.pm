@@ -16,7 +16,7 @@ sub REGEX {
 sub from_local_path {
     my($self, $path) = @_;
     return undef
-	unless -r $path;
+        unless -r $path;
     return _tag_from_local_path($path);
 }
 

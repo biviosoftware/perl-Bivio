@@ -13,11 +13,11 @@ sub GRID_CLASS {
 sub internal_choice_widget {
     my($self, $value, $label, $attrs) = @_;
     return SPAN_b_checkbox(Checkbox({
-	%$attrs,
-	field => b_use('Biz.FormModel')->format_enum_set_field(
-	    $self->get('field'),
-	    $value,
-	),
+        %$attrs,
+        field => b_use('Biz.FormModel')->format_enum_set_field(
+            $self->get('field'),
+            $value,
+        ),
     }));
 }
 

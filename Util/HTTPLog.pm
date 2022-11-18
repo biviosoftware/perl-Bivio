@@ -15,11 +15,11 @@ our($_TRACE);
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_CFG) = {
     error_file => (-r '/var/log/bivio-proxy/error_log'
-	? '/var/log/bivio-proxy/error_log'
-	: -r '/var/log/httpd/error_log'
-	? '/var/log/httpd/error_log'
-	: -r '/var/log/httpd/error.log'
-	    ? '/var/log/httpd/error.log'
+        ? '/var/log/bivio-proxy/error_log'
+        : -r '/var/log/httpd/error_log'
+        ? '/var/log/httpd/error_log'
+        : -r '/var/log/httpd/error.log'
+            ? '/var/log/httpd/error.log'
             : '/var/log/apache2/error_log'),
     email => 'root',
     pager_email => '',
@@ -46,7 +46,7 @@ sub USAGE {
     #
     #     usage: b-http-log [options] command [args...]
     #     commands:
-    # 	parse_errors interval_minutes -- returns errors found in last interval
+    #         parse_errors interval_minutes -- returns errors found in last interval
     return <<'EOF';
 usage: b-http-log [options] command [args...]
 commands:
@@ -110,8 +110,8 @@ sub handle_config {
     $_CFG = $cfg;
     $_REGEXP = {};
     foreach my $r (qw(ignore critical error ignore_unless_count)) {
-	my($x) = $cfg->{"${r}_list"};
-	$_REGEXP->{$r} = @$x ? qr/(@{[join('|', @$x)]})/ : undef;
+        my($x) = $cfg->{"${r}_list"};
+        $_REGEXP->{$r} = @$x ? qr/(@{[join('|', @$x)]})/ : undef;
     }
     return;
 }
@@ -126,73 +126,73 @@ sub parse_errors {
     # I<interval_minutes> must match the execute time in cron.
     my($self, $interval_minutes) = @_;
     return ($self->lock_action(sub {
-	$self->get_request;
-	#TODO: dies later unless this is here
-	return _parse_errors_complete($self)
-	    unless $interval_minutes = _parse_errors_init(
-		$self, $interval_minutes);
-	my($fields) = $self->[$_IDI];
-	my($start) = Bivio::Type::DateTime->add_seconds(
-	    $_CFG->{test_now} || Bivio::Type::DateTime->now,
-	    -$interval_minutes * 60,
-	);
-	my($error_countdown) = $_CFG->{error_count_for_page};
-	my($date, $record, $in_interval);
-	my($last_error) = Bivio::Type::DateTime->get_min;
-	my($ignored) = {};
-	my(%error_times);
+        $self->get_request;
+        #TODO: dies later unless this is here
+        return _parse_errors_complete($self)
+            unless $interval_minutes = _parse_errors_init(
+                $self, $interval_minutes);
+        my($fields) = $self->[$_IDI];
+        my($start) = Bivio::Type::DateTime->add_seconds(
+            $_CFG->{test_now} || Bivio::Type::DateTime->now,
+            -$interval_minutes * 60,
+        );
+        my($error_countdown) = $_CFG->{error_count_for_page};
+        my($date, $record, $in_interval);
+        my($last_error) = Bivio::Type::DateTime->get_min;
+        my($ignored) = {};
+        my(%error_times);
      RECORD: while (_parse_record($self, \$record, \$date)) {
-	    unless ($in_interval) {
-		next RECORD
-			if Bivio::Type::DateTime->compare($start, $date) >= 0;
-		$in_interval = 1;
-	    }
-	    _trace('record: ', $record) if $_TRACE;
-	    if ($_REGEXP->{ignore} && $record =~ $_REGEXP->{ignore}) {
-		_trace('ignoring: ', $1) if $_TRACE;
-		next RECORD;
-	    }
-	    if ($_REGEXP->{ignore_unless_count}
-		&& $record =~ $_REGEXP->{ignore_unless_count}) {
-		$ignored->{$1}++;
-		_trace('ignore_unless_count: ', $1) if $_TRACE;
-		next RECORD;
-	    }
-	    # Critical already avoids dups, so put before time check after.
-	    if ($_REGEXP->{critical} && $record =~ $_REGEXP->{critical}) {
-		my($e) = $1;
-		_trace('critical: ', $e) if $_TRACE;
-		$e =~ s/^Bivio::DieCode:://g;
-		$e =~ s/ class=>\S+//g;
-		$e =~ s/\w+=>//g;
-		_pager_report($self, $e);
-		$record =~ s/^/***CRITICAL*** /;
-	    }
-	    if ($_REGEXP->{error} && $record =~ $_REGEXP->{error}) {
-		_trace('error: ', $1) if $_TRACE;
-		# Certain error messages don't pass the $_REGEXP->{error} on
-		# the first output.  die message comes out first and it's what
-		# we want in the email.  However, we need to count the error
-		# regexp on the second message.  This code does this correctly.
-		# We don't recount error REGEXPs output at the same time.
-		_pager_report($self, $1)
-		    if !$error_times{$date}++ && --$error_countdown == 0;
-	    }
-	    # Avoid duplicate error messages by checking $last_error
-	    if (Bivio::Type::DateTime->compare($last_error, $date) == 0
-		&& $record !~ /JOB_ERROR/) {
-		_trace('same time: ', $record) if $_TRACE;
-		next RECORD;
-	    }
-	    $last_error = $date;
-	    # Never send more than 256 bytes (three lines) in a record via email
-	    _report($self, substr($record, 0, 256));
-	}
-	foreach my $k (sort(keys(%$ignored))) {
-	    _report($self, "[repeated $ignored->{$k} times] ", $k)
-		if $ignored->{$k} >= $_CFG->{ignore_unless_count};
-	}
-	return _parse_errors_complete($self);
+            unless ($in_interval) {
+                next RECORD
+                        if Bivio::Type::DateTime->compare($start, $date) >= 0;
+                $in_interval = 1;
+            }
+            _trace('record: ', $record) if $_TRACE;
+            if ($_REGEXP->{ignore} && $record =~ $_REGEXP->{ignore}) {
+                _trace('ignoring: ', $1) if $_TRACE;
+                next RECORD;
+            }
+            if ($_REGEXP->{ignore_unless_count}
+                && $record =~ $_REGEXP->{ignore_unless_count}) {
+                $ignored->{$1}++;
+                _trace('ignore_unless_count: ', $1) if $_TRACE;
+                next RECORD;
+            }
+            # Critical already avoids dups, so put before time check after.
+            if ($_REGEXP->{critical} && $record =~ $_REGEXP->{critical}) {
+                my($e) = $1;
+                _trace('critical: ', $e) if $_TRACE;
+                $e =~ s/^Bivio::DieCode:://g;
+                $e =~ s/ class=>\S+//g;
+                $e =~ s/\w+=>//g;
+                _pager_report($self, $e);
+                $record =~ s/^/***CRITICAL*** /;
+            }
+            if ($_REGEXP->{error} && $record =~ $_REGEXP->{error}) {
+                _trace('error: ', $1) if $_TRACE;
+                # Certain error messages don't pass the $_REGEXP->{error} on
+                # the first output.  die message comes out first and it's what
+                # we want in the email.  However, we need to count the error
+                # regexp on the second message.  This code does this correctly.
+                # We don't recount error REGEXPs output at the same time.
+                _pager_report($self, $1)
+                    if !$error_times{$date}++ && --$error_countdown == 0;
+            }
+            # Avoid duplicate error messages by checking $last_error
+            if (Bivio::Type::DateTime->compare($last_error, $date) == 0
+                && $record !~ /JOB_ERROR/) {
+                _trace('same time: ', $record) if $_TRACE;
+                next RECORD;
+            }
+            $last_error = $date;
+            # Never send more than 256 bytes (three lines) in a record via email
+            _report($self, substr($record, 0, 256));
+        }
+        foreach my $k (sort(keys(%$ignored))) {
+            _report($self, "[repeated $ignored->{$k} times] ", $k)
+                if $ignored->{$k} >= $_CFG->{ignore_unless_count};
+        }
+        return _parse_errors_complete($self);
     }, __PACKAGE__ . 'parse_errors' . $_CFG->{error_file}))[0];
 }
 
@@ -211,10 +211,10 @@ sub _pager_report {
     my($fields) = $self->[$_IDI];
     my($msg) = Bivio::IO::Alert->format_args(@args);
     $fields->{res} = "CRITICAL ERRORS\n$fields->{res}"
-	unless $fields->{res} =~ /^CRITICAL ERRORS/;
+        unless $fields->{res} =~ /^CRITICAL ERRORS/;
     my($last) = $fields->{pager_res}->[$#{$fields->{pager_res}}];
     push(@{$fields->{pager_res}}, $msg)
-	if !$last || $last ne $msg;
+        if !$last || $last ne $msg;
     return;
 }
 
@@ -225,12 +225,12 @@ sub _parse_errors_complete {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     $fields->{fh}->close
-	if $fields->{fh} && !$fields->{fh}->eof;
+        if $fields->{fh} && !$fields->{fh}->eof;
     my($pr) = substr(join('', @{$fields->{pager_res}}), 0, 100);
     $self->send_mail(
-	$_CFG->{pager_email},
-	_subject(),
-	\$pr,
+        $_CFG->{pager_email},
+        _subject(),
+        \$pr,
     ) if $pr && $_CFG->{pager_email};
     return \$fields->{res};
 }
@@ -242,29 +242,29 @@ sub _parse_errors_init {
     my($self, $interval_minutes) = @_;
     # Initializes the request (timezone)
     $self->usage('interval_minutes must be supplied')
-	if $interval_minutes <= 0;
+        if $interval_minutes <= 0;
     $self->put(email => $_CFG->{email})
-	unless defined($self->unsafe_get('email'));
+        unless defined($self->unsafe_get('email'));
     $self->put(result_subject => _subject($_CFG->{error_file}));
     my($fields) = $self->[$_IDI] = {
-	res => '',
-	pager_res => [],
-	fh => IO::File->new,
+        res => '',
+        pager_res => [],
+        fh => IO::File->new,
     };
     my($err);
 
     if ($self->req->is_production && ! -s $_CFG->{error_file}) {
-	if (abs($_DT->diff_seconds(
-	    $_DT->now,
-	    $_DT->set_local_beginning_of_day($_DT->now),
-	)) < 300) {
-	    # log file may be rotating
-	    return 0;
-	}
-	$err = "$_CFG->{error_file}: error file missing or empty";
+        if (abs($_DT->diff_seconds(
+            $_DT->now,
+            $_DT->set_local_beginning_of_day($_DT->now),
+        )) < 300) {
+            # log file may be rotating
+            return 0;
+        }
+        $err = "$_CFG->{error_file}: error file missing or empty";
     }
     elsif (! $fields->{fh}->open($_CFG->{error_file})) {
-	$err = "$_CFG->{error_file}: $!";
+        $err = "$_CFG->{error_file}: $!";
     }
     return $interval_minutes unless $err;
     _pager_report($self, $err);
@@ -289,9 +289,9 @@ sub _parse_record {
     my($fields) = $self->[$_IDI];
     $$record = undef;
     while (_parse_line($fields)) {
-	last if $$record && $fields->{line} =~ /$_RECORD_PREFIX/o;
-	$$record .= $fields->{line};
-	$fields->{line} = undef;
+        last if $$record && $fields->{line} =~ /$_RECORD_PREFIX/o;
+        $$record .= $fields->{line};
+        $fields->{line} = undef;
     }
     return 0 unless defined($$record);
     my($err);
@@ -299,9 +299,9 @@ sub _parse_record {
     my($m) = $_CFG->{test_now} ? 'from_literal' : 'from_local_literal';
     ($$date, $err) = Bivio::Type::DateTime->$m($d1 || $d2);
     unless ($$date) {
-	_report($self, "can't parse date: ", $err, ": ", $$record);
-	$$record = '';
-	return 1;
+        _report($self, "can't parse date: ", $err, ": ", $$record);
+        $$record = '';
+        return 1;
     }
     return 1;
 }
@@ -318,7 +318,7 @@ sub _report {
 sub _subject {
     my($subject) = @_;
     return (b_use('Bivio.BConf')->bconf_host_name =~ /^([^\.]+)/)[0]
-	. ($subject ? (' ' . $subject) : '')
+        . ($subject ? (' ' . $subject) : '')
 ;
 }
 

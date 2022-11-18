@@ -5,10 +5,10 @@ my($email) = email(my $pattern = random_string());
 my($assert) = sub {
     my($expect) = @_;
     return sub {
-	return assert_equals(
-	    $expect,
-	    model('Email')->unauth_rows_exist({email => $email}),
-	);
+        return assert_equals(
+            $expect,
+            model('Email')->unauth_rows_exist({email => $email}),
+        );
     };
 };
 [

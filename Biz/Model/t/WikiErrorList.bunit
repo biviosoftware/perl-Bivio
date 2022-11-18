@@ -3,6 +3,6 @@
 ListModel();
 [
     load_from_array => [
-	[[{entity => 'e1'}]] => [{entity => 'e1', message => undef}],
+        [[{entity => 'e1'}]] => [{entity => 'e1', message => undef}],
     ],
 ];

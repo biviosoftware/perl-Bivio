@@ -158,7 +158,7 @@ sub initialize {
     return if exists($fields->{value});
     $fields->{value} = $self->get('value');
     $fields->{mode} = ($self->unsafe_get('mode')
-	? $_DTM->from_any($self->get('mode')) : $_DTM->get_widget_default
+        ? $_DTM->from_any($self->get('mode')) : $_DTM->get_widget_default
     )->as_int;
     $fields->{undef_value} = $self->get_or_default('undef_value', '&nbsp;');
     $fields->{font} = $self->ancestral_get('string_font', undef);
@@ -169,25 +169,25 @@ sub initialize {
 sub internal_new_args {
     my(undef, $value, $mode, $show_timezone, $undef_value, $attributes) = @_;
     return '"value" attribute must be an array_ref'
-	unless ref($value) eq 'ARRAY';
+        unless ref($value) eq 'ARRAY';
     if (defined($mode)) {
-	my($m) = $_DTM->unsafe_from_any($mode);
-	return '"mode" must be a DateTimeMode' unless $m;
-	$mode = $m;
+        my($m) = $_DTM->unsafe_from_any($mode);
+        return '"mode" must be a DateTimeMode' unless $m;
+        $mode = $m;
     }
     return '"show_timezone" attribute must be a boolean'
-	if defined($show_timezone) && (
-	    ref($show_timezone)
-	    || $show_timezone !~ /^[01]$/
-	);
+        if defined($show_timezone) && (
+            ref($show_timezone)
+            || $show_timezone !~ /^[01]$/
+        );
     return '"undef_value" must be a scalar'
-	if defined($undef_value) && ref($undef_value);
+        if defined($undef_value) && ref($undef_value);
     return {
-	value => $value,
-	defined($mode) ? (mode => $mode) : (),
-	defined($show_timezone) ? (show_timezone => $show_timezone) : (),
-	defined($undef_value) ? (undef_value => $undef_value) : (),
-	($attributes ? %$attributes : ()),
+        value => $value,
+        defined($mode) ? (mode => $mode) : (),
+        defined($show_timezone) ? (show_timezone => $show_timezone) : (),
+        defined($undef_value) ? (undef_value => $undef_value) : (),
+        ($attributes ? %$attributes : ()),
     };
 }
 
@@ -198,30 +198,30 @@ sub render {
     my($value) = $source->get_widget_value(@{$fields->{value}});
     my($f) = $fields->{font};
     if (ref($f)) {
-	$f = '';
-	$self->unsafe_render_value(
-	    'string_font', $fields->{font}, $source, \$f);
+        $f = '';
+        $self->unsafe_render_value(
+            'string_font', $fields->{font}, $source, \$f);
     }
     my($p, $s) = $f ? $_F->format_html($f, $source->get_request) : ('', '');
     $$buffer .= $p;
     unless (defined($value)) {
-	$$buffer .= $fields->{undef_value};
-	$$buffer .= $s;
-	return;
+        $$buffer .= $fields->{undef_value};
+        $$buffer .= $s;
+        return;
     }
     my($gmt) = $_HDT->get_widget_value(
-	$value, $fields->{mode}, $fields->{no_timezone});
+        $value, $fields->{mode}, $fields->{no_timezone});
     my($mi) = $fields->{mode};
     my($fn) = $self->JAVASCRIPT_FUNCTION_NAME;
     $_JS->render(
-	$source,
-	$buffer,
-	$fn,
-	$_FUNCS,
-	# Must not begin dates with 0 (netscape barfs, so have to
-	# print as decimals
-	"$fn(".sprintf('%d,%d,%d,%s', $mi, split(' ', $value), "'$gmt'").');',
-	$gmt,
+        $source,
+        $buffer,
+        $fn,
+        $_FUNCS,
+        # Must not begin dates with 0 (netscape barfs, so have to
+        # print as decimals
+        "$fn(".sprintf('%d,%d,%d,%s', $mi, split(' ', $value), "'$gmt'").');',
+        $gmt,
     );
     $$buffer .= $s;
     return;

@@ -29,11 +29,11 @@ sub as_realm_role_category_role_group {
 sub from_realm_role_enabled_categories {
     my($proto, $enabled_categories) = @_;
     my($modes) = [map(
-	$_ =~ /^$_CATEGORY_PREFIX(.+)/o ? $1 : (),
-	@$enabled_categories,
+        $_ =~ /^$_CATEGORY_PREFIX(.+)/o ? $1 : (),
+        @$enabled_categories,
     )];
     b_die($modes, ': must be exactly one enabled mode')
-	unless @$modes == 1;
+        unless @$modes == 1;
     return $proto->from_name($modes->[0]);
 }
 

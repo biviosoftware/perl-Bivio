@@ -3,8 +3,8 @@
 require './Cookie.PL';
 config({
     'Bivio::Delegate::Cookie' => {
-	domain => undef,
-	tag => 'Tt',
+        domain => undef,
+        tag => 'Tt',
     },
 });
 options({
@@ -12,30 +12,30 @@ options({
 });
 [
     sub {Bivio::Agent::HTTP::Cookie->new(req(), req('r'))} => [
-	put => [
-	    [x1 => 'v1', x2 => 'v2'] => undef,
+        put => [
+            [x1 => 'v1', x2 => 'v2'] => undef,
         ],
-	header_out => [
-	    [req(), req('r')] => 1,
+        header_out => [
+            [req(), req('r')] => 1,
         ],
     ],
     sub {req('r')} => [
-	header_out => sub {
-	    my($case, $return) = @_;
-	    my($res) = {@$return};
-	    return 0
-		unless $res->{'Set-Cookie'} =~ m{^(TT=\S+); path=/; max-age=}s;
-	    # Save for next test; only call is for "Cookie"
-	    req('r')->header_in(Cookie => $1);
-	    return 1;
+        header_out => sub {
+            my($case, $return) = @_;
+            my($res) = {@$return};
+            return 0
+                unless $res->{'Set-Cookie'} =~ m{^(TT=\S+); path=/; max-age=}s;
+            # Save for next test; only call is for "Cookie"
+            req('r')->header_in(Cookie => $1);
+            return 1;
         },
     ],
     sub {'Bivio::Agent::HTTP::Cookie'} => [
-	new => [
-	    [req(), req('r')] => sub {
-		my($case, $return) = @_;
-		return $return->[0]->get('x1') eq 'v1' ? 1 : 0;
-	    },
+        new => [
+            [req(), req('r')] => sub {
+                my($case, $return) = @_;
+                return $return->[0]->get('x1') eq 'v1' ? 1 : 0;
+            },
         ],
     ],
 ];

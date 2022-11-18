@@ -71,7 +71,7 @@ sub read_zip_from_string {
     $_F->write($file, $zip_contents);
     $fields->{zip} = Archive::Zip->new;
     b_die('failed to read zip from string')
-	unless $fields->{zip}->read($file) == Archive::Zip::AZ_OK();
+        unless $fields->{zip}->read($file) == Archive::Zip::AZ_OK();
     return $self;
 }
 
@@ -81,8 +81,8 @@ sub send_zip_to_client {
     my($file_name) = $_F->temp_file($req);
     $self->write_to_file($file_name);
     $req->get('reply')->set_output(IO::File->new($file_name, 'r')
-	|| b_die('file open failed: ', $file_name))
-	->set_output_type('application/zip');
+        || b_die('file open failed: ', $file_name))
+        ->set_output_type('application/zip');
     return $self;
 }
 

@@ -9,14 +9,14 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 sub internal_new_args {
     my($proto, $list_class, $attributes) = @_;
     return $proto->SUPER::internal_new_args(
-	$list_class,
-	[If(['!', '->is_ignore'],
-	    Mailbox(['Email.email'], ['RealmOwner.display_name']),
-	)],
-	{
-	    row_separator => ', ',
-	    $attributes ? %$attributes : (),
-	}
+        $list_class,
+        [If(['!', '->is_ignore'],
+            Mailbox(['Email.email'], ['RealmOwner.display_name']),
+        )],
+        {
+            row_separator => ', ',
+            $attributes ? %$attributes : (),
+        }
      );
 }
 

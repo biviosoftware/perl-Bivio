@@ -4,14 +4,14 @@ Request();
 [
     inline_case(sub {
         my($dc) = Bivio_DieCode()->NOT_FOUND;
-	my($req) = req();
-	my($start) = time;
+        my($req) = req();
+        my($start) = time;
         foreach my $x (1..15000) {
-	    $dc->put_on_req($req);
-	}
-	my($delta) = time - $start;
-	b_die($delta, ': too many seconds')
-	    unless $delta <= 1;
+            $dc->put_on_req($req);
+        }
+        my($delta) = time - $start;
+        b_die($delta, ': too many seconds')
+            unless $delta <= 1;
         return;
     }),
 ];

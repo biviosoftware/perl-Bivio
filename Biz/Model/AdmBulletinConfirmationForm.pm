@@ -67,8 +67,8 @@ B<FOR INTERNAL USE ONLY>
 sub internal_initialize {
     my($self) = @_;
     my($info) = {
-	require_context => 1,
-	version => 1,
+        require_context => 1,
+        version => 1,
         visible => [
             {
                 name => 'test_button',
@@ -83,7 +83,7 @@ sub internal_initialize {
         ],
     };
     return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+            $self->SUPER::internal_initialize, $info);
 }
 
 #=PRIVATE SUBROUTINES

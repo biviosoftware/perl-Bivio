@@ -2,17 +2,17 @@
 # $Id$
 Widget({
     setup_render => sub {
-	model('ProductList')->load_all({
-	    b_use('SQL.ListQuery')->to_char('parent_id') => 'CATS',
-	})->set_cursor_or_die(0);
-	return;
+        model('ProductList')->load_all({
+            b_use('SQL.ListQuery')->to_char('parent_id') => 'CATS',
+        })->set_cursor_or_die(0);
+        return;
     },
     source => 'Model.ProductList',
 });
 
 [
     [{
-	task_id => 'PRODUCTS',
-	query_type => 'THIS_AS_PARENT',
+        task_id => 'PRODUCTS',
+        query_type => 'THIS_AS_PARENT',
     }] => '/pub/products?p=FL-DSH-01',
 ];

@@ -4,13 +4,13 @@ Type();
 my($_I) = Integer();
 [
     [$_I, 0] => [
-	equals => [
-	    [class()->new($_I, 0)] => 1,
-	    [class()->new($_I, 1)] => 0,
-	    [class()->new($_I->new(0, 1), 1)] => 0,
-	    [undef] => 0,
-	],
-	as_string => 'Bivio::Type::Integer[0]',
+        equals => [
+            [class()->new($_I, 0)] => 1,
+            [class()->new($_I, 1)] => 0,
+            [class()->new($_I->new(0, 1), 1)] => 0,
+            [undef] => 0,
+        ],
+        as_string => 'Bivio::Type::Integer[0]',
     ],
     [Role(), Role('USER')] => [
         as_string => 'Bivio::Auth::Role[User]',

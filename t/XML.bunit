@@ -3,7 +3,7 @@
 Type();
 [
     escape => [
-	[undef] => '',
-	q{<&'">} => '&lt;&amp;&apos;&quot;&gt;',
+        [undef] => '',
+        q{<&'">} => '&lt;&amp;&apos;&quot;&gt;',
     ],
 ];

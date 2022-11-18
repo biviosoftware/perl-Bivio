@@ -6,65 +6,65 @@ my($pub) = Bivio::Biz::Model->new(req(), 'RealmFile')->load({path => '/public'})
 my($load_dav) = {
     method => 'load_dav',
     compute_params => sub {
-	my(undef, $params) = @_;
-	req()->put(path_info => $params->[0]);
-	return [];
+        my(undef, $params) = @_;
+        req()->put(path_info => $params->[0]);
+        return [];
     },
     compute_return => sub {
-	return [shift->get('object')->get_result_set_size];
+        return [shift->get('object')->get_result_set_size];
     },
 };
 [
     $load_dav => [
-	'/not-found' => 0,
-	'/*' => CORRUPT_QUERY(),
-	'/' => 1,
-	'' => 1,
-	'/public' => 1,
+        '/not-found' => 0,
+        '/*' => CORRUPT_QUERY(),
+        '/' => 1,
+        '' => 1,
+        '/public' => 1,
     ],
     dav_propfind => [
-	[] => [{
-	    displayname => 'Public',
-	    uri => '',
-	    getlastmodified => $pub->get('modified_date_time'),
-	}],
+        [] => [{
+            displayname => 'Public',
+            uri => '',
+            getlastmodified => $pub->get('modified_date_time'),
+        }],
     ],
     dav_propfind_children => [
-	[] => [
-	    $pub->new_other('RealmFileList')->map_iterate(sub {
-		my($m) = @_;
-	        my($n) = Bivio::Type::FileName->get_tail(
-		    $m->get('RealmFile.path'));
-	        return {
-		    uri => $n,
-		    displayname => $n,
-		    $m->get('RealmFile.is_folder') ? ()
-			: (getcontenttype => $m->get_content_type,
-			   getcontentlength => $m->get_content_length),
-		    getlastmodified => $m->get('RealmFile.modified_date_time'),
-		};
-	    }, {
-		path_info => '/public',
-	    }),
-	],
+        [] => [
+            $pub->new_other('RealmFileList')->map_iterate(sub {
+                my($m) = @_;
+                my($n) = Bivio::Type::FileName->get_tail(
+                    $m->get('RealmFile.path'));
+                return {
+                    uri => $n,
+                    displayname => $n,
+                    $m->get('RealmFile.is_folder') ? ()
+                        : (getcontenttype => $m->get_content_type,
+                           getcontentlength => $m->get_content_length),
+                    getlastmodified => $m->get('RealmFile.modified_date_time'),
+                };
+            }, {
+                path_info => '/public',
+            }),
+        ],
     ],
     $load_dav => [
-	'/hello.txt' => 0,
+        '/hello.txt' => 0,
     ],
     dav_put => [
-	[\(my $x = <<'EOF')] => not_die(),
+        [\(my $x = <<'EOF')] => not_die(),
 hello world
 EOF
     ],
     $load_dav => [
-	'/hello.txt' => 1,
+        '/hello.txt' => 1,
     ],
     dav_put => [
-	[\(my $y = <<'EOF')] => not_die(),
+        [\(my $y = <<'EOF')] => not_die(),
 Hello world!
 EOF
     ],
     $load_dav => [
-	'/Archived/hello;1.txt' => 1,
+        '/Archived/hello;1.txt' => 1,
     ],
 ];

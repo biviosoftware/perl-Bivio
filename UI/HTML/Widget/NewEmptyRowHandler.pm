@@ -9,9 +9,9 @@ my($_JS) = b_use('HTMLWidget.JavaScript');
 sub get_html_field_attributes {
     my($self, $field_name, $source) = @_;
     return ' onfocus="ner_focus(this, \''
-	. $source->req('form_model')
-	    ->get_field_name_for_html('empty_row_count')
-	. '\')"';
+        . $source->req('form_model')
+            ->get_field_name_for_html('empty_row_count')
+        . '\')"';
 }
 
 sub render {

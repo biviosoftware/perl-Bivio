@@ -49,8 +49,8 @@ sub new {
     my($proto, $length) = @_;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	alpha => 2.0 / ($_LENGTH_RANGE->from_literal_or_die($length) + 1.0),
-	avg => undef,
+        alpha => 2.0 / ($_LENGTH_RANGE->from_literal_or_die($length) + 1.0),
+        avg => undef,
     };
     return $self;
 }
@@ -71,8 +71,8 @@ sub compute {
     my($self, $value) = @_;
     my($fields) = $self->[$_IDI];
     return $fields->{avg} += defined($fields->{avg})
-	? $fields->{alpha} * ($value - $fields->{avg})
-	: $value;
+        ? $fields->{alpha} * ($value - $fields->{avg})
+        : $value;
 }
 
 =for html <a name="value"></a>
@@ -88,7 +88,7 @@ Dies if L<compute|"compute"> hasn't been called.
 sub value {
     my($res) = shift->[$_IDI]->{avg};
     die('not defined; must call compute at least once')
-	unless defined($res);
+        unless defined($res);
     return $res;
 }
 

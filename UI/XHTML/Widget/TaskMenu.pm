@@ -30,13 +30,13 @@ sub NEW_ARGS {
 sub internal_as_string {
     my($self) = @_;
     return map(
-	(ref($_) =~ /Link/ && $_->unsafe_get('_task_menu_cfg')
-	    ? $_->get('_task_menu_cfg')->{xlink}
-	    || $_->get('_task_menu_cfg')->{task_id}->get_name
-	    : ref($_) eq 'ARRAY' ? $_->[0]
-	    : ref($_) eq 'HASH' ?  $_->{xlink} || $_->{task_id}
-	    : $_),
-	@{$self->unsafe_get('task_map') || []},
+        (ref($_) =~ /Link/ && $_->unsafe_get('_task_menu_cfg')
+            ? $_->get('_task_menu_cfg')->{xlink}
+            || $_->get('_task_menu_cfg')->{task_id}->get_name
+            : ref($_) eq 'ARRAY' ? $_->[0]
+            : ref($_) eq 'HASH' ?  $_->{xlink} || $_->{task_id}
+            : $_),
+        @{$self->unsafe_get('task_map') || []},
     );
 }
 
@@ -45,10 +45,10 @@ sub initialize {
     return
         if $self->unsafe_get('_init');
     $self->put_unless_exists(
-	class => 'task_menu',
-	tag_if_empty => 0,
-	tag => 'div',
-	selected_class => 'selected',
+        class => 'task_menu',
+        tag_if_empty => 0,
+        tag => 'div',
+        selected_class => 'selected',
     );
     $self->initialize_attr('selected_item', ['->req', 'task_id']);
     $self->initialize_attr(show_current_task => 1);
@@ -59,61 +59,61 @@ sub initialize {
     my($prefix) = $self->unsafe_initialize_attr('selected_label_prefix');
     my($need_sep, $selected);
     $self->put(
-	_init => sub {
-	    my($source) = @_;
-	    $need_sep = 0;
-	    $selected = $self->resolve_attr('selected_item', $source);
-	    return \$need_sep;
-	},
-	task_map => [map({
-	    my(undef, $cfg) = $self->name_parameters(
-		$_PARAMS, ref($_) eq 'ARRAY' ? $_
-		    : [$_W->is_blesser_of($_) ? {xlink => $_}
-		    : $_],
-	    );
-	    if ($cfg->{task_id}) {
-		unless (ref($cfg->{task_id})) {
-		    if ($cfg->{task_id} =~ /^[a-z\.\d_]+$/) {
-			$cfg->{xlink} = delete($cfg->{task_id});
-			$cfg->{label} = $_XLL->qualify_label($cfg->{xlink});
-		    }
-		    else {
-			$cfg->{task_id} = $_TI->from_any($cfg->{task_id});
-		    }
-		}
-		if (ref($cfg->{task_id})) {
-		    $cfg->{label} ||= $cfg->{task_id}->get_name;
-		    $cfg->{uri} ||= URI({
-			_cfg($cfg, @$_URI),
-		    });
-		}
-	    }
-	    $cfg->{label} = _label($cfg->{label})
-		unless ref($cfg->{label});
-	    $self->initialize_value('label', $cfg->{label});
-	    $cfg->{sort_label} ||= $cfg->{label};
-	    $cfg->{sort_label} = _label($cfg->{sort_label})
-		unless ref($cfg->{sort_label});
-	    $self->initialize_value('sort_label', $cfg->{sort_label});
-	    # Note that 'realm' is initialized, b/c URI has reference, not deep copy
+        _init => sub {
+            my($source) = @_;
+            $need_sep = 0;
+            $selected = $self->resolve_attr('selected_item', $source);
+            return \$need_sep;
+        },
+        task_map => [map({
+            my(undef, $cfg) = $self->name_parameters(
+                $_PARAMS, ref($_) eq 'ARRAY' ? $_
+                    : [$_W->is_blesser_of($_) ? {xlink => $_}
+                    : $_],
+            );
+            if ($cfg->{task_id}) {
+                unless (ref($cfg->{task_id})) {
+                    if ($cfg->{task_id} =~ /^[a-z\.\d_]+$/) {
+                        $cfg->{xlink} = delete($cfg->{task_id});
+                        $cfg->{label} = $_XLL->qualify_label($cfg->{xlink});
+                    }
+                    else {
+                        $cfg->{task_id} = $_TI->from_any($cfg->{task_id});
+                    }
+                }
+                if (ref($cfg->{task_id})) {
+                    $cfg->{label} ||= $cfg->{task_id}->get_name;
+                    $cfg->{uri} ||= URI({
+                        _cfg($cfg, @$_URI),
+                    });
+                }
+            }
+            $cfg->{label} = _label($cfg->{label})
+                unless ref($cfg->{label});
+            $self->initialize_value('label', $cfg->{label});
+            $cfg->{sort_label} ||= $cfg->{label};
+            $cfg->{sort_label} = _label($cfg->{sort_label})
+                unless ref($cfg->{sort_label});
+            $self->initialize_value('sort_label', $cfg->{sort_label});
+            # Note that 'realm' is initialized, b/c URI has reference, not deep copy
             my($selected_cond) = ['->ureq', _selected_attr($self, $cfg)];
- 	    my($w) = $_W->is_blesser_of($cfg->{xlink})
-		? $cfg->{xlink}
-		: $cfg->{xlink} ? XLink($cfg->{xlink})
-		: $cfg->{task_id} ? Link(
+             my($w) = $_W->is_blesser_of($cfg->{xlink})
+                ? $cfg->{xlink}
+                : $cfg->{xlink} ? XLink($cfg->{xlink})
+                : $cfg->{task_id} ? Link(
                     _prefix(
                         $prefix,
-			$cfg->{label},
+                        $cfg->{label},
                         $selected_cond,
                     ),
-		    $cfg->{uri},
-	        ) : $self->die(
-		    [qw(xlink task_id)], undef, 'missing task_id or xlink');
-	    $w = $self->internal_wrap_widget($w, $cfg);
-	    my($class) = $w->unsafe_get('class');
-	    $w->put(
-		_task_menu_cfg => $cfg,
-		_cfg($cfg, 'control'),
+                    $cfg->{uri},
+                ) : $self->die(
+                    [qw(xlink task_id)], undef, 'missing task_id or xlink');
+            $w = $self->internal_wrap_widget($w, $cfg);
+            my($class) = $w->unsafe_get('class');
+            $w->put(
+                _task_menu_cfg => $cfg,
+                _cfg($cfg, 'control'),
                 _is_selected => [sub {
                     my($source) = @_;
                     return (ref($selected) eq 'CODE'
@@ -121,19 +121,19 @@ sub initialize {
                         : ref($selected) eq 'Regexp'
                         ? ($source->ureq('uri') || '') =~ $selected
                         : $cfg->{task_id} && ref($selected)
-			? $cfg->{task_id} == $selected
-			: $selected eq $w->render_simple_attr(value => $source)
+                        ? $cfg->{task_id} == $selected
+                        : $selected eq $w->render_simple_attr(value => $source)
                     ) ? 1 : 0;
                 }],
-		class => Join([
-		    defined($class) ? $class : (),
-		    [sub {$need_sep ? 'want_sep' : ()}],
+                class => Join([
+                    defined($class) ? $class : (),
+                    [sub {$need_sep ? 'want_sep' : ()}],
                     If($selected_cond, $self->get('selected_class')),
-		], {join_separator => ' '}),
-		link_target => $cfg->{link_target},
-	    );
-	    $self->initialize_value($cfg->{label}, $w);
-	} @{$self->get('task_map')})],
+                ], {join_separator => ' '}),
+                link_target => $cfg->{link_target},
+            );
+            $self->initialize_value($cfg->{label}, $w);
+        } @{$self->get('task_map')})],
     );
     return shift->SUPER::initialize(@_);
 }
@@ -141,20 +141,20 @@ sub initialize {
 sub internal_drop_down_widget {
     my($self, $buffers) = @_;
     return DIV(
-	DropDown(
-	    $self->get('want_more_label'),
-	    DIV_dd_menu(
-		Join($buffers),
-	    ),
-	),
-	{class => 'task_menu_wrapper want_sep'},
+        DropDown(
+            $self->get('want_more_label'),
+            DIV_dd_menu(
+                Join($buffers),
+            ),
+        ),
+        {class => 'task_menu_wrapper want_sep'},
     );
 }
 
 sub internal_wrap_widget {
     my($self, $w, $cfg) = @_;
     if ($cfg->{xlink} && !$_CB->is_blesser_of($w)) {
-	return DIV_task_menu_wrapper($w);
+        return DIV_task_menu_wrapper($w);
     }
     return $w;
 }
@@ -166,14 +166,14 @@ sub render_tag_value {
     my($req) = $source->req;
     foreach my $w (_render_list($self, $source)) {
         $req->put(
-	    _selected_attr($self, $w->get('_task_menu_cfg'))
-		=> $w->render_simple_attr('_is_selected', $source),
-	);
-	my($b) = '';
-	$w->render($source, \$b);
-	next
-	    unless $b;
-	$$need_sep++;
+            _selected_attr($self, $w->get('_task_menu_cfg'))
+                => $w->render_simple_attr('_is_selected', $source),
+        );
+        my($b) = '';
+        $w->render($source, \$b);
+        next
+            unless $b;
+        $$need_sep++;
         push(@$buffers, $b);
     }
     _want_more($self, $source, $buffers);
@@ -206,38 +206,38 @@ sub _render_list {
     my($req) = $self->get_request;
     my($sct) = $self->render_simple_attr(show_current_task => $source);
     my($list) = [map(
-	{
-	    my($w, $cfg) = ($_, $_->get('_task_menu_cfg'));
-	    # Control is the first question that has to be asked.  If the widget is
-	    # off, then the rest doesn't make sense, and there may be a conditional
-	    # value in the other parts of the widget (task_id, for example) which
-	    # is protected by the control.
-	    $w->can('is_control_on')
-		&& !$w->is_control_on($source)
-		|| !$sct
-		&& $cfg->{task_id}
-		&& $req->get('task_id')->equals($cfg->{task_id})
-		|| $cfg->{task_id}
-		&& !$req->can_user_execute_task(
-		    $cfg->{task_id},
-		    $self->render_simple_value($cfg->{realm}, $source) || undef,
-		)
-		? () : $w;
+        {
+            my($w, $cfg) = ($_, $_->get('_task_menu_cfg'));
+            # Control is the first question that has to be asked.  If the widget is
+            # off, then the rest doesn't make sense, and there may be a conditional
+            # value in the other parts of the widget (task_id, for example) which
+            # is protected by the control.
+            $w->can('is_control_on')
+                && !$w->is_control_on($source)
+                || !$sct
+                && $cfg->{task_id}
+                && $req->get('task_id')->equals($cfg->{task_id})
+                || $cfg->{task_id}
+                && !$req->can_user_execute_task(
+                    $cfg->{task_id},
+                    $self->render_simple_value($cfg->{realm}, $source) || undef,
+                )
+                ? () : $w;
         }
-	@{$self->get('task_map')},
+        @{$self->get('task_map')},
     )];
     return @$list
-	unless $self->render_simple_attr('want_sorting', $source);
+        unless $self->render_simple_attr('want_sorting', $source);
     return @{
-	$_A->map_sort_map(
-	    sub {
-		my($cfg) = shift->get('_task_menu_cfg');
-		return lc(
-		    $self->render_simple_value($cfg->{sort_label}, $source),
-		);
-	    },
-	    sub {shift cmp shift},
-	    $list,
+        $_A->map_sort_map(
+            sub {
+                my($cfg) = shift->get('_task_menu_cfg');
+                return lc(
+                    $self->render_simple_value($cfg->{sort_label}, $source),
+                );
+            },
+            sub {shift cmp shift},
+            $list,
         ),
     };
 }
@@ -250,13 +250,13 @@ sub _selected_attr {
 sub _want_more {
     my($self, $source, $buffers) = @_;
     return
-	unless $self->render_simple_attr('want_more', $source)
-	or my $wmc = $self->render_simple_attr('want_more_threshold', $source);
+        unless $self->render_simple_attr('want_more', $source)
+        or my $wmc = $self->render_simple_attr('want_more_threshold', $source);
     return
-	unless @$buffers > 1 + ($wmc ||= $_DEFAULT_WANT_MORE_THRESHOLD);
+        unless @$buffers > 1 + ($wmc ||= $_DEFAULT_WANT_MORE_THRESHOLD);
     my($b) = '';
     $self->internal_drop_down_widget([splice(@$buffers, $wmc)])
-	->initialize_and_render($source, \$b);
+        ->initialize_and_render($source, \$b);
     push(@$buffers, $b);
     return;
 }

@@ -12,7 +12,7 @@ sub new {
     my($proto) = shift;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	value => shift,
+        value => shift,
     };
     return $self;
 }

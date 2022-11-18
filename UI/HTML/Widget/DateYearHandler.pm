@@ -64,7 +64,7 @@ function dy_complete_date(s) {
     else if (s_year.length == 0)
         s.value = s.value + c_year;
     else if (s_year.length <= 2)
-	s.value = s_month + sep + s_day + sep
+        s.value = s_month + sep + s_day + sep
             + (s_year.length == 1 ? century + '0'
             : c_year - (century + '00') >= s_year - 20 ? century
             : century - 1)

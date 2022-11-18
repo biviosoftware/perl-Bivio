@@ -12,8 +12,8 @@ sub ADM {
 sub init_adm {
     my($self) = @_;
     $self->initialize_fully->with_realm(undef, sub {
-	$self->new_other('SQL')->create_user_with_account($self->ADM)
-	    unless $self->model('RealmOwner')->unauth_load({name => $self->ADM});
+        $self->new_other('SQL')->create_user_with_account($self->ADM)
+            unless $self->model('RealmOwner')->unauth_load({name => $self->ADM});
     });
     return shift->SUPER::init_adm(@_);
 }

@@ -35,87 +35,87 @@ my($support);
 my($values) = sub {
     my($gender, $boolean) = @_;
     return [{
-	gender => ref($gender) ? [map(Type_Gender($_), @$gender)]
-	    : Type_Gender($gender),
-	boolean => $boolean,
+        gender => ref($gender) ? [map(Type_Gender($_), @$gender)]
+            : Type_Gender($gender),
+        boolean => $boolean,
     }];
 };
 [
     [{
-	version => 1,
-	table_name => $table,
-	columns => {
-	    $id => [qw(PrimaryId PRIMARY_KEY)],
-	    name => [qw(Name NONE)],
-	    line => [qw(Line NONE)],
-	    text => [qw(Text NONE)],
-	    amount => [qw(Amount NONE)],
-	    boolean => [qw(Boolean NOT_NULL)],
-	    date_time => [qw(DateTime NONE)],
-	    dt => [qw(Date NONE)],
-	    tm => [qw(Time NONE)],
-	    gender => [qw(Gender NOT_NULL)],
-	},
+        version => 1,
+        table_name => $table,
+        columns => {
+            $id => [qw(PrimaryId PRIMARY_KEY)],
+            name => [qw(Name NONE)],
+            line => [qw(Line NONE)],
+            text => [qw(Text NONE)],
+            amount => [qw(Amount NONE)],
+            boolean => [qw(Boolean NOT_NULL)],
+            date_time => [qw(DateTime NONE)],
+            dt => [qw(Date NONE)],
+            tm => [qw(Time NONE)],
+            gender => [qw(Gender NOT_NULL)],
+        },
     }] => [
-	unsafe_load => [
-	    [{$id => $min_id}] => [undef],
-	],
-	create => [
-	    map(
-		($values->(@$_) => not_die()),
-		[qw(FEMALE 0)],
-		[qw(MALE 0)],
-		[qw(FEMALE 1)],
-		[qw(MALE 1)],
-	    ),
-	],
-	unsafe_load => [
-	    map(
-		($values->(@$_) => $values->(@$_)),
-		[qw(FEMALE 0)],
-		[qw(MALE 0)],
-		[qw(FEMALE 1)],
-		[qw(MALE 1)],
-	    ),
-	],
-	delete_all => [
-	    $values->([qw(FEMALE MALE)], 0) => not_die(),
-	],
-	unsafe_load => [
-	    map(
-		($values->(@$_) => $_->[1] ? $values->(@$_) : [undef]),
-		[qw(FEMALE 0)],
-		[qw(MALE 0)],
-		[qw(FEMALE 1)],
-		[qw(MALE 1)],
-	    ),
-	],
-	delete_all => [
-	    [{}] => not_die(),
-	],
-	unsafe_load => [
-	    [{}] => [undef],
-	],
-	delete_all => [
-	    inline_case(sub {
-	        config({'Bivio::IO::Config' => {is_production => 1}});
-		return;
-	    }),
-	    [{}] => DIE(),
-	],
-	new => [
-	    [{
-		version => 1,
-		table => $table,
-		columns => {
-		    name => ['Name', 'NONE'],
-		},
-	    }] => qr{you must declare table_name},
-	],
-	iterate_start => [
-	    ['Bivio::Die', undef, undef] => not_die(),
-	    ['Bivio::Die', 'gender ASC', undef] => not_die(),
-	    ['Bivio::Die', 'gender ASC', {gender => Type_Gender('MALE')}] => not_die(),
-	],
+        unsafe_load => [
+            [{$id => $min_id}] => [undef],
+        ],
+        create => [
+            map(
+                ($values->(@$_) => not_die()),
+                [qw(FEMALE 0)],
+                [qw(MALE 0)],
+                [qw(FEMALE 1)],
+                [qw(MALE 1)],
+            ),
+        ],
+        unsafe_load => [
+            map(
+                ($values->(@$_) => $values->(@$_)),
+                [qw(FEMALE 0)],
+                [qw(MALE 0)],
+                [qw(FEMALE 1)],
+                [qw(MALE 1)],
+            ),
+        ],
+        delete_all => [
+            $values->([qw(FEMALE MALE)], 0) => not_die(),
+        ],
+        unsafe_load => [
+            map(
+                ($values->(@$_) => $_->[1] ? $values->(@$_) : [undef]),
+                [qw(FEMALE 0)],
+                [qw(MALE 0)],
+                [qw(FEMALE 1)],
+                [qw(MALE 1)],
+            ),
+        ],
+        delete_all => [
+            [{}] => not_die(),
+        ],
+        unsafe_load => [
+            [{}] => [undef],
+        ],
+        delete_all => [
+            inline_case(sub {
+                config({'Bivio::IO::Config' => {is_production => 1}});
+                return;
+            }),
+            [{}] => DIE(),
+        ],
+        new => [
+            [{
+                version => 1,
+                table => $table,
+                columns => {
+                    name => ['Name', 'NONE'],
+                },
+            }] => qr{you must declare table_name},
+        ],
+        iterate_start => [
+            ['Bivio::Die', undef, undef] => not_die(),
+            ['Bivio::Die', 'gender ASC', undef] => not_die(),
+            ['Bivio::Die', 'gender ASC', {gender => Type_Gender('MALE')}] => not_die(),
+        ],
     ],
 ];

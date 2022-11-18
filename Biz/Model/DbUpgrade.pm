@@ -6,13 +6,13 @@ use Bivio::Base 'Biz.PropertyModel';
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 'db_upgrade_t',
-	columns => {
-	    # Which version, can be anything, but must be unique
+        version => 1,
+        table_name => 'db_upgrade_t',
+        columns => {
+            # Which version, can be anything, but must be unique
             version => ['Name', 'PRIMARY_KEY'],
-	    # When did the upgrade run?
-	    run_date_time => ['DateTime', 'NOT_NULL'],
+            # When did the upgrade run?
+            run_date_time => ['DateTime', 'NOT_NULL'],
         },
     };
 }

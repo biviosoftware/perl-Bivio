@@ -11,7 +11,7 @@ use IO::Scalar;
 sub dir {
     my($self) = @_;
     return Bivio::Ext::NetFTPServer::DirHandle->new($self->{ftps},
-	$self->dirname);
+        $self->dirname);
 }
 
 # Open the file handle.
@@ -21,8 +21,8 @@ sub open {
     return undef unless $mode eq "r";
     my($realm_file) = $self->{ftps}->get_realm_file($self->pathname);
     return $realm_file
-	? IO::Scalar->new($realm_file->get_content)
-	: undef;
+        ? IO::Scalar->new($realm_file->get_content)
+        : undef;
 }
 
 sub status {

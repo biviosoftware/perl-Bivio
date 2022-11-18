@@ -3,15 +3,15 @@
 Type();
 options({
     compute_return => sub {
-	my(undef, $actual) = @_;
-	return [map(ref($_) eq class() ? $_->as_array : $_, @$actual)];
+        my(undef, $actual) = @_;
+        return [map(ref($_) eq class() ? $_->as_array : $_, @$actual)];
     },
 });
 [
     from_literal => [
         'a,b' => [undef, Bivio_TypeError()->DOMAIN_NAME],
-	'a.co,b.co' => [[qw(a.co b.co)], undef],
-	'a.co b.co' => [[qw(a.co b.co)], undef],
-	'a.co , b.co' => [[qw(a.co b.co)], undef],
+        'a.co,b.co' => [[qw(a.co b.co)], undef],
+        'a.co b.co' => [[qw(a.co b.co)], undef],
+        'a.co , b.co' => [[qw(a.co b.co)], undef],
     ],
 ];

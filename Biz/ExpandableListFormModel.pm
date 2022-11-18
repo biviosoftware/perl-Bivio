@@ -34,7 +34,7 @@ sub execute_empty {
     # Copies submitted values
     my($prev_self) = $self->get_request->unsafe_get(_key($self));
     $self->internal_put({%{$prev_self->internal_get}})
-	if $prev_self;
+        if $prev_self;
     return shift->SUPER::execute_empty(@_);
 }
 
@@ -42,8 +42,8 @@ sub execute_empty_row {
     my($self) = @_;
     # Loads visible list fields.
     foreach my $f (@{$self->get_info('visible_field_names')}) {
-	$self->internal_load_field($f)
-	    if $self->get_list_model->has_keys($f);
+        $self->internal_load_field($f)
+            if $self->get_list_model->has_keys($f);
     }
     return;
 }
@@ -52,23 +52,23 @@ sub internal_initialize {
     my($self) = @_;
     # B<FOR INTERNAL USE ONLY>
     my($info) = {
-	visible => [
-	    {
-		name => 'add_rows',
-		type => 'OKButton',
-		constraint => 'NONE',
-	    },
-	],
-	hidden => [
-	    {
-		name => 'empty_row_count',
-		type => 'Integer',
-		constraint => 'NONE',
-	    },
-	],
+        visible => [
+            {
+                name => 'add_rows',
+                type => 'OKButton',
+                constraint => 'NONE',
+            },
+        ],
+        hidden => [
+            {
+                name => 'empty_row_count',
+                type => 'Integer',
+                constraint => 'NONE',
+            },
+        ],
     };
     return $self->merge_initialize_info(
-	    $self->SUPER::internal_initialize, $info);
+            $self->SUPER::internal_initialize, $info);
 }
 
 sub internal_initialize_list {
@@ -80,11 +80,11 @@ sub internal_initialize_list {
     my($form) = $self->internal_get_form($req);
     my($prev_self) = $req->unsafe_get(_key($self));
     my($erc) = $prev_self ? $prev_self->get('empty_row_count')
-	: $form ? $form->{$self->get_field_name_for_html('empty_row_count')}
-	: $self->ROW_INCREMENT;
+        : $form ? $form->{$self->get_field_name_for_html('empty_row_count')}
+        : $self->ROW_INCREMENT;
     $self->internal_put_field(empty_row_count => $erc);
     $form->{$self->get_field_name_for_html('empty_row_count')} = $erc
-	if $form;
+        if $form;
     $list->append_empty_rows($erc);
     return $list;
 }
@@ -97,7 +97,7 @@ sub internal_load_field {
     $list_field ||= $form_field;
     my($value) = $self->get_list_model->get($list_field);
     $self->internal_put_field($form_field, $value)
-	if defined($value);
+        if defined($value);
     return;
 }
 
@@ -107,15 +107,15 @@ sub is_empty_row {
     # L<Bivio::Type::is_specified|Bivio::Type/"is_specified">.
     # Calls SUPER::is_empty_row if MUST_BE_SPECIFIED_FIELDS is false.
     foreach my $f (@{
-	$self->MUST_BE_SPECIFIED_FIELDS
-	    || return shift->SUPER::is_empty_row(@_),
+        $self->MUST_BE_SPECIFIED_FIELDS
+            || return shift->SUPER::is_empty_row(@_),
     }) {
-	return 0
-	    if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
+        return 0
+            if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
     }
     foreach my $f (@{$self->EMPTY_AND_CANNOT_BE_SPECIFIED_FIELDS}) {
-	return 0
-	    if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
+        return 0
+            if $self->get_field_type($f)->is_specified($self->unsafe_get($f));
     }
     return 1;
 }
@@ -125,11 +125,11 @@ sub validate {
     # Responds to button click on 'add_rows', save the values on the
     # request and redirects to the same task.
     return shift->SUPER::validate(@_)
-	unless $self->unsafe_get('add_rows');
+        unless $self->unsafe_get('add_rows');
     my($req) = $self->get_request;
     # increment the empty_row count and redirect to the same task
     $self->internal_put_field(empty_row_count =>
-	$self->get('empty_row_count') + $self->ROW_INCREMENT);
+        $self->get('empty_row_count') + $self->ROW_INCREMENT);
     $req->put_durable(_key($self) => $self);
     # Put last for testing
     $req->server_redirect($req->get(qw(task_id auth_realm query path_info)));
@@ -143,9 +143,9 @@ sub validate_row {
     return unless my $cols = $self->MUST_BE_SPECIFIED_FIELDS;
     return unless $self->is_empty_row;
     foreach my $f (@$cols, @{$self->EMPTY_AND_CANNOT_BE_SPECIFIED_FIELDS}) {
-	next unless my $e = $self->get_field_error($f);
-	$self->internal_clear_error($f)
-	    if $e->eq_null || $e->eq_unspecified;
+        next unless my $e = $self->get_field_error($f);
+        $self->internal_clear_error($f)
+            if $e->eq_null || $e->eq_unspecified;
     }
     return;
 }

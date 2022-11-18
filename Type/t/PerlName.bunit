@@ -3,17 +3,17 @@
 Type();
 [
     {
-	method => 'unsafe_from_path_info',
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->put(path_info => $params->[0]);
-	    return [req()];
-	},
+        method => 'unsafe_from_path_info',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->put(path_info => $params->[0]);
+            return [req()];
+        },
     } => [
-	a => 'a',
-	'/a' => 'a',
-	'/' => [undef],
-	'any junk' => [undef],
-	'' => [undef],
+        a => 'a',
+        '/a' => 'a',
+        '/' => [undef],
+        'any junk' => [undef],
+        '' => [undef],
     ],
 ];

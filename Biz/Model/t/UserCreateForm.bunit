@@ -4,43 +4,43 @@ use Bivio::Biz::Model::UserCreateForm;
 Request('initialize_fully');
 [
     class() => [
-	execute => [
-	    [req(), {
-		'RealmOwner.display_name' => 'Fred',
-		'RealmOwner.password' => 'password',
-	     }] => not_die(),
-	],
+        execute => [
+            [req(), {
+                'RealmOwner.display_name' => 'Fred',
+                'RealmOwner.password' => 'password',
+             }] => not_die(),
+        ],
     ],
     sub {model('User')} => [
-	unauth_load => [
-	    sub {[{user_id => req('auth_user_id')}]} => 1,
-	],
-	inline_case(sub {
-	    model('UserCreateForm')->if_unapproved_applicant_mode(sub {
-	        model('RealmUser')
-		    ->delete_all({user_id => req('auth_user_id')});
-	    });
-	    return;
-	}),
-	cascade_delete => undef,
-	unauth_load => [
-	    sub {[{user_id => req('auth_user_id')}]} => 0,
-	],
+        unauth_load => [
+            sub {[{user_id => req('auth_user_id')}]} => 1,
+        ],
+        inline_case(sub {
+            model('UserCreateForm')->if_unapproved_applicant_mode(sub {
+                model('RealmUser')
+                    ->delete_all({user_id => req('auth_user_id')});
+            });
+            return;
+        }),
+        cascade_delete => undef,
+        unauth_load => [
+            sub {[{user_id => req('auth_user_id')}]} => 0,
+        ],
     ],
     class() => [
-	execute => [
-	    [req(), {
-		'RealmOwner.display_name' => 'Last, First',
-		'RealmOwner.password' => 'password',
-	     }] => not_die(),
-	],
+        execute => [
+            [req(), {
+                'RealmOwner.display_name' => 'Last, First',
+                'RealmOwner.password' => 'password',
+             }] => not_die(),
+        ],
     ],
      sub {model('RealmOwner')} => [
-	unauth_load => [
-	    sub {[{realm_id => req()->get('auth_user_id')}]} => 1,
-	],
-	get => [
-	    ['display_name'] => ['First Last'],
-	],
+        unauth_load => [
+            sub {[{realm_id => req()->get('auth_user_id')}]} => 1,
+        ],
+        get => [
+            ['display_name'] => ['First Last'],
+        ],
     ],
 ];

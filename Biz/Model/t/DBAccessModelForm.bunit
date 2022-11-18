@@ -3,25 +3,25 @@
 Request();
 [
     class() => [
-	get_all_fields => sub {
-	    my(undef, $actual) = @_;
-	    my($f) = $actual->[0];
-	    assert_equals(
-		[],
-		[grep(
-		    ! UNIVERSAL::isa(model($_), 'Bivio::Biz::PropertyModel'),
-		    sort(keys(%{$actual->[0]})),
-		)],
-	    );
-	    assert_equals(
-		{
-		    related => [{model => 'RealmOwner', field => 'realm_id'}],
-		    type => Type_PrimaryId(),
-		    constraint => 'NOT_NULL',
-		},
-		$actual->[0]->{RealmFile}->{realm_id},
-	    );
-	    return 1;
-	},
+        get_all_fields => sub {
+            my(undef, $actual) = @_;
+            my($f) = $actual->[0];
+            assert_equals(
+                [],
+                [grep(
+                    ! UNIVERSAL::isa(model($_), 'Bivio::Biz::PropertyModel'),
+                    sort(keys(%{$actual->[0]})),
+                )],
+            );
+            assert_equals(
+                {
+                    related => [{model => 'RealmOwner', field => 'realm_id'}],
+                    type => Type_PrimaryId(),
+                    constraint => 'NOT_NULL',
+                },
+                $actual->[0]->{RealmFile}->{realm_id},
+            );
+            return 1;
+        },
     ],
 ];

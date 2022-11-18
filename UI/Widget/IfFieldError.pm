@@ -13,10 +13,10 @@ sub internal_as_string {
 sub internal_new_args {
     my(undef, $field, $on, $off, $attributes) = @_;
     return {
-	field => $field,
-	defined($on) ? (control_on_value => $on) : (),
-	defined($off) ? (control_off_value => $off) : (),
-	($attributes ? %$attributes : ()),
+        field => $field,
+        defined($on) ? (control_on_value => $on) : (),
+        defined($off) ? (control_off_value => $off) : (),
+        ($attributes ? %$attributes : ()),
     };
 }
 sub initialize {
@@ -24,7 +24,7 @@ sub initialize {
     $self->initialize_attr('field');
     $self->initialize_attr(control_on_value => 1);
     $self->put_unless_exists(
-	control => $_VS->vs_form_method_call($self, 'get_field_error'));
+        control => $_VS->vs_form_method_call($self, 'get_field_error'));
     return shift->SUPER::initialize(@_);
 }
 

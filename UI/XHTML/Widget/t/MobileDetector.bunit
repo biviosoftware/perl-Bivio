@@ -4,23 +4,23 @@ Request();
 req()->initialize_fully('SITE_WIKI_VIEW');
 [
     class() => [
-	{
-	    method => 'robot_redirect_for_desktop',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->setup_facade('m-petshop')
-		    if $params->[0];
-		return [req()];
-	    },
-	} => [
-	    [] => [],
-	    ['mobile'] => [{
-		require_absolute => 1,
-		task_id => 'SITE_WIKI_VIEW',
-		carry_path_info => 0,
-		carry_query => 0,
-		http_status_code => Ext_ApacheConstants()->HTTP_MOVED_PERMANENTLY,
-	    }],
-	],
+        {
+            method => 'robot_redirect_for_desktop',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->setup_facade('m-petshop')
+                    if $params->[0];
+                return [req()];
+            },
+        } => [
+            [] => [],
+            ['mobile'] => [{
+                require_absolute => 1,
+                task_id => 'SITE_WIKI_VIEW',
+                carry_path_info => 0,
+                carry_query => 0,
+                http_status_code => Ext_ApacheConstants()->HTTP_MOVED_PERMANENTLY,
+            }],
+        ],
     ],
 ];

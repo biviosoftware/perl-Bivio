@@ -8,144 +8,144 @@ my($email) = email('shellutil');
 my($_G) = __PACKAGE__->use('Type.Gender');
 config({
     'Bivio::IO::ClassLoader' => {
-	maps => {
-	    ShellUtil => ['Bivio::t::ShellUtil', 'Bivio::Util', 'Bivio::Biz::Util'],
-	},
+        maps => {
+            ShellUtil => ['Bivio::t::ShellUtil', 'Bivio::Util', 'Bivio::Biz::Util'],
+        },
     },
 });
 [
     class() => [
-	piped_exec => [
-	    ['echo x'] => "x\n",
-	    ['cat', 'a'] => 'a',
-	    [[qw(echo ')]] => "'\n",
-	    ['false', undef, 1] => '',
-	    'false' => DIE(),
-	],
-	do_backticks => [
-	    q{echo x\\'} => "x'\n",
-	    'sh -c "(echo x; echo y)"' => ["x\n", "y\n"],
-	    'sh -c "(echo x; false)"' => DIE(),
-	    ['sh -c "(echo x; false)"', 0] => DIE(),
-	    ['sh -c "(echo x; false)"', 1] => "x\n",
-	    q{sh -c "echo \\'"} => "'\n",
-	],
-	{
-	    method => 'do_backticks',
-	    want_scalar => 1,
-	} => [
-	    'sh -c "(echo x; echo y)"' => "x\ny\n",
-	],
-	name_args => [
-	    [['String'], ['a']] => [class(), 'a'],
-	    [[[qw(arg Integer)]], [1, 2, 3]] => [class(), 1, 2, 3],
-	    [[[qw(arg Integer)]], ['a']] => DIE(),
-	    [[[qw(?arg Integer)]], ['a']] => DIE(),
-	    [[[qw(?arg Integer)]], []] => [class(), undef],
-	    [[[qw(arg Integer)]], [undef]] => DIE(),
-	    [[[qw(arg Integer 1)]], [undef]] => [class(), 1],
-	    [[[qw(arg Integer), sub {2}]], [undef]] => [class(), 2],
-	    [[[Integer => sub {2}]], [undef]] => [class(), 2],
-	    # MALE is the last value from get_list()
-	    [[['Gender', sub {$_G->get_list}]]] => [class(), $_G->MALE],
-	],
-	send_mail => [
-	    [$email => 'Scalar' => \('hello')] => undef,
-	    [$email => 'RealmFile' => RealmFile()->unauth_load_or_die(
-		realm_id => realm_id('demo'),
-		path => '/private/image.gif',
-	    )] => undef,
-	],
-	group_args => [
-	    [2, ['a', 'b', 'c', 'd']] => [[['a', 'b'], ['c', 'd']]],
-	    [3, ['a', 'b', 'c', 'd']] => Bivio::DieCode->DIE,
-	],
-	lock_action => [
-	    [sub {
-		 -d '/tmp/BivioTest_eval_method.lockdir'
-		     or die('wrong lock name'),
-	    }] => 1,
-	    [sub {'ok'}] => 'ok',
-	    [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
-	    [sub {die('bad')}, 'Bivio::ShellUtil::t::ShellUtil']
-	        => Bivio::DieCode->DIE,
-	    [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
-	    [sub {
-		 Bivio::ShellUtil->lock_action(sub {
-		     die("shouldn't get here");
-		 }, 'Bivio::ShellUtil::t::ShellUtil'
-		 ) and die('lock should not be obtained');
-		 return 'ok';
-	    }, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
-	    sub {
-		# Test to see if we delete the lock when owner dies
-		my($child) = fork;
-		if ($child) {
-		    waitpid($child, 0) == $child
-			or die('wrong process died');
-		    $? >> 8 == 0
-			or die($?, ": bad exit code");
-		    return [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'];
-	        }
-		Bivio::ShellUtil->lock_action(sub {
-		    kill('KILL', $$);
-		}, 'Bivio::ShellUtil::t::ShellUtil',
-		);
-	        die("shouldn't get here!");
-	    } => 'ok',
-	    sub {
-		my($case) = @_;
-		$SIG{TERM} = sub {
-		    # Gets called after the lock was removed
-		    die('/tmp/ShellUtil.t.mylock.lockdir: exists')
-			if -d '/tmp/ShellUtil.t.mylock.lockdir';
-		    $case->put(got_sig_term => 1);
-		};
-		return [
-		    sub {
-			die('/tmp/ShellUtil.t.mylock.lockdir: not found')
-			    unless -d '/tmp/ShellUtil.t.mylock.lockdir';
-			kill('TERM', $$);
-		    },
-		    'ShellUtil.t.mylock',
-		];
-	    } => sub {
-		my($case) = @_;
-		$case->get('got_sig_term');
-		return 1;
-	    },
-	],
-	unauth_model => [
-	    RealmOwner => sub {
-		shift;
-		return shift->[0]->isa('Bivio::Biz::Model');
-	    },
-	    ['RealmOwner', {name => 'demo'}] => sub {
-		shift;
-		return shift->[0]->get('realm_type')->eq_user;
-	    },
-	],
-	model => [
-	    ['RealmOwner', {name => 'demo'}] => MODEL_NOT_FOUND(),
-	],
-	new => [
-	    [] => DIE(),
-	    'T1' =>sub {
-		shift;
-		return shift->[0]->isa('Bivio::t::ShellUtil::T1');
-	    },
-	],
+        piped_exec => [
+            ['echo x'] => "x\n",
+            ['cat', 'a'] => 'a',
+            [[qw(echo ')]] => "'\n",
+            ['false', undef, 1] => '',
+            'false' => DIE(),
+        ],
+        do_backticks => [
+            q{echo x\\'} => "x'\n",
+            'sh -c "(echo x; echo y)"' => ["x\n", "y\n"],
+            'sh -c "(echo x; false)"' => DIE(),
+            ['sh -c "(echo x; false)"', 0] => DIE(),
+            ['sh -c "(echo x; false)"', 1] => "x\n",
+            q{sh -c "echo \\'"} => "'\n",
+        ],
+        {
+            method => 'do_backticks',
+            want_scalar => 1,
+        } => [
+            'sh -c "(echo x; echo y)"' => "x\ny\n",
+        ],
+        name_args => [
+            [['String'], ['a']] => [class(), 'a'],
+            [[[qw(arg Integer)]], [1, 2, 3]] => [class(), 1, 2, 3],
+            [[[qw(arg Integer)]], ['a']] => DIE(),
+            [[[qw(?arg Integer)]], ['a']] => DIE(),
+            [[[qw(?arg Integer)]], []] => [class(), undef],
+            [[[qw(arg Integer)]], [undef]] => DIE(),
+            [[[qw(arg Integer 1)]], [undef]] => [class(), 1],
+            [[[qw(arg Integer), sub {2}]], [undef]] => [class(), 2],
+            [[[Integer => sub {2}]], [undef]] => [class(), 2],
+            # MALE is the last value from get_list()
+            [[['Gender', sub {$_G->get_list}]]] => [class(), $_G->MALE],
+        ],
+        send_mail => [
+            [$email => 'Scalar' => \('hello')] => undef,
+            [$email => 'RealmFile' => RealmFile()->unauth_load_or_die(
+                realm_id => realm_id('demo'),
+                path => '/private/image.gif',
+            )] => undef,
+        ],
+        group_args => [
+            [2, ['a', 'b', 'c', 'd']] => [[['a', 'b'], ['c', 'd']]],
+            [3, ['a', 'b', 'c', 'd']] => Bivio::DieCode->DIE,
+        ],
+        lock_action => [
+            [sub {
+                 -d '/tmp/BivioTest_eval_method.lockdir'
+                     or die('wrong lock name'),
+            }] => 1,
+            [sub {'ok'}] => 'ok',
+            [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
+            [sub {die('bad')}, 'Bivio::ShellUtil::t::ShellUtil']
+                => Bivio::DieCode->DIE,
+            [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
+            [sub {
+                 Bivio::ShellUtil->lock_action(sub {
+                     die("shouldn't get here");
+                 }, 'Bivio::ShellUtil::t::ShellUtil'
+                 ) and die('lock should not be obtained');
+                 return 'ok';
+            }, 'Bivio::ShellUtil::t::ShellUtil'] => 'ok',
+            sub {
+                # Test to see if we delete the lock when owner dies
+                my($child) = fork;
+                if ($child) {
+                    waitpid($child, 0) == $child
+                        or die('wrong process died');
+                    $? >> 8 == 0
+                        or die($?, ": bad exit code");
+                    return [sub {'ok'}, 'Bivio::ShellUtil::t::ShellUtil'];
+                }
+                Bivio::ShellUtil->lock_action(sub {
+                    kill('KILL', $$);
+                }, 'Bivio::ShellUtil::t::ShellUtil',
+                );
+                die("shouldn't get here!");
+            } => 'ok',
+            sub {
+                my($case) = @_;
+                $SIG{TERM} = sub {
+                    # Gets called after the lock was removed
+                    die('/tmp/ShellUtil.t.mylock.lockdir: exists')
+                        if -d '/tmp/ShellUtil.t.mylock.lockdir';
+                    $case->put(got_sig_term => 1);
+                };
+                return [
+                    sub {
+                        die('/tmp/ShellUtil.t.mylock.lockdir: not found')
+                            unless -d '/tmp/ShellUtil.t.mylock.lockdir';
+                        kill('TERM', $$);
+                    },
+                    'ShellUtil.t.mylock',
+                ];
+            } => sub {
+                my($case) = @_;
+                $case->get('got_sig_term');
+                return 1;
+            },
+        ],
+        unauth_model => [
+            RealmOwner => sub {
+                shift;
+                return shift->[0]->isa('Bivio::Biz::Model');
+            },
+            ['RealmOwner', {name => 'demo'}] => sub {
+                shift;
+                return shift->[0]->get('realm_type')->eq_user;
+            },
+        ],
+        model => [
+            ['RealmOwner', {name => 'demo'}] => MODEL_NOT_FOUND(),
+        ],
+        new => [
+            [] => DIE(),
+            'T1' =>sub {
+                shift;
+                return shift->[0]->isa('Bivio::t::ShellUtil::T1');
+            },
+        ],
         USAGE => DIE(),
-	required_main => [
-	    [] => DIE(),
-	    Class => DIE(),
-	    [qw(Class u_name ShellUtil.Class)] => 'Bivio::Util::Class',
-	    [qw(class name ShellUtil.Class)] => 'Bivio::Util::Class',
-	    [qw(Bivio::Util::Class name ShellUtil.Class)] => 'Bivio::Util::Class',
-	    [qw(Bivio::Util::Class package_name ShellUtil.Class)] => DIE(),
-	    [qw(Bivio::Util::Class model ShellUtil.Class)] => DIE(),
-	    [qw(Bivio::Util::Class not_a_command ShellUtil.Class)] => DIE(),
-	],
+        required_main => [
+            [] => DIE(),
+            Class => DIE(),
+            [qw(Class u_name ShellUtil.Class)] => 'Bivio::Util::Class',
+            [qw(class name ShellUtil.Class)] => 'Bivio::Util::Class',
+            [qw(Bivio::Util::Class name ShellUtil.Class)] => 'Bivio::Util::Class',
+            [qw(Bivio::Util::Class package_name ShellUtil.Class)] => DIE(),
+            [qw(Bivio::Util::Class model ShellUtil.Class)] => DIE(),
+            [qw(Bivio::Util::Class not_a_command ShellUtil.Class)] => DIE(),
+        ],
     ],
     class('ShellUtil.T2') => [
         USAGE => qr{^usage: \S+ \[options\] command \[args..\]
@@ -156,47 +156,47 @@ commands:
 }s,
     ],
     sub {'Bivio::t::ShellUtil::T1'} => [
-	{
-	    method => 'new',
-	    compute_return => sub {
-		my($o) = $_[1]->[0];
-		return [$o->simple_package_name, $o->get('force')];
-	    },
-	} => [
-	    [] => [qw(T1 0)],
-	    [['-force']] => [qw(T1 1)],
-	    ['T2'] => [qw(T2 0)],
-	    [T2 => ['-force']] => [qw(T2 1)],
-# 	    sub {
-# 		Bivio::Agent::Request->clear_current;
-# 		return [];
-# 	    } => DIE(),
-#	    ['T2'] => DIE(),
-	],
-	main => [
-	    [qw(my_package)] => "T1\n",
-	    [qw(T2 my_package)] => "T2\n",
-	    t1 => [],
-	    # If these tests are failing, check ShellUtil/mylog.log
-	    ['-email' => $email, 'rd1'] => $myarg_re,
-	    ['rd1', 'rd2'] => $myarg_re,
-	    ['rd1', 'rd3'] => sub {
-		my($case, $actual) = @_;
-		my($r) = $actual->[0];
-		return $$r !~ /myarg/
-		    && $$r =~ /@{[join('.*', map("Sent SIGTERM", 0..4))]}/s
-		    ? 1 : 0;
-	    },
-	    # LAST: because redirects Bivio::IO::Alert output
-	    sub {
-		unlink('T1.tmp');
-		[qw(-detach -output T1.tmp echo), var(now => time)];
-	    } => sub {
-		sleep(1);
-		assert_equals(var('now'), ${read_file('T1.tmp')});
-		return qr{^\d+$};
-	    },
-	],
+        {
+            method => 'new',
+            compute_return => sub {
+                my($o) = $_[1]->[0];
+                return [$o->simple_package_name, $o->get('force')];
+            },
+        } => [
+            [] => [qw(T1 0)],
+            [['-force']] => [qw(T1 1)],
+            ['T2'] => [qw(T2 0)],
+            [T2 => ['-force']] => [qw(T2 1)],
+#             sub {
+#                 Bivio::Agent::Request->clear_current;
+#                 return [];
+#             } => DIE(),
+#            ['T2'] => DIE(),
+        ],
+        main => [
+            [qw(my_package)] => "T1\n",
+            [qw(T2 my_package)] => "T2\n",
+            t1 => [],
+            # If these tests are failing, check ShellUtil/mylog.log
+            ['-email' => $email, 'rd1'] => $myarg_re,
+            ['rd1', 'rd2'] => $myarg_re,
+            ['rd1', 'rd3'] => sub {
+                my($case, $actual) = @_;
+                my($r) = $actual->[0];
+                return $$r !~ /myarg/
+                    && $$r =~ /@{[join('.*', map("Sent SIGTERM", 0..4))]}/s
+                    ? 1 : 0;
+            },
+            # LAST: because redirects Bivio::IO::Alert output
+            sub {
+                unlink('T1.tmp');
+                [qw(-detach -output T1.tmp echo), var(now => time)];
+            } => sub {
+                sleep(1);
+                assert_equals(var('now'), ${read_file('T1.tmp')});
+                return qr{^\d+$};
+            },
+        ],
     ],
 ];
 

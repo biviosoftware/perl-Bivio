@@ -84,10 +84,10 @@ sub _init_set {
     my($set) = shift;
     $$set = '';
     return Bivio::Type::ECPaymentStatusSet->set(
-	$set,
-	map {
-	    __PACKAGE__->from_any($_),
-	} @_
+        $set,
+        map {
+            __PACKAGE__->from_any($_),
+        } @_
     );
 }
 
@@ -96,12 +96,12 @@ sub _is_set {
     # Returns true if $self is set in $set.  Initializes sets, if need be.
     my($self, $set) = @_;
     unless (defined($$set)) {
-	# Avoids circular import.
-	Bivio::IO::ClassLoader->simple_require(
-	    'Bivio::Type::ECPaymentStatusSet');
-	_init_set(\$_APPROVED_SET, qw(CAPTURED VOIDED CREDITED));
-	_init_set(\$_BAD_SET, qw(DECLINED FAILED));
-	_init_set(\$_NEEDS_PROCESSING_SET, @$_NEEDS_PROCESSING_LIST);
+        # Avoids circular import.
+        Bivio::IO::ClassLoader->simple_require(
+            'Bivio::Type::ECPaymentStatusSet');
+        _init_set(\$_APPROVED_SET, qw(CAPTURED VOIDED CREDITED));
+        _init_set(\$_BAD_SET, qw(DECLINED FAILED));
+        _init_set(\$_NEEDS_PROCESSING_SET, @$_NEEDS_PROCESSING_LIST);
     }
     return Bivio::Type::ECPaymentStatusSet->is_set($set, $self);
 }

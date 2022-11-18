@@ -87,13 +87,13 @@ sub initialize {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     return
-	if exists($fields->{value});
+        if exists($fields->{value});
     $fields->{font} = $self->ancestral_get('string_font', undef);
     # -1 is default true which is handled differently in widget and
     # html cases.
     $fields->{escape} = $self->get_or_default('escape_html', -1);
     $fields->{hard_newlines} = $self->get_or_default(
-	'hard_newlines', $fields->{escape},
+        'hard_newlines', $fields->{escape},
     );
     $fields->{hard_spaces} = $self->get_or_default('hard_spaces', 0);
     my($pad_left) = $self->get_or_default('pad_left', 0);
@@ -108,10 +108,10 @@ sub initialize {
         # do nothing, formatter may be dynamic
     }
     elsif ($fields->{is_widget} = $_W->is_blesser_of($fields->{value})) {
-	$fields->{value}->initialize_with_parent($self);
+        $fields->{value}->initialize_with_parent($self);
     }
     b_warn('is_widget and has formatter')
-	if $fields->{is_widget} && $fields->{format};
+        if $fields->{is_widget} && $fields->{format};
     return shift->SUPER::initialize(@_);
 }
 
@@ -131,42 +131,42 @@ sub render {
     my($self, $source, $buffer) = @_;
     my($fields) = $self->[$_IDI];
     b_die("String widget not initialized: ", $self->get('value'))
-	unless exists($fields->{value});
+        unless exists($fields->{value});
     my($b) = '';
     if ($fields->{is_literal}) {
         $b = _format($fields, $fields->{value});
     }
     elsif ($fields->{is_widget}) {
-	$fields->{value}->render($source, \$b);
-	# Note the special treatment of non-default true.
-	$b = _escape($fields, $b) if $fields->{escape} == 1;
+        $fields->{value}->render($source, \$b);
+        # Note the special treatment of non-default true.
+        $b = _escape($fields, $b) if $fields->{escape} == 1;
     }
     else {
-	my($v) = $self->unsafe_resolve_widget_value($fields->{value}, $source);
-	$v = $self->unsafe_resolve_widget_value(
-	    $fields->{undef_value}, $source,
-	) unless defined($v);
-	if (ref($v) && $_W->is_blesser_of($v)) {
-	    $self->initialize_value($v);
-	    $v->initialize_with_parent($self);
-	    $v->render($source, \$b);
-	    # Note the special treatment of non-default true.
-	    $b = _escape($fields, $b) if $fields->{escape} == 1;
-	}
-	else {
-	    $b .= _format($fields, $v);
-	}
+        my($v) = $self->unsafe_resolve_widget_value($fields->{value}, $source);
+        $v = $self->unsafe_resolve_widget_value(
+            $fields->{undef_value}, $source,
+        ) unless defined($v);
+        if (ref($v) && $_W->is_blesser_of($v)) {
+            $self->initialize_value($v);
+            $v->initialize_with_parent($self);
+            $v->render($source, \$b);
+            # Note the special treatment of non-default true.
+            $b = _escape($fields, $b) if $fields->{escape} == 1;
+        }
+        else {
+            $b .= _format($fields, $v);
+        }
     }
     return
-	unless length($b);
+        unless length($b);
     my($f) = $fields->{font};
     if (ref($f)) {
-	$f = '';
-	$self->unsafe_render_value(
-	    'string_font', $fields->{font}, $source, \$f);
+        $f = '';
+        $self->unsafe_render_value(
+            'string_font', $fields->{font}, $source, \$f);
     }
     my($p, $s) = $f ? $_FONT->format_html($f, $source->get_request)
-	: ('', '');
+        : ('', '');
     $$buffer .= $p.$fields->{prefix}.$b.$fields->{suffix}.$s;
     return;
 }
@@ -183,14 +183,14 @@ sub _escape {
 sub _format {
     my($fields, $value) = @_;
     if ($fields->{format}) {
-	$value = $fields->{format}->get_widget_value($value);
-	return $value if $fields->{format}->result_is_html;
+        $value = $fields->{format}->get_widget_value($value);
+        return $value if $fields->{format}->result_is_html;
     }
     if (ref($value)) {
-	b_die('got ref where scalar expected: ', $value)
-	    unless Bivio::UNIVERSAL->is_blesser_of($value)
-	    && $value->can('as_html');
-	return $value->as_html;
+        b_die('got ref where scalar expected: ', $value)
+            unless Bivio::UNIVERSAL->is_blesser_of($value)
+            && $value->can('as_html');
+        return $value->as_html;
     }
     # Note the treatment of escape when -1 or +1.
     return $fields->{escape} ? _escape($fields, $value) : $value;

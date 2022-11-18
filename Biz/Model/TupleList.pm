@@ -12,11 +12,11 @@ sub execute_load_history_list {
     my($q) = $thl->parse_query_from_request;
     $thl->load_all($q);
     my($t) = $thl->new_other('Tuple')->load({
-	thread_root_id => $q->get('parent_id'),
+        thread_root_id => $q->get('parent_id'),
     });
     $proto->new($req)->load_this({
-	parent_id => $t->get('tuple_def_id'),
-	this => $t->get('tuple_num'),
+        parent_id => $t->get('tuple_def_id'),
+        this => $t->get('tuple_num'),
     });
     return;
 }
@@ -26,29 +26,29 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         order_by => [qw(
-	    Tuple.tuple_num
-	    Tuple.modified_date_time
-	),
-	    @{$_TSN->map_list(sub {'Tuple.' . shift(@_)})},
-	],
-	primary_key => [
-	    'Tuple.tuple_num',
-	],
-	other => [
-	    'Tuple.thread_root_id',
+            Tuple.tuple_num
+            Tuple.modified_date_time
+        ),
+            @{$_TSN->map_list(sub {'Tuple.' . shift(@_)})},
         ],
-	parent_id => 'Tuple.tuple_def_id',
-	auth_id => 'Tuple.realm_id',
+        primary_key => [
+            'Tuple.tuple_num',
+        ],
+        other => [
+            'Tuple.thread_root_id',
+        ],
+        parent_id => 'Tuple.tuple_def_id',
+        auth_id => 'Tuple.realm_id',
     });
 }
 
 sub internal_prepare_statement {
     my($self, undef, $query) = @_;
     $self->new_other('TupleUseList')->load_this({
-	this => $query->get('parent_id'),
+        this => $query->get('parent_id'),
     });
     $self->new_other('TupleSlotDefList')->unauth_load_all({
-	map(($_ => $query->get($_)), qw(parent_id auth_id)),
+        map(($_ => $query->get($_)), qw(parent_id auth_id)),
     });
     return shift->SUPER::internal_prepare_statement(@_);
 }

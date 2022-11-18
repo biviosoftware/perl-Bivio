@@ -27,26 +27,26 @@ sub acquire_or_load {
         pid => $$,
     });
     b_use('AgentJob.Dispatcher')->enqueue(
-	$self->req,
+        $self->req,
         $task_id,
-	{
+        {
             %$job_attributes,
             process_cleanup => sub {
-		my(undef, $req, $die) = @_;
-		my($job_lock) = $self->new->unauth_load_or_die({
-		    realm_id => $realm_id,
-		    task_id => $task_id,
-		});
-		if ($die) {
-		    $job_lock->update({
-			die_code => $die->get('code'),
-		    });
-		}
-		else {
-		    $job_lock->delete;
-		}
-		return;
-	    },
+                my(undef, $req, $die) = @_;
+                my($job_lock) = $self->new->unauth_load_or_die({
+                    realm_id => $realm_id,
+                    task_id => $task_id,
+                });
+                if ($die) {
+                    $job_lock->update({
+                        die_code => $die->get('code'),
+                    });
+                }
+                else {
+                    $job_lock->delete;
+                }
+                return;
+            },
         },
     );
     return 1;
@@ -71,19 +71,19 @@ sub internal_initialize {
     # (self) : hash_ref
     # B<FOR INTERNAL USE ONLY>
     return {
-	version => 1,
-	table_name => 'job_lock_t',
-	columns => {
+        version => 1,
+        table_name => 'job_lock_t',
+        columns => {
             realm_id => ['RealmOwner.realm_id', 'PRIMARY_KEY'],
             task_id => [b_use('Agent.TaskId'), 'PRIMARY_KEY'],
-	    modified_date_time => ['DateTime', 'NOT_NULL'],
+            modified_date_time => ['DateTime', 'NOT_NULL'],
             hostname => ['Line', 'NOT_NULL'],
             pid => ['Integer', 'NOT_NULL'],
             percent_complete => ['Amount', 'NONE'],
             message => ['Text64K', 'NONE'],
             die_code => [b_use('Bivio.DieCode'), 'NONE'],
-	},
-	auth_id => 'realm_id',
+        },
+        auth_id => 'realm_id',
     };
 }
 

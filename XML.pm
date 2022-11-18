@@ -16,7 +16,7 @@ my($_CHARS) = join('\\', '', sort(keys(%$_MAP)));
 sub escape {
     my(undef, $value) = @_;
     return ''
-	unless defined($value);
+        unless defined($value);
     $value =~ s{([$_CHARS])}{&$_MAP->{$1};}osg;
     return $value;
 }

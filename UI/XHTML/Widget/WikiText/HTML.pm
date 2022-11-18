@@ -19,9 +19,9 @@ sub parse_tag_start {
     my($proto, $args, $attrs) = shift->parameters(@_);
     my($state) = $args->{state};
     return
-	unless $proto;
+        unless $proto;
     $args->{content}
-	= join("\n", @{$proto->parse_lines_till_end_tag($args) || []});
+        = join("\n", @{$proto->parse_lines_till_end_tag($args) || []});
     return 1;
 }
 
@@ -29,7 +29,7 @@ sub render_html {
     sub RENDER_HTML {[]};
     my($proto, $args, $attrs) = shift->parameters(@_);
     return
-	unless $proto;
+        unless $proto;
     return $args->{content};
 }
 

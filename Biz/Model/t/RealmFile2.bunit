@@ -6,305 +6,305 @@ my($root) = '/' . random_string();
 my($path) = sub {
     my($version, $base, $no_hash) = @_;
     ($base, $version) = ($version, undef)
-	if defined($version) && $version =~ /\D/;
+        if defined($version) && $version =~ /\D/;
     $base ||= 'file';
     my($fp) = class('Type.FilePath');
     $base = $fp->join($root, $base);
     return {path => $base}
-	unless defined($version);
+        unless defined($version);
     my($suffix) = $fp->get_suffix($base);
     substr($base, length($suffix) ? -length($suffix) - 1 : length($base),  0)
-	= ";$version";
+        = ";$version";
     return {path => $fp->join($fp->VERSIONS_FOLDER, $base)}
-	unless $no_hash;
+        unless $no_hash;
     return $fp->join($fp->VERSIONS_FOLDER, $base);
 };
 my($commit) = sub {commit(); return 1};
 options({
     compute_return => sub {
-	my($case, $actual) = @_;
-	my($f) = $actual->[0];
-	return $case->get('method') eq 'load' ? [$f->get('is_folder')
-	    ? $f->get_shallow_copy : $f->get_content] : $actual;
+        my($case, $actual) = @_;
+        my($f) = $actual->[0];
+        return $case->get('method') eq 'load' ? [$f->get('is_folder')
+            ? $f->get_shallow_copy : $f->get_content] : $actual;
     },
     comparator => 'nested_contains',
 });
 [
     [req()] => [
-	create_with_content => [
-	    [$path->(), \('foo1')] => $commit,
-	],
-	update_with_content => [
-	    [{}, \('foo2')] => $commit,
-	],
-	load => [
-	    [$path->(1)] => 'foo1',
-	    [$path->()] => 'foo2',
-	],
-	update_with_content => [
-	    [{}, \('foo3')] => $commit,
-	],
-	load => [
-	    [$path->()] => 'foo3',
-	    [$path->(2)] => 'foo2',
-	],
-	delete => FORBIDDEN(),
-	load => [
-	    [$path->()] => 'foo3',
-	],
-	delete => $commit,
-	load => [
-	    [$path->(3)] => 'foo3',
-	],
-	unsafe_load => [
-	    [$path->()] => 0,
-	],
-	create_folder => [
-	    [$path->()] => $commit,
-	],
-  	delete => $commit,
-	unsafe_load => [
-	    [$path->()] => 0,
-	    [$path->(4)] => 0,
-	    [$path->(3)] => 1,
-	],
-	create_folder => [
-	    [$path->()] => $commit,
-	],
-  	unauth_delete_deep => $commit,
-	unsafe_load => [
-	    [$path->()] => 0,
-	    [$path->(4)] => 0,
-	    [$path->(3)] => 1,
-	],
-	create_folder => [
-	    [$path->()] => $commit,
-	],
-	create_with_content => [
-	    [$path->('file/bar'), \('123')] => $commit,
-	],
-	load => [
-	    [$path->('file/bar')] => '123',
-	    [$path->()] => [{is_folder => 1}],
-	],
-  	unauth_delete_deep => $commit,
-	unsafe_load => [
-	    [$path->()] => 0,
-	],
-	load => [
-	    [$path->(1, 'file/bar')] => '123',
-	],
-	create_with_content => [
-	    [$path->(), \('foo4')] => $commit,
-	],
-  	delete => $commit,
-	unsafe_load => [
-	    [$path->()] => 0,
-	],
-	load => [
-	    [$path->(4)] => 'foo4',
-	],
-	create_with_content => [
-	    [$path->(), \('foo5')] => $commit,
-	],
-	load => [
-	    [$path->()] => 'foo5',
-	],
-  	unauth_delete_deep => $commit,
-	unsafe_load => [
-	    [$path->()] => 0,
-	],
-	load => [
-	    [$path->(1)] => 'foo1',
-	    [$path->(5)] => 'foo5',
-	],
-	create_with_content => [
-	    [$path->('dir/file'), \('bar1')] => $commit,
-	],
- 	delete => $commit,
-	create_with_content => [
-	    [$path->('dir/file'), \('bar2')] => $commit,
-	    [$path->('dir/file'), \('bar3')] => DB_CONSTRAINT(),
-	],
-	load => [
-	    [$path->(1, 'dir/file')] => 'bar1',
-	    [$path->('dir/file')] => 'bar2',
-	    [$path->('dir')] => not_die(),
-	],
-	unauth_copy_deep => [
- 	    [$path->('dir2')] => $commit,
- 	    [$path->('dir3')] => $commit,
-	],
-	load => [
-	    [$path->('dir/file')] => 'bar2',
-	    [$path->('dir2')] => not_die(),
-	    [$path->('dir2/file')] => 'bar2',
-	    [$path->('dir3')] => not_die(),
-	    [$path->('dir3/file')] => 'bar2',
-	    [$path->('dir/file')] => 'bar2',
-	],
-	update_with_content => [
-	    [{}, \('bar3')] => $commit,
-	],
-	load => [
-	    [$path->(2, 'dir/file')] => 'bar2',
-	    [$path->('dir/file')] => 'bar3',
-	    [$path->(2, 'dir2/file')] => MODEL_NOT_FOUND(),
-	    [$path->('dir2/file')] => 'bar2',
-	],
-	update_with_content => [
-	    [{}, \('bar3-2')] => $commit,
-	],
-	load => [
-	    [$path->(1, 'dir2/file')] => 'bar2',
-	    [$path->('dir2/file')] => 'bar3-2',
-	    [$path->('dir3/file')] => 'bar2',
-	    [$path->('dir2')] => not_die(),
-	],
-	unauth_copy_deep => [
-	    [$path->('dir3')] => $commit,
-	],
-	load => [
-	    [$path->('dir3')] => not_die(),
-	    [$path->(1, 'dir3/file')] => 'bar2',
-	    [$path->('dir3/file')] => 'bar3-2',
-	],
-	update => [
-	    [$path->('dir3/file3')] => $commit,
-	],
-	load => [
-	    [$path->(1, 'dir3/file3')] => MODEL_NOT_FOUND(),
-	    [$path->('dir3/file3')] => 'bar3-2',
-	],
-	update_with_content => [
-	    [{}, \('bar3-3')] => $commit,
-	],
-	load => [
-	    [$path->(1, 'dir3/file3')] => 'bar3-2',
-	    [$path->('dir3/file3')] => 'bar3-3',
-	],
-	update => [
-	    [$path->('dir4/file4')] => $commit,
-	],
- 	load => [
- 	    [$path->('dir3/file3')] => MODEL_NOT_FOUND(),
- 	    [$path->('dir4/file4')] => 'bar3-3',
- 	],
-	load => [
-	    [$path->('dir/file')] => 'bar3',
-	    [$path->(2, 'dir/file')] => 'bar2',
-	    [$path->(1, 'dir/file')] => 'bar1',
-	],
-	load => [
-	    [$path->('dir4/file4')] => 'bar3-3',
-	],
-	update_with_content => [
-	    [{}, \('bar3-4')] => $commit,
-	],
-	load => [
-	    [$path->('dir4/file4')] => 'bar3-4',
-	    [$path->(1, 'dir4/file4')] => 'bar3-3',
-	],
-	load => [
-	    [$path->(1, 'dir/file')] => 'bar1',
-	],
-	update_with_content => [
-	    [{}, \('bar1a')] => FORBIDDEN(),
-	],
-	load => [
-	    [$path->('dir/file')] => 'bar3',
-	    [$path->(2, 'dir/file')] => 'bar2',
-	    [$path->(1, 'dir/file')] => 'bar1',
-	],
-	unsafe_load => [
-	    [$path->('ver_f;1')] => 0,
-	    [$path->('ver_d;2')] => 0,
-	    [$path->('ver_d;3')] => 0,
-	],
-	load => [
- 	    [$path->('dir2')] => not_die(),
-	],
-	create_with_content => [
-	    [$path->('file.doc'), \('doc')] => $commit,
-	],
-	update_with_content => [
-	    [$path->('file.doc'), \('doc2')] => $commit,
-	],
-	load => [
-	    [$path->(1, 'file.doc')] => 'doc',
-	    [$path->('file.doc')] => 'doc2',
-	],
-	create_with_content => [
-	    [$path->('expenses.2007.xls'), \('123')] => $commit,
-	],
-	update_with_content => [
-	    [$path->('expenses.2007.xls'), \('456')] => $commit,
-	],
- 	delete => $commit,
-	load => [
-	    [$path->(1, 'expenses.2007.xls')] => '123',
-	    [$path->(2, 'expenses.2007.xls')] => '456',
-	],
-	unsafe_load => [
-	    [$path->('expenses.2007.xls')] => 0,
-	],
-	create_with_content => [
-	    [$path->('revert'), \('text1')] => $commit,
-	],
-	update_with_content => [
-	    [$path->('revert'), \('text2')] => $commit,
-	],
-	update_with_file => [
-	    [$path->('revert'), $path->(1, 'revert', 1)] => $commit,
-	],
-	load => [
-	    [$path->('revert')] => 'text1',
-	    [$path->(2, 'revert')] => 'text2',
-	    [$path->(1, 'revert')] => 'text1',
-	],
-	create_with_content => [
-	    [$path->('restore_dir/file1'), \('1abc')] => $commit,
-	],
-	update_with_content => [
-	    [$path->('restore_dir/file1'), \('1def')] => $commit,
-	],
-	create_with_content => [
-	    [$path->('restore_dir/file2'), \('2zyx')] => $commit,
-	],
-	update_with_content => [
-	    [$path->('restore_dir/file2'), \('2wvu')] => $commit,
-	],
-	load => [
-	    [$path->('restore_dir')] => not_die(),
-	],
-	unauth_delete_deep => $commit,
-	load => [
-	    [{
-		path => class('Type.FilePath')->VERSIONS_FOLDER
-		  . $root . '/restore_dir'
-	    }] => not_die(),
-	],
-	restore_path => $root . '/restore_dir',
-	restore => $commit,
-	load => [
-	    [$path->('restore_dir')] => not_die(),
-	    [$path->('restore_dir/file1')] => '1def',
-	    [$path->('restore_dir/file2')] => '2wvu',
-	],
-	load => [
-	    [$path->(1, 'restore_dir/file1')] => '1abc',
-	],
-	restore_path => $root . '/restore_dir/file1',
-	restore => $commit,
-	load => [
-	    [$path->('restore_dir/file1')] => '1abc',
-	],
-	load => [
-	    [{
-		path => class('Type.FilePath')->VERSIONS_FOLDER
-		  . $root . '/restore_dir'
-	    }] => not_die(),
-	],
-	restore => INVALID_OP(),
+        create_with_content => [
+            [$path->(), \('foo1')] => $commit,
+        ],
+        update_with_content => [
+            [{}, \('foo2')] => $commit,
+        ],
+        load => [
+            [$path->(1)] => 'foo1',
+            [$path->()] => 'foo2',
+        ],
+        update_with_content => [
+            [{}, \('foo3')] => $commit,
+        ],
+        load => [
+            [$path->()] => 'foo3',
+            [$path->(2)] => 'foo2',
+        ],
+        delete => FORBIDDEN(),
+        load => [
+            [$path->()] => 'foo3',
+        ],
+        delete => $commit,
+        load => [
+            [$path->(3)] => 'foo3',
+        ],
+        unsafe_load => [
+            [$path->()] => 0,
+        ],
+        create_folder => [
+            [$path->()] => $commit,
+        ],
+          delete => $commit,
+        unsafe_load => [
+            [$path->()] => 0,
+            [$path->(4)] => 0,
+            [$path->(3)] => 1,
+        ],
+        create_folder => [
+            [$path->()] => $commit,
+        ],
+          unauth_delete_deep => $commit,
+        unsafe_load => [
+            [$path->()] => 0,
+            [$path->(4)] => 0,
+            [$path->(3)] => 1,
+        ],
+        create_folder => [
+            [$path->()] => $commit,
+        ],
+        create_with_content => [
+            [$path->('file/bar'), \('123')] => $commit,
+        ],
+        load => [
+            [$path->('file/bar')] => '123',
+            [$path->()] => [{is_folder => 1}],
+        ],
+          unauth_delete_deep => $commit,
+        unsafe_load => [
+            [$path->()] => 0,
+        ],
+        load => [
+            [$path->(1, 'file/bar')] => '123',
+        ],
+        create_with_content => [
+            [$path->(), \('foo4')] => $commit,
+        ],
+          delete => $commit,
+        unsafe_load => [
+            [$path->()] => 0,
+        ],
+        load => [
+            [$path->(4)] => 'foo4',
+        ],
+        create_with_content => [
+            [$path->(), \('foo5')] => $commit,
+        ],
+        load => [
+            [$path->()] => 'foo5',
+        ],
+          unauth_delete_deep => $commit,
+        unsafe_load => [
+            [$path->()] => 0,
+        ],
+        load => [
+            [$path->(1)] => 'foo1',
+            [$path->(5)] => 'foo5',
+        ],
+        create_with_content => [
+            [$path->('dir/file'), \('bar1')] => $commit,
+        ],
+         delete => $commit,
+        create_with_content => [
+            [$path->('dir/file'), \('bar2')] => $commit,
+            [$path->('dir/file'), \('bar3')] => DB_CONSTRAINT(),
+        ],
+        load => [
+            [$path->(1, 'dir/file')] => 'bar1',
+            [$path->('dir/file')] => 'bar2',
+            [$path->('dir')] => not_die(),
+        ],
+        unauth_copy_deep => [
+             [$path->('dir2')] => $commit,
+             [$path->('dir3')] => $commit,
+        ],
+        load => [
+            [$path->('dir/file')] => 'bar2',
+            [$path->('dir2')] => not_die(),
+            [$path->('dir2/file')] => 'bar2',
+            [$path->('dir3')] => not_die(),
+            [$path->('dir3/file')] => 'bar2',
+            [$path->('dir/file')] => 'bar2',
+        ],
+        update_with_content => [
+            [{}, \('bar3')] => $commit,
+        ],
+        load => [
+            [$path->(2, 'dir/file')] => 'bar2',
+            [$path->('dir/file')] => 'bar3',
+            [$path->(2, 'dir2/file')] => MODEL_NOT_FOUND(),
+            [$path->('dir2/file')] => 'bar2',
+        ],
+        update_with_content => [
+            [{}, \('bar3-2')] => $commit,
+        ],
+        load => [
+            [$path->(1, 'dir2/file')] => 'bar2',
+            [$path->('dir2/file')] => 'bar3-2',
+            [$path->('dir3/file')] => 'bar2',
+            [$path->('dir2')] => not_die(),
+        ],
+        unauth_copy_deep => [
+            [$path->('dir3')] => $commit,
+        ],
+        load => [
+            [$path->('dir3')] => not_die(),
+            [$path->(1, 'dir3/file')] => 'bar2',
+            [$path->('dir3/file')] => 'bar3-2',
+        ],
+        update => [
+            [$path->('dir3/file3')] => $commit,
+        ],
+        load => [
+            [$path->(1, 'dir3/file3')] => MODEL_NOT_FOUND(),
+            [$path->('dir3/file3')] => 'bar3-2',
+        ],
+        update_with_content => [
+            [{}, \('bar3-3')] => $commit,
+        ],
+        load => [
+            [$path->(1, 'dir3/file3')] => 'bar3-2',
+            [$path->('dir3/file3')] => 'bar3-3',
+        ],
+        update => [
+            [$path->('dir4/file4')] => $commit,
+        ],
+         load => [
+             [$path->('dir3/file3')] => MODEL_NOT_FOUND(),
+             [$path->('dir4/file4')] => 'bar3-3',
+         ],
+        load => [
+            [$path->('dir/file')] => 'bar3',
+            [$path->(2, 'dir/file')] => 'bar2',
+            [$path->(1, 'dir/file')] => 'bar1',
+        ],
+        load => [
+            [$path->('dir4/file4')] => 'bar3-3',
+        ],
+        update_with_content => [
+            [{}, \('bar3-4')] => $commit,
+        ],
+        load => [
+            [$path->('dir4/file4')] => 'bar3-4',
+            [$path->(1, 'dir4/file4')] => 'bar3-3',
+        ],
+        load => [
+            [$path->(1, 'dir/file')] => 'bar1',
+        ],
+        update_with_content => [
+            [{}, \('bar1a')] => FORBIDDEN(),
+        ],
+        load => [
+            [$path->('dir/file')] => 'bar3',
+            [$path->(2, 'dir/file')] => 'bar2',
+            [$path->(1, 'dir/file')] => 'bar1',
+        ],
+        unsafe_load => [
+            [$path->('ver_f;1')] => 0,
+            [$path->('ver_d;2')] => 0,
+            [$path->('ver_d;3')] => 0,
+        ],
+        load => [
+             [$path->('dir2')] => not_die(),
+        ],
+        create_with_content => [
+            [$path->('file.doc'), \('doc')] => $commit,
+        ],
+        update_with_content => [
+            [$path->('file.doc'), \('doc2')] => $commit,
+        ],
+        load => [
+            [$path->(1, 'file.doc')] => 'doc',
+            [$path->('file.doc')] => 'doc2',
+        ],
+        create_with_content => [
+            [$path->('expenses.2007.xls'), \('123')] => $commit,
+        ],
+        update_with_content => [
+            [$path->('expenses.2007.xls'), \('456')] => $commit,
+        ],
+         delete => $commit,
+        load => [
+            [$path->(1, 'expenses.2007.xls')] => '123',
+            [$path->(2, 'expenses.2007.xls')] => '456',
+        ],
+        unsafe_load => [
+            [$path->('expenses.2007.xls')] => 0,
+        ],
+        create_with_content => [
+            [$path->('revert'), \('text1')] => $commit,
+        ],
+        update_with_content => [
+            [$path->('revert'), \('text2')] => $commit,
+        ],
+        update_with_file => [
+            [$path->('revert'), $path->(1, 'revert', 1)] => $commit,
+        ],
+        load => [
+            [$path->('revert')] => 'text1',
+            [$path->(2, 'revert')] => 'text2',
+            [$path->(1, 'revert')] => 'text1',
+        ],
+        create_with_content => [
+            [$path->('restore_dir/file1'), \('1abc')] => $commit,
+        ],
+        update_with_content => [
+            [$path->('restore_dir/file1'), \('1def')] => $commit,
+        ],
+        create_with_content => [
+            [$path->('restore_dir/file2'), \('2zyx')] => $commit,
+        ],
+        update_with_content => [
+            [$path->('restore_dir/file2'), \('2wvu')] => $commit,
+        ],
+        load => [
+            [$path->('restore_dir')] => not_die(),
+        ],
+        unauth_delete_deep => $commit,
+        load => [
+            [{
+                path => class('Type.FilePath')->VERSIONS_FOLDER
+                  . $root . '/restore_dir'
+            }] => not_die(),
+        ],
+        restore_path => $root . '/restore_dir',
+        restore => $commit,
+        load => [
+            [$path->('restore_dir')] => not_die(),
+            [$path->('restore_dir/file1')] => '1def',
+            [$path->('restore_dir/file2')] => '2wvu',
+        ],
+        load => [
+            [$path->(1, 'restore_dir/file1')] => '1abc',
+        ],
+        restore_path => $root . '/restore_dir/file1',
+        restore => $commit,
+        load => [
+            [$path->('restore_dir/file1')] => '1abc',
+        ],
+        load => [
+            [{
+                path => class('Type.FilePath')->VERSIONS_FOLDER
+                  . $root . '/restore_dir'
+            }] => not_die(),
+        ],
+        restore => INVALID_OP(),
     ],
 ];

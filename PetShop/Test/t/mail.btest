@@ -18,28 +18,28 @@ my($date) = sub {
 my($header) = sub {
     my($label, $who) = @_;
     return
-	unless $who;
+        unless $who;
     return (
-	$label,
-	($label =~ /return/i || !$vars->{$who . '_name'}
-	     ? $vars->{$who . '_email'}
-	     : $vars->{$who . '_name'}
-	     . ' <' . $vars->{$who . '_email'} . '>'),
+        $label,
+        ($label =~ /return/i || !$vars->{$who . '_name'}
+             ? $vars->{$who . '_email'}
+             : $vars->{$who . '_name'}
+             . ' <' . $vars->{$who . '_email'} . '>'),
     );
 };
 my($headers) = sub {
     my($from, $to, $ref) = @_;
     return {
-	$header->('Return-Path', $from),
-	$header->('From', $from),
-	$header->('To', $to),
-	'Message-Id' => next_message_id(),
-	'X-Bivio-Mail-Test' => 1,
-	Date => $date->(),
-	Subject => ref($ref) ? 'Re: ' . $ref->unsafe_get_header('Subject')
-	    : $ref ? "$ref " . random_string() . ' & co'
-	    : random_string(),
-	ref($ref) ? (References => $ref->unsafe_get_header('Message-Id')) : (),
+        $header->('Return-Path', $from),
+        $header->('From', $from),
+        $header->('To', $to),
+        'Message-Id' => next_message_id(),
+        'X-Bivio-Mail-Test' => 1,
+        Date => $date->(),
+        Subject => ref($ref) ? 'Re: ' . $ref->unsafe_get_header('Subject')
+            : $ref ? "$ref " . random_string() . ' & co'
+            : random_string(),
+        ref($ref) ? (References => $ref->unsafe_get_header('Message-Id')) : (),
     };
 };
 my($send_mail) = sub {
@@ -49,7 +49,7 @@ my($send_mail) = sub {
     my($head, $body) = test_template($template) =~ /^(.*?\n)\n(.*)/s;
     %$h = (%$h, split(/\: |\n/, $head));
     my($msg) = send_mail(
-	map($h->{$_} =~ /([^<]+\@[^>]+)/, qw(From To)), $h, $body);
+        map($h->{$_} =~ /([^<]+\@[^>]+)/, qw(From To)), $h, $body);
     return $msg;
 };
 my($send_and_verify_mail) = sub {
@@ -63,12 +63,12 @@ my($check_for_loop) = sub {
     sleep(10);
     follow_link(qw(^mail_forum$ ^mail$));
     b_die('Found duplicate message')
-	if get_table_row('_anon#0', 0)->{''}->get('text')
-	eq get_table_row('_anon#0', 1)->{''}->get('text');
+        if get_table_row('_anon#0', 0)->{''}->get('text')
+        eq get_table_row('_anon#0', 1)->{''}->get('text');
     return;
 };
 my($msg, $subject) = $send_and_verify_mail->(qw(1.eml user1 forum),
-					     'Long Thread');
+                                             'Long Thread');
 login_as('mail_user1');
 my($user1_email) = generate_local_email('mail_user1');
 follow_link(qw(^mail_forum$ ^mail$));

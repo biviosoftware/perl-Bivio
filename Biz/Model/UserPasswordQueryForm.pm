@@ -26,22 +26,22 @@ sub execute_empty {
     $self->SUPER::execute_empty;
     my($email) = $self->new_other('Email');
     if (my $q = $self->ureq('query')) {
-	$q = $q->{$self->QUERY_KEY};
-	return
-	    unless $q && $email->unauth_load({email => $q});
+        $q = $q->{$self->QUERY_KEY};
+        return
+            unless $q && $email->unauth_load({email => $q});
     }
     else {
-	return
-	    unless my $cookie = $req->ureq('cookie');
-	my($user_id) = $cookie->unsafe_get($_USER_FIELD);
-	return
-	    unless $user_id && $email->unauth_load({
-	    realm_id => $user_id,
-	});
+        return
+            unless my $cookie = $req->ureq('cookie');
+        my($user_id) = $cookie->unsafe_get($_USER_FIELD);
+        return
+            unless $user_id && $email->unauth_load({
+            realm_id => $user_id,
+        });
     }
     $email = $email->unsafe_get('email');
     return
-	unless $_E->is_valid($email);
+        unless $_E->is_valid($email);
     $self->internal_put_field('Email.email' => $email);
     return;
 }
@@ -51,9 +51,9 @@ sub execute_ok {
     return unless $self->validate_email_and_put_uri;
     $self->put_on_request(1);
     return {
- 	method => 'server_redirect',
- 	task_id => 'next',
-	query => undef,
+         method => 'server_redirect',
+         task_id => 'next',
+        query => undef,
      };
 }
 
@@ -61,17 +61,17 @@ sub internal_initialize {
     my($self) = @_;
     # Returns config
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
-	visible => [
-	    'Email.email',
-	],
-	other => [
-	    {
-		name => 'uri',
-		type => 'Line',
-		constraint => 'NONE',
-	    },
-	],
+        version => 1,
+        visible => [
+            'Email.email',
+        ],
+        other => [
+            {
+                name => 'uri',
+                type => 'Line',
+                constraint => 'NONE',
+            },
+        ],
     });
 }
 
@@ -81,21 +81,21 @@ sub validate_email_and_put_uri {
     my($req) = $form->get_request;
     my($ro) = $self->new_other('RealmOwner');
     if (my $err = $ro->validate_login($form->get('Email.email'))) {
-	$form->internal_put_error('Email.email', $err);
-	return 0;
+        $form->internal_put_error('Email.email', $err);
+        return 0;
     }
     $form->internal_put_field(
-	uri => $req->with_realm(
-	    $ro,
-	    sub {
-		return Bivio::Biz::Action->get_instance('UserPasswordQuery')
-		    ->format_uri($req)
-		    unless $req->is_super_user($ro->get('realm_id'))
-		    || $ro->require_otp;
-		$form->internal_put_error(qw(Email.email PERMISSION_DENIED));
-		return;
-	    },
-	) || return 0,
+        uri => $req->with_realm(
+            $ro,
+            sub {
+                return Bivio::Biz::Action->get_instance('UserPasswordQuery')
+                    ->format_uri($req)
+                    unless $req->is_super_user($ro->get('realm_id'))
+                    || $ro->require_otp;
+                $form->internal_put_error(qw(Email.email PERMISSION_DENIED));
+                return;
+            },
+        ) || return 0,
     );
     return 1;
 }

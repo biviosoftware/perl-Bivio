@@ -41,15 +41,15 @@ for my $table (qw(t_list1_t t_list2_t)) {
         Bivio::SQL::Connection->rollback;
     }
     Bivio::SQL::Connection->execute(<<"EOF");
-	create table $table (
-	    date_time DATE,
+        create table $table (
+            date_time DATE,
             toggle NUMERIC(1) not null,
-	    auth_id NUMERIC(18) not null,
-	    name VARCHAR(30) not null,
+            auth_id NUMERIC(18) not null,
+            name VARCHAR(30) not null,
             value VARCHAR(30),
-	    gender NUMERIC(1) NOT NULL,
+            gender NUMERIC(1) NOT NULL,
             primary key(date_time, toggle)
-	)
+        )
 EOF
     Bivio::SQL::Connection->commit;
 }
@@ -59,20 +59,20 @@ use Bivio::Base 'Bivio::Biz::PropertyModel';
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 't_list1_t',
-	columns => {
-	    date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint->PRIMARY_KEY],
-	    toggle => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint->PRIMARY_KEY],
-	    auth_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint->NOT_NULL],
-	    name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint->NOT_NULL],
-	    gender => ['Bivio::Type::Gender',
-		Bivio::SQL::Constraint->NOT_NULL],
-	},
+        version => 1,
+        table_name => 't_list1_t',
+        columns => {
+            date_time => ['Bivio::Type::DateTime',
+                Bivio::SQL::Constraint->PRIMARY_KEY],
+            toggle => ['Bivio::Type::Boolean',
+                Bivio::SQL::Constraint->PRIMARY_KEY],
+            auth_id => ['Bivio::Type::PrimaryId',
+                Bivio::SQL::Constraint->NOT_NULL],
+            name => ['Bivio::Type::Name',
+                Bivio::SQL::Constraint->NOT_NULL],
+            gender => ['Bivio::Type::Gender',
+                Bivio::SQL::Constraint->NOT_NULL],
+        },
     };
 }
 
@@ -81,20 +81,20 @@ use Bivio::Base 'Bivio::Biz::PropertyModel';
 
 sub internal_initialize {
     return {
-	version => 1,
-	table_name => 't_list2_t',
-	columns => {
-	    date_time => ['Bivio::Type::DateTime',
-		Bivio::SQL::Constraint->PRIMARY_KEY],
-	    toggle => ['Bivio::Type::Boolean',
-		Bivio::SQL::Constraint->PRIMARY_KEY],
-	    auth_id => ['Bivio::Type::PrimaryId',
-		Bivio::SQL::Constraint->NOT_NULL],
-	    name => ['Bivio::Type::Name',
-		Bivio::SQL::Constraint->NOT_NULL],
-	    gender => ['Bivio::Type::Gender',
-		Bivio::SQL::Constraint->NOT_NULL],
-	},
+        version => 1,
+        table_name => 't_list2_t',
+        columns => {
+            date_time => ['Bivio::Type::DateTime',
+                Bivio::SQL::Constraint->PRIMARY_KEY],
+            toggle => ['Bivio::Type::Boolean',
+                Bivio::SQL::Constraint->PRIMARY_KEY],
+            auth_id => ['Bivio::Type::PrimaryId',
+                Bivio::SQL::Constraint->NOT_NULL],
+            name => ['Bivio::Type::Name',
+                Bivio::SQL::Constraint->NOT_NULL],
+            gender => ['Bivio::Type::Gender',
+                Bivio::SQL::Constraint->NOT_NULL],
+        },
     };
 }
 
@@ -104,8 +104,8 @@ my($T) = 2;
 sub t {
     my($actual, $expected) = @_;
     print $actual eq $expected
-	    ? "ok $T\n" : ("not ok $T ($actual != $expected)",
-		    ' at ', __FILE__, " line ", (caller)[2], "\n");
+            ? "ok $T\n" : ("not ok $T ($actual != $expected)",
+                    ' at ', __FILE__, " line ", (caller)[2], "\n");
     $T++;
 }
 my($m);
@@ -116,46 +116,46 @@ foreach $m ('TListT1', 'TListT2') {
     my($pkg) = "Bivio::Biz::Model::$m";
     my($table) = $pkg->get_instance->get_info('table_name');
     if (Bivio::Die->catch(sub {
-	Bivio::SQL::Connection->execute("drop table $table");
+        Bivio::SQL::Connection->execute("drop table $table");
         Bivio::SQL::Connection->commit;
     })) {
         Bivio::SQL::Connection->rollback;
     }
     Bivio::SQL::Connection->execute(<<"EOF");
-	create table $table (
-	    date_time DATE,
+        create table $table (
+            date_time DATE,
             toggle NUMERIC(1) not null,
-	    auth_id NUMERIC(18) not null,
-	    name VARCHAR(30) not null,
+            auth_id NUMERIC(18) not null,
+            name VARCHAR(30) not null,
             value VARCHAR(30),
-	    gender NUMERIC(1) NOT NULL,
+            gender NUMERIC(1) NOT NULL,
             primary key(date_time, toggle)
-	)
+        )
 EOF
     Bivio::SQL::Connection->execute(
-	"alter table $table add constraint ${table}_c1
+        "alter table $table add constraint ${table}_c1
              check (toggle between 0 and 1)");
     Bivio::SQL::Connection->execute(
-	"alter table $table add constraint ${table}_c2
+        "alter table $table add constraint ${table}_c2
             CHECK (gender BETWEEN 0 AND 2)");
     my($gender, $name, $auth_id);
     my($date_time) = $now;
     my($model) = $pkg->new($req);
     my($toggle) = 1;
     foreach $auth_id (1..2) {
-	foreach $name (@$names) {
-	    foreach $gender ('FEMALE', 'MALE') {
-		$model->create({
-		    date_time => $date_time,
-		    toggle => ($toggle = !$toggle),
-		    auth_id => $auth_id,
-		    name => $name,
-		    value => undef,
-		    gender => Bivio::Type::Gender->$gender(),
-		});
-		$date_time = Bivio::Type::DateTime->add_seconds($date_time, 1);
-	    }
-	}
+        foreach $name (@$names) {
+            foreach $gender ('FEMALE', 'MALE') {
+                $model->create({
+                    date_time => $date_time,
+                    toggle => ($toggle = !$toggle),
+                    auth_id => $auth_id,
+                    name => $name,
+                    value => undef,
+                    gender => Bivio::Type::Gender->$gender(),
+                });
+                $date_time = Bivio::Type::DateTime->add_seconds($date_time, 1);
+            }
+        }
     }
 }
 Bivio::SQL::Connection->commit;
@@ -163,19 +163,19 @@ my($support) = Bivio::SQL::ListSupport->new({
     version => 1,
     can_iterate => 1,
     other => [
-	{
-	    name => 'local_field',
-	    type => 'Bivio::Type::Integer',
-	    constraint => Bivio::SQL::Constraint::NONE(),
-	},
+        {
+            name => 'local_field',
+            type => 'Bivio::Type::Integer',
+            constraint => Bivio::SQL::Constraint::NONE(),
+        },
     ],
     order_by => [
-	[qw(TListT1.name TListT2.name)],
-	[qw(TListT1.gender TListT2.gender)],
+        [qw(TListT1.name TListT2.name)],
+        [qw(TListT1.gender TListT2.gender)],
     ],
     primary_key => [
-	'TListT1.date_time',
-	'TListT1.toggle',
+        'TListT1.date_time',
+        'TListT1.toggle',
     ],
     auth_id => [qw(TListT1.auth_id TListT2.auth_id)],
 });
@@ -327,37 +327,37 @@ $support = Bivio::SQL::ListSupport->new({
     version => 1,
     can_iterate => 1,
     order_by => [
-	map({
+        map({
             my($n) = ($_ =~ /(\d)/)[0];
             {
-		name => "count$n",
-		constraint => 'NOT_NULL',
-		type => 'Integer',
-		in_select => 1,
-		select_value => "COUNT($_.date_time) AS count$n",
-	    };
+                name => "count$n",
+                constraint => 'NOT_NULL',
+                type => 'Integer',
+                in_select => 1,
+                select_value => "COUNT($_.date_time) AS count$n",
+            };
         } qw(t_list1_t_1 t_list2_t_qual)),
     ],
     group_by => [
-	[qw(TListT1_1.gender qual.TListT2.gender)],
+        [qw(TListT1_1.gender qual.TListT2.gender)],
         'TListT1_1.auth_id',
     ],
     primary_key => [
-	'TListT1_1.gender',
+        'TListT1_1.gender',
     ],
     auth_id => [qw(TListT1_1.auth_id qual.TListT2.auth_id)],
     other => [
-	[{
+        [{
             name => 'TListT1_1.name',
             in_select => 0,
         }, 'qual.TListT2.name'],
-	map({
-	    my($f) = $_;
-	    map(+{
-		name => "$_.$f",
-		in_select => 0,
-	    }, qw(TListT1_1 qual.TListT2));
-	} qw(toggle date_time)),
+        map({
+            my($f) = $_;
+            map(+{
+                name => "$_.$f",
+                in_select => 0,
+            }, qw(TListT1_1 qual.TListT2));
+        } qw(toggle date_time)),
     ],
 });
 $rows = $support->load(Bivio::SQL::ListQuery->new({
@@ -367,10 +367,10 @@ $rows = $support->load(Bivio::SQL::ListQuery->new({
 }, $support), undef, '', []);
 t(Bivio::IO::Ref->nested_equals($rows, [
     map({
-	'TListT1_1.auth_id' => 1,
-	count1 => scalar(@$names),
-	count2 => scalar(@$names),
-	'TListT1_1.gender' => Bivio::Type::Gender->from_int($_)
+        'TListT1_1.auth_id' => 1,
+        count1 => scalar(@$names),
+        count2 => scalar(@$names),
+        'TListT1_1.gender' => Bivio::Type::Gender->from_int($_)
     }, 1, 2),
 ]), 1);
 Bivio::SQL::ListSupport->new({
@@ -378,12 +378,12 @@ Bivio::SQL::ListSupport->new({
     date => 'TListT1.date_time',
     want_select => 0,
     order_by => [
-	{
-	    name => 'TListT1.date_time',
-	    sort_order => 1,
-	},
+        {
+            name => 'TListT1.date_time',
+            sort_order => 1,
+        },
     ],
     primary_key => [
-	'TListT1.date_time',
+        'TListT1.date_time',
     ],
 });

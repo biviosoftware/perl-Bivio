@@ -2,12 +2,12 @@
 # $Id$
 Widget({
     parse_return => sub {
-	my($case, $actual) = @_;
-	# Clear state internal to Script widget each time the
-	# [] empty case occurs.
-	Bivio::Agent::Request->get_current->delete(class())
-	     unless $case->get('object')->unsafe_get('value');
-	return $actual;
+        my($case, $actual) = @_;
+        # Clear state internal to Script widget each time the
+        # [] empty case occurs.
+        Bivio::Agent::Request->get_current->delete(class())
+             unless $case->get('object')->unsafe_get('value');
+        return $actual;
     },
 });
 [
@@ -30,9 +30,9 @@ EOF
     page_print => '',
     page_print => '',
     [] => sub {
-	my(undef, $actual) = @_;
-	return $actual->[0] =~ /window.onload.*page_print.*page_print/is
-	    ? 0 : 1;
+        my(undef, $actual) = @_;
+        return $actual->[0] =~ /window.onload.*page_print.*page_print/is
+            ? 0 : 1;
     },
 ];
 

@@ -10,7 +10,7 @@ sub render {
     my($self, $source, $buffer) = @_;
     $_DIE->catch_quietly(sub {
         $$buffer .= ${$self->render_attr(value => $source)};
-	return;
+        return;
     });
     return;
 }

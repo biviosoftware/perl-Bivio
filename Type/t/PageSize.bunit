@@ -6,27 +6,27 @@ my($u) = req(qw(auth_realm owner));
 my($rid) = realm_id('demo');
 [
     class() => [
-	row_tag_replace => [
-	    [undef, 3, req()] => not_die(),
-	],
-	row_tag_get => [
-	    [$u, req()] => 3,
-	    [$u->get('realm_id'), req()] => 3,
-	    [req()] => 3,
-	],
-	row_tag_replace => [
-	    [$u, undef] => DIE(),
-	    [$u, undef, req()] => not_die(),
-	    [undef, req()] => not_die(),
-	],
-	row_tag_get => [
-	    [$u, req()] => class()->get_default,
-	],
-	row_tag_replace => [
-	    [$rid, 67, req()] => not_die(),
-	],
-	row_tag_get => [
-	    [$rid, req()] => 67,
-	],
+        row_tag_replace => [
+            [undef, 3, req()] => not_die(),
+        ],
+        row_tag_get => [
+            [$u, req()] => 3,
+            [$u->get('realm_id'), req()] => 3,
+            [req()] => 3,
+        ],
+        row_tag_replace => [
+            [$u, undef] => DIE(),
+            [$u, undef, req()] => not_die(),
+            [undef, req()] => not_die(),
+        ],
+        row_tag_get => [
+            [$u, req()] => class()->get_default,
+        ],
+        row_tag_replace => [
+            [$rid, 67, req()] => not_die(),
+        ],
+        row_tag_get => [
+            [$rid, req()] => 67,
+        ],
     ],
 ];

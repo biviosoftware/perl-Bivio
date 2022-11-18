@@ -17,9 +17,9 @@ sub execute_unwind {
     my($self) = @_;
 
     if ($self->get('is_confirmed')) {
-	my($res) = $self->validate_and_execute_ok;
-	return if $self->in_error;
-	return $res || $self->internal_redirect_next;
+        my($res) = $self->validate_and_execute_ok;
+        return if $self->in_error;
+        return $res || $self->internal_redirect_next;
     }
     return shift->SUPER::execute_unwind(@_);
 }
@@ -27,14 +27,14 @@ sub execute_unwind {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
-	hidden => [
-	    {
-		name => 'is_confirmed',
-		type => 'Boolean',
-	        constraint => 'NONE',
-	    },
-	],
+        version => 1,
+        hidden => [
+            {
+                name => 'is_confirmed',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
+        ],
     });
 }
 

@@ -7,7 +7,7 @@ use Bivio::Base 'Type.EnumDelegate';
 
 sub get_delegate_info {
     return [
-	PRIMARY => [1],
+        PRIMARY => [1],
         BILL_TO => [2, 'Bill To Address'],
         SHIP_TO => [3, 'Shipping Address'],
     ];

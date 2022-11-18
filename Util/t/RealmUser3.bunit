@@ -5,22 +5,22 @@ req()->set_realm_and_user(qw(realm_user_util5 demo));
 ShellUtil_RealmAdmin()->join_user('MEMBER');
 [
     sub {class()->new([])} => [
-	audit_user => [
-	    [] => sub {
-		assert_contains(
-		    [{
-			role => Auth_Role('WITHDRAWN'),
-		    }],
-		    req()->with_realm(fourem => sub {
-			return model('RealmUser')->map_iterate(
-			    undef,
-			    'realm_id',
-			    {user_id => req('auth_user_id')},
-			);
-		    }),
-		);
-		return 1;
-	    },
-	],
+        audit_user => [
+            [] => sub {
+                assert_contains(
+                    [{
+                        role => Auth_Role('WITHDRAWN'),
+                    }],
+                    req()->with_realm(fourem => sub {
+                        return model('RealmUser')->map_iterate(
+                            undef,
+                            'realm_id',
+                            {user_id => req('auth_user_id')},
+                        );
+                    }),
+                );
+                return 1;
+            },
+        ],
     ],
 ];

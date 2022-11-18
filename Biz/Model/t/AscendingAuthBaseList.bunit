@@ -4,24 +4,24 @@ options({class_name => 'Bivio::Biz::Model::t::AscendingAuthBaseList::T1List'});
 ListModel();
 [
     {
-	method => 'load_all',
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->set_realm($params->[0]);
-	    return [];
-	},
+        method => 'load_all',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->set_realm($params->[0]);
+            return [];
+        },
     } => [
-	demo => [{
-	    'RealmOwner.name' => 'demo',
-	}, {
-	    'RealmOwner.name' => 'general',
-	}],
-	'fourem-sub1' => [{
-	    'RealmOwner.name' => 'fourem',
-	}, {
-	    'RealmOwner.name' => 'fourem-sub1',
-	}, {
-	    'RealmOwner.name' => 'general',
-	}],
+        demo => [{
+            'RealmOwner.name' => 'demo',
+        }, {
+            'RealmOwner.name' => 'general',
+        }],
+        'fourem-sub1' => [{
+            'RealmOwner.name' => 'fourem',
+        }, {
+            'RealmOwner.name' => 'fourem-sub1',
+        }, {
+            'RealmOwner.name' => 'general',
+        }],
     ],
 ];

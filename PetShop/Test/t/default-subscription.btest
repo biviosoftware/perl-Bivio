@@ -9,8 +9,8 @@ my($send_mail) = sub {
     login_as('root');
     follow_link($forum, qw(^mail$ new_topic));
     submit_form({
-	topic => "$forum test topic",
-	text => my $text = "$forum test text" . random_string(),
+        topic => "$forum test topic",
+        text => my $text = "$forum test text" . random_string(),
     });
     return $text;
 };
@@ -19,7 +19,7 @@ my($verify_default_subscription) = sub {
     login_as($email);
     follow_link('settings');
     verify_form({
-	default => $current_default,
+        default => $current_default,
     });
     return;
 };
@@ -27,7 +27,7 @@ my($set_default_subscription) = sub {
     my($current_default, $new_default) = @_;
     $verify_default_subscription->($current_default);
     submit_form({
-	default => $new_default,
+        default => $new_default,
     });
     return;
 };
@@ -38,16 +38,16 @@ my($verify_subscription) = sub {
     my($fn) = ($forum =~ /.*-(.*)/)[0];
     my($row) = find_table_row('Forum', 'Forum', qr{$fn}i)->{_row_index};
     verify_form({
-	"Subscribed?_$row" => $current_subscription,
+        "Subscribed?_$row" => $current_subscription,
     });
     return;
 };
 my($verify_mail) = sub {
     my($forum, $member, $is_subscribed) = @_;
     verify_local_mail(
-	$email,
-	$send_mail->($forum),
-	$member && $is_subscribed,
+        $email,
+        $send_mail->($forum),
+        $member && $is_subscribed,
     );
     return;
 };
@@ -56,31 +56,31 @@ my($change_user_forum_status) = sub {
     login_as('root');
     follow_link($forum, 'roster');
     if ($member) {
-	follow_link('add_member');
-	submit_form({
-	    email => $email,
-	});
-	find_page_with_text($email);
-	test_deviance()
-	    unless $is_subscribed;
-	verify_table('last', [
-	    ['email', 'privileges'],
-	    [$email, qr{subscribed}i],
-	]);
-	test_conformance()
-	    unless $is_subscribed;
-	$verify_subscription->($forum, $is_subscribed);
+        follow_link('add_member');
+        submit_form({
+            email => $email,
+        });
+        find_page_with_text($email);
+        test_deviance()
+            unless $is_subscribed;
+        verify_table('last', [
+            ['email', 'privileges'],
+            [$email, qr{subscribed}i],
+        ]);
+        test_conformance()
+            unless $is_subscribed;
+        $verify_subscription->($forum, $is_subscribed);
     }
     else {
-	find_page_with_text($email);
-	follow_link_in_table(
-	    'last', 'email', $email, 'privileges', qr{member}i);
-	submit_form({
-	    level => 'No Access',
-	});
-	test_deviance();
-	find_page_with_text($email);
-	test_conformance();
+        find_page_with_text($email);
+        follow_link_in_table(
+            'last', 'email', $email, 'privileges', qr{member}i);
+        submit_form({
+            level => 'No Access',
+        });
+        test_deviance();
+        find_page_with_text($email);
+        test_conformance();
     }
     $verify_mail->($forum, $member, $is_subscribed);
 };

@@ -11,7 +11,7 @@ my($_ECPS) = b_use('Type.ECPaymentStatus');
 sub create {
     my($self, $values) = @_;
     $values->{description} = $values->{service}->get_short_desc
-	unless defined($values->{description});
+        unless defined($values->{description});
     $values->{status} ||= $_ECPS->CAPTURED;
     $values->{point_of_sale} ||= $_ECPOS->INTERNET;
     $values->{currency_name} ||= $_CN->get_default;
@@ -23,11 +23,11 @@ sub get_amount_sum {
     # for this realm.
     my($self) = @_;
     return (b_use('SQL.Connection')->execute_one_row(
-	'SELECT SUM(amount)
+        'SELECT SUM(amount)
          FROM ec_payment_t
          WHERE realm_id = ?',
-	[$self->req('auth_id')])
-	|| [0])->[0];
+        [$self->req('auth_id')])
+        || [0])->[0];
 }
 
 sub internal_initialize {
@@ -39,20 +39,20 @@ sub internal_initialize {
         table_name => 'ec_payment_t',
         columns => {
             ec_payment_id => ['PrimaryId', 'PRIMARY_KEY'],
-	    # Which realm is using the service
+            # Which realm is using the service
             realm_id => ['PrimaryId', 'NOT_NULL'],
-	    # Which realm paid for the service
+            # Which realm paid for the service
             user_id => ['PrimaryId', 'NOT_NULL'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
             amount => ['Amount', 'NOT_NULL'],
             method => ['ECPaymentMethod', 'NOT_ZERO_ENUM'],
             status => ['ECPaymentStatus', 'NOT_NULL'],
-	    description => ['Line', 'NOT_NULL'],
+            description => ['Line', 'NOT_NULL'],
             remark => ['Text', 'NONE'],
-	    salesperson_id => ['PrimaryId', 'NONE'],
-	    service => ['ECService', 'NOT_NULL'],
-	    point_of_sale => ['ECPointOfSale', 'NOT_NULL'],
-	    currency_name => ['CurrencyName', 'NOT_NULL'],
+            salesperson_id => ['PrimaryId', 'NONE'],
+            service => ['ECService', 'NOT_NULL'],
+            point_of_sale => ['ECPointOfSale', 'NOT_NULL'],
+            currency_name => ['CurrencyName', 'NOT_NULL'],
         },
         auth_id => 'realm_id',
     };
@@ -64,11 +64,11 @@ sub unsafe_get_model {
     my($self, $name) = @_;
 
     if ($name eq 'ECSubscription' || $name eq 'ECCheckPayment'
-	|| $name eq 'ECCreditCardPayment') {
+        || $name eq 'ECCreditCardPayment') {
 
-	my($model) =  $self->new_other($name);
-	$model->unauth_load({
-	    ec_payment_id => $self->get('ec_payment_id'),
+        my($model) =  $self->new_other($name);
+        $model->unauth_load({
+            ec_payment_id => $self->get('ec_payment_id'),
         });
         return $model;
     }

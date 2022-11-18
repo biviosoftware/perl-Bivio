@@ -2,7 +2,7 @@
 # $Id$
 config({
     'Bivio::UI::Facade' => {
-	http_host => 'localhost',
+        http_host => 'localhost',
     },
 });
 Widget();

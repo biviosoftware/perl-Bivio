@@ -9,10 +9,10 @@ sub internal_create_models {
     my($self) = shift;
     my($realm, @rest) = $self->SUPER::internal_create_models(@_);
     $self->req->with_realm($realm => sub {
-	foreach my $model (qw(Address Phone)) {
-	    $self->new_other($model)->create({});
-	};
-	return;
+        foreach my $model (qw(Address Phone)) {
+            $self->new_other($model)->create({});
+        };
+        return;
     });
     return ($realm, @rest);
 }

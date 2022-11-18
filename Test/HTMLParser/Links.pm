@@ -49,7 +49,7 @@ sub new {
     my($proto, $parser) = @_;
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	xpath => [],
+        xpath => [],
     };
     return $self;
 }
@@ -60,7 +60,7 @@ sub _end_a {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
     _link($self, $fields->{text})
-	if defined($fields->{text}) && defined($fields->{href});
+        if defined($fields->{text}) && defined($fields->{href});
     $fields->{href} = undef;
     return;
 }
@@ -72,14 +72,14 @@ sub _link {
     my($fields) = $self->[$_IDI];
     my($base, $i) = $label;
     while ($self->get('elements')->{$label}) {
-	return if $self->get('elements')->{$label}->{href}
+        return if $self->get('elements')->{$label}->{href}
             eq ($fields->{href} || '');
-	$label = $base . '_' . ++$i;
+        $label = $base . '_' . ++$i;
     }
     $self->get('elements')->{$label} = {
-	label => $label,
-	href => $fields->{href},
-	alt => $alt,
+        label => $label,
+        href => $fields->{href},
+        alt => $alt,
     };
     _trace($label, '->', $fields->{href}) if $_TRACE;
     return;
@@ -90,20 +90,20 @@ sub _start_a {
     # Stores the href.
     my($fields, $attr) = @_;
     Bivio::Die->die(
-	'already have an href (missing </a>). current=', $fields->{href},
-	' new=', $attr->{href},
+        'already have an href (missing </a>). current=', $fields->{href},
+        ' new=', $attr->{href},
     ) if $fields->{href};
     return
-	if $attr->{name} && !$attr->{href}
-	# DropDown creates links that are meaningless for testing
+        if $attr->{name} && !$attr->{href}
+        # DropDown creates links that are meaningless for testing
         || $attr->{onclick} && ($attr->{href} || '') eq '#';
     unless (defined($attr->{href}) || $attr->{name}) {
-	b_info(
-	    join('/', @{$fields->{xpath}}),
+        b_info(
+            join('/', @{$fields->{xpath}}),
             ': missing href or name, ignoring: ',
-	    $attr,
-	);
-	return;
+            $attr,
+        );
+        return;
     }
     $fields->{href} = $attr->{href};
     $fields->{text} = '';

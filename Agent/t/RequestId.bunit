@@ -3,8 +3,8 @@
 Request();
 [
     class() => [
-	current => [
-	    [req()] => qr{^[0-9a-h]{40}$},
-	],
+        current => [
+            [req()] => qr{^[0-9a-h]{40}$},
+        ],
     ],
 ];

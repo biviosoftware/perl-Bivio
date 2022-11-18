@@ -11,13 +11,13 @@ sub handle_register {
 
 sub parse_tag_start {
     sub PARSE_TAG_START {[
-	[qw(paragraphing Boolean), undef],
+        [qw(paragraphing Boolean), undef],
     ]};
     my($proto, $args, $attrs) = shift->parameters(@_);
     return
-	unless $proto;
+        unless $proto;
     $args->{state}->{option}->{paragraphing} = $attrs->{paragraphing}
-	if defined($attrs->{paragraphing});
+        if defined($attrs->{paragraphing});
     return;
 }
 

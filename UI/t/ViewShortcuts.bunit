@@ -4,38 +4,38 @@ Request('initialize_fully');
 set_realm_and_user(qw(demo demo));
 [
     {
-	object => class(),
-	compute_return => sub {
-	    my(undef, $actual) = @_;
-	    return [req()->get_widget_value($actual)];
-	},
+        object => class(),
+        compute_return => sub {
+            my(undef, $actual) = @_;
+            return [req()->get_widget_value($actual)];
+        },
     } => [
-	vs_text => [
-	    bunit_simple => 'simple text',
-	    [[sub {'bunit_simple'}]] => 'simple text',
-	    [[sub {'Address'}], 'street1'] => 'Street',
-	],
-	vs_constant => [
-	    view_shortcuts1 => 'one',
-	],
-	vs_realm => [
-	    [] => 'Demo User',
-	    name => 'demo',
-	],
-	vs_model => [
-	    sub {
-		model('Email')->execute_auth_user(req());
-		return [[sub {'Email.email'}]];
-	    } => qr{.*demo\@},
-	    ['Email', 'email'] => qr{.*demo\@},
-	],
+        vs_text => [
+            bunit_simple => 'simple text',
+            [[sub {'bunit_simple'}]] => 'simple text',
+            [[sub {'Address'}], 'street1'] => 'Street',
+        ],
+        vs_constant => [
+            view_shortcuts1 => 'one',
+        ],
+        vs_realm => [
+            [] => 'Demo User',
+            name => 'demo',
+        ],
+        vs_model => [
+            sub {
+                model('Email')->execute_auth_user(req());
+                return [[sub {'Email.email'}]];
+            } => qr{.*demo\@},
+            ['Email', 'email'] => qr{.*demo\@},
+        ],
     ],
     class() => [
-	vs_text => [
-	    [req(), 'bunit_simple'] => 'simple text',
-	],
-	vs_constant => [
-	    [req(), 'view_shortcuts1'] => 'one',
-	],
+        vs_text => [
+            [req(), 'bunit_simple'] => 'simple text',
+        ],
+        vs_constant => [
+            [req(), 'view_shortcuts1'] => 'one',
+        ],
     ],
 ];

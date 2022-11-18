@@ -117,7 +117,7 @@ sub internal_initialize_head_attrs {
     $self->unsafe_initialize_attr('style');
     $self->unsafe_initialize_attr('xhtml');
     foreach my $x (qw(Style Script JavaScript)) {
-	$self->initialize_attr(lc($x), sub {vs_call($x)});
+        $self->initialize_attr(lc($x), sub {vs_call($x)});
     }
     $self->initialize_attr(
        _page_print_script => $self->get('script')->new('page_print'),
@@ -129,13 +129,13 @@ sub internal_new_args {
     my($proto, $head, $body, $attrs) = @_;
     # Implements positional argument parsing for L<new|"new">.
     return '"head" must be defined'
-	unless defined($head);
+        unless defined($head);
     return '"body" must be defined'
-	unless defined($body);
+        unless defined($body);
     return {
-	head => $head,
-	body => $body,
-	($attrs ? %$attrs : ()),
+        head => $head,
+        body => $body,
+        ($attrs ? %$attrs : ()),
     };
 }
 
@@ -144,24 +144,24 @@ sub internal_render_head_attrs {
     my($b);
     my($x) = '';
     $self->map_invoke(
-	unsafe_render_attr => [
-	    map(
-		[$_, $source, \$b],
-		'head',
-		'style',
-		$self->unsafe_render_attr('want_page_print', $source, \$x)
-		    && $x ? '_page_print_script' : (),
-		'script',
-		'javascript',
-	    ),
-	],
-	undef,
-	[$source],
+        unsafe_render_attr => [
+            map(
+                [$_, $source, \$b],
+                'head',
+                'style',
+                $self->unsafe_render_attr('want_page_print', $source, \$x)
+                    && $x ? '_page_print_script' : (),
+                'script',
+                'javascript',
+            ),
+        ],
+        undef,
+        [$source],
     );
     # IE caches too much.
     $b .= qq{<meta name="MSSmartTagsPreventParsing" content="TRUE">\n}
-	.qq{<meta http-equiv="pragma" content="no-cache">\n}
-	if $source->get_request->get('Type.UserAgent')->has_over_caching_bug;
+        .qq{<meta http-equiv="pragma" content="no-cache">\n}
+        if $source->get_request->get('Type.UserAgent')->has_over_caching_bug;
     return $b;
 }
 
@@ -171,27 +171,27 @@ sub render {
     my($xhtml) = $self->internal_setup_xhtml($req);
     my($body) = $self->render_attr('body', $source);
     $$buffer .= "<!DOCTYPE html>\n<html"
-	. $self->render_simple_attr(html_tag_attrs => $source)
-	. "><head>\n"
-	. $self->internal_render_head_attrs($source)
-	. '</head><body';
+        . $self->render_simple_attr(html_tag_attrs => $source)
+        . "><head>\n"
+        . $self->internal_render_head_attrs($source)
+        . '</head><body';
     # Always have a background color
     $$buffer .= b_use('FacadeComponent.Color')->format_html(
-	$self->get_or_default('page_bgcolor', 'page_bg'), 'bgcolor', $req);
+        $self->get_or_default('page_bgcolor', 'page_bg'), 'bgcolor', $req);
     foreach my $c ('text', 'link', 'alink', 'vlink') {
-	my($n) = 'page_'.$c;
-	$$buffer .= b_use('FacadeComponent.Color')->format_html(
-	    $self->get_or_default($n.'_color', $n), $c, $req);
+        my($n) = 'page_'.$c;
+        $$buffer .= b_use('FacadeComponent.Color')->format_html(
+            $self->get_or_default($n.'_color', $n), $c, $req);
     }
     my($x) = '';
     $$buffer .= b_use('FacadeComponent.Icon')->format_html_attribute(
-	$x, 'background', $req
+        $x, 'background', $req
     ) if $self->unsafe_render_attr('background', $source, \$x) && $x;
     $$buffer .= vs_html_attrs_render_one(
-	$self, $source, 'body_class');
+        $self, $source, 'body_class');
     $self->get('body')->unsafe_render_attr('html_tag_attrs', $source, $buffer)
-	if Bivio::UI::Widget->is_blesser_of($self->get('body'))
-	&& $self->get('body')->can('unsafe_render_attr');
+        if Bivio::UI::Widget->is_blesser_of($self->get('body'))
+        && $self->get('body')->can('unsafe_render_attr');
     $$buffer .= ">\n$$body\n</body></html>\n";
     $_HANDLERS->do_filo(handle_page_render_end => [$source, $buffer]);
     return;
@@ -201,8 +201,8 @@ sub internal_setup_xhtml {
     my($self, $req) = @_;
     $req->put(font_with_style =>
         $req->get('Type.UserAgent')->is_css_compatible
-	    && $self->unsafe_get('style')
-	    ? 1 : 0,
+            && $self->unsafe_get('style')
+            ? 1 : 0,
     );
     $req->put(xhtml => my $xhtml = $self->render_simple_attr('xhtml', $req));
     return $xhtml;

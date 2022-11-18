@@ -9,8 +9,8 @@ my($_BC) = b_use('Type.BlogContent');
 
 sub execute_cancel {
     return {
-	task_id => 'next',
-	carry_path_info => 1,
+        task_id => 'next',
+        carry_path_info => 1,
     };
 }
 
@@ -18,7 +18,7 @@ sub execute_empty {
     my($self) = @_;
     my($l) = $self->get_request->get('Model.BlogList');
     foreach my $f (qw(title content RealmFile.is_public)) {
-	$self->internal_put_field($f => $l->get($f));
+        $self->internal_put_field($f => $l->get($f));
     }
     return;
 }
@@ -26,15 +26,15 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     my($id, $fn) = $self->req('Model.BlogList')
-	->get(qw(RealmFile.realm_file_id path_info));
+        ->get(qw(RealmFile.realm_file_id path_info));
     my($public) = $self->get('RealmFile.is_public');
     $self->new_other('RealmFile')->load({
-	realm_file_id => $id,
+        realm_file_id => $id,
     })->update_with_content({
-	path => $_BFN->to_absolute($fn, $public),
-	'RealmFile.is_public' => $public,
+        path => $_BFN->to_absolute($fn, $public),
+        'RealmFile.is_public' => $public,
     }, $_BC->join($self->get(qw(title content))))
-	->put_on_request;
+        ->put_on_request;
     return $self->return_with_validate({
         carry_path_info => 1,
     });
@@ -45,18 +45,18 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
-	    'RealmFile.is_public',
-	    {
-		name => 'title',
-		type => 'BlogTitle',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'content',
-		type => 'BlogBody',
-		constraint => 'NOT_NULL',
-	    },
-	],
+            'RealmFile.is_public',
+            {
+                name => 'title',
+                type => 'BlogTitle',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'content',
+                type => 'BlogBody',
+                constraint => 'NOT_NULL',
+            },
+        ],
     });
 }
 

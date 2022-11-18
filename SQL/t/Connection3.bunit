@@ -3,20 +3,20 @@
 Request();
 [
     class() => [
-	map_execute => [
-	    [
-		'SELECT name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
-		['root', 'demo'],
-	    ] => [[qw(demo root)]],
-	    [
-		'SELECT name, display_name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
-		['root', 'demo'],
-	    ] => [[['demo', 'Demo User'], ['root', 'Root User']]],
-	    [
-		sub {join(' ', @{shift(@_)})},
-		'SELECT name, display_name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
-		['root', 'demo'],
-	    ] => [['demo Demo User', 'root Root User']],
-	],
+        map_execute => [
+            [
+                'SELECT name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
+                ['root', 'demo'],
+            ] => [[qw(demo root)]],
+            [
+                'SELECT name, display_name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
+                ['root', 'demo'],
+            ] => [[['demo', 'Demo User'], ['root', 'Root User']]],
+            [
+                sub {join(' ', @{shift(@_)})},
+                'SELECT name, display_name FROM realm_owner_t WHERE name IN (?, ?) ORDER BY name',
+                ['root', 'demo'],
+            ] => [['demo Demo User', 'root Root User']],
+        ],
     ],
 ];

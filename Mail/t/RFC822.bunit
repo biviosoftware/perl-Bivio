@@ -3,15 +3,15 @@
 Type();
 [
     escape_header_phrase => [
-	[undef] => '',
-	'' => '',
-	' ' => '',
-	' <a ' => '"<a"',
-	'a b c' => 'a b c',
+        [undef] => '',
+        '' => '',
+        ' ' => '',
+        ' <a ' => '"<a"',
+        'a b c' => 'a b c',
     ],
     format_mailbox => [
-	'a@a.a' => 'a@a.a',
-	['a@a.a', ' '] => 'a@a.a',
-	['a@a.a', 'a'] => 'a <a@a.a>',
+        'a@a.a' => 'a@a.a',
+        ['a@a.a', ' '] => 'a@a.a',
+        ['a@a.a', 'a'] => 'a <a@a.a>',
     ],
 ];

@@ -19,11 +19,11 @@ sub internal_input_base_render_attrs {
     my($self, $form, $field, $source, $buffer) = @_;
     shift->SUPER::internal_input_base_render_attrs(@_);
     my($v) = $form->in_error
-	? $form->get_field_as_html($field)
-	: $_D->to_html($form->get($field)
-	    || ($self->render_simple_attr('allow_undef', $source)
-		? undef
-		: $_D->local_today));
+        ? $form->get_field_as_html($field)
+        : $_D->to_html($form->get($field)
+            || ($self->render_simple_attr('allow_undef', $source)
+                ? undef
+                : $_D->local_today));
     $$buffer .= qq{ value="$v"};
     return;
 }
@@ -39,13 +39,13 @@ sub initialize {
             ->get_field_constraint($f)->eq_none;
     }, $source);
     $self->initialize_attr(_date_picker => DatePicker({
-	map({
-	    $_ => $self->get($_);
-	} qw(form_model field)),
-	map({
-	    my($v) = $self->unsafe_get($_);
-	    $v ? ($_ => $v) : ();
-	} qw(start_date end_date)),
+        map({
+            $_ => $self->get($_);
+        } qw(form_model field)),
+        map({
+            my($v) = $self->unsafe_get($_);
+            $v ? ($_ => $v) : ();
+        } qw(start_date end_date)),
     })) if $self->unsafe_get('want_picker');
     return shift->SUPER::initialize(@_);
 }

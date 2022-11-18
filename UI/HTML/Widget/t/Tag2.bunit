@@ -3,9 +3,9 @@
 class('UI.ViewLanguage');
 [
     'p' => [
-	initialize => DIE(),
+        initialize => DIE(),
     ],
     [[sub {'br'}]] => [
-	initialize => DIE(),
+        initialize => DIE(),
     ],
 ];

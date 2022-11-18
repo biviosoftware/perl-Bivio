@@ -5,35 +5,35 @@ my($o2) = class('Collection.Attributes')->new;
 my($i) = 0;
 [
     [] => [
-	push_object => [
-	    [$o1] => not_die(),
-	],
-	call_fifo => [
-	    [put => [a => 1]] => not_die(),
-	],
-	push_object => [
-	    [sub {shift}] => not_die(),
-	    [$o2] => not_die(),
-	],
-	call_fifo => [
-	    [put => sub {[b => ++$i]}] => not_die(),
-	    not_a_method => not_die(),
-	],
-	do_filo => [
-	    [unsafe_get => ['b']] => 3,
-	    [unsafe_get => ['a']] => 'unsafe_get',
-	],
+        push_object => [
+            [$o1] => not_die(),
+        ],
+        call_fifo => [
+            [put => [a => 1]] => not_die(),
+        ],
+        push_object => [
+            [sub {shift}] => not_die(),
+            [$o2] => not_die(),
+        ],
+        call_fifo => [
+            [put => sub {[b => ++$i]}] => not_die(),
+            not_a_method => not_die(),
+        ],
+        do_filo => [
+            [unsafe_get => ['b']] => 3,
+            [unsafe_get => ['a']] => 'unsafe_get',
+        ],
     ],
     sub {$o1} => [
-	get => [
-	    a => 1,
-	    b => 1,
-	],
+        get => [
+            a => 1,
+            b => 1,
+        ],
     ],
     sub {$o2} => [
-	unsafe_get => [
-	    a => [undef],
-	    b => 3,
-	],
+        unsafe_get => [
+            a => [undef],
+            b => 3,
+        ],
     ],
 ];

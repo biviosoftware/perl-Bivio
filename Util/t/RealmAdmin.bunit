@@ -13,48 +13,48 @@ model('UserRealmSubscription')->unauth_delete({
     [to_id => 'Demo User'] => unauth_model(RealmOwner => {name => 'demo'})->get('realm_id'),
     [qw(-realm site-reports -user crm_tech1 leave_user)] => not_die(),
     [qw(-realm site-reports users)] => sub {
-	my(undef, $actual) = @_;
-	assert_not_equals(qr{crm_tech1}, $actual->[0]);
-	return 1;
+        my(undef, $actual) = @_;
+        assert_not_equals(qr{crm_tech1}, $actual->[0]);
+        return 1;
     },
     [qw(-realm site-reports -user crm_tech1 join_user member)] => not_die(),
     [qw(-realm site-reports users)] => qr{crm_tech1},
     [qw(-realm site-reports -user crm_tech1 join_user member)] => not_die(),
     [qw(-realm site-reports -user crm_tech1 join_user mail_recipient)] => sub {
-	assert_equals(1, model('UserRealmSubscription')->unauth_load({
-	    realm_id => realm_id('site-reports'),
-	    user_id => realm_id('crm_tech1'),
-	}));
-	return 1;
+        assert_equals(1, model('UserRealmSubscription')->unauth_load({
+            realm_id => realm_id('site-reports'),
+            user_id => realm_id('crm_tech1'),
+        }));
+        return 1;
     },
     [qw(-realm site-reports -user crm_tech1 leave_user)] => not_die(),
     [qw(-realm site-reports users)] => sub {
-	my(undef, $actual) = @_;
-	assert_not_equals(qr{crm_tech1}, $actual->[0]);
-	return 1;
+        my(undef, $actual) = @_;
+        assert_not_equals(qr{crm_tech1}, $actual->[0]);
+        return 1;
     },
     inline_case(sub {
         $uid = ShellUtil_TestUser()->create(random_realm_name());
-	my($uid2) = ShellUtil_TestUser()->create(random_realm_name());
-	class()->main(-realm => $uid, -user => $uid2, qw(join_user GUEST));
+        my($uid2) = ShellUtil_TestUser()->create(random_realm_name());
+        class()->main(-realm => $uid, -user => $uid2, qw(join_user GUEST));
         return;
     }),
     sub {[-realm => $uid, 'delete_auth_realm_and_users']} => not_die(),
     [qw(-realm fourem -user root unsubscribe_user_from_realm)] => sub {
-	unauth_model(UserRealmSubscription => {
-	    user_id => realm_id('root'),
-	    realm_id => realm_id('fourem'),
-	    is_subscribed => 0,
-	});
-	return 1;
+        unauth_model(UserRealmSubscription => {
+            user_id => realm_id('root'),
+            realm_id => realm_id('fourem'),
+            is_subscribed => 0,
+        });
+        return 1;
     },
     [qw(-realm fourem -user root subscribe_user_to_realm)] => sub {
-	unauth_model(UserRealmSubscription => {
-	    user_id => realm_id('root'),
-	    realm_id => realm_id('fourem'),
-	    is_subscribed => 1,
-	});
-	return 1;
+        unauth_model(UserRealmSubscription => {
+            user_id => realm_id('root'),
+            realm_id => realm_id('fourem'),
+            is_subscribed => 1,
+        });
+        return 1;
     },
 ];
 

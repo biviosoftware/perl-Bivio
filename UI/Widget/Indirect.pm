@@ -27,7 +27,7 @@ sub execute {
     my($self, $req) = @_;
     my($w) = _select($self, $req);
     Bivio::Die->die('Indirect did not select a widget; no content type')
-	    unless defined($w);
+            unless defined($w);
     return $w->execute($req);
 }
 
@@ -62,7 +62,7 @@ sub _new_args {
     return ($proto, $value) if ref($value) eq 'HASH';
     # We accept any value
     return ($proto, {
-	value => $value,
+        value => $value,
     });
 }
 

@@ -36,7 +36,7 @@ sub internal_initialize {
 sub _model {
     my($self) = @_;
     return $self->req->unsafe_get('Model.CRMThread')
-	|| ($self->has_cursor ? $self : $self->set_cursor_or_die(0))
+        || ($self->has_cursor ? $self : $self->set_cursor_or_die(0))
             ->get_model('CRMThread');
 }
 

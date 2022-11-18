@@ -3,13 +3,13 @@
 FormModel();
 my($exising_mail_recipient_realms) = sub {
     return model('RealmUser')->map_iterate(
-	'realm_id',
-	'unauth_iterate_start',
-	'realm_id',
-	{
-	    user_id => realm_id(shift),
-	    role => Auth_Role('MAIL_RECIPIENT'),
-	},
+        'realm_id',
+        'unauth_iterate_start',
+        'realm_id',
+        {
+            user_id => realm_id(shift),
+            role => Auth_Role('MAIL_RECIPIENT'),
+        },
     );
 };
 my($case) = sub {
@@ -27,63 +27,63 @@ Date: $date
 text1
 EOF
     return (
-	req_state({
-	    user => $user,
-	    realm => $user,
-	    path_info => '/' . $rm->get('realm_file_id'),
-	}),
-	[{$button => 1}] => sub {
-	    my($user_id) = realm_id($user);
-	    req()->set_realm($realm);
-	    assert_equals(
-		$realm =~ /bulletin/ ? 0 : 1,
-		model('UserRealmSubscription')->unsafe_load({
-		    user_id => $user_id,
-		    is_subscribed => 1,
-		}),
-	    );
-	    assert_equals(
-		$roles || [],
-		model('RealmUser')->map_iterate(
-		    'role',
-		    'role',
-		    {user_id => $user_id},
-		),
-	    );
-	    $button eq 'all_button'
-		? assert_equals(
-		    [],
-		    model('UserRealmSubscription')->map_iterate(
-			'realm_id',
-			'unauth_iterate_start',
-			'realm_id',
-			{
-			    user_id => $user_id,
-			    is_subscribed => $realm =~ /bulletin/ ? 1 : 0,
-			},
-		    ),
-		)
-		: assert_equals(
-		    $realm =~ /bulletin/ ? 0 : 1,
-		    model('UserRealmSubscription')->unsafe_load({
-			user_id => $user_id,
-			is_subscribed => 1,
-		    }),
-		);
-	    assert_equals(
-		$mail_recipient_realms || [],
-		model('RealmUser')->map_iterate(
-		    'realm_id',
-		    'unauth_iterate_start',
-		    'realm_id',
-		    {
-			user_id => $user_id,
-			role => Auth_Role('MAIL_RECIPIENT'),
-		    },
-		),
-	    ) if $mail_recipient_realms;
-	    return 1;
-	},
+        req_state({
+            user => $user,
+            realm => $user,
+            path_info => '/' . $rm->get('realm_file_id'),
+        }),
+        [{$button => 1}] => sub {
+            my($user_id) = realm_id($user);
+            req()->set_realm($realm);
+            assert_equals(
+                $realm =~ /bulletin/ ? 0 : 1,
+                model('UserRealmSubscription')->unsafe_load({
+                    user_id => $user_id,
+                    is_subscribed => 1,
+                }),
+            );
+            assert_equals(
+                $roles || [],
+                model('RealmUser')->map_iterate(
+                    'role',
+                    'role',
+                    {user_id => $user_id},
+                ),
+            );
+            $button eq 'all_button'
+                ? assert_equals(
+                    [],
+                    model('UserRealmSubscription')->map_iterate(
+                        'realm_id',
+                        'unauth_iterate_start',
+                        'realm_id',
+                        {
+                            user_id => $user_id,
+                            is_subscribed => $realm =~ /bulletin/ ? 1 : 0,
+                        },
+                    ),
+                )
+                : assert_equals(
+                    $realm =~ /bulletin/ ? 0 : 1,
+                    model('UserRealmSubscription')->unsafe_load({
+                        user_id => $user_id,
+                        is_subscribed => 1,
+                    }),
+                );
+            assert_equals(
+                $mail_recipient_realms || [],
+                model('RealmUser')->map_iterate(
+                    'realm_id',
+                    'unauth_iterate_start',
+                    'realm_id',
+                    {
+                        user_id => $user_id,
+                        role => Auth_Role('MAIL_RECIPIENT'),
+                    },
+                ),
+            ) if $mail_recipient_realms;
+            return 1;
+        },
     );
 };
 [

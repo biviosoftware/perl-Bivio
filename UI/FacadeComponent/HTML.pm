@@ -13,7 +13,7 @@ sub internal_initialize_value {
     my($self, $value) = @_;
     shift->SUPER::internal_initialize_value(@_);
     $value->{value}->initialize
-	if $self->is_blesser_of($value->{value}, 'Bivio::UI::Widget');
+        if $self->is_blesser_of($value->{value}, 'Bivio::UI::Widget');
     return;
 }
 

@@ -3,10 +3,10 @@
 Request('setup_facade');
 [
     sub {class()->get_from_source(req())} => [
-	get_value => [
-	    [qw(constant_bunit undef)] => [undef],
-	    [qw(constant_bunit three)] => 3,
-	    [qw(constant_bunit empty_sub)] => [undef],
-	],
+        get_value => [
+            [qw(constant_bunit undef)] => [undef],
+            [qw(constant_bunit three)] => 3,
+            [qw(constant_bunit empty_sub)] => [undef],
+        ],
     ],
 ];

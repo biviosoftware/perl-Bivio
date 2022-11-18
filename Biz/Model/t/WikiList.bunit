@@ -4,28 +4,28 @@ ListModel();
 req()->set_realm('site');
 [
     load_all => [
-	[] => [map(+{'RealmFile.path' => $_}, qw(
-	    /Public/Wiki/base.css
-	    /Public/Wiki/index
-	    /Public/Wiki/SearchTest1
-	    /Public/Wiki/StartPage
-	    /Public/Wiki/WikiValidator_NOT_OK
-	    /Public/Wiki/WikiValidator_OK
-	))],
-	inline_case(sub {
+        [] => [map(+{'RealmFile.path' => $_}, qw(
+            /Public/Wiki/base.css
+            /Public/Wiki/index
+            /Public/Wiki/SearchTest1
+            /Public/Wiki/StartPage
+            /Public/Wiki/WikiValidator_NOT_OK
+            /Public/Wiki/WikiValidator_OK
+        ))],
+        inline_case(sub {
             req()->set_user('root');
-	    return;
-	}),
-	[] => [map(+{'RealmFile.path' => $_}, qw(
-	    /Public/Wiki/base.css
-	    /Public/Wiki/index
-	    /Public/Wiki/SearchTest1
-	    /Public/Wiki/StartPage
-	    /Public/Wiki/WikiValidator_NOT_OK
-	    /Public/Wiki/WikiValidator_OK
-	    /Wiki/base.css
-	    /Wiki/DefaultStartPage
-	    /Wiki/index
-	))],
+            return;
+        }),
+        [] => [map(+{'RealmFile.path' => $_}, qw(
+            /Public/Wiki/base.css
+            /Public/Wiki/index
+            /Public/Wiki/SearchTest1
+            /Public/Wiki/StartPage
+            /Public/Wiki/WikiValidator_NOT_OK
+            /Public/Wiki/WikiValidator_OK
+            /Wiki/base.css
+            /Wiki/DefaultStartPage
+            /Wiki/index
+        ))],
     ],
 ];

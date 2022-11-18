@@ -8,7 +8,7 @@ use Bivio::Base 'Bivio::Test::Request';
 sub setup_facade {
     my($self) = shift->SUPER::setup_facade(@_);
     die('must be executed in PetShop environment')
-	unless $self->get('UI.Facade')->simple_package_name eq 'PetShop';
+        unless $self->get('UI.Facade')->simple_package_name eq 'PetShop';
     return $self;
 }
 

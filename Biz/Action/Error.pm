@@ -16,16 +16,16 @@ my($_WARNINGS) = {};
 sub execute {
     my($proto, $req) = @_;
     return $_JR->execute_check_req_is_json(
-	$req,
-	sub {
-	    my($status) = $req->get('task_id')->get_name;
-	    $status = $1 || 'SERVER_ERROR'
-		if $status =~ /^DEFAULT_ERROR_REDIRECT_?(.*)/s;
-	    return $proto->SUPER::execute(
-		$req,
-		$proto->internal_render_content($req, $status) || $status,
-	    );
-	},
+        $req,
+        sub {
+            my($status) = $req->get('task_id')->get_name;
+            $status = $1 || 'SERVER_ERROR'
+                if $status =~ /^DEFAULT_ERROR_REDIRECT_?(.*)/s;
+            return $proto->SUPER::execute(
+                $req,
+                $proto->internal_render_content($req, $status) || $status,
+            );
+        },
     );
 }
 
@@ -33,20 +33,20 @@ sub internal_render_content {
     my($proto, $req, $status) = @_;
     my($r) = $req->unsafe_get('r');
     my($self) = $proto->new({
-	status => $status,
-	uri => $r && $r->header_in('Referer') || undef,
+        status => $status,
+        uri => $r && $r->header_in('Referer') || undef,
     })->put_on_req($req);
     my($reply) = $req->get('reply');
     $reply->delete_output;
     return
-	unless $_C->if_version(6)
-	&& $_FC->get_value('ActionError_want_wiki_view', $req);
+        unless $_C->if_version(6)
+        && $_FC->get_value('ActionError_want_wiki_view', $req);
     my($die) = Bivio::Die->catch_quietly(sub {_wiki($self, $req)});
     b_warn($status, ': wiki rendering error: ', $die)
         if $die && !$_WARNINGS->{$status}++;
     $_V->execute(
-	$_FC->get_value('ActionError_default_view', $req),
-	$req,
+        $_FC->get_value('ActionError_default_view', $req),
+        $req,
     ) if $die || !$reply->unsafe_get_output;
     return;
 }
@@ -54,22 +54,22 @@ sub internal_render_content {
 sub _wiki {
     my($self, $req) = @_;
     return $req->with_realm(
-	$_FC->get_value('site_realm_id', $req),
-	sub {
-	    my($wn);
-	    foreach my $try ($self->get('status'), 'default') {
-		last
-		    if $wn = $_T->get_from_source($req)
-		    ->unsafe_get_value('ActionError.wiki_name', $try);
-	    }
-	    return
-		unless $wn;
-	    $req->put(path_info => $wn);
-	    $_WV->execute_prepare_html($req);
-	    $req->set_task('FORUM_WIKI_VIEW');
-	    $_V->execute('Wiki->site_view', $req);
-	    return;
-	},
+        $_FC->get_value('site_realm_id', $req),
+        sub {
+            my($wn);
+            foreach my $try ($self->get('status'), 'default') {
+                last
+                    if $wn = $_T->get_from_source($req)
+                    ->unsafe_get_value('ActionError.wiki_name', $try);
+            }
+            return
+                unless $wn;
+            $req->put(path_info => $wn);
+            $_WV->execute_prepare_html($req);
+            $req->set_task('FORUM_WIKI_VIEW');
+            $_V->execute('Wiki->site_view', $req);
+            return;
+        },
     );
 }
 

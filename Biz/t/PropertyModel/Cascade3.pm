@@ -9,12 +9,12 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	table_name => 't_cascade3_t',
-	columns => {
-	    k1 => ['Cascade2.k1', 'PRIMARY_KEY'],
-	    k2 => ['Cascade2.k2', 'PRIMARY_KEY'],
-	    k3 => ['Integer', 'PRIMARY_KEY'],
-	},
+        table_name => 't_cascade3_t',
+        columns => {
+            k1 => ['Cascade2.k1', 'PRIMARY_KEY'],
+            k2 => ['Cascade2.k2', 'PRIMARY_KEY'],
+            k3 => ['Integer', 'PRIMARY_KEY'],
+        },
     });
 }
 

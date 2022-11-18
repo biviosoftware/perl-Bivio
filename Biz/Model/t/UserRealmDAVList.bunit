@@ -5,28 +5,28 @@ req()->set_user('btest_read');
 [
     load_all => [
        [{
-	   realm_type => 'USER',
-	   path_info => '/',
+           realm_type => 'USER',
+           path_info => '/',
        }] => [{
-	   'RealmOwner.name' => '/',
+           'RealmOwner.name' => '/',
        }],
     ],
     dav_propfind_children => [
-	[] => [[{
-	    uri => 'btest_read',
-	}]],
+        [] => [[{
+            uri => 'btest_read',
+        }]],
     ],
     load_all => [
        [{
-	   realm_type => 'FORUM',
-	   path_info => '/',
+           realm_type => 'FORUM',
+           path_info => '/',
        }] => [{
-	   'RealmOwner.name' => '/',
+           'RealmOwner.name' => '/',
        }],
     ],
     dav_propfind_children => [
-	[] => [[map(+{
-	    uri => $_,
-	}, qw(fourem fourem-sub1 fourem-sub1-1 fourem-sub2 site-admin))]],
+        [] => [[map(+{
+            uri => $_,
+        }, qw(fourem fourem-sub1 fourem-sub1-1 fourem-sub2 site-admin))]],
     ],
 ];

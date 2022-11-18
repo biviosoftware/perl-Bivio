@@ -23,7 +23,7 @@ commit();
 req()->set_user(undef);
 options({
     compute_params => sub {
-	my($case, $params) = @_;
+        my($case, $params) = @_;
         if (ref($params->[0]) eq 'HASH') {
             req()->put(%{shift(@$params)});
         }
@@ -34,38 +34,38 @@ options({
                 return [req()];
             }
         }
-	return [req(), undef, req('auth_id'), @$params];
+        return [req(), undef, req('auth_id'), @$params];
     },
     compute_return => sub {
-	return [req('reply')->get_output];
+        return [req('reply')->get_output];
     },
 });
 [
     class() => [
-	execute_private => [
-	    '/ARF/0' => '/ARF/0',
-	    '/ARF' => MODEL_NOT_FOUND(),
-	],
-	access_controlled_execute => [
-	    '/ARF/0' => FORBIDDEN(),
-	    '/ARF.txt' => '/Public/ARF.txt',
+        execute_private => [
+            '/ARF/0' => '/ARF/0',
+            '/ARF' => MODEL_NOT_FOUND(),
+        ],
+        access_controlled_execute => [
+            '/ARF/0' => FORBIDDEN(),
+            '/ARF.txt' => '/Public/ARF.txt',
             'A.eml' => '/Public/A.eml',
             '/Archived/A;1.eml' => FORBIDDEN(),
-	],
-	{
-	    method => 'execute_show_original',
+        ],
+        {
+            method => 'execute_show_original',
             compute_return => sub {
                 return [req('reply')->get_output_type,
                         req('reply')->get_output,
                         req('Model.RealmFile')->get_content_type];
             },
-	} => [
+        } => [
             '/A.eml' => ['text/plain', '/Public/A.eml', 'message/rfc822'],
         ],
-	unauth_execute => [
-	    ['/ARF/0'] => '/ARF/0',
-	    ['/Some/path', '/ARF/0'] => '/ARF/0',
-	    ['/ARF/0', '/not_found'] => MODEL_NOT_FOUND(),
+        unauth_execute => [
+            ['/ARF/0'] => '/ARF/0',
+            ['/Some/path', '/ARF/0'] => '/ARF/0',
+            ['/ARF/0', '/not_found'] => MODEL_NOT_FOUND(),
             # These tests must be last
             [{
                 path_info =>'/ARF/0',
@@ -75,6 +75,6 @@ options({
                 path_info =>'/ARF/0',
                 r => class('Bivio::Biz::Action::t::Mock::Reply')->new({Range => 'bytes=2-'}),
             }] => 'RF/0',
-	],
+        ],
     ],
 ];

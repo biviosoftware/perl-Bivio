@@ -2,19 +2,19 @@
 # $Id$
 [
     class() => [
-	sub {
-	    config({
-		'Bivio::Util::RealmUser' => {
-		    audit_map => [
-			demo => [
-			    ADMINISTRATOR => [
-				[guest => [qw(ADMINISTRATOR MEMBER)]],
-			    ],
-			],	
-		    ],
-		},
-	    });
-	    return b_die('did not die');
-	} => qr{too many main roles in},
+        sub {
+            config({
+                'Bivio::Util::RealmUser' => {
+                    audit_map => [
+                        demo => [
+                            ADMINISTRATOR => [
+                                [guest => [qw(ADMINISTRATOR MEMBER)]],
+                            ],
+                        ],        
+                    ],
+                },
+            });
+            return b_die('did not die');
+        } => qr{too many main roles in},
     ],
 ];

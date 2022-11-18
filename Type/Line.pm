@@ -8,7 +8,7 @@ use Bivio::Base 'Type.String';
 sub from_literal {
     my($proto, $value) = @_;
     $value = ${$proto->canonicalize_charset($value)}
-	if defined($value);
+        if defined($value);
     return $proto->SUPER::from_literal($value);
 }
 

@@ -8,19 +8,19 @@ req()->put(font_with_style => 1); #suppress <font> tags in rendered output
 Widget();
 [
     [{
-	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
-	model => 'BlogCreateForm',
-	field => 'content',
-	rows => 2,
-	cols => 60,
-	FOO => 'bar',
+        form_model => ['Bivio::Biz::Model::BlogCreateForm'],
+        model => 'BlogCreateForm',
+        field => 'content',
+        rows => 2,
+        cols => 60,
+        FOO => 'bar',
     }] => qq(<textarea cols="60" foo="bar" rows="2" name="$name"></textarea>),
     [{
-    	form_model => ['Bivio::Biz::Model::BlogCreateForm'],
-    	model => 'BlogCreateForm',
-    	field => 'content',
-    	rows => 5,
-    	cols => 20,
-	readonly => 1,
+            form_model => ['Bivio::Biz::Model::BlogCreateForm'],
+            model => 'BlogCreateForm',
+            field => 'content',
+            rows => 5,
+            cols => 20,
+        readonly => 1,
     }] => qq(<textarea cols="20" readonly="readonly" rows="5" name="$name"></textarea>),
 ];

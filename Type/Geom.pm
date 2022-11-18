@@ -24,13 +24,13 @@ sub as_string {
 sub from_literal {
     my($proto, $value) = @_;
     return (undef, undef)
-	unless $value;
+        unless $value;
     my($srid, $type, $wkt) = $value =~ /^SRID=(\d+);([a-z]+)\((.+)\)$/is;
     return (undef, $_TE->SYNTAX_ERROR)
         unless $srid;
     my($e) = $proto->validate_wkt($wkt);
     return (undef, $e)
-	if $e;
+        if $e;
     return (undef, $_TE->NOT_FOUND)
         unless $proto->SRID eq $srid;
     return (undef, $_TE->UNSUPPORTED_TYPE)
@@ -50,15 +50,15 @@ sub from_sql_value {
 sub new {
     my($proto, $wkt, $type, $srid) = @_;
     return undef
-	unless defined($wkt);
+        unless defined($wkt);
     my($self) = $proto->SUPER::new;
     $self->[$_IDI] = {
-	@{$self->map_together(
-	    sub {return (lc($_[0]), _convert($self, @_))},
-	    [qw(TYPE SRID)],
-	    [$type, $srid],
-	)},
-	wkt => $wkt,
+        @{$self->map_together(
+            sub {return (lc($_[0]), _convert($self, @_))},
+            [qw(TYPE SRID)],
+            [$type, $srid],
+        )},
+        wkt => $wkt,
     };
     return $self;
 }
@@ -66,10 +66,10 @@ sub new {
 sub to_sql_param {
     my($proto, $value) = @_;
     return undef
-	unless $value;
+        unless $value;
     my($fields) = $value->[$_IDI];
     return 'SRID=' . $fields->{srid} . ';' . $fields->{type}
-	. '(' . $fields->{wkt} . ')';
+        . '(' . $fields->{wkt} . ')';
 }
 
 sub to_sql_value {

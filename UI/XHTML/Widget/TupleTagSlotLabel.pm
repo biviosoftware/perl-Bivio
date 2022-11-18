@@ -10,13 +10,13 @@ my($_CB) = __PACKAGE__->use('XHTMLWidget.ControlBase');
 sub initialize {
     my($self) = @_;
     $self->initialize_attr(
-	label => After(
-	    String(vs_form_method_call($self, 'tuple_tag_slot_label')),
-	    ':',
-	),
+        label => After(
+            String(vs_form_method_call($self, 'tuple_tag_slot_label')),
+            ':',
+        ),
     );
     $self->initialize_attr(
-	row_control => vs_form_method_call($self, 'tuple_tag_slot_label'));
+        row_control => vs_form_method_call($self, 'tuple_tag_slot_label'));
     return shift->SUPER::initialize(@_);
 }
 

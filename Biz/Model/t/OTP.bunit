@@ -6,30 +6,30 @@ create_user('x' . random_string())->get('realm_id');
     create => [
         [{
             user_id => req('auth_user_id'),
-	    otp_md5 => '0F31CF4D32A97E42',
-	    seed => 'petshop',
+            otp_md5 => '0F31CF4D32A97E42',
+            seed => 'petshop',
             sequence => '498',
-	}] => not_die(),
+        }] => not_die(),
     ],
     verify => [
         ['TOG CANE FACE GIFT TIRE LEEK'] => 1,
     ],
     load => [
         [] => [{
-	    otp_md5 => '414C61F2C59ECB58',
-	    seed => 'petshop',
+            otp_md5 => '414C61F2C59ECB58',
+            seed => 'petshop',
             sequence => '497',
-	}],
+        }],
     ],
     verify => [
         ['TOG CANE FACE GIFT TIRE LEEK'] => 0,
     ],
     load => [
         [] => [{
-	    otp_md5 => '414C61F2C59ECB58',
-	    seed => 'petshop',
+            otp_md5 => '414C61F2C59ECB58',
+            seed => 'petshop',
             sequence => '497',
-	}],
+        }],
     ],
 ];
 

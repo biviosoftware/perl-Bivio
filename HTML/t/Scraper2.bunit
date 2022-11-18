@@ -2,23 +2,23 @@
 # $Id$
 config({
     'Bivio::Test::Language::HTTP' => {
-	home_page_uri => 'http://petshop.bivio.biz',
+        home_page_uri => 'http://petshop.bivio.biz',
     },
 });
 [
     map(
-	{
-	    my($expect) = $_;
-	    my($tmp) = tmp_dir();
-	    sub {
-		class('Bivio::HTML::t::Scraper::T1')->new($expect ? $tmp : ());
-	    } => [
-		 login => sub {
-		     assert_equals($expect, -f "$tmp/login.html" || 0);
-		     return 1;
-		 }
-	    ];
-	}
-	0 .. 1,
+        {
+            my($expect) = $_;
+            my($tmp) = tmp_dir();
+            sub {
+                class('Bivio::HTML::t::Scraper::T1')->new($expect ? $tmp : ());
+            } => [
+                 login => sub {
+                     assert_equals($expect, -f "$tmp/login.html" || 0);
+                     return 1;
+                 }
+            ];
+        }
+        0 .. 1,
     ),
 ];

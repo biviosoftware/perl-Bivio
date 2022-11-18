@@ -18,7 +18,7 @@ sub new {
 #TODO: assumes widget is Tag baseclass
     my($edit) = $values->[0];
     $edit->put(class => 'form-control')
-	unless $edit->isa('Bivio::UI::HTML::Widget::File');
+        unless $edit->isa('Bivio::UI::HTML::Widget::File');
     return $self->put(values => $values);
 }
 

@@ -49,25 +49,25 @@ sub die_to_http_code {
     # If I<die> is C<undef>, returns C<$_AC::OK>.
     my($proto, $die, $r) = @_;
     return $_AC->OK
-	unless defined($die);
+        unless defined($die);
     $die = $die->get('code')
-	if $_D->is_blesser_of($die);
+        if $_D->is_blesser_of($die);
     return $_AC->OK
-	unless defined($die);
+        unless defined($die);
     %_DIE_TO_HTTP_CODE = (
-	# Keep in synch with HTTP::Dispatcher
-	$_DC->FORBIDDEN => $_AC->FORBIDDEN,
-	$_DC->NOT_FOUND => $_AC->NOT_FOUND,
-	$_DC->MODEL_NOT_FOUND => $_AC->NOT_FOUND,
-	$_DC->CLIENT_REDIRECT_TASK => $_AC->OK,
-	$_DC->CORRUPT_QUERY => $_AC->BAD_REQUEST,
-	$_DC->CORRUPT_FORM => $_AC->BAD_REQUEST,
-	$_DC->INVALID_OP => $_AC->BAD_REQUEST,
-	$_DC->INPUT_TOO_LARGE => $_AC->HTTP_REQUEST_ENTITY_TOO_LARGE,
-	$_DC->CLIENT_ERROR => $_AC->HTTP_SERVICE_UNAVAILABLE,
+        # Keep in synch with HTTP::Dispatcher
+        $_DC->FORBIDDEN => $_AC->FORBIDDEN,
+        $_DC->NOT_FOUND => $_AC->NOT_FOUND,
+        $_DC->MODEL_NOT_FOUND => $_AC->NOT_FOUND,
+        $_DC->CLIENT_REDIRECT_TASK => $_AC->OK,
+        $_DC->CORRUPT_QUERY => $_AC->BAD_REQUEST,
+        $_DC->CORRUPT_FORM => $_AC->BAD_REQUEST,
+        $_DC->INVALID_OP => $_AC->BAD_REQUEST,
+        $_DC->INPUT_TOO_LARGE => $_AC->HTTP_REQUEST_ENTITY_TOO_LARGE,
+        $_DC->CLIENT_ERROR => $_AC->HTTP_SERVICE_UNAVAILABLE,
     ) unless %_DIE_TO_HTTP_CODE;
     return _error($proto, $_DIE_TO_HTTP_CODE{$die}, $r)
-	if defined($_DIE_TO_HTTP_CODE{$die});
+        if defined($_DIE_TO_HTTP_CODE{$die});
     # The rest get mapped to SERVER_ERROR
     b_warn($die, ": unknown $_DC")
         unless $_DC->is_blesser_of($die);
@@ -90,8 +90,8 @@ sub new {
     # Creates a new Reply type which uses the specified Apache::Request for
     # output operations.
     return shift->SUPER::new->put(
-	output_type => 'text/html',
-	r => shift,
+        output_type => 'text/html',
+        r => shift,
     );
 }
 
@@ -105,20 +105,20 @@ sub send {
     my($is_scalar) = ref($o) eq 'SCALAR';
     die('no reply generated, missing UI item on Task: ',
         $req->get('task_id')->get_name)
-	unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::Handle');
+        unless $is_scalar || ref($o) eq 'GLOB' || UNIVERSAL::isa($o, 'IO::Handle');
     my($size) = $is_scalar ? length($$o) : -s $o;
     if ($is_scalar) {
-	# Don't allow caching of dynamically generated replies, because
-	# we don't know the contents (typically from the database)
-	# This isn't *really* private, i.e. not setting Pragma: no-cache.
-	# This pragma screws up Netscape on animated gifs.
-	# Don't set it if someone else has already set Cache-Control
-	$self->set_cache_private
-	    unless $self->unsafe_get_header('Cache-Control');
+        # Don't allow caching of dynamically generated replies, because
+        # we don't know the contents (typically from the database)
+        # This isn't *really* private, i.e. not setting Pragma: no-cache.
+        # This pragma screws up Netscape on animated gifs.
+        # Don't set it if someone else has already set Cache-Control
+        $self->set_cache_private
+            unless $self->unsafe_get_header('Cache-Control');
     }
     else {
-	$self->set_last_modified((stat($o))[9])
-	    unless $self->unsafe_get_header('Last-Modified');
+        $self->set_last_modified((stat($o))[9])
+            unless $self->unsafe_get_header('Last-Modified');
     }
     # Don't keep the connection open on normal replies
     $self->send_append_header($r, 'Connection', 'close');
@@ -128,23 +128,23 @@ sub send {
     _send_http_header($self, $req, $r, $self->get_or_default('status', $_AC->HTTP_OK));
 
     Bivio::Die->eval(sub {
-	# M_HEAD not defined, so can't use method_number12
-	if (uc($r->method) eq 'HEAD') {
-	    # No body, just header
-	}
-	elsif ($is_scalar) {
-	    $r->print($$o);
-	    _trace($o) if $_TRACE;
-	}
-	else {
-	    $r->send_fd($o, $size);
-	    close($o);
-	}
+        # M_HEAD not defined, so can't use method_number12
+        if (uc($r->method) eq 'HEAD') {
+            # No body, just header
+        }
+        elsif ($is_scalar) {
+            $r->print($$o);
+            _trace($o) if $_TRACE;
+        }
+        else {
+            $r->send_fd($o, $size);
+            close($o);
+        }
     });
     if ($@) {
-	die $@
-	    unless ref($@) eq 'APR::Error'
-		&& APR::Status::is_ECONNABORTED($@);
+        die $@
+            unless ref($@) eq 'APR::Error'
+                && APR::Status::is_ECONNABORTED($@);
     }
     # don't let any more data be sent.  Don't clear early in case
     # there is an error and we get called back in die_to_http_code
@@ -162,12 +162,12 @@ sub send_append_header {
 sub set_cache_max_age {
     my($self, $max_age, $req, $always_cache) = @_;
     unless ($always_cache) {
-	return $self
-	    unless b_use('UI.Facade')
-		->get_from_source($req)->get('want_local_file_cache');
+        return $self
+            unless b_use('UI.Facade')
+                ->get_from_source($req)->get('want_local_file_cache');
     }
     return $self
-	->set_header('Cache-Control', "max-age=$max_age")
+        ->set_header('Cache-Control', "max-age=$max_age")
         ->set_header(Expires => $_DT->rfc822($_DT->add_seconds($_DT->now, $max_age)));
 }
 
@@ -199,17 +199,17 @@ sub set_output {
     # I<file> or I<value> will be owned by this method.
     my($self, $value) = @_;
     die('too many calls to set_output')
-	if $self->has_keys('output');
+        if $self->has_keys('output');
     die('not an IO::Handle, GLOB, or SCALAR reference')
-	unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
-	    || UNIVERSAL::isa($value, 'IO::Handle');
+        unless ref($value) eq 'SCALAR' || ref($value) eq 'GLOB'
+            || UNIVERSAL::isa($value, 'IO::Handle');
     return shift->SUPER::set_output(@_);
 }
 
 sub _cookie_check {
     my($self, $req, $r) = @_;
     $self->set_cache_private
-	if $req->get('cookie')->header_out($req, $r);
+        if $req->get('cookie')->header_out($req, $r);
     return;
 }
 
@@ -223,16 +223,16 @@ sub _error {
 #      probably using a newer apache.  $^V was only defined after 5.005,
 #      so this check is good enough.
     return $status
-	if defined($^V)
-	    || !exists($ENV{MOD_PERL})
-	    || $status == $_AC->OK;
+        if defined($^V)
+            || !exists($ENV{MOD_PERL})
+            || $status == $_AC->OK;
     $r->content_type('text/html');
     _send_http_header($proto, undef, $r, $status);
     # make it look like apache's redirect
     my($uri) = $r->uri;
     # Ignore HEAD.  There was an error, give the whole body
     if ($status == $_AC->NOT_FOUND) {
-	$r->print(<<"EOF");
+        $r->print(<<"EOF");
 $_DOCTYPE_HEAD
 <title>404 Not Found</title>
 </head><body>
@@ -242,7 +242,7 @@ $_DOCTYPE_HEAD
 EOF
     }
     elsif ($status == $_AC->FORBIDDEN) {
-	$r->print(<<"EOF");
+        $r->print(<<"EOF");
 $_DOCTYPE_HEAD
 <title>403 Forbidden</title>
 </head><body>
@@ -253,7 +253,7 @@ on this server.</p>
 EOF
     }
     else {
-	$r->print(<<"EOF");
+        $r->print(<<"EOF");
 $_DOCTYPE_HEAD
 <title>500 Internal Server Error</title>
 </head><body>
@@ -277,19 +277,19 @@ sub _send_http_header {
     my($self, $req, $r, $status) = @_;
     $r->status($status);
     if (ref($self) && $req) {
-	_cookie_check($self, $req, $r);
-	my($h) = $self->unsafe_get('headers');
-	if ($h) {
-	    foreach my $k (sort(keys(%$h))) {
-		$self->send_append_header($r, $k, $h->{$k});
-	    }
-	}
-	_trace($self->unsafe_get('status'), ' ', $h) if $_TRACE;
+        _cookie_check($self, $req, $r);
+        my($h) = $self->unsafe_get('headers');
+        if ($h) {
+            foreach my $k (sort(keys(%$h))) {
+                $self->send_append_header($r, $k, $h->{$k});
+            }
+        }
+        _trace($self->unsafe_get('status'), ' ', $h) if $_TRACE;
     }
     # Turn off KeepAlive if there are jobs.  This is because IE doesn't
     # cycle connections.  It goes back to exactly the same one.
     $self->send_append_header($r, 'Connection', 'close')
-	unless b_use('AgentJob.Dispatcher')->queue_is_empty;
+        unless b_use('AgentJob.Dispatcher')->queue_is_empty;
     $r->send_http_header;
     return;
 }

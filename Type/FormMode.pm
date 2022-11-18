@@ -9,8 +9,8 @@ __PACKAGE__->compile_with_numbers([qw(EDIT CREATE)]);
 sub setup_by_list_this {
     my($proto, $list, $detail_name) = @_;
     my($self) = $proto->from_name(
-	$list->unsafe_load_this($list->parse_query_from_request)
-	    ? ('EDIT', $list->get_model($detail_name))[0] : 'CREATE',
+        $list->unsafe_load_this($list->parse_query_from_request)
+            ? ('EDIT', $list->get_model($detail_name))[0] : 'CREATE',
     );
     $self->execute($list->req);
     return $self;

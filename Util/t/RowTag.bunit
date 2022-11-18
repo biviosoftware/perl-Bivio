@@ -4,7 +4,7 @@ ShellUtil();
 [
     [qw(replace_value ERROR_DETAIL hello)] => not_die(),
     [qw(list ERROR_DETAIL)]
-	=> [IO_Ref()->to_string({ERROR_DETAIL => 'hello'})],
+        => [IO_Ref()->to_string({ERROR_DETAIL => 'hello'})],
     [qw(replace_value ERROR_DETAIL)] => not_die(),
     list => qr{'ERROR_DETAIL' => undef.*'RELATED_ID' => undef}s,
 ];

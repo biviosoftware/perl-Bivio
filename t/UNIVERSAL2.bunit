@@ -9,84 +9,84 @@ my($do_by_two) = 0;
 my($clone);
 [
     class() => [
-	max_number => [
-	    [] => [undef],
-	    [1] => 1,
-	    [1, 2] => 2,
-	],
-	{
-	    method => 'do_by_two',
-	    compute_return => sub {[$do_by_two]},
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		return [sub {
-		    my($x, $y) = @_;
-		    return 0
-			unless $x;
-	            $do_by_two = $y;
-		    return 1;
-		}, [@$params]];
-	    }
-	} => [
-	    [1, 'a'] => 'a',
-	    [1, 'a', 0, 'b'] => 'a',
-	    [1, 'a', 1, 'b'] => 'b',
-	],
-	map_together => [
-	    [sub {(shift(@_) || '') . shift(@_)}, [qw(a b)], [qw(1 2 3)]]
-		=> [[qw(a1 b2 3)]],
-	],
-	list_if_value => [
-	    [k1 => 1, k2 => undef] => [k1 => 1],
-	],
-	req => [
-	    [] => [req()],
-	    is_production => 0,
-	],
-	iterate_reduce => [
-	    [sub {
-		 my($v1, $v2) = @_;
-		 return $v1 * $v2;
-	     }, [qw(1 2 3 4 5)]] => 120,
-	    [\&_reverse_join, [qw(a b c d e)]] => 'edcba',
-	    [\&_reverse_join, []] => [undef],
-	    [\&_reverse_join, ['x']] => 'x',
-	    [\&_reverse_join, ['y', 'x'], 'z'] => 'xyz',
-	    [\&_reverse_join, [], 'z'] => 'z',
-	],
-	is_simple_package_name => [
-	    'X' => 1,
-	    class() => 0,
-	    [class()->new] => 0,
-	],
-	type => [
-	    Line => Type_Line(),
-	    [Gender => 'male'] => [Type_Gender()->MALE],
-	],
+        max_number => [
+            [] => [undef],
+            [1] => 1,
+            [1, 2] => 2,
+        ],
+        {
+            method => 'do_by_two',
+            compute_return => sub {[$do_by_two]},
+            compute_params => sub {
+                my(undef, $params) = @_;
+                return [sub {
+                    my($x, $y) = @_;
+                    return 0
+                        unless $x;
+                    $do_by_two = $y;
+                    return 1;
+                }, [@$params]];
+            }
+        } => [
+            [1, 'a'] => 'a',
+            [1, 'a', 0, 'b'] => 'a',
+            [1, 'a', 1, 'b'] => 'b',
+        ],
+        map_together => [
+            [sub {(shift(@_) || '') . shift(@_)}, [qw(a b)], [qw(1 2 3)]]
+                => [[qw(a1 b2 3)]],
+        ],
+        list_if_value => [
+            [k1 => 1, k2 => undef] => [k1 => 1],
+        ],
+        req => [
+            [] => [req()],
+            is_production => 0,
+        ],
+        iterate_reduce => [
+            [sub {
+                 my($v1, $v2) = @_;
+                 return $v1 * $v2;
+             }, [qw(1 2 3 4 5)]] => 120,
+            [\&_reverse_join, [qw(a b c d e)]] => 'edcba',
+            [\&_reverse_join, []] => [undef],
+            [\&_reverse_join, ['x']] => 'x',
+            [\&_reverse_join, ['y', 'x'], 'z'] => 'xyz',
+            [\&_reverse_join, [], 'z'] => 'z',
+        ],
+        is_simple_package_name => [
+            'X' => 1,
+            class() => 0,
+            [class()->new] => 0,
+        ],
+        type => [
+            Line => Type_Line(),
+            [Gender => 'male'] => [Type_Gender()->MALE],
+        ],
     ],
     sub {req()} => [
-	req => [
-	    [] => [req()],
-	    is_production => 0,
-	],
+        req => [
+            [] => [req()],
+            is_production => 0,
+        ],
     ],
     sub {b_use('Bivio::t::UNIVERSAL::Clonee')->new} => [
-	equals => [
-	    sub {[Bivio::t::UNIVERSAL::Clonee->new]} => 0,
-	    sub {[$clone = shift->get('object')->clone]} => sub {
-		my($case) = @_;
-		assert_not_equals($case->get('object') . '', "$clone");
-		return [1];
-	    },
-	],
+        equals => [
+            sub {[Bivio::t::UNIVERSAL::Clonee->new]} => 0,
+            sub {[$clone = shift->get('object')->clone]} => sub {
+                my($case) = @_;
+                assert_not_equals($case->get('object') . '', "$clone");
+                return [1];
+            },
+        ],
     ],
     sub {b_use('Bivio::t::UNIVERSAL::Clonee2')->new} => [
-	clone => [
-	    [] => sub {
-		my($case, $actual) = @_;
-		assert_equals($case->get('object') . '', "$actual->[0]");
-		return 1;
-	    },
-	],
+        clone => [
+            [] => sub {
+                my($case, $actual) = @_;
+                assert_equals($case->get('object') . '', "$actual->[0]");
+                return 1;
+            },
+        ],
     ],
 ];

@@ -2,7 +2,7 @@
 # Copyright (c) 2002-2005 bivio Software, Inc.  All rights reserved.
 config({
     class() => {
-	ignore_model_not_found => 1,
+        ignore_model_not_found => 1,
     },
 });
 Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
@@ -15,12 +15,12 @@ model('EmailAlias')->create({
 [
     [req()] => [
         $test_setup => [
-	    # [From:, To:] => [auth_user, auth_realm]
-	    [qw(demo ignore*demo)] => [qw(demo demo)],
-	    ['Bob <' . email('demo') . '>', 'ignore*demo'] => [qw(demo demo)],
-	    [qw(not_a_user ignore*demo)] => [undef, 'demo'],
-	    [qw(demo ignore*not_a_user)] => [undef, undef, 'ignore_task'],
-	    [qw(demo x)] => [undef, undef, 'ignore_task'],
+            # [From:, To:] => [auth_user, auth_realm]
+            [qw(demo ignore*demo)] => [qw(demo demo)],
+            ['Bob <' . email('demo') . '>', 'ignore*demo'] => [qw(demo demo)],
+            [qw(not_a_user ignore*demo)] => [undef, 'demo'],
+            [qw(demo ignore*not_a_user)] => [undef, undef, 'ignore_task'],
+            [qw(demo x)] => [undef, undef, 'ignore_task'],
             ['demo', $support_email]
                 => [qw(demo site-contact FORUM_MAIL_RECEIVE)],
             ['demo', $support_email, "\nX-Spam-Flag: Y"]

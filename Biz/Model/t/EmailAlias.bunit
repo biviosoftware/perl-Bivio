@@ -4,22 +4,22 @@ PropertyModel();
 req()->initialize_fully;
 [
     {
-	method => 'format_realm_as_incoming',
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->set_realm($params->[0]);
-	    return [];
-	},
+        method => 'format_realm_as_incoming',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->set_realm($params->[0]);
+            return [];
+        },
     } => [
-	demo => qr{btest_demo-alias@},
-	root => qr{btest_root\@},
-	crm_forum => remote_email('crm'),
-	crm_tuple_forum => remote_email('crm_tuple_forum'),
+        demo => qr{btest_demo-alias@},
+        root => qr{btest_root\@},
+        crm_forum => remote_email('crm'),
+        crm_tuple_forum => remote_email('crm_tuple_forum'),
     ],
     incoming_to_outgoing => [
-	email('demo-alias') => 'demo',
-	email('random-alias') => 'random@example.com',
-	$$ . '@in.bunit' => $$ . '@out.bunit',
-	'nomatch@foo.com' => [],
+        email('demo-alias') => 'demo',
+        email('random-alias') => 'random@example.com',
+        $$ . '@in.bunit' => $$ . '@out.bunit',
+        'nomatch@foo.com' => [],
     ],
 ];

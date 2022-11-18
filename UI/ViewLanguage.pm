@@ -55,46 +55,46 @@ sub AUTOLOAD {
 sub call_method {
     my(undef, $autoload, $proto, $args) = @_;
     return $_CL->call_autoload(
-	$autoload,
-	$args,
-	sub {
-	    # Calls method or class contained in I<autoload>.  Using I<proto>
-	    # and passing I<args> as appropriate.
-	    #
-	    # If I<autoload> begins with a capital letter, it is assumed to be
-	    # a class which needs to be loaded via view_class_map.  If
-	    # I<autoload> begins with C<vs_> it is found in the view_shortcuts
-	    # map.  Otherwise, I<autoload> must begin with C<view_>, and is
-	    # called in this module.
-	    my($method, $args2) = @_;
-	    my($view) = _assert_in_eval($autoload);
-	    _die("$method: invalid autoload of private method (spelling error?)")
-		if $proto->is_private_method_name($method);
-	    local($_WIDGET_LABEL) = $method;
-	    my($simple_method, $suffix) = $method =~ /^([A-Z].*?)(?:_(.*))?$/s;
-	    if ($simple_method) {
-		my($map) = $view->ancestral_get('view_class_map', undef);
-		_die("$method: view_class_map() or view_parent() must be called first")
-		    unless $map;
-		my($class) = $_CL->unsafe_map_require($map, $simple_method);
-		return $class->new(@$args2)
-		    if $class;
-	    }
-	    elsif ($method =~ /^view_/) {
-		return $proto->$method(@$args2)
-		    if $proto->can($method);
-	    }
-	    my($vs) = $view->ancestral_get('view_shortcuts', undef);
-	    if ($method =~ /^vs_/) {
-		_die("view_shortcuts() or view_parent() must be called before $method")
-		    unless $vs;
-		_die("$method is not implemented by $vs or its superclass(es)")
-		    unless $vs->can($method);
-		return $vs->$method(@$args2);
-	    }
-	    return ($vs || b_use('UI.ViewShortcutsBase'))
-		->view_autoload($method, \@$args2, $simple_method, $suffix);
-	},
+        $autoload,
+        $args,
+        sub {
+            # Calls method or class contained in I<autoload>.  Using I<proto>
+            # and passing I<args> as appropriate.
+            #
+            # If I<autoload> begins with a capital letter, it is assumed to be
+            # a class which needs to be loaded via view_class_map.  If
+            # I<autoload> begins with C<vs_> it is found in the view_shortcuts
+            # map.  Otherwise, I<autoload> must begin with C<view_>, and is
+            # called in this module.
+            my($method, $args2) = @_;
+            my($view) = _assert_in_eval($autoload);
+            _die("$method: invalid autoload of private method (spelling error?)")
+                if $proto->is_private_method_name($method);
+            local($_WIDGET_LABEL) = $method;
+            my($simple_method, $suffix) = $method =~ /^([A-Z].*?)(?:_(.*))?$/s;
+            if ($simple_method) {
+                my($map) = $view->ancestral_get('view_class_map', undef);
+                _die("$method: view_class_map() or view_parent() must be called first")
+                    unless $map;
+                my($class) = $_CL->unsafe_map_require($map, $simple_method);
+                return $class->new(@$args2)
+                    if $class;
+            }
+            elsif ($method =~ /^view_/) {
+                return $proto->$method(@$args2)
+                    if $proto->can($method);
+            }
+            my($vs) = $view->ancestral_get('view_shortcuts', undef);
+            if ($method =~ /^vs_/) {
+                _die("view_shortcuts() or view_parent() must be called before $method")
+                    unless $vs;
+                _die("$method is not implemented by $vs or its superclass(es)")
+                    unless $vs->can($method);
+                return $vs->$method(@$args2);
+            }
+            return ($vs || b_use('UI.ViewShortcutsBase'))
+                ->view_autoload($method, \@$args2, $simple_method, $suffix);
+        },
     );
 }
 
@@ -107,8 +107,8 @@ sub eval {
     #
     # Compiles I<code> within context of the current view being compiled.
     return b_use('UI.View')->is_blesser_of($value) ? _eval_view($value)
-	: ref($value) eq 'SCALAR' ? _eval_code($value)
-	: _die('eval: invalid argument (not a string_ref or view)');
+        : ref($value) eq 'SCALAR' ? _eval_code($value)
+        : _die('eval: invalid argument (not a string_ref or view)');
 }
 
 sub get_b_widget_label_and_clear {
@@ -170,7 +170,7 @@ sub view_main {
     #
     # A view must either have a L<view_parent|"view_parent"> or a view_main.
     _put(view_main => _assert_value(
-	'view_main', $widget, qw(Bivio::UI::Widget execute render)));
+        'view_main', $widget, qw(Bivio::UI::Widget execute render)));
     return;
 }
 
@@ -186,7 +186,7 @@ sub view_parent {
     #
     # A view must either have a L<view_main|"view_main"> or a view_parent.
     _assert_in_eval('view_parent')->internal_set_parent(
-	_assert_value('view_parent', $view_name));
+        _assert_value('view_parent', $view_name));
     return;
 }
 
@@ -194,7 +194,7 @@ sub view_pre_execute {
     my($proto, $code) = _args(@_);
     # Code to be executed prior to rendering the view.
     _die('view_pre_execute must be a code_ref')
-	unless ref($code) eq 'CODE';
+        unless ref($code) eq 'CODE';
     _put(view_pre_execute => $code);
     return;
 }
@@ -223,7 +223,7 @@ sub view_shortcuts {
     # begin with C<view_>), or names of widgets (which are always begin with an upper
     # case letter and are simple class names).
     _put(view_shortcuts => _assert_value(
-	'view_shortcuts', $class_name, 'Bivio::UI::ViewShortcutsBase'));
+        'view_shortcuts', $class_name, 'Bivio::UI::ViewShortcutsBase'));
     return;
 }
 
@@ -248,8 +248,8 @@ sub view_widget_value {
     # attributes from their children at run-time.
     my($view) = _assert_in_eval('view_widget_value');
     _die($attr.': attribute not found; view or its parents must declare'
-	    .' before use')
-	    unless $view->ancestral_has_keys($attr);
+            .' before use')
+            unless $view->ancestral_has_keys($attr);
     return [['->get_request'], 'Bivio::UI::View', '->ancestral_get', $attr];
 }
 
@@ -264,7 +264,7 @@ sub _assert_in_eval {
     # Returns the current view or terminates.
     my($res) = _in_eval();
     return $res
-	if $res;
+        if $res;
     $op ||= 'eval';
     $op =~ s/.*:://;
     b_die($op, ': operation only allowed in views');
@@ -276,19 +276,19 @@ sub _assert_value {
     # Asserts value is defined, isa class, and implements methods.
     _die("$name() not supplied a value") unless defined($value);
     return $value
-	unless $class;
+        unless $class;
 
     # Load class and value class unless is ref (loaded)
     unless (ref($value)) {
-	$class = b_use($class);
-	$value = b_use($value);
+        $class = b_use($class);
+        $value = b_use($value);
     }
     _die(": $name()'s value not a $class")
-	unless UNIVERSAL::isa($value, $class);
+        unless UNIVERSAL::isa($value, $class);
 
     foreach my $m (@methods) {
-	_die($value, qq{: $name() does not implement $m})
-	    unless $value->can($m);
+        _die($value, qq{: $name() does not implement $m})
+            unless $value->can($m);
     }
     return $value;
 }
@@ -311,14 +311,14 @@ sub _eval_view {
     my($view) = @_;
     # Does view version of eval.
     $view->compile_die('view already compiled!')
-	if $view->is_read_only;
+        if $view->is_read_only;
     local($_VIEW_IN_EVAL) = $view;
     return Bivio::Die->catch(sub {
-	my($code) = $view->compile;
-	_eval_code($code)
-	    if ref($code) eq 'SCALAR';
-	_initialize($view);
-	return;
+        my($code) = $view->compile;
+        _eval_code($code)
+            if ref($code) eq 'SCALAR';
+        _initialize($view);
+        return;
     });
 }
 
@@ -332,11 +332,11 @@ sub _initialize {
     # with no uses.
     my($values) = $view->get_shallow_copy;
     while (my($k, $v) = each(%$values)) {
-	$v->initialize_with_parent(undef)
-	    if __PACKAGE__->is_blesser_of($v, 'Bivio::UI::Widget');
+        $v->initialize_with_parent(undef)
+            if __PACKAGE__->is_blesser_of($v, 'Bivio::UI::Widget');
     }
     _die('view_main or view_parent must be specified')
-	unless $view->has_keys('view_main') || $view->has_keys('view_parent');
+        unless $view->has_keys('view_main') || $view->has_keys('view_parent');
 #TODO: Traverse parents to see if all attributes defined
     $view->put(view_is_executable => 1);
     $view->set_read_only;
@@ -350,8 +350,8 @@ sub _put {
     # We allow an attribute to be view_declared (undef) and then
     # assigned later in the view.
     _die($name, ': view attribute already defined in this view',
-	 ' (no overrides within view)')
-	unless $overwrite || !defined($view->unsafe_get($name));
+         ' (no overrides within view)')
+        unless $overwrite || !defined($view->unsafe_get($name));
     $view->put($name => $value);
     return;
 }
@@ -360,24 +360,24 @@ sub _validated_put {
     my($args, $overwrite) = @_;
     my($proto, @args) = _args(@$args);
     _die('view_put not supplied any arguments')
-	unless @args > 1;
+        unless @args > 1;
     _die('view_put not supplied an even number of arguments')
-	    if @args % 2 != 0;
+            if @args % 2 != 0;
     $proto->map_by_two(sub {
-	my($n, $v) = @_;
-	# The syntax is very rigid to allow for expansion
-	_die($n, ': attr_name is not a perl identifier')
-	    if $n =~ /\W/;
-	_die($n, ': attr_name does not begin with a letter')
-	    unless $n =~ /^[a-z]/;
-	_die($n, ': attr_name is not all lower case')
-	    if $n =~ /[A-Z]/;
-	_die($n, ': attr_name may not begin with view_')
-	    if $n =~ /^view_/;
-	_die($n, ': is a reserved attribute name')
-	    if $n eq 'parent';
-	_put($n, $v, $overwrite);
-	return;
+        my($n, $v) = @_;
+        # The syntax is very rigid to allow for expansion
+        _die($n, ': attr_name is not a perl identifier')
+            if $n =~ /\W/;
+        _die($n, ': attr_name does not begin with a letter')
+            unless $n =~ /^[a-z]/;
+        _die($n, ': attr_name is not all lower case')
+            if $n =~ /[A-Z]/;
+        _die($n, ': attr_name may not begin with view_')
+            if $n =~ /^view_/;
+        _die($n, ': is a reserved attribute name')
+            if $n eq 'parent';
+        _put($n, $v, $overwrite);
+        return;
     }, \@args);
     return;
 }

@@ -10,20 +10,20 @@ b_use('XHTMLWidget.MainErrors')->register_handler(__PACKAGE__);
 
 sub error_list_widget {
     return WithModel(WikiErrorList => Join([
-	Join([
-	    String(['path']),
-	    Join([
-		', line ',
-		String(['line_num']),
-	    ], {control => ['line_num']}),
-	    ': ',
-	], {control => ['path']}),
-	Join([
-	    String(['entity']),
-	    ': ',
-	], {control => ['entity']}),
-	String(['message']),
-	LineBreak(),
+        Join([
+            String(['path']),
+            Join([
+                ', line ',
+                String(['line_num']),
+            ], {control => ['line_num']}),
+            ': ',
+        ], {control => ['path']}),
+        Join([
+            String(['entity']),
+            ': ',
+        ], {control => ['entity']}),
+        String(['message']),
+        LineBreak(),
     ]));
 }
 
@@ -31,12 +31,12 @@ sub handle_render_main_errors {
     my($self) = shift;
     my($source) = @_;
     return
-	unless my $wv = $_WV->unsafe_self_from_req($source->req);
+        unless my $wv = $_WV->unsafe_self_from_req($source->req);
     Join([
-	DIV_b_title(vs_text_as_prose('WikiValidator.title')),
-	$self->error_list_widget,
+        DIV_b_title(vs_text_as_prose('WikiValidator.title')),
+        $self->error_list_widget,
     ])->initialize_and_render(@_)
-	if $wv->unsafe_load_error_list;
+        if $wv->unsafe_load_error_list;
     return;
 }
 

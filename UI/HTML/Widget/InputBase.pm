@@ -16,17 +16,17 @@ sub accepts_attribute {
 sub control_on_render {
     my($self, $source, $buffer) = @_;
     $_C->if_version(
-	6 => sub {
-	    $self->SUPER::control_on_render($source, $buffer);
-	    return;
-	},
-	sub {
-	    my($p, $s) = $_F->format_html('input_field', $source->req);
-	    $$buffer .= $p;
-	    $self->SUPER::control_on_render($source, $buffer);
-	    $$buffer .= $s;
-	    return;
-	}
+        6 => sub {
+            $self->SUPER::control_on_render($source, $buffer);
+            return;
+        },
+        sub {
+            my($p, $s) = $_F->format_html('input_field', $source->req);
+            $$buffer .= $p;
+            $self->SUPER::control_on_render($source, $buffer);
+            $$buffer .= $s;
+            return;
+        }
     );
     $self->internal_input_base_post_render($source, $buffer);
     return;
@@ -49,18 +49,18 @@ sub internal_as_string {
 
 sub internal_attributes {
     return $_VS->vs_html_attrs_merge([qw(
-	event_handler
-	field
-	form_model
-	format
-	is_read_only
+        event_handler
+        field
+        form_model
+        format
+        is_read_only
     )]);
 }
 
 sub internal_input_base_post_render {
     my($self, $source, $buffer) = @_;
     if (my $h = $source->req->unsafe_get("$self")) {
-	$h->render($source, $buffer);
+        $h->render($source, $buffer);
     }
     return;
 }
@@ -70,16 +70,16 @@ sub internal_input_base_render_attrs {
     my($req) = $source->get_request;
     $$buffer .= ' name="' . $form->get_field_name_for_html($field) . '"';
     if (my $h = $self->unsafe_resolve_attr('event_handler', $source)) {
-	$req->put("$self" => $h);
-	$$buffer .= ' ' . $h->get_html_field_attributes($field, $source);
+        $req->put("$self" => $h);
+        $$buffer .= ' ' . $h->get_html_field_attributes($field, $source);
     }
     else {
-	# Just in case there was some transient state
-	$req->delete("$self");
+        # Just in case there was some transient state
+        $req->delete("$self");
     }
     $$buffer .= ' disabled="disabled"'
-	if $self->render_simple_attr('is_read_only', $source)
-	|| !$form->is_field_editable($field);
+        if $self->render_simple_attr('is_read_only', $source)
+        || !$form->is_field_editable($field);
     return;
 }
 
@@ -91,10 +91,10 @@ sub internal_tag_render_attrs {
     my($self, $source, $buffer) = @_;
     shift->SUPER::internal_tag_render_attrs(@_);
     $self->internal_input_base_render_attrs(
-	$self->resolve_ancestral_attr('form_model', $source->req),
-	$self->render_simple_attr('field', $source),
-	$source,
-	$buffer,
+        $self->resolve_ancestral_attr('form_model', $source->req),
+        $self->render_simple_attr('field', $source),
+        $source,
+        $buffer,
     );
     return;
 }

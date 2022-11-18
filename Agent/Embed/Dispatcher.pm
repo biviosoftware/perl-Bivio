@@ -14,10 +14,10 @@ sub call_task {
     my($die) = $_SELF->process_request($req, @_);
     $req->internal_set_current;
     $die->throw
-	if $die;
+        if $die;
     return (
-	$req->get('Bivio::Agent::Embed::Reply'),
-	$req->delete('Bivio::Agent::Embed::Reply'),
+        $req->get('Bivio::Agent::Embed::Reply'),
+        $req->delete('Bivio::Agent::Embed::Reply'),
     )[0];
 }
 

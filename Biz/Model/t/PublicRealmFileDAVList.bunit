@@ -11,11 +11,11 @@ model('RealmFile')->create_with_content({
 }, \(''));
 [
     load_dav => [
-	[] => 1,
+        [] => 1,
     ],
     dav_propfind_children => [
-	[] => [[map(+{
-	    uri => $_,
-	}, qw(found))]],
+        [] => [[map(+{
+            uri => $_,
+        }, qw(found))]],
     ],
 ];

@@ -4,9 +4,9 @@ Request();
 req()->set_realm('fourem');
 [
     class() => [
-	from_realm_role_enabled_categories => [
-	    [ShellUtil_RealmRole()->list_enabled_categories]
-		=> [class()->ALL_MEMBERS]
-	],
+        from_realm_role_enabled_categories => [
+            [ShellUtil_RealmRole()->list_enabled_categories]
+                => [class()->ALL_MEMBERS]
+        ],
     ],
 ];

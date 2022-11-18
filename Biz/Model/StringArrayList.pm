@@ -10,10 +10,10 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	$self->field_decl(
-	    primary_key => ['value'],
-	    'String',
-	),
+        $self->field_decl(
+            primary_key => ['value'],
+            'String',
+        ),
     });
 }
 

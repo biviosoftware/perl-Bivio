@@ -5,13 +5,13 @@ my($path, $prefix, $md5) = do('CacheTag.PL');
 [
     from_literal => [
         '' => UNDEF(),
-	$md5 => SYNTAX_ERROR(),
-	$prefix => SYNTAX_ERROR(),
-	substr($prefix . $md5, 1) => SYNTAX_ERROR(),
-	substr($prefix . $md5, 1) . 'g' => SYNTAX_ERROR(),
-	$prefix . $md5 => $prefix . $md5,
+        $md5 => SYNTAX_ERROR(),
+        $prefix => SYNTAX_ERROR(),
+        substr($prefix . $md5, 1) => SYNTAX_ERROR(),
+        substr($prefix . $md5, 1) . 'g' => SYNTAX_ERROR(),
+        $prefix . $md5 => $prefix . $md5,
     ],
     from_local_path => [
-	$path => $prefix . $md5,
+        $path => $prefix . $md5,
     ],
 ];

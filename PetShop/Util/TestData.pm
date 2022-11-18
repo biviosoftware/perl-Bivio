@@ -26,12 +26,12 @@ sub clear_crm_threads {
     my($self) = @_;
     $self->assert_test;
     $self->model('CRMThread')
-	->do_iterate(
-	    sub {
-		shift->cascade_delete;
-		return 1;
-	    },
-	);
+        ->do_iterate(
+            sub {
+                shift->cascade_delete;
+                return 1;
+            },
+        );
     return;
 }
 
@@ -48,29 +48,29 @@ sub init_calendar_btest {
     my($self) = @_;
     $self->initialize_fully;
     $self->new_other('SQL')->map_invoke(
-	create_user_with_account => [qw(
-	    calendar_btest_user
-	    calendar_btest_adm
-	)],
+        create_user_with_account => [qw(
+            calendar_btest_user
+            calendar_btest_adm
+        )],
     );
     _do_calendar_btest(sub {
-	my($name) = @_;
-	$self->req->set_realm(undef);
-	$self->model('ForumForm', {
-	    'RealmOwner.display_name'
-		=> b_use('Type.String')->to_camel_case($name),
-	    'RealmOwner.name' => $name,
-	});
-	$self->model(RealmUserAddForm => {
-	    administrator => 1,
-	    'User.user_id' => $self->unauth_realm_id('calendar_btest_adm'),
-	});
-	$self->model(RealmUserAddForm => {
-	    administrator => 0,
-	    'User.user_id' => $self->unauth_realm_id('calendar_btest_user'),
-	    file_writer => $name =~ /read_only/ ? 0 : 1,
-	}) unless $name =~ /adm_only/;
-	return 1;
+        my($name) = @_;
+        $self->req->set_realm(undef);
+        $self->model('ForumForm', {
+            'RealmOwner.display_name'
+                => b_use('Type.String')->to_camel_case($name),
+            'RealmOwner.name' => $name,
+        });
+        $self->model(RealmUserAddForm => {
+            administrator => 1,
+            'User.user_id' => $self->unauth_realm_id('calendar_btest_adm'),
+        });
+        $self->model(RealmUserAddForm => {
+            administrator => 0,
+            'User.user_id' => $self->unauth_realm_id('calendar_btest_user'),
+            file_writer => $name =~ /read_only/ ? 0 : 1,
+        }) unless $name =~ /adm_only/;
+        return 1;
     });
     return;
 }
@@ -78,19 +78,19 @@ sub init_calendar_btest {
 sub init_mail_references {
     my($self) = @_;
     $self->req->with_realm_and_user(
-	undef,
-	$self->new_other('TestUser')->ADM,
-	sub {
-	    $self->model('ForumForm', {
-		'RealmOwner.display_name' => 'Mail References',
-		'RealmOwner.name' => 'mail_references',
-	    }) unless $self->model('RealmOwner')
-		->unauth_rows_exist({name => 'mail_references'});
-	    $self->new_other('SiteForum')
-		->put(force => 1)
-		->init_files('mail_references');
-	    return;
-	},
+        undef,
+        $self->new_other('TestUser')->ADM,
+        sub {
+            $self->model('ForumForm', {
+                'RealmOwner.display_name' => 'Mail References',
+                'RealmOwner.name' => 'mail_references',
+            }) unless $self->model('RealmOwner')
+                ->unauth_rows_exist({name => 'mail_references'});
+            $self->new_other('SiteForum')
+                ->put(force => 1)
+                ->init_files('mail_references');
+            return;
+        },
     );
     return;
 }
@@ -129,17 +129,17 @@ sub reset_calendar_btest {
     my($self) = @_;
     $self->req->with_realm('calendar_btest_user', sub {
         b_use('Type.TimeZone')->row_tag_replace(
-	    $self->req('auth_user_id'), $self->req);
+            $self->req('auth_user_id'), $self->req);
     });
     return _do_calendar_btest(sub {
-	return $self->req->with_realm(shift, sub {
-	    $self->model('CalendarEvent')->do_iterate(
-	        sub {
-		    shift->cascade_delete;
-		    return 1;
-		},
-	    );
-	    return;
+        return $self->req->with_realm(shift, sub {
+            $self->model('CalendarEvent')->do_iterate(
+                sub {
+                    shift->cascade_delete;
+                    return 1;
+                },
+            );
+            return;
         });
     });
 }
@@ -149,30 +149,30 @@ sub reset_seo_btest {
     $self->initialize_fully;
     my($req) = $self->req;
     $req->with_realm_and_user(
-	undef,
-	$self->new_other('TestUser')->ADM,
-	sub {
-	    $self->model('ForumForm', {
-		'RealmOwner.display_name' => 'SEO Btest',
-		'RealmOwner.name' => 'seo_btest',
-	    }) unless $self->model('RealmOwner')
-		->unauth_rows_exist({name => 'seo_btest'});
-	    $req->set_realm('seo_btest');
-	    $self->model('RealmFile')->create_or_update_with_content({
-		path => '/Public/Wiki/StartPage',
-	    }, \('content does not matter'));
-	    $req->set_realm($_C->get_value('site_realm_name', $req));
-	    # Didn't want to export from SEOPrefixList, because no need except
-	    # for this class (private unless necessary public)
-	    $self->model('RealmFile')->create_or_update_with_content({
-		path => '/Settings/SEOPrefix.csv',
-	    }, <<'EOF');
+        undef,
+        $self->new_other('TestUser')->ADM,
+        sub {
+            $self->model('ForumForm', {
+                'RealmOwner.display_name' => 'SEO Btest',
+                'RealmOwner.name' => 'seo_btest',
+            }) unless $self->model('RealmOwner')
+                ->unauth_rows_exist({name => 'seo_btest'});
+            $req->set_realm('seo_btest');
+            $self->model('RealmFile')->create_or_update_with_content({
+                path => '/Public/Wiki/StartPage',
+            }, \('content does not matter'));
+            $req->set_realm($_C->get_value('site_realm_name', $req));
+            # Didn't want to export from SEOPrefixList, because no need except
+            # for this class (private unless necessary public)
+            $self->model('RealmFile')->create_or_update_with_content({
+                path => '/Settings/SEOPrefix.csv',
+            }, <<'EOF');
 URI,Prefix
 /seo_btest,forum home
 /seo_btest/bp,wiki home
 /seo_btest/bp/StartPage,start page
 EOF
-	},
+        },
     );
     $self->commit_or_rollback;
     return;
@@ -181,9 +181,9 @@ EOF
 sub _do_calendar_btest {
     my($op) = @_;
     foreach my $name (qw(
-	calendar_btest_main
-	calendar_btest_adm_only
-	calendar_btest_other
+        calendar_btest_main
+        calendar_btest_adm_only
+        calendar_btest_other
         calendar_btest_read_only
     )) {
         $op->($name);

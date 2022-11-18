@@ -10,17 +10,17 @@ sub execute {
     $req->assert_test;
     my($q) = $req->get('query');
     if (my $m = delete($q->{form_model})) {
-	$m = Bivio::Biz::Model->get_instance($m);
-	$m->execute($req, {
-	    map(($_ => ($m->get_field_type($_)->from_literal($q->{$_}))[0]),
-		keys(%$q)),
-	});
+        $m = Bivio::Biz::Model->get_instance($m);
+        $m->execute($req, {
+            map(($_ => ($m->get_field_type($_)->from_literal($q->{$_}))[0]),
+                keys(%$q)),
+        });
     }
     elsif (my $u = delete($q->{shell_util})) {
-	Bivio::ShellUtil->new_other($u)->main(split(' ', $q->{command}));
+        Bivio::ShellUtil->new_other($u)->main(split(' ', $q->{command}));
     }
     else {
-	Bivio::Die->die($q, ': invalid query');
+        Bivio::Die->die($q, ': invalid query');
     }
     return;
 }

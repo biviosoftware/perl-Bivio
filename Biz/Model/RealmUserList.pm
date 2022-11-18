@@ -13,16 +13,16 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	can_iterate => 1,
-	order_by => [qw(
+        can_iterate => 1,
+        order_by => [qw(
             RealmOwner.display_name
             RealmUser.role
         )],
-	primary_key => [
-	    [qw(RealmUser.user_id RealmOwner.realm_id)],
-	],
-	other_query_keys => ['roles'],
-	auth_id => ['RealmUser.realm_id'],
+        primary_key => [
+            [qw(RealmUser.user_id RealmOwner.realm_id)],
+        ],
+        other_query_keys => ['roles'],
+        auth_id => ['RealmUser.realm_id'],
     });
 }
 
@@ -31,7 +31,7 @@ sub internal_prepare_statement {
     my($r) = $query->unsafe_get('roles') || [];
     push(@$r, @{$self->internal_get_roles || []});
     $stmt->where($stmt->IN('RealmUser.role', $r))
-	if @$r;
+        if @$r;
     return shift->SUPER::internal_prepare_statement(@_);
 }
 

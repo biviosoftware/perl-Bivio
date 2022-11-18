@@ -20,10 +20,10 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     $$buffer .= '1'
-	if $_S->is_equal(
-	    $self->render_simple_attr('left', $source),
-	    $self->render_simple_attr('right', $source),
-	);
+        if $_S->is_equal(
+            $self->render_simple_attr('left', $source),
+            $self->render_simple_attr('right', $source),
+        );
     return;
 }
 

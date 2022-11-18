@@ -4,10 +4,10 @@ Request();
 req()->set_realm_and_user(qw(fourem demo));
 [
     class() => [
-	xapian_terms_and_postings => [
-	    [model('RealmFile')->create_with_content({
-		path => '/search-realm-file/xapian.html',
-	    }, \(<<'EOF'))],
+        xapian_terms_and_postings => [
+            [model('RealmFile')->create_with_content({
+                path => '/search-realm-file/xapian.html',
+            }, \(<<'EOF'))],
 <html><head><title>
 A Short Title
 </title>
@@ -19,58 +19,58 @@ I have no worries.  unicodechar&#198;
 </html>
 EOF
 
-	    sub {
-		my(undef, $actual) = @_;
-		my($p) = $actual->[0];
-		shift->actual_return([
-		    +{map({
-			my($k, $v) = $_ =~ /^([A-Z])([^A-Z].*)$/;
-			$k ? ($k, $v) : split(/:/, $_, 2);
-		    } @{$p->get('terms')})},
-		    $p->get(qw(postings title excerpt)),
-		]);
-		my($now) = Bivio::Type::DateTime->local_now_as_file_name;
-		return [
-		    {map(ref($_) ? lc(req()->get_widget_value(@$_)) : $_,
-			 XREALMID => ['auth_id'],
-			 XUSERID => ['auth_user_id'],
-			 XSIMPLECLASS => 'realmfile',
-			 XISPUBLIC => 0,
-			 S => 'a short title',
-			 T => 'text/html',
-			 D => substr($now, 0, 8),
-			 M => substr($now, 0, 6),
-			 Y => substr($now, 0, 4),
-			 P => '/search-realm-file/xapian.html',
-		    )},
-		    [qw(
-			search
-			realm
-			file
-			xapian
-			html
+            sub {
+                my(undef, $actual) = @_;
+                my($p) = $actual->[0];
+                shift->actual_return([
+                    +{map({
+                        my($k, $v) = $_ =~ /^([A-Z])([^A-Z].*)$/;
+                        $k ? ($k, $v) : split(/:/, $_, 2);
+                    } @{$p->get('terms')})},
+                    $p->get(qw(postings title excerpt)),
+                ]);
+                my($now) = Bivio::Type::DateTime->local_now_as_file_name;
+                return [
+                    {map(ref($_) ? lc(req()->get_widget_value(@$_)) : $_,
+                         XREALMID => ['auth_id'],
+                         XUSERID => ['auth_user_id'],
+                         XSIMPLECLASS => 'realmfile',
+                         XISPUBLIC => 0,
+                         S => 'a short title',
+                         T => 'text/html',
+                         D => substr($now, 0, 8),
+                         M => substr($now, 0, 6),
+                         Y => substr($now, 0, 4),
+                         P => '/search-realm-file/xapian.html',
+                    )},
+                    [qw(
+                        search
+                        realm
+                        file
+                        xapian
+                        html
                         a
-			short
-			title
-			asterisks
-			f.u.d.
-			is
-			what
-			makes
-			programmers
-			worry
-			so
-			much
-			i
-			have
-			no
-			worries
-			unicodecharae
-		    )],
-		    'A Short Title',
-		    '*asterisks* F.U.D. is what makes programmers worry so much. I have no worries. unicodecharAE',
-		];
-	    },
-	],
+                        short
+                        title
+                        asterisks
+                        f.u.d.
+                        is
+                        what
+                        makes
+                        programmers
+                        worry
+                        so
+                        much
+                        i
+                        have
+                        no
+                        worries
+                        unicodecharae
+                    )],
+                    'A Short Title',
+                    '*asterisks* F.U.D. is what makes programmers worry so much. I have no worries. unicodecharAE',
+                ];
+            },
+        ],
     ],
 ];

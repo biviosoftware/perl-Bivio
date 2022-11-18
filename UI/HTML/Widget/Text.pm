@@ -22,14 +22,14 @@ sub internal_input_base_render_attrs {
     if (!$form->get_field_error($field)
         and my $f = $self->unsafe_resolve_attr('format', $source)
     ) {
-	$f = Bivio::UI::HTML::Format->get_instance($f)
-	    unless ref($f);
-	$v = $f->get_widget_value($form->get($field));
-	$v = Bivio::HTML->escape($v)
-	    unless $f->result_is_html;
+        $f = Bivio::UI::HTML::Format->get_instance($f)
+            unless ref($f);
+        $v = $f->get_widget_value($form->get($field));
+        $v = Bivio::HTML->escape($v)
+            unless $f->result_is_html;
     }
     $v = $form->get_field_as_html($field)
-	unless defined($v);
+        unless defined($v);
     $$buffer .= qq{ value="$v"};
     return;
 }

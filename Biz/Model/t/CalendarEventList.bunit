@@ -7,36 +7,36 @@ req()->set_realm_and_user(qw(fourem btest_admin))
     ->initialize_fully('FORUM_CALENDAR');
 [
     load_all => [
-	[] => [$rows->(qr{^07})],
-	sub {
-	    req()->set_realm('btest_admin');
-	    return [];
-	} => [$rows->(qr{^0[78]})],
+        [] => [$rows->(qr{^07})],
+        sub {
+            req()->set_realm('btest_admin');
+            return [];
+        } => [$rows->(qr{^0[78]})],
     ],
     map({
-	my($user, $any, $fourem_sub2) = @$_;
-	(
-	    load_all => [
-		sub {
-		    req()->set_user($user);
-		    return [];
-		} => not_die(),
-	    ],
-	    can_user_edit_any_realm => $any,
-	    {
-		method => 'can_user_edit_this_realm',
-		compute_params => sub {
-		    my(undef, $params, undef, $object) = @_;
-		    $object->find_row_by('CalendarEvent.realm_id' => realm_id($params->[0]));
-		    return [];
-		},
-	    } => [
-		fourem => 0,
-		'fourem-sub2' => $fourem_sub2,
-	    ],
-	);
+        my($user, $any, $fourem_sub2) = @$_;
+        (
+            load_all => [
+                sub {
+                    req()->set_user($user);
+                    return [];
+                } => not_die(),
+            ],
+            can_user_edit_any_realm => $any,
+            {
+                method => 'can_user_edit_this_realm',
+                compute_params => sub {
+                    my(undef, $params, undef, $object) = @_;
+                    $object->find_row_by('CalendarEvent.realm_id' => realm_id($params->[0]));
+                    return [];
+                },
+            } => [
+                fourem => 0,
+                'fourem-sub2' => $fourem_sub2,
+            ],
+        );
     }
         [qw(btest_admin 1 1)],
-	[qw(btest_read 0 0)],
+        [qw(btest_read 0 0)],
     ),
 ];

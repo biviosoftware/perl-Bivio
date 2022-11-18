@@ -3,16 +3,16 @@
 Type();
 [
     from_literal => [
-	male => 'MALE',
-	female => 'FEMALE',
-	m => 'MALE',
-	f => 'FEMALE',
-	x => NOT_FOUND(),
+        male => 'MALE',
+        female => 'FEMALE',
+        m => 'MALE',
+        f => 'FEMALE',
+        x => NOT_FOUND(),
     ],
     unsafe_from_any => [
-	male => 'MALE',
-	female => 'FEMALE',
-	m => 'MALE',
-	f => 'FEMALE',
+        male => 'MALE',
+        female => 'FEMALE',
+        m => 'MALE',
+        f => 'FEMALE',
     ],
 ];

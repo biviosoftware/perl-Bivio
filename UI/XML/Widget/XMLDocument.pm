@@ -13,7 +13,7 @@ sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
         version => '1.0',
-	encoding => 'utf-8',
+        encoding => 'utf-8',
     );
     return shift->SUPER::initialize(@_);
 }
@@ -21,12 +21,12 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     $$buffer .= join(
-	'',
-	'<?xml version="',
-	$self->render_simple_attr('version', $source),
-	'" encoding="',
-	$self->render_simple_attr('encoding', $source),
-	qq{"?>\n},
+        '',
+        '<?xml version="',
+        $self->render_simple_attr('version', $source),
+        '" encoding="',
+        $self->render_simple_attr('encoding', $source),
+        qq{"?>\n},
     );
     return shift->SUPER::render(@_);
 }

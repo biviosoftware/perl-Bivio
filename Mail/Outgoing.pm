@@ -25,21 +25,21 @@ my($_KEEP_HEADERS_LIST_SEND_RE) = qr{
     ^(?:
     @{[join(
         '|',
-	qw(
-	    bcc
-	    cc
-	    comments
-	    content-.+
-	    date
-	    from
-	    in-reply-to
-	    keywords
-	    message-id
-	    mime-version
-	    references
-	    reply-to
-	    subject
-	    to
+        qw(
+            bcc
+            cc
+            comments
+            content-.+
+            date
+            from
+            in-reply-to
+            keywords
+            message-id
+            mime-version
+            references
+            reply-to
+            subject
+            to
         ),
     )]}
     )$
@@ -84,13 +84,13 @@ sub add_missing_headers {
     $from_email ||= $self->get_from_email($req);
     my($now) = $_DT->now;
     foreach my $x (
-	[Date => $_DT->rfc822($now)],
-	['Message-ID' => $self->generate_message_id($req)],
-	[From => "<$from_email>"],
-	['Return-Path' => "<$from_email>"],
+        [Date => $_DT->rfc822($now)],
+        ['Message-ID' => $self->generate_message_id($req)],
+        [From => "<$from_email>"],
+        ['Return-Path' => "<$from_email>"],
     ) {
- 	$self->set_header(@$x)
-	    unless $self->unsafe_get_header($x->[0]);
+         $self->set_header(@$x)
+            unless $self->unsafe_get_header($x->[0]);
     }
 
     return $self;
@@ -101,25 +101,25 @@ sub as_string {
     # Returns string representation of the mail message, suitable for sending.
     my($headers) = {%{$self->get('headers')}};
     my($res) = join(
-	'',
-	map(
-	    delete($headers->{$_}) || '',
-	    @$_FIRST_HEADERS,
-	    sort(keys(%$headers)),
-	),
+        '',
+        map(
+            delete($headers->{$_}) || '',
+            @$_FIRST_HEADERS,
+            sort(keys(%$headers)),
+        ),
     );
     my($body, $ct, $parts) = $self->unsafe_get(qw(body content_type parts));
     if ($parts) {
-	die("'content_type' must be set for attachments")
-	    unless $ct;
-	Bivio::IO::Alert->warn("ignoring body, have attachments")
-	    if $body;
+        die("'content_type' must be set for attachments")
+            unless $ct;
+        Bivio::IO::Alert->warn("ignoring body, have attachments")
+            if $body;
         _encapsulate_parts(\$res, $ct, $parts);
     }
     elsif ($body) {
-	$res .= "Content-Type: $ct\n"
-	    if $ct;
-	$res .= "\n" . $$body;
+        $res .= "Content-Type: $ct\n"
+            if $ct;
+        $res .= "\n" . $$body;
     }
     return $res;
 }
@@ -139,8 +139,8 @@ sub edit_body {
     # fix vars cut-off by quoted printable formatting
     my($count) = 0;
     while ($body =~ s/( quoted-printable.*?\$\w*)\=\n(\w+)/$1$2/s) {
-	b_die('too many vars replaced')
-	    if ++$count > 10;
+        b_die('too many vars replaced')
+            if ++$count > 10;
     }
     $self->set_body($_IOT->replace_in_string(\$body, $vars));
     return;
@@ -149,8 +149,8 @@ sub edit_body {
 sub generate_addr_spec {
     my(undef, $req) = @_;
     return $req->format_email(
-	    $_DT->to_file_name($_DT->now) . '.' . $_R->string(16)
-	);
+            $_DT->to_file_name($_DT->now) . '.' . $_R->string(16)
+        );
 }
 
 sub generate_message_id {
@@ -167,9 +167,9 @@ sub get_body {
 sub get_from_email {
     my($self, $req) = @_;
     return ($_A->parse(
-	$self->unsafe_get_header('from')
-	|| $self->unsafe_get_header('Apparently-From')
-	|| ($self->user_email($req))[0],
+        $self->unsafe_get_header('from')
+        || $self->unsafe_get_header('Apparently-From')
+        || ($self->user_email($req))[0],
     ))[0];
 }
 
@@ -179,27 +179,27 @@ sub new {
     # uses as the basis for the message.
     my($attrs) = {};
     $msg = $_I->new($msg)
-	if ref($msg) eq 'SCALAR';
+        if ref($msg) eq 'SCALAR';
     if (UNIVERSAL::isa($msg, $_I)) {
-	my($body);
-	$msg->get_body(\$body);
-	$attrs->{body} = \$body;
-	$attrs->{headers} = $msg->get_headers;
+        my($body);
+        $msg->get_body(\$body);
+        $attrs->{body} = \$body;
+        $attrs->{headers} = $msg->get_headers;
         $attrs->{envelope_from} = $msg->get_from;
     }
     elsif (UNIVERSAL::isa($msg, __PACKAGE__)) {
-	# NOTE: This shares \$body if it exists, which neither class nor
-	# its parents modify.  Action.RealmMailReflector depends on this
-	# so that the server doesn't grow too large.
-	my($c) = $msg->get_shallow_copy;
-	while (my($k, $v) = each(%$c)) {
-	    $attrs->{$k} = ref($v) eq 'ARRAY' ? [@$v]
-		: ref($v) eq 'HASH' ? {%$v}
-		: $v;
-	}
+        # NOTE: This shares \$body if it exists, which neither class nor
+        # its parents modify.  Action.RealmMailReflector depends on this
+        # so that the server doesn't grow too large.
+        my($c) = $msg->get_shallow_copy;
+        while (my($k, $v) = each(%$c)) {
+            $attrs->{$k} = ref($v) eq 'ARRAY' ? [@$v]
+                : ref($v) eq 'HASH' ? {%$v}
+                : $v;
+        }
     }
     elsif (defined($msg)) {
-	Bivio::Die->die('invalid message type');
+        Bivio::Die->die('invalid message type');
     }
     $attrs->{headers} ||= {};
     return $proto->SUPER::new($attrs);
@@ -209,7 +209,7 @@ sub remove_headers {
     my($self, @names) = @_;
     my($h) = $self->get('headers');
     foreach my $name (@names) {
-	delete($h->{lc($name)});
+        delete($h->{lc($name)});
     }
     return;
 }
@@ -264,9 +264,9 @@ sub set_header {
     my($n) = lc($name);
 #TODO: Should assert header name is valid and quote value if need be
     b_warn('stripped trailing newline from header value: ', $name, ' ', $value)
-	if $value =~ s/\n+$//g;
+        if $value =~ s/\n+$//g;
     $self->set_envelope_from(($_A->parse($value))[0])
-	if $n eq 'return-path';
+        if $n eq 'return-path';
     $self->get('headers')->{$n} = $name . ': ' . $value . "\n";
     return $self;
 }
@@ -275,52 +275,52 @@ sub set_headers_for_forward {
     my($self, $sender, $req) = @_;
     _inc_forward_header($self);
     $self->set_header('Sender', $sender)
-	if $sender;
+        if $sender;
     return $self;
 }
 
 sub set_headers_for_list_send {
     sub SET_HEADERS_FOR_LIST_SEND {[
-	[qw(req Agent.Request)],
-	[qw(list_email Email)],
-	[qw(?reply_to Email)],
-	[qw(?reply_to_list Boolean)],
-	[qw(?return_path Email)],
-	[qw(?sender Email)],
-	[qw(?subject_prefix Line)],
+        [qw(req Agent.Request)],
+        [qw(list_email Email)],
+        [qw(?reply_to Email)],
+        [qw(?reply_to_list Boolean)],
+        [qw(?return_path Email)],
+        [qw(?sender Email)],
+        [qw(?subject_prefix Line)],
     ]};
     my($self, $bp) = shift->parameters(\@_);
     $bp->{sender} ||= $bp->{list_email};
     $bp->{reply_to} ||= $bp->{list_email};
     my($headers) = $self->get('headers');
     $self->remove_headers(
-	grep($_ !~ $_KEEP_HEADERS_LIST_SEND_RE, keys(%$headers)));
+        grep($_ !~ $_KEEP_HEADERS_LIST_SEND_RE, keys(%$headers)));
     $self->set_header(
-	To => $self->unsafe_get_header('cc') || $bp->{list_email},
+        To => $self->unsafe_get_header('cc') || $bp->{list_email},
     ) unless $self->unsafe_get_header('to');
     $self->set_header('X-Mailer', "Bivio-Mail-Outgoing");
     $self->set_header('Precedence', 'list');
     $self->set_header('X-Auto-Response-Suppress', 'OOF');
     $self->set_header('List-Id', _list_id($bp->{list_email}));
     $self->set_header('Reply-To', $bp->{reply_to})
-	if $bp->{reply_to_list};
+        if $bp->{reply_to_list};
     $self->set_header(From => $bp->{sender})
-	unless $headers->{from};
+        unless $headers->{from};
     $self->set_header(
-	'Return-Path',
-	'<'
-	. ($bp->{return_path} || $self->get_from_email($bp->{req}))
-	. '>',
+        'Return-Path',
+        '<'
+        . ($bp->{return_path} || $self->get_from_email($bp->{req}))
+        . '>',
     );
     $self->set_headers_for_forward($bp->{sender}, $bp->{req});
     return $self
-	unless $bp->{subject_prefix};
+        unless $bp->{subject_prefix};
     my($s) = $self->unsafe_get_header('subject');
     if (defined($s)) {
-	$s =~ s/^(?!(Re:\s*)*\Q$bp->{subject_prefix}\E)/$bp->{subject_prefix} /is;
+        $s =~ s/^(?!(Re:\s*)*\Q$bp->{subject_prefix}\E)/$bp->{subject_prefix} /is;
     }
     else {
-	$s = $bp->{subject_prefix};
+        $s = $bp->{subject_prefix};
     }
     $self->set_header(Subject => $s);
     return $self;
@@ -329,7 +329,7 @@ sub set_headers_for_list_send {
 sub unsafe_get_header {
     # Returns header value or undef.
     return [
-	((shift->get('headers')->{lc(shift)})[0] || '')
+        ((shift->get('headers')->{lc(shift)})[0] || '')
         =~ /^(?:.*?):\s+(.*)\n$/s
     ]->[0];
 }
@@ -345,29 +345,29 @@ This is a multi-part message in MIME format.
 EOF
     my($p);
     foreach $p (@$parts) {
-	$$buf .= "--$boundary\nContent-Type: $p->{content_type}";
-	my($n) = $_FP->get_clean_tail($p->{filename});
-	if ($n) {
-	    $n =~ s/^\s+|\s+$|"//g;
-	    $$buf .= qq{; name="$n"}
-	}
-	$$buf .= "\nContent-Disposition: inline";
-	$$buf .= qq{; filename="$n"}
+        $$buf .= "--$boundary\nContent-Type: $p->{content_type}";
+        my($n) = $_FP->get_clean_tail($p->{filename});
+        if ($n) {
+            $n =~ s/^\s+|\s+$|"//g;
+            $$buf .= qq{; name="$n"}
+        }
+        $$buf .= "\nContent-Disposition: inline";
+        $$buf .= qq{; filename="$n"}
             if $n;
-	my($encoding)
-	    = $_T->suggest_encoding($p->{content_type}, $p->{content});
-	$$buf .= "\nContent-Transfer-Encoding: $encoding\n\n";
+        my($encoding)
+            = $_T->suggest_encoding($p->{content_type}, $p->{content});
+        $$buf .= "\nContent-Transfer-Encoding: $encoding\n\n";
         if ($encoding eq 'quoted-printable' ) {
             $$buf .= MIME::QuotedPrint::encode(${$p->{content}});
         }
-	elsif ($encoding eq 'base64' ) {
+        elsif ($encoding eq 'base64' ) {
             $$buf .= MIME::Base64::encode(${$p->{content}});
         }
-	else {
+        else {
             $$buf .= ${$p->{content}};
-	    $$buf .= "\n"
-		unless $$buf =~ /\n$/s;
-	}
+            $$buf .= "\n"
+                unless $$buf =~ /\n$/s;
+        }
     }
     $$buf .= "--$boundary--\n";
     return;
@@ -376,8 +376,8 @@ EOF
 sub _inc_forward_header {
     my($self) = @_;
     return $self->set_header(
-	$self->FORWARDING_HDR,
-	($self->unsafe_get_header($self->FORWARDING_HDR) || 0) + 1,
+        $self->FORWARDING_HDR,
+        ($self->unsafe_get_header($self->FORWARDING_HDR) || 0) + 1,
     );
 }
 
@@ -414,13 +414,13 @@ sub _rewrite_from {
     my($new_email, $new_name) = _rewrite_from_generate(
         $self, $old_email, $old_name, $req);
     $self->set_header('Reply-To', $old_email)
-	unless $self->unsafe_get_header('reply-to');
+        unless $self->unsafe_get_header('reply-to');
     my($rp) = $self->unsafe_get_header('return-path');
     $self->set_header('Return-Path', $_RFC->format_angle_brackets($new_email))
-	if !$rp || $rp eq $old_email;
+        if !$rp || $rp eq $old_email;
     my($ef) = $self->unsafe_get('envelope_from');
     $self->set_envelope_from($new_email)
-	if !$ef || $ef eq $old_email;
+        if !$ef || $ef eq $old_email;
     $self->set_header('From', $_RFC->format_mailbox($new_email, $new_name));
     return 1;
 }
@@ -430,16 +430,16 @@ sub _rewrite_from_generate {
     my($ro) = b_use('Model.RealmOwner')->new($req);
     if ($ro->unauth_load_by_email($email)) {
         $email = b_use('Model.MailReceiveDispatchForm')->new($req)
-	    ->format_recipient(
-		$ro->get('realm_id'),
-		undef,
-		b_use('Action.MailForward')->REWRITE_FROM_DOMAIN_URI,
-	    );
-	$name ||= $ro->get('display_name');
+            ->format_recipient(
+                $ro->get('realm_id'),
+                undef,
+                b_use('Action.MailForward')->REWRITE_FROM_DOMAIN_URI,
+            );
+        $name ||= $ro->get('display_name');
     }
     else {
-	$name ||= $_E->get_local_part($email);
-	$email = $_E->format_ignore($email, $req);
+        $name ||= $_E->get_local_part($email);
+        $email = $_E->format_ignore($email, $req);
     }
     $name .= ' via ' . b_use('UI.Facade')->get_value('mail_host', $req);
     return ($email, $name);

@@ -13,22 +13,22 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         visible => [
-	    {
-		name => 'ok_button',
-		type => 'OKButton',
-		form_name => 'b_ok',
-	    },
-	],
+            {
+                name => 'ok_button',
+                type => 'OKButton',
+                form_name => 'b_ok',
+            },
+        ],
     });
 }
 
 sub internal_query_fields {
     my($self) = @_;
     return [
-	[qw(search Line), {
-	    form_name => b_use('SQL.ListQuery')->to_char('search'),
-	}],
-	[qw(b_realm_only NullBoolean)],
+        [qw(search Line), {
+            form_name => b_use('SQL.ListQuery')->to_char('search'),
+        }],
+        [qw(b_realm_only NullBoolean)],
     ];
 }
 

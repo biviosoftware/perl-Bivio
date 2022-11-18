@@ -15,8 +15,8 @@ Document,^Document,pdf
 EOF
 [
     [{
-	value => '@b-menu value=T1',
-	is_public => 0,
+        value => '@b-menu value=T1',
+        is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/bunit_wiki/\w+/Index" Index

@@ -10,20 +10,20 @@ sub control_on_render {
     my($self, $source, $buffer) = @_;
     my($req) = $self->get_request;
     my($field) = $self->resolve_ancestral_attr('form_model', $req)
-	->get_field_name_for_html(${$self->render_attr('field', $source)});
+        ->get_field_name_for_html(${$self->render_attr('field', $source)});
     my($super) = '';
     my($alt) = $self->render_simple_attr('alt', $source);
     $self->SUPER::control_on_render($source, \$super);
     $$buffer .= '<input type="image" name="'
-	. $field
-	. '" src="'
-	. b_use('FacadeComponent.Icon')->get_value(
-	    ${$self->render_attr('image', $source)}, $req)->{uri}
-	. (length($alt) ? '" alt="' . Bivio::HTML->escape_attr_value($alt) : '')
-	. ($super =~ /id=/ ? '' : ('" id="' . $field))
-	. '"'
-	. $super
-	. $self->render_simple_attr('attributes', $source)
+        . $field
+        . '" src="'
+        . b_use('FacadeComponent.Icon')->get_value(
+            ${$self->render_attr('image', $source)}, $req)->{uri}
+        . (length($alt) ? '" alt="' . Bivio::HTML->escape_attr_value($alt) : '')
+        . ($super =~ /id=/ ? '' : ('" id="' . $field))
+        . '"'
+        . $super
+        . $self->render_simple_attr('attributes', $source)
         . ' />';
     return;
 }
@@ -31,10 +31,10 @@ sub control_on_render {
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	field => sub {
-	    Bivio::IO::Alert->warn_deprecated('field must be specified');
-	    return 'submit';
-	});
+        field => sub {
+            Bivio::IO::Alert->warn_deprecated('field must be specified');
+            return 'submit';
+        });
     $self->map_invoke(initialize_attr => [qw(field image)]);
     $self->map_invoke(unsafe_initialize_attr => [qw(alt attributes)]);
     return shift->SUPER::initialize(@_);

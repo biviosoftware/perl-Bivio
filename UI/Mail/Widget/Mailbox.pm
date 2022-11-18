@@ -20,8 +20,8 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     $$buffer .= $_RFC->format_mailbox(
-	$self->req->format_email(${$self->render_attr('email', $source)}),
-	$self->render_simple_attr('name',  $source),
+        $self->req->format_email(${$self->render_attr('email', $source)}),
+        $self->render_simple_attr('name',  $source),
     );
     return;
 }

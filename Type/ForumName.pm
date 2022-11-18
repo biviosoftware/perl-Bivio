@@ -34,12 +34,12 @@ sub extract_top {
 sub from_literal {
     my($proto, $value) = @_;
     $value =~ s/^\s+|\s+$//sg
-	if defined($value);
+        if defined($value);
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     return (undef, Bivio::TypeError->FORUM_NAME)
-	unless $v =~ $proto->REGEXP;
+        unless $v =~ $proto->REGEXP;
     return lc($v);
 }
 
@@ -60,7 +60,7 @@ sub join {
 sub join_top_unless_exists {
     my($proto, $top, $value) = @_;
     return $value
-	if $proto->is_equal($proto->extract_top($value), $top);
+        if $proto->is_equal($proto->extract_top($value), $top);
     return $proto->join($top, $value);
 }
 

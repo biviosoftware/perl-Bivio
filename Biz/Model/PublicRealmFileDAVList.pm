@@ -15,7 +15,7 @@ sub load_dav {
     my($self) = @_;
     my($req) = $self->get_request;
     $req->put(path_info => $_FP->to_public(
-	$_RF->parse_path($req->get('path_info'), $self)));
+        $_RF->parse_path($req->get('path_info'), $self)));
     return shift->SUPER::load_dav(@_);
 }
 

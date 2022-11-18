@@ -7,31 +7,31 @@ req()->set_realm_and_user(qw(fourem btest_admin));
 [
     load_all => [
         [{
-	    full_calendar_start => '1214870400',
-	    full_calendar_end => '1217548799',
-	}] => [{
-	    'CalendarEvent.dtstart' => DateTime('07/16/2008 09:00:00'),
-	}, {
-	    'CalendarEvent.dtstart' => DateTime('07/15/2008 09:00:00'),
-	}],
+            full_calendar_start => '1214870400',
+            full_calendar_end => '1217548799',
+        }] => [{
+            'CalendarEvent.dtstart' => DateTime('07/16/2008 09:00:00'),
+        }, {
+            'CalendarEvent.dtstart' => DateTime('07/15/2008 09:00:00'),
+        }],
     ],
     as_type_values => [
-	[] => [[{
-	    allDay => 'Bivio::Type::Boolean[0]',
-	    className => 'Bivio::Type::Line[b_full_calendar_event]',
-	    editable => 'Bivio::Type::Boolean[1]',
-	    end => qr{DateTime},
-	    id => qr{PrimaryId},
-	    start => qr{07/16/2008 09:00:00},
-	    title => qr{DN '},
-	}, {
-	    allDay => 'Bivio::Type::Boolean[0]',
-	    className => 'Bivio::Type::Line[b_full_calendar_event]',
-	    editable => 'Bivio::Type::Boolean[1]',
-	    end => qr{DateTime},
-	    id => qr{PrimaryId},
-	    start => qr{07/15/2008 09:00:00},
-	    title => qr{DN '},
-	}]],
+        [] => [[{
+            allDay => 'Bivio::Type::Boolean[0]',
+            className => 'Bivio::Type::Line[b_full_calendar_event]',
+            editable => 'Bivio::Type::Boolean[1]',
+            end => qr{DateTime},
+            id => qr{PrimaryId},
+            start => qr{07/16/2008 09:00:00},
+            title => qr{DN '},
+        }, {
+            allDay => 'Bivio::Type::Boolean[0]',
+            className => 'Bivio::Type::Line[b_full_calendar_event]',
+            editable => 'Bivio::Type::Boolean[1]',
+            end => qr{DateTime},
+            id => qr{PrimaryId},
+            start => qr{07/15/2008 09:00:00},
+            title => qr{DN '},
+        }]],
     ],
 ];

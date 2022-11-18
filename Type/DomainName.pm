@@ -25,14 +25,14 @@ sub internal_post_from_literal {
 sub to_http_uri {
     my($proto, $value) = @_;
     return b_use('Type.HTTPURI')->from_literal(
-	join('', 'http://', $proto->from_literal_or_die($value)));
+        join('', 'http://', $proto->from_literal_or_die($value)));
 }
 
 sub unsafe_to_dotted_decimal {
     my($proto, $value) = @_;
     return Socket::inet_ntoa(
-	gethostbyname($proto->from_literal_or_die($value))
-	|| return undef,
+        gethostbyname($proto->from_literal_or_die($value))
+        || return undef,
     );
 }
 

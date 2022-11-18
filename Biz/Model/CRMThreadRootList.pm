@@ -20,18 +20,18 @@ sub internal_initialize {
         version => 1,
         primary_key => ['CRMThread.crm_thread_num'],
         order_by => [qw(
-	    CRMThread.modified_date_time
-	    CRMThread.crm_thread_num
+            CRMThread.modified_date_time
+            CRMThread.crm_thread_num
             CRMThread.crm_thread_status
-	    CRMThread.subject_lc
-	)],
+            CRMThread.subject_lc
+        )],
         other_query_keys => $self->get_instance(
-	    $self->LIST_QUERY_FORM_CLASS)->filter_keys,
-	other => [
+            $self->LIST_QUERY_FORM_CLASS)->filter_keys,
+        other => [
             delete($info->{primary_key})->[0],
-	    'CRMThread.subject',
-	    ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
-	    ['RealmMail.realm_id', 'CRMThread.realm_id'],
+            'CRMThread.subject',
+            ['RealmMail.thread_root_id', 'CRMThread.thread_root_id'],
+            ['RealmMail.realm_id', 'CRMThread.realm_id'],
             {
                 name => 'owner_name',
                 type => 'Name',
@@ -60,14 +60,14 @@ sub internal_initialize {
                     AND e.location = $_LOCATION
                 ) AS modified_by_email",
             },
-	],
+        ],
     });
 }
 
 sub internal_post_load_row {
     my($self, $row) = @_;
     return 0
-	unless shift->SUPER::internal_post_load_row(@_);
+        unless shift->SUPER::internal_post_load_row(@_);
     $row->{modified_by_name} = $_E->get_local_part($row->{modified_by_email});
     return 1;
 }
@@ -75,12 +75,12 @@ sub internal_post_load_row {
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     if (my $qf = $self->req->unsafe_get($self->LIST_QUERY_FORM_CLASS)) {
-	my($status, $owner) = $qf->unsafe_get(qw(b_status b_owner));
-	$stmt->where(['CRMThread.crm_thread_status', [
+        my($status, $owner) = $qf->unsafe_get(qw(b_status b_owner));
+        $stmt->where(['CRMThread.crm_thread_status', [
             $status->get_criteria_list,
         ]]) if $status;
-	$stmt->where(['CRMThread.owner_user_id', [$owner]])
-	    if $owner;
+        $stmt->where(['CRMThread.owner_user_id', [$owner]])
+            if $owner;
     }
     return shift->SUPER::internal_prepare_statement(@_);
 }

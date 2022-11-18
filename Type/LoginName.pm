@@ -9,9 +9,9 @@ b_use('IO.ClassLoaderAUTOLOAD');
 sub from_literal {
     my($proto, $value) = @_;
     map({
-	my($v, $e) = $_->from_literal($value);
-	return $v
-	    unless $e;
+        my($v, $e) = $_->from_literal($value);
+        return $v
+            unless $e;
     } Type_Email(), Type_RealmName(), Type_PrimaryId());
     return (undef, Bivio_TypeError()->SYNTAX_ERROR);
 }
@@ -19,9 +19,9 @@ sub from_literal {
 sub get_width {
     my($w) = 'get_width';
     return Type_Integer()->max(
-	Type_Email()->$w,
-	Type_RealmName()->$w,
-	Type_PrimaryId()->$w,
+        Type_Email()->$w,
+        Type_RealmName()->$w,
+        Type_PrimaryId()->$w,
     );
 }
 

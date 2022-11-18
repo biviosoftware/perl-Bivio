@@ -15,46 +15,46 @@ my($v) = {
 };
 [
     [req()] => [
-	create_from_vevent => [
+        create_from_vevent => [
 #TODO: removed this - it causes everything to fail on Redhat 7.2
-#	    [{}] => DB_ERROR(),
-	    [{
-		%$v,
-		url => 'bad url',
-	    }] => DIE(),
-	    [$v] => undef,
-	],
-	update => [
-	    [{modified_date_time => $now_100}] => undef,
-	],
-	update_from_vevent => [
-	    [$v] => undef,
-	],
-	get => [
-	    modified_date_time => $now_100,
-	],
-	update_from_vevent => [
-	    [{
-		%$v,
-		summary => 'other summary',
-	    }] => undef,
-	],
-	get => [
-	    modified_date_time => sub {
-		my(undef, $actual) = @_;
-		return $actual->[0] ne $now_100 ? 1 : 0;
-	    },
-	],
-	update => [
-	    [{modified_date_time => $now_100}] => undef,
-	],
-	update_from_vevent => [
-	    [{
-		%$v,
-		description => undef,
-		location => undef,
-		url => undef,
-	    }] => undef,
-	],
+#            [{}] => DB_ERROR(),
+            [{
+                %$v,
+                url => 'bad url',
+            }] => DIE(),
+            [$v] => undef,
+        ],
+        update => [
+            [{modified_date_time => $now_100}] => undef,
+        ],
+        update_from_vevent => [
+            [$v] => undef,
+        ],
+        get => [
+            modified_date_time => $now_100,
+        ],
+        update_from_vevent => [
+            [{
+                %$v,
+                summary => 'other summary',
+            }] => undef,
+        ],
+        get => [
+            modified_date_time => sub {
+                my(undef, $actual) = @_;
+                return $actual->[0] ne $now_100 ? 1 : 0;
+            },
+        ],
+        update => [
+            [{modified_date_time => $now_100}] => undef,
+        ],
+        update_from_vevent => [
+            [{
+                %$v,
+                description => undef,
+                location => undef,
+                url => undef,
+            }] => undef,
+        ],
     ],
 ];

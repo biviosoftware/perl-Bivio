@@ -17,7 +17,7 @@ sub from_literal {
     my($proto, $value) = @_;
     my($v, $e) = $proto->SUPER::from_literal($value);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     $v =~ s{^/}{};
     return length($v) ? $v : (undef, undef);
 }

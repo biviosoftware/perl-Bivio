@@ -3,11 +3,11 @@
 WikiText();
 [
     [{
-	value => '^http://foo.org',
-	link_target => 'tgt',
+        value => '^http://foo.org',
+        link_target => 'tgt',
     }] => qq{<p class="b_prose"><a href="http://foo.org" target="tgt">http://foo.org</a>\n</p>},
     [{
-	value => '@a href=/ foo.org',
-	link_target => 'tgt',
+        value => '@a href=/ foo.org',
+        link_target => 'tgt',
     }] => qq{<p class="b_prose"><a href="/" target="tgt">foo.org</a></p>},
 ];

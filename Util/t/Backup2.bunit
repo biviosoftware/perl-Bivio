@@ -3,7 +3,7 @@
 Request();
 config({
     class() => {
-	min_kb => 100,
+        min_kb => 100,
     },
 });
 my($now) = Date('20080227');
@@ -27,86 +27,86 @@ foreach my $day (@$days) {
         x1/d1/s1
         x2/d1/s1
         x2/d1/d3/s1
-	x2/s1
-	x3/s1
+        x2/s1
+        x3/s1
         1024
-	x1/b1
+        x1/b1
         x1/d1/d2/b1
         x2/d1/b1
         x2/d2/d3/b1
         var/no-archive/b1
         var/b2
     }) {
-	if ($d =~ /^\d+$/) {
-	    $kb = $d;
-	    next;
-	}
-	my($src) = "$tmp/mirror/$day/$d";
-	IO_File()->mkdir_parent_only($src);
-	system("dd if=/dev/zero of=$src bs=1024 count=$kb > /dev/null 2>&1");
+        if ($d =~ /^\d+$/) {
+            $kb = $d;
+            next;
+        }
+        my($src) = "$tmp/mirror/$day/$d";
+        IO_File()->mkdir_parent_only($src);
+        system("dd if=/dev/zero of=$src bs=1024 count=$kb > /dev/null 2>&1");
     }
 }
 [
     class() => [
-	{
-	    method => 'archive_weekly',
-	    compute_params => sub {
-		my(undef, $params) = @_;
+        {
+            method => 'archive_weekly',
+            compute_params => sub {
+                my(undef, $params) = @_;
                 my($d) = Date($params->[0] =~ /(\d+)$/);
                 DateTime()->set_test_now(
                     DateTime()->set_local_beginning_of_day($d));
                 $d = Date()->to_file_name($d);
                 unlink($init_archive_flag);
-		return [
+                return [
                     "$tmp/mirror/$d",
                     "$tmp/weekly",
                     $d % 1 ? $init_archive_pl : (),
                 ];
-	    },
-	    check_return => sub {
+            },
+            check_return => sub {
                 my($params) = shift->get('params');
-		my($date) = $params->[0] =~ /(\d+)$/;
+                my($date) = $params->[0] =~ /(\d+)$/;
                 assert_equals(8, length($date));
-		my($d) = grep($date eq $_, map("2008$_", qw(0227 0302 0309 0316 0323 0330 0406)))
-		    ? "$tmp/weekly/$date"
-		    : 0;
+                my($d) = grep($date eq $_, map("2008$_", qw(0227 0302 0309 0316 0323 0330 0406)))
+                    ? "$tmp/weekly/$date"
+                    : 0;
                 # If weekly should be created and archive_init_pl passed,
                 # expect the file to exist, else not
                 assert_equals(
                     $params->[2] && $d ? 1 : 0,
                     -s $init_archive_flag ? 1 : 0);
-		unless ($d) {
-		    assert_eval("! -d '$tmp/weekly/$date'");
-		    return 1;
-		}
-		assert_eval("-d '$d'");
-		assert_eval("! -f '$d/x2/d1/d3.tgz'");
-		assert_eval("! -f '$d/..tgz'");
-		foreach my $x (
-		    [qw(x1 x1/b1)],
-		    [qw(x1/d1 x1/d1/s1)],
-		    [qw(x1/d1/d2 x1/d1/d2/b1)],
-		    [qw(x2 x2/s1)],
-		    [qw(x2/d1 x2/d1/d3 x2/d1/d3/s1 x2/d1/b1 x2/d1/s1)],
-		    [qw(x2/d2)],
-		    [qw(x2/d2/d3 x2/d2/d3/b1)],
-		    [qw(x3 x3/s1)],
-		) {
+                unless ($d) {
+                    assert_eval("! -d '$tmp/weekly/$date'");
+                    return 1;
+                }
+                assert_eval("-d '$d'");
+                assert_eval("! -f '$d/x2/d1/d3.tgz'");
+                assert_eval("! -f '$d/..tgz'");
+                foreach my $x (
+                    [qw(x1 x1/b1)],
+                    [qw(x1/d1 x1/d1/s1)],
+                    [qw(x1/d1/d2 x1/d1/d2/b1)],
+                    [qw(x2 x2/s1)],
+                    [qw(x2/d1 x2/d1/d3 x2/d1/d3/s1 x2/d1/b1 x2/d1/s1)],
+                    [qw(x2/d2)],
+                    [qw(x2/d2/d3 x2/d2/d3/b1)],
+                    [qw(x3 x3/s1)],
+                ) {
                     assert_equals(
-			[sort(map(/[dx]\d+$/ ? "$_/\n" : "$_\n", @$x))],
-			[sort(`tar tzf $d/$x->[0].tgz 2>&1`)],
-			"@$x",
-		    );
-		}
+                        [sort(map(/[dx]\d+$/ ? "$_/\n" : "$_\n", @$x))],
+                        [sort(`tar tzf $d/$x->[0].tgz 2>&1`)],
+                        "@$x",
+                    );
+                }
                 assert_equals(
                     ["var/\n", "var/b2\n"],
                     [sort(`tar tzf $d/var.tgz 2>&1`)],
                 );
                 assert_equals(1, ! -d "$d/var");
-		return 1;
-	    },
-	} => [
-	    map(($_ => []), @$days),
-	],
+                return 1;
+            },
+        } => [
+            map(($_ => []), @$days),
+        ],
     ],
 ];

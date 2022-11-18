@@ -14,10 +14,10 @@ my($files_root) = get_uri();
 
 if (get_content() =~ m,"/fourem/file/realm-file-btest.txt",) {
     follow_link_in_table('Name', 'Name', qr{realm-file-btest.txt},
-	'Actions', 'Modify');
+        'Actions', 'Modify');
     visit_realm_file_change_mode('DELETE');
     submit_form(OK => {
-	'Comments:' => 'deleted by acceptance test',
+        'Comments:' => 'deleted by acceptance test',
     });
 }
 
@@ -73,7 +73,7 @@ unless (text_exists($folder)) {
     follow_link_in_table('Name', 'Name', '/', 'Actions', 'Modify');
     visit_realm_file_change_mode('ADD_SUBFOLDER');
     submit_form(OK => {
-	'Name:' => $folder,
+        'Name:' => $folder,
     });
 }
 follow_link_in_table('Name', 'Name', $folder, 'Actions', 'Modify');
@@ -111,7 +111,7 @@ verify_table('Name', [
     [$folder, qr/^Delete Permanently$/],
 ]);
 follow_link_in_table('Name', 'Name', $folder,
-		     'Actions', 'Delete Permanently');
+                     'Actions', 'Delete Permanently');
 verify_text(qr{delete.*/Archived/$folder.*permanently});
 submit_form('Delete Permanently');
 visit_realm_folder('fourem', $folder);

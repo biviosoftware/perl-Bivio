@@ -3,25 +3,25 @@
 req()->initialize_fully();
 [
     class() => [
-	from_literal => [
-	    name1 => 'NAME1',
-	    '1st' => [undef, Bivio::TypeError::NOT_FOUND],
-	    'second description' => [undef, Bivio::TypeError::NOT_FOUND],
-	],
-	from_any => [
-	    name1 => 'NAME1',
-	    '1st' => 'NAME1',
-	    'first description' => 'NAME1',
-	],
+        from_literal => [
+            name1 => 'NAME1',
+            '1st' => [undef, Bivio::TypeError::NOT_FOUND],
+            'second description' => [undef, Bivio::TypeError::NOT_FOUND],
+        ],
+        from_any => [
+            name1 => 'NAME1',
+            '1st' => 'NAME1',
+            'first description' => 'NAME1',
+        ],
     ],
     sub {class()->NAME1} => [
-	as_int => 1,
-	get_name => 'NAME1',
-	get_short_desc => '1st',
-	get_long_desc => 'First Description',
+        as_int => 1,
+        get_name => 'NAME1',
+        get_short_desc => '1st',
+        get_long_desc => 'First Description',
     ],
     sub {class()->NAME2} => [
-	get_short_desc => '2nd',
-	get_long_desc => '2nd',
+        get_short_desc => '2nd',
+        get_long_desc => '2nd',
     ],
 ];

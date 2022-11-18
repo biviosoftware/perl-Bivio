@@ -2,115 +2,115 @@
 # $Id$
 config({
     'Bivio::IO::ClassLoader' => {
-	maps => {
-	    ClassLoader_Bunit => [
-	        'Bivio::IO::t::ClassLoader',
-	        'Bivio::IO::t::ClassLoader::After',
-	    ],
-	    ClassLoader_Bunit2 => [
-	        'Bivio::IO::t::ClassLoader::After',
-	    ],
-	},
-	delegates => {
-	    'ClassLoaderBunit::Delegate' => 'Bivio::IO::t::ClassLoader::Valid',
-	},
+        maps => {
+            ClassLoader_Bunit => [
+                'Bivio::IO::t::ClassLoader',
+                'Bivio::IO::t::ClassLoader::After',
+            ],
+            ClassLoader_Bunit2 => [
+                'Bivio::IO::t::ClassLoader::After',
+            ],
+        },
+        delegates => {
+            'ClassLoaderBunit::Delegate' => 'Bivio::IO::t::ClassLoader::Valid',
+        },
      },
 });
 my($importers) = sub {
     my($num) = @_;
     return sub {
-	assert_equals(
-	    [map('Bivio::Test', 1..$num)],
-	    Bivio::IO::t::ClassLoader::Valid->get_importers,
-	);
-	return 1;
+        assert_equals(
+            [map('Bivio::Test', 1..$num)],
+            Bivio::IO::t::ClassLoader::Valid->get_importers,
+        );
+        return 1;
     } => 1,
 };
 [
     class() => [
-	is_map_configured => [
-	    NoSuchMap => 0,
-	    ClassLoader_Bunit => 1,
-	],
-	was_required => [
-	    'Bivio::IO::ClassLoader' => 1,
-	    'Bivio::IO::t::ClassLoader::Valid' => 0,
-	    'Bivio::IO::t::ClassLoader::SyntaxError' => 0,
-	],
-	unsafe_simple_require => [
-	    'Bivio::IO::t::ClassLoader::Valid' => 'Bivio::IO::t::ClassLoader::Valid',
-	],
-	$importers->(1),
- 	map((
-  	    simple_require => [
-  	        @$_,
-  	    ],
-  	    unsafe_simple_require => [
- 		$_->[0] => $_->[1]->eq_not_found ? [undef] : $_->[1],
-  	    ],
- 	    was_required => [
- 		$_->[0] => 0,
- 	    ],
- 	),
- 	    ['Bivio::IO::t::ClassLoader::NotFound' => NOT_FOUND()],
- 	    ['Bivio::IO::t::ClassLoader::SyntaxError' => DIE()],
+        is_map_configured => [
+            NoSuchMap => 0,
+            ClassLoader_Bunit => 1,
+        ],
+        was_required => [
+            'Bivio::IO::ClassLoader' => 1,
+            'Bivio::IO::t::ClassLoader::Valid' => 0,
+            'Bivio::IO::t::ClassLoader::SyntaxError' => 0,
+        ],
+        unsafe_simple_require => [
+            'Bivio::IO::t::ClassLoader::Valid' => 'Bivio::IO::t::ClassLoader::Valid',
+        ],
+        $importers->(1),
+         map((
+              simple_require => [
+                  @$_,
+              ],
+              unsafe_simple_require => [
+                 $_->[0] => $_->[1]->eq_not_found ? [undef] : $_->[1],
+              ],
+             was_required => [
+                 $_->[0] => 0,
+             ],
+         ),
+             ['Bivio::IO::t::ClassLoader::NotFound' => NOT_FOUND()],
+             ['Bivio::IO::t::ClassLoader::SyntaxError' => DIE()],
         ),
-	map((
-	    unsafe_map_require => [
-		$_ => 'Bivio::IO::t::ClassLoader::Valid',
-	    ],
-	    was_required => [
-		'Bivio::IO::t::ClassLoader::Valid' => 1,
-	    ],
-	    $importers->(1),
-	    delete_require => [
-		'Bivio::IO::t::ClassLoader::Valid' => undef,
-	    ],
-	    was_required => [
-		'Bivio::IO::t::ClassLoader::Valid' => 0,
-	    ],
-	),
-	    [qw(ClassLoader_Bunit Valid)],
-	    'ClassLoader_Bunit.Valid',
-	    [qw(NoSuchMapButOK Bivio::IO::t::ClassLoader::Valid)],
-	    'Bivio::IO::t::ClassLoader::Valid',
-	),
-	map_require_all => [
-	    ClassLoader_Bunit => DIE(),
-	    [ClassLoader_Bunit => sub {shift !~ /SyntaxError/}]
-		=> [['Bivio::IO::t::ClassLoader::Valid']],
-	],
-	delete_require => [
-	    'Bivio::IO::t::ClassLoader::Valid' => undef,
-	],
-	delegate_require => [
-	    'ClassLoaderBunit::Delegate' => 'Bivio::IO::t::ClassLoader::Valid',
-	    'NotConfigured' => DIE(),
-	],
+        map((
+            unsafe_map_require => [
+                $_ => 'Bivio::IO::t::ClassLoader::Valid',
+            ],
+            was_required => [
+                'Bivio::IO::t::ClassLoader::Valid' => 1,
+            ],
+            $importers->(1),
+            delete_require => [
+                'Bivio::IO::t::ClassLoader::Valid' => undef,
+            ],
+            was_required => [
+                'Bivio::IO::t::ClassLoader::Valid' => 0,
+            ],
+        ),
+            [qw(ClassLoader_Bunit Valid)],
+            'ClassLoader_Bunit.Valid',
+            [qw(NoSuchMapButOK Bivio::IO::t::ClassLoader::Valid)],
+            'Bivio::IO::t::ClassLoader::Valid',
+        ),
+        map_require_all => [
+            ClassLoader_Bunit => DIE(),
+            [ClassLoader_Bunit => sub {shift !~ /SyntaxError/}]
+                => [['Bivio::IO::t::ClassLoader::Valid']],
+        ],
+        delete_require => [
+            'Bivio::IO::t::ClassLoader::Valid' => undef,
+        ],
+        delegate_require => [
+            'ClassLoaderBunit::Delegate' => 'Bivio::IO::t::ClassLoader::Valid',
+            'NotConfigured' => DIE(),
+        ],
         after_in_map => [
-	    ['ClassLoader_Bunit', 'Bivio::IO::t::ClassLoader::Valid'] =>
-		'Bivio::IO::t::ClassLoader::After::Valid',
-	    ['ClassLoader_Bunit', 'Bivio::IO::t::ClassLoader::After::Valid'] =>
-		 qr{find package after},
-	],
-	call_autoload => [
-	    ['ANYTHING::Bivio_Die', []] => 'Bivio::Die',
-	    ['ANYTHING::Collection_Attributes', [{a => 1}]] => [{a => 1}],
-	    ['ANYTHING::not_valid', []] => qr{not_valid:.*not found},
-	    ['ANYTHING::not_valid', [], []] => qr{not_valid:.*not found},
-	    ['Bivio_Test', []] => 'Bivio::Test',
-	    ['ClassLoader_Bunit_Valid', []] => 'Bivio::IO::t::ClassLoader::Valid',
-	    ['ClassLoader_Bunit2_Valid', []] => 'Bivio::IO::t::ClassLoader::After::Valid',
-	],
-	$importers->(1),
-	# unsafe_map_for_package => [
-	#     'Bivio::IO::t::ClassLoader::Valid' => 'ClassLoader_Bunit',
-	#     'Bivio::IO::t::NotFound' => [undef],
-	# ],
-	is_valid_map_class_name => [
-	    'Foo.Bar' => 1,
-	    'Foo::Bar' => 0,
-	    'Foo' => 0,
-	],
+            ['ClassLoader_Bunit', 'Bivio::IO::t::ClassLoader::Valid'] =>
+                'Bivio::IO::t::ClassLoader::After::Valid',
+            ['ClassLoader_Bunit', 'Bivio::IO::t::ClassLoader::After::Valid'] =>
+                 qr{find package after},
+        ],
+        call_autoload => [
+            ['ANYTHING::Bivio_Die', []] => 'Bivio::Die',
+            ['ANYTHING::Collection_Attributes', [{a => 1}]] => [{a => 1}],
+            ['ANYTHING::not_valid', []] => qr{not_valid:.*not found},
+            ['ANYTHING::not_valid', [], []] => qr{not_valid:.*not found},
+            ['Bivio_Test', []] => 'Bivio::Test',
+            ['ClassLoader_Bunit_Valid', []] => 'Bivio::IO::t::ClassLoader::Valid',
+            ['ClassLoader_Bunit2_Valid', []] => 'Bivio::IO::t::ClassLoader::After::Valid',
+        ],
+        $importers->(1),
+        # unsafe_map_for_package => [
+        #     'Bivio::IO::t::ClassLoader::Valid' => 'ClassLoader_Bunit',
+        #     'Bivio::IO::t::NotFound' => [undef],
+        # ],
+        is_valid_map_class_name => [
+            'Foo.Bar' => 1,
+            'Foo::Bar' => 0,
+            'Foo' => 0,
+        ],
     ],
 ];

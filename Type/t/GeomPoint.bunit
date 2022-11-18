@@ -4,21 +4,21 @@ Type();
 [
     from_literal => [
         '' => UNDEF(),
-	'SRID=4326;POINT(0 0)' => 'SRID=4326;POINT(0 0)',
-	'SRID=4327POINT(0 0)' => SYNTAX_ERROR(),
-	'SRID=4327;POINT(0 0)' => from_literal_error('NOT_FOUND'),
-	'SRID=4326;POINTM(0 0)' => UNSUPPORTED_TYPE(),
-	'SRID=4326;POINT(0)' => TOO_FEW(),
-	'SRID=4326;POINT(1 2 3)' => from_literal_error('TOO_MANY'),
+        'SRID=4326;POINT(0 0)' => 'SRID=4326;POINT(0 0)',
+        'SRID=4327POINT(0 0)' => SYNTAX_ERROR(),
+        'SRID=4327;POINT(0 0)' => from_literal_error('NOT_FOUND'),
+        'SRID=4326;POINTM(0 0)' => UNSUPPORTED_TYPE(),
+        'SRID=4326;POINT(0)' => TOO_FEW(),
+        'SRID=4326;POINT(1 2 3)' => from_literal_error('TOO_MANY'),
     ],
     {
-	method => 'from_long_lat',
-	compute_return => sub {
-	    my(undef, $actual) = @_;
-	    return [$actual->[0]->as_string];
-	},
+        method => 'from_long_lat',
+        compute_return => sub {
+            my(undef, $actual) = @_;
+            return [$actual->[0]->as_string];
+        },
     } => [
-	[-100, +40] => 'SRID=4326;POINT(-100.00000000 40.00000000)',
+        [-100, +40] => 'SRID=4326;POINT(-100.00000000 40.00000000)',
     ],
 ];
 

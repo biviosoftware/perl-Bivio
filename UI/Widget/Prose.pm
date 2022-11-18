@@ -81,10 +81,10 @@ sub initialize {
     my($self) = @_;
     # Initializes widget state and children.
     if (ref(my $v = $self->get('value'))) {
-	$self->initialize_attr('value');
+        $self->initialize_attr('value');
     }
     else {
-	$self->put(_join => Bivio::UI::Widget::Join->new(_parse($v)));
+        $self->put(_join => Bivio::UI::Widget::Join->new(_parse($v)));
     }
     return;
 }
@@ -93,20 +93,20 @@ sub internal_new_args {
     my(undef, $value, $attributes) = @_;
     # Implements positional argument parsing for L<new|"new">.
     return "'value' must be defined"
-	unless defined($value);
+        unless defined($value);
     return {
         value => $value,
-	($attributes ? %$attributes : ()),
+        ($attributes ? %$attributes : ()),
     };
 }
 
 sub render {
     my($self, $source, $buffer) = @_;
     ($self->unsafe_get('_join') || $self->initialize_value(
-	'value',
-	Bivio::UI::Widget::Join->new(
-	    _parse($self->render_simple_attr('value', $source)),
-	),
+        'value',
+        Bivio::UI::Widget::Join->new(
+            _parse($self->render_simple_attr('value', $source)),
+        ),
     ))->render($source, $buffer);
     return;
 }
@@ -115,8 +115,8 @@ sub _parse {
     my($value) = @_;
     # Parses the string and returns an array_ref for the join.
     my($res) = [
-	map($_ =~ s/^\<\{// ? _parse_code($_) : _parse_text($_),
-	    split(/(?=\<\{)|(?<=\}\>)/, ref($value) ? $$value : $value)),
+        map($_ =~ s/^\<\{// ? _parse_code($_) : _parse_text($_),
+            split(/(?=\<\{)|(?<=\}\>)/, ref($value) ? $$value : $value)),
     ];
     _trace($res) if $_TRACE;
     return $res;
@@ -126,7 +126,7 @@ sub _parse_code {
     my($code) = @_;
     # Parses the code and returns the result of the eval.
     Bivio::Die->die($code, ': missing Prose program terminator "}>"')
-		unless $code =~ s/\}\>$//;
+                unless $code =~ s/\}\>$//;
     return Bivio::UI::ViewLanguage->eval(\$code);
 }
 
@@ -135,27 +135,27 @@ sub _parse_text {
     # Called for text with embedded function calls.
     my(@res, $bit);
     while (length($text)) {
-	unless ($text =~ /^(?:[a-zA-Z]\w+|[A-Z])\(/) {
-	    ($bit, $text) = split(/(?=\b(?:[a-zA-Z]\w+|[A-Z])\()/, $text, 2);
-	    # Unescape any specials in <>.
-	    $bit =~ s/\<([\<\>\{\}\(\);])\>/$1/g if $bit;
-	    push(@res, $bit);
-	    last unless defined($text) && length($text);
-	}
-	# We have a function at the start of $text.  Strip it off and
-	# leave in $bit.  $text will contain the rest
-	$bit = $text;
-	Bivio::Die->die($bit, ': missing Prose function terminator ");"')
-		unless $bit =~ s/\);(.*)//s;
-	$text = $1;
-	# Unescape any escaped values in perl code
-	$bit =~ s/\<([\<\>\{\}\(\);])\>/$1/g;
-	push(@res, map {
-	    Bivio::Die->die($_, ': invalid value in Prose function: ', $bit)
-		unless defined($_) && (UNIVERSAL::isa($_, 'Bivio::UI::Widget')
-		       || ref($_) eq 'ARRAY' || !ref($_));
-	    $_;
-	} _parse_code($bit.');}>'));
+        unless ($text =~ /^(?:[a-zA-Z]\w+|[A-Z])\(/) {
+            ($bit, $text) = split(/(?=\b(?:[a-zA-Z]\w+|[A-Z])\()/, $text, 2);
+            # Unescape any specials in <>.
+            $bit =~ s/\<([\<\>\{\}\(\);])\>/$1/g if $bit;
+            push(@res, $bit);
+            last unless defined($text) && length($text);
+        }
+        # We have a function at the start of $text.  Strip it off and
+        # leave in $bit.  $text will contain the rest
+        $bit = $text;
+        Bivio::Die->die($bit, ': missing Prose function terminator ");"')
+                unless $bit =~ s/\);(.*)//s;
+        $text = $1;
+        # Unescape any escaped values in perl code
+        $bit =~ s/\<([\<\>\{\}\(\);])\>/$1/g;
+        push(@res, map {
+            Bivio::Die->die($_, ': invalid value in Prose function: ', $bit)
+                unless defined($_) && (UNIVERSAL::isa($_, 'Bivio::UI::Widget')
+                       || ref($_) eq 'ARRAY' || !ref($_));
+            $_;
+        } _parse_code($bit.');}>'));
     }
     return @res;
 }

@@ -24,14 +24,14 @@ sub initialize {
     b_die('pass realm_types instead of realm_type')
         if $self->unsafe_get('realm_type');
     $self->put_unless_exists(
-	control => [sub {$self->internal_control_value(@_)}],
-	control_on_value => If(
-	    [sub {_one_choice($self, shift)}],
-	    SPAN(_curr_realm($self), {
-		class => $self->unsafe_get('single_row_class') || 'dd_link',
-	    }),
-	    _drop_down($self),
-	),
+        control => [sub {$self->internal_control_value(@_)}],
+        control_on_value => If(
+            [sub {_one_choice($self, shift)}],
+            SPAN(_curr_realm($self), {
+                class => $self->unsafe_get('single_row_class') || 'dd_link',
+            }),
+            _drop_down($self),
+        ),
     );
     return shift->SUPER::initialize(@_);
 }
@@ -67,8 +67,8 @@ sub internal_control_value {
 sub _choices {
     my($self, $source) = @_;
     return $source->req->cache_for_auth_user(
-	[$self, @{_realm_types($self)}],
-	sub {$self->internal_choices($source)},
+        [$self, @{_realm_types($self)}],
+        sub {$self->internal_choices($source)},
     );
 }
 
@@ -82,43 +82,43 @@ sub _drop_down {
     my($rt) = _realm_types($self);
     my($first_rt) = $rt->[0];
     my($res) = DropDown(
-	If([[qw(->req auth_realm type)], '->equals_by_name', @$rt],
-	   _curr_realm($self),
-	   Prose(vs_text('RealmDropDown', $first_rt)),
+        If([[qw(->req auth_realm type)], '->equals_by_name', @$rt],
+           _curr_realm($self),
+           Prose(vs_text('RealmDropDown', $first_rt)),
         ),
-	TaskMenu([
-	    Simple([sub {
-		        my($source) = @_;
-			my($realms) = _choices($self, $source);
-			my($r) = $source->req('auth_realm');
-			$r = $r->get('type')->equals_by_name(@$rt)
-			    ? $r->get('owner_name')
-				: '';
-			return Join([
-			    map(
-				Link(String(_value($_, 'display_name')) => URI({
-				    realm => _value($_, 'name'),
-				    task_id => _value($_, 'task_id')
-					|| $self->render_simple_attr(
-					    task_id => $source,
-					) || ($first_rt . '_HOME'),
-				    query => undef,
-				    path_info => undef,
-				})),
-				grep(_eq($_, $r), @$realms),
-				grep(!_eq($_, $r), @$realms),
-			    ),
-			]);
-		    }]),
-	], {
-	    class => 'dd_menu',
-	}),
+        TaskMenu([
+            Simple([sub {
+                        my($source) = @_;
+                        my($realms) = _choices($self, $source);
+                        my($r) = $source->req('auth_realm');
+                        $r = $r->get('type')->equals_by_name(@$rt)
+                            ? $r->get('owner_name')
+                                : '';
+                        return Join([
+                            map(
+                                Link(String(_value($_, 'display_name')) => URI({
+                                    realm => _value($_, 'name'),
+                                    task_id => _value($_, 'task_id')
+                                        || $self->render_simple_attr(
+                                            task_id => $source,
+                                        ) || ($first_rt . '_HOME'),
+                                    query => undef,
+                                    path_info => undef,
+                                })),
+                                grep(_eq($_, $r), @$realms),
+                                grep(!_eq($_, $r), @$realms),
+                            ),
+                        ]);
+                    }]),
+        ], {
+            class => 'dd_menu',
+        }),
     )->put(
-	%{$self->unsafe_get('drop_down_attrs') || {}},
+        %{$self->unsafe_get('drop_down_attrs') || {}},
     );
     return $_F->if_2014style(
-	$res,
-	DIV_task_menu_wrapper($res),
+        $res,
+        DIV_task_menu_wrapper($res),
     );
 }
 
@@ -133,17 +133,17 @@ sub _one_choice {
     my($ar) = $source->req('auth_realm');
     return @$choices == 1
         && $ar->has_owner
-	&& _value($choices->[0], 'name') eq $ar->get('owner_name');
+        && _value($choices->[0], 'name') eq $ar->get('owner_name');
 }
 
 sub _realm_types {
     my($self) = @_;
     return $self->get_if_exists_else_put(_realm_types => sub {
-	my($rt) = $self->unsafe_get('realm_types')
-	    || $self->DEFAULT_REALM_TYPES;
+        my($rt) = $self->unsafe_get('realm_types')
+            || $self->DEFAULT_REALM_TYPES;
         return [map(
-	    $_RT->from_any($_)->get_name,
-	    ref($rt) ? @$rt : $rt,
+            $_RT->from_any($_)->get_name,
+            ref($rt) ? @$rt : $rt,
         )];
     });
 }
@@ -151,9 +151,9 @@ sub _realm_types {
 sub _value {
     my($choice, $which) = @_;
     return $choice->{$which}
-	if ref($choice);
+        if ref($choice);
     return $choice
-	if $which =~ /name/;
+        if $which =~ /name/;
     return undef;
 }
 

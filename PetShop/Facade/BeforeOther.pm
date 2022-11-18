@@ -12,12 +12,12 @@ __PACKAGE__->new({
     is_production => 1,
     clone => 'Other',
     Constant => __PACKAGE__->make_groups([
-	@{__PACKAGE__->bunit_shared_values},
-	shared_value2 => 'BeforeOther',
+        @{__PACKAGE__->bunit_shared_values},
+        shared_value2 => 'BeforeOther',
     ]),
     Text => __PACKAGE__->make_groups([
-	@{__PACKAGE__->bunit_shared_values},
-	shared_value1 => 'BeforeOther',
+        @{__PACKAGE__->bunit_shared_values},
+        shared_value1 => 'BeforeOther',
     ]),
 });
 

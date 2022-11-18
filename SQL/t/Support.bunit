@@ -3,57 +3,57 @@
 options({comparator => 'nested_contains'});
 [
     class() => [
-	parse_model_name => [
-	    'RealmOwner' => [{
-		model_name => 'RealmOwner',
-		model_sql => 'realm_owner_t',
-	    }],
-	    'RealmOwner_1' => [{
-		model_name => 'RealmOwner_1',
-		model_sql => 'realm_owner_t_1',
-	    }],
-	    'my.RealmOwner' => [{
-		model_name => 'my.RealmOwner',
-		model_sql => 'realm_owner_t_my',
-	    }],
-	    'My.RealmOwner' => DIE(),
-	],
-	parse_column_name => [
-	    'RealmOwner.realm_type' => [{
-		type => 'Bivio::Auth::RealmType',
-		model_name => 'RealmOwner',
-		sql_name => 'realm_owner_t.realm_type',
-	    }],
-	    'qual.RealmOwner.realm_type' => [{
-		type => 'Bivio::Auth::RealmType',
-		model_name => 'qual.RealmOwner',
-		sql_name => 'realm_owner_t_qual.realm_type',
-	    }],
-	],
-	is_qualified_model_name => [
-	    'RealmOwner_1' => 1,
-	    'qualifier.RealmOwner' => 1,
-	    'BadQual.RealmOwner' => 0,
-	    'RealmOwner' => 0,
-	    'Bivio::Biz::Model::RealmOwner' => 0,
-	],
-	parse_qualified_field => [
-	    '' => [undef],
-	    'a' => [undef],
-	    'qual.RealmOwner.name' => [{
-		prefix => 'qual',
-		model => 'RealmOwner',
-		field => 'name',
-	    }],
-	],
- 	extract_qualified_prefix => [
-	    'aa.bb.cc' => 'aa',
- 	    'bb.cc' => DIE(),
- 	],
-	extract_column_name => [
-	    'aa.bb.cc' => 'cc',
- 	    'bb.cc' => 'cc',
- 	    'cc' => 'cc',
-	],
+        parse_model_name => [
+            'RealmOwner' => [{
+                model_name => 'RealmOwner',
+                model_sql => 'realm_owner_t',
+            }],
+            'RealmOwner_1' => [{
+                model_name => 'RealmOwner_1',
+                model_sql => 'realm_owner_t_1',
+            }],
+            'my.RealmOwner' => [{
+                model_name => 'my.RealmOwner',
+                model_sql => 'realm_owner_t_my',
+            }],
+            'My.RealmOwner' => DIE(),
+        ],
+        parse_column_name => [
+            'RealmOwner.realm_type' => [{
+                type => 'Bivio::Auth::RealmType',
+                model_name => 'RealmOwner',
+                sql_name => 'realm_owner_t.realm_type',
+            }],
+            'qual.RealmOwner.realm_type' => [{
+                type => 'Bivio::Auth::RealmType',
+                model_name => 'qual.RealmOwner',
+                sql_name => 'realm_owner_t_qual.realm_type',
+            }],
+        ],
+        is_qualified_model_name => [
+            'RealmOwner_1' => 1,
+            'qualifier.RealmOwner' => 1,
+            'BadQual.RealmOwner' => 0,
+            'RealmOwner' => 0,
+            'Bivio::Biz::Model::RealmOwner' => 0,
+        ],
+        parse_qualified_field => [
+            '' => [undef],
+            'a' => [undef],
+            'qual.RealmOwner.name' => [{
+                prefix => 'qual',
+                model => 'RealmOwner',
+                field => 'name',
+            }],
+        ],
+         extract_qualified_prefix => [
+            'aa.bb.cc' => 'aa',
+             'bb.cc' => DIE(),
+         ],
+        extract_column_name => [
+            'aa.bb.cc' => 'cc',
+             'bb.cc' => 'cc',
+             'cc' => 'cc',
+        ],
     ],
 ];

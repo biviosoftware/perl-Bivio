@@ -42,7 +42,7 @@ sub get_http_response {
     my(@page) = @res_lines;
     splice(@page, 0, int(@headers) + 1);
     map({$_ =~ s/<head>/<head><base href="$base">/} @page)
-	if $base;
+        if $base;
     return join('', @page);
 }
 
@@ -58,7 +58,7 @@ sub internal_initialize {
     b_use('IO.Config')->assert_test;
     return $self->merge_initialize_info($self->SUPER::internal_initialize,
         {
-	    version => '1',
+            version => '1',
             other => [
                 {
                     name => 'request_number',
@@ -85,8 +85,8 @@ sub internal_initialize {
                     type => 'String',
                     constraint => 'NONE',
                 },
-	    ]
-	});
+            ]
+        });
     return;
 }
 
@@ -106,17 +106,17 @@ sub _process_dom_dump_files {
      my($result) = [];
      my(@dom_files) = glob($_ATL->get_result_directory($test_name .  '/html*.html'));
      foreach my $dom_file (@dom_files) {
-	my($req_nr, $test_line_number) = $dom_file =~ /html-(\d+)-(\d+)/;
-	my($res_nr) = sprintf('%05d', $req_nr);
+        my($req_nr, $test_line_number) = $dom_file =~ /html-(\d+)-(\d+)/;
+        my($res_nr) = sprintf('%05d', $req_nr);
         my($anchor, $title) = _read_file($dom_file);
-	push(@$result, {
-	     request_number => int($req_nr),
-	     response_number => int($res_nr),
-	     test_line_number => $test_line_number,
-	     http_status => '',
+        push(@$result, {
+             request_number => int($req_nr),
+             response_number => int($res_nr),
+             test_line_number => $test_line_number,
+             http_status => '',
              command => "#$anchor",
              is_dom_dump => 1,
-	 });
+         });
      }
      return $result;
 }
@@ -126,22 +126,22 @@ sub _process_req_res_files {
      my($result) = [];
      my(@req_files) = glob($_ATL->get_result_directory($test_name .  '/http*.req'));
      foreach my $req_file (@req_files) {
-	my($req_nr) = $req_file =~ /http-(\d+)/;
-	my($res_nr) = sprintf('%05d', $req_nr + 1);
-	my($test_line_number, $command) = _read_file($req_file);
-	$test_line_number =~ s/^.*?:\s*//;
-	my($res_file) = $req_file;
-	$res_file =~ s/http-\d+.req/http-$res_nr.res/;
-	my(@res_lines) = _read_file($res_file);
-	my($http_status) = $res_lines[0]  =~ /HTTP\/1.1 (\d+).*/;
-	push(@$result, {
-	     request_number => int($req_nr),
-	     response_number => int($res_nr),
-	     test_line_number => $test_line_number,
-	     http_status => $http_status,
+        my($req_nr) = $req_file =~ /http-(\d+)/;
+        my($res_nr) = sprintf('%05d', $req_nr + 1);
+        my($test_line_number, $command) = _read_file($req_file);
+        $test_line_number =~ s/^.*?:\s*//;
+        my($res_file) = $req_file;
+        $res_file =~ s/http-\d+.req/http-$res_nr.res/;
+        my(@res_lines) = _read_file($res_file);
+        my($http_status) = $res_lines[0]  =~ /HTTP\/1.1 (\d+).*/;
+        push(@$result, {
+             request_number => int($req_nr),
+             response_number => int($res_nr),
+             test_line_number => $test_line_number,
+             http_status => $http_status,
              command => $command,
              is_dom_dump => 0,
-	 });
+         });
      }
      return $result;
 }

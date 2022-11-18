@@ -18,13 +18,13 @@ sub ROW_TAG_KEY {
 sub compile {
     my($i) = 2;
     return shift->SUPER::compile([
-	UNKNOWN => [0, 'Select Time Zone'],
-	UTC => [1, 'UTC'],
-	map({
-	    my($x) = $_;
-	    $x =~ s/\W/_/g;
-	    (uc($x) => [$i++, $_]);
-	} @{_names_for_version($DateTime::TimeZone::VERSION)}),
+        UNKNOWN => [0, 'Select Time Zone'],
+        UTC => [1, 'UTC'],
+        map({
+            my($x) = $_;
+            $x =~ s/\W/_/g;
+            (uc($x) => [$i++, $_]);
+        } @{_names_for_version($DateTime::TimeZone::VERSION)}),
     ]);
 }
 
@@ -56,17 +56,17 @@ sub _convert {
     my($self, $date_time, $source, $target) = @_;
     my($sec, $min, $hour, $mday, $mon, $year) = $_DT->to_parts($date_time);
     my($dt) = scalar(DateTime->new(
-	year   => $year,
-	month  => $mon,
-	day    => $mday,
-	hour   => $hour,
-	minute => $min,
-	second => $sec,
-	time_zone => $source->get_short_desc,
+        year   => $year,
+        month  => $mon,
+        day    => $mday,
+        hour   => $hour,
+        minute => $min,
+        second => $sec,
+        time_zone => $source->get_short_desc,
     ));
     $dt->set_time_zone($target->get_short_desc);
     return $_DT->from_parts_or_die(
-	$dt->second, $dt->minute, $dt->hour, $dt->day, $dt->month, $dt->year);
+        $dt->second, $dt->minute, $dt->hour, $dt->day, $dt->month, $dt->year);
 }
 
 sub _names_for_version {
@@ -79,8 +79,8 @@ sub _names_for_version {
         'Africa/Addis_Ababa',
         'Africa/Algiers',
         $version < $v2
-	    ? 'Africa/Asmera'
-	    : 'Africa/Asmara',
+            ? 'Africa/Asmera'
+            : 'Africa/Asmara',
         'Africa/Bamako',
         'Africa/Bangui',
         'Africa/Banjul',
@@ -280,8 +280,8 @@ sub _names_for_version {
         'Asia/Bishkek',
         'Asia/Brunei',
         $version < $v2
-	    ? 'Asia/Calcutta'
-	    : 'Asia/Kolkata',
+            ? 'Asia/Calcutta'
+            : 'Asia/Kolkata',
         'Asia/Choibalsan',
         'Asia/Chongqing',
         'Asia/Colombo',
@@ -303,8 +303,8 @@ sub _names_for_version {
         'Asia/Karachi',
         'Asia/Kashgar',
         $version < $v2
-	    ? 'Asia/Katmandu'
-	    : 'Asia/Kathmandu',
+            ? 'Asia/Katmandu'
+            : 'Asia/Kathmandu',
         'Asia/Krasnoyarsk',
         'Asia/Kuala_Lumpur',
         'Asia/Kuching',
@@ -326,8 +326,8 @@ sub _names_for_version {
         'Asia/Rangoon',
         'Asia/Riyadh',
         $version < $v2
-	    ? 'Asia/Saigon'
-	    : 'Asia/Ho_Chi_Minh',
+            ? 'Asia/Saigon'
+            : 'Asia/Ho_Chi_Minh',
         'Asia/Sakhalin',
         'Asia/Samarkand',
         'Asia/Seoul',
@@ -351,8 +351,8 @@ sub _names_for_version {
         'Atlantic/Canary',
         'Atlantic/Cape_Verde',
         $version < $v2
-	    ? 'Atlantic/Faeroe'
-	    : 'Atlantic/Faroe',
+            ? 'Atlantic/Faeroe'
+            : 'Atlantic/Faroe',
         'Atlantic/Madeira',
         'Atlantic/Reykjavik',
         'Atlantic/South_Georgia',
@@ -459,8 +459,8 @@ sub _names_for_version {
         'Pacific/Palau',
         'Pacific/Pitcairn',
         $version < $v2
-	    ? 'Pacific/Ponape'
-	    : 'Pacific/Pohnpei',
+            ? 'Pacific/Ponape'
+            : 'Pacific/Pohnpei',
         'Pacific/Port_Moresby',
         'Pacific/Rarotonga',
         'Pacific/Saipan',
@@ -468,35 +468,35 @@ sub _names_for_version {
         'Pacific/Tarawa',
         'Pacific/Tongatapu',
         $version < $v2
-	    ? 'Pacific/Truk'
-	    : 'Pacific/Chuuk',
+            ? 'Pacific/Truk'
+            : 'Pacific/Chuuk',
         'Pacific/Wake',
         'Pacific/Wallis',
 
-	$version >= $v2 ? (
-	    'Africa/Juba',
-	    'America/Argentina/Salta',
-	    'America/Argentina/San_Luis',
-	    'America/Bahia_Banderas',
-	    'America/Indiana/Tell_City',
-	    'America/Indiana/Winamac',
-	    'America/Matamoros',
-	    'America/Metlakatla',
-	    'America/North_Dakota/Beulah',
-	    'America/Ojinaga',
-	    'America/Resolute',
-	    'America/Santa_Isabel',
-	    'America/Santarem',
-	    'America/Sitka',
-	    'Antarctica/Macquarie',
-	    'Asia/Hebron',
-	    'Asia/Novokuznetsk',
-	    'Australia/Eucla',
-	    'CET',
-	    'EET',
-	    'MET',
-	    'WET',
-	) : (),
+        $version >= $v2 ? (
+            'Africa/Juba',
+            'America/Argentina/Salta',
+            'America/Argentina/San_Luis',
+            'America/Bahia_Banderas',
+            'America/Indiana/Tell_City',
+            'America/Indiana/Winamac',
+            'America/Matamoros',
+            'America/Metlakatla',
+            'America/North_Dakota/Beulah',
+            'America/Ojinaga',
+            'America/Resolute',
+            'America/Santa_Isabel',
+            'America/Santarem',
+            'America/Sitka',
+            'Antarctica/Macquarie',
+            'Asia/Hebron',
+            'Asia/Novokuznetsk',
+            'Australia/Eucla',
+            'CET',
+            'EET',
+            'MET',
+            'WET',
+        ) : (),
     ];
 }
 

@@ -8,9 +8,9 @@ use Bivio::Base 'Bivio::Type';
 sub from_literal {
     my($proto, $value) = @_;
     return (undef, undef)
-	unless defined($value) && length($value);
+        unless defined($value) && length($value);
     return (undef, Bivio::TypeError->SYNTAX_ERROR)
-	unless $value =~ /^[+-]?(?:\d|\.\d)\d*(?:\.\d*)?(?:[Ee]([+-]?\d+))?$/;
+        unless $value =~ /^[+-]?(?:\d|\.\d)\d*(?:\.\d*)?(?:[Ee]([+-]?\d+))?$/;
     return $value + 0;
 }
 

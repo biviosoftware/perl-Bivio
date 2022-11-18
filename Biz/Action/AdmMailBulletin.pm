@@ -45,10 +45,10 @@ sub execute {
         next unless $_E->is_valid($email)
             && ! $_E->is_ignore($email);
         # avoid accidentally sending to real email address in dev mode
-	if ($req->is_test) {
-	    $test_email ||= ($proto->use('Bivio::Test::Language::HTTP')
-		->generate_local_email('x') =~ /(\@.+)/)[0];
-	    next unless $email =~ /\Q$test_email\E$/;
+        if ($req->is_test) {
+            $test_email ||= ($proto->use('Bivio::Test::Language::HTTP')
+                ->generate_local_email('x') =~ /(\@.+)/)[0];
+            next unless $email =~ /\Q$test_email\E$/;
         }
         _send_bulletin($proto, $bulletin, $email);
     }

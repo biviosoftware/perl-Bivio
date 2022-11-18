@@ -8,9 +8,9 @@ unlink($last_realm_file_name)
 my($realms_with_files) = {};
 model('RealmFile')->do_iterate(
     sub {
-	my($rf) = @_;
-	$realms_with_files->{$rf->get('realm_id')} = 1;
-	return 1;
+        my($rf) = @_;
+        $realms_with_files->{$rf->get('realm_id')} = 1;
+        return 1;
     },
     'unauth_iterate_start',
 );
@@ -20,12 +20,12 @@ my($resume_realms) = [(@$total_realms)[-5 .. -1]];
 [
     [qw(-realm xapian_demo rebuild_db)] => [IO_Ref()->to_string($total_realms)],
     inline_case(
-	sub {
-	    b_die($last_realm_file_name, ' still exists')
-		if -f $last_realm_file_name;
-	    $_F->write($last_realm_file_name, $resume_realms->[0]);
-	},
+        sub {
+            b_die($last_realm_file_name, ' still exists')
+                if -f $last_realm_file_name;
+            $_F->write($last_realm_file_name, $resume_realms->[0]);
+        },
     ),
     [qw(-force -realm xapian_demo rebuild_db)]
-	=> [IO_Ref()->to_string($resume_realms)],
+        => [IO_Ref()->to_string($resume_realms)],
 ];

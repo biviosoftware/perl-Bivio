@@ -4,15 +4,15 @@ PropertyModel();
 req()->set_user(undef);
 [
     {
-	method => 'is_enabled_for_auth_realm',
-	compute_params => sub {
-	    my(undef, $params) = @_;
-	    req()->set_realm($params->[0]);
-	    return [req()];
-	},
+        method => 'is_enabled_for_auth_realm',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            req()->set_realm($params->[0]);
+            return [req()];
+        },
     } => [
-	demo => 0,
-	mail_forum => 0,
-	crm_forum => 1,
+        demo => 0,
+        mail_forum => 0,
+        crm_forum => 1,
     ],
 ];

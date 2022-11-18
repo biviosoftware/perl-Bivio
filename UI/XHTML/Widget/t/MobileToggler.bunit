@@ -3,16 +3,16 @@
 Widget({
     view_class_map => 'XHTMLWidget',
     new_params => sub {
-	my($case, $params) = @_;
-	$case->put('MobileToggler.bunit' => $params);
-	return [];
+        my($case, $params) = @_;
+        $case->put('MobileToggler.bunit' => $params);
+        return [];
     },
     setup_render => sub {
-	my($req, $case) = @_;
-	$req->server_redirect('SITE_ROOT');
+        my($req, $case) = @_;
+        $req->server_redirect('SITE_ROOT');
         $req->put(query => {b_mobile => $case->get('MobileToggler.bunit')->[0]});
-	XHTMLWidget_MobileDetector()->handle_pre_execute_task($req->get('task'), $req);
-	return;
+        XHTMLWidget_MobileDetector()->handle_pre_execute_task($req->get('task'), $req);
+        return;
     },
 });
 [

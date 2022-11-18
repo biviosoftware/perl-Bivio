@@ -10,8 +10,8 @@ sub initialize {
     my($self) = @_;
     my($tracking_id, $site) = $self->get(qw(tracking_id site));
     $self->put(
-	value => $_C->is_production
-	    ? <<"EOF"
+        value => $_C->is_production
+            ? <<"EOF"
 <script type="text/javascript">
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -21,7 +21,7 @@ sub initialize {
   ga('send', 'pageview');
 </script>
 EOF
-	    : ''
+            : ''
     );
     return shift->SUPER::initialize(@_);
 }
@@ -29,8 +29,8 @@ EOF
 sub internal_new_args {
     my($self, $tracking_id, $site) = @_;
     return {
-	tracking_id => $tracking_id,
-	site => $site,
+        tracking_id => $tracking_id,
+        site => $site,
     };
 }
 

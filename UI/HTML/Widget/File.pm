@@ -21,7 +21,7 @@ sub internal_input_base_render_attrs {
     shift->SUPER::internal_input_base_render_attrs(@_);
     my($size) = $self->render_simple_attr('size', $source);
     $$buffer .= qq{ value="@{[$form->get_field_as_html($field)]}"}
-	. qq{ size="$size"};
+        . qq{ size="$size"};
     return;
 }
 

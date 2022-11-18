@@ -19,11 +19,11 @@ ignore this
 EOF
 [
     class() => [
-	{
-	    method => sub {
-		my($case, $object, $is_production) = @_;
-		req()->put(is_production => $is_production);
-		class('Bivio::UI::View')->render(\(<<"EOF"), req());
+        {
+            method => sub {
+                my($case, $object, $is_production) = @_;
+                req()->put(is_production => $is_production);
+                class('Bivio::UI::View')->render(\(<<"EOF"), req());
 view_class_map('HTMLWidget');
 view_shortcuts('Bivio::UI::HTML::ViewShortcuts');
 view_put(vap_wv1 => 'aaa');
@@ -36,20 +36,20 @@ view_main(RealmFilePage({
     xhtml => 1,
 }));
 EOF
-	    },
-	} => [
-	    1 => qr{
-		<html>\n
-		<head>\n
-		.*text/css.*\n
-		href="/tmp/css/my.css\?0"\n
-		src="/my.jpg"\n
-		href="\#"\n
-		</head>\n
-		<body>\n
-		aaabbb\n
-		</body>
-	    }sx,
-	],
+            },
+        } => [
+            1 => qr{
+                <html>\n
+                <head>\n
+                .*text/css.*\n
+                href="/tmp/css/my.css\?0"\n
+                src="/my.jpg"\n
+                href="\#"\n
+                </head>\n
+                <body>\n
+                aaabbb\n
+                </body>
+            }sx,
+        ],
     ],
 ];

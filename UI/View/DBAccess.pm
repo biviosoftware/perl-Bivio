@@ -18,167 +18,167 @@ sub absolute_path {
 sub dbaccess_model_form {
     my($self) = @_;
     view_put(
-	xhtml => Join([
-		HEAD(
-		    Join([
-			STYLE(_css(), {
-			    TYPE => 'text/css',
-			}),
-			TITLE([\&_model_name]),
-		    ])
-		),
-		BODY(Join([
-		    vs_simple_form('DBAccessModelForm' => [
-			DIV_header_panel(Join([
-			    H1(Join([String('Model: '), [\&_model_name]])),
-			    Grid([
-				[
-				    Link('Model list', 'DEV_DBACCESS_MODEL_LIST'),
-				    DIV_search_result(String(['Model.DBAccessModelForm', 'status'])),
-				    [
-					sub {
-					    my($source) = @_;
-					    return unless $source->ureq('query', 'c');
-					    return Link('show in table', {
-						task_id => 'DEV_DBACCESS_ROW_LIST',
-					    });
-					}
-				    ],
-				],
-			    ])
-			])),
-			Grid([
-			    [
-				DIV_button_panel(
-				    Join([
-					map(FormButton($_ . '_button'),
-					    qw(clear_form)),
-				    ]),
-				),
-				DIV_button_panel(
-				    Join([
-					map(FormButton($_ . '_button'),
-					    qw(first prev search next last)),
-				    ]),
-				),
-				DIV_button_panel(
-				    Join([
-					map(FormButton($_ . '_button'),
-					    qw(update create delete)),
-				    ]),
-				),
-			    ],
-			]),
-			Grid([
-			    map(
-				[
-				    Join([_label($_)])->put(
-					row_control => _row_enabled($_),
-					row_class => If(_read_only($_),
-					       'row_read_only',
-					       'row_editable'),
-				    ),
-				    DIV_field_value(
-					If (_read_only($_),
-					    _form_field($_, 1),
-					    _form_field($_, 0),
-					)
-				    ),
-				    _related_links($_),
-				],				
-				@{$_DBAMF->get_qualified_fields},
-			    ),
-			]),
-		    ],
-		    1,
-		)])),
-	    ]));
-    return;		     
+        xhtml => Join([
+                HEAD(
+                    Join([
+                        STYLE(_css(), {
+                            TYPE => 'text/css',
+                        }),
+                        TITLE([\&_model_name]),
+                    ])
+                ),
+                BODY(Join([
+                    vs_simple_form('DBAccessModelForm' => [
+                        DIV_header_panel(Join([
+                            H1(Join([String('Model: '), [\&_model_name]])),
+                            Grid([
+                                [
+                                    Link('Model list', 'DEV_DBACCESS_MODEL_LIST'),
+                                    DIV_search_result(String(['Model.DBAccessModelForm', 'status'])),
+                                    [
+                                        sub {
+                                            my($source) = @_;
+                                            return unless $source->ureq('query', 'c');
+                                            return Link('show in table', {
+                                                task_id => 'DEV_DBACCESS_ROW_LIST',
+                                            });
+                                        }
+                                    ],
+                                ],
+                            ])
+                        ])),
+                        Grid([
+                            [
+                                DIV_button_panel(
+                                    Join([
+                                        map(FormButton($_ . '_button'),
+                                            qw(clear_form)),
+                                    ]),
+                                ),
+                                DIV_button_panel(
+                                    Join([
+                                        map(FormButton($_ . '_button'),
+                                            qw(first prev search next last)),
+                                    ]),
+                                ),
+                                DIV_button_panel(
+                                    Join([
+                                        map(FormButton($_ . '_button'),
+                                            qw(update create delete)),
+                                    ]),
+                                ),
+                            ],
+                        ]),
+                        Grid([
+                            map(
+                                [
+                                    Join([_label($_)])->put(
+                                        row_control => _row_enabled($_),
+                                        row_class => If(_read_only($_),
+                                               'row_read_only',
+                                               'row_editable'),
+                                    ),
+                                    DIV_field_value(
+                                        If (_read_only($_),
+                                            _form_field($_, 1),
+                                            _form_field($_, 0),
+                                        )
+                                    ),
+                                    _related_links($_),
+                                ],                                
+                                @{$_DBAMF->get_qualified_fields},
+                            ),
+                        ]),
+                    ],
+                    1,
+                )])),
+            ]));
+    return;                     
 }
 
 sub dbaccess_model_list {
     view_put(xhtml =>
-		 Join([
-		     HEAD(
-			 Join([
-			     TITLE('Model List'),
-			     STYLE(_css(), {
-				 TYPE => 'text/css',
-			     }),			     
-			 ]),
-		      ),
-		     BODY(Join([		     
-			 H1('Property Models'),
-			  vs_paged_list('DBAccessModelList', [
-			     ['name', {
-			 	 column_widget => Link({
-			 	     value  => String(['name']),
-			 	     href => URI({
-			 		 task_id => 'DEV_DBACCESS_MODEL_FORM',
-			 		 path_info => ['name'],
-					 query => {
-					     n => 1,
-					 },
-			 	     }),
-			 	 }),
-			 	 column_data_class => 'name',		
-			     }],
-				     
-			 ]),
-		     ])),
-		 ]));
+                 Join([
+                     HEAD(
+                         Join([
+                             TITLE('Model List'),
+                             STYLE(_css(), {
+                                 TYPE => 'text/css',
+                             }),                             
+                         ]),
+                      ),
+                     BODY(Join([                     
+                         H1('Property Models'),
+                          vs_paged_list('DBAccessModelList', [
+                             ['name', {
+                                  column_widget => Link({
+                                      value  => String(['name']),
+                                      href => URI({
+                                          task_id => 'DEV_DBACCESS_MODEL_FORM',
+                                          path_info => ['name'],
+                                         query => {
+                                             n => 1,
+                                         },
+                                      }),
+                                  }),
+                                  column_data_class => 'name',                
+                             }],
+                                     
+                         ]),
+                     ])),
+                 ]));
     return;
 }
 
 sub dbaccess_row_list {
     view_put(xhtml => Join([
-	HEAD(
-	    Join([
-		TITLE(Join([[\&_model_name], String(' List')])),
-		STYLE(_css(), {
-		    TYPE => 'text/css',
-		}),
-	    ]),
-	),
-	BODY(Join([
-	    DIV_header_panel(
-		Join([
-		    H1(Join([String('Model: '), [\&_model_name]])),
-		    Grid([[
-			Link('Model list', 'DEV_DBACCESS_MODEL_LIST'),
-		    ]]),
-		])
-	    ),
-	    vs_paged_list('DBAccessRowList', [
-		['index', {
-		    column_widget => 				     
-			Link({
-			    value  =>  String(['index']),
-			    href => URI({
-				task_id => 'DEV_DBACCESS_MODEL_FORM',
-				path_info => [\&_model_name],
-				query => [
-				    sub {
-					my($source) = @_;
-					my($query)= $source->req('query');
+        HEAD(
+            Join([
+                TITLE(Join([[\&_model_name], String(' List')])),
+                STYLE(_css(), {
+                    TYPE => 'text/css',
+                }),
+            ]),
+        ),
+        BODY(Join([
+            DIV_header_panel(
+                Join([
+                    H1(Join([String('Model: '), [\&_model_name]])),
+                    Grid([[
+                        Link('Model list', 'DEV_DBACCESS_MODEL_LIST'),
+                    ]]),
+                ])
+            ),
+            vs_paged_list('DBAccessRowList', [
+                ['index', {
+                    column_widget =>                                      
+                        Link({
+                            value  =>  String(['index']),
+                            href => URI({
+                                task_id => 'DEV_DBACCESS_MODEL_FORM',
+                                path_info => [\&_model_name],
+                                query => [
+                                    sub {
+                                        my($source) = @_;
+                                        my($query)= $source->req('query');
 #TODO: Should be computed in DBAccessRowList
-					$query->{n} = $source->get('index');
-					return $query;
-				    },
-				],
-			    }),
-			}),
-		    column_data_class => 'index',		
-		}],
-		map(
-		    [
-			$_,
-			{column_heading => String(_unqualified($_))},
-		    ],
-		    @{$_DBAMF->get_qualified_fields},
-		),
-	    ]),
-	])),
+                                        $query->{n} = $source->get('index');
+                                        return $query;
+                                    },
+                                ],
+                            }),
+                        }),
+                    column_data_class => 'index',                
+                }],
+                map(
+                    [
+                        $_,
+                        {column_heading => String(_unqualified($_))},
+                    ],
+                    @{$_DBAMF->get_qualified_fields},
+                ),
+            ]),
+        ])),
     ]));
     return;
 }
@@ -186,7 +186,7 @@ sub dbaccess_row_list {
 sub pre_compile {
     my($self) = @_;
     view_parent('DBAccess->xhtml')
-	unless $self->get('view_name') eq 'xhtml';
+        unless $self->get('view_name') eq 'xhtml';
     return;
 }
 
@@ -195,25 +195,25 @@ sub xhtml {
     view_class_map('XHTMLWidget');
     view_shortcuts('UIXHTML.ViewShortcuts');
     view_put(
-	xhtml => '',
+        xhtml => '',
     );
     view_main(SimplePage(view_widget_value('xhtml')));
     return;
 }
 
-	    
+            
 sub _form_field {
     my($qualified_field_name, $read_only) = @_;
     return FormField({
-	field => 'DBAccessModelForm.' . $qualified_field_name,
-	form_field_label => 'DBAccessModelForm.prev_button',
-	edit_attributes => {
-	    label => '',
-	    wf_want_select => 1,
-	    disabled => $read_only,
-	    is_read_only => $read_only,
-	    readonly => $read_only,
-	}});
+        field => 'DBAccessModelForm.' . $qualified_field_name,
+        form_field_label => 'DBAccessModelForm.prev_button',
+        edit_attributes => {
+            label => '',
+            wf_want_select => 1,
+            disabled => $read_only,
+            is_read_only => $read_only,
+            readonly => $read_only,
+        }});
 }
 
 sub _model_name {
@@ -229,97 +229,97 @@ sub _related_links {
     my($count) = {};
     map($count->{$_->{model}}++,  @$related); 
     return DIV_related_links(
-	UL(
-	    Join([
-		map(
-		    _related_link($qualified_field, $_, $count->{$_->{model}} > 1),
-		    sort(
-			{$a->{model} cmp $b->{model}}
-			@$related,
-		    ),
-		),
-	    ]),
-	),
+        UL(
+            Join([
+                map(
+                    _related_link($qualified_field, $_, $count->{$_->{model}} > 1),
+                    sort(
+                        {$a->{model} cmp $b->{model}}
+                        @$related,
+                    ),
+                ),
+            ]),
+        ),
     );
 }
 
 sub _related_link {
     my($qualified_field, $related, $duplicate) = @_;
     my($label)
-	= ' '
-	. $related->{model}
-	. ($duplicate ? "($related->{field})" : '')
-	. ' ';
+        = ' '
+        . $related->{model}
+        . ($duplicate ? "($related->{field})" : '')
+        . ' ';
     return LI(
-	If(
-	    [
-		'Model.DBAccessModelForm',
-		'->relation_exists',
-		$qualified_field,
-		$related->{model},
-		$related->{field},
-	    ],
-	    Link(
-		String($label),
+        If(
+            [
+                'Model.DBAccessModelForm',
+                '->relation_exists',
+                $qualified_field,
+                $related->{model},
+                $related->{field},
+            ],
+            Link(
+                String($label),
 #TODO: should be encapsulated in DBAccessModelForm -- if uri is undef then won't render link
-		[ 	 
-		  sub {
-		      my($source) = @_;
-		      return {
-			  path_info => $related->{model},
-			  query => {
-			      n => 1,
-			      $related->{field} => $source->req('Model.DBAccessModelForm', $qualified_field),
-			  },
-		      };
-		  },
-	        ],
-	    ),
-	    String($label),
-	),
+                [          
+                  sub {
+                      my($source) = @_;
+                      return {
+                          path_info => $related->{model},
+                          query => {
+                              n => 1,
+                              $related->{field} => $source->req('Model.DBAccessModelForm', $qualified_field),
+                          },
+                      };
+                  },
+                ],
+            ),
+            String($label),
+        ),
     ); 
 }
 
 sub _row_enabled {
     my($field) = @_;
     return [
-	sub {
-	    my($source) = @_;
-	    my($prefix) = substr($source->req('path_info'), 1) . '.';
-	    return index($field, $prefix) == 0;
-	}
+        sub {
+            my($source) = @_;
+            my($prefix) = substr($source->req('path_info'), 1) . '.';
+            return index($field, $prefix) == 0;
+        }
     ];
 }
 
 sub _read_only {
     my($qualified_field) = @_;
     return [
-	sub {
-	    my($source) = @_;
-	    my($field) = $qualified_field =~ qr{[^\.]*\.(.*)};
-	    return ((($source->req('query') || {})->{'_' . $field} || 0) == 0) ? 1 : 0;
-	}
+        sub {
+            my($source) = @_;
+            my($field) = $qualified_field =~ qr{[^\.]*\.(.*)};
+            return ((($source->req('query') || {})->{'_' . $field} || 0) == 0) ? 1 : 0;
+        }
     ];
 }
 
 sub _label {
     my($qualified_field) = @_;
     return [
-	sub {
-	    my($source) = @_;
-	    my($field) = $qualified_field =~ qr{[^\.]*\.(.*)};
-	    my($label) = $field;
-	    $label =~ s/_/ /g;
-	    my($query) = {%{$source->req('query') || {}}};
-	    my($p) = '_' . $field;
-	    $query->{$p} = 1 unless (delete($query->{$p}) || 0 == 1);
-	    my($link) = DIV(Link($label . ': ', URI({
-		path_info => $source->req('path_info'),
-		query => $query,
-	    })));
-	    $link->put(class => 'field_label');  
-	    return $link;
-	}
+        sub {
+            my($source) = @_;
+            my($field) = $qualified_field =~ qr{[^\.]*\.(.*)};
+            my($label) = $field;
+            $label =~ s/_/ /g;
+            my($query) = {%{$source->req('query') || {}}};
+            my($p) = '_' . $field;
+            $query->{$p} = 1 unless (delete($query->{$p}) || 0 == 1);
+            my($link) = DIV(Link($label . ': ', URI({
+                path_info => $source->req('path_info'),
+                query => $query,
+            })));
+            $link->put(class => 'field_label');  
+            return $link;
+        }
     ];
 }
 

@@ -8,8 +8,8 @@ use Bivio::Base 'Biz.Action';
 sub execute {
     my($proto, $req) = @_;
     b_use('Test.Util')->weekly_build_output_to_wiki(
-	$req->get('Model.MailReceiveDispatchForm')
-	->get('message')->{content},
+        $req->get('Model.MailReceiveDispatchForm')
+        ->get('message')->{content},
     );
     return 0;
 }

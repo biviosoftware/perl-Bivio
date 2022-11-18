@@ -18,9 +18,9 @@ use Bivio::Base 'UI.WidgetValueSource';
 sub get_instance {
     my($proto, $class) = @_;
     $class = b_use('HTMLFormat', $class)
-	unless ref($class);
+        unless ref($class);
     b_die($class, ': not a ', $proto->package_name)
-	unless $proto->is_super_of($class);
+        unless $proto->is_super_of($class);
     return $class;
 }
 

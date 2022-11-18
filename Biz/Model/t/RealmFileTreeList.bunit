@@ -5,35 +5,35 @@ req()->set_realm_and_user('btest_read', 'btest_read')
     ->initialize_fully('FORUM_FILE_TREE_LIST');
 my($ids) = [
     map(
-	model(RealmFile => {
-	    path_lc => $_,
-	})->get('realm_file_id'),
-	'/', '/private',
+        model(RealmFile => {
+            path_lc => $_,
+        })->get('realm_file_id'),
+        '/', '/private',
     ),
 ];
 options({
     compute_return => sub {
-	my(undef, $actual) = @_;
-	return $actual->[0]->map_rows(sub{shift->get('RealmFile.path_lc');});
+        my(undef, $actual) = @_;
+        return $actual->[0]->map_rows(sub{shift->get('RealmFile.path_lc');});
     },
 });
 [
     load_all => [
-	[] => [qw(/ /private /public)],
-	sub {
-	    return [{
-		order_by => '0d',
-		this => $ids->[1],
-	     }];
-	} => [qw(/ /public /private /private/image.gif /private/file.html)],
-	[{path_info => '/private'}]
-	    => [qw(/private/file.html /private/image.gif)],
-	[{path_info => '/does-not-exist'}] => MODEL_NOT_FOUND(),
-	[{
-	    expand => join(',', @$ids),
-	}] => [qw(/ /private /private/file.html /private/image.gif /public)],
-	[{
-	    expand => join('%2C', @$ids),
-	}] => CORRUPT_QUERY(),
+        [] => [qw(/ /private /public)],
+        sub {
+            return [{
+                order_by => '0d',
+                this => $ids->[1],
+             }];
+        } => [qw(/ /public /private /private/image.gif /private/file.html)],
+        [{path_info => '/private'}]
+            => [qw(/private/file.html /private/image.gif)],
+        [{path_info => '/does-not-exist'}] => MODEL_NOT_FOUND(),
+        [{
+            expand => join(',', @$ids),
+        }] => [qw(/ /private /private/file.html /private/image.gif /public)],
+        [{
+            expand => join('%2C', @$ids),
+        }] => CORRUPT_QUERY(),
     ],
 ];

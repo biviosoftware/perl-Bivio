@@ -31,8 +31,8 @@ sub dev_get {
     my($caller) = caller;
     print eval "
         package $caller;
-	Bivio::IO::Config->get(\@_);
-	1;
+        Bivio::IO::Config->get(\@_);
+        1;
     " ? "$@not ok $T\n" : "ok $T\n";
     return;
 }
@@ -42,7 +42,7 @@ sub conf_get {
     my($caller) = caller;
     my($res) = eval "
         package $caller;
-	Bivio::IO::Config->get(\@_);
+        Bivio::IO::Config->get(\@_);
     ";
     print $res ? "ok $T\n" : "$@not ok $T\n";
     return $res;
@@ -98,10 +98,10 @@ foreach $k (qw(p1 p2)) {
 
 Bivio::IO::Config->introduce_values({
     'Bivio::IO::Config::t::T1' => {
-	p1 => 999,
-	freddy => {
-	    p3 => 777,
-	},
+        p1 => 999,
+        freddy => {
+            p3 => 777,
+        },
     },
 });
 
@@ -116,9 +116,9 @@ foreach my $x (
     my($a, $b) = ref($name) ? @$name : $name;
     my($actual) = main::conf_get($a);
     $actual = $actual->{$b}
-	if $b;
+        if $b;
     die($actual, ": $a not $expect")
-	unless $actual == $expect;
+        unless $actual == $expect;
 }
 
 my($actual) = main::conf_get('Bivio::IO::Config::t::T1');

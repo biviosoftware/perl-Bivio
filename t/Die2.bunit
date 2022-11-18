@@ -5,18 +5,18 @@ my($var) = 0;
 Unit();
 [
     class() => [
-	eval => [
-	    [sub {(caller)[0]}] => Bivio_Test()->package_name,
-	    ['(caller)[0]'] => Bivio_Test()->package_name,
-	    [sub {$sub->()}] => TestUnit_Unit()->package_name,
-	],
-	catch_and_rethrow => [
-	    [sub {'a'}, sub {$var = 1}] => sub {
-		assert_equals($var, 1);
-		return ['a'];
-	    },
-	    [sub {b_die('bad')}, sub {$var = 2}] => DIE(),
-	    inline_case(sub {assert_equals($var, 2)}),
-	],
+        eval => [
+            [sub {(caller)[0]}] => Bivio_Test()->package_name,
+            ['(caller)[0]'] => Bivio_Test()->package_name,
+            [sub {$sub->()}] => TestUnit_Unit()->package_name,
+        ],
+        catch_and_rethrow => [
+            [sub {'a'}, sub {$var = 1}] => sub {
+                assert_equals($var, 1);
+                return ['a'];
+            },
+            [sub {b_die('bad')}, sub {$var = 2}] => DIE(),
+            inline_case(sub {assert_equals($var, 2)}),
+        ],
     ],
 ];

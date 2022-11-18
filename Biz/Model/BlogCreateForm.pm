@@ -15,24 +15,24 @@ sub execute_ok {
     my($bfn);
     my($p) = $self->unsafe_get('RealmFile.is_public') ? 1 : 0;
     foreach my $x (1..100) {
-	$bfn = $_BFN->from_date_time($now);
-	my($v) = {
-	    path => $_BFN->to_absolute($bfn, $p),
-	    is_public => $p,
-	};
-	unless ($rf->unsafe_load($v)) {
-	    $rf->create_with_content(
-		$v, $_BC->join($self->get(qw(title content))));
-	    $self->get_request->put();
-	    return $self->return_with_validate({
-		path_info => $bfn,
-	    });
-	}
-	$bfn = undef;
-	$now = $_DT->add_seconds($now, 1);
+        $bfn = $_BFN->from_date_time($now);
+        my($v) = {
+            path => $_BFN->to_absolute($bfn, $p),
+            is_public => $p,
+        };
+        unless ($rf->unsafe_load($v)) {
+            $rf->create_with_content(
+                $v, $_BC->join($self->get(qw(title content))));
+            $self->get_request->put();
+            return $self->return_with_validate({
+                path_info => $bfn,
+            });
+        }
+        $bfn = undef;
+        $now = $_DT->add_seconds($now, 1);
     }
     $self->die(
-	$_BFN->from_date_time($now) , ': unable to create unique file',
+        $_BFN->from_date_time($now) , ': unable to create unique file',
     );
     # DOES NOT RETURN
 }
@@ -42,21 +42,21 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
-	    {
-		name => 'title',
-		type => 'BlogTitle',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'content',
-		type => 'BlogBody',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'RealmFile.is_public',
-		constraint => 'NONE',
-	    },
-	],
+            {
+                name => 'title',
+                type => 'BlogTitle',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'content',
+                type => 'BlogBody',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'RealmFile.is_public',
+                constraint => 'NONE',
+            },
+        ],
     });
 }
 

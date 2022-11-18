@@ -8,8 +8,8 @@ use Bivio::SQL::Connection;
 my($_TABLE) = 't_connection_t';
 Bivio::Die->eval(
     sub {
-	Bivio::SQL::Connection->execute("drop table $_TABLE");
-	Bivio::SQL::Connection->commit;
+        Bivio::SQL::Connection->execute("drop table $_TABLE");
+        Bivio::SQL::Connection->commit;
     },
 );
 Bivio::Test->unit([
@@ -17,32 +17,32 @@ Bivio::Test->unit([
         # need to rollback first in case the drop above leaves the
         # connection in a bad state
         rollback => undef,
-	execute => [
-	    # We expect to get a statement back.
-	    [<<"EOF"] => \&_expect_statement,
-		create table $_TABLE (
-		    f1 numeric(8),
-		    f2 numeric(8),
-		    unique(f1, f2)
-		)
+        execute => [
+            # We expect to get a statement back.
+            [<<"EOF"] => \&_expect_statement,
+                create table $_TABLE (
+                    f1 numeric(8),
+                    f2 numeric(8),
+                    unique(f1, f2)
+                )
 EOF
-	    ["insert into $_TABLE (f1, f2) values (1, 1)"]
-	        => \&_expect_statement,
-	],
-	commit => undef,
-	execute => [
-	    ["insert into $_TABLE (f1, f2) values (1, 1)"]
-	        => Bivio::DieCode->DB_CONSTRAINT,
-	],
-	execute => [
-	    ["update $_TABLE set f2 = 13 where f2 = 1"] => \&_expect_one_row,
-	],
-	execute_one_row => [
-	    ["select f2 from $_TABLE where f2 = 13"] => [[13]]
-	],
-	execute => [
-	    ["delete from $_TABLE where f1 = 1"] => \&_expect_one_row,
-	],
+            ["insert into $_TABLE (f1, f2) values (1, 1)"]
+                => \&_expect_statement,
+        ],
+        commit => undef,
+        execute => [
+            ["insert into $_TABLE (f1, f2) values (1, 1)"]
+                => Bivio::DieCode->DB_CONSTRAINT,
+        ],
+        execute => [
+            ["update $_TABLE set f2 = 13 where f2 = 1"] => \&_expect_one_row,
+        ],
+        execute_one_row => [
+            ["select f2 from $_TABLE where f2 = 13"] => [[13]]
+        ],
+        execute => [
+            ["delete from $_TABLE where f1 = 1"] => \&_expect_one_row,
+        ],
     ],
 ]);
 

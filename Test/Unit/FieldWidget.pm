@@ -24,8 +24,8 @@ sub new_unit {
     $args->{parse_return} = sub {_parse_return($self, @_)};
     $self = $proto->SUPER::new_unit($class_name, $args, @rest);
     $self->put(
-	field_name => $args->{field},
-	parse_return_regex => qr{$re},
+        field_name => $args->{field},
+        parse_return_regex => qr{$re},
     );
     return $self;
 }
@@ -33,11 +33,11 @@ sub new_unit {
 sub test_value_as_html {
     my($self) = @_;
     return sub {
-	my($case) = $self->current_case();
-	return [
-	    $_FTF->get_field_type($self->get('field_name'))
-	        ->to_html($case->get('object')->get('test_value')),
-	];
+        my($case) = $self->current_case();
+        return [
+            $_FTF->get_field_type($self->get('field_name'))
+                ->to_html($case->get('object')->get('test_value')),
+        ];
     };
 }
 
@@ -49,25 +49,25 @@ sub _new_params {
     my($f) = $self->get('field_name');
     $self->builtin_model('FieldTestForm', {$f => $p->{test_value}});
     return [{
-	form_class => $_FTF->package_name,
-	form_model => [$_FTF->package_name],
-	field => $f,
-	%$p,
+        form_class => $_FTF->package_name,
+        form_model => [$_FTF->package_name],
+        field => $f,
+        %$p,
     }];
 }
 
 sub _parse_return {
     my($self, $case, $actual) = @_;
     $self->builtin_assert_equals(
-	$self->get('parse_return_regex'),
-	$actual->[0],
+        $self->get('parse_return_regex'),
+        $actual->[0],
     );
     return [join(
-	';',
-	map(
-	    defined($_) ? $_ : '',
-	    $actual->[0] =~ $self->get('parse_return_regex'),
-	),
+        ';',
+        map(
+            defined($_) ? $_ : '',
+            $actual->[0] =~ $self->get('parse_return_regex'),
+        ),
     )];
 }
 

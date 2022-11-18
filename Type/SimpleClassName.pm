@@ -13,9 +13,9 @@ sub from_literal {
     my($proto) = shift;
     my($v, $e) = $proto->SUPER::from_literal(@_);
     return ($v, $e)
-	unless defined($v);
+        unless defined($v);
     return $v =~ m{^@{[$proto->REGEX]}$}
-	? $v : (undef, Bivio::TypeError->SIMPLE_CLASS_NAME);
+        ? $v : (undef, Bivio::TypeError->SIMPLE_CLASS_NAME);
     return;
 }
 

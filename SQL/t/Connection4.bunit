@@ -4,83 +4,83 @@ Unit();
 my($is_postgres) = SQL_Connection()->get_instance =~ /Postgres/;
 foreach my $n (1..4) {
     rollback()
-	if Bivio_Die()->catch_quietly(
-	    sub {
-		SQL_Connection()->execute("drop table t_leftjoin_t$n");
-		commit();
-		return;
-	    },
-	);
+        if Bivio_Die()->catch_quietly(
+            sub {
+                SQL_Connection()->execute("drop table t_leftjoin_t$n");
+                commit();
+                return;
+            },
+        );
 }
 [
     class() => [
-	execute => [
-	    # We expect to get a statement back.
-	    map({
-		("create table t_leftjoin_t$_ (
-		    f1 numeric(8),
-		    f2 numeric(8)
-		)" => undef);
-	    } 1..4),
-	],
-	commit => undef,
-	execute => [
-	    'insert into t_leftjoin_t1 (f1, f2) values (1, 1)' => undef,
-	    'insert into t_leftjoin_t1 (f1, f2) values (2, 2)' => undef,
-	    'insert into t_leftjoin_t1 (f1, f2) values (3, 3)' => undef,
-	    'insert into t_leftjoin_t2 (f1, f2) values (2, 2)' => undef,
-	    'insert into t_leftjoin_t3 (f1, f2) values (3, 3)' => undef,
-	    'insert into t_leftjoin_t4 (f1, f2) values (1, 1)' => undef,
-	    'insert into t_leftjoin_t4 (f1, f2) values (2, 2)' => undef,
-	    'insert into t_leftjoin_t4 (f1, f2) values (3, 3)' => undef,
-	],
-	commit => undef,
-	execute_one_row => [
-	    # Verify # rows
-	    'select count(*) from t_leftjoin_t1' => [[3]],
-	    # Simple join
-	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1' => [[1]],
-	    # Left join
-	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[3]],
-	    # Left and simple
-	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t1.f1 = t_leftjoin_t3.f1' => [[1]],
-	    # Simple and left
-	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t3.f1 and t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[1]],
-	    # Two left with one table
-	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[3]],
-	    # Two left with two tables
-	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t1.f1 = t_leftjoin_t3.f1(+)' => [[3]],
-	    # Count cross product
-	    'select count(*) from t_leftjoin_t1, t_leftjoin_t4' => [[9]],
-	    # Two left with two different sets of tables
-	    'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+)' => [[9]],
+        execute => [
+            # We expect to get a statement back.
+            map({
+                ("create table t_leftjoin_t$_ (
+                    f1 numeric(8),
+                    f2 numeric(8)
+                )" => undef);
+            } 1..4),
+        ],
+        commit => undef,
+        execute => [
+            'insert into t_leftjoin_t1 (f1, f2) values (1, 1)' => undef,
+            'insert into t_leftjoin_t1 (f1, f2) values (2, 2)' => undef,
+            'insert into t_leftjoin_t1 (f1, f2) values (3, 3)' => undef,
+            'insert into t_leftjoin_t2 (f1, f2) values (2, 2)' => undef,
+            'insert into t_leftjoin_t3 (f1, f2) values (3, 3)' => undef,
+            'insert into t_leftjoin_t4 (f1, f2) values (1, 1)' => undef,
+            'insert into t_leftjoin_t4 (f1, f2) values (2, 2)' => undef,
+            'insert into t_leftjoin_t4 (f1, f2) values (3, 3)' => undef,
+        ],
+        commit => undef,
+        execute_one_row => [
+            # Verify # rows
+            'select count(*) from t_leftjoin_t1' => [[3]],
+            # Simple join
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t2 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1' => [[1]],
+            # Left join
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t2 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[3]],
+            # Left and simple
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t1.f1 = t_leftjoin_t3.f1' => [[1]],
+            # Simple and left
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t3.f1 and t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[1]],
+            # Two left with one table
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)' => [[3]],
+            # Two left with two tables
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t1.f1 = t_leftjoin_t3.f1(+)' => [[3]],
+            # Count cross product
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t4' => [[9]],
+            # Two left with two different sets of tables
+            'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+)' => [[9]],
             !$is_postgres ? () : (
-		'select count(*)
-		    from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4
-		    where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)
-		    and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+)
-		    order by t_leftjoin_t1.f1'
-		=> [[9]],
-		'select count(*),
-		    (select sum(f1) from t_leftjoin_t4 where t_leftjoin_t4.f2 > 1) as f3
-		    from t_leftjoin_t1, t_leftjoin_t2
-		    where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)',
-		=> [[3, 5]],
-	    ),
-	    'select t_leftjoin_t1.f1,
-		   (select sum(t_leftjoin_t3.f2) from t_leftjoin_t3
-		    where t_leftjoin_t3.f1=t_leftjoin_t1.f1) as f3
-	      from t_leftjoin_t1, t_leftjoin_t2
-	      where t_leftjoin_t1.f1=t_leftjoin_t2.f1(+)
+                'select count(*)
+                    from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t4
+                    where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)
+                    and t_leftjoin_t4.f1 = t_leftjoin_t3.f1(+)
+                    order by t_leftjoin_t1.f1'
+                => [[9]],
+                'select count(*),
+                    (select sum(f1) from t_leftjoin_t4 where t_leftjoin_t4.f2 > 1) as f3
+                    from t_leftjoin_t1, t_leftjoin_t2
+                    where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+)',
+                => [[3, 5]],
+            ),
+            'select t_leftjoin_t1.f1,
+                   (select sum(t_leftjoin_t3.f2) from t_leftjoin_t3
+                    where t_leftjoin_t3.f1=t_leftjoin_t1.f1) as f3
+              from t_leftjoin_t1, t_leftjoin_t2
+              where t_leftjoin_t1.f1=t_leftjoin_t2.f1(+)
               order by t_leftjoin_t1.f1 asc' => [[1, undef]],
-	    # Simple and left with aliases
-	    'select count(*) from t_leftjoin_t1 ljt1, t_leftjoin_t2 ljt2, t_leftjoin_t3 ljt3 where ljt1.f1 = ljt3.f1 and ljt1.f1 = ljt2.f1(+)' => [[1]],
-	    # self join and left with aliases
-	    'select count(*) from t_leftjoin_t1 t1_1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t1 where t1_1.f1 = t_leftjoin_t3.f1 and t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t1_1.f1 = t_leftjoin_t1.f1' => [[1]],
-	    # Emulated ListSupport query
-	    'select count(*) from t_leftjoin_t1 t_leftjoin_t1_1, t_leftjoin_t2 t_leftjoin_t2_2, t_leftjoin_t3 t_leftjoin_t3_3, t_leftjoin_t1 t_leftjoin_t1_4 where t_leftjoin_t1_1.f1 = t_leftjoin_t3_3.f1 and t_leftjoin_t1_4.f1 = t_leftjoin_t2_2.f1(+) and t_leftjoin_t1_1.f1 = t_leftjoin_t1_4.f1' => [[1]],
-	    # Mix it up a bit
-	    'select count(*) from t_leftjoin_t2 t_leftjoin_t2_2, t_leftjoin_t3 t_leftjoin_t3_3, t_leftjoin_t1 t_leftjoin_t1_4 , t_leftjoin_t1 t_leftjoin_t1_1 where t_leftjoin_t1_1.f1 = t_leftjoin_t3_3.f1 and t_leftjoin_t1_4.f1 = t_leftjoin_t2_2.f1(+) and t_leftjoin_t1_1.f1 = t_leftjoin_t1_4.f1' => [[1]],
+            # Simple and left with aliases
+            'select count(*) from t_leftjoin_t1 ljt1, t_leftjoin_t2 ljt2, t_leftjoin_t3 ljt3 where ljt1.f1 = ljt3.f1 and ljt1.f1 = ljt2.f1(+)' => [[1]],
+            # self join and left with aliases
+            'select count(*) from t_leftjoin_t1 t1_1, t_leftjoin_t2, t_leftjoin_t3, t_leftjoin_t1 where t1_1.f1 = t_leftjoin_t3.f1 and t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t1_1.f1 = t_leftjoin_t1.f1' => [[1]],
+            # Emulated ListSupport query
+            'select count(*) from t_leftjoin_t1 t_leftjoin_t1_1, t_leftjoin_t2 t_leftjoin_t2_2, t_leftjoin_t3 t_leftjoin_t3_3, t_leftjoin_t1 t_leftjoin_t1_4 where t_leftjoin_t1_1.f1 = t_leftjoin_t3_3.f1 and t_leftjoin_t1_4.f1 = t_leftjoin_t2_2.f1(+) and t_leftjoin_t1_1.f1 = t_leftjoin_t1_4.f1' => [[1]],
+            # Mix it up a bit
+            'select count(*) from t_leftjoin_t2 t_leftjoin_t2_2, t_leftjoin_t3 t_leftjoin_t3_3, t_leftjoin_t1 t_leftjoin_t1_4 , t_leftjoin_t1 t_leftjoin_t1_1 where t_leftjoin_t1_1.f1 = t_leftjoin_t3_3.f1 and t_leftjoin_t1_4.f1 = t_leftjoin_t2_2.f1(+) and t_leftjoin_t1_1.f1 = t_leftjoin_t1_4.f1' => [[1]],
             # left join on left join
             'select count(*) from t_leftjoin_t1, t_leftjoin_t2, t_leftjoin_t3 where t_leftjoin_t1.f1 = t_leftjoin_t2.f1(+) and t_leftjoin_t2.f2 = t_leftjoin_t3.f2(+)' => [[3]],
        ],

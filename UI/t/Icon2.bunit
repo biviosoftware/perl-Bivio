@@ -7,24 +7,24 @@ my($my_icon) = "$dir/my_icon.gif";
 system("cp ../../PetShop/files/petshop/plain/i/logo.gif $my_icon");
 config({
     'Bivio::UI::Facade' => {
-	local_file_root => $root,
-	want_local_file_cache => 1,
+        local_file_root => $root,
+        want_local_file_cache => 1,
     },
     'Bivio::Type::CacheTagFilePath' => {
-	use_cached_path => 1,
+        use_cached_path => 1,
     },
 });
 req()->initialize_fully;
 my($ctre) = Type_CacheTag()->REGEX;
 [
     sub {class()->get_from_source(req())} => [
- 	format_css => [
-	    my_icon => qr{url\(/i/my_icon\.$ctre\.gif\)},
-	    my_icon => qr{url\(/i/my_icon\.$ctre\.gif\)},
-	    sub {
-		unlink($my_icon);
-		return ['my_icon'];
-	    } => 'url(/missing-image)',
-	],
+         format_css => [
+            my_icon => qr{url\(/i/my_icon\.$ctre\.gif\)},
+            my_icon => qr{url\(/i/my_icon\.$ctre\.gif\)},
+            sub {
+                unlink($my_icon);
+                return ['my_icon'];
+            } => 'url(/missing-image)',
+        ],
     ],
 ];

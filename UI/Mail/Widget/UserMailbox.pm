@@ -75,10 +75,10 @@ Implements positional argument parsing for L<new|"new">.
 sub internal_new_args {
     my(undef, $user_id, $attrs) = @_;
     return '"user_id" attribute must be defined'
-	unless $user_id;
+        unless $user_id;
     return {
         user_id => $user_id,
-	($attrs ? %$attrs : ()),
+        ($attrs ? %$attrs : ()),
     };
 }
 

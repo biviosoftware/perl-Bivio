@@ -5,15 +5,15 @@ options({
 });
 [
     class() => [
-	inheritance_ancestors => [
-	    [] => [[qw(
-	        Bivio::Type::String
-	        Bivio::Type
-		Bivio::UI::WidgetValueSource
-		Bivio::UNIVERSAL
-	    )]],
-	],
-	test_b_die => qr{Bivio::t::Base::T1:\d+ Bivio::DieCode::DIE: here},
-	test_b_info => qr{Bivio::t::Base::T1::test_b_info:\d+ xyz},
+        inheritance_ancestors => [
+            [] => [[qw(
+                Bivio::Type::String
+                Bivio::Type
+                Bivio::UI::WidgetValueSource
+                Bivio::UNIVERSAL
+            )]],
+        ],
+        test_b_die => qr{Bivio::t::Base::T1:\d+ Bivio::DieCode::DIE: here},
+        test_b_info => qr{Bivio::t::Base::T1::test_b_info:\d+ xyz},
     ],
 ];

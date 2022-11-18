@@ -31,8 +31,8 @@ EOF
 [
     inline_case(sub {wiki_uri_to_req('/Xb'); 1}),
     [{
-	value => '@b-menu value=x',
-	is_public => 0,
+        value => '@b-menu value=x',
+        is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/bp/Xa" Xa
@@ -41,8 +41,8 @@ EOF
     ))]}},
     inline_case(sub {wiki_uri_to_req('/Yb'); 1}),
     [{
-	value => '@b-menu value=y',
-	is_public => 0,
+        value => '@b-menu value=y',
+        is_public => 0,
     }] => qr{@{[join('.*', qw(
        class="bmenu"
        "/bunit_wiki/\w+/Ya" Ya

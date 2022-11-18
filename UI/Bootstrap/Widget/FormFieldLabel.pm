@@ -14,10 +14,10 @@ sub COL_CLASS {
 sub initialize {
     my($self) = @_;
     return shift->put_unless_exists(
-	value => LABEL(
-	    $self->get('label'),
-	    $self->COL_CLASS . ' control-label',
-	),
+        value => LABEL(
+            $self->get('label'),
+            $self->COL_CLASS . ' control-label',
+        ),
     )->SUPER::initialize(@_);
 }
 

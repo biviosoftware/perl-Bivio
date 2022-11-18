@@ -11,38 +11,38 @@ my($simple) = class()->new([
 my($error);
 [
     new => [
-	[] => 'Parameters',
-	[['param1']] => 'Parameters(param1)',
-	[['Boolean']] => 'Parameters(Boolean)',
-	[['+Boolean']] => 'Parameters(+Boolean)',
-	[[[qw(?bool Boolean)], '*String']] => 'Parameters(?bool,*String)',
-	[[qw(+Boolean +String)]] => qr{Boolean: only the last.*repeat},
-	[[qw(?Boolean +String)]] => qr{String: param must be optional},
-	[['NoSuchType']] => qr{not.found}i,
+        [] => 'Parameters',
+        [['param1']] => 'Parameters(param1)',
+        [['Boolean']] => 'Parameters(Boolean)',
+        [['+Boolean']] => 'Parameters(+Boolean)',
+        [[[qw(?bool Boolean)], '*String']] => 'Parameters(?bool,*String)',
+        [[qw(+Boolean +String)]] => qr{Boolean: only the last.*repeat},
+        [[qw(?Boolean +String)]] => qr{String: param must be optional},
+        [['NoSuchType']] => qr{not.found}i,
     ],
     parameters => [
-	[[], $empty] => [class(), {}],
-	[{}, $empty] => [class(), {}],
-	[['value1'], $simple] => [class(), {
-	    p1 => 'value1',
-	    gender => Type_Gender()->FEMALE,
-	    name => 'site',
-	    repeat => [99],
-	}],
-	[[Type_Month()->MAY, qw(male club 1 2 3)], $simple] => [class(), {
-	    p1 => Type_Month()->MAY,
-	    gender => Type_Gender()->MALE,
-	    name => 'club',
-	    repeat => [1, 2, 3],
-	}],
-	sub {[[qw(v1 not-gender)], $simple, $error = {}]} => sub {
-	    assert_equals({
-		param_name => 'gender',
-		param_value => 'not-gender',
-		type_error => Bivio_TypeError()->NOT_FOUND,
-	    }, $error);
-	    return 1;
-	},
-	[{not_found => 1}, $simple] => qr{not_found: not found},
+        [[], $empty] => [class(), {}],
+        [{}, $empty] => [class(), {}],
+        [['value1'], $simple] => [class(), {
+            p1 => 'value1',
+            gender => Type_Gender()->FEMALE,
+            name => 'site',
+            repeat => [99],
+        }],
+        [[Type_Month()->MAY, qw(male club 1 2 3)], $simple] => [class(), {
+            p1 => Type_Month()->MAY,
+            gender => Type_Gender()->MALE,
+            name => 'club',
+            repeat => [1, 2, 3],
+        }],
+        sub {[[qw(v1 not-gender)], $simple, $error = {}]} => sub {
+            assert_equals({
+                param_name => 'gender',
+                param_value => 'not-gender',
+                type_error => Bivio_TypeError()->NOT_FOUND,
+            }, $error);
+            return 1;
+        },
+        [{not_found => 1}, $simple] => qr{not_found: not found},
     ],
 ];

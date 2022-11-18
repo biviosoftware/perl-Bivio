@@ -3,19 +3,19 @@
 Request();
 [
     class() => [
-	{
-	    method => 'execute',
-	    compute_params => sub {
-		my(undef, $params) = @_;
-		req()->put(path_info => $params->[0]);
-		return [req()];
-	    },
-	    compute_return => sub {
-		return [Bivio::IO::Trace->get_package_filter];
-	    },
-	} => [
-	    sql => qr{SQL},
-	    '' => [undef],
-	],
+        {
+            method => 'execute',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                req()->put(path_info => $params->[0]);
+                return [req()];
+            },
+            compute_return => sub {
+                return [Bivio::IO::Trace->get_package_filter];
+            },
+        } => [
+            sql => qr{SQL},
+            '' => [undef],
+        ],
     ],
 ];

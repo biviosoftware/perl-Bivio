@@ -18,7 +18,7 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     $self->new_other('RealmFileLock')->load({
-	realm_file_lock_id => $self->get('RealmFileLock.realm_file_lock_id'),
+        realm_file_lock_id => $self->get('RealmFileLock.realm_file_lock_id'),
     })->delete;
     return;
 }
@@ -28,16 +28,16 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         require_context => 1,
-	hidden => [
-	    'RealmFileLock.realm_file_lock_id',
-	],
+        hidden => [
+            'RealmFileLock.realm_file_lock_id',
+        ],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
     $self->get_model('RealmFileLock')
-	if $self->get('RealmFileLock.realm_file_lock_id');
+        if $self->get('RealmFileLock.realm_file_lock_id');
     return;
 }
 

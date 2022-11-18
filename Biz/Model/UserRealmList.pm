@@ -13,17 +13,17 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	order_by => [qw(
-	    RealmOwner.name
-	)],
-	other => [qw(
-	    RealmOwner.realm_type
+        order_by => [qw(
+            RealmOwner.name
+        )],
+        other => [qw(
+            RealmOwner.realm_type
             RealmOwner.display_name
-	)],
-	primary_key => [
-	    [qw(RealmUser.realm_id RealmOwner.realm_id)],
-	],
-	auth_id => ['RealmUser.user_id'],
+        )],
+        primary_key => [
+            [qw(RealmUser.realm_id RealmOwner.realm_id)],
+        ],
+        auth_id => ['RealmUser.user_id'],
     });
 }
 

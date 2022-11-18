@@ -2,6 +2,6 @@
 # $Id$
 [
     class() => [
-	simple_package_name => 'Unit',
+        simple_package_name => 'Unit',
     ],
 ];

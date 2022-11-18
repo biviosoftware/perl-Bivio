@@ -13,30 +13,30 @@ sub internal_initialize {
     my($columns) = [];
 
     while (my($model_name, $fields) = each(%{$_DBAMF->get_all_fields()})) {
-    	foreach my $field (sort(keys(%$fields))) {
-    	    my($e) = {
-    		name => "$model_name.$field",
-    		type => $_DBAMF->get_all_fields()->{$model_name}->{$field}->{type},
-    		constraint => 'NONE',
-    	    };
-	    $e->{type} = 'Line' if  $e->{type} eq 'Bivio::Type::PrimaryId';
-    	    $e->{type} = 'Line' if $e->{type}->isa('Bivio::Type::EnumSet');
-    	    $e->{type} = 'Line' if $e->{type} eq 'Bivio::Type::EmailVerifyKey';
-	    $e->{type} = 'Line' if $e->{type} eq 'Bivio::Type::DateTime';
-    	    push(@$columns, $e);
-    	}
+            foreach my $field (sort(keys(%$fields))) {
+                my($e) = {
+                    name => "$model_name.$field",
+                    type => $_DBAMF->get_all_fields()->{$model_name}->{$field}->{type},
+                    constraint => 'NONE',
+                };
+            $e->{type} = 'Line' if  $e->{type} eq 'Bivio::Type::PrimaryId';
+                $e->{type} = 'Line' if $e->{type}->isa('Bivio::Type::EnumSet');
+                $e->{type} = 'Line' if $e->{type} eq 'Bivio::Type::EmailVerifyKey';
+            $e->{type} = 'Line' if $e->{type} eq 'Bivio::Type::DateTime';
+                push(@$columns, $e);
+            }
     }
     return $self->merge_initialize_info($self->SUPER::internal_initialize,
         {
-	    version => '1',
-	    primary_key => [
+            version => '1',
+            primary_key => [
                 {
                     name => 'index',
                     type => 'String',
                     constraint => 'NONE',
                 },
-		@$columns,
-	    ],
+                @$columns,
+            ],
         });
     return;
 }

@@ -20,11 +20,11 @@ sub t {
     my($actual);
     my($die) = Bivio::Die->catch(sub {
         $actual = $req->redirect($args);
-	return;
+        return;
     });
     print(
-	($expect ? $die->get('code')->equals_by_name($expect)
-	     : !$die && !$actual) ? "ok $t\n" : "not ok $t\n");
+        ($expect ? $die->get('code')->equals_by_name($expect)
+             : !$die && !$actual) ? "ok $t\n" : "not ok $t\n");
     $t++;
     return;
 }

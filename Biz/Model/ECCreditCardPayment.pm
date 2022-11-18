@@ -22,10 +22,10 @@ sub internal_initialize {
     # need to always preserve ECPayments, so deleting them
     # via cascade_delete() should always fail
     return {
-	version => 1,
-	table_name => 'ec_credit_card_payment_t',
-	columns => {
-	    ec_payment_id => ['ECPayment.ec_payment_id', 'PRIMARY_KEY'],
+        version => 1,
+        table_name => 'ec_credit_card_payment_t',
+        columns => {
+            ec_payment_id => ['ECPayment.ec_payment_id', 'PRIMARY_KEY'],
             realm_id => ['PrimaryId', 'NOT_NULL'],
             processed_date_time => ['DateTime', 'NONE'],
             processor_response => ['Text', 'NONE'],
@@ -37,15 +37,15 @@ sub internal_initialize {
             card_zip => ['Name', 'NOT_NULL'],
             card_first_name => ['Name', 'NONE'],
             card_last_name => ['Name', 'NONE'],
-	    card_address => ['Line', 'NONE'],
-	    card_city => ['Name', 'NONE'],
+            card_address => ['Line', 'NONE'],
+            card_city => ['Name', 'NONE'],
             # Only if US or CA
-	    card_state => ['Name', 'NONE'],
-	    card_country => ['Country', 'NONE'],
+            card_state => ['Name', 'NONE'],
+            card_country => ['Country', 'NONE'],
             card_email => ['Email', 'NONE'],
         },
-	auth_id => 'realm_id',
-	other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
+        auth_id => 'realm_id',
+        other => [['ec_payment_id', 'ECPayment.ec_payment_id']],
     };
 }
 
@@ -58,7 +58,7 @@ sub process_payment {
     my($self, $form) = @_;
     $self->req->with_realm($self->req('auth_user'), sub {
         Bivio::Die->catch(sub {
-	    $self->get_payment_processor->execute_process($self->req);
+            $self->get_payment_processor->execute_process($self->req);
             my($payment) = $self->req('Model.ECPayment');
 
             if ($payment->get('status')->is_bad) {
@@ -67,14 +67,14 @@ sub process_payment {
                     $payment->get_model('ECCreditCardPayment')
                         ->get('processor_response') || 'Card declined');
             }
-	    else {
-		b_info('credit card processed: ',
-		    join(' ',
-			 $payment->get(qw(realm_id user_id currency_name)),
-			 $_A->to_literal($payment->get('amount')),
-		    ),
-		);
-	    }
+            else {
+                b_info('credit card processed: ',
+                    join(' ',
+                         $payment->get(qw(realm_id user_id currency_name)),
+                         $_A->to_literal($payment->get('amount')),
+                    ),
+                );
+            }
         });
     });
     return $form->in_error ? 0 : 1;

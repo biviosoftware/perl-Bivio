@@ -15,16 +15,16 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	primary_key => [{
-	    name => 'key',
-	    type => 'Integer',
-	    constraint => 'NOT_NULL',
-	}],
-	other => [{
-	    name => 'choice',
-	    type => 'TupleSlot',
-	    constraint => 'NOT_NULL',
-	}],
+        primary_key => [{
+            name => 'key',
+            type => 'Integer',
+            constraint => 'NOT_NULL',
+        }],
+        other => [{
+            name => 'choice',
+            type => 'TupleSlot',
+            constraint => 'NOT_NULL',
+        }],
     });
 }
 
@@ -32,8 +32,8 @@ sub internal_load_rows {
     my($self) = @_;
     my($k) = 1;
     return [map(+{
-	choice => $_,
-	key => $k++,
+        choice => $_,
+        key => $k++,
     }, sort(@{$self->[$_IDI]}))];
 }
 
@@ -47,18 +47,18 @@ sub _list {
     my($source) = @_;
     my($c, $tc);
     if ($_TST->is_blesser_of($source)) {
-	($c, $tc) = map($source->get($_), qw(choices class));
+        ($c, $tc) = map($source->get($_), qw(choices class));
     }
     else {
-	$tc = Bivio::Type->get_instance(
-	    $source->get('TupleSlotType.type_class'));
-	$c = $source->get('TupleSlotType.choices');
+        $tc = Bivio::Type->get_instance(
+            $source->get('TupleSlotType.type_class'));
+        $c = $source->get('TupleSlotType.choices');
     }
     return [map(
-	$tc->to_literal($_),
-	sort {
-	    $tc->compare($a, $b)
-	} @{$c->as_array},
+        $tc->to_literal($_),
+        sort {
+            $tc->compare($a, $b)
+        } @{$c->as_array},
     )];
 }
 

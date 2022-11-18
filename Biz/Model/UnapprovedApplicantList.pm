@@ -13,8 +13,8 @@ sub internal_initialize {
     push(@order, @{$info->{order_by}});
     delete($info->{order_by});
     return $self->merge_initialize_info($info, {
- 	order_by => [@order],
-	group_by => ['RealmOwner.creation_date_time'],
+         order_by => [@order],
+        group_by => ['RealmOwner.creation_date_time'],
     });
 }
 

@@ -2,36 +2,36 @@
 # $Id$
 options({
     create_object => sub {
-	my($case, $params) = @_;
-	my($name) = 'Bivio::t::UNIVERSAL::' . $params->[1];
-	return $params->[0] ? class($name) : class($name)->new;
+        my($case, $params) = @_;
+        my($name) = 'Bivio::t::UNIVERSAL::' . $params->[1];
+        return $params->[0] ? class($name) : class($name)->new;
     },
 });
 [
     [0 => 'Delegate'] => [
-	simple_package_name => 'Delegate',
+        simple_package_name => 'Delegate',
     ],
     [0 => 'Delegator'] => [
-	simple_package_name => 'Delegator',
+        simple_package_name => 'Delegator',
     ],
     map({
-	($_ => [
-	    echo => [
-		$_->[2] => $_->[1] . ' ' . ($_->[3] ? $_->[3] : $_->[2]) . "\n",
-	    ],
-	]);
+        ($_ => [
+            echo => [
+                $_->[2] => $_->[1] . ' ' . ($_->[3] ? $_->[3] : $_->[2]) . "\n",
+            ],
+        ]);
     }
-	[0 => Delegator => 'yea'],
-	[1 => Delegator => 'yea'],
-	[0 => Delegate => 'yea'],
-	[1 => Delegate => 'yea'],
-	[0 => Delegator => [class('Bivio::t::UNIVERSAL::Delegate')]
-	     =>  "Bivio::t::UNIVERSAL::Delegate"],
-	[1 => Delegator => [class('Bivio::t::UNIVERSAL::Delegate')->new]
-	     =>  "Delegate"],
-	[0 => Delegate => [class('Bivio::t::UNIVERSAL::Delegator')]
-	     =>  "Bivio::t::UNIVERSAL::Delegator"],
-	[1 => Delegate => [class('Bivio::t::UNIVERSAL::Delegator')->new]
-	     =>  "Delegator"],
+        [0 => Delegator => 'yea'],
+        [1 => Delegator => 'yea'],
+        [0 => Delegate => 'yea'],
+        [1 => Delegate => 'yea'],
+        [0 => Delegator => [class('Bivio::t::UNIVERSAL::Delegate')]
+             =>  "Bivio::t::UNIVERSAL::Delegate"],
+        [1 => Delegator => [class('Bivio::t::UNIVERSAL::Delegate')->new]
+             =>  "Delegate"],
+        [0 => Delegate => [class('Bivio::t::UNIVERSAL::Delegator')]
+             =>  "Bivio::t::UNIVERSAL::Delegator"],
+        [1 => Delegate => [class('Bivio::t::UNIVERSAL::Delegator')->new]
+             =>  "Delegator"],
     ),
 ];

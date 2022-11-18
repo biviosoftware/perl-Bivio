@@ -8,8 +8,8 @@ use Bivio::Base 'HTMLWidget.Tag';
 sub initialize {
     my($self) = @_;
     $self->put_unless_exists(
-	tag_if_empty => 1,
-	value => '',
+        tag_if_empty => 1,
+        value => '',
     );
     return shift->SUPER::initialize(@_);
 }

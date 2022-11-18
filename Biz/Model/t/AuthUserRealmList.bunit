@@ -4,52 +4,52 @@ ListModel();
 req()->set_realm_and_user('fourem')->initialize_fully('GROUP_USER_LIST');
 [
     {
-	method => 'load_all_for_task',
-	compute_params => sub {
-	    my(undef, $actual) = @_;
-	    req()->set_user($actual->[0]);
-	    return [$actual->[1] || undef];
-	},
+        method => 'load_all_for_task',
+        compute_params => sub {
+            my(undef, $actual) = @_;
+            req()->set_user($actual->[0]);
+            return [$actual->[1] || undef];
+        },
     } => [
-	btest_read => [],
-	[qw(btest_admin FORUM_CALENDAR_EVENT_DETAIL)] => [
-	    {'RealmOwner.name' => 'btest_admin'},
-	    {'RealmOwner.name' => 'fourem'},
-	    {'RealmOwner.name' => 'fourem-sub2'},
-	],
-	btest_admin => [{'RealmOwner.name' => 'fourem-sub2'}],
+        btest_read => [],
+        [qw(btest_admin FORUM_CALENDAR_EVENT_DETAIL)] => [
+            {'RealmOwner.name' => 'btest_admin'},
+            {'RealmOwner.name' => 'fourem'},
+            {'RealmOwner.name' => 'fourem-sub2'},
+        ],
+        btest_admin => [{'RealmOwner.name' => 'fourem-sub2'}],
     ],
     assert_realm_exists => [
-	[realm_id('fourem-sub2')] => not_die(),
-	[realm_id('fourem')] => FORBIDDEN(),
-	[undef] => DIE(),
+        [realm_id('fourem-sub2')] => not_die(),
+        [realm_id('fourem')] => FORBIDDEN(),
+        [undef] => DIE(),
     ],
     realm_ids => [
-	[] => [[realm_id('fourem-sub2')]],
-	['FORUM_CALENDAR_EVENT_DETAIL'] => [
-	    [map(realm_id($_), qw(btest_admin fourem fourem-sub2))],
-	],
+        [] => [[realm_id('fourem-sub2')]],
+        ['FORUM_CALENDAR_EVENT_DETAIL'] => [
+            [map(realm_id($_), qw(btest_admin fourem fourem-sub2))],
+        ],
     ],
     inline_case(sub {req()->set_user('calendar_btest_user')}),
     load_all_for_task => [
-	'FORUM_CALENDAR_EVENT_DETAIL' => not_die(),
+        'FORUM_CALENDAR_EVENT_DETAIL' => not_die(),
     ],
     {
-	method => 'can_user_execute_task_in_this_realm',
-	compute_params => sub {
-	    my($case, $params) = @_;
-	    $case->get('object')->find_row_by('RealmOwner.name', shift(@$params));
-	    return [@$params];
-	},
+        method => 'can_user_execute_task_in_this_realm',
+        compute_params => sub {
+            my($case, $params) = @_;
+            $case->get('object')->find_row_by('RealmOwner.name', shift(@$params));
+            return [@$params];
+        },
     } => [
-	[qw(fourem FORUM_CALENDAR_EVENT_DETAIL)] => DIE(),
-	[qw(calendar_btest_main FORUM_CALENDAR_EVENT_DETAIL)] => 1,
-	[qw(calendar_btest_main FORUM_CALENDAR_EVENT_FORM)] => 1,
-	[qw(calendar_btest_read_only FORUM_CALENDAR_EVENT_DETAIL)] => 1,
-	[qw(calendar_btest_read_only FORUM_CALENDAR_EVENT_FORM)] => 0,
+        [qw(fourem FORUM_CALENDAR_EVENT_DETAIL)] => DIE(),
+        [qw(calendar_btest_main FORUM_CALENDAR_EVENT_DETAIL)] => 1,
+        [qw(calendar_btest_main FORUM_CALENDAR_EVENT_FORM)] => 1,
+        [qw(calendar_btest_read_only FORUM_CALENDAR_EVENT_DETAIL)] => 1,
+        [qw(calendar_btest_read_only FORUM_CALENDAR_EVENT_FORM)] => 0,
     ],
     can_user_execute_task_in_any_realm => [
-	FORUM_CALENDAR_EVENT_FORM => 1,
-	SITE_ADMIN_USER_LIST => 0,
+        FORUM_CALENDAR_EVENT_FORM => 1,
+        SITE_ADMIN_USER_LIST => 0,
     ],
 ];

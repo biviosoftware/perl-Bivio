@@ -17,34 +17,34 @@ sub format {
     # with L<Bivio::ListQuery::to_char|Bivio::ListQuery/"to_char">.
     my(undef, $query, $req) = @_;
     return undef
-	unless $query;
+        unless $query;
     if (exists($query->{acknowledgement})) {
-	($_A ||= b_use('Action.Acknowledgement'))
-	    ->save_label(delete($query->{acknowledgement}), $req, $query);
-	return undef
-	    unless %$query;
+        ($_A ||= b_use('Action.Acknowledgement'))
+            ->save_label(delete($query->{acknowledgement}), $req, $query);
+        return undef
+            unless %$query;
     }
     my($res) = '';
     # Always format the keys in the same order
     foreach my $k (sort(keys(%$query))) {
-	my($v) = $query->{$k};
-	$k = $_LQ->to_char($k)
-	    if $k =~ s/^ListQuery\.//;
-	$res .= $_HTML->escape_query($k)
-	    . '='
-	    # Sometimes the query value is not defined.  It may
-	    # be a corrupt query, but shouldn't blow up.
-	    . $_HTML->escape_query(
-		ref($v)
-		? $_U->is_blesser_of($v) && $v->can('as_query')
-		? $v->as_query
-		: $req->isa('Bivio::Test::Request')
-		? "$v"
-		: b_die($k, '=', $v, ': query value is a reference')
-		: defined($v)
-		? $v
-		: '',
-	    ) . '&';
+        my($v) = $query->{$k};
+        $k = $_LQ->to_char($k)
+            if $k =~ s/^ListQuery\.//;
+        $res .= $_HTML->escape_query($k)
+            . '='
+            # Sometimes the query value is not defined.  It may
+            # be a corrupt query, but shouldn't blow up.
+            . $_HTML->escape_query(
+                ref($v)
+                ? $_U->is_blesser_of($v) && $v->can('as_query')
+                ? $v->as_query
+                : $req->isa('Bivio::Test::Request')
+                ? "$v"
+                : b_die($k, '=', $v, ': query value is a reference')
+                : defined($v)
+                ? $v
+                : '',
+            ) . '&';
     }
     chop($res);
     return $res;
@@ -62,27 +62,27 @@ sub parse {
     # Some search engines escape the query string incorrectly.
     #   /pub/trez_talk/msg?v=1%26t=332800003%26o=0d1a2a
     $string = _correct('unescape_uri', $string)
-	    if $string =~ /^(?:v=1%26|v%3d1)/i;
+            if $string =~ /^(?:v=1%26|v%3d1)/i;
 
     # Some search engines don't unescape_html when parsing the page
     #   /pub/trez_talk/msg?v=1&amp;t=292100003&amp;o=0d1a2a
     $string = _correct('unescape', $string)
-	    if $string =~ /&amp;\w=/;
+            if $string =~ /&amp;\w=/;
 
     # Split on & and then =
     my(@v);
     foreach my $item (split(/&/, $string)) {
-	# While it isn't usual to have a query value with = literally,
-	# it can happen and therefore we have the "2".
-	my($k, $v) = split(/=/, $item, 2);
+        # While it isn't usual to have a query value with = literally,
+        # it can happen and therefore we have the "2".
+        my($k, $v) = split(/=/, $item, 2);
 
-	# Avoid the lone "&=" case.  Totally mangled query element.
-	next unless defined($k) && length($k);
+        # Avoid the lone "&=" case.  Totally mangled query element.
+        next unless defined($k) && length($k);
 
-	# $v may not be defined.  This is a malformed query, but
-	# let's handle anyway.
-	push(@v, $_HTML->unescape_query($k),
-		defined($v) ? $_HTML->unescape_query($v) : undef);
+        # $v may not be defined.  This is a malformed query, but
+        # let's handle anyway.
+        push(@v, $_HTML->unescape_query($k),
+                defined($v) ? $_HTML->unescape_query($v) : undef);
     }
 
     # No valid elements?
@@ -99,13 +99,13 @@ sub _correct {
     my(@msg) = ('correcting query=', $literal);
     my($req) = Bivio::Agent::Request->get_current;
     if ($req) {
-	my($r) = $req->get('r');
-	push(@msg,
-		', uri=', $req->unsafe_get('uri'),
-		', referer=', $r ? $r->header_in('referer') : undef,
-		', client_addr=', $req->unsafe_get('client_addr'),
-		', user-agent=', $r ? $r->header_in('user-agent') : undef,
-	       );
+        my($r) = $req->get('r');
+        push(@msg,
+                ', uri=', $req->unsafe_get('uri'),
+                ', referer=', $r ? $r->header_in('referer') : undef,
+                ', client_addr=', $req->unsafe_get('client_addr'),
+                ', user-agent=', $r ? $r->header_in('user-agent') : undef,
+               );
     }
     Bivio::IO::Alert->warn(@msg);
     return $_HTML->$method($literal);

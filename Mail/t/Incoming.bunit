@@ -14,26 +14,26 @@ Message-ID: <m@m>
 any body
 EOF
         get_from => [
-	    [] => ['john+btest_forum-admin@localhost.localdomain', 'John Doe'],
-	],
-	get_references => [
-	    [] => [[qw(d@d c@c b@b a@a)]],
-	],
-	get_message_id => 'm@m',
-	get_date_time => '2453670 29987',
-	get_reply_subject => 'Re: should bounce',
-	grep_headers => [
-	    [qr{subj}i, qr{should}i] => [['subject']],
-	    [qr{subj}i, qr{should not}i] => [[]],
-	    [qr{badheader}i, qr{should}i] => [[]],
-	],
+            [] => ['john+btest_forum-admin@localhost.localdomain', 'John Doe'],
+        ],
+        get_references => [
+            [] => [[qw(d@d c@c b@b a@a)]],
+        ],
+        get_message_id => 'm@m',
+        get_date_time => '2453670 29987',
+        get_reply_subject => 'Re: should bounce',
+        grep_headers => [
+            [qr{subj}i, qr{should}i] => [['subject']],
+            [qr{subj}i, qr{should not}i] => [[]],
+            [qr{badheader}i, qr{should}i] => [[]],
+        ],
     ],
     [\(<<'EOF')] => [
 Message-ID: <m@m>
 
 any body
 EOF
-	get_reply_subject => 'Re: (No Subject)',
+        get_reply_subject => 'Re: (No Subject)',
         get_from => not_die(),
     ],
     [\(<<'EOF')] => [
@@ -47,11 +47,11 @@ Cc: cc@cc.com, John Doe <John@Localhost.localdomain>
 
 any body
 EOF
-	get_message_id => [
-	    [] => ['no-message-id'],
-	],
-	get_references => [
-	    [] => [[qw(d@d c@c b@b a@a)]],
-	],
+        get_message_id => [
+            [] => ['no-message-id'],
+        ],
+        get_references => [
+            [] => [[qw(d@d c@c b@b a@a)]],
+        ],
     ],
 ];

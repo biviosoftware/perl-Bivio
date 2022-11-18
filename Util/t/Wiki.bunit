@@ -5,10 +5,10 @@ my($tmp) = tmp_dir();
 system("cp Wiki/*.html $tmp") == 0 || die;
 options({
     check_return => sub {
-	my($case) = @_;
-	my($res) = $case->get('params')->[1] =~ /(.+)\.html/;
-	$case->actual_return([read_file($res)]);
-	return [read_file('Wiki/' . ($res =~ /(\w+)$/)[0])];
+        my($case) = @_;
+        my($res) = $case->get('params')->[1] =~ /(.+)\.html/;
+        $case->actual_return([read_file($res)]);
+        return [read_file('Wiki/' . ($res =~ /(\w+)$/)[0])];
     },
 });
 [

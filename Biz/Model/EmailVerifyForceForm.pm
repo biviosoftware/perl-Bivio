@@ -16,22 +16,22 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         other => [
-	    {
-		name => 'realm_id',
-		type => 'PrimaryId',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'email',
-		type => 'Email',
-		constraint => 'NOT_NULL',
-	    },
-	    {
-		name => 'display_name',
-		type => 'DisplayName',
-		constraint => 'NOT_NULL',
-	    },
-	],
+            {
+                name => 'realm_id',
+                type => 'PrimaryId',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'email',
+                type => 'Email',
+                constraint => 'NOT_NULL',
+            },
+            {
+                name => 'display_name',
+                type => 'DisplayName',
+                constraint => 'NOT_NULL',
+            },
+        ],
     });
 }
 
@@ -44,9 +44,9 @@ sub internal_pre_execute {
     my($ro) = $self->new_other('RealmOwner')->set_ephemeral;
     $ro->unauth_load({realm_id => $rid});
     $self->internal_put_field(
-	realm_id => $rid,
-	email => $e->get('email'),
-	display_name => $ro->get('display_name'),
+        realm_id => $rid,
+        email => $e->get('email'),
+        display_name => $ro->get('display_name'),
     );
     return @res;
 }

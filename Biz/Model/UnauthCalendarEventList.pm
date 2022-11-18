@@ -13,13 +13,13 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-	primary_key => [['CalendarEvent.calendar_event_id', 'RealmOwner.realm_id']],
-	order_by => ['CalendarEvent.calendar_event_id'],
-	other => [
-	    $self->get_instance('CalendarEvent')->get_qualified_field_name_list,
-	    'RealmOwner.display_name',
-	],
-	other_query_keys => [$self->IS_COPY_QUERY_KEY],
+        primary_key => [['CalendarEvent.calendar_event_id', 'RealmOwner.realm_id']],
+        order_by => ['CalendarEvent.calendar_event_id'],
+        other => [
+            $self->get_instance('CalendarEvent')->get_qualified_field_name_list,
+            'RealmOwner.display_name',
+        ],
+        other_query_keys => [$self->IS_COPY_QUERY_KEY],
     });
 }
 

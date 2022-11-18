@@ -124,14 +124,14 @@ my($_CLASSES) = [qw(auth_id visible hidden primary_key other)];
 sub extract_column_from_classes {
     my($proto, $decls, $column_name) = @_;
     foreach my $c (map(@{$decls->{$_} || []}, @$_CLASSES)) {
-	if (ref($c)) {
-	    return $c
-		if $c->{name} eq $column_name;
-	}
-	else {
-	    return {name => $c}
-		if $c eq $column_name;
-	}
+        if (ref($c)) {
+            return $c
+                if $c->{name} eq $column_name;
+        }
+        else {
+            return {name => $c}
+                if $c eq $column_name;
+        }
     }
     Bivio::Die->die($column_name, ': not found in ', $decls);
     # DOES NOT RETURN
@@ -186,16 +186,16 @@ sub new {
     # models corresponding to the table names unless overridden
     my($proto, $decl) = @_;
     my($attrs) = {
-	# All columns by qualified name
-	columns => {},
-	# All models by qualified name
-	models => {},
-	# All fields and field identities by qualified name
-	column_aliases => {},
-	# Columns which have no corresponding property model field
-	local_columns => [],
-	map(($_ => $decl->{$_} ? 1 : 0), qw(require_validate require_context)),
-	has_secure_data => 0,
+        # All columns by qualified name
+        columns => {},
+        # All models by qualified name
+        models => {},
+        # All fields and field identities by qualified name
+        column_aliases => {},
+        # Columns which have no corresponding property model field
+        local_columns => [],
+        map(($_ => $decl->{$_} ? 1 : 0), qw(require_validate require_context)),
+        has_secure_data => 0,
     };
     $proto->init_common_attrs($attrs, $decl);
 
@@ -213,19 +213,19 @@ sub new {
 sub _form_name {
     my($col, $i, $form_names) = @_;
     if ($col->{form_name}) {
-	b_die(
-	    $col->{name},
-	    q{: form name cannot be fNN. You probably have a field in both the 'visible' and 'hidden' sections of your form definition.  OR, you may be trying to edit the primary key field of a ListFormModel's ListModel.}
-	) if $col->{form_name} =~ /^f\d+$/;
+        b_die(
+            $col->{name},
+            q{: form name cannot be fNN. You probably have a field in both the 'visible' and 'hidden' sections of your form definition.  OR, you may be trying to edit the primary key field of a ListFormModel's ListModel.}
+        ) if $col->{form_name} =~ /^f\d+$/;
     }
     else {
-	$col->{form_name} = 'f' . $i++;
+        $col->{form_name} = 'f' . $i++;
     }
     b_die(
-	$col->{name},
-	': duplicate form name (',
-	$col->{form_name},
-	')',
+        $col->{name},
+        ': duplicate form name (',
+        $col->{form_name},
+        ')',
     ) if $form_names->{$col->{form_name}}++;
     ($col->{json_form_name} = lc($col->{name})) =~ s/\W/_/g;
     return $i;
@@ -259,39 +259,39 @@ sub _init_column_classes {
     $attrs->{file_fields} = undef;
 #TODO: These must agree with FormModel
     my($form_names) = {(Bivio::Biz::FormModel->VERSION_FIELD() => 1,
-	    Bivio::Biz::FormModel->CONTEXT_FIELD() => 1,
-	    Bivio::Biz::FormModel->TIMEZONE_FIELD() => 1,)};
+            Bivio::Biz::FormModel->CONTEXT_FIELD() => 1,
+            Bivio::Biz::FormModel->TIMEZONE_FIELD() => 1,)};
     $attrs->{json_form_name_map} = {};
     foreach my $col (@{$attrs->{visible}}, @{$attrs->{hidden}}) {
-	$i = _form_name($col, $i, $form_names);
-	$attrs->{json_form_name_map}->{$col->{json_form_name}} = $col;
-	$attrs->{column_aliases}->{$col->{form_name}} = $col;
-	push(@{$attrs->{file_fields} ||= []}, $col)
-	    if $col->{is_file_field} = b_use('Type.FileField')->is_super_of($col->{type});
-	$attrs->{has_secure_data} = 1
-	    if $col->{type}->is_secure_data;
-	# Defaults to false and overwritten below
-	$col->{is_hidden} = 0;
+        $i = _form_name($col, $i, $form_names);
+        $attrs->{json_form_name_map}->{$col->{json_form_name}} = $col;
+        $attrs->{column_aliases}->{$col->{form_name}} = $col;
+        push(@{$attrs->{file_fields} ||= []}, $col)
+            if $col->{is_file_field} = b_use('Type.FileField')->is_super_of($col->{type});
+        $attrs->{has_secure_data} = 1
+            if $col->{type}->is_secure_data;
+        # Defaults to false and overwritten below
+        $col->{is_hidden} = 0;
     }
 
     # Reset is_visible for visible fields.
     foreach my $col (@{$attrs->{visible}}) {
-	$col->{is_visible} = 1;
+        $col->{is_visible} = 1;
     }
 
     # Map field name lists
     $attrs->{visible_field_names} = [sort(map {
-	$_->{name}
+        $_->{name}
     } @{$attrs->{visible}})];
 
     $attrs->{hidden_field_names} = [sort(map {
-	$_->{name}
+        $_->{name}
     } @{$attrs->{hidden}})];
 
     $attrs->{file_field_names} = [sort(map {
-	$_->{name}
+        $_->{name}
     } @{$attrs->{file_fields}})]
-		if $attrs->{file_fields};
+                if $attrs->{file_fields};
     return;
 }
 
@@ -309,15 +309,15 @@ sub _init_list_class {
     # Set the primary_key by copying the list_class's primary key
     $decl->{hidden} = [] unless $decl->{hidden};
     foreach my $col (@{$lm->get_info('primary_key')}) {
-	# Copy all the attributes, because list_class may override
-	# the attributes or have local fields.
-	my($c) = {
-	    name => $col->{name},
-	    type => $col->{type},
-	    constraint => $col->{constraint},
-	    in_list => 1,
-	};
-	push(@{$decl->{hidden}}, $c);
+        # Copy all the attributes, because list_class may override
+        # the attributes or have local fields.
+        my($c) = {
+            name => $col->{name},
+            type => $col->{type},
+            constraint => $col->{constraint},
+            in_list => 1,
+        };
+        push(@{$decl->{hidden}}, $c);
     }
     return;
 }
@@ -330,10 +330,10 @@ sub _init_list_columns {
     $attrs->{in_list} = [];
     $attrs->{in_list_field_names} = [];
     foreach my $cn (@{$attrs->{column_names}}) {
-	my($col) = $attrs->{columns}->{$cn};
-	next unless $col->{in_list};
-	push(@{$attrs->{in_list}}, $col);
-	push(@{$attrs->{in_list_field_names}}, $cn);
+        my($col) = $attrs->{columns}->{$cn};
+        next unless $col->{in_list};
+        push(@{$attrs->{in_list}}, $col);
+        push(@{$attrs->{in_list_field_names}}, $cn);
     }
     return;
 }

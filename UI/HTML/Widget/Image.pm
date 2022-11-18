@@ -98,42 +98,42 @@ sub control_on_render {
     my($b) = '<img';
     $self->SUPER::control_on_render($source, \$b);
     $b .= qq{ class="$src_name"}
-	if $b !~ /class=|id=/ && $_VS->vs_xhtml($source);
+        if $b !~ /class=|id=/ && $_VS->vs_xhtml($source);
     if ($self->has_keys('tooltip')) {
-	$b .= ' title="' . ${$self->render_attr('tooltip', $source)} . '"';
+        $b .= ' title="' . ${$self->render_attr('tooltip', $source)} . '"';
     }
     $$buffer .= $b;
     my($alt) = $self->has_keys('alt')
-	? $self->render_simple_attr('alt', $source)
-	: b_use('FacadeComponent.Text')->get_from_source($source)
-	    ->unsafe_get_widget_value_by_name(
-		'Image_alt.'
-		. (defined($self->unsafe_get('alt_text'))
-		    ? $self->render_simple_attr('alt_text', $source)
-		    : $src_name,
-	        ),
-	        $source,
-	    );
+        ? $self->render_simple_attr('alt', $source)
+        : b_use('FacadeComponent.Text')->get_from_source($source)
+            ->unsafe_get_widget_value_by_name(
+                'Image_alt.'
+                . (defined($self->unsafe_get('alt_text'))
+                    ? $self->render_simple_attr('alt_text', $source)
+                    : $src_name,
+                ),
+                $source,
+            );
     $alt = 'none'
-	unless $alt;
+        unless $alt;
     $$buffer .= ' alt="' . Bivio::HTML->escape_attr_value($alt) . '"';
     my($a) = {map(($_ => $self->render_simple_attr($_, $source)), @$_OLD_HTML)};
     $a->{border} ||= '0'
-	unless  $b =~ /class=|id=/;
+        unless  $b =~ /class=|id=/;
     foreach my $k (qw(width height)) {
-	$a->{$k} ||= '';
+        $a->{$k} ||= '';
     }
     $$buffer .= join(
-	'',
-	$_A->as_html(delete($a->{align})),
-	delete($a->{attributes}),
-	map((length($a->{$_}) ? qq{ $_="$a->{$_}"} : ()), sort(keys(%$a))),
+        '',
+        $_A->as_html(delete($a->{align})),
+        delete($a->{attributes}),
+        map((length($a->{$_}) ? qq{ $_="$a->{$_}"} : ()), sort(keys(%$a))),
     ) . (
-	$src_is_uri ? qq{ src="$src"}
-	    : defined($self->unsafe_get('width'))
-	    ? (' src="' . $_HTML->escape_attr_value(
-		$_I->get_value($src, $source)->{uri}) . '"')
-	    : $_I->format_html($src, $source)
+        $src_is_uri ? qq{ src="$src"}
+            : defined($self->unsafe_get('width'))
+            ? (' src="' . $_HTML->escape_attr_value(
+                $_I->get_value($src, $source)->{uri}) . '"')
+            : $_I->format_html($src, $source)
     ) . ' />';
     return;
 }
@@ -145,11 +145,11 @@ sub initialize {
     my($self) = @_;
     $self->initialize_attr('src');
     $self->map_invoke(
-	unsafe_initialize_attr => [
-	    @$_OLD_HTML,
-	    'alt',
-	    'alt_text',
-	]
+        unsafe_initialize_attr => [
+            @$_OLD_HTML,
+            'alt',
+            'alt_text',
+        ]
     );
     return shift->SUPER::initialize(@_);
 }
@@ -161,8 +161,8 @@ sub internal_as_string {
 
 sub internal_new_args {
     return {
-	alt_text => ref($_[2]) eq 'HASH' ? undef : [splice(@_, 2, 1)]->[0],
-	%{shift->internal_compute_new_args([qw(src)], \@_)},
+        alt_text => ref($_[2]) eq 'HASH' ? undef : [splice(@_, 2, 1)]->[0],
+        %{shift->internal_compute_new_args([qw(src)], \@_)},
     };
 }
 

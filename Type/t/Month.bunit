@@ -3,21 +3,21 @@
 
 [
     class() => [
-	from_any => [
-	    feb => 'FEBRUARY',
-	    FEB => 'FEBRUARY',
-	    february => 'FEBRUARY',
-	    FEBRUARY => 'FEBRUARY',
-	    '02' => 'FEBRUARY',
-	    2 => 'FEBRUARY',
-	],
+        from_any => [
+            feb => 'FEBRUARY',
+            FEB => 'FEBRUARY',
+            february => 'FEBRUARY',
+            FEBRUARY => 'FEBRUARY',
+            '02' => 'FEBRUARY',
+            2 => 'FEBRUARY',
+        ],
     ],
    sub {class()->FEBRUARY} => [
-	get_two_digit_value => '02',
-	as_int => 2,
+        get_two_digit_value => '02',
+        as_int => 2,
    ],
    sub {class()->DECEMBER} => [
-	get_two_digit_value => '12',
+        get_two_digit_value => '12',
    ],
 ];
 

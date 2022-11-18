@@ -58,7 +58,7 @@ sub page {
     my($self, @pages) = @_;
     $self->initialize_ui;
     my($user_agent) = b_use('Ext.LWPUserAgent')->new
-	->bivio_redirect_automatically;
+        ->bivio_redirect_automatically;
     my($status) = '';
     foreach my $page (@pages) {
         my($host) = $page =~ m!^\w+://([^:/]+)!;
@@ -77,7 +77,7 @@ sub process_status {
     # (self) : string
     # Returns significant load average changes.
     my($new) = int(
-	(split(' ', ${Bivio::IO::File->read($_CFG->{loadavg_file})}))[2]);
+        (split(' ', ${Bivio::IO::File->read($_CFG->{loadavg_file})}))[2]);
     my($old) = Bivio::Die->eval(sub {
         ${Bivio::IO::File->read($_CFG->{status_file}, $new)}
     }) || 0;

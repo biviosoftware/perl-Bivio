@@ -19,7 +19,7 @@ sub can_user_execute_task {
     my($self, $bp) = shift->parameters(\@_);
     $self->initialize_fully;
     b_use('UI.Facade')->setup_request($bp->{facade}, $self->req)
-	if $bp->{facade};
+        if $bp->{facade};
     return $self->req->can_user_execute_task($bp->{task});
 }
 

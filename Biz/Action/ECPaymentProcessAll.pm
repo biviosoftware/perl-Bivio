@@ -16,14 +16,14 @@ sub internal_execute {
     my($self, $req) = @_;
     b_use('Model.ECPayment')->new($req)->do_iterate(sub {
         my($ecp) = @_;
-	$ecp->put_on_request;
+        $ecp->put_on_request;
         $req->set_user($ecp->get('user_id'));
         $req->set_realm($ecp->get('realm_id'));
-	$ecp->get_model('ECCreditCardPayment')->get_payment_processor
-	    ->execute_process($req);
-	return 1;
+        $ecp->get_model('ECCreditCardPayment')->get_payment_processor
+            ->execute_process($req);
+        return 1;
     }, 'unauth_iterate_start', 'creation_date_time asc', {
-	status => b_use('Type.ECPaymentStatus')->needs_processing_list,
+        status => b_use('Type.ECPaymentStatus')->needs_processing_list,
     });
     return 0;
 }

@@ -60,14 +60,14 @@ sub compare {
     # call this way:
     #
     #     return shift->SUPER::compare(@_)
-    # 	unless defined($left) && defined($right);
+    #         unless defined($left) && defined($right);
     my($proto, $left, $right) = @_;
     return 0
-	unless defined($left) || defined($right);
+        unless defined($left) || defined($right);
     return -1
-	unless defined($left);
+        unless defined($left);
     return 1
-	unless defined($right);
+        unless defined($right);
     return shift->compare_defined(@_);
 }
 
@@ -103,7 +103,7 @@ sub from_literal {
 sub from_literal_for_model_value {
     my($v, $e) = shift->from_literal(@_);
     Bivio::IO::Alert->warn_deprecated(
-	\@_, ': from_literal_for_model_value failed with: ', $e)
+        \@_, ': from_literal_for_model_value failed with: ', $e)
         unless defined($v);
     return $v;
 }
@@ -119,14 +119,14 @@ sub from_literal_or_die {
     my($proto, $value, $null_ok) = @_;
     my($v, $e) = $proto->from_literal($value);
     return $v
-	if defined($v) || $null_ok && !$e;
+        if defined($v) || $null_ok && !$e;
     $e ||= $proto->use('Bivio::TypeError')->NULL;
     $proto->use('Bivio::Die')->throw_die('DIE', {
-	message => 'from_literal failed: ' . $e->get_long_desc,
-	program_error => 1,
-	error_enum => $e,
-	entity => $value,
-	class => (ref($proto) || $proto),
+        message => 'from_literal failed: ' . $e->get_long_desc,
+        program_error => 1,
+        error_enum => $e,
+        entity => $value,
+        class => (ref($proto) || $proto),
     });
 }
 
@@ -175,10 +175,10 @@ sub get_instance {
     my($self, $type) = @_;
     $type ||= $self;
     $type = $self->use('Type', $type)
-	unless ref($type);
+        unless ref($type);
     $_A->bootstrap_die($type, ': not a Bivio::Type')
-	unless UNIVERSAL::isa($type, 'Bivio::Type')
-	    || UNIVERSAL::isa($type, 'Bivio::Delegator');
+        unless UNIVERSAL::isa($type, 'Bivio::Type')
+            || UNIVERSAL::isa($type, 'Bivio::Delegator');
     return $type;
 }
 
@@ -277,7 +277,7 @@ sub max {
     my($proto, @values) = @_;
     return $proto->iterate_reduce(sub {
         my($v1, $v2) = @_;
-	return $proto->compare($v1, $v2) > 0 ? $v1 : $v2;
+        return $proto->compare($v1, $v2) > 0 ? $v1 : $v2;
     }, \@values);
 }
 
@@ -285,7 +285,7 @@ sub min {
     my($proto, @values) = @_;
     return $proto->iterate_reduce(sub {
         my($v1, $v2) = @_;
-	return $proto->compare($v1, $v2) < 0 ? $v1 : $v2;
+        return $proto->compare($v1, $v2) < 0 ? $v1 : $v2;
     }, \@values);
 }
 
@@ -294,10 +294,10 @@ sub row_tag_get {
     my($req) = pop;
     my($model_or_id) = @_;
     $_A->bootstrap_die($req, ': last arg must be a Bivio::Agent::Request')
-	unless Bivio::Agent::Request->is_blesser_of($req);
+        unless Bivio::Agent::Request->is_blesser_of($req);
     my($v) = $proto->from_sql_column(
-	Bivio::Biz::Model->new($req, 'RowTag')
-	    ->get_value($model_or_id, $proto->ROW_TAG_KEY));
+        Bivio::Biz::Model->new($req, 'RowTag')
+            ->get_value($model_or_id, $proto->ROW_TAG_KEY));
     return $proto->is_specified($v) ? $v : $proto->get_default;
 }
 
@@ -306,14 +306,14 @@ sub row_tag_replace {
     my($req) = pop;
     my($model_or_id, $value) = @_ > 1 ? @_ : (undef, @_);
     $_A->bootstrap_die($req, ': last arg must be a Bivio::Agent::Request')
-	unless Bivio::Agent::Request->is_blesser_of($req);
+        unless Bivio::Agent::Request->is_blesser_of($req);
     Bivio::Biz::Model->new($req, 'RowTag')->replace_value(
-	$model_or_id,
-	$proto->ROW_TAG_KEY,
-	!$proto->is_specified($value)
-	    || $proto->is_equal($value, $proto->get_default)
-	    ? undef
-	    : $proto->to_sql_param($value),
+        $model_or_id,
+        $proto->ROW_TAG_KEY,
+        !$proto->is_specified($value)
+            || $proto->is_equal($value, $proto->get_default)
+            ? undef
+            : $proto->to_sql_param($value),
     );
     return;
 }
@@ -328,14 +328,14 @@ sub to_html {
     # empty string.  Otherwise, escapes html and returns.
     my($self, $value) = @_;
     return ''
-	unless defined($value);
+        unless defined($value);
     return $_HTML->escape($self->to_literal($value));
 }
 
 sub to_json {
     my($proto, $value) = @_;
     return ${($_MJ ||= $proto->use('MIME.JSON'))->to_text(
-	$proto->to_literal($value),
+        $proto->to_literal($value),
     )};
 }
 
@@ -423,7 +423,7 @@ sub to_uri {
     # empty string.  Otherwise, escapes uri and returns.
     my($proto, $value) = @_;
     return ''
-	unless defined($value);
+        unless defined($value);
     return $_HTML->escape_uri($proto->to_literal($value));
 }
 

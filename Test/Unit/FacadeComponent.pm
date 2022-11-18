@@ -10,8 +10,8 @@ sub new_unit {
     my($req) = b_use('Test.Request')->initialize_fully;
     $attrs ||= {};
     $attrs->{create_object} ||= sub {
-	my($self) = shift->get('test');
-	return $self->builtin_class->get_from_source($self->builtin_req);
+        my($self) = shift->get('test');
+        return $self->builtin_class->get_from_source($self->builtin_req);
     };
     return shift->SUPER::new_unit($class_name, $attrs, @rest);
 }

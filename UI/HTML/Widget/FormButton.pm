@@ -11,8 +11,8 @@ sub initialize {
     my($self) = @_;
     $self->initialize_attr(TYPE => 'submit');
     $self->put_unless_exists(label => vs_text_as_prose(
-	$self->ancestral_get('form_class')->simple_package_name,
-	$self->get('field'),
+        $self->ancestral_get('form_class')->simple_package_name,
+        $self->get('field'),
     ));
     $self->map_invoke(unsafe_initialize_attr => [qw(label attributes)]);
     return shift->SUPER::initialize(@_);
@@ -22,11 +22,11 @@ sub internal_input_base_render_attrs {
     my($self, $form, $field, $source, $buffer) = @_;
     shift->SUPER::internal_input_base_render_attrs(@_);
     my($v) = $_HTML->escape_attr_value(
-	$self->render_simple_attr('label', $source));
+        $self->render_simple_attr('label', $source));
     $$buffer .= qq{ value="$v"};
     my($attr) = $self->render_simple_attr('attributes', $source);
     $$buffer .= qq{ $attr}
-	if $attr;
+        if $attr;
     return;
 }
 

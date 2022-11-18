@@ -19,7 +19,7 @@ sub execute_ok {
     my($self) = @_;
     my($r) = $self->internal_create_models;
     $self->new_other('UserLoginForm')->process({realm_owner => $r})
-	unless $self->unsafe_get('without_login');
+        unless $self->unsafe_get('without_login');
     return;
 }
 
@@ -32,13 +32,13 @@ sub handle_config {
 sub if_unapproved_applicant_mode {
     my($self, $then) = (shift, shift);
     my($then2) = sub {
-	return $then->()
-	    unless ref($self);
-	return $self->req->with_realm(
-	    b_use('FacadeComponent.Constant')
-		->get_value('site_admin_realm_name', $self->req),
-	    $then,
-	);
+        return $then->()
+            unless ref($self);
+        return $self->req->with_realm(
+            b_use('FacadeComponent.Constant')
+                ->get_value('site_admin_realm_name', $self->req),
+            $then,
+        );
     };
     return $self->if_then_else($_CFG->{unapproved_applicant_mode}, $then2, @_);
 }
@@ -61,21 +61,21 @@ sub internal_create_models {
     $params ||= {};
     my($req) = $self->get_request;
     my($user, $realm) = $self->new_other('User')->create_realm(
-	$self->parse_to_names('RealmOwner.display_name') || return,
-	$self->get_model_properties('RealmOwner'),
+        $self->parse_to_names('RealmOwner.display_name') || return,
+        $self->get_model_properties('RealmOwner'),
     );
     $self->internal_put_field('User.user_id' => $user->get('user_id'));
     my($e) = $self->new_other('Email');
     my($et) = $e->get_field_type('email');
     $e->create({
-	realm_id => $user->get('user_id'),
-	email => $self->unsafe_get('Email.email')
-	    || $et->format_ignore_random($realm->get('name'), $req),
-	want_bulletin => defined($params->{'Email.want_bulletin'})
-	    ? $params->{'Email.want_bulletin'} : 1,
+        realm_id => $user->get('user_id'),
+        email => $self->unsafe_get('Email.email')
+            || $et->format_ignore_random($realm->get('name'), $req),
+        want_bulletin => defined($params->{'Email.want_bulletin'})
+            ? $params->{'Email.want_bulletin'} : 1,
     }) unless ($self->unsafe_get('Email.email') || '') eq $et->IGNORE_PREFIX;
     $self->join_site_admin_realm
-	if $_C->if_version(10);
+        if $_C->if_version(10);
     return ($realm, $user);
 }
 
@@ -83,25 +83,25 @@ sub internal_initialize {
     my($self) = @_;
     # B<FOR INTERNAL USE ONLY>
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-	version => 1,
-	visible => [
-	    'RealmOwner.display_name',
-	    'Email.email',
+        version => 1,
+        visible => [
+            'RealmOwner.display_name',
+            'Email.email',
             'RealmOwner.password',
-	    {
-		name => 'confirm_password',
-		type => 'Password',
-		constraint => 'NOT_NULL',
-	    },
-	],
-	other => [
-	    'RealmOwner.name',
-	    'User.user_id',
-	    $self->field_decl([qw(
-		without_login
-		password_ok
-	    )], 'Boolean'),
-	],
+            {
+                name => 'confirm_password',
+                type => 'Password',
+                constraint => 'NOT_NULL',
+            },
+        ],
+        other => [
+            'RealmOwner.name',
+            'User.user_id',
+            $self->field_decl([qw(
+                without_login
+                password_ok
+            )], 'Boolean'),
+        ],
     });
 }
 
@@ -109,19 +109,19 @@ sub join_site_admin_realm {
     my($self, $user_id) = @_;
     my($ro) = $self->new_other('RealmOwner');
     return
-	unless $ro->unauth_load({
-	    name => b_use('FacadeComponent.Constant')
-	    ->get_value('site_admin_realm_name', $self->req),
-	});
+        unless $ro->unauth_load({
+            name => b_use('FacadeComponent.Constant')
+            ->get_value('site_admin_realm_name', $self->req),
+        });
     $self->req->with_realm(
-	$ro,
-	sub {
-	    return $self->new_other('GroupUserForm')
-		->change_main_role(
-		    $user_id || $self->get('User.user_id'),
-		    $_USER,
-	       );
-	},
+        $ro,
+        sub {
+            return $self->new_other('GroupUserForm')
+                ->change_main_role(
+                    $user_id || $self->get('User.user_id'),
+                    $_USER,
+               );
+        },
     );
     return;
 }
@@ -136,8 +136,8 @@ sub parse_to_names {
     my(undef, $delegator, $field) = shift->delegated_args(@_);
     my($x) = $_DN->parse_to_names($delegator->get($field));
     unless (ref($x) eq 'HASH') {
-	$delegator->internal_put_error($field => $x);
-	return;
+        $delegator->internal_put_error($field => $x);
+        return;
     }
     return $x;
 }
@@ -145,10 +145,10 @@ sub parse_to_names {
 sub validate {
     my($self) = @_;
     $self->internal_put_error('RealmOwner.password', 'CONFIRM_PASSWORD')
-	unless $self->get_field_error('RealmOwner.password')
-	    || $self->get_field_error('confirm_password')
-	    || $self->get('RealmOwner.password')
-		eq $self->get('confirm_password');
+        unless $self->get_field_error('RealmOwner.password')
+            || $self->get_field_error('confirm_password')
+            || $self->get('RealmOwner.password')
+                eq $self->get('confirm_password');
     return;
 }
 

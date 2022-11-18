@@ -78,16 +78,16 @@ sub append_empty_rows {
     # create an empty row
     my($empty_row) = {};
     foreach my $field (@{$self->get_keys}) {
-	$empty_row->{$field} = undef;
+        $empty_row->{$field} = undef;
     }
     # give each key a bogus value
     foreach my $key (@{$self->get_info('primary_key_names')}) {
-	$empty_row->{$key} = $self->EMPTY_KEY_VALUE();
+        $empty_row->{$key} = $self->EMPTY_KEY_VALUE();
     }
 
     while ($count--) {
-	# append a copy of the empty row
-	push(@$rows, {%$empty_row});
+        # append a copy of the empty row
+        push(@$rows, {%$empty_row});
     }
     return;
 }
@@ -132,8 +132,8 @@ sub do_rows {
     $delegator->reset_cursor;
 
     while ($delegator->next_row) {
-	last unless $delegator->internal_verify_do_iterate_result(
-	    $do_rows_handler->($delegator));
+        last unless $delegator->internal_verify_do_iterate_result(
+            $do_rows_handler->($delegator));
     }
     return $delegator;
 }
@@ -163,8 +163,8 @@ sub execute_load_this {
     my($self) = $proto->new($req);
     my($query) = $self->parse_query_from_request();
     $self->throw_die('CORRUPT_QUERY', {
-	message => 'missing this',
-	query => $self->get_request->unsafe_get('query'),
+        message => 'missing this',
+        query => $self->get_request->unsafe_get('query'),
     }) unless $query->unsafe_get('this');
     $self->load_this($query);
     return 0;
@@ -190,16 +190,16 @@ sub find_row_by {
     my($self) = shift;
     my($query) = @_;
     $query = {@_}
-	unless ref($query) eq 'HASH';
+        unless ref($query) eq 'HASH';
     return $self->do_rows(
-	sub {
-	    foreach my $field (keys(%$query)) {
-		return 1
-		    unless $self->get_field_type($field)
-		    ->is_equal($self->get($field), $query->{$field});
-	    }
-	    return 0;
-	},
+        sub {
+            foreach my $field (keys(%$query)) {
+                return 1
+                    unless $self->get_field_type($field)
+                    ->is_equal($self->get($field), $query->{$field});
+            }
+            return 0;
+        },
     )->has_cursor ? $self : undef;
 }
 
@@ -221,14 +221,14 @@ sub format_query {
 
     # Determine if need to pass in current row
     if ($type->get_name =~ /DETAIL|THIS_CHILD_LIST|THIS_AS_PARENT|PATH/) {
-	my($c) = $fields->{cursor};
-	Bivio::Die->die('no cursor')
-	    unless defined($c) && $c >= 0;
-	$args = {%{$self->internal_get}, %$args};
+        my($c) = $fields->{cursor};
+        Bivio::Die->die('no cursor')
+            unless defined($c) && $c >= 0;
+        $args = {%{$self->internal_get}, %$args};
     }
     else {
-	Bivio::Die->die('not loaded')
-	    unless $fields->{rows};
+        Bivio::Die->die('not loaded')
+            unless $fields->{rows};
     }
 
     return $fields->{query}->$method($self->internal_get_sql_support(), $args);
@@ -258,7 +258,7 @@ sub format_uri {
     $uri .= $self->internal_format_uri_get_path_info($type, $uri, $query_args) || '';
     my($query) = $self->format_query($type, $query_args);
     return $uri
-	unless $query;
+        unless $query;
     # Push the query on the front of the form context.
     $uri =~ s/\?/?$query&/ || ($uri .= '?'.$query);
     return $uri;
@@ -338,7 +338,7 @@ sub get_hidden_field_values {
     # Emulate L<Bivio::Biz::FormModel::get_hidden_field_values|Bivio::Biz::FormModel/"get_hidden_field_values">
     my($fields) = $self->[$_IDI];
     return $fields->{query}->get_hidden_field_values(
-	    $self->internal_get_sql_support());
+            $self->internal_get_sql_support());
 }
 
 sub get_list_class {
@@ -364,14 +364,14 @@ sub get_non_empty_result_set_size {
     Bivio::Die->die('not loaded') unless $rows;
     my($count) = 0;
     foreach my $r (@$rows) {
-	foreach my $k (@{$self->get_info('primary_key_names')}) {
-	    unless ($self->get_field_type($k)->is_equal(
-		$r->{$k}, $self->EMPTY_KEY_VALUE,
-	    )) {
-		$count++;
-		last;
-	    }
-	}
+        foreach my $k (@{$self->get_info('primary_key_names')}) {
+            unless ($self->get_field_type($k)->is_equal(
+                $r->{$k}, $self->EMPTY_KEY_VALUE,
+            )) {
+                $count++;
+                last;
+            }
+        }
     }
     return $count;
 }
@@ -436,26 +436,26 @@ sub internal_format_uri_args {
     my($self, $type, $uri, $query_args) = @_;
     my($req) = $self->req;
     $type = $_QT->from_name($type)
-	unless ref($type);
+        unless ref($type);
     $self->die('query_args ', $query_args, ' not allowed for ', $type)
-	    if $query_args && $type != $_QT->THIS_LIST;
+            if $query_args && $type != $_QT->THIS_LIST;
     if (defined($uri)) {
-	$uri = $_TI->from_name($uri)
-	    if !ref($uri) && $_TI->is_valid_name($uri);
+        $uri = $_TI->from_name($uri)
+            if !ref($uri) && $_TI->is_valid_name($uri);
         if ($_TI->is_super_of($uri)) {
-	    $uri = $req->format_stateless_uri($uri);
-	}
-	else {
-	    $self->die($uri, ': unknown type for uri_or_task')
+            $uri = $req->format_stateless_uri($uri);
+        }
+        else {
+            $self->die($uri, ': unknown type for uri_or_task')
                 if ref($uri);
-	}
+        }
     }
     else {
-	# Need to get the list_uri or detail_uri from the request?
-	# If specific uri not found, use current task.
+        # Need to get the list_uri or detail_uri from the request?
+        # If specific uri not found, use current task.
 #TODO: DEPRECATED usage if there is a detail_uri or list_uri.
-	$uri = $req->unsafe_get($type->get_uri_attr) ||
-	    $req->format_stateless_uri($req->get('task_id'));
+        $uri = $req->unsafe_get($type->get_uri_attr) ||
+            $req->format_stateless_uri($req->get('task_id'));
     }
     return ($self, $type, $uri, $query_args);
 }
@@ -463,13 +463,13 @@ sub internal_format_uri_args {
 sub internal_format_uri_get_path_info {
     my($self, $type) = @_;
     return
-	unless $type->get_name =~ /PATH/;
+        unless $type->get_name =~ /PATH/;
     $self->assert_has_cursor;
     $self->die('row ', $self->get_cursor, ': no path_info at cursor')
-	unless defined(my $pi = $self->get('path_info'));
+        unless defined(my $pi = $self->get('path_info'));
     if (length($pi) && $pi ne '/') {
-	$_A->warn_deprecated('path_info does not begin with leading /')
-	    if $pi =~ s!^([^/])!/$1!;
+        $_A->warn_deprecated('path_info does not begin with leading /')
+            if $pi =~ s!^([^/])!/$1!;
     }
     return $pi;
 }
@@ -498,11 +498,11 @@ sub internal_initialize_sql_support {
 
     my($decl);
     if (ref($config) eq 'CODE') {
-	$stmt->config($config->($proto, $stmt));
+        $stmt->config($config->($proto, $stmt));
         $decl = {
             version => 1,
             can_iterate => 1,
-	};
+        };
     }
     else {
         $decl = $config || $proto->internal_initialize($stmt);
@@ -511,8 +511,8 @@ sub internal_initialize_sql_support {
 
     return $_LS->new(
         $proto->merge_initialize_info($decl,
-	    $stmt->build_decl_for_sql_support()),
-	$stmt);
+            $stmt->build_decl_for_sql_support()),
+        $stmt);
 }
 
 sub internal_is_loaded {
@@ -533,13 +533,13 @@ sub internal_load {
     $query ||= $self->empty_query;
     # Easier to just replace the hash_ref
     my($empty_properties, $load_notes) = @{$self->[$_IDI]}{
-	qw(empty_properties load_notes)};
+        qw(empty_properties load_notes)};
     $self->[$_IDI] = {
-	rows => $rows,
-	cursor => $self->RESET_CURSOR,
-	query => $query,
-	empty_properties => $empty_properties,
- 	load_notes => $load_notes,
+        rows => $rows,
+        cursor => $self->RESET_CURSOR,
+        query => $query,
+        empty_properties => $empty_properties,
+         load_notes => $load_notes,
     };
     $self->internal_clear_model_cache;
     $self->internal_put($empty_properties);
@@ -547,15 +547,15 @@ sub internal_load {
         if $self->NOT_FOUND_IF_EMPTY && !@$rows;
 
     unless ($self->is_ephemeral) {
-	$self->put_on_request;
-	$self->req->put(list_model => $self)
-	    if $self->unsafe_get_request;
+        $self->put_on_request;
+        $self->req->put(list_model => $self)
+            if $self->unsafe_get_request;
     }
 
     for (my($i) = 0; $i <= $#$rows; $i++) {
-	$self->set_cursor_or_die($i);
-	splice(@$rows, $i--, 1)
-	    unless $self->internal_post_load_row($rows->[$i]);
+        $self->set_cursor_or_die($i);
+        splice(@$rows, $i--, 1)
+            unless $self->internal_post_load_row($rows->[$i]);
     }
     $self->reset_cursor;
     return;
@@ -593,9 +593,9 @@ sub is_empty_row {
     my($self) = @_;
     # If all primary key(s) equal EMPTY_KEY_VALUE.
     foreach my $k (@{$self->get_info('primary_key_names')}) {
-	return 0 unless $self->get_field_type($k)->is_equal(
-	    $self->get($k), $self->EMPTY_KEY_VALUE,
-	);
+        return 0 unless $self->get_field_type($k)->is_equal(
+            $self->get($k), $self->EMPTY_KEY_VALUE,
+        );
     }
     return 1;
 }
@@ -620,11 +620,11 @@ sub iterate_next {
     # already applied.  If internal_post_load_row returns false, the row isn't
     # returned and another row is attempted.
     while () {
-	my($self, $row) = shift->internal_iterate_next(@_);
-	last unless $row;
-	next if !$self->internal_post_load_row($row);
-	$self->internal_put($row);
-	return 1;
+        my($self, $row) = shift->internal_iterate_next(@_);
+        last unless $row;
+        next if !$self->internal_post_load_row($row);
+        $self->internal_put($row);
+        return 1;
     }
     return 0;
 }
@@ -650,11 +650,11 @@ sub iterate_next_and_load {
     $fields->{rows} = [$row];
     $fields->{cursor} = 0;
     while ($self->internal_get_sql_support->iterate_next(
-	$self, $it || $self->internal_get_iterator, $row)) {
-	next if !$self->internal_post_load_row($row);
-	$self->internal_clear_model_cache;
-	$self->internal_put($row);
-	return 1;
+        $self, $it || $self->internal_get_iterator, $row)) {
+        next if !$self->internal_post_load_row($row);
+        $self->internal_clear_model_cache;
+        $self->internal_put($row);
+        return 1;
     }
     $self->internal_clear_model_cache;
     $self->internal_put({%{$fields->{empty_properties}}});
@@ -691,8 +691,8 @@ sub load_all {
 sub load_empty {
     my($self) = @_;
     $self->internal_load([], $self->parse_query({
-	# Cannot be overriden value: See Type.PrimaryId
-	parent_id => __PACKAGE__->EMPTY_KEY_VALUE,
+        # Cannot be overriden value: See Type.PrimaryId
+        parent_id => __PACKAGE__->EMPTY_KEY_VALUE,
     }));
     return $self;
 }
@@ -737,20 +737,20 @@ sub map_primary_key_to_rows {
     # Maps the primary key to all rows.  The primary key values are separated
     # by perl's subscript separator (C<$;>).
     my($primary_key_names)
-	    = $self->internal_get_sql_support->get('primary_key_names');
+            = $self->internal_get_sql_support->get('primary_key_names');
     return {map {(join($;, @$_{@$primary_key_names}), $_)}
-	    @{$self->internal_get_rows}};
+            @{$self->internal_get_rows}};
 }
 
 sub map_rows {
     my(undef, $delegator, $map_iterate_handler) = shift->delegated_args(@_);
     my($res) = [];
     $map_iterate_handler ||= sub {
-	return shift->get_shallow_copy;
+        return shift->get_shallow_copy;
     };
     $delegator->reset_cursor;
     while ($delegator->next_row) {
-	push(@$res, $map_iterate_handler->($delegator));
+        push(@$res, $map_iterate_handler->($delegator));
     }
     return $res;
 }
@@ -765,9 +765,9 @@ sub new_anonymous {
     # Create a new_anonymous ListModel associated with the request.
     # Defaults version and can_iterate to 1.
     if (ref($config) eq 'HASH') {
-	$config->{version} ||= 1;
-	# Always can_iterate, since pure SQL
-	$config->{can_iterate} = 1;
+        $config->{version} ||= 1;
+        # Always can_iterate, since pure SQL
+        $config->{can_iterate} = 1;
     };
     return _new(shift->SUPER::new_anonymous(@_));
 }
@@ -783,9 +783,9 @@ sub next_row {
     Bivio::Die->die('no cursor') unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     if (++$fields->{cursor} >= int(@{$fields->{rows}})) {
-	$fields->{cursor} = undef;
-	$self->internal_put({%{$fields->{empty_properties}}});
-	return 0;
+        $fields->{cursor} = undef;
+        $self->internal_put({%{$fields->{empty_properties}}});
+        return 0;
     }
     $self->internal_put($fields->{rows}->[$fields->{cursor}]);
     return 1;
@@ -801,13 +801,13 @@ sub next_row_or_die {
 sub parse_query {
     my($self, $query) = @_;
     return $self->unauth_parse_query($query)->put(
-	map(($_ => $self->get_info($_)
-	    #SECURITY: Do not remove this check
-	    ? $self->req($_) || $self->die(FORBIDDEN => {
-		message => "$_ required",
-		entity => $query,
-	    }) : undef,
-	), qw(auth_id auth_user_id)),
+        map(($_ => $self->get_info($_)
+            #SECURITY: Do not remove this check
+            ? $self->req($_) || $self->die(FORBIDDEN => {
+                message => "$_ required",
+                entity => $query,
+            }) : undef,
+        ), qw(auth_id auth_user_id)),
     );
 }
 
@@ -831,9 +831,9 @@ sub prev_row {
     Bivio::Die->die('no cursor') unless defined($fields->{cursor});
     $self->internal_clear_model_cache;
     if (--$fields->{cursor} < 0) {
-	$fields->{cursor} = undef;
-	$self->internal_put({%{$fields->{empty_properties}}});
-	return 0;
+        $fields->{cursor} = undef;
+        $self->internal_put({%{$fields->{empty_properties}}});
+        return 0;
     }
     $self->internal_put($fields->{rows}->[$fields->{cursor}]);
     return 1;
@@ -849,7 +849,7 @@ sub save_excursion {
     my($old_cursor) = $self->get_cursor;
     my(@res) = $op->();
     $self->set_cursor($old_cursor)
-	if defined($old_cursor);
+        if defined($old_cursor);
     return wantarray ? @res : $res[0];
 }
 
@@ -868,18 +868,18 @@ sub set_cursor {
     $self->internal_clear_model_cache;
     my($n) = int(@{$fields->{rows}});
     if ($index == $self->LAST_ROW) {
-	$index = $n - 1;
-	# Fall through to handle empty list case.
+        $index = $n - 1;
+        # Fall through to handle empty list case.
     }
     if ($index >= $n || $index == $self->RESET_CURSOR) {
-	$self->die("$index: invalid index")
-	    if $index > $n;
-	$fields->{cursor} = $index == $n ? undef : $self->RESET_CURSOR;
-	$self->internal_put({%{$fields->{empty_properties}}});
-	return 0;
+        $self->die("$index: invalid index")
+            if $index > $n;
+        $fields->{cursor} = $index == $n ? undef : $self->RESET_CURSOR;
+        $self->internal_put({%{$fields->{empty_properties}}});
+        return 0;
     }
     $self->die($index, ': invalid index')
-	if $index < 0;
+        if $index < 0;
     $self->internal_put($fields->{rows}->[$fields->{cursor} = $index]);
     return 1;
 }
@@ -891,7 +891,7 @@ sub set_cursor_or_die {
     #
     # Returns self.
     $self->throw_die('DIE', {message => 'no such row', entity => $_[0]})
-	unless $self->set_cursor(@_);
+        unless $self->set_cursor(@_);
     return $self;
 }
 
@@ -902,7 +902,7 @@ sub set_cursor_or_not_found {
     #
     # Returns self.
     $self->throw_die(
-	'MODEL_NOT_FOUND', {message => 'no such row', entity => $_[0]},
+        'MODEL_NOT_FOUND', {message => 'no such row', entity => $_[0]},
     ) unless $self->set_cursor(@_);
     return $self;
 }
@@ -931,7 +931,7 @@ sub unauth_load_page {
 sub unauth_parse_query {
     my($self, $query) = @_;
     return $_LQ->is_blesser_of($query) ? $query
-	: $_LQ->new($query || {}, $self->internal_get_sql_support, $self);
+        : $_LQ->new($query || {}, $self->internal_get_sql_support, $self);
 }
 
 sub unsafe_get {
@@ -977,7 +977,7 @@ sub _execute_clear_this {
     my($self) = $proto->new($req);
     $query_method ||= 'parse_query';
     $self->$load_method(
-	$self->parse_query_from_request($query_method)->put(this => undef),
+        $self->parse_query_from_request($query_method)->put(this => undef),
     );
     return 0;
 }
@@ -985,15 +985,15 @@ sub _execute_clear_this {
 sub _iterate_start {
     my($parse_query, $self, $query) = @_;
     $self->throw_die('DIE', 'iteration not supported')
-	unless $self->can_iterate;
+        unless $self->can_iterate;
     my($fields) = $self->[$_IDI];
     $fields->{query} = $self->$parse_query($query);
     return $self->internal_put_iterator(
-	$self->internal_get_sql_support->iterate_start(
-	    $fields->{query},
-	    _statement($self),
-	    _where_and_params($self),
-	    $self,
+        $self->internal_get_sql_support->iterate_start(
+            $fields->{query},
+            _statement($self),
+            _where_and_params($self),
+            $self,
         ),
     );
 }
@@ -1010,27 +1010,27 @@ sub _load_this {
     # Loads this or first.  Sets cursor to 0.
     $query = $self->parse_query($query);
     unless ($query->unsafe_get('this')) {
-	return
-	    if $not_found_ok && ! $first_only;
-	$self->throw_die('DIE', {
-	    message => 'missing this',
-	    query => $query,
-	    program_error => 1,
-	}) unless $first_only;
-	$query->put(want_first_only => 1);
+        return
+            if $not_found_ok && ! $first_only;
+        $self->throw_die('DIE', {
+            message => 'missing this',
+            query => $query,
+            program_error => 1,
+        }) unless $first_only;
+        $query->put(want_first_only => 1);
     }
     my($count) = _unauth_load($self, $query);
     return $self->set_cursor_or_die(0)
-	if $count == 1;
+        if $count == 1;
     $self->throw_die(TOO_MANY => {
-	message => 'expecting just one this',
-	query => $query,
+        message => 'expecting just one this',
+        query => $query,
     }) if $count;
     $self->throw_die(
-	MODEL_NOT_FOUND => {
-	    message => 'this not found',
-	    query => $query,
-	},
+        MODEL_NOT_FOUND => {
+            message => 'this not found',
+            query => $query,
+        },
     ) unless $not_found_ok;
     return;
 }
@@ -1040,8 +1040,8 @@ sub _new {
     # Finishes instantiation.
     # NOTE: fields are dynamically replaced.  See, e.g. load.
     $self->[$_IDI] = {
-	empty_properties => {%{$self->internal_get}},
-	load_notes => '',
+        empty_properties => {%{$self->internal_get}},
+        load_notes => '',
     };
     return $self;
 }
@@ -1073,30 +1073,30 @@ sub _unauth_load {
 
     # Convert to listQuery
     $query = $_LQ->unauth_new($query, $sql_support, $self)
-	if ref($query) eq 'HASH';
+        if ref($query) eq 'HASH';
 
     # Add in count if not there
     unless ($query->has_keys('count')) {
-	my($count);
-	if ($self->can('PAGE_SIZE')) {
-	    $count = $self->PAGE_SIZE();
-	}
-	# only check preferences if that model is present
-	else {
-	    $count = $self->new_other('RowTag')
-		->row_tag_get_for_auth_user('PAGE_SIZE');
-	}
-	$query->put(count => $count);
+        my($count);
+        if ($self->can('PAGE_SIZE')) {
+            $count = $self->PAGE_SIZE();
+        }
+        # only check preferences if that model is present
+        else {
+            $count = $self->new_other('RowTag')
+                ->row_tag_get_for_auth_user('PAGE_SIZE');
+        }
+        $query->put(count => $count);
     }
     $fields->{query} = $query;
     $self->internal_load(
-	$self->internal_load_rows(
-	    $query,
-	    _statement($self),
-	    _where_and_params($self),
-	    $sql_support,
-	),
-	$query,
+        $self->internal_load_rows(
+            $query,
+            _statement($self),
+            _where_and_params($self),
+            $sql_support,
+        ),
+        $query,
     );
     # fields is invalid at this point
     return scalar(@{$self->[$_IDI]->{rows}});
@@ -1115,10 +1115,10 @@ sub _unauth_load_page {
     my($self, $query) = @_;
     my($wpc) = $self->internal_get_sql_support->unsafe_get('want_page_count');
     $query = $query->put(
-	want_page_count => defined($wpc) ? $wpc : $_CFG->{want_page_count});
+        want_page_count => defined($wpc) ? $wpc : $_CFG->{want_page_count});
     $self->throw_die('CORRUPT_QUERY', {
-	message => 'unexpected this',
-	query => $query,
+        message => 'unexpected this',
+        query => $query,
     }) if $query->unsafe_get('this');
     _unauth_load($self, $query);
     return $self;
@@ -1128,12 +1128,12 @@ sub _where_and_params {
     my($self) = @_;
     my($params) = [];
     return (
-	$self->internal_pre_load(
-	    $self->get_query,
-	    $self->internal_get_sql_support,
-	    $params,
-	),
-	$params,
+        $self->internal_pre_load(
+            $self->get_query,
+            $self->internal_get_sql_support,
+            $params,
+        ),
+        $params,
     );
 }
 

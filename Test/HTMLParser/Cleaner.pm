@@ -16,14 +16,14 @@ sub new {
     $html =~ s/&nbsp;/ /g;
     $html =~ s/<\/?(?:br|p) ?\/?>/\n/ig;
     return $proto->SUPER::new({
-	html => $html,
+        html => $html,
     })->set_read_only;
 }
 
 sub unescape_text {
     my($self, $text) = @_;
     return ''
-	unless defined($text);
+        unless defined($text);
     $text =~ s/\&\#39\;/'/g;
     $text =~ s/\&quot\;/"/g;
     $text =~ s/\&\#\d+\;/ /g;
@@ -34,7 +34,7 @@ sub unescape_text {
 sub text {
     my($self, $text) = @_;
     return ''
-	unless defined($text);
+        unless defined($text);
     $text = $self->unescape_text($text);
     $text =~ s/\s+/ /g;
     $text =~ s/^\s+|\s+$//g;
