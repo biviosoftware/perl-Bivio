@@ -17,6 +17,7 @@ b_use('IO.Config')->register(my $_CFG = {
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
     allow_resend_from => [],
+    in_btest => 0,
 });
 #TODO: get rid of global state - put it on the request instead
 my($_IDI) = __PACKAGE__->instance_data_index;
@@ -185,9 +186,9 @@ sub test_language_setup {
     my($self) = @_;
     b_use('IO.Config')->introduce_values({
         'Bivio::Mail::Common' => {
-            allow_resend_from => [],
+            in_btest => 1,
         },
-    }) if @{$self->internal_get_config->{allow_resend_from}};
+    });
     return;
 }
 
