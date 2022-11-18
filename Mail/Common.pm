@@ -187,9 +187,6 @@ sub test_language_setup {
     b_use('IO.Config')->introduce_values({
         'Bivio::Mail::Common' => {
             in_btest => 1,
-            @{$self->internal_get_config->{allow_resend_from}} ? (
-                allow_resend_from => [],
-            ) : (),
         },
     });
     return;
