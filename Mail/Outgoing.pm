@@ -7,6 +7,7 @@ use MIME::Base64 ();
 use MIME::QuotedPrint ();
 # prints messages which can be ignored at startup.
 Bivio::Die->eval(q{use Net::DNS ();});
+Bivio::Die->eval(q{use Mail::SPF ();});
 
 # C<Bivio::Mail::Outgoing> is used to create and send mail messages.
 # One can resend an existing mail message or simply create one from
@@ -410,7 +411,7 @@ sub _rewrite_from {
     }
     else {
         my($d) = lc($_E->get_domain_part($old_email));
-        if (!_rewrite_from_lookup($d)) {
+        if (!_rewrite_from_if_dmarc($d) && !_rewrite_from_if_spf($old_email)) {
             return 1;
         }
     }
@@ -448,7 +449,7 @@ sub _rewrite_from_generate {
     return ($email, $name);
 }
 
-sub _rewrite_from_lookup {
+sub _rewrite_from_if_dmarc {
     my($domain) = @_;
     my($res) = undef;
     my($die) = b_catch(sub {
@@ -476,6 +477,19 @@ sub _rewrite_from_lookup {
         b_info($domain, ': error, leaving undef: ', $die);
     }
     return $res;
+}
+
+sub _rewrite_from_if_spf {
+    my($email) = @_;
+    # Avoid unnecessary messages output
+    my($r) = Bivio::Die->eval(
+        sub {
+            return Mail::SPF::Server->new->process(
+                Mail::SPF::Request->new(identity => $email, ip_address => '0.0.0.0'),
+            );
+        },
+    );
+    return $r && $r =~ m{^(?:pass|none|netural)$}i ? 0 : 1;
 }
 
 1;
