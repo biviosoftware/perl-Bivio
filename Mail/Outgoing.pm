@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Mail::Outgoing;
 use strict;
 use Bivio::Base 'Mail.Common';
@@ -410,7 +409,16 @@ sub _rewrite_from {
         }
     }
     else {
+        # POSIT: can always send from mail_host. We might be using a Postfix
+        # "Smart host" for this so we can't just use our own IP in the SPF
+        # tests. Also, this avoids multiple rewrites, since _rewrite_from_if_spf
+        # checks with 0.0.0.0 as the IP, which shouldn't match anything.
         my($d) = lc($_E->get_domain_part($old_email));
+        # This probably only is not defined in bunits
+        my($f) = $req->unsafe_get('UI.Facade');
+        if (!$f || $d eq $f->get_value('mail_host')) {
+            return 1;
+        }
         if (!_rewrite_from_if_dmarc($d) && !_rewrite_from_if_spf($old_email)) {
             return 1;
         }
@@ -481,7 +489,9 @@ sub _rewrite_from_if_dmarc {
 
 sub _rewrite_from_if_spf {
     my($email) = @_;
-    # Avoid unnecessary messages output
+    # Avoid unnecessary messages output from Mail::SPF, e.g.
+    # Error::throw('Mail::SPF::ENoAcceptableRecord', 'No applicable sender policy available')
+    #   called at /usr/share/perl5/vendor_perl/Mail/SPF/Server.pm line 478
     my($r) = Bivio::Die->eval(
         sub {
             return Mail::SPF::Server->new->process(
@@ -489,7 +499,7 @@ sub _rewrite_from_if_spf {
             );
         },
     );
-    return $r && $r =~ m{^(?:pass|none|netural)$}i ? 0 : 1;
+    return $r && $r->code =~ m{^(?:pass|none|netural)$}i ? 0 : 1;
 }
 
 1;

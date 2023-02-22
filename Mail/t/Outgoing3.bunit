@@ -1,5 +1,4 @@
-# Copyright (c) 2017 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2017-2023 bivio Software, Inc.  All rights reserved.
 Request('initialize_fully');
 config({
     'Bivio::Mail::Common' => {
@@ -21,9 +20,10 @@ EOF
 # has dmarc above
 (my $_REWRITE_FROM2 = $_REWRITE_FROM1) =~ s/science.doe.gov/txt.voice.google.com/;
 # has p=none
-(my $_NOT_REWRITE_FROM1 = $_REWRITE_FROM1) =~ s/science.doe.gov/gmail.com/;
+(my $_NOT_REWRITE_FROM1 = $_REWRITE_FROM1) =~ s/science.doe.gov/domain-without-spf.com/;
 # has no dmarc
-(my $_NOT_REWRITE_FROM2 = $_REWRITE_FROM1) =~ s/science.doe.gov/bivio.com/;
+my($mail_host) = req('UI.Facade')->get_value('mail_host');
+(my $_NOT_REWRITE_FROM2 = $_REWRITE_FROM1) =~ s/science.doe.gov/$mail_host/;
 [
     [Bivio::Mail::Incoming->new(\$_REWRITE_FROM1)] => [
         set_recipients => [
@@ -55,7 +55,7 @@ EOF
             [req()] => undef,
         ],
         unsafe_get_header => [
-            from => qr{^Any User <any_user.gmail.com>$},
+            from => qr{^Any User <any_user.domain-without-spf.com>$},
         ],
     ],
     [Bivio::Mail::Incoming->new(\$_NOT_REWRITE_FROM2)] => [
@@ -66,7 +66,7 @@ EOF
             [req()] => undef,
         ],
         unsafe_get_header => [
-            from => qr{^Any User <any_user.bivio.com>$},
+            from => qr{^Any User <any_user.$mail_host>$},
         ],
     ],
 ];

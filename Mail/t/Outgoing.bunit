@@ -1,5 +1,4 @@
-# Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2005-2023 bivio Software, Inc.  All rights reserved.
 Request('initialize_fully');
 config({
     'Bivio::Mail::Common' => {
@@ -20,7 +19,7 @@ Received: from lists.bivio.com)
 	by foo.example.com (8.8.7/8.8.7) with SMTP id HAA23241
 	for <any@bivio.com>; Thu, 1 Jul 1999 07:43:09 -0600
 Message-ID: <123@example.com>
-From: "Fan Tango" <foo_bar@example.net>
+From: "Fan Tango" <foo_bar@domain-without-spf-xyzzy.com>
 To: "Some-List" <some-list@example.com>, to@example.com
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 MIME-Version: 1.0
@@ -46,10 +45,10 @@ EOF
 
 
 my($_OUT) = <<'EOF';
-Return-Path: <foo_bar@example.net>
+Return-Path: <foo_bar@domain-without-spf-xyzzy.com>
 Message-ID: <123@example.com>
 Date: Thu, 1 Jul 1999 09:33:35 -0400
-From: "Fan Tango" <foo_bar@example.net>
+From: "Fan Tango" <foo_bar@domain-without-spf-xyzzy.com>
 Subject: [abc] This is my subject
 Sender: some-list-owner@a.a
 To: "Some-List" <some-list@example.com>, to@example.com
@@ -127,7 +126,6 @@ lazy dog.
 --001a11c3e682ee25060502a42c67--
 EOF
 
-
 my($_BODY) = 'what a body';
 [
     [Bivio::Mail::Incoming->new(\$_IN)] => [
@@ -192,7 +190,7 @@ my($_BODY) = 'what a body';
         add_missing_headers => [
             [req()] => undef,
         ],
-        as_string => qr{Return-Path: <foo_bar\@example.net>\nMessage-ID}is,
+        as_string => qr{Return-Path: <foo_bar\@domain-without-spf-xyzzy.com>\nMessage-ID}is,
     ],
     [Bivio::Mail::Incoming->new(\$_IN)] => [
         set_headers_for_list_send => [
@@ -210,7 +208,7 @@ my($_BODY) = 'what a body';
             cc => 'cc@example.com',
             bcc => 'bcc@example.com',
             'return-path' => '<c@c.c>',
-            from => '"Fan Tango" <foo_bar@example.net>',
+            from => '"Fan Tango" <foo_bar@domain-without-spf-xyzzy.com>',
             sender => 'a@a.a',
             'reply-to' => undef,
         ],
