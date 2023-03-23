@@ -12,8 +12,8 @@ use MIME::Base64;
     {
         index => 1,
 	mime_type => 'application/pdf',
-	'->get_file_name' => '2021 - Foo Bar.pdf',
-	'->format_uri_for_part SITE_ROOT' => '/2021%20-%20Foo%20Bar.pdf?p=1&t=1',
+	'->get_file_name' => '2021-Foo-Bar.pdf',
+	'->format_uri_for_part SITE_ROOT' => '/2021-Foo-Bar.pdf?p=1&t=1',
 	mime_entity => MIME::Base64::decode('JVBERi0xLjQNJeLjz9MNCjYgMCBvYmoNPDwgDS9MaW5lYXJpemVkIDEgDS9PIDkgDS9IIFsgMTAy'),
     },
 ];
