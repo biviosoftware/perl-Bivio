@@ -77,7 +77,7 @@ sub do_iterate {
             if $self->internal_verify_do_iterate_result(
                 $handler->($self),
             );
-        $self->put_on_request($self)
+        $self->put_on_request
             unless $self->is_ephemeral;
         last;
     }

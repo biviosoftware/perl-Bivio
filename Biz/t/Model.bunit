@@ -201,6 +201,10 @@ my($category_count) = 0;
                 },
                 'name asc',
             ] => sub {
+                req()->clear_nondurable_state;
+                if (my $c = req()->unsafe_get('Model.Category')) {
+                    b_die('State not cleared=', $c);
+                }
                 shift->actual_return([$category_count]);
                 return [3];
             },
