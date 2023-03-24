@@ -12,15 +12,15 @@ use MIME::Base64;
     {
         index => 1,
 	mime_type => 'application/pdf',
-	'->get_file_name' => 'SCOPE Alliance Jan07 Mngt_Inv. #10501.pdf',
-	'->format_uri_for_part SITE_ROOT' => '/SCOPE%20Alliance%20Jan07%20Mngt_Inv.%20%2310501.pdf?p=1&t=1',
+	'->get_file_name' => 'SCOPE-Alliance-Jan07-Mngt_Inv.-#10501.pdf',
+	'->format_uri_for_part SITE_ROOT' => '/SCOPE-Alliance-Jan07-Mngt_Inv.-%2310501.pdf?p=1&t=1',
 	mime_entity => MIME::Base64::decode('JVBERi0xLjQNJeLjz9MNCjYgMCBvYmoNPDwgDS9MaW5lYXJpemVkIDEgDS9PIDkgDS9IIFsgMTAy'),
     },
     {
         index => 2,
 	mime_type => 'application/pdf',
-	'->get_file_name' => 'SCOPE Alliance Statement 1.15.07.pdf',
-	'->format_uri_for_part SITE_ROOT' => '/SCOPE%20Alliance%20Statement%201.15.07.pdf?p=1&t=2',
+	'->get_file_name' => 'SCOPE-Alliance-Statement-1.15.07.pdf',
+	'->format_uri_for_part SITE_ROOT' => '/SCOPE-Alliance-Statement-1.15.07.pdf?p=1&t=2',
 	mime_entity => MIME::Base64::decode('JVBERi0xLjQNJeLjz9MNCjYgMCBvYmoNPDwgDS9MaW5lYXJpemVkIDEgDS9PIDkgDS9IIFsgMTAw'),
     },
 ];

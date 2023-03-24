@@ -11,6 +11,7 @@ my($_E) = b_use('Type.Email');
 my($_FN) = b_use('Type.FileName');
 my($_MP) = b_use('Ext.MIMEParser');
 my($_RM) = b_use('Model.RealmMail');
+my($_S) = b_use('Type.String');
 my($_T) = b_use('MIME.Type');
 my($_W) = b_use('MIME.Word');
 my($_LFP) = b_use('Action.LocalFilePlain');
@@ -86,7 +87,8 @@ sub get_file_name {
     my($self) = @_;
     my($fn) = $self->get('mime_entity')->head->recommended_filename;
     return $_FN->get_tail(
-        $fn && $_W->decode($fn) || _default_file_name($self));
+        $fn && _canonicalize_file_name($fn) || _default_file_name($self),
+    );
 }
 
 sub get_from_name {
@@ -232,6 +234,14 @@ sub was_attachment_visited {
     return $fields->{visited} && $fields->{visited}->{$cid}
         ? 1
         : 0;
+}
+
+sub _canonicalize_file_name {
+    my($file_name) = @_;
+    $file_name = ${$_S->canonicalize_charset($_W->decode($file_name))};
+    $file_name =~ s/ +/-/g;
+    $file_name =~ s/-{2,}/-/g;
+    return $file_name;
 }
 
 sub _default_file_name {
