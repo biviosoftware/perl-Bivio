@@ -439,9 +439,8 @@ sub _validate_user {
     # Ensures the user is present, displays the are_you_sure using the
     # specified message.
     # Returns the user's realm.
+    $self->assert_have_user;
     my($req) = $self->get_request;
-    $self->usage_error("missing user")
-        unless $self->unsafe_get('user');
     $self->are_you_sure($message . ' for '
         . $req->get_nested(qw(auth_user display_name))
         . ' of '
