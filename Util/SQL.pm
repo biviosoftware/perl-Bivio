@@ -1,4 +1,4 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2023 bivio Software, Inc.  All rights reserved.
 # $Id$
 package Bivio::Util::SQL;
 use strict;
@@ -626,6 +626,21 @@ ALTER TABLE ec_credit_card_payment_t
     ADD COLUMN card_state VARCHAR(30),
     ADD COLUMN card_country VARCHAR(2),
     ADD COLUMN card_email VARCHAR(100)
+/
+EOF
+    return;
+}
+
+sub internal_upgrade_db_login_failure_count {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE realm_owner_t
+    ADD COLUMN login_failure_count NUMERIC(3)
+/
+UPDATE realm_owner_t set login_failure_count = 0
+/
+ALTER TABLE realm_owner_t
+    ALTER COLUMN login_failure_count SET NOT NULL
 /
 EOF
     return;

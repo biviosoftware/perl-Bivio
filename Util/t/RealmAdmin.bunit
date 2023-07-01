@@ -1,6 +1,12 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2007-2023 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
+my($lockout_count) = 5;
+config({
+    'Bivio::Biz::Model::RealmOwner' => {
+        lockout_login_failure_count => $lockout_count,
+    },
+});
 my($uid);
 model('UserRealmSubscription')->unauth_delete({
     realm_id => realm_id('site-reports'),
@@ -56,5 +62,14 @@ model('UserRealmSubscription')->unauth_delete({
         });
         return 1;
     },
+    # This would be cleaner if there was a `lock_login` method or util, but that isn't really needed
+    inline_case(sub {
+        $uid = ShellUtil_TestUser()->create(random_realm_name());
+        my($ro) = unauth_model(RealmOwner => {realm_id => $uid});
+        $ro->update({login_failure_count => $lockout_count});
+        return $ro->is_locked;
+    }),
+    sub {[-realm => $uid, -user => $uid, 'unlock_login']} => sub {
+        return !unauth_model(RealmOwner => {realm_id => $uid})->is_locked;
+    },
 ];
-

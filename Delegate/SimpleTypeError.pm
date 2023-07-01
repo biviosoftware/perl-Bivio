@@ -1,5 +1,4 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2001-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Delegate::SimpleTypeError;
 use strict;
 use Bivio::Base 'Type.EnumDelegate';
@@ -432,6 +431,11 @@ sub get_delegate_info {
         82,
         undef,
         'File names may not contain a leading dot.',
+    ],
+    LOGIN_LOCKED => [
+        83,
+        undef,
+        'User has been locked due to too many failed login attempts.  Please contact customer support.',
     ],
 ];
 }

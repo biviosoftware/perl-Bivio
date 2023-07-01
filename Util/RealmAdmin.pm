@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2023 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Util::RealmAdmin;
 use strict;
@@ -31,6 +31,7 @@ commands:
     scan_realm_id [realm_id] -- checks for auth_id in all table fields
     subscribe_user_to_realm -- subscribe given user to given realm
     to_id anything -- the id for the realm passed as an argument
+    unlock_login -- unlock user login
     unsafe_to_id anything -- to_id if it exists else undef
     unsubscribe_user_from_realm -- unsubscribe given user from given realm
     users [role] -- dump users in realm [with a specific role]
@@ -284,6 +285,12 @@ sub subscribe_user_to_realm {
 sub to_id {
     return shift->unsafe_to_id(@_)
         || b_die(shift, ': not found');
+}
+
+sub unlock_login {
+    my($self) = @_;
+    _validate_user($self, 'Unlock login')->unlock_login;
+    return;
 }
 
 sub unsafe_to_id {

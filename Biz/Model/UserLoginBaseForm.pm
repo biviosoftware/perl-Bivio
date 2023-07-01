@@ -1,5 +1,4 @@
-# Copyright (c) 2011-2012 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2011-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserLoginBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
@@ -113,6 +112,19 @@ sub validate {
     return;
 }
 
+sub validate_and_execute_ok {
+    my($self) = @_;
+    my($res) = shift->SUPER::validate_and_execute_ok(@_);
+    # Won't have a realm owner if the login field was invalid
+    return $res
+        unless my $ro = $self->unsafe_get('realm_owner');
+    my($errors) = $self->get_errors || {};
+    # Have to do this after form processing as the transaction gets rolled back upon form errors
+    $ro->record_login_failure
+        if $errors->{'RealmOwner.password'};
+    return $res;
+}
+
 sub validate_login {
     my($self, $model_or_login, $field) = @_;
     $field ||= 'login';
@@ -148,6 +160,7 @@ sub _validate {
             user_id => $owner->get('realm_id')
         })->verify($self->get('RealmOwner.password'));
     }
+    $owner->reset_login_failure_count;
     $self->internal_put_field(validate_called => 1);
     return;
 }

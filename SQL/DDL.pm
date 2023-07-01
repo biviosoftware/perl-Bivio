@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2023 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::SQL::DDL;
 use strict;
@@ -1566,6 +1566,7 @@ CREATE TABLE realm_owner_t (
   realm_type NUMERIC(2) NOT NULL,
   display_name TEXT64K NOT NULL,
   creation_date_time DATE NOT NULL,
+  login_failure_count NUMERIC(3) NOT NULL,
   CONSTRAINT realm_owner_t1 PRIMARY KEY(realm_id)
 )
 /
