@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Type::Password;
 use strict;
 use Bivio::Base 'Type.Name';
@@ -51,6 +50,8 @@ sub encrypt {
 }
 
 sub get_min_width {
+    # As of 07/2023, new passwords are required to be 8 characters, but we are allowing existing
+    # short passwords.
     return 6;
 }
 
@@ -74,6 +75,15 @@ sub is_valid {
             || $value =~ $_VALID_SHA_RE
             || $value eq $proto->OTP_VALUE
     ) ? 1 : 0;
+}
+
+sub validate_clear_text {
+    my($proto, $clear_text, $user_id, $user_name, $user_emails) = @_;
+    # Have to check length outside of usual width checking as deprecated 6-7 character passwords are
+    # still allowed.
+    return 'TOO_SHORT'
+        if length($clear_text) < 8;
+    return;
 }
 
 sub _encrypt {

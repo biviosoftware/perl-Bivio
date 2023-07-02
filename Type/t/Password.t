@@ -35,5 +35,9 @@ Bivio::Test->new('Bivio::Type::Password')->unit([
             otp => 1,
             xx => 0,
         ],
+        validate_clear_text => [
+            'shrtpw' => 'TOO_SHORT',
+            'longerpw' => undef,
+        ],
     ],
 ]);

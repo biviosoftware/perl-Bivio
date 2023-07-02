@@ -1,0 +1,39 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+my($reset_password) = sub {
+    my($password) = @_;
+    req()->with_realm_and_user(qw(demo demo), sub {
+        Util_RealmAdmin()->reset_password($password);
+    });
+    return 1;
+};
+[
+    simple_case({
+        login => 'demo',
+        'RealmOwner.password' => 'password',
+    } => {
+        login => 'demo',
+        'RealmOwner.password' => 'password',
+    }),
+    inline_case(sub {
+        return $reset_password->('passwd');
+    }),
+    # Users are allowed to log in with existing deprecated 6-7 character passwords
+    simple_case({
+        login => 'demo',
+        'RealmOwner.password' => 'passwd',
+    } => {
+        login => 'demo',
+        'RealmOwner.password' => 'passwd',
+    }),
+    inline_case(sub {
+        return $reset_password->('pass');
+    }),
+    # Users are not allowed to log in with invalid < 6 character passwords
+    simple_case({
+        login => 'demo',
+        'RealmOwner.password' => 'pass',
+    } => {
+        'RealmOwner.password' => 'TOO_SHORT',
+    }),
+];
