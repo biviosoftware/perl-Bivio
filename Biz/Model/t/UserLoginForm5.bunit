@@ -1,0 +1,64 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+my($_P) = b_use('Type.Password');
+my($password) = 'password';
+my($validate_password_hash) = sub {
+    my($expected_hash_type) = @_;
+    my($ro) = model('RealmOwner');
+    $ro->unauth_load({name => 'demo'});
+    my($hashed_pw) = $ro->get('password');
+    b_die("invalid $expected_hash_type password hash=$hashed_pw")
+        unless $_P->is_valid($hashed_pw, $expected_hash_type);
+    return 1;
+};
+my($reset_password_hash) = sub {
+    my($hash_type) = @_;
+    req()->with_realm_and_user(qw(demo demo), sub {
+        Util_RealmAdmin()->reset_password($password, $hash_type);
+    });
+    return 1;
+};
+[
+    simple_case({
+        login => 'demo',
+        'RealmOwner.password' => $password,
+    } => {
+        login => 'demo',
+        'RealmOwner.password' => $password,
+    }),
+    inline_case(sub {
+        return $validate_password_hash->($_P->HASH_TYPE);
+    }),
+    inline_case(sub {
+        return $reset_password_hash->(Type_PasswordHashCrypt());
+    }),
+    inline_case(sub {
+        return $validate_password_hash->(Type_PasswordHashCrypt());
+    }),
+    simple_case({
+        login => 'demo',
+        'RealmOwner.password' => $password,
+    } => {
+        login => 'demo',
+        'RealmOwner.password' => $password,
+    }),
+    inline_case(sub {
+        return $validate_password_hash->($_P->HASH_TYPE);
+    }),
+    inline_case(sub {
+        return $reset_password_hash->(Type_PasswordHashHMACSHA1());
+    }),
+    inline_case(sub {
+        return $validate_password_hash->(Type_PasswordHashHMACSHA1());
+    }),
+    simple_case({
+        login => 'demo',
+        'RealmOwner.password' => $password,
+    } => {
+        login => 'demo',
+        'RealmOwner.password' => $password,
+    }),
+    inline_case(sub {
+        return $validate_password_hash->($_P->HASH_TYPE);
+    }),
+];

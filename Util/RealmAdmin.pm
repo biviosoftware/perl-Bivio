@@ -27,7 +27,7 @@ commands:
     join_user roles... -- adds specified user role to realm
     leave_role -- remove one user role from a realm
     leave_user -- removes all user roles from realm
-    reset_password password -- reset a user's password
+    reset_password password [hash_type] -- reset a user's password [with a specific deprecated hash type (for testing)]
     scan_realm_id [realm_id] -- checks for auth_id in all table fields
     subscribe_user_to_realm -- subscribe given user to given realm
     to_id anything -- the id for the realm passed as an argument
@@ -238,12 +238,12 @@ sub leave_user {
 }
 
 sub reset_password {
-    my($self, $password) = @_;
+    my($self, $password, $hash_type) = @_;
     # Changes a user's password.
     $self->usage_error("missing new password")
         unless defined($password);
     _validate_user($self, 'Reset Password')->update({
-        password => b_use('Type.Password')->encrypt($password),
+        password => b_use('Type.Password')->encrypt($password, $hash_type),
     });
     return;
 }

@@ -195,6 +195,13 @@ sub is_offline_user {
         $model->get($model_prefix . 'name'));
 }
 
+sub maybe_upgrade_password {
+    my($self, $clear_text) = @_;
+    return $self
+        if $self->require_otp || !$_P->needs_upgrade($self->get('password'));
+    return $self->update_password($clear_text);
+}
+
 sub require_otp {
     my($self) = @_;
     return $self->get_field_type('password')->is_otp($self->get('password'));
