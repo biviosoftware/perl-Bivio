@@ -437,6 +437,11 @@ sub get_delegate_info {
         undef,
         'User has been locked due to too many failed login attempts.  Please contact customer support.',
     ],
+    WEAK_PASSWORD => [
+        84,
+        undef,
+        'Password does not sufficiently protect against potential attackers. Do not use a common, easy to guess password, your user id, login name, or email address.',
+    ],
 ];
 }
 

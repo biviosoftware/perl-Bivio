@@ -5,6 +5,33 @@ use Bivio::Base 'Type.Name';
 use Bivio::TypeError;
 use Digest::SHA ();
 
+my($_F) = b_use('IO.File');
+
+my($_WEAK_PASSWORDS);
+my($_C) = b_use('IO.Config');
+my($_CFG);
+$_C->register($_CFG = {
+    weak_regex => [],
+    weak_corpus_path => undef,
+    in_weak_corpus => sub {
+        # This implementation should only be used for a corpus of limited size. Larger corpuses
+        # should be stored in a more sofisticated external database, with a new implementation
+        # that uses said database.
+        my($clear_text) = @_;
+        unless (defined($_WEAK_PASSWORDS)) {
+            $_WEAK_PASSWORDS = {};
+            if ($_CFG->{weak_corpus_path} && -f $_CFG->{weak_corpus_path}) {
+                $_F->do_lines($_CFG->{weak_corpus_path}, sub {
+                    my($weak_pw) = @_;
+                    $_WEAK_PASSWORDS->{$weak_pw} = 1;
+                    return 1;
+                });
+            }
+        }
+        return $_WEAK_PASSWORDS->{$clear_text} ? 1 : 0;
+    },
+});
+
 # C<Bivio::Type::Password> indicates the input is a password entry.
 # It should be handled with care, e.g. never displayed to user.
 
@@ -55,6 +82,12 @@ sub get_min_width {
     return 6;
 }
 
+sub handle_config {
+    my(undef, $cfg) = @_;
+    $_CFG = $cfg;
+    return;
+}
+
 sub is_otp {
     my($proto, $value) = @_;
     return $proto->OTP_VALUE eq ($value || '') ? 1 : 0;
@@ -83,12 +116,41 @@ sub validate_clear_text {
     # still allowed.
     return 'TOO_SHORT'
         if length($clear_text) < 8;
+    return 'WEAK_PASSWORD'
+        if _is_weak($clear_text, $user_id, $user_name, $user_emails);
     return;
 }
 
 sub _encrypt {
     my($clear, $salt) = @_;
     return $salt . Digest::SHA::hmac_sha1_base64($clear, $salt);
+}
+
+sub _is_weak {
+    my($clear_text, $user_id, $user_name, $user_emails) = @_;
+    b_die('must provide user realm_id, user realm owner name, user email addresses')
+        unless $user_id && $user_name && $user_emails;
+    return 1
+        if $clear_text eq $user_id;
+    return 1
+        if $clear_text eq $user_name;
+    foreach my $email (@$user_emails) {
+        return 1
+            if $clear_text eq $email;
+        my($local_part) = split('@', $email);
+        return 1
+            if $clear_text eq $local_part;
+        my(@email_parts) = split(qr/\W/, $email);
+        return 1
+            if $clear_text eq join('', @email_parts);
+    }
+    foreach my $regex (@{$_CFG->{weak_regex} || []}) {
+        return 1
+            if $clear_text =~ $regex;
+    }
+    return 1
+        if $_CFG->{in_weak_corpus}($clear_text);
+    return 0;
 }
 
 1;
