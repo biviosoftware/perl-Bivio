@@ -631,6 +631,16 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_password_length {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE realm_owner_t
+    ALTER COLUMN password TYPE VARCHAR(255)
+/
+EOF
+    return;
+}
+
 sub is_oracle {
     my($self) = @_;
     # May not have a database at this point to connect to.
@@ -706,7 +716,7 @@ sub reinitialize_sequences {
 sub restore_dbms_dump {
     my($self, $dump, $extra_args) = @_;
     $self->usage_error($dump, ': missing or non existent dump file argument')
-	unless -r $dump;
+        unless -r $dump;
     $self->destroy_dbms;
     $self->commit_or_rollback;
     $self->init_dbms;
