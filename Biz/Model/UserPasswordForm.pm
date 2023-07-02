@@ -60,7 +60,13 @@ sub internal_pre_execute {
 
 sub internal_validate_new {
     my($self) = @_;
-    my($error) = $_P->validate_clear_text($self->get('new_password'));
+    my($req) = $self->get_request;
+    my($error) = $_P->validate_clear_text(
+        $self->get('new_password'),
+        $req->get('auth_id'),
+        $req->get_nested(qw(auth_realm owner_name)),
+        $self->new_other('Email')->map_iterate('email'),
+    );
     return $self->internal_put_error('new_password', $error)
         if $error;
     return;

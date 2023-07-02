@@ -433,6 +433,11 @@ sub get_delegate_info {
         undef,
         'File names may not contain a leading dot.',
     ],
+    WEAK_PASSWORD => [
+        83,
+        undef,
+        'Password does not sufficiently protect against potential attackers. Do not use a common, easy to guess password, your user id, login name, or email address.',
+    ],
 ];
 }
 
