@@ -50,6 +50,7 @@ sub internal_pre_execute {
 
 sub internal_validate_new {
     my($self) = @_;
+    # Not calling super as new password isn't a regular password
     my($otp) = Bivio::Biz::RFC2289->canonical_hex($self->get('new_password'));
     unless ($otp) {
         $self->internal_put_field(new_password => undef);
