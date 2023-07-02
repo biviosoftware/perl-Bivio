@@ -646,6 +646,16 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_password_length {
+    my($self) = @_;
+    $self->run(<<'EOF');
+ALTER TABLE realm_owner_t
+    ALTER COLUMN password TYPE VARCHAR(255)
+/
+EOF
+    return;
+}
+
 sub is_oracle {
     my($self) = @_;
     # May not have a database at this point to connect to.

@@ -1,9 +1,7 @@
 # Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Type::Password;
 use strict;
-use Bivio::Base 'Type.Name';
-use Bivio::TypeError;
-use Digest::SHA ();
+use Bivio::Base 'Type.Line';
 
 my($_F) = b_use('IO.File');
 
@@ -31,18 +29,19 @@ $_C->register($_CFG = {
         return $_WEAK_PASSWORDS->{$clear_text} ? 1 : 0;
     },
 });
+my($_CURRENT_HASH_TYPE) = b_use('Type.PasswordHashHMACSHA512');
+my($_HASH_TYPES) = [
+    b_use('Type.PasswordHashCrypt'),
+    b_use('Type.PasswordHashHMACSHA1'),
+    $_CURRENT_HASH_TYPE,
+];
 
 # C<Bivio::Type::Password> indicates the input is a password entry.
 # It should be handled with care, e.g. never displayed to user.
 
-my(@_SALT_CHARS) = (
-    'a'..'z',
-    'A'..'Z',
-    '0'..'9',
-);
-my($_SALT_INDEX_MAX) = int(@_SALT_CHARS) - 1;
-my($_CRYPT_VALID_LENGTH) = 13;
-my($_VALID_SHA_RE) = qr{^[a-z0-9+/]{29}$}ois;
+sub HASH_TYPE {
+    return $_CURRENT_HASH_TYPE;
+}
 
 sub INVALID {
     # Returns invalid password (save literally!).
@@ -54,32 +53,37 @@ sub OTP_VALUE {
 }
 
 sub compare {
-    my($proto, $encrypted, $incoming) = @_;
+    my($proto, $hashed, $clear_text) = @_;
     return -1
-        unless defined($encrypted);
+        unless defined($hashed);
+    # Incoming clear text is never allowed to match stored OTP value and instead must be verified
+    # via the OTP module.
+    return -1
+        if $hashed eq $proto->OTP_VALUE;
     return 1
-        unless defined($incoming);
-    my($salt) = substr($encrypted, 0, 2);
-    my($i) = length($encrypted) == $_CRYPT_VALID_LENGTH
-        ? crypt($incoming, $salt)
-        : _encrypt($incoming, $salt);
-    return $encrypted cmp $i;
+        unless defined($clear_text);
+    my($hti) = _to_hash_type_instance($hashed);
+    b_die('invalid password hash')
+        unless ref($hti);
+    return $hti->compare($clear_text);
 }
 
 sub encrypt {
-    my(undef, $password) = @_;
-    my($salt) = '';
-    for (my($i) = 0; $i < 2; $i++) {
-        $salt .= $_SALT_CHARS[int(rand($_SALT_INDEX_MAX) + 0.5)];
-    };
-    return _encrypt($password, $salt);
-
+    my(undef, $clear_text, $type) = @_;
+    $type ||= $_CURRENT_HASH_TYPE;
+    b_die("unsupported hash type=$type")
+        unless grep($_ eq $type, @$_HASH_TYPES);
+    return $type->to_literal($clear_text);
 }
 
 sub get_min_width {
     # As of 07/2023, new passwords are required to be 8 characters, but we are allowing existing
     # short passwords.
     return 6;
+}
+
+sub get_width {
+    return 255;
 }
 
 sub handle_config {
@@ -102,12 +106,26 @@ sub is_secure_data {
 }
 
 sub is_valid {
-    my($proto, $value) = @_;
-    return $value && (
-        length($value) == $_CRYPT_VALID_LENGTH
-            || $value =~ $_VALID_SHA_RE
-            || $value eq $proto->OTP_VALUE
-    ) ? 1 : 0;
+    my($proto, $hashed, $expected_hash_type) = @_;
+    return 0
+        unless $hashed;
+    return 1
+        if $hashed eq $proto->OTP_VALUE;
+    my($hti) = _to_hash_type_instance($hashed);
+    if ($expected_hash_type) {
+        return ref($hti) eq $expected_hash_type ? 1 : 0;
+    }
+    return ref($hti) ? 1 : 0;
+}
+
+sub needs_upgrade {
+    my($proto, $hashed) = @_;
+    return 0
+        if $hashed eq $proto->OTP_VALUE;
+    my($hti) = _to_hash_type_instance($hashed);
+    b_die('invalid password hash')
+        unless ref($hti);
+    return ref($hti) ne $_CURRENT_HASH_TYPE ? 1 : 0;
 }
 
 sub validate_clear_text {
@@ -119,11 +137,6 @@ sub validate_clear_text {
     return 'WEAK_PASSWORD'
         if _is_weak($clear_text, $user_id, $user_name, $user_emails);
     return;
-}
-
-sub _encrypt {
-    my($clear, $salt) = @_;
-    return $salt . Digest::SHA::hmac_sha1_base64($clear, $salt);
 }
 
 sub _is_weak {
@@ -151,6 +164,16 @@ sub _is_weak {
     return 1
         if $_CFG->{in_weak_corpus}($clear_text);
     return 0;
+}
+
+sub _to_hash_type_instance {
+    my($hashed) = @_;
+    foreach my $type (@$_HASH_TYPES) {
+        my($hti, $error) = $type->from_literal($hashed);
+        return $hti
+            unless $error;
+    }
+    return;
 }
 
 1;

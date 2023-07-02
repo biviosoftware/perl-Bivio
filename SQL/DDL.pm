@@ -1562,7 +1562,7 @@ CREATE TABLE realm_mail_bounce_t (
 CREATE TABLE realm_owner_t (
   realm_id NUMERIC(18),
   name VARCHAR(30) NOT NULL,
-  password VARCHAR(30) NOT NULL,
+  password VARCHAR(255) NOT NULL,
   realm_type NUMERIC(2) NOT NULL,
   display_name TEXT64K NOT NULL,
   creation_date_time DATE NOT NULL,
