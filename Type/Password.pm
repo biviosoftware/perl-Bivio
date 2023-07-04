@@ -106,17 +106,17 @@ sub is_valid {
         if $hashed eq $proto->OTP_VALUE;
     my($hti) = _to_hash_type_instance($hashed);
     if ($expected_hash_type) {
-        return ref($hti) eq $expected_hash_type ? 1 : 0;
+        return $proto->is_blesser_of($hti, $expected_hash_type) ? 1 : 0;
     }
-    return ref($hti) ? 1 : 0;
+    return $hti ? 1 : 0;
 }
 
 sub needs_upgrade {
     my($proto, $hashed) = @_;
     return 0
         if $hashed eq $proto->OTP_VALUE;
-    return ref($hti) ne $_CURRENT_HASH_TYPE ? 1 : 0;
     my($hti) = _to_hash_type_instance_or_die($hashed);
+    return $_CURRENT_HASH_TYPE->is_blesser_of($hti) ? 0 : 1;
 }
 
 sub validate_clear_text {
