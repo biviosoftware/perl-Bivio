@@ -51,9 +51,7 @@ sub compare {
         if $hashed eq $proto->OTP_VALUE;
     return 1
         unless defined($clear_text);
-    my($hti) = _to_hash_type_instance($hashed);
-    b_die('invalid password hash')
-        unless ref($hti);
+    my($hti) = _to_hash_type_instance_or_die($hashed);
     return $hti->compare($clear_text);
 }
 
@@ -117,10 +115,8 @@ sub needs_upgrade {
     my($proto, $hashed) = @_;
     return 0
         if $hashed eq $proto->OTP_VALUE;
-    my($hti) = _to_hash_type_instance($hashed);
-    b_die('invalid password hash')
-        unless ref($hti);
     return ref($hti) ne $_CURRENT_HASH_TYPE ? 1 : 0;
+    my($hti) = _to_hash_type_instance_or_die($hashed);
 }
 
 sub validate_clear_text {
@@ -169,6 +165,14 @@ sub _to_hash_type_instance {
             unless $error;
     }
     return;
+}
+
+sub _to_hash_type_instance_or_die {
+    my($hashed) = @_;
+    my($hti) = _to_hash_type_instance($hashed);
+    b_die('invalid password hash')
+        unless $hti;
+    return $hti;
 }
 
 1;
