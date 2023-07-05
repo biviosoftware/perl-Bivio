@@ -7,7 +7,7 @@ use Digest::SHA ();
 
 my($_F) = b_use('IO.File');
 
-my($_WEAK_PASSWORDS);
+my($_WEAK_PASSWORDS) = {};
 my($_C) = b_use('IO.Config');
 my($_CFG);
 $_C->register($_CFG = {
@@ -15,20 +15,9 @@ $_C->register($_CFG = {
     weak_corpus_path => undef,
     in_weak_corpus => sub {
         # This implementation should only be used for a corpus of limited size. Larger corpuses
-        # should be stored in a more sofisticated external database, with a new implementation
-        # that uses said database.
-        my($clear_text) = @_;
-        unless (defined($_WEAK_PASSWORDS)) {
-            $_WEAK_PASSWORDS = {};
-            if ($_CFG->{weak_corpus_path} && -f $_CFG->{weak_corpus_path}) {
-                $_F->do_lines($_CFG->{weak_corpus_path}, sub {
-                    my($weak_pw) = @_;
-                    $_WEAK_PASSWORDS->{$weak_pw} = 1;
-                    return 1;
-                });
-            }
-        }
-        return $_WEAK_PASSWORDS->{$clear_text} ? 1 : 0;
+        # should be stored in an external database, with a new implementation that uses said
+        # database.
+        return $_WEAK_PASSWORDS->{shift(@_)} ? 1 : 0;
     },
 });
 
@@ -85,6 +74,12 @@ sub get_min_width {
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
+    if ($_CFG->{weak_corpus_path} && -f $_CFG->{weak_corpus_path}) {
+        $_F->do_lines($_CFG->{weak_corpus_path}, sub {
+            $_WEAK_PASSWORDS->{shift(@_)} = 1;
+            return 1;
+        });
+    }
     return;
 }
 
