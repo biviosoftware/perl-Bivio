@@ -1,0 +1,40 @@
+# Copyright (c) 2005 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+[
+    error_case({
+        'RealmOwner.display_name' => 'Some User',
+        'Email.email' => email('some_user'),
+        'RealmOwner.password' => 'password1',
+        confirm_password => 'password2',
+    } => {
+        'RealmOwner.password' => 'CONFIRM_PASSWORD',
+    }),
+    error_case({
+        'RealmOwner.display_name' => 'Some User',
+        'Email.email' => email('some_user'),
+        'RealmOwner.password' => 'pass',
+        confirm_password => 'pass',
+    } => {
+        'RealmOwner.password' => 'TOO_SHORT',
+    }),
+    # Separate code path for 6-7 character passwords
+    error_case({
+        'RealmOwner.display_name' => 'Some User',
+        'Email.email' => email('some_user'),
+        'RealmOwner.password' => 'passwd',
+        confirm_password => 'passwd',
+    } => {
+        'RealmOwner.password' => 'TOO_SHORT',
+    }),
+    simple_case({
+        'RealmOwner.display_name' => 'Some User',
+        'Email.email' => email('some_user'),
+        'RealmOwner.password' => 'password',
+        confirm_password => 'password',
+    } => {
+        'RealmOwner.display_name' => 'Some User',
+        'Email.email' => email('some_user'),
+        'RealmOwner.password' => 'password',
+        confirm_password => 'password',
+    }),
+];

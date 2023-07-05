@@ -8,6 +8,7 @@ b_use('IO.ClassLoaderAUTOLOAD');
 
 my($_DN) = b_use('Type.DisplayName');
 my($_A) = b_use('IO.Alert');
+my($_P) = b_use('Type.Password');
 my($_GUEST) = b_use('Auth.Role')->GUEST;
 my($_USER) = $_GUEST->USER;
 my($_C) = b_use('IO.Config');
@@ -149,6 +150,11 @@ sub validate {
             || $self->get_field_error('confirm_password')
             || $self->get('RealmOwner.password')
                 eq $self->get('confirm_password');
+    return
+        if $self->in_error;
+    my($validate_err) = $_P->validate_clear_text($self->get('RealmOwner.password'));
+    $self->internal_put_error('RealmOwner.password', $validate_err)
+        if $validate_err;
     return;
 }
 
