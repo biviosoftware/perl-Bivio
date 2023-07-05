@@ -34,15 +34,15 @@ sub compare {
 }
 
 sub get_id {
-    return shift->[$_IDI][0];
+    return shift->[$_IDI]{id};
 }
 
 sub get_salt {
-    return shift->[$_IDI][1];
+    return shift->[$_IDI]{salt};
 }
 
 sub get_hash {
-    return shift->[$_IDI][2];
+    return shift->[$_IDI]{hash};
 }
 
 sub internal_format_literal {
@@ -72,7 +72,12 @@ sub internal_to_literal {
 
 sub internal_to_parts {
     my($proto, $value) = @_;
-    return [split('\$', substr($value, 1))];
+    my($id, $salt, $hash) = split('\$', substr($value, 1));
+    return {
+        id => $id,
+        salt => $salt,
+        hash => $hash,
+    };
 }
 
 sub to_literal {

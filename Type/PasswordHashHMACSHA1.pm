@@ -30,7 +30,11 @@ sub internal_to_literal {
 
 sub internal_to_parts {
     my($proto, $value) = @_;
-    return [$proto->ID, substr($value, 0, 2), substr($value, 2)];
+    return {
+        id => $proto->ID,
+        salt => substr($value, 0, $proto->SALT_LENGTH),
+        hash => substr($value, $proto->SALT_LENGTH),
+    };
 }
 
 1;

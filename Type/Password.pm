@@ -24,6 +24,7 @@ my($_HASH_TYPES) = [
     b_use('Type.PasswordHashHMACSHA1'),
     $_CURRENT_HASH_TYPE,
 ];
+my($_SUPPORTED_HASH_TYPE) = {map(($_ => 1), @$_HASH_TYPES)};
 
 # C<Bivio::Type::Password> indicates the input is a password entry.
 # It should be handled with care, e.g. never displayed to user.
@@ -51,15 +52,14 @@ sub compare {
         if $hashed eq $proto->OTP_VALUE;
     return 1
         unless defined($clear_text);
-    my($hti) = _to_hash_type_instance_or_die($hashed);
-    return $hti->compare($clear_text);
+    return _to_hash_type_instance_or_die($hashed)->compare($clear_text);
 }
 
 sub encrypt {
     my(undef, $clear_text, $type) = @_;
     $type ||= $_CURRENT_HASH_TYPE;
     b_die("unsupported hash type=$type")
-        unless grep($_ eq $type, @$_HASH_TYPES);
+        unless $_SUPPORTED_HASH_TYPE->{$type};
     return $type->to_literal($clear_text);
 }
 
@@ -106,7 +106,7 @@ sub is_valid {
         if $hashed eq $proto->OTP_VALUE;
     my($hti) = _to_hash_type_instance($hashed);
     if ($expected_hash_type) {
-        return $proto->is_blesser_of($hti, $expected_hash_type) ? 1 : 0;
+        return $proto->is_blesser_of($hti, $expected_hash_type);
     }
     return $hti ? 1 : 0;
 }
@@ -115,8 +115,7 @@ sub needs_upgrade {
     my($proto, $hashed) = @_;
     return 0
         if $hashed eq $proto->OTP_VALUE;
-    my($hti) = _to_hash_type_instance_or_die($hashed);
-    return $_CURRENT_HASH_TYPE->is_blesser_of($hti) ? 0 : 1;
+    return $_CURRENT_HASH_TYPE->is_blesser_of(_to_hash_type_instance_or_die($hashed)) ? 0 : 1;
 }
 
 sub validate_clear_text {
@@ -169,10 +168,8 @@ sub _to_hash_type_instance {
 
 sub _to_hash_type_instance_or_die {
     my($hashed) = @_;
-    my($hti) = _to_hash_type_instance($hashed);
-    b_die('invalid password hash')
-        unless $hti;
-    return $hti;
+    return _to_hash_type_instance($hashed)
+        || b_die('invalid password hash=', $hashed);
 }
 
 1;
