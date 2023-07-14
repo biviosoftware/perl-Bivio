@@ -14,10 +14,6 @@ my($_HOME_TASK_MAP) = {
     } (grep($_->equals_by_name(qw(GENERAL)) ? 0 : 1,
         $_RT->get_non_zero_list))),
 };
-my($_C) = b_use('IO.Config');
-$_C->register(my $_CFG = {
-    lockout_login_failure_count => 100,
-});
 
 sub create {
     my($self, $values) = @_;
@@ -32,7 +28,6 @@ sub create {
     $values->{creation_date_time} ||= $_DT->now;
     $values->{password} = $_P->INVALID
         unless defined($values->{password});
-    $values->{login_failure_count} = 0;
     return shift->SUPER::create(@_);
 }
 
@@ -98,12 +93,6 @@ sub format_uri {
     });
 }
 
-sub handle_config {
-    my(undef, $cfg) = @_;
-    $_CFG = $cfg;
-    return;
-}
-
 sub has_valid_password {
     my($self) = @_;
     # Returns true if self's password is valid.
@@ -143,7 +132,6 @@ sub internal_initialize {
             realm_type => [b_use('Auth.RealmType'), 'NOT_NULL'],
             display_name => ['DisplayName', 'NOT_NULL'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
-            login_failure_count => ['Integer', 'NOT_NULL'],
         },
         auth_id => 'realm_id',
 # prevent circular dependency, handled by overridden unsafe_get_model()
@@ -185,12 +173,6 @@ sub is_default {
         eq $model->get($model_prefix . 'realm_id') ? 1 : 0;
 }
 
-sub is_locked {
-    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return $model->get($model_prefix . 'login_failure_count') >= $_CFG->{lockout_login_failure_count}
-        ? 1 : 0;
-}
-
 sub is_name_eq_email {
     my(undef, $req, $name, $email) = @_;
     # If I<name> points to I<email>, returns true.  Caller should
@@ -212,21 +194,9 @@ sub is_offline_user {
         $model->get($model_prefix . 'name'));
 }
 
-sub record_login_failure {
-    my($self) = @_;
-    my($new_count) = $self->get('login_failure_count') + 1;
-    $self->update({login_failure_count => $new_count});
-    return $new_count;
-}
-
 sub require_otp {
     my($self) = @_;
     return $self->get_field_type('password')->is_otp($self->get('password'));
-}
-
-sub reset_login_failure_count {
-    shift->update({login_failure_count => 0});
-    return;
 }
 
 sub unauth_delete_realm {
@@ -327,12 +297,6 @@ sub unauth_load_by_name_and_type_or_die {
     return $self;
 }
 
-sub unlock_login {
-    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    $model->reset_login_failure_count;
-    return;
-}
-
 sub unsafe_get_model {
     my($self, $name) = @_;
     # Overridden to support getting the related User or Club.
@@ -370,19 +334,15 @@ sub update_password {
 
 sub validate_login {
     my($self, $login) = @_;
-    return 'NOT_FOUND'
-        unless $self->unauth_load_by_email_id_or_name($login);
-    if ($self->is_locked) {
-        b_warn($login, ': login locked');
-        return 'LOGIN_LOCKED'
-    }
-    my($err) = $self->is_offline_user ? 'is_offline_user'
+    my($err) = !$self->unauth_load_by_email_id_or_name($login) ? ''
+        : $self->is_offline_user ? 'is_offline_user'
         : $self->is_default ? 'is_default'
         : $self->get('realm_type') != $_RT->USER
         ? ('realm_type is ' . $self->get('realm_type')->get_name)
         : !$self->has_valid_password ? 'not has_valid_password'
         : return;
-    b_warn($login, ': ', $err);
+    b_warn($login, ': ', $err)
+        if $err;
     return 'NOT_FOUND';
 }
 

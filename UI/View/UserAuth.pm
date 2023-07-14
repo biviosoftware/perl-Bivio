@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::View::UserAuth;
 use strict;
 use Bivio::Base 'View.Base';
@@ -85,6 +84,10 @@ sub internal_mail {
 
 sub internal_settings_form_extra_fields {
     return [];
+}
+
+sub user_lockout_mail {
+    return shift->internal_mail;
 }
 
 sub login {

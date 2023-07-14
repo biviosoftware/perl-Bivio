@@ -1,5 +1,4 @@
 # Copyright (c) 2008-2023 bivio Software, Inc.  All Rights Reserved.
-# $Id$
 package Bivio::SQL::DDL;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
@@ -1028,6 +1027,21 @@ CREATE INDEX user_default_subscription_t5 ON user_default_subscription_t (
   user_id
 )
 /
+
+--
+-- login_attempt_t
+--
+ALTER TABLE login_attempt_t
+  ADD CONSTRAINT login_attempt_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX login_attempt_t3 ON login_attempt_t (
+  realm_id,
+  creation_date_time,
+  login_attempt_id
+)
+/
 EOF
 }
 
@@ -1121,6 +1135,10 @@ CREATE SEQUENCE bulletin_s
   CACHE 1 INCREMENT BY 100000
 /
 
+CREATE SEQUENCE login_attempt_s
+  MINVALUE 100017
+  CACHE 1 INCREMENT BY 100000
+/
 EOF
 }
 
@@ -1566,7 +1584,6 @@ CREATE TABLE realm_owner_t (
   realm_type NUMERIC(2) NOT NULL,
   display_name TEXT64K NOT NULL,
   creation_date_time DATE NOT NULL,
-  login_failure_count NUMERIC(3) NOT NULL,
   CONSTRAINT realm_owner_t1 PRIMARY KEY(realm_id)
 )
 /
@@ -1635,6 +1652,16 @@ CREATE TABLE user_default_subscription_t (
   subscribed_by_default NUMERIC(1) NOT NULL,
   modified_date_time DATE NOT NULL,
   CONSTRAINT user_default_subscription_t1 primary key(user_id, realm_id)
+)
+/
+
+CREATE TABLE login_attempt_t (
+  login_attempt_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  login_attempt_state NUMERIC(2) NOT NULL,
+  ip_address CHAR(15) NOT NULL,
+  CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
 )
 /
 EOF

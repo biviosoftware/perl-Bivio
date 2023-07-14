@@ -1,5 +1,4 @@
-# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::FacadeBase;
 use strict;
 use Bivio::Base 'UI.Facade';
@@ -1984,6 +1983,7 @@ sub _cfg_user_auth {
             [GENERAL_USER_PASSWORD_QUERY => 'pub/forgot-password'],
             [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
             [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
+            [GENERAL_USER_LOCKOUT_MAIL => undef],
             [USER_PASSWORD_RESET => '?/new-password'],
             [USER_PASSWORD => '?/password'],
             [USER_SETTINGS_FORM => '?/settings'],
@@ -2115,6 +2115,24 @@ Join([['Model.UserPasswordQueryForm', 'uri']]);
 
 For your security, this link may be used one time only to set your
 password.
+
+You may contact customer support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
+EOF
+                    ],
+                    user_lockout_mail => [
+                        to => q{Mailbox(['Model.UserLoginForm', 'Email.email']);},
+                        subject => 'vs_site_name(); Account Locked',
+                        body => <<'EOF',
+We have locked your account due to a large number of failed login attempts. This is done to prevent
+potential attackers from being able to guess your password. To regain access to your account, follow
+link below or use the forgot password form.
+
+Join([['Model.UserLoginForm', 'uri']]);
+
+For your security, this link may be used one time only to set your password.
 
 You may contact customer support by replying to this message.
 

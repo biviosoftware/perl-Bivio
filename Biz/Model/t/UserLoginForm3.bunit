@@ -1,43 +1,50 @@
 # Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
 FormModel();
-my($lockout_count) = 5;
 config({
-    'Bivio::Biz::Model::RealmOwner' => {
-        lockout_login_failure_count => $lockout_count,
+    'Bivio::Biz::Model::LoginAttempt' => {
+        lockout_failure_count => 2,
     },
 });
 my($uid) = Util_TestUser()->create(random_realm_name());
-# Have to commit as form processing will issue a rollback on error
+# Have to commit as form processing will issue a rollback on error, preventing login attempts from
+# being recorded.
 commit();
 [
-    map(
-        error_case({
-            login => $uid,
-            'RealmOwner.password' => 'wrong password',
-        } => {
-            'RealmOwner.password' => 'PASSWORD_MISMATCH',
-        }),
-        1..$lockout_count,
-    ),
+    req_state({
+        task => 'LOGIN',
+    }),
+    error_case({
+        login => $uid,
+        'RealmOwner.password' => 'wrong password',
+    } => {
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
     inline_commit(),
     error_case({
         login => $uid,
         'RealmOwner.password' => 'wrong password',
     } => {
-        login => 'LOGIN_LOCKED',
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    inline_commit(),
+    error_case({
+        login => $uid,
+        'RealmOwner.password' => 'wrong password',
+    } => {
+        login => 'LOCKED_OUT',
     }),
     error_case({
         login => $uid,
         # Right password, but it's too late
         'RealmOwner.password' => 'password',
     } => {
-        login => 'LOGIN_LOCKED',
+        login => 'LOCKED_OUT',
     }),
-    sub {
+    inline_case(sub {
         req()->with_realm_and_user($uid, $uid, sub {
-            Util_RealmAdmin()->unlock_login;
+            Util_RealmAdmin()->reset_login('password');
         });
-    } => undef,
+    }),
     simple_case({
         login => $uid,
         'RealmOwner.password' => 'password',

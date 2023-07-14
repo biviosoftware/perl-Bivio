@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::OTP;
 use strict;
 use Bivio::Base 'Bivio::ShellUtil';
@@ -35,6 +34,7 @@ sub reset_user {
         sequence => $seq,
         seed => $seed,
     });
+    b_use('Model.LoginAttempt')->reset_failure_count($self->req);
     return $res;
 }
 

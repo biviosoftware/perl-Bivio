@@ -3,6 +3,9 @@ package Bivio::Biz::Model::UserLoginBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
+my($_A) = b_use('Biz.Action');
+my($_E) = b_use('Model.Email');
+my($_LAS) = b_use('Type.LoginAttemptState');
 
 sub PASSWORD_FIELD {
     return 'p';
@@ -75,6 +78,16 @@ sub internal_initialize {
                 type => 'Boolean',
                 constraint => 'NONE',
             },
+            {
+                name => 'Email.email',
+                type => 'Email',
+                constraint => 'NONE',
+            },
+            {
+                name => 'uri',
+                type => 'Line',
+                constraint => 'NONE',
+            },
         ],
     });
 
@@ -117,11 +130,40 @@ sub validate_and_execute_ok {
     my($res) = shift->SUPER::validate_and_execute_ok(@_);
     # Won't have a realm owner if the login field was invalid
     return $res
-        unless my $ro = $self->unsafe_get('realm_owner');
+        unless my $owner = $self->unsafe_get('realm_owner');
     my($errors) = $self->get_errors || {};
+    if ($errors->{'login'} && $errors->{'login'}->eq_locked_out) {
+        b_warn('locked out owner=', $owner);
+        # Return non-specific errror so potential attacker doesn't glean additional information
+        return {
+            method => 'server_redirect',
+            task_id => 'DEFAULT_ERROR_REDIRECT',
+            query => undef,
+        };
+    }
     # Have to do this after form processing as the transaction gets rolled back upon form errors
-    $ro->record_login_failure
-        if $errors->{'RealmOwner.password'};
+    if (
+        $errors->{'RealmOwner.password'}
+        && _record_login_attempt($self, $owner, 0)->get('login_attempt_state')->eq_lockout
+    ) {
+        b_warn('failed login attempt triggered lock out owner=', $owner);
+        $self->req->with_realm($owner, sub {
+            $self->internal_put_field(
+                'Email.email' => $self->new_other('Email')->load({
+                    location => $_E->DEFAULT_LOCATION,
+                })->get('email'),
+                uri => $_A->get_instance('UserPasswordQuery')->format_uri($self->req),
+            );
+        });
+        $self->put_on_request(1);
+        return {
+            method => 'server_redirect',
+            task_id => 'lockout_task',
+            query => undef,
+        },
+    }
+    _record_login_attempt($self, $owner, 1)
+        unless $self->in_error;
     return $res;
 }
 
@@ -142,11 +184,26 @@ sub validate_login {
     return $realm;
 }
 
+sub _record_login_attempt {
+    my($self, $owner, $success) = @_;
+    return $self->req->with_realm($owner, sub {
+        return $self->new_other('LoginAttempt')->create({
+            login_attempt_state => $success ? $_LAS->SUCCESS : $_LAS->FAILURE,
+        });
+    });
+}
+
 sub _validate {
     my($self) = @_;
     my($owner) = $self->validate_login;
     return
         if !$owner || ($self->in_error && !$owner->require_otp);
+    if ($self->req->with_realm($owner, sub {
+        my($la) = $self->new_other('LoginAttempt')->unsafe_load_last;
+        return $la && $la->get('login_attempt_state')->eq_lockout;
+    })) {
+        return $self->internal_put_error(login => 'LOCKED_OUT');
+    }
     unless ($owner->get_field_type('password')->is_equal(
         $owner->get('password'),
         $self->get('RealmOwner.password'),
@@ -160,7 +217,6 @@ sub _validate {
             user_id => $owner->get('realm_id')
         })->verify($self->get('RealmOwner.password'));
     }
-    $owner->reset_login_failure_count;
     $self->internal_put_field(validate_called => 1);
     return;
 }

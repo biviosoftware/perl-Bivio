@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2023 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
 # $Id$
 package Bivio::Biz::Model::UserSubscriptionList;
 use strict;
@@ -25,7 +25,6 @@ sub internal_initialize {
             RealmOwner.password
             RealmOwner.realm_type
             RealmOwner.creation_date_time
-            RealmOwner.login_failure_count
             RealmUser.realm_id
             RealmUser.user_id
             RealmUser.role

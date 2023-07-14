@@ -1,5 +1,4 @@
 # Copyright (c) 2001-2023 bivio Software, Inc.  All rights reserved.
-# $Id$
 package Bivio::Util::SQL;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
@@ -631,16 +630,35 @@ EOF
     return;
 }
 
-sub internal_upgrade_db_login_failure_count {
+sub internal_upgrade_db_login_attempt {
     my($self) = @_;
     $self->run(<<'EOF');
-ALTER TABLE realm_owner_t
-    ADD COLUMN login_failure_count NUMERIC(3)
+CREATE SEQUENCE login_attempt_s
+  MINVALUE 100017
+  CACHE 1 INCREMENT BY 100000
 /
-UPDATE realm_owner_t set login_failure_count = 0
+CREATE TABLE login_attempt_t (
+  login_attempt_id NUMERIC(18),
+  realm_id NUMERIC(18),
+  creation_date_time DATE NOT NULL,
+  success NUMERIC(1) NOT NULL,
+  lockout NUMERIC(1) NOT NULL,
+  ip_address CHAR(15) NOT NULL,
+  http_user_agent VARCHAR(500),
+  referer VARCHAR(500),
+  CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
+)
 /
-ALTER TABLE realm_owner_t
-    ALTER COLUMN login_failure_count SET NOT NULL
+ALTER TABLE login_attempt_t
+  ADD CONSTRAINT login_attempt_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX login_attempt_t3 ON login_attempt_t (
+  realm_id,
+  creation_date_time,
+  login_attempt_id
+)
 /
 EOF
     return;
@@ -721,7 +739,7 @@ sub reinitialize_sequences {
 sub restore_dbms_dump {
     my($self, $dump, $extra_args) = @_;
     $self->usage_error($dump, ': missing or non existent dump file argument')
-	unless -r $dump;
+        unless -r $dump;
     $self->destroy_dbms;
     $self->commit_or_rollback;
     $self->init_dbms;

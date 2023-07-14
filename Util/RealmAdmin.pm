@@ -1,5 +1,4 @@
 # Copyright (c) 2002-2023 bivio Software, Inc.  All Rights Reserved.
-# $Id$
 package Bivio::Util::RealmAdmin;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
@@ -27,11 +26,11 @@ commands:
     join_user roles... -- adds specified user role to realm
     leave_role -- remove one user role from a realm
     leave_user -- removes all user roles from realm
+    reset_login [password] -- reset failed login lockout count for user
     reset_password password -- reset a user's password
     scan_realm_id [realm_id] -- checks for auth_id in all table fields
     subscribe_user_to_realm -- subscribe given user to given realm
     to_id anything -- the id for the realm passed as an argument
-    unlock_login -- unlock user login
     unsafe_to_id anything -- to_id if it exists else undef
     unsubscribe_user_from_realm -- unsubscribe given user from given realm
     users [role] -- dump users in realm [with a specific role]
@@ -238,6 +237,15 @@ sub leave_user {
     return;
 }
 
+sub reset_login {
+    my($self, $password) = @_;
+    $self->assert_not_general;
+    $self->reset_password($password)
+        if $password;
+    b_use('Model.LoginAttempt')->reset_failure_count($self->req);
+    return;
+}
+
 sub reset_password {
     my($self, $password) = @_;
     # Changes a user's password.
@@ -285,12 +293,6 @@ sub subscribe_user_to_realm {
 sub to_id {
     return shift->unsafe_to_id(@_)
         || b_die(shift, ': not found');
-}
-
-sub unlock_login {
-    my($self) = @_;
-    _validate_user($self, 'Unlock login')->unlock_login;
-    return;
 }
 
 sub unsafe_to_id {

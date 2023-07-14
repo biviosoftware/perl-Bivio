@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2014 bivio Software, Inc.        All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2023 bivio Software, Inc.        All Rights Reserved.
 package Bivio::Delegate::TaskId;
 use strict;
 use Bivio::Base 'Type.EnumDelegate';
@@ -1594,6 +1593,8 @@ sub info_user_auth {
             Action.UserLogout
             Model.UserLoginForm
             View.UserAuth->login
+            lockout_task=GENERAL_USER_LOCKOUT_MAIL
+            reset_task=USER_PASSWORD_RESET
             next=MY_SITE
             require_secure=1
         )],
@@ -1665,7 +1666,17 @@ sub info_user_auth {
             View.UserAuth->email_verify_mail
             View.UserAuth->email_verify_sent
         )],
-#97-99
+        # Redirect to non-specific errror so potential attacker doesn't glean additional information
+        [qw(
+            GENERAL_USER_LOCKOUT_MAIL
+            98
+            GENERAL
+            ANYBODY
+            View.UserAuth->user_lockout_mail
+            Action.ServerRedirect->execute_next
+            next=DEFAULT_ERROR_REDIRECT
+        )],
+#99
     ];
 }
 

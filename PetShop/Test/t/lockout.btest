@@ -1,0 +1,77 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+test_setup('PetShop');
+home_page();
+my($e) = generate_local_email(random_alpha_string());
+my($trigger_lockout) = sub {
+    for (1..4) {
+        test_deviance();
+        login_as($e, 'bad password');
+        test_conformance();
+        verify_no_text('bad password');
+        verify_text('password you entered does not match');
+    }
+    test_deviance();
+    login_as($e, 'bad password');
+    test_conformance();
+    verify_text('server encountered an error');
+};
+follow_menu_link(qw(sign_in new_user));
+submit_form(create => {
+    'Email:' => $e,
+    'Password:' => 'password',
+    'First Name:' => 'Lockout',
+    'Last Name:' => 'Test',
+});
+do_logout();
+login_as($e, 'password');
+do_logout();
+test_deviance();
+login_as($e, 'bad password');
+test_conformance();
+verify_no_text('bad password');
+verify_text('password you entered does not match');
+# Resets fail count
+login_as($e, 'password');
+$trigger_lockout->();
+my($uri) = extract_uri_from_local_mail($e, qr{account locked}i);
+visit_uri($uri);
+submit_form(Change => {
+    'New Password:' => 'password',
+    'Re-enter New Password:' => 'password',
+});
+do_logout();
+login_as($e, 'password');
+$trigger_lockout->();
+follow_link(qw(login forgot_password));
+submit_form('Reset Password' => {
+    'Email:' => $e,
+});
+verify_text(qr{An email has been sent to.*\Q$e});
+$uri = extract_uri_from_local_mail($e, qr{password assistance}i);
+visit_uri($uri);
+submit_form(Change => {
+    'New Password:' => 'password',
+    'Re-enter New Password:' => 'password',
+});
+do_logout();
+login_as($e, 'password');
+do_logout();
+$trigger_lockout->();
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login password");
+login_as($e, 'password');
+$trigger_lockout->();
+login_as('root');
+visit_uri('/adm/su');
+submit_form({
+    email => $e,
+});
+follow_link(qw(myaccount password));
+submit_form(Change => {
+    'New Password:' => 'password',
+    'Re-enter New Password:' => 'password',
+});
+do_logout();
+login_as($e, 'password');
+$trigger_lockout->();
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login password");
+login_as($e, 'password');

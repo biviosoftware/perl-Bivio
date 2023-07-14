@@ -1,0 +1,43 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+Request();
+config({
+    class() => {
+        lockout_failure_count => 2,
+    },
+});
+my($ip_address) = '1.2.3.4';
+options({
+    compute_return => sub {
+        my(undef, $actual) = @_;
+        if ($actual->[0]) {
+            b_die('unexpected IP address')
+                unless $actual->[0]->get('ip_address') =~ qr/$ip_address/;
+            return [$actual->[0]->get('login_attempt_state')->get_name];
+        }
+        return [undef];
+    },
+});
+my($uid) = Util_TestUser()->create(random_realm_name());
+req()->set_realm($uid);
+req()->put(client_addr => $ip_address);
+[
+    [req()] => [
+        unsafe_load_last => undef,
+        create => [[{login_attempt_state => Type_LoginAttemptState()->FAILURE}] => 'FAILURE'],
+        unsafe_load_last => 'FAILURE',
+        create => [[{login_attempt_state => Type_LoginAttemptState()->FAILURE}] => 'LOCKOUT'],
+        unsafe_load_last => 'LOCKOUT',
+        reset_failure_count => undef,
+        unsafe_load_last => 'RESET',
+        create => [[{login_attempt_state => Type_LoginAttemptState()->FAILURE}] => 'FAILURE'],
+        unsafe_load_last => 'FAILURE',
+        create => [[{login_attempt_state => Type_LoginAttemptState()->FAILURE}] => 'LOCKOUT'],
+        unsafe_load_last => 'LOCKOUT',
+        reset_failure_count => undef,
+        unsafe_load_last => 'RESET',
+        create => [[{login_attempt_state => Type_LoginAttemptState()->SUCCESS}] => 'SUCCESS'],
+        unsafe_load_last => 'SUCCESS',
+        create => [[{login_attempt_state => Type_LoginAttemptState()->SUCCESS}] => 'SUCCESS'],
+        unsafe_load_last => 'SUCCESS',
+    ],
+];

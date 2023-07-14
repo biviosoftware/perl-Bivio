@@ -432,10 +432,9 @@ sub get_delegate_info {
         undef,
         'File names may not contain a leading dot.',
     ],
-    LOGIN_LOCKED => [
+    LOCKED_OUT => [
         83,
-        undef,
-        'User has been locked due to too many failed login attempts.  Please contact customer support.',
+        # No description as this error is not shown to the user.
     ],
 ];
 }
