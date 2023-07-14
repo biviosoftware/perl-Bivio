@@ -1,4 +1,5 @@
-# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# $Id$
 package Bivio::Biz::Model::RealmOwner;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
