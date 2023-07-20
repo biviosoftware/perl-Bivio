@@ -48,13 +48,27 @@ sub reset_failure_count {
     });
 }
 
-sub unsafe_load_last {
-    my($self) = @_;
-    return $self->unsafe_load_first('creation_date_time DESC, login_attempt_id DESC');
+sub unauth_load_last_lockout {
+    my($self, $realm_id) = @_;
+    my($lockout) = 0;
+    _iterate($self, $realm_id, sub {
+        my($it) = @_;
+        $lockout = $it->get('login_attempt_state')->eq_lockout;
+        return 0;
+    });
+    return $lockout;
 }
 
 sub update {
     b_die('login attempt record modification not allowed');
+}
+
+sub _iterate {
+    my($model, $realm_id, $op) = @_;
+    $model->do_iterate($op, 'unauth_iterate_start', 'creation_date_time DESC', {
+        realm_id => $realm_id,
+    });
+    return;
 }
 
 sub _state {
@@ -65,17 +79,17 @@ sub _state {
     b_die('unexpected login_attempt_state=', $state)
         unless $state->eq_failure;
     my($fail_count) = 1;
-    $self->new_other('LoginAttempt')->do_iterate(sub {
+    _iterate($self->new_other('LoginAttempt'), $values->{realm_id}, sub {
         my($it) = @_;
         return 0
             if $it->get('login_attempt_state')->eq_success
             || $it->get('login_attempt_state')->eq_reset;
         if (++$fail_count >= $_CFG->{lockout_failure_count}) {
-            $state = $_S->LOCKOUT;
+            $state = $state->LOCKOUT;
             return 0;
         }
         return 1;
-    }, 'creation_date_time DESC, login_attempt_id DESC');
+    });
     return $state;
 }
 
