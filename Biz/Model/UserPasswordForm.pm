@@ -1,9 +1,9 @@
-# Copyright (c) 2003-2023 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
+# $Id$
 package Bivio::Biz::Model::UserPasswordForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-my($_LAS) = b_use('Type.LoginAttemptState');
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
@@ -18,7 +18,6 @@ sub execute_ok {
         realm_owner => $req->get_nested(qw(auth_realm owner))
             ->update_password($self->get('new_password')),
     });
-    $self->new_other('LoginAttempt')->create({login_attempt_state => $_LAS->SUCCESS});
     return $res;
 }
 
