@@ -1037,9 +1037,12 @@ ALTER TABLE login_attempt_t
   REFERENCES realm_owner_t(realm_id)
 /
 CREATE INDEX login_attempt_t3 ON login_attempt_t (
+  realm_id
+)
+/
+CREATE INDEX login_attempt_t4 ON login_attempt_t (
   realm_id,
-  creation_date_time,
-  login_attempt_id
+  creation_date_time
 )
 /
 EOF
@@ -1121,8 +1124,13 @@ CREATE SEQUENCE failover_work_queue_s
   CACHE 1 INCREMENT BY 100000
 /
 
+CREATE SEQUENCE login_attempt_s
+  MINVALUE 100013
+  CACHE 1 INCREMENT BY 100000
+/
+
 --
--- 100013-14 available
+-- 100014 available
 --
 
 CREATE SEQUENCE ec_payment_s
@@ -1135,10 +1143,6 @@ CREATE SEQUENCE bulletin_s
   CACHE 1 INCREMENT BY 100000
 /
 
-CREATE SEQUENCE login_attempt_s
-  MINVALUE 100017
-  CACHE 1 INCREMENT BY 100000
-/
 EOF
 }
 
