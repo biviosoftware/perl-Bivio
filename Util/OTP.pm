@@ -34,7 +34,7 @@ sub reset_user {
         sequence => $seq,
         seed => $seed,
     });
-    b_use('Model.LoginAttempt')->reset_failure_count($self->req);
+    $self->model('LoginAttempt')->reset_failure_count($self->req('auth_id'));
     return $res;
 }
 

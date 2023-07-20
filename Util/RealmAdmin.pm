@@ -26,7 +26,7 @@ commands:
     join_user roles... -- adds specified user role to realm
     leave_role -- remove one user role from a realm
     leave_user -- removes all user roles from realm
-    reset_login [password] -- reset failed login lockout count for user
+    reset_login_attempts -- reset failed login attempt lockout count for user
     reset_password password -- reset a user's password
     scan_realm_id [realm_id] -- checks for auth_id in all table fields
     subscribe_user_to_realm -- subscribe given user to given realm
@@ -237,12 +237,10 @@ sub leave_user {
     return;
 }
 
-sub reset_login {
-    my($self, $password) = @_;
+sub reset_login_attempts {
+    my($self) = @_;
     $self->assert_not_general;
-    $self->reset_password($password)
-        if $password;
-    b_use('Model.LoginAttempt')->reset_failure_count($self->req);
+    $self->model('LoginAttempt')->reset_failure_count($self->req('auth_id'));
     return;
 }
 
