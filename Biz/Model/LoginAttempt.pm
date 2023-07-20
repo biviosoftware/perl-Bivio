@@ -41,11 +41,11 @@ sub internal_initialize {
 }
 
 sub reset_failure_count {
-    my($proto, $req) = @_;
-    $proto->new($req)->create({
+    my($self, $realm_id) = @_;
+    return $self->create({
+        realm_id => $realm_id,
         login_attempt_state => $_S->RESET,
     });
-    return;
 }
 
 sub unsafe_load_last {
