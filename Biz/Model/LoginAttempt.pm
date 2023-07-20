@@ -33,7 +33,6 @@ sub internal_initialize {
         as_string_fields => [qw(realm_id login_attempt_state ip_address)],
         columns => {
             login_attempt_id => ['PrimaryId', 'PRIMARY_KEY'],
-            $self->REALM_ID_FIELD => [$self->REALM_ID_FIELD_TYPE, 'NOT_NULL'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
             login_attempt_state => ['LoginAttemptState', 'NOT_NULL'],
             ip_address => ['IPAddress', 'NOT_NULL'],
