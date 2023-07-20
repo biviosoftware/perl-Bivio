@@ -643,9 +643,9 @@ CREATE TABLE login_attempt_t (
   creation_date_time DATE NOT NULL,
   success NUMERIC(1) NOT NULL,
   lockout NUMERIC(1) NOT NULL,
-  ip_address CHAR(15) NOT NULL,
   http_user_agent VARCHAR(500),
   referer VARCHAR(500),
+  ip_address CHAR(15),
   CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
 )
 /

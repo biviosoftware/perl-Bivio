@@ -14,8 +14,7 @@ sub create {
     return $self->SUPER::create({
         %$values,
         login_attempt_state => _state($self, $values),
-        # Utils don't have client_addr set
-        ip_address => $self->req->unsafe_get('client_addr') || '0.0.0.0',
+        ip_address => $self->req->unsafe_get('client_addr'),
     });
 }
 
@@ -35,7 +34,8 @@ sub internal_initialize {
             login_attempt_id => ['PrimaryId', 'PRIMARY_KEY'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
             login_attempt_state => ['LoginAttemptState', 'NOT_NULL'],
-            ip_address => ['IPAddress', 'NOT_NULL'],
+            # Won't have client_addr if created by util
+            ip_address => ['IPAddress', 'NONE'],
         },
     });
 }
