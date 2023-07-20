@@ -4,10 +4,11 @@ use strict;
 use Bivio::Base 'Type.Enum';
 
 __PACKAGE__->compile([
-    SUCCESS => 0,
-    FAILURE => 1,
-    LOCKOUT => 2,
-    RESET => 3,
+    UNKNOWN => 0,
+    SUCCESS => 1,
+    FAILURE => 2,
+    LOCKOUT => 3,
+    RESET => 4,
 ]);
 
 1;

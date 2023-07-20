@@ -33,7 +33,7 @@ sub internal_initialize {
         columns => {
             login_attempt_id => ['PrimaryId', 'PRIMARY_KEY'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
-            login_attempt_state => ['LoginAttemptState', 'NOT_NULL'],
+            login_attempt_state => ['LoginAttemptState', 'NOT_ZERO_ENUM'],
             # Won't have client_addr if created by util
             ip_address => ['IPAddress', 'NONE'],
         },
