@@ -2132,14 +2132,9 @@ EOF
                         subject => 'vs_site_name(); Account Locked',
                         body => <<'EOF',
 We have locked your account due to a large number of failed login attempts. This is done to prevent
-potential attackers from being able to guess your password. To regain access to your account, follow
-link below or use the forgot password form.
+potential attackers from being able to guess your password.
 
-Join([['Model.UserLoginForm', 'uri']]);
-
-For your security, this link may be used one time only to set your password.
-
-You may contact customer support by replying to this message.
+To unlock your account you must contact customer support by replying to this message.
 
 Thank you,
 vs_site_name(); Support
