@@ -6,38 +6,60 @@ config({
     },
 });
 my($ip_address) = '1.2.3.4';
+my($assert_ip) = sub {
+    b_die('unexpected IP address')
+        unless shift->get('ip_address') =~ qr/$ip_address/;
+};
+my($now) = Type_DateTime()->now;
+my($uid) = Util_TestUser()->create(random_realm_name());
+req()->put(client_addr => $ip_address);
 options({
+    compute_params => sub {
+        my(undef, $params, $method) = @_;
+        $now = Type_DateTime()->set_test_now(Type_DateTime()->add_seconds($now, 1));
+        if ($method =~ /unauth_load_last_lockout|reset_failure_count/) {
+            return [$uid];
+        }
+        if ($method eq 'create') {
+            my($state) = $params->[0];
+            return [{
+                realm_id => $uid,
+                login_attempt_state => Type_LoginAttemptState()->$state,
+            }];
+        }
+        return $params;
+    },
     compute_return => sub {
-        my(undef, $actual) = @_;
-        if ($actual->[0]) {
-            b_die('unexpected IP address')
-                unless $actual->[0]->get('ip_address') =~ qr/$ip_address/;
+        my($case, $actual) = @_;
+        if (class()->is_blesser_of($actual->[0])) {
+            $assert_ip->($actual->[0]);
             return [$actual->[0]->get('login_attempt_state')->get_name];
         }
-        return [undef];
+        if ($case->get('object')->is_loaded) {
+            $assert_ip->($case->get('object'));
+            return [@$actual, $case->get('object')->get('login_attempt_state')->get_name];
+        }
+        return $actual;
     },
 });
-my($uid) = Util_TestUser()->create(random_realm_name());
-req()->set_realm($uid);
-req()->put(client_addr => $ip_address);
 [
-    [req()] => [
-        unsafe_load_last => undef,
-        create => [[{login_attempt_state => Type_LoginAttemptState()->FAILURE}] => 'FAILURE'],
-        unsafe_load_last => 'FAILURE',
-        create => [[{login_attempt_state => Type_LoginAttemptState()->FAILURE}] => 'LOCKOUT'],
-        unsafe_load_last => 'LOCKOUT',
-        reset_failure_count => undef,
-        unsafe_load_last => 'RESET',
-        create => [[{login_attempt_state => Type_LoginAttemptState()->FAILURE}] => 'FAILURE'],
-        unsafe_load_last => 'FAILURE',
-        create => [[{login_attempt_state => Type_LoginAttemptState()->FAILURE}] => 'LOCKOUT'],
-        unsafe_load_last => 'LOCKOUT',
-        reset_failure_count => undef,
-        unsafe_load_last => 'RESET',
-        create => [[{login_attempt_state => Type_LoginAttemptState()->SUCCESS}] => 'SUCCESS'],
-        unsafe_load_last => 'SUCCESS',
-        create => [[{login_attempt_state => Type_LoginAttemptState()->SUCCESS}] => 'SUCCESS'],
-        unsafe_load_last => 'SUCCESS',
+    [] => [
+        unauth_load_last_lockout => 0,
+        create => [['FAILURE'] => 'FAILURE'],
+        unauth_load_last_lockout => [[] => [0, 'FAILURE']],
+        create => [['FAILURE'] => 'LOCKOUT'],
+        unauth_load_last_lockout => [[] => [1, 'LOCKOUT']],
+        reset_failure_count => 'RESET',
+        unauth_load_last_lockout => [[] => [0, 'RESET']],
+        create => [['FAILURE'] => 'FAILURE'],
+        unauth_load_last_lockout => [[] => [0, 'FAILURE']],
+        create => [['FAILURE'] => 'LOCKOUT'],
+        unauth_load_last_lockout => [[] => [1, 'LOCKOUT']],
+        reset_failure_count => 'RESET',
+        unauth_load_last_lockout => [[] => [0, 'RESET']],
+        create => [['SUCCESS'] => 'SUCCESS'],
+        unauth_load_last_lockout => [[] => [0, 'SUCCESS']],
+        create => [['SUCCESS'] => 'SUCCESS'],
+        unauth_load_last_lockout => [[] => [0, 'SUCCESS']],
     ],
 ];

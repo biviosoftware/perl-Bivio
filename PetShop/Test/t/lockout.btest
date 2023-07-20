@@ -2,18 +2,27 @@
 test_setup('PetShop');
 home_page();
 my($e) = generate_local_email(random_alpha_string());
+my($now) = Type_DateTime()->now;
+my($next_second) = sub {
+    $now = date_time_now(Type_DateTime()->add_seconds($now, 1));
+};
+my($login_next_second) = sub {
+    my($deviance) = shift;
+    $next_second->();
+    test_deviance()
+        if $deviance;
+    login_as(@_);
+    test_conformance()
+        if $deviance;
+};
 my($trigger_lockout) = sub {
     for (1..4) {
-        test_deviance();
-        login_as($e, 'bad password');
-        test_conformance();
+        $login_next_second->(1, $e, 'bad password');
         verify_no_text('bad password');
         verify_text('password you entered does not match');
     }
-    test_deviance();
-    login_as($e, 'bad password');
-    test_conformance();
-    verify_text('server encountered an error');
+    $login_next_second->(1, $e, 'bad password');
+    verify_text('Account Locked');
 };
 follow_menu_link(qw(sign_in new_user));
 submit_form(create => {
@@ -23,55 +32,60 @@ submit_form(create => {
     'Last Name:' => 'Test',
 });
 do_logout();
-login_as($e, 'password');
+$login_next_second->(0, $e, 'password');
 do_logout();
-test_deviance();
-login_as($e, 'bad password');
-test_conformance();
-verify_no_text('bad password');
+$login_next_second->(1, $e, 'bad password');
 verify_text('password you entered does not match');
 # Resets fail count
-login_as($e, 'password');
+$login_next_second->(0, $e, 'password');
 $trigger_lockout->();
-my($uri) = extract_uri_from_local_mail($e, qr{account locked}i);
-visit_uri($uri);
-submit_form(Change => {
-    'New Password:' => 'password',
-    'Re-enter New Password:' => 'password',
+$login_next_second->(1, $e, 'password');
+verify_text('Account is locked');
+follow_link('forgot_password');
+test_deviance();
+submit_form('Reset Password' => {
+    'Email:' => $e,
 });
-do_logout();
-login_as($e, 'password');
-$trigger_lockout->();
-follow_link(qw(login forgot_password));
+test_conformance();
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
+$login_next_second->(1, $e, 'password');
+follow_link(qw(sign_in forgot_password));
 submit_form('Reset Password' => {
     'Email:' => $e,
 });
 verify_text(qr{An email has been sent to.*\Q$e});
-$uri = extract_uri_from_local_mail($e, qr{password assistance}i);
+my($uri) = extract_uri_from_local_mail($e, qr{password assistance}i);
 visit_uri($uri);
 submit_form(Change => {
     'New Password:' => 'password',
     'Re-enter New Password:' => 'password',
 });
 do_logout();
-login_as($e, 'password');
+$login_next_second->(0, $e, 'password');
 do_logout();
 $trigger_lockout->();
-do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login password");
-login_as($e, 'password');
-$trigger_lockout->();
-login_as('root');
+$login_next_second->(0, 'root');
 visit_uri('/adm/su');
 submit_form({
     email => $e,
 });
-follow_link(qw(myaccount password));
-submit_form(Change => {
+follow_link(qw(myaccount change_password));
+submit_form({
     'New Password:' => 'password',
     'Re-enter New Password:' => 'password',
 });
 do_logout();
-login_as($e, 'password');
+$login_next_second->(1, $e, 'password');
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
+$login_next_second->(0, $e, 'password');
 $trigger_lockout->();
-do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login password");
-login_as($e, 'password');
+$next_second->();
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
+$login_next_second->(1, $e, 'password');
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password password");
+$login_next_second->(0, $e, 'password');
+$trigger_lockout->();
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password password");
+$login_next_second->(1, $e, 'password');
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
+$login_next_second->(0, $e, 'password');

@@ -57,16 +57,21 @@ model('UserRealmSubscription')->unauth_delete({
     },
     inline_case(sub {
         $uid = ShellUtil_TestUser()->create(random_realm_name());
-        my($la) = b_use('Model.LoginAttempt')->new(req());
-        my($last);
-        req()->with_realm($uid, sub {
-            $last = $la->create({login_attempt_state => Type_LoginAttemptState()->FAILURE})
-                for 1..5;
-        });
-        return $last->get('login_attempt_state')->eq_lockout;
+        my($la) = model('LoginAttempt');
+        my($now) = Type_DateTime()->now;
+        for (1..5) {
+            $la->create({
+                realm_id => $uid,
+                login_attempt_state => Type_LoginAttemptState()->FAILURE,
+            });
+            $now = Type_DateTime()->set_test_now(Type_DateTime()->add_seconds($now, 1));
+        }
+        return $la->get('login_attempt_state')->eq_lockout;
     }),
-    sub {[-realm => $uid, -user => $uid, 'reset_login']} => sub {
-        my($la) = b_use('Model.LoginAttempt')->new(req())->unsafe_load_last;
-        return $la ? $la->get('login_attempt_state')->eq_reset : 0;
+    sub {[-realm => $uid, -user => $uid, 'reset_login_attempts']} => sub {
+        my($la) = model('LoginAttempt');
+        return 0
+            if $la->unauth_load_last_lockout(req(qw(auth_id)));
+        return $la->get('login_attempt_state')->eq_reset;
     },
 ];
