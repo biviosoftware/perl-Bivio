@@ -30,7 +30,7 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         table_name => 'login_attempt_t',
-        as_string_fields => [qw(realm_id login_attempt_state ip_address)],
+        as_string_fields => [qw(realm_id creation_date_time login_attempt_state ip_address)],
         columns => {
             login_attempt_id => ['PrimaryId', 'PRIMARY_KEY'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
