@@ -432,9 +432,9 @@ sub get_delegate_info {
         undef,
         'File names may not contain a leading dot.',
     ],
-    LOCKED_OUT => [
+    LOGIN_LOCKED_OUT => [
         83,
-        # No description as this error is not shown to the user.
+        # Description needs to come from facade because it should include a link to contact support.
     ],
 ];
 }

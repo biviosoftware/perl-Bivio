@@ -491,7 +491,7 @@ sub _cfg_base {
                 padding: 2px;
             }],
         ],
-         FormError => [
+        FormError => [
             [NULL => 'You must supply a value for vs_fe("label");.'],
             [EXISTS => 'vs_fe("label"); already exists in our database.'],
             [NOT_FOUND => 'vs_fe("label"); was not found in our database.'],
@@ -501,6 +501,10 @@ sub _cfg_base {
             ['image_file.SYNTAX_ERROR' => 'vs_fe("label"); unknown or invalid image format.  Please verify file, and change to an acceptable format (e.g. png, gif, jpg), and retry upload.'],
             ['EmailAlias.incoming.SYNTAX_ERROR' => 'vs_fe("label"); must be in name@domain format or just an @domain'],
             ['login.SYNTAX_ERROR' => 'Invalid login'],
+            [[
+                'UserLoginForm.login.LOGIN_LOCKED_OUT',
+                'UserPasswordQueryForm.Email.email.LOGIN_LOCKED_OUT',
+            ] => 'Account is locked. Please contact MailTo("support"); for assistance.'],
         ],
         HTML => [
             [table_default_align => 'left'],
