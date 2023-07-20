@@ -638,7 +638,7 @@ CREATE SEQUENCE login_attempt_s
   CACHE 1 INCREMENT BY 100000
 /
 CREATE TABLE login_attempt_t (
-  login_attempt_id NUMERIC(18),
+  login_attempt_id NUMERIC(18) NOT NULL,
   realm_id NUMERIC(18) NOT NULL,
   creation_date_time DATE NOT NULL,
   login_attempt_state NUMERIC(1) NOT NULL,

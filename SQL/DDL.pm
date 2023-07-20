@@ -1663,7 +1663,7 @@ CREATE TABLE login_attempt_t (
   login_attempt_id NUMERIC(18) NOT NULL,
   realm_id NUMERIC(18) NOT NULL,
   creation_date_time DATE NOT NULL,
-  login_attempt_state NUMERIC(2) NOT NULL,
+  login_attempt_state NUMERIC(1) NOT NULL,
   ip_address CHAR(15),
   CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
 )
