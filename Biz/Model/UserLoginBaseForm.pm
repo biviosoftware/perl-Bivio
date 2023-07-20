@@ -169,10 +169,9 @@ sub _password_error {
 
 sub _record_login_attempt {
     my($self, $owner, $success) = @_;
-    return $self->req->with_realm($owner, sub {
-        return $self->new_other('LoginAttempt')->create({
-            login_attempt_state => $success ? $_LAS->SUCCESS : $_LAS->FAILURE,
-        });
+    return $self->new_other('LoginAttempt')->create({
+        realm_id => $owner->get('realm_id'),
+        login_attempt_state => $success ? $_LAS->SUCCESS : $_LAS->FAILURE,
     });
 }
 
