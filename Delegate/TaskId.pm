@@ -1593,8 +1593,7 @@ sub info_user_auth {
             Action.UserLogout
             Model.UserLoginForm
             View.UserAuth->login
-            lockout_task=GENERAL_USER_LOCKOUT_MAIL
-            reset_task=USER_PASSWORD_RESET
+            lockout_mail_task=GENERAL_USER_LOCKOUT_MAIL
             next=MY_SITE
             require_secure=1
         )],
@@ -1666,15 +1665,14 @@ sub info_user_auth {
             View.UserAuth->email_verify_mail
             View.UserAuth->email_verify_sent
         )],
-        # Redirect to non-specific errror so potential attacker doesn't glean additional information
         [qw(
             GENERAL_USER_LOCKOUT_MAIL
             98
             GENERAL
             ANYBODY
+            Action.UserLockout->execute_load_owner_email
             View.UserAuth->user_lockout_mail
-            Action.ServerRedirect->execute_next
-            next=DEFAULT_ERROR_REDIRECT
+            View.UserAuth->user_locked_out
         )],
 #99
     ];

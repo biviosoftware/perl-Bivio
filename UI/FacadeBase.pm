@@ -2059,6 +2059,7 @@ sub _cfg_user_auth {
                 USER_EMAIL_VERIFY => 'Verify Email Address',
                 USER_EMAIL_VERIFY_FORCE_FORM => 'Force Verify Email Address',
                 USER_EMAIL_VERIFY_SENT => 'Check Your Email',
+                GENERAL_USER_LOCKOUT_MAIL => 'Account Locked',
             ]],
             [[qw(title xlink)] => [
                 GENERAL_CONTACT => 'Contact',
@@ -2123,7 +2124,7 @@ vs_site_name(); Support
 EOF
                     ],
                     user_lockout_mail => [
-                        to => q{Mailbox(['Model.UserLoginForm', 'Email.email']);},
+                        to => q{Mailbox(['locked_owner_email']);},
                         subject => 'vs_site_name(); Account Locked',
                         body => <<'EOF',
 We have locked your account due to a large number of failed login attempts. This is done to prevent

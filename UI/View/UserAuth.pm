@@ -86,10 +86,6 @@ sub internal_settings_form_extra_fields {
     return [];
 }
 
-sub user_lockout_mail {
-    return shift->internal_mail;
-}
-
 sub login {
     return shift->internal_body(vs_simple_form(UserLoginForm => [qw(
         UserLoginForm.login
@@ -186,6 +182,14 @@ Link(URI({
 }));
 EOF
     );
+}
+
+sub user_lockout_mail {
+    return shift->internal_mail;
+}
+
+sub user_locked_out {
+    return shift->internal_body('');
 }
 
 sub _password_fields {
