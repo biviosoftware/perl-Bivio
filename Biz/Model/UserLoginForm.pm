@@ -132,12 +132,7 @@ sub _assert_realm {
     # Validates realm_owner is valid
     return undef
         unless my $realm = $self->get('realm_owner');
-    my($err) = $realm->is_offline_user ? "can't login as offline user"
-        : $realm->get('realm_type') != Bivio::Auth::RealmType->USER
-        ? "can't login as non-user"
-        : $realm->is_default ? "can't login as *the* USER realm"
-        : !$realm->has_valid_password ? "user's password is invalidated"
-        : '';
+    my($err) = $realm->validate;
     $self->throw_die('NOT_FOUND', {entity => $realm, message => $err})
         if $err;
     $self->internal_put_field(validate_called => 1);

@@ -333,18 +333,23 @@ sub update_password {
     });
 }
 
-sub validate_login {
-    my($self, $login) = @_;
-    my($err) = !$self->unauth_load_by_email_id_or_name($login) ? ''
-        : $self->is_offline_user ? 'is_offline_user'
+sub validate {
+    my($self) = @_;
+    my($err) = $self->is_offline_user ? 'is_offline_user'
         : $self->is_default ? 'is_default'
         : $self->get('realm_type') != $_RT->USER
         ? ('realm_type is ' . $self->get('realm_type')->get_name)
         : !$self->has_valid_password ? 'not has_valid_password'
         : return;
-    b_warn($login, ': ', $err)
-        if $err;
+    b_warn($err, ' owner=', $self);
     return 'NOT_FOUND';
+}
+
+sub validate_login {
+    my($self, $login) = @_;
+    return 'NOT_FOUND'
+        unless $self->unauth_load_by_email_id_or_name($login);
+    return $self->validate;
 }
 
 sub _unauth_load {
