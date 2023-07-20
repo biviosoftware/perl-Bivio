@@ -180,6 +180,8 @@ sub _validate {
     my($owner) = $self->validate_login;
     return
         if !$owner || ($self->in_error && !$owner->require_otp);
+    return $self->internal_put_error(login => 'LOGIN_LOCKED_OUT')
+        if $owner->is_locked_out;
     return
         unless _validate_login_attempt($self, $owner);
     $self->internal_put_field(validate_called => 1);

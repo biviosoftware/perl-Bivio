@@ -421,6 +421,7 @@ sub _info {
             'location',
             {realm_id => $user->get('realm_id')},
         )},
+        $user->is_locked_out ? 'Is Locked Out' : (),
     );
 }
 

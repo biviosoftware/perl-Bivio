@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Biz::Model::RealmOwner;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
@@ -172,6 +171,11 @@ sub is_default {
     # Default realms have ids same as their types as_int.
     return $model->get($model_prefix . 'realm_type')->as_int
         eq $model->get($model_prefix . 'realm_id') ? 1 : 0;
+}
+
+sub is_locked_out {
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    return $model->new_other('LoginAttempt')->unauth_load_last_lockout($model->get('realm_id'));
 }
 
 sub is_name_eq_email {
