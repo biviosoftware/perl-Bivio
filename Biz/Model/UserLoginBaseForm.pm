@@ -6,6 +6,7 @@ use Bivio::Base 'Biz.FormModel';
 my($_A) = b_use('Biz.Action');
 my($_E) = b_use('Model.Email');
 my($_LAS) = b_use('Type.LoginAttemptState');
+my($_R) = b_use('Biz.Random');
 
 sub PASSWORD_FIELD {
     return 'p';
@@ -184,6 +185,23 @@ sub validate_login {
     return $realm;
 }
 
+sub _password_error {
+    my($self, $owner) = @_;
+    my($pw_err);
+    unless ($owner->get_field_type('password')->is_equal(
+        $owner->get('password'),
+        $self->get('RealmOwner.password'),
+    )) {
+        return 'PASSWORD_MISMATCH'
+            unless $owner->require_otp;
+        return 'OTP_PASSWORD_MISMATCH'
+            unless $self->new_other('OTP')->unauth_load_or_die({
+                user_id => $owner->get('realm_id')
+            })->verify($self->get('RealmOwner.password'));
+    }
+    return;
+}
+
 sub _record_login_attempt {
     my($self, $owner, $success) = @_;
     return $self->req->with_realm($owner, sub {
@@ -198,27 +216,27 @@ sub _validate {
     my($owner) = $self->validate_login;
     return
         if !$owner || ($self->in_error && !$owner->require_otp);
-    if ($self->req->with_realm($owner, sub {
-        my($la) = $self->new_other('LoginAttempt')->unsafe_load_last;
-        return $la && $la->get('login_attempt_state')->eq_lockout;
-    })) {
-        return $self->internal_put_error(login => 'LOCKED_OUT');
-    }
-    unless ($owner->get_field_type('password')->is_equal(
-        $owner->get('password'),
-        $self->get('RealmOwner.password'),
-    )) {
-        return $self->internal_put_error(
-            'RealmOwner.password', 'PASSWORD_MISMATCH',
-        ) unless $owner->require_otp;
-        return $self->internal_put_error(
-            'RealmOwner.password' => 'OTP_PASSWORD_MISMATCH'
-        ) unless $self->new_other('OTP')->unauth_load_or_die({
-            user_id => $owner->get('realm_id')
-        })->verify($self->get('RealmOwner.password'));
-    }
+    return
+        unless _validate_login_attempt($self, $owner);
     $self->internal_put_field(validate_called => 1);
     return;
+}
+
+sub _validate_login_attempt {
+    my($self, $owner) = @_;
+    if (my $err = _password_error($self, $owner)) {
+        # Need to stay on page or the login attempt would get rolled back
+        $self->internal_stay_on_page;
+        $self->internal_put_error('RealmOwner.password' => $err);
+        if (_record_login_attempt($self, $owner, 0)->get('login_attempt_state')->eq_lockout) {
+            b_warn('lockout owner=', $owner);
+            $owner->update_password($_R->password);
+            $self->internal_put_field(do_lockout_mail_task => 1);
+        }
+        return 0;
+    }
+    _record_login_attempt($self, $owner, 1);
+    return 1;
 }
 
 1;
