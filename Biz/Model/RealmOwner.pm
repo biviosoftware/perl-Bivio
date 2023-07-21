@@ -337,7 +337,7 @@ sub update_password {
     });
 }
 
-sub validate {
+sub validate_login_for_self {
     my($self) = @_;
     my($err) = $self->is_offline_user ? 'is_offline_user'
         : $self->is_default ? 'is_default'
@@ -353,7 +353,7 @@ sub validate_login {
     my($self, $login) = @_;
     return 'NOT_FOUND'
         unless $self->unauth_load_by_email_id_or_name($login);
-    return $self->validate;
+    return $self->validate_login_for_self;
 }
 
 sub _unauth_load {

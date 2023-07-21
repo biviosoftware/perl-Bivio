@@ -136,7 +136,7 @@ sub _assert_realm {
     # Validates realm_owner is valid
     return undef
         unless my $realm = $self->get('realm_owner');
-    my($err) = $realm->validate;
+    my($err) = $realm->validate_login_for_self;
     $self->throw_die('NOT_FOUND', {entity => $realm, message => $err})
         if $err;
     $self->internal_put_field(validate_called => 1);
