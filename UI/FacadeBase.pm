@@ -1987,7 +1987,7 @@ sub _cfg_user_auth {
             [GENERAL_USER_PASSWORD_QUERY => 'pub/forgot-password'],
             [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
             [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
-            [GENERAL_USER_LOCKOUT_MAIL => undef],
+            [GENERAL_USER_LOCKED_OUT => undef],
             [USER_PASSWORD_RESET => '?/new-password'],
             [USER_PASSWORD => '?/password'],
             [USER_SETTINGS_FORM => '?/settings'],
@@ -2063,7 +2063,7 @@ sub _cfg_user_auth {
                 USER_EMAIL_VERIFY => 'Verify Email Address',
                 USER_EMAIL_VERIFY_FORCE_FORM => 'Force Verify Email Address',
                 USER_EMAIL_VERIFY_SENT => 'Check Your Email',
-                GENERAL_USER_LOCKOUT_MAIL => 'Account Locked',
+                GENERAL_USER_LOCKED_OUT => 'Account Locked',
             ]],
             [[qw(title xlink)] => [
                 GENERAL_CONTACT => 'Contact',

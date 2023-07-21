@@ -6,7 +6,7 @@ use Bivio::Base 'Model.RealmBase';
 my($_C) = b_use('IO.Config');
 my($_S) = b_use('Type.LoginAttemptState');
 $_C->register(my $_CFG = {
-    lockout_failure_count => $_C->is_test ? 5 : 100,
+    locked_out_failure_count => $_C->is_test ? 5 : 100,
 });
 
 sub create {
@@ -48,15 +48,15 @@ sub reset_failure_count {
     });
 }
 
-sub unauth_load_last_lockout {
+sub unauth_load_last_locked_out {
     my($self, $realm_id) = @_;
-    my($lockout) = 0;
+    my($locked_out) = 0;
     _iterate($self, $realm_id, sub {
         my($it) = @_;
-        $lockout = $it->get('login_attempt_state')->eq_lockout;
+        $locked_out = $it->get('login_attempt_state')->eq_locked_out;
         return 0;
     });
-    return $lockout;
+    return $locked_out;
 }
 
 sub update {
@@ -84,8 +84,8 @@ sub _state {
         return 0
             if $it->get('login_attempt_state')->eq_success
             || $it->get('login_attempt_state')->eq_reset;
-        if (++$fail_count >= $_CFG->{lockout_failure_count}) {
-            $state = $state->LOCKOUT;
+        if (++$fail_count >= $_CFG->{locked_out_failure_count}) {
+            $state = $state->LOCKED_OUT;
             return 0;
         }
         return 1;

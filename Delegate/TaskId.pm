@@ -1593,7 +1593,7 @@ sub info_user_auth {
             Action.UserLogout
             Model.UserLoginForm
             View.UserAuth->login
-            lockout_mail_task=GENERAL_USER_LOCKOUT_MAIL
+            locked_out_task=GENERAL_USER_LOCKED_OUT
             next=MY_SITE
             require_secure=1
         )],
@@ -1666,12 +1666,12 @@ sub info_user_auth {
             View.UserAuth->email_verify_sent
         )],
         [qw(
-            GENERAL_USER_LOCKOUT_MAIL
+            GENERAL_USER_LOCKED_OUT
             98
             GENERAL
             ANYBODY
-            Action.UserLockout->execute_load_owner_email
-            View.UserAuth->user_lockout_mail
+            Action.UserLockedOut->execute_load_owner_email
+            View.UserAuth->user_locked_out_mail
             View.UserAuth->user_locked_out
         )],
 #99

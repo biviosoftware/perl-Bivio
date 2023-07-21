@@ -78,7 +78,7 @@ sub internal_initialize {
                 constraint => 'NONE',
             },
             {
-                name => 'do_lockout_mail_task',
+                name => 'do_locked_out_task',
                 type => 'Boolean',
                 constraint => 'NONE',
             },
@@ -122,11 +122,11 @@ sub validate {
 sub validate_and_execute_ok {
     my($self) = @_;
     my($res) = shift->SUPER::validate_and_execute_ok(@_);
-    if ($self->unsafe_get('do_lockout_mail_task')) {
+    if ($self->unsafe_get('do_locked_out_task')) {
         $self->put_on_request(1);
         return {
             method => 'server_redirect',
-            task_id => 'lockout_mail_task',
+            task_id => 'locked_out_task',
             query => undef,
         };
     }
@@ -194,10 +194,10 @@ sub _validate_login_attempt {
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
         $self->internal_put_error('RealmOwner.password' => $err);
-        if (_record_login_attempt($self, $owner, 0)->get('login_attempt_state')->eq_lockout) {
-            b_warn('lockout owner=', $owner);
+        if (_record_login_attempt($self, $owner, 0)->get('login_attempt_state')->eq_locked_out) {
+            b_warn('locked out owner=', $owner);
             $owner->update_password($_R->password);
-            $self->internal_put_field(do_lockout_mail_task => 1);
+            $self->internal_put_field(do_locked_out_task => 1);
         }
         return 0;
     }

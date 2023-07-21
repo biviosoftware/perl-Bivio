@@ -15,20 +15,20 @@ my($login_next_second) = sub {
     test_conformance()
         if $deviance;
 };
-my($trigger_lockout) = sub {
+my($trigger_locked_out) = sub {
     for (1..4) {
         $login_next_second->(1, $e, 'bad password');
         verify_no_text('bad password');
         verify_text('password you entered does not match');
     }
     $login_next_second->(1, $e, 'bad password');
-    verify_text('Account Locked');
+    verify_text('User Account Locked');
 };
 follow_menu_link(qw(sign_in new_user));
 submit_form(create => {
     'Email:' => $e,
     'Password:' => 'password',
-    'First Name:' => 'Lockout',
+    'First Name:' => 'LockedOut',
     'Last Name:' => 'Test',
 });
 do_logout();
@@ -38,9 +38,9 @@ $login_next_second->(1, $e, 'bad password');
 verify_text('password you entered does not match');
 # Resets fail count
 $login_next_second->(0, $e, 'password');
-$trigger_lockout->();
+$trigger_locked_out->();
 $login_next_second->(1, $e, 'password');
-verify_text('Account is locked');
+verify_text('User account is locked');
 follow_link('forgot_password');
 test_deviance();
 submit_form('Reset Password' => {
@@ -63,7 +63,7 @@ submit_form(Change => {
 do_logout();
 $login_next_second->(0, $e, 'password');
 do_logout();
-$trigger_lockout->();
+$trigger_locked_out->();
 $login_next_second->(0, 'root');
 visit_uri('/adm/su');
 submit_form({
@@ -78,13 +78,13 @@ do_logout();
 $login_next_second->(1, $e, 'password');
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
 $login_next_second->(0, $e, 'password');
-$trigger_lockout->();
+$trigger_locked_out->();
 $next_second->();
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
 $login_next_second->(1, $e, 'password');
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password password");
 $login_next_second->(0, $e, 'password');
-$trigger_lockout->();
+$trigger_locked_out->();
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password password");
 $login_next_second->(1, $e, 'password');
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");

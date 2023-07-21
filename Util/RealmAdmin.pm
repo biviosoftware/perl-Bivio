@@ -26,7 +26,7 @@ commands:
     join_user roles... -- adds specified user role to realm
     leave_role -- remove one user role from a realm
     leave_user -- removes all user roles from realm
-    reset_login_attempts -- reset failed login attempt lockout count for user
+    reset_login_attempts -- reset consecutive failed login attempt count for user
     reset_password password -- reset a user's password
     scan_realm_id [realm_id] -- checks for auth_id in all table fields
     subscribe_user_to_realm -- subscribe given user to given realm

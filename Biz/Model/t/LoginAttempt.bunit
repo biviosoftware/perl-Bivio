@@ -2,7 +2,7 @@
 Request();
 config({
     class() => {
-        lockout_failure_count => 2,
+        locked_out_failure_count => 2,
     },
 });
 my($ip_address) = '1.2.3.4';
@@ -17,7 +17,7 @@ options({
     compute_params => sub {
         my(undef, $params, $method) = @_;
         $now = Type_DateTime()->set_test_now(Type_DateTime()->add_seconds($now, 1));
-        if ($method =~ /unauth_load_last_lockout|reset_failure_count/) {
+        if ($method =~ /unauth_load_last_locked_out|reset_failure_count/) {
             return [$uid];
         }
         if ($method eq 'create') {
@@ -44,22 +44,22 @@ options({
 });
 [
     [] => [
-        unauth_load_last_lockout => 0,
+        unauth_load_last_locked_out => 0,
         create => [['FAILURE'] => 'FAILURE'],
-        unauth_load_last_lockout => [[] => [0, 'FAILURE']],
-        create => [['FAILURE'] => 'LOCKOUT'],
-        unauth_load_last_lockout => [[] => [1, 'LOCKOUT']],
+        unauth_load_last_locked_out => [[] => [0, 'FAILURE']],
+        create => [['FAILURE'] => 'LOCKED_OUT'],
+        unauth_load_last_locked_out => [[] => [1, 'LOCKED_OUT']],
         reset_failure_count => 'RESET',
-        unauth_load_last_lockout => [[] => [0, 'RESET']],
+        unauth_load_last_locked_out => [[] => [0, 'RESET']],
         create => [['FAILURE'] => 'FAILURE'],
-        unauth_load_last_lockout => [[] => [0, 'FAILURE']],
-        create => [['FAILURE'] => 'LOCKOUT'],
-        unauth_load_last_lockout => [[] => [1, 'LOCKOUT']],
+        unauth_load_last_locked_out => [[] => [0, 'FAILURE']],
+        create => [['FAILURE'] => 'LOCKED_OUT'],
+        unauth_load_last_locked_out => [[] => [1, 'LOCKED_OUT']],
         reset_failure_count => 'RESET',
-        unauth_load_last_lockout => [[] => [0, 'RESET']],
+        unauth_load_last_locked_out => [[] => [0, 'RESET']],
         create => [['SUCCESS'] => 'SUCCESS'],
-        unauth_load_last_lockout => [[] => [0, 'SUCCESS']],
+        unauth_load_last_locked_out => [[] => [0, 'SUCCESS']],
         create => [['SUCCESS'] => 'SUCCESS'],
-        unauth_load_last_lockout => [[] => [0, 'SUCCESS']],
+        unauth_load_last_locked_out => [[] => [0, 'SUCCESS']],
     ],
 ];

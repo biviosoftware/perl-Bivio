@@ -184,7 +184,7 @@ EOF
     );
 }
 
-sub user_lockout_mail {
+sub user_locked_out_mail {
     return shift->internal_mail;
 }
 

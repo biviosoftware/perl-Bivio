@@ -7,7 +7,7 @@ __PACKAGE__->compile([
     UNKNOWN => 0,
     SUCCESS => 1,
     FAILURE => 2,
-    LOCKOUT => 3,
+    LOCKED_OUT => 3,
     RESET => 4,
 ]);
 

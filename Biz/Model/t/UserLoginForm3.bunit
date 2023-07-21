@@ -2,7 +2,7 @@
 FormModel();
 config({
     'Bivio::Biz::Model::LoginAttempt' => {
-        lockout_failure_count => 2,
+        locked_out_failure_count => 2,
     },
 });
 my($uid) = Util_TestUser()->create(random_realm_name());

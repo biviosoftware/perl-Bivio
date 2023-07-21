@@ -66,12 +66,12 @@ model('UserRealmSubscription')->unauth_delete({
             });
             $now = Type_DateTime()->set_test_now(Type_DateTime()->add_seconds($now, 1));
         }
-        return $la->get('login_attempt_state')->eq_lockout;
+        return $la->get('login_attempt_state')->eq_locked_out;
     }),
     sub {[-realm => $uid, -user => $uid, 'reset_login_attempts']} => sub {
         my($la) = model('LoginAttempt');
         return 0
-            if $la->unauth_load_last_lockout(req(qw(auth_id)));
+            if $la->unauth_load_last_locked_out(req(qw(auth_id)));
         return $la->get('login_attempt_state')->eq_reset;
     },
 ];

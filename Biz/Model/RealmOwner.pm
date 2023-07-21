@@ -175,7 +175,7 @@ sub is_default {
 
 sub is_locked_out {
     my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
-    return $model->new_other('LoginAttempt')->unauth_load_last_lockout($model->get('realm_id'));
+    return $model->new_other('LoginAttempt')->unauth_load_last_locked_out($model->get('realm_id'));
 }
 
 sub is_name_eq_email {

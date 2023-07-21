@@ -1,5 +1,5 @@
 # Copyright (c) 2023 bivio Software, Inc.  All rights reserved.
-package Bivio::Biz::Action::UserLockout;
+package Bivio::Biz::Action::UserLockedOut;
 use strict;
 use Bivio::Base 'Biz.Action';
 
