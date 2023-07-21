@@ -153,18 +153,18 @@ sub validate_login {
 sub _password_error {
     my($self, $owner) = @_;
     my($pw_err);
-    unless ($owner->get_field_type('password')->is_equal(
-        $owner->get('password'),
-        $self->get('RealmOwner.password'),
-    )) {
-        return 'PASSWORD_MISMATCH'
-            unless $owner->require_otp;
-        return 'OTP_PASSWORD_MISMATCH'
-            unless $self->new_other('OTP')->unauth_load_or_die({
-                user_id => $owner->get('realm_id')
-            })->verify($self->get('RealmOwner.password'));
-    }
-    return;
+    return undef
+        if $owner->get_field_type('password')->is_equal(
+            $owner->get('password'),
+            $self->get('RealmOwner.password'),
+        );
+    return 'PASSWORD_MISMATCH'
+        unless $owner->require_otp;
+    return 'OTP_PASSWORD_MISMATCH'
+        unless $self->new_other('OTP')->unauth_load_or_die({
+            user_id => $owner->get('realm_id')
+        })->verify($self->get('RealmOwner.password'));
+    return undef;
 }
 
 sub _record_login_attempt {
