@@ -75,15 +75,14 @@ sub _state {
     my($self, $values) = @_;
     my($state) = $values->{login_attempt_state};
     return $state
-        if $state->eq_success || $state->eq_reset;
+        if _success_equivalent($state);
     b_die('unexpected login_attempt_state=', $state)
         unless $state->eq_failure;
     my($fail_count) = 1;
     _iterate($self->new_other('LoginAttempt'), $values->{realm_id}, sub {
         my($it) = @_;
         return 0
-            if $it->get('login_attempt_state')->eq_success
-            || $it->get('login_attempt_state')->eq_reset;
+            if _success_equivalent($it->get('login_attempt_state'));
         if (++$fail_count >= $_CFG->{locked_out_failure_count}) {
             $state = $state->LOCKED_OUT;
             return 0;
@@ -91,6 +90,10 @@ sub _state {
         return 1;
     });
     return $state;
+}
+
+sub _success_equivalent {
+    return shift->equals_by_name(qw(success reset));
 }
 
 1;
