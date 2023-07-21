@@ -37,14 +37,14 @@ my($next_second) = sub {
         login => $uid,
         'RealmOwner.password' => 'wrong password',
     } => {
-        login => 'LOGIN_LOCKED_OUT',
+        login => 'USER_LOCKED_OUT',
     }),
     error_case({
         login => $uid,
         # Right password, but it's too late
         'RealmOwner.password' => 'password',
     } => {
-        login => 'LOGIN_LOCKED_OUT',
+        login => 'USER_LOCKED_OUT',
     }),
     inline_case(sub {
         req()->with_realm_and_user($uid, $uid, sub {

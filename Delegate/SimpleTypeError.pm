@@ -432,7 +432,7 @@ sub get_delegate_info {
         undef,
         'File names may not contain a leading dot.',
     ],
-    LOGIN_LOCKED_OUT => [
+    USER_LOCKED_OUT => [
         83,
         # Description needs to come from facade because it should include a link to contact support.
     ],

@@ -85,7 +85,7 @@ sub validate_email_and_put_uri {
     }
     if ($ro->is_locked_out) {
         b_warn('locked owner=', $self);
-        $form->internal_put_error('Email.email', 'LOGIN_LOCKED_OUT');
+        $form->internal_put_error('Email.email', 'USER_LOCKED_OUT');
         return 0;
     }
     $form->internal_put_field(

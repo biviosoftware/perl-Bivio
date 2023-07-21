@@ -502,9 +502,9 @@ sub _cfg_base {
             ['EmailAlias.incoming.SYNTAX_ERROR' => 'vs_fe("label"); must be in name@domain format or just an @domain'],
             ['login.SYNTAX_ERROR' => 'Invalid login'],
             [[
-                'UserLoginForm.login.LOGIN_LOCKED_OUT',
-                'UserPasswordQueryForm.Email.email.LOGIN_LOCKED_OUT',
-            ] => 'Account is locked. Please contact MailTo("support"); for assistance.'],
+                'UserLoginForm.login.USER_LOCKED_OUT',
+                'UserPasswordQueryForm.Email.email.USER_LOCKED_OUT',
+            ] => 'User account is locked. Please contact MailTo("support"); for assistance.'],
         ],
         HTML => [
             [table_default_align => 'left'],
@@ -2063,7 +2063,7 @@ sub _cfg_user_auth {
                 USER_EMAIL_VERIFY => 'Verify Email Address',
                 USER_EMAIL_VERIFY_FORCE_FORM => 'Force Verify Email Address',
                 USER_EMAIL_VERIFY_SENT => 'Check Your Email',
-                GENERAL_USER_LOCKED_OUT => 'Account Locked',
+                GENERAL_USER_LOCKED_OUT => 'User Account Locked',
             ]],
             [[qw(title xlink)] => [
                 GENERAL_CONTACT => 'Contact',
@@ -2129,12 +2129,12 @@ EOF
                     ],
                     user_locked_out_mail => [
                         to => q{Mailbox(['Action.UserLockedOut', 'owner_email']);},
-                        subject => 'vs_site_name(); Account Locked',
+                        subject => 'vs_site_name(); User Account Locked',
                         body => <<'EOF',
-We have locked your account due to a large number of failed login attempts. This is done to prevent
-potential attackers from being able to guess your password.
+We have locked your user account due to a large number of failed login attempts. This is done to
+prevent potential attackers from being able to guess your password.
 
-To unlock your account you must contact customer support by replying to this message.
+To unlock your user account you must contact customer support by replying to this message.
 
 Thank you,
 vs_site_name(); Support
