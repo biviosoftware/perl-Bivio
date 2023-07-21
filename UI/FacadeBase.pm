@@ -2127,8 +2127,8 @@ Thank you,
 vs_site_name(); Support
 EOF
                     ],
-                    user_lockout_mail => [
-                        to => q{Mailbox(['locked_owner_email']);},
+                    user_locked_out_mail => [
+                        to => q{Mailbox(['Action.UserLockedOut', 'owner_email']);},
                         subject => 'vs_site_name(); Account Locked',
                         body => <<'EOF',
 We have locked your account due to a large number of failed login attempts. This is done to prevent
