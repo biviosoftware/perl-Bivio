@@ -4,6 +4,8 @@ package Bivio::Biz::Model::UserPasswordForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
+my($_LAS) = b_use('Type.LoginAttemptState');
+my($_P) = b_use('Type.Password');
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
@@ -57,16 +59,20 @@ sub internal_pre_execute {
 }
 
 sub internal_validate_new {
+    my($self) = @_;
+    my($error) = $_P->validate_clear_text($self->get('new_password'));
+    return $self->internal_put_error('new_password', $error)
+        if $error;
     return;
 }
 
 sub internal_validate_old {
     my($self) = @_;
     return $self->internal_put_error(qw(old_password PASSWORD_MISMATCH))
-        unless $self->use('Type.Password')->is_equal(
+        unless $_P->is_equal(
             $self->req(qw(auth_realm owner password)),
             $self->get('old_password'),
-    );
+        );
     return 1;
 }
 
