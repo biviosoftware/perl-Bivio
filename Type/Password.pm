@@ -78,7 +78,7 @@ sub is_valid {
 }
 
 sub validate_clear_text {
-    my($proto, $clear_text, $user_id, $user_name, $user_emails) = @_;
+    my($proto, $clear_text) = @_;
     # Have to check length outside of usual width checking as deprecated 6-7 character passwords are
     # still allowed.
     return 'TOO_SHORT'
