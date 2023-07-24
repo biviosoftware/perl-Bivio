@@ -1,5 +1,5 @@
-# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
-package Bivio::Type::Password;
+# Copyright (c) 2023 bivio Software, Inc.  All rights reserved.
+package Bivio::Type::PasswordHash;
 use strict;
 use Bivio::Base 'Type.Line';
 
@@ -15,7 +15,7 @@ my($_SUPPORTED_HASH_TYPE) = {map(($_ => 1), @$_HASH_TYPES)};
 # It should be handled with care, e.g. never displayed to user.
 
 sub CURRENT_HASH_TYPE {
-    return $_HMACSHA512,
+    return $_HMACSHA512;
 }
 
 sub INVALID {
@@ -49,12 +49,11 @@ sub encrypt {
 }
 
 sub get_min_width {
-    # Allow existing deprecated 6-7 character passwords.
-    return 6;
+    return 13;
 }
 
 sub get_width {
-    return 255;
+    return 116;
 }
 
 sub is_otp {
@@ -62,9 +61,10 @@ sub is_otp {
     return $proto->OTP_VALUE eq ($value || '') ? 1 : 0;
 }
 
-sub is_password {
-    return 1;
-}
+# TODO: Confirm this isn't needed for non-input field
+# sub is_password {
+#     return 1;
+# }
 
 sub is_secure_data {
     return 1;

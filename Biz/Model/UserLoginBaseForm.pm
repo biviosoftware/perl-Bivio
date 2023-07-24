@@ -135,12 +135,8 @@ sub _validate {
     my($owner) = $self->validate_login;
     return
         if !$owner || ($self->in_error && !$owner->require_otp);
-    unless ($owner->get_field_type('password')->is_equal(
-        $owner->get('password'),
-        $self->get('RealmOwner.password'),
-    )) {
-    my($incoming_pw) = $self->get('RealmOwner.password');
-    unless ($owner->get_field_type('password')->is_equal($owner->get('password'), $incoming_pw)) {
+    my($pw_input) = $self->get('RealmOwner.password');
+    unless ($owner->get_field_type('password')->is_equal($owner->get('password'), $pw_input)) {
         return $self->internal_put_error(
             'RealmOwner.password', 'PASSWORD_MISMATCH',
         ) unless $owner->require_otp;
@@ -148,9 +144,9 @@ sub _validate {
             'RealmOwner.password' => 'OTP_PASSWORD_MISMATCH'
         ) unless $self->new_other('OTP')->unauth_load_or_die({
             user_id => $owner->get('realm_id')
-        })->verify($incoming_pw);
+        })->verify($pw_input);
     }
-    $owner->maybe_upgrade_password($incoming_pw);
+    $owner->maybe_upgrade_password($pw_input);
     $self->internal_put_field(validate_called => 1);
     return;
 }

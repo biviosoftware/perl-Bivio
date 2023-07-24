@@ -1,20 +1,18 @@
 # Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
 FormModel();
-my($_P) = b_use('Type.Password');
 my($password) = 'password';
 my($validate_password_hash) = sub {
     my($expected_hash_type) = @_;
-    my($ro) = model('RealmOwner');
-    $ro->unauth_load({name => 'demo'});
+    my($ro) = model('RealmOwner')->unauth_load_or_die({name => 'demo'});
     my($hashed_pw) = $ro->get('password');
     b_die("invalid $expected_hash_type password hash=$hashed_pw")
-        unless $_P->is_valid($hashed_pw, $expected_hash_type);
+        unless Type_Password()->is_valid($hashed_pw, $expected_hash_type);
     return 1;
 };
-my($reset_password_hash) = sub {
+my($set_password_hash) = sub {
     my($hash_type) = @_;
-    req()->with_realm_and_user(qw(demo demo), sub {
-        Util_RealmAdmin()->reset_password($password, $hash_type);
+    model('RealmOwner')->unauth_load_or_die({name => 'demo'})->update({
+        password => Type_Password()->encrypt($password, $hash_type),
     });
     return 1;
 };
@@ -27,10 +25,10 @@ my($reset_password_hash) = sub {
         'RealmOwner.password' => $password,
     }),
     inline_case(sub {
-        return $validate_password_hash->($_P->HASH_TYPE);
+        return $validate_password_hash->(Type_Password()->CURRENT_HASH_TYPE);
     }),
     inline_case(sub {
-        return $reset_password_hash->(Type_PasswordHashCrypt());
+        return $set_password_hash->(Type_PasswordHashCrypt());
     }),
     inline_case(sub {
         return $validate_password_hash->(Type_PasswordHashCrypt());
@@ -43,10 +41,10 @@ my($reset_password_hash) = sub {
         'RealmOwner.password' => $password,
     }),
     inline_case(sub {
-        return $validate_password_hash->($_P->HASH_TYPE);
+        return $validate_password_hash->(Type_Password()->CURRENT_HASH_TYPE);
     }),
     inline_case(sub {
-        return $reset_password_hash->(Type_PasswordHashHMACSHA1());
+        return $set_password_hash->(Type_PasswordHashHMACSHA1());
     }),
     inline_case(sub {
         return $validate_password_hash->(Type_PasswordHashHMACSHA1());
@@ -59,6 +57,6 @@ my($reset_password_hash) = sub {
         'RealmOwner.password' => $password,
     }),
     inline_case(sub {
-        return $validate_password_hash->($_P->HASH_TYPE);
+        return $validate_password_hash->(Type_Password()->CURRENT_HASH_TYPE);
     }),
 ];

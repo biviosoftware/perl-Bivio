@@ -4,7 +4,6 @@ package Bivio::Biz::Model::UserPasswordForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-my($_LAS) = b_use('Type.LoginAttemptState');
 my($_P) = b_use('Type.Password');
 
 sub PASSWORD_FIELD_LIST {
@@ -31,14 +30,14 @@ sub internal_initialize {
         require_context => 1,
         $self->field_decl(
             visible => [
-                [old_password => undef, 'NONE'],
-                qw(new_password confirm_new_password),
+                [qw(old_password Password NONE)],
+                [qw(new_password NewPassword NOT_NULL)],
+                [qw(confirm_new_password ConfirmPassword NOT_NULL)],
             ],
             hidden => [
-                [qw(display_old_password  Boolean)],
-                [query_password => undef, 'NONE'],
+                [qw(display_old_password Boolean)],
+                [qw(query_password String NONE)],
             ],
-            'Password', 'NOT_NULL',
         ),
     });
 }
@@ -60,15 +59,9 @@ sub internal_pre_execute {
 
 sub internal_validate_new {
     my($self) = @_;
-    my($req) = $self->get_request;
-    my($error) = $_P->validate_clear_text(
-        $self->get('new_password'),
-        $req->get('auth_id'),
-        $req->get_nested(qw(auth_realm owner_name)),
-        $self->new_other('Email')->map_iterate('email'),
-    );
-    return $self->internal_put_error('new_password', $error)
-        if $error;
+    if (my $err = $self->req(qw(auth_realm owner))->validate_password($self->get('new_password'))) {
+        $self->internal_put_error(new_password => $err);
+    }
     return;
 }
 

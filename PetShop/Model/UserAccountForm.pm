@@ -48,10 +48,20 @@ sub internal_initialize {
             'Address.zip',
             'Address.country',
             'Phone.phone',
-            map(+{
-                name => $_,
+            {
+                name => 'RealmOwner.display_name',
                 constraint => 'NONE',
-            }, qw(RealmOwner.password RealmOwner.display_name confirm_password)),
+            },
+            {
+                name => 'new_password',
+                type => 'NewPassword',
+                constraint => 'NONE',
+            },
+            {
+                name => 'confirm_password',
+                type => 'ConfirmPassword',
+                constraint => 'NONE',
+            },
         ],
         other => [
             {
@@ -72,7 +82,7 @@ sub parse_to_names {
 sub validate {
     my($self) = @_;
     # Ensures password is valid if required.
-    $self->validate_not_null('RealmOwner.password')
+    $self->validate_not_null('new_password')
         unless _is_editing($self);
     return;
 }

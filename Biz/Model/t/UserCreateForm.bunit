@@ -7,7 +7,7 @@ Request('initialize_fully');
         execute => [
             [req(), {
                 'RealmOwner.display_name' => 'Fred',
-                'RealmOwner.password' => 'password',
+                'new_password' => 'password',
              }] => not_die(),
         ],
     ],
@@ -31,7 +31,7 @@ Request('initialize_fully');
         execute => [
             [req(), {
                 'RealmOwner.display_name' => 'Last, First',
-                'RealmOwner.password' => 'password',
+                'new_password' => 'password',
              }] => not_die(),
         ],
     ],

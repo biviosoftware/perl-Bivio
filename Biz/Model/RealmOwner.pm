@@ -354,6 +354,40 @@ sub validate_login {
     return 'NOT_FOUND';
 }
 
+sub validate_password {
+    my($self, $clear_text) = @_;
+    return 'WEAK_PASSWORD'
+        if $clear_text eq $self->get('name')
+        || $clear_text eq $self->get('realm_id')
+        || _canonicalize($clear_text) eq _canonicalize($self->get('display_name'))
+        || _similar_to_email($self, $clear_text);
+    return;
+}
+
+sub _canonicalize {
+    my($value) = @_;
+    $value =~ s/\W+//g;
+    $value = lc($value);
+    return $value;
+}
+
+sub _similar_to_email {
+    my($self, $value) = @_;
+    foreach my $email (@{$self->new_other('Email')->map_iterate('email', 'unauth_iterate_start', {
+        realm_id => $self->get('realm_id'),
+    })}) {
+        return 1
+            if $value eq $email;
+        my($local_part) = split('@', $email);
+        return 1
+            if $value eq $local_part;
+        $email =~ s/\W+//g;
+        return 1
+            if $value eq $email;
+    }
+    return 0;
+}
+
 sub _unauth_load {
     my($self, $id_or_name, $query, $want_die) = @_;
     if ($_PI->is_valid($id_or_name)) {

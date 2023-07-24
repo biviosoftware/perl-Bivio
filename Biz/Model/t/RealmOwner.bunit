@@ -2,8 +2,15 @@
 # $Id$
 Request();
 my($email) = ShellUtil_SQL()->DEMO_EMAIL;
+my($like_email) = $email;
+$like_email =~ s/\W+//g;
+my($email_local_part) = split('@', $email);
 my($name) = ShellUtil_SQL()->DEMO;
-my($id) = unauth_model(RealmOwner => {name => $name})->get('realm_id');
+my($owner) = unauth_model(RealmOwner => {name => $name});
+my($display_name) = $owner->get('display_name');
+my($like_display_name) = $display_name;
+$like_display_name =~ s/\W+//g;
+my($id) = $owner->get('realm_id');
 my($_RT) = __PACKAGE__->use('Auth.RealmType');
 [
     {
@@ -42,6 +49,20 @@ my($_RT) = __PACKAGE__->use('Auth.RealmType');
                 display_name => '',
                 realm_type => $_RT->CLUB,
             }] => DB_ERROR(),
+        ],
+    ],
+    {
+        object => sub{$owner},
+    } => [
+        validate_password => [
+            $id => 'WEAK_PASSWORD',
+            $name => 'WEAK_PASSWORD',
+            $display_name => 'WEAK_PASSWORD',
+            $like_display_name => 'WEAK_PASSWORD',
+            $email => 'WEAK_PASSWORD',
+            $like_email => 'WEAK_PASSWORD',
+            $email_local_part => 'WEAK_PASSWORD',
+            'some password' => [],
         ],
     ],
 ];

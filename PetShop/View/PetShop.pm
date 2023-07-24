@@ -17,7 +17,7 @@ sub account {
             'UserAccountForm.User.first_name',
             'UserAccountForm.User.last_name',
             'UserAccountForm.Email.email',
-            ['UserAccountForm.RealmOwner.password', {
+            ['UserAccountForm.new_password', {
                 wf_widget => Link('Change password', 'USER_PASSWORD'),
                 row_control => If(['auth_user'], 1),
                 cell_class => 'field',
@@ -32,7 +32,7 @@ sub account {
                     'USER_OTP',
                 )->put(row_control => If(['auth_user'], 1)),
             ],
-            ['UserAccountForm.RealmOwner.password', {
+            ['UserAccountForm.new_password', {
                 row_control => If(['auth_user'], 0, 1),
             }],
             vs_blank_cell(),
