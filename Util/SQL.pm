@@ -1,5 +1,4 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2001-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Util::SQL;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';

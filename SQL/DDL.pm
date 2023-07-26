@@ -1,5 +1,4 @@
-# Copyright (c) 2008-2012 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::SQL::DDL;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';

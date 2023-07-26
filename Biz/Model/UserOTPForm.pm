@@ -1,5 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserOTPForm;
 use strict;
 use Bivio::Base 'Model.UserPasswordForm';

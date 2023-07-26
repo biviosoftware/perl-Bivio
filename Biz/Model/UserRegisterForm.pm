@@ -1,5 +1,4 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2005-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserRegisterForm;
 use strict;
 use Bivio::Base 'Model.UserCreateForm';

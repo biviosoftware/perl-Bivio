@@ -1,5 +1,4 @@
-# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2003-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserPasswordForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';

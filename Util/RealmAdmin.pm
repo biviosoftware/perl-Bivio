@@ -1,5 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2002-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::RealmAdmin;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';

@@ -1,5 +1,4 @@
-# Copyright (c) 2013 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2013-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::PetShop::View::PetShop;
 use strict;
 use Bivio::Base 'View.Base';

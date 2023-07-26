@@ -1,5 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2001-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::PetShop::Model::UserAccountForm;
 use strict;
 use Bivio::Base 'Model.UserCreateForm';
