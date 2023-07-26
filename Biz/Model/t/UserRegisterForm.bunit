@@ -11,16 +11,10 @@ my($exists) = ShellUtil_SQL()->DEMO_EMAIL();
     [{
         'Email.email' => $new,
     }] => [{
-        # TODO: realm->validate_password iterates email and ends up clearing it from the
-        # request. Do we care?
-
-        # 'Model.Email' => {
-        #     email => $new,
-        # },
+        'Model.Email' => {
+            email => $new,
+        },
     }],
-    inline_case(sub {
-        return b_use('Model.Email')->new(req())->unauth_load({email => $new});
-    }),
     [{
         'Email.email' => $exists,
     }] => sub {
