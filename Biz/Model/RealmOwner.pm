@@ -374,11 +374,7 @@ sub _canonicalize {
 sub _similar_to_email {
     my($self, $value) = @_;
     foreach my $email (@{$self->new_other('Email')->set_ephemeral->map_iterate(
-        'email',
-        'unauth_iterate_start',
-        {
-            realm_id => $self->get('realm_id'),
-        },
+        'email', 'unauth_iterate_start', {realm_id => $self->get('realm_id')},
     )}) {
         return 1
             if $value eq $email;
