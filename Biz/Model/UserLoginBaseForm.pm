@@ -96,34 +96,34 @@ sub internal_initialize {
 }
 
 sub internal_validate_login_value {
-    my($self, $value) = @_;
-    my($owner) = $self->new_other('RealmOwner');
+    my(undef, $delegator, $value) = shift->delegated_args(@_);
+    my($owner) = $delegator->new_other('RealmOwner');
     my($err) = $owner->validate_login($value);
     return $err ? (undef, $err) : ($owner, undef);
 }
 
 sub validate {
-    my($self, $login, $password) = @_;
+    my(undef, $delegator, $login, $password) = shift->delegated_args(@_);
     # Checks the form property values.  Puts errors on the fields
     # if there are any.
     if (@_ == 3) {
-        $self->internal_put_field(login => $login);
-        $self->internal_put_field('RealmOwner.password' => $password);
+        $delegator->internal_put_field(login => $login);
+        $delegator->internal_put_field('RealmOwner.password' => $password);
     }
-    _validate($self);
+    _validate($delegator);
     # don't send password back to client in error case
-    if ($self->in_error) {
-        $self->internal_put_field('RealmOwner.password' => undef);
-        $self->internal_clear_literal('RealmOwner.password');
+    if ($delegator->in_error) {
+        $delegator->internal_put_field('RealmOwner.password' => undef);
+        $delegator->internal_clear_literal('RealmOwner.password');
     }
     return;
 }
 
 sub validate_and_execute_ok {
-    my($self) = @_;
-    my($res) = shift->SUPER::validate_and_execute_ok(@_);
-    if ($self->unsafe_get('do_locked_out_task')) {
-        $self->put_on_request(1);
+    my(undef, $delegator) = shift->delegated_args(@_);
+    my($res) = $delegator->SUPER::validate_and_execute_ok(@_);
+    if ($delegator->unsafe_get('do_locked_out_task')) {
+        $delegator->put_on_request(1);
         return {
             method => 'server_redirect',
             task_id => 'locked_out_task',
@@ -134,16 +134,16 @@ sub validate_and_execute_ok {
 }
 
 sub validate_login {
-    my($self, $model_or_login, $field) = @_;
+    my(undef, $delegator, $model_or_login, $field) = shift->delegated_args(@_);
     $field ||= 'login';
-    my($model) = ref($model_or_login) ? $model_or_login : $self;
+    my($model) = ref($model_or_login) ? $model_or_login : $delegator;
     $model->internal_put_field($field => $model_or_login)
         if defined($model_or_login) && !ref($model_or_login);
     $model->internal_put_field(validate_called => 1);
     my($login) = $model->get($field);
     return undef
         unless defined($login);
-    my($realm, $err) = $self->internal_validate_login_value($login);
+    my($realm, $err) = $delegator->internal_validate_login_value($login);
     $model->internal_put_error($field => $err)
         if $err;
     $model->internal_put_field(realm_owner => $realm);
