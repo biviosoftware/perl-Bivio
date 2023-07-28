@@ -9,7 +9,7 @@ my($next_second) = sub {
 my($login_next_second) = sub {
     my($deviance) = shift;
     $next_second->();
-    test_deviance()
+    test_deviance($deviance)
         if $deviance;
     login_as(@_);
     test_conformance()
@@ -17,11 +17,9 @@ my($login_next_second) = sub {
 };
 my($trigger_locked_out) = sub {
     for (1..4) {
-        $login_next_second->(1, $e, 'bad password');
-        verify_no_text('bad password');
-        verify_text('password you entered does not match');
+        $login_next_second->('does not match', $e, 'bad password');
     }
-    $login_next_second->(1, $e, 'bad password');
+    $login_next_second->('logout.*pattern not found', $e, 'bad password');
     verify_text('User Account Locked');
 };
 follow_menu_link(qw(sign_in new_user));
@@ -32,15 +30,13 @@ submit_form(create => {
     'Last Name:' => 'Test',
 });
 do_logout();
-$login_next_second->(0, $e, 'password');
+$login_next_second->(undef, $e, 'password');
 do_logout();
-$login_next_second->(1, $e, 'bad password');
-verify_text('password you entered does not match');
+$login_next_second->('does not match', $e, 'bad password');
 # Resets fail count
-$login_next_second->(0, $e, 'password');
+$login_next_second->(undef, $e, 'password');
 $trigger_locked_out->();
-$login_next_second->(1, $e, 'password');
-verify_text('User account is locked');
+$login_next_second->('account is locked', $e, 'password');
 follow_link('forgot_password');
 test_deviance();
 submit_form('Reset Password' => {
@@ -48,7 +44,7 @@ submit_form('Reset Password' => {
 });
 test_conformance();
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
-$login_next_second->(1, $e, 'password');
+$login_next_second->('does not match', $e, 'password');
 follow_link(qw(sign_in forgot_password));
 submit_form('Reset Password' => {
     'Email:' => $e,
@@ -61,10 +57,10 @@ submit_form(Change => {
     'Re-enter New Password:' => 'password',
 });
 do_logout();
-$login_next_second->(0, $e, 'password');
+$login_next_second->(undef, $e, 'password');
 do_logout();
 $trigger_locked_out->();
-$login_next_second->(0, 'root');
+$login_next_second->(undef, 'root');
 visit_uri('/adm/su');
 submit_form({
     email => $e,
@@ -75,17 +71,17 @@ submit_form({
     'Re-enter New Password:' => 'password',
 });
 do_logout();
-$login_next_second->(1, $e, 'password');
+$login_next_second->('account is locked', $e, 'password');
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
-$login_next_second->(0, $e, 'password');
+$login_next_second->(undef, $e, 'password');
 $trigger_locked_out->();
 $next_second->();
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
-$login_next_second->(1, $e, 'password');
+$login_next_second->('does not match', $e, 'password');
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password password");
-$login_next_second->(0, $e, 'password');
+$login_next_second->(undef, $e, 'password');
 $trigger_locked_out->();
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password password");
-$login_next_second->(1, $e, 'password');
+$login_next_second->('account is locked', $e, 'password');
 do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_login_attempts");
-$login_next_second->(0, $e, 'password');
+$login_next_second->(undef, $e, 'password');
