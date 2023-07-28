@@ -6,10 +6,11 @@ use Bivio::Base 'Biz.Action';
 my($_E) = b_use('Model.Email');
 
 sub execute_load_owner_email {
-    my($proto, $req) = @_;
+    my($proto, $req, $form) = @_;
+    $form ||= 'Model.UserLoginForm';
     $proto->new($req)->put_on_request($req)->put(
         owner_email => $_E->new($req)->unauth_load_or_die({
-            realm_id => $req->req(qw(Model.UserLoginForm realm_owner realm_id)),
+            realm_id => $req->req($form, qw(realm_owner realm_id)),
             location => $_E->DEFAULT_LOCATION,
         })->get('email'),
     );
