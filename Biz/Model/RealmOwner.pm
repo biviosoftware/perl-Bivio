@@ -355,15 +355,16 @@ sub validate_login {
 
 sub validate_password {
     my($self, $clear_text) = @_;
+    my($canonical_clear_text) = _canonicalize_for_weak_password($clear_text);
     return 'WEAK_PASSWORD'
-        if $clear_text eq $self->get('name')
-        || $clear_text eq $self->get('realm_id')
-        || _canonicalize($clear_text) eq _canonicalize($self->get('display_name'))
-        || _similar_to_email($self, $clear_text);
+        if $canonical_clear_text eq _canonicalize_for_weak_password($self->get('display_name'))
+        || $canonical_clear_text eq _canonicalize_for_weak_password($self->get('name'))
+        || $canonical_clear_text eq $self->get('realm_id')
+        || _similar_to_email($self, $canonical_clear_text);
     return;
 }
 
-sub _canonicalize {
+sub _canonicalize_for_weak_password {
     my($value) = @_;
     $value =~ s/\W+//g;
     $value = lc($value);
