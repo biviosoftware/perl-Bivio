@@ -435,7 +435,7 @@ sub get_delegate_info {
     WEAK_PASSWORD => [
         83,
         undef,
-        'Password does not sufficiently protect against potential attackers. Do not use a common, easy to guess password, your user id, login name, or email address.',
+        'Password is similar to your name, email address, and/or common phrases. Please enter a unique password.',
     ],
 ];
 }
