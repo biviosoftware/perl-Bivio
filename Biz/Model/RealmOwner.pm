@@ -372,20 +372,18 @@ sub _canonicalize_for_weak_password {
 }
 
 sub _similar_to_email {
-    my($self, $value) = @_;
-    foreach my $email (@{$self->new_other('Email')->set_ephemeral->map_iterate(
-        'email', 'unauth_iterate_start', {realm_id => $self->get('realm_id')},
-    )}) {
-        return 1
-            if $value eq $email;
-        my($local_part) = split('@', $email);
-        return 1
-            if $value eq $local_part;
-        $email =~ s/\W+//g;
-        return 1
-            if $value eq $email;
-    }
-    return 0;
+    my($self, $canonical_value) = @_;
+    my($similar) = 0;
+    $self->new_other('Email')->set_ephemeral->do_iterate(sub {
+        my($it) = @_;
+        my($email) = _canonicalize_for_weak_password($it->get('email'));
+        if (index($email, $canonical_value) >= 0 || index($canonical_value, $email) >= 0) {
+            $similar = 1;
+            return 0;
+        }
+        return 1;
+    }, 'unauth_iterate_start', {realm_id => $self->get('realm_id')});
+    return $similar;
 }
 
 sub _unauth_load {
