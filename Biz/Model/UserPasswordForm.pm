@@ -35,7 +35,7 @@ sub internal_initialize {
             ],
             hidden => [
                 [qw(display_old_password Boolean)],
-                [qw(query_password String NONE)],
+                [qw(query_password Text NONE)],
             ],
         ),
     });
