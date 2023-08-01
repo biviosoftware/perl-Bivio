@@ -366,7 +366,7 @@ sub validate_password {
 
 sub _canonicalize_for_weak_password {
     my($value) = @_;
-    $value =~ s/\W+//g;
+    $value =~ s/[^a-z0-9]//ig;
     $value = lc($value);
     return $value;
 }
