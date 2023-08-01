@@ -26,7 +26,7 @@ my($ids) = [map({
         }
         return 1;
     },
-    [create_from_email => $email, 'xxxxxx'] => sub {
+    [create_from_email => $email, 'yyyyyy'] => sub {
         b_use('ShellUtil.User')->new->put(force => 1)
             ->merge_users(req(qw(Model.User user_id)), $ids->[0]);
         return 1;
