@@ -90,6 +90,8 @@ sub internal_create_models {
     my($self) = shift;
     $self->internal_put_field('RealmOwner.display_name', '');
     my($realm, @rest) = $self->SUPER::internal_create_models(@_);
+    return
+        if $self->in_error;
     $self->req->set_realm($realm);
     foreach my $model (qw(Address Phone)) {
         $self->new_other($model)->create({
