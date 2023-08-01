@@ -4,10 +4,15 @@ Request('initialize_fully');
 [
     class() => [
         execute => [
+            # Die if trying to use old name for password field
+            [req(), {
+                'RealmOwner.display_name' => 'Fred',
+                'RealmOwner.password' => 'password',
+            }] => DIE(),
             [req(), {
                 'RealmOwner.display_name' => 'Fred',
                 'new_password' => 'password',
-             }] => not_die(),
+            }] => not_die(),
         ],
     ],
     sub {model('User')} => [

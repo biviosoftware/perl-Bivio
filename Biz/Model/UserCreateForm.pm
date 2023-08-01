@@ -16,6 +16,9 @@ $_C->register(my $_CFG = {
 
 sub execute_ok {
     my($self) = @_;
+    # Disallow old field name
+    b_die('use new_password')
+        if $self->unsafe_get('RealmOwner.password');
     my($r) = $self->internal_create_models;
     $self->new_other('UserLoginForm')->process({realm_owner => $r})
         unless $self->unsafe_get('without_login');
