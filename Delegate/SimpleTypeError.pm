@@ -103,7 +103,7 @@ sub get_delegate_info {
     PASSWORD => [
         16,
         undef,
-        'invalid password; must be at least SIX characters',
+        'invalid password; must be at least EIGHT characters',
     ],
     REALM_NAME => [
         17,
