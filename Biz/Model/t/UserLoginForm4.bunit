@@ -1,0 +1,67 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+my($name) = 'demo';
+my($email) = email($name);
+my($ro) = unauth_model('RealmOwner', {name => $name});
+my($dp) = b_use('ShellUtil.TestUser')->DEFAULT_PASSWORD;
+[
+    req_state({
+        task => 'LOGIN',
+    }),
+    simple_case({
+        login => $name,
+        'RealmOwner.password' => $dp,
+    } => {
+        login => $name,
+        'RealmOwner.password' => $dp,
+    }),
+    simple_case({
+        login => $email,
+        'RealmOwner.password' => $dp,
+    } => {
+        login => $email,
+        'RealmOwner.password' => $dp,
+    }),
+    simple_case({
+        login => $ro->get('realm_id'),
+        'RealmOwner.password' => $dp,
+    } => {
+        login => $ro->get('realm_id'),
+        'RealmOwner.password' => $dp,
+    }),
+    error_case({
+        login => $name,
+        'RealmOwner.password' => "x$dp",
+    } => {
+        login => $name,
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    error_case({
+        login => "x$name",
+        'RealmOwner.password' => $dp,
+    } => {
+        login => 'NOT_FOUND',
+        'RealmOwner.password' => undef,
+    }),
+    error_case({
+        login => 'user',
+        'RealmOwner.password' => $dp,
+    } => {
+        login => 'NOT_FOUND',
+        'RealmOwner.password' => undef,
+    }),
+    error_case({
+        login => 'club',
+        'RealmOwner.password' => $dp,
+    } => {
+        login => 'NOT_FOUND',
+        'RealmOwner.password' => undef,
+    }),
+    error_case({
+        login => 'fourem',
+        'RealmOwner.password' => $dp,
+    } => {
+        login => 'NOT_FOUND',
+        'RealmOwner.password' => undef,
+    }),
+];
