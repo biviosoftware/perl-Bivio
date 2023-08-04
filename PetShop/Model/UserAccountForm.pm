@@ -19,6 +19,8 @@ sub execute_ok {
     my($self) = @_;
     return shift->SUPER::execute_ok(@_)
         unless _is_editing($self);
+    return
+        unless $self->internal_validate_realm_owner_password;
     _do_models(
         $self,
         sub {shift->update($self->get_model_properties(shift))},

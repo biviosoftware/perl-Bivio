@@ -16,9 +16,6 @@ $_C->register(my $_CFG = {
 
 sub execute_ok {
     my($self) = @_;
-    # Disallow old field name
-    b_die('use new_password')
-        if $self->unsafe_get('RealmOwner.password');
     my($r) = $self->internal_create_models;
     $self->new_other('UserLoginForm')->process({realm_owner => $r})
         unless $self->unsafe_get('without_login');
@@ -66,7 +63,7 @@ sub internal_create_models {
         $self->parse_to_names('RealmOwner.display_name') || return,
         {
             %{$self->get_model_properties('RealmOwner')},
-            password => $self->get('new_password'),
+            password => $self->unsafe_get('new_password'),
         },
     );
     $self->internal_put_field('User.user_id' => $user->get('user_id'));
@@ -79,12 +76,10 @@ sub internal_create_models {
         want_bulletin => defined($params->{'Email.want_bulletin'})
             ? $params->{'Email.want_bulletin'} : 1,
     }) unless ($self->unsafe_get('Email.email') || '') eq $et->IGNORE_PREFIX;
+    return
+        unless $self->internal_validate_realm_owner_password($realm);
     $self->join_site_admin_realm
         if $_C->if_version(10);
-    if (my $err = $realm->validate_password($self->get('new_password'))) {
-        $self->internal_put_error('new_password' => $err);
-        return;
-    }
     return ($realm, $user);
 }
 
@@ -116,6 +111,19 @@ sub internal_initialize {
             )], 'Boolean'),
         ],
     });
+}
+
+sub internal_validate_realm_owner_password {
+    my($self, $realm_owner) = @_;
+    $realm_owner ||= $self->ureq(qw(auth_realm owner)) || b_die('realm owner required');
+    # Disallow old field name
+    b_die('use new_password')
+        if $self->unsafe_get('RealmOwner.password');
+    if (my $err = $realm_owner->validate_password($self->unsafe_get('new_password') // '')) {
+        $self->internal_put_error('new_password' => $err);
+        return 0;
+    }
+    return 1;
 }
 
 sub join_site_admin_realm {
