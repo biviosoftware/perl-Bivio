@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Biz::Model::RealmOwner;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
@@ -174,6 +173,11 @@ sub is_default {
         eq $model->get($model_prefix . 'realm_id') ? 1 : 0;
 }
 
+sub is_locked_out {
+    my($proto, $model, $model_prefix) = shift->internal_get_target(@_);
+    return $model->new_other('LoginAttempt')->unauth_load_last_locked_out($model->get('realm_id'));
+}
+
 sub is_name_eq_email {
     my(undef, $req, $name, $email) = @_;
     # If I<name> points to I<email>, returns true.  Caller should
@@ -333,18 +337,23 @@ sub update_password {
     });
 }
 
-sub validate_login {
-    my($self, $login) = @_;
-    my($err) = !$self->unauth_load_by_email_id_or_name($login) ? ''
-        : $self->is_offline_user ? 'is_offline_user'
+sub validate_login_for_self {
+    my($self) = @_;
+    my($err) = $self->is_offline_user ? 'is_offline_user'
         : $self->is_default ? 'is_default'
         : $self->get('realm_type') != $_RT->USER
         ? ('realm_type is ' . $self->get('realm_type')->get_name)
         : !$self->has_valid_password ? 'not has_valid_password'
         : return;
-    b_warn($login, ': ', $err)
-        if $err;
+    b_warn($err, ' owner=', $self);
     return 'NOT_FOUND';
+}
+
+sub validate_login {
+    my($self, $login) = @_;
+    return 'NOT_FOUND'
+        unless $self->unauth_load_by_email_id_or_name($login);
+    return $self->validate_login_for_self;
 }
 
 sub _unauth_load {

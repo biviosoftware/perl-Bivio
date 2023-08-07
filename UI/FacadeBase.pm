@@ -1,5 +1,4 @@
-# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::FacadeBase;
 use strict;
 use Bivio::Base 'UI.Facade';
@@ -492,7 +491,7 @@ sub _cfg_base {
                 padding: 2px;
             }],
         ],
-         FormError => [
+        FormError => [
             [NULL => 'You must supply a value for vs_fe("label");.'],
             [EXISTS => 'vs_fe("label"); already exists in our database.'],
             [NOT_FOUND => 'vs_fe("label"); was not found in our database.'],
@@ -502,6 +501,10 @@ sub _cfg_base {
             ['image_file.SYNTAX_ERROR' => 'vs_fe("label"); unknown or invalid image format.  Please verify file, and change to an acceptable format (e.g. png, gif, jpg), and retry upload.'],
             ['EmailAlias.incoming.SYNTAX_ERROR' => 'vs_fe("label"); must be in name@domain format or just an @domain'],
             ['login.SYNTAX_ERROR' => 'Invalid login'],
+            [[
+                'UserLoginForm.login.USER_LOCKED_OUT',
+                'UserPasswordQueryForm.Email.email.USER_LOCKED_OUT',
+            ] => 'User account is locked. Please contact MailTo("support"); for assistance.'],
         ],
         HTML => [
             [table_default_align => 'left'],
@@ -1984,6 +1987,7 @@ sub _cfg_user_auth {
             [GENERAL_USER_PASSWORD_QUERY => 'pub/forgot-password'],
             [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
             [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
+            [GENERAL_USER_LOCKED_OUT => undef],
             [USER_PASSWORD_RESET => '?/new-password'],
             [USER_PASSWORD => '?/password'],
             [USER_SETTINGS_FORM => '?/settings'],
@@ -2059,6 +2063,7 @@ sub _cfg_user_auth {
                 USER_EMAIL_VERIFY => 'Verify Email Address',
                 USER_EMAIL_VERIFY_FORCE_FORM => 'Force Verify Email Address',
                 USER_EMAIL_VERIFY_SENT => 'Check Your Email',
+                GENERAL_USER_LOCKED_OUT => 'User Account Locked',
             ]],
             [[qw(title xlink)] => [
                 GENERAL_CONTACT => 'Contact',
@@ -2117,6 +2122,19 @@ For your security, this link may be used one time only to set your
 password.
 
 You may contact customer support by replying to this message.
+
+Thank you,
+vs_site_name(); Support
+EOF
+                    ],
+                    user_locked_out_mail => [
+                        to => q{Mailbox(['Action.UserLockedOut', 'owner_email']);},
+                        subject => 'vs_site_name(); User Account Locked',
+                        body => <<'EOF',
+We have locked your user account due to a large number of failed login attempts. This is done to
+prevent potential attackers from being able to guess your password.
+
+To unlock your user account you must contact customer support by replying to this message.
 
 Thank you,
 vs_site_name(); Support

@@ -1,9 +1,10 @@
-# Copyright (c) 2011-2012 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2011-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserLoginBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
+my($_LAS) = b_use('Type.LoginAttemptState');
+my($_R) = b_use('Biz.Random');
 
 sub PASSWORD_FIELD {
     return 'p';
@@ -76,6 +77,11 @@ sub internal_initialize {
                 type => 'Boolean',
                 constraint => 'NONE',
             },
+            {
+                name => 'do_locked_out_task',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
         ],
     });
 
@@ -90,44 +96,83 @@ sub internal_initialize {
 }
 
 sub internal_validate_login_value {
-    my($self, $value) = @_;
-    my($owner) = $self->new_other('RealmOwner');
+    my(undef, $delegator, $value) = shift->delegated_args(@_);
+    my($owner) = $delegator->new_other('RealmOwner');
     my($err) = $owner->validate_login($value);
     return $err ? (undef, $err) : ($owner, undef);
 }
 
 sub validate {
-    my($self, $login, $password) = @_;
+    my(undef, $delegator, $login, $password) = shift->delegated_args(@_);
     # Checks the form property values.  Puts errors on the fields
     # if there are any.
-    if (@_ == 3) {
-        $self->internal_put_field(login => $login);
-        $self->internal_put_field('RealmOwner.password' => $password);
+    if (defined($login) && defined($password)) {
+        $delegator->internal_put_field(login => $login);
+        $delegator->internal_put_field('RealmOwner.password' => $password);
     }
-    _validate($self);
+    _validate($delegator);
     # don't send password back to client in error case
-    if ($self->in_error) {
-        $self->internal_put_field('RealmOwner.password' => undef);
-        $self->internal_clear_literal('RealmOwner.password');
+    if ($delegator->in_error) {
+        $delegator->internal_put_field('RealmOwner.password' => undef);
+        $delegator->internal_clear_literal('RealmOwner.password');
     }
     return;
 }
 
+sub validate_and_execute_ok {
+    my(undef, $delegator) = shift->delegated_args(@_);
+    my($res) = $delegator->SUPER::validate_and_execute_ok(@_);
+    if ($delegator->unsafe_get('do_locked_out_task')) {
+        $delegator->put_on_request(1);
+        return {
+            method => 'server_redirect',
+            task_id => 'locked_out_task',
+            query => undef,
+        };
+    }
+    return $res;
+}
+
 sub validate_login {
-    my($self, $model_or_login, $field) = @_;
+    my(undef, $delegator, $model_or_login, $field) = shift->delegated_args(@_);
     $field ||= 'login';
-    my($model) = ref($model_or_login) ? $model_or_login : $self;
+    my($model) = ref($model_or_login) ? $model_or_login : $delegator;
     $model->internal_put_field($field => $model_or_login)
         if defined($model_or_login) && !ref($model_or_login);
     $model->internal_put_field(validate_called => 1);
     my($login) = $model->get($field);
     return undef
         unless defined($login);
-    my($realm, $err) = $self->internal_validate_login_value($login);
+    my($realm, $err) = $delegator->internal_validate_login_value($login);
     $model->internal_put_error($field => $err)
         if $err;
     $model->internal_put_field(realm_owner => $realm);
     return $realm;
+}
+
+sub _password_error {
+    my($self, $owner) = @_;
+    my($pw_err);
+    return undef
+        if $owner->get_field_type('password')->is_equal(
+            $owner->get('password'),
+            $self->get('RealmOwner.password'),
+        );
+    return 'PASSWORD_MISMATCH'
+        unless $owner->require_otp;
+    return 'OTP_PASSWORD_MISMATCH'
+        unless $self->new_other('OTP')->unauth_load_or_die({
+            user_id => $owner->get('realm_id')
+        })->verify($self->get('RealmOwner.password'));
+    return undef;
+}
+
+sub _record_login_attempt {
+    my($self, $owner, $success) = @_;
+    return $self->new_other('LoginAttempt')->create({
+        realm_id => $owner->get('realm_id'),
+        login_attempt_state => $success ? $_LAS->SUCCESS : $_LAS->FAILURE,
+    });
 }
 
 sub _validate {
@@ -135,21 +180,29 @@ sub _validate {
     my($owner) = $self->validate_login;
     return
         if !$owner || ($self->in_error && !$owner->require_otp);
-    unless ($owner->get_field_type('password')->is_equal(
-        $owner->get('password'),
-        $self->get('RealmOwner.password'),
-    )) {
-        return $self->internal_put_error(
-            'RealmOwner.password', 'PASSWORD_MISMATCH',
-        ) unless $owner->require_otp;
-        return $self->internal_put_error(
-            'RealmOwner.password' => 'OTP_PASSWORD_MISMATCH'
-        ) unless $self->new_other('OTP')->unauth_load_or_die({
-            user_id => $owner->get('realm_id')
-        })->verify($self->get('RealmOwner.password'));
-    }
+    return $self->internal_put_error(login => 'USER_LOCKED_OUT')
+        if $owner->is_locked_out;
+    return
+        unless _validate_login_attempt($self, $owner);
     $self->internal_put_field(validate_called => 1);
     return;
+}
+
+sub _validate_login_attempt {
+    my($self, $owner) = @_;
+    if (my $err = _password_error($self, $owner)) {
+        # Need to stay on page or the login attempt would get rolled back
+        $self->internal_stay_on_page;
+        $self->internal_put_error('RealmOwner.password' => $err);
+        if (_record_login_attempt($self, $owner, 0)->get('login_attempt_state')->eq_locked_out) {
+            b_warn('locked out owner=', $owner);
+            $owner->update_password($_R->password);
+            $self->internal_put_field(do_locked_out_task => 1);
+        }
+        return 0;
+    }
+    _record_login_attempt($self, $owner, 1);
+    return 1;
 }
 
 1;

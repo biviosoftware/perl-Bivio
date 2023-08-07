@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2012 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Biz::Model::UserLoginForm;
 use strict;
 use Bivio::Base 'Model.UserLoginBaseForm';
@@ -46,6 +45,11 @@ sub execute_ok {
         && !$self->unsafe_get('validate_called');
     return _su_logout($self)
         if !$realm && $req->is_substitute_user;
+    if ($realm && $realm->is_locked_out && !$req->is_substitute_user) {
+        b_warn('locked owner=', $self);
+        $self->throw_die('NOT_FOUND', {entity => $realm});
+        # DOES NOT RETURN
+    }
     _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
     _set_cookie_user($self, $req, $realm);
     return $res
@@ -132,12 +136,7 @@ sub _assert_realm {
     # Validates realm_owner is valid
     return undef
         unless my $realm = $self->get('realm_owner');
-    my($err) = $realm->is_offline_user ? "can't login as offline user"
-        : $realm->get('realm_type') != Bivio::Auth::RealmType->USER
-        ? "can't login as non-user"
-        : $realm->is_default ? "can't login as *the* USER realm"
-        : !$realm->has_valid_password ? "user's password is invalidated"
-        : '';
+    my($err) = $realm->validate_login_for_self;
     $self->throw_die('NOT_FOUND', {entity => $realm, message => $err})
         if $err;
     $self->internal_put_field(validate_called => 1);

@@ -1,5 +1,4 @@
-# Copyright (c) 2001-2012 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2001-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Util::SQL;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
@@ -631,6 +630,40 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_login_attempt {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE SEQUENCE login_attempt_s
+  MINVALUE 100013
+  CACHE 1 INCREMENT BY 100000
+/
+CREATE TABLE login_attempt_t (
+  login_attempt_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  login_attempt_state NUMERIC(1) NOT NULL,
+  ip_address CHAR(15),
+  CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
+)
+/
+ALTER TABLE login_attempt_t
+  ADD CONSTRAINT login_attempt_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX login_attempt_t3 ON login_attempt_t (
+  realm_id
+)
+/
+CREATE INDEX login_attempt_t4 ON login_attempt_t (
+  realm_id,
+  creation_date_time
+)
+/
+EOF
+    return;
+}
+
 sub is_oracle {
     my($self) = @_;
     # May not have a database at this point to connect to.
@@ -706,7 +739,7 @@ sub reinitialize_sequences {
 sub restore_dbms_dump {
     my($self, $dump, $extra_args) = @_;
     $self->usage_error($dump, ': missing or non existent dump file argument')
-	unless -r $dump;
+        unless -r $dump;
     $self->destroy_dbms;
     $self->commit_or_rollback;
     $self->init_dbms;

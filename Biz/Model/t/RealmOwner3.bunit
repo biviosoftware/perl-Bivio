@@ -1,0 +1,29 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+PropertyModel();
+my($uid) = Util_TestUser()->create(random_realm_name());
+my($ro) = unauth_model('RealmOwner', {realm_id => $uid});
+[
+    validate_login => [
+        $uid => [],
+        inline_case(sub {
+            $ro->update({password => Type_Password()->INVALID});
+        }),
+        $uid => 'NOT_FOUND',
+        inline_case(sub {
+            $ro->update({
+                name => Type_RealmName()->make_offline($ro->get('name')),
+            });
+            $ro->update_password(b_use('Biz.Random')->password);
+        }),
+        $uid => 'NOT_FOUND',
+        inline_case(sub {
+            $ro->update({
+                name => substr($ro->get('name'), 1),
+            });
+        }),
+        $uid => [],
+        user => 'NOT_FOUND',
+        site => 'NOT_FOUND',
+        somerealmname => 'NOT_FOUND',
+    ],
+];

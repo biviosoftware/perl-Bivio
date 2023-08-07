@@ -1,5 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2023 bivio Software, Inc.  All Rights Reserved.
 ShellUtil();
 my($uid);
 model('UserRealmSubscription')->unauth_delete({
@@ -56,5 +55,23 @@ model('UserRealmSubscription')->unauth_delete({
         });
         return 1;
     },
+    inline_case(sub {
+        $uid = ShellUtil_TestUser()->create(random_realm_name());
+        my($la) = model('LoginAttempt');
+        my($now) = Type_DateTime()->now;
+        for (1..5) {
+            $la->create({
+                realm_id => $uid,
+                login_attempt_state => Type_LoginAttemptState()->FAILURE,
+            });
+            $now = Type_DateTime()->set_test_now(Type_DateTime()->add_seconds($now, 1));
+        }
+        return $la->get('login_attempt_state')->eq_locked_out;
+    }),
+    sub {[-realm => $uid, -user => $uid, 'reset_login_attempts']} => sub {
+        my($la) = model('LoginAttempt');
+        return 0
+            if $la->unauth_load_last_locked_out(req(qw(auth_id)));
+        return $la->get('login_attempt_state')->eq_reset;
+    },
 ];
-

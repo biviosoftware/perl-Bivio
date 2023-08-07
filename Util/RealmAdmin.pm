@@ -1,5 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2002-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::RealmAdmin;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
@@ -27,6 +26,7 @@ commands:
     join_user roles... -- adds specified user role to realm
     leave_role -- remove one user role from a realm
     leave_user -- removes all user roles from realm
+    reset_login_attempts -- reset consecutive failed login attempt count for user
     reset_password password -- reset a user's password
     scan_realm_id [realm_id] -- checks for auth_id in all table fields
     subscribe_user_to_realm -- subscribe given user to given realm
@@ -237,6 +237,13 @@ sub leave_user {
     return;
 }
 
+sub reset_login_attempts {
+    my($self) = @_;
+    $self->assert_not_general;
+    $self->model('LoginAttempt')->reset_failure_count($self->req('auth_id'));
+    return;
+}
+
 sub reset_password {
     my($self, $password) = @_;
     # Changes a user's password.
@@ -412,6 +419,7 @@ sub _info {
             'location',
             {realm_id => $user->get('realm_id')},
         )},
+        $user->is_locked_out ? 'Is Locked Out' : (),
     );
 }
 
@@ -439,9 +447,8 @@ sub _validate_user {
     # Ensures the user is present, displays the are_you_sure using the
     # specified message.
     # Returns the user's realm.
+    $self->assert_have_user;
     my($req) = $self->get_request;
-    $self->usage_error("missing user")
-        unless $self->unsafe_get('user');
     $self->are_you_sure($message . ' for '
         . $req->get_nested(qw(auth_user display_name))
         . ' of '
