@@ -106,7 +106,7 @@ sub validate {
     my(undef, $delegator, $login, $password) = shift->delegated_args(@_);
     # Checks the form property values.  Puts errors on the fields
     # if there are any.
-    if (@_ == 3) {
+    if (defined($login) && defined($password)) {
         $delegator->internal_put_field(login => $login);
         $delegator->internal_put_field('RealmOwner.password' => $password);
     }
