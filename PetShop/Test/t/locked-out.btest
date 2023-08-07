@@ -21,6 +21,7 @@ my($trigger_locked_out) = sub {
     }
     $login_next_second->('logout.*pattern not found', $e, 'bad password');
     verify_text('User Account Locked');
+    verify_local_mail($e, 'locked your user account');
 };
 follow_menu_link(qw(sign_in new_user));
 submit_form(create => {
