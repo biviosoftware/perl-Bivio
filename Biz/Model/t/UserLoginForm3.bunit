@@ -1,0 +1,74 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 2,
+    },
+});
+my($uid) = Util_TestUser()->create(random_realm_name());
+# Have to commit as form processing will issue a rollback on error, preventing login attempts from
+# being recorded.
+commit();
+my($now) = Type_DateTime()->now;
+my($next_second) = sub {
+    $now = Type_DateTime()->set_test_now(Type_DateTime()->add_seconds($now, 1));
+};
+[
+    req_state({
+        task => 'LOGIN',
+    }),
+    error_case({
+        login => $uid,
+        'RealmOwner.password' => 'wrong password',
+    } => {
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    inline_commit(),
+    inline_case($next_second),
+    error_case({
+        login => $uid,
+        'RealmOwner.password' => 'wrong password',
+    } => {
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    inline_commit(),
+    inline_case($next_second),
+    error_case({
+        login => $uid,
+        'RealmOwner.password' => 'wrong password',
+    } => {
+        login => 'USER_LOCKED_OUT',
+    }),
+    error_case({
+        login => $uid,
+        # Right password, but it's too late
+        'RealmOwner.password' => 'password',
+    } => {
+        login => 'USER_LOCKED_OUT',
+    }),
+    inline_case(sub {
+        req()->with_realm_and_user($uid, $uid, sub {
+            Util_RealmAdmin()->reset_login_attempts();
+        });
+    }),
+    inline_case($next_second),
+    error_case({
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    } => {
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    inline_case(sub {
+        req()->with_realm_and_user($uid, $uid, sub {
+            Util_RealmAdmin()->reset_password('password');
+        });
+    }),
+    inline_case($next_second),
+    simple_case({
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    } => {
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    }),
+];

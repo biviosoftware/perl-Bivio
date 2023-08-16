@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2014 bivio Software, Inc.        All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2023 bivio Software, Inc.        All Rights Reserved.
 package Bivio::Delegate::TaskId;
 use strict;
 use Bivio::Base 'Type.EnumDelegate';
@@ -1594,6 +1593,7 @@ sub info_user_auth {
             Action.UserLogout
             Model.UserLoginForm
             View.UserAuth->login
+            locked_out_task=GENERAL_USER_LOCKED_OUT
             next=MY_SITE
             require_secure=1
         )],
@@ -1665,7 +1665,16 @@ sub info_user_auth {
             View.UserAuth->email_verify_mail
             View.UserAuth->email_verify_sent
         )],
-#97-99
+        [qw(
+            GENERAL_USER_LOCKED_OUT
+            98
+            GENERAL
+            ANYBODY
+            Action.UserLockedOut->execute_load_owner_email
+            View.UserAuth->user_locked_out_mail
+            View.UserAuth->user_locked_out
+        )],
+#99
     ];
 }
 

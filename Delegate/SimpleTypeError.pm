@@ -432,8 +432,12 @@ sub get_delegate_info {
         undef,
         'File names may not contain a leading dot.',
     ],
-    WEAK_PASSWORD => [
+    USER_LOCKED_OUT => [
         83,
+        # Description needs to come from facade because it should include a link to contact support.
+    ],
+    WEAK_PASSWORD => [
+        84,
         undef,
         'Password is similar to your name, email address, and/or common phrases. Please enter a unique password.',
     ],

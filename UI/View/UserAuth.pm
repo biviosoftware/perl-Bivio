@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::View::UserAuth;
 use strict;
 use Bivio::Base 'View.Base';
@@ -183,6 +182,14 @@ Link(URI({
 }));
 EOF
     );
+}
+
+sub user_locked_out_mail {
+    return shift->internal_mail;
+}
+
+sub user_locked_out {
+    return shift->internal_body('');
 }
 
 sub _password_fields {

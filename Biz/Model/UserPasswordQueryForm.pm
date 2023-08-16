@@ -1,5 +1,4 @@
-# Copyright (c) 2005-2012 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2005-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserPasswordQueryForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
@@ -82,6 +81,11 @@ sub validate_email_and_put_uri {
     my($ro) = $self->new_other('RealmOwner');
     if (my $err = $ro->validate_login($form->get('Email.email'))) {
         $form->internal_put_error('Email.email', $err);
+        return 0;
+    }
+    if ($ro->is_locked_out) {
+        b_warn('locked owner=', $self);
+        $form->internal_put_error('Email.email', 'USER_LOCKED_OUT');
         return 0;
     }
     $form->internal_put_field(

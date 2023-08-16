@@ -1027,6 +1027,24 @@ CREATE INDEX user_default_subscription_t5 ON user_default_subscription_t (
   user_id
 )
 /
+
+--
+-- login_attempt_t
+--
+ALTER TABLE login_attempt_t
+  ADD CONSTRAINT login_attempt_t2
+  FOREIGN KEY (realm_id)
+  REFERENCES realm_owner_t(realm_id)
+/
+CREATE INDEX login_attempt_t3 ON login_attempt_t (
+  realm_id
+)
+/
+CREATE INDEX login_attempt_t4 ON login_attempt_t (
+  realm_id,
+  creation_date_time
+)
+/
 EOF
 }
 
@@ -1106,8 +1124,13 @@ CREATE SEQUENCE failover_work_queue_s
   CACHE 1 INCREMENT BY 100000
 /
 
+CREATE SEQUENCE login_attempt_s
+  MINVALUE 100013
+  CACHE 1 INCREMENT BY 100000
+/
+
 --
--- 100013-14 available
+-- 100014 available
 --
 
 CREATE SEQUENCE ec_payment_s
@@ -1633,6 +1656,16 @@ CREATE TABLE user_default_subscription_t (
   subscribed_by_default NUMERIC(1) NOT NULL,
   modified_date_time DATE NOT NULL,
   CONSTRAINT user_default_subscription_t1 primary key(user_id, realm_id)
+)
+/
+
+CREATE TABLE login_attempt_t (
+  login_attempt_id NUMERIC(18) NOT NULL,
+  realm_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  login_attempt_state NUMERIC(1) NOT NULL,
+  ip_address CHAR(15),
+  CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
 )
 /
 EOF
