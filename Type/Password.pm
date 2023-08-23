@@ -1,22 +1,22 @@
-# Copyright (c) 1999-2007 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::Type::Password;
 use strict;
-use Bivio::Base 'Type.Name';
-use Bivio::TypeError;
-use Digest::SHA ();
+use Bivio::Base 'Type.Line';
+
+my($_HMACSHA512) = b_use('Type.PasswordHashHMACSHA512');
+my($_HASH_TYPES) = [
+    b_use('Type.PasswordHashCrypt'),
+    b_use('Type.PasswordHashHMACSHA1'),
+    $_HMACSHA512,
+];
+my($_SUPPORTED_HASH_TYPE) = {map(($_ => 1), @$_HASH_TYPES)};
 
 # C<Bivio::Type::Password> indicates the input is a password entry.
 # It should be handled with care, e.g. never displayed to user.
 
-my(@_SALT_CHARS) = (
-    'a'..'z',
-    'A'..'Z',
-    '0'..'9',
-);
-my($_SALT_INDEX_MAX) = int(@_SALT_CHARS) - 1;
-my($_CRYPT_VALID_LENGTH) = 13;
-my($_VALID_SHA_RE) = qr{^[a-z0-9+/]{29}$}ois;
+sub CURRENT_HASH_TYPE {
+    return $_HMACSHA512,
+}
 
 sub INVALID {
     # Returns invalid password (save literally!).
@@ -28,30 +28,33 @@ sub OTP_VALUE {
 }
 
 sub compare {
-    my($proto, $encrypted, $incoming) = @_;
+    my($proto, $hashed, $clear_text) = @_;
     return -1
-        unless defined($encrypted);
+        unless defined($hashed);
+    # Incoming clear text is never allowed to match stored OTP value and instead must be verified
+    # via the OTP module.
+    return -1
+        if $hashed eq $proto->OTP_VALUE;
     return 1
-        unless defined($incoming);
-    my($salt) = substr($encrypted, 0, 2);
-    my($i) = length($encrypted) == $_CRYPT_VALID_LENGTH
-        ? crypt($incoming, $salt)
-        : _encrypt($incoming, $salt);
-    return $encrypted cmp $i;
+        unless defined($clear_text);
+    return _to_hash_type_instance_or_die($hashed)->compare($clear_text);
 }
 
 sub encrypt {
-    my(undef, $password) = @_;
-    my($salt) = '';
-    for (my($i) = 0; $i < 2; $i++) {
-        $salt .= $_SALT_CHARS[int(rand($_SALT_INDEX_MAX) + 0.5)];
-    };
-    return _encrypt($password, $salt);
-
+    my($proto, $clear_text, $type) = @_;
+    $type ||= $proto->CURRENT_HASH_TYPE;
+    b_die("unsupported hash type=$type")
+        unless $_SUPPORTED_HASH_TYPE->{$type};
+    return $type->to_literal($clear_text);
 }
 
 sub get_min_width {
+    # Allow existing deprecated 6-7 character passwords.
     return 6;
+}
+
+sub get_width {
+    return 255;
 }
 
 sub is_otp {
@@ -68,17 +71,39 @@ sub is_secure_data {
 }
 
 sub is_valid {
-    my($proto, $value) = @_;
-    return $value && (
-        length($value) == $_CRYPT_VALID_LENGTH
-            || $value =~ $_VALID_SHA_RE
-            || $value eq $proto->OTP_VALUE
-    ) ? 1 : 0;
+    my($proto, $hashed, $expected_hash_type) = @_;
+    return 0
+        unless $hashed;
+    return 1
+        if $hashed eq $proto->OTP_VALUE;
+    my($hti) = _to_hash_type_instance($hashed);
+    if ($expected_hash_type) {
+        return $proto->is_blesser_of($hti, $expected_hash_type);
+    }
+    return $hti ? 1 : 0;
 }
 
-sub _encrypt {
-    my($clear, $salt) = @_;
-    return $salt . Digest::SHA::hmac_sha1_base64($clear, $salt);
+sub needs_upgrade {
+    my($proto, $hashed) = @_;
+    return 0
+        if $hashed eq $proto->OTP_VALUE;
+    return $proto->CURRENT_HASH_TYPE->is_blesser_of(_to_hash_type_instance_or_die($hashed)) ? 0 : 1;
+}
+
+sub _to_hash_type_instance {
+    my($hashed) = @_;
+    foreach my $type (@$_HASH_TYPES) {
+        my($hti, $error) = $type->from_literal($hashed);
+        return $hti
+            unless $error;
+    }
+    return;
+}
+
+sub _to_hash_type_instance_or_die {
+    my($hashed) = @_;
+    return _to_hash_type_instance($hashed)
+        || b_die('invalid password hash=', $hashed);
 }
 
 1;

@@ -184,6 +184,7 @@ sub _validate {
         if $owner->is_locked_out;
     return
         unless _validate_login_attempt($self, $owner);
+    $owner->maybe_upgrade_password($self->get('RealmOwner.password'));
     $self->internal_put_field(validate_called => 1);
     return;
 }

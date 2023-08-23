@@ -1,9 +1,9 @@
-# Copyright (c) 2003-2007 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2003-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserPasswordForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
+my($_P) = b_use('Type.Password');
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
@@ -29,14 +29,14 @@ sub internal_initialize {
         require_context => 1,
         $self->field_decl(
             visible => [
-                [old_password => undef, 'NONE'],
-                qw(new_password confirm_new_password),
+                [qw(old_password Password NONE)],
+                [qw(new_password NewPassword NOT_NULL)],
+                [qw(confirm_new_password ConfirmPassword NOT_NULL)],
             ],
             hidden => [
-                [qw(display_old_password  Boolean)],
-                [query_password => undef, 'NONE'],
+                [qw(display_old_password Boolean)],
+                [qw(query_password Text NONE)],
             ],
-            'Password', 'NOT_NULL',
         ),
     });
 }
@@ -57,16 +57,20 @@ sub internal_pre_execute {
 }
 
 sub internal_validate_new {
+    my($self) = @_;
+    if (my $err = $self->req(qw(auth_realm owner))->validate_password($self->get('new_password'))) {
+        $self->internal_put_error(new_password => $err);
+    }
     return;
 }
 
 sub internal_validate_old {
     my($self) = @_;
     return $self->internal_put_error(qw(old_password PASSWORD_MISMATCH))
-        unless $self->use('Type.Password')->is_equal(
+        unless $_P->is_equal(
             $self->req(qw(auth_realm owner password)),
             $self->get('old_password'),
-    );
+        );
     return 1;
 }
 

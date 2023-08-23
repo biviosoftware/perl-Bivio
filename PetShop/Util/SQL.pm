@@ -148,7 +148,7 @@ sub create_user_with_account {
         'Address.zip' => '80304',
         'Address.country' => 'US',
         'Phone.phone' => '555-1212',
-        'RealmOwner.password' => $self->PASSWORD,
+        'new_password' => $self->PASSWORD,
         force_create => 1,
     });
     # test accounts have real names, for ease of logging in

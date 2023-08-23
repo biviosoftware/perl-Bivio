@@ -199,6 +199,13 @@ sub is_offline_user {
         $model->get($model_prefix . 'name'));
 }
 
+sub maybe_upgrade_password {
+    my($self, $clear_text) = @_;
+    return $self
+        if $self->require_otp || !$_P->needs_upgrade($self->get('password'));
+    return $self->update_password($clear_text);
+}
+
 sub require_otp {
     my($self) = @_;
     return $self->get_field_type('password')->is_otp($self->get('password'));
@@ -337,6 +344,13 @@ sub update_password {
     });
 }
 
+sub validate_login {
+    my($self, $login) = @_;
+    return 'NOT_FOUND'
+        unless $self->unauth_load_by_email_id_or_name($login);
+    return $self->validate_login_for_self;
+}
+
 sub validate_login_for_self {
     my($self) = @_;
     my($err) = $self->is_offline_user ? 'is_offline_user'
@@ -349,11 +363,37 @@ sub validate_login_for_self {
     return 'NOT_FOUND';
 }
 
-sub validate_login {
-    my($self, $login) = @_;
-    return 'NOT_FOUND'
-        unless $self->unauth_load_by_email_id_or_name($login);
-    return $self->validate_login_for_self;
+sub validate_password {
+    my($self, $clear_text) = @_;
+    my($t) = _canonicalize_for_weak_password($clear_text);
+    return 'WEAK_PASSWORD'
+        if $t eq _canonicalize_for_weak_password($self->get('display_name'))
+        || $t eq _canonicalize_for_weak_password($self->get('name'))
+        || $t eq $self->get('realm_id')
+        || _similar_to_email($self, $t);
+    return;
+}
+
+sub _canonicalize_for_weak_password {
+    my($value) = @_;
+    $value =~ s/[^a-z0-9]//ig;
+    $value = lc($value);
+    return $value;
+}
+
+sub _similar_to_email {
+    my($self, $canonical_value) = @_;
+    my($similar) = 0;
+    $self->new_other('Email')->set_ephemeral->do_iterate(sub {
+        my($it) = @_;
+        my($email) = _canonicalize_for_weak_password($it->get('email'));
+        if (index($email, $canonical_value) >= 0 || index($canonical_value, $email) >= 0) {
+            $similar = 1;
+            return 0;
+        }
+        return 1;
+    }, 'unauth_iterate_start', {realm_id => $self->get('realm_id')});
+    return $similar;
 }
 
 sub _unauth_load {

@@ -1,5 +1,4 @@
-# Copyright (c) 2005-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2005-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserRegisterForm;
 use strict;
 use Bivio::Base 'Model.UserCreateForm';
@@ -43,8 +42,8 @@ sub internal_create_models {
             $self->get_instance('User')->get_field_type('last_name')->get_width,
          ),
     ) unless $self->unsafe_get('RealmOwner.display_name');
-    $self->internal_put_field('RealmOwner.password' => $_BR->password)
-        unless $self->unsafe_get('RealmOwner.password')
+    $self->internal_put_field('new_password' => $_BR->password)
+        unless $self->unsafe_get('new_password')
         && $self->unsafe_get('password_ok');
     return shift->SUPER::internal_create_models(@_);
 }
@@ -66,7 +65,8 @@ sub internal_initialize {
         ],
         other => [
             {
-                name => 'RealmOwner.password',
+                name => 'new_password',
+                type => 'NewPassword',
                 constraint => 'NONE',
             },
             $self->field_decl([[qw(uri String)]]),

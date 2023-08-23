@@ -630,35 +630,11 @@ EOF
     return;
 }
 
-sub internal_upgrade_db_login_attempt {
+sub internal_upgrade_db_password_length {
     my($self) = @_;
     $self->run(<<'EOF');
-CREATE SEQUENCE login_attempt_s
-  MINVALUE 100013
-  CACHE 1 INCREMENT BY 100000
-/
-CREATE TABLE login_attempt_t (
-  login_attempt_id NUMERIC(18) NOT NULL,
-  realm_id NUMERIC(18) NOT NULL,
-  creation_date_time DATE NOT NULL,
-  login_attempt_state NUMERIC(1) NOT NULL,
-  ip_address CHAR(15),
-  CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
-)
-/
-ALTER TABLE login_attempt_t
-  ADD CONSTRAINT login_attempt_t2
-  FOREIGN KEY (realm_id)
-  REFERENCES realm_owner_t(realm_id)
-/
-CREATE INDEX login_attempt_t3 ON login_attempt_t (
-  realm_id
-)
-/
-CREATE INDEX login_attempt_t4 ON login_attempt_t (
-  realm_id,
-  creation_date_time
-)
+ALTER TABLE realm_owner_t
+    ALTER COLUMN password TYPE VARCHAR(255)
 /
 EOF
     return;

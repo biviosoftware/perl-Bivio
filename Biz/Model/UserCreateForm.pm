@@ -1,13 +1,12 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2002-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserCreateForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 use Bivio::IO::Trace;
 b_use('IO.ClassLoaderAUTOLOAD');
 
-my($_DN) = b_use('Type.DisplayName');
 my($_A) = b_use('IO.Alert');
+my($_DN) = b_use('Type.DisplayName');
 my($_GUEST) = b_use('Auth.Role')->GUEST;
 my($_USER) = $_GUEST->USER;
 my($_C) = b_use('IO.Config');
@@ -62,7 +61,10 @@ sub internal_create_models {
     my($req) = $self->get_request;
     my($user, $realm) = $self->new_other('User')->create_realm(
         $self->parse_to_names('RealmOwner.display_name') || return,
-        $self->get_model_properties('RealmOwner'),
+        {
+            %{$self->get_model_properties('RealmOwner')},
+            password => $self->unsafe_get('new_password'),
+        },
     );
     $self->internal_put_field('User.user_id' => $user->get('user_id'));
     my($e) = $self->new_other('Email');
@@ -74,6 +76,8 @@ sub internal_create_models {
         want_bulletin => defined($params->{'Email.want_bulletin'})
             ? $params->{'Email.want_bulletin'} : 1,
     }) unless ($self->unsafe_get('Email.email') || '') eq $et->IGNORE_PREFIX;
+    return
+        unless $self->internal_validate_realm_owner_password($realm);
     $self->join_site_admin_realm
         if $_C->if_version(10);
     return ($realm, $user);
@@ -87,10 +91,14 @@ sub internal_initialize {
         visible => [
             'RealmOwner.display_name',
             'Email.email',
-            'RealmOwner.password',
+            {
+                name => 'new_password',
+                type => 'NewPassword',
+                constraint => 'NOT_NULL',
+            },
             {
                 name => 'confirm_password',
-                type => 'Password',
+                type => 'ConfirmPassword',
                 constraint => 'NOT_NULL',
             },
         ],
@@ -103,6 +111,19 @@ sub internal_initialize {
             )], 'Boolean'),
         ],
     });
+}
+
+sub internal_validate_realm_owner_password {
+    my($self, $realm_owner) = @_;
+    $realm_owner ||= $self->ureq(qw(auth_realm owner)) || b_die('realm owner required');
+    # Disallow old field name
+    b_die('use new_password')
+        if $self->unsafe_get('RealmOwner.password');
+    if (my $err = $realm_owner->validate_password($self->unsafe_get('new_password') // '')) {
+        $self->internal_put_error('new_password' => $err);
+        return 0;
+    }
+    return 1;
 }
 
 sub join_site_admin_realm {
@@ -144,11 +165,10 @@ sub parse_to_names {
 
 sub validate {
     my($self) = @_;
-    $self->internal_put_error('RealmOwner.password', 'CONFIRM_PASSWORD')
-        unless $self->get_field_error('RealmOwner.password')
+    $self->internal_put_error('new_password', 'CONFIRM_PASSWORD')
+        unless $self->get_field_error('new_password')
             || $self->get_field_error('confirm_password')
-            || $self->get('RealmOwner.password')
-                eq $self->get('confirm_password');
+            || $self->get('new_password') eq $self->get('confirm_password');
     return;
 }
 

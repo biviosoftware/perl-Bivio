@@ -1,5 +1,4 @@
-# Copyright (c) 2000-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2000-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::PetShop::Facade::PetShop;
 use strict;
 use Bivio::Base 'UI.FacadeBase';
@@ -226,6 +225,7 @@ __PACKAGE__->new({
             ok_button => 'Add to Cart',
         ]],
         [UserAccountForm => [
+            new_password => 'Password',
             ok_button => q{If(['auth_user_id'], 'Update MyAccount', 'Create MyAccount');},
         ]],
         [UserPasswordForm => [

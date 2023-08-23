@@ -1,5 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserOTPForm;
 use strict;
 use Bivio::Base 'Model.UserPasswordForm';
@@ -50,6 +49,7 @@ sub internal_pre_execute {
 
 sub internal_validate_new {
     my($self) = @_;
+    # Not calling super as new password isn't a regular password
     my($otp) = Bivio::Biz::RFC2289->canonical_hex($self->get('new_password'));
     unless ($otp) {
         $self->internal_put_field(new_password => undef);

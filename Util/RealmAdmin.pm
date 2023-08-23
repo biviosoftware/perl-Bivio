@@ -56,7 +56,7 @@ sub create_user {
     return $self->model(UserCreateForm => {
         'Email.email' => $email,
         'RealmOwner.display_name' => $display_name,
-        'RealmOwner.password' => $password,
+        new_password => $password,
         confirm_password => $password,
         'RealmOwner.name' => $user_name,
     })->get('User.user_id');

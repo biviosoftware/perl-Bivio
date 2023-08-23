@@ -1,0 +1,58 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+my($display_name) = 'Some User';
+my($email) = email('some_user');
+[
+    error_case({
+        'RealmOwner.display_name' => $display_name,
+        'Email.email' => $email,
+        new_password => 'password1',
+        confirm_password => 'password2',
+    } => {
+        new_password => 'CONFIRM_PASSWORD',
+    }),
+    error_case({
+        'RealmOwner.display_name' => $display_name,
+        'Email.email' => $email,
+        new_password => 'pass',
+        confirm_password => 'pass',
+    } => {
+        new_password => 'TOO_SHORT',
+    }),
+    # Confirm deprecated 6-7 character passwords are no longer allowed for new passwords
+    error_case({
+        'RealmOwner.display_name' => $display_name,
+        'Email.email' => $email,
+        new_password => 'passwd',
+        confirm_password => 'passwd',
+    } => {
+        new_password => 'TOO_SHORT',
+    }),
+    error_case({
+        'RealmOwner.display_name' => $display_name,
+        'Email.email' => $email,
+        new_password => $email,
+        confirm_password => $email,
+    } => {
+        new_password => 'WEAK_PASSWORD',
+    }),
+    error_case({
+        'RealmOwner.display_name' => $display_name,
+        'Email.email' => $email,
+        new_password => $display_name,
+        confirm_password => $display_name,
+    } => {
+        new_password => 'WEAK_PASSWORD',
+    }),
+    simple_case({
+        'RealmOwner.display_name' => $display_name,
+        'Email.email' => $email,
+        new_password => 'password',
+        confirm_password => 'password',
+    } => {
+        'RealmOwner.display_name' => $display_name,
+        'Email.email' => $email,
+        new_password => 'password',
+        confirm_password => 'password',
+    }),
+];

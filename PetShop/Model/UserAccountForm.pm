@@ -1,5 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2001-2023 bivio Software, Inc.  All rights reserved.
 package Bivio::PetShop::Model::UserAccountForm;
 use strict;
 use Bivio::Base 'Model.UserCreateForm';
@@ -20,6 +19,8 @@ sub execute_ok {
     my($self) = @_;
     return shift->SUPER::execute_ok(@_)
         unless _is_editing($self);
+    return
+        unless $self->internal_validate_realm_owner_password;
     _do_models(
         $self,
         sub {shift->update($self->get_model_properties(shift))},
@@ -48,10 +49,20 @@ sub internal_initialize {
             'Address.zip',
             'Address.country',
             'Phone.phone',
-            map(+{
-                name => $_,
+            {
+                name => 'RealmOwner.display_name',
                 constraint => 'NONE',
-            }, qw(RealmOwner.password RealmOwner.display_name confirm_password)),
+            },
+            {
+                name => 'new_password',
+                type => 'NewPassword',
+                constraint => 'NONE',
+            },
+            {
+                name => 'confirm_password',
+                type => 'ConfirmPassword',
+                constraint => 'NONE',
+            },
         ],
         other => [
             {
@@ -72,7 +83,7 @@ sub parse_to_names {
 sub validate {
     my($self) = @_;
     # Ensures password is valid if required.
-    $self->validate_not_null('RealmOwner.password')
+    $self->validate_not_null('new_password')
         unless _is_editing($self);
     return;
 }
@@ -81,6 +92,8 @@ sub internal_create_models {
     my($self) = shift;
     $self->internal_put_field('RealmOwner.display_name', '');
     my($realm, @rest) = $self->SUPER::internal_create_models(@_);
+    return
+        if $self->in_error;
     $self->req->set_realm($realm);
     foreach my $model (qw(Address Phone)) {
         $self->new_other($model)->create({
