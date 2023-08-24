@@ -115,11 +115,14 @@ sub internal_initialize {
 
 sub internal_validate_realm_owner_password {
     my($self, $realm_owner) = @_;
-    $realm_owner ||= $self->ureq(qw(auth_realm owner)) || b_die('realm owner required');
     # Disallow old field name
     b_die('use new_password')
         if $self->unsafe_get('RealmOwner.password');
-    if (my $err = $realm_owner->validate_password($self->unsafe_get('new_password') // '')) {
+    # Allow internal execution of this form without setting a password
+    return 1
+        unless my $pw = $self->unsafe_get('new_password');
+    $realm_owner ||= $self->ureq(qw(auth_realm owner)) || b_die('realm owner required');
+    if (my $err = $realm_owner->validate_password($pw)) {
         $self->internal_put_error('new_password' => $err);
         return 0;
     }
