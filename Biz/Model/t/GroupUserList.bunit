@@ -6,7 +6,7 @@ req()->initialize_fully('GROUP_USER_LIST');
 model('RealmUserAddForm', {
     'Email.email' => email('delete'),
     'RealmOwner.display_name' => 'Bunit_deleted User',
-    'RealmOwner.password' => 'password',
+    'new_password' => 'password',
 });
 foreach my $args (
     [qw(leave_user)],

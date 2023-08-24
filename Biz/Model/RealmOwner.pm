@@ -365,6 +365,8 @@ sub validate_login_for_self {
 
 sub validate_password {
     my($self, $clear_text) = @_;
+    b_die('missing password')
+        unless defined($clear_text) && length($clear_text);
     my($t) = _canonicalize_for_weak_password($clear_text);
     return 'WEAK_PASSWORD'
         if $t eq _canonicalize_for_weak_password($self->get('display_name'))
