@@ -109,7 +109,7 @@ sub merge_users {
     foreach my $property (@{_get_related_property_names($self)}) {
         next if $property eq 'User.user_id';
          my($model, $field) = $property =~ /(.*)\.(.*)/;
-        next if $model eq 'RealmFile';
+        next if $model eq 'RealmFile' || $model eq 'LoginAttempt';
         $self->model($model)->do_iterate(sub {
             my($m) = @_;
 

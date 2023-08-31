@@ -27,8 +27,12 @@ my($ids) = [map({
         return 1;
     },
     [create_from_email => $email, 'yyyyyy'] => sub {
+        my($uid) = req(qw(Model.User user_id));
+        req()->with_realm($uid, sub {
+            b_use('ShellUtil.RealmAdmin')->new->reset_login_attempts;
+        });
         b_use('ShellUtil.User')->new->put(force => 1)
-            ->merge_users(req(qw(Model.User user_id)), $ids->[0]);
+            ->merge_users($uid, $ids->[0]);
         return 1;
     },
 #TODO: removed this, breakouts all other tests which depend on demo user
