@@ -17,6 +17,7 @@ b_use('IO.Config')->register(my $_CFG = {
     # Deliver in background so errors are sent via e-mail
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
     allow_resend_from => [],
+    force_rewrite_from => [],
     in_btest => 0,
 });
 #TODO: get rid of global state - put it on the request instead
@@ -101,10 +102,12 @@ sub handle_config {
         b_die($cfg->{errors_to}, ': invalid errors_to');
     }
     $_CFG = $cfg;
-    my($v) = $cfg->{allow_resend_from} ||= [];
-    $cfg->{allow_resend_from_re} = @$v
-        ? qr{[\@\.](?:@{[join('|', @$v)]})$}is
-        : undef;
+    foreach my $c (qw(allow_resend_from force_rewrite_from)) {
+        my($v) = $cfg->{$c} ||= [];
+        $cfg->{$c . '_re'} = @$v
+            ? qr{[\@\.](?:@{[join('|', @$v)]})$}is
+            : undef;
+    }
     return;
 }
 

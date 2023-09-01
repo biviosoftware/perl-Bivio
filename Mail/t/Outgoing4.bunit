@@ -1,52 +1,31 @@
 # Copyright (c) 2017 bivio Software, Inc.  All rights reserved.
 # $Id$
 Request('initialize_fully');
-my($resend_domain1) = 'allow.resend.from1';
-my($resend_domain2) = 'allow.resend.from2';
+my($resend_domain) = 'no.dmarc.no.spf.force';
+my($rewrite_domain1) = "$resend_domain.force.rewrite1";
+my($rewrite_domain2) = "$resend_domain.force.rewrite2";
 config({
     'Bivio::Mail::Common' => {
         # read input until EOF, and ignore command line args
         sendmail => 'sh -c "cat >& /dev/null" -s > /dev/null',
-        allow_resend_from => [$resend_domain1, $resend_domain2],
+        force_rewrite_from => [$rewrite_domain1, $rewrite_domain2],
     },
 });
 my($_USER) = 'bunit@bivio.biz';
 
-my($_ALLOW_FROM1) = <<"EOF";
+my($_ALLOW_FROM) = <<"EOF";
 Message-ID: <123\@example.com>
-From: Any User <any_user\@$resend_domain1>
+From: Any User <any_user\@$resend_domain>
 Date: Thu, 1 Jul 1999 09:33:35 -0400
 
 body
 EOF
 
-(my $_ALLOW_FROM2 = $_ALLOW_FROM1) =~ s/$resend_domain1/$resend_domain2/;
-(my $_NOT_ALLOW_FROM = $_ALLOW_FROM1) =~ s/$resend_domain1/not.allow.resend/;
+(my $_FORCE_REWRITE_FROM1 = $_ALLOW_FROM) =~ s/$resend_domain/$rewrite_domain1/;
+(my $_FORCE_REWRITE_FROM2 = $_ALLOW_FROM) =~ s/$resend_domain/$rewrite_domain2/;
 
 [
-    [Bivio::Mail::Incoming->new(\$_ALLOW_FROM1)] => [
-        set_recipients => [
-            [$_USER, req()] => undef,
-        ],
-        send => [
-            [req()] => undef,
-        ],
-        unsafe_get_header => [
-            from => qr{^Any User <any_user\@$resend_domain1>$},
-        ],
-    ],
-    [Bivio::Mail::Incoming->new(\$_ALLOW_FROM2)] => [
-        set_recipients => [
-            [$_USER, req()] => undef,
-        ],
-        send => [
-            [req()] => undef,
-        ],
-        unsafe_get_header => [
-            from => qr{^Any User <any_user\@$resend_domain2>$},
-        ],
-    ],
-    [Bivio::Mail::Incoming->new(\$_NOT_ALLOW_FROM)] => [
+    [Bivio::Mail::Incoming->new(\$_FORCE_REWRITE_FROM1)] => [
         set_recipients => [
             [$_USER, req()] => undef,
         ],
@@ -55,6 +34,28 @@ EOF
         ],
         unsafe_get_header => [
             from => qr{^"Any User via \S+ <ignore-.*>$},
+        ],
+    ],
+    [Bivio::Mail::Incoming->new(\$_FORCE_REWRITE_FROM2)] => [
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^"Any User via \S+ <ignore-.*>$},
+        ],
+    ],
+    [Bivio::Mail::Incoming->new(\$_ALLOW_FROM)] => [
+        set_recipients => [
+            [$_USER, req()] => undef,
+        ],
+        send => [
+            [req()] => undef,
+        ],
+        unsafe_get_header => [
+            from => qr{^Any User <any_user\@$resend_domain>$},
         ],
     ],
 ];

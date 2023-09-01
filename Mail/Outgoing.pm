@@ -403,7 +403,10 @@ sub _rewrite_from {
     if ($cfg->{in_btest}) {
         return 1;
     }
-    if ($cfg->{allow_resend_from_re}) {
+    if ($cfg->{force_rewrite_from_re} && $old_email =~ $cfg->{force_rewrite_from_re}) {
+        # Fall through to rewrite below
+    }
+    elsif ($cfg->{allow_resend_from_re}) {
         if ($old_email =~ $cfg->{allow_resend_from_re}) {
             return 1;
         }
