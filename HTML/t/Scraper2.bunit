@@ -16,7 +16,10 @@ config({
                  login => sub {
                      assert_equals($expect, -f "$tmp/login.html" || 0);
                      return 1;
-                 }
+                 },
+                 inline_case(sub {
+                     rm_rf($tmp);
+                 }),
             ];
         }
         0 .. 1,

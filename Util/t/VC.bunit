@@ -22,4 +22,7 @@ IO_File()->chdir($tmp);
         $ENV{BIVIO_UTIL_VC_ROOT} = IO_File()->absolute_path('perl');
         return [qw(u_checkout Cal54)];
     } => [],
+    inline_case(sub {
+        rm_rf($tmp);
+    }),
 ];

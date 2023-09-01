@@ -1,10 +1,14 @@
 # Copyright (c) 2011 CAL54, Inc.  All Rights Reserved.
 # $Id$
 ShellUtil();
-IO_File()->chdir(tmp_dir());
+my($dir) = tmp_dir();
+IO_File()->chdir($dir);
 [
     [qw(self_signed_crt domain1.com)] => not_die(),
     [qw(read_crt domain1.com.crt)] => qr{CN=domain1.com},
     [qw(self_signed_mdc mdc domain2.com domain3.com)] => not_die(),
     [qw(read_crt mdc.crt)] => qr{CN=mdc.*DNS:domain2.com, DNS:domain3.com}s,
+    inline_case(sub {
+        rm_rf($dir);
+    }),
 ];

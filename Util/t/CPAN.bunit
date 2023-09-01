@@ -41,4 +41,7 @@ config({
             },
         ],
     ],
+    inline_case(sub {
+        rm_rf($tmp);
+    }),
 ];

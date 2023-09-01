@@ -27,4 +27,7 @@ my($ctre) = Type_CacheTag()->REGEX;
             } => 'url(/missing-image)',
         ],
     ],
+    inline_case(sub {
+        rm_rf($root);
+    }),
 ];

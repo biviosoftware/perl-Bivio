@@ -10,4 +10,7 @@ write_file("$root/20080229123456", '');
     [trim_directories => $root, 30] => [],
     [trim_directories => $root, 4] => "Removed: $root/20080228 $root/20080229",
     [trim_directories => $root, 2] => "Removed: $root/20080229123456 $root/20080301",
+    inline_case(sub {
+        rm_rf($root);
+    }),
 ];

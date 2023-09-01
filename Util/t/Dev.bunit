@@ -22,4 +22,7 @@ $ENV{HOME} = $dir;
             },
         ],
     ],
+    inline_case(sub {
+        rm_rf($dir);
+    }),
 ];
