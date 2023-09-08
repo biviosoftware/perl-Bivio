@@ -95,4 +95,7 @@ END
         );
         return 1;
     },
+    inline_case(sub {
+        rm_rf($tmp);
+    }),
 ];

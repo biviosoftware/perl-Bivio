@@ -1,9 +1,10 @@
 # Copyright (c) 2005-2006 bivio Software, Inc.  All rights reserved.
 # $Id$
 Request('initialize_fully');
+my($tmp) = tmp_dir();
 config({
     class() => my $cfg = {map(
-        ($_ . '_file' => tmp_dir() . "/$_"),
+        ($_ . '_file' => $tmp . "/$_"),
         qw(status loadavg),
     )},
 });
@@ -31,4 +32,7 @@ config({
             2 => '',
         ],
     ],
+    inline_case(sub {
+        rm_rf($tmp);
+    }),
 ];

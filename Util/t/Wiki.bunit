@@ -13,4 +13,7 @@ options({
 });
 [
     map(([from_xhtml => $_] => []), glob("$tmp/*.html")),
+    inline_case(sub {
+        rm_rf($tmp);
+    }),
 ];
