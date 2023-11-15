@@ -27,10 +27,6 @@ my($net2) = '2.3.4.24/29';
 				'mail',
 				[qw(mail.other.com. 20)],
 			    ],
-			    dkim1 => {
-				host => 'mydkimhost._domainkey',
-				p => 'PXWifNHWcbJ8y/Q1AQAB',
-			    },
 			}],
 		    ],
 		    25 => [
@@ -52,6 +48,9 @@ my($net2) = '2.3.4.24/29';
 		ftp => 'www',
 		alias => 'example.other.com.',
 	    },
+            dkim1 => {
+                'mydkimhost._domainkey' => 'PXWifNHWcbJ8y/Q1AQAB',
+            },
 	    txt => {
                 'key1' => 'value1',
 	    },

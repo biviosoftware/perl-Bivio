@@ -64,7 +64,6 @@ sub _local_cfg {
         refresh => '1D',
         retry => '1D',
         spf1 => undef,
-        dkim1 => undef,
         ttl => '1D',
     };
     my($net) = '127.0.0.0/31';
@@ -80,7 +79,6 @@ sub _local_cfg {
                     ['@', {
                         mx => undef,
                         spf1 => undef,
-                        dkim1 => undef,
                         ptr => 1,
                     }],
                 ],
@@ -266,23 +264,18 @@ sub _zone_a {
 }
 
 sub _zone_cname {
-    return _zone_literal('cname', @_);
+    return _zone_literal('cname', undef, undef, @_);
 }
 
 sub _zone_dkim1 {
-    return _zone_ipv4_map(
-        @_,
+    return _zone_literal(
+        'dkim1',
+        'txt',
         sub {
-            my($host, $host_cfg, $ip) = @_;
-            return
-                unless my $dkim = $host_cfg->{dkim1};
-            return join(
-                ' ',
-                $dkim->{host},
-                'IN TXT',
-                '"v=DKIM1\\; k=rsa\\; p=' . $dkim->{p} . '\\;"',
-            );
+            my($value) = @_;
+            qq{"v=DKIM1; k=rsa; p=$value;"},
         },
+        @_,
     );
 }
 
@@ -376,13 +369,14 @@ sub _zone_ipv4_map_op {
 }
 
 sub _zone_literal {
-    my($which, $zone, $cfg) = @_;
-    my($values) = $cfg->{$which} || [];
-    $values = [map([$_ => $values->{$_}], sort(keys(%$values)))]
+    my($cfg_which, $dns_which, $op, $zone, $cfg) = @_;
+    my($values) = $cfg->{$cfg_which} || [];
+    $op ||= sub {shift};
+    $values = [map([$_ => $op->($values->{$_})], sort(keys(%$values)))]
         if ref($values) eq 'HASH';
-    $which = uc($which);
+    my($w) = uc($dns_which || $cfg_which);
     return map(
-        "$_->[0] IN $which $_->[1]",
+        "$_->[0] IN $w $_->[1]",
         @$values,
     );
 }
@@ -439,11 +433,11 @@ sub _zone_spf1 {
 }
 
 sub _zone_srv {
-    return _zone_literal('srv', @_);
+    return _zone_literal('srv', undef, undef, @_);
 }
 
 sub _zone_txt {
-    return _zone_literal('txt', @_);
+    return _zone_literal('txt', undef, undef, @_);
 }
 
 1;
