@@ -270,7 +270,12 @@ sub is_duplicate {
     my($self, $req) = @_;
     my($res) = 0;
     my($count) = 0;
-    my($body, $date_time) = ($self->get_body, $self->get_date_time);
+    my($headers, $body, $date_time) = (
+        $self->get_headers,
+        $self->get_body,
+        $self->get_date_time,
+    );
+    my($cfg) = $self->internal_get_config;
     b_use('Model.RealmMail')->new($req)->set_ephemeral->do_iterate(
         sub {
             my($rm) = @_;
@@ -281,8 +286,15 @@ sub is_duplicate {
                     $date_time,
                     $rf->get('modified_date_time')
                 )) > 3600;
-            
-            if ($self->new($rf->get_content)->get_body eq $body) {
+            my($mi) = $self->new($rf->get_content);
+            my($mih) = $mi->get_headers;
+            if (
+                $mi->get_body eq $body
+                && ($cfg->{dedup_ignores_recipients} || (
+                    $mih->{to} eq $headers->{to}
+                    && ($mih->{cc} // '') eq ($headers->{cc} // '')
+                )),
+            ) {
                 $res = 1;
                 return 0;
             }

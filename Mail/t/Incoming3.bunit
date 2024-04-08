@@ -11,15 +11,16 @@ my($create_mail) = sub {
 };
 
 my($create_rfc) = sub {
-    my($date, $body) = @_;
+    my($date, $body, $to, $cc) = @_;
     $date ||= 'Wed, 26 Oct 2005 04:19:47 EDT';
     $body ||= 'any body';
+    $to ||= 'mail_forum@localhost.localdomain';
     my($email) = unauth_model(Email => {
         realm_id => req('auth_user_id'),
     })->get('email');
     return <<"EOF",
 From: $email
-To: mail_forum\@localhost.localdomain
+To: $to@{[$cc ? qq(\nCc: $cc) : q()]}
 Subject: msg
 Date: $date
 Message-ID: <m\@m>
@@ -33,6 +34,8 @@ my($msgs) = [
     $create_rfc->('Wed, 26 Oct 2005 05:19:47 EDT'),
     $create_rfc->('Wed, 26 Oct 2005 05:19:48 EDT'),
     $create_rfc->(undef, 'a different body'),
+    $create_rfc->(undef, undef, 'mail_forum2@localhost.localdomain'),
+    $create_rfc->(undef, undef, undef, 'mail_forum3@localhost.localdomain'),
 ];
 
 [
@@ -46,6 +49,12 @@ my($msgs) = [
         is_duplicate => 0,
     ],
     [$msgs->[3]] => [
+        is_duplicate => 0,
+    ],
+    [$msgs->[4]] => [
+        is_duplicate => 0,
+    ],
+    [$msgs->[5]] => [
         is_duplicate => 0,
     ],
     inline_case(
@@ -66,12 +75,26 @@ my($msgs) = [
     [$msgs->[3]] => [
         is_duplicate => 0,
     ],
-    inline_case(
-        sub {
-            $create_mail->($msgs->[3]);
-            return 1;
-        },
-    ),
+    [$msgs->[4]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[5]] => [
+        is_duplicate => 1,
+    ],
+    inline_case(sub {
+        config({
+            'Bivio::Mail::Common' => {
+                dedup_ignores_recipients => 0,
+            },
+        }),
+    }),
+    [$msgs->[4]] => [
+        is_duplicate => 0,
+    ],
+    inline_case(sub {
+        $create_mail->($msgs->[3]);
+        return 1;
+    }),
     [$msgs->[0]] => [
         is_duplicate => 1,
     ],
@@ -82,6 +105,56 @@ my($msgs) = [
         is_duplicate => 0,
     ],
     [$msgs->[3]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[4]] => [
+        is_duplicate => 0,
+    ],
+    [$msgs->[5]] => [
+        is_duplicate => 0,
+    ],
+    inline_case(sub {
+        $create_mail->($msgs->[4]);
+        return 1;
+    }),
+    [$msgs->[0]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[1]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[2]] => [
+        is_duplicate => 0,
+    ],
+    [$msgs->[3]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[4]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[5]] => [
+        is_duplicate => 0,
+    ],
+    inline_case(sub {
+        $create_mail->($msgs->[5]);
+        return 1;
+    }),
+    [$msgs->[0]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[1]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[2]] => [
+        is_duplicate => 0,
+    ],
+    [$msgs->[3]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[4]] => [
+        is_duplicate => 1,
+    ],
+    [$msgs->[5]] => [
         is_duplicate => 1,
     ],
 ];

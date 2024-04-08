@@ -18,6 +18,7 @@ b_use('IO.Config')->register(my $_CFG = {
     sendmail => '/usr/sbin/sendmail -oem -odb -i',
     allow_resend_from => [],
     force_rewrite_from => [],
+    dedup_ignores_recipients => 1,
     in_btest => 0,
 });
 #TODO: get rid of global state - put it on the request instead
