@@ -177,7 +177,7 @@ sub _newlines {
 sub _opendkim_parse {
     my($path) = @_;
     return {}
-        unless $path && -e $path;
+        unless $path;
     return JSON::decode_json(${$_F->read($path)});
 }
 
