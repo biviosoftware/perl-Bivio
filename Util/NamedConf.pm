@@ -1,9 +1,12 @@
-# Copyright (c) 2010-2022 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2010-2024 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::NamedConf;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
 b_use('IO.ClassLoaderAUTOLOAD');
 
+use JSON ();
+
+my($_IDI) = __PACKAGE__->instance_data_index;
 my($_D) = b_use('Bivio.Die');
 my($_F) = b_use('IO.File');
 my($_ZONE_DIR) = 'var/named';
@@ -15,16 +18,21 @@ sub USAGE {
     return <<'EOF';
 usage: bivio NamedConf [options] command [args..]
 commands
-  generate -- create /var/named and /etc/named.conf from input in pwd
+  generate [opendkim.json] -- create /var/named and /etc/named.conf from input in pwd
   root_file -- get named.root from internic.net
 EOF
 }
 
 sub generate {
-    my($self) = @_;
+    my($self, $opendkim_json) = @_;
+    # $opendkim_json contains {domain2 => {spec1 => key2, spec2 => key2}, domain2...}
+
     # http://zytrax.com/books/dns/
-#TODO: Shoudl we use named-checkzone and named-checkconf on all files(?); doesn't do much
+#TODO: Should we use named-checkzone and named-checkconf on all files(?); doesn't do much
     my($cfg) = $_D->eval_or_die(${$self->read_input});
+    $self->[$_IDI] = {
+        opendkim => _opendkim_parse($opendkim_json),
+    };
     _local_cfg($cfg);
     $_F->mkdir_p('etc');
     $_F->mkdir_p($_ZONE_DIR);
@@ -166,6 +174,13 @@ sub _newlines {
     return join("\n", @_) . "\n";
 }
 
+sub _opendkim_parse {
+    my($path) = @_;
+    return {}
+        unless $path;
+    return JSON::decode_json(${$_F->read($path)});
+}
+
 sub _serial {
     my($self, $cfg) = @_;
     my($server) = $cfg->{servers}->[0];
@@ -210,7 +225,7 @@ sub _zones {
     my($ptr_map) = {};
     return (
         map(
-            _zone($_, $z->{$_}, $cfg, $ptr_map),
+            _zone($self, $_, $z->{$_}, $cfg, $ptr_map),
             sort(keys(%$z)),
         ),
         map(
@@ -221,7 +236,7 @@ sub _zones {
 }
 
 sub _zone {
-    my($zone, $cfg, $common, $ptr_map) = @_;
+    my($self, $zone, $cfg, $common, $ptr_map) = @_;
     $cfg = {%$common, %$cfg};
     my($zone_dot) = _dot($zone);
     return (
@@ -231,11 +246,12 @@ sub _zone {
             sort(
                 _zone_a($zone_dot, $cfg, $ptr_map),
                 _zone_cname($zone_dot, $cfg, $ptr_map),
-                _zone_txt($zone_dot, $cfg, $ptr_map),
+                _zone_dkim1($zone_dot, $cfg, $ptr_map),
                 _zone_mx($zone_dot, $cfg, $ptr_map),
+                _zone_opendkim($zone_dot, $self->[$_IDI]->{opendkim}, $ptr_map),
                 _zone_spf1($zone_dot, $cfg, $ptr_map),
                 _zone_srv($zone_dot, $cfg, $ptr_map),
-                _zone_dkim1($zone_dot, $cfg, $ptr_map),
+                _zone_txt($zone_dot, $cfg, $ptr_map),
             ),
         ),
     );
@@ -273,7 +289,11 @@ sub _zone_dkim1 {
         'txt',
         sub {
             my($value) = @_;
-            qq{"v=DKIM1; k=rsa; p=$value;"},
+            my($res) = qq{"v=DKIM1; k=rsa; p=$value;"};
+            # give the user a clue.
+            b_die("dkim1 parameter only supports 1024 keys p=$value; use opendkim.json parameter to pass longer records")
+                if length($res) > 255;
+            return $res;
         },
         @_,
     );
@@ -409,6 +429,12 @@ sub _zone_mx {
         },
     );
     return;
+}
+
+sub _zone_opendkim {
+    my($zone_dot) = @_;
+    # POSIT: rsconf/opendkim writes json without dots
+    return _zone_literal(substr($zone_dot, 0, -1), 'txt', undef, @_);
 }
 
 sub _zone_spf1 {
