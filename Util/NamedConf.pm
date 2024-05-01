@@ -433,7 +433,8 @@ sub _zone_mx {
 
 sub _zone_opendkim {
     my($zone_dot) = @_;
-    return _zone_literal($zone_dot, 'txt', undef, @_);
+    # POSIT: rsconf/opendkim writes json without dots
+    return _zone_literal(substr($zone_dot, 0, -1), 'txt', undef, @_);
 }
 
 sub _zone_spf1 {
