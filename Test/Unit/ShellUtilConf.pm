@@ -34,7 +34,6 @@ sub new_unit {
             my($in) = $_F->absolute_path(
                 $_FP->join($self->builtin_bunit_base_name, "$n.in"),
             );
-            (my $opendkim = $in) =~ s{$n.in$}{$n-opendkim.in};
             $self->builtin_go_dir($self->builtin_bunit_base_name);
             $_F->rm_rf($_F->absolute_path($n));
             system("tar xzf $n.tgz")
@@ -51,11 +50,12 @@ sub new_unit {
             );
             $setup_case->(@_)
                 if $setup_case;
+            (my $txt_json = $in) =~ s{$n.in$}{$n-*.json};
             return [
                 '-input',
                 $in,
                 'generate',
-                -e $opendkim ? $opendkim : (),
+                glob($txt_json),
             ];
         },
         check_return => sub {

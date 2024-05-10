@@ -18,20 +18,20 @@ sub USAGE {
     return <<'EOF';
 usage: bivio NamedConf [options] command [args..]
 commands
-  generate [opendkim.json] -- create /var/named and /etc/named.conf from input in pwd
+  generate [txt1.json...] -- create /var/named and /etc/named.conf from input in pwd
   root_file -- get named.root from internic.net
 EOF
 }
 
 sub generate {
-    my($self, $opendkim_json) = @_;
-    # $opendkim_json contains {domain2 => {spec1 => key2, spec2 => key2}, domain2...}
+    my($self, @txt_json) = @_;
+    # $txt_json[0] contains {domain2 => {subdomain1 => txt1, subdomain2 => txt2}, domain2...}
 
     # http://zytrax.com/books/dns/
 #TODO: Should we use named-checkzone and named-checkconf on all files(?); doesn't do much
     my($cfg) = $_D->eval_or_die(${$self->read_input});
     $self->[$_IDI] = {
-        opendkim => _opendkim_parse($opendkim_json),
+        txt_json => _txt_json_parse(@txt_json),
     };
     _local_cfg($cfg);
     $_F->mkdir_p('etc');
@@ -174,13 +174,6 @@ sub _newlines {
     return join("\n", @_) . "\n";
 }
 
-sub _opendkim_parse {
-    my($path) = @_;
-    return {}
-        unless $path;
-    return JSON::decode_json(${$_F->read($path)});
-}
-
 sub _serial {
     my($self, $cfg) = @_;
     my($server) = $cfg->{servers}->[0];
@@ -204,6 +197,25 @@ sub _serial {
         }
     }
     b_die($server, ': could not find SOA');
+}
+
+sub _txt_json_parse {
+    my(@paths) = @_;
+    return {}
+        unless @paths;
+    my($res) = {};
+    foreach my $path (@paths) {
+        my($j) = JSON::decode_json(${$_F->read($path)});
+        while (my($domain, $subdomains) = each(%$j)) {
+            my($r) = $res->{$domain} ||= {};
+            while (my($s, $t) = each(%$subdomains)) {
+                b_die("subdomain=$s.$domain in path=$path and other paths=@paths")
+                    if exists($r->{$s});
+                $r->{$s} = $t;
+            }
+        }
+    }
+    return $res;
 }
 
 sub _write {
@@ -248,10 +260,10 @@ sub _zone {
                 _zone_cname($zone_dot, $cfg, $ptr_map),
                 _zone_dkim1($zone_dot, $cfg, $ptr_map),
                 _zone_mx($zone_dot, $cfg, $ptr_map),
-                _zone_opendkim($zone_dot, $self->[$_IDI]->{opendkim}, $ptr_map),
                 _zone_spf1($zone_dot, $cfg, $ptr_map),
                 _zone_srv($zone_dot, $cfg, $ptr_map),
                 _zone_txt($zone_dot, $cfg, $ptr_map),
+                _zone_txt_json($zone_dot, $self->[$_IDI]->{txt_json}, $ptr_map),
             ),
         ),
     );
@@ -431,12 +443,6 @@ sub _zone_mx {
     return;
 }
 
-sub _zone_opendkim {
-    my($zone_dot) = @_;
-    # POSIT: rsconf/opendkim writes json without dots
-    return _zone_literal(substr($zone_dot, 0, -1), 'txt', undef, @_);
-}
-
 sub _zone_spf1 {
     my($zone, $cfg) = @_;
     return _zone_ipv4_map(
@@ -464,6 +470,12 @@ sub _zone_srv {
 
 sub _zone_txt {
     return _zone_literal('txt', undef, undef, @_);
+}
+
+sub _zone_txt_json {
+    my($zone_dot) = @_;
+    # POSIT: txt_json does not contain dots
+    return _zone_literal(substr($zone_dot, 0, -1), 'txt', undef, @_);
 }
 
 1;
