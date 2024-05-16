@@ -5,7 +5,7 @@
         "20240429._domainkey.dkim": "key2",
         "20240429._domainkey.dkim.multi.level": "key3"
     },
-    "example2.com": {
-        "20240328._domainkey.dkim": "key4"
-    }
+    "example2.com": [
+        ["20240328._domainkey.dkim", "key4"]
+    ]
 }

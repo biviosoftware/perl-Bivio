@@ -207,11 +207,14 @@ sub _txt_json_parse {
     foreach my $path (@paths) {
         my($j) = JSON::decode_json(${$_F->read($path)});
         while (my($domain, $subdomains) = each(%$j)) {
-            my($r) = $res->{$domain} ||= {};
-            while (my($s, $t) = each(%$subdomains)) {
-                b_die("subdomain=$s.$domain in path=$path and other paths=@paths")
-                    if exists($r->{$s});
-                $r->{$s} = $t;
+            my($r) = $res->{$domain} ||= [];
+            if (ref($subdomains) eq 'HASH') {
+                while (my($s, $t) = each(%$subdomains)) {
+                    push(@$r, [$s, $t]);
+                }
+            }
+            else {
+                push(@$r, @$subdomains);
             }
         }
     }
