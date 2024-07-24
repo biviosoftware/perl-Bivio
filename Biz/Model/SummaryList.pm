@@ -66,7 +66,8 @@ sub get_widget_value {
     my($fields) = $self->[$_IDI];
     # Only "get" if first source has this key.  "get" does a "put"
     # if need be.
-    $self->get($name) if $fields->{source}->[0]->has_keys($name);
+    $self->get($name)
+        if $fields->{source}->[0]->has_keys($name);
     return $self->SUPER::get_widget_value($name, @params);
 }
 
@@ -81,7 +82,8 @@ sub internal_sum {
         $list->reset_cursor;
 
         while ($list->next_row) {
-            next unless $list->get($name);
+            next
+                unless $list->get($name);
             $result = $list->get_field_type($name)->add(
                 $result, $list->get($name));
         }
@@ -107,7 +109,8 @@ sub new {
 sub next_row {
     my($self) = @_;
     my($fields) = $self->[$_IDI];
-    b_die('no cursor')unless defined($fields->{loaded});
+    b_die('no cursor')
+        unless defined($fields->{loaded});
 
     if ($fields->{loaded}) {
         $fields->{loaded} = 0;
