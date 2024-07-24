@@ -21,41 +21,6 @@ sub ORD_FIELD {
     return 'tuple_num';
 }
 
-sub internal_initialize {
-    my($self) = @_;
-    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-        version => 1,
-        table_name => 'tuple_t',
-        columns => {
-            tuple_def_id => ['PrimaryId', 'PRIMARY_KEY'],
-            tuple_num => ['TupleNum', 'PRIMARY_KEY'],
-            modified_date_time => ['DateTime', 'NOT_NULL'],
-            thread_root_id => ['RealmMail.thread_root_id', 'NONE'],
-            @{$_TSN->map_list(sub {shift(@_) => ['TupleSlot', 'NONE']})},
-        },
-    });
-}
-
-sub internal_prepare_max_ord {
-    my($self, $stmt, $values) = @_;
-    $stmt->where([
-        $self->get_qualified_field_name('tuple_def_id'),
-        [$values->{tuple_def_id}],
-    ]);
-    return shift->SUPER::internal_prepare_max_ord(@_);
-}
-
-sub mail_slot {
-    my(undef, $label, $value) = @_;
-    return "$label: $value\n";
-}
-
-sub mail_subject {
-    my($proto, $tuple_use) = @_;
-    return $tuple_use->get('moniker') . '#'
-        . (ref($proto) && $proto->is_loaded ? $proto->get('tuple_num') : '');
-}
-
 sub handle_mail_post_create {
     my($proto, $realm_mail, $incoming) = @_;
 #TODO: Use FEATURE_TUPLE to control loading
@@ -129,6 +94,41 @@ sub handle_mail_post_create {
 #TODO: Need to update the subject in the disk file
     }
     return _create_or_update_slots($state, _parse_slots($state->{body}));
+}
+
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+        table_name => 'tuple_t',
+        columns => {
+            tuple_def_id => ['PrimaryId', 'PRIMARY_KEY'],
+            tuple_num => ['TupleNum', 'PRIMARY_KEY'],
+            modified_date_time => ['DateTime', 'NOT_NULL'],
+            thread_root_id => ['RealmMail.thread_root_id', 'NONE'],
+            @{$_TSN->map_list(sub {shift(@_) => ['TupleSlot', 'NONE']})},
+        },
+    });
+}
+
+sub internal_prepare_max_ord {
+    my($self, $stmt, $values) = @_;
+    $stmt->where([
+        $self->get_qualified_field_name('tuple_def_id'),
+        [$values->{tuple_def_id}],
+    ]);
+    return shift->SUPER::internal_prepare_max_ord(@_);
+}
+
+sub mail_slot {
+    my(undef, $label, $value) = @_;
+    return "$label: $value\n";
+}
+
+sub mail_subject {
+    my($proto, $tuple_use) = @_;
+    return $tuple_use->get('moniker') . '#'
+        . (ref($proto) && $proto->is_loaded ? $proto->get('tuple_num') : '');
 }
 
 sub split_body {
