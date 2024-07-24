@@ -7,7 +7,7 @@ b_use('UI.ViewLanguageAUTOLOAD');
 
 
 sub NEW_ARGS {
-    return [qw(file_name)];
+    return [qw(file_name ?charset)];
 }
 
 sub initialize {
@@ -19,12 +19,16 @@ sub initialize {
 sub render {
     my($self, $source, $buffer) = @_;
     my($fn) = $self->render_simple_attr('file_name', $source);
+    my($c) = $self->render_simple_attr('charset', $source);
     my($type) = $self->to_html_type_attr($fn);
     my($uri) = _get_uri_or_die($source, $fn);
     HTMLWidget_Tag({
         tag => $type =~ /javascript/ ? (
             'script',
             SRC => $uri,
+            $c ? (
+                CHARSET => $c,
+            ) : (),
             value => '',
         ) : (
             'link',
