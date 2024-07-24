@@ -16,6 +16,11 @@ use Bivio::Base 'Collection.Attributes';
 # methods while iterating through the source(s).
 
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_LM) = b_use('Biz.ListModel');
+
+sub do_rows {
+    return shift->delegate_method($_LM, @_);
+}
 
 sub get {
     # Overrides Attributes get to dynamically create a summary value for the
