@@ -105,7 +105,7 @@ sub internal_initialize {
 
 sub is_acquired {
     my($self, $realm_id) = @_;
-    $realm_id || $self->req('auth_id');
+    $realm_id ||= $self->req('auth_id');
     return _map_txn_resources(
         $self,
         sub {_is_equal(shift, $realm_id) ? 1 : ()},
