@@ -565,10 +565,12 @@ sub gettimeofday_diff_seconds {
 
 sub handle_pre_execute_task {
     my($proto, undef, $req) = @_;
-    $proto->set_test_now(
-        delete(($req->unsafe_get('query') || {})->{$proto->TEST_NOW_QUERY_KEY}),
-        $req,
-    ) if $_IS_TEST;
+    if ($_IS_TEST && exists(($req->unsafe_get('query') || {})->{$proto->TEST_NOW_QUERY_KEY})) {
+        $proto->set_test_now(
+            delete($req->get('query')->{$proto->TEST_NOW_QUERY_KEY}),
+            $req,
+        );
+    }
     return;
 }
 
