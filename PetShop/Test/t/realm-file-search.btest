@@ -7,7 +7,7 @@ go_back();
 submit_form({
     _anon => 'SearchTest1'
 });
-verify_text('Test Result One');
+poll_page(verify_text => 'Test Result One');
 submit_form({
     _anon => 'search_test2.txt'
 });
