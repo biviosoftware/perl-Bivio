@@ -2,11 +2,14 @@
 # $Id$
 Request();
 my($sendmail_out) = 'sendmail.tmp';
+my($errors_to_user) = 'postmaster';
 config({
     'Bivio::Mail::Common' => {
+        errors_to => $errors_to_user,
         sendmail => "perl -w mock-sendmail.PL $sendmail_out ",
     },
 });
+my($errors_from_email, $errors_from_user) = class()->user_email(req());
 [
     class() => [
         {
@@ -40,6 +43,25 @@ IN
 Recipients: a@a.a
 X-Bivio-Test-Recipient: a@a.a
 z
+OUT
+            ['a@a.a', <<"IN", 0, 'b@b.b', req()] => <<"OUT",
+\x{1F928}
+IN
+Recipients: $errors_to_user
+X-Bivio-Test-Recipient: $errors_to_user
+From: "$errors_from_user" <$errors_from_email>
+To: $errors_to_user
+Subject: ERROR: unable to send mail
+Sender: "-" <$errors_from_user>
+X-Bivio-Test-Recipient: $errors_to_user
+Auto-Submitted: auto-replied
+
+Error while trying to send message to a\@a.a:
+
+    (reason: I/O error)
+
+-------------------- Original Message Follows ----------------
+(original message send failed with reported reason)
 OUT
         ],
     ],

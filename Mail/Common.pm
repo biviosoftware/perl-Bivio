@@ -154,21 +154,8 @@ sub send {
     $from =~ s/'/'\\''/g;
     $req ||= Bivio::Agent::Request->get_current_or_new;
     my($err) = _send($self, $recipients, $msg_ref, $offset, $from, $req);
-    if ($err) {
-        $err = _send(
-            $self,
-            $_CFG->{errors_to},
-            $self->format_as_bounce(
-                $err, $recipients, $msg_ref, undef,
-                $req,
-            ),
-            0,
-            '',
-            $req,
-        );
-        Bivio::Die->die('errors_to mail failed: ', $err, "\n", $msg_ref)
-            if $err;
-    }
+    _send_error($self, $err, $recipients, $msg_ref, $req)
+        if $err;
     return $self;
 }
 
@@ -236,6 +223,28 @@ sub _send {
     }) or $?;
     Bivio::IO::Alert->warn($die ? $die->as_string : "$command: status = $?");
     return 'I/O error';
+}
+
+sub _send_error {
+    my($self, $err, $recipients, $msg_ref, $req) = @_;
+    my($errors) = [$err];
+    foreach my $mr ($msg_ref, \('(original message send failed with reported reason)')) {
+        $err = _send(
+            $self,
+            $_CFG->{errors_to},
+            $self->format_as_bounce($err, $recipients, $mr, undef, $req),
+            0,
+            '',
+            $req,
+        );
+        last
+            unless $err;
+        push(@$errors, $err);
+    }
+    return
+        unless $err;
+    Bivio::Die->die('errors_to mail failed: ', join(', ', @$errors), "\n", $msg_ref);
+    # DOES NOT RETURN
 }
 
 1;
