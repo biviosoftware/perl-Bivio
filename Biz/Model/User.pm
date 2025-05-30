@@ -128,12 +128,6 @@ sub invalidate_email {
     return;
 }
 
-sub set_encrypted_password {
-    my($self, $encrypted) = @_;
-    # Sets a user's encrypted password to a new value.
-    return _get_realm->update({password => $encrypted});
-}
-
 sub unauth_delete_realm {
     my($self, $realm_owner) = @_;
     my($rid) = $realm_owner->get('realm_id');
