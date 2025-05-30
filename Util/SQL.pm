@@ -640,6 +640,23 @@ EOF
     return;
 }
 
+sub internal_upgrade_db_totp {
+    my($self) = @_;
+    $self->run(<<'EOF');
+CREATE TABLE totp_t (
+  user_id NUMERIC(18) NOT NULL,
+  algorithm NUMERIC(1) NOT NULL,
+  digits NUMERIC(1) NOT NULL,
+  period NUMERIC(2) NOT NULL,
+  secret VARCHAR(4000) NOT NULL,
+  last_time_step NUMERIC(10),
+  CONSTRAINT totp_t1 primary key(user_id)
+)
+/
+EOF
+    return;
+}
+
 sub is_oracle {
     my($self) = @_;
     # May not have a database at this point to connect to.
