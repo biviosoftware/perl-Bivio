@@ -1,0 +1,38 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+PropertyModel();
+req()->set_user('demo');
+my($m) = model('TOTP')->create(Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1));
+[
+    {
+        method => 'validate_login',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            return [$params->[0], req('auth_user')]
+                if $params->[0];
+            return [
+                Biz_RFC6238()->compute(
+                    'SHA1',
+                    6,
+                    $params->[1],
+                    Biz_RFC6238()->get_time_step(time + ($params->[2] || 0), 30),
+                ),
+                req('auth_user'),
+            ],
+        },
+    } => [
+        ['1' x 6] => 0,
+        [undef, '1' x 20] => 0,
+        map(
+            ([undef, $m->get('secret'), $_->[0]] => $_->[1]), (
+                [0 => 1],
+                [0 => 0],
+                [-30 => 1],
+                [-30 => 0],
+                [30 => 1],
+                [30 => 0],
+                [-60 => 0],
+                [60 => 0],
+            ),
+        ),
+    ],
+];
