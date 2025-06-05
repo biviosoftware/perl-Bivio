@@ -225,6 +225,7 @@ sub _is_other {
         |tlsprober
         |wget
         |ultraseek
+        |scrapy
     }ix ? 1 : 0;
 }
 
