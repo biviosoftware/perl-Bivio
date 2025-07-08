@@ -6,6 +6,7 @@ use Bivio::Base 'Model.UserCreateForm';
 
 sub execute_empty {
     my($self) = @_;
+    $self->internal_put_field(totp_secret => b_debug(b_use('Type.TOTPSecret')->generate_secret(b_use('Model.TOTP')->get_default_algorithm)));
     # Loads values for the current user, if present.
     return unless _is_editing($self);
     _do_models(
@@ -17,6 +18,7 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
+    b_debug('totp secret? ', $self->get('totp_secret'));
     return shift->SUPER::execute_ok(@_)
         unless _is_editing($self);
     return
@@ -70,6 +72,11 @@ sub internal_initialize {
                 # _is_editing().  See Petshop::Util for an example.
                 name => 'force_create',
                 type => 'Boolean',
+                constraint => 'NONE',
+            },
+            {
+                name => 'totp_secret',
+                type => 'Line',
                 constraint => 'NONE',
             },
         ],

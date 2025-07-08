@@ -92,7 +92,7 @@ sub control_on_render {
     # (self, any, string_ref) : undef
     # Render the image.
     my($self, $source, $buffer) = @_;
-    my($src) = ${$self->render_attr('src', $source)};
+    my($src) = $self->internal_src($source);
     my($src_is_uri) = $src =~ m{[/:]};
     my($src_name) = $src_is_uri ? ($src =~ m{([^/]+)\.\w+$})[0] || '' : $src;
     my($b) = '<img';
@@ -164,6 +164,11 @@ sub internal_new_args {
         alt_text => ref($_[2]) eq 'HASH' ? undef : [splice(@_, 2, 1)]->[0],
         %{shift->internal_compute_new_args([qw(src)], \@_)},
     };
+}
+
+sub internal_src {
+    my($self, $source) = @_;
+    return ${$self->render_attr('src', $source)};
 }
 
 1;

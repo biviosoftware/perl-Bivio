@@ -1,0 +1,13 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Type();
+[
+    is_otp => [
+        [] => 1,
+    ],
+    is_password => [
+        [] => 1,
+    ],
+    is_secure_data => [
+        [] => 1,
+    ],
+];

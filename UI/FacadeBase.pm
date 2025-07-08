@@ -1780,6 +1780,65 @@ sub _cfg_task_log {
     };
 }
 
+sub _cfg_totp {
+    return {
+        Task => [
+            [USER_ENABLE_TOTP_FORM => '?/enable-totp'],
+            [USER_DISABLE_TOTP_FORM => '?/disable-totp'],
+            [USER_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
+        ],
+        Text => [
+            [[qw(UserEnableTOTPForm UserDisableTOTPForm)] => [
+                password => 'Password',
+                totp_code => '6-Digit Authenticator Code',
+            ]],
+            [UserEnableTOTPForm => [
+                prose => [
+                    # "Hardware keys without the ability to sync clock are not recommended"?
+                    prologue => <<'EOF',
+Join([
+    'bivio gives users the option to set up two-factor authentication via well-known authenticator apps such as Google Authenticator or Duo Mobile.',
+    BR(), BR(),
+    'To set up two-factor authentication, complete the following steps:',
+    BR(), BR(),
+    OL(Join([
+        LI(Join([
+            'Scan the QR code below with your chosen authenticator app.',
+            TOTPQRCode(),
+        ])),
+        LI(Join([
+            'Save the following recovery codes in a secure place. If you lose access to your authenticator app you will need to enter one of them to regain access to your account.',
+             BR(), BR(),
+             'For example, click the "copy" link to the right and then paste into your password manager entry for this site, or click the "download" link and then move the downloaded file to a secure place in your personal documents.',
+            BR(), BR(),
+            RecoveryCodeList(),
+        ])),
+        LI('Enter the generated 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
+        LI('Enter your account password.'),
+    ])),
+    BR(), BR(),
+]);
+EOF
+                ],
+            ]],
+            [UserDisableTOTPForm => [
+                prose => [
+                    prologue => <<'EOF',
+To disable two-factor authentication, you must enter an authentator code and your password. If you don't have access to your authenticator, you must enter a recovery code.
+EOF
+                ],
+            ]],
+            [title => [
+                USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
+            ]],
+            [acknowledgement => [
+                USER_ENABLE_TOTP_FORM => 'Two-Factor Authentication has been set up successfully',
+                USER_DISABLE_TOTP_FORM => 'Two-Factor Authentication has been disabled successfully',
+            ]],
+        ],
+    };
+}
+
 sub _cfg_tuple {
     return {
          FormError => [

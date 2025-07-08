@@ -211,6 +211,11 @@ sub require_otp {
     return $self->get_field_type('password')->is_otp($self->get('password'));
 }
 
+sub require_totp {
+    my($self) = @_;
+    return $self->new_other('TOTP')->set_ephemeral->unauth_load({user_id => $self->get('realm_id')});
+}
+
 sub unauth_delete_realm {
     my($self, $query) = @_;
     $self->unauth_load_or_die($query)
@@ -332,7 +337,7 @@ sub update {
     ) {
         my($otp) = $self->new_other('OTP');
         $otp->delete
-            unless $otp->unauth_load({user_id => $self->get('realm_id')});
+            if $otp->unauth_load({user_id => $self->get('realm_id')});
     }
     return shift->SUPER::update(@_);
 }

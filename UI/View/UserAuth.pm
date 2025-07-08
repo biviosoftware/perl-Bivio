@@ -87,10 +87,13 @@ sub internal_settings_form_extra_fields {
 }
 
 sub login {
-    return shift->internal_body(vs_simple_form(UserLoginForm => [qw(
-        UserLoginForm.login
-        UserLoginForm.RealmOwner.password
-    )]));
+    return shift->internal_body(vs_simple_form(UserLoginForm => [
+        'UserLoginForm.login',
+        'UserLoginForm.RealmOwner.password',
+        ['UserLoginForm.totp_code', {
+            row_control => ["Model.UserLoginForm", 'do_totp'],
+        }],
+    ]));
 }
 
 sub missing_cookies {

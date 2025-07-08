@@ -48,8 +48,19 @@ sub internal_initialize {
                 name => 'RealmOwner.password',
                 form_name => 'x2',
             },
+            {
+                name => 'totp_code',
+                type => 'Line',
+                constraint => 'NONE',
+            },
         ],
-
+        hidden => [
+            {
+                name => 'do_totp',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
+        ],
         # Fields used internally which are computed dynamically.
         # They are not sent to or returned from the user.
         other => [
@@ -150,6 +161,16 @@ sub validate_login {
     return $realm;
 }
 
+sub _maybe_lock_out {
+    my($self, $owner) = @_;
+    if (_record_login_attempt($self, $owner, 0)->get('login_attempt_state')->eq_locked_out) {
+        b_warn('locked out owner=', $owner);
+        $owner->update_password($_R->password);
+        $self->internal_put_field(do_locked_out_task => 1);
+    }
+    return;
+}
+
 sub _password_error {
     my($self, $owner) = @_;
     my($pw_err);
@@ -175,6 +196,29 @@ sub _record_login_attempt {
     });
 }
 
+sub _validate_totp {
+    my($self, $owner) = @_;
+    my($totp) = $self->new_other('TOTP');
+    return 1
+        unless $totp->unauth_load({user_id => $owner->get('realm_id')});
+    if ($self->get('do_totp') && (my $totp_code = $self->get('totp_code'))) {
+        return 1
+            if $totp->validate_input_code($totp_code, $self->req('auth_user'));
+        # Need to stay on page or the login attempt would get rolled back
+        $self->internal_stay_on_page;
+        $self->internal_put_error(totp_code => 'INVALID_TOTP_CODE');
+        _maybe_lock_out($self, $owner);
+        return 0;
+    }
+    elsif ($self->get('do_totp')) {
+        $self->internal_put_error(totp_code => 'NULL');
+        return 0;
+    }
+    $self->internal_stay_on_page;
+    $self->internal_put_field(do_totp => 1);
+    return 0;
+}
+
 sub _validate {
     my($self) = @_;
     my($owner) = $self->validate_login;
@@ -185,6 +229,10 @@ sub _validate {
     return
         unless _validate_login_attempt($self, $owner);
     $owner->maybe_upgrade_password($self->get('RealmOwner.password'));
+    return
+        unless _validate_totp($self, $owner);
+    _record_login_attempt($self, $owner, 1);
+    # isn't this already done in validate_login?
     $self->internal_put_field(validate_called => 1);
     return;
 }
@@ -195,14 +243,9 @@ sub _validate_login_attempt {
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
         $self->internal_put_error('RealmOwner.password' => $err);
-        if (_record_login_attempt($self, $owner, 0)->get('login_attempt_state')->eq_locked_out) {
-            b_warn('locked out owner=', $owner);
-            $owner->update_password($_R->password);
-            $self->internal_put_field(do_locked_out_task => 1);
-        }
+        _maybe_lock_out($self, $owner);
         return 0;
     }
-    _record_login_attempt($self, $owner, 1);
     return 1;
 }
 

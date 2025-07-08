@@ -50,15 +50,14 @@ sub execute_ok {
     return unless $self->validate_email_and_put_uri;
     $self->put_on_request(1);
     return {
-         method => 'server_redirect',
-         task_id => 'next',
+        method => 'server_redirect',
+        task_id => 'next',
         query => undef,
-     };
+    };
 }
 
 sub internal_initialize {
     my($self) = @_;
-    # Returns config
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         visible => [
@@ -95,7 +94,7 @@ sub validate_email_and_put_uri {
                 return Bivio::Biz::Action->get_instance('UserPasswordQuery')
                     ->format_uri($req)
                     unless $req->is_super_user($ro->get('realm_id'))
-                    || $ro->require_otp;
+                    || $ro->require_otp || $ro->require_totp;
                 $form->internal_put_error(qw(Email.email PERMISSION_DENIED));
                 return;
             },

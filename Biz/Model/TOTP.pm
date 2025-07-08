@@ -2,7 +2,6 @@
 package Bivio::Biz::Model::TOTP;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
-use MIME::Base32 ();
 
 my($_DT) = b_use('Type.DateTime');
 my($_RFC6238) = b_use('Biz.RFC6238');
@@ -10,31 +9,47 @@ my($_TA) = b_use('Type.TOTPAlgorithm');
 my($_TS) = b_use('Type.TOTPSecret');
 
 Bivio::IO::Config->register(my $_CFG = {
-    algorithm => $_TA->SHA1,
-    digits => 6,
-    period => 30,
+    default_algorithm => $_TA->SHA1,
+    default_digits => 6,
+    default_period => 30,
     time_step_tolerance => 1,
 });
+
+sub SECRET_KEY {
+    return 'totp_secret';
+}
 
 sub create {
     my($self, $secret, $time_step) = @_;
     return $self->SUPER::create({
         user_id => $self->req('auth_user_id'),
-        map(($_ => $_CFG->{$_}), qw(algorithm digits period)),
+        map(($_ => $_CFG->{'default_' . $_}), qw(algorithm digits period)),
         secret => $secret,
         last_time_step => $time_step,
     });
 }
 
+sub get_default_algorithm {
+    return $_CFG->{default_algorithm};
+}
+
+sub get_default_digits {
+    return $_CFG->{default_digits};
+}
+
+sub get_default_period {
+    return $_CFG->{default_period};
+}
+
 sub handle_config {
     my(undef, $cfg) = @_;
-    b_die('unsupported digits')
-        unless $cfg->{digits} == 6 || $cfg->{digits} == 8;
-    b_die('unsupported period')
-        unless $cfg->{period} >= 30 && $cfg->{period} <= 90;
+    b_die('unsupported default_digits')
+        unless $cfg->{default_digits} == 6 || $cfg->{default_digits} == 8;
+    b_die('unsupported default_period')
+        unless $cfg->{default_period} >= 30 && $cfg->{default_period} <= 90;
     b_die('unsupported time_step_tolerance')
         unless $cfg->{time_step_tolerance} <= 3;
-    $cfg->{algorithm} = $_TA->from_any($cfg->{algorithm});
+    $cfg->{default_algorithm} = $_TA->from_any($cfg->{default_algorithm});
     $_CFG = $cfg;
     return;
 }
@@ -56,7 +71,7 @@ sub internal_initialize {
     });
 }
 
-sub validate_login {
+sub validate_input_code {
     my($self, $input, $auth_user) = @_;
     $self->unauth_load_or_die({user_id => $auth_user->get('realm_id')});
     my($time_step) = _input_in_range($input, $self->get(qw(algorithm digits period secret)));
@@ -72,7 +87,8 @@ sub validate_login {
 
 sub validate_setup {
     my($proto, $input, $secret) = @_;
-    return _input_in_range($input, $_CFG->{algorithm}, $_CFG->{digits}, $_CFG->{period}, $secret);
+    return _input_in_range(
+        $input, map($_CFG->{$_}, qw(default_algorithm default_digits default_period)), $secret);
 }
 
 sub _input_in_range {

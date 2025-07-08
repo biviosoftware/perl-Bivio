@@ -1435,6 +1435,38 @@ table.task_log .super_user {
 EOF
 }
 
+sub _site_totp {
+    return <<'EOF';
+img.totp_qr_code {
+  margin: auto;
+  display: block;
+}
+div.totp_setup {
+  text-align: center;
+}
+span.totp_setup_key {
+  display: none;
+}
+table.b_recovery_code_list {
+  margin: auto;
+  border: 1px solid #ccc;
+}
+table.b_recovery_code_list td {
+  padding: 0.25em;
+  vertical-align: top;
+  background: #f0f0f0;
+}
+table.b_recovery_codes td,
+table.b_recovery_code_options td {
+  padding: 0.5em 1.5em;
+  text-align: center;
+  whitespace: nowrap;
+  border: 0.5em solid #f0f0f0;
+  background: #fff;
+}
+EOF
+}
+
 sub _site_user_auth {
     return <<'EOF';
 div.user_state {

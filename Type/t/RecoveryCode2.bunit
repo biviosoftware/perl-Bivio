@@ -1,0 +1,46 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Type();
+my($_F) = b_use('IO.File');
+my($word_list_path) = $_F->temp_file(req());
+$_F->write($word_list_path, <<'EOF');
+foo
+bar
+baz
+EOF
+my($expected_combinations) = [qw(foo.bar bar.baz foo.baz bar.foo baz.bar baz.foo)];
+my($codes) = {};
+my($case_count) = 50;
+config({
+    'Bivio::Type::RecoveryCode' => {
+        is_enabled => 1,
+        word_list => $word_list_path,
+        word_sample_size => 2,
+        word_separator => '.',
+    },
+});
+[
+    {
+        method => 'generate_code',
+        compute_return => sub {
+            my($case, $actual) = @_;
+            $codes->{$actual->[0]}++;
+            return [-1]
+                unless grep($actual->[0] eq $_, @$expected_combinations);
+            if ($case->get('case_num') >= $case_count) {
+                foreach my $c (@$expected_combinations) {
+                    unless ($codes->{$c}) {
+                        b_info('missing expected combination=', $c);
+                        return [-2];
+                    }
+                }
+                if (int(keys(%$codes)) != int(@$expected_combinations)) {
+                    b_info('unexpected combinations=', $codes);
+                    return [-3];
+                }
+            }
+            return [1];
+        },
+    } => [
+        map(([] => 1), 1..$case_count),
+    ],
+];

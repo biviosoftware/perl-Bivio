@@ -653,6 +653,12 @@ CREATE TABLE totp_t (
   CONSTRAINT totp_t1 primary key(user_id)
 )
 /
+CREATE TABLE recovery_code_t (
+  user_id NUMERIC(18) NOT NULL,
+  code VARCHAR(4000) NOT NULL,
+  CONSTRAINT recovery_code_t1 primary key(user_id, code)
+)
+/
 EOF
     return;
 }

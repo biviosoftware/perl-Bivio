@@ -1343,6 +1343,36 @@ sub info_site_admin {
     ];
 }
 
+sub info_totp {
+    return [
+        [qw(
+            USER_ENABLE_TOTP_FORM
+            260
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.UserEnableTOTPForm
+            View.TOTP->enable_form
+            next=MY_SITE
+        )],
+        [qw(
+            USER_DISABLE_TOTP_FORM
+            261
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.UserDisableTOTPForm
+            View.TOTP->disable_form
+            next=MY_SITE
+        )],
+        [qw(
+            USER_RECOVERY_CODE_DOWNLOAD
+            262
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Action.RecoveryCode->execute_download
+        )],
+    ];
+}
+
 sub info_task_log {
     return [
         [qw(
@@ -1674,7 +1704,6 @@ sub info_user_auth {
             View.UserAuth->user_locked_out_mail
             View.UserAuth->user_locked_out
         )],
-#99
     ];
 }
 

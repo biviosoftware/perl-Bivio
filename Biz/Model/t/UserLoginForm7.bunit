@@ -1,0 +1,107 @@
+# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
+FormModel();
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 2,
+    },
+});
+my($uid) = Util_TestUser()->create(random_realm_name());
+# Have to commit as form processing will issue a rollback on error, preventing login attempts from
+# being recorded.
+commit();
+my($now) = Type_DateTime()->now;
+my($time_step) = Biz_RFC6238()->get_time_step(
+    Type_DateTime()->to_unix($now), Model_TOTP()->get_default_period);
+my($next_time_step) = sub {
+    $now = Type_DateTime()->set_test_now(
+        Type_DateTime()->add_seconds($now, Model_TOTP()->get_default_period));
+    $time_step = Biz_RFC6238()->get_time_step(
+        Type_DateTime()->to_unix($now), Model_TOTP()->get_default_period);
+};
+my($secret) = Type_TOTPSecret()->generate_secret(Model_TOTP()->get_default_algorithm);
+my($totp_code) = sub {
+    return Biz_RFC6238()->compute(
+        Model_TOTP()->get_default_algorithm,
+        Model_TOTP()->get_default_digits,
+        $secret,
+        $time_step,
+    );
+};
+[
+    req_state({
+        task => 'LOGIN',
+    }),
+    simple_case({
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    } => {
+        login => $uid,
+        'RealmOwner.password' => 'password',
+        do_totp => 0,
+    }),
+    inline_case(sub {
+        Model_TOTP()->create($secret, $time_step);
+    }),
+    inline_commit(),
+    inline_case($next_time_step),
+    simple_case({
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    } => {
+        do_totp => 1,
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    }),
+    error_case({
+        do_totp => 1,
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    } => {
+        totp_code => 'NULL',
+    }),
+    error_case({
+        do_totp => 1,
+        login => $uid,
+        'RealmOwner.password' => 'password',
+        totp_code => '123456',
+    } => {
+        totp_code => 'INVALID_TOTP_CODE',
+    }),
+    inline_commit(),
+    inline_case($next_time_step),
+    error_case({
+        do_totp => 1,
+        login => $uid,
+        'RealmOwner.password' => 'password',
+        totp_code => '123456',
+    } => {
+        totp_code => 'INVALID_TOTP_CODE',
+    }),
+    inline_commit(),
+    inline_case($next_time_step),
+    error_case({
+        do_totp => 1,
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    } => {
+        # Right password, but user is already locked out
+        login => 'USER_LOCKED_OUT',
+    }),
+    inline_case(sub {
+        req()->with_realm_and_user($uid, $uid, sub {
+            Util_RealmAdmin()->reset_login_attempts();
+            Util_RealmAdmin()->reset_password('password');
+        });
+    }),
+    inline_case($next_time_step),
+    simple_case({
+        do_totp => 1,
+        login => $uid,
+        'RealmOwner.password' => 'password',
+        totp_code => \&$totp_code,
+    } => {
+        login => $uid,
+        'RealmOwner.password' => 'password',
+        totp_code => \&$totp_code,
+    }),
+];

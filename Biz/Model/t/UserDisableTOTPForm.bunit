@@ -1,0 +1,109 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 1,
+    },
+});
+my($no_setup) = 1;
+my($totp_secret);
+my($time_step);
+my($totp_code);
+my($recovery_codes);
+FormModel({
+    setup_request => sub {
+        return
+            if $no_setup;
+        unless ($totp_secret) {
+            $totp_secret = Type_TOTPSecret()->generate_secret(Model_TOTP()->get_default_algorithm);
+            $time_step = Biz_RFC6238()->get_time_step(
+                Type_DateTime()->to_unix(Type_DateTime()->now), Model_TOTP()->get_default_period);
+            $totp_code = Biz_RFC6238()->compute(
+                Model_TOTP()->get_default_algorithm,
+                Model_TOTP()->get_default_digits,
+                $totp_secret,
+                $time_step,
+            );
+            $recovery_codes = Type_RecoveryCode()->generate_new_codes(
+                Model_RecoveryCodeList()->get_new_code_count);
+        }
+        unless (Model_TOTP()->unsafe_load) {
+            Model_TOTP()->create($totp_secret, $time_step);
+            Model_RecoveryCodeList()->create_list($recovery_codes);
+        }
+        return;
+    },
+});
+req()->set_realm_and_user(qw(demo demo));
+req()->initialize_fully('USER_DISABLE_TOTP_FORM');
+my($is_task) = sub {
+    my($expected_task) = @_;
+    return sub {
+        my($case, $res) = @_;
+        return $res->[0]->{task_id} eq $expected_task ? 1 : 0;
+    };
+};
+[
+    [{
+        login => 'demo',
+    }] => $is_task->('FORBIDDEN'),
+    inline_case(sub {$no_setup = 0}),
+    empty_case({
+        login => 'demo',
+    }),
+    error_case({
+        login => 'demo',
+    } => {
+        totp_code => 'INVALID_RECOVERY_OPTIONS',
+    }),
+    error_case({
+        login => 'demo',
+        totp_code => sub {$totp_code},
+    } => {
+        totp_code => 'INVALID_RECOVERY_OPTIONS',
+    }),
+    error_case({
+        login => 'demo',
+        'RealmOwner.password' => 'password',
+    } => {
+        totp_code => 'INVALID_RECOVERY_OPTIONS',
+    }),
+    error_case({
+        login => 'demo',
+        totp_code => 123456,
+        'RealmOwner.password' => 'password',
+    } => {
+        totp_code => 'INVALID_TOTP_CODE',
+    }),
+    error_case({
+        login => 'demo',
+        recovery_code => 'wrong-recovery-code',
+    } => {
+        recovery_code => 'INVALID_RECOVERY_CODE',
+    }),
+    [{
+        login => 'demo',
+        totp_code => sub {$totp_code},
+        'RealmOwner.password' => 'wrong-password',
+    }] => $is_task->('locked_out_task'),
+    [{
+        login => 'demo',
+        totp_code => sub {$totp_code},
+        'RealmOwner.password' => 'password',
+    }] => sub {
+        return 0
+            if Model_TOTP()->new(req())->unsafe_load;
+        return 0
+            if Model_RecoveryCodeList()->new(req())->load_all->get_result_set_size;
+        return 1;
+    },
+    [{
+        login => 'demo',
+        recovery_code => sub {$recovery_codes->get_element(0)},
+    }] => sub {
+        return 0
+            if Model_TOTP()->new(req())->unsafe_load;
+        return 0
+            if Model_RecoveryCodeList()->new(req())->load_all->get_result_set_size;
+        return 1;
+    },
+];

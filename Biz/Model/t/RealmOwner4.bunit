@@ -1,0 +1,16 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Request();
+options({
+    create_object => sub {
+        my(undef, $args) = @_;
+        return unauth_model('RealmOwner', {name => 'otp'});
+    },
+});
+[
+    [] => [
+        require_otp => 1,
+        update => [
+            [{password => 'password'}] => not_die(),
+        ],
+    ],
+];
