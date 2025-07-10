@@ -1,7 +1,7 @@
 # Copyright (c) 2025 bivio Software Artisans, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::TOTP;
 use strict;
-use Bivio::Base 'Biz.PropertyModel';
+use Bivio::Base 'Model.RealmBase';
 
 my($_DT) = b_use('Type.DateTime');
 my($_RFC6238) = b_use('Biz.RFC6238');
@@ -15,6 +15,14 @@ Bivio::IO::Config->register(my $_CFG = {
     time_step_tolerance => 1,
 });
 
+sub REALM_ID_FIELD {
+    return 'user_id';
+}
+
+sub REALM_ID_FIELD_TYPE {
+    return 'User.user_id';
+}
+
 sub SECRET_KEY {
     return 'totp_secret';
 }
@@ -22,7 +30,6 @@ sub SECRET_KEY {
 sub create {
     my($self, $secret, $time_step) = @_;
     return $self->SUPER::create({
-        user_id => $self->req('auth_user_id'),
         map(($_ => $_CFG->{'default_' . $_}), qw(algorithm digits period)),
         secret => $secret,
         last_time_step => $time_step,
@@ -60,20 +67,19 @@ sub internal_initialize {
         version => 1,
         table_name => 'totp_t',
         columns => {
-            user_id => ['User.user_id', 'PRIMARY_KEY'],
+            $self->REALM_ID_FIELD => [$self->REALM_ID_FIELD_TYPE, 'PRIMARY_KEY'],
+            creation_date_time => ['DateTime', 'NOT_NULL'],
             algorithm => ['TOTPAlgorithm', 'NOT_ZERO_ENUM'],
             digits => ['Integer', 'NOT_NULL'],
             period => ['Integer', 'NOT_NULL'],
             secret => ['TOTPSecret', 'NOT_NULL'],
             last_time_step => ['Integer', 'NONE'],
         },
-        auth_id => 'user_id',
     });
 }
 
 sub validate_input_code {
-    my($self, $input, $auth_user) = @_;
-    $self->unauth_load_or_die({user_id => $auth_user->get('realm_id')});
+    my($self, $input) = @_;
     my($time_step) = _input_in_range($input, $self->get(qw(algorithm digits period secret)));
     return 0
         unless $time_step;

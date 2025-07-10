@@ -45,7 +45,7 @@ my($is_task) = sub {
 [
     [{
         login => 'demo',
-    }] => $is_task->('FORBIDDEN'),
+    }] => $is_task->('NOT_FOUND'),
     inline_case(sub {$no_setup = 0}),
     empty_case({
         login => 'demo',

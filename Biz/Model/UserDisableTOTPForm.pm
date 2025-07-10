@@ -53,7 +53,7 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    return 'FORBIDDEN'
+    return 'NOT_FOUND'
         unless $_T->new($self->req)->unsafe_load;
     return;
 }
@@ -67,15 +67,12 @@ sub validate {
         return @res
             if $self->in_error;
         $self->internal_put_error(totp_code => 'INVALID_TOTP_CODE')
-            unless $_T->new($self->req)->validate_input_code(
-                $self->get('totp_code'), $self->req('auth_user'));
+            unless $self->req('Model.TOTP')->validate_input_code($self->get('totp_code'));
         return @res;
     }
     if ($recovery_code) {
-        if (my $rc = $_RCL->new($self->req)->load_all->is_in_list($self->get('recovery_code'))) {
-            $_RC->new($self->req)->load_from_properties(b_debug($rc->get_shallow_copy))->delete;
-            return;
-        }
+        return
+            if $_RC->new($self->req)->unsafe_load({code => $self->get('recovery_code')});
         $self->internal_put_error(recovery_code => 'INVALID_RECOVERY_CODE');
         return;
     }

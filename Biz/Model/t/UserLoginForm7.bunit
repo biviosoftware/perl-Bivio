@@ -1,14 +1,20 @@
-# Copyright (c) 2023 bivio Software, Inc.  All Rights Reserved.
-FormModel();
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+FormModel({
+    setup_request => sub {
+        req()->set_realm(undef);
+        req()->set_user(undef);
+    },
+});
 config({
     'Bivio::Biz::Model::LoginAttempt' => {
         locked_out_failure_count => 2,
     },
 });
-my($uid) = Util_TestUser()->create(random_realm_name());
+my($uid) = create_user(random_realm_name())->get('realm_id');
 # Have to commit as form processing will issue a rollback on error, preventing login attempts from
 # being recorded.
 commit();
+req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $uid);
 my($now) = Type_DateTime()->now;
 my($time_step) = Biz_RFC6238()->get_time_step(
     Type_DateTime()->to_unix($now), Model_TOTP()->get_default_period);
@@ -40,7 +46,9 @@ my($totp_code) = sub {
         do_totp => 0,
     }),
     inline_case(sub {
-        Model_TOTP()->create($secret, $time_step);
+        req()->with_realm($uid, sub {
+            Model_TOTP()->create($secret, $time_step);
+        });
     }),
     inline_commit(),
     inline_case($next_time_step),

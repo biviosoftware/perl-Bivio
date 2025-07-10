@@ -1045,6 +1045,32 @@ CREATE INDEX login_attempt_t4 ON login_attempt_t (
   creation_date_time
 )
 /
+
+--
+-- totp_t
+--
+ALTER TABLE totp_t
+  ADD CONSTRAINT totp_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX totp_t3 ON totp_t (
+  user_id
+)
+/
+
+--
+-- recovery_code_t
+--
+ALTER TABLE recovery_code_t
+  ADD CONSTRAINT totp_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX recovery_code_t3 ON recovery_code_t (
+  user_id
+)
+/
 EOF
 }
 
@@ -1666,6 +1692,26 @@ CREATE TABLE login_attempt_t (
   login_attempt_state NUMERIC(1) NOT NULL,
   ip_address CHAR(15),
   CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
+)
+/
+
+CREATE TABLE totp_t (
+  user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  algorithm NUMERIC(1) NOT NULL,
+  digits NUMERIC(1) NOT NULL,
+  period NUMERIC(2) NOT NULL,
+  secret VARCHAR(4000) NOT NULL,
+  last_time_step NUMERIC(10),
+  CONSTRAINT totp_t1 primary key(user_id)
+)
+/
+
+CREATE TABLE recovery_code_t (
+  user_id NUMERIC(18) NOT NULL,
+  code VARCHAR(4000) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  CONSTRAINT recovery_code_t1 primary key(user_id, code)
 )
 /
 EOF

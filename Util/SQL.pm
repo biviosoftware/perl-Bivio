@@ -630,21 +630,12 @@ EOF
     return;
 }
 
-sub internal_upgrade_db_password_length {
-    my($self) = @_;
-    $self->run(<<'EOF');
-ALTER TABLE realm_owner_t
-    ALTER COLUMN password TYPE VARCHAR(255)
-/
-EOF
-    return;
-}
-
 sub internal_upgrade_db_totp {
     my($self) = @_;
     $self->run(<<'EOF');
 CREATE TABLE totp_t (
   user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
   algorithm NUMERIC(1) NOT NULL,
   digits NUMERIC(1) NOT NULL,
   period NUMERIC(2) NOT NULL,
@@ -656,6 +647,7 @@ CREATE TABLE totp_t (
 CREATE TABLE recovery_code_t (
   user_id NUMERIC(18) NOT NULL,
   code VARCHAR(4000) NOT NULL,
+  creation_date_time DATE NOT NULL,
   CONSTRAINT recovery_code_t1 primary key(user_id, code)
 )
 /

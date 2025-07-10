@@ -203,7 +203,7 @@ sub _validate_totp {
         unless $totp->unauth_load({user_id => $owner->get('realm_id')});
     if ($self->get('do_totp') && (my $totp_code = $self->get('totp_code'))) {
         return 1
-            if $totp->validate_input_code($totp_code, $self->req('auth_user'));
+            if $totp->validate_input_code($totp_code);
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
         $self->internal_put_error(totp_code => 'INVALID_TOTP_CODE');

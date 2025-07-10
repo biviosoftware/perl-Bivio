@@ -1,16 +1,21 @@
 # Copyright (c) 2025 bivio Software Artisans, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::RecoveryCode;
 use strict;
-use Bivio::Base 'Biz.PropertyModel';
-
-# TODO: UserRecoveryCode?
+use Bivio::Base 'Model.RealmBase';
 
 my($_RCL) = b_use('Model.RecoveryCodeList');
+
+sub REALM_ID_FIELD {
+    return 'user_id';
+}
+
+sub REALM_ID_FIELD_TYPE {
+    return 'User.user_id';
+}
 
 sub create {
     my($self, $code) = @_;
     return $self->SUPER::create({
-        user_id => $self->req('auth_user_id'),
         code => $code,
     });
 }
@@ -21,16 +26,16 @@ sub internal_initialize {
         version => 1,
         table_name => 'recovery_code_t',
         columns => {
-            user_id => ['User.user_id', 'PRIMARY_KEY'],
+            $self->REALM_ID_FIELD => [$self->REALM_ID_FIELD_TYPE, 'PRIMARY_KEY'],
             code => ['RecoveryCode', 'PRIMARY_KEY'],
+            creation_date_time => ['DateTime', 'NOT_NULL'],
         },
-        auth_id => 'user_id',
     });
 }
 
 sub validate {
     my($self, $code) = @_;
-    my($found) = $_RCL->is_in_list($code);
+    my($found) = $_RCL->new($self->req)->load_all->is_in_list($code);
     return 0
         unless $found;
     # TODO: keep the other codes, or delete all?
