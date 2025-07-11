@@ -28,13 +28,11 @@ FormModel({
         }
         unless (Model_TOTP()->unsafe_load) {
             Model_TOTP()->create($totp_secret, $time_step);
-            Model_RecoveryCodeList()->create_list($recovery_codes);
+            Model_RecoveryCodeList()->create($recovery_codes);
         }
         return;
     },
 });
-req()->set_realm_and_user(qw(demo demo));
-req()->initialize_fully('USER_DISABLE_TOTP_FORM');
 my($is_task) = sub {
     my($expected_task) = @_;
     return sub {
@@ -43,9 +41,12 @@ my($is_task) = sub {
     };
 };
 [
-    [{
-        login => 'demo',
-    }] => $is_task->('NOT_FOUND'),
+    req_state({
+        task => 'USER_DISABLE_TOTP_FORM',
+        realm => 'demo',
+        user => 'demo',
+    }),
+    [] => $is_task->('NOT_FOUND'),
     inline_case(sub {$no_setup = 0}),
     empty_case({
         login => 'demo',

@@ -31,7 +31,7 @@ sub execute_ok {
         $self->get('totp_secret'),
         $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_T->get_default_period),
     );
-    $_RCL->create_list($self->get('recovery_codes'));
+    $_RCL->create($self->get('recovery_codes'));
     return @res;
 }
 

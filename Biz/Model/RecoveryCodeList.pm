@@ -9,7 +9,7 @@ $_C->register(my $_CFG = {
     new_code_count => 5,
 });
 
-sub create_list {
+sub create {
     my($self, $code_array) = @_;
     $code_array->do_iterate(sub {
         my($it) = @_;
@@ -17,24 +17,6 @@ sub create_list {
         return 1;
     });
     return;
-}
-
-sub delete_all {
-    my($self) = @_;
-    $_RC->delete_all({user_id => $self->req('auth_id')});
-    return;
-}
-
-sub is_in_list {
-    my($self, $code) = @_;
-    my($found);
-    $self->do_rows(sub {
-        my($it) = @_;
-        $found = $it
-            if $it->get('RecoveryCode.code') eq $code;
-        return $found ? 0 : 1;
-    });
-    return $found;
 }
 
 sub get_new_code_count {

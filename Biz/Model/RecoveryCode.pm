@@ -3,8 +3,6 @@ package Bivio::Biz::Model::RecoveryCode;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-my($_RCL) = b_use('Model.RecoveryCodeList');
-
 sub REALM_ID_FIELD {
     return 'user_id';
 }
@@ -31,16 +29,6 @@ sub internal_initialize {
             creation_date_time => ['DateTime', 'NOT_NULL'],
         },
     });
-}
-
-sub validate {
-    my($self, $code) = @_;
-    my($found) = $_RCL->new($self->req)->load_all->is_in_list($code);
-    return 0
-        unless $found;
-    # TODO: keep the other codes, or delete all?
-    $found->delete;
-    return 1;
 }
 
 1;

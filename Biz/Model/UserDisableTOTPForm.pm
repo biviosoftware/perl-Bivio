@@ -6,7 +6,6 @@ use Bivio::Base 'Model.UserLoginForm';
 my($_DT) = b_use('Type.DateTime');
 my($_RFC6238) = b_use('Biz.RFC6238');
 my($_RC) = b_use('Model.RecoveryCode');
-my($_RCL) = b_use('Model.RecoveryCodeList');
 my($_SA) = b_use('Type.StringArray');
 my($_T) = b_use('Model.TOTP');
 my($_TS) = b_use('Type.TOTPSecret');
@@ -24,7 +23,8 @@ sub execute_ok {
     return @res
         if $self->in_error;
     $self->req('Model.TOTP')->delete;
-    $_RCL->delete_all;
+    # TODO: guardrails?
+    $_RC->delete_all;
     return @res;
 }
 
@@ -53,9 +53,10 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
+    my(@res) = shift->SUPER::internal_pre_execute(@_);
     return 'NOT_FOUND'
         unless $_T->new($self->req)->unsafe_load;
-    return;
+    return @res;
 }
 
 sub validate {
