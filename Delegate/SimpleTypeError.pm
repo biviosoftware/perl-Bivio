@@ -449,12 +449,17 @@ sub get_delegate_info {
     INVALID_RECOVERY_OPTIONS => [
         86,
         undef,
-        'Recovery code or authenticator code and password is required.',
+        'Password and recovery code or password and authenticator code is required.',
     ],
     INVALID_RECOVERY_CODE => [
         87,
         undef,
         'Recovery code is invalid.',
+    ],
+    EXPIRED => [
+        88,
+        undef,
+        'expired',
     ],
 ];
 }

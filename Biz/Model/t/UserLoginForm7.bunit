@@ -43,7 +43,7 @@ my($totp_code) = sub {
     } => {
         login => $uid,
         'RealmOwner.password' => 'password',
-        do_totp => 0,
+        require_totp => 0,
     }),
     inline_case(sub {
         req()->with_realm($uid, sub {
@@ -56,19 +56,19 @@ my($totp_code) = sub {
         login => $uid,
         'RealmOwner.password' => 'password',
     } => {
-        do_totp => 1,
+        require_totp => 1,
         login => $uid,
         'RealmOwner.password' => 'password',
     }),
     error_case({
-        do_totp => 1,
+        require_totp => 1,
         login => $uid,
         'RealmOwner.password' => 'password',
     } => {
         totp_code => 'NULL',
     }),
     error_case({
-        do_totp => 1,
+        require_totp => 1,
         login => $uid,
         'RealmOwner.password' => 'password',
         totp_code => '123456',
@@ -78,7 +78,7 @@ my($totp_code) = sub {
     inline_commit(),
     inline_case($next_time_step),
     error_case({
-        do_totp => 1,
+        require_totp => 1,
         login => $uid,
         'RealmOwner.password' => 'password',
         totp_code => '123456',
@@ -88,7 +88,7 @@ my($totp_code) = sub {
     inline_commit(),
     inline_case($next_time_step),
     error_case({
-        do_totp => 1,
+        require_totp => 1,
         login => $uid,
         'RealmOwner.password' => 'password',
     } => {
@@ -103,7 +103,7 @@ my($totp_code) = sub {
     }),
     inline_case($next_time_step),
     simple_case({
-        do_totp => 1,
+        require_totp => 1,
         login => $uid,
         'RealmOwner.password' => 'password',
         totp_code => \&$totp_code,

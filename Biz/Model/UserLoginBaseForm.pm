@@ -3,8 +3,11 @@ package Bivio::Biz::Model::UserLoginBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
+my($_DT) = b_use('Type.DateTime');
 my($_LAS) = b_use('Type.LoginAttemptState');
 my($_R) = b_use('Biz.Random');
+my($_RC) = b_use('Model.RecoveryCode');
+my($_RCT) = b_use('Type.RecoveryCodeType');
 
 sub PASSWORD_FIELD {
     return 'p';
@@ -53,10 +56,25 @@ sub internal_initialize {
                 type => 'Line',
                 constraint => 'NONE',
             },
+            {
+                name => 'password_query_recovery_code',
+                type => 'Line',
+                constraint => 'NONE',
+            },
+            {
+                name => 'totp_lost_button',
+                type => 'OKButton',
+                constraint => 'NONE',
+            },
+            {
+                name => 'totp_lost_recovery_code',
+                type => 'Line',
+                constraint => 'NONE',
+            },
         ],
         hidden => [
             {
-                name => 'do_totp',
+                name => 'require_totp',
                 type => 'Boolean',
                 constraint => 'NONE',
             },
@@ -106,6 +124,20 @@ sub internal_initialize {
     return $info;
 }
 
+sub internal_pre_execute {
+    my($self, $method) = @_;
+    if (my $upq = $self->ureq('Action.UserPasswordQuery')) {
+        $self->internal_put_field(map(($_ => $upq->get($_)), qw(
+            realm_owner disable_assert_cookie require_totp password_query_recovery_code)));
+        $self->new_other('RecoveryCode')->unauth_load_by_code_and_type_or_die(
+            $self->get_nested(qw(realm_owner realm_id)),
+            $self->get('password_query_recovery_code'),
+            $_RCT->PASSWORD_QUERY,
+        );
+    }
+    return;
+}
+
 sub internal_validate_login_value {
     my(undef, $delegator, $value) = shift->delegated_args(@_);
     my($owner) = $delegator->new_other('RealmOwner');
@@ -115,13 +147,15 @@ sub internal_validate_login_value {
 
 sub validate {
     my(undef, $delegator, $login, $password) = shift->delegated_args(@_);
-    # Checks the form property values.  Puts errors on the fields
-    # if there are any.
+    my($form_button);
     if (defined($login) && defined($password)) {
         $delegator->internal_put_field(login => $login);
         $delegator->internal_put_field('RealmOwner.password' => $password);
     }
-    _validate($delegator);
+    elsif (defined($login)) {
+        $form_button = $login;
+    }
+    _validate($delegator, $form_button);
     # don't send password back to client in error case
     if ($delegator->in_error) {
         $delegator->internal_put_field('RealmOwner.password' => undef);
@@ -201,26 +235,40 @@ sub _validate_totp {
     my($totp) = $self->new_other('TOTP');
     return 1
         unless $totp->unauth_load({user_id => $owner->get('realm_id')});
-    if ($self->get('do_totp') && (my $totp_code = $self->get('totp_code'))) {
+    if ($self->get('require_totp') && $self->get('totp_code')) {
         return 1
-            if $totp->validate_input_code($totp_code);
+            if $totp->validate_input_code($self->get('totp_code'));
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
         $self->internal_put_error(totp_code => 'INVALID_TOTP_CODE');
         _maybe_lock_out($self, $owner);
         return 0;
     }
-    elsif ($self->get('do_totp')) {
+    elsif ($self->get('require_totp') && $self->get('totp_lost_recovery_code')) {
+        my($rc) = $self->new_other('RecoveryCode');
+        return 1
+            if $rc->unauth_load({
+                user_id => $owner->get('realm_id'),
+                code => $self->get('totp_lost_recovery_code'),
+                type => $_RCT->TOTP_LOST,
+            });
+        # Need to stay on page or the login attempt would get rolled back
+        $self->internal_stay_on_page;
+        $self->internal_put_error(totp_lost_recovery_code => 'INVALID_RECOVERY_CODE');
+        _maybe_lock_out($self, $owner);
+        return 0;
+    }
+    elsif ($self->get('require_totp')) {
         $self->internal_put_error(totp_code => 'NULL');
         return 0;
     }
     $self->internal_stay_on_page;
-    $self->internal_put_field(do_totp => 1);
+    $self->internal_put_field(require_totp => 1);
     return 0;
 }
 
 sub _validate {
-    my($self) = @_;
+    my($self, $form_button) = @_;
     my($owner) = $self->validate_login;
     return
         if !$owner || ($self->in_error && !$owner->require_otp);
@@ -239,6 +287,18 @@ sub _validate {
 
 sub _validate_login_attempt {
     my($self, $owner) = @_;
+    if ($self->get('password_query_recovery_code')) {
+        my($rc) = $_RC->new($self->req);
+        if ($rc->unauth_load({
+            user_id => $owner->get('realm_id'),
+            code => $self->get('password_query_recovery_code'),
+            type => $_RCT->PASSWORD_QUERY,
+        })) {
+            return 1;
+        }
+        $self->internal_put_error(recovery_code => 'NOT_FOUND');
+        return 0;
+    }
     if (my $err = _password_error($self, $owner)) {
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;

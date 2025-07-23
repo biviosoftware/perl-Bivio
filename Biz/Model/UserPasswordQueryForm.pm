@@ -47,13 +47,17 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    return unless $self->validate_email_and_put_uri;
+    my($req) = $self->get_request;
+    my($ro) = _validate_ro($self);
+    return
+        unless $ro;
+    $self->internal_put_field(
+        uri => $req->with_realm($ro, sub {
+            return Bivio::Biz::Action->get_instance('UserPasswordQuery')->format_uri($req);
+        }),
+    );
     $self->put_on_request(1);
-    return {
-        method => 'server_redirect',
-        task_id => 'next',
-        query => undef,
-    };
+    return _redirect('next');
 }
 
 sub internal_initialize {
@@ -73,34 +77,32 @@ sub internal_initialize {
     });
 }
 
-sub validate_email_and_put_uri {
-    my($self, $form) = @_;
-    $form ||= $self;
-    my($req) = $form->get_request;
+sub _redirect {
+    my($task_id) = @_;
+    return {
+        method => 'server_redirect',
+        task_id => $task_id,
+        query => undef,
+    }
+}
+
+sub _validate_ro {
+    my($self) = @_;
     my($ro) = $self->new_other('RealmOwner');
-    if (my $err = $ro->validate_login($form->get('Email.email'))) {
-        $form->internal_put_error('Email.email', $err);
-        return 0;
+    if (my $err = $ro->validate_login($self->get('Email.email'))) {
+        $self->internal_put_error('Email.email', $err);
+        return;
     }
     if ($ro->is_locked_out) {
         b_warn('locked owner=', $self);
-        $form->internal_put_error('Email.email', 'USER_LOCKED_OUT');
-        return 0;
+        $self->internal_put_error('Email.email', 'USER_LOCKED_OUT');
+        return;
     }
-    $form->internal_put_field(
-        uri => $req->with_realm(
-            $ro,
-            sub {
-                return Bivio::Biz::Action->get_instance('UserPasswordQuery')
-                    ->format_uri($req)
-                    unless $req->is_super_user($ro->get('realm_id'))
-                    || $ro->require_otp || $ro->require_totp;
-                $form->internal_put_error(qw(Email.email PERMISSION_DENIED));
-                return;
-            },
-        ) || return 0,
-    );
-    return 1;
+    if ($self->req->is_super_user($ro->get('realm_id')) || $ro->require_otp) {
+        $self->internal_put_error(qw(Email.email PERMISSION_DENIED));
+        return;
+    }
+    return $ro;
 }
 
 1;

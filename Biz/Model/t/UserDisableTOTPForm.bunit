@@ -48,9 +48,9 @@ my($is_task) = sub {
     }),
     [] => $is_task->('NOT_FOUND'),
     inline_case(sub {$no_setup = 0}),
-    empty_case({
-        login => 'demo',
-    }),
+    [] => sub {
+        return req(qw(form_model realm_owner name)) eq 'demo';
+    },
     error_case({
         login => 'demo',
     } => {

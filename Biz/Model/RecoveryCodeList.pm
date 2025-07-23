@@ -3,6 +3,7 @@ package Bivio::Biz::Model::RecoveryCodeList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
+my($_DT) = b_use('Type.DateTime');
 my($_RC) = b_use('Model.RecoveryCode');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
@@ -14,6 +15,19 @@ sub create {
     $code_array->do_iterate(sub {
         my($it) = @_;
         $_RC->new($self->req)->create($it);
+        return 1;
+    });
+    return;
+}
+
+sub delete_expired {
+    my($proto, $req) = @_;
+    $proto->new($req)->load_all->do_iterate(sub {
+        my($it) = @_;
+        my($rc) = $_RC->new($req)->set_ephemeral->load({code => $it->get('RecoveryCode.code')});
+        $rc->delete
+            if $rc->get('expiration_date_time')
+            && $_DT->is_less_than($rc->get('expiration_date_time'), $_DT->now);
         return 1;
     });
     return;

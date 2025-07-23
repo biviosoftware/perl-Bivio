@@ -4,6 +4,7 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 my($_P) = b_use('Type.Password');
+my($_RCT) = b_use('Type.RecoveryCodeType');
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
@@ -18,6 +19,8 @@ sub execute_ok {
         realm_owner => $req->get_nested(qw(auth_realm owner))
             ->update_password($self->get('new_password')),
     });
+    $self->req('Model.RecoveryCode')->delete
+        if $self->ureq('Model.RecoveryCode');
     return $res;
 }
 
@@ -35,7 +38,8 @@ sub internal_initialize {
             ],
             hidden => [
                 [qw(display_old_password Boolean)],
-                [qw(query_password Text NONE)],
+                [qw(display_totp Boolean)],
+                [qw(password_query_recovery_code RecoveryCode NONE)],
             ],
         ),
     });
@@ -46,13 +50,11 @@ sub internal_pre_execute {
     # Sets the 'display_old_password' field based on if the user is the
     # super user.
     my($req) = $self->get_request;
-    my($qp) = $req->unsafe_get_nested(qw(Action.UserPasswordQuery password));
-    $self->internal_put_field(query_password => $qp)
-        if $qp;
-    $self->internal_put_field(old_password => $qp)
-        if $qp ||= $self->unsafe_get('query_password');
+    my($pqrc) = $req->unsafe_get_nested(qw(Action.UserPasswordQuery password_query_recovery_code));
+    $self->internal_put_field(password_query_recovery_code => $pqrc)
+        if $pqrc;
     $self->internal_put_field(
-        display_old_password => $qp || $req->is_substitute_user ? 0 : 1);
+        display_old_password => $pqrc || $req->is_substitute_user ? 0 : 1);
     return;
 }
 
@@ -77,7 +79,10 @@ sub internal_validate_old {
 sub validate {
     my($self) = @_;
     return if $self->in_error;
-    unless ($self->req->is_substitute_user) {
+    my($rc) = $self->new_other('RecoveryCode')->load_by_code_and_type(
+        $self->get('password_query_recovery_code'), $_RCT->PASSWORD_QUERY)
+        if $self->unsafe_get('password_query_recovery_code');
+    unless ($self->req->is_substitute_user || $rc) {
         return
             unless $self->validate_not_null('old_password')
             && $self->internal_validate_old;

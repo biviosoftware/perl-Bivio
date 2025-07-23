@@ -33,6 +33,10 @@ sub generate_code {
     );
 }
 
+sub generate_code_for_query {
+    return Bivio::Biz::Random->password;
+}
+
 sub generate_new_codes {
     my($proto, $count) = @_;
     b_die('new code count required')
@@ -70,10 +74,12 @@ sub is_otp {
 }
 
 sub is_password {
+    # return 0;
     return 1;
 }
 
 sub is_secure_data {
+    # return 0;
     return 1;
 }
 

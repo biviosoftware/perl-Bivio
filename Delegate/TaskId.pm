@@ -1370,6 +1370,15 @@ sub info_totp {
             ADMIN_READ&ADMIN_WRITE
             Action.RecoveryCode->execute_download
         )],
+        [qw(
+            USER_RECOVERY_FORM
+            263
+            GENERAL
+            ANYBODY
+            Model.UserRecoveryForm
+            View.TOTP->recovery_form
+            next=MY_SITE
+        )],
     ];
 }
 
@@ -1555,6 +1564,7 @@ sub info_user_auth {
             Model.UserPasswordQueryForm
             View.UserAuth->password_query
             reset_task=USER_PASSWORD_RESET
+            recovery_task=USER_RECOVERY_FORM
             next=GENERAL_USER_PASSWORD_QUERY_MAIL
             cancel=SITE_ROOT
         )],
@@ -1573,6 +1583,7 @@ sub info_user_auth {
             USER
             ANYBODY
             Action.UserPasswordQuery
+            login_task=LOGIN
             password_task=USER_PASSWORD
             NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
             require_secure=1
@@ -1580,6 +1591,7 @@ sub info_user_auth {
         # forbidden errors are probably due to missing cookies.
         # for example, if user is resetting password from email link
         # with cookies disabled
+        # TODO: permissions when resetting password?
         [qw(
             USER_PASSWORD
             21

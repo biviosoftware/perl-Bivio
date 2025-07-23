@@ -2043,7 +2043,7 @@ sub _cfg_user_auth {
             [USER_CREATE => 'pub/register'],
             [GENERAL_CONTACT => 'pub/contact'],
             [USER_CREATE_DONE => undef],
-            [GENERAL_USER_PASSWORD_QUERY => 'pub/forgot-password'],
+            [GENERAL_USER_PASSWORD_QUERY => [qw(pub/lost-account-access pub/forgot-password)]],
             [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
             [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
             [GENERAL_USER_LOCKED_OUT => undef],
@@ -2104,12 +2104,13 @@ sub _cfg_user_auth {
                 ok_button => 'Send',
             ]],
             [acknowledgement => [
-                user_exists => 'Your email is already in the database.  Please use the form below to reset your password.',
+                user_exists => 'Your email is already in the database.  Please use the form below to reset your password or recover your account.',
                 GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to reset your password.},
                 USER_PASSWORD_RESET => q{Your password has been reset.  Please choose a new one.},
                 USER_PASSWORD => q{Your password has been changed.},
                 password_nak => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to reset your password again.},
                 USER_FORUM_TREE => q{Your subscriptions have been updated.},
+                # TODO: is this used
                 user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},
                 GENERAL_CONTACT => 'Your inquiry has been sent.  Thank you!',
                 USER_SETTINGS_FORM => 'Your settings have been updated.',
@@ -2131,7 +2132,7 @@ sub _cfg_user_auth {
                 DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser is Missing Cookies',
             ]],
             [xlink => [
-                GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
+                GENERAL_USER_PASSWORD_QUERY => 'Forgot Password or Lost Account Access?',
                 login_no_context => 'Already registered?  Click here to login.',
                 user_create_no_context => 'Not registered? Click here to register.',
                 USER_CREATE_DONE => 'Check Your Email',

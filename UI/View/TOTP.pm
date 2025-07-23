@@ -19,4 +19,10 @@ sub disable_form {
     )]));
 }
 
+sub recovery_form {
+    return shift->internal_body(vs_simple_form(UserRecoveryForm => [qw(
+        UserRecoveryForm.recovery_code
+    )]));
+}
+
 1;

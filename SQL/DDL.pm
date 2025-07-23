@@ -1155,9 +1155,10 @@ CREATE SEQUENCE login_attempt_s
   CACHE 1 INCREMENT BY 100000
 /
 
---
--- 100014 available
---
+CREATE SEQUENCE recovery_code_s
+  MINVALUE 100014
+  CACHE 1 INCREMENT BY 100000
+/
 
 CREATE SEQUENCE ec_payment_s
   MINVALUE 100015
@@ -1708,10 +1709,13 @@ CREATE TABLE totp_t (
 /
 
 CREATE TABLE recovery_code_t (
+  recovery_code_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
   code VARCHAR(4000) NOT NULL,
+  type NUMERIC(1) NOT NULL,
   creation_date_time DATE NOT NULL,
-  CONSTRAINT recovery_code_t1 primary key(user_id, code)
+  expiration_date_time DATE,
+  CONSTRAINT recovery_code_t1 primary key(recovery_code_id)
 )
 /
 EOF
