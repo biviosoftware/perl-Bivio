@@ -28,15 +28,22 @@ sub execute {
         require_totp => 0,
     })->put_on_request($req, 1);
     my($redirect_task_id);
+    my(@res);
     if ($u->require_totp) {
         $self->put(require_totp => 1);
-        $redirect_task_id = $req->get('task')->get_attr_as_id('login_task');
+        @res = {
+            method => 'server_redirect',
+            #TODO: get_attr and set no_context on the password_task
+            task_id => $req->get('task')->get_attr_as_id('login_task'),
+            no_context => 1,
+        };
     }
     else {
         my($die) = Bivio::Die->catch(sub {
-            Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {});
+            @res = Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {});
         });
         if ($die) {
+            b_debug($die);
             $die->throw
                 if $die->get('code')->eq_missing_cookies;
             _nak($proto, $req);
@@ -46,14 +53,8 @@ sub execute {
             });
         }
         $proto->get_instance('Acknowledgement')->save_label($req);
-        $redirect_task_id = $req->get('task')->get_attr_as_id('password_task');
     }
-    return {
-        method => 'server_redirect',
-        #TODO: get_attr and set no_context on the password_task
-        task_id => $redirect_task_id,
-        no_context => 1,
-    };
+    return @res;
 }
 
 sub format_uri {

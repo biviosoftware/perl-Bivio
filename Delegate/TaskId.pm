@@ -1636,6 +1636,7 @@ sub info_user_auth {
             Model.UserLoginForm
             View.UserAuth->login
             locked_out_task=GENERAL_USER_LOCKED_OUT
+            password_task=USER_PASSWORD
             next=MY_SITE
             require_secure=1
         )],

@@ -27,6 +27,27 @@ sub get_basic_authorization_realm {
         : '*';
 }
 
+sub execute_ok {
+    my($self) = @_;
+    my(@res) = shift->SUPER::execute_ok(@_);
+    return @res
+        if $self->in_error;
+    if (my $pqrcm = $self->unsafe_get('password_query_recovery_code_model')) {
+        $pqrcm->update({type => $_RCT->PASSWORD_RESET});
+        @res = {
+            method => 'server_redirect',
+            task_id => $self->req('task')->get_attr_as_id('password_task'),
+            no_context => 1,
+        };
+    }
+    if ($self->unsafe_get('totp_lost_recovery_code_model')) {
+        # TODO: ack?
+        $self->new_other('UserDisableTOTPForm')->disable_totp;
+        $self->internal_put_field(totp_disabled => 1);
+    }
+    return @res;
+}
+
 sub internal_initialize {
     my($self) = @_;
     # B<FOR INTERNAL USE ONLY>
@@ -59,11 +80,6 @@ sub internal_initialize {
             {
                 name => 'password_query_recovery_code',
                 type => 'Line',
-                constraint => 'NONE',
-            },
-            {
-                name => 'totp_lost_button',
-                type => 'OKButton',
                 constraint => 'NONE',
             },
             {
@@ -111,6 +127,21 @@ sub internal_initialize {
                 type => 'Boolean',
                 constraint => 'NONE',
             },
+            {
+                name => 'password_query_recovery_code_model',
+                type => 'Model.RecoveryCode',
+                constraint => 'NONE',
+            },
+            {
+                name => 'totp_lost_recovery_code_model',
+                type => 'Model.RecoveryCode',
+                constraint => 'NONE',
+            },
+            {
+                name => 'totp_disabled',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
         ],
     });
 
@@ -129,10 +160,14 @@ sub internal_pre_execute {
     if (my $upq = $self->ureq('Action.UserPasswordQuery')) {
         $self->internal_put_field(map(($_ => $upq->get($_)), qw(
             realm_owner disable_assert_cookie require_totp password_query_recovery_code)));
-        $self->new_other('RecoveryCode')->unauth_load_by_code_and_type_or_die(
-            $self->get_nested(qw(realm_owner realm_id)),
-            $self->get('password_query_recovery_code'),
-            $_RCT->PASSWORD_QUERY,
+    }
+    if ($self->unsafe_get('password_query_recovery_code')) {
+        $self->internal_put_field(
+            password_query_recovery_code_model => $self->new_other('RecoveryCode')->unauth_load_by_code_and_type_or_die(
+                $self->get_nested(qw(realm_owner realm_id)),
+                $self->get('password_query_recovery_code'),
+                $_RCT->PASSWORD_QUERY,
+            ),
         );
     }
     return;
@@ -245,13 +280,14 @@ sub _validate_totp {
         return 0;
     }
     elsif ($self->get('require_totp') && $self->get('totp_lost_recovery_code')) {
-        my($rc) = $self->new_other('RecoveryCode');
-        return 1
-            if $rc->unauth_load({
-                user_id => $owner->get('realm_id'),
-                code => $self->get('totp_lost_recovery_code'),
-                type => $_RCT->TOTP_LOST,
-            });
+        if (my $rc = $self->new_other('RecoveryCode')->unauth_load_by_code_and_type({
+            user_id => $owner->get('realm_id'),
+            code => $self->get('totp_lost_recovery_code'),
+            type => $_RCT->TOTP_LOST,
+        })) {
+            $self->internal_put_field(totp_lost_recovery_code_model => $rc);
+            return 1;
+        }
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
         $self->internal_put_error(totp_lost_recovery_code => 'INVALID_RECOVERY_CODE');
@@ -276,7 +312,8 @@ sub _validate {
         if $owner->is_locked_out;
     return
         unless _validate_login_attempt($self, $owner);
-    $owner->maybe_upgrade_password($self->get('RealmOwner.password'));
+    $owner->maybe_upgrade_password($self->get('RealmOwner.password'))
+        if $self->get('RealmOwner.password');
     return
         unless _validate_totp($self, $owner);
     _record_login_attempt($self, $owner, 1);
@@ -287,18 +324,8 @@ sub _validate {
 
 sub _validate_login_attempt {
     my($self, $owner) = @_;
-    if ($self->get('password_query_recovery_code')) {
-        my($rc) = $_RC->new($self->req);
-        if ($rc->unauth_load({
-            user_id => $owner->get('realm_id'),
-            code => $self->get('password_query_recovery_code'),
-            type => $_RCT->PASSWORD_QUERY,
-        })) {
-            return 1;
-        }
-        $self->internal_put_error(recovery_code => 'NOT_FOUND');
-        return 0;
-    }
+    return 1
+        if $self->unsafe_get('password_query_recovery_code_model');
     if (my $err = _password_error($self, $owner)) {
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;

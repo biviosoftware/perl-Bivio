@@ -54,13 +54,13 @@ my($is_task) = sub {
     error_case({
         login => 'demo',
     } => {
-        totp_code => 'INVALID_RECOVERY_OPTIONS',
+        'RealmOwner.password' => 'NULL',
     }),
     error_case({
         login => 'demo',
         totp_code => sub {$totp_code},
     } => {
-        totp_code => 'INVALID_RECOVERY_OPTIONS',
+        'RealmOwner.password' => 'NULL',
     }),
     error_case({
         login => 'demo',
@@ -70,26 +70,27 @@ my($is_task) = sub {
     }),
     error_case({
         login => 'demo',
-        totp_code => 123456,
         'RealmOwner.password' => 'password',
+        totp_code => 123456,
     } => {
         totp_code => 'INVALID_TOTP_CODE',
     }),
     error_case({
         login => 'demo',
+        'RealmOwner.password' => 'password',
         recovery_code => 'wrong-recovery-code',
     } => {
         recovery_code => 'INVALID_RECOVERY_CODE',
     }),
     [{
         login => 'demo',
-        totp_code => sub {$totp_code},
         'RealmOwner.password' => 'wrong-password',
+        totp_code => sub {$totp_code},
     }] => $is_task->('locked_out_task'),
     [{
         login => 'demo',
-        totp_code => sub {$totp_code},
         'RealmOwner.password' => 'password',
+        totp_code => sub {$totp_code},
     }] => sub {
         return 0
             if Model_TOTP()->new(req())->unsafe_load;
@@ -99,6 +100,7 @@ my($is_task) = sub {
     },
     [{
         login => 'demo',
+        'RealmOwner.password' => 'password',
         recovery_code => sub {$recovery_codes->get_element(0)},
     }] => sub {
         return 0

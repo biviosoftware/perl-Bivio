@@ -24,11 +24,26 @@ sub account {
             [
                 vs_blank_cell(),
                 Link(
-                    If ([['auth_user'], '->require_otp'],
+                    If([['auth_user'], '->require_otp'],
                         'Reset OTP',
                         'Convert your account to OTP',
                     ),
                     'USER_OTP',
+                )->put(row_control => If(['auth_user'], 1)),
+            ],
+            vs_blank_cell(),
+            [
+                vs_blank_cell(),
+                If(
+                    [['auth_user'], '->require_totp'],
+                    Link(
+                        'Disable time-based one-time password two-factor authentication',
+                        'USER_DISABLE_TOTP_FORM',
+                    ),
+                    Link(
+                        'Enable time-based one-time password two-factor authentication',
+                        'USER_ENABLE_TOTP_FORM',
+                    ),
                 )->put(row_control => If(['auth_user'], 1)),
             ],
             ['UserAccountForm.new_password', {

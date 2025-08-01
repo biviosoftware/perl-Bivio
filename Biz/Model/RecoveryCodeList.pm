@@ -10,6 +10,7 @@ $_C->register(my $_CFG = {
     new_code_count => 5,
 });
 
+# TODO: should this be here or in RecoveryCode?
 sub create {
     my($self, $code_array) = @_;
     $code_array->do_iterate(sub {
@@ -20,11 +21,12 @@ sub create {
     return;
 }
 
-sub delete_expired {
+# TODO: should this be here or in RecoveryCode?
+sub delete_all_expired {
     my($proto, $req) = @_;
     $proto->new($req)->load_all->do_iterate(sub {
         my($it) = @_;
-        my($rc) = $_RC->new($req)->set_ephemeral->load({code => $it->get('RecoveryCode.code')});
+        my($rc) = $_RC->new($req)->set_ephemeral->load({recovery_code_id => $it->get('RecoveryCode.recovery_code_id')});
         $rc->delete
             if $rc->get('expiration_date_time')
             && $_DT->is_less_than($rc->get('expiration_date_time'), $_DT->now);
@@ -51,7 +53,8 @@ sub internal_initialize {
         version => 1,
         can_iterate => 1,
         auth_id => ['RecoveryCode.user_id'],
-        primary_key => [qw(RecoveryCode.user_id RecoveryCode.code)],
+        other => ['RecoveryCode.code'],
+        primary_key => [qw(RecoveryCode.recovery_code_id)],
     });
 }
 
