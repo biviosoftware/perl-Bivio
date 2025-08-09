@@ -34,7 +34,7 @@ sub format_uri_for_download {
     my($self) = @_;
     return $self->req->format_uri({
         task_id => 'USER_RECOVERY_CODE_DOWNLOAD',
-        realm => b_debug($self->req(qw(auth_user name))),
+        realm => $self->req(qw(auth_user name)),
         query => {
             $self->CODE_QUERY_KEY => join(
                 $self->CODE_QUERY_SEPARATOR, $self->req(qw(form_model recovery_codes))->as_list),

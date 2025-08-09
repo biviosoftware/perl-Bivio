@@ -4,6 +4,7 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 my($_P) = b_use('Type.Password');
+my($_RCT) = b_use('Type.RecoveryCodeType');
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
@@ -11,15 +12,16 @@ sub PASSWORD_FIELD_LIST {
 
 sub execute_ok {
     my($self) = @_;
-    b_debug($self->unsafe_get('password_query_recovery_code_verified'));
-    b_debug($self->ureq(qw(Action.UserPasswordQuery password_query_recovery_code)));
-    # Updates the password in the database and the cookie.
     my($res) = shift->SUPER::execute_ok(@_);
     my($req) = $self->get_request;
+    # Updates the password in the database and the cookie.
     $self->get_instance('UserLoginForm')->execute($req, {
         realm_owner => $req->get_nested(qw(auth_realm owner))
             ->update_password($self->get('new_password')),
     });
+    if (my $m = $self->unsafe_get('password_query_recovery_code_model')) {
+        $m->delete;
+    }
     return $res;
 }
 
@@ -38,10 +40,10 @@ sub internal_initialize {
             hidden => [
                 [qw(display_old_password Boolean)],
                 [qw(display_totp Boolean)],
-                [qw(password_query_recovery_code RecoveryCode NONE)],
+                [qw(password_query_recovery_code Type.RecoveryCode NONE)],
             ],
             other => [
-                [qw(password_query_recovery_code_verified Boolean)],
+                [qw(password_query_recovery_code_model Model.RecoveryCode NONE)],
             ],
         ),
     });
@@ -52,13 +54,10 @@ sub internal_pre_execute {
     # Sets the 'display_old_password' field based on if the user is the
     # super user.
     my($req) = $self->get_request;
-    my($pqrc) = b_debug($req->unsafe_get_nested(qw(Action.UserPasswordQuery password_query_recovery_code)));
+    my($pqrc) = $req->unsafe_get_nested(qw(Action.UserPasswordQuery password_query_recovery_code));
     $self->internal_put_field(password_query_recovery_code => $pqrc)
         if $pqrc;
-    $self->internal_put_field(password_query_recovery_code_verified => 1)
-        if $pqrc;
-    $self->internal_put_field(
-        display_old_password => $pqrc || $req->is_substitute_user ? 0 : 1);
+    $self->internal_put_field(display_old_password => $pqrc || $req->is_substitute_user ? 0 : 1);
     return;
 }
 
@@ -82,10 +81,14 @@ sub internal_validate_old {
 
 sub validate {
     my($self) = @_;
-    b_debug($self->unsafe_get('password_query_recovery_code_verified'));
-    b_debug($self->ureq(qw(Action.UserPasswordQuery password_query_recovery_code)));
     return if $self->in_error;
-    unless ($self->req->is_substitute_user || $self->unsafe_get('password_query_recovery_code')) {
+    if (my $pqrc = $self->unsafe_get('password_query_recovery_code')) {
+        $self->internal_put_field(
+            password_query_recovery_code_model => $self->new_other(
+                'RecoveryCode')->load_by_code_and_type($pqrc, $_RCT->PASSWORD_RESET),
+        );
+    }
+    unless ($self->req->is_substitute_user || $self->unsafe_get('password_query_recovery_code_model')) {
         return
             unless $self->validate_not_null('old_password')
             && $self->internal_validate_old;

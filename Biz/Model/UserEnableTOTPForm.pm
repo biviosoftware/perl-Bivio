@@ -64,8 +64,6 @@ sub internal_pre_execute {
     my($self) = @_;
     return 'FORBIDDEN'
         if $_T->new($self->req)->unsafe_load;
-    return 'FORBIDDEN'
-        if $_RCL->new($self->req)->load_all->get_result_set_size;
     return;
 }
 

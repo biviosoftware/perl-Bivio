@@ -80,9 +80,11 @@ sub internal_initialize {
 
 sub validate_input_code {
     my($self, $input) = @_;
+    b_debug($input);
     my($time_step) = _input_in_range($input, $self->get(qw(algorithm digits period secret)));
     return 0
         unless $time_step;
+    b_debug($time_step);
     if ($time_step == ($self->get('last_time_step') // -1)) {
         b_warn('TOTP code reuse disallowed');
         return 0;

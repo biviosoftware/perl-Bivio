@@ -1788,7 +1788,7 @@ sub _cfg_totp {
             [USER_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
         ],
         Text => [
-            [[qw(UserEnableTOTPForm UserDisableTOTPForm)] => [
+            [[qw(UserLoginForm UserEnableTOTPForm UserDisableTOTPForm)] => [
                 password => 'Password',
                 totp_code => '6-Digit Authenticator Code',
             ]],

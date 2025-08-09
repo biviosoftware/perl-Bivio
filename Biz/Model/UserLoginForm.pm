@@ -34,6 +34,8 @@ sub disable_assert_cookie {
 sub execute_ok {
     my($self) = @_;
     my($res) = shift->SUPER::execute_ok(@_);
+    return $res
+        if $self->get_stay_on_page;
     my($req) = $self->get_request;
     my($realm) = $self->unsafe_get('validate_called')
         ? $self->get('realm_owner')

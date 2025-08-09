@@ -19,17 +19,17 @@ sub execute {
     my($proto, $req) = @_;
     my($query_key) = delete(($req->get('query') || {})->{$_KEY});
     my($u) = $req->get_nested(qw(auth_realm owner));
-    my($self) = $proto->new({
+    my($self) = $proto->new(b_debug({
         realm_owner => $u,
         # there might not be a cookie if user is visiting site
         # from the reset-password URI
         disable_assert_cookie => 1,
         password_query_recovery_code => $query_key,
         require_totp => 0,
-    })->put_on_request($req, 1);
+    }))->put_on_request($req, 1);
     my($redirect_task_id);
     my(@res);
-    if ($u->require_totp) {
+    if (b_debug($u->require_totp)) {
         $self->put(require_totp => 1);
         @res = {
             method => 'server_redirect',

@@ -161,14 +161,22 @@ sub internal_pre_execute {
         $self->internal_put_field(map(($_ => $upq->get($_)), qw(
             realm_owner disable_assert_cookie require_totp password_query_recovery_code)));
     }
+    # UserLogout uses this form; may not be able to do this in internal_pre_execute.
     if ($self->unsafe_get('password_query_recovery_code')) {
-        $self->internal_put_field(
-            password_query_recovery_code_model => $self->new_other('RecoveryCode')->unauth_load_by_code_and_type_or_die(
-                $self->get_nested(qw(realm_owner realm_id)),
-                $self->get('password_query_recovery_code'),
-                $_RCT->PASSWORD_QUERY,
-            ),
+        my($rc) = $self->new_other('RecoveryCode')->unauth_load_by_code_and_type(
+            $self->get_nested(qw(realm_owner realm_id)),
+            $self->get('password_query_recovery_code'),
+            $_RCT->PASSWORD_QUERY,
         );
+        if ($rc && $rc->is_expired) {
+            $self->internal_put_error(password_query_recovery_code => 'EXPIRED');
+        }
+        elsif ($rc) {
+            $self->internal_put_field(password_query_recovery_code_model => $rc);
+        }
+        else {
+            $self->internal_put_error(password_query_recovery_code => 'NOT_FOUND');
+        }
     }
     return;
 }

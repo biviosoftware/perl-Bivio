@@ -48,6 +48,11 @@ sub internal_initialize {
     });
 }
 
+sub is_expired {
+    my($self) = @_;
+    return $_DT->is_less_than($self->get('expiration_date_time'), $_DT->now) ? 1 : 0;
+}
+
 sub load_by_code_and_type {
     my($self, $code, $type) = @_;
     return _iterate($self, 1, $code, 'iterate_start', {type => $type});
@@ -71,19 +76,18 @@ sub unsafe_load_by_code_and_type {
 sub _iterate {
     my($self, $do_die, $code, $method, $query) = @_;
     my($found);
-    b_debug($code);
     $self->do_iterate(sub {
         my($it) = @_;
         return 1
-            unless b_debug($it->get('code')) eq $code;
+            unless $it->get('code') eq $code;
         $found = 1;
         return 0;
-    }, $method, b_debug($query));
+    }, $method, $query);
     if ($do_die) {
         b_die('recovery code not found')
             unless $found;
         b_die('expired recovery code=', $self)
-            unless $_DT->is_less_than($_DT->now, $self->get('expiration_date_time'));
+            if $self->is_expired;
     }
     return $found ? $self : undef;
 }

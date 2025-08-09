@@ -244,6 +244,9 @@ sub login {
         vs_simple_form('UserLoginForm', [
             'UserLoginForm.login',
             'UserLoginForm.RealmOwner.password',
+            ['UserLoginForm.totp_code', {
+                row_control => [qw(Model.UserLoginForm require_totp)],
+            }],
             '*ok_button',
             vs_blank_cell(),
             [

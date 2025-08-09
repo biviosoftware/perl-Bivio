@@ -15,7 +15,6 @@ sub initialize {
         QRCode([sub {
             my($source) = @_;
             my($secret) = $source->req(qw(form_model totp_secret));
-            b_debug($secret);
             return join('', (
                 'otpauth://totp/',
                 $source->req(qw(auth_user name)),
