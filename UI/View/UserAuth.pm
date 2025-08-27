@@ -91,7 +91,7 @@ sub login {
         'UserLoginForm.login',
         'UserLoginForm.RealmOwner.password',
         ['UserLoginForm.totp_code', {
-            row_control => ["Model.UserLoginForm", 'do_totp'],
+            row_control => ['Model.UserLoginForm', 'require_totp'],
         }],
     ]));
 }

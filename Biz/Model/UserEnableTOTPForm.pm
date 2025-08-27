@@ -3,6 +3,7 @@ package Bivio::Biz::Model::UserEnableTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginForm';
 
+my($_ARC) = b_use('Action.RecoveryCode');
 my($_DT) = b_use('Type.DateTime');
 my($_RFC6238) = b_use('Biz.RFC6238');
 my($_RC) = b_use('Type.RecoveryCode');
@@ -17,7 +18,7 @@ sub execute_empty {
     $self->internal_put_field(
         login => $self->req(qw(auth_realm owner_name)),
         totp_secret => $_TS->generate_secret($_T->get_default_algorithm),
-        recovery_codes => $_RC->generate_new_codes($_RCL->get_new_code_count),
+        recovery_codes => $self->req($_ARC, 'recovery_code_array'),
     );
     return @res;
 }

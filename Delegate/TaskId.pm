@@ -1350,6 +1350,7 @@ sub info_totp {
             260
             USER
             ADMIN_READ&ADMIN_WRITE
+            Action.RecoveryCode->execute_preview_array
             Model.UserEnableTOTPForm
             View.TOTP->enable_form
             next=MY_SITE
@@ -1371,12 +1372,21 @@ sub info_totp {
             Action.RecoveryCode->execute_download
         )],
         [qw(
-            USER_RECOVERY_FORM
+            USER_RECOVERY_CODE_REFILL_LIST
             263
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Action.RecoveryCode->execute_refill_list
+            View.TOTP->recovery_code_list
+            next=MY_SITE
+        )],
+        [qw(
+            LOGIN_TOTP
+            264
             GENERAL
             ANYBODY
-            Model.UserRecoveryForm
-            View.TOTP->recovery_form
+            Model.UserTOTPLoginForm
+            View.TOTP->login_form
             next=MY_SITE
         )],
     ];
@@ -1564,7 +1574,6 @@ sub info_user_auth {
             Model.UserPasswordQueryForm
             View.UserAuth->password_query
             reset_task=USER_PASSWORD_RESET
-            recovery_task=USER_RECOVERY_FORM
             next=GENERAL_USER_PASSWORD_QUERY_MAIL
             cancel=SITE_ROOT
         )],
@@ -1637,7 +1646,7 @@ sub info_user_auth {
             View.UserAuth->login
             locked_out_task=GENERAL_USER_LOCKED_OUT
             password_task=USER_PASSWORD
-            next=MY_SITE
+            next=USER_RECOVERY_CODE_REFILL_LIST
             require_secure=1
         )],
         [qw(

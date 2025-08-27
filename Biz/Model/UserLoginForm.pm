@@ -8,7 +8,7 @@ b_use('IO.Trace');
 # cookie.  Modules which "login" users should call <tt>execute</tt>
 # with the new realm_owner.
 #
-# A user is logged in if his PASSWORD_FIELD is set in the cookie.  We keep the
+# A user is logged in if their PASSWORD_FIELD is set in the cookie.  We keep the
 # user_id in the cookie so we can track logged out users.
 
 our($_TRACE);
@@ -17,6 +17,10 @@ b_use('IO.Config')->register(my $_CFG = {
 });
 (my $_C = b_use('AgentHTTP.Cookie'))->register(__PACKAGE__)
     if $_CFG->{register_with_cookie};
+my($_T) = b_use('Model.TOTP');
+my($_TI) = b_use('Agent.TaskId');
+my($_RC) = b_use('Model.RecoveryCode');
+my($_RCT) = b_use('Model.RecoveryCodeType');
 
 sub SUPER_USER_FIELD {
     # B<DEPRECATED>:
@@ -33,8 +37,7 @@ sub disable_assert_cookie {
 
 sub execute_ok {
     my($self) = @_;
-    my($res) = shift->SUPER::execute_ok(@_);
-    return $res
+    return
         if $self->get_stay_on_page;
     my($req) = $self->get_request;
     my($realm) = $self->unsafe_get('validate_called')
@@ -52,8 +55,10 @@ sub execute_ok {
         $self->throw_die('NOT_FOUND', {entity => $realm});
         # DOES NOT RETURN
     }
-    _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
     _set_cookie_user($self, $req, $realm);
+    my($res) = shift->SUPER::execute_ok(@_);
+    _set_cookie_totp($self, $req, $realm);
+    _set_user($self, $realm, $req->unsafe_get('cookie'), $req);
     return $res
         unless $realm && $realm->require_otp;
     return $res
@@ -184,15 +189,30 @@ sub _load_cookie_user {
         my($cp) = _get($cookie, $proto->PASSWORD_FIELD);
         return undef
             unless $cp;
-        return $auth_user
-            if _validate_cookie_password($cp, $auth_user);
+        if (_validate_cookie_password($cp, $auth_user)) {
+            if ($auth_user->require_totp) {
+                return $auth_user
+                    if _validate_cookie_totp($cookie, $auth_user);
+                # TODO: no_context => 1, ?
+                $req->server_redirect('LOGIN_TOTP')
+                    unless $req->req('task_id')->is_equal($_TI->from_name('LOGIN_TOTP'));
+                return undef;
+            }
+            return $auth_user;
+        }
         $req->warn($auth_user, ': user is not valid');
     }
     else {
         $req->warn($cookie->get($proto->USER_FIELD),
             ': user_id not found, logging out');
     }
-    $cookie->delete($proto->USER_FIELD, $proto->PASSWORD_FIELD);
+    $cookie->delete(
+        $proto->USER_FIELD,
+        $proto->PASSWORD_FIELD,
+        $proto->TOTP_CODE_FIELD,
+        $proto->TOTP_TIME_STEP_FIELD,
+        $proto->TOTP_LOST_RECOVERY_CODE_FIELD,
+    );
     return undef;
 }
 
@@ -214,7 +234,45 @@ sub _set_cookie_user {
         );
     }
     else {
-        $cookie->delete($self->PASSWORD_FIELD);
+        $cookie->delete(
+            $self->PASSWORD_FIELD,
+        );
+    }
+    return;
+}
+
+sub _set_cookie_totp {
+    my($self, $req, $realm) = @_;
+    my($cookie) = $req->unsafe_get('cookie');
+    return
+        unless $cookie;
+    $_C->assert_is_ok($req)
+        if $realm && !_disable_assert_cookie($self);
+    if ($realm) {
+        return
+            unless $realm->require_totp;
+        my($cookie) = $req->unsafe_get('cookie');
+        # TODO: maybe compute the code rather than using input, which could be recovery code?
+        if ($self->get('totp_code')) {
+            $cookie->put(
+                $self->TOTP_CODE_FIELD => $self->get('totp_code'),
+                $self->TOTP_TIME_STEP_FIELD => $self->get('totp_time_step'),
+            );
+            return;
+        }
+        if ($self->get('totp_lost_recovery_code')) {
+            $cookie->put($self->TOTP_LOST_RECOVERY_CODE_FIELD => $self->get('totp_lost_recovery_code'));
+            return;
+        }
+        b_die('set cookie totp with no codes');
+        # DOES NOT RETURN
+    }
+    else {
+        $cookie->delete(
+            $self->TOTP_CODE_FIELD,
+            $self->TOTP_TIME_STEP_FIELD,
+            $self->TOTP_LOST_RECOVERY_CODE_FIELD,
+        );
     }
     return;
 }
@@ -244,9 +302,10 @@ sub _set_user {
         super_user_id => _get($cookie, _super_user_field($proto))
             || $req->unsafe_get('super_user_id'),
         user_state => $proto->use('Type.UserState')->from_name(
-            $user ? 'LOGGED_IN'
-            : _get($cookie, $proto->USER_FIELD)
-            ? 'LOGGED_OUT' : 'JUST_VISITOR'),
+            $user ? _get($cookie, $proto->TOTP_CODE_FIELD) ? 'LOGGED_IN'
+                : _get($cookie, $proto->TOTP_LOST_RECOVERY_CODE_FIELD) ? 'LOGGED_IN' : 'PENDING_TOTP'
+            : _get($cookie, $proto->USER_FIELD) ? 'LOGGED_OUT' : 'JUST_VISITOR',
+        ),
     );
     _set_log_user($proto, $cookie, $req);
     return $user;
@@ -266,6 +325,29 @@ sub _validate_cookie_password {
     return $auth_user->require_otp
         ? $auth_user->new_other('OTP')->validate_password($passwd, $auth_user)
         : $passwd eq $auth_user->get('password') ? 1 : 0;
+}
+
+sub _validate_cookie_totp {
+    my($self, $cookie, $auth_user) = @_;
+    if (my $c = _get($cookie, $self->TOTP_CODE_FIELD)) {
+        if (my $t = _get($cookie, $self->TOTP_TIME_STEP_FIELD)) {
+            my($totp) = $auth_user->new_other('TOTP');
+            unless ($totp->unauth_load({$_T->REALM_ID_FIELD => $auth_user->get('realm_id')})) {
+                b_warn('validating cookie totp with no totp');
+                return 0;
+            }
+            return $totp->validate_cookie_code($c, $t);
+        }
+        b_warn('invalid totp cookie fields');
+        return 0;
+    }
+    if (my $c = _get($cookie, $self->TOTP_LOST_RECOVERY_CODE_FIELD)) {
+        my($rc) = $auth_user->new_other('RecoveryCode');
+        return 0
+            unless $rc->unauth_load_by_code_and_type($auth_user->get('realm_id'), $c, $_RCT->TOTP_LOST);
+        return $rc->validate_for_cookie;
+    }
+    return 0;
 }
 
 1;

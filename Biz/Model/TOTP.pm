@@ -9,6 +9,7 @@ my($_TA) = b_use('Type.TOTPAlgorithm');
 my($_TS) = b_use('Type.TOTPSecret');
 
 Bivio::IO::Config->register(my $_CFG = {
+    # TODO: remove/rename "default"?
     default_algorithm => $_TA->SHA1,
     default_digits => 6,
     default_period => 30,
@@ -78,13 +79,16 @@ sub internal_initialize {
     });
 }
 
+sub validate_cookie_code {
+    my($self, $code, $time_step) = @_;
+    return _code_valid_for_time_step($self, $code, $time_step);
+}
+
 sub validate_input_code {
     my($self, $input) = @_;
-    b_debug($input);
-    my($time_step) = _input_in_range($input, $self->get(qw(algorithm digits period secret)));
+    my($time_step) = _input_in_range($self, $input);
     return 0
         unless $time_step;
-    b_debug($time_step);
     if ($time_step == ($self->get('last_time_step') // -1)) {
         b_warn('TOTP code reuse disallowed');
         return 0;
@@ -100,23 +104,28 @@ sub validate_setup {
 }
 
 sub _input_in_range {
-    my($input, $algorithm, $digits, $period, $secret) = @_;
-    my($now_ts) = $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $period);
+    my($self, $input) = @_;
+    my($now_ts) = $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $self->get('period'));
     foreach my $ts (
         # Test time step for now first as it will most often be the valid one
         $now_ts,
         map($now_ts + $_, grep($_ != 0, -$_CFG->{time_step_tolerance} .. $_CFG->{time_step_tolerance}))
     ) {
         next
-            unless _input_valid_for_time_step($input, $algorithm, $digits, $secret, $ts);
+            unless _code_valid_for_time_step($self, $input, $ts);
         return $ts;
     }
     return undef;
 }
 
-sub _input_valid_for_time_step {
-    my($input, $algorithm, $digits, $secret, $time_step) = @_;
-    return $input eq $_RFC6238->compute($algorithm->get_name, $digits, $secret, $time_step);
+sub _code_valid_for_time_step {
+    my($self, $code, $time_step) = @_;
+    return $code eq $_RFC6238->compute(
+        $self->get('algorithm')->get_name,
+        $self->get('digits'),
+        $self->get('secret'),
+        $time_step,
+    ) ? 1 : 0;
 }
 
 1;

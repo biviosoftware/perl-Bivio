@@ -295,7 +295,7 @@ __PACKAGE__->new({
             LOGIN => 'Sign-in',
             LOGOUT => 'Sign-out',
             USER_ACCOUNT_CREATE => 'New User',
-            GENERAL_USER_PASSWORD_QUERY => 'Forgot Password or Lost Account Access?',
+            GENERAL_USER_PASSWORD_QUERY => 'Forgot Password?',
         ]],
         [SiteRoot => [
             hm_bunit1 => 'bunit1',

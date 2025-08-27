@@ -454,7 +454,7 @@ sub get_delegate_info {
     INVALID_RECOVERY_CODE => [
         87,
         undef,
-        'Recovery code is invalid.',
+        'Recovery code is invalid or has already been used.',
     ],
     EXPIRED => [
         88,

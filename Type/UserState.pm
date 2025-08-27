@@ -17,11 +17,17 @@ use Bivio::Base 'Type.Enum';
 # LOGGED_IN
 #
 # User is logged in
+#
+# PENDING_TOTP
+#
+# User has entered login/password, but must now enter totp
 
 __PACKAGE__->compile([
     JUST_VISITOR => [1],
     LOGGED_OUT => [2],
     LOGGED_IN => [3],
+    # TODO: "totp" or "2fa"?
+    PENDING_TOTP => [4],
 ]);
 
 1;

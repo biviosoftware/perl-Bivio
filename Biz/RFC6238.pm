@@ -4,8 +4,6 @@ use strict;
 use Digest::SHA ();
 use Bivio::Base 'Bivio.UNIVERSAL';
 
-my($_DIGITS_POWER) = [map(10 ** $_, 0..8)];
-
 sub compute {
     my($proto, $algorithm, $digits, $secret, $time_step) = @_;
     $algorithm = $algorithm->get_name
@@ -22,7 +20,7 @@ sub compute {
         (($bytes[$offset + 1] & 0xff) << 16) |
         (($bytes[$offset + 2] & 0xff) << 8) |
         ($bytes[$offset + 3] & 0xff);
-    return sprintf('%0' . $digits . 'd', $binary % $_DIGITS_POWER->[$digits]);
+    return sprintf('%0' . $digits . 'd', $binary % _digits_power($digits));
 }
 
 sub get_time_step {
@@ -32,6 +30,10 @@ sub get_time_step {
     b_die('period required')
         unless $period;
     return int($unixtime / $period);
+}
+
+sub _digits_power {
+    return 10 ** shift;
 }
 
 sub _hash {

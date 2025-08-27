@@ -1464,6 +1464,10 @@ table.b_recovery_code_options td {
   border: 0.5em solid #f0f0f0;
   background: #fff;
 }
+tr.b_totp_lost_recovery_code,
+tr.b_disable_totp {
+  display: none;
+}
 EOF
 }
 

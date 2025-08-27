@@ -4,10 +4,10 @@ use strict;
 use Bivio::Base 'Biz.ListModel';
 
 my($_DT) = b_use('Type.DateTime');
-my($_RC) = b_use('Model.RecoveryCode');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    new_code_count => 5,
+    new_code_count => 6,
+    refill_threshold => 2,
 });
 
 # TODO: should this be here or in RecoveryCode?
@@ -15,28 +15,34 @@ sub create {
     my($self, $code_array) = @_;
     $code_array->do_iterate(sub {
         my($it) = @_;
-        $_RC->new($self->req)->create($it);
+        $self->new_other('RecoveryCode')->create($it);
         return 1;
     });
     return;
 }
 
 # TODO: should this be here or in RecoveryCode?
-sub delete_all_expired {
-    my($proto, $req) = @_;
-    $proto->new($req)->load_all->do_iterate(sub {
-        my($it) = @_;
-        my($rc) = $_RC->new($req)->set_ephemeral->load({recovery_code_id => $it->get('RecoveryCode.recovery_code_id')});
-        $rc->delete
-            if $rc->get('expiration_date_time')
-            && $_DT->is_less_than($rc->get('expiration_date_time'), $_DT->now);
-        return 1;
-    });
-    return;
-}
+# sub delete_all_expired {
+#     my($self) = @_;
+#     $self->load_all->do_iterate(sub {
+#         my($it) = @_;
+#         my($rc) = $self->new_other('RecoveryCode')->set_ephemeral->load({
+#             recovery_code_id => $it->get('RecoveryCode.recovery_code_id'),
+#         });
+#         $rc->delete
+#             if $rc->get('expiration_date_time')
+#             && $_DT->is_less_than($rc->get('expiration_date_time'), $_DT->now);
+#         return 1;
+#     });
+#     return;
+# }
 
 sub get_new_code_count {
     return $_CFG->{new_code_count};
+}
+
+sub get_refill_threshold {
+    return $_CFG->{refill_threshold};
 }
 
 sub handle_config {
@@ -56,6 +62,12 @@ sub internal_initialize {
         other => ['RecoveryCode.code'],
         primary_key => [qw(RecoveryCode.recovery_code_id)],
     });
+}
+
+sub internal_prepare_statement {
+    my($self, $stmt) = @_;
+    $stmt->where($stmt->GTE('RecoveryCode.expiration_date_time', [$_DT->now]));
+    return;
 }
 
 1;

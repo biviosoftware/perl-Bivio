@@ -9,28 +9,33 @@ my($_A) = b_use('Action.RecoveryCode');
 sub initialize {
     my($self) = @_;
     return shift->put_unless_exists(values => [
-        [sub {
-            my($source) = @_;
-            my($did_copy_link) = 0;
-            my($did_dl_link) = 0;
-            return Grid([[
-                Grid([
-                    map([$_], $source->req(qw(Model.UserEnableTOTPForm recovery_codes))->as_list),
-                ], {class => 'b_recovery_codes'}),
-                Grid([[
-                    Link('copy', '#', {
-                        ID => 'copy_codes_link',
-                    }),
-                ], [
-                    Link('download', [sub {$_A->format_uri_for_download(shift(@_))}], {
-                        ID => 'download_codes_link',
-                    }),
-                ]], {class => 'b_recovery_code_options'}),
-            ]], {class => 'b_recovery_code_list'});
-        }],
-        BR(),
-        InlineJavaScript(Join([
-            <<'EOF',
+        Join([
+            'Save the following codes in a secure place. These are your authenticator recovery codes. If you lose access to your authenticator app you will need to enter one of these codes to regain access to your account.',
+            BR(), BR(),
+            'For example, click the "copy" link to the right and then paste into your password manager entry for this site, or click the "download" link and then move the downloaded file to a secure place in your personal documents.',
+            BR(), BR(),
+            [sub {
+                my($source) = @_;
+                my($did_copy_link) = 0;
+                my($did_dl_link) = 0;
+                return Grid([[
+                    Grid([
+                        map([$_], @{_codes($source)}),
+                    ], {class => 'b_recovery_codes'}),
+                    Grid([[
+                        Link('copy', '#', {
+                            ID => 'copy_codes_link',
+                        }),
+                    ], [
+                        Link('download', [sub {$_A->format_uri_for_download(shift(@_))}], {
+                            ID => 'download_codes_link',
+                        }),
+                    ]], {class => 'b_recovery_code_options'}),
+                ]], {class => 'b_recovery_code_list'});
+            }],
+            BR(),
+            InlineJavaScript(Join([
+                <<'EOF',
 (() => {
     const l = document.getElementById("copy_codes_link");
     if (l) {
@@ -38,8 +43,8 @@ sub initialize {
             l.addEventListener("click", (event) => {
                 navigator.clipboard.writeText(
 EOF
-            JavaScriptString([\&_codes, '\n']),
-            <<'EOF',
+                JavaScriptString([\&_codes, '\n']),
+                <<'EOF',
 );
             })
         }
@@ -53,13 +58,15 @@ EOF
     }
 })();
 EOF
-        ])),
+            ])),
+        ]),
     ])->SUPER::initialize(@_);
 }
 
 sub _codes {
     my($source, $separator) = @_;
-    return join($separator, $source->req(qw(Model.UserEnableTOTPForm recovery_codes))->as_list);
+    my($codes) = $source->req(qw(Action.RecoveryCode recovery_code_array))->as_array;
+    return $separator ? join($separator, @$codes) : $codes;
 }
 
 1;

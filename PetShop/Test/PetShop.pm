@@ -181,15 +181,20 @@ sub home_page {
 }
 
 sub login_as {
-    my($self, $user, $password) = @_;
+    my($self, $user, $password, $totp_code) = @_;
     # Logs in as I<user> and I<password>.
     $self->do_logout();
     $self->follow_link('register')
         if $self->text_exists(qr{>register<}i);
     $self->follow_link($self->text_exists('Sign-in') ? 'Sign-in' : 'login');
     $self->submit_form(sign_in => {
-        'Email:' => $user,
-        'Password:' => defined($password) ? $password : $_SQL->PASSWORD,
+        email => $user,
+    });
+    $self->submit_form(sign_in => {
+        password => defined($password) ? $password : $_SQL->PASSWORD,
+        $totp_code ? (
+            authenticator_code => $totp_code,
+        ) : (),
     });
     $self->verify_link(qr{Sign-out|logout}i);
     $self->groupware_check;

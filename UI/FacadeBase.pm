@@ -1790,7 +1790,14 @@ sub _cfg_totp {
         Text => [
             [[qw(UserLoginForm UserEnableTOTPForm UserDisableTOTPForm)] => [
                 password => 'Password',
-                totp_code => '6-Digit Authenticator Code',
+                totp_code => 'Authenticator Code',
+                'totp_code.desc' => 'Current ' . b_use('Model.TOTP')->get_default_digits . ' digit code found in authenticator application',
+            ]],
+            [UserLoginForm => [
+                totp_lost_recovery_code => 'Authenticator Recovery Code',
+                'totp_lost_recovery_code.desc' => 'Used recovery codes will no longer be available',
+                disable_totp => 'Disable two-factor authentication',
+                'disable_totp.desc' => 'Check this box if you have permanently lost access to your authenticator',
             ]],
             [UserEnableTOTPForm => [
                 prose => [
@@ -1806,13 +1813,7 @@ Join([
             'Scan the QR code below with your chosen authenticator app.',
             TOTPQRCode(),
         ])),
-        LI(Join([
-            'Save the following recovery codes in a secure place. If you lose access to your authenticator app you will need to enter one of them to regain access to your account.',
-             BR(), BR(),
-             'For example, click the "copy" link to the right and then paste into your password manager entry for this site, or click the "download" link and then move the downloaded file to a secure place in your personal documents.',
-            BR(), BR(),
-            RecoveryCodeList(),
-        ])),
+        LI(RecoveryCodeList()),
         LI('Enter the generated 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
         LI('Enter your account password.'),
     ])),
@@ -1832,8 +1833,8 @@ EOF
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
             ]],
             [acknowledgement => [
-                USER_ENABLE_TOTP_FORM => 'Two-Factor Authentication has been set up successfully',
-                USER_DISABLE_TOTP_FORM => 'Two-Factor Authentication has been disabled successfully',
+                USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',
+                USER_DISABLE_TOTP_FORM => 'Two-factor authentication has been disabled successfully',
             ]],
         ],
     };
@@ -2043,7 +2044,7 @@ sub _cfg_user_auth {
             [USER_CREATE => 'pub/register'],
             [GENERAL_CONTACT => 'pub/contact'],
             [USER_CREATE_DONE => undef],
-            [GENERAL_USER_PASSWORD_QUERY => [qw(pub/lost-account-access pub/forgot-password)]],
+            [GENERAL_USER_PASSWORD_QUERY => 'pub/forgot-password'],
             [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
             [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
             [GENERAL_USER_LOCKED_OUT => undef],
@@ -2116,6 +2117,7 @@ sub _cfg_user_auth {
                 USER_SETTINGS_FORM => 'Your settings have been updated.',
                 email_verified => q{Your email address has been updated.},
                 USER_EMAIL_VERIFY_FORCE_FORM => 'Email address verified.',
+                totp_disabled => 'Two-factor authentication disabled',
             ]],
             [title => [
                 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
@@ -2132,7 +2134,7 @@ sub _cfg_user_auth {
                 DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser is Missing Cookies',
             ]],
             [xlink => [
-                GENERAL_USER_PASSWORD_QUERY => 'Forgot Password or Lost Account Access?',
+                GENERAL_USER_PASSWORD_QUERY => 'Forgot Password?',
                 login_no_context => 'Already registered?  Click here to login.',
                 user_create_no_context => 'Not registered? Click here to register.',
                 USER_CREATE_DONE => 'Check Your Email',

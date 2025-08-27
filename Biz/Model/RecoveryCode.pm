@@ -6,7 +6,6 @@ use Bivio::Base 'Model.RealmBase';
 # TODO: rename to UserRecoveryCode?
 
 my($_DT) = b_use('Type.DateTime');
-my($_RCL) = b_use('Model.RecoveryCodeList');
 my($_RCT) = b_use('Type.RecoveryCodeType');
 
 sub REALM_ID_FIELD {
@@ -19,11 +18,12 @@ sub REALM_ID_FIELD_TYPE {
 
 sub create {
     my($self, $code, $type, $expiry) = @_;
-    $_RCL->delete_all_expired($self->req);
+    # $self->new_other('RecoveryCodeList')->delete_all_expired;
     if ($type && $type->eq_password_query) {
         my($rc) = $self->new($self->req);
-        $rc->delete
-            if $rc->unsafe_load({type => $type});
+        # $rc->delete
+        #     if $rc->unsafe_load({type => $type});
+        $rc->update(expiration_date_time => $_DT->now);
     }
     return $self->SUPER::create({
         code => $code,
@@ -58,6 +58,12 @@ sub load_by_code_and_type {
     return _iterate($self, 1, $code, 'iterate_start', {type => $type});
 }
 
+sub set_expired {
+    my($self) = @_;
+    $self->update({expiration_date_time => $_DT->now});
+    return;
+}
+
 sub unauth_load_by_code_and_type {
     my($self, $user_id, $code, $type) = @_;
     return _iterate($self, 0, $code, 'unauth_iterate_start', {user_id => $user_id, type => $type});
@@ -71,6 +77,14 @@ sub unauth_load_by_code_and_type_or_die {
 sub unsafe_load_by_code_and_type {
     my($self, $code, $type) = @_;
     return _iterate($self, 0, $code, 'iterate_start', {type => $type});
+}
+
+sub validate_for_cookie {
+    my($self) = @_;
+    return 0
+        unless $self->is_expired;
+    # Recovery codes are force-expired when used to log in; thus cookie codes are only valid if expired.
+    return 1;
 }
 
 sub _iterate {
