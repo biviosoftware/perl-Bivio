@@ -213,7 +213,8 @@ sub require_otp {
 
 sub require_totp {
     my($self) = @_;
-    return $self->new_other('TOTP')->set_ephemeral->unsafe_load;
+    my($totp) = $self->new_other('TOTP')->set_ephemeral;
+    return $totp->unauth_load({$totp->REALM_ID_FIELD => $self->get('realm_id')});
 }
 
 sub unauth_delete_realm {

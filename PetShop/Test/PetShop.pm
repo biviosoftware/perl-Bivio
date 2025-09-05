@@ -186,16 +186,17 @@ sub login_as {
     $self->do_logout();
     $self->follow_link('register')
         if $self->text_exists(qr{>register<}i);
-    $self->follow_link($self->text_exists('Sign-in') ? 'Sign-in' : 'login');
+    $self->follow_link($self->text_exists('Sign-in') ? 'Sign-in' : qr/\blogin\b/i);
     $self->submit_form(sign_in => {
         email => $user,
-    });
-    $self->submit_form(sign_in => {
         password => defined($password) ? $password : $_SQL->PASSWORD,
-        $totp_code ? (
-            authenticator_code => $totp_code,
-        ) : (),
     });
+    if ($totp_code) {
+        $self->verify_link(qr{Sign-in|\blogin\b}i);
+        $self->submit_form(sign_in => {
+            authenticator_code => $totp_code,
+        });
+    }
     $self->verify_link(qr{Sign-out|logout}i);
     $self->groupware_check;
     return;

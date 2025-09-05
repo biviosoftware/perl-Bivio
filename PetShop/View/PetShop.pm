@@ -242,56 +242,8 @@ sub login {
         $self,
         '',
         vs_simple_form('UserLoginForm', [
-            ['UserLoginForm.login', {
-                READONLY => [qw(Model.UserLoginForm have_login)],
-            }],
-            # [
-            #     FormFieldLabel('UserLoginForm.login'),
-            #     String([qw(Model.UserLoginForm login)])->put(
-            #         row_control => [qw(Model.UserLoginForm have_login)],
-            #     ),
-            # ],
-            ['UserLoginForm.RealmOwner.password', {
-                row_control => [qw(Model.UserLoginForm login)],
-            }],
-            ['UserLoginForm.totp_code', {
-                row_control => [qw(Model.UserLoginForm require_totp)],
-                row_class => 'b_totp_code',
-            }],
-            ['UserLoginForm.totp_lost_recovery_code', {
-                row_control => [qw(Model.UserLoginForm require_totp)],
-                row_class => 'b_totp_lost_recovery_code',
-            }],
-            ['UserLoginForm.disable_totp', {
-                row_control => [qw(Model.UserLoginForm require_totp)],
-                row_class => 'b_disable_totp',
-            }],
-            [
-                vs_blank_cell(),
-                Link('Lost Authenticator Access?', '#', {
-                    ID => 'b_totp_lost_access',
-                    row_control => [qw(Model.UserLoginForm require_totp)],
-                }),
-            ],
-            InlineJavaScript(<<'EOF'),
-(() => {
-    const la = document.getElementById("b_totp_lost_access");
-    const c = document.getElementsByClassName("b_totp_code")[0];
-    const lrc = document.getElementsByClassName("b_totp_lost_recovery_code")[0];
-    const dt = document.getElementsByClassName("b_disable_totp")[0];
-    if (la && c && lrc && dt) {
-        la.addEventListener("click", (event) => {
-            la.style.display = "none";
-            c.style.display = "none";
-            lrc.style.display = "table-row";
-            dt.style.display = "table-row";
-        });
-    }
-    else {
-        console.log("lost access link not found");
-    }
-})();
-EOF
+            'UserLoginForm.login',
+            'UserLoginForm.RealmOwner.password',
             '*ok_button',
             vs_blank_cell(),
             [

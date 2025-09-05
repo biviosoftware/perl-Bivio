@@ -1783,23 +1783,24 @@ sub _cfg_task_log {
 sub _cfg_totp {
     return {
         Task => [
+            [USER_LOGIN_TOTP_FORM => 'pub/totp'],
             [USER_ENABLE_TOTP_FORM => '?/enable-totp'],
             [USER_DISABLE_TOTP_FORM => '?/disable-totp'],
             [USER_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
         ],
         Text => [
-            [[qw(UserLoginForm UserEnableTOTPForm UserDisableTOTPForm)] => [
-                password => 'Password',
+            [[qw(UserLoginTOTPForm UserEnableTOTPForm UserDisableTOTPForm)] => [
                 totp_code => 'Authenticator Code',
                 'totp_code.desc' => 'Current ' . b_use('Model.TOTP')->get_default_digits . ' digit code found in authenticator application',
             ]],
-            [UserLoginForm => [
+            ['UserLoginTOTPForm' => [
                 totp_lost_recovery_code => 'Authenticator Recovery Code',
                 'totp_lost_recovery_code.desc' => 'Used recovery codes will no longer be available',
                 disable_totp => 'Disable two-factor authentication',
                 'disable_totp.desc' => 'Check this box if you have permanently lost access to your authenticator',
             ]],
             [UserEnableTOTPForm => [
+                'RealmOwner.password' => 'Password',
                 prose => [
                     # "Hardware keys without the ability to sync clock are not recommended"?
                     prologue => <<'EOF',
@@ -1823,6 +1824,7 @@ EOF
                 ],
             ]],
             [UserDisableTOTPForm => [
+                'RealmOwner.password' => 'Password',
                 prose => [
                     prologue => <<'EOF',
 To disable two-factor authentication, you must enter an authentator code and your password. If you don't have access to your authenticator, you must enter a recovery code.
@@ -1830,7 +1832,9 @@ EOF
                 ],
             ]],
             [title => [
+                USER_LOGIN_TOTP_FORM => 'Two-Factor Authentication',
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
+                USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
             ]],
             [acknowledgement => [
                 USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',

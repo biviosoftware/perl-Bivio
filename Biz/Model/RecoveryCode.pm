@@ -21,9 +21,9 @@ sub create {
     # $self->new_other('RecoveryCodeList')->delete_all_expired;
     if ($type && $type->eq_password_query) {
         my($rc) = $self->new($self->req);
-        # $rc->delete
-        #     if $rc->unsafe_load({type => $type});
-        $rc->update(expiration_date_time => $_DT->now);
+        $rc->delete
+            if $rc->unsafe_load({type => $type});
+        # $rc->update(expiration_date_time => $_DT->now);
     }
     return $self->SUPER::create({
         code => $code,
@@ -50,7 +50,18 @@ sub internal_initialize {
 
 sub is_expired {
     my($self) = @_;
-    return $_DT->is_less_than($self->get('expiration_date_time'), $_DT->now) ? 1 : 0;
+    return $_DT->is_less_than_or_equals($self->get('expiration_date_time'), b_debug($_DT->now))
+        ? 1 : 0;
+}
+
+sub is_valid_for_cookie {
+    my($self, $realm_id, $code) = @_;
+    return 0
+        unless b_debug($self->unauth_load_by_code_and_type($realm_id, $code, $_RCT->TOTP_LOST));
+    return 0
+        unless b_debug($self->is_expired);
+    # Recovery codes are force-expired when used to log in; thus cookie codes are only valid if expired.
+    return b_debug(1);
 }
 
 sub load_by_code_and_type {
@@ -60,7 +71,7 @@ sub load_by_code_and_type {
 
 sub set_expired {
     my($self) = @_;
-    $self->update({expiration_date_time => $_DT->now});
+    $self->update({expiration_date_time => b_debug($_DT->now)});
     return;
 }
 
@@ -77,14 +88,6 @@ sub unauth_load_by_code_and_type_or_die {
 sub unsafe_load_by_code_and_type {
     my($self, $code, $type) = @_;
     return _iterate($self, 0, $code, 'iterate_start', {type => $type});
-}
-
-sub validate_for_cookie {
-    my($self) = @_;
-    return 0
-        unless $self->is_expired;
-    # Recovery codes are force-expired when used to log in; thus cookie codes are only valid if expired.
-    return 1;
 }
 
 sub _iterate {

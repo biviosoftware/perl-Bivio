@@ -1381,12 +1381,14 @@ sub info_totp {
             next=MY_SITE
         )],
         [qw(
-            LOGIN_TOTP
+            USER_LOGIN_TOTP_FORM
             264
             GENERAL
             ANYBODY
-            Model.UserTOTPLoginForm
-            View.TOTP->login_form
+            Model.UserLoginTOTPForm
+            View.TOTP->totp_form
+            password_task=USER_PASSWORD
+            refill_task==USER_RECOVERY_CODE_REFILL_LIST
             next=MY_SITE
         )],
     ];
@@ -1593,6 +1595,7 @@ sub info_user_auth {
             ANYBODY
             Action.UserPasswordQuery
             login_task=LOGIN
+            totp_task=USER_LOGIN_TOTP_FORM
             password_task=USER_PASSWORD
             NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
             require_secure=1
@@ -1646,7 +1649,7 @@ sub info_user_auth {
             View.UserAuth->login
             locked_out_task=GENERAL_USER_LOCKED_OUT
             password_task=USER_PASSWORD
-            next=USER_RECOVERY_CODE_REFILL_LIST
+            totp_task=USER_LOGIN_TOTP_FORM
             require_secure=1
         )],
         [qw(

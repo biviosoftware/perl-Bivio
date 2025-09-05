@@ -42,6 +42,10 @@ sub internal_initialize {
     });
 }
 
+sub is_state_locked_out {
+    return shift->get('login_attempt_state')->eq_locked_out;
+}
+
 sub reset_failure_count {
     my($self, $realm_id) = @_;
     return $self->create({
@@ -55,7 +59,7 @@ sub unauth_load_last_locked_out {
     my($locked_out) = 0;
     _iterate($self, $realm_id, sub {
         my($it) = @_;
-        $locked_out = $it->get('login_attempt_state')->eq_locked_out;
+        $locked_out = $it->is_state_locked_out;
         return 0;
     });
     return $locked_out;
