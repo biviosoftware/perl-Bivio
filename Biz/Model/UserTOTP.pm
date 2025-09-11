@@ -1,5 +1,5 @@
 # Copyright (c) 2025 bivio Software Artisans, Inc.  All Rights Reserved.
-package Bivio::Biz::Model::TOTP;
+package Bivio::Biz::Model::UserTOTP;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
@@ -66,7 +66,7 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-        table_name => 'totp_t',
+        table_name => 'user_totp_t',
         columns => {
             $self->REALM_ID_FIELD => [$self->REALM_ID_FIELD_TYPE, 'PRIMARY_KEY'],
             creation_date_time => ['DateTime', 'NOT_NULL'],

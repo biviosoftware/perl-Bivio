@@ -7,7 +7,7 @@ my($_AMFCL) = b_use('Action.MFAFallbackCodeList');
 my($_DT) = b_use('Type.DateTime');
 my($_MMFCL) = b_use('Model.MFAFallbackCodeList');
 my($_RFC6238) = b_use('Biz.RFC6238');
-my($_T) = b_use('Model.TOTP');
+my($_T) = b_use('Model.UserTOTP');
 my($_TS) = b_use('Type.TOTPSecret');
 
 sub execute_empty {
@@ -22,7 +22,7 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     my(@res) = shift->SUPER::execute_ok(@_);
-    $self->new_other('TOTP')->create(
+    $self->new_other('UserTOTP')->create(
         $self->get('totp_secret'),
         $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_T->get_default_period),
     );
@@ -49,7 +49,7 @@ sub internal_initialize {
 sub internal_pre_execute {
     my($self) = @_;
     return 'FORBIDDEN'
-        if $self->new_other('TOTP')->unsafe_load;
+        if $self->new_other('UserTOTP')->unsafe_load;
     $self->internal_put_field(realm_owner => $self->req(qw(auth_realm owner)));
     return;
 }

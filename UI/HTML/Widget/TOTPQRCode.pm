@@ -5,7 +5,7 @@ use Bivio::Base 'XHTMLWidget.Join';
 b_use('UI.ViewLanguageAUTOLOAD');
 use MIME::Base32 ();
 
-my($_T) = b_use('Model.TOTP');
+my($_UT) = b_use('Model.UserTOTP');
 my($_TS) = b_use('Type.TOTPSecret');
 my($_SHOW_KEY) = 'show setup key';
 
@@ -21,9 +21,9 @@ sub initialize {
                 '?',
                 join('&', map(join('=', @$_), (
                     ['secret', MIME::Base32::encode_rfc3548($secret)],
-                    ['algorithm', $_T->get_default_algorithm->get_name],
-                    ['digits', $_T->get_default_digits],
-                    ['period', $_T->get_default_period],
+                    ['algorithm', $_UT->get_default_algorithm->get_name],
+                    ['digits', $_UT->get_default_digits],
+                    ['period', $_UT->get_default_period],
                     ['issuer', 'bivio.com'],
                 ))),
             ));

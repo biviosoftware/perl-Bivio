@@ -1783,16 +1783,16 @@ sub _cfg_task_log {
 sub _cfg_totp {
     return {
         Task => [
-            [USER_LOGIN_TOTP_FORM => 'pub/totp'],
-            [USER_ENABLE_TOTP_FORM => '?/enable-totp'],
-            [USER_DISABLE_TOTP_FORM => '?/disable-totp'],
-            [USER_MFA_FALLBACK_CODE_REFILL_LIST => '?/refill-mfa-fallback-codes'],
-            [USER_MFA_FALLBACK_CODE_DOWNLOAD => '?/download-mfa-fallback-codes'],
+            [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
+            [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
+            [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
+            [USER_MFA_FALLBACK_CODE_REFILL_LIST => '?/refill-user-mfa-fallback-codes'],
+            [USER_MFA_FALLBACK_CODE_DOWNLOAD => '?/download-user-mfa-fallback-codes'],
         ],
         Text => [
             [[qw(UserLoginTOTPForm UserEnableTOTPForm UserDisableTOTPForm)] => [
                 totp_code => 'Authenticator Code',
-                'totp_code.desc' => 'Current ' . b_use('Model.TOTP')->get_default_digits . ' digit code found in authenticator application',
+                'totp_code.desc' => 'Current ' . b_use('Model.UserTOTP')->get_default_digits . ' digit code found in authenticator application',
             ]],
             ['UserLoginTOTPForm' => [
                 fallback_code => 'Authenticator Fallback Code',

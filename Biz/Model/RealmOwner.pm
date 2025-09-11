@@ -213,7 +213,7 @@ sub require_otp {
 
 sub require_totp {
     my($self) = @_;
-    my($totp) = $self->new_other('TOTP')->set_ephemeral;
+    my($totp) = $self->new_other('UserTOTP')->set_ephemeral;
     return $totp->unauth_load({$totp->REALM_ID_FIELD => $self->get('realm_id')});
 }
 

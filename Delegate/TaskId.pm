@@ -1352,7 +1352,7 @@ sub info_totp {
             ADMIN_READ&ADMIN_WRITE
             Action.MFAFallbackCodeList->execute_preview
             Model.UserEnableTOTPForm
-            View.TOTP->enable_form
+            View.UserTOTP->enable_form
             next=MY_SITE
         )],
         [qw(
@@ -1361,7 +1361,7 @@ sub info_totp {
             USER
             ADMIN_READ&ADMIN_WRITE
             Model.UserDisableTOTPForm
-            View.TOTP->disable_form
+            View.UserTOTP->disable_form
             next=MY_SITE
         )],
         [qw(
@@ -1377,7 +1377,7 @@ sub info_totp {
             USER
             ADMIN_READ&ADMIN_WRITE
             Action.MFAFallbackCodeList->execute_refill
-            View.TOTP->fallback_code_list
+            View.UserTOTP->fallback_code_list
             password_task=USER_PASSWORD
             next=MY_SITE
         )],
@@ -1387,7 +1387,7 @@ sub info_totp {
             GENERAL
             ANYBODY
             Model.UserLoginTOTPForm
-            View.TOTP->totp_form
+            View.UserTOTP->totp_form
             password_task=USER_PASSWORD
             refill_task=USER_MFA_FALLBACK_CODE_REFILL_LIST
             next=MY_SITE

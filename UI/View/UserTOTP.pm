@@ -1,5 +1,5 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-package Bivio::UI::View::TOTP;
+package Bivio::UI::View::UserTOTP;
 use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;

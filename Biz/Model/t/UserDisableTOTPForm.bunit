@@ -14,20 +14,20 @@ FormModel({
         return
             if $no_setup;
         unless ($totp_secret) {
-            $totp_secret = Type_TOTPSecret()->generate_secret(Model_TOTP()->get_default_algorithm);
+            $totp_secret = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
             $time_step = Biz_RFC6238()->get_time_step(
-                Type_DateTime()->to_unix(Type_DateTime()->now), Model_TOTP()->get_default_period);
+                Type_DateTime()->to_unix(Type_DateTime()->now), Model_UserTOTP()->get_default_period);
             $totp_code = Biz_RFC6238()->compute(
-                Model_TOTP()->get_default_algorithm,
-                Model_TOTP()->get_default_digits,
+                Model_UserTOTP()->get_default_algorithm,
+                Model_UserTOTP()->get_default_digits,
                 $totp_secret,
                 $time_step,
             );
             $fallback_codes = Type_RecoveryCode()->generate_new_codes(
                 Model_MFAFallbackCodeList()->get_new_code_count);
         }
-        unless (Model_TOTP()->unsafe_load) {
-            Model_TOTP()->create($totp_secret, $time_step);
+        unless (Model_UserTOTP()->unsafe_load) {
+            Model_UserTOTP()->create($totp_secret, $time_step);
             Model_MFAFallbackCodeList()->create($fallback_codes);
         }
         return;
@@ -93,7 +93,7 @@ my($is_task) = sub {
         totp_code => sub {$totp_code},
     }] => sub {
         return 0
-            if Model_TOTP()->new(req())->unsafe_load;
+            if Model_UserTOTP()->new(req())->unsafe_load;
         return 0
             if Model_MFAFallbackCodeList()->new(req())->load_all->get_result_set_size;
         return 1;
@@ -104,7 +104,7 @@ my($is_task) = sub {
         fallback_code => sub {$fallback_codes->get_element(0)},
     }] => sub {
         return 0
-            if Model_TOTP()->new(req())->unsafe_load;
+            if Model_UserTOTP()->new(req())->unsafe_load;
         return 0
             if Model_MFAFallbackCodeList()->new(req())->load_all->get_result_set_size;
         return 1;

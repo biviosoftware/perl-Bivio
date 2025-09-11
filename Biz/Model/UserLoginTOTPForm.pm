@@ -53,7 +53,7 @@ sub internal_disable_totp {
     my($self) = @_;
     b_die('models not loaded')
         unless $self->internal_load_models($self);
-    $self->req('Model.TOTP')->delete;
+    $self->req('Model.UserTOTP')->delete;
     $self->req('Model.MFAFallbackCodeList')->do_rows(sub {
         my($it) = @_;
         $self->new_other('UserRecoveryCode')->load({
@@ -90,9 +90,9 @@ sub internal_initialize {
 sub internal_load_models {
     my($self) = @_;
     return 1
-        if $self->ureq('Model.TOTP') && $self->ureq('Model.MFAFallbackCodeList');
+        if $self->ureq('Model.UserTOTP') && $self->ureq('Model.MFAFallbackCodeList');
     return 0
-        unless $self->new_other('TOTP')->unsafe_load;
+        unless $self->new_other('UserTOTP')->unsafe_load;
     return 0
         unless $self->new_other('MFAFallbackCodeList')->load_all({
             type => $_RCT->MFA_FALLBACK,
@@ -132,7 +132,7 @@ sub is_valid_totp_cookie {
         unless $auth_user->require_totp;
     if (my $c = $cookie->unsafe_get($proto->TOTP_CODE_FIELD)) {
         if (my $t = $cookie->unsafe_get($proto->TOTP_TIME_STEP_FIELD)) {
-            return $auth_user->new_other('TOTP')
+            return $auth_user->new_other('UserTOTP')
                 ->is_valid_for_cookie($auth_user->get('realm_id'), $c, $t);
         }
         b_warn('invalid totp cookie fields');
@@ -206,7 +206,7 @@ sub _set_cookie_totp {
 sub _validate_totp {
     my($self) = @_;
     if ($self->get('totp_code')) {
-        my($totp) = $self->new_other('TOTP');
+        my($totp) = $self->new_other('UserTOTP');
         if ($totp->unauth_load_or_die({
             $totp->REALM_ID_FIELD => $self->get_nested(qw(realm_owner realm_id)),
         })->is_valid_input_code($self->get('totp_code'))) {

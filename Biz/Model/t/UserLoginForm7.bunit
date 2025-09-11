@@ -17,18 +17,18 @@ commit();
 req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $uid);
 my($now) = Type_DateTime()->now;
 my($time_step) = Biz_RFC6238()->get_time_step(
-    Type_DateTime()->to_unix($now), Model_TOTP()->get_default_period);
+    Type_DateTime()->to_unix($now), Model_UserTOTP()->get_default_period);
 my($next_time_step) = sub {
     $now = Type_DateTime()->set_test_now(
-        Type_DateTime()->add_seconds($now, Model_TOTP()->get_default_period));
+        Type_DateTime()->add_seconds($now, Model_UserTOTP()->get_default_period));
     $time_step = Biz_RFC6238()->get_time_step(
-        Type_DateTime()->to_unix($now), Model_TOTP()->get_default_period);
+        Type_DateTime()->to_unix($now), Model_UserTOTP()->get_default_period);
 };
-my($secret) = Type_TOTPSecret()->generate_secret(Model_TOTP()->get_default_algorithm);
+my($secret) = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
 my($totp_code) = sub {
     return Biz_RFC6238()->compute(
-        Model_TOTP()->get_default_algorithm,
-        Model_TOTP()->get_default_digits,
+        Model_UserTOTP()->get_default_algorithm,
+        Model_UserTOTP()->get_default_digits,
         $secret,
         $time_step,
     );
@@ -47,7 +47,7 @@ my($totp_code) = sub {
     }),
     inline_case(sub {
         req()->with_realm($uid, sub {
-            Model_TOTP()->create($secret, $time_step);
+            Model_UserTOTP()->create($secret, $time_step);
         });
     }),
     inline_commit(),

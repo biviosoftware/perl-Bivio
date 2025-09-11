@@ -1,7 +1,7 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
 PropertyModel();
 my($m) = req()->with_realm('demo', sub {
-    return model('TOTP')->create(
+    return model('UserTOTP')->create(
         Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1),
     );
 });

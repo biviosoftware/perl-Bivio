@@ -1047,14 +1047,14 @@ CREATE INDEX login_attempt_t4 ON login_attempt_t (
 /
 
 --
--- totp_t
+-- user_totp_t
 --
-ALTER TABLE totp_t
-  ADD CONSTRAINT totp_t2
+ALTER TABLE user_totp_t
+  ADD CONSTRAINT user_totp_t2
   FOREIGN KEY (user_id)
   REFERENCES user_t(user_id)
 /
-CREATE INDEX totp_t3 ON totp_t (
+CREATE INDEX user_totp_t3 ON user_totp_t (
   user_id
 )
 /
@@ -1696,7 +1696,7 @@ CREATE TABLE login_attempt_t (
 )
 /
 
-CREATE TABLE totp_t (
+CREATE TABLE user_totp_t (
   user_id NUMERIC(18) NOT NULL,
   creation_date_time DATE NOT NULL,
   algorithm NUMERIC(1) NOT NULL,
@@ -1704,7 +1704,7 @@ CREATE TABLE totp_t (
   period NUMERIC(2) NOT NULL,
   secret VARCHAR(4000) NOT NULL,
   last_time_step NUMERIC(10),
-  CONSTRAINT totp_t1 primary key(user_id)
+  CONSTRAINT user_totp_t1 primary key(user_id)
 )
 /
 

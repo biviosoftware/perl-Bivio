@@ -57,19 +57,19 @@ my($is_task) = sub {
         %$v,
         totp_code => sub {
             $time_step = Biz_RFC6238()->get_time_step(
-                Type_DateTime()->to_unix(Type_DateTime()->now), Model_TOTP()->get_default_period);
+                Type_DateTime()->to_unix(Type_DateTime()->now), Model_UserTOTP()->get_default_period);
             return Biz_RFC6238()->compute(
-                Model_TOTP()->get_default_algorithm,
-                Model_TOTP()->get_default_digits,
+                Model_UserTOTP()->get_default_algorithm,
+                Model_UserTOTP()->get_default_digits,
                 $totp_secret,
                 $time_step,
             );
         },
     }] => [{
-        'Model.TOTP' => {
-            algorithm => Model_TOTP()->get_default_algorithm,
-            digits => Model_TOTP()->get_default_digits,
-            period => Model_TOTP()->get_default_period,
+        'Model.UserTOTP' => {
+            algorithm => Model_UserTOTP()->get_default_algorithm,
+            digits => Model_UserTOTP()->get_default_digits,
+            period => Model_UserTOTP()->get_default_period,
             secret => sub {$totp_secret},
             last_time_step => sub {$time_step},
         },
