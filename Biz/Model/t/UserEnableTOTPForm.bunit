@@ -8,12 +8,12 @@ FormModel();
 req()->set_realm_and_user(qw(demo demo));
 req()->initialize_fully('USER_ENABLE_TOTP_FORM');
 my($totp_secret);
-my($recovery_codes);
+my($fallback_codes);
 my($time_step);
 my($v) = {
     login => 'demo',
     'RealmOwner.password' => 'password',
-    recovery_codes => sub {$recovery_codes},
+    fallback_codes => sub {$fallback_codes},
     totp_secret => sub {$totp_secret},
 };
 my($is_task) = sub {
@@ -30,12 +30,12 @@ my($is_task) = sub {
     }),
     inline_case(sub {
         $totp_secret = req(qw(form_model totp_secret));
-        $recovery_codes = req(qw(form_model recovery_codes));
-        b_die('unexpected recovery_codes count')
-            unless $recovery_codes->as_length == Model_RecoveryCodeList()->get_new_code_count;
-        $recovery_codes->do_iterate(sub {
+        $fallback_codes = req(qw(form_model fallback_codes));
+        b_die('unexpected fallback_codes count')
+            unless $fallback_codes->as_length == Model_MFAFallbackCodeList()->get_new_code_count;
+        $fallback_codes->do_iterate(sub {
             my($it) = @_;
-            b_die('unexpected recovery_code format')
+            b_die('unexpected fallback_code format')
                 unless $it =~ /^[a-z-]+$/;
             return 1;
         });
@@ -75,17 +75,17 @@ my($is_task) = sub {
         },
     }],
     inline_case(sub {
-        my($expected_codes) = $recovery_codes->as_array;
+        my($expected_codes) = $fallback_codes->as_array;
         my($found) = 0;
-        Model_RecoveryCodeList()->load_all->do_rows(sub {
+        Model_MFAFallbackCodeList()->load_all->do_rows(sub {
             my($it) = @_;
             $found++;
-            b_die('unexpected recovery_code')
-                unless grep({$it->get('RecoveryCode.code') eq $_} @$expected_codes);
+            b_die('unexpected fallback_code')
+                unless grep({$it->get('UserRecoveryCode.code') eq $_} @$expected_codes);
             return 1;
         });
-        b_die('expected=', Model_RecoveryCodeList()->get_new_code_count, ' recovery codes, found=', $found)
-            unless Model_RecoveryCodeList()->get_new_code_count == $found;
+        b_die('expected=', Model_MFAFallbackCodeList()->get_new_code_count, ' recovery codes, found=', $found)
+            unless Model_MFAFallbackCodeList()->get_new_code_count == $found;
         return;
     }),
     [] => $is_task->('FORBIDDEN'),

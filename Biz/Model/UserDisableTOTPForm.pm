@@ -3,7 +3,7 @@ package Bivio::Biz::Model::UserDisableTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginTOTPForm';
 
-my($_RCT) = b_use('Type.RecoveryCodeType');
+my($_RCT) = b_use('Type.RecoveryCode');
 
 sub execute_ok {
     my($self) = @_;

@@ -446,18 +446,13 @@ sub get_delegate_info {
         undef,
         'Authenticator code is invalid.',
     ],
-    INVALID_RECOVERY_OPTIONS => [
+    INVALID_RECOVERY_CODE => [
         86,
         undef,
-        'Password and recovery code or password and authenticator code is required.',
-    ],
-    INVALID_RECOVERY_CODE => [
-        87,
-        undef,
-        'Recovery code is invalid or has already been used.',
+        'Code is invalid or has already been used.',
     ],
     EXPIRED => [
-        88,
+        87,
         undef,
         'expired',
     ],

@@ -1,100 +1,45 @@
-# Copyright (c) 2025 bivio, Inc.  All rights reserved.
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Type::RecoveryCode;
 use strict;
-use Bivio::Base 'Type.SecretLine';
+use Bivio::Base 'Type.Enum';
 
-my($_F) = b_use('IO.File');
-my($_RCA) = b_use('Type.RecoveryCodeArray');
+my($_DT) = b_use('Type.DateTime');
+my($_MC) = b_use('Type.MnemonicCode');
 
-my($_WORDS);
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    is_enabled => 0,
-    word_list => undef,
-    word_sample_size => 6,
-    word_separator => '-',
+    password_query_expiry_seconds => 60 * 60,
 });
 
-sub generate_code {
-    my($proto) = @_;
-    b_die('recovery codes not enabled')
-        unless $_CFG->{is_enabled};
-    my($w) = {};
-    for (1..$_CFG->{word_sample_size}) {
-        my($i) = int(rand(int(@$_WORDS)));
-        redo
-            if defined($w->{$i});
-        $w->{$i} = int(keys(%$w));
-    }
-    # TODO: Should this be a StringArray?
-    return join(
-        $_CFG->{word_separator},
-        map($_WORDS->[$_], sort({$w->{$a} <=> $w->{$b}} keys(%$w))),
-    );
+__PACKAGE__->compile([
+    UNKNOWN => 0,
+    MFA_FALLBACK => 1,
+    PASSWORD_QUERY => 2,
+    PASSWORD_RESET => 3,
+]);
+
+sub generate_code_for_type {
+    my(undef, $type) = @_;
+    return Bivio::Biz::Random->password
+        if $type->eq_password_query;
+    return $_MC->generate_code
+        if $type->eq_mfa_fallback;
+    b_die('unsupported type');
+    # DOES NOT RETURN
 }
 
-sub generate_code_for_query {
-    return Bivio::Biz::Random->password;
-}
-
-sub generate_new_codes {
-    my($proto, $count) = @_;
-    b_die('new code count required')
-        unless $count;
-    my($res) = $_RCA->new;
-    $res = $res->append($proto->generate_code)
-        for 1..$count;
-    return $res;
-}
-
-sub get_word_separator {
-    return $_CFG->{word_separator};
+sub get_expiry_for_type {
+    my(undef, $type) = @_;
+    return $_DT->add_seconds($_DT->now, $_CFG->{password_query_expiry_seconds})
+        if $type->eq_password_query;
+    return undef;
 }
 
 sub handle_config {
-    my($proto, $cfg) = @_;
+    my(undef, $cfg) = @_;
+    b_die('missing password_query_expiry_seconds')
+        unless $cfg->{password_query_expiry_seconds};
     $_CFG = $cfg;
-    return
-        unless $_CFG->{is_enabled};
-    if ($_CFG->{word_list} && -f $_CFG->{word_list}) {
-        _init_word_list($proto, $_CFG->{word_list});
-    }
-    b_die('invalid word_list')
-        unless int(@$_WORDS) >= ($_C->is_test ? 3 : 1000);
-    b_die('invalid word_sample_size')
-        unless $_CFG->{word_sample_size} >= ($_C->is_test ? 2 : 6);
-    b_die('sanity error')
-        unless int(@$_WORDS) > $_CFG->{word_sample_size};
-    return;
-}
-
-# Not sure if should use
-sub is_otp {
-    return 1;
-}
-
-sub is_password {
-    # return 0;
-    return 1;
-}
-
-sub is_secure_data {
-    # return 0;
-    return 1;
-}
-
-sub _init_word_list {
-    my($proto, $path) = @_;
-    my($max_length) = 0;
-    $_F->do_lines($path, sub {
-        my($line) = @_;
-        $max_length = length($line)
-            unless $max_length >= length($line);
-        push(@$_WORDS, lc($line));
-        return 1;
-    });
-    b_die('longest code exceeds type width')
-        if (($max_length + length($_CFG->{word_separator})) * $_CFG->{word_sample_size}) - 1 > $proto->get_width;
     return;
 }
 

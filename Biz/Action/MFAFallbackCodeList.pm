@@ -1,40 +1,48 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-package Bivio::Biz::Action::RecoveryCode;
+package Bivio::Biz::Action::MFAFallbackCodeList;
 use strict;
 use Bivio::Base 'Biz.Action';
 
+my($_MC) = b_use('Type.MnemonicCode');
+my($_MFCL) = b_use('Model.MFAFallbackCodeList');
 my($_RC) = b_use('Type.RecoveryCode');
-my($_RCL) = b_use('Model.RecoveryCodeList');
-my($_RCT) = b_use('Type.RecoveryCodeType');
 
 sub CODE_QUERY_KEY {
-    return 'recovery_codes';
+    return 'fallback_codes';
 }
 
 sub CODE_QUERY_SEPARATOR {
     return ',';
 }
 
-sub execute_refill_list {
+sub execute_refill {
     my($proto, $req) = @_;
-    return 'next'
+    my($res) = {
+        method => 'server_redirect',
+        task_id => $req->req('Action.UserPasswordQuery') ? 'password_task' : 'next',
+        # TODO: need this?
+        no_context => 1,
+    };
+    return $res
         unless $req->req('auth_user')->require_totp;
-    my($existing_list) = $_RCL->new($req)->load_all({type => $_RCT->TOTP_LOST});
-    return 'next'
-        if $existing_list->get_result_set_size > $_RCL->get_refill_threshold;
+    my($existing_list) = $_MFCL->new($req)->load_all({type => $_RC->MFA_FALLBACK});
+    return $res
+        if $existing_list->get_result_set_size > $_MFCL->get_refill_threshold;
     my($self) = _new($proto, $req);
     _generate_code_array($self);
-    $_RCL->create($self->get('recovery_code_array'));
+    $_MFCL->create($self->get('fallback_code_array'));
+    # TODO: keep or expire existing codes? show them to user?
     $existing_list->do_rows(sub {
         my($row) = @_;
-        $self->get('recovery_code_array')->append($row->get('RecoveryCode.code'));
+        $self->get('fallback_code_array')->append($row->get('UserRecoveryCode.code'));
         return 1;
     });
     $self->put(is_code_list_update => 1);
+    b_debug();
     return;
 }
 
-sub execute_preview_array {
+sub execute_preview {
     my($proto, $req) = @_;
     _generate_code_array(_new($proto, $req));
     return;
@@ -46,7 +54,7 @@ sub execute_download {
         unless my $codes = ($req->unsafe_get('query') || {})->{$proto->CODE_QUERY_KEY};
     $codes = [split($proto->CODE_QUERY_SEPARATOR, $codes)];
     b_die('unexpected code count')
-        unless int(@$codes) == $_RCL->get_new_code_count;
+        unless int(@$codes) == $_MFCL->get_new_code_count;
     $req->get('reply')->set_header(
         'Content-Disposition',
         'attachment; filename="recovery-codes.txt"',
@@ -60,18 +68,18 @@ sub execute_download {
 sub format_uri_for_download {
     my($self) = @_;
     return $self->req->format_uri({
-        task_id => 'USER_RECOVERY_CODE_DOWNLOAD',
+        task_id => 'USER_MFA_FALLBACK_CODE_DOWNLOAD',
         realm => $self->req(qw(auth_user name)),
         query => {
             $self->CODE_QUERY_KEY => join(
-                $self->CODE_QUERY_SEPARATOR, $self->req(qw(form_model recovery_codes))->as_list),
+                $self->CODE_QUERY_SEPARATOR, $self->req(qw(form_model fallback_codes))->as_list),
         },
     });
 }
 
 sub _generate_code_array {
     my($self) = @_;
-    $self->put(recovery_code_array => $_RC->generate_new_codes($_RCL->get_new_code_count));
+    $self->put(fallback_code_array => $_MC->generate_new_codes($_MFCL->get_new_code_count));
     return $self;
 }
 

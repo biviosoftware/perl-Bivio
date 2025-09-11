@@ -1786,7 +1786,8 @@ sub _cfg_totp {
             [USER_LOGIN_TOTP_FORM => 'pub/totp'],
             [USER_ENABLE_TOTP_FORM => '?/enable-totp'],
             [USER_DISABLE_TOTP_FORM => '?/disable-totp'],
-            [USER_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
+            [USER_MFA_FALLBACK_CODE_REFILL_LIST => '?/refill-mfa-fallback-codes'],
+            [USER_MFA_FALLBACK_CODE_DOWNLOAD => '?/download-mfa-fallback-codes'],
         ],
         Text => [
             [[qw(UserLoginTOTPForm UserEnableTOTPForm UserDisableTOTPForm)] => [
@@ -1794,8 +1795,8 @@ sub _cfg_totp {
                 'totp_code.desc' => 'Current ' . b_use('Model.TOTP')->get_default_digits . ' digit code found in authenticator application',
             ]],
             ['UserLoginTOTPForm' => [
-                totp_lost_recovery_code => 'Authenticator Recovery Code',
-                'totp_lost_recovery_code.desc' => 'Used recovery codes will no longer be available',
+                fallback_code => 'Authenticator Fallback Code',
+                'fallback_code.desc' => 'Used fallback codes will no longer be available',
                 disable_totp => 'Disable two-factor authentication',
                 'disable_totp.desc' => 'Check this box if you have permanently lost access to your authenticator',
             ]],
@@ -1814,7 +1815,7 @@ Join([
             'Scan the QR code below with your chosen authenticator app.',
             TOTPQRCode(),
         ])),
-        LI(RecoveryCodeList()),
+        LI(MFAFallbackCodeList()),
         LI('Enter the generated 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
         LI('Enter your account password.'),
     ])),
@@ -1827,7 +1828,7 @@ EOF
                 'RealmOwner.password' => 'Password',
                 prose => [
                     prologue => <<'EOF',
-To disable two-factor authentication, you must enter an authentator code and your password. If you don't have access to your authenticator, you must enter a recovery code.
+To disable two-factor authentication, you must enter an authentator code and your password. If you don't have access to your authenticator, you must enter a fallback code.
 EOF
                 ],
             ]],
@@ -1835,6 +1836,7 @@ EOF
                 USER_LOGIN_TOTP_FORM => 'Two-Factor Authentication',
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
                 USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
+                USER_MFA_FALLBACK_CODE_REFILL_LIST => 'New Authenticator Fallback Codes',
             ]],
             [acknowledgement => [
                 USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',

@@ -644,19 +644,38 @@ CREATE TABLE totp_t (
   CONSTRAINT totp_t1 primary key(user_id)
 )
 /
-CREATE TABLE recovery_code_t (
-  recovery_code_id NUMERIC(18) NOT NULL,
+ALTER TABLE totp_t
+  ADD CONSTRAINT totp_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX totp_t3 ON totp_t (
+  user_id
+)
+/
+CREATE TABLE user_recovery_code_t (
+  user_recovery_code_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
   code VARCHAR(4000) NOT NULL,
   type NUMERIC(1) NOT NULL,
   creation_date_time DATE NOT NULL,
   expiration_date_time DATE,
-  CONSTRAINT recovery_code_t1 primary key(recovery_code_id)
+  is_used NUMERIC(1),
+  CONSTRAINT user_recovery_code_t1 primary key(user_recovery_code_id)
 )
 /
-CREATE SEQUENCE recovery_code_s
+CREATE SEQUENCE user_recovery_code_s
   MINVALUE 100014
   CACHE 1 INCREMENT BY 100000
+/
+ALTER TABLE user_recovery_code_t
+  ADD CONSTRAINT user_recovery_code_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_recovery_code_t3 ON user_recovery_code_t (
+  user_id
+)
 /
 EOF
     return;

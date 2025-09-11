@@ -15,18 +15,12 @@ sub disable_form {
     return shift->internal_body(vs_simple_form(UserDisableTOTPForm => [qw(
         UserDisableTOTPForm.RealmOwner.password
         UserDisableTOTPForm.totp_code
-        UserDisableTOTPForm.recovery_code
+        UserDisableTOTPForm.fallback_code
     )]));
 }
 
-sub recovery_code_list {
-    return shift->internal_body(RecoveryCodeList());
-}
-
-sub recovery_form {
-    return shift->internal_body(vs_simple_form(UserRecoveryForm => [qw(
-        UserRecoveryForm.recovery_code
-    )]));
+sub fallback_code_list {
+    return shift->internal_body(MFAFallbackCodeList());
 }
 
 sub totp_form {
@@ -34,8 +28,8 @@ sub totp_form {
         ['UserLoginTOTPForm.totp_code', {
             row_class => 'b_totp_code',
         }],
-        ['UserLoginTOTPForm.totp_lost_recovery_code', {
-            row_class => 'b_totp_lost_recovery_code',
+        ['UserLoginTOTPForm.fallback_code', {
+            row_class => 'b_fallback_code',
         }],
         ['UserLoginTOTPForm.disable_totp', {
             row_class => 'b_disable_totp',
@@ -43,20 +37,20 @@ sub totp_form {
         [
             vs_blank_cell(),
             Link('Lost Authenticator Access?', '#', {
-                ID => 'b_totp_lost_access',
+                ID => 'b_fallback_access',
             }),
         ],
         InlineJavaScript(<<'EOF'),
 (() => {
-    const la = document.getElementById("b_totp_lost_access");
-    const c = document.getElementsByClassName("b_totp_code")[0];
-    const lrc = document.getElementsByClassName("b_totp_lost_recovery_code")[0];
+    const fa = document.getElementById("b_fallback_access");
+    const tc = document.getElementsByClassName("b_totp_code")[0];
+    const fc = document.getElementsByClassName("b_fallback_code")[0];
     const dt = document.getElementsByClassName("b_disable_totp")[0];
-    if (la && c && lrc && dt) {
-        la.addEventListener("click", (event) => {
-            la.style.display = "none";
-            c.style.display = "none";
-            lrc.style.display = "table-row";
+    if (fa && tc && fc && dt) {
+        fa.addEventListener("click", (event) => {
+            fa.style.display = "none";
+            tc.style.display = "none";
+            fc.style.display = "table-row";
             dt.style.display = "table-row";
         });
     }

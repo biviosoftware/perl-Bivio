@@ -1,41 +1,25 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-package Bivio::Biz::Model::RecoveryCodeList;
+package Bivio::Biz::Model::MFAFallbackCodeList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 my($_DT) = b_use('Type.DateTime');
+my($_RC) = b_use('Type.RecoveryCode');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     new_code_count => 6,
     refill_threshold => 2,
 });
 
-# TODO: should this be here or in RecoveryCode?
 sub create {
     my($self, $code_array) = @_;
     $code_array->do_iterate(sub {
         my($it) = @_;
-        $self->new_other('RecoveryCode')->create($it);
+        $self->new_other('UserRecoveryCode')->create($_RC->MFA_FALLBACK, $it);
         return 1;
     });
     return;
 }
-
-# TODO: should this be here or in RecoveryCode?
-# sub delete_all_expired {
-#     my($self) = @_;
-#     $self->load_all->do_iterate(sub {
-#         my($it) = @_;
-#         my($rc) = $self->new_other('RecoveryCode')->set_ephemeral->load({
-#             recovery_code_id => $it->get('RecoveryCode.recovery_code_id'),
-#         });
-#         $rc->delete
-#             if $rc->get('expiration_date_time')
-#             && $_DT->is_less_than($rc->get('expiration_date_time'), $_DT->now);
-#         return 1;
-#     });
-#     return;
-# }
 
 sub get_new_code_count {
     return $_CFG->{new_code_count};
@@ -58,15 +42,15 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         can_iterate => 1,
-        auth_id => ['RecoveryCode.user_id'],
-        other => ['RecoveryCode.code'],
-        primary_key => [qw(RecoveryCode.recovery_code_id)],
+        auth_id => ['UserRecoveryCode.user_id'],
+        other => ['UserRecoveryCode.code'],
+        primary_key => [qw(UserRecoveryCode.user_recovery_code_id)],
     });
 }
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    $stmt->where($stmt->GTE('RecoveryCode.expiration_date_time', [$_DT->now]));
+    $stmt->where($stmt->IS_NULL('UserRecoveryCode.expiration_date_time'));
     return;
 }
 

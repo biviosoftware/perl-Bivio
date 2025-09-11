@@ -110,11 +110,6 @@ sub is_valid_setup {
 
 sub _input_in_range {
     my($input, $algorithm, $digits, $period, $secret) = @_;
-    b_debug($input);
-    b_debug($algorithm);
-    b_debug($digits);
-    b_debug($period);
-    b_debug($secret);
     my($now_ts) = $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $period);
     foreach my $ts (
         # Test time step for now first as it will most often be the valid one
@@ -130,7 +125,7 @@ sub _input_in_range {
 
 sub _code_valid_for_time_step {
     my($code, $algorithm, $digits, $secret, $time_step) = @_;
-    return $code eq b_debug($_RFC6238->compute($algorithm->get_name, $digits, $secret, $time_step)) ? 1 : 0;
+    return $code eq $_RFC6238->compute($algorithm->get_name, $digits, $secret, $time_step) ? 1 : 0;
 }
 
 1;

@@ -31,13 +31,15 @@ sub execute_ok {
     my(@res) = shift->SUPER::execute_ok(@_);
     return @res
         if $self->in_error;
+    # TODO: use require_totp or override_require_totp?
     return @res
-        unless $self->unsafe_get('realm_owner') && $self->unsafe_get('validate_called');
+        unless ($self->unsafe_get('realm_owner') && $self->unsafe_get('validate_called'))
+        || $self->unsafe_get('require_totp');
     return $self->get('realm_owner')->require_totp ? {
         method => 'server_redirect',
-        task_id => $self->req('task')->get_attr_as_id('totp_task'),
+        task_id => 'totp_task',
         # TODO: need this?
-        no_context => 1,
+        # no_context => 1,
     } : @res;
 }
 
@@ -68,7 +70,7 @@ sub internal_initialize {
         ],
         hidden => [
             {
-                name => 'password_query_recovery_code',
+                name => 'password_query_code',
                 type => 'Line',
                 constraint => 'NONE',
             },
@@ -106,8 +108,13 @@ sub internal_initialize {
                 constraint => 'NONE',
             },
             {
-                name => 'password_query_recovery_code_model',
-                type => 'Model.RecoveryCode',
+                name => 'password_query_code_model',
+                type => 'Model.UserRecoveryCode',
+                constraint => 'NONE',
+            },
+            {
+                name => 'require_totp',
+                type => 'Boolean',
                 constraint => 'NONE',
             },
         ],
@@ -233,7 +240,7 @@ sub _validate {
 sub _validate_login_attempt {
     my($self, $owner) = @_;
     return
-        if $self->unsafe_get('password_query_recovery_code_model');
+        if $self->unsafe_get('password_query_code_model');
     return
         unless $self->get('RealmOwner.password');
     if (my $err = _password_error($self, $owner)) {

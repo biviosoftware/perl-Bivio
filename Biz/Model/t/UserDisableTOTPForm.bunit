@@ -8,7 +8,7 @@ my($no_setup) = 1;
 my($totp_secret);
 my($time_step);
 my($totp_code);
-my($recovery_codes);
+my($fallback_codes);
 FormModel({
     setup_request => sub {
         return
@@ -23,12 +23,12 @@ FormModel({
                 $totp_secret,
                 $time_step,
             );
-            $recovery_codes = Type_RecoveryCode()->generate_new_codes(
-                Model_RecoveryCodeList()->get_new_code_count);
+            $fallback_codes = Type_RecoveryCode()->generate_new_codes(
+                Model_MFAFallbackCodeList()->get_new_code_count);
         }
         unless (Model_TOTP()->unsafe_load) {
             Model_TOTP()->create($totp_secret, $time_step);
-            Model_RecoveryCodeList()->create($recovery_codes);
+            Model_MFAFallbackCodeList()->create($fallback_codes);
         }
         return;
     },
@@ -78,9 +78,9 @@ my($is_task) = sub {
     error_case({
         login => 'demo',
         'RealmOwner.password' => 'password',
-        recovery_code => 'wrong-recovery-code',
+        fallback_code => 'wrong-recovery-code',
     } => {
-        recovery_code => 'INVALID_RECOVERY_CODE',
+        fallback_code => 'INVALID_RECOVERY_CODE',
     }),
     [{
         login => 'demo',
@@ -95,18 +95,18 @@ my($is_task) = sub {
         return 0
             if Model_TOTP()->new(req())->unsafe_load;
         return 0
-            if Model_RecoveryCodeList()->new(req())->load_all->get_result_set_size;
+            if Model_MFAFallbackCodeList()->new(req())->load_all->get_result_set_size;
         return 1;
     },
     [{
         login => 'demo',
         'RealmOwner.password' => 'password',
-        recovery_code => sub {$recovery_codes->get_element(0)},
+        fallback_code => sub {$fallback_codes->get_element(0)},
     }] => sub {
         return 0
             if Model_TOTP()->new(req())->unsafe_load;
         return 0
-            if Model_RecoveryCodeList()->new(req())->load_all->get_result_set_size;
+            if Model_MFAFallbackCodeList()->new(req())->load_all->get_result_set_size;
         return 1;
     },
 ];

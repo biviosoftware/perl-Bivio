@@ -3,10 +3,10 @@ package Bivio::Biz::Model::UserEnableTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginTOTPForm';
 
-my($_ARC) = b_use('Action.RecoveryCode');
+my($_AMFCL) = b_use('Action.MFAFallbackCodeList');
 my($_DT) = b_use('Type.DateTime');
+my($_MMFCL) = b_use('Model.MFAFallbackCodeList');
 my($_RFC6238) = b_use('Biz.RFC6238');
-my($_RCL) = b_use('Model.RecoveryCodeList');
 my($_T) = b_use('Model.TOTP');
 my($_TS) = b_use('Type.TOTPSecret');
 
@@ -14,7 +14,7 @@ sub execute_empty {
     my($self) = @_;
     $self->internal_put_field(
         totp_secret => $_TS->generate_secret($_T->get_default_algorithm),
-        recovery_codes => $self->req($_ARC, 'recovery_code_array'),
+        fallback_codes => $self->req($_AMFCL, 'fallback_code_array'),
     );
     return;
 }
@@ -26,7 +26,7 @@ sub execute_ok {
         $self->get('totp_secret'),
         $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_T->get_default_period),
     );
-    $_RCL->create($self->get('recovery_codes'));
+    $_MMFCL->create($self->get('fallback_codes'));
     return @res;
 }
 
@@ -39,7 +39,7 @@ sub internal_initialize {
                 name => 'RealmOwner.password',
             }],
             hidden => [
-                [qw(recovery_codes StringArray)],
+                [qw(fallback_codes StringArray)],
                 [qw(totp_secret Line)],
             ],
         ),

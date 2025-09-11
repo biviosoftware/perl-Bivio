@@ -11,7 +11,7 @@ my($expected_combinations) = [qw(foo.bar bar.baz foo.baz bar.foo baz.bar baz.foo
 my($codes) = {};
 my($case_count) = 50;
 config({
-    'Bivio::Type::RecoveryCode' => {
+    'Bivio::Type::MnemonicCode' => {
         is_enabled => 1,
         word_list => $word_list_path,
         word_sample_size => 2,

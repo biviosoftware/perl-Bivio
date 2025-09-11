@@ -1447,24 +1447,24 @@ div.totp_setup {
 span.totp_setup_key {
   display: none;
 }
-table.b_recovery_code_list {
+table.b_fallback_code_list {
   margin: auto;
   border: 1px solid #ccc;
 }
-table.b_recovery_code_list td {
+table.b_fallback_code_list td {
   padding: 0.25em;
   vertical-align: top;
   background: #f0f0f0;
 }
-table.b_recovery_codes td,
-table.b_recovery_code_options td {
+table.b_fallback_codes td,
+table.b_fallback_code_options td {
   padding: 0.5em 1.5em;
   text-align: center;
   whitespace: nowrap;
   border: 0.5em solid #f0f0f0;
   background: #fff;
 }
-tr.b_totp_lost_recovery_code,
+tr.b_fallback_code,
 tr.b_disable_totp {
   display: none;
 }
