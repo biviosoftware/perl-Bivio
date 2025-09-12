@@ -20,14 +20,9 @@ sub FALLBACK_CODE_FIELD {
     return 'fc';
 }
 
-sub execute_empty {
-    my($self) = @_;
-    return $self->internal_validate_realm_owner;
-}
-
 sub execute_ok {
     my($self) = @_;
-    my($cookie) = _set_cookie_totp($self);
+    my($cookie) = $self->set_cookie_totp($self->get('realm_owner'));
     $_ULF->set_user($self->get('realm_owner'), $cookie, $self->req);
     my($next);
     if ($self->unsafe_get('password_query_code')) {
@@ -51,8 +46,6 @@ sub execute_ok {
 
 sub internal_disable_totp {
     my($self) = @_;
-    b_die('models not loaded')
-        unless $self->internal_load_models($self);
     $self->req('Model.UserTOTP')->delete;
     $self->req('Model.MFAFallbackCodeList')->do_rows(sub {
         my($it) = @_;
@@ -61,6 +54,7 @@ sub internal_disable_totp {
         })->delete;
         return 1;
     });
+    _delete_cookie($self, $self->req('cookie'));
     return;
 }
 
@@ -81,23 +75,9 @@ sub internal_initialize {
                 [qw(realm_owner Model.RealmOwner)],
                 [qw(totp_time_step Integer)],
                 [qw(fallback_code_model Model.UserRecoveryCode)],
-                [qw(do_locked_out_task Boolean)],
             ],
         ),
     });
-}
-
-sub internal_load_models {
-    my($self) = @_;
-    return 1
-        if $self->ureq('Model.UserTOTP') && $self->ureq('Model.MFAFallbackCodeList');
-    return 0
-        unless $self->new_other('UserTOTP')->unsafe_load;
-    return 0
-        unless $self->new_other('MFAFallbackCodeList')->load_all({
-            type => $_RCT->MFA_FALLBACK,
-        })->get_result_set_size;
-    return 1;
 }
 
 sub internal_pre_execute {
@@ -110,13 +90,9 @@ sub internal_pre_execute {
         unless $self->ureq('cookie');
     $self->internal_put_field(
         realm_owner => $_ULF->load_cookie_user($self->req, $self->req('cookie')));
-    return;
-}
-
-sub internal_validate_realm_owner {
-    my($self) = @_;
-    b_die('FORBIDDEN')
+    return
         unless $self->get('realm_owner');
+    # TODO: do we need these?
     b_die('USER_LOCKED_OUT')
         if $self->get('realm_owner')->is_locked_out;
     b_die('NOT_FOUND')
@@ -142,47 +118,17 @@ sub is_valid_totp_cookie {
         return $auth_user->new_other('UserRecoveryCode')
             ->is_valid_for_cookie($auth_user->get('realm_id'), $c);
     }
-    _delete_cookie($proto, $cookie);
+    $proto->delete_cookie($cookie);
     return 0;
 }
 
-sub validate {
-    my($self) = @_;
-    $self->internal_validate_realm_owner;
-    _validate_totp($self);
-    if ($self->in_error) {
-        foreach my $f ('totp_code', 'fallback_code') {
-            $self->internal_put_field($f => undef);
-            $self->internal_clear_literal($f);
-        }
-        $self->internal_put_field(do_locked_out_task => 1)
-            if $_ULF->record_login_attempt($self->get('realm_owner'), 0)->is_state_locked_out;
-    }
-    else {
-        $_ULF->record_login_attempt($self->get('realm_owner'), 1);
-    }
-    return;
-}
-
-sub validate_and_execute_ok {
-    return shift->delegate_method($_ULF, @_);
-}
-
-sub _delete_cookie {
-    my($proto, $cookie) = @_;
-    $cookie->delete(
-        $proto->TOTP_CODE_FIELD,
-        $proto->TOTP_TIME_STEP_FIELD,
-        $proto->FALLBACK_CODE_FIELD,
-    );
-    return;
-}
-
-sub _set_cookie_totp {
-    my($self) = @_;
-    my($cookie) = $self->req->unsafe_get('cookie');
+sub set_cookie_totp {
+    my($self, $values) = @_;
+    my($cookie) = $self->ureq('cookie');
     return undef
         unless $cookie;
+    $self->internal_put_field(%$values)
+        if ref($values) eq 'HASH';
     if ($self->get('realm_owner')) {
         $_C->assert_is_ok($self->req);
         if ($self->get('totp_code')) {
@@ -201,6 +147,34 @@ sub _set_cookie_totp {
     }
     _delete_cookie($self, $cookie);
     return $cookie;
+}
+
+sub validate {
+    my($self, $values) = @_;
+    $self->internal_put_field(%$values)
+        if ref($values) eq 'HASH';
+    # else $values=$form_button
+    _validate_totp($self);
+    if ($self->in_error) {
+        foreach my $f ('totp_code', 'fallback_code') {
+            $self->internal_put_field($f => undef);
+            $self->internal_clear_literal($f);
+        }
+        $_ULF->record_login_attempt($self->get('realm_owner'), 0);
+        return;
+    }
+    $_ULF->record_login_attempt($self->get('realm_owner'), 1);
+    return;
+}
+
+sub _delete_cookie {
+    my($self, $cookie) = @_;
+    $cookie->delete(
+        $self->TOTP_CODE_FIELD,
+        $self->TOTP_TIME_STEP_FIELD,
+        $self->FALLBACK_CODE_FIELD,
+    );
+    return;
 }
 
 sub _validate_totp {

@@ -20,7 +20,7 @@ options({
     },
 });
 [
-    validate_input_code => [
+    is_valid_input_code => [
         ['1' x 6] => 0,
         [undef, '1' x 20] => 0,
         map(

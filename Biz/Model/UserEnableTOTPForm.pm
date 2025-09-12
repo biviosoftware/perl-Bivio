@@ -7,13 +7,13 @@ my($_AMFCL) = b_use('Action.MFAFallbackCodeList');
 my($_DT) = b_use('Type.DateTime');
 my($_MMFCL) = b_use('Model.MFAFallbackCodeList');
 my($_RFC6238) = b_use('Biz.RFC6238');
-my($_T) = b_use('Model.UserTOTP');
 my($_TS) = b_use('Type.TOTPSecret');
+my($_UT) = b_use('Model.UserTOTP');
 
 sub execute_empty {
     my($self) = @_;
     $self->internal_put_field(
-        totp_secret => $_TS->generate_secret($_T->get_default_algorithm),
+        totp_secret => $_TS->generate_secret($_UT->get_default_algorithm),
         fallback_codes => $self->req($_AMFCL, 'fallback_code_array'),
     );
     return;
@@ -24,7 +24,7 @@ sub execute_ok {
     my(@res) = shift->SUPER::execute_ok(@_);
     $self->new_other('UserTOTP')->create(
         $self->get('totp_secret'),
-        $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_T->get_default_period),
+        $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
     );
     $_MMFCL->create($self->get('fallback_codes'));
     return @res;
@@ -35,9 +35,9 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         $self->field_decl(
-            visible => [{
-                name => 'RealmOwner.password',
-            }],
+            visible => [
+                [qw(RealmOwner.password)],
+            ],
             hidden => [
                 [qw(fallback_codes StringArray)],
                 [qw(totp_secret Line)],
@@ -54,19 +54,20 @@ sub internal_pre_execute {
     return;
 }
 
-sub internal_validate_realm_owner {
-    return;
-}
-
 sub validate {
     my($self) = @_;
-    $self->internal_put_error('RealmOwner.password' => 'PASSWORD_MISMATCH')
-        unless $self->get('realm_owner')->get_field_type('password')->is_equal(
-            $self->get_nested(qw(realm_owner password)),
-            $self->get('RealmOwner.password'),
-        );
+    # TODO: i don't love doing the password validation this way
+    my($ulf) = $self->new_other('UserLoginForm');
+    $ulf->validate($self->get_nested(qw(realm_owner name)), $self->get('RealmOwner.password'));
+    if ($ulf->in_error) {
+        $self->internal_stay_on_page;
+        my($e) = $ulf->get_errors;
+        $self->internal_put_error('RealmOwner.password' => delete($e->{'RealmOwner.password'}));
+        b_die('invalid login=', $self->get('realm_owner'), ' ', $e)
+            if %$e;
+    }
     $self->internal_put_error(totp_code => 'INVALID_TOTP_CODE')
-        unless my $ts = $_T->is_valid_setup($self->get('totp_code'), $self->get('totp_secret'));
+        unless my $ts = $_UT->is_valid_setup($self->get('totp_code'), $self->get('totp_secret'));
     $self->internal_put_field(totp_time_step => $ts);
     return;
 }

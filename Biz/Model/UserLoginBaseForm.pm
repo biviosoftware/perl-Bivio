@@ -103,11 +103,6 @@ sub internal_initialize {
                 constraint => 'NONE',
             },
             {
-                name => 'do_locked_out_task',
-                type => 'Boolean',
-                constraint => 'NONE',
-            },
-            {
                 name => 'password_query_code_model',
                 type => 'Model.UserRecoveryCode',
                 constraint => 'NONE',
@@ -164,20 +159,6 @@ sub validate {
     return;
 }
 
-sub validate_and_execute_ok {
-    my(undef, $delegator) = shift->delegated_args(@_);
-    my($res) = $delegator->SUPER::validate_and_execute_ok(@_);
-    if ($delegator->unsafe_get('do_locked_out_task')) {
-        $delegator->put_on_request(1);
-        return {
-            method => 'server_redirect',
-            task_id => 'locked_out_task',
-            query => undef,
-        };
-    }
-    return $res;
-}
-
 sub validate_login {
     my(undef, $delegator, $model_or_login, $field) = shift->delegated_args(@_);
     $field ||= 'login';
@@ -200,6 +181,8 @@ sub _maybe_lock_out {
     if ($attempt->is_state_locked_out) {
         b_warn('locked out owner=', $owner);
         $owner->update_password($_R->password);
+        b_debug();
+        $owner->req->server_redirect('GENERAL_USER_LOCKED_OUT');
     }
     return $attempt;
 }
@@ -247,8 +230,7 @@ sub _validate_login_attempt {
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
         $self->internal_put_error('RealmOwner.password' => $err);
-        $self->internal_put_field(do_locked_out_task => 1)
-            if $self->record_login_attempt($owner, 0)->is_state_locked_out;
+        $self->record_login_attempt($owner, 0);
     }
     return;
 }

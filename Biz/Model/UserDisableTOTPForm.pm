@@ -4,27 +4,61 @@ use strict;
 use Bivio::Base 'Model.UserLoginTOTPForm';
 
 my($_RCT) = b_use('Type.RecoveryCode');
+my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 
 sub execute_ok {
     my($self) = @_;
-    my(@res) = shift->SUPER::execute_ok(@_);
-    $self->internal_disable_totp;
-    return @res;
+    $self->internal_disable_totp($self);
+    return;
+}
+
+sub internal_initialize {
+    my($self) = @_;
+    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+        $self->field_decl(
+            visible => [
+                [qw(RealmOwner.password)],
+            ],
+        ),
+    });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
     return 'NOT_FOUND'
-        unless $self->internal_load_models($self);
+        unless _load_models($self);
     $self->internal_put_field(realm_owner => $self->req(qw(auth_realm owner)));
     return;
 }
 
-sub internal_validate_realm_owner {
+sub validate {
     my($self) = @_;
-    b_die('NOT_FOUND')
-        unless $self->get('realm_owner')->require_totp;
-    return;
+    my(@res) = shift->SUPER::validate(@_);
+    # TODO: i don't love doing the password validation this way
+    my($ulf) = $self->new_other('UserLoginForm');
+    $ulf->validate($self->get_nested(qw(realm_owner name)), $self->get('RealmOwner.password'));
+    if ($ulf->in_error) {
+        $self->internal_stay_on_page;
+        my($e) = $ulf->get_errors;
+        $self->internal_put_error('RealmOwner.password' => delete($e->{'RealmOwner.password'}));
+        b_die('invalid login=', $self->get('realm_owner'), ' ', $e)
+            if %$e;
+    }
+    return @res;
+}
+
+sub _load_models {
+    my($self) = @_;
+    return 1
+        if $self->ureq('Model.UserTOTP') && $self->ureq('Model.MFAFallbackCodeList');
+    return 0
+        unless $self->new_other('UserTOTP')->unsafe_load;
+    return 0
+        unless $self->new_other('MFAFallbackCodeList')->load_all({
+            type => $_RCT->MFA_FALLBACK,
+        })->get_result_set_size;
+    return 1;
 }
 
 1;

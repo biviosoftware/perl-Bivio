@@ -3,7 +3,7 @@ PropertyModel();
 my($s) = Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1);
 [
     {
-        method => 'validate_setup',
+        method => 'is_valid_setup',
         compute_params => sub {
             my(undef, $params) = @_;
             return [$params->[0], $s]

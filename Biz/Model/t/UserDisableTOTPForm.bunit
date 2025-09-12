@@ -23,7 +23,7 @@ FormModel({
                 $totp_secret,
                 $time_step,
             );
-            $fallback_codes = Type_RecoveryCode()->generate_new_codes(
+            $fallback_codes = Type_MnemonicCode()->generate_new_codes(
                 Model_MFAFallbackCodeList()->get_new_code_count);
         }
         unless (Model_UserTOTP()->unsafe_load) {
@@ -51,44 +51,36 @@ my($is_task) = sub {
     [] => sub {
         return req(qw(form_model realm_owner name)) eq 'demo';
     },
-    error_case({
-        login => 'demo',
-    } => {
+    error_case({} => {
         'RealmOwner.password' => 'NULL',
     }),
     error_case({
-        login => 'demo',
         totp_code => sub {$totp_code},
     } => {
         'RealmOwner.password' => 'NULL',
     }),
     error_case({
-        login => 'demo',
         'RealmOwner.password' => 'password',
     } => {
         totp_code => 'INVALID_RECOVERY_OPTIONS',
     }),
     error_case({
-        login => 'demo',
         'RealmOwner.password' => 'password',
         totp_code => 123456,
     } => {
         totp_code => 'INVALID_TOTP_CODE',
     }),
     error_case({
-        login => 'demo',
         'RealmOwner.password' => 'password',
         fallback_code => 'wrong-recovery-code',
     } => {
         fallback_code => 'INVALID_RECOVERY_CODE',
     }),
     [{
-        login => 'demo',
         'RealmOwner.password' => 'wrong-password',
         totp_code => sub {$totp_code},
     }] => $is_task->('locked_out_task'),
     [{
-        login => 'demo',
         'RealmOwner.password' => 'password',
         totp_code => sub {$totp_code},
     }] => sub {
@@ -99,7 +91,6 @@ my($is_task) = sub {
         return 1;
     },
     [{
-        login => 'demo',
         'RealmOwner.password' => 'password',
         fallback_code => sub {$fallback_codes->get_element(0)},
     }] => sub {

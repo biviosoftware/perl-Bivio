@@ -7,11 +7,11 @@ config({
 FormModel();
 req()->set_realm_and_user(qw(demo demo));
 req()->initialize_fully('USER_ENABLE_TOTP_FORM');
+Action_MFAFallbackCodeList()->execute_preview(req());
 my($totp_secret);
 my($fallback_codes);
 my($time_step);
 my($v) = {
-    login => 'demo',
     'RealmOwner.password' => 'password',
     fallback_codes => sub {$fallback_codes},
     totp_secret => sub {$totp_secret},
@@ -25,7 +25,6 @@ my($is_task) = sub {
 };
 [
     empty_case({
-        login => 'demo',
         totp_secret => qr/^[a-zA-Z0-9]+$/,
     }),
     inline_case(sub {
