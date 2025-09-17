@@ -5,9 +5,8 @@ use Bivio::Base 'Biz.Action';
 use Bivio::Biz::Random;
 
 my($_DT) = b_use('Type.DateTime');
-my($_URC) = b_use('Model.UserRecoveryCode');
-my($_MRCL) = b_use('Model.MFAFallbackCodeList');
-my($_TRC) = b_use('Type.RecoveryCode');
+my($_USC) = b_use('Model.UserSecretCode');
+my($_TSC) = b_use('Type.SecretCode');
 my($_KEY) = 'x';
 
 sub execute {
@@ -19,9 +18,12 @@ sub execute {
     })->put_on_request($req, 1);
     my($res);
     my($die) = Bivio::Die->catch(sub {
-        my($rc) = $_URC->new($req)->unauth_load_by_code_and_type_or_die(
-            $u->get('realm_id'), $query_key, $_TRC->PASSWORD_QUERY);
-        $rc->update({type => $_TRC->PASSWORD_RESET});
+        my($rc) = $_USC->new($req)->unauth_load_by_code_and_type(
+            $u->get('realm_id'), $query_key, $_TSC->PASSWORD_QUERY);
+        b_die('invalid or expired')
+            unless $rc;
+        # TODO: should this actually reset the password here?
+        $rc->update({type => $_TSC->PASSWORD_RESET});
         $res = Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
             realm_owner => $u,
             # there might not be a cookie if user is visiting site
@@ -49,7 +51,7 @@ sub execute {
 
 sub format_uri {
     my(undef, $req) = @_;
-    my($rc) = $_URC->new($req)->create($_TRC->PASSWORD_QUERY);
+    my($rc) = $_USC->new($req)->create($_TSC->PASSWORD_QUERY);
     return $req->format_http({
         task_id => $req->get('task')->get_attr_as_id('reset_task'),
         query => {$_KEY => $rc->get('code')},

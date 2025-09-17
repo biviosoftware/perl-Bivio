@@ -3,8 +3,7 @@ package Bivio::Biz::Model::UserDisableTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginTOTPForm';
 
-my($_RCT) = b_use('Type.RecoveryCode');
-my($_ULTF) = b_use('Model.UserLoginTOTPForm');
+my($_SC) = b_use('Type.SecretCode');
 
 sub execute_ok {
     my($self) = @_;
@@ -51,12 +50,12 @@ sub validate {
 sub _load_models {
     my($self) = @_;
     return 1
-        if $self->ureq('Model.UserTOTP') && $self->ureq('Model.MFAFallbackCodeList');
+        if $self->ureq('Model.UserTOTP') && $self->ureq('Model.MFARecoveryCodeList');
     return 0
         unless $self->new_other('UserTOTP')->unsafe_load;
     return 0
-        unless $self->new_other('MFAFallbackCodeList')->load_all({
-            type => $_RCT->MFA_FALLBACK,
+        unless $self->new_other('MFARecoveryCodeList')->load_all({
+            type => $_SC->MFA_RECOVERY,
         })->get_result_set_size;
     return 1;
 }

@@ -1350,7 +1350,7 @@ sub info_totp {
             260
             USER
             ADMIN_READ&ADMIN_WRITE
-            Action.MFAFallbackCodeList->execute_preview
+            Action.MFARecoveryCodeList->execute_preview
             Model.UserEnableTOTPForm
             View.UserTOTP->enable_form
             next=MY_SITE
@@ -1365,19 +1365,19 @@ sub info_totp {
             next=MY_SITE
         )],
         [qw(
-            USER_MFA_FALLBACK_CODE_DOWNLOAD
+            USER_MFA_RECOVERY_CODE_DOWNLOAD
             262
             USER
             ADMIN_READ&ADMIN_WRITE
-            Action.MFAFallbackCodeList->execute_download
+            Action.MFARecoveryCodeList->execute_download
         )],
         [qw(
-            USER_MFA_FALLBACK_CODE_REFILL_LIST
+            USER_MFA_RECOVERY_CODE_REFILL_LIST
             263
             USER
             ADMIN_READ&ADMIN_WRITE
-            Action.MFAFallbackCodeList->execute_refill
-            View.UserTOTP->fallback_code_list
+            Action.MFARecoveryCodeList->execute_refill
+            View.UserTOTP->recovery_code_list
             password_task=USER_PASSWORD
             next=MY_SITE
         )],
@@ -1389,7 +1389,7 @@ sub info_totp {
             Model.UserLoginTOTPForm
             View.UserTOTP->totp_form
             password_task=USER_PASSWORD
-            refill_task=USER_MFA_FALLBACK_CODE_REFILL_LIST
+            refill_task=USER_MFA_RECOVERY_CODE_REFILL_LIST
             next=MY_SITE
         )],
     ];

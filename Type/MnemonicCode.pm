@@ -16,6 +16,11 @@ $_C->register(my $_CFG = {
     word_separator => '-',
 });
 
+sub compare {
+    my($proto, $left, $right) = @_;
+    return $proto->SUPER::compare(map(_canonicalize($_), $left, $right));
+}
+
 sub generate_code {
     my($proto) = @_;
     b_die('recovery codes not enabled')
@@ -78,6 +83,13 @@ sub is_password {
 sub is_secure_data {
     # return 0;
     return 1;
+}
+
+sub _canonicalize {
+    my($code) = @_;
+    $code = lc($code);
+    $code = join($_CFG->{separator}, split(/[^a-z]+/, $code));
+    return $code;
 }
 
 sub _init_word_list {

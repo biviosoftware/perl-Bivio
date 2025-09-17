@@ -192,6 +192,7 @@ sub login_as {
         password => defined($password) ? $password : $_SQL->PASSWORD,
     });
     if ($totp_code) {
+        $self->verify_no_text(qr/sign-out/i);
         $self->verify_link(qr{Sign-in|\blogin\b}i);
         $self->submit_form(sign_in => {
             authenticator_code => $totp_code,

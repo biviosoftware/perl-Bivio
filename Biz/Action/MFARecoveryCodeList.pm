@@ -1,14 +1,14 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-package Bivio::Biz::Action::MFAFallbackCodeList;
+package Bivio::Biz::Action::MFARecoveryCodeList;
 use strict;
 use Bivio::Base 'Biz.Action';
 
 my($_MC) = b_use('Type.MnemonicCode');
-my($_MFCL) = b_use('Model.MFAFallbackCodeList');
-my($_RC) = b_use('Type.RecoveryCode');
+my($_MFCL) = b_use('Model.MFARecoveryCodeList');
+my($_SC) = b_use('Type.SecretCode');
 
 sub CODE_QUERY_KEY {
-    return 'fallback_codes';
+    return 'recovery_codes';
 }
 
 sub CODE_QUERY_SEPARATOR {
@@ -25,16 +25,16 @@ sub execute_refill {
     };
     return $res
         unless $req->req('auth_user')->require_totp;
-    my($existing_list) = $_MFCL->new($req)->load_all({type => $_RC->MFA_FALLBACK});
+    my($existing_list) = $_MFCL->new($req)->load_all({type => $_SC->MFA_RECOVERY});
     return $res
         if $existing_list->get_result_set_size > $_MFCL->get_refill_threshold;
     my($self) = _new($proto, $req);
     _generate_code_array($self);
-    $_MFCL->create($self->get('fallback_code_array'));
+    $_MFCL->create($self->get('recovery_code_array'));
     # TODO: keep or expire existing codes? show them to user?
     $existing_list->do_rows(sub {
         my($row) = @_;
-        $self->get('fallback_code_array')->append($row->get('UserRecoveryCode.code'));
+        $self->get('recovery_code_array')->append($row->get('UserSecretCode.code'));
         return 1;
     });
     $self->put(is_code_list_update => 1);
@@ -68,18 +68,18 @@ sub execute_download {
 sub format_uri_for_download {
     my($self) = @_;
     return $self->req->format_uri({
-        task_id => 'USER_MFA_FALLBACK_CODE_DOWNLOAD',
+        task_id => 'USER_MFA_RECOVERY_CODE_DOWNLOAD',
         realm => $self->req(qw(auth_user name)),
         query => {
             $self->CODE_QUERY_KEY => join(
-                $self->CODE_QUERY_SEPARATOR, $self->req(qw(form_model fallback_codes))->as_list),
+                $self->CODE_QUERY_SEPARATOR, $self->req(qw(form_model recovery_codes))->as_list),
         },
     });
 }
 
 sub _generate_code_array {
     my($self) = @_;
-    $self->put(fallback_code_array => $_MC->generate_new_codes($_MFCL->get_new_code_count));
+    $self->put(recovery_code_array => $_MC->generate_new_codes($_MFCL->get_new_code_count));
     return $self;
 }
 

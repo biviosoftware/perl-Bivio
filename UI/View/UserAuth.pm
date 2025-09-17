@@ -4,6 +4,7 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
+my($_UT) = b_use('View.UserTOTP');
 
 sub adm_substitute_user {
     return shift->internal_body(vs_simple_form(AdmSubstituteUserForm => [qw{
@@ -90,9 +91,6 @@ sub login {
     return shift->internal_body(vs_simple_form(UserLoginForm => [
         'UserLoginForm.login',
         'UserLoginForm.RealmOwner.password',
-        ['UserLoginForm.totp_code', {
-            row_control => ['Model.UserLoginForm', 'require_totp'],
-        }],
     ]));
 }
 
@@ -103,6 +101,7 @@ sub missing_cookies {
 sub password {
     return shift->internal_body(vs_simple_form(UserPasswordForm => [
         _password_fields('UserPasswordForm'),
+        $_UT->totp_fields('UserPasswordForm', 1, [qw(Model.UserPasswordForm require_totp)]),
     ]));
 }
 
@@ -199,7 +198,7 @@ sub _password_fields {
     my($m) = @_;
     return (
         ["$m.old_password", {
-            row_control => ["Model.$m", 'display_old_password'],
+            row_control => ["Model.$m", 'require_old_password'],
         }],
         "$m.new_password",
         "$m.confirm_new_password",

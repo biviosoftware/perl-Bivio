@@ -1,5 +1,5 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-package Bivio::Type::RecoveryCode;
+package Bivio::Type::SecretCode;
 use strict;
 use Bivio::Base 'Type.Enum';
 
@@ -8,22 +8,30 @@ my($_MC) = b_use('Type.MnemonicCode');
 
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    password_query_expiry_seconds => 60 * 60,
+    password_query_expiry_seconds => 30 * 60,
 });
 
 __PACKAGE__->compile([
     UNKNOWN => 0,
-    MFA_FALLBACK => 1,
+    MFA_RECOVERY => 1,
     PASSWORD_QUERY => 2,
     PASSWORD_RESET => 3,
 ]);
+
+sub from_literal_for_type {
+    my(undef, $type, $value) = @_;
+    if ($type->eq_mfa_recovery) {
+        return $_MC->from_literal($value);
+    }
+    return $value;
+}
 
 sub generate_code_for_type {
     my(undef, $type) = @_;
     return Bivio::Biz::Random->password
         if $type->eq_password_query;
     return $_MC->generate_code
-        if $type->eq_mfa_fallback;
+        if $type->eq_mfa_recovery;
     b_die('unsupported type');
     # DOES NOT RETURN
 }

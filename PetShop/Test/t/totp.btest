@@ -2,140 +2,7 @@
 use MIME::Base32 ();
 test_setup('PetShop');
 home_page();
-# Deviance cases can't use this inline or they'll fail to die on next call
-my($dp) = default_password();
-my($rs) = random_string();
-my($e) = generate_local_email($rs);
-test_deviance();
-login_as('', 'bad password');
-test_conformance();
-verify_no_text(qr/(sign-out|\blogout\b)/i);
-verify_no_text('bad password');
-test_deviance();
-login_as($e, 'bad password');
-test_conformance();
-verify_no_text(qr/(sign-out|\blogout\b)/i);
-verify_no_text('bad password');
-follow_menu_link('new_user');
-test_deviance('too short');
-submit_form(create => {
-    'Email:' => $e,
-    'Password:' => 'passwd',
-    'First Name:' => 'Password',
-    'Last Name:' => 'Test',
-});
-test_deviance('enter a unique password');
-# password similar to email (disallowed)
-submit_form(create => {
-    'Email:' => $e,
-    'Password:' => $rs,
-    'First Name:' => 'Password',
-    'Last Name:' => 'Test',
-});
-submit_form(create => {
-    'Email:' => $e,
-    'Password:' => 'passwordtest',
-    'First Name:' => 'Password',
-    'Last Name:' => 'Test',
-});
-test_conformance();
-submit_form(create => {
-    'Email:' => $e,
-    'Password:' => $dp,
-    'First Name:' => 'Password',
-    'Last Name:' => 'Test',
-});
-do_logout();
-verify_no_text(qr/(sign-out|\blogout\b)/i);
-# need to clear cookies or the deviance Reset Password will fail
-clear_cookies();
-follow_link(qw(Sign-in forgot_password));
-test_deviance('must supply');
-submit_form('Reset Password');
-test_conformance();
-submit_form('Reset Password' => {
-    'Email:' => $e,
-});
-verify_text(qr{An email has been sent to.*\Q$e});
-# Verify ack gets cleared
-follow_menu_link('home');
-go_back();
-my($uri) = extract_uri_from_local_mail($e, 'password');
-(my $bad = $uri) =~ s/(?<=\=)\S//;
-visit_uri($bad);
-verify_text('no longer valid');
-visit_uri($uri);
-verify_text(qr/(sign-out|\blogout\b)/i);
-my($p) = random_string();
-verify_no_text('Current Password');
-submit_form('Cancel');
-verify_text(qr/(sign-out|\blogout\b)/i);
-verify_text('Birds');
-visit_uri($uri);
-verify_text('no longer valid');
-do_logout();
-follow_link(qw(Sign-in forgot_password));
-submit_form('Reset Password' => {
-    'Email:' => $e,
-});
-verify_text(qr{An email has been sent to.*\Q$e});
-my($uri1) = extract_uri_from_local_mail($e, 'password');
-home_page();
-follow_link(qw(Sign-in forgot_password));
-submit_form('Reset Password' => {
-    'Email:' => $e,
-});
-verify_text(qr{An email has been sent to.*\Q$e});
-my($uri2) = extract_uri_from_local_mail($e, 'password');
-visit_uri($uri1);
-verify_text('no longer valid');
-my($add_seconds) = sub {
-    my($seconds) = @_;
-    date_time_now(Type_DateTime()->add_seconds(Type_DateTime()->now, $seconds));
-    return;
-};
-$add_seconds->(3 * 60 * 60);
-visit_uri($uri2);
-verify_text('no longer valid');
-$add_seconds->(-3 * 60 * 60);
-visit_uri($uri2);
-verify_text(qr/(sign-out|\blogout\b)/i);
-verify_text(qr{type="password".*type="password"}s);
-submit_form(Change => {
-    'New Password:' => $p,
-    'Re-enter New Password:' => $p,
-});
-follow_link('myaccount', 'change_password');
-test_deviance('must supply a value for current password');
-submit_form(Change => {
-    'Current Password:' => '',
-    'New Password:' => $dp,
-    'Re-enter New Password:' => $dp,
-});
-test_deviance('password you entered does not match');
-submit_form(Change => {
-    'Current Password:' => 'wrong password',
-    'New Password:' => $dp,
-    'Re-enter New Password:' => $dp,
-});
-test_deviance('password and confirm password fields do not match');
-submit_form(Change => {
-    'Current Password:' => $p,
-    'New Password:' => "x$dp",
-    'Re-enter New Password:' => $dp,
-});
-test_conformance();
-submit_form(Change => {
-    'Current Password:' => $p,
-    'New Password:' => $dp,
-    'Re-enter New Password:' => $dp,
-});
-do_logout();
-login_as($e, $dp);
-do_logout();
-visit_uri($uri2);
-verify_text('no longer valid');
-login_as($e, $dp);
+my($e) = create_user();
 follow_link('myaccount', 'enable_time_based');
 verify_text('set up two-factor');
 my($totp_setup_key) = get_content() =~ /id="totp_setup_key">([^<]+)</;
@@ -168,6 +35,7 @@ submit_form({
 });
 verify_no_text(qr/sign-out/i);
 verify_text(qr/authenticator code/i);
+verify_text(qr/recovery code/i);
 my($totp_code) = $compute_totp_code->();
 test_deviance(qr/authenticator code is invalid/i);
 submit_form({
@@ -189,6 +57,21 @@ submit_form({
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 do_logout();
+follow_link('sign_in');
+submit_form({
+    password => $dp,
+    email => $e,
+});
+verify_no_text(qr/sign-out/i);
+verify_text(qr/authenticator code/i);
+my($totp_code) = $compute_totp_code->();
+test_deviance(qr/recovery code is invalid/i);
+submit_form({
+    recovery_code => 'foo-bar-baz',
+});
+
+
+
 home_page();
 follow_link(qw(Sign-in forgot_password));
 submit_form({

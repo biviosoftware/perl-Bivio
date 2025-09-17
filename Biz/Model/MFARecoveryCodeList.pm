@@ -1,10 +1,10 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-package Bivio::Biz::Model::MFAFallbackCodeList;
+package Bivio::Biz::Model::MFARecoveryCodeList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
 my($_DT) = b_use('Type.DateTime');
-my($_RC) = b_use('Type.RecoveryCode');
+my($_SC) = b_use('Type.SecretCode');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     new_code_count => 6,
@@ -15,7 +15,7 @@ sub create {
     my($self, $code_array) = @_;
     $code_array->do_iterate(sub {
         my($it) = @_;
-        $self->new_other('UserRecoveryCode')->create($_RC->MFA_FALLBACK, $it);
+        $self->new_other('UserSecretCode')->create($_SC->MFA_RECOVERY, $it);
         return 1;
     });
     return;
@@ -42,15 +42,15 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         can_iterate => 1,
-        auth_id => ['UserRecoveryCode.user_id'],
-        other => ['UserRecoveryCode.code'],
-        primary_key => [qw(UserRecoveryCode.user_recovery_code_id)],
+        auth_id => ['UserSecretCode.user_id'],
+        other => ['UserSecretCode.code'],
+        primary_key => [qw(UserSecretCode.user_secret_code_id)],
     });
 }
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    $stmt->where($stmt->IS_NULL('UserRecoveryCode.expiration_date_time'));
+    $stmt->where($stmt->IS_NULL('UserSecretCode.expiration_date_time'));
     return;
 }
 

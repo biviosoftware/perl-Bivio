@@ -104,7 +104,7 @@ sub internal_initialize {
             },
             {
                 name => 'password_query_code_model',
-                type => 'Model.UserRecoveryCode',
+                type => 'Model.UserSecretCode',
                 constraint => 'NONE',
             },
             {

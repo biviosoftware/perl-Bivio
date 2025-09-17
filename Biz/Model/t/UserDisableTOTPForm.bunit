@@ -8,7 +8,7 @@ my($no_setup) = 1;
 my($totp_secret);
 my($time_step);
 my($totp_code);
-my($fallback_codes);
+my($recovery_codes);
 FormModel({
     setup_request => sub {
         return
@@ -23,12 +23,12 @@ FormModel({
                 $totp_secret,
                 $time_step,
             );
-            $fallback_codes = Type_MnemonicCode()->generate_new_codes(
-                Model_MFAFallbackCodeList()->get_new_code_count);
+            $recovery_codes = Type_MnemonicCode()->generate_new_codes(
+                Model_MFARecoveryCodeList()->get_new_code_count);
         }
         unless (Model_UserTOTP()->unsafe_load) {
             Model_UserTOTP()->create($totp_secret, $time_step);
-            Model_MFAFallbackCodeList()->create($fallback_codes);
+            Model_MFARecoveryCodeList()->create($recovery_codes);
         }
         return;
     },
@@ -72,9 +72,9 @@ my($is_task) = sub {
     }),
     error_case({
         'RealmOwner.password' => 'password',
-        fallback_code => 'wrong-recovery-code',
+        recovery_code => 'wrong-recovery-code',
     } => {
-        fallback_code => 'INVALID_RECOVERY_CODE',
+        recovery_code => 'INVALID_RECOVERY_CODE',
     }),
     [{
         'RealmOwner.password' => 'wrong-password',
@@ -87,17 +87,17 @@ my($is_task) = sub {
         return 0
             if Model_UserTOTP()->new(req())->unsafe_load;
         return 0
-            if Model_MFAFallbackCodeList()->new(req())->load_all->get_result_set_size;
+            if Model_MFARecoveryCodeList()->new(req())->load_all->get_result_set_size;
         return 1;
     },
     [{
         'RealmOwner.password' => 'password',
-        fallback_code => sub {$fallback_codes->get_element(0)},
+        recovery_code => sub {$recovery_codes->get_element(0)},
     }] => sub {
         return 0
             if Model_UserTOTP()->new(req())->unsafe_load;
         return 0
-            if Model_MFAFallbackCodeList()->new(req())->load_all->get_result_set_size;
+            if Model_MFARecoveryCodeList()->new(req())->load_all->get_result_set_size;
         return 1;
     },
 ];

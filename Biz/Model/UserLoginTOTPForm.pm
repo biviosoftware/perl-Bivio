@@ -4,7 +4,7 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 my($_C) = b_use('AgentHTTP.Cookie');
-my($_RCT) = b_use('Type.RecoveryCode');
+my($_SC) = b_use('Type.SecretCode');
 my($_ULF) = b_use('Model.UserLoginForm');
 my($_UPQ) = b_use('Action.UserPasswordQuery');
 
@@ -16,7 +16,7 @@ sub TOTP_TIME_STEP_FIELD {
     return 'tt';
 }
 
-sub FALLBACK_CODE_FIELD {
+sub RECOVERY_CODE_FIELD {
     return 'fc';
 }
 
@@ -32,7 +32,7 @@ sub execute_ok {
         })->put_on_request($self->req, 1);
         $next = 'password_task';
     }
-    if (my $tlrcm = $self->unsafe_get('fallback_code_model')) {
+    if (my $tlrcm = $self->unsafe_get('recovery_code_model')) {
         $self->get('disable_totp') ? $self->internal_disable_totp : $tlrcm->set_used;
         $next = 'refill_task';
     }
@@ -41,16 +41,16 @@ sub execute_ok {
         task_id => $next,
         # TODO: need this?
         no_context => 1,
-    } : ();
+    } : 0;
 }
 
 sub internal_disable_totp {
     my($self) = @_;
     $self->req('Model.UserTOTP')->delete;
-    $self->req('Model.MFAFallbackCodeList')->do_rows(sub {
+    $self->req('Model.MFARecoveryCodeList')->do_rows(sub {
         my($it) = @_;
-        $self->new_other('UserRecoveryCode')->load({
-            user_recovery_code_id => $it->get('UserRecoveryCode.user_recovery_code_id'),
+        $self->new_other('UserSecretCode')->load({
+            user_secret_code_id => $it->get('UserSecretCode.user_secret_code_id'),
         })->delete;
         return 1;
     });
@@ -65,7 +65,7 @@ sub internal_initialize {
         $self->field_decl(
             visible => [
                 [qw(totp_code Line)],
-                [qw(fallback_code Line)],
+                [qw(recovery_code Line)],
                 [qw(disable_totp Boolean)],
             ],
             hidden => [
@@ -74,7 +74,7 @@ sub internal_initialize {
             other => [
                 [qw(realm_owner Model.RealmOwner)],
                 [qw(totp_time_step Integer)],
-                [qw(fallback_code_model Model.UserRecoveryCode)],
+                [qw(recovery_code_model Model.UserSecretCode)],
             ],
         ),
     });
@@ -114,11 +114,10 @@ sub is_valid_totp_cookie {
         b_warn('invalid totp cookie fields');
         return 0;
     }
-    if (my $c = $cookie->unsafe_get($proto->FALLBACK_CODE_FIELD)) {
-        return $auth_user->new_other('UserRecoveryCode')
+    if (my $c = $cookie->unsafe_get($proto->RECOVERY_CODE_FIELD)) {
+        return $auth_user->new_other('UserSecretCode')
             ->is_valid_for_cookie($auth_user->get('realm_id'), $c);
     }
-    $proto->delete_cookie($cookie);
     return 0;
 }
 
@@ -138,8 +137,8 @@ sub set_cookie_totp {
             );
             return $cookie;
         }
-        if ($self->get('fallback_code')) {
-            $cookie->put($self->FALLBACK_CODE_FIELD => $self->get('fallback_code'));
+        if ($self->get('recovery_code')) {
+            $cookie->put($self->RECOVERY_CODE_FIELD => $self->get('recovery_code'));
             return $cookie;
         }
         b_die('set cookie totp with no codes');
@@ -150,13 +149,10 @@ sub set_cookie_totp {
 }
 
 sub validate {
-    my($self, $values) = @_;
-    $self->internal_put_field(%$values)
-        if ref($values) eq 'HASH';
-    # else $values=$form_button
+    my($self) = @_;
     _validate_totp($self);
     if ($self->in_error) {
-        foreach my $f ('totp_code', 'fallback_code') {
+        foreach my $f ('totp_code', 'recovery_code') {
             $self->internal_put_field($f => undef);
             $self->internal_clear_literal($f);
         }
@@ -172,7 +168,7 @@ sub _delete_cookie {
     $cookie->delete(
         $self->TOTP_CODE_FIELD,
         $self->TOTP_TIME_STEP_FIELD,
-        $self->FALLBACK_CODE_FIELD,
+        $self->RECOVERY_CODE_FIELD,
     );
     return;
 }
@@ -192,19 +188,19 @@ sub _validate_totp {
         $self->internal_put_error(totp_code => 'INVALID_TOTP_CODE');
         return;
     }
-    if ($self->get('fallback_code')) {
-        # TODO: could use MFAFallbackCodeList here
-        if (my $rc = $self->new_other('UserRecoveryCode')->unauth_load_by_code_and_type(
+    if ($self->get('recovery_code')) {
+        # TODO: could use MFARecoveryCodeList here
+        if (my $sc = $self->new_other('UserSecretCode')->unauth_load_by_code_and_type(
             $self->get_nested(qw(realm_owner realm_id)),
-            $self->get('fallback_code'),
-            $_RCT->MFA_FALLBACK,
+            $self->get('recovery_code'),
+            $_SC->MFA_RECOVERY,
         )) {
-            $self->internal_put_field(fallback_code_model => $rc);
+            $self->internal_put_field(recovery_code_model => $sc);
             return;
         }
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
-        $self->internal_put_error(fallback_code => 'INVALID_RECOVERY_CODE');
+        $self->internal_put_error(recovery_code => 'INVALID_RECOVERY_CODE');
         return;
     }
     $self->internal_put_error(totp_code => 'NULL');
