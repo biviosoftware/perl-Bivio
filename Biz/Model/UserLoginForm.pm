@@ -17,6 +17,7 @@ b_use('IO.Config')->register(my $_CFG = {
 });
 (my $_C = b_use('AgentHTTP.Cookie'))->register(__PACKAGE__)
     if $_CFG->{register_with_cookie};
+b_use('Agent.Task')->register(__PACKAGE__);
 my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 
 sub SUPER_USER_FIELD {
@@ -51,10 +52,9 @@ sub execute_ok {
         $self->throw_die('NOT_FOUND', {entity => $realm});
         # DOES NOT RETURN
     }
-    _set_cookie_user($self, $req, $realm)
-        unless $self->in_error || $self->get_stay_on_page;
+    _set_cookie_user($self, $req, $realm);
     return $res
-        if $res || $self->in_error || $self->get_stay_on_page;
+        if $res;
     $self->set_user($realm, $req->unsafe_get('cookie'), $req);
     return $res
         unless $realm && $realm->require_otp;
@@ -83,21 +83,28 @@ sub handle_cookie_in {
     my($proto, $cookie, $req) = @_;
     $proto = Bivio::Biz::Model->get_instance('UserLoginForm');
     my($cookie_user) = $proto->load_cookie_user($req, $cookie);
-    _set_super_user($proto, $cookie, $req);
     $cookie_user = undef
-        unless $req->is_substitute_user || $_ULTF->is_valid_totp_cookie($cookie, $cookie_user);
+        unless $cookie_user && (
+            !$cookie_user->require_mfa || $_ULTF->is_valid_totp_cookie($cookie, $cookie_user)
+        );
     $proto->set_user($cookie_user, $cookie, $req);
+    return;
+}
+
+sub handle_pre_auth_task {
+    my($proto, $task, $req) = @_;
     # If user is invalid, logout as super user
     _su_logout($proto->new($req))
-        if $req->is_substitute_user && ! $req->get('auth_user');
-    return;
+        if $req->is_substitute_user && !$req->get('auth_user');
+    return 0;
 }
 
 sub load_cookie_user {
     my($proto, $req, $cookie) = @_;
     # Returns auth_user if logged in.  Otherwise indicates logged out or
     # just visitor.
-    return undef unless $cookie->unsafe_get($proto->USER_FIELD);
+    return undef
+        unless $cookie->unsafe_get($proto->USER_FIELD);
     my($auth_user) = Bivio::Biz::Model->new($req, 'RealmOwner');
     if ($auth_user->unauth_load({
         realm_id => $cookie->get($proto->USER_FIELD),
@@ -105,8 +112,8 @@ sub load_cookie_user {
     })) {
         # TODO: i don't think this was ever true originally because it's called in handle_cookie_in
         # before super_user_id is set (though we now also call this from UserLoginTOTPForm
-        return $auth_user
-            if $req->is_substitute_user;
+        # return $auth_user
+        #     if $req->is_substitute_user;
 
         # Must have password to be logged in
         my($cp) = _get($cookie, $proto->PASSWORD_FIELD);
@@ -131,24 +138,17 @@ sub set_user {
     my($proto, $user, $cookie, $req) = @_;
     # Sets user on request based on cookie state.
     $req->set_user($user);
-    # TODO: only need this for handle_cookie_in?
-    _set_super_user($proto, $cookie, $req);
-    $req->put_durable(
-        user_state => $proto->use('Type.UserState')->from_name(
-            $user ? 'LOGGED_IN' : _get($cookie, $proto->USER_FIELD) ? 'LOGGED_OUT' : 'JUST_VISITOR'),
-    );
-    _set_log_user($proto, $cookie, $req);
-    return $user;
-}
-
-sub _set_super_user {
-    my($proto, $cookie, $req) = @_;
     $req->put_durable(
         # Cookie overrides but may not have a cookie so super_user_id
         super_user_id => _get($cookie, _super_user_field($proto))
             || $req->unsafe_get('super_user_id'),
+        user_state => $proto->use('Type.UserState')->from_name(
+            $user ? 'LOGGED_IN'
+            : _get($cookie, $proto->USER_FIELD)
+            ? 'LOGGED_OUT' : 'JUST_VISITOR'),
     );
-    return;
+    _set_log_user($proto, $cookie, $req);
+    return $user;
 }
 
 sub substitute_user {
@@ -175,10 +175,13 @@ sub substitute_user {
     }
     _trace($req->unsafe_get('super_user_id'), ' => ', $new_user)
         if $_TRACE;
-    return $self->process({
-        realm_owner => $new_user,
-        disable_assert_cookie => _disable_assert_cookie($self),
-    });
+    foreach my $form ($self, $new_user->require_mfa ? $self->new_other('UserLoginTOTPForm') : ()) {
+        $form->process({
+            realm_owner => $new_user,
+            disable_assert_cookie => _disable_assert_cookie($self),
+        });
+    }
+    return;
 }
 
 sub unsafe_get_cookie_user_id {
@@ -236,7 +239,8 @@ sub _set_cookie_user {
 
     # If there's no cookie, just ignore (probably command line app)
     my($cookie) = $req->unsafe_get('cookie');
-    return unless $cookie;
+    return
+        unless $cookie;
 
     # If logging in, need to have a cookie.
     $_C->assert_is_ok($req)
@@ -262,7 +266,7 @@ sub _set_log_user {
     return unless $r;
     my($uid) = $req->get('auth_user_id')
         || _get($cookie, $proto->USER_FIELD);
-    my($suid) = $req->get('super_user_id')
+    my($suid) = $req->unsafe_get('super_user_id')
         || _get($cookie, _super_user_field($proto));
     $r->connection->user(
         ($suid ? 'su-' . $suid . '-' : '')

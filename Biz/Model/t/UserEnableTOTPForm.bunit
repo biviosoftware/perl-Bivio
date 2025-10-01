@@ -9,11 +9,11 @@ req()->set_realm_and_user(qw(demo demo));
 req()->initialize_fully('USER_ENABLE_TOTP_FORM');
 Action_MFARecoveryCodeList()->execute_preview(req());
 my($totp_secret);
-my($recovery_codes);
+my($mfa_recovery_codes);
 my($time_step);
 my($v) = {
     'RealmOwner.password' => 'password',
-    recovery_codes => sub {$recovery_codes},
+    mfa_recovery_codes => sub {$mfa_recovery_codes},
     totp_secret => sub {$totp_secret},
 };
 my($is_task) = sub {
@@ -29,12 +29,12 @@ my($is_task) = sub {
     }),
     inline_case(sub {
         $totp_secret = req(qw(form_model totp_secret));
-        $recovery_codes = req(qw(form_model recovery_codes));
-        b_die('unexpected recovery_codes count')
-            unless $recovery_codes->as_length == Model_MFARecoveryCodeList()->get_new_code_count;
-        $recovery_codes->do_iterate(sub {
+        $mfa_recovery_codes = req(qw(form_model mfa_recovery_codes));
+        b_die('unexpected mfa_recovery_codes count')
+            unless $mfa_recovery_codes->as_length == Model_MFARecoveryCodeList()->get_new_code_count;
+        $mfa_recovery_codes->do_iterate(sub {
             my($it) = @_;
-            b_die('unexpected recovery_code format')
+            b_die('unexpected mfa_recovery_code format')
                 unless $it =~ /^[a-z-]+$/;
             return 1;
         });
@@ -74,12 +74,12 @@ my($is_task) = sub {
         },
     }],
     inline_case(sub {
-        my($expected_codes) = $recovery_codes->as_array;
+        my($expected_codes) = $mfa_recovery_codes->as_array;
         my($found) = 0;
         Model_MFARecoveryCodeList()->load_all->do_rows(sub {
             my($it) = @_;
             $found++;
-            b_die('unexpected recovery_code')
+            b_die('unexpected mfa_recovery_code')
                 unless grep({$it->get('UserSecretCode.code') eq $_} @$expected_codes);
             return 1;
         });

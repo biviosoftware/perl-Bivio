@@ -82,10 +82,12 @@ sub su_logout {
     $req->get('cookie')->delete($self->SUPER_USER_FIELD)
         if $req->unsafe_get('cookie');
     my($realm) = $self->new_other('RealmOwner');
-    $self->new_other('UserLoginForm')->process({
-        realm_owner => $realm->unauth_load({realm_id => $su})
-            ? $realm : undef,
-    });
+    $realm->unauth_load({realm_id => $su});
+    foreach my $form ('UserLoginForm', $realm->is_loaded && $realm->require_mfa ? 'UserLoginTOTPForm' : ()) {
+        $self->new_other($form)->process({
+            realm_owner => $realm->is_loaded ? $realm : undef,
+        });
+    }
     _trace($realm) if $_TRACE;
     return $realm->is_loaded && $req->unsafe_get('task')
         ? $req->get('task')->unsafe_get_attr_as_id('su_task') || $_DEFAULT_TASK

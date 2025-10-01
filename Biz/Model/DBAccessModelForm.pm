@@ -1,11 +1,9 @@
-# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::DBAccessModelForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
 my($_IDI) = __PACKAGE__->instance_data_index;
-my($_A) = b_use('Action.Acknowledgement');
 my($_CL) = b_use('IO.ClassLoader');
 my($_COUNT) = b_use('SQL.ListQuery')->to_char('count');
 my($_DT) = b_use('Type.DateTime');
@@ -172,7 +170,7 @@ sub internal_initialize {
             }
     }
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-        version => 1, 
+        version => 1,
         visible => [
             @$visible,
             $self->field_decl(['status'], 'String'),

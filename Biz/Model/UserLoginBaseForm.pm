@@ -31,15 +31,15 @@ sub execute_ok {
     my(@res) = shift->SUPER::execute_ok(@_);
     return @res
         if $self->in_error;
-    # TODO: use require_totp or override_require_totp?
     return @res
         unless ($self->unsafe_get('realm_owner') && $self->unsafe_get('validate_called'))
-        || $self->unsafe_get('require_totp');
-    return $self->get('realm_owner')->require_totp ? {
+        || $self->unsafe_get('require_mfa');
+    return $self->get('realm_owner')->require_mfa ? {
         method => 'server_redirect',
+        # Only TOTP supported at this time; may support other methods later.
         task_id => 'totp_task',
         # TODO: need this?
-        # no_context => 1,
+        no_context => 1,
     } : @res;
 }
 
@@ -66,13 +66,6 @@ sub internal_initialize {
             {
                 name => 'RealmOwner.password',
                 form_name => 'x2',
-            },
-        ],
-        hidden => [
-            {
-                name => 'password_query_code',
-                type => 'Line',
-                constraint => 'NONE',
             },
         ],
         # Fields used internally which are computed dynamically.
@@ -103,12 +96,7 @@ sub internal_initialize {
                 constraint => 'NONE',
             },
             {
-                name => 'password_query_code_model',
-                type => 'Model.UserSecretCode',
-                constraint => 'NONE',
-            },
-            {
-                name => 'require_totp',
+                name => 'require_mfa',
                 type => 'Boolean',
                 constraint => 'NONE',
             },
@@ -142,15 +130,11 @@ sub record_login_attempt {
 
 sub validate {
     my(undef, $delegator, $login, $password) = shift->delegated_args(@_);
-    my($form_button);
     if (defined($login) && defined($password)) {
         $delegator->internal_put_field(login => $login);
         $delegator->internal_put_field('RealmOwner.password' => $password);
     }
-    elsif (defined($login)) {
-        $form_button = $login;
-    }
-    _validate($delegator, $form_button);
+    _validate($delegator);
     # don't send secrets back to client in error case
     if ($delegator->in_error) {
         $delegator->internal_put_field('RealmOwner.password' => undef);
@@ -181,7 +165,6 @@ sub _maybe_lock_out {
     if ($attempt->is_state_locked_out) {
         b_warn('locked out owner=', $owner);
         $owner->update_password($_R->password);
-        b_debug();
         $owner->req->server_redirect('GENERAL_USER_LOCKED_OUT');
     }
     return $attempt;
@@ -205,10 +188,10 @@ sub _password_error {
 }
 
 sub _validate {
-    my($self, $form_button) = @_;
+    my($self) = @_;
     my($owner) = $self->validate_login;
     return
-        unless $owner;
+        if !$owner || ($self->in_error && !$owner->require_otp);
     return $self->internal_put_error(login => 'USER_LOCKED_OUT')
         if $owner->is_locked_out;
     _validate_login_attempt($self, $owner);
@@ -222,10 +205,6 @@ sub _validate {
 
 sub _validate_login_attempt {
     my($self, $owner) = @_;
-    return
-        if $self->unsafe_get('password_query_code_model');
-    return
-        unless $self->get('RealmOwner.password');
     if (my $err = _password_error($self, $owner)) {
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;

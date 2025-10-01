@@ -101,7 +101,7 @@ sub missing_cookies {
 sub password {
     return shift->internal_body(vs_simple_form(UserPasswordForm => [
         _password_fields('UserPasswordForm'),
-        $_UT->totp_fields('UserPasswordForm', 1, [qw(Model.UserPasswordForm require_totp)]),
+        $_UT->totp_fields('UserPasswordForm', 1, [qw(Model.UserPasswordForm require_mfa)]),
     ]));
 }
 

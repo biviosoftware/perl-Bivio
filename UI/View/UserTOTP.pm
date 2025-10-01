@@ -20,8 +20,15 @@ sub disable_form {
     ]));
 }
 
-sub recovery_code_list {
-    return shift->internal_body(MFARecoveryCodeList());
+sub mfa_recovery_code_list {
+    return shift->internal_body(vs_simple_form(MFARecoveryCodeListRefillForm => [
+        Join([
+            'Your authenticator recovery code list was running low, so we\'ve generated a new list for you.',
+            BR(), BR(),
+            MFARecoveryCodeList(),
+        ]),
+        '*ok_button',
+    ]));
 }
 
 sub totp_fields {
@@ -35,21 +42,28 @@ sub totp_fields {
             ) : (),
         }],
         $with_recovery ? (
-            [$form . '.recovery_code', {
-                row_class => 'b_recovery_code',
+            [String('You may log in using an authenticator recovery code if you cannot access your authenticator at this time. Codes can only be used once. Used recovery codes will no longer be available.', {
+                row_class => 'b_mfa_recovery_prologue',
+                cell_colspan => 2,
+                $control ? (
+                    row_control => $control,
+                ) : (),
+            })],
+            [$form . '.mfa_recovery_code', {
+                row_class => 'b_mfa_recovery_code',
                 $control ? (
                     row_control => $control,
                 ) : (),
             }],
-            $form eq 'UserLoginTOTPForm' ? [$form . '.disable_totp', {
-                row_class => 'b_disable_totp',
+            $form eq 'UserLoginTOTPForm' ? [$form . '.disable_mfa', {
+                row_class => 'b_disable_mfa',
                 $control ? (
                     row_control => $control,
                 ) : (),
             }] : (),
             [
                 vs_blank_cell(),
-                Link('Lost Authenticator Access?', '#', {
+                Link('Can\'t Access Authenticator?', '#', {
                     ID => 'b_recovery_access',
                     $control ? (
                         row_control => $control,
@@ -59,16 +73,18 @@ sub totp_fields {
             [InlineJavaScript(
                 <<'EOF',
 (() => {
-    const fa = document.getElementById("b_recovery_access");
+    const ra = document.getElementById("b_recovery_access");
     const tc = document.getElementsByClassName("b_totp_code")[0];
-    const fc = document.getElementsByClassName("b_recovery_code")[0];
-    const dt = document.getElementsByClassName("b_disable_totp")[0];
-    if (fa && tc && fc && dt) {
-        fa.addEventListener("click", (event) => {
-            fa.style.display = "none";
+    const rp = document.getElementsByClassName("b_mfa_recovery_prologue")[0];
+    const rc = document.getElementsByClassName("b_mfa_recovery_code")[0];
+    const dm = document.getElementsByClassName("b_disable_mfa")[0];
+    if (ra && rp && tc && rc && dm) {
+        ra.addEventListener("click", (event) => {
+            ra.style.display = "none";
             tc.style.display = "none";
-            fc.style.display = "table-row";
-            dt.style.display = "table-row";
+            rp.style.display = "table-row";
+            rc.style.display = "table-row";
+            dm.style.display = "table-row";
         });
     }
     else {

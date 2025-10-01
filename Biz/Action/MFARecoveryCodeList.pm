@@ -6,9 +6,11 @@ use Bivio::Base 'Biz.Action';
 my($_MC) = b_use('Type.MnemonicCode');
 my($_MFCL) = b_use('Model.MFARecoveryCodeList');
 my($_SC) = b_use('Type.SecretCode');
+my($_T) = b_use('FacadeComponent.Text');
+my($_USC) = b_use('Model.UserSecretCode');
 
 sub CODE_QUERY_KEY {
-    return 'recovery_codes';
+    return 'mfa_recovery_codes';
 }
 
 sub CODE_QUERY_SEPARATOR {
@@ -19,25 +21,22 @@ sub execute_refill {
     my($proto, $req) = @_;
     my($res) = {
         method => 'server_redirect',
-        task_id => $req->req('Action.UserPasswordQuery') ? 'password_task' : 'next',
+        task_id => $req->ureq('Action.UserPasswordQuery') ? 'password_task' : 'next',
         # TODO: need this?
         no_context => 1,
     };
-    return $res
-        unless $req->req('auth_user')->require_totp;
     my($existing_list) = $_MFCL->new($req)->load_all({type => $_SC->MFA_RECOVERY});
-    return $res
-        if $existing_list->get_result_set_size > $_MFCL->get_refill_threshold;
-    my($self) = _new($proto, $req);
-    _generate_code_array($self);
-    $_MFCL->create($self->get('recovery_code_array'));
-    # TODO: keep or expire existing codes? show them to user?
+    return b_debug($res)
+        unless $existing_list->get_result_set_size < $_MFCL->get_refill_threshold;
     $existing_list->do_rows(sub {
         my($row) = @_;
-        $self->get('recovery_code_array')->append($row->get('UserSecretCode.code'));
+        $_USC->new($req)->load({
+            user_secret_code_id => $row->get('UserSecretCode.user_secret_code_id'),
+        })->delete;
         return 1;
     });
-    $self->put(is_code_list_update => 1);
+    my($self) = _new($proto, $req);
+    $_MFCL->create(_generate_code_array($self));
     b_debug();
     return;
 }
@@ -57,7 +56,9 @@ sub execute_download {
         unless int(@$codes) == $_MFCL->get_new_code_count;
     $req->get('reply')->set_header(
         'Content-Disposition',
-        'attachment; filename="recovery-codes.txt"',
+        'attachment; filename="'
+            . join('-', $_T->get_widget_value('site_name', $req) || (), qw(recovery codes))
+            . '.txt"',
     );
     $req->get('reply')->set_output_type('text/plain');
     my($b) = join("\n", @$codes);
@@ -66,21 +67,21 @@ sub execute_download {
 }
 
 sub format_uri_for_download {
-    my($self) = @_;
-    return $self->req->format_uri({
+    my($proto) = @_;
+    return $proto->req->format_uri({
         task_id => 'USER_MFA_RECOVERY_CODE_DOWNLOAD',
-        realm => $self->req(qw(auth_user name)),
+        realm => $proto->req(qw(auth_user name)),
         query => {
-            $self->CODE_QUERY_KEY => join(
-                $self->CODE_QUERY_SEPARATOR, $self->req(qw(form_model recovery_codes))->as_list),
+            $proto->CODE_QUERY_KEY => join(
+                $proto->CODE_QUERY_SEPARATOR, $proto->req($proto, 'mfa_recovery_code_array')->as_list),
         },
     });
 }
 
 sub _generate_code_array {
     my($self) = @_;
-    $self->put(recovery_code_array => $_MC->generate_new_codes($_MFCL->get_new_code_count));
-    return $self;
+    $self->put(mfa_recovery_code_array => $_MC->generate_new_codes($_MFCL->get_new_code_count));
+    return $self->get('mfa_recovery_code_array');
 }
 
 sub _new {

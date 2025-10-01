@@ -1,34 +1,40 @@
 # Copyright (c) 2005-2023 bivio Software, Inc.  All Rights Reserved.
 use MIME::Base32 ();
-test_setup('PetShop');
+test_setup('PetShop', 'groupware');
 home_page();
 my($e) = create_user();
-follow_link('myaccount', 'enable_time_based');
+my($dp) = default_password();
+follow_link(qw(myaccount enable_time_based));
 verify_text('set up two-factor');
 my($totp_setup_key) = get_content() =~ /id="totp_setup_key">([^<]+)</;
 $totp_setup_key =~ s/\s+//g;
-my($compute_totp_code) = sub {
+my($add_seconds) = sub {
     my($seconds) = @_;
-    $seconds //= 30;
+    date_time_now(Type_DateTime()->add_seconds(Type_DateTime()->now, $seconds));
+    return;
+};
+my($compute_totp_code) = sub {
+    my($seconds, $key) = @_;
     $add_seconds->($seconds);
-    do_test_backdoor(UserTOTP => join(' ', '-r', $e, 'compute', MIME::Base32::decode_rfc3548($totp_setup_key)));
+    do_test_backdoor(UserTOTP => join(' ', '-r', $e, 'compute', MIME::Base32::decode_rfc3548($key)));
     my($code) = get_content();
     chomp($code);
     go_back();
     return $code;
 };
 follow_link('download');
-my($recovery_codes) = [split("\n", get_content())];
+my($mfa_recovery_codes) = [split("\n", get_content())];
+b_die('unexpected code count')
+    unless int(@$mfa_recovery_codes) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
-my($totp_setup_now) = Type_DateTime()->now;
 submit_form({
     password => $dp,
-    authenticator_code => $compute_totp_code->(),
+    authenticator_code => $compute_totp_code->(30, $totp_setup_key),
 });
 verify_text(qr/two-factor authentication has been set up successfully/i);
 verify_text(qr/sign-out/i);
 do_logout();
-follow_link('sign_in');
+follow_link(qr,\blogin\b,i);
 submit_form({
     password => $dp,
     email => $e,
@@ -36,73 +42,136 @@ submit_form({
 verify_no_text(qr/sign-out/i);
 verify_text(qr/authenticator code/i);
 verify_text(qr/recovery code/i);
-my($totp_code) = $compute_totp_code->();
+my($totp_code) = $compute_totp_code->(0, $totp_setup_key);
 test_deviance(qr/authenticator code is invalid/i);
 submit_form({
     authenticator_code => $totp_code + 1,
 });
 test_conformance();
 verify_no_text(qr/(sign-out|\blogout\b)/i);
-# Should generate the same code as was used in setup. Using the same code twice is disallowed.
-date_time_now($totp_setup_now);
+# At same time step as in setup, so code should be the same. Using a code twice is disallowed.
 test_deviance(qr/authenticator code is invalid/i);
 submit_form({
     authenticator_code => $totp_code,
 });
 test_conformance();
 verify_no_text(qr/(sign-out|\blogout\b)/i);
-$add_seconds->(30);
 submit_form({
-    authenticator_code => $compute_totp_code->(),
+    authenticator_code => $compute_totp_code->(30, $totp_setup_key),
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 do_logout();
-follow_link('sign_in');
+follow_link(qr,\blogin\b,i);
 submit_form({
     password => $dp,
     email => $e,
 });
 verify_no_text(qr/sign-out/i);
 verify_text(qr/authenticator code/i);
-my($totp_code) = $compute_totp_code->();
+verify_text(qr/recovery code/i);
 test_deviance(qr/recovery code is invalid/i);
 submit_form({
-    recovery_code => 'foo-bar-baz',
+    authenticator_recovery_code => 'foo-bar-baz',
 });
-
-
-
-home_page();
-follow_link(qw(Sign-in forgot_password));
+test_conformance();
+submit_form({
+    authenticator_recovery_code => $mfa_recovery_codes->[0],
+});
+verify_text(qr/(sign-out|\blogout\b)/i);
+do_logout();
+follow_link(qr,\blogin\b,i);
+submit_form({
+    password => $dp,
+    email => $e,
+});
+verify_no_text(qr/sign-out/i);
+test_deviance(qr/recovery code is invalid/i);
+submit_form({
+    authenticator_recovery_code => $mfa_recovery_codes->[0],
+});
+test_conformance();
+submit_form({
+    authenticator_recovery_code => $mfa_recovery_codes->[1],
+});
+verify_text(qr/(sign-out|\blogout\b)/i);
+foreach my $x (2..Model_MFARecoveryCodeList()->get_new_code_count - 3) {
+    do_logout();
+    follow_link(qr,\blogin\b,i);
+    submit_form({
+        password => $dp,
+        email => $e,
+    });
+    verify_no_text(qr/sign-out/i);
+    submit_form({
+        authenticator_recovery_code => $mfa_recovery_codes->[$x],
+    });
+    verify_text(qr/(sign-out|\blogout\b)/i);
+    verify_no_text(qr/recovery code list was running low/i);
+}
+do_logout();
+follow_link(qr,\blogin\b,i);
+submit_form({
+    password => $dp,
+    email => $e,
+});
+verify_no_text(qr/sign-out/i);
+submit_form({
+    authenticator_recovery_code => $mfa_recovery_codes->[Model_MFARecoveryCodeList()->get_new_code_count - 2],
+});
+verify_text(qr/(sign-out|\blogout\b)/i);
+verify_text(qr/recovery code list was running low/i);
+verify_text(qr/these are your authenticator recovery codes/i);
+follow_link('download');
+my($mfa_recovery_codes2) = [split("\n", get_content())];
+b_die('unexpected code count')
+    unless int(@$mfa_recovery_codes2) == Model_MFARecoveryCodeList()->get_new_code_count;
+go_back();
+submit_form('continue');
+verify_text('birds');
+do_logout();
+follow_link(qr,\blogin\b,i);
+submit_form({
+    password => $dp,
+    email => $e,
+});
+test_deviance(qr/recovery code is invalid/i);
+submit_form({
+    authenticator_recovery_code => $mfa_recovery_codes->[Model_MFARecoveryCodeList()->get_new_code_count - 1],
+});
+test_conformance();
+submit_form({
+    authenticator_recovery_code => $mfa_recovery_codes2->[0],
+});
+verify_text(qr/(sign-out|\blogout\b)/i);
+do_logout();
+follow_link(qw(login forgot_password));
 submit_form({
     'Email:' => $e,
 });
 verify_text(qr{An email has been sent to.*\Q$e});
-$uri = extract_uri_from_local_mail($e, 'password');
+my($uri) = extract_uri_from_local_mail($e, 'password');
 visit_uri($uri);
 verify_no_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/authenticator code/i);
-$add_seconds->(30);
 submit_form({
-    authenticator_code => $compute_totp_code->(),
+    authenticator_code => $compute_totp_code->(30, $totp_setup_key),
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/your password/i);
 verify_no_text(qr/current password/i);
-$p = random_string();
+my($p) = random_string();
 submit_form(Change => {
     'New Password:' => $p,
     'Re-enter New Password:' => $p,
 });
 verify_text(qr/your password has been changed/i);
 do_logout();
-$add_seconds->(30);
-login_as($e, $p, $compute_totp_code->());
+login_as($e, $p, $compute_totp_code->(30, $totp_setup_key));
 do_logout();
 visit_uri($uri);
 verify_text('no longer valid');
 home_page();
-follow_link(qw(Sign-in forgot_password));
+follow_link(qw(login forgot_password));
 submit_form({
     'Email:' => $e,
 });
@@ -112,7 +181,7 @@ visit_uri($uri);
 verify_no_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/authenticator code/i);
 submit_form({
-    recovery_code => $recovery_codes->[int(rand(int(@$recovery_codes)))],
+    authenticator_recovery_code => $mfa_recovery_codes2->[1],
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/your password/i);
@@ -123,7 +192,7 @@ submit_form(Change => {
     'Re-enter New Password:' => $p,
 });
 verify_text(qr/your password has been changed/i);
-follow_link('myaccount', 'change_password');
+follow_link(qw(myaccount change_password));
 verify_text(qr/current password/i);
 verify_text(qr/authenticator code/i);
 my($p2) = random_string();
@@ -156,14 +225,13 @@ submit_form(Change => {
     current_password => $p,
     'New Password:' => $p2,
     'Re-enter New Password:' => $p2,
-    authenticator_code => $compute_totp_code->(),
+    authenticator_code => $compute_totp_code->(30, $totp_setup_key),
 });
 $p = $p2;
 do_logout();
-$add_seconds->(30);
-login_as($e, $p, $compute_totp_code->());
+login_as($e, $p, $compute_totp_code->(30, $totp_setup_key));
 do_logout();
-follow_link(qw(Sign-in forgot_password));
+follow_link(qw(login forgot_password));
 submit_form('Reset Password' => {
     'Email:' => $e,
 });
@@ -174,15 +242,6 @@ visit_uri($uri);
 verify_text('no longer valid');
 verify_no_text(qr/(sign-out|\blogout\b)/i);
 home_page();
-follow_link(qw(Sign-in forgot_password));
-verify_form({
-    'Email:' => $e,
-});
-test_deviance('You are not allowed');
-submit_form('Reset Password' => {
-    'Email:' => ShellUtil_SQL()->ROOT_EMAIL,
-});
-test_conformance();
 login_as('root');
 visit_uri('/adm/su');
 submit_form({
@@ -194,4 +253,152 @@ do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password x$dp");
 go_back();
 follow_menu_link('wiki');
 verify_no_text('Acting as User');
-do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password $dp");
+do_test_backdoor(RealmAdmin => "-force -u $e -r $e reset_password $p");
+go_back();
+follow_menu_link('wiki');
+verify_no_text('Acting as User');
+do_logout();
+follow_link('login');
+submit_form({
+    email => $e,
+    password => $p,
+});
+verify_text(qr/authenticator code/i);
+submit_form({
+    authenticator_code => $compute_totp_code->(30, $totp_setup_key),
+});
+verify_text(qr/(sign-out|\blogout\b)/i);
+follow_link(qw(myaccount disable_time_based));
+verify_text(qr/disable two-factor/i);
+# Have to compute before test deviance
+$totp_code = $compute_totp_code->(0, $totp_setup_key);
+test_deviance(qr/must supply a value for password/i);
+submit_form('OK');
+test_deviance(qr/password you entered does not match/i);
+submit_form('OK', {
+    password => 'x' . $p,
+});
+test_deviance(qr/authenticator code is invalid/i);
+submit_form({
+    password => $p,
+    authenticator_code => '123456',
+});
+# Still at the previous time step, so should be the same code. Using a code twice is disallowed.
+test_deviance(qr/authenticator code is invalid/i);
+submit_form({
+    password => $p,
+    authenticator_code => $totp_code,
+});
+test_conformance();
+submit_form({
+    password => $p,
+    authenticator_code => $compute_totp_code->(30, $totp_setup_key),
+});
+verify_text(qr/has been disabled successfully/);
+follow_link('myaccount');
+verify_text(qr/enable time-based/i);
+verify_text(qr/(sign-out|\blogout\b)/i);
+do_logout();
+follow_link('login');
+submit_form({
+    email => $e,
+    password => $p,
+});
+verify_text(qr/(sign-out|\blogout\b)/i);
+follow_link(qw(myaccount enable_time_based));
+verify_text('set up two-factor');
+my($totp_setup_key2) = get_content() =~ /id="totp_setup_key">([^<]+)</;
+$totp_setup_key2 =~ s/\s+//g;
+b_die('same setup key')
+    if $totp_setup_key eq $totp_setup_key2;
+follow_link('download');
+my($mfa_recovery_codes3) = [split("\n", get_content())];
+b_die('unexpected code count')
+    unless int(@$mfa_recovery_codes3) == Model_MFARecoveryCodeList()->get_new_code_count;
+go_back();
+$totp_code =  $compute_totp_code->(30, $totp_setup_key);
+test_deviance(qr/authenticator code is invalid/i);
+# Using previous setup key should be invalid
+submit_form({
+    password => $p,
+    authenticator_code => $totp_code,
+});
+test_conformance();
+submit_form({
+    password => $p,
+    authenticator_code => $compute_totp_code->(30, $totp_setup_key2),
+});
+verify_text(qr/two-factor authentication has been set up successfully/i);
+verify_text(qr/sign-out/i);
+do_logout();
+follow_link('login');
+submit_form({
+    email => $e,
+    password => $p,
+});
+verify_text(qr/authenticator code/i);
+verify_text(qr/recovery code/i);
+$totp_code = $compute_totp_code->(0, $totp_setup_key2);
+test_deviance(qr/authenticator code is invalid/i);
+# Using same code just used in setup should be invalid
+submit_form({
+    authenticator_code => $totp_code,
+});
+test_conformance();
+$totp_code = $compute_totp_code->(30, $totp_setup_key);
+test_deviance(qr/authenticator code is invalid/i);
+# Using previous setup key should be invalid
+submit_form({
+    authenticator_code => $totp_code,
+});
+test_conformance();
+$totp_code = $compute_totp_code->(0, $totp_setup_key2);
+submit_form({
+    authenticator_code => $totp_code,
+});
+verify_text(qr/(sign-out|\blogout\b)/i);
+do_logout();
+follow_link('login');
+submit_form({
+    email => $e,
+    password => $p,
+});
+test_deviance(qr/recovery code is invalid/i);
+# Using previous recovery codes should be invalid
+submit_form({
+    authenticator_recovery_code => $mfa_recovery_codes2->[2],
+});
+test_conformance();
+submit_form({
+    authenticator_recovery_code => $mfa_recovery_codes3->[0],
+});
+follow_link(qw(myaccount disable_time_based));
+verify_text(qr/disable two-factor/i);
+test_deviance(qr/recovery code is invalid/i);
+# Using previous recovery codes should be invalid
+submit_form({
+    password => $p,
+    authenticator_recovery_code => $mfa_recovery_codes2->[3],
+});
+# Using previously used recovery code should be invalid
+submit_form({
+    password => $p,
+    authenticator_recovery_code => $mfa_recovery_codes3->[0],
+});
+test_conformance();
+submit_form({
+    password => $p,
+    authenticator_recovery_code => $mfa_recovery_codes3->[1],
+});
+verify_text(qr/has been disabled successfully/);
+follow_link('myaccount');
+verify_text(qr/enable time-based/i);
+verify_text(qr/(sign-out|\blogout\b)/i);
+do_logout();
+follow_link('login');
+submit_form({
+    email => $e,
+    password => $p,
+});
+verify_no_text('authenticator code');
+verify_text(qr/(sign-out|\blogout\b)/i);

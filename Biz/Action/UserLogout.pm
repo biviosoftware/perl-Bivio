@@ -9,11 +9,11 @@ my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 
 sub execute {
     my(undef, $req) = @_;
-    my($res) = $_ULF->execute($req, {realm_owner => undef});
-    # TODO: what might $res be here?
-    return b_debug($res)
-        if $res;
-    return $_ULTF->execute($req, {realm_owner => undef});
+    my($res);
+    foreach my $form ($_ULF, $_ULTF) {
+        $res ||= $form->execute($req, {realm_owner => undef});
+    }
+    return $res;
 }
 
 1;

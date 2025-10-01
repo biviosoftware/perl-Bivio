@@ -9,13 +9,16 @@ my($_MC) = b_use('Type.MnemonicCode');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     password_query_expiry_seconds => 30 * 60,
+    password_mfa_challenge_expiry_seconds => 5 * 60,
+    password_reset_expiry_seconds => 5 * 60,
 });
 
 __PACKAGE__->compile([
     UNKNOWN => 0,
     MFA_RECOVERY => 1,
     PASSWORD_QUERY => 2,
-    PASSWORD_RESET => 3,
+    PASSWORD_MFA_CHALLENGE => 3,
+    PASSWORD_RESET => 4,
 ]);
 
 sub from_literal_for_type {
@@ -29,7 +32,7 @@ sub from_literal_for_type {
 sub generate_code_for_type {
     my(undef, $type) = @_;
     return Bivio::Biz::Random->password
-        if $type->eq_password_query;
+        if $type->equals_by_name(qw(password_query password_mfa_challenge password_reset));
     return $_MC->generate_code
         if $type->eq_mfa_recovery;
     b_die('unsupported type');
@@ -38,15 +41,21 @@ sub generate_code_for_type {
 
 sub get_expiry_for_type {
     my(undef, $type) = @_;
-    return $_DT->add_seconds($_DT->now, $_CFG->{password_query_expiry_seconds})
-        if $type->eq_password_query;
+    return $_DT->add_seconds($_DT->now, $_CFG->{lc($type->get_name) . '_expiry_seconds'})
+        if $type->equals_by_name(qw(password_query password_mfa_challenge password_reset));
     return undef;
 }
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    b_die('missing password_query_expiry_seconds')
-        unless $cfg->{password_query_expiry_seconds};
+    foreach my $f (qw(
+        password_query_expiry_seconds
+        password_mfa_challenge_expiry_seconds
+        password_reset_expiry_seconds
+    )) {
+        b_die('missing ' . $f)
+            unless $cfg->{$f};
+    }
     $_CFG = $cfg;
     return;
 }

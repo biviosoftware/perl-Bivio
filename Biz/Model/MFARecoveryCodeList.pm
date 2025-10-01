@@ -50,7 +50,10 @@ sub internal_initialize {
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
-    $stmt->where($stmt->IS_NULL('UserSecretCode.expiration_date_time'));
+    $stmt->where(
+        $stmt->EQ('UserSecretCode.type', [$_SC->MFA_RECOVERY]),
+        $stmt->EQ('UserSecretCode.is_used', [0]),
+    );
     return;
 }
 

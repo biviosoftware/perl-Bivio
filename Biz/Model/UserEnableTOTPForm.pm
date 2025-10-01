@@ -14,7 +14,7 @@ sub execute_empty {
     my($self) = @_;
     $self->internal_put_field(
         totp_secret => $_TS->generate_secret($_UT->get_default_algorithm),
-        recovery_codes => $self->req($_AMFCL, 'recovery_code_array'),
+        mfa_recovery_code_array => $self->req($_AMFCL, 'mfa_recovery_code_array'),
     );
     return;
 }
@@ -26,7 +26,7 @@ sub execute_ok {
         $self->get('totp_secret'),
         $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
     );
-    $_MMFCL->create($self->get('recovery_codes'));
+    $_MMFCL->create($self->get('mfa_recovery_code_array'));
     return @res;
 }
 
@@ -39,7 +39,7 @@ sub internal_initialize {
                 [qw(RealmOwner.password)],
             ],
             hidden => [
-                [qw(recovery_codes StringArray)],
+                [qw(mfa_recovery_code_array StringArray)],
                 [qw(totp_secret Line)],
             ],
         ),
@@ -56,10 +56,10 @@ sub internal_pre_execute {
 
 sub validate {
     my($self) = @_;
-    # TODO: i don't love doing the password validation this way
     my($ulf) = $self->new_other('UserLoginForm');
     $ulf->validate($self->get_nested(qw(realm_owner name)), $self->get('RealmOwner.password'));
     if ($ulf->in_error) {
+        # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
         my($e) = $ulf->get_errors;
         $self->internal_put_error('RealmOwner.password' => delete($e->{'RealmOwner.password'}));

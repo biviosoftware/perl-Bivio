@@ -10,10 +10,12 @@ my($_T) = b_use('Model.UserTOTP');
 sub compute {
     my($self, $secret, $algorithm, $digits, $period) = @_;
     $self->assert_not_general;
-    $algorithm ||= $_T->get_default_algorithm;
-    $digits ||= $_T->get_default_digits;
-    $period ||= $_T->get_default_period;
-    $secret ||= $self->model('UserTOTP')->load->get('secret');
+    my($m) = $self->model('UserTOTP');
+    $m->unsafe_load;
+    $secret ||= $m->is_loaded ? $m->get('secret') : ($secret || b_die('no secret'));
+    $algorithm ||= $m->is_loaded ? $m->get('algorithm') : $_T->get_default_algorithm;
+    $digits ||= $m->is_loaded ? $m->get('digits') : $_T->get_default_digits;
+    $period ||= $m->is_loaded ? $m->get('period') : $_T->get_default_period;
     return $_RFC6238->compute(
         $algorithm->get_name,
         $digits,

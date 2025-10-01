@@ -211,8 +211,9 @@ sub require_otp {
     return $self->get_field_type('password')->is_otp($self->get('password'));
 }
 
-sub require_totp {
+sub require_mfa {
     my($self) = @_;
+    # Only TOTP supported at this time; may support other methods later.
     my($totp) = $self->new_other('UserTOTP')->set_ephemeral;
     return $totp->unauth_load({$totp->REALM_ID_FIELD => $self->get('realm_id')});
 }

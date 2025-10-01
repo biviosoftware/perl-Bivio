@@ -1447,25 +1447,26 @@ div.totp_setup {
 span.totp_setup_key {
   display: none;
 }
-table.b_recovery_code_list {
+table.b_mfa_recovery_code_list {
   margin: auto;
   border: 1px solid #ccc;
 }
-table.b_recovery_code_list td {
+table.b_mfa_recovery_code_list td {
   padding: 0.25em;
   vertical-align: top;
   background: #f0f0f0;
 }
-table.b_recovery_codes td,
-table.b_recovery_code_options td {
+table.b_mfa_recovery_codes td,
+table.b_mfa_recovery_code_options td {
   padding: 0.5em 1.5em;
   text-align: center;
   whitespace: nowrap;
   border: 0.5em solid #f0f0f0;
   background: #fff;
 }
-tr.b_recovery_code,
-tr.b_disable_totp {
+tr.b_mfa_recovery_prologue,
+tr.b_mfa_recovery_code,
+tr.b_disable_mfa {
   display: none;
 }
 EOF

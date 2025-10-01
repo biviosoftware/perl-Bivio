@@ -1,10 +1,12 @@
 # Copyright (c) 2003-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserPasswordForm;
 use strict;
-use Bivio::Base 'Model.UserLoginTOTPForm';
+use Bivio::Base 'Biz.FormModel';
 
+my($_A) = b_use('Action.Acknowledgement');
 my($_P) = b_use('Type.Password');
 my($_SC) = b_use('Type.SecretCode');
+my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
@@ -12,16 +14,16 @@ sub PASSWORD_FIELD_LIST {
 
 sub execute_ok {
     my($self) = shift;
-    my($res) = $self->get('require_totp') ? $self->SUPER::execute_ok(@_) : 0;
     # Updates the password in the database and the cookie.
     $self->get_instance('UserLoginForm')->execute($self->req, {
         realm_owner => $self->get('realm_owner')
             ->update_password($self->get('new_password')),
     });
-    if (my $m = $self->unsafe_get('password_query_code_model')) {
-        $m->delete;
-    }
-    return $res;
+    $self->get('password_reset_code_model')->set_used
+        if $self->unsafe_get('password_reset_code_model');
+    return $self->get('totp_form')->process($self->req)
+        if $self->unsafe_get('require_mfa');
+    return;
 }
 
 sub internal_initialize {
@@ -35,14 +37,17 @@ sub internal_initialize {
                 [qw(old_password Password NONE)],
                 [qw(new_password NewPassword NOT_NULL)],
                 [qw(confirm_new_password ConfirmPassword NOT_NULL)],
+                [qw(totp_code Line NONE)],
+                [qw(mfa_recovery_code Line NONE)],
             ],
             hidden => [
-                [qw(password_query_code SecretLine NONE)],
+                [qw(password_reset_code SecretLine NONE)],
             ],
             other => [
                 [qw(require_old_password Boolean)],
-                [qw(password_query_code_model Model.UserSecretCode NONE)],
-                [qw(require_totp Boolean)],
+                [qw(password_reset_code_model Model.UserSecretCode NONE)],
+                [qw(require_mfa Boolean)],
+                [qw(totp_form Model.UserLoginTOTPForm NONE)],
             ],
         ),
     });
@@ -52,20 +57,31 @@ sub internal_pre_execute {
     my($self, $method) = @_;
     # Sets the 'require_old_password' field based on if the user is the
     # super user.
-    my($pqcm);
-    if (
-        my $pqc = $self->ureq(qw(Action.UserPasswordQuery password_query_code))
-        || $self->get('password_query_code')
-    ) {
-        $self->internal_put_field(password_query_code => $pqc);
-        $pqcm = $self->new_other('UserSecretCode')
-            ->unsafe_load_by_code_and_type($pqc, $_SC->PASSWORD_RESET);
-        $self->internal_put_field(password_query_code_model => $pqcm);
+    unless ($self->get('password_reset_code')) {
+        $self->internal_put_field(
+            password_reset_code => $self->ureq(qw(Action.UserPasswordQuery password_reset_code)),
+        );
+    }
+    my($prsc);
+    if ($self->get('password_reset_code')) {
+        $prsc = $self->new_other('UserSecretCode')->unsafe_load_by_code_and_type(
+            $self->get('password_reset_code'),
+            $_SC->PASSWORD_RESET,
+        );
+        if ($prsc) {
+            $self->internal_put_field(password_reset_code_model => $prsc);
+        }
+        else {
+            $_A->save_label(password_nak => $self->req);
+            b_die('NOT_FOUND');
+            # DOES NOT RETURN
+        }
     }
     $self->internal_put_field(
+        password_reset_code => $prsc ? $prsc->get('code') : undef,
         realm_owner => $self->req(qw(auth_realm owner)),
-        require_old_password => $pqcm || $self->req->is_substitute_user ? 0 : 1,
-        require_totp => $self->req(qw(auth_realm owner))->require_totp && !$pqcm ? 1 : 0,
+        require_old_password => $prsc || $self->req->is_substitute_user ? 0 : 1,
+        require_mfa => $self->req(qw(auth_realm owner))->require_mfa && !$prsc ? 1 : 0,
     );
     return;
 }
@@ -90,9 +106,25 @@ sub internal_validate_old {
 
 sub validate {
     my($self) = @_;
-    return if $self->in_error;
-    $self->SUPER::validate
-        if $self->get('require_totp');
+    return
+        if $self->in_error;
+    if ($self->get('require_mfa')) {
+        # Only TOTP supported at this time; may support other methods later.
+        my($ultf) = $self->new_other('UserLoginTOTPForm');
+        my($totp_fields) = [qw(realm_owner totp_code mfa_recovery_code)];
+        $ultf->validate(map($self->get($_) // '', @$totp_fields));
+        if ($ultf->in_error) {
+            # Need to stay on page or the login attempt would get rolled back
+            $self->internal_stay_on_page;
+            my($e) = $ultf->get_errors;
+            foreach my $f (@$totp_fields) {
+                $self->internal_put_error($f => delete($e->{$f}));
+            }
+            b_die('remaining error(s)=', ' ', $e)
+                if %$e;
+        }
+        $self->internal_put_field(totp_form => $ultf);
+    }
     if ($self->get('require_old_password')) {
         return
             unless $self->validate_not_null('old_password')

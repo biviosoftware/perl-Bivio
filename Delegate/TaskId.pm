@@ -1377,7 +1377,8 @@ sub info_totp {
             USER
             ADMIN_READ&ADMIN_WRITE
             Action.MFARecoveryCodeList->execute_refill
-            View.UserTOTP->recovery_code_list
+            Model.MFARecoveryCodeListRefillForm
+            View.UserTOTP->mfa_recovery_code_list
             password_task=USER_PASSWORD
             next=MY_SITE
         )],

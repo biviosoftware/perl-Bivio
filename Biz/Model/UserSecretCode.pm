@@ -3,8 +3,9 @@ package Bivio::Biz::Model::UserSecretCode;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
+# TODO: rename to UserOneTimeCode?
+
 my($_DT) = b_use('Type.DateTime');
-my($_MC) = b_use('Type.MnemonicCode');
 my($_SC) = b_use('Type.SecretCode');
 
 sub REALM_ID_FIELD {
@@ -17,15 +18,17 @@ sub REALM_ID_FIELD_TYPE {
 
 sub create {
     my($self, $type, $code) = @_;
-    if ($type->eq_password_query) {
-        my($sc) = $self->new_other('UserSecretCode');
-        $sc->delete
-            if $sc->unsafe_load({type => $type});
+    my($values) = ref($type) eq 'HASH' ? $type : {code => $code, type => $type};
+    b_die('type required')
+        unless $values->{type};
+    $values->{code} ||= $_SC->generate_code_for_type($values->{type});
+    if ($values->{type}->equals_by_name(qw(password_query password_reset))) {
+        $self->new_other('UserSecretCode')->delete_all({type => $values->{type}});
     }
     return $self->SUPER::create({
-        code => $code || $_SC->generate_code_for_type($type),
-        type => $type,
-        expiration_date_time => $_SC->get_expiry_for_type($type),
+        %$values,
+        expiration_date_time => $_SC->get_expiry_for_type($values->{type}),
+        is_used => 0,
     });
 }
 
@@ -41,9 +44,17 @@ sub internal_initialize {
             type => [qw(SecretCode NOT_ZERO_ENUM)],
             creation_date_time => [qw(DateTime NOT_NULL)],
             expiration_date_time => [qw(DateTime NONE)],
-            is_used => [qw(Boolean NONE)],
+            is_used => [qw(Boolean NOT_NULL)],
         },
     });
+}
+
+sub is_expired {
+    my($self) = @_;
+    return 0
+        unless $self->get('expiration_date_time');
+    return $_DT->is_less_than_or_equals($self->get('expiration_date_time'), $_DT->now)
+        ? 1 : 0;
 }
 
 sub is_valid_for_cookie {
@@ -77,22 +88,17 @@ sub _find {
         return 1
             unless $it->get('code') eq $_SC->from_literal_for_type($it->get('type'), $code);
         return 1
-            if _is_expired($it);
+            if $it->is_expired;
         $found = 1;
         return 0;
-    }, $method, $query);
+    }, $method, {
+        is_used => 0,
+        %$query,
+    });
     return $self
         if $found;
     $self->internal_unload;
     return undef;
-}
-
-sub _is_expired {
-    my($self) = @_;
-    return 0
-        unless $self->get('expiration_date_time');
-    return $_DT->is_less_than_or_equals($self->get('expiration_date_time'), $_DT->now)
-        ? 1 : 0;
 }
 
 1;

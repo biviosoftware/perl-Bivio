@@ -446,10 +446,10 @@ sub get_delegate_info {
         undef,
         'Authenticator code is invalid.',
     ],
-    INVALID_RECOVERY_CODE => [
+    INVALID_MFA_RECOVERY_CODE => [
         86,
         undef,
-        'Code is invalid or has already been used.',
+        'Recovery code is invalid or has already been used.',
     ],
     EXPIRED => [
         87,

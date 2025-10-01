@@ -35,7 +35,7 @@ sub account {
             [
                 vs_blank_cell(),
                 If(
-                    [['auth_user'], '->require_totp'],
+                    [['auth_user'], '->require_mfa'],
                     Link(
                         'Disable time-based one-time password two-factor authentication',
                         'USER_DISABLE_TOTP_FORM',

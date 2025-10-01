@@ -1786,21 +1786,21 @@ sub _cfg_totp {
             [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
             [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
             [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
-            [USER_MFA_RECOVERY_CODE_REFILL_LIST => '?/refill-user-mfa-recovery-codes'],
-            [USER_MFA_RECOVERY_CODE_DOWNLOAD => '?/download-user-mfa-recovery-codes'],
+            [USER_MFA_RECOVERY_CODE_REFILL_LIST => '?/refill-recovery-codes'],
+            [USER_MFA_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
         ],
         Text => [
             [[qw(UserLoginTOTPForm UserEnableTOTPForm UserDisableTOTPForm UserPasswordForm)] => [
                 totp_code => 'Authenticator Code',
                 'totp_code.desc' => 'Current ' . b_use('Model.UserTOTP')->get_default_digits . ' digit code found in authenticator application',
             ]],
-            [[qw(UserLoginTOTPForm UserPasswordForm)] => [
-                recovery_code => 'Authenticator Recovery Code',
-                'recovery_code.desc' => 'Used recovery codes will no longer be available',
+            [[qw(UserLoginTOTPForm UserPasswordForm UserDisableTOTPForm)] => [
+                mfa_recovery_code => 'Authenticator Recovery Code',
+                'mfa_recovery_code.desc' => 'Used recovery codes will no longer be available',
             ]],
             [UserLoginTOTPForm => [
-                disable_totp => 'Disable two-factor authentication',
-                'disable_totp.desc' => 'Check this box if you have permanently lost access to your authenticator',
+                disable_mfa => 'Disable two-factor authentication',
+                'disable_mfa.desc' => 'Check this box if you have permanently lost access to your authenticator',
             ]],
             [UserEnableTOTPForm => [
                 'RealmOwner.password' => 'Password',
@@ -1834,6 +1834,9 @@ To disable two-factor authentication, you must enter an authentator code and you
 EOF
                 ],
             ]],
+            [MFARecoveryCodeListRefillForm => [
+                'ok_button' => 'Continue',
+            ]],
             [title => [
                 USER_LOGIN_TOTP_FORM => 'Two-Factor Authentication',
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
@@ -1843,6 +1846,7 @@ EOF
             [acknowledgement => [
                 USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',
                 USER_DISABLE_TOTP_FORM => 'Two-factor authentication has been disabled successfully',
+                mfa_recovery_code_used => 'Authenticator recovery code accepted and removed from available list',
             ]],
         ],
     };
@@ -2117,7 +2121,7 @@ sub _cfg_user_auth {
                 GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to update your password.},
                 USER_PASSWORD_RESET => q{Your may now update your password.},
                 USER_PASSWORD => q{Your password has been changed.},
-                password_nak => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to reset your password again.},
+                password_nak => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to submit the forgot password form again.},
                 USER_FORUM_TREE => q{Your subscriptions have been updated.},
                 # TODO: is this used?
                 user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},

@@ -8,7 +8,7 @@ my($no_setup) = 1;
 my($totp_secret);
 my($time_step);
 my($totp_code);
-my($recovery_codes);
+my($mfa_recovery_codes);
 FormModel({
     setup_request => sub {
         return
@@ -23,12 +23,12 @@ FormModel({
                 $totp_secret,
                 $time_step,
             );
-            $recovery_codes = Type_MnemonicCode()->generate_new_codes(
+            $mfa_recovery_codes = Type_MnemonicCode()->generate_new_codes(
                 Model_MFARecoveryCodeList()->get_new_code_count);
         }
         unless (Model_UserTOTP()->unsafe_load) {
             Model_UserTOTP()->create($totp_secret, $time_step);
-            Model_MFARecoveryCodeList()->create($recovery_codes);
+            Model_MFARecoveryCodeList()->create($mfa_recovery_codes);
         }
         return;
     },
@@ -72,9 +72,9 @@ my($is_task) = sub {
     }),
     error_case({
         'RealmOwner.password' => 'password',
-        recovery_code => 'wrong-recovery-code',
+        mfa_recovery_code => 'wrong-recovery-code',
     } => {
-        recovery_code => 'INVALID_RECOVERY_CODE',
+        mfa_recovery_code => 'INVALID_RECOVERY_CODE',
     }),
     [{
         'RealmOwner.password' => 'wrong-password',
@@ -92,7 +92,7 @@ my($is_task) = sub {
     },
     [{
         'RealmOwner.password' => 'password',
-        recovery_code => sub {$recovery_codes->get_element(0)},
+        mfa_recovery_code => sub {$mfa_recovery_codes->get_element(0)},
     }] => sub {
         return 0
             if Model_UserTOTP()->new(req())->unsafe_load;

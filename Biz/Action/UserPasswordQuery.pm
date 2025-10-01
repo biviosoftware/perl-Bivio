@@ -13,23 +13,27 @@ sub execute {
     my($proto, $req) = @_;
     my($query_key) = delete(($req->get('query') || {})->{$_KEY});
     my($u) = $req->get_nested(qw(auth_realm owner));
-    my($self) = $proto->new({
-        password_query_code => $query_key,
-    })->put_on_request($req, 1);
     my($res);
     my($die) = Bivio::Die->catch(sub {
-        my($rc) = $_USC->new($req)->unauth_load_by_code_and_type(
+        my($pqsc) = $_USC->new($req)->unauth_load_by_code_and_type(
             $u->get('realm_id'), $query_key, $_TSC->PASSWORD_QUERY);
         b_die('invalid or expired')
-            unless $rc;
-        # TODO: should this actually reset the password here?
-        $rc->update({type => $_TSC->PASSWORD_RESET});
+            unless $pqsc;
+        $pqsc->set_used;
+        my($tsc) = $u->require_mfa ? $_TSC->PASSWORD_MFA_CHALLENGE : $_TSC->PASSWORD_RESET;
+        my($usc) = $_USC->new($req)->create({
+            $_USC->REALM_ID_FIELD => $u->get('realm_id'),
+            type => $tsc,
+        });
+        my($self) = $proto->new({
+            lc($tsc->get_name) . '_code' => $usc->get('code'),
+        })->put_on_request($req, 1);
         $res = Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
             realm_owner => $u,
             # there might not be a cookie if user is visiting site
             # from the reset-password URI
             disable_assert_cookie => 1,
-            require_totp => $u->require_totp,
+            require_mfa => $u->require_mfa,
         }) || {
             method => 'server_redirect',
             task_id => 'password_task',
@@ -51,10 +55,10 @@ sub execute {
 
 sub format_uri {
     my(undef, $req) = @_;
-    my($rc) = $_USC->new($req)->create($_TSC->PASSWORD_QUERY);
+    my($pqsc) = $_USC->new($req)->create($_TSC->PASSWORD_QUERY);
     return $req->format_http({
         task_id => $req->get('task')->get_attr_as_id('reset_task'),
-        query => {$_KEY => $rc->get('code')},
+        query => {$_KEY => $pqsc->get('code')},
         no_context => 1,
     });
 }

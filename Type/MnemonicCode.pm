@@ -16,9 +16,9 @@ $_C->register(my $_CFG = {
     word_separator => '-',
 });
 
-sub compare {
-    my($proto, $left, $right) = @_;
-    return $proto->SUPER::compare(map(_canonicalize($_), $left, $right));
+sub from_literal {
+    my($proto, $value) = @_;
+    return _canonicalize($value);
 }
 
 sub generate_code {
@@ -86,10 +86,10 @@ sub is_secure_data {
 }
 
 sub _canonicalize {
-    my($code) = @_;
-    $code = lc($code);
-    $code = join($_CFG->{separator}, split(/[^a-z]+/, $code));
-    return $code;
+    my($value) = @_;
+    $value = lc($value);
+    $value = join($_CFG->{word_separator}, split(/[^a-z]+/, $value));
+    return $value;
 }
 
 sub _init_word_list {
