@@ -1,11 +1,17 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
 Type();
+config({
+    'Bivio::Type::MnemonicCode' => {
+        word_separator => '_',
+    },
+});
 [
-    is_otp => [
-        [] => 1,
+    from_literal => [
+        [' foo.bar.baz  '] => 'foo_bar_baz',
+        ['elmo bert ernie grover'] => 'elmo_bert_ernie_grover',
     ],
-    is_password => [
-        [] => 1,
+    get_word_separator => [
+        [] => '_',
     ],
     is_secure_data => [
         [] => 1,

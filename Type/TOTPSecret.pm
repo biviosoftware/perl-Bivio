@@ -16,15 +16,6 @@ sub generate_secret {
     return $s;
 }
 
-# TODO: Not sure if should use
-sub is_otp {
-    return 1;
-}
-
-sub is_password {
-    return 1;
-}
-
 sub is_secure_data {
     return 1;
 }

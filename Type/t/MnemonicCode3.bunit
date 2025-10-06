@@ -2,7 +2,7 @@
 Type();
 [
     generate_code => [
-        # Need enable via config
+        # Need to enable via config
         [] => DIE(),
     ],
 ];

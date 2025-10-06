@@ -32,7 +32,6 @@ sub generate_code {
             if defined($w->{$i});
         $w->{$i} = int(keys(%$w));
     }
-    # TODO: Should this be a StringArray?
     return join(
         $_CFG->{word_separator},
         map($_WORDS->[$_], sort({$w->{$a} <=> $w->{$b}} keys(%$w))),
@@ -55,7 +54,7 @@ sub get_word_separator {
 
 sub handle_config {
     my($proto, $cfg) = @_;
-    $_CFG = $cfg;
+    $_CFG = b_debug($cfg);
     return
         unless $_CFG->{is_enabled};
     if ($_CFG->{word_list} && -f $_CFG->{word_list}) {
@@ -70,30 +69,21 @@ sub handle_config {
     return;
 }
 
-# Not sure if should use
-sub is_otp {
-    return 1;
-}
-
-sub is_password {
-    # return 0;
-    return 1;
-}
-
 sub is_secure_data {
-    # return 0;
     return 1;
 }
 
 sub _canonicalize {
     my($value) = @_;
     $value = lc($value);
+    $value =~ s/^\s+|\s+$//g;
     $value = join($_CFG->{word_separator}, split(/[^a-z]+/, $value));
     return $value;
 }
 
 sub _init_word_list {
     my($proto, $path) = @_;
+    @$_WORDS = ();
     my($max_length) = 0;
     $_F->do_lines($path, sub {
         my($line) = @_;

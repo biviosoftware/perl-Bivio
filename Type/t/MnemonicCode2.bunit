@@ -43,4 +43,16 @@ config({
     } => [
         map(([] => 1), 1..$case_count),
     ],
+    generate_new_codes => [
+        [2] => sub {
+            my($case, $actual) = @_;
+            b_die('unexpected code count=', int($actual->[0]->as_list))
+                unless int($actual->[0]->as_list) == 2;
+            foreach my $code ($actual->[0]->as_list) {
+                b_die('unexpected code=', $code)
+                    unless grep($code eq $_, @$expected_combinations);
+            }
+            return $actual;
+        },
+    ],
 ];
