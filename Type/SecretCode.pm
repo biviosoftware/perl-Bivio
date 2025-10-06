@@ -22,27 +22,27 @@ __PACKAGE__->compile([
 ]);
 
 sub from_literal_for_type {
-    my(undef, $type, $value) = @_;
-    if ($type->eq_mfa_recovery) {
+    my($self, $value) = @_;
+    if ($self->eq_mfa_recovery) {
         return $_MC->from_literal($value);
     }
     return $value;
 }
 
 sub generate_code_for_type {
-    my(undef, $type) = @_;
+    my($self) = @_;
     return Bivio::Biz::Random->password
-        if $type->equals_by_name(qw(password_query password_mfa_challenge password_reset));
+        if $self->equals_by_name(qw(password_query password_mfa_challenge password_reset));
     return $_MC->generate_code
-        if $type->eq_mfa_recovery;
+        if $self->eq_mfa_recovery;
     b_die('unsupported type');
     # DOES NOT RETURN
 }
 
 sub get_expiry_for_type {
-    my(undef, $type) = @_;
-    return $_DT->add_seconds($_DT->now, $_CFG->{lc($type->get_name) . '_expiry_seconds'})
-        if $type->equals_by_name(qw(password_query password_mfa_challenge password_reset));
+    my($self) = @_;
+    return $_DT->add_seconds($_DT->now, $_CFG->{lc($self->get_name) . '_expiry_seconds'})
+        if $self->equals_by_name(qw(password_query password_mfa_challenge password_reset));
     return undef;
 }
 

@@ -23,9 +23,9 @@ my($compute_totp_code) = sub {
     return $code;
 };
 follow_link('download');
-my($mfa_recovery_codes) = [split("\n", get_content())];
+my($recovery_codes) = [split("\n", get_content())];
 b_die('unexpected code count')
-    unless int(@$mfa_recovery_codes) == Model_MFARecoveryCodeList()->get_new_code_count;
+    unless int(@$recovery_codes) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
 submit_form({
     password => $dp,
@@ -75,7 +75,7 @@ submit_form({
 });
 test_conformance();
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes->[0],
+    authenticator_recovery_code => $recovery_codes->[0],
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 do_logout();
@@ -87,11 +87,11 @@ submit_form({
 verify_no_text(qr/sign-out/i);
 test_deviance(qr/recovery code is invalid/i);
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes->[0],
+    authenticator_recovery_code => $recovery_codes->[0],
 });
 test_conformance();
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes->[1],
+    authenticator_recovery_code => $recovery_codes->[1],
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 foreach my $x (2..Model_MFARecoveryCodeList()->get_new_code_count - 3) {
@@ -103,7 +103,7 @@ foreach my $x (2..Model_MFARecoveryCodeList()->get_new_code_count - 3) {
     });
     verify_no_text(qr/sign-out/i);
     submit_form({
-        authenticator_recovery_code => $mfa_recovery_codes->[$x],
+        authenticator_recovery_code => $recovery_codes->[$x],
     });
     verify_text(qr/(sign-out|\blogout\b)/i);
     verify_no_text(qr/recovery code list was running low/i);
@@ -116,15 +116,15 @@ submit_form({
 });
 verify_no_text(qr/sign-out/i);
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes->[Model_MFARecoveryCodeList()->get_new_code_count - 2],
+    authenticator_recovery_code => $recovery_codes->[Model_MFARecoveryCodeList()->get_new_code_count - 2],
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/recovery code list was running low/i);
 verify_text(qr/these are your authenticator recovery codes/i);
 follow_link('download');
-my($mfa_recovery_codes2) = [split("\n", get_content())];
+my($recovery_codes2) = [split("\n", get_content())];
 b_die('unexpected code count')
-    unless int(@$mfa_recovery_codes2) == Model_MFARecoveryCodeList()->get_new_code_count;
+    unless int(@$recovery_codes2) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
 submit_form('continue');
 verify_text('birds');
@@ -136,11 +136,11 @@ submit_form({
 });
 test_deviance(qr/recovery code is invalid/i);
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes->[Model_MFARecoveryCodeList()->get_new_code_count - 1],
+    authenticator_recovery_code => $recovery_codes->[Model_MFARecoveryCodeList()->get_new_code_count - 1],
 });
 test_conformance();
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes2->[0],
+    authenticator_recovery_code => $recovery_codes2->[0],
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 do_logout();
@@ -181,7 +181,7 @@ visit_uri($uri);
 verify_no_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/authenticator code/i);
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes2->[1],
+    authenticator_recovery_code => $recovery_codes2->[1],
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/your password/i);
@@ -312,9 +312,9 @@ $totp_setup_key2 =~ s/\s+//g;
 b_die('same setup key')
     if $totp_setup_key eq $totp_setup_key2;
 follow_link('download');
-my($mfa_recovery_codes3) = [split("\n", get_content())];
+my($recovery_codes3) = [split("\n", get_content())];
 b_die('unexpected code count')
-    unless int(@$mfa_recovery_codes3) == Model_MFARecoveryCodeList()->get_new_code_count;
+    unless int(@$recovery_codes3) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
 $totp_code =  $compute_totp_code->(30, $totp_setup_key);
 test_deviance(qr/authenticator code is invalid/i);
@@ -366,11 +366,11 @@ submit_form({
 test_deviance(qr/recovery code is invalid/i);
 # Using previous recovery codes should be invalid
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes2->[2],
+    authenticator_recovery_code => $recovery_codes2->[2],
 });
 test_conformance();
 submit_form({
-    authenticator_recovery_code => $mfa_recovery_codes3->[0],
+    authenticator_recovery_code => $recovery_codes3->[0],
 });
 follow_link(qw(myaccount disable_time_based));
 verify_text(qr/disable two-factor/i);
@@ -378,17 +378,17 @@ test_deviance(qr/recovery code is invalid/i);
 # Using previous recovery codes should be invalid
 submit_form({
     password => $p,
-    authenticator_recovery_code => $mfa_recovery_codes2->[3],
+    authenticator_recovery_code => $recovery_codes2->[3],
 });
 # Using previously used recovery code should be invalid
 submit_form({
     password => $p,
-    authenticator_recovery_code => $mfa_recovery_codes3->[0],
+    authenticator_recovery_code => $recovery_codes3->[0],
 });
 test_conformance();
 submit_form({
     password => $p,
-    authenticator_recovery_code => $mfa_recovery_codes3->[1],
+    authenticator_recovery_code => $recovery_codes3->[1],
 });
 verify_text(qr/has been disabled successfully/);
 follow_link('myaccount');

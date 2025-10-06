@@ -21,13 +21,13 @@ sub create {
     my($values) = ref($type) eq 'HASH' ? $type : {code => $code, type => $type};
     b_die('type required')
         unless $values->{type};
-    $values->{code} ||= $_SC->generate_code_for_type($values->{type});
+    $values->{code} ||= $values->{type}->generate_code_for_type;
     if ($values->{type}->equals_by_name(qw(password_query password_reset))) {
         $self->new_other('UserSecretCode')->delete_all({type => $values->{type}});
     }
     return $self->SUPER::create({
         %$values,
-        expiration_date_time => $_SC->get_expiry_for_type($values->{type}),
+        expiration_date_time => $values->{type}->get_expiry_for_type,
         is_used => 0,
     });
 }
@@ -86,7 +86,7 @@ sub _find {
     $self->do_iterate(sub {
         my($it) = @_;
         return 1
-            unless $it->get('code') eq $_SC->from_literal_for_type($it->get('type'), $code);
+            unless $it->get('code') eq $it->get('type')->from_literal_for_type($code);
         return 1
             if $it->is_expired;
         $found = 1;

@@ -3,8 +3,6 @@ package Bivio::Biz::Model::UserDisableTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginTOTPForm';
 
-my($_SC) = b_use('Type.SecretCode');
-
 sub execute_ok {
     my($self) = @_;
     $self->internal_disable_mfa($self);
