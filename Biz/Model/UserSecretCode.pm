@@ -3,10 +3,9 @@ package Bivio::Biz::Model::UserSecretCode;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-# TODO: rename to UserOneTimeCode?
-
 my($_DT) = b_use('Type.DateTime');
-my($_SC) = b_use('Type.SecretCode');
+my($_C) = b_use('Type.SecretCode');
+my($_S) = b_use('Type.SecretCodeStatus');
 
 sub REALM_ID_FIELD {
     return 'user_id';
@@ -27,8 +26,7 @@ sub create {
     }
     return $self->SUPER::create({
         %$values,
-        expiration_date_time => $values->{type}->get_expiry_for_type,
-        is_used => 0,
+        status => $_S->ACTIVE,
     });
 }
 
@@ -37,14 +35,14 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         table_name => 'user_secret_code_t',
-        as_string_fields => [qw(user_secret_code_id type creation_date_time expiration_date_time)],
+        as_string_fields => [qw(user_secret_code_id user_id creation_date_time type status)],
         columns => {
             user_secret_code_id => [qw(PrimaryId PRIMARY_KEY)],
+            creation_date_time => [qw(DateTime NOT_NULL)],
+            modified_date_time => [qw(DateTime NOT_NULL)],
             code => [qw(SecretLine NOT_NULL)],
             type => [qw(SecretCode NOT_ZERO_ENUM)],
-            creation_date_time => [qw(DateTime NOT_NULL)],
-            expiration_date_time => [qw(DateTime NONE)],
-            is_used => [qw(Boolean NOT_NULL)],
+            status => [qw(SecretCodeStatus NOT_ZERO_ENUM)],
         },
     });
 }
@@ -52,22 +50,35 @@ sub internal_initialize {
 sub is_expired {
     my($self) = @_;
     return 0
-        unless $self->get('expiration_date_time');
-    return $_DT->is_less_than_or_equals($self->get('expiration_date_time'), $_DT->now)
-        ? 1 : 0;
+        unless my $expiry = $self->get('type')->get_expiry_for_type($self->get('creation_date_time'));
+    return $_DT->is_less_than_or_equals($expiry, $_DT->now) ? 1 : 0;
 }
 
 sub is_valid_for_cookie {
     my($self, $realm_id, $code) = @_;
     return _find($self, $code, 'unauth_iterate_start', {
         user_id => $realm_id,
-        type => $_SC->MFA_RECOVERY,
-        is_used => 1,
+        type => $_C->MFA_RECOVERY,
+        status => $_S->ARCHIVED,
     }) ? 1 : 0;
 }
 
+sub set_archived {
+    my($self) = @_;
+    b_die('unexpected type')
+        unless $self->get('type')->eq_mfa_recovery;
+    return $self->update({status => $_S->ARCHIVED});
+}
+
 sub set_used {
-    return shift->update({is_used => 1});
+    my($self) = @_;
+    b_die('unexpected type')
+        unless $self->get('type')->equals_by_name(qw(
+            password_query
+            password_mfa_challenge
+            password_reset
+        ));
+    return $self->update({status => $_S->USED});
 }
 
 sub unauth_load_by_code_and_type {
@@ -92,7 +103,7 @@ sub _find {
         $found = 1;
         return 0;
     }, $method, {
-        is_used => 0,
+        status => $_S->ACTIVE,
         %$query,
     });
     return $self

@@ -5,6 +5,7 @@ use Bivio::Base 'Biz.ListModel';
 
 my($_DT) = b_use('Type.DateTime');
 my($_SC) = b_use('Type.SecretCode');
+my($_SCS) = b_use('Type.SecretCodeStatus');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     new_code_count => 6,
@@ -52,7 +53,7 @@ sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $stmt->where(
         $stmt->EQ('UserSecretCode.type', [$_SC->MFA_RECOVERY]),
-        $stmt->EQ('UserSecretCode.is_used', [0]),
+        $stmt->EQ('UserSecretCode.status', [$_SCS->ACTIVE]),
     );
     return;
 }

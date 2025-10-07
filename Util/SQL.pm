@@ -656,11 +656,11 @@ CREATE INDEX user_totp_t3 ON user_totp_t (
 CREATE TABLE user_secret_code_t (
   user_secret_code_id NUMERIC(18) NOT NULL,
   user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  modified_date_time DATE NOT NULL,
   code VARCHAR(4000) NOT NULL,
   type NUMERIC(1) NOT NULL,
-  creation_date_time DATE NOT NULL,
-  expiration_date_time DATE,
-  is_used NUMERIC(1),
+  status NUMERIC(1),
   CONSTRAINT user_secret_code_t1 primary key(user_secret_code_id)
 )
 /

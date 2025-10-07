@@ -26,7 +26,7 @@ sub execute_refill {
         no_context => 1,
     };
     my($existing_list) = $_MFCL->new($req)->load_all({type => $_SC->MFA_RECOVERY});
-    return b_debug($res)
+    return $res
         unless $existing_list->get_result_set_size < $_MFCL->get_refill_threshold;
     $existing_list->do_rows(sub {
         my($row) = @_;
@@ -37,7 +37,6 @@ sub execute_refill {
     });
     my($self) = _new($proto, $req);
     $_MFCL->create(_generate_code_array($self));
-    b_debug();
     return;
 }
 

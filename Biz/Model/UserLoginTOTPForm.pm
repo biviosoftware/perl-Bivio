@@ -41,7 +41,7 @@ sub execute_ok {
         $next = 'password_task';
     }
     if (my $mrcm = $self->unsafe_get('mfa_recovery_code_model')) {
-        $self->get('disable_mfa') ? $self->internal_disable_mfa : $mrcm->set_used;
+        $self->get('disable_mfa') ? $self->internal_disable_mfa : $mrcm->set_archived;
         $_A->save_label(mfa_recovery_code_used => $self->req);
         $next = 'refill_task';
     }

@@ -40,8 +40,8 @@ sub generate_code_for_type {
 }
 
 sub get_expiry_for_type {
-    my($self) = @_;
-    return $_DT->add_seconds($_DT->now, $_CFG->{lc($self->get_name) . '_expiry_seconds'})
+    my($self, $creation_dt) = @_;
+    return $_DT->add_seconds($creation_dt, $_CFG->{lc($self->get_name) . '_expiry_seconds'})
         if $self->equals_by_name(qw(password_query password_mfa_challenge password_reset));
     return undef;
 }
