@@ -54,7 +54,7 @@ sub get_word_separator {
 
 sub handle_config {
     my($proto, $cfg) = @_;
-    $_CFG = b_debug($cfg);
+    $_CFG = $cfg;
     return
         unless $_CFG->{is_enabled};
     if ($_CFG->{word_list} && -f $_CFG->{word_list}) {
