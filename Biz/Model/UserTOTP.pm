@@ -79,14 +79,15 @@ sub internal_initialize {
     });
 }
 
-sub is_valid_for_cookie {
-    my($self, $realm_id, $code, $time_step) = @_;
-    unless ($self->unauth_load({$self->REALM_ID_FIELD => $realm_id})) {
+sub is_valid_cookie_code {
+    my($proto, $realm_id, $code, $time_step) = @_;
+    my($model) = $proto->new->set_ephemeral;
+    unless ($model->unauth_load({$proto->REALM_ID_FIELD => $realm_id})) {
         b_warn('validating cookie totp with no totp');
         return 0;
     }
     return _code_valid_for_time_step(
-        $code, $self->get(qw(algorithm digits secret)), $time_step);
+        $code, $model->get(qw(algorithm digits secret)), $time_step);
 }
 
 sub is_valid_input_code {

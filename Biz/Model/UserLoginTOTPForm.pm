@@ -11,6 +11,7 @@ my($_TSC) = b_use('Type.SecretCode');
 my($_ULF) = b_use('Model.UserLoginForm');
 my($_UPQ) = b_use('Action.UserPasswordQuery');
 my($_USC) = b_use('Model.UserSecretCode');
+my($_UT) = b_use('Model.UserTOTP');
 
 sub TOTP_CODE_FIELD {
     return 'tc';
@@ -135,15 +136,13 @@ sub is_valid_totp_cookie {
     my($proto, $cookie, $auth_user) = @_;
     if (my $c = $cookie->unsafe_get($proto->TOTP_CODE_FIELD)) {
         if (my $t = $cookie->unsafe_get($proto->TOTP_TIME_STEP_FIELD)) {
-            return $auth_user->new_other('UserTOTP')
-                ->is_valid_for_cookie($auth_user->get('realm_id'), $c, $t);
+            return $_UT->is_valid_cookie_code($auth_user->get('realm_id'), $c, $t);
         }
         b_warn('invalid totp cookie fields');
         return 0;
     }
     if (my $c = $cookie->unsafe_get($proto->MFA_RECOVERY_CODE_FIELD)) {
-        return $auth_user->new_other('UserSecretCode')
-            ->is_valid_for_cookie($auth_user->get('realm_id'), $c);
+        return $_USC->is_valid_cookie_code($auth_user->get('realm_id'), $c);
     }
     return 0;
 }

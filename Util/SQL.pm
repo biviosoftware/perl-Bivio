@@ -658,6 +658,7 @@ CREATE TABLE user_secret_code_t (
   user_id NUMERIC(18) NOT NULL,
   creation_date_time DATE NOT NULL,
   modified_date_time DATE NOT NULL,
+  expiration_date_time DATE,
   code VARCHAR(4000) NOT NULL,
   type NUMERIC(1) NOT NULL,
   status NUMERIC(1),

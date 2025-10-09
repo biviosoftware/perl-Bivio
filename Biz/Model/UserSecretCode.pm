@@ -21,11 +21,12 @@ sub create {
     b_die('type required')
         unless $values->{type};
     $values->{code} ||= $values->{type}->generate_code_for_type;
-    if ($values->{type}->equals_by_name(qw(password_query password_reset))) {
+    if ($values->{type}->equals_by_name(qw(password_query password_mfa_challenge password_reset))) {
         $self->new_other('UserSecretCode')->delete_all({type => $values->{type}});
     }
     return $self->SUPER::create({
         %$values,
+        expiration_date_time => $values->{type}->get_expiry_for_type,
         status => $_S->ACTIVE,
     });
 }
@@ -35,11 +36,12 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         table_name => 'user_secret_code_t',
-        as_string_fields => [qw(user_secret_code_id user_id creation_date_time type status)],
+        as_string_fields => [qw(user_secret_code_id user_id creation_date_time expiration_date_time type status)],
         columns => {
             user_secret_code_id => [qw(PrimaryId PRIMARY_KEY)],
             creation_date_time => [qw(DateTime NOT_NULL)],
             modified_date_time => [qw(DateTime NOT_NULL)],
+            expiration_date_time => [qw(DateTime NONE)],
             code => [qw(SecretLine NOT_NULL)],
             type => [qw(SecretCode NOT_ZERO_ENUM)],
             status => [qw(SecretCodeStatus NOT_ZERO_ENUM)],
@@ -50,13 +52,15 @@ sub internal_initialize {
 sub is_expired {
     my($self) = @_;
     return 0
-        unless my $expiry = $self->get('type')->get_expiry_for_type($self->get('creation_date_time'));
-    return $_DT->is_less_than_or_equals($expiry, $_DT->now) ? 1 : 0;
+        unless $self->get('expiration_date_time');
+    return $_DT->is_less_than_or_equals($self->get('expiration_date_time'), $_DT->now)
+        ? 1 : 0;
 }
 
-sub is_valid_for_cookie {
-    my($self, $realm_id, $code) = @_;
-    return _find($self, $code, 'unauth_iterate_start', {
+sub is_valid_cookie_code {
+    my($proto, $realm_id, $code) = @_;
+    my($model) = $proto->new->set_ephemeral;
+    return _find($model, $code, 'unauth_iterate_start', {
         user_id => $realm_id,
         type => $_C->MFA_RECOVERY,
         status => $_S->ARCHIVED,
