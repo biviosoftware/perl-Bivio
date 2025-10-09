@@ -1,10 +1,10 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
 PropertyModel();
-my($m) = req()->with_realm('demo', sub {
-    return model('UserTOTP')->create(
-        Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1),
-    );
-});
+create_user(random_alpha_string());
+my($m) = model('UserTOTP')->create(
+    Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1),
+);
+my($t) = Type_DateTime()->to_unix(Type_DateTime()->set_test_now(Type_DateTime()->now));
 options({
     create_object => sub {$m},
     compute_params => sub {
@@ -12,10 +12,7 @@ options({
         return [$params->[0]]
             if $params->[0];
         return [Biz_RFC6238()->compute(
-            'SHA1',
-            6,
-            $params->[1],
-            Biz_RFC6238()->get_time_step(time + ($params->[2] || 0), 30),
+            'SHA1', 6, $params->[1], Biz_RFC6238()->get_time_step($t + ($params->[2] || 0), 30),
         )],
     },
 });

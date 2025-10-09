@@ -51,12 +51,16 @@ sub get_default_period {
 
 sub handle_config {
     my(undef, $cfg) = @_;
+    foreach my $f (qw(default_algorithm default_digits default_period time_step_tolerance)) {
+        b_die($f, ' required')
+            unless $cfg->{$f};
+    }
     b_die('unsupported default_digits')
         unless $cfg->{default_digits} == 6 || $cfg->{default_digits} == 8;
     b_die('unsupported default_period')
         unless $cfg->{default_period} >= 30 && $cfg->{default_period} <= 90;
     b_die('unsupported time_step_tolerance')
-        unless $cfg->{time_step_tolerance} <= 3;
+        unless $cfg->{time_step_tolerance} >= 0 && $cfg->{time_step_tolerance} <= 3;
     $cfg->{default_algorithm} = $_TA->from_any($cfg->{default_algorithm});
     $_CFG = $cfg;
     return;

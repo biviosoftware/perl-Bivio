@@ -1,0 +1,35 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+PropertyModel();
+my($u1, $u2) = map(create_user(random_alpha_string())->get('realm_id'), 1..2);
+my($t) = Type_DateTime()->to_unix(Type_DateTime()->now);
+my($c);
+req()->with_realm_and_user($u1, $u1, sub {
+    $c = Biz_RFC6238()->compute(
+        'SHA1',
+        6,
+        model('UserTOTP')->create(
+            Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1),
+        )->get('secret'),
+        Biz_RFC6238()->get_time_step($t, 30),
+    );
+});
+req()->set_realm_and_user(undef, undef);
+[
+    {
+        method => 'is_valid_cookie_code',
+        compute_params => sub {
+            my(undef, $params) = @_;
+            $params->[2] = Biz_RFC6238()->get_time_step($params->[2], 30);
+            return $params;
+        },
+    } => [
+        [$u1, '1' x 6, $t] => 0,
+        [$u1, '1' x 20, $t] => 0,
+        [$u1, $c, $t] => 1,
+        [$u1, $c, $t + 30] => 0,
+        [$u1, $c, $t - 30] => 0,
+        [$u1, $c, $t + 60] => 0,
+        [$u1, $c, $t - 60] => 0,
+        [$u2, $c, $t] => 0,
+    ],
+];
