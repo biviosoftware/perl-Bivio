@@ -1,0 +1,12 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Type();
+[
+    from_literal => [
+        [0] => NUMBER_RANGE(),
+        [29] => NUMBER_RANGE(),
+        [30] => not_die(),
+        [60] => not_die(),
+        [90] => not_die(),
+        [91] => NUMBER_RANGE(),
+    ],
+];

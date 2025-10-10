@@ -1,0 +1,11 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Type();
+config({
+    class() => {
+        first_available_date => '01/01/2025 00:00:00',
+    },
+});
+[
+    get_min => 19285440,
+    get_max => 241937279,
+];

@@ -6,10 +6,12 @@ use Bivio::Base 'Model.RealmBase';
 my($_DT) = b_use('Type.DateTime');
 my($_RFC6238) = b_use('Biz.RFC6238');
 my($_TA) = b_use('Type.TOTPAlgorithm');
+my($_TD) = b_use('Type.TOTPDigits');
+my($_TP) = b_use('Type.TOTPPeriod');
 my($_TS) = b_use('Type.TOTPSecret');
+my($_TST) = b_use('Type.TOTPTimeStepTolerance');
 
 Bivio::IO::Config->register(my $_CFG = {
-    # TODO: remove/rename "default"?
     default_algorithm => $_TA->SHA1,
     default_digits => 6,
     default_period => 30,
@@ -32,8 +34,8 @@ sub create {
     my($self, $secret, $time_step) = @_;
     return $self->SUPER::create({
         map(($_ => $_CFG->{'default_' . $_}), qw(algorithm digits period)),
-        secret => $secret,
-        last_time_step => $time_step,
+        secret => $self->get_field_type('secret')->from_literal_or_die($secret),
+        last_time_step => $self->get_field_type('last_time_step')->from_literal_or_die($time_step),
     });
 }
 
@@ -51,18 +53,14 @@ sub get_default_period {
 
 sub handle_config {
     my(undef, $cfg) = @_;
-    foreach my $f (qw(default_algorithm default_digits default_period time_step_tolerance)) {
-        b_die($f, ' required')
-            unless $cfg->{$f};
-    }
-    b_die('unsupported default_digits')
-        unless $cfg->{default_digits} == 6 || $cfg->{default_digits} == 8;
-    b_die('unsupported default_period')
-        unless $cfg->{default_period} >= 30 && $cfg->{default_period} <= 90;
-    b_die('unsupported time_step_tolerance')
-        unless $cfg->{time_step_tolerance} >= 0 && $cfg->{time_step_tolerance} <= 3;
-    $cfg->{default_algorithm} = $_TA->from_any($cfg->{default_algorithm});
-    $_CFG = $cfg;
+    $_CFG = {
+        map(($_->[0] => $_->[1]->from_literal_or_die($cfg->{$_->[0]})), (
+            ['default_algorithm', $_TA],
+            ['default_digits', $_TD],
+            ['default_period', $_TP],
+            ['time_step_tolerance', $_TST],
+        )),
+    };
     return;
 }
 
@@ -75,10 +73,10 @@ sub internal_initialize {
             $self->REALM_ID_FIELD => [$self->REALM_ID_FIELD_TYPE, 'PRIMARY_KEY'],
             creation_date_time => ['DateTime', 'NOT_NULL'],
             algorithm => ['TOTPAlgorithm', 'NOT_ZERO_ENUM'],
-            digits => ['Integer', 'NOT_NULL'],
-            period => ['Integer', 'NOT_NULL'],
+            digits => ['TOTPDigits', 'NOT_NULL'],
+            period => ['TOTPPeriod', 'NOT_NULL'],
             secret => ['TOTPSecret', 'NOT_NULL'],
-            last_time_step => ['Integer', 'NONE'],
+            last_time_step => ['TOTPTimeStep', 'NONE'],
         },
     });
 }

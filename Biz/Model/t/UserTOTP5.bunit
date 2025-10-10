@@ -1,5 +1,5 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-PropertyModel();
+Unit();
 config({
     'Bivio::Biz::Model::UserTOTP' => {
         default_algorithm => 'SHA256',
@@ -7,26 +7,33 @@ config({
         default_period => 60,
     },
 });
-options({
-    create_object => sub {model('UserTOTP')},
-});
+my($s) = Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA256);
 my($ts) = Biz_RFC6238()->get_time_step(Type_DateTime()->to_unix(Type_DateTime()->now), 60);
-my($u) = create_user(random_alpha_string());
+my($u);
 [
-    create => [
-        ['foo', 1] => sub {
+    map((sub {
+        # Create a user for each test group so that die cases don't cause tested user to get rolled back.
+        $u = create_user(random_alpha_string());
+        return model('UserTOTP');
+    } => [
+        create => $_,
+    ]), (
+        [['foo', 1] => DIE()],
+        [[$s, 1] => DIE()],
+        [['foo', $ts] => DIE()],
+        [[$s, $ts] => sub {
             my(undef, $actual) = @_;
             foreach my $t (
                 ['user_id', $u->get('realm_id')],
                 ['algorithm', Type_TOTPAlgorithm()->SHA256],
                 ['digits', 8],
                 ['period', 60],
-                ['secret', 'foo'],
-                ['last_time_step', 1],
+                ['secret', $s],
+                ['last_time_step', $ts],
             ) {
                 assert_equals($actual->[0]->get($t->[0]), $t->[1]);
             }
             return 1;
-        },
-    ],
+        }],
+    )),
 ];

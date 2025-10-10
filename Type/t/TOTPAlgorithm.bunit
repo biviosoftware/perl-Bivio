@@ -1,0 +1,10 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Unit();
+[
+    map({
+        my($x) = $_;
+        sub {class()->from_name($x->[0])} => [
+            get_secret_byte_count => $x->[1],
+        ];
+    } ['SHA1', 20], ['SHA256', 32], ['SHA512', 64]),
+];

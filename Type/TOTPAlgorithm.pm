@@ -19,7 +19,7 @@ __PACKAGE__->compile([
 sub get_secret_byte_count {
     my($self) = @_;
     return $_SECRET_BYTE_COUNT->{$self->get_name}
-        || b_die('byte count not found');
+        || b_die('no byte count for type=', $self);
 }
 
 1;

@@ -1,18 +1,24 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
 PropertyModel();
 create_user(random_alpha_string());
+my($t) = Type_DateTime()->set_test_now(Type_DateTime()->now);
 my($m) = model('UserTOTP')->create(
     Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1),
+    Biz_RFC6238()->get_time_step(Type_DateTime()->to_unix($t), 30),
 );
-my($t) = Type_DateTime()->to_unix(Type_DateTime()->set_test_now(Type_DateTime()->now));
 options({
     create_object => sub {$m},
     compute_params => sub {
         my(undef, $params) = @_;
+        return []
+            unless int(@$params);
         return [$params->[0]]
             if $params->[0];
         return [Biz_RFC6238()->compute(
-            'SHA1', 6, $params->[1], Biz_RFC6238()->get_time_step($t + ($params->[2] || 0), 30),
+            'SHA1',
+            6,
+            $params->[1],
+            Biz_RFC6238()->get_time_step(Type_DateTime()->to_unix(now()) + ($params->[2] || 0), 30),
         )],
     },
 });
@@ -20,6 +26,11 @@ options({
     is_valid_input_code => [
         ['1' x 6] => 0,
         [undef, '1' x 20] => 0,
+        # Same time step as in create
+        [undef, $m->get('secret'), 0] => 0,
+    ],
+    inline_case(sub {Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(now(), 30))}),
+    is_valid_input_code => [
         map(
             ([undef, $m->get('secret'), $_->[0]] => $_->[1]), (
                 [0 => 1],

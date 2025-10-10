@@ -9,6 +9,7 @@ req()->with_realm_and_user($u1, $u1, sub {
         6,
         model('UserTOTP')->create(
             Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1),
+            Biz_RFC6238()->get_time_step($t, 30),
         )->get('secret'),
         Biz_RFC6238()->get_time_step($t, 30),
     );
