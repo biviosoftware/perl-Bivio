@@ -110,11 +110,6 @@ sub load_cookie_user {
         realm_id => $cookie->get($proto->USER_FIELD),
         realm_type => Bivio::Auth::RealmType->USER,
     })) {
-        # TODO: i don't think this was ever true originally because it's called in handle_cookie_in
-        # before super_user_id is set (though we now also call this from UserLoginTOTPForm
-        # return $auth_user
-        #     if $req->is_substitute_user;
-
         # Must have password to be logged in
         my($cp) = _get($cookie, $proto->PASSWORD_FIELD);
         return undef

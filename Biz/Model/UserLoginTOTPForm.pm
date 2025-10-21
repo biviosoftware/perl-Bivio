@@ -43,7 +43,6 @@ sub delete_cookie {
 sub execute_ok {
     my($self) = @_;
     my($cookie) = _set_cookie_totp($self);
-    # TODO: not sure if this works with substitute user logout, but user has to be set to use refill task. Should that be a task, or just do it here?
     $_ULF->set_user($self->get('realm_owner'), $cookie, $self->req);
     return
         unless $self->get('realm_owner');

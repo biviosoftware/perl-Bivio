@@ -105,7 +105,6 @@ sub internal_initialize {
         other => [
             'RealmOwner.name',
             'User.user_id',
-            # TODO: is password_ok used?
             $self->field_decl([qw(
                 without_login
                 password_ok

@@ -2058,8 +2058,6 @@ sub _cfg_user_auth {
                 login_mfa_challenge_nak => q{We're sorry, but the login attempt is no longer valid. Please try again.},
                 login_challenge_state_nak => q{We're sorry, but the login attempt is not valid. Please try again.},
                 USER_FORUM_TREE => q{Your subscriptions have been updated.},
-                # TODO: is this used?
-                user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},
                 GENERAL_CONTACT => 'Your inquiry has been sent.  Thank you!',
                 USER_SETTINGS_FORM => 'Your settings have been updated.',
                 email_verified => q{Your email address has been updated.},
