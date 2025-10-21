@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2025 bivio Software, Inc.  All rights reserved.
 package Bivio::Biz::Action::UserLogout;
 use strict;
 use Bivio::Base 'Biz.Action';
@@ -9,11 +8,9 @@ my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 
 sub execute {
     my(undef, $req) = @_;
-    my($res);
-    foreach my $form ($_ULF, $_ULTF) {
-        $res ||= $form->execute($req, {realm_owner => undef});
-    }
-    return $res;
+    my($res) = $_ULF->execute($req, {realm_owner => undef});
+    my($res2) = $_ULTF->execute($req, {do_logout => 1});
+    return $res || $res2;
 }
 
 1;

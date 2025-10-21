@@ -1,0 +1,129 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+my($uid) = create_user(random_realm_name())->get('realm_id');
+my($no_challenge) = 1;
+FormModel({
+    setup_request => sub {
+        model('UserSecretCode')->create({
+            user_id => $uid,
+            type => Type_SecretCode()->LOGIN_MFA_CHALLENGE,
+        }) unless $no_challenge;
+        req_state({
+            task => 'USER_LOGIN_TOTP_FORM',
+        });
+    },
+});
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 2,
+    },
+});
+my($secret) = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
+my($time_step);
+my($next_time_step) = sub {
+    my($seconds) = @_;
+    $seconds //= Model_UserTOTP()->get_default_period;
+    Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, $seconds));
+    return $time_step = Biz_RFC6238()->get_time_step(
+        Type_DateTime()->to_unix(Type_DateTime()->now), Model_UserTOTP()->get_default_period);
+};
+my($totp_code);
+my($compute_totp_code) = sub {
+    return $totp_code = Biz_RFC6238()->compute(
+        Model_UserTOTP()->get_default_algorithm,
+        Model_UserTOTP()->get_default_digits,
+        $secret,
+        $time_step,
+    );
+};
+Action_MFARecoveryCodeList()->execute_preview(req());
+my($recovery_codes) = req(qw(Action.MFARecoveryCodeList mfa_recovery_code_array));
+$next_time_step->(0);
+Model_UserEnableTOTPForm()->process({
+    'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+    totp_secret => $secret,
+    mfa_recovery_code_array => $recovery_codes,
+    totp_code => $compute_totp_code->(),
+    totp_time_step => $time_step,
+});
+# Have to commit as form processing will issue a rollback on error, preventing login attempts from
+# being recorded.
+commit();
+my($set_cookie) = sub {req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $uid, 1)};
+[
+    [] => FORBIDDEN(),
+    inline_case($set_cookie),
+    [] => FORBIDDEN(),
+    inline_case(sub {
+        $no_challenge = 0;
+    }),
+    error_case({} => {
+        totp_code => 'NULL',
+    }),
+    error_case({
+        totp_code => '123456',
+    } => {
+        totp_code => 'INVALID_TOTP_CODE',
+    }),
+    inline_commit(),
+    [{
+        totp_code => '123456',
+    }] => sub {req('task_id')->eq_general_user_locked_out},
+    inline_commit(),
+    [] => FORBIDDEN(),
+    inline_case(sub {
+        req()->with_realm_and_user($uid, $uid, sub {
+            # Have to advance the clock or the failure and reset login attempts will have same dt
+            # and the login attempt sorting may be incorrect, causing the user to still be locked out.
+            Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 1));
+            Util_RealmAdmin()->reset_login_attempts;
+            Util_RealmAdmin()->reset_password('password');
+        });
+    }),
+    inline_commit(),
+    [] => FORBIDDEN(),
+    inline_case($set_cookie),
+    error_case({
+        # Can't use same code as in create.
+        totp_code => $compute_totp_code,
+    } => {
+        totp_code => 'INVALID_TOTP_CODE',
+    }),
+    inline_case($next_time_step),
+    [{
+        totp_code => $compute_totp_code,
+    }] => sub {
+        return 0
+            unless req('cookie', class()->TOTP_CODE_FIELD) eq $totp_code;
+        return 0
+            unless req('cookie', class()->TOTP_TIME_STEP_FIELD) == $time_step;
+        return 0
+            unless req('user_state')->eq_logged_in;
+        return 1;
+    },
+    inline_case($set_cookie),
+    [{
+        mfa_recovery_code => $recovery_codes->get_element(0),
+    }] => sub {
+        return 0
+            unless req('cookie', class()->MFA_RECOVERY_CODE_FIELD) eq $recovery_codes->get_element(0);
+        return 0
+            unless req('user_state')->eq_logged_in;
+        return 1;
+    },
+    inline_case($set_cookie),
+    error_case({
+        # Can't reuse recovery codes.
+        mfa_recovery_code => $recovery_codes->get_element(0),
+    } => {
+        mfa_recovery_code => 'INVALID_MFA_RECOVERY_CODE',
+    }),
+    [{
+        mfa_recovery_code => $recovery_codes->get_element(1),
+    }] => sub {
+        return 0
+            unless req('cookie', class()->MFA_RECOVERY_CODE_FIELD) eq $recovery_codes->get_element(1);
+        return 0
+            unless req('user_state')->eq_logged_in;
+        return 1;
+    },
+];

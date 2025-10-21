@@ -288,13 +288,24 @@ sub setup_http {
 }
 
 sub set_user_state_and_cookie {
-    my($self, $user_state, $user) = @_;
+    my($self, $user_state, $user, $mfa_pending) = @_;
     $user_state = b_use('Type.UserState')->from_any($user_state);
     $self->put_unless_exists(cookie => b_use('Collection.Attributes')->new);
     my($ulf) = b_use('Model.UserLoginForm')->new($self);
     $ulf->process({login => $user});
-    $ulf->process({login => undef})
-        if $user_state->eq_logged_out;
+    if ($mfa_pending) {
+        return $self;
+    }
+    my($ultf) = b_use('Model.UserLoginTOTPForm')->new($self);
+    if ($user_state->eq_logged_out) {
+        $ulf->process({login => undef});
+        $ultf->process({do_logout => 1});
+    }
+    elsif ($user_state->eq_logged_in) {
+        my($cu) = $ulf->load_cookie_user($self, $self->get('cookie'));
+        $ultf->process({bypass_challenge => 1})
+            if $cu->require_mfa;
+    }
     return $self;
 }
 

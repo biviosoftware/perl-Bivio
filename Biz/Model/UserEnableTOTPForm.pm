@@ -21,6 +21,7 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
+    $self->internal_put_field(bypass_challenge => 1);
     my(@res) = shift->SUPER::execute_ok(@_);
     $self->new_other('UserTOTP')->create(
         $self->get('totp_secret'),
@@ -39,8 +40,8 @@ sub internal_initialize {
                 [qw(RealmOwner.password)],
             ],
             hidden => [
-                [qw(mfa_recovery_code_array StringArray)],
                 [qw(totp_secret Line)],
+                [qw(mfa_recovery_code_array StringArray)],
             ],
         ),
     });

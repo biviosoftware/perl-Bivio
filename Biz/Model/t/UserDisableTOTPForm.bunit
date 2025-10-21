@@ -9,8 +9,10 @@ my($totp_secret);
 my($time_step);
 my($totp_code);
 my($mfa_recovery_codes);
+my($user);
 FormModel({
     setup_request => sub {
+        $user = create_user(random_alpha_string());
         return
             if $no_setup;
         unless ($totp_secret) {
@@ -33,23 +35,12 @@ FormModel({
         return;
     },
 });
-my($is_task) = sub {
-    my($expected_task) = @_;
-    return sub {
-        my($case, $res) = @_;
-        return $res->[0]->{task_id} eq $expected_task ? 1 : 0;
-    };
-};
+req()->initialize_fully('USER_DISABLE_TOTP_FORM');
 [
-    req_state({
-        task => 'USER_DISABLE_TOTP_FORM',
-        realm => 'demo',
-        user => 'demo',
-    }),
-    [] => $is_task->('NOT_FOUND'),
+    [] => MODEL_NOT_FOUND(),
     inline_case(sub {$no_setup = 0}),
     [] => sub {
-        return req(qw(form_model realm_owner name)) eq 'demo';
+        return req(qw(form_model realm_owner name)) eq $user->get('name');
     },
     error_case({} => {
         'RealmOwner.password' => 'NULL',
@@ -62,7 +53,7 @@ my($is_task) = sub {
     error_case({
         'RealmOwner.password' => 'password',
     } => {
-        totp_code => 'INVALID_RECOVERY_OPTIONS',
+        totp_code => 'NULL',
     }),
     error_case({
         'RealmOwner.password' => 'password',
@@ -74,12 +65,12 @@ my($is_task) = sub {
         'RealmOwner.password' => 'password',
         mfa_recovery_code => 'wrong-recovery-code',
     } => {
-        mfa_recovery_code => 'INVALID_RECOVERY_CODE',
+        mfa_recovery_code => 'INVALID_MFA_RECOVERY_CODE',
     }),
     [{
         'RealmOwner.password' => 'wrong-password',
         totp_code => sub {$totp_code},
-    }] => $is_task->('locked_out_task'),
+    }] => sub {req('task_id')->equals_by_name('GENERAL_USER_LOCKED_OUT')},
     [{
         'RealmOwner.password' => 'password',
         totp_code => sub {$totp_code},

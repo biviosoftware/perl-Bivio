@@ -1343,59 +1343,6 @@ sub info_site_admin {
     ];
 }
 
-sub info_totp {
-    return [
-        [qw(
-            USER_ENABLE_TOTP_FORM
-            260
-            USER
-            ADMIN_READ&ADMIN_WRITE
-            Action.MFARecoveryCodeList->execute_preview
-            Model.UserEnableTOTPForm
-            View.UserTOTP->enable_form
-            next=MY_SITE
-        )],
-        [qw(
-            USER_DISABLE_TOTP_FORM
-            261
-            USER
-            ADMIN_READ&ADMIN_WRITE
-            Model.UserDisableTOTPForm
-            View.UserTOTP->disable_form
-            next=MY_SITE
-        )],
-        [qw(
-            USER_MFA_RECOVERY_CODE_DOWNLOAD
-            262
-            USER
-            ADMIN_READ&ADMIN_WRITE
-            Action.MFARecoveryCodeList->execute_download
-        )],
-        [qw(
-            USER_MFA_RECOVERY_CODE_REFILL_LIST
-            263
-            USER
-            ADMIN_READ&ADMIN_WRITE
-            Action.MFARecoveryCodeList->execute_refill
-            Model.MFARecoveryCodeListRefillForm
-            View.UserTOTP->mfa_recovery_code_list
-            password_task=USER_PASSWORD
-            next=MY_SITE
-        )],
-        [qw(
-            USER_LOGIN_TOTP_FORM
-            264
-            GENERAL
-            ANYBODY
-            Model.UserLoginTOTPForm
-            View.UserTOTP->totp_form
-            password_task=USER_PASSWORD
-            refill_task=USER_MFA_RECOVERY_CODE_REFILL_LIST
-            next=MY_SITE
-        )],
-    ];
-}
-
 sub info_task_log {
     return [
         [qw(
@@ -1730,6 +1677,57 @@ sub info_user_auth {
             Action.UserLockedOut->execute_load_owner_email
             View.UserAuth->user_locked_out_mail
             View.UserAuth->user_locked_out
+        )],
+        [qw(
+            USER_MFA_RECOVERY_CODE_DOWNLOAD
+            300
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Action.MFARecoveryCodeList->execute_download
+        )],
+        [qw(
+            USER_MFA_RECOVERY_CODE_REFILL_LIST
+            301
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Action.MFARecoveryCodeList->execute_refill
+            Model.MFARecoveryCodeListRefillForm
+            View.UserTOTP->mfa_recovery_code_list
+            password_task=USER_PASSWORD
+            next=MY_SITE
+        )],
+        # 302-309 free
+        [qw(
+            USER_LOGIN_TOTP_FORM
+            310
+            GENERAL
+            ANYBODY
+            Model.UserLoginTOTPForm
+            View.UserTOTP->totp_form
+            password_task=USER_PASSWORD
+            refill_task=USER_MFA_RECOVERY_CODE_REFILL_LIST
+            next=MY_SITE
+            MODEL_NOT_FOUND=LOGIN
+            FORBIDDEN=LOGIN
+        )],
+        [qw(
+            USER_ENABLE_TOTP_FORM
+            311
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Action.MFARecoveryCodeList->execute_preview
+            Model.UserEnableTOTPForm
+            View.UserTOTP->enable_form
+            next=MY_SITE
+        )],
+        [qw(
+            USER_DISABLE_TOTP_FORM
+            312
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.UserDisableTOTPForm
+            View.UserTOTP->disable_form
+            next=MY_SITE
         )],
     ];
 }

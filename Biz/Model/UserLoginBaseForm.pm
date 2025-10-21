@@ -7,6 +7,8 @@ my($_A) = b_use('Action.Acknowledgement');
 my($_DT) = b_use('Type.DateTime');
 my($_LAS) = b_use('Type.LoginAttemptState');
 my($_R) = b_use('Biz.Random');
+my($_TSC) = b_use('Type.SecretCode');
+my($_USC) = b_use('Model.UserSecretCode');
 
 sub PASSWORD_FIELD {
     return 'p';
@@ -34,13 +36,20 @@ sub execute_ok {
     return @res
         unless ($self->unsafe_get('realm_owner') && $self->unsafe_get('validate_called'))
         || $self->unsafe_get('require_mfa');
-    return $self->get('realm_owner')->require_mfa ? {
-        method => 'server_redirect',
-        # Only TOTP supported at this time; may support other methods later.
-        task_id => 'totp_task',
-        # TODO: need this?
-        no_context => 1,
-    } : @res;
+    if ($self->get('realm_owner')->require_mfa) {
+        $self->new_other('UserSecretCode')->create({
+            $_USC->REALM_ID_FIELD => $self->get_nested(qw(realm_owner realm_id)),
+            type => $_TSC->LOGIN_MFA_CHALLENGE,
+        });
+        return {
+            method => 'server_redirect',
+            # Only TOTP supported at this time; may support other MFA methods later.
+            task_id => 'totp_task',
+            # TODO: need this?
+            no_context => 1,
+        };
+    }
+    return @res;
 }
 
 sub internal_initialize {
@@ -166,6 +175,7 @@ sub _maybe_lock_out {
         b_warn('locked out owner=', $owner);
         $owner->update_password($_R->password);
         $owner->req->server_redirect('GENERAL_USER_LOCKED_OUT');
+        # DOES NOT RETURN
     }
     return $attempt;
 }

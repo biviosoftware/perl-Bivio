@@ -5,26 +5,23 @@ use Bivio::Base 'Type.SecretLine';
 
 my($_F) = b_use('IO.File');
 my($_MCA) = b_use('Type.MnemonicCodeArray');
+my($_TE) = b_use('Bivio.TypeError');
 
 my($_WORDS);
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
-    # TODO: probably don't want this long-term
-    is_enabled => 0,
-    word_list => undef,
-    word_sample_size => 6,
+    word_list => [qw(foo bar baz qux)],
+    word_sample_size => 3,
     word_separator => '-',
 });
 
 sub from_literal {
-    my($proto, $value) = @_;
+    my(undef, $value) = @_;
     return _canonicalize($value);
 }
 
 sub generate_code {
     my($proto) = @_;
-    b_die('recovery codes not enabled')
-        unless $_CFG->{is_enabled};
     my($w) = {};
     for (1..$_CFG->{word_sample_size}) {
         my($i) = int(rand(int(@$_WORDS)));
@@ -55,17 +52,21 @@ sub get_word_separator {
 sub handle_config {
     my($proto, $cfg) = @_;
     $_CFG = $cfg;
-    return
-        unless $_CFG->{is_enabled};
     if ($_CFG->{word_list} && -f $_CFG->{word_list}) {
         _init_word_list($proto, $_CFG->{word_list});
+    }
+    elsif ($_C->is_test && ref($_CFG->{word_list}) eq 'ARRAY') {
+        @$_WORDS = @{$_CFG->{word_list}};
+    }
+    else {
+        b_die('word_list required');
+        # DOES NOT RETURN
     }
     b_die('invalid word_list')
         unless int(@$_WORDS) >= ($_C->is_test ? 3 : 1000);
     b_die('invalid word_sample_size')
-        unless $_CFG->{word_sample_size} >= ($_C->is_test ? 2 : 5);
-    b_die('sanity error')
-        unless int(@$_WORDS) > $_CFG->{word_sample_size};
+        unless $_CFG->{word_sample_size} >= ($_C->is_test ? 2 : 5)
+        && int(@$_WORDS) > $_CFG->{word_sample_size};
     return;
 }
 
@@ -77,7 +78,12 @@ sub _canonicalize {
     my($value) = @_;
     $value = lc($value);
     $value =~ s/^\s+|\s+$//g;
-    $value = join($_CFG->{word_separator}, split(/[^a-z]+/, $value));
+    return (undef, $_TE->SYNTAX_ERROR)
+        unless $value =~ qr{^[a-z\s.,_/\\|-]+$};
+    my(@words) = split(/[^a-z]+/, $value);
+    return (undef, $_TE->TOO_FEW)
+        unless int(@words) >= 2;
+    $value = join($_CFG->{word_separator}, @words);
     return $value;
 }
 

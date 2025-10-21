@@ -21,7 +21,13 @@ sub create {
     b_die('type required')
         unless $values->{type};
     $values->{code} ||= $values->{type}->generate_code_for_type;
-    if ($values->{type}->equals_by_name(qw(password_query password_mfa_challenge password_reset))) {
+    if ($values->{type}->equals_by_name(qw(
+        login_mfa_challenge
+        password_query
+        password_query_mfa_challenge
+        password_reset
+    ))) {
+        # Note this means that users can only have an mfa challenge in progress on one device at a time.
         $self->new_other('UserSecretCode')->delete_all({type => $values->{type}});
     }
     return $self->SUPER::create({
@@ -78,8 +84,9 @@ sub set_used {
     my($self) = @_;
     b_die('unexpected type')
         unless $self->get('type')->equals_by_name(qw(
+            login_mfa_challenge
             password_query
-            password_mfa_challenge
+            password_query_mfa_challenge
             password_reset
         ));
     return $self->update({status => $_S->USED});
@@ -101,7 +108,7 @@ sub _find {
     $self->do_iterate(sub {
         my($it) = @_;
         return 1
-            unless $it->get('code') eq $it->get('type')->from_literal_for_type($code);
+            unless $it->get('code') eq $code;
         return 1
             if $it->is_expired;
         $found = 1;

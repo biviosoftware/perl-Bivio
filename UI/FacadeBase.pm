@@ -1780,78 +1780,6 @@ sub _cfg_task_log {
     };
 }
 
-sub _cfg_totp {
-    return {
-        Task => [
-            [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
-            [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
-            [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
-            [USER_MFA_RECOVERY_CODE_REFILL_LIST => '?/refill-recovery-codes'],
-            [USER_MFA_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
-        ],
-        Text => [
-            [[qw(UserLoginTOTPForm UserEnableTOTPForm UserDisableTOTPForm UserPasswordForm)] => [
-                totp_code => 'Authenticator Code',
-                'totp_code.desc' => 'Current ' . b_use('Model.UserTOTP')->get_default_digits . ' digit code found in authenticator application',
-            ]],
-            [[qw(UserLoginTOTPForm UserPasswordForm UserDisableTOTPForm)] => [
-                mfa_recovery_code => 'Authenticator Recovery Code',
-                'mfa_recovery_code.desc' => 'Used recovery codes will no longer be available',
-            ]],
-            [UserLoginTOTPForm => [
-                disable_mfa => 'Disable two-factor authentication',
-                'disable_mfa.desc' => 'Check this box if you have permanently lost access to your authenticator',
-            ]],
-            [UserEnableTOTPForm => [
-                'RealmOwner.password' => 'Password',
-                prose => [
-                    # "Hardware keys without the ability to sync clock are not recommended"?
-                    prologue => <<'EOF',
-Join([
-    'bivio gives users the option to set up two-factor authentication via well-known authenticator apps such as Google Authenticator or Duo Mobile.',
-    BR(), BR(),
-    'To set up two-factor authentication, complete the following steps:',
-    BR(), BR(),
-    OL(Join([
-        LI(Join([
-            'Scan the QR code below with your chosen authenticator app.',
-            TOTPQRCode(),
-        ])),
-        LI(MFARecoveryCodeList()),
-        LI('Enter the generated 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
-        LI('Enter your account password.'),
-    ])),
-    BR(), BR(),
-]);
-EOF
-                ],
-            ]],
-            [UserDisableTOTPForm => [
-                'RealmOwner.password' => 'Password',
-                prose => [
-                    prologue => <<'EOF',
-To disable two-factor authentication, you must enter an authentator code and your password. If you don't have access to your authenticator, you must enter a recovery code.
-EOF
-                ],
-            ]],
-            [MFARecoveryCodeListRefillForm => [
-                'ok_button' => 'Continue',
-            ]],
-            [title => [
-                USER_LOGIN_TOTP_FORM => 'Two-Factor Authentication',
-                USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
-                USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
-                USER_MFA_RECOVERY_CODE_REFILL_LIST => 'New Authenticator Recovery Codes',
-            ]],
-            [acknowledgement => [
-                USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',
-                USER_DISABLE_TOTP_FORM => 'Two-factor authentication has been disabled successfully',
-                mfa_recovery_code_used => 'Authenticator recovery code accepted and removed from available list',
-            ]],
-        ],
-    };
-}
-
 sub _cfg_tuple {
     return {
          FormError => [
@@ -2068,6 +1996,11 @@ sub _cfg_user_auth {
             [USER_EMAIL_VERIFY => '?/verify-email'],
             [USER_EMAIL_VERIFY_FORCE_FORM => undef],
             [USER_EMAIL_VERIFY_SENT => undef],
+            [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
+            [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
+            [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
+            [USER_MFA_RECOVERY_CODE_REFILL_LIST => '?/refill-recovery-codes'],
+            [USER_MFA_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
         ],
         Text => [
             [[qw(UserLoginForm ContextlessUserLoginForm)] => [
@@ -2121,7 +2054,9 @@ sub _cfg_user_auth {
                 GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to update your password.},
                 USER_PASSWORD_RESET => q{Your may now update your password.},
                 USER_PASSWORD => q{Your password has been changed.},
-                password_nak => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to submit the forgot password form again.},
+                [qw(password_nak password_query_mfa_challenge_nak)] => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to submit the forgot password form again.},
+                login_mfa_challenge_nak => q{We're sorry, but the login attempt is no longer valid. Please try again.},
+                login_challenge_state_nak => q{We're sorry, but the login attempt is not valid. Please try again.},
                 USER_FORUM_TREE => q{Your subscriptions have been updated.},
                 # TODO: is this used?
                 user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},
@@ -2291,7 +2226,64 @@ Join([
 EOF
                 ],
             ]],
-
+            [[qw(UserLoginTOTPForm UserEnableTOTPForm UserDisableTOTPForm UserPasswordForm)] => [
+                totp_code => 'Authenticator Code',
+                'totp_code.desc' => 'Current ' . b_use('Model.UserTOTP')->get_default_digits . ' digit code found in authenticator application',
+            ]],
+            [[qw(UserLoginTOTPForm UserPasswordForm UserDisableTOTPForm)] => [
+                mfa_recovery_code => 'Authenticator Recovery Code',
+                'mfa_recovery_code.desc' => 'Used recovery codes will no longer be available',
+            ]],
+            [UserLoginTOTPForm => [
+                disable_mfa => 'Disable two-factor authentication',
+                'disable_mfa.desc' => 'Check this box if you have permanently lost access to your authenticator',
+            ]],
+            [UserEnableTOTPForm => [
+                'RealmOwner.password' => 'Password',
+                prose => [
+                    # "Hardware keys without the ability to sync clock are not recommended"?
+                    prologue => <<'EOF',
+Join([
+    'bivio gives users the option to set up two-factor authentication via well-known authenticator apps such as Google Authenticator or Duo Mobile.',
+    BR(), BR(),
+    'To set up two-factor authentication, complete the following steps:',
+    BR(), BR(),
+    OL(Join([
+        LI(Join([
+            'Scan the QR code below with your chosen authenticator app.',
+            TOTPQRCode(),
+        ])),
+        LI(MFARecoveryCodeList()),
+        LI('Enter the generated 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
+        LI('Enter your account password.'),
+    ])),
+    BR(), BR(),
+]);
+EOF
+                ],
+            ]],
+            [UserDisableTOTPForm => [
+                'RealmOwner.password' => 'Password',
+                prose => [
+                    prologue => <<'EOF',
+To disable two-factor authentication, you must enter an authentator code and your password. If you don't have access to your authenticator, you must enter a recovery code.
+EOF
+                ],
+            ]],
+            [MFARecoveryCodeListRefillForm => [
+                'ok_button' => 'Continue',
+            ]],
+            [title => [
+                USER_LOGIN_TOTP_FORM => 'Two-Factor Authentication',
+                USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
+                USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
+                USER_MFA_RECOVERY_CODE_REFILL_LIST => 'New Authenticator Recovery Codes',
+            ]],
+            [acknowledgement => [
+                USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',
+                USER_DISABLE_TOTP_FORM => 'Two-factor authentication has been disabled successfully',
+                mfa_recovery_code_used => 'Authenticator recovery code accepted and removed from available list',
+            ]],
         ],
     };
 }

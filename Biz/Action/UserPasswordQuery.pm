@@ -15,12 +15,16 @@ sub execute {
     my($u) = $req->get_nested(qw(auth_realm owner));
     my($res);
     my($die) = Bivio::Die->catch(sub {
+        my($err);
+        ($query_key, $err) = $_TSC->PASSWORD_QUERY->from_literal_for_type($query_key);
+        b_die('invalid query key')
+            if $err;
         my($pqsc) = $_USC->new($req)->unauth_load_by_code_and_type(
             $u->get('realm_id'), $query_key, $_TSC->PASSWORD_QUERY);
         b_die('invalid or expired')
             unless $pqsc;
         $pqsc->set_used;
-        my($tsc) = $u->require_mfa ? $_TSC->PASSWORD_MFA_CHALLENGE : $_TSC->PASSWORD_RESET;
+        my($tsc) = $u->require_mfa ? $_TSC->PASSWORD_QUERY_MFA_CHALLENGE : $_TSC->PASSWORD_RESET;
         my($usc) = $_USC->new($req)->create({
             $_USC->REALM_ID_FIELD => $u->get('realm_id'),
             type => $tsc,

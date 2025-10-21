@@ -21,8 +21,10 @@ sub execute_ok {
     });
     $self->get('password_reset_code_model')->set_used
         if $self->unsafe_get('password_reset_code_model');
-    return $self->get('totp_form')->process($self->req)
-        if $self->unsafe_get('require_mfa');
+    if ($self->unsafe_get('require_mfa')) {
+        $self->get('totp_form')->bypass_challenge;
+        return $self->get('totp_form')->process($self->req);
+    }
     return;
 }
 
@@ -109,7 +111,7 @@ sub validate {
     return
         if $self->in_error;
     if ($self->get('require_mfa')) {
-        # Only TOTP supported at this time; may support other methods later.
+        # Only TOTP supported at this time; may support other MFA methods later.
         my($ultf) = $self->new_other('UserLoginTOTPForm');
         my($totp_fields) = [qw(realm_owner totp_code mfa_recovery_code)];
         $ultf->validate(map($self->get($_) // '', @$totp_fields));

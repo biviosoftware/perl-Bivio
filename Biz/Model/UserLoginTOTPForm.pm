@@ -25,13 +25,37 @@ sub MFA_RECOVERY_CODE_FIELD {
     return 'rc';
 }
 
+sub bypass_challenge {
+    shift->internal_put_field(bypass_challenge => 1);
+    return;
+}
+
+sub delete_cookie {
+    my($proto, $cookie) = @_;
+    $cookie->delete(
+        $proto->TOTP_CODE_FIELD,
+        $proto->TOTP_TIME_STEP_FIELD,
+        $proto->MFA_RECOVERY_CODE_FIELD,
+    );
+    return;
+}
+
 sub execute_ok {
     my($self) = @_;
-    my($cookie) = _set_cookie_totp($self, $self->get('realm_owner'));
+    my($cookie) = _set_cookie_totp($self);
     # TODO: not sure if this works with substitute user logout, but user has to be set to use refill task. Should that be a task, or just do it here?
     $_ULF->set_user($self->get('realm_owner'), $cookie, $self->req);
+    return
+        unless $self->get('realm_owner');
     my($next);
-    if (my $pmccm = $self->unsafe_get('password_mfa_challenge_code_model')) {
+    if (my $lmccm = $self->unsafe_get('login_mfa_challenge_code_model')) {
+        $lmccm->set_used;
+    }
+    else {
+        b_die('FORBIDDEN')
+            unless $self->unsafe_get('bypass_challenge');
+    }
+    if (my $pmccm = $self->unsafe_get('password_query_mfa_challenge_code_model')) {
         $pmccm->set_used;
         $_UPQ->new({
             password_reset_code => $self->new_other('UserSecretCode')->create({
@@ -65,7 +89,7 @@ sub internal_disable_mfa {
         })->delete;
         return 1;
     });
-    _delete_cookie($self, $self->req('cookie'));
+    $self->delete_cookie($self->req('cookie'));
     return;
 }
 
@@ -80,13 +104,17 @@ sub internal_initialize {
                 [qw(disable_mfa Boolean)],
             ],
             hidden => [
-                [qw(password_mfa_challenge_code SecretLine)],
+                [qw(login_mfa_challenge_code SecretLine)],
+                [qw(password_query_mfa_challenge_code SecretLine)],
             ],
             other => [
                 [qw(realm_owner Model.RealmOwner)],
                 [qw(totp_time_step Integer)],
                 [qw(mfa_recovery_code_model Model.UserSecretCode)],
-                [qw(password_mfa_challenge_code_model Model.UserSecretCode)],
+                [qw(login_mfa_challenge_code_model Model.UserSecretCode)],
+                [qw(password_query_mfa_challenge_code_model Model.UserSecretCode)],
+                [qw(do_logout Boolean)],
+                [qw(bypass_challenge Boolean)],
             ],
         ),
     });
@@ -105,29 +133,35 @@ sub internal_pre_execute {
     my($self) = @_;
     return
         unless $self->ureq('cookie');
+    if ($self->unsafe_get('do_logout')) {
+        $self->internal_put_field(realm_owner => undef);
+        return;
+    }
     $self->internal_put_field(
         realm_owner => $_ULF->load_cookie_user($self->req, $self->req('cookie')));
-    return
-        unless $self->get('realm_owner');
-    b_die('USER_LOCKED_OUT')
-        if $self->get('realm_owner')->is_locked_out;
+    b_die('FORBIDDEN')
+        unless $self->get('realm_owner') && $self->get('realm_owner')->require_mfa;
     $self->internal_load_models;
-    unless ($self->unsafe_get('password_mfa_challenge_code')) {
-        $self->internal_put_field(
-            password_mfa_challenge_code => $self->ureq(qw(Action.UserPasswordQuery password_mfa_challenge_code)),
-        );
-    }
-    if ($self->get('password_mfa_challenge_code')) {
-        if (my $sc = $self->new_other('UserSecretCode')->unauth_load_by_code_and_type(
-            $self->get_nested(qw(realm_owner realm_id)),
-            $self->get('password_mfa_challenge_code'),
-            $_TSC->PASSWORD_MFA_CHALLENGE,
-        )) {
-            $self->internal_put_field(password_mfa_challenge_code_model => $sc);
-            return;
-        }
-        $_A->save_label(password_nak => $self->req);
-        b_die('NOT_FOUND');
+    return
+        if $self->unsafe_get('bypass_challenge');
+    _load_challenge(
+        $self,
+        $_TSC->LOGIN_MFA_CHALLENGE,
+        'login_mfa_challenge_code',
+        $self->ureq(qw(Model.UserSecretCode code)),
+        'login_mfa_challenge_nak',
+    );
+    _load_challenge(
+        $self,
+        $_TSC->PASSWORD_QUERY_MFA_CHALLENGE,
+        'password_query_mfa_challenge_code',
+        $self->ureq(qw(Action.UserPasswordQuery password_query_mfa_challenge_code)),
+        'password_query_mfa_challenge_nak',
+    );
+    unless ($self->unsafe_get('login_mfa_challenge_code_model')) {
+        $_A->save_label(login_challenge_state_nak => $self->req);
+        b_die('FORBIDDEN');
+        # DOES NOT RETURN
     }
     return;
 }
@@ -167,21 +201,32 @@ sub validate {
     return;
 }
 
-sub _delete_cookie {
-    my($self, $cookie) = @_;
-    $cookie->delete(
-        $self->TOTP_CODE_FIELD,
-        $self->TOTP_TIME_STEP_FIELD,
-        $self->MFA_RECOVERY_CODE_FIELD,
-    );
+sub _load_challenge {
+    my($self, $type, $field, $value, $nak) = @_;
+    unless ($self->unsafe_get($field)) {
+        $self->internal_put_field($field => $value);
+    }
+    if ($self->get($field)) {
+        if (my $sc = $self->new_other('UserSecretCode')->unauth_load_by_code_and_type(
+            $self->get_nested(qw(realm_owner realm_id)),
+            $self->get($field),
+            $type,
+        )) {
+            $self->internal_put_field($field . '_model' => $sc);
+            return;
+        }
+        $_A->save_label($nak => $self->req);
+        b_die('MODEL_NOT_FOUND');
+    }
     return;
 }
 
 sub _set_cookie_totp {
-    my($self, $values) = @_;
+    my($self) = @_;
     my($cookie) = $self->ureq('cookie');
     return undef
         unless $cookie;
+    $self->delete_cookie($cookie);
     if ($self->get('realm_owner')) {
         $_C->assert_is_ok($self->req);
         if ($self->unsafe_get('totp_code')) {
@@ -195,7 +240,7 @@ sub _set_cookie_totp {
             $cookie->put($self->MFA_RECOVERY_CODE_FIELD => $self->get('mfa_recovery_code'));
             return $cookie;
         }
-        if ($self->req->is_substitute_user) {
+        if ($self->req->is_substitute_user || $self->unsafe_get('bypass_challenge')) {
             my($totp) = _totp_model($self);
             my($ts) = $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $totp->get('period'));
             $cookie->put(
@@ -208,7 +253,6 @@ sub _set_cookie_totp {
         b_die('set cookie totp with no codes');
         # DOES NOT RETURN
     }
-    _delete_cookie($self, $cookie);
     return $cookie;
 }
 
@@ -234,17 +278,21 @@ sub _validate_totp {
         return;
     }
     if ($self->get('mfa_recovery_code')) {
-        if (my $sc = $self->new_other('UserSecretCode')->unauth_load_by_code_and_type(
-            $self->get_nested(qw(realm_owner realm_id)),
-            $self->get('mfa_recovery_code'),
-            $_TSC->MFA_RECOVERY,
-        )) {
+        my($v, $e) = $_TSC->MFA_RECOVERY->from_literal_for_type($self->get('mfa_recovery_code'));
+        if ($v && (my $sc = $self->new_other('UserSecretCode')->unauth_load_by_code_and_type(
+            $self->get_nested(qw(realm_owner realm_id)), $v, $_TSC->MFA_RECOVERY,
+        ))) {
             $self->internal_put_field(mfa_recovery_code_model => $sc);
             return;
         }
+        elsif ($e) {
+            $self->internal_put_error(mfa_recovery_code => $e);
+        }
+        else {
+            $self->internal_put_error(mfa_recovery_code => 'INVALID_MFA_RECOVERY_CODE');
+        }
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
-        $self->internal_put_error(mfa_recovery_code => 'INVALID_MFA_RECOVERY_CODE');
         return;
     }
     $self->internal_put_error(totp_code => 'NULL');

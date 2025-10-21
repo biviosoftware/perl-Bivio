@@ -8,7 +8,16 @@ config({
 [
     from_literal => [
         [' foo.bar.baz  '] => 'foo_bar_baz',
+        ['ELMO Bert ERNIE grover'] => 'elmo_bert_ernie_grover',
         ['elmo bert ernie grover'] => 'elmo_bert_ernie_grover',
+        ["elmo\tbert\ternie\tgrover"] => 'elmo_bert_ernie_grover',
+        ['elmo_bert_ernie_grover'] => 'elmo_bert_ernie_grover',
+        ['elmo|bert|ernie|grover'] => 'elmo_bert_ernie_grover',
+        ['elmo/bert/ernie/grover'] => 'elmo_bert_ernie_grover',
+        ['elmo\bert\ernie\grover'] => 'elmo_bert_ernie_grover',
+        ['elmo,bert,ernie,grover'] => 'elmo_bert_ernie_grover',
+        ['foo'] => TOO_FEW(),
+        ['foo1bar'] => SYNTAX_ERROR(),
     ],
     get_word_separator => [
         [] => '_',

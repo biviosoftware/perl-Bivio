@@ -83,11 +83,10 @@ sub su_logout {
         if $req->unsafe_get('cookie');
     my($realm) = $self->new_other('RealmOwner');
     $realm->unauth_load({realm_id => $su});
-    foreach my $form ('UserLoginForm', $realm->is_loaded && $realm->require_mfa ? 'UserLoginTOTPForm' : ()) {
-        $self->new_other($form)->process({
-            realm_owner => $realm->is_loaded ? $realm : undef,
-        });
-    }
+    _do_form($self, 'UserLoginTOTPForm', {do_logout => 1});
+    _do_form($self, 'UserLoginForm', {realm_owner => $realm->is_loaded ? $realm : undef});
+    _do_form($self, 'UserLoginTOTPForm', {realm_owner => $realm, bypass_challenge => 1})
+        if $realm->is_loaded && $realm->require_mfa;
     _trace($realm) if $_TRACE;
     return $realm->is_loaded && $req->unsafe_get('task')
         ? $req->get('task')->unsafe_get_attr_as_id('su_task') || $_DEFAULT_TASK
@@ -102,4 +101,9 @@ sub validate {
     return;
 }
 
+sub _do_form {
+    my($self, $form, $values) = @_;
+    $self->new_other($form)->process($values);
+    return;
+}
 1;

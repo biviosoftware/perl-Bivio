@@ -5,7 +5,7 @@ config({
     },
 });
 FormModel();
-req()->set_realm_and_user(qw(demo demo));
+my($create_user) = sub {create_user(random_alpha_string())};
 req()->initialize_fully('USER_ENABLE_TOTP_FORM');
 Action_MFARecoveryCodeList()->execute_preview(req());
 my($totp_secret);
@@ -13,24 +13,26 @@ my($mfa_recovery_codes);
 my($time_step);
 my($v) = {
     'RealmOwner.password' => 'password',
-    mfa_recovery_codes => sub {$mfa_recovery_codes},
+    mfa_recovery_code_array => sub {$mfa_recovery_codes},
     totp_secret => sub {$totp_secret},
 };
 my($is_task) = sub {
     my($expected_task) = @_;
     return sub {
         my($case, $res) = @_;
-        return $res->[0]->{task_id} eq $expected_task ? 1 : 0;
+        return ref($res->[0]) eq 'HASH' ? $res->[0]->{task_id} eq $expected_task ? 1 : 0
+            : req('task_id')->equals_by_name($expected_task) ? 1 : 0;
     };
 };
 [
+    inline_case($create_user),
     empty_case({
         totp_secret => qr/^[a-zA-Z0-9]+$/,
     }),
     inline_case(sub {
         $totp_secret = req(qw(form_model totp_secret));
-        $mfa_recovery_codes = req(qw(form_model mfa_recovery_codes));
-        b_die('unexpected mfa_recovery_codes count')
+        $mfa_recovery_codes = req(qw(form_model mfa_recovery_code_array));
+        b_die('unexpected mfa_recovery_code_array count')
             unless $mfa_recovery_codes->as_length == Model_MFARecoveryCodeList()->get_new_code_count;
         $mfa_recovery_codes->do_iterate(sub {
             my($it) = @_;
@@ -46,12 +48,13 @@ my($is_task) = sub {
     } => {
         totp_code => 'INVALID_TOTP_CODE',
     }),
+    inline_case($create_user),
     [{
         %$v,
         totp_code => 123456,
         'RealmOwner.password' => 'wrong-password',
-    }] => $is_task->('locked_out_task'),
-    inline_case(sub {rollback()}),
+    }] => $is_task->('GENERAL_USER_LOCKED_OUT'),
+    inline_case($create_user),
     [{
         %$v,
         totp_code => sub {

@@ -131,6 +131,7 @@ sub load_cookie_user {
         $proto->USER_FIELD,
         $proto->PASSWORD_FIELD,
     );
+    $_ULTF->delete_cookie($cookie);
     return undef;
 }
 
@@ -178,7 +179,11 @@ sub substitute_user {
     foreach my $form ($self, $new_user->require_mfa ? $self->new_other('UserLoginTOTPForm') : ()) {
         $form->process({
             realm_owner => $new_user,
-            disable_assert_cookie => _disable_assert_cookie($self),
+            ref($form) eq $_ULTF ? (
+                bypass_challenge => 1,
+            ) : (
+                disable_assert_cookie => _disable_assert_cookie($self),
+            ),
         });
     }
     return;
