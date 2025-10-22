@@ -2249,7 +2249,7 @@ Join([
     OL(Join([
         LI(Join([
             'Scan the QR code below with your chosen authenticator app.',
-            TOTPQRCode(),
+            TOTPQRCode(String([qw(->req form_model totp_secret)])),
         ])),
         LI(MFARecoveryCodeList()),
         LI('Enter the generated 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),

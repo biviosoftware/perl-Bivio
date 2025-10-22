@@ -1435,8 +1435,17 @@ table.task_log .super_user {
 EOF
 }
 
-sub _site_totp {
+sub _site_user_auth {
     return <<'EOF';
+div.user_state {
+  vertical-align: top;
+  text-align: right;
+  display: inline;
+  white-space: nowrap;
+}
+div.user_state a {
+  Font('user_state');
+}
 img.totp_qr_code {
   margin: auto;
   display: block;
@@ -1468,20 +1477,6 @@ tr.b_mfa_recovery_prologue,
 tr.b_mfa_recovery_code,
 tr.b_disable_mfa {
   display: none;
-}
-EOF
-}
-
-sub _site_user_auth {
-    return <<'EOF';
-div.user_state {
-  vertical-align: top;
-  text-align: right;
-  display: inline;
-  white-space: nowrap;
-}
-div.user_state a {
-  Font('user_state');
 }
 EOF
 }

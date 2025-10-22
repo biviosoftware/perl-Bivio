@@ -8,7 +8,7 @@ my($_MC) = b_use('Type.MnemonicCode');
 my($_R) = b_use('Biz.Random');
 my($_TE) = b_use('Bivio.TypeError');
 
-my($_CHARS) = [0..9, 'a'..'z', 'A'..'Z'];
+my($_CHARS) = ['a'..'z', 'A'..'Z', '0'..'9'];
 my($_WIDTH) = 64;
 
 my($_C) = b_use('IO.Config');

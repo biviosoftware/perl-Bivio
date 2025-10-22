@@ -1,0 +1,43 @@
+# Copyright (c) 2025 bivio Software, Inc. All Rights Reserved.
+Widget();
+req()->set_realm_and_user(qw(demo demo));
+Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
+    mfa_recovery_code_array => Type_MnemonicCodeArray()->new([qw(foo-bar-baz baz-bar-foo bar-foo-baz)]),
+);
+[
+    [] => q{Save the following codes in a secure place. This list will only be shown to you once.<br /><br />These are your authenticator recovery codes. If you don't have access to your authenticator app you will need to enter one of these codes to gain access to your account.<br /><br />For example, click the "copy" link to the right and then paste into your password manager entry for this site, or click the "download" link and then move the downloaded file to a secure place in your personal documents.<br /><br /><table class="b_mfa_recovery_code_list"><tr>
+<td><table class="b_mfa_recovery_codes"><tr>
+<td>foo-bar-baz</td>
+</tr><tr>
+<td>baz-bar-foo</td>
+</tr><tr>
+<td>bar-foo-baz</td>
+</tr></table></td>
+<td><table class="b_mfa_recovery_code_options"><tr class="b_mfa_recovery_code_copy_link">
+<td><a id="copy_codes_link" href="#">copy</a></td>
+</tr><tr>
+<td><a id="download_codes_link" href="/demo/download-recovery-codes?mfa_recovery_codes=foo-bar-baz%2Cbaz-bar-foo%2Cbar-foo-baz">download</a></td>
+</tr></table></td>
+</tr></table><br /><script type="text/javascript">(() => {
+    const l = document.getElementById("copy_codes_link");
+    const c = document.getElementsByClassName("b_mfa_recovery_code_copy_link")[0];
+    if (l) {
+        if (navigator.clipboard) {
+            l.addEventListener("click", (event) => {
+                navigator.clipboard.writeText(
+"foo-bar-baz\\\nbaz-bar-foo\\\nbar-foo-baz");
+            })
+        }
+        else {
+            console.log("clipboard not available");
+            if (c) {
+                c.style.display = "none";
+            }
+        }
+    }
+    else {
+        console.log("copy codes link not found");
+    }
+})();
+</script>},
+];

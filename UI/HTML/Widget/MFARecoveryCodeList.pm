@@ -27,6 +27,7 @@ sub initialize {
                     Grid([[
                         Link('copy', '#', {
                             ID => 'copy_codes_link',
+                            row_class => 'b_mfa_recovery_code_copy_link',
                         }),
                     ], [
                         Link('download', [sub {$_A->format_uri_for_download(shift(@_))}], {
@@ -40,6 +41,7 @@ sub initialize {
                 <<'EOF',
 (() => {
     const l = document.getElementById("copy_codes_link");
+    const c = document.getElementsByClassName("b_mfa_recovery_code_copy_link")[0];
     if (l) {
         if (navigator.clipboard) {
             l.addEventListener("click", (event) => {
@@ -52,7 +54,9 @@ EOF
         }
         else {
             console.log("clipboard not available");
-            //l.style.display = "none";
+            if (c) {
+                c.style.display = "none";
+            }
         }
     }
     else {

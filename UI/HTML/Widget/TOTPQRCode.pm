@@ -14,13 +14,12 @@ sub initialize {
     return shift->put_unless_exists(values => [
         QRCode([sub {
             my($source) = @_;
-            my($secret) = $source->req(qw(form_model totp_secret));
             return join('', (
                 'otpauth://totp/',
                 $source->req(qw(auth_user name)),
                 '?',
                 join('&', map(join('=', @$_), (
-                    ['secret', MIME::Base32::encode_rfc3548($secret)],
+                    ['secret', _encoded_secret($self, $source)],
                     ['algorithm', $_UT->get_default_algorithm->get_name],
                     ['digits', $_UT->get_default_digits],
                     ['period', $_UT->get_default_period],
@@ -32,7 +31,7 @@ sub initialize {
             Link($_SHOW_KEY, '#', {ID => 'totp_setup_key_toggle'}),
             SPAN(String([sub {
                 my($source) = @_;
-                my($secret) = MIME::Base32::encode_rfc3548($source->req(qw(form_model totp_secret)));
+                my($secret) = _encoded_secret($self, $source);
                 my(@parts);
                 my($i) = 0;
                 while (length($secret)) {
@@ -59,6 +58,21 @@ sub initialize {
 EOF
         ])),
     ])->SUPER::initialize(@_);
+}
+
+sub internal_new_args {
+    my(undef, $totp_secret) = @_;
+    return '"totp_secret" attribute required'
+        unless $totp_secret;
+    return {
+        totp_secret => $totp_secret,
+    };
+}
+
+sub _encoded_secret {
+    my($self, $source) = @_;
+    return MIME::Base32::encode_rfc3548(
+        $self->render_simple_attr('totp_secret', $source) || b_die('no secret'));
 }
 
 1;

@@ -65,13 +65,13 @@ sub execute_download {
 }
 
 sub format_uri_for_download {
-    my($proto) = @_;
-    return $proto->req->format_uri({
+    my($proto, $source) = @_;
+    return $source->req->format_uri({
         task_id => 'USER_MFA_RECOVERY_CODE_DOWNLOAD',
-        realm => $proto->req(qw(auth_user name)),
+        realm => $source->req(qw(auth_user name)),
         query => {
             $proto->CODE_QUERY_KEY => join(
-                $proto->CODE_QUERY_SEPARATOR, $proto->req($proto, 'mfa_recovery_code_array')->as_list),
+                $proto->CODE_QUERY_SEPARATOR, $source->req($proto, 'mfa_recovery_code_array')->as_list),
         },
     });
 }

@@ -1,0 +1,26 @@
+# Copyright (c) 2025 bivio Software, Inc. All Rights Reserved.
+Widget();
+req()->set_realm_and_user(qw(demo demo));
+[
+    ['0wdJM8lg2nw8sN2uPkvY'] => '<img class="totp_qr_code" alt="none" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoAQMAAABAK/OWAAAABlBMVEUAAAD///+l2Z/dAAAAAnRS
+TlP//8i138cAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAG6SURBVHic7dXBcsJADANQ/f9Pu1NWsp12
+YFqiAwdtmTTsPnOIsEH9ZyE6Ojo6+pM0zuLG4wbfu/XYXKfRHi13LC/0fRrt01i7YDKj+zTaqgFZ
+UP74rGirPi8i/n+RZfTbWjX89h/E9Xv6RN/U/P188vfktzj6Xd2rS8C0gAuItmhmA6JCb0x9tFmj
+80AnpZgq2qmLYdRF9l33R7RJ8+0U1QkG6yjaps9wAfS9n3CK0SDaqPXw10HP+b5G+zQ0eShLKSme
+S+9E39SYmi5C9SvartEl7IhaqbEg2qZ56eEzE2dnE+3SBLxhjY64EW3TnYKKzkV4vY12aCgA7Jbo
+BqnJKtqh59l3FJw4vY+KtmnGAn77mRdrGBuinbrPdD17WpNT9H1dEwOjAgdSsXSnE31X654HZxfq
+jO6OaJeeVuhAuke6NNqnVcAkAKgpdi7RLq1sqiatcwusk2iL1gLP2AgziBpEO7SUmqGmgsnVnj7R
+d/Xl0a+kqtO59E70XX2yURy617yfj4i26tUTmvNnCOHSDdFOffIpVc4l2qanpqqHzumIPo22aagP
+QMKUqroo2qf/vKKjo6OjP0V/AVRLMRB03kV9AAAAAElFTkSuQmCC
+" /><div class="totp_setup"><a id="totp_setup_key_toggle" href="#">show setup key</a><span class="totp_setup_key" id="totp_setup_key">GB3W ISSN HBWG OMTO O44H GTRS OVIG W5SZ</span><br /><br /></div><script type="text/javascript">(() => {
+    const l = document.getElementById("totp_setup_key_toggle");
+    const s = document.getElementById("totp_setup_key");
+    l.addEventListener("click", (event) => {
+        if (l.innerText == "show setup key") {
+            s.style.display = "inline";
+            l.style.display = "none";
+        }
+    });
+})();
+</script>',
+];
