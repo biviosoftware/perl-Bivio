@@ -14,7 +14,6 @@ sub execute_ok {
         return {
             method => 'server_redirect',
             task_id => 'password_task',
-            # TODO: need this?
             no_context => 1,
         };
     }

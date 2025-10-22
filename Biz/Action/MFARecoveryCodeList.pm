@@ -22,7 +22,6 @@ sub execute_refill {
     my($res) = {
         method => 'server_redirect',
         task_id => $req->ureq('Action.UserPasswordQuery') ? 'password_task' : 'next',
-        # TODO: need this?
         no_context => 1,
     };
     my($existing_list) = $_MFCL->new($req)->load_all({type => $_SC->MFA_RECOVERY});

@@ -72,17 +72,22 @@ sub execute_ok {
     return $next ? {
         method => 'server_redirect',
         task_id => $next,
-        # TODO: need this?
         no_context => 1,
     } : 0;
 }
 
 sub internal_disable_mfa {
     my($self) = @_;
-    # TODO: test this
-    $self->req('Model.UserTOTP')->delete;
+    my($totp) = $self->req('Model.UserTOTP');
+    # Sanity check
+    b_die('wrong totp model')
+        unless $totp->get($_UT->REALM_ID_FIELD) eq $self->req('auth_user_id');
+    $totp->delete;
     $self->req('Model.MFARecoveryCodeList')->do_rows(sub {
         my($it) = @_;
+        # Sanity check
+        b_die('wrong code list model')
+            unless $it->get('UserSecretCode.' . $_USC->REALM_ID_FIELD) eq $self->req('auth_user_id');
         $self->new_other('UserSecretCode')->set_ephemeral->load({
             user_secret_code_id => $it->get('UserSecretCode.user_secret_code_id'),
         })->delete;

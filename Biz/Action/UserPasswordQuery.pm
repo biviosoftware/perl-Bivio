@@ -15,6 +15,8 @@ sub execute {
     my($u) = $req->get_nested(qw(auth_realm owner));
     my($res);
     my($die) = Bivio::Die->catch(sub {
+        b_die('no query key')
+            unless $query_key;
         my($err);
         ($query_key, $err) = $_TSC->PASSWORD_QUERY->from_literal_for_type($query_key);
         b_die('invalid query key')

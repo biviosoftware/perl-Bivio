@@ -45,7 +45,6 @@ sub execute_ok {
             method => 'server_redirect',
             # Only TOTP supported at this time; may support other MFA methods later.
             task_id => 'totp_task',
-            # TODO: need this?
             no_context => 1,
         };
     }
