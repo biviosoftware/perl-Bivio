@@ -44,7 +44,7 @@ sub internal_initialize {
         version => 1,
         can_iterate => 1,
         auth_id => ['UserSecretCode.user_id'],
-        other => ['UserSecretCode.code'],
+        order_by => ['UserSecretCode.code'],
         primary_key => [qw(UserSecretCode.user_secret_code_id)],
     });
 }

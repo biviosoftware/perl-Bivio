@@ -1,8 +1,0 @@
-# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-Type();
-[
-    generate_code => [
-        # Need to enable via config
-        [] => DIE(),
-    ],
-];

@@ -39,10 +39,12 @@ sub generate_new_codes {
     my($proto, $count) = @_;
     b_die('new code count required')
         unless $count;
-    my($res) = $_MCA->new;
-    $res = $res->append($proto->generate_code)
-        for 1..$count;
-    return $res;
+    my($codes) = [];
+    for (1..$count) {
+        push(@$codes, $proto->generate_code);
+    }
+    $codes = [sort(@$codes)],
+    return $_MCA->new($codes);
 }
 
 sub get_word_separator {
