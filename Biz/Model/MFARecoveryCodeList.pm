@@ -44,9 +44,16 @@ sub internal_initialize {
         version => 1,
         can_iterate => 1,
         auth_id => ['UserSecretCode.user_id'],
-        order_by => ['UserSecretCode.code'],
+        other => ['UserSecretCode.code'],
         primary_key => [qw(UserSecretCode.user_secret_code_id)],
     });
+}
+
+sub internal_load_rows {
+    my($self) = @_;
+    my($rows) = shift->SUPER::internal_load_rows(@_);
+    # Can't sort with order_by since the field is encrypted.
+    return [sort({$a->{'UserSecretCode.code'} cmp $b->{'UserSecretCode.code'}} @$rows)];
 }
 
 sub internal_prepare_statement {

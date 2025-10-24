@@ -5,9 +5,9 @@ my($user) = req(qw(auth_realm owner));
 my($original_codes);
 my($new_codes);
 my($get_codes) = sub {
-    return [sort(@{model('MFARecoveryCodeList')->load_all->map_rows(sub {
+    return model('MFARecoveryCodeList')->load_all->map_rows(sub {
         return shift->get('UserSecretCode.code');
-    })})];
+    });
 };
 my($is_equal) = sub {
     my($l1, $l2) = map(join('|', @$_), @_);

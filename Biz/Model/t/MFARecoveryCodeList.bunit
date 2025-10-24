@@ -1,0 +1,31 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+ListModel();
+create_user(random_realm_name());
+my($user) = req(qw(auth_realm owner));
+my($codes) = Type_MnemonicCode()->generate_new_codes(Model_MFARecoveryCodeList()->get_new_code_count);
+model('UserSecretCode')->create(Type_SecretCode()->LOGIN_MFA_CHALLENGE);
+my($map) = sub {
+    return [map(+{
+        'UserSecretCode.user_id' => $user->get('realm_id'),
+        'UserSecretCode.code' => $_,
+    }, @_)];
+};
+[
+    create => [
+        [$codes] => [],
+    ],
+    load_all => [
+        [] => $map->($codes->as_list),
+        inline_case(sub {
+            my($m) = model('UserSecretCode')->unsafe_load_by_code_and_type(
+                $codes->get_element(0),
+                Type_SecretCode()->MFA_RECOVERY,
+            );
+            b_die('no code model')
+                unless $m;
+            $m->set_archived;
+            return;
+        }),
+        [] => $map->(($codes->as_list)[1..$codes->as_length - 1]),
+    ],
+];
