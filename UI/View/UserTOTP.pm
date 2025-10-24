@@ -20,17 +20,6 @@ sub disable_form {
     ]));
 }
 
-sub mfa_recovery_code_list {
-    return shift->internal_body(vs_simple_form(MFARecoveryCodeListRefillForm => [
-        Join([
-            'Your authenticator recovery code list was running low, so we\'ve generated a new list for you.',
-            BR(), BR(),
-            MFARecoveryCodeList(),
-        ]),
-        '*ok_button',
-    ]));
-}
-
 sub totp_fields {
     my(undef, $form, $with_recovery, $control) = @_;
     $form ||= 'UserLoginTOTPForm';

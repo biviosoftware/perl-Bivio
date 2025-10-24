@@ -30,8 +30,10 @@ sub initialize {
                             row_class => 'b_mfa_recovery_code_copy_link',
                         }),
                     ], [
-                        Link('download', [sub {$_A->format_uri_for_download(shift(@_))}], {
-                            ID => 'download_codes_link',
+                        Link('download', [sub {$_A->format_uri_for_download(shift(@_))}]),
+                    ], [
+                        Link('print', '#', {
+                            ID => 'print_codes_link',
                         }),
                     ]], {class => 'b_mfa_recovery_code_options'}),
                 ]], {class => 'b_mfa_recovery_code_list'});
@@ -62,6 +64,26 @@ EOF
     else {
         console.log("copy codes link not found");
     }
+    function printFrameOnLoad() {
+        const closePrintFrame = () => {
+            document.body.removeChild(this);
+        };
+        this.contentWindow.onbeforeunload = closePrintFrame;
+        this.contentWindow.onafterprint = closePrintFrame;
+        this.contentWindow.print();
+    }
+    document.getElementById("print_codes_link").addEventListener("click", () => {
+        const printFrame = document.createElement("iframe");
+        printFrame.onload = printFrameOnLoad;
+        printFrame.style.display = "none";
+        printFrame.src =
+EOF
+                '"',
+                String([sub {$_A->format_uri_for_print(shift(@_))}]),
+                <<'EOF',
+";
+        document.body.appendChild(printFrame);
+    });
 })();
 EOF
             ])),

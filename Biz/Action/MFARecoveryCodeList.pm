@@ -47,9 +47,7 @@ sub execute_preview {
 
 sub execute_download {
     my($proto, $req) = @_;
-    b_die('codes not found on query')
-        unless my $codes = ($req->unsafe_get('query') || {})->{$proto->CODE_QUERY_KEY};
-    $codes = [split($proto->CODE_QUERY_SEPARATOR, $codes)];
+    my($codes) = $proto->get_codes_from_query($req);
     b_die('unexpected code count')
         unless int(@$codes) == $_MFCL->get_new_code_count;
     $req->get('reply')->set_header(
@@ -66,14 +64,19 @@ sub execute_download {
 
 sub format_uri_for_download {
     my($proto, $source) = @_;
-    return $source->req->format_uri({
-        task_id => 'USER_MFA_RECOVERY_CODE_DOWNLOAD',
-        realm => $source->req(qw(auth_user name)),
-        query => {
-            $proto->CODE_QUERY_KEY => join(
-                $proto->CODE_QUERY_SEPARATOR, $source->req($proto, 'mfa_recovery_code_array')->as_list),
-        },
-    });
+    return _uri($proto, $source, 'USER_MFA_RECOVERY_CODE_DOWNLOAD');
+}
+
+sub format_uri_for_print {
+    my($proto, $source) = @_;
+    return _uri($proto, $source, 'USER_MFA_RECOVERY_CODE_PRINT');
+}
+
+sub get_codes_from_query {
+    my($proto, $source) = @_;
+    b_die('codes not found on query')
+        unless my $codes = ($source->req->unsafe_get('query') || {})->{$proto->CODE_QUERY_KEY};
+    return [split($proto->CODE_QUERY_SEPARATOR, $codes)];
 }
 
 sub _generate_code_array {
@@ -85,6 +88,18 @@ sub _generate_code_array {
 sub _new {
     my($proto, $req) = @_;
     return $proto->new->put_on_request($req, 1);
+}
+
+sub _uri {
+    my($proto, $source, $task_id) = @_;
+    return $source->req->format_uri({
+        task_id => $task_id,
+        realm => $source->req(qw(auth_user name)),
+        query => {
+            $proto->CODE_QUERY_KEY => join(
+                $proto->CODE_QUERY_SEPARATOR, $source->req($proto, 'mfa_recovery_code_array')->as_list),
+        },
+    });
 }
 
 1;

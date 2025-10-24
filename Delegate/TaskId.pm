@@ -1686,17 +1686,24 @@ sub info_user_auth {
             Action.MFARecoveryCodeList->execute_download
         )],
         [qw(
-            USER_MFA_RECOVERY_CODE_REFILL_LIST
+            USER_MFA_RECOVERY_CODE_PRINT
             301
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            View.UserAuth->mfa_recovery_code_print_list
+        )],
+        [qw(
+            USER_MFA_RECOVERY_CODE_REFILL_LIST
+            302
             USER
             ADMIN_READ&ADMIN_WRITE
             Action.MFARecoveryCodeList->execute_refill
             Model.MFARecoveryCodeListRefillForm
-            View.UserTOTP->mfa_recovery_code_list
+            View.UserAuth->mfa_recovery_code_refill_list
             password_task=USER_PASSWORD
             next=MY_SITE
         )],
-        # 302-309 free
+        # 303-309 free
         [qw(
             USER_LOGIN_TOTP_FORM
             310

@@ -4,6 +4,7 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
+my($_AMRCL) = b_use('Action.MFARecoveryCodeList');
 my($_UT) = b_use('View.UserTOTP');
 
 sub adm_substitute_user {
@@ -91,6 +92,37 @@ sub login {
     return shift->internal_body(vs_simple_form(UserLoginForm => [
         'UserLoginForm.login',
         'UserLoginForm.RealmOwner.password',
+    ]));
+}
+
+sub mfa_recovery_code_print_list {
+    view_main(Page({
+        xhtml => 1,
+        style => view_widget_value('xhtml_style'),
+        head => Join([
+            vs_text_as_prose('xhtml_head_title'),
+        ]),
+        body => Join([
+            DIV_main_top(DIV_title(Join([vs_site_name(), vs_text_as_prose('xhtml_title')], ' '))),
+            DIV_main_body([sub {
+                my($source) = @_;
+                return Grid([
+                    map([$_], @{$_AMRCL->get_codes_from_query($source)}),
+                ], {class => 'b_mfa_recovery_codes'});
+            }]),
+        ]),
+    }));
+    return;
+}
+
+sub mfa_recovery_code_refill_list {
+    return shift->internal_body(vs_simple_form(MFARecoveryCodeListRefillForm => [
+        Join([
+            'Your authenticator recovery code list was running low, so we\'ve generated a new list for you.',
+            BR(), BR(),
+            MFARecoveryCodeList(),
+        ]),
+        '*ok_button',
     ]));
 }
 

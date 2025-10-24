@@ -2001,6 +2001,7 @@ sub _cfg_user_auth {
             [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
             [USER_MFA_RECOVERY_CODE_REFILL_LIST => '?/refill-recovery-codes'],
             [USER_MFA_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
+            [USER_MFA_RECOVERY_CODE_PRINT => '?/print-recovery-codes'],
         ],
         Text => [
             [[qw(UserLoginForm ContextlessUserLoginForm)] => [
@@ -2276,6 +2277,7 @@ EOF
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
                 USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
                 USER_MFA_RECOVERY_CODE_REFILL_LIST => 'New Authenticator Recovery Codes',
+                USER_MFA_RECOVERY_CODE_PRINT => 'Authenticator Recovery Codes',
             ]],
             [acknowledgement => [
                 USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',
