@@ -10,11 +10,12 @@ sub initialize {
     my($self) = @_;
     return shift->put_unless_exists(values => [
         Join([
-            'Save the following codes in a secure place. This list will only be shown to you once.',
+            # TODO: probably shouldn't have this text in the widget
+            'The following codes are your authenticator recovery codes. If you don\'t have access to your authenticator app you will need to enter one of these codes to gain access to your account.',
             BR(), BR(),
-            'These are your authenticator recovery codes. If you don\'t have access to your authenticator app you will need to enter one of these codes to gain access to your account.',
+            'Save these codes in a secure place. This list will only be shown to you once.',
             BR(), BR(),
-            'For example, click the "copy" link to the right and then paste into your password manager entry for this site, or click the "download" link and then move the downloaded file to a secure place in your personal documents.',
+            'For example, click the "copy" link to the right and then paste into your password manager entry for this site, click the "download" link and then move the downloaded file to a secure place where you keep personal files, or click the "print" link and then place the printed page in a secure place in your personal files.',
             BR(), BR(),
             [sub {
                 my($source) = @_;

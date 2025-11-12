@@ -4,6 +4,7 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
 my($_DT) = b_use('Type.DateTime');
+my($_MM) = b_use('Type.MFAMethod');
 my($_RN) = b_use('Type.RealmName');
 my($_PI) = b_use('Type.PrimaryId');
 my($_P) = b_use('Type.Password');
@@ -91,6 +92,18 @@ sub format_uri {
         query => undef,
         path_info => undef,
     });
+}
+
+sub get_configured_mfa_methods {
+    my($self, $type_filter) = @_;
+    my($methods) = [];
+    foreach my $type ($type_filter ? $type_filter : $_MM->get_non_zero_list) {
+        my($model) = $self->new_other($type->get_model_class)->set_ephemeral;
+        next
+            unless $model->unauth_load({$model->REALM_ID_FIELD => $self->get('realm_id')});
+        push(@$methods, {type => $type, model => $model});
+    }
+    return int(@$methods) ? $methods : undef;
 }
 
 sub has_valid_password {
@@ -209,13 +222,6 @@ sub maybe_upgrade_password {
 sub require_otp {
     my($self) = @_;
     return $self->get_field_type('password')->is_otp($self->get('password'));
-}
-
-sub require_mfa {
-    my($self) = @_;
-    # Only TOTP supported at this time; may support other methods later.
-    my($totp) = $self->new_other('UserTOTP')->set_ephemeral;
-    return $totp->unauth_load({$totp->REALM_ID_FIELD => $self->get('realm_id')});
 }
 
 sub unauth_delete_realm {

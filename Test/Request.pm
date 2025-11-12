@@ -304,7 +304,7 @@ sub set_user_state_and_cookie {
     elsif ($user_state->eq_logged_in) {
         my($cu) = $ulf->load_cookie_user($self, $self->get('cookie'));
         $ultf->process({bypass_challenge => 1})
-            if $cu->require_mfa;
+            if $cu->get_configured_mfa_methods;
     }
     return $self;
 }

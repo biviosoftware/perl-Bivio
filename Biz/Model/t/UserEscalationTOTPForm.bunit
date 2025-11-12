@@ -1,0 +1,143 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+my($user);
+my($no_totp) = 1;
+my($no_challenge) = 1;
+my($secret);
+my($totp);
+my($recovery_codes);
+my($get_totp_code) = sub {
+    return Biz_RFC6238()->compute(
+        $totp->get(qw(algorithm digits secret)),
+        Biz_RFC6238()->get_time_step(
+            Type_DateTime()->to_unix(Type_DateTime()->now),
+            $totp->get('period'),
+        ),
+    );
+};
+FormModel({
+    setup_request => sub {
+        unless ($no_totp || $totp) {
+            req()->with_realm($user, sub {
+                $secret = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
+                $totp = Model_UserTOTP()->create(
+                    $secret,
+                    Biz_RFC6238()->get_time_step(
+                        Type_DateTime()->to_unix(Type_DateTime()->now),
+                        Model_UserTOTP()->get_default_period,
+                    ),
+                );
+                Action_MFARecoveryCodeList()->execute_preview(req());
+                $recovery_codes = req(qw(Action.MFARecoveryCodeList mfa_recovery_code_array));
+                Model_MFARecoveryCodeList()->create($recovery_codes);
+            });
+            commit();
+        }
+        unless ($no_challenge) {
+            Model_UserSecretCode()->delete_all({type => Type_SecretCode()->ESCALATION_CHALLENGE});
+            my($redirect) = Action_MFAChallenge()->execute_assert_escalation(req());
+            my($method) = delete($redirect->{method});
+            $redirect->{task_id} = req('task')->get_attr_as_id($redirect->{task_id});
+            return req()->$method($redirect);
+        }
+        return;
+    },
+});
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 2,
+    },
+});
+$user = create_user(random_realm_name());
+commit();
+[
+    req_state({
+        task => 'USER_PASSWORD',
+    }),
+    [] => MODEL_NOT_FOUND(),
+    inline_case(sub {$no_totp = 0}),
+    [] => FORBIDDEN(),
+    inline_case(sub {$no_challenge = 0}),
+    [] => not_die(),
+    error_case({} => {
+        'RealmOwner.password' => 'NULL',
+    }),
+    error_case({
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+    } => {
+        totp_code => 'NULL',
+    }),
+    error_case({
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD . 'x',
+        totp_code => sub {$get_totp_code->() + 1},
+    } => {
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    inline_commit(),
+    error_case({
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+        totp_code => sub {$get_totp_code->() + 1},
+    } => {
+        totp_code => 'INVALID_TOTP_CODE',
+    }),
+    inline_case(sub {
+        commit();
+        req()->set_realm($user);
+        return;
+    }),
+    # Should now be locked out
+    [{
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+        totp_code => sub {$get_totp_code->() + 1},
+    }] => DIE(),
+    inline_case(sub {
+        Util_RealmAdmin()->reset_login_attempts();
+        Util_RealmAdmin()->reset_password(Util_TestUser()->DEFAULT_PASSWORD);
+    }),
+    # Not allowed to use same TOTP code from setup
+    error_case({
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+        totp_code => $get_totp_code,
+    } => {
+        totp_code => 'INVALID_TOTP_CODE',
+    }),
+    inline_case(sub {
+        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 30));
+        return;
+    }),
+    [{
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+        totp_code => $get_totp_code,
+    }] => sub {
+        my(undef, $actual) = @_;
+        assert_equals(req('auth_user_id'), $user->get('realm_id'));
+        assert_equals($actual->[0]{task_id}->get_name, 'USER_PASSWORD');
+        b_die('challenge not found')
+            unless Action_MFAChallenge()->unsafe_get_challenge(req(), {
+                type => Type_SecretCode()->ESCALATION_CHALLENGE,
+                status => Type_SecretCodeStatus()->PASSED,
+            });
+        return 1;
+    },
+    error_case({
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+        mfa_recovery_code => 'a-b-c',
+    } => {
+        mfa_recovery_code => 'INVALID_MFA_RECOVERY_CODE',
+    }),
+    [{
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+        mfa_recovery_code => sub {
+            return $recovery_codes->get_element(int(rand($recovery_codes->as_length)));
+        },
+    }] => sub {
+        my(undef, $actual) = @_;
+        assert_equals(req('auth_user_id'), $user->get('realm_id'));
+        assert_equals($actual->[0]{task_id}->get_name, 'USER_PASSWORD');
+        b_die('challenge not found')
+            unless Action_MFAChallenge()->unsafe_get_challenge(req(), {
+                type => Type_SecretCode()->ESCALATION_CHALLENGE,
+                status => Type_SecretCodeStatus()->PASSED,
+            });
+        return 1;
+    },
+];

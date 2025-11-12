@@ -26,7 +26,7 @@ sub initialize {
                     ['issuer', 'bivio.com'],
                 ))),
             ));
-        }], {class => 'totp_qr_code'}),
+        }], {class => 'totp_qr_code', %{$self->get('qrcode_args')}}),
         DIV(Join([
             Link($_SHOW_KEY, '#', {ID => 'totp_setup_key_toggle'}),
             SPAN(String([sub {
@@ -61,11 +61,12 @@ EOF
 }
 
 sub internal_new_args {
-    my(undef, $totp_secret) = @_;
+    my(undef, $totp_secret, $qrcode_args) = @_;
     return '"totp_secret" attribute required'
         unless $totp_secret;
     return {
         totp_secret => $totp_secret,
+        qrcode_args => $qrcode_args || {},
     };
 }
 

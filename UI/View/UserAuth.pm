@@ -5,7 +5,6 @@ use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 my($_AMRCL) = b_use('Action.MFARecoveryCodeList');
-my($_UT) = b_use('View.UserTOTP');
 
 sub adm_substitute_user {
     return shift->internal_body(vs_simple_form(AdmSubstituteUserForm => [qw{
@@ -56,6 +55,12 @@ An email has been sent to String(['Model.EmailVerifyForm', 'Email.email']);.
 Please click on the link in the email message to complete the verification
 process.
 EOF
+}
+
+sub escalation_plain_form {
+    return shift->internal_body(vs_simple_form(UserEscalationPlainForm => [
+        'UserEscalationPlainForm.RealmOwner.password',
+    ]));
 }
 
 sub general_contact_mail {
@@ -126,6 +131,20 @@ sub mfa_recovery_code_refill_list {
     ]));
 }
 
+sub mfa_recovery_code_list_regenerate_form {
+    return shift->internal_body(
+        If(
+            [qw(->ureq Model.MFARecoveryCodeList)],
+            Join([
+                MFARecoveryCodeList(),
+                BR(), BR(),
+                Link('Back to my site', 'MY_SITE'),
+            ]),
+            vs_simple_form(MFARecoveryCodeListRegenerateForm => []),
+        ),
+    );
+}
+
 sub missing_cookies {
     return shift->internal_body(DIV_prose(_prose('missing_cookies.body')));
 }
@@ -133,7 +152,6 @@ sub missing_cookies {
 sub password {
     return shift->internal_body(vs_simple_form(UserPasswordForm => [
         _password_fields('UserPasswordForm'),
-        $_UT->totp_fields('UserPasswordForm', 1, [qw(Model.UserPasswordForm require_mfa)]),
     ]));
 }
 

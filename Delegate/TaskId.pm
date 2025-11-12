@@ -1537,15 +1537,18 @@ sub info_user_auth {
             Action.ServerRedirect->execute_next
             next=GENERAL_USER_PASSWORD_QUERY_ACK
         )],
+        # TODO: had these, but I don't think we need the indirection as we're already in Action.MFAChallenge
+            # plain_task=USER_MFA_LOGIN
+            # totp_task=USER_MFA_LOGIN
         [qw(
             USER_PASSWORD_RESET
             20
             USER
             ANYBODY
-            Action.UserPasswordQuery
-            login_task=LOGIN
-            totp_task=USER_LOGIN_TOTP_FORM
+            Action.MFAChallenge->execute_password_reset
+            plain_task=USER_PASSWORD
             password_task=USER_PASSWORD
+            totp_task=USER_LOGIN_TOTP_FORM
             NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
             require_secure=1
         )],
@@ -1553,13 +1556,17 @@ sub info_user_auth {
         # for example, if user is resetting password from email link
         # with cookies disabled
         # TODO: permissions when resetting password?
+        # TODO: keep execute_assert_escalation? would affect all apps.
         [qw(
             USER_PASSWORD
             21
             USER
             ADMIN_READ&ADMIN_WRITE
+            Action.MFAChallenge->execute_assert_escalation
             Model.UserPasswordForm
             View.UserAuth->password
+            plain_task=USER_ESCALATION_PLAIN_FORM
+            totp_task=USER_ESCALATION_TOTP_FORM
             next=MY_SITE
             FORBIDDEN=DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
             require_secure=1
@@ -1588,6 +1595,9 @@ sub info_user_auth {
             View.UserAuth->general_contact
             next=SITE_ROOT
         )],
+        # TODO: don't think need
+            # next=USER_MFA_LOGIN
+            # mfa_task=USER_MFA_LOGIN
         [qw(
             LOGIN
             90
@@ -1597,7 +1607,7 @@ sub info_user_auth {
             Model.UserLoginForm
             View.UserAuth->login
             locked_out_task=GENERAL_USER_LOCKED_OUT
-            password_task=USER_PASSWORD
+            next=MY_SITE
             totp_task=USER_LOGIN_TOTP_FORM
             require_secure=1
         )],
@@ -1679,21 +1689,21 @@ sub info_user_auth {
             View.UserAuth->user_locked_out
         )],
         [qw(
-            USER_MFA_RECOVERY_CODE_DOWNLOAD
+            USER_MFA_RECOVERY_CODE_LIST_DOWNLOAD
             300
             USER
             ADMIN_READ&ADMIN_WRITE
             Action.MFARecoveryCodeList->execute_download
         )],
         [qw(
-            USER_MFA_RECOVERY_CODE_PRINT
+            USER_MFA_RECOVERY_CODE_LIST_PRINT
             301
             USER
             ADMIN_READ&ADMIN_WRITE
             View.UserAuth->mfa_recovery_code_print_list
         )],
         [qw(
-            USER_MFA_RECOVERY_CODE_REFILL_LIST
+            USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM
             302
             USER
             ADMIN_READ&ADMIN_WRITE
@@ -1703,16 +1713,57 @@ sub info_user_auth {
             password_task=USER_PASSWORD
             next=MY_SITE
         )],
-        # 303-309 free
+        [qw(
+            USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM
+            303
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Action.MFAChallenge->execute_assert_escalation
+            Model.MFARecoveryCodeListRegenerateForm
+            View.UserAuth->mfa_recovery_code_list_regenerate_form
+            plain_task=DEFAULT_ERROR_REDIRECT_NOT_FOUND
+            totp_task=USER_ESCALATION_TOTP_FORM
+            next=MY_SITE
+        )],
+        [qw(
+            USER_ESCALATION_PLAIN_FORM
+            304
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.UserEscalationPlainForm
+            View.UserAuth->escalation_plain_form
+            next=MY_SITE
+        )],
+        # TODO: remove
+        # [qw(
+        #     USER_MFA_LOGIN
+        #     305
+        #     GENERAL
+        #     ANYBODY
+        #     Action.MFAChallenge->execute_mfa_redirect
+        #     plain_task=MY_SITE
+        #     totp_task=USER_LOGIN_TOTP_FORM
+        # )],
+        [qw(
+            USER_ESCALATION_TOTP_FORM
+            306
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.UserEscalationTOTPForm
+            View.UserTOTP->escalation_totp_form
+            next=MY_SITE
+        )],
+        # 307-309 free
         [qw(
             USER_LOGIN_TOTP_FORM
             310
             GENERAL
             ANYBODY
+            Action.MFAChallenge->execute_assert_login
             Model.UserLoginTOTPForm
             View.UserTOTP->totp_form
             password_task=USER_PASSWORD
-            refill_task=USER_MFA_RECOVERY_CODE_REFILL_LIST
+            refill_task=USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM
             next=MY_SITE
             MODEL_NOT_FOUND=LOGIN
             FORBIDDEN=LOGIN
@@ -1723,8 +1774,11 @@ sub info_user_auth {
             USER
             ADMIN_READ&ADMIN_WRITE
             Action.MFARecoveryCodeList->execute_preview
+            Action.MFAChallenge->execute_assert_escalation
             Model.UserEnableTOTPForm
             View.UserTOTP->enable_form
+            plain_task=USER_ESCALATION_PLAIN_FORM
+            totp_task=USER_ESCALATION_TOTP_FORM
             next=MY_SITE
         )],
         [qw(
@@ -1732,8 +1786,11 @@ sub info_user_auth {
             312
             USER
             ADMIN_READ&ADMIN_WRITE
+            Action.MFAChallenge->execute_assert_escalation
             Model.UserDisableTOTPForm
             View.UserTOTP->disable_form
+            plain_task=USER_ESCALATION_PLAIN_FORM
+            totp_task=USER_ESCALATION_TOTP_FORM
             next=MY_SITE
         )],
     ];

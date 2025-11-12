@@ -3,12 +3,17 @@ package Bivio::Biz::Model::UserEnableTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginTOTPForm';
 
+my($_AMC) = b_use('Action.MFAChallenge');
 my($_AMFCL) = b_use('Action.MFARecoveryCodeList');
 my($_DT) = b_use('Type.DateTime');
 my($_MMFCL) = b_use('Model.MFARecoveryCodeList');
 my($_RFC6238) = b_use('Biz.RFC6238');
 my($_TS) = b_use('Type.TOTPSecret');
+my($_TSC) = b_use('Type.SecretCode');
 my($_UT) = b_use('Model.UserTOTP');
+
+# TODO: This form assumes that no recovery codes already exist -- once multiple MFA methods are
+# implemented, that might not be true. Update as needed.
 
 sub execute_empty {
     my($self) = @_;
@@ -21,7 +26,7 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    $self->internal_put_field(bypass_challenge => 1);
+    $self->bypass_challenge;
     my(@res) = shift->SUPER::execute_ok(@_);
     $self->new_other('UserTOTP')->create(
         $self->get('totp_secret'),
@@ -36,9 +41,6 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         $self->field_decl(
-            visible => [
-                [qw(RealmOwner.password)],
-            ],
             hidden => [
                 [qw(totp_secret Line)],
                 [qw(mfa_recovery_code_array StringArray)],
@@ -49,24 +51,20 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    return 'FORBIDDEN'
+    b_die('FORBIDDEN')
         if $self->new_other('UserTOTP')->unsafe_load;
     $self->internal_put_field(realm_owner => $self->req(qw(auth_realm owner)));
+    # TODO: get challente this way or with unsafe_get_challenge?
+    my($c) = $self->ureq($_AMC->get_req_key($_TSC->ESCALATION_CHALLENGE));
+    # TODO: die or just return FORBIDDEN? confusing in tests when we just return as the FORBIDDEN
+    # return isn't obvious.
+    b_die('FORBIDDEN')
+        unless $c && $c->get('user_id') eq $self->req('auth_id') && $c->get('status')->eq_passed;
     return;
 }
 
 sub validate {
     my($self) = @_;
-    my($ulf) = $self->new_other('UserLoginForm');
-    $ulf->validate($self->get_nested(qw(realm_owner name)), $self->get('RealmOwner.password'));
-    if ($ulf->in_error) {
-        # Need to stay on page or the login attempt would get rolled back
-        $self->internal_stay_on_page;
-        my($e) = $ulf->get_errors;
-        $self->internal_put_error('RealmOwner.password' => delete($e->{'RealmOwner.password'}));
-        b_die('invalid login=', $self->get('realm_owner'), ' ', $e)
-            if %$e;
-    }
     $self->internal_put_error(totp_code => 'INVALID_TOTP_CODE')
         unless my $ts = $_UT->is_valid_setup($self->get('totp_code'), $self->get('totp_secret'));
     $self->internal_put_field(totp_time_step => $ts);

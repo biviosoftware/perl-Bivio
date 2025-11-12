@@ -5,7 +5,7 @@ Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
     mfa_recovery_code_array => Type_MnemonicCodeArray()->new([qw(foo-bar-baz baz-bar-foo bar-foo-baz)]),
 );
 [
-    [] => q{Save the following codes in a secure place. This list will only be shown to you once.<br /><br />These are your authenticator recovery codes. If you don't have access to your authenticator app you will need to enter one of these codes to gain access to your account.<br /><br />For example, click the "copy" link to the right and then paste into your password manager entry for this site, or click the "download" link and then move the downloaded file to a secure place in your personal documents.<br /><br /><table class="b_mfa_recovery_code_list"><tr>
+    [] => q{The following codes are your authenticator recovery codes. If you don't have access to your authenticator app you will need to enter one of these codes to gain access to your account.<br /><br />Save these codes in a secure place. This list will only be shown to you once.<br /><br />For example, click the "copy" link to the right and then paste into your password manager entry for this site, click the "download" link and then move the downloaded file to a secure place where you keep personal files, or click the "print" link and then place the printed page in a secure place in your personal files.<br /><br /><table class="b_mfa_recovery_code_list"><tr>
 <td><table class="b_mfa_recovery_codes"><tr>
 <td>foo-bar-baz</td>
 </tr><tr>
@@ -16,7 +16,9 @@ Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
 <td><table class="b_mfa_recovery_code_options"><tr class="b_mfa_recovery_code_copy_link">
 <td><a id="copy_codes_link" href="#">copy</a></td>
 </tr><tr>
-<td><a id="download_codes_link" href="/demo/download-recovery-codes?mfa_recovery_codes=foo-bar-baz%2Cbaz-bar-foo%2Cbar-foo-baz">download</a></td>
+<td><a href="/demo/download-recovery-codes?mfa_recovery_codes=foo-bar-baz%2Cbaz-bar-foo%2Cbar-foo-baz">download</a></td>
+</tr><tr>
+<td><a id="print_codes_link" href="#">print</a></td>
 </tr></table></td>
 </tr></table><br /><script type="text/javascript">(() => {
     const l = document.getElementById("copy_codes_link");
@@ -38,6 +40,22 @@ Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
     else {
         console.log("copy codes link not found");
     }
+    function printFrameOnLoad() {
+        const closePrintFrame = () => {
+            document.body.removeChild(this);
+        };
+        this.contentWindow.onbeforeunload = closePrintFrame;
+        this.contentWindow.onafterprint = closePrintFrame;
+        this.contentWindow.print();
+    }
+    document.getElementById("print_codes_link").addEventListener("click", () => {
+        const printFrame = document.createElement("iframe");
+        printFrame.onload = printFrameOnLoad;
+        printFrame.style.display = "none";
+        printFrame.src =
+"/demo/print-recovery-codes?mfa_recovery_codes=foo-bar-baz%2Cbaz-bar-foo%2Cbar-foo-baz";
+        document.body.appendChild(printFrame);
+    });
 })();
 </script>},
 ];

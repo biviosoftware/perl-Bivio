@@ -1,0 +1,75 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+my($no_challenge) = 1;
+FormModel({
+    setup_request => sub {
+        unless ($no_challenge) {
+            my($redirect) = Action_MFAChallenge()->execute_assert_escalation(req());
+            my($method) = delete($redirect->{method});
+            $redirect->{task_id} = req('task')->get_attr_as_id($redirect->{task_id});
+            return req()->$method($redirect);
+        }
+        return;
+    },
+});
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 2,
+    },
+});
+my($user) = create_user(random_realm_name());
+commit();
+[
+    req_state({
+        task => 'USER_PASSWORD',
+    }),
+    [] => FORBIDDEN(),
+    inline_case(sub {$no_challenge = 0}),
+    empty_case({
+        login => $user->format_email,
+    }),
+    error_case({
+        login => $user->format_email,
+    } => {
+        'RealmOwner.password' => 'NULL',
+    }),
+    error_case({
+        login => sub {$user->format_email},
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD . 'x',
+    } => {
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    error_case({
+        login => sub {$user->format_email},
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD . 'x',
+    } => {
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    inline_case(sub {
+        commit();
+        req()->set_realm($user);
+    }),
+    error_case({
+        login => sub {$user->format_email},
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+    } => {
+        login => 'USER_LOCKED_OUT',
+    }),
+    inline_case(sub {
+        Util_RealmAdmin()->reset_login_attempts();
+        Util_RealmAdmin()->reset_password(Util_TestUser()->DEFAULT_PASSWORD);
+    }),
+    [{
+        login => sub {$user->format_email},
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+    }] => sub {
+        my(undef, $actual) = @_;
+        assert_equals(req('auth_user_id'), $user->get('realm_id'));
+        assert_equals($actual->[0]{task_id}->get_name, 'USER_PASSWORD');
+        b_die('challenge not found')
+            unless Action_MFAChallenge()->unsafe_get_challenge(req(), {
+                type => Type_SecretCode()->ESCALATION_CHALLENGE,
+                status => Type_SecretCodeStatus()->PASSED,
+            });
+        return 1;
+    },
+];

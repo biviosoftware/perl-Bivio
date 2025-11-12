@@ -3,21 +3,34 @@ FormModel({
     setup_request => sub {
         req()->set_realm(undef);
         req()->set_user(undef);
+        return;
     },
 });
 my($uid) = create_user(random_realm_name())->get('realm_id');
-req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $uid);
+my($is_task) = sub {
+    my($expected_task) = @_;
+    return sub {
+        my($case, $res) = @_;
+        return (ref($res->[0]->{task_id}) ? $res->[0]->{task_id}->get_name : $res->[0]->{task_id})
+            eq $expected_task ? 1 : 0
+    };
+};
 [
     req_state({
         task => 'LOGIN',
     }),
-    simple_case({
+    [{
         login => $uid,
         'RealmOwner.password' => 'password',
-    } => {
-        login => $uid,
-        'RealmOwner.password' => 'password',
+    }] => $is_task->('CART'),
+    inline_case(sub {
+        req()->put(disable_assert_cookie => 0);
+        req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $uid);
     }),
+    [{
+        login => $uid,
+        'RealmOwner.password' => 'password',
+    }] => $is_task->('CART'),
     inline_case(sub {
         req()->with_realm($uid, sub {
             Model_UserTOTP()->create(
@@ -32,11 +45,5 @@ req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $uid);
     [{
         login => $uid,
         'RealmOwner.password' => 'password',
-    } => {
-        login => $uid,
-        'RealmOwner.password' => 'password',
-    }] => sub {
-        my($case, $res) = @_;
-        return $res->[0]->{task_id} eq 'totp_task' ? 1 : 0;
-    },
+    }] => $is_task->('totp_task'),
 ];

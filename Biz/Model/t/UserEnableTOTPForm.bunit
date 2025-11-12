@@ -4,15 +4,29 @@ config({
         locked_out_failure_count => 1,
     },
 });
-FormModel();
-my($create_user) = sub {create_user(random_alpha_string())};
+my($create_user) = 1;
+my($create_escalation) = 0;
+my($pass_escalation) = 0;
+FormModel({
+    setup_request => sub {
+        return
+            unless $create_user;
+        create_user(random_realm_name());
+        return
+            unless $create_escalation;
+        Action_MFAChallenge()->execute_assert_escalation(req());
+        return
+            unless $pass_escalation;
+        model('UserEscalationPlainForm')->process({});
+        return;
+    },
+});
 req()->initialize_fully('USER_ENABLE_TOTP_FORM');
 Action_MFARecoveryCodeList()->execute_preview(req());
 my($totp_secret);
 my($mfa_recovery_codes);
 my($time_step);
 my($v) = {
-    'RealmOwner.password' => 'password',
     mfa_recovery_code_array => sub {$mfa_recovery_codes},
     totp_secret => sub {$totp_secret},
 };
@@ -25,7 +39,10 @@ my($is_task) = sub {
     };
 };
 [
-    inline_case($create_user),
+    [] => FORBIDDEN(),
+    inline_case(sub {$create_escalation = 1}),
+    [] => FORBIDDEN(),
+    inline_case(sub {$pass_escalation = 1}),
     empty_case({
         totp_secret => qr/^[a-zA-Z0-9]+$/,
     }),
@@ -48,13 +65,6 @@ my($is_task) = sub {
     } => {
         totp_code => 'INVALID_TOTP_CODE',
     }),
-    inline_case($create_user),
-    [{
-        %$v,
-        totp_code => 123456,
-        'RealmOwner.password' => 'wrong-password',
-    }] => $is_task->('GENERAL_USER_LOCKED_OUT'),
-    inline_case($create_user),
     [{
         %$v,
         totp_code => sub {
@@ -90,5 +100,6 @@ my($is_task) = sub {
             unless Model_MFARecoveryCodeList()->get_new_code_count == $found;
         return;
     }),
-    [] => $is_task->('FORBIDDEN'),
+    inline_case(sub {$create_user = 0}),
+    [] => FORBIDDEN(),
 ];

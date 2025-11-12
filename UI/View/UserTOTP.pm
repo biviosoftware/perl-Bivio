@@ -7,17 +7,21 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 sub enable_form {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(UserEnableTOTPForm => [
-        'UserEnableTOTPForm.RealmOwner.password',
         $self->totp_fields('UserEnableTOTPForm'),
+    ]));
+}
+
+sub escalation_totp_form {
+    my($self) = @_;
+    return $self->internal_body(vs_simple_form(UserEscalationTOTPForm => [
+        'UserEscalationTOTPForm.RealmOwner.password',
+        $self->totp_fields('UserEscalationTOTPForm', 1),
     ]));
 }
 
 sub disable_form {
     my($self) = @_;
-    return $self->internal_body(vs_simple_form(UserDisableTOTPForm => [
-        'UserDisableTOTPForm.RealmOwner.password',
-        $self->totp_fields('UserDisableTOTPForm', 1),
-    ]));
+    return $self->internal_body(vs_simple_form(UserDisableTOTPForm => []));
 }
 
 sub totp_fields {

@@ -1,11 +1,26 @@
 # Copyright (c) 2025 bivio Software, Inc.  All rights reserved.
 package Bivio::Biz::Model::UserDisableTOTPForm;
 use strict;
-use Bivio::Base 'Model.UserLoginTOTPForm';
+use Bivio::Base 'Biz.FormModel';
+
+my($_AMC) = b_use('Action.MFAChallenge');
+my($_TSC) = b_use('Type.SecretCode');
+my($_ULTF) = b_use('Model.UserLoginTOTPForm');
+my($_UT) = b_use('Model.UserTOTP');
+my($_USC) = b_use('Model.UserSecretCode');
 
 sub execute_ok {
     my($self) = @_;
-    $self->internal_disable_mfa($self);
+    my($mm) = $self->req(qw(auth_realm owner))->get_configured_mfa_methods;
+    my($totp) = $self->req('Model.UserTOTP');
+    # Sanity check
+    b_die('wrong totp model')
+        unless $totp->get($_UT->REALM_ID_FIELD) eq $self->req('auth_user_id');
+    $totp->delete;
+    $self->new_other('MFARecoveryCodeList')->load_all->delete
+        unless int(@$mm) > 1;
+    $_ULTF->delete_cookie($self->req('cookie'));
+    # TODO: send email
     return;
 }
 
@@ -13,33 +28,18 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-        visible => [{
-            name => 'RealmOwner.password',
-        }],
     });
 }
 
 sub internal_pre_execute {
     my($self) = @_;
-    $self->internal_put_field(realm_owner => $self->req(qw(auth_realm owner)));
-    $self->internal_load_models;
+    b_die('MODEL_NOT_FOUND')
+        unless $self->new_other('UserTOTP')->unsafe_load;
+    # TODO: get challenge this way or via unsafe_get_challenge?
+    my($c) = $self->ureq($_AMC->get_req_key($_TSC->ESCALATION_CHALLENGE));
+    b_die('FORBIDDEN')
+        unless $c && $c->get('user_id') eq $self->req('auth_user_id') && $c->get('status')->eq_passed;
     return;
-}
-
-sub validate {
-    my($self) = @_;
-    my($ulf) = $self->new_other('UserLoginForm');
-    $ulf->validate($self->get_nested(qw(realm_owner name)), $self->get('RealmOwner.password'));
-    if ($ulf->in_error) {
-        $self->internal_stay_on_page;
-        my($e) = $ulf->get_errors;
-        $self->internal_put_error('RealmOwner.password' => delete($e->{'RealmOwner.password'}));
-        b_die('invalid login=', $self->get('realm_owner'), ' ', $e)
-            if %$e;
-    }
-    return
-        if $self->in_error;
-    return shift->SUPER::validate(@_);
 }
 
 1;

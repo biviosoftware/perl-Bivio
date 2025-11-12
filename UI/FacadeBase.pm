@@ -1999,9 +1999,14 @@ sub _cfg_user_auth {
             [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
             [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
             [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
-            [USER_MFA_RECOVERY_CODE_REFILL_LIST => '?/refill-recovery-codes'],
-            [USER_MFA_RECOVERY_CODE_DOWNLOAD => '?/download-recovery-codes'],
-            [USER_MFA_RECOVERY_CODE_PRINT => '?/print-recovery-codes'],
+            # TODO: remove
+            # [USER_MFA_LOGIN => undef],
+            [USER_ESCALATION_PLAIN_FORM => '?/confirm-access'],
+            [USER_ESCALATION_TOTP_FORM => '?/confirm-totp'],
+            [USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM => '?/refill-recovery-codes'],
+            [USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => '?/regenerate-recovery-codes'],
+            [USER_MFA_RECOVERY_CODE_LIST_DOWNLOAD => '?/download-recovery-codes'],
+            [USER_MFA_RECOVERY_CODE_LIST_PRINT => '?/print-recovery-codes'],
         ],
         Text => [
             [[qw(UserLoginForm ContextlessUserLoginForm)] => [
@@ -2225,22 +2230,26 @@ Join([
 EOF
                 ],
             ]],
-            [[qw(UserLoginTOTPForm UserEnableTOTPForm UserDisableTOTPForm UserPasswordForm)] => [
+            [[qw(UserLoginTOTPForm UserEnableTOTPForm UserEscalationTOTPForm MFARecoveryCodeListRegenerateForm UserDisableTOTPForm UserPasswordForm)] => [
                 totp_code => 'Authenticator Code',
-                'totp_code.desc' => 'Current ' . b_use('Model.UserTOTP')->get_default_digits . ' digit code found in authenticator application',
+                'totp_code.desc' => 'Current ' . b_use('Model.UserTOTP')->get_default_digits . ' digit code found in authenticator app',
             ]],
-            [[qw(UserLoginTOTPForm UserPasswordForm UserDisableTOTPForm)] => [
+            [[qw(UserLoginTOTPForm UserEscalationTOTPForm UserPasswordForm UserDisableTOTPForm)] => [
                 mfa_recovery_code => 'Authenticator Recovery Code',
                 'mfa_recovery_code.desc' => 'Used recovery codes will no longer be available',
+            ]],
+            [[qw(UserEscalationPlainForm UserEscalationTOTPForm)] => [
+                ok_button => 'Continue',
             ]],
             [UserLoginTOTPForm => [
                 disable_mfa => 'Disable two-factor authentication',
                 'disable_mfa.desc' => 'Check this box if you have permanently lost access to your authenticator',
             ]],
-            [UserEnableTOTPForm => [
+            [[qw(UserEnableTOTPForm UserEscalationPlainForm UserEscalationTOTPForm MFARecoveryCodeListRegenerateForm UserDisableTOTPForm)] => [
                 'RealmOwner.password' => 'Password',
+            ]],
+            [UserEnableTOTPForm => [
                 prose => [
-                    # "Hardware keys without the ability to sync clock are not recommended"?
                     prologue => <<'EOF',
 Join([
     'bivio gives users the option to set up two-factor authentication via well-known authenticator apps such as Google Authenticator or Duo Mobile.',
@@ -2261,23 +2270,48 @@ Join([
 EOF
                 ],
             ]],
-            [UserDisableTOTPForm => [
-                'RealmOwner.password' => 'Password',
+            [UserEscalationPlainForm => [
                 prose => [
                     prologue => <<'EOF',
-To disable two-factor authentication, you must enter an authentator code and your password. If you don't have access to your authenticator, you must enter a recovery code.
+You have requested a restricted account action. Please enter your password to continue.
 EOF
                 ],
+            ]],
+            [UserEscalationTOTPForm => [
+                prose => [
+                    prologue => <<'EOF',
+You have requested a restricted account action. Please enter your password and authenticator code to continue.
+EOF
+                ],
+            ]],
+            [MFARecoveryCodeListRegenerateForm => [
+                prose => [
+                    prologue => <<'EOF',
+Are you sure you want to create new authenticator recovery codes? Any existing recovery codes will no longer be available.
+EOF
+                ],
+                'ok_button' => 'Create New Authenticator Recovery Codes',
+            ]],
+            [UserDisableTOTPForm => [
+                prose => [
+                    prologue => <<'EOF',
+Are you sure you want to disable time-based two-factor authentication?
+EOF
+                ],
+                'ok_button' => 'Disable',
             ]],
             [MFARecoveryCodeListRefillForm => [
                 'ok_button' => 'Continue',
             ]],
             [title => [
                 USER_LOGIN_TOTP_FORM => 'Two-Factor Authentication',
+                USER_ESCALATION_PLAIN_FORM => 'Confirm Account Access',
+                USER_ESCALATION_TOTP_FORM => 'Confirm Account Access',
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
                 USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
-                USER_MFA_RECOVERY_CODE_REFILL_LIST => 'New Authenticator Recovery Codes',
-                USER_MFA_RECOVERY_CODE_PRINT => 'Authenticator Recovery Codes',
+                USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM => 'New Authenticator Recovery Codes',
+                USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Create New Authenticator Recovery Codes',
+                USER_MFA_RECOVERY_CODE_LIST_PRINT => 'Authenticator Recovery Codes',
             ]],
             [acknowledgement => [
                 USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',

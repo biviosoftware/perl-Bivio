@@ -4,15 +4,15 @@ config({
         locked_out_failure_count => 1,
     },
 });
+my($no_challenge) = 1;
 my($no_setup) = 1;
 my($totp_secret);
 my($time_step);
 my($totp_code);
 my($mfa_recovery_codes);
-my($user);
 FormModel({
     setup_request => sub {
-        $user = create_user(random_alpha_string());
+        create_user(random_alpha_string());
         return
             if $no_setup;
         unless ($totp_secret) {
@@ -32,6 +32,10 @@ FormModel({
             Model_UserTOTP()->create($totp_secret, $time_step);
             Model_MFARecoveryCodeList()->create($mfa_recovery_codes);
         }
+        return
+            if $no_challenge;
+        Action_MFAChallenge()->execute_assert_escalation(req());
+        model('UserEscalationTOTPForm')->process({});
         return;
     },
 });
@@ -39,52 +43,16 @@ req()->initialize_fully('USER_DISABLE_TOTP_FORM');
 [
     [] => MODEL_NOT_FOUND(),
     inline_case(sub {$no_setup = 0}),
-    [] => sub {
-        return req(qw(form_model realm_owner name)) eq $user->get('name');
-    },
-    error_case({} => {
-        'RealmOwner.password' => 'NULL',
-    }),
-    error_case({
-        totp_code => sub {$totp_code},
-    } => {
-        'RealmOwner.password' => 'NULL',
-    }),
-    error_case({
-        'RealmOwner.password' => 'password',
-    } => {
-        totp_code => 'NULL',
-    }),
-    error_case({
-        'RealmOwner.password' => 'password',
-        totp_code => 123456,
-    } => {
-        totp_code => 'INVALID_TOTP_CODE',
-    }),
-    error_case({
-        'RealmOwner.password' => 'password',
-        mfa_recovery_code => 'wrong-recovery-code',
-    } => {
-        mfa_recovery_code => 'INVALID_MFA_RECOVERY_CODE',
-    }),
-    [{
-        'RealmOwner.password' => 'wrong-password',
-        totp_code => sub {$totp_code},
-    }] => sub {req('task_id')->equals_by_name('GENERAL_USER_LOCKED_OUT')},
-    [{
-        'RealmOwner.password' => 'password',
-        totp_code => sub {$totp_code},
-    }] => sub {
+    [] => FORBIDDEN(),
+    inline_case(sub {$no_challenge = 0}),
+    [{}] => sub {
         return 0
             if Model_UserTOTP()->new(req())->unsafe_load;
         return 0
             if Model_MFARecoveryCodeList()->new(req())->load_all->get_result_set_size;
         return 1;
     },
-    [{
-        'RealmOwner.password' => 'password',
-        mfa_recovery_code => sub {$mfa_recovery_codes->get_element(0)},
-    }] => sub {
+    [{}] => sub {
         return 0
             if Model_UserTOTP()->new(req())->unsafe_load;
         return 0

@@ -3,9 +3,12 @@ package Bivio::Biz::Model::MFARecoveryCodeList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
+# TODO: should be UserMFARecoveryCodeList?
+
 my($_DT) = b_use('Type.DateTime');
 my($_SC) = b_use('Type.SecretCode');
 my($_SCS) = b_use('Type.SecretCodeStatus');
+my($_USC) = b_use('Model.UserSecretCode');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     new_code_count => 6,
@@ -14,9 +17,26 @@ $_C->register(my $_CFG = {
 
 sub create {
     my($self, $code_array) = @_;
+    my($usc) = $self->new_other('UserSecretCode');
     $code_array->do_iterate(sub {
         my($it) = @_;
-        $self->new_other('UserSecretCode')->create($_SC->MFA_RECOVERY, $it);
+        $usc->create({
+            type => $_SC->MFA_RECOVERY,
+            code => $it,
+            status => $_SCS->ACTIVE,
+        });
+        return 1;
+    });
+    return;
+}
+
+sub delete {
+    my($self) = @_;
+    $self->do_rows(sub {
+        my($it) = @_;
+        $self->new_other('UserSecretCode')->set_ephemeral->load({
+            user_secret_code_id => $it->get('UserSecretCode.user_secret_code_id'),
+        })->delete;
         return 1;
     });
     return;

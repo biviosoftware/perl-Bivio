@@ -18,6 +18,9 @@ b_use('IO.Config')->register(my $_CFG = {
 (my $_C = b_use('AgentHTTP.Cookie'))->register(__PACKAGE__)
     if $_CFG->{register_with_cookie};
 b_use('Agent.Task')->register(__PACKAGE__);
+my($_AMC) = b_use('Action.MFAChallenge');
+my($_TSC) = b_use('Type.SecretCode');
+my($_TSCS) = b_use('Type.SecretCodeStatus');
 my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 
 sub SUPER_USER_FIELD {
@@ -53,8 +56,16 @@ sub execute_ok {
         # DOES NOT RETURN
     }
     _set_cookie_user($self, $req, $realm);
+    # TODO: verify
+    # TODO: just rip out otp ffs?
+    if ($req->ureq('cookie') && (
+        ($realm && !$realm->require_otp && $self->unsafe_get('validate_called')) || $self->unsafe_get('require_mfa')
+    )) {
+        return _challenge_redirect($self, $realm, $res, $req);
+    }
+    # TODO: do this here or earlier? how would we be in_error?
     return $res
-        if $res;
+        if $self->in_error;
     $self->set_user($realm, $req->unsafe_get('cookie'), $req);
     return $res
         unless $realm && $realm->require_otp;
@@ -83,10 +94,19 @@ sub handle_cookie_in {
     my($proto, $cookie, $req) = @_;
     $proto = Bivio::Biz::Model->get_instance('UserLoginForm');
     my($cookie_user) = $proto->load_cookie_user($req, $cookie);
-    $cookie_user = undef
-        unless $cookie_user && (
-            !$cookie_user->require_mfa || $_ULTF->is_valid_totp_cookie($cookie, $cookie_user)
-        );
+    if ($cookie_user) {
+        my($need_mfa_cookie);
+        my($have_mfa_cookie);
+        foreach my $m (@{$cookie_user->get_configured_mfa_methods || []}) {
+            $need_mfa_cookie = 1;
+            next
+                unless $m->{type}->get_login_form_class->is_valid_cookie($cookie, $cookie_user);
+            $have_mfa_cookie = 1;
+            last;
+        }
+        $cookie_user = undef
+            if $need_mfa_cookie && !$have_mfa_cookie;
+    }
     $proto->set_user($cookie_user, $cookie, $req);
     return;
 }
@@ -171,13 +191,16 @@ sub substitute_user {
     }
     _trace($req->unsafe_get('super_user_id'), ' => ', $new_user)
         if $_TRACE;
-    foreach my $form ($self, $new_user->require_mfa ? $self->new_other('UserLoginTOTPForm') : ()) {
-        $form->process({
+    foreach my $class (
+        $self,
+        map($_->{type}->get_login_form_class, @{$new_user->get_configured_mfa_methods || []}),
+    ) {
+        $class->new($req)->process({
             realm_owner => $new_user,
-            ref($form) eq $_ULTF ? (
-                bypass_challenge => 1,
-            ) : (
+            $self->equals_class_name($class->as_classloader_map_name) ? (
                 disable_assert_cookie => _disable_assert_cookie($self),
+            ) : (
+                bypass_challenge => 1,
             ),
         });
     }
@@ -207,8 +230,28 @@ sub _assert_realm {
     my($err) = $realm->validate_login_for_self;
     $self->throw_die('NOT_FOUND', {entity => $realm, message => $err})
         if $err;
-    $self->internal_put_field(validate_called => 1);
+    # TODO: can't figure out why this would be set here... "validate" was not called.
+    # $self->internal_put_field(validate_called => 1);
     return $realm;
+}
+
+sub _challenge_redirect {
+    my($self, $realm, $res, $req) = @_;
+    _trace('successful login; creating challenge for user=', $realm)
+        if $_TRACE;
+        # No precursor that creates challenge, so creating passed challenge here.
+    $_AMC->create_challenge($req, $realm, $_TSC->LOGIN_CHALLENGE)
+        ->update({status => $_TSCS->PASSED});
+    return $_AMC->do_plain_or_mfa($realm, sub {
+        _trace('no MFA; setting user, escalation code, redirecting to next task')
+            if $_TRACE;
+        $self->set_user($realm, $req->ureq('cookie'), $req);
+        # Initial login treated as an escalation so user doesn't have to present credentials
+        # twice within a short period.
+        $_AMC->create_challenge($req, $realm, $_TSC->ESCALATION_CHALLENGE)
+            ->update({status => $_TSCS->PASSED});
+        return $_AMC->get_next($req) || $res;
+    }, undef, 1);
 }
 
 sub _cookie_password {

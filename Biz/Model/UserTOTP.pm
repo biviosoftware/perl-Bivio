@@ -113,6 +113,8 @@ sub is_valid_setup {
 
 sub _input_in_range {
     my($input, $algorithm, $digits, $period, $secret) = @_;
+    b_die('missing arguments')
+        unless $input && $algorithm && $digits && $period && $secret;
     my($now_ts) = $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $period);
     foreach my $ts (
         # Test time step for now first as it will most often be the valid one
@@ -128,6 +130,8 @@ sub _input_in_range {
 
 sub _code_valid_for_time_step {
     my($code, $algorithm, $digits, $secret, $time_step) = @_;
+    b_die('missing arguments')
+        unless $code && $algorithm && $digits && $secret && $time_step;
     return $code eq $_RFC6238->compute($algorithm->get_name, $digits, $secret, $time_step) ? 1 : 0;
 }
 

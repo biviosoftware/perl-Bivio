@@ -1,23 +1,6 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-my($uid) = create_user(random_realm_name())->get('realm_id');
-my($no_challenge) = 1;
-FormModel({
-    setup_request => sub {
-        model('UserSecretCode')->create({
-            user_id => $uid,
-            type => Type_SecretCode()->LOGIN_MFA_CHALLENGE,
-        }) unless $no_challenge;
-        req_state({
-            task => 'USER_LOGIN_TOTP_FORM',
-        });
-    },
-});
-config({
-    'Bivio::Biz::Model::LoginAttempt' => {
-        locked_out_failure_count => 2,
-    },
-});
-my($secret) = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
+my($secret);
+my($recovery_codes);
 my($time_step);
 my($next_time_step) = sub {
     my($seconds) = @_;
@@ -35,27 +18,54 @@ my($compute_totp_code) = sub {
         $time_step,
     );
 };
-Action_MFARecoveryCodeList()->execute_preview(req());
-my($recovery_codes) = req(qw(Action.MFARecoveryCodeList mfa_recovery_code_array));
+my($no_challenge) = 1;
+my($user);
+FormModel({
+    setup_request => sub {
+        return
+            if $no_challenge;
+        # TODO: this might not be exactly right, but the redirect in execute_assert_login
+        # gets ignored by test request.
+        return
+            if $user->is_locked_out;
+        Action_MFAChallenge()
+            ->create_challenge(req(), $user, Type_SecretCode()->LOGIN_CHALLENGE)
+            ->update({status => Type_SecretCodeStatus()->PASSED});
+        Action_MFAChallenge()->execute_assert_login(req());
+        # req_state({
+        #     task => 'USER_LOGIN_TOTP_FORM',
+        # });
+        return;
+    },
+});
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 2,
+    },
+});
 $next_time_step->(0);
+$user = create_user(random_realm_name());
+$secret = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
+Action_MFARecoveryCodeList()->execute_preview(req());
+$recovery_codes = req(qw(Action.MFARecoveryCodeList mfa_recovery_code_array));
+Action_MFAChallenge()->execute_assert_escalation(req());
+model('UserEscalationPlainForm')->process({});
 Model_UserEnableTOTPForm()->process({
-    'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
     totp_secret => $secret,
     mfa_recovery_code_array => $recovery_codes,
     totp_code => $compute_totp_code->(),
     totp_time_step => $time_step,
 });
-# Have to commit as form processing will issue a rollback on error, preventing login attempts from
-# being recorded.
 commit();
-my($set_cookie) = sub {req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $uid, 1)};
+my($set_cookie) = sub {
+    req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $user->get('realm_id'), 1);
+    return;
+};
 [
     [] => FORBIDDEN(),
     inline_case($set_cookie),
     [] => FORBIDDEN(),
-    inline_case(sub {
-        $no_challenge = 0;
-    }),
+    inline_case(sub {$no_challenge = 0}),
     error_case({} => {
         totp_code => 'NULL',
     }),
@@ -71,7 +81,7 @@ my($set_cookie) = sub {req()->set_user_state_and_cookie(Type_UserState()->LOGGED
     inline_commit(),
     [] => FORBIDDEN(),
     inline_case(sub {
-        req()->with_realm_and_user($uid, $uid, sub {
+        req()->with_realm_and_user($user, $user, sub {
             # Have to advance the clock or the failure and reset login attempts will have same dt
             # and the login attempt sorting may be incorrect, causing the user to still be locked out.
             Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 1));
@@ -80,7 +90,6 @@ my($set_cookie) = sub {req()->set_user_state_and_cookie(Type_UserState()->LOGGED
         });
     }),
     inline_commit(),
-    [] => FORBIDDEN(),
     inline_case($set_cookie),
     error_case({
         # Can't use same code as in create.
@@ -100,9 +109,8 @@ my($set_cookie) = sub {req()->set_user_state_and_cookie(Type_UserState()->LOGGED
             unless req('user_state')->eq_logged_in;
         return 1;
     },
-    inline_case($set_cookie),
     [{
-        mfa_recovery_code => $recovery_codes->get_element(0),
+        mfa_recovery_code => sub {$recovery_codes->get_element(0)},
     }] => sub {
         return 0
             unless req('cookie', class()->MFA_RECOVERY_CODE_FIELD) eq $recovery_codes->get_element(0);
@@ -110,15 +118,14 @@ my($set_cookie) = sub {req()->set_user_state_and_cookie(Type_UserState()->LOGGED
             unless req('user_state')->eq_logged_in;
         return 1;
     },
-    inline_case($set_cookie),
     error_case({
         # Can't reuse recovery codes.
-        mfa_recovery_code => $recovery_codes->get_element(0),
+        mfa_recovery_code => sub {$recovery_codes->get_element(0)},
     } => {
         mfa_recovery_code => 'INVALID_MFA_RECOVERY_CODE',
     }),
     [{
-        mfa_recovery_code => $recovery_codes->get_element(1),
+        mfa_recovery_code => sub {$recovery_codes->get_element(1)},
     }] => sub {
         return 0
             unless req('cookie', class()->MFA_RECOVERY_CODE_FIELD) eq $recovery_codes->get_element(1);

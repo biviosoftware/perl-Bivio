@@ -5,9 +5,9 @@ use Bivio::Base 'Model.UserCreateForm';
 b_use('IO.ClassLoaderAUTOLOAD');
 
 my($_A) = b_use('Action.Acknowledgement');
+my($_AMC) = b_use('Action.MFAChallenge');
 my($_BR) = b_use('Biz.Random');
 my($_UNKNOWN) = b_use('Bivio.TypeError')->UNKNOWN;
-my($_UPQ) = b_use('Action.UserPasswordQuery');
 my($_UPQF) = b_use('Model.UserPasswordQueryForm');
 
 sub execute_ok {
@@ -18,7 +18,7 @@ sub execute_ok {
     return
         if $self->unsafe_get('password_ok');
     $self->internal_put_field(
-        uri => $_UPQ->format_uri($self->req),
+        uri => $_AMC->format_password_query_uri($self->req),
     );
     $self->put_on_request(1);
     $self->if_unapproved_applicant_mode(sub {

@@ -18,11 +18,13 @@ my($is_equal) = sub {
 };
 my($archive_code) = sub {
     my($index) = @_;
-    my($code) = Model_UserSecretCode()->unsafe_load_by_code_and_type(
-        $original_codes->[$index], Type_SecretCode()->MFA_RECOVERY);
+    my($code) = Model_UserSecretCode()->unsafe_load_by_code($original_codes->[$index], {
+        type => Type_SecretCode()->MFA_RECOVERY,
+        status => Type_SecretCodeStatus()->ACTIVE,
+    });
     b_die('no code')
         unless $code;
-    $code->set_archived;
+    $code->update({status => Type_SecretCodeStatus()->ARCHIVED});
     return;
 };
 [
@@ -44,6 +46,8 @@ my($archive_code) = sub {
                     ->generate_secret(Model_UserTOTP()->get_default_algorithm);
                 my($time_step) = Biz_RFC6238()->get_time_step(
                     Type_DateTime()->to_unix(Type_DateTime()->now), Model_UserTOTP()->get_default_period);
+                Action_MFAChallenge()->execute_assert_escalation(req());
+                model('UserEscalationPlainForm')->process({});
                 model('UserEnableTOTPForm')->process({
                     totp_secret => $secret,
                     mfa_recovery_code_array => req(class(), 'mfa_recovery_code_array'),
@@ -55,7 +59,7 @@ my($archive_code) = sub {
                     ),
                     totp_time_step => $time_step,
                 });
-                $original_codes = $get_codes->();
+                $original_codes = b_debug($get_codes->());
                 return;
             }),
         ],

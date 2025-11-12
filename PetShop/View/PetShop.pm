@@ -4,8 +4,33 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
+my($_MM) = b_use('Type.MFAMethod');
+
 sub account {
     my($self) = @_;
+    my($mfa_rows) = [];
+    foreach my $mm ($_MM->get_non_zero_list) {
+        push(@$mfa_rows, [
+            vs_blank_cell(),
+            If(
+                [sub {
+                    my($source, $method) = @_;
+                    return grep(
+                        $_->{type}->is_equal($method),
+                        @{$source->req('auth_user')->get_configured_mfa_methods || []},
+                    ) ? 1 : 0;
+                }, $mm],
+                Link(
+                   'Disable ' . lc($_MM->TOTP->get_long_desc) . ' two-factor authentication',
+                   'USER_DISABLE_' . $_MM->TOTP->get_name . '_FORM',
+                ),
+                Link(
+                    'Enable ' . lc($_MM->TOTP->get_long_desc) . ' two-factor authentication',
+                    'USER_ENABLE_' . $_MM->TOTP->get_name . '_FORM',
+                ),
+            )->put(row_control => If(['auth_user'], 1)),
+        ]);
+    }
     return _with_menu(
         $self,
         '',
@@ -32,20 +57,17 @@ sub account {
                 )->put(row_control => If(['auth_user'], 1)),
             ],
             vs_blank_cell(),
-            [
-                vs_blank_cell(),
-                If(
-                    [['auth_user'], '->require_mfa'],
-                    Link(
-                        'Disable time-based one-time password two-factor authentication',
-                        'USER_DISABLE_TOTP_FORM',
-                    ),
-                    Link(
-                        'Enable time-based one-time password two-factor authentication',
-                        'USER_ENABLE_TOTP_FORM',
-                    ),
-                )->put(row_control => If(['auth_user'], 1)),
-            ],
+            @$mfa_rows,
+            If(
+                [sub {
+                    my($source) = @_;
+                    return $source->req('auth_user')->get_configured_mfa_methods ? 1 : 0;
+                }],
+                Link(
+                   'Create new authenticator recovery codes',
+                   'USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM',
+                ),
+            )->put(row_control => If(['auth_user'], 1)),
             ['UserAccountForm.new_password', {
                 row_control => If(['auth_user'], 0, 1),
             }],

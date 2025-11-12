@@ -28,7 +28,6 @@ b_die('unexpected code count')
     unless int(@$recovery_codes) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
 submit_form({
-    password => $dp,
     authenticator_code => $compute_totp_code->(30, $totp_setup_key),
 });
 verify_text(qr/two-factor authentication has been set up successfully/i);
@@ -120,7 +119,7 @@ submit_form({
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/recovery code list was running low/i);
-verify_text(qr/these are your authenticator recovery codes/i);
+verify_text(qr/the following codes are your authenticator recovery codes/i);
 follow_link('download');
 my($recovery_codes2) = [split("\n", get_content())];
 b_die('unexpected code count')
@@ -143,6 +142,16 @@ submit_form({
     authenticator_recovery_code => $recovery_codes2->[0],
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
+follow_link(qw(myaccount create_new_authenticator_recovery_codes));
+verify_text(qr/are you sure you want to create new/i);
+verify_no_text(qr/the following/i);
+submit_form(qr/create new authenticator recovery codes/i);
+verify_text(qr/the following/i);
+follow_link('download');
+my($recovery_codes3) = [split("\n", get_content())];
+b_die('unexpected code count')
+    unless int(@$recovery_codes3) == Model_MFARecoveryCodeList()->get_new_code_count;
+go_back();
 do_logout();
 follow_link(qw(login forgot_password));
 submit_form({
@@ -181,7 +190,7 @@ visit_uri($uri);
 verify_no_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/authenticator code/i);
 submit_form({
-    authenticator_recovery_code => $recovery_codes2->[1],
+    authenticator_recovery_code => $recovery_codes3->[1],
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/your password/i);
@@ -193,39 +202,12 @@ submit_form(Change => {
 });
 verify_text(qr/your password has been changed/i);
 follow_link(qw(myaccount change_password));
-verify_text(qr/current password/i);
-verify_text(qr/authenticator code/i);
+verify_no_text(qr/current password/i);
+verify_no_text(qr/authenticator code/i);
 my($p2) = random_string();
-test_deviance(qr/must supply a value for current password/i);
 submit_form(Change => {
     'New Password:' => $p2,
     'Re-enter New Password:' => $p2,
-});
-test_deviance(qr/password you entered does not match/i);
-submit_form(Change => {
-    current_password => $p . 'x',
-    'New Password:' => $p2,
-    'Re-enter New Password:' => $p2,
-});
-test_deviance(qr/must supply a value for authenticator code/i);
-submit_form(Change => {
-    current_password => $p,
-    'New Password:' => $p2,
-    'Re-enter New Password:' => $p2,
-});
-test_deviance(qr/authenticator code is invalid/i);
-submit_form(Change => {
-    current_password => $p,
-    'New Password:' => $p2,
-    'Re-enter New Password:' => $p2,
-    authenticator_code => '123456',
-});
-test_conformance();
-submit_form(Change => {
-    current_password => $p,
-    'New Password:' => $p2,
-    'Re-enter New Password:' => $p2,
-    authenticator_code => $compute_totp_code->(30, $totp_setup_key),
 });
 $p = $p2;
 do_logout();
@@ -269,31 +251,8 @@ submit_form({
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
 follow_link(qw(myaccount disable_time_based));
-verify_text(qr/disable two-factor/i);
-# Have to compute before test deviance
-$totp_code = $compute_totp_code->(0, $totp_setup_key);
-test_deviance(qr/must supply a value for password/i);
-submit_form('OK');
-test_deviance(qr/password you entered does not match/i);
-submit_form('OK', {
-    password => 'x' . $p,
-});
-test_deviance(qr/authenticator code is invalid/i);
-submit_form({
-    password => $p,
-    authenticator_code => '123456',
-});
-# Still at the previous time step, so should be the same code. Using a code twice is disallowed.
-test_deviance(qr/authenticator code is invalid/i);
-submit_form({
-    password => $p,
-    authenticator_code => $totp_code,
-});
-test_conformance();
-submit_form({
-    password => $p,
-    authenticator_code => $compute_totp_code->(30, $totp_setup_key),
-});
+verify_text(qr/are you sure you want to disable/i);
+submit_form('Disable');
 verify_text(qr/has been disabled successfully/);
 follow_link('myaccount');
 verify_text(qr/enable time-based/i);
@@ -305,27 +264,35 @@ submit_form({
     password => $p,
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
+$add_seconds->(Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 follow_link(qw(myaccount enable_time_based));
+verify_text(qr/please enter your password to continue/i);
+test_deviance(qr/password you entered does not match/i);
+submit_form(Continue => {
+    password => 'foobarbaz',
+});
+test_conformance();
+submit_form(Continue => {
+    password => $p,
+});
 verify_text('set up two-factor');
 my($totp_setup_key2) = get_content() =~ /id="totp_setup_key">([^<]+)</;
 $totp_setup_key2 =~ s/\s+//g;
 b_die('same setup key')
     if $totp_setup_key eq $totp_setup_key2;
 follow_link('download');
-my($recovery_codes3) = [split("\n", get_content())];
+my($recovery_codes4) = [split("\n", get_content())];
 b_die('unexpected code count')
-    unless int(@$recovery_codes3) == Model_MFARecoveryCodeList()->get_new_code_count;
+    unless int(@$recovery_codes4) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
+# Using previous setup key should be invalid
 $totp_code =  $compute_totp_code->(30, $totp_setup_key);
 test_deviance(qr/authenticator code is invalid/i);
-# Using previous setup key should be invalid
 submit_form({
-    password => $p,
     authenticator_code => $totp_code,
 });
 test_conformance();
 submit_form({
-    password => $p,
     authenticator_code => $compute_totp_code->(30, $totp_setup_key2),
 });
 verify_text(qr/two-factor authentication has been set up successfully/i);
@@ -366,30 +333,50 @@ submit_form({
 test_deviance(qr/recovery code is invalid/i);
 # Using previous recovery codes should be invalid
 submit_form({
-    authenticator_recovery_code => $recovery_codes2->[2],
+    authenticator_recovery_code => $recovery_codes3->[2],
 });
 test_conformance();
 submit_form({
-    authenticator_recovery_code => $recovery_codes3->[0],
+    authenticator_recovery_code => $recovery_codes4->[0],
 });
+$add_seconds->(Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
+$totp_code = $compute_totp_code->(0, $totp_setup_key2);
+follow_link(qw(myaccount create_new_authenticator_recovery_codes));
+verify_text(qr/please enter your password and authenticator code to continue/i);
+test_deviance(qr/password you entered does not match/i);
+submit_form(Continue => {
+    password => 'foobarbaz',
+    authenticator_code => $totp_code,
+});
+test_deviance(qr/authenticator code is invalid/i);
+submit_form(Continue => {
+    password => $p,
+    authenticator_code => $totp_code + 1,
+});
+test_conformance();
+submit_form(Continue => {
+    password => $p,
+    authenticator_code => $totp_code,
+});
+verify_text(qr/are you sure you want to create new/i);
+verify_no_text(qr/the following/i);
+submit_form(qr/create new authenticator recovery codes/i);
+verify_text(qr/the following/i);
+follow_link('download');
+my($recovery_codes5) = [split("\n", get_content())];
+b_die('unexpected code count')
+    unless int(@$recovery_codes5) == Model_MFARecoveryCodeList()->get_new_code_count;
+go_back();
+$add_seconds->(Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
+follow_link('back_to_my_site');
 follow_link(qw(myaccount disable_time_based));
-verify_text(qr/disable two-factor/i);
-test_deviance(qr/recovery code is invalid/i);
-# Using previous recovery codes should be invalid
-submit_form({
+verify_text(qr/please enter your password and authenticator code to continue/i);
+submit_form(Continue => {
     password => $p,
-    authenticator_recovery_code => $recovery_codes2->[3],
+    authenticator_recovery_code => $recovery_codes5->[0],
 });
-# Using previously used recovery code should be invalid
-submit_form({
-    password => $p,
-    authenticator_recovery_code => $recovery_codes3->[0],
-});
-test_conformance();
-submit_form({
-    password => $p,
-    authenticator_recovery_code => $recovery_codes3->[1],
-});
+verify_text(qr/are you sure you want to disable time-based two-factor/i);
+submit_form('Disable');
 verify_text(qr/has been disabled successfully/);
 follow_link('myaccount');
 verify_text(qr/enable time-based/i);

@@ -1449,6 +1449,9 @@ div.user_state a {
 img.totp_qr_code {
   margin: auto;
   display: block;
+  width: 400px;
+  height: 400px;
+  padding: 1em;
 }
 div.totp_setup {
   text-align: center;

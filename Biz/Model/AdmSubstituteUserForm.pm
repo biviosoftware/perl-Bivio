@@ -7,6 +7,8 @@ use Bivio::IO::Trace;
 
 our($_TRACE);
 my($_LQ) = b_use('SQL.ListQuery');
+my($_MM) = b_use('Type.MFAMethod');
+my($_ULF) = b_use('Model.UserLoginForm');
 my($_DEFAULT_TASK) = b_use('Agent.TaskId')->ADM_SUBSTITUTE_USER;
 
 sub SUPER_USER_FIELD {
@@ -83,10 +85,20 @@ sub su_logout {
         if $req->unsafe_get('cookie');
     my($realm) = $self->new_other('RealmOwner');
     $realm->unauth_load({realm_id => $su});
-    _do_form($self, 'UserLoginTOTPForm', {do_logout => 1});
-    _do_form($self, 'UserLoginForm', {realm_owner => $realm->is_loaded ? $realm : undef});
-    _do_form($self, 'UserLoginTOTPForm', {realm_owner => $realm, bypass_challenge => 1})
-        if $realm->is_loaded && $realm->require_mfa;
+    # Log out of all possible MFA methods for maximal caution
+    foreach my $t ($_MM->get_non_zero_list) {
+        b_debug($t);
+        _do_form($self, $t->get_login_form_class, {do_logout => 1});
+    }
+    _do_form($self, $_ULF, {realm_owner => $realm->is_loaded ? $realm : undef});
+    if ($realm->is_loaded) {
+        foreach my $m (@{$realm->get_configured_mfa_methods || []}) {
+            _do_form($self, $m->{type}->get_login_form_class, {
+                realm_owner => $realm,
+                bypass_challenge => 1,
+            });
+        }
+    }
     _trace($realm) if $_TRACE;
     return $realm->is_loaded && $req->unsafe_get('task')
         ? $req->get('task')->unsafe_get_attr_as_id('su_task') || $_DEFAULT_TASK
@@ -102,8 +114,8 @@ sub validate {
 }
 
 sub _do_form {
-    my($self, $form, $values) = @_;
-    $self->new_other($form)->process($values);
+    my($self, $class, $values) = @_;
+    $class->new($self->req)->process($values);
     return;
 }
 1;

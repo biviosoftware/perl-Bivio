@@ -5,9 +5,11 @@ use Bivio::Base 'Type.Enum';
 
 __PACKAGE__->compile([
     UNKNOWN => 0,
-    ACTIVE => 1,
-    USED => 2,
-    ARCHIVED => 3,
+    PENDING => 1,
+    PASSED => 2,
+    ACTIVE => 3,
+    USED => 4,
+    ARCHIVED => 5,
 ]);
 
 1;

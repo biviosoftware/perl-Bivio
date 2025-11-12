@@ -4,10 +4,12 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 my($_A) = b_use('Action.Acknowledgement');
+my($_AMC) = b_use('Action.MFAChallenge');
 my($_DT) = b_use('Type.DateTime');
 my($_LAS) = b_use('Type.LoginAttemptState');
 my($_R) = b_use('Biz.Random');
 my($_TSC) = b_use('Type.SecretCode');
+my($_TSCS) = b_use('Type.SecretCodeStatus');
 my($_USC) = b_use('Model.UserSecretCode');
 
 sub PASSWORD_FIELD {
@@ -28,28 +30,22 @@ sub get_basic_authorization_realm {
         : '*';
 }
 
-sub execute_ok {
-    my($self) = @_;
-    my(@res) = shift->SUPER::execute_ok(@_);
-    return @res
-        if $self->in_error;
-    return @res
-        unless ($self->unsafe_get('realm_owner') && $self->unsafe_get('validate_called'))
-        || $self->unsafe_get('require_mfa');
-    if ($self->get('realm_owner')->require_mfa) {
-        $self->new_other('UserSecretCode')->create({
-            $_USC->REALM_ID_FIELD => $self->get_nested(qw(realm_owner realm_id)),
-            type => $_TSC->LOGIN_MFA_CHALLENGE,
-        });
-        return {
-            method => 'server_redirect',
-            # Only TOTP supported at this time; may support other MFA methods later.
-            task_id => 'totp_task',
-            no_context => 1,
-        };
-    }
-    return @res;
-}
+# sub execute_ok {
+#     my($self) = @_;
+#     my(@res) = shift->SUPER::execute_ok(@_);
+#     return @res
+#         if $self->in_error;
+#     return @res
+#         unless ($self->unsafe_get('realm_owner') && $self->unsafe_get('validate_called'))
+#         || $self->unsafe_get('require_mfa');
+#     # Always go to MFA task, which should check if the user has MFA methods configured
+#     # and either redirects to MFA method login task or completes the plain login with set_user.
+#     # return {
+#     #     method => 'server_redirect',
+#     #     task_id => 'mfa_task',
+#     #     no_context => 1,
+#     # };
+# }
 
 sub internal_initialize {
     my($self) = @_;
@@ -108,6 +104,11 @@ sub internal_initialize {
                 type => 'Boolean',
                 constraint => 'NONE',
             },
+            {
+                name => 'no_record',
+                type => 'Boolean',
+                constraint => 'NONE',
+            },
         ],
     });
 
@@ -137,10 +138,16 @@ sub record_login_attempt {
 }
 
 sub validate {
-    my(undef, $delegator, $login, $password) = shift->delegated_args(@_);
+    my(undef, $delegator, $login, $password, $no_record) = shift->delegated_args(@_);
+    # TODO: moved from validate_login, which gets called from internal code paths where "validate"
+    # doesn't get called. Verify this can be moved.
+    $delegator->internal_put_field(validate_called => 1);
     if (defined($login) && defined($password)) {
-        $delegator->internal_put_field(login => $login);
-        $delegator->internal_put_field('RealmOwner.password' => $password);
+        $delegator->internal_put_field(
+            login => $login,
+            'RealmOwner.password' => $password,
+            no_record => $no_record,
+        );
     }
     _validate($delegator);
     # don't send secrets back to client in error case
@@ -157,7 +164,6 @@ sub validate_login {
     my($model) = ref($model_or_login) ? $model_or_login : $delegator;
     $model->internal_put_field($field => $model_or_login)
         if defined($model_or_login) && !ref($model_or_login);
-    $model->internal_put_field(validate_called => 1);
     my($login) = $model->get($field);
     return undef
         unless defined($login);
@@ -208,7 +214,8 @@ sub _validate {
         if $self->in_error && !$owner->require_otp;
     $owner->maybe_upgrade_password($self->get('RealmOwner.password'))
         if $self->get('RealmOwner.password');
-    $self->record_login_attempt($owner, 1);
+    $self->record_login_attempt($owner, 1)
+        unless $self->unsafe_get('no_record');
     return;
 }
 
@@ -218,7 +225,8 @@ sub _validate_login_attempt {
         # Need to stay on page or the login attempt would get rolled back
         $self->internal_stay_on_page;
         $self->internal_put_error('RealmOwner.password' => $err);
-        $self->record_login_attempt($owner, 0);
+        $self->record_login_attempt($owner, 0)
+            unless $self->unsafe_get('no_record');
     }
     return;
 }

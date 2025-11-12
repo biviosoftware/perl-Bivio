@@ -1,11 +1,47 @@
-# $Id$
-# Copyright (c) 2002-2010 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2002-2025 bivio Software, Inc.  All rights reserved.
 Request();
 my($user) = unauth_model(RealmOwner => {name => 'demo'});
 [
     [req()] => [
         process => [
             [{realm_owner => $user}] => [0],
+        ],
+        process => [
+            [{
+                realm_owner => $user,
+                require_mfa => 1,
+            }] => [0],
+        ],
+        inline_case(sub {
+            req()->put(disable_assert_cookie => 0);
+            req()->set_user_state_and_cookie(Type_UserState()->LOGGED_OUT, $user->get('realm_id'));
+        }),
+        process => [
+            [{
+                realm_owner => $user,
+                require_mfa => 1,
+            }] => [0],
+        ],
+        inline_case(sub {
+            req()->with_realm($user, sub {
+                Model_UserTOTP()->create(
+                    Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm),
+                    Biz_RFC6238()->get_time_step(
+                        Type_DateTime()->to_unix(Type_DateTime()->now),
+                        Model_UserTOTP()->get_default_period,
+                    ),
+                );
+            });
+        }),
+        process => [
+            [{
+                realm_owner => $user,
+                require_mfa => 1,
+            }] => [{
+                method => 'server_redirect',
+                task_id => 'totp_task',
+                no_context => 1,
+            }],
         ],
     ],
     sub {class()->get_instance} => [

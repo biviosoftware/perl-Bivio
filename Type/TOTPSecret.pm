@@ -5,7 +5,6 @@ use Bivio::Base 'Type.SecretLine';
 
 my($_A) = b_use('Type.TOTPAlgorithm');
 my($_TE) = b_use('Bivio.TypeError');
-# TODO: more chars
 my($_CHARS) = ['a'..'z', 'A'..'Z', '0'..'9'];
 my($_CHARS_INDEX_MAX) = int(@$_CHARS) - 1;
 
