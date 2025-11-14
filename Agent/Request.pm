@@ -323,7 +323,7 @@ sub call_process_cleanup {
                 my($die2) = $_D->catch(sub {$op->()});
                 b_warn($die2, ': process_cleanup handler error')
                     if $die2;
-                my($method) = b_debug($die2 ? 'rollback' : 'commit');
+                my($method) = $die2 ? 'rollback' : 'commit';
                 $_T->$method($self);
                 return;
             },

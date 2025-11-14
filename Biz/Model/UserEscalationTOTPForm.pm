@@ -21,6 +21,12 @@ sub execute_ok {
     return;
 }
 
+sub execute_cancel {
+    # Discard context so we don't return to a form that requires escalation and get redirected here
+    # again.
+    return 'cancel';
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {

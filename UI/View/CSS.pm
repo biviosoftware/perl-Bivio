@@ -1449,8 +1449,8 @@ div.user_state a {
 img.totp_qr_code {
   margin: auto;
   display: block;
-  width: 400px;
-  height: 400px;
+  width: 300px;
+  height: 300px;
   padding: 1em;
 }
 div.totp_setup {

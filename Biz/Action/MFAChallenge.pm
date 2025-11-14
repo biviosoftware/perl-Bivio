@@ -80,30 +80,6 @@ sub do_plain_or_mfa {
     return $mfa_op->($owner) // _redirect((lc($m->get_name) . '_task'), $no_context);
 }
 
-sub execute_assert_login {
-    my($proto, $req) = @_;
-    # TODO: sidestep if substitute_user? makes sense, but shoudn't get to a task that asserts login if su, i think
-    _trace('asserting login')
-        if $_TRACE;
-    my($owner) = $_ULF->load_cookie_user($req, $req->req('cookie'));
-    my($usc) = $owner
-        ? _unauth_load_from_cookie($proto, $req, {
-            user_id => $owner->get('realm_id'),
-            type => $_TSC->LOGIN_CHALLENGE,
-            status => $_TSCS->PASSED,
-        })
-        : undef;
-    # TODO: no context?
-    _redirect('login_task')
-        unless $owner && $usc;
-    b_die('only for mfa login forms to assert plain login')
-        unless $owner->get_configured_mfa_methods;
-    _trace('MFA available; creating escalation code')
-        if $_TRACE;
-    $proto->create_challenge($req, $owner, $_TSC->ESCALATION_CHALLENGE);
-    return;
-}
-
 sub execute_assert_escalation {
     my($proto, $req) = @_;
     if ($req->is_substitute_user) {
@@ -125,6 +101,31 @@ sub execute_assert_escalation {
         });
     $proto->create_challenge($req, $req->req('auth_user'), $_TSC->ESCALATION_CHALLENGE);
     return $proto->do_plain_or_mfa($req->req('auth_user'));
+}
+
+sub execute_assert_login {
+    my($proto, $req) = @_;
+    # TODO: sidestep if substitute_user? makes sense, but shoudn't get to a task that asserts login if su, i think
+    _trace('asserting login')
+        if $_TRACE;
+    my($owner) = $_ULF->load_cookie_user($req, $req->req('cookie'));
+    my($usc) = $owner
+        ? _unauth_load_from_cookie($proto, $req, {
+            user_id => $owner->get('realm_id'),
+            type => $_TSC->LOGIN_CHALLENGE,
+            status => $_TSCS->PASSED,
+        })
+        : undef;
+    # TODO: no context?
+    # TODO: ack
+    _redirect('login_task')
+        unless $owner && $usc;
+    b_die('only for mfa login forms to assert plain login')
+        unless $owner->get_configured_mfa_methods;
+    _trace('MFA available; creating escalation code')
+        if $_TRACE;
+    $proto->create_challenge($req, $owner, $_TSC->ESCALATION_CHALLENGE);
+    return;
 }
 
 sub execute_password_reset {
@@ -240,6 +241,8 @@ sub _load {
     _trace('load method=', $method, ' query=', $query)
         if $_TRACE;
     my($usc) = $_USC->new($req)->set_ephemeral->$method($code, $query);
+    _trace('result=', $usc)
+        if $_TRACE;
     _put_req($proto, $req, $usc)
         if $usc;
     return $usc;

@@ -59,6 +59,16 @@ EOF
 
 sub escalation_plain_form {
     return shift->internal_body(vs_simple_form(UserEscalationPlainForm => [
+        Join([
+            'You have requested a restricted account action. Please enter your password to continue.',
+            BR(), BR(),
+            'Access to restricted actions will be granted for ',
+            String([sub {
+                return (int(b_use('Type.SecretCode')->ESCALATION_CHALLENGE->get_expiry_seconds_for_type) / 60);
+            }]),
+            ' minutes.',
+            BR(), BR(),
+        ]),
         'UserEscalationPlainForm.RealmOwner.password',
     ]));
 }

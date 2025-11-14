@@ -376,7 +376,13 @@ submit_form(Continue => {
     authenticator_recovery_code => $recovery_codes5->[0],
 });
 verify_text(qr/are you sure you want to disable time-based two-factor/i);
+$add_seconds->(Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 submit_form('Disable');
+verify_text(qr/please enter your password and authenticator code to continue/i);
+submit_form(Continue => {
+    password => $p,
+    authenticator_recovery_code => $recovery_codes5->[1],
+});
 verify_text(qr/has been disabled successfully/);
 follow_link('myaccount');
 verify_text(qr/enable time-based/i);

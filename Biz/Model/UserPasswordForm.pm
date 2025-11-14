@@ -1,12 +1,13 @@
 # Copyright (c) 2003-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserPasswordForm;
 use strict;
-use Bivio::Base 'Biz.FormModel';
+use Bivio::Base 'Model.UserEscalatedAccessBaseForm';
 
 my($_A) = b_use('Action.Acknowledgement');
 my($_AMC) = b_use('Action.MFAChallenge');
 my($_P) = b_use('Type.Password');
 my($_TSC) = b_use('Type.SecretCode');
+my($_TSCS) = b_use('Type.SecretCodeStatus');
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
@@ -24,10 +25,7 @@ sub execute_ok {
 
 sub internal_initialize {
     my($self) = @_;
-    # Return config.
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-        version => 1,
-        require_context => 1,
         $self->field_decl(
             visible => [
                 [qw(old_password Password NONE)],
@@ -43,13 +41,10 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self, $method) = @_;
-    # Sets the 'require_old_password' field based on if the user is the
-    # super user.
-    # TODO: get challenge this way or via unsafe_get_challenge?
-    my($c) = $self->ureq($_AMC->get_req_key($_TSC->ESCALATION_CHALLENGE));
+    shift->SUPER::internal_pre_execute(@_);
     $self->internal_put_field(
         realm_owner => $self->req(qw(auth_realm owner)),
-        require_old_password => ($c && $c->get('status')->eq_passed) || $self->req->is_substitute_user
+        require_old_password => $self->unsafe_get('passed_access_challenge') || $self->req->is_substitute_user
             ? 0 : 1,
     );
     return;

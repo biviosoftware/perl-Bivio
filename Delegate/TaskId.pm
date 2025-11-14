@@ -1733,27 +1733,9 @@ sub info_user_auth {
             Model.UserEscalationPlainForm
             View.UserAuth->escalation_plain_form
             next=MY_SITE
+            cancel=USER_SETTINGS_FORM
         )],
-        # TODO: remove
-        # [qw(
-        #     USER_MFA_LOGIN
-        #     305
-        #     GENERAL
-        #     ANYBODY
-        #     Action.MFAChallenge->execute_mfa_redirect
-        #     plain_task=MY_SITE
-        #     totp_task=USER_LOGIN_TOTP_FORM
-        # )],
-        [qw(
-            USER_ESCALATION_TOTP_FORM
-            306
-            USER
-            ADMIN_READ&ADMIN_WRITE
-            Model.UserEscalationTOTPForm
-            View.UserTOTP->escalation_totp_form
-            next=MY_SITE
-        )],
-        # 307-309 free
+        # 305-309 free
         [qw(
             USER_LOGIN_TOTP_FORM
             310
@@ -1761,7 +1743,7 @@ sub info_user_auth {
             ANYBODY
             Action.MFAChallenge->execute_assert_login
             Model.UserLoginTOTPForm
-            View.UserTOTP->totp_form
+            View.UserTOTP->login_form
             password_task=USER_PASSWORD
             refill_task=USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM
             next=MY_SITE
@@ -1778,7 +1760,6 @@ sub info_user_auth {
             Model.UserEnableTOTPForm
             View.UserTOTP->enable_form
             plain_task=USER_ESCALATION_PLAIN_FORM
-            totp_task=USER_ESCALATION_TOTP_FORM
             next=MY_SITE
         )],
         [qw(
@@ -1789,9 +1770,18 @@ sub info_user_auth {
             Action.MFAChallenge->execute_assert_escalation
             Model.UserDisableTOTPForm
             View.UserTOTP->disable_form
-            plain_task=USER_ESCALATION_PLAIN_FORM
             totp_task=USER_ESCALATION_TOTP_FORM
             next=MY_SITE
+        )],
+        [qw(
+            USER_ESCALATION_TOTP_FORM
+            313
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.UserEscalationTOTPForm
+            View.UserTOTP->escalation_totp_form
+            next=MY_SITE
+            cancel=USER_SETTINGS_FORM
         )],
     ];
 }

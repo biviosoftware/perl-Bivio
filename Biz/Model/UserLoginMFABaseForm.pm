@@ -52,11 +52,12 @@ sub execute_ok {
         $next = 'refill_task';
     }
     $next ||= $_AMC->get_next($self->req);
-    return $next ? {
+    return {
         method => 'server_redirect',
         task_id => $next,
         no_context => 1,
-    } : undef;
+    } if $next;
+    return;
 }
 
 sub internal_clear_sensitive_fields {

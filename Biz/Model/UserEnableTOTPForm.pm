@@ -3,13 +3,12 @@ package Bivio::Biz::Model::UserEnableTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginTOTPForm';
 
-my($_AMC) = b_use('Action.MFAChallenge');
 my($_AMFCL) = b_use('Action.MFARecoveryCodeList');
 my($_DT) = b_use('Type.DateTime');
 my($_MMFCL) = b_use('Model.MFARecoveryCodeList');
 my($_RFC6238) = b_use('Biz.RFC6238');
 my($_TS) = b_use('Type.TOTPSecret');
-my($_TSC) = b_use('Type.SecretCode');
+my($_UEABF) = b_use('Model.UserEscalatedAccessBaseForm');
 my($_UT) = b_use('Model.UserTOTP');
 
 # TODO: This form assumes that no recovery codes already exist -- once multiple MFA methods are
@@ -27,19 +26,25 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     $self->bypass_challenge;
-    my(@res) = shift->SUPER::execute_ok(@_);
+    my($res) = shift->SUPER::execute_ok(@_);
     $self->new_other('UserTOTP')->create(
         $self->get('totp_secret'),
         $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
     );
     $_MMFCL->create($self->get('mfa_recovery_code_array'));
-    return @res;
+    # TODO: send email
+    return $res;
+}
+
+sub execute_unwind {
+    return shift->delegate_method($_UEABF, @_);
 }
 
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
+        require_context => 1,
         $self->field_decl(
             hidden => [
                 [qw(totp_secret Line)],
@@ -54,13 +59,7 @@ sub internal_pre_execute {
     b_die('FORBIDDEN')
         if $self->new_other('UserTOTP')->unsafe_load;
     $self->internal_put_field(realm_owner => $self->req(qw(auth_realm owner)));
-    # TODO: get challente this way or with unsafe_get_challenge?
-    my($c) = $self->ureq($_AMC->get_req_key($_TSC->ESCALATION_CHALLENGE));
-    # TODO: die or just return FORBIDDEN? confusing in tests when we just return as the FORBIDDEN
-    # return isn't obvious.
-    b_die('FORBIDDEN')
-        unless $c && $c->get('user_id') eq $self->req('auth_id') && $c->get('status')->eq_passed;
-    return;
+    return shift->delegate_method($_UEABF, @_);
 }
 
 sub validate {

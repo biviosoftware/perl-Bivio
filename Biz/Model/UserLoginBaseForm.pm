@@ -30,23 +30,6 @@ sub get_basic_authorization_realm {
         : '*';
 }
 
-# sub execute_ok {
-#     my($self) = @_;
-#     my(@res) = shift->SUPER::execute_ok(@_);
-#     return @res
-#         if $self->in_error;
-#     return @res
-#         unless ($self->unsafe_get('realm_owner') && $self->unsafe_get('validate_called'))
-#         || $self->unsafe_get('require_mfa');
-#     # Always go to MFA task, which should check if the user has MFA methods configured
-#     # and either redirects to MFA method login task or completes the plain login with set_user.
-#     # return {
-#     #     method => 'server_redirect',
-#     #     task_id => 'mfa_task',
-#     #     no_context => 1,
-#     # };
-# }
-
 sub internal_initialize {
     my($self) = @_;
     # B<FOR INTERNAL USE ONLY>
@@ -130,7 +113,7 @@ sub internal_validate_login_value {
 }
 
 sub record_login_attempt {
-    my(undef, $owner, $success) = @_;
+    my(undef, undef, $owner, $success) = shift->delegated_args(@_);
     return _maybe_lock_out($owner, $owner->new_other('LoginAttempt')->create({
         realm_id => $owner->get('realm_id'),
         login_attempt_state => $success ? $_LAS->SUCCESS : $_LAS->FAILURE,

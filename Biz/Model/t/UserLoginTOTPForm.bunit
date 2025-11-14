@@ -32,9 +32,6 @@ FormModel({
             ->create_challenge(req(), $user, Type_SecretCode()->LOGIN_CHALLENGE)
             ->update({status => Type_SecretCodeStatus()->PASSED});
         Action_MFAChallenge()->execute_assert_login(req());
-        # req_state({
-        #     task => 'USER_LOGIN_TOTP_FORM',
-        # });
         return;
     },
 });

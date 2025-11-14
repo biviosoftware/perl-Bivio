@@ -46,13 +46,20 @@ sub create {
         escalation_challenge
         password_query
     ))) {
-        # Note this means that users can only have one challenge in progress at a time.
-        $self->new_other('UserSecretCode')->delete_all({type => $values->{type}});
+        # Users only allowed one of these types in progress at a time.
+        if ($self->req('auth_realm')->is_general) {
+            b_die($self->REALM_ID_FIELD, ' required')
+                unless $values->{$self->REALM_ID_FIELD};
+            $self->req->with_realm($values->{$self->REALM_ID_FIELD}, sub {
+                _delete_all($self, $values->{type});
+                return;
+            });
+        }
+        else {
+            _delete_all($self, $values->{type})
+        }
     }
-    return $self->SUPER::create({
-        %$values,
-        expiration_date_time => $values->{type}->get_expiry_for_type,
-    });
+    return $self->SUPER::create(_values_with_expiry($self, $values));
 }
 
 sub internal_initialize {
@@ -93,7 +100,7 @@ sub is_valid_cookie_code {
 
 sub update {
     my($self, $values) = _validate_update(@_);
-    return $self->SUPER::update($values);
+    return $self->SUPER::update(_values_with_expiry($self, $values));
 }
 
 sub unauth_load_by_code {
@@ -104,6 +111,11 @@ sub unauth_load_by_code {
 sub unsafe_load_by_code {
     my($self, $code, $query) = @_;
     return _find($self, $code, 'iterate_start', $query);
+}
+
+sub _delete_all {
+    my($self, $type) = @_;
+    return $self->new_other('UserSecretCode')->delete_all({type => $type});
 }
 
 sub _validate_update {
@@ -142,6 +154,18 @@ sub _find {
         if $found;
     $self->internal_unload;
     return undef;
+}
+
+sub _values_with_expiry {
+    my($self, $values) = @_;
+    return $values
+        unless $values->{status};
+    return {
+        %$values,
+        $values->{status}->equals_by_name(qw(active passed)) ? (
+            expiration_date_time => ($values->{type} || $self->get('type'))->get_expiry_for_type,
+        ) : (),
+    };
 }
 
 1;

@@ -295,9 +295,7 @@ sub _set_cookie_user {
         );
     }
     else {
-        $cookie->delete(
-            $self->PASSWORD_FIELD,
-        );
+        $cookie->delete($self->PASSWORD_FIELD);
     }
     return;
 }

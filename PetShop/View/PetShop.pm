@@ -11,7 +11,8 @@ sub account {
     my($mfa_rows) = [];
     foreach my $mm ($_MM->get_non_zero_list) {
         push(@$mfa_rows, [
-            vs_blank_cell(),
+            int(@$mfa_rows) ? vs_blank_cell()
+                : String('Two-Factor Authentication', {cell_class => 'label label_ok'}),
             If(
                 [sub {
                     my($source, $method) = @_;
@@ -58,16 +59,20 @@ sub account {
             ],
             vs_blank_cell(),
             @$mfa_rows,
-            If(
-                [sub {
-                    my($source) = @_;
-                    return $source->req('auth_user')->get_configured_mfa_methods ? 1 : 0;
-                }],
+            vs_blank_cell(),
+            [
+                vs_blank_cell(),
                 Link(
-                   'Create new authenticator recovery codes',
-                   'USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM',
-                ),
-            )->put(row_control => If(['auth_user'], 1)),
+                    'Create new authenticator recovery codes',
+                    'USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM',
+                )->put(row_control => If(And(
+                    ['auth_user'],
+                    [sub {
+                        my($source) = @_;
+                        return $source->req('auth_user')->get_configured_mfa_methods ? 1 : 0;
+                    }],
+                ), 1)),
+            ],
             ['UserAccountForm.new_password', {
                 row_control => If(['auth_user'], 0, 1),
             }],

@@ -1,7 +1,7 @@
 # Copyright (c) 2025 bivio Software, Inc.  All rights reserved.
 package Bivio::Biz::Model::UserDisableTOTPForm;
 use strict;
-use Bivio::Base 'Biz.FormModel';
+use Bivio::Base 'Model.UserEscalatedAccessBaseForm';
 
 my($_AMC) = b_use('Action.MFAChallenge');
 my($_TSC) = b_use('Type.SecretCode');
@@ -24,22 +24,11 @@ sub execute_ok {
     return;
 }
 
-sub internal_initialize {
-    my($self) = @_;
-    return $self->merge_initialize_info($self->SUPER::internal_initialize, {
-        version => 1,
-    });
-}
-
 sub internal_pre_execute {
     my($self) = @_;
     b_die('MODEL_NOT_FOUND')
         unless $self->new_other('UserTOTP')->unsafe_load;
-    # TODO: get challenge this way or via unsafe_get_challenge?
-    my($c) = $self->ureq($_AMC->get_req_key($_TSC->ESCALATION_CHALLENGE));
-    b_die('FORBIDDEN')
-        unless $c && $c->get('user_id') eq $self->req('auth_user_id') && $c->get('status')->eq_passed;
-    return;
+    return shift->SUPER::internal_pre_execute(@_);
 }
 
 1;

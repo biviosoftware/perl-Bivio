@@ -22,6 +22,12 @@ sub execute_ok {
     return;
 }
 
+sub execute_cancel {
+    # Discard context so we don't return to a form that requires escalation and get redirected here
+    # again.
+    return 'cancel';
+}
+
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info(shift->SUPER::internal_initialize(@_), {
@@ -39,13 +45,12 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    # TODO: status handling for when getting challenge from cookie
     my($sc) = $_AMC->get_challenge($self->req, {
         type => $_TSC->ESCALATION_CHALLENGE,
         status => $_TSCS->PENDING,
     });
     b_die('FORBIDDEN')
-        unless $sc && $sc->get('user_id') eq $self->req('auth_id') && $sc->get('status')->eq_pending;
+        unless $sc && $sc->get('user_id') eq $self->req('auth_id');
     return;
 }
 

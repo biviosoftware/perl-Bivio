@@ -1999,8 +1999,6 @@ sub _cfg_user_auth {
             [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
             [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
             [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
-            # TODO: remove
-            # [USER_MFA_LOGIN => undef],
             [USER_ESCALATION_PLAIN_FORM => '?/confirm-access'],
             [USER_ESCALATION_TOTP_FORM => '?/confirm-totp'],
             [USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM => '?/refill-recovery-codes'],
@@ -2241,10 +2239,6 @@ EOF
             [[qw(UserEscalationPlainForm UserEscalationTOTPForm)] => [
                 ok_button => 'Continue',
             ]],
-            [UserLoginTOTPForm => [
-                disable_mfa => 'Disable two-factor authentication',
-                'disable_mfa.desc' => 'Check this box if you have permanently lost access to your authenticator',
-            ]],
             [[qw(UserEnableTOTPForm UserEscalationPlainForm UserEscalationTOTPForm MFARecoveryCodeListRegenerateForm UserDisableTOTPForm)] => [
                 'RealmOwner.password' => 'Password',
             ]],
@@ -2263,24 +2257,9 @@ Join([
         ])),
         LI(MFARecoveryCodeList()),
         LI('Enter the generated 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
-        LI('Enter your account password.'),
     ])),
     BR(), BR(),
 ]);
-EOF
-                ],
-            ]],
-            [UserEscalationPlainForm => [
-                prose => [
-                    prologue => <<'EOF',
-You have requested a restricted account action. Please enter your password to continue.
-EOF
-                ],
-            ]],
-            [UserEscalationTOTPForm => [
-                prose => [
-                    prologue => <<'EOF',
-You have requested a restricted account action. Please enter your password and authenticator code to continue.
 EOF
                 ],
             ]],
