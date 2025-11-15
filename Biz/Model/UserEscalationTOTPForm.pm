@@ -42,7 +42,6 @@ sub internal_initialize {
 sub internal_pre_execute {
     my($self) = @_;
     # Assert that we have TOTP configured
-    b_debug($self->req);
     $self->new_other('UserTOTP')->load;
     my($sc) = $_AMC->get_challenge($self->req, {
         type => $_TSC->ESCALATION_CHALLENGE,

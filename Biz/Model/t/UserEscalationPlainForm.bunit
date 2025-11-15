@@ -16,6 +16,13 @@ config({
         locked_out_failure_count => 2,
     },
 });
+my($is_locked_out) = sub {
+    my($case, $actual) = @_;
+    assert_equals(req('auth_user_id'), undef);
+    assert_equals(req(qw(auth_realm))->is_general, 1);
+    assert_equals(req('task_id')->eq_general_user_locked_out, 1);
+    return 1;
+};
 my($user) = create_user(random_realm_name());
 commit();
 [
@@ -38,15 +45,17 @@ commit();
     } => {
         'RealmOwner.password' => 'PASSWORD_MISMATCH',
     }),
-    error_case({
+    inline_case(sub {
+        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 1));
+    }),
+    [{
         login => sub {$user->format_email},
         'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD . 'x',
-    } => {
-        'RealmOwner.password' => 'PASSWORD_MISMATCH',
-    }),
-    inline_case(sub {
-        commit();
-        req()->set_realm($user);
+    }] => $is_locked_out,
+    req_state({
+        task => 'USER_PASSWORD',
+        user => $user,
+        realm => $user,
     }),
     error_case({
         login => sub {$user->format_email},
@@ -55,8 +64,12 @@ commit();
         login => 'USER_LOCKED_OUT',
     }),
     inline_case(sub {
+        req()->set_realm_and_user($user, $user);
         Util_RealmAdmin()->reset_login_attempts();
         Util_RealmAdmin()->reset_password(Util_TestUser()->DEFAULT_PASSWORD);
+    }),
+    req_state({
+        task => 'USER_PASSWORD',
     }),
     [{
         login => sub {$user->format_email},

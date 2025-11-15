@@ -5,6 +5,7 @@ my($no_challenge) = 1;
 my($secret);
 my($totp);
 my($recovery_codes);
+my($period);
 my($get_totp_code) = sub {
     return Biz_RFC6238()->compute(
         $totp->get(qw(algorithm digits secret)),
@@ -23,7 +24,7 @@ FormModel({
                     $secret,
                     Biz_RFC6238()->get_time_step(
                         Type_DateTime()->to_unix(Type_DateTime()->now),
-                        Model_UserTOTP()->get_default_period,
+                        $period,
                     ),
                 );
                 Action_MFARecoveryCodeList()->execute_preview(req());
@@ -47,8 +48,22 @@ config({
         locked_out_failure_count => 2,
     },
 });
+my($is_locked_out) = sub {
+    my($case, $actual) = @_;
+    assert_equals(req('auth_user_id'), undef);
+    assert_equals(req(qw(auth_realm))->is_general, 1);
+    assert_equals(req('task_id')->eq_general_user_locked_out, 1);
+    return 1;
+};
 $user = create_user(random_realm_name());
 commit();
+$period = Model_UserTOTP()->get_default_period;
+Type_DateTime()->set_test_now(
+    Type_DateTime()->add_seconds(
+        Type_DateTime()->now,
+        $period - (Type_DateTime()->to_unix(Type_DateTime()->now) % $period),
+    ),
+);
 [
     req_state({
         task => 'USER_PASSWORD',
@@ -72,26 +87,30 @@ commit();
     } => {
         'RealmOwner.password' => 'PASSWORD_MISMATCH',
     }),
-    inline_commit(),
-    error_case({
+    inline_case(sub {
+        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 1));
+    }),
+    [{
         'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
         totp_code => sub {$get_totp_code->() + 1},
-    } => {
-        totp_code => 'INVALID_TOTP_CODE',
+    }] => $is_locked_out,
+    req_state({
+        task => 'USER_PASSWORD',
+        user => $user,
+        realm => $user,
     }),
-    inline_case(sub {
-        commit();
-        req()->set_realm($user);
-        return;
-    }),
-    # Should now be locked out
     [{
         'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
         totp_code => sub {$get_totp_code->() + 1},
     }] => DIE(),
     inline_case(sub {
+        req()->set_realm_and_user($user, $user);
+        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 1));
         Util_RealmAdmin()->reset_login_attempts();
         Util_RealmAdmin()->reset_password(Util_TestUser()->DEFAULT_PASSWORD);
+    }),
+    req_state({
+        task => 'USER_PASSWORD',
     }),
     # Not allowed to use same TOTP code from setup
     error_case({
@@ -101,7 +120,7 @@ commit();
         totp_code => 'INVALID_TOTP_CODE',
     }),
     inline_case(sub {
-        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 30));
+        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, $period));
         return;
     }),
     [{

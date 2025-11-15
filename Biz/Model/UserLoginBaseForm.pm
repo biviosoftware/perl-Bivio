@@ -162,6 +162,7 @@ sub _maybe_lock_out {
     if ($attempt->is_state_locked_out) {
         b_warn('locked out owner=', $owner);
         $owner->update_password($_R->password);
+        $owner->req->set_user(undef);
         $owner->req->server_redirect('GENERAL_USER_LOCKED_OUT');
         # DOES NOT RETURN
     }
