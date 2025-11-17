@@ -6,10 +6,10 @@ use Bivio::Base 'Biz.FormModel';
 # Not making this a UserEscalatedAccessBaseForm for now so as to not change existing apps.
 
 my($_A) = b_use('Action.Acknowledgement');
-my($_AMC) = b_use('Action.MFAChallenge');
+my($_AAC) = b_use('Action.AccessChallenge');
 my($_P) = b_use('Type.Password');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
+my($_TAC) = b_use('Type.AccessCode');
+my($_TACS) = b_use('Type.AccessCodeStatus');
 
 sub PASSWORD_FIELD_LIST {
     return qw(new_password old_password confirm_new_password);
@@ -48,9 +48,9 @@ sub internal_pre_execute {
     shift->SUPER::internal_pre_execute(@_);
     $self->internal_put_field(
         realm_owner => $self->req(qw(auth_realm owner)),
-        require_old_password => $_AMC->unsafe_get_challenge($self->req, {
-            type => $_TSC->ESCALATION_CHALLENGE,
-            status => $_TSCS->PASSED,
+        require_old_password => $_AAC->unsafe_get_challenge($self->req, {
+            type => $_TAC->ESCALATION_CHALLENGE,
+            status => $_TACS->PASSED,
         }) || $self->req->is_substitute_user
             ? 0 : 1,
     );

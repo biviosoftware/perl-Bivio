@@ -14,7 +14,7 @@ FormModel({
         create_user(random_realm_name());
         return
             unless $create_escalation;
-        Action_MFAChallenge()->execute_assert_escalation(req());
+        Action_AccessChallenge()->execute_assert_escalation(req());
         return
             unless $pass_escalation;
         model('UserEscalationPlainForm')->process({});
@@ -93,7 +93,7 @@ my($is_task) = sub {
             my($it) = @_;
             $found++;
             b_die('unexpected mfa_recovery_code')
-                unless grep({$it->get('UserSecretCode.code') eq $_} @$expected_codes);
+                unless grep({$it->get('UserAccessCode.code') eq $_} @$expected_codes);
             return 1;
         });
         b_die('expected=', Model_MFARecoveryCodeList()->get_new_code_count, ' recovery codes, found=', $found)

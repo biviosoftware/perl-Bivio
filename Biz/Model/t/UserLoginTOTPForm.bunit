@@ -28,10 +28,10 @@ FormModel({
         # gets ignored by test request.
         return
             if $user->is_locked_out;
-        Action_MFAChallenge()
-            ->create_challenge(req(), $user, Type_SecretCode()->LOGIN_CHALLENGE)
-            ->update({status => Type_SecretCodeStatus()->PASSED});
-        Action_MFAChallenge()->execute_assert_login(req());
+        Action_AccessChallenge()
+            ->create_challenge(req(), $user, Type_AccessCode()->LOGIN_CHALLENGE)
+            ->update({status => Type_AccessCodeStatus()->PASSED});
+        Action_AccessChallenge()->execute_assert_login(req());
         return;
     },
 });
@@ -45,7 +45,7 @@ $user = create_user(random_realm_name());
 $secret = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
 Action_MFARecoveryCodeList()->execute_preview(req());
 $recovery_codes = req(qw(Action.MFARecoveryCodeList mfa_recovery_code_array));
-Action_MFAChallenge()->execute_assert_escalation(req());
+Action_AccessChallenge()->execute_assert_escalation(req());
 model('UserEscalationPlainForm')->process({});
 Model_UserEnableTOTPForm()->process({
     totp_secret => $secret,

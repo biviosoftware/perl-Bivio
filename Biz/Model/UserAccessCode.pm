@@ -1,5 +1,5 @@
 # Copyright (c) 2025 bivio Software Artisans, Inc.  All Rights Reserved.
-package Bivio::Biz::Model::UserSecretCode;
+package Bivio::Biz::Model::UserAccessCode;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
@@ -7,8 +7,8 @@ use Bivio::Base 'Model.RealmBase';
 
 my($_A) = b_use('Action.Acknowledgement');
 my($_DT) = b_use('Type.DateTime');
-my($_C) = b_use('Type.SecretCode');
-my($_S) = b_use('Type.SecretCodeStatus');
+my($_C) = b_use('Type.AccessCode');
+my($_S) = b_use('Type.AccessCodeStatus');
 my($_STARTING_STATUSES) = {
     LOGIN_CHALLENGE => ['PENDING'],
     ESCALATION_CHALLENGE => ['PENDING'],
@@ -67,16 +67,16 @@ sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
-        table_name => 'user_secret_code_t',
-        as_string_fields => [qw(user_secret_code_id user_id creation_date_time expiration_date_time type status)],
+        table_name => 'user_access_code_t',
+        as_string_fields => [qw(user_access_code_id user_id creation_date_time expiration_date_time type status)],
         columns => {
-            user_secret_code_id => [qw(PrimaryId PRIMARY_KEY)],
+            user_access_code_id => [qw(PrimaryId PRIMARY_KEY)],
             creation_date_time => [qw(DateTime NOT_NULL)],
             modified_date_time => [qw(DateTime NOT_NULL)],
             expiration_date_time => [qw(DateTime NONE)],
             code => [qw(SecretLine NOT_NULL)],
-            type => [qw(SecretCode NOT_ZERO_ENUM)],
-            status => [qw(SecretCodeStatus NOT_ZERO_ENUM)],
+            type => [qw(AccessCode NOT_ZERO_ENUM)],
+            status => [qw(AccessCodeStatus NOT_ZERO_ENUM)],
         },
     });
 }
@@ -116,7 +116,7 @@ sub unsafe_load_by_code {
 
 sub _delete_all {
     my($self, $type) = @_;
-    return $self->new_other('UserSecretCode')->delete_all({type => $type});
+    return $self->new_other('UserAccessCode')->delete_all({type => $type});
 }
 
 sub _find {
@@ -131,7 +131,7 @@ sub _find {
         return 1
             unless $it->get('code') eq $code;
         if ($it->is_expired) {
-            $_A->save_label(secret_code_expired => $self->req)
+            $_A->save_label(access_code_expired => $self->req)
                 if $expired_ack;
             return 1;
         }

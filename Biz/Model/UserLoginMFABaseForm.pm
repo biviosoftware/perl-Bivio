@@ -4,12 +4,12 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 my($_A) = b_use('Action.Acknowledgement');
-my($_AMC) = b_use('Action.MFAChallenge');
+my($_AAC) = b_use('Action.AccessChallenge');
 my($_C) = b_use('AgentHTTP.Cookie');
 my($_MM) = b_use('Type.MFAMethod');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
-my($_USC) = b_use('Model.UserSecretCode');
+my($_TAC) = b_use('Type.AccessCode');
+my($_TACS) = b_use('Type.AccessCodeStatus');
+my($_UAC) = b_use('Model.UserAccessCode');
 my($_ULF) = b_use('Model.UserLoginForm');
 
 sub MFA_RECOVERY_CODE_FIELD {
@@ -40,18 +40,18 @@ sub execute_ok {
     return
         unless $self->get('realm_owner');
     unless ($self->unsafe_get('bypass_challenge')) {
-        $_AMC->assert_challenge($self->req, {
-            type => $_TSC->ESCALATION_CHALLENGE,
-            status => $_TSCS->PENDING,
-        })->update({status => $_TSCS->PASSED});
+        $_AAC->assert_challenge($self->req, {
+            type => $_TAC->ESCALATION_CHALLENGE,
+            status => $_TACS->PENDING,
+        })->update({status => $_TACS->PASSED});
     }
     my($next);
     if (my $mrcm = $self->unsafe_get('mfa_recovery_code_model')) {
-        $mrcm->update({status => $_TSCS->ARCHIVED});
+        $mrcm->update({status => $_TACS->ARCHIVED});
         $_A->save_label(mfa_recovery_code_used => $self->req);
         $next = 'refill_task';
     }
-    $next ||= $_AMC->get_next($self->req);
+    $next ||= $_AAC->get_next($self->req);
     return {
         method => 'server_redirect',
         task_id => $next,
@@ -80,7 +80,7 @@ sub internal_initialize {
             ],
             other => [
                 [qw(realm_owner Model.RealmOwner)],
-                [qw(mfa_recovery_code_model Model.UserSecretCode)],
+                [qw(mfa_recovery_code_model Model.UserAccessCode)],
                 [qw(do_logout Boolean)],
                 [qw(bypass_challenge Boolean)],
             ],
@@ -103,10 +103,10 @@ sub internal_pre_execute {
         && $self->get('realm_owner')->get_configured_mfa_methods($_MM->TOTP);
     return
         if $self->unsafe_get('bypass_challenge');
-    $_AMC->unauth_assert_challenge($self->req, {
+    $_AAC->unauth_assert_challenge($self->req, {
         user_id => $self->get_nested(qw(realm_owner realm_id)),
-        type => $_TSC->LOGIN_CHALLENGE,
-        status => $_TSCS->PASSED,
+        type => $_TAC->LOGIN_CHALLENGE,
+        status => $_TACS->PASSED,
     });
     return;
 }
@@ -130,7 +130,7 @@ sub internal_set_cookie {
 sub is_valid_cookie {
     my($proto, $cookie, $auth_user) = @_;
     if (my $c = $cookie->unsafe_get($proto->MFA_RECOVERY_CODE_FIELD)) {
-        return $_USC->is_valid_cookie_code($auth_user->get('realm_id'), $c);
+        return $_UAC->is_valid_cookie_code($auth_user->get('realm_id'), $c);
     }
     return 0;
 }
@@ -148,11 +148,11 @@ sub validate {
 sub _validate_recovery_code {
     my($self) = @_;
     if ($self->get('mfa_recovery_code')) {
-        my($v, $e) = $_TSC->MFA_RECOVERY->from_literal_for_type($self->get('mfa_recovery_code'));
-        if ($v && (my $sc = $self->new_other('UserSecretCode')->unauth_load_by_code($v, {
+        my($v, $e) = $_TAC->MFA_RECOVERY->from_literal_for_type($self->get('mfa_recovery_code'));
+        if ($v && (my $sc = $self->new_other('UserAccessCode')->unauth_load_by_code($v, {
             user_id => $self->get_nested(qw(realm_owner realm_id)),
-            type => $_TSC->MFA_RECOVERY,
-            status => $_TSCS->ACTIVE,
+            type => $_TAC->MFA_RECOVERY,
+            status => $_TACS->ACTIVE,
         }))) {
             $self->internal_put_field(mfa_recovery_code_model => $sc);
             return;

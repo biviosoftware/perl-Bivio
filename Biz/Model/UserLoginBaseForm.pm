@@ -4,13 +4,9 @@ use strict;
 use Bivio::Base 'Biz.FormModel';
 
 my($_A) = b_use('Action.Acknowledgement');
-my($_AMC) = b_use('Action.MFAChallenge');
 my($_DT) = b_use('Type.DateTime');
 my($_LAS) = b_use('Type.LoginAttemptState');
 my($_R) = b_use('Biz.Random');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
-my($_USC) = b_use('Model.UserSecretCode');
 
 sub PASSWORD_FIELD {
     return 'p';

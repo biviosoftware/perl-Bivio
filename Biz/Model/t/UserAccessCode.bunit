@@ -4,8 +4,8 @@ PropertyModel();
     create => [
         # Can't create with no realm id in general
         [{
-            type => Type_SecretCode()->MFA_RECOVERY,
-            status => Type_SecretCodeStatus()->ACTIVE,
+            type => Type_AccessCode()->MFA_RECOVERY,
+            status => Type_AccessCodeStatus()->ACTIVE,
         }] => DB_ERROR(),
     ],
 ];

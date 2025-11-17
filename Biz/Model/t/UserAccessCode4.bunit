@@ -2,28 +2,28 @@
 Unit();
 my($u) = create_user(random_realm_name());
 req()->set_realm_and_user(undef, undef);
-my($types) = [Type_SecretCode()->get_non_zero_list];
+my($types) = [Type_AccessCode()->get_non_zero_list];
 my($statuses) = {
-    LOGIN_CHALLENGE => Type_SecretCodeStatus()->PENDING,
-    ESCALATION_CHALLENGE => Type_SecretCodeStatus()->PENDING,
-    MFA_RECOVERY => Type_SecretCodeStatus()->ACTIVE,
-    PASSWORD_QUERY => Type_SecretCodeStatus()->ACTIVE,
+    LOGIN_CHALLENGE => Type_AccessCodeStatus()->PENDING,
+    ESCALATION_CHALLENGE => Type_AccessCodeStatus()->PENDING,
+    MFA_RECOVERY => Type_AccessCodeStatus()->ACTIVE,
+    PASSWORD_QUERY => Type_AccessCodeStatus()->ACTIVE,
 };
 my($objects) = {
-    map(($_->get_name => model('UserSecretCode')->create({
-        Model_UserSecretCode()->REALM_ID_FIELD => $u->get('realm_id'),
+    map(($_->get_name => model('UserAccessCode')->create({
+        Model_UserAccessCode()->REALM_ID_FIELD => $u->get('realm_id'),
         type => $_,
         status => $statuses->{$_->get_name} || b_die('unsupported type=', $_),
     })), @$types),
 };
 [
     {
-        object => sub {model('UserSecretCode')},
+        object => sub {model('UserAccessCode')},
         compute_return => sub {
             my(undef, $actual) = @_;
             b_die('not found')
                 unless class()->is_blesser_of($actual->[0]);
-            return [$actual->[0]->get('user_secret_code_id')];
+            return [$actual->[0]->get('user_access_code_id')];
         },
     } => [
         unauth_load_by_code => [
@@ -32,18 +32,18 @@ my($objects) = {
                     user_id => $u->get('realm_id'),
                     type => $_,
                     status => $statuses->{$_->get_name},
-                }] => $objects->{$_->get_name}->get('user_secret_code_id'),
+                }] => $objects->{$_->get_name}->get('user_access_code_id'),
             ), @$types),
         ],
     ],
     inline_case(sub {req()->set_realm($u)}),
     {
-        object => sub {model('UserSecretCode')},
+        object => sub {model('UserAccessCode')},
         compute_return => sub {
             my(undef, $actual) = @_;
             b_die('not found')
                 unless class()->is_blesser_of($actual->[0]);
-            return [$actual->[0]->get('user_secret_code_id')];
+            return [$actual->[0]->get('user_access_code_id')];
         },
     } => [
         unsafe_load_by_code => [
@@ -51,7 +51,7 @@ my($objects) = {
                 [$objects->{$_->get_name}->get('code') => {
                     type => $_,
                     status => $statuses->{$_->get_name},
-                }] => $objects->{$_->get_name}->get('user_secret_code_id'),
+                }] => $objects->{$_->get_name}->get('user_access_code_id'),
             ), @$types),
         ],
     ],
@@ -63,7 +63,7 @@ my($objects) = {
     ],
     sub {$objects->{MFA_RECOVERY}} => [
         update => [
-            [{status => Type_SecretCodeStatus()->ARCHIVED}] => sub {
+            [{status => Type_AccessCodeStatus()->ARCHIVED}] => sub {
                 my(undef, $actual) = @_;
                 return $actual->[0]->get('status')->eq_archived ? 1 : 0,
             },
@@ -76,7 +76,7 @@ my($objects) = {
     ],
     sub {$objects->{PASSWORD_QUERY}} => [
         update => [
-            [{status => Type_SecretCodeStatus()->USED}] => sub {
+            [{status => Type_AccessCodeStatus()->USED}] => sub {
                 my(undef, $actual) = @_;
                 return $actual->[0]->get('status')->eq_used ? 1 : 0,
             },
@@ -86,7 +86,7 @@ my($objects) = {
         my($t) = $_;
         sub {$objects->{$t->get_name}} => [
             update => [
-                [{status => Type_SecretCodeStatus()->PENDING}] => DIE(),
+                [{status => Type_AccessCodeStatus()->PENDING}] => DIE(),
             ],
         ];
     } @$types),

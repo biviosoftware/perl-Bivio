@@ -18,9 +18,9 @@ b_use('IO.Config')->register(my $_CFG = {
 (my $_C = b_use('AgentHTTP.Cookie'))->register(__PACKAGE__)
     if $_CFG->{register_with_cookie};
 b_use('Agent.Task')->register(__PACKAGE__);
-my($_AMC) = b_use('Action.MFAChallenge');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
+my($_AAC) = b_use('Action.AccessChallenge');
+my($_TAC) = b_use('Type.AccessCode');
+my($_TACS) = b_use('Type.AccessCodeStatus');
 my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 
 sub SUPER_USER_FIELD {
@@ -240,17 +240,17 @@ sub _challenge_redirect {
     _trace('successful login; creating challenge for user=', $realm)
         if $_TRACE;
         # No precursor that creates challenge, so creating passed challenge here.
-    $_AMC->create_challenge($req, $realm, $_TSC->LOGIN_CHALLENGE)
-        ->update({status => $_TSCS->PASSED});
-    return $_AMC->do_plain_or_mfa($realm, sub {
+    $_AAC->create_challenge($req, $realm, $_TAC->LOGIN_CHALLENGE)
+        ->update({status => $_TACS->PASSED});
+    return $_AAC->do_plain_or_mfa($realm, sub {
         _trace('no MFA; setting user, escalation code, redirecting to next task')
             if $_TRACE;
         $self->set_user($realm, $req->ureq('cookie'), $req);
         # Initial login treated as an escalation so user doesn't have to present credentials
         # twice within a short period.
-        $_AMC->create_challenge($req, $realm, $_TSC->ESCALATION_CHALLENGE)
-            ->update({status => $_TSCS->PASSED});
-        return $_AMC->get_next($req) || $res;
+        $_AAC->create_challenge($req, $realm, $_TAC->ESCALATION_CHALLENGE)
+            ->update({status => $_TACS->PASSED});
+        return $_AAC->get_next($req) || $res;
     }, undef, 1);
 }
 

@@ -3,12 +3,9 @@ package Bivio::Biz::Model::MFARecoveryCodeList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
 
-# TODO: should be UserMFARecoveryCodeList?
-
 my($_DT) = b_use('Type.DateTime');
-my($_SC) = b_use('Type.SecretCode');
-my($_SCS) = b_use('Type.SecretCodeStatus');
-my($_USC) = b_use('Model.UserSecretCode');
+my($_SC) = b_use('Type.AccessCode');
+my($_SCS) = b_use('Type.AccessCodeStatus');
 my($_C) = b_use('IO.Config');
 $_C->register(my $_CFG = {
     new_code_count => 6,
@@ -17,10 +14,10 @@ $_C->register(my $_CFG = {
 
 sub create {
     my($self, $code_array) = @_;
-    my($usc) = $self->new_other('UserSecretCode');
+    my($uac) = $self->new_other('UserAccessCode');
     $code_array->do_iterate(sub {
         my($it) = @_;
-        $usc->create({
+        $uac->create({
             type => $_SC->MFA_RECOVERY,
             code => $it,
             status => $_SCS->ACTIVE,
@@ -34,8 +31,8 @@ sub delete {
     my($self) = @_;
     $self->do_rows(sub {
         my($it) = @_;
-        $self->new_other('UserSecretCode')->set_ephemeral->load({
-            user_secret_code_id => $it->get('UserSecretCode.user_secret_code_id'),
+        $self->new_other('UserAccessCode')->set_ephemeral->load({
+            user_access_code_id => $it->get('UserAccessCode.user_access_code_id'),
         })->delete;
         return 1;
     });
@@ -63,9 +60,9 @@ sub internal_initialize {
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
         version => 1,
         can_iterate => 1,
-        auth_id => ['UserSecretCode.user_id'],
-        other => ['UserSecretCode.code'],
-        primary_key => [qw(UserSecretCode.user_secret_code_id)],
+        auth_id => ['UserAccessCode.user_id'],
+        other => ['UserAccessCode.code'],
+        primary_key => [qw(UserAccessCode.user_access_code_id)],
     });
 }
 
@@ -73,14 +70,14 @@ sub internal_load_rows {
     my($self) = @_;
     my($rows) = shift->SUPER::internal_load_rows(@_);
     # Can't sort with order_by since the field is encrypted.
-    return [sort({$a->{'UserSecretCode.code'} cmp $b->{'UserSecretCode.code'}} @$rows)];
+    return [sort({$a->{'UserAccessCode.code'} cmp $b->{'UserAccessCode.code'}} @$rows)];
 }
 
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     $stmt->where(
-        $stmt->EQ('UserSecretCode.type', [$_SC->MFA_RECOVERY]),
-        $stmt->EQ('UserSecretCode.status', [$_SCS->ACTIVE]),
+        $stmt->EQ('UserAccessCode.type', [$_SC->MFA_RECOVERY]),
+        $stmt->EQ('UserAccessCode.status', [$_SCS->ACTIVE]),
     );
     return;
 }

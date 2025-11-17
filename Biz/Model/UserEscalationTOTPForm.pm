@@ -3,10 +3,9 @@ package Bivio::Biz::Model::UserEscalationTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginTOTPForm';
 
-my($_AMC) = b_use('Action.MFAChallenge');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
-my($_UT) = b_use('Model.UserTOTP');
+my($_AAC) = b_use('Action.AccessChallenge');
+my($_TAC) = b_use('Type.AccessCode');
+my($_TACS) = b_use('Type.AccessCodeStatus');
 
 sub SENSITIVE_FIELDS {
     return ['RealmOwner.password', @{shift->SUPER::SENSITIVE_FIELDS}],
@@ -14,10 +13,10 @@ sub SENSITIVE_FIELDS {
 
 sub execute_ok {
     my($self) = @_;
-    $_AMC->assert_challenge($self->req, {
-        type => $_TSC->ESCALATION_CHALLENGE,
-        status => $_TSCS->PENDING,
-    })->update({status => $_TSCS->PASSED});
+    $_AAC->assert_challenge($self->req, {
+        type => $_TAC->ESCALATION_CHALLENGE,
+        status => $_TACS->PENDING,
+    })->update({status => $_TACS->PASSED});
     return;
 }
 
@@ -43,9 +42,9 @@ sub internal_pre_execute {
     my($self) = @_;
     # Assert that we have TOTP configured
     $self->new_other('UserTOTP')->load;
-    $_AMC->assert_challenge($self->req, {
-        type => $_TSC->ESCALATION_CHALLENGE,
-        status => $_TSCS->PENDING,
+    $_AAC->assert_challenge($self->req, {
+        type => $_TAC->ESCALATION_CHALLENGE,
+        status => $_TACS->PENDING,
     });
     $self->internal_put_field(realm_owner => $self->req(qw(auth_realm owner)));
     return;

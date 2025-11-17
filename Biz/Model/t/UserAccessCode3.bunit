@@ -3,10 +3,10 @@ Unit();
 my($u) = create_user(random_realm_name());
 my($objects) = {};
 foreach my $x (
-    [Type_SecretCode()->LOGIN_CHALLENGE => Type_SecretCodeStatus()->PENDING],
-    [Type_SecretCode()->ESCALATION_CHALLENGE => Type_SecretCodeStatus()->PENDING],
-    [Type_SecretCode()->MFA_RECOVERY => Type_SecretCodeStatus()->ACTIVE],
-    [Type_SecretCode()->PASSWORD_QUERY => Type_SecretCodeStatus()->ACTIVE],
+    [Type_AccessCode()->LOGIN_CHALLENGE => Type_AccessCodeStatus()->PENDING],
+    [Type_AccessCode()->ESCALATION_CHALLENGE => Type_AccessCodeStatus()->PENDING],
+    [Type_AccessCode()->MFA_RECOVERY => Type_AccessCodeStatus()->ACTIVE],
+    [Type_AccessCode()->PASSWORD_QUERY => Type_AccessCodeStatus()->ACTIVE],
 ) {
     my($type, $status) = @$x;
     $objects->{$type->get_name} = class()->new(req())->create({type => $type, status => $status});
@@ -21,7 +21,7 @@ my($add_seconds) = sub {
 my($update_status) = sub {
     my($t, $s) = @_;
     return sub {
-        $objects->{$t}->update({status => Type_SecretCodeStatus()->$s});
+        $objects->{$t}->update({status => Type_AccessCodeStatus()->$s});
         return;
     };
 };
@@ -31,8 +31,8 @@ my($update_status) = sub {
         sub {$objects->{$t->get_name}} => [
             is_expired => 0,
         ];
-    } Type_SecretCode()->get_non_zero_list),
-    inline_case($add_seconds->(Type_SecretCode()->PASSWORD_QUERY->get_expiry_seconds_for_type)),
+    } Type_AccessCode()->get_non_zero_list),
+    inline_case($add_seconds->(Type_AccessCode()->PASSWORD_QUERY->get_expiry_seconds_for_type)),
     map({
         my($t, $e) = @$_;
         sub {$objects->{$t}} => [
@@ -47,7 +47,7 @@ my($update_status) = sub {
     map({
         my($t) = $_;
         (
-            inline_case($add_seconds->(Type_SecretCode()->$t->get_expiry_seconds_for_type)),
+            inline_case($add_seconds->(Type_AccessCode()->$t->get_expiry_seconds_for_type)),
             sub {$objects->{$t}} => [
                 is_expired => 0,
             ],
@@ -55,7 +55,7 @@ my($update_status) = sub {
             sub {$objects->{$t}} => [
                 is_expired => 0,
             ],
-            inline_case($add_seconds->(Type_SecretCode()->$t->get_expiry_seconds_for_type)),
+            inline_case($add_seconds->(Type_AccessCode()->$t->get_expiry_seconds_for_type)),
             sub {$objects->{$t}} => [
                 is_expired => 1,
             ],

@@ -1542,7 +1542,7 @@ sub info_user_auth {
             20
             USER
             ANYBODY
-            Action.MFAChallenge->execute_password_reset
+            Action.AccessChallenge->execute_password_reset
             plain_task=USER_PASSWORD
             password_task=USER_PASSWORD
             totp_task=USER_LOGIN_TOTP_FORM
@@ -1558,7 +1558,7 @@ sub info_user_auth {
             21
             USER
             ADMIN_READ&ADMIN_WRITE
-            Action.MFAChallenge->execute_assert_escalation_if_mfa
+            Action.AccessChallenge->execute_assert_escalation_if_mfa
             Model.UserPasswordForm
             View.UserAuth->password
             plain_task=USER_ESCALATION_PLAIN_FORM
@@ -1711,7 +1711,7 @@ sub info_user_auth {
             303
             USER
             ADMIN_READ&ADMIN_WRITE
-            Action.MFAChallenge->execute_assert_escalation
+            Action.AccessChallenge->execute_assert_escalation
             Model.MFARecoveryCodeListRegenerateForm
             View.UserAuth->mfa_recovery_code_list_regenerate_form
             plain_task=DEFAULT_ERROR_REDIRECT_NOT_FOUND
@@ -1734,7 +1734,7 @@ sub info_user_auth {
             310
             GENERAL
             ANYBODY
-            Action.MFAChallenge->execute_assert_login
+            Action.AccessChallenge->execute_assert_login
             Model.UserLoginTOTPForm
             View.UserTOTP->login_form
             password_task=USER_PASSWORD
@@ -1749,7 +1749,7 @@ sub info_user_auth {
             USER
             ADMIN_READ&ADMIN_WRITE
             Action.MFARecoveryCodeList->execute_preview
-            Action.MFAChallenge->execute_assert_escalation
+            Action.AccessChallenge->execute_assert_escalation
             Model.UserEnableTOTPForm
             View.UserTOTP->enable_form
             plain_task=USER_ESCALATION_PLAIN_FORM
@@ -1760,7 +1760,7 @@ sub info_user_auth {
             312
             USER
             ADMIN_READ&ADMIN_WRITE
-            Action.MFAChallenge->execute_assert_escalation
+            Action.AccessChallenge->execute_assert_escalation
             Model.UserDisableTOTPForm
             View.UserTOTP->disable_form
             totp_task=USER_ESCALATION_TOTP_FORM

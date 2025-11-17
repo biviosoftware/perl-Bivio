@@ -264,7 +264,7 @@ submit_form({
     password => $p,
 });
 verify_text(qr/(sign-out|\blogout\b)/i);
-$add_seconds->(Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
+$add_seconds->(Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 follow_link(qw(myaccount enable_time_based));
 verify_text(qr/please enter your password to continue/i);
 test_deviance(qr/password you entered does not match/i);
@@ -339,7 +339,7 @@ test_conformance();
 submit_form({
     authenticator_recovery_code => $recovery_codes4->[0],
 });
-$add_seconds->(Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
+$add_seconds->(Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 $totp_code = $compute_totp_code->(0, $totp_setup_key2);
 follow_link(qw(myaccount create_new_authenticator_recovery_codes));
 verify_text(qr/please enter your password and authenticator code to continue/i);
@@ -367,7 +367,7 @@ my($recovery_codes5) = [split("\n", get_content())];
 b_die('unexpected code count')
     unless int(@$recovery_codes5) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
-$add_seconds->(Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
+$add_seconds->(Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 follow_link('back_to_my_site');
 follow_link(qw(myaccount disable_time_based));
 verify_text(qr/please enter your password and authenticator code to continue/i);
@@ -376,7 +376,7 @@ submit_form(Continue => {
     authenticator_recovery_code => $recovery_codes5->[0],
 });
 verify_text(qr/are you sure you want to disable time-based two-factor/i);
-$add_seconds->(Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
+$add_seconds->(Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 submit_form('Disable');
 verify_text(qr/authentication expired/i);
 verify_text(qr/please enter your password and authenticator code to continue/i);

@@ -2,10 +2,10 @@
 PropertyModel();
 my($u) = create_user(random_realm_name());
 my($statuses) = {
-    LOGIN_CHALLENGE => Type_SecretCodeStatus()->PENDING,
-    ESCALATION_CHALLENGE => Type_SecretCodeStatus()->PENDING,
-    MFA_RECOVERY => Type_SecretCodeStatus()->ACTIVE,
-    PASSWORD_QUERY => Type_SecretCodeStatus()->ACTIVE,
+    LOGIN_CHALLENGE => Type_AccessCodeStatus()->PENDING,
+    ESCALATION_CHALLENGE => Type_AccessCodeStatus()->PENDING,
+    MFA_RECOVERY => Type_AccessCodeStatus()->ACTIVE,
+    PASSWORD_QUERY => Type_AccessCodeStatus()->ACTIVE,
 };
 [
     map({
@@ -38,7 +38,7 @@ my($statuses) = {
                     if $expect->{code} && $actual->[0]->get('code') ne $expect->{code};
                 return [-6]
                     unless $actual->[0]->get('status')->equals_by_name($expect->{status} || 'PENDING');
-                return [int(@{model('UserSecretCode')->map_iterate(
+                return [int(@{model('UserAccessCode')->map_iterate(
                     sub {shift},
                     'unauth_iterate_start', {user_id => $u->get('realm_id'), type => $expect->{type}},
                 )})];
@@ -69,5 +69,5 @@ my($statuses) = {
                 status => $statuses->{$type->get_name},
             }] => $is_recovery ? 4 : 1,
         ]);
-    } Type_SecretCode()->get_non_zero_list),
+    } Type_AccessCode()->get_non_zero_list),
 ];

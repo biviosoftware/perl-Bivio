@@ -1,14 +1,14 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-package Bivio::Biz::Action::MFAChallenge;
+package Bivio::Biz::Action::AccessChallenge;
 use strict;
 use Bivio::Base 'Biz.Action';
 b_use('IO.Trace');
 
 our($_TRACE);
 my($_C) = b_use('AgentHTTP.Cookie');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
-my($_USC) = b_use('Model.UserSecretCode');
+my($_TAC) = b_use('Type.AccessCode');
+my($_TACS) = b_use('Type.AccessCodeStatus');
+my($_UAC) = b_use('Model.UserAccessCode');
 my($_ULF) = b_use('Model.UserLoginForm');
 my($_COOKIE_KEY) = {
     LOGIN_CHALLENGE => 'lc',
@@ -34,14 +34,14 @@ sub create_challenge {
         unless my $cookie = $req->unsafe_get('cookie');
     b_die('unexpected type=', $type)
         unless $type->equals_by_name(qw(LOGIN_CHALLENGE ESCALATION_CHALLENGE));
-    my($usc) = $_USC->new($req)->set_ephemeral->create({
-        $_USC->REALM_ID_FIELD => $owner->get('realm_id'),
+    my($uac) = $_UAC->new($req)->set_ephemeral->create({
+        $_UAC->REALM_ID_FIELD => $owner->get('realm_id'),
         type => $type,
-        status => $_TSCS->PENDING,
+        status => $_TACS->PENDING,
     });
-    _put_cookie($cookie, $usc);
-    _put_req($proto, $req, $usc);
-    return $usc;
+    _put_cookie($cookie, $uac);
+    _put_req($proto, $req, $uac);
+    return $uac;
 }
 
 sub delete_challenges {
@@ -50,10 +50,10 @@ sub delete_challenges {
         unless my $cookie = $req->ureq('cookie');
     _trace('deleting all cookies')
         if $_TRACE;
-    foreach my $t ($_TSC->LOGIN_CHALLENGE, $_TSC->ESCALATION_CHALLENGE) {
+    foreach my $t ($_TAC->LOGIN_CHALLENGE, $_TAC->ESCALATION_CHALLENGE) {
         my($m) = _unsafe_load_from_cookie($proto, $req, {
             type => $t,
-            status => [$_TSCS->get_list],
+            status => [$_TACS->get_list],
         });
         $m->delete
             if $m;
@@ -91,25 +91,24 @@ sub execute_assert_escalation {
 
 sub execute_assert_login {
     my($proto, $req) = @_;
-    # TODO: sidestep if substitute_user? makes sense, but shoudn't get to a task that asserts login if su, i think
     _trace('asserting login')
         if $_TRACE;
     my($owner) = $_ULF->load_cookie_user($req, $req->req('cookie'));
-    my($usc) = $owner
+    my($uac) = $owner
         ? _unauth_load_from_cookie($proto, $req, {
             user_id => $owner->get('realm_id'),
-            type => $_TSC->LOGIN_CHALLENGE,
-            status => $_TSCS->PASSED,
+            type => $_TAC->LOGIN_CHALLENGE,
+            status => $_TACS->PASSED,
         })
         : undef;
     # TODO: no context?
     return _redirect('login_task')
-        unless $owner && $usc;
+        unless $owner && $uac;
     b_die('only for mfa login forms to assert plain login')
         unless $owner->get_configured_mfa_methods;
     _trace('MFA available; creating escalation code')
         if $_TRACE;
-    $proto->create_challenge($req, $owner, $_TSC->ESCALATION_CHALLENGE);
+    $proto->create_challenge($req, $owner, $_TAC->ESCALATION_CHALLENGE);
     return;
 }
 
@@ -127,17 +126,17 @@ sub execute_password_reset {
         b_die('no query key')
             unless $query_key;
         my($err);
-        ($query_key, $err) = $_TSC->PASSWORD_QUERY->from_literal_for_type($query_key);
+        ($query_key, $err) = $_TAC->PASSWORD_QUERY->from_literal_for_type($query_key);
         b_die('invalid query key')
             if $err;
-        my($usc) = _unauth_load($proto, $req, $query_key, {
+        my($uac) = _unauth_load($proto, $req, $query_key, {
             user_id => $u->get('realm_id'),
-            type => $_TSC->PASSWORD_QUERY,
-            status => $_TSCS->ACTIVE,
+            type => $_TAC->PASSWORD_QUERY,
+            status => $_TACS->ACTIVE,
         });
         b_die('invalid or expired')
-            unless $usc;
-        $usc->update({status => $_TSCS->USED});
+            unless $uac;
+        $uac->update({status => $_TACS->USED});
         Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
             realm_owner => $u,
             # there might not be a cookie if user is visiting site
@@ -157,8 +156,8 @@ sub execute_password_reset {
     }
     _put_ack($proto, $req);
     return $proto->do_plain_or_mfa($u, sub {
-        $proto->create_challenge($req, $u, $_TSC->ESCALATION_CHALLENGE)
-            ->update({status => $_TSCS->PASSED});
+        $proto->create_challenge($req, $u, $_TAC->ESCALATION_CHALLENGE)
+            ->update({status => $_TACS->PASSED});
         return;
     }, sub {
         # TODO: does this get cleared from the req appropriately?
@@ -169,9 +168,9 @@ sub execute_password_reset {
 
 sub format_password_query_uri {
     my(undef, $req) = @_;
-    my($pqsc) = b_debug($_USC->new($req)->create({
-        type => $_TSC->PASSWORD_QUERY,
-        status => $_TSCS->ACTIVE,
+    my($pqsc) = b_debug($_UAC->new($req)->create({
+        type => $_TAC->PASSWORD_QUERY,
+        status => $_TACS->ACTIVE,
     }));
     return $req->format_http({
         task_id => $req->get('task')->get_attr_as_id('reset_task'),
@@ -217,8 +216,8 @@ sub _assert_escalation {
     if ($req->is_substitute_user) {
         _trace('not requiring escalation for substitute user')
             if $_TRACE;
-        $proto->create_challenge($req, $req->req('auth_user'), $_TSC->ESCALATION_CHALLENGE)
-            ->update({status => $_TSCS->PASSED});
+        $proto->create_challenge($req, $req->req('auth_user'), $_TAC->ESCALATION_CHALLENGE)
+            ->update({status => $_TACS->PASSED});
         return;
     }
     _trace('asserting escalation')
@@ -228,10 +227,10 @@ sub _assert_escalation {
     # TODO: need to set next in case of recovery code refill?
     return
         if _unsafe_load_from_cookie($proto, $req, {
-            type => $_TSC->ESCALATION_CHALLENGE,
-            status => $_TSCS->PASSED,
+            type => $_TAC->ESCALATION_CHALLENGE,
+            status => $_TACS->PASSED,
         });
-    $proto->create_challenge($req, $req->req('auth_user'), $_TSC->ESCALATION_CHALLENGE);
+    $proto->create_challenge($req, $req->req('auth_user'), $_TAC->ESCALATION_CHALLENGE);
     return $proto->do_plain_or_mfa($req->req('auth_user'), $plain_op, $mfa_op);
 }
 
@@ -249,12 +248,12 @@ sub _load {
     my($proto, $req, $method, $code, $query) = @_;
     _trace('load method=', $method, ' query=', $query)
         if $_TRACE;
-    my($usc) = $_USC->new($req)->set_ephemeral->$method($code, $query, 1);
-    _trace('result=', $usc)
+    my($uac) = $_UAC->new($req)->set_ephemeral->$method($code, $query, 1);
+    _trace('result=', $uac)
         if $_TRACE;
-    _put_req($proto, $req, $usc)
-        if $usc;
-    return $usc;
+    _put_req($proto, $req, $uac)
+        if $uac;
+    return $uac;
 }
 
 sub _put_ack {
@@ -264,10 +263,10 @@ sub _put_ack {
 }
 
 sub _put_cookie {
-    my($cookie, $usc) = @_;
-    _trace('put cookie ', _cookie_key($usc->get('type')))
+    my($cookie, $uac) = @_;
+    _trace('put cookie ', _cookie_key($uac->get('type')))
         if $_TRACE;
-    $cookie->put(_cookie_key($usc->get('type')) => $usc->get('code'));
+    $cookie->put(_cookie_key($uac->get('type')) => $uac->get('code'));
     return;
 }
 
@@ -280,10 +279,10 @@ sub _put_next {
 }
 
 sub _put_req {
-    my($proto, $req, $usc) = @_;
-    _trace('put req ', _get_req_key($proto, $usc->get('type')), '=', $usc)
+    my($proto, $req, $uac) = @_;
+    _trace('put req ', _get_req_key($proto, $uac->get('type')), '=', $uac)
         if $_TRACE;
-    $req->put_durable(_get_req_key($proto, $usc->get('type')) => $usc);
+    $req->put_durable(_get_req_key($proto, $uac->get('type')) => $uac);
     return;
 }
 
@@ -312,13 +311,13 @@ sub _unsafe_load_from_cookie {
 
 sub _unsafe_get_from_req {
     my($proto, $req, $query) = @_;
-    if (my $usc = $req->ureq(_get_req_key($proto, $query->{type}))) {
-        _trace('have challenge from req=', $usc);
-        if ($usc->get('status')->is_equal($query->{status})) {
-            return $usc;
+    if (my $uac = $req->ureq(_get_req_key($proto, $query->{type}))) {
+        _trace('have challenge from req=', $uac);
+        if ($uac->get('status')->is_equal($query->{status})) {
+            return $uac;
         }
         else {
-            _trace('have challenge=', $usc, ', but expected status=', $query->{status})
+            _trace('have challenge=', $uac, ', but expected status=', $query->{status})
                 if $_TRACE;
         }
     }

@@ -4,7 +4,7 @@ package Bivio::Biz::Model::EmailVerify;
 use strict;
 use Bivio::Base 'Model.LocationBase';
 
-# TODO: could change to be a UserSecretCode
+# TODO: could change to be a UserAccessCode
 
 my($_DT) = b_use('Type.DateTime');
 my($_EVK) = b_use('Type.EmailVerifyKey');

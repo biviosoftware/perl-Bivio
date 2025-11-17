@@ -3,12 +3,11 @@ package Bivio::Biz::Action::MFARecoveryCodeList;
 use strict;
 use Bivio::Base 'Biz.Action';
 
-my($_AMC) = b_use('Action.MFAChallenge');
+my($_AAC) = b_use('Action.AccessChallenge');
 my($_MC) = b_use('Type.MnemonicCode');
 my($_MRCL) = b_use('Model.MFARecoveryCodeList');
-my($_SC) = b_use('Type.SecretCode');
+my($_SC) = b_use('Type.AccessCode');
 my($_T) = b_use('FacadeComponent.Text');
-my($_USC) = b_use('Model.UserSecretCode');
 
 sub CODE_QUERY_KEY {
     return 'mfa_recovery_codes';
@@ -20,7 +19,7 @@ sub CODE_QUERY_SEPARATOR {
 
 sub execute_refill {
     my($proto, $req) = @_;
-    my($next) = $_AMC->get_next($req);
+    my($next) = $_AAC->get_next($req);
     my($res) = $next ? {
         method => 'server_redirect',
         task_id => $next,

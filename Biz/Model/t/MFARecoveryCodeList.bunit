@@ -4,14 +4,14 @@ create_user(random_realm_name());
 my($user) = req(qw(auth_realm owner));
 my($codes) = Type_MnemonicCode()->generate_new_codes(Model_MFARecoveryCodeList()->get_new_code_count);
 # Code that shouldn't appear in list
-model('UserSecretCode')->create({
-    type => Type_SecretCode()->LOGIN_CHALLENGE,
-    status => Type_SecretCodeStatus()->PENDING,
+model('UserAccessCode')->create({
+    type => Type_AccessCode()->LOGIN_CHALLENGE,
+    status => Type_AccessCodeStatus()->PENDING,
 });
 my($map) = sub {
     return [map(+{
-        'UserSecretCode.user_id' => $user->get('realm_id'),
-        'UserSecretCode.code' => $_,
+        'UserAccessCode.user_id' => $user->get('realm_id'),
+        'UserAccessCode.code' => $_,
     }, @_)];
 };
 [
@@ -21,13 +21,13 @@ my($map) = sub {
     load_all => [
         [] => $map->($codes->as_list),
         inline_case(sub {
-            my($m) = model('UserSecretCode')->unsafe_load_by_code($codes->get_element(0), {
-                type => Type_SecretCode()->MFA_RECOVERY,
-                status => Type_SecretCodeStatus()->ACTIVE,
+            my($m) = model('UserAccessCode')->unsafe_load_by_code($codes->get_element(0), {
+                type => Type_AccessCode()->MFA_RECOVERY,
+                status => Type_AccessCodeStatus()->ACTIVE,
             });
             b_die('no code model')
                 unless $m;
-            $m->update({status => Type_SecretCodeStatus()->ARCHIVED});
+            $m->update({status => Type_AccessCodeStatus()->ARCHIVED});
             return;
         }),
         [] => $map->(($codes->as_list)[1..$codes->as_length - 1]),

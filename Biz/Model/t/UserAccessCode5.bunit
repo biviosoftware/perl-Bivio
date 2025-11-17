@@ -2,10 +2,10 @@
 PropertyModel();
 my($u) = create_user(random_realm_name());
 my($bad_statuses) = {
-    LOGIN_CHALLENGE => Type_SecretCodeStatus()->ACTIVE,
-    ESCALATION_CHALLENGE => Type_SecretCodeStatus()->ACTIVE,
-    MFA_RECOVERY => Type_SecretCodeStatus()->PENDING,
-    PASSWORD_QUERY => Type_SecretCodeStatus()->PENDING,
+    LOGIN_CHALLENGE => Type_AccessCodeStatus()->ACTIVE,
+    ESCALATION_CHALLENGE => Type_AccessCodeStatus()->ACTIVE,
+    MFA_RECOVERY => Type_AccessCodeStatus()->PENDING,
+    PASSWORD_QUERY => Type_AccessCodeStatus()->PENDING,
 };
 [
     create => [
@@ -15,6 +15,6 @@ my($bad_statuses) = {
                 code => $_->generate_code_for_type,
                 status => $bad_statuses->{$_->get_name},
             }] => DIE(),
-        ), Type_SecretCode()->get_non_zero_list),
+        ), Type_AccessCode()->get_non_zero_list),
     ],
 ];

@@ -3,9 +3,9 @@ package Bivio::Biz::Model::UserEscalatedAccessBaseForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
-my($_AMC) = b_use('Action.MFAChallenge');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
+my($_AAC) = b_use('Action.AccessChallenge');
+my($_TAC) = b_use('Type.AccessCode');
+my($_TACS) = b_use('Type.AccessCodeStatus');
 
 sub execute_unwind {
     my(undef, $delegator) = shift->delegated_args(@_);
@@ -20,7 +20,7 @@ sub internal_initialize {
         require_context => 1,
         $self->field_decl(
             other => [
-                [qw(passed_access_challenge Model.UserSecretCode)],
+                [qw(passed_access_challenge Model.UserAccessCode)],
             ],
         ),
     });
@@ -29,9 +29,9 @@ sub internal_initialize {
 sub internal_pre_execute {
     my(undef, $delegator) = shift->delegated_args(@_);
     $delegator->internal_put_field(
-        passed_access_challenge => $_AMC->assert_challenge($delegator->req, {
-            type => $_TSC->ESCALATION_CHALLENGE,
-            status => $_TSCS->PASSED,
+        passed_access_challenge => $_AAC->assert_challenge($delegator->req, {
+            type => $_TAC->ESCALATION_CHALLENGE,
+            status => $_TACS->PASSED,
         }),
     );
     return;

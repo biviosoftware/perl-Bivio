@@ -34,7 +34,7 @@ FormModel({
         }
         return
             if $no_challenge;
-        Action_MFAChallenge()->execute_assert_escalation(req());
+        Action_AccessChallenge()->execute_assert_escalation(req());
         model('UserEscalationTOTPForm')->process({});
         return;
     },

@@ -3,15 +3,11 @@ package Bivio::Biz::Model::UserLoginTOTPForm;
 use strict;
 use Bivio::Base 'Model.UserLoginMFABaseForm';
 
-my($_AMC) = b_use('Action.MFAChallenge');
 my($_C) = b_use('AgentHTTP.Cookie');
 my($_DT) = b_use('Type.DateTime');
 my($_MM) = b_use('Type.MFAMethod');
 my($_RFC6238) = b_use('Biz.RFC6238');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
 my($_ULF) = b_use('Model.UserLoginForm');
-my($_USC) = b_use('Model.UserSecretCode');
 my($_UT) = b_use('Model.UserTOTP');
 
 sub TOTP_CODE_FIELD {

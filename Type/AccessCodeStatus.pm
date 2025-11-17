@@ -1,5 +1,5 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
-package Bivio::Type::SecretCodeStatus;
+package Bivio::Type::AccessCodeStatus;
 use strict;
 use Bivio::Base 'Type.Enum';
 

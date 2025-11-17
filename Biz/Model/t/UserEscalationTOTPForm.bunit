@@ -34,8 +34,8 @@ FormModel({
             commit();
         }
         unless ($no_challenge) {
-            Model_UserSecretCode()->delete_all({type => Type_SecretCode()->ESCALATION_CHALLENGE});
-            my($redirect) = Action_MFAChallenge()->execute_assert_escalation(req());
+            Model_UserAccessCode()->delete_all({type => Type_AccessCode()->ESCALATION_CHALLENGE});
+            my($redirect) = Action_AccessChallenge()->execute_assert_escalation(req());
             my($method) = delete($redirect->{method});
             $redirect->{task_id} = req('task')->get_attr_as_id($redirect->{task_id});
             return req()->$method($redirect);
@@ -131,9 +131,9 @@ Type_DateTime()->set_test_now(
         assert_equals(req('auth_user_id'), $user->get('realm_id'));
         assert_equals($actual->[0]{task_id}->get_name, 'USER_PASSWORD');
         b_die('challenge not found')
-            unless Action_MFAChallenge()->unsafe_get_challenge(req(), {
-                type => Type_SecretCode()->ESCALATION_CHALLENGE,
-                status => Type_SecretCodeStatus()->PASSED,
+            unless Action_AccessChallenge()->unsafe_get_challenge(req(), {
+                type => Type_AccessCode()->ESCALATION_CHALLENGE,
+                status => Type_AccessCodeStatus()->PASSED,
             });
         return 1;
     },
@@ -153,9 +153,9 @@ Type_DateTime()->set_test_now(
         assert_equals(req('auth_user_id'), $user->get('realm_id'));
         assert_equals($actual->[0]{task_id}->get_name, 'USER_PASSWORD');
         b_die('challenge not found')
-            unless Action_MFAChallenge()->unsafe_get_challenge(req(), {
-                type => Type_SecretCode()->ESCALATION_CHALLENGE,
-                status => Type_SecretCodeStatus()->PASSED,
+            unless Action_AccessChallenge()->unsafe_get_challenge(req(), {
+                type => Type_AccessCode()->ESCALATION_CHALLENGE,
+                status => Type_AccessCodeStatus()->PASSED,
             });
         return 1;
     },

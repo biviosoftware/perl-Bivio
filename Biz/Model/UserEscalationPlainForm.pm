@@ -3,9 +3,9 @@ package Bivio::Biz::Model::UserEscalationPlainForm;
 use strict;
 use Bivio::Base 'Model.UserLoginBaseForm';
 
-my($_AMC) = b_use('Action.MFAChallenge');
-my($_TSC) = b_use('Type.SecretCode');
-my($_TSCS) = b_use('Type.SecretCodeStatus');
+my($_AAC) = b_use('Action.AccessChallenge');
+my($_TAC) = b_use('Type.AccessCode');
+my($_TACS) = b_use('Type.AccessCodeStatus');
 
 sub execute_empty {
     my($self) = @_;
@@ -15,10 +15,10 @@ sub execute_empty {
 
 sub execute_ok {
     my($self) = @_;
-    $_AMC->assert_challenge($self->req, {
-        type => $_TSC->ESCALATION_CHALLENGE,
-        status => $_TSCS->PENDING,
-    })->update({status => $_TSCS->PASSED});
+    $_AAC->assert_challenge($self->req, {
+        type => $_TAC->ESCALATION_CHALLENGE,
+        status => $_TACS->PENDING,
+    })->update({status => $_TACS->PASSED});
     return;
 }
 
@@ -45,9 +45,9 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my($self) = @_;
-    $_AMC->assert_challenge($self->req, {
-        type => $_TSC->ESCALATION_CHALLENGE,
-        status => $_TSCS->PENDING,
+    $_AAC->assert_challenge($self->req, {
+        type => $_TAC->ESCALATION_CHALLENGE,
+        status => $_TACS->PENDING,
     });
     return;
 }
