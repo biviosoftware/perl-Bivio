@@ -1,7 +1,9 @@
 # Copyright (c) 2003-2023 bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::UserPasswordForm;
 use strict;
-use Bivio::Base 'Model.UserEscalatedAccessBaseForm';
+use Bivio::Base 'Biz.FormModel';
+
+# Not making this a UserEscalatedAccessBaseForm for now so as to not change existing apps.
 
 my($_A) = b_use('Action.Acknowledgement');
 my($_AMC) = b_use('Action.MFAChallenge');
@@ -26,6 +28,8 @@ sub execute_ok {
 sub internal_initialize {
     my($self) = @_;
     return $self->merge_initialize_info($self->SUPER::internal_initialize, {
+        version => 1,
+        require_context => 1,
         $self->field_decl(
             visible => [
                 [qw(old_password Password NONE)],
@@ -44,7 +48,10 @@ sub internal_pre_execute {
     shift->SUPER::internal_pre_execute(@_);
     $self->internal_put_field(
         realm_owner => $self->req(qw(auth_realm owner)),
-        require_old_password => $self->unsafe_get('passed_access_challenge') || $self->req->is_substitute_user
+        require_old_password => $_AMC->unsafe_get_challenge($self->req, {
+            type => $_TSC->ESCALATION_CHALLENGE,
+            status => $_TSCS->PASSED,
+        }) || $self->req->is_substitute_user
             ? 0 : 1,
     );
     return;

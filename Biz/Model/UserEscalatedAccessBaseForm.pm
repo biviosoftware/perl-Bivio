@@ -28,13 +28,12 @@ sub internal_initialize {
 
 sub internal_pre_execute {
     my(undef, $delegator) = shift->delegated_args(@_);
-    my($c) = $_AMC->get_challenge($delegator->req, {
-        type => $_TSC->ESCALATION_CHALLENGE,
-        status => $_TSCS->PASSED,
-    });
-    b_die('FORBIDDEN')
-        unless $c && $c->get('user_id') eq $delegator->req('auth_id');
-    $delegator->internal_put_field(passed_access_challenge => $c);
+    $delegator->internal_put_field(
+        passed_access_challenge => $_AMC->assert_challenge($delegator->req, {
+            type => $_TSC->ESCALATION_CHALLENGE,
+            status => $_TSCS->PASSED,
+        }),
+    );
     return;
 }
 

@@ -40,7 +40,7 @@ sub execute_ok {
     return
         unless $self->get('realm_owner');
     unless ($self->unsafe_get('bypass_challenge')) {
-        $_AMC->get_challenge($self->req, {
+        $_AMC->assert_challenge($self->req, {
             type => $_TSC->ESCALATION_CHALLENGE,
             status => $_TSCS->PENDING,
         })->update({status => $_TSCS->PASSED});
@@ -103,9 +103,11 @@ sub internal_pre_execute {
         && $self->get('realm_owner')->get_configured_mfa_methods($_MM->TOTP);
     return
         if $self->unsafe_get('bypass_challenge');
-    my($c) = $self->ureq($_AMC->get_req_key($_TSC->LOGIN_CHALLENGE));
-    b_die('FORBIDDEN')
-        unless $c && $c->get('user_id') eq $self->get_nested(qw(realm_owner realm_id)) && $c->get('status')->eq_passed;
+    $_AMC->unauth_assert_challenge($self->req, {
+        user_id => $self->get_nested(qw(realm_owner realm_id)),
+        type => $_TSC->LOGIN_CHALLENGE,
+        status => $_TSCS->PASSED,
+    });
     return;
 }
 

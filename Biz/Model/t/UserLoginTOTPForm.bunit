@@ -71,7 +71,11 @@ my($set_cookie) = sub {
     } => {
         totp_code => 'INVALID_TOTP_CODE',
     }),
-    inline_commit(),
+    # Need to advance the clock to ensure LOCKED_OUT login attempt comes last and ->is_locked_out
+    # is correct.
+    inline_case(sub {
+        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 1));
+    }),
     [{
         totp_code => '123456',
     }] => sub {req('task_id')->eq_general_user_locked_out},

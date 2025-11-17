@@ -5,6 +5,7 @@ use Bivio::Base 'Model.RealmBase';
 
 # TODO: "UserAccessCode"?
 
+my($_A) = b_use('Action.Acknowledgement');
 my($_DT) = b_use('Type.DateTime');
 my($_C) = b_use('Type.SecretCode');
 my($_S) = b_use('Type.SecretCodeStatus');
@@ -104,18 +105,43 @@ sub update {
 }
 
 sub unauth_load_by_code {
-    my($self, $code, $query) = @_;
-    return _find($self, $code, 'unauth_iterate_start', $query);
+    my($self, $code, $query, $expired_ack) = @_;
+    return _find($self, $code, 'unauth_iterate_start', $query, $expired_ack);
 }
 
 sub unsafe_load_by_code {
-    my($self, $code, $query) = @_;
-    return _find($self, $code, 'iterate_start', $query);
+    my($self, $code, $query, $expired_ack) = @_;
+    return _find($self, $code, 'iterate_start', $query, $expired_ack);
 }
 
 sub _delete_all {
     my($self, $type) = @_;
     return $self->new_other('UserSecretCode')->delete_all({type => $type});
+}
+
+sub _find {
+    my($self, $code, $method, $query, $expired_ack) = @_;
+    foreach my $f ('type', 'status', $method =~ /unauth/ ? 'user_id' : ()) {
+        b_die($f . ' required')
+            unless $query->{$f};
+    }
+    my($found);
+    $self->do_iterate(sub {
+        my($it) = @_;
+        return 1
+            unless $it->get('code') eq $code;
+        if ($it->is_expired) {
+            $_A->save_label(secret_code_expired => $self->req)
+                if $expired_ack;
+            return 1;
+        }
+        $found = 1;
+        return 0;
+    }, $method, $query);
+    return $self
+        if $found;
+    $self->internal_unload;
+    return undef;
 }
 
 sub _validate_update {
@@ -132,28 +158,6 @@ sub _validate_update {
         );
     }
     return ($self, $values);
-}
-
-sub _find {
-    my($self, $code, $method, $query) = @_;
-    foreach my $f ('type', 'status', $method =~ /unauth/ ? 'user_id' : ()) {
-        b_die($f . ' required')
-            unless $query->{$f};
-    }
-    my($found);
-    $self->do_iterate(sub {
-        my($it) = @_;
-        return 1
-            unless $it->get('code') eq $code;
-        return 1
-            if $it->is_expired;
-        $found = 1;
-        return 0;
-    }, $method, $query);
-    return $self
-        if $found;
-    $self->internal_unload;
-    return undef;
 }
 
 sub _values_with_expiry {

@@ -5,13 +5,12 @@ home_page();
 my($email, $name) = create_user();
 home_page();
 follow_link('settings', 'password');
-verify_no_text(qr/restricted account action/i);
+verify_no_text(qr/current/i);
 date_time_now(Type_DateTime()->add_seconds(
     Type_DateTime()->now, Type_SecretCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type));
 follow_link('settings', 'password');
-verify_text(qr/restricted account action/i);
 verify_form({
-    '^password' => undef,
+    '^current' => undef,
 });
 go_back();
 # The name UserSettings also tests root's large page size

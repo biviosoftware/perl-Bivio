@@ -1537,9 +1537,6 @@ sub info_user_auth {
             Action.ServerRedirect->execute_next
             next=GENERAL_USER_PASSWORD_QUERY_ACK
         )],
-        # TODO: had these, but I don't think we need the indirection as we're already in Action.MFAChallenge
-            # plain_task=USER_MFA_LOGIN
-            # totp_task=USER_MFA_LOGIN
         [qw(
             USER_PASSWORD_RESET
             20
@@ -1556,13 +1553,12 @@ sub info_user_auth {
         # for example, if user is resetting password from email link
         # with cookies disabled
         # TODO: permissions when resetting password?
-        # TODO: keep execute_assert_escalation? would affect all apps.
         [qw(
             USER_PASSWORD
             21
             USER
             ADMIN_READ&ADMIN_WRITE
-            Action.MFAChallenge->execute_assert_escalation
+            Action.MFAChallenge->execute_assert_escalation_if_mfa
             Model.UserPasswordForm
             View.UserAuth->password
             plain_task=USER_ESCALATION_PLAIN_FORM
@@ -1595,9 +1591,6 @@ sub info_user_auth {
             View.UserAuth->general_contact
             next=SITE_ROOT
         )],
-        # TODO: don't think need
-            # next=USER_MFA_LOGIN
-            # mfa_task=USER_MFA_LOGIN
         [qw(
             LOGIN
             90

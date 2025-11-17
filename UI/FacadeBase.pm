@@ -2296,6 +2296,7 @@ EOF
                 USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',
                 USER_DISABLE_TOTP_FORM => 'Two-factor authentication has been disabled successfully',
                 mfa_recovery_code_used => 'Authenticator recovery code accepted and removed from available list',
+                secret_code_expired => 'Authentication expired, please try again.',
             ]],
         ],
     };

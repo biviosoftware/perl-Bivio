@@ -14,7 +14,7 @@ sub SENSITIVE_FIELDS {
 
 sub execute_ok {
     my($self) = @_;
-    $_AMC->get_challenge($self->req, {
+    $_AMC->assert_challenge($self->req, {
         type => $_TSC->ESCALATION_CHALLENGE,
         status => $_TSCS->PENDING,
     })->update({status => $_TSCS->PASSED});
@@ -43,12 +43,10 @@ sub internal_pre_execute {
     my($self) = @_;
     # Assert that we have TOTP configured
     $self->new_other('UserTOTP')->load;
-    my($sc) = $_AMC->get_challenge($self->req, {
+    $_AMC->assert_challenge($self->req, {
         type => $_TSC->ESCALATION_CHALLENGE,
         status => $_TSCS->PENDING,
     });
-    b_die('FORBIDDEN')
-        unless $sc && $sc->get('user_id') eq $self->req('auth_id');
     $self->internal_put_field(realm_owner => $self->req(qw(auth_realm owner)));
     return;
 }
