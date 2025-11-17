@@ -3,8 +3,6 @@ package Bivio::Type::AccessCode;
 use strict;
 use Bivio::Base 'Type.Enum';
 
-# TODO: "AccessCode"?
-
 my($_DT) = b_use('Type.DateTime');
 my($_MC) = b_use('Type.MnemonicCode');
 my($_R) = b_use('Biz.Random');

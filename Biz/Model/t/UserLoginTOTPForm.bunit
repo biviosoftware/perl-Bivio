@@ -24,8 +24,6 @@ FormModel({
     setup_request => sub {
         return
             if $no_challenge;
-        # TODO: this might not be exactly right, but the redirect in execute_assert_login
-        # gets ignored by test request.
         return
             if $user->is_locked_out;
         Action_AccessChallenge()

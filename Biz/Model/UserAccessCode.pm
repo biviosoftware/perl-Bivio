@@ -3,8 +3,6 @@ package Bivio::Biz::Model::UserAccessCode;
 use strict;
 use Bivio::Base 'Model.RealmBase';
 
-# TODO: "UserAccessCode"?
-
 my($_A) = b_use('Action.Acknowledgement');
 my($_DT) = b_use('Type.DateTime');
 my($_C) = b_use('Type.AccessCode');

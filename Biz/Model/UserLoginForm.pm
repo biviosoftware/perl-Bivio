@@ -56,7 +56,6 @@ sub execute_ok {
         # DOES NOT RETURN
     }
     _set_cookie_user($self, $req, $realm);
-    # TODO: verify
     # TODO: just rip out otp ffs?
     if ($req->ureq('cookie') && (
         ($realm && !$realm->require_otp && $self->unsafe_get('validate_called')) || $self->unsafe_get('require_mfa')
