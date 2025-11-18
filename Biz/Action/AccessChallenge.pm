@@ -51,12 +51,19 @@ sub delete_challenges {
     _trace('deleting all cookies')
         if $_TRACE;
     foreach my $t ($_TAC->LOGIN_CHALLENGE, $_TAC->ESCALATION_CHALLENGE) {
-        my($m) = _unsafe_load_from_cookie($proto, $req, {
-            type => $t,
-            status => [$_TACS->get_list],
-        });
-        $m->delete
-            if $m;
+        # Might be logged out already
+        if (my $user_id = ($req->ureq('auth_user_id') || $cookie->unsafe_get($_ULF->USER_FIELD))) {
+            my($m) = _unauth_load_from_cookie($proto, $req, {
+                user_id => $user_id,
+                type => $t,
+                status => [$_TACS->get_list],
+            });
+            $m->delete
+                if $m;
+        }
+        elsif ($cookie->unsafe_get($_COOKIE_KEY->{$t->get_name})) {
+            b_warn('no auth user or cookie user, but have code for challenge=', $t);
+        }
         $cookie->delete($_COOKIE_KEY->{$t->get_name});
     }
     return;
@@ -166,10 +173,10 @@ sub execute_password_reset {
 
 sub format_password_query_uri {
     my(undef, $req) = @_;
-    my($pqsc) = b_debug($_UAC->new($req)->create({
+    my($pqsc) = $_UAC->new($req)->create({
         type => $_TAC->PASSWORD_QUERY,
         status => $_TACS->ACTIVE,
-    }));
+    });
     return $req->format_http({
         task_id => $req->get('task')->get_attr_as_id('reset_task'),
         query => {$_PASSWORD_QUERY_KEY => $pqsc->get('code')},
