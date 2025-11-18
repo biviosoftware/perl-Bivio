@@ -11,6 +11,10 @@ sub enable_form {
     ]));
 }
 
+sub enable_mail {
+    return shift->internal_mail;
+}
+
 sub escalation_totp_form {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(UserEscalationTOTPForm => [
@@ -32,6 +36,17 @@ sub escalation_totp_form {
 sub disable_form {
     my($self) = @_;
     return $self->internal_body(vs_simple_form(UserDisableTOTPForm => []));
+}
+
+sub disable_mail {
+    return shift->internal_mail;
+}
+
+sub internal_mail {
+    my($self) = @_;
+    my($n) = $self->my_caller;
+    view_put(map(("mail_$_" => _prose($n, $_)), qw(to subject)));
+    return $self->internal_body_prose(_prose($n, 'body'));
 }
 
 sub login_form {
@@ -88,6 +103,10 @@ EOF
             )],
         ) : (),
     );
+}
+
+sub _prose {
+    return vs_text_as_prose('UserTOTP', @_);
 }
 
 1;

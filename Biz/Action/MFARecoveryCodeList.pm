@@ -63,7 +63,7 @@ sub format_uri_for_download {
 
 sub format_uri_for_print {
     my($proto, $source) = @_;
-    return _uri($proto, $source, 'USER_MFA_RECOVERY_CODE_LIST_PRINT');
+    return _uri($proto, $source, 'MFA_RECOVERY_CODE_LIST_PRINT');
 }
 
 sub get_codes_from_query {

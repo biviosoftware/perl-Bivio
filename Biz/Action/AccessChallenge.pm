@@ -101,8 +101,7 @@ sub execute_assert_login {
             status => $_TACS->PASSED,
         })
         : undef;
-    # TODO: no context?
-    return _redirect('login_task')
+    return _redirect('login_task', 1)
         unless $owner && $uac;
     b_die('only for mfa login forms to assert plain login')
         unless $owner->get_configured_mfa_methods;
@@ -160,7 +159,6 @@ sub execute_password_reset {
             ->update({status => $_TACS->PASSED});
         return;
     }, sub {
-        # TODO: does this get cleared from the req appropriately?
         _put_next($proto, $req, $req->req('task')->get_attr_as_id('password_task')->get_name);
         return;
     }, 1);
@@ -181,7 +179,8 @@ sub format_password_query_uri {
 
 sub get_next {
     my($proto, $req) = @_;
-    # TODO: handle no cookies?
+    return
+        unless $req->ureq('cookie');
     my($next) = $req->req('cookie')->unsafe_get($_COOKIE_KEY->{next_task});
     _trace('get next=', $next)
         if $_TRACE;
@@ -224,7 +223,6 @@ sub _assert_escalation {
         if $_TRACE;
     b_die('must have user in non-general realm')
         unless $req->req('auth_user') && !$req->req('auth_realm')->is_general;
-    # TODO: need to set next in case of recovery code refill?
     return
         if _unsafe_load_from_cookie($proto, $req, {
             type => $_TAC->ESCALATION_CHALLENGE,

@@ -4,13 +4,15 @@ use strict;
 use Bivio::Base 'Model.UserEscalatedAccessBaseForm';
 
 my($_AMRCL) = b_use('Action.MFARecoveryCodeList');
+my($_V) = b_use('UI.View');
 
 sub execute_ok {
     my($self) = @_;
-    # TODO: send email
+    shift->SUPER::execute_ok(@_);
     unless ($self->ureq('Model.MFARecoveryCodeList')) {
         $_AMRCL->regenerate_list($self->req);
         $self->internal_stay_on_page;
+        $_V->call_main('UserAuth->mfa_recovery_code_list_regenerate_mail', $self->req);
     }
     return;
 }

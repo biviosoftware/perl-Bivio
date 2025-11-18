@@ -31,6 +31,7 @@ submit_form({
     authenticator_code => $compute_totp_code->(30, $totp_setup_key),
 });
 verify_text(qr/two-factor authentication has been set up successfully/i);
+verify_local_mail($e, qr/two-factor authentication enabled/i, 1);
 verify_text(qr/sign-out/i);
 do_logout();
 follow_link(qr,\blogin\b,i);
@@ -152,6 +153,7 @@ my($recovery_codes3) = [split("\n", get_content())];
 b_die('unexpected code count')
     unless int(@$recovery_codes3) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
+verify_local_mail($e, qr/two-factor authentication recovery codes regenerated/i, 1);
 do_logout();
 follow_link(qw(login forgot_password));
 submit_form({
@@ -254,6 +256,7 @@ follow_link(qw(myaccount disable_time_based));
 verify_text(qr/are you sure you want to disable/i);
 submit_form('Disable');
 verify_text(qr/has been disabled successfully/);
+verify_local_mail($e, qr/two-factor authentication disabled/i, 1);
 follow_link('myaccount');
 verify_text(qr/enable time-based/i);
 verify_text(qr/(sign-out|\blogout\b)/i);
@@ -296,6 +299,7 @@ submit_form({
     authenticator_code => $compute_totp_code->(30, $totp_setup_key2),
 });
 verify_text(qr/two-factor authentication has been set up successfully/i);
+verify_local_mail($e, qr/two-factor authentication enabled/i, 1);
 verify_text(qr/sign-out/i);
 do_logout();
 follow_link('login');
@@ -367,6 +371,7 @@ my($recovery_codes5) = [split("\n", get_content())];
 b_die('unexpected code count')
     unless int(@$recovery_codes5) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
+verify_local_mail($e, qr/two-factor authentication recovery codes regenerated/i, 1);
 $add_seconds->(Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 follow_link('back_to_my_site');
 follow_link(qw(myaccount disable_time_based));
@@ -385,6 +390,7 @@ submit_form(Continue => {
     authenticator_recovery_code => $recovery_codes5->[1],
 });
 verify_text(qr/has been disabled successfully/);
+verify_local_mail($e, qr/two-factor authentication disabled/i, 1);
 follow_link('myaccount');
 verify_text(qr/enable time-based/i);
 verify_text(qr/(sign-out|\blogout\b)/i);

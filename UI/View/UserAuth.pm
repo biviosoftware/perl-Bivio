@@ -155,6 +155,10 @@ sub mfa_recovery_code_list_regenerate_form {
     );
 }
 
+sub mfa_recovery_code_list_regenerate_mail {
+    return shift->internal_mail;
+}
+
 sub missing_cookies {
     return shift->internal_body(DIV_prose(_prose('missing_cookies.body')));
 }

@@ -1998,13 +1998,15 @@ sub _cfg_user_auth {
             [USER_EMAIL_VERIFY_SENT => undef],
             [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
             [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
+            [USER_ENABLE_TOTP_MAIL => undef],
             [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
+            [USER_DISABLE_TOTP_MAIL => undef],
             [USER_ESCALATION_PLAIN_FORM => '?/confirm-access'],
             [USER_ESCALATION_TOTP_FORM => '?/confirm-totp'],
-            [USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM => '?/refill-recovery-codes'],
-            [USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => '?/regenerate-recovery-codes'],
+            [MFA_RECOVERY_CODE_LIST_REFILL_FORM => '?/refill-recovery-codes'],
+            [MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => '?/regenerate-recovery-codes'],
             [USER_MFA_RECOVERY_CODE_LIST_DOWNLOAD => '?/download-recovery-codes'],
-            [USER_MFA_RECOVERY_CODE_LIST_PRINT => '?/print-recovery-codes'],
+            [MFA_RECOVERY_CODE_LIST_PRINT => '?/print-recovery-codes'],
         ],
         Text => [
             [[qw(UserLoginForm ContextlessUserLoginForm)] => [
@@ -2117,6 +2119,14 @@ sub _cfg_user_auth {
                 USER_SETTINGS_FORM => 'b_icon_cog',
             ]],
             [prose => [
+                user_account_action_body => <<'EOF',
+If this was you, no further action is required.
+
+If this was not you, please contact customer support by replying to this email.
+
+Thank you,
+vs_site_name(); Support
+EOF
                 UserAuth => [
                     general_contact_mail => [
                         subject => q{vs_site_name(); Web Contact},
@@ -2226,6 +2236,35 @@ Join([
     ]),
 ]);
 EOF
+                    mfa_recovery_code_list_regenerate_mail => [
+                        to => q{Mailbox([qw(Model.Email email)]);},
+                        subject => 'vs_site_name(); two-factor authentication recovery codes regenerated',
+                        body => <<'EOF'
+Your two-factor authentication recovery codes have been regenerated.
+
+vs_text_as_prose('user_account_action_body');
+EOF
+                    ],
+                ],
+                UserTOTP => [
+                    enable_mail => [
+                        to => q{Mailbox([qw(Model.Email email)]);},
+                        subject => 'vs_site_name(); two-factor authentication enabled',
+                        body => <<'EOF'
+Two-factor authentication has been enabled for your account.
+
+vs_text_as_prose('user_account_action_body');
+EOF
+                    ],
+                    disable_mail => [
+                        to => q{Mailbox([qw(Model.Email email)]);},
+                        subject => 'vs_site_name(); two-factor authentication disabled',
+                        body => <<'EOF'
+Two-factor authentication has been disabled for your account.
+
+vs_text_as_prose('user_account_action_body');
+EOF
+                    ],
                 ],
             ]],
             [[qw(UserLoginTOTPForm UserEnableTOTPForm UserEscalationTOTPForm MFARecoveryCodeListRegenerateForm UserDisableTOTPForm UserPasswordForm)] => [
@@ -2288,9 +2327,9 @@ EOF
                 USER_ESCALATION_TOTP_FORM => 'Confirm Account Access',
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
                 USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
-                USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM => 'New Authenticator Recovery Codes',
-                USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Create New Authenticator Recovery Codes',
-                USER_MFA_RECOVERY_CODE_LIST_PRINT => 'Authenticator Recovery Codes',
+                MFA_RECOVERY_CODE_LIST_REFILL_FORM => 'New Authenticator Recovery Codes',
+                MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Create New Authenticator Recovery Codes',
+                MFA_RECOVERY_CODE_LIST_PRINT => 'Authenticator Recovery Codes',
             ]],
             [acknowledgement => [
                 USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',

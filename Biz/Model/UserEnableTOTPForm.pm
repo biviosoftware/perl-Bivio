@@ -26,14 +26,16 @@ sub execute_empty {
 sub execute_ok {
     my($self) = @_;
     $self->bypass_challenge;
-    my($res) = shift->SUPER::execute_ok(@_);
+    shift->SUPER::execute_ok(@_);
     $self->new_other('UserTOTP')->create(
         $self->get('totp_secret'),
         $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
     );
     $_MMFCL->create($self->get('mfa_recovery_code_array'));
-    # TODO: send email
-    return $res;
+    return {
+        method => 'server_redirect',
+        task_id => 'next',
+    };
 }
 
 sub execute_unwind {

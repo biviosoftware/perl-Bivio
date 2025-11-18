@@ -8,6 +8,7 @@ my($_UT) = b_use('Model.UserTOTP');
 
 sub execute_ok {
     my($self) = @_;
+    shift->SUPER::execute_ok(@_);
     my($mm) = $self->req(qw(auth_realm owner))->get_configured_mfa_methods;
     my($totp) = $self->req('Model.UserTOTP');
     # Sanity check
@@ -17,8 +18,10 @@ sub execute_ok {
     $self->new_other('MFARecoveryCodeList')->load_all->delete
         unless int(@$mm) > 1;
     $_ULTF->delete_cookie($self->req('cookie'));
-    # TODO: send email
-    return;
+    return {
+        method => 'server_redirect',
+        task_id => 'next',
+    };
 }
 
 sub internal_pre_execute {

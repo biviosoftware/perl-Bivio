@@ -1689,14 +1689,14 @@ sub info_user_auth {
             Action.MFARecoveryCodeList->execute_download
         )],
         [qw(
-            USER_MFA_RECOVERY_CODE_LIST_PRINT
+            MFA_RECOVERY_CODE_LIST_PRINT
             301
             USER
             ADMIN_READ&ADMIN_WRITE
             View.UserAuth->mfa_recovery_code_print_list
         )],
         [qw(
-            USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM
+            MFA_RECOVERY_CODE_LIST_REFILL_FORM
             302
             USER
             ADMIN_READ&ADMIN_WRITE
@@ -1707,11 +1707,12 @@ sub info_user_auth {
             next=MY_SITE
         )],
         [qw(
-            USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM
+            MFA_RECOVERY_CODE_LIST_REGENERATE_FORM
             303
             USER
             ADMIN_READ&ADMIN_WRITE
             Action.AccessChallenge->execute_assert_escalation
+            Model.Email->execute_load_default_for_auth_user
             Model.MFARecoveryCodeListRegenerateForm
             View.UserAuth->mfa_recovery_code_list_regenerate_form
             plain_task=DEFAULT_ERROR_REDIRECT_NOT_FOUND
@@ -1738,7 +1739,7 @@ sub info_user_auth {
             Model.UserLoginTOTPForm
             View.UserTOTP->login_form
             password_task=USER_PASSWORD
-            refill_task=USER_MFA_RECOVERY_CODE_LIST_REFILL_FORM
+            refill_task=MFA_RECOVERY_CODE_LIST_REFILL_FORM
             next=MY_SITE
             MODEL_NOT_FOUND=LOGIN
             FORBIDDEN=LOGIN
@@ -1753,22 +1754,42 @@ sub info_user_auth {
             Model.UserEnableTOTPForm
             View.UserTOTP->enable_form
             plain_task=USER_ESCALATION_PLAIN_FORM
+            next=USER_ENABLE_TOTP_MAIL
+        )],
+        [qw(
+            USER_ENABLE_TOTP_MAIL
+            312
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.Email->execute_load_default_for_auth_user
+            View.UserTOTP->enable_mail
+            Action.ServerRedirect->execute_next
             next=MY_SITE
         )],
         [qw(
             USER_DISABLE_TOTP_FORM
-            312
+            313
             USER
             ADMIN_READ&ADMIN_WRITE
             Action.AccessChallenge->execute_assert_escalation
             Model.UserDisableTOTPForm
             View.UserTOTP->disable_form
             totp_task=USER_ESCALATION_TOTP_FORM
+            next=USER_DISABLE_TOTP_MAIL
+        )],
+        [qw(
+            USER_DISABLE_TOTP_MAIL
+            314
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.Email->execute_load_default_for_auth_user
+            View.UserTOTP->disable_mail
+            Action.ServerRedirect->execute_next
             next=MY_SITE
         )],
         [qw(
             USER_ESCALATION_TOTP_FORM
-            313
+            315
             USER
             ADMIN_READ&ADMIN_WRITE
             Model.UserEscalationTOTPForm

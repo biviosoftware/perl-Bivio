@@ -64,7 +64,7 @@ sub account {
                 vs_blank_cell(),
                 Link(
                     'Create new authenticator recovery codes',
-                    'USER_MFA_RECOVERY_CODE_LIST_REGENERATE_FORM',
+                    'MFA_RECOVERY_CODE_LIST_REGENERATE_FORM',
                 )->put(row_control => If(And(
                     ['auth_user'],
                     [sub {
