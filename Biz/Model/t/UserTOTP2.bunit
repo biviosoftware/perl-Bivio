@@ -2,10 +2,10 @@
 PropertyModel();
 create_user(random_alpha_string());
 my($t) = Type_DateTime()->set_test_now(Type_DateTime()->now);
-my($m) = model('UserTOTP')->create(
-    Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1),
-    Biz_RFC6238()->get_time_step(Type_DateTime()->to_unix($t), 30),
-);
+my($m) = model('UserTOTP')->create({
+    secret => Type_TOTPSecret()->generate_secret(Type_TOTPAlgorithm()->SHA1),
+    time_step => Biz_RFC6238()->get_time_step(Type_DateTime()->to_unix($t), 30),
+});
 options({
     create_object => sub {$m},
     compute_params => sub {

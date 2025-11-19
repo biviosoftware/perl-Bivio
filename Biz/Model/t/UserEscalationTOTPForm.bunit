@@ -20,13 +20,13 @@ FormModel({
         unless ($no_totp || $totp) {
             req()->with_realm($user, sub {
                 $secret = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
-                $totp = Model_UserTOTP()->create(
-                    $secret,
-                    Biz_RFC6238()->get_time_step(
+                $totp = Model_UserTOTP()->create({
+                    secret => $secret,
+                    time_step => Biz_RFC6238()->get_time_step(
                         Type_DateTime()->to_unix(Type_DateTime()->now),
                         $period,
                     ),
-                );
+                });
                 Action_MFARecoveryCodeList()->execute_preview(req());
                 $recovery_codes = req(qw(Action.MFARecoveryCodeList mfa_recovery_code_array));
                 Model_MFARecoveryCodeList()->create($recovery_codes);

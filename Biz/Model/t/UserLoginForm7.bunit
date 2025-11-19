@@ -33,13 +33,13 @@ my($is_task) = sub {
     }] => $is_task->('CART'),
     inline_case(sub {
         req()->with_realm($uid, sub {
-            Model_UserTOTP()->create(
-                Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm),
-                Biz_RFC6238()->get_time_step(
+            Model_UserTOTP()->create({
+                secret => Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm),
+                time_step => Biz_RFC6238()->get_time_step(
                     Type_DateTime()->to_unix(Type_DateTime()->now),
                     Model_UserTOTP()->get_default_period,
                 ),
-            );
+            });
         });
     }),
     [{

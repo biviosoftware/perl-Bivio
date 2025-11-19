@@ -25,12 +25,12 @@ req()->put(cookie => Collection_Attributes()->new({
                     );
                     return 1;
                 }),
-             } [qw(LOGIN_CHALLENGE lc)], [qw(ESCALATION_CHALLENGE ec)]),
+             } [qw(LOGIN_CHALLENGE aclc)], [qw(ESCALATION_CHALLENGE acec)]),
         ],
         delete_challenges => [
             [req()] => sub {
-                assert_equals(undef, ureq(qw(cookie lc)));
-                assert_equals(undef, ureq(qw(cookie ec)));
+                assert_equals(undef, ureq(qw(cookie aclc)));
+                assert_equals(undef, ureq(qw(cookie acec)));
                 foreach my $type (qw(LOGIN_CHALLENGE ESCALATION_CHALLENGE)) {
                     assert_equals(0, model('UserAccessCode')->unauth_load({
                         user_id => realm_id('demo'),

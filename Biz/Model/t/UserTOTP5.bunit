@@ -16,12 +16,12 @@ my($u);
         $u = create_user(random_alpha_string());
         return model('UserTOTP');
     } => [
-        create => $_,
+        create => [[{secret => $_->[0], time_step => $_->[1]}] => $_->[2]],
     ]), (
-        [['foo', 1] => DIE()],
-        [[$s, 1] => DIE()],
-        [['foo', $ts] => DIE()],
-        [[$s, $ts] => sub {
+        ['foo', 1 => DIE()],
+        [$s, 1 => DIE()],
+        ['foo', $ts => DIE()],
+        [$s, $ts => sub {
             my(undef, $actual) = @_;
             foreach my $t (
                 ['user_id', $u->get('realm_id')],

@@ -29,7 +29,7 @@ FormModel({
                 Model_MFARecoveryCodeList()->get_new_code_count);
         }
         unless (Model_UserTOTP()->unsafe_load) {
-            Model_UserTOTP()->create($totp_secret, $time_step);
+            Model_UserTOTP()->create({secret => $totp_secret, time_step => $time_step});
             Model_MFARecoveryCodeList()->create($mfa_recovery_codes);
         }
         return

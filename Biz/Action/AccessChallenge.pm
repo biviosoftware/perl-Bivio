@@ -11,10 +11,10 @@ my($_TACS) = b_use('Type.AccessCodeStatus');
 my($_UAC) = b_use('Model.UserAccessCode');
 my($_ULF) = b_use('Model.UserLoginForm');
 my($_COOKIE_KEY) = {
-    LOGIN_CHALLENGE => 'lc',
-    ESCALATION_CHALLENGE => 'ec',
-    PASSWORD_QUERY => 'pq',
-    next_task => 'nt',
+    LOGIN_CHALLENGE => 'aclc',
+    ESCALATION_CHALLENGE => 'acec',
+    PASSWORD_QUERY => 'acpq',
+    next_task => 'acnt',
 };
 my($_PASSWORD_QUERY_KEY) = 'x';
 
