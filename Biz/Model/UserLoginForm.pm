@@ -45,7 +45,7 @@ sub execute_ok {
         : $self->has_keys('realm_owner') ? _assert_realm($self)
         : $self->has_keys('login') ? _assert_login($self)
         : b_die('missing form fields');
-    b_warn('RealmOwner.password was NOT CHECKED')
+    b_die('RealmOwner.password was NOT CHECKED')
         if defined($self->unsafe_get('RealmOwner.password'))
         && !$self->unsafe_get('validate_called');
     return _su_logout($self)
@@ -56,15 +56,11 @@ sub execute_ok {
         # DOES NOT RETURN
     }
     _set_cookie_user($self, $req, $realm);
-    # TODO: just rip out otp ffs?
     if ($req->ureq('cookie') && (
         ($realm && !$realm->require_otp && $self->unsafe_get('validate_called')) || $self->unsafe_get('require_mfa')
     )) {
         return _challenge_redirect($self, $realm, $res, $req);
     }
-    # TODO: do this here or earlier? how would we be in_error?
-    return $res
-        if $self->in_error;
     $self->set_user($realm, $req->unsafe_get('cookie'), $req);
     return $res
         unless $realm && $realm->require_otp;
@@ -229,8 +225,6 @@ sub _assert_realm {
     my($err) = $realm->validate_login_for_self;
     $self->throw_die('NOT_FOUND', {entity => $realm, message => $err})
         if $err;
-    # TODO: can't figure out why this would be set here... "validate" was not called.
-    # $self->internal_put_field(validate_called => 1);
     return $realm;
 }
 

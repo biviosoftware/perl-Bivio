@@ -2281,6 +2281,19 @@ EOF
             [[qw(UserEnableTOTPForm UserEscalationPlainForm UserEscalationTOTPForm MFARecoveryCodeListRegenerateForm UserDisableTOTPForm)] => [
                 'RealmOwner.password' => 'Password',
             ]],
+            [MFARecoveryCodeList => [
+                prose => [
+                    prologue => <<'EOF',
+Join([
+    'The following codes are your authenticator recovery codes. If you don\'t have access to your authenticator app you will need to enter one of these codes to gain access to your account.',
+    BR(), BR(),
+    'Save these codes in a secure place. This list will only be shown to you once.',
+    BR(), BR(),
+    'For example, click the "copy" link to the right and then paste into your password manager entry for this site, click the "download" link and then move the downloaded file to a secure place where you keep personal files, or click the "print" link and then place the printed page in a secure place in your personal files.',
+]);
+EOF
+                ],
+            ]],
             [UserEnableTOTPForm => [
                 prose => [
                     prologue => <<'EOF',

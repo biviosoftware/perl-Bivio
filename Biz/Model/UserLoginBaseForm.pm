@@ -117,8 +117,6 @@ sub record_login_attempt {
 
 sub validate {
     my(undef, $delegator, $login, $password, $no_record) = shift->delegated_args(@_);
-    # TODO: moved from validate_login, which gets called from internal code paths where "validate"
-    # doesn't get called. Verify this can be moved.
     $delegator->internal_put_field(validate_called => 1);
     if (defined($login) && defined($password)) {
         $delegator->internal_put_field(
@@ -128,7 +126,7 @@ sub validate {
         );
     }
     _validate($delegator);
-    # don't send secrets back to client in error case
+    # don't send password back to client in error case
     if ($delegator->in_error) {
         $delegator->internal_put_field('RealmOwner.password' => undef);
         $delegator->internal_clear_literal('RealmOwner.password');

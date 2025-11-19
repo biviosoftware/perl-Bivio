@@ -85,9 +85,8 @@ sub su_logout {
         if $req->unsafe_get('cookie');
     my($realm) = $self->new_other('RealmOwner');
     $realm->unauth_load({realm_id => $su});
-    # Log out of all possible MFA methods for maximal caution
+    # Log out of all possible MFA methods out of caution
     foreach my $t ($_MM->get_non_zero_list) {
-        b_debug($t);
         _do_form($self, $t->get_login_form_class, {do_logout => 1});
     }
     _do_form($self, $_ULF, {realm_owner => $realm->is_loaded ? $realm : undef});

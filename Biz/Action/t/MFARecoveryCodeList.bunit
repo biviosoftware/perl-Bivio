@@ -13,7 +13,7 @@ my($is_equal) = sub {
     my($l1, $l2) = map(join('|', @$_), @_);
     return 1
         if $l1 eq $l2;
-    b_debug($l1, ' ne ', $l2);
+    b_info($l1, ' ne ', $l2);
     return 0;
 };
 my($archive_code) = sub {
@@ -59,7 +59,7 @@ my($archive_code) = sub {
                     ),
                     totp_time_step => $time_step,
                 });
-                $original_codes = b_debug($get_codes->());
+                $original_codes = $get_codes->();
                 return;
             }),
         ],

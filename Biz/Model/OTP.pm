@@ -5,6 +5,8 @@ use strict;
 use Bivio::Base 'Biz.PropertyModel';
 use Bivio::Biz::RFC2289;
 
+# TODO: The OTP functionality most likely unused and can be removed.
+
 Bivio::IO::Config->register(my $_CFG = {
     login_timeout_seconds => 3600,
     reinitialize_sequence => 10,
@@ -91,7 +93,7 @@ sub verify {
 
 sub _values {
     my($self, $values) = @_;
-#TODO: Is this a good idea to hardcode here?  Shouldn't it be pulled from OTPForm? 
+#TODO: Is this a good idea to hardcode here?  Shouldn't it be pulled from OTPForm?
     $values->{sequence} = $self->get_field_type('sequence')->get_max - 1
         unless exists($values->{sequence});
     $values->{last_login} ||= $self->get_field_type('last_login')->now();
