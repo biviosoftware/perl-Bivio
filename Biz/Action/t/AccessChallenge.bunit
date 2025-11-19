@@ -1,0 +1,44 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Request();
+req()->put(cookie => Collection_Attributes()->new({
+    Model_UserLoginForm()->USER_FIELD => realm_id('demo'),
+}));
+[
+    class() => [
+        create_challenge => [
+            map ({
+                my($type, $cookie_key) = @$_;
+                ([
+                    req(),
+                    unauth_model('RealmOwner', {realm_id => realm_id('demo')}),
+                    Type_AccessCode()->$type,
+                ] => sub {
+                    my($case, $actual, $expect) = @_;
+                    my($uac) = $actual->[0];
+                    assert_equals(realm_id('demo'), $uac->get('user_id'));
+                    assert_equals(Type_AccessCode()->$type, $uac->get('type'));
+                    assert_equals(Type_AccessCodeStatus()->PENDING, $uac->get('status'));
+                    assert_equals($uac->get('code'), req('cookie')->get($cookie_key));
+                    assert_equals(
+                        $uac->get('user_access_code_id'),
+                        req(class() . '.' . lc($type), 'user_access_code_id'),
+                    );
+                    return 1;
+                }),
+             } [qw(LOGIN_CHALLENGE lc)], [qw(ESCALATION_CHALLENGE ec)]),
+        ],
+        delete_challenges => [
+            [req()] => sub {
+                assert_equals(undef, ureq(qw(cookie lc)));
+                assert_equals(undef, ureq(qw(cookie ec)));
+                foreach my $type (qw(LOGIN_CHALLENGE ESCALATION_CHALLENGE)) {
+                    assert_equals(0, model('UserAccessCode')->unauth_load({
+                        user_id => realm_id('demo'),
+                        type => Type_AccessCode()->$type,
+                    }));
+                }
+                return 1;
+            },
+        ],
+    ],
+]

@@ -13,7 +13,6 @@ sub PASSWORD_FIELD {
 }
 
 sub USER_FIELD {
-    # Returns the cookie key for the super user value.
     return 'u';
 }
 
