@@ -103,7 +103,9 @@ sub get_configured_mfa_methods {
             unless $model->unauth_load({$model->REALM_ID_FIELD => $self->get('realm_id')});
         push(@$methods, {type => $type, model => $model});
     }
-    return int(@$methods) ? $methods : undef;
+    return $methods
+        if int(@$methods);
+    return;
 }
 
 sub has_valid_password {

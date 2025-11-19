@@ -1682,24 +1682,34 @@ sub info_user_auth {
             View.UserAuth->user_locked_out
         )],
         [qw(
+            USER_ESCALATION_PLAIN_FORM
+            99
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.UserEscalationPlainForm
+            View.UserAuth->escalation_plain_form
+            next=MY_SITE
+            cancel=USER_SETTINGS_FORM
+        )],
+        [qw(
             USER_MFA_RECOVERY_CODE_LIST_DOWNLOAD
             300
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
             Action.MFARecoveryCodeList->execute_download
         )],
         [qw(
             MFA_RECOVERY_CODE_LIST_PRINT
             301
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
             View.UserAuth->mfa_recovery_code_print_list
         )],
         [qw(
             MFA_RECOVERY_CODE_LIST_REFILL_FORM
             302
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
             Action.MFARecoveryCodeList->execute_refill
             Model.MFARecoveryCodeListRefillForm
             View.UserAuth->mfa_recovery_code_refill_list
@@ -1710,7 +1720,7 @@ sub info_user_auth {
             MFA_RECOVERY_CODE_LIST_REGENERATE_FORM
             303
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
             Action.AccessChallenge->execute_assert_escalation
             Model.Email->execute_load_default_for_auth_user
             Model.MFARecoveryCodeListRegenerateForm
@@ -1719,17 +1729,7 @@ sub info_user_auth {
             totp_task=USER_ESCALATION_TOTP_FORM
             next=MY_SITE
         )],
-        [qw(
-            USER_ESCALATION_PLAIN_FORM
-            304
-            USER
-            ADMIN_READ&ADMIN_WRITE
-            Model.UserEscalationPlainForm
-            View.UserAuth->escalation_plain_form
-            next=MY_SITE
-            cancel=USER_SETTINGS_FORM
-        )],
-        # 305-309 free
+        # 304-309 free
         [qw(
             USER_LOGIN_TOTP_FORM
             310
@@ -1748,7 +1748,7 @@ sub info_user_auth {
             USER_ENABLE_TOTP_FORM
             311
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Action.MFARecoveryCodeList->execute_preview
             Action.AccessChallenge->execute_assert_escalation
             Model.UserEnableTOTPForm
@@ -1760,7 +1760,7 @@ sub info_user_auth {
             USER_ENABLE_TOTP_MAIL
             312
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Model.Email->execute_load_default_for_auth_user
             View.UserTOTP->enable_mail
             Action.ServerRedirect->execute_next
@@ -1770,7 +1770,7 @@ sub info_user_auth {
             USER_DISABLE_TOTP_FORM
             313
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Action.AccessChallenge->execute_assert_escalation
             Model.UserDisableTOTPForm
             View.UserTOTP->disable_form
@@ -1781,7 +1781,7 @@ sub info_user_auth {
             USER_DISABLE_TOTP_MAIL
             314
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Model.Email->execute_load_default_for_auth_user
             View.UserTOTP->disable_mail
             Action.ServerRedirect->execute_next
@@ -1791,7 +1791,7 @@ sub info_user_auth {
             USER_ESCALATION_TOTP_FORM
             315
             USER
-            ADMIN_READ&ADMIN_WRITE
+            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Model.UserEscalationTOTPForm
             View.UserTOTP->escalation_totp_form
             next=MY_SITE

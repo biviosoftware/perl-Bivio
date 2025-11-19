@@ -4,7 +4,12 @@ test_setup('PetShop', 'groupware');
 home_page();
 my($e) = create_user();
 my($dp) = default_password();
-follow_link(qw(myaccount enable_time_based));
+follow_link('myaccount');
+verify_no_text(qr/enable time based/i);
+do_test_backdoor(RealmRole => join(' ', '-r', $e, 'edit_categories', '+feature_mfa'));
+go_back();
+reload_page();
+follow_link('enable_time_based');
 verify_text('set up two-factor');
 my($totp_setup_key) = get_content() =~ /id="totp_setup_key">([^<]+)</;
 $totp_setup_key =~ s/\s+//g;
@@ -383,7 +388,7 @@ submit_form(Continue => {
 verify_text(qr/are you sure you want to disable time-based two-factor/i);
 $add_seconds->(Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 submit_form('Disable');
-verify_text(qr/authentication expired/i);
+verify_text(qr/prior access has expired/i);
 verify_text(qr/please enter your password and authenticator code to continue/i);
 submit_form(Continue => {
     password => $p,

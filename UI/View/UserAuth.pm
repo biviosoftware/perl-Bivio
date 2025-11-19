@@ -64,7 +64,7 @@ sub escalation_plain_form {
             BR(), BR(),
             'Access to restricted actions will be granted for ',
             String([sub {
-                return (int(b_use('Type.AccessCode')->ESCALATION_CHALLENGE->get_expiry_seconds_for_type) / 60);
+                return b_use('Type.AccessCode')->ESCALATION_CHALLENGE->get_expiry_seconds_for_type / 60;
             }]),
             ' minutes.',
             BR(), BR(),

@@ -5,6 +5,7 @@ use Bivio::Base 'Biz.Action';
 b_use('IO.Trace');
 
 our($_TRACE);
+my($_A) = b_use('Action.Acknowledgement');
 my($_C) = b_use('AgentHTTP.Cookie');
 my($_TAC) = b_use('Type.AccessCode');
 my($_TACS) = b_use('Type.AccessCodeStatus');
@@ -19,7 +20,8 @@ my($_COOKIE_KEY) = {
 my($_PASSWORD_QUERY_KEY) = 'x';
 
 sub assert_challenge {
-    return shift->unsafe_get_challenge(@_) || b_die('FORBIDDEN');
+    my($proto, $req, $query) = @_;
+    return $proto->unsafe_get_challenge($req, $query, 1) || b_die('FORBIDDEN');
 }
 
 sub create_challenge {
@@ -106,7 +108,7 @@ sub execute_assert_login {
             user_id => $owner->get('realm_id'),
             type => $_TAC->LOGIN_CHALLENGE,
             status => $_TACS->PASSED,
-        })
+        }, 1)
         : undef;
     return _redirect('login_task', 1)
         unless $owner && $uac;
@@ -197,15 +199,15 @@ sub get_next {
 
 sub unauth_assert_challenge {
     my($proto, $req, $query) = _assert_query_args(@_);
-    return _unsafe_get_from_req($proto, $req, $query)
-        || _unauth_load_from_cookie($proto, $req, $query)
+    return _unsafe_get_from_req($proto, $req, $query, 1)
+        || _unauth_load_from_cookie($proto, $req, $query, 1)
         || b_die('FORBIDDEN');
 }
 
 sub unsafe_get_challenge {
-    my($proto, $req, $query) = _assert_query_args(@_);
-    return _unsafe_get_from_req($proto, $req, $query)
-        || _unsafe_load_from_cookie($proto, $req, $query);
+    my($proto, $req, $query, $expired_ack) = _assert_query_args(@_);
+    return _unsafe_get_from_req($proto, $req, $query, $expired_ack)
+        || _unsafe_load_from_cookie($proto, $req, $query, $expired_ack);
 }
 
 sub _assert_query_args {
@@ -234,7 +236,7 @@ sub _assert_escalation {
         if _unsafe_load_from_cookie($proto, $req, {
             type => $_TAC->ESCALATION_CHALLENGE,
             status => $_TACS->PASSED,
-        });
+        }, $req->is_http_method('POST'));
     $proto->create_challenge($req, $req->req('auth_user'), $_TAC->ESCALATION_CHALLENGE);
     return $proto->do_plain_or_mfa($req->req('auth_user'), $plain_op, $mfa_op);
 }
@@ -250,10 +252,10 @@ sub _get_req_key {
 }
 
 sub _load {
-    my($proto, $req, $method, $code, $query) = @_;
+    my($proto, $req, $method, $code, $query, $expired_ack) = @_;
     _trace('load method=', $method, ' query=', $query)
         if $_TRACE;
-    my($uac) = $_UAC->new($req)->set_ephemeral->$method($code, $query, 1);
+    my($uac) = $_UAC->new($req)->set_ephemeral->$method($code, $query, $expired_ack);
     _trace('result=', $uac)
         if $_TRACE;
     _put_req($proto, $req, $uac)
@@ -292,36 +294,39 @@ sub _put_req {
 }
 
 sub _unauth_load {
-    my($proto, $req, $code, $query) = @_;
-    return _load($proto, $req, 'unauth_load_by_code', $code, $query);
+    my($proto, $req, $code, $query, $expired_ack) = @_;
+    return _load($proto, $req, 'unauth_load_by_code', $code, $query, $expired_ack);
 }
 
 sub _unauth_load_from_cookie {
-    my($proto, $req, $query) = @_;
+    my($proto, $req, $query, $expired_ack) = @_;
     return
         unless my $code = _unsafe_get_code_from_cookie($proto, $req, $query->{type});
-    return _unauth_load($proto, $req, $code, $query);
+    return _unauth_load($proto, $req, $code, $query, $expired_ack);
 }
 
 sub _unsafe_load_from_cookie {
-    my($proto, $req, $query) = @_;
+    my($proto, $req, $query, $expired_ack) = @_;
     return
         unless my $code = _unsafe_get_code_from_cookie($proto, $req, $query->{type});
     # Not using unsafe_load_by_code as we may not be in user realm
     return _load($proto, $req, 'unauth_load_by_code', $code, {
         %$query,
         user_id => $req->req('auth_user_id'),
-    });
+    }, $expired_ack);
 }
 
 sub _unsafe_get_from_req {
-    my($proto, $req, $query) = @_;
+    my($proto, $req, $query, $expired_ack) = @_;
     if (my $uac = $req->ureq(_get_req_key($proto, $query->{type}))) {
         _trace('have challenge from req=', $uac)
             if $_TRACE;
         if ($uac->is_expired) {
             _trace('challenge expired')
                 if $_TRACE;
+            b_use('IO.Alert')->print_stack;
+            $_A->save_label(access_code_expired => $req)
+                if $expired_ack;
             return;
         }
         if (!$uac->get('status')->is_equal($query->{status})) {

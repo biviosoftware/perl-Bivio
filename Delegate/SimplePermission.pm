@@ -41,6 +41,8 @@ sub get_delegate_info {
         FEATURE_BULLETIN => [32],
         FEATURE_GROUP_ADMIN => [33],
         DEV_TRANSIENT => [34],
+        FEATURE_MFA => [35],
+        FEATURE_TOTP => [36],
         LAST_RESERVED_VALUE => [50],
     ];
 }
