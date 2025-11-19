@@ -19,7 +19,7 @@ sub execute_ok {
 
 sub internal_pre_execute {
     my($self) = @_;
-    b_die('regenerate recovery codes with no MFA methods')
+    b_die('FORBIDDEN')
         unless $self->req(qw(auth_realm owner))->get_configured_mfa_methods;
     return shift->SUPER::internal_pre_execute(@_);
 }

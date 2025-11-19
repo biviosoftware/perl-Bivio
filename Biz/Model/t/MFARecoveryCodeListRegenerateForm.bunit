@@ -1,0 +1,82 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+my($do_setup) = 0;
+my($create_escalation) = 0;
+my($pass_escalation) = 0;
+my($user);
+my($original_codes);
+my($now);
+my($totp_secret);
+my($totp_time_step);
+my($totp_code);
+my($do_delay) = sub {
+    $now = Type_DateTime()->set_test_now(
+        Type_DateTime()->add_seconds(
+            $now,
+            Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type,
+        ),
+    );
+};
+my($get_codes) = sub {
+    my($codes) = model('MFARecoveryCodeList')->map_iterate(sub {shift->get('UserAccessCode.code')});
+    b_die(
+        'expected=', Model_MFARecoveryCodeList()->get_new_code_count, ' recovery codes, ',
+        'have=', int(@$codes),
+    ) unless Model_MFARecoveryCodeList()->get_new_code_count == int(@$codes);
+    return $codes;
+};
+FormModel({
+    setup_request => sub {
+        $user = create_user(random_realm_name());
+        return
+            unless $do_setup;
+        $do_delay->();
+        Action_AccessChallenge()->execute_assert_escalation(req());
+        model('UserEscalationPlainForm')->process({});
+        Action_MFARecoveryCodeList()->execute_preview(req());
+        my($f) = model('UserEnableTOTPForm');
+        $f->process({
+            totp_secret => $totp_secret,
+            mfa_recovery_code_array => req(qw(Action.MFARecoveryCodeList mfa_recovery_code_array)),
+            totp_time_step => $totp_time_step,
+            totp_code => $totp_code,
+        });
+        $original_codes = $get_codes->();
+        $do_delay->();
+        return
+            unless $create_escalation;
+        Action_AccessChallenge()->execute_assert_escalation(req());
+        return
+            unless $pass_escalation;
+        model('UserEscalationTOTPForm')->process({});
+        return;
+    },
+});
+req()->initialize_fully('MFA_RECOVERY_CODE_LIST_REGENERATE_FORM');
+$now = Type_DateTime()->set_test_now(Type_DateTime()->now);
+$totp_secret = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
+$totp_time_step = Biz_RFC6238()->get_time_step(
+    Type_DateTime()->to_unix($now), Model_UserTOTP()->get_default_period);
+$totp_code = Biz_RFC6238()->compute(
+    Model_UserTOTP()->get_default_algorithm,
+    Model_UserTOTP()->get_default_digits,
+    $totp_secret,
+    $totp_time_step,
+);
+[
+    [] => FORBIDDEN(),
+    inline_case(sub {$do_setup = 1}),
+    [] => FORBIDDEN(),
+    inline_case(sub {$create_escalation = 1}),
+    [] => FORBIDDEN(),
+    inline_case(sub {$pass_escalation = 1}),
+    [{}] => sub {
+        my($new_codes) = $get_codes->();
+        foreach my $code (@$new_codes) {
+            b_die('new code same as original code')
+                if grep($_ eq $code, @$original_codes);
+        }
+        return 1;
+    },
+    inline_case(sub {$do_setup = 0}),
+    [] => FORBIDDEN(),
+];

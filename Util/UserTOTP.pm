@@ -8,7 +8,7 @@ my($_RFC6238) = b_use('Biz.RFC6238');
 my($_T) = b_use('Model.UserTOTP');
 
 sub compute {
-    my($self, $secret, $algorithm, $digits, $period) = @_;
+    my($self, $secret, $algorithm, $digits, $period, $date_time) = @_;
     $self->assert_not_general;
     my($m) = $self->model('UserTOTP');
     $m->unsafe_load;
@@ -16,11 +16,12 @@ sub compute {
     $algorithm ||= $m->is_loaded ? $m->get('algorithm') : $_T->get_default_algorithm;
     $digits ||= $m->is_loaded ? $m->get('digits') : $_T->get_default_digits;
     $period ||= $m->is_loaded ? $m->get('period') : $_T->get_default_period;
+    $date_time = $date_time ? $_DT->from_literal_or_die($date_time) : $_DT->now;
     return $_RFC6238->compute(
         $algorithm->get_name,
         $digits,
         $secret,
-        $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $period),
+        $_RFC6238->get_time_step($_DT->to_unix($date_time), $period),
     );
 }
 

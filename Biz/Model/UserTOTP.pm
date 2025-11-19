@@ -31,11 +31,17 @@ sub SECRET_KEY {
 }
 
 sub create {
-    my($self, $secret, $time_step) = @_;
+    my($self, $values) = @_;
+    b_die('secret required')
+        unless $values->{secret};
+    b_die('time_step required')
+        unless $values->{time_step};
     return $self->SUPER::create({
         map(($_ => $_CFG->{'default_' . $_}), qw(algorithm digits period)),
-        secret => $self->get_field_type('secret')->from_literal_or_die($secret),
-        last_time_step => $self->get_field_type('last_time_step')->from_literal_or_die($time_step),
+        %$values,
+        secret => $self->get_field_type('secret')->from_literal_or_die($values->{secret}),
+        last_time_step => $self->get_field_type('last_time_step')
+            ->from_literal_or_die($values->{time_step}),
     });
 }
 

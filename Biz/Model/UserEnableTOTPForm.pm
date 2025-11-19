@@ -27,10 +27,10 @@ sub execute_ok {
     my($self) = @_;
     $self->bypass_challenge;
     shift->SUPER::execute_ok(@_);
-    $self->new_other('UserTOTP')->create(
-        $self->get('totp_secret'),
-        $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
-    );
+    $self->new_other('UserTOTP')->create({
+        secret => $self->get('totp_secret'),
+        time_step => $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
+    });
     $_MMFCL->create($self->get('mfa_recovery_code_array'));
     return {
         method => 'server_redirect',

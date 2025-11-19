@@ -8,7 +8,7 @@ my($_RFC6238) = b_use('Biz.RFC6238');
 my($_TP) = b_use('Type.TOTPPeriod');
 
 Bivio::IO::Config->register(my $_CFG = {
-    first_available_date => '10/10/2025 00:00:00',
+    first_available_date => '11/01/2025 00:00:00',
 });
 
 sub get_min {

@@ -317,14 +317,19 @@ sub _unsafe_load_from_cookie {
 sub _unsafe_get_from_req {
     my($proto, $req, $query) = @_;
     if (my $uac = $req->ureq(_get_req_key($proto, $query->{type}))) {
-        _trace('have challenge from req=', $uac);
-        if ($uac->get('status')->is_equal($query->{status})) {
-            return $uac;
-        }
-        else {
-            _trace('have challenge=', $uac, ', but expected status=', $query->{status})
+        _trace('have challenge from req=', $uac)
+            if $_TRACE;
+        if ($uac->is_expired) {
+            _trace('challenge expired')
                 if $_TRACE;
+            return;
         }
+        if (!$uac->get('status')->is_equal($query->{status})) {
+            _trace('not expected status=', $query->{status})
+                if $_TRACE;
+            return;
+        }
+        return $uac;
     }
     return;
 }
