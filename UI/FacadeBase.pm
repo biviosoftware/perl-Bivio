@@ -2005,7 +2005,7 @@ sub _cfg_user_auth {
             [USER_ESCALATION_TOTP_FORM => '?/confirm-totp'],
             [MFA_RECOVERY_CODE_LIST_REFILL_FORM => '?/refill-recovery-codes'],
             [MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => '?/regenerate-recovery-codes'],
-            [USER_MFA_RECOVERY_CODE_LIST_DOWNLOAD => '?/download-recovery-codes'],
+            [MFA_RECOVERY_CODE_LIST_DOWNLOAD => '?/download-recovery-codes'],
             [MFA_RECOVERY_CODE_LIST_PRINT => '?/print-recovery-codes'],
         ],
         Text => [
@@ -2318,10 +2318,14 @@ EOF
             [MFARecoveryCodeListRegenerateForm => [
                 prose => [
                     prologue => <<'EOF',
-Are you sure you want to create new authenticator recovery codes? Any existing recovery codes will no longer be available.
+Join([
+    'Are you sure you want to regenerate your authenticator recovery codes?',
+    BR(), BR(),
+    'Any existing recovery codes will no longer be available.',
+]);
 EOF
                 ],
-                'ok_button' => 'Create New Authenticator Recovery Codes',
+                'ok_button' => 'Regenerate Recovery Codes',
             ]],
             [UserDisableTOTPForm => [
                 prose => [

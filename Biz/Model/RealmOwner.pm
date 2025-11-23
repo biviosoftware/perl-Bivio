@@ -96,11 +96,13 @@ sub format_uri {
 
 sub get_configured_mfa_methods {
     my($self, $type_filter) = @_;
+    # TODO: return empty unless FEATURE_MFA?
     my($methods) = [];
     foreach my $type ($type_filter ? $type_filter : $_MM->get_non_zero_list) {
         my($model) = $self->new_other($type->get_model_class)->set_ephemeral;
         next
             unless $model->unauth_load({$model->REALM_ID_FIELD => $self->get('realm_id')});
+        # TODO: next unless FEATURE_TOTP?
         push(@$methods, {type => $type, model => $model});
     }
     return $methods

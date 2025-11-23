@@ -7,15 +7,14 @@ my($_C) = b_use('AgentHTTP.Cookie');
 my($_DT) = b_use('Type.DateTime');
 my($_MM) = b_use('Type.MFAMethod');
 my($_RFC6238) = b_use('Biz.RFC6238');
-my($_ULF) = b_use('Model.UserLoginForm');
 my($_UT) = b_use('Model.UserTOTP');
 
 sub TOTP_CODE_FIELD {
-    return 'tc';
+    return 'totpc';
 }
 
 sub TOTP_TIME_STEP_FIELD {
-    return 'tt';
+    return 'totpt';
 }
 
 sub SENSITIVE_FIELDS {
@@ -114,14 +113,14 @@ sub validate {
     _validate_totp_code($self);
     if ($self->in_error) {
         $self->internal_clear_sensitive_fields;
-        $_ULF->record_login_attempt($self->get('realm_owner'), 0);
+        $self->internal_login_form->record_login_attempt($self->get('realm_owner'), 0);
         return;
     }
     elsif (!$self->get('totp_code') && !$self->get('mfa_recovery_code')) {
         $self->internal_put_error(totp_code => 'NULL');
         return;
     }
-    $_ULF->record_login_attempt($self->get('realm_owner'), 1);
+    $self->internal_login_form->record_login_attempt($self->get('realm_owner'), 1);
     return;
 }
 

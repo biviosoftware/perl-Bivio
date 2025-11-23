@@ -58,7 +58,7 @@ sub execute_download {
 
 sub format_uri_for_download {
     my($proto, $source) = @_;
-    return _uri($proto, $source, 'USER_MFA_RECOVERY_CODE_LIST_DOWNLOAD');
+    return _uri($proto, $source, 'MFA_RECOVERY_CODE_LIST_DOWNLOAD');
 }
 
 sub format_uri_for_print {

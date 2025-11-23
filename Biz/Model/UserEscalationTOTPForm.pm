@@ -54,7 +54,7 @@ sub validate {
     my($self) = @_;
     return
         if $self->in_error;
-    my($ulf) = $self->new_other('UserLoginForm');
+    my($ulf) = $self->internal_login_form->new($self->req);
     # Only recording plain login attempt in error because recording success would prevent
     # lockouts when password is correct, but totp code is not.
     $ulf->validate($self->get_nested(qw(realm_owner name)), $self->get('RealmOwner.password'), 1);

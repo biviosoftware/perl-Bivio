@@ -5,7 +5,7 @@ use Bivio::Base 'Model.UserLoginTOTPForm';
 
 my($_AMFCL) = b_use('Action.MFARecoveryCodeList');
 my($_DT) = b_use('Type.DateTime');
-my($_MMFCL) = b_use('Model.MFARecoveryCodeList');
+my($_MRCL) = b_use('Model.MFARecoveryCodeList');
 my($_RFC6238) = b_use('Biz.RFC6238');
 my($_TS) = b_use('Type.TOTPSecret');
 my($_UEABF) = b_use('Model.UserEscalatedAccessBaseForm');
@@ -31,7 +31,7 @@ sub execute_ok {
         secret => $self->get('totp_secret'),
         time_step => $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
     });
-    $_MMFCL->create($self->get('mfa_recovery_code_array'));
+    $_MRCL->create($self->get('mfa_recovery_code_array'));
     return {
         method => 'server_redirect',
         task_id => 'next',

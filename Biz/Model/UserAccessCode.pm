@@ -131,7 +131,7 @@ sub _find {
         if ($it->is_expired) {
             $_A->save_label(access_code_expired => $self->req)
                 if $expired_ack;
-            return 1;
+            return 0;
         }
         $found = 1;
         return 0;

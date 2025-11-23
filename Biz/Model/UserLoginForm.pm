@@ -18,10 +18,6 @@ b_use('IO.Config')->register(my $_CFG = {
 (my $_C = b_use('AgentHTTP.Cookie'))->register(__PACKAGE__)
     if $_CFG->{register_with_cookie};
 b_use('Agent.Task')->register(__PACKAGE__);
-my($_AAC) = b_use('Action.AccessChallenge');
-my($_TAC) = b_use('Type.AccessCode');
-my($_TACS) = b_use('Type.AccessCodeStatus');
-my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 
 sub SUPER_USER_FIELD {
     # B<DEPRECATED>:
@@ -56,10 +52,8 @@ sub execute_ok {
         # DOES NOT RETURN
     }
     _set_cookie_user($self, $req, $realm);
-    if ($req->ureq('cookie') && (
-        ($realm && !$realm->require_otp && $self->unsafe_get('validate_called')) || $self->unsafe_get('require_mfa')
-    )) {
-        return _challenge_redirect($self, $realm, $res, $req);
+    if (defined(my $cr = $self->internal_challenge_redirect($realm, $res, $req))) {
+        return $cr;
     }
     $self->set_user($realm, $req->unsafe_get('cookie'), $req);
     return $res
@@ -80,86 +74,12 @@ sub handle_config {
     return;
 }
 
-sub handle_cookie_in {
-    # Sets the I<auth_user_id> if user is logged in.   Sets the user
-    # in the log (via I<r> record).
-    #
-    # Doesn't read the database to validate ids, simply translates values
-    # from cookie to real code.
-    my($proto, $cookie, $req) = @_;
-    $proto = Bivio::Biz::Model->get_instance('UserLoginForm');
-    my($cookie_user) = $proto->load_cookie_user($req, $cookie);
-    if ($cookie_user) {
-        my($need_mfa_cookie);
-        my($have_mfa_cookie);
-        foreach my $m (@{$cookie_user->get_configured_mfa_methods || []}) {
-            $need_mfa_cookie = 1;
-            next
-                unless $m->{type}->get_login_form_class->is_valid_cookie($cookie, $cookie_user);
-            $have_mfa_cookie = 1;
-            last;
-        }
-        $cookie_user = undef
-            if $need_mfa_cookie && !$have_mfa_cookie;
-    }
-    $proto->set_user($cookie_user, $cookie, $req);
-    return;
-}
-
 sub handle_pre_auth_task {
     my($proto, $task, $req) = @_;
     # If user is invalid, logout as super user
     _su_logout($proto->new($req))
         if $req->is_substitute_user && !$req->get('auth_user');
     return 0;
-}
-
-sub load_cookie_user {
-    my($proto, $req, $cookie) = @_;
-    # Returns auth_user if logged in.  Otherwise indicates logged out or
-    # just visitor.
-    return undef
-        unless $cookie->unsafe_get($proto->USER_FIELD);
-    my($auth_user) = Bivio::Biz::Model->new($req, 'RealmOwner');
-    if ($auth_user->unauth_load({
-        realm_id => $cookie->get($proto->USER_FIELD),
-        realm_type => Bivio::Auth::RealmType->USER,
-    })) {
-        # Must have password to be logged in
-        my($cp) = _get($cookie, $proto->PASSWORD_FIELD);
-        return undef
-            unless $cp;
-        return $auth_user
-            if _validate_cookie_password($cp, $auth_user);
-        $req->warn($auth_user, ': user is not valid');
-    }
-    else {
-        $req->warn($cookie->get($proto->USER_FIELD),
-            ': user_id not found, logging out');
-    }
-    $cookie->delete(
-        $proto->USER_FIELD,
-        $proto->PASSWORD_FIELD,
-    );
-    $_ULTF->delete_cookie($cookie);
-    return undef;
-}
-
-sub set_user {
-    my($proto, $user, $cookie, $req) = @_;
-    # Sets user on request based on cookie state.
-    $req->set_user($user);
-    $req->put_durable(
-        # Cookie overrides but may not have a cookie so super_user_id
-        super_user_id => _get($cookie, _super_user_field($proto))
-            || $req->unsafe_get('super_user_id'),
-        user_state => $proto->use('Type.UserState')->from_name(
-            $user ? 'LOGGED_IN'
-            : _get($cookie, $proto->USER_FIELD)
-            ? 'LOGGED_OUT' : 'JUST_VISITOR'),
-    );
-    _set_log_user($proto, $cookie, $req);
-    return $user;
 }
 
 sub substitute_user {
@@ -205,7 +125,7 @@ sub substitute_user {
 sub unsafe_get_cookie_user_id {
     my($proto, $req) = @_;
     # Returns user_id in cookie independent of login state.
-    return _get($req->unsafe_get('cookie'), $proto->USER_FIELD);
+    return $req->ureq('cookie') && $req->req('cookie')->unsafe_get($proto->USER_FIELD);
 }
 
 sub _assert_login {
@@ -228,25 +148,6 @@ sub _assert_realm {
     return $realm;
 }
 
-sub _challenge_redirect {
-    my($self, $realm, $res, $req) = @_;
-    _trace('successful login; creating challenge for user=', $realm)
-        if $_TRACE;
-        # No precursor that creates challenge, so creating passed challenge here.
-    $_AAC->create_challenge($req, $realm, $_TAC->LOGIN_CHALLENGE)
-        ->update({status => $_TACS->PASSED});
-    return $_AAC->do_plain_or_mfa($realm, sub {
-        _trace('no MFA; setting user, escalation code, redirecting to next task')
-            if $_TRACE;
-        $self->set_user($realm, $req->ureq('cookie'), $req);
-        # Initial login treated as an escalation so user doesn't have to present credentials
-        # twice within a short period.
-        $_AAC->create_challenge($req, $realm, $_TAC->ESCALATION_CHALLENGE)
-            ->update({status => $_TACS->PASSED});
-        return $_AAC->get_next($req) || $res;
-    }, undef, 1);
-}
-
 sub _cookie_password {
     my($realm) = @_;
     return $realm->require_otp
@@ -261,12 +162,6 @@ sub _disable_assert_cookie {
     return $self->unsafe_get('disable_assert_cookie')
         || $self->ureq('disable_assert_cookie')
         || 0;
-}
-
-sub _get {
-    my($cookie, $field) = @_;
-    # Returns cookie field, if there is a cookie.
-    return $cookie && $cookie->unsafe_get($field);
 }
 
 sub _set_cookie_user {
@@ -290,22 +185,6 @@ sub _set_cookie_user {
     else {
         $cookie->delete($self->PASSWORD_FIELD);
     }
-    return;
-}
-
-sub _set_log_user {
-    my($proto, $cookie, $req) = @_;
-    # Set the user for this connection.  Shows up in the server log.
-    my($r) = $req->unsafe_get('r');
-    return unless $r;
-    my($uid) = $req->get('auth_user_id')
-        || _get($cookie, $proto->USER_FIELD);
-    my($suid) = $req->unsafe_get('super_user_id')
-        || _get($cookie, _super_user_field($proto));
-    $r->connection->user(
-        ($suid ? 'su-' . $suid . '-' : '')
-        . ($uid ? ($req->get('user_state')->eq_logged_in ? 'li-' : 'lo-') . $uid
-        : ''));
     return;
 }
 

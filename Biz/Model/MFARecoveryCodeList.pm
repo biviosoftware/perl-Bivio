@@ -13,11 +13,14 @@ $_C->register(my $_CFG = {
 });
 
 sub create {
-    my($self, $code_array) = @_;
+    my($self, $code_array, $realm_id) = @_;
     my($uac) = $self->new_other('UserAccessCode');
     $code_array->do_iterate(sub {
         my($it) = @_;
         $uac->create({
+            $realm_id ? (
+                $uac->REALM_ID_FIELD => $realm_id,
+            ) : (),
             type => $_SC->MFA_RECOVERY,
             code => $it,
             status => $_SCS->ACTIVE,

@@ -19,6 +19,22 @@ my($_COOKIE_KEY) = {
 };
 my($_PASSWORD_QUERY_KEY) = 'x';
 
+sub LOGIN_CHALLENGE_FIELD {
+    return $_COOKIE_KEY->{LOGIN_CHALLENGE};
+}
+
+sub ESCALATION_CHALLENGE_FIELD {
+    return $_COOKIE_KEY->{ESCALATION_CHALLENGE};
+}
+
+sub PASSWORD_QUERY_FIELD {
+    return $_COOKIE_KEY->{PASSWORD_QUERY};
+}
+
+sub NEXT_TASK_FIELD {
+    return $_COOKIE_KEY->{next_task};
+}
+
 sub assert_challenge {
     my($proto, $req, $query) = @_;
     return $proto->unsafe_get_challenge($req, $query, 1) || b_die('FORBIDDEN');
@@ -54,7 +70,9 @@ sub delete_challenges {
         if $_TRACE;
     foreach my $t ($_TAC->LOGIN_CHALLENGE, $_TAC->ESCALATION_CHALLENGE) {
         # Might be logged out already
-        if (my $user_id = ($req->ureq('auth_user_id') || $cookie->unsafe_get($_ULF->USER_FIELD))) {
+        if (my $user_id = (
+            $req->ureq('auth_user_id') || $cookie->unsafe_get($proto->internal_login_form->USER_FIELD)
+        )) {
             my($m) = _unauth_load_from_cookie($proto, $req, {
                 user_id => $user_id,
                 type => $t,
@@ -102,7 +120,7 @@ sub execute_assert_login {
     my($proto, $req) = @_;
     _trace('asserting login')
         if $_TRACE;
-    my($owner) = $_ULF->load_cookie_user($req, $req->req('cookie'));
+    my($owner) = $proto->internal_login_form->load_cookie_user($req, $req->req('cookie'));
     my($uac) = $owner
         ? _unauth_load_from_cookie($proto, $req, {
             user_id => $owner->get('realm_id'),
@@ -168,7 +186,7 @@ sub execute_password_reset {
             ->update({status => $_TACS->PASSED});
         return;
     }, sub {
-        _put_next($proto, $req, $req->req('task')->get_attr_as_id('password_task')->get_name);
+        $proto->put_next($req, $req->req('task')->get_attr_as_id('password_task')->get_name);
         return;
     }, 1);
 }
@@ -195,6 +213,18 @@ sub get_next {
         if $_TRACE;
     $req->req('cookie')->delete($_COOKIE_KEY->{next_task});
     return $next;
+}
+
+sub internal_login_form {
+    return $_ULF;
+}
+
+sub put_next {
+    my($proto, $req, $task) = @_;
+    _trace('put next task=', $task)
+        if $_TRACE;
+    $req->req('cookie')->put($_COOKIE_KEY->{next_task} => $task);
+    return;
 }
 
 sub unauth_assert_challenge {
@@ -274,14 +304,6 @@ sub _put_cookie {
     _trace('put cookie ', _cookie_key($uac->get('type')))
         if $_TRACE;
     $cookie->put(_cookie_key($uac->get('type')) => $uac->get('code'));
-    return;
-}
-
-sub _put_next {
-    my($proto, $req, $task_name) = @_;
-    _trace('put next task=', $task_name)
-        if $_TRACE;
-    $req->req('cookie')->put($_COOKIE_KEY->{next_task} => $task_name);
     return;
 }
 

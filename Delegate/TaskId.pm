@@ -1599,7 +1599,6 @@ sub info_user_auth {
             Action.UserLogout
             Model.UserLoginForm
             View.UserAuth->login
-            locked_out_task=GENERAL_USER_LOCKED_OUT
             next=MY_SITE
             totp_task=USER_LOGIN_TOTP_FORM
             require_secure=1
@@ -1692,7 +1691,7 @@ sub info_user_auth {
             cancel=USER_SETTINGS_FORM
         )],
         [qw(
-            USER_MFA_RECOVERY_CODE_LIST_DOWNLOAD
+            MFA_RECOVERY_CODE_LIST_DOWNLOAD
             300
             USER
             ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
@@ -1738,6 +1737,7 @@ sub info_user_auth {
             Action.AccessChallenge->execute_assert_login
             Model.UserLoginTOTPForm
             View.UserTOTP->login_form
+            login_task=LOGIN
             password_task=USER_PASSWORD
             refill_task=MFA_RECOVERY_CODE_LIST_REFILL_FORM
             next=MY_SITE

@@ -13,7 +13,7 @@ my($_UAC) = b_use('Model.UserAccessCode');
 my($_ULF) = b_use('Model.UserLoginForm');
 
 sub MFA_RECOVERY_CODE_FIELD {
-    return 'rc';
+    return 'mrc';
 }
 
 sub SENSITIVE_FIELDS {
@@ -36,7 +36,7 @@ sub delete_cookie {
 sub execute_ok {
     my($self) = @_;
     $self->internal_set_cookie;
-    $_ULF->set_user($self->get('realm_owner'), $self->ureq('cookie'), $self->req);
+    $self->internal_login_form->set_user($self->get('realm_owner'), $self->ureq('cookie'), $self->req);
     return
         unless $self->get('realm_owner');
     unless ($self->unsafe_get('bypass_challenge')) {
@@ -88,6 +88,10 @@ sub internal_initialize {
     });
 }
 
+sub internal_login_form {
+    return $_ULF;
+}
+
 sub internal_pre_execute {
     my($self) = @_;
     return
@@ -97,7 +101,7 @@ sub internal_pre_execute {
         return;
     }
     $self->internal_put_field(
-        realm_owner => $_ULF->load_cookie_user($self->req, $self->req('cookie')));
+        realm_owner => $self->internal_login_form->load_cookie_user($self->req, $self->req('cookie')));
     b_die('FORBIDDEN')
         unless $self->get('realm_owner')
         && $self->get('realm_owner')->get_configured_mfa_methods($_MM->TOTP);
