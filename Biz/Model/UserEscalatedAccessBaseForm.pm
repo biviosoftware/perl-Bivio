@@ -26,14 +26,20 @@ sub internal_initialize {
     });
 }
 
-sub internal_pre_execute {
-    my(undef, $delegator) = shift->delegated_args(@_);
-    $delegator->internal_put_field(
-        passed_access_challenge => $_AAC->assert_challenge($delegator->req, {
+sub internal_assert_escalation_challenge {
+    my($self) = @_;
+    $self->internal_put_field(
+        passed_access_challenge => $_AAC->assert_challenge($self->req, {
             type => $_TAC->ESCALATION_CHALLENGE,
             status => $_TACS->PASSED,
         }),
     );
+    return;
+}
+
+sub internal_pre_execute {
+    my(undef, $delegator) = shift->delegated_args(@_);
+    $delegator->internal_assert_escalation_challenge;
     return;
 }
 

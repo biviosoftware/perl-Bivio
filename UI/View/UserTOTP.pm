@@ -29,6 +29,7 @@ sub escalation_totp_form {
             BR(), BR(),
         ]),
         'UserEscalationTOTPForm.RealmOwner.password',
+        [vs_blank_cell()],
         _fields('UserEscalationTOTPForm', 1, 0),
     ]));
 }
@@ -66,41 +67,12 @@ sub _fields {
                 ONFOCUS => 'return;',
             ),
         }],
+        [vs_blank_cell(), String('- OR -')],
         $with_recovery ? (
-            [String('You may use an authenticator recovery code if you cannot access your authenticator at this time. Codes can only be used once. Used recovery codes will no longer be available.', {
-                row_class => 'b_mfa_recovery_prologue',
-                cell_colspan => 2,
-            })],
             [$form . '.mfa_recovery_code', {
                 row_class => 'b_mfa_recovery_code',
             }],
-            [
-                vs_blank_cell(),
-                Link('Can\'t Access Authenticator?', '#', {
-                    ID => 'b_recovery_access',
-                }),
-            ],
-            [InlineJavaScript(
-                <<'EOF',
-(() => {
-    const ra = document.getElementById("b_recovery_access");
-    const tc = document.getElementsByClassName("b_totp_code")[0];
-    const rp = document.getElementsByClassName("b_mfa_recovery_prologue")[0];
-    const rc = document.getElementsByClassName("b_mfa_recovery_code")[0];
-    if (ra && rp && tc && rc) {
-        ra.addEventListener("click", (event) => {
-            ra.style.display = "none";
-            tc.style.display = "none";
-            rp.style.display = "table-row";
-            rc.style.display = "table-row";
-        });
-    }
-    else {
-        console.log("lost access link not found");
-    }
-})();
-EOF
-            )],
+            [vs_blank_cell()],
         ) : (),
     );
 }

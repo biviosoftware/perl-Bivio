@@ -1476,11 +1476,6 @@ table.b_mfa_recovery_code_options td {
   border: 0.5em solid #f0f0f0;
   background: #fff;
 }
-tr.b_mfa_recovery_prologue,
-tr.b_mfa_recovery_code,
-tr.b_disable_mfa {
-  display: none;
-}
 EOF
 }
 

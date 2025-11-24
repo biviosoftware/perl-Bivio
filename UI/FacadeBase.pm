@@ -2284,12 +2284,19 @@ EOF
             [MFARecoveryCodeList => [
                 prose => [
                     prologue => <<'EOF',
-Join([
-    'The following codes are your authenticator recovery codes. If you don\'t have access to your authenticator app you will need to enter one of these codes to gain access to your account.',
-    BR(), BR(),
-    'Save these codes in a secure place. This list will only be shown to you once.',
-    BR(), BR(),
-    'For example, click the "copy" link to the right and then paste into your password manager entry for this site, click the "download" link and then move the downloaded file to a secure place where you keep personal files, or click the "print" link and then place the printed page in a secure place in your personal files.',
+Grid([
+    ['The following codes are your authenticator recovery codes. If you don\'t have access to your authenticator app you will need to enter one of these codes to gain access to your account.'],
+    [vs_blank_cell()],
+    ['This list will only be shown to you once.'],
+    [vs_blank_cell()],
+    ['Save these codes in a secure place.'],
+    [vs_blank_cell()],
+    ['Options for saving these recovery codes:'],
+    [UL(Join([
+        LI('If you use a password manager, click the "copy" link to the right and then paste into the entry for bivio.'),
+         LI('Click the "download" link and then move the downloaded file to a secure place where you keep personal files.'),
+        LI('Click the "print" link and then place the printed page in a secure place with your personal files.'),
+    ]))],
 ]);
 EOF
                 ],
@@ -2315,6 +2322,27 @@ Join([
 EOF
                 ],
             ]],
+            [UserLoginTOTPForm => [
+                prose => [
+                    prologue => <<'EOF',
+Join([
+    'Please enter the current one-time-password code from your authenticator app.',
+    BR(), BR(),
+    'If you don\'t have access to your authenticator app at this time, you may enter a recovery code instead.',
+    BR(), BR(),
+]);
+EOF
+                ],
+                'ok_button' => 'Continue',
+            ]],
+            [UserDisableTOTPForm => [
+                prose => [
+                    prologue => <<'EOF',
+Are you sure you want to disable time-based one-time-password two-factor authentication?
+EOF
+                ],
+                'ok_button' => 'Disable',
+            ]],
             [MFARecoveryCodeListRegenerateForm => [
                 prose => [
                     prologue => <<'EOF',
@@ -2322,18 +2350,11 @@ Join([
     'Are you sure you want to regenerate your authenticator recovery codes?',
     BR(), BR(),
     'Any existing recovery codes will no longer be available.',
+    BR(), BR(),
 ]);
 EOF
                 ],
                 'ok_button' => 'Regenerate Recovery Codes',
-            ]],
-            [UserDisableTOTPForm => [
-                prose => [
-                    prologue => <<'EOF',
-Are you sure you want to disable time-based two-factor authentication?
-EOF
-                ],
-                'ok_button' => 'Disable',
             ]],
             [MFARecoveryCodeListRefillForm => [
                 'ok_button' => 'Continue',
@@ -2352,7 +2373,7 @@ EOF
                 USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',
                 USER_DISABLE_TOTP_FORM => 'Two-factor authentication has been disabled successfully',
                 mfa_recovery_code_used => 'Authenticator recovery code accepted and removed from available list',
-                access_code_expired => 'Prior access has expired, please try again.',
+                access_code_expired => 'Prior access has expired, please re-enter your credentials.',
             ]],
         ],
     };
