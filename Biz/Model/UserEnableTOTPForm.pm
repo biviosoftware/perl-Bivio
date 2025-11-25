@@ -32,13 +32,14 @@ sub execute_ok {
         time_step => $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
     });
     $_MRCL->create($self->get('mfa_recovery_code_array'));
-    return {
-        method => 'server_redirect',
-        task_id => 'next',
-    };
+    return;
 }
 
 sub execute_unwind {
+    return shift->delegate_method($_UEABF, @_);
+}
+
+sub internal_assert_escalation_challenge {
     return shift->delegate_method($_UEABF, @_);
 }
 

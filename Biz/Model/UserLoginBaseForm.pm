@@ -340,6 +340,13 @@ sub _validate {
     return;
 }
 
+sub _validate_cookie_password {
+    my($passwd, $auth_user) = @_;
+    return $auth_user->require_otp
+        ? $auth_user->new_other('OTP')->validate_password($passwd, $auth_user)
+        : $passwd eq $auth_user->get('password') ? 1 : 0;
+}
+
 sub _validate_login_attempt {
     my($self, $owner) = @_;
     if (my $err = _password_error($self, $owner)) {

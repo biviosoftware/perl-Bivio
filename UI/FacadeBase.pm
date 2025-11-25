@@ -2285,7 +2285,9 @@ EOF
                 prose => [
                     prologue => <<'EOF',
 Grid([
-    ['The following codes are your authenticator recovery codes. If you don\'t have access to your authenticator app you will need to enter one of these codes to gain access to your account.'],
+    ['The following codes are your authenticator recovery codes.'],
+    [vs_blank_cell()],
+    ['If you don\'t have access to your authenticator app you will need to enter one of these codes to gain access to your account.'],
     [vs_blank_cell()],
     ['This list will only be shown to you once.'],
     [vs_blank_cell()],
@@ -2305,17 +2307,17 @@ EOF
                 prose => [
                     prologue => <<'EOF',
 Join([
-    'bivio gives users the option to set up two-factor authentication via well-known authenticator apps such as Google Authenticator or Duo Mobile.',
+    'bivio gives users the option to set up two-factor authentication via well-known authenticator apps that support time-based one-time-password generation such as Google Authenticator or Duo Mobile.',
     BR(), BR(),
     'To set up two-factor authentication, complete the following steps:',
     BR(), BR(),
     OL(Join([
         LI(Join([
-            'Scan the QR code below with your chosen authenticator app.',
+            'Scan the QR code below with your chosen authenticator app or manually enter the setup key.',
             TOTPQRCode(String([qw(->req form_model totp_secret)])),
         ])),
         LI(MFARecoveryCodeList()),
-        LI('Enter the generated 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
+        LI('Enter the current 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
     ])),
     BR(), BR(),
 ]);
@@ -2338,7 +2340,7 @@ EOF
             [UserDisableTOTPForm => [
                 prose => [
                     prologue => <<'EOF',
-Are you sure you want to disable time-based one-time-password two-factor authentication?
+Are you sure you want to disable two-factor authentication?
 EOF
                 ],
                 'ok_button' => 'Disable',
@@ -2366,7 +2368,7 @@ EOF
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
                 USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
                 MFA_RECOVERY_CODE_LIST_REFILL_FORM => 'New Authenticator Recovery Codes',
-                MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Create New Authenticator Recovery Codes',
+                MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Regenerate Authenticator Recovery Codes',
                 MFA_RECOVERY_CODE_LIST_PRINT => 'Authenticator Recovery Codes',
             ]],
             [acknowledgement => [

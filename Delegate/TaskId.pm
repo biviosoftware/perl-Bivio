@@ -1749,8 +1749,8 @@ sub info_user_auth {
             311
             USER
             ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
-            Action.MFARecoveryCodeList->execute_preview
             Action.AccessChallenge->execute_assert_escalation
+            Action.MFARecoveryCodeList->execute_preview
             Model.UserEnableTOTPForm
             View.UserTOTP->enable_form
             plain_task=USER_ESCALATION_PLAIN_FORM

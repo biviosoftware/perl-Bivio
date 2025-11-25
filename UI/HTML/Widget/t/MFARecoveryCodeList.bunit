@@ -5,7 +5,24 @@ Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
     mfa_recovery_code_array => Type_MnemonicCodeArray()->new([qw(foo-bar-baz baz-bar-foo bar-foo-baz)]),
 );
 [
-    [] => q{The following codes are your authenticator recovery codes. If you don't have access to your authenticator app you will need to enter one of these codes to gain access to your account.<br /><br />Save these codes in a secure place. This list will only be shown to you once.<br /><br />For example, click the "copy" link to the right and then paste into your password manager entry for this site, click the "download" link and then move the downloaded file to a secure place where you keep personal files, or click the "print" link and then place the printed page in a secure place in your personal files.<br /><br /><table class="b_mfa_recovery_code_list"><tr>
+    [] => q{<table border="0" cellpadding="0" cellspacing="0"><tr>
+<td>The following codes are your authenticator recovery codes. If you don't have access to your authenticator app you will need to enter one of these codes to gain access to your account.</td>
+</tr><tr>
+<td>&nbsp;</td>
+</tr><tr>
+<td>This list will only be shown to you once.</td>
+</tr><tr>
+<td>&nbsp;</td>
+</tr><tr>
+<td>Save these codes in a secure place.</td>
+</tr><tr>
+<td>&nbsp;</td>
+</tr><tr>
+<td>Options for saving these recovery codes:</td>
+</tr><tr>
+<td><ul><li>If you use a password manager, click the "copy" link to the right and then paste into the entry for bivio.</li><li>Click the "download" link and then move the downloaded file to a secure place where you keep personal files.</li><li>Click the "print" link and then place the printed page in a secure place with your personal files.</li></ul></td>
+</tr></table>
+<br /><br /><table class="b_mfa_recovery_code_list"><tr>
 <td><table class="b_mfa_recovery_codes"><tr>
 <td>foo-bar-baz</td>
 </tr><tr>

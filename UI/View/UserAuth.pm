@@ -142,13 +142,14 @@ sub mfa_recovery_code_refill_list {
 }
 
 sub mfa_recovery_code_list_regenerate_form {
+    my($self, $link) = @_;
     return shift->internal_body(
         If(
             [qw(->ureq Model.MFARecoveryCodeList)],
             Join([
-                MFARecoveryCodeList(),
+                DIV_mfa_recovery_code_list(MFARecoveryCodeList()),
                 BR(), BR(),
-                Link('Back to my site', 'MY_SITE'),
+                $link || Link('Back to my site', 'MY_SITE'),
             ]),
             vs_simple_form(MFARecoveryCodeListRegenerateForm => []),
         ),

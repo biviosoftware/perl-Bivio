@@ -94,12 +94,12 @@ sub internal_login_form {
 
 sub internal_pre_execute {
     my($self) = @_;
-    return
-        unless $self->ureq('cookie');
     if ($self->unsafe_get('do_logout')) {
         $self->internal_put_field(realm_owner => undef);
         return;
     }
+    return
+        unless $self->ureq('cookie');
     $self->internal_put_field(
         realm_owner => $self->internal_login_form->load_cookie_user($self->req, $self->req('cookie')));
     b_die('FORBIDDEN')

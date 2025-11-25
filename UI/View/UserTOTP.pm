@@ -36,7 +36,7 @@ sub escalation_totp_form {
 
 sub disable_form {
     my($self) = @_;
-    return $self->internal_body(vs_simple_form(UserDisableTOTPForm => []));
+    return $self->internal_body(vs_simple_form(UserDisableTOTPForm => [vs_blank_cell()]));
 }
 
 sub disable_mail {
@@ -67,13 +67,16 @@ sub _fields {
                 ONFOCUS => 'return;',
             ),
         }],
-        [vs_blank_cell(), String('- OR -')],
         $with_recovery ? (
+            [vs_blank_cell(), String('- OR -')],
             [$form . '.mfa_recovery_code', {
                 row_class => 'b_mfa_recovery_code',
+                $focus ? () : (
+                    ONFOCUS => 'return;',
+                ),
             }],
-            [vs_blank_cell()],
         ) : (),
+        [vs_blank_cell()],
     );
 }
 

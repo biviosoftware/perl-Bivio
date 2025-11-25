@@ -13,15 +13,12 @@ sub execute_ok {
     my($totp) = $self->req('Model.UserTOTP');
     # Sanity check
     b_die('wrong totp model')
-        unless $totp->get($_UT->REALM_ID_FIELD) eq $self->req('auth_user_id');
+        unless $totp->get($_UT->REALM_ID_FIELD) eq $self->req('auth_id');
     $totp->delete;
     $self->new_other('MFARecoveryCodeList')->load_all->delete
         unless int(@$mm) > 1;
     $_ULTF->delete_cookie($self->req('cookie'));
-    return {
-        method => 'server_redirect',
-        task_id => 'next',
-    };
+    return;
 }
 
 sub internal_pre_execute {
