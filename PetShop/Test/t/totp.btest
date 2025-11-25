@@ -151,14 +151,14 @@ verify_text(qr/(sign-out|\blogout\b)/i);
 follow_link(qw(myaccount create_new_authenticator_recovery_codes));
 verify_text(qr/are you sure you want to create new/i);
 verify_no_text(qr/the following/i);
-submit_form(qr/create new authenticator recovery codes/i);
+submit_form(qr/create new recovery codes/i);
 verify_text(qr/the following/i);
 follow_link('download');
 my($recovery_codes3) = [split("\n", get_content())];
 b_die('unexpected code count')
     unless int(@$recovery_codes3) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
-verify_local_mail($e, qr/two-factor authentication recovery codes regenerated/i, 1);
+verify_local_mail($e, qr/two-factor authentication recovery codes created/i, 1);
 do_logout();
 follow_link(qw(login forgot_password));
 submit_form({
@@ -369,14 +369,14 @@ submit_form(Continue => {
 });
 verify_text(qr/are you sure you want to create new/i);
 verify_no_text(qr/the following/i);
-submit_form(qr/create new authenticator recovery codes/i);
+submit_form(qr/create new recovery codes/i);
 verify_text(qr/the following/i);
 follow_link('download');
 my($recovery_codes5) = [split("\n", get_content())];
 b_die('unexpected code count')
     unless int(@$recovery_codes5) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
-verify_local_mail($e, qr/two-factor authentication recovery codes regenerated/i, 1);
+verify_local_mail($e, qr/new two-factor authentication recovery codes/i, 1);
 $add_seconds->(Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 follow_link('back_to_my_site');
 follow_link(qw(myaccount disable_time_based));
@@ -385,7 +385,7 @@ submit_form(Continue => {
     password => $p,
     authenticator_recovery_code => $recovery_codes5->[0],
 });
-verify_text(qr/are you sure you want to disable time-based two-factor/i);
+verify_text(qr/are you sure you want to disable two-factor/i);
 $add_seconds->(Type_AccessCode()->ESCALATION_CHALLENGE->get_expiry_seconds_for_type);
 submit_form('Disable');
 verify_text(qr/prior access has expired/i);

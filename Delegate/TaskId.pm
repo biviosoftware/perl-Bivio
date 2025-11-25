@@ -1763,7 +1763,7 @@ sub info_user_auth {
             ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Model.Email->execute_load_default_for_auth_user
             View.UserTOTP->enable_mail
-            Action.ServerRedirect->execute_next
+            Action.ClientRedirect->execute_next
             next=MY_SITE
         )],
         [qw(
@@ -1784,7 +1784,7 @@ sub info_user_auth {
             ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Model.Email->execute_load_default_for_auth_user
             View.UserTOTP->disable_mail
-            Action.ServerRedirect->execute_next
+            Action.ClientRedirect->execute_next
             next=MY_SITE
         )],
         [qw(

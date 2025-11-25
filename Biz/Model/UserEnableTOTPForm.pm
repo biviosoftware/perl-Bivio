@@ -32,7 +32,11 @@ sub execute_ok {
         time_step => $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
     });
     $_MRCL->create($self->get('mfa_recovery_code_array'));
-    return;
+    # Need server_redirect for mail task
+    return {
+        method => 'server_redirect',
+        task_id => 'next',
+    };
 }
 
 sub execute_unwind {

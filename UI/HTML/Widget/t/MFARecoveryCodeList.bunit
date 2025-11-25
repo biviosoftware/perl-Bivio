@@ -6,7 +6,11 @@ Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
 );
 [
     [] => q{<table border="0" cellpadding="0" cellspacing="0"><tr>
-<td>The following codes are your authenticator recovery codes. If you don't have access to your authenticator app you will need to enter one of these codes to gain access to your account.</td>
+<td>The following codes are your authenticator recovery codes.</td>
+</tr><tr>
+<td>&nbsp;</td>
+</tr><tr>
+<td>If you don't have access to your authenticator app you will need to enter one of these codes to gain access to your account.</td>
 </tr><tr>
 <td>&nbsp;</td>
 </tr><tr>

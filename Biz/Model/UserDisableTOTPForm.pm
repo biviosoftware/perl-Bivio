@@ -18,7 +18,11 @@ sub execute_ok {
     $self->new_other('MFARecoveryCodeList')->load_all->delete
         unless int(@$mm) > 1;
     $_ULTF->delete_cookie($self->req('cookie'));
-    return;
+    # Need server_redirect for mail task
+    return {
+        method => 'server_redirect',
+        task_id => 'next',
+    };
 }
 
 sub internal_pre_execute {

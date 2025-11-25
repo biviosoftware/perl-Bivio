@@ -2004,7 +2004,7 @@ sub _cfg_user_auth {
             [USER_ESCALATION_PLAIN_FORM => '?/confirm-access'],
             [USER_ESCALATION_TOTP_FORM => '?/confirm-totp'],
             [MFA_RECOVERY_CODE_LIST_REFILL_FORM => '?/refill-recovery-codes'],
-            [MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => '?/regenerate-recovery-codes'],
+            [MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => '?/create-new-recovery-codes'],
             [MFA_RECOVERY_CODE_LIST_DOWNLOAD => '?/download-recovery-codes'],
             [MFA_RECOVERY_CODE_LIST_PRINT => '?/print-recovery-codes'],
         ],
@@ -2238,9 +2238,9 @@ Join([
 EOF
                     mfa_recovery_code_list_regenerate_mail => [
                         to => q{Mailbox([qw(Model.Email email)]);},
-                        subject => 'vs_site_name(); two-factor authentication recovery codes regenerated',
+                        subject => 'New vs_site_name(); two-factor authentication recovery codes created',
                         body => <<'EOF'
-Your two-factor authentication recovery codes have been regenerated.
+New two-factor authentication recovery codes have been created.
 
 vs_text_as_prose('user_account_action_body');
 EOF
@@ -2349,14 +2349,14 @@ EOF
                 prose => [
                     prologue => <<'EOF',
 Join([
-    'Are you sure you want to regenerate your authenticator recovery codes?',
+    'Are you sure you want to create new your authenticator recovery codes?',
     BR(), BR(),
     'Any existing recovery codes will no longer be available.',
     BR(), BR(),
 ]);
 EOF
                 ],
-                'ok_button' => 'Regenerate Recovery Codes',
+                'ok_button' => 'Create New Recovery Codes',
             ]],
             [MFARecoveryCodeListRefillForm => [
                 'ok_button' => 'Continue',
@@ -2368,7 +2368,7 @@ EOF
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
                 USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
                 MFA_RECOVERY_CODE_LIST_REFILL_FORM => 'New Authenticator Recovery Codes',
-                MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Regenerate Authenticator Recovery Codes',
+                MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Create New Authenticator Recovery Codes',
                 MFA_RECOVERY_CODE_LIST_PRINT => 'Authenticator Recovery Codes',
             ]],
             [acknowledgement => [
