@@ -22,6 +22,11 @@ sub USER_FIELD {
     return 'u';
 }
 
+sub disable_assert_cookie {
+    shift->internal_put_field(disable_assert_cookie => 1);
+    return;
+}
+
 sub get_basic_authorization_realm {
     my($self) = shift;
     my($ro) = $self->unsafe_get('realm_owner');
@@ -78,6 +83,13 @@ sub internal_challenge_redirect {
             ->update({status => $_TACS->PASSED});
         return $_AAC->get_next($req) || $res;
     }, undef, 1);
+}
+
+sub internal_is_disable_assert_cookie {
+    my($self) = @_;
+    return $self->unsafe_get('disable_assert_cookie')
+        || $self->ureq('disable_assert_cookie')
+        || 0;
 }
 
 sub internal_initialize {
@@ -206,6 +218,27 @@ sub load_cookie_user {
         $t->get_login_form_class->delete_cookie($cookie);
     }
     return undef;
+}
+
+sub login_all_forms {
+    my(undef, $delegator, $new_user, $req) = shift->delegated_args(@_);
+    $req ||= $delegator->req;
+    foreach my $class (
+        $delegator,
+        map($_->{type}->get_login_form_class, @{$new_user->get_configured_mfa_methods || []}),
+    ) {
+        $class->new($req)->process({
+            realm_owner => $new_user,
+            $delegator->equals_class_name($class->as_classloader_map_name) ? (
+                $delegator->b_can('internal_is_disable_assert_cookie') ? (
+                    disable_assert_cookie => $delegator->internal_is_disable_assert_cookie,
+                ) : (),
+            ) : (
+                bypass_challenge => 1,
+            ),
+        });
+    }
+    return;
 }
 
 sub record_login_attempt {

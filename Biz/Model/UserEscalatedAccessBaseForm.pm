@@ -10,7 +10,14 @@ my($_TACS) = b_use('Type.AccessCodeStatus');
 sub execute_unwind {
     my(undef, $delegator) = shift->delegated_args(@_);
     # If user takes too long and gets redirected to the escalation form again we end up back here.
-    return $delegator->validate_and_execute_ok;
+    my($res) = $delegator->validate_and_execute_ok;
+    return $res
+        if $res;
+    # Need server_redirect for potential mail task
+    return {
+        method => 'server_redirect',
+        task_id => 'next',
+    };
 }
 
 sub internal_initialize {

@@ -27,11 +27,6 @@ sub SUPER_USER_FIELD {
     return shift->get_instance('AdmSubstituteUserForm')->SUPER_USER_FIELD;
 }
 
-sub disable_assert_cookie {
-    shift->internal_put_field(disable_assert_cookie => 1);
-    return;
-}
-
 sub execute_ok {
     my($self) = @_;
     my($res) = shift->SUPER::execute_ok(@_);
@@ -106,19 +101,7 @@ sub substitute_user {
     }
     _trace($req->unsafe_get('super_user_id'), ' => ', $new_user)
         if $_TRACE;
-    foreach my $class (
-        $self,
-        map($_->{type}->get_login_form_class, @{$new_user->get_configured_mfa_methods || []}),
-    ) {
-        $class->new($req)->process({
-            realm_owner => $new_user,
-            $self->equals_class_name($class->as_classloader_map_name) ? (
-                disable_assert_cookie => _disable_assert_cookie($self),
-            ) : (
-                bypass_challenge => 1,
-            ),
-        });
-    }
+    $self->login_all_forms($new_user);
     return;
 }
 
@@ -157,13 +140,6 @@ sub _cookie_password {
         : $realm->get('password')
 }
 
-sub _disable_assert_cookie {
-    my($self) = @_;
-    return $self->unsafe_get('disable_assert_cookie')
-        || $self->ureq('disable_assert_cookie')
-        || 0;
-}
-
 sub _set_cookie_user {
     my($self, $req, $realm) = @_;
     # Checks to see if the cookie was received.  If so, set the state.
@@ -175,7 +151,7 @@ sub _set_cookie_user {
 
     # If logging in, need to have a cookie.
     $_C->assert_is_ok($req)
-        if $realm && !_disable_assert_cookie($self);
+        if $realm && !$self->internal_is_disable_assert_cookie;
     if ($realm) {
         $cookie->put(
             $self->USER_FIELD => $realm->get('realm_id'),
