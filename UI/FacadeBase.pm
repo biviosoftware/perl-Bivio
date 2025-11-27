@@ -1998,9 +1998,7 @@ sub _cfg_user_auth {
             [USER_EMAIL_VERIFY_SENT => undef],
             [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
             [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
-            [USER_ENABLE_TOTP_MAIL => undef],
             [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
-            [USER_DISABLE_TOTP_MAIL => undef],
             [USER_ESCALATION_PLAIN_FORM => '?/confirm-access'],
             [USER_ESCALATION_TOTP_FORM => '?/confirm-totp'],
             [MFA_RECOVERY_CODE_LIST_REFILL_FORM => '?/refill-recovery-codes'],
@@ -2120,9 +2118,9 @@ sub _cfg_user_auth {
             ]],
             [prose => [
                 user_account_action_body => <<'EOF',
-If this was you, no further action is required.
+If you requested this, no further action is required.
 
-If this was not you, please contact customer support by replying to this email.
+If you did not request this, please contact customer support by replying to this email.
 
 Thank you,
 vs_site_name(); Support

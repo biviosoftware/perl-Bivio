@@ -1751,45 +1751,27 @@ sub info_user_auth {
             ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Action.AccessChallenge->execute_assert_escalation
             Action.MFARecoveryCodeList->execute_preview
+            Model.Email->execute_load_default_for_auth_user
             Model.UserEnableTOTPForm
             View.UserTOTP->enable_form
             plain_task=USER_ESCALATION_PLAIN_FORM
-            next=USER_ENABLE_TOTP_MAIL
-        )],
-        [qw(
-            USER_ENABLE_TOTP_MAIL
-            312
-            USER
-            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
-            Model.Email->execute_load_default_for_auth_user
-            View.UserTOTP->enable_mail
-            Action.ClientRedirect->execute_next
             next=MY_SITE
         )],
         [qw(
             USER_DISABLE_TOTP_FORM
-            313
+            312
             USER
             ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Action.AccessChallenge->execute_assert_escalation
+            Model.Email->execute_load_default_for_auth_user
             Model.UserDisableTOTPForm
             View.UserTOTP->disable_form
             totp_task=USER_ESCALATION_TOTP_FORM
-            next=USER_DISABLE_TOTP_MAIL
-        )],
-        [qw(
-            USER_DISABLE_TOTP_MAIL
-            314
-            USER
-            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
-            Model.Email->execute_load_default_for_auth_user
-            View.UserTOTP->disable_mail
-            Action.ClientRedirect->execute_next
             next=MY_SITE
         )],
         [qw(
             USER_ESCALATION_TOTP_FORM
-            315
+            313
             USER
             ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
             Model.UserEscalationTOTPForm

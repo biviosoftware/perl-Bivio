@@ -5,6 +5,7 @@ use Bivio::Base 'Model.UserEscalatedAccessBaseForm';
 
 my($_ULTF) = b_use('Model.UserLoginTOTPForm');
 my($_UT) = b_use('Model.UserTOTP');
+my($_V) = b_use('UI.View');
 
 sub execute_ok {
     my($self) = @_;
@@ -17,12 +18,15 @@ sub execute_ok {
     $totp->delete;
     $self->new_other('MFARecoveryCodeList')->load_all->delete
         unless int(@$mm) > 1;
+    $self->internal_delete_cookie;
+    $_V->call_main('UserTOTP->disable_mail', $self->req);
+    return;
+}
+
+sub internal_delete_cookie {
+    my($self) = @_;
     $_ULTF->delete_cookie($self->req('cookie'));
-    # Need server_redirect for mail task
-    return {
-        method => 'server_redirect',
-        task_id => 'next',
-    };
+    return;
 }
 
 sub internal_pre_execute {

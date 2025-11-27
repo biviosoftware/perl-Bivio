@@ -10,6 +10,7 @@ my($_RFC6238) = b_use('Biz.RFC6238');
 my($_TS) = b_use('Type.TOTPSecret');
 my($_UEABF) = b_use('Model.UserEscalatedAccessBaseForm');
 my($_UT) = b_use('Model.UserTOTP');
+my($_V) = b_use('UI.View');
 
 # TODO: This form assumes that no recovery codes already exist -- once multiple MFA methods are
 # implemented, that might not be true. Update as needed.
@@ -32,11 +33,8 @@ sub execute_ok {
         time_step => $_RFC6238->get_time_step($_DT->to_unix($_DT->now), $_UT->get_default_period),
     });
     $_MRCL->create($self->get('mfa_recovery_code_array'));
-    # Need server_redirect for mail task
-    return {
-        method => 'server_redirect',
-        task_id => 'next',
-    };
+    $_V->call_main('UserTOTP->enable_mail', $self->req);
+    return;
 }
 
 sub execute_unwind {
