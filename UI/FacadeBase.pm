@@ -1996,6 +1996,15 @@ sub _cfg_user_auth {
             [USER_EMAIL_VERIFY => '?/verify-email'],
             [USER_EMAIL_VERIFY_FORCE_FORM => undef],
             [USER_EMAIL_VERIFY_SENT => undef],
+            [USER_LOGIN_TOTP_FORM => 'pub/user-totp'],
+            [USER_ENABLE_TOTP_FORM => '?/enable-user-totp'],
+            [USER_DISABLE_TOTP_FORM => '?/disable-user-totp'],
+            [USER_ESCALATION_PLAIN_FORM => '?/confirm-access'],
+            [USER_ESCALATION_TOTP_FORM => '?/confirm-totp'],
+            [MFA_RECOVERY_CODE_LIST_REFILL_FORM => '?/refill-recovery-codes'],
+            [MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => '?/create-new-recovery-codes'],
+            [MFA_RECOVERY_CODE_LIST_DOWNLOAD => '?/download-recovery-codes'],
+            [MFA_RECOVERY_CODE_LIST_PRINT => '?/print-recovery-codes'],
         ],
         Text => [
             [[qw(UserLoginForm ContextlessUserLoginForm)] => [
@@ -2045,17 +2054,19 @@ sub _cfg_user_auth {
                 ok_button => 'Send',
             ]],
             [acknowledgement => [
-                user_exists => 'Your email is already in the database.  Please use the form below to reset your password.',
-                GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to reset your password.},
-                USER_PASSWORD_RESET => q{Your password has been reset.  Please choose a new one.},
+                user_exists => 'Your email is already in the database.  Please use the form below to reset your password or recover your account.',
+                GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to update your password.},
+                USER_PASSWORD_RESET => q{Your may now update your password.},
                 USER_PASSWORD => q{Your password has been changed.},
-                password_nak => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to reset your password again.},
+                [qw(password_nak password_query_mfa_challenge_nak)] => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to submit the forgot password form again.},
+                login_mfa_challenge_nak => q{We're sorry, but the login attempt is no longer valid. Please try again.},
+                login_challenge_state_nak => q{We're sorry, but the login attempt is not valid. Please try again.},
                 USER_FORUM_TREE => q{Your subscriptions have been updated.},
-                user_create_password_reset => q{You are already registered.  Your password has been reset.  An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to choose a new password.},
                 GENERAL_CONTACT => 'Your inquiry has been sent.  Thank you!',
                 USER_SETTINGS_FORM => 'Your settings have been updated.',
                 email_verified => q{Your email address has been updated.},
                 USER_EMAIL_VERIFY_FORCE_FORM => 'Email address verified.',
+                totp_disabled => 'Two-factor authentication disabled',
             ]],
             [title => [
                 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
@@ -2072,7 +2083,7 @@ sub _cfg_user_auth {
                 DEFAULT_ERROR_REDIRECT_MISSING_COOKIES => 'Your Browser is Missing Cookies',
             ]],
             [xlink => [
-                GENERAL_USER_PASSWORD_QUERY => 'Forgot password?',
+                GENERAL_USER_PASSWORD_QUERY => 'Forgot Password?',
                 login_no_context => 'Already registered?  Click here to login.',
                 user_create_no_context => 'Not registered? Click here to register.',
                 USER_CREATE_DONE => 'Check Your Email',
@@ -2106,6 +2117,14 @@ sub _cfg_user_auth {
                 USER_SETTINGS_FORM => 'b_icon_cog',
             ]],
             [prose => [
+                user_account_action_body => <<'EOF',
+If you requested this, no further action is required.
+
+If you did not request this, please contact customer support by replying to this email.
+
+Thank you,
+vs_site_name(); Support
+EOF
                 UserAuth => [
                     general_contact_mail => [
                         subject => q{vs_site_name(); Web Contact},
@@ -2215,9 +2234,147 @@ Join([
     ]),
 ]);
 EOF
+                    mfa_recovery_code_list_regenerate_mail => [
+                        to => q{Mailbox([qw(Model.Email email)]);},
+                        subject => 'New vs_site_name(); two-factor authentication recovery codes created',
+                        body => <<'EOF'
+New two-factor authentication recovery codes have been created.
+
+vs_text_as_prose('user_account_action_body');
+EOF
+                    ],
+                ],
+                UserTOTP => [
+                    enable_mail => [
+                        to => q{Mailbox([qw(Model.Email email)]);},
+                        subject => 'vs_site_name(); two-factor authentication enabled',
+                        body => <<'EOF'
+Two-factor authentication has been enabled for your account.
+
+vs_text_as_prose('user_account_action_body');
+EOF
+                    ],
+                    disable_mail => [
+                        to => q{Mailbox([qw(Model.Email email)]);},
+                        subject => 'vs_site_name(); two-factor authentication disabled',
+                        body => <<'EOF'
+Two-factor authentication has been disabled for your account.
+
+vs_text_as_prose('user_account_action_body');
+EOF
+                    ],
                 ],
             ]],
-
+            [[qw(UserLoginTOTPForm UserEnableTOTPForm UserEscalationTOTPForm MFARecoveryCodeListRegenerateForm UserDisableTOTPForm UserPasswordForm)] => [
+                totp_code => 'Authenticator Code',
+                'totp_code.desc' => 'Current ' . b_use('Model.UserTOTP')->get_default_digits . ' digit code found in authenticator app',
+            ]],
+            [[qw(UserLoginTOTPForm UserEscalationTOTPForm UserPasswordForm UserDisableTOTPForm)] => [
+                mfa_recovery_code => 'Authenticator Recovery Code',
+                'mfa_recovery_code.desc' => 'Used recovery codes will no longer be available',
+            ]],
+            [[qw(UserEscalationPlainForm UserEscalationTOTPForm)] => [
+                ok_button => 'Continue',
+            ]],
+            [[qw(UserEnableTOTPForm UserEscalationPlainForm UserEscalationTOTPForm MFARecoveryCodeListRegenerateForm UserDisableTOTPForm)] => [
+                'RealmOwner.password' => 'Password',
+            ]],
+            [MFARecoveryCodeList => [
+                prose => [
+                    prologue => <<'EOF',
+Grid([
+    ['The following codes are your authenticator recovery codes.'],
+    [vs_blank_cell()],
+    ['If you don\'t have access to your authenticator app you will need to enter one of these codes to gain access to your account.'],
+    [vs_blank_cell()],
+    ['This list will only be shown to you once.'],
+    [vs_blank_cell()],
+    ['Save these codes in a secure place.'],
+    [vs_blank_cell()],
+    ['Options for saving these recovery codes:'],
+    [UL(Join([
+        LI('If you use a password manager, click the "copy" link to the right and then paste into the entry for bivio.'),
+         LI('Click the "download" link and then move the downloaded file to a secure place where you keep personal files.'),
+        LI('Click the "print" link and then place the printed page in a secure place with your personal files.'),
+    ]))],
+]);
+EOF
+                ],
+            ]],
+            [UserEnableTOTPForm => [
+                prose => [
+                    prologue => <<'EOF',
+Join([
+    'bivio gives users the option to set up two-factor authentication via well-known authenticator apps that support time-based one-time-password generation such as Google Authenticator or Duo Mobile.',
+    BR(), BR(),
+    'To set up two-factor authentication, complete the following steps:',
+    BR(), BR(),
+    OL(Join([
+        LI(Join([
+            'Scan the QR code below with your chosen authenticator app or manually enter the setup key.',
+            TOTPQRCode(String([qw(->req form_model totp_secret)])),
+        ])),
+        LI(MFARecoveryCodeList()),
+        LI('Enter the current 6-digit authenticator code below. Note that the authenticator codes change every 30 seconds and each individual code can only be used once.'),
+    ])),
+    BR(), BR(),
+]);
+EOF
+                ],
+            ]],
+            [UserLoginTOTPForm => [
+                prose => [
+                    prologue => <<'EOF',
+Join([
+    'Please enter the current one-time-password code from your authenticator app.',
+    BR(), BR(),
+    'If you don\'t have access to your authenticator app at this time, you may enter a recovery code instead.',
+    BR(), BR(),
+]);
+EOF
+                ],
+                'ok_button' => 'Continue',
+            ]],
+            [UserDisableTOTPForm => [
+                prose => [
+                    prologue => <<'EOF',
+Are you sure you want to disable two-factor authentication?
+EOF
+                ],
+                'ok_button' => 'Disable',
+            ]],
+            [MFARecoveryCodeListRegenerateForm => [
+                prose => [
+                    prologue => <<'EOF',
+Join([
+    'Are you sure you want to create new your authenticator recovery codes?',
+    BR(), BR(),
+    'Any existing recovery codes will no longer be available.',
+    BR(), BR(),
+]);
+EOF
+                ],
+                'ok_button' => 'Create New Recovery Codes',
+            ]],
+            [MFARecoveryCodeListRefillForm => [
+                'ok_button' => 'Continue',
+            ]],
+            [title => [
+                USER_LOGIN_TOTP_FORM => 'Two-Factor Authentication',
+                USER_ESCALATION_PLAIN_FORM => 'Confirm Account Access',
+                USER_ESCALATION_TOTP_FORM => 'Confirm Account Access',
+                USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
+                USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
+                MFA_RECOVERY_CODE_LIST_REFILL_FORM => 'New Authenticator Recovery Codes',
+                MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Create New Authenticator Recovery Codes',
+                MFA_RECOVERY_CODE_LIST_PRINT => 'Authenticator Recovery Codes',
+            ]],
+            [acknowledgement => [
+                USER_ENABLE_TOTP_FORM => 'Two-factor authentication has been set up successfully',
+                USER_DISABLE_TOTP_FORM => 'Two-factor authentication has been disabled successfully',
+                mfa_recovery_code_used => 'Authenticator recovery code accepted and removed from available list',
+                access_code_expired => 'Prior access has expired, please re-enter your credentials.',
+            ]],
         ],
     };
 }

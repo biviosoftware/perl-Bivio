@@ -1,0 +1,81 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+PropertyModel();
+my($ok_config) = {
+    default_algorithm => 'SHA1',
+    default_digits => 6,
+    default_period => 30,
+    time_step_tolerance => 1,
+};
+[
+    handle_config => [
+        map(($_ => DIE()), (
+            [{}],
+            [{
+                default_algorithm => 'SHA1',
+            }],
+            [{
+                default_algorithm => 'SHA1',
+                default_digits => 6,
+            }],
+            [{
+                default_algorithm => 'SHA1',
+                default_digits => 6,
+                default_period => 30,
+            }],
+            [{
+                %$ok_config,
+                default_algorithm => 'foo',
+            }],
+            [{
+                %$ok_config,
+                default_digits => 5,
+            }],
+            [{
+                %$ok_config,
+                default_digits => 7,
+            }],
+            [{
+                %$ok_config,
+                default_digits => 9,
+            }],
+            [{
+                %$ok_config,
+                default_period => 29,
+            }],
+            [{
+                %$ok_config,
+                default_period => 91,
+            }],
+            [{
+                %$ok_config,
+                time_step_tolerance => -1,
+            }],
+            [{
+                %$ok_config,
+                time_step_tolerance => 4,
+            }],
+            [{
+                %$ok_config,
+                default_algorithm => 'foo',
+            }],
+        )),
+        map(($_ => not_die()), (
+            [{
+                %$ok_config,
+                default_algorithm => 'SHA256',
+            }],
+            [{
+                %$ok_config,
+                default_digits => 8,
+            }],
+            [{
+                %$ok_config,
+                default_period => 90,
+            }],
+            [{
+                %$ok_config,
+                time_step_tolerance => 3,
+            }],
+        )),
+    ],
+];

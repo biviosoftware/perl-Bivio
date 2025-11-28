@@ -630,11 +630,55 @@ EOF
     return;
 }
 
-sub internal_upgrade_db_password_length {
+sub internal_upgrade_db_totp {
     my($self) = @_;
     $self->run(<<'EOF');
-ALTER TABLE realm_owner_t
-    ALTER COLUMN password TYPE VARCHAR(255)
+CREATE TABLE user_totp_t (
+  user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  algorithm NUMERIC(1) NOT NULL,
+  digits NUMERIC(1) NOT NULL,
+  period NUMERIC(2) NOT NULL,
+  secret VARCHAR(4000) NOT NULL,
+  last_time_step NUMERIC(10),
+  CONSTRAINT user_totp_t1 primary key(user_id)
+)
+/
+ALTER TABLE user_totp_t
+  ADD CONSTRAINT user_totp_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_totp_t3 ON user_totp_t (
+  user_id
+)
+/
+CREATE TABLE user_access_code_t (
+  user_access_code_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  modified_date_time DATE NOT NULL,
+  expiration_date_time DATE,
+  code VARCHAR(4000) NOT NULL,
+  type NUMERIC(1) NOT NULL,
+  status NUMERIC(1),
+  CONSTRAINT user_access_code_t1 primary key(user_access_code_id)
+)
+/
+CREATE SEQUENCE user_access_code_s
+  MINVALUE 100014
+  CACHE 1 INCREMENT BY 100000
+/
+ALTER TABLE user_access_code_t
+  ADD CONSTRAINT user_access_code_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_access_code_t3 ON user_access_code_t (
+  user_id,
+  type,
+  status
+)
 /
 EOF
     return;

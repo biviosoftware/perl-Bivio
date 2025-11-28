@@ -20,6 +20,8 @@ sub create {
 
 sub handle_config {
     my(undef, $cfg) = @_;
+    b_die('invalid locked_out_failure_count=', $cfg->{locked_out_failure_count})
+        if $cfg->{locked_out_failure_count} < 5 && !$_C->is_test;
     $_CFG = $cfg;
     return;
 }
@@ -40,6 +42,10 @@ sub internal_initialize {
     });
 }
 
+sub is_state_locked_out {
+    return shift->get('login_attempt_state')->eq_locked_out;
+}
+
 sub reset_failure_count {
     my($self, $realm_id) = @_;
     return $self->create({
@@ -53,7 +59,7 @@ sub unauth_load_last_locked_out {
     my($locked_out) = 0;
     _iterate($self, $realm_id, sub {
         my($it) = @_;
-        $locked_out = $it->get('login_attempt_state')->eq_locked_out;
+        $locked_out = $it->is_state_locked_out;
         return 0;
     });
     return $locked_out;
@@ -71,6 +77,13 @@ sub _iterate {
     return;
 }
 
+sub _maybe_lock_out {
+    my($fail_count, $state) = @_;
+    return $state->LOCKED_OUT
+        if $fail_count >= $_CFG->{locked_out_failure_count};
+    return $state;
+}
+
 sub _state {
     my($self, $values) = @_;
     my($state) = $values->{login_attempt_state};
@@ -78,16 +91,18 @@ sub _state {
         if _success_equivalent($state);
     b_die('unexpected login_attempt_state=', $state)
         unless $state->eq_failure;
+    # Starting at 1 because this attempt is a failure
     my($fail_count) = 1;
+    $state = _maybe_lock_out($fail_count, $state)
+        if $_C->is_test;
+    return $state
+        if $state->eq_locked_out;
     _iterate($self->new_other('LoginAttempt'), $values->{realm_id}, sub {
         my($it) = @_;
         return 0
             if _success_equivalent($it->get('login_attempt_state'));
-        if (++$fail_count >= $_CFG->{locked_out_failure_count}) {
-            $state = $state->LOCKED_OUT;
-            return 0;
-        }
-        return 1;
+        $state = _maybe_lock_out(++$fail_count, $state);
+        return $state->eq_locked_out ? 0 : 1;
     });
     return $state;
 }

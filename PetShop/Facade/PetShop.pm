@@ -239,6 +239,9 @@ __PACKAGE__->new({
                 epilogue => '',
             ],
         ]],
+        [UserLoginTOTPForm => [
+            ok_button => 'Sign In',
+        ]],
         # Table headings
         [Image_alt => [
             bivio_power => 'Powered by bivio Software, Inc.',

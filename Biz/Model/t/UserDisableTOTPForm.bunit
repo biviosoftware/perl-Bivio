@@ -1,0 +1,62 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 1,
+    },
+});
+my($no_challenge) = 1;
+my($no_setup) = 1;
+my($totp_secret);
+my($time_step);
+my($totp_code);
+my($mfa_recovery_codes);
+FormModel({
+    setup_request => sub {
+        create_user(random_alpha_string());
+        return
+            if $no_setup;
+        unless ($totp_secret) {
+            $totp_secret = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
+            $time_step = Biz_RFC6238()->get_time_step(
+                Type_DateTime()->to_unix(Type_DateTime()->now), Model_UserTOTP()->get_default_period);
+            $totp_code = Biz_RFC6238()->compute(
+                Model_UserTOTP()->get_default_algorithm,
+                Model_UserTOTP()->get_default_digits,
+                $totp_secret,
+                $time_step,
+            );
+            $mfa_recovery_codes = Type_MnemonicCode()->generate_new_codes(
+                Model_MFARecoveryCodeList()->get_new_code_count);
+        }
+        unless (Model_UserTOTP()->unsafe_load) {
+            Model_UserTOTP()->create({secret => $totp_secret, time_step => $time_step});
+            Model_MFARecoveryCodeList()->create($mfa_recovery_codes);
+        }
+        return
+            if $no_challenge;
+        Action_AccessChallenge()->execute_assert_escalation(req());
+        model('UserEscalationTOTPForm')->process({});
+        return;
+    },
+});
+req()->initialize_fully('USER_DISABLE_TOTP_FORM');
+[
+    [] => MODEL_NOT_FOUND(),
+    inline_case(sub {$no_setup = 0}),
+    [] => FORBIDDEN(),
+    inline_case(sub {$no_challenge = 0}),
+    [{}] => sub {
+        return 0
+            if Model_UserTOTP()->new(req())->unsafe_load;
+        return 0
+            if Model_MFARecoveryCodeList()->new(req())->load_all->get_result_set_size;
+        return 1;
+    },
+    [{}] => sub {
+        return 0
+            if Model_UserTOTP()->new(req())->unsafe_load;
+        return 0
+            if Model_MFARecoveryCodeList()->new(req())->load_all->get_result_set_size;
+        return 1;
+    },
+];

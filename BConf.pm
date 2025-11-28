@@ -584,6 +584,9 @@ sub merge_realm_role_category_map {
             ], [
                 feature_motion =>
                     '+open_results_motion',
+            ], [
+                feature_mfa =>
+                    ['*all_admins' => [qw(FEATURE_MFA FEATURE_TOTP)]],
             ],
             $new ? @{$new->()} : (),
         ]},

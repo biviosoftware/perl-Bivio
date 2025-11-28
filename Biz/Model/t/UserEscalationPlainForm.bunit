@@ -1,0 +1,88 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+my($no_challenge) = 1;
+FormModel({
+    setup_request => sub {
+        unless ($no_challenge) {
+            my($redirect) = Action_AccessChallenge()->execute_assert_escalation(req());
+            my($method) = delete($redirect->{method});
+            $redirect->{task_id} = req('task')->get_attr_as_id($redirect->{task_id});
+            return req()->$method($redirect);
+        }
+        return;
+    },
+});
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 2,
+    },
+});
+my($is_locked_out) = sub {
+    my($case, $actual) = @_;
+    assert_equals(req('auth_user_id'), undef);
+    assert_equals(req(qw(auth_realm))->is_general, 1);
+    assert_equals(req('task_id')->eq_general_user_locked_out, 1);
+    return 1;
+};
+my($user) = create_user(random_realm_name());
+commit();
+[
+    req_state({
+        task => 'USER_PASSWORD',
+    }),
+    [] => FORBIDDEN(),
+    inline_case(sub {$no_challenge = 0}),
+    empty_case({
+        login => $user->format_email,
+    }),
+    error_case({
+        login => $user->format_email,
+    } => {
+        'RealmOwner.password' => 'NULL',
+    }),
+    error_case({
+        login => sub {$user->format_email},
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD . 'x',
+    } => {
+        'RealmOwner.password' => 'PASSWORD_MISMATCH',
+    }),
+    inline_case(sub {
+        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, 1));
+    }),
+    [{
+        login => sub {$user->format_email},
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD . 'x',
+    }] => $is_locked_out,
+    req_state({
+        task => 'USER_PASSWORD',
+        user => $user,
+        realm => $user,
+    }),
+    error_case({
+        login => sub {$user->format_email},
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+    } => {
+        login => 'USER_LOCKED_OUT',
+    }),
+    inline_case(sub {
+        req()->set_realm_and_user($user, $user);
+        Util_RealmAdmin()->reset_login_attempts();
+        Util_RealmAdmin()->reset_password(Util_TestUser()->DEFAULT_PASSWORD);
+    }),
+    req_state({
+        task => 'USER_PASSWORD',
+    }),
+    [{
+        login => sub {$user->format_email},
+        'RealmOwner.password' => Util_TestUser()->DEFAULT_PASSWORD,
+    }] => sub {
+        my(undef, $actual) = @_;
+        assert_equals(req('auth_user_id'), $user->get('realm_id'));
+        assert_equals($actual->[0]{task_id}->get_name, 'USER_PASSWORD');
+        b_die('challenge not found')
+            unless Action_AccessChallenge()->unsafe_get_challenge(req(), {
+                type => Type_AccessCode()->ESCALATION_CHALLENGE,
+                status => Type_AccessCodeStatus()->PASSED,
+            });
+        return 1;
+    },
+];

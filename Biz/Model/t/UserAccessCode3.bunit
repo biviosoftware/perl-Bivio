@@ -1,0 +1,75 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Unit();
+my($u) = create_user(random_realm_name());
+my($objects) = {};
+foreach my $x (
+    [Type_AccessCode()->LOGIN_CHALLENGE => Type_AccessCodeStatus()->PENDING],
+    [Type_AccessCode()->ESCALATION_CHALLENGE => Type_AccessCodeStatus()->PENDING],
+    [Type_AccessCode()->MFA_RECOVERY => Type_AccessCodeStatus()->ACTIVE],
+    [Type_AccessCode()->PASSWORD_QUERY => Type_AccessCodeStatus()->ACTIVE],
+) {
+    my($type, $status) = @$x;
+    $objects->{$type->get_name} = class()->new(req())->create({type => $type, status => $status});
+}
+my($add_seconds) = sub {
+    my($s) = @_;
+    return sub {
+        Type_DateTime()->set_test_now(Type_DateTime()->add_seconds(Type_DateTime()->now, $s));
+        return;
+    };
+};
+my($update_status) = sub {
+    my($t, $s) = @_;
+    return sub {
+        $objects->{$t}->update({status => Type_AccessCodeStatus()->$s});
+        return;
+    };
+};
+[
+    map({
+        my($t) = $_;
+        sub {$objects->{$t->get_name}} => [
+            is_expired => 0,
+        ];
+    } Type_AccessCode()->get_non_zero_list),
+    inline_case($add_seconds->(Type_AccessCode()->PASSWORD_QUERY->get_expiry_seconds_for_type)),
+    map({
+        my($t, $e) = @$_;
+        sub {$objects->{$t}} => [
+            is_expired => $e,
+        ];
+    } (
+        [LOGIN_CHALLENGE => 0],
+        [ESCALATION_CHALLENGE => 0],
+        [MFA_RECOVERY => 0],
+        [PASSWORD_QUERY => 1],
+    )),
+    map({
+        my($t) = $_;
+        (
+            inline_case($add_seconds->(Type_AccessCode()->$t->get_expiry_seconds_for_type)),
+            sub {$objects->{$t}} => [
+                is_expired => 0,
+            ],
+            inline_case($update_status->($t => 'PASSED')),
+            sub {$objects->{$t}} => [
+                is_expired => 0,
+            ],
+            inline_case($add_seconds->(Type_AccessCode()->$t->get_expiry_seconds_for_type)),
+            sub {$objects->{$t}} => [
+                is_expired => 1,
+            ],
+        );
+    } qw(LOGIN_CHALLENGE ESCALATION_CHALLENGE)),
+    map({
+        my($t, $e) = @$_;
+        sub {$objects->{$t}} => [
+            is_expired => $e,
+        ];
+    } (
+        [LOGIN_CHALLENGE => 1],
+        [ESCALATION_CHALLENGE => 1],
+        [MFA_RECOVERY => 0],
+        [PASSWORD_QUERY => 1],
+    )),
+];

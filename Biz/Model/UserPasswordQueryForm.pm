@@ -92,8 +92,8 @@ sub validate_email_and_put_uri {
         uri => $req->with_realm(
             $ro,
             sub {
-                return Bivio::Biz::Action->get_instance('UserPasswordQuery')
-                    ->format_uri($req)
+                return Bivio::Biz::Action->get_instance('AccessChallenge')
+                    ->format_password_query_uri($req)
                     unless $req->is_super_user($ro->get('realm_id'))
                     || $ro->require_otp;
                 $form->internal_put_error(qw(Email.email PERMISSION_DENIED));

@@ -163,10 +163,9 @@ sub clear_local_mail {
 sub date_time_now {
     my($self, $now) = @_;
     $now = $_DT->set_test_now($now, _req($self));
-    $self->clear_extra_query_params;
     $self->extra_query_params(
         $_DT->TEST_NOW_QUERY_KEY => $now,
-    ) if $now;
+    );
     return $now;
 }
 
@@ -495,6 +494,7 @@ sub handle_setup {
     # Clears files in I<mail_dir>.
     $self->SUPER::handle_setup(@_);
     $self->clear_local_mail;
+    $self->date_time_now;
     _wait_for_server($self, $_CFG->{server_startup_timeout})
         if $_CFG->{server_startup_timeout} && ref($self);
     return;

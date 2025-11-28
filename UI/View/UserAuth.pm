@@ -4,6 +4,7 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
+my($_AMRCL) = b_use('Action.MFARecoveryCodeList');
 
 sub adm_substitute_user {
     return shift->internal_body(vs_simple_form(AdmSubstituteUserForm => [qw{
@@ -56,6 +57,24 @@ process.
 EOF
 }
 
+sub escalation_plain_form {
+    return shift->internal_body(vs_simple_form(UserEscalationPlainForm => [
+        Join([
+            'You have requested a restricted account action. Please enter your password to continue.',
+            BR(), BR(),
+            'This helps ensure that only the account owner can request actions that affect account security.',
+            BR(), BR(),
+            'Access to restricted actions will be granted for ',
+            String([sub {
+                return b_use('Type.AccessCode')->ESCALATION_CHALLENGE->get_expiry_seconds_for_type / 60;
+            }]),
+            ' minutes.',
+            BR(), BR(),
+        ]),
+        'UserEscalationPlainForm.RealmOwner.password',
+    ]));
+}
+
 sub general_contact_mail {
     return shift->internal_put_base_attr(
         from => ['Model.ContactForm', 'from'],
@@ -87,10 +106,60 @@ sub internal_settings_form_extra_fields {
 }
 
 sub login {
-    return shift->internal_body(vs_simple_form(UserLoginForm => [qw(
-        UserLoginForm.login
-        UserLoginForm.RealmOwner.password
-    )]));
+    return shift->internal_body(vs_simple_form(UserLoginForm => [
+        'UserLoginForm.login',
+        'UserLoginForm.RealmOwner.password',
+    ]));
+}
+
+sub mfa_recovery_code_print_list {
+    view_main(Page({
+        xhtml => 1,
+        style => view_widget_value('xhtml_style'),
+        head => Join([
+            vs_text_as_prose('xhtml_head_title'),
+        ]),
+        body => Join([
+            DIV_main_top(DIV_title(Join([vs_site_name(), vs_text_as_prose('xhtml_title')], ' '))),
+            DIV_main_body([sub {
+                my($source) = @_;
+                return Grid([
+                    map([$_], @{$_AMRCL->get_codes_from_query($source)}),
+                ], {class => 'b_mfa_recovery_codes'});
+            }]),
+        ]),
+    }));
+    return;
+}
+
+sub mfa_recovery_code_refill_list {
+    return shift->internal_body(vs_simple_form(MFARecoveryCodeListRefillForm => [
+        Join([
+            'Your authenticator recovery code list was running low, so we\'ve generated a new list for you.',
+            BR(), BR(),
+            MFARecoveryCodeList(),
+        ]),
+        '*ok_button',
+    ]));
+}
+
+sub mfa_recovery_code_list_regenerate_form {
+    my($self, $link) = @_;
+    return shift->internal_body(
+        If(
+            [qw(->ureq Model.MFARecoveryCodeList)],
+            Join([
+                DIV_mfa_recovery_code_list(MFARecoveryCodeList()),
+                BR(), BR(),
+                $link || Link('Back to my site', 'MY_SITE'),
+            ]),
+            vs_simple_form(MFARecoveryCodeListRegenerateForm => []),
+        ),
+    );
+}
+
+sub mfa_recovery_code_list_regenerate_mail {
+    return shift->internal_mail;
 }
 
 sub missing_cookies {
@@ -196,7 +265,7 @@ sub _password_fields {
     my($m) = @_;
     return (
         ["$m.old_password", {
-            row_control => ["Model.$m", 'display_old_password'],
+            row_control => ["Model.$m", 'require_old_password'],
         }],
         "$m.new_password",
         "$m.confirm_new_password",

@@ -9,7 +9,7 @@ use Bivio::Base 'Bivio.UNIVERSAL';
 # will reset the connection if the database the connection is lost.
 #
 # B<Agent.Task> depends on the fact that this is the only module
-# which modifies the database. 
+# which modifies the database.
 
 our($_TRACE);
 b_use('IO.Trace');

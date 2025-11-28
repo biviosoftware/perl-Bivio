@@ -1,0 +1,20 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+PropertyModel();
+my($u) = create_user(random_realm_name());
+my($bad_statuses) = {
+    LOGIN_CHALLENGE => Type_AccessCodeStatus()->ACTIVE,
+    ESCALATION_CHALLENGE => Type_AccessCodeStatus()->ACTIVE,
+    MFA_RECOVERY => Type_AccessCodeStatus()->PENDING,
+    PASSWORD_QUERY => Type_AccessCodeStatus()->PENDING,
+};
+[
+    create => [
+        map((
+            [{
+                type => $_,
+                code => $_->generate_code_for_type,
+                status => $bad_statuses->{$_->get_name},
+            }] => DIE(),
+        ), Type_AccessCode()->get_non_zero_list),
+    ],
+];

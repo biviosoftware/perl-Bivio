@@ -1,0 +1,59 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Unit();
+config({
+    class() => {
+        login_challenge_expiry_seconds => 30,
+        escalation_challenge_expiry_seconds => 20,
+        password_query_expiry_seconds => 10,
+    },
+    'Bivio::Type::MnemonicCode' => {
+        word_list => [qw(foo bar baz)],
+        word_sample_size => 2,
+    },
+});
+Type_DateTime()->set_test_now(now());
+my($o) = {map(($_->get_name => $_), class()->get_non_zero_list)};
+my($non_mfa) = {%$o};
+delete($non_mfa->{MFA_RECOVERY});
+[
+    map({
+        my($t) = $_;
+        sub {$o->{$t->[0]}} => [
+            from_literal_for_type => [
+                [$t->[1]] => [$t->[2], defined($t->[3]) ? $t->[3] : ()],
+            ],
+        ];
+    } (
+        [qw(MFA_RECOVERY foo.bar.baz foo-bar-baz)],
+        map([$_, 'foo.bar.baz', undef, 'SYNTAX_ERROR'], keys(%$non_mfa)),
+        map([$_, qw(fooBarBAZ123 fooBarBAZ123)], keys(%$non_mfa)),
+    )),
+    map({
+        my($t) = $_;
+        sub {$o->{$t->[0]}} => [
+            generate_code_for_type => $t->[1],
+        ];
+    } (
+        ['MFA_RECOVERY', qr/^([a-z]+-)+[a-z]+$/],
+        map([$_, qr/^[0-9a-zA-Z]{64}$/], keys(%$non_mfa)),
+    )),
+    map({
+        my($t) = $_;
+        {
+            object => sub {$o->{$t->[0]}},
+            compute_return => sub {
+                my(undef, $actual) = @_;
+                return $actual
+                    unless defined($actual->[0]);
+                return [Type_DateTime()->diff_seconds($actual->[0], now())];
+            },
+        } => [
+            get_expiry_for_type => $t->[1],
+        ];
+    } (
+        [LOGIN_CHALLENGE => 30],
+        [ESCALATION_CHALLENGE => 20],
+        [PASSWORD_QUERY => 10],
+        [MFA_RECOVERY => undef],
+    )),
+];

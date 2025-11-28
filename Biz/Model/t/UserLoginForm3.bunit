@@ -5,6 +5,7 @@ config({
         locked_out_failure_count => 2,
     },
 });
+# Test fails occasionally
 my($uid) = Util_TestUser()->create(random_realm_name());
 # Have to commit as form processing will issue a rollback on error, preventing login attempts from
 # being recorded.

@@ -4,8 +4,33 @@ use strict;
 use Bivio::Base 'View.Base';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
+my($_MM) = b_use('Type.MFAMethod');
+
 sub account {
     my($self) = @_;
+    my($mfa_rows) = [];
+    foreach my $mm ($_MM->get_non_zero_list) {
+        push(@$mfa_rows, [
+            vs_blank_cell(),
+            If(
+                [sub {
+                    my($source, $method) = @_;
+                    return grep(
+                        $_->{type}->is_equal($method),
+                        @{$source->req('auth_user')->get_configured_mfa_methods || []},
+                    ) ? 1 : 0;
+                }, $mm],
+                Link(_mfa_desc($mm, 0), _mfa_task($mm, 0)),
+                If(
+                    [sub {
+                        my($source, $method) = @_;
+                        return $source->req->can_user_execute_task(_mfa_task($method, 1));
+                    }, $mm],
+                    Link(_mfa_desc($mm, 1), _mfa_task($mm, 1)),
+                ),
+            )->put(row_control => If(['auth_user'], 1)),
+        ]);
+    }
     return _with_menu(
         $self,
         '',
@@ -24,12 +49,28 @@ sub account {
             [
                 vs_blank_cell(),
                 Link(
-                    If ([['auth_user'], '->require_otp'],
+                    If([['auth_user'], '->require_otp'],
                         'Reset OTP',
                         'Convert your account to OTP',
                     ),
                     'USER_OTP',
                 )->put(row_control => If(['auth_user'], 1)),
+            ],
+            vs_blank_cell(),
+            @$mfa_rows,
+            vs_blank_cell(),
+            [
+                vs_blank_cell(),
+                Link(
+                    'Create new authenticator recovery codes',
+                    'MFA_RECOVERY_CODE_LIST_REGENERATE_FORM',
+                )->put(row_control => If(And(
+                    ['auth_user'],
+                    [sub {
+                        my($source) = @_;
+                        return $source->req('auth_user')->get_configured_mfa_methods ? 1 : 0;
+                    }],
+                ), 1)),
             ],
             ['UserAccountForm.new_password', {
                 row_control => If(['auth_user'], 0, 1),
@@ -608,6 +649,18 @@ sub _demo_warning {
 This a demonstration site.
 DO NOT ENTER REAL DATA.
 EOF
+}
+
+sub _mfa_desc {
+    my($mfa_method, $enable) = @_;
+    return ($enable ? 'Enable ' : 'Disable ')
+        . lc($mfa_method->get_long_desc)
+        . ' two-factor authentication';
+}
+
+sub _mfa_task {
+    my($mfa_method, $enable) = @_;
+    return 'USER_' . ($enable ? 'ENABLE_' : 'DISABLE_') . $mfa_method->get_name . '_FORM';
 }
 
 sub _with_menu {

@@ -1,0 +1,11 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+PropertyModel();
+[
+    create => [
+        # Can't create with no realm id in general
+        [{
+            type => Type_AccessCode()->MFA_RECOVERY,
+            status => Type_AccessCodeStatus()->ACTIVE,
+        }] => DB_ERROR(),
+    ],
+];

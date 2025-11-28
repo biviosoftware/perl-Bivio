@@ -1,0 +1,61 @@
+# Copyright (c) 2025 bivio Software, Inc. All Rights Reserved.
+Widget();
+req()->set_realm_and_user(qw(demo demo));
+[
+    ['0wdJM8lg2nw8sN2uPkvY'] => '<img class="totp_qr_code" alt="none" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASgAAAEoAQMAAADRyf5aAAAABlBMVEUAAAD///+l2Z/dAAAAAnRS
+TlP//8i138cAAAAJcEhZcwAALiMAAC4jAXilP3YAAAF6SURBVGiB7ZVZlsNADAK5/6WZRQLhjOcG
+dJKOI1X7ox5ygFn8WeDvxfcHP5e/349V6vrD7LYct1sqKNwvYo0eZaLUg5orGWTkstQbNe9t7veL
++1KXv7E7zV1/ZrvUPvX/eT1XKfujUazlaJaKHmYupxmFO1fqgwLvgAxLL0slxZXIB/GRy1JH7aAe
+zBEq6yzFZ2vKN7XUyoEt5XmFSju1UP5iL/XY7U0n9CuJUvKo+V14ZhalXqkL4lboc3jcrBS3hhja
+KwvRXUopeFx+CpND5xFxvJTtCZ5NkG9QSsp2R0bRwdzhLSVKCi1Xk3r1EF0KftjFsIqFzJcKyjXt
+HlU4paVgm9IXc3qbyVKn7QozrFAi9e9QytRF8COWvCOlguKC6VnxG60sFZScUiUFELgTpYQwSw4g
+PMDUVuqaF0IeufNsptTIC3dhmLbqiJZaaaFR1+GcpV6oyCKvC3dKvVCbS53QViooi9zHnNRSlksl
+BeUP21q7pOFSpr4AcerEVYI4RYsAAAAASUVORK5CYII=
+" /><div class="totp_setup"><a id="totp_setup_key_toggle" href="#">show setup key</a><span class="totp_setup_key" id="totp_setup_key">GB3W ISSN HBWG OMTO O44H GTRS OVIG W5SZ</span><br /><br /></div><script type="text/javascript">(() => {
+    const l = document.getElementById("totp_setup_key_toggle");
+    const s = document.getElementById("totp_setup_key");
+    l.addEventListener("click", (event) => {
+        if (l.innerText == "show setup key") {
+            s.style.display = "inline";
+            l.style.display = "none";
+        }
+    });
+})();
+</script>',
+    ['LT14nXglRTz3UWNWYdLu', {size => 7, dpi => 299, level => 'H', margin => 5}] => '<img class="totp_qr_code" alt="none" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAdUAAAHVAQMAAACdd/O0AAAABlBMVEUAAAD///+l2Z/dAAAAAnRS
+TlP//8i138cAAAAJcEhZcwAALfsAAC37AfyHSucAAAUfSURBVHic7ZwxjttADEUpqHC5R/BRfDTp
+aDqKj+DShSGG5P+UbG2CAAGWKsIporWsNymomfnzybHovzdpttlmm2222Wb/L/Yu3r78MurjqrNf
+RKZ4YpkGfYrdVFzi2Vuz1az/+fxS+/4lcl2si6c9MK1j0MEu3tMjuiDQbC1rEX1afP3ph9ysi8vD
+urCLxX4a7JPdXK07Y1d/E5o9iVWPYYyzAdFe5eJDcXjF+PRPzZ7M2h0LpX02FtOlPaZ42u42ey6r
+nCc9sPZpjQVLItqLcGCuI6ZS1d/Psc3+KEu9ge//cvmDVmn2Z1m2e8ZQBQpREe1oiwyuRd4eb7aa
+tfXKv4+/3yQ6J8+HR/T19go0W80uLiZc/nFmlFi2YvUyCCreb2K0XrTZE9hJdxVo26iQHdGF4mY8
+DS2iW2u2lM2oMbAKTYiehOqDmvC4ljVbwtrICjEoE7qYKd9tSozpcoxXwIeixX5t9hTWVygl5PGN
+wZcDk0Fnh6qvfAWarWRFsP+Nja+bfG9hdjspZAfi68DjoPmb/XkWUVNufLnjvdI6vyGiFm2Xhv6/
+fOx/m61hLb4rdJ975sIw++UpYcTCnYV1Dh+w2WLWrx7RRfgYHVh/mhHVBda5rXqvy+HdaLaAxTzJ
+HGBOiW6WI76S+y7ddlrNlrM2QSKGVIG0Kph0GqL7KeX7+Dl+my1h1ZctZG3D5JsgDdOBpTSE1TTp
+1potZGFAbH7e1gW2UVt+F0IxJs9bs+VsbHVjEnTdLpwuV3xamSYcefMwfputYN2AgIGU6facIBFK
+Dj7I92bPYplYki3M2VxogBWJyxDSvtliFiZfFBOF5SfDnt6AyPhiF3f5vv9ttoKN3EUsWwofCd/P
+gkIVSdmh6OnS7AlsOEfIa4jQjhAuacJM1KTYWx0882bL2Hc/Nr6guRRFeSOHabwC6/jpxzZbxO6j
+LrO2lIbUG+FfQNqvgvRGs6VsBk9k30ZlujYyghiDL9RCbFqk2ULWrzBiaevxlEWKeWx8USuu7tU2
+W87u2pwJDWyxIP9EKOaZLUSNcrPlrNBzHVB/pxpZjiFPwkDFj+k45TvRbCF7m4eUf7nHjfSGZES9
+YfAh9s2ewPIIDL0+lqZAfSjPXHC6xDHBZotZ6vYo0dv2VteIqOyyg9Axz95sCXu/6a4C41wF68G3
+Si/7Z4aRPushz95sDeuDD2dfIsJTyj8WJ3MbvB+JlmarWUUd6x0nnD9TgRTzYTU9o97o4Lc3W8LC
+5PPZD8VE4e7dUQwWlRFZjuyBzYRUs6WsYqsrItzcbuWssaQJkk78FYE8gdFsLbukgcTd1Jql+5es
+Q9boieucd9hsMatUEbPw7NJbh5GCimhDdhxq85qtYenuCc4nSVYeT9xw4ZTFPOy14qrNFrPq8k+Z
+A9xru2a6EoCiGEyhPj7m2GYr2NgxwSSK+Cp1H5a0iWc4hbWVevQ3mq1gY2RFPf+2jYIY5NGL/AWv
+xxb0ZovZaFn2EPPke73KzEKjlVkOvALNnsBqWue0/IRF4pvJh3UuL83WshG1rTgyLL+QfyhnnVH9
+gHkS9SpXbbaa9XDtRRA4Ziao+4oxqCxAlojv736zq9kfZzPrRx8pf0oyh6JyGxztW96q2UI2ayRZ
+4kWzfOKGa0hXCcmOZk9hdWYMd881qlfCTuKpzW9rWbNFrEJaSCxUC8cgfykgTwQqpstv8W22hP3U
+G1zLbsq6r7cF7qq6fvqxzdaw/9iabbbZZpttttn/h/0F7GEnJNBGNDQAAAAASUVORK5CYII=
+" /><div class="totp_setup"><a id="totp_setup_key_toggle" href="#">show setup key</a><span class="totp_setup_key" id="totp_setup_key">JRKD CNDO LBTW YUSU PIZV KV2O K5MW ITDV</span><br /><br /></div><script type="text/javascript">(() => {
+    const l = document.getElementById("totp_setup_key_toggle");
+    const s = document.getElementById("totp_setup_key");
+    l.addEventListener("click", (event) => {
+        if (l.innerText == "show setup key") {
+            s.style.display = "inline";
+            l.style.display = "none";
+        }
+    });
+})();
+</script>',
+];

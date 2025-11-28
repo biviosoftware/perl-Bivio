@@ -7,6 +7,8 @@ use Bivio::IO::Trace;
 
 our($_TRACE);
 my($_LQ) = b_use('SQL.ListQuery');
+my($_MM) = b_use('Type.MFAMethod');
+my($_ULF) = b_use('Model.UserLoginForm');
 my($_DEFAULT_TASK) = b_use('Agent.TaskId')->ADM_SUBSTITUTE_USER;
 
 sub SUPER_USER_FIELD {
@@ -82,10 +84,20 @@ sub su_logout {
     $req->get('cookie')->delete($self->SUPER_USER_FIELD)
         if $req->unsafe_get('cookie');
     my($realm) = $self->new_other('RealmOwner');
-    $self->new_other('UserLoginForm')->process({
-        realm_owner => $realm->unauth_load({realm_id => $su})
-            ? $realm : undef,
-    });
+    $realm->unauth_load({realm_id => $su});
+    # Log out of all possible MFA methods out of caution
+    foreach my $t ($_MM->get_non_zero_list) {
+        _do_form($self, $t->get_login_form_class, {do_logout => 1});
+    }
+    _do_form($self, $_ULF, {realm_owner => $realm->is_loaded ? $realm : undef});
+    if ($realm->is_loaded) {
+        foreach my $m (@{$realm->get_configured_mfa_methods || []}) {
+            _do_form($self, $m->{type}->get_login_form_class, {
+                realm_owner => $realm,
+                bypass_challenge => 1,
+            });
+        }
+    }
     _trace($realm) if $_TRACE;
     return $realm->is_loaded && $req->unsafe_get('task')
         ? $req->get('task')->unsafe_get_attr_as_id('su_task') || $_DEFAULT_TASK
@@ -100,4 +112,9 @@ sub validate {
     return;
 }
 
+sub _do_form {
+    my($self, $class, $values) = @_;
+    $class->new($self->req)->process($values);
+    return;
+}
 1;

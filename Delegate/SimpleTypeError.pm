@@ -441,6 +441,21 @@ sub get_delegate_info {
         undef,
         'Password is similar to your name, email address, and/or common phrases. Please enter a unique password.',
     ],
+    INVALID_TOTP_CODE => [
+        85,
+        undef,
+        'Authenticator code is invalid.',
+    ],
+    INVALID_MFA_RECOVERY_CODE => [
+        86,
+        undef,
+        'Recovery code is invalid or has already been used.',
+    ],
+    EXPIRED => [
+        87,
+        undef,
+        'expired',
+    ],
 ];
 }
 

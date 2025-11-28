@@ -1446,6 +1446,36 @@ div.user_state {
 div.user_state a {
   Font('user_state');
 }
+img.totp_qr_code {
+  margin: auto;
+  display: block;
+  width: 300px;
+  height: 300px;
+  padding: 1em;
+}
+div.totp_setup {
+  text-align: center;
+}
+span.totp_setup_key {
+  display: none;
+}
+table.b_mfa_recovery_code_list {
+  margin: auto;
+  border: 1px solid #ccc;
+}
+table.b_mfa_recovery_code_list td {
+  padding: 0.25em;
+  vertical-align: top;
+  background: #f0f0f0;
+}
+table.b_mfa_recovery_codes td,
+table.b_mfa_recovery_code_options td {
+  padding: 0.5em 1.5em;
+  text-align: center;
+  whitespace: nowrap;
+  border: 0.5em solid #f0f0f0;
+  background: #fff;
+}
 EOF
 }
 

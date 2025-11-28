@@ -1,0 +1,105 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+config({
+    'Bivio::Biz::Model::LoginAttempt' => {
+        locked_out_failure_count => 1,
+    },
+});
+my($create_user) = 1;
+my($create_escalation) = 0;
+my($pass_escalation) = 0;
+FormModel({
+    setup_request => sub {
+        return
+            unless $create_user;
+        create_user(random_realm_name());
+        return
+            unless $create_escalation;
+        Action_AccessChallenge()->execute_assert_escalation(req());
+        return
+            unless $pass_escalation;
+        model('UserEscalationPlainForm')->process({});
+        return;
+    },
+});
+req()->initialize_fully('USER_ENABLE_TOTP_FORM');
+Action_MFARecoveryCodeList()->execute_preview(req());
+my($totp_secret);
+my($mfa_recovery_codes);
+my($time_step);
+my($v) = {
+    mfa_recovery_code_array => sub {$mfa_recovery_codes},
+    totp_secret => sub {$totp_secret},
+};
+my($is_task) = sub {
+    my($expected_task) = @_;
+    return sub {
+        my($case, $res) = @_;
+        return ref($res->[0]) eq 'HASH' ? $res->[0]->{task_id} eq $expected_task ? 1 : 0
+            : req('task_id')->equals_by_name($expected_task) ? 1 : 0;
+    };
+};
+[
+    [] => FORBIDDEN(),
+    inline_case(sub {$create_escalation = 1}),
+    [] => FORBIDDEN(),
+    inline_case(sub {$pass_escalation = 1}),
+    empty_case({
+        totp_secret => qr/^[a-zA-Z0-9]+$/,
+    }),
+    inline_case(sub {
+        $totp_secret = req(qw(form_model totp_secret));
+        $mfa_recovery_codes = req(qw(form_model mfa_recovery_code_array));
+        b_die('unexpected mfa_recovery_code_array count')
+            unless $mfa_recovery_codes->as_length == Model_MFARecoveryCodeList()->get_new_code_count;
+        $mfa_recovery_codes->do_iterate(sub {
+            my($it) = @_;
+            b_die('unexpected mfa_recovery_code format')
+                unless $it =~ /^[a-z-]+$/;
+            return 1;
+        });
+        return;
+    }),
+    error_case({
+        %$v,
+        totp_code => 123456,
+    } => {
+        totp_code => 'INVALID_TOTP_CODE',
+    }),
+    [{
+        %$v,
+        totp_code => sub {
+            $time_step = Biz_RFC6238()->get_time_step(
+                Type_DateTime()->to_unix(Type_DateTime()->now), Model_UserTOTP()->get_default_period);
+            return Biz_RFC6238()->compute(
+                Model_UserTOTP()->get_default_algorithm,
+                Model_UserTOTP()->get_default_digits,
+                $totp_secret,
+                $time_step,
+            );
+        },
+    }] => [{
+        'Model.UserTOTP' => {
+            algorithm => Model_UserTOTP()->get_default_algorithm,
+            digits => Model_UserTOTP()->get_default_digits,
+            period => Model_UserTOTP()->get_default_period,
+            secret => sub {$totp_secret},
+            last_time_step => sub {$time_step},
+        },
+    }],
+    inline_case(sub {
+        my($expected_codes) = $mfa_recovery_codes->as_array;
+        my($found) = 0;
+        Model_MFARecoveryCodeList()->load_all->do_rows(sub {
+            my($it) = @_;
+            $found++;
+            b_die('unexpected mfa_recovery_code')
+                unless grep({$it->get('UserAccessCode.code') eq $_} @$expected_codes);
+            return 1;
+        });
+        b_die('expected=', Model_MFARecoveryCodeList()->get_new_code_count, ' recovery codes, found=', $found)
+            unless Model_MFARecoveryCodeList()->get_new_code_count == $found;
+        return;
+    }),
+    inline_case(sub {$create_user = 0}),
+    [] => FORBIDDEN(),
+];

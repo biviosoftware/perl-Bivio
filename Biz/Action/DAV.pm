@@ -315,7 +315,7 @@ sub _load {
         _trace($tid, ' ', $req) if $_TRACE;
 #TODO: Does not work with new Task->execute_items which return HASH
         my($t) = b_use('Agent.Task')->get_by_id($tid);
-#TODO: It's not clear if this is over-restrictive.  However, 
+#TODO: It's not clear if this is over-restrictive.  However,
         last unless $req->get('auth_realm')->can_user_execute_task($t, $req);
         $req->put(task_id => $tid, task => $t);
         if ($t->unsafe_get('require_dav')

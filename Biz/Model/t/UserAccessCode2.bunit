@@ -1,0 +1,73 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+PropertyModel();
+my($u) = create_user(random_realm_name());
+my($statuses) = {
+    LOGIN_CHALLENGE => Type_AccessCodeStatus()->PENDING,
+    ESCALATION_CHALLENGE => Type_AccessCodeStatus()->PENDING,
+    MFA_RECOVERY => Type_AccessCodeStatus()->ACTIVE,
+    PASSWORD_QUERY => Type_AccessCodeStatus()->ACTIVE,
+};
+[
+    map({
+        my($type) = $_;
+        my($is_recovery) = $type->eq_mfa_recovery ? 1 : 0;
+        ({
+            method => 'create',
+            compute_return => sub {
+                my($case, $actual) = @_;
+                return []
+                    if ref($case->get('params')) eq 'CODE';
+                my($expect) = {
+                    ref($case->get('params')->[0]) eq 'HASH' ? %{$case->get('params')->[0]} : (
+                        map(($_->[0] => $case->get('params')->[$_->[1]]), (
+                            [type => 0],
+                            [code => 1],
+                            [status => 2],
+                        )),
+                    ),
+                };
+                return [-1]
+                    unless $actual->[0]->get('user_id') == $u->get('realm_id');
+                return [-2]
+                    unless $actual->[0]->get('type')->is_equal($expect->{type});
+                return [-3]
+                    if $expect->{type}->eq_mfa_recovery && $actual->[0]->get('code') !~ /^([a-z]+-)+[a-z]+$/;
+                return [-4]
+                    if !$expect->{type}->eq_mfa_recovery && $actual->[0]->get('code') !~ /^.{64}$/;
+                return [-5]
+                    if $expect->{code} && $actual->[0]->get('code') ne $expect->{code};
+                return [-6]
+                    unless $actual->[0]->get('status')->equals_by_name($expect->{status} || 'PENDING');
+                return [int(@{model('UserAccessCode')->map_iterate(
+                    sub {shift},
+                    'unauth_iterate_start', {user_id => $u->get('realm_id'), type => $expect->{type}},
+                )})];
+            },
+        } => [
+            inline_case(sub {req()->set_realm($u)}),
+            [{
+                type => $type,
+                code => $type->generate_code_for_type,
+                status => $statuses->{$type->get_name},
+            }] => 1,
+            [{
+                type => $type,
+                code => $type->generate_code_for_type,
+                status => $statuses->{$type->get_name},
+            }] => $is_recovery ? 2 : 1,
+            inline_case(sub {req()->set_realm(undef)}),
+            [{
+                user_id => $u->get('realm_id'),
+                type => $type,
+                code => $type->generate_code_for_type,
+                status => $statuses->{$type->get_name},
+            }] => $is_recovery ? 3 : 1,
+            [{
+                user_id => $u->get('realm_id'),
+                type => $type,
+                code => $type->generate_code_for_type,
+                status => $statuses->{$type->get_name},
+            }] => $is_recovery ? 4 : 1,
+        ]);
+    } Type_AccessCode()->get_non_zero_list),
+];

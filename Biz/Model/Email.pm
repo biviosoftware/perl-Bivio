@@ -15,10 +15,13 @@ sub create {
 
 sub email_for_auth_user {
     my($self) = @_;
-    return $self->unauth_load_or_die({
-        realm_id => $self->req('auth_user_id'),
-        location => $self->DEFAULT_LOCATION,
-    })->get('email');
+    return _load_auth_user_default($self)->get('email');
+}
+
+sub execute_load_default_for_auth_user {
+    my($proto, $req) = @_;
+    _load_auth_user_default($proto->new($req));
+    return;
 }
 
 sub internal_initialize {
@@ -100,6 +103,14 @@ sub unsafe_user_id_from_email {
 sub update {
     my($self, $values) = (shift, shift);
     return $self->SUPER::update($self->internal_prepare_query($values), @_);
+}
+
+sub _load_auth_user_default {
+    my($self) = @_;
+    return $self->unauth_load_or_die({
+        realm_id => $self->req('auth_user_id'),
+        location => $self->DEFAULT_LOCATION,
+    });
 }
 
 1;

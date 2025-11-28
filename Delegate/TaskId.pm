@@ -1542,21 +1542,27 @@ sub info_user_auth {
             20
             USER
             ANYBODY
-            Action.UserPasswordQuery
+            Action.AccessChallenge->execute_password_reset
+            plain_task=USER_PASSWORD
             password_task=USER_PASSWORD
+            totp_task=USER_LOGIN_TOTP_FORM
             NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
             require_secure=1
         )],
         # forbidden errors are probably due to missing cookies.
         # for example, if user is resetting password from email link
         # with cookies disabled
+        # TODO: permissions when resetting password?
         [qw(
             USER_PASSWORD
             21
             USER
             ADMIN_READ&ADMIN_WRITE
+            Action.AccessChallenge->execute_assert_escalation_if_mfa
             Model.UserPasswordForm
             View.UserAuth->password
+            plain_task=USER_ESCALATION_PLAIN_FORM
+            totp_task=USER_ESCALATION_TOTP_FORM
             next=MY_SITE
             FORBIDDEN=DEFAULT_ERROR_REDIRECT_MISSING_COOKIES
             require_secure=1
@@ -1593,8 +1599,8 @@ sub info_user_auth {
             Action.UserLogout
             Model.UserLoginForm
             View.UserAuth->login
-            locked_out_task=GENERAL_USER_LOCKED_OUT
             next=MY_SITE
+            totp_task=USER_LOGIN_TOTP_FORM
             require_secure=1
         )],
         [qw(
@@ -1674,7 +1680,105 @@ sub info_user_auth {
             View.UserAuth->user_locked_out_mail
             View.UserAuth->user_locked_out
         )],
-#99
+        [qw(
+            USER_ESCALATION_PLAIN_FORM
+            99
+            USER
+            ADMIN_READ&ADMIN_WRITE
+            Model.UserEscalationPlainForm
+            View.UserAuth->escalation_plain_form
+            next=MY_SITE
+            cancel=USER_SETTINGS_FORM
+        )],
+        [qw(
+            MFA_RECOVERY_CODE_LIST_DOWNLOAD
+            300
+            USER
+            ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
+            Action.MFARecoveryCodeList->execute_download
+        )],
+        [qw(
+            MFA_RECOVERY_CODE_LIST_PRINT
+            301
+            USER
+            ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
+            View.UserAuth->mfa_recovery_code_print_list
+        )],
+        [qw(
+            MFA_RECOVERY_CODE_LIST_REFILL_FORM
+            302
+            USER
+            ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
+            Action.MFARecoveryCodeList->execute_refill
+            Model.MFARecoveryCodeListRefillForm
+            View.UserAuth->mfa_recovery_code_refill_list
+            password_task=USER_PASSWORD
+            next=MY_SITE
+        )],
+        [qw(
+            MFA_RECOVERY_CODE_LIST_REGENERATE_FORM
+            303
+            USER
+            ADMIN_READ&ADMIN_WRITE&FEATURE_MFA
+            Action.AccessChallenge->execute_assert_escalation
+            Model.Email->execute_load_default_for_auth_user
+            Model.MFARecoveryCodeListRegenerateForm
+            View.UserAuth->mfa_recovery_code_list_regenerate_form
+            plain_task=DEFAULT_ERROR_REDIRECT_NOT_FOUND
+            totp_task=USER_ESCALATION_TOTP_FORM
+            next=MY_SITE
+        )],
+        # 304-309 free
+        [qw(
+            USER_LOGIN_TOTP_FORM
+            310
+            GENERAL
+            ANYBODY
+            Action.AccessChallenge->execute_assert_login
+            Model.UserLoginTOTPForm
+            View.UserTOTP->login_form
+            login_task=LOGIN
+            password_task=USER_PASSWORD
+            refill_task=MFA_RECOVERY_CODE_LIST_REFILL_FORM
+            next=MY_SITE
+            MODEL_NOT_FOUND=LOGIN
+            FORBIDDEN=LOGIN
+        )],
+        [qw(
+            USER_ENABLE_TOTP_FORM
+            311
+            USER
+            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
+            Action.AccessChallenge->execute_assert_escalation
+            Action.MFARecoveryCodeList->execute_preview
+            Model.Email->execute_load_default_for_auth_user
+            Model.UserEnableTOTPForm
+            View.UserTOTP->enable_form
+            plain_task=USER_ESCALATION_PLAIN_FORM
+            next=MY_SITE
+        )],
+        [qw(
+            USER_DISABLE_TOTP_FORM
+            312
+            USER
+            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
+            Action.AccessChallenge->execute_assert_escalation
+            Model.Email->execute_load_default_for_auth_user
+            Model.UserDisableTOTPForm
+            View.UserTOTP->disable_form
+            totp_task=USER_ESCALATION_TOTP_FORM
+            next=MY_SITE
+        )],
+        [qw(
+            USER_ESCALATION_TOTP_FORM
+            313
+            USER
+            ADMIN_READ&ADMIN_WRITE&FEATURE_TOTP
+            Model.UserEscalationTOTPForm
+            View.UserTOTP->escalation_totp_form
+            next=MY_SITE
+            cancel=USER_SETTINGS_FORM
+        )],
     ];
 }
 

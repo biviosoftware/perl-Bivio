@@ -1023,7 +1023,13 @@ sub validate_and_execute_ok {
             if $res->{carry_query} && $res->{query};
         $res->{query} = $req->unsafe_get('query')
             if delete($res->{carry_query});
-        ($res->{query} ||= {})->{acknowledgement} ||= $_A->SAVE_LABEL_DEFAULT;
+        if (!$res->{query} || ref($res->{query}) eq 'HASH') {
+            ($res->{query} ||= {})->{acknowledgement} ||= $_A->SAVE_LABEL_DEFAULT;
+        }
+        elsif ($res->{query} !~ qr/\backnowledgement\b/) {
+            # Some callers provide an already-formatted query string.
+            $res->{query} .= '&acknowledgement=' . $_A->SAVE_LABEL_DEFAULT;
+        }
         return $res;
     }
     $req->warn('form_errors=', $self->get_errors, ' ', $self->get_error_details)

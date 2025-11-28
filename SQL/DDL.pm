@@ -1045,6 +1045,34 @@ CREATE INDEX login_attempt_t4 ON login_attempt_t (
   creation_date_time
 )
 /
+
+--
+-- user_totp_t
+--
+ALTER TABLE user_totp_t
+  ADD CONSTRAINT user_totp_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_totp_t3 ON user_totp_t (
+  user_id
+)
+/
+
+--
+-- user_access_code_t
+--
+ALTER TABLE user_access_code_t
+  ADD CONSTRAINT user_access_code_t2
+  FOREIGN KEY (user_id)
+  REFERENCES user_t(user_id)
+/
+CREATE INDEX user_access_code_t3 ON user_access_code_t (
+  user_id,
+  type,
+  status
+)
+/
 EOF
 }
 
@@ -1129,9 +1157,10 @@ CREATE SEQUENCE login_attempt_s
   CACHE 1 INCREMENT BY 100000
 /
 
---
--- 100014 available
---
+CREATE SEQUENCE user_access_code_s
+  MINVALUE 100014
+  CACHE 1 INCREMENT BY 100000
+/
 
 CREATE SEQUENCE ec_payment_s
   MINVALUE 100015
@@ -1666,6 +1695,31 @@ CREATE TABLE login_attempt_t (
   login_attempt_state NUMERIC(1) NOT NULL,
   ip_address CHAR(15),
   CONSTRAINT login_attempt_t1 PRIMARY KEY(login_attempt_id)
+)
+/
+
+CREATE TABLE user_totp_t (
+  user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  algorithm NUMERIC(1) NOT NULL,
+  digits NUMERIC(1) NOT NULL,
+  period NUMERIC(2) NOT NULL,
+  secret VARCHAR(4000) NOT NULL,
+  last_time_step NUMERIC(10),
+  CONSTRAINT user_totp_t1 primary key(user_id)
+)
+/
+
+CREATE TABLE user_access_code_t (
+  user_access_code_id NUMERIC(18) NOT NULL,
+  user_id NUMERIC(18) NOT NULL,
+  creation_date_time DATE NOT NULL,
+  modified_date_time DATE NOT NULL,
+  expiration_date_time DATE,
+  code VARCHAR(4000) NOT NULL,
+  type NUMERIC(1) NOT NULL,
+  status NUMERIC(1) NOT NULL,
+  CONSTRAINT user_access_code_t1 primary key(user_access_code_id)
 )
 /
 EOF

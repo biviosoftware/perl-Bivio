@@ -1,0 +1,13 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Type();
+[
+    from_literal => [
+        [] => NULL(),
+        [0] => SYNTAX_ERROR(),
+        [5] => SYNTAX_ERROR(),
+        [6] => not_die(),
+        [7] => SYNTAX_ERROR(),
+        [8] => not_die(),
+        [9] => SYNTAX_ERROR(),
+    ],
+];

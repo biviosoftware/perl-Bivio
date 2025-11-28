@@ -1,0 +1,29 @@
+# Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
+Unit();
+my($u) = create_user(random_realm_name());
+my($objects) = {};
+foreach my $x (
+    [Type_AccessCode()->LOGIN_CHALLENGE => Type_AccessCodeStatus()->PENDING],
+    [Type_AccessCode()->ESCALATION_CHALLENGE => Type_AccessCodeStatus()->PENDING],
+    [Type_AccessCode()->MFA_RECOVERY => Type_AccessCodeStatus()->ACTIVE],
+    [Type_AccessCode()->PASSWORD_QUERY => Type_AccessCodeStatus()->ACTIVE],
+) {
+    my($type, $status) = @$x;
+    $objects->{$type->get_name} = class()->new(req())->create({type => $type, status => $status});
+}
+my($bad_statuses) = {
+    LOGIN_CHALLENGE => Type_AccessCodeStatus()->ACTIVE,
+    ESCALATION_CHALLENGE => Type_AccessCodeStatus()->ACTIVE,
+    MFA_RECOVERY => Type_AccessCodeStatus()->PASSED,
+    PASSWORD_QUERY => Type_AccessCodeStatus()->PASSED,
+};
+[
+    map({
+        my($t) = $_;
+        sub {$objects->{$t->get_name}} => [
+            update => [
+                [{status => $bad_statuses->{$t->get_name}}] => DIE(),
+            ],
+        ],
+    } Type_AccessCode()->get_non_zero_list),
+];
