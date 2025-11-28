@@ -296,14 +296,12 @@ sub set_user_state_and_cookie {
     if ($mfa_pending) {
         return $self;
     }
-    my($ultf) = b_use('Model.UserLoginTOTPForm')->new($self);
     if ($user_state->eq_logged_out) {
-        $ulf->process({login => undef});
-        $ultf->process({do_logout => 1});
+        b_use('Action.UserLogout')->execute($self);
     }
     elsif ($user_state->eq_logged_in) {
         my($cu) = $ulf->load_cookie_user($self, $self->get('cookie'));
-        $ultf->process({bypass_challenge => 1})
+        b_use('Model.UserLoginTOTPForm')->new($self)->process({bypass_challenge => 1})
             if $cu->get_configured_mfa_methods;
     }
     return $self;
