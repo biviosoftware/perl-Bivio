@@ -675,7 +675,9 @@ ALTER TABLE user_access_code_t
   REFERENCES user_t(user_id)
 /
 CREATE INDEX user_access_code_t3 ON user_access_code_t (
-  user_id
+  user_id,
+  type,
+  status
 )
 /
 EOF
