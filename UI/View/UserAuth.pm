@@ -62,6 +62,8 @@ sub escalation_plain_form {
         Join([
             'You have requested a restricted account action. Please enter your password to continue.',
             BR(), BR(),
+            'This helps ensure that only the account owner can request actions that affect account security.',
+            BR(), BR(),
             'Access to restricted actions will be granted for ',
             String([sub {
                 return b_use('Type.AccessCode')->ESCALATION_CHALLENGE->get_expiry_seconds_for_type / 60;
