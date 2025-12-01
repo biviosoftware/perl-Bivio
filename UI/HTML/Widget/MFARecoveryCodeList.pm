@@ -44,7 +44,7 @@ sub initialize {
             l.addEventListener("click", (event) => {
                 navigator.clipboard.writeText(
 EOF
-                Join(["'", [\&_codes, '\n']]),
+                Join(["'", [\&_codes, '\n'], '\n']),
                 <<'EOF',
 ');
             });
