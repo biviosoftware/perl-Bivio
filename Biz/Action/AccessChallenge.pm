@@ -346,7 +346,6 @@ sub _unsafe_get_from_req {
         if ($uac->is_expired) {
             _trace('challenge expired')
                 if $_TRACE;
-            b_use('IO.Alert')->print_stack;
             $_A->save_label(access_code_expired => $req)
                 if $expired_ack;
             return;

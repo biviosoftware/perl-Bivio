@@ -105,7 +105,6 @@ my($archive_code) = sub {
                 $new_codes = $get_codes->();
                 my($count) = 0;
                 foreach my $code (@$new_codes) {
-                    b_debug($code);
                     b_die('repeat code')
                         if grep($code eq $_, @$original_codes);
                     $count++;
