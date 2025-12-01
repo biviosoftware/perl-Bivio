@@ -13,9 +13,6 @@ Bivio::IO::Config->register(my $_CFG = {
     default_margin => 0,
 });
 
-# sudo yum install qrencode
-# sudo yum install perl-MIME-Base32
-
 sub handle_config {
     my(undef, $cfg) = @_;
     $_CFG = $cfg;
