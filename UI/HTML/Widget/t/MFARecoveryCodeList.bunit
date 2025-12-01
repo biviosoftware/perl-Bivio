@@ -48,8 +48,8 @@ Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
         if (navigator.clipboard) {
             l.addEventListener("click", (event) => {
                 navigator.clipboard.writeText(
-"foo-bar-baz\\\nbaz-bar-foo\\\nbar-foo-baz");
-            })
+'foo-bar-baz\nbaz-bar-foo\nbar-foo-baz');
+            });
         }
         else {
             console.log("clipboard not available");
