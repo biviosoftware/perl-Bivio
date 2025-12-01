@@ -44,10 +44,10 @@ sub initialize {
             l.addEventListener("click", (event) => {
                 navigator.clipboard.writeText(
 EOF
-                String([\&_codes, "\n"]),
+                Join(["'", [\&_codes, '\n']]),
                 <<'EOF',
-);
-            })
+');
+            });
         }
         else {
             console.log("clipboard not available");
