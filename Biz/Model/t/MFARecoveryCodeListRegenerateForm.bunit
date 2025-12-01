@@ -51,6 +51,14 @@ FormModel({
         return;
     },
 });
+my($word_list_path) = IO_File()->temp_file(req());
+IO_File()->write($word_list_path, join("\n", map(Biz_Random()->string(8, ['a'..'z']), 1..100)));
+config({
+    'Bivio::Type::MnemonicCode' => {
+        word_list => $word_list_path,
+        word_sample_size => 5,
+    },
+});
 req()->initialize_fully('MFA_RECOVERY_CODE_LIST_REGENERATE_FORM');
 $now = Type_DateTime()->set_test_now(Type_DateTime()->now);
 $totp_secret = Type_TOTPSecret()->generate_secret(Model_UserTOTP()->get_default_algorithm);
