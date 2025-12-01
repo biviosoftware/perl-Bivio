@@ -20,7 +20,7 @@ Bivio::IO::Config->introduce_values({
 Bivio::IO::File->chdir('Util');
 my($user) = "$ENV{USER}\@localhost.localdomain";
 Bivio::Test->unit([
-    'Bivio::Test::Language::HTTP' => [
+    Bivio::Test::Language::HTTP->new => [
         handle_setup => undef,
     ],
     'Bivio::Test::Util' => [
@@ -52,7 +52,7 @@ EOF
             ] => undef,
         ],
     ],
-    'Bivio::Test::Language::HTTP' => [
+    Bivio::Test::Language::HTTP->new => [
         handle_setup => undef,
         verify_local_mail => [
             ["$ENV{USER}+btest_bla\@localhost.localdomain", qr{First message.}i] => undef,

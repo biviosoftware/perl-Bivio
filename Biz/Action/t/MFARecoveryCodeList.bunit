@@ -1,5 +1,13 @@
 # Copyright (c) 2025 bivio Software, Inc.  All Rights Reserved.
 Request();
+my($word_list_path) = IO_File()->temp_file(req());
+IO_File()->write($word_list_path, join("\n", map(Biz_Random()->string(8, ['a'..'z']), 1..100)));
+config({
+    'Bivio::Type::MnemonicCode' => {
+        word_list => $word_list_path,
+        word_sample_size => 5,
+    },
+});
 create_user(random_realm_name());
 my($user) = req(qw(auth_realm owner));
 my($original_codes);
@@ -97,6 +105,7 @@ my($archive_code) = sub {
                 $new_codes = $get_codes->();
                 my($count) = 0;
                 foreach my $code (@$new_codes) {
+                    b_debug($code);
                     b_die('repeat code')
                         if grep($code eq $_, @$original_codes);
                     $count++;
