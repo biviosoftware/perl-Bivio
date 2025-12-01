@@ -23,6 +23,8 @@ my($_DC) = $_CL->map_require('Bivio.DieCode');
 my($_U) = $_CL->map_require('TestUnit.Unit');
 my($_TI) = $_CL->map_require('Agent.TaskId');
 my($_AT) = $_CL->map_require('Agent.Task');
+my($_F) = $_CL->map_require('IO.File');
+my($_R) = $_CL->map_require('Biz.Random');
 my($req) = $_CL->map_require('Test.Request')->initialize_fully;
 $_AT->initialize;
 $req->setup_facade->ignore_redirects(0);
@@ -62,15 +64,15 @@ $_CL->map_require('Bivio.Test')->new({
     }
         [qw(TEST_ITEMS_1 SHELL_UTIL)],
         [qw(TEST_ITEMS_2 LOGIN)],
-         [qw(SHELL_UTIL SITE_ROOT)],
-         [qw(REDIRECT_TEST_1 REDIRECT_TEST_2)],
-         [qw(REDIRECT_TEST_3 REDIRECT_TEST_1)],
-         [qw(REDIRECT_TEST_3 REDIRECT_TEST_2)],
-         [qw(REDIRECT_TEST_4 REDIRECT_TEST_2)],
-         [qw(REDIRECT_TEST_2 FORBIDDEN)],
-         [qw(REDIRECT_TEST_5 SITE_ROOT)],
-         [qw(REDIRECT_TEST_6 REDIRECT_TEST_5)],
-         [qw(TEST_TRANSIENT SITE_ROOT)],
+        [qw(SHELL_UTIL SITE_ROOT)],
+        [qw(REDIRECT_TEST_1 REDIRECT_TEST_2)],
+        [qw(REDIRECT_TEST_3 REDIRECT_TEST_1)],
+        [qw(REDIRECT_TEST_3 REDIRECT_TEST_2)],
+        [qw(REDIRECT_TEST_4 REDIRECT_TEST_2)],
+        [qw(REDIRECT_TEST_2 FORBIDDEN)],
+        [qw(REDIRECT_TEST_5 SITE_ROOT)],
+        [qw(REDIRECT_TEST_6 REDIRECT_TEST_5)],
+        [qw(TEST_TRANSIENT SITE_ROOT)],
     ),
     TEST_TRANSIENT => [
         put_attr_for_test => [
@@ -99,16 +101,22 @@ $_CL->map_require('Bivio.Test')->new({
         get_attr_as_task => [
             next => [$_AT->get_by_id($_TI->REDIRECT_TEST_5)],
         ],
-         execute => [
-             sub {
+        execute => [
+            sub {
+                my($word_list_path) = $_F->temp_file($req);
+                $_F->write($word_list_path, join("\n", map($_R->string, 1..1000)));
                 Bivio::IO::Config->introduce_values({
                     'Bivio::IO::Config' => {
                         is_production => 1,
                     },
+                    'Bivio::Type::MnemonicCode' => {
+                        word_list => $word_list_path,
+                        word_sample_size => 5,
+                    },
                 });
-                 return [$req];
-             } => $_DC->FORBIDDEN,
-         ],
+                return [$req];
+            } => $_DC->FORBIDDEN,
+        ],
     ],
     DEVIANCE_1 => [
          execute => => $_DC->DIE,
