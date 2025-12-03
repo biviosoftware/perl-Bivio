@@ -56,6 +56,7 @@ sub execute_ok {
         method => 'server_redirect',
         task_id => $next,
         no_context => 1,
+        carry_query => 1,
     } if $next;
     return;
 }
