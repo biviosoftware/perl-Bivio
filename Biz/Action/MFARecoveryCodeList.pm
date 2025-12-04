@@ -19,18 +19,19 @@ sub CODE_QUERY_SEPARATOR {
 
 sub execute_refill {
     my($proto, $req) = @_;
-    my($next) = $_AAC->get_next($req);
-    my($res) = $next ? {
-        method => 'server_redirect',
-        task_id => $next,
-        no_context => 1,
-    } : undef;
     my($existing_list) = $_MRCL->new($req)->load_all;
-    return $res || 'next'
-        unless $existing_list->get_result_set_size < $_MRCL->get_refill_threshold;
-    $existing_list->delete;
-    $existing_list->create(_generate_code_array(_new($proto, $req)));
-    return $res;
+    if ($existing_list->get_result_set_size < $_MRCL->get_refill_threshold) {
+        $existing_list->delete;
+        $existing_list->create(_generate_code_array(_new($proto, $req)));
+        return;
+    }
+    my($aac_next) = $_AAC->get_next($req);
+    return {
+        method => 'server_redirect',
+        task_id => $aac_next,
+        carry_query => 1,
+    } if $aac_next;
+    return 'next';
 }
 
 sub execute_preview {
