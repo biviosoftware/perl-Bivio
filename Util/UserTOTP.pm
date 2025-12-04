@@ -9,9 +9,11 @@ my($_T) = b_use('Model.UserTOTP');
 
 sub compute {
     my($self, $secret, $algorithm, $digits, $period, $date_time) = @_;
-    $self->assert_not_general;
     my($m) = $self->model('UserTOTP');
-    $m->unsafe_load;
+    unless ($secret) {
+        $self->assert_not_general;
+        $m->unsafe_load;
+    }
     $secret ||= $m->is_loaded ? $m->get('secret') : ($secret || b_die('no secret'));
     $algorithm ||= $m->is_loaded ? $m->get('algorithm') : $_T->get_default_algorithm;
     $digits ||= $m->is_loaded ? $m->get('digits') : $_T->get_default_digits;
