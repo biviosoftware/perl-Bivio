@@ -33,9 +33,15 @@ FormModel({
         return;
     },
 });
+my($word_list_path) = IO_File()->temp_file(req());
+IO_File()->write($word_list_path, join("\n", map(Biz_Random()->string(8, ['a'..'z']), 1..100)));
 config({
     'Bivio::Biz::Model::LoginAttempt' => {
         locked_out_failure_count => 2,
+    },
+    'Bivio::Type::MnemonicCode' => {
+        word_list => $word_list_path,
+        word_sample_size => 5,
     },
 });
 $next_time_step->(0);
