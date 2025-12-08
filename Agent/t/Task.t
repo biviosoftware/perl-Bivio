@@ -104,7 +104,7 @@ $_CL->map_require('Bivio.Test')->new({
         execute => [
             sub {
                 my($word_list_path) = $_F->temp_file($req);
-                $_F->write($word_list_path, join("\n", map($_R->string, 1..1000)));
+                $_F->write($word_list_path, join("\n", map($_R->string(8, ['a'..'z']), 1..1000)));
                 Bivio::IO::Config->introduce_values({
                     'Bivio::IO::Config' => {
                         is_production => 1,
