@@ -2366,7 +2366,7 @@ EOF
                 USER_ENABLE_TOTP_FORM => 'Set Up Two-Factor Authentication',
                 USER_DISABLE_TOTP_FORM => 'Disable Two-Factor Authentication',
                 MFA_RECOVERY_CODE_LIST_REFILL_FORM => 'New Authenticator Recovery Codes',
-                MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Create New Authenticator Recovery Codes',
+                MFA_RECOVERY_CODE_LIST_REGENERATE_FORM => 'Prose(If([qw(->ureq Model.MFARecoveryCodeList)], q(New Authenticator Recovery Codes Created), q(Create New Authenticator Recovery Codes)));',
                 MFA_RECOVERY_CODE_LIST_PRINT => 'Authenticator Recovery Codes',
             ]],
             [acknowledgement => [
