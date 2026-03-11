@@ -120,7 +120,10 @@ sub handle_config {
             $cipher->{$field} = $_DEFAULT_VALUES->{$field};
         }
     }
-    _init_cipher() if $ENV{MOD_PERL};
+    return
+        if ref(_default_cipher()->{key});
+    _init_cipher()
+        if $ENV{MOD_PERL};
     return;
 }
 
