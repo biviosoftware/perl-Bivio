@@ -1543,6 +1543,7 @@ sub info_user_auth {
             USER
             ANYBODY
             Action.AccessChallenge->execute_password_reset
+            Action.EmptyReply
             plain_task=USER_PASSWORD
             password_task=USER_PASSWORD
             totp_task=USER_LOGIN_TOTP_FORM
