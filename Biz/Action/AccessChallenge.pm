@@ -145,6 +145,9 @@ sub execute_assert_escalation_if_mfa {
 
 sub execute_password_reset {
     my($proto, $req) = @_;
+    # Don't use access code if called by link-checker or other HEAD request
+    return
+        if $req->is_http_method('HEAD');
     my($query_key) = delete(($req->get('query') || {})->{$_PASSWORD_QUERY_KEY});
     my($u) = $req->get_nested(qw(auth_realm owner));
     my($res);
