@@ -1161,11 +1161,14 @@ sub visit_realm_folder {
 }
 
 sub visit_uri {
-    my($self, $uri) = @_;
+    my($self, $uri, $method) = @_;
+    $method ||= 'GET';
+    b_die('unexpected method')
+        unless $method =~ qr/(GET|HEAD)/;
     # Loads the page using the specified URI.
     _trace($uri) if $_TRACE;
 #TODO: No referer when we are visiting
-    _send_request($self, HTTP::Request->new(GET => $self->absolute_uri($uri)));
+    _send_request($self, HTTP::Request->new($method => $self->absolute_uri($uri)));
     return;
 }
 
