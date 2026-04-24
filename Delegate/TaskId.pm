@@ -1524,7 +1524,7 @@ sub info_user_auth {
             ANYBODY
             Model.UserPasswordQueryForm
             View.UserAuth->password_query
-            reset_task=USER_PASSWORD_RESET
+            reset_task=USER_PASSWORD_RESET_CONFIRM
             next=GENERAL_USER_PASSWORD_QUERY_MAIL
             cancel=SITE_ROOT
         )],
@@ -1543,7 +1543,6 @@ sub info_user_auth {
             USER
             ANYBODY
             Action.AccessChallenge->execute_password_reset
-            Action.EmptyReply
             plain_task=USER_PASSWORD
             password_task=USER_PASSWORD
             totp_task=USER_LOGIN_TOTP_FORM
@@ -1582,6 +1581,18 @@ sub info_user_auth {
             ANYBODY
             Action.JSONReply->execute_check_req_is_json
             View.UserAuth->missing_cookies
+        )],
+        [qw(
+            USER_PASSWORD_RESET_CONFIRM
+            240
+            USER
+            ANYBODY
+            Action.AccessChallenge->execute_password_reset_access_code
+            Model.UserPasswordResetConfirmForm
+            View.UserAuth->password_reset_confirm
+            next=USER_PASSWORD_RESET
+            NOT_FOUND=GENERAL_USER_PASSWORD_QUERY
+            require_secure=1
         )],
         [qw(
             GENERAL_CONTACT
@@ -1623,7 +1634,7 @@ sub info_user_auth {
             View.UserAuth->create
             next=USER_CREATE_DONE
             cancel=SITE_ROOT
-            reset_task=USER_PASSWORD_RESET
+            reset_task=USER_PASSWORD_RESET_CONFIRM
             user_exists_task=GENERAL_USER_PASSWORD_QUERY
             reset_next_task=GENERAL_USER_PASSWORD_QUERY_MAIL
             require_secure=1
