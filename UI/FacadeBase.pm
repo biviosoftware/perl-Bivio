@@ -1988,6 +1988,7 @@ sub _cfg_user_auth {
             [GENERAL_USER_PASSWORD_QUERY_MAIL => undef],
             [GENERAL_USER_PASSWORD_QUERY_ACK => undef],
             [GENERAL_USER_LOCKED_OUT => undef],
+            [USER_PASSWORD_RESET_CONFIRM => '?/new-password-confirm'],
             [USER_PASSWORD_RESET => '?/new-password'],
             [USER_PASSWORD => '?/password'],
             [USER_SETTINGS_FORM => '?/settings'],
@@ -2048,6 +2049,9 @@ sub _cfg_user_auth {
             [UserPasswordQueryForm => [
                 ok_button => 'Reset Password',
             ]],
+            [UserPasswordResetConfirmForm => [
+                ok_button => 'Continue',
+            ]],
             [ContactForm => [
                 from => 'Your Email',
                 text => 'Message',
@@ -2056,7 +2060,7 @@ sub _cfg_user_auth {
             [acknowledgement => [
                 user_exists => 'Your email is already in the database.  Please use the form below to reset your password or recover your account.',
                 GENERAL_USER_PASSWORD_QUERY => q{An email has been sent to String([qw(Model.UserPasswordQueryForm Email.email)]); with a link to update your password.},
-                USER_PASSWORD_RESET => q{Your may now update your password.},
+                USER_PASSWORD_RESET => q{You may now update your password.},
                 USER_PASSWORD => q{Your password has been changed.},
                 [qw(password_nak password_query_mfa_challenge_nak)] => q{We're sorry, but the "vs_text('xlink.GENERAL_USER_PASSWORD_QUERY');" link you clicked is no longer valid.  You will need to submit the forgot password form again.},
                 login_mfa_challenge_nak => q{We're sorry, but the login attempt is no longer valid. Please try again.},
@@ -2070,6 +2074,7 @@ sub _cfg_user_auth {
             ]],
             [title => [
                 GENERAL_USER_PASSWORD_QUERY => 'Password Assistance',
+                USER_PASSWORD_RESET_CONFIRM => 'Click Continue to Reset Your Password',
                 USER_CREATE_DONE => 'Registration Email Sent',
                 USER_EMAIL_VERIFY => 'Verify Email Address',
                 USER_EMAIL_VERIFY_FORCE_FORM => 'Force Verify Email Address',

@@ -178,6 +178,10 @@ sub password_query {
     ]));
 }
 
+sub password_reset_confirm {
+    return shift->internal_body(vs_simple_form(UserPasswordResetConfirmForm => []));
+}
+
 sub password_query_ack {
     return shift->internal_body('');
 }

@@ -145,26 +145,15 @@ sub execute_assert_escalation_if_mfa {
 
 sub execute_password_reset {
     my($proto, $req) = @_;
-    # Don't use access code if called by link-checker or other HEAD request
-    return
-        if $req->is_http_method('HEAD');
-    my($query_key) = delete(($req->get('query') || {})->{$_PASSWORD_QUERY_KEY});
     my($u) = $req->get_nested(qw(auth_realm owner));
-    my($res);
+    my($uac);
     my($die) = Bivio::Die->catch(sub {
-        b_die('no query key')
-            unless $query_key;
-        my($err);
-        ($query_key, $err) = $_TAC->PASSWORD_QUERY->from_literal_for_type($query_key);
-        b_die('invalid query key')
-            if $err;
-        my($uac) = _unauth_load($proto, $req, $query_key, {
-            user_id => $u->get('realm_id'),
-            type => $_TAC->PASSWORD_QUERY,
-            status => $_TACS->ACTIVE,
-        });
+        # Get access code from request as loaded by execute_password_reset_access_code used by
+        # UserPasswordResetConfirmForm (not query) so that confirmation is required and reset won't
+        # work by going to reset task directly.
+        $uac = $req->req('Model.UserAccessCode');
         b_die('invalid or expired')
-            unless $uac;
+            unless $uac->get('status')->eq_active && !$uac->is_expired;
         $uac->update({status => $_TACS->USED});
         Bivio::Biz::Model->get_instance('UserLoginForm')->execute($req, {
             realm_owner => $u,
@@ -177,11 +166,7 @@ sub execute_password_reset {
     if ($die) {
         $die->throw
             if $die->get('code')->eq_missing_cookies;
-        _put_ack($proto, $req, 'password_nak');
-        Bivio::Die->throw(NOT_FOUND => {
-            entity => $query_key,
-            realm => $u,
-        });
+        _password_reset_die($proto, $req, $u, $uac, $die);
     }
     _put_ack($proto, $req);
     return $proto->do_plain_or_mfa($u, sub {
@@ -192,6 +177,27 @@ sub execute_password_reset {
         $proto->put_next($req, $req->req('task')->get_attr_as_id('password_task')->get_name);
         return;
     }, 1);
+}
+
+sub execute_password_reset_access_code {
+    my($proto, $req) = @_;
+    my($query_key) = ($req->get('query') || {})->{$_PASSWORD_QUERY_KEY};
+    my($u) = $req->get_nested(qw(auth_realm owner));
+    _password_reset_die($proto, $req, $u, $query_key, 'no query key')
+        unless $query_key;
+    my($err);
+    ($query_key, $err) = $_TAC->PASSWORD_QUERY->from_literal_for_type($query_key);
+    _password_reset_die($proto, $req, $u, $query_key, 'bad query key')
+        if $err;
+    my($uac) = _unauth_load($proto, $req, $query_key, {
+        user_id => $u->get('realm_id'),
+        type => $_TAC->PASSWORD_QUERY,
+        status => $_TACS->ACTIVE,
+    });
+    _password_reset_die($proto, $req, $u, $query_key, 'no user acess code')
+        unless $uac;
+    $uac->put_on_request(1);
+    return;
 }
 
 sub format_password_query_uri {
@@ -294,6 +300,17 @@ sub _load {
     _put_req($proto, $req, $uac)
         if $uac;
     return $uac;
+}
+
+sub _password_reset_die {
+    my($proto, $req, $realm, $entity, $context) = @_;
+    _put_ack($proto, $req, 'password_nak');
+    Bivio::Die->throw(NOT_FOUND => {
+        entity => $entity,
+        realm => $realm,
+        context => $context,
+    });
+    # DOES NOT RETURN
 }
 
 sub _put_ack {
