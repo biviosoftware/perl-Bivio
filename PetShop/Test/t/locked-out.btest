@@ -53,6 +53,8 @@ submit_form('Reset Password' => {
 verify_text(qr{An email has been sent to.*\Q$e});
 my($uri) = extract_uri_from_local_mail($e, qr{password assistance}i);
 visit_uri($uri);
+verify_text(qr/click continue to reset/i);
+submit_form('Continue');
 submit_form(Change => {
     'New Password:' => 'password',
     'Re-enter New Password:' => 'password',

@@ -168,6 +168,9 @@ verify_text(qr{An email has been sent to.*\Q$e});
 my($uri) = extract_uri_from_local_mail($e, 'password');
 visit_uri($uri);
 verify_no_text(qr/(sign-out|\blogout\b)/i);
+verify_text(qr/click continue to reset/i);
+submit_form('Continue');
+verify_no_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/authenticator code/i);
 submit_form({
     authenticator_code => $compute_totp_code->(30, $totp_setup_key),
@@ -194,6 +197,9 @@ submit_form({
 verify_text(qr{An email has been sent to.*\Q$e});
 $uri = extract_uri_from_local_mail($e, 'password');
 visit_uri($uri);
+verify_no_text(qr/(sign-out|\blogout\b)/i);
+verify_text(qr/click continue to reset/i);
+submit_form('Continue');
 verify_no_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/authenticator code/i);
 submit_form({
@@ -229,6 +235,7 @@ $uri = extract_uri_from_local_mail($e, 'password');
 $add_seconds->(3 * 60 * 60);
 visit_uri($uri);
 verify_text('no longer valid');
+verify_no_text(qr/click continue to reset/i);
 verify_no_text(qr/(sign-out|\blogout\b)/i);
 home_page();
 login_as('root');

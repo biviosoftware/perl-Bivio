@@ -1,5 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2026 bivio Software, Inc.  All Rights Reserved.
 test_setup('PetShop', 'groupware');
 home_page();
 follow_link(qw(register login));
@@ -34,6 +33,8 @@ submit_form({
     email => my $u = generate_local_email($r),
 });
 follow_link_in_mail($u);
+verify_text(qr/click continue to reset/i);
+submit_form('Continue');
 submit_form({
     '^new' => default_password(),
     enter => default_password(),
