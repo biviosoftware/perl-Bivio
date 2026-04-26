@@ -115,6 +115,7 @@ sub create_user {
         name => $n,
     });
     $self->follow_link_in_mail($e);
+    $self->submit_form('Continue');
     $self->submit_form({
         '^new' => $self->default_password,
         '^re-en' => $self->default_password,
