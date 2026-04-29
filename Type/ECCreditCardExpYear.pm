@@ -1,5 +1,4 @@
-# Copyright (c) 2000 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2026 bivio Software, Inc.  All rights reserved.
 package Bivio::Type::ECCreditCardExpYear;
 use strict;
 use Bivio::Base 'Type.Enum';
@@ -9,11 +8,11 @@ use Bivio::Base 'Type.Enum';
 my($_D) = __PACKAGE__->use('Type.Date');
 my($_NOW) = $_D->get_part($_D->now, 'year');
 
-# 10 year window from current year forward, ex. (Y2004 => [2004, 2004])
+# 20 year window from current year forward, ex. (Y2004 => [2004, 2004])
 __PACKAGE__->compile([
     map({
         ("Y$_" => [$_, $_]),
-    } ($_NOW .. $_NOW + 9)),
+    } ($_NOW .. $_NOW + 20)),
 ]);
 
 1;
