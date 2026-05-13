@@ -4,9 +4,9 @@ use strict;
 use Bivio::Base 'Type.SecretLine';
 
 my($_A) = b_use('Type.TOTPAlgorithm');
+my($_R) = b_use('Biz.Random');
 my($_TE) = b_use('Bivio.TypeError');
 my($_CHARS) = ['a'..'z', 'A'..'Z', '0'..'9'];
-my($_CHARS_INDEX_MAX) = int(@$_CHARS) - 1;
 
 sub from_literal {
     my($proto, $value) = @_;
@@ -21,11 +21,7 @@ sub from_literal {
 
 sub generate_secret {
     my($proto, $algorithm) = @_;
-    my($s) = '';
-    for (1..$algorithm->get_secret_byte_count) {
-        $s .= $_CHARS->[int(rand($_CHARS_INDEX_MAX) + 0.5)];
-    }
-    return $s;
+    return $_R->string($algorithm->get_secret_byte_count, $_CHARS);
 }
 
 1;

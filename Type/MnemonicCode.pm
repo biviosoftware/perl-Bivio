@@ -5,6 +5,7 @@ use Bivio::Base 'Type.SecretLine';
 
 my($_F) = b_use('IO.File');
 my($_MCA) = b_use('Type.MnemonicCodeArray');
+my($_R) = b_use('Biz.Random');
 my($_TE) = b_use('Bivio.TypeError');
 
 my($_WORDS);
@@ -24,7 +25,7 @@ sub generate_code {
     my($proto) = @_;
     my($w) = {};
     for (1..$_CFG->{word_sample_size}) {
-        my($i) = int(rand(int(@$_WORDS)));
+        my($i) = $_R->integer(int(@$_WORDS));
         redo
             if defined($w->{$i});
         $w->{$i} = int(keys(%$w));
