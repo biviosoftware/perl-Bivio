@@ -2352,7 +2352,7 @@ EOF
                 prose => [
                     prologue => <<'EOF',
 Join([
-    'Are you sure you want to create new your authenticator recovery codes?',
+    'Are you sure you want to create new authenticator recovery codes?',
     BR(), BR(),
     'Any existing recovery codes will no longer be available.',
     BR(), BR(),
