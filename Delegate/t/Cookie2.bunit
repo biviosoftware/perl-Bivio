@@ -38,7 +38,7 @@ req('r')->test_bean_register_callback(
             } => sub {
                 assert_equals(1, scalar(@$cookies));
                 b_die($cookies, ': no match')
-                    unless $cookies->[0] =~ m{^TAG4=(.+?); path=/; domain=.bivio.biz; max-age};
+                    unless $cookies->[0] =~ m{^TAG4=(.+?); path=/; domain=.bivio.biz; max-age=.*; HttpOnly; SameSite=Lax(?:;|$)};
                 $encrypted = $1;
                 $cookies = [];
                 return [1];
@@ -61,7 +61,11 @@ req('r')->test_bean_register_callback(
                     [2, 2],
                 ) {
                     assert_equals($x->[1], scalar(grep(/TAG$x->[0]=;/, @$cookies)));
-                    }
+                }
+                foreach my $c (@$cookies) {
+                    b_die($c, ': missing SameSite=Lax')
+                        unless $c =~ m{; SameSite=Lax(?:;|$)};
+                }
                 $cookies = [];
                     return [1];
                 }

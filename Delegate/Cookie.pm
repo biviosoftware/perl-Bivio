@@ -97,7 +97,7 @@ sub header_out {
     chop($clear_text);
     my($value) = $_CFG->{tag}
         . '=' . $_S->encrypt_http_base64($clear_text)
-        . $p . '; HttpOnly'
+        . $p . '; HttpOnly; SameSite=Lax'
         . ($req->agent_execution_is_secure ? '; Secure' : '');
     _trace($value) if $_TRACE;
     $req->get('reply')->send_append_header($r, 'Set-Cookie', $value);
@@ -162,7 +162,7 @@ sub _clear_prior_tags {
             $req->get('reply')->send_append_header(
                 $r,
                 'Set-Cookie',
-                "$tag=; path=/; max-age=0"
+                "$tag=; path=/; max-age=0; SameSite=Lax"
                     . ($d ? "; domain=$d" : ''),
             );
         }
