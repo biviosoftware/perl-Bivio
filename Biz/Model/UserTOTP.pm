@@ -5,6 +5,7 @@ use Bivio::Base 'Model.RealmBase';
 
 my($_DT) = b_use('Type.DateTime');
 my($_RFC6238) = b_use('Biz.RFC6238');
+my($_SC) = b_use('Biz.SecureCompare');
 my($_TA) = b_use('Type.TOTPAlgorithm');
 my($_TD) = b_use('Type.TOTPDigits');
 my($_TP) = b_use('Type.TOTPPeriod');
@@ -138,7 +139,8 @@ sub _code_valid_for_time_step {
     my($code, $algorithm, $digits, $secret, $time_step) = @_;
     b_die('missing arguments')
         unless $code && $algorithm && $digits && $secret && $time_step;
-    return $code eq $_RFC6238->compute($algorithm->get_name, $digits, $secret, $time_step) ? 1 : 0;
+    return $_SC->is_equal(
+        $code, $_RFC6238->compute($algorithm->get_name, $digits, $secret, $time_step));
 }
 
 1;

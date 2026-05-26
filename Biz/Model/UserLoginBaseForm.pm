@@ -11,6 +11,7 @@ my($_DT) = b_use('Type.DateTime');
 my($_LAS) = b_use('Type.LoginAttemptState');
 my($_MM) = b_use('Type.MFAMethod');
 my($_R) = b_use('Biz.Random');
+my($_SC) = b_use('Biz.SecureCompare');
 my($_TAC) = b_use('Type.AccessCode');
 my($_TACS) = b_use('Type.AccessCodeStatus');
 
@@ -377,7 +378,7 @@ sub _validate_cookie_password {
     my($passwd, $auth_user) = @_;
     return $auth_user->require_otp
         ? $auth_user->new_other('OTP')->validate_password($passwd, $auth_user)
-        : $passwd eq $auth_user->get('password') ? 1 : 0;
+        : $_SC->is_equal($passwd, $auth_user->get('password'));
 }
 
 sub _validate_login_attempt {
