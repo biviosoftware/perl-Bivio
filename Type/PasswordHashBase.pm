@@ -4,6 +4,7 @@ use strict;
 use Bivio::Base 'Type.SyntacticString';
 
 my($_IDI) = __PACKAGE__->instance_data_index;
+my($_SC) = b_use('Biz.SecureCompare');
 my(@_SALT_CHARS) = (
     'a'..'z',
     'A'..'Z',
@@ -30,7 +31,8 @@ sub as_literal {
 
 sub compare {
     my($self, $clear_text) = @_;
-    return $self->as_literal cmp $self->to_literal($clear_text, $self->get_salt);
+    return $_SC->is_equal($self->as_literal, $self->to_literal($clear_text, $self->get_salt))
+        ? 0 : 1;
 }
 
 sub get_id {

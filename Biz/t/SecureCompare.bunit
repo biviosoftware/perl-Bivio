@@ -1,0 +1,17 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+[
+    class() => [
+        is_equal => [
+            ['abc', 'abc'] => 1,
+            ['abc', 'abd'] => 0,
+            ['abc', 'ab'] => 0,
+            ['abc', 'abcd'] => 0,
+            ['', ''] => 1,
+            [undef, 'abc'] => 0,
+            ['abc', undef] => 0,
+            [undef, undef] => 0,
+            ["\0\0", "\0\0"] => 1,
+            ["\0\0", "\0\1"] => 0,
+        ],
+    ],
+];
