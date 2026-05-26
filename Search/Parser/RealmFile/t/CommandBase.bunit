@@ -1,0 +1,39 @@
+# Copyright (c) 2026 bivio Software, Inc.  All Rights Reserved.
+# Regression test: realm file paths containing shell metacharacters must not
+# be expanded/executed by the shell when interpolated into a parser command.
+# Parent must load first or _handler_map re-enters CommandBase mid-load.
+b_use('SearchParser.RealmFile');
+{
+    package MockParseable;
+    sub new { my($class, $path) = @_; bless({path => $path}, $class) }
+    sub get_os_path { return shift->{path} }
+}
+
+my($mp) = sub {MockParseable->new(shift)};
+
+[
+    class() => [
+        internal_run_parser => [
+            # Sanity: ordinary path round-trips unchanged.
+            ['echo <path>', $mp->('safe.txt')] => "safe.txt\n",
+            # $(...)  - if unquoted, shell would substitute to empty string.
+            ['echo <path>', $mp->('evil$(echo PWNED).txt')]
+                => "evil\$(echo PWNED).txt\n",
+            # Backticks - same threat as $(...).
+            ['echo <path>', $mp->('evil`echo PWNED`.txt')]
+                => "evil`echo PWNED`.txt\n",
+            # Semicolon - if unquoted, would run a second command.
+            ['echo <path>', $mp->('a.txt;echo INJECTED')]
+                => "a.txt;echo INJECTED\n",
+            # Embedded single quote - must survive the '\'' escape.
+            ['echo <path>', $mp->("o'malley.txt")] => "o'malley.txt\n",
+            # Combination: single quote plus $(...) - both must be neutralized.
+            ['echo <path>', $mp->("a'\$(echo PWNED).txt")]
+                => "a'\$(echo PWNED).txt\n",
+            # Whitespace - must stay one argument to echo.
+            ['echo <path>', $mp->('two words.txt')] => "two words.txt\n",
+            # Glob characters - must not be expanded against the filesystem.
+            ['echo <path>', $mp->('star*.txt')] => "star*.txt\n",
+        ],
+    ],
+];

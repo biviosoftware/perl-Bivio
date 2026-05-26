@@ -38,8 +38,12 @@ sub internal_run_parser {
     my($proto, $cmd, $parseable, $error_pattern) = @_;
     my($out);
     my($path) = $parseable->get_os_path;
+    # $path can come from an uploaded RealmFile name; FilePath's ILLEGAL_CHAR_REGEXP
+    # allows shell metacharacters ($, `, ;, &, (), space).  piped_exec on a string
+    # routes through /bin/sh, so we single-quote the path to prevent injection.
+    my($quoted_path) = "'" . ($path =~ s/'/'\\''/gr) . "'";
     b_die($cmd, ': missing <path>')
-        unless $cmd =~ s/<path>/$path/g;
+        unless $cmd =~ s/<path>/$quoted_path/g;
     my($die) = $_D->catch_quietly(sub {$out = $_SU->piped_exec($cmd)});
     if ($die || !defined($out) || ($error_pattern && $$out =~ $error_pattern)) {
         b_warn($cmd, ': ', $die ? $die->get('attrs') : ($out || 'no output'));
