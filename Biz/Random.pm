@@ -7,22 +7,17 @@ use Bivio::MIME::Base64;
 use IO::File ();
 
 my($_DEV) = -r '/dev/urandom' ? '/dev/urandom'
-    : -r '/dev/random' ? '/dev/random' : undef;
+    : -r '/dev/random' ? '/dev/random'
+    : __PACKAGE__->die('no random device available');
 
 sub bytes {
     my($proto, $length) = @_;
     $length = b_use('Type.Integer')->from_literal_or_die($length);
     my($f, $res);
-    return $_DEV
-        ? ($f = IO::File->new("< $_DEV"))
-            && defined($f->sysread($res, $length))
-            && defined($f->close)
-            ? $res : $proto->die("$_DEV: $!")
-        : substr(
-            pack('L', int(rand(0xffffffff))) x int(($length + 3)/4),
-            0,
-            $length,
-        );
+    return ($f = IO::File->new("< $_DEV"))
+        && defined($f->sysread($res, $length))
+        && defined($f->close)
+        ? $res : $proto->die("$_DEV: $!");
 }
 
 sub hex_digits {
