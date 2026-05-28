@@ -1,13 +1,14 @@
-# Copyright (c) 1999-2023 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2026 bivio Software, Inc.  All rights reserved.
 package Bivio::Type::Password;
 use strict;
 use Bivio::Base 'Type.Line';
 
-my($_HMACSHA512) = b_use('Type.PasswordHashHMACSHA512');
+my($_ARGON2ID) = b_use('Type.PasswordHashArgon2ID');
 my($_HASH_TYPES) = [
+    $_ARGON2ID,
+    b_use('Type.PasswordHashHMACSHA512'),
     b_use('Type.PasswordHashCrypt'),
     b_use('Type.PasswordHashHMACSHA1'),
-    $_HMACSHA512,
 ];
 my($_SUPPORTED_HASH_TYPE) = {map(($_ => 1), @$_HASH_TYPES)};
 
@@ -15,7 +16,7 @@ my($_SUPPORTED_HASH_TYPE) = {map(($_ => 1), @$_HASH_TYPES)};
 # It should be handled with care, e.g. never displayed to user.
 
 sub CURRENT_HASH_TYPE {
-    return $_HMACSHA512,
+    return $_ARGON2ID,
 }
 
 sub INVALID {
