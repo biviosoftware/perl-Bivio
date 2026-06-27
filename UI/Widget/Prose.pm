@@ -1,5 +1,4 @@
-# Copyright (c) 2000-2006 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2000-2026 bivio Software, Inc.  All rights reserved.
 package Bivio::UI::Widget::Prose;
 use strict;
 use Bivio::Base 'Bivio::UI::Widget';
@@ -102,12 +101,19 @@ sub internal_new_args {
 
 sub render {
     my($self, $source, $buffer) = @_;
-    ($self->unsafe_get('_join') || $self->initialize_value(
+    if (my $join = $self->unsafe_get('_join')) {
+        $join->render($source, $buffer);
+        return;
+    }
+    # Dynamic value: fresh Join each render. The marker is set here, not just in render_transient,
+    # because the tree is built during initialize_value below.
+    local($Bivio::UI::Widget::_IN_VALUE_RESOLVE) = 1;
+    $self->initialize_value(
         'value',
         Bivio::UI::Widget::Join->new(
             _parse($self->render_simple_attr('value', $source)),
         ),
-    ))->render($source, $buffer);
+    )->render_transient($source, $buffer);
     return;
 }
 

@@ -1,5 +1,4 @@
-# Copyright (c) 2018 Bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2018-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::XHTML::Widget::OpenGraphHead;
 use strict;
 use Bivio::Base 'XHTMLWidget.ControlBase';
@@ -34,7 +33,7 @@ sub control_on_render {
             }),
             sort(keys(%$p)),
         ),
-    ])->initialize_and_render($source, $buffer);
+    ])->render_transient($source, $buffer);
     return;
 }
 
