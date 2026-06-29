@@ -1,4 +1,5 @@
-# Copyright (c) 2001-2026 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2001-2010 bivio Software, Inc.  All rights reserved.
+# $Id$
 package Bivio::UI::HTML::Widget::SourceCode;
 use strict;
 use Bivio::Base 'UI.Widget';
@@ -58,7 +59,7 @@ sub render {
     $lines =~ s{<pre[^>]*}{<div class="b_literal"}ig;
     $lines =~ s{</pre>}{</div>}ig;
     DIV_b_source_code_title(String($package))
-        ->render_transient($req, $buffer);
+        ->initialize_and_render($req, $buffer);
     $$buffer .= $lines;
     return;
 }
@@ -73,7 +74,7 @@ sub render_source_link {
                ? $source->as_classloader_map_name : $source,
             $method ? (anchor => $method) : (),
         }),
-    )->render_transient($req, $buffer);
+    )->initialize_and_render($req, $buffer);
     return;
 }
 

@@ -1,4 +1,5 @@
-# Copyright (c) 1999-2026 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
+# $Id$
 package Bivio::UI::Widget;
 use strict;
 use Bivio::Base 'Collection.Attributes';
@@ -137,8 +138,6 @@ my($_A) = b_use('IO.Alert');
 my($_V1) = b_use('IO.Config')->if_version(1);
 my($_CL) = b_use('IO.ClassLoader');
 my($_WO) = b_use('UI.WidgetOutput');
-# Marks widgets built during a transient render (see b_widget_label, render_transient).
-our($_IN_VALUE_RESOLVE);
 
 sub accepts_attribute {
     # Does the widget accept this attribute?
@@ -165,8 +164,6 @@ sub b_widget_label {
     }
     $self->put_unless_exists(b_widget_calling_context => $calling_context)
         if $calling_context;
-    $self->put(b_widget_is_transient => 1)
-        if $_IN_VALUE_RESOLVE;
     return $self;
 }
 
@@ -247,18 +244,6 @@ sub initialize_with_parent {
     my($self, $parent, $source) = @_;
     $self->put(parent => $parent)->initialize($source)
         unless $self->has_keys('parent');
-    return $self;
-}
-
-sub render_transient {
-    my($self, $source, $buffer) = @_;
-    # Renders a throwaway widget and breaks its reference cycle; without this it leaks, since the
-    # codebase uses no weaken.
-    local($_IN_VALUE_RESOLVE) = 1;
-    $self->initialize_with_parent(undef, $source)
-        unless $self->has_keys('parent');
-    $self->render($source, $buffer);
-    _clear_render_cycle($self, {});
     return $self;
 }
 
@@ -420,24 +405,11 @@ sub unsafe_render_value {
     my($proto, $attr_name, $value, $source, $buffer) = @_;
     return 0
         unless defined($value);
-    # Only array_ref specs can build a fresh widget, so only arm the marker then; common
-    # non-widget renders stay cheap.
-    my($is_spec) = ref($value) eq 'ARRAY';
-    $value = $is_spec
-        ? do {
-            local($_IN_VALUE_RESOLVE) = 1;
-            $proto->unsafe_resolve_widget_value($value, $source);
-        }
-        : $proto->unsafe_resolve_widget_value($value, $source);
+    $value = $proto->unsafe_resolve_widget_value($value, $source);
     return 0
         unless defined($value);
     if (__PACKAGE__->is_blesser_of($value)) {
-        # Only check for transient when one is possible: freshly built from a spec, or a stored
-        # child reached during a transient render (e.g. XLinkLabel).
-        ($is_spec || $_IN_VALUE_RESOLVE)
-            && $value->unsafe_get('b_widget_is_transient')
-            ? $value->render_transient($source, $buffer)
-            : $value->initialize_and_render($source, $buffer);
+        $value->initialize_and_render($source, $buffer);
     }
 # removed until all director widgets are fixed up
 #    elsif (ref($value) && UNIVERSAL::can($value, 'as_string')) {
@@ -487,28 +459,6 @@ sub _label {
         b_use('UI.ViewLanguageAUTOLOAD')->unsafe_calling_context
             || b_use('UI.ViewLanguageAUTOLOAD')->widget_new_calling_context,
     ];
-}
-
-sub _clear_render_cycle {
-    my($w, $seen) = @_;
-    # Deletes only the parent pointers, not the whole widget: a widget reached here may be a
-    # reused/cached one merely parented into this tree, so destroying its data would corrupt the
-    # next render.  parent == $w restricts this to children parented into this tree.
-    return
-        if $seen->{$w}++ || $w->is_read_only;
-    foreach my $v (values(%{$w->get_shallow_copy})) {
-        next
-            unless ref($v);
-        foreach my $o (
-            ref($v) eq 'ARRAY' ? @$v : ref($v) eq 'HASH' ? values(%$v) : $v,
-        ) {
-            _clear_render_cycle($o, $seen)
-                if $w->is_blesser_of($o, 'Bivio::UI::Widget')
-                && ($o->unsafe_get('parent') || 0) == $w;
-        }
-    }
-    $w->delete(qw(parent view_parent));
-    return;
 }
 
 sub _resolve_attr {

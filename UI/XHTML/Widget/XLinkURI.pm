@@ -1,4 +1,5 @@
-# Copyright (c) 2011-2026 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
+# $Id$
 package Bivio::UI::XHTML::Widget::XLinkURI;
 use strict;
 use Bivio::Base 'UI.Widget';
@@ -12,8 +13,25 @@ sub NEW_ARGS {
 
 sub initialize {
     my($self) = @_;
-    $self->initialize_attr('facade_label');
-    return shift->SUPER::initialize(@_);
+    my($l) = $self->initialize_attr('facade_label');
+    $self->initialize_attr(_uri =>
+        $_TI->is_valid_name($l) ? URI({
+            task_id => $_TI->from_name($l),
+            query => undef,
+            path_info => undef,
+        }) : [sub {
+            my($source) = @_;
+            my($req) = $self->req;
+            return URI(
+                vs_constant(
+                    $req,
+                    $self->qualify_label(
+                        $self->render_simple_attr(facade_label => $req)),
+                ),
+            );
+        }],
+    );
+    return;
 }
 
 sub qualify_label {
@@ -22,18 +40,7 @@ sub qualify_label {
 }
 
 sub render {
-    my($self, $source, $buffer) = @_;
-    # Build the URI transiently rather than storing it on $self: a stored value
-    # whose code_ref captures $self forms a cycle that leaks per render.
-    my($l) = $self->render_simple_attr('facade_label', $source);
-    ($_TI->is_valid_name($l)
-        ? URI({
-            task_id => $_TI->from_name($l),
-            query => undef,
-            path_info => undef,
-        })
-        : URI(vs_constant($source->req, $self->qualify_label($l)))
-    )->render_transient($source, $buffer);
+    shift->render_attr(_uri => @_);
     return;
 }
 

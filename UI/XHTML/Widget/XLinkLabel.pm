@@ -1,4 +1,5 @@
-# Copyright (c) 2008-2026 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
+# $Id$
 package Bivio::UI::XHTML::Widget::XLinkLabel;
 use strict;
 use Bivio::Base 'XHTMLWidget.Simple';
@@ -10,16 +11,22 @@ sub qualify_label {
     return "xlink.$label";
 }
 
-sub render {
-    my($self, $source, $buffer) = @_;
-    # Build the Prose transiently rather than storing it on $self: a stored
-    # Prose whose code_ref captures $self forms a cycle that leaks per render.
-    Prose([sub {
+sub initialize {
+    my($self) = @_;
+    $self->initialize_attr(_prose => Prose([sub {
+        my($source) = @_;
         return vs_text(
-            $_[0]->req,
-            $self->qualify_label($self->render_simple_attr('value', $_[0])),
+            $source->req,
+            $self->qualify_label(
+                $self->render_simple_attr('value', $source),
+            ),
         );
-    }])->render_transient($source, $buffer);
+    }]));
+    return shift->SUPER::initialize(@_);
+}
+
+sub render {
+    shift->render_attr(_prose => @_);
     return;
 }
 
