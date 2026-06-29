@@ -1,9 +1,9 @@
-# Copyright (c) 2011 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2011-2026 bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::XHTML::Widget::XLinkURI;
 use strict;
 use Bivio::Base 'UI.Widget';
 use Bivio::UI::ViewLanguageAUTOLOAD;
+use Scalar::Util ();
 
 my($_TI) = b_use('Agent.TaskId');
 
@@ -19,17 +19,20 @@ sub initialize {
             task_id => $_TI->from_name($l),
             query => undef,
             path_info => undef,
-        }) : [sub {
-            my($source) = @_;
-            my($req) = $self->req;
-            return URI(
-                vs_constant(
-                    $req,
-                    $self->qualify_label(
-                        $self->render_simple_attr(facade_label => $req)),
-                ),
-            );
-        }],
+        }) : do {
+            # Weakly capture $self so this code_ref does not form a reference-cycle.
+            Scalar::Util::weaken(my $w = $self);
+            [sub {
+                my($req) = $w->req;
+                return URI(
+                    vs_constant(
+                        $req,
+                        $w->qualify_label(
+                            $w->render_simple_attr(facade_label => $req)),
+                    ),
+                );
+            }];
+        },
     );
     return;
 }
