@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2026 bivio Software, Inc.  All rights reserved.
 package Bivio::UI::Widget;
 use strict;
 use Bivio::Base 'Collection.Attributes';
@@ -242,7 +241,10 @@ sub initialize_value {
 
 sub initialize_with_parent {
     my($self, $parent, $source) = @_;
-    $self->put(parent => $parent)->initialize($source)
+    # Weaken the parent back-reference, preventing a memory-leak-causing reference-cycle;
+    # the tree is owned top-down (parent -> children), so dropping the root frees
+    # the whole subtree without the need for explicit teardown.
+    $self->put(parent => $parent)->weaken_attr('parent')->initialize($source)
         unless $self->has_keys('parent');
     return $self;
 }

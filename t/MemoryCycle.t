@@ -19,10 +19,9 @@ use Bivio::UI::Widget::Join;
 use Scalar::Util ();
 @Bivio::t::MemoryCycle::Testee::ISA = ('Bivio::UNIVERSAL');
 
-# Counts the reference cycles reachable from I<root>.  Bivio relies on
-# reference-counting GC (no Scalar::Util::weaken anywhere in the tree), so any
-# cycle that is not explicitly broken pins its whole graph for the life of the
-# process.
+# Counts the GC-relevant reference cycles reachable from I<root>.  find_cycle
+# skips weak references, so a weakened parent back-pointer is not reported --
+# which is the point: a weak ref cannot pin the graph.
 sub count_cycles {
     my(undef, $root) = @_;
     my($n) = 0;
@@ -41,15 +40,21 @@ sub _tree {
     return ($parent, $child);
 }
 
-# Documents the structural fact: the parent<->child back-pointer is a cycle.
-sub widget_tree_has_cycle {
+# Validates the weakened parent back-reference: a transient tree is reclaimed
+# when its root is dropped, since the weak parent does not keep it alive.
+# Returns 1 if the child was freed, 0 if it leaked.
+sub widget_tree_freed_when_root_dropped {
     my($proto) = @_;
-    return $proto->count_cycles(($proto->_tree)[0]);
+    my($weak_child);
+    {
+        my($parent, $child) = $proto->_tree;
+        Scalar::Util::weaken($weak_child = $child);
+    }
+    return defined($weak_child) ? 0 : 1;
 }
 
-# Guards the teardown contract: deleting 'parent' (as
-# Bivio::UI::View::initialize does via ->delete(qw(parent view_parent)))
-# eliminates the cycle so the graph can be reclaimed.
+# With the parent back-pointer weakened, find_cycle reports no cycle even before
+# the explicit delete; this guards that the count stays 0.
 sub widget_tree_after_teardown {
     my($proto) = @_;
     my($parent, $child) = $proto->_tree;
@@ -234,10 +239,10 @@ package main;
 # (run with e.g. BCONF=Bivio::PetShop); if one is not available, build a probe
 # request -- on failure, omit the request case rather than fail the suite.
 my(@cases) = (
-    # The widget parent<->child back-pointer forms a reference cycle that
-    # refcount GC cannot reclaim on its own.
-    widget_tree_has_cycle => 1,
-    # The framework's explicit teardown breaks it.
+    # Weakening the parent back-reference lets a transient tree be reclaimed
+    # when its root is dropped (no cycle keeps it alive).
+    widget_tree_freed_when_root_dropped => 1,
+    # find_cycle reports no GC cycle, because the parent back-pointer is weak.
     widget_tree_after_teardown => 0,
 );
 if (

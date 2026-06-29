@@ -1,11 +1,11 @@
-# Copyright (c) 1999-2005 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2026 bivio Software, Inc.  All rights reserved.
 package Bivio::Collection::Attributes;
 use strict;
 use base 'Bivio::UI::WidgetValueSource';
 use Bivio::IO::Alert;
 use Bivio::IO::ClassLoader;
 use Bivio::IO::Trace;
+use Scalar::Util ();
 
 # C<Bivio::Collection::Attributes> provides a useful wrapper around a
 # hash of values.
@@ -285,6 +285,16 @@ sub put {
         my($k, $v) = (shift(@$args), shift(@$args));
         $fields->{$k} = $v;
     }
+    return $self;
+}
+
+sub weaken_attr {
+    my($self, $name) = @_;
+    # Makes the named attribute a weak reference so it does not keep its referent alive and
+    # cause a memory leak.
+    my($fields) = _writable($self);
+    Scalar::Util::weaken($fields->{$name})
+        if ref($fields->{$name});
     return $self;
 }
 
