@@ -1,5 +1,4 @@
-# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::SearchList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
@@ -144,6 +143,7 @@ sub internal_load_rows {
                 offset => ($pn - 1) * $c,
                 length => $c + 1,
                 req => $self->req,
+                partial => $self->internal_want_partial,
                 %$x,
             });
             return;
@@ -201,6 +201,10 @@ sub internal_public_realm_ids {
 
 sub internal_want_all_public {
     return 1;
+}
+
+sub internal_want_partial {
+    return 0;
 }
 
 sub load_row_with_model {

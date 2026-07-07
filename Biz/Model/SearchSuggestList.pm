@@ -1,5 +1,4 @@
-# Copyright (c) 2013 Bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2013-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::SearchSuggestList;
 use strict;
 use Bivio::Base 'Model.SearchList';
@@ -16,6 +15,10 @@ sub internal_load_rows {
     $query->put(search => $q->{term})
         if $q && defined($q->{term});
     return shift->SUPER::internal_load_rows(@_);
+}
+
+sub internal_want_partial {
+    return 1;
 }
 
 1;

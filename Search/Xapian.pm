@@ -1,5 +1,4 @@
-# Copyright (c) 2006-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Search::Xapian;
 use strict;
 use Bivio::Base 'Search.None';
@@ -17,8 +16,12 @@ my($_LOCK_ID);
 my($_MAX_WORD) = 80;
 my($_LENGTH) = b_use('Type.PageSize')->get_default;
 my($_STEMMER) = Search::Xapian::Stem->new('english');
+# FLAG_PARTIAL is intentionally excluded: it expands the trailing term to every
+# index term sharing its prefix and is not bounded by set_max_wildcard_expansion,
+# so it can cause memory spikes. Type-ahead instead appends '*' to the trailing term
+# (see query) to prefix-match via FLAG_WILDCARD, which is bounded.
 my($_FLAGS) = 0;
-foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD FLAG_PURE_NOT FLAG_PARTIAL)) {
+foreach my $f (qw(FLAG_BOOLEAN FLAG_PHRASE FLAG_LOVEHATE FLAG_WILDCARD FLAG_PURE_NOT)) {
     $_FLAGS |= Search::Xapian->$f();
 }
 my($_VALUE_MAP) = {
@@ -35,6 +38,7 @@ my($_VALUE_MAP) = {
 b_use('IO.Config')->register(my $_CFG = {
     db_path => b_use('Biz.File')->absolute_path('Xapian'),
     max_changesets => 10,
+    max_wildcard_expansion => 100,
 });
 my($_L) = b_use('Model.Lock');
 my($_D) = b_use('Type.Date');
@@ -170,6 +174,9 @@ sub query {
         $qp->set_stemmer($_STEMMER);
         $qp->set_stemming_strategy(Search::Xapian::STEM_ALL());
         $qp->set_default_op(Search::Xapian->OP_AND);
+        # Note that queries over this limit causes parse_query to die
+        $qp->set_max_wildcard_expansion($_CFG->{max_wildcard_expansion})
+            if $qp->can('set_max_wildcard_expansion');
         my($db) = Search::Xapian::Database->new($proto->get_db_path);
         $qp->set_database($db);
         foreach my $field (keys(%$_VALUE_MAP)) {
@@ -183,20 +190,17 @@ sub query {
         }
         my($phrase) = $attr->{phrase};
         my($elite_set) = $attr->{elite_set};
-        my($main_query);
         b_die("phrase and elite set are mutually incompatible")
             if defined($phrase) && defined($elite_set);
         b_die("one of phrase or elite_set is required")
             unless defined($phrase) || defined($elite_set);
         if (defined($phrase)) {
             $phrase =~ s/_/ /g;
-            $main_query = $qp->parse_query($phrase, $_FLAGS);
-        }
-        else {
-            $main_query = Search::Xapian::Query->new(
-                Search::Xapian->OP_ELITE_SET,
-                map(Search::Xapian::Query->new($_),
-                    @$elite_set));
+            # Type-ahead prefix-matches the trailing term. Use FLAG_WILDCARD
+            # (bounded by set_max_wildcard_expansion) rather than FLAG_PARTIAL
+            # (unbounded) by appending '*' to a trailing word.
+            $phrase =~ s/(\w)\s*\z/$1*/
+                if $attr->{partial};
         }
         $q = Search::Xapian::Query->new( Search::Xapian->OP_AND,
             defined($elite_set)
