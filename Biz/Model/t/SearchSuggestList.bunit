@@ -1,0 +1,33 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+Request('initialize_fully');
+my($files) = require('../../../Search/t/xapian.PL');
+Bivio::Type->get_instance('AccessMode')->execute_private(req());
+[
+    inline_case(sub {
+        req()->set_realm_and_user(qw(xapian_demo xapian_guest));
+    }),
+    [req()] => [
+        {
+            method => 'load_page',
+            check_return => sub {
+                my($case, $actual, $expect) = @_;
+                $case->actual_return([sort(@{
+                    $case->get('object')
+                        ->map_rows(sub {shift->get('primary_id')})
+                    })]);
+                return [sort(map($files->[$_], @$expect))];
+            },
+        } => [
+            [{search => 'albe', page_number => 1, count => 20}]
+                => [0, 1, 2, 3, 4, 5],
+            [{search => 'w', page_number => 1, count => 20}]
+                => [0, 1, 2, 3, 4, 5],
+            sub {
+                config({
+                    'Bivio::Search::Xapian' => {max_wildcard_expansion => 1},
+                });
+                return [{search => 'w', page_number => 1, count => 20}];
+            } => [],
+        ],
+    ],
+];
