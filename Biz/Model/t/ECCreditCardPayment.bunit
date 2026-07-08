@@ -1,0 +1,29 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+Request();
+req()->set_realm_and_user(ShellUtil_SQL()->DEMO);
+my($payment) = model('ECPayment')->create({
+    amount => 0,
+    service => Type_ECService()->ANIMAL,
+    method => Type_ECPaymentMethod()->CREDIT_CARD,
+});
+model('ECCreditCardPayment')->create({
+    ec_payment_id => $payment->get('ec_payment_id'),
+    card_number => '4222222222222',
+    card_expiration_date => Type_Date()->add_days(Type_Date()->local_today, 365),
+    card_name => 'Test User',
+    card_zip => '80301',
+});
+[
+    [req()] => [
+        unauth_load_or_die => [
+            [{ec_payment_id => $payment->get('ec_payment_id')}] => not_die(),
+        ],
+        get => [
+            ['card_number'] => '4222222222222',
+        ],
+        truncate_card_number => not_die(),
+        get => [
+            ['card_number'] => '2222',
+        ],
+    ],
+];

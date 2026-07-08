@@ -1,5 +1,4 @@
-# Copyright (c) 2000-2010 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2000-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::Type::ECCreditCardNumber;
 use strict;
 use Bivio::Base 'Type.Secret';
@@ -18,7 +17,7 @@ sub from_literal {
         if $err;
     return undef
         unless defined($value);
-    $value =~ s/[-\s]+//g;
+    $value = _strip_separators($value);
     return $proto->luhn_mod10($value) ? $value :
             (undef, $_TE->CREDITCARD_INVALID_NUMBER);
 }
@@ -43,6 +42,19 @@ sub luhn_mod10 {
         $mul = $mul == 1 ? 2 : 1;
     }
     return ($sum % 10) == 0 ? 1 : 0;
+}
+
+sub truncate {
+    my($proto, $value) = @_;
+    return undef
+        unless defined($value);
+    return substr(_strip_separators($value), -4);
+}
+
+sub _strip_separators {
+    my($value) = @_;
+    $value =~ s/[-\s]+//g;
+    return $value;
 }
 
 1;

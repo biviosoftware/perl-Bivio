@@ -1,5 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2002-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Action::ECCreditCardProcessor;
 use strict;
 use Bivio::Base 'Biz.Action';
@@ -128,6 +127,9 @@ sub _process_payment {
             unless defined($result_code);
     }
     _update_status($proto, $payment, $result_code, \@details);
+    # authorize.net only requires full number for initial transaction (refunds only require
+    # last-four). Truncate here so that we don't store the full number.
+    $payment->get_model('ECCreditCardPayment')->truncate_card_number;
     return;
 }
 

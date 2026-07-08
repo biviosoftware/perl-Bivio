@@ -1,10 +1,10 @@
-# Copyright (c) 2002 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2002-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::ECCreditCardPayment;
 use strict;
 use Bivio::Base 'Biz.PropertyModel';
 
 my($_A) = b_use('Type.Amount');
+my($_CN) = b_use('Type.ECCreditCardNumber');
 
 sub create {
     my($self, $new_values) = @_;
@@ -52,6 +52,15 @@ sub internal_initialize {
 sub is_accepted_currency {
     # POSIT: payment processor is static, get_payment_processor is
     return shift->get_payment_processor->is_accepted_currency(@_);
+}
+
+sub truncate_card_number {
+    my($self) = @_;
+    # The the full number is generally only required for the initial auth/charge. This method
+    # should be called before commit if possible so the full number isn't stored in the database.
+    return $self->update({
+        card_number => $_CN->truncate($self->get('card_number')),
+    });
 }
 
 sub process_payment {
