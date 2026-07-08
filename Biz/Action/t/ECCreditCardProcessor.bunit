@@ -1,0 +1,61 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+config({
+    'Bivio::Biz::Action::ECCreditCardProcessor' => {
+        # test_mode hardcodes the card number sent to the gateway; turn it off
+        # so _transact_form_data sends the stored number
+        test_mode => 0,
+    },
+});
+Request();
+req()->set_realm_and_user(ShellUtil_SQL()->DEMO);
+my($full) = '4222222222222';
+my($truncated) = '2222';
+my($sent) = [];
+# Capture the card number sent to the gateway and return a canned approval
+# instead of contacting authorize.net
+class()->use('Ext.LWPUserAgent');
+{
+    no warnings 'redefine';
+    *Bivio::Ext::LWPUserAgent::request = sub {
+        my(undef, $hreq) = @_;
+        push(@$sent, ($hreq->content =~ /x_Card_Num=([^&]+)/)[0]);
+        return HTTP::Response->new(
+            200, 'OK', undef, '1,1,1,Approved,auth,x,TXN123');
+    };
+}
+my($payment) = model('ECPayment')->create({
+    amount => 5,
+    service => Type_ECService()->ANIMAL,
+    method => Type_ECPaymentMethod()->CREDIT_CARD,
+    status => Type_ECPaymentStatus()->TRY_CAPTURE,
+});
+model('ECCreditCardPayment')->create({
+    ec_payment_id => $payment->get('ec_payment_id'),
+    card_number => $full,
+    card_expiration_date => Type_Date()->add_days(Type_Date()->local_today, 365),
+    card_name => 'Test User',
+    card_zip => '80301',
+});
+my($stored) = sub {
+    return model('ECCreditCardPayment', {
+        ec_payment_id => $payment->get('ec_payment_id'),
+    })->get('card_number');
+};
+[
+    class() => [
+        {
+            method => 'execute_process',
+            compute_params => sub {
+                my(undef, $params) = @_;
+                $payment->update({status => $params->[0]});
+                return [req()];
+            },
+            compute_return => sub {
+                return [$sent->[-1], $stored->()];
+            },
+        } => [
+            [Type_ECPaymentStatus()->TRY_CAPTURE] => [$full, $truncated],
+            [Type_ECPaymentStatus()->TRY_CREDIT] => [$truncated, $truncated],
+        ],
+    ],
+];
