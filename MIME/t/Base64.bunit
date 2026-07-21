@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All rights reserved.
+my($_B) = b_use('MIME.Base64');
+[
+    class() => [
+        {
+            method => 'http_encode',
+            compute_return => sub {
+                my($case, $actual) = @_;
+                return [$_B->http_decode($actual->[0])];
+            },
+        } => [
+            ["Bivio Software\x{2763}\x{fe0f}"]
+                => [do {my($x) = "Bivio Software\x{2763}\x{fe0f}"; utf8::encode($x); $x}],
+            # Binary input (flag off) is left untouched.
+            [join('', map(chr, 0 .. 255))] => [join('', map(chr, 0 .. 255))],
+        ],
+    ],
+];

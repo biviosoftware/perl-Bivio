@@ -1,5 +1,4 @@
-# Copyright (c) 2000-2008 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2000-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::MIME::Base64;
 use strict;
 use Bivio::Base 'Bivio::UNIVERSAL';
@@ -34,6 +33,10 @@ sub http_encode {
     # Converts I<decoded> to an encoded form using the rules for
     # http-base64 encoding.
     my(undef, $decoded) = @_;
+    # MIME::Base64::encode dies on wide characters; downgrade to UTF-8 octets.
+    # Binary input (Random, Secret) has the flag off and is left untouched.
+    utf8::encode($decoded)
+        if defined($decoded) && utf8::is_utf8($decoded);
     my($encoded) = MIME::Base64::encode($decoded, '');
     $encoded =~ tr/=+\//_*-/;
     return $encoded;
