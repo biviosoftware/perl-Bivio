@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2011 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::View::Mail;
 use strict;
 use Bivio::Base 'View.Base';
@@ -45,6 +44,7 @@ sub form_imail {
                 mime_type => 'text/plain',
                 mime_data => $body,
                 mime_encoding => $_T->suggest_encoding('text/plain', \$body),
+                mime_charset => 'utf-8',
                 values => $f->map_attachments(sub {
                     return unless my $a = $f->get(shift);
                     return MIMEEntity({

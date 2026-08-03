@@ -1,5 +1,4 @@
-# Copyright (c) 2002-2012 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2002-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Test::Language::HTTP;
 use strict;
 use Bivio::Base 'Test.Language';
@@ -8,6 +7,7 @@ use HTTP::Request ();
 use HTTP::Request::Common ();
 use URI ();
 use Email::MIME::Encodings ();
+use Encode ();
 b_use('IO.Trace');
 
 our($_TRACE);
@@ -1288,8 +1288,12 @@ sub _fixup_pattern {
 
 sub _fixup_pattern_protected {
     my($self, $v) = @_;
-    return $self->deprecated_text_patterns || !defined($v) ? $v
-        : _fixup_pattern($v);
+    return $v
+        unless defined($v) && !ref($v);
+    # Match the decode_utf8 applied to the parsed html, so byte-string keys
+    # containing utf-8 (e.g. a subject with wide characters) still match.
+    $v = Encode::decode_utf8($v);
+    return $self->deprecated_text_patterns ? $v : _fixup_pattern($v);
 }
 
 sub _format_form {
@@ -1307,7 +1311,10 @@ sub _format_form {
         my($value) = $f->{options}
             ? _lookup_option_value(
                 $f->{options}, _fixup_pattern_protected($self, $v))
-            : $v;
+            # Submit as decoded characters (like a browser) so utf-8 octets
+            # aren't upgraded and double-encoded alongside decoded form fields.
+            : ref($v) || !defined($v) ? $v
+            : Encode::decode_utf8($v);
         _validate_text_field($f, $v)
             if $f->{type} eq 'text';
         push(@$result, $f->{name}, $value);

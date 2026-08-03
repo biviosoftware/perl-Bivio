@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::Type::String;
 use strict;
 use Bivio::Base 'Bivio.Type';
@@ -173,10 +172,9 @@ sub _clean_utf8 {
     my($value) = @_;
     return undef
         unless utf8::valid($$value);
-    utf8::decode($$value);
-    my($res) = _map_characters($value, 0);
     return undef
-        unless $res;
+        unless utf8::is_utf8($$value) || utf8::decode($$value);
+    _map_characters($value, 0);
     utf8::encode($$value);
     return $value;
 }

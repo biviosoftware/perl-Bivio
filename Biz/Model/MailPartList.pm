@@ -1,8 +1,8 @@
-# Copyright (c) 2006-2011 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::MailPartList;
 use strict;
 use Bivio::Base 'Biz.ListModel';
+use Encode ();
 
 my($_IDI) = __PACKAGE__->instance_data_index;
 my($_A) = b_use('Mail.Address');
@@ -79,8 +79,11 @@ sub format_uri_for_part {
 }
 
 sub get_body {
-    my($v) = shift->get('mime_entity')->bodyhandle;
-    return $v ? $v->as_string : '';
+    my($e) = shift->get('mime_entity');
+    return ''
+        unless my $v = $e->bodyhandle;
+    return _to_utf8(
+        $v->as_string, $e->head->mime_attr('content-type.charset'));
 }
 
 sub get_file_name {
@@ -256,6 +259,18 @@ sub _default_file_name {
 
 sub _parser {
     return $_MP->parse_data(\$_[0]);
+}
+
+sub _to_utf8 {
+    my($octets, $charset) = @_;
+    # Pages are displayed as utf-8, so transcode if possible.
+    return $octets
+        unless defined($charset)
+        && $charset =~ /\S/
+        && $charset !~ /^\s*(?:us-ascii|ascii|utf-?8)\s*$/i;
+    return $octets
+        unless my $enc = Encode::find_encoding($charset);
+    return Encode::encode('utf-8', $enc->decode($octets, Encode::FB_DEFAULT()));
 }
 
 sub _walk {

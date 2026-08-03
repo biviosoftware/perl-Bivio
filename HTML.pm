@@ -1,5 +1,4 @@
-# Copyright (c) 2000-2009 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2000-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::HTML;
 use strict;
 use base 'Bivio::UNIVERSAL';
@@ -9,7 +8,9 @@ use URI::Escape ();
 
 sub escape {
     my(undef, $text) = @_;
-    my($res) = scalar(HTML::Entities::encode($text));
+    # Only escape the HTML metacharacters so UTF-8 octets pass through
+    # unchanged; encoding high bytes mangles multibyte characters.
+    my($res) = scalar(HTML::Entities::encode($text, '<>&"'));
     $res =~ s/'/&#39;/sg;
     return $res;
 }

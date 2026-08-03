@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::Widget::MIMEEntityView;
 use strict;
 use Bivio::Base 'Widget.ControlBase';
@@ -30,7 +29,7 @@ sub initialize {
     $self->map_invoke(initialize_attr => [
         ['view_name'],
         [mime_type => ['->req', "$self"]],
-        [mime_charset => 'us-ascii'],
+        [mime_charset => 'utf-8'],
         [mime_encoding => [sub {
             shift->req("$self") =~ m{^text/}i ? 'quoted-printable' : 'base64';
         }]],
