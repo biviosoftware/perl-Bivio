@@ -1,5 +1,4 @@
-# Copyright (c) 2008-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 test_setup('PetShop', 'groupware');
 home_page();
 my($vars) = test_template_vars({
@@ -135,8 +134,10 @@ verify_text('reply text');
 $next_date = $d->add_seconds($next_date, 120);
 ($msg, $subject) = $send_and_verify_mail->(qw(ar.eml user1 forum));
 follow_link(qw(^mail_forum$ ^mail$));
+verify_text('다음');
 follow_link($subject);
 verify_text($subject);
+verify_text('부재중입니다');
 $send_mail->(qw(ar.eml user1 forum));
 $check_for_loop->();
 $send_mail->(qw(ar.eml user1 forum));
@@ -171,6 +172,23 @@ verify_text($subject);
 );
 $send_mail->(qw(bf2.eml user1 forum));
 $check_for_loop->();
+my($with_utf8) = 'Bivio Software❣️';
+%$vars = (
+    %$vars,
+    utf8_subject => join(' ', random_string(), $with_utf8),
+);
+($msg, $subject) = $send_and_verify_mail->(qw(utf8.eml user1 forum));
+login_as('mail_user1');
+follow_link(qw(^mail_forum$ ^mail$));
+follow_link($subject);
+verify_text(escape_html($subject));
+verify_text($with_utf8);
+follow_link('reply$');
+submit_form(Send => {
+    text => join(' ', 'Unicode reply', $with_utf8),
+});
+verify_text('was sent');
+verify_local_mail(qr{.}, qr{charset="utf-8".*$with_utf8}s, 2);
 # Test spam filtering
 %$vars = (
     %$vars,

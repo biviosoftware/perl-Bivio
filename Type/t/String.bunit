@@ -1,5 +1,4 @@
-# Copyright (c) 2004-2006 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2004-2026 Bivio Software, Inc.  All Rights Reserved.
 Type();
 [
     compare => [
@@ -46,6 +45,9 @@ Type();
         "a\n\n\nb" => "a\n\n\nb",
         'á' => 'a',
         "\xe2\x80\xb3" => '"',
+        # Valid UTF-8 with no transliteration is preserved
+        "Bivio Software\xe2\x9d\xa3\xef\xb8\x8f"
+            => "Bivio Software\xe2\x9d\xa3\xef\xb8\x8f",
     ],
     canonicalize_and_excerpt => [
         [undef] => [\('')],

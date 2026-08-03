@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2014 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::UI::HTML::Widget::Page;
 use strict;
 use Bivio::Base 'UI.Widget';
@@ -172,7 +171,7 @@ sub render {
     my($body) = $self->render_attr('body', $source);
     $$buffer .= "<!DOCTYPE html>\n<html"
         . $self->render_simple_attr(html_tag_attrs => $source)
-        . "><head>\n"
+        . qq{><head>\n<meta charset="utf-8">\n}
         . $self->internal_render_head_attrs($source)
         . '</head><body';
     # Always have a background color
