@@ -866,7 +866,7 @@ sub required_main {
     my($pkgs) = $_CL->list_simple_packages_in_map($_MAP_NAME);
     $proto->usage_error(
         join("\n",
-             'first argument must be a class name.  Available classes:',
+             'first argument must be a class name or map class name.  Available classes in default map:',
              @$pkgs,
         )
         . "\n"
@@ -877,8 +877,16 @@ sub required_main {
             unless $c;
         $class = $c;
     }
-    return ref($proto->new($_CL->map_require($_MAP_NAME => $class)))
-        ->main(@args);
+    my($mr);
+    if ($_CL->is_valid_map_class_name($class)) {
+        $mr = $_CL->map_require($class);
+        $proto->usage_error($class, ": class is not a ", $proto)
+            unless $proto->is_super_of($mr);
+    }
+    else {
+        $mr = $_CL->map_require($_MAP_NAME => $class);
+    }
+    return ref($proto->new($mr))->main(@args);
 }
 
 sub result {
