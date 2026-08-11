@@ -189,6 +189,24 @@ submit_form(Send => {
 });
 verify_text('was sent');
 verify_local_mail(qr{.}, qr{charset="utf-8".*$with_utf8}s, 2);
+my($with_utf8_nbsp) = 'With html utf8_nbsp';
+%$vars = (
+    %$vars,
+    utf8_nbsp_subject => join(' ', random_string(), $with_utf8_nbsp),
+);
+($msg, $subject) = $send_and_verify_mail->(qw(utf8_nbsp.eml user1 forum));
+login_as('mail_user1');
+follow_link(qw(^mail_forum$ ^mail$));
+verify_text(escape_html(qq{We're hiring "now" today $vars->{randomizer}.}));
+follow_link($subject);
+verify_text(escape_html($subject));
+verify_text($with_utf8_nbsp);
+follow_link('reply$');
+submit_form(Send => {
+    text => join(' ', 'UTF-8 nbsp reply', $with_utf8_nbsp),
+});
+verify_text('was sent');
+verify_local_mail(qr{.}, qr{charset="utf-8".*$with_utf8_nbsp}s, 2);
 # Test spam filtering
 %$vars = (
     %$vars,
