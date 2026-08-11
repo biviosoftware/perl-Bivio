@@ -1,5 +1,4 @@
-# Copyright (c) 2002-2010 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2002-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::HTML::Scraper;
 use strict;
 use Bivio::Base 'Collection.Attributes';
@@ -252,10 +251,11 @@ sub to_text {
 
 sub unescape_html {
     # Calls L<Bivio::HTML::unescape|Bivio::HTML/"unescape"> and fixes up
-    # ISO-88559-1 chars, e.g. \240 (non-breaking-space).
+    # non-breaking-space, which unescape returns as ISO-8859-1 \240.
     shift;
     my($v) = $_HTML->unescape(shift);
-    $v =~ s/\240/ /g;
+    # \302\240 is the utf-8 form
+    $v =~ s/\302\240|\240/ /g;
     return $v;
 }
 
