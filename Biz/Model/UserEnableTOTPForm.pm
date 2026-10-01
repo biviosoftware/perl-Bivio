@@ -69,6 +69,10 @@ sub internal_pre_execute {
 
 sub validate {
     my($self) = @_;
+    unless ($self->get('totp_code')) {
+        $self->internal_put_error(totp_code => 'NULL');
+        return;
+    }
     $self->internal_put_error(totp_code => 'INVALID_TOTP_CODE')
         unless my $ts = $_UT->is_valid_setup($self->get('totp_code'), $self->get('totp_secret'));
     $self->internal_put_field(totp_time_step => $ts);

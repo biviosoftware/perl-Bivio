@@ -61,6 +61,12 @@ my($is_task) = sub {
     }),
     error_case({
         %$v,
+        totp_code => '',
+    } => {
+        totp_code => 'NULL',
+    }),
+    error_case({
+        %$v,
         totp_code => 123456,
     } => {
         totp_code => 'INVALID_TOTP_CODE',
