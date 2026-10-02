@@ -67,6 +67,12 @@ sub format_uri_for_print {
     return _uri($proto, $source, 'MFA_RECOVERY_CODE_LIST_PRINT');
 }
 
+sub get_current_codes {
+    my($proto, $source) = @_;
+    return $source->ureq(qw(form_model mfa_recovery_code_array))
+        || $source->req($proto, 'mfa_recovery_code_array');
+}
+
 sub get_codes_from_query {
     my($proto, $source) = @_;
     b_die('codes not found on query')
@@ -100,7 +106,7 @@ sub _uri {
         realm => $source->req(qw(auth_user name)),
         query => {
             $proto->CODE_QUERY_KEY => join(
-                $proto->CODE_QUERY_SEPARATOR, $source->req($proto, 'mfa_recovery_code_array')->as_list),
+                $proto->CODE_QUERY_SEPARATOR, $proto->get_current_codes($source)->as_list),
         },
     });
 }
