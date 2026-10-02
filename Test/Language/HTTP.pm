@@ -404,6 +404,21 @@ sub get_table_row {
         || Bivio::Die->($row_index, ': no such row number in ', $table_name);
 }
 
+sub get_totp_recovery_codes {
+    my($self) = @_;
+    $self->follow_link('download');
+    my($res) = [split("\n", $self->get_content)];
+    $self->go_back;
+    return $res;
+}
+
+sub get_totp_setup_key {
+    my($self) = @_;
+    my($res) = $self->get_content =~ /id="totp_setup_key">([^<]+)</;
+    $res =~ s/\s+//g;
+    return $res;
+}
+
 sub get_uri {
     # Returns the uri for the current page.  Blows up if no current uri.
     return shift->unsafe_get_uri || b_die('no current uri');
@@ -1075,6 +1090,22 @@ sub verify_title {
     # Verifies that the specified title appears on the page.
     b_die($title, ': title not found in response')
             unless $self->get_content =~ /\<title\>.*$title.*\<\/title\>/i;
+    return;
+}
+
+sub verify_totp_content {
+    my($self, $totp_setup_key, $recovery_codes) = @_;
+    my($new_totp_setup_key) = $self->get_totp_setup_key;
+    b_die('totp setup key should still be the same')
+        unless $new_totp_setup_key eq $totp_setup_key;
+    my($content) = $self->get_content;
+    foreach my $c (@$recovery_codes) {
+        b_die('not found on page code=', $c)
+            unless $content =~ "<td>$c</td>";
+    }
+    my($new_recovery_codes) = $self->get_totp_recovery_codes;
+    b_die('mfa recovery codes should still be the same')
+        unless join("\n", @$new_recovery_codes) eq join("\n", @$recovery_codes);
     return;
 }
 

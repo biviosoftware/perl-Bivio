@@ -11,7 +11,7 @@ go_back();
 reload_page();
 follow_link('enable_time_based');
 verify_text('set up two-factor');
-my($totp_setup_key) = get_content() =~ /id="totp_setup_key">([^<]+)</;
+my($totp_setup_key) = get_totp_setup_key();
 $totp_setup_key =~ s/\s+//g;
 my($add_seconds) = sub {
     my($seconds) = @_;
@@ -28,7 +28,7 @@ my($compute_totp_code) = sub {
     return $code;
 };
 follow_link('download');
-my($recovery_codes) = [split("\n", get_content())];
+my($recovery_codes) = get_totp_recovery_codes();
 b_die('unexpected code count')
     unless int(@$recovery_codes) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
@@ -127,7 +127,7 @@ verify_text(qr/(sign-out|\blogout\b)/i);
 verify_text(qr/recovery code list was running low/i);
 verify_text(qr/the following codes are your authenticator recovery codes/i);
 follow_link('download');
-my($recovery_codes2) = [split("\n", get_content())];
+my($recovery_codes2) = get_totp_recovery_codes();
 b_die('unexpected code count')
     unless int(@$recovery_codes2) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
@@ -154,7 +154,7 @@ verify_no_text(qr/the following/i);
 submit_form(qr/create new recovery codes/i);
 verify_text(qr/the following/i);
 follow_link('download');
-my($recovery_codes3) = [split("\n", get_content())];
+my($recovery_codes3) = get_totp_recovery_codes();
 b_die('unexpected code count')
     unless int(@$recovery_codes3) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
@@ -291,12 +291,12 @@ submit_form(Continue => {
     password => $p,
 });
 verify_text('set up two-factor');
-my($totp_setup_key2) = get_content() =~ /id="totp_setup_key">([^<]+)</;
+my($totp_setup_key2) = get_totp_setup_key();
 $totp_setup_key2 =~ s/\s+//g;
 b_die('same setup key')
     if $totp_setup_key eq $totp_setup_key2;
 follow_link('download');
-my($recovery_codes4) = [split("\n", get_content())];
+my($recovery_codes4) = get_totp_recovery_codes();
 b_die('unexpected code count')
     unless int(@$recovery_codes4) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();
@@ -307,6 +307,7 @@ submit_form({
     authenticator_code => $totp_code,
 });
 test_conformance();
+verify_totp_content($totp_setup_key2, $recovery_codes4);
 submit_form({
     authenticator_code => $compute_totp_code->(30, $totp_setup_key2),
 });
@@ -379,7 +380,7 @@ verify_no_text(qr/the following/i);
 submit_form(qr/create new recovery codes/i);
 verify_text(qr/the following/i);
 follow_link('download');
-my($recovery_codes5) = [split("\n", get_content())];
+my($recovery_codes5) = get_totp_recovery_codes();
 b_die('unexpected code count')
     unless int(@$recovery_codes5) == Model_MFARecoveryCodeList()->get_new_code_count;
 go_back();

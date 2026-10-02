@@ -87,7 +87,7 @@ EOF
 
 sub _codes {
     my($source, $separator) = @_;
-    my($codes) = $source->req(qw(Action.MFARecoveryCodeList mfa_recovery_code_array))->as_array;
+    my($codes) = $_A->get_current_codes($source)->as_array;
     return $separator ? join($separator, @$codes) : $codes;
 }
 
