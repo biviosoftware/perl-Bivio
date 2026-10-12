@@ -1,5 +1,4 @@
-# Copyright (c) 2000-2012 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2000-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::UI::Facade;
 use strict;
 use Bivio::Base 'Collection.Attributes';
@@ -284,6 +283,8 @@ sub handle_config {
     # cache all icon sizes.
     #
     # For development, you probably want to set I<want_local_file_cache> to false.
+    b_die('is_2014style: no longer supported')
+        if $cfg->{is_2014style};
     Bivio::IO::Alert->warn_deprecated($cfg->{http_suffix}, ': use http_host')
         if $cfg->{http_suffix};
     b_warn(
@@ -342,8 +343,9 @@ sub initialize {
 
 sub is_2014style {
     my($proto) = @_;
-    return ref($proto) ? $proto->get('Constant')->get_value('is_2014style')
-        : $_CFG->{is_2014style};
+    b_die('is_2014style: no longer supported')
+        if ref($proto) && $proto->get('Constant')->get_value('is_2014style');
+    return 0;
 }
 
 sub is_fully_initialized {

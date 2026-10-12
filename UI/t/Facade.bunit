@@ -1,5 +1,4 @@
-# Copyright (c) 2007 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2026 Bivio Software, Inc.  All Rights Reserved.
 Request();
 config({
     'Bivio::UI::Facade' => {
@@ -40,6 +39,12 @@ req()->initialize_fully;
         ],
         get_from_source => [
             [req()] => qr{beforeother}i,
+        ],
+        is_2014style => [
+            [] => 0,
+        ],
+        handle_config => [
+            [{is_2014style => 1}] => qr{is_2014style: no longer supported},
         ],
     ],
     sub {class()->find_by_uri_or_domain('petshop', req())} => [
