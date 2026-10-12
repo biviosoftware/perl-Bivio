@@ -1,12 +1,11 @@
-# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2001-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::BConf;
 use strict;
 use Cwd ();
 use File::Basename ();
 use Sys::Hostname ();
 
-# C<Bivio::BConf> provides a basic configuration.  You bivio.bconf file
+# C<Bivio::BConf> provides a basic configuration.  Your bivio.bconf file
 # would look like:
 #
 #    use Bivio::BConf;
@@ -31,6 +30,7 @@ sub IS_2014STYLE {
 
 sub default_merge_overrides {
     my($proto) = shift;
+    _assert_not_2014style($proto);
     my($args) = @_;
     unless (ref($args) eq 'HASH') {
         my($root, $prefix, $owner) = @_;
@@ -80,7 +80,6 @@ sub default_merge_overrides {
         },
         'Bivio::UI::Facade' => {
             default => $args->{root},
-            is_2014style => $proto->IS_2014STYLE,
         },
         'Bivio::Util::Release' => {
             $proto->merge_projects([
@@ -93,13 +92,6 @@ sub default_merge_overrides {
         'Bivio::IO::Config' => {
             version => $args->{version},
         },
-        $proto->IS_2014STYLE
-            ? (
-                'Bivio::Test::HTMLParser::Forms' => {
-                    error_class => 'b_form_field_error',
-                    error_title_class => 'alert alert-warning',
-                },
-            ) : (),
         'Bivio::IO::Trace' => {
             config => {
                 # This doesn't actually exist, b/c Config is second module
@@ -285,6 +277,7 @@ sub merge_class_loader {
     #         },
     #     }),
     #     ...
+    _assert_not_2014style($proto);
     $overrides ||= {};
     $overrides->{delegates} = {map(
         ($_ => join('::', $proto->DELEGATE_ROOT_PREFIX, 'Delegate', $_ =~ /(\w+)$/)),
@@ -356,20 +349,12 @@ sub merge_class_loader {
                     # CSS has no general widgets so don't put Bivio::UI in path
                     UICSS => ['Bivio::UI::CSS'],
                     UIHTML => ['Bivio::UI::HTML', 'Bivio::UI'],
-                    UIXHTML => [
-                        $proto->IS_2014STYLE
-                            ? 'Bivio::UI::Bootstrap'
-                            : (),
-                        'Bivio::UI::XHTML', 'Bivio::UI::HTML',
-                    ],
+                    UIXHTML => ['Bivio::UI::XHTML', 'Bivio::UI::HTML'],
                     Util => ['Bivio::Util', 'Bivio::Biz::Util'],
                     View => ['Bivio::UI::View'],
                     Widget => ['Bivio::UI::Widget'],
                     WikiText => ['Bivio::UI::XHTML::Widget::WikiText'],
                     XHTMLWidget => [
-                        $proto->IS_2014STYLE
-                            ? 'Bivio::UI::Bootstrap::Widget'
-                            : (),
                         'Bivio::UI::XHTML::Widget',
                         'Bivio::UI::HTML::Widget',
                         'Bivio::UI::Widget',
@@ -591,6 +576,14 @@ sub merge_realm_role_category_map {
             $new ? @{$new->()} : (),
         ]},
     };
+}
+
+sub _assert_not_2014style {
+    my($proto) = @_;
+    die($proto, ': is_2014style: no longer supported')
+        if $proto->IS_2014STYLE;
+    # TODO: remove all 2014style code
+    return;
 }
 
 sub _base {

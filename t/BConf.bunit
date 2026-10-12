@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+# IS_2014STYLE is checked where it is consumed, not in the accessor, because an
+# app BConf overrides the accessor without calling SUPER.
+{
+    package Bivio::BConfTest2014Style;
+    use base 'Bivio::BConf';
+    sub IS_2014STYLE {
+        return 1;
+    }
+}
+
+[
+    sub {'Bivio::BConfTest2014Style'} => [
+        default_merge_overrides => [
+            [{root => 'Bivio::PetShop', prefix => 'petshop', owner => 'petshop'}]
+                => qr{is_2014style: no longer supported},
+        ],
+        merge_class_loader => [
+            [{}] => qr{is_2014style: no longer supported},
+        ],
+    ],
+    class() => [
+        merge_class_loader => [
+            [{}] => not_die(),
+        ],
+    ],
+];
