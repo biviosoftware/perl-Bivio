@@ -8,6 +8,7 @@ my($_A) = b_use('Action.MFARecoveryCodeList');
 
 sub initialize {
     my($self) = @_;
+    my($list_anchor) = 'recovery_codes_list';
     return shift->put_unless_exists(values => [
         vs_text_as_prose(qw(MFARecoveryCodeList prose prologue)),
         BR(), BR(),
@@ -15,24 +16,28 @@ sub initialize {
             my($source) = @_;
             my($did_copy_link) = 0;
             my($did_dl_link) = 0;
-            return Grid([[
-                Grid([
-                    map([$_], @{_codes($source)}),
-                ], {class => 'b_mfa_recovery_codes'}),
+            return Join([
+                DIV('', { ID => $list_anchor}),
                 Grid([[
-                    Link('copy', '#', {
-                        ID => 'copy_codes_link',
-                        row_class => 'b_mfa_recovery_code_copy_link',
-                    }),
-                ], [
-                    Link('download', [sub {$_A->format_uri_for_download(shift(@_))}]),
-                ], [
-                    Link('print', '#', {
-                        ID => 'print_codes_link',
-                    }),
-                ]], {class => 'b_mfa_recovery_code_options'}),
-            ]], {class => 'b_mfa_recovery_code_list'});
+                    Grid([
+                        map([$_], @{_codes($source)}),
+                    ], {class => 'b_mfa_recovery_codes'}),
+                    Grid([[
+                        Link('copy', '#' . $list_anchor, {
+                            ID => 'copy_codes_link',
+                            row_class => 'b_mfa_recovery_code_copy_link',
+                        }),
+                    ], [
+                        Link('download', [sub {$_A->format_uri_for_download(shift(@_))}]),
+                    ], [
+                        Link('print', '#' . $list_anchor, {
+                            ID => 'print_codes_link',
+                        }),
+                    ]], {class => 'b_mfa_recovery_code_options'}),
+                ]], {class => 'b_mfa_recovery_code_list'}),
+            ]);
         }],
+        BR(),
         BR(),
         InlineJavaScript(Join([
             <<'EOF',
