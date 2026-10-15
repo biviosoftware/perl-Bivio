@@ -26,7 +26,7 @@ Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
 </tr><tr>
 <td><ul><li>If you use a password manager, click the "copy" link to the right and then paste into the entry for bivio.</li><li>Click the "download" link and then move the downloaded file to a secure place where you keep personal files.</li><li>Click the "print" link and then place the printed page in a secure place with your personal files.</li></ul></td>
 </tr></table>
-<br /><br /><table class="b_mfa_recovery_code_list"><tr>
+<br /><br /><div id="recovery_codes_list"></div><table class="b_mfa_recovery_code_list"><tr>
 <td><table class="b_mfa_recovery_codes"><tr>
 <td>foo-bar-baz</td>
 </tr><tr>
@@ -35,13 +35,13 @@ Action_MFARecoveryCodeList()->new()->put_on_request(req(), 1)->put(
 <td>bar-foo-baz</td>
 </tr></table></td>
 <td><table class="b_mfa_recovery_code_options"><tr class="b_mfa_recovery_code_copy_link">
-<td><a id="copy_codes_link" href="#">copy</a></td>
+<td><a id="copy_codes_link" href="#recovery_codes_list">copy</a></td>
 </tr><tr>
 <td><a href="/demo/download-recovery-codes?mfa_recovery_codes=foo-bar-baz%2Cbaz-bar-foo%2Cbar-foo-baz">download</a></td>
 </tr><tr>
-<td><a id="print_codes_link" href="#">print</a></td>
+<td><a id="print_codes_link" href="#recovery_codes_list">print</a></td>
 </tr></table></td>
-</tr></table><br /><script type="text/javascript">(() => {
+</tr></table><br /><br /><script type="text/javascript">(() => {
     const l = document.getElementById("copy_codes_link");
     const c = document.getElementsByClassName("b_mfa_recovery_code_copy_link")[0];
     if (l) {
