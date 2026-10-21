@@ -806,7 +806,7 @@ sub _mkdir_rpmbuild {
         return $d
             if $name eq '_topdir';
         b_die($d, ": $name does not begin with _topdir")
-            unless $d =~ /^\%{_topdir}(.+)/;
+            unless $d =~ /^\%\{_topdir\}(.+)/;
         return $map->{_topdir} . $1;
     };
     my($top) = $lookup->('_topdir');
