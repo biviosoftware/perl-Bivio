@@ -105,11 +105,12 @@ sub initialize {
         max => $max,
     };
 
-    # Pad appropriately, because the enum may be smaller than the enumset.
+    b_die(
+        $enum, ': EnumSet (', $proto->get_width, ' bytes)',
+        ' is narrower than Enum (', length($max), ' bytes)',
+    ) if $proto->get_width < length($max);
+    # Pad appropriately, because the enum may be smaller than the enumset. 2 hex digits per byte.
     my($width) = 2 * $proto->get_width;
-    b_die($enum, ": EnumSet ($width) is narrower than Enum (",
-        length($max), ")",
-    ) if $width - length($max) < 0;
     foreach my $m ('min', 'max') {
         my($s) = unpack('h*', $_INFO{$class}->{$m});
         $s .= '0' x ($width - length($s));
