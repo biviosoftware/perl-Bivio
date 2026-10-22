@@ -61,12 +61,12 @@ sub get_enum_type {
 
 =head2 get_width() : int
 
-Returns 60.  That's 480 tasks.
+Returns 150.  That's 1200 tasks.
 
 =cut
 
 sub get_width {
-    return 60;
+    return 150;
 }
 
 #=PRIVATE METHODS
