@@ -6,7 +6,7 @@ my($yesterday, $today, $tomorrow) = map(
     Date()->to_literal(Date()->add_days($now, $_)),
     (-1, 0, 1));
 
-my($files) = require('xapian.PL');
+my($files) = require(IO_File()->absolute_path('xapian.PL'));
 my($demo) = unauth_model('RealmOwner', {name => 'xapian_demo'})
     ->get('realm_id');
 my($guest) = unauth_model('RealmOwner', {name => 'xapian_guest'})

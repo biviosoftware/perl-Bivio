@@ -1,6 +1,5 @@
-# Copyright (c) 2006 bivio Software, Inc.  All Rights Reserved.
-# $Id$
-require 'Blog.PL';
+# Copyright (c) 2006-2026 bivio Software, Inc.  All Rights Reserved.
+require(IO_File()->absolute_path('Blog.PL'));
 [map({
     my($x) = {
         title => "Title $_ *?:/",

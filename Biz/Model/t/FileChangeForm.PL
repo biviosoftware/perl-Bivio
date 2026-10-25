@@ -1,5 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 bivio Software, Inc.  All Rights Reserved.
 FormModel({
     setup_request => sub {
         my(undef, $params) = @_;
@@ -8,5 +7,5 @@ FormModel({
         return;
     },
 });
-require 'RealmFile.PL';
+require(IO_File()->absolute_path('RealmFile.PL'));
 

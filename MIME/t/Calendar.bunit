@@ -1,5 +1,4 @@
-# Copyright (c) 2005-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2005-2026 bivio Software, Inc.  All Rights Reserved.
 my($_DT) = b_use('Type.DateTime');
 my($_TZ) = b_use('Type.TimeZone');
 my($_F) = b_use('IO.File');
@@ -8,7 +7,7 @@ options({comparator => 'nested_contains'});
     class() => [
         vevents_from_ics => [
             map(
-                ([$_F->read("Calendar/$_.in")] => [do("Calendar/$_.out")]),
+                ([$_F->read("Calendar/$_.in")] => [do($_F->absolute_path("Calendar/$_.out"))]),
                 1 .. 18,
             ),
         ],
