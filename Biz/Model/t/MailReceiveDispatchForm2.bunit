@@ -1,12 +1,11 @@
-# $Id$
-# Copyright (c) 2002-2005 bivio Software, Inc.  All rights reserved.
+# Copyright (c) 2002-2026 bivio Software, Inc.  All rights reserved.
 config({
     class() => {
         ignore_model_not_found => 1,
     },
 });
 Request('initialize_fully', 'MAIL_RECEIVE_DISPATCH');
-my($test_setup) = require 'MailReceiveDispatchForm.PL';
+my($test_setup) = require(IO_File()->absolute_path('MailReceiveDispatchForm.PL'));
 my($support_email) = req()->format_email(b_use('UI.Text')->get_value('support_email', req()));
 model('EmailAlias')->create({
     incoming => $support_email,
