@@ -1,5 +1,4 @@
-# Copyright (c) 2001-2007 bivio Software, Inc.  All Rights reserved.
-# $Id$
+# Copyright (c) 2001-2026 bivio Software, Inc.  All Rights reserved.
 package Bivio::Test;
 use strict;
 use Bivio::Base 'Collection.Attributes';
@@ -508,7 +507,7 @@ sub _compile_object {
         $state->{object} = undef;
         $state->{create_object} = undef;
     }
-    elsif (!UNIVERSAL::isa($state->{object}, 'UNIVERSAL')) {
+    elsif (!ref($state->{object}) || !UNIVERSAL::isa($state->{object}, 'UNIVERSAL')) {
         _load_class($state)
             if $state->{object} && $state->{object} =~ /(?:\:\:|\.)/;
         _compile_die($state, 'object is not a subclass of UNIVERSAL'
