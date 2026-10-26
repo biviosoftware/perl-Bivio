@@ -1,6 +1,7 @@
-# Copyright (c) 2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2009-2026 bivio Software, Inc.  All Rights Reserved.
 Request('initialize_fully');
+config_can_secure(1);
+req()->put(is_secure => 1);
 req()->set_realm('remote_copy_bunit');
 my($rfcl) = model('RemoteCopyList', {})->set_cursor_or_die(0);
 [
