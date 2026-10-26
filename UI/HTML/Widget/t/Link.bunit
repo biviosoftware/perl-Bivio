@@ -1,8 +1,9 @@
-# Copyright (c) 2005-2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2005-2026 bivio Software, Inc.  All Rights Reserved.
 Widget({
     task_id => 'LOGOUT',
 });
+config_can_secure(1);
+req()->put(is_secure => 1);
 [
     ['txt', '#anchor'] => '<a href="#anchor">txt</a>',
     ['txt', '#', 'foo'] => '<a class="foo" href="#">txt</a>',
