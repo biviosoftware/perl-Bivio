@@ -1,5 +1,32 @@
-# Copyright (c) 2025 bivio Software, Inc. All Rights Reserved.
-Widget();
+# Copyright (c) 2025-2026 bivio Software, Inc. All Rights Reserved.
+use Compress::Zlib ();
+use Digest::MD5 ();
+use MIME::Base64 ();
+# zlib versions compress PNGs differently, so compare a digest of the pixel data
+my($pixel_digest) = sub {
+    my($html) = @_;
+    $html =~ s{(base64,)([^"]+)}{
+        my($png) = MIME::Base64::decode($2);
+        my($idat) = '';
+        my($pos) = 8;
+        # after the 8-byte signature, each chunk is length(N), type(a4), data, checksum
+        while ($pos < length($png)) {
+            my($len, $type) = unpack('Na4', substr($png, $pos, 8));
+            $idat .= substr($png, $pos + 8, $len)
+                if $type eq 'IDAT';
+            $pos += 12 + $len;
+        }
+        $1 . Digest::MD5::md5_hex(Compress::Zlib::uncompress($idat));
+    }e;
+    return $html;
+};
+Widget({
+    parse_return => sub {
+        my($case, $actual, $expect) = @_;
+        $expect->[0] = $pixel_digest->($expect->[0]);
+        return [$pixel_digest->($actual->[0])];
+    },
+});
 req()->set_realm_and_user(qw(demo demo));
 [
     ['0wdJM8lg2nw8sN2uPkvY'] => '<img class="totp_qr_code" alt="none" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASgAAAEoAQMAAADRyf5aAAAABlBMVEUAAAD///+l2Z/dAAAAAnRS
