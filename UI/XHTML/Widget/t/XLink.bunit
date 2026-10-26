@@ -1,6 +1,7 @@
-# Copyright (c) 2006-2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2026 bivio Software, Inc.  All Rights Reserved.
 Widget({view_class_map => 'XHTMLWidget'});
+config_can_secure(1);
+req()->put(is_secure => 1);
 [
     bunit1 => qr{<a href="/pub/login">one</a>},
     SITE_ROOT => qr{<a href="/">home</a>},
