@@ -166,6 +166,19 @@ sub internal_thread_root_list_columns {
     ];
 }
 
+sub internal_thread_root_list_selector_fields {
+    my($self, $form) = @_;
+    return [map(
+        Select({
+            %{$form->get_select_attrs($_)},
+            unknown_label => vs_text('CRMQueryForm', $_),
+            auto_submit => 1,
+        }),
+        grep($form->get_field_type($_)->isa('Bivio::Type::TupleChoiceList'),
+            $form->tuple_tag_field_check),
+    )];
+}
+
 sub internal_tuple_tag_form_fields {
     my($self, $model) = @_;
     return map([$model->simple_package_name . ".$_", {
@@ -208,16 +221,7 @@ sub thread_root_list {
                         unknown_label => vs_text($f->simple_package_name, 'b_owner'),
                         auto_submit => 1,
                     }),
-                    map(
-                        Select({
-                            %{$f->get_select_attrs($_)},
-                            unknown_label => vs_text('CRMQueryForm', $_),
-                            auto_submit => 1,
-                        }),
-                        grep($f->get_field_type($_)->isa(
-                            'Bivio::Type::TupleChoiceList'),
-                             $f->tuple_tag_field_check),
-                    ),
+                    @{$self->internal_thread_root_list_selector_fields($f)},
                     ScriptOnly({
                         widget => Simple(''),
                         alt_widget => FormButton('ok_button')
