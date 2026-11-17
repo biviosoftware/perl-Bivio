@@ -138,6 +138,8 @@ sub internal_thread_root_list_columns {
     my($self, $model) = @_;
     return [
         _update_uri_column(qw(CRMThread.crm_thread_num String)),
+        _update_uri_column(qw(CRMThread.crm_thread_status Enum)),
+        _update_uri_column(qw(owner_name String)),
         # WidgetFactory uses singleton to find type so we have to do it here
         map([$_, {
             wf_type => $model->get_field_type($_),
@@ -146,8 +148,6 @@ sub internal_thread_root_list_columns {
          ['RealmMail.from_email', {
             column_widget => String(['RealmMail.from_email']),
         }],
-        _update_uri_column(qw(CRMThread.crm_thread_status Enum)),
-        _update_uri_column(qw(owner_name String)),
 #TODO: Put this in second row with colspan below all this other stuff
          ['CRMThread.subject', {
              order_by_names => 'CRMThread.subject_lc',
@@ -207,6 +207,19 @@ sub thread_root_list {
             vs_inline_form(
                 $f->simple_package_name,
                 [
+                    Join([
+                        FormFieldError({
+                            field => $num,
+                            label => $num_label,
+                            tag => 'span',
+                        }),
+                        Text({
+                            field => $num,
+                            size => $f->get_field_type($num)->get_width,
+                            class => 'form-control',
+                            PLACEHOLDER => $num_label,
+                        }),
+                    ]),
                     Select({
                         %{$f->get_select_attrs('b_status')},
                         unknown_label => vs_text('CRMQueryForm', 'b_status'),
@@ -223,19 +236,6 @@ sub thread_root_list {
                         auto_submit => 1,
                     }),
                     @{$self->internal_thread_root_list_selector_fields($f)},
-                    Join([
-                        FormFieldError({
-                            field => $num,
-                            label => $num_label,
-                            tag => 'span',
-                        }),
-                        Text({
-                            field => $num,
-                            size => $f->get_field_type($num)->get_width,
-                            class => 'form-control',
-                            PLACEHOLDER => $num_label,
-                        }),
-                    ]),
                     ScriptOnly({
                         widget => Simple(''),
                         alt_widget => FormButton('ok_button')
