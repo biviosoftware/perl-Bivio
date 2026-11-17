@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2021 Bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::CRMThreadRootList;
 use strict;
 use Bivio::Base 'Model.MailThreadRootList';
@@ -75,7 +75,9 @@ sub internal_post_load_row {
 sub internal_prepare_statement {
     my($self, $stmt) = @_;
     if (my $qf = $self->req->unsafe_get($self->LIST_QUERY_FORM_CLASS)) {
-        my($status, $owner) = $qf->unsafe_get(qw(b_status b_owner));
+        my($status, $owner, $num) = $qf->unsafe_get(qw(b_status b_owner b_crm_thread_num));
+        $stmt->where(['CRMThread.crm_thread_num', [$num]])
+            if defined($num);
         $stmt->where(['CRMThread.crm_thread_status', [
             $status->get_criteria_list,
         ]]) if $status;

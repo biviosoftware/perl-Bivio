@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2023 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2006-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::FacadeBase;
 use strict;
 use Bivio::Base 'UI.Facade';
@@ -936,6 +936,7 @@ sub _cfg_crm {
             [CRMQueryForm => [
                 b_status => 'Any Status',
                 b_owner => 'Any Assignee',
+                b_crm_thread_num => 'Ticket #',
             ]],
             [CRMThreadRootList => [
                 'CRMThread.subject' => 'Subject',

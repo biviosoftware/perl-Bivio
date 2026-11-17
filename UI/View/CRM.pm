@@ -1,5 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::View::CRM;
 use strict;
 use Bivio::Base 'View.Mail';
@@ -203,6 +202,8 @@ sub thread_root_list {
     $self->internal_put_base_attr(
         selector => [sub {
             my($f) = $_M->from_req(shift->req, 'CRMQueryForm');
+            my($num) = 'b_crm_thread_num';
+            my($num_label) = vs_text($f->simple_package_name, $num);
             vs_inline_form(
                 $f->simple_package_name,
                 [
@@ -222,6 +223,19 @@ sub thread_root_list {
                         auto_submit => 1,
                     }),
                     @{$self->internal_thread_root_list_selector_fields($f)},
+                    Join([
+                        FormFieldError({
+                            field => $num,
+                            label => $num_label,
+                            tag => 'span',
+                        }),
+                        Text({
+                            field => $num,
+                            size => $f->get_field_type($num)->get_width,
+                            class => 'form-control',
+                            PLACEHOLDER => $num_label,
+                        }),
+                    ]),
                     ScriptOnly({
                         widget => Simple(''),
                         alt_widget => FormButton('ok_button')
