@@ -214,7 +214,8 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # after_row : Bivio::UI::Widget
 #
 # An optional widget which will be rendered after every data row in a row of its
-# own, spanning all columns, with the same bgcolor and class as the data row.
+# own, spanning all columns, with the same bgcolor and class as the data row plus
+# class b_after_row.
 #
 #
 #
@@ -685,6 +686,14 @@ sub control_on_render {
             _row_prefix($state, $is_even_row),
             $_TRC->DATA,
         );
+        _render_extra_row(
+            $self,
+            'after_row',
+            $state->{cells},
+            $list,
+            $buffer,
+            _row_prefix($state, $is_even_row, 'b_after_row'),
+        );
         if (defined($grouping_field)) {
             $prev_value = $grouping_value;
         }
@@ -762,8 +771,6 @@ sub render_row {
             ? '</th>' : '</td>';
     }
     $$buffer .= "\n</tr>";
-    _render_extra_row($self, 'after_row', $cells, $source, $buffer, $row_prefix)
-        if $class == $_TRC->DATA;
     return;
 }
 
@@ -955,7 +962,7 @@ sub _render_trailer {
 }
 
 sub _row_prefix {
-    my($state, $is_even_row) = @_;
+    my($state, $is_even_row, $extra_class) = @_;
     my($color) = $state->{self}->render_simple_attr(
         'row_bgcolor', $state->{list});
     my($class) = join(
@@ -969,6 +976,7 @@ sub _row_prefix {
                 $is_even_row ? 'even_row_class' : 'odd_row_class',
                 $state->{list},
             ),
+            $extra_class,
         ),
     );
     _xhtml(

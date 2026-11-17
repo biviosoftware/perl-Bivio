@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::View::CSS;
 use strict;
 use Bivio::Base 'View.Base';
@@ -489,6 +488,18 @@ table.list tr, table.paged_list tr {
 }
 table.list .b_even_row, table.paged_list .b_even_row  {
   background-color: transparent;
+}
+table.list tr.b_data_row.b_after_row, table.paged_list tr.b_data_row.b_after_row {
+  border-top-style: hidden;
+  border-bottom-width: 2px;
+}
+table.list tr.b_data_row:hover + tr.b_after_row,
+table.paged_list tr.b_data_row:hover + tr.b_after_row {
+  Color('list_row_hover-background');
+}
+table.list tr.b_data_row:has<(>+ tr.b_after_row:hover<)>,
+table.paged_list tr.b_data_row:has<(>+ tr.b_after_row:hover<)> {
+  Color('list_row_hover-background');
 }
 div.dd_menu, div.cb_menu {
   ShadowAttr({

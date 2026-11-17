@@ -88,12 +88,12 @@ EOF
 <td>RP-LI-02</td>
 <td>Iguana</td>
 </tr>
-<tr class="b_data_row b_odd_row"><td colspan="2">Iguana</td></tr>
+<tr class="b_data_row b_odd_row b_after_row"><td colspan="2">Iguana</td></tr>
 <tr class="b_data_row b_even_row">
 <td>RP-SN-01</td>
 <td>Rattlesnake</td>
 </tr>
-<tr class="b_data_row b_even_row"><td colspan="2">Rattlesnake</td></tr>
+<tr class="b_data_row b_even_row b_after_row"><td colspan="2">Rattlesnake</td></tr>
 </table>
 EOF
     [[
