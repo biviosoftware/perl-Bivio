@@ -1,9 +1,31 @@
-# Copyright (c) 2008-2009 bivio Software Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 FormModel();
+my($num) = 3;
+my($open) = CRMThreadStatus('OPEN');
 [
     empty_case({
-        b_status => CRMThreadStatus('OPEN'),
+        b_status => $open,
         b_owner_name => undef,
+    }),
+    req_state({
+        query => {
+            b_crm_thread_num => $num,
+            b_status => CRMThreadStatus('CLOSED')->as_int,
+            b_owner => realm_id('crm_tech1'),
+        },
+    }),
+    empty_case({
+        b_crm_thread_num => $num,
+        b_status => undef,
+        b_owner => undef,
+    }),
+    req_state({
+        query => {
+            b_crm_thread_num => 'not-a-number',
+        },
+    }),
+    empty_case({
+        b_crm_thread_num => 'INTEGER',
+        b_status => $open,
     }),
 ];
