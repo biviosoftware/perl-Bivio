@@ -1,4 +1,4 @@
-# Copyright (c) 2002-2023 bivio Software, Inc.  All Rights Reserved.
+# Copyright (c) 2002-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::RealmAdmin;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
@@ -406,7 +406,7 @@ sub _info {
     my($user) = @_;
     return join("\n  ",
         join(' ',
-            $user->get(qw(name realm_id password)),
+            $user->get(qw(name realm_id)),
             $_DT->to_xml($user->get('creation_date_time')),
             $user->get('display_name'),
         ),
