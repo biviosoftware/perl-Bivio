@@ -3,13 +3,17 @@
 Request();
 my($sendmail_out) = 'sendmail.tmp';
 my($errors_to_user) = 'postmaster';
+my($fail_marker) = 'mock-sendmail-fail';
 config({
     'Bivio::Mail::Common' => {
         errors_to => $errors_to_user,
-        sendmail => "perl -w mock-sendmail.PL $sendmail_out ",
+        sendmail => "perl -w mock-sendmail.PL $sendmail_out $fail_marker ",
     },
 });
 my($errors_from_email, $errors_from_user) = class()->user_email(req());
+my($emoji) = "\x{1F928}";
+my($emoji_utf8) = $emoji;
+utf8::encode($emoji_utf8);
 [
     class() => [
         {
@@ -44,9 +48,18 @@ Recipients: a@a.a
 X-Bivio-Test-Recipient: a@a.a
 z
 OUT
-            ['a@a.a', <<"IN", 0, 'b@b.b', req()] => <<"OUT",
-\x{1F928}
-IN
+            ['a@a.a', "$emoji\n", 0, 'b@b.b', req()] => <<"OUT",
+From: b\@b.b
+Recipients: a\@a.a
+X-Bivio-Test-Recipient: a\@a.a
+$emoji_utf8
+OUT
+            ['a@a.a', "${emoji}x\n", 1, undef, req()] => <<"OUT",
+Recipients: a\@a.a
+X-Bivio-Test-Recipient: a\@a.a
+x
+OUT
+            ['a@a.a', "$fail_marker\n", 0, 'b@b.b', req()] => <<"OUT",
 Recipients: $errors_to_user
 X-Bivio-Test-Recipient: $errors_to_user
 From: "$errors_from_user" <$errors_from_email>
