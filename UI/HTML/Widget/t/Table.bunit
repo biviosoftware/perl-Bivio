@@ -1,5 +1,4 @@
-# Copyright (c) 2007-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2007-2026 Bivio Software, Inc.  All Rights Reserved.
 Widget({
     setup_render => sub {
         req()->put(task_id => Bivio::Agent::TaskId->PRODUCTS);
@@ -75,6 +74,26 @@ EOF
 <td>RP-SN-01</td>
 <td>Rattlesnake</td>
 </tr>
+</table>
+EOF
+    [{class => 'reptiles', after_row =>
+          class('HTMLWidget.String')->new(['Product.name'], 0)}] => _chomp(<<'EOF'),
+
+<table class="reptiles">
+<tr class="b_heading_row">
+<th><a rel="nofollow" href="/pub/products?p=REPTILES&amp;o=1a">Product ID</a></th>
+<th><a rel="nofollow" href="/pub/products?p=REPTILES&amp;o=0d">Product Name<span class="b_sort_arrow ascend"> &#9650;</span></a></th>
+</tr>
+<tr class="b_data_row b_odd_row">
+<td>RP-LI-02</td>
+<td>Iguana</td>
+</tr>
+<tr class="b_data_row b_odd_row"><td colspan="2">Iguana</td></tr>
+<tr class="b_data_row b_even_row">
+<td>RP-SN-01</td>
+<td>Rattlesnake</td>
+</tr>
+<tr class="b_data_row b_even_row"><td colspan="2">Rattlesnake</td></tr>
 </table>
 EOF
     [[

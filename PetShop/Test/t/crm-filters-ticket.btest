@@ -23,7 +23,9 @@ verify_local_mail($tech1, qr{\Q$email\E.*Status changed from New to Closed}s, 1)
 my($tickets) = sub {
     my($res) = [];
     do_table_rows('Ticket', sub {
-        push(@$res, shift->{Ticket}->as_string);
+        my($row) = @_;
+        push(@$res, $row->{Ticket}->as_string)
+            if $row->{Status};
         return 1;
     });
     return $res;
@@ -36,7 +38,12 @@ my($lookup) = sub {
 test_equals([$to_keep], $tickets->());
 $lookup->($to_close);
 test_equals([$to_close], $tickets->());
-do_table_rows('Ticket', sub {test_equals(qr{closed}i, shift->{Status})});
+do_table_rows('Ticket', sub {
+    my($row) = @_;
+    test_equals(qr{closed}i, $row->{Status})
+        if $row->{Status};
+    return 1;
+});
 $lookup->($to_keep + 1);
 verify_text('list is empty');
 test_deviance(qr{number without a decimal point});

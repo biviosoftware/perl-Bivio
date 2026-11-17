@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::HTML::Widget::Table;
 use strict;
 use Bivio::Base 'HTMLWidget.TableBase';
@@ -211,6 +210,11 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # before_row : Bivio::UI::Widget
 #
 # An optional widget which will be rendered before every row.
+#
+# after_row : Bivio::UI::Widget
+#
+# An optional widget which will be rendered after every data row in a row of its
+# own, spanning all columns, with the same bgcolor and class as the data row.
 #
 #
 #
@@ -541,6 +545,7 @@ sub initialize {
     }
     $self->unsafe_initialize_attr('empty_list_widget', $source);
     $self->unsafe_initialize_attr('before_row', $source);
+    $self->unsafe_initialize_attr('after_row', $source);
     foreach my $c (qw(
         even_row
         odd_row
@@ -711,7 +716,7 @@ sub render_row {
     # If in_list is true, then empty strings will be rendered as '&nbsp;'.
     my($self, $cells, $source, $buffer, $row_prefix, $class) = @_;
     my($req) = $self->get_request;
-    _render_before_row($self, scalar(@$cells), $source, $buffer)
+    _render_extra_row($self, 'before_row', $cells, $source, $buffer)
         unless $class == $_TRC->HEADING;
     $$buffer .= $row_prefix
         || "\n<tr"
@@ -757,6 +762,8 @@ sub render_row {
             ? '</th>' : '</td>';
     }
     $$buffer .= "\n</tr>";
+    _render_extra_row($self, 'after_row', $cells, $source, $buffer, $row_prefix)
+        if $class == $_TRC->DATA;
     return;
 }
 
@@ -881,11 +888,11 @@ sub _initialize_colspan {
     return;
 }
 
-sub _render_before_row {
-    my($self, $cols, $source, $buffer) = @_;
+sub _render_extra_row {
+    my($self, $attr, $cells, $source, $buffer, $row_prefix) = @_;
     my($b) = '';
-    $self->unsafe_render_attr('before_row', $source, \$b);
-    $$buffer .= qq(\n<tr><td colspan="$cols">$b</td></tr>)
+    $self->unsafe_render_attr($attr, $source, \$b);
+    $$buffer .= ($row_prefix || "\n<tr>") . '<td colspan="' . int(@$cells) . qq{">$b</td></tr>}
         if length($b);
     return;
 }

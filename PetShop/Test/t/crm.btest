@@ -1,5 +1,4 @@
-# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 test_setup('PetShop');
 home_page();
 my($forum) = generate_remote_email('crm');
@@ -13,7 +12,7 @@ die('no ticket')
     unless $ticket;
 login_as('crm_tech1');
 visit_uri('/crm_forum/tickets');
-follow_link_in_table('Ticket', 'Subject', $bug_subject);
+follow_link($bug_subject);
 follow_link('discuss_internally');
 submit_form(update => {
     assignee => "crm_tech1",
@@ -22,7 +21,7 @@ verify_local_mail($tech1, qr{Status: Open\s+Assignee: crm_tech1\s+Status changed
 test_deviance();
 verify_local_mail($cust1, qr{.}, 1);
 test_conformance();
-follow_link_in_table('Ticket', 'Subject', $bug_subject);
+follow_link($bug_subject);
 verify_text(qr{Status: Open.*Assignee: crm_tech1.*Status changed from New to Open.*Assignee changed from none to crm_tech1}s);
 follow_link('answer_1');
 verify_text("Open Ticket #$ticket");
@@ -47,7 +46,7 @@ $msg =~ /^Sender: crm\@/im || die('incorrect Sender: ', $msg);
 submit_form(Refresh => {
     'Any Status' => 'Any Status', # force filter to Any Status
 });
-follow_link_in_table('Ticket', 'Subject', ($subject =~ /.*#\d+\]\s*(.+)/)[0]);
+follow_link(($subject =~ /.*#\d+\]\s*(.+)/)[0]);
 verify_text("Closed Ticket #$ticket");
 verify_text(qr{Status: Closed.*Assignee: crm_tech1.*Status changed from Open to Closed}s);
 my($body) = 'but wait ' . random_string();
@@ -75,6 +74,9 @@ verify_local_mail($cust1, qr{Status: Open}, 1);
 test_conformance();
 $msg = verify_local_mail($cust1);
 test_ok($msg !~ /(To|Cc):.* \Q$forum/im, "found $forum");
+my($board_ticket) = $msg =~ m{^Subject: .*#(\d+)\]}mi;
+die('no board ticket')
+    unless $board_ticket;
 follow_link($board_subject);
 verify_text(qr{Status: Open.*Assignee: crm_tech1}s);
 follow_link('new_ticket');
@@ -85,15 +87,15 @@ submit_form({
 });
 verify_local_mail($tech1, qr{Status: Open\s+Assignee: crm_tech1}s, 1);
 visit_uri('/crm_forum/tickets');
-follow_link_in_table('Ticket', 'Subject', $bug_subject);
+follow_link($bug_subject);
 follow_link('discuss_internally_2');
 do_test_backdoor(RowTag => "-r crm_tech1 replace_value NO_CONFIRM_TASKS");
 visit_uri('/crm_forum/tickets');
-follow_link_in_table('Ticket', 'Subject', $bug_subject, 'Actions', 'close');
+follow_link_in_table('Ticket', 'Ticket', $ticket, 'Actions', 'close');
 verify_text($bug_subject);
 submit_form(OK => {
     do_not_show => 1,
 });
 verify_no_text($bug_subject);
-follow_link_in_table('Ticket', 'Subject', $board_subject, 'Actions', 'close');
+follow_link_in_table('Ticket', 'Ticket', $board_ticket, 'Actions', 'close');
 verify_no_text($board_subject);

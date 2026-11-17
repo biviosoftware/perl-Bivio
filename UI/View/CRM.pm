@@ -148,15 +148,6 @@ sub internal_thread_root_list_columns {
          ['RealmMail.from_email', {
             column_widget => String(['RealmMail.from_email']),
         }],
-#TODO: Put this in second row with colspan below all this other stuff
-         ['CRMThread.subject', {
-             order_by_names => 'CRMThread.subject_lc',
-            column_widget => Link(
-                String(['CRMThread.subject']),
-                ['->drilldown_uri'],
-            ),
-            column_data_class => 'b_word_break_all',
-         }],
          'CRMThread.modified_date_time',
          'modified_by_name',
         vs_actions_column([
@@ -251,6 +242,11 @@ sub thread_root_list {
             $self->internal_thread_root_list_columns(
                 $_M->from_req(shift->req, 'CRMThreadRootList'),
             ),
+            {
+                after_row => DIV_b_word_break_all(
+                    Link(String(['CRMThread.subject']), ['->drilldown_uri']),
+                ),
+            },
         );
     }])
 }
@@ -259,10 +255,10 @@ sub thread_root_list_csv {
     return shift->internal_body(
         CSV('CRMThreadRootList', [
             'CRMThread.crm_thread_num',
-            map($_, b_use('Model.CRMThreadRootList')->tuple_tag_field_check),
-            'RealmMail.from_email',
             'CRMThread.crm_thread_status',
             'owner_name',
+            map($_, b_use('Model.CRMThreadRootList')->tuple_tag_field_check),
+            'RealmMail.from_email',
             'CRMThread.subject',
             'CRMThread.modified_date_time',
             'modified_by_name',
