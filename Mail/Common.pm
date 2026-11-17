@@ -151,6 +151,7 @@ sub send {
     $recipients =~ s/'/'\\''/g;
     Bivio::Die->die('negative offset: ', $offset)
         if $offset < 0;
+    ($msg_ref, $offset) = _encode_wide_chars($msg_ref, $offset);
     $from =~ s/'/'\\''/g;
     $req ||= Bivio::Agent::Request->get_current_or_new;
     my($err) = _send($self, $recipients, $msg_ref, $offset, $from, $req);
@@ -193,6 +194,17 @@ sub user_email {
     # Returns ($email, $name)
     my($name) = getpwuid($>) || 'intruder';
     return ($req->format_email($name), $name);
+}
+
+sub _encode_wide_chars {
+    my($msg_ref, $offset) = @_;
+    return ($msg_ref, $offset)
+        unless utf8::is_utf8($$msg_ref) && $$msg_ref =~ /[^\x00-\xFF]/;
+    my($m) = $$msg_ref;
+    utf8::encode($m);
+    my($prefix) = substr($$msg_ref, 0, $offset);
+    utf8::encode($prefix);
+    return (\$m, length($prefix));
 }
 
 sub _send {
