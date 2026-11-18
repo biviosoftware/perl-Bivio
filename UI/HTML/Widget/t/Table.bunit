@@ -79,21 +79,25 @@ EOF
     [{class => 'reptiles', after_row =>
           class('HTMLWidget.String')->new(['Product.name'], 0)}] => _chomp(<<'EOF'),
 
-<table class="reptiles">
+<table style="--b-columns: 2;" class="reptiles">
 <tr class="b_heading_row">
 <th><a rel="nofollow" href="/pub/products?p=REPTILES&amp;o=1a">Product ID</a></th>
 <th><a rel="nofollow" href="/pub/products?p=REPTILES&amp;o=0d">Product Name<span class="b_sort_arrow ascend"> &#9650;</span></a></th>
 </tr>
+<tbody class="b_row_group">
 <tr class="b_data_row b_odd_row">
 <td>RP-LI-02</td>
 <td>Iguana</td>
 </tr>
 <tr class="b_data_row b_odd_row b_after_row"><td colspan="2">Iguana</td></tr>
+</tbody>
+<tbody class="b_row_group">
 <tr class="b_data_row b_even_row">
 <td>RP-SN-01</td>
 <td>Rattlesnake</td>
 </tr>
 <tr class="b_data_row b_even_row b_after_row"><td colspan="2">Rattlesnake</td></tr>
+</tbody>
 </table>
 EOF
     [[

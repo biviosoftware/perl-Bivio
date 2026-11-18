@@ -232,6 +232,13 @@ sub thread_root_list {
                         alt_widget => FormButton('ok_button')
                             ->put(label => 'Refresh'),
                     }),
+                    Link(
+                        vs_text($f->simple_package_name, 'default_filters'),
+                        URI({
+                            task_id => 'FORUM_CRM_THREAD_ROOT_LIST',
+                            query => undef,
+                        }),
+                    ),
                 ],
             ),
         }],

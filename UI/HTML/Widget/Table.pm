@@ -215,7 +215,9 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 #
 # An optional widget which will be rendered after every data row in a row of its
 # own, spanning all columns, with the same bgcolor and class as the data row plus
-# class b_after_row.
+# class b_after_row. Each data row and its after_row are wrapped in a
+# tbody.b_row_group, and the table's style sets --b-columns to the number of
+# columns, so CSS can style each pair as one box.
 #
 #
 #
@@ -559,6 +561,11 @@ sub initialize {
     )) {
         $self->initialize_attr($c . '_class', 'b_' . $c);
     }
+    $self->put(style => join(
+        ' ',
+        $self->unsafe_get('style') || (),
+        '--b-columns: ' . int(@$cells) . ';',
+    )) if $self->unsafe_get('after_row');
     $_VS->vs_html_attrs_initialize(
         $self,
         undef,
@@ -669,6 +676,7 @@ sub control_on_render {
 
     my($prev_value);
     my($grouping_field) = $self->unsafe_get('row_grouping_field');
+    my($want_row_group) = $self->unsafe_get('after_row') ? 1 : 0;
     $list->reset_cursor;
     while ($list->next_row) {
         my($grouping_value) = defined($grouping_field)
@@ -679,6 +687,8 @@ sub control_on_render {
                 if defined($grouping_field) && defined($prev_value)
                         && $prev_value ne $grouping_value;
 
+        $$buffer .= qq{\n<tbody class="b_row_group">}
+            if $want_row_group;
         $self->render_row(
             $state->{cells},
             $list,
@@ -694,6 +704,8 @@ sub control_on_render {
             $buffer,
             _row_prefix($state, $is_even_row, 'b_after_row'),
         );
+        $$buffer .= "\n</tbody>"
+            if $want_row_group;
         if (defined($grouping_field)) {
             $prev_value = $grouping_value;
         }

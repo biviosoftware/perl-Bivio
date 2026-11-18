@@ -489,18 +489,6 @@ table.list tr, table.paged_list tr {
 table.list .b_even_row, table.paged_list .b_even_row  {
   background-color: transparent;
 }
-table.list tr.b_data_row.b_after_row, table.paged_list tr.b_data_row.b_after_row {
-  border-top-style: hidden;
-  border-bottom-width: 2px;
-}
-table.list tr.b_data_row:hover + tr.b_after_row,
-table.paged_list tr.b_data_row:hover + tr.b_after_row {
-  Color('list_row_hover-background');
-}
-table.list tr.b_data_row:has<(>+ tr.b_after_row:hover<)>,
-table.paged_list tr.b_data_row:has<(>+ tr.b_after_row:hover<)> {
-  Color('list_row_hover-background');
-}
 div.dd_menu, div.cb_menu {
   ShadowAttr({
     box => '3px 3px 3px 3px rgba(102, 102, 102, 0.6)',
@@ -968,6 +956,62 @@ pre .text {
 }
 .b_odd_row {
   Color('odd-background');
+}
+table.list:has<(>> tbody.b_row_group<)>, table.paged_list:has<(>> tbody.b_row_group<)> {
+  display: grid;
+  grid-template-columns: repeat<(>var<(>--b-columns<)>, auto<)>;
+  row-gap: 10px;
+  width: fit-content;
+  margin-top: 1.75em;
+}
+table.list:has<(>> tbody.b_row_group<)> > tbody:not<(>.b_row_group<)>,
+table.paged_list:has<(>> tbody.b_row_group<)> > tbody:not<(>.b_row_group<)>,
+table.list:has<(>> tbody.b_row_group<)> > tbody.b_row_group > tr,
+table.paged_list:has<(>> tbody.b_row_group<)> > tbody.b_row_group > tr {
+  display: contents;
+}
+table.list:has<(>> tbody.b_row_group<)> > tbody:not<(>.b_row_group<)> > tr,
+table.paged_list:has<(>> tbody.b_row_group<)> > tbody:not<(>.b_row_group<)> > tr {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+table.list:has<(>> tbody.b_row_group<)> th, table.paged_list:has<(>> tbody.b_row_group<)> th {
+  text-align: left;
+}
+table.list:has<(>> tbody.b_row_group<)> th + th,
+table.paged_list:has<(>> tbody.b_row_group<)> th + th,
+table.list:has<(>> tbody.b_row_group<)> tr:not<(>.b_after_row<)> > td + td,
+table.paged_list:has<(>> tbody.b_row_group<)> tr:not<(>.b_after_row<)> > td + td {
+  border-left: 1px solid;
+  Color('list_column-border');
+}
+table.list:has<(>> tbody.b_row_group<)> > tbody.b_row_group,
+table.paged_list:has<(>> tbody.b_row_group<)> > tbody.b_row_group {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  border: 1px solid;
+  Color('list_row_group-border');
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba<(>0, 0, 0, 0.15<)>;
+  overflow: hidden;
+}
+table.list:has<(>> tbody.b_row_group<)> > tbody.b_row_group > tr:not<(>.b_after_row<)> > td,
+table.paged_list:has<(>> tbody.b_row_group<)> > tbody.b_row_group > tr:not<(>.b_after_row<)> > td {
+  background-color: rgba<(>0, 0, 0, 0.03<)>;
+}
+table.list:has<(>> tbody.b_row_group<)> > tbody.b_row_group:hover,
+table.paged_list:has<(>> tbody.b_row_group<)> > tbody.b_row_group:hover {
+  Color('list_row_hover-background');
+  Color('list_row_hover-border');
+}
+table.list:has<(>> tbody.b_row_group<)> tr.b_after_row > td,
+table.paged_list:has<(>> tbody.b_row_group<)> tr.b_after_row > td {
+  grid-column: 1 / -1;
+  padding: .75em 1em;
+  border-top: 1px solid;
+  Color('list_row-border');
 }
 p {
   text-align: left;
