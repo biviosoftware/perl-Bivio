@@ -225,8 +225,11 @@ sub thread_root_list {
                         auto_submit => 1,
                     }),
                     @{$self->internal_thread_root_list_selector_fields($f)},
+                    # Enter submits a form with several text fields only when it has a submit
+                    # button, so the JavaScript branch renders a hidden one.
                     ScriptOnly({
-                        widget => Simple(''),
+                        widget => FormButton('ok_button', 'b_hide')
+                            ->put(label => 'Refresh'),
                         alt_widget => FormButton('ok_button')
                             ->put(label => 'Refresh'),
                     }),
