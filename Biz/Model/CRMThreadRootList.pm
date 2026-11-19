@@ -6,6 +6,8 @@ use Bivio::Base 'Model.MailThreadRootList';
 my($_LOCATION) = b_use('Model.Email')->DEFAULT_LOCATION->as_sql_param;
 my($_CRMQF) = b_use('Model.CRMQueryForm');
 my($_E) = b_use('Type.Email');
+my($_GENERAL_ID) = b_use('Auth.RealmType')->GENERAL->as_int;
+my($_ADMINISTRATOR) = b_use('Auth.Role')->ADMINISTRATOR->as_sql_param;
 b_use('ClassWrapper.TupleTag')->wrap_methods(
     __PACKAGE__, b_use('Model.CRMForm')->TUPLE_TAG_INFO);
 
@@ -59,6 +61,46 @@ sub internal_initialize {
                     WHERE e.realm_id = crm_thread_t.modified_by_user_id
                     AND e.location = $_LOCATION
                 ) AS modified_by_email",
+            },
+            'CRMThread.modified_by_user_id',
+            {
+                name => 'modified_by_is_super_user',
+                type => 'Boolean',
+                constraint => 'NONE',
+                in_select => 1,
+                select_value => "EXISTS (
+                    SELECT ru.user_id
+                    FROM realm_user_t ru
+                    WHERE ru.realm_id = $_GENERAL_ID
+                    AND ru.user_id = crm_thread_t.modified_by_user_id
+                    AND ru.role = $_ADMINISTRATOR
+                ) AS modified_by_is_super_user",
+            },
+            {
+                name => 'from_user_id',
+                type => 'User.user_id',
+                constraint => 'NONE',
+                in_select => 1,
+                select_value => '(
+                    SELECT e.realm_id
+                    FROM email_t e, user_t u
+                    WHERE e.email = realm_mail_t.from_email
+                    AND u.user_id = e.realm_id
+                ) AS from_user_id',
+            },
+            {
+                name => 'from_is_super_user',
+                type => 'Boolean',
+                constraint => 'NONE',
+                in_select => 1,
+                select_value => "EXISTS (
+                    SELECT ru.user_id
+                    FROM realm_user_t ru, email_t e
+                    WHERE ru.realm_id = $_GENERAL_ID
+                    AND ru.user_id = e.realm_id
+                    AND ru.role = $_ADMINISTRATOR
+                    AND e.email = realm_mail_t.from_email
+                ) AS from_is_super_user",
             },
         ],
     });

@@ -1,0 +1,46 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+ListModel();
+my($tech) = 'crm_tech1';
+my($super) = 'root';
+req()->set_realm_and_user('crm_tuple_forum', $tech)->initialize_fully('FORUM_CRM_FORM');
+CRMThread()->test_unauth_delete_all({realm_id => req('auth_id')});
+my($is_super) = sub {
+    my($user) = @_;
+    return $user && $user eq $super ? 1 : 0;
+};
+my($rows) = [map({
+    my($modified_by, $from, $from_user) = @$_;
+    my($user_id, $from_user_id) = map($_ && realm_id($_), $modified_by, $from_user);
+    my($from_email) = email($from);
+    ShellUtil_TestCRM()->create_thread({'b_ticket.TupleTag.slot2' => 'High'});
+    req('Model.CRMThread')->update({modified_by_user_id => $user_id});
+    model(RealmMail => {realm_file_id => req(qw(Model.CRMThread thread_root_id))})
+        ->update({from_email => $from_email});
+    +{
+        'CRMThread.crm_thread_num' => req(qw(Model.CRMThread crm_thread_num)),
+        'CRMThread.modified_by_user_id' => $user_id,
+        modified_by_is_super_user => $is_super->($modified_by),
+        'RealmMail.from_email' => $from_email,
+        from_user_id => $from_user_id,
+        from_is_super_user => $is_super->($from_user),
+    };
+} (
+    [$tech, $tech, $tech],
+    [$super, $super, $super],
+    [undef, 'crm_cust1', undef],
+    [undef, "${tech}a", $tech],
+))];
+options({
+    compute_params => sub {
+        my(undef, $params) = @_;
+        req()->put(query => {@$params}, form => undef);
+        model('CRMQueryForm')->process;
+        return [];
+    },
+});
+[
+    load_all => [map(
+        ([b_crm_thread_num => $_->{'CRMThread.crm_thread_num'}] => [$_]),
+        @$rows,
+    )],
+];

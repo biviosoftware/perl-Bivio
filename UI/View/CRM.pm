@@ -145,11 +145,9 @@ sub internal_thread_root_list_columns {
             wf_type => $model->get_field_type($_),
             column_heading => String(vs_text($model->simple_package_name, $_)),
         }], $model->tuple_tag_field_check),
-         ['RealmMail.from_email', {
-            column_widget => String(['RealmMail.from_email']),
-        }],
+        _su_column(qw(RealmMail.from_email from_user_id from_is_super_user)),
          'CRMThread.modified_date_time',
-         'modified_by_name',
+        _su_column(qw(modified_by_name CRMThread.modified_by_user_id modified_by_is_super_user)),
         vs_actions_column([
             ['close', 'FORUM_CRM_CLOSE', 'THIS_AS_PARENT'],
         ]),
@@ -273,6 +271,29 @@ sub thread_root_list_csv {
             want_iterate_start => 1,
         }),
     );
+}
+
+sub _su_column {
+    my($field, $user_id, $is_super_user) = @_;
+    my($task) = 'ADM_SUBSTITUTE_USER';
+    return [$field, {
+        column_widget => If(
+            And(
+                [$user_id],
+                ['!', $is_super_user],
+                [['->req'], '->can_user_execute_task', $task],
+            ),
+            Link(
+                String([$field]),
+                URI({
+                    task_id => $task,
+                    query => {'ListQuery.this' => [$user_id]},
+                }),
+                {link_target => '_blank'},
+            ),
+            String([$field]),
+        ),
+    }];
 }
 
 sub _update_text {
