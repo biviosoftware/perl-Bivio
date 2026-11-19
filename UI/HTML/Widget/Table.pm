@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2009 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::HTML::Widget::Table;
 use strict;
 use Bivio::Base 'HTMLWidget.TableBase';
@@ -211,6 +210,14 @@ use Bivio::UI::ViewLanguageAUTOLOAD;
 # before_row : Bivio::UI::Widget
 #
 # An optional widget which will be rendered before every row.
+#
+# after_row : Bivio::UI::Widget
+#
+# An optional widget which will be rendered after every data row in a row of its
+# own, spanning all columns, with the same bgcolor and class as the data row plus
+# class b_after_row. Each data row and its after_row are wrapped in a
+# tbody.b_row_group, and the table's style sets --b-columns to the number of
+# columns, so CSS can style each pair as one box.
 #
 #
 #
@@ -541,6 +548,7 @@ sub initialize {
     }
     $self->unsafe_initialize_attr('empty_list_widget', $source);
     $self->unsafe_initialize_attr('before_row', $source);
+    $self->unsafe_initialize_attr('after_row', $source);
     foreach my $c (qw(
         even_row
         odd_row
@@ -553,6 +561,11 @@ sub initialize {
     )) {
         $self->initialize_attr($c . '_class', 'b_' . $c);
     }
+    $self->put(style => join(
+        ' ',
+        $self->unsafe_get('style') || (),
+        '--b-columns: ' . int(@$cells) . ';',
+    )) if $self->unsafe_get('after_row');
     $_VS->vs_html_attrs_initialize(
         $self,
         undef,
@@ -663,6 +676,7 @@ sub control_on_render {
 
     my($prev_value);
     my($grouping_field) = $self->unsafe_get('row_grouping_field');
+    my($want_row_group) = $self->unsafe_get('after_row') ? 1 : 0;
     $list->reset_cursor;
     while ($list->next_row) {
         my($grouping_value) = defined($grouping_field)
@@ -673,6 +687,8 @@ sub control_on_render {
                 if defined($grouping_field) && defined($prev_value)
                         && $prev_value ne $grouping_value;
 
+        $$buffer .= qq{\n<tbody class="b_row_group">}
+            if $want_row_group;
         $self->render_row(
             $state->{cells},
             $list,
@@ -680,6 +696,16 @@ sub control_on_render {
             _row_prefix($state, $is_even_row),
             $_TRC->DATA,
         );
+        _render_extra_row(
+            $self,
+            'after_row',
+            $state->{cells},
+            $list,
+            $buffer,
+            _row_prefix($state, $is_even_row, 'b_after_row'),
+        );
+        $$buffer .= "\n</tbody>"
+            if $want_row_group;
         if (defined($grouping_field)) {
             $prev_value = $grouping_value;
         }
@@ -711,7 +737,7 @@ sub render_row {
     # If in_list is true, then empty strings will be rendered as '&nbsp;'.
     my($self, $cells, $source, $buffer, $row_prefix, $class) = @_;
     my($req) = $self->get_request;
-    _render_before_row($self, scalar(@$cells), $source, $buffer)
+    _render_extra_row($self, 'before_row', $cells, $source, $buffer)
         unless $class == $_TRC->HEADING;
     $$buffer .= $row_prefix
         || "\n<tr"
@@ -881,11 +907,11 @@ sub _initialize_colspan {
     return;
 }
 
-sub _render_before_row {
-    my($self, $cols, $source, $buffer) = @_;
+sub _render_extra_row {
+    my($self, $attr, $cells, $source, $buffer, $row_prefix) = @_;
     my($b) = '';
-    $self->unsafe_render_attr('before_row', $source, \$b);
-    $$buffer .= qq(\n<tr><td colspan="$cols">$b</td></tr>)
+    $self->unsafe_render_attr($attr, $source, \$b);
+    $$buffer .= ($row_prefix || "\n<tr>") . '<td colspan="' . int(@$cells) . qq{">$b</td></tr>}
         if length($b);
     return;
 }
@@ -948,7 +974,7 @@ sub _render_trailer {
 }
 
 sub _row_prefix {
-    my($state, $is_even_row) = @_;
+    my($state, $is_even_row, $extra_class) = @_;
     my($color) = $state->{self}->render_simple_attr(
         'row_bgcolor', $state->{list});
     my($class) = join(
@@ -962,6 +988,7 @@ sub _row_prefix {
                 $is_even_row ? 'even_row_class' : 'odd_row_class',
                 $state->{list},
             ),
+            $extra_class,
         ),
     );
     _xhtml(

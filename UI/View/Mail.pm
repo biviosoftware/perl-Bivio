@@ -250,7 +250,7 @@ sub internal_thread_list {
 }
 
 sub internal_thread_root_list {
-    my($self, $columns) = @_;
+    my($self, $columns, $attrs) = @_;
     my($name) = _name($self, 'XxThreadRootList');
     return vs_paged_list(
         $name,
@@ -260,6 +260,7 @@ sub internal_thread_root_list {
             show_headings => $name =~ /Mail/
                 ? (b_use('UI.Facade')->is_2014style ? 0 : 1)
                 : 1,
+            %{$attrs || {}},
         },
     );
 }

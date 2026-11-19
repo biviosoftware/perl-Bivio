@@ -1,5 +1,4 @@
-# Copyright (c) 2008 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::View::CRM;
 use strict;
 use Bivio::Base 'View.Mail';
@@ -139,6 +138,8 @@ sub internal_thread_root_list_columns {
     my($self, $model) = @_;
     return [
         _update_uri_column(qw(CRMThread.crm_thread_num String)),
+        _update_uri_column(qw(CRMThread.crm_thread_status Enum)),
+        _update_uri_column(qw(owner_name String)),
         # WidgetFactory uses singleton to find type so we have to do it here
         map([$_, {
             wf_type => $model->get_field_type($_),
@@ -147,17 +148,6 @@ sub internal_thread_root_list_columns {
          ['RealmMail.from_email', {
             column_widget => String(['RealmMail.from_email']),
         }],
-        _update_uri_column(qw(CRMThread.crm_thread_status Enum)),
-        _update_uri_column(qw(owner_name String)),
-#TODO: Put this in second row with colspan below all this other stuff
-         ['CRMThread.subject', {
-             order_by_names => 'CRMThread.subject_lc',
-            column_widget => Link(
-                String(['CRMThread.subject']),
-                ['->drilldown_uri'],
-            ),
-            column_data_class => 'b_word_break_all',
-         }],
          'CRMThread.modified_date_time',
          'modified_by_name',
         vs_actions_column([
@@ -203,9 +193,24 @@ sub thread_root_list {
     $self->internal_put_base_attr(
         selector => [sub {
             my($f) = $_M->from_req(shift->req, 'CRMQueryForm');
+            my($num) = 'b_crm_thread_num';
+            my($num_label) = vs_text($f->simple_package_name, $num);
             vs_inline_form(
                 $f->simple_package_name,
                 [
+                    Join([
+                        FormFieldError({
+                            field => $num,
+                            label => $num_label,
+                            tag => 'span',
+                        }),
+                        Text({
+                            field => $num,
+                            size => $f->get_field_type($num)->get_width,
+                            class => 'form-control',
+                            PLACEHOLDER => $num_label,
+                        }),
+                    ]),
                     Select({
                         %{$f->get_select_attrs('b_status')},
                         unknown_label => vs_text('CRMQueryForm', 'b_status'),
@@ -227,6 +232,13 @@ sub thread_root_list {
                         alt_widget => FormButton('ok_button')
                             ->put(label => 'Refresh'),
                     }),
+                    Link(
+                        vs_text($f->simple_package_name, 'default_filters'),
+                        URI({
+                            task_id => 'FORUM_CRM_THREAD_ROOT_LIST',
+                            query => undef,
+                        }),
+                    ),
                 ],
             ),
         }],
@@ -237,6 +249,11 @@ sub thread_root_list {
             $self->internal_thread_root_list_columns(
                 $_M->from_req(shift->req, 'CRMThreadRootList'),
             ),
+            {
+                after_row => DIV_b_word_break_all(
+                    Link(String(['CRMThread.subject']), ['->drilldown_uri']),
+                ),
+            },
         );
     }])
 }
@@ -245,10 +262,10 @@ sub thread_root_list_csv {
     return shift->internal_body(
         CSV('CRMThreadRootList', [
             'CRMThread.crm_thread_num',
-            map($_, b_use('Model.CRMThreadRootList')->tuple_tag_field_check),
-            'RealmMail.from_email',
             'CRMThread.crm_thread_status',
             'owner_name',
+            map($_, b_use('Model.CRMThreadRootList')->tuple_tag_field_check),
+            'RealmMail.from_email',
             'CRMThread.subject',
             'CRMThread.modified_date_time',
             'modified_by_name',
