@@ -285,7 +285,7 @@ sub _cfg_base {
             [list_heading_border_bottom => 0x96c4ea],
             [list_row_border => 0xedf1f5],
             [list_column_border => 0xe1e7ed],
-            [list_row_group_border => 0xd5dde5],
+            [list_row_group_border => 0xb4bec8],
             [list_row_hover_background => 0xf5fbfe],
             [list_row_hover_border => 0xc6d8e4],
         ],
