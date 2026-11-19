@@ -149,7 +149,7 @@ sub internal_thread_root_list_columns {
             column_widget => String(['RealmMail.from_email']),
         }],
          'CRMThread.modified_date_time',
-         'modified_by_name',
+        _modified_by_column(),
         vs_actions_column([
             ['close', 'FORUM_CRM_CLOSE', 'THIS_AS_PARENT'],
         ]),
@@ -273,6 +273,29 @@ sub thread_root_list_csv {
             want_iterate_start => 1,
         }),
     );
+}
+
+sub _modified_by_column {
+    my($name, $user_id, $task)
+        = qw(modified_by_name CRMThread.modified_by_user_id ADM_SUBSTITUTE_USER);
+    return [$name, {
+        column_widget => If(
+            And(
+                [$user_id],
+                ['!', 'modified_by_is_super_user'],
+                [['->req'], '->can_user_execute_task', $task],
+            ),
+            Link(
+                String([$name]),
+                URI({
+                    task_id => $task,
+                    query => {'ListQuery.this' => [$user_id]},
+                }),
+                {link_target => '_blank'},
+            ),
+            String([$name]),
+        ),
+    }];
 }
 
 sub _update_text {
