@@ -1,0 +1,30 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+ListModel();
+my($tech) = 'crm_tech1';
+req()->set_realm_and_user('crm_tuple_forum', $tech)->initialize_fully('FORUM_CRM_FORM');
+CRMThread()->test_unauth_delete_all({realm_id => req('auth_id')});
+my($rows) = [map({
+    my($user) = $_;
+    my($user_id) = $user && realm_id($user);
+    ShellUtil_TestCRM()->create_thread({'b_ticket.TupleTag.slot2' => 'High'});
+    req('Model.CRMThread')->update({modified_by_user_id => $user_id});
+    +{
+        'CRMThread.crm_thread_num' => req(qw(Model.CRMThread crm_thread_num)),
+        'CRMThread.modified_by_user_id' => $user_id,
+        modified_by_is_super_user => $user && $user eq 'root' ? 1 : 0,
+    };
+} $tech, 'root', undef)];
+options({
+    compute_params => sub {
+        my(undef, $params) = @_;
+        req()->put(query => {@$params}, form => undef);
+        model('CRMQueryForm')->process;
+        return [];
+    },
+});
+[
+    load_all => [map(
+        ([b_crm_thread_num => $_->{'CRMThread.crm_thread_num'}] => [$_]),
+        @$rows,
+    )],
+];
