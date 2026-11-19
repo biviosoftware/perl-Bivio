@@ -1,0 +1,106 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+Unit();
+my($tmp) = Cwd::realpath(tmp_dir());
+my($main) = "$tmp/App";
+my($wt) = "$tmp/wt";
+my($bivio) = IO_File()->mkdir_p("$tmp/Bivio");
+my($static) = "$tmp/static";
+my($db) = 'files/db';
+my($plain_b) = 'files/site/plain/b';
+my($child_b) = 'files/child/plain/b';
+my($child_target) = '../../site/plain/b';
+my($perllib) = "$main/.git/worktrees/wt/perllib";
+my($copied) = [qw(Filtrum InstrumentDB)];
+my($shared) = [qw(Cache RealmFile Xapian)];
+my($content) = "main\n";
+my($git) = sub {
+    return class()->piped_exec(
+        [qw(git -c user.name=bunit -c user.email=bunit@example.com -C), $main, @_]);
+};
+foreach my $f (
+    "$main/files/site/plain/f/app.css",
+    map("$main/$db/$_/1", @$copied, @$shared),
+    "$static/b.js",
+) {
+    IO_File()->mkdir_parent_only($f);
+    write_file($f, $content);
+}
+write_file("$main/.gitignore", join("\n", "/$db/", "/$plain_b", '/files/child', ''));
+IO_File()->mkdir_parent_only("$main/$child_b");
+IO_File()->symlink($static, "$main/$plain_b");
+IO_File()->symlink($child_target, "$main/$child_b");
+$git->(qw(init --quiet));
+$git->(qw(add --all));
+$git->(qw(commit --quiet --no-verify --message init));
+$git->(qw(worktree add --quiet --detach), $wt);
+config({
+    'Bivio::UI::Facade' => {
+        local_file_root => "$main/files",
+    },
+    'Bivio::Biz::File' => {
+        root => "$main/$db",
+    },
+    'Bivio::Search::Xapian' => {
+        db_path => "$main/$db/Xapian",
+    },
+});
+my($env) = "export PERLLIB='$perllib:$ENV{PERLLIB}' BCONF='$ENV{BCONF}'";
+my($assert_setup) = sub {
+    my($bivio_dir, $instrument_db) = @_;
+    my($links) = {
+        map(("$wt/$db/$_" => "$main/$db/$_"), @$shared),
+        "$wt/$plain_b" => $static,
+        "$wt/$child_b" => $child_target,
+        "$perllib/App" => $wt,
+        "$perllib/Bivio" => $bivio_dir,
+    };
+    assert_equals($links, {map(($_ => readlink($_)), keys(%$links))});
+    assert_equals(
+        {Filtrum => [0, $content], InstrumentDB => [0, $instrument_db]},
+        {map(($_ => [-l "$wt/$db/$_" ? 1 : 0, ${read_file("$wt/$db/$_/1")}]), @$copied)},
+    );
+    return 1;
+};
+[
+    class() => [
+        worktree_setup => [
+            [$main] => qr{is the main checkout},
+            [$wt, $bivio] => sub {
+                my(undef, $actual) = @_;
+                assert_equals([$env], $actual);
+                return $assert_setup->($bivio, $content);
+            },
+        ],
+    ],
+    inline_case(sub {
+        my($wt_content) = "worktree\n";
+        write_file("$wt/$db/InstrumentDB/1", $wt_content);
+        rm_rf("$wt/$db/Filtrum");
+        IO_File()->symlink("$main/$db/Filtrum", "$wt/$db/Filtrum");
+        unlink("$wt/$db/Xapian");
+        IO_File()->symlink($static, "$wt/$db/Xapian");
+        local($ENV{PERLLIB}) = "$perllib:$ENV{PERLLIB}";
+        assert_equals(
+            [$env],
+            [IO_File()->do_in_dir("$wt/files", sub {class()->worktree_setup})],
+        );
+        $assert_setup->(
+            Cwd::realpath(IO_Config()->bootstrap_package_dir('Bivio::BConf')),
+            $wt_content,
+        );
+    }),
+    inline_case(sub {
+        $git->(qw(worktree remove), $wt);
+        my($kept) = [map("$main/$db/$_/1", @$copied, @$shared), "$static/b.js"];
+        assert_equals(
+            {$wt => 0, $perllib => 0, map(($_ => $content), @$kept)},
+            {
+                map(($_ => -e $_ ? 1 : 0), $wt, $perllib),
+                map(($_ => ${read_file($_)}), @$kept),
+            },
+        );
+    }),
+    inline_case(sub {
+        rm_rf($tmp);
+    }),
+];
