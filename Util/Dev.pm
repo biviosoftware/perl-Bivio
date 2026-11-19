@@ -1,8 +1,10 @@
-# Copyright (c) 2008-2013 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::Dev;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
+use Cwd ();
+use File::Basename ();
+use File::Spec ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
 
@@ -15,6 +17,7 @@ commands
   setup_bconf_d_defaults_bconf - creates ~/bconf.d/defaults.bconf
   setup_btest_mail - creates ~/btest-mail/ and ~/.procmailrc
   setup_src - creates ~/src
+  worktree_setup [worktree [bivio_dir]] - prepares a git worktree of the BCONF app, prints env
 EOF
 }
 
@@ -129,6 +132,110 @@ sub setup_src {
             }
         },
     );
+    return;
+}
+
+sub worktree_setup {
+    my($self, $worktree, $bivio) = @_;
+    my($wt, $main, $git_dir) = _git_dirs($self, $worktree);
+    my($repos) = [$main, $wt];
+    my($app, $files) = _repo_path(UI_Facade()->get_local_file_root, $repos);
+    my($db) = (_repo_path(Biz_File()->absolute_path(''), $repos))[1];
+    b_die(UI_Facade()->get_local_file_root, ': BCONF app files not in ', $main, ' or ', $wt)
+        unless defined($files) && defined($db);
+    my($plain_b) = Type_FilePath()->join(
+        '*',
+        UI_LocalFileType()->PLAIN->get_path,
+        UI_Facade()->get_local_file_plain_common_uri,
+    );
+    foreach my $p (_glob("$main/$files", $plain_b)) {
+        _link(readlink("$main/$files/$p"), "$wt/$files/$p")
+            if -l "$main/$files/$p";
+    }
+    # The dev DB is shared, so files that its rows reference or are derived from must be too
+    my($shared) = {map(
+        ($_ => 1),
+        map(
+            (_repo_path($_, $repos))[1],
+            Search_Xapian()->get_db_path,
+            map(Biz_File()->absolute_path($_), qw(Cache ModelBulletin RealmFile)),
+        ),
+    )};
+    IO_File()->mkdir_p("$wt/$db");
+    foreach my $x (map("$db/$_", _glob("$main/$db", '*'))) {
+        $shared->{$x} ? _link("$main/$x", "$wt/$x") : _copy($self, "$main/$x", "$wt/$x");
+    }
+    my($perllib) = "$git_dir/perllib";
+    # For perl-Bivio apps $app is Bivio, so the worktree overrides bivio_dir
+    my($links) = {
+        Bivio => Cwd::realpath($bivio || IO_Config()->bootstrap_package_dir('Bivio::BConf'))
+            || b_die($bivio, ': bivio_dir not found'),
+        $app => $wt,
+    };
+    foreach my $name (sort(keys(%$links))) {
+        _link($links->{$name}, "$perllib/$name");
+    }
+    return "export PERLLIB='"
+        . join(':', $perllib, grep($_ ne $perllib, split(/:/, $ENV{PERLLIB} || '')))
+        . "' BCONF='$ENV{BCONF}'";
+}
+
+sub _copy {
+    my($self, $from, $to) = @_;
+    # A link here would let tests rewrite the main checkout's data
+    unlink($to) || b_die($to, ": unlink: $!")
+        if -l $to;
+    $self->piped_exec([qw(cp --archive), $from, $to])
+        unless -e $to;
+    return;
+}
+
+sub _git_dirs {
+    my($self, $dir) = @_;
+    my($wt, $common, $git_dir) = map(
+        Cwd::realpath($_),
+        split(/\n/, ${$self->piped_exec([
+            qw(git -C), $dir || '.',
+            qw(rev-parse --show-toplevel --path-format=absolute),
+            qw(--git-common-dir --absolute-git-dir),
+        ])}),
+    );
+    my($main) = File::Basename::dirname($common);
+    b_die($wt, ': is the main checkout, not a linked worktree')
+        if $wt eq $main;
+    return ($wt, $main, $git_dir);
+}
+
+sub _glob {
+    my($dir, $pattern) = @_;
+    return -d $dir ? IO_File()->do_in_dir($dir, sub {glob($pattern)}) : ();
+}
+
+sub _link {
+    my($target, $link) = @_;
+    return
+        if (readlink($link) || '') eq $target;
+    b_die($link, ': exists and is not a symlink')
+        if -e $link && ! -l $link;
+    IO_File()->mkdir_parent_only($link);
+    # rename(2) replaces an existing link atomically
+    my($tmp) = "$link.$$";
+    IO_File()->symlink($target, $tmp);
+    IO_File()->rename($tmp, $link);
+    return;
+}
+
+sub _repo_path {
+    my($path, $repos) = @_;
+    my($dir) = File::Spec->canonpath($path);
+    my($rel) = '';
+    until ($dir eq File::Basename::dirname($dir)) {
+        my($real) = Cwd::realpath($dir) || '';
+        return (File::Basename::basename($dir), $rel)
+            if grep($real eq $_, @$repos);
+        $rel = Type_FilePath()->join(File::Basename::basename($dir), $rel);
+        $dir = File::Basename::dirname($dir);
+    }
     return;
 }
 

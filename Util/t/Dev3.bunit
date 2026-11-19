@@ -33,6 +33,7 @@ $git->(qw(init --quiet));
 $git->(qw(add --all));
 $git->(qw(commit --quiet --no-verify --message init));
 $git->(qw(worktree add --quiet --detach), $wt);
+my($facade_root) = UI_Facade()->get_local_file_root;
 config({
     'Bivio::UI::Facade' => {
         local_file_root => "$main/files",
@@ -101,6 +102,11 @@ my($assert_setup) = sub {
         );
     }),
     inline_case(sub {
+        config({
+            'Bivio::UI::Facade' => {
+                local_file_root => $facade_root,
+            },
+        });
         rm_rf($tmp);
     }),
 ];
