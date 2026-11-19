@@ -17,6 +17,7 @@ die('no ticket')
     unless $to_close && $to_keep;
 visit_uri($uri);
 follow_link('tickets');
+verify_text(qr{document\.write\('(?=[^\n]*type="submit")[^\n]*value="Refresh"});
 follow_link(qr{^$to_close$});
 submit_form(only => {status => 'Closed'});
 verify_local_mail($tech1, qr{\Q$email\E.*Status changed from New to Closed}s, 1);

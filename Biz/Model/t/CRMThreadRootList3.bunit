@@ -2,16 +2,22 @@
 ListModel();
 my($tech) = 'crm_tech1';
 my($super) = 'root';
+my($sender) = 'crm_tech2';
 req()->set_realm_and_user('crm_tuple_forum', $tech)->initialize_fully('FORUM_CRM_FORM');
 CRMThread()->test_unauth_delete_all({realm_id => req('auth_id')});
+model('RowTag')->row_tag_replace(CANONICAL_SENDER_EMAIL => email($sender));
 my($is_super) = sub {
     my($user) = @_;
     return $user && $user eq $super ? 1 : 0;
 };
+my($rewrite) = sub {
+    my($realm_id) = @_;
+    return Type_Email()->format_email(
+        $realm_id, undef, undef, Action_MailForward()->REWRITE_FROM_DOMAIN_URI, req());
+};
 my($rows) = [map({
-    my($modified_by, $from, $from_user) = @$_;
+    my($modified_by, $from_email, $from_user) = @$_;
     my($user_id, $from_user_id) = map($_ && realm_id($_), $modified_by, $from_user);
-    my($from_email) = email($from);
     ShellUtil_TestCRM()->create_thread({'b_ticket.TupleTag.slot2' => 'High'});
     req('Model.CRMThread')->update({modified_by_user_id => $user_id});
     model(RealmMail => {realm_file_id => req(qw(Model.CRMThread thread_root_id))})
@@ -25,10 +31,14 @@ my($rows) = [map({
         from_is_super_user => $is_super->($from_user),
     };
 } (
-    [$tech, $tech, $tech],
-    [$super, $super, $super],
-    [undef, 'crm_cust1', undef],
-    [undef, "${tech}a", $tech],
+    [$tech, email($tech), $tech],
+    [$super, email($super), $super],
+    [undef, email('crm_cust1'), undef],
+    [undef, email("${tech}a"), $tech],
+    [undef, $rewrite->(realm_id($tech)), $tech],
+    [undef, $rewrite->(realm_id($super)), $super],
+    [undef, $rewrite->(req('auth_id')), undef],
+    [undef, email($sender), undef],
 ))];
 options({
     compute_params => sub {

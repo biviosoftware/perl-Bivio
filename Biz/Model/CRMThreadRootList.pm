@@ -8,6 +8,28 @@ my($_CRMQF) = b_use('Model.CRMQueryForm');
 my($_E) = b_use('Type.Email');
 my($_GENERAL_ID) = b_use('Auth.RealmType')->GENERAL->as_int;
 my($_ADMINISTRATOR) = b_use('Auth.Role')->ADMINISTRATOR->as_sql_param;
+my($_CANONICAL_SENDER) = b_use('Type.RowTagKey')->CANONICAL_SENDER_EMAIL->as_sql_param;
+my($_REWRITE) = b_use('Action.MailForward')->REWRITE_FROM_DOMAIN_URI;
+my($_FROM_USER_ID) = "CASE WHEN EXISTS (
+        SELECT rt.primary_id
+        FROM row_tag_t rt
+        WHERE rt.primary_id = realm_mail_t.realm_id
+        AND rt.key = $_CANONICAL_SENDER
+        AND LOWER(rt.value) = LOWER(realm_mail_t.from_email)
+    ) THEN NULL ELSE COALESCE(
+        (
+            SELECT u.user_id
+            FROM user_t u
+            WHERE u.user_id = CAST(
+                SUBSTRING(realm_mail_t.from_email FROM '^$_REWRITE\[*]([0-9]+)\@') AS NUMERIC)
+        ),
+        (
+            SELECT e.realm_id
+            FROM email_t e, user_t u
+            WHERE e.email = realm_mail_t.from_email
+            AND u.user_id = e.realm_id
+        )
+    ) END";
 b_use('ClassWrapper.TupleTag')->wrap_methods(
     __PACKAGE__, b_use('Model.CRMForm')->TUPLE_TAG_INFO);
 
@@ -81,12 +103,7 @@ sub internal_initialize {
                 type => 'User.user_id',
                 constraint => 'NONE',
                 in_select => 1,
-                select_value => '(
-                    SELECT e.realm_id
-                    FROM email_t e, user_t u
-                    WHERE e.email = realm_mail_t.from_email
-                    AND u.user_id = e.realm_id
-                ) AS from_user_id',
+                select_value => "($_FROM_USER_ID) AS from_user_id",
             },
             {
                 name => 'from_is_super_user',
@@ -95,11 +112,10 @@ sub internal_initialize {
                 in_select => 1,
                 select_value => "EXISTS (
                     SELECT ru.user_id
-                    FROM realm_user_t ru, email_t e
+                    FROM realm_user_t ru
                     WHERE ru.realm_id = $_GENERAL_ID
-                    AND ru.user_id = e.realm_id
                     AND ru.role = $_ADMINISTRATOR
-                    AND e.email = realm_mail_t.from_email
+                    AND ru.user_id = ($_FROM_USER_ID)
                 ) AS from_is_super_user",
             },
         ],
