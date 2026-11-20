@@ -1,13 +1,13 @@
 # Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
 Unit();
-my($min_git) = class()->MIN_GIT_VERSION;
+my($min_git) = class()->WORKTREE_SETUP_MIN_GIT_VERSION;
 return [
     class() => [
         worktree_setup => [
-            [] => qr{git \Q$min_git\E or later is required},
+            [] => qr{worktree_setup requires git \Q$min_git\E or later},
         ],
     ],
-] unless class()->is_git_version_ok;
+] unless class()->is_worktree_setup_supported;
 my($tmp) = Cwd::realpath(tmp_dir());
 my($main) = "$tmp/App";
 my($wt) = "$tmp/wt";
