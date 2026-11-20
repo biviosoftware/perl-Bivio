@@ -5,6 +5,7 @@ use Bivio::Base 'Bivio.ShellUtil';
 use Cwd ();
 use File::Basename ();
 use File::Spec ();
+use version ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
 
@@ -21,6 +22,11 @@ commands
 EOF
 }
 
+sub WORKTREE_SETUP_MIN_GIT_VERSION {
+    # git rev-parse --path-format
+    return '2.31';
+}
+
 sub bashrc_b_env_aliases {
     my($self) = @_;
     return join(
@@ -33,6 +39,14 @@ sub bashrc_b_env_aliases {
             },
         )},
     );
+}
+
+sub is_worktree_setup_supported {
+    my($self) = @_;
+    my($v) = ${$self->piped_exec([qw(git --version)])} =~ /(\d+(?:\.\d+)+)/;
+    return $v
+        && version->parse("v$v") >= version->parse('v' . $self->WORKTREE_SETUP_MIN_GIT_VERSION)
+        ? 1 : 0;
 }
 
 sub setup_all {
@@ -192,6 +206,8 @@ sub _copy {
 
 sub _git_dirs {
     my($self, $dir) = @_;
+    b_die('worktree_setup requires git ', $self->WORKTREE_SETUP_MIN_GIT_VERSION, ' or later')
+        unless $self->is_worktree_setup_supported;
     my($wt, $common, $git_dir) = map(
         Cwd::realpath($_),
         split(/\n/, ${$self->piped_exec([
