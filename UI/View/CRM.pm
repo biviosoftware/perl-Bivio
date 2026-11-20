@@ -228,8 +228,8 @@ sub thread_root_list {
                     # Enter submits a form with several text fields only when it has a submit
                     # button, so the JavaScript branch renders a hidden one.
                     ScriptOnly({
-                        widget => FormButton('ok_button', 'b_hide')
-                            ->put(label => 'Refresh'),
+                        widget => FormButton('ok_button')
+                            ->put(label => 'Refresh', class => 'b_hide'),
                         alt_widget => FormButton('ok_button')
                             ->put(label => 'Refresh'),
                     }),
