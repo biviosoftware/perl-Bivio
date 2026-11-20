@@ -10,7 +10,8 @@ my($plain_b) = 'files/site/plain/b';
 my($child_b) = 'files/child/plain/b';
 my($child_target) = '../../site/plain/b';
 my($perllib) = "$main/.git/worktrees/wt/perllib";
-my($copied) = [qw(Filtrum InstrumentDB)];
+my($restored, $modified) = qw(Restored Modified);
+my($copied) = [$restored, $modified];
 my($shared) = [qw(Cache RealmFile Xapian)];
 my($content) = "main\n";
 my($git) = sub {
@@ -47,7 +48,7 @@ config({
 });
 my($env) = "export PERLLIB='$perllib:$ENV{PERLLIB}' BCONF='$ENV{BCONF}'";
 my($assert_setup) = sub {
-    my($bivio_dir, $instrument_db) = @_;
+    my($bivio_dir, $modified_content) = @_;
     my($links) = {
         map(("$wt/$db/$_" => "$main/$db/$_"), @$shared),
         "$wt/$plain_b" => $static,
@@ -57,7 +58,7 @@ my($assert_setup) = sub {
     };
     assert_equals($links, {map(($_ => readlink($_)), keys(%$links))});
     assert_equals(
-        {Filtrum => [0, $content], InstrumentDB => [0, $instrument_db]},
+        {$restored => [0, $content], $modified => [0, $modified_content]},
         {map(($_ => [-l "$wt/$db/$_" ? 1 : 0, ${read_file("$wt/$db/$_/1")}]), @$copied)},
     );
     return 1;
@@ -75,9 +76,9 @@ my($assert_setup) = sub {
     ],
     inline_case(sub {
         my($wt_content) = "worktree\n";
-        write_file("$wt/$db/InstrumentDB/1", $wt_content);
-        rm_rf("$wt/$db/Filtrum");
-        IO_File()->symlink("$main/$db/Filtrum", "$wt/$db/Filtrum");
+        write_file("$wt/$db/$modified/1", $wt_content);
+        rm_rf("$wt/$db/$restored");
+        IO_File()->symlink("$main/$db/$restored", "$wt/$db/$restored");
         unlink("$wt/$db/Xapian");
         IO_File()->symlink($static, "$wt/$db/Xapian");
         local($ENV{PERLLIB}) = "$perllib:$ENV{PERLLIB}";
