@@ -5,8 +5,14 @@ use Bivio::Base 'Bivio.ShellUtil';
 use Cwd ();
 use File::Basename ();
 use File::Spec ();
+use version ();
 b_use('IO.ClassLoaderAUTOLOAD');
 
+
+sub MIN_GIT_VERSION {
+    # git rev-parse --path-format
+    return '2.31';
+}
 
 sub USAGE {
     return <<'EOF';
@@ -33,6 +39,12 @@ sub bashrc_b_env_aliases {
             },
         )},
     );
+}
+
+sub is_git_version_ok {
+    my($self) = @_;
+    my($v) = ${$self->piped_exec([qw(git --version)])} =~ /(\d+(?:\.\d+)+)/;
+    return $v && version->parse("v$v") >= version->parse('v' . $self->MIN_GIT_VERSION) ? 1 : 0;
 }
 
 sub setup_all {
@@ -192,6 +204,8 @@ sub _copy {
 
 sub _git_dirs {
     my($self, $dir) = @_;
+    b_die('git ', $self->MIN_GIT_VERSION, ' or later is required')
+        unless $self->is_git_version_ok;
     my($wt, $common, $git_dir) = map(
         Cwd::realpath($_),
         split(/\n/, ${$self->piped_exec([
