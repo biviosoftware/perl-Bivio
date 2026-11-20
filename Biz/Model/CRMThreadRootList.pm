@@ -154,7 +154,6 @@ sub _su_fields {
         ($_ => $rewrite_user_id->{$_}),
         grep($is_user->{$rewrite_user_id->{$_}}, keys(%$rewrite_user_id)),
     )};
-    # Model.Email lowercases its email query value, which breaks an IN list
     $_C->map_execute(
         sub {
             my($row) = @_;
