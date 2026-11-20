@@ -35,6 +35,7 @@ my($rows) = [map({
     [$super, email($super), $super],
     [undef, email('crm_cust1'), undef],
     [undef, email("${tech}a"), $tech],
+    [undef, ucfirst(email($super)), $super],
     [undef, $rewrite->(realm_id($tech)), $tech],
     [undef, $rewrite->(realm_id($super)), $super],
     [undef, $rewrite->(req('auth_id')), undef],
