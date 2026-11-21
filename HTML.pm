@@ -31,6 +31,9 @@ sub escape_query {
 
 sub escape_uri {
     my(undef, $value) = @_;
+    # uri_escape dies on wide characters and uri_escape_utf8 double-encodes octets.
+    utf8::encode($value)
+        if utf8::is_utf8($value);
     return _extra_escape_uri(URI::Escape::uri_escape($value));
 }
 
