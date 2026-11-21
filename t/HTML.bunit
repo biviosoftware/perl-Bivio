@@ -1,9 +1,12 @@
-# Copyright (c) 2005-2007 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2005-2026 Bivio Software, Inc.  All Rights Reserved.
 Type();
 use Encode ();
 my($value) = '&lt; original/value%20 &gt;';
 my($copy) = $value;
+my($nnbsp) = "a\x{202F}b";
+my($nnbsp_escaped) = 'a%E2%80%AFb';
+my($e_acute) = Encode::decode_utf8("caf\xc3\xa9");
+my($e_acute_escaped) = 'caf%C3%A9';
 
 [
     # $] > 5.008005 ? () : (
@@ -32,6 +35,16 @@ my($copy) = $value;
         'hello bye' => 'hello%20bye',
         'hello&bye' => 'hello%26bye',
         'hello?bye' => 'hello%3Fbye',
+        $nnbsp => $nnbsp_escaped,
+    ],
+    escape_uri => [
+        'hello bye' => 'hello%20bye',
+        '/a/b c' => '/a/b%20c',
+        'a=b&c' => 'a%3Db%26c',
+        $nnbsp => $nnbsp_escaped,
+        Encode::encode_utf8($nnbsp) => $nnbsp_escaped,
+        $e_acute => $e_acute_escaped,
+        Encode::encode_utf8($e_acute) => $e_acute_escaped,
     ],
     unescape_query => [
         hello => 'hello',
