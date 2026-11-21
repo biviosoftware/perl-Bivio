@@ -1,5 +1,4 @@
-# Copyright (c) 2001-2013 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 2001-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::SQL::Connection::Postgres;
 use strict;
 use Bivio::Base 'Bivio::SQL::Connection';
@@ -64,6 +63,9 @@ sub internal_execute {
         my($msg) = @_;
         return
             if $msg =~ /NOTICE:\s+CREATE TABLE . PRIMARY KEY will create implicit index/;
+        # Backend is exiting; execute retries or dies with the connection error
+        return b_info($msg)
+            if $msg =~ /^FATAL:/;
         return $prev && $prev->(@_);
     };
     return shift->SUPER::internal_execute(@_);
@@ -122,15 +124,17 @@ sub internal_get_error_code {
 }
 
 sub internal_get_retry_sleep {
-    # (self, int, string) : int
+    # (self, int, string, string) : int
     # Returns the number of seconds to sleep for the specified transient
     # error code. 0 indicates retry immediately, undef indicates don't
     # retry.
-    my($self, $error, $message) = @_;
+    my($self, $error, $message, $state) = @_;
     # retry in 15 seconds if database is gone. may have rebooted database
     return 15 if $error == -1 && $message =~ /backend closed the channel/;
     return 1 if $error == -1
         && $message =~ /server closed the connection unexpectedly/;
+    # SQLSTATE 08xxx connection exception, 57P01 admin shutdown, 57P02 crash shutdown
+    return 1 if ($state || '') =~ /^(?:08|57P0[12])/;
     return undef;
 }
 
