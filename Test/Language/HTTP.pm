@@ -255,7 +255,8 @@ sub file_field {
     my($self, $name, $content) = @_;
     # Returns a value to be used by submit_form() with I<file_name> or I<name> as the
     # name.  Uses a temporary file which is cleaned up at program exit if I<content>
-    # is supplied.
+    # is supplied. An array_ref of these submits several files to a file input
+    # which has the multiple attribute.
     return [$name, $name]
         unless defined($content);
     return [$_F->write($self->temp_file($name), $content), $name];
@@ -1285,6 +1286,15 @@ sub _facade {
     return $to_fix
 }
 
+sub _file_field_values {
+    my($field, $value) = @_;
+    return $value
+        unless ref($value) eq 'ARRAY' && ref($value->[0]) eq 'ARRAY';
+    b_die('file input does not accept multiple files: ', $field->{label})
+        unless exists($field->{multiple});
+    return @$value;
+}
+
 sub _find_row {
     my($self, $table_name, $find_heading, $find_value) = @_;
     # Returns the hashref for row identified by I<table_name>, <I>find_heading
@@ -1348,7 +1358,10 @@ sub _format_form {
             : Encode::decode_utf8($v);
         _validate_text_field($f, $v)
             if $f->{type} eq 'text';
-        push(@$result, $f->{name}, $value);
+        push(
+            @$result,
+            map(($f->{name}, $_), $f->{type} eq 'file' ? _file_field_values($f, $value) : $value),
+        );
     }
     # Fill in hidden and defaults
     foreach my $class (qw(hidden visible)) {

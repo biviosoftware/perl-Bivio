@@ -1,0 +1,77 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+test_setup('PetShop', 'groupware');
+home_page();
+login_as('root');
+my($realm) = 'fourem';
+visit_realm_folder($realm);
+my($files_root) = get_uri();
+my($folder) = 'upload ' . random_string();
+my($upload_field) = 'File to upload:';
+my($single) = 'one.txt';
+my($content) = {map(($_ => random_string()), $single, qw(two.txt three.txt new.txt))};
+my($files) = sub {
+    return [map(file_field($_, $content->{$_}), @_)];
+};
+my($visit_change) = sub {
+    my($name, $mode) = @_;
+    visit_uri($files_root);
+    follow_link($folder)
+        unless grep($name eq $_, '/', $folder);
+    follow_link_in_table('Name', 'Name', $name, 'Actions', 'Modify');
+    visit_realm_file_change_mode($mode);
+    return;
+};
+my($verify_file) = sub {
+    my($name) = @_;
+    visit_realm_folder($realm, $folder);
+    follow_link($name);
+    verify_text($content->{$name});
+    return;
+};
+$visit_change->('/', 'ADD_SUBFOLDER');
+submit_form(OK => {
+    'Name:' => $folder,
+});
+$visit_change->($folder, 'UPLOAD');
+submit_form(OK => {
+    $upload_field => file_field($single, $content->{$single}),
+});
+$verify_file->($single);
+$visit_change->($folder, 'UPLOAD');
+my($several) = $files->(qw(two.txt three.txt));
+submit_form(OK => {
+    $upload_field => $several,
+});
+$verify_file->('two.txt');
+$verify_file->('three.txt');
+$visit_change->($folder, 'UPLOAD');
+my($conflict) = $files->(qw(new.txt two.txt));
+test_deviance();
+submit_form(OK => {
+    $upload_field => $conflict,
+});
+test_conformance();
+verify_text('A file with this name already exists: two.txt.');
+visit_realm_folder($realm, $folder);
+verify_no_text('new.txt');
+$visit_change->($single, 'UPLOAD');
+test_deviance('does not accept multiple files');
+submit_form(OK => {
+    $upload_field => $several,
+});
+test_conformance();
+submit_form(OK => {
+    $upload_field => file_field($single, $content->{$single} = random_string()),
+});
+$verify_file->($single);
+$visit_change->($folder, 'DELETE');
+submit_form('OK');
+visit_uri($files_root);
+follow_link('Archived', $folder);
+foreach my $version (qw(one;1.txt one;2.txt two;1.txt three;1.txt)) {
+    follow_link_in_table('Name', 'Name', $version, 'Actions', 'Delete Permanently');
+    submit_form('Delete Permanently');
+}
+follow_link_in_table('Name', 'Name', $folder, 'Actions', 'Delete Permanently');
+submit_form('Delete Permanently');
+verify_no_text($folder);
