@@ -1,0 +1,35 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+Type();
+my($file) = sub {
+    my($name, $content) = @_;
+    return {
+        filename => $name,
+        content => \$content,
+        content_type => 'text/plain',
+    };
+};
+my($file_a) = $file->('a.txt', 'a');
+my($file_b) = $file->('b.txt', 'b');
+my($empty) = $file->('empty.txt', '');
+my($not_selected) = {
+    filename => '',
+    content => \(''),
+    content_type => 'application/octet-stream',
+};
+my($no_files) = [undef, undef];
+my($not_a_file) = [undef, Bivio_TypeError()->FILE_FIELD];
+my($mixed) = Bivio_TypeError()->FORM_DATA_MULTIPART_MIXED;
+[
+    from_literal => [
+        [undef] => $no_files,
+        '' => $no_files,
+        'x' => $not_a_file,
+        [$not_selected] => $no_files,
+        [$file_a] => [[$file_a]],
+        [[$file_a, $file_b]] => [[$file_a, $file_b]],
+        [[$not_selected, $file_a, '', $empty]] => [[$file_a, $empty]],
+        [[$not_selected, $not_selected]] => $no_files,
+        [[$file_a, 'x']] => $not_a_file,
+        [[$file_a, {error => $mixed}]] => [undef, $mixed],
+    ],
+];
