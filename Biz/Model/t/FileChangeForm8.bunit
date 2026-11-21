@@ -1,0 +1,96 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+require(b_use('IO.File')->absolute_path('FileChangeForm.PL'));
+
+my($_FCM) = __PACKAGE__->use('Type.FileChangeMode');
+my($folder) = '/multi';
+my($comment) = 'multi upload';
+my($file) = sub {
+    my($name, $content) = @_;
+    return {
+        filename => $name,
+        content => \(defined($content) ? $content : "$name content"),
+        content_type => 'text/plain',
+    };
+};
+my($upload) = sub {
+    return {
+        path_info => $folder,
+        file => [map(ref($_) ? $_ : $file->($_), @_)],
+        comment => $comment,
+        mode => $_FCM->UPLOAD,
+    };
+};
+my($content) = sub {
+    my($name) = @_;
+    return ${model('RealmFile', {path => "$folder/$name"})->get_content};
+};
+my($exists) = sub {
+    my($name) = @_;
+    return model('RealmFile')->unsafe_load({path => "$folder/$name"});
+};
+my($empty) = $file->('d.txt', '');
+[
+    sub {
+        model('RealmFile')->create_folder({path => $folder});
+        foreach my $name (qw(a.txt b.txt)) {
+            model('RealmFile')->create_with_content(
+                {path => "$folder/$name"},
+                $file->($name)->{content},
+            );
+        }
+        commit();
+        return 1;
+    } => 1,
+    error_case($upload->('a.txt'), {
+        'RealmFile.path_lc' => 'EXISTS',
+    }),
+    error_case($upload->('c.txt', 'a.txt'), {
+        'RealmFile.path_lc' => 'EXISTS: a.txt',
+    }),
+    error_case($upload->('a.txt', 'c.txt', 'B.TXT'), {
+        'RealmFile.path_lc' => 'EXISTS: a.txt, B.TXT',
+    }),
+    error_case($upload->('c.txt', 'C.txt'), {
+        'RealmFile.path_lc' => 'EXISTS: C.txt',
+    }),
+    error_case($upload->($empty, 'e.txt'), {
+        file => 'EMPTY: d.txt',
+    }),
+    error_case($upload->('*', 'e.txt', '?'), {
+        file => 'FILE_NAME: *, ?',
+    }),
+    error_case($upload->('e.txt', $empty, 'a.txt'), {
+        file => 'EMPTY: d.txt',
+        'RealmFile.path_lc' => 'EXISTS: a.txt',
+    }),
+    sub {
+        return join(', ', map($exists->($_), qw(c.txt d.txt e.txt)));
+    } => '0, 0, 0',
+    error_case({
+        %{$upload->('x.txt', 'y.txt')},
+        path_info => "$folder/a.txt",
+    }, {
+        file => 'TOO_MANY',
+    }),
+    sub {$content->('a.txt')} => 'a.txt content',
+    [$upload->('c.txt', 'e.txt')] => [{}],
+    sub {
+        return join(', ', map($content->($_), qw(c.txt e.txt)));
+    } => 'c.txt content, e.txt content',
+    sub {
+        return join(', ', map(
+            model('RealmFileLock')->unsafe_load({
+                realm_file_id => model('RealmFile', {path => "$folder/$_"})->get('realm_file_id'),
+                comment => $comment,
+            }),
+            qw(c.txt e.txt),
+        ));
+    } => '1, 1',
+    sub {
+        model('RealmFileLock')->delete_all({realm_id => req('auth_id')});
+        model('RealmFile')->delete_all;
+        model('RealmFile')->init_realm;
+        commit();
+        return 1;
+    } => 1,
+];

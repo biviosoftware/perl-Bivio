@@ -1,13 +1,14 @@
-# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Model::FileChangeForm;
 use strict;
 use Bivio::Base 'Biz.FormModel';
 
 my($_FCM) = b_use('Type.FileChangeMode');
+my($_FF) = b_use('Type.FileField');
 my($_FN) = b_use('Type.FileName');
 my($_FP) = b_use('Type.FilePath');
 my($_TA) = b_use('Type.TextArea');
+my($_TE) = b_use('Bivio.TypeError');
 my($_LOCK) = b_use('Model.RealmFileLock')->if_enabled;
 b_use('IO.Config')->register(my $_CFG = {
     show_comment => 0,
@@ -75,20 +76,20 @@ sub execute_ok {
     }
     elsif ($self->is_folder) {
         if ($self->get('mode')->equals_by_name(qw(UPLOAD TEXT_FILE))) {
-            my($name, $content) = $self->get('mode')->eq_upload
-                ? ($self->validate_file_name($self, 'file'),
-                   $self->get('file')->{content})
-                : ($self->get(qw(name content)));
+            my($files) = $self->get('mode')->eq_upload
+                ? _upload_files($self)
+                : [[$self->get(qw(name content))]];
             return if $self->in_error;
-            my($realm_file_id) = $self->new_other('RealmFile')
-                ->create_with_content({
-                    path => $_FP->join($self->get('realm_file')->get('path'),
-                        $name),
-                }, $content)->get('realm_file_id');
-            $self->new_other('RealmFileLock')->create({
-                realm_file_id => $realm_file_id,
-                comment => $self->get('comment'),
-            }) if $_LOCK && defined($self->get('comment'));
+            foreach my $f (@$files) {
+                my($realm_file_id) = $self->new_other('RealmFile')
+                    ->create_with_content({
+                        path => $_FP->join($self->get('realm_file')->get('path'), $f->[0]),
+                    }, $f->[1])->get('realm_file_id');
+                $self->new_other('RealmFileLock')->create({
+                    realm_file_id => $realm_file_id,
+                    comment => $self->get('comment'),
+                }) if $_LOCK && defined($self->get('comment'));
+            }
         }
         elsif ($self->get('mode')->eq_add_subfolder) {
             $self->new_other('RealmFile')->create_folder({
@@ -105,9 +106,11 @@ sub execute_ok {
     }
     # file
     elsif ($self->get('mode')->equals_by_name(qw(UPLOAD TEXT_FILE))) {
+        my($content) = _content($self);
+        return if $self->in_error;
         _release_lock($self);
         my($realm_file_id) = $self->get('realm_file')
-            ->update_with_content({}, _content($self))
+            ->update_with_content({}, $content)
             ->get('realm_file_id');
         $self->new_other('RealmFileLock')->create({
             realm_file_id => $realm_file_id,
@@ -172,7 +175,7 @@ sub internal_initialize {
                 [qw(name NonHiddenFileName)],
                 [qw(rename_name NonHiddenFileName)],
                 [qw(folder_id RealmFile.realm_file_id)],
-                [qw(file FileField)],
+                [qw(file FileFieldArray)],
                 [qw(comment RealmFileLock.comment)],
                 [qw(content Text64K)],
                 [qw(override_mode FileChangeMode)],
@@ -283,22 +286,25 @@ sub validate {
 
 sub validate_file_name {
     my($proto, $form, $file_field) = @_;
-    my($name, $err) = $_FN->from_literal(
-        $_FP->get_tail($form->get($file_field)->{filename}));
-
-    if ($err) {
-        $form->internal_put_error(file => $err);
-        return;
-    }
-    $form->internal_put_error(file => 'FILE_NAME')
-        unless defined($name);
+    my($name, $err) = _file_name($form->get($file_field));
+    $form->internal_put_error(file => $err)
+        if $err;
     return $name;
 }
 
 sub _content {
     my($self) = @_;
-    return $self->get('mode')->eq_upload ? $self->get('file')->{content}
-        : $self->get('content');
+    return $self->get('content')
+        unless $self->get('mode')->eq_upload;
+    my($files) = $self->get('file');
+    if (int(@$files) > 1) {
+        $self->internal_put_error(file => $_TE->TOO_MANY);
+        return;
+    }
+    my(undef, $err) = $_FF->from_literal($files->[0]);
+    $self->internal_put_error(file => $err)
+        if $err;
+    return $files->[0]->{content};
 }
 
 sub _default_mode {
@@ -309,6 +315,12 @@ sub _default_mode {
     return $self->is_text_content_type
         ? $_FCM->TEXT_FILE
         : $_FCM->UPLOAD;
+}
+
+sub _file_name {
+    my($file) = @_;
+    my($name, $err) = $_FN->from_literal($_FP->get_tail($file->{filename}));
+    return defined($name) ? $name : (undef, $err || $_TE->FILE_NAME);
 }
 
 sub _release_lock {
@@ -328,6 +340,49 @@ sub _rename_file_name {
     return lc($suffix) eq lc($_FP->get_suffix($self->get('rename_name')))
         ? $self->get('rename_name')
         : join('.', $self->get('rename_name'), $_FP->get_suffix($old_name));
+}
+
+sub _upload_file {
+    my($self, $file, $seen) = @_;
+    my(undef, $err) = $_FF->from_literal($file);
+    my($name);
+    ($name, $err) = _file_name($file)
+        unless $err;
+    return ($_FP->get_tail($file->{filename}), file => $err)
+        if $err;
+    return ($name, 'RealmFile.path_lc' => $_TE->EXISTS)
+        if $seen->{lc($name)}++
+        || $self->new_other('RealmFile')->set_ephemeral->unsafe_load({
+            path => $_FP->join($self->get('realm_file')->get('path'), $name),
+        });
+    return $name;
+}
+
+sub _upload_files {
+    my($self) = @_;
+    my($files) = $self->get('file');
+    my($res) = [];
+    my($errors) = {};
+    my($seen) = {};
+    foreach my $file (@$files) {
+        my($name, $field, $err) = _upload_file($self, $file, $seen);
+        unless ($err) {
+            push(@$res, [$name, $file->{content}]);
+            next;
+        }
+        my($e) = $errors->{$field} ||= [$err, []];
+        push(@{$e->[1]}, $name)
+            if $e->[0]->equals($err);
+    }
+    foreach my $field (sort(keys(%$errors))) {
+        my($err, $names) = @{$errors->{$field}};
+        $self->internal_put_error_and_detail(
+            $field,
+            $err,
+            int(@$files) > 1 ? join(', ', @$names) : undef,
+        );
+    }
+    return $res;
 }
 
 sub _validate_move_folder {
