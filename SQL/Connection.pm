@@ -1,5 +1,4 @@
-# Copyright (c) 1999-2010 bivio Software, Inc.  All rights reserved.
-# $Id$
+# Copyright (c) 1999-2026 Bivio Software, Inc.  All rights reserved.
 package Bivio::SQL::Connection;
 use strict;
 use Bivio::Base 'Bivio.UNIVERSAL';
@@ -107,7 +106,8 @@ sub execute {
     # I<LongReadLen> and I<LongTruncOk> are set accordingly.
     #
     # We retry on certain errors (see
-    # L<internal_get_retry_sleep|"internal_get_retry_sleep">).
+    # L<internal_get_retry_sleep|"internal_get_retry_sleep">), but only if no
+    # statement has executed in the current transaction.
     my($sql, $params, $die, $has_blob) = @_;
     my($fields) = $self->[$_IDI];
     $sql = $self->internal_fixup_sql($sql);
@@ -129,18 +129,21 @@ sub execute {
         my($die_error) = $@;
         b_warn($delta, 's: query took a long time: ', $sql, $params)
             if $delta > $_CFG->{long_query_seconds};
-        return $statement
-            if $ok;
+        if ($ok) {
+            $fields->{txn_has_statements} = 1;
+            return $statement;
+        }
         $err = $statement && $statement->err ? $statement->err + 0 : 0;
         $errstr = $statement && $statement->errstr
             ? $statement->errstr : $die_error;
         # If we get an error, it may be a timed-out connection.  We'll
         # check the connection the next time through.
         $fields->{need_ping} = 1;
-        my($sleep) = $self->internal_get_retry_sleep($err, $errstr);
+        my($sleep) = $self->internal_get_retry_sleep(
+            $err, $errstr, $statement ? $statement->state : '');
         last TRY
             unless defined($sleep);
-        if ($fields->{need_commit}) {
+        if ($fields->{txn_has_statements}) {
             b_warn($errstr, '; not retrying, partial transaction');
             last TRY;
         }
@@ -331,6 +334,7 @@ sub internal_new {
         # checks the connection with a ping to make sure it is still
         # alive.
         need_ping => 0,
+        txn_has_statements => 0,
     };
     return $self;
 }
@@ -436,6 +440,7 @@ sub _commit_or_rollback {
     return _get_instance($self)->$method(@_)
         unless ref($self);
     my($fields) = $self->[$_IDI];
+    $fields->{txn_has_statements} = 0;
     return unless $self->REQUIRE_COMMIT_OR_ROLLBACK || $fields->{need_commit};
     _trace($method) if $_TRACE;
     _get_connection($self)->$method()
