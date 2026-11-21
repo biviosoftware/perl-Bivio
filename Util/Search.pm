@@ -1,5 +1,4 @@
-# Copyright (c) 2006-2012 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Util::Search;
 use strict;
 use Bivio::Base 'Bivio.ShellUtil';
@@ -161,6 +160,7 @@ sub _do_realm {
     my($j) = 0;
     my($commit) = sub {
         $self->commit_or_rollback;
+        $req->call_process_cleanup;
         $_A->reset_warn_counter;
         return;
     };
