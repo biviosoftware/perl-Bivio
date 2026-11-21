@@ -1,0 +1,54 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+Request('initialize_fully');
+my($scratch) = IO_File()->rm_rf(IO_File()->absolute_path('Search3.tmp'));
+my($tmp_dir) = IO_File()->mkdir_p("$scratch/tmp");
+config({
+    'Bivio::IO::File' => {tmp_dir => $tmp_dir},
+    'Bivio::Search::Xapian' => {db_path => "$scratch/Xapian"},
+});
+my($realm) = 'xapian_guest';
+my($path) = '/search3-attachment.eml';
+my($delete_file) = sub {
+    my($rf) = model('RealmFile');
+    $rf->delete
+        if $rf->unsafe_load({path_lc => $path});
+    commit();
+    return;
+};
+req()->set_realm_and_user($realm, $realm);
+$delete_file->();
+model('RealmFile')->create_with_content({path => $path}, \(<<'EOF'));
+Subject: search3
+From: x@y.z
+To: q@r.s
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary=b
+
+--b
+Content-Type: text/plain
+
+body
+--b
+Content-Type: application/octet-stream; name="a.bin"
+Content-Disposition: attachment; filename="a.bin"
+
+attachment
+--b--
+EOF
+commit();
+req()->call_process_cleanup;
+[
+    sub {ShellUtil_Search()} => [
+        {
+            method => 'rebuild_realm',
+            check_return => sub {
+                my($case) = @_;
+                $case->actual_return([glob("$tmp_dir/*")]);
+                return [];
+            },
+        } => [
+            [] => [],
+            inline_case($delete_file),
+        ],
+    ],
+];
