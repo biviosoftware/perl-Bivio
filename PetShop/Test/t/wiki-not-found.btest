@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Bivio Software, Inc.  All Rights Reserved.
+test_setup('PetShop', 'groupware');
+home_page();
+my($missing) = '/site/bp/NoSuchWikiPage';
+foreach my $uri ($missing, '/site/bp/export/') {
+    test_deviance();
+    visit_uri($uri);
+    test_conformance();
+    test_equals(404, get_response()->code());
+    verify_text('do not have permission to create it');
+}
+login_as('root');
+visit_uri($missing);
+verify_text('Please create it');

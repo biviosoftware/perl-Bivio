@@ -1,11 +1,11 @@
-# Copyright (c) 2006-2009 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2006-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::Biz::Action::WikiView;
 use strict;
 use Bivio::Base 'Biz.Action';
 use Bivio::UI::ViewLanguageAUTOLOAD;
 
 my($_A) = b_use('IO.Alert');
+my($_AC) = b_use('Ext.ApacheConstants');
 my($_ARF) = b_use('Action.RealmFile');
 my($_C) = b_use('FacadeComponent.Constant');
 my($_E) = b_use('Model.Email');
@@ -57,9 +57,10 @@ sub execute_not_found {
         if $_CFG->{use_default_start_page}
         && _create_default_start_page($proto, $req);
     my($t) = $req->get('task')->unsafe_get_attr_as_id('edit_task');
-    return
-        unless $t && $req->can_user_execute_task($t)
-        && $req->unsafe_get('path_info');
+    unless ($t && $req->can_user_execute_task($t) && $req->unsafe_get('path_info')) {
+        $req->get('reply')->set_http_status($_AC->NOT_FOUND);
+        return;
+    }
     $proto->get_instance('Acknowledgement')
         ->save_label('FORUM_WIKI_NOT_FOUND', $req);
     return 'edit_task';
