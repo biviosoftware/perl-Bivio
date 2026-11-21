@@ -1,5 +1,4 @@
-# Copyright (c) 2008-2010 bivio Software, Inc.  All Rights Reserved.
-# $Id$
+# Copyright (c) 2008-2026 Bivio Software, Inc.  All Rights Reserved.
 package Bivio::UI::View::File;
 use strict;
 use Bivio::Base 'View.Base';
@@ -302,6 +301,7 @@ sub _file_change {
             }],
             ['FileChangeForm.file', {
                 row_class => 'hidden_file_field',
+                MULTIPLE => If(['Model.FileChangeForm', '->is_folder'], 'multiple'),
             }],
             Join([
                 StandardSubmit({

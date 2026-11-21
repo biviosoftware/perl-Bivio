@@ -1069,8 +1069,11 @@ sub _cfg_test {
 sub _cfg_file {
     return {
         FormError => [
-            ['FileChangeForm.RealmFile.path_lc.EXISTS' =>
-                 'A file with this name already exists.'],
+            # Not vs_fe('detail'): Prose would parse the uploaded file names as code
+            ['FileChangeForm.RealmFile.path_lc.EXISTS' => q{A file with this name already exists<{
+                my($d) = b_use('UI.FormError')->field_value('detail');
+                $d ? Join([': ', $d]) : '';
+            }>.}],
         ],
         Constant => [
             [EasyForm_dir => $_EASY_FORM_DIR],
